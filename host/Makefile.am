@@ -6,10 +6,10 @@
 ##     eCos host-side software toplevel makefile
 ##
 ## =====================================================================
-######COPYRIGHTBEGIN####
-##                                                                          
+#######ECOSHOSTGPLCOPYRIGHTBEGIN####
 ## ----------------------------------------------------------------------------
-## Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+## Copyright (C) 2002 Bart Veer
+## Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 ##
 ## This file is part of the eCos host tools.
 ##
@@ -28,8 +28,7 @@
 ## 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ##
 ## ----------------------------------------------------------------------------
-##                                                                          
-######COPYRIGHTEND####
+#######ECOSHOSTGPLCOPYRIGHTEND####
 ## =====================================================================
 #######DESCRIPTIONBEGIN####
 ##
@@ -41,5 +40,5 @@
 ######DESCRIPTIONEND####
 ## =====================================================================
 
-AUTOMAKE_OPTIONS = 1.3 cygnus
-SUBDIRS          = @ECOS_DIRS@
+AUTOMAKE_OPTIONS = 1.3 foreign
+SUBDIRS          = @SUBDIRS@

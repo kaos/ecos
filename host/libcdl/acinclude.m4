@@ -5,10 +5,9 @@ dnl
 dnl     acinclude.m4
 dnl
 dnl ====================================================================
-dnl####COPYRIGHTBEGIN####
-dnl                                                                         
+dnl ####ECOSHOSTGPLCOPYRIGHTBEGIN####
 dnl ----------------------------------------------------------------------------
-dnl Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+dnl Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 dnl
 dnl This file is part of the eCos host tools.
 dnl
@@ -27,8 +26,7 @@ dnl this program; if not, write to the Free Software Foundation, Inc.,
 dnl 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 dnl
 dnl ----------------------------------------------------------------------------
-dnl                                                                          
-dnl####COPYRIGHTEND####
+dnl ####ECOSHOSTGPLCOPYRIGHTEND####
 dnl ====================================================================
 dnl#####DESCRIPTIONBEGIN####
 dnl
@@ -43,4 +41,4 @@ dnl ====================================================================
 dnl Access shared macros.
 dnl AM_CONDITIONAL needs to be mentioned here or else aclocal does not
 dnl incorporate the macro into aclocal.m4
-sinclude(../acinclude.m4)
+sinclude(../../acsupport/acinclude.m4)

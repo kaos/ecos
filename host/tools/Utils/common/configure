@@ -15,9 +15,9 @@ ac_help="$ac_help
   --enable-maintainer-mode enable make rules and dependencies not useful
                           (and sometimes confusing) to the casual installer"
 ac_help="$ac_help
- --enable-debug do a debug rather than a release build"
+ --enable-debug           do a debug rather than a release build"
 ac_help="$ac_help
- --enable-ansi Do an ANSI rather than a unicode build"
+ --enable-ansi            do an ANSI rather than a unicode build"
 
 # Initialize some variables set by options.
 # The variables have the same names as the options, with
@@ -530,7 +530,7 @@ fi
 
 
 ac_aux_dir=
-for ac_dir in ../../.. $srcdir/../../..; do
+for ac_dir in ../../../../acsupport $srcdir/../../../../acsupport; do
   if test -f $ac_dir/install-sh; then
     ac_aux_dir=$ac_dir
     ac_install_sh="$ac_aux_dir/install-sh -c"
@@ -542,7 +542,7 @@ for ac_dir in ../../.. $srcdir/../../..; do
   fi
 done
 if test -z "$ac_aux_dir"; then
-  { echo "configure: error: can not find install-sh or install.sh in ../../.. $srcdir/../../.." 1>&2; exit 1; }
+  { echo "configure: error: can not find install-sh or install.sh in ../../../../acsupport $srcdir/../../../../acsupport" 1>&2; exit 1; }
 fi
 ac_config_guess=$ac_aux_dir/config.guess
 ac_config_sub=$ac_aux_dir/config.sub
@@ -1226,10 +1226,61 @@ else
   fi
 fi
 
+for ac_declaration in \
+   ''\
+   '#include <stdlib.h>' \
+   'extern "C" void std::exit (int) throw (); using std::exit;' \
+   'extern "C" void std::exit (int); using std::exit;' \
+   'extern "C" void exit (int) throw ();' \
+   'extern "C" void exit (int);' \
+   'void exit (int);'
+do
+  cat > conftest.$ac_ext <<EOF
+#line 1240 "configure"
+#include "confdefs.h"
+#include <stdlib.h>
+$ac_declaration
+int main() {
+exit (42);
+; return 0; }
+EOF
+if { (eval echo configure:1248: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  :
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  continue
+fi
+rm -f conftest*
+  cat > conftest.$ac_ext <<EOF
+#line 1258 "configure"
+#include "confdefs.h"
+$ac_declaration
+int main() {
+exit (42);
+; return 0; }
+EOF
+if { (eval echo configure:1265: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  break
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+fi
+rm -f conftest*
+done
+if test -n "$ac_declaration"; then
+  echo '#ifdef __cplusplus' >>confdefs.h
+  echo $ac_declaration      >>confdefs.h
+  echo '#endif'             >>confdefs.h
+fi
+
+
 # Extract the first word of "ranlib", so it can be a program name with args.
 set dummy ranlib; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:1233: checking for $ac_word" >&5
+echo "configure:1284: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_RANLIB'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1257,13 +1308,13 @@ else
 fi
 
 echo $ac_n "checking for object suffix""... $ac_c" 1>&6
-echo "configure:1261: checking for object suffix" >&5
+echo "configure:1312: checking for object suffix" >&5
 if eval "test \"`echo '$''{'ac_cv_objext'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   rm -f conftest*
 echo 'int i = 1;' > conftest.$ac_ext
-if { (eval echo configure:1267: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:1318: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   for ac_file in conftest.*; do
     case $ac_file in
     *.c) ;;
@@ -1281,12 +1332,12 @@ OBJEXT=$ac_cv_objext
 ac_objext=$ac_cv_objext
 
 echo $ac_n "checking for Cygwin environment""... $ac_c" 1>&6
-echo "configure:1285: checking for Cygwin environment" >&5
+echo "configure:1336: checking for Cygwin environment" >&5
 if eval "test \"`echo '$''{'ac_cv_cygwin'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1290 "configure"
+#line 1341 "configure"
 #include "confdefs.h"
 
 int main() {
@@ -1297,7 +1348,7 @@ int main() {
 return __CYGWIN__;
 ; return 0; }
 EOF
-if { (eval echo configure:1301: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:1352: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_cygwin=yes
 else
@@ -1314,19 +1365,19 @@ echo "$ac_t""$ac_cv_cygwin" 1>&6
 CYGWIN=
 test "$ac_cv_cygwin" = yes && CYGWIN=yes
 echo $ac_n "checking for mingw32 environment""... $ac_c" 1>&6
-echo "configure:1318: checking for mingw32 environment" >&5
+echo "configure:1369: checking for mingw32 environment" >&5
 if eval "test \"`echo '$''{'ac_cv_mingw32'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1323 "configure"
+#line 1374 "configure"
 #include "confdefs.h"
 
 int main() {
 return __MINGW32__;
 ; return 0; }
 EOF
-if { (eval echo configure:1330: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:1381: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_mingw32=yes
 else
@@ -1345,7 +1396,7 @@ test "$ac_cv_mingw32" = yes && MINGW32=yes
 
 
 echo $ac_n "checking for executable suffix""... $ac_c" 1>&6
-echo "configure:1349: checking for executable suffix" >&5
+echo "configure:1400: checking for executable suffix" >&5
 if eval "test \"`echo '$''{'ac_cv_exeext'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1355,7 +1406,7 @@ else
   rm -f conftest*
   echo 'int main () { return 0; }' > conftest.$ac_ext
   ac_cv_exeext=
-  if { (eval echo configure:1359: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; }; then
+  if { (eval echo configure:1410: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; }; then
     for file in conftest.*; do
       case $file in
       *.c | *.o | *.obj) ;;
@@ -1376,17 +1427,39 @@ echo "$ac_t""${ac_cv_exeext}" 1>&6
 ac_exeext=$EXEEXT
 
 
+    ecos_CFLAGS=""
+    ecos_CXXFLAGS=""
+    ecos_LDADD=""
+    ecos_INCLUDES=""
+    ecos_LIBS=""
+    
+    
+    
+    
+    
+
+
+    
     
     
 
     echo $ac_n "checking "for Visual C++"""... $ac_c" 1>&6
-echo "configure:1384: checking "for Visual C++"" >&5
+echo "configure:1448: checking "for Visual C++"" >&5
     MSVC="no";
     if test "${CC}" = "cl" ; then
        MSVC="yes"
+       CXX="cl"
+       
+    
+    
+    if test "${MSVC}" = "yes" ; then
+      MSVC_SRCDIR=`cygpath -w ${MSVC_SRCDIR} | tr \\\\\\\\ /`
     fi
-    if test "${CXX}" = "cl" ; then
-       MSVC="yes"
+
+       
+       ecos_INCLUDES="${ecos_INCLUDES} \"-I${msvc_srcdir}\""
+       ecos_LDADD="-link"
+       ecos_LIBS="advapi32.lib"
     fi
     
 
@@ -1397,56 +1470,76 @@ else
   MSVC_TRUE='#'
   MSVC_FALSE=
 fi
-    echo "$ac_t""${MSVC}" 1>&6
+    if test "${MSVC}" = "yes" ; then
+        echo "$ac_t""unfortunately yes" 1>&6
+    else
+        echo "$ac_t""no" 1>&6
+    fi
 
 
+    
     
     
     
 
     echo $ac_n "checking "the default compiler flags"""... $ac_c" 1>&6
-echo "configure:1409: checking "the default compiler flags"" >&5
+echo "configure:1487: checking "the default compiler flags"" >&5
 
-                        cygflags_enable_debug="no"
+            ecosflags_enable_debug="no"
     # Check whether --enable-debug or --disable-debug was given.
 if test "${enable_debug+set}" = set; then
   enableval="$enable_debug"
   case "${enableval}" in
-       yes) cygflags_enable_debug="yes" ;;
-       *)   cygflags_enable_debug="no" ;;
+       yes) ecosflags_enable_debug="yes" ;;
+       *)   ecosflags_enable_debug="no" ;;
     esac
 fi
 
 
-            cygflags_enable_ansi="no"
+                    ecosflags_enable_ansi="no"
     if test "${MSVC}" = "yes" ; then
       # Check whether --enable-ansi or --disable-ansi was given.
 if test "${enable_ansi+set}" = set; then
   enableval="$enable_ansi"
   case "${enableval}" in
-         yes) cygflags_enable_ansi="yes" ;;
-         *)   cygflags_enable_ansi="no" ;;
+         yes) ecosflags_enable_ansi="yes" ;;
+         *)   ecosflags_enable_ansi="no" ;;
       esac
 fi
 
     fi
 
-    if test "${GCC}" = "yes" ; then
-        CC="$CC -Wall -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs"
-        CXX="$CXX -Wall -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Woverloaded-virtual"
+        if test "${GCC}" = "yes" ; then
+        ecos_CFLAGS="${ecos_CFLAGS} -pipe -Wall -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs"
+        ecos_CXXFLAGS="${ecos_CXXFLAGS} -pipe -Wall -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Woverloaded-virtual"
     elif test "${MSVC}" = "yes" ; then
-        CC="$CC -nologo -W3"
-        CXX="$CXX -nologo -W3 -GR -GX"
-        if test "${cygflags_enable_debug}" = "yes" ; then
-            CC="$CC -MDd -Zi"
-            CXX="$CXX -MDd -Zi"
-        else
-            CC="$CC -MD -O2"
-            CXX="$CXX -MD -O2"
-        fi
+        ecos_CFLAGS="${ecos_CFLAGS} -nologo -W3"
+        ecos_CXXFLAGS="${ecos_CXXFLAGS} -nologo -W3 -GR -GX"
     else
         { echo "configure: error: "default flags for ${CC} are not known"" 1>&2; exit 1; }
     fi
+
+        if test "${ecosflags_enable_debug}" = "yes" ; then
+        if test "${GCC}" = "yes" ; then
+            ecos_CFLAGS="${ecos_CFLAGS} -g -O0"
+            ecos_CXXFLAGS="${ecos_CXXFLAGS} -g -O0"
+        elif test "${MSVC}" = "yes" ; then
+            ecos_CFLAGS="${ecos_CFLAGS} -MDd -Zi"
+            ecos_CXXFLAGS="${ecos_CXXFLAGS} -MDd -Zi"
+        fi
+    else
+                                        if test "${GCC}" = "yes" ; then
+            ecos_CFLAGS="${ecos_CFLAGS} -O0"
+            ecos_CXXFLAGS="${ecos_CXXFLAGS} -O0"
+        elif test "${MSVC}" = "yes" ; then
+            ecos_CFLAGS="${ecos_CFLAGS} -MD -O2"
+            ecos_CXXFLAGS="${ecos_CXXFLAGS} -MD -O2"
+        fi
+    fi
+
+    CFLAGS="${ac_save_CFLAGS}"
+    CXXFLAGS="${ac_save_CXXFLAGS}"
+
     echo "$ac_t""done" 1>&6
 
 
@@ -1619,6 +1712,12 @@ s%@CXX@%$CXX%g
 s%@RANLIB@%$RANLIB%g
 s%@OBJEXT@%$OBJEXT%g
 s%@EXEEXT@%$EXEEXT%g
+s%@ecos_CFLAGS@%$ecos_CFLAGS%g
+s%@ecos_CXXFLAGS@%$ecos_CXXFLAGS%g
+s%@ecos_LDADD@%$ecos_LDADD%g
+s%@ecos_INCLUDES@%$ecos_INCLUDES%g
+s%@ecos_LIBS@%$ecos_LIBS%g
+s%@MSVC_SRCDIR@%$MSVC_SRCDIR%g
 s%@MSVC_TRUE@%$MSVC_TRUE%g
 s%@MSVC_FALSE@%$MSVC_FALSE%g
 

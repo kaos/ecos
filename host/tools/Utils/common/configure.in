@@ -42,7 +42,7 @@ dnl ====================================================================
 AC_INIT(eCosStd.cpp)
 
 dnl Pick up the support files from the top-level of the source tree
-AC_CONFIG_AUX_DIR(../../..)
+AC_CONFIG_AUX_DIR(../../../../acsupport)
 
 dnl Other standard options.
 AC_CANONICAL_HOST
@@ -57,7 +57,7 @@ AC_PROG_CXX
 AC_PROG_RANLIB
 AC_OBJEXT
 AC_EXEEXT
-CYG_AC_PROG_MSVC
-CYG_AC_PROG_STANDARD_COMPILER_FLAGS
+ECOS_PROG_MSVC
+ECOS_PROG_STANDARD_COMPILER_FLAGS
 
 AC_OUTPUT(Makefile)

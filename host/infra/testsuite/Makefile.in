@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -10,8 +10,26 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-######COPYRIGHTBEGIN####
-######COPYRIGHTEND####
+#######ECOSHOSTGPLCOPYRIGHTBEGIN####
+# Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+#
+# This file is part of the eCos host tools.
+#
+# This program is free software; you can redistribute it and/or modify it 
+# under the terms of the GNU General Public License as published by the Free 
+# Software Foundation; either version 2 of the License, or (at your option) 
+# any later version.
+# 
+# This program is distributed in the hope that it will be useful, but WITHOUT 
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+# more details.
+# 
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 
+# 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#######ECOSHOSTGPLCOPYRIGHTEND####
 #######DESCRIPTIONBEGIN####
 ######DESCRIPTIONEND####
 
@@ -66,23 +84,31 @@ host_alias = @host_alias@
 host_triplet = @host@
 CC = @CC@
 CXX = @CXX@
+ECOS_REPOSITORY = @ECOS_REPOSITORY@
 EXEEXT = @EXEEXT@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
+MSVC_SRCDIR = @MSVC_SRCDIR@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
+PACKAGE_DIR = @PACKAGE_DIR@
+PACKAGE_INSTALL = @PACKAGE_INSTALL@
+PACKAGE_VERSION = @PACKAGE_VERSION@
 RANLIB = @RANLIB@
 VERSION = @VERSION@
-cyg_CFLAGS = @cyg_CFLAGS@
-cyg_CXXFLAGS = @cyg_CXXFLAGS@
-cyg_ac_tcl_incdir = @cyg_ac_tcl_incdir@
-cyg_ac_tcl_libdir = @cyg_ac_tcl_libdir@
-cyg_ac_tcl_libs = @cyg_ac_tcl_libs@
-cyg_ac_tcl_version = @cyg_ac_tcl_version@
-cyg_ac_tk_libs = @cyg_ac_tk_libs@
+ecos_CFLAGS = @ecos_CFLAGS@
+ecos_CXXFLAGS = @ecos_CXXFLAGS@
+ecos_INCLUDES = @ecos_INCLUDES@
+ecos_LDADD = @ecos_LDADD@
+ecos_LIBS = @ecos_LIBS@
+ecos_infra_incdir = @ecos_infra_incdir@
+ecos_infra_libdir = @ecos_infra_libdir@
+ecos_libcdl_incdir = @ecos_libcdl_incdir@
+ecos_libcdl_libdir = @ecos_libcdl_libdir@
+ecos_tk_libs = @ecos_tk_libs@
 
-AUTOMAKE_OPTIONS = 1.3 cygnus dejagnu
-mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
+AUTOMAKE_OPTIONS = 1.3 foreign dejagnu
+mkinstalldirs = $(SHELL) $(top_srcdir)/../../acsupport/mkinstalldirs
 CONFIG_HEADER = ../hostinfra.h
 CONFIG_CLEAN_FILES = 
 DIST_COMMON =  Makefile.am Makefile.in
@@ -92,14 +118,14 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = gtar
 GZIP_ENV = --best
-EXPECT = `if test -f $(top_builddir)/../expect/expect; then echo $(top_builddir)/../expect/expect; else echo expect; fi`
-RUNTEST = `if test -f $(top_srcdir)/../dejagnu/runtest; then echo $(top_srcdir)/../dejagnu/runtest; else echo runtest; fi`
+EXPECT = expect
+RUNTEST = runtest
 all: all-redirect
 .SUFFIXES:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --cygnus testsuite/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --foreign testsuite/Makefile
 
-Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
@@ -112,8 +138,13 @@ distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 subdir = testsuite
 
 distdir: $(DISTFILES)
+	here=`cd $(top_builddir) && pwd`; \
+	top_distdir=`cd $(top_distdir) && pwd`; \
+	distdir=`cd $(distdir) && pwd`; \
+	cd $(top_srcdir) \
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --foreign testsuite/Makefile
 	@for file in $(DISTFILES); do \
-	  if test -f $$file; then d=.; else d=$(srcdir); fi; \
+	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
 	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
@@ -132,10 +163,6 @@ RUNTESTDEFAULTFLAGS = --tool $(DEJATOOL) --srcdir $$srcdir
 check-DEJAGNU: site.exp
 	srcdir=`cd $(srcdir) && pwd`; export srcdir; \
 	EXPECT=$(EXPECT); export EXPECT; \
-	if [ -f $(top_builddir)/../expect/expect ]; then \
-	  TCL_LIBRARY=`cd $(top_srcdir)/../tcl/library && pwd`; \
-	  export TCL_LIBRARY; \
-	fi; \
 	runtest=$(RUNTEST); \
 	if $(SHELL) -c "$$runtest --version" > /dev/null 2>&1; then \
 	  $$runtest $(RUNTESTDEFAULTFLAGS) $(RUNTESTFLAGS); \
@@ -160,13 +187,11 @@ info-am:
 info: info-am
 dvi-am:
 dvi: dvi-am
-check-am:
+check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) check-DEJAGNU
 check: check-am
 installcheck-am:
 installcheck: installcheck-am
-install-info-am: 
-install-info: install-info-am
 install-exec-am:
 install-exec: install-exec-am
 
@@ -213,11 +238,11 @@ maintainer-clean-am:  maintainer-clean-generic distclean-am
 maintainer-clean: maintainer-clean-am
 
 .PHONY: tags distdir check-DEJAGNU info-am info dvi-am dvi check \
-check-am installcheck-am installcheck install-info-am install-info \
-install-exec-am install-exec install-data-am install-data install-am \
-install uninstall-am uninstall all-redirect all-am all installdirs \
-mostlyclean-generic distclean-generic clean-generic \
-maintainer-clean-generic clean mostlyclean distclean maintainer-clean
+check-am installcheck-am installcheck install-exec-am install-exec \
+install-data-am install-data install-am install uninstall-am uninstall \
+all-redirect all-am all installdirs mostlyclean-generic \
+distclean-generic clean-generic maintainer-clean-generic clean \
+mostlyclean distclean maintainer-clean
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

@@ -7,26 +7,27 @@ dnl	configtool/standalone/common
 dnl
 dnl ====================================================================
 dnl ####ECOSHOSTGPLCOPYRIGHTBEGIN####
-dnl -------------------------------------------
-dnl Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+dnl -------------------------------------------                              
+dnl Copyright (C) 2002 Bart Veer    
+dnl Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 dnl
 dnl This file is part of the eCos host tools.
 dnl
-dnl This program is free software; you can redistribute it and/or modify it
-dnl under the terms of the GNU General Public License as published by the Free
-dnl Software Foundation; either version 2 of the License, or (at your option)
+dnl This program is free software; you can redistribute it and/or modify it 
+dnl under the terms of the GNU General Public License as published by the Free 
+dnl Software Foundation; either version 2 of the License, or (at your option) 
 dnl any later version.
-dnl
-dnl This program is distributed in the hope that it will be useful, but WITHOUT
-dnl ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-dnl FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+dnl 
+dnl This program is distributed in the hope that it will be useful, but WITHOUT 
+dnl ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+dnl FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
 dnl more details.
-dnl
+dnl 
 dnl You should have received a copy of the GNU General Public License along with
-dnl this program; if not, write to the Free Software Foundation, Inc.,
+dnl this program; if not, write to the Free Software Foundation, Inc., 
 dnl 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 dnl
-dnl -------------------------------------------
+dnl -------------------------------------------                              
 dnl ####ECOSHOSTGPLCOPYRIGHTEND####
 dnl ====================================================================
 dnl#####DESCRIPTIONBEGIN####
@@ -41,80 +42,24 @@ dnl ====================================================================
 
 AC_INIT(ecosconfig.cxx)
 
-dnl Pick up the support files from the top-level of the host sources
-AC_CONFIG_AUX_DIR(../../../..)
+dnl Pick up the support files from the top-level acsupport directory
+AC_CONFIG_AUX_DIR(../../../../../acsupport)
 
+ECOS_CHECK_BUILD_ne_SRC
+AC_CANONICAL_HOST
 AM_INIT_AUTOMAKE(ecosconfig, 0.1)
 AM_MAINTAINER_MODE
 
-dnl Other standard options.
-AC_CANONICAL_HOST
 AC_PROG_CC
 AC_PROG_CXX
 AC_OBJEXT
 AC_EXEEXT
-CYG_AC_PROG_MSVC
-CYG_AC_PROG_STANDARD_COMPILER_FLAGS
+ECOS_PROG_MSVC
+ECOS_PROG_STANDARD_COMPILER_FLAGS
 
-dnl ----------------------------------------------------------------------------
-dnl Where can the Tcl library be found?
-dnl There are command-line argument --with-tcl and --with-tcl-version.
-dnl Otherwise assume that there is already a working installation
-dnl in $(PREFIX)
-CYG_AC_PATH_TCL
-
-dnl Now for the host-side infrastructure and for libcdl
-dnl The names and paths can just be hardwired, with a minimal
-dnl sanity check. Note that for the infrastructure it is
-dnl necessary to use the build tree for the include path,
-dnl since header files from various places need to be
-dnl gathered together.
-
-AC_MSG_CHECKING(for host-side infrastructure)
-cyg_ac_infra_incdir=../../../../infra
-cyg_ac_infra_libdir=../../../../infra
-if test "${MSVC}" = "yes" ; then
- cyg_ac_infra_libraries=cyginfra.lib
-else
- cyg_ac_infra_libraries=cyginfra
-fi
-if test \! -d ${cyg_ac_infra_incdir} ; then
-  AC_MSG_ERROR(unable to locate the infrastructure build directory)
-fi
-CYG_AC_MSVC_PATH(cyg_ac_infra_incdir)
-CYG_AC_MSVC_PATH(cyg_ac_infra_libdir)
-AC_SUBST(cyg_ac_infra_incdir)
-AC_SUBST(cyg_ac_infra_libdir)
-AC_SUBST(cyg_ac_infra_libraries)
-AC_MSG_RESULT(-I${cyg_ac_infra_incdir} -L${cyg_ac_infra_libdir} libraries ${cyg_ac_infra_libraries})
-
-AC_MSG_CHECKING(for libcdl)
-cyg_ac_cdl_incdir=${srcdir}/../../../../libcdl
-cyg_ac_cdl_libdir=../../../../libcdl
-if test "${MSVC}" = "yes" ; then
-  cyg_ac_cdl_libraries=cdl.lib
-else
-  cyg_ac_cdl_libraries=cdl
-fi
-if test \! -d ${cyg_ac_cdl_incdir} ; then
-  AC_MSG_ERROR(unable to locate the libcdl source directory)
-fi
-if test \! -f ${cyg_ac_cdl_incdir}/cdl.hxx ; then
-  AC_MSG_ERROR(unable to locate the libcdl header file cdl.hxx)
-fi
-if test \! -d ${cyg_ac_cdl_libdir} ; then
-  AC_MSG_ERROR(unable to locate the libcdl build directory)
-fi
-CYG_AC_MSVC_PATH(cyg_ac_cdl_incdir)
-CYG_AC_MSVC_PATH(cyg_ac_cdl_libdir)
-AC_SUBST(cyg_ac_cdl_incdir)
-AC_SUBST(cyg_ac_cdl_libdir)
-AC_SUBST(cyg_ac_cdl_libraries)
-AC_MSG_RESULT(-I${cyg_ac_cdl_incdir} -L${cyg_ac_cdl_libdir} libraries ${cyg_ac_cdl_libraries})
-
-dnl Provide a VC++-friendly version of srcdir
-win_srcdir=${srcdir}
-CYG_AC_MSVC_PATH(win_srcdir)
-AC_SUBST(win_srcdir)
+ECOS_ARG_INFRASTRUCTURE
+ECOS_PATH_LIBCDL
+ECOS_PATH_INFRA
+ECOS_PATH_TCL
 
 AC_OUTPUT(Makefile)

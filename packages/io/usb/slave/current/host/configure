@@ -15,9 +15,9 @@ ac_help="$ac_help
   --enable-maintainer-mode enable make rules and dependencies not useful
                           (and sometimes confusing) to the casual installer"
 ac_help="$ac_help
- --enable-debug do a debug rather than a release build"
+ --enable-debug           do a debug rather than a release build"
 ac_help="$ac_help
- --enable-ansi Do an ANSI rather than a unicode build"
+ --enable-ansi            do an ANSI rather than a unicode build"
 ac_help="$ac_help
  --with-tcl-version=<vsn> version of Tcl to be used"
 ac_help="$ac_help
@@ -1228,8 +1228,59 @@ else
   fi
 fi
 
+for ac_declaration in \
+   ''\
+   '#include <stdlib.h>' \
+   'extern "C" void std::exit (int) throw (); using std::exit;' \
+   'extern "C" void std::exit (int); using std::exit;' \
+   'extern "C" void exit (int) throw ();' \
+   'extern "C" void exit (int);' \
+   'void exit (int);'
+do
+  cat > conftest.$ac_ext <<EOF
+#line 1242 "configure"
+#include "confdefs.h"
+#include <stdlib.h>
+$ac_declaration
+int main() {
+exit (42);
+; return 0; }
+EOF
+if { (eval echo configure:1250: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  :
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  continue
+fi
+rm -f conftest*
+  cat > conftest.$ac_ext <<EOF
+#line 1260 "configure"
+#include "confdefs.h"
+$ac_declaration
+int main() {
+exit (42);
+; return 0; }
+EOF
+if { (eval echo configure:1267: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  break
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+fi
+rm -f conftest*
+done
+if test -n "$ac_declaration"; then
+  echo '#ifdef __cplusplus' >>confdefs.h
+  echo $ac_declaration      >>confdefs.h
+  echo '#endif'             >>confdefs.h
+fi
+
+
     echo $ac_n "checking whether ln -s works""... $ac_c" 1>&6
-echo "configure:1233: checking whether ln -s works" >&5
+echo "configure:1284: checking whether ln -s works" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_LN_S'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1250,13 +1301,13 @@ else
 fi
 
     echo $ac_n "checking for object suffix""... $ac_c" 1>&6
-echo "configure:1254: checking for object suffix" >&5
+echo "configure:1305: checking for object suffix" >&5
 if eval "test \"`echo '$''{'ac_cv_objext'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   rm -f conftest*
 echo 'int i = 1;' > conftest.$ac_ext
-if { (eval echo configure:1260: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:1311: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   for ac_file in conftest.*; do
     case $ac_file in
     *.c) ;;
@@ -1274,12 +1325,12 @@ OBJEXT=$ac_cv_objext
 ac_objext=$ac_cv_objext
 
     echo $ac_n "checking for Cygwin environment""... $ac_c" 1>&6
-echo "configure:1278: checking for Cygwin environment" >&5
+echo "configure:1329: checking for Cygwin environment" >&5
 if eval "test \"`echo '$''{'ac_cv_cygwin'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1283 "configure"
+#line 1334 "configure"
 #include "confdefs.h"
 
 int main() {
@@ -1290,7 +1341,7 @@ int main() {
 return __CYGWIN__;
 ; return 0; }
 EOF
-if { (eval echo configure:1294: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:1345: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_cygwin=yes
 else
@@ -1307,19 +1358,19 @@ echo "$ac_t""$ac_cv_cygwin" 1>&6
 CYGWIN=
 test "$ac_cv_cygwin" = yes && CYGWIN=yes
 echo $ac_n "checking for mingw32 environment""... $ac_c" 1>&6
-echo "configure:1311: checking for mingw32 environment" >&5
+echo "configure:1362: checking for mingw32 environment" >&5
 if eval "test \"`echo '$''{'ac_cv_mingw32'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1316 "configure"
+#line 1367 "configure"
 #include "confdefs.h"
 
 int main() {
 return __MINGW32__;
 ; return 0; }
 EOF
-if { (eval echo configure:1323: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:1374: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_mingw32=yes
 else
@@ -1338,7 +1389,7 @@ test "$ac_cv_mingw32" = yes && MINGW32=yes
 
 
 echo $ac_n "checking for executable suffix""... $ac_c" 1>&6
-echo "configure:1342: checking for executable suffix" >&5
+echo "configure:1393: checking for executable suffix" >&5
 if eval "test \"`echo '$''{'ac_cv_exeext'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1348,7 +1399,7 @@ else
   rm -f conftest*
   echo 'int main () { return 0; }' > conftest.$ac_ext
   ac_cv_exeext=
-  if { (eval echo configure:1352: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; }; then
+  if { (eval echo configure:1403: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; }; then
     for file in conftest.*; do
       case $file in
       *.c | *.o | *.obj) ;;
@@ -1386,7 +1437,7 @@ ac_exeext=$EXEEXT
     
 
     echo $ac_n "checking "for Visual C++"""... $ac_c" 1>&6
-echo "configure:1390: checking "for Visual C++"" >&5
+echo "configure:1441: checking "for Visual C++"" >&5
     MSVC="no";
     if test "${CC}" = "cl" ; then
        MSVC="yes"
@@ -1425,7 +1476,7 @@ fi
     
 
     echo $ac_n "checking "the default compiler flags"""... $ac_c" 1>&6
-echo "configure:1429: checking "the default compiler flags"" >&5
+echo "configure:1480: checking "the default compiler flags"" >&5
 
             ecosflags_enable_debug="no"
     # Check whether --enable-debug or --disable-debug was given.
@@ -1497,7 +1548,7 @@ fi
 
                 
     echo $ac_n "checking for Tcl version""... $ac_c" 1>&6
-echo "configure:1501: checking for Tcl version" >&5
+echo "configure:1552: checking for Tcl version" >&5
     # Check whether --with-tcl-version or --without-tcl-version was given.
 if test "${with_tcl_version+set}" = set; then
   withval="$with_tcl_version"
@@ -1519,7 +1570,7 @@ fi
     echo "$ac_t""${ecos_tcl_version}" 1>&6
 
         echo $ac_n "checking for Tcl installation""... $ac_c" 1>&6
-echo "configure:1523: checking for Tcl installation" >&5
+echo "configure:1574: checking for Tcl installation" >&5
 
     # Check whether --with-tcl-header or --without-tcl-header was given.
 if test "${with_tcl_header+set}" = set; then
@@ -1643,9 +1694,8 @@ fi
         package_dir=`cd ${srcdir} && /bin/pwd`
     PACKAGE_VERSION=`dirname ${package_dir}`
     PACKAGE_VERSION=`basename ${PACKAGE_VERSION}`
-    
 
-                        package_dir=`dirname ${package_dir}`
+                    package_dir=`dirname ${package_dir}`
     package_dir=`dirname ${package_dir}`
 
     possibles="${package_dir}/.. ${package_dir}/../.. ${package_dir}/../../.. ${package_dir}/../../../.. ${package_dir}/../../../../../.." 
@@ -1661,11 +1711,15 @@ fi
     if test "${repository_root}" = "" ; then
         { echo "configure: error: Failed to identify this package's position within the eCos repository" 1>&2; exit 1; }
     fi
-        repository_root=`cd "${repository_root}/packages" && /bin/pwd`
-        package_dir=`echo ${package_dir} | sed -e "s:${repository_root}/::"`
+        ECOS_REPOSITORY=`cd "${repository_root}/packages/pkgconf/.." && /bin/pwd`
 
-                    PACKAGE_NAME=`echo ${package_dir} | sed -e "s:/:_:g"`
+        PACKAGE_DIR=`echo ${package_dir} | sed -e "s:${ECOS_REPOSITORY}/::"`
 
+                        PACKAGE_INSTALL="${PACKAGE_DIR}/${PACKAGE_VERSION}"
+    
+    
+    
+    
     
 
 fi
@@ -1851,8 +1905,10 @@ s%@MSVC_SRCDIR@%$MSVC_SRCDIR%g
 s%@MSVC_TRUE@%$MSVC_TRUE%g
 s%@MSVC_FALSE@%$MSVC_FALSE%g
 s%@ecos_tk_libs@%$ecos_tk_libs%g
+s%@ECOS_REPOSITORY@%$ECOS_REPOSITORY%g
+s%@PACKAGE_DIR@%$PACKAGE_DIR%g
 s%@PACKAGE_VERSION@%$PACKAGE_VERSION%g
-s%@PACKAGE_NAME@%$PACKAGE_NAME%g
+s%@PACKAGE_INSTALL@%$PACKAGE_INSTALL%g
 
 CEOF
 EOF

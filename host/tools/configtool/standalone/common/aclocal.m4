@@ -1,6 +1,6 @@
-dnl aclocal.m4 generated automatically by aclocal 1.4
+dnl aclocal.m4 generated automatically by aclocal 1.4-p5
 
-dnl Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+dnl Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -18,26 +18,25 @@ dnl     acinclude.m4
 dnl
 dnl ====================================================================
 dnl ####ECOSHOSTGPLCOPYRIGHTBEGIN####
-dnl -------------------------------------------
+dnl -------------------------------------------                              
 dnl Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 dnl
 dnl This file is part of the eCos host tools.
 dnl
-dnl This program is free software; you can redistribute it and/or modify it
-dnl under the terms of the GNU General Public License as published by the Free
-dnl Software Foundation; either version 2 of the License, or (at your option)
+dnl This program is free software; you can redistribute it and/or modify it 
+dnl under the terms of the GNU General Public License as published by the Free 
+dnl Software Foundation; either version 2 of the License, or (at your option) 
 dnl any later version.
-dnl
-dnl This program is distributed in the hope that it will be useful, but WITHOUT
-dnl ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-dnl FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+dnl 
+dnl This program is distributed in the hope that it will be useful, but WITHOUT 
+dnl ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+dnl FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
 dnl more details.
-dnl
+dnl 
 dnl You should have received a copy of the GNU General Public License along with
-dnl this program; if not, write to the Free Software Foundation, Inc.,
+dnl this program; if not, write to the Free Software Foundation, Inc., 
 dnl 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-dnl
-dnl -------------------------------------------
+dnl -------------------------------------------                              
 dnl ####ECOSHOSTGPLCOPYRIGHTEND####
 dnl ====================================================================
 dnl#####DESCRIPTIONBEGIN####
@@ -53,11 +52,11 @@ dnl ====================================================================
 dnl Access shared macros.
 dnl AM_CONDITIONAL needs to be mentioned here or else aclocal does not
 dnl incorporate the macro into aclocal.m4
-sinclude(../../../../acinclude.m4)
+sinclude(../../../../../acsupport/acinclude.m4)
 
 # Define a conditional.
 
-AC_DEFUN(AM_CONDITIONAL,
+AC_DEFUN([AM_CONDITIONAL],
 [AC_SUBST($1_TRUE)
 AC_SUBST($1_FALSE)
 if $2; then
@@ -77,7 +76,7 @@ fi])
 dnl Usage:
 dnl AM_INIT_AUTOMAKE(package,version, [no-define])
 
-AC_DEFUN(AM_INIT_AUTOMAKE,
+AC_DEFUN([AM_INIT_AUTOMAKE],
 [AC_REQUIRE([AC_PROG_INSTALL])
 PACKAGE=[$1]
 AC_SUBST(PACKAGE)
@@ -105,7 +104,7 @@ AC_REQUIRE([AC_PROG_MAKE_SET])])
 # Check to make sure that the build environment is sane.
 #
 
-AC_DEFUN(AM_SANITY_CHECK,
+AC_DEFUN([AM_SANITY_CHECK],
 [AC_MSG_CHECKING([whether build environment is sane])
 # Just in case
 sleep 1
@@ -146,7 +145,7 @@ AC_MSG_RESULT(yes)])
 
 dnl AM_MISSING_PROG(NAME, PROGRAM, DIRECTORY)
 dnl The program must properly implement --version.
-AC_DEFUN(AM_MISSING_PROG,
+AC_DEFUN([AM_MISSING_PROG],
 [AC_MSG_CHECKING(for working $2)
 # Run test in a subshell; some versions of sh will print an error if
 # an executable is not found, even if stderr is redirected.
@@ -165,7 +164,7 @@ AC_SUBST($1)])
 
 # serial 1
 
-AC_DEFUN(AM_MAINTAINER_MODE,
+AC_DEFUN([AM_MAINTAINER_MODE],
 [AC_MSG_CHECKING([whether to enable maintainer-specific portions of Makefiles])
   dnl maintainer-mode is disabled by default
   AC_ARG_ENABLE(maintainer-mode,

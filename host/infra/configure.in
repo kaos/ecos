@@ -6,10 +6,10 @@ dnl
 dnl     Host side implementation of the eCos infrastructure.
 dnl
 dnl ====================================================================
-dnl####COPYRIGHTBEGIN####
-dnl                                                                         
+dnl ####ECOSHOSTGPLCOPYRIGHTBEGIN####
 dnl ----------------------------------------------------------------------------
-dnl Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+dnl Copyright (C) 2002 Bart Veer    
+dnl Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 dnl
 dnl This file is part of the eCos host tools.
 dnl
@@ -28,8 +28,7 @@ dnl this program; if not, write to the Free Software Foundation, Inc.,
 dnl 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 dnl
 dnl ----------------------------------------------------------------------------
-dnl                                                                          
-dnl####COPYRIGHTEND####
+dnl ####ECOSHOSTGPLCOPYRIGHTEND####
 dnl ====================================================================
 dnl#####DESCRIPTIONBEGIN####
 dnl
@@ -44,38 +43,39 @@ dnl ====================================================================
 dnl No infrastructure is complete without assertions.
 AC_INIT(assert.cxx)
 
-dnl Pick up the support files from the top-level of the host source tree
-AC_CONFIG_AUX_DIR(..)
+dnl Pick up the support files from the top-level acsupport directory.
+AC_CONFIG_AUX_DIR(../../acsupport)
+
+ECOS_CHECK_BUILD_ne_SRC
 
 dnl Other standard options.
 AC_CANONICAL_HOST
 
-dnl This package is called cyginfra. Hopefully this will not clash
-dnl with any other Red Hat packages. The generated header file may
-dnl get #include'd indirectly by other packages, so it is not a
-dnl good idea to define package and version.
+dnl This package is called cyginfra, partly for historical reasons
+dnl and partly to avoid reorganizing the testsuite subdirectory.
+dnl The generated header file may get #include'd indirectly by other
+dnl packages, so it is not a good idea to define package and version.
 AM_INIT_AUTOMAKE(cyginfra, 0.1,0)
-CYG_AC_SUBST_VERSION(CYGNUM_INFRA_VERSION)
+ECOS_SUBST_VERSION(CYGNUM_INFRA_VERSION)
 AM_MAINTAINER_MODE
 
 dnl The package contains a library implemented in C++. It has to be
 dnl buildable under NT. Only a static version of the library is
 dnl of interest at the moment.
-AC_PROG_MAKE_SET
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_RANLIB
 AC_OBJEXT
 AC_EXEEXT
-CYG_AC_PROG_MSVC
-CYG_AC_PROG_STANDARD_COMPILER_FLAGS
+ECOS_PROG_MSVC
+ECOS_PROG_STANDARD_COMPILER_FLAGS
 
 dnl Work out the endianness. The standard macro for this is used
 dnl even though it will give warnings at autoconf time.
 AC_C_BIGENDIAN
 
 dnl Work out a suitable datatype for 64 bit arithmetic.
-CYG_AC_TYPE_64bit
+ECOS_TYPE_64bit
 
 dnl Check the sizes of the pointer and long data types, so that
 dnl CYG_ADDRWORD can be defined correctly.
@@ -83,10 +83,11 @@ AC_CHECK_SIZEOF(int *)
 AC_CHECK_SIZEOF(long)
 
 dnl See whether or not the compiler provides __PRETTY_FUNCTION__
-CYG_AC_C_PRETTY_FUNCTION
+ECOS_C_PRETTY_FUNCTION
 
-dnl What version of Tcl should be used?
-CYG_AC_PATH_TCL
+dnl What function should be used to create a temporary file?
+dnl tmpnam() is deprecated for security reasons.
+AC_CHECK_FUNCS(mkstemp)
 
 dnl --------------------------------------------------------------------
 dnl User-settable options. Currently these are handled via --enable
@@ -161,4 +162,3 @@ dnl hostinfra.h.
 
 AM_CONFIG_HEADER(hostinfra.h:config.h.in)
 AC_OUTPUT(Makefile:Makefile.in testsuite/Makefile:testsuite/Makefile.in)
-

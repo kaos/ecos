@@ -8,7 +8,7 @@
 ######COPYRIGHTBEGIN####
 #                                                                          
 # ----------------------------------------------------------------------------
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 #
 # This file is part of the eCos host tools.
 #
@@ -48,90 +48,20 @@ if { [isnative] != 1 } {
 }
 
 # Most of the test harness lives in a file hosttest.exp. This is part
-# of the host-side infrastructure and gets installed in the directory
-# $(PREFIX)/share/dejagnu. Other packages have to locate the file
-# the hard way since the PREFIX is not provided automatically in
-# the site.exp file, instead it is necessary to search through the
-# build tree's Makefile.
-#
-# First look for the infrastructure package.
+# of the host-side infrastructure.
 
-set filename [file join $::srcdir "../../../../../infra/current/host/hosttest.exp"]
-if { [file exists $filename] } {
-
-    set status [ catch {
-	source $filename
-    } message]
-    if { $status != 0 } {
-	perror "Unexpected error while reading in the support script $filename\n$message"
-	exit 1
-    }
-    
-} else {
-    
-    # It is necessary to read in the Makefile in the build tree and
-    # look for a line "prefix = xxx".
-    set filename [file join $::objdir Makefile]
-    if { [file exists $filename] == 0 } {
-	perror "The build tree's Makefile $filename does not exist."
-	exit 1
-    }
-
-    set status [ catch {
-	set fd [open $filename r]
-	set contents [read $fd]
-	close $fd
-    } message]
-    if { $status != 0 } {
-	perror "Error reading $filename.\n$message"
-	exit 1
-    }
-
-    set prefix ""
-    set dummy  ""
-    set match1 ""
-
-    # This regexp is tied more closely to the automake implementation
-    # then I would like, and it may cause trouble in future.
-    foreach line [split $contents "\n"] {
-	if { [regexp -- {^prefix = *(.*)$} $line dummy match1] == 1 } {
-	    set prefix $match1
-	    break
-	}
-    }
-    if { $prefix == "" } {
-	perror "Unable to find the install prefix in $filename."
-	exit 1
-    }
-
-    # Now that the install tree is known it is possible to load
-    # the hosttest.exp script.
-    set filename [file join $prefix share dejagnu hosttest.exp]
-    if { [file exists $filename] == 0 } {
-	perror "The support script $filename has not been installed."
-	exit 1
-    }
-
-    set status [ catch { source $filename } message]
-    if { $status != 0 } {
-	perror "Unexpected error while reading in the support script $filename\n$message"
-	exit 1
-    }
-    
+set filename [file join $::srcdir "../../infra/hosttest.exp"]
+set status [ catch { source $filename } message]
+if { $status != 0 } {
+    perror "Unexpected error while reading in the support script $filename\n$message"
+    exit 1
 }
 
 # Now that the hosttest.exp utilities are available it is possible to do
 # a bit more initialization. In particular it is possible to read in the
 # build tree's Makefile and look for definitions of CC, CXX, and any
 # other information from the Makefile that may prove useful.
-hosttest_initialize {
-    cyg_ac_infra_incdir
-    cyg_ac_infra_libdir
-    cyg_ac_tcl_version
-    cyg_ac_tcl_incdir
-    cyg_ac_tcl_libdir
-    cyg_ac_tcl_libs
-}
+hosttest_initialize
 
 # There are standard routines ${tool}_start, ${tool}_load, ${tool}_exit
 # and ${tool}_version which test harnesses should normally implement.
@@ -171,18 +101,7 @@ proc ${tool}_start { } {
 # all the libraries etc. that are going to be needed.
 
 proc ${tool}_load { program { args ""} } {
-    set incdirs ""
-    lappend incdirs [file join $::objdir .. $::hosttest_data(cyg_ac_infra_incdir)]
-    lappend incdirs [file join $::objdir .. $::hosttest_data(cyg_ac_tcl_incdir)]
-    set libdirs ""
-    lappend libdirs [file join $::objdir .. $::hosttest_data(cyg_ac_infra_libdir)]
-    lappend libdirs [file join $::objdir .. $::hosttest_data(cyg_ac_tcl_libdir)]
-    set libs [list cdl cyginfra]
-    foreach lib $::hosttest_data(cyg_ac_tcl_libs) {
-	lappend libs [string range $lib 2 end]
-    }
-    
-    hosttest_run_simple_test $program {} $incdirs $libdirs $libs $args
+    hosttest_run_simple_test $program {} [list] [list] [list "cdl"] $args
 }
 
 # ${tool}_exit does not serve any useful purpose here.

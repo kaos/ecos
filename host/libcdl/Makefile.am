@@ -6,30 +6,29 @@
 ##     libcdl.a
 ##
 ## =====================================================================
-######COPYRIGHTBEGIN####
-##                                                                          
+#######ECOSHOSTGPLCOPYRIGHTBEGIN####
 ## ----------------------------------------------------------------------------
-## Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
-##
-## This file is part of the eCos host tools.
-##
-## This program is free software; you can redistribute it and/or modify it 
-## under the terms of the GNU General Public License as published by the Free 
-## Software Foundation; either version 2 of the License, or (at your option) 
-## any later version.
-## 
-## This program is distributed in the hope that it will be useful, but WITHOUT 
-## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
-## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
-## more details.
-## 
-## You should have received a copy of the GNU General Public License along with
-## this program; if not, write to the Free Software Foundation, Inc., 
-## 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-##
+# Copyright (C) 2002 Bart Veer
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
+#
+# This file is part of the eCos host tools.
+#
+# This program is free software; you can redistribute it and/or modify it 
+# under the terms of the GNU General Public License as published by the Free 
+# Software Foundation; either version 2 of the License, or (at your option) 
+# any later version.
+# 
+# This program is distributed in the hope that it will be useful, but WITHOUT 
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+# more details.
+# 
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 
+# 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
 ## ----------------------------------------------------------------------------
-##                                                                          
-######COPYRIGHTEND####
+#######ECOSHOSTGPLCOPYRIGHTEND####
 ## =====================================================================
 #######DESCRIPTIONBEGIN####
 ##
@@ -41,13 +40,15 @@
 ######DESCRIPTIONEND####
 ## =====================================================================
 
-AUTOMAKE_OPTIONS = 1.3 cygnus
-SUBDIRS          = testsuite
+AUTOMAKE_OPTIONS 	= 1.3 foreign
+SUBDIRS          	= testsuite
 
 ## Pick up compiler flags etc. from configury
-INCLUDES        = @INCLUDES@
-AM_CFLAGS	= @cyg_CFLAGS@
-AM_CXXFLAGS	= @cyg_CXXFLAGS@
+INCLUDES        	= @ecos_INCLUDES@
+LIBS			= @ecos_LIBS@ @ecos_LDADD@
+AM_CFLAGS		= @ecos_CFLAGS@
+AM_CXXFLAGS		= @ecos_CXXFLAGS@
+ecos_infra_incdir	= @ecos_infra_incdir@
 
 ## This package exports its interface via cdl.hxx
 include_HEADERS = cdlcore.hxx cdl.hxx
@@ -110,11 +111,11 @@ endif
 ## Add specific dependencies for all source files.
 ## Every module in libcdl uses assertions and tracing.
 ## These pull in the others.
-infra_headers := $(cyg_ac_infra_incdir)/cyg/infra/cyg_ass.h  \
-                 $(cyg_ac_infra_incdir)/cyg/infra/cyg_trac.h \
-                 $(cyg_ac_infra_incdir)/pkgconf/infra.h      \
-                 $(cyg_ac_infra_incdir)/pkgconf/hostinfra.h  \
-                 $(cyg_ac_infra_incdir)/cyg/infra/cyg_type.h
+infra_headers := $(ecos_infra_incdir)/cyg/infra/cyg_ass.h  \
+                 $(ecos_infra_incdir)/cyg/infra/cyg_trac.h \
+                 $(ecos_infra_incdir)/pkgconf/infra.h      \
+                 $(ecos_infra_incdir)/pkgconf/hostinfra.h  \
+                 $(ecos_infra_incdir)/cyg/infra/cyg_type.h
 
 ## Depending on the flavor of CDL being implemented, different
 ## headers will get included.

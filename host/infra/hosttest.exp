@@ -8,7 +8,7 @@
 ######COPYRIGHTBEGIN####
 #                                                                          
 # ----------------------------------------------------------------------------
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 #
 # This file is part of the eCos host tools.
 #
@@ -65,6 +65,11 @@
 #     CFLAGS         - flags to use when compiling C code
 #     CXXFLAGS       - flags to use when compiling C++ code
 #
+# Some additional variables should be present in any generated
+# makefiles in the eCos tree.
+#     INCLUDES       - header file search path
+#     LIBS           - libraries, search paths, ...
+#
 # hosttest_initialize
 #     Perform any initialization steps that are needed. Currently this
 #     means reading in the Makefile from the top-level of the build tree
@@ -116,7 +121,7 @@ proc hosttest_initialize { { pkg_vars {} } } {
     
     set lines [split $contents "\n"]
 
-    foreach var [concat { CC CXX prefix OBJEXT EXEEXT VERSION CFLAGS CXXFLAGS } $pkg_vars] {
+    foreach var [concat { CC CXX prefix OBJEXT EXEEXT VERSION CFLAGS CXXFLAGS INCLUDES LIBS } $pkg_vars] {
 
 	set pattern "^$var\[ \t\]*:?=\[ \t\]* (.*)\$"
 	set dummy ""
@@ -131,7 +136,7 @@ proc hosttest_initialize { { pkg_vars {} } } {
 	if { [info exists ::hosttest_data($var)] == 0 } {
 	    perror "Variable $var is not defined in $filename"
 	    exit 1
-	}
+	} 
     }
 
     # If compiling with VC++ remove any cygwin-isms from the prefix
@@ -198,7 +203,7 @@ proc hosttest_extract_version { } {
 # verbose at level 2. Unsuccesful compiles or builts are reported using
 # level 1.
 
-proc hosttest_compile { name sources incdirs libdirs libs } {
+proc hosttest_compile { name sources includes libdirs libs } {
 
     # Make sure that the testcase directory does not yet exist, then
     # create it. This guarantees a clean system and reasonable access
@@ -260,13 +265,15 @@ proc hosttest_compile { name sources incdirs libdirs libs } {
 	}
 
 	# Include path: start with the source tree. Then the build tree.
+	# Then the makefile's INCLUDES variable.
 	# Then any additional directories specified explicitly by the
 	# testcase. Finish off with the prefix. Note that header files
 	# in the prefix directory may be out of date, depending on whether
 	# or not there has been an install recently.
 	append commandline "-I[file join [pwd] [file dirname $::srcdir]] "
 	append commandline "-I[file join [pwd] [file dirname $::objdir]] "
-	foreach dir $incdirs {
+	append commandline "$::hosttest_data(INCLUDES) "
+	foreach dir $includes {
 	    append commandline "-I[file join [pwd] $dir] "
 	}
 	append commandline "-I[file join [pwd] $::hosttest_data(prefix) include] "
@@ -323,7 +330,7 @@ proc hosttest_compile { name sources incdirs libdirs libs } {
 	foreach lib $libs {
 	    append commandline "${lib}.lib "
 	}
-	append commandline "-link "
+	append commandline "$::hosttest_data(LIBS) "
 	append commandline "-libpath=[file join [pwd] [file dirname $::objdir]] "
 	foreach dir $libdirs {
 	    append commandline "-libpath=[file join [pwd] $dir] "
@@ -339,6 +346,7 @@ proc hosttest_compile { name sources incdirs libdirs libs } {
 	foreach lib $libs {
 	    append commandline "-l$lib "
 	}
+	append commandline "$::hosttest_data(LIBS) "
     }
 
     # We have a command line, go for it.

@@ -41,4 +41,4 @@ dnl ====================================================================
 dnl Access shared macros.
 dnl AM_CONDITIONAL needs to be mentioned here or else aclocal does not
 dnl incorporate the macro into aclocal.m4
-sinclude(../../../acinclude.m4)
+sinclude(../../../../acsupport/acinclude.m4)

@@ -11,7 +11,8 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 2002 Bart Veer
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
 //
@@ -334,17 +335,17 @@ Internal Documentation
 The required functions which are used by the tracing macros are
 
     externC void
-    cyg_tracenomsg( char *psz_func, char *psz_file, cyg_uint32 linenum );
+    cyg_tracenomsg( const char *psz_func, const char *psz_file, cyg_uint32 linenum );
     
     externC void
     cyg_tracemsg( cyg_uint32 what, 
-                  char *psz_func, char *psz_file, cyg_uint32 linenum, 
-                  char *psz_msg );
+                  const char *psz_func, const char *psz_file, cyg_uint32 linenum, 
+                  const char *psz_msg );
     
     externC void
     cyg_tracemsg2( cyg_uint32 what, 
-                   char *psz_func, char *psz_file, cyg_uint32 linenum, 
-                   char *psz_msg,
+                   const char *psz_func, const char *psz_file, cyg_uint32 linenum, 
+                   const char *psz_msg,
                    CYG_ADDRWORD arg0,  CYG_ADDRWORD arg1 );
     // extended in the obvious way for 4,6,8 arguments
 
@@ -405,7 +406,7 @@ also fits in a byte as number or a bitset.
 // these are executed to deal with tracing - breakpoint?
 
 externC void
-cyg_tracenomsg( char *psz_func, char *psz_file, cyg_uint32 linenum );
+cyg_tracenomsg( const char *psz_func, const char *psz_file, cyg_uint32 linenum );
 
 externC void
 cyg_trace_dump(void);
@@ -438,31 +439,31 @@ enum cyg_trace_what{
 
 externC void
 cyg_tracemsg( cyg_uint32 what, 
-              char *psz_func, char *psz_file, cyg_uint32 linenum, 
-              char *psz_msg );
+              const char *psz_func, const char *psz_file, cyg_uint32 linenum, 
+              const char *psz_msg );
 
 externC void
 cyg_tracemsg2( cyg_uint32 what, 
-               char *psz_func, char *psz_file, cyg_uint32 linenum, 
-               char *psz_msg,
+               const char *psz_func, const char *psz_file, cyg_uint32 linenum, 
+               const char *psz_msg,
                CYG_ADDRWORD arg0,  CYG_ADDRWORD arg1 );
 externC void
 cyg_tracemsg4( cyg_uint32 what, 
-               char *psz_func, char *psz_file, cyg_uint32 linenum, 
-               char *psz_msg,
+               const char *psz_func, const char *psz_file, cyg_uint32 linenum, 
+               const char *psz_msg,
                CYG_ADDRWORD arg0,  CYG_ADDRWORD arg1,
                CYG_ADDRWORD arg2,  CYG_ADDRWORD arg3 );
 externC void
 cyg_tracemsg6( cyg_uint32 what, 
-               char *psz_func, char *psz_file, cyg_uint32 linenum, 
-               char *psz_msg,
+               const char *psz_func, const char *psz_file, cyg_uint32 linenum, 
+               const char *psz_msg,
                CYG_ADDRWORD arg0,  CYG_ADDRWORD arg1,
                CYG_ADDRWORD arg2,  CYG_ADDRWORD arg3,
                CYG_ADDRWORD arg4,  CYG_ADDRWORD arg5 );
 externC void
 cyg_tracemsg8( cyg_uint32 what, 
-               char *psz_func, char *psz_file, cyg_uint32 linenum, 
-               char *psz_msg,
+               const char *psz_func, const char *psz_file, cyg_uint32 linenum, 
+               const char *psz_msg,
                CYG_ADDRWORD arg0,  CYG_ADDRWORD arg1,
                CYG_ADDRWORD arg2,  CYG_ADDRWORD arg3,
                CYG_ADDRWORD arg4,  CYG_ADDRWORD arg5,
@@ -603,17 +604,17 @@ class Cyg_TraceFunction_Report_
 {
 public:
     int   cond;
-    char *func;
-    char *file;
+    const char *func;
+    const char *file;
     cyg_uint32 lnum;
 #ifdef CYGDBG_INFRA_DEBUG_TRACE_MESSAGE
-    char *exitmsg;
+    const char *exitmsg;
     CYG_ADDRWORD exitvalue;
     enum { UNSET = 0, SET, VOID } exitset;
 #endif
 
     Cyg_TraceFunction_Report_(
-        int condition, char *psz_func, char *psz_file,
+        int condition, const char *psz_func, const char *psz_file,
         cyg_uint32 linenum)
     {
         cond = condition;
@@ -633,8 +634,8 @@ public:
     };
 
     Cyg_TraceFunction_Report_(
-        int condition, char *psz_func, char *psz_file, 
-        cyg_uint32 linenum, char *psz_exitmsg )
+        int condition, const char *psz_func, const char *psz_file, 
+        cyg_uint32 linenum, const char *psz_exitmsg )
     {
         cond = condition;
         func = psz_func;
@@ -646,7 +647,7 @@ public:
         if ( cond )
             cyg_tracemsg( cyg_trace_enter, func, file, lnum, "enter");
 #else
-        CYG_UNUSED_PARAM( char *, psz_exitmsg );
+        CYG_UNUSED_PARAM( const char *, psz_exitmsg );
         if ( cond )
             cyg_tracenomsg( func, file, lnum );
 #endif
@@ -760,11 +761,11 @@ CYG_MACRO_END
 struct Cyg_TraceFunction_Report_
 {
     int   cond;
-    char *func;
-    char *file; /* not strictly needed in plain 'C' */
+    const char *func;
+    const char *file; /* not strictly needed in plain 'C' */
     cyg_uint32 lnum; /* nor this */
 #ifdef CYGDBG_INFRA_DEBUG_TRACE_MESSAGE
-    char *exitmsg;
+    const char *exitmsg;
     CYG_ADDRWORD exitvalue;
     int exitset;
 #endif

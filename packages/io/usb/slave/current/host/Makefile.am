@@ -60,7 +60,7 @@ AUTOMAKE_OPTIONS = 1.3 foreign
 
 if SUPPORTED
 
-AM_CFLAGS       = @ecos_CFLAGS@ -DUSBHOST_VERSION=\"@VERSION@\" -DPKGVERSION=\"@PACKAGE_VERSION@\" -DUSBAUXDIR=\"$(libexecdir)/ecos/@PACKAGE_NAME@_@PACKAGE_VERSION@\"
+AM_CFLAGS       = @ecos_CFLAGS@ -DUSBHOST_VERSION=\"@VERSION@\" -DPKGVERSION=\"@PACKAGE_VERSION@\" -DUSBAUXDIR=\"$(libexecdir)/ecos/@PACKAGE_INSTALL@\"
 AM_CXXFLAGS     = @ecos_CXXFLAGS@
 INCLUDES        = @ecos_INCLUDES@
 LIBS            = @ecos_LIBS@ @ecos_LDADD@
@@ -81,7 +81,7 @@ usbhost_SOURCES		= usbhost.c
 usbhost_DEPENDENCIES	= ../tests/protocol.h ../tests/common.c
 usbhost_LDADD           = -lpthread
 
-usbauxdir		= $(libexecdir)/ecos/@PACKAGE_NAME@_@PACKAGE_VERSION@
+usbauxdir		= $(libexecdir)/ecos/@PACKAGE_INSTALL@
 usbaux_PROGRAMS		= usbchmod
 usbaux_DATA		= usbhost.tcl list.tcl verbose.tcl
 usbchmod_SOURCES	= usbchmod.c
@@ -99,5 +99,16 @@ install-exec-hook:
 install-data-hook:
 	chown root $(usbauxdir)/usbchmod
 	chmod u+s $(usbauxdir)/usbchmod
+
+else
+
+## When automake scans for hooks it does not take conditionals fully
+## into account. If the conditional is not satisfied the generated
+## makefile will still try to invoke the hook, so dummy hooks are needed.
+install-exec-hook:
+	echo Nothing to be done for this platform
+
+install-data-hook:
+	echo Nothing to be done for this platform
 
 endif

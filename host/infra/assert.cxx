@@ -10,7 +10,8 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 2002 Bart Veer
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
 //
@@ -163,11 +164,13 @@ cyg_assert_failure_invoke_callbacks(
 // subsequent attempts to output more data cause additional failures. It
 // is worthwhile detecting recursive assertion failures.
 //
-// Assuming the table of callbacks is not empty it is possible to output
-// some more data to a file. The tmpnam() function is used to get a filename.
-// The file is opened and the callbacks are invoked. Three utilities have to
-// be provided to do the real work, and a static is used to keep track of the
-// FILE * pointer.
+// Assuming the table of callbacks is not empty it is possible to
+// output some more data to a file. If possible mkstemp() is used to
+// create this file. If mkstemp() is not available then tmpnam() is
+// used instead. That function has security problems, albeit not ones
+// likely to affect dump files. Once the file is opened the callbacks
+// are invoked. Three utilities have to be provided to do the real
+// work, and a static is used to keep track of the FILE * pointer.
 //
 // The testcase tassert8, and in particular the associated Tcl proc
 // tassert8_filter in testsuite/cyginfra/assert.exp, has detailed
@@ -241,6 +244,23 @@ default_handler(const char* fn, const char* file, cyg_uint32 lineno, const char*
     
     // Only create a logfile if more information is available.
     if (0 != callbacks.size() ) {
+
+        // Use mkstemp() if possible, but only when running on a platform where /tmp
+        // is likely to be available.
+#if defined(HAVE_MKSTEMP) && !defined(_MSC_VER)
+        char filename[32];
+        int  fd;
+        strcpy(filename, "/tmp/ecosdump.XXXXXX");
+        fd = mkstemp(filename);
+        if (-1 == fd) {
+            fprintf(stderr, "Unable to create a suitable output file for additional data.\n");
+        } else {
+            default_handler_output_file = fdopen(fd, "w");
+            if (0 == default_handler_output_file) {
+                close(fd);
+            }
+        }
+#else
         char filename[L_tmpnam];
         if (0 == tmpnam(filename)) {
             fprintf(stderr, "Unable to create a suitable output file for additional data.\n");
@@ -251,27 +271,28 @@ default_handler(const char* fn, const char* file, cyg_uint32 lineno, const char*
             // The probability of a problem is considered to be too small
             // to worry about.
             default_handler_output_file = fopen(filename, "w");
-            if (0 == default_handler_output_file) {
-                fprintf(stderr, "Unable to open output file %s\n", filename);
-                fputs("No further assertion information is available.\n", stderr);
-            } else {
-                fprintf(stderr, "Writing additional output to %s\n", filename);
+        }
+#endif
+        if (0 == default_handler_output_file) {
+            fprintf(stderr, "Unable to open output file %s\n", filename);
+            fputs("No further assertion information is available.\n", stderr);
+        } else {
+            fprintf(stderr, "Writing additional output to %s\n", filename);
                 
-                // Repeat the information about the assertion itself.
-                fprintf(default_handler_output_file, "Assertion failure: %s\n", msg);
-                fprintf(default_handler_output_file, "File %s, line number %lu\n", file, (unsigned long) lineno);
-                if (0 != fn)
-                    fprintf(default_handler_output_file, "Function %s\n", fn);
-                fputs("\n", default_handler_output_file);
+            // Repeat the information about the assertion itself.
+            fprintf(default_handler_output_file, "Assertion failure: %s\n", msg);
+            fprintf(default_handler_output_file, "File %s, line number %lu\n", file, (unsigned long) lineno);
+            if (0 != fn)
+                fprintf(default_handler_output_file, "Function %s\n", fn);
+            fputs("\n", default_handler_output_file);
 
-                // Now for the various callbacks.
-                cyg_assert_failure_invoke_callbacks( &default_handler_first_fn,
-                    &default_handler_second_fn, &default_handler_final_fn );
+            // Now for the various callbacks.
+            cyg_assert_failure_invoke_callbacks( &default_handler_first_fn,
+                                                 &default_handler_second_fn, &default_handler_final_fn );
 
-                // And close the file.
-                fputs("\nEnd of assertion data.\n", default_handler_output_file);
-                fclose(default_handler_output_file);
-            }
+            // And close the file.
+            fputs("\nEnd of assertion data.\n", default_handler_output_file);
+            fclose(default_handler_output_file);
         }
     }
     fflush(stderr);

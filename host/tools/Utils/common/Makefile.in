@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -86,18 +86,28 @@ host_alias = @host_alias@
 host_triplet = @host@
 CC = @CC@
 CXX = @CXX@
+ECOS_REPOSITORY = @ECOS_REPOSITORY@
 EXEEXT = @EXEEXT@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
+MSVC_SRCDIR = @MSVC_SRCDIR@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
+PACKAGE_DIR = @PACKAGE_DIR@
+PACKAGE_INSTALL = @PACKAGE_INSTALL@
+PACKAGE_VERSION = @PACKAGE_VERSION@
 RANLIB = @RANLIB@
 VERSION = @VERSION@
-cyg_ac_tcl_incdir = @cyg_ac_tcl_incdir@
-cyg_ac_tcl_libdir = @cyg_ac_tcl_libdir@
-cyg_ac_tcl_libs = @cyg_ac_tcl_libs@
-cyg_ac_tcl_version = @cyg_ac_tcl_version@
-cyg_ac_tk_libs = @cyg_ac_tk_libs@
+ecos_CFLAGS = @ecos_CFLAGS@
+ecos_CXXFLAGS = @ecos_CXXFLAGS@
+ecos_INCLUDES = @ecos_INCLUDES@
+ecos_LDADD = @ecos_LDADD@
+ecos_LIBS = @ecos_LIBS@
+ecos_infra_incdir = @ecos_infra_incdir@
+ecos_infra_libdir = @ecos_infra_libdir@
+ecos_libcdl_incdir = @ecos_libcdl_incdir@
+ecos_libcdl_libdir = @ecos_libcdl_libdir@
+ecos_tk_libs = @ecos_tk_libs@
 
 AUTOMAKE_OPTIONS = 1.3 cygnus
 SUBDIRS = 
@@ -109,7 +119,7 @@ libutils_a_SOURCES = Collections.cpp Subprocess.cpp eCosSocket.cpp \
                      eCosStd.cpp eCosTrace.cpp
 
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-mkinstalldirs = $(SHELL) $(top_srcdir)/../../../mkinstalldirs
+mkinstalldirs = $(SHELL) $(top_srcdir)/../../../../acsupport/mkinstalldirs
 CONFIG_CLEAN_FILES = 
 LIBRARIES =  $(noinst_LIBRARIES)
 
@@ -235,7 +245,7 @@ maintainer-clean-recursive:
 	dot_seen=no; \
 	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
 	  rev="$$subdir $$rev"; \
-	  test "$$subdir" = "." && dot_seen=yes; \
+	  test "$$subdir" != "." || dot_seen=yes; \
 	done; \
 	test "$$dot_seen" = "no" && rev=". $$rev"; \
 	target=`echo $@ | sed s/-recursive//`; \

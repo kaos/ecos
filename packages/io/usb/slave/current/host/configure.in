@@ -91,7 +91,7 @@ if test "${SUPPORTED}" = "yes" ; then
             AC_MSG_ERROR([The USB testing support requires at least version 8.2 of Tcl/Tk])
         fi
     fi
-    ECOS_PACKAGE_NAME_AND_VERSION
+    ECOS_PACKAGE_DIRS
 fi
 
 dnl There is no real need for a config.h file at this time, since the code

@@ -15,9 +15,35 @@ ac_help="$ac_help
   --enable-maintainer-mode enable make rules and dependencies not useful
                           (and sometimes confusing) to the casual installer"
 ac_help="$ac_help
- --enable-debug do a debug rather than a release build"
+ --enable-debug           do a debug rather than a release build"
 ac_help="$ac_help
- --enable-ansi Do an ANSI rather than a unicode build"
+ --enable-ansi            do an ANSI rather than a unicode build"
+ac_help="$ac_help
+ --disable-asserts        disable all assertions"
+ac_help="$ac_help
+ --disable-preconditions  disable a subset of the assertions"
+ac_help="$ac_help
+ --disable-postconditions disable a subset of the assertions"
+ac_help="$ac_help
+ --disable-invariants     disable a subset of the assertions"
+ac_help="$ac_help
+ --disable-loopinvariants disable a subset of the assertions"
+ac_help="$ac_help
+ --disable-tracing        disable tracing"
+ac_help="$ac_help
+ --disable-fntracing      disable function entry/exit tracing"
+ac_help="$ac_help
+ --with-libcdl-header=<path> location of eCos libcdl headers"
+ac_help="$ac_help
+ --with-libcdl-lib=<path>    location of eCos libcdl library"
+ac_help="$ac_help
+ --with-libcdl=<path>        location of eCos libcdl installation"
+ac_help="$ac_help
+ --with-infra-header=<path> location of eCos infrastructure headers"
+ac_help="$ac_help
+ --with-infra-lib=<path>    location of eCos infrastructure library"
+ac_help="$ac_help
+ --with-infra=<path>        location of eCos infrastructure installation"
 ac_help="$ac_help
  --with-tcl-version=<vsn> version of Tcl to be used"
 ac_help="$ac_help
@@ -538,7 +564,7 @@ fi
 
 
 ac_aux_dir=
-for ac_dir in ../../../.. $srcdir/../../../..; do
+for ac_dir in ../../../../../acsupport $srcdir/../../../../../acsupport; do
   if test -f $ac_dir/install-sh; then
     ac_aux_dir=$ac_dir
     ac_install_sh="$ac_aux_dir/install-sh -c"
@@ -550,12 +576,53 @@ for ac_dir in ../../../.. $srcdir/../../../..; do
   fi
 done
 if test -z "$ac_aux_dir"; then
-  { echo "configure: error: can not find install-sh or install.sh in ../../../.. $srcdir/../../../.." 1>&2; exit 1; }
+  { echo "configure: error: can not find install-sh or install.sh in ../../../../../acsupport $srcdir/../../../../../acsupport" 1>&2; exit 1; }
 fi
 ac_config_guess=$ac_aux_dir/config.guess
 ac_config_sub=$ac_aux_dir/config.sub
 ac_configure=$ac_aux_dir/configure # This should be Cygnus configure.
 
+
+
+    echo $ac_n "checking that a separate build tree is being used""... $ac_c" 1>&6
+echo "configure:589: checking that a separate build tree is being used" >&5
+    ecos_cwd=`/bin/pwd`
+    if test "${srcdir}" = "." ; then
+        srcdir=${ecos_cwd}
+    fi
+    if test "${ecos_cwd}" = "${srcdir}" ; then
+        echo "$ac_t""no" 1>&6
+        { echo "configure: error: This configure script should not be run inside the source tree. Instead please use a separate build tree" 1>&2; exit 1; }
+    else
+        echo "$ac_t""yes" 1>&6
+    fi
+
+
+# Make sure we can run config.sub.
+if ${CONFIG_SHELL-/bin/sh} $ac_config_sub sun4 >/dev/null 2>&1; then :
+else { echo "configure: error: can not run $ac_config_sub" 1>&2; exit 1; }
+fi
+
+echo $ac_n "checking host system type""... $ac_c" 1>&6
+echo "configure:608: checking host system type" >&5
+
+host_alias=$host
+case "$host_alias" in
+NONE)
+  case $nonopt in
+  NONE)
+    if host_alias=`${CONFIG_SHELL-/bin/sh} $ac_config_guess`; then :
+    else { echo "configure: error: can not guess host type; you must specify one" 1>&2; exit 1; }
+    fi ;;
+  *) host_alias=$nonopt ;;
+  esac ;;
+esac
+
+host=`${CONFIG_SHELL-/bin/sh} $ac_config_sub $host_alias`
+host_cpu=`echo $host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\1/'`
+host_vendor=`echo $host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\2/'`
+host_os=`echo $host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
+echo "$ac_t""$host" 1>&6
 
 # Find a good install program.  We prefer a C program (faster),
 # so one script is as good as another.  But avoid the broken or
@@ -569,7 +636,7 @@ ac_configure=$ac_aux_dir/configure # This should be Cygnus configure.
 # SVR4 /usr/ucb/install, which tries to use the nonexistent group "staff"
 # ./install, which can be erroneously created by make from ./install.sh.
 echo $ac_n "checking for a BSD compatible install""... $ac_c" 1>&6
-echo "configure:573: checking for a BSD compatible install" >&5
+echo "configure:640: checking for a BSD compatible install" >&5
 if test -z "$INSTALL"; then
 if eval "test \"`echo '$''{'ac_cv_path_install'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -622,7 +689,7 @@ test -z "$INSTALL_SCRIPT" && INSTALL_SCRIPT='${INSTALL_PROGRAM}'
 test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
 
 echo $ac_n "checking whether build environment is sane""... $ac_c" 1>&6
-echo "configure:626: checking whether build environment is sane" >&5
+echo "configure:693: checking whether build environment is sane" >&5
 # Just in case
 sleep 1
 echo timestamp > conftestfile
@@ -679,7 +746,7 @@ test "$program_suffix" != NONE &&
 test "$program_transform_name" = "" && program_transform_name="s,x,x,"
 
 echo $ac_n "checking whether ${MAKE-make} sets \${MAKE}""... $ac_c" 1>&6
-echo "configure:683: checking whether ${MAKE-make} sets \${MAKE}" >&5
+echo "configure:750: checking whether ${MAKE-make} sets \${MAKE}" >&5
 set dummy ${MAKE-make}; ac_make=`echo "$2" | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_prog_make_${ac_make}_set'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -725,7 +792,7 @@ EOF
 
 missing_dir=`cd $ac_aux_dir && pwd`
 echo $ac_n "checking for working aclocal""... $ac_c" 1>&6
-echo "configure:729: checking for working aclocal" >&5
+echo "configure:796: checking for working aclocal" >&5
 # Run test in a subshell; some versions of sh will print an error if
 # an executable is not found, even if stderr is redirected.
 # Redirect stdin to placate older versions of autoconf.  Sigh.
@@ -738,7 +805,7 @@ else
 fi
 
 echo $ac_n "checking for working autoconf""... $ac_c" 1>&6
-echo "configure:742: checking for working autoconf" >&5
+echo "configure:809: checking for working autoconf" >&5
 # Run test in a subshell; some versions of sh will print an error if
 # an executable is not found, even if stderr is redirected.
 # Redirect stdin to placate older versions of autoconf.  Sigh.
@@ -751,7 +818,7 @@ else
 fi
 
 echo $ac_n "checking for working automake""... $ac_c" 1>&6
-echo "configure:755: checking for working automake" >&5
+echo "configure:822: checking for working automake" >&5
 # Run test in a subshell; some versions of sh will print an error if
 # an executable is not found, even if stderr is redirected.
 # Redirect stdin to placate older versions of autoconf.  Sigh.
@@ -764,7 +831,7 @@ else
 fi
 
 echo $ac_n "checking for working autoheader""... $ac_c" 1>&6
-echo "configure:768: checking for working autoheader" >&5
+echo "configure:835: checking for working autoheader" >&5
 # Run test in a subshell; some versions of sh will print an error if
 # an executable is not found, even if stderr is redirected.
 # Redirect stdin to placate older versions of autoconf.  Sigh.
@@ -777,7 +844,7 @@ else
 fi
 
 echo $ac_n "checking for working makeinfo""... $ac_c" 1>&6
-echo "configure:781: checking for working makeinfo" >&5
+echo "configure:848: checking for working makeinfo" >&5
 # Run test in a subshell; some versions of sh will print an error if
 # an executable is not found, even if stderr is redirected.
 # Redirect stdin to placate older versions of autoconf.  Sigh.
@@ -791,7 +858,7 @@ fi
 
 
 echo $ac_n "checking whether to enable maintainer-specific portions of Makefiles""... $ac_c" 1>&6
-echo "configure:795: checking whether to enable maintainer-specific portions of Makefiles" >&5
+echo "configure:862: checking whether to enable maintainer-specific portions of Makefiles" >&5
     # Check whether --enable-maintainer-mode or --disable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then
   enableval="$enable_maintainer_mode"
@@ -814,37 +881,10 @@ fi
   
 
 
-
-# Make sure we can run config.sub.
-if ${CONFIG_SHELL-/bin/sh} $ac_config_sub sun4 >/dev/null 2>&1; then :
-else { echo "configure: error: can not run $ac_config_sub" 1>&2; exit 1; }
-fi
-
-echo $ac_n "checking host system type""... $ac_c" 1>&6
-echo "configure:825: checking host system type" >&5
-
-host_alias=$host
-case "$host_alias" in
-NONE)
-  case $nonopt in
-  NONE)
-    if host_alias=`${CONFIG_SHELL-/bin/sh} $ac_config_guess`; then :
-    else { echo "configure: error: can not guess host type; you must specify one" 1>&2; exit 1; }
-    fi ;;
-  *) host_alias=$nonopt ;;
-  esac ;;
-esac
-
-host=`${CONFIG_SHELL-/bin/sh} $ac_config_sub $host_alias`
-host_cpu=`echo $host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\1/'`
-host_vendor=`echo $host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\2/'`
-host_os=`echo $host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
-echo "$ac_t""$host" 1>&6
-
 # Extract the first word of "gcc", so it can be a program name with args.
 set dummy gcc; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:848: checking for $ac_word" >&5
+echo "configure:888: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_CC'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -874,7 +914,7 @@ if test -z "$CC"; then
   # Extract the first word of "cc", so it can be a program name with args.
 set dummy cc; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:878: checking for $ac_word" >&5
+echo "configure:918: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_CC'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -925,7 +965,7 @@ fi
       # Extract the first word of "cl", so it can be a program name with args.
 set dummy cl; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:929: checking for $ac_word" >&5
+echo "configure:969: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_CC'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -957,7 +997,7 @@ fi
 fi
 
 echo $ac_n "checking whether the C compiler ($CC $CFLAGS $LDFLAGS) works""... $ac_c" 1>&6
-echo "configure:961: checking whether the C compiler ($CC $CFLAGS $LDFLAGS) works" >&5
+echo "configure:1001: checking whether the C compiler ($CC $CFLAGS $LDFLAGS) works" >&5
 
 ac_ext=c
 # CFLAGS is not in ac_cpp because -g, -O, etc. are not valid cpp options.
@@ -968,12 +1008,12 @@ cross_compiling=$ac_cv_prog_cc_cross
 
 cat > conftest.$ac_ext << EOF
 
-#line 972 "configure"
+#line 1012 "configure"
 #include "confdefs.h"
 
 main(){return(0);}
 EOF
-if { (eval echo configure:977: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:1017: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   ac_cv_prog_cc_works=yes
   # If we can't run a trivial program, we are probably using a cross compiler.
   if (./conftest; exit) 2>/dev/null; then
@@ -999,12 +1039,12 @@ if test $ac_cv_prog_cc_works = no; then
   { echo "configure: error: installation or configuration problem: C compiler cannot create executables." 1>&2; exit 1; }
 fi
 echo $ac_n "checking whether the C compiler ($CC $CFLAGS $LDFLAGS) is a cross-compiler""... $ac_c" 1>&6
-echo "configure:1003: checking whether the C compiler ($CC $CFLAGS $LDFLAGS) is a cross-compiler" >&5
+echo "configure:1043: checking whether the C compiler ($CC $CFLAGS $LDFLAGS) is a cross-compiler" >&5
 echo "$ac_t""$ac_cv_prog_cc_cross" 1>&6
 cross_compiling=$ac_cv_prog_cc_cross
 
 echo $ac_n "checking whether we are using GNU C""... $ac_c" 1>&6
-echo "configure:1008: checking whether we are using GNU C" >&5
+echo "configure:1048: checking whether we are using GNU C" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_gcc'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1013,7 +1053,7 @@ else
   yes;
 #endif
 EOF
-if { ac_try='${CC-cc} -E conftest.c'; { (eval echo configure:1017: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } | egrep yes >/dev/null 2>&1; then
+if { ac_try='${CC-cc} -E conftest.c'; { (eval echo configure:1057: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } | egrep yes >/dev/null 2>&1; then
   ac_cv_prog_gcc=yes
 else
   ac_cv_prog_gcc=no
@@ -1032,7 +1072,7 @@ ac_test_CFLAGS="${CFLAGS+set}"
 ac_save_CFLAGS="$CFLAGS"
 CFLAGS=
 echo $ac_n "checking whether ${CC-cc} accepts -g""... $ac_c" 1>&6
-echo "configure:1036: checking whether ${CC-cc} accepts -g" >&5
+echo "configure:1076: checking whether ${CC-cc} accepts -g" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_cc_g'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1068,7 +1108,7 @@ do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:1072: checking for $ac_word" >&5
+echo "configure:1112: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_CXX'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1100,7 +1140,7 @@ test -n "$CXX" || CXX="gcc"
 
 
 echo $ac_n "checking whether the C++ compiler ($CXX $CXXFLAGS $LDFLAGS) works""... $ac_c" 1>&6
-echo "configure:1104: checking whether the C++ compiler ($CXX $CXXFLAGS $LDFLAGS) works" >&5
+echo "configure:1144: checking whether the C++ compiler ($CXX $CXXFLAGS $LDFLAGS) works" >&5
 
 ac_ext=C
 # CXXFLAGS is not in ac_cpp because -g, -O, etc. are not valid cpp options.
@@ -1111,12 +1151,12 @@ cross_compiling=$ac_cv_prog_cxx_cross
 
 cat > conftest.$ac_ext << EOF
 
-#line 1115 "configure"
+#line 1155 "configure"
 #include "confdefs.h"
 
 int main(){return(0);}
 EOF
-if { (eval echo configure:1120: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:1160: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   ac_cv_prog_cxx_works=yes
   # If we can't run a trivial program, we are probably using a cross compiler.
   if (./conftest; exit) 2>/dev/null; then
@@ -1142,12 +1182,12 @@ if test $ac_cv_prog_cxx_works = no; then
   { echo "configure: error: installation or configuration problem: C++ compiler cannot create executables." 1>&2; exit 1; }
 fi
 echo $ac_n "checking whether the C++ compiler ($CXX $CXXFLAGS $LDFLAGS) is a cross-compiler""... $ac_c" 1>&6
-echo "configure:1146: checking whether the C++ compiler ($CXX $CXXFLAGS $LDFLAGS) is a cross-compiler" >&5
+echo "configure:1186: checking whether the C++ compiler ($CXX $CXXFLAGS $LDFLAGS) is a cross-compiler" >&5
 echo "$ac_t""$ac_cv_prog_cxx_cross" 1>&6
 cross_compiling=$ac_cv_prog_cxx_cross
 
 echo $ac_n "checking whether we are using GNU C++""... $ac_c" 1>&6
-echo "configure:1151: checking whether we are using GNU C++" >&5
+echo "configure:1191: checking whether we are using GNU C++" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_gxx'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1156,7 +1196,7 @@ else
   yes;
 #endif
 EOF
-if { ac_try='${CXX-g++} -E conftest.C'; { (eval echo configure:1160: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } | egrep yes >/dev/null 2>&1; then
+if { ac_try='${CXX-g++} -E conftest.C'; { (eval echo configure:1200: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } | egrep yes >/dev/null 2>&1; then
   ac_cv_prog_gxx=yes
 else
   ac_cv_prog_gxx=no
@@ -1175,7 +1215,7 @@ ac_test_CXXFLAGS="${CXXFLAGS+set}"
 ac_save_CXXFLAGS="$CXXFLAGS"
 CXXFLAGS=
 echo $ac_n "checking whether ${CXX-g++} accepts -g""... $ac_c" 1>&6
-echo "configure:1179: checking whether ${CXX-g++} accepts -g" >&5
+echo "configure:1219: checking whether ${CXX-g++} accepts -g" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_cxx_g'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1206,14 +1246,65 @@ else
   fi
 fi
 
+for ac_declaration in \
+   ''\
+   '#include <stdlib.h>' \
+   'extern "C" void std::exit (int) throw (); using std::exit;' \
+   'extern "C" void std::exit (int); using std::exit;' \
+   'extern "C" void exit (int) throw ();' \
+   'extern "C" void exit (int);' \
+   'void exit (int);'
+do
+  cat > conftest.$ac_ext <<EOF
+#line 1260 "configure"
+#include "confdefs.h"
+#include <stdlib.h>
+$ac_declaration
+int main() {
+exit (42);
+; return 0; }
+EOF
+if { (eval echo configure:1268: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  :
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  continue
+fi
+rm -f conftest*
+  cat > conftest.$ac_ext <<EOF
+#line 1278 "configure"
+#include "confdefs.h"
+$ac_declaration
+int main() {
+exit (42);
+; return 0; }
+EOF
+if { (eval echo configure:1285: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  break
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+fi
+rm -f conftest*
+done
+if test -n "$ac_declaration"; then
+  echo '#ifdef __cplusplus' >>confdefs.h
+  echo $ac_declaration      >>confdefs.h
+  echo '#endif'             >>confdefs.h
+fi
+
+
 echo $ac_n "checking for object suffix""... $ac_c" 1>&6
-echo "configure:1211: checking for object suffix" >&5
+echo "configure:1302: checking for object suffix" >&5
 if eval "test \"`echo '$''{'ac_cv_objext'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   rm -f conftest*
 echo 'int i = 1;' > conftest.$ac_ext
-if { (eval echo configure:1217: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:1308: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   for ac_file in conftest.*; do
     case $ac_file in
     *.c) ;;
@@ -1231,12 +1322,12 @@ OBJEXT=$ac_cv_objext
 ac_objext=$ac_cv_objext
 
 echo $ac_n "checking for Cygwin environment""... $ac_c" 1>&6
-echo "configure:1235: checking for Cygwin environment" >&5
+echo "configure:1326: checking for Cygwin environment" >&5
 if eval "test \"`echo '$''{'ac_cv_cygwin'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1240 "configure"
+#line 1331 "configure"
 #include "confdefs.h"
 
 int main() {
@@ -1247,7 +1338,7 @@ int main() {
 return __CYGWIN__;
 ; return 0; }
 EOF
-if { (eval echo configure:1251: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:1342: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_cygwin=yes
 else
@@ -1264,19 +1355,19 @@ echo "$ac_t""$ac_cv_cygwin" 1>&6
 CYGWIN=
 test "$ac_cv_cygwin" = yes && CYGWIN=yes
 echo $ac_n "checking for mingw32 environment""... $ac_c" 1>&6
-echo "configure:1268: checking for mingw32 environment" >&5
+echo "configure:1359: checking for mingw32 environment" >&5
 if eval "test \"`echo '$''{'ac_cv_mingw32'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1273 "configure"
+#line 1364 "configure"
 #include "confdefs.h"
 
 int main() {
 return __MINGW32__;
 ; return 0; }
 EOF
-if { (eval echo configure:1280: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:1371: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_mingw32=yes
 else
@@ -1295,7 +1386,7 @@ test "$ac_cv_mingw32" = yes && MINGW32=yes
 
 
 echo $ac_n "checking for executable suffix""... $ac_c" 1>&6
-echo "configure:1299: checking for executable suffix" >&5
+echo "configure:1390: checking for executable suffix" >&5
 if eval "test \"`echo '$''{'ac_cv_exeext'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1305,7 +1396,7 @@ else
   rm -f conftest*
   echo 'int main () { return 0; }' > conftest.$ac_ext
   ac_cv_exeext=
-  if { (eval echo configure:1309: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; }; then
+  if { (eval echo configure:1400: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; }; then
     for file in conftest.*; do
       case $file in
       *.c | *.o | *.obj) ;;
@@ -1326,17 +1417,39 @@ echo "$ac_t""${ac_cv_exeext}" 1>&6
 ac_exeext=$EXEEXT
 
 
+    ecos_CFLAGS=""
+    ecos_CXXFLAGS=""
+    ecos_LDADD=""
+    ecos_INCLUDES=""
+    ecos_LIBS=""
+    
+    
+    
+    
+    
+
+
+    
     
     
 
     echo $ac_n "checking "for Visual C++"""... $ac_c" 1>&6
-echo "configure:1334: checking "for Visual C++"" >&5
+echo "configure:1438: checking "for Visual C++"" >&5
     MSVC="no";
     if test "${CC}" = "cl" ; then
        MSVC="yes"
+       CXX="cl"
+       
+    
+    
+    if test "${MSVC}" = "yes" ; then
+      MSVC_SRCDIR=`cygpath -w ${MSVC_SRCDIR} | tr \\\\\\\\ /`
     fi
-    if test "${CXX}" = "cl" ; then
-       MSVC="yes"
+
+       
+       ecos_INCLUDES="${ecos_INCLUDES} \"-I${msvc_srcdir}\""
+       ecos_LDADD="-link"
+       ecos_LIBS="advapi32.lib"
     fi
     
 
@@ -1347,300 +1460,610 @@ else
   MSVC_TRUE='#'
   MSVC_FALSE=
 fi
-    echo "$ac_t""${MSVC}" 1>&6
+    if test "${MSVC}" = "yes" ; then
+        echo "$ac_t""unfortunately yes" 1>&6
+    else
+        echo "$ac_t""no" 1>&6
+    fi
 
 
+    
     
     
     
 
     echo $ac_n "checking "the default compiler flags"""... $ac_c" 1>&6
-echo "configure:1359: checking "the default compiler flags"" >&5
+echo "configure:1477: checking "the default compiler flags"" >&5
 
-                        cygflags_enable_debug="no"
+            ecosflags_enable_debug="no"
     # Check whether --enable-debug or --disable-debug was given.
 if test "${enable_debug+set}" = set; then
   enableval="$enable_debug"
   case "${enableval}" in
-       yes) cygflags_enable_debug="yes" ;;
-       *)   cygflags_enable_debug="no" ;;
+       yes) ecosflags_enable_debug="yes" ;;
+       *)   ecosflags_enable_debug="no" ;;
     esac
 fi
 
 
-            cygflags_enable_ansi="no"
+                    ecosflags_enable_ansi="no"
     if test "${MSVC}" = "yes" ; then
       # Check whether --enable-ansi or --disable-ansi was given.
 if test "${enable_ansi+set}" = set; then
   enableval="$enable_ansi"
   case "${enableval}" in
-         yes) cygflags_enable_ansi="yes" ;;
-         *)   cygflags_enable_ansi="no" ;;
+         yes) ecosflags_enable_ansi="yes" ;;
+         *)   ecosflags_enable_ansi="no" ;;
       esac
 fi
 
     fi
 
         if test "${GCC}" = "yes" ; then
-        cyg_CFLAGS="-pipe -Wall -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs"
-        cyg_CXXFLAGS="-pipe -Wall -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Woverloaded-virtual"
+        ecos_CFLAGS="${ecos_CFLAGS} -pipe -Wall -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs"
+        ecos_CXXFLAGS="${ecos_CXXFLAGS} -pipe -Wall -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Woverloaded-virtual"
     elif test "${MSVC}" = "yes" ; then
-        cyg_CFLAGS="-nologo -W3"
-        cyg_CXXFLAGS="-nologo -W3 -GR -GX"
+        ecos_CFLAGS="${ecos_CFLAGS} -nologo -W3"
+        ecos_CXXFLAGS="${ecos_CXXFLAGS} -nologo -W3 -GR -GX"
     else
         { echo "configure: error: "default flags for ${CC} are not known"" 1>&2; exit 1; }
     fi
 
-        if test "${cygflags_enable_debug}" = "yes" ; then
+        if test "${ecosflags_enable_debug}" = "yes" ; then
         if test "${GCC}" = "yes" ; then
-            cyg_CFLAGS="${cyg_CFLAGS} -g -O0"
-            cyg_CXXFLAGS="${cyg_CXXFLAGS} -g -O0"
+            ecos_CFLAGS="${ecos_CFLAGS} -g -O0"
+            ecos_CXXFLAGS="${ecos_CXXFLAGS} -g -O0"
         elif test "${MSVC}" = "yes" ; then
-            cyg_CFLAGS="${cyg_CFLAGS} -MDd -Zi"
-            cyg_CXXFLAGS="${cyg_CXXFLAGS} -MDd -Zi"
+            ecos_CFLAGS="${ecos_CFLAGS} -MDd -Zi"
+            ecos_CXXFLAGS="${ecos_CXXFLAGS} -MDd -Zi"
         fi
     else
-        if test "${GCC}" = "yes" ; then
-            cyg_CFLAGS="${cyg_CFLAGS} -O0"
-            cyg_CXXFLAGS="${cyg_CXXFLAGS} -O0"
+                                        if test "${GCC}" = "yes" ; then
+            ecos_CFLAGS="${ecos_CFLAGS} -O0"
+            ecos_CXXFLAGS="${ecos_CXXFLAGS} -O0"
         elif test "${MSVC}" = "yes" ; then
-            cyg_CFLAGS="${cyg_CFLAGS} -MD -O2"
-            cyg_CXXFLAGS="${cyg_CXXFLAGS} -MD -O2"
+            ecos_CFLAGS="${ecos_CFLAGS} -MD -O2"
+            ecos_CXXFLAGS="${ecos_CXXFLAGS} -MD -O2"
         fi
     fi
 
     CFLAGS="${ac_save_CFLAGS}"
     CXXFLAGS="${ac_save_CXXFLAGS}"
-    
-    
+
     echo "$ac_t""done" 1>&6
 
 
 
 
+    
+
+    if test "${ecosflags_enable_debug}" = "yes" ; then
+        ecosinfra_asserts="yes"
+        ecosinfra_preconditions="yes"
+        ecosinfra_postconditions="yes"
+        ecosinfra_invariants="yes"
+        ecosinfra_loopinvariants="yes"
+        ecosinfra_tracing="yes"
+        ecosinfra_fntracing="yes"
+    else
+        ecosinfra_asserts="no"
+        ecosinfra_preconditions="no"
+        ecosinfra_postconditions="no"
+        ecosinfra_invariants="no"
+        ecosinfra_loopinvariants="no"
+        ecosinfra_tracing="no"
+        ecosinfra_fntracing="no"
+    fi
+
+    # Check whether --enable-asserts or --disable-asserts was given.
+if test "${enable_asserts+set}" = set; then
+  enableval="$enable_asserts"
+  case "${enableval}" in
+            yes) ecosinfra_asserts="yes" ;;
+            no)  ecosinfra_asserts="no"  ;;
+            *)   { echo "configure: error: bad value ${enableval} for disable-asserts option" 1>&2; exit 1; } ;;
+        esac
+fi
+
+    if test "${ecosinfra_asserts}" = "yes"; then
+        cat >> confdefs.h <<\EOF
+#define CYGDBG_USE_ASSERTS 1
+EOF
+
+    fi
+
+    # Check whether --enable-preconditions or --disable-preconditions was given.
+if test "${enable_preconditions+set}" = set; then
+  enableval="$enable_preconditions"
+  case "${enableval}" in
+            yes) ecosinfra_preconditions="yes" ;;
+            no)  ecosinfra_preconditions="no"  ;;
+            *)   { echo "configure: error: bad value ${enableval} for disable-preconditions option" 1>&2; exit 1; } ;;
+        esac
+fi
+
+    if test "${ecosinfra_preconditions}" = "yes"; then
+        cat >> confdefs.h <<\EOF
+#define CYGDBG_INFRA_DEBUG_PRECONDITIONS 1
+EOF
+
+    fi
+
+    # Check whether --enable-postconditions or --disable-postconditions was given.
+if test "${enable_postconditions+set}" = set; then
+  enableval="$enable_postconditions"
+  case "${enableval}" in
+            yes) ecosinfra_postconditions="yes" ;;
+            no)  ecosinfra_postconditions="no"  ;;
+            *)   { echo "configure: error: bad value ${enableval} for disable-postconditions option" 1>&2; exit 1; } ;;
+        esac
+fi
+
+    if test "${ecosinfra_postconditions}" = "yes"; then
+        cat >> confdefs.h <<\EOF
+#define CYGDBG_INFRA_DEBUG_POSTCONDITIONS 1
+EOF
+
+    fi
+
+    # Check whether --enable-invariants or --disable-invariants was given.
+if test "${enable_invariants+set}" = set; then
+  enableval="$enable_invariants"
+  case "${enableval}" in
+            yes) ecosinfra_invariants="yes" ;;
+            no)  ecosinfra_invariants="no"  ;;
+            *)   { echo "configure: error: bad value ${enableval} for disable-invariants option" 1>&2; exit 1; } ;;
+        esac
+fi
+
+    if test "${ecosinfra_invariants}" = "yes"; then
+        cat >> confdefs.h <<\EOF
+#define CYGDBG_INFRA_DEBUG_INVARIANTS 1
+EOF
+
+    fi
+
+    # Check whether --enable-loopinvariants or --disable-loopinvariants was given.
+if test "${enable_loopinvariants+set}" = set; then
+  enableval="$enable_loopinvariants"
+  case "${enableval}" in
+            yes) ecosinfra_loopinvariants="yes" ;;
+            no)  ecosinfra_loopinvariants="no"  ;;
+            *)   { echo "configure: error: bad value ${enableval} for disable-loopinvariants option" 1>&2; exit 1; } ;;
+        esac
+fi
+
+    if test "${ecosinfra_loopinvariants}" = "yes"; then
+        cat >> confdefs.h <<\EOF
+#define CYGDBG_INFRA_DEBUG_LOOP_INVARIANTS 1
+EOF
+
+    fi
+
+    # Check whether --enable-tracing or --disable-tracing was given.
+if test "${enable_tracing+set}" = set; then
+  enableval="$enable_tracing"
+  case "${enableval}" in
+            yes) ecosinfra_tracing="yes" ;;
+            no)  ecosinfra_tracing="no"  ;;
+            *)   { echo "configure: error: bad value ${enableval} for disable-tracing option" 1>&2; exit 1; } ;;
+        esac
+fi
+
+    if test "${ecosinfra_tracing}" = "yes"; then
+        cat >> confdefs.h <<\EOF
+#define CYGDBG_USE_TRACING 1
+EOF
+
+    fi
+
+    # Check whether --enable-fntracing or --disable-fntracing was given.
+if test "${enable_fntracing+set}" = set; then
+  enableval="$enable_fntracing"
+  case "${enableval}" in
+            yes) ecosinfra_fntracing="yes" ;;
+            no)  ecosinfra_fntracing=no  ;;
+            *)   { echo "configure: error: bad value ${enableval} for disable-fntracing option" 1>&2; exit 1; } ;;
+    esac
+fi
+
+    if test "${ecosinfra_fntracing}" = "yes"; then
+        cat >> confdefs.h <<\EOF
+#define CYGDBG_INFRA_DEBUG_FUNCTION_REPORTS 1
+EOF
+
+    fi
+
+
+    echo $ac_n "checking for libcdl""... $ac_c" 1>&6
+echo "configure:1680: checking for libcdl" >&5
+
+        libcdl_srcdir=""
+    possibles="${srcdir}/.. ${srcdir}/../.. ${srcdir}/../../.. ${srcdir}/../../../.. ${srcdir}/../../../../.."
+    
+    libcdl_srcdir=""
+    for i in ${possibles}; do
+        if test -d "$i/"libcdl""; then
+            libcdl_srcdir=$i
+            break
+        fi
+    done
+
+    if test "${libcdl_srcdir}" = "" ; then
+      possibles="${srcdir}/../host ${srcdir}/../../host ${srcdir}/../../../host ${srcdir}/../../../../host ${srcdir}/../../../../../host ${srcdir}/../../../../../../host"
+      
+    libcdl_srcdir=""
+    for i in ${possibles}; do
+        if test -d "$i/"libcdl""; then
+            libcdl_srcdir=$i
+            break
+        fi
+    done
+
+    fi
+    if test "${libcdl_srcdir}" != "" ; then
+        libcdl_srcdir="${libcdl_srcdir}/libcdl"
+        libcdl_srcdir=`cd ${libcdl_srcdir} && /bin/pwd`
+    fi
+
+        libcdl_builddir=""
+    possibles=".. ../.. ../../.. ../../../.. ../../../../.."
+    
+    libcdl_builddir=""
+    for i in ${possibles}; do
+        if test -d "$i/"libcdl""; then
+            libcdl_builddir=$i
+            break
+        fi
+    done
+
+    if test "${libcdl_builddir}" = "" ; then
+      possibles="../host ../../host ../../../host ../../../../host ../../../../../host ../../../../../../host"
+      
+    libcdl_builddir=""
+    for i in ${possibles}; do
+        if test -d "$i/"libcdl""; then
+            libcdl_builddir=$i
+            break
+        fi
+    done
+
+    fi
+    if test "${libcdl_builddir}" != "" ; then
+        libcdl_builddir="${libcdl_builddir}/libcdl"
+        libcdl_builddir=`cd ${libcdl_builddir} && /bin/pwd`
+    fi
+
+    ecos_libcdl_incdir=""
+    ecos_libcdl_libdir=""
+    ecos_libcdl_libs=""
+
+    # Check whether --with-libcdl-header or --without-libcdl-header was given.
+if test "${with_libcdl_header+set}" = set; then
+  withval="$with_libcdl_header"
+  :
+fi
+
+    # Check whether --with-libcdl-lib or --without-libcdl-lib was given.
+if test "${with_libcdl_lib+set}" = set; then
+  withval="$with_libcdl_lib"
+  :
+fi
+
+    # Check whether --with-libcdl or --without-libcdl was given.
+if test "${with_libcdl+set}" = set; then
+  withval="$with_libcdl"
+  :
+fi
+
+
+    if test "${with_libcdl_header+set}" = "set"; then
+        ecos_libcdl_incdir="${with_libcdl_header}"
+    elif test "${with_libcdl+set}" = "set"; then
+        ecos_libcdl_incdir="${with_libcdl}/include"
+    elif test "${libcdl_srcdir}" != "" ; then
+        ecos_libcdl_incdir="${libcdl_srcdir}"
+    fi
+    if test \! -r "${ecos_libcdl_incdir}/cdl.hxx" ; then
+        { echo "configure: error: libcdl headers not found" 1>&2; exit 1; }
+    fi
+    if test "${MSVC}" = "yes" ; then
+        ecos_msvc_libcdl_incdir = "${ecos_libcdl_incdir}"
+        
+    
+    
+    if test "${MSVC}" = "yes" ; then
+      ecos_msvc_libcdl_incdir=`cygpath -w ${ecos_msvc_libcdl_incdir} | tr \\\\\\\\ /`
+    fi
+
+        ecos_INCLUDES="${ecos_INCLUDES} \"-I${ecos_msvc_libcdl_incdir}\""
+    else
+        ecos_INCLUDES="${ecos_INCLUDES} -I${ecos_libcdl_incdir}"
+    fi
+
+    if test "${with_libcdl_lib+set}" = "set"; then
+        ecos_libcdl_libdir="${with_libcdl_lib}"
+    elif test "${with_libcdl+set}" = "set"; then
+        ecos_libcdl_libdir="${with_libcdl}/lib"
+    elif test "${libcdl_builddir}" != "" ; then
+        ecos_libcdl_libdir="${libcdl_builddir}"
+    else
+        { echo "configure: error: libcdl library not found" 1>&2; exit 1; }
+    fi
+    if test "${MSVC}" = "yes" ; then
+        ecos_msvc_libcdl_libdir=${ecos_libcdl_libdir}
+        
+    
+    
+    if test "${MSVC}" = "yes" ; then
+      ecos_msvc_libcdl_libdir=`cygpath -w ${ecos_msvc_libcdl_libdir} | tr \\\\\\\\ /`
+    fi
+
+        ecos_LIBS="${ecos_LIBS} cdl.lib"
+        ecos_LDADD="${ecos_LDADD} \"-libpath=${ecos_msvc_libcdl_libdir}\""
+    else
+        ecos_LIBS="${ecos_LIBS} -lcdl"
+        ecos_LDADD="${ecos_LDADD} -L${ecos_libcdl_libdir}"
+    fi
+
+    
+    
+    echo "$ac_t""-I${ecos_libcdl_incdir} -L${ecos_libcdl_libdir}" 1>&6
+
+
+    echo $ac_n "checking for eCos host-side infrastructure""... $ac_c" 1>&6
+echo "configure:1816: checking for eCos host-side infrastructure" >&5
+
+                infra_builddir=""
+    possibles=".. ../.. ../../.. ../../../.. ../../../../.."
+    
+    infra_builddir=""
+    for i in ${possibles}; do
+        if test -d "$i/"infra""; then
+            infra_builddir=$i
+            break
+        fi
+    done
+
+    if test "${infra_builddir}" = "" ; then
+      possibles="../host ../../host ../../../host ../../../../host ../../../../../host ../../../../../../host"
+      
+    infra_builddir=""
+    for i in ${possibles}; do
+        if test -d "$i/"infra""; then
+            infra_builddir=$i
+            break
+        fi
+    done
+
+    fi
+    if test "${infra_builddir}" != "" ; then
+        infra_builddir="${infra_builddir}/infra"
+        infra_builddir=`cd ${infra_builddir} && /bin/pwd`
+    fi
+
+    ecos_infra_incdir=""
+    ecos_infra_libdir=""
+    ecos_infra_libs=""
+
+    # Check whether --with-infra-header or --without-infra-header was given.
+if test "${with_infra_header+set}" = set; then
+  withval="$with_infra_header"
+  :
+fi
+
+    # Check whether --with-infra-lib or --without-infra-lib was given.
+if test "${with_infra_lib+set}" = set; then
+  withval="$with_infra_lib"
+  :
+fi
+
+    # Check whether --with-infra or --without-infra was given.
+if test "${with_infra+set}" = set; then
+  withval="$with_infra"
+  :
+fi
+
+
+    if test "${with_infra_header+set}" = "set"; then
+        ecos_infra_incdir="${with_infra_header}"
+    elif test "${with_infra+set}" = "set"; then
+        ecos_infra_incdir="${with_infra}/include"
+    elif test "${infra_builddir}" != "" ; then
+        ecos_infra_incdir="${infra_builddir}"
+    else
+        { echo "configure: error: infrastructure headers not found" 1>&2; exit 1; }
+    fi
+    if test "${MSVC}" = "yes" ; then
+        ecos_msvc_infra_incdir = ${ecos_infra_incdir}
+        
+    
+    
+    if test "${MSVC}" = "yes" ; then
+      ecos_msvc_infra_incdir=`cygpath -w ${ecos_msvc_infra_incdir} | tr \\\\\\\\ /`
+    fi
+
+        ecos_INCLUDES="${ecos_INCLUDES} \"-I${ecos_msvc_infra_incdir}\""
+    else
+        ecos_INCLUDES="${ecos_INCLUDES} -I${ecos_infra_incdir}"
+    fi
+
+    if test "${with_infra_lib+set}" = "set"; then
+        ecos_infra_libdir="${with_infra_lib}"
+    elif test "${with_infra+set}" = "set"; then
+        ecos_infra_libdir="${with_infra}/lib"
+    elif test "${infra_builddir}" != "" ; then
+        ecos_infra_libdir="${infra_builddir}"
+    else
+        { echo "configure: error: infrastructure library not found" 1>&2; exit 1; }
+    fi
+    if test "${MSVC}" = "yes" ; then
+        ecos_msvc_infra_libdir=${ecos_infra_libdir}
+        
+    
+    
+    if test "${MSVC}" = "yes" ; then
+      ecos_msvc_infra_libdir=`cygpath -w ${ecos_msvc_infra_libdir} | tr \\\\\\\\ /`
+    fi
+
+        ecos_LIBS="${ecos_LIBS} cyginfra.lib"
+        ecos_LDADD="${ecos_LDADD} \"-libpath=${ecos_msvc_infra_libdir}\""
+    else
+        ecos_LIBS="${ecos_LIBS} -lcyginfra"
+        ecos_LDADD="${ecos_LDADD} -L${ecos_infra_libdir}"
+    fi
+
+    
+    
+    echo "$ac_t""-I${ecos_infra_incdir} -L${ecos_infra_libdir}" 1>&6
 
 
 
+    
+    
 
-echo $ac_n "checking for Tcl version""... $ac_c" 1>&6
-echo "configure:1427: checking for Tcl version" >&5
-# Check whether --with-tcl-version or --without-tcl-version was given.
+    ecos_tcl_version=""
+    ecos_tcl_incdir=""
+    ecos_tcl_libdir=""
+    ecos_tk_libs=""
+
+                
+    echo $ac_n "checking for Tcl version""... $ac_c" 1>&6
+echo "configure:1933: checking for Tcl version" >&5
+    # Check whether --with-tcl-version or --without-tcl-version was given.
 if test "${with_tcl_version+set}" = set; then
   withval="$with_tcl_version"
   
-  cyg_ac_tcl_version=${with_tcl_version}
-
+        ecos_tcl_version=${with_tcl_version}
+    
 else
   
-  if test "${MSVC}" = "yes" ; then
-    cyg_ac_tcl_version=80
-  else
-    if test "${ac_cv_cygwin}" = "yes" ; then
-      cyg_ac_tcl_version=80
-    else
-      cyg_ac_tcl_version=""
-    fi
-  fi
-
+        if test "${MSVC}" = "yes" ; then
+           ecos_tcl_version=80
+        elif test "${ac_cv_cygwin}" = "yes" ; then
+           ecos_tcl_version=80
+        else
+           ecos_tcl_version=""
+        fi
+    
 fi
 
-echo "$ac_t""${cyg_ac_tcl_version}" 1>&6
+    echo "$ac_t""${ecos_tcl_version}" 1>&6
 
+        echo $ac_n "checking for Tcl installation""... $ac_c" 1>&6
+echo "configure:1955: checking for Tcl installation" >&5
 
+    # Check whether --with-tcl-header or --without-tcl-header was given.
+if test "${with_tcl_header+set}" = set; then
+  withval="$with_tcl_header"
+  :
+fi
 
-# Check whether --with-tcl or --without-tcl was given.
+    # Check whether --with-tcl-lib or --without-tcl-lib was given.
+if test "${with_tcl_lib+set}" = set; then
+  withval="$with_tcl_lib"
+  :
+fi
+
+    # Check whether --with-tcl or --without-tcl was given.
 if test "${with_tcl+set}" = set; then
   withval="$with_tcl"
   :
 fi
 
-# Check whether --with-tcl or --without-tcl was given.
-if test "${with_tcl+set}" = set; then
-  withval="$with_tcl"
-  :
-fi
 
-# Check whether --with-tcl or --without-tcl was given.
-if test "${with_tcl+set}" = set; then
-  withval="$with_tcl"
-  :
-fi
+                                
+    if test "${MSVC}" = "yes" ; then
 
+        if test "${with_tcl_header+set}" = set ; then
+            ecos_tcl_incdir=${with_tcl_header}
+        elif test "${with_tcl+set}" = set ; then
+            ecos_tcl_incdir="${with_tcl}/include"
+        else
+            { echo "configure: error: You must specify a Tcl installation with either --with-tcl=<path> or --with-tcl-header=<path>" 1>&2; exit 1; }
+        fi
+  
+                        if test \! -r "${ecos_tcl_incdir}/tcl.h" ; then
+            { echo "configure: error: unable to locate Tcl header file tcl.h" 1>&2; exit 1; }
+        fi
+        ecos_msvc_tcl_incdir="${ecos_tcl_incdir}"
+        
+    
+    
+    if test "${MSVC}" = "yes" ; then
+      ecos_msvc_tcl_incdir=`cygpath -w ${ecos_msvc_tcl_incdir} | tr \\\\\\\\ /`
+    fi
 
-echo $ac_n "checking for Tcl installation""... $ac_c" 1>&6
-echo "configure:1472: checking for Tcl installation" >&5
+        ecos_INCLUDES="${ecos_INCLUDES} \"-I${ecos_msvc_tcl_incdir}\""
 
+        if test "${with_tcl_lib+set}" = set; then
+            ecos_tcl_libdir=${with_tcl_lib}
+        elif test "${with_tcl+set}" = set; then
+            ecos_tcl_libdir="${with_tcl}/lib"
+        else
+            { echo "configure: error: You must specify a Tcl installation with either --with-tcl=<path> or --with-tcl-lib=<path>" 1>&2; exit 1; }
+        fi
+        
+    
+    
+    if test "${MSVC}" = "yes" ; then
+      ecos_tcl_libdir=`cygpath -w ${ecos_tcl_libdir} | tr \\\\\\\\ /`
+    fi
 
-if test "${MSVC}" = "yes" ; then
-  if test "${with_tcl_header+set}" = set; then
-    cyg_ac_tcl_incdir=${with_tcl_header}
-  else
-    if test "${with_tcl+set}" = set; then
-      cyg_ac_tcl_incdir="${with_tcl}/include"
+        ecos_LIBS="${ecos_LIBS} tcl${ecos_tcl_version}.lib"
+        ecos_LDADD="${ecos_LDADD} \"-libpath=${ecos_tcl_libdir}\""
+
+                        ecos_tk_libs=""
+
     else
-      { echo "configure: error: You must specify a Tcl installation with either --with-tcl=<path> or --with-tcl-header=<path>" 1>&2; exit 1; }
-    fi
-  fi
-  if test "${with_tcl_lib+set}" = set; then
-    cyg_ac_tcl_libdir=${with_tcl_lib}
-  else
-    if test "${with_tcl+set}" = set; then
-      cyg_ac_tcl_libdir="${with_tcl}/lib"
-    else
-      { echo "configure: error: You must specify a Tcl installation with either --with-tcl=<path> or --with-tcl-lib=<path>" 1>&2; exit 1; }
-    fi
-  fi
-  cyg_ac_tcl_libs="tcl${cyg_ac_tcl_version}.lib"
-else
-  tcl_incdirs="${with_tcl_header} ${with_tcl}/include ${prefix}/include /usr/include/tcl$cyg_ac_tcl_version /usr/include"
-  
-cyg_ac_tcl_incdir=NO
-for i in $tcl_incdirs;
-do
-  for j in tcl.h;
-  do
-    if test -r "$i/$j"; then
-      cyg_ac_tcl_incdir=$i
-      break 2
-    fi
-  done
-done
+                        possibles="${with_tcl_header} ${with_tcl}/include ${prefix}/include /usr/include/tcl${ecos_tcl_version} /usr/include"
+        
+    ecos_tcl_incdir=""
+    for i in ${possibles}; do
+        if test -r "$i/"tcl.h""; then
+            ecos_tcl_incdir=$i
+            break
+        fi
+    done
 
-  tcl_libdirs="${with_tcl_lib} ${with_tcl}/lib ${libdir} ${prefix}/lib /usr/lib/tcl$cyg_ac_tcl_version /usr/lib"
-  
-cyg_ac_tcl_libdir=NO
-for i in $tcl_libdirs;
-do
-  for j in tclConfig.sh;
-  do
-    if test -r "$i/$j"; then
-      cyg_ac_tcl_libdir=$i
-      break 2
-    fi
-  done
-done
+        if test \! -r "${ecos_tcl_incdir}/tcl.h" ; then
+            { echo "configure: error: unable to locate Tcl header file tcl.h" 1>&2; exit 1; }
+        else
+                                                                                                            if test "${ecos_tcl_incdir}" != "/usr/include" ; then
+                ecos_INCLUDES="${ecos_INCLUDES} -I${ecos_tcl_incdir}"
+            fi
+        fi
+        possibles="${with_tcl_lib} ${with_tcl}/lib ${libdir} ${prefix}/lib /usr/lib/tcl$${ecos_tcl_version} /usr/lib"
+        
+    ecos_tcl_libdir=""
+    for i in ${possibles}; do
+        if test -r "$i/"tclConfig.sh""; then
+            ecos_tcl_libdir=$i
+            break
+        fi
+    done
 
-  if test \! -r ${cyg_ac_tcl_libdir}/tclConfig.sh ; then
-    { echo "configure: error: unable to locate Tcl config file tclConfig.sh" 1>&2; exit 1; }
-  else
-    . ${cyg_ac_tcl_libdir}/tclConfig.sh
-    cyg_ac_tcl_libs="-ltcl${cyg_ac_tcl_version} ${TCL_LIBS}"
-  fi
-fi
+        if test \! -r "${ecos_tcl_libdir}/tclConfig.sh" ; then
+            { echo "configure: error: unable to locate Tcl config file tclConfig.sh" 1>&2; exit 1; }
+        else
+            . ${ecos_tcl_libdir}/tclConfig.sh
+            ecos_LIBS="${ecos_LIBS} -ltcl${ecos_tcl_version} ${TCL_LIBS}"
+        fi
 
-if test \! -r ${cyg_ac_tcl_incdir}/tcl.h ; then
-  { echo "configure: error: unable to locate Tcl header file tcl.h" 1>&2; exit 1; }
-fi
-
-if test "${MSVC}" = "yes" ; then
-  
-    
-    
-
-    if test "${MSVC}" = "yes" ; then
-      cyg_ac_tcl_incdir=`cygpath -w ${cyg_ac_tcl_incdir} | tr \\\\\\\\ /`
+        if test \! -r "${ecos_tcl_libdir}/tkConfig.sh" ; then
+            { echo "configure: error: unable to locate Tk config file tkConfig.sh" 1>&2; exit 1; }
+        else
+            . ${ecos_tcl_libdir}/tkConfig.sh
+            ecos_tk_libs="-ltk${ecos_tcl_version} ${TK_LIBS}"
+                                    for lib in ${TCL_LIBS} ; do
+                ecos_tk_libs=`echo ${ecos_tk_libs} | sed -e "s!${lib}!!"`
+            done
+        fi
     fi
 
-  
-    
-    
-
-    if test "${MSVC}" = "yes" ; then
-      cyg_ac_tcl_libdir=`cygpath -w ${cyg_ac_tcl_libdir} | tr \\\\\\\\ /`
-    fi
-
-fi
-
-echo "$ac_t""${cyg_ac_tcl_libdir}" 1>&6
-
-
-
-
-
-
-
-
-echo $ac_n "checking for host-side infrastructure""... $ac_c" 1>&6
-echo "configure:1565: checking for host-side infrastructure" >&5
-cyg_ac_infra_incdir=../../../../infra
-cyg_ac_infra_libdir=../../../../infra
-if test "${MSVC}" = "yes" ; then
- cyg_ac_infra_libraries=cyginfra.lib
-else
- cyg_ac_infra_libraries=cyginfra
-fi
-if test \! -d ${cyg_ac_infra_incdir} ; then
-  { echo "configure: error: unable to locate the infrastructure build directory" 1>&2; exit 1; }
-fi
+    echo "$ac_t""-I${ecos_tcl_incdir} -L${ecos_tcl_libdir}" 1>&6
 
     
-    
-
-    if test "${MSVC}" = "yes" ; then
-      cyg_ac_infra_incdir=`cygpath -w ${cyg_ac_infra_incdir} | tr \\\\\\\\ /`
-    fi
-
-
-    
-    
-
-    if test "${MSVC}" = "yes" ; then
-      cyg_ac_infra_libdir=`cygpath -w ${cyg_ac_infra_libdir} | tr \\\\\\\\ /`
-    fi
-
-
-
-
-echo "$ac_t""-I${cyg_ac_infra_incdir} -L${cyg_ac_infra_libdir} libraries ${cyg_ac_infra_libraries}" 1>&6
-
-echo $ac_n "checking for libcdl""... $ac_c" 1>&6
-echo "configure:1598: checking for libcdl" >&5
-cyg_ac_cdl_incdir=${srcdir}/../../../../libcdl
-cyg_ac_cdl_libdir=../../../../libcdl
-if test "${MSVC}" = "yes" ; then
-  cyg_ac_cdl_libraries=cdl.lib
-else
-  cyg_ac_cdl_libraries=cdl
-fi
-if test \! -d ${cyg_ac_cdl_incdir} ; then
-  { echo "configure: error: unable to locate the libcdl source directory" 1>&2; exit 1; }
-fi
-if test \! -f ${cyg_ac_cdl_incdir}/cdl.hxx ; then
-  { echo "configure: error: unable to locate the libcdl header file cdl.hxx" 1>&2; exit 1; }
-fi
-if test \! -d ${cyg_ac_cdl_libdir} ; then
-  { echo "configure: error: unable to locate the libcdl build directory" 1>&2; exit 1; }
-fi
-
-    
-    
-
-    if test "${MSVC}" = "yes" ; then
-      cyg_ac_cdl_incdir=`cygpath -w ${cyg_ac_cdl_incdir} | tr \\\\\\\\ /`
-    fi
-
-
-    
-    
-
-    if test "${MSVC}" = "yes" ; then
-      cyg_ac_cdl_libdir=`cygpath -w ${cyg_ac_cdl_libdir} | tr \\\\\\\\ /`
-    fi
-
-
-
-
-echo "$ac_t""-I${cyg_ac_cdl_incdir} -L${cyg_ac_cdl_libdir} libraries ${cyg_ac_cdl_libraries}" 1>&6
-
-win_srcdir=${srcdir}
-
-    
-    
-
-    if test "${MSVC}" = "yes" ; then
-      win_srcdir=`cygpath -w ${win_srcdir} | tr \\\\\\\\ /`
-    fi
-
 
 
 trap '' 1 2 15
@@ -1788,6 +2211,11 @@ s%@includedir@%$includedir%g
 s%@oldincludedir@%$oldincludedir%g
 s%@infodir@%$infodir%g
 s%@mandir@%$mandir%g
+s%@host@%$host%g
+s%@host_alias@%$host_alias%g
+s%@host_cpu@%$host_cpu%g
+s%@host_vendor@%$host_vendor%g
+s%@host_os@%$host_os%g
 s%@INSTALL_PROGRAM@%$INSTALL_PROGRAM%g
 s%@INSTALL_SCRIPT@%$INSTALL_SCRIPT%g
 s%@INSTALL_DATA@%$INSTALL_DATA%g
@@ -1802,31 +2230,23 @@ s%@SET_MAKE@%$SET_MAKE%g
 s%@MAINTAINER_MODE_TRUE@%$MAINTAINER_MODE_TRUE%g
 s%@MAINTAINER_MODE_FALSE@%$MAINTAINER_MODE_FALSE%g
 s%@MAINT@%$MAINT%g
-s%@host@%$host%g
-s%@host_alias@%$host_alias%g
-s%@host_cpu@%$host_cpu%g
-s%@host_vendor@%$host_vendor%g
-s%@host_os@%$host_os%g
 s%@CC@%$CC%g
 s%@CXX@%$CXX%g
 s%@OBJEXT@%$OBJEXT%g
 s%@EXEEXT@%$EXEEXT%g
+s%@ecos_CFLAGS@%$ecos_CFLAGS%g
+s%@ecos_CXXFLAGS@%$ecos_CXXFLAGS%g
+s%@ecos_LDADD@%$ecos_LDADD%g
+s%@ecos_INCLUDES@%$ecos_INCLUDES%g
+s%@ecos_LIBS@%$ecos_LIBS%g
+s%@MSVC_SRCDIR@%$MSVC_SRCDIR%g
 s%@MSVC_TRUE@%$MSVC_TRUE%g
 s%@MSVC_FALSE@%$MSVC_FALSE%g
-s%@cyg_CFLAGS@%$cyg_CFLAGS%g
-s%@cyg_CXXFLAGS@%$cyg_CXXFLAGS%g
-s%@cyg_ac_tcl_version@%$cyg_ac_tcl_version%g
-s%@cyg_ac_tcl_incdir@%$cyg_ac_tcl_incdir%g
-s%@cyg_ac_tcl_libdir@%$cyg_ac_tcl_libdir%g
-s%@cyg_ac_tcl_libs@%$cyg_ac_tcl_libs%g
-s%@cyg_ac_tk_libs@%$cyg_ac_tk_libs%g
-s%@cyg_ac_infra_incdir@%$cyg_ac_infra_incdir%g
-s%@cyg_ac_infra_libdir@%$cyg_ac_infra_libdir%g
-s%@cyg_ac_infra_libraries@%$cyg_ac_infra_libraries%g
-s%@cyg_ac_cdl_incdir@%$cyg_ac_cdl_incdir%g
-s%@cyg_ac_cdl_libdir@%$cyg_ac_cdl_libdir%g
-s%@cyg_ac_cdl_libraries@%$cyg_ac_cdl_libraries%g
-s%@win_srcdir@%$win_srcdir%g
+s%@ecos_libcdl_incdir@%$ecos_libcdl_incdir%g
+s%@ecos_libcdl_libdir@%$ecos_libcdl_libdir%g
+s%@ecos_infra_incdir@%$ecos_infra_incdir%g
+s%@ecos_infra_libdir@%$ecos_infra_libdir%g
+s%@ecos_tk_libs@%$ecos_tk_libs%g
 
 CEOF
 EOF

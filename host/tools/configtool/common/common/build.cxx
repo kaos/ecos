@@ -1,7 +1,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2002 Red Hat, Inc.
 //
 // This program is part of the eCos host tools.
 //
@@ -217,7 +217,7 @@ std::string cygpath (const std::string input) {
             unsigned int n = 2;
             unsigned int i;
 
-            if (path[n] == '\\' || path[n] == '//')
+            if (path[n] == '\\' || path[n] == '/')
                 n ++;
             
             for (i = n; i < path.size(); i++)

@@ -10,7 +10,8 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 2002 Bart Veer
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
 //
@@ -76,8 +77,8 @@
 // -------------------------------------------------------------------------
 // The tracing macros end up calling one of the following routines:
 //
-// void cyg_tracenomsg(cyg_uint32 what, char* fn, char* file, cyg_uint32 line)
-// void cyg_tracemsg(  ..., char* msg)
+// void cyg_tracenomsg(cyg_uint32 what, const char* fn, const char* file, cyg_uint32 line)
+// void cyg_tracemsg(  ..., const char* msg)
 // void cyg_tracemsg2( ..., CYG_ADDRWORD arg0, CYG_ADDRWORD arg1 )
 // void cyg_tracemsg4( ..., CYG_ADDRWORD arg0, CYG_ADDRWORD arg1, ... )
 // void cyg_tracemsg6( ..., CYG_ADDRWORD arg0, CYG_ADDRWORD arg1, ... )
@@ -130,9 +131,9 @@ typedef struct trace_entry {
     bool            valid;
     cyg_uint32      what;
     cyg_uint32      line;
-    char*           fn;
-    char*           file;
-    char*           msg;
+    const char*     fn;
+    const char*     file;
+    const char*     msg;
     CYG_ADDRWORD    data[8];
 } trace_entry;
 
@@ -171,7 +172,7 @@ static bool callback_installed = false;
 // vector in some other thread can work safely, but it may help a little bit.
 
 extern "C" void
-cyg_tracenomsg(char* fn, char* file, cyg_uint32 line)
+cyg_tracenomsg(const char* fn, const char* file, cyg_uint32 line)
 {
     int i               = trace_index;
     tracevec[i].valid   = false;
@@ -199,7 +200,7 @@ cyg_tracenomsg(char* fn, char* file, cyg_uint32 line)
 }
 
 extern "C" void
-cyg_tracemsg(cyg_uint32 what, char* fn, char* file, cyg_uint32 line, char* msg)
+cyg_tracemsg(cyg_uint32 what, const char* fn, const char* file, cyg_uint32 line, const char* msg)
 {
     int i               = trace_index;
     tracevec[i].valid   = false;
@@ -227,7 +228,7 @@ cyg_tracemsg(cyg_uint32 what, char* fn, char* file, cyg_uint32 line, char* msg)
 }
 
 extern "C" void
-cyg_tracemsg2(cyg_uint32 what, char *fn, char* file, cyg_uint32 line, char *msg,
+cyg_tracemsg2(cyg_uint32 what, const char* fn, const char* file, cyg_uint32 line, const char *msg,
               CYG_ADDRWORD arg0, CYG_ADDRWORD arg1)
 {
     int i               = trace_index;
@@ -256,7 +257,7 @@ cyg_tracemsg2(cyg_uint32 what, char *fn, char* file, cyg_uint32 line, char *msg,
 }
 
 extern "C" void
-cyg_tracemsg4(cyg_uint32 what, char *fn, char* file, cyg_uint32 line, char *msg,
+cyg_tracemsg4(cyg_uint32 what, const char *fn, const char* file, cyg_uint32 line, const char *msg,
               CYG_ADDRWORD arg0, CYG_ADDRWORD arg1,
               CYG_ADDRWORD arg2, CYG_ADDRWORD arg3)
 {
@@ -286,7 +287,7 @@ cyg_tracemsg4(cyg_uint32 what, char *fn, char* file, cyg_uint32 line, char *msg,
 }
 
 extern "C" void
-cyg_tracemsg6(cyg_uint32 what, char *fn, char* file, cyg_uint32 line, char *msg,
+cyg_tracemsg6(cyg_uint32 what, const char *fn, const char* file, cyg_uint32 line, const char *msg,
               CYG_ADDRWORD arg0, CYG_ADDRWORD arg1,
               CYG_ADDRWORD arg2, CYG_ADDRWORD arg3,
               CYG_ADDRWORD arg4, CYG_ADDRWORD arg5)
@@ -317,7 +318,7 @@ cyg_tracemsg6(cyg_uint32 what, char *fn, char* file, cyg_uint32 line, char *msg,
 }
 
 extern "C" void
-cyg_tracemsg8(cyg_uint32 what, char *fn, char* file, cyg_uint32 line, char *msg,
+cyg_tracemsg8(cyg_uint32 what, const char* fn, const char* file, cyg_uint32 line, const char *msg,
               CYG_ADDRWORD arg0, CYG_ADDRWORD arg1,
               CYG_ADDRWORD arg2, CYG_ADDRWORD arg3,
               CYG_ADDRWORD arg4, CYG_ADDRWORD arg5,
@@ -376,7 +377,7 @@ cyg_tracemsg8(cyg_uint32 what, char *fn, char* file, cyg_uint32 line, char *msg,
 //     to just use sprintf() for this.
 
 static std::string
-trim_file(char* file)
+trim_file(const char* file)
 {
     // If the output is to look reasonable then the result should be a
     // fixed length. 20 characters is reasonable for now.
@@ -390,7 +391,7 @@ trim_file(char* file)
     // a directory separator is found. Given the number of levels
     // in a typical eCos directory hierarchy it is probably not
     // worthwhile outputting any of that information.
-    char * pEnd = file + strlen(file);
+    const char * pEnd = file + strlen(file);
     while ((pEnd > file) && ('/' != *pEnd) && ('\\' != *pEnd)) {
         pEnd--;
     }
@@ -430,7 +431,7 @@ trim_linenum(cyg_uint32 line)
 // to be followed immediately by the argument list. No maximum
 // length is imposed - arguably that is a bad idea.
 static std::string
-trim_function(char* fn)
+trim_function(const char* fn)
 {
     if (0 == fn) {
         return "<unknown>";
@@ -443,7 +444,7 @@ trim_function(char* fn)
     //
     // First locate the opening bracket. The function name can
     // be identified by walking backwards from that.
-    char *s;
+    const char *s;
     for (s = fn; ('\0' != *s) && ('(' != *s); s++);
     for ( ; (s > fn) && (*s != ' '); s--);
     if ( s > fn) s++;
@@ -460,7 +461,7 @@ trim_function(char* fn)
 // whether the argument is still valid, and return a suitable
 // approximation to the actual data.
 static std::string
-trim_string(char * arg)
+trim_string(const char * arg)
 {
     const int max_string_len = 20;
 
@@ -485,7 +486,7 @@ trim_string(char * arg)
 // checking happens first.
 
 static std::string
-parse_msg(char* msg, trace_entry& entry)
+parse_msg(const char* msg, trace_entry& entry)
 {
     if (0 == msg) {
         return "";

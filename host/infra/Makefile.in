@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -10,8 +10,27 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-######COPYRIGHTBEGIN####
-######COPYRIGHTEND####
+#######ECOSHOSTGPLCOPYRIGHTBEGIN####
+# Copyright (C) 2002 Bart Veer
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
+#
+# This file is part of the eCos host tools.
+#
+# This program is free software; you can redistribute it and/or modify it 
+# under the terms of the GNU General Public License as published by the Free 
+# Software Foundation; either version 2 of the License, or (at your option) 
+# any later version.
+# 
+# This program is distributed in the hope that it will be useful, but WITHOUT 
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
+# more details.
+# 
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 
+# 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+#######ECOSHOSTGPLCOPYRIGHTEND####
 #######DESCRIPTIONBEGIN####
 ######DESCRIPTIONEND####
 
@@ -66,42 +85,58 @@ host_alias = @host_alias@
 host_triplet = @host@
 CC = @CC@
 CXX = @CXX@
+ECOS_REPOSITORY = @ECOS_REPOSITORY@
 EXEEXT = @EXEEXT@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
+MSVC_SRCDIR = @MSVC_SRCDIR@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
+PACKAGE_DIR = @PACKAGE_DIR@
+PACKAGE_INSTALL = @PACKAGE_INSTALL@
+PACKAGE_VERSION = @PACKAGE_VERSION@
 RANLIB = @RANLIB@
 VERSION = @VERSION@
-cyg_CFLAGS = @cyg_CFLAGS@
-cyg_CXXFLAGS = @cyg_CXXFLAGS@
-cyg_ac_tcl_incdir = @cyg_ac_tcl_incdir@
-cyg_ac_tcl_libdir = @cyg_ac_tcl_libdir@
-cyg_ac_tcl_libs = @cyg_ac_tcl_libs@
-cyg_ac_tcl_version = @cyg_ac_tcl_version@
-cyg_ac_tk_libs = @cyg_ac_tk_libs@
+ecos_CFLAGS = @ecos_CFLAGS@
+ecos_CXXFLAGS = @ecos_CXXFLAGS@
+ecos_INCLUDES = @ecos_INCLUDES@
+ecos_LDADD = @ecos_LDADD@
+ecos_LIBS = @ecos_LIBS@
+ecos_infra_incdir = @ecos_infra_incdir@
+ecos_infra_libdir = @ecos_infra_libdir@
+ecos_libcdl_incdir = @ecos_libcdl_incdir@
+ecos_libcdl_libdir = @ecos_libcdl_libdir@
+ecos_tk_libs = @ecos_tk_libs@
 
-AUTOMAKE_OPTIONS = 1.3 cygnus
+AUTOMAKE_OPTIONS = 1.3 foreign
 SUBDIRS = testsuite
 
 noinst_LIBRARIES = libcyginfra.a
-libcyginfra_a_SOURCES = assert.cxx                            trace.cxx                             checkdata.cxx                         testcase.cxx
+libcyginfra_a_SOURCES = assert.cxx    \
+                        trace.cxx     \
+                        checkdata.cxx \
+                        testcase.cxx
 
 
-AM_CFLAGS = @cyg_CFLAGS@
-AM_CXXFLAGS = @cyg_CXXFLAGS@
+INCLUDES = @ecos_INCLUDES@
+LIBS = @ecos_LIBS@ @ecos_LDADD@
+AM_CFLAGS = @ecos_CFLAGS@
+AM_CXXFLAGS = @ecos_CXXFLAGS@
 
-copies = cyg/infra/cyg_type.h          cyg/infra/cyg_ass.h           cyg/infra/cyg_trac.h          cyg/infra/testcase.h          cyg/hal/basetype.h            pkgconf/infra.h               pkgconf/hostinfra.h           hosttest.exp
+copies = cyg/infra/cyg_type.h \
+         cyg/infra/cyg_ass.h  \
+         cyg/infra/cyg_trac.h \
+         cyg/infra/testcase.h \
+         cyg/hal/basetype.h   \
+         pkgconf/infra.h      \
+         pkgconf/hostinfra.h
 
 
 noinst_HEADERS = $(copies)
 
 CLEANFILES = $(copies)
-
-dejagnudir = $(prefix)/share/dejagnu
-dejagnu_DATA = hosttest.exp
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
+mkinstalldirs = $(SHELL) $(top_srcdir)/../../acsupport/mkinstalldirs
 CONFIG_HEADER = hostinfra.h
 CONFIG_CLEAN_FILES = 
 LIBRARIES =  $(noinst_LIBRARIES)
@@ -110,7 +145,6 @@ LIBRARIES =  $(noinst_LIBRARIES)
 DEFS = @DEFS@ -I. -I$(srcdir) -I.
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
-LIBS = @LIBS@
 libcyginfra_a_LIBADD = 
 libcyginfra_a_OBJECTS =  assert.$(OBJEXT) trace.$(OBJEXT) \
 checkdata.$(OBJEXT) testcase.$(OBJEXT)
@@ -119,8 +153,6 @@ CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
-DATA =  $(dejagnu_DATA)
-
 HEADERS =  $(noinst_HEADERS)
 
 DIST_COMMON =  ./stamp-h.in ChangeLog Makefile.am Makefile.in acconfig.h \
@@ -131,6 +163,8 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = gtar
 GZIP_ENV = --best
+DEP_FILES =  .deps/assert.P .deps/checkdata.P .deps/testcase.P \
+.deps/trace.P
 SOURCES = $(libcyginfra_a_SOURCES)
 OBJECTS = $(libcyginfra_a_OBJECTS)
 
@@ -138,9 +172,9 @@ all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .S .c .cxx .o .obj .s
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --cygnus Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --foreign Makefile
 
-Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
@@ -189,9 +223,6 @@ distclean-noinstLIBRARIES:
 
 maintainer-clean-noinstLIBRARIES:
 
-.c.o:
-	$(COMPILE) -c $<
-
 # FIXME: We should only use cygpath when building on Windows,
 # and only if it is available.
 .c.obj:
@@ -223,25 +254,6 @@ libcyginfra.a: $(libcyginfra_a_OBJECTS) $(libcyginfra_a_DEPENDENCIES)
 .cxx.obj:
 	$(CXXCOMPILE) -c `cygpath -w $<`
 
-install-dejagnuDATA: $(dejagnu_DATA)
-	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(dejagnudir)
-	@list='$(dejagnu_DATA)'; for p in $$list; do \
-	  if test -f $(srcdir)/$$p; then \
-	    echo " $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(dejagnudir)/$$p"; \
-	    $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(dejagnudir)/$$p; \
-	  else if test -f $$p; then \
-	    echo " $(INSTALL_DATA) $$p $(DESTDIR)$(dejagnudir)/$$p"; \
-	    $(INSTALL_DATA) $$p $(DESTDIR)$(dejagnudir)/$$p; \
-	  fi; fi; \
-	done
-
-uninstall-dejagnuDATA:
-	@$(NORMAL_UNINSTALL)
-	list='$(dejagnu_DATA)'; for p in $$list; do \
-	  rm -f $(DESTDIR)$(dejagnudir)/$$p; \
-	done
-
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run `make' without going through this Makefile.
 # To change the values of `make' variables: instead of editing Makefiles,
@@ -252,7 +264,7 @@ uninstall-dejagnuDATA:
 @SET_MAKE@
 
 all-recursive install-data-recursive install-exec-recursive \
-installdirs-recursive install-recursive uninstall-recursive install-info-recursive \
+installdirs-recursive install-recursive uninstall-recursive  \
 check-recursive installcheck-recursive info-recursive dvi-recursive:
 	@set fnord $(MAKEFLAGS); amf=$$2; \
 	dot_seen=no; \
@@ -278,7 +290,7 @@ maintainer-clean-recursive:
 	dot_seen=no; \
 	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
 	  rev="$$subdir $$rev"; \
-	  test "$$subdir" = "." && dot_seen=yes; \
+	  test "$$subdir" != "." || dot_seen=yes; \
 	done; \
 	test "$$dot_seen" = "no" && rev=". $$rev"; \
 	target=`echo $@ | sed s/-recursive//`; \
@@ -369,8 +381,13 @@ distdir: $(DISTFILES)
 	-rm -rf $(distdir)
 	mkdir $(distdir)
 	-chmod 777 $(distdir)
+	here=`cd $(top_builddir) && pwd`; \
+	top_distdir=`cd $(distdir) && pwd`; \
+	distdir=`cd $(distdir) && pwd`; \
+	cd $(top_srcdir) \
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --foreign Makefile
 	@for file in $(DISTFILES); do \
-	  if test -f $$file; then d=.; else d=$(srcdir); fi; \
+	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
 	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
@@ -389,37 +406,85 @@ distdir: $(DISTFILES)
 	      || exit 1; \
 	  fi; \
 	done
+
+DEPS_MAGIC := $(shell mkdir .deps > /dev/null 2>&1 || :)
+
+-include $(DEP_FILES)
+
+mostlyclean-depend:
+
+clean-depend:
+
+distclean-depend:
+	-rm -rf .deps
+
+maintainer-clean-depend:
+
+%.o: %.c
+	@echo '$(COMPILE) -c $<'; \
+	$(COMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-cp .deps/$(*F).pp .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm .deps/$(*F).pp
+
+%.lo: %.c
+	@echo '$(LTCOMPILE) -c $<'; \
+	$(LTCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*F).pp > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm -f .deps/$(*F).pp
+
+%.o: %.cxx
+	@echo '$(CXXCOMPILE) -c $<'; \
+	$(CXXCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-cp .deps/$(*F).pp .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm .deps/$(*F).pp
+
+%.lo: %.cxx
+	@echo '$(LTCXXCOMPILE) -c $<'; \
+	$(LTCXXCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*F).pp > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm -f .deps/$(*F).pp
 info-am:
 info: info-recursive
 dvi-am:
 dvi: dvi-recursive
-check-am:
+check-am: all-am
 check: check-recursive
 installcheck-am:
 installcheck: installcheck-recursive
-install-info-am: 
-install-info: install-info-recursive
 all-recursive-am: hostinfra.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 install-exec-am: install-exec-local
 install-exec: install-exec-recursive
 
-install-data-am: install-dejagnuDATA install-data-local
+install-data-am: install-data-local
 install-data: install-data-recursive
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 install: install-recursive
-uninstall-am: uninstall-dejagnuDATA
+uninstall-am:
 uninstall: uninstall-recursive
-all-am: Makefile $(LIBRARIES) $(DATA) $(HEADERS) hostinfra.h all-local
+all-am: Makefile $(LIBRARIES) $(HEADERS) hostinfra.h all-local
 all-redirect: all-recursive-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
 installdirs: installdirs-recursive
 installdirs-am:
-	$(mkinstalldirs)  $(DESTDIR)$(dejagnudir)
 
 
 mostlyclean-generic:
@@ -433,18 +498,19 @@ distclean-generic:
 
 maintainer-clean-generic:
 mostlyclean-am:  mostlyclean-hdr mostlyclean-noinstLIBRARIES \
-		mostlyclean-compile mostlyclean-tags \
+		mostlyclean-compile mostlyclean-tags mostlyclean-depend \
 		mostlyclean-generic
 
 mostlyclean: mostlyclean-recursive
 
 clean-am:  clean-hdr clean-noinstLIBRARIES clean-compile clean-tags \
-		clean-generic mostlyclean-am clean-local
+		clean-depend clean-generic mostlyclean-am clean-local
 
 clean: clean-recursive
 
 distclean-am:  distclean-hdr distclean-noinstLIBRARIES distclean-compile \
-		distclean-tags distclean-generic clean-am
+		distclean-tags distclean-depend distclean-generic \
+		clean-am
 
 distclean: distclean-recursive
 	-rm -f config.status
@@ -452,7 +518,8 @@ distclean: distclean-recursive
 maintainer-clean-am:  maintainer-clean-hdr \
 		maintainer-clean-noinstLIBRARIES \
 		maintainer-clean-compile maintainer-clean-tags \
-		maintainer-clean-generic distclean-am
+		maintainer-clean-depend maintainer-clean-generic \
+		distclean-am
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
@@ -463,20 +530,21 @@ maintainer-clean: maintainer-clean-recursive
 mostlyclean-noinstLIBRARIES distclean-noinstLIBRARIES \
 clean-noinstLIBRARIES maintainer-clean-noinstLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \
-maintainer-clean-compile uninstall-dejagnuDATA install-dejagnuDATA \
-install-data-recursive uninstall-data-recursive install-exec-recursive \
+maintainer-clean-compile install-data-recursive \
+uninstall-data-recursive install-exec-recursive \
 uninstall-exec-recursive installdirs-recursive uninstalldirs-recursive \
 all-recursive check-recursive installcheck-recursive info-recursive \
 dvi-recursive mostlyclean-recursive distclean-recursive clean-recursive \
 maintainer-clean-recursive tags tags-recursive mostlyclean-tags \
-distclean-tags clean-tags maintainer-clean-tags distdir info-am info \
-dvi-am dvi check check-am installcheck-am installcheck install-info-am \
-install-info all-recursive-am install-exec-local install-exec-am \
-install-exec install-data-local install-data-am install-data install-am \
-install uninstall-am uninstall all-local all-redirect all-am all \
-installdirs-am installdirs mostlyclean-generic distclean-generic \
-clean-generic maintainer-clean-generic clean mostlyclean distclean \
-maintainer-clean
+distclean-tags clean-tags maintainer-clean-tags distdir \
+mostlyclean-depend distclean-depend clean-depend \
+maintainer-clean-depend info-am info dvi-am dvi check check-am \
+installcheck-am installcheck all-recursive-am install-exec-local \
+install-exec-am install-exec install-data-local install-data-am \
+install-data install-am install uninstall-am uninstall all-local \
+all-redirect all-am all installdirs-am installdirs mostlyclean-generic \
+distclean-generic clean-generic maintainer-clean-generic clean \
+mostlyclean distclean maintainer-clean
 
 
 @MSVC_TRUE@all-local: cyginfra.lib

@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -11,36 +11,6 @@
 # PARTICULAR PURPOSE.
 
 #####ECOSGPLCOPYRIGHTBEGIN####
-## -------------------------------------------
-## This file is part of eCos, the Embedded Configurable Operating System.
-## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-##
-## eCos is free software; you can redistribute it and/or modify it under
-## the terms of the GNU General Public License as published by the Free
-## Software Foundation; either version 2 or (at your option) any later version.
-##
-## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
-## WARRANTY; without even the implied warranty of MERCHANTABILITY or
-## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-## for more details.
-##
-## You should have received a copy of the GNU General Public License along
-## with eCos; if not, write to the Free Software Foundation, Inc.,
-## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-##
-## As a special exception, if other files instantiate templates or use macros
-## or inline functions from this file, or you compile this file and link it
-## with other works to produce a work based on this file, this file does not
-## by itself cause the resulting work to be covered by the GNU General Public
-## License. However the source code for this file must still be made available
-## in accordance with section (3) of the GNU General Public License.
-##
-## This exception does not invalidate any other reasons why a work based on
-## this file might be covered by the GNU General Public License.
-##
-## Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-## at http://sources.redhat.com/ecos/ecos-license/
-## -------------------------------------------
 #####ECOSGPLCOPYRIGHTEND####
 #######DESCRIPTIONBEGIN####
 ######DESCRIPTIONEND####
@@ -96,6 +66,7 @@ host_alias = @host_alias@
 host_triplet = @host@
 CC = @CC@
 CXX = @CXX@
+ECOS_REPOSITORY = @ECOS_REPOSITORY@
 EXEEXT = @EXEEXT@
 LN_S = @LN_S@
 MAINT = @MAINT@
@@ -103,7 +74,8 @@ MAKEINFO = @MAKEINFO@
 MSVC_SRCDIR = @MSVC_SRCDIR@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
-PACKAGE_NAME = @PACKAGE_NAME@
+PACKAGE_DIR = @PACKAGE_DIR@
+PACKAGE_INSTALL = @PACKAGE_INSTALL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 VERSION = @VERSION@
 ecos_CFLAGS = @ecos_CFLAGS@
@@ -119,20 +91,20 @@ ecos_tk_libs = @ecos_tk_libs@
 
 AUTOMAKE_OPTIONS = 1.3 foreign
 
-@SUPPORTED_TRUE@AM_CFLAGS = @ecos_CFLAGS@ -DUSBHOST_VERSION=\"@VERSION@\" -DPKGVERSION=\"@PACKAGE_VERSION@\" -DUSBAUXDIR=\"$(libexecdir)/ecos/@PACKAGE_NAME@_@PACKAGE_VERSION@\"
-@SUPPORTED_TRUE@AM_CXXFLAGS = @ecos_CXXFLAGS@
-@SUPPORTED_TRUE@INCLUDES = @ecos_INCLUDES@
-@SUPPORTED_TRUE@LIBS = @ecos_LIBS@ @ecos_LDADD@
+@SUPPORTED_TRUE@AM_CFLAGS = @SUPPORTED_TRUE@@ecos_CFLAGS@ -DUSBHOST_VERSION=\"@VERSION@\" -DPKGVERSION=\"@PACKAGE_VERSION@\" -DUSBAUXDIR=\"$(libexecdir)/ecos/@PACKAGE_INSTALL@\"
+@SUPPORTED_TRUE@AM_CXXFLAGS = @SUPPORTED_TRUE@@ecos_CXXFLAGS@
+@SUPPORTED_TRUE@INCLUDES = @SUPPORTED_TRUE@@ecos_INCLUDES@
+@SUPPORTED_TRUE@LIBS = @SUPPORTED_TRUE@@ecos_LIBS@ @ecos_LDADD@
 
-@SUPPORTED_TRUE@noinst_PROGRAMS = usbhost
-@SUPPORTED_TRUE@usbhost_SOURCES = usbhost.c
-@SUPPORTED_TRUE@usbhost_DEPENDENCIES = ../tests/protocol.h ../tests/common.c
-@SUPPORTED_TRUE@usbhost_LDADD = -lpthread
+@SUPPORTED_TRUE@noinst_PROGRAMS = @SUPPORTED_TRUE@usbhost
+@SUPPORTED_TRUE@usbhost_SOURCES = @SUPPORTED_TRUE@usbhost.c
+@SUPPORTED_TRUE@usbhost_DEPENDENCIES = @SUPPORTED_TRUE@../tests/protocol.h ../tests/common.c
+@SUPPORTED_TRUE@usbhost_LDADD = @SUPPORTED_TRUE@-lpthread
 
-@SUPPORTED_TRUE@usbauxdir = $(libexecdir)/ecos/@PACKAGE_NAME@_@PACKAGE_VERSION@
-@SUPPORTED_TRUE@usbaux_PROGRAMS = usbchmod
-@SUPPORTED_TRUE@usbaux_DATA = usbhost.tcl list.tcl verbose.tcl
-@SUPPORTED_TRUE@usbchmod_SOURCES = usbchmod.c
+@SUPPORTED_TRUE@usbauxdir = @SUPPORTED_TRUE@$(libexecdir)/ecos/@PACKAGE_INSTALL@
+@SUPPORTED_TRUE@usbaux_PROGRAMS = @SUPPORTED_TRUE@usbchmod
+@SUPPORTED_TRUE@usbaux_DATA = @SUPPORTED_TRUE@usbhost.tcl list.tcl verbose.tcl
+@SUPPORTED_TRUE@usbchmod_SOURCES = @SUPPORTED_TRUE@usbchmod.c
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/../../../../../../acsupport/mkinstalldirs
 CONFIG_CLEAN_FILES = 
@@ -477,6 +449,12 @@ mostlyclean distclean maintainer-clean
 @SUPPORTED_TRUE@install-data-hook:
 @SUPPORTED_TRUE@	chown root $(usbauxdir)/usbchmod
 @SUPPORTED_TRUE@	chmod u+s $(usbauxdir)/usbchmod
+
+@SUPPORTED_FALSE@install-exec-hook:
+@SUPPORTED_FALSE@	echo Nothing to be done for this platform
+
+@SUPPORTED_FALSE@install-data-hook:
+@SUPPORTED_FALSE@	echo Nothing to be done for this platform
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -1,15 +1,13 @@
-dnl Process this file with autoconf to produce a configure script.
+dnl Process this file with aclocal to get an aclocal.m4 file. Then
+dnl process that with autoconf.
 dnl ====================================================================
 dnl
-dnl     configure.in
-dnl
-dnl     Top-level configure script for eCos host-side software.
+dnl     acinclude.m4
 dnl
 dnl ====================================================================
 dnl ####ECOSHOSTGPLCOPYRIGHTBEGIN####
 dnl ----------------------------------------------------------------------------
-dnl Copyright (C) 2002 Bart Veer    
-dnl Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
+dnl Copyright (C) 2002 Bart Veer
 dnl
 dnl This file is part of the eCos host tools.
 dnl
@@ -34,35 +32,13 @@ dnl#####DESCRIPTIONBEGIN####
 dnl
 dnl Author(s):	bartv
 dnl Contact(s):	bartv
-dnl Date:	1998/12/17
+dnl Date:	2002/08/03
 dnl Version:	0.01
 dnl
 dnl####DESCRIPTIONEND####
 dnl ====================================================================
 
-dnl Generic initialization
-AC_INIT(../acsupport/config.guess)
-AC_CONFIG_AUX_DIR(../acsupport)
-AC_CANONICAL_HOST
-AM_INIT_AUTOMAKE(eCos,2.0,0)
-AM_MAINTAINER_MODE
-ECOS_CHECK_BUILD_ne_SRC
-
-dnl Nothing actually gets built in this directory, so there is no
-dnl point in worrying about compiler flags etc. Instead just
-dnl recurse into appropriate subdirectories. The current directory
-dnl tree is rather deep, so to avoid having to create lots of intermediate
-dnl configure scripts and associated files the required build tree
-dnl subdirectories are created here.
-SUBDIRS="infra libcdl tools/configtool/standalone/common"
-
-AC_OUTPUT_COMMANDS([
-    test -d tools   			       || mkdir tools
-    test -d tools/configtool                   || mkdir tools/configtool
-    test -d tools/configtool/standalone        || mkdir tools/configtool/standalone
-    test -d tools/configtool/standalone/common || mkdir tools/configtool/standalone/common
-])
-
-AC_SUBST(SUBDIRS)
-AC_CONFIG_SUBDIRS(${SUBDIRS})
-AC_OUTPUT(Makefile)
+dnl Access shared macros.
+dnl AM_CONDITIONAL needs to be mentioned here or else aclocal does not
+dnl incorporate the macro into aclocal.m4
+sinclude(acsupport/acinclude.m4)

@@ -1,3 +1,8 @@
+2002-08-03  Bart Veer  <bartv@ecoscentric.com>
+
+	* common/Makefile.am, common/configure.in, common/acinclude.m4:
+	Rework host-side autoconf support
+
 2000-09-15  Jesper Skov  <jskov@redhat.com>
 
 	* common/Makefile.in: Regenerated.
