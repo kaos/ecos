@@ -8,6 +8,7 @@
 #####ECOSGPLCOPYRIGHTBEGIN####
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2003 Bart Veer
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 ## Copyright (C) 2002 Gary Thomas
 ##
@@ -100,7 +101,7 @@ _mpc8xx_reset:
         ori     r3,r3,0x0080  // Bit 24
 	stw	r3,PLPRCR(r4)
         mfmsr   r3
-        lwi     r5,~MSR_ME
+        lwi     r5,~CYGARC_REG_MSR_ME
         and     r3,r3,r5
         mtmsr   r3
 
