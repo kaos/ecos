@@ -149,10 +149,11 @@ static DISK_FUNS(cf_disk_funs,
 static cf_disk_info_t cf_disk_info##_number_ = {                      \
     base: (volatile cyg_uint16 *)_base_,                              \
 };                                                                    \
-static DISK_CHANNEL(cf_disk_channel##_number_,                        \
-                    cf_disk_funs,                                     \
-                    cf_disk_info##_number_,                           \
-                    _mbr_supp_                                        \
+DISK_CHANNEL(cf_disk_channel##_number_,                               \
+             cf_disk_funs,                                            \
+             cf_disk_info##_number_,                                  \
+             _mbr_supp_,                                              \
+             4                                                        \
 );                                                                    \
 BLOCK_DEVTAB_ENTRY(cf_disk_io##_number_,                              \
                    _name_,                                            \
@@ -239,7 +240,7 @@ read_data(volatile cyg_uint16 *base,
     {
         cyg_uint16 data;
         HAL_READ_UINT16(base + 4, data);
-        *bufp++ = data;
+        if (i < len) *bufp++ = data;
     }
 
     CF_HW_BUSY_WAIT();
@@ -259,7 +260,8 @@ write_data(volatile cyg_uint16 *base,
     {
         cyg_uint16 data;
 
-        data = *bufp++;
+        if (i < len) data = *bufp++;
+        else         data = 0x0000;
 
         HAL_WRITE_UINT16(base + 4, data);
     }
@@ -307,7 +309,7 @@ cf_disk_init(struct cyg_devtab_entry *tab)
         D(("CF(%p) error (%x)\n", info->base, get_error(info->base)));
         return false; 
     }
-    read_data(info->base, id_buf, sizeof(cf_ata_identify_data_t), 0);
+    read_data(info->base, id_buf, sizeof(cf_ata_identify_data_t));
    
     ata_id = (cf_ata_identify_data_t *)id_buf;
 

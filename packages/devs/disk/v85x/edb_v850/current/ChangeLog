@@ -1,3 +1,9 @@
+2004-07-02  Savin Zlobec  <savin@elatec.si> 
+
+        * src/v85x_edb_v850_disk.c:
+        Updated to work with the new DISK_CHANNEL macro definition
+        and fixed read and write calls to honor the len parameter.
+
 2004-01-15  Nick Garnett  <nickg@calivar.com>
 
 	* src/v85x_edb_v850_disk.c: Removed block_pos arguments from read
