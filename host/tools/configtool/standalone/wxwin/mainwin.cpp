@@ -369,7 +369,7 @@ ecMainFrame::ecMainFrame(wxDocManager *manager, const wxString& title, const wxP
     webMenu->Append(ecID_REDHAT_WEB_ECOS, _("&eCos Product Page"), _("Opens the eCos product page"));
     webMenu->Append(ecID_REDHAT_WEB_NET_RELEASE, _("eCos &Net Release Page"), _("Opens the eCos net release page"));
     webMenu->AppendSeparator();
-    webMenu->Append(ecID_REDHAT_WEB_UITRON, _("µ&ITRON"), _("Opens the µITRON specification page"));
+    webMenu->Append(ecID_REDHAT_WEB_UITRON, _("&ITRON"), _("Opens the ITRON specification page"));
     
 //    helpMenu->Append(ecID_REDHAT_WEB, _("&Red Hat on the Web"), webMenu);
 //    helpMenu->AppendSeparator();
@@ -1052,7 +1052,7 @@ void ecMainFrame::OnHelpConfigtool(wxCommandEvent& event)
     //wxString strURL(wxT("redirect/the-ecos-configuration-tool.html"));
     wxString strURL(wxGetApp().GetFullAppPath(wxT("manual/user-guides.2.html")));
     if (!wxFileExists(strURL))
-	strURL = wxT("guides/user-guides.2.html");
+	strURL = wxT("user-guide/the-ecos-configuration-tool.html");
 
     if (wxGetApp().GetConfigToolDoc())
     {

@@ -1,3 +1,7 @@
+2003-02-17  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/mainwin.cpp: Update path to configtool HTML docs.
+
 2003-02-13  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/admindlg.cpp,
