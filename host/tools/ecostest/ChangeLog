@@ -1,3 +1,8 @@
+2003-01-20  John Dallaway  <jld@ecoscentric.com>
+
+	* common/eCosTestPlatform.cpp (CProperties::CreateKey):
+	"sizeof TCHAR" -> "sizeof (TCHAR)" for GNU headers.
+
 2001-02-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* common/eCosTestClient.cpp (LocateExecutables): Add /sbin and

@@ -108,11 +108,11 @@ bool CeCosTestPlatform::SaveToRegistry(HKEY hTopKey,LPCTSTR pszKey)
         LPCTSTR pszInferior=ti.Inferior();
         LPCTSTR pszPrompt=ti.Prompt();
         DWORD dwServerSideGdb=ti.ServerSideGdb()?1l:0l;
-        rc&=(ERROR_SUCCESS==RegSetValueEx(hKey2,_T("Prefix"),0,REG_SZ,   (CONST BYTE *)pszPrefix,(1+_tcslen(pszPrefix))*sizeof TCHAR)) &&
-            (ERROR_SUCCESS==RegSetValueEx(hKey2,_T("Commands"),0,REG_SZ,   (CONST BYTE *)pszGdb,(1+_tcslen(pszGdb))*sizeof TCHAR)) &&
-            (ERROR_SUCCESS==RegSetValueEx(hKey2,_T("Inferior"),0,REG_SZ,   (CONST BYTE *)pszInferior,(1+_tcslen(pszInferior))*sizeof TCHAR)) &&
-            (ERROR_SUCCESS==RegSetValueEx(hKey2,_T("Prompt"),0,REG_SZ,   (CONST BYTE *)pszPrompt,(1+_tcslen(pszPrompt))*sizeof TCHAR)) &&
-            (ERROR_SUCCESS==RegSetValueEx(hKey2,_T("ServerSideGdb"),0,REG_DWORD,   (CONST BYTE *)&dwServerSideGdb,sizeof DWORD));
+        rc&=(ERROR_SUCCESS==RegSetValueEx(hKey2,_T("Prefix"),0,REG_SZ,   (CONST BYTE *)pszPrefix,(1+_tcslen(pszPrefix))*sizeof (TCHAR))) &&
+            (ERROR_SUCCESS==RegSetValueEx(hKey2,_T("Commands"),0,REG_SZ,   (CONST BYTE *)pszGdb,(1+_tcslen(pszGdb))*sizeof (TCHAR))) &&
+            (ERROR_SUCCESS==RegSetValueEx(hKey2,_T("Inferior"),0,REG_SZ,   (CONST BYTE *)pszInferior,(1+_tcslen(pszInferior))*sizeof (TCHAR))) &&
+            (ERROR_SUCCESS==RegSetValueEx(hKey2,_T("Prompt"),0,REG_SZ,   (CONST BYTE *)pszPrompt,(1+_tcslen(pszPrompt))*sizeof (TCHAR))) &&
+            (ERROR_SUCCESS==RegSetValueEx(hKey2,_T("ServerSideGdb"),0,REG_DWORD,   (CONST BYTE *)&dwServerSideGdb,sizeof (DWORD)));
       }
       RegCloseKey(hKey2);
     }
