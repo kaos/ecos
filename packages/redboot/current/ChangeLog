@@ -1,3 +1,8 @@
+2004-9-25   Andrew Lunn <andrew.lunn@ascom.ch>
+
+	* doc/redboot_install.sgml: Added installation information for the
+	Atmel AT91 JTST board provided by Andrea Michelotti
+	
 2004-9-23   Bob Koninckx <bob.koninckx@o-3s.com>
 
 	* src/net/tc.c: Removed unneccesary call to MS_TICKS_DELAY

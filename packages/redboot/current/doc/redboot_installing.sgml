@@ -1085,10 +1085,142 @@ installation of RedBoot to overwrite Angel, thus making the board
 <emphasis>unbootable</emphasis>.  Only hardware JTAG can restore the
 board once in this state.
 </para></warning>
-
 </sect2>
 </sect1>
 
+<?Pub _newpage>
+<sect1 id="at91jtst">
+<title>ARM/ARM7 Atmel JTST Evaluation Board (AT572D740-DK1)</title>
+<sect2>
+<title>Overview</title>
+<para><indexterm><primary>Atmel AT91/JTST</primary>
+<secondary>installing and testing</secondary></indexterm><indexterm><primary>
+installing and testing</primary><secondary>Atmel AT91/JTST
+</secondary></indexterm>
+RedBoot support is available for the JTST board. 
+By default this board is shipped with 256Kbytes of
+external SRAM. To minimize the amount of RAM used by RedBoot, only very basic
+flash management is provided, comprising of just the <command>fis
+erase</command> and <command>fis write</command> commands.
+</para>
+<para>
+RedBoot supports two serial ports.
+The default serial port settings for RedBoot are 115200,8,N,1. 
+</para>
+
+<para>The following RedBoot configurations are supported:
+
+      <informaltable frame="all">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
+	  <thead>
+	    <row>
+	      <entry>Configuration</entry>
+	      <entry>Mode</entry>
+	      <entry>Description</entry>
+	      <entry>File</entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry>ROM</entry>
+	      <entry>[ROM]</entry>
+	      <entry>RedBoot running from the board's flash boot
+	      sector.</entry>
+	      <entry>redboot_ROM.ecm</entry>
+	    </row>
+	    <row>
+	      <entry>RAM</entry>
+	      <entry>[RAM]</entry>
+	      <entry>RedBoot running from RAM with RedBoot in the
+	      flash boot sector.</entry>
+	      <entry>redboot_RAM.ecm</entry>
+	    </row>
+
+</tbody>
+</tgroup>
+</informaltable>
+</para>
+</sect2>
+<sect2>
+<title>Installing a RedBoot image on the JTST</title>
+<para>
+This development board comes with RedBoot installed on flash. To
+install a new version of RedBoot or another binary image in flash you
+must start a GDB session setting a remote target and load and run the
+<command>jtstflashd.elf</command> diopsis application. This is a
+daemon that listens on JTST serial port 1. On the PC side you must use
+the <command>jtstflash.exe</command> (both linux and windows PC are
+supported) to flash the image on JTST.
+</para>
+<para>
+When the jtstflashd.elf is started, the user should open the jumper
+JP5 to write in the second half (512Kbytes) of the flash, in this way
+the original RedBoot image is preserved.
+</para>
+<sect3>
+<title>GDB console</title>
+<screen>
+<userinput>arm-elf-gdb jtstflash.elf</userinput>
+(gdb) <userinput>set remotebaud 115200</userinput>
+(gdb) <userinput>target remote /dev/ttyS0</userinput>
+Remote debugging using /dev/ttyS0
+0x00502a44 in ?? ()
+(gdb) <userinput>load</userinput>
+Loading section .internal_vectors, size 0x1c4 lma 0x160
+Loading section .rom_vectors, size 0x40 lma 0x606000
+Loading section .text, size 0x14198 lma 0x606040
+Loading section .rodata, size 0xb6c lma 0x61a1d8
+Loading section .data, size 0x498 lma 0x61ad44
+Start address 0x606040, load size 86944
+Transfer rate: 77283 bits/sec, 301 bytes/write.
+(gdb) <userinput>c</userinput>
+Continuing.
+* JTST FLASH PROGRAMMER
+* opening usart port 1
+...
+</screen>
+</sect3>
+<sect3>
+<title>PC console</title>
+<screen>
+<userinput>jtstflash mybinaryimage.bin</userinput>
+* binary len 79536 bytes flash add 0x500000..
+* flash id check ok
+* erasing space address 0x500000... please wait
+* flash erase check ok
+* start programming 79536 bytes.
+</screen>
+</sect3>
+</sect2>
+<sect2>
+<title>Special RedBoot Commands </title>
+<para>None.</para>
+</sect2>
+<sect2>
+<title>Memory Maps </title>
+<para>This processor has no MMU, so the only memory map is for
+physical addresses.
+</para>
+<para>
+The memory layout of the JTST after bootstrap is as follows:
+<programlisting>
+Physical Address Range     Description
+-----------------------    ----------------------------------
+0x00000000 - 0x00007fff    On-chip SRAM
+0x00500000 - 0x0057ffff    Flash
+0x00600000 - 0x0063ffff    External SRAM
+0x00410000 - 0x0042fffc    On-chip Magic Data Memory Left
+0x00430000 - 0x0043fffc    On-chip Magic Data Memory Right
+0x00430000 - 0x0044fffc    On-chip Magic Program Memory
+0x00490000 - 0x00490ffc    On-chip Arm/Magic Data Exchange Left
+0x004A0000 - 0x004A0ffc    On-chip Arm/Magic Data Exchange Right
+0x00450000 - 0x0045003c    Magic I/O registers
+0x00460000 - 0x0046000c    Magic Control registers
+0xffe00000 - 0xffffffff    I/O registers
+</programlisting>
+</para>
+</sect2>
+</sect1>
 
 <?Pub _newpage>
 <sect1 id="edb7xxx">
