@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -343,7 +344,7 @@ serial_write(cyg_io_handle_t handle, const void *_buf, cyg_uint32 *len)
                     if (!cbuf->blocking) {
                         *len -= size;   // number of characters actually sent
                         cbuf->waiting = false;
-                        res = -EAGAIN;
+                        res = size == 0 ? -EAGAIN : ENOERROR;
                         break;
                     }
 #endif // CYGOPT_IO_SERIAL_SUPPORT_NONBLOCKING
@@ -440,7 +441,7 @@ serial_read(cyg_io_handle_t handle, void *_buf, cyg_uint32 *len)
 #ifdef CYGOPT_IO_SERIAL_SUPPORT_NONBLOCKING
                 if (!cbuf->blocking) {
                     *len = size;        // characters actually read
-                    res = -EAGAIN;
+                    res = size == 0 ? -EAGAIN : ENOERROR;
                     break;
                 }
 #endif // CYGOPT_IO_SERIAL_SUPPORT_NONBLOCKING

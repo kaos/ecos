@@ -10,6 +10,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2003 Jonathan Larmour
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -661,7 +662,14 @@ termios_read(cyg_io_handle_t handle, void *_buf, cyg_uint32 *len)
                                  CYG_IO_GET_CONFIG_SERIAL_BUFFER_INFO,
                                  &dev_buf_conf, &dbc_len );
         CYG_ASSERT( res == ENOERR, "Query buffer status failed!" );
-        *len = *len < dev_buf_conf.rx_count ? *len : dev_buf_conf.rx_count;
+        if (dev_buf_conf.rx_count > 0) {
+            // Adjust length to be max characters currently available
+            *len = *len < dev_buf_conf.rx_count ? *len : dev_buf_conf.rx_count;
+        } else if (t->c_cc[VMIN] == 0) {
+            // No chars available - don't block
+            *len = 0;
+            return ENOERR;
+        }
     } // if
 
     while (!returnnow && size < *len) {
@@ -754,10 +762,7 @@ termios_read(cyg_io_handle_t handle, void *_buf, cyg_uint32 *len)
                     c = '\r';
                 returnnow = true; // FIXME: true even for INLCR?
             } // else if
-        } else { // non-canonical mode
-            if ( t->c_cc[ VMIN ] && (size+1 >= t->c_cc[ VMIN ]) )
-                returnnow = true;
-        } // else
+        } // if 
 
 #ifdef CYGSEM_IO_SERIAL_TERMIOS_USE_SIGNALS
         if ( (t->c_lflag & ISIG) && (t->c_cc[ VINTR ] == c) ) {
@@ -791,6 +796,12 @@ termios_read(cyg_io_handle_t handle, void *_buf, cyg_uint32 *len)
                 // FIXME: what about error or non-blocking?
                 termios_write( handle, &c, &clen );
             }
+        }
+
+        if ( (t->c_lflag & ICANON) == 0 ) {
+            // Check to see if read has been satisfied
+            if ( t->c_cc[ VMIN ] && (size >= t->c_cc[ VMIN ]) )
+                returnnow = true;
         }
         cyg_drv_mutex_unlock( &priv->lock );
     } // while
