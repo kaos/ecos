@@ -447,23 +447,41 @@ do_reset(int argc, char *argv[])
 #include <flash_config.h>
 #endif
 
+static int
+set_comm_baud_rate(hal_virtual_comm_table_t *chan, int rate)
+{
+    int current_rate;
+
+    current_rate = CYGACC_COMM_IF_CONTROL(*chan, __COMMCTL_SETBAUD, rate);
+    if (rate != current_rate)
+        return CYGACC_COMM_IF_CONTROL(*chan, __COMMCTL_SETBAUD, rate);
+
+    return 0;
+}
+
 int
 set_console_baud_rate(int rate)
 {
-    hal_virtual_comm_table_t *__chan;
-    static int current_rate = CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD;
-    int ret = current_rate;
-
-    if (rate != current_rate) {
-        __chan = CYGACC_CALL_IF_CONSOLE_PROCS();
-        ret = CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_SETBAUD, rate);
-        if (ret < 0) {
-            diag_printf("Setting console baud rate to %d failed\n", rate);
-            return ret;
+    int ret;
+#ifdef CYGPKG_REDBOOT_ANY_CONSOLE
+    if (!console_selected) {
+        int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+        int i;
+        // Set baud for all channels
+        for (i = 0;  i < CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS;  i++) {
+            CYGACC_CALL_IF_SET_CONSOLE_COMM(i);
+	    ret = set_comm_baud_rate(CYGACC_CALL_IF_CONSOLE_PROCS(), rate);
+	    if (ret < 0)
+		break;
         }
-        ret = current_rate;
-        current_rate = rate;
-    }
+        CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
+    } else
+#endif
+    ret = set_comm_baud_rate(CYGACC_CALL_IF_CONSOLE_PROCS(), rate);
+
+    if (ret < 0)
+	diag_printf("Setting console baud rate to %d failed\n", rate);
+
     return ret;
 }
 

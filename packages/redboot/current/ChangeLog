@@ -1,3 +1,8 @@
+2002-09-16  Mark Salter  <msalter@redhat.com>
+
+	* src/main.c (set_console_baud_rate): Handle CYGPKG_REDBOOT_ANY_CONSOLE.
+	(set_comm_baud_rate): New function.
+
 2002-09-13  Mark Salter  <msalter@redhat.com>
 
 	* src/decompress.c: Move error handling back into gzip_close to
