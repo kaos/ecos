@@ -65,12 +65,20 @@ cdl_package CYGPKG_LIBC_TIME {
     requires      CYGINT_ISO_DIV
     requires      CYGINT_ISO_ABS
 
+    # Note: the POSIX files asctime_r,ctime_r,gmtime_r and
+    # localtime_r should be built all the time, not just in
+    # CYGFUN_LIBC_TIME_POSIX because the internal definitions
+    # are used by the ISO C functions regardless. Otherwise we
+    # get problems with certain inlining combinations. [Bug 1000001]
+
     compile       asctime.cxx       clock.cxx      \
                   ctime.cxx         difftime.cxx   \
                   gmtime.cxx        localtime.cxx  \
                   mktime.cxx        settime.cxx    \
                   strftime.cxx      time.cxx       \
-                  timeutil.cxx
+                  timeutil.cxx      asctime_r.cxx  \
+                  ctime_r.cxx       gmtime_r.cxx   \
+                  localtime_r.cxx 
 
 
 # ====================================================================
@@ -116,8 +124,7 @@ cdl_package CYGPKG_LIBC_TIME {
         display       "POSIX time functions"
         default_value 1
         requires      CYGFUN_LIBC_STRING_BSD_FUNCS
-        compile       asctime_r.cxx ctime_r.cxx gmtime_r.cxx \
-                      localtime_r.cxx strptime.cxx
+        compile       strptime.cxx
         description   "
             Enabling this option allows the use of the
             following functions defined in POSIX 1003.1:

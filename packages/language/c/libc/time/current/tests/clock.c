@@ -221,7 +221,8 @@ main(int argc, char *argv[])
     for (i=SKIPPED_SAMPLES;i<SAMPLES;i++) {
         unsigned long err;
 
-        err = (100 * my_abs(ctrs[i]-mean)) / mean;
+        // use mean+1 as divisor to avoid div-by-zero
+        err = (100 * my_abs(ctrs[i]-mean)) / (mean+1);
         if (err > TOLERANCE) {
             diag_printf("mean=%d, ctrs[%d]=%d, err=%d\n", mean, i, ctrs[i],
                         err);

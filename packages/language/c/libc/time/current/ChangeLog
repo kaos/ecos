@@ -1,3 +1,12 @@
+2003-06-13  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* tests/clock.c (main): Avoid div-by-zero if mean==0.
+
+	* cdl/time.cdl: build all POSIX files all the time because they
+	are used internally by the standard ISO C functions even if not
+	exported.
+	[Bug 1000001]
+
 2003-04-24  Robert Cragie  <rcc@jennic.com>
 
 	* include/time.inl:
