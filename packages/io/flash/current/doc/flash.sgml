@@ -47,7 +47,7 @@
 <listitem><PARA>Read, erasing and writing to FLASH blocks.</PARA></listitem>
 <listitem><PARA>Validating an address is within the FLASH.</PARA></listitem>
 <listitem><PARA>Determining the number and size of FLASH blocks.
-          <PARA></listitem>
+          </PARA></listitem>
 </orderedlist>
 
 <PARA>
@@ -264,7 +264,7 @@ explains some of the problems with the library.  </PARA>
 <PARA>The library is not thread safe. Multiple simultaneous calls to
 its library functions will likely fail and may cause a crash. It is
 the callers responsibility to use the necessary mutex's if needed.
-<PARA>
+</PARA>
 
 <PARA>FLASH devices cannot be read from when an erase or write
 operation is active. This means it is not possible to execute code
