@@ -1,3 +1,8 @@
+2003-10-02  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/dp83816.h: Let default ESA be a pointer, so platforms can more
+	easily set it a runtime.
+
 2003-09-30  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/if_dp83816.c: 

@@ -86,7 +86,7 @@ typedef struct dp83816_bd {
 // Private driver structure
 typedef struct dp83816_priv_data {
     char                     *esa_key;        // RedBoot 'key' for device ESA
-    unsigned char             enaddr[6];
+    unsigned char            *enaddr;
     int                       rxnum;          // Number of Rx buffers
     unsigned char            *rxbuf;          // Rx buffer space
     dp83816_bd_t             *rxd;            // Rx descriptor pool

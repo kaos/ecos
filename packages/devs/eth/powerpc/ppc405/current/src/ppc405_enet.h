@@ -338,7 +338,7 @@ struct ppc405_eth_info {
     // These fields should be defined by the implementation
     int                 int_vector;
     char               *esa_key;        // RedBoot 'key' for device ESA
-    unsigned char       enaddr[6];
+    unsigned char      *enaddr;
     int                 rxnum;          // Number of Rx buffers
     unsigned char      *rxbuf;          // Rx buffer space
     mal_bd_t           *rxbd_table;     // Rx buffer headers

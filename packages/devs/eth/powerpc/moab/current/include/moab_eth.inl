@@ -70,10 +70,11 @@ static unsigned char ppc405_eth_txbufs[TxBUFSIZE] __attribute__((aligned(HAL_DCA
 static mal_bd_t ppc405_eth_rxbd[CYGNUM_DEVS_ETH_POWERPC_PPC405_RxNUM] __attribute__((aligned(HAL_DCACHE_LINE_SIZE)));
 static mal_bd_t ppc405_eth_txbd[CYGNUM_DEVS_ETH_POWERPC_PPC405_TxNUM] __attribute__((aligned(HAL_DCACHE_LINE_SIZE)));
 
+extern char _moab_eth0_ESA[];
 static struct ppc405_eth_info ppc405_eth0_info = {
     0, // Interrupt vector
     "eth0_esa",
-    { 0x08, 0x00, 0x3C, 0x28, 0x7A, 0xBA}, // Default ESA
+    _moab_eth0_ESA,
     CYGNUM_DEVS_ETH_POWERPC_PPC405_RxNUM,  // Number of Rx buffers
     ppc405_eth_rxbufs,                     // Rx buffer space
     ppc405_eth_rxbd,                       // Rx buffer headers
@@ -109,7 +110,7 @@ NETDEVTAB_ENTRY(ppc405_netdev,
 RedBoot_config_option("eth0 network hardware address [MAC]",
                       eth0_esa,
                       ALWAYS_ENABLED, true,
-                      CONFIG_ESA, &ppc405_eth0_info.enaddr
+                      CONFIG_ESA, _moab_eth0_ESA
     );
 #endif // CYGSEM_REDBOOT_FLASH_CONFIG
 #endif // CYGPKG_REDBOOT

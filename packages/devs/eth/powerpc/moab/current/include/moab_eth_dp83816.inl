@@ -108,9 +108,10 @@ static unsigned char dp83816_eth_txbufs[TxBUFSIZE] __attribute__((aligned(HAL_DC
 static dp83816_bd_t dp83816_eth_rxbd[CYGNUM_DEVS_ETH_MOAB_DP83816_RxNUM] __attribute__((aligned(HAL_DCACHE_LINE_SIZE)));
 static dp83816_bd_t dp83816_eth_txbd[CYGNUM_DEVS_ETH_MOAB_DP83816_TxNUM] __attribute__((aligned(HAL_DCACHE_LINE_SIZE)));
 
+extern char _moab_eth1_ESA[];
 static dp83816_priv_data_t dp83816_eth1_priv_data = { 
     "eth1_esa",
-    { 0x08, 0x00, 0x3C, 0x29, 0x7A, 0xBA}, // Default ESA
+    _moab_eth1_ESA,
     CYGNUM_DEVS_ETH_MOAB_DP83816_RxNUM,    // Number of Rx buffers
     dp83816_eth_rxbufs,                    // Rx buffer space
     dp83816_eth_rxbd,                      // Rx buffer headers
@@ -145,7 +146,7 @@ NETDEVTAB_ENTRY(dp83816_netdev,
 RedBoot_config_option("eth1 network hardware address [MAC]",
                       eth1_esa,
                       ALWAYS_ENABLED, true,
-                      CONFIG_ESA, &dp83816_eth1_priv_data.enaddr
+                      CONFIG_ESA, _moab_eth1_ESA
     );
 #endif  // CYGSEM_REDBOOT_FLASH_CONFIG
 #else
