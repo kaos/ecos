@@ -1,3 +1,11 @@
+2003-01-17  Andrew Lunn	 <andrew.lunn@ascom.ch>
+
+	* src/if_i82544.c: Fixed a few compiler warnings.
+	
+2004-01-15  Kevin Lemay  <kevin.lemay@agilent.com>
+
+	* src/if_i82544.c: Added support for the i82540 device. 
+
 2003-05-16  Mark Salter  <msalter@redhat.com>
 
 	* include/i82544_info.h: Add link flag.

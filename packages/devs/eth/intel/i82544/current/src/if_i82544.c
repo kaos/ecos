@@ -816,6 +816,7 @@ static int mii_read_register( struct i82544 *p_i82544, int phy, int regnum )
     return value;
 }
 
+#ifndef CYGHWR_DEVS_ETH_INTEL_I82544_USE_ASD
 static void mii_write_register( struct i82544 *p_i82544, int phy, int regnum, int value )
 {
     cyg_uint32 ioaddr = p_i82544->io_address;
@@ -850,7 +851,9 @@ static void mii_write_register( struct i82544 *p_i82544, int phy, int regnum, in
         } while( (mdic & (1<<28)) == 0 );
     }
 }
+#endif
 
+#ifdef DEBUG
 // dump out the PHY registers
 static void show_phy( struct i82544 *p_i82544, int phy )
 {
@@ -869,6 +872,7 @@ static void show_phy( struct i82544 *p_i82544, int phy )
     }
     os_printf("\n");        
 }
+#endif
 
 // ------------------------------------------------------------------------
 //
@@ -904,7 +908,8 @@ static inline void ee_select( int ioaddr, struct i82544 *p_i82544 )
 {
     cyg_uint32 l;
     l = INL( ioaddr + I82544_EECD );
-    if (p_i82544->device == 0x1010) {
+    if (p_i82544->device == 0x1010 ||
+        p_i82544->device == 0x100e) {
 	// i82546 requires REQ/GNT before EEPROM access
 	l |= EE_REQ;
 	OUTL( l, ioaddr + I82544_EECD );
@@ -1015,7 +1020,8 @@ get_eeprom_size( struct i82544 *p_i82544 )
     diag_printf( "get_eeprom_size\n" );
 #endif
 
-    if (p_i82544->device == 0x1010) {
+    if (p_i82544->device == 0x1010 ||
+        p_i82544->device == 0x100e) {
 	
 	l |= EE_REQ;
 	OUTL( l, ioaddr + I82544_EECD );
@@ -1282,7 +1288,8 @@ i82544_init(struct cyg_netdevtab_entry * ndp)
                 os_printf("Valid EEPROM checksum\n");
 #endif
 		// Second port of dual-port 82546 uses EEPROM ESA | 1
-		if (p_i82544->device == 0x1010) {
+		if (p_i82544->device == 0x1010 ||
+                    p_i82544->device == 0x100e) {
 		    cyg_uint8 devfn = CYG_PCI_DEV_GET_DEVFN(p_i82544->devid);
 		    if (CYG_PCI_DEV_GET_FN(devfn) == 1)
 			mac_address[5] |= 1;
@@ -1319,7 +1326,9 @@ i82544_init(struct cyg_netdevtab_entry * ndp)
     if ( p_i82544->mac_addr_ok )
         (sc->funs->eth_drv->init)(sc, &(p_i82544->mac_address[0]) );
     else
+    {
         (sc->funs->eth_drv->init)(sc, NULL );
+    }
 
 
 #ifdef DEBUG
@@ -1343,7 +1352,9 @@ i82544_setup( struct i82544 *p_i82544 )
 {
     cyg_uint32 ioaddr;    
     cyg_uint32 ctrl;
+#ifndef CYGHWR_DEVS_ETH_INTEL_I82544_USE_ASD
     cyg_uint32 ctrl_ext;
+#endif
 
     ioaddr = p_i82544->io_address; // get 82544's I/O address
 
@@ -2524,7 +2535,8 @@ find_82544s_match_func( cyg_uint16 v, cyg_uint16 d, cyg_uint32 c, void *p )
             ((0x1004 == d) ||   // 82543
              (0x100d == d) ||   // 82543
              (0x1008 == d) ||   // 82544
-             (0x1010 == d)      // 82546
+             (0x1010 == d) ||   // 82546
+             (0x100e == d)      // 82540EM
             )
            );
 }
