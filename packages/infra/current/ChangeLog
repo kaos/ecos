@@ -1,3 +1,7 @@
+2004-06-30  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/diag.cxx (_vprintf): Returned [length] was wrong for %p
+
 2004-04-16  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* tests/cxxsupp.cxx: Allow inline function to be correctly inlined.
