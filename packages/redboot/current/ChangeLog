@@ -1,3 +1,10 @@
+2003-12-08  Gary Thomas  <gary@mlbassoc.com>
+
+	* cdl/redboot.cdl: Better handling of GDB stubs support.  This
+	should be automatically included if the platform supports GDB.
+	Disabling CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS (in the common HAL)
+	will fully disable GDB support.
+
 2003-12-05  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/decompress.c (gzip_init): Memory pool initialization should
