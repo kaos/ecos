@@ -1,3 +1,8 @@
+2003-04-09  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/mips_rm7000.ld:
+        Fix .gnulinkonce.s -> .gnu.linkonce.s typo.
+
 2001-08-09  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/var_intr.h: Move HAL_INTERRUPT_ interrupt controller
