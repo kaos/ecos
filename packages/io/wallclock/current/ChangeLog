@@ -1,3 +1,8 @@
+2001-07-30  Jesper Skov  <jskov@redhat.com>
+
+	* include/wallclock/wallclock.inl (_simple_mktime): Fix assertion
+	for leap seconds.
+
 2001-07-27  Jesper Skov  <jskov@redhat.com>
 
 	* include/wallclock/wallclock.inl (_simple_mktime): Added some assertions.

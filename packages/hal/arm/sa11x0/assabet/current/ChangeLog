@@ -1,3 +1,9 @@
+2001-07-28  Stefan Eletzhofer <schuehle@t-online.de>
+
+	* include/hal_platform_setup.h: 
+	* cdl/hal_arm_sa11x0_assabet.cdl: Support additional timing setup
+	when Neponset board is available.
+
 2001-06-21  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* images/redboot*: Remove. Don't bloat repository with things already

@@ -1,3 +1,11 @@
+2001-07-31  Hugo Tyson <hmt@redhat.com>
+2001-07-31  Ron Kundla <rkundla@nband.com>
+
+	* utils/mib2c/mib2c (Table-handling): Concatenate rather than
+	replace subsequent processed variables.  The symptom was that in
+	the generated header file you only get the last table in the MIB.
+	This fixes it.  Thanks Ron!
+
 2001-06-07  Jesper Skov  <jskov@redhat.com>
 
 	* src/mibgroup/mibII/ip.c (var_ipNetToMediaTable): Only handle

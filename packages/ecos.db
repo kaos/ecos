@@ -202,6 +202,16 @@ package CYGPKG_DEVS_FLASH_EDB7XXX {
 	   on the Cirrus Logic EDB7xxx platform(s)."
 }
 
+package CYGPKG_DEVS_FLASH_AT91 {
+	alias 		{ "FLASH memory support for Atmel AT91/EB40" flash_at91 }
+	directory	devs/flash/arm/at91
+	script		flash_at91.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the Atmel AT91/EB40 platform(s)."
+}
+
 package CYGPKG_DEVS_FLASH_ASSABET {
 	alias 		{ "FLASH memory support for Intel SA1110 (Assabet)" flash_assabet }
 	directory	devs/flash/arm/assabet
@@ -392,6 +402,15 @@ package CYGPKG_IO_SERIAL_ARM_CMA230 {
     directory	      devs/serial/arm/cma230
     script	      ser_arm_cma230.cdl	
     description       "Cogent ARM/CMA230 serial device drivers"
+}
+
+package CYGPKG_IO_SERIAL_ARM_AT91 {
+    alias 	      { "Atmel AT91 evaluation board (EB40)"
+                        devs_serial_arm_at91 at91_serial_driver }
+    hardware
+    directory	      devs/serial/arm/at91
+    script	      ser_arm_at91.cdl	
+    description       "Atmel AT91 evaulation board (EB40) serial drivers."
 }
 
 package CYGPKG_IO_SERIAL_POWERPC_COGENT {
@@ -1048,6 +1067,16 @@ package CYGPKG_REDBOOT {
         using eCos as the underlying board support mechanism."
 }
 
+package CYGPKG_HAL_SH_SH7750_DREAMCAST {
+	alias		{ "SEGA Dreamcast" hal_sh_dreamcast sh_dreamcast_hal }
+	directory	hal/sh/dreamcast
+	script		hal_sh_sh7750_dreamcast.cdl
+	hardware
+        description "
+           This SH HAL package provides the support needed to run
+           eCos on SEGA Dreamcast."
+}
+
 # --------------------------------------------------------------------------
 # ARM packages
 package CYGPKG_HAL_ARM {
@@ -1089,6 +1118,16 @@ package CYGPKG_HAL_ARM_E7T {
         description "
 The e7t HAL package provides the support needed to run eCos on a ARM
 Evaluator7T board (aka the AEB-2)."
+}
+
+package CYGPKG_HAL_ARM_AT91 {
+	alias		{ "Atmel evaluation board (EB40)" hal_arm_at91 arm_at91_hal }
+	directory	hal/arm/at91
+	script		hal_arm_at91.cdl
+	hardware
+        description "
+The at91 HAL package provides the support needed to run eCos on an Atmel
+evaluation board (EB40)."
 }
 
 package CYGPKG_HAL_ARM_EBSA285 {
@@ -1291,6 +1330,18 @@ package CYGPKG_HAL_SH_SH7750_CQ7750 {
         description "
            This SH HAL package provides the support needed to run
            eCos on a CqREEK SH7750 board."
+}
+
+target dreamcast {
+        alias { "SEGA Dreamcast" dreamcast }
+        packages { CYGPKG_HAL_SH
+                   CYGPKG_HAL_SH_SH4
+                   CYGPKG_HAL_SH_SH7750_DREAMCAST
+                   CYGPKG_IO_PCI
+                   CYGPKG_IO_SERIAL_SH_SCIF }
+        description "
+           The sh7750 target provides the packages needed to run
+           eCos on SEGA Dreamcast."
 }
 
 # --------------------------------------------------------------------------
@@ -1804,6 +1855,18 @@ target e7t {
         description "
 The aeb target provides the packages needed to run eCos on an ARM
 Evaluator7T board (aka AEB-2)."
+}
+
+target at91 {
+	alias { "Atmel evaulation board (EB40)" eb40 }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_AT91
+                   CYGPKG_DEVS_FLASH_AT91
+                   CYGPKG_IO_SERIAL_ARM_AT91
+        }
+        description "
+The aeb target provides the packages needed to run eCos on an Atmel
+evaluation board (EB40)."
 }
 
 target ebsa285 {

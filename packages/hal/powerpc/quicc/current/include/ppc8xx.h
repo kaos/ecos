@@ -809,9 +809,7 @@ typedef struct eppc {
 	volatile unsigned char	RSRVD31[0x1];
 	volatile unsigned char	scc_sccs;	/* SCC status reg */
 	volatile unsigned char	RSRVD32[0x8]; 
-    } scc_regs[2];
-
-    volatile unsigned char RSRVD120[0x40];
+    } scc_regs[4];
 
     /* SMC */
     struct smc_regs {

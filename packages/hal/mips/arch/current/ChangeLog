@@ -4,7 +4,7 @@
 	rate, thus allowing for runtime baud rate changes, and no
 	dependency on platform CDL defines.
 
-a2001-07-19  Gary Thomas  <gthomas@redhat.com>
+2001-07-19  Gary Thomas  <gthomas@redhat.com>
 
 	* src/redboot_linux_exec.c: Define DEFAULT_BAUD.  The supporting
 	CDL differs from platform to platform, so this define is used to

@@ -1,7 +1,20 @@
+2001-07-30  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added Dreamcast platform HAL, contributed by Takeshi
+	Yaegashi (t@keshi.org)
+
 2001-07-27  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* ecos.db: Add flexanet HAL, eth driver, flash driver and target.
 	Contributed by Jordi Colomer <jco@ict.es>
+
+2001-07-24  Gary Thomas  <gthomas@redhat.com>
+
+	* ecos.db: Add Atmel AT91/EB40 serial support.
+
+2001-07-18  Gary Thomas  <gthomas@redhat.com>
+
+	* ecos.db: Add Atmel AT91/EB40
 
 2001-07-16  Bart Veer  <bartv@redhat.com>
 

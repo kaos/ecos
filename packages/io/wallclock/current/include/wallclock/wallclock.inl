@@ -74,7 +74,7 @@ _simple_mktime(cyg_uint32 year, cyg_uint32 mon,
     CYG_ASSERT(day <= 31, "Day is invalid");
     CYG_ASSERT(hour <= 23, "Hour is invalid");
     CYG_ASSERT(min <= 59, "Minutes is invalid");
-    CYG_ASSERT(sec <= 62, "Seconds is invalid");
+    CYG_ASSERT(sec <= 61, "Seconds is invalid");
 
     // Number of days due to years
     days = 0;

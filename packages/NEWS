@@ -1,3 +1,6 @@
+* Add Atmel AT91/EB40 port, including flash and serial drivers.
+* Added HAL port to SEGA Dreamcast.
+  Contributed by Takeshi Yaegashi <t@keshi.org>
 * Added port to Bright Star Engineering SA11x0 based Flexanet handheld board,
   including flash and ethernet support.
   Contributed by Jordi Colomer <jco@ict.es>

@@ -198,14 +198,18 @@ dram_table:
         .word   SA11X0_DRAM0_CAS_0,           0xAAAAAA7F
         .word   SA11X0_DRAM0_CAS_1,           0xAAAAAAAA
         .word   SA11X0_DRAM0_CAS_2,           0xAAAAAAAA
-//        .word   SA11X0_STATIC_CONTROL_0,      0x4B384B38
-//        .word   SA11X0_STATIC_CONTROL_1,      0x22212419
+#ifdef CYGSEM_HAL_ARM_SA11X0_ASSABET_NEPONSET_TIMINGS
+        .word   SA11X0_STATIC_CONTROL_0,      0x4B384370
+        .word   SA11X0_STATIC_CONTROL_1,      0x22212419
+#endif
         .word   SA11X0_EXP_BUS_CONFIGURATION, 0x994A994A
         .word   SA11X0_REFRESH_CONFIGURATION, 0x49FC0327
         .word   SA11X0_DRAM2_CAS_0,           0xAAAAAA7F
         .word   SA11X0_DRAM2_CAS_1,           0xAAAAAAAA
         .word   SA11X0_DRAM2_CAS_2,           0xAAAAAAAA
-//        .word   SA11X0_STATIC_CONTROL_2,      0x42194449
+#ifdef CYGSEM_HAL_ARM_SA11X0_ASSABET_NEPONSET_TIMINGS
+        .word   SA11X0_STATIC_CONTROL_2,      0x42196669
+#endif
         .word   SA11X0_SMROM_CONFIGURATION,   0xAFCCAFCC
         .word   SA11X0_DRAM_CONFIGURATION,    0x72547254        // Disabled
         .word   0, 0
