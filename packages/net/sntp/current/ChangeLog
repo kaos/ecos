@@ -1,3 +1,19 @@
+2003-02-25  Gary Thomas  <mlbassoc.com>
+
+	* tests/sntp1.c (net_test): Strip the trailing "\n" making it more
+	  readable.
+	
+2003-02-25  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* doc/sntp.sgml: Added license banner and added missing </para>
+	* include/sntp.h (cyg_sntp_start): C++ safe
+	* cdl/sntp.cdl: Stricture requirements and same description as in
+  	  ecos.db.  Only build the test if CYGPKH_NET_BUILD_HW_TESTS
+	* tests/sntp1.c (net_test): Check we have the required
+	  packages. Require the time to be within 90 days of the build
+	  date of the test
+		
+	
 2003-02-16  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/sntp.c: First import of SNTP client code.

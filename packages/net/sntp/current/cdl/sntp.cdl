@@ -51,15 +51,15 @@
 cdl_package CYGPKG_NET_SNTP {
     display       "Simple Network Time Protocol Client (SNTP)"
     description   "
-                  This package provides an SNTP client which will recieve
-		  SNTP broadcasts and set the system clock to the correct
-		  time."
+           This package provides a SNTP client which can recieve broadcast time 
+           information and set the system clock."
     doc           ref/net-sntp.html
     include_dir   cyg/sntp
 
     requires      CYGPKG_NET
-    requires      CYGPKG_ISO_TIME
-
+    requires      CYGPKG_LIBC_TIME
+    requires      CYGSEM_LIBC_TIME_TIME_WORKING
+    requires      CYGSEM_LIBC_TIME_SETTIME_WORKING
     compile       sntp.c
     
     cdl_component CYGPKG_NET_SNTP_OPTIONS {
@@ -95,7 +95,7 @@ cdl_package CYGPKG_NET_SNTP {
         display "sntp tests"
         flavor  data
         no_define
-        calculated { "tests/sntp1.c" }
+        calculated { CYGPKG_NET_BUILD_HW_TESTS ? "tests/sntp1.c" : "" }
     }
 }
 

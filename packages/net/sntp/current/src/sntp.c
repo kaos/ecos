@@ -51,6 +51,7 @@
 #include <network.h>
 #include <cyg/infra/cyg_type.h>
 #include <cyg/infra/cyg_ass.h>
+#include <cyg/infra/cyg_trac.h>
 #include <cyg/sntp/sntp.h>
 #include <time.h>
 
@@ -152,8 +153,10 @@ static void sntp_fn(cyg_addrword_t data) {
     mode = (htonl(buf[0]) & MODE_MASK) >> MODE_SHIFT;
     
     /* Only support protocol versions 3 or 4 */
-    if (new_srv.version < 3 || new_srv.version > 4) 
+    if (new_srv.version < 3 || new_srv.version > 4) {
+      CYG_TRACE1(1, "Unsupported version of NTP. Version %d",version);
       continue;
+    }
     
     /* Only process broadcast packet */
     if (mode != MODE_BROADCAST) 

@@ -1,4 +1,35 @@
-<PART ID="net-sntp">
+<!-- {{{ Banner                         -->
+
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!--     sntp.sgml                                                   -->
+<!--                                                                 -->
+<!--     Simple Network Time Protocol Client                         -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- ####COPYRIGHTBEGIN####                                          -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- Copyright (C) 2003 Andrew Lunn                                  -->
+<!-- This material may be distributed only subject to the terms      -->
+<!-- and conditions set forth in the Open Publication License, v1.0  -->
+<!-- or later (the latest version is presently available at          -->
+<!-- http://www.opencontent.org/openpub/)                            -->
+<!-- Distribution of the work or derivative of the work in any       -->
+<!-- standard (paper) book form is prohibited unless prior           -->
+<!-- permission obtained from the copyright holder                   -->
+<!-- =============================================================== -->
+<!--                                                                 -->      
+<!-- ####COPYRIGHTEND####                                            -->
+<!-- =============================================================== -->
+<!-- #####DESCRIPTIONBEGIN####                                       -->
+<!--                                                                 -->
+<!-- ####DESCRIPTIONEND####                                          -->
+<!-- =============================================================== -->
+
+<!-- }}} -->
+
+<PART ID="net-sntp-client">
 <TITLE>Simple Network Time Protocol Client</TITLE>
 <PARTINTRO>
 <PARA>
@@ -8,7 +39,7 @@ from an NTP server and uses the information received to set the system
 clock.
 </PARA>
 </PARTINTRO>
-<CHAPTER id="sntp-the">
+<CHAPTER id="net-sntp">
 <TITLE>The SNTP Client</TITLE>
 <SECT1 id="sntp-starting">
 <TITLE>Starting the SNTP client</TITLE>
@@ -23,8 +54,8 @@ called.  The thread is then started by calling the function:
 void cyg_sntp_start(void);
 </programlisting>
 <para>
-
 Once started, the thread will run forever.
+</para>
 </sect1>
 
 <sect1 id="net-sntp-operation">

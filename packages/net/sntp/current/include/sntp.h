@@ -51,6 +51,7 @@
 //=============================================================================
 
 /* Call this function to start the SNTP Client */
-void cyg_sntp_start(void);
+__externC void 
+cyg_sntp_start(void);
 
 #endif

@@ -46,8 +46,11 @@
 // Description:   Tests the sntp client
 //####DESCRIPTIONEND####
 
-#include <network.h>
+#include <pkgconf/isoinfra.h>
 #include <cyg/infra/testcase.h>
+
+#if defined(CYGINT_ISO_STDIO_FORMATTED_IO) && defined(CYGINT_ISO_STRING_STRFUNCS) 
+#include <network.h>
 #include <time.h>
 #include <cyg/sntp/sntp.h>
 #include <stdio.h>
@@ -69,6 +72,7 @@ net_test(cyg_addrword_t param)
 			 "Apr", "May", "Jun", 
 			 "Jul", "Aug", "Sep",
 			 "Oct", "Nov", "Dec" };
+  char time_info[32];
   
   CYG_TEST_INIT();
 
@@ -80,7 +84,9 @@ net_test(cyg_addrword_t param)
 
   for (seconds = 120; seconds > 0; seconds--) {
     now = time(NULL);
-    CYG_TEST_INFO(ctime(&now));
+    ctime_r(&now, time_info);
+    time_info[strlen(time_info)-1] = '\0';  // Strip \n
+    CYG_TEST_INFO(time_info);
     cyg_thread_delay(100);
   }
   
@@ -105,12 +111,12 @@ net_test(cyg_addrword_t param)
     if (build_time > time(NULL)) {
       CYG_TEST_FAIL_FINISH("Build time is ahead of SNTP time");
     } else {
-      if ((build_time + 60 * 60 * 24 * 10) > time(NULL)) {
-	CYG_TEST_FAIL_FINISH("Build time is more than 10 days old");
+      if ((build_time + 60 * 60 * 24 * 90) > time(NULL)) {
+	CYG_TEST_FAIL_FINISH("Build time is more than 90 days old");
       }
     }
   }
-  CYG_TEST_FINISH("sntp1 test is complete");
+  CYG_TEST_PASS_FINISH("sntp1 test is complete");
 }
 
 #define STACK_SIZE (CYGNUM_HAL_STACK_SIZE_TYPICAL*2)
@@ -133,3 +139,12 @@ cyg_user_start(void)
             );
     cyg_thread_resume(thread_handle);      // Start it
 }
+
+#else //defined(CYGINT_ISO_STDIO_FORMATTED_IO) && defined(CYGINT_ISO_STRING_STRFUNCS)
+
+void cyg_user_start(void) 
+{
+  CYG_TEST_NA("Not all the required packages are available");
+}
+
+#endif
