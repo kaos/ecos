@@ -8,7 +8,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: fs-ecos.c,v 1.36 2004/04/01 03:39:55 gthomas Exp $
+ * $Id: fs-ecos.c,v 1.37 2004/04/21 18:45:54 gthomas Exp $
  *
  */
 
@@ -1417,6 +1417,11 @@ static int jffs2_fo_lseek(struct CYG_FILE_TAG *fp, off_t * apos, int whence)
 	default:
 		return EINVAL;
 	}
+
+        // Check that pos is still within current file size, or at the
+        // very end.
+        if (pos < 0 || pos > node->i_size)
+                return EINVAL;
 
 	// All OK, set fp offset and return new position.
 	*apos = fp->f_offset = pos;
