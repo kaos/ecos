@@ -319,7 +319,7 @@ void hal_hardware_init(void)
 {
     volatile cyg_uint32 *icr;
     int vector;
-
+    
     // Clear and initialize instruction cache
     HAL_ICACHE_INVALIDATE_ALL();
     HAL_ICACHE_ENABLE();

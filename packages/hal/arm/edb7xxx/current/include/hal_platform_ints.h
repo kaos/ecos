@@ -75,28 +75,3 @@
 #if defined(__EDB7209)
 #define CYGNUM_HAL_INTERRUPT_I2SINT     22
 #endif
-
-#define CYGNUM_HAL_ISR_MIN              0
-#if defined(__CL7111)
-#define CYGNUM_HAL_ISR_MAX              21
-#else
-#define CYGNUM_HAL_ISR_MAX              22
-#endif
-#define CYGNUM_HAL_ISR_COUNT            (CYGNUM_HAL_ISR_MAX+1)
-
-// The vector used by the Real time clock
-#define CYGNUM_HAL_INTERRUPT_RTC        CYGNUM_HAL_INTERRUPT_TC2OI
-
-
-
-//----------------------------------------------------------------------------
-// Reset.
-
-// Try and force the board into a reset state.  Since this hardware requires
-// a "wakeup" signal, we can't just use a watchdog/reset approach.
-externC void reset_platform(void);
-#define HAL_PLATFORM_RESET() reset_platform()
-
-#define HAL_PLATFORM_RESET_ENTRY 0xe0000000
-
-#endif // CYGONCE_HAL_PLATFORM_INTS_H

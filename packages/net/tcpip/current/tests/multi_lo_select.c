@@ -451,6 +451,8 @@ master(cyg_addrword_t param)
 void
 cyg_user_start(void)
 {
+    CYG_TEST_INIT();
+
     cyg_thread_create(PRIO_MASTERHIGH,            // Priority
                       master,                     // entry
                       0,                          // entry parameter

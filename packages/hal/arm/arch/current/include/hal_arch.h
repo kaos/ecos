@@ -288,35 +288,6 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 #define HAL_IDLE_THREAD_ACTION(_count_) hal_idle_thread_action(_count_)
 
 //---------------------------------------------------------------------------
-// Table definition macros.
-// The ARM assembler has a slightly different syntax for some of this, so
-// we have to define alternatives here.
-// Note that the __string() and __xstring() macros used here are defined in
-// hal_tables.h.
-
-#ifndef CYG_HAL_TABLE_BEGIN
-#define CYG_HAL_TABLE_BEGIN( _label, _name )                                    \
-__asm__(".section \"" __string(.ecos.table.##_name##.begin) "\",\"aw\"\n"       \
-	".globl " __xstring(CYG_LABEL_DEFN(_label)) "\n"                        \
-	".type    " __xstring(CYG_LABEL_DEFN(_label)) ",object\n"               \
-	".p2align 2\n"                                                          \
-__xstring(CYG_LABEL_DEFN(_label)) ":\n"                                         \
-	".previous\n"                                                           \
-       )
-#endif
-
-#ifndef CYG_HAL_TABLE_END
-#define CYG_HAL_TABLE_END( _label, _name )                                      \
-__asm__(".section \"" __string(.ecos.table.##_name##.finish) "\",\"aw\"\n"      \
-	".globl " __xstring(CYG_LABEL_DEFN(_label)) "\n"                        \
-	".type    " __xstring(CYG_LABEL_DEFN(_label)) ",object\n"               \
-	".p2align 2\n"                                                          \
-__xstring(CYG_LABEL_DEFN(_label)) ":\n"                                         \
-	".previous\n"                                                           \
-       )
-#endif
-
-//---------------------------------------------------------------------------
 
 // Minimal and sensible stack sizes: the intention is that applications
 // will use these to provide a stack size in the first instance prior to

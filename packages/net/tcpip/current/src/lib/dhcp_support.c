@@ -107,7 +107,7 @@ int dhcp_bind( void )
         && DHCPSTATE_FAILED != eth0_dhcpstate )
             eth0_up = do_dhcp(eth0_name, &eth0_bootp_data, &eth0_dhcpstate, &eth0_lease);
 #endif            
-#ifdef CYGHWR_NET_DRIVER_ETH0
+#ifdef CYGHWR_NET_DRIVER_ETH1
     if (eth1_up
         && DHCPSTATE_FAILED != eth1_dhcpstate )
             eth1_up = do_dhcp(eth1_name, &eth1_bootp_data, &eth1_dhcpstate, &eth1_lease);
@@ -139,7 +139,7 @@ int dhcp_bind( void )
          eth0_dhcpstate == DHCPSTATE_NOTBOUND )
         return 0; // a lease timed out; we became unbound
 #endif
-#ifdef CYGHWR_NET_DRIVER_ETH0
+#ifdef CYGHWR_NET_DRIVER_ETH1
     if ( old_eth1_dhcpstate == DHCPSTATE_BOUND &&
          eth1_dhcpstate == DHCPSTATE_NOTBOUND )
         return 0; // a lease timed out; we became unbound

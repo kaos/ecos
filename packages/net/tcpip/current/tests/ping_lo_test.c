@@ -247,6 +247,8 @@ net_test(cyg_addrword_t p)
 void
 cyg_start(void)
 {
+    CYG_TEST_INIT();
+
     // Create a main thread, so we can run the scheduler and have time 'pass'
     cyg_thread_create(CYGPKG_NET_THREAD_PRIORITY-4,// Priority - just a number
                       net_test,                 // entry

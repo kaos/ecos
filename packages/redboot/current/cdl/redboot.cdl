@@ -183,6 +183,7 @@ cdl_package CYGPKG_REDBOOT {
                about 1514 bytes.  Note: there is little need to make this larger
                than the default."
         }
+
     }
 
     cdl_option CYGPKG_REDBOOT_ANY_CONSOLE {

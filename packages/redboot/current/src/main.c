@@ -90,6 +90,11 @@ RedBoot_cmd("dump",
             "-b <location> [-l <length>]",
             do_dump 
     );
+RedBoot_cmd("x", 
+            "Display (hex dump) a range of memory", 
+            "-b <location> [-l <length>]",
+            do_x 
+    );
 RedBoot_cmd("cksum", 
             "Compute a 32bit checksum [POSIX algorithm] for a range of memory", 
             "-b <location> -l <length>",
@@ -428,6 +433,13 @@ do_dump(int argc, char *argv[])
     diag_dump_buf((void *)base, len);
     _base = base + len;
     _len = len;
+}
+
+// Simple alias for the dump command
+void
+do_x(int argc, char *argv[])
+{
+    do_dump(argc, argv);
 }
 
 void

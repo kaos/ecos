@@ -1,3 +1,11 @@
+2001-10-04  Jesper Skov  <jskov@redhat.com>
+
+	* src/fs/disk.c: Fix ISO9660 build error.
+
+	* src/main.c: Added x as an alias for the dump command.
+
+	* src/net/dns.c: Fixed some messages (DNS -> DNS server).
+
 2001-10-02  Gary Thomas  <gthomas@redhat.com>
 
 	* src/xyzModem.h: 

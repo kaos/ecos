@@ -58,24 +58,24 @@
 #define __xstring(_x) __string(_x)
 
 #ifndef CYG_HAL_TABLE_BEGIN
-#define CYG_HAL_TABLE_BEGIN( _label, _name )                                  \
-__asm__(".section \".ecos.table." __xstring(_name) ".begin\",\"aw\"\n"        \
-	".globl " __xstring(CYG_LABEL_DEFN(_label)) "\n"                      \
-	".type    " __xstring(CYG_LABEL_DEFN(_label)) ",@object\n"            \
-	".p2align " __xstring(CYGARC_P2ALIGNMENT) "\n"                        \
-__xstring(CYG_LABEL_DEFN(_label)) ":\n"                                       \
-	".previous\n"                                                         \
+#define CYG_HAL_TABLE_BEGIN( _label, _name )                                 \
+__asm__(".section \".ecos.table." __xstring(_name) ".begin\",\"aw\"\n"       \
+    ".globl " __xstring(CYG_LABEL_DEFN(_label)) "\n"                         \
+    ".type    " __xstring(CYG_LABEL_DEFN(_label)) ",object\n"                \
+    ".p2align " __xstring(CYGARC_P2ALIGNMENT) "\n"                           \
+__xstring(CYG_LABEL_DEFN(_label)) ":\n"                                      \
+    ".previous\n"                                                            \
        )
 #endif
 
 #ifndef CYG_HAL_TABLE_END
-#define CYG_HAL_TABLE_END( _label, _name )                                    \
-__asm__(".section \".ecos.table." __xstring(_name) ".finish\",\"aw\"\n"       \
-	".globl " __xstring(CYG_LABEL_DEFN(_label)) "\n"                      \
-	".type    " __xstring(CYG_LABEL_DEFN(_label)) ",@object\n"            \
-	".p2align " __xstring(CYGARC_P2ALIGNMENT) "\n"                        \
-__xstring(CYG_LABEL_DEFN(_label)) ":\n"                                       \
-	".previous\n"                                                         \
+#define CYG_HAL_TABLE_END( _label, _name )                                   \
+__asm__(".section \".ecos.table." __xstring(_name) ".finish\",\"aw\"\n"      \
+    ".globl " __xstring(CYG_LABEL_DEFN(_label)) "\n"                         \
+    ".type    " __xstring(CYG_LABEL_DEFN(_label)) ",object\n"                \
+    ".p2align " __xstring(CYGARC_P2ALIGNMENT) "\n"                           \
+__xstring(CYG_LABEL_DEFN(_label)) ":\n"                                      \
+    ".previous\n"                                                            \
        )
 #endif
 

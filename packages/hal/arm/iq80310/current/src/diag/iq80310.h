@@ -69,6 +69,9 @@
 #define FALSE 0
 #endif
 
+#include <cyg/infra/diag.h>
+#define printf diag_printf
+
 #define RAM_FUNC_SECT
 
 /* 02/09/01 jwf */

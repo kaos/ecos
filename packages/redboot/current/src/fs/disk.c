@@ -166,15 +166,17 @@ find_partitions(disk_t *d)
 
 
     if (d->kind == DISK_IDE_CDROM) {
+#ifdef CYGSEM_REDBOOT_DISK_ISO9660
 	// no partition table, so fake it
 	p = d->partitions;
 	p->disk = d;
 	p->start_sector = 0;
 	p->nr_sectors = d->nr_sectors;
-#ifdef CYGSEM_REDBOOT_DISK_ISO9660
 	p->funs = &redboot_iso9660fs_funs;
-#endif
 	return 1;
+#else
+        return 0;
+#endif
     }
 
     // read Master Boot Record

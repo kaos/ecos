@@ -1,3 +1,4 @@
+* Flash driver added for the SH EDK7708 platform.
 * Added rudimentary ELF loader, including support for dynamic objects under
   services/loader.
 * Dallas wallclock driver implemented for x86 PC.

@@ -1,3 +1,9 @@
+2001-10-03  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/diag/io_utils.c: Switch to diag_printf from printf.
+	* src/diag/iq80310.h: Ditto.
+	* src/diag/memtest.c: Ditto, and don't define printf prototype.
+
 2001-08-27  Mark Salter  <msalter@redhat.com>
 
 	* cdl/hal_arm_iq80310.cdl (CYGSEM_HAL_ARM_IQ80310_BTB): New option.

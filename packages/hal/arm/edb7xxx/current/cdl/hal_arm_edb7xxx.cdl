@@ -301,7 +301,7 @@ cdl_package CYGPKG_HAL_ARM_EDB7XXX {
         cdl_option CYGBLD_BUILD_GDB_STUBS {
             display "Build GDB stub ROM image"
             default_value 0
-            requires { CYG_HAL_STARTUP == "ROM" }
+            requires { (CYG_HAL_STARTUP == "ROM") || (CYG_HAL_STARTUP == "ROMRAM") }
             requires CYGSEM_HAL_ROM_MONITOR
             requires CYGBLD_BUILD_COMMON_GDB_STUBS
             requires CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
@@ -520,7 +520,7 @@ cdl_package CYGPKG_HAL_ARM_EDB7XXX {
         flavor        bool
         default_value 0
         parent        CYGPKG_HAL_ROM_MONITOR
-        requires      { CYG_HAL_STARTUP == "ROM" }
+        requires      { (CYG_HAL_STARTUP == "ROM") || (CYG_HAL_STARTUP == "ROMRAM") }
         description   "
             Enable this option if this program is to be used as a ROM monitor,
             i.e. applications will be loaded into RAM on the board, and this

@@ -1,3 +1,24 @@
+2001-10-04  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/net.cdl (CYGHWR_NET_DRIVER_ETH0): Make flavor bool so it isn't
+	defined when 0.
+	(CYGHWR_NET_DRIVER_ETH0): Ditto.
+
+2001-10-04  Hugo Tyson  <hmt@redhat.com>
+
+	* src/lib/dhcp_support.c: Some conditional compilation tags were
+	wrong vis a vis ETH1 versus ETH0.  Thanks to "Simon"
+	<simoncc@ms46.url.com.tw> for spotting it.
+
+2001-10-04  Jesper Skov  <jskov@redhat.com>
+
+	* tests/multi_lo_select.c (cyg_user_start): Added CYG_TEST_INIT
+	call.
+	* tests/ping_lo_test.c (cyg_start): Same.
+	* tests/tcp_lo_test.c (cyg_start): Same.
+	* tests/udp_lo_test.c (cyg_start): Same.
+	* tests/tcp_lo_select.c (cyg_start): Same.
+
 2001-09-28  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/net.cdl: Tell isoinfra we support getproto* and getserv*

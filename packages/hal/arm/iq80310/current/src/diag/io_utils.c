@@ -45,6 +45,9 @@
  * Version: @(#)test_io.c	1.2 8/26/93
  */
 #include <redboot.h>
+#include <cyg/infra/diag.h>
+#define printf diag_printf
+
 
 #define TRUE	1
 #define FALSE	0

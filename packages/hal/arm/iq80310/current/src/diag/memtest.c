@@ -49,6 +49,9 @@
 *  02feb01 jwf for snc
 */
 
+#include <cyg/infra/diag.h>
+#define printf diag_printf
+
 #include "7_segment_displays.h"
 
 #if 0
@@ -58,7 +61,9 @@ extern int quadtest(long startaddr);
 #endif
 
 extern void hex32out (unsigned int num);
+#if 0
 extern int printf(char*,...);
+#endif
 extern load_runtime_reg();
 extern store_runtime_reg();
 

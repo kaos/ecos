@@ -1,3 +1,8 @@
+2001-10-01  Ian Campbell  <icampbell@arcom.co.uk>
+
+	* src/vectors.S: include CYGBLD_HAL_PLATFORM_H rather than
+	<pkgconf/hal_i386_pc.h>
+
 2001-09-05  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/vectors.S (__default_interrupt_vsr): Adjust saved stack pointer

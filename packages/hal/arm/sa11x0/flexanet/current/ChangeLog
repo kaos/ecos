@@ -1,3 +1,7 @@
+2001-10-04  Jordi Colomer <jco@ict.es>
+
+	* include/hal_platform_setup.h: Add sleep/resume support.
+
 2001-07-27  Jordi Colomer  <jco@ict.es>
 	
 	* Initial version of support for BSE Flexanet/SA1110 handheld board.

@@ -45,7 +45,8 @@
 //
 //==========================================================================
 
-#include <pkgconf/hal_i386_pc.h>
+#include <pkgconf/system.h>
+#include CYGBLD_HAL_PLATFORM_H
 
 #include <cyg/hal/pcmb_io.h>
 

@@ -272,6 +272,8 @@ tcp_client_2(cyg_addrword_t param)
 void
 cyg_start(void)
 {
+    CYG_TEST_INIT();
+
     cyg_thread_create(MAIN_THREAD_PRIORITY,     // Priority
                       tcp_server,               // entry
                       0,                        // entry parameter

@@ -1,3 +1,8 @@
+2001-10-02  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/hal_arch.h: Remove CYG_HAL_TABLE_BEGIN and CYG_HAL_TABLE_END
+	as the common versions are acceptable.
+
 2001-10-01  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/arm.ld: Make separate section for GOT and .eh_frame.

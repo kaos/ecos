@@ -529,7 +529,8 @@ cdl_package CYGPKG_NET {
 
     cdl_interface CYGHWR_NET_DRIVER_ETH0 {
         display "Does the hardware provide an 'eth0' device?"
-	requires { CYGHWR_NET_DRIVER_ETH0 <= 1 }
+        requires { CYGHWR_NET_DRIVER_ETH0 <= 1 }
+        flavor   bool
     }
 
     cdl_component CYGHWR_NET_DRIVER_ETH0_SETUP_OPTIONS {
@@ -641,7 +642,8 @@ cdl_package CYGPKG_NET {
 
     cdl_interface CYGHWR_NET_DRIVER_ETH1 {
         display "Does the hardware provide an 'eth1' device?"
-	requires { CYGHWR_NET_DRIVER_ETH1 <= 1 }
+        requires { CYGHWR_NET_DRIVER_ETH1 <= 1 }
+        flavor   bool
     }
 
     cdl_component CYGHWR_NET_DRIVER_ETH1_SETUP_OPTIONS {

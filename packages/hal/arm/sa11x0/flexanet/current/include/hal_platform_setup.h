@@ -268,6 +268,18 @@ dram_table:
         ldr     r2,=SA11X0_PERIPHERAL_CONTROL_HOLD
         str     r2,[r1]
 
+        // If waking up from sleep, jump to the resume function
+        // pointed by the scratchpad register.
+        ldr     r1,=SA11X0_RESET_STATUS
+        ldr     r2,[r1]
+        cmp     r2,#SA11X0_SLEEP_MODE_RESET
+        bne     20f
+        ldr     r1,=SA11X0_PWR_MGR_SCRATCHPAD
+        ldr     r1,[r1]
+        mov     pc,r1
+        nop
+20:     nop        
+
         // Set up a stack [for calling C code]
         ldr     r1,=__startup_stack
         ldr     r2,=SA11X0_RAM_BANK0_BASE

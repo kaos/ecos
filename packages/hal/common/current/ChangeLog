@@ -1,3 +1,21 @@
+2001-10-04  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_endian.h: Added.
+	Fix typo.
+
+2001-10-03  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/hal_tables.h (CYG_HAL_TABLE_BEGIN): Use plain "object"
+	because	some (only some though) MIPS tools complain with %object.
+	(CYG_HAL_TABLE_END): Ditto.
+
+2001-10-02  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/hal_tables.h (CYG_HAL_TABLE_BEGIN): Use %object syntax
+	rather than @object since @ is a comment character on ARM. gas
+	accepts either syntax.
+	(CYG_HAL_TABLE_END): Ditto.
+
 2001-10-01  Gary Thomas  <gthomas@redhat.com>
 
 	* src/generic-stub.c (getpacket): Send back error response (E01) if

@@ -145,8 +145,8 @@
 	mcr	MMU_CP,0,r1,MMU_FlushIDC,c0,0 /* Invalidate Caches */   
 	ldr	r1,=0xFFFFFFFF                                          
 	mcr	MMU_CP,0,r1,MMU_DomainAccess,c0                         
-	ldr	r2,=10f       
-#ifdef CYG_HAL_STARTUP_ROM                                                  
+	ldr	r2,=10f      
+#ifdef CYG_HAL_STARTUP_ROMRAM
 	ldr     r3,=__exception_handlers                                
 	sub     r2,r2,r3                                                
 	ldr     r3,=ROM0_LA_START                                       
@@ -162,7 +162,7 @@
         .endm
 #endif // EP7xxx,720T processor
 
-#ifdef CYG_HAL_STARTUP_ROM                                                  
+#ifdef CYG_HAL_STARTUP_ROMRAM                                                  
         .macro  RELOCATE_TEXT_SEGMENT
         ldr     r2,=__exception_handlers
         ldr     r3,=ROM0_LA_START       
@@ -173,7 +173,12 @@
         ldr     r0,[r3],#4              
         str     r0,[r2],#4              
         cmp     r2,r4                   
-        bne     15b                     
+        bne     15b            
+	ldr	r2,=20f      
+	mov	pc,r2    /* Change address spaces */                    
+	nop                                                             
+ 	nop                                                             
+	nop                                                             
 20:
         .endm        
 #endif
@@ -500,7 +505,7 @@ _phys_store_end:
 /* Now initialize the MMU to use this new page table */
 	ldr	r1,=MMU_BASE
         MMU_INITIALIZE
-#ifdef CYG_HAL_STARTUP_ROM                                                  
+#ifdef CYG_HAL_STARTUP_ROMRAM                                                  
         RELOCATE_TEXT_SEGMENT
 #endif // CYG_HAL_STARTUP_ROM                                                          
         .endm

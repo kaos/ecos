@@ -45,6 +45,7 @@
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <termios.h>
+#include <errno.h>
 
 char _ReceiveChar(long port)
 {
@@ -142,6 +143,10 @@ int _CharReady(long port)
 #else
     int n, res;
     res = ioctl(port, FIONREAD, &n);
+    if (res < 0) {
+        fprintf(stderr, "I/O error: %s\n", strerror(errno));
+        exit(1);
+    }
     return n;  // Non-zero if characters ready to read
 #endif
 }

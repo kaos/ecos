@@ -47,7 +47,7 @@
 
 #include <pkgconf/system.h>
 #include <pkgconf/hal.h>
-#include <pkgconf/hal_i386_pc.h>
+#include CYGBLD_HAL_PLATFORM_H
 
 #ifdef CYGPKG_KERNEL
 #include <pkgconf/kernel.h>
