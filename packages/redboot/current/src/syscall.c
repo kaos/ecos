@@ -250,7 +250,6 @@ static void sys_timer_init(void)
 }
 
 
-#ifndef CYGPKG_HAL_GDB_FILEIO
 //
 // read  -- read bytes from the serial port. Ignore fd, since
 //          we only have stdin.
@@ -324,8 +323,6 @@ sys_lseek(int fd,  int offset, int whence)
     return (-NEWLIB_EIO);
 }
 
-
-#endif // ifdef CYGPKG_HAL_GDB_FILEIO
 
 #define NS_PER_TICK    (CYGNUM_HAL_RTC_NUMERATOR/CYGNUM_HAL_RTC_DENOMINATOR)
 #define TICKS_PER_SEC  (1000000000ULL / NS_PER_TICK)
@@ -444,142 +441,162 @@ __do_syscall(CYG_ADDRWORD func,                 // syscall function number
 
     switch (func) {
 
-#ifdef CYGPKG_HAL_GDB_FILEIO // File I/O over the GDB remote protocol
       case SYS_open:
       {
+#ifdef CYGPKG_HAL_GDB_FILEIO // File I/O over the GDB remote protocol
           __externC int cyg_hal_gdbfileio_open( const char *name, int flags, 
                                                 int mode, int *sig );
-          err = cyg_hal_gdbfileio_open((const char *)arg1, (int)arg2, (int)arg3,
-                                       (int *)sig);
+	  if (gdb_active)
+	      err = cyg_hal_gdbfileio_open((const char *)arg1, (int)arg2, (int)arg3,
+					   (int *)sig);
+	  else
+#endif
+	      err = sys_open((const char *)arg1, (int)arg2, (int)arg3);
           break;
       }
       case SYS_read:
       {
+#ifdef CYGPKG_HAL_GDB_FILEIO // File I/O over the GDB remote protocol
           __externC int cyg_hal_gdbfileio_read( int fd, void *buf, size_t count,
                                                 int *sig );
-          err = cyg_hal_gdbfileio_read((int)arg1, (void *)arg2, (size_t)arg3,
-                                       (int *)sig);
+	  if (gdb_active)
+	      err = cyg_hal_gdbfileio_read((int)arg1, (void *)arg2, (size_t)arg3,
+					   (int *)sig);
+	  else
+#endif
+	      err = sys_read((int)arg1, (char *)arg2, (int)arg3);
           break;
       }
       case SYS_write:
       {
+#ifdef CYGPKG_HAL_GDB_FILEIO // File I/O over the GDB remote protocol
           __externC int cyg_hal_gdbfileio_write( int fd, const void *buf,
                                                  size_t count, int *sig );
-          err = cyg_hal_gdbfileio_write((int)arg1, (const void *)arg2,
-                                        (size_t)arg3, (int *)sig);
+	  if (gdb_active)
+	      err = cyg_hal_gdbfileio_write((int)arg1, (const void *)arg2,
+					    (size_t)arg3, (int *)sig);
+	  else
+#endif
+	      err = sys_write((int)arg1, (char *)arg2, (int)arg3);
           break;
       }
       case SYS_close:
       {
+#ifdef CYGPKG_HAL_GDB_FILEIO // File I/O over the GDB remote protocol
           __externC int cyg_hal_gdbfileio_close( int fd, int *sig );
-          err = cyg_hal_gdbfileio_close((int)arg1, (int *)sig);
+	  if (gdb_active)
+	      err = cyg_hal_gdbfileio_close((int)arg1, (int *)sig);
+	  else
+#endif
+	      err = sys_close((int)arg1);
           break;
       }
       case SYS_lseek:
       {
+#ifdef CYGPKG_HAL_GDB_FILEIO // File I/O over the GDB remote protocol
           __externC int cyg_hal_gdbfileio_lseek( int fd, long offset,
                                                  int whence, int *sig );
-          err = cyg_hal_gdbfileio_lseek((int)arg1, (long)arg2, (int)arg3,
-                                        (int *)sig);
+	  if (gdb_active)
+	      err = cyg_hal_gdbfileio_lseek((int)arg1, (long)arg2, (int)arg3,
+					    (int *)sig);
+	  else
+#endif
+	      err = sys_lseek((int)arg1, (int)arg2, (int)arg3);
           break;
       }
       case SYS_stat:
       {
+#ifdef CYGPKG_HAL_GDB_FILEIO // File I/O over the GDB remote protocol
           __externC int cyg_hal_gdbfileio_stat( const char *pathname,
                                                 void *statbuf, int *sig );
-          err = cyg_hal_gdbfileio_stat((const char *)arg1, (void *)arg2,
-                                       (int *)sig);
+	  if (gdb_active)
+	      err = cyg_hal_gdbfileio_stat((const char *)arg1, (void *)arg2,
+					   (int *)sig);
+	  else
+#endif
+	      err = -NEWLIB_ENOSYS;
           break;
       }
       case SYS_fstat:
       {
+#ifdef CYGPKG_HAL_GDB_FILEIO // File I/O over the GDB remote protocol
           __externC int cyg_hal_gdbfileio_fstat( int fd, void *statbuf,
                                                  int *sig );
-          err = cyg_hal_gdbfileio_fstat((int)arg1, (void *)arg2,
-                                        (int *)sig);
+	  if (gdb_active)
+	      err = cyg_hal_gdbfileio_fstat((int)arg1, (void *)arg2,
+					    (int *)sig);
+	  else
+#endif
+	  {
+	      struct newlib_stat *st = (struct newlib_stat *)arg2;
+	      st->st_mode = NEWLIB_S_IFCHR;
+	      st->st_blksize = 4096;
+	      err = 0;
+	  }
           break;
       }
       case SYS_rename:
       {
+#ifdef CYGPKG_HAL_GDB_FILEIO // File I/O over the GDB remote protocol
           __externC int cyg_hal_gdbfileio_rename( const char *oldpath,
                                                   const char *newpath,
                                                   int *sig );
-          err = cyg_hal_gdbfileio_rename((const char *)arg1, (const char *)arg2,
-                                         (int *)sig);
+	  if (gdb_active)
+	      err = cyg_hal_gdbfileio_rename((const char *)arg1, (const char *)arg2,
+					     (int *)sig);
+	  else
+#endif
+	      err = -NEWLIB_ENOSYS;
           break;
       }
       case SYS_unlink:
       {
+#ifdef CYGPKG_HAL_GDB_FILEIO // File I/O over the GDB remote protocol
           __externC int cyg_hal_gdbfileio_unlink( const char *pathname,
                                                   int *sig );
-          err = cyg_hal_gdbfileio_unlink((const char *)arg1, (int *)sig);
+	  if (gdb_active)
+	      err = cyg_hal_gdbfileio_unlink((const char *)arg1, (int *)sig);
+	  else
+#endif
+	      err = -NEWLIB_ENOSYS;
           break;
       }
       case SYS_isatty:
       {
+#ifdef CYGPKG_HAL_GDB_FILEIO // File I/O over the GDB remote protocol
           __externC int cyg_hal_gdbfileio_isatty( int fd, int *sig );
-          err = cyg_hal_gdbfileio_isatty((int)arg1, (int *)sig);
+	  if (gdb_active)
+	      err = cyg_hal_gdbfileio_isatty((int)arg1, (int *)sig);
+	  else
+#endif
+	      err = 1;
           break;
       }
       case SYS_system:
       {
+#ifdef CYGPKG_HAL_GDB_FILEIO // File I/O over the GDB remote protocol
           __externC int cyg_hal_gdbfileio_system( const char *command,
                                                   int *sig );
-          err = cyg_hal_gdbfileio_system((const char *)arg1, (int *)sig);
+	  if (gdb_active)
+	      err = cyg_hal_gdbfileio_system((const char *)arg1, (int *)sig);
+	  else
+#endif
+	      err = -1;
           break;
       }
       case SYS_gettimeofday:
       {
+#ifdef CYGPKG_HAL_GDB_FILEIO // File I/O over the GDB remote protocol
           __externC int cyg_hal_gdbfileio_gettimeofday( void *tv, void *tz,
                                                         int *sig );
-          err = cyg_hal_gdbfileio_gettimeofday((void *)arg1, (void *)arg2,
-                                               (int *)sig);
+	  if (gdb_active)
+	      err = cyg_hal_gdbfileio_gettimeofday((void *)arg1, (void *)arg2,
+						   (int *)sig);
+	  else
+#endif
+	      err = 0;
           break;
       }
-#else
-      case SYS_read:
-        err = sys_read((int)arg1, (char *)arg2, (int)arg3);
-        break;
-      case SYS_write:
-        err = sys_write((int)arg1, (char *)arg2, (int)arg3);
-        break;
-      case SYS_open:
-        err = sys_open((const char *)arg1, (int)arg2, (int)arg3);
-        break;
-      case SYS_close:
-        err = sys_close((int)arg1);
-        break;
-      case SYS_lseek:
-        err = sys_lseek((int)arg1, (int)arg2, (int)arg3);
-        break;
-      case SYS_rename:
-        err = -NEWLIB_ENOSYS;
-        break;
-      case SYS_unlink:
-        err = -NEWLIB_ENOSYS;
-        break;
-      case SYS_isatty:
-        err = 1;
-        break;
-      case SYS_system:
-        err = -1;
-        break;
-      case SYS_gettimeofday:
-        err = 0;
-        break;
-      case SYS_stat:
-        err = -NEWLIB_ENOSYS;
-        break;
-      case SYS_fstat:
-      {
-          struct newlib_stat *st = (struct newlib_stat *)arg2;
-          st->st_mode = NEWLIB_S_IFCHR;
-          st->st_blksize = 4096;
-          err = 0;
-          break;
-      }
-#endif // !CYGPKG_HAL_GDB_FILEIO
-
       case SYS_utime:
         // FIXME. Some libglosses depend on this behavior.
         err = sys_times((unsigned long *)arg1);
