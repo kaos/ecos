@@ -132,14 +132,8 @@ _vsprintf( char * /* str */, const char * /* format */,
 
 // ISO C 7.9.7 Character input/output functions
 
-externC int
-_fgetc( FILE * /* stream */ );
-
 externC char *
 _fgets( char * /* str */, int /* length */, FILE * /* stream */ );
-
-externC int
-_fputc( int /* c */, FILE * /* stream */ );
 
 externC int
 _fputs( const char * /* str */, FILE * /* stream */ );

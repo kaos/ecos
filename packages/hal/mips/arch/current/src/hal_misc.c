@@ -68,8 +68,24 @@ externC void __handle_exception (void);
 
 externC HAL_SavedRegisters *_hal_registers;
 
+externC cyg_uint8 cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs );
+
 externC void exception_handler(HAL_SavedRegisters *regs)
 {
+#ifdef  CYGHWR_HAL_MIPS_FPU
+    // We may be required to emulate certain unimplemented Floating Point
+    // operations
+
+    if ((regs->vector>>2) == CYGNUM_HAL_VECTOR_FPE) {
+
+        // cyg_hal_mips_process_fpe() returns non-zero if it could handle
+        // the exception successfully. If so, we just return
+
+        if ( cyg_hal_mips_process_fpe(regs) )
+            return;
+    }
+#endif
+
 #if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
 
     // Set the pointer to the registers of the current exception

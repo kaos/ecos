@@ -104,15 +104,17 @@ __exception_handlers:
 // they are copied in pairs.
 	.global	vectors
 vectors:
-UNMAPPED_PTR(reset_vector)
-PTR(undefined_instruction)
-PTR(software_interrupt)
-PTR(abort_prefetch)
-PTR(abort_data)
-	.word	0
-PTR(IRQ)
-PTR(FIQ)
-PTR(start)
+UNMAPPED_PTR(reset_vector)			// 0x20
+PTR(undefined_instruction)			// 0x24
+PTR(software_interrupt)				// 0x28
+PTR(abort_prefetch)				// 0x2C
+PTR(abort_data)					// 0x30
+	.word	0				// 0x34
+PTR(IRQ)					// 0x38
+PTR(FIQ)					// 0x3c
+PTR(start) // This is copied to 0x28 for bootup // 0x40
+	   // location 0x40 is used for storing DRAM size if known
+	   // for some platforms.
 
 	.text	
 // Startup code which will get the machine into supervisor mode
@@ -128,12 +130,15 @@ reset_vector:
 	beq	start
 #endif
 
+	PLATFORM_SETUP1		// Early stage platform initialization
+				// which can set DRAM size at 0x40
+				// see <cyg/hal/hal_platform_setup.h>
+	// We cannot access any LED registers until after PLATFORM_SETUP1
 	LED 7
 
-	PLATFORM_SETUP1		// Early stage platform initialization
-				// see <cyg/hal/hal_platform_setup.h>
-
 	mov	r0,#0		// move vectors
+	// We cannot perform a store until after PLATFORM_SETUP1
+	str	r0, [r0,#0x40]  // DRAM size to zero => unknown
 	ldr	r1,.__exception_handlers
 	ldr	r2,[r1,#0x04]	// undefined instruction
 	str	r2,[r0,#0x04]
@@ -263,7 +268,7 @@ start:
         bl      initialize_stub
 #endif
 
-	LED 7
+	LED 1
 	
 	// This starts up the eCos kernel
 	bl	cyg_start
@@ -719,12 +724,6 @@ init_flag:
 	.long	0
 
 	.extern hal_default_isr
-
-	.globl	hal_vsr_table
-hal_vsr_table:
-	.rept	CYGNUM_HAL_VSR_COUNT
-	.long	0		// hal_default_isr
-	.endr
 
 	.globl	hal_interrupt_handlers
 hal_interrupt_handlers:

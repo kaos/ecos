@@ -107,6 +107,41 @@
 #define CAUSE           36
 #define PC              37
 
+#define F0              38
+#define F1              39
+#define F2              40
+#define F3              41
+#define F4              42
+#define F5              43
+#define F6              44
+#define F7              45
+#define F8              46
+#define F9              47
+#define F10             48
+#define F11             49
+#define F12             50
+#define F13             51
+#define F14             52
+#define F15             53
+#define F16             54
+#define F17             55
+#define F18             56
+#define F19             57
+#define F20             58
+#define F21             59
+#define F22             60
+#define F23             61
+#define F24             62
+#define F25             63
+#define F26             64
+#define F27             65
+#define F28             66
+#define F29             67
+#define F30             68
+#define F31             69
+
+#define FCR31           70
+
 /* System Control Coprocessor (CP0) exception processing registers */
 #define C0_CONTEXT      $4              /* Context */
 #define C0_BADVADDR     $8              /* Bad Virtual Address */
@@ -170,6 +205,36 @@
 #define SR_ERL          0x00000004      /* error level */
 #define SR_EXL          0x00000002      /* exception level */
 #define SR_IE           0x00000001      /* interrupt enable */
+
+/* Floating-point unit control/status register (FCR31) */
+#define FCR31_FS        0x01000000      /* Flush denormalized to zero */
+#define FCR31_C         0x00800000      /* FP compare result */
+
+#define FCR31_CAUSE_E   0x00020000      /* Cause - unimplemented operation */
+#define FCR31_CAUSE_V   0x00010000      /* Cause - invalid operation */
+#define FCR31_CAUSE_Z   0x00008000      /* Cause - division by zero */
+#define FCR31_CAUSE_O   0x00004000      /* Cause - overflow */
+#define FCR31_CAUSE_U   0x00002000      /* Cause - underflow */
+#define FCR31_CAUSE_I   0x00001000      /* Cause - inexact operation */
+
+#define FCR31_ENABLES_V 0x00000800      /* Enables - invalid operation */
+#define FCR31_ENABLES_Z 0x00000400      /* Enables - division by zero */
+#define FCR31_ENABLES_O 0x00000200      /* Enables - overflow */
+#define FCR31_ENABLES_U 0x00000100      /* Enables - underflow */
+#define FCR31_ENABLES_I 0x00000080      /* Enables - inexact operation */
+
+#define FCR31_FLAGS_V   0x00000040      /* Flags - invalid operation */
+#define FCR31_FLAGS_Z   0x00000020      /* Flags - division by zero */
+#define FCR31_FLAGS_O   0x00000010      /* Flags - overflow */
+#define FCR31_FLAGS_U   0x00000008      /* Flags - underflow */
+#define FCR31_FLAGS_I   0x00000004      /* Flags - inexact operation */
+
+#define FCR31_RMMASK    0x00000002      /* Rounding mode mask */
+#define FCR31_RM_RN     0               /* Round to nearest */
+#define FCR31_RM_RZ     1               /* Round to zero */
+#define FCR31_RM_RP     2               /* Round to +infinity */
+#define FCR31_RM_RM     3               /* Round to -infinity */
+
 
 /* Cause register fields */
 #define CAUSE_BD        0x80000000      /* Branch Delay */

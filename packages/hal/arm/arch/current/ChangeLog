@@ -1,3 +1,27 @@
+1999-07-21  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/vectors.S (vectors): Re-organize startup a little to support
+	ROMming of the image and stubrom creation.  Withdraw publication
+	of cyg_startup_stack; it's necessary to do this a different way,
+	using...
+
+	* include/hal_intr.h (hal_dram_size): reserve location 0x40 for
+	communicating DRAM size between boot ROMs and app during startup,
+	and remembering it within ROM startup.  Platforms that don't need
+	this should zero the location.
+
+1999-07-19  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/vectors.S (cyg_startup_stack): Publish this object for
+	passing some DRAM size info around during startup.
+	Remove the unused [well, ignored] array hal_vsr_table - the VSR
+	table is defined to be at 0x20 by the code here in vectors.S
+
+	* include/hal_intr.h (HAL_VSR_SET): define hal_vsr_table to be at
+	0x20 where the hardware vectors actually read VSR entries from.
+	Renumber VSR symbols to match.  Do not use the external
+	"hal_vsr_table" symbol.
+
 1999-07-14  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/vectors.S: Add some startup debug via a LED macro - which

@@ -59,19 +59,18 @@
 // These vectors correspond to VSRs. These values are the ones to use for
 // HAL_VSR_GET/SET
 
-#define CYGNUM_HAL_VECTOR_RESERVED_0           0
-#define CYGNUM_HAL_VECTOR_RESET                1
-#define CYGNUM_HAL_VECTOR_UNDEF_INSTRUCTION    2
-#define CYGNUM_HAL_VECTOR_SOFTWARE_INTERRUPT   3
-#define CYGNUM_HAL_VECTOR_ABORT_PREFETCH       4
-#define CYGNUM_HAL_VECTOR_ABORT_DATA           5
-#define CYGNUM_HAL_VECTOR_reserved             6
-#define CYGNUM_HAL_VECTOR_IRQ                  7
-#define CYGNUM_HAL_VECTOR_FIQ                  8
+#define CYGNUM_HAL_VECTOR_RESET                0
+#define CYGNUM_HAL_VECTOR_UNDEF_INSTRUCTION    1
+#define CYGNUM_HAL_VECTOR_SOFTWARE_INTERRUPT   2
+#define CYGNUM_HAL_VECTOR_ABORT_PREFETCH       3
+#define CYGNUM_HAL_VECTOR_ABORT_DATA           4
+#define CYGNUM_HAL_VECTOR_reserved             5
+#define CYGNUM_HAL_VECTOR_IRQ                  6
+#define CYGNUM_HAL_VECTOR_FIQ                  7
 
 #define CYGNUM_HAL_VSR_MIN                     0
-#define CYGNUM_HAL_VSR_MAX                     8
-#define CYGNUM_HAL_VSR_COUNT                   9
+#define CYGNUM_HAL_VSR_MAX                     7
+#define CYGNUM_HAL_VSR_COUNT                   8
 
 // Exception vectors. These are the values used when passed out to an
 // external exception handler using cyg_hal_deliver_exception()
@@ -98,7 +97,16 @@ externC volatile CYG_ADDRWORD   hal_interrupt_data[CYGNUM_HAL_ISR_COUNT];
 externC volatile CYG_ADDRESS    hal_interrupt_objects[CYGNUM_HAL_ISR_COUNT];
 
 // VSR table
-externC volatile CYG_ADDRESS    hal_vsr_table[CYGNUM_HAL_VSR_COUNT];
+//externC volatile CYG_ADDRESS    hal_vsr_table[CYGNUM_HAL_VSR_COUNT];
+
+// actually, it is immediately after the hardware vectors
+#define hal_vsr_table ((volatile CYG_ADDRESS *)(0x20))
+
+// and followed by a DRAM size variable used during bootup.  This is in a
+// fixed location so that it can be shared between an eCos Stub ROM and a
+// RAM start eCos app.  Ie. so that RAM startup code knows DRAM size.
+// If this variable is zero, RAM size is unknown/is the default.
+#define hal_dram_size (*(CYG_WORD *)(0x40))
 
 //--------------------------------------------------------------------------
 // Default ISR

@@ -1,3 +1,34 @@
+1999-07-15  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/arch.inc (hal_fpu_save_caller): Save fcr31 first as
+	recommended by user's manual
+	(hal_fpu_load_caller): Similarly restore fcr31 last
+
+	Rename CYG_HAL_MIPS_FSR_INIT to CYG_HAL_MIPS_FCSR_INIT since that's
+	closer to its documented name
+
+	* include/mips-regs.h: 
+	Add floating point register definitions, and bitfields/masks for FCR31
+	in particular
+
+	* src/mips-stub.c (__single_step):
+	Enable FP branch support if the hardware has an FPU.
+
+	Change register access to FCR using HAL macro names from mips-regs.h
+
+	When comparing branch tests with 0, cast the result of get_register()
+	to int so that it works on 64-bit MIPS targets even in 32-bit mode,
+	when GDB still insists REG_SIZE must be 8 (in which case negative
+	results would otherwise go positive)
+	
+	* src/mipsfp.c: New file to emulate unimplemented MIPS FP operations
+	* src/PKGconf.mak (COMPILE): compile it
+
+	* src/hal_misc.c (exception_handler): If we have an FPU and get an FP
+	exception, call cyg_hal_mips_process_fpe() from mipsfp.c to process
+	it
+
+
 1999-07-09  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* include/mips.inc:

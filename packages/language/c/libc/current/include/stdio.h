@@ -192,27 +192,35 @@ externC int
 fputc( int /* c */, FILE * /* stream */ );
 
 externC int
+putc( int /* c */, FILE * /* stream */ );
+
+externC int
+putchar( int /* c */ );
+
+externC int
 fputs( const char * /* str */, FILE * /* stream */ );
-
-// no function equivalent is required for these, so we can just #define
-// them
-
-#define getc( __stream ) fgetc( __stream )
-
-#define getchar() fgetc( stdin )
 
 externC char *
 gets( char * );
 
-#define putc(__c, __stream) fputc(__c, __stream)
+externC int
+getc( FILE * /* stream */ );
 
-#define putchar(__c) fputc(__c, stdout)
+externC int
+getchar( void );
 
 externC int
 puts( const char * /* str */ );
 
 externC int
 ungetc( int /* c */, FILE * /* stream */ );
+
+// no function equivalent is required for getchar() or putchar(), so we can
+// just #define them
+
+#define getchar() fgetc( stdin )
+
+#define putchar(__c) fputc(__c, stdout)
 
 //========================================================================
 

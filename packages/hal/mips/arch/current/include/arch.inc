@@ -341,8 +341,8 @@ hal_intc_translation_table:
 #error MIPS FPU register size not defined
 #endif		
 
-#ifndef CYG_HAL_MIPS_FSR_INIT
-#define CYG_HAL_MIPS_FSR_INIT 0
+#ifndef CYG_HAL_MIPS_FCSR_INIT
+#define CYG_HAL_MIPS_FCSR_INIT 0
 #endif
 
 	.macro	hal_fpu_init
@@ -355,7 +355,7 @@ hal_intc_translation_table:
 	nop
 	nop
 	nop
-        la	v0,CYG_HAL_MIPS_FSR_INIT	# Get initial value for FSR
+        la	v0,CYG_HAL_MIPS_FCSR_INIT	# Get initial value for FCR31
 	ctc1	v0,$31				# set Fp control reg
 	nop
 	.endm
@@ -363,6 +363,8 @@ hal_intc_translation_table:
 	# Save the caller-saved registers as defined by the ABI.
 	# These only really need saving during interrupts.
 	.macro	hal_fpu_save_caller regs
+	cfc1	v0,$31
+	sw	v0,mipsreg_fcr31(\regs)
 	sfpr	f0,(mipsreg_fpureg+0*mips_fpuregsize)(\regs)
 	sfpr	f1,(mipsreg_fpureg+1*mips_fpuregsize)(\regs)
 	sfpr	f2,(mipsreg_fpureg+2*mips_fpuregsize)(\regs)
@@ -384,8 +386,6 @@ hal_intc_translation_table:
 	sfpr	f18,(mipsreg_fpureg+18*mips_fpuregsize)(\regs)
 	sfpr	f19,(mipsreg_fpureg+19*mips_fpuregsize)(\regs)
 	sfpr	f31,(mipsreg_fpureg+31*mips_fpuregsize)(\regs)
-	cfc1	v0,$31
-	sw	v0,mipsreg_fcr31(\regs)
 	.endm
 
 	# Save the callee-saved registers as defined by the ABI.
@@ -413,8 +413,6 @@ hal_intc_translation_table:
 
 	# Reload the caller-saved registers.
 	.macro	hal_fpu_load_caller regs
-	lw	v0,mipsreg_fcr31(\regs)
-	ctc1	v0,$31
 	lfpr	f0,(mipsreg_fpureg+0*mips_fpuregsize)(\regs)
 	lfpr	f1,(mipsreg_fpureg+1*mips_fpuregsize)(\regs)
 	lfpr	f2,(mipsreg_fpureg+2*mips_fpuregsize)(\regs)
@@ -436,6 +434,8 @@ hal_intc_translation_table:
 	lfpr	f18,(mipsreg_fpureg+18*mips_fpuregsize)(\regs)
 	lfpr	f19,(mipsreg_fpureg+19*mips_fpuregsize)(\regs)
 	lfpr	f31,(mipsreg_fpureg+31*mips_fpuregsize)(\regs)
+	lw	v0,mipsreg_fcr31(\regs)
+        ctc1	v0,$31
 	.endm
 
 	# Reload the callee-saved registers.

@@ -2,7 +2,7 @@
 //
 //      fgetc.cxx
 //
-//      ANSI Stdio fgetc() function
+//      ISO C standard I/O get character functions
 //
 //===========================================================================
 //####COPYRIGHTBEGIN####
@@ -29,10 +29,11 @@
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour
-// Contributors:  jlarmour
-// Date:        1998-02-13
-// Purpose:     
+// Author(s):    jlarmour
+// Contributors: jlarmour
+// Date:         1999-07-16
+// Purpose:      Provide the fgetc() function. Also provides the function
+//               version of getc() and getchar()
 // Description: 
 // Usage:       
 //
@@ -44,52 +45,82 @@
 
 #include <pkgconf/libc.h>   // Configuration header
 
-// Include the C library? And do we want the stdio stuff?
-#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_STDIO)
+// Do we want the stdio stuff?
+#ifdef CYGPKG_LIBC_STDIO
 
 // INCLUDES
 
 #include <cyg/infra/cyg_type.h>     // Common project-wide type definitions
+#include <cyg/infra/cyg_ass.h>      // Standard eCos assertion support
+#include <cyg/infra/cyg_trac.h>     // Standard eCos tracing support
 #include <stddef.h>                 // NULL and size_t from compiler
 #include <stdio.h>                  // header for this file
 #include <errno.h>                  // error codes
-#include "clibincl/stdiosupp.hxx"   // Support functions for stdio
 #include "clibincl/stream.hxx"      // Cyg_StdioStream
-
-// EXPORTED SYMBOLS
-
-externC int
-fgetc( FILE * ) CYGPRI_LIBC_WEAK_ALIAS("_fgetc");
 
 // FUNCTIONS
 
 externC int
-_fgetc( FILE *stream )
+__fgetc( FILE *stream )
 {
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)stream;
     cyg_ucount32 bytes_read;
     Cyg_ErrNo err;
     cyg_uint8 c;
+
+    CYG_REPORT_FUNCNAMETYPE("__fgetc", "returning char %d");
+    CYG_REPORT_FUNCARG1XV( stream );
     
+    CYG_CHECK_DATA_PTR( stream, "stream is not a valid pointer" );
+
     err = real_stream->read( &c, 1, &bytes_read );
 
+    // FIXME: Why do we need this?
     if (!err && !bytes_read)  // if no err, but nothing to read, try again
     {
         real_stream->refill_read_buffer();
         err = real_stream->read( &c, 1, &bytes_read );
     } // if
 
+    CYG_ASSERT( 1 == bytes_read, "Didn't read 1 byte!" );
+
     if (err)
     {
         real_stream->set_error( err );
         errno = err;
+        CYG_REPORT_RETVAL(EOF);
         return EOF;
     } // if
     
+    CYG_REPORT_RETVAL((int)c);
     return (int)c;
 
-} // _fgetc()
+} // __fgetc()
 
-#endif // if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_STDIO)
+
+externC int
+__getchar( void )
+{
+    return fgetc( stdin );
+} // __getchar()
+
+
+// EXPORTED SYMBOLS
+
+externC int
+fgetc( FILE * ) CYGBLD_ATTRIB_WEAK_ALIAS(__fgetc);
+
+// Also define getc() and getchar() even though they can be macros.
+// Undefine the macros first though
+#undef getc
+#undef getchar
+
+externC int
+getc( FILE * ) CYGBLD_ATTRIB_WEAK_ALIAS(__fgetc);
+
+externC int
+getchar( void ) CYGBLD_ATTRIB_WEAK_ALIAS(__getchar);
+
+#endif // ifdef CYGPKG_LIBC_STDIO
 
 // EOF fgetc.cxx

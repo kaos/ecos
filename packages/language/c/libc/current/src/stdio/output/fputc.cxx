@@ -2,7 +2,7 @@
 //
 //      fputc.cxx
 //
-//      ANSI Stdio fputc() function
+//      ISO Standard I/O character output functions
 //
 //===========================================================================
 //####COPYRIGHTBEGIN####
@@ -29,10 +29,11 @@
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour
-// Contributors:  jlarmour
-// Date:        1998-02-13
-// Purpose:     
+// Author(s):    jlarmour
+// Contributors: jlarmour
+// Date:         1999-07-16
+// Purpose:      Provide the fputc() function. Also provides the function
+//               versions of putc() and putchar()
 // Description: 
 // Usage:       
 //
@@ -44,46 +45,71 @@
 
 #include <pkgconf/libc.h>   // Configuration header
 
-// Include the C library? And do we want the stdio stuff?
-#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_STDIO)
+// Do we want the stdio stuff?
+#ifdef CYGPKG_LIBC_STDIO
 
 // INCLUDES
 
 #include <cyg/infra/cyg_type.h>     // Common project-wide type definitions
+#include <cyg/infra/cyg_ass.h>      // Standard eCos assertion support
+#include <cyg/infra/cyg_trac.h>     // Standard eCos tracing support
 #include <stddef.h>                 // NULL and size_t from compiler
 #include <stdio.h>                  // header for this file
 #include <errno.h>                  // error codes
-#include "clibincl/stdiosupp.hxx"   // Support functions for stdio
 #include "clibincl/stream.hxx"      // Cyg_StdioStream
-
-// EXPORTED SYMBOLS
-
-externC int
-fputc( int, FILE * ) CYGPRI_LIBC_WEAK_ALIAS("_fputc");
 
 // FUNCTIONS
 
 externC int
-_fputc( int c, FILE *stream )
+__fputc( int c, FILE *stream )
 {
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)stream;
     Cyg_ErrNo err;
     cyg_uint8 real_c = (cyg_uint8) c;
     
+    CYG_REPORT_FUNCNAMETYPE("__fputc", "wrote char %d");
+    CYG_REPORT_FUNCARG2( "c = %d, stream=%08x", c, stream );
+    
+    CYG_CHECK_DATA_PTR( stream, "stream is not a valid pointer" );
+
     err = real_stream->write_byte( real_c );
 
     if (err)
     {
         real_stream->set_error( err );
         errno = err;
+        CYG_REPORT_RETVAL(EOF);
         return EOF;
     } // if
     
-    
+    CYG_REPORT_RETVAL((int)real_c);
     return (int)real_c;
 
-} // _fputc()
+} // __fputc()
 
-#endif // if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_STDIO)
+
+externC int
+__putchar( int c )
+{
+    return fputc( c, stdout );
+} // __putchar()
+
+// EXPORTED SYMBOLS
+
+externC int
+fputc( int, FILE * ) CYGBLD_ATTRIB_WEAK_ALIAS(__fputc);
+
+// Also define putc() and putchar() even though they can be macros.
+// Undefine the macros first though
+#undef putc
+#undef putchar
+
+externC int
+putc( int, FILE * ) CYGBLD_ATTRIB_WEAK_ALIAS(__fputc);
+
+externC int
+putchar( int ) CYGBLD_ATTRIB_WEAK_ALIAS(__putchar);
+
+#endif // ifdef CYGPKG_LIBC_STDIO
 
 // EOF fputc.cxx

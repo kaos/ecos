@@ -32,7 +32,7 @@ PACKAGE       := hal_mips
 include ../../../../../pkgconf/pkgconf.mak
 
 LIBRARY       := libtarget.a
-COMPILE       := hal_misc.c context.S mips-stub.c
+COMPILE       := hal_misc.c context.S mips-stub.c mipsfp.c
 OTHER_OBJS    :=
 OTHER_TARGETS := vectors.stamp
 OTHER_DEPS    := $(PACKAGE)_vectors.d

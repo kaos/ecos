@@ -1,3 +1,25 @@
+1999-07-16  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/stdio/input/fgetc.cxx: 
+	Include outline versions of getc() (actually just a symbol alias for
+	fgetc() ) and getchar()
+	Some minor clean-ups
+	Add tracing/assertions
+
+	* src/stdio/input/fputc.cxx: 
+	Likewise (except applied to putc() and putchar())
+
+	* src/stdio/common/stdioinlines.cxx (_puts):
+	Call fputc() not _fputc()
+
+	* src/clibincl/stdiosupp.hxx:
+	Remove now obsolete prototypes for _fgetc() and _fputc()
+
+	* include/stdio.h:
+	Don't bother with getc()/putc() macros any more, just call
+	them as functions
+	Include protos for getc(), putc(), getchar() and putchar() functions
+
 1999-06-11  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* include/stdio.h: Make FILEs array types so they won't be

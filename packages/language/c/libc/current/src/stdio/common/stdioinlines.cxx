@@ -147,7 +147,7 @@ _puts( const char *s )
     rc = _fputs( s, stdout );
 
     if (rc >= 0)
-        rc = _fputc('\n', stdout );
+        rc = fputc('\n', stdout );
 
     return rc;
 } // _puts()

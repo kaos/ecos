@@ -195,7 +195,7 @@ void __single_step (void)
         case OP_BLTZL:
         case OP_BLTZAL:
         case OP_BLTZALL:
-          if (get_register (inst.IType.rs) < 0 )
+            if ((int)get_register (inst.IType.rs) < 0 )
             instrBuffer.targetAddr =
               (t_inst *)(((signed short)inst.IType.imm<<2)
                                         + (get_register (PC) + 4));
@@ -206,7 +206,7 @@ void __single_step (void)
         case OP_BGEZL:
         case OP_BGEZAL:
         case OP_BGEZALL:
-          if (get_register (inst.IType.rs) >= 0 )
+            if ((int)get_register (inst.IType.rs) >= 0 )
             instrBuffer.targetAddr =
               (t_inst *)(((signed short)inst.IType.imm<<2)
                                         + (get_register (PC) + 4));
@@ -243,7 +243,7 @@ void __single_step (void)
       break;
     case OP_BLEZ:
     case OP_BLEZL:
-      if (get_register (inst.IType.rs) <= 0)
+        if ((int)get_register (inst.IType.rs) <= 0)
         instrBuffer.targetAddr =
           (t_inst *)(((signed short)inst.IType.imm<<2) + (get_register (PC) + 4));
       else
@@ -251,20 +251,21 @@ void __single_step (void)
       break;
     case OP_BGTZ:
     case OP_BGTZL:
-      if (get_register (inst.IType.rs) > 0)
+        if ((int)get_register (inst.IType.rs) > 0)
         instrBuffer.targetAddr =
           (t_inst *)(((signed short)inst.IType.imm<<2) + (get_register (PC) + 4));
       else
         instrBuffer.targetAddr = (t_inst *)(get_register (PC) + 8);
       break;
 
-#if 0   /* no floating point support at the moment */
+#ifdef CYGHWR_HAL_MIPS_FPU
+
     case OP_COP1:
       if (inst.RType.rs == OP_BC)
           switch (inst.RType.rt) {
             case COPz_BCF:
             case COPz_BCFL:
-              if (get_register (FCSR) & CSR_C)
+                if (get_register (FCR31) & FCR31_C)
                 instrBuffer.targetAddr = (t_inst *)(get_register (PC) + 8);
               else
                 instrBuffer.targetAddr =
@@ -273,7 +274,7 @@ void __single_step (void)
               break;
             case COPz_BCT:
             case COPz_BCTL:
-              if (get_register (FCSR) & CSR_C)
+                if (get_register (FCR31) & FCR31_C)
                 instrBuffer.targetAddr =
                   (t_inst *)(((signed short)inst.IType.imm<<2)
                                             + (get_register (PC) + 4));
