@@ -1116,6 +1116,15 @@ int mq&lowbar;setattr( mqd&lowbar;t mqdes, const struct mq&lowbar;attr &ast;mqst
 int mq&lowbar;getattr( mqd&lowbar;t mqdes, struct mq&lowbar;attr &ast;mqstat ); 
 int mq&lowbar;notify( mqd&lowbar;t mqdes, const struct sigevent &ast;notification );
 </screen>
+<para>From POSIX 1003.1d draft: </para>
+<screen>
+int mq&lowbar;send( mqd&lowbar;t mqdes, const char &ast;msg&lowbar;ptr,
+	     size&lowbar;t msg&lowbar;len, unsigned int msg&lowbar;prio,
+             const struct timespec *abs_timeout ); 
+ssize&lowbar;t mq&lowbar;receive( mqd&lowbar;t mqdes, char &ast;msg&lowbar;ptr,
+	            size&lowbar;t msg&lowbar;len, unsigned int &ast;msg&lowbar;prio,
+             const struct timespec *abs_timeout );
+</screen>
 </sect2>
 
 <!-- =================================================================== -->

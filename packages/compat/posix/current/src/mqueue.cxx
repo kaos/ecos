@@ -84,7 +84,10 @@
 # include <signal.h>
 # include "pprivate.h"               // cyg_sigqueue()
 #endif
-
+#ifdef CYGFUN_KERNEL_THREADS_TIMER
+# include <time.h>
+# include "pprivate.h"               // cyg_timespec_to_ticks()
+#endif
 
 /* CONSTANTS */
 
@@ -671,7 +674,186 @@ mq_receive( mqd_t mqdes, char *msg_ptr, size_t msg_len,
     
 } // mq_receive()
 
+
 //------------------------------------------------------------------------
+#ifdef CYGFUN_KERNEL_THREADS_TIMER
+externC int
+mq_timedsend( mqd_t mqdes, const char *msg_ptr, size_t msg_len,
+              unsigned int msg_prio, const struct timespec *abs_timeout)
+{
+    CYG_REPORT_FUNCTYPE( "returning %d" );
+    CYG_REPORT_FUNCARG6( "mqdes=%08x, msg_ptr=%08x, msg_len=%u, msg_prio=%u,
+	                      abs_timeout = %lu, %ld",
+                         mqdes, msg_ptr, msg_len, msg_prio, 
+                         abs_timeout->tv_sec, abs_timeout->tv_nsec);
+    CYG_CHECK_DATA_PTRC( msg_ptr );
+    
+    struct mquser *user = (struct mquser *)mqdes;
+    struct mqtabent *tabent = user->tabent;
+
+#ifdef CYGIMP_POSIX_MQUEUE_VALIDATE_DESCRIPTOR
+    if ( user->magic != MQ_VALID_MAGIC ) {
+        errno  = EBADF;
+        CYG_REPORT_RETVAL( -1 );
+        return -1;
+    }
+#endif
+    
+    if ( msg_len > (size_t)tabent->msgsize ) {
+        errno = EMSGSIZE;
+        CYG_REPORT_RETVAL( -1 );
+        return -1;
+    }
+
+    if ( msg_prio > MQ_PRIO_MAX ) {
+        errno = EINVAL;
+        CYG_REPORT_RETVAL( -1 );
+        return -1;
+    }
+
+    if ( (O_WRONLY != (user->flags & O_WRONLY)) && 
+         (O_RDWR != (user->flags & O_RDWR)) ) {
+        errno = EBADF;
+        CYG_REPORT_RETVAL( -1 );
+        return -1;
+    }
+
+    // go for it
+    Cyg_Mqueue::qerr_t err;
+    bool nonblocking = ((user->flags & O_NONBLOCK) == O_NONBLOCK);
+    bool badtimespec = (abs_timeout->tv_nsec < 0) ||
+        (abs_timeout->tv_nsec > 999999999l);
+    err = tabent->mq->put( msg_ptr, msg_len, msg_prio,
+                           !nonblocking && !badtimespec,
+                           cyg_timespec_to_ticks(abs_timeout));
+    switch (err) {
+
+    case Cyg_Mqueue::INTR:
+        errno = EINTR;
+        CYG_REPORT_RETVAL( -1 );
+        return -1;
+
+    case Cyg_Mqueue::WOULDBLOCK:
+        if (badtimespec) {
+            errno = EINVAL;
+            CYG_REPORT_RETVAL( -1 );
+            return -1;
+        }
+        CYG_ASSERT( (user->flags & O_NONBLOCK) == O_NONBLOCK,
+                    "Message queue assumed non-blocking when blocking requested"
+            );
+        errno = EAGAIN;
+        CYG_REPORT_RETVAL( -1 );
+        return -1;
+
+    case Cyg_Mqueue::TIMEOUT:
+        errno = ETIMEDOUT;
+        CYG_REPORT_RETVAL( -1 );
+        return -1;
+        
+    case Cyg_Mqueue::OK:
+        CYG_REPORT_RETVAL( 0 );
+        return 0;
+
+    default:
+        CYG_FAIL( "unhandled message queue return code" );
+        return -1; // keep compiler happy
+    } // switch
+} // mq_timedsend()
+
+//------------------------------------------------------------------------
+
+
+externC ssize_t
+mq_timedreceive( mqd_t mqdes, char *msg_ptr, size_t msg_len,
+            unsigned int *msg_prio, const struct timespec *abs_timeout)
+{
+    CYG_REPORT_FUNCTYPE( "returning %ld" );
+    CYG_REPORT_FUNCARG6( "mqdes=%08x, msg_ptr=%08x, msg_len=%u, msg_prio=%08x,
+	                      abs_timeout = %lu, %ld",
+                         mqdes, msg_ptr, msg_len, msg_prio,
+                         abs_timeout->tv_sec, abs_timeout->tv_nsec );
+    CYG_CHECK_DATA_PTRC( msg_ptr );
+    CYG_CHECK_DATA_PTRC( msg_ptr+msg_len-1 );
+    if ( NULL != msg_prio )
+        CYG_CHECK_DATA_PTRC( msg_prio );
+    
+    
+    struct mquser *user = (struct mquser *)mqdes;
+    struct mqtabent *tabent = user->tabent;
+
+#ifdef CYGIMP_POSIX_MQUEUE_VALIDATE_DESCRIPTOR
+    if ( user->magic != MQ_VALID_MAGIC ) {
+        errno  = EBADF;
+        CYG_REPORT_RETVAL( -1 );
+        return (ssize_t)-1;
+    }
+#endif
+    
+    if ( (O_RDONLY != (user->flags & O_RDONLY)) && 
+         (O_RDWR != (user->flags & O_RDWR)) ) {
+        errno = EBADF;
+        CYG_REPORT_RETVAL( -1 );
+        return (ssize_t)-1;
+    }
+
+    if ( msg_len < (size_t)tabent->msgsize ) {
+        errno = EMSGSIZE;
+        CYG_REPORT_RETVAL( -1 );
+        return (ssize_t)-1;
+    }
+
+    // go for it
+    Cyg_Mqueue::qerr_t err;
+    bool nonblocking = ((user->flags & O_NONBLOCK) == O_NONBLOCK);
+    bool badtimespec = (abs_timeout->tv_nsec < 0) ||
+        (abs_timeout->tv_nsec > 999999999l);
+    err = tabent->mq->get( msg_ptr, &msg_len, msg_prio,
+                           !nonblocking && !badtimespec,
+                           cyg_timespec_to_ticks(abs_timeout) );
+    switch (err) {
+
+    case Cyg_Mqueue::INTR:
+        errno = EINTR;
+        CYG_REPORT_RETVAL( -1 );
+        return (ssize_t)-1;
+
+    case Cyg_Mqueue::WOULDBLOCK:
+        if (badtimespec) {
+            errno = EINVAL;
+            CYG_REPORT_RETVAL( -1 );
+            return -1;
+        }
+        CYG_ASSERT( (user->flags & O_NONBLOCK) == O_NONBLOCK,
+                    "Message queue assumed non-blocking when blocking requested"
+            );
+        errno = EAGAIN;
+        CYG_REPORT_RETVAL( -1 );
+        return (ssize_t)-1;
+
+    case Cyg_Mqueue::TIMEOUT:
+        errno = ETIMEDOUT;
+        CYG_REPORT_RETVAL( -1 );
+        return -1;
+        
+    case Cyg_Mqueue::OK:
+        CYG_ASSERT( msg_len <= (size_t)tabent->msgsize,
+                    "returned message too long" );
+        if ( NULL != msg_prio )
+            CYG_ASSERT( *msg_prio <= MQ_PRIO_MAX,
+                        "returned message has invalid priority" );
+        CYG_REPORT_RETVAL( msg_len );
+        return (ssize_t)msg_len;
+
+    default:
+        CYG_FAIL( "unhandled message queue return code" );
+        return (ssize_t)-1; // keep compiler happy
+    } // switch
+    
+} // mq_timedreceive()
+
+//------------------------------------------------------------------------
+#endif
 
 #ifdef CYGFUN_POSIX_MQUEUE_NOTIFY
 
