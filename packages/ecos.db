@@ -3352,6 +3352,8 @@ target innovator {
                    CYGPKG_HAL_ARM_ARM9_INNOVATOR
                    CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
                    CYGPKG_DEVS_FLASH_ARM_INNOVATOR
+		   CYGPKG_DEVS_ETH_SMSC_LAN91CXX
+		   CYGPKG_DEVS_ETH_ARM_INNOVATOR
         }
         description "
         The Innovator HAL package provides the support needed to run

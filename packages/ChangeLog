@@ -1,3 +1,7 @@
+2003-02-12  Patrick Doyle  <wpd@delcomsys.com>
+
+	* ecos.db: Added ethernet packages to OMAP Innovator port.
+
 2003-02-05  Patrick Doyle  <wpd@delcomsys.com>
 
 	* ecos.db: Add Texas Instruments ARM9 OMAP Innovator port. Redboot
