@@ -1,3 +1,8 @@
+2003-11-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/pci.c (cyg_pci_find_device): Removed a debug print which should
+	not be there and is causing an warning.
+
 2003-11-18  Manu Sharma  <manu.sharma@ascom.com>
 
         * src/pci.c : Additional changes in cyg_pci_get_device_info, 
