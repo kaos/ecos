@@ -136,7 +136,7 @@ cdl_package CYGPKG_HAL_ARM_SA11X0_CERF {
         active_if        CYGPRI_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL_CONFIGURABLE
         flavor data
         legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
-        default_value    0
+        default_value    CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_DEFAULT
         description      "
             The cerf board has 3 serial ports. This option
             chooses which port will be used to connect to a host
@@ -146,8 +146,8 @@ cdl_package CYGPKG_HAL_ARM_SA11X0_CERF {
      cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_DEFAULT {
          display      "Default console channel."
          flavor       data
-         legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
-         calculated   0
+         legal_values 0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
+         calculated   1
      }
  
      cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL {

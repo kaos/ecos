@@ -1,3 +1,9 @@
+2003-11-01  Gary Thomas  <gary@mlbassoc.com>
+
+	* cdl/hal_arm_sa11x0_cerf.cdl: Make port 1 (uart3) be default
+	console/debug channel.  This is because the CerfCube only has
+	uart3 [physically] exposed, while the CerfBoard has uart1 as well.
+
 2003-09-21  Gary Thomas  <gary@mlbassoc.com>
 
 	* misc/redboot_RAM.ecm: 

@@ -30,6 +30,7 @@ cdl_configuration eCos {
     package -template CYGPKG_REDBOOT current ;
     package -template CYGPKG_ISOINFRA current ;
     package -template CYGPKG_LIBC_STRING current ;
+    package -template CYGPKG_CRC current ;
     package CYGPKG_NS_DNS current ;
     package CYGPKG_IO_FLASH current ;
     package CYGPKG_IO_ETH_DRIVERS current ;
@@ -86,6 +87,10 @@ cdl_component CYGBLD_BUILD_REDBOOT {
 
 cdl_component CYGPKG_REDBOOT_NETWORKING {
     user_value 1
+};
+
+cdl_option CYGBLD_REDBOOT_MIN_IMAGE_SIZE {
+    user_value 0x00040000
 };
 
 cdl_component CYGSEM_REDBOOT_FLASH_CONFIG {

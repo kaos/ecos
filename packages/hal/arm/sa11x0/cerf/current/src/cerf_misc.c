@@ -131,10 +131,16 @@ cerf_BCR(unsigned long mask, unsigned long value)
 void
 plf_hardware_init(void)
 {
+#if 0 // Is this correct?
     // Force "alternate" use of GPIO pins used for LCD screen
     *SA11X0_GPIO_ALTERNATE_FUNCTION |= 0x080003FC;  // Bits 2..9
     *SA11X0_GPIO_PIN_DIRECTION |= 0x080003FC;  // Bits 2..9
     *SA11X0_GPIO_PIN_OUTPUT_CLEAR = 0x080003FC;  // Bits 2..9
+#else
+    // Force "alternate" use of GPIO pins
+    *SA11X0_GPIO_ALTERNATE_FUNCTION  = 0x08000000;
+    *SA11X0_GPIO_PIN_DIRECTION       = 0x0B20000F;
+#endif
     *SA11X0_GPIO_PIN_OUTPUT_SET = 0x08000000;  // CRYSTAL WAKEUP(GPIO27)
 
     // Toggle A0 connected to the SBHE line on the Crystal chip.
