@@ -21,7 +21,9 @@
 #include <linux/compiler.h>
 #include "jffs2port.h"
 
-#define CONFIG_JFFS2_FS_DEBUG 0
+#ifndef CONFIG_JFFS2_FS_DEBUG
+# define CONFIG_JFFS2_FS_DEBUG 0
+#endif
 
 static inline uint32_t os_to_jffs2_mode(uint32_t osmode)
 {
