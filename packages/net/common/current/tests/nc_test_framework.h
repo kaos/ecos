@@ -73,6 +73,9 @@ typedef void *test_param_t;
 #define NC_TESTING_SLAVE_PORT  8770
 #define NC_TESTING_MASTER_PORT 8771
 
+#define __string(s) #s
+#define _string(s) __string(s)
+
 //
 // The basic idea behind this test structure is that one end will run
 // in "slave" mode and the other in "master" mode.  Typically, the slave

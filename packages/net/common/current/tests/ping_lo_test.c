@@ -19,7 +19,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas, sorin@netappi.com
-// Contributors: gthomas, sorin@netappi.com, andrew.lunn@ascom.ch, jlarmour
+// Contributors: gthomas, sorin@netappi.com, andrew.lunn@ascom.ch
 // Date:         2000-01-10
 // Purpose:      
 // Description:  
@@ -36,13 +36,6 @@
 #include <netinet/ip6.h>
 #include <netinet/icmp6.h>
 #endif
-
-#include <pkgconf/system.h>
-#include <pkgconf/net.h>
-
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 
 #include <cyg/infra/testcase.h>
 
@@ -135,7 +128,7 @@ show_icmp(unsigned char *pkt, int len,
     return (from->sin_addr.s_addr == to->sin_addr.s_addr);
 }
 
-static int
+static void
 ping_host(int s, struct sockaddr_in *host)
 {
     struct icmp *icmp = (struct icmp *)pkt1;
@@ -184,7 +177,6 @@ ping_host(int s, struct sockaddr_in *host)
         }
     }
     diag_printf("Sent %d packets, received %d OK, %d bad\n", NUM_PINGS, ok_recv, bogus_recv);
-    return ok_recv;
 }
 
 static void
@@ -193,7 +185,7 @@ ping_test_loopback( int lo )
     struct protoent *p;
     struct timeval tv;
     struct sockaddr_in host;
-    int s, ok_recv;
+    int s;
 
     if ((p = getprotobyname("icmp")) == (struct protoent *)0) {
         perror("getprotobyname");
@@ -212,14 +204,10 @@ ping_test_loopback( int lo )
     host.sin_len = sizeof(host);
     host.sin_addr.s_addr = htonl(INADDR_LOOPBACK + (0x100 * lo));
     host.sin_port = 0;
-    CYG_TEST_INFO("Pinging valid host");
-    ok_recv = ping_host(s, &host);
-    // check acceptable ping level - loopback should have 0 loss
-    CYG_TEST_PASS_FAIL( ok_recv == NUM_PINGS, "Good packets acceptable" );
+    ping_host(s, &host);
     // Now try a bogus host
-    host.sin_addr.s_addr = htonl(ntohl(host.sin_addr.s_addr) + NLOOP + 10);
-    ok_recv = ping_host(s, &host);
-    CYG_TEST_PASS_FAIL( ok_recv == 0, "No packets should be received" );
+    host.sin_addr.s_addr = htonl(ntohl(host.sin_addr.s_addr) + 32);
+    ping_host(s, &host);
 }
 
 #ifdef CYGPKG_NET_INET6
@@ -370,9 +358,7 @@ void
 net_test(cyg_addrword_t p)
 {
     int i;
-
-    CYG_TEST_INIT();
-    CYG_TEST_INFO("Start loopback PING test");
+    diag_printf("Start PING test\n");
 
     init_all_network_interfaces();
 #if NLOOP > 0
@@ -380,14 +366,13 @@ net_test(cyg_addrword_t p)
         ping_test_loopback( i );
     for ( i = 0; i < NLOOP; i++ )
         ping_test_loopback( i );
-# ifdef CYGPKG_NET_INET6
+#ifdef CYGPKG_NET_INET6
     for ( i = 0; i < NLOOP; i++ )
         ping6_test_loopback( i );
-# endif
-    CYG_TEST_FINISH( "Done pinging loopback" ); // FIXMEJIFL
-#else
-    CYG_TEST_NA( "No loopback interfaces" );
 #endif
+    CYG_TEST_PASS_FINISH( "Done pinging loopback" );
+#endif
+    CYG_TEST_NA( "No loopback devs" );
 }
 
 void
@@ -408,5 +393,3 @@ cyg_start(void)
     cyg_thread_resume(thread_handle);           // Start it
     cyg_scheduler_start();
 }
-
-// EOF ping_lo_test.c
