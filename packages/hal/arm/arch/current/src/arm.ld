@@ -77,6 +77,8 @@ OUTPUT_FORMAT(elf32-bigarm)
 #define LMA_EQ_VMA
 #define FORCE_OUTPUT . = .
 
+// Some versions of gcc define "arm" which causes problems with .note.arm.ident
+#undef arm
 #define SECTIONS_BEGIN                          \
   /* Debug information */                       \
   .debug_aranges  0 : { *(.debug_aranges) }     \
