@@ -165,7 +165,7 @@ externC int disk_register(disk_t *disk);
 #define diskerr_open      -3
 #define diskerr_read      -4
 
-externC int   disk_stream_open(char *filename, int *err);    
+externC int   disk_stream_open(connection_info_t *info, int *err);    
 externC void  disk_stream_close(int *err);    
 externC int   disk_stream_read(char *buf, int size, int *err);    
 externC char *disk_error(int err);
