@@ -335,8 +335,6 @@ cdl_package CYGPKG_HAL_I386_PC {
                              ELF image to a binary image suitable for
                              copying to a floppy disk."
         
-                compile -library=libextras.a
-        
                 make -priority 325 {
                     <PREFIX>/bin/redboot.bin : <PREFIX>/bin/redboot.elf
                     $(OBJCOPY) -O binary $< $@
