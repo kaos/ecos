@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    Red Hat
-// Contributors: hmt
+// Contributors: hmt, gthomas
 // Date:         1999-06-08
 // Purpose:      Provide basic Serial IO for MBX board
 // Description:  Serial IO for MBX boards which connect their debug channel
@@ -69,11 +69,11 @@
 #define UART_BIT_RATE(n) (((int)(CYGHWR_HAL_POWERPC_BOARD_SPEED*1000000)/16)/n)
 #define UART_BAUD_RATE CYGNUM_HAL_QUICC_DIAG_BAUD
 
-#define Rxbd     0x2800       /* Rx Buffer Descriptor Offset */
-#define Txbd     0x2808       /* Tx Buffer Descriptor Offset */
-
-#define Rxbuf    ((volatile char *)eppc + 0x2810)
-#define Txbuf    ((volatile char *)eppc + 0x2820)
+#define Txbd     0x2800       /* Tx Buffer Descriptor Offset */
+#define Txbuf    ((volatile char *)eppc + 0x2808)
+#define Rxbd     0x2810       /* Rx Buffer Descriptor Offset */
+#define NUM_Rxbd 4
+#define Rxbuf    ((volatile char *)eppc + Rxbd + (NUM_Rxbd*sizeof(struct cp_bufdesc)))
 
 // SMC Events (interrupts)
 #define QUICC_SMCE_BRK 0x10  // Break received
@@ -81,6 +81,7 @@
 #define QUICC_SMCE_TX  0x02  // Tx interrupt
 #define QUICC_SMCE_RX  0x01  // Rx interrupt
 
+static struct cp_bufdesc *next_rxbd;
 
 /*
  *  Initialize SMC1 as a uart.
@@ -112,10 +113,6 @@ cyg_hal_plf_serial_init_channel(void)
     /* SMC1 Uart parameter ram */
     uart_pram = &eppc->pram[2].scc.pothers.smc_modem.psmc.u;
 
-    /* tx and rx buffer descriptors */
-    txbd = (struct cp_bufdesc *)((char *)eppc + Txbd);
-    rxbd = (struct cp_bufdesc *)((char *)eppc + Rxbd);
-
     /*
      *  Set up the PortB pins for UART operation.
      *  Set PAR and DIR to allow SMCTXD1 and SMRXD1
@@ -124,10 +121,8 @@ cyg_hal_plf_serial_init_channel(void)
     eppc->pip_pbpar |= 0xc0;
     eppc->pip_pbdir &= ~0xc0;
 
-
     /* Configure baud rate generator (Section 16.13.2) */
     eppc->brgc1 = 0x10000 | (UART_BIT_RATE(UART_BAUD_RATE)<<1);
-
 
     /*
      *  NMSI mode, BRG1 to SMC1
@@ -141,11 +136,6 @@ cyg_hal_plf_serial_init_channel(void)
      */
     uart_pram->rbase = Rxbd;
     uart_pram->tbase = Txbd;
-
-    /*
-     *  Init Rx & Tx params for SMC1
-     */
-    eppc->cp_cr = 0x91;
 
     /*
      *  SDMA & LCD bus request level 5
@@ -175,12 +165,24 @@ cyg_hal_plf_serial_init_channel(void)
     /* 1 break char sent on top XMIT */
     uart_pram->brkcr = 1;
 
-    /* setup RX buffer descriptor */
-    rxbd->length = 0;
-    rxbd->buffer = Rxbuf;
-    rxbd->ctrl   = 0xb000;
+    /* setup RX buffer descriptors */
+    rxbd = (struct cp_bufdesc *)((char *)eppc + Rxbd);
+    next_rxbd = rxbd;
+    for (i = 0;  i < NUM_Rxbd;  i++) {
+        rxbd->length = 0;
+        rxbd->buffer = Rxbuf+i;
+        rxbd->ctrl   = QUICC_BD_CTL_Ready | QUICC_BD_CTL_Int;
+        if (i == (NUM_Rxbd-1)) {
+            rxbd->ctrl   |= QUICC_BD_CTL_Wrap;
+        }
+        rxbd++;
+    }
+    // Compiler bug: for whatever reason, the Wrap code above fails!
+    rxbd = (struct cp_bufdesc *)((char *)eppc + Rxbd);
+    rxbd[NUM_Rxbd-1].ctrl   |= QUICC_BD_CTL_Wrap;
 
     /* setup TX buffer descriptor */
+    txbd = (struct cp_bufdesc *)((char *)eppc + Txbd);
     txbd->length = 1;
     txbd->buffer = Txbuf;
     txbd->ctrl   = 0x2000;
@@ -198,6 +200,11 @@ cyg_hal_plf_serial_init_channel(void)
      */
     eppc->smc_regs[0].smc_smcmr = 0x4820;
     eppc->smc_regs[0].smc_smcmr = 0x4823;
+
+    /*
+     *  Init Rx & Tx params for SMC1
+     */
+    eppc->cp_cr = 0x91;
 
 #ifndef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // remove below
 #ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
@@ -300,7 +307,7 @@ cyg_hal_plf_serial_getc_nonblock(void* __ch_data, cyg_uint8* ch)
     int cache_state;
 
     /* rx buffer descriptor */
-    bd = (struct cp_bufdesc *)((char *)eppc + uart_pram->rbptr);
+    bd = next_rxbd;
 
     if (bd->ctrl & QUICC_BD_CTL_Ready)
         return false;
@@ -310,6 +317,13 @@ cyg_hal_plf_serial_getc_nonblock(void* __ch_data, cyg_uint8* ch)
     bd->length = 0;
     bd->buffer[0] = '\0';
     bd->ctrl |= QUICC_BD_CTL_Ready;
+    if (bd->ctrl & QUICC_BD_CTL_Wrap) {
+        bd = (struct cp_bufdesc *)((char *)eppc + Rxbd);
+    } else {
+        bd++;
+    }
+    next_rxbd = bd;
+
     // Note: the MBX860 does not seem to snoop/invalidate the data cache properly!
     HAL_DCACHE_IS_ENABLED(cache_state);
     if (cache_state) {
@@ -434,14 +448,20 @@ cyg_hal_plf_serial_isr(void *__ch_data, int* __ctrlc,
         eppc->smc_regs[0].smc_smce = QUICC_SMCE_RX;
 
         /* rx buffer descriptors */
-        bd = (struct cp_bufdesc *)((char *)eppc + Rxbd);
+        bd = next_rxbd;
 
         if ((bd->ctrl & QUICC_BD_CTL_Ready) == 0) {
             
             // then there be a character waiting
             ch = bd->buffer[0];
             bd->length = 1;
-            bd->ctrl   = QUICC_BD_CTL_Ready | QUICC_BD_CTL_Wrap | QUICC_BD_CTL_Int;
+            bd->ctrl   |= QUICC_BD_CTL_Ready | QUICC_BD_CTL_Int;
+            if (bd->ctrl & QUICC_BD_CTL_Wrap) {
+                bd = (struct cp_bufdesc *)((char *)eppc + Rxbd);
+            } else {
+                bd++;
+            }
+            next_rxbd = bd;
         
             if( cyg_hal_is_break( &ch , 1 ) )
                 *__ctrlc = 1;
@@ -466,7 +486,6 @@ cyg_hal_plf_serial_init(void)
 {
     hal_virtual_comm_table_t* comm;
     int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
-    volatile EPPC *eppc = eppc_base();
 
     static int init = 0;  // It's wrong to do this more than once
     if (init) return;

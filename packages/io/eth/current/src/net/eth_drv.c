@@ -295,7 +295,8 @@ eth_drv_init(struct eth_drv_sc *sc, unsigned char *enaddr)
     struct ifnet *ifp = &sc->sc_arpcom.ac_if;
 
     // Set up hardware address
-    bcopy(enaddr, &sc->sc_arpcom.ac_enaddr, ETHER_ADDR_LEN);
+    if (NULL != enaddr)
+        bcopy(enaddr, &sc->sc_arpcom.ac_enaddr, ETHER_ADDR_LEN);
 
     // Initialize ifnet structure
     bcopy((void *)sc->dev_name, ifp->if_xname, IFNAMSIZ);

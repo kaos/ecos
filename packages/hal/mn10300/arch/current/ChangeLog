@@ -1,3 +1,9 @@
+2001-01-18  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/vectors.S: Added underscore to reference to
+	cyg_scheduler_sched_lock, since CYGBLD_ATTRIB_ASM_ALIAS() now adds
+	one automatically.
+
 2000-11-30  Drew Moseley  <dmoseley@redhat.com>
 
 	* include/hal_arch.h: Handle Cygmon interrupt stack.  ie For

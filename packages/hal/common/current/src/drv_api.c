@@ -60,7 +60,7 @@
 //--------------------------------------------------------------------------
 // Statics
 
-static volatile cyg_int32 isr_disable_counter;  // ISR disable counter
+static volatile cyg_int32 isr_disable_counter = 1;  // ISR disable counter
 
 volatile cyg_int32 dsr_disable_counter asm("cyg_scheduler_sched_lock");  // DSR disable counter
 

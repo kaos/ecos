@@ -233,11 +233,13 @@ int exec_command(struct extensible *ex)
 
 void wait_on_exec(struct extensible *ex)
 {
+#ifndef __ECOS
 #ifndef EXCACHETIME
     if (ex->pid && waitpid(ex->pid,&ex->result,0) < 0) {
       setPerrorstatus("waitpid");
     }
     ex->pid = 0;
+#endif
 #endif
 }
 
@@ -528,7 +530,9 @@ restart_hook(int action,
 #ifdef SIGALRM
     signal(SIGALRM,restart_doit);
 #endif
+#ifndef __ECOS
     alarm(RESTARTSLEEP);
+#endif
   } 
   return SNMP_ERR_NOERROR;
 }

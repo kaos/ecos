@@ -46,6 +46,7 @@
 #include <cyg/hal/sh3_offsets.inc>
 
 #include <cyg/hal/arch.inc>
+#include <cyg/hal/hal_intr.h>
 
 #---------------------------------------------------------------------------
 # Cache operations
@@ -186,3 +187,43 @@ $MASK:
         .long   0x1fffffff              ! mask off top 3 bits
 $BASE:
         .long   0xa0000000              ! base of non-cachable memory
+
+        .data
+
+SYM_DEF(cyg_hal_ILVL_table)
+        # The first entries in the table have static priorities.
+
+        .byte   0xf                     // NMI
+        .byte   0xf                     // Reserved
+        .byte   0xf                     // LVL0
+        .byte   0xe                     // LVL1
+        .byte   0xd                     // LVL2
+        .byte   0xc                     // LVL3
+        .byte   0xb                     // LVL4
+        .byte   0xa                     // LVL5
+        .byte   0x9                     // LVL6
+        .byte   0x8                     // LVL7
+        .byte   0x7                     // LVL8
+        .byte   0x6                     // LVL9
+        .byte   0x5                     // LVL10
+        .byte   0x4                     // LVL11
+        .byte   0x3                     // LVL12
+        .byte   0x2                     // LVL13
+        .byte   0x1                     // LVL14
+        .byte   0xf                     // Reserved
+
+        # The rest of the table consists of programmable levels, maintained
+        # by the HAL_INTERRUPT_SET_LEVEL macro. 
+        # These default to the highest level so that a spurious
+        # interrupt cause the IPL to be suddenly lowered to allow all
+        # interrupts. This should give a better chance at tracking down
+        # the problem.
+        .rept   (CYGNUM_HAL_ISR_MAX-CYGNUM_HAL_INTERRUPT_RESERVED_3E0)
+        .byte   0xf
+        .endr
+
+        # All interrupts are masked initally. Set to 1 to enable.
+SYM_DEF(cyg_hal_IMASK_table)
+        .rept   (CYGNUM_HAL_ISR_MAX)
+        .byte   0x0
+        .endr

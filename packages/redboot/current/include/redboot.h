@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -90,9 +90,11 @@ EXTERN int script_timeout;
 #endif
 
 // Prototypes
-int  printf(char *fmt, ...);
+typedef int _printf_fun(char *fmt, ...);
+_printf_fun printf;
 int  vprintf(char *fmt, va_list ap);
 int  sprintf(char *buf, char *fmt, ...);
+int  vsprintf(char *buf, char *fmt, va_list ap);
 int  strlen(const char *str);
 int  strcmp(const char *s1, const char *s2);
 int  strncmp(const char *s1, const char *s2, int len);
@@ -104,6 +106,7 @@ void mon_write_char(char c);
 bool verify_action(char *fmt, ...);
 void dump_buf(void *, CYG_ADDRWORD);
 void dump_buf_with_offset(void *, CYG_ADDRWORD, void *);
+void vdump_buf_with_offset(_printf_fun *pf, void *, CYG_ADDRWORD, void *);
 
 // Read a single line of input from the console, possibly with timeout
 int  gets(char *line, int len, int timeout);

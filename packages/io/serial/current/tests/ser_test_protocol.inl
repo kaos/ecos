@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     jskov
-// Contributors:  jskov
+// Contributors:  jskov, gthomas
 // Date:          1999-03-17
 // Description:   Protocol implementation used to test eCos serial devices.
 //                Relies on ser_filter to be present on the host side to
@@ -56,7 +56,7 @@
 #include <cyg/infra/diag.h>
 #include <cyg/infra/cyg_ass.h>
 
-#include <cyg/hal/hal_intr.h>           // for reclaiming interrup vector
+#include <cyg/hal/hal_intr.h>           // for reclaiming interrupt vector
 
 //----------------------------------------------------------------------------
 // Definition of which device to run tests on on various platforms.

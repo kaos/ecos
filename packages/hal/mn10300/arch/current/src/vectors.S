@@ -315,14 +315,14 @@ _start:
 
 #ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
 	
-	.extern	cyg_scheduler_sched_lock
+	.extern	_cyg_scheduler_sched_lock
 	
 	# Increment the scheduler lock
 			
 	.macro increment_sched_lock reg=d0
-	mov	(cyg_scheduler_sched_lock),\reg
+	mov	(_cyg_scheduler_sched_lock),\reg
 	inc	\reg
-	mov	\reg,(cyg_scheduler_sched_lock)
+	mov	\reg,(_cyg_scheduler_sched_lock)
 	.endm
 
 #else

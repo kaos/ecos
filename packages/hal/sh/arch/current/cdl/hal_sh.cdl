@@ -165,4 +165,13 @@ cdl_package CYGPKG_HAL_SH {
 	no_define
         calculated  { "src/sh.ld" }
     }
+
+    cdl_option CYGPKG_HAL_SH_TESTS {
+        display "SH tests"
+        flavor  data
+        no_define
+        calculated { "tests/intr0" }
+        description   "
+            This option specifies the set of tests for the SH HAL."
+    }
 }

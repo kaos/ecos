@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -581,12 +581,7 @@ __tcp_listen(tcp_socket_t *s, word port)
     s->our_port = port;
     s->pkt.buf = (word *)s->pktbuf;
     s->pkt.bufsize = ETH_MAX_PKTLEN;
-#if 0
-    s->pkt.eth_hdr = (eth_header_t *)s->pkt.buf;
-    s->pkt.ip_hdr  = (ip_header_t *)(s->pkt.eth_hdr + 1);
-#else
     s->pkt.ip_hdr  = (ip_header_t *)s->pkt.buf;
-#endif
     s->pkt.tcp_hdr = (tcp_header_t *)(s->pkt.ip_hdr + 1);
 
     s->next = tcp_list;

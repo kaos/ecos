@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    jskov
-// Contributors: jskov
+// Contributors: jskov, gthomas
 // Date:         2000-02-11
 // Purpose:      PowerPC variant interrupt handlers
 // Description:  This file contains code to handle interrupt related issues
@@ -121,6 +121,9 @@ hal_variant_IRQ_init(void)
 
     // Disable timers
     CYGARC_MTSPR(SPR_TCR, 0);
+
+    // Let the platform do any overrides
+    hal_platform_IRQ_init();
 }
 
 externC void 
@@ -264,10 +267,10 @@ hal_ppc40x_interrupt_configure(int vector, int level, int dir)
     if ((vector >= CYGNUM_HAL_INTERRUPT_EXT0) &&
         (vector <= CYGNUM_HAL_INTERRUPT_EXT4)) {
         mask = 0x03 << (30 - ((vector - CYGNUM_HAL_INTERRUPT_EXT0)*2));
-        new_state = 0x00;        
+        new_state = (dir & 0x01);  // Up/Down    
         if (level == 0) {
             // Edge triggered
-            new_state = 0x02 | (dir & 0x01);  // Up/Down
+            new_state = 0x02;
         }
         new_state <<= (30 - ((vector - CYGNUM_HAL_INTERRUPT_EXT0)*2));
         CYGARC_MFDCR(DCR_IOCR, iocr);

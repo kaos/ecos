@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     Red Hat, jskov
-// Contributors:  Red Hat, jskov
+// Contributors:  Red Hat, jskov, gthomas
 // Date:          1998-08-20
 // Purpose:       
 // Description:   Helper functions for stub, generic to all PowerPC processors
@@ -54,6 +54,10 @@
 #include <cyg/hal/hal_stub.h>
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_intr.h>
+
+#ifdef CYGNUM_HAL_NO_VECTOR_TRACE
+#define USE_BREAKPOINTS_FOR_SINGLE_STEP
+#endif
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
 #include <cyg/hal/dbg-threads-api.h>    // dbg_currthread_id
@@ -89,6 +93,11 @@ int __computeSignal (unsigned int trap_number)
         // The register PS contains the value of SRR1 at the time of
         // exception entry. Bits 11-15 contain information about the
         // cause of the exception. Bits 16-31 the PS (MSR) state.
+#ifdef USE_BREAKPOINTS_FOR_SINGLE_STEP
+        if (__is_single_step(get_register(PC))) {
+            return SIGTRAP;
+        }
+#endif
         switch ((get_register (PS) >> 17) & 0xf){
         case 1:                         /* trap */
             return SIGTRAP;
@@ -98,7 +107,7 @@ int __computeSignal (unsigned int trap_number)
         case 8:                         /* floating point */
             return SIGFPE;
         default:                        /* should never happen! */
-            return SIGTERM;
+            return SIGILL;
         }            
 
     case CYGNUM_HAL_VECTOR_RESERVED_A:
@@ -178,6 +187,178 @@ void set_pc (target_register_t pc)
    This may be done by setting breakpoints or setting a single step flag
    in the saved user registers, for example. */
 
+#ifdef USE_BREAKPOINTS_FOR_SINGLE_STEP
+
+#if (HAL_BREAKINST_SIZE == 1)
+typedef cyg_uint8 t_inst;
+#elif (HAL_BREAKINST_SIZE == 2)
+typedef cyg_uint16 t_inst;
+#elif (HAL_BREAKINST_SIZE == 4)
+typedef cyg_uint32 t_inst;
+#else
+#error "Don't know how to handle that size"
+#endif
+
+typedef struct
+{
+  t_inst *targetAddr;
+  t_inst savedInstr;
+} instrBuffer;
+
+static instrBuffer sstep_instr[2];
+static target_register_t irq_state = 0;
+
+static void 
+__insert_break(int indx, target_register_t pc)
+{
+    sstep_instr[indx].targetAddr = (t_inst *)pc;
+    sstep_instr[indx].savedInstr = *(t_inst *)pc;
+    *(t_inst*)pc = (t_inst)HAL_BREAKINST;
+    __data_cache(CACHE_FLUSH);
+    __instruction_cache(CACHE_FLUSH);
+}
+
+static void 
+__remove_break(int indx)
+{
+    if (sstep_instr[indx].targetAddr != 0) {
+        *(sstep_instr[indx].targetAddr) = sstep_instr[indx].savedInstr;
+        sstep_instr[indx].targetAddr = 0;
+        __data_cache(CACHE_FLUSH);
+        __instruction_cache(CACHE_FLUSH);
+    }
+}
+
+int
+__is_single_step(target_register_t pc)
+{
+    return (sstep_instr[0].targetAddr == pc) ||
+        (sstep_instr[1].targetAddr == pc);
+}
+
+
+// Compute the target address for this instruction, if the instruction
+// is some sort of branch/flow change.
+
+struct xl_form {
+    unsigned int op : 6;
+    unsigned int bo : 5;
+    unsigned int bi : 5;
+    unsigned int reserved : 5;
+    unsigned int xo : 10;
+    unsigned int lk : 1;
+};
+
+struct i_form {
+    unsigned int op : 6;
+    signed   int li : 24;
+    unsigned int aa : 1;
+    unsigned int lk : 1;
+};
+
+struct b_form {
+    unsigned int op : 6;
+    unsigned int bo : 5;
+    unsigned int bi : 5;
+    signed   int bd : 14;
+    unsigned int aa : 1;
+    unsigned int lk : 1;
+};
+
+union ppc_insn {
+    unsigned int   word;
+    struct i_form  i;
+    struct b_form  b;
+    struct xl_form xl;
+};
+
+static target_register_t
+__branch_pc(target_register_t pc)
+{
+    union ppc_insn insn;
+
+    insn.word = *(t_inst *)pc;
+
+    // Decode the instruction to determine the instruction which will follow
+    // Note: there are holes in this process, but the important ones work
+    switch (insn.i.op) {
+    case 16:
+	/* bcx */
+	if (insn.b.aa) {
+	    return (target_register_t)(insn.b.bd << 2);
+        } else {
+	    return (target_register_t)((insn.b.bd << 2) + (long)pc);
+        }
+    case 18:
+	/* bx */
+	if (insn.i.aa) {
+	    return (target_register_t)(insn.i.li << 2);
+        } else {
+	    return (target_register_t)((insn.i.li << 2) + (long)pc);
+        }
+    case 19:
+	if (insn.xl.reserved == 0) {
+	    if (insn.xl.xo == 528) {
+		/* bcctrx */
+                return (target_register_t)(get_register(CNT) & ~3);
+	    } else if (insn.xl.xo == 16) {
+		/* bclrx */
+                return (target_register_t)(get_register(LR) & ~3);
+	    }
+	}
+	break;
+    default:
+	break;
+    }
+    return (pc+4);
+}
+
+void __single_step(void)
+{
+    target_register_t msr = get_register(PS);
+    target_register_t pc = get_register(PC);
+    target_register_t next_pc = __branch_pc(pc);
+
+    // Disable interrupts.
+    irq_state = msr & MSR_EE;
+    msr &= ~MSR_EE;
+    put_register (PS, msr);
+
+    // Set a breakpoint at the next instruction
+    __insert_break(0, pc+4);
+    if (next_pc != (pc+4)) {
+        __insert_break(1, next_pc);
+    }
+}
+
+/* Clear the single-step state. */
+
+void __clear_single_step(void)
+{
+    target_register_t msr = get_register (PS);
+
+    // Restore interrupt state.
+    // FIXME: Should check whether the executed instruction changed the
+    // interrupt state - or single-stepping a MSR changing instruction
+    // may result in a wrong EE. Not a very likely scenario though.
+    msr |= irq_state;
+
+    // This function is called much more than its counterpart
+    // __single_step.  Only re-enable interrupts if they where
+    // disabled during the previous cal to __single_step. Otherwise,
+    // this function only makes "extra sure" that no trace or branch
+    // exception will happen.
+    irq_state = 0;
+
+    put_register (PS, msr);
+
+    // Remove breakpoints
+    __remove_break(0);
+    __remove_break(1);
+}
+
+#else
+
 static target_register_t irq_state = 0;
 
 void __single_step (void)
@@ -216,7 +397,7 @@ void __clear_single_step (void)
 
     put_register (PS, msr);
 }
-
+#endif
 
 void __install_breakpoints (void)
 {

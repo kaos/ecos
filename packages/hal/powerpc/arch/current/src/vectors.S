@@ -23,7 +23,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -378,11 +378,11 @@ _start:
         bl      hal_enable_caches
 #endif // CYGHWR_HAL_POWERPC_ENABLE_MMU
 
-        # call c++ constructors
-        bl      cyg_hal_invoke_constructors
-
         # set up platform specific interrupt environment
         bl      hal_IRQ_init
+
+        # call c++ constructors
+        bl      cyg_hal_invoke_constructors
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
         bl      initialize_stub

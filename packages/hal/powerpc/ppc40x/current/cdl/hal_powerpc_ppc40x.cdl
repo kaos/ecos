@@ -84,23 +84,5 @@ cdl_package CYGPKG_HAL_POWERPC_PPC40x {
         no_define
     }
 
-    cdl_option CYGSEM_HAL_USE_ROM_MONITOR {
-        display       "Work with a ROM monitor"
-        flavor        bool
-        default_value { (CYG_HAL_STARTUP == "RAM" &&
-                        !CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS &&
-                        !CYGINT_HAL_USE_ROM_MONITOR_UNSUPPORTED &&
-                        !CYGSEM_HAL_POWERPC_COPY_VECTORS) ? 1 : 0 }
-        parent        CYGPKG_HAL_ROM_MONITOR
-        requires      { CYG_HAL_STARTUP == "RAM" }
-        requires      ! CYGSEM_HAL_POWERPC_COPY_VECTORS
-        requires      ! CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-        requires      ! CYGINT_HAL_USE_ROM_MONITOR_UNSUPPORTED
-        description   "
-            Allow coexistence with ROM monitor (CygMon or GDB stubs) by
-            only initializing interrupt vectors on startup, thus leaving
-            exception handling to the ROM monitor."
-    }
-
     compile       var_intr.c var_misc.c variant.S
 }

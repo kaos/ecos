@@ -1,3 +1,9 @@
+2001-01-17  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/mibgroup/util_funcs.c (restart_hook): Don't use alarm() in eCos
+	(wait_on_exec): Don't use waitpid() in eCos
+	The above prevent link errors.
+
 2001-01-10  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/snmpagent.cdl: Clarify ISO C requirements

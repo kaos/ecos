@@ -25,7 +25,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -246,7 +246,7 @@ __exception_\name:
 	cntlzw	r3,\dreg			# find highest "1" bit
 	slwi	r3,r3,2
 	lwi	\dreg,EXISR_TAB			# convert bit # to signal #
-	lwz	\dreg,0(\dreg)
+	lwzx	\dreg,\dreg,r3
 1:      stw     \dreg,CYGARC_PPCREG_VECTOR(\state) # update vector in state frame.
         slwi    \dreg,\dreg,2                   # convert to byte offset.
         .endm                              

@@ -1,3 +1,9 @@
+2001-01-15  Gary Thomas  <gthomas@redhat.com>
+
+	* src/quicc_smc1.c: Provide for multiple serial input buffers
+	since the single buffer/descriptor model fails miserably on some
+	newer chips [at least 855T].
+
 2001-01-03  Gary Thomas  <gthomas@redhat.com>
 
 	* include/ppc8xx.h: Layout of I2C and IDMA was [slightly] wrong.

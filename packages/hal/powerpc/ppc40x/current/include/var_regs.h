@@ -26,7 +26,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -135,6 +135,13 @@
 #define TSR_WRS_System  0x30000000  //   System reset by watchdog
 #define TSR_PIS         0x08000000  // Programmable timer interrupt
 #define TSR_FIS         0x04000000  // Fixed timer interrupt
+
+// Debug registers
+#define SPR_DBSR        1008
+#define SPR_DBCR        1010
+
+#define DBCR_IDM        0x40000000  // Internal debug enable
+#define DBCR_IC         0x08000000  // Instruction completion
 
 #endif //  CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
 

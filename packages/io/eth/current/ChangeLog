@@ -1,3 +1,7 @@
+2001-01-15  Jesper Skov  <jskov@redhat.com>
+
+	* src/net/eth_drv.c (eth_drv_init): Do not use enaddr if NULL.
+
 2001-01-07  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/eth_drivers.cdl: Add interface 'CYGPKG_NET_DRIVER_FRAMEWORK'

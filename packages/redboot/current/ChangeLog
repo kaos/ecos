@@ -1,3 +1,25 @@
+2001-01-18  Gary Thomas  <gthomas@redhat.com>
+
+	* include/net/net.h: 
+	* src/net/pktbuf.c (__pktbuf_alloc): 
+	* src/net/tcp.c (__tcp_listen): Remove obsolete code regarding
+	'eth_hdr' stored with packet buffer.
+
+2001-01-17  Hugo Tyson  <hmt@redhat.com>
+
+	* src/io.c (dump_buf_with_offset): Fix previous change so it
+	compiles; variable names used not same as parm names in func.
+
+2001-01-16  Gary Thomas  <gthomas@redhat.com>
+
+	* src/xyzModem.c: Improved debug support - now allows debug 
+	trace to be kept in memory and dumped at completion.
+
+	* src/io.c (vdump_buf_with_offset): New function which allows
+	dumping via any generic "print" function.
+
+	* include/redboot.h: Export new print/dump functions.
+
 2001-01-08  Gary Thomas  <gthomas@redhat.com>
 
 	* src/net/arp.c: Add special case handling for ARP(self).

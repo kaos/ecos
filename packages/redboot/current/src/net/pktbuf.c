@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -111,12 +111,7 @@ __pktbuf_alloc(int nbytes)
 
     if (p) {
 	free_list = p->next;
-#if 0
-	p->eth_hdr = (eth_header_t *)p->buf;
-	p->ip_hdr  = (ip_header_t *)(p->eth_hdr + 1);
-#else
 	p->ip_hdr  = (ip_header_t *)p->buf;
-#endif
 	p->tcp_hdr = (tcp_header_t *)(p->ip_hdr + 1);
 	p->pkt_bytes = 0;
 #if BUFF_STATS

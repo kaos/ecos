@@ -250,7 +250,7 @@ gets(char *buf, int buflen, int timeout)
 }
 
 void
-dump_buf_with_offset(void *_p, CYG_ADDRWORD s, void *_base)
+vdump_buf_with_offset(_printf_fun *pf, void *_p, CYG_ADDRWORD s, void *_base)
 {
     int i, c;
     cyg_uint8 *p = (cyg_uint8 *)_p;
@@ -261,20 +261,20 @@ dump_buf_with_offset(void *_p, CYG_ADDRWORD s, void *_base)
     }
     while ((int)s > 0) {
         if (base) {
-            printf("0x%08X: ", (CYG_ADDRWORD)p - (CYG_ADDRWORD)base);
+            (*pf)("0x%08X: ", (CYG_ADDRWORD)p - (CYG_ADDRWORD)base);
         } else {
-            printf("0x%08X: ", (CYG_ADDRWORD)p);
+            (*pf)("0x%08X: ", (CYG_ADDRWORD)p);
         }
         for (i = 0;  i < 16;  i++) {
             if (i < (int)s) {
-                printf("%02X", p[i] & 0xFF);
+                (*pf)("%02X", p[i] & 0xFF);
             } else {
-                printf("  ");
+                (*pf)("  ");
             }
-            if ((i % 2) == 1) printf(" ");
-            if ((i % 8) == 7) printf(" ");
+            if ((i % 2) == 1) (*pf)(" ");
+            if ((i % 8) == 7) (*pf)(" ");
         }
-        printf(" |");
+        (*pf)(" |");
         for (i = 0;  i < 16;  i++) {
             if (i < (int)s) {
                 c = p[i] & 0xFF;
@@ -282,12 +282,18 @@ dump_buf_with_offset(void *_p, CYG_ADDRWORD s, void *_base)
             } else {
                 c = ' ';
             }
-            printf("%c", c);
+            (*pf)("%c", c);
         }
-        printf("|\n");
+        (*pf)("|\n");
         s -= 16;
         p += 16;
     }
+}
+
+void
+dump_buf_with_offset(void *p, CYG_ADDRWORD s, void *base)
+{
+    vdump_buf_with_offset(printf, p, s, base);
 }
 
 void

@@ -92,27 +92,17 @@ hal_variant_init(void)
 //---------------------------------------------------------------------------
 // Interrupt function support
 
-#ifdef CYGSEM_HAL_COMMON_INTERRUPTS_ALLOW_NESTING
 externC cyg_uint8 cyg_hal_ILVL_table[];
-#define HAL_UPDATE_ILVL_TABLE(_vector_, _level_)                         \
-    /* Update the ILVL table, so it is easy for the interrupt entry */   \
-    /* code to find out the level of a given interrupt source.      */   \
-    cyg_hal_ILVL_table[(_vector_)] = (_level_)
-#else
-#define HAL_UPDATE_ILVL_TABLE(_vector_, _level_)
-#endif
+externC cyg_uint8 cyg_hal_IMASK_table[];
 
-void
-hal_interrupt_set_level(int vector, int level)
+static void
+hal_interrupt_update_level(int vector)
 {
     cyg_uint16 iprX;                                                     
-                                                                         
-    CYG_ASSERT((0 <= (level) && 15 >= (level)), "Illegal level");    
-    CYG_ASSERT((CYGNUM_HAL_ISR_MIN <= (vector)                         
-                && CYGNUM_HAL_ISR_MAX >= (vector)), "Illegal vector"); 
-                                                                         
-    HAL_UPDATE_ILVL_TABLE(vector, level);                            
-                                                                         
+    int level;
+
+    level = cyg_hal_IMASK_table[vector] ? cyg_hal_ILVL_table[vector] : 0;
+
     switch( (vector) ) {                                               
     case CYGNUM_HAL_INTERRUPT_NMI:                                       
         /* fall through */                                               
@@ -297,6 +287,18 @@ hal_interrupt_set_level(int vector, int level)
 }
 
 void
+hal_interrupt_set_level(int vector, int level)
+{
+    CYG_ASSERT((0 <= (level) && 15 >= (level)), "Illegal level");    
+    CYG_ASSERT((CYGNUM_HAL_ISR_MIN <= (vector)                         
+                && CYGNUM_HAL_ISR_MAX >= (vector)), "Illegal vector"); 
+                                                                         
+    cyg_hal_ILVL_table[vector] = level;
+
+    hal_interrupt_update_level(vector);
+}
+
+void
 hal_interrupt_mask(int vector)                                    
 {
     switch( (vector) ) {                                                
@@ -306,7 +308,8 @@ hal_interrupt_mask(int vector)
         /* Can only be masked by fiddling Imask in SR. */                 
         break;                                                            
     case CYGNUM_HAL_INTERRUPT_TMU0_TUNI0 ... CYGNUM_HAL_ISR_MAX:            
-        HAL_INTERRUPT_SET_LEVEL((vector), 0);                           
+        cyg_hal_IMASK_table[vector] = 0;
+        hal_interrupt_update_level(vector);
         break;                                                            
     case CYGNUM_HAL_INTERRUPT_RESERVED_1E0:                               
     case CYGNUM_HAL_INTERRUPT_RESERVED_3E0:                               
@@ -328,7 +331,8 @@ hal_interrupt_unmask(int vector)
         /* Can only be unmasked by fiddling Imask in SR. */               
         break;                                                            
     case CYGNUM_HAL_INTERRUPT_TMU0_TUNI0 ... CYGNUM_HAL_ISR_MAX:            
-        HAL_INTERRUPT_SET_LEVEL((vector), 1);                           
+        cyg_hal_IMASK_table[vector] = 1;
+        hal_interrupt_update_level(vector);
         break;                                                            
     case CYGNUM_HAL_INTERRUPT_RESERVED_1E0:                               
     case CYGNUM_HAL_INTERRUPT_RESERVED_3E0:                               

@@ -1,3 +1,9 @@
+2001-01-18  Jesper Skov  <jskov@redhat.com>
+
+	Case 105302
+	* src/vectors.S: Moved ILVL table to variant code.
+	* tests/intr0.c: Added.
+
 2001-01-04  Jesper Skov  <jskov@redhat.com>
 
 	* src/sh.ld: Make sure .data and .bss section sizes are aligned.

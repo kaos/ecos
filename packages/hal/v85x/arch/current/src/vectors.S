@@ -351,8 +351,8 @@ do_interrupt:
         // increment the scheduler lock and handle the interrupt
 
 #ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT			
-        .extern	cyg_scheduler_sched_lock
-        lea     cyg_scheduler_sched_lock,r7
+        .extern	_cyg_scheduler_sched_lock
+        lea     _cyg_scheduler_sched_lock,r7
         ld.w    0[r7],r8
         addi    1,r8,r8
         st.w    r8,0[r7]

@@ -1,3 +1,15 @@
+2001-01-16  Gary Thomas  <gthomas@redhat.com>
+
+	* src/vectors.S (_start): Set up IRQ environment _before_ calling
+	constructors - since they may need it to work.
+
+2001-01-15  Gary Thomas  <gthomas@redhat.com>
+
+	* src/ppc_stub.c: Define new method for achieving single stepping
+	when processor (like 40x) does not support it in hardware.  This
+	method will be invoked if the variant or plaform define the 
+	symbol CYGNUM_HAL_NO_VECTOR_TRACE.
+
 2001-01-03  Gary Thomas  <gthomas@redhat.com>
 
 	* src/hal_intr.c (hal_delay_us): Fix some problems - didn't

@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -260,9 +260,6 @@ typedef struct {
 
 typedef struct _pktbuf {
     struct _pktbuf *next;
-#if 0
-    eth_header_t   *eth_hdr;		/* pointer to ethernet header */
-#endif
     union {
 	ip_header_t *__iphdr;		/* pointer to IP header */
 	arp_header_t *__arphdr;		/* pointer to ARP header */

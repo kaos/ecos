@@ -1,3 +1,10 @@
+2001-01-18  Jesper Skov  <jskov@redhat.com>
+
+	Case 105302
+	* src/var_misc.c: Separate interrupt level and mask controls.
+	* src/variant.S: Include cyg_hal_ILVL_table and
+	cyg_hal_IMASK_table.
+
 2000-11-22  Jesper Skov  <jskov@redhat.com>
 
  	* src/variant.S: Mangle symbols.

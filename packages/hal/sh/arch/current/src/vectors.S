@@ -832,36 +832,6 @@ SYM_DEF(hal_interrupt_objects)
         .long   0
         .endr
 
-#ifdef CYGSEM_HAL_COMMON_INTERRUPTS_ALLOW_NESTING
-SYM_DEF(cyg_hal_ILVL_table)
-        # The first entries in the table have static priorities.
-
-        .byte   0xf                     // NMI
-        .byte   0xf                     // Reserved
-        .byte   0xf                     // LVL0
-        .byte   0xe                     // LVL1
-        .byte   0xd                     // LVL2
-        .byte   0xc                     // LVL3
-        .byte   0xb                     // LVL4
-        .byte   0xa                     // LVL5
-        .byte   0x9                     // LVL6
-        .byte   0x8                     // LVL7
-        .byte   0x7                     // LVL8
-        .byte   0x6                     // LVL9
-        .byte   0x5                     // LVL10
-        .byte   0x4                     // LVL11
-        .byte   0x3                     // LVL12
-        .byte   0x2                     // LVL13
-        .byte   0x1                     // LVL14
-        .byte   0xf                     // Reserved
-
-        # The rest of the table consists of programmable levels, maintained
-        # by the HAL_INTERRUPT_SET_LEVEL macro.
-        .rept   (CYGNUM_HAL_ISR_MAX-CYGNUM_HAL_INTERRUPT_RESERVED_3E0)
-        .byte   0xf
-        .endr
-#endif // CYGSEM_HAL_COMMON_INTERRUPTS_ALLOW_NESTING
-
 #---------------------------------------------------------------------------
 ## Temporary interrupt stack
         

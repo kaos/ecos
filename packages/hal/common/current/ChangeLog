@@ -1,3 +1,8 @@
+2001-01-15  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/drv_api.c: Initialized isr_disable_counter to 1 so that it
+	indicates that interrupts are initially disabled.
+
 2000-12-15  Gary Thomas  <gthomas@redhat.com>
 
 	* src/generic-stub.c: Define 'version' string to be a weak

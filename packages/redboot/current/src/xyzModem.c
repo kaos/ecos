@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -108,13 +108,13 @@ static unsigned short crc16[] = {
 };
 
 #ifdef DEBUG
-
+#ifndef USE_SPRINTF
 //
 // Note: this debug setup only works if the target platform has two serial ports
 // available so that the other one (currently only port 1) can be used for debug
 // messages.
 //
-void
+static int
 zm_dprintf(char *fmt, ...)
 {
     int cur_console;
@@ -127,33 +127,60 @@ zm_dprintf(char *fmt, ...)
     CYGACC_CALL_IF_SET_CONSOLE_COMM(cur_console);
 }
 
-void
+static void
+zm_flush(void)
+{
+}
+
+#else
+//
+// Note: this debug setup works by storing the strings in a fixed buffer
+//
+static char *zm_out = (char *)0x00200000;
+static char *zm_out_start = (char *)0x00200000;
+
+static int
+zm_dprintf(char *fmt, ...)
+{
+    int len;
+    va_list args;
+
+    va_start(args, fmt);
+    len = vsprintf(zm_out, fmt, args);
+    zm_out += len;
+}
+
+static void
+zm_flush(void)
+{
+    char *p = zm_out_start;
+    while (*p) mon_write_char(*p++);
+    zm_out = zm_out_start;
+}
+#endif
+
+static void
 zm_dump_buf(void *buf, int len)
 {
-    int cur_console;
-
-    cur_console = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
-    CYGACC_CALL_IF_SET_CONSOLE_COMM(1);
-    dump_buf(buf, len);
-    CYGACC_CALL_IF_SET_CONSOLE_COMM(cur_console);
+    vdump_buf_with_offset(zm_dprintf, buf, len, 0);
 }
 
 static unsigned char zm_buf[2048];
 static unsigned char *zm_bp;
 
-void
+static void
 zm_new(void)
 {
     zm_bp = zm_buf;
 }
 
-void
+static void
 zm_save(unsigned char c)
 {
     *zm_bp++ = c;
 }
 
-void
+static void
 zm_dump(int line)
 {
     zm_dprintf("Packet at line: %d\n", line);
@@ -211,6 +238,7 @@ xyzModem_get_hdr(void)
             }
         } else {
             // Data stream timed out
+            ZM_DEBUG(zm_dump(__LINE__));
             return xyzModem_timeout;
         }
     }
@@ -219,11 +247,13 @@ xyzModem_get_hdr(void)
     res = CYGACC_COMM_IF_GETC_TIMEOUT(*xyz.__chan, &xyz.blk);
     ZM_DEBUG(zm_save(xyz.blk));
     if (!res) {
+        ZM_DEBUG(zm_dump(__LINE__));
         return xyzModem_timeout;
     }
     res = CYGACC_COMM_IF_GETC_TIMEOUT(*xyz.__chan, &xyz.cblk);
     ZM_DEBUG(zm_save(xyz.cblk));
     if (!res) {
+        ZM_DEBUG(zm_dump(__LINE__));
         return xyzModem_timeout;
     }
     xyz.len = (c == SOH) ? 128 : 1024;
@@ -234,18 +264,21 @@ xyzModem_get_hdr(void)
         if (res) {
             xyz.pkt[i] = c;
         } else {
+            ZM_DEBUG(zm_dump(__LINE__));
             return xyzModem_timeout;
         }
     }
     res = CYGACC_COMM_IF_GETC_TIMEOUT(*xyz.__chan, &xyz.crc1);
     ZM_DEBUG(zm_save(xyz.crc1));
     if (!res) {
+        ZM_DEBUG(zm_dump(__LINE__));
         return xyzModem_timeout;
     }
     if (xyz.crc_mode) {
         res = CYGACC_COMM_IF_GETC_TIMEOUT(*xyz.__chan, &xyz.crc2);
         ZM_DEBUG(zm_save(xyz.crc2));
         if (!res) {
+            ZM_DEBUG(zm_dump(__LINE__));
             return xyzModem_timeout;
         }
     }
@@ -332,6 +365,7 @@ xyzModem_stream_open(char *filename, int mode, int *err)
         }
     }
     *err = stat;
+    ZM_DEBUG(zm_flush());
     return -1;
 }
 
@@ -407,6 +441,7 @@ xyzModem_stream_close(int *err)
            xyz.crc_mode ? "CRC" : "Cksum",
            xyz.total_SOH, xyz.total_STX, xyz.total_CAN,
            xyz.total_retries);
+    ZM_DEBUG(zm_flush());
 }
 
 char *
