@@ -1,3 +1,9 @@
+2003-03-20  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/cpm.c (_mpc8xx_allocBd): Improve "best guess" for intial DPRAM
+	allocation to use a value which is likely not to conflict with old 
+	versions of RedBoot.
+
 2003-03-18  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/quicc_smc1.c (cyg_hal_sccx_init_channel): Update initialization
