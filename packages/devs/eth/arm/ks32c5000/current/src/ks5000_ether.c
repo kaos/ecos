@@ -307,9 +307,9 @@ static FRAME_DESCRIPTOR _txFrameDescrArray[MAX_TX_FRAME_DESCRIPTORS] __attribute
 #define rxFrameDescrArray ((FRAME_DESCRIPTOR*)(((unsigned)_rxFrameDescrArray)|0x4000000))
 #define txFrameDescrArray ((FRAME_DESCRIPTOR*)(((unsigned)_txFrameDescrArray)|0x4000000))
 
-static FRAME_DESCRIPTOR *rxReadPointer;
-static FRAME_DESCRIPTOR *txDonePointer;
-static FRAME_DESCRIPTOR *txWritePointer;
+static volatile FRAME_DESCRIPTOR *rxReadPointer;
+static volatile FRAME_DESCRIPTOR *txDonePointer;
+static volatile FRAME_DESCRIPTOR *txWritePointer;
 
 static cyg_drv_mutex_t oldRxMutex;
 static cyg_drv_cond_t  oldRxCond;

@@ -1,8 +1,13 @@
+2003-03-20  Chris Garry  <cgarry@sweeneydesign.co.uk>
+
+	* src/ks5000_ether.c:
+	Added volatile to *rxReadPointer, *txDonePointer and
+	*txWritePointer's definitions.
+
 2003-02-20  Chris Garry  <cgarry@sweeneydesign.co.uk>
 
-    * src/ks5000_ether.c:
-    Removed line setting up programmable I/O pins as debug outputs.
-    
+	* src/ks5000_ether.c:
+	Removed line setting up programmable I/O pins as debug outputs.
 
 2002-11-05  Jonathan Larmour  <jifl@eCosCentric.com>
 
