@@ -1,3 +1,8 @@
+2003-05-14  Thomas Koeller  <thomas.koeller@baslerweb.com>
+
+	* ecos.db: Changed human-readable name and description of
+        CYGPKG_IO_SERIAL_ARM_AT91 to something sensible.
+
 2003-05-12  Nick Garnett  <nickg@balti.calivar.com>
 
 	* ecos.db: Added packages and targets for Atmel AT91 boards: EB40,

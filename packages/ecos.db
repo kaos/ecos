@@ -799,12 +799,12 @@ package CYGPKG_IO_SERIAL_ARM_INTEGRATOR {
 }
 
 package CYGPKG_IO_SERIAL_ARM_AT91 {
-    alias 	      { "Atmel AT91 evaluation board (EB40)"
+    alias 	      { "Atmel AT91 serial device driver"
                         devs_serial_arm_at91 at91_serial_driver }
     hardware
     directory	      devs/serial/arm/at91
     script	      ser_arm_at91.cdl	
-    description       "Atmel AT91 evaluation board (EB40) serial drivers."
+    description       "Atmel AT91 on-chip serial device driver."
 }
 
 package CYGPKG_IO_SERIAL_POWERPC_COGENT {
