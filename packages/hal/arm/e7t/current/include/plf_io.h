@@ -132,10 +132,10 @@
 #define E7T_ROMCON_TACC_6C        0x00000050
 #define E7T_ROMCON_TACC_7C        0x00000060
 
-#define E7T_ROMCON_BASE_MASK      0x000ff700
+#define E7T_ROMCON_BASE_MASK      0x000ffc00
 #define E7T_ROMCON_BASE_shift     10
 
-#define E7T_ROMCON_NEXT_MASK      0x7ff00000
+#define E7T_ROMCON_NEXT_MASK      0x3ff00000
 #define E7T_ROMCON_NEXT_shift     20
 
 

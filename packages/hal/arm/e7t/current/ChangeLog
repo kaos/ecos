@@ -1,3 +1,8 @@
+2003-10-06  Chris Garry  <cgarry@sweeneydesign.co.uk>
+
+        * include/plf_io.h: Correct (unused) defines for
+        E7T_ROMCON_BASE_MASK and E7T_ROMCON_NEXT_MASK.
+
 2003-09-21  Gary Thomas  <gary@mlbassoc.com>
 
 	* misc/redboot_ROM.ecm:  Adjust for changes in RedBoot
