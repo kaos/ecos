@@ -900,12 +900,12 @@ static void show_phy( struct i82544 *p_i82544, int phy )
 #endif
 
 
-static inline void ee_select( int ioaddr )
+static inline void ee_select( int ioaddr, struct i82544 *p_i82544 )
 {
     cyg_uint32 l;
     l = INL( ioaddr + I82544_EECD );
-    if (l & EE_PRES) {
-	// i82546 has EE_PRES bit and requires REQ/GNT before EEPROM access
+    if (p_i82544->device == 0x1010) {
+	// i82546 requires REQ/GNT before EEPROM access
 	l |= EE_REQ;
 	OUTL( l, ioaddr + I82544_EECD );
 	EE_DELAY();
@@ -994,7 +994,7 @@ static inline void ee_write_data_bit( int ioaddr, int databit )
 }
 
 // Pass ioaddr around "invisibly"
-#define EE_SELECT()              ee_select(ioaddr)
+#define EE_SELECT()              ee_select(ioaddr, p_i82544)
 #define EE_DESELECT()            ee_deselect(ioaddr)
 #define EE_CLOCK_UP()            ee_clock_up(ioaddr)
 #define EE_CLOCK_DOWN()          ee_clock_down(ioaddr)
@@ -1007,17 +1007,76 @@ static int
 get_eeprom_size( struct i82544 *p_i82544 )
 {
     cyg_uint32 l, ioaddr = p_i82544->io_address;
+    int i, tmp, addrbits;
+
+    l = INL( ioaddr + I82544_EECD );
 
 #ifdef DEBUG_EE
     diag_printf( "get_eeprom_size\n" );
 #endif
 
-    l = INL( ioaddr + I82544_EECD );
-    if (l & EE_PRES) {
-#ifdef DEBUG_EE
-	diag_printf("eeprom size: %d\n", (l & EE_SIZE) ? 8 : 6 );
-#endif
-	return (l & EE_SIZE) ? 8 : 6;
+    if (p_i82544->device == 0x1010) {
+	
+	l |= EE_REQ;
+	OUTL( l, ioaddr + I82544_EECD );
+	EE_DELAY();
+	while ((l & EE_GNT) == 0)
+	    l = INL( ioaddr + I82544_EECD );
+	l &= ~0x3f;
+	l |= EE_ENB;
+	OUTL( l, ioaddr + I82544_EECD );
+	EE_DELAY();
+	l |= EE_CS;
+	OUTL( l, ioaddr + I82544_EECD );
+	l = INL( ioaddr + I82544_EECD );
+	EE_DELAY();
+
+	for (i = 3; i >= 0; i--) { // Doc says to shift out a zero then:
+	    tmp = (6 & (1 << i)) ? 1 : 0; // "6" is the "read" command.
+	    EE_WRITE_DATA_BIT(tmp);
+	    EE_CLOCK_UP();
+	    EE_CLOCK_DOWN();
+	}
+	// Now clock out address zero, looking for the dummy 0 data bit
+	for ( i = 1; i <= 10; i++ ) {
+	    EE_WRITE_DATA_BIT(0);
+	    EE_CLOCK_UP();
+	    EE_CLOCK_DOWN();
+	    if (EE_READ_DATA_BIT() == 0)
+		break; // The dummy zero est arrive'
+	}
+
+	if (6 != i && 8 != i)
+	    diag_printf("no EEPROM found\n");
+
+	addrbits = i;
+        
+	tmp = 0;
+	for (i = 15; i >= 0; i--) {
+	    EE_CLOCK_UP();
+	    if (EE_READ_DATA_BIT())
+		tmp |= (1<<i);
+	    EE_CLOCK_DOWN();
+	}
+
+	l = INL( ioaddr + I82544_EECD ) & ~0x3f;
+	l |= EE_ENB;
+	OUTL( l, ioaddr + I82544_EECD );
+	EE_DELAY();
+	EE_DELAY();
+	EE_DELAY();
+	l &= ~EE_CS;
+	OUTL( l, ioaddr + I82544_EECD );
+	l = INL( ioaddr + I82544_EECD );
+	EE_DELAY();
+	EE_DELAY();
+	EE_DELAY();
+
+	l &= ~EE_REQ;
+	OUTL( l, ioaddr + I82544_EECD );
+	EE_DELAY();
+
+	return addrbits;
     }
 
     return 6;
@@ -1287,7 +1346,6 @@ i82544_setup( struct i82544 *p_i82544 )
     cyg_uint32 ctrl_ext;
 
     ioaddr = p_i82544->io_address; // get 82544's I/O address
-
 
 #ifdef CYGHWR_DEVS_ETH_INTEL_I82544_USE_ASD
     // Use Auto-negotiation
@@ -2464,7 +2522,7 @@ pci_init_find_82544s( void )
         // See above for find_82544s_match_func
         if (cyg_pci_find_matching( &find_82544s_match_func, NULL, &devid )) {
 #ifdef DEBUG
-            db_printf("eth%d = 82544\n", device_index);
+            db_printf("eth%d = 8254x\n", device_index);
 #endif
             cyg_pci_get_device_info(devid, &dev_info);
 

@@ -1,3 +1,8 @@
+2003-03-19  Mark Salter  <msalter@redhat.com>
+
+	* src/if_i82544.c (i82544_setup): More 82546 EEPROM fixes (EE_PRES
+	appears to be unreliable).
+
 2003-03-17  Mark Salter  <msalter@redhat.com>
 
 	* src/if_i82544.c: Fix 82546 EEPROM access. Fix ESA address for second
