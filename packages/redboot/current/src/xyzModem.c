@@ -354,6 +354,8 @@ xyzModem_stream_open(connection_info_t *info, int *err)
     xyz.read_length = 0;
     xyz.file_length = 0;
 #endif
+    
+    CYGACC_COMM_IF_PUTC(*xyz.__chan, (xyz.crc_mode ? 'C' : NAK));
 
     while (retries-- > 0) {
         stat = xyzModem_get_hdr();

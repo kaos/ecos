@@ -1,3 +1,8 @@
+2004-02-19  Jani Monoses <jani@iv.ro>
+
+	* src/xyzModem.c: Start with sending a 'C', do not wait until the
+	first packet from the sender.This allows download to start quicker.
+	
 2004-02-16  Andrew Dyer  <adyer@righthandtech.com>
 
 	* src/main.c: add 'go' options to help string
