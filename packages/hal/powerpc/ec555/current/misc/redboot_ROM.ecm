@@ -246,10 +246,6 @@ cdl_option CYGBLD_ISO_STRING_STRFUNCS_HEADER {
     user_value 1 <cyg/libc/string/string.h>
 };
 
-cdl_option CYGNUM_FLASH_WORKSPACE_SIZE {
-    user_value 0x00000000
-};
-
 cdl_option CYGHWR_DEVS_FLASH_AMD_AM29LV200 {
     user_value 0
 };

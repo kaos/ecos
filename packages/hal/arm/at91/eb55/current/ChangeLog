@@ -1,3 +1,8 @@
+2003-12-16  Gary Thomas  <gary@mlbassoc.com>
+
+	* misc/redboot_ROMRAM.ecm: 
+	CYGNUM_FLASH_WORKSPACE_SIZE is no longer used.
+
 2003-09-30 Jani Monoses <jani@iv.ro> 
 
 	* cdl/hal_arm_at91_eb55.cdl: Interfaces are already implemented by

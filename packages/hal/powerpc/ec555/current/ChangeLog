@@ -1,3 +1,9 @@
+2003-12-16  Gary Thomas  <gary@mlbassoc.com>
+
+	* misc/redboot_ROM.ecm: 
+	* misc/redboot_RAM.ecm: 
+	CYGNUM_FLASH_WORKSPACE_SIZE is no longer used.
+
 2003-07-18  Nick Garnett  <nickg@balti.calivar.com>
 
 	* cdl/hal_powerpc_ec555.cdl:
