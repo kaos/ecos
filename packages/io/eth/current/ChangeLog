@@ -1,3 +1,8 @@
+2003-03-14  Nick Garnett  <nickg@calivar.com>
+
+	* src/net/eth_drv.c: Added calls to cyg_net_show_mbufs() whenever
+	we see an out-of-mbufs problem.
+
 2003-03-11  Mark Salter  <msalter@redhat.com>
 
 	* src/stand_alone/eth_drv.c (eth_drv_stop): Uncomment, make non-static,
