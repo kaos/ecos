@@ -1,3 +1,7 @@
+2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/ser_sh_edk7708.cdl: Remove irrelevant doc link.
+
 2002-05-08  Jesper Skov  <jskov@redhat.com>
 
 	* include/sh_sh3_edk7708_sci.inl: Serial register renaming.
