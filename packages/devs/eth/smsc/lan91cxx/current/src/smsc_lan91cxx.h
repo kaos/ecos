@@ -421,6 +421,7 @@ get_data(struct eth_drv_sc *sc)
 
 // ------------------------------------------------------------------------
 // Read the bank register (this one is bank-independent)
+#ifndef SMSC_PLATFORM_DEFINED_GET_BANKSEL
 static __inline__ unsigned short
 get_banksel(struct eth_drv_sc *sc)
 {
@@ -435,6 +436,7 @@ get_banksel(struct eth_drv_sc *sc)
 #endif
     return val;
 }
+#endif
 
 
 // ------------------------------------------------------------------------

@@ -1,3 +1,8 @@
+2003-12-19  Gary Parnes  <garyp@logicpd.com>
+
+	* src/smsc_lan91cxx.h (get_banksel): Allow this function to be 
+	overridden. 
+
 2003-12-10  Uwe Kindler <uwe_kindler@web.de>
 
 	* src/if_lan91cxx.c: Add some missing endian swapping calls.
