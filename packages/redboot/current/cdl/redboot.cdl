@@ -708,7 +708,7 @@ cdl_package CYGPKG_REDBOOT {
         cdl_component CYGSEM_REDBOOT_FLASH_CONFIG {
             display       "Keep RedBoot configuration data in FLASH"
             flavor        bool
-            default_value 1
+            default_value { CYGPKG_IO_FLASH != 0 }
             compile       fconfig.c
             description "
               When this option is enabled, RedBoot will keep configuration
