@@ -127,7 +127,7 @@ check: $(MAIN_SGML) $(OTHER_SGML) $(GIFS) $(EPS)
 # can be ignored.
 html: copyfiles $(MAIN_HTML)
 
-$(MAIN_HTML): $(MAIN_SGML) $(OTHER_SGML) $(GIFS) $(HTML_STYLESHEET) $(FIXHTML)
+$(MAIN_HTML): $(MAIN_SGML) $(OTHER_SGML) $(PNGS) $(HTML_STYLESHEET) $(FIXHTML)
 	jade -t sgml -i html -c $(DSSSL_CATALOG) -d $(HTML_STYLESHEET)#html $<
 	tclsh $(FIXHTML)
 

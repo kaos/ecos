@@ -1,3 +1,7 @@
+2003-05-05  John Dallaway  <jld@ecoscentric.com>
+
+	* pkgconf/rules.doc: Build PNG images (not GIFs) for HTML docs.
+
 2003-03-23  Iztok Zupet  <iz@vsr.si>
 
 	* pkgconf/rules.doc: Use three stylesheets instead of one.
