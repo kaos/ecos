@@ -1,3 +1,8 @@
+2003-11-24  Roland Caﬂebohm <roland.cassebohm@visionsystems.de>
+
+	* src/flashiodev.c (flashiodev_bwrite): Use flash_read rather than
+	directly doing a memcpy. 
+
 2003-11-20  Jani Monoses  <jani@iv.ro>
 
 	* src/flash.c: 

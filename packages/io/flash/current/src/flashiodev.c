@@ -120,6 +120,9 @@ flashiodev_bread( cyg_io_handle_t handle, void *buf, cyg_uint32 *len,
 	struct flashiodev_priv_t *dev = (struct flashiodev_priv_t *)tab->priv;
 
 	char *startpos = dev->start + pos;
+        void *erraddr;
+        Cyg_ErrNo err = ENOERR;
+        
 
 #ifdef CYGPKG_INFRA_DEBUG // don't bother checking this all the time
     char *endpos = startpos + *len - 1;
@@ -129,9 +132,13 @@ flashiodev_bread( cyg_io_handle_t handle, void *buf, cyg_uint32 *len,
     if ( endpos > flashend )
         return -EINVAL;
 #endif
+    
+    err = flash_read( startpos,
+                      (void *)buf, *len, &erraddr );
 
-    memcpy( buf, startpos, *len );
-    return ENOERR;
+    if ( err )
+        err = -EIO; // just something sane
+    return err;
 } // flashiodev_bread()
 
 static Cyg_ErrNo
