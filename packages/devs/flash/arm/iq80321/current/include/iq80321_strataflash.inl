@@ -52,6 +52,8 @@
 //
 //==========================================================================
 
+#include <cyg/hal/iq80321.h>  // IQ80321_FLASH_ADDR
+
 // The iq80321 system has one 16-bit device.
 
 #define CYGNUM_FLASH_DEVICES 	(1)
