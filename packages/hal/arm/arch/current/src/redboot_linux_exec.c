@@ -252,6 +252,7 @@ struct tag {
 // <cyg/hal/plf_io.h>
 #ifndef CYGHWR_REDBOOT_LINUX_ATAG_MEM
 #define CYGHWR_REDBOOT_LINUX_ATAG_MEM(_p_)                                                      \
+    CYG_MACRO_START                                                                             \
     /* Next ATAG_MEM. */                                                                        \
     _p_->hdr.size = (sizeof(struct tag_mem32) + sizeof(struct tag_header))/sizeof(long);        \
     _p_->hdr.tag = ATAG_MEM;                                                                    \
@@ -261,7 +262,8 @@ struct tag {
     _p_->u.mem.size  = 1<<hal_msbindex(CYGMEM_REGION_ram_SIZE);                                 \
     if (_p_->u.mem.size < CYGMEM_REGION_ram_SIZE)                                               \
 	    _p_->u.mem.size <<= 1;                                                              \
-    _p_->u.mem.start = CYGARC_PHYSICAL_ADDRESS(CYGMEM_REGION_ram);
+    _p_->u.mem.start = CYGARC_PHYSICAL_ADDRESS(CYGMEM_REGION_ram);                              \
+    CYG_MACRO_END
 #endif
 
 
@@ -320,8 +322,10 @@ do_exec(int argc, char *argv[])
     params->u.core.pagesize = 0;
     params->u.core.rootdev = 0;
     params = (struct tag *)((long *)params + params->hdr.size);
-    
+
+    // Fill in the details of the memory layout
     CYGHWR_REDBOOT_LINUX_ATAG_MEM(params)
+
     params = (struct tag *)((long *)params + params->hdr.size);
     if (ramdisk_addr_set) {
         params->hdr.size = (sizeof(struct tag_initrd) + sizeof(struct tag_header))/sizeof(long);
@@ -362,7 +366,7 @@ do_exec(int argc, char *argv[])
     if (!base_addr_set) {
         if ((base_addr == 0) || (length == 0)) {
             // Probably not valid - don't try it
-            diag_printf("No default base address set!\n");
+            diag_printf("Base address unknown - use \"-b\" option\n");
             return;
         }
         diag_printf("Using base address %p and length %p\n",

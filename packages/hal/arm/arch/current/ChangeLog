@@ -1,3 +1,8 @@
+2003-02-13  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/redboot_linux_exec.c (CYGHWR_REDBOOT_LINUX_ATAG_MEM): 
+	Add CYG_MACRO_START/END markers.
+
 2003-02-12  Gary Thomas  <gary@mlbassoc.com> inspired by
 2003-02-12  Robin Farine <robin.farine@acn-group.ch>	
 
