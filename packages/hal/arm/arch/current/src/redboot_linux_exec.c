@@ -161,7 +161,7 @@ struct tag_ramdisk {
 
 /*
  * this one accidentally used virtual addresses - as such,
- * its depreciated.
+ * its deprecated.
  */
 #define ATAG_INITRD	0x54410005
 
