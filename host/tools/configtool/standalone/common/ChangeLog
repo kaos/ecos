@@ -1,3 +1,11 @@
+2003-03-26  Bart Veer  <bartv@ecoscentric.com>
+
+	* ecosconfig.cxx: remove TRANSLATE_PATH() support, no longer
+	needed and causes confusion because you end up with repositories
+	containing a : character that now gets interpreted as a path
+	separator. Also fix a couple of bugs related to template
+	versioning.
+
 2003-02-12  Bart Veer  <bartv@ecoscentric.com>
 
 	* Makefile.in, configure:

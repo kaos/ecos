@@ -13,7 +13,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 2002 Bart Veer
+// Copyright (C) 2002, 2003 Bart Veer
 // Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
@@ -130,6 +130,7 @@ class CdlPackagesDatabaseBody {
     const std::vector<std::string>&     get_package_aliases(std::string) const;
     const std::vector<std::string>&     get_package_versions(std::string) const;
     const std::string&                  get_package_directory(std::string) const;
+    const std::string&                  get_package_repository(std::string, std::string /* version */ = "") const;
     const std::string&                  get_package_script(std::string) const;
     bool                                is_hardware_package(std::string) const;
 
@@ -175,6 +176,7 @@ class CdlPackagesDatabaseBody {
         std::string                     description;
         std::vector<std::string>        aliases;
         std::vector<std::string>        versions;
+        std::map<std::string, std::string> repositories;   /* one entry per version */
         std::string                     directory;
         std::string                     script;
         bool                            hardware;
@@ -202,6 +204,7 @@ class CdlPackagesDatabaseBody {
     struct template_data {
       public:
         std::vector<std::string>        versions;
+        std::map<std::string, std::string>  files;
         std::map<std::string, struct template_version_data> version_details;
     };
     std::map<std::string, struct template_data>   templates;
@@ -482,7 +485,7 @@ class CdlPackageBody : public virtual CdlNodeBody,
   private:
 
     // The only valid constructor requires a number of fields
-    CdlPackageBody(std::string /* name */, CdlConfiguration, std::string /* directory */);
+    CdlPackageBody(std::string /* name */, CdlConfiguration, std::string /* repository */, std::string /* directory */);
 
     // Other constructors are illegal
     CdlPackageBody();

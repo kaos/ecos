@@ -12,7 +12,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 2002 Bart Veer
+// Copyright (C) 2002, 2003 Bart Veer
 // Copyright (C) 1999, 2000, 2001 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
@@ -152,13 +152,6 @@ CdlDbParser::new_package(CdlInterpreter interp, int argc, const char* argv[])
         return TCL_OK;
     }
     std::string pkg_name        = argv[1];
-
-    // Better make sure that this is not a duplicate definition.
-    if (std::find(db->package_names.begin(), db->package_names.end(), pkg_name) != db->package_names.end()) {
-        CdlParse::report_warning(interp, diag_package + pkg_name, "Duplicate package entry, ignoring second occurence.");
-        CYG_REPORT_RETVAL(TCL_OK);
-        return TCL_OK;
-    }
     
     // The package data is constructed locally. It only gets added to
     // the database in the absence of errors.
@@ -227,8 +220,6 @@ CdlDbParser::new_package(CdlInterpreter interp, int argc, const char* argv[])
                 std::vector<std::string> subdirs;
                 unsigned int i;
                 interp->locate_subdirs(pkgdir, subdirs);
-                std::sort(subdirs.begin(), subdirs.end(), Cdl::version_cmp());
-                
                 for (i = 0; i < subdirs.size(); i++) {
                     if (("CVS" == subdirs[i]) || ("cvs" == subdirs[i])) {
                         continue;
@@ -243,6 +234,7 @@ CdlDbParser::new_package(CdlInterpreter interp, int argc, const char* argv[])
                         }
                     }
                     package.versions.push_back(subdirs[i]);
+                    package.repositories[subdirs[i]] = repo;
                 }
                 if (0 == package.versions.size()) {
                     CdlParse::report_warning(interp, diag_package + pkg_name,
@@ -254,9 +246,23 @@ CdlDbParser::new_package(CdlInterpreter interp, int argc, const char* argv[])
     }
 
     // If the package is still ok, now is the time to add it to the database.
+    // It may be a new package, or there may already be an entry from a previous
+    // repository.
     if (package_ok && (old_error_count == CdlParse::get_error_count(interp))) {
-        db->package_names.push_back(pkg_name);
-        db->packages[pkg_name] = package;
+        if ( std::find(db->package_names.begin(), db->package_names.end(), pkg_name) == db->package_names.end()) {
+            db->package_names.push_back(pkg_name);
+            db->packages[pkg_name] = package;
+        } else {
+            // Only add versions which are not already present.
+            std::vector<std::string>::const_iterator version_i;
+            for (version_i = package.versions.begin(); version_i != package.versions.end(); version_i++) {
+                if (std::find(db->packages[pkg_name].versions.begin(), db->packages[pkg_name].versions.end(),
+                              *version_i) == db->packages[pkg_name].versions.end()) {
+                    db->packages[pkg_name].versions.push_back(*version_i);
+                    db->packages[pkg_name].repositories[*version_i] = package.repositories[*version_i];
+                }
+            }
+        }
     }
 
     CYG_REPORT_RETVAL(result);
@@ -441,10 +447,9 @@ CdlDbParser::new_target(CdlInterpreter interp, int argc, const char* argv[])
     
     std::string target_name     = argv[1];
 
-    // Better make sure that this is not a duplicate definition.
+    // This may be a duplicate definition if the target was defined in an
+    // earlier repository
     if (std::find(db->target_names.begin(), db->target_names.end(), target_name) != db->target_names.end()) {
-        CdlParse::report_warning(interp, diag_target + target_name,
-                                 "Duplicate target entry, ignoring second occurence.");
         CYG_REPORT_RETVAL(TCL_OK);
         return TCL_OK;
     }
@@ -778,43 +783,80 @@ CdlPackagesDatabaseBody::CdlPackagesDatabaseBody(std::string repo, CdlDiagnostic
         CdlInterpreterBody::CommandSupport cmds(interp, commands);
         CdlInterpreterBody::DiagSupport diag(interp, error_fn, warn_fn);
         CdlInterpreterBody::AssocSupport assoc(interp, dbparser_database_key, static_cast<ClientData>(this));
-        CdlInterpreterBody::VariableSupport var(interp, dbparser_component_repository, repo);
         interp->add_command("unknown", &CdlParse::unknown_command);
         CdlParse::clear_error_count(interp);
 
-        // Ignore errors at this stage, instead check error count at the end.
-        (void) interp->eval_file(component_repository + "/" + database_name);
-    
-        // Now start looking for templates. These should reside in the
-        // templates subdirectory of the component repository. Each template
-        // should be in its own directory, and inside each directory should
-        // be versioned template files with a .ect extension.
-        std::string templates_dir = repo + "/" + "templates";
-        std::vector<std::string> subdirs;
-        interp->locate_subdirs(templates_dir, subdirs);
+        unsigned int index, search;
+        for ( index = 0; index < repo.size(); ) {
 
-        unsigned int i;
-        for (i = 0; i < subdirs.size(); i++) {
-            // Do not add the template to the known ones until we are sure there is
-            // at least one valid template.
-            std::vector<std::string> files;
-            interp->locate_files(templates_dir + "/" + subdirs[i], files);
-            unsigned int j;
-            for (j = 0; j < files.size(); j++) {
-                if ((4 < files[j].size()) && (".ect" == files[j].substr(files[j].size() - 4))) {
+            // Get the next entry in the search path. In a normal world
+            // the separator is :, but in a VC++ Windows world it is ;
+            for ( search = index; search < repo.size(); search++) {
+#ifdef _MSC_VER
+                if ( ';' == repo[search]) {
                     break;
                 }
+#else
+                if ( ':' == repo[search]) {
+                    break;
+                }
+#endif                
             }
-            if (j != files.size()) {
-                this->template_names.push_back(subdirs[i]);
-                for ( ; j < files.size(); j++) {
+            std::string this_repo   = repo.substr(index, search - index);
+            index = search + 1;
+            
+            // Ignore errors at this stage, instead check error count at the end.
+            interp->set_variable(std::string(dbparser_component_repository), this_repo);
+            (void) interp->eval_file(this_repo + "/" + database_name);
+    
+            // Now start looking for templates. These should reside in the
+            // templates subdirectory of the component repository. Each template
+            // should be in its own directory, and inside each directory should
+            // be versioned template files with a .ect extension.
+            std::string templates_dir = this_repo + "/" + "templates";
+            std::vector<std::string> subdirs;
+            interp->locate_subdirs(templates_dir, subdirs);
+
+            unsigned int i;
+            for (i = 0; i < subdirs.size(); i++) {
+                // Do not add the template to the known ones until we are sure there is
+                // at least one valid template.
+                std::vector<std::string> files;
+                interp->locate_files(templates_dir + "/" + subdirs[i], files);
+                unsigned int j;
+                for (j = 0; j < files.size(); j++) {
                     if ((4 < files[j].size()) && (".ect" == files[j].substr(files[j].size() - 4))) {
-                        this->templates[subdirs[i]].versions.push_back(files[j].substr(0, files[j].size() - 4));
+                        break;
+                    }
+                }
+                if (j != files.size()) {
+                    std::string tmplt = subdirs[i];
+                    if  (std::find(this->template_names.begin(), this->template_names.end(), tmplt) == this->template_names.end()) {
+                        this->template_names.push_back(tmplt);
+                    }
+                    for ( ; j < files.size(); j++) {
+                        if ((4 < files[j].size()) && (".ect" == files[j].substr(files[j].size() - 4))) {
+                            std::string version = files[j].substr(0, files[j].size() - 4);
+                            if (std::find(templates[tmplt].versions.begin(), templates[tmplt].versions.end(), version) == templates[tmplt].versions.end()) {
+                                templates[tmplt].versions.push_back(version);
+                                templates[tmplt].files[version] = templates_dir + "/" + tmplt + "/" + files[j] ;
+                            }
+                        }
                     }
                 }
             }
         }
 
+        // The package and template version should be sorted
+        std::vector<std::string>::const_iterator pkg_i;
+        for (pkg_i = package_names.begin(); pkg_i != package_names.end(); pkg_i++) {
+            std::sort(packages[*pkg_i].versions.begin(), packages[*pkg_i].versions.end(), Cdl::version_cmp());
+        }
+        std::vector<std::string>::const_iterator tmpl_i;
+        for (tmpl_i = template_names.begin(); tmpl_i != template_names.end(); tmpl_i++) {
+            std::sort(templates[*tmpl_i].versions.begin(), templates[*tmpl_i].versions.end(), Cdl::version_cmp());
+        }
+        
         // Consistency checks. All target-specific packages should
         // have the hardware attribute. Also, all the packages should
         // exist. Problems only result in warnings and only when
@@ -828,7 +870,7 @@ CdlPackagesDatabaseBody::CdlPackagesDatabaseBody(std::string repo, CdlDiagnostic
                     if (std::find(package_names.begin(), package_names.end(), *name_j) == package_names.end()) {
                         CdlParse::report_warning(interp, diag_target + *name_i,
                                                  std::string("This target refers to an unknown package `") + *name_j + "'.");
-                    }
+                        }   
                     if (!packages[*name_j].hardware) {
                         CdlParse::report_warning(interp, diag_target + *name_i,
                                                  std::string("This target refers to a package `") + *name_j +
@@ -837,6 +879,7 @@ CdlPackagesDatabaseBody::CdlPackagesDatabaseBody(std::string repo, CdlDiagnostic
                 }
             }
         }
+        
         // Now, were there any errors while reading in the database?
         // If so it is necessary to throw an exception here, to make sure
         // that things get cleaned up properly.
@@ -1096,6 +1139,42 @@ CdlPackagesDatabaseBody::get_package_directory(std::string pkg_name) const
 }
 
 const std::string&
+CdlPackagesDatabaseBody::get_package_repository(std::string pkg_name, std::string vsn) const
+{
+    CYG_REPORT_FUNCNAME("CdlPackagesDatabase::get_package_repository");
+    CYG_REPORT_FUNCARG1XV(this);
+    CYG_PRECONDITION_THISC();
+
+    static std::string dummy = "";
+    
+    std::map<std::string,package_data>::const_iterator pkgs_i = packages.find(pkg_name);
+    if (pkgs_i == packages.end()) {
+        CYG_FAIL("Invalid package name passed to CdlPackagesDatabase::get_package_repository()");
+        CYG_REPORT_RETURN();
+        return dummy;
+    }
+
+    std::map<std::string,std::string>::const_iterator repo_i;
+    if (("" == vsn) && (0 == pkgs_i->second.versions.size())) {
+        CYG_REPORT_RETURN();
+        return dummy;
+    }
+
+    if ("" == vsn) {
+        vsn = *(pkgs_i->second.versions.begin());
+    }
+    repo_i = pkgs_i->second.repositories.find(vsn);
+    if (repo_i == pkgs_i->second.repositories.end()) {
+        CYG_FAIL("Invalid package version passed to CdlPackagesDatabase::get_package_repository()");
+        CYG_REPORT_RETURN();
+        return dummy;
+    }
+        
+    CYG_REPORT_RETURN();
+    return repo_i->second;
+}
+
+const std::string&
 CdlPackagesDatabaseBody::get_package_script(std::string pkg_name) const
 {
     CYG_REPORT_FUNCNAME("CdlPackagesDatabase::get_package_script");
@@ -1318,7 +1397,7 @@ CdlPackagesDatabaseBody::get_template_versions(std::string template_name) const
 }
 
 std::string
-CdlPackagesDatabaseBody::get_template_filename(std::string template_name, std::string version_name) const
+CdlPackagesDatabaseBody::get_template_filename(std::string template_name, std::string version) const
 {
     CYG_REPORT_FUNCNAME("CdlPackagesDatabase::get_template_filename");
     CYG_REPORT_FUNCARG1XV(this);
@@ -1334,12 +1413,12 @@ CdlPackagesDatabaseBody::get_template_filename(std::string template_name, std::s
         CYG_REPORT_RETURN();
         return "";
     }
-    if ("" == version_name) {
+    if ("" == version) {
         CYG_ASSERTC(0 != template_i->second.versions.size());
-        version_name = template_i->second.versions[0];
+        version = template_i->second.versions[0];
     } else {
         std::vector<std::string>::const_iterator vsn_i = std::find(template_i->second.versions.begin(),
-                                                                   template_i->second.versions.end(), version_name);
+                                                                   template_i->second.versions.end(), version);
         if (vsn_i == template_i->second.versions.end()) {
             CYG_FAIL("Invalid template version passed to CdlPackagesDatabase::get_template_filename");
             CYG_REPORT_RETURN();
@@ -1347,7 +1426,8 @@ CdlPackagesDatabaseBody::get_template_filename(std::string template_name, std::s
         }
     }
 
-    std::string result = component_repository + "/templates/" + template_name + "/" + version_name + ".ect";
+    std::map<std::string,std::string>::const_iterator file_i = template_i->second.files.find(version);
+    std::string result = file_i->second;
     CYG_REPORT_RETURN();
     return result;
 }

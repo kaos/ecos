@@ -55,30 +55,6 @@
 #define DEFAULT_SAVE_FILE "ecos.ecc"
 static char* tool = "ecosconfig";
 
-// When running under cygwin there may be confusion between cygwin and
-// Windows paths. Some paths will be passed on to the Tcl library,
-// which sometimes will accept a cygwin path and sometimes not. This
-// does not affect the VC++ build which only accepts Windows paths,
-// and obviously it does not affect any Unix platfom.
-#ifdef __CYGWIN__
-static std::string
-translate_path(std::string& path)
-{
-    std::string result;
-    char buffer [MAXPATHLEN + 1];
-    if ("" == path) {
-        result = path;
-    } else {
-        cygwin_conv_to_win32_path (path.c_str (), buffer);
-        result = std::string(buffer);
-    }
-    return result;
-}
-# define TRANSLATE_PATH(a) translate_path(a)
-#else
-# define TRANSLATE_PATH(a) (a)
-#endif
-
 int main (int argc, char * argv []) {
 
     // process command qualifiers
@@ -280,10 +256,6 @@ int main (int argc, char * argv []) {
         }
     }
 
-    repository          = TRANSLATE_PATH(repository);
-    savefile            = TRANSLATE_PATH(savefile);
-    install_prefix      = TRANSLATE_PATH(install_prefix);
-
     // Initialize the cdl_exec code (not quite sure why this needs a
     // separate object rather than just a bunch of statics). 
     cdl_exec exec (trim_path (repository), savefile, trim_path (install_prefix), no_resolve);
@@ -302,7 +274,7 @@ int main (int argc, char * argv []) {
 
     if ("new" == command) {
         // Usage: ecosconfig new <target> [template [version]]
-        if ((command_index == argc) || ((command_index + 3) <= argc)) {
+        if ((command_index == argc) || ((command_index + 3) < argc)) {
             usage_message();
         } else {
             // The default values for template and template_version
@@ -392,7 +364,7 @@ int main (int argc, char * argv []) {
         if (command_index + 1 == argc) {
             status = exec.cmd_template (argv [command_index]);
         } else if (command_index + 2 == argc) {
-            status = exec.cmd_template (argv [command_index], argv [command_index]);
+            status = exec.cmd_template (argv [command_index], argv [command_index + 1]);
         } else {
             usage_message ();
         }
@@ -401,7 +373,6 @@ int main (int argc, char * argv []) {
         // Usage: ecosconfige export <filename>
         if (command_index + 1 == argc) {
             std::string filename = std::string(argv[command_index]);
-            filename = TRANSLATE_PATH(filename);
             status = exec.cmd_export(filename);
         } else {
             usage_message ();
@@ -411,7 +382,6 @@ int main (int argc, char * argv []) {
         // Usage: ecosconfig import <filename>
         if (command_index + 1 == argc) {
             std::string filename = std::string(argv[command_index]);
-            filename = TRANSLATE_PATH(filename);
             status = exec.cmd_import(filename);
         } else {
             usage_message ();

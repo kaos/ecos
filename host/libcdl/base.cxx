@@ -10,7 +10,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 2002 Bart Veer
+// Copyright (C) 2002, 2003 Bart Veer
 // Copyright (C) 1999, 2000 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
@@ -999,7 +999,7 @@ CdlContainerBody::check_this(cyg_assert_class_zeal zeal) const
 // updates of the owned vector happen inside the CdlToplevel
 // add_node() and remove_node() family.
 
-CdlLoadableBody::CdlLoadableBody(CdlToplevel toplevel, std::string dir)
+CdlLoadableBody::CdlLoadableBody(CdlToplevel toplevel, std::string repo, std::string dir)
     : CdlContainerBody()
 {
     CYG_REPORT_FUNCNAME("CdlLoadable:: constructor");
@@ -1007,6 +1007,7 @@ CdlLoadableBody::CdlLoadableBody(CdlToplevel toplevel, std::string dir)
     CYG_PRECONDITION_CLASSC(toplevel);
 
     // Initialize enough of the object to support check_this()
+    repository  = repo;
     directory   = dir;
     interp      = 0;
     remove_node_loadables_position = -1;
@@ -1092,6 +1093,7 @@ CdlLoadableBody::~CdlLoadableBody()
     CYG_ASSERTC(0 == owned.size());
     delete interp;
     interp      = 0;
+    repository  = "";
     directory   = "";
 
     CYGDBG_MEMLEAK_DESTRUCTOR();
@@ -1143,6 +1145,17 @@ CdlLoadableBody::get_interpreter() const
     CdlInterpreter result = interp;
     CYG_REPORT_RETVAL(result);
     return result;
+}
+
+std::string
+CdlLoadableBody::get_repository() const
+{
+    CYG_REPORT_FUNCNAME("CdlLoadable::get_repository");
+    CYG_REPORT_FUNCARG1XV(this);
+    CYG_PRECONDITION_THISC();
+
+    CYG_REPORT_RETURN();
+    return repository;
 }
 
 std::string
@@ -1488,7 +1501,7 @@ CdlLoadableBody::find_absolute_file(std::string filename, std::string dirname, b
     CYG_PRECONDITIONC("" != filename);
 
     // These variable names should be kept in step with CdlBuildable::update_all_build_info()
-    interp->set_variable("::cdl_topdir",  get_toplevel()->get_directory());
+    interp->set_variable("::cdl_topdir",  repository);
     interp->set_variable("::cdl_pkgdir",  directory);
     interp->set_variable("::cdl_prefdir", dirname);
     interp->set_variable("::cdl_target",  filename);
@@ -1536,7 +1549,7 @@ CdlLoadableBody::find_relative_file(std::string filename, std::string dirname) c
     CYG_PRECONDITIONC("" != filename);
 
     // These variable names should be kept in step with CdlBuildable::update_all_build_info()
-    interp->set_variable("::cdl_topdir",  get_toplevel()->get_directory());
+    interp->set_variable("::cdl_topdir",  repository);
     interp->set_variable("::cdl_pkgdir",  directory);
     interp->set_variable("::cdl_prefdir", dirname);
     interp->set_variable("::cdl_target",  filename);
@@ -1578,7 +1591,7 @@ CdlLoadableBody::has_subdirectory(std::string name) const
 
     bool        result = false;
     
-    interp->set_variable("::cdl_topdir",  get_toplevel()->get_directory());
+    interp->set_variable("::cdl_topdir",  repository);
     interp->set_variable("::cdl_pkgdir",  directory);
     interp->set_variable("::cdl_target",  name);
 
@@ -1652,7 +1665,7 @@ CdlLoadableBody::check_this(cyg_assert_class_zeal zeal) const
 // an interpreter, so this should not happen until the world
 // is ready to deal with such errors.
 
-CdlToplevelBody::CdlToplevelBody(CdlInterpreter interp_arg, std::string directory_arg)
+CdlToplevelBody::CdlToplevelBody(CdlInterpreter interp_arg)
     : CdlContainerBody()
 {
     CYG_REPORT_FUNCNAME("CdlToplevel:: constructor");
@@ -1661,7 +1674,6 @@ CdlToplevelBody::CdlToplevelBody(CdlInterpreter interp_arg, std::string director
 
     // The STL containers will take care of themselves.
     interp      = interp_arg;
-    directory   = directory_arg;
     transaction = 0;
 
     // A toplevel is always active, override the default setting for a node
@@ -2115,17 +2127,6 @@ CdlToplevelBody::set_description(std::string new_description)
     description = new_description;
 
     CYG_REPORT_RETURN();
-}
-
-std::string
-CdlToplevelBody::get_directory() const
-{
-    CYG_REPORT_FUNCNAME("CdlToplevel::get_directory");
-    CYG_REPORT_FUNCARG1XV(this);
-    CYG_PRECONDITION_THISC();
-
-    CYG_REPORT_RETURN();
-    return directory;
 }
 
 std::string

@@ -1,3 +1,14 @@
+2003-03-26  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl.hxx, config.cxx.cxx, package.cxx:
+	Update derived classes now that the repository is per-loadable
+	rather than per-toplevel. Also turn ECOS_REPOSITORY into a
+	path rather than a single directory, updating all affected
+	database and config code.
+
+	* base.cxx, build.cxx, cdlcore.hxx: make the repository a
+	characteristic of each loadable rather than of the toplevel
+
 2003-02-12  Bart Veer  <bartv@ecoscentric.com>
 
 	* Makefile.in, configure, testsuite/Makefile.in:

@@ -1,3 +1,8 @@
+2003-03-26  Bart Veer  <bartv@ecoscentric.com>
+
+	* common/common/build.cxx: There is no longer a single repository,
+	instead each package can come from different repositories.
+
 2003-03-26  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/makefile.gnu: Tidy up.

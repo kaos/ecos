@@ -1,6 +1,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
+// Copyright (C) 2003 Bart Veer
 // Copyright (C) 1998, 1999, 2000, 2002 Red Hat, Inc.
 //
 // This program is part of the eCos host tools.
@@ -353,7 +354,6 @@ bool generate_makefile (const CdlConfiguration config, const CdlBuildInfo_Loadab
 	fprintf (stream, makefile_header.c_str ());
 
 	// generate the global variables
-	fprintf (stream, "export REPOSITORY := %s\n", cygpath (config->get_database ()->get_component_repository ()).c_str ());
 	fprintf (stream, "export PREFIX := %s\n", cygpath (install_tree).c_str ());
 	fprintf (stream, "export COMMAND_PREFIX := %s\n", command_prefix.c_str ());
 	fprintf (stream, "export CC := $(COMMAND_PREFIX)gcc\n");
@@ -366,6 +366,7 @@ bool generate_makefile (const CdlConfiguration config, const CdlBuildInfo_Loadab
 	fprintf (stream, "export AR := $(COMMAND_PREFIX)ar\n\n");
 
 	// generate the package variables
+	fprintf (stream, "export REPOSITORY := %s\n", cygpath (info.repository).c_str());
 	fprintf (stream, "PACKAGE := %s\n", info.directory.c_str ());
 	fprintf (stream, "OBJECT_PREFIX := %s\n", object_prefix.c_str ());
 	fprintf (stream, "CFLAGS := %s\n", get_flags (config, &info, "CFLAGS").c_str ());
@@ -516,7 +517,6 @@ bool generate_toplevel_makefile (const CdlConfiguration config, const std::strin
 	fprintf (stream, makefile_header.c_str ());
 
 	// generate the variables
-	fprintf (stream, "export REPOSITORY := %s\n", cygpath (config->get_database ()->get_component_repository ()).c_str ());
 #if defined(_WIN32) || defined(__CYGWIN__)
     fprintf (stream, "export HOST := CYGWIN\n");
 #else

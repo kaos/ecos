@@ -10,7 +10,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 2002 Bart Veer
+// Copyright (C) 2002, 2003 Bart Veer
 // Copyright (C) 1999, 2000 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
@@ -72,7 +72,7 @@ CYGDBG_DEFINE_MEMLEAK_COUNTER(CdlPackageBody);
 // ----------------------------------------------------------------------------
 // Constructor. The real work is actually done in the base classes
 // and the parser.
-CdlPackageBody::CdlPackageBody(std::string name_arg, CdlConfiguration toplevel, std::string dir)
+CdlPackageBody::CdlPackageBody(std::string name_arg, CdlConfiguration toplevel, std::string repo, std::string dir)
     : CdlNodeBody(name_arg),
       CdlContainerBody(),
       CdlUserVisibleBody(),
@@ -80,7 +80,7 @@ CdlPackageBody::CdlPackageBody(std::string name_arg, CdlConfiguration toplevel, 
       CdlParentableBody(),
       CdlBuildableBody(),
       CdlDefinableBody(),
-      CdlLoadableBody(toplevel, dir),
+      CdlLoadableBody(toplevel, repo, dir),
       CdlBuildLoadableBody(),
       CdlDefineLoadableBody()
 {

@@ -15,7 +15,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 2002 Bart Veer
+// Copyright (C) 2002, 2003 Bart Veer
 // Copyright (C) 1999, 2000, 2001 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
@@ -3634,6 +3634,7 @@ class CdlLoadableBody : virtual public CdlContainerBody {
     const std::vector<CdlNode>&         get_owned() const;
     bool                                owns(CdlConstNode) const;
     CdlInterpreter                      get_interpreter() const;
+    std::string                         get_repository() const;
     std::string                         get_directory() const;
 
     // Some properties such as doc and compile reference filenames.
@@ -3661,7 +3662,7 @@ class CdlLoadableBody : virtual public CdlContainerBody {
 
   protected:
 
-    CdlLoadableBody(CdlToplevel, std::string /* directory */);
+    CdlLoadableBody(CdlToplevel, std::string /* repository */, std::string /* directory */);
 
     // Needed by derived classes, but not actually used.
     CdlLoadableBody();
@@ -3670,6 +3671,7 @@ class CdlLoadableBody : virtual public CdlContainerBody {
     
     std::vector<CdlNode> owned;
     CdlInterpreter       interp;
+    std::string          repository;
     std::string          directory;
 
     // Used by add/remove_node_from_toplevel()
@@ -3792,11 +3794,6 @@ class CdlToplevelBody : virtual public CdlContainerBody {
     // Each toplevel must have an associated master Tcl interpreter.
     CdlInterpreter      get_interpreter() const;
 
-    // Each toplevel should also have an associated directory for 
-    // the component repository. It is not required that all loadables
-    // are relative to this, but that is the default behaviour.
-    std::string         get_directory() const;
-
     // Each toplevel may have a single active main transaction.
     // For now there is no support for concurrent transactions
     // operating on a single toplevel (although nested transactions
@@ -3843,7 +3840,7 @@ class CdlToplevelBody : virtual public CdlContainerBody {
     CYGDBG_DECLARE_MEMLEAK_COUNTER();
 
   protected:
-    CdlToplevelBody(CdlInterpreter, std::string);
+    CdlToplevelBody(CdlInterpreter);
 
   private:
 
@@ -3853,7 +3850,6 @@ class CdlToplevelBody : virtual public CdlContainerBody {
     CdlInterpreter                      interp;
     CdlContainer                        orphans;
     std::string                         description;
-    std::string                         directory;
     std::list<CdlConflict>              conflicts;
     std::list<CdlConflict>              structural_conflicts;
 
@@ -5333,6 +5329,7 @@ class CdlBuildInfo_Loadable {
 
   public:
     std::string         name;           /* CYGPKG_INFRA         */
+    std::string         repository;     /* arbitrary path       */
     std::string         directory;      /* infra/current        */
     std::vector<CdlBuildInfo_Header>            headers;
     std::vector<CdlBuildInfo_Compile>           compiles;

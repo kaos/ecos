@@ -544,14 +544,16 @@ CdlBuildableBody::update_all_build_info(CdlBuildInfo_Loadable& build_info, std::
     CdlLoadable loadable        = get_owner();
     CYG_ASSERT_CLASSC(loadable);
     std::string directory       = loadable->get_directory();
+    std::string repository      = loadable->get_repository();
     CYG_ASSERTC("" != directory);
+    CYG_ASSERTC("" != repository);
     CdlInterpreter interp       = loadable->get_interpreter();
     CYG_ASSERT_CLASSC(interp);
 
     // The interpreter needs some information about the locations
     // of various things. This code has to be kept in step with
     // CdlLoadable::find_relative_file()
-    interp->set_variable("::cdl_topdir", get_toplevel()->get_directory());
+    interp->set_variable("::cdl_topdir", repository);
     interp->set_variable("::cdl_pkgdir", directory);
 
     // For many packages the sources will reside in a src subdirectory.
@@ -964,7 +966,7 @@ update_header_file_info(CdlConstBuildLoadable loadable, CdlBuildInfo_Loadable& b
 
     // It is necessary to search for the appropriate files.
     CdlInterpreter interp = loadable->get_interpreter();
-    std::string    path   = loadable->get_toplevel()->get_directory() + "/" + loadable->get_directory();
+    std::string    path   = loadable->get_repository() + "/" + loadable->get_directory();
     if (has_include_subdir) {
         std::vector<std::string> files;
         std::vector<std::string>::const_iterator file_i;
@@ -1051,8 +1053,9 @@ CdlBuildLoadableBody::update_build_info(CdlBuildInfo& build_info) const
     CdlBuildInfo_Loadable tmp_info;
     build_info.entries.push_back(tmp_info);
     CdlBuildInfo_Loadable& this_info = *(build_info.entries.rbegin());
-    this_info.name      = get_name();
-    this_info.directory = get_directory();
+    this_info.name          = get_name();
+    this_info.repository    = get_repository();
+    this_info.directory     = get_directory();
 
     // Take care of the header files
     update_header_file_info(this, this_info);
@@ -1090,8 +1093,8 @@ CdlBuildLoadableBody::update_all_build_info(CdlBuildInfo& build_info) const
     CdlBuildInfo_Loadable tmp_info;
     build_info.entries.push_back(tmp_info);
     CdlBuildInfo_Loadable& this_info = *(build_info.entries.rbegin());
-    this_info.name      = get_name();
-    this_info.directory = get_directory();
+    this_info.name       = get_name();
+    this_info.directory  = get_directory();
 
     std::string loadable_library = default_library_name;
     if (has_property(CdlPropertyId_Library)) {
