@@ -102,12 +102,12 @@
 
 #elif defined(CYGPKG_HAL_ARM_ARM9_ARM925T)
 # define HAL_ICACHE_SIZE                 0x4000
-# define HAL_ICACHE_LINE_SIZE            32
+# define HAL_ICACHE_LINE_SIZE            16
 # define HAL_ICACHE_WAYS                 2
 # define HAL_ICACHE_SETS (HAL_ICACHE_SIZE/(HAL_ICACHE_LINE_SIZE*HAL_ICACHE_WAYS))
 
 # define HAL_DCACHE_SIZE                 0x2000
-# define HAL_DCACHE_LINE_SIZE            32
+# define HAL_DCACHE_LINE_SIZE            16
 # define HAL_DCACHE_WAYS                 2
 # define HAL_DCACHE_SETS (HAL_DCACHE_SIZE/(HAL_DCACHE_LINE_SIZE*HAL_DCACHE_WAYS))
 

@@ -1,3 +1,9 @@
+2003-01-08  Patrick Doyle  <wpd@delcomsys.com>
+
+	* include/hal_cache.h: Changed HAL_ICACHE_LINE_SIZE and
+	HAL_DCACHE_LINE_SIZE to match the documentation from TI.  Now the
+	kcache2 test passes the two tests that it runs.
+
 2002-03-06  Nick Garnett  <nickg@redhat.com>
 
 	* include/hal_cache.h: Added support for ARM966E. This does not
