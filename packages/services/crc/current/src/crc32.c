@@ -65,7 +65,7 @@
   /*                                                                        */
   /* ====================================================================== */
 
-static const unsigned long crc32_tab[] = {
+static const cyg_uint32 crc32_tab[] = {
       0x00000000L, 0x77073096L, 0xee0e612cL, 0x990951baL, 0x076dc419L,
       0x706af48fL, 0xe963a535L, 0x9e6495a3L, 0x0edb8832L, 0x79dcb8a4L,
       0xe0d5e91eL, 0x97d2d988L, 0x09b64c2bL, 0x7eb17cbdL, 0xe7b82d07L,
@@ -122,8 +122,8 @@ static const unsigned long crc32_tab[] = {
 
 /* This is the standard Gary S. Brown's 32 bit CRC algorithm, but
    accumulate the CRC into the result of a previous CRC. */
-unsigned long 
-cyg_crc32_accumulate(unsigned long crc32val, unsigned char *s, int len)
+cyg_uint32 
+cyg_crc32_accumulate(cyg_uint32 crc32val, unsigned char *s, int len)
 {
   int i;
 
@@ -134,7 +134,7 @@ cyg_crc32_accumulate(unsigned long crc32val, unsigned char *s, int len)
 }
 
 /* This is the standard Gary S. Brown's 32 bit CRC algorithm */
-unsigned long 
+cyg_uint32
 cyg_crc32(unsigned char *s, int len)
 {
   return (cyg_crc32_accumulate(0,s,len));
@@ -143,8 +143,8 @@ cyg_crc32(unsigned char *s, int len)
 /* Return a 32-bit CRC of the contents of the buffer accumulating the
    result from a previous CRC calculation. This uses the Ethernet FCS
    algorithm.*/
-unsigned long 
-cyg_ether_crc32_accumulate(unsigned long crc32val, unsigned char *s, int len)
+cyg_uint32
+cyg_ether_crc32_accumulate(cyg_uint32 crc32val, unsigned char *s, int len)
 {
   int i;
 
@@ -159,7 +159,7 @@ cyg_ether_crc32_accumulate(unsigned long crc32val, unsigned char *s, int len)
 
 /* Return a 32-bit CRC of the contents of the buffer, using the
    Ethernet FCS algorithm. */
-unsigned long 
+cyg_uint32
 cyg_ether_crc32(unsigned char *s, int len)
 {
   return cyg_ether_crc32_accumulate(0,s,len);

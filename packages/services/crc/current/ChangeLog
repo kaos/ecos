@@ -1,3 +1,7 @@
+2002-10-28  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* */*: Fixed 32-bit reliance.
+
 2002-10-18  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/crc.h: Add extern definitions.

@@ -56,7 +56,7 @@
 #include <cyg/crc/crc.h>
 
 // Table of CRC constants - implements x^16+x^12+x^5+1
-static const unsigned short crc16_tab[] = {
+static const cyg_uint16 crc16_tab[] = {
     0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50a5, 0x60c6, 0x70e7, 
     0x8108, 0x9129, 0xa14a, 0xb16b, 0xc18c, 0xd1ad, 0xe1ce, 0xf1ef, 
     0x1231, 0x0210, 0x3273, 0x2252, 0x52b5, 0x4294, 0x72f7, 0x62d6, 
@@ -91,11 +91,11 @@ static const unsigned short crc16_tab[] = {
     0x6e17, 0x7e36, 0x4e55, 0x5e74, 0x2e93, 0x3eb2, 0x0ed1, 0x1ef0, 
 };
 
-unsigned short
+cyg_uint16
 cyg_crc16(unsigned char *buf, int len)
 {
     int i;
-    unsigned short cksum;
+    cyg_uint16 cksum;
 
     cksum = 0;
     for (i = 0;  i < len;  i++) {

@@ -79,13 +79,13 @@ cyg_start( void )
   
   CYG_TEST_INFO("Calculating CRCs");
  
-  if (1500790746l != cyg_posix_crc32(license_txt,sizeof(license_txt)-1)) {
+  if (1500790746UL != cyg_posix_crc32(license_txt,sizeof(license_txt)-1)) {
     CYG_TEST_FAIL("Wrong POSIX CRC32 calculation");
   } else {
     CYG_TEST_PASS("POSIX CRC32 calculation");
   }
   
-  if (1667500021 != cyg_ether_crc32(license_txt,sizeof(license_txt)-1)) {
+  if (1667500021UL != cyg_ether_crc32(license_txt,sizeof(license_txt)-1)) {
     CYG_TEST_FAIL("Wrong Ethernet crc32 calculation");
   } else {
     CYG_TEST_PASS("Ethernet crc32 calculation");
@@ -97,14 +97,14 @@ cyg_start( void )
     crc1= cyg_ether_crc32_accumulate(0, license_txt,sizeof(license_txt)-1);
     crc2 = cyg_ether_crc32_accumulate(crc1, license_txt,sizeof(license_txt)-1);
     
-    if ((1667500021 != crc1) || (3478736840u != crc2)) {
+    if ((1667500021UL != crc1) || (3478736840UL != crc2)) {
       CYG_TEST_FAIL("Wrong Etheret crc32 accumulate");
     } else {
       CYG_TEST_PASS("Ethernet crc32_accumulate");
     }
   }
 
-  if (1247800780 != cyg_crc32(license_txt,sizeof(license_txt)-1)) {
+  if (1247800780UL != cyg_crc32(license_txt,sizeof(license_txt)-1)) {
     CYG_TEST_FAIL("Wrong Gary S. Browns' crc32 calculation");
   } else {
     CYG_TEST_PASS("Gary S. Browns' crc32 calculation");
@@ -113,13 +113,13 @@ cyg_start( void )
   crc1 = cyg_crc32_accumulate(0,license_txt,sizeof(license_txt)-1);
   crc2 = cyg_crc32_accumulate(crc1,license_txt,sizeof(license_txt)-1);
     
-  if ((1247800780 != crc1) || (926002294 != crc2)) {
+  if ((1247800780UL != crc1) || (926002294UL != crc2)) {
     CYG_TEST_FAIL("Wrong Gary S. Browns' crc32 accumulate calculation");
   } else {
     CYG_TEST_PASS("Gary S. Browns' crc32 accumulate calculation");
   }
     
-  if (32256 != cyg_crc16(license_txt,sizeof(license_txt)-1)) {
+  if (32256UL != cyg_crc16(license_txt,sizeof(license_txt)-1)) {
     CYG_TEST_FAIL_FINISH("Wrong 16bit CRC calculation");
   } else {
     CYG_TEST_PASS_FINISH("16bit CRC calculation");
