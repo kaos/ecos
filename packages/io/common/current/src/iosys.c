@@ -124,25 +124,29 @@ cyg_io_init(void)
 Cyg_ErrNo
 cyg_io_lookup(const char *name, cyg_io_handle_t *handle)
 {
-    cyg_devtab_entry_t *t, *st;
+    union devtab_entry_handle_union {
+        cyg_devtab_entry_t *st;
+        cyg_io_handle_t h;
+    } stunion;
+    cyg_devtab_entry_t *t;
     Cyg_ErrNo res;
     const char *name_ptr;
     for (t = &__DEVTAB__[0]; t != &__DEVTAB_END__; t++) {
         if (cyg_io_compare(name, t->name, &name_ptr)) {
             // FUTURE: Check 'avail'/'online' here
             if (t->dep_name) {
-                res = cyg_io_lookup(t->dep_name, (cyg_io_handle_t *)&st);
+                res = cyg_io_lookup(t->dep_name, &stunion.h);
                 if (res != ENOERR) {
                     return res;
                 }
             } else {
-                st = (cyg_devtab_entry_t *)0;
+                stunion.st = NULL;
             }
             if (t->lookup) {
                 // This indirection + the name pointer allows the lookup routine
                 // to return a different 'devtab' handle.  This will provide for
                 // 'pluggable' devices, file names, etc.
-                res = (t->lookup)(&t, st, name_ptr);
+                res = (t->lookup)(&t, stunion.st, name_ptr);
                 if (res != ENOERR) {
                     return res;
                 }
