@@ -79,7 +79,7 @@ plf_hardware_init(void)
     *IXP425_GPCLKR |= GPCLKR_CLK1_ENABLE;
     *IXP425_GPCLKR |= GPCLKR_CLK1_PCLK2;
 
-    HAL_GPIO_OUTPUT_CLEAR(GPIO_EEPROM_SCL);
+    HAL_GPIO_OUTPUT_SET(GPIO_EEPROM_SCL);
     HAL_GPIO_OUTPUT_ENABLE(GPIO_EEPROM_SCL);
 
     HAL_GPIO_OUTPUT_SET(GPIO_EEPROM_SDA);
@@ -174,6 +174,8 @@ eeprom_stop(void)
     DATA_HI();
     hal_delay_us(5);
     CLK_LO();
+    hal_delay_us(5);
+    CLK_HI();
     hal_delay_us(5);
 }
 
