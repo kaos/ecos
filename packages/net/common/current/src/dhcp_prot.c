@@ -42,6 +42,11 @@
 
 #include <cyg/infra/cyg_ass.h>
 
+#ifdef INET6
+#include <net/if_var.h>
+#include <netinet6/in6_var.h>
+#endif
+
 // ------------------------------------------------------------------------
 // Returns a pointer to the end of dhcp message (or NULL if invalid)
 // meaning the address of the byte *after* the TAG_END token in the vendor
@@ -1271,6 +1276,30 @@ do_dhcp_down_net(const char *intf, struct bootp *res,
     if (ioctl(s, SIOCDIFADDR, &ifr)) { /* delete IF addr */
         perror("SIOCDIFADDR1");
     }
+
+#ifdef INET6
+    {
+      int s6;
+    
+      s6 = socket(AF_INET6, SOCK_DGRAM, 0);
+      if (s6 < 0) {
+        perror("socket AF_INET6");
+        return false;
+      }
+      // Now delete the ipv6 addr
+      strcpy(ifr.ifr_name, intf);
+      if (ioctl(s6, SIOCGLIFADDR, &ifr)) {
+	perror("SIOCGIFADDR_IN6 1");
+	return false;
+      }
+      
+      strcpy(ifr.ifr_name, intf);
+      if (ioctl(s6, SIOCDLIFADDR, &ifr)) { /* delete IF addr */
+        perror("SIOCDIFADDR_IN61");
+      }
+      close(s6);
+    }
+#endif /* IP6 */
 
     // Shut down interface so it can be reinitialized
     ifr.ifr_flags &= ~(IFF_UP | IFF_RUNNING);
