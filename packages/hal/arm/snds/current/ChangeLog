@@ -1,3 +1,9 @@
+2003-10-08  Roland Caﬂebohm  <roland.cassebohm@visionsystems.de>
+
+        * include/plf_io.h: Correct (unused) defines for
+        KS32C_ROMCON_BASE_MASK, KS32C_ROMCON_NEXT_MASK, 
+        KS32C_DRAMCON_BASE_MASK and KS32C_DRAMCON_NEXT_MASK.
+
 2003-09-21  Gary Thomas  <gary@mlbassoc.com>
 
 	* misc/redboot_RAM.ecm: 
