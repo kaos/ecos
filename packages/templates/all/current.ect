@@ -42,6 +42,26 @@ cdl_configuration template_all {
     package     CYGPKG_CPULOAD current ;
     package     CYGPKG_NET_SNTP current ;
     package     CYGPKG_HTTPD current ;
+    package     CYGPKG_IO_FLASH current ;
+    package     CYGPKG_FS_RAM current ;
+    package     CYGPKG_FS_ROM current ;
+    package     CYGPKG_FS_JFFS2 current ;
+    package     CYGPKG_LINUX_COMPAT current ;  
+    package     CYGPKG_IO_USB current ;
+    package     CYGPKG_IO_USB_SLAVE current ;
+    package     CYGPKG_IO_USB_SLAVE_ETH current ;
+    package     CYGPKG_NET_FTPCLIENT current ;
+    package     CYGPKG_PPP current ;
+    package     CYGPKG_DEVS_ETH_CF current ;
+    package     CYGPKG_DEVS_ETH_NS_DP83902A current ;
+    package     CYGPKG_IO_PCI current ;
+    package     CYGPKG_IO_SPI current ;
+    package     CYGPKG_COMPRESS_ZLIB current ;
+    package     CYGPKG_POWER current ;
+    package     CYGPKG_VNC_SERVER current ;
+    package     CYGPKG_IO_DISK current ;
+    package     CYGPKG_BLOCK_LIB current ;
+    package     CYGPKG_FS_FAT current ;
 };
 
 cdl_option CYGBLD_ISO_CTYPE_HEADER {
@@ -244,3 +264,23 @@ cdl_option CYGBLD_ISO_STDIO_FILEOPS_HEADER {
 cdl_option CYGBLD_ISO_STDIO_FILEPOS_HEADER {
     inferred_value 1 <cyg/libc/stdio/stdio.h>
 };
+
+cdl_option CYGPKG_IO_SERIAL_FLOW_CONTROL {
+    inferred_value 1
+};
+
+cdl_option CYGOPT_IO_SERIAL_SUPPORT_NONBLOCKING {
+    inferred_value 1
+};
+
+cdl_option CYGPKG_IO_SERIAL_DEVICES {
+    inferred_value 1 
+};
+
+cdl_option CYGPKG_IO_FILEIO_INODE {
+    inferred_value 1
+};
+
+cdl_option CYGPKG_IO_FLASH_BLOCK_DEVICE {
+    inferred_value 1
+}

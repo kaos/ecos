@@ -1,3 +1,8 @@
+2004-10-05  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* current.ect: Added in many missing packages, plus some defaults
+	which the inference engine works out.
+
 2004-04-15  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* current.ect: Provide default for CYGBLD_ISO_STDIO_FILEOPS_HEADER
