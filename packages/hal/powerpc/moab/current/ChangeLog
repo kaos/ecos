@@ -1,3 +1,8 @@
+2003-10-03  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/hal_aux.c (hal_platform_init): Better/different ESA computation,
+	using only 16 unique bits.
+
 2003-10-02  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/hal_aux.c: 

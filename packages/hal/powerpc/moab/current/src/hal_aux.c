@@ -89,22 +89,22 @@ CYGARC_MEMDESC_TABLE CYGBLD_ATTRIB_WEAK = {
 
 // Board/CPU serial number
 cyg_uint32 _moab_serial_no[2];
-unsigned char _moab_eth0_ESA[] = { 0x00, 0x20, 0xCF, 0x01, 0x11, 0x11}; // Default ESA
-unsigned char _moab_eth1_ESA[] = { 0x00, 0x20, 0xCF, 0x81, 0x11, 0x11}; // Default ESA
+unsigned char _moab_eth0_ESA[] = { 0x00, 0x20, 0xCF, 0x02, 0x11, 0x11}; // Default ESA
+unsigned char _moab_eth1_ESA[] = { 0x00, 0x20, 0xCF, 0x03, 0x11, 0x11}; // Default ESA
 
 void
 hal_platform_init(void)
 {
+    unsigned long munged_serial_no;
 
     CYGARC_MFDCR(DCR_CPC0_ECID0, _moab_serial_no[0]);
     CYGARC_MFDCR(DCR_CPC0_ECID1, _moab_serial_no[1]);
-    // Set default ethernet ESA
-    _moab_eth0_ESA[3] = ((_moab_serial_no[1] & 0x007F0000) >> 16) | 0x00;
-    _moab_eth0_ESA[4] = ((_moab_serial_no[1] & 0x0000FF00) >> 8);
-    _moab_eth0_ESA[5] = ((_moab_serial_no[1] & 0x000000FF) >> 0);
-    _moab_eth1_ESA[3] = ((_moab_serial_no[1] & 0x007F0000) >> 16) | 0x80;
-    _moab_eth1_ESA[4] = ((_moab_serial_no[1] & 0x0000FF00) >> 8);
-    _moab_eth1_ESA[5] = ((_moab_serial_no[1] & 0x000000FF) >> 0);
+    // Set default ethernet ESA - using 16 bits of munged serial number
+    munged_serial_no = ((_moab_serial_no[0] & 0x0000000F) << 12) | (_moab_serial_no[1] & 0x00000FFF);
+    _moab_eth0_ESA[4] = ((munged_serial_no & 0x0000FF00) >> 8);
+    _moab_eth0_ESA[5] = ((munged_serial_no & 0x000000FF) >> 0);
+    _moab_eth1_ESA[4] = ((munged_serial_no & 0x0000FF00) >> 8);
+    _moab_eth1_ESA[5] = ((munged_serial_no & 0x000000FF) >> 0);
 #ifdef CYGPKG_REDBOOT
     diag_printf("CPU serial number: %08x/%08x\n", _moab_serial_no[0], _moab_serial_no[1]);
 #endif
