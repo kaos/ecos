@@ -1,3 +1,20 @@
+2000-02-18  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/tcdiag.cxx (cyg_test_exit): Add the facility for a platform
+	HAL to define an action to take at CYG_TEST_EXIT time; this is
+	useful for some simulators that are not (yet) Gdb integrated.
+	The action is CYGHWR_TEST_PROGRAM_EXIT() if defined.
+
+	* src/simple.cxx (cyg_assert_fail): Add the facility for a
+	platform HAL to define an action to take when an assertion failure
+	occurs.  Ditto.
+
+	* src/fancy.cxx (cyg_assert_fail): Ditto.
+
+	* src/buffer.cxx (cyg_assert_fail): Ditto.
+
+	[no change to null.cxx because, well, it's null isn't it]
+
 2000-02-08  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* include/cyg_trac.h: Define and document CYG_TRACE_PRINT() and

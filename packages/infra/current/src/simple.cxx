@@ -506,6 +506,9 @@ cyg_assert_fail( const char *psz_func, const char *psz_file,
     diag_write_string(psz_msg);
     diag_write_char('\n');
 
+#ifdef CYGHWR_TEST_PROGRAM_EXIT
+    CYGHWR_TEST_PROGRAM_EXIT();
+#endif
     for(;;);
 
 //    DIAG_DEVICE_END_SYNC();

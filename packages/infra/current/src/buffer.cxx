@@ -727,6 +727,9 @@ cyg_assert_fail( const char *psz_func, const char *psz_file,
 
 #endif
     
+#ifdef CYGHWR_TEST_PROGRAM_EXIT
+    CYGHWR_TEST_PROGRAM_EXIT();
+#endif
     for(;;);
     
 //    DIAG_DEVICE_END_SYNC();

@@ -43,6 +43,8 @@
 #include <cyg/infra/diag.h>            // HAL polled output
 #include <cyg/infra/testcase.h>        // what we implement
 
+#include <cyg/hal/hal_intr.h>          // exit macro, if defined
+
 int cyg_test_is_simulator = 0;         // infrastructure changes as necessary
 
 externC void
@@ -98,6 +100,10 @@ cyg_test_output(Cyg_test_code status, const char *msg, int line,
 externC void
 cyg_test_exit(void)
 {
+#ifdef CYGHWR_TEST_PROGRAM_EXIT
+    CYGHWR_TEST_PROGRAM_EXIT();
+#endif
+
     for(;;)
         ;
 }
