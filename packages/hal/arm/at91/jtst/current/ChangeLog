@@ -1,3 +1,8 @@
+2004-10-8  Andrew Lunn	<andrew.lunn@ascom.ch>
+
+	* support/jtstflash.{c|cpp}: Host tools for programming the
+	flash on the jtst boards. See the redboot documentation.
+	
 2004-10-6  Andrea Michelotti  <amichelotti@atmel.com>
 
 	* include/plf_io.h: removed SPI definitions. They are defined in
