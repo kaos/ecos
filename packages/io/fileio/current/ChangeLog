@@ -1,3 +1,12 @@
+2004-01-07  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/select.cxx: No need to make pselect() dependent on
+	CYGPKG_POSIX - that would depend on the arguments. Assert instead,
+	and more correctly make it contingent on CYGPKG_POSIX_SIGNALS.
+
+	* src/fio.h: Separate out signal functionality into its own separate
+	test.
+
 2003-12-21  Sandeep Kumar <sandeep@codito.com>
 
 	* src/dir.cxx (readdir_r): Handle NULL dirp argument and return

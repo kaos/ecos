@@ -317,13 +317,17 @@ select(int nfd, fd_set *in, fd_set *out, fd_set *ex, struct timeval *tv)
 //
 // This is derived from the POSIX-200X specification.
 
-#ifdef CYGPKG_POSIX
-
 __externC int
 pselect(int nfd, fd_set *in, fd_set *out, fd_set *ex,
 	const struct timespec *ts, const sigset_t *sigmask)
 {
 	struct timeval tv;
+
+#ifndef CYGPKG_POSIX_SIGNALS
+        CYG_ASSERT( sigmask == NULL,
+                    "pselect called with non-null sigmask without POSIX signal support"
+                    );
+#endif
 
 	if (ts != NULL)
         {
@@ -333,8 +337,6 @@ pselect(int nfd, fd_set *in, fd_set *out, fd_set *ex,
 
 	return cyg_pselect(nfd, in, out, ex, ts ? &tv : NULL, sigmask);
 }
-
-#endif
 
 //==========================================================================
 // Select support functions.

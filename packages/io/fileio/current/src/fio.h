@@ -92,12 +92,22 @@
 // POSIX API support
 
 #ifdef CYGPKG_POSIX
-
+#include <pkgconf/posix.h>
 #include <cyg/posix/export.h>
 
 #define CYG_FILEIO_FUNCTION_START() CYG_POSIX_FUNCTION_START()
 
 #define CYG_FILEIO_FUNCTION_FINISH() CYG_POSIX_FUNCTION_FINISH()
+
+#else
+
+#define CYG_FILEIO_FUNCTION_START() CYG_EMPTY_STATEMENT
+
+#define CYG_FILEIO_FUNCTION_FINISH() CYG_EMPTY_STATEMENT
+
+#endif
+
+#ifdef CYGPKG_POSIX_SIGNALS
 
 #define CYG_FILEIO_SIGMASK_SET( __set, __oset ) \
         CYG_PTHREAD_SIGMASK_SET( __set, __oset )
@@ -109,12 +119,7 @@
 
 #else
 
-#define CYG_FILEIO_FUNCTION_START() CYG_EMPTY_STATEMENT
-
-#define CYG_FILEIO_FUNCTION_FINISH() CYG_EMPTY_STATEMENT
-
-#define CYG_FILEIO_SIGMASK_SET( __set, __oset ) \
-            CYG_UNUSED_PARAM(sigset_t *, __oset)
+#define CYG_FILEIO_SIGMASK_SET( __set, __oset ) CYG_EMPTY_STATEMENT
 
 #define CYG_FILEIO_SIGPENDING() (0)
 
