@@ -476,8 +476,7 @@ init_all_network_interfaces(void)
 #endif
 
 #ifdef CYGDAT_NS_DNS_DEFAULT_SERVER
-      cyg_dns_res_start(CYGDAT_NS_DNS_DEFAULT_SERVER);
-    }
+      cyg_dns_res_start(string(CYGDAT_NS_DNS_DEFAULT_SERVER));
 #endif
 
 #ifdef CYGDAT_NS_DNS_DOMAINNAME_NAME

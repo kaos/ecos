@@ -1,3 +1,8 @@
+2004-04-13  Sandeep Kumar <sandeep@codito.com>
+
+	* src/network_support.c (init_all_network_interfaces): Fix argument to
+        cyg_dns_res_start and removed errneaous extra closing brace around it.
+
 2004-04-13  Jay Foster <jay.foster@systech.com>
 
 	* src/bootp_support.c (do_bootp): Return false when we should.
