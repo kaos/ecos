@@ -3,7 +3,7 @@
 #      edosk2674_eth_drivers.cdl
 #
 #      Ethernet drivers - support for LAN91CXX ethernet controller
-#      on the EDOSK-2674R board.
+#      on the EDOSK-2674 board.
 #
 # ====================================================================
 #####ECOSGPLCOPYRIGHTBEGIN####
@@ -51,7 +51,7 @@
 
 cdl_package CYGPKG_DEVS_ETH_H8300_EDOSK2674 {
 
-    display       "EDOSK-2674R SMC91C96 ethernet driver"
+    display       "EDOSK-2674 SMC91C96 ethernet driver"
 
     parent        CYGPKG_IO_ETH_DRIVERS
     active_if	  CYGPKG_IO_ETH_DRIVERS
@@ -62,7 +62,7 @@ cdl_package CYGPKG_DEVS_ETH_H8300_EDOSK2674 {
     implements    CYGINT_DEVS_ETH_SMSC_LAN91CXX_REQUIRED
     implements    CYGSEM_DEVS_ETH_SMSC_LAN91CXX_8_BIT
 
-    description   "Ethernet driver for EDOSK-2674R boards."
+    description   "Ethernet driver for EDOSK-2674 boards."
 
     include_dir   cyg/io
 

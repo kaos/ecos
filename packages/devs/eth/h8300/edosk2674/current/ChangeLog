@@ -1,7 +1,7 @@
 2003-02-26  Yoshinori Sato <ysato@users.sourceforge.jp>
 	
 	* Initial version of support for LAN91CXX ethernet controller
-	on the HMSE EDOSK-2674R board.
+	on the HMSE EDOSK-2674 board.
 
 //===========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####

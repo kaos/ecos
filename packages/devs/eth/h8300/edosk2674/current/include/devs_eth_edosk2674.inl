@@ -2,7 +2,7 @@
 //
 //      devs/eth/h8300/edosk2674/...../include/devs_eth_edosk2674.inl
 //
-//      EDOSK-2674R ethernet I/O definitions.
+//      EDOSK-2674 ethernet I/O definitions.
 //
 //==========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
@@ -43,7 +43,7 @@
 // Author(s):    Yoshinori Sato <ysato@users.sourceforge.jp>
 // Contributors: ysato
 // Date:         2003-02-25
-// Purpose:      EDOSK-2674R ethernet definitions
+// Purpose:      EDOSK-2674 ethernet definitions
 //####DESCRIPTIONEND####
 //==========================================================================
 
@@ -61,7 +61,7 @@ static lan91cxx_priv_data lan91cxx_eth0_priv_data = {
     enaddr : CYGDAT_DEVS_ETH_H8300_EDOSK2674_ESA,
 #endif
     base : (unsigned short *)0xf80000,
-    interrupt : 12
+    interrupt : 16
 };
 
 ETH_DRV_SC(lan91cxx_sc,
