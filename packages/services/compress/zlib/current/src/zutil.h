@@ -17,6 +17,7 @@
 #ifdef __ECOS__
 #include <cyg/compress/zlib.h>
 #include <cyg/crc/crc.h>
+#undef  crc32
 #define crc32 cyg_ether_crc32_accumulate
 #else
 #include "zlib.h"

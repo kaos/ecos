@@ -8,6 +8,23 @@
 #ifndef ZCONF_H
 #define ZCONF_H
 
+// #ifdef __ECOS__
+#undef __ECOS__
+#define __ECOS__
+#define Z_PREFIX
+#include <pkgconf/compress_zlib.h>
+#if CYGINT_COMPRESS_ZLIB_LOCAL_ALLOC != 0
+#define MY_ZCALLOC
+#endif
+#ifdef CYGSEM_COMPRESS_ZLIB_DEFLATE_MAKES_GZIP
+#undef  MAX_WBITS
+#define MAX_WBITS   15+16 /* 32K LZ77 window */
+#else
+#define NO_GZIP
+#define NO_GZCOMPRESS
+#endif
+// #endif
+
 /*
  * If you *really* need a unique prefix for all types and library functions,
  * compile with -DZ_PREFIX. The "standard" zlib should be compiled without it.
@@ -318,17 +335,6 @@ typedef uLong FAR uLongf;
 #   pragma map(inflate_table,"INTABL")
 #   pragma map(inflate_fast,"INFA")
 #   pragma map(inflate_copyright,"INCOPY")
-#endif
-
-#ifdef __ECOS__
-#include <pkgconf/compress_zlib.h>
-#if CYGINT_COMPRESS_ZLIB_LOCAL_ALLOC != 0
-#define MY_ZCALLOC
-#endif
-#ifdef CYGSEM_COMPRESS_ZLIB_DEFLATE_MAKES_GZIP
-#undef  MAX_WBITS
-#define MAX_WBITS   15+16 /* 32K LZ77 window */
-#endif
 #endif
 
 #endif /* ZCONF_H */

@@ -1,3 +1,12 @@
+2004-05-25  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/zutil.h: Fix redefine of 'crc32'
+	
+	* include/zconf.h: Force define of __ECOS__ to make it easier for
+	applications to use this library.  Also define Z_PREFIX to minimize
+	namespace pollution.  !CYGSEM_COMPRESS_ZLIB_DEFLATE_MAKES_GZIP now
+	implies NO_GZCOMPRESS and NO_GZIP.
+
 2004-05-24  Gary Thomas  <gary@mlbassoc.com>
 
 	* tests/zlib2.c: 
