@@ -1,3 +1,15 @@
+2003-02-03  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/filename.cpp: Eliminate (const WCHAR*) cast
+	in call to PathRelativePathTo() which is related to an error
+	in w32api/shlwapi.h.
+
+	* standalone/configtool.cpp: Suppress obsolete splash screen and
+	associated resources for now.
+
+	* standalone/mainwin.cpp: Implement simplified 'About' dialog box
+	to eliminate configtool.bin resource file dependency.
+
 2003-01-25  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/configtool.cpp: Use correct data type in call

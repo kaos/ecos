@@ -2,6 +2,7 @@
 //
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 2003 John Dallaway
 //
 // This program is part of the eCos host tools.
 //
@@ -27,8 +28,8 @@
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   julians
-// Contact(s):  julians
+// Author(s):   julians, jld
+// Contact(s):  julians, jld
 // Date:        2000/08/24
 // Version:     $Id: mainwin.cpp,v 1.57 2002/02/28 18:30:35 julians Exp $
 // Purpose:
@@ -546,8 +547,9 @@ void ecMainFrame::OnUpdateFindNext(wxUpdateUIEvent& event)
 
 void ecMainFrame::OnAbout(wxCommandEvent& WXUNUSED(event))
 {
-    ecAboutDialog dialog(this, ecID_ABOUT_DIALOG, _("About eCos Configuration Tool"));
-    dialog.ShowModal();
+//    ecAboutDialog dialog(this, ecID_ABOUT_DIALOG, _("About eCos Configuration Tool"));
+//    dialog.ShowModal();
+    wxMessageBox(_("eCos Configuration Tool 2.12.net\n\nCopyright (c) Red Hat, Inc. 1998-2002\nCopyright (c) John Dallaway 2003"), _("About eCos Configuration Tool"), wxICON_INFORMATION | wxOK);
 }
 
 void ecMainFrame::OnSize(wxSizeEvent& WXUNUSED(event))

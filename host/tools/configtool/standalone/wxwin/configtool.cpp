@@ -2,6 +2,7 @@
 //
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 2003 John Dallaway
 //
 // This program is part of the eCos host tools.
 //
@@ -27,8 +28,8 @@
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   julians
-// Contact(s):  julians
+// Author(s):   julians, jld
+// Contact(s):  julians, jld
 // Date:        2000/08/24
 // Version:     $Id: configtool.cpp,v 1.51 2001/12/11 15:59:51 julians Exp $
 // Purpose:
@@ -512,17 +513,17 @@ bool ecApp::LoadResources()
 {
     wxFileSystem::AddHandler(new wxMemoryFSHandler);
 
-    LoadBitmapResource(m_splashScreenBitmap, wxT("splash16.png"), wxBITMAP_TYPE_PNG, FALSE);
+//    LoadBitmapResource(m_splashScreenBitmap, wxT("splash16.png"), wxBITMAP_TYPE_PNG, FALSE);
 
-    wxBitmap bitmap1, bitmap2, bitmap3;
-    LoadBitmapResource(bitmap1, wxT("ecoslogo.png"), wxBITMAP_TYPE_PNG, TRUE);
-    LoadBitmapResource(bitmap2, wxT("ecoslogosmall.png"), wxBITMAP_TYPE_PNG, TRUE);
-    LoadBitmapResource(bitmap3, wxT("rhlogo.png"), wxBITMAP_TYPE_PNG, TRUE);
+//    wxBitmap bitmap1, bitmap2, bitmap3;
+//    LoadBitmapResource(bitmap1, wxT("ecoslogo.png"), wxBITMAP_TYPE_PNG, TRUE);
+//    LoadBitmapResource(bitmap2, wxT("ecoslogosmall.png"), wxBITMAP_TYPE_PNG, TRUE);
+//    LoadBitmapResource(bitmap3, wxT("rhlogo.png"), wxBITMAP_TYPE_PNG, TRUE);
 
-    wxString aboutText;
-    LoadTextResource(aboutText, wxT("about.htm"), TRUE);
+//    wxString aboutText;
+//    LoadTextResource(aboutText, wxT("about.htm"), TRUE);
 
-    VersionStampSplashScreen();
+//    VersionStampSplashScreen();
 
     return TRUE;
 }

@@ -2,6 +2,7 @@
 //                                                                          
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 2003 John Dallaway
 //
 // This program is part of the eCos host tools.
 //
@@ -448,7 +449,7 @@ ecFileName ecFileName::Relative(const wxChar* compare,const wxChar* current)
 {
 #ifdef __WXMSW__
     wxString rc;
-    bool b=(TRUE==PathRelativePathTo(rc.GetWriteBuf(1+MAX_PATH),current,FILE_ATTRIBUTE_DIRECTORY,(const WCHAR*)compare,0));
+    bool b=(TRUE==PathRelativePathTo(rc.GetWriteBuf(1+MAX_PATH),current,FILE_ATTRIBUTE_DIRECTORY,compare,0));
     rc.UngetWriteBuf();
     return b?(ecFileName)rc:(ecFileName)compare;
 #else
