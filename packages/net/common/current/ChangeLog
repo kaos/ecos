@@ -1,3 +1,8 @@
+2003-10-21  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+        * src/dhcp_prot.c (set_default_dhcp_tags): 
+        * src/bootp_support.c (show_bootp): Added support for TAG_NTP_SERVER
+
 2003-10-13  Jay Foster  <jay@systech.com>
 
         * include/dhcp.h: Added prototype for dhcp_set_hostname().

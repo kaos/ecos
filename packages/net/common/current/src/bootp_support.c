@@ -68,6 +68,9 @@
 #ifdef CYGINT_ISO_DNS
 #include <netdb.h>
 #endif
+#ifdef CYGPKG_NET_SNTP
+#include <cyg/sntp/sntp.h>
+#endif
 
 #ifndef CYGPKG_LIBC_STDIO
 #define perror(s) diag_printf(#s ": %s\n", strerror(errno))
@@ -361,7 +364,15 @@ show_bootp(const char *intf, struct bootp *bp)
                         diag_printf(" %d",op[i]);
                 diag_printf("\n");
                 break;
-
+            case TAG_NTP_SERVER:
+              diag_printf("        NTP servers: ");
+              for ( i = 0 ; i < op[1]/4 ; i++) {
+                diag_printf("%d.%d.%d.%d ",
+                            op[1+i*4+1], op[1+i*4+2], 
+                            op[1+i*4+3], op[1+i*4+4]);
+              }
+              diag_printf("\n");
+              break;
             default:
                 diag_printf("Unknown option: %x/%d.%d:", *op, *op, *(op+1));
                 for ( i = 2; i < 2 + op[1]; i++ )
@@ -536,6 +547,47 @@ init_net(const char *intf, struct bootp *bp)
         }
     }
 #endif
+
+#ifdef CYGNUM_NET_SNTP_UNICAST_MAXDHCP
+    {
+        struct in_addr dhcp_addrs[CYGNUM_NET_SNTP_UNICAST_MAXDHCP];
+
+        /* Removed any previously registered addresses */
+        cyg_sntp_set_servers(NULL, 0);
+
+        /* See if we received any NTP servers from DHCP */
+        length = sizeof(dhcp_addrs);
+        if (get_bootp_option(bp, TAG_NTP_SERVER, &dhcp_addrs[0], &length))
+        {
+        	static struct sockaddr ntp_servers[CYGNUM_NET_SNTP_UNICAST_MAXDHCP];
+            struct servent *service;
+        	cyg_uint32 num;
+
+            /* See how many addresses we got.  The length should always
+             * be a multiple of 4, but cut off any extra bytes and
+             * use what we got.
+             */
+            length /= sizeof(struct in_addr);
+
+            /* Fill out a sockaddr array for the NTP client */
+            service = getservbyname("ntp", "udp");
+            CYG_CHECK_DATA_PTR(service, "NTP service not found.");
+            memset(&ntp_servers[0], 0, sizeof(ntp_servers));
+            for (num = 0; num < length; num++)
+            {
+				struct sockaddr_in *saddr = (struct sockaddr_in *)&ntp_servers[num];
+
+                saddr->sin_len = sizeof(*saddr);
+                saddr->sin_family = AF_INET;
+                saddr->sin_port = service->s_port;  /* Already network-endian */
+                saddr->sin_addr = dhcp_addrs[num];  /* Already network-endian */
+            }
+
+            /* Configure the client with the array */
+            cyg_sntp_set_servers(&ntp_servers[0], num);
+        }
+    }
+#endif /* CYGNUM_NET_SNTP_UNICAST_MAXDHCP */
     return true;
 }
 

@@ -56,6 +56,10 @@
 
 #ifdef CYGPKG_NET_DHCP
 
+#ifdef CYGPKG_NET_SNTP
+#include <pkgconf/net_sntp.h>
+#endif /* CYGPKG_NET_SNTP */
+
 #if 0
 #define perror( txt ) // nothing
 #endif
@@ -543,6 +547,9 @@ static void set_default_dhcp_tags( struct bootp *xmit )
         TAG_DOMAIN_SERVER     ,     //     domain server: 10.16.19.66
         TAG_DOMAIN_NAME       ,     //     domain name: hmt10.cambridge.redhat.com
         TAG_IP_BROADCAST      ,     //     IP broadcast: 10.16.19.255
+#endif
+#ifdef CYGNUM_NET_SNTP_UNICAST_MAXDHCP
+        TAG_NTP_SERVER        ,     //     NTP Server Addresses(es)
 #endif
 #ifdef CYGOPT_NET_DHCP_PARM_REQ_LIST_ADDITIONAL
         CYGOPT_NET_DHCP_PARM_REQ_LIST_ADDITIONAL ,
