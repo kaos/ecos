@@ -86,8 +86,8 @@ static eth_phy_access_t _l = {PHY_REG_LEVEL_ACCESS_TYPE, false, _init, _reset, \
                               {.reg_level_ops = {_put_reg, _get_reg}}}
 
 #define ETH_PHY_STAT_LINK  0x0001   // Link up/down
-#define ETH_PHY_STAT_100MB 0x0002   // Connection is 100Mb
-#define ETH_PHY_STAT_FDX   0x0004   // Connection is full duplex
+#define ETH_PHY_STAT_100MB 0x0002   // Connection is 100Mb/10Mb
+#define ETH_PHY_STAT_FDX   0x0004   // Connection is full/half duplex
 
 externC bool _eth_phy_init(eth_phy_access_t *f);
 externC void _eth_phy_reset(eth_phy_access_t *f);

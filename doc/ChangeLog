@@ -1,3 +1,7 @@
+2003-09-11  Gary Thomas  <gary@mlbassoc.com>
+
+	* sgml/doclist: Add ethernet PHY documentation.
+
 2003-07-09  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* sgml/makemakefile: Update trademark info and sort.

@@ -1,3 +1,9 @@
+2003-09-11  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/eth_phy.h: Minor improvement in status bitfield [comments]
+
+	* doc/eth_phy.sgml: New file - add basic documentation on PHY API.
+
 2003-08-26  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/DP83847.c: 
