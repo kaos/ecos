@@ -1278,6 +1278,7 @@ be achieved when programming in C++ is lost.
       <refname>cyg_thread_measure_stack_usage</refname>
       <refname>cyg_thread_get_next</refname>
       <refname>cyg_thread_get_info</refname>
+      <refname>cyg_thread_get_id</refname>
       <refname>cyg_thread_find</refname>
       <refpurpose>Get basic thread information</refpurpose>
     </refnamediv>
@@ -1317,6 +1318,10 @@ be achieved when programming in C++ is lost.
           <paramdef>cyg_handle_t <parameter>thread</parameter></paramdef>
           <paramdef>cyg_uint16 <parameter>id</parameter></paramdef>
           <paramdef>cyg_thread_info *<parameter>info</parameter></paramdef>
+        </funcprototype>        
+        <funcprototype>
+          <funcdef>cyg_uint16 <function>cyg_thread_get_id</function></funcdef>
+          <paramdef>cyg_handle_t <parameter>thread</parameter></paramdef>
         </funcprototype>        
         <funcprototype>
           <funcdef>cyg_handle_t <function>cyg_thread_find</function></funcdef>
@@ -1403,6 +1408,10 @@ typedef struct
 </programlisting>
     </para>
     <para>
+<function>cyg_thread_get_id</function> returns the unique thread ID for
+the thread identified by <parameter>thread</parameter>.
+    </para>
+    <para>
 <function>cyg_thread_find</function> returns a handle for the thread
 whose ID is <parameter>id</parameter>. If no such thread exists, a
 zero handle is returned.
@@ -1420,6 +1429,9 @@ initialized. <function>cyg_thread_get_stack_base</function>,
 any time after the specified thread has been created, but measuring
 stack usage involves looping over at least part of the thread's stack
 so this should normally only be done from thread context.
+<function>cyg_thread_get_id</function> may be called from any context
+as long as the caller can guarantee that the supplied thread handle
+remains valid.
       </para>
     </refsect1>
 

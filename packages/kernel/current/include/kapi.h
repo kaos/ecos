@@ -229,6 +229,8 @@ cyg_bool_t cyg_thread_get_info( cyg_handle_t thread,
                                 cyg_uint16 id,
                                 cyg_thread_info *info );
 
+cyg_uint16 cyg_thread_get_id( cyg_handle_t thread );
+
 cyg_handle_t cyg_thread_find( cyg_uint16 id );
     
 /*---------------------------------------------------------------------------*/

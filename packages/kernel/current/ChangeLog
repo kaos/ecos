@@ -1,3 +1,13 @@
+2003-12-08  Dan Jakubiec  <djakubiec@yahoo.com>
+
+	* src/common/kapi.cxx: Added new function cyg_thread_get_id().
+	This function returns the unique thread ID for a given thread
+	handle.
+
+	* include/kapi.h: Added function prototype for cyg_thread_get_id().
+
+	* doc/kernel.sgml: Added documentation for cyg_thread_get_id().
+
 2003-10-13  Nick Garnett  <nickg@balti.calivar.com>
 
 	* src/common/clock.cxx (Cyg_Counter::tick): Changed code to deal

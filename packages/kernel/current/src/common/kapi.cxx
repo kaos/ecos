@@ -236,6 +236,11 @@ externC cyg_handle_t cyg_thread_self()
     return (cyg_handle_t)Cyg_Thread::self();
 }
 
+externC cyg_uint16 cyg_thread_get_id( cyg_handle_t thread)
+{
+    return ((Cyg_Thread *)thread)->get_unique_id();
+}
+
 // idle thread is not really a plain CygThread; danger.
 externC cyg_handle_t cyg_thread_idle_thread()
 {
