@@ -135,18 +135,17 @@ void hal_platform_init(void)
          vector <= CYGNUM_HAL_EXCEPTION_MAX;
          vector++)        
     {
-        HAL_VSR_SET( vector, &__default_exception_vsr, NULL );
+#if defined(CYGHWR_HAL_I386_FPU_SWITCH_LAZY)
+        // If we are doing lazy FPU switching, the FPU switch VSR has
+        // already been installed, so avoid overwriting it.
+        if( vector != CYGNUM_HAL_VECTOR_NO_DEVICE )
+#endif
+        {
+            HAL_VSR_SET( vector, &__default_exception_vsr, NULL );
+        }
     }
 #endif
-    
-#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)    
-    {
-        void hal_ctrlc_isr_init(void);
-        hal_ctrlc_isr_init();
-    }
 
-#endif
-        
 #ifdef CYGPKG_REDBOOT
 
     // Start the timer device running if we are in a RedBoot
@@ -158,6 +157,15 @@ void hal_platform_init(void)
     
     hal_if_init();
 
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) || \
+    defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
+    {
+        void hal_ctrlc_isr_init(void);
+        hal_ctrlc_isr_init();
+    }
+
+#endif
+        
 #ifdef CYGPKG_HAL_SMP_SUPPORT
 
     cyg_hal_smp_init();

@@ -81,10 +81,6 @@ externC char idtStart[];
 
 void hal_pc_stubs_init(void)
 {
-    int i ;
-    for(i=0; i<=31; i++)
-        HAL_VSR_SET(i,&__default_exception_vsr,NULL);	
-
 #if defined(CYGSEM_REDBOOT_BSP_SYSCALLS)
     cyg_hal_pc_set_idt_entry((CYG_ADDRESS)__syscall_tramp, (short *)(idtStart + (0x80 * 8)));
 #endif // CYGSEM_REDBOOT_BSP_SYSCALLS

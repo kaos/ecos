@@ -66,9 +66,15 @@
 #define CYGPKG_HAL_I386_CPU_INIT_DEFINED
 
 ##=============================================================================
-## ROM startup
+## ROM and GRUB startup
+##
+## Although these two startup types are, on the face of it, very different,
+## the actual work that needs to be done here for them both is much the same.
+## In both cases the system has been initialized in real mode and the transition 
+## to 32 bit protected mode has been done. Here all we need to do is set up
+## our own GDT and IDT, reload the segment registers and proceed.
 
-#ifdef CYG_HAL_STARTUP_ROM
+#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_GRUB)
 
 	.macro	hal_cpu_init
 
@@ -141,6 +147,19 @@ gdtStart:
 	.align	4, 0xFF
 gdtEnd:
 
+#if defined(CYG_HAL_STARTUP_GRUB)
+        # Multiboot header -- this must be in the first 8k 
+        # of the image file.
+
+#define GRUB_MAGIC      0x1BADB002      /* Magic number */
+#define GRUB_FLAGS      0x00000000      /* Flags        */
+        
+        .align	4, 0xFF        
+        .long   GRUB_MAGIC
+        .long   GRUB_FLAGS
+        .long   0-GRUB_MAGIC-GRUB_FLAGS /* Checksum */
+#endif
+
 3:
 	# Set up data selectors
 	movw	$0x10, %ax
@@ -150,14 +169,25 @@ gdtEnd:
 	movw	%ax, %gs
 
 	movw	%ax, %ss
-	
-	# Set up SP
+        
+        # Set up SP
 	movl	$__interrupt_stack,%esp
 	
 	/* Reset the flags register. */
 	push	$0
 	popf
 
+#if defined(CYG_HAL_STARTUP_GRUB)
+        # Save the multiboot info passed in %EBX away into a
+	# global variable for later use.
+        .data
+        .global hal_multiboot_info
+hal_multiboot_info:     
+        .long   0
+        .text
+        movl    %ebx,hal_multiboot_info
+#endif       
+        
 hal_cpu_init_end:
         nop
 

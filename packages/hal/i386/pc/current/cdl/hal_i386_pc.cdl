@@ -79,20 +79,33 @@ cdl_package CYGPKG_HAL_I386_PC {
     cdl_component CYG_HAL_STARTUP {
         display       "Startup type"
         flavor        data
-        legal_values  {"RAM" "FLOPPY" "ROM"}
+        legal_values  {"RAM" "FLOPPY" "ROM" "GRUB"}
         default_value {"RAM"}
 	no_define
 	define -file system.h CYG_HAL_STARTUP
         description   "
-            It is possible to configure eCos for the PC target to build for
+            It is possible to configure eCos for the PC target to build for:
             RAM startup (generally when being run under an existing
-            Monitor program like RedBoot), FLOPPY startup (for writing
+            Monitor program like RedBoot); FLOPPY startup (for writing
             to a floppy disk, which can then be used for booting
-            on PCs with a standard BIOS), or ROM startup (for writing
+            on PCs with a standard BIOS), GRUB startup (for being booted
+            by the GRUB bootloader) ROM startup (for writing
             straight to a boot ROM/Flash). ROM startup is experimental
             at this time."
     }
-        
+
+    cdl_option CYGDBG_HAL_DEBUG_GDB_INITIAL_BREAK {
+        display    "Enable initial breakpoint"
+        parent     CYGPKG_HAL_DEBUG
+        active_if  CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+        default_value { !CYGPKG_REDBOOT }
+        description "
+                This option causes an application that has GDB stubs built in
+                to take a breakpoint immediately before calling cyg_start().
+                This gives the developer a chance to set any breakpoints or
+                inspect the system state before it proceeds."
+    }
+
     cdl_option CYGBLD_BUILD_I386_ROMBOOT {
 	display       "Build ROM bootstrap code"
 	calculated    { CYG_HAL_STARTUP == "ROM" }
@@ -257,18 +270,20 @@ cdl_package CYGPKG_HAL_I386_PC {
         display "Memory layout"
         flavor data
         no_define
-        calculated { CYG_HAL_STARTUP == "RAM" ? "i386_pc_ram" : \
-		     CYG_HAL_STARTUP == "ROM" ? "i386_pc_rom" : \
-	                                        "i386_pc_floppy" }
+        calculated { CYG_HAL_STARTUP == "RAM"  ? "i386_pc_ram" : \
+		     CYG_HAL_STARTUP == "ROM"  ? "i386_pc_rom" : \
+		     CYG_HAL_STARTUP == "GRUB" ? "i386_pc_grub" : \
+	                                         "i386_pc_floppy" }
 
         cdl_option CYGHWR_MEMORY_LAYOUT_LDI {
             display "Memory layout linker script fragment"
             flavor data
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_LDI
-            calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_i386_pc_ram.ldi>" : \
-		         CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_i386_pc_rom.ldi>" : \
-                                                    "<pkgconf/mlt_i386_pc_floppy.ldi>" }
+            calculated { CYG_HAL_STARTUP == "RAM"  ? "<pkgconf/mlt_i386_pc_ram.ldi>" : \
+		         CYG_HAL_STARTUP == "ROM"  ? "<pkgconf/mlt_i386_pc_rom.ldi>" : \
+		         CYG_HAL_STARTUP == "GRUB" ? "<pkgconf/mlt_i386_pc_grub.ldi>" : \
+                                                     "<pkgconf/mlt_i386_pc_floppy.ldi>" }
         }
 
         cdl_option CYGHWR_MEMORY_LAYOUT_H {
@@ -276,9 +291,10 @@ cdl_package CYGPKG_HAL_I386_PC {
             flavor data
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_H
-            calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_i386_pc_ram.h>" : \
-		         CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_i386_pc_rom.h>" : \
-                                                    "<pkgconf/mlt_i386_pc_floppy.h>" }
+            calculated { CYG_HAL_STARTUP == "RAM"  ? "<pkgconf/mlt_i386_pc_ram.h>" : \
+		         CYG_HAL_STARTUP == "ROM"  ? "<pkgconf/mlt_i386_pc_rom.h>" : \
+		         CYG_HAL_STARTUP == "GRUB" ? "<pkgconf/mlt_i386_pc_grub.h>" : \
+                                                     "<pkgconf/mlt_i386_pc_floppy.h>" }
         }
     }
 

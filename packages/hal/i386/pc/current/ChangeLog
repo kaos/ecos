@@ -1,3 +1,35 @@
+2002-11-28  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/plf_stub.c: Removed redundant reinitialization of VSR table
+	in hal_pc_stubs_init(). This has already been done in
+	hal_platform_init() and reinitializing here destroys the FPU
+	switch VSR.
+
+	* src/plf_misc.c (hal_platform_init):
+	Added configuration and test to avoid overwriting the FPU switch
+	VSR with the default VSR. This caused problems with stand-alone
+	application that use lazy FPU switching.
+	Moved call to hal_ctrlc_isr_init() to after call to
+	hal_if_init(). Previously, stand-alone applications had problems
+	with ctrl-c handling because the CALL_HACK stuff didn't work.
+
+	* cdl/hal_i386_pc.cdl:
+	Added GRUB startup option. This enables support for booting from
+	the GRUB bootloader.
+	Added CYGDBG_HAL_DEBUG_GDB_INITIAL_BREAK option to force a
+	breakpoint just before calling cyg_start(). This is insinuated
+	into the CYGPKG_HAL_DEBUG part of the tree, and conditioned to
+	only work for stand-alone apps with the stubs included.
+
+	* include/platform.inc: Added GRUB startup support.
+
+	* include/pkgconf/mlt_i386_pc_grub.mlt: 
+	* include/pkgconf/mlt_i386_pc_grub.ldi: 
+	* include/pkgconf/mlt_i386_pc_grub.h: 
+	Added these MLT files to support the new GRUB startup option.
+
+	* misc/menu.lst: Added this example GRUB menu configuration file.
+	
 2002-05-07  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/hal_i386_pc.cdl: 
