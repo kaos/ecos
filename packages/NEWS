@@ -1,5 +1,6 @@
 * Port added for IDT MIPS IDT79RC32334 reference platform, including Flash,
-  ethernet, and serial drivers as well as RedBoot support.
+  ethernet, and serial drivers as well as RedBoot support. Contributed by
+  Tim Michals working for IDT.
 * Port added for Texas Instruments ARM9 OMAP Innovator board. Contributed by
   Patrick Doyle of Delphi Communication Systems.
 * Add XScale PXA2x0 support, with Microplex Printer control 5.0 (mpc50)
