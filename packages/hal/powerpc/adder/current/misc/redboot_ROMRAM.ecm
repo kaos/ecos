@@ -17,6 +17,8 @@ cdl_configuration eCos {
     package -hardware CYGPKG_HAL_QUICC current ;
     package -hardware CYGPKG_DEVS_FLASH_POWERPC_ADDER current ;
     package -hardware CYGPKG_DEVS_FLASH_AMD_AM29XXXXX current ;
+    package -hardware CYGPKG_DEVS_ETH_POWERPC_QUICC current ;
+    package -hardware CYGPKG_DEVS_ETH_POWERPC_ADDER current ;
     package -template CYGPKG_HAL current ;
     package -template CYGPKG_INFRA current ;
     package -template CYGPKG_REDBOOT current ;
@@ -25,6 +27,7 @@ cdl_configuration eCos {
     package -template CYGPKG_NS_DNS current ;
     package -template CYGPKG_CRC current ;
     package CYGPKG_IO_FLASH current ;
+    package CYGPKG_IO_ETH_DRIVERS current ;
 };
 
 cdl_option CYGFUN_LIBC_STRING_BSD_FUNCS {

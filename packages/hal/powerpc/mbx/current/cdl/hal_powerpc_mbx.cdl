@@ -69,7 +69,6 @@ cdl_package CYGPKG_HAL_POWERPC_MBX {
 
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_powerpc_mpc8xx.h>"
-        puts $::cdl_system_header "#define CYGBLD_HAL_VARIANT_H  <pkgconf/hal_powerpc_quicc.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_powerpc_mbx.h>"
 
 	puts $::cdl_header "#define HAL_PLATFORM_CPU    \"PowerPC 860\""

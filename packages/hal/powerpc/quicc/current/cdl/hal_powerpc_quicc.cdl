@@ -62,6 +62,10 @@ cdl_package CYGPKG_HAL_QUICC {
            Currently only serial IO via SMC1/2 and SCC1 is provided by
            this package."
 
+    define_proc {
+        puts $::cdl_system_header "#define CYGBLD_HAL_VARIANT_H  <pkgconf/hal_powerpc_quicc.h>"
+    }
+
     cdl_interface CYGNUM_HAL_QUICC_SMC1 {
         display    "SMC1 is available for serial I/O"
         description "
