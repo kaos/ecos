@@ -212,6 +212,18 @@ cdl_package CYGPKG_LIBC_STDLIB {
             numbers. Disabling this option removes the
             dependency on the math library package."
     }
+
+    cdl_option CYGFUN_LIBC_STDLIB_CONV_LONGLONG {
+        display       "Provides long long conversion functions"
+        default_value 1
+        compile       strtoll.cxx strtoull.cxx
+        description   "
+                Enabling this option will provide support for the strtoll(),
+                strtoull() and atoll() conversion functions, which are
+                the long long variants of the standard versions of these
+                functions. Supporting this requires extra code and compile
+                time."
+    }
     
     cdl_option CYGNUM_LIBC_BSEARCH_TRACE_LEVEL {
         display       "bsearch() tracing level"

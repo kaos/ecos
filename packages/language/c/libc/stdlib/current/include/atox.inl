@@ -80,6 +80,9 @@ atoi( const char * /* int_str */ );
 extern long
 atol( const char * /* long_str */ );
 
+extern long long
+atoll( const char * /* long_long_str */ );
+
 #ifdef CYGFUN_LIBC_strtod
 extern double
 strtod( const char * /* double_str */, char ** /* endptr */ );
@@ -92,6 +95,16 @@ strtol( const char * /* long_str */, char ** /* endptr */,
 extern unsigned long
 strtoul( const char * /* ulong_str */, char ** /* endptr */,
          int /* base */ );
+
+#ifdef CYGFUN_LIBC_STDLIB_CONV_LONGLONG
+extern long long
+strtoll( const char * /* long_long_str */, char ** /* endptr */,
+        int /* base */ );
+
+extern unsigned long long
+strtoull( const char * /* ulong_long_str */, char ** /* endptr */,
+         int /* base */ );
+#endif
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -156,6 +169,24 @@ atol( const char *__nptr )
 
     return __retval;
 } /* atol() */
+
+#ifdef CYGFUN_LIBC_STDLIB_CONV_LONGLONG
+CYGPRI_LIBC_STDLIB_ATOX_INLINE long long
+atoll( const char *__nptr )
+{
+    long long __retval;
+
+    CYG_REPORT_FUNCNAMETYPE( "atoll", "returning %lld" );
+
+    CYG_CHECK_DATA_PTR( __nptr, "__nptr is an invalid pointer!" );
+    
+    __retval = strtoll( __nptr, (char **)NULL, 10 );
+
+    CYG_REPORT_RETVAL( __retval );
+
+    return __retval;
+} /* atoll() */
+#endif
 
 #endif /* CYGONCE_LIBC_STDLIB_ATOX_INL multiple inclusion protection */
 

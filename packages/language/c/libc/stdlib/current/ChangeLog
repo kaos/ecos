@@ -1,3 +1,13 @@
+2004-08-18  Fredrik Hederstierna  <fredrik@wespot.com>
+2004-08-18  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/strtoll.cxx, src/strtoull.cxx: New files. Support for long long
+	string conversion.
+	* cdl/stdlib.cdl (CYGFUN_LIBC_STDLIB_CONV_LONGLONG): New option
+	to build above new files configurably.
+	* include/atox.inl: Prototype new functions from above. Add atoll()
+	inline.
+
 2004-02-17  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/rand.cxx (srand): Use correct thread data type.
