@@ -267,17 +267,17 @@ static unsigned long ConvertMode( unsigned long posix_mode ) {
     if ( S_ISREG( posix_mode ) ) result |= 1<<3;
     if ( S_ISFIFO(posix_mode ) ) result |= 1<<4;
     // We cannot create MQ, SEM, or SHM entries here
-    if ( posix_mode & S_IRUSR )  result |= 1<<8;
-    if ( posix_mode & S_IWUSR )  result |= 1<<9;
-    if ( posix_mode & S_IXUSR )  result |= 1<<10;
-    if ( posix_mode & S_IRGRP )  result |= 1<<11;
-    if ( posix_mode & S_IWGRP )  result |= 1<<12;
-    if ( posix_mode & S_IXGRP )  result |= 1<<13;
-    if ( posix_mode & S_IROTH )  result |= 1<<14;
-    if ( posix_mode & S_IWOTH )  result |= 1<<15;
-    if ( posix_mode & S_IXOTH )  result |= 1<<16;
-    if ( posix_mode & S_ISUID )  result |= 1<<17;
-    if ( posix_mode & S_ISGID )  result |= 1<<18;
+    if ( posix_mode & S_IRUSR )  result |= 1<<16;
+    if ( posix_mode & S_IWUSR )  result |= 1<<17;
+    if ( posix_mode & S_IXUSR )  result |= 1<<18;
+    if ( posix_mode & S_IRGRP )  result |= 1<<19;
+    if ( posix_mode & S_IWGRP )  result |= 1<<20;
+    if ( posix_mode & S_IXGRP )  result |= 1<<21;
+    if ( posix_mode & S_IROTH )  result |= 1<<22;
+    if ( posix_mode & S_IWOTH )  result |= 1<<23;
+    if ( posix_mode & S_IXOTH )  result |= 1<<24;
+    if ( posix_mode & S_ISUID )  result |= 1<<25;
+    if ( posix_mode & S_ISGID )  result |= 1<<26;
     return result;
 }
 

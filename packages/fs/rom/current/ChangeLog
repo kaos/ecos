@@ -1,3 +1,8 @@
+2003-07-10  Andrew Lunn  <andrew.lunn@ascom.ch>
+        
+	* support/mk_romfs.c: S_I[RWX]{USR|GRP|OTH} etc changed to match
+	the changes in sys/stat.h
+
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/romfs.cdl: Fix doc link.
