@@ -65,18 +65,50 @@ cdl_package CYGPKG_HAL_POWERPC_ADDER {
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
     implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
-    implements    CYGNUM_HAL_QUICC_SMC2
-    implements    CYGNUM_HAL_QUICC_SCC3
-
-    requires      { CYGHWR_HAL_POWERPC_MPC8XX == "850" }
 
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_powerpc_mpc8xx.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_powerpc_adder.h>"
-
-	puts $::cdl_header "#define HAL_PLATFORM_CPU    \"PowerPC 850\""
-        puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"A&M ADDER\""
         puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
+    }
+
+    cdl_component CYGPKG_HAL_POWERPC_ADDER_MODEL {
+        display       "Adder model"
+        requires      CYGHWR_HAL_POWERPC_ADDER_I | CYGHWR_HAL_POWERPC_ADDER_II
+        default_value 1
+        no_define
+        description "
+           The sub-options of this component define the model of Adder"
+
+        cdl_option  CYGHWR_HAL_POWERPC_ADDER_I {
+            display       "Adder-I with 850"
+            requires      !CYGHWR_HAL_POWERPC_ADDER_II
+            requires      { CYGHWR_HAL_POWERPC_MPC8XX == "850" }
+            default_value 0
+            implements    CYGNUM_HAL_QUICC_SMC2
+            implements    CYGNUM_HAL_QUICC_SCC3
+            define_proc {
+                puts $::cdl_header "#define HAL_PLATFORM_CPU    \"PowerPC 850\""
+                puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"A&M ADDER\""
+            }
+            description "
+                Select this model for an Adder with the PPC850 processor."
+        }
+
+        cdl_option  CYGHWR_HAL_POWERPC_ADDER_II {
+            display       "Adder-I with 852T"
+            requires      !CYGHWR_HAL_POWERPC_ADDER_I
+            requires      { CYGHWR_HAL_POWERPC_MPC8XX == "852T" }
+            default_value 0
+            implements    CYGNUM_HAL_QUICC_SMC1
+#            implements    CYGNUM_HAL_QUICC_SCC3
+            define_proc {
+                puts $::cdl_header "#define HAL_PLATFORM_CPU    \"PowerPC 852T\""
+                puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"A&M AdderII\""
+            }
+            description "
+                Select this model for an Adder with the PPC852T processor."
+        }
     }
 
     cdl_component CYG_HAL_STARTUP {
@@ -90,14 +122,16 @@ cdl_package CYGPKG_HAL_POWERPC_ADDER {
            This option is used to control where the application program will
            run, either from RAM or ROM (flash) memory.  ROM based applications
            must be self contained, while RAM applications will typically assume
-           the existence of a debug environment, such as GDB stubs."
+           the existence of a debug environment, such as RedBoot or GDB stubs."
     }
 
     cdl_option CYGHWR_HAL_POWERPC_BOARD_SPEED {
         display          "Development board clock speed (MHz)"
         flavor           data
-        legal_values     { 47 }
-        default_value    47
+        legal_values     { 47 48 50 100 }
+        default_value    { (CYGHWR_HAL_POWERPC_ADDER_I ? 47 : 48) }
+        requires         { (CYGHWR_HAL_POWERPC_ADDER_I && (CYGHWR_HAL_POWERPC_BOARD_SPEED == 47)) ||
+                           (CYGHWR_HAL_POWERPC_ADDER_II && (CYGHWR_HAL_POWERPC_BOARD_SPEED != 47)) }
         description      "
            ADDER Development Boards have various system clock speeds
            depending on the processor fitted.  Select the clock speed
@@ -201,6 +235,7 @@ cdl_package CYGPKG_HAL_POWERPC_ADDER {
     cdl_component CYGPKG_HAL_POWERPC_ADDER_OPTIONS {
         display "ADDER build options"
         flavor  none
+        no_define
         description   "
 	    Package specific build options including control over
 	    compiler flags used only in building this package,

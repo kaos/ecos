@@ -1,3 +1,14 @@
+2003-03-24  Gary Thomas  <gary@mlbassoc.com>
+
+	* misc/redboot_ROMRAM.ecm: Remove.
+
+	* misc/adder_redboot_ROMRAM.ecm: 
+	* misc/adderII_redboot_ROMRAM.ecm: New file(s), distinguish platforms.
+
+	* src/hal_aux.c: 
+	* src/adder.S: 
+	* cdl/hal_powerpc_adder.cdl: Update to support new platform - AdderII.
+
 2003-03-23  Gary Thomas  <gary@mlbassoc.com>
 
 	* cdl/hal_powerpc_adder.cdl: New option for setting processor type.

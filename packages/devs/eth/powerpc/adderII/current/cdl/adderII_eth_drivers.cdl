@@ -1,8 +1,8 @@
 #====================================================================
 #
-#      viper_eth_drivers.cdl
+#      adderII_eth_drivers.cdl
 #
-#      Hardware specifics for A&M Viper ethernet
+#      Hardware specifics for A&M Adder-II ethernet
 #
 #====================================================================
 #####ECOSGPLCOPYRIGHTBEGIN####
@@ -43,16 +43,16 @@
 #
 # Author(s):      gthomas, hmt
 # Original data:  gthomas
-# Contributors:   gthomas
-# Date:           2001-02-14
+# Contributors:   gthomas, F.Robbins
+# Date:           2003-03-17
 #
 #####DESCRIPTIONEND####
 #
 #====================================================================
 
-cdl_package CYGPKG_DEVS_ETH_POWERPC_VIPER {
-    display       "A&M Viper (MPC8xxT) ethernet support"
-    description   "Hardware specifics for A&M Viper ethernet"
+cdl_package CYGPKG_DEVS_ETH_POWERPC_ADDERII {
+    display       "A&M AdderII (MPC852T) ethernet support"
+    description   "Hardware specifics for A&M AdderII ethernet"
 
     parent        CYGPKG_IO_ETH_DRIVERS
     active_if	  CYGPKG_IO_ETH_DRIVERS
@@ -60,10 +60,11 @@ cdl_package CYGPKG_DEVS_ETH_POWERPC_VIPER {
     active_if	  CYGPKG_HAL_POWERPC_MPC8xx
 
     requires      CYGPKG_DEVS_ETH_POWERPC_FEC
+    requires      CYGHWR_HAL_POWERPC_ADDER_II
 
     include_dir   cyg/io
 
     define_proc {
-        puts $::cdl_system_header "#define CYGDAT_DEVS_FEC_ETH_INL <cyg/io/viper_eth.inl>"
+        puts $::cdl_system_header "#define CYGDAT_DEVS_FEC_ETH_INL <cyg/io/adderII_eth.inl>"
     }
 }

@@ -1,3 +1,7 @@
+2003-03-24  Gary Thomas  <gary@mlbassoc.com>
+
+	* ecos.db: New platform - Analogue & Micro AdderII (PPC852T)
+
 2003-03-18  Mark Salter  <msalter@redhat.com>
 
         * ecos.db: Add support for XScale IXP425, IXDP425, GRG.

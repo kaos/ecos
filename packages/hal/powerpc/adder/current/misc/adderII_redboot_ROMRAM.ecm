@@ -9,7 +9,7 @@ cdl_savefile_command cdl_interface { value_source user_value wizard_value inferr
 
 cdl_configuration eCos {
     description "" ;
-    hardware    adder ;
+    hardware    adderII ;
     template    redboot ;
     package -hardware CYGPKG_HAL_POWERPC current ;
     package -hardware CYGPKG_HAL_POWERPC_MPC8xx current ;
@@ -17,8 +17,8 @@ cdl_configuration eCos {
     package -hardware CYGPKG_HAL_QUICC current ;
     package -hardware CYGPKG_DEVS_FLASH_POWERPC_ADDER current ;
     package -hardware CYGPKG_DEVS_FLASH_AMD_AM29XXXXX current ;
-    package -hardware CYGPKG_DEVS_ETH_POWERPC_QUICC current ;
-    package -hardware CYGPKG_DEVS_ETH_POWERPC_ADDER current ;
+    package -hardware CYGPKG_DEVS_ETH_POWERPC_FEC current ;
+    package -hardware CYGPKG_DEVS_ETH_POWERPC_ADDERII current ;
     package -hardware CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC current ;
     package -template CYGPKG_HAL current ;
     package -template CYGPKG_INFRA current ;
@@ -56,7 +56,11 @@ cdl_option CYGSEM_HAL_ROM_MONITOR {
 };
 
 cdl_component CYGHWR_HAL_POWERPC_MPC8XX {
-    inferred_value 850
+    inferred_value 852T
+};
+
+cdl_option CYGHWR_HAL_POWERPC_ADDER_II {
+    user_value 1
 };
 
 cdl_component CYG_HAL_STARTUP {

@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2002, 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -95,6 +95,7 @@ hal_platform_init(void)
     _adder_set_leds(0x1);
 }
 
+#ifdef CYGHWR_HAL_POWERPC_ADDER_I
 void
 _adder_set_leds(int pat)
 {
@@ -110,5 +111,24 @@ _adder_get_leds(void)
 
     return ((eppc->pip_pbdat & 0x0000000E) >> 1);
 }
+#endif
+
+#ifdef CYGHWR_HAL_POWERPC_ADDER_II
+void
+_adder_set_leds(int pat)
+{
+    volatile EPPC *eppc = (volatile EPPC *)eppc_base();
+
+    eppc->pip_pbdat = (eppc->pip_pbdat & ~0x00000007) |(~(pat&0x0007) );
+}
+
+int
+_adder_get_leds(void)
+{
+    volatile EPPC *eppc = (volatile EPPC *)eppc_base();
+
+    return ((~(eppc->pip_pbdat & 0x00000007)) & 0x0007 );
+}
+#endif
 
 // EOF hal_aux.c

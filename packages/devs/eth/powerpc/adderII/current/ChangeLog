@@ -1,21 +1,20 @@
 2003-03-24  Gary Thomas  <gary@mlbassoc.com>
 
-	* cdl/adder_eth_drivers.cdl: Make sure this builds only for
-	the original Adder (PPC850)
+	* include/adderII_eth.inl: 
+	* cdl/adderII_eth_drivers.cdl: New package - ethernet support on
+	AdderII using FEC.
 
-2002-11-25  Gary Thomas  <gthomas@ecoscentric.com>
+2002-09-03  Gary Thomas  <gary@mlbassoc.com>
 
-	* src/adder_eth.c: 
-	* include/adder_eth.inl: 
-	* cdl/adder_eth_drivers.cdl: New package - platform specifics for
-	Analogue & Micro Adder (PowerPC 850) ethernet, using SCC2.
+	* include/viper_eth.inl: 
+	* cdl/viper_eth_drivers.cdl: New package - platform specifics for
+	PowerPC/FEC ethernet driver.
 
 //===========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free

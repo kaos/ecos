@@ -552,16 +552,6 @@ package CYGPKG_DEVS_FLASH_VIPER {
 	   on the A&M PowerPC/8xx VIPER platform."
 }
 
-package CYGPKG_DEVS_FLASH_POWERPC_ADDER {
-	alias 		{ "FLASH memory support for A&M Adder PowerPC/85x" flash_adder }
-	directory	devs/flash/powerpc/adder
-	script		flash_adder.cdl
-	hardware
-        description "
-           This package contains hardware support for FLASH memory
-	   on the A&M PowerPC/8xx ADDER platform."
-}
-
 package CYGPKG_DEVS_FLASH_MN10300_STB {
 	alias 		{ "FLASH memory support for Matsushita MN10300 STB" flash_stb }
 	directory	devs/flash/mn10300/stb
@@ -1338,14 +1328,6 @@ package CYGPKG_DEVS_ETH_POWERPC_VIPER {
 	directory	devs/eth/powerpc/viper
 	script		viper_eth_drivers.cdl
         description     "Ethernet driver specifics for A&M Viper (MPC8xxT) based boards."
-}
-
-package CYGPKG_DEVS_ETH_POWERPC_ADDER {
-	alias 		{ "A&M Adder ethernet driver" adder_eth_driver }
-	hardware
-	directory	devs/eth/powerpc/adder
-	script		adder_eth_drivers.cdl
-        description     "Ethernet driver specifics for A&M Adder (MPC85x) based boards."
 }
 
 package CYGPKG_DEVS_ETH_INTEL_I82559 {
@@ -2756,16 +2738,6 @@ package CYGPKG_HAL_POWERPC_VIPER {
             eCos on a A&M VIPER board equipped with a PowerPC processor."
 }
 
-package CYGPKG_HAL_POWERPC_ADDER {
-	alias		{ "A&M Adder PPC85x board" hal_powerpc_adder powerpc_adder_hal }
-	directory	hal/powerpc/adder
-	script		hal_powerpc_adder.cdl
-	hardware
-        description "
-            The ADDER HAL package provides the support needed to run
-            eCos on a A&M ADDER board equipped with a PowerPC processor."
-}
-
 package CYGPKG_HAL_POWERPC_TS6 {
 	alias		{ "Delphi TigerSHARC-6 board" hal_powerpc_ts6 powerpc_ts6_hal }
 	directory	hal/powerpc/ts6
@@ -2789,16 +2761,14 @@ package CYGPKG_HAL_POWERPC_VADS {
 }
 
 package CYGPKG_HAL_QUICC {
-	alias		{ "Motorola MBX860/821 QUICC support" hal_quicc quicc_hal quicc }
+	alias		{ "Motorola MPC8xx QUICC support" hal_quicc quicc_hal quicc }
 	directory	hal/powerpc/quicc
 	script		hal_powerpc_quicc.cdl
 	hardware
         description "
             The QUICC package provides some of the support needed
-            to run eCos on a Motorola MBX board, using the QUICC
-            feature of the MPC860 and MPC821 CPUs.
-            Currently only serial IO via SMC1 is provided by
-            this package."
+            to run eCos on a Motorola MPC8xx processors, using the QUICC
+            communications subsystem."
 }
 
 package CYGPKG_HAL_POWERPC_SIM {
@@ -4124,23 +4094,6 @@ target viper {
             eCos on a A&M Viper PPC860 board."
 }
 
-target adder {
-        alias		{ "A&M Adder PPC850 board" adder850 }
-	packages        { CYGPKG_HAL_POWERPC
-                          CYGPKG_HAL_POWERPC_MPC8xx
-                          CYGPKG_HAL_POWERPC_ADDER
-                          CYGPKG_HAL_QUICC 
-                          CYGPKG_DEVS_FLASH_POWERPC_ADDER
-                          CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
-                          CYGPKG_DEVS_ETH_POWERPC_QUICC
-                          CYGPKG_DEVS_ETH_POWERPC_ADDER
-                          CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC
-        }
-        description "
-            The adder target provides the packages needed to run
-            eCos on a A&M Adder PPC850 board."
-}
-
 target psim {
 	alias		{ "PowerPC simulator" ppc_sim powerpc_sim }
 	packages        { CYGPKG_HAL_POWERPC
@@ -4544,6 +4497,7 @@ target calm32_ceb {
            The calm32_ceb target provides the packages needed to run
            eCos on the CalmRISC32 Core Evaluation Board."
 }
+
 # --------------------------------------------------------------------------
 
 package CYGPKG_HAL_POWERPC_TS1000 {
@@ -4637,4 +4591,78 @@ target uE250 {
         description "
         The uE250 target provides the packages needed to run
         eCos on an NMI uEngine uE250 board."
+}
+
+# --------------------------------------------------------------------------
+
+package CYGPKG_HAL_POWERPC_ADDER {
+	alias		{ "A&M Adder PPC85x board" hal_powerpc_adder powerpc_adder_hal }
+	directory	hal/powerpc/adder
+	script		hal_powerpc_adder.cdl
+	hardware
+        description "
+            The ADDER HAL package provides the support needed to run
+            eCos on a A&M ADDER board equipped with a PowerPC processor."
+}
+
+package CYGPKG_DEVS_FLASH_POWERPC_ADDER {
+	alias 		{ "FLASH memory support for A&M Adder PowerPC/85x" flash_adder }
+	directory	devs/flash/powerpc/adder
+	script		flash_adder.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the A&M PowerPC/8xx ADDER platforms."
+}
+
+package CYGPKG_DEVS_ETH_POWERPC_ADDER {
+	alias 		{ "A&M Adder ethernet driver" adder_eth_driver }
+	hardware
+	directory	devs/eth/powerpc/adder
+	script		adder_eth_drivers.cdl
+        description     "Ethernet driver specifics for A&M Adder (MPC85x) based boards."
+}
+
+package CYGPKG_DEVS_ETH_POWERPC_ADDERII {
+        alias           { "A&M AdderII ethernet driver" adderII_eth_driver }
+        hardware
+        directory       devs/eth/powerpc/adderII
+        script          adderII_eth_drivers.cdl
+        description     "Ethernet driver specifics for A&M AdderII (MPC852T) based boards."
+}
+
+target adder {
+        alias		{ "A&M Adder PPC850 board" adder850 }
+	packages        { CYGPKG_HAL_POWERPC
+                          CYGPKG_HAL_POWERPC_MPC8xx
+                          CYGPKG_HAL_POWERPC_ADDER
+                          CYGPKG_HAL_QUICC 
+                          CYGPKG_DEVS_FLASH_POWERPC_ADDER
+                          CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
+                          CYGPKG_DEVS_ETH_POWERPC_QUICC
+                          CYGPKG_DEVS_ETH_POWERPC_ADDER
+                          CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC
+        }
+        enable { CYGHWR_HAL_POWERPC_ADDER_I }
+        description "
+            The adder target provides the packages needed to run
+            eCos on a A&M Adder PPC850 board."
+}
+
+target adderII {
+        alias		{ "A&M Adder PPC852T board" adder852T }
+	packages        { CYGPKG_HAL_POWERPC
+                          CYGPKG_HAL_POWERPC_MPC8xx
+                          CYGPKG_HAL_POWERPC_ADDER
+                          CYGPKG_HAL_QUICC 
+                          CYGPKG_DEVS_FLASH_POWERPC_ADDER
+                          CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
+                          CYGPKG_DEVS_ETH_POWERPC_FEC
+                          CYGPKG_DEVS_ETH_POWERPC_ADDERII
+                          CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC
+        }
+        enable { CYGHWR_HAL_POWERPC_ADDER_II }
+        description "
+            The adderII target provides the packages needed to run
+            eCos on a A&M Adder PPC852T board."
 }

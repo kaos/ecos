@@ -9,7 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-## Copyright (C) 2002 Gary Thomas
+## Copyright (C) 2002, 2003 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -245,26 +245,22 @@ FUNC_START( hal_hardware_init )
 // PTA field is (System Clock in MHz * Refresh rate in us) / Prescale
 // e.g.  ((14*3.6864)*62.5)/32 => 100.8 => 101        
 //                
+#if defined(CYGHWR_HAL_POWERPC_MPC8XX_852T)
+#if (CYGHWR_HAL_POWERPC_BOARD_SPEED == 48)
+#define PLPRCR_VALUE 0x32594000 // MFI=9 MFN=6 MFD=9 PDF=0 S=1 OSCLK=10MEG
+#define MAMR_PTA 93 //sysclk * 62.5e-6 /32
+#endif
+#if (CYGHWR_HAL_POWERPC_BOARD_SPEED == 50)
+#define PLPRCR_VALUE 0xD05A4000 // MFI=10 MFN=0 MFD=1 PDF=0 S=1 OSCLK=10MEG
+#define MAMR_PTA 97 //sysclk * 62.5e-6 /32
+#endif
+#else        
 #if (CYGHWR_HAL_POWERPC_BOARD_SPEED == 47)
-#define PLPRCR_PTX 0x00C // (47MHz/3.6864MHz)-1
+#define PLPRCR_VALUE 0x00C04000 // MFI=9 MFN=6 MFD=9 PDF=0 S=1 OSCLK=10MEG
 #define MAMR_PTA 94        
 #endif        
-#if (CYGHWR_HAL_POWERPC_BOARD_SPEED == 51)
-#define PLPRCR_PTX 0x00D // (51.6MHz/3.6864MHz)-1
-#define MAMR_PTA 101
-#endif        
-#if (CYGHWR_HAL_POWERPC_BOARD_SPEED == 55)
-#define PLPRCR_PTX 0x00E // (55.3MHz/3.6864MHz)-1
-#define MAMR_PTA 108
-#endif        
-#if (CYGHWR_HAL_POWERPC_BOARD_SPEED == 59)
-#define PLPRCR_PTX 0x00F // (58.9MHz/3.6864MHz)-1
-#define MAMR_PTA 116
-#endif        
-#if (CYGHWR_HAL_POWERPC_BOARD_SPEED == 63)
-#define PLPRCR_PTX 0x010 // (62.7MHz/3.6864MHz)-1
-#define MAMR_PTA 123
-#endif        
+#endif
+
 //#define MAMR_PTA (((((((PLPRCR_PTX+1)*3686400)*625)/10000000)+31)/32)&0xFF)
         lwi     r3,0x00802114|(MAMR_PTA<<24)
         stw	r3,MAMR(r4)
@@ -364,7 +360,8 @@ FUNC_START( hal_hardware_init )
 // 	Field FIOPD (bit 26) = 0
 // 	Field Reserved (bits 27-31) = 0
 	 */
-	lwi	r3,0x04000|(PLPRCR_PTX<<20)
+//	lwi	r3,0x04000|(PLPRCR_PTX<<20)
+	lwi	r3,PLPRCR_VALUE
 	stw	r3,PLPRCR(r4)
 
 	lwi	r3,0x40000
@@ -431,7 +428,6 @@ FUNC_START( hal_hardware_init )
         cmplw   r7,r8
         bne     10b
 #endif                
-
 	blr
 FUNC_END( hal_hardware_init )
 
