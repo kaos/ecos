@@ -231,7 +231,7 @@ isr_pit(CYG_ADDRWORD vector, CYG_ADDRWORD data, HAL_SavedRegisters *regs)
 {
 
     HAL_INTERRUPT_ACKNOWLEDGE (CYGNUM_HAL_INTERRUPT_SIU_PIT);
-    profile_hit(regs->pc);
+    __profile_hit(regs->pc);
 
     return Cyg_InterruptHANDLED;
 }

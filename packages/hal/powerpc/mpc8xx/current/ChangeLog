@@ -1,3 +1,7 @@
+2002-11-15  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* src/var_misc.c: Change in API for profile callback.
+
 2002-11-14  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* src/var_misc.c: 
