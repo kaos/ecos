@@ -145,6 +145,8 @@ extern int tcp_keepintvl;		/* time between keepalive probes */
 extern int tcp_maxidle;			/* time to drop after starting probes */
 extern int tcp_delacktime;		/* time before sending a delayed ACK */
 extern int tcp_maxpersistidle;
+extern int tcp_rexmit_min;       /* min time between retransmissions */
+extern int tcp_rexmit_shift_max; /* maximum retransmission attempts */
 extern int tcp_msl;
 extern int tcp_ttl;			/* time to live for TCP segs */
 extern int tcp_backoff[];

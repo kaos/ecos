@@ -1,3 +1,15 @@
+2003-10-28  Matt Jerdonek  <maj1224@yahoo.com>
+
+	* src/sys/netinet/tcp_output.c (tcp_setpersist): Use variable
+	tcp_rexmit_shift_max instead of TCP_MAXRXTSHIFT
+	* src/sys/netinet/tcp_subr.c (tcp_newtcpcb): Add FreeBSD
+	changes to control minimum retransmit time
+	* src/sys/netinet/tcp_timer.c : Use variable tcp_rexmit_shift_max
+	instead of TCP_MAXRXTSHIFT.  Also add FreeBSD changes to control
+	minimum retransmit time
+	* include/netinet/tcp_timer.h : Add external declarations to 
+	support above.
+	
 2003-10-15  Roland Cassebohm  <roland.cassebohm@visionsystems.de>
 
 	* src/sys/net/if.c (ifinit): Change printf(...) to log(LOG_INIT,...) to

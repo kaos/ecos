@@ -101,6 +101,26 @@ sysctl_msec_to_ticks(SYSCTL_HANDLER_ARGS)
 	*(int *)oidp->oid_arg1 = tt;
         return (0);
 }
+static int
+sysctl_rexmitmax_rangecheck(SYSCTL_HANDLER_ARGS)
+{
+	int error, tt;
+
+	tt = *(int *)oidp->oid_arg1;
+
+	error = sysctl_handle_int(oidp, &tt, 0, req);
+	if (error || !req->newptr)
+		return (error);
+		
+	if (tt > TCP_MAXRXTSHIFT)
+		return (EINVAL);
+		
+	if (tt < 2)
+		return (EINVAL);
+
+	*(int *)oidp->oid_arg1 = tt;
+        return (0);
+}
 #endif
 int	tcp_keepinit;
 SYSCTL_PROC(_net_inet_tcp, TCPCTL_KEEPINIT, keepinit, CTLTYPE_INT|CTLFLAG_RW,
@@ -126,6 +146,14 @@ SYSCTL_PROC(_net_inet_tcp, OID_AUTO, msl, CTLTYPE_INT|CTLFLAG_RW,
 static int	always_keepalive = 0;
 SYSCTL_INT(_net_inet_tcp, OID_AUTO, always_keepalive, CTLFLAG_RW, 
     &always_keepalive , 0, "Assume SO_KEEPALIVE on all TCP connections");
+    
+int	tcp_rexmit_min;
+SYSCTL_PROC(_net_inet_tcp, OID_AUTO, rexmit_min, CTLTYPE_INT|CTLFLAG_RW,
+    &tcp_rexmit_min, 0, sysctl_msec_to_ticks, "I", "Minimum retransmission timeout");
+    
+int	tcp_rexmit_shift_max = TCP_MAXRXTSHIFT;
+SYSCTL_PROC(_net_inet_tcp, OID_AUTO, rexmit_shift_max, CTLTYPE_INT|CTLFLAG_RW,
+    &tcp_rexmit_shift_max, 0, sysctl_rexmitmax_rangecheck, "I", "Maximum TCP retransmissions");    
 
 static int	tcp_keepcnt = TCPTV_KEEPCNT;
 	/* max idle probes */
@@ -337,7 +365,7 @@ tcp_timer_persist(xtp)
 	 * (no responses to probes) reaches the maximum
 	 * backoff that we would use if retransmitting.
 	 */
-	if (tp->t_rxtshift == TCP_MAXRXTSHIFT &&
+	if (tp->t_rxtshift == tcp_rexmit_shift_max &&
 	    ((ticks - tp->t_rcvtime) >= tcp_maxpersistidle ||
 	     (ticks - tp->t_rcvtime) >= TCP_REXMTVAL(tp) * tcp_totbackoff)) {
 		tcpstat.tcps_persistdrop++;
@@ -381,8 +409,8 @@ tcp_timer_rexmt(xtp)
 	 * been acked within retransmit interval.  Back off
 	 * to a longer retransmit interval and retransmit one segment.
 	 */
-	if (++tp->t_rxtshift > TCP_MAXRXTSHIFT) {
-		tp->t_rxtshift = TCP_MAXRXTSHIFT;
+	if (++tp->t_rxtshift > tcp_rexmit_shift_max) {
+		tp->t_rxtshift = tcp_rexmit_shift_max;
 		tcpstat.tcps_timeoutdrop++;
 		tp = tcp_drop(tp, tp->t_softerror ?
 			      tp->t_softerror : ETIMEDOUT);
@@ -426,7 +454,7 @@ tcp_timer_rexmt(xtp)
 	 * move the current srtt into rttvar to keep the current
 	 * retransmit times until then.
 	 */
-	if (tp->t_rxtshift > TCP_MAXRXTSHIFT / 4) {
+	if (tp->t_rxtshift > tcp_rexmit_shift_max / 4) {
 #ifdef INET6
 		if ((tp->t_inpcb->inp_vflag & INP_IPV6) != 0)
 			in6_losing(tp->t_inpcb);

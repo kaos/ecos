@@ -152,7 +152,7 @@ SYSCTL_INT(_net_inet_tcp, OID_AUTO, strict_rfc1948, CTLFLAG_RW,
 static int	tcp_isn_reseed_interval = 0;
 SYSCTL_INT(_net_inet_tcp, OID_AUTO, isn_reseed_interval, CTLFLAG_RW,
     &tcp_isn_reseed_interval, 0, "Seconds between reseeding of ISN secret");
-
+    
 static void	tcp_cleartaocache __P((void));
 static void	tcp_notify __P((struct inpcb *, int));
 
@@ -205,6 +205,7 @@ tcp_init()
 	tcp_keepintvl = TCPTV_KEEPINTVL;
 	tcp_maxpersistidle = TCPTV_KEEP_IDLE;
 	tcp_msl = TCPTV_MSL;
+	tcp_rexmit_min = TCPTV_MIN;
 
 	LIST_INIT(&tcb);
 	tcbinfo.listhead = &tcb;
@@ -544,7 +545,7 @@ tcp_newtcpcb(inp)
 	 */
 	tp->t_srtt = TCPTV_SRTTBASE;
 	tp->t_rttvar = ((TCPTV_RTOBASE - TCPTV_SRTTBASE) << TCP_RTTVAR_SHIFT) / 4;
-	tp->t_rttmin = TCPTV_MIN;
+	tp->t_rttmin = tcp_rexmit_min;
 	tp->t_rxtcur = TCPTV_RTOBASE;
 	tp->snd_cwnd = TCP_MAXWIN << TCP_MAX_WINSHIFT;
 	tp->snd_ssthresh = TCP_MAXWIN << TCP_MAX_WINSHIFT;
