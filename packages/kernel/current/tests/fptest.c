@@ -89,19 +89,19 @@
 
 #define STACK_SIZE (CYGNUM_HAL_STACK_SIZE_MINIMUM)
 
-cyg_uint8 stacks[3][STACK_SIZE];
-cyg_handle_t thread[3];
-cyg_thread thread_struct[3];
+static cyg_uint8 stacks[3][STACK_SIZE];
+static cyg_handle_t thread[3];
+static cyg_thread thread_struct[3];
 
 //==========================================================================
 // Alarm parameters.
 
-cyg_alarm alarm_struct;
-cyg_handle_t alarm;
+static cyg_alarm alarm_struct;
+static cyg_handle_t alarm;
 
-cyg_count8 cur_thread = 0;
-cyg_count32 alarm_ticks = 0;
-cyg_count32 run_ticks = RUN_TICKS;
+static cyg_count8 cur_thread = 0;
+static cyg_count32 alarm_ticks = 0;
+static cyg_count32 run_ticks = RUN_TICKS;
 
 //==========================================================================
 

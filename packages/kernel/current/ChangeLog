@@ -1,3 +1,8 @@
+2003-03-03  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* tests/fptest.c: Make all variables static to avoid any risk
+	of collisions with symbols defined elsewhere in eCos.
+
 2003-02-27  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/kapidata.h: Revert change of 2001-08-23 and instead make
