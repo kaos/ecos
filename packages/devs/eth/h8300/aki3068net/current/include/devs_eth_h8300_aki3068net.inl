@@ -57,7 +57,7 @@
 #ifdef CYGPKG_DEVS_ETH_H8300_AKI3068NET_ETH0
 
 static dp83902a_priv_data_t dp83902a_eth0_priv_data = { 
-    base: 0x200000,
+    base: (cyg_uint8 *)0x200000,
     interrupt: 17,
     tx_buf1: 0x40,
     tx_buf2: 0x48,
