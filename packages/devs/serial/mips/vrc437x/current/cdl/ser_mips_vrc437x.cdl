@@ -63,7 +63,6 @@ cdl_package CYGPKG_IO_SERIAL_MIPS_VRC437X {
     description   "
            This option enables the serial device drivers for the
            VRC437X."
-    doc           redirect/ecos-device-drivers.html
 
     compile       -library=libextras.a   vrc437x_serial.c
 
