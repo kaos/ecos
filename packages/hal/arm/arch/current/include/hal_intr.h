@@ -67,6 +67,9 @@
 # endif
 #endif
 
+// Spurious interrupt (no interrupt source could be found)
+#define CYGNUM_HAL_INTERRUPT_NONE -1
+
 //--------------------------------------------------------------------------
 // ARM exception vectors.
 

@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -444,7 +444,7 @@ int hal_IRQ_handler(void)
         map++;  // Next interrupt status register
     }
     hal_spurious_ints++;
-    return CYGNUM_HAL_INTERRUPT_unused; // This shouldn't happen!
+    return CYGNUM_HAL_INTERRUPT_NONE; // This shouldn't happen!
 }
 
 //

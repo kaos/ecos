@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -798,23 +798,24 @@ externC int sigtimedwait  (const sigset_t *set, siginfo_t *info,
         {
             if( ticks == 0 || !signal_sigwait.wait(ticks) )
             {
-                // first check we weren't woken up to be cancelled
-                pthread_testcancel_unlock( (pthread_mutex_t *)&signal_mutex );
-
                 // If the timeout is actually zero, or we have waited and
                 // timed out, then we must quit with an error.
                 err = EAGAIN;
                 break;
             }
         }
-        else signal_sigwait.wait();
+        else {
+            if ( !signal_sigwait.wait() ) {
+                // check we weren't woken up forcibly (e.g. to be cancelled)
+                // if so, pretend it's an error
+                err = EAGAIN;
+                break;
+            }
+        }
         
         // Special case check for SIGALRM since the fact SIGALRM is masked
         // would have prevented it being set pending in the alarm handler.
         check_sigalarm();
-
-        // check we weren't woken up to be cancelled
-        pthread_testcancel_unlock( (pthread_mutex_t *)&signal_mutex );
     }
 
     if( err == 0 )
@@ -878,7 +879,9 @@ externC int sigtimedwait  (const sigset_t *set, siginfo_t *info,
     }
     
     signal_mutex.unlock();
-    
+
+    pthread_testcancel();
+
     if (err)
         SIGNAL_RETURN(err);
     else

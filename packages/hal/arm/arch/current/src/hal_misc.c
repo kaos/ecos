@@ -140,6 +140,17 @@ exception_handler(HAL_SavedRegisters *regs)
     return;
 }
 
+void hal_spurious_IRQ(HAL_SavedRegisters *regs) CYGBLD_ATTRIB_WEAK;
+void
+hal_spurious_IRQ(HAL_SavedRegisters *regs)
+{
+#if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
+    exception_handler(regs);
+#else
+    CYG_FAIL("Spurious interrupt!!");
+#endif    
+}
+
 /*------------------------------------------------------------------------*/
 /* C++ support - run initial constructors                                 */
 

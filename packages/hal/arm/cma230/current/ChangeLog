@@ -1,3 +1,8 @@
+2001-02-13  Gary Thomas  <gthomas@redhat.com>
+
+	* src/cma230_misc.c (hal_IRQ_handler): 
+	Return CYGNUM_HAL_INTERRUPT_NONE for spurious interrupts.
+	
 2001-02-08  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_arm_cma230.cdl: Respect channel configuration

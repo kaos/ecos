@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -782,6 +782,8 @@ externC void pthread_exit (void *retval)
 
 externC int pthread_join (pthread_t thread, void **thread_return)
 {
+    int err = 0;
+
     PTHREAD_ENTRY();
     
     // check for cancellation first.
@@ -797,24 +799,26 @@ externC int pthread_join (pthread_t thread, void **thread_return)
 
     if( joinee == NULL )
     {
-        pthread_mutex.unlock();
-        PTHREAD_RETURN(ESRCH);
+        err = ESRCH;
     }
 
-    if( joinee == self )
+    if( !err && joinee == self )
     {
-        pthread_mutex.unlock();
-        PTHREAD_RETURN(EDEADLK);
+        err = EDEADLK;
     }
 
-    switch ( joinee->state )
-    {
-    case PTHREAD_STATE_RUNNING:
-        // The thread is still running, we must wait for it.
+    if ( !err ) {
+        switch ( joinee->state )
+        {
+        case PTHREAD_STATE_RUNNING:
+            // The thread is still running, we must wait for it.
         while( joinee->state == PTHREAD_STATE_RUNNING ) {
-            joinee->joiner->wait();
-            // check if we were woken because we were being cancelled
-            pthread_testcancel_unlock( (pthread_mutex_t *)&pthread_mutex);
+            if ( !joinee->joiner->wait() )
+                // check if we were woken because we were being cancelled
+                if ( checkforcancel() ) {
+                    err = EAGAIN;  // value unimportant, just some error
+                    break;
+                }
         }
 
         // check that the thread is still joinable
@@ -823,37 +827,43 @@ externC int pthread_join (pthread_t thread, void **thread_return)
 
         // The thread has become unjoinable while we waited, so we
         // fall through to complain.
-
-    case PTHREAD_STATE_FREE:
-    case PTHREAD_STATE_DETACHED:
-    case PTHREAD_STATE_EXITED:
-        // None of these may be joined.
-        pthread_mutex.unlock();
-        PTHREAD_RETURN(EINVAL);
         
-    case PTHREAD_STATE_JOIN:
-        break;
+        case PTHREAD_STATE_FREE:
+        case PTHREAD_STATE_DETACHED:
+        case PTHREAD_STATE_EXITED:
+        // None of these may be joined.
+            err = EINVAL;
+            break;
+            
+        case PTHREAD_STATE_JOIN:
+            break;
+        }
     }
 
-    // here, we know that joinee is a thread that has exited and is
-    // ready to be joined.
-
-    // Get the retval
-
-    if( thread_return != NULL )
-        *thread_return = joinee->retval;
-
-    // set state to exited.
-    joinee->state = PTHREAD_STATE_EXITED;
-    pthreads_exited++;
-    pthreads_tobejoined--;
+    if ( !err ) {
     
-    // Dispose of any dead threads
-    pthread_reap();
+        // here, we know that joinee is a thread that has exited and is
+        // ready to be joined.
+
+        // Get the retval
+        if( thread_return != NULL )
+            *thread_return = joinee->retval;
+        
+        // set state to exited.
+        joinee->state = PTHREAD_STATE_EXITED;
+        pthreads_exited++;
+        pthreads_tobejoined--;
     
+        // Dispose of any dead threads
+        pthread_reap();
+    }
+
     pthread_mutex.unlock();
+    
+    // check for cancellation before returning
+    pthread_testcancel();
 
-    PTHREAD_RETURN(0);
+    PTHREAD_RETURN(err);
 }
 
 //-----------------------------------------------------------------------------
@@ -1712,7 +1722,12 @@ externC int pthread_cond_timedwait (pthread_cond_t *cond,
     // check if we were woken because we were being cancelled
     pthread_testcancel();
 
-    PTHREAD_RETURN(0);
+    pthread_info *self = pthread_self_info();
+
+    if ( self->thread->get_wake_reason() == Cyg_Thread::TIMEOUT )
+        PTHREAD_RETURN(ETIMEDOUT);
+    else
+        PTHREAD_RETURN(0);
 }
 
 //=============================================================================
@@ -1989,42 +2004,6 @@ externC int pthread_cancel (pthread_t thread)
    
     
     PTHREAD_RETURN(0);
-}
-
-//-----------------------------------------------------------------------------
-// eCos extension:
-// Test for a pending cancellation for the current thread and return
-// non-zero if this thread has a deferred cancellation pending
-
-externC int pthread_canceled(void)
-{
-    PTHREAD_ENTRY();
-    PTHREAD_RETURN( checkforcancel() );
-}
-
-//-----------------------------------------------------------------------------
-// eCos extension:
-// Test for a pending cancellation for the current thread and terminate
-// the thread if there is one, unlocking the supplied mutex first.
-
-externC void pthread_testcancel_unlock( pthread_mutex_t *__mut )
-{
-    PTHREAD_ENTRY_VOID();
-    
-    if( checkforcancel() )
-    {
-        Cyg_Mutex *mut = (Cyg_Mutex *)__mut;
-        mut->unlock();
-
-        // If we have cancellation enabled, and there is a cancellation
-        // pending, then go ahead and do the deed. 
-        
-        // Exit now with special retval. pthread_exit() calls the
-        // cancellation handlers implicitly.
-        pthread_exit(PTHREAD_CANCELED);
-    }
-        
-    PTHREAD_RETURN_VOID;
 }
 
 //-----------------------------------------------------------------------------

@@ -747,11 +747,14 @@ handle_IRQ_or_FIQ:
         str     v6,[r2]
 #endif
 
-#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_IGNORE_SPURIOUS     
-        cmp     r0,#0                   // ignore spurious interrupts
-        beq     spurious_IRQ
-#endif // CYGIMP_HAL_COMMON_INTERRUPTS_IGNORE_SPURIOUS        
-        ldr     r1,.hal_interrupt_data
+        cmp     r0,#CYGNUM_HAL_INTERRUPT_NONE   // spurious interrupt
+        bne     10f
+#ifndef CYGIMP_HAL_COMMON_INTERRUPTS_IGNORE_SPURIOUS
+        bl      hal_spurious_IRQ
+#endif // CYGIMP_HAL_COMMON_INTERRUPTS_IGNORE_SPURIOUS
+        b       spurious_IRQ
+        
+10:     ldr     r1,.hal_interrupt_data
         ldr     r1,[r1,v1,lsl #2]       // handler data
         ldr     r2,.hal_interrupt_handlers
         ldr     v3,[r2,v1,lsl #2]       // handler (indexed by vector #)
@@ -776,9 +779,7 @@ IRQ_15A:
         mov     pc,v3                   // thru v3)
 #endif
 
-#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_IGNORE_SPURIOUS     
 spurious_IRQ:           
-#endif // CYGIMP_HAL_COMMON_INTERRUPTS_IGNORE_SPURIOUS  
 
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
         // If we are returning from the last nested interrupt, move back

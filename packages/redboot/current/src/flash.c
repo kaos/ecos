@@ -842,7 +842,7 @@ RedBoot_config_option("Boot script",
                       ""
     );
 // Some preprocessor magic for building the [constant] prompt string
-#define __cat(s1,c2,s3) s1 ## #c2 ## s3
+#define __cat(s1,c2,s3) s1 #c2 s3
 #define _cat(s1,c2,s3) __cat(s1,c2,s3)
 RedBoot_config_option(_cat("Boot script timeout (",
                            CYGNUM_REDBOOT_FLASH_SCRIPT_TIMEOUT_RESOLUTION,

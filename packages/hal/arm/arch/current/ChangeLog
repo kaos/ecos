@@ -1,3 +1,15 @@
+2001-02-13  Gary Thomas  <gthomas@redhat.com>
+
+	* src/vectors.S (handle_IRQ_or_FIQ): Change behaviour for
+	handling spurious interrupts.
+
+	* src/hal_misc.c (hal_spurious_IRQ): New function - called
+	when a spurious interrupt is detected.  Defined as "weak"
+	so platforms can provide localized support.
+
+	* src/hal_mk_defs.c: 
+	* include/hal_intr.h (CYGNUM_HAL_INTERRUPT_NONE): Define.
+
 2001-02-09  Hugo Tyson  <hmt@redhat.com>
 
 	* src/vectors.S (UNMAPPED()): Handle CYGHWR_HAL_ROM_VADDR if so
@@ -99,6 +111,8 @@
 	* cdl/hal_arm.cdl: Add hal_syscall.c to compile list.
 
 2000-11-04  Mark Salter  <msalter@redhat.com>
+
+	* include/hal_io.h: Include cyg/hal/plf_io.h for IQ80310.
 
 	* src/arm_stub.c (__computeSignal): New interface for
 	HAL_STUB_IS_STOPPED_BY_HARDWARE

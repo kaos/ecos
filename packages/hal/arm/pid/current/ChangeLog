@@ -1,3 +1,8 @@
+2001-02-13  Gary Thomas  <gthomas@redhat.com>
+
+	* src/pid_misc.c (hal_IRQ_handler): 
+	Return CYGNUM_HAL_INTERRUPT_NONE for spurious interrupts.
+
 2001-02-08  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_diag.c: Replace CYGSEM_HAL_DIAG_MANGLER_None with

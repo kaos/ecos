@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -106,6 +106,7 @@ main(void)
 #if defined(CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT)
     DEFINE(CYGNUM_CALL_IF_TABLE_SIZE, CYGNUM_CALL_IF_TABLE_SIZE);
 #endif
+    DEFINE(CYGNUM_HAL_INTERRUPT_NONE, CYGNUM_HAL_INTERRUPT_NONE);
 
     return 0;
 }

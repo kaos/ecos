@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -631,8 +631,6 @@ externC int nanosleep( const struct timespec *rqtp,
     then = Cyg_Clock::real_time_clock->current_value();
 
     self->thread->delay( ticks );
-    // check if we were woken up because we were cancelled.
-    pthread_testcancel();
 
     now = Cyg_Clock::real_time_clock->current_value();
 
@@ -649,6 +647,9 @@ externC int nanosleep( const struct timespec *rqtp,
         cyg_ticks_to_timespec( ticks, rmtp );
     }
     
+    // check if we were woken up because we were cancelled.
+    pthread_testcancel();
+
     TIME_RETURN(0);
 }    
 

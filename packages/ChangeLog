@@ -35,10 +35,18 @@
 	* pkgconf/rules.mak: Get rid of some gnu specific options to cp, find and xargs.
 
 	
+2000-11-04  Mark Salter  <msalter@redhat.com>
+
+	* ecos.db: Add CYGPKG_DEVS_ETH_ARM_IQ80310.
+
 2000-11-01  Jesper Skov  <jskov@redhat.com>
 
 	* ecos.db: Added cq7750 target and SH3/SH4 variant packages. Moved
 	EDK7708 package.
+
+2000-10-26  Mark Salter  <msalter@redhat.com>
+
+	* ecos.db: Add support for XScale IQ80310
 
 2000-10-25  Drew Moseley  <dmoseley@redhat.com>
 

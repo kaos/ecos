@@ -1,3 +1,8 @@
+2001-02-13  Hugo Tyson  <hmt@redhat.com>
+
+	* src/flash.c: Fix token/string pasting thinko: ## operators are
+	not needed and do confuse some compilers.
+
 2001-02-12  Jesper Skov  <jskov@redhat.com>
 
 	* src/main.c: Use CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL instead

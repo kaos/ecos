@@ -1,0 +1,99 @@
+# ====================================================================
+#
+#      flash_iq80310.cdl
+#
+#      FLASH memory - Hardware support on Cyclone IQ80310
+#
+# ====================================================================
+#####COPYRIGHTBEGIN####
+#                                                                          
+# -------------------------------------------                              
+# The contents of this file are subject to the Red Hat eCos Public License 
+# Version 1.1 (the "License"); you may not use this file except in         
+# compliance with the License.  You may obtain a copy of the License at    
+# http://www.redhat.com/                                                   
+#                                                                          
+# Software distributed under the License is distributed on an "AS IS"      
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+# License for the specific language governing rights and limitations under 
+# the License.                                                             
+#                                                                          
+# The Original Code is eCos - Embedded Configurable Operating System,      
+# released September 30, 1998.                                             
+#                                                                          
+# The Initial Developer of the Original Code is Red Hat.                   
+# Portions created by Red Hat are                                          
+# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# All Rights Reserved.                                                     
+# -------------------------------------------                              
+#                                                                          
+#####COPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      msalter
+# Original data:  msalter
+# Contributors:
+# Date:           2000-10-10
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_DEVS_FLASH_IQ80310 {
+    display       "Cyclone IQ80310 FLASH memory support"
+
+    parent        CYGPKG_IO_FLASH
+    active_if	  CYGPKG_IO_FLASH
+    requires	  CYGPKG_HAL_ARM_IQ80310
+
+    implements    CYGHWR_IO_FLASH_DEVICE
+    implements    CYGHWR_IO_FLASH_BLOCK_LOCKING
+
+    include_dir   .
+    include_files ; # none _exported_ whatsoever
+    description   "FLASH memory device support for Cyclone IQ80310"
+    compile       iq80310_flash.c
+
+    make -priority 1 {
+        flash_erase_block.o: $(REPOSITORY)/$(PACKAGE)/src/flash_erase_block.c
+        $(CC) -S $(INCLUDE_PATH) $(CFLAGS) -g0 -fno-function-sections $(REPOSITORY)/$(PACKAGE)/src/flash_erase_block.c
+        echo " .globl flash_erase_block_end" >>flash_erase_block.s
+        echo "flash_erase_block_end:" >>flash_erase_block.s
+        $(CC) -c -o flash_erase_block.o flash_erase_block.s
+        $(AR) rcs $(PREFIX)/lib/libtarget.a flash_erase_block.o
+    }
+    make -priority 1 {
+        flash_program_buf.o: $(REPOSITORY)/$(PACKAGE)/src/flash_program_buf.c
+        $(CC) -S $(INCLUDE_PATH) $(CFLAGS) -g0 -fno-function-sections $(REPOSITORY)/$(PACKAGE)/src/flash_program_buf.c
+        echo " .globl flash_program_buf_end" >>flash_program_buf.s
+        echo "flash_program_buf_end:" >>flash_program_buf.s
+        $(CC) -c -o flash_program_buf.o flash_program_buf.s
+        $(AR) rcs $(PREFIX)/lib/libtarget.a flash_program_buf.o
+    }
+    make -priority 1 {
+        flash_query.o: $(REPOSITORY)/$(PACKAGE)/src/flash_query.c
+        $(CC) -S $(INCLUDE_PATH) $(CFLAGS) -g0 -fno-function-sections $(REPOSITORY)/$(PACKAGE)/src/flash_query.c
+        echo " .globl flash_query_end" >>flash_query.s
+        echo "flash_query_end:" >>flash_query.s
+        $(CC) -c -o flash_query.o flash_query.s
+        $(AR) rcs $(PREFIX)/lib/libtarget.a flash_query.o
+    }
+    make -priority 1 {
+        flash_lock_block.o: $(REPOSITORY)/$(PACKAGE)/src/flash_lock_block.c
+        $(CC) -S $(INCLUDE_PATH) $(CFLAGS) -g0 -fno-function-sections $(REPOSITORY)/$(PACKAGE)/src/flash_lock_block.c
+        echo " .globl flash_lock_block_end" >>flash_lock_block.s
+        echo "flash_lock_block_end:" >>flash_lock_block.s
+        $(CC) -c -o flash_lock_block.o flash_lock_block.s
+        $(AR) rcs $(PREFIX)/lib/libtarget.a flash_lock_block.o
+    }
+    make -priority 1 {
+        flash_unlock_block.o: $(REPOSITORY)/$(PACKAGE)/src/flash_unlock_block.c
+        $(CC) -S $(INCLUDE_PATH) $(CFLAGS) -g0 -fno-function-sections $(REPOSITORY)/$(PACKAGE)/src/flash_unlock_block.c
+        echo " .globl flash_unlock_block_end" >>flash_unlock_block.s
+        echo "flash_unlock_block_end:" >>flash_unlock_block.s
+        $(CC) -c -o flash_unlock_block.o flash_unlock_block.s
+        $(AR) rcs $(PREFIX)/lib/libtarget.a flash_unlock_block.o
+    }
+}
+

@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -120,22 +120,21 @@ void hal_hardware_init(void)
 // This routine is called to respond to a hardware interrupt (IRQ).  It
 // should interrogate the hardware and return the IRQ vector number.
 
+#if 0
 // TEMP
 int tot_ints;
 cyg_uint32 int_PC[2048];
 // TEMP
-
-#if 0
-int hal_IRQ_handler(void)
-#else
-int hal_IRQ_handler(HAL_SavedRegisters *regs)
 #endif
+
+int hal_IRQ_handler(HAL_SavedRegisters *regs)
 {
     volatile cyg_uint8 isr = *(volatile cyg_uint8 *)CMA230_ISR;    
     volatile cyg_uint8 *imrr = (volatile cyg_uint8 *)CMA230_IMRr;
     int vector;
     isr &= *imrr;  // The Interrupt Source Register shows _all_ current
                    // interrupt sources, not just the enabled ones
+#if 0
 // TEMP
     int_PC[tot_ints++] = 0xFFFFFFFF;
     int_PC[tot_ints++] = isr;
@@ -143,12 +142,14 @@ int hal_IRQ_handler(HAL_SavedRegisters *regs)
     int_PC[tot_ints++] = regs->pc;
     if (tot_ints == 2048) tot_ints = 0;
 // TEMP
+#endif
+
     for (vector = 0;  vector < 8;  vector++) {
         if (isr & (1<<vector)) {
             return (vector+1);
         }
     }
-    return CYGNUM_HAL_INTERRUPT_unused; // This shouldn't happen!
+    return CYGNUM_HAL_INTERRUPT_NONE; // This shouldn't happen!
 }
 
 //

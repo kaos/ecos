@@ -1,3 +1,6 @@
+* Added Intel XScale support with the IQ80310 Software Development and
+  Processor Evaluation Kit. Support includes flash and ethernet drivers,
+  and RedBoot support.
 * Added support for USB slave devices. This includes generic USB slave
   support, a device driver for the SA11x0 on-chip USB device, and an
   additional support package for developing USB-ethernet and similar

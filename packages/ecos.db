@@ -161,6 +161,16 @@ package CYGPKG_DEVS_FLASH_ASSABET {
            This package contains hardware support for FLASH memory
 	   on the Intel StrongARM SA-1110 Assabet platform."
 }
+package CYGPKG_DEVS_FLASH_IQ80310 {
+	alias 		{ "FLASH memory support for Cyclone IQ80310" flash_iq80310 }
+	directory	devs/flash/arm/iq80310
+	script		flash_iq80310.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the Cyclone IQ80310 platform."
+}
+
 package CYGPKG_DEVS_FLASH_MBX {
 	alias 		{ "FLASH memory support for Motorola PowerPC/860 MBX" flash_mbx }
 	directory	devs/flash/powerpc/mbx
@@ -178,6 +188,15 @@ package CYGPKG_IO_SERIAL_ARM_EBSA285 {
     directory	      devs/serial/arm/ebsa285
     script	      ser_arm_ebsa285.cdl	
     description       "Intel StrongARM/EBSA285 serial device drivers"
+}
+
+package CYGPKG_IO_SERIAL_ARM_IQ80310 {
+    alias 	      { "Intel XScale IQ80310 serial driver"
+                        devs_serial_arm_iq80310 iq80310_serial_driver }
+    hardware
+    directory	      devs/serial/arm/iq80310
+    script	      ser_arm_iq80310.cdl	
+    description       "Intel XScale/IQ80310 serial device drivers"
 }
 
 package CYGPKG_IO_SERIAL_ARM_SA11X0 {
@@ -474,6 +493,15 @@ package CYGPKG_DEVS_ETH_INTEL_I82559 {
 	directory	devs/eth/intel/i82559
 	script		intel_i82559_eth_drivers.cdl
         description     "Ethernet driver for Intel 82559 NIC."
+}
+
+package CYGPKG_DEVS_ETH_ARM_IQ80310 {
+	alias 		{ "Intel IQ80310 with onboard 82559 ethernet driver"
+			   devs_eth_arm_iq80310 iq80310_eth_driver }
+	hardware
+	directory	devs/eth/arm/iq80310
+	script		iq80310_eth_drivers.cdl
+        description     "Ethernet driver for Intel IQ80310 with onboard 82559 NIC."
 }
 
 # Not sure whether this should be "hardware"; if so, it should be mentioned
@@ -867,6 +895,16 @@ package CYGPKG_HAL_ARM_CMA230 {
         description "
 The cma230 HAL package provides the support needed to run eCos on a Cogent 
 CMA230 (ARM7TDMI) or CMA222 (ARM710T) eval board."
+}
+
+package CYGPKG_HAL_ARM_IQ80310 {
+	alias		{ "Intel IQ80310 XScale board" hal_arm_iq80310 arm_iq80310_hal }
+	directory	hal/arm/iq80310
+	script		hal_arm_iq80310.cdl
+	hardware
+	description "
+	The IQ80310 HAL package provides the support needed to run
+	eCos on an Intel XScale IQ80310 evaluation board."
 }
 
 # --------------------------------------------------------------------------
@@ -1390,6 +1428,20 @@ target sa1100mm {
         eCos on an Intel StrongARM SA1100 Multimedia evaluation board."
 }
 
+target iq80310 {
+	alias { "Intel IQ80310 XScale board" iq80310 }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_IQ80310
+                   CYGPKG_IO_PCI
+		   CYGPKG_DEVS_ETH_ARM_IQ80310
+		   CYGPKG_IO_SERIAL_ARM_IQ80310
+		   CYGPKG_DEVS_FLASH_IQ80310
+        }
+        description "
+        The iq80310 target provides the packages needed to run
+        eCos on a Cyclone IQ80310 board."
+}
+
 target edb7xxx {
         alias		{ "Cirrus Logic development board" edb7211 eb7xxx eb7211 }
 	packages	{ CYGPKG_HAL_ARM
@@ -1669,7 +1721,7 @@ target ceb_v850 {
         }
         description "
 The ceb_v850 target provides the packages needed to run eCos on a
-Cosmo CEB-V850 evaluation board fitted with a V850/SA1."
+Cosmo CEB-V850 evaluation board fitted with a V850/SA1 or V850/SB1."
 }
 
 # --------------------------------------------------------------------------
