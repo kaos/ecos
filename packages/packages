@@ -304,6 +304,13 @@ package CYGPKG_IO_SERIAL	{
 	include_dir	cyg/io
 }
 
+package CYGPKG_IO_PCI	{
+	alias		{ "PCI configuration library" io_pci }
+	directory	io/pci
+	default_value	0
+	include_dir	cyg/io
+}
+
 package CYGPKG_DEVICES_WALLCLOCK {
 	alias		{ "Wallclock Device Code" wallclock devices_wallclock device_wallclock }
 	directory	devs/wallclock

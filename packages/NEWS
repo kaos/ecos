@@ -67,6 +67,7 @@
 
 ** API additions
 
+*** PCI library - providing an API to control the PCI buses of supported targets
 
 *** Debugging
 	The file <cyg/kernel/test/stackmon.h> defines some functions
@@ -88,6 +89,11 @@
 *** i386/linux
 	The eCos idle loop will not load the host system anymore
 	(except in special configurations, see linux_misc.c).
+
+*** Sparclite
+
+Where supported by the targetted platform, it is now possible to use
+Multiple Vector Trapping (MVT).
 
 *** Common
 

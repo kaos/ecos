@@ -1,0 +1,149 @@
+1999-09-24  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/pci2.c (pci_test): Replaced CYG_ASSERT with CYG_TEST_CHECK
+
+1999-09-10  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/pkgconf/io_pci.h: Reparent under CYGPKG_IO - this is used under
+	more than one target now and the library itself is generic.
+
+1999-08-25  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/pci.c (cyg_pci_init): Made it idempotent.
+
+	* tests/pci1.c:
+	* tests/pci2.c:
+	* src/pci.c: 
+	* include/pci.h: 
+	All functions that deal with addresses in PCI space now use PCI
+	ADDRESS types.
+	
+1999-08-24  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/pci1.c: 
+	* tests/pci2.c: 
+	* include/pci.h: 
+	* src/pci.c:
+	Handle requests for memory regions in 64bit space.
+	
+1999-08-24  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/pci1.c: Added more output, resource allocation, debug help
+	(enable devices).
+
+	* src/pci.c (cyg_pci_find_next): Handle multi-function devices.
+
+	* include/pci_cfg.h (CYG_PCI_CFG_COMMAND_ACTIVE): Added MASTER.
+	Added HEADER_TYPE definitions.
+
+1999-08-23  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* tests/pci1.c: Fixed a couple of bugs in the vendor/device/class
+	table search code.
+
+1999-08-23  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/pcihdr.h: [Added]
+	* tests/pci1.c: Added Vendor/Device ID description output.
+
+	* include/pci_cfg.h: Added vendor and class IDs.
+	Also added Prog/IF IDs.
+
+1999-08-19  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* tests/pci1.c (pci_test): Added printf() of class_rev code to
+	output of bus scan.
+
+	* include/pci.h (CYG_PCI_MAX_FN): Increased to 8.
+
+1999-08-19  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/pci.c (cyg_pci_allocate_memory, cyg_pci_allocate_io):
+	Check that device is inactive. Ensure that 1MB limits (IO/MEM1MB)
+	are observed.
+
+	* tests/pci2.c (pci_test): Added tests of io/mem allocators.
+
+1999-08-17  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/pci2.c (pci_test): Added (empty for now)
+	* tests/pci1.c: Added API checks.
+	* include/pci.h: Fixed typo.
+
+	* include/pci.h (CYG_PCI_NULL_DEVID): Changed initializer.
+	* src/pci.c (cyg_pci_find_next): Correct check for initializer.
+
+	* tests/pci1.c: Added.
+	Fixed output.
+
+	* include/pci_cfg.h: 
+	* include/pci.h: 
+	* include/pci_hw.h: 
+	* src/pci_hw.c: 
+	* src/pci.c: 
+	Renamed cyg_pci_config_interrupt to cyg_pci_translate_interrupt.
+	Untabified.
+	
+1999-08-16  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/io_pci.h:
+
+	Parent PCI package under package on which it depends.
+
+1999-08-16  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pci.h: 
+	* src/pci.c (cyg_pci_config_interrupt): 
+	* include/pci_hw.h:
+	* src/pci_hw.c (cyg_pcihw_config_interrupt): 
+	Added interrupt configuration functions.
+	
+1999-08-13  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pci_cfg.h:
+	* include/pci.h: 
+	* src/pci_hw.c:
+	* src/pci.c:
+	Extended cyg_pci_device and API.
+	Renamed HAL macros.
+	Put physical address in base_map.
+
+	(cyg_pci_get_device_info): Fix switch. Clear base_size when device
+	enabled.
+
+1999-08-12  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pci_hw.h:
+	* include/pci_cfg.h:
+	* include/pci.h: 
+	* src/pci_hw.c: 
+	* src/pci.c:
+	Renamed some registers. Fixed some bad arguments. Added forgotten
+	externCs.
+	cyg_pci_configure_device fleshed out a bit.
+	
+	* First half-empty files checked in.
+
+//===========================================================================
+//####COPYRIGHTBEGIN####
+//
+// -------------------------------------------
+// The contents of this file are subject to the Cygnus eCos Public License
+// Version 1.0 (the "License"); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://sourceware.cygnus.com/ecos
+// 
+// Software distributed under the License is distributed on an "AS IS"
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the
+// License for the specific language governing rights and limitations under
+// the License.
+// 
+// The Original Code is eCos - Embedded Cygnus Operating System, released
+// September 30, 1998.
+// 
+// The Initial Developer of the Original Code is Cygnus.  Portions created
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
+// -------------------------------------------
+//
+//####COPYRIGHTEND####
+//===========================================================================

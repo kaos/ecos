@@ -1,3 +1,9 @@
+1999-11-03  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/hal_arm_cl7211.h: Change default clock speed
+	to 36MHz with no software DRAM refresh (hardware is stable with
+	this combo).
+
 1999-10-27  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/cl7211_misc.c (enable_FIQ): New function.  Used to re-enable

@@ -60,6 +60,10 @@
 	* targets:
 	Rename all mentions of am32 to am31
 
+1999-08-12  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* packages: Added entry for PCI package.
+
 1999-06-10  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* packages, targets: Add support for the PowerPC target MBX860

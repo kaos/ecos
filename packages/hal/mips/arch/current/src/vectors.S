@@ -76,7 +76,7 @@ FUNC_START(reset_vector)
 	lar	k1,__nmi_entry		# jump to ROM nmi code
 	jalr	k1
 	nop
-1:	
+1:
 	lui	k1,0x0010		# isolate soft reset bit
 	and	k1,k1,k0		
 	beqz	k1,2f			# skip if zero
@@ -86,6 +86,8 @@ FUNC_START(reset_vector)
 	jr	k1
 	nop
 2:
+	la	k0,INITIAL_CONFIG0	# Set up config0 register
+	mtc0	k0,config0		# to disable cache
 #endif	
 	lar	v0,_start		# jump to start
 	jr	v0

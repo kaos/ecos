@@ -165,7 +165,7 @@
    }
    
    }}CFG_DATA */
-#define CYGHWR_HAL_ARM_CL7211_PROCESSOR_CLOCK 73728
+#define CYGHWR_HAL_ARM_CL7211_PROCESSOR_CLOCK 36864
 
 /* ---------------------------------------------------------------------
    {{CFG_DATA
@@ -198,7 +198,7 @@
 
    }}CFG_DATA */
 
-#define CYGHWR_HAL_ARM_CL7211_SOFTWARE_DRAM_REFRESH
+#undef CYGHWR_HAL_ARM_CL7211_SOFTWARE_DRAM_REFRESH
 
 /* ----------------------------------------------------------------------------
    {{CFG_DATA

@@ -97,6 +97,10 @@
 	(target_ins): Check whether branches execute.
 	(ins_will_execute): Fixed HI and LS.
 
+1999-08-12  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_io.h: Include plf_io.h when appropriate.
+
 1999-08-06  Jesper Skov  <jskov@cygnus.co.uk>
         CR 101032
         * src/vectors.S (handle_IRQ_or_FIQ): Moved setup of register_frame
