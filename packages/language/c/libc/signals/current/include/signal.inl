@@ -233,7 +233,7 @@ raise(int __sig)
 
     __sigfun = cyg_libc_signal_handlers[__sig];
 
-    if ( __sigfun == SIG_DFL {
+    if ( __sigfun == SIG_DFL ) {
         CYG_TRACE0(cyg_libc_signals_raise_trace_level,
                    "signal handler returned is SIG_DFL");
         cyg_libc_signals_unlock();
