@@ -114,9 +114,9 @@ static struct test_info
     cyg_int32   result;
 } tests[] =
 {
-    { "CHAT_TEST_1"     , script1       , 0 },          // Simple test to completion
-    { "CHAT_TEST_2"     , script1       , 1 },          // Expects an ABORT
-    { "CHAT_TEST_3"     , script1       , 1 },          // Expects a timeout
+    { "CHAT_TEST_1"     , script1       , 1 },          // Simple test to completion
+    { "CHAT_TEST_2"     , script1       , 0 },          // Expects an ABORT
+    { "CHAT_TEST_3"     , script1       , 0 },          // Expects a timeout
     { NULL              , NULL          , 0 }
 };
 

@@ -875,6 +875,12 @@ linkend="ppp-chat"> for full detail of the script used.
 </para>
 
 <para>
+The return value of this function will be zero if the chat script
+fails for any reason, such as an ABORT or a timeout. If the end of the
+script is reached, then the return value will be non-zero.
+</para>
+
+<para>
 Under normal use this function is called from the PPP subsystem if the
 <structname>cyg_ppp_options_t</structname>
 <structfield>script</structfield> field is set to a

@@ -1,3 +1,7 @@
+2004-04-15  Oyvind Harboe <oyvind.harboe@zylin.com>
+
+	* src/chat.c: Script now returns success when it runs to completion
+
 2004-03-31  John Dallaway  <jld@ecoscentric.com>
 
 	* cdl/ppp.cdl: Correct capitalisation in display strings.

@@ -114,9 +114,6 @@ static cyg_io_handle_t cyg_ppp_chat_handle;
 static char cyg_ppp_chat_buffer[CHAT_STRING_LENGTH];
 static char cyg_ppp_chat_expect_buffer[CHAT_STRING_LENGTH];
 
-// success indicator
-static int cyg_ppp_chat_success;
-
 //=====================================================================
 // Timeout alarm function
 //
@@ -367,8 +364,8 @@ externC cyg_int32 cyg_ppp_chat( const char *devname,
 {
     const char *s;
     Cyg_ErrNo err;
+    cyg_int32 result = 1;
 
-    cyg_ppp_chat_success = 0;
     cyg_ppp_chat_thread = cyg_thread_self();
     cyg_ppp_chat_abort_count = 0;
     cyg_ppp_chat_timeout = 45;
@@ -387,7 +384,7 @@ externC cyg_int32 cyg_ppp_chat( const char *devname,
 
 
     // Now loop over script handling the elements in turn
-    while( (s = *script++) != NULL && cyg_ppp_chat_success == 0 )
+    while( (s = *script++) != NULL )
     {
         int what = cyg_ppp_chat_expect( s );
 
@@ -395,7 +392,7 @@ externC cyg_int32 cyg_ppp_chat( const char *devname,
 
         if( what == CHAT_FAIL )
         {
-            cyg_ppp_chat_success = 1;
+            result = 0;
             break;
         }
         
@@ -429,6 +426,12 @@ externC cyg_int32 cyg_ppp_chat( const char *devname,
         }
     }
 
+    if (s==NULL)
+    {
+	// the script ran to completion
+        result = 1; 
+    }
+    
     // Finally, wait for the serial device to drain 
     {
         cyg_uint32 zero = 0;
@@ -440,7 +443,7 @@ externC cyg_int32 cyg_ppp_chat( const char *devname,
         
     }
     
-    return cyg_ppp_chat_success;
+    return result;
 }
 
 //=====================================================================
