@@ -42,6 +42,8 @@
 
 <CHAPTER id="tcpip-openbsd-networking-stack-features">
 <TITLE>Networking Stack Features</TITLE>
+<SECT1 id="tcpip-openbsd-tcpip-features">
+<TITLE>Introduction</TITLE>
 <PARA>Since this networking package is based on BSD code, it is
 very complete and robust.  The eCos implementation includes support
 for the following protocols:   </PARA>
@@ -52,14 +54,18 @@ for the following protocols:   </PARA>
 <LISTITEM><PARA>ICMP</para></listitem>
 <LISTITEM><PARA>raw packet interface</para></listitem>
 </itemizedlist>
-<PARA>These additional features are also present in the package,
+<PARA>Along with support for the above mentioned protocols, the OpenBSD
+stack also supports ethernet bridging.
+</PARA>
+<PARA>The following additional features are also present in the package,
 	but are not supported:</PARA>
 <itemizedlist>
 <LISTITEM><PARA>Berkeley Packet Filter   </PARA></LISTITEM>
-<LISTITEM><PARA>Multi-cast and uni-cast support, including multi-casting
+<LISTITEM><PARA>Multi-cast and uni-cast support, including multi-cast
 routing   </PARA></LISTITEM>
 <LISTITEM><PARA>IPv6 </PARA></LISTITEM>
       </itemizedlist>
+</SECT1>
 </CHAPTER>
 <CHAPTER id="tcpip-openbsd-stack-port">
 <TITLE>OpenBSD TCP/IP stack port</TITLE>
@@ -112,6 +118,25 @@ the configuration option CYGPKG_NET_BUILD_TESTS &ldquo;Build
 networking tests (demo programs)&rdquo; within &ldquo;Networking
 support build options&rdquo;.</PARA>
 </NOTE>
+</SECT1>
+<SECT1 id="tcpip-openbsd-building-the-bridge-code">
+<TITLE>Inclusion of bridge code</TITLE>
+
+<PARA>The OpenBSD stack does not by default result in the inclusion of
+the bridge code. To include bridging functionality the CDL option
+CYGPKG_NET_BRIDGE must be enable . It is also possible to enable more
+than one concurrent bridge. The number of bridges active in a device
+is configured by the CDL option CYGNUM_NET_BRIDGES, which has a
+default value of 1.</PARA>
+
+<PARA>The default behavior of a bridge is to operate without the
+spanning tree protocol. When devices are operated in this default mode
+it must be ensured the network topology is loop-free. Any loops will
+cause broadcast storms and general mayhem on the network.  Including
+spanning tree code during the build process will allow the bridge to
+communicate with other bridges. They can then detect such loops and by
+disabling selected interfaces break the loop. To enable spanning tree enable
+the CDL option CYGPKG_NET_BRIDGE_STP_CODE.</PARA>
 </SECT1>
 </CHAPTER>
 <CHAPTER id="tcpip-openbsd-tcpip-apis">
@@ -189,5 +214,8 @@ void <function>cyg_select_abort</function>(void)
 <function>cyg_select_with_abort()</function> call
 to cease waiting and continue execution.</PARA>
 </SECT1>
+&net-tcpip-openbsd-manpages-netintro-sgml
+&net-tcpip-openbsd-manpages-bridge-sgml
+&net-tcpip-openbsd-manpages-stp-sgml
 </CHAPTER>
 </PART>

@@ -1,3 +1,18 @@
+2003-11-25  Manu Sharma <manu.sharma@ascom.com>
+        * src/sys/net/bridgestp.c: Code for Spanning Tree Protocol (STP).
+
+        * cdl/openbsd_net.cdl: Changes make provisions for STP code.
+        * doc/openbsd.sgml:         Same.
+        * include/net/if.h:         Same.
+        * include/net/if_bridge.h:  Same.
+        * include/net/if_llc.h:     Same.
+        * include/sys/sockio.h:     Same.
+        * src/sys/net/if_bridge.c:  Same.
+
+        * doc/openbsd-manpages-stp.sgml: Documentation for OpenBSD specific code
+        * doc/openbsd-manpages-netintro.sgml: Same.
+        * doc/openbsd-manpages-bridge.sgml:   Same.
+
 2003-09-22  Reinhard Jessich  <Reinhard.Jessich@frequentis.com>
 
 	* include/net/if.h: Define macro IF_IS_EMPTY needed by eth_drv.c

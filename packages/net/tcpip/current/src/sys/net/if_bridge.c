@@ -19,7 +19,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    Jason L. Wright (jason@thought.net)  
-// Contributors: andrew.lunn@ascom.ch (Andrew Lunn), hmt
+// Contributors: andrew.lunn@ascom.ch (Andrew Lunn), hmt, manu.sharma@ascom.com
 // Date:         2000-07-18
 // Purpose:      Ethernet bridge
 // Description:  
@@ -136,52 +136,16 @@
 #define BRIDGE_RTABLE_TIMEOUT	300
 #endif
 
+/* Spanning tree defaults */
+#define BSTP_DEFAULT_MAX_AGE            (20 * 256)
+#define BSTP_DEFAULT_HELLO_TIME         (2 * 256)
+#define BSTP_DEFAULT_FORWARD_DELAY      (15 * 256)
+#define BSTP_DEFAULT_HOLD_TIME          (1 * 256)
+#define BSTP_DEFAULT_BRIDGE_PRIORITY    0x8000
+#define BSTP_DEFAULT_PORT_PRIORITY      0x80
+#define BSTP_DEFAULT_PATH_COST          55
+
 extern int ifqmaxlen;
-
-/*
- * Bridge filtering rules
- */
-struct brl_node {
-	SIMPLEQ_ENTRY(brl_node)	brl_next;	/* next rule */
-	struct ether_addr	brl_src;	/* source mac address */
-	struct ether_addr	brl_dst;	/* destination mac address */
-	u_int8_t		brl_action;	/* what to do with match */
-	u_int8_t		brl_flags;	/* comparision flags */
-};
-
-/*
- * Bridge interface list
- */
-struct bridge_iflist {
-	LIST_ENTRY(bridge_iflist)	next;		/* next in list */
-	SIMPLEQ_HEAD(, brl_node)	bif_brlin;	/* input rules */
-	SIMPLEQ_HEAD(, brl_node)	bif_brlout;	/* output rules */
-	struct				ifnet *ifp;	/* member interface */
-	u_int32_t			bif_flags;	/* member flags */
-};
-
-/*
- * Bridge route node
- */
-struct bridge_rtnode {
-	LIST_ENTRY(bridge_rtnode)	brt_next;	/* next in list */
-	struct				ifnet *brt_if;	/* destination ifs */
-	u_int8_t			brt_flags;	/* address flags */
-	u_int8_t			brt_age;	/* age counter */
-	struct				ether_addr brt_addr;	/* dst addr */
-};
-
-/*
- * Software state for each bridge
- */
-struct bridge_softc {
-	struct				ifnet sc_if;	/* the interface */
-	u_int32_t			sc_brtmax;	/* max # addresses */
-	u_int32_t			sc_brtcnt;	/* current # addrs */
-	u_int32_t			sc_brttimeout;	/* timeout ticks */
-	LIST_HEAD(, bridge_iflist)	sc_iflist;	/* interface list */
-	LIST_HEAD(bridge_rthead, bridge_rtnode)	*sc_rts;/* hash table */
-};
 
 /* SNAP LLC header */
 struct snap {
@@ -207,7 +171,6 @@ int	bridge_bifconf __P((struct bridge_softc *, struct ifbifconf *));
 int	bridge_rtfind __P((struct bridge_softc *, struct ifbaconf *));
 void	bridge_rtage __P((void *));
 void	bridge_rttrim __P((struct bridge_softc *));
-void	bridge_rtdelete __P((struct bridge_softc *, struct ifnet *));
 int	bridge_rtdaddr __P((struct bridge_softc *, struct ether_addr *));
 int	bridge_rtflush __P((struct bridge_softc *, int));
 struct ifnet *	bridge_rtupdate __P((struct bridge_softc *,
@@ -221,6 +184,11 @@ int		bridge_addrule __P((struct bridge_iflist *,
 int		bridge_flushrule __P((struct bridge_iflist *));
 int	bridge_brlconf __P((struct bridge_softc *, struct ifbrlconf *));
 u_int8_t bridge_filterrule __P((struct brl_node *, struct ether_header *));
+int     bridge_ifenqueue __P((struct bridge_softc *, struct ifnet *, struct mbuf *));
+
+#ifdef CYGPKG_NET_BRIDGE_STP_CODE
+void bridge_span (struct bridge_softc *, struct ether_header *, struct mbuf *);
+#endif
 
 #define	ETHERADDR_IS_IP_MCAST(a) \
 	/* struct etheraddr *a;	*/				\
@@ -247,7 +215,13 @@ bridgeattach(unused)
 	for (i = 0; i < CYGNUM_NET_BRIDGES; i++) {
 		bridgectl[i].sc_brtmax = BRIDGE_RTABLE_MAX;
 		bridgectl[i].sc_brttimeout = (BRIDGE_RTABLE_TIMEOUT * hz) / 2;
+                bridgectl[i].sc_bridge_max_age = BSTP_DEFAULT_MAX_AGE;
+                bridgectl[i].sc_bridge_hello_time = BSTP_DEFAULT_HELLO_TIME;
+                bridgectl[i].sc_bridge_forward_delay= BSTP_DEFAULT_FORWARD_DELAY;
+                bridgectl[i].sc_bridge_priority = BSTP_DEFAULT_BRIDGE_PRIORITY;
+                bridgectl[i].sc_hold_time = BSTP_DEFAULT_HOLD_TIME;
 		LIST_INIT(&bridgectl[i].sc_iflist);
+		LIST_INIT(&bridgectl[i].sc_spanlist);
 		ifp = &bridgectl[i].sc_if;
 		sprintf(ifp->if_xname, "bridge%d", i);
 		ifp->if_softc = &bridgectl[i];
@@ -309,6 +283,19 @@ bridge_ioctl(ifp, cmd, data)
 			error = EBUSY;
 			break;
 		}
+
+#ifdef CYGPKG_NET_BRIDGE_STP_CODE
+                /* If it's in the span list, it can't be a member. */
+                LIST_FOREACH(p, &sc->sc_spanlist, next) {
+                        if (p->ifp == ifs)
+                                break;
+                }
+                if (p != LIST_END(&sc->sc_spanlist)) {
+                        error = EBUSY;
+                        break;
+                }
+#endif
+
 
 		if (ifs->if_type == IFT_ETHER) {
 			if ((ifs->if_flags & IFF_UP) == 0) {
@@ -373,6 +360,8 @@ bridge_ioctl(ifp, cmd, data)
 
 		p->ifp = ifs;
 		p->bif_flags = IFBIF_LEARNING | IFBIF_DISCOVER;
+                p->bif_priority = BSTP_DEFAULT_PORT_PRIORITY;
+                p->bif_path_cost = BSTP_DEFAULT_PATH_COST;
 		SIMPLEQ_INIT(&p->bif_brlin);
 		SIMPLEQ_INIT(&p->bif_brlout);
 		LIST_INSERT_HEAD(&sc->sc_iflist, p, next);
@@ -392,7 +381,7 @@ bridge_ioctl(ifp, cmd, data)
 				error = ifpromisc(p->ifp, 0);
 
 				LIST_REMOVE(p, next);
-				bridge_rtdelete(sc, p->ifp);
+				bridge_rtdelete(sc, p->ifp, 0);
 				bridge_flushrule(p);
 				free(p, M_DEVBUF);
 				break;
@@ -407,6 +396,67 @@ bridge_ioctl(ifp, cmd, data)
 	case SIOCBRDGIFS:
 		error = bridge_bifconf(sc, bifconf);
 		break;
+#ifdef CYGPKG_NET_BRIDGE_STP_CODE
+        case SIOCBRDGADDS:
+#ifndef __ECOS
+                if ((error = suser(prc->p_ucred, &prc->p_acflag)) != 0)
+                        break;
+#endif
+
+                ifs = ifunit(req->ifbr_ifsname);
+                if (ifs == NULL) {                      /* no such interface */
+                        error = ENOENT;
+                        break;
+                }
+                if (ifs->if_bridge == (caddr_t)sc) {
+                        error = EEXIST;
+                        break;
+                }
+                if (ifs->if_bridge != NULL) {
+                        error = EBUSY;
+                        break;
+                }
+                LIST_FOREACH(p, &sc->sc_spanlist, next) {
+                        if (p->ifp == ifs)
+                        break;
+                }
+                if (p != LIST_END(&sc->sc_spanlist)) {
+                        error = EBUSY;
+                        break;
+                }
+                p = (struct bridge_iflist *)malloc(
+                    sizeof(struct bridge_iflist), M_DEVBUF, M_NOWAIT);
+                if (p == NULL) {
+                       error = ENOMEM;
+                       break;
+                }
+                bzero(p, sizeof(struct bridge_iflist));
+                p->ifp = ifs;
+                SIMPLEQ_INIT(&p->bif_brlin);
+                SIMPLEQ_INIT(&p->bif_brlout);
+                LIST_INSERT_HEAD(&sc->sc_spanlist, p, next);
+                break;
+                                                                                                                                                                                                           case SIOCBRDGDELS:
+#ifndef __ECOS
+                if ((error = suser(prc->p_ucred, &prc->p_acflag)) != 0)
+                       break;
+#endif
+
+                LIST_FOREACH(p, &sc->sc_spanlist, next) {
+                       if (strncmp(p->ifp->if_xname, req->ifbr_ifsname,
+                          sizeof(p->ifp->if_xname)) == 0) {
+                              LIST_REMOVE(p, next);
+                              free(p, M_DEVBUF);
+                              break;
+                       }
+                }
+                if (p == LIST_END(&sc->sc_spanlist)) {
+                       error = ENOENT;
+                       break;
+                }
+                break;
+#endif
+
 	case SIOCBRDGGIFFLGS:
 		ifs = ifunit(req->ifbr_ifsname);
 		if (ifs == NULL) {
@@ -426,6 +476,10 @@ bridge_ioctl(ifp, cmd, data)
 			break;
 		}
 		req->ifbr_ifsflags = p->bif_flags;
+                req->ifbr_state = p->bif_state;
+                req->ifbr_priority = p->bif_priority;
+                req->ifbr_path_cost = p->bif_path_cost;
+                req->ifbr_portno = p->ifp->if_index & 0xff;
 		break;
 	case SIOCBRDGSIFFLGS:
 #ifndef __ECOS
@@ -451,6 +505,39 @@ bridge_ioctl(ifp, cmd, data)
 		}
 		p->bif_flags = req->ifbr_ifsflags;
 		break;
+        case SIOCBRDGSIFPRIO:
+        case SIOCBRDGSIFCOST:
+#ifndef __ECOS
+                if ((error = suser(prc->p_ucred, &prc->p_acflag)) != 0)
+                        break;
+#endif
+
+                ifs = ifunit(req->ifbr_ifsname);
+                if (ifs == NULL) {
+                        error = ENOENT;
+                        break;
+                }
+                if ((caddr_t)sc != ifs->if_bridge) {
+                        error = ESRCH;
+                        break;
+                }
+                LIST_FOREACH(p, &sc->sc_iflist, next) {
+                        if (p->ifp == ifs)
+                        break;
+                }
+                if (p == LIST_END(&sc->sc_iflist)) {
+                        error = ESRCH;
+                        break;
+                }
+                if (cmd == SIOCBRDGSIFPRIO)
+                        p->bif_priority = req->ifbr_priority;
+                else {
+                        if (req->ifbr_path_cost < 1)
+                                error = EINVAL;
+                        else
+                                p->bif_path_cost = req->ifbr_path_cost;
+                }
+                break;
 	case SIOCBRDGRTS:
 		error = bridge_rtfind(sc, baconf);
 		break;
@@ -590,9 +677,27 @@ bridge_ioctl(ifp, cmd, data)
 	case SIOCBRDGGRL:
 		error = bridge_brlconf(sc, brlconf);
 		break;
+        case SIOCBRDGGPRI:
+        case SIOCBRDGGMA:
+        case SIOCBRDGGHT:
+        case SIOCBRDGGFD:
+                break;
+        case SIOCBRDGSPRI:
+        case SIOCBRDGSFD:
+        case SIOCBRDGSMA:
+        case SIOCBRDGSHT:
+#ifndef __ECOS
+                error = suser(prc->p_ucred, &prc->p_acflag);
+#endif
+                break;
 	default:
 		error = EINVAL;
 	}
+
+#ifdef CYGPKG_NET_BRIDGE_STP_CODE
+        if (!error)
+                error = bstp_ioctl(ifp, cmd, data);
+#endif
 	splx(s);
 	return (error);
 }
@@ -609,7 +714,7 @@ bridge_ifdetach(ifp)
 	    bif = LIST_NEXT(bif, next))
 		if (bif->ifp == ifp) {
 			LIST_REMOVE(bif, next);
-			bridge_rtdelete(bsc, ifp);
+			bridge_rtdelete(bsc, ifp, 0);
 			bridge_flushrule(bif);
 			free(bif, M_DEVBUF);
 			ifp->if_bridge = NULL;
@@ -624,6 +729,9 @@ bridge_bifconf(sc, bifc)
 {
 	struct bridge_iflist *p;
 	u_int32_t total = 0, i;
+#ifdef CYGPKG_NET_BRIDGE_STP_CODE
+        u_int32_t j;
+#endif
 	int error = 0;
 	struct ifbreq breq;
 
@@ -632,6 +740,14 @@ bridge_bifconf(sc, bifc)
 		total++;
 		p = LIST_NEXT(p, next);
 	}
+
+#ifdef CYGPKG_NET_BRIDGE_STP_CODE
+        p = LIST_FIRST(&sc->sc_spanlist);
+        while (p != NULL) {
+                total++;
+                p = LIST_NEXT(p, next);
+        }
+#endif
 
 	if (bifc->ifbic_len == 0) {
 		i = total;
@@ -648,6 +764,10 @@ bridge_bifconf(sc, bifc)
 		    sizeof(breq.ifbr_ifsname)-1);
 		breq.ifbr_ifsname[sizeof(breq.ifbr_ifsname) - 1] = '\0';
 		breq.ifbr_ifsflags = p->bif_flags;
+                breq.ifbr_state = p->bif_state;
+                breq.ifbr_priority = p->bif_priority;
+                breq.ifbr_path_cost = p->bif_path_cost;
+                breq.ifbr_portno = p->ifp->if_index & 0xff;
 		error = copyout((caddr_t)&breq,
 		    (caddr_t)(bifc->ifbic_req + i), sizeof(breq));
 		if (error)
@@ -656,6 +776,31 @@ bridge_bifconf(sc, bifc)
 		i++;
 		bifc->ifbic_len -= sizeof(breq);
 	}
+
+#ifdef CYGPKG_NET_BRIDGE_STP_CODE
+        p = LIST_FIRST(&sc->sc_spanlist);
+        j = 0;
+        while (p != NULL && bifc->ifbic_len > j * sizeof(breq)) {
+                strncpy(breq.ifbr_name, sc->sc_if.if_xname,
+                        sizeof(breq.ifbr_name)-1);
+                breq.ifbr_name[sizeof(breq.ifbr_name) - 1] = '\0';
+                strncpy(breq.ifbr_ifsname, p->ifp->if_xname,
+                    sizeof(breq.ifbr_ifsname)-1);
+                breq.ifbr_ifsname[sizeof(breq.ifbr_ifsname) - 1] = '\0';
+                 breq.ifbr_ifsflags = p->bif_flags | IFBIF_SPAN;
+                breq.ifbr_state = p->bif_state;
+                breq.ifbr_priority = p->bif_priority;
+                breq.ifbr_path_cost = p->bif_path_cost;
+                breq.ifbr_portno = p->ifp->if_index & 0xff;
+                error = copyout((caddr_t)&breq,
+                    (caddr_t)(bifc->ifbic_req + j), sizeof(breq));
+                if (error)
+                        goto done;
+                p = LIST_NEXT(p, next);
+                j++;
+                bifc->ifbic_len -= sizeof(breq);
+        }
+#endif
 done:
 	bifc->ifbic_len = i * sizeof(breq);
 	return (error);
@@ -774,7 +919,7 @@ bridge_init(sc)
 	ifp->if_flags |= IFF_RUNNING;
 	splx(s);
 
-	if (sc->sc_brttimeout != 0)
+	if (sc->sc_brttimeout != 0) 
 		timeout(bridge_rtage, sc, sc->sc_brttimeout);
 }
 
@@ -848,6 +993,10 @@ bridge_output(ifp, m, sa, rt)
 		struct bridge_iflist *p;
 		struct mbuf *mc;
 		int used = 0;
+
+#ifdef CYGPKG_NET_BRIDGE_STP_CODE
+                bridge_span(sc, NULL, m);
+#endif
 
 		for (p = LIST_FIRST(&sc->sc_iflist); p != NULL;
 		     p = LIST_NEXT(p, next)) {
@@ -958,6 +1107,23 @@ bridgeintr_frame(sc, m)
 
 	src_if = m->m_pkthdr.rcvif;
 
+        /* 
+         * Pick out 802.1D packets.
+         *                   */
+#ifdef CYGPKG_NET_BRIDGE_STP_CODE
+#ifdef __ECOS
+        if (m->m_flags & (M_BCAST | M_MCAST)) {
+                if (bcmp (mtod(m,struct ether_header *), bstp_etheraddr, ETHER_ADDR_LEN) == 0) {
+                        m_copydata(m, 0, sizeof(struct ether_header), (caddr_t)&eh);
+                        m_adj (m, sizeof(struct ether_header));
+                        m = bstp_input(sc, src_if, &eh, m);
+                        if (m == NULL)
+                                return;
+                 }
+        }
+#endif   // __ECOS
+#endif
+
 #if NBPFILTER > 0
 	if (sc->sc_if.if_bpf)
 		bpf_mtap(sc->sc_if.if_bpf, m);
@@ -975,6 +1141,16 @@ bridgeintr_frame(sc, m)
 		m_freem(m);
 		return;
 	}
+
+#ifdef CYGPKG_NET_BRIDGE_STP_CODE
+        if ((ifl->bif_flags & IFBIF_STP) &&
+            (ifl->bif_state == BSTP_IFSTATE_BLOCKING ||
+            ifl->bif_state == BSTP_IFSTATE_LISTENING ||
+            ifl->bif_state == BSTP_IFSTATE_DISABLED)) {
+                m_freem(m);
+                return;
+        }
+#endif
 
 	if (m->m_pkthdr.len < sizeof(eh)) {
 		m_freem(m);
@@ -997,6 +1173,18 @@ bridgeintr_frame(sc, m)
 	      eh.ether_shost[4] == 0 &&
 	      eh.ether_shost[5] == 0))
 		bridge_rtupdate(sc, src, src_if, 0, IFBAF_DYNAMIC);
+
+#ifdef CYGPKG_NET_BRIDGE_STP_CODE
+        if ((ifl->bif_flags & IFBIF_STP) &&
+            (ifl->bif_state == BSTP_IFSTATE_LEARNING)) {
+                m_freem(m);
+                return;
+        }
+#endif
+        /*
+         * At this point, the port either does not participate in stp or
+         * it is in forwarding state.
+         */
 
 	/*
 	 * If packet is unicast, destined for someone on "this"
@@ -1082,6 +1270,15 @@ bridgeintr_frame(sc, m)
 	ifl = LIST_FIRST(&sc->sc_iflist);
 	while (ifl != NULL && ifl->ifp != dst_if)
 		ifl = LIST_NEXT(ifl, next);
+#ifdef CYGPKG_NET_BRIDGE_STP_CODE
+        if ((ifl->bif_flags & IFBIF_STP) &&
+            (ifl->bif_state == BSTP_IFSTATE_DISABLED ||
+            ifl->bif_state == BSTP_IFSTATE_BLOCKING)) {
+                m_freem(m);
+                return;
+        }
+#endif
+
 	if (SIMPLEQ_FIRST(&ifl->bif_brlout) &&
 	    bridge_filterrule(SIMPLEQ_FIRST(&ifl->bif_brlout), &eh) ==
 	    BRL_ACTION_BLOCK) {
@@ -1135,6 +1332,45 @@ bridge_input(ifp, eh, m)
 	if ((sc->sc_if.if_flags & IFF_RUNNING) == 0)
 		return (m);
 
+        LIST_FOREACH (ifl, &sc->sc_iflist, next) {
+                if (ifl->ifp == ifp)
+                        break;
+        }
+        if (ifl == LIST_END (&sc->sc_iflist))
+                return (m);
+
+#ifdef CYGPKG_NET_BRIDGE_STP_CODE
+        bridge_span(sc, eh, m);
+        /*
+         * Tap off 802.1D packets, they do not get forwarded 
+         */
+        if (m->m_flags & (M_BCAST | M_MCAST)) {
+                if (bcmp(eh->ether_dhost, bstp_etheraddr, ETHER_ADDR_LEN) == 0) {
+#ifdef __ECOS
+                        M_PREPEND(m, sizeof (struct ether_header), M_DONTWAIT);
+                        if (m == NULL)
+                                return (NULL);
+                        bcopy(eh, mtod(m, caddr_t), sizeof(struct ether_header));
+
+                        s = splimp ();
+                        if (IF_QFULL(&sc->sc_if.if_snd)) {
+                                m_freem (m);
+                                splx (s);
+                                return (NULL);
+                        }
+                        IF_ENQUEUE(&sc->sc_if.if_snd, m);
+                        splx (s);
+                        schednetisr (NETISR_BRIDGE);
+                        return (NULL);
+#else
+                        m = bstp_input(sc, ifp, eh, m);
+                        if (m == NULL)
+                                return (NULL);
+#endif
+                }
+        }
+#endif
+
 	if (m->m_flags & (M_BCAST | M_MCAST)) {
 		/*
 		 * make a copy of 'm' with 'eh' tacked on to the
@@ -1159,6 +1395,17 @@ bridge_input(ifp, eh, m)
 		schednetisr(NETISR_BRIDGE);
 		return (m);
 	}
+
+        /*
+         * No need to queue frames for ifs in blocking, disabled or listening state
+         */
+#ifdef CYGPKG_NET_BRIDGE_STP_CODE
+        if ((ifl->bif_flags & IFBIF_STP) &&
+            ((ifl->bif_state == BSTP_IFSTATE_BLOCKING) ||
+             (ifl->bif_state == BSTP_IFSTATE_LISTENING) ||
+             (ifl->bif_state == BSTP_IFSTATE_DISABLED)))
+                 return (m);
+#endif
 
 	/*
 	 * Unicast, make sure it's not for us.
@@ -1220,6 +1467,12 @@ bridge_broadcast(sc, ifp, eh, m)
 		if (p->ifp->if_index == ifp->if_index)
 			continue;
 
+#ifdef CYGPKG_NET_BRIDGE_STP_CODE
+                if ((p->bif_flags & IFBIF_STP) &&
+                    (p->bif_state != BSTP_IFSTATE_FORWARDING))
+                        continue;
+#endif
+
 		if ((p->bif_flags & IFBIF_DISCOVER) == 0 &&
 		    (m->m_flags & (M_BCAST | M_MCAST)) == 0)
 			continue;
@@ -1270,6 +1523,60 @@ bridge_broadcast(sc, ifp, eh, m)
 	if (!used)
 		m_freem(m);
 }
+
+#ifdef CYGPKG_NET_BRIDGE_STP_CODE
+void
+bridge_span(sc, eh, morig)
+        struct bridge_softc *sc;
+        struct ether_header *eh;
+        struct mbuf *morig;
+{
+        struct bridge_iflist *p;
+        struct ifnet *ifp;
+        struct mbuf *mc, *m;
+        int error;
+
+        if (LIST_EMPTY(&sc->sc_spanlist))
+                return;
+
+        m = m_copym2(morig, 0, M_COPYALL, M_NOWAIT);
+        if (m == NULL)
+                return;
+        if (eh != NULL) {
+                M_PREPEND(m, sizeof(struct ether_header), M_DONTWAIT);
+                if (m == NULL)
+                        return;
+                bcopy(eh, mtod(m, caddr_t), sizeof(struct ether_header));
+        }
+
+        LIST_FOREACH(p, &sc->sc_spanlist, next) {
+                ifp = p->ifp;
+
+                if ((ifp->if_flags & IFF_RUNNING) == 0)
+                        continue;
+
+#ifdef ALTQ
+                if (ALTQ_IS_ENABLED(&ifp->if_snd) == 0)
+#endif
+                        if (IF_QFULL(&ifp->if_snd)) {
+                                IF_DROP(&ifp->if_snd);
+                                sc->sc_if.if_oerrors++;
+                                continue;
+                        }
+
+                mc = m_copym(m, 0, M_COPYALL, M_DONTWAIT);
+                if (mc == NULL) {
+                        sc->sc_if.if_oerrors++;
+                        continue;
+                }
+
+                error = bridge_ifenqueue(sc, ifp, m);
+                if (error)
+                        continue;
+        }
+        m_freem(m);
+}
+#endif
 
 struct ifnet *
 bridge_rtupdate(sc, ea, ifp, setflags, flags)
@@ -1641,7 +1948,7 @@ done:
  * Delete routes to a specific interface member.
  */
 void
-bridge_rtdelete(sc, ifp)
+bridge_rtdelete(sc, ifp, dynonly)
 	struct bridge_softc *sc;
 	struct ifnet *ifp;
 {
@@ -2018,3 +2325,28 @@ ifpromisc(ifp, pswitch)
 	return ((*ifp->if_ioctl)(ifp, SIOCSIFFLAGS, (caddr_t)&ifr));
 }
 
+int
+bridge_ifenqueue(sc, ifp, m)
+        struct bridge_softc *sc;
+        struct ifnet *ifp;
+        struct mbuf *m;
+{
+        int error, len;
+        short mflags;
+
+        len = m->m_pkthdr.len;
+        mflags = m->m_flags;
+        IFQ_ENQUEUE(&ifp->if_snd, m, NULL, error);
+        if (error) {
+                sc->sc_if.if_oerrors++;
+                return (error);
+        }
+        sc->sc_if.if_opackets++;
+        sc->sc_if.if_obytes += len;
+        ifp->if_obytes += len;
+        if (mflags & M_MCAST)
+                ifp->if_omcasts++;
+        if ((ifp->if_flags & IFF_OACTIVE) == 0)
+                (*ifp->if_start)(ifp);
+                                                                                                           return (0);
+}

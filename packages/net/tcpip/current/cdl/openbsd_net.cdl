@@ -186,13 +186,22 @@ cdl_package CYGPKG_NET_OPENBSD_STACK {
          description   "
              This option controls whether to include the built-in code for
              the Ethernet bridge."
-     compile sys/net/if_bridge.c
+     compile sys/net/if_bridge.c \
+             sys/net/bridgestp.c
 
          cdl_option CYGNUM_NET_BRIDGES {
              display "Number of Ethernet bridges"
              flavor  data
              default_value 1
              legal_values 1 to 999999
+         }
+
+         cdl_option CYGPKG_NET_BRIDGE_STP_CODE {
+             display "Include code for Spanning Tree Protocol"
+             default_value 0
+             description "
+                 This option controls whether to include the code for
+                 the Spanning Tree Protocol on Ethernet bridge."
          }
     }
 

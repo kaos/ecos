@@ -256,6 +256,19 @@ struct ifnet {				/* and the entries */
 }
 #define	IF_IS_EMPTY(ifq)	((ifq)->ifq_len == 0)
 
+#define IFQ_ENQUEUE(ifq, m, pattr, err)                                 \
+do {                                                                    \
+        if (IF_QFULL((ifq))) {                                          \
+                m_freem((m));                                           \
+                (err) = ENOBUFS;                                        \
+        } else {                                                        \
+                IF_ENQUEUE((ifq), (m));                                 \
+                (err) = 0;                                              \
+        }                                                               \
+        if ((err))                                                      \
+                (ifq)->ifq_drops++;                                     \
+} while (0)
+
 #define	IFQ_MAXLEN	50
 #define	IFNET_SLOWHZ	1		/* granularity is 1 second */
 
