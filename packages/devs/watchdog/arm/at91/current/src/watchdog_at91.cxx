@@ -113,7 +113,22 @@
 #else
 #error Desired resolution beyond hardware capabilities
 #endif
-
+#elif defined(CYGHWR_HAL_ARM_AT91_JTST)
+#if   BASE_TICKS / 32 <= MAX_TICKS
+#define DIVIDER 0
+#define DIV_FACTOR 32
+#elif BASE_TICKS / 128 <= MAX_TICKS
+#define DIVIDER 1
+#define DIV_FACTOR 128
+#elif BASE_TICKS / 1024 <= MAX_TICKS
+#define DIVIDER 2
+#define DIV_FACTOR 1024
+#elif BASE_TICKS / 2046 <= MAX_TICKS
+#define DIVIDER 3
+#define DIV_FACTOR 2046
+#else
+#error Desired resolution beyond hardware capabilities
+#endif
 
 #endif
 

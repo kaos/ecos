@@ -1,3 +1,8 @@
+2004-10-4  Andrea Michelotti  <amichelotti@atmel.com>
+
+	* src/watchdog_at91.cxx: 
+	* cdl/watchdog_at91.cdl: added JTST support
+
 2003-05-12  Nick Garnett  <nickg@balti.calivar.com>
 
 	* src/watchdog_at91.cxx: 

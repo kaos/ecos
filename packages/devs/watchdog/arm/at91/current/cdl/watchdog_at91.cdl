@@ -65,8 +65,8 @@ cdl_package CYGPKG_DEVICES_WATCHDOG_ARM_AT91 {
       in the AT91 to execute a predefined action if the
       application fails to call the reset function for
       longer than a given timeout interval. This package
-      currently only supports the AT91x408xx and AT91M55800A
-      devices found on the Atmel EB40, EB40A and EB55 evaluation
+      currently only supports the AT91x408xx, AT91M55800A and Diopsis
+      devices found on the Atmel EB40, EB40A, EB55 and JTST evaluation
       boards. The AT91M42800 found on the EB42 is not supported
       since it uses a totally different watchdog device."
 
