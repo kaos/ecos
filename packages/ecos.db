@@ -5707,6 +5707,13 @@ package CYGPKG_DEVS_DISK_ECOSYNTH {
     description     "Disk driver for the synthetic target."
 }
 
+package CYGPKG_DEVS_DISK_IDE {
+    alias           { "Generic IDE disk driver" ide_disk }
+    directory       devs/disk/ide
+    script          ide_disk.cdl
+    description     "Disk driver for generic IDE interface." 
+}
+
 package CYGPKG_IO_DISK {
     alias           { "Disk device drivers" disk io_disk }
     directory       io/disk

@@ -1,3 +1,4 @@
+* Support for generic IDE disks using PIO, by Iztok Zupet.
 * Support for SPI on the eb55 by Savin Zlobec.
 * Added support for the Atmel JTST board by Andrea Michelotti.
 * Added support for the AIM711 contributed by Roland Cassebohm.
