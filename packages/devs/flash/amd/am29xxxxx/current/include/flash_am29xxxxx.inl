@@ -121,6 +121,23 @@
 // #define CYGNUM_FLASH_WIDTH           : Width of devices on platform
 // #define CYGNUM_FLASH_BASE            : Address of first device
 
+// Platform code may define some or all of the below, to provide
+// timeouts appropriate to the target hardware. The timeout
+// values depend partly on the flash part being used, partly
+// on the target (including bus and cpu speeds).
+#ifndef CYGNUM_FLASH_TIMEOUT_QUERY
+# define CYGNUM_FLASH_TIMEOUT_QUERY		  500000
+#endif
+#ifndef CYGNUM_FLASH_TIMEOUT_ERASE_TIMER
+# define CYGNUM_FLASH_TIMEOUT_ERASE_TIMER	10000000
+#endif
+#ifndef CYGNUM_FLASH_TIMEOUT_ERASE_COMPLETE
+# define CYGNUM_FLASH_TIMEOUT_ERASE_COMPLETE	10000000
+#endif
+#ifndef CYGNUM_FLASH_TIMEOUT_PROGRAM
+# define CYGNUM_FLASH_TIMEOUT_PROGRAM		10000000
+#endif
+
 #define CYGNUM_FLASH_BLANK              (1)
 
 #ifndef FLASH_P2V
@@ -183,7 +200,7 @@ flash_query(void* data)
     volatile flash_data_t *f_s1, *f_s2;
     flash_data_t* id = (flash_data_t*) data;
     flash_data_t w;
-    long timeout = 500000;
+    long timeout = CYGNUM_FLASH_TIMEOUT_QUERY;
 
     ROM = (flash_data_t*) CYGNUM_FLASH_BASE;
     f_s1 = FLASH_P2V(ROM+FLASH_Setup_Addr1);
@@ -282,14 +299,13 @@ flash_erase_block(void* block, unsigned int size)
     volatile flash_data_t* b_p = (flash_data_t*) block;
     volatile flash_data_t *b_v;
     volatile flash_data_t *f_s0, *f_s1, *f_s2;
-    int timeout = 50000;
+    int timeout = CYGNUM_FLASH_TIMEOUT_QUERY;
     int len = 0;
     int res = FLASH_ERR_OK;
     flash_data_t state;
     cyg_bool bootblock = false;
     cyg_uint32 *bootblocks = (cyg_uint32 *)0;
     CYG_ADDRWORD bank_offset;
-
     BANK = ROM = (volatile flash_data_t*)((unsigned long)block & flash_dev_info->base_mask);
 
     // If this is a banked device, find the bank where commands should
@@ -355,7 +371,7 @@ flash_erase_block(void* block, unsigned int size)
         *b_v = FLASH_Block_Erase;
 
         // Now poll for the completion of the sector erase timer (50us)
-        timeout = 10000000;              // how many retries?
+        timeout = CYGNUM_FLASH_TIMEOUT_ERASE_TIMER;              // how many retries?
         while (true) {
             state = *b_v;
             if ((state & FLASH_Sector_Erase_Timer)
@@ -369,7 +385,7 @@ flash_erase_block(void* block, unsigned int size)
 
         // Then wait for erase completion.
         if (FLASH_ERR_OK == res) {
-            timeout = 10000000;
+            timeout = CYGNUM_FLASH_TIMEOUT_ERASE_COMPLETE;
             while (true) {
                 state = *b_v;
                 if (FLASH_BlankValue == state) {
@@ -462,7 +478,7 @@ flash_program_buf(void* addr, void* data, int len)
         *f_s1 = FLASH_Program;
         *addr_v = *data_ptr;
 
-        timeout = 10000000;
+        timeout = CYGNUM_FLASH_TIMEOUT_PROGRAM;
         while (true) {
             state = *addr_v;
             if (*data_ptr == state) {

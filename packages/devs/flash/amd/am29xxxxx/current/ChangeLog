@@ -1,3 +1,12 @@
+2003-08-17  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/flash_am29xxxxx.inl:
+	Allow platform-specific code to override the default loop counts
+	used for timeouts.
+
+	* include/flash_am29xxxxx_parts.inl, cdl/flash_amd_am29xxxxx.cdl:
+	Add AM29PL160 device
+
 2003-07-23  Chris Garry <cgarry@sweeneydesign.co.uk>
 
     * include/flash_am29xxxxx_parts.inl (CYGHWR_DEVS_FLASH_AMD_AM29LV400):
