@@ -1,3 +1,9 @@
+2003-10-29  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/flash_unlock_block.c (flash_unlock_block): test lock bit
+	explicitly - newer flash parts use the reserved bits in the
+	returned data.
+
 2003-09-11  Jani Monoses <jani@iv.ro>
 
 	* src/flash_erase_block.c (flash_erase_block): 

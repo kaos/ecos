@@ -62,6 +62,7 @@
 //
 
 #define MAX_FLASH_BLOCKS 128
+#define FLASH_LOCK_MASK 0x1    // which bit of the read query has the lock bit
 
 int
 flash_unlock_block(volatile flash_t *block, int block_size, int blocks)
@@ -103,9 +104,9 @@ flash_unlock_block(volatile flash_t *block, int block_size, int blocks)
             is_locked[i] = 0;
         } else {
 #if 8 == CYGNUM_FLASH_WIDTH
-            is_locked[i] = bpv[4];
+            is_locked[i] = bpv[4] & FLASH_LOCK_MASK;
 #else
-            is_locked[i] = bpv[2];
+            is_locked[i] = bpv[2] & FLASH_LOCK_MASK;
 # endif
         }
         bp += block_size / sizeof(*bp);
