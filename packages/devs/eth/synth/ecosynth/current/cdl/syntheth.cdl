@@ -8,7 +8,7 @@
 #####ECOSGPLCOPYRIGHTBEGIN####
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
-## Copyright (C) 2002 Bart Veer
+## Copyright (C) 2002, 2003 Bart Veer
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -114,6 +114,7 @@ cdl_package CYGPKG_DEVS_ETH_ECOSYNTH {
 	active_if   { CYGVAR_DEVS_ETH_ECOSYNTH_ETH0 || CYGVAR_DEVS_ETH_ECOSYNTH_ETH1 || CYGVAR_DEVS_ETH_ECOSYNTH_ETH2 || CYGVAR_DEVS_ETH_ECOSYNTH_ETH3 }
 	flavor      none
 	compile     -library=libextras.a syntheth.c
+	requires    CYGINT_ISO_ERRNO_CODES CYGINT_ISO_STRING_MEMFUNCS
 	description "
 	    Package-specific build options including control over compiler
 	    flags used only in building this package."

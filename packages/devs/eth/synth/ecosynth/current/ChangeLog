@@ -1,3 +1,8 @@
+2003-02-13  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/syntheth.c, cdl/syntheth.cdl: add dependency on errno.h for
+	error codes, and avoid memset() warning
+
 2003-02-12  Bart Veer  <bartv@ecoscentric.com>
 
 	* host/Makefile.in, host/configure:
