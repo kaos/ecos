@@ -48,9 +48,9 @@ struct _inode *jffs2_lookup(struct _inode *dir_i, const unsigned char *d_name, i
 	up(&dir_f->sem);
 	if (ino) {
 		inode = jffs2_iget(dir_i->i_sb, ino);
-		if (!inode) {
+		if (IS_ERR(inode)) {
 			printk("jffs2_iget() failed for ino #%u\n", ino);
-			return (ERR_PTR(-EIO));
+			return inode;
 		}
 	}
 

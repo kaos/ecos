@@ -709,7 +709,7 @@ static int jffs2_open(cyg_mtab_entry * mte, cyg_dir dir, const char *name,
 			if (err != 0) {
                                 //Possible orphaned inode on the flash - but will be gc'd
                           	jffs2_iput(ds.dir);
-                                return err;
+                                return -err;
 			}
 
 			err = ENOERR;
@@ -825,9 +825,10 @@ static int jffs2_ops_mkdir(cyg_mtab_entry * mte, cyg_dir dir, const char *name)
 	} else {
 		// If there we no error, something already exists with that
 		// name, so we cannot create another one.
-		jffs2_iput(ds.node);
-		if (err == ENOERR)
-			err = EEXIST;
+               if (err == ENOERR) {
+            		jffs2_iput(ds.node);
+                        err = EEXIST;
+               }
 	}
 	jffs2_iput(ds.dir);
 	return err;
@@ -946,7 +947,6 @@ static int jffs2_ops_rename(cyg_mtab_entry * mte, cyg_dir dir1,
 		    ds2.dir->i_ctime = ds2.dir->i_mtime = cyg_timestamp();
  out:
 	jffs2_iput(ds1.dir);
-	jffs2_iput(ds1.node);
 	if (S_ISDIR(ds1.node->i_mode)) {
 		/* Renamed a directory to elsewhere... so fix up its
 		   i_parent pointer and the i_counts of its old and
@@ -957,10 +957,11 @@ static int jffs2_ops_rename(cyg_mtab_entry * mte, cyg_dir dir1,
 	} else {
 		jffs2_iput(ds2.dir); /* ... doing this */
 	}
+	jffs2_iput(ds1.node);
 	if (ds2.node)
 		jffs2_iput(ds2.node);
  
-	return -err;
+	return err;
 }
 
 // -------------------------------------------------------------------------
@@ -1095,9 +1096,11 @@ static int jffs2_chdir(cyg_mtab_entry * mte, cyg_dir dir, const char *name,
 			return err;
 
 		// check it is a directory
-		if (!S_ISDIR(ds.node->i_mode))
+		if (!S_ISDIR(ds.node->i_mode)) {
+                        jffs2_iput(ds.node);
 			return ENOTDIR;
-
+                }
+                
 		// Pass it out
 		*dir_out = (cyg_dir) ds.node;
 	} else {
@@ -1363,7 +1366,7 @@ static int jffs2_fo_write(struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio)
 		int err;
 
 		D2(printf("jffs2_fo_write page_start_pos %d\n", pos));
-		D2(printf("jffs2_fo_write transfer size %d\n", l));
+		D2(printf("jffs2_fo_write transfer size %d\n", len));
 
 		err = jffs2_write_inode_range(c, f, &ri, buf,
 					      pos, len, &writtenlen);
@@ -1421,8 +1424,6 @@ static int jffs2_fo_lseek(struct CYG_FILE_TAG *fp, off_t * apos, int whence)
 		return EINVAL;
 	}
 
-        // Check that pos is still within current file size, or at the
-        // very end.
         if (pos < 0 )
                 return EINVAL;
 
@@ -1752,13 +1753,14 @@ struct _inode *jffs2_iget(struct super_block *sb, cyg_uint32 ino)
 	// Not cached, so malloc it
 	inode = new_inode(sb);
 	if (inode == NULL)
-		return 0;
+		return ERR_PTR(-ENOMEM);
 
 	inode->i_ino = ino;
 
 	err = jffs2_read_inode(inode);
 	if (err) {
 		printf("jffs2_read_inode() failed\n");
+                inode->i_nlink = 0; // free _this_ bad inode right now
 		jffs2_iput(inode);
 		inode = NULL;
 		return ERR_PTR(err);
@@ -1869,8 +1871,17 @@ struct _inode *jffs2_new_inode (struct _inode *dir_i, int mode, struct jffs2_raw
 	ri->mode =  cpu_to_jemode(mode);
 	ret = jffs2_do_new_inode (c, f, mode, ri);
 	if (ret) {
-		jffs2_iput(inode);
-		return ERR_PTR(ret);
+                // forceful evict: f->sem is locked already, and the
+                // inode is bad.
+                if (inode->i_cache_prev)
+                       inode->i_cache_prev->i_cache_next = inode->i_cache_next;
+                if (inode->i_cache_next)
+                       inode->i_cache_next->i_cache_prev = inode->i_cache_prev; 
+                up(&(f->sem));
+                jffs2_clear_inode(inode);
+                memset(inode, 0x6a, sizeof(*inode));
+                free(inode);
+                return ERR_PTR(ret);
 	}
 	inode->i_nlink = 1;
 	inode->i_ino = je32_to_cpu(ri->ino);

@@ -1,3 +1,10 @@
+2005-02-08  Estelle HAMMACHE <estelle.hammache@st.com>
+
+	* src/fs-ecos.c 
+	* src/dir-ecos.c: Fixed the sign of the return codes in various
+	places. iput the inode only after we have finished with
+	it etc.
+	
 2005-01-22  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* Merge from public MTD.
