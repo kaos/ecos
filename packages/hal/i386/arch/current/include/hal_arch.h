@@ -144,12 +144,13 @@ CYG_MACRO_END
 # else
 # define HAL_THREAD_INIT_FPU_CONTEXT_SPACE( __sp, __fpspace )                   \
          (__fpspace) = (__fpspace);
-# define HAL_THREAD_INIT_FPU_CONTEXT( __regs, __fpspace )                       \
-CYG_MACRO_START                                                                 \
-    cyg_ucount8 __i;                                                            \
-    (__regs)->fpstate_valid = 0;                                                \
-    for( __i = 0; __i < (sizeof((__regs)->fpstate)/sizeof(cyg_uint32)); __i++ ) \
-        (__regs)->fpstate[__i] = 0;                                             \
+# define HAL_THREAD_INIT_FPU_CONTEXT( __regs, __fpspace )                               \
+CYG_MACRO_START                                                                         \
+    cyg_ucount8 __i;                                                                    \
+    HAL_FPU_Context *__fpspace_ = &((__regs)->fpucontext);                              \
+    __fpspace_->fpstate_valid = 0;                                                      \
+    for( __i = 0; __i < (sizeof(__fpspace_->fpstate)/sizeof(cyg_uint32)); __i++ )       \
+        __fpspace_->fpstate[__i] = 0;                                                   \
 CYG_MACRO_END
 # endif
 #else
