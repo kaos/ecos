@@ -718,6 +718,7 @@
 
 #include <sys/types.h>
 #include <sys/endian.h>
+#include <errno.h>
 
 #ifdef _KERNEL
 // External [common] variables
