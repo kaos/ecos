@@ -1,8 +1,11 @@
+2004-08-04  Alexander Neundorf <alexander.neundorf@jenoptik.com>
+
+	* src/syscall-i386-linux-1.0.S:	Add mkdir system call
+
 2004-06-21  Alexander Neundorf <alexander.neundorf@jenoptik.com>
 
 	* src/syscall-i386-linux-1.0.S:
 	Add readdir, lstat and fstat system calls
-
 
 2004-04-22  Jani Monoses <jani@iv.ro>
 
