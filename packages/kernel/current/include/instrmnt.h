@@ -190,6 +190,7 @@ externC char * cyg_instrument_msg(CYG_WORD16 type);
 #define CYG_INSTRUMENT_EVENT_BINSEM_TRY         4
 #define CYG_INSTRUMENT_EVENT_BINSEM_POST        5
 #define CYG_INSTRUMENT_EVENT_BINSEM_WAKE        6
+#define CYG_INSTRUMENT_EVENT_BINSEM_TIMEOUT     7
 
 // Counting semaphore events
 #define CYG_INSTRUMENT_EVENT_CNTSEM_CLAIM       1

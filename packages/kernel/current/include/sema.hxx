@@ -81,6 +81,10 @@ public:
         
     cyg_bool    wait();                 // Wait until state == true
 
+#ifdef CYGFUN_KERNEL_THREADS_TIMER
+    cyg_bool    wait( cyg_tick_count timeout );
+#endif                                  // Wait until state == true or timeout
+
     cyg_bool    trywait();              // Set state false if possible
         
     void        post();                 // Increment count

@@ -156,10 +156,12 @@ Cyg_Counting_Semaphore::wait( cyg_tick_count timeout )
     self->set_timer( timeout, Cyg_Thread::TIMEOUT  );
 
     // If the timeout is in the past, the wake reason will have been
-    // set to something other than NONE already. Set the result false
-    // to force an immediate return.
+    // set to something other than NONE already. If the count is zero,
+    // set the result false to force an immediate return. If the count
+    // is non-zero, then this wait will succeed anyway.
     
-    if( self->get_wake_reason() != Cyg_Thread::NONE )
+    if( self->get_wake_reason() != Cyg_Thread::NONE &&
+        0 == count )
         result = false;
             
     while ( 0 == count && result ) {

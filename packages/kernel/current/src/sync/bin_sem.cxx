@@ -77,6 +77,7 @@ Cyg_Binary_Semaphore::Cyg_Binary_Semaphore (
 
 Cyg_Binary_Semaphore::~Cyg_Binary_Semaphore ( )
 {
+    CYG_ASSERT( queue.empty(), "Destroying semaphore with waiting threads");
 }
 
 // -------------------------------------------------------------------------
@@ -130,6 +131,84 @@ cyg_bool Cyg_Binary_Semaphore::wait()
 
     return result;
 }
+
+// -------------------------------------------------------------------------
+// Wait until the state can be set false or timeout
+
+#ifdef CYGFUN_KERNEL_THREADS_TIMER
+
+cyg_bool
+Cyg_Binary_Semaphore::wait( cyg_tick_count timeout )
+{
+    cyg_bool result = true;
+    Cyg_Thread *self = Cyg_Thread::self();
+    
+    // Prevent preemption
+    Cyg_Scheduler::lock();
+
+    CYG_INSTRUMENT_BINSEM( CLAIM, this, state );
+        
+    // Set the timer _once_ outside the loop.
+    self->set_timer( timeout, Cyg_Thread::TIMEOUT  );
+
+    // If the timeout is in the past, the wake reason will have been
+    // set to something other than NONE already. If the semaphore is
+    // not available, set the result false to force an immediate
+    // return. If it is available, then go ahead and claim it.
+    
+    if( self->get_wake_reason() != Cyg_Thread::NONE && !state )
+        result = false;
+            
+    while ( !state && result ) {
+
+        // must reset the sleep reason every time
+        self->set_sleep_reason( Cyg_Thread::TIMEOUT );
+
+        self->sleep();
+
+        queue.enqueue( self );
+
+        CYG_INSTRUMENT_BINSEM( WAIT, this, 0 );
+
+        // Allow other threads to run
+        Cyg_Scheduler::reschedule();
+
+        CYG_INSTRUMENT_BINSEM( WOKE, this, state );
+
+        switch( self->get_wake_reason() )
+        {
+        case Cyg_Thread::TIMEOUT:
+            result = false;
+            CYG_INSTRUMENT_BINSEM( TIMEOUT, this, state);
+            break;
+            
+        case Cyg_Thread::DESTRUCT:
+        case Cyg_Thread::BREAK:
+            result = false;
+            break;
+            
+        case Cyg_Thread::EXIT:            
+            self->exit();
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    // Clear the timeout. It is irrelevant whether the alarm has
+    // actually gone off or not.
+    self->clear_timer();
+        
+    if( result ) state = false;
+
+    // Unlock the scheduler and maybe switch threads
+    Cyg_Scheduler::unlock();
+
+    return result;
+}
+
+#endif // CYGFUN_KERNEL_THREADS_TIMER
 
 // -------------------------------------------------------------------------
 

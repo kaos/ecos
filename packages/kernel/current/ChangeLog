@@ -1,3 +1,24 @@
+2003-06-06  David Brennan  <eCos@brennanhome.com>
+2003-06-23  Nick Garnett  <nickg@balti.calivar.com>
+
+	* cdl/kernel.cdl: Added tests/bin_sem3 to list of kernel tests.
+
+	* include/sema.hxx: Added declaration for wait with timeout for
+        Cyg_Binary_Semaphore.
+	
+	* include/instrmnt.h: Added instrumentation point for binary semaphore
+        timeout.
+	
+        * src/sync/bin_sem.cxx: Added wait with time-out function to 
+        Cyg_Binary_Semaphore class. 
+
+	* src/sync/cnt_sem.cxx: Modified semantics slightly to claim an
+	available semaphore even with a timeout in the past. This is in
+	line with the new timed wait in bin_sem.cxx. 
+
+	* tests/bin_sem3.cxx: Created new test for timed wait binary
+        semaphore.
+		
 2003-05-20  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/common/kapi.cxx (cyg_thread_get_next): Passing a *current
