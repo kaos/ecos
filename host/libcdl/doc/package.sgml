@@ -78,10 +78,7 @@ details of the various packages.
 <informalfigure PgWide=1>
 <mediaobject>
 <imageobject>
-<imagedata fileref="repo.eps" format="eps" Scalefit=1 Align="Center">
-</imageobject>
-<imageobject>
-<imagedata fileref="repo.gif" format="gif" Align="Center">
+<imagedata fileref="repo.png" Scalefit=1 Align="Center">
 </imageobject>
 </mediaobject>
 </informalfigure>
@@ -175,10 +172,7 @@ that are no longer required.
 <informalfigure PgWide=1>
 <mediaobject>
 <imageobject>
-<imagedata fileref="version.eps" format="eps" Scalefit=1 Align="Center">
-</imageobject>
-<imageobject>
-<imagedata fileref="version.gif" format="gif" Align="Center">
+<imagedata fileref="version.png" Scalefit=1 Align="Center">
 </imageobject>
 </mediaobject>
 </informalfigure>
@@ -394,10 +388,7 @@ which splits the package contents on a functional basis:
 <informalfigure PgWide=1>
 <mediaobject>
 <imageobject>
-<imagedata fileref="package.eps" format="eps" Scalefit=1 Align="Center">
-</imageobject>
-<imageobject>
-<imagedata fileref="package.gif" format="gif" Align="Center">
+<imagedata fileref="package.png" Scalefit=1 Align="Center">
 </imageobject>
 </mediaobject>
 </informalfigure>
