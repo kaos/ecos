@@ -1,3 +1,7 @@
+2003-03-20  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/hal_aux.c (hal_platform_init): Fix SCC2/SCC3 routing.
+
 2003-03-11  Mark Salter  <msalter@redhat.com>
 
 	* src/redboot_linux_exec.c (do_exec): Call eth_drv_stop as necessary.

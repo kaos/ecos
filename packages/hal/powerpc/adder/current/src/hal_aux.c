@@ -83,8 +83,8 @@ hal_platform_init(void)
     volatile EPPC *eppc = (volatile EPPC *)eppc_base();
 
     // Special routing information for CICR
-    eppc->cpmi_cicr &= 0xFF0000;  // Routing bits
-    eppc->cpmi_cicr |= 0x240000;  // SCC2, SCC3 on "normal" bit positions
+    eppc->cpmi_cicr &= ~0xFF0000;  // Routing bits
+    eppc->cpmi_cicr |= 0x240000;   // SCC2, SCC3 on "normal" bit positions
 
     eppc->pip_pbpar &= ~0x0000400E;   // PB29..30 AS GPIO
     eppc->pip_pbdir |=  0x0000400E;
