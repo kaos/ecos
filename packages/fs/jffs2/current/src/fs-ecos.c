@@ -1268,7 +1268,7 @@ static int jffs2_extend_file (struct _inode *inode, struct jffs2_raw_inode *ri,
 	D1(printk(KERN_DEBUG "Writing new hole frag 0x%x-0x%x between current EOF and new page\n",
 		  (unsigned int)inode->i_size, offset));
 
-	ret = jffs2_reserve_space(c, sizeof(ri), &phys_ofs, &alloc_len, ALLOC_NORMAL);
+	ret = jffs2_reserve_space(c, sizeof(*ri), &phys_ofs, &alloc_len, ALLOC_NORMAL);
 	if (ret)
 		return ret;
 
@@ -1276,8 +1276,8 @@ static int jffs2_extend_file (struct _inode *inode, struct jffs2_raw_inode *ri,
 
 	ri->magic = cpu_to_je16(JFFS2_MAGIC_BITMASK);
 	ri->nodetype = cpu_to_je16(JFFS2_NODETYPE_INODE);
-	ri->totlen = cpu_to_je32(sizeof(ri));
-	ri->hdr_crc = cpu_to_je32(crc32(0, &ri, sizeof(struct jffs2_unknown_node)-4));
+	ri->totlen = cpu_to_je32(sizeof(*ri));
+	ri->hdr_crc = cpu_to_je32(crc32(0, ri, sizeof(struct jffs2_unknown_node)-4));
 
 	ri->version = cpu_to_je32(++f->highest_version);
 	ri->isize = cpu_to_je32(max((uint32_t)inode->i_size, offset));
@@ -1286,7 +1286,7 @@ static int jffs2_extend_file (struct _inode *inode, struct jffs2_raw_inode *ri,
 	ri->dsize = cpu_to_je32(offset - inode->i_size);
 	ri->csize = cpu_to_je32(0);
 	ri->compr = JFFS2_COMPR_ZERO;
-	ri->node_crc = cpu_to_je32(crc32(0, &ri, sizeof(ri)-8));
+	ri->node_crc = cpu_to_je32(crc32(0, ri, sizeof(*ri)-8));
 	ri->data_crc = cpu_to_je32(0);
 		
 	fn = jffs2_write_dnode(c, f, ri, NULL, 0, phys_ofs, ALLOC_NORMAL);
@@ -1417,11 +1417,6 @@ static int jffs2_fo_lseek(struct CYG_FILE_TAG *fp, off_t * apos, int whence)
 	default:
 		return EINVAL;
 	}
-
-	// Check that pos is still within current file size, or at the
-	// very end.
-	if (pos < 0 || pos > node->i_size)
-		return EINVAL;
 
 	// All OK, set fp offset and return new position.
 	*apos = fp->f_offset = pos;

@@ -110,6 +110,7 @@ cdl_package CYGPKG_FS_JFFS2 {
     cdl_option CYGOPT_FS_JFFS2_DEBUG {
 	display         "Debug level"
 	flavor          data
+        default_value   0
         legal_values    0 to 2
 	define          CONFIG_JFFS2_FS_DEBUG
         description     "
@@ -218,7 +219,7 @@ cdl_package CYGPKG_FS_JFFS2 {
 	display "JFFS2 FS tests"
 	flavor  data
 	no_define
-	calculated { "tests/fileio1.c" }
+	calculated { "tests/fileio1.c tests/fseek1.c" }
             description   "
                 This option specifies the set of tests for the JFFS2 FS package."
         }

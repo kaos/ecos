@@ -1,3 +1,10 @@
+2004-04-06  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/fs-ecos.c (jffs2_extend_file): Fix creation of hole inode's
+	* src/fs-ecos.c (jffs2_fo_lseek): Allow seeking past EOF.
+	* tests/fseek1.c (main): fseek and simple test of a hole in a file
+	* cdl/jffs2.cdl: Added new test program fseek1.
+	
 2004-03-31  David Woodhouse  <dwmw2@infradead.org>
 
 	* src/fs-ecos.c (jffs2_fo_write): Set ri.isize so that non-append
