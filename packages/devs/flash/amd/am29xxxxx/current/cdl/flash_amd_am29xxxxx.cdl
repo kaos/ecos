@@ -158,6 +158,16 @@ cdl_package CYGPKG_DEVS_FLASH_AMD_AM29XXXXX {
             part in the family."
     }
 
+    cdl_option CYGHWR_DEVS_FLASH_AMD_AM29LV400 {
+        display       "AMD AM29LV400 flash memory support"
+        default_value 0
+        implements    CYGINT_DEVS_FLASH_AMD_VARIANTS
+        description   "
+            When this option is enabled, the AMD flash driver will be
+            able to recognize and handle the AM29LV400
+            part in the family."
+    }
+
     cdl_option CYGHWR_DEVS_FLASH_AMD_AM29DL640D {
         display       "AMD AM29DL640D flash memory support"
         default_value 0

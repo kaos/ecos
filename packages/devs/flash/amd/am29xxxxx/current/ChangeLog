@@ -1,3 +1,9 @@
+2003-07-23  Chris Garry <cgarry@sweeneydesign.co.uk>
+
+    * include/flash_am29xxxxx_parts.inl (CYGHWR_DEVS_FLASH_AMD_AM29LV400):
+    * cdl/flash_amd_am29xxxxx.cdl: 
+    Add support for Am29LV400 part.
+
 2003-04-03  Jani Monoses <jani@iv.ro> 
 
 	* include/flash_am29xxxxx.inl:

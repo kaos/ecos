@@ -800,6 +800,40 @@
                      }
     }
 #endif
+#ifdef CYGHWR_DEVS_FLASH_AMD_AM29LV400
+    {   // AM29LV400-T
+        device_id  : FLASHWORD(0x22b9),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 8,
+        device_size: 0x80000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x80000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : true,
+        bootblocks : { 0xf0000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x08000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x02000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x02000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x04000 * CYGNUM_FLASH_INTERLEAVE,
+                       _LAST_BOOTBLOCK
+                     },
+        banked     : false
+    },
+    {   // AM29LV400-B
+        device_id  : FLASHWORD(0x22ba),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 8,
+        device_size: 0x80000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x80000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : true,
+        bootblocks : { 0x000000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x004000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x008000 * CYGNUM_FLASH_INTERLEAVE,
+                       _LAST_BOOTBLOCK
+                     },
+        banked     : false
+    },
+#endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29F800
     {   // AM29F800-T
         device_id  : FLASHWORD(0x22d6),
