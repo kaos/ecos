@@ -1319,8 +1319,7 @@ do_flash_init(void)
 
     if (!__flash_init) {
         __flash_init = 1;
-        if ((stat = flash_init((void *)(workspace_end-FLASH_MIN_WORKSPACE), 
-                               FLASH_MIN_WORKSPACE, diag_printf)) != 0) {
+        if ((stat = flash_init(diag_printf)) != 0) {
             diag_printf("FLASH: driver init failed: %s\n", flash_errmsg(stat));
             return false;
         }

@@ -1,3 +1,7 @@
+2002-11-20  Jani Monoses  <jani@iv.ro>
+
+	* src/flash.c: flash_init() no longer takes three args.
+
 2003-11-13  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/main.c (do_go): Need to stop catching exceptions when running a
