@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 // Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -76,6 +76,14 @@ RedBoot_config_option("Network debug at boot time",
                       CONFIG_BOOL,
                       false
     );
+#if defined(CYGHWR_NET_DRIVERS) && (CYGHWR_NET_DRIVERS > 1)
+RedBoot_config_option("Default network device", 
+                      net_device, 
+                      ALWAYS_ENABLED, true,
+                      CONFIG_NETPORT,
+                      ""
+    );
+#endif
 // Note: the following options are related.  If 'bootp' is false, then
 // the other values are used in the configuration.  Because of the way
 // that configuration tables are generated, they should have names which
@@ -609,10 +617,47 @@ flash_get_IP(char *id, ip_addr_t *val)
 }
 #endif
 
+static cyg_netdevtab_entry_t *
+net_devtab_entry(unsigned index)
+{
+    cyg_netdevtab_entry_t *t = &__NETDEVTAB__[index];
+
+    if (t < &__NETDEVTAB__[0] || t >= &__NETDEVTAB_END__)
+	return NULL;
+
+    return t;
+}
+
+const char *
+net_devname(unsigned index)
+{
+    cyg_netdevtab_entry_t *t = net_devtab_entry(index);
+    if (t)
+	return t->name;
+    return NULL;
+}
+
+int
+net_devindex(char *name)
+{
+    const char *devname;
+    int index;
+
+    for (index = 0; (devname = net_devname(index)) != NULL; index++)
+	if (!strcmp(name, devname))
+	    return index;
+    return -1;
+}
+
 void
 net_init(void)
 {
     cyg_netdevtab_entry_t *t;
+    unsigned index;
+#if defined(CYGHWR_NET_DRIVERS) && (CYGHWR_NET_DRIVERS > 1)
+    char *default_devname;
+    int default_index;
+#endif
 
     // Set defaults as appropriate
 #ifdef CYGSEM_REDBOOT_DEFAULT_NO_BOOTP
@@ -628,6 +673,9 @@ net_init(void)
     gdb_port = CYGNUM_REDBOOT_NETWORKING_TCP_PORT;
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
     // Fetch values from saved config data, if available
+#if defined(CYGHWR_NET_DRIVERS) && (CYGHWR_NET_DRIVERS > 1)
+    flash_get_config("net_device", &default_devname, CONFIG_NETPORT);
+#endif
     flash_get_config("net_debug", &net_debug, CONFIG_BOOL);
     flash_get_config("gdb_port", &gdb_port, CONFIG_INT);
     flash_get_config("bootp", &use_bootp, CONFIG_BOOL);
@@ -652,15 +700,40 @@ net_init(void)
     // Make sure the recv buffers are set up
     eth_drv_buffers_init();
     __pktbuf_init();
-    // Initialize all network devices
-    for (t = &__NETDEVTAB__[0]; t != &__NETDEVTAB_END__; t++) {
-        if (t->init(t)) {
+
+    // Initialize network device.
+    // Try default device first, then others
+#ifdef CYGNUM_REDBOOT_DEFAULT_NETWORK_DEVICE
+    default_devname = net_devname(CYGNUM_REDBOOT_DEFAULT_NETWORK_DEVICE);
+#endif
+
+#if defined(CYGHWR_NET_DRIVERS) && (CYGHWR_NET_DRIVERS > 1)
+    default_index = net_devindex(default_devname);
+    if (default_index < 0)
+	default_index = 0;
+    if ((t = net_devtab_entry(default_index)) != NULL) {
+	if (t->init(t))
             t->status = CYG_NETDEVTAB_STATUS_AVAIL;
-        } else {
-            // What to do if device init fails?
-            t->status = 0;  // Device not [currently] available
-        }
+	else
+#endif
+	{
+	    for (index = 0; t = net_devtab_entry(index); index++) {
+#if defined(CYGHWR_NET_DRIVERS) && (CYGHWR_NET_DRIVERS > 1)
+		if (index == default_index)
+		    continue;
+#endif
+		if (t->init(t)) {
+		    t->status = CYG_NETDEVTAB_STATUS_AVAIL;
+		    break; // stop after first good device found
+		} else {
+		    // What to do if device init fails?
+		    t->status = 0;  // Device not [currently] available
+		}
+	    }
+	}
+#if defined(CYGHWR_NET_DRIVERS) && (CYGHWR_NET_DRIVERS > 1)
     }
+#endif
     if (!__local_enet_sc) {
         diag_printf("No network interfaces found\n");
         return;

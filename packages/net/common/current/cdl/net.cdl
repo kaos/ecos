@@ -401,10 +401,6 @@ cdl_package CYGPKG_NET {
 
 # Description and control over different interfaces
 
-    cdl_interface CYGHWR_NET_DRIVERS {
-        display "Network drivers"
-    }
-
     cdl_interface CYGHWR_NET_DRIVER_ETH0 {
         display "Does the hardware provide an 'eth0' device?"
         requires { CYGHWR_NET_DRIVER_ETH0 <= 1 }

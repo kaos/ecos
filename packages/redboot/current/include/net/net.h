@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 // Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -616,6 +616,10 @@ extern void net_io_test(bool is_idle);
 // Conversion between IP addresses and printable strings
 extern bool  inet_aton(const char *, in_addr_t *);
 extern char *inet_ntoa(in_addr_t *);
+
+// Network device table access
+extern const char *net_devname(unsigned index);
+extern int net_devindex(char *name);
 
 // FIXME
 /* #define NET_SUPPORT_RARP  1 */

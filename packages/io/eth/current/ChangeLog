@@ -1,3 +1,7 @@
+2003-03-20  Mark Salter  <msalter@redhat.com>
+
+	* cdl/eth_drivers.cdl (CYGHWR_NET_DRIVERS): Moved here from net/common.
+
 2003-03-14  Nick Garnett  <nickg@calivar.com>
 
 	* src/net/eth_drv.c: Added calls to cyg_net_show_mbufs() whenever

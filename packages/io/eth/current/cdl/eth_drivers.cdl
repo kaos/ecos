@@ -58,6 +58,10 @@ cdl_package CYGPKG_IO_ETH_DRIVERS {
 
     implements    CYGPKG_NET_DRIVER_FRAMEWORK
 
+    cdl_interface CYGHWR_NET_DRIVERS {
+        display "Network drivers"
+    }
+
     cdl_interface     CYGINT_IO_ETH_MULTICAST {
         display   "Driver supports multicast addressing"
         description "

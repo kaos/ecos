@@ -351,6 +351,17 @@ cdl_package CYGPKG_REDBOOT {
                 }
     
             }
+
+	    cdl_option CYGNUM_REDBOOT_DEFAULT_NETWORK_DEVICE {
+                display         "Default network device driver"
+                flavor          data
+                active_if       { !CYGSEM_REDBOOT_FLASH_CONFIG && CYGHWR_NET_DRIVERS > 1 }
+	        legal_values    0 to CYGHWR_NET_DRIVERS-1
+                default_value   0
+                description     "
+                    This is the index of the first network device driver that
+                    RedBoot will try to initialize."
+            }
         }
     
         cdl_option CYGPKG_REDBOOT_ANY_CONSOLE {

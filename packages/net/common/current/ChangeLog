@@ -1,3 +1,7 @@
+2003-03-20  Mark Salter  <msalter@redhat.com>
+
+	* cdl/net.cdl (CYGHWR_NET_DRIVERS): Removed to io/eth.
+
 2003-03-18 Barton Meeks  <bartonm2002@yahoo.com>
 
         * src/tftp_client.c: Reduce size of initial request packet

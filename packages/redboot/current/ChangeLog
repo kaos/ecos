@@ -1,3 +1,11 @@
+2003-03-20  Mark Salter  <msalter@redhat.com>
+
+	* include/flash_config.h (CONFIG_NETPORT): New config option.
+	* src/flash.c: Support CONFIG_NETPORT.
+	* cdl/redboot.cdl: New option to select default ethernet device.
+	* src/net/net_io.c: Support multiple ethernet devices.
+	* include/net/net.h: Add externs for net_devname and net_devindex.
+	
 2002-03-19  John Dallaway  <jld@ecoscentric.com>
 
 	* doc/redboot_installing.sgml: Update Atmel AT91EB40 RedBoot
