@@ -177,7 +177,7 @@ static int fd_close( int fd )
     int error = 0;
     cyg_file *fp;
 
-    CYG_ASSERT(((0 < fd) && (fd<CYGNUM_FILEIO_NFD)), "fd out of range");    
+    CYG_ASSERT(((0 <= fd) && (fd<CYGNUM_FILEIO_NFD)), "fd out of range");    
 
     fp = desc[fd];
 
@@ -206,7 +206,7 @@ __externC int cyg_fd_alloc(int low)
 {
     int fd;
 
-    CYG_ASSERT(((0 < low) && (low<CYGNUM_FILEIO_NFD)),"fd out of range");
+    CYG_ASSERT(((0 <= low) && (low<CYGNUM_FILEIO_NFD)),"fd out of range");
 
     FILEIO_MUTEX_LOCK(fdlock);
     
@@ -233,7 +233,7 @@ __externC int cyg_fd_alloc(int low)
 __externC void cyg_fd_assign(int fd, cyg_file *fp)
 {
 
-    CYG_ASSERT(((0 < fd) && (fd<CYGNUM_FILEIO_NFD)),"fd out of range");
+    CYG_ASSERT(((0 <= fd) && (fd<CYGNUM_FILEIO_NFD)),"fd out of range");
 
     FILEIO_MUTEX_LOCK(fdlock);
 
@@ -253,7 +253,7 @@ __externC int cyg_fd_free(int fd)
 {
     int error;
 
-    CYG_ASSERT(((0 < fd) && (fd<CYGNUM_FILEIO_NFD)),"fd out of range");
+    CYG_ASSERT(((0 <= fd) && (fd<CYGNUM_FILEIO_NFD)),"fd out of range");
     
     FILEIO_MUTEX_LOCK(fdlock);
     
@@ -277,7 +277,7 @@ __externC int cyg_fd_free(int fd)
 
 __externC cyg_file *cyg_fp_get( int fd )
 {
-    CYG_ASSERT(((0 < fd) && (fd<CYGNUM_FILEIO_NFD)),"fd out of range");
+    CYG_ASSERT(((0 <= fd) && (fd<CYGNUM_FILEIO_NFD)),"fd out of range");
 
     FILEIO_MUTEX_LOCK(fdlock);
     
