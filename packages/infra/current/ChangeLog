@@ -1,3 +1,10 @@
+2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/diag.h: Added CYGBLD_ATTRIB_PRINTF_FORMAT where
+	appropriate to get the compiler to do more checking.
+	* src/diag.cxx (diag_dump_buf_with_offset_16bit): Fix compiler warning
+	caused by above change.
+
 2005-02-08  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/diag_sprintf1.c 

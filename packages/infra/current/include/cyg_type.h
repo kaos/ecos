@@ -375,6 +375,14 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 # define CYGBLD_ATTRIB_PRINTF_FORMAT(__format__, __args__) \
         __attribute__((format (printf, __format__, __args__)))
 
+// Teach compiler how to check format of scanf-like functions
+# define CYGBLD_ATTRIB_SCANF_FORMAT(__format__, __args__) \
+        __attribute__((format (scanf, __format__, __args__)))
+
+// Teach compiler how to check format of strftime-like functions
+# define CYGBLD_ATTRIB_STRFTIME_FORMAT(__format__, __args__) \
+        __attribute__((format (strftime, __format__, __args__)))
+
 #else // non-GNU
 
 # define CYGBLD_ATTRIB_CONSTRUCTOR
@@ -399,6 +407,11 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 # define CYGBLD_ATTRIB_ALIGNOFTYPE( _type_ ) !!!-- Alignment alias not defined --!!!
 
 # define CYGBLD_ATTRIB_PRINTF_FORMAT(__format__, __args__)
+
+# define CYGBLD_ATTRIB_SCANF_FORMAT(__format__, __args__)
+
+# define CYGBLD_ATTRIB_STRFTIME_FORMAT(__format__, __args__)
+
 
 #endif
 

@@ -92,13 +92,18 @@ externC void diag_dump_buf_with_offset_16bit(cyg_uint16 *p,
                                              CYG_ADDRWORD     s, 
                                              cyg_uint16      *base);
 
-externC int  diag_printf( const char *fmt, ... );  /* Formatted print      */
+/* Formatted print      */
+externC int  diag_printf( const char *fmt, ... ) CYGBLD_ATTRIB_PRINTF_FORMAT(1,2);  
 
 externC void diag_init_putc(void (*putc)(char c, void **param));
-externC int  diag_sprintf(char *buf, const char *fmt, ...);
-externC int  diag_snprintf(char *buf, size_t len, const char *fmt, ...);
-externC int  diag_vsprintf(char *buf, const char *fmt, va_list ap);
-externC int  diag_vprintf(const char *fmt, va_list ap);
+externC int  diag_sprintf(char *buf, const char *fmt, ...) 
+     CYGBLD_ATTRIB_PRINTF_FORMAT(2,3);
+externC int  diag_snprintf(char *buf, size_t len, const char *fmt, ...)
+     CYGBLD_ATTRIB_PRINTF_FORMAT(3,4);
+externC int  diag_vsprintf(char *buf, const char *fmt, va_list ap)
+     CYGBLD_ATTRIB_PRINTF_FORMAT(2,0);
+externC int  diag_vprintf(const char *fmt, va_list ap)
+     CYGBLD_ATTRIB_PRINTF_FORMAT(1,0);
 
 
 /*---------------------------------------------------------------------------*/

@@ -654,7 +654,7 @@ diag_dump_buf_with_offset_32bit(cyg_uint32   *p,
         if (base) {
             diag_printf("%08X: ", (CYG_ADDRWORD)p - (CYG_ADDRWORD)base);
         } else {
-            diag_printf("%08X: ", p);
+            diag_printf("%08X: ", (CYG_ADDRWORD)p);
         }
         for (i = 0;  i < 4;  i++) {
             if (i < (int)s/4) {
@@ -688,7 +688,7 @@ diag_dump_buf_with_offset_16bit(cyg_uint16   *p,
         if (base) {
             diag_printf("%08X: ", (CYG_ADDRWORD)p - (CYG_ADDRWORD)base);
         } else {
-            diag_printf("%08X: ", p);
+            diag_printf("%08X: ", (CYG_ADDRWORD)p);
         }
         for (i = 0;  i < 8;  i++) {
             if (i < (int)s/2) {
