@@ -1,3 +1,8 @@
+2001-02-27  Chris Morrow  <cmorrow@YottaYotta.com>
+
+	* src/vectors.S (hal_zero_bss): Oops, allow for bss being multiple
+	of block size. And add delay slot.
+
 2001-02-26  Chris Morrow  <cmorrow@YottaYotta.com>
 
 	* src/vectors.S (hal_zero_bss): Implemented in assembler for speed.

@@ -803,12 +803,18 @@ FUNC_START(hal_zero_bss)
         bne             a3,a0,2b                # to next store
         nop
 
+        # If length is a multiple of block size then we
+        # are done and need to skip the byte loop
+        beq		a1,a0,3f
+        nop
+	
         # finish 1 byte at a time
 1:      sb      zero,0(a0)              # zero memory
         addiu   a0,a0,1                 # next addr
         bne     a0,a1,1b                # to next store
         nop
-        jr      ra
+3:      jr      ra
+        nop
 FUNC_END(hal_zero_bss)
 
         
