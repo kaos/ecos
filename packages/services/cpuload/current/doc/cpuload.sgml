@@ -52,7 +52,7 @@ thread priorities. No other threads must be using these priorities
 while the function is being used. The kernel scheduler must be started
 and not disabled. The function takes 100ms to complete during which
 time no other threads will be run.
-<para>
+</para>
 </sect2>
 <sect2 id="services-cpuload-api-cyg-cpuload-create">
 <title>cyg_cpuload_create</title>
