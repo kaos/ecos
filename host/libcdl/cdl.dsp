@@ -121,12 +121,10 @@ OutDir=V:\cdl\Release
 InputPath=.\ChangeLog
 
 BuildCmds= \
-	if not exist $(IntDir)\tools\configtool\standalone\common\Makefile sh -c "ECOSHOST=`echo ""puts [ file attributes [ pwd ] -shortname ]"" | cygtclsh80`/.. ; echo ""ECOSHOST=$ECOSHOST"" ; echo ""TCLHOME=$TCLHOME"" ; mkdir -p `cygpath -u ""$(IntDir)""` ; cd `cygpath -u ""$(IntDir)""` && CC=cl CXX=cl `cygpath -u ""$ECOSHOST""`/configure --prefix=`cygpath -u ""$(OutDir)""` --with-tcl=`cygpath -u ""$TCLHOME""` --with-tcl_version=82" \
+	if not exist $(IntDir)\tools\configtool\standalone\common\Makefile sh -c "ECOSHOST=`echo ""puts [ file attributes [ pwd ] -shortname ]"" | tclsh`/.. ; echo ""ECOSHOST=$ECOSHOST"" ; echo ""TCLHOME=$TCLHOME"" ; mkdir -p `cygpath -u ""$(IntDir)""` ; cd `cygpath -u ""$(IntDir)""` && CC=cl CXX=cl `cygpath -u ""$ECOSHOST""`/configure --prefix=`cygpath -u ""$(OutDir)""` --with-tcl=`cygpath -u ""$TCLHOME""` --with-tcl_version=82" \
 	cd $(IntDir) \
 	v: \
-	cd infra && make --unix install \
-	cd ..\libcdl && make --unix install \
-	cd .. \
+	make --unix install \
 	
 
 "$(OutDir)\lib\cdl.lib" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -144,12 +142,10 @@ OutDir=V:\cdl\Debug
 InputPath=.\ChangeLog
 
 BuildCmds= \
-	if not exist $(IntDir)\tools\configtool\standalone\common\Makefile sh -c "ECOSHOST=`echo ""puts [ file attributes [ pwd ] -shortname ]"" | cygtclsh80`/.. ; echo ""ECOSHOST=$ECOSHOST"" ; echo ""TCLHOME=$TCLHOME"" ; mkdir -p `cygpath -u ""$(IntDir)""` ; cd `cygpath -u ""$(IntDir)""` && CC=cl CXX=cl `cygpath -u ""$ECOSHOST""`/configure --prefix=`cygpath -u ""$(OutDir)""` --with-tcl=`cygpath -u ""$TCLHOME""` --with-tcl_version=82d --enable-debug --enable-maintainer-mode" \
+	if not exist $(IntDir)\tools\configtool\standalone\common\Makefile sh -c "ECOSHOST=`echo ""puts [ file attributes [ pwd ] -shortname ]"" | tclsh`/.. ; echo ""ECOSHOST=$ECOSHOST"" ; echo ""TCLHOME=$TCLHOME"" ; mkdir -p `cygpath -u ""$(IntDir)""` ; cd `cygpath -u ""$(IntDir)""` && CC=cl CXX=cl `cygpath -u ""$ECOSHOST""`/configure --prefix=`cygpath -u ""$(OutDir)""` --with-tcl=`cygpath -u ""$TCLHOME""` --with-tcl_version=82d --enable-debug --enable-maintainer-mode" \
 	cd $(IntDir) \
 	v: \
-	cd infra && make --unix install \
-	cd ..\libcdl && make --unix install \
-	cd .. \
+	make --unix install \
 	
 
 "$(OutDir)\lib\cdl.lib" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -167,12 +163,10 @@ OutDir=v:\cdl\Debug
 InputPath=.\ChangeLog
 
 BuildCmds= \
-	if not exist $(IntDir)\tools\configtool\standalone\common\Makefile sh -c "ECOSHOST=`echo ""puts [ file attributes [ pwd ] -shortname ]"" | cygtclsh80`/.. ; echo ""ECOSHOST=$ECOSHOST"" ; echo ""TCLHOME=$TCLHOME"" ; mkdir -p `cygpath -u ""$(IntDir)""` ; cd `cygpath -u ""$(IntDir)""` && CC=cl CXX=cl `cygpath -u ""$ECOSHOST""`/configure --prefix=`cygpath -u ""$(OutDir)""` --with-tcl=`cygpath -u ""$TCLHOME""` --with-tcl_version=82 --enable-debug --enable-maintainer-mode" \
+	if not exist $(IntDir)\tools\configtool\standalone\common\Makefile sh -c "ECOSHOST=`echo ""puts [ file attributes [ pwd ] -shortname ]"" | tclsh`/.. ; echo ""ECOSHOST=$ECOSHOST"" ; echo ""TCLHOME=$TCLHOME"" ; mkdir -p `cygpath -u ""$(IntDir)""` ; cd `cygpath -u ""$(IntDir)""` && CC=cl CXX=cl `cygpath -u ""$ECOSHOST""`/configure --prefix=`cygpath -u ""$(OutDir)""` --with-tcl=`cygpath -u ""$TCLHOME""` --with-tcl_version=82d --enable-debug --enable-maintainer-mode" \
 	cd $(IntDir) \
 	v: \
-	cd infra && make --unix install \
-	cd ..\libcdl && make --unix install \
-	cd .. \
+	make --unix install \
 	
 
 "$(OutDir)\lib\cdl.lib" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -191,12 +185,10 @@ InputPath=.\ChangeLog
 
 BuildCmds= \
 	echo $(PATH) \
-	if not exist $(IntDir)\tools\configtool\standalone\common\Makefile sh -c "ECOSHOST=`echo ""puts [ file attributes [ pwd ] -shortname ]"" | cygtclsh80`/.. ; echo ""ECOSHOST=$ECOSHOST"" ; echo ""TCLHOME=$TCLHOME"" ; mkdir -p `cygpath -u ""$(IntDir)""` ; cd `cygpath -u ""$(IntDir)""` && CC=cl CXX=cl `cygpath -u ""$ECOSHOST""`/configure --prefix=`cygpath -u ""$(OutDir)""` --with-tcl=`cygpath -u ""$TCLHOME""` --with-tcl_version=82" \
+	if not exist $(IntDir)\tools\configtool\standalone\common\Makefile sh -c "ECOSHOST=`echo ""puts [ file attributes [ pwd ] -shortname ]"" | tclsh`/.. ; echo ""ECOSHOST=$ECOSHOST"" ; echo ""TCLHOME=$TCLHOME"" ; mkdir -p `cygpath -u ""$(IntDir)""` ; cd `cygpath -u ""$(IntDir)""` && CC=cl CXX=cl `cygpath -u ""$ECOSHOST""`/configure --prefix=`cygpath -u ""$(OutDir)""` --with-tcl=`cygpath -u ""$TCLHOME""` --with-tcl_version=82" \
 	cd $(IntDir) \
 	v: \
-	cd infra && make --unix install \
-	cd ..\libcdl && make --unix install \
-	cd .. \
+	make --unix install \
 	
 
 "$(OutDir)\lib\cdl.lib" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
