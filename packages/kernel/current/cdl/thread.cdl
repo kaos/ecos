@@ -165,7 +165,7 @@ cdl_component CYGVAR_KERNEL_THREADS_DATA {
     cdl_option CYGNUM_KERNEL_THREADS_DATA_MAX {
 	display            "Number of words of per-thread data"
 	flavor             data
-	legal_values       4 to 31
+	legal_values       4 to 32
 	default_value      6
 	description "
         It is possible for the kernel to support per-thread data, in
@@ -176,7 +176,7 @@ cdl_component CYGVAR_KERNEL_THREADS_DATA {
         number of words of per-thread data that the kernel will
         allow. In the current implementation a bitmask is used to identify
         used per-thread data slots and so the maximum legal value must
-        remain 31."
+        remain 32."
     }
 
     cdl_component CYGNUM_KERNEL_THREADS_DATA_ALL {

@@ -1055,7 +1055,9 @@ Cyg_Thread::deliver_exception(
 
 // Set the data map bits for each free slot in the data array.
 cyg_ucount32 Cyg_Thread::thread_data_map = (~CYGNUM_KERNEL_THREADS_DATA_ALL) &
-                                           ((1<<CYGNUM_KERNEL_THREADS_DATA_MAX)-1);
+             (1+(((cyg_ucount32)(1<<(CYGNUM_KERNEL_THREADS_DATA_MAX-1))-1)<<1));
+// the second expression is equivalent to ((1<<CYGNUM_KERNEL_THREADS_DATA_MAX)-1);
+// but avoids overflow. The compiler will compile to a constant just fine.
 
 Cyg_Thread::cyg_data_index
 Cyg_Thread::new_data_index()

@@ -1,3 +1,8 @@
+2003-01-30  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/common/thread.cxx: Fix potential warning and overflow with
+	CYGNUM_KERNEL_THREADS_DATA_MAX == 32.
+
 2003-01-28  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/common/kapi.cxx (cyg_thread_get_next): Be quite zealous about
