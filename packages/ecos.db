@@ -242,6 +242,16 @@ package CYGPKG_DEVS_FLASH_MIPS_VRC437X {
 	   on the VRC437X platform."
 }
 
+package CYGPKG_DEVS_FLASH_MIPS_REFIDT334 {
+	alias 		{ "MIPS IDT 79RC32334 reference platform flash support" flash_refidt334 }
+	directory	devs/flash/mips/idt79s334a
+	script		flash_mips_refidt334.cdl
+	hardware
+        description "
+           This package contains hardware support for flash memory
+	   on the IDT MIPS 334a reference platform."
+}
+
 package CYGPKG_DEVS_FLASH_SH_HS7729PCI {
         alias           { "Hitachi SH/HS7729PCI FLASH memory support" flash_hs7729pci }
         directory       devs/flash/sh/hs7729pci
@@ -954,6 +964,16 @@ package CYGPKG_IO_SERIAL_MIPS_UPD985XX {
     description       "NEC MIPS uPD985xx serial device drivers"
 }
 
+package CYGPKG_IO_SERIAL_MIPS_IDT79S334A {
+    alias             { "MIPS IDT 79RC32334 reference platform serial device drivers"
+                        devs_serial_idt79s334a idt79s334a_serial_driver
+                        devs_serial_mips_idt79s334 mips_idt79s334a_serial_driver }
+    hardware
+    directory	      devs/serial/mips/idt79s334a
+    script	      ser_mipsidt_334a.cdl	
+    description       "IDT 334a reference platform serial device drivers"
+}
+
 package CYGPKG_IO_SERIAL_H8300_SCI {
     alias             { "H8/300 SCI serial device drivers"
                         devs_serial_h8300h_sci sci_serial_driver }
@@ -1412,6 +1432,15 @@ package CYGPKG_DEVS_ETH_MIPS_UPD985XX {
 	directory	devs/eth/mips/upd985xx
 	script		upd985xx_eth_drivers.cdl
 	description     "NEC uPD985xx ethernet driver"
+}
+
+package CYGPKG_DEVS_ETH_MIPS_REFIDT334 {
+        alias           { "MIPS IDT 79RC32334 reference platform ethernet driver"
+                           devs_eth_refidt334 refidt334_eth_driver }
+        hardware
+        directory       devs/eth/mips/idt79s334a
+        script          refidt334_eth_drivers.cdl
+        description     "Ethernet driver for MIPS IDT 79RC32334 reference platform."
 }
 
 # Not sure whether this should be "hardware"; if so, it should be mentioned
@@ -2896,6 +2925,27 @@ package CYGPKG_HAL_MIPS_UPD985XX {
            select a specific target platform HAL package."
 }
 
+package CYGPKG_HAL_MIPS_IDT32334 {
+	alias		{ "MIPS IDT32334 variant HAL" hal_idt32334 idt32334_hal idt32334_arch_hal }
+	directory	hal/mips/idt32334
+	script		hal_mips_idt32334.cdl
+	hardware
+        description "
+           The IDT32334 variant HAL package provides generic support
+           for platforms based on this variant. It is also necessary to
+           select a specific target platform HAL package."
+}
+
+package CYGPKG_HAL_MIPS_IDT32334_REFIDT334 {
+	alias		{ "MIPS IDT79S334A reference platform" hal_idt32334_refIDT334 idt32334_refIDT334_hal }
+	directory	hal/mips/idt79s334a
+	script		hal_mips_idt32334_refidt334.cdl
+	hardware
+	description "
+           The REFIDT334 HAL package should be used when targetting the
+           actual hardware."
+}
+
 # --------------------------------------------------------------------------
 # MN10300 packages
 
@@ -4198,6 +4248,23 @@ target vrc4375 {
         description "
            The vrc4375 target provides the packages needed to run
            eCos on an NEC VRC4375 board."
+}
+
+target refidt334 {
+        alias		{ "MIPS IDT79S334A reference platform with IDT79RC32334 procesor" idt32334 }
+	packages        { CYGPKG_HAL_MIPS
+                          CYGPKG_HAL_MIPS_IDT32334
+                          CYGPKG_HAL_MIPS_IDT32334_REFIDT334
+                          CYGPKG_IO_PCI
+			  CYGPKG_DEVS_ETH_INTEL_I82559
+			  CYGPKG_DEVS_ETH_MIPS_REFIDT334
+			  CYGPKG_DEVS_FLASH_MIPS_REFIDT334
+			  CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
+			  CYGPKG_IO_SERIAL_MIPS_IDT79S334A
+        }
+        description "
+           The refidt334 target provides the packages needed to run
+           eCos on a MIPS IDT IDT79S334A reference board."
 }
 
 # --------------------------------------------------------------------------

@@ -1,3 +1,9 @@
+2003-02-14  Tim Michals  <t.michals@attbi.com>
+2003-02-14  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* ecos.db: Add IDT MIPS IDT79RC32334 reference platform port,
+	including Flash, ethernet, and serial drivers.
+
 2003-02-12  Patrick Doyle  <wpd@delcomsys.com>
 
 	* ecos.db: Added ethernet packages to OMAP Innovator port.
