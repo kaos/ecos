@@ -1,3 +1,11 @@
+2003-03-07  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/appsettings.cpp: Look in the right place for the
+	eCos repository location under Linux.
+
+	* standalone/wxwin/admindlg.cpp: Allow addition of EPKs with no
+	pkgadd.txt since this file should be optional.
+
 2003-02-25  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/makefile.gnu: No need to specify -L /usr/lib for

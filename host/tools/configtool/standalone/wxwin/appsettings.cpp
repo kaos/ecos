@@ -533,7 +533,7 @@ bool ecSettings::LoadConfig()
     
     // Load current repository from eCos Configuration Tool/Paths/RepositoryDir
     {
-        wxConfig eCosConfig(wxT("eCos Configuration Tool"), wxEmptyString, wxEmptyString, wxEmptyString, wxCONFIG_USE_GLOBAL_FILE|wxCONFIG_USE_LOCAL_FILE);
+        wxConfig eCosConfig(wxGetApp().GetSettings().GetConfigAppName(), wxEmptyString, wxEmptyString, wxEmptyString, wxCONFIG_USE_GLOBAL_FILE|wxCONFIG_USE_LOCAL_FILE);
         wxConfigPathChanger path(& config, wxT("/Repository/"));
         
         //if (!eCosConfig.Read(wxT("Folder"), & m_strRepository))

@@ -255,7 +255,7 @@ void ecAdminDialog::OnAdd(wxCommandEvent& event)
                 // read the license file
                 
                 wxFile fileLicenseFile;
-                if (fileLicenseFile.Open (strLicenseFile, wxFile::read))
+                if (fileLicenseFile.Exists (strLicenseFile) && fileLicenseFile.Open (strLicenseFile, wxFile::read))
                 {
                     //TRACE (_T("License file found at %s\n"), strLicenseFile);
                     const off_t dwLicenseLength = fileLicenseFile.Length ();
