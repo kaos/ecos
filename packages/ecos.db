@@ -410,7 +410,7 @@ package CYGPKG_IO_SERIAL_ARM_AT91 {
     hardware
     directory	      devs/serial/arm/at91
     script	      ser_arm_at91.cdl	
-    description       "Atmel AT91 evaulation board (EB40) serial drivers."
+    description       "Atmel AT91 evaluation board (EB40) serial drivers."
 }
 
 package CYGPKG_IO_SERIAL_POWERPC_COGENT {
@@ -1167,7 +1167,7 @@ package CYGPKG_HAL_ARM_SA11X0_ASSABET {
 	hardware
         description "
         The ASSABET HAL package provides the support needed to run
-        eCos on a Intel StrongARM SA1110 evaulation board (assabet)."
+        eCos on a Intel StrongARM SA1110 evaluation board (assabet)."
 }
 
 package CYGPKG_HAL_ARM_SA11X0_IPAQ {
@@ -1226,7 +1226,7 @@ package CYGPKG_HAL_ARM_SA11X0_BRUTUS {
 	hardware
         description "
         The BRUTUS HAL package provides the support needed to run
-        eCos on a Intel StrongARM SA1110 evaulation board (brutus)."
+        eCos on a Intel StrongARM SA1110 evaluation board (brutus)."
 }
 
 package CYGPKG_HAL_ARM_SA11X0_SA1100MM {
@@ -1858,7 +1858,7 @@ Evaluator7T board (aka AEB-2)."
 }
 
 target at91 {
-	alias { "Atmel evaulation board (EB40)" eb40 }
+	alias { "Atmel evaluation board (EB40)" eb40 }
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_AT91
                    CYGPKG_DEVS_FLASH_AT91

@@ -78,7 +78,10 @@ name:
 # :     8(%esp) :     address of sp save location of current thread
 #
 # %eax, %ecx, and %edx are ours to abuse.
-        
+
+        .extern hal_interrupts_enabled
+        .extern hal_enable_interrupts
+                        
 FUNC_START(hal_thread_switch_context)
         movl    4(%esp),%eax            # next context ptr
         movl    8(%esp),%edx            # this context ptr
@@ -98,7 +101,11 @@ FUNC_START(hal_thread_switch_context)
         movl    %ebx,i386reg_ebx(%esp)
         movl    %esi,i386reg_esi(%esp)
         movl    %edi,i386reg_edi(%esp)
-        
+
+        # And interrupt state
+        movl    hal_interrupts_enabled,%eax
+        movl    %eax,i386reg_interrupts(%esp)
+                
         # Store the context ptr
         movl    %esp,(%edx)
 
@@ -126,6 +133,21 @@ FUNC_START(hal_thread_load_context)
         movl    i386reg_edi(%eax),%edi
         movl    i386reg_esp(%eax),%esp
 
+        # And see what needs to happen about interrupts
+        movl    i386reg_interrupts(%eax),%eax
+        cmpl    hal_interrupts_enabled,%eax
+        je      interrupts_ok
+
+        # The saved interrupt state differs from the current one.
+        # If interrupts are supposed to be enabled then invoke
+        # hal_enable_interrupts. That can be done as a tail call.
+        # If interrupts are supposed to be disabled then just
+        # update the global variable.
+        cmpl    $0,%eax
+        jne     hal_enable_interrupts
+        movl    %eax,hal_interrupts_enabled
+                
+interrupts_ok:          
         ret
 
 
@@ -157,8 +179,8 @@ FUNC_START(hal_setjmp)
 
         # Stack and PC
         movl    %esp,CYGARC_JMP_BUF_SP*4(%eax)
-        movl    0(%esp),%ebx
-        movl    %ebx,CYGARC_JMP_BUF_PC*4(%eax)
+        movl    0(%esp),%edx
+        movl    %edx,CYGARC_JMP_BUF_PC*4(%eax)
 
         # Return 0
         xor     %eax,%eax

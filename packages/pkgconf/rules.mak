@@ -23,7 +23,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -91,7 +91,7 @@ else
 	@mkdir -p $(dir $@)
 endif
 	$(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -Wp,-MD,$(@:.d=.tmp) -o $(@:.d=.o) $<
-	@sed -e '/^ *\\/d' -e "s#.*: #$@: #" $(@:.o.d=.tmp) > $@
+	@sed -e '/^ *\\/d' -e "s#.*: #$@: #" $(@:.d=.tmp) > $@
 	@rm $(@:.d=.tmp)
 
 %.d : %.cxx
@@ -101,7 +101,7 @@ else
 	@mkdir -p $(dir $@)
 endif
 	$(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -Wp,-MD,$(@:.d=.tmp) -o $(@:.d=.o) $<
-	@sed -e '/^ *\\/d' -e "s#.*: #$@: #" $(@:.o.d=.tmp) > $@
+	@sed -e '/^ *\\/d' -e "s#.*: #$@: #" $(@:.d=.tmp) > $@
 	@rm $(@:.d=.tmp)
 
 %.d : %.S
@@ -111,7 +111,7 @@ else
 	@mkdir -p $(dir $@)
 endif	
 	$(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -Wp,-MD,$(@:.d=.tmp) -o $(@:.d=.o) $<
-	@sed -e '/^ *\\/d' -e "s#.*: #$@: #" $(@:.o.d=.tmp) > $@
+	@sed -e '/^ *\\/d' -e "s#.*: #$@: #" $(@:.d=.tmp) > $@
 	@rm $(@:.d=.tmp)
 
 # rule to generate a test executable from object code

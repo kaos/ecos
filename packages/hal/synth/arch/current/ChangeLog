@@ -1,3 +1,10 @@
+2001-08-02  Bart Veer  <bartv@redhat.com>
+
+	* include/hal_intr.h:
+	Note a subtle interaction between the interrupt handling
+	and the context switch handling, which are in the
+	architectural and variant HAL packages respectively.
+
 2001-04-27  Bart Veer  <bartv@redhat.com>
 
 	* All files

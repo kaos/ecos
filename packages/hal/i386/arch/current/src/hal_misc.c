@@ -46,6 +46,7 @@
 
 #include <cyg/infra/cyg_type.h>
 #include <cyg/infra/cyg_ass.h>
+#include <cyg/infra/diag.h>      // diag_printf
 
 #include <cyg/hal/hal_arch.h>
 

@@ -61,7 +61,8 @@
 	.equ	i386reg_ebx,		12
 	.equ	i386reg_esi,		16
 	.equ	i386reg_edi,		20
-	.equ	i386reg_context_size, 	24
+	.equ	i386reg_interrupts,	24
+	.equ	i386reg_context_size, 	28
 
 #------------------------------------------------------------------------------
 # end of arch.inc

@@ -1,3 +1,17 @@
+2001-08-01  Hugo Tyson  <hmt@redhat.com>
+
+	* src/vectors.S (restore_state): (see the change below 2001-07-03)
+	Make the code to keep SR IM bits from the ISR conditional on a CDL
+	interface so that it is selected on a per-platform or variant basis.
+
+	* cdl/hal_mips.cdl (CYGINT_HAL_MIPS_INTERRUPT_RETURN_KEEP_SR_IM):
+	New interface to control conditional code.
+
+	* include/hal_intr.h (HAL_ENABLE_INTERRUPTS): Make this (et al)
+	conditional on CYGHWR_HAL_INTERRUPT_ENABLE_DISABLE_RESTORE_DEFINED
+	so that the variant HAL can define these insead, in the usual
+	manner.
+
 2001-07-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/redboot_linux_exec.c: Adjust below change by getting baud

@@ -1,3 +1,8 @@
+2001-07-31  Mark Salter  <msalter@redhat.com>
+
+	* include/pcmb_io.h: Add IDE I/O macros.
+	* cdl/hal_i386_pcmb.cdl: Now implements CYGINT_HAL_PLF_IF_IDE.
+
 2001-07-18  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/pcmb_intr.h: Fill in interrupt table descriptions.

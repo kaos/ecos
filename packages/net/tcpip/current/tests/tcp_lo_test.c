@@ -95,6 +95,12 @@ void server(void)
     if (s_source < 0) {
         pexit("stream socket");
     }   
+    if (setsockopt(s_source, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one))) {
+        pexit("setsockopt /source/ SO_REUSEADDR");
+    }
+    if (setsockopt(s_source, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one))) {
+        pexit("setsockopt /source/ SO_REUSEPORT");
+    }
     memset(&local, 0, sizeof(local));
     local.sin_family = AF_INET;
     local.sin_len = sizeof(local);
@@ -102,12 +108,6 @@ void server(void)
     local.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
     if(bind(s_source, (struct sockaddr *) &local, sizeof(local)) < 0) {
         pexit("bind /source/ error");
-    }
-    if (setsockopt(s_source, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one))) {
-        pexit("setsockopt /source/ SO_REUSEADDR");
-    }
-    if (setsockopt(s_source, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one))) {
-        pexit("setsockopt /source/ SO_REUSEPORT");
     }
     listen(s_source, SOMAXCONN);
    

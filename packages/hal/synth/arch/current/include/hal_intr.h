@@ -106,7 +106,10 @@
 // higher priority. There is one exception: the sequence
 // disable_interrupts() followed by restore_interrupts() occurs
 // frequently and is worth some inlining.
-// macro.
+//
+// Note: some of the details such as the existence of a global
+// variable hal_interrupts_enabled are known to the context switch
+// code in the variant HAL.
 typedef cyg_bool_t          CYG_INTERRUPT_STATE;
 externC volatile cyg_bool_t hal_interrupts_enabled;
 externC void                hal_enable_interrupts(void);

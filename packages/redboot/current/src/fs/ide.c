@@ -81,14 +81,28 @@ __wait_for_drq(int ctlr)
     return 0;
 }
 
-static void
+static int
 ide_reset(int ctlr)
 {
+    cyg_uint8 status;
+    int delay;
+
     HAL_IDE_WRITE_CONTROL(ctlr, 6);	// polled mode, reset asserted
     CYGACC_CALL_IF_DELAY_US(5000);
     HAL_IDE_WRITE_CONTROL(ctlr, 2);	// polled mode, reset cleared
     CYGACC_CALL_IF_DELAY_US((cyg_uint32)50000);
-    __wait_for_ready(ctlr);
+
+    // wait 30 seconds max for not busy
+    for (delay = 0; delay < 300; ++delay) {
+	CYGACC_CALL_IF_DELAY_US((cyg_uint32)100000);
+	HAL_IDE_READ_UINT8(ctlr, IDE_REG_STATUS, status);
+	// bail out early on bogus status
+	if ((status & (IDE_STAT_BSY|IDE_STAT_DRDY)) == (IDE_STAT_BSY|IDE_STAT_DRDY))
+	    break;
+	if (!(status & IDE_STAT_BSY))
+	    return 1;
+    }
+    return 0;
 }
 
 static int
@@ -98,16 +112,10 @@ ide_ident(int ctlr, int dev, int is_packet_dev, cyg_uint16 *buf)
 
     HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_DEVICE, dev << 4);
     HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_COMMAND, is_packet_dev ? 0xA1 : 0xEC);
+    CYGACC_CALL_IF_DELAY_US((cyg_uint32)50000);
 
-    if (!__wait_for_drq(ctlr)) {
-	cyg_uint8 status;
-
-	HAL_IDE_READ_UINT8(ctlr, IDE_REG_STATUS, status);
-
-	printf("%s: NO DRQ for ide%d, device %d. status[%02x]\n",
-	       __FUNCTION__, ctlr, dev, status);
+    if (!__wait_for_drq(ctlr))
 	return 0;
-    }
 
     for (i = 0; i < (SECTOR_SIZE / sizeof(cyg_uint16)); i++, buf++)
 	HAL_IDE_READ_UINT16(ctlr, IDE_REG_DATA, *buf);
@@ -157,13 +165,14 @@ ide_read(struct disk *d,
 static void
 ide_init(void)
 {
-    cyg_uint32 buf[SECTOR_SIZE/sizeof(cyg_uint32)];
-    cyg_uint32 u32;
+    cyg_uint32 buf[SECTOR_SIZE/sizeof(cyg_uint32)], u32;
     cyg_uint16 u16;
-    cyg_uint8  sig[2][4];
+    cyg_uint8 u8;
     int i, j;
     disk_t disk;
     struct ide_priv *priv;
+
+#define DEV_INIT_VAL ((j << 4) | 0xA0)
 
     HAL_IDE_INIT();
 
@@ -173,19 +182,8 @@ ide_init(void)
     for (i = 0; i < HAL_IDE_NUM_CONTROLLERS; i++) {
 
 	// soft reset the devices on this controller
-	ide_reset(i);
-
-	// save off signature values for later
-	HAL_IDE_WRITE_UINT8(i, IDE_REG_DEVICE, (0 << 4));
-	HAL_IDE_READ_UINT8(i, IDE_REG_COUNT,  sig[0][0]);
-	HAL_IDE_READ_UINT8(i, IDE_REG_LBALOW, sig[0][1]);
-	HAL_IDE_READ_UINT8(i, IDE_REG_LBAMID, sig[0][2]);
-	HAL_IDE_READ_UINT8(i, IDE_REG_LBAHI,  sig[0][3]);
-	HAL_IDE_WRITE_UINT8(i, IDE_REG_DEVICE, (1 << 4));
-	HAL_IDE_READ_UINT8(i, IDE_REG_COUNT,  sig[1][0]);
-	HAL_IDE_READ_UINT8(i, IDE_REG_LBALOW, sig[1][1]);
-	HAL_IDE_READ_UINT8(i, IDE_REG_LBAMID, sig[1][2]);
-	HAL_IDE_READ_UINT8(i, IDE_REG_LBAHI,  sig[1][3]);
+	if (!ide_reset(i))
+	    continue;
 
 	// 2 devices per controller
 	for (j = 0; j < 2; j++, priv++) {
@@ -193,23 +191,30 @@ ide_init(void)
 	    priv->controller = i;
 	    priv->drive = j;
 	    priv->flags = 0;
-
-	    if (sig[j][0] != 0x01 || sig[j][1] != 0x01)
-		continue;
-
-	    if (!(sig[j][2] == 0x00 && sig[j][3] == 0x00) &&
-		!(sig[j][2] == 0x14 && sig[j][3] == 0xeb))
+	    
+	    // This is reminiscent of a memory test. We write a value
+	    // to a certain location (device register), then write a
+	    // different value somewhere else so that the first value
+	    // is not hanging on the bus, then we read back the first
+	    // value to see if the write was succesful.
+	    //
+	    HAL_IDE_WRITE_UINT8(i, IDE_REG_DEVICE, DEV_INIT_VAL);
+	    HAL_IDE_WRITE_UINT8(i, IDE_REG_FEATURES, 0);
+	    CYGACC_CALL_IF_DELAY_US(50000);
+	    HAL_IDE_READ_UINT8(i, IDE_REG_DEVICE, u8);
+	    if (u8 != DEV_INIT_VAL)
 		continue;
 
 	    // device present
+	    priv->flags |= IDE_DEV_PRESENT;
 
-	    priv->flags = IDE_DEV_PRESENT;
-
-	    if (sig[j][2] == 0x14 && sig[j][3] == 0xeb)
-		priv->flags |= IDE_DEV_PACKET;
-
-	    if (ide_ident(i, j, priv->flags & IDE_DEV_PACKET, (cyg_uint16 *)buf) <= 0)
-		continue;
+	    if (ide_ident(i, j, 0, (cyg_uint16 *)buf) <= 0) {
+		if (ide_ident(i, j, 1, (cyg_uint16 *)buf) <= 0) {
+		    priv->flags = 0;
+		    continue;  // can't identify device
+		} else
+		    priv->flags |= IDE_DEV_PACKET;
+	    }
     
 	    memset(&disk, 0, sizeof(disk));
 	    disk.funs = &ide_funs;

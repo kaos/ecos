@@ -90,6 +90,12 @@ server_test(struct bootp *bp)
     if (s < 0) {
         pexit("stream socket");
     }
+    if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one))) {
+        pexit("setsockopt SO_REUSEADDR");
+    }
+    if (setsockopt(s, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one))) {
+        pexit("setsockopt SO_REUSEPORT");
+    }
     memset(&local, 0, sizeof(local));
     local.sin_family = AF_INET;
     local.sin_len = sizeof(local);
@@ -97,12 +103,6 @@ server_test(struct bootp *bp)
     local.sin_addr.s_addr = INADDR_ANY;
     if(bind(s, (struct sockaddr *) &local, sizeof(local)) < 0) {
         pexit("bind error");
-    }
-    if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one))) {
-        pexit("setsockopt SO_REUSEADDR");
-    }
-    if (setsockopt(s, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one))) {
-        pexit("setsockopt SO_REUSEPORT");
     }
     listen(s, SOMAXCONN);
     while (true) {

@@ -1,3 +1,12 @@
+2001-08-02  Bart Veer  <bartv@redhat.com>
+
+	* src/context.S, include/arch.inc, include/var_arch.h:
+	Update thread context manipulation code to do the
+	right thing with respect to interrupt state.
+
+	* src/context.S (hal_setjmp):
+	 Fixed bug in hal_setjmp() that corrupted EBX.
+
 2001-04-27  Bart Veer  <bartv@redhat.com>
 
 	* All files

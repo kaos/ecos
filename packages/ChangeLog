@@ -1,3 +1,8 @@
+2001-07-31  Bart Veer  <bartv@redhat.com>
+
+	* pkgconf/rules.mak:
+	Fix header file dependencies for testcases.
+
 2001-07-30  Jesper Skov  <jskov@redhat.com>
 
 	* ecos.db: Added Dreamcast platform HAL, contributed by Takeshi

@@ -60,6 +60,7 @@ typedef struct
     cyg_uint32  ebx;
     cyg_uint32  esi;
     cyg_uint32  edi;
+    cyg_bool    interrupts;             // Are interrupts enabled for this thread?
 } HAL_SavedRegisters;
 
 
@@ -117,6 +118,7 @@ CYG_MACRO_END
     _regs_->ebp    = (CYG_WORD)(_id_);                                    \
     _regs_->esi    = (CYG_WORD)(_id_);                                    \
     _regs_->edi    = (CYG_WORD)(_id_);                                    \
+    _regs_->interrupts = true;                                            \
     (_sparg_)      = (CYG_ADDRESS) _regs_;                                \
     CYG_MACRO_END
 

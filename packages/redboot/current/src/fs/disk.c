@@ -92,24 +92,30 @@ find_dos_partitions(disk_t *d, cyg_uint8 *mbr)
 
 #if CYGNUM_REDBOOT_MAX_PARTITIONS > 4
     {
-	cyg_uint32 buf[SECTOR_SIZE/sizeof(cyg_uint32)];
+	cyg_uint32 buf[SECTOR_SIZE/sizeof(cyg_uint32)], xoffset;
 	cyg_uint16 magic;
-	int j, nextp;
+	int nextp;
 
 	// Go back through and find extended partitions
 	for (i = 0, nextp = 4; i < 4 && nextp < CYGNUM_REDBOOT_MAX_PARTITIONS; i++) {
 	    if (d->partitions[i].systype == SYSTYPE_EXTENDED) {
-		// read partition boot record (same format as mbr)
-		if (DISK_READ(d, d->partitions[i].start_sector, buf, 1) <= 0)
-		    break;
+		// sector offsets in partition tables are relative to start
+		// of extended partition.
+		xoffset = d->partitions[i].start_sector;
+		for ( ; nextp < CYGNUM_REDBOOT_MAX_PARTITIONS; ++nextp) {
 
-		magic = *(cyg_uint16 *)((char *)buf + MBR_MAGIC_OFFSET);
-		if (SWAB_LE16(magic) != MBR_MAGIC)
-		    continue;
+		    // read partition boot record (same format as mbr except
+		    // there should only be 2 entries max: a normal partition
+		    // and another extended partition
+		    if (DISK_READ(d, xoffset, buf, 1) <= 0)
+			break;
 
-		p = (struct mbr_partition *)(buf + MBR_PTABLE_OFFSET);
+		    magic = *(cyg_uint16 *)((char *)buf + MBR_MAGIC_OFFSET);
+		    if (SWAB_LE16(magic) != MBR_MAGIC)
+			break;
 
-		for (j = 0; i < 4 && nextp < CYGNUM_REDBOOT_MAX_PARTITIONS; j++, nextp++) {
+		    p = (struct mbr_partition *)((char *)buf + MBR_PTABLE_OFFSET);
+
 		    // Have to use memcpy because of alignment
 		    memcpy(&tmp, p->start_sect, 4);
 		    s = SWAB_LE32(tmp);
@@ -119,18 +125,28 @@ find_dos_partitions(disk_t *d, cyg_uint8 *mbr)
 		    if (s && n) {
 			++found;
 			d->partitions[nextp].disk = d;
-			d->partitions[nextp].start_sector = s + d->partitions[i].start_sector;
+			d->partitions[nextp].start_sector = s + xoffset;
 			d->partitions[nextp].nr_sectors = n;
 			d->partitions[nextp].systype = p->sys_ind;
 			d->partitions[nextp].bootflag = p->boot_ind;
 		    }
 		    ++p;
+
+		    memcpy(&tmp, p->start_sect, 4);
+		    s = SWAB_LE32(tmp);
+		    memcpy(&tmp, p->nr_sects, 4);
+		    n = SWAB_LE32(tmp);
+
+		    // more extended partitions?
+		    if (p->sys_ind != SYSTYPE_EXTENDED || !s || !n)
+			break;
+
+		    xoffset += s;
 		}
 	    }
 	}
     }
 #endif
-
     return found;
 }
 

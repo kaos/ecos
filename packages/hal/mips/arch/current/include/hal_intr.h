@@ -208,6 +208,7 @@ typedef cyg_uint32 CYG_INTERRUPT_STATE;
 // Beware of nops in this code. They fill delay slots and avoid CP0 hazards
 // that might otherwise cause following code to run in the wrong state or
 // cause a resource conflict.
+#ifndef CYGHWR_HAL_INTERRUPT_ENABLE_DISABLE_RESTORE_DEFINED
 
 #define HAL_DISABLE_INTERRUPTS(_old_)           \
 {                                               \
@@ -261,6 +262,8 @@ typedef cyg_uint32 CYG_INTERRUPT_STATE;
         : "$8"                                  \
         );                                      \
 }
+
+#endif // CYGHWR_HAL_INTERRUPT_ENABLE_DISABLE_RESTORE_DEFINED
 
 //--------------------------------------------------------------------------
 // Routine to execute DSRs using separate interrupt stack

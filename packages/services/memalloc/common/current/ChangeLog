@@ -1,3 +1,20 @@
+2001-08-01  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/sepmetaimpl.inl: Define check_free_memdq and
+	check_alloced_memdq as inlines.
+
+	* cdl/memalloc.cdl: Add new allocator supporting separate metadata,
+	and the associated config options, and build sepmeta.cxx and tests.
+	Build heapgeninc.tcl with macros that work with both gcc2 and gcc3.
+	Ditto for heaps.o.
+	Add CYGBLD_MEMALLOC_MALLOC_EXTERNAL_HEAP_H to allow external entities
+	to define the heap.
+	* src/malloc.cxx: Include CYGBLD_MEMALLOC_MALLOC_EXTERNAL_HEAP_H if
+	defined instead of default heap definition.
+	* include/sepmeta.hxx, include/sepmetaimpl.hxx, include/sepmetaimpl.inl,
+	src/sepmeta.cxx, tests/sepmeta1.cxx, tests/sepmeta2.cxx:
+	New files for seperated metadata allocator.
+
 2001-07-18  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/heapgen.tcl: Use constructor priority of CYG_INIT_MEMALLOC

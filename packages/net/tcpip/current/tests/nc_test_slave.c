@@ -324,15 +324,6 @@ do_tcp_test(int s1, struct nc_request *req, struct sockaddr_in *master)
             pexit("datagram socket");
         }
 
-        memset((char *) &test_chan_slave, 0, sizeof(test_chan_slave));
-        test_chan_slave.sin_family = AF_INET;
-        test_chan_slave.sin_addr.s_addr = htonl(INADDR_ANY);
-        test_chan_slave.sin_port = htons(ntohl(req->slave_port));
-    
-        if (bind(s, (struct sockaddr *) &test_chan_slave, sizeof(test_chan_slave)) < 0) {
-            perror("bind");
-            close(s);
-        }
         if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one))) {
             perror("setsockopt SO_REUSEADDR");
             return;
@@ -343,6 +334,15 @@ do_tcp_test(int s1, struct nc_request *req, struct sockaddr_in *master)
             return;
         }
 #endif
+        memset((char *) &test_chan_slave, 0, sizeof(test_chan_slave));
+        test_chan_slave.sin_family = AF_INET;
+        test_chan_slave.sin_addr.s_addr = htonl(INADDR_ANY);
+        test_chan_slave.sin_port = htons(ntohl(req->slave_port));
+    
+        if (bind(s, (struct sockaddr *) &test_chan_slave, sizeof(test_chan_slave)) < 0) {
+            perror("bind");
+            close(s);
+        }
         listen(s, SOMAXCONN);
         slave_tcp_port = s;
     }

@@ -115,6 +115,20 @@ cdl_package CYGPKG_HAL_MIPS {
 	been compiled as 32-bit.  Do not use this for real 64-bit code."
     }
 
+    cdl_interface CYGINT_HAL_MIPS_INTERRUPT_RETURN_KEEP_SR_IM {
+	display  "Interrupt return keeps interrupt mask bits in SR"
+	description "
+	On some MIPS variants, the status register (SR) contains a number
+	of interrupt mask bits (IM\[0..7\]).  Default behavior is to restore
+	the whole SR over an interrupt.  This means that if the ISR
+	modifies those bits, the change is lost when the interrupt returns.
+	If this interface is implemented, changes made to the SR IM bits by
+	an ISR will instead be preserved.
+	Variants whose HAL_INTERRUPT_MASK() routines (et al) modify the IM
+	bits in the SR should implement this interface to get the necessary
+	preserving behavior."
+    }
+
     cdl_component CYGPKG_REDBOOT_MIPS_OPTIONS {
         display       "Redboot for MIPS options"
         flavor        none

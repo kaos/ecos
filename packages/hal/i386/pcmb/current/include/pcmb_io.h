@@ -26,7 +26,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -191,6 +191,37 @@ CYG_MACRO_END
 #define PC_WRITE_SCREEN_32( __pos, __val )      \
     PC_WRITE_SCREEN_16( __pos, (__val)>>16 );   \
     PC_WRITE_SCREEN_16( (__pos)+4, __val );
+
+//-----------------------------------------------------------------------------
+// IDE interface macros
+//
+#define HAL_IDE_NUM_CONTROLLERS 2
+
+// Initialize the IDE controller(s).
+#define HAL_IDE_INIT()
+
+#define __PCMB_IDE_PRI_CMD   0x1f0
+#define __PCMB_IDE_PRI_CTL   0x3f4
+#define __PCMB_IDE_SEC_CMD   0x170
+#define __PCMB_IDE_SEC_CTL   0x374
+
+#define __CMD_ADDR(__n) ((__n) ? __PCMB_IDE_SEC_CMD : __PCMB_IDE_PRI_CMD)
+#define __CTL_ADDR(__n) ((__n) ? __PCMB_IDE_SEC_CTL : __PCMB_IDE_PRI_CTL)
+
+#define HAL_IDE_READ_UINT8( __ctlr, __regno, __val )  \
+    HAL_READ_UINT8(__CMD_ADDR(__ctlr) + (__regno), (__val))
+#define HAL_IDE_READ_UINT16( __ctlr, __regno, __val )  \
+    HAL_READ_UINT16(__CMD_ADDR(__ctlr) + (__regno), (__val))
+#define HAL_IDE_READ_ALTSTATUS( __ctlr, __val )  \
+    HAL_READ_UINT16(__CTL_ADDR(__ctlr), (__val))
+
+#define HAL_IDE_WRITE_UINT8( __ctlr, __regno, __val )  \
+    HAL_WRITE_UINT8(__CMD_ADDR(__ctlr) + (__regno), (__val))
+#define HAL_IDE_WRITE_UINT16( __ctlr, __regno, __val )  \
+    HAL_WRITE_UINT16(__CMD_ADDR(__ctlr) + (__regno), (__val))
+#define HAL_IDE_WRITE_CONTROL( __ctlr, __val )  \
+    HAL_WRITE_UINT16(__CTL_ADDR(__ctlr), (__val))
+
 
 //-----------------------------------------------------------------------------
 // end of pcmb_io.h

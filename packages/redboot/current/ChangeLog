@@ -1,3 +1,14 @@
+2001-08-01  Mark Salter  <msalter@redhat.com>
+
+	* src/fs/ide.c (ide_reset): Check for bogus status and timeout. Add
+	return value to indicate success.
+	(ide_init): Check ide_reset() return value.
+
+2001-07-31  Mark Salter  <msalter@redhat.com>
+
+	* src/fs/disk.c (find_dos_partitions): Fix extended partitions.
+	* src/fs/ide.c (ide_init): Rework the test for device presence.
+
 2001-07-27  Gary Thomas  <gthomas@redhat.com>
 
 	* src/load.c (load_srec_image, do_load): 

@@ -58,7 +58,11 @@
 #include <cyg/infra/cyg_ass.h>     // Common assertion support
 #include <string.h>                // For memset() and memmove()
 #include <stdlib.h>                // header for this file
-#include <pkgconf/heaps.hxx>       // heap pools information
+#ifdef CYGBLD_MEMALLOC_MALLOC_EXTERNAL_HEAP_H
+# include CYGBLD_MEMALLOC_MALLOC_EXTERNAL_HEAP_H
+#else
+# include <pkgconf/heaps.hxx>       // heap pools information
+#endif
 #include CYGBLD_MEMALLOC_MALLOC_IMPLEMENTATION_HEADER
 
 // STATIC VARIABLES

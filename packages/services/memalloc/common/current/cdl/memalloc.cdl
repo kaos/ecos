@@ -46,7 +46,8 @@ cdl_package CYGPKG_MEMALLOC {
         dynamic memory allocators, including the ISO standard malloc
         interface. It also contains some sample implementations."
     include_dir   cyg/memalloc
-    compile       dlmalloc.cxx kapi.cxx malloc.cxx memfixed.cxx memvar.cxx
+    compile       dlmalloc.cxx kapi.cxx malloc.cxx memfixed.cxx memvar.cxx \
+                  sepmeta.cxx
 
 # ====================================================================
 
@@ -175,6 +176,26 @@ cdl_package CYGPKG_MEMALLOC {
                     are faster in some circumstances."
            }
         }
+
+        cdl_component CYGPKG_MEMALLOC_ALLOCATOR_SEPMETA {
+            display       "Variable block allocator with separate metadata"
+            flavor        none
+            no_define
+            description   "
+                This component contains configuration options related to the 
+                variable block memory allocator with separate metadata."
+
+            cdl_option CYGSEM_MEMALLOC_ALLOCATOR_SEPMETA_THREADAWARE {
+                display        "Make thread safe"
+                active_if      CYGPKG_KERNEL
+                default_value  1
+                description    "
+                    With this option enabled, this allocator will be
+                    made thread-safe. Additionally allocation functions
+                    are made available that allow a thread to wait
+                    until memory is available."
+            }
+        }
     }
 
     cdl_option CYGFUN_MEMALLOC_KAPI {
@@ -218,9 +239,7 @@ cdl_package CYGPKG_MEMALLOC {
         make -priority 50 {
             heapgeninc.tcl : <PACKAGE>/src/heapgen.cpp
             $(CC) $(CFLAGS) $(INCLUDE_PATH) -Wp,-MD,heapgen.tmp -E $< -o $@
-            @echo $@ ':' $< '\' > $(notdir $@).deps
-            @tail +2 heapgen.tmp >> $(notdir $@).deps
-            @echo >> $(notdir $@).deps
+            @sed -e '/^ *\\/d' -e "s#.*: #$@: #" heapgen.tmp > $(notdir $@).deps
             @rm heapgen.tmp
         }
     
@@ -239,10 +258,19 @@ cdl_package CYGPKG_MEMALLOC {
         make_object {
             heaps.o.d : heaps.cxx
             $(CC) $(CFLAGS) $(INCLUDE_PATH) -Wp,-MD,heaps.tmp -c -o $(OBJECT_PREFIX)_$(notdir $(@:.o.d=.o)) $<
-            @echo $@ ':' $< '\' > $@
-            @tail +2 heaps.tmp >> $@
-            @echo >> $@
+            @sed -e '/^ *\\/d' -e "s#.*: #$@: #" heaps.tmp > $@
             @rm heaps.tmp
+        }
+
+        cdl_component CYGBLD_MEMALLOC_MALLOC_EXTERNAL_HEAP_H {
+            display       "Use external heap definition"
+            flavor        booldata
+            default_value 0
+            description   "This option allows other components in the
+                           system to override the default system
+                           provision of heap memory pools. This should
+                           be set to a header which provides the equivalent
+                           definitions to <pkgconf/heaps.hxx>."
         }
 
         cdl_interface CYGINT_MEMALLOC_MALLOC_ALLOCATORS {
@@ -343,7 +371,7 @@ cdl_package CYGPKG_MEMALLOC {
             display "Tests"
             flavor  data
             no_define
-            calculated { "tests/dlmalloc1 tests/dlmalloc2 tests/heaptest tests/kmemfix1 tests/kmemvar1 tests/malloc1 tests/malloc2 tests/malloc3 tests/malloc4 tests/memfix1 tests/memfix2 tests/memvar1 tests/memvar2 tests/realloc" }
+            calculated { "tests/dlmalloc1 tests/dlmalloc2 tests/heaptest tests/kmemfix1 tests/kmemvar1 tests/malloc1 tests/malloc2 tests/malloc3 tests/malloc4 tests/memfix1 tests/memfix2 tests/memvar1 tests/memvar2 tests/realloc tests/sepmeta1 tests/sepmeta2" }
             description   "
                 This option specifies the set of tests for this package."
         }

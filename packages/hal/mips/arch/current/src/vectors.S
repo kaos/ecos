@@ -722,7 +722,8 @@ restore_state:
 #endif
 
 	lw	k1,mipsreg_sr(sp)		# K1 = saved SR
-#ifndef CYG_HAL_MIPS_R3900	
+
+#if 0 < CYGINT_HAL_MIPS_INTERRUPT_RETURN_KEEP_SR_IM
 	# Keep the current settings of the IM[7:0] bits within the status
 	# register.  These may be used as interrupt masks, so if an ISR or
 	# DSR masks interrupts they must be preserved.
@@ -736,7 +737,7 @@ restore_state:
 	nop
 	andi	k0,k0,0xff00			# preserve interrupt set
 	or	k1,k1,k0			# insert into "saved SR"
-#endif
+#endif // 0 < CYGINT_HAL_MIPS_INTERRUPT_RETURN_KEEP_SR_IM
 	lva	k0,mipsreg_pc(sp)		# K0 = return PC
 	lsp	sp,sp				# load SP
 

@@ -1,3 +1,13 @@
+2001-08-02  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* tests/linux_echo.c (echo_test): Set socket options before bind.
+	* tests/nc_test_slave.c (do_tcp_test): Ditto.
+	* tests/server_test.c (server_test): Ditto.
+	* tests/tcp_echo.c (echo_test): Ditto.
+	* tests/tcp_lo_test.c (server): Ditto.
+	* tests/tcp_sink.c (sink_test): Ditto.
+	* tests/tcp_source.c (source_test): Ditto.
+
 2001-07-27  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/sys/select.h: Renamed to....

@@ -196,15 +196,15 @@ source_test(char *echo_node, int load)
     if (s_source < 0) {
         pexit("stream socket");
     }
+    if (setsockopt(s_source, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one))) {
+        pexit("setsockopt /source/ SO_REUSEADDR");
+    }
     memset(&local, 0, sizeof(local));
     local.sin_family = AF_INET;
     local.sin_port = INADDR_ANY;
     local.sin_addr.s_addr = INADDR_ANY;
     if(bind(s_source, (struct sockaddr *) &local, sizeof(local)) < 0) {
         pexit("bind /source/ error");
-    }
-    if (setsockopt(s_source, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one))) {
-        pexit("setsockopt /source/ SO_REUSEADDR");
     }
 
     if (connect(s_source, (struct sockaddr *)&slave, sizeof(slave)) < 0) { 
