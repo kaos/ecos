@@ -1,3 +1,9 @@
+2004-04-14  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/double/ieee754-core/e_cosh.c (__ieee754_cosh): 
+	* src/double/ieee754-core/e_sinh.c (__ieee754_sinh): Make use of
+	the CYG_LIBM_LO() macro which does not generate a compiler warning.
+
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/libm.cdl: Fix doc link.
