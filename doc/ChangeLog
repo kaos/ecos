@@ -1,3 +1,8 @@
+2003-01-30  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* sgml/doclist: Added snmp-manpages.sgml 
+	* sgml/makemakefile: Extend the kludge to include snmp-manpages.sgml
+	
 2003-01-22  John Dallaway  <jld@ecoscentric.com>
 
 	* sgml/makemakefile: Allow eCos package version to be specified
