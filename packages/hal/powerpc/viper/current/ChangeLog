@@ -1,3 +1,8 @@
+2003-10-06  Gary Thomas  <gary@mlbassoc.com>
+
+	* misc/viper2_866T.ecm: 
+	* misc/viper2_860T.ecm: New file(s) describing new board variants.
+
 2003-09-21  Gary Thomas  <gary@mlbassoc.com>
 
 	* misc/redboot_ROMRAM.ecm:  Adjust for changes in RedBoot
