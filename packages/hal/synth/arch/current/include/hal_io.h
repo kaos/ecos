@@ -349,25 +349,25 @@ struct cyg_hal_sys_itimerval {
 /* open/fcntl flags */
 
 #define CYG_HAL_SYS_O_RDONLY        0
-#define CYG_HAL_SYS_O_WRONLY        1
-#define CYG_HAL_SYS_O_RDWR          2
-#define CYG_HAL_SYS_O_CREAT       100
-#define CYG_HAL_SYS_O_EXCL        200
-#define CYG_HAL_SYS_O_NOCTTY      400
-#define CYG_HAL_SYS_O_TRUNC      1000
-#define CYG_HAL_SYS_O_APPEND     2000
-#define CYG_HAL_SYS_O_NONBLOCK   4000
+#define CYG_HAL_SYS_O_WRONLY       01
+#define CYG_HAL_SYS_O_RDWR         02
+#define CYG_HAL_SYS_O_CREAT      0100
+#define CYG_HAL_SYS_O_EXCL       0200
+#define CYG_HAL_SYS_O_NOCTTY     0400
+#define CYG_HAL_SYS_O_TRUNC     01000
+#define CYG_HAL_SYS_O_APPEND    02000
+#define CYG_HAL_SYS_O_NONBLOCK  04000
 #define CYG_HAL_SYS_O_NDELAY     CYG_HAL_SYS_O_NONBLOCK
-#define CYG_HAL_SYS_O_SYNC      10000
+#define CYG_HAL_SYS_O_SYNC     010000
 #define CYG_HAL_SYS_O_FSYNC     CYG_HAL_SYS_O_SYNC
-#define CYG_HAL_SYS_O_ASYNC     20000
+#define CYG_HAL_SYS_O_ASYNC    020000
 
 /* open mode flags */
-#define CYG_HAL_SYS_S_IRUSR 400
+#define CYG_HAL_SYS_S_IRUSR 0400
 #define CYG_HAL_SYS_S_IREAD CYG_HAL_SYS_S_IRUSR
-#define CYG_HAL_SYS_S_IWUSR 200
+#define CYG_HAL_SYS_S_IWUSR 0200
 #define CYG_HAL_SYS_S_IWRITE CYG_HAL_SYS_S_IWUSR
-#define CYG_HAL_SYS_S_IXUSR 100
+#define CYG_HAL_SYS_S_IXUSR 0100
 #define CYG_HAL_SYS_S_IEXEC CYG_HAL_SYS_S_IXUSR
 #define CYG_HAL_SYS_S_IRWXU \
   (CYG_HAL_SYS_S_IREAD|CYG_HAL_SYS_S_IWRITE|CYG_HAL_SYS_S_IEXEC)
