@@ -7,17 +7,13 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: compr_rubin.c,v 1.16 2002/01/25 01:49:26 dwmw2 Exp $
+ * $Id: compr_rubin.c,v 1.17 2002/05/20 14:56:37 dwmw2 Exp $
  *
  */
 
  
-#ifdef __ECOS
-#include "jffs2port.h"
-#else
 #include <linux/string.h>
 #include <linux/types.h>
-#endif
 #include "compr_rubin.h"
 #include "histo_mips.h"
 

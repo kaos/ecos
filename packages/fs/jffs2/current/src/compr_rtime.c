@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: compr_rtime.c,v 1.8 2002/01/25 01:49:26 dwmw2 Exp $
+ * $Id: compr_rtime.c,v 1.9 2002/05/20 14:56:37 dwmw2 Exp $
  *
  *
  * Very simple lz77-ish encoder.
@@ -21,14 +21,10 @@
  *
  */
 
-#ifdef __ECOS
-#include "jffs2port.h"
-#else
 #include <linux/kernel.h>
 #include <linux/types.h>
 #include <linux/errno.h>
 #include <linux/string.h> 
-#endif
 
 /* _compress returns the compressed size, -1 if bigger */
 int jffs2_rtime_compress(unsigned char *data_in, unsigned char *cpage_out, 

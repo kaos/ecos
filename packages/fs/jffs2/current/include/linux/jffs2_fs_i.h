@@ -1,22 +1,12 @@
-/* $Id: jffs2_fs_i.h,v 1.10 2002/01/09 11:44:23 dwmw2 Exp $ */
+/* $Id: jffs2_fs_i.h,v 1.16 2003/01/09 14:03:21 dwmw2 Exp $ */
 
 #ifndef _JFFS2_FS_I
 #define _JFFS2_FS_I
 
-/* Include the pipe_inode_info at the beginning so that we can still
-   use the storage space in the inode when we have a pipe inode.
-   This sucks.
-*/
-
-#undef THISSUCKS /* Only for 2.2 */
-#ifdef THISSUCKS
-#include <linux/pipe_fs_i.h>
-#endif
+#include <linux/version.h>
+#include <linux/rbtree.h>
 
 struct jffs2_inode_info {
-#ifdef THISSUCKS
-        struct pipe_inode_info pipecrap;
-#endif
 	/* We need an internal semaphore similar to inode->i_sem.
 	   Unfortunately, we can't used the existing one, because
 	   either the GC would deadlock, or we'd have to release it
@@ -29,7 +19,7 @@ struct jffs2_inode_info {
 	uint32_t highest_version;
 
 	/* List of data fragments which make up the file */
-	struct jffs2_node_frag *fraglist;
+	struct rb_root fragtree;
 
 	/* There may be one datanode which isn't referenced by any of the
 	   above fragments, if it contains a metadata update but no actual
@@ -44,12 +34,13 @@ struct jffs2_inode_info {
 	/* Some stuff we just have to keep in-core at all times, for each inode. */
 	struct jffs2_inode_cache *inocache;
 
-	/* Keep a pointer to the last physical node in the list. We don't 
-	   use the doubly-linked lists because we don't want to increase
-	   the memory usage that much. This is simpler */
-	//	struct jffs2_raw_node_ref *lastnode;
 	uint16_t flags;
 	uint8_t usercompr;
+#if !defined (__ECOS)
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2,5,2)
+	struct inode vfs_inode;
+#endif
+#endif
 };
 
 #endif /* _JFFS2_FS_I */

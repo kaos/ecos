@@ -40,7 +40,7 @@
 # ====================================================================
 ######DESCRIPTIONBEGIN####
 #
-# Author(s):      dominic ostrowski
+# Author(s):      David Woodhouse, Dominic Ostrowski
 # Original data:  ported from JFFS2 by David Woodhouse
 # Contributors:   dominic.ostrowski@3glab.com
 # Date:           2000-08-28
@@ -52,13 +52,12 @@
 cdl_package CYGPKG_FS_JFFS2 {
     display        "JFFS2 filesystem"
     doc            doc/index.html
-    include_dir    cyg/jffs2
+    include_dir    ""
 
     requires       CYGPKG_IO_FILEIO
     requires       CYGPKG_IO_FLASH
     requires       CYGPKG_COMPRESS_ZLIB
     requires       CYGINT_ISO_MALLOC
-    requires       CYGPKG_CRC
 
     requires       CYGPKG_ISOINFRA
     requires       CYGPKG_ERROR
@@ -66,10 +65,12 @@ cdl_package CYGPKG_FS_JFFS2 {
     requires       CYGINT_ISO_ERRNO_CODES
     requires       CYGPKG_IO_FLASH_BLOCK_DEVICE
     requires       CYGPKG_IO_FILEIO_INODE
+    requires       CYGPKG_LINUX_COMPAT
+    requires       CYGPKG_CRC
 
     implements     CYGINT_IO_FILEIO_FS      
 
-    compile        -library=libextras.a jffs2.c
+    compile        -library=libextras.a fs-ecos.c
     compile        build.c scan.c malloc-ecos.c nodelist.c nodemgmt.c readinode.c erase.c dir-ecos.c write.c gc.c read.c compr.c compr_zlib.c compr_rtime.c compr_rubin.c file-ecos.c
 
     cdl_option CYGPKG_FS_JFFS2_CFLAGS_ADD {
@@ -78,7 +79,7 @@ cdl_package CYGPKG_FS_JFFS2 {
 	no_define
 	# We add -D__ECOS to trigger eCos-specific code in places.
 	# We add -Werror because I find it useful.
-	default_value { "-D__ECOS -Werror" }
+	default_value { "-D__ECOS -nostdinc -iwithprefix include -Werror" }
 	description   "
 	    This option modifies the set of compiler flags for
             building the JFFS2 package.
@@ -99,6 +100,31 @@ cdl_package CYGPKG_FS_JFFS2 {
             building the JFFS2 package. These flags are removed from
             the set of global flags if present."
         }
+
+    cdl_option CYGNUM_FS_JFFS2_SECTOR_SIZE {
+       display         "Physical sector size of the flash devices"
+       flavor          data
+       default_value   { 0x10000 }
+       description     "64 KiB for synthetic target."
+    }
+
+    cdl_option CYGNUM_FS_JFFS2_FLASH_SIZE {
+       display         "Amount of flash committed to JFFS2"
+       flavor          data
+       default_value   { 0x100000 }
+       description     "1 MiB (giving 16 sectors, realistic minimum!)"
+    }
+
+    cdl_option CYGNUM_FS_JFFS2_BASE_ADDRESS {
+       display         "Base of the JFFS2 filesystem in memory"
+       flavor          data
+       default_value   { 0x40000000 }
+       description     "Set this value to the base address of the JFFS2
+               filesystem in memory. By coincidence, this matches the
+               address at which the synthetic target will mmap its
+               backing store. Perhaps we should make it work through
+               something other than coincidence?"
+    }
 
     # ----------------------------------------------------------------
     # Tests

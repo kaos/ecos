@@ -7,10 +7,11 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id$
+ * $Id: malloc-ecos.c,v 1.2 2003/01/09 13:53:44 dwmw2 Exp $
  *
  */
 
+#include <linux/kernel.h>
 #include "nodelist.h"
 
 struct jffs2_full_dirent *jffs2_alloc_full_dirent(int namesize)

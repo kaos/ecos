@@ -7,13 +7,13 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * In sync with:
- * $Id: dir.c,v 1.57 2002/01/28 22:25:07 dwmw2 Exp $
+ * $Id: dir-ecos.c,v 1.3 2003/01/22 00:04:13 dwmw2 Exp $
  *
  */
 
+#include <linux/kernel.h>
+#include <linux/crc32.h>
 #include "nodelist.h"
-#include "crc32.h"
 
 /***********************************************************************/
 
@@ -30,7 +30,7 @@ struct inode *jffs2_lookup(struct inode *dir_i, struct qstr *d_name)
 	uint32_t ino = 0;
 	struct inode *inode = NULL;
 
-	D1(printk(KERN_DEBUG "jffs2_lookup()\n"));
+	D1(printk("jffs2_lookup()\n"));
 
 	dir_f = JFFS2_INODE_INFO(dir_i);
 	c = JFFS2_SB_INFO(dir_i->i_sb);
@@ -52,7 +52,7 @@ struct inode *jffs2_lookup(struct inode *dir_i, struct qstr *d_name)
 	if (ino) {
 		inode = iget(dir_i->i_sb, ino);
 		if (!inode) {
-			printk(KERN_WARNING "iget() failed for ino #%u\n", ino);
+			printk("iget() failed for ino #%u\n", ino);
 			return (ERR_PTR(-EIO));
 		}
 	}
@@ -123,7 +123,8 @@ int jffs2_unlink(struct inode *dir_i, struct inode *d_inode, struct qstr *d_name
 
 	ret = jffs2_do_unlink(c, dir_f, d_name->name, 
 			       d_name->len, dead_f);
-	d_inode->i_nlink = dead_f->inocache->nlink;
+	if (dead_f->inocache)
+		d_inode->i_nlink = dead_f->inocache->nlink;
 	return ret;
 }
 /***********************************************************************/
@@ -193,8 +194,8 @@ int jffs2_mkdir (struct inode *dir_i, struct qstr *d_name, int mode, struct inod
 
 	f = JFFS2_INODE_INFO(inode);
 
-	ri->data_crc = 0;
-	ri->node_crc = crc32(0, ri, sizeof(*ri)-8);
+	ri->data_crc = cpu_to_je32(0);
+	ri->node_crc = cpu_to_je32(crc32(0, ri, sizeof(*ri)-8));
 	
 	fn = jffs2_write_dnode(c, f, ri, NULL, 0, phys_ofs, &writtenlen);
 
@@ -240,19 +241,19 @@ int jffs2_mkdir (struct inode *dir_i, struct qstr *d_name, int mode, struct inod
 	dir_f = JFFS2_INODE_INFO(dir_i);
 	down(&dir_f->sem);
 
-	rd->magic = JFFS2_MAGIC_BITMASK;
-	rd->nodetype = JFFS2_NODETYPE_DIRENT;
-	rd->totlen = sizeof(*rd) + namelen;
-	rd->hdr_crc = crc32(0, rd, sizeof(struct jffs2_unknown_node)-4);
+	rd->magic = cpu_to_je16(JFFS2_MAGIC_BITMASK);
+	rd->nodetype = cpu_to_je16(JFFS2_NODETYPE_DIRENT);
+	rd->totlen = cpu_to_je32(sizeof(*rd) + namelen);
+	rd->hdr_crc = cpu_to_je32(crc32(0, rd, sizeof(struct jffs2_unknown_node)-4));
 
-	rd->pino = dir_i->i_ino;
-	rd->version = ++dir_f->highest_version;
-	rd->ino = inode->i_ino;
-	rd->mctime = CURRENT_TIME;
+	rd->pino = cpu_to_je32(dir_i->i_ino);
+	rd->version = cpu_to_je32(++dir_f->highest_version);
+	rd->ino = cpu_to_je32(inode->i_ino);
+	rd->mctime = cpu_to_je32(cyg_timestamp());
 	rd->nsize = namelen;
 	rd->type = DT_DIR;
-	rd->node_crc = crc32(0, rd, sizeof(*rd)-8);
-	rd->name_crc = crc32(0, d_name->name, namelen);
+	rd->node_crc = cpu_to_je32(crc32(0, rd, sizeof(*rd)-8));
+	rd->name_crc = cpu_to_je32(crc32(0, d_name->name, namelen));
 
 	fd = jffs2_write_dirent(c, dir_f, rd, d_name->name, namelen, phys_ofs, &writtenlen);
 	
@@ -293,7 +294,38 @@ int jffs2_rename (struct inode *old_dir_i, struct inode *d_inode, struct qstr *o
 {
 	int ret;
 	struct jffs2_sb_info *c = JFFS2_SB_INFO(old_dir_i->i_sb);
+	struct jffs2_inode_info *victim_f = NULL;
 	uint8_t type;
+
+#if 0 /* FIXME -- this really doesn't belong in individual file systems. 
+	 The fileio code ought to do this for us, or at least part of it */
+	if (new_dentry->d_inode) {
+		if (S_ISDIR(d_inode->i_mode) && 
+		    !S_ISDIR(new_dentry->d_inode->i_mode)) {
+			/* Cannot rename directory over non-directory */
+			return -EINVAL;
+		}
+
+		victim_f = JFFS2_INODE_INFO(new_dentry->d_inode);
+
+		if (S_ISDIR(new_dentry->d_inode->i_mode)) {
+			struct jffs2_full_dirent *fd;
+
+			if (!S_ISDIR(d_inode->i_mode)) {
+				/* Cannot rename non-directory over directory */
+				return -EINVAL;
+			}
+			down(&victim_f->sem);
+			for (fd = victim_f->dents; fd; fd = fd->next) {
+				if (fd->ino) {
+					up(&victim_f->sem);
+					return -ENOTEMPTY;
+				}
+			}
+			up(&victim_f->sem);
+		}
+	}
+#endif
 
 	/* XXX: We probably ought to alloc enough space for
 	   both nodes at the same time. Writing the new link, 
@@ -313,20 +345,30 @@ int jffs2_rename (struct inode *old_dir_i, struct inode *d_inode, struct qstr *o
 	if (ret)
 		return ret;
 
+	if (victim_f) {
+		/* There was a victim. Kill it off nicely */
+		/* Don't oops if the victim was a dirent pointing to an
+		   inode which didn't exist. */
+		if (victim_f->inocache) {
+			down(&victim_f->sem);
+			victim_f->inocache->nlink--;
+			up(&victim_f->sem);
+		}
+	}
+
 	/* Unlink the original */
 	ret = jffs2_do_unlink(c, JFFS2_INODE_INFO(old_dir_i), 
 		      old_d_name->name, old_d_name->len, NULL);
-
-	/* We don't touch inode->i_nlink */
 
 	if (ret) {
 		/* Oh shit. We really ought to make a single node which can do both atomically */
 		struct jffs2_inode_info *f = JFFS2_INODE_INFO(d_inode);
 		down(&f->sem);
-		d_inode->i_nlink = f->inocache->nlink++;
+		if (f->inocache)
+			d_inode->i_nlink = f->inocache->nlink++;
 		up(&f->sem);
 
-               printk(KERN_NOTICE "jffs2_rename(): Link succeeded, unlink failed (err %d). You now have a hard link\n", ret);
+		printk(KERN_NOTICE "jffs2_rename(): Link succeeded, unlink failed (err %d). You now have a hard link\n", ret);
 	}
 	return ret;
 }

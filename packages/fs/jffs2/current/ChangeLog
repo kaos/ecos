@@ -1,3 +1,41 @@
+2003-02-04  Gary Thomas  <gary@mlbassoc.com> on behalf of
+2003-02-04  David Woodhouse <dwmw2@cambridge.redhat.com>	
+
+	* src/write.c: 
+	* src/scan.c: 
+	* src/readinode.c: 
+	* src/read.c: 
+	* src/pushpull.h: 
+	* src/os-ecos.h: 
+	* src/nodemgmt.c: 
+	* src/nodelist.h: 
+	* src/nodelist.c: 
+	* src/malloc-ecos.c: 
+	* src/jffs2port.h: 
+	* src/gc.c: 
+	* src/file-ecos.c: 
+	* src/erase.c: 
+	* src/dir-ecos.c: 
+	* src/compr_zlib.c: 
+	* src/compr_rubin.c: 
+	* src/compr_rtime.c: 
+	* src/compr.c: 
+	* src/build.c: 
+	* cdl/jffs2.cdl: Update to latest public JFFS2 codebase.
+
+	* src/list.h: 
+	* src/jffs2_fs_sb.h: 
+	* src/jffs2_fs_i.h: 
+	* src/jffs2.h: 
+	* src/jffs2.c: 
+	* src/crc32.h: 
+	* src/background.c: Removed/renamed file(s).
+
+	* src/fs-ecos.c: 
+	* include/linux/jffs2_fs_sb.h: 
+	* include/linux/jffs2_fs_i.h: 
+	* include/linux/jffs2.h: New file(s).
+
 2002-12-06  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/jffs2.cdl: Implements the CYGINT_IO_FILEIO_FS interface.

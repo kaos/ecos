@@ -1,24 +1,20 @@
 /*
  * JFFS2 -- Journalling Flash File System, Version 2.
  *
- * Copyright (C) 2001 Red Hat, Inc.
+ * Copyright (C) 2001, 2002 Red Hat, Inc.
  *
  * Created by David Woodhouse <dwmw2@cambridge.redhat.com>
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: pushpull.h,v 1.6 2002/01/25 01:49:26 dwmw2 Exp $
+ * $Id: pushpull.h,v 1.8 2002/05/20 14:56:38 dwmw2 Exp $
  *
  */
 
 #ifndef __PUSHPULL_H__
 #define __PUSHPULL_H__
 
-#ifndef __ECOS
 #include <linux/errno.h>
-#else
-#include <errno.h>
-#endif
 
 struct pushpull {
 	unsigned char *buf;
