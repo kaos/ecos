@@ -308,8 +308,7 @@ cdl_package CYGPKG_HAL {
 
             cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_VERSION {
                 display       "Claim version virtual vectors"
-                default_value { CYGSEM_HAL_VIRTUAL_VECTOR_INIT_WHOLE_TABLE \
-                                || CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DEFAULT }
+                default_value { CYGSEM_HAL_VIRTUAL_VECTOR_INIT_WHOLE_TABLE }
                 description   "
                     This option will cause the version
                     virtual vectors to be claimed."

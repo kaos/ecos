@@ -1,3 +1,8 @@
+2002-12-04  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* cdl/hal.cdl: RAM applications should not claim (reset) version
+	string by default.
+
 2002-12-03  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* src/hal_if.c (hal_if_init): 
