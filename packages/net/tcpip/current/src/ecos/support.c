@@ -602,6 +602,130 @@ cyg_net_init(void)
     _init = true;
 }
 
+// Copyright (C) 2002 Gary Thomas
+
+#include <net/if.h>
+#include <net/route.h>
+#include <net/netdb.h>
+externC void if_indextoname(int indx, char *buf, int len);
+
+typedef void pr_fun(char *fmt, ...);
+
+static void
+_mask(struct sockaddr *sa, char *buf, int _len)
+{
+    char *cp = ((char *)sa) + 4;
+    int len = sa->sa_len - 4;
+    int tot = 0;
+
+    while (len-- > 0) {
+        if (tot) *buf++ = '.';
+        buf += diag_sprintf(buf, "%d", *cp++);
+        tot++;
+    }
+
+    while (tot < 4) {
+        if (tot) *buf++ = '.';
+        buf += diag_sprintf(buf, "%d", 0);
+        tot++;
+    }
+}
+
+static void
+_show_ifp(struct ifnet *ifp, pr_fun *pr)
+{
+    struct ifaddr *ifa;
+    char addr[64], netmask[64], broadcast[64];
+
+    (*pr)("%-8s", ifp->if_xname);
+    TAILQ_FOREACH(ifa, &ifp->if_addrlist, ifa_list) {
+        if (ifa->ifa_addr->sa_family != AF_LINK) {
+            getnameinfo (ifa->ifa_addr, ifa->ifa_addr->sa_len, addr, sizeof(addr), 0, 0, 0);
+            getnameinfo (ifa->ifa_dstaddr, ifa->ifa_dstaddr->sa_len, broadcast, sizeof(broadcast), 0, 0, 0);
+            _mask(ifa->ifa_netmask, netmask, 64);
+            (*pr)("IP: %s, Broadcast: %s, Netmask: %s\n", addr, broadcast, netmask);
+            (*pr)("        ");
+            if ((ifp->if_flags & IFF_UP)) (*pr)("UP ");
+            if ((ifp->if_flags & IFF_BROADCAST)) (*pr)("BROADCAST ");
+            if ((ifp->if_flags & IFF_LOOPBACK)) (*pr)("LOOPBACK ");
+            if ((ifp->if_flags & IFF_RUNNING)) (*pr)("RUNNING ");
+            if ((ifp->if_flags & IFF_PROMISC)) (*pr)("PROMISC ");
+            if ((ifp->if_flags & IFF_MULTICAST)) (*pr)("MULTICAST ");
+            if ((ifp->if_flags & IFF_ALLMULTI)) (*pr)("ALLMULTI ");
+            (*pr)("MTU: %d, Metric: %d\n", ifp->if_mtu, ifp->if_metric);
+            (*pr)("        Rx - Packets: %d, Bytes: %d", ifp->if_data.ifi_ipackets, ifp->if_data.ifi_ibytes);
+            (*pr)(", Tx - Packets: %d, Bytes: %d\n", ifp->if_data.ifi_opackets, ifp->if_data.ifi_obytes);
+        }
+    }
+}
+
+static int
+_dumpentry(struct radix_node *rn, void *vw)
+{
+    struct rtentry *rt = (struct rtentry *)rn;
+    struct sockaddr *dst, *gate, *netmask, *genmask;
+    char addr[32], *cp;
+    pr_fun *pr = (pr_fun *)vw;
+
+    dst = rt_key(rt);
+    gate = rt->rt_gateway;
+    netmask = rt_mask(rt);
+    genmask = rt->rt_genmask;
+    if ((rt->rt_flags & (RTF_UP | RTF_LLINFO)) == RTF_UP) {
+        if (netmask == NULL) {
+            return 0;
+        }
+        _inet_ntop(dst, addr, sizeof(addr));
+        (*pr)("%-15s ", addr);
+        if (gate != NULL) {
+            _inet_ntop(gate, addr, sizeof(addr));
+            (*pr)("%-15s ", addr);
+        } else {
+            (*pr)("%-15s ", " ");
+        }
+        if (netmask != NULL) {
+            _mask(netmask, addr, sizeof(addr));
+            (*pr)("%-15s ", addr);
+        } else {
+            (*pr)("%-15s ", " ");
+        }
+        cp = addr;
+        if ((rt->rt_flags & RTF_UP)) *cp++ = 'U';
+        if ((rt->rt_flags & RTF_GATEWAY)) *cp++ = 'G';
+        if ((rt->rt_flags & RTF_STATIC)) *cp++ = 'S';
+        if ((rt->rt_flags & RTF_DYNAMIC)) *cp++ = 'D';
+        *cp = '\0';
+        (*pr)("%-8s ", addr);  // Flags
+        if_indextoname(rt->rt_ifp->if_index, addr, 64);
+        (*pr)("%-8s ", addr);
+        (*pr)("\n");
+    }
+    return 0;
+}
+
+void
+show_network_tables(pr_fun *pr)
+{
+    int i, error;
+    struct radix_node_head *rnh;
+    struct ifnet *ifp;
+
+    cyg_scheduler_lock();
+    (*pr)("Routing tables\n");
+    (*pr)("Destination     Gateway         Mask            Flags    Interface\n");
+    for (i = 1; i <= AF_MAX; i++) {
+        if ((rnh = rt_tables[i]) != NULL) {
+            error = rnh->rnh_walktree(rnh, _dumpentry, pr);
+        }
+    }
+
+    (*pr)("Interface statistics\n");
+    for (ifp = ifnet.tqh_first; ifp != 0; ifp = ifp->if_list.tqe_next) {
+        _show_ifp(ifp, pr);
+    }
+    cyg_scheduler_unlock();
+}
+
 #endif // CYGPKG_NET_DRIVER_FRAMEWORK
 
 // EOF support.c

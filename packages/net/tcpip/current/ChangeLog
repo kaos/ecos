@@ -1,3 +1,8 @@
+2002-12-03  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* src/ecos/support.c (show_network_tables): New function used
+	to print network information (interface, routing).
+
 2002-05-21  Jesper Skov  <jskov@redhat.com>
 
 	* src/lib/recv.c: Fix warning. socket.h declarations are not

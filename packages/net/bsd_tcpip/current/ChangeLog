@@ -1,3 +1,8 @@
+2002-12-03  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* src/ecos/support.c (show_network_tables): New function to
+	print information about network tables (interfaces, routing).
+
 2002-11-12  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/ecos/timeout.c (callout_reset): Check for finding the
