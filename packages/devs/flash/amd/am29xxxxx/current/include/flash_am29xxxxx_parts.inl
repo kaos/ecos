@@ -80,6 +80,17 @@
 #define _LAST_BOOTBLOCK (-1)
 
 #if CYGNUM_FLASH_WIDTH == 8
+#ifdef CYGHWR_DEVS_FLASH_AMD_AM29F010
+    {   // AM29F010
+        device_id  : FLASHWORD(0x20),
+        block_size : 0x4000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 8,
+        device_size: 0x20000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x20000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : false,
+	    banked     : false
+    },
+#endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29F040B
     {   // AM29F040B
         device_id  : FLASHWORD(0xa4),

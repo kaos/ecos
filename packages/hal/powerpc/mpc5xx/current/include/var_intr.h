@@ -79,8 +79,8 @@ typedef struct t_hal_mpc5xx_arbitration_data {
 externC void 
 hal_mpc5xx_install_arbitration_isr(hal_mpc5xx_arbitration_data *adata);
   
-externC void 
-hal_mpc5xx_remove_arbitration_isr(hal_mpc5xx_arbitration_data *adata);
+externC hal_mpc5xx_arbitration_data *
+hal_mpc5xx_remove_arbitration_isr(cyg_uint32 apriority);
 
 //-----------------------------------------------------------------------------
 // Exception vectors.
@@ -2709,6 +2709,8 @@ externC cyg_uint32 hal_arbitration_isr_pit (CYG_ADDRWORD vector,
                                             CYG_ADDRWORD data);
 externC cyg_uint32 hal_arbitration_isr_rtc (CYG_ADDRWORD vector,
                                             CYG_ADDRWORD data);
+externC cyg_uint32 hal_arbitration_isr_sci (CYG_ADDRWORD vector,
+		                                    CYG_ADDRWORD data);
 
 //-----------------------------------------------------------------------------
 // Symbols used by assembly code

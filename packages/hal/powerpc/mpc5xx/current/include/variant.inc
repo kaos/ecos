@@ -154,6 +154,12 @@
 ##-----------------------------------------------------------------------------
 ## MPC5xx exception state handling
         .macro	hal_variant_save regs
+#ifdef CYGSEM_HAL_ROM_MONITOR
+        ## This is not really a save of this registers. It just clears any pending
+        ## flags so that vwe can be sure that FREEZE will be negated after returning
+        ## from the interrupt. Failing to do can block a number of devices. 
+		mfspr r3, 148;
+#endif
         .endm
 
         .macro	hal_variant_load regs

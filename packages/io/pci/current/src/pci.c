@@ -552,11 +552,13 @@ cyg_pci_find_device( cyg_uint16 vendor, cyg_uint16 device,
 #ifdef CYGPKG_IO_PCI_DEBUG
         diag_printf("... PCI vendor = %x, device = %x\n", v, d);
 #endif
+        diag_printf("... PCI vendor = %x/%x, device = %x/%x\n", v, vendor, d, device);
         if (v != vendor) continue;
 
         // Check that device matches.
         if (d == device) {
             *devid = new_devid;
+            diag_printf("Found it!\n");
             return true;
         }
     }

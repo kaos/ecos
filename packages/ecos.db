@@ -1492,6 +1492,14 @@ package CYGPKG_DEVS_ETH_POWERPC_VIPER {
         description     "Ethernet driver specifics for A&M Viper (MPC8xxT) based boards."
 }
 
+package CYGPKG_DEVS_ETH_POWERPC_EC555 {
+	alias 		{ "Crystal LAN ethernet driver for ec555 boards" ec555_eth_driver }
+	hardware
+	directory	devs/eth/powerpc/ec555
+	script		ec555_eth_drivers.cdl
+    description     "Ethernet driver for Crystal LAN on ec555 board."
+}
+
 package CYGPKG_DEVS_ETH_INTEL_I82559 {
 	alias 		{ "Intel 82559 ethernet driver"
 			   devs_eth_intel_i82559 i82559_eth_driver }
@@ -1852,6 +1860,16 @@ package CYGPKG_DEVICES_WATCHDOG_MN10300_MN10300 {
         description "
            This package provides a watchdog driver implementation for the
            MN10300 chip."
+}
+
+package CYGPKG_DEVICES_WATCHDOG_MPC5xx {
+	alias		{ "Watchdog driver for mpc5xx processor" devices_watchdog_mpc5xx device_watchdog_mpc5xx }
+	directory	devs/watchdog/powerpc/mpc5xx
+	script          watchdog_mpc5xx.cdl
+	hardware
+        description "
+           This package provides a watchdog driver implementation for the
+           mpc5xx processor family."
 }
 
 package CYGPKG_DEVICES_WATCHDOG_SH_SH3 {

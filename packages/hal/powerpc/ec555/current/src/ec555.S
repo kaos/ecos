@@ -56,6 +56,20 @@
 #include <cyg/hal/ppc_regs.h>
 #include <cyg/hal/arch.inc>
 
+#include <pkgconf/system.h>
+#ifdef CYGPKG_DEVS_ETH_POWERPC_EC555
+#include <pkgconf/devs_eth_powerpc_ec555.h>
+#endif
+
+## FIXME
+## The following probably belongs in the variant hal rather than the board specifics ... 
+#ifdef CYGPKG_DEVICES_WATCHDOG_MPC5xx
+#include <pkgconf/devices_watchdog_mpc5xx.h>
+#define CYG_SYPCR 0x0000ff8d | (CYGNUM_DEVICES_WATCHDOG_POWERPC_MPC5XX_RELOAD << 16) | CYGDAT_DEVICES_WATCHDOG_POWERPC_MPC5XX_PRESCALE
+#else
+#define CYG_SYPCR 0x0000ff88
+#endif
+
 #------------------------------------------------------------------------------
                 
         .globl  hal_hardware_init
@@ -63,12 +77,15 @@ hal_hardware_init:
 #if defined(CYGPKG_HAL_POWERPC_EC555) && defined(CYGPKG_HAL_POWERPC_MPC5xx)
         lwi     r3, CYGARC_REG_IMM_BASE             # Base address of control registers
 
+#if defined(CYG_HAL_STARTUP_ROM)
         // Burst enable
         lwi     r0, 0x00002000
         mtspr   560, r0
        
-        // Disable the Watchdog (for now)
-        lwi     r4, 0xffffff88
+        // FIXME
+        // The following probably belongs in the variant hal rather than the board specifics ... 
+        // Disable / enable the Watchdog
+        lwi     r4, CYG_SYPCR
         stw     r4, (CYGARC_REG_IMM_SYPCR-CYGARC_REG_IMM_BASE)(r3)
         lwi     r4, 0x00000000
         stw     r4, (CYGARC_REG_IMM_SIUMCR-CYGARC_REG_IMM_BASE)(r3)
@@ -89,6 +106,7 @@ hal_hardware_init:
         stw     r4, (CYGARC_REG_IMM_PLPRCRK-CYGARC_REG_IMM_BASE)(r3)
         stw     r4, (CYGARC_REG_IMM_RSRK-CYGARC_REG_IMM_BASE)(r3)
 
+        // Either Redboot or BDM will have already done it otherwise
         // Boost the clock to 40MHz
         lwi     r4, 0x03000000
         stw     r4, (CYGARC_REG_IMM_SCCR-CYGARC_REG_IMM_BASE)(r3)
@@ -108,6 +126,28 @@ hal_hardware_init:
         stw     r4, (CYGARC_REG_IMM_BR1-CYGARC_REG_IMM_BASE)(r3)
         lwi     r4, 0xfff00000
         stw     r4, (CYGARC_REG_IMM_OR1-CYGARC_REG_IMM_BASE)(r3)
+#endif
+
+#ifdef CYGPKG_DEVS_ETH_POWERPC_EC555
+
+        lwi     r4, (CYGNUM_DEVS_ETH_POWERPC_EC555_ETH0_BASE & 0xffff0000) | 0x00000803
+#if   (CYGNUM_DEVS_ETH_POWERPC_EC555_ETH0_CS == 2)
+        stw     r4, (CYGARC_REG_IMM_BR2-CYGARC_REG_IMM_BASE)(r3)
+        lwi     r4, 0xffff8e60
+        stw     r4, (CYGARC_REG_IMM_OR2-CYGARC_REG_IMM_BASE)(r3)
+        lwi     r4, 0
+        stw     r4, (CYGARC_REG_IMM_BR3-CYGARC_REG_IMM_BASE)(r3)
+#elif (CYGNUM_DEVS_ETH_POWERPC_EC555_ETH0_CS == 3)
+        stw     r4, (CYGARC_REG_IMM_BR3-CYGARC_REG_IMM_BASE)(r3)
+        lwi     r4, 0xffff8e60
+        stw     r4, (CYGARC_REG_IMM_OR3-CYGARC_REG_IMM_BASE)(r3)
+        lwi     r4, 0
+        stw     r4, (CYGARC_REG_IMM_BR2-CYGARC_REG_IMM_BASE)(r3)
+#else
+#error "Invalid chip select for ethernet card specified"
+#endif
+
+#else
         lwi     r4, 0x00c00000
         stw     r4, (CYGARC_REG_IMM_BR2-CYGARC_REG_IMM_BASE)(r3)
         lwi     r4, 0xffff8000
@@ -116,6 +156,7 @@ hal_hardware_init:
         stw     r4, (CYGARC_REG_IMM_BR3-CYGARC_REG_IMM_BASE)(r3)
         lwi     r4, 0xffff8000
         stw     r4, (CYGARC_REG_IMM_OR3-CYGARC_REG_IMM_BASE)(r3)
+#endif
 
 #if defined(CYGSEM_HAL_POWERPC_MPC5XX_IFLASH_DUAL_MAP)
         lwi     r4, 1
@@ -185,12 +226,6 @@ hal_hardware_init:
         lwi     r4, 0x60000000
         lwi     r5, (CYGARC_REG_IMM_UMCR-CYGARC_REG_IMM_BASE)
         stwx    r4, r3, r5
-
-        // Finally, disable serialization
-        // Motorola claims that failing to do so results in a performance 
-        // penalty of a facor three !!
-        lwi     r0, 0x00000007
-        mtspr   158, r0
 #endif                
         sync
         blr

@@ -1,3 +1,7 @@
+2003-11-05  Bob Koninckx <bob.koninckx@mech.kuleuven.ac.be>
+
+	* src/if_cs8900a.c: Fix handling of odd bytes on big endian machines
+
 2003-04-12  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/if_cs8900a.c (cs8900a_send): Allow for data not being 16-bit

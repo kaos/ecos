@@ -2,7 +2,7 @@
 ##
 ##	variant.S
 ##
-##	POWERPC MPC8xx variant code
+##	POWERPC MPC5xx variant code
 ##
 ##=============================================================================
 #####ECOSGPLCOPYRIGHTBEGIN####
@@ -40,11 +40,11 @@
 ##=============================================================================
 #######DESCRIPTIONBEGIN####
 ##
-## Author(s): 	jskov
-## Contributors:jskov
-## Date:	2000-02-04
-## Purpose:	PowerPC MPC8xx variant code
-## Description:	Variant specific code for PowerPC MPC8xx CPUs.
+## Author(s): 	 Bob Koninckx
+## Contributors: Bob Koninckx
+## Date:	     2000-02-04
+## Purpose:	     PowerPC MPC5xx variant code
+## Description:	 Variant specific code for PowerPC MPC5xx CPUs.
 ##
 ######DESCRIPTIONEND####
 ##

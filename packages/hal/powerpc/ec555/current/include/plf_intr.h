@@ -57,10 +57,20 @@
 //
 //==========================================================================
 
+#include <pkgconf/system.h>
 
 //----------------------------------------------------------------------------
 // Reset.
+#ifdef CYGPKG_IO_WATCHDOG
+#define HAL_PLATFORM_RESET()             \
+  {                                      \
+	  cyg_uint32 old_state;              \
+	  HAL_DISABLE_INTERRUPTS(old_state); \
+	  while(1);                          \
+  }
+#else
 #define HAL_PLATFORM_RESET()             CYG_EMPTY_STATEMENT
+#endif
 
 #define HAL_PLATFORM_RESET_ENTRY 0x00000100
 

@@ -146,12 +146,12 @@ cyg_hal_plf_comms_init(void)
 
 //-----------------------------------------------------------------------------
 typedef struct {
-    cyg_uint16*  base;
-    cyg_int32    msec_timeout;
-    int          siu_vector;
-    int          imb3_vector;
-    unsigned int level;
-    int          baud_rate;
+    cyg_uint16*  base;                // Base address of the register set
+    cyg_int32    msec_timeout;        // How long do we wait
+    int          imb3_vector;         // The vector on the IMB3. No need to worry
+                                      // about SIU levels or vectors, that's the
+                                      // responsibility of the application
+	int          baud_rate;
 } channel_data_t;
 
 //-----------------------------------------------------------------------------
@@ -163,49 +163,50 @@ init_serial_channel(const channel_data_t* __ch_data)
     
     switch(__ch_data->baud_rate)
     {
-      case 300:
+    case 300:
         br = CYG_DEV_SERIAL_RS232_SCxBR_300;
-	break;
-      case 600:
+	    break;
+    case 600:
         br = CYG_DEV_SERIAL_RS232_SCxBR_600;
-	break;
-      case 1200:
+        break;
+    case 1200:
         br = CYG_DEV_SERIAL_RS232_SCxBR_1200;
-	break;
-      case 2400:
+        break;
+    case 2400:
         br = CYG_DEV_SERIAL_RS232_SCxBR_2400;
-	break;
-      case 4800:
+        break;
+    case 4800:
         br = CYG_DEV_SERIAL_RS232_SCxBR_4800;
-	break;
-      case 9600:
+        break;
+    case 9600:
         br = CYG_DEV_SERIAL_RS232_SCxBR_9600;
-	break;
-      case 14400:
+        break;
+    case 14400:
         br = CYG_DEV_SERIAL_RS232_SCxBR_14400;
-	break;
-      case 19200:
+        break;
+    case 19200:
         br = CYG_DEV_SERIAL_RS232_SCxBR_19200;
-	break;
-      case 28800:
+        break;
+    case 28800:
         br = CYG_DEV_SERIAL_RS232_SCxBR_28800;
-	break;
-      case 38400:
+        break;
+    case 38400:
         br = CYG_DEV_SERIAL_RS232_SCxBR_38400;
-	break;
-      case 57600:
+        break;
+    case 57600:
         br = CYG_DEV_SERIAL_RS232_SCxBR_57600;
-	break;
-      case 115200:
+        break;
+    case 115200:
         br = CYG_DEV_SERIAL_RS232_SCxBR_115200;
-	break;
-      default:
-	// Use the default if something unknown is requested
+        break;
+    default:
+        // Use the default if something unknown is requested
         br = CYG_DEV_SERIAL_RS232_SCxBR_38400;
-	break;
+        break;
     }
     
-    // 8-1-No parity
+    // 8-1-No parity, enable transmitter and receiver, leave interrupts
+	// as they are
     HAL_WRITE_UINT16(base+CYG_DEV_SERIAL_RS232_SCCR1, (SCCR1_TE | SCCR1_RE));
        
     // Set baud rate
@@ -271,16 +272,12 @@ cyg_hal_plf_serial_putc(void* __ch_data, cyg_uint8 c)
 // flash ....
 static channel_data_t channels[2] = {
     { (cyg_uint16*)CYG_DEV_SERIAL_BASE_A, 
-      1000, 
-      CYGNUM_HAL_INTERRUPT_SIU_LVL0, 
+      1000,
       CYGNUM_HAL_INTERRUPT_IMB3_SCI0_RX,
-      0,
       CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD },
     { (cyg_uint16*)CYG_DEV_SERIAL_BASE_B, 
       1000, 
-      CYGNUM_HAL_INTERRUPT_SIU_LVL0, 
       CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RX,
-      0,
       CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD }
 };
 
@@ -342,31 +339,31 @@ cyg_hal_plf_serial_control(void *__ch_data, __comm_control_cmd_t __func, ...)
         ret = chan->baud_rate;
         break;
     case __COMMCTL_SETBAUD:
-	{
-	va_list ap;
-	va_start(ap, __func);
+        {
+        va_list ap;
+        va_start(ap, __func);
 	
-	ret = chan->baud_rate;
-	chan->baud_rate = va_arg(ap, cyg_int32);
-	init_serial_channel(chan);
+        ret = chan->baud_rate;
+        chan->baud_rate = va_arg(ap, cyg_int32);
+        init_serial_channel(chan);
 	
-	va_end(ap);
-	}
-	break;
+        va_end(ap);
+        }
+        break;
     case __COMMCTL_IRQ_ENABLE:
-        HAL_INTERRUPT_SET_LEVEL(chan->imb3_vector, chan->level);
-	HAL_INTERRUPT_UNMASK(chan->imb3_vector);
-        HAL_INTERRUPT_UNMASK(chan->siu_vector);
+	    // Just enable the interrupt on the IMB3. The debugged application is
+        // must make sure that the interrupt is properly decoded
+        HAL_INTERRUPT_UNMASK(chan->imb3_vector);
         irq_state = 1;
         break;
     case __COMMCTL_IRQ_DISABLE:
+		// Same remark as above
         ret = irq_state;
         irq_state = 0;
         HAL_INTERRUPT_MASK(chan->imb3_vector);
-	HAL_INTERRUPT_MASK(chan->siu_vector);
         break;
     case __COMMCTL_DBG_ISR_VECTOR:
-        ret = chan->siu_vector;
+        ret = chan->imb3_vector;
         break;
     case __COMMCTL_SET_TIMEOUT:
         {
@@ -378,7 +375,7 @@ cyg_hal_plf_serial_control(void *__ch_data, __comm_control_cmd_t __func, ...)
 
         va_end(ap);
         }        
-	break;
+        break;
     default:
         break;
     }
@@ -412,8 +409,8 @@ cyg_hal_plf_serial_isr(void *__ch_data, int* __ctrlc,
         if(cyg_hal_is_break(&c, 1))
 	    *__ctrlc = 1;
 	
-	HAL_INTERRUPT_ACKNOWLEDGE(((channel_data_t *)__ch_data)->imb3_vector);
-	res = CYG_ISR_HANDLED;
+        HAL_INTERRUPT_ACKNOWLEDGE(((channel_data_t *)__ch_data)->imb3_vector);
+        res = CYG_ISR_HANDLED;
     }
 
     CYGARC_HAL_RESTORE_GP();

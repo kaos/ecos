@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//      io/watchdog/watchdog.cxx
+//      devs/watchdog/powerpc/mpc5xx/watchdog_mpc5xx.cxx
 //
-//      Watchdog common code
+//      Watchdog implementation for MPC5XX
 //
 //==========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
@@ -40,10 +40,12 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    nickg
-// Contributors: nickg
-// Date:         1999-02-18
+// Author(s):    Bob Koninckx
+// Contributors: Bob Koninckx
+// Date:         2003-05-18
 // Purpose:      Watchdog class implementation
+// Description:  Contains an implementation of the Watchdog class for use
+//               with the mpc5xx watchdog timer.
 //
 //####DESCRIPTIONEND####
 //
@@ -53,142 +55,73 @@
 #include <pkgconf/watchdog.h>           // configuration for this package
 
 #include <cyg/infra/cyg_trac.h>         // tracing macros
-#include <cyg/infra/cyg_ass.h>          // assertion macros
 
-#include <cyg/hal/drv_api.h>            // for locking
+#include <cyg/hal/hal_io.h>             // IO register access
+#include <cyg/hal/hal_arch.h>           // Register definitions
 
 #include <cyg/io/watchdog.hxx>          // watchdog API
-#include <cyg/io/watchdog.h>            // watchdog c-api
 
 // -------------------------------------------------------------------------
-// Statics
-
-// A static pointer to the single system defined watchdog device.
-Cyg_Watchdog Cyg_Watchdog::watchdog;
+// MPC5xx SYPCR register bit definitions
+#define MPC5XX_SYPCR_SWTC 0xffff0000
+#define MPC5XX_SYPCR_SWP  0x00000001
+#define MPC5XX_SYPCR_SWRI 0x00000002
+#define MPC5XX_SYPCR_SWE  0x00000004
+#define MPC5XX_SYPCR_SWF  0x00000008
 
 // -------------------------------------------------------------------------
 // Constructor
 
-
-Cyg_Watchdog::Cyg_Watchdog()
+void
+Cyg_Watchdog::init_hw(void)
 {
     CYG_REPORT_FUNCTION();
 
-#ifndef CYGSEM_WATCHDOG_RESETS_ON_TIMEOUT    
-    action_list         = 0;
-#endif
+    cyg_uint32 sypcr;
+	HAL_READ_UINT32(CYGARC_REG_IMM_SYPCR, sypcr);
+    
+    resolution = (sypcr & MPC5XX_SYPCR_SWTC) >> 16;
+	if(sypcr & MPC5XX_SYPCR_SWP)
+	  resolution *= 2048;
 
-    // HW driver initialization. This must set the watchdog resolution.
-    init_hw();
+	// Now we have it in ticks, convert to nanoseconds
+	// This holds for a system clock of 40 Mhz (25 nanosecond ticks) which is normal
+	// for the MPC5xx
+	resolution *= 25;
         
     CYG_REPORT_RETURN();
 }
 
 // -------------------------------------------------------------------------
-// Return reset resolution
-
-cyg_uint64
-Cyg_Watchdog::get_resolution()
-{
-    return resolution;
-}
-
-#ifndef CYGSEM_WATCHDOG_RESETS_ON_TIMEOUT
-// -------------------------------------------------------------------------
-// Trigger the watchdog as if the timer had expired. This should be called
-// from the driver's ISR.
-
+// Start the watchdog running.
+// On powerpc, the watchdog is enabled by default. If the watchdog package
+// is present, board setup does not disable it, so, nothing special to be
+// done here.
 void
-Cyg_Watchdog::trigger()
+Cyg_Watchdog::start(void)
 {
     CYG_REPORT_FUNCTION();
-    
-    cyg_drv_dsr_lock();
-    
-    Cyg_Watchdog_Action *act = action_list;
-
-    while( 0 != act )
-    {
-        act->action( act->data );
-
-        act = act->next;
-    }
-
-    cyg_drv_dsr_unlock();
-
-    CYG_REPORT_RETURN();
-}
-    
-// -------------------------------------------------------------------------
-// Register an action routine that will be called when the timer
-// triggers.
-
-void
-Cyg_Watchdog::install_action( Cyg_Watchdog_Action *action )
-{
-    CYG_REPORT_FUNCTION();
-    
-    cyg_drv_dsr_lock();
-    
-    action->next = action_list;
-    action_list = action;
-
-    cyg_drv_dsr_unlock();
 
     CYG_REPORT_RETURN();
 }
 
 // -------------------------------------------------------------------------
-// Deregister a previously registered action routine.
+// Reset watchdog timer. This needs to be called regularly to prevent
+// the watchdog firing.
 
 void
-Cyg_Watchdog::uninstall_action( Cyg_Watchdog_Action *action )
-{
+Cyg_Watchdog::reset()
+{    
     CYG_REPORT_FUNCTION();
+
+    cyg_uint16 swsr;
+	swsr = 0x556c;
+	HAL_WRITE_UINT16(CYGARC_REG_IMM_SWSR, swsr);
+	swsr = 0xaa39;
+	HAL_WRITE_UINT16(CYGARC_REG_IMM_SWSR, swsr);
     
-    cyg_drv_dsr_lock();
-
-    Cyg_Watchdog_Action **act_ptr = &action_list;    
-
-    while( 0 != *act_ptr )
-    {
-        Cyg_Watchdog_Action *a = *act_ptr;
-
-        if( a == action )
-        {
-            *act_ptr = a->next;
-            break;
-        }
-        act_ptr = &a->next;
-    }
-    
-    cyg_drv_dsr_unlock();
-
     CYG_REPORT_RETURN();
 }
 
-#endif // CYGSEM_WATCHDOG_RESETS_ON_TIMEOUT
-
 // -------------------------------------------------------------------------
-// Implementation of the C-api
-
-externC void
-watchdog_start(void)
-{
-  Cyg_Watchdog::watchdog.start();
-}
-
-externC void
-watchdog_reset(void)
-{
-  Cyg_Watchdog::watchdog.reset();
-}
-
-externC cyg_uint64
-watchdog_get_resolution(void)
-{
-  return Cyg_Watchdog::watchdog.get_resolution();
-}
-
-// -------------------------------------------------------------------------
-// EOF io/watchdog/watchdog.cxx
+// EOF watchdog_mpc5xx.cxx

@@ -82,7 +82,6 @@
 #define CYGARC_REG_CMPH         155
 #define CYGARC_REG_LCTRL1       156
 #define CYGARC_REG_LCTRL2       157
-#define CYGARC_REG_ICTRL        158
 #define CYGARC_REG_BAR          159
 #define CYGARC_REG_MI_GRA       528
 #define CYGARC_REG_L2U_GRA      536
@@ -129,7 +128,6 @@
 # define CMPH               CYGARC_REG_CMPH
 # define LCTRL1             CYGARC_REG_LCTRL1
 # define LCTRL2             CYGARC_REG_LCTRL2
-# define ICTRL              CYGARC_REG_ICTRL
 # define BAR                CYGARC_REG_BAR
 # define MI_GRA             CYGARC_REG_MI_GRA
 # define L2U_GRA            CYGARC_REG_L2U_GRA

@@ -1,17 +1,8 @@
-2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
-	* cdl/ser_powerpc_cme555.cdl: Remove irrelevant doc link.
+2003-05-25  Bob Koninckx  <bob.koninckx@mech.kuleuven.ac.be>
 
-2002-11-11  Bob Koninckx  <bob.koninckx@mech.kuleuven.ac.be>
+	* new package
 
-	* src/cme555_serial_with_ints.c: 
-	interrupt arbiter slightly modified to make GDB CTRL-C work
-
-2002-04-24  Bob Koninckx  <bob.koninckx@mech.kuleuven.ac.be>
-
-	* New package.
-
-//===========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
@@ -44,4 +35,3 @@
 // at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
-//===========================================================================

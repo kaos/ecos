@@ -57,11 +57,25 @@
 extern "C" {
 #endif
 
-#define NUMREGS    71
-
-#define REGSIZE( _x_ ) (((_x_) >= F0 && (_x_) <= F31) ? 8 : 4)
-
 typedef unsigned long target_register_t;
+
+#define NUMREGS    71
+	
+#ifdef CYGHWR_HAL_POWERPC_FPU
+// The PowerPC has floating point registers that are larger than what it
+// can hold in a target_register_t
+#define TARGET_HAS_LARGE_REGISTERS
+
+// PowerPC stub has special needs for register handling because flating point
+// registers are bigger than the rest. Special put_register and get_register
+// are provided
+#define CYGARC_STUB_REGISTER_ACCESS_DEFINED 1
+	
+// extra space needed for floating point registers
+#define HAL_STUB_REGISTERS_SIZE ((sizeof(GDB_Registers) + sizeof(target_register_t) - 1)/sizeof(target_register_t))
+#endif
+	
+#define REGSIZE( _x_ ) (((_x_) >= F0 && (_x_) <= F31) ? 8 : 4)
 
 enum regnames {
     R0, R1, R2, R3, R4, R5, R6, R7, 

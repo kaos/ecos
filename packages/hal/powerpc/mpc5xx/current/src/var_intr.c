@@ -153,6 +153,42 @@ hal_arbitration_isr_rtc (CYG_ADDRWORD vector, CYG_ADDRWORD data)
     return 0;
 }
 
+// Default arbitration ISR for serial interrupts. Although such arbitration
+// belongs in the serial device driver, we require this default implementation
+// for CTRL-C interrupts to be delivered correctly to any running ROM monitor.
+// A device driver that uses more than just receive interrupts may of course
+// provide its own arbiter.
+externC cyg_uint32
+hal_arbitration_isr_sci(CYG_ADDRWORD vector, CYG_ADDRWORD data)
+{
+    cyg_uint32 isr_ret;
+	cyg_uint16 scc_sr;
+	cyg_uint16 scc_cr;
+
+	// Try SCI0
+	HAL_READ_UINT16(CYGARC_REG_IMM_SC1SR, scc_sr);
+	HAL_READ_UINT16(CYGARC_REG_IMM_SCC1R1, scc_cr);
+	if ((scc_sr & CYGARC_REG_IMM_SCxSR_RDRF) && (scc_cr & CYGARC_REG_IMM_SCCxR1_RIE)) {
+	    isr_ret = hal_call_isr(CYGNUM_HAL_INTERRUPT_IMB3_SCI0_RX);
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
+        if (isr_ret & CYG_ISR_HANDLED)
+#endif
+		   return isr_ret;
+	}
+
+	HAL_READ_UINT16(CYGARC_REG_IMM_SC2SR, scc_sr);
+	HAL_READ_UINT16(CYGARC_REG_IMM_SCC2R1, scc_cr);
+	if ((scc_sr & CYGARC_REG_IMM_SCxSR_RDRF) && (scc_cr & CYGARC_REG_IMM_SCCxR1_RIE)) {
+	    isr_ret = hal_call_isr(CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RX);
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
+        if (isr_ret & CYG_ISR_HANDLED)
+#endif
+			return isr_ret;
+	}
+
+	return 0;
+}
+
 // -------------------------------------------------------------------------
 // IMB3 interrupt decoding
 //
@@ -212,36 +248,48 @@ mpc5xx_insert(hal_mpc5xx_arbitration_data * list,
   return (hal_mpc5xx_arbitration_data *)(tmp.reserved);
 }
 
+// This returns either the removed object or NULL if the priority
+// was not found in the list.
+// If a valid pointer is returned, the new start of the list is chained to it.
 static hal_mpc5xx_arbitration_data *
 mpc5xx_remove(hal_mpc5xx_arbitration_data * list,
-              hal_mpc5xx_arbitration_data * data)
+              cyg_uint32 apriority)
 {
-  hal_mpc5xx_arbitration_data    tmp;
+  hal_mpc5xx_arbitration_data   tmp;
+  hal_mpc5xx_arbitration_data   result = 0;
   hal_mpc5xx_arbitration_data * ptmp = &tmp;
   tmp.reserved = list;
 
   while(ptmp->reserved)
   {
-    if(ptmp->reserved == data)
+    if(((hal_mpc5xx_arbitration_data *)(ptmp->reserved))->priority == apriority)
       break;
       
+	// move on
     ptmp = (hal_mpc5xx_arbitration_data *)(ptmp->reserved);
   }
 
+  // When we come here, ptmp is either chained to NULL or to the one we were looking for.
   if(ptmp->reserved)
+  { // remove it
+	result = (hal_mpc5xx_arbitration_data *)(ptmp->reserved);
+	result->reserved = tmp.reserved;
+	
     ptmp->reserved = ((hal_mpc5xx_arbitration_data *)(ptmp->reserved))->reserved;
+  }
 
-  return (hal_mpc5xx_arbitration_data *)(tmp.reserved);
+  return result;
 }
 #endif
 
 externC void 
 hal_mpc5xx_install_arbitration_isr(hal_mpc5xx_arbitration_data * adata)
-{
+{ // Find the SIU vector from the priority
   CYG_ADDRWORD vector = 2*(1 + adata->priority);
+  
   if(vector < CYGNUM_HAL_INTERRUPT_SIU_LVL7)
-  {
-    HAL_INTERRUPT_ATTACH(vector, adata->arbiter, adata->data, 0);
+  { // Store adata in the objects table
+    HAL_INTERRUPT_ATTACH(vector, adata->arbiter, adata->data, adata);
     HAL_INTERRUPT_UNMASK(vector);
   }
   else
@@ -253,31 +301,93 @@ hal_mpc5xx_install_arbitration_isr(hal_mpc5xx_arbitration_data * adata)
     imb3_data_head = mpc5xx_insert(imb3_data_head, adata);
     HAL_INTERRUPT_UNMASK(CYGNUM_HAL_INTERRUPT_SIU_LVL7);
 #else
-    HAL_INTERRUPT_ATTACH(CYGNUM_HAL_INTERRUPT_SIU_LVL7, adata->arbiter, adata->data, 0);
+    HAL_INTERRUPT_ATTACH(CYGNUM_HAL_INTERRUPT_SIU_LVL7, adata->arbiter, adata->data, adata);
     HAL_INTERRUPT_UNMASK(CYGNUM_HAL_INTERRUPT_SIU_LVL7);
 #endif
   }
 }
 
-externC void
-hal_mpc5xx_remove_arbitration_isr(hal_mpc5xx_arbitration_data * adata)
+externC hal_mpc5xx_arbitration_data *
+hal_mpc5xx_remove_arbitration_isr(cyg_uint32 apriority)
 {
+  hal_mpc5xx_arbitration_data * result = 0;
+  
+  // Find the SIU vector from the priority
+  CYG_ADDRWORD vector = 2*(1 + apriority);
+  if(vector < CYGNUM_HAL_INTERRUPT_SIU_LVL7)
+  {
+    result = (hal_mpc5xx_arbitration_data *)(hal_interrupt_objects[vector]);
+	HAL_INTERRUPT_DETACH(vector, hal_interrupt_handlers[vector]);
+  }
+  else
+  {
 #ifdef CYGSEM_HAL_POWERPC_MPC5XX_IMB3_ARBITER  
-  // Prevent anything from coming through while manipulating the list
-  HAL_INTERRUPT_MASK(CYGNUM_HAL_INTERRUPT_SIU_LVL7);
-  imb3_data_head = mpc5xx_remove(imb3_data_head, adata);
-  HAL_INTERRUPT_UNMASK(CYGNUM_HAL_INTERRUPT_SIU_LVL7);
+    // Prevent anything from coming through while manipulating the list
+    HAL_INTERRUPT_MASK(CYGNUM_HAL_INTERRUPT_SIU_LVL7);
+	result = mc5xx_remove(imb3_data_head, apriority);
+	
+	// If something was removed, update the list.
+	if(result) imb3_data_head = result->reserved;
+    HAL_INTERRUPT_UNMASK(CYGNUM_HAL_INTERRUPT_SIU_LVL7);
+#else
+    result = (hal_mpc5xx_arbitration_data *)(hal_interrupt_objects[CYGNUM_HAL_INTERRUPT_SIU_LVL7]);
+	HAL_INTERRUPT_DETACH(CYGNUM_HAL_INTERRUPT_SIU_LVL7, hal_interrupt_handlers[CYGNUM_HAL_INTERRUPT_SIU_LVL7]); 
 #endif
+  }
+
+  return result;
 }
 
 // -------------------------------------------------------------------------
 // Variant specific interrupt setup
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
+     || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
+static hal_mpc5xx_arbitration_data sci_arbiter;
+#endif
+
 externC void
 hal_variant_IRQ_init(void)
 {
+  // Mask off everything. This guarantees that we can safely install a handler on the decrementer
+  // later on
+  HAL_INTERRUPT_MASK(CYGNUM_HAL_INTERRUPT_SIU_IRQ0);
+  HAL_INTERRUPT_MASK(CYGNUM_HAL_INTERRUPT_SIU_IRQ1);
+  HAL_INTERRUPT_MASK(CYGNUM_HAL_INTERRUPT_SIU_IRQ2);
+  HAL_INTERRUPT_MASK(CYGNUM_HAL_INTERRUPT_SIU_IRQ3);
+  HAL_INTERRUPT_MASK(CYGNUM_HAL_INTERRUPT_SIU_IRQ4);
+  HAL_INTERRUPT_MASK(CYGNUM_HAL_INTERRUPT_SIU_IRQ5);
+  HAL_INTERRUPT_MASK(CYGNUM_HAL_INTERRUPT_SIU_IRQ6);
+  HAL_INTERRUPT_MASK(CYGNUM_HAL_INTERRUPT_SIU_IRQ7);
+  HAL_INTERRUPT_MASK(CYGNUM_HAL_INTERRUPT_SIU_LVL0);
+  HAL_INTERRUPT_MASK(CYGNUM_HAL_INTERRUPT_SIU_LVL1);
+  HAL_INTERRUPT_MASK(CYGNUM_HAL_INTERRUPT_SIU_LVL2);
+  HAL_INTERRUPT_MASK(CYGNUM_HAL_INTERRUPT_SIU_LVL3);
+  HAL_INTERRUPT_MASK(CYGNUM_HAL_INTERRUPT_SIU_LVL4);
+  HAL_INTERRUPT_MASK(CYGNUM_HAL_INTERRUPT_SIU_LVL5);
+  HAL_INTERRUPT_MASK(CYGNUM_HAL_INTERRUPT_SIU_LVL6);
+  HAL_INTERRUPT_MASK(CYGNUM_HAL_INTERRUPT_SIU_LVL7);
+  
 #ifdef CYGSEM_HAL_POWERPC_MPC5XX_IMB3_ARBITER  
   HAL_INTERRUPT_ATTACH(CYGNUM_HAL_INTERRUPT_SIU_LVL7, hal_arbitration_imb3, &imb3_data_head, 0);
   HAL_INTERRUPT_UNMASK(CYGNUM_HAL_INTERRUPT_SIU_LVL7);
+#endif
+
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
+     || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
+  // GDB-CTRLC
+  // Install a default arbiter for serial interrupts. This allows
+  // to make a boot monitor simply turn on the required Rx interrupt
+  // and still be delivered the necessary default isr. Without this,
+  // redboot would be informed of a level interrupt on the SIU instead
+  // of the Rx interrupt that really happened.
+  // Make sure the interrupts are set up on the correct level
+  sci_arbiter.priority = CYGNUM_HAL_ISR_SOURCE_PRIORITY_QSCI;
+  sci_arbiter.data    = 0;
+  sci_arbiter.arbiter = hal_arbitration_isr_sci;
+
+  hal_mpc5xx_install_arbitration_isr(&sci_arbiter);
+  HAL_INTERRUPT_SET_LEVEL(CYGNUM_HAL_INTERRUPT_IMB3_SCI0_RX, CYGNUM_HAL_ISR_SOURCE_PRIORITY_QSCI);	
+  HAL_INTERRUPT_SET_LEVEL(CYGNUM_HAL_INTERRUPT_IMB3_SCI0_RX, CYGNUM_HAL_ISR_SOURCE_PRIORITY_QSCI);	
 #endif
 }
 

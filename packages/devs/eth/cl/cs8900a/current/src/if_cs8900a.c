@@ -472,17 +472,18 @@ cs8900a_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
         if (len > 0) {
             /* Finish the last word. */
             if (odd_byte) {
-                // Add data to the most significant byte
 #if(CYG_BYTEORDER == CYG_LSBFIRST)                              
+                // Add data to the most significant byte
                 saved_data |= ((cyg_uint16)*data++) << 8;
 #elif(CYG_BYTEORDER == CYG_MSBFIRST)
-                saved_data = ((cyg_uint16)*data++) | (saved_data << 8);
+                // Add data to the least significant byte
+                saved_data |= *data++;
 #endif
                 HAL_WRITE_UINT16(cpd->base+CS8900A_RTDATA, saved_data);
                 len--;
                 odd_byte = false;
             }
-            if ((CYG_ADDRESS)data & 0x1 == 0) {
+            if (((CYG_ADDRESS)data & 0x1) == 0) {
                 /* Aligned on 16-bit boundary, so output contiguous words. */
                 sdata = (cyg_uint16 *)data;
                 while (len > 1) {
@@ -506,6 +507,9 @@ cs8900a_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
             /* Save last byte, if necessary. */
             if (len == 1) {
                 saved_data = (cyg_uint16)*data;
+#if CYG_BYTEORDER == CYG_MSBFIRST				
+                saved_data = (saved_data << 8);
+#endif
                 odd_byte = true;
             }
         }

@@ -2,6 +2,11 @@
 
 	* cdl/ser_powerpc_ec555.cdl: Remove irrelevant doc link.
 
+2002-11-11  Bob Koninckx  <bob.koninckx@mech.kuleuven.ac.be>
+
+	* src/ec555_serial_with_ints: 
+	arbiter slightly modified to make GDB-CTRLC work.
+
 2002-04-24  Bob Koninckx  <bob.koninckx@mech.kuleuven.ac.be>
 
 	* New package.

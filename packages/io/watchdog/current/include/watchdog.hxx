@@ -56,7 +56,7 @@
 //
 //==========================================================================
 
-#include <cyg/kernel/ktypes.h>
+#include <cyg/infra/cyg_type.h>
 #include <cyg/infra/cyg_ass.h>            // assertion macros
 
 class Cyg_Watchdog_Action;

@@ -67,6 +67,16 @@ cdl_package CYGPKG_DEVS_FLASH_AMD_AM29XXXXX {
         display   "Number of included variants"
     }
 
+    cdl_option CYGHWR_DEVS_FLASH_AMD_AM29F010 {
+        display       "AMD AM29F010 flash memory support"
+        default_value 0
+        implements    CYGINT_DEVS_FLASH_AMD_VARIANTS
+        description   "
+            When this option is enabled, the AMD flash driver will be
+            able to recognize and handle the AMD29F010
+            part in the family."
+    }
+
     cdl_option CYGHWR_DEVS_FLASH_AMD_AM29F040B {
         display       "AMD AM29F040B flash memory support"
         default_value 0

@@ -202,45 +202,104 @@ asm volatile (" .globl  " #_label_ ";"          \
 
 //-----------------------------------------------------------------------------
 // Thread register state manipulation for GDB support.
+typedef struct {
+    cyg_uint32  gpr[32];     // General purpose registers
+	double      f0[16];      // First sixteen floating point regs
+	cyg_uint32  pc;
+	cyg_uint32  msr;
+	cyg_uint32  cr;
+	cyg_uint32  lr;
+	cyg_uint32  ctr;
+	cyg_uint32  xer;
+	cyg_uint32  mq;
+#ifdef CYGHWR_HAL_POWERPC_FPU
+	double     f16[16];      // Last sixteen floating point regs
+	                         // Could probably also be inserted in the middle
+	                         // Adding them at the end minimises the risk of
+	                         // breaking existing implementations that do not
+	                         // have floating point registers.
+#endif
+} GDB_Registers;
 
 // Translate a stack pointer as saved by the thread context macros above into
 // a pointer to a HAL_SavedRegisters structure.
 #define HAL_THREAD_GET_SAVED_REGISTERS( _sp_, _regs_ )  \
         (_regs_) = (HAL_SavedRegisters *)(_sp_)
 
+// Copy floating point registers from a HAL_SavedRegisters structure into a
+// GDB_Registers structure
+#ifdef CYGHWR_HAL_POWERPC_FPU
+#define HAL_GET_GDB_FLOATING_POINT_REGISTERS( _gdb_, _regs_ ) \
+	CYG_MACRO_START                                           \
+	double * _p_ = _gdb_->f0;                                 \
+    double * _q_ = _regs_->f;                                 \
+    for( _i_ = 0; _i_ < 16; _i_++)                            \
+	  *_p_++ = *_q_++;                                        \
+	                                                          \
+    _p_ = _gdb_->f16;                                         \
+    for( _i_ = 0; _i_ < 16; _i_++)                            \
+	  *_p_++ = *_q_++;                                        \
+	CYG_MACRO_END
+#else
+#define HAL_GET_GDB_FLOATING_POINT_REGISTERS( _gdb_, _regs_ ) \
+	CYG_MACRO_START                                           \
+	CYG_MACRO_END
+#endif
+
+// Copy a GDB_Registers structure into a HAL_SavedRegisters structure
+#ifdef CYGHWR_HAL_POWERPC_FPU
+#define HAL_SET_GDB_FLOATING_POINT_REGISTERS( _regs_, _gdb_) \
+	CYG_MACRO_START                                          \
+	double * _p_ = _regs_->f;                                \
+	double * _q_ = _gdb_->f0;                                \
+	for( _i_ = 0; _i_ < 16; _i_++)                           \
+	  *_p_++ = *_q_++;                                       \
+                                                             \
+	_q_ = _gdb_->f16;                                        \
+	for( _i_ = 0; _i_ < 16; _i_++)                           \
+	  *_p_++ = *_q_++;                                       \
+	CYG_MACRO_END
+#else
+#define HAL_SET_GDB_FLOATING_POINT_REGISTERS( _regs_, _gdb_)  \
+	CYG_MACRO_START                                           \
+	CYG_MACRO_END
+#endif
+	
 // Copy a set of registers from a HAL_SavedRegisters structure into a
 // GDB ordered array.    
 #define HAL_GET_GDB_REGISTERS( _aregval_, _regs_ )              \
     CYG_MACRO_START                                             \
-    CYG_ADDRWORD *_regval_ = (CYG_ADDRWORD *)(_aregval_);       \
+    GDB_Registers *_gdb_ = (GDB_Registers *)(_aregval_);        \
     int _i_;                                                    \
                                                                 \
     for( _i_ = 0; _i_ < 32; _i_++ )                             \
-        _regval_[_i_] = (_regs_)->d[_i_];                       \
+        _gdb_->gpr[_i_] = (_regs_)->d[_i_];                     \
                                                                 \
-    _regval_[64] = (_regs_)->pc;                                \
-    _regval_[65] = (_regs_)->msr;                               \
-    _regval_[66] = (_regs_)->cr;                                \
-    _regval_[67] = (_regs_)->lr;                                \
-    _regval_[68] = (_regs_)->ctr;                               \
-    _regval_[69] = (_regs_)->xer;                               \
+    _gdb_->pc    = (_regs_)->pc;                                \
+    _gdb_->msr   = (_regs_)->msr;                               \
+    _gdb_->cr    = (_regs_)->cr;                                \
+    _gdb_->lr    = (_regs_)->lr;                                \
+    _gdb_->ctr   = (_regs_)->ctr;                               \
+    _gdb_->xer   = (_regs_)->xer;                               \
+	HAL_GET_GDB_FLOATING_POINT_REGISTERS(_gdb_, _regs_);        \
     CYG_MACRO_END
 
 // Copy a GDB ordered array into a HAL_SavedRegisters structure.
 #define HAL_SET_GDB_REGISTERS( _regs_ , _aregval_ )             \
     CYG_MACRO_START                                             \
-    CYG_ADDRWORD *_regval_ = (CYG_ADDRWORD *)(_aregval_);       \
+    GDB_Registers *_gdb_ = (GDB_Registers *)(_aregval_);        \
     int _i_;                                                    \
                                                                 \
     for( _i_ = 0; _i_ < 32; _i_++ )                             \
-        (_regs_)->d[_i_] = _regval_[_i_];                       \
+        (_regs_)->d[_i_] = _gdb_->gpr[_i_];                     \
                                                                 \
-    (_regs_)->pc  = _regval_[64];                               \
-    (_regs_)->msr = _regval_[65];                               \
-    (_regs_)->cr  = _regval_[66];                               \
-    (_regs_)->lr  = _regval_[67];                               \
-    (_regs_)->ctr = _regval_[68];                               \
-    (_regs_)->xer = _regval_[69];                               \
+    (_regs_)->pc  = _gdb_->pc;                                  \
+    (_regs_)->msr = _gdb_->msr;                                 \
+    (_regs_)->cr  = _gdb_->cr;                                  \
+    (_regs_)->lr  = _gdb_->lr;                                  \
+    (_regs_)->ctr = _gdb_->ctr;                                 \
+    (_regs_)->xer = _gdb_->xer;                                 \
+	HAL_SET_GDB_FLOATING_POINT_REGISTERS(_regs_, _gdb_);        \
     CYG_MACRO_END
 
 //-----------------------------------------------------------------------------

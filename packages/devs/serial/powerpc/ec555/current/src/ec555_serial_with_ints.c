@@ -207,36 +207,40 @@ DEVTAB_ENTRY(mpc555_serial_io1,
 // The arbitration isr. 
 // I think this is the best place to implement it. The device driver is the only place
 // in the code where the knowledge is present about how the hardware is used
+//
+// Always check receiver interrupts. Some rom monitor might be listening to CTRL-C
 static cyg_uint32 hal_arbitration_isr_qsci(CYG_ADDRWORD a_vector, CYG_ADDRWORD a_data)
 {
   cyg_uint16 status;
   cyg_uint16 control;
 
-#ifdef CYGPKG_IO_SERIAL_POWERPC_EC555_SERIAL_A // Do not waist time on unused hardware
   HAL_READ_UINT16(CYGARC_REG_IMM_SC1SR, status);
   HAL_READ_UINT16(CYGARC_REG_IMM_SCC1R1, control);
+  if((status & CYGARC_REG_IMM_SCxSR_RDRF) && (control & CYGARC_REG_IMM_SCCxR1_RIE))
+    return hal_call_isr(CYGNUM_HAL_INTERRUPT_IMB3_SCI0_RX);
+  
+#ifdef CYGPKG_IO_SERIAL_POWERPC_EC555_SERIAL_A // Do not waist time on unused hardware
   if((status & CYGARC_REG_IMM_SCxSR_TDRE) && (control & CYGARC_REG_IMM_SCCxR1_TIE))
     return hal_call_isr(CYGNUM_HAL_INTERRUPT_IMB3_SCI0_TX);
 // Don't waist time on unused interrupts
 //  if((status & CYGARC_REG_IMM_SCxSR_TC) && (control & CYGARC_REG_IMM_SCCxR1_TCIE))
 //    return hal_call_isr(CYGNUM_HAL_INTERRUPT_IMB3_SCI0_TXC);
-  if((status & CYGARC_REG_IMM_SCxSR_RDRF) && (control & CYGARC_REG_IMM_SCCxR1_RIE))
-    return hal_call_isr(CYGNUM_HAL_INTERRUPT_IMB3_SCI0_RX);
 // Don't waist time on unused interrupts
 //  if((status & CYGARC_REG_IMM_SCxSR_IDLE) && (control & CYGARC_REG_IMM_SCCxR1_ILIE))
 //    return hal_call_isr(CYGNUM_HAL_INTERRUPT_IMB3_SCI0_IDLE);
 #endif
 
-#ifdef CYGPKG_IO_SERIAL_POWERPC_EC555_SERIAL_B // Do not waist time on unused hardware
   HAL_READ_UINT16(CYGARC_REG_IMM_SC2SR, status);
   HAL_READ_UINT16(CYGARC_REG_IMM_SCC2R1, control);
+  if((status & CYGARC_REG_IMM_SCxSR_RDRF) && (control & CYGARC_REG_IMM_SCCxR1_RIE))
+    return hal_call_isr(CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RX);
+  
+#ifdef CYGPKG_IO_SERIAL_POWERPC_EC555_SERIAL_B // Do not waist time on unused hardware
   if((status & CYGARC_REG_IMM_SCxSR_TDRE) && (control & CYGARC_REG_IMM_SCCxR1_TIE))
     return hal_call_isr(CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TX);
 // Don't waist time on unused interrupts
 //  if((status & CYGARC_REG_IMM_SCxSR_TC) && (control & CYGARC_REG_IMM_SCCxR1_TCIE))
 //    return hal_call_isr(CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TXC);
-  if((status & CYGARC_REG_IMM_SCxSR_RDRF) && (control & CYGARC_REG_IMM_SCCxR1_RIE))
-    return hal_call_isr(CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RX);
 // Don't waist time on unused interrupts
 //  if((status & CYGARC_REG_IMM_SCxSR_IDLE) && (control & CYGARC_REG_IMM_SCCxR1_ILIE))
 //    return hal_call_isr(CYGNUM_HAL_INTERRUPT_IMB3_SCI1_IDLE);
@@ -415,7 +419,7 @@ static bool mpc555_serial_init(struct cyg_devtab_entry * tab)
      arbiter.arbiter  = hal_arbitration_isr_qsci;
      
      // Install the arbitration isr, Make sure that is is not installed twice
-     hal_mpc5xx_remove_arbitration_isr(&arbiter);
+     hal_mpc5xx_remove_arbitration_isr(CYGNUM_HAL_ISR_SOURCE_PRIORITY_QSCI);
      hal_mpc5xx_install_arbitration_isr(&arbiter); 
 
      // Create the Tx interrupt, do not enable it yet

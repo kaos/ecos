@@ -1,3 +1,9 @@
+2003-11-05  Bob Koninckx <bob.koninckx@mech.kuleuven.ac.be>
+
+	* src/watchdog.cxx: 
+	* include/watchdog.hxx: 
+	* include/watchdog.h: New file - add "C" API for watchdog functions.
+
 2003-04-03  Thomas Koeller  <thomas.koeller@baslerweb.com>
 
 	* cdl/watchdog.cdl: Turned 'wallclock' into 'watchdog' in string.

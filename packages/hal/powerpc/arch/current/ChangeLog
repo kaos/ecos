@@ -71,6 +71,13 @@
 
 	* src/hal_mk_defs.c: Allow platforms to provide their own definitions.
 
+2002-11-14  Bob Koninckx <bob.koninckx@mech.kuleuven.ac.be>
+
+	* include/hal_arch.h: 
+	* include/ppc_stub.h: 
+	* src/ppc_stub.c: 
+	floating point support in GDB - definitions/implementation
+
 2002-11-13  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* src/hal_misc.c (hal_enable_caches): Support new CDL options for

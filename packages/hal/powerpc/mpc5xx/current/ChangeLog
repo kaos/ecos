@@ -1,3 +1,16 @@
+2002-11-11  Bob Koninckx  <bob.koninckx@mech.kuleuven.ac.be>
+
+    * include/var_regs.h: Removed double definitions for ICTRL, ICTRL_SERSHOW
+    and ICTRL_NOSERSHOW
+    * src/var_intr.c: Added a very simple serial arbitration isr to make GDB-CTRC
+    work in the absence of any device drivers.
+    * include/var_intr.h: Added a definition for hal_arbitration_isr_sci
+    * include/variant.inc: Make sure FREEZE gets negated before returning from an
+    exception. Failing to do so prevents proper operation of timers etc when
+    debugging.
+    * tests/intr0.c: completely rewritten to something that actually tests something.
+    Not completely finished.
+
 2002-04-25  Bob Koninckx  <bob.koninckx@mech.kuleuven.ac.be>
 2002-04-25  Jonathan Larmour  <jlarmour@redhat.com>
 

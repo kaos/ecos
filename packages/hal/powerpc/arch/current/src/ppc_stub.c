@@ -72,6 +72,10 @@
 #include <cyg/hal/dbg-threads-api.h>    // dbg_currthread_id
 #endif
 
+#ifndef OFFSETOF
+#define OFFSETOF(_struct_, _member_) (int)((char *)(&(((_struct_*)0)->_member_))-(char *)((_struct_*)0))
+#endif
+
 /* Given a trap value TRAP, return the corresponding signal. */
 
 int __computeSignal (unsigned int trap_number)
@@ -198,6 +202,88 @@ void set_pc (target_register_t pc)
     put_register (PC, pc);
 }
 
+#ifdef CYGHWR_HAL_POWERPC_FPU
+static int
+reg_offset(regnames_t reg)
+{
+  // We let the compiler determine the offsets in order to avoid all
+  // possible alignment problems
+  int base_offset;
+  // 32 general purpose registers
+  if(reg < F0)   return reg * 4;
+
+  // first sixteen floating point regs
+  base_offset = OFFSETOF(GDB_Registers, f0);
+  if(reg < F16)  return base_offset + ((reg - F0) * 8);
+
+  // last sixteen floating point regs
+  base_offset = OFFSETOF(GDB_Registers, f16);
+  if(reg < PC) 	 return base_offset + ((reg - F16) * 8);
+
+  // Other 32 bit regs
+  if(reg < PS)   return(OFFSETOF(GDB_Registers, pc));
+  if(reg < CND)  return(OFFSETOF(GDB_Registers, msr));
+  if(reg < LR)   return(OFFSETOF(GDB_Registers, cr));
+  if(reg < CNT)  return(OFFSETOF(GDB_Registers, lr));
+  if(reg < XER)  return(OFFSETOF(GDB_Registers, ctr));
+  if(reg < MQ)   return(OFFSETOF(GDB_Registers, xer));
+  
+  return OFFSETOF(GDB_Registers, mq);
+}
+
+// Return the currently-saved value corresponding to register REG of
+// the exception context.
+target_register_t
+get_register (regnames_t reg)
+{
+   target_register_t val;
+   int offset = reg_offset(reg);
+
+   if (REGSIZE(reg) > sizeof(target_register_t))
+   return -1;
+
+   val = _registers[offset/sizeof(target_register_t)];
+
+   return val;
+}
+
+// Store VALUE in the register corresponding to WHICH in the exception
+// context.
+void
+put_register (regnames_t which, target_register_t value)
+{
+   int offset = reg_offset(which);
+
+   if (REGSIZE(which) > sizeof(target_register_t))
+   return;
+
+   _registers[offset/sizeof(target_register_t)] = value;
+}
+
+// Write the contents of register WHICH into VALUE as raw bytes. This
+// is only used for registers larger than sizeof(target_register_t).
+// Return non-zero if it is a valid register.
+int
+get_register_as_bytes (regnames_t which, char *value)
+{
+  int offset = reg_offset(which);
+
+  memcpy (value, (char *)_registers + offset, REGSIZE(which));
+  return 1;
+}
+
+// Alter the contents of saved register WHICH to contain VALUE. This
+// is only used for registers larger than sizeof(target_register_t).
+// Return non-zero if it is a valid register.
+int
+put_register_as_bytes (regnames_t which, char *value)
+{
+  int offset = reg_offset(which);
+
+  memcpy ((char *)_registers + offset, value, REGSIZE(which));
+  return 1;
+}
+#endif
 
 /*----------------------------------------------------------------------
  * Single-step support

@@ -6,6 +6,10 @@
         "default_value" from "calculated". This makes it easier
         to change these values globally.
         
+2003-05-25  Bob Koninckx <bob.koninckx@mech.kuleuven.ac.be>
+
+    * include/plf_intr.h: Use the watchdog (if present) to reset the board
+
 2003-03-07  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/plf_stub.h: Remove [confusing] platform specific include.
@@ -13,6 +17,11 @@
 2003-02-10  Nick Garnett  <nickg@calivar.com>
 
 	* misc/redboot_RAM.ecm: Brought up to date with ROM version.
+
+2002-11-11  Bob Koninckx  <bob.koninckx@mech.kuleuven.ac.be>
+
+    * src/ec555.S: Removed statements to disable processor serialization,
+    this is already done in the variant initialization code.
 
 2002-05-13  Jesper Skov  <jskov@redhat.com>
 

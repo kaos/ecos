@@ -63,6 +63,8 @@
 #include <cyg/hal/hal_io.h>             // I/O macros
 #include <cyg/infra/diag.h>
 #include CYGHWR_MEMORY_LAYOUT_H
+#include <cyg/io/pci_hw.h>
+#include <cyg/io/pci.h>
 
 #ifdef CYGPKG_REDBOOT
 #include <redboot.h>
@@ -96,6 +98,8 @@ void
 hal_platform_init(void)
 {
     unsigned long munged_serial_no;
+    cyg_pci_device USB_info;
+    cyg_pci_device_id USB_dev = CYG_PCI_NULL_DEVID;
 
     CYGARC_MFDCR(DCR_CPC0_ECID0, _moab_serial_no[0]);
     CYGARC_MFDCR(DCR_CPC0_ECID1, _moab_serial_no[1]);
@@ -108,6 +112,22 @@ hal_platform_init(void)
 #ifdef CYGPKG_REDBOOT
     diag_printf("CPU serial number: %08x/%08x\n", _moab_serial_no[0], _moab_serial_no[1]);
 #endif
+    // Configure USB controller (if present)
+    while (cyg_pci_find_next(USB_dev, &USB_dev)) {
+        cyg_uint8 bus = CYG_PCI_DEV_GET_BUS(USB_dev);
+        cyg_uint8 devfn = CYG_PCI_DEV_GET_DEVFN(USB_dev);
+        cyg_uint16 v, d;
+        cyg_uint32 ext_reg;
+
+        cyg_pcihw_read_config_uint16(bus, devfn, CYG_PCI_CFG_VENDOR, &v);
+        cyg_pcihw_read_config_uint16(bus, devfn, CYG_PCI_CFG_DEVICE, &d);
+        if ((v == 0x1033) && ((d == 0x0035) || (d == 0x00E0))) {
+            // NEC USB controller
+            cyg_pcihw_read_config_uint32(bus, devfn, 0xE4, &ext_reg);
+            ext_reg |= (1<<5);  // 48MHz clock
+            cyg_pcihw_write_config_uint32(bus, devfn, 0xE4, ext_reg);
+        }
+    }
 }
 
 #ifdef CYGSEM_REDBOOT_PLF_STARTUP

@@ -1,17 +1,13 @@
-2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
+#ifndef _IO_WATCHDOG_H_
+#define _IO_WATCHDOG_H_
 
-	* cdl/ser_powerpc_cme555.cdl: Remove irrelevant doc link.
-
-2002-11-11  Bob Koninckx  <bob.koninckx@mech.kuleuven.ac.be>
-
-	* src/cme555_serial_with_ints.c: 
-	interrupt arbiter slightly modified to make GDB CTRL-C work
-
-2002-04-24  Bob Koninckx  <bob.koninckx@mech.kuleuven.ac.be>
-
-	* New package.
-
-//===========================================================================
+//==========================================================================
+//
+//      watchdog.h
+//
+//      c-api to the watchdog.
+//
+//==========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
@@ -44,4 +40,20 @@
 // at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
-//===========================================================================
+//==========================================================================
+//#####DESCRIPTIONBEGIN####
+//
+// Author(s):     Bob Koninckx
+// Contributors:  Bob Koninckx
+// Date:          2003-05-24
+// Purpose:       provide a c-api to the watchdog
+//
+//####DESCRIPTIONEND####
+ 
+#include <cyg/infra/cyg_type.h>
+
+externC void watchdog_start(void);
+externC void watchdog_reset(void);
+externC cyg_uint64 watchdog_get_resolution(void);
+
+#endif // _IO_WATCHDOG_H_
