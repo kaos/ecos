@@ -338,8 +338,8 @@ __remove_break(int indx)
 int
 __is_single_step(target_register_t pc)
 {
-    return (sstep_instr[0].targetAddr == pc) ||
-        (sstep_instr[1].targetAddr == pc);
+    return (sstep_instr[0].targetAddr == (t_inst *)pc) ||
+        (sstep_instr[1].targetAddr == (t_inst *)pc);
 }
 
 
