@@ -1,3 +1,8 @@
+2003-03-05  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/variant.inc: Don't let FP be set in MSR in common HAL.
+	Reported by Radu Cernea <rc@unusus.com>
+
 2003-01-20  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/variant.S: Be careful about using QUICC functions unless that

@@ -59,6 +59,9 @@
 
 #include <pkgconf/hal.h>
 	
+#undef CYG_MSR_COMMON
+#define CYG_MSR_COMMON (MSR_ME | MSR_RI)
+
 #include <cyg/hal/arch.inc>
 
 ##-----------------------------------------------------------------------------
