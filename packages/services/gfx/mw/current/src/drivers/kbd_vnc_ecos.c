@@ -112,8 +112,10 @@ static void vnc_GetModifierInfo(MWKEYMOD *modifiers, MWKEYMOD *curmodifiers)
         *modifiers = MWKMOD_CTRL | MWKMOD_SHIFT | MWKMOD_ALT | MWKMOD_META
                    | MWKMOD_CAPS | MWKMOD_NUM | MWKMOD_SCR;
     }
-
-    *curmodifiers = current_mods;
+    if (curmodifiers)
+    {
+        *curmodifiers = current_mods;
+    }
 }
 
 

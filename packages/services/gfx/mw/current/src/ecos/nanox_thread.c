@@ -45,8 +45,7 @@ static void
 nanox_thread(CYG_ADDRWORD data)
 {
     int argc = 0;
-    char **argv;
+    char *argv[] = {"nanox_thread", NULL};
 
-        printf("%s.%d\n", __FUNCTION__, __LINE__);
     nanox_main(argc, argv);
 }

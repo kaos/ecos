@@ -1,3 +1,12 @@
+2003-09-03  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/ecos/nanox_thread.c (nanox_thread): Fill in program
+	name - also from Eric Doenges.
+
+	* src/drivers/kbd_vnc_ecos.c (vnc_GetModifierInfo): 
+	Protect against null [curmodifiers] pointer.  Reported
+	by Eric Doenges <Eric.Doenges@DynaPel.com>
+
 2003-09-01  Chris Garry <cgarry@sweeneydesign.co.uk>
 
     * src/ecos/ecos_app.c:
