@@ -362,6 +362,15 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 #  define CYGBLD_ATTRIB_ALIGN(__align__) __attribute__((aligned(__align__)))
 # endif
 
+# if !defined(CYGBLD_ATTRIB_ALIGN_MAX)
+#  define CYGBLD_ATTRIB_ALIGN_MAX __attribute__((aligned))
+# endif
+
+# if !defined(CYGBLD_ATTRIB_ALIGNOFTYPE)
+#  define CYGBLD_ATTRIB_ALIGNOFTYPE( _type_ ) \
+     __attribute__((aligned(__alignof__( _type_ ))))
+# endif
+
 // Teach compiler how to check format of printf-like functions
 # define CYGBLD_ATTRIB_PRINTF_FORMAT(__format__, __args__) \
         __attribute__((format (printf, __format__, __args__)))
@@ -384,6 +393,10 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 # define CYGBLD_ATTRIB_CONST
 
 # define CYGBLD_ATTRIB_ALIGN(__align__) !!!-- Alignment alias not defined --!!!
+
+# define CYGBLD_ATTRIB_ALIGN_MAX !!!-- Alignment alias not defined --!!!
+
+# define CYGBLD_ATTRIB_ALIGNOFTYPE !!!-- Alignment alias not defined --!!!
 
 # define CYGBLD_ATTRIB_PRINTF_FORMAT(__format__, __args__)
 

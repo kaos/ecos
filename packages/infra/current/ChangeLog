@@ -1,3 +1,8 @@
+2004-04-15  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/cyg_type.h: added CYG_ATTRIB_ALIGN_MAX and
+	CYGBLD_ATTRIB_ALIGNOFTYPE. Inspired by Robert Larice.
+	
 2004-01-08  Jani Monoses <jani@iv.ro>
 
 	* src/diag.cxx (diag_check_string): Allow '\t' in format strings.
