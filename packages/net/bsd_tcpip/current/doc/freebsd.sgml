@@ -93,7 +93,7 @@ to your configuration.  Their package names
 are CYGPKG_NET, CYGPKG_NET_FREEBSD_STACK and CYGPKG_NET_ETH_DRIVERS
 respectively.</PARA>
 <para>A short-cut way to do this is by
-using the &ldquo;new_net&rdquo; <emphasis>template</emphasis>
+using the &ldquo;net&rdquo; <emphasis>template</emphasis>
 if it is available for your platform.</para>
 <PARA>The platform-specific ethernet device driver for your platform
 will be added as part of the target selection (in the
