@@ -226,4 +226,44 @@ cdl_package CYGPKG_DEVS_FLASH_AMD_AM29XXXXX {
             When this option is enabled, the AMD flash driver will be
             able to recognize and handle the Toshiba TC58FVB800."
     }
+
+    cdl_option CYGHWR_DEVS_FLASH_AMD_AM29LV081B {
+        display       "AMD AM29LV081B flash memory support"
+        default_value 0
+        implements    CYGINT_DEVS_FLASH_AMD_VARIANTS
+        description   "
+            When this option is enabled, the AMD flash driver will be
+            able to recognize and handle the AMD29LV081B
+            part in the family."
+    }
+
+    cdl_option CYGHWR_DEVS_FLASH_AMD_AM29LV017D {
+        display       "AMD AM29LV017D flash memory support"
+        default_value 0
+        implements    CYGINT_DEVS_FLASH_AMD_VARIANTS
+        description   "
+            When this option is enabled, the AMD flash driver will be
+            able to recognize and handle the AMD29LV017D
+            part in the family."
+    }
+
+    cdl_option CYGHWR_DEVS_FLASH_AMD_AM29LV033C {
+        display       "AMD AM29LV033C flash memory support"
+        default_value 0
+        implements    CYGINT_DEVS_FLASH_AMD_VARIANTS
+        description   "
+            When this option is enabled, the AMD flash driver will be
+            able to recognize and handle the AMD29LV033C
+            part in the family."
+    }
+
+    cdl_option CYGHWR_DEVS_FLASH_AMD_AM29LV065D {
+        display       "AMD AM29LV065D flash memory support"
+        default_value 0
+        implements    CYGINT_DEVS_FLASH_AMD_VARIANTS
+        description   "
+            When this option is enabled, the AMD flash driver will be
+            able to recognize and handle the AMD29LV065D
+            part in the family."
+    }
 }

@@ -1,3 +1,11 @@
+2003-10-02  Jay Foster   <jay@systech.com>
+
+	* include/flash_am29xxxxx_parts.inl (CYGHWR_DEVS_FLASH_AMD_AM29LV081B,
+      CYGHWR_DEVS_FLASH_AMD_AM29LV017D, CYGHWR_DEVS_FLASH_AMD_AM29LV033C,
+      CYGHWR_DEVS_FLASH_AMD_AM29LV065D):
+	* cdl/flash_amd_am29xxxxx.cdl: Add support for Am29LV081B, Am29LV017D,
+      Am29LV033C, and Am29LV065D parts.
+
 2003-09-09  Thomas Koeller <thomas.koeller@baslerweb.com>
 
 	* include/flash_am29xxxxx.inl:

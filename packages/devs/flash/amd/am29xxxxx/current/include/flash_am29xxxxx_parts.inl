@@ -490,6 +490,58 @@
     },
 #endif
 
+#ifdef CYGHWR_DEVS_FLASH_AMD_AM29LV081B
+    {   // AM29LV081B
+        device_id  : FLASHWORD(0x38),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 16,
+        device_size: 0x100000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x100000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : false,
+        banked     : false,
+        bufsiz     : 1
+    },
+#endif
+
+#ifdef CYGHWR_DEVS_FLASH_AMD_AM29LV017D
+    {   // AM29LV017D
+        device_id  : FLASHWORD(0xC8),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 32,
+        device_size: 0x200000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x200000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : false,
+        banked     : false,
+        bufsiz     : 1
+    },
+#endif
+
+#ifdef CYGHWR_DEVS_FLASH_AMD_AM29LV033C
+    {   // AM29LV033C
+        device_id  : FLASHWORD(0xA3),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 64,
+        device_size: 0x400000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x400000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : false,
+        banked     : false,
+        bufsiz     : 1
+    },
+#endif
+
+#ifdef CYGHWR_DEVS_FLASH_AMD_AM29LV065D
+    {   // AM29LV065D
+        device_id  : FLASHWORD(0x93),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 128,
+        device_size: 0x800000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x800000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : false,
+        banked     : false,
+        bufsiz     : 1
+    },
+#endif
+
 #else // 16 bit devices
 
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29LV128
