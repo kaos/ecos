@@ -1,3 +1,5 @@
+#ifndef CYGONCE_IQ80310_H
+#define CYGONCE_IQ80310_H
 //=============================================================================
 //
 //      iq80310.h - Cyclone Diagnostics
@@ -547,3 +549,4 @@ typedef unsigned long ADDR;
 /* Reserved 0x0000183C through 0x000018FF */
 
 
+#endif /* CYGONCE_IQ80310_H */

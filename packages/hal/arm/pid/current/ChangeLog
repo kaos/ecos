@@ -1,3 +1,8 @@
+2003-02-05  Nick Garnett  <nickg@calivar.com>
+
+	* include/plf_io.h (CYGARC_PHYSICAL_ADDRESS): Added this
+	definition to keep redboot_linux_exec.c happy.
+
 2002-05-23  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_arm_pid.cdl: Don't run cache tests.

@@ -141,7 +141,7 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_MPC50 {
 			display "Global command prefix"
 			flavor  data
 			no_define
-			default_value { "xscale-elf" }
+			default_value { "arm-elf" }
 			description "
 				This option specifies the command prefix used when
 				invoking the build tools."
@@ -151,7 +151,7 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_MPC50 {
 			display "Global compiler flags"
 			flavor  data
 			no_define
-            default_value { "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -fno-rtti -fno-exceptions -fvtable-gc -finit-priority -mapcs-frame" }
+            default_value { "-mcpu=xscale -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -fno-rtti -fno-exceptions -fvtable-gc -finit-priority -mapcs-frame" }
 			description   "
 				This option controls the global compiler flags which are used to
 				compile all packages by default. Individual packages may define
@@ -162,7 +162,7 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_MPC50 {
 			display "Global linker flags"
 			flavor  data
 			no_define
-			default_value { "-Wl,--gc-sections -Wl,-static -g -O2 -nostdlib" }
+			default_value { "-mcpu=xscale -Wl,--gc-sections -Wl,-static -g -O2 -nostdlib" }
 			description   "
 				This option controls the global linker flags. Individual
 				packages may define options which override these global flags."

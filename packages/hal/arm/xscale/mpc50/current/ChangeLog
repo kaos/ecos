@@ -1,3 +1,8 @@
+2003-02-05  Nick Garnett  <nickg@calivar.com>
+
+	* cdl/hal_arm_xscale_mpc50.cdl: Changed compiler prefix to arm-elf
+	and added -mcpu=xscale to global flags.
+
 2003-01-24  Knud Woehler <knud.woehler@microplex.de>
 2003-01-24  Mark Salter <msalter@redhat.com>
 

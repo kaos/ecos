@@ -1,3 +1,8 @@
+2003-02-05  Nick Garnett  <nickg@calivar.com>
+
+	* include/plf_io.h (CYGARC_PHYSICAL_ADDRESS): Added this
+	definition to keep redboot_linux_exec.c happy.
+
 2002-10-03  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/pkgconf/mlt_arm_snds_ram.ldi: Add definition of heap1.

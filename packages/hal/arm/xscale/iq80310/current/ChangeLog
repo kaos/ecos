@@ -1,3 +1,8 @@
+2003-02-05  Nick Garnett  <nickg@calivar.com>
+
+	* src/diag/iq80310.h: Added CYGONCE_IQ80310_H to avoid compilation
+	errors.
+
 2003-01-31  Mark Salter  <msalter@redhat.com>
 
 	* include/hal_platform_setup.h: Disabling of write buffer
