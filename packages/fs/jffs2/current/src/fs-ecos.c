@@ -305,6 +305,8 @@ static int find_entry(jffs2_dirsearch * ds)
 
 	if (d == NULL)
 		return ENOENT;
+	if (IS_ERR(d))
+		return -PTR_ERR(d);
 
 	// If it's a new directory inode, increase refcount on its parent
 	if (S_ISDIR(d->i_mode) && !d->i_parent) {

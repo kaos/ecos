@@ -1,3 +1,8 @@
+2004-10-07  Knud Woehler <knud.woehler@microplex.de>
+
+	* src/fs-ecos.c (find_entry): jffs2_lookup may return error codes.
+	Check added.
+
 2004-09-16  Dirk Eibach  <eibach@gdsys.de>
 2004-09-19  Andrew Lunn  <andrew.lunn@ascom.ch>
 
