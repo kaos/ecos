@@ -36,7 +36,8 @@
 
 <!-- }}} -->
 
-<reference id="devs-usb-nec-upd985xx-ref">
+<part id="devs-usb-nec-upd985xx-ref">
+<!-- reference id="devs-usb-nec-upd985xx-ref" -->
   <title>NEC uPD985xx USB Device Driver</title>
 
 <refentry id="devs-usb-nec-upd985xx">
@@ -254,4 +255,5 @@ invoke it during the endpoint 0 start-up operation.
 </refsect1>
 
 </refentry>
-</reference>
+</part>
+<!-- /reference -->
