@@ -574,7 +574,8 @@ eth_drv_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
         // Note: drivers may behave like IFF_ALLMULTI if the list is 
         // more than their hardware can handle, e.g. some can only handle 1.
         if ((sc->funs->control)(sc, mode, &mc_list, sizeof(mc_list))) {
-            diag_printf("Driver can't set multi-cast mode\n");
+            diag_printf( "[%s] Warning: Driver can't set multi-cast mode\n",
+                         __FUNCTION__ );
             error = EINVAL;
         }
         break;
