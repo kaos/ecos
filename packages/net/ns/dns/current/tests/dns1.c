@@ -134,7 +134,7 @@ dns_test(cyg_addrword_t p)
         diag_printf("PASS:<Asked for bad IP " _LOOKUP_IP_BAD ". No answer: %s>\n", hstrerror(h_errno));
     }
 
-    /* Setup a domainname. We not don't have to use fully qualified
+    /* Setup a domainname. We now don't have to use fully qualified
        domain names */
     setdomainname(_LOOKUP_DOMAINNAME, sizeof(_LOOKUP_DOMAINNAME));
     getdomainname(dn, sizeof(dn));
