@@ -8,5 +8,6 @@
 #define uint32_t cyg_uint32
 #define loff_t off_t
 
+#define kvec iovec
 #endif /* __LINUX_TYPES_H__ */
 

@@ -1,3 +1,13 @@
+2004-08-12  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/linux/spinlock.h: Add CYG_UNUSED_PARAM() calls to avoid
+	compiler warnings.
+
+2004-08-04  Gary Thomas <gary@mlbassoc.com>
+
+	* include/linux/list.h (list_for_each_entry): New macro needed for
+	latest jffs2 code.
+
 2003-11-12  Thomas Koeller <thomas.koeller@baslerweb.com>
 
         * cdl/linux.cdl:

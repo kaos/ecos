@@ -63,6 +63,11 @@ struct list_head {
 
 /* MACROS */
 
+#define LIST_HEAD_INIT(name) { &(name), &(name) }
+
+#define LIST_HEAD(name) \
+        struct list_head name = LIST_HEAD_INIT(name)
+
 #define INIT_LIST_HEAD( _list_ )              \
 CYG_MACRO_START                               \
 (_list_)->next = (_list_)->prev = (_list_);   \
@@ -121,6 +126,15 @@ list_empty( struct list_head *list )
     for ( (_ent_) = (_list_)->next;      \
     (_ent_) != (_list_);                 \
     (_ent_) = (_ent_)->next )
+
+/*
+ * list_for_each_entry - this function can be use to iterate over all
+ * items in a list* _list_ with it's head at _head_ and link _item_
+ */
+#define list_for_each_entry(_list_, _head_, _item_)                     \
+for ((_list_) = list_entry((_head_)->next, typeof(*_list_), _item_); \
+     &((_list_)->_item_) != (_head_);                                 \
+     (_list_) = list_entry((_list_)->_item_.next, typeof(*_list_), _item_))
 
 /* -----------------------------------------------------------------------*/
 #endif /* #ifndef CYGONCE_FS_JFFS2_LIST_H */
