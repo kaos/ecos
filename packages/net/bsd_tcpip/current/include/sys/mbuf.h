@@ -634,6 +634,9 @@ void	m_aux_delete __P((struct mbuf *, struct mbuf *));
 extern void *cyg_net_mbuf_alloc(int type, int flags);
 extern void cyg_net_mbuf_free(caddr_t addr, int type);
 extern void *cyg_net_cluster_alloc(void );
+#ifdef CYGDBG_NET_SHOW_MBUFS                
+extern void cyg_net_show_mbufs(void);
+#endif
 #endif /* _KERNEL */
 
 #endif /* !_SYS_MBUF_H_ */

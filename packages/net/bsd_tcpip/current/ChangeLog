@@ -1,3 +1,12 @@
+2003-03-14  Nick Garnett  <nickg@balti.calivar.com>
+
+	* src/ecos/support.c: Added function cyg_net_show_mbufs() and code
+	in cyg_net_mbuf_alloc() to accumulate and optionally display
+	information about the current set of mbufs. This is mostly a
+	debugging feature and is disabled by default.
+
+	* include/sys/mbuf.h: Added prototype for cyg_net_show_mbufs().
+
 2003-03-14  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/sys/net/if.c (if_attach): Removed printf which causes the

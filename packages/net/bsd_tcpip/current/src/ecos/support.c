@@ -214,6 +214,45 @@ cyg_net_free(caddr_t addr, int type)
     FINISH_STATS(stats_free);
 }
 
+#ifdef CYGDBG_NET_SHOW_MBUFS
+
+struct mbuf *mbinfo[300];
+
+void cyg_net_show_mbufs(void)
+{
+    int i;
+    diag_printf(" MBUF   : TYPE FLGS     DATA[LEN]   NEXT    NEXTPKT\n");
+    for( i = 0; i < 300; i++ )
+    {
+        struct mbuf *m = mbinfo[i];
+        char *type;
+        if( m == 0 ) continue;
+
+        switch( m->m_hdr.mh_type )
+        {
+        case MT_FREE: type="FREE"; break;
+        case MT_DATA: type="DATA"; break;
+        case MT_HEADER: type="HEADER"; break;
+        case MT_SONAME: type="SONAME"; break;
+        case MT_FTABLE: type="FTABLE"; break;
+        case MT_CONTROL: type="CONTROL"; break;
+        case MT_OOBDATA: type="OOBDATA"; break;
+        default: type="UNKNOWN"; break;
+        }
+
+        diag_printf("%08x: %s %04x %08x[%03d] %08x %08x\n",
+                    m, type,
+                    m->m_hdr.mh_flags,
+                    m->m_hdr.mh_data,
+                    m->m_hdr.mh_len,
+                    m->m_hdr.mh_next,
+                    m->m_hdr.mh_nextpkt);
+    }
+    diag_printf(" MBUF   : TYPE FLGS     DATA[LEN]   NEXT    NEXTPKT\n");    
+}
+
+#endif
+
 void *
 cyg_net_mbuf_alloc(int type, int flags)
 {
@@ -228,6 +267,17 @@ cyg_net_mbuf_alloc(int type, int flags)
         res = cyg_mempool_fix_alloc(net_mbufs);
     }
     FINISH_STATS(stats_mbuf_alloc);
+#ifdef CYGDBG_NET_SHOW_MBUFS    
+    {
+        int i;
+        for( i = 0; i < (sizeof(mbinfo)/sizeof(mbinfo[0])); i++ )
+            if( mbinfo[i] == 0 )
+            {
+                mbinfo[i] = (struct mbuf *)res;
+                break;
+            }
+    }
+#endif
     // Check that this nastiness works OK
     CYG_ASSERT( dtom(res) == res, "dtom failed, base of mbuf" );
     CYG_ASSERT( dtom((char *)res + MSIZE/2) == res, "dtom failed, mid mbuf" );
