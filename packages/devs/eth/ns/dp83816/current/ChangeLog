@@ -1,3 +1,10 @@
+2003-10-14  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/if_dp83816.c (dp83816_poll): Try to better detect condition
+	where device just stops.  This seems to be related to Rx overruns,
+	but there is no status reported.  The best that can be done is
+	detect the condition and then reset/restart the device.
+
 2003-10-02  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/dp83816.h: Let default ESA be a pointer, so platforms can more

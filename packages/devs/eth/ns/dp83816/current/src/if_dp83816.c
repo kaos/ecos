@@ -330,12 +330,16 @@ dp83816_RxEvent(struct eth_drv_sc *sc)
     struct dp83816_priv_data *dp = (struct dp83816_priv_data *)sc->driver_private;
     dp83816_bd_t *bdp = CYGARC_UNCACHED_ADDRESS(dp->rxd);
     dp83816_bd_t *bdfirst = CYGARC_UNCACHED_ADDRESS(dp->rxd);
-    int len;
+    int len, err;
 
     DEBUG_FUNCTION();
 
     while (true) {
         if ((_le2h(bdp->stat) & BD_OWN) != 0) {
+            err = _le2h(bdp->stat) & (BD_RXA|BD_RXO|BD_LONG|BD_RUNT|BD_ISE|BD_CRCE|BD_FAE|BD_COL);
+            if (err != 0) {
+                diag_printf("RxError: %x\n", err);
+            }
             len = _le2h(bdp->stat) & BD_LENGTH_MASK;
             dp->rxnext = bdp;
             (sc->funs->eth_drv->recv)(sc, len);
@@ -371,49 +375,53 @@ dp83816_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
 }
 
 static void
+dp83816_warm_reset(struct eth_drv_sc *sc)
+{
+    struct dp83816_priv_data *dp = (struct dp83816_priv_data *)sc->driver_private;
+    dp83816_bd_t *bdp;
+    int len, err;
+    int i;
+
+    // Free up any active Tx buffers
+    bdp = CYGARC_UNCACHED_ADDRESS(dp->txd);
+    for (i = 0; i < dp->txnum; i++, bdp++) {
+        if (bdp->key) {
+            (sc->funs->eth_drv->tx_done)(sc, bdp->key, 0);
+        }
+    }
+    // Reset the device
+    dp83816_reset(dp);
+    DP_OUT(dp->base, DP_CR, _CR_RXE | _CR_TXE);
+}
+
+static void
 dp83816_poll(struct eth_drv_sc *sc)
 {
     struct dp83816_priv_data *dp = (struct dp83816_priv_data *)sc->driver_private;
     unsigned long stat, cr_stat;
-    dp83816_bd_t *bdp;
-    int i;
 
     DP_IN(dp->base, DP_ISR, stat);
     do {
         if ((stat & (_ISR_TXDESC|_ISR_TXOK)) != 0) {
             dp83816_TxEvent(sc);
         }
-        if ((stat & (_ISR_RXDESC|_ISR_RXOK)) != 0) {
+        if ((stat & (_ISR_RXDESC|_ISR_RXOK|_ISR_RXERR)) != 0) {
             dp83816_RxEvent(sc);
         }
-        if ((stat & (_ISR_HIBERR|_ISR_TXURN|_ISR_RXORN)) != 0) {            
-            diag_printf("DP83816 - major error: %x", stat);
-            DP_IN(dp->base, DP_CR, stat);
-            diag_printf(", cmd: %x\n", stat);
-            // Try to reset the device
-            bdp = CYGARC_UNCACHED_ADDRESS(dp->txd);
-            for (i = 0; i < dp->txnum; i++, bdp++) {
-                if (bdp->key) {
-                    (sc->funs->eth_drv->tx_done)(sc, bdp->key, 0);
-                }
-            }
-            dp83816_reset(dp);
-            DP_OUT(dp->base, DP_CR, _CR_RXE | _CR_TXE);
-        }
         DP_IN(dp->base, DP_CR, cr_stat);
+        if ((stat & (_ISR_HIBERR|_ISR_TXURN|_ISR_RXORN)) != 0) {            
+            diag_printf("DP83816 - major error: %x, cmd_stat: %x\n", stat, cr_stat);
+            // Try to reset the device
+            dp83816_warm_reset(sc);
+        }
         if (((cr_stat & _CR_RXE) == 0) ||
             ((dp->txbusy > 1) && ((cr_stat & _CR_TXE) == 0))) {
+#if 0
             // What happened?
-            diag_printf("DP83816 went to lunch? - stat: %x, txbusy: %x\n", cr_stat, dp->txbusy);
+            diag_printf("DP83816 went to lunch? - stat: %x/%x, txbusy: %x\n", cr_stat, stat, dp->txbusy);
+#endif
             // Try to reset the device
-            bdp = CYGARC_UNCACHED_ADDRESS(dp->txd);
-            for (i = 0; i < dp->txnum; i++, bdp++) {
-                if (bdp->key) {
-                    (sc->funs->eth_drv->tx_done)(sc, bdp->key, 0);
-                }
-            }
-            dp83816_reset(dp);
-            DP_OUT(dp->base, DP_CR, _CR_RXE | _CR_TXE);
+            dp83816_warm_reset(sc);
         }
         DP_IN(dp->base, DP_ISR, stat);
     } while (stat != 0);
