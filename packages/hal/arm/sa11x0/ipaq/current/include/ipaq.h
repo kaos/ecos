@@ -161,6 +161,8 @@ extern void ipaq_EGPIO(unsigned long mask, unsigned long value);
 #define IPAQ_CF_CTRL_VCC              0x0004   // Vcc power enable
 #define IPAQ_CF_CTRL_V12              0x0008   // 12v power enable
 #define IPAQ_CF_CTRL_RESET            0x0010   // Reset card
+#define IPAQ_CF_CTRL_RESET_ENABLE     _LOGIC_ONE(IPAQ_CF_CTRL_RESET)
+#define IPAQ_CF_CTRL_RESET_DISABLE    _LOGIC_ZERO(IPAQ_CF_CTRL_RESET)
 #define IPAQ_CF_CTRL_APOE             0x0020   // Auto power off
 #define IPAQ_CF_CTRL_APOE_ENABLE      _LOGIC_ONE(IPAQ_CF_CTRL_APOE)
 #define IPAQ_CF_CTRL_APOE_DISABLE     _LOGIC_ZERO(IPAQ_CF_CTRL_APOE)
