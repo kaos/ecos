@@ -84,7 +84,7 @@
 #define SER_16550_SCR 0x1c   // scratch pad register
 
 // The interrupt enable register bits.
-#define SIO_IER_ERDAI   0x01            // enable received data available irq
+#define SIO_IER_ERDAI   0x04            // enable received data available irq
 #define SIO_IER_ETHREI  0x02            // enable THR empty interrupt
 #define SIO_IER_ELSI    0x04            // enable receiver line status irq
 #define SIO_IER_EMSI    0x08            // enable modem status interrupt

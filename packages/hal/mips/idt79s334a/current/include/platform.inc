@@ -45,7 +45,7 @@
 ## Author(s): 	 tmichals
 ## Contributors: nickg
 ## Date:	 2003-02-13
-## Purpose:	 CT1608-IDT32334 board definitions.
+## Purpose:	 IDT32334 board definitions.
 ## Description:	 This file contains various definitions and macros that are
 ##               useful for writing assembly code for the IDT32334 reference
 ##               board.
@@ -164,6 +164,34 @@
 	bne	t0,t3,1b
 	nop
 
+/* set up and move interrupts */
+
+/* setup and move the vector table into ram */
+/* This allows execptions to happen in ROM first
+** then when running in RAM, they are switched */
+        mfc0    v0, status
+        nop
+        li      v1, ~0x00400000
+        and   v0, v0,v1
+        mtc0    v0, status
+        nop
+
+
+        la      t0, hal_vsr_table
+        la      t1,__default_interrupt_vsr
+
+        sw      t1, 0(t0)
+
+        la      t1,__default_exception_vsr
+        li      t2, 62
+        li      t3, 0
+        addi    t0,t0,4
+12:
+        sw      t1,0(t0)
+        addi    t3,t3,1
+        addi    t0,t0,4
+        bne     t3,t2, 12b
+        nop
 
 	la	v0,2f			# RAM address to go to
 	jr	v0

@@ -76,6 +76,7 @@
 // the default for all MIPS variants is to use the 6 bits
 // in the cause register.
 
+// These are only HW interrupts
 #define CYGNUM_HAL_INTERRUPT_0                0
 #define CYGNUM_HAL_INTERRUPT_1                1
 #define CYGNUM_HAL_INTERRUPT_2                2

@@ -425,6 +425,7 @@
 /* Rc32134 Interrupt controller settings for Uart */
 #define INTR_STATUS_PTR         0xb8000500
 #define INTR_MASK_REG           0xb8000504
+#define INTR_CLEAR_REG          0xb8000508
 
 #define INTR_COM0_REG           0xb8000554
 #define INTR_COM1_REG           0xb8000564

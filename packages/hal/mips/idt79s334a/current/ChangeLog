@@ -1,3 +1,9 @@
+2003-04-29  Tim Michals  <t.michals@attbi.com>
+
+	* include/idt79rc233x.h (INTR_CLEAR_REG): Define (needed for serial).
+	* include/platform.inc: updated ROMRAM support for gdb.
+	* src/ser16c550c.c (SIO_IER_ERDAI): updated value for errata.
+
 2003-02-13  Tim Michals  <t.michals@attbi.com>
 2003-02-13  Jonathan Larmour  <jifl@eCosCentric.com>
 
