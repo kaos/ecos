@@ -1,3 +1,8 @@
+2002-10-27  Bart Veer  <bartv@ecoscentric.com>
+
+	* acinclude.m4 (ECOS_PATH_TCL): fix typo that prevented a build
+	under Debian Woody
+
 2002-09-22  Bart Veer  <bartv@ecoscentric.com>
 
 	* acinclude.m4:

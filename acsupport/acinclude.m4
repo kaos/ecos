@@ -496,7 +496,7 @@ AC_DEFUN(ECOS_PATH_TCL, [
                 ecos_INCLUDES="${ecos_INCLUDES} -I${ecos_tcl_incdir}"
             fi
         fi
-        possibles="${with_tcl_lib} ${with_tcl}/lib ${libdir} ${prefix}/lib /usr/lib/tcl$${ecos_tcl_version} /usr/lib"
+        possibles="${with_tcl_lib} ${with_tcl}/lib ${libdir} ${prefix}/lib /usr/lib/tcl${ecos_tcl_version} /usr/lib"
         AC_FIND_FILE("tclConfig.sh", ${possibles}, ecos_tcl_libdir)
         if test \! -r "${ecos_tcl_libdir}/tclConfig.sh" ; then
             AC_MSG_ERROR(unable to locate Tcl config file tclConfig.sh)
