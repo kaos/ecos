@@ -439,11 +439,13 @@ static void
 fis_list(int argc, char *argv[])
 {
     struct fis_image_desc *img;
-    int i;
+    int i, image_indx;
     bool show_cksums = false;
     bool show_datalen = false;
     struct option_info opts[2];
     void *err_addr;
+    unsigned long last_addr, lowest_addr;
+    bool image_found;
 
 #ifdef CYGHWR_REDBOOT_ARM_FLASH_SIB
     // FIXME: this is somewhat half-baked
@@ -466,7 +468,6 @@ fis_list(int argc, char *argv[])
         return;
     }
     flash_read(fis_addr, fis_work_block, fisdir_size, (void **)&err_addr);
-    img = (struct fis_image_desc *) fis_work_block;
     // Let diag_printf do the formatting in both cases, rather than counting
     // cols by hand....
     diag_printf("%-16s  %-10s  %-10s  %-10s  %-s\n",
@@ -474,8 +475,24 @@ fis_list(int argc, char *argv[])
                 show_cksums ? "Checksum" : "Mem addr",
                 show_datalen ? "Datalen" : "Length",
                 "Entry point" );
-    for (i = 0;  i < fisdir_size/sizeof(*img);  i++, img++) {
-        if (img->name[0] != (unsigned char)0xFF) {
+    last_addr = 0;
+    image_indx = 0;
+    do {
+        image_found = false;
+        lowest_addr = 0xFFFFFFFF;
+        img = (struct fis_image_desc *) fis_work_block;
+        for (i = 0;  i < fisdir_size/sizeof(*img);  i++, img++) {
+            if (img->name[0] != (unsigned char)0xFF) {
+                if ((img->flash_base > last_addr) && (img->flash_base < lowest_addr)) {
+                    lowest_addr = img->flash_base;
+                    image_found = true;
+                    image_indx = i;
+                }
+            }
+        }
+        if (image_found) {
+            img = (struct fis_image_desc *) fis_work_block;
+            img += image_indx;
             diag_printf("%-16s  0x%08lX  0x%08lX  0x%08lX  0x%08lX\n", img->name, 
                         img->flash_base, 
 #ifdef CYGSEM_REDBOOT_FIS_CRC_CHECK
@@ -487,7 +504,8 @@ fis_list(int argc, char *argv[])
 #endif
                         img->entry_point);
         }
-    }
+        last_addr = lowest_addr;
+    } while (image_found == true);
 }
 
 static void

@@ -1,3 +1,8 @@
+2003-10-06  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/flash.c (fis_list): Display FIS directory entries in FLASH
+	address (sorted) order.
+
 2003-10-03  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/flash.c (fis_delete): 'fconfig' data only shows up in FIS if
