@@ -301,11 +301,22 @@ cdl_package CYGPKG_INFRA {
                 the set of global flags if present."
         }
 
-        cdl_option CYGPKG_INFRA_TESTS {
+        cdl_component CYGPKG_INFRA_TESTS {
             display "Infra package tests"
             flavor  data
             no_define
             calculated { "tests/cxxsupp" }
+
+            cdl_option CYGNUM_TESTS_RUN_COUNT {
+                display "Number of times a test runs"
+                flavor  data
+                default_value 1	
+                description "
+                    This option controls the number of times tests will execute their
+                    basic function.  Not all tests will honor this setting, but those
+                    that do will execute the test N times before terminating.  A value
+                    less than 0 indicates to run forever."
+            }
         }
 
     }

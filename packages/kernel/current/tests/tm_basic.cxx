@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2002, 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -1635,8 +1635,8 @@ run_sched_tests(void)
     end_of_test_group();
 }
 
-void 
-run_all_tests(CYG_ADDRESS id)
+static void 
+_run_all_tests(CYG_ADDRESS id)
 {
     int i, j;
     cyg_uint32 tv[nsamples], tv0, tv1;
@@ -1780,7 +1780,18 @@ run_all_tests(CYG_ADDRESS id)
 
     ticks = cyg_current_time();
     diag_printf("\nTiming complete - %d ms total\n\n", (int)((ticks*ns_per_system_clock)/1000));
+}
 
+void 
+run_all_tests(CYG_ADDRESS id)
+{
+#if CYGNUM_TESTS_RUN_COUNT < 0
+    while (1)
+#else       
+    int i;
+    for (i = 0;  i < CYGNUM_TESTS_RUN_COUNT;  i++)
+#endif
+        _run_all_tests(id);
     CYG_TEST_PASS_FINISH("Basic timing OK");
 }
 

@@ -1,3 +1,7 @@
+2003-05-05  Gary Thomas  <gary@mlbassoc.com>
+
+	* cdl/infra.cdl: Add option to control number of times tests run.
+
 2003-04-25  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* tests/cxxsupp.cxx: don't include <pkgconf/kernel.h> as it's not
