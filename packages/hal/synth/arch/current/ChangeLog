@@ -1,3 +1,7 @@
+2004-06-18  William Donahue  <WDonahue@siriusradio.com>
+
+	* include/hal_io.h (CYG_HAL_SYS_FD_ZERO): Added misisng }
+
 2004-05-27  Alexander Neundorf <alexander.neundorf@jenoptik.com>
 
 	* include/hal_io.h: 

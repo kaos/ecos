@@ -309,6 +309,7 @@ struct cyg_hal_sys_fd_set {
              __i < (CYG_HAL_SYS_FD_SETSIZE / CYG_HAL_SYS__NFDBITS);     \
              __i++) {                                                   \
            (_fdsp_)->hal_fds_bits[__i] = 0;                             \
+        }                                                               \
      } while (0);
     
 #define CYG_HAL_SYS_FD_SET(_fd_, _fdsp_)                                \
