@@ -1,3 +1,8 @@
+2003-01-28  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/thread.cdl: Correct max legal value for
+	CYGNUM_KERNEL_THREADS_DATA_MAX.
+
 2003-01-22  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* doc/kernel.sgml: Document cyg_thread_info type.
