@@ -101,7 +101,7 @@ dp83902a_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     // This conditioning out is necessary because of explicit calls to this
     // DSR - which would not ever be called in the case of a polled mode
     // usage ie. in RedBoot.
-#ifdef CYGPKG_IO_ETH_DRIVERS_NET
+#ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
     dp83902a_priv_data_t* dp = (dp83902a_priv_data_t *)data;
     struct cyg_netdevtab_entry *ndp = (struct cyg_netdevtab_entry *)(dp->tab);
     struct eth_drv_sc *sc = (struct eth_drv_sc *)(ndp->device_instance);

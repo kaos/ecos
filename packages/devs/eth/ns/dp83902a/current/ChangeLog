@@ -1,3 +1,7 @@
+2004-08-12  Jani Monoses <jani@iv.ro>
+
+	* src/if_dp83902a.c: Fix builing with lwip.
+
 2003-11-19  David Woodhouse  <dwmw2@redhat.com>
 
 	* src/if_dp83902a.c: Set STOP bit in CR after setting CURP 

@@ -2713,7 +2713,7 @@ eth_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     // This conditioning out is necessary because of explicit calls to this
     // DSR - which would not ever be called in the case of a polled mode
     // usage ie. in RedBoot.
-#ifdef CYGPKG_IO_ETH_DRIVERS_NET
+#ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
     struct i82559* p_i82559 = (struct i82559 *)data;
     struct cyg_netdevtab_entry *ndp =
         (struct cyg_netdevtab_entry *)(p_i82559->ndp);
