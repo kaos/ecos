@@ -76,7 +76,7 @@ for i in `cat ${doclist}`; do
   line="`echo $i | sed 's/#.*//;'`"
   if (test ! -z $line); then
    /bin/echo -n " ${toplvl}/packages/$i" | sed "s@/current/@/${PACKAGEVER}/@g" >> makefile
-   entityi="`echo $i | sed 's@/@-@g; s@\.@-@g; s@_@-@g; s@-current-doc@@g; s@-current@@g'`"
+   entityi="`echo $i | sed 's@\+@x@g; s@/@-@g; s@\.@-@g; s@_@-@g; s@-current-doc@@g; s@-current@@g'`"
    echo "<!ENTITY $entityi SYSTEM \"${toplvl}/packages/$i\">" | sed "s@/current/@/${PACKAGEVER}/@g" >> ecos-ref.sgml
   fi
 done
@@ -207,7 +207,7 @@ EOF
 for i in `cat ${doclist}`; do
   line="`echo $i | sed 's/#.*//;'`"
   if (test ! -z $line); then
-   entityi="`echo $i | sed 's@/@-@g; s@\.@-@g; s@_@-@g; s@-current-doc@@g; s@-current@@g'`"
+   entityi="`echo $i | sed 's@\+@x@g; s@/@-@g; s@\.@-@g; s@_@-@g; s@-current-doc@@g; s@-current@@g'`"
    # special kludge
    if [ "`basename $i`" != "tcpip-manpages.sgml" -a \
 	"`basename $i`" != "snmp-manpages.sgml" -a \

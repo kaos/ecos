@@ -1,3 +1,7 @@
+2004-06-15  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* sgml/makemakefile: Replace plusses with x'es in all entities.
+
 2004-04-19  John Dallaway  <jld@ecoscentric.com>
 
 	* sgml/doclist: Remove RedBoot documentation which is now built
