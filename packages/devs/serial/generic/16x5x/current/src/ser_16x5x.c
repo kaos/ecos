@@ -221,6 +221,11 @@ static SERIAL_FUNS(pc_serial_funs,
 
 #include CYGDAT_IO_SERIAL_GENERIC_16X5X_INL
 
+#ifndef CYG_IO_SERIAL_GENERIC_16X5X_INT_PRIORITY
+# define CYG_IO_SERIAL_GENERIC_16X5X_INT_PRIORITY 4
+#endif
+
+
 // Internal function to actually configure the hardware to desired
 // baud rate, etc.
 static bool
@@ -337,7 +342,7 @@ pc_serial_init(struct cyg_devtab_entry *tab)
 
     if (chan->out_cbuf.len != 0) {
         cyg_drv_interrupt_create(ser_chan->int_num,
-                                 99,
+                                 CYG_IO_SERIAL_GENERIC_16X5X_INT_PRIORITY,
                                  (cyg_addrword_t)chan,
                                  pc_serial_ISR,
                                  pc_serial_DSR,
@@ -443,7 +448,11 @@ pc_serial_set_config(serial_channel *chan, cyg_uint32 key, const void *xbuf,
     case CYG_IO_SET_CONFIG_SERIAL_HW_FLOW_CONFIG:
         // Nothing to do because we do support both RTSCTS and DSRDTR flow
         // control.
-        // Other targets would clear any unsupported flags here.
+        // Other targets would clear any unsupported flags here and
+        // would then return -ENOSUPP - the higher layer can then query
+        // what flags are set and decide what to do. This is optimised for
+        // the most common case - i.e. that authors know what their hardware
+        // is capable of.
         // We just return ENOERR.
       break;
 #endif
