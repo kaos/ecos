@@ -73,6 +73,8 @@
 //----------------------------------------------------------------------------
 // Reset.
 
+__externC void hal_pc_reset(void);
+
 #define HAL_PLATFORM_RESET()             hal_pc_reset()
 
 #define HAL_PLATFORM_RESET_ENTRY	 &hal_pc_reset

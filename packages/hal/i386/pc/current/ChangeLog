@@ -1,3 +1,7 @@
+2003-07-23  Nick Garnett  <nickg@balti.calivar.com>
+
+	* include/plf_intr.h: Added extern definition for hal_pc_reset().
+
 2003-04-10  Nick Garnett  <nickg@balti.calivar.com>
 
 	* include/pkgconf/mlt_i386_pc_rom.ldi: Brought list of sections up
