@@ -75,6 +75,9 @@ CYGARC_MEMDESC_TABLE CYGBLD_ATTRIB_WEAK = {
     CYGARC_MEMDESC_TABLE_END
 };
 
+void
+_adder_set_leds(int pat);
+
 //--------------------------------------------------------------------------
 // Platform init code.
 void

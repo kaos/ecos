@@ -1,3 +1,8 @@
+2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/hal_aux.c: Added prototype of _adder_set_led() to remove
+	compiler warning
+	
 2004-09-16  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/hal_aux.c (hal_platform_init): Move parallel port initializations
