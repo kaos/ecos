@@ -1,3 +1,11 @@
+2003-04-03  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/load.c: Better handling of default download mode.  Also
+	display information when I/O errors occor (was silent).
+
+	* src/net/http_client.c: 
+	* include/net/http.h: Improve parsing of HTTP responses for errors.
+
 2003-03-28  Gary Thomas  <gary@mlbassoc.com>  inspired by
 2003-03-28  Jani Monoses <jani@iv.ro>	
 

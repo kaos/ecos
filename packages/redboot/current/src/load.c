@@ -140,6 +140,9 @@ redboot_getc(void)
         getc_info.bufp = getc_info.buf;
         getc_info.len = (*getc_info.fun)(getc_info.bufp, BUF_SIZE, &getc_info.err);
         if ((getc_info.avail = getc_info.len) <= 0) {
+            if (getc_info.len < 0) {
+                diag_printf("I/O error: %s\n", (getc_info.io->error)(getc_info.err));
+            }
             if (getc_info.verbose) diag_printf("\n");
             return -1;
         }
@@ -590,7 +593,7 @@ do_load(int argc, char *argv[])
     char *filename = 0;
     struct option_info opts[7];
     connection_info_t info;
-    getc_io_funcs_t *io;
+    getc_io_funcs_t *io = NULL;
     struct load_io_entry *io_tab;
 #ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
     bool spillover_ok = false;
@@ -653,7 +656,6 @@ do_load(int argc, char *argv[])
         return;
     }
     if (mode_str_set) {
-        io = (getc_io_funcs_t *)NULL;
         for (io_tab = __RedBoot_LOAD_TAB__; 
              io_tab != &__RedBoot_LOAD_TAB_END__;  io_tab++) {
             if (strncasecmp(&mode_str[0], io_tab->name, strlen(&mode_str[0])) == 0) {
@@ -679,20 +681,23 @@ do_load(int argc, char *argv[])
             return;
         }
     } else {
+        char *which;
         io_tab = (struct load_io_entry *)NULL;  // Default
 #ifdef CYGPKG_REDBOOT_NETWORKING
-#ifdef CYGSEM_REDBOOT_NET_TFTP_DOWNLOAD
+#ifdef CYGSEM_REDBOOT_NET_TFTP_DOWNLOAD        
+        which = "TFTP";
         io = &tftp_io;
-#elif CYGSEM_REDBOOT_NET_HTTP_DOWNLOAD
+#else if defined(CYGSEM_REDBOOT_NET_HTTP_DOWNLOAD)
+        which = "HTTP";
         io = &http_io;
-#else
-        io = &xyzModem_io;
-        verbose = false;
 #endif
-#else
-        io = &xyzModem_io;
-        verbose = false;
 #endif
+        if (!io) {
+            which = "Xmodem";
+            io = &xyzModem_io;
+            verbose = false;
+        }
+        diag_printf("Using default protocol (%s)\n", which);
     }
 #ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
     if (base_addr_set &&

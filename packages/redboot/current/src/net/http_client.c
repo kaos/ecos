@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2002, 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -173,7 +173,17 @@ http_stream_read(char *buf,
                             s->avail--;
                         }
                         if (strncmp(s->bufp, "OK", 2)) {
-                            *err = HTTP_BADHDR;
+                            switch (code) {
+                            case 400:
+                                *err = HTTP_BADREQ;
+                                break;
+                            case 404:
+                                *err = HTTP_NOFILE;
+                                break;
+                            default:
+                                *err = HTTP_BADHDR;
+                                break;
+                            }
                             return -1;
                         }
                         // Find \r\n\r\n - end of HTTP preamble
@@ -224,6 +234,10 @@ http_error(int err)
         return "";
     case HTTP_BADHDR:
         return "Unrecognized HTTP response";
+    case HTTP_BADREQ:
+        return "Bad HTTP request (check file name)";
+    case HTTP_NOFILE:
+        return "No such file";
     case HTTP_OPEN:
         return "Can't connect to host";
     case HTTP_IO:
