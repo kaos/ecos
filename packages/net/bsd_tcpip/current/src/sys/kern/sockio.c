@@ -467,7 +467,6 @@ bsd_getname(cyg_file *fp, sockaddr *asa, socklen_t *alen, int peer)
     struct socket *so;
     socklen_t len = 0;
     int error;
-    int type = peer ? PRU_PEERADDR : PRU_SOCKADDR;
     sockaddr *sa;
     
     if( alen != NULL)
@@ -475,7 +474,7 @@ bsd_getname(cyg_file *fp, sockaddr *asa, socklen_t *alen, int peer)
         
     so = (struct socket *)fp->f_data;
     sa = 0;
-    if (type) {
+    if (peer) {
         // getpeername()
 	if ((so->so_state & (SS_ISCONNECTED|SS_ISCONFIRMING)) == 0) {
             return (ENOTCONN);
