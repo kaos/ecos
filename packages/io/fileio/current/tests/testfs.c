@@ -58,10 +58,8 @@
 //==========================================================================
 
 #include <pkgconf/hal.h>
-#include <pkgconf/kernel.h>
 #include <pkgconf/io_fileio.h>
 
-#include <cyg/kernel/ktypes.h>         // base kernel types
 #include <cyg/infra/cyg_trac.h>        // tracing macros
 #include <cyg/infra/cyg_ass.h>         // assertion macros
 
@@ -73,7 +71,6 @@
 
 #include <cyg/fileio/fileio.h>
 
-#include <cyg/kernel/kapi.h>
 #include <cyg/infra/diag.h>
 
 //==========================================================================
@@ -351,8 +348,11 @@ static int testfs_find( testfs_node *dir,       // dir to start search in
 
 static time_t testfs_time(void)
 {
-    // FIXME: !!!!Temporary!!!!
+#ifdef CYGPKG_KERNEL
     return cyg_current_time();
+#else
+    return 0;
+#endif
 }
 
 // -------------------------------------------------------------------------

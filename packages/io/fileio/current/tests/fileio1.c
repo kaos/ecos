@@ -58,10 +58,8 @@
 //==========================================================================
 
 #include <pkgconf/hal.h>
-#include <pkgconf/kernel.h>
 #include <pkgconf/io_fileio.h>
 
-#include <cyg/kernel/ktypes.h>         // base kernel types
 #include <cyg/infra/cyg_trac.h>        // tracing macros
 #include <cyg/infra/cyg_ass.h>         // assertion macros
 
@@ -357,7 +355,7 @@ static void comparefiles( char *name2, char *name1 )
 //==========================================================================
 // main
 
-int main( int argc, char **argv )
+int cyg_user_start(void)
 {
     int err;
 
