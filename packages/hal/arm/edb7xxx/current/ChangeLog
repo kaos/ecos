@@ -1,3 +1,13 @@
+2002-12-06  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* misc/edb7312_redboot_ROMRAM.ecm: 
+	* misc/edb7312_redboot_ROM.ecm: 
+	* misc/edb7312_redboot_RAM.ecm: 
+	* misc/edb7212_redboot_ROM.ecm: 
+	* misc/edb7212_redboot.ecm: 
+	* misc/edb7211_redboot_ROM.ecm: 
+	* misc/edb7211_redboot.ecm: Force no 'Linux exec' command in RedBoot.
+
 2002-08-02  Gary Thomas  <gary@chez-thomas.org>
 
 	* cdl/hal_arm_edb7xxx.cdl: Clean up CDL.

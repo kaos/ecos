@@ -106,3 +106,7 @@ cdl_option CYGPKG_NS_DNS_BUILD {
 };
 
 
+cdl_option CYGBLD_BUILD_REDBOOT_WITH_EXEC {
+    user_value 0
+};
+

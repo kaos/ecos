@@ -44,3 +44,7 @@ cdl_component CYGBLD_BUILD_REDBOOT {
 };
 
 
+cdl_option CYGBLD_BUILD_REDBOOT_WITH_EXEC {
+    user_value 0
+};
+

@@ -95,3 +95,7 @@ cdl_option CYGPKG_NS_DNS_BUILD {
 cdl_option CYGBLD_REDBOOT_MIN_IMAGE_SIZE {
     user_value 0x00040000
 };
+cdl_option CYGBLD_BUILD_REDBOOT_WITH_EXEC {
+    user_value 0
+};
+
