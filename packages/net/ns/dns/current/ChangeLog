@@ -1,3 +1,9 @@
+2003-09-04  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/dns.cdl: CDL control of what DNS server to use for the tests
+	* tests/dns1.c: Fine tuned the information for my server and added
+	Iztok Zupet's Server to the test.
+
 2003-05-22  Andrew Lunn  <andrew.lunn@ascom.cd>
 
         * src/dns.c: (cyg_dns_res_start) New: Allow IPv6 to be used to

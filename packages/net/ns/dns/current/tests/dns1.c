@@ -86,10 +86,28 @@ struct test_info_s {
 };
 
 struct test_info_s test_info[] = {
+#if CYGPKG_NS_DNS_TESTS_ELSIS
     {
-        "192.168.10.1",
-        "fe80::2ff:8eff:fe04:a18d",
-        "lunn.org.",
+        "194.249.198.85",
+        NULL,
+        "test.ecos.",
+        "hostnamev4",
+        "cnamev4",
+        "192.168.88.1",
+        "hostnamev6",
+        "cnamev6",
+        "fec0::88:4:3:2:1",
+        "hostnamev46",
+        "cnamev46",
+        "192.168.88.2",
+        "fec0::88:4:3:2:2"
+    },
+#endif
+#ifdef CYGPKG_NS_DNS_TESTS_LUNN
+    {
+        "80.238.139.98",
+        "3ffe:bc0:8000::839",
+        "test.ecos.",
         "hostnamev4",
         "cnamev4",
         "192.168.88.1",
@@ -101,6 +119,7 @@ struct test_info_s test_info[] = {
         "192.168.88.2",
         "fec0::88:4:3:2:2"
     }
+#endif
 };
 
 char * familytoa(int family) {

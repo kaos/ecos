@@ -163,7 +163,7 @@ cdl_package CYGPKG_NS_DNS {
     }
 
     cdl_option CYGPKG_NS_DNS_TESTS {
-        display "Networking tests"
+        display "DNS test"
         flavor  data
         active_if CYGPKG_NS_DNS_BUILD
         no_define
@@ -172,6 +172,24 @@ cdl_package CYGPKG_NS_DNS {
         description   "
             This option specifies the set of tests for the DNS package."
     }
-}
 
+    cdl_option CYGPKG_NS_DNS_TESTS_LUNN {
+        display        "Use Andrew Lunn's DNS server for tests"
+        default_value  1
+        description    "
+            Run the tests against Andrew Lunn's DNS server. Servers
+            come and go, IP addresses change, links are sometime down. 
+            So this may not work...."
+    }
+
+    cdl_option CYGPKG_NS_DNS_TESTS_ELSIS {
+        display        "Iztok Zupet DNS server at Elsis for tests"
+        default_value  1
+        description    "
+            Run the tests against Iztok Zupet DNS server at
+            Elsis. Servers come and go, IP addresses change, links are
+            sometime down.  So this may not work...."
+    }
+}
 # EOF dns.cdl
+
