@@ -1,3 +1,12 @@
+2003-02-24  Gary Thomas  <gary@mind.be>
+
+	* include/plx.h: Clean up unused code.
+
+	* src/uE250_pci.c: 
+	* src/uE250_misc.c: 
+	* include/plf_io.h: 
+	* include/hal_plf_ints.h: Support interrupts via PCI bus.
+
 2003-02-04  Gary Thomas  <gary@mind.be>
 
 	* src/xilinx-load.c: 

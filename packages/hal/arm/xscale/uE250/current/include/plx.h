@@ -41,16 +41,8 @@
 //####ECOSGPLCOPYRIGHTEND####
 //=============================================================================
 
-#if 0
-#define PCI_MEM_BASE            0x0C000000
-#define LOCALBUS_MEM_BASE       0x00100000
-#define PCI_MEM_BASE2           0x10000000
-#define DISPLAY_MEM_BASE        0x04000000
-#define PLX_PCI_SLOT            0x5
-#else
 #define LOCALBUS_CONFIG_OFFSET  0x0
 #define LOCALBUS_OFFSET         0x100
-#endif
 
 #ifndef _DEFINE_VARS
 #define __global externC
@@ -61,17 +53,6 @@ __global cyg_uint32 _plx_config_addr;
 __global cyg_uint32 _plx_localbus_addr;
 #undef __global
 
-#if 0
-#define plx_config_readl(a) (*(volatile cyg_uint32 *)(PCI_MEM_BASE + LOCALBUS_MEM_BASE + LOCALBUS_CONFIG_OFFSET + (a)))
-#define plx_config_writel(v,a)  (*(volatile cyg_uint32 *)(PCI_MEM_BASE + LOCALBUS_MEM_BASE + LOCALBUS_CONFIG_OFFSET + (a)))=(v)
-
-#define localbus_readb(a) (*(volatile cyg_uint8 *)(PCI_MEM_BASE + LOCALBUS_MEM_BASE + LOCALBUS_OFFSET + (a)))
-#define localbus_readw(a) (*(volatile cyg_uint16 *)(PCI_MEM_BASE + LOCALBUS_MEM_BASE + LOCALBUS_OFFSET + (a)))
-#define localbus_readl(a) (*(volatile cyg_uint32 *)(PCI_MEM_BASE + LOCALBUS_MEM_BASE + LOCALBUS_OFFSET + (a)))
-#define localbus_writeb(v,a) (*(volatile cyg_uint8 *)(PCI_MEM_BASE + LOCALBUS_MEM_BASE + LOCALBUS_OFFSET + (a)))=(v)
-#define localbus_writew(v,a) (*(volatile cyg_uint16 *)(PCI_MEM_BASE + LOCALBUS_MEM_BASE + LOCALBUS_OFFSET + (a)))=(v)
-#define localbus_writel(v,a) (*(volatile cyg_uint32 *)(PCI_MEM_BASE + LOCALBUS_MEM_BASE + LOCALBUS_OFFSET + (a)))=(v)
-#else
 #define plx_config_readl(a) (*(volatile cyg_uint32 *)(_plx_config_addr + (a)))
 #define plx_config_writel(v,a)  (*(volatile cyg_uint32 *)(_plx_config_addr + (a)))=(v)
 
@@ -81,7 +62,6 @@ __global cyg_uint32 _plx_localbus_addr;
 #define localbus_writeb(v,a) (*(volatile cyg_uint8 *)(_plx_localbus_addr + (a)))=(v)
 #define localbus_writew(v,a) (*(volatile cyg_uint16 *)(_plx_localbus_addr + (a)))=(v)
 #define localbus_writel(v,a) (*(volatile cyg_uint32 *)(_plx_localbus_addr + (a)))=(v)
-#endif
 
 #define display_readb(a) (*(volatile cyg_uint8 *)(PCI_MEM_BASE2 + DISPLAY_MEM_BASE + (a)))
 #define display_readw(a) (*(volatile cyg_uint16 *)(PCI_MEM_BASE2 + DISPLAY_MEM_BASE + (a)))

@@ -151,7 +151,16 @@ cyg_hal_plf_pci_init(void)
             }
         }
     }
+}
 
+void 
+_uE250_pci_translate_interrupt(int bus, int devfn, int *vector, int *valid)
+{
+    int dev = CYG_PCI_DEV_GET_DEV(devfn);
+
+    *vector = _uPCI_BASE_INTERRUPT+(dev-1);
+    diag_printf("%s.%d - dev: %d = %d\n", __FUNCTION__, __LINE__, dev, *vector);
+    valid = true;;
 }
 
 static void

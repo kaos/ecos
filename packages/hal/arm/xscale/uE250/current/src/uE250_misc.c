@@ -133,6 +133,12 @@ plf_hardware_init(void)
     hal_if_init();
 
     cyg_hal_plf_pci_init();
+    // Set up to handle PCI interrupts
+    HAL_INTERRUPT_CONFIGURE(CYGNUM_HAL_INTERRUPT_GPIO1, 0, 0);  // Falling edge
+    HAL_INTERRUPT_UNMASK(CYGNUM_HAL_INTERRUPT_GPIO1);
+    PCICTL_INT_RESET = 0xFF;  // Clear all pending interrupts
+    PCICTL_INT_EDGE = 0xFF;   // Generate interrupts
+    PCICTL_IRQ_MASK = 0x00;   // All masked
 
     initialize_plx_bridge();
 }
@@ -166,6 +172,66 @@ hal_arm_mem_real_region_top( cyg_uint8 *regionend )
 #endif
     return regionend;
 }
+
+// ------------------------------------------------------------------------
+// Extended, platform-specific, interrupt handling
+
+// FIXME - still needs work to support interrupts from PXA bridge
+
+int  
+_uE250_extended_irq(void)
+{
+    cyg_uint32 stat = PCICTL_STATUS_REG;
+    int irq = 0;
+
+    if (stat & 0x1F0) {
+        PCICTL_INT_RESET = 0xFF;  // Clear all pending interrupts
+    }
+    if (stat & 0x00F) {
+        // PCI interrupt
+        for (irq = 0;  irq < 4; irq++) {
+            if ((stat & (1 << irq)) != 0) {
+                break;
+            }
+        }
+        irq += _uPCI_BASE_INTERRUPT;
+    }
+    HAL_INTERRUPT_ACKNOWLEDGE(CYGNUM_HAL_INTERRUPT_GPIO1);
+    PCICTL_INT_EDGE = 0xFF;   // Generate interrupts
+    return irq;
+}
+
+void 
+_uE250_extended_int_mask(int vector)
+{
+    if (vector <= CYGNUM_HAL_INTERRUPT_PCI_INTD) {
+        PCICTL_IRQ_MASK &= ~(1<<(vector-CYGNUM_HAL_INTERRUPT_PCI_INTA));
+    }
+}
+
+void 
+_uE250_extended_int_unmask(int vector)
+{
+    if (vector <= CYGNUM_HAL_INTERRUPT_PCI_INTD) {
+        PCICTL_IRQ_MASK |= (1<<(vector-CYGNUM_HAL_INTERRUPT_PCI_INTA));
+    }
+}
+
+void 
+_uE250_extended_int_acknowledge(int vector)
+{
+}
+
+void 
+_uE250_extended_int_configure(int vector, int level, int up)
+{
+}
+
+void 
+_uE250_extended_int_set_level(int vector, int level)
+{
+}
+
 
 // ------------------------------------------------------------------------
 // EOF uE250_misc.c

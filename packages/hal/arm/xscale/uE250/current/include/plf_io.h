@@ -69,7 +69,7 @@
 #define PCICTL_CONFIG_REMAP        PCI_CTL_IO(0x0008)
 #define PCICTL_INT_RESET           PCI_CTL_IO(0x0010)
 #define PCICTL_STATUS_REG          PCI_CTL_IO_BYTE(0x0010)
-#define PCICTL_INT_EDGE            PCI_CTL_IO(0x0011)
+#define PCICTL_INT_EDGE            PCI_CTL_IO_BYTE(0x0011)
 #define PCICTL_IRQ_MASK            PCI_CTL_IO(0x0014)
 #define PCICTL_MISC                PCI_CTL_IO(0x001C)
 
@@ -171,7 +171,9 @@ extern void cyg_hal_plf_pci_cfg_write_byte   (cyg_uint32 bus,
 externC void cyg_hal_plf_pci_init(void);
 #define HAL_PCI_INIT() cyg_hal_plf_pci_init()
 
-#define HAL_PCI_TRANSLATE_INTERRUPT(__bus, __devfn, __vector, __valid)
+externC void _uE250_pci_translate_interrupt(int bus, int devfn, int *vector, int *valid);
+#define HAL_PCI_TRANSLATE_INTERRUPT(__bus, __devfn, __vector, __valid) \
+  _uE250_pci_translate_interrupt(__bus, __devfn, &__vector, &__valid)
 
 // Special I/O access functions
 externC cyg_uint8 pci_io_read_8(cyg_uint32 address);

@@ -61,6 +61,62 @@
 #include <cyg/hal/plf_io.h>
 
 //----------------------------------------------------------------------------
+// Additional interrupts from PCI & Motherboard
+#define _uPCI_BASE_INTERRUPT   (96+17)
+
+#define CYGNUM_HAL_INTERRUPT_PCI_INTA    (_uPCI_BASE_INTERRUPT+0)   
+#define CYGNUM_HAL_INTERRUPT_PCI_INTB    (_uPCI_BASE_INTERRUPT+1)   
+#define CYGNUM_HAL_INTERRUPT_PCI_INTC    (_uPCI_BASE_INTERRUPT+2)   
+#define CYGNUM_HAL_INTERRUPT_PCI_INTD    (_uPCI_BASE_INTERRUPT+3)   
+#define CYGNUM_HAL_INTERRUPT_PXA         (_uPCI_BASE_INTERRUPT+4)   
+
+#undef  CYGNUM_HAL_ISR_MIN
+#undef  CYGNUM_HAL_ISR_MAX
+#define CYGNUM_HAL_ISR_MIN               0
+#define CYGNUM_HAL_ISR_MAX               (_uPCI_BASE_INTERRUPT+4)   
+
+//----------------------------------------------------------------------------
+// Platform specific interrupt handling
+externC int  _uE250_extended_irq(void);
+externC void _uE250_extended_int_mask(int vector);
+externC void _uE250_extended_int_unmask(int vector);
+externC void _uE250_extended_int_acknowledge(int vector);
+externC void _uE250_extended_int_configure(int vector, int level, int up);
+externC void _uE250_extended_int_set_level(int vector, int level);
+
+#define HAL_EXTENDED_IRQ_HANDLER(sources)                       \
+    if ((sources & (1 << CYGNUM_HAL_INTERRUPT_GPIO1)) != 0) {   \
+        int res = _uE250_extended_irq();                        \
+        if (res) return res;                                    \
+    };
+#define HAL_EXTENDED_INTERRUPT_MASK(vector)     \
+    if (vector >= _uPCI_BASE_INTERRUPT) {       \
+        _uE250_extended_int_mask(vector);       \
+        return;                                 \
+    }
+#define HAL_EXTENDED_INTERRUPT_UNMASK(vector)   \
+    if (vector >= _uPCI_BASE_INTERRUPT) {       \
+        _uE250_extended_int_unmask(vector);     \
+        return;                                 \
+    }
+#define HAL_EXTENDED_INTERRUPT_ACKNOWLEDGE(vector)      \
+    if (vector >= _uPCI_BASE_INTERRUPT) {               \
+        _uE250_extended_int_acknowledge(vector);        \
+        return;                                         \
+    }
+#define HAL_EXTENDED_INTERRUPT_CONFIGURE(vector, level, up)     \
+    if (vector >= _uPCI_BASE_INTERRUPT) {                       \
+        _uE250_extended_int_configure(vector, level, up);       \
+        return;                                                 \
+    }
+#define HAL_EXTENDED_INTERRUPT_SET_LEVEL(vector, level) \
+    if (vector >= _uPCI_BASE_INTERRUPT) {               \
+        _uE250_extended_int_set_level(vector, level);   \
+        return;                                         \
+    }
+
+
+//----------------------------------------------------------------------------
 // Reset.
 #undef  HAL_PLATFORM_RESET
 #define HAL_PLATFORM_RESET()                                               \
