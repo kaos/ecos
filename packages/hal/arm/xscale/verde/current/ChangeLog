@@ -1,3 +1,11 @@
+2003-07-18  Nick Garnett  <nickg@balti.calivar.com>
+
+	* cdl/hal_arm_xscale_verde.cdl:
+        Changed values for CYGNUM_HAL_RTC_NUMERATOR,
+        CYGNUM_HAL_RTC_DENOMINATOR and CYGNUM_HAL_RTC_PERIOD to
+        "default_value" from "calculated". This makes it easier
+        to change these values globally.
+        
 2003-06-21  Mark Salter  <msalter@redhat.com>
 
 	* src/verde_pci.c (pci_config_setup): Add dev field to PCI-X Type 0

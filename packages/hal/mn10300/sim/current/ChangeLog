@@ -1,3 +1,11 @@
+2003-07-18  Nick Garnett  <nickg@balti.calivar.com>
+
+	* cdl/hal_mn10300_am31_sim.cdl:
+        Changed values for CYGNUM_HAL_RTC_NUMERATOR,
+        CYGNUM_HAL_RTC_DENOMINATOR and CYGNUM_HAL_RTC_PERIOD to
+        "default_value" from "calculated". This makes it easier
+        to change these values globally.
+        
 2003-03-06  Bart Veer  <bartv@ecoscentric.com>
 
 	* include/plf_io.h: add dummy header file needed by the

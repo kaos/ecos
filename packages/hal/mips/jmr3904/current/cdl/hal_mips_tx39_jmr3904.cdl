@@ -125,19 +125,19 @@ cdl_package CYGPKG_HAL_MIPS_TX39_JMR3904 {
         cdl_option CYGNUM_HAL_RTC_NUMERATOR {
             display       "Real-time clock numerator"
             flavor        data
-            calculated    1000000000
+            default_value 1000000000
         }
         cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
             display       "Real-time clock denominator"
             flavor        data
-            calculated    100
+            default_value 100
         }
         # Isn't a nice way to handle freq requirement!
         cdl_option CYGNUM_HAL_RTC_PERIOD {
             display       "Real-time clock period"
             flavor        data
             legal_values  { 15360 20736 }
-            calculated     { CYGHWR_HAL_MIPS_CPU_FREQ == 50 ? 15360 : \
+            default_value  { CYGHWR_HAL_MIPS_CPU_FREQ == 50 ? 15360 : \
                              CYGHWR_HAL_MIPS_CPU_FREQ == 66 ? 20736 : 0 }
         }
     }

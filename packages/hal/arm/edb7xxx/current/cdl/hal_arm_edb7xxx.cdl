@@ -297,17 +297,17 @@ CL-PS7111 and EP7xxx based development boards."
         cdl_option CYGNUM_HAL_RTC_NUMERATOR {
             display       "Real-time clock numerator"
             flavor        data
-            calculated    1000000000
+            default_value 1000000000
         }
         cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
             display       "Real-time clock denominator"
             flavor        data
-            calculated    100
+            default_value 100
         }
         cdl_option CYGNUM_HAL_RTC_PERIOD {
             display       "Real-time clock period"
             flavor        data
-            calculated    { CYGHWR_HAL_ARM_EDB7XXX_PROCESSOR_CLOCK <= 73728 ? 5120 : 6272 };
+            default_value { CYGHWR_HAL_ARM_EDB7XXX_PROCESSOR_CLOCK <= 73728 ? 5120 : 6272 };
 	    # Assumes 512KHz clock - usually.
         }
     }

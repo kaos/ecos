@@ -1,3 +1,11 @@
+2003-07-18  Nick Garnett  <nickg@balti.calivar.com>
+
+	* cdl/hal_arm_edb7xxx.cdl:
+        Changed values for CYGNUM_HAL_RTC_NUMERATOR,
+        CYGNUM_HAL_RTC_DENOMINATOR and CYGNUM_HAL_RTC_PERIOD to
+        "default_value" from "calculated". This makes it easier
+        to change these values globally.
+        
 2003-03-28  Jani Monoses  <jani@iv.ro>
 
 	* include/hal_platform_setup.h: EDB7211 has two 8M FLASH chips

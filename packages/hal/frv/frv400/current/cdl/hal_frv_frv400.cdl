@@ -172,18 +172,18 @@ cdl_package CYGPKG_HAL_FRV_FRV400 {
         cdl_option CYGNUM_HAL_RTC_NUMERATOR {
             display       "Real-time clock numerator"
             flavor        data
-            calculated    1000000000
+            default_value 1000000000
         }
         cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
             display       "Real-time clock denominator"
             flavor        data
-            calculated    100
+            default_value 100
         }
         cdl_option CYGNUM_HAL_RTC_PERIOD {
             display       "Real-time clock period"
             flavor        data
 # Internal clock set up to run at 1MHz
-            calculated    { (1000000/CYGNUM_HAL_RTC_DENOMINATOR) }
+            default_value { (1000000/CYGNUM_HAL_RTC_DENOMINATOR) }
         }
     }
 

@@ -98,7 +98,7 @@ cdl_package CYGPKG_HAL_ARM_SA11X0 {
         cdl_option CYGNUM_HAL_RTC_NUMERATOR {
             display       "Real-time clock numerator"
             flavor        data
-            calculated    1000000000
+            default_value 1000000000
         }
         cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
             display       "Real-time clock denominator"
@@ -114,7 +114,7 @@ cdl_package CYGPKG_HAL_ARM_SA11X0 {
         cdl_option CYGNUM_HAL_RTC_PERIOD {
             display       "Real-time clock period"
             flavor        data
-            calculated    (3686400/CYGNUM_HAL_RTC_DENOMINATOR)        ;# Clock for OS Timer is 3.6864MHz
+            default_value (3686400/CYGNUM_HAL_RTC_DENOMINATOR)        ;# Clock for OS Timer is 3.6864MHz
         }
     }
 

@@ -1,3 +1,11 @@
+2003-07-18  Nick Garnett  <nickg@balti.calivar.com>
+
+	* cdl/hal_arm_sa11x0.cdl:
+        Changed values for CYGNUM_HAL_RTC_NUMERATOR,
+        CYGNUM_HAL_RTC_DENOMINATOR and CYGNUM_HAL_RTC_PERIOD to
+        "default_value" from "calculated". This makes it easier
+        to change these values globally.
+        
 2002-10-26  Gary Thomas  <gthomas@ecoscentric.com> (inspired by)
 2002-10-26  Gordon Schumacher <gordon_schumacher@maxtor.com>
 

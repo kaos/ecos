@@ -125,17 +125,17 @@ cdl_package CYGPKG_HAL_M68K_MCF52xx_MCF5272_MCF5272C3 {
         cdl_option CYGNUM_HAL_RTC_NUMERATOR {
             display       "Real-time clock numerator"
             flavor        data
-            calculated    1000000000
+            default_value 1000000000
         }
         cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
             display       "Real-time clock denominator"
             flavor        data
-            calculated    1000
+            default_value 1000
         }
         cdl_option CYGNUM_HAL_RTC_PERIOD {
             display       "Real-time clock period"
             flavor        data
-            calculated    1000000
+            default_value 1000000
         }
     }
 

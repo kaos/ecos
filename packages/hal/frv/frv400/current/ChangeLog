@@ -1,3 +1,11 @@
+2003-07-18  Nick Garnett  <nickg@balti.calivar.com>
+
+	* cdl/hal_frv_frv400.cdl:
+        Changed values for CYGNUM_HAL_RTC_NUMERATOR,
+        CYGNUM_HAL_RTC_DENOMINATOR and CYGNUM_HAL_RTC_PERIOD to
+        "default_value" from "calculated". This makes it easier
+        to change these values globally.
+        
 2002-08-29  Mark Salter  <msalter@redhat.com>
 
 	* include/plf_stub.h: Add HAL_STUB_HW_BREAKPOINT_LIST_SIZE and

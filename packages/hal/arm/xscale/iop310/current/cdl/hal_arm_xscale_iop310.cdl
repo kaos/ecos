@@ -179,17 +179,17 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_IOP310 {
         cdl_option CYGNUM_HAL_RTC_NUMERATOR {
             display       "Real-time clock numerator"
             flavor        data
-            calculated    1000000000
+            default_value 1000000000
         }
         cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
             display       "Real-time clock denominator"
             flavor        data
-            calculated    100
+            default_value 100
         }
         cdl_option CYGNUM_HAL_RTC_PERIOD {
             display       "Real-time clock period"
             flavor        data
-            calculated    330000        ;# External timer is 33MHz
+            default_value 330000        ;# External timer is 33MHz
         }
     }
 

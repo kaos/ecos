@@ -123,13 +123,13 @@ cdl_package CYGPKG_HAL_MN10300_AM33 {
         cdl_option CYGNUM_HAL_RTC_NUMERATOR {
             display       "Real-time clock numerator"
             flavor        data
-            calculated    (1000 * 1000 * 1000)
+            default_value (1000 * 1000 * 1000)
         }
 
         cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
             display       "Real-time clock denominator"
             flavor        data
-            calculated    100
+            default_value 100
             description   "
               This option selects the heartbeat rate for the real-time clock.
               The rate is specified in ticks per second.  Change this value
@@ -141,7 +141,7 @@ cdl_package CYGPKG_HAL_MN10300_AM33 {
         cdl_option CYGNUM_HAL_RTC_PERIOD {
             display       "Real-time clock divisor"
             flavor        data
-            calculated    (CYGHWR_HAL_MN10300_IOCLK_SPEED / CYGNUM_HAL_RTC_DENOMINATOR)
+            default_value (CYGHWR_HAL_MN10300_IOCLK_SPEED / CYGNUM_HAL_RTC_DENOMINATOR)
         }
     }
 

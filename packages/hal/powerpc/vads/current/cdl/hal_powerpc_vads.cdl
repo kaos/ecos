@@ -154,7 +154,7 @@ cdl_package CYGPKG_HAL_POWERPC_VADS {
         cdl_option CYGNUM_HAL_RTC_NUMERATOR {
             display       "Real-time clock numerator"
             flavor        data
-            calculated    1000000000
+            default_value 1000000000
         }
         cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
             display       "Real-time clock denominator"
@@ -167,7 +167,7 @@ cdl_package CYGPKG_HAL_POWERPC_VADS {
         cdl_option CYGNUM_HAL_RTC_PERIOD {
             display       "Real-time clock period"
             flavor        data
-            calculated    { (((CYGHWR_HAL_POWERPC_BOARD_SPEED*1000000)/4)/CYGNUM_HAL_RTC_DENOMINATOR) }
+            default_value { (((CYGHWR_HAL_POWERPC_BOARD_SPEED*1000000)/4)/CYGNUM_HAL_RTC_DENOMINATOR) }
         }
     }
     
