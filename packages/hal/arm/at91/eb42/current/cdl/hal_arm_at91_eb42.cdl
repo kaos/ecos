@@ -60,12 +60,6 @@ cdl_package CYGPKG_HAL_ARM_AT91_EB42 {
 
     compile       eb42_misc.c
 
-    implements    CYGINT_HAL_DEBUG_GDB_STUBS
-    implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
-    implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
-    implements    CYGINT_HAL_ARM_ARCH_ARM7
-    implements    CYGINT_HAL_ARM_THUMB_ARCH
-
     requires      { CYGHWR_HAL_ARM_AT91 == "M42800A" }
 
     define_proc {
