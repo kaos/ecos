@@ -1,3 +1,9 @@
+2003-03-27  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/pure.cxx, cdl/infra.cdl: new function __cxa_pure_virtual(),
+	needed when building with g++ v3.x if the code uses pure
+	virtual functions.
+
 2003-01-18  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/cyg_ass.h (CYG_CHECK_FUNC_PTRC): Define with const pointer

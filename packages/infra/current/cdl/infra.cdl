@@ -59,7 +59,8 @@ cdl_package CYGPKG_INFRA {
 
     compile startup.cxx prestart.cxx pkgstart.cxx userstart.cxx      \
             dummyxxmain.cxx null.cxx simple.cxx fancy.cxx buffer.cxx \
-            diag.cxx tcdiag.cxx memcpy.c memset.c delete.cxx eprintf.c
+            diag.cxx tcdiag.cxx memcpy.c memset.c delete.cxx eprintf.c \
+	    pure.cxx
 
 
     # ====================================================================
