@@ -1,3 +1,10 @@
+2002-07-11  Gary Thomas  <gary@chez-thomas.org>
+
+	* src/quicc_smc1.c: 
+	* include/quicc_smc1.h: 
+	* cdl/hal_powerpc_quicc.cdl: Add support for SCC1 as a serial
+	console (for newer chips which have this available).
+
 2002-06-25  Gary Thomas  <gary@chez-thomas.org>
 
 	* src/quicc_smc1.c: 

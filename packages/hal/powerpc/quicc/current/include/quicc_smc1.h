@@ -4,13 +4,14 @@
 //
 //      quicc_smc1.h
 //
-//      PowerPC QUICC basic Serial IO using port SMC1
+//      PowerPC QUICC basic Serial IO using port SMC1/SCC1
 //
 //=============================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -43,11 +44,11 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    Red Hat
-// Contributors: hmt
+// Contributors: hmt, gthomas
 // Date:         1999-06-08
-// Purpose:      Provide basic Serial IO for MBX board
-// Description:  Serial IO for MBX boards which connect their debug channel
-//               to SMC1; or any QUICC user who wants to use SMC1.
+// Purpose:      Provide basic Serial IO for MPC8xx boards (like Motorola MBX)
+// Description:  Serial IO for MPC8xx boards which connect their debug channel
+//               to SMC1 or SCC1; or any QUICC user who wants to use SMC1/SCC1
 // Usage:
 //
 //####DESCRIPTIONEND####
@@ -64,7 +65,5 @@ externC void cyg_hal_plf_serial_init_channel(void);
 #endif
 
 externC void cyg_hal_plf_serial_init(void);
-externC void cyg_hal_plf_serial_putc(void* __ch_data, cyg_uint8 __ch);
-externC cyg_uint8 cyg_hal_plf_serial_getc(void* __ch_data);
 
 #endif /* CYGONCE_HAL_PPC_QUICC_SMC1_H */

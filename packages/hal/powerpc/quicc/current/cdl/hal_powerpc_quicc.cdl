@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2002 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -50,16 +51,24 @@
 # ====================================================================
 
 cdl_package CYGPKG_HAL_QUICC {
-    display  "Motorola MBX PowerQUICC support"
+    display  "Motorola MPC8xx PowerQUICC support"
     parent        CYGPKG_HAL_POWERPC
     define_header hal_powerpc_quicc.h
     include_dir   cyg/hal/quicc
     description   "
            The QUICC package provides some of the support needed
-           to run eCos on a Motorola MBX board, using the QUICC
+           to run eCos on a Motorola MPC8xx (MBX) board, using the QUICC
            feature of the MPC860 and MPC821 CPUs.
-           Currently only serial IO via SMC1 is provided by
+           Currently only serial IO via SMC1 and SCC1 is provided by
            this package."
+
+    cdl_interface CYGNUM_HAL_QUICC_SCC1 {
+        display    "SCC1 is available for serial I/O"
+        description "
+          Most MPC8xx chipsets use SCC1 to drive the ethernet controller.
+        On some newer (e.g. 860T) chips, SCC1 can be used for general
+        serial since there is a separate ethernet machine."
+    }
 
     compile       quicc_smc1.c
 

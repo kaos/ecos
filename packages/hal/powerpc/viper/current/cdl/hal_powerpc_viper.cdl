@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2002 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -64,6 +65,7 @@ cdl_package CYGPKG_HAL_POWERPC_VIPER {
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
     implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
+    implements    CYGNUM_HAL_QUICC_SCC1
 
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_powerpc_mpc8xx.h>"
@@ -103,7 +105,7 @@ cdl_package CYGPKG_HAL_POWERPC_VIPER {
    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS {
        display      "Number of communication channels on the board"
        flavor       data
-       calculated   1
+       calculated   1+CYGNUM_HAL_QUICC_SCC1
    }
 
    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL {
