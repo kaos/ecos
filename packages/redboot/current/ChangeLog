@@ -1,3 +1,8 @@
+2004-04-29  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* doc/redboot_epilogue.sgml: Comment out </part> to reflect change
+	of 2004-04-19.
+
 2004-04-23  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/main.c: 
