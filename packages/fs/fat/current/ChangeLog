@@ -1,3 +1,7 @@
+2004-11-11  David Brennan  <eCos@brennanhome.com>
+
+	* src/fatfs.c: fixed typos in TRACE statements
+
 2004-10-23  David Brennan  <eCos@brennanhome.com>
 
 	* tests/fileio1.c: fixed check for return value for attribute

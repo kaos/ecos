@@ -1035,7 +1035,7 @@ fatfs_set_attrib(cyg_mtab_entry        *mte,
     fatfs_dirsearch_t  ds;
     int                err;
 
-    CYG_TRACE4(TFS, "chmod mte=%p dir=%p name='%s' buf=%x", 
+    CYG_TRACE4(TFS, "set_attrib mte=%p dir=%p name='%s' buf=%x", 
                     mte, dir, name, new_attrib);
 
     // Verify new_mode is valid
@@ -1069,8 +1069,8 @@ fatfs_get_attrib(cyg_mtab_entry  *mte,
     fatfs_dirsearch_t  ds;
     int                err;
 
-    CYG_TRACE4(TFS, "chmod mte=%p dir=%p name='%s' buf=%x", 
-                    mte, dir, name, new_attrib);
+    CYG_TRACE4(TFS, "get_attrib mte=%p dir=%p name='%s' buf=%x", 
+                    mte, dir, name, file_attrib);
 
     init_dirsearch(&ds, disk, (fatfs_node_t *) dir, name);
 
