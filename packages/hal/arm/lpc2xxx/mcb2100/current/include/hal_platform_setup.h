@@ -53,6 +53,7 @@
 //
 //===========================================================================*/
 
+#include <pkgconf/system.h>
 #include <cyg/hal/var_io.h>
 
 //===========================================================================*/
@@ -80,9 +81,8 @@
 	mov r1,#1			                // enable PLL	
 	str r1,[r0,#CYGARC_HAL_LPC2XXX_REG_PLLCON]
 	
-	mov r1,#0x24
-        // set M and P:core runs at 60MHz (5 times 12MHz xtal frequency)
-	str r1,[r0,#CYGARC_HAL_LPC2XXX_REG_PLLCFG]	
+	mov r1,#(0x20 | (CYGNUM_HAL_ARM_LPC2XXX_PLL_MUL - 1))
+	str r1,[r0,#CYGARC_HAL_LPC2XXX_REG_PLLCFG]
 	
 	str r2,[r0,#CYGARC_HAL_LPC2XXX_REG_PLLFEED]	// update PLL registers
 	str r3,[r0,#CYGARC_HAL_LPC2XXX_REG_PLLFEED]

@@ -123,15 +123,27 @@ cdl_package CYGPKG_HAL_ARM_LPC2XXX_P2106 {
          description   "
             This option controls the baud rate used for the GDB connection."
      }
-    
+     
     # Real-time clock/counter specifics
+    cdl_option CYGNUM_HAL_ARM_LPC2XXX_XTAL_FREQ {
+        display       "CPU clock speed"
+        flavor        data
+        default_value {14745600}
+    }
+
+    cdl_option CYGNUM_HAL_ARM_LPC2XXX_PLL_MUL {
+        display       "CPU clock speed"
+        flavor        data
+        default_value {4}
+    }
+ 
     cdl_option CYGNUM_HAL_ARM_LPC2XXX_CLOCK_SPEED {
         display       "CPU clock speed"
         flavor        data
-        default_value {58982400}
+        calculated { CYGNUM_HAL_ARM_LPC2XXX_PLL_MUL * CYGNUM_HAL_ARM_LPC2XXX_XTAL_FREQ }
     }
-
-     cdl_component CYGBLD_GLOBAL_OPTIONS {
+   
+    cdl_component CYGBLD_GLOBAL_OPTIONS {
         display "Global build options"
         flavor  none
         parent  CYGPKG_NONE

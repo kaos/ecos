@@ -1,3 +1,9 @@
+2004-11-19  Jani Monoses <jani@iv.ro>
+
+	* cdl/hal_arm_lpc2xxx_p2106.cdl: 
+	* include/hal_platform_setup.h: 
+	Make PLL multiplier value configurable.
+	
 2004-11-15  Jani Monoses <jani@iv.ro>
 
 	* include/hal_platform_setup.h:

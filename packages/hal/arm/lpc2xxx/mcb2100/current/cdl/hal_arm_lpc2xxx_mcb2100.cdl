@@ -128,12 +128,23 @@ cdl_package CYGPKG_HAL_ARM_LPC2XXX_MCB2100 {
      }
     
     # Real-time clock/counter specifics
+    cdl_option CYGNUM_HAL_ARM_LPC2XXX_XTAL_FREQ {
+        display       "CPU clock speed"
+        flavor        data
+        default_value {12000000}
+    }
+
+    cdl_option CYGNUM_HAL_ARM_LPC2XXX_PLL_MUL {
+        display       "CPU clock speed"
+        flavor        data
+        default_value {5}
+    }
+
     cdl_option CYGNUM_HAL_ARM_LPC2XXX_CLOCK_SPEED {
         display       "CPU clock speed"
         flavor        data
-        default_value {60000000}
+        calculated { CYGNUM_HAL_ARM_LPC2XXX_PLL_MUL * CYGNUM_HAL_ARM_LPC2XXX_XTAL_FREQ }
     }
-
  
     cdl_component CYGBLD_GLOBAL_OPTIONS {
         display "Global build options"
