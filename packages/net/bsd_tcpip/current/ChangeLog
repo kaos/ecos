@@ -1,3 +1,9 @@
+2003-02-04  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/sys/bsdtypes.h: Workaround when building with new
+	Linux compatability package (which over-defines some symols
+	defined in this module).
+
 2002-12-03  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* src/ecos/support.c (show_network_tables): New function to

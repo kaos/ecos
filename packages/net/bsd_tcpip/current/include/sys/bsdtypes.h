@@ -26,6 +26,9 @@
 #include <cyg/hal/hal_arch.h>
 
 #define	__BIT_TYPES_DEFINED__
+#undef uint8_t
+#undef uint16_t
+#undef uint32_t
 typedef	__signed char		   int8_t;
 typedef	unsigned char		 u_int8_t;
 typedef	unsigned char		  uint8_t;
