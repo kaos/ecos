@@ -85,7 +85,7 @@ Cyg_WallClock::get_hw_seconds( void )
     cyg_tick_count secs = Cyg_Clock::real_time_clock->current_value()
         - epoch_ticks;
 
-    secs = ( secs * res.dividend ) / ( res.divisor * 1000000000LL ) ;
+    secs = secs / ( ( res.divisor * 1000000000LL ) / res.dividend );
 
     return secs;
 }

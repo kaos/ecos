@@ -1,3 +1,10 @@
+2003-09-23  Dan Jakubiec <firstname.lastname@systech.com>
+
+	* src/emulate.cxx (get_hw_seconds): Modified the ticks-to-seconds
+	conversion in the wallclock emulator's get_hw_seconds() function.
+	The previous implementation would easily overflow for any
+	reasonable date/tick-resolution combinations.
+
 2003-09-19  Gary Thomas  <gary@mlbassoc.com>
 
 	* tests/wallclock.cxx: Allow test to complete, even if it looses sync.
