@@ -198,6 +198,7 @@ static inline void jffs2_erase_pending_trigger(struct jffs2_sb_info *c)
 #define jffs2_flash_writev(a,b,c,d,e,f) jffs2_flash_direct_writev(a,b,c,d,e)
 #define jffs2_wbuf_timeout NULL
 #define jffs2_wbuf_process NULL
+#define jffs2_nor_ecc(c) (0)
 #else
 #error no nand yet
 #endif

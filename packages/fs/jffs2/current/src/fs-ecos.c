@@ -8,7 +8,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: fs-ecos.c,v 1.37 2004/04/21 18:45:54 gthomas Exp $
+ * $Id: fs-ecos.c,v 1.39 2004/11/11 12:46:17 dwmw2 Exp $
  *
  */
 
@@ -1671,7 +1671,8 @@ unsigned char *jffs2_gc_fetch_page(struct jffs2_sb_info *c,
 	/* FIXME: This works only with one file system mounted at a time */
 	int ret;
 
-	ret = jffs2_read_inode_range(c, f, gc_buffer, offset, PAGE_CACHE_SIZE);
+	ret = jffs2_read_inode_range(c, f, gc_buffer, 
+				     offset & ~(PAGE_CACHE_SIZE-1), PAGE_CACHE_SIZE);
 	if (ret)
 		return ERR_PTR(ret);
 

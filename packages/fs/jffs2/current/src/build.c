@@ -259,14 +259,6 @@ static void jffs2_calc_trigger_levels(struct jffs2_sb_info *c)
 
 	c->resv_blocks_write = c->resv_blocks_deletion + (size / c->sector_size);
 
-	// If the flash disk is smaller than resv_blocks_write, then we 
-	// allow writing to the disk anyway. The flash disk is then most likely
-	// being used as write once - read many medimum, e.g. configuration of 
-	// static paramters.
-	if (c->resv_blocks_write * c->sector_size > c->flash_size) {
-	  c->resv_blocks_write = 0; 
-	}
-
 	/* When do we let the GC thread run in the background */
 
 	c->resv_blocks_gctrigger = c->resv_blocks_write + 1;

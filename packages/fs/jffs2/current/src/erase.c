@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: erase.c,v 1.60 2004/06/30 17:26:15 dbrown Exp $
+ * $Id: erase.c,v 1.64 2004/11/12 15:25:14 jwboyer Exp $
  *
  */
 
@@ -387,6 +387,7 @@ static void jffs2_mark_erased_block(struct jffs2_sb_info *c, struct jffs2_eraseb
 		jeb->dirty_size = 0;
 		jeb->wasted_size = 0;
 	} else {
+		struct iovec vecs[1];
 		struct jffs2_unknown_node marker = {
 			.magic =	cpu_to_je16(JFFS2_MAGIC_BITMASK),
 			.nodetype =	cpu_to_je16(JFFS2_NODETYPE_CLEANMARKER),
@@ -395,15 +396,17 @@ static void jffs2_mark_erased_block(struct jffs2_sb_info *c, struct jffs2_eraseb
 
 		marker.hdr_crc = cpu_to_je32(crc32(0, &marker, sizeof(struct jffs2_unknown_node)-4));
 
-		/* We only write the header; the rest was noise or padding anyway */
-		ret = jffs2_flash_write(c, jeb->offset, sizeof(marker), &retlen, (char *)&marker);
+		vecs[0].iov_base = (unsigned char *) &marker;
+		vecs[0].iov_len = sizeof(marker);
+		ret = jffs2_flash_direct_writev(c, vecs, 1, jeb->offset, &retlen);
+		
 		if (ret) {
 			printk(KERN_WARNING "Write clean marker to block at 0x%08x failed: %d\n",
 			       jeb->offset, ret);
 			goto bad2;
 		}
 		if (retlen != sizeof(marker)) {
-			printk(KERN_WARNING "Short write to newly-erased block at 0x%08x: Wanted %d, got %zd\n",
+			printk(KERN_WARNING "Short write to newly-erased block at 0x%08x: Wanted %zd, got %zd\n",
 			       jeb->offset, sizeof(marker), retlen);
 			goto bad2;
 		}
