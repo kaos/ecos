@@ -141,7 +141,9 @@ static int mbtowc_trace = CYGNUM_LIBC_I18N_MBTOWC_TRACE_LEVEL;
 
 #ifdef CYGINT_LIBC_I18N_MB_REQUIRED
 # ifdef CYGSEM_LIBC_I18N_PER_THREAD_MB
-static volatile cyg_ucount32 mbtowc_data_index=CYGNUM_KERNEL_THREADS_DATA_MAX;
+static volatile Cyg_Thread::cyg_data_index
+mbtowc_data_index=CYGNUM_KERNEL_THREADS_DATA_MAX;
+
 static Cyg_Mutex mbtowc_data_mutex CYG_INIT_PRIORITY(LIBC);
 # else
 static int cyg_libc_mbtowc_last;
@@ -178,11 +180,11 @@ mbtowc ( wchar_t *pwc, const char *s, size_t n )
     mbtowc_data_mutex.lock();
     if (CYGNUM_KERNEL_THREADS_DATA_MAX==mbtowc_data_index) {
       
-      // the kernel just throws an assert if this doesn't work
       // FIXME: Should use real CDL to pre-allocate a slot at compile
       // time to ensure there are enough slots
       mbtowc_data_index = self->new_data_index();
       
+      CYG_ASSERT(mbtowc_data_index >= 0, "failed to allocate data index" );
     }
     mbtowc_data_mutex.unlock();
   } // if

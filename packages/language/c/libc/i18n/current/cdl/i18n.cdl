@@ -116,10 +116,26 @@ cdl_package CYGPKG_LIBC_I18N {
 
 # ====================================================================
 
+    cdl_option CYGPKG_LIBC_I18N_NEWLIB_CTYPE {
+        display       "Newlib's ctype implementation"
+        default_value 0
+        requires      { CYGBLD_ISO_CTYPE_HEADER == \
+                        "<cyg/libc/i18n/newlibctype.h>" }
+        description   "
+            This option enables the implementation of the ctype functions
+            that comes with newlib. It is table driven and therefore
+            exhibits different performance characteristics. It also offers
+            a limited amount of binary compatibility
+            with newlib so that programs linked against newlib ctype/locale
+            do not need to be recompiled when linked with eCos."
+        compile       newlibctype.cxx
+    }
+    
     cdl_option CYGSEM_LIBC_I18N_PER_THREAD_MB	 {
         display       "Per-thread multibyte state"
+        active_if     CYGPKG_KERNEL
         requires      CYGVAR_KERNEL_THREADS_DATA
-        default_value 0
+        default_value { CYGVAR_KERNEL_THREADS_DATA != 0 }
         description   "
             This option controls whether the multibyte character
             handling functions mblen(), mbtowc(), and wctomb(),

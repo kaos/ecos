@@ -53,12 +53,18 @@
 //
 //=========================================================================*/
 
+/* CONFIGURATION */
+
+#include <pkgconf/libc_i18n.h>   /* Configuration header */
+
 /* We don't want the inline versions of the ctype functions defined here */
 
 #define CYGPRI_LIBC_I18N_CTYPE_INLINE
 
 /* This means that including ctype.inl will make the outline functions */
 
-#include <cyg/libc/i18n/ctype.inl>
+#ifndef CYGPKG_LIBC_I18N_NEWLIB_CTYPE
+# include <cyg/libc/i18n/ctype.inl>
+#endif
 
 /* EOF ctype.cxx */

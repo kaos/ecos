@@ -132,7 +132,9 @@ static int mblen_trace = CYGNUM_LIBC_I18N_MBLEN_TRACE_LEVEL;
 
 #ifdef CYGINT_LIBC_I18N_MB_REQUIRED
 # ifdef CYGSEM_LIBC_I18N_PER_THREAD_MB
-static volatile cyg_ucount32 mblen_data_index=CYGNUM_KERNEL_THREADS_DATA_MAX;
+static volatile Cyg_Thread::cyg_data_index 
+mblen_data_index=CYGNUM_KERNEL_THREADS_DATA_MAX;
+
 static Cyg_Mutex mblen_data_mutex CYG_INIT_PRIORITY(LIBC);
 # else
 static int cyg_libc_mblen_last;
@@ -167,11 +169,11 @@ mblen ( const char *s, size_t n )
     mblen_data_mutex.lock();
     if (CYGNUM_KERNEL_THREADS_DATA_MAX==mblen_data_index) {
       
-      // the kernel just throws an assert if this doesn't work
       // FIXME: Should use real CDL to pre-allocate a slot at compile
       // time to ensure there are enough slots
       mblen_data_index = self->new_data_index();
       
+      CYG_ASSERT(mblen_data_index >= 0, "failed to allocate data index" );
     }
     mblen_data_mutex.unlock();
   } // if

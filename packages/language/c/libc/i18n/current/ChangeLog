@@ -1,3 +1,16 @@
+2004-02-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/i18n.cdl: Add newlib style ctype implementation.
+	CYGSEM_LIBC_I18N_PER_THREAD_MB can be inactive when no kernel.
+	* include/newlibctype.h: New file.
+	* src/newlibctype.cxx: New file.
+	* src/ctype.cxx: Don't define functions if newlib style ctype
+	chosen instead.
+
+	* src/wctomb.cxx (wctomb): Use correct thread data type.
+	* src/mbtowc.cxx (mbtowc): Ditto.
+	* src/mblen.cxx (mblen): Ditto.
+
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/i18n.cdl: Fix doc link.
