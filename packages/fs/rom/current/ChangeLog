@@ -1,3 +1,9 @@
+2004-12-13  John Dallaway  <jld@ecoscentric.com>
+
+	* tests/fileio1.c: Rename to romfs1.c. eCos test names should be
+	unique.
+	* cdl/romfs.cdl: Build the romfs1 test.
+
 2004-10-04  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/romfs.c (romfs_mount): Avoid a compiler warning about punned
@@ -119,6 +125,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2004 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free

@@ -1,6 +1,6 @@
 //==========================================================================
 //
-//      fileio1.c
+//      ramfs1.c
 //
 //      Test fileio system
 //
@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2004 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -644,8 +645,8 @@ int main( int argc, char **argv )
     err = umount( "/ram" );
     if( err < 0 ) SHOW_RESULT( umount, err );    
     
-    CYG_TEST_PASS_FINISH("fileio1");
+    CYG_TEST_PASS_FINISH("ramfs1");
 }
 
 // -------------------------------------------------------------------------
-// EOF fileio1.c
+// EOF ramfs1.c
