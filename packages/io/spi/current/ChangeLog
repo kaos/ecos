@@ -1,3 +1,9 @@
+2004-08-25  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/spi.cdl: change the package's main display string, to avoid
+	confusion in the configtool's tree view if SPI device drivers are
+	placed below it
+
 2004-04-23  Bart Veer  <bartv@ecoscentric.com>
 
 	* Generic SPI package created
