@@ -1,3 +1,9 @@
+2004-05-04  Jay Foster <jay.foster@systech.com>
+
+        * src/bootp_support.c (get_bootp_option, show_bootp):
+        * src/dhcp_prot.c (scan_dhcp_size): Fixed bug that didn't handle
+        the pad option.
+	
 2004-04-19  Oyvind Harboe <oyvind.harboe@zylin.com>
 
 	* src/tftp_server.c: files are now created with the

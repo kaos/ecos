@@ -110,8 +110,14 @@ scan_dhcp_size( struct bootp *ppkt )
         return NULL;
     }
     op += 4;
+
+    // This will only scan the options field.
     while (*op != TAG_END) {
-        op += *(op+1)+2;
+        if ( *op == TAG_PAD ) {
+            op++;
+        } else {
+          op += *(op+1)+2;
+        }
         if ( op > &ppkt->bp_vend[BP_VEND_LEN-1] ) {
             CYG_FAIL( "Oversize DHCP packet in dhcp_size" );
             return NULL;

@@ -298,6 +298,9 @@ show_bootp(const char *intf, struct bootp *bp)
         op = &bp->bp_vend[4];
         while (*op != TAG_END) {
             switch (*op) {
+            case TAG_PAD:
+                op++;
+                continue;
             case TAG_SUBNET_MASK:
             case TAG_GATEWAY:
             case TAG_IP_BROADCAST:
@@ -410,7 +413,11 @@ get_bootp_option(struct bootp *bp, unsigned char tag, void *opt,
             *length=max;                        \
             return true;                        \
         }                                       \
-        op += *(op+1)+2;                        \
+        if (*op == TAG_PAD) {                   \
+            op++;                               \
+        } else {                                \
+            op += *(op+1)+2;                    \
+        }                                       \
     }                                           \
 CYG_MACRO_END
 
