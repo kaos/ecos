@@ -58,7 +58,7 @@ result from the previous CRC calculation.
 <sect2 id="services-crc-api-cyg-ether-crc32">
 <title>cyg_ether_crc32</title>
 <para>
-These functions implements the 32 bit CRC used by the Ethernet FCS word.
+These functions implement the 32 bit CRC used by the Ethernet FCS word.
 </para>
 <programlisting>
 unsigned long cyg_ether_crc32(unsigned char &ast; s, int len);
