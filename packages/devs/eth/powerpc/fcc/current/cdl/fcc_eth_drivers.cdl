@@ -64,6 +64,9 @@ cdl_package CYGPKG_DEVS_ETH_POWERPC_FCC {
     description   "Fast ethernet driver for PowerPC MPC8xxx boards."
     compile       -library=libextras.a if_fcc.c
 
+    # Debug I/O during network stack initialization is not reliable
+    requires { !CYGPKG_NET || CYGPKG_NET_FORCE_SERIAL_CONSOLE == 1 }
+
     cdl_option CYGNUM_DEVS_ETH_POWERPC_FCC_BUFSIZE {
         display       "Buffer size"
         flavor        data

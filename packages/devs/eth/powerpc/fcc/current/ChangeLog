@@ -1,3 +1,8 @@
+2003-09-08  Gary Thomas  <gary@mlbassoc.com>
+
+	* cdl/fcc_eth_drivers.cdl: Force serial console during init (only
+	safe way to print during system initialization)
+
 2003-08-30  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/if_fcc.c: Fix compile error.
