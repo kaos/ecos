@@ -85,7 +85,7 @@ test( CYG_ADDRWORD data )
         CYG_TEST_FAIL_FINISH("Can't chdir('/')");
     }
 
-    fp = fopen("TEST_FILE", "w");
+    fp = fopen(TEST_FILE, "w");
     if (fp == (FILE *)NULL) {
         CYG_TEST_FAIL_FINISH("Can't create test file");
     }
@@ -103,7 +103,7 @@ test( CYG_ADDRWORD data )
         CYG_TEST_FAIL_FINISH("Error closingfile");
     }
 
-    fp = fopen("TEST_FILE", "r");
+    fp = fopen(TEST_FILE, "r");
     if (fp == (FILE *)NULL) {
         CYG_TEST_FAIL_FINISH("Can't open test file");
     }
@@ -136,7 +136,7 @@ test( CYG_ADDRWORD data )
         CYG_TEST_FAIL_FINISH("Error closingfile");
     }
 
-    fp = fopen("TEST_FILE", "r");
+    fp = fopen(TEST_FILE, "r");
     if (fp == (FILE *)NULL) {
         CYG_TEST_FAIL_FINISH("Can't open test file");
     }
