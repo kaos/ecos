@@ -87,7 +87,7 @@ cdl_package CYGPKG_DEVS_ETH_ARM_FLEXANET {
     cdl_option CYGDAT_DEVS_ETH_ARM_FLEXANET_ESA {
         display       "The ethernet station address (MAC)"
         flavor        data
-        default_value {"{0x11, 0x12, 0x13, 0x14, 0x15, 0x16}"}
+        default_value {"{0x12, 0x13, 0x14, 0x15, 0x16, 0x17}"}
         description   "A static ethernet station address. 
             Caution: Booting two systems with the same MAC on the same
             network, will cause severe conflicts."

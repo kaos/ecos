@@ -1,3 +1,7 @@
+2001-12-07  Bart Veer  <bartv@redhat.com>
+
+	* include/hal_io.h: Added cyg_hal_sys_getcwd()
+
 2001-08-02  Bart Veer  <bartv@redhat.com>
 
 	* include/hal_intr.h:

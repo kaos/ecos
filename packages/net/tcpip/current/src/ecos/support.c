@@ -138,6 +138,7 @@ static cyg_mempool_fix net_clusters_pool;
 static cyg_handle_t    net_clusters;
 static char            net_clusters_refcnt[(NET_CLUSTERS_SIZE/MCLBYTES)+1];
 
+#ifdef CYGDBG_NET_TIMING_STATS
 static struct net_stats  stats_malloc, stats_free, 
     stats_memcpy, stats_memset,
     stats_mbuf_alloc, stats_mbuf_free, stats_cluster_alloc;
@@ -191,6 +192,7 @@ show_net_times(void)
     show_net_stats(&stats_memcpy,        "Net memcpy");
     show_net_stats(&stats_memset,        "Net memset");
 }
+#endif /* CYGDBG_NET_TIMING_STATS */ 
 
 void *
 cyg_net_malloc(u_long size, int type, int flags)

@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2001/04/04
-// Version:     $Id: docsystem.cpp,v 1.18 2001/05/16 16:08:24 julians Exp $
+// Version:     $Id: docsystem.cpp,v 1.19 2001/12/11 15:59:51 julians Exp $
 // Purpose:
 // Description: Various classes for the documentation system
 // Requires:
@@ -84,6 +84,24 @@ ecHtmlIndexer::ecHtmlIndexer(bool useRelativeURLs)
 #else
     m_useRelativeURLs = FALSE;
 #endif
+    m_useOldDocs = TRUE;
+
+    // Initialise some tables
+    AddTutorialDirectory(wxT("arm"), wxT("ARM"));
+    AddTutorialDirectory(wxT("am31-33"), wxT("AM31-33"));
+    AddTutorialDirectory(wxT("i386pc"), wxT("i386 PC"));
+    AddTutorialDirectory(wxT("ppc"), wxT("PowerPC"));
+    AddTutorialDirectory(wxT("sh3"), wxT("SH-3"));
+    AddTutorialDirectory(wxT("sparclite"), wxT("SPARClite"));
+    AddTutorialDirectory(wxT("mips"), wxT("MIPS"));
+    AddTutorialDirectory(wxT("v850"), wxT("V850"));
+
+    AddEntityTranslation(wxT("&#8212;"), wxT("--"));
+    AddEntityTranslation(wxT("&#38;"), wxT("&"));
+    AddEntityTranslation(wxT("&#8220;"), wxT("\""));
+    AddEntityTranslation(wxT("&#8221;"), wxT("\""));
+    AddEntityTranslation(wxT("&#0091;"), wxT("["));
+    AddEntityTranslation(wxT("&#0093;"), wxT("]"));
 }
 
 ecHtmlIndexer::~ecHtmlIndexer()
@@ -148,7 +166,7 @@ bool ecHtmlIndexer::CreateHHCByExaminingClass(const wxString& title, const wxStr
     if (parser.ParseFile(htmlFile))
     {
         stream << "<LI> <OBJECT type=\"text/sitemap\"><param name=\"Name\" value=\"";
-        stream << title << wxString("\">");
+        stream << TranslateEntities(title) << wxString("\">");
         
         if (!topURL.IsEmpty())
         {
@@ -280,7 +298,7 @@ bool ecHtmlIndexer::CreateHHCByExaminingList(const wxString& title, const wxStri
     if (parser.ParseFile(htmlFile))
     {
         stream << "<LI> <OBJECT type=\"text/sitemap\"><param name=\"Name\" value=\"";
-        stream << title << wxString("\">");
+        stream << TranslateEntities(title) << wxString("\">");
         
         if (!topURL.IsEmpty())
         {
@@ -297,8 +315,20 @@ bool ecHtmlIndexer::CreateHHCByExaminingList(const wxString& title, const wxStri
             if (tag->GetType() == wxSimpleHtmlTag_Close && tag->NameIs("DL")) level -- ;
             if (tag->GetType() == wxSimpleHtmlTag_Open && tag->NameIs("A") && tag->HasAttribute("HREF") && level > 0)
                 CreateHHCOutputItem(tag, level, indent, pathPrefix, docDir, stream);
-            
-            tag = tag->GetNext();
+
+            // If we get to list of figures/tables/examples, finish
+            if (tag->GetType() == wxSimpleHtmlTag_Text)
+            {
+                if (tag->GetText() == wxT("List of Figures") ||
+                    tag->GetText() == wxT("List of Tables") ||
+                    tag->GetText() == wxT("List of Examples"))
+                {
+                    tag = NULL;
+                }
+            }
+
+            if (tag)
+                tag = tag->GetNext();
         }
 
         // Close any remaining levels
@@ -327,7 +357,7 @@ bool ecHtmlIndexer::CreateHHCItem(const wxString& title, const wxString& topURL,
     for (i = 0; i < indent*2; i++) stream << " ";
     
     stream << "<LI> <OBJECT type=\"text/sitemap\"><param name=\"Name\" value=\"";
-    stream << title << "\"><param name=\"Local\" value=\"";
+    stream << TranslateEntities(title) << "\"><param name=\"Local\" value=\"";
     stream << topURL1 << "\"></OBJECT>\n";
 
     return TRUE;
@@ -365,7 +395,7 @@ void ecHtmlIndexer::CreateHHCOutputItem(wxSimpleHtmlTag* tag, int level, int& in
             for (i = 0; i < indent*2; i++) stream << " ";
 
             stream << "<LI> <OBJECT type=\"text/sitemap\"><param name=\"Name\" value=\"";
-            stream << text << "\"><param name=\"Local\" value=\"";
+            stream << TranslateEntities(text) << "\"><param name=\"Local\" value=\"";
             stream << url1 << "\"></OBJECT>";
         }
         stream << "\n";
@@ -382,7 +412,7 @@ void ecHtmlIndexer::CreateHHCOutputItem(wxSimpleHtmlTag* tag, int level, int& in
     for (i = 0; i < indent*2; i++) stream << " ";
 
     stream << "<LI> <OBJECT type=\"text/sitemap\"><param name=\"Name\" value=\"";
-    stream << text << "\"><param name=\"Local\" value=\"";
+    stream << TranslateEntities(text) << "\"><param name=\"Local\" value=\"";
     stream << url1 << "\"></OBJECT>\n";
 }
 
@@ -408,7 +438,7 @@ bool ecHtmlIndexer::CreateHHCStartSection(const wxString& title, const wxString&
         url1 = docDir + sep + url1;
 
     stream << "<LI> <OBJECT type=\"text/sitemap\"><param name=\"Name\" value=\"";
-    stream << title << wxString("\">");
+    stream << TranslateEntities(title) << wxString("\">");
     
     if (!topURL.IsEmpty())
     {
@@ -460,12 +490,15 @@ Title=eCos\n";
 
     stream << 
 "[WINDOWS]\n\
-mainwin=\"eCos Documentation\",\"eCos.hhc\",\"eCos.hhk\",,\"index.html\",\"http://sources.redhat.com/ecos/\",\"Net Release\",\"http://www.redhat.com/products/ecos/\",\"eCos Product\",0x40060420,,0xc287e,[0,0,762,400],,,,,,,0\n\
+mainwin=\"eCos Documentation\",\"eCos.hhc\",,,\"index.html\",\"http://sources.redhat.com/ecos/\",\"Net Release\",\"http://www.redhat.com/products/ecos/\",\"eCos Product\",0x40060420,,0xc287e,[0,0,762,400],,,,,,,0\n\
 \n\
 [FILES]\n\
 index.html\n\
 \n\
 [INFOTYPES]\n" ;
+
+    // When we have the ability to generate a hhk, replace above line with:
+    // mainwin=\"eCos Documentation\",\"eCos.hhc\",\"eCos.hhk\",,\"index.html\",\"http://sources.redhat.com/ecos/\",\"Net Release\",\"http://www.redhat.com/products/ecos/\",\"eCos Product\",0x40060420,,0xc287e,[0,0,762,400],,,,,,,0\n\
 
     return TRUE;
 
@@ -483,7 +516,7 @@ bool ecHtmlIndexer::CreateHHCPackagesSection(const wxString& title, const wxStri
     // and then generate the multiple files. Otherwise we'll be repeating the same "Getting Started with eCos"
     // line. I.e. it'll only look right if we only have one tutorial.
     stream << "<LI> <OBJECT type=\"text/sitemap\"><param name=\"Name\" value=\"";
-    stream << title << wxString("\">");
+    stream << TranslateEntities(title) << wxString("\">");
     
     if (!topURL.IsEmpty())
     {
@@ -515,7 +548,7 @@ bool ecHtmlIndexer::CreateHHCPackagesSection(const wxString& title, const wxStri
                 url = htmlPath + wxString(wxFILE_SEP_PATH) + Redirect(htmlPath, url);
 
                 stream << "<LI> <OBJECT type=\"text/sitemap\"><param name=\"Name\" value=\"";
-                stream << strPackageName << wxString("\">");
+                stream << TranslateEntities(strPackageName) << wxString("\">");
                 
                 if (!url.IsEmpty())
                 {
@@ -815,13 +848,40 @@ void ecHtmlIndexer::ClearItems()
     m_indexItems.Clear();
 }
 
+// Set m_useOldDocs to TRUE if we find old-style docs
+bool ecHtmlIndexer::CheckDocEra(const wxString& reposDir)
+{
+    // We look for tutorials/arm/ecos-tutorial.1.html to see if it's old-style
+    wxString sep(wxFILE_SEP_PATH);
+    
+    wxString docDir(reposDir + sep + wxString(wxT("doc"))) ;
+    
+    // The CVS repository has an HTML subdirectory, but the
+    // packaged version doesn't
+    if (wxDirExists(docDir + sep + wxT("html")))
+        docDir = docDir + sep + wxString(wxT("html"));
+    
+    wxString armTutorial = docDir + sep + wxString(wxT("tutorials")) + sep +
+        wxString(wxT("arm")) + sep + wxString(wxT("ecos-tutorial.1.html")) ;
+
+    m_useOldDocs = wxFileExists(armTutorial);
+    return m_useOldDocs;
+}
+
+
 // Top-level function: generate appropriate index files
 // and place them either in the install directory or if that is read-only,
 // in the user's .eCos directory.
 // Returns TRUE and the created project file if successful
 bool ecHtmlIndexer::IndexDocs(const wxString& reposDir, wxString& projectFile, bool force)
 {
-    AddStartSection(wxT("Getting Started with eCos"), wxT(""));
+    CheckDocEra(reposDir);
+
+    if (UseOldDocs())
+    {
+        // Old-style docs, where HTML is mostly generated from PageMaker
+
+        AddStartSection(wxT("Getting Started with eCos"), wxT(""));
         AddIndexByClass(wxT("AM31-33"), wxT("tutorials/am31-33/ecos-tutorial.1.html"), wxT("tutorials/am31-33/ecos-tutorial.2.html"));
         AddIndexByClass(wxT("ARM"), wxT("tutorials/arm/ecos-tutorial.1.html"), wxT("/tutorials/arm/ecos-tutorial.2.html"));
         AddIndexByClass(wxT("i386 PC"), wxT("tutorials/i386pc/ecos-tutorial.1.html"), wxT("tutorials/i386pc/ecos-tutorial.2.html"));
@@ -830,40 +890,149 @@ bool ecHtmlIndexer::IndexDocs(const wxString& reposDir, wxString& projectFile, b
         AddIndexByClass(wxT("SPARClite"), wxT("tutorials/sparclite/ecos-tutorial.1.html"), wxT("tutorials/sparclite/ecos-tutorial.2.html"));
         AddIndexByClass(wxT("MIPS"), wxT("tutorials/mips/ecos-tutorial.1.html"), wxT("tutorials/mips/ecos-tutorial.2.html"));
         AddIndexByClass(wxT("V850"), wxT("tutorials/v850/ecos-tutorial.1.html"), wxT("tutorials/v850/ecos-tutorial.2.html"));
-    AddEndSection();
-
-    AddIndexByClass(wxT("eCos User's Guide"), wxT("guides/user-guides.1.html"), wxT("guides/user-guides.2.html"));
-    
-    // We don't yet know how to parse the RedBoot guide
-    AddIndexItem(wxT("RedBoot User's Guide"), wxT("redboot/redboot.html"));
-
-    AddIndexByClass(wxT("Linux Configuration Tool Guide"), wxGetApp().GetFullAppPath(wxT("manual/user-guides.4.html")), wxGetApp().GetFullAppPath(wxT("manual/user-guides.2.html")));
-    
-    AddIndexByList(wxT("eCos Component Writer's Guide"), wxT("cdl/cdl-guide.html"), wxT("cdl/cdl-guide.html"));
-    
-    AddIndexByClass(wxT("eCos Reference Manual"), wxT("ref/ecos-ref.1.html"), wxT("ref/ecos-ref.2.html"));
-    
-    AddIndexByClass(wxT("eCos-EL/IX Compatibility Guide"), wxT("ecos-elix/ecos-elix.html"), wxT("ecos-elix/ecos-elix.1.html"), 1);
-    
-    AddStartSection(wxT("GNUPro Toolkit Reference Manual"));
+        AddEndSection();
+        
+        AddIndexByClass(wxT("eCos User's Guide"), wxT("guides/user-guides.1.html"), wxT("guides/user-guides.2.html"));
+        
+        AddIndexByList(wxT("RedBoot User's Guide"), wxT("redboot/redboot.html"), wxT("redboot/redboot.html"));
+        
+        AddIndexByClass(wxT("Linux Configuration Tool Guide"), wxGetApp().GetFullAppPath(wxT("manual/user-guides.4.html")), wxGetApp().GetFullAppPath(wxT("manual/user-guides.2.html")));
+        
+        AddIndexByList(wxT("eCos Component Writer's Guide"), wxT("cdl/cdl-guide.html"), wxT("cdl/cdl-guide.html"));
+        
+        AddIndexByClass(wxT("eCos Reference Manual"), wxT("ref/ecos-ref.1.html"), wxT("ref/ecos-ref.2.html"));
+        
+        AddIndexByClass(wxT("eCos-EL/IX Compatibility Guide"), wxT("ecos-elix/ecos-elix.html"), wxT("ecos-elix/ecos-elix.1.html"), 1);
+        
+        AddStartSection(wxT("GNUPro Toolkit Reference Manual"));
         // Start at indent 1 to avoid a spurious level
-        AddIndexByClass(wxT("ARM"), wxT("ref/gnupro-ref/arm/ARM_COMBO_front.html"), wxT("ref/gnupro-ref/ARM_COMBOTOC.html"), 1);
+        AddIndexByClass(wxT("ARM"), wxT("ref/gnupro-ref/arm/ARM_COMBO_front.html"), wxT("ref/gnupro-ref/arm/ARM_COMBOTOC.html"), 1);
         AddIndexByClass(wxT("Fujitsu SPARClite"), wxT("ref/gnupro-ref/sparclite/index.html"), wxT("ref/gnupro-ref/sparclite/index.html"));
-        AddIndexByClass(wxT("Matsushita MN10300"), wxT("ref/gnupro-ref/mn10300/am33_front.html"), wxT("ref/gnupro-ref/mn10300/am33toc.html"));
+        AddIndexByClass(wxT("Matsushita MN10300"), wxT("ref/gnupro-ref/mn10300/am33_front.html"), wxT("ref/gnupro-ref/mn10300/am33toc.html"), 1);
         AddIndexByClass(wxT("PowerPC"), wxT("ref/gnupro-ref/powerpc/index.html"), wxT("ref/gnupro-ref/powerpc/index.html"));
         AddIndexByClass(wxT("Toshiba MIPS TX39"), wxT("/gnupro-ref/tx39/index.html"), wxT("/gnupro-ref/tx39/index.html"));
-
+        
         // Don't parse HTML, just add this item, if the page exists.
         // Presumably the HTML can't be parsed for some reason.
         AddIndexItem(wxT("Toshiba MIPS TX49"), wxT("ref/gnupro-ref/tx49/tx49_ref.html"));
-
-        AddIndexByClass(wxT("Hitachi SuperH"), wxT("ref/gnupro-ref/sh/SH_front.html"), wxT("ref/gnupro-ref/sh/SHTOC.html"));
-
+        
+        AddIndexByClass(wxT("Hitachi SuperH"), wxT("ref/gnupro-ref/sh/SH_front.html"), wxT("ref/gnupro-ref/sh/SHTOC.html"), 1);
+        
         AddIndexItem(wxT("NEC V850"), wxT("ref/gnupro-ref/v850/v850_ref_3.html"));
-        AddIndexByClass(wxT("NEC VR4300"), wxT("ref/gnupro-ref/vr4300/Vr43REF_front.html"), wxT("ref/gnupro-ref/vr4300/Vr43REFTOC.html"));
-    AddEndSection();
+        AddIndexByClass(wxT("NEC VR4300"), wxT("ref/gnupro-ref/vr4300/Vr43REF_front.html"), wxT("ref/gnupro-ref/vr4300/Vr43REFTOC.html"), 1);
+        AddEndSection();
+    }
+    else
+    {
+        // NEW-STYLE DOCUMENTATION (HTML is generated from SGML)
+
+        // Get a list of all tutorials
+
+        wxArrayString tutorials;
+
+        wxString sep(wxFILE_SEP_PATH);
+        
+        wxString docDir(reposDir + sep + wxString(wxT("doc"))) ;
+        
+        // The CVS repository has an HTML subdirectory, but the
+        // packaged version doesn't
+        if (wxDirExists(docDir + sep + wxT("html")))
+            docDir = docDir + sep + wxString(wxT("html"));
+
+        docDir += sep ;
+        docDir += wxString(wxT("tutorials"));
+
+        wxLogNull log;
+        wxDir dir(docDir);
+        
+        if (dir.IsOpened())
+        {
+            wxString filename;
+            bool cont = dir.GetFirst(& filename, wxT("*"), wxDIR_DIRS);
+            while (cont)
+            {
+                if (filename != wxT(".") && filename != wxT(".."))
+                    tutorials.Add(filename);
+                
+                cont = dir.GetNext(& filename);
+            }
+        }
+
+        AddStartSection(wxT("Getting Started with eCos"), wxT(""));
+        size_t i;
+        for (i = 0; i < tutorials.GetCount(); i++)
+        {
+            wxString tutorial(tutorials[i]);
+            wxString tutorialRelativePath = wxT("tutorials/") + tutorial + wxT("/ecos-tutorial.html");
+
+            // Use a more friendly name than just the directory if it's available
+            AddIndexByList(TranslateTutorialDirectory(tutorial), tutorialRelativePath, tutorialRelativePath);
+        }
+        AddEndSection();
+
+        AddIndexByList(wxT("eCos User's Guide"), wxT("guides/ecos-user-guide.html"), wxT("guides/ecos-user-guide.html"));
+        AddIndexByList(wxT("RedBoot User's Guide"), wxT("redboot/redboot.html"), wxT("redboot/redboot.html"));
+        AddIndexByList(wxT("eCos Component Writer's Guide"), wxT("cdl/cdl-guide.html"), wxT("cdl/cdl-guide.html"));       
+        AddIndexByList(wxT("eCos Reference Manual"), wxT("ref/ecos-reference-manual.html"), wxT("ref/ecos-reference-manual.html"));
+        AddIndexByList(wxT("eCos-EL/IX Compatibility Guide"), wxT("ecos-elix/elix-compatibility.html"), wxT("ecos-elix/elix-compatibility.html"));
+
+        //// TOOLCHAIN REFERENCE MANUALS
+        AddStartSection(wxT("GNUPro Toolkit Reference Manual"));
+        // Start at indent 1 to avoid a spurious level
+        AddIndexByClass(wxT("ARM"), wxT("ref/gnupro-ref/arm/ARM_COMBO_front.html"), wxT("ref/gnupro-ref/arm/ARM_COMBOTOC.html"), 1);
+        AddIndexByClass(wxT("Fujitsu SPARClite"), wxT("ref/gnupro-ref/sparclite/index.html"), wxT("ref/gnupro-ref/sparclite/index.html"), 1);
+        AddIndexByClass(wxT("Matsushita MN10300"), wxT("ref/gnupro-ref/mn10300/am33_front.html"), wxT("ref/gnupro-ref/mn10300/am33toc.html"), 1);
+        AddIndexByClass(wxT("PowerPC"), wxT("ref/gnupro-ref/powerpc/index.html"), wxT("ref/gnupro-ref/powerpc/index.html"));
+        AddIndexByClass(wxT("Toshiba MIPS TX39"), wxT("/gnupro-ref/tx39/index.html"), wxT("/gnupro-ref/tx39/index.html"));
+        
+        // Don't parse HTML, just add this item, if the page exists.
+        // Presumably the HTML can't be parsed for some reason.
+        AddIndexItem(wxT("Toshiba MIPS TX49"), wxT("ref/gnupro-ref/tx49/tx49_ref.html"));
+        
+        AddIndexByClass(wxT("Hitachi SuperH"), wxT("ref/gnupro-ref/sh/SH_front.html"), wxT("ref/gnupro-ref/sh/SHTOC.html"), 1);
+        
+        AddIndexItem(wxT("NEC V850"), wxT("ref/gnupro-ref/v850/v850_ref_3.html"));
+        AddIndexByClass(wxT("NEC VR4300"), wxT("ref/gnupro-ref/vr4300/Vr43REF_front.html"), wxT("ref/gnupro-ref/vr4300/Vr43REFTOC.html"), 1);
+        AddEndSection();
+    }
 
     DoIndexDocs(reposDir, projectFile, force);
     
     return TRUE;
 }
+
+// Some things should be translated in the contents
+void ecHtmlIndexer::AddEntityTranslation(const wxString& entity, const wxString& translation)
+{
+    m_entityTableNames.Add(entity);
+    m_entityTableValues.Add(translation);
+}
+
+// Apply all translations to this string
+wxString ecHtmlIndexer::TranslateEntities(const wxString& toTranslate)
+{
+    wxString result(toTranslate);
+    size_t i;
+    for (i = 0; i < m_entityTableNames.GetCount(); i++)
+    {
+        result.Replace(m_entityTableNames[i], m_entityTableValues[i]);
+    }
+    return result;
+}
+
+// Mapping from directory to user-viewable name
+void ecHtmlIndexer::AddTutorialDirectory(const wxString& dirName, const wxString& title)
+{
+    m_tutorialTableNames.Add(dirName);
+    m_tutorialTableValues.Add(title);
+}
+
+wxString ecHtmlIndexer::TranslateTutorialDirectory(const wxString& dirName)
+{
+    int i = m_tutorialTableNames.Index(dirName);
+    if (i >= 0)
+        return m_tutorialTableValues[i];
+    else
+        return dirName;
+}
+

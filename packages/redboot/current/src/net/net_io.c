@@ -415,7 +415,7 @@ start_console(void)
 {
     int cur_console;
     cur_console = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
-    CYGACC_CALL_IF_SET_CONSOLE_COMM(0);
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGDBG_REDBOOT_NET_DEBUG_CONSOLE_NUMBER);
     return cur_console;
 }
 

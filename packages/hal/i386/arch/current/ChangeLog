@@ -1,3 +1,13 @@
+2001-12-11  Nick Garnett  <nickg@redhat.com>
+
+	* src/i386.ld (SECTION_rel__got): Added entry for
+	.rel.gnu.linkonce* that more recent versions of the compiler seem
+	to generate.
+
+2001-12-07  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/i386.ld: Add missing close bracket.
+
 2001-12-06  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/i386.ld: Add .rel.text and .rel.data sections to avoid

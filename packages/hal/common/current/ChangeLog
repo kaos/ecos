@@ -1,3 +1,9 @@
+2001-12-12  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_stub.h: Add goto to the used label.
+	* src/hal_misc.c: Added (dummy) got for label used in
+	CYGARC_HAL_GET_RETURN_ADDRESS_BACKUP.
+
 2001-12-05  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/dbg-threads-syscall.c (dbg_thread_syscall): Don't bother to

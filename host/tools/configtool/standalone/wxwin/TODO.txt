@@ -29,3 +29,9 @@ To-Do List for Configuration Tool 2.x
 
 - Should look for a .ecc file in the current directory if no save file is
   passed on the command line.
+
+- Packages dialog:
+
+  o optionally, the ability to hide inactive and/or calculated options
+    and/or interfaces. They add a lot to visual clutter, but we do require the
+    user to be _able_ to view them if need be.

@@ -1,3 +1,18 @@
+2001-12-12  Hugo Tyson  <hmt@redhat.com>
+
+	* cdl/redboot.cdl (CYGDBG_REDBOOT_NET_DEBUG_CONSOLE_NUMBER): New
+	option to control the console number for network debug messages.
+	For platforms where serial0 is supported (due to common variant
+	HAL code) but not connected; serial1 is all you get, say.
+
+	* src/net/net_io.c (start_console): Use it.
+
+2001-12-10  Nick Garnett  <nickg@redhat.com>
+
+	* src/net/cksum.c (__pseudo_sum): Fixed method of adding protocol
+	field to checksum. Some compilers optimize some of this away to
+	give a bogus result.
+
 2001-12-06  Jesper Skov  <jskov@redhat.com>
 
 	* src/load.c (do_load): Fix warning.

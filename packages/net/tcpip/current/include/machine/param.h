@@ -122,6 +122,7 @@ struct net_stats {
     cyg_uint32       min_time, max_time, total_time;
 };
 
+#ifdef CYGDBG_NET_TIMING_STATS
 #define START_STATS()                                   \
     cyg_uint32 start_time, end_time, elapsed_time;      \
     HAL_CLOCK_READ(&start_time);
@@ -141,6 +142,10 @@ struct net_stats {
         stats.max_time = elapsed_time;                                                  \
     stats.total_time += elapsed_time;                                                   \
     stats.count++;
+#else
+#define START_STATS() 
+#define FINISH_STATS(X)
+#endif
 
 // timeout support
 typedef void (timeout_fun)(void *);

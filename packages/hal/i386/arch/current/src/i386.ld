@@ -93,11 +93,11 @@ GROUP(libtarget.a libgcc.a)
     > _region_
 
 // Note: The __ in the name is an encoding of the .
-#define SECTION_rel__got(_region_, _vma_, _lma_)        \
-    .rel.text _vma_ : _lma_ { *(.rel.text*) } > _region_      \
-    .rel.data _vma_ : _lma_ { *(.rel.data*) } > _region_      \
-    .rel.got _vma_ : _lma_                                            \
-    { *(.rel.got)      }                                        \
+#define SECTION_rel__got(_region_, _vma_, _lma_)                                \
+    .rel.text _vma_ : _lma_ { *(.rel.text*) *(.rel.gnu.linkonce*) } > _region_  \
+    .rel.data _vma_ : _lma_ { *(.rel.data*) } > _region_                        \
+    .rel.got _vma_ : _lma_                                                      \
+    { *(.rel.got)      }                                                        \
     > _region_
 
 #define SECTION_data(_region_, _vma_, _lma_)                       \

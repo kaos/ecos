@@ -540,10 +540,12 @@ echo_test(cyg_addrword_t p)
                 (int)idle_thread_count, i);
 
 //#ifdef CYGDBG_USE_ASSERTS
+#ifdef CYGDBG_NET_TIMING_STATS 
     {
         extern void show_net_times(void);
         show_net_times();
     }
+#endif
 //#endif
 }
 

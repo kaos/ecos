@@ -1,3 +1,12 @@
+2001-12-10  Richard Sandiford  <rsandifo@redhat.com>
+
+	* src/if_dp83902a.c (dp83902a_RxEvent): Remove unused argument.
+	(dp83902a_TxEvent): Likewise.
+	(dp83902a_BufEvent): Remove.
+	(dp83902a_ClearCounters): New.
+	(dp83902a_Overflow): New.
+	(dp83902a_poll): Rework polling loop to use the new functions.
+
 2001-10-16  Jesper Skov  <jskov@redhat.com>
 
 	* include/dp83902a.h: Removed hardwired buffer

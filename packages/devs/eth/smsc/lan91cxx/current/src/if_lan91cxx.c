@@ -987,8 +987,14 @@ lan91cxx_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
                 plen -= sizeof(*data);
             }
         }
+        else { // must actively discard ie. read it from the chip anyway.
+            while (mlen >= sizeof(*data)) {
+                (void)get_data(sc);
+                mlen -= sizeof(*data);
+                plen -= sizeof(*data);
+            }
+        }
     }
-    CYG_ASSERT( data, "No sg data for end byte" );
     val = get_data(sc); // Read control word unconditionally
     CYG_ASSERT(val & LAN91CXX_CONTROLBYTE_RX, 
                "Controlbyte is not for Rx");

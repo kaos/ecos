@@ -1,3 +1,9 @@
+2001-12-10  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/flexanet_eth_drivers.cdl (CYGDAT_DEVS_ETH_ARM_FLEXANET_ESA):
+	Ensure default ESA has a value that is both locally administered and
+	*not* broadcast.
+
 2001-07-27  Jordi Colomer  <jco@ict.es>
 	
 	* Initial version of support for LAN91CXX ethernet controller

@@ -231,12 +231,17 @@ do {                                                                         \
 #endif
 
 // This macro may already have been defined by the architecture HAL
+// Notice the trick to *use* the label - sometimes the tools want to
+// move the label if unused, which is bad.
 #ifndef CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION
 #define CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION( _old_ )                         \
 do {                                                                          \
     cyg_hal_gdb_remove_break( (target_register_t)&&cyg_hal_gdb_break_place ); \
     HAL_RESTORE_INTERRUPTS(_old_);                                            \
+    _old_ = 1; /* actually use the label as a label... */                     \
 cyg_hal_gdb_break_place:;                                                     \
+    if ( (_old_)-- > 0 ) /* ...or the compiler might move it! */              \
+        goto cyg_hal_gdb_break_place;                                         \
 } while ( 0 )
 #endif
 

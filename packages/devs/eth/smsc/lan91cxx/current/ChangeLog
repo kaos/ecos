@@ -1,3 +1,11 @@
+2001-12-12  Hugo Tyson  <hmt@redhat.com>
+
+	* src/if_lan91cxx.c (lan91cxx_recv): If discarding data due to
+	caller out of buffers, we must read-out and discard the packet to
+	correctly complete the transaction.  Bogus assert for buffer
+	pointer removed; other asserts from not discarding data assuaged
+	by first change above.
+
 2001-08-17  Hugo Tyson  <hmt@redhat.com>
 
 	* src/if_lan91cxx.c (lan91cxx_poll): The interrupt acknowledge

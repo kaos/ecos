@@ -68,6 +68,12 @@ struct eth_drv_funs eth_drv_funs = {eth_drv_init, eth_drv_recv, eth_drv_tx_done}
 
 #ifdef CYGDBG_IO_ETH_DRIVERS_DEBUG
 int cyg_io_eth_net_debug = CYGDBG_IO_ETH_DRIVERS_DEBUG_VERBOSITY;
+// Usually just the header is enough, the body slows things too much.
+#define DIAG_DUMP_BUF_HDR( a, b ) if (0 < cyg_io_eth_net_debug) diag_dump_buf( (a), (b) )
+#define DIAG_DUMP_BUF_BDY( a, b ) if (1 < cyg_io_eth_net_debug) diag_dump_buf( (a), (b) )
+#else
+#define DIAG_DUMP_BUF_HDR( a, b )
+#define DIAG_DUMP_BUF_BDY( a, b )
 #endif
 
 unsigned char      __local_enet_addr[ETHER_ADDR_LEN+2];
@@ -253,8 +259,8 @@ eth_drv_write(char *eth_hdr, char *buf, int len)
         int old_console;
         old_console = start_console();
         diag_printf("Ethernet send:\n");
-        diag_dump_buf(eth_hdr, 14);
-        diag_dump_buf(buf, len);
+        DIAG_DUMP_BUF_HDR(eth_hdr, 14);
+        DIAG_DUMP_BUF_BDY(buf, len);
         end_console(old_console);
     }
 #endif
@@ -382,12 +388,15 @@ eth_drv_copy_recv(struct eth_drv_sc *sc,
                   struct eth_drv_sg *sg_list,
                   int sg_len)
 {
-    int i;   
+    int i;
+    unsigned char *ppp;
     CYGARC_HAL_SAVE_GP();
+    ppp = eth_drv_copy_recv_buf;        // Be safe against being called again by accident
     for (i = 0;  i < sg_len;  i++) {
-        memcpy((unsigned char *)sg_list[i].buf, 
-               eth_drv_copy_recv_buf, sg_list[i].len);
-        eth_drv_copy_recv_buf += sg_list[i].len;
+        if ( sg_list[i].buf )           // Be safe against discarding calls
+            memcpy((unsigned char *)sg_list[i].buf, 
+                   ppp, sg_list[i].len);
+        ppp += sg_list[i].len;
     }
     CYGARC_HAL_RESTORE_GP();
 }
@@ -426,7 +435,7 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
         diag_printf("%s: packet of %d bytes dropped\n", __FUNCTION__, total_len);
         end_console(old_console);
 #endif
-        buf = (char *)0;  // Drivers know this means "the bit bucket"
+        buf = (unsigned char *)0;  // Drivers know this means "the bit bucket"
     }
     sg_list[0].buf = (CYG_ADDRESS)buf;
     sg_list[0].len = total_len;
@@ -438,13 +447,18 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
         int old_console;
         old_console = start_console();
         diag_printf("Ethernet recv:\n");
-        diag_dump_buf(buf, 14);
-        diag_dump_buf(buf+14, total_len-14);
+        if ( buf ) {
+            DIAG_DUMP_BUF_HDR(buf, 14);
+            DIAG_DUMP_BUF_BDY(buf+14, total_len-14);
+        }
+        else
+            diag_printf("  ...NULL buffer.\n");
         end_console(old_console);
     }
 #endif
 #ifdef CYGSEM_IO_ETH_DRIVERS_PASS_PACKETS
-    if (sc->funs->eth_drv_old != (struct eth_drv_funs *)0) {
+    if ((unsigned char *)0 != buf &&    // Only pass on a packet we actually got!
+        sc->funs->eth_drv_old != (struct eth_drv_funs *)0) {
         void (*hold_recv)(struct eth_drv_sc *sc,
                           struct eth_drv_sg *sg_list,
                           int sg_len);
@@ -465,8 +479,8 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
         msg->len = total_len;
         eth_drv_msg_put(&eth_msg_full, msg);
 #ifdef CYGSEM_IO_ETH_DRIVERS_WARN
-    } else {
-        diag_dump_buf(sg_list[0].buf, sg_list[0].len);
+    // there was an else with a dump_buf() here but it's
+    // meaningless; sg_list[0].buf is NULL!
 #endif
     }
     CYGARC_HAL_RESTORE_GP();

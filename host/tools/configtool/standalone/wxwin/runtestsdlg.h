@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/09/29
-// Version:     $Id: runtestsdlg.h,v 1.10 2001/06/29 13:48:23 julians Exp $
+// Version:     $Id: runtestsdlg.h,v 1.11 2001/12/13 15:30:27 julians Exp $
 // Purpose:
 // Description: Header file for ecRunTestsDialog
 // Requires:
@@ -59,7 +59,7 @@
 /*
  * ecRunTestsTimer
  * Just to force idle processing now and again while
- * the tests are runnin
+ * the tests are running
  */
 
 class ecRunTestsTimer: public wxTimer

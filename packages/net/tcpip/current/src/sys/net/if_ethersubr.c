@@ -548,8 +548,8 @@ ether_output(ifp, m0, dst, rt0)
 
 	default:
 #ifdef __ECOS
-		diag_printf("%s: can't handle af%d\n", ifp->if_xname,
-                            dst->sa_family);
+//		diag_printf("%s: can't handle af%d\n", ifp->if_xname,
+//                            dst->sa_family);
 #else
 		printf("%s: can't handle af%d\n", ifp->if_xname,
 			dst->sa_family);

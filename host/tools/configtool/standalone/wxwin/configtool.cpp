@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/24
-// Version:     $Id: configtool.cpp,v 1.50 2001/10/15 15:33:02 julians Exp $
+// Version:     $Id: configtool.cpp,v 1.51 2001/12/11 15:59:51 julians Exp $
 // Purpose:
 // Description: Implementation file for the ConfigTool application class
 // Requires:
@@ -123,6 +123,7 @@ static const wxCmdLineEntryDesc sg_cmdLineDesc[] =
     { wxCMD_LINE_SWITCH, "h", "help",   "displays help on the command line parameters" },
     { wxCMD_LINE_SWITCH, "e", "edit-only",    "edit save file only" },
     { wxCMD_LINE_SWITCH, "v", "version",    "print version" },
+    { wxCMD_LINE_SWITCH, "c", "compile-help",    "compile online help only" },
 
     { wxCMD_LINE_PARAM,  NULL, NULL, "input file 1", wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL },
     { wxCMD_LINE_PARAM,  NULL, NULL, "input file 2", wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL },
@@ -230,7 +231,7 @@ bool ecApp::OnInit()
     if (res == -1 || res > 0 || parser.Found(wxT("h")))
     {
 #ifdef __WXGTK__
-	wxLog::SetActiveTarget(new wxLogStderr);
+        wxLog::SetActiveTarget(new wxLogStderr);
 #endif
         parser.Usage();
         return FALSE;
@@ -238,10 +239,10 @@ bool ecApp::OnInit()
     if (parser.Found(wxT("v")))
     {
 #ifdef __WXGTK__
-	wxLog::SetActiveTarget(new wxLogStderr);
+        wxLog::SetActiveTarget(new wxLogStderr);
 #endif
-	wxString msg;
-	msg.Printf(wxT("eCos Configuration Tool (c) Red Hat, 2001 Version %.2f, %s"), ecCONFIGURATION_TOOL_VERSION, __DATE__);
+        wxString msg;
+        msg.Printf(wxT("eCos Configuration Tool (c) Red Hat, 2001 Version %.2f, %s"), ecCONFIGURATION_TOOL_VERSION, __DATE__);
         wxLogMessage(msg);
         return FALSE;
     }
@@ -286,6 +287,9 @@ bool ecApp::OnInit()
 
     if (parser.Found(wxT("e")))
         GetSettings().m_editSaveFileOnly = TRUE;
+
+    // If in --compile-help (-c) mode, then exit immediately after recompiling help file
+    bool compileHelpOnly = parser.Found(wxT("c"));
 
     wxString filenameToOpen1, filenameToOpen2;
     if (parser.GetParamCount() > 0)
@@ -461,6 +465,38 @@ bool ecApp::OnInit()
         {
             // Create a new file
             m_docManager->CreateDocument(wxString(""), wxDOC_NEW);
+        }
+
+        if (compileHelpOnly)
+        {
+            if (!gotRepository)
+            {
+                wxString msg;
+                msg.Printf(wxT("Please specify a repository when using the --compile-help option."));
+                wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_EXCLAMATION|wxOK);
+                return FALSE;
+            }
+            ecConfigToolDoc* doc = wxGetApp().GetConfigToolDoc();
+            if (doc)
+            {
+                if (!doc->RebuildHelpIndex(TRUE))
+                {
+                    wxString msg;
+                    msg.Printf(wxT("Sorry, there was a problem compiling the help index."));
+                    wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_EXCLAMATION|wxOK);
+                    return FALSE;                   
+                }
+            }
+            else
+            {
+                wxString msg;
+                msg.Printf(wxT("Sorry, there was no current document when compiling the help index."));
+                wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_EXCLAMATION|wxOK);
+                return FALSE;                   
+            }
+
+            // Return FALSE in order to quit the application
+            return FALSE;
         }
     }
     else

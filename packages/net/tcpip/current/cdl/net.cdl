@@ -432,6 +432,15 @@ cdl_package CYGPKG_NET {
         }
     }
 
+    cdl_option CYGDBG_NET_TIMING_STATS {
+        display       "Network timing statistics"
+        default_value 0
+        description   "
+                This component controls whether there is diagnostic 
+                information about how long memcpy, malloc, mbuf_alloc
+                etc take to perform."
+    }
+
     cdl_component CYGPKG_NET_OPTIONS {
         display "Networking support build options"
         flavor  none

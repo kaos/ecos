@@ -42,7 +42,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas, jskov
+// Contributors: gthomas, jskov, rsandifo
 // Date:         2001-06-13
 // Purpose:      
 // Description:
@@ -477,7 +477,7 @@ dp83902a_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
 // 'dp83902a_recv' will be called to actually fetch it from the hardware.
 //
 static void
-dp83902a_RxEvent(struct eth_drv_sc *sc, int stat)
+dp83902a_RxEvent(struct eth_drv_sc *sc)
 {
     struct dp83902a_priv_data *dp = (struct dp83902a_priv_data *)sc->driver_private;
     cyg_uint8 *base = dp->base;
@@ -637,7 +637,7 @@ dp83902a_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
 }
 
 static void
-dp83902a_TxEvent(struct eth_drv_sc *sc, int stat)
+dp83902a_TxEvent(struct eth_drv_sc *sc)
 {
     struct dp83902a_priv_data *dp = (struct dp83902a_priv_data *)sc->driver_private;
     cyg_uint8 *base = dp->base;
@@ -669,14 +669,61 @@ dp83902a_TxEvent(struct eth_drv_sc *sc, int stat)
     (sc->funs->eth_drv->tx_done)(sc, key, 0);
 }
 
-static void
-dp83902a_BufEvent(struct eth_drv_sc *sc, int stat)
+// Read the tally counters to clear them.  Called in response to a CNT
+// interrupt.
+static int
+dp83902a_ClearCounters(struct eth_drv_sc *sc)
 {
-    // What to do if the receive buffers overflow?
-    if (stat & DP_ISR_OFLW) {
-        // Note: [so far] it seems safe to just ignore this condition
-        // The Linux driver goes through extraordinary pains to handle
-        // it, including totally shutting down the chip and restarting.
+    struct dp83902a_priv_data *dp = (struct dp83902a_priv_data *)sc->driver_private;
+    cyg_uint8 *base = dp->base;
+    cyg_uint8 cnt1, cnt2, cnt3;
+
+    DP_IN(base, DP_FER, cnt1);
+    DP_IN(base, DP_CER, cnt2);
+    DP_IN(base, DP_MISSED, cnt3);
+    DP_OUT(base, DP_ISR, DP_ISR_CNT);
+}
+
+// Deal with an overflow condition.  This code follows the procedure set
+// out in section 7.0 of the datasheet.
+static void
+dp83902a_Overflow(struct eth_drv_sc *sc)
+{
+    struct dp83902a_priv_data *dp = (struct dp83902a_priv_data *)sc->driver_private;
+    cyg_uint8 *base = dp->base;
+    cyg_uint8 isr;
+
+    // Issue a stop command and wait 1.6ms for it to complete.
+    CR_UP();
+    DP_OUT(base, DP_CR, DP_CR_STOP | DP_CR_NODMA);
+    CYGACC_CALL_IF_DELAY_US(1600);
+
+    // Clear the remote byte counter registers.
+    DP_OUT(base, DP_RBCL, 0);
+    DP_OUT(base, DP_RBCH, 0);
+
+    // Enter loopback mode while we clear the buffer.
+    DP_OUT(base, DP_TCR, DP_TCR_LOCAL); 
+    DP_OUT(base, DP_CR, DP_CR_START | DP_CR_NODMA);
+    CR_DOWN();
+
+    // Read in as many packets as we can and acknowledge any and receive
+    // interrupts.  Since the buffer has overflowed, a receive event of
+    // some kind will have occured.
+    dp83902a_RxEvent(sc);
+    DP_OUT(base, DP_ISR, DP_ISR_RxP|DP_ISR_RxE);
+
+    // Clear the overflow condition and leave loopback mode.
+    DP_OUT(base, DP_ISR, DP_ISR_OFLW);
+    DP_OUT(base, DP_TCR, DP_TCR_NORMAL);
+
+    // If a transmit command was issued, but no transmit event has occured,
+    // restart it here.
+    DP_IN(base, DP_ISR, isr);
+    if (dp->tx_started && !(isr & (DP_ISR_TxP|DP_ISR_TxE))) {
+        CR_UP();
+        DP_OUT(base, DP_CR, DP_CR_NODMA | DP_CR_TXPKT | DP_CR_START);
+        CR_DOWN();
     }
 }
 
@@ -694,18 +741,31 @@ dp83902a_poll(struct eth_drv_sc *sc)
     CR_DOWN();
     DP_IN(base, DP_ISR, isr);
     while (0 != isr) {
-        DP_OUT(base, DP_ISR, isr);      // Clear set bits
-        if (!dp->running) break;        // Is this necessary?
-        // Check for tx_started on TX event since these may happen
-        // spuriously it seems.
-        if (isr & (DP_ISR_TxP|DP_ISR_TxE) && dp->tx_started) {
-            dp83902a_TxEvent(sc, isr);
+        // The CNT interrupt triggers when the MSB of one of the error
+        // counters is set.  We don't much care about these counters, but
+        // we should read their values to reset them.
+        if (isr & DP_ISR_CNT) {
+            dp83902a_ClearCounters(sc);
         }
-        if (isr & (DP_ISR_RxP|DP_ISR_RxE)) {
-            dp83902a_RxEvent(sc, isr);
-        }
-        if (isr & (DP_ISR_OFLW|DP_ISR_CNT)) {
-            dp83902a_BufEvent(sc, isr);
+        // Check for overflow.  It's a special case, since there's a
+        // particular procedure that must be followed to get back into
+        // a running state.
+        if (isr & DP_ISR_OFLW) {
+            dp83902a_Overflow(sc);
+        } else {
+            // Other kinds of interrupts can be acknowledged simply by
+            // clearing the relevant bits of the ISR.  Do that now, then
+            // handle the interrupts we care about.
+            DP_OUT(base, DP_ISR, isr);      // Clear set bits
+            if (!dp->running) break;        // Is this necessary?
+            // Check for tx_started on TX event since these may happen
+            // spuriously it seems.
+            if (isr & (DP_ISR_TxP|DP_ISR_TxE) && dp->tx_started) {
+                dp83902a_TxEvent(sc);
+            }
+            if (isr & (DP_ISR_RxP|DP_ISR_RxE)) {
+                dp83902a_RxEvent(sc);
+            }
         }
         DP_IN(base, DP_ISR, isr);
     }

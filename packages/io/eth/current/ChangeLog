@@ -1,3 +1,30 @@
+2001-12-12  Hugo Tyson  <hmt@redhat.com>
+
+	* src/net/eth_drv.c (START_CONSOLE,END_CONSOLE): New macros akin
+	to those within RedBoot's internal net_io.c, for directing warning
+	messages to a serial line if required.  All printf's wrapped in
+	them for safety.
+
+	* cdl/eth_drivers.cdl (CYGPKG_IO_ETH_DRIVERS_WARN_FORCE_CONSOLE):
+	and ..._NUMBER, new options to direct application warning output
+	somewhere useful (less harmful) for when you are debugging over
+	the net.  Trying to print within a call which occurred from within
+	RedBoot itself is such a recursive situation as to be fatal.
+	Defaults are disabled, you must choose to set these up if
+	you want to debug your app safely over the network.
+
+2001-12-12  Hugo Tyson  <hmt@redhat.com>
+
+	* src/stand_alone/eth_drv.c (DIAG_DUMP_BUF_HDR,DIAG_DUMP_BUF_BDY):
+	Separate macros for debug dumps of ethernet header and body.
+	(eth_drv_write): Use them.
+	(eth_drv_copy_recv): Do not corrupt the static data pointer, so
+	that if we are erroneously called twice, at least what we pass is
+	a packet, rather than random memory; do not escape to SEGV.  Guard
+	against NULL sg_list[].buf pointers, in case caller out of MBUFs.
+	(eth_drv_recv): Only dump packet if we actually have a buffer.
+	Only forward the packet if actually have a buffer.
+
 2001-12-04  Richard Sandiford  <rsandifo@redhat.com>
 
 	* src/stand_alone/eth_drv.c (eth_drv_read): Check that the return

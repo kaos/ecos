@@ -265,6 +265,26 @@ simulate_fail_corrupt_sglist( struct eth_drv_sg *sg_list, int sg_len )
 #endif // CYGPKG_IO_ETH_DRIVERS_SIMULATED_FAILURES
 // ------------------------------------------------------------------------
 
+#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT) && defined(CYGPKG_IO_ETH_DRIVERS_WARN_FORCE_CONSOLE)
+
+#include <cyg/hal/hal_if.h>
+
+// Use with care!  Local variable defined!
+#define START_CONSOLE()  {                                                                     \
+     int _cur_console;                                                                         \
+     _cur_console = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT); \
+     CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGPKG_IO_ETH_DRIVERS_WARN_FORCE_CONSOLE_NUMBER)
+
+#define END_CONSOLE()                                   \
+     CYGACC_CALL_IF_SET_CONSOLE_COMM(_cur_console);     \
+}
+
+#else
+#define START_CONSOLE()
+#define END_CONSOLE()
+#endif
+// ------------------------------------------------------------------------
+
 static int  eth_drv_ioctl(struct ifnet *, u_long, caddr_t);
 static void eth_drv_send(struct ifnet *);
 
@@ -529,8 +549,11 @@ eth_drv_send(struct ifnet *ifp)
 #endif
 
 #ifdef CYGDBG_IO_ETH_DRIVERS_DEBUG
-        if (cyg_io_eth_net_debug)
+        if (cyg_io_eth_net_debug) {
+            START_CONSOLE();
             diag_printf("Sending %d bytes\n", m0->m_pkthdr.len);
+            END_CONSOLE();
+        }
 #endif
 
         /* We need to use m->m_pkthdr.len, so require the header */
@@ -555,13 +578,19 @@ eth_drv_send(struct ifnet *ifp)
                 sg_len++;
 #ifdef CYGDBG_IO_ETH_DRIVERS_DEBUG
             if (cyg_io_eth_net_debug) {
+                START_CONSOLE();
                 diag_printf("xmit %d bytes at %x sg[%d]\n", len, data, sg_len);
                 if ( cyg_io_eth_net_debug > 1)
                     diag_dump_buf(data, len);
+                END_CONSOLE();
             }
 #endif
             if ( MAX_ETH_DRV_SG < sg_len ) {
+#ifdef CYGPKG_IO_ETH_DRIVERS_WARN_NO_MBUFS
+                START_CONSOLE();
                 diag_printf("too many mbufs to tx, %d > %d\n", sg_len, MAX_ETH_DRV_SG );
+                END_CONSOLE();
+#endif
                 sg_len = 0;
                 break; // drop it on the floor
             }
@@ -681,7 +710,9 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
     MGETHDR(m, M_DONTWAIT, MT_DATA);
     if (m == 0) {
 #ifdef CYGPKG_IO_ETH_DRIVERS_WARN_NO_MBUFS
+        START_CONSOLE();
         diag_printf("warning: eth_recv out of MBUFs\n");
+        END_CONSOLE();
 #endif
     }
 
@@ -714,7 +745,9 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
             if (m == 0) {
                 m_freem(top);
 #ifdef CYGPKG_IO_ETH_DRIVERS_WARN_NO_MBUFS
+                START_CONSOLE();
                 diag_printf("out of MBUFs [2]");
+                END_CONSOLE();
 #endif
                 sg_list[sg_len].buf = (CYG_ADDRESS)0;
                 sg_list[sg_len].len = total_len;
@@ -730,7 +763,9 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
                 m_freem(top);
                 m_free(m);
 #ifdef CYGPKG_IO_ETH_DRIVERS_WARN_NO_MBUFS
+                START_CONSOLE();
                 diag_printf("warning: eth_recv out of MBUFs\n");
+                END_CONSOLE();
 #endif
                 sg_list[sg_len].buf = (CYG_ADDRESS)0;
                 sg_list[sg_len].len = total_len;
@@ -762,6 +797,7 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
 
 #ifdef CYGDBG_IO_ETH_DRIVERS_DEBUG
     if (cyg_io_eth_net_debug) {
+        START_CONSOLE();
         for (i = 0;  i < sg_len;  i++) {
             if (sg_list[i].buf) {
                 diag_printf("rx %d bytes at %x sg[%d]\n", sg_list[i].len, sg_list[i].buf, i);
@@ -769,6 +805,7 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
                     diag_dump_buf((void *)sg_list[i].buf, sg_list[i].len);
             }
         }
+        END_CONSOLE();
     }
 #endif
     m = top;

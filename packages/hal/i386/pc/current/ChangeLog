@@ -1,3 +1,9 @@
+2001-12-07  Nick Garnett  <nickg@redhat.com>
+
+	* include/plf_intr.h: Added definition of HAL_DELAY_US() so that
+	this is used instead of the delay loop in delay_us(). This is
+	necessary to handle fast Pentiums and Athlons.
+
 2001-10-16  Mark Salter  <msalter@redhat.com>
 
 	* misc/redboot_FLOPPY_D850GB.ecm: New file. RedBoot config for

@@ -92,7 +92,9 @@ static void do_some_random_computation(int p);
 
 #ifdef __ECOS
 #define test_param_t cyg_addrword_t
+#ifdef CYGDBG_NET_TIMING_STATS
 extern void show_net_times(void);
+#endif
 #else
 #define test_param_t int
 #endif
@@ -137,7 +139,9 @@ void
 pexit(char *s)
 {
     perror(s);
+#ifdef CYGDBG_NET_TIMING_STATS
     show_net_times();
+#endif
     cyg_test_exit();
 }
 
@@ -559,7 +563,9 @@ net_test(test_param_t param)
 #endif
     }
     nc_slave(param);
+#ifdef CYGDBG_NET_TIMING_STATS
     show_net_times();
+#endif
     cyg_test_exit();
 }
 

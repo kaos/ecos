@@ -991,7 +991,7 @@ pcnet_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
                 _SU32(cpd->txd, PCNET_TD_PTR));
 #endif
 
-    // This delay seems to be necessary on some platforms
+    // This delay seems to be necessary on some platforms 
     // Why it is needed is not clear, but removing it or
     // reducing it cause transmission failures in RedBoot (at least).
     CYGACC_CALL_IF_DELAY_US(100);

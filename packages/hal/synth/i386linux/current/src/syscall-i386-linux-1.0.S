@@ -424,4 +424,4 @@ SYSCALL5(_newselect)
 SYSCALL3(readv)
 SYSCALL3(writev)
 SYSCALL1(fdatasync)
-
+SYSCALL2(getcwd)

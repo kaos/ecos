@@ -1,3 +1,22 @@
+2001-12-14  Hugo Tyson  <hmt@redhat.com>
+
+	* src/sys/net/if_ethersubr.c (ether_output): Never ever print
+	anything!  It can recurse unexpectedly if debugging over net.
+
+2001-12-10  Andrew Lunn <andrew.lunn@ascom.ch>
+
+	* cdl/net.cdl: Add configury to eliminate network timing stats.
+	* src/include/machine/param.h: Timing statistics for things like 
+	memcpy, mbuf_alloc etc now use configury to determine if the
+	statistics code should be compiled.
+	* src/ecos/support.c: Ditto.
+	* tests/nc_test_slave.c: Only print timing stats when they
+	are enabled. 
+	* tests/tcp_echo.c: Ditto.
+	* tests/nc_test_master.c: Allow building with SNMP lib which has
+	its own gettimeofday(). This should be fixed better a different
+	way but will do for now.
+	
 2001-12-06  Hugo Tyson  <hmt@redhat.com>
 
 	* src/lib/bootp_support.c (init_net): Just re-tabbed and checked

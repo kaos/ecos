@@ -93,17 +93,21 @@ __pseudo_sum(ip_header_t *ip)
 {
     int    sum;
     word   *p;
-    char   cbuf[2];
 
+    union {
+	unsigned char c[2];
+	unsigned short s;
+    } su;
+    
     p = (word *)ip->source;
     sum  = *p++;
     sum += *p++;
     sum += *p++;
     sum += *p++;
     
-    cbuf[0] = 0;
-    cbuf[1] = ip->protocol;
-    sum += *(word *)cbuf;
+    su.c[0] = 0;
+    su.c[1] = ip->protocol;
+    sum += su.s;
 
     sum += ip->length;
     

@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/29
-// Version:     $Id: appsettings.h,v 1.10 2001/08/22 16:50:32 julians Exp $
+// Version:     $Id: appsettings.h,v 1.12 2001/12/14 17:34:03 julians Exp $
 // Purpose:
 // Description: Header file for the ConfigTool application settings
 // Requires:
@@ -243,6 +243,10 @@ public:
 
     // Font settings
     wxWindowSettings        m_windowSettings;
+
+    // Packages dialog settings
+    bool                    m_omitHardwarePackages;
+    bool                    m_matchPackageNamesExactly;
 };
 
 #endif

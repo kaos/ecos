@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/29
-// Version:     $Id: appsettings.cpp,v 1.25 2001/09/25 09:50:23 julians Exp $
+// Version:     $Id: appsettings.cpp,v 1.27 2001/12/14 17:34:03 julians Exp $
 // Purpose:
 // Description: Implementation file for the ecSettings
 // Requires:
@@ -130,6 +130,10 @@ ecSettings::ecSettings()
     m_findDialogPos = wxPoint(-1, -1);
 
     m_editSaveFileOnly = FALSE;
+
+    // Packages dialog settings
+    m_omitHardwarePackages = FALSE;
+    m_matchPackageNamesExactly = FALSE;
 }
 
 // Copy constructor
@@ -175,6 +179,10 @@ void ecSettings::Copy(const ecSettings& settings)
     m_buildToolsDir = settings.m_buildToolsDir;
 
     m_editSaveFileOnly = settings.m_editSaveFileOnly;
+
+    // Packages dialog settings
+    m_omitHardwarePackages = settings.m_omitHardwarePackages;
+    m_matchPackageNamesExactly = settings.m_matchPackageNamesExactly;
 }
 
 ecSettings::~ecSettings()
@@ -285,6 +293,10 @@ bool ecSettings::LoadConfig()
     config.Read(_("/Find/SearchWhat"), & m_findSearchWhat);
     config.Read(_("/Find/DialogX"), & m_findDialogPos.x);
     config.Read(_("/Find/DialogY"), & m_findDialogPos.y);
+
+    // Package dialog settings
+    config.Read(_("/Packages/OmitHardwarePackages"), & m_omitHardwarePackages);
+    config.Read(_("/Packages/MatchPackageNamesExactly"), & m_matchPackageNamesExactly);
 
     // Run tests settings
     m_runTestsSettings.LoadConfig(config);
@@ -631,6 +643,10 @@ bool ecSettings::SaveConfig()
     config.Write(_("/Find/DialogX"), (long) m_findDialogPos.x);
     config.Write(_("/Find/DialogY"), (long) m_findDialogPos.y);
     
+    // Package dialog settings
+    config.Write(_("/Packages/OmitHardwarePackages"), m_omitHardwarePackages);
+    config.Write(_("/Packages/MatchPackageNamesExactly"), m_matchPackageNamesExactly);
+
     // Save current repository to eCos/Common/Repository/Folder
     // UNLESS it was overridden by ECOS_REPOSITORY
     {

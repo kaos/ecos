@@ -1,3 +1,12 @@
+2001-12-07  Bart Veer  <bartv@redhat.com>
+
+	* doc/language.sgml, doc/*.html:
+	Add a footnote clarifying a particular Tcl expression
+	(bug 57097). Regenerate html.
+
+	* doc/fixhtml.tcl
+	Removed, the master copy now lives in pkgconf
+
 2001-12-06  Bart Veer  <bartv@redhat.com>
 
 	* cdlcore.hxx, build.cxx, interp.cxx:

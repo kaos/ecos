@@ -69,5 +69,12 @@
 #define HAL_PLATFORM_RESET_ENTRY	 &hal_pc_reset
 
 //---------------------------------------------------------------------------
+// Microsecond delay
+
+__externC void hal_delay_us(int us);
+
+#define HAL_DELAY_US(_us) hal_delay_us(_us)
+
+//---------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_PLF_INTR_H
 // End of plf_intr.h

@@ -562,10 +562,15 @@ static void test_dinvalidate(void)
 //  o Time difference between repeatedly executing a bunch of instructions
 //    with and without locking.
 #ifdef HAL_ICACHE_LOCK
-static void iloop(unsigned long* start, unsigned long* end)
+static void iloop(unsigned long* start, unsigned long* end, int dummy)
 {
+    // dummy is just used to fool the compiler to not move the labels
+    // around. All callers should call with dummy=0;
+
     register char c;
     register CYG_INTERRUPT_STATE oldints;
+
+    if (1 == dummy) goto label_end;
 
  label_start:
     // Invalidating shouldn't affect locked lines.
@@ -644,6 +649,8 @@ static void iloop(unsigned long* start, unsigned long* end)
 
     *start = (unsigned long) &&label_start;
     *end = (unsigned long) &&label_end;
+
+    if (1 == dummy) goto label_start;
 }
 
 static void time_ilock(void)
@@ -661,7 +668,7 @@ static void time_ilock(void)
 
     count0 = cyg_current_time();
     for (k = 0; k < time_ilock_loops; k++) {
-        iloop(&start, &end);
+        iloop(&start, &end, 0);
     }
     count1 = cyg_current_time();
     t = count1 - count0;
@@ -671,7 +678,7 @@ static void time_ilock(void)
 
     count0 = cyg_current_time();
     for (k = 0; k < time_ilock_loops; k++) {
-        iloop(&start, &end);
+        iloop(&start, &end, 0);
     }
     count1 = cyg_current_time();
     t = count1 - count0;

@@ -1,9 +1,23 @@
 Release History for eCos Configuration Tool 2
 =============================================
 
-*** Version 2.09, December 3rd 2001
+*** Version 2.09, December 11th 2001
 
 - Hardware is now sorted alphabetically on UNIX.
+
+- The documentation system will now work with HTML documentation
+  generated from SGML, which will be the case from eCos 2.0
+  on.
+
+- --compile-help command added, which will create .hhp and .hhc
+  files, and then exit.
+
+- Packages dialog improvements: added keyword search and 'Omit hardware'
+  checkbox; added more information to the description window.
+
+- added an "exact match" checkbox to the Packages dialog. That way if
+  you type 'flash', you get exactly what you'd get if you type
+  'ecosconfig add flash'.
 
 
 *** Version 2.08, October 25th 2001

@@ -4,13 +4,13 @@
 
 [Setup]
     MinVersion=4.0,4.0
-    AppName=eCos Configuration Tool 2.08
+    AppName=eCos Configuration Tool 2.09
     AppId=eCos Configuration Tool
     CreateUninstallRegKey=1
     UsePreviousAppDir=1
     UsePreviousGroup=1
-    AppVersion=2.08
-    AppVerName=eCos Configuration Tool 2.08
+    AppVersion=2.09
+    AppVerName=eCos Configuration Tool 2.09
     AppCopyright=Copyright © Red Hat Inc., 2001
     BackColor=$FF0000
     BackColor2=$000000
@@ -29,7 +29,7 @@
     AlwaysCreateUninstallIcon=1
     Uninstallable=1
     DefaultDirName=c:\Program Files\Red Hat\eCos Configuration Tool
-    DefaultGroupName=Red Hat eCos Configuration Tool 2.08
+    DefaultGroupName=Red Hat eCos Configuration Tool 2.09
     LicenseFile=v:\deliver\configtool\license.txt
     InfoBeforeFile=v:\deliver\configtool\readme.txt
     MessagesFile=compiler:default.isl
@@ -213,7 +213,7 @@
 ; DO NOT DELETE THEM or you may be unable to reload the script
 
 ;[ScriptSetup]
-;VerNum=2.08
+;VerNum=2.09
 ;InnoVer=1.3
 ;AddVerTo=AppVerName
 ;SetupFilename=setup.exe

@@ -154,6 +154,16 @@ cdl_package CYGPKG_REDBOOT {
                 This option is overriden by the configuration stored in flash."
         }
 
+	cdl_option CYGDBG_REDBOOT_NET_DEBUG_CONSOLE_NUMBER {
+	    display	     "Console number for net debug information"
+	    flavor           data
+	    default_value    0
+	    description "
+	    0 is normally serial port 0, 1 is serial port 1.  Some boards don't
+	    have a serial 0, or it may not be brought out to a connector,
+	    so this option is available to change things."
+	}    
+
         cdl_component CYGDAT_REDBOOT_DEFAULT_IP_ADDR {
             display          "Default IP address"
             flavor           booldata
@@ -205,12 +215,12 @@ cdl_package CYGPKG_REDBOOT {
     }
 
     cdl_option CYGPKG_REDBOOT_ANY_CONSOLE {
-        display       "Allow RedBoot to use any I/O channel for it's console."
+        display       "Allow RedBoot to use any I/O channel for its console."
         flavor        bool
         default_value 1
         description   "
           If this option is enabled then RedBoot will attempt to use all
-          defined serial I/O channels for it's console device.  Once input
+          defined serial I/O channels for its console device.  Once input
           arrives at one of these channels then the console will use only
           that port."
     }

@@ -1,3 +1,8 @@
+2001-12-12  Jesper Skov  <jskov@redhat.com>
+
+	* tests/kcache2.c (time_ilock): Put some dummy goto statements in
+	to prevent compiler from moving labels around.
+
 2001-11-29  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/sched/mlqueue.cxx (timeslice_cpu): Reset timeslice_count on

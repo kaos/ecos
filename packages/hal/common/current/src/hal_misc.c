@@ -60,12 +60,18 @@
 // Macro for finding return address. 
 #ifndef CYGARC_HAL_GET_RETURN_ADDRESS
 
-#define CYGARC_HAL_GET_RETURN_ADDRESS(_x_) \
-  (_x_) = (CYG_ADDRWORD)&&__backup_return_address
+#define CYGARC_HAL_GET_RETURN_ADDRESS(_x_, _dummy_)     \
+    CYG_MACRO_START                                     \
+    (_dummy_) = 1;                                      \
+    (_x_) = (CYG_ADDRWORD)&&__backup_return_address;    \
+    CYG_MACRO_END
 
-#define CYGARC_HAL_GET_RETURN_ADDRESS_BACKUP() \
-__backup_return_address:
-
+#define CYGARC_HAL_GET_RETURN_ADDRESS_BACKUP(_dummy_)   \
+    CYG_MACRO_START                                     \
+__backup_return_address:                                \
+    if ((_dummy_)-- > 0)                                \
+        goto __backup_return_address;                   \
+    CYG_MACRO_END
 #endif
 
 //--------------------------------------------------------------------------
@@ -91,6 +97,11 @@ cyg_hal_is_break(char *buf, int size)
     return false;
 }
 
+// Keep this variable global, to prevent the compiler removing it (and
+// the goto-reference) due to being local to the function where it is
+// used. Yes, it's ugly.
+int _cyg_hal_compiler_dummy;
+
 void 
 cyg_hal_user_break( CYG_ADDRWORD *regs )
 {
@@ -102,14 +113,14 @@ cyg_hal_user_break( CYG_ADDRWORD *regs )
     CYG_WORD32 __pc;
     HAL_SavedRegisters *sreg = (HAL_SavedRegisters *)regs;
 
-    CYGARC_HAL_GET_RETURN_ADDRESS(__ra);
+    CYGARC_HAL_GET_RETURN_ADDRESS(__ra, _cyg_hal_compiler_dummy);
 
     if( regs == NULL ) __pc = __ra;
     else  CYGARC_HAL_GET_PC_REG(sreg, __pc);
 
     CYGACC_CALL_IF_INSTALL_BPT_FN((void *)__pc);
 
-    CYGARC_HAL_GET_RETURN_ADDRESS_BACKUP();
+    CYGARC_HAL_GET_RETURN_ADDRESS_BACKUP(_cyg_hal_compiler_dummy);
     
 #else
 

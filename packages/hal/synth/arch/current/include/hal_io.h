@@ -331,6 +331,10 @@ externC int             cyg_hal_sys_gettimeofday(struct cyg_hal_sys_timeval*,
 
 // The actual implementation appears to return the new brk() value.
 externC void*           cyg_hal_sys_brk(void*);
+
+// Returns the number of characters placed in the buffer or <0 for error,
+// not a char*. 
+externC int             cyg_hal_sys_getcwd(char*, int);
  
 // ----------------------------------------------------------------------------
 // Interaction between the application and the auxiliary.

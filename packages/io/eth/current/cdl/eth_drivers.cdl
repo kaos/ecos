@@ -80,7 +80,7 @@ cdl_package CYGPKG_IO_ETH_DRIVERS {
         default_value 1
         compile       net/eth_drv.c
 
-    	cdl_option CYGPKG_IO_ETH_DRIVERS_WARN_NO_MBUFS {
+    	cdl_component CYGPKG_IO_ETH_DRIVERS_WARN_NO_MBUFS {
 	    display	"Warn when there are no more mbufs"
 	    flavor	bool
 	    default_value 1
@@ -92,6 +92,26 @@ cdl_package CYGPKG_IO_ETH_DRIVERS {
 	        out is bad for performance but not fatal, not a crash.
                 You might want to turn off the warnings to preserve realtime
                 properties of the system even in extremis."
+
+	    cdl_component CYGPKG_IO_ETH_DRIVERS_WARN_FORCE_CONSOLE {
+		display		"Force warning output to particular console"
+		default_value	0
+		flavor		bool
+		active_if 		CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
+		description "
+		Enabling this forces warning output somewhere useful, such
+		as a particular serial port when performing network debugging."
+		
+		cdl_option CYGPKG_IO_ETH_DRIVERS_WARN_FORCE_CONSOLE_NUMBER {
+		    display		"Console number for warning output"
+		    flavor 		data
+		    default_value	0
+		    description "
+		    0 is normally serial 0, 1 is serial 1.  Some boards don't have a
+		    serial 0, or if they do it's not brought out to a connector.  Hence
+		    the need to change this."
+		}
+	    }
 	}
 
 	cdl_component CYGPKG_IO_ETH_DRIVERS_SIMULATED_FAILURES {

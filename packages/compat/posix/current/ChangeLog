@@ -1,3 +1,9 @@
+2001-12-11  Nick Garnett  <nickg@redhat.com>
+
+	* tests/mqueue2.c (cyg_user_start): Added CYG_TEST_INIT() to
+	NOTAPPLICABLE variant, otherwise the order of breakpoints are all
+	wrong and the testfarm registers a failure.
+
 2001-11-06  Gary Thomas  <gthomas@redhat.com>
 
 	* include/muttypes.h: Need <pkgconf/kernel.h> configuration info,
