@@ -1,3 +1,8 @@
+2003-02-05  Nick Garnett  <nickg@calivar.com>
+
+	* include/var_cache.h: Added include for hal_io.h since this file
+	uses HAL_READ_UINT32() etc.
+
 2002-08-06  Gary Thomas  <gary@chez-thomas.org>
 2002-08-06  Motoya Kurotsu <kurotsu@allied-telesis.co.jp>	
 

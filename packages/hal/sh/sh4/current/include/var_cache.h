@@ -62,6 +62,8 @@
 
 #include <cyg/hal/plf_cache.h>
 
+#include <cyg/hal/hal_io.h>
+
 //=============================================================================
 
 #ifndef HAL_DCACHE_DEFINED
