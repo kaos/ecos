@@ -58,31 +58,6 @@
 
 #include <cyg/hal/quicc/ppc8xx.h>                  // QUICC structure definitions
 
-// SMC Mode Register
-#define QUICC_SMCMR_CLEN(n)   ((n+1)<<11)   // Character length
-#define QUICC_SMCMR_SB(n)     ((n-1)<<10)   // Stop bits (1 or 2)
-#define QUICC_SMCMR_PE(n)     (n<<9)        // Parity enable (0=disable, 1=enable)
-#define QUICC_SMCMR_PM(n)     (n<<8)        // Parity mode (0=odd, 1=even)
-#define QUICC_SMCMR_UART      (2<<4)        // UART mode
-#define QUICC_SMCMR_TEN       (1<<1)        // Enable transmitter
-#define QUICC_SMCMR_REN       (1<<0)        // Enable receiver
-
-// SMC Events (interrupts)
-#define QUICC_SMCE_BRK 0x10  // Break received
-#define QUICC_SMCE_BSY 0x04  // Busy - receive buffer overrun
-#define QUICC_SMCE_TX  0x02  // Tx interrupt
-#define QUICC_SMCE_RX  0x01  // Rx interrupt
-
-// SMC Commands
-#define QUICC_SMC_CMD_InitTxRx  (0<<8)
-#define QUICC_SMC_CMD_InitTx    (1<<8)
-#define QUICC_SMC_CMD_InitRx    (2<<8)
-#define QUICC_SMC_CMD_StopTx    (4<<8)
-#define QUICC_SMC_CMD_RestartTx (6<<8)
-#define QUICC_SMC_CMD_Reset     0x8000
-#define QUICC_SMC_CMD_Go        0x0001
-
-
 static unsigned int smc_select_word_length[] = {
     QUICC_SMCMR_CLEN(5),  // 5 bits / word (char)
     QUICC_SMCMR_CLEN(6),
@@ -104,30 +79,6 @@ static unsigned int smc_select_parity[] = {
     0,                                     // Mark parity
     0,                                     // Space parity
 };
-
-// SCC PSMR masks ....
-#define QUICC_SCC_PSMR_ASYNC   0x8000
-#define QUICC_SCC_PSMR_SB(n)   ((n-1)<<14)  // Stop bits (1=1sb, 2=2sb)
-#define QUICC_SCC_PSMR_CLEN(n) ((n-5)<<12)  // Character Length (5-8)
-#define QUICC_SCC_PSMR_PE(n)   (n<<4)       // Parity enable(0=disabled, 1=enabled)
-#define QUICC_SCC_PSMR_RPM(n)  (n<<2)       // Rx Parity mode (0=odd,  1=low, 2=even, 3=high)
-#define QUICC_SCC_PSMR_TPM(n)  (n)          // Tx Parity mode (0=odd,  1=low, 2=even, 3=high)
-
-// SCC DSR masks
-#define QUICC_SCC_DSR_FULL     0x7e7e
-#define QUICC_SCC_DSR_HALF     0x467e
-
-// SCC GSMR masks ...
-#define QUICC_SCC_GSMR_H_INIT  0x00000060 
-#define QUICC_SCC_GSMR_L_INIT  0x00028004 
-#define QUICC_SCC_GSMR_L_Tx    0x00000010
-#define QUICC_SCC_GSMR_L_Rx    0x00000020
-
-// SCC Events (interrupts)
-#define QUICC_SCCE_BRK         0x0040
-#define QUICC_SCCE_BSY         0x0004
-#define QUICC_SCCE_TX          0x0002
-#define QUICC_SCCE_RX          0x0001
 
 static unsigned int scc_select_word_length[] = {
   QUICC_SCC_PSMR_CLEN(5),  // 5 bits / word (char)

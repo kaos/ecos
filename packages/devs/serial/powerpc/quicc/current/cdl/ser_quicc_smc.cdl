@@ -113,16 +113,6 @@ cdl_component CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC1 {
             for the PowerPC QUICC/SMC port 1."
     }
 
-    cdl_option CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_BRG {
-        display       "Which baud rate generator to use for the PowerPC QUICC/SMC serial port 1"
-        flavor        data
-        legal_values  1 to 4
-        default_value 1
-        description   "
-            This option specifies which of the four baud rate generators
-            to use for the PowerPC QUICC/SMC port 1."
-    }
-
     cdl_option CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_TxSIZE {
         display       "Output buffer size for the PowerPC QUICC/SMC serial port 1"
         flavor        data
@@ -202,16 +192,6 @@ cdl_component CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC2 {
         description   "
             This option specifies the size of the internal buffers used
             for the PowerPC QUICC/SMC port 2."
-    }
-
-    cdl_option CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_BRG {
-        display       "Which baud rate generator to use for the PowerPC QUICC/SMC serial port 2"
-        flavor        data
-        legal_values  1 to 4
-        default_value 2
-        description   "
-            This option specifies which of the four baud rate generators
-            to use for the PowerPC QUICC/SMC port 2."
     }
 
     cdl_option CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_TxSIZE {
@@ -328,16 +308,6 @@ cdl_component CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SCC1 {
             for the PowerPC QUICC/SCC port 1."
     }
 
-    cdl_option CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC1_BRG {
-        display       "Which baud rate generator to use for the PowerPC QUICC/SCC serial port 1"
-        flavor        data
-        legal_values  1 to 4
-        default_value 2
-        description   "
-            This option specifies which of the four baud rate generators
-            to use for the PowerPC QUICC/SCC port 1."
-    }
-
     cdl_option CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC1_TxSIZE {
         display       "Output buffer size for the PowerPC QUICC/SCC serial port 1"
         flavor        data
@@ -419,16 +389,6 @@ cdl_component CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SCC2 {
             for the PowerPC QUICC/SCC port 2."
     }
 
-    cdl_option CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC2_BRG {
-        display       "Which baud rate generator to use for the PowerPC QUICC/SCC serial port 2"
-        flavor        data
-        legal_values  1 to 4
-        default_value 3
-        description   "
-            This option specifies which of the four baud rate generators
-            to use for the PowerPC QUICC/SCC port 2."
-    }
-
     cdl_option CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC2_TxSIZE {
         display       "Output buffer size for the PowerPC QUICC/SCC serial port 2"
         flavor        data
@@ -508,16 +468,6 @@ cdl_component CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SCC3 {
         description   "
             This option specifies the size of the internal buffers used
             for the PowerPC QUICC/SCC port 3."
-    }
-
-    cdl_option CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC3_BRG {
-        display       "Which baud rate generator to use for the PowerPC QUICC/SCC serial port 3"
-        flavor        data
-        legal_values  1 to 4
-        default_value 4
-        description   "
-            This option specifies which of the four baud rate generators
-            to use for the PowerPC QUICC/SCC port 3."
     }
 
     cdl_option CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC3_TxSIZE {

@@ -1,3 +1,12 @@
+2003-03-23  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/quicc_smc_serial.h: Move common definitions to common
+	include file (in HAL).
+
+	* src/quicc_smc_serial.c: 
+	* cdl/ser_quicc_smc.cdl: Remove options for baud rate generator
+	assignment - use more generic [automatic] support.
+
 2003-03-17  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/quicc_smc_serial.h: 

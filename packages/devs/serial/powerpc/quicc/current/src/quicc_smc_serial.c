@@ -74,7 +74,7 @@ typedef struct quicc_sxx_serial_info {
     CYG_ADDRWORD          channel;                   // Which channel SMCx/SCCx
     short                 int_num;                   // Interrupt number
     short                 type;                      // Channel type - SCC or SMC
-    cyg_uint32            *brg;                      // Which baud rate generator
+    unsigned long         *brg;                      // Which baud rate generator
     void                  *pram;                     // Parameter RAM pointer
     void                  *ctl;                      // SMC/SCC control registers
     volatile struct cp_bufdesc     *txbd, *rxbd;     // Next Tx,Rx descriptor to use
@@ -374,42 +374,20 @@ quicc_smc_serial_init_info(quicc_sxx_serial_info *smc_chan,
                            int RxBD, int RxNUM, int RxSIZE,
                            cyg_uint8 *RxBUF,
                            int portBmask,
-                           int BRG, int SIpos)
+                           int port)
 {
     EPPC *eppc = eppc_base();
     struct cp_bufdesc *txbd, *rxbd;
-    cyg_uint32 simode = 0;
     int i;
 
     // Disable channel during setup
     ctl->smc_smcmr = QUICC_SMCMR_UART;  // Disabled, UART mode
     smc_chan->pram = (void *)uart_pram;
     smc_chan->ctl = (void *)ctl;
-    /*
-     *  SDMA & LCD bus request level 5
-     *  (Section 16.10.2.1)
-     */
-    eppc->dma_sdcr = 1;
-    switch (BRG) {
-    case 1:
-        smc_chan->brg = (cyg_uint32 *)&eppc->brgc1;
-        simode = 0;
-        break;
-    case 2:
-        smc_chan->brg = (cyg_uint32 *)&eppc->brgc2;
-        simode = 1;
-        break;
-    case 3:
-        smc_chan->brg = (cyg_uint32 *)&eppc->brgc3;
-        simode = 2;
-        break;
-    case 4:
-        smc_chan->brg = (cyg_uint32 *)&eppc->brgc4;
-        simode = 3;
-        break;
-    }
-    // NMSI mode, BRGn to SMCm  (Section 16.12.5.2)
-    eppc->si_simode = (eppc->si_simode & ~(0xF<<SIpos)) | (simode<<SIpos);
+
+    // Set up baud rate generator
+    smc_chan->brg = _mpc8xx_allocate_brg(port);
+
     /*
      *  Set up the PortB pins for UART operation.
      *  Set PAR and DIR to allow SMCTXDx and SMRXDx
@@ -528,42 +506,20 @@ quicc_scc_serial_init_info(quicc_sxx_serial_info *scc_chan,
                            int RxBD, int RxNUM, int RxSIZE,
                            cyg_uint8 *RxBUF,
                            int portAmask, int portBmask, int portCmask,
-                           int BRG, int SIpos)
+                           int port)
 {
     EPPC *eppc = eppc_base();
     struct cp_bufdesc *txbd, *rxbd;
-    cyg_uint32 simode = 0;
     int i;
 
     // Disable channel during setup
     ctl->scc_gsmr_l = 0;
     scc_chan->pram = (void *)uart_pram;
     scc_chan->ctl = (void *)ctl;
-    /*
-     *  SDMA & LCD bus request level 5
-     *  (Section 16.10.2.1)
-     */
-    eppc->dma_sdcr = 1;
-    switch (BRG) {
-    case 1:
-        scc_chan->brg = (cyg_uint32 *)&eppc->brgc1;
-        simode = 0;
-        break;
-    case 2:
-        scc_chan->brg = (cyg_uint32 *)&eppc->brgc2;
-        simode = 1;
-        break;
-    case 3:
-        scc_chan->brg = (cyg_uint32 *)&eppc->brgc3;
-        simode = 2;
-        break;
-    case 4:
-        scc_chan->brg = (cyg_uint32 *)&eppc->brgc4;
-        simode = 3;
-        break;
-    }
-    // Route baud rate generators
-    eppc->si_sicr = (eppc->si_sicr & ~(0xFF<<SIpos)) | (((simode<<3)|(simode<<0))<<SIpos);
+
+    // Set up baud rate generator
+    scc_chan->brg = _mpc8xx_allocate_brg(port);
+
     /*
      *  Set up the PortA/B/C pins for UART operation.
      */
@@ -682,8 +638,7 @@ quicc_sxx_serial_init(struct cyg_devtab_entry *tab)
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_RxSIZE,
                                    ALIGN_TO_CACHELINES(&quicc_smc1_rxbuf[0][0]),
                                    0xC0, // PortB mask
-                                   CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_BRG,
-                                   12  // SI mask position
+                                   QUICC_CPM_SMC1
             );
     }
 #endif
@@ -703,8 +658,7 @@ quicc_sxx_serial_init(struct cyg_devtab_entry *tab)
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_RxSIZE,
                                    ALIGN_TO_CACHELINES(&quicc_smc2_rxbuf[0][0]),
                                    0xC00, // PortB mask
-                                   CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_BRG,
-                                   28  // SI mask position
+                                   QUICC_CPM_SMC2
             );
     }
 #endif
@@ -726,8 +680,7 @@ quicc_sxx_serial_init(struct cyg_devtab_entry *tab)
                                    0x0003, // PortA mask
                                    0x1000, // PortB mask
                                    0x0800, // PortC mask
-                                   CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC1_BRG,
-                                   0  // SI mask position
+                                   QUICC_CPM_SCC1
             );
     }
 #endif
@@ -749,8 +702,7 @@ quicc_sxx_serial_init(struct cyg_devtab_entry *tab)
                                    0x000C, // PortA mask
                                    0x2000, // PortB mask
                                    0x0C00, // PortC mask
-                                   CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC2_BRG,
-                                   8  // SI mask position
+                                   QUICC_CPM_SCC2
             );
     }
 #endif
@@ -772,8 +724,7 @@ quicc_sxx_serial_init(struct cyg_devtab_entry *tab)
                                    0x0000, // PortA mask
                                    0x00C0, // PortB mask
                                    0x0000, // PortC mask
-                                   CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC3_BRG,
-                                   16  // SI mask position
+                                   QUICC_CPM_SCC3
             );
     }
 #endif
