@@ -1,3 +1,7 @@
+2002-09-23  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* .cvsignore: Ignore the generated html files.
+
 2002-02-26  Julian Smart  <julians@redhat.com>
 
 	* config-tool.sgml: updated further text and graphics

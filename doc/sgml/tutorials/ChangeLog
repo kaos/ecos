@@ -1,3 +1,7 @@
+2002-09-23  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* .cvsignore: Ignore the generated html files.
+
 2002-05-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* ecos-tutorial.sgml: RHEPL -> GPL. A few minor other tweaks, but
