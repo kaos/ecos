@@ -134,6 +134,38 @@ found in <FILENAME>/usr/include</FILENAME>.  For example:
  install/include/sys/sockio.h
 </PROGRAMLISTING>
 </PARA>
+<PARA>
+<filename>network.h</filename> at the top level
+defines various extensions, for example the API
+<function>init_all_network_interfaces(void)</function>
+described
+above.  We advise including <filename>network.h</filename> whether
+you use these features or not.</PARA>
+<PARA>In general, using the networking code may require definition
+of two symbols: _KERNEL and __ECOS.  _KERNEL
+is not normally required; __ECOS is normally required.
+So add this to your compile lines for files which use the network
+stack:</PARA>
+<PROGRAMLISTING>        -D__ECOS</PROGRAMLISTING>
+<PARA>To expand a little, it&rsquo;s like this because this is
+a port of a standard distribution external to eCos.  One goal
+is to perturb the sources as little as possible, so that upgrading
+and maintenance from the external distribution is simplified.  The __ECOS
+symbol marks out the eCos additions in making the port.
+The _KERNEL symbol is traditional UNIX practice: it distinguishes
+a compilation which is to be linked into the kernel from one which
+is part of an application.  eCos applications are fully linked,
+so this distinction does not apply.  _KERNEL can however
+be used to control the visibility of the internals of the stack,
+so depending on what features your application uses, it may or may
+not be necessary.</PARA>
+<PARA>The include file <filename>network.h</filename> undefines _KERNEL
+unconditionally, to provide an application-like compilation environment.
+If you were writing code which, for example,
+enumerates the stack&rsquo;s internal
+structures, that is a kernel-like compilation environment, so you
+would need to define _KERNEL (in addition to __ECOS)
+and avoid including <filename>network.h</filename>.</PARA>
 </SECT1>
 <SECT1 id="tcpip-freebsd-enhanced-select">
 <TITLE>Enhanced Select()</TITLE>

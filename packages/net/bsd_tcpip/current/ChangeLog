@@ -1,3 +1,8 @@
+2004-02-18  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* doc/freebsd.sgml: Import text from openbsd doc about use of __ECOS
+	<network.h>, etc.
+
 2004-01-17  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/sys/kern/sockio.c (bsd_connect): Set the sa_len field in
