@@ -700,18 +700,18 @@ void fileio1_main( CYG_ADDRESS id )
     // Verify we cannot unlink a read-only file
     diag_printf("<INFO>: unlink /foo\n");
     err = unlink( "/foo" );
-    if( err != -EPERM ) SHOW_RESULT( unlink, err );
+    if( (err != -1) || (errno != EPERM) ) SHOW_RESULT( unlink, err );
 
     // Verify we cannot rename a read-only file
     diag_printf("<INFO>: rename /foo bundy\n");
     err = rename( "/foo", "bundy" );
-    if( err != -EPERM ) SHOW_RESULT( rename, err );
+    if( (err != -1) || (errno != EPERM) ) SHOW_RESULT( rename, err );
 
     // Verify we cannot open read-only file for writing
     int fd;
     diag_printf("<INFO>: create file /foo\n");
     fd = open( "/foo", O_WRONLY );
-    if( err != -EPERM ) SHOW_RESULT( rename, err );
+    if( (err != -1) || (errno != EACCES) ) SHOW_RESULT( open, err );
     if( err > 0 ) close(fd);
 
     // Make it Normal

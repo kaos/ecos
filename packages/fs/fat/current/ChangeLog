@@ -1,3 +1,8 @@
+2004-10-23  David Brennan  <eCos@brennanhome.com>
+
+	* tests/fileio1.c: fixed check for return value for attribute
+	tests.
+
 2004-10-17  David Brennan  <eCos@brennanhome.com>
 
 	* src/fatfs.c:
