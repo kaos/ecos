@@ -682,8 +682,8 @@ mq_timedsend( mqd_t mqdes, const char *msg_ptr, size_t msg_len,
               unsigned int msg_prio, const struct timespec *abs_timeout)
 {
     CYG_REPORT_FUNCTYPE( "returning %d" );
-    CYG_REPORT_FUNCARG6( "mqdes=%08x, msg_ptr=%08x, msg_len=%u, msg_prio=%u,
-	                      abs_timeout = %lu, %ld",
+    CYG_REPORT_FUNCARG6( "mqdes=%08x, msg_ptr=%08x, msg_len=%u, msg_prio=%u, "
+                         "abs_timeout = %lu, %ld",
                          mqdes, msg_ptr, msg_len, msg_prio, 
                          abs_timeout->tv_sec, abs_timeout->tv_nsec);
     CYG_CHECK_DATA_PTRC( msg_ptr );
@@ -769,8 +769,8 @@ mq_timedreceive( mqd_t mqdes, char *msg_ptr, size_t msg_len,
             unsigned int *msg_prio, const struct timespec *abs_timeout)
 {
     CYG_REPORT_FUNCTYPE( "returning %ld" );
-    CYG_REPORT_FUNCARG6( "mqdes=%08x, msg_ptr=%08x, msg_len=%u, msg_prio=%08x,
-	                      abs_timeout = %lu, %ld",
+    CYG_REPORT_FUNCARG6( "mqdes=%08x, msg_ptr=%08x, msg_len=%u, msg_prio=%08x, "
+	                 "abs_timeout = %lu, %ld",
                          mqdes, msg_ptr, msg_len, msg_prio,
                          abs_timeout->tv_sec, abs_timeout->tv_nsec );
     CYG_CHECK_DATA_PTRC( msg_ptr );
