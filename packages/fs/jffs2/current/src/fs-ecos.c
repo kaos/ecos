@@ -28,8 +28,7 @@
 #include <cyg/io/config_keys.h>
 #include <cyg/io/flash.h>
 
-#if (__GNUC__ == 3) && (__GNUC_MINOR__ == 2) && (__GNUC_PATCHLEVEL__ == 1) && \
-    defined (__ARM_ARCH_4__)
+#if (__GNUC__ == 3) && (__GNUC_MINOR__ == 2) && defined (__ARM_ARCH_4__)
 #error This compiler is known to be broken. Please see:
 #error http://ecos.sourceware.org/ml/ecos-patches/2003-08/msg00006.html
 #endif
