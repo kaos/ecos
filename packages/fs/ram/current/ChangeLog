@@ -1,3 +1,8 @@
+2004-01-08  Vincent Catros  <Vincent.Catros@elios-informatique.fr>
+
+	* src/ramfs.c (ramfs_fo_write): Return ENOSPC when the filesystem
+	is full.
+
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/ramfs.cdl: Fix doc link.

@@ -2089,6 +2089,7 @@ static int ramfs_fo_write     (struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio)
     ramfs_node *node = (ramfs_node *)fp->f_data;
     off_t pos = fp->f_offset;
     ssize_t resid = uio->uio_resid;    
+    int err = ENOERR;
     int i;
 
     // If the APPEND mode bit was supplied, force all writes to
@@ -2115,7 +2116,6 @@ static int ramfs_fo_write     (struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio)
             cyg_uint8 *fbuf;
             size_t bsize;
             off_t l = len;
-            int err;
             
             err = findbuffer_node( node, pos, &fbuf, &bsize, true );
 
@@ -2153,7 +2153,7 @@ static int ramfs_fo_write     (struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio)
     uio->uio_resid = resid;
     fp->f_offset = pos;
     
-    return ENOERR;
+    return err;
 }
 
 // -------------------------------------------------------------------------
