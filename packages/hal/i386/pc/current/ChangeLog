@@ -1,3 +1,7 @@
+2003-01-22  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/pkgconf/hal_i386_pc.h: Old file. Remove.
+
 2002-11-28  Nick Garnett  <nickg@ecoscentric.com>
 
 	* src/plf_stub.c: Removed redundant reinitialization of VSR table
