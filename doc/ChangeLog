@@ -1,3 +1,14 @@
+2003-05-01  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* sgml/jadetex.cfg: Add this to configure PDF output nicely with index
+	and coloured links.
+
+2003-03-23  Iztok Zupet  <iz@vsr.si>
+
+	* sgml/makemakefile: modified copyfiles to copy png-s instead of 
+	gif-s.
+	* sgml/README-PDF: Comment on pdfjadetext failure and workaround.
+
 2003-03-27  Thomas Koeller  <thomas.koeller@baslerweb.com>
 
         * sgml/makemakefile: Modified to generate makefile that can

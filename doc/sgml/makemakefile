@@ -84,10 +84,10 @@ for i in `cat ${doclist}`; do
   fi
 done
 
-# Go through again but find GIFs to copy
+# Go through again but find GIFs and PNGs to copy
 for i in `for j in \`cat ${doclist}\` ; do dirname $j ; done | sort | uniq` ; do
   diri=`echo ${toplvl}/packages/$i | sed "s@/current/@/${PACKAGEVER}/@g"`
-  dirigifs=`ls $diri/*.gif 2>/dev/null | tr '\n' ' '`
+  dirigifs=`ls $diri/*.gif $diri/*.png 2>/dev/null | tr '\n' ' '`
   if [ x"$dirigifs" != x ]; then
         copyfiles="$copyfiles $dirigifs"
   fi
