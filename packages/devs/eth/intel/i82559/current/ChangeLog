@@ -1,3 +1,8 @@
+2003-02-27  Mark Salter  <msalter@redhat.com>
+
+	* src/if_i82559.c (eth_set_mac_address): Correct writing
+	of wrong address to EEPROM.
+
 2003-02-22  Mark Salter  <msalter@redhat.com>
 
 	* src/if_i82559.c: Fix endian issues with EEPROM writing.

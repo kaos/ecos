@@ -3356,9 +3356,9 @@ eth_set_mac_address(struct i82559* p_i82559, char *addr, int eeprom)
             eeprom_burn[i] = read_eeprom( ioaddr, i, addr_length );
 
         // now set this address in the device eeprom ....
-        eeprom_burn[0] = p_i82559->mac_address[0] | (p_i82559->mac_address[1] << 8);
-        eeprom_burn[1] = p_i82559->mac_address[2] | (p_i82559->mac_address[3] << 8);
-        eeprom_burn[2] = p_i82559->mac_address[4] | (p_i82559->mac_address[5] << 8);
+        eeprom_burn[0] = addr[0] | (addr[1] << 8);
+        eeprom_burn[1] = addr[2] | (addr[3] << 8);
+        eeprom_burn[2] = addr[4] | (addr[5] << 8);
 
         // No idea what these were for...
         // eeprom_burn[20] &= 0xfe;   
