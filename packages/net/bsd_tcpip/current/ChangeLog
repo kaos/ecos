@@ -1,3 +1,8 @@
+2004-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/ecos/support.c (_dumpentry): Don't skip routes which don't
+	have a netmask. These are seem to be valid host routes.
+
 2004-02-18  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* doc/freebsd.sgml: Import text from openbsd doc about use of __ECOS

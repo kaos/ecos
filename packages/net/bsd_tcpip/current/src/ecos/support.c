@@ -1022,9 +1022,6 @@ _dumpentry(struct radix_node *rn, void *vw)
     netmask = rt_mask(rt);
     genmask = rt->rt_genmask;
     if ((rt->rt_flags & (RTF_UP | RTF_WASCLONED)) == RTF_UP) {
-        if (netmask == NULL) {
-            return 0;
-        }
         _inet_ntop(dst, addr, sizeof(addr));
         (*pr)("%-15s ", addr);
         if (gate != NULL) {
