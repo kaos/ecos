@@ -269,6 +269,7 @@ net_io_putc(void* __ch_data, cyg_uint8 c)
     static bool have_dollar, have_hash;
     static int hash_count;
 
+    CYGARC_HAL_SAVE_GP();
     *out_bufp++ = c;
     if (c == '$') have_dollar = true;
     if (have_dollar && (c == '#')) {
@@ -280,6 +281,7 @@ net_io_putc(void* __ch_data, cyg_uint8 c)
         net_io_flush();
         have_dollar = false;
     }
+    CYGARC_HAL_RESTORE_GP();
 }
 
 static void
@@ -323,8 +325,8 @@ net_io_getc_timeout(void* __ch_data, cyg_uint8* ch)
 {
     int delay_count;
     cyg_bool res;
-    CYGARC_HAL_SAVE_GP();
 
+    CYGARC_HAL_SAVE_GP();
     net_io_flush();  // Make sure any output has been sent
     delay_count = _timeout;
 
@@ -336,6 +338,7 @@ net_io_getc_timeout(void* __ch_data, cyg_uint8* ch)
     }
 
     CYGARC_HAL_RESTORE_GP();
+
     return res;
 }
 
@@ -395,12 +398,14 @@ net_io_isr(void *__ch_data, int* __ctrlc,
 {
     char ch;
 
+    CYGARC_HAL_SAVE_GP();
     *__ctrlc = 0;
     if (net_io_getc_nonblock(__ch_data, &ch)) {
         if (ch == 0x03) {
             *__ctrlc = 1;
         }
     }
+    CYGARC_HAL_RESTORE_GP();
     return CYG_ISR_HANDLED;
 }
 
@@ -538,8 +543,11 @@ net_init(void)
     flash_get_config("net_debug", &net_debug, CONFIG_BOOL);
     flash_get_config("gdb_port", &gdb_port, CONFIG_INT);
     flash_get_config("bootp", &use_bootp, CONFIG_BOOL);
-    flash_get_config("bootp_my_ip", &__local_ip_addr, CONFIG_IP);
-    flash_get_config("bootp_server_ip", &my_bootp_info.bp_siaddr, CONFIG_IP);
+    if (use_bootp) {
+        flash_get_config("bootp_my_ip", &__local_ip_addr, CONFIG_IP);
+        flash_get_config("bootp_server_ip", &my_bootp_info.bp_siaddr, CONFIG_IP)
+;
+    }
 #endif
     have_net = false;
     // Make sure the recv buffers are set up
@@ -563,7 +571,14 @@ net_init(void)
         if (__bootp_find_local_ip(&my_bootp_info) == 0) {
             have_net = true;
         } else {
-            printf("Can't get BOOTP info - network disabled!\n");
+            // Is it an unset address, or has it been set to a static addr
+            if (__local_ip_addr[0] == 0 && __local_ip_addr[1] == 0 &&
+                __local_ip_addr[2] == 0 && __local_ip_addr[3] == 0) {
+                printf("Can't get BOOTP info - network disabled!\n");
+            } else {
+                printf("Can't get BOOTP info, using default IP address\n");
+                have_net = true;
+            }
         }
     } else {
         have_net = true;  // Assume values in FLASH were OK

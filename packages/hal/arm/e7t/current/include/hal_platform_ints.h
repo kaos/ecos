@@ -4,7 +4,7 @@
 //
 //      hal_platform_ints.h
 //
-//      HAL Interrupt and clock assignments for AEB-1
+//      HAL Interrupt and clock assignments for E7T (AEB-2)
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####

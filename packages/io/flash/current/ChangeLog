@@ -1,3 +1,9 @@
+2001-07-19  Gary Thomas  <gthomas@redhat.com>
+
+	* include/flash.h: 
+	* cdl/io_flash.cdl: New option CYGINT_FLASH_WORKSPACE_SIZE used
+	to control how much memory is reserved for use by FLASH drivers.
+
 2001-06-19  Hugo Tyson  <hmt@redhat.com>
 
 	* src/flash.c (flash_program): Only verify program with memcmp if

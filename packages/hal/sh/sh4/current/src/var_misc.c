@@ -71,13 +71,16 @@
 externC void
 cyg_var_enable_caches(void)
 {
+    // If relying on a ROM monitor do not invalidate the caches as the
+    // ROM monitor may have (non-synced) state in the caches.
+#if !defined(CYGSEM_HAL_USE_ROM_MONITOR)
     // Initialize cache.
     HAL_DCACHE_INVALIDATE_ALL();    
     HAL_ICACHE_INVALIDATE_ALL();    
 
     // Set cache modes
     HAL_DCACHE_WRITE_MODE_SH(CACHE_MODE_P0|CACHE_MODE_P1);
-
+#endif
 #ifdef CYGHWR_HAL_SH_CACHE_ENABLE
     // Enable cache.
     HAL_ICACHE_ENABLE();

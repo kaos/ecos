@@ -1,3 +1,9 @@
+2001-07-19  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/devfs.cxx (dev_fo_read): Treat non-blocking reads returning
+	EAGAIN correctly
+	(dev_fo_write): Ditto for writes.
+
 2001-06-14  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/fio.h (FILEIO_ENTRY): Don't use CYG_MACRO_START/END around

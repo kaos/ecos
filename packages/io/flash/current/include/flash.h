@@ -49,7 +49,7 @@
 
 typedef int _printf(char* fmt, ...);
 
-#define FLASH_MIN_WORKSPACE 0x10000  // Space used by FLASH code
+#define FLASH_MIN_WORKSPACE CYGINT_FLASH_WORKSPACE_SIZE  // Space used by FLASH code
 
 externC int flash_init(void *work_space, int work_space_length, _printf *pf);
 externC int flash_erase(void *base, int len, void **err_address);

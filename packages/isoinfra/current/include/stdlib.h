@@ -380,8 +380,8 @@ qsort( void * /* first_object */, size_t /* num_objects */,
 /*======================================================================*/
 
 #if CYGINT_ISO_ABS
-# ifdef CYGBLD_ISO_ABS_HEADER
-#  include CYGBLD_ISO_ABS_HEADER
+# ifdef CYGBLD_ISO_STDLIB_ABS_HEADER
+#  include CYGBLD_ISO_STDLIB_ABS_HEADER
 # else
 
 /* TYPE DEFINITIONS */
@@ -408,8 +408,8 @@ labs( long /* val */ ) __attribute__((__const__));
 /*======================================================================*/
 
 #if CYGINT_ISO_DIV
-# ifdef CYGBLD_ISO_DIV_HEADER
-#  include CYGBLD_ISO_DIV_HEADER
+# ifdef CYGBLD_ISO_STDLIB_DIV_HEADER
+#  include CYGBLD_ISO_STDLIB_DIV_HEADER
 # else
 
 /* ISO C 7.10 and 7.10.6 - Integer Arithmetic Functions */

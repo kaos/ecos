@@ -218,11 +218,13 @@ mon_set_read_char_timeout(int ms)
         CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);        
     } else 
 #endif
-    if ((__chan = CYGACC_CALL_IF_CONSOLE_PROCS()) != 0) {
-        CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_SET_TIMEOUT, ms);
-    }
-    if ((__chan = CYGACC_CALL_IF_DEBUG_PROCS()) != 0) {
-        CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_SET_TIMEOUT, ms);
+    {
+        if ((__chan = CYGACC_CALL_IF_CONSOLE_PROCS()) != 0) {
+            CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_SET_TIMEOUT, ms);
+        }
+        if ((__chan = CYGACC_CALL_IF_DEBUG_PROCS()) != 0) {
+            CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_SET_TIMEOUT, ms);
+        }
     }
 }
 

@@ -1,3 +1,39 @@
+2001-07-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/net/net_io.c (net_init): Don't overwrite static IP
+	address when reading flash config if configured to not use BOOTP.
+	Set have_net if not using BOOTP and a default static IP addr is set.
+
+2001-07-19  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c: Be more generic with 'fconfig' layout.  In 
+	particular, handle case where FLASH block size is too small
+	to hold fconfig data.
+
+	* src/io.c (mon_set_read_char_timeout): Fix dangling else bug.
+
+	* src/flash.c (do_flash_init): Suppress printing info - this
+	will happen when 'version' is called.  Also allow flash subsystem
+	to be initialized when there is no 'fconfig' or 'fis' command
+	configured in (but flash support still is present).
+
+	* src/version.c: Display complete version information which 
+	reflects such information as the source release, etc.
+
+	* cdl/redboot.cdl: New option CYGDAT_REDBOOT_CUSTOM_VERSION used to 
+	allow site-specific version information.  Define this via the
+	CDL like this:
+	   cdl_option CYGDAT_REDBOOT_CUSTOM_VERSION {
+             user_value 1 "Special test version"
+           };
+
+2001-07-18  Gary Thomas  <gthomas@redhat.com>
+
+	* src/net/net_io.c (net_io_putc, net_io_isr):
+	Need CYGARC_HAL_SAVE_GP()/CYGARC_HAL_RESTORE_GP() to support
+	network debugging since different layers of eCos programs are
+	involved.
+
 2001-07-16  Gary Thomas  <gthomas@redhat.com>
 
 	* src/main.c (do_version): Use external function _flash_info() to 

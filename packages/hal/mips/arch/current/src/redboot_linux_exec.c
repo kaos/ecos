@@ -46,6 +46,15 @@
 #include <cyg/hal/hal_intr.h>
 #include <cyg/hal/hal_cache.h>
 
+// Not all platforms define this the same way
+#if defined(CYGNUM_HAL_VIRTUAL_VECTOR_CHANNELS_DEFAULT_BAUD)
+#define DEFAULT_BAUD CYGNUM_HAL_VIRTUAL_VECTOR_CHANNELS_DEFAULT_BAUD
+#elif defined(CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD)
+#define DEFAULT_BAUD CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD
+#else
+#define DEFAULT_BAUD 38400  // Probably wrong
+#endif
+
 #define xstr(s) str(s)
 #define str(s...) #s
 
@@ -127,7 +136,7 @@ do_exec(int argc, char *argv[])
     pb->modetty0.name = ++pcmd;
     pcmd += sprintf(pcmd, "modetty0");
     pb->modetty0.val = ++pcmd;
-    pcmd += sprintf(pcmd, "%d,n,8,1,hw", CYGNUM_HAL_VIRTUAL_VECTOR_CHANNELS_DEFAULT_BAUD);
+    pcmd += sprintf(pcmd, "%d,n,8,1,hw", DEFAULT_BAUD);
 
 #ifdef CYGPKG_REDBOOT_NETWORKING
     pb->ethaddr.name = ++pcmd;

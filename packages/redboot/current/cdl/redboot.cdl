@@ -80,6 +80,17 @@ cdl_package CYGPKG_REDBOOT {
             requires  CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
         }
 
+        cdl_option CYGDAT_REDBOOT_CUSTOM_VERSION {
+            display        "Customized version string"
+            flavor         booldata
+            default_value  0
+            description    "
+              Use this option to define a customized version \"string\" for
+              RedBoot.  Note: this value is only cosmetic, displayed by the
+              \"version\" command, but is useful for providing site specific
+              information about the RedBoot configuration."
+        }
+
         no_define
         description "This option enables the building of the Redboot ELF image.
                      The image may require further relocation or symbol

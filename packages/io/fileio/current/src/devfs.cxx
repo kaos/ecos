@@ -337,6 +337,11 @@ static int dev_fo_read      (struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio)
                            iov->iov_base,
                            &len);
 
+        if( EAGAIN == err ) // must be in non-blocking mode
+        {
+            uio->uio_resid -= len;
+            return ENOERR;
+        }
         if( err < 0 ) break;
 
         uio->uio_resid -= len;
@@ -363,6 +368,11 @@ static int dev_fo_write     (struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio)
                             iov->iov_base,
                             &len);
 
+        if( EAGAIN == err ) // must be in non-blocking mode
+        {
+            uio->uio_resid -= len;
+            return ENOERR;
+        }
         if( err < 0 ) break;
 
         uio->uio_resid -= len;

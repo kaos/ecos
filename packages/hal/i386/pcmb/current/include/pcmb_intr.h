@@ -65,11 +65,41 @@
 //--------------------------------------------------------------------------
 // Interrupt vectors.
 
+#define CYGNUM_HAL_INTERRUPT_IRQ0                32
+#define CYGNUM_HAL_INTERRUPT_IRQ1                33
+#define CYGNUM_HAL_INTERRUPT_IRQ2                34
+#define CYGNUM_HAL_INTERRUPT_IRQ3                35
+#define CYGNUM_HAL_INTERRUPT_IRQ4                36
+#define CYGNUM_HAL_INTERRUPT_IRQ5                37
+#define CYGNUM_HAL_INTERRUPT_IRQ6                38
+#define CYGNUM_HAL_INTERRUPT_IRQ7                39
+#define CYGNUM_HAL_INTERRUPT_IRQ8                40
+#define CYGNUM_HAL_INTERRUPT_IRQ9                41
+#define CYGNUM_HAL_INTERRUPT_IRQ10               42
+#define CYGNUM_HAL_INTERRUPT_IRQ11               43
+#define CYGNUM_HAL_INTERRUPT_IRQ12               44
+#define CYGNUM_HAL_INTERRUPT_IRQ13               45
+#define CYGNUM_HAL_INTERRUPT_IRQ14               46
+#define CYGNUM_HAL_INTERRUPT_IRQ15               47
+
+#define CYGNUM_HAL_INTERRUPT_TIMER               32
+#define CYGNUM_HAL_INTERRUPT_KEYBOARD            33
+#define CYGNUM_HAL_INTERRUPT_SLAVE8259           34
+#define CYGNUM_HAL_INTERRUPT_COM2                35
+#define CYGNUM_HAL_INTERRUPT_COM1                36
+#define CYGNUM_HAL_INTERRUPT_LPT2                37
+#define CYGNUM_HAL_INTERRUPT_FDD                 38
+#define CYGNUM_HAL_INTERRUPT_LPT1                39
+#define CYGNUM_HAL_INTERRUPT_WALLCLOCK           40
+#define CYGNUM_HAL_INTERRUPT_SLAVE8259REDIR      41
+#define CYGNUM_HAL_INTERRUPT_COPRO               45
+#define CYGNUM_HAL_INTERRUPT_HDD                 46
+
 #define CYGNUM_HAL_ISR_MIN                       32
 #define CYGNUM_HAL_ISR_MAX                       47
 #define CYGNUM_HAL_ISR_COUNT    (CYGNUM_HAL_ISR_MAX - CYGNUM_HAL_ISR_MIN + 1)
 
-#define CYGNUM_HAL_INTERRUPT_RTC                (CYGNUM_HAL_ISR_MIN + 0)
+#define CYGNUM_HAL_INTERRUPT_RTC                 CYGNUM_HAL_INTERRUPT_TIMER
 
 //--------------------------------------------------------------------------
 // Interrupt vector translation

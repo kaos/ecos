@@ -1,3 +1,14 @@
+2001-07-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* tests/fileio1.c (main): Get this to actually pass! Remove
+	kernel dependency.
+	* cdl/fileio.cdl: Get CDL dependencies better. Don't use
+	fixed base address. Make test building an option. Build mk_romfs
+	and use it to construct a test romfs.
+	* support/mk_romfs.c: fix trivial typo
+	* tests/testromfs: Directory hierarchy added for constructing test
+	ROMFS.
+
 2001-07-13  Richard Panton (richard.panton@3glab.com)
 
 	* support/mk_romfs.c: Convert between host FS file modes and eCos

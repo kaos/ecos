@@ -146,6 +146,11 @@ extern struct cmd __FIS_cmds_TAB__[], __FIS_cmds_TAB_END__;
 static void *flash_start, *flash_end;
 static int block_size, blocks;
 static void *fis_work_block;
+static int fisdir_size;  // Size of FIS directory.  Note: zero if FIS not enabled
+#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
+static void *cfg_base;   // Location in Flash of config data
+static int   cfg_size;   // Length of config data - rounded to Flash block size
+#endif
 
 static void
 fis_usage(char *why)
@@ -179,9 +184,6 @@ fis_init(int argc, char *argv[])
     int stat;
     struct fis_image_desc *img;
     void *fis_base, *err_addr;
-#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
-    void *cfg_base;
-#endif
     bool full_init = false;
     struct option_info opts[1];
     unsigned long redboot_image_size, redboot_flash_start;
@@ -249,10 +251,9 @@ fis_init(int argc, char *argv[])
     // And a descriptor for the configuration data
     memset(img, 0, sizeof(*img));
     strcpy(img->name, "RedBoot config");
-    cfg_base = (void *)((unsigned long)flash_end - (2*block_size));
     img->flash_base = (unsigned long)cfg_base;
     img->mem_base = (unsigned long)cfg_base;
-    img->size = block_size;
+    img->size = cfg_size;
     img++;
 #endif
     // And a descriptor for the descriptor table itself
@@ -1030,10 +1031,14 @@ do_flash_init(void)
         flash_get_block_info(&block_size, &blocks);
         fis_work_block = (unsigned char *)(workspace_end-FLASH_MIN_WORKSPACE-block_size);
         workspace_end = fis_work_block;
-        _flash_info();
+        fisdir_size = block_size;
     }
     return true;
 }
+
+#ifndef CYGOPT_REDBOOT_FLASH_CONFIG
+RedBoot_init(do_flash_init, RedBoot_INIT_FIRST);
+#endif
 
 static void
 do_fis(int argc, char *argv[])
@@ -1607,19 +1612,18 @@ void
 flash_write_config(void)
 {
     int stat;
-    void *cfg_base, *err_addr;
+    void *err_addr;
 
     config.len = sizeof(config);
     config.key1 = CONFIG_KEY1;  
     config.key2 = CONFIG_KEY2;
     config.cksum = crc32((unsigned char *)&config, sizeof(config)-sizeof(config.cksum));
-    cfg_base = (void *)((unsigned long)flash_end - (2*block_size));
     if (verify_action("Update RedBoot non-volatile configuration")) {
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
         // Insure [quietly] that the config page is unlocked before trying to update
-        flash_unlock((void *)cfg_base, block_size, (void **)&err_addr);
+        flash_unlock((void *)cfg_base, cfg_size, (void **)&err_addr);
 #endif
-        if ((stat = flash_erase(cfg_base, block_size, (void **)&err_addr)) != 0) {
+        if ((stat = flash_erase(cfg_base, cfg_size, (void **)&err_addr)) != 0) {
             printf("   initialization failed %p: 0x%x(%s)\n", err_addr, stat, flash_errmsg(stat));
         } else {
             if ((stat = flash_program(cfg_base, (void *)&config, 
@@ -1630,7 +1634,7 @@ flash_write_config(void)
         }
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
         // Insure [quietly] that the config data is locked after the update
-        flash_lock((void *)cfg_base, block_size, (void **)&err_addr);
+        flash_lock((void *)cfg_base, cfg_size, (void **)&err_addr);
 #endif
     }
 }
@@ -1824,13 +1828,15 @@ config_init(void)
 static void
 load_flash_config(void)
 {
-    void *cfg_base;
     bool use_boot_script;
 
     config_ok = false;
     script = (unsigned char *)0;
     if (!do_flash_init()) return;
-    cfg_base = (void *)((unsigned long)flash_end - (2*block_size));
+#define _roundup(n,s) ((((n)+(s-1))/s)*s)
+    cfg_size = (block_size > sizeof(config)) ? sizeof(config) : 
+                                               _roundup(sizeof(config), block_size);
+    cfg_base = (void *)((unsigned long)flash_end - (cfg_size+fisdir_size));
     memcpy(&config, cfg_base, sizeof(config));
     if ((crc32((unsigned char *)&config, sizeof(config)-sizeof(config.cksum)) != config.cksum) ||
         (config.key1 != CONFIG_KEY1)|| (config.key2 != CONFIG_KEY2)) {

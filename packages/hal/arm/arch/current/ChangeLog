@@ -1,3 +1,12 @@
+2001-07-19  Gary Thomas  <gthomas@redhat.com>
+
+	* src/vectors.S: Support ROMRAM startup mode.  Note: most of
+	the support for this mode will be in the platform setup code.
+
+2001-07-18  Gary Thomas  <gthomas@redhat.com>
+
+	* src/hal_mk_defs.c (main): FIQ no longer listed as an exception.
+
 2001-07-17  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/hal_intr.h: Define range of exceptions more accurately.

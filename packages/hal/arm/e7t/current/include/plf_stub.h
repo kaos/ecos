@@ -45,7 +45,7 @@
 //=============================================================================
 
 #include <pkgconf/hal.h>
-#include <pkgconf/hal_arm_e7t.h>
+#include CYGBLD_HAL_PLATFORM_H
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 

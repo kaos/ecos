@@ -1,3 +1,7 @@
+2001-07-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/stdlib.h: Use correct macro names for abs and div.
+
 2001-06-08  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/stdlib.h: Actually set MB_CUR_MAX in i18n package via header.

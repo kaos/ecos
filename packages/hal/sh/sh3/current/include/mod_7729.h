@@ -55,7 +55,7 @@
 #define CYGARC_SH_MOD_PFC  1
 #define CYGARC_SH_MOD_SCI  1
 #define CYGARC_SH_MOD_SCIF 1
-#define CYGARC_SH_MOD_UBC  3
+//#define CYGARC_SH_MOD_UBC  3
 
 
 //-----------------------------------------------------------------------------

@@ -1,3 +1,7 @@
+2001-07-18  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/cyg_type.h (CYG_INIT_MEMALLOC): Add.
+
 2001-07-13  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/diag.cxx (diag_vprintf): Fix long longs (patch from

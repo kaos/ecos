@@ -333,7 +333,7 @@ start:
 
         LED 4
 
-#if defined(CYG_HAL_STARTUP_ROM)
+#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_ROMRAM)
         // Set up reset vector
         mov     r0,#0
         ldr     r1,.__exception_handlers

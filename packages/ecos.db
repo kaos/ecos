@@ -1278,7 +1278,7 @@ package CYGPKG_HAL_I386 {
 }
 
 package CYGPKG_HAL_I386_GENERIC {
-	alias		{ "i386 Generic target" hal_i386_generic }
+	alias		{ "i386 generic target" hal_i386_generic }
 	directory	hal/i386/generic
 	script		hal_i386_generic.cdl
 	hardware

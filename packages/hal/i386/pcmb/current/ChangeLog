@@ -1,3 +1,7 @@
+2001-07-18  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/pcmb_intr.h: Fill in interrupt table descriptions.
+
 2001-07-05  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/pcmb_misc.c (hal_pcmb_init): Silence warning

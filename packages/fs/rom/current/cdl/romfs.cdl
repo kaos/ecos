@@ -48,32 +48,49 @@ cdl_package CYGPKG_FS_ROM {
     requires       CYGPKG_IO_FILEIO
 
     requires       CYGPKG_ISOINFRA
-    requires       CYGPKG_ERROR
     requires       CYGINT_ISO_ERRNO
     requires       CYGINT_ISO_ERRNO_CODES
 
     compile        -library=libextras.a romfs.c
 
-    cdl_option CYGNUM_FS_ROM_BASE_ADDRESS {
-	display		"Base of the ROM filesystem in memory"
-	flavor		data
-	default_value	{ 0x50040000 }
-	description	"Set this value to the base address of the ROM
-		filesystem in memory."
-    }
-
     # ----------------------------------------------------------------
     # Tests
 
-    cdl_option CYGPKG_FS_ROM_TESTS {
-	display "ROM FS tests"
-	flavor  data
-	no_define
-	calculated { "tests/fileio1.c" }
-            description   "
-                This option specifies the set of tests for the ROM FS package."
+    cdl_component CYGTST_ROMFS_BUILD_TESTS {
+        display       "Build ROMFS tests"
+        flavor        bool
+        no_define
+        default_value 0
+        requires      CYGINT_LIBC_STARTUP_CONTEXT
+        requires      CYGINT_ISO_STDIO_FORMATTED_IO
+        requires      CYGINT_ISO_STRERROR
+        description   "
+                This option enables the building of the ROMFS tests."
+
+        # FIXME: host compiler/flags should be provided by config system
+        make -priority 100 {
+            <PREFIX>/bin/mk_romfs: <PACKAGE>/support/mk_romfs.c
+            @mkdir -p "$(dir $@)"
+            @cc -g -O2 -o $@ $<
         }
     
+        make -priority 100 {
+            <PREFIX>/include/cyg/romfs/testromfs.h : $(PREFIX)/bin/mk_romfs <PACKAGE>/support/file2c.tcl
+            $(PREFIX)/bin/mk_romfs $(REPOSITORY)/$(PACKAGE)/tests/testromfs testromfs.bin
+            @mkdir -p "$(dir $@)"
+            sh $(REPOSITORY)/$(PACKAGE)/support/file2c.tcl testromfs.bin $@
+        }
+    
+    
+        cdl_option CYGPKG_FS_ROM_TESTS {
+            display "ROM FS tests"
+            flavor  data
+            no_define
+            calculated { "tests/fileio1.c" }
+                description   "
+                    This option specifies the set of tests for the ROM FS package."
+        }
+    }
 }
 
 # End of romfs.cdl

@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):           nickg
-// Contributors:        nickg, richard.panton@3glab.com
+// Contributors:        nickg, richard.panton@3glab.com, jlarmour
 // Date:                2000-05-25
 // Purpose:             Test fileio system
 // Description:         This test uses the testfs to check out the initialization
@@ -43,12 +43,9 @@
 //==========================================================================
 
 #include <pkgconf/hal.h>
-#include <pkgconf/kernel.h>
 #include <pkgconf/io_fileio.h>
-
-#include <cyg/kernel/ktypes.h>         // base kernel types
-#include <cyg/infra/cyg_trac.h>        // tracing macros
-#include <cyg/infra/cyg_ass.h>         // assertion macros
+#include <pkgconf/isoinfra.h>
+#include <pkgconf/system.h>
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -56,13 +53,14 @@
 #include <errno.h>
 #include <string.h>
 #include <dirent.h>
+#include <stdio.h>
 
 #include <cyg/fileio/fileio.h>
 
 #include <cyg/infra/testcase.h>
 #include <cyg/infra/diag.h>            // HAL polled output
 
-#include <pkgconf/fs_rom.h>	// Address of ROMFS
+#include <cyg/romfs/testromfs.h>  // Test ROMFS data
 
 //==========================================================================
 
@@ -70,7 +68,7 @@ MTAB_ENTRY( romfs_mte1,
                    "/",
                    "romfs",
                    "",
-                   (CYG_ADDRWORD) CYGNUM_FS_ROM_BASE_ADDRESS );
+                   (CYG_ADDRWORD) &filedata[0] );
 
 
 //==========================================================================
@@ -95,7 +93,7 @@ else if ( errno != _type ) \
 
 //==========================================================================
 
-#ifndef CYGPKG_LIBC_STRING
+#ifndef CYGINT_ISO_STRING_STRFUNCS
 
 char *strcat( char *s1, const char *s2 )
 {
@@ -165,6 +163,7 @@ static void listdir( char *name, int statp )
 
 //==========================================================================
 
+#ifdef CYGPKG_FS_RAM
 static void copyfile( char *name2, char *name1 )
 {
 
@@ -207,6 +206,7 @@ static void copyfile( char *name2, char *name1 )
     if( err < 0 ) SHOW_RESULT( close, err );
     
 }
+#endif
 
 //==========================================================================
 
@@ -275,7 +275,6 @@ int main( int argc, char **argv )
     // --------------------------------------------------------------
 
     diag_printf("<INFO>: ROMFS root follows\n");
-    diag_printf("<INFO>: Note that dev cannot be stat()ed\n");
     listdir( "/", true );
 
     diag_printf("<INFO>: cd /etc\n" );
@@ -291,19 +290,23 @@ int main( int argc, char **argv )
     diag_printf("<INFO>: ROMFS list of . follows\n");
     listdir( ".", true );
     
+#ifdef CYGPKG_FS_RAM
     err = mount( "", "/var", "ramfs" );
-    if( err < 0 ) SHOW_RESULT( mount, err );    
+    if( err < 0 ) SHOW_RESULT( mount, err );
 
     copyfile( "/etc/passwd", "/var/passwd_copy" );
 
     comparefiles( "/etc/passwd", "/var/passwd_copy" );
+#endif
     
     diag_printf("<INFO>: ROMFS list of / follows\n");
+#ifdef CYGPKG_FS_RAM
     diag_printf("<INFO>: Note that /var now gives stat() info for RAMFS\n");
+#endif
     listdir( "/", true );
 
     diag_printf("<INFO>: Mount ROMFS again onto /mnt\n");
-    sprintf( address, "%p", (void*)CYGNUM_FS_ROM_BASE_ADDRESS );
+    sprintf( address, "%p", (void*)&filedata[0] );
     err = mount( address, "/mnt", "romfs" );
     if( err < 0 ) SHOW_RESULT( mount, err );    
 
@@ -314,7 +317,11 @@ int main( int argc, char **argv )
     CHKFAIL_TYPE( mkdir, err, EROFS );
 
     err = rename( "/var", "/tmp" );	// RAMFS is mounted here
+#ifdef CYGPKG_FS_RAM
     CHKFAIL_TYPE( rename, err, EXDEV );
+#else
+    CHKFAIL_TYPE( rename, err, EROFS );
+#endif
 
     err = rename( "/var/passwd_copy", "/mnt/etc/passwd_copy" );
     CHKFAIL_TYPE( rename, err, EXDEV );
@@ -336,15 +343,19 @@ int main( int argc, char **argv )
     CHKFAIL_TYPE( unlink, err, EROFS );
 
     diag_printf("<INFO>: mount random area\n");
-    sprintf(address, "%p", (void*)(CYGNUM_FS_ROM_BASE_ADDRESS + 0x20000));
+    sprintf(address, "%p", (void*)(&filedata[0] + 0x100));
     err = mount( address, "/tmp", "romfs" );
-    SHOW_RESULT( mount, err );
+    CHKFAIL_TYPE( mount, err, ENOENT );
 
     err = umount( "/mnt" );
     if( err < 0 ) SHOW_RESULT( umount, err );    
 
     err = umount( "/var" );
+#ifdef CYGPKG_FS_RAM
     if( err < 0 ) SHOW_RESULT( umount, err );    
+#else
+    CHKFAIL_TYPE( umount, err, EINVAL );
+#endif
 
     err = umount( "/" );
     if( err < 0 ) SHOW_RESULT( umount, err );    

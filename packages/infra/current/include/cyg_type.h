@@ -268,6 +268,7 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 #define CYG_INIT_IDLE_THREAD            15000
 #define CYG_INIT_THREADS                16000
 #define CYG_INIT_KERNEL                 40000
+#define CYG_INIT_MEMALLOC               47000
 #define CYG_INIT_IO                     49000
 #define CYG_INIT_LIBC                   50000
 #define CYG_INIT_COMPAT                 55000

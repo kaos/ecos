@@ -1,3 +1,9 @@
+2001-07-18  Franck Mamalet  <franck.mamalet@rd.francetelecom.com>
+2001-07-18  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/edb7xxx_misc.c: Reorder hal_interrupt_status_regmap so that
+	all FIQs are first.
+
 2001-06-29  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/io.c: Support building on cygwin.

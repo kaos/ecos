@@ -1,3 +1,9 @@
+2001-07-18  Jesper Skov  <jskov@redhat.com>
+
+	* src/var_misc.c (cyg_var_enable_caches): Small hack to prevent
+	ethernet connection to be lost in RAM applications when started
+	from a ROM monitor.
+
 2001-07-17  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_sh_sh4.cdl: Allow caching.

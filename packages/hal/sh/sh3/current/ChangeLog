@@ -1,3 +1,12 @@
+2001-07-18  Jesper Skov  <jskov@redhat.com>
+
+	* src/var_misc.c (cyg_var_enable_caches): Small hack to prevent
+	ethernet connection to be lost in RAM applications when started
+	from a ROM monitor.
+
+	* include/mod_7729.h: Single stepping using UBC is broken -
+	disable it for now.
+
 2001-06-28  Jesper Skov  <jskov@redhat.com>
 
 	* include/var_intr.h: Allow platforms to extend vector table.

@@ -363,6 +363,8 @@ Cyg_StdioStream::get_position( fpos_t *pos )
 inline Cyg_ErrNo
 Cyg_StdioStream::set_position( fpos_t pos, int whence )
 {
+    CYG_ASSERTCLASS( this, "Stream object is not a valid stream!" );
+    
 #ifndef CYGPKG_LIBC_STDIO_FILEIO    
     // this is currently a workaround until we have real files
     // this will be corrected when we decide the true filesystem interface
@@ -370,8 +372,6 @@ Cyg_StdioStream::set_position( fpos_t pos, int whence )
     Cyg_ErrNo err;
     cyg_uint8 c;
 
-    CYG_ASSERTCLASS( this, "Stream object is not a valid stream!" );
-    
     if ((whence != SEEK_CUR) || pos < 0)
         return ENOSYS;
 
@@ -398,13 +398,46 @@ Cyg_StdioStream::set_position( fpos_t pos, int whence )
     
 #else
 
-    Cyg_ErrNo err;
-    off_t newpos = pos;
-
-    CYG_ASSERTCLASS( this, "Stream object is not a valid stream!" );
-    
     if (!lock_me())
         return EBADF; // assume file is now invalid
+
+    if ( whence != SEEK_END ) {
+        cyg_ucount32 bytesavail = bytes_available_to_read();
+        off_t abspos = (whence == SEEK_CUR) ? position + pos : pos;
+        off_t posdiff = abspos - position;
+
+        if ( bytesavail > posdiff ) {
+            // can just "seek" within the existing buffer
+#ifdef CYGFUN_LIBC_STDIO_ungetc
+            if (flags.unread_char_buf_in_use) {
+                flags.unread_char_buf_in_use = false;
+                posdiff--;
+            }
+#endif
+#ifdef CYGSEM_LIBC_STDIO_WANT_BUFFERED_IO
+            if (posdiff>0 && flags.buffering) {
+                io_buf.set_bytes_read(posdiff);
+                posdiff=0;
+            } else 
+#endif
+            if (posdiff>0 && flags.readbuf_char_in_use) {
+                flags.readbuf_char_in_use = false;
+                posdiff--;
+            }
+            CYG_ASSERT(posdiff==0, "Failed to seek within buffer correctly");
+
+            position = abspos;
+            unlock_me();
+            return ENOERR;
+        } // endif (bytesavail > posdiff)
+
+        if (whence == SEEK_CUR) {
+            position += bytesavail;
+        }
+    } //endif (whence != SEEK_END)
+
+    Cyg_ErrNo err;
+    off_t newpos=pos;
 
     err = cyg_stdio_lseek( my_device, &newpos, whence );
 
@@ -422,10 +455,10 @@ Cyg_StdioStream::set_position( fpos_t pos, int whence )
 
         // Clear EOF indicator.
         flags.at_eof = false;
-    }
-    
-    if( err == ENOERR )
+        
+        // update stream pos
         position = newpos;
+    }
     
     unlock_me();
 

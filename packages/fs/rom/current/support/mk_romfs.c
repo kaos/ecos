@@ -610,7 +610,7 @@ static void usage(void) {
     fprintf(stderr,"          Options include:\n");
     fprintf(stderr," -v / -q    increase / decrease verbosity\n");
     fprintf(stderr," -n         do everything EXCEPT creating the output file\n");
-    fprintf(stderr," -b         write a big-endian image (default is little endian\n");
+    fprintf(stderr," -b         write a big-endian image (default is little endian)\n");
     fprintf(stderr," -l         collapse hard links to a single node\n");
     fprintf(stderr,"\n");
     exit(EXIT_ARGS);

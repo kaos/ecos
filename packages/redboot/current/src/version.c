@@ -43,6 +43,7 @@
 //
 //==========================================================================
 
+#include <pkgconf/redboot.h>
 #include <cyg/hal/hal_arch.h>
 
 //
@@ -58,8 +59,19 @@
 // outlined above.
 //
 
-char RedBoot_version[] CYGBLD_ATTRIB_WEAK = 
-  "\nRedBoot(tm) bootstrap and debug environment - built " __TIME__ ", " __DATE__ "\n\n";
+#if defined(CYGDAT_REDBOOT_CUSTOM_VERSION)
+#define _REDBOOT_VERSION CYGDAT_REDBOOT_CUSTOM_VERSION
+#elif defined(CYGPKG_REDBOOT_current)
+#define _REDBOOT_VERSION UNKNOWN
+#else
+#define _REDBOOT_VERSION CYGPKG_REDBOOT
+#endif
+#define __s(x) #x
+#define _s(x) __s(x)
+
+char RedBoot_version[] CYGBLD_ATTRIB_WEAK =
+   "\nRedBoot(tm) bootstrap and debug environment, version " 
+   _s(_REDBOOT_VERSION) " - built " __TIME__ ", " __DATE__ "\n\n";
 
 // Override default GDB stubs 'info'
 // Note: this can still be a "weak" symbol since it will occur in the .o
