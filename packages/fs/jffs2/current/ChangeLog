@@ -1,3 +1,7 @@
+2003-09-19  Thomas Koeller  <thomas.koeller@baslerweb.com>
+
+	* src/fs-ecos.c: Another inode number fix.
+
 2003-09-18  Thomas Koeller  <thomas.koeller@baslerweb.com>
 
 	* src/fs-ecos.c: Inode number returned by stat() was bogus.

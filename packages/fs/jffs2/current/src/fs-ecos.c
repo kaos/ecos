@@ -1460,7 +1460,7 @@ static int jffs2_fo_fstat(struct CYG_FILE_TAG *fp, struct stat *buf)
 
 	// Fill in the status
 	buf->st_mode = node->i_mode;
-	buf->st_ino = (ino_t) node;
+	buf->st_ino = node->i_ino;
 	buf->st_dev = 0;
 	buf->st_nlink = node->i_nlink;
 	buf->st_uid = 0;
