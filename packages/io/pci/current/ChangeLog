@@ -1,3 +1,10 @@
+2004-01-14  Nick Garnett  <nickg@calivar.com>
+
+	* src/pci.c (cyg_pci_get_device_info): Added fix for devices that
+	only implement the bottom 16 bits of an IO BAR. This is allowed by
+	the standard but is very rare and mostly present in older devices
+	only. Without this cyg_pci_allocate_io_priv() gets confused.
+
 2004-01-09  David Vrabel  <dvrabel@arcom.com>
         
 	* src/pci.c (cyg_pci_find_device): Remove debug message.

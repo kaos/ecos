@@ -168,6 +168,17 @@ cyg_pci_get_device_info ( cyg_pci_device_id devid, cyg_pci_device *dev_info )
                     dev_info->base_map[i] = 0xffffffff;
                 }
             }
+
+            // Fix any IO devices that only implement the bottom 16
+            // bits of the the BAR. Just fill in these bits so it
+            // looks like a full 32 bit BAR.
+            if ((CYG_PCI_CFG_BAR_SPACE_IO == 
+                 (size & CYG_PCI_CFG_BAR_SPACE_MASK)) &&
+                ((size & 0xFFFF0000) == 0)
+                )
+            {
+                dev_info->base_size[i] |= 0xFFFF0000;
+            }
         }
         dev_info->num_bars = bar_count;
     } else {
