@@ -1767,8 +1767,8 @@ _run_all_tests(CYG_ADDRESS id)
     for (j = 0;  j < STACKSIZE;  j++) {
         if (((char *)stack[0])[j]) break;
     }
-    diag_printf("%5d   %5d   %5d  (main stack: %5d)  Thread stack used (%d total)\n", 
-                total_stack/NTEST_THREADS, min_stack, max_stack, 
+    diag_printf("%5ld  %5d   %5d  (main stack: %5d)  Thread stack used (%d total)\n", 
+                (unsigned long) total_stack/NTEST_THREADS, min_stack, max_stack, 
                 STACKSIZE - j, STACK_SIZE);
 
     cyg_test_dump_thread_stack_stats( "All done, main stack", thread[0] );
