@@ -1,3 +1,10 @@
+2003-04-11  Michael Checky  <Michael_Checky@Thermoking.com>
+
+	* cdl/freebsd_net.cdl: Deleted the 'CYGPKG_NET_FREEBSD_STACK_BUILD_TESTS'
+	component because these tests are in the net.cdl component
+	'CYGPKG_NET_BUILD_TESTS' and selecting this option in freebsd_net.cdl
+	causes build errors.
+
 2003-03-14  Nick Garnett  <nickg@balti.calivar.com>
 
 	* src/ecos/support.c: Added function cyg_net_show_mbufs() and code
