@@ -247,8 +247,8 @@ quicc_eth_init(struct cyg_netdevtab_entry *tab)
 
     memset((void *)enet_pram, 0, sizeof(*enet_pram));
 
-    TxBD = cyg_hal_allocBd(CYGNUM_DEVS_ETH_POWERPC_QUICC_TxNUM * sizeof(struct cp_bufdesc));
-    RxBD = cyg_hal_allocBd(CYGNUM_DEVS_ETH_POWERPC_QUICC_RxNUM * sizeof(struct cp_bufdesc));
+    TxBD = _mpc8xx_allocBd(CYGNUM_DEVS_ETH_POWERPC_QUICC_TxNUM * sizeof(struct cp_bufdesc));
+    RxBD = _mpc8xx_allocBd(CYGNUM_DEVS_ETH_POWERPC_QUICC_RxNUM * sizeof(struct cp_bufdesc));
 
     txbd = (struct cp_bufdesc *)((char *)eppc + TxBD);
     rxbd = (struct cp_bufdesc *)((char *)eppc + RxBD);
