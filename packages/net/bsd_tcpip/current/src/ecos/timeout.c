@@ -408,7 +408,13 @@ callout_reset(struct callout *c, int delta, timeout_fun *f, void *p)
                 CYG_ASSERT( 0 == e->fun, "Function recorded for 0 delta" );
             }
         }
-        CYG_ASSERT( delta == last_delta, "We didn't pick the smallest delta!" );
+        if (delta < last_delta) {
+            diag_printf("Failed to pick smallest delta - picked: %d, last: %d\n", delta, last_delta);
+            for (e = timeouts;  e;  e = e->next) {
+                diag_printf("  timeout: %p at %d\n", e->fun, e->delta);
+            }
+        }
+        CYG_ASSERT( delta >= last_delta, "We didn't pick the smallest delta!" );
     }
 #endif
     cyg_splx(spl);

@@ -1,55 +1,17 @@
-2002-11-12  Gary Thomas  <gary@mlbassoc.com>
-
-	* cdl/flash_iq80310.cdl: New Xscale platforms layout.
-
-2002-04-16  Jonathan Larmour  <jlarmour@redhat.com>
-
-	* cdl/flash_iq80310.cdl: Invoke $(CC) with $(CFLAGS) to ensure the
-	correct flags are passed.
-
-2001-09-28  Jonathan Larmour  <jlarmour@redhat.com>
-
-	* src/iq80310_flash.c (flash_hwr_init): Only re-enable icache if it
-	was enabled before.
-
-2001-08-04  Mark Salter  <msalter@redhat.com>
-
-	* src/flash.h (FLASH_P2V): First 4K of flash now mapped at 0xd0000000.
-
-2001-06-11  Gary Thomas  <gthomas@redhat.com>
-
-	* src/iq80310_flash.c: Remove dependency on printf() via user functions.
-
-2001-05-23  Jesper Skov  <jskov@redhat.com>
-
-	* cdl/flash_iq80310.cdl: Needs IO controller to copy functions to
-	RAM.
-
-2000-12-05  Jonathan Larmour  <jlarmour@redhat.com>
-
-	* src/iq80310_flash.c (flash_code_overlaps): Define stext/etext
-	as array types so no assumptions can be made by the compiler about
-	location.
-
-2000-11-22  Mark Salter  <msalter@redhat.com>
-
-	* src/flash_unlock_block.c (flash_unlock_block): Fix broken
-	read of lock bits.
-
-2000-11-19  Mark Salter  <msalter@redhat.com>
-
-	* src/flash_unlock_block.c (flash_unlock_block): Fix lock state
-	query to properly use FLASH_P2V macro. Don't issue lock state
-	query for block we are unlocking.
-
-	* src/flash_program_buf.c (flash_program_buf): Fix code to skip
-	over Yavapai registers in flash memory space.
-
-//===========================================================================
+#ifndef CYGONCE_HAL_PLATFORM_INTS_H
+#define CYGONCE_HAL_PLATFORM_INTS_H
+//==========================================================================
+//
+//      hal_platform_ints.h
+//
+//      HAL Interrupt and clock support
+//
+//==========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -78,4 +40,32 @@
 // at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
-//===========================================================================
+//==========================================================================
+//#####DESCRIPTIONBEGIN####
+//
+// Author(s):    msalter
+// Contributors: gthomas
+// Date:         2000-10-10
+// Purpose:      Define Interrupt support
+// Description:  The interrupt details for the NPWR Linux Engine are defined here.
+// Usage:
+//               included from <cyg/hal/hal_var_ints.h>
+//               ...
+//              
+//####DESCRIPTIONEND####
+//
+//==========================================================================
+
+#define CYGNUM_HAL_INTERRUPT_TIMER        CYGNUM_HAL_INTERRUPT_XINT3_BIT0 // external timer
+#define CYGNUM_HAL_INTERRUPT_ETH0         CYGNUM_HAL_INTERRUPT_XINT3_BIT1 // primary enet
+#define CYGNUM_HAL_INTERRUPT_SCSI         CYGNUM_HAL_INTERRUPT_XINT3_BIT2 // 53c1000 SCSI
+#define CYGNUM_HAL_INTERRUPT_SERIAL_B     CYGNUM_HAL_INTERRUPT_XINT3_BIT3 // 16x50 uart B
+#define CYGNUM_HAL_INTERRUPT_ETH1         CYGNUM_HAL_INTERRUPT_XINT3_BIT4 // secondary enet
+
+// The vector used by the Real time clock
+#define CYGNUM_HAL_INTERRUPT_RTC        CYGNUM_HAL_INTERRUPT_TIMER
+//#define CYGNUM_HAL_INTERRUPT_RTC        CYGNUM_HAL_INTERRUPT_PMU_CCNT_OVFL
+
+#endif // CYGONCE_HAL_PLATFORM_INTS_H
+
+// EOF hal_platform_ints.h

@@ -1,3 +1,11 @@
+2002-11-12  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/ecos/timeout.c (callout_reset): Check for finding the
+	correct "delta" was wrong - only used with asserts enabled.
+
+	* include/sys/uio.h: Compatability wrapper to expose 'iovec'
+	functions - used by many network programs.
+
 2002-11-04  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* src/sys/net/if.c (if_attach): Moved check for ifq_maxlen to

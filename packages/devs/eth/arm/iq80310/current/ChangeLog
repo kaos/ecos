@@ -1,3 +1,7 @@
+2002-11-12  Gary Thomas  <gary@mlbassoc.com>
+
+	* cdl/iq80310_eth_drivers.cdl: Update for new Xscale package layout.
+
 2002-01-04  Mark Salter  <msalter@redhat.com>
 
 	* cdl/iq80310_eth_drivers.cdl: Remove

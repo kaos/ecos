@@ -1,49 +1,16 @@
 2002-11-12  Gary Thomas  <gary@mlbassoc.com>
 
-	* cdl/flash_iq80310.cdl: New Xscale platforms layout.
+	* include/arm_iop310_ser.inl: 
+	* cdl/ser_arm_iop310.cdl: New Xscale platforms layout.
 
-2002-04-16  Jonathan Larmour  <jlarmour@redhat.com>
+2001-09-03  Jesper Skov  <jskov@redhat.com>
 
-	* cdl/flash_iq80310.cdl: Invoke $(CC) with $(CFLAGS) to ensure the
-	correct flags are passed.
+	* include/arm_iq80310_ser.inl: Fix interrupt vector name typos.
 
-2001-09-28  Jonathan Larmour  <jlarmour@redhat.com>
+2000-10-25  Mark Salter  <msalter@redhat.com>
 
-	* src/iq80310_flash.c (flash_hwr_init): Only re-enable icache if it
-	was enabled before.
-
-2001-08-04  Mark Salter  <msalter@redhat.com>
-
-	* src/flash.h (FLASH_P2V): First 4K of flash now mapped at 0xd0000000.
-
-2001-06-11  Gary Thomas  <gthomas@redhat.com>
-
-	* src/iq80310_flash.c: Remove dependency on printf() via user functions.
-
-2001-05-23  Jesper Skov  <jskov@redhat.com>
-
-	* cdl/flash_iq80310.cdl: Needs IO controller to copy functions to
-	RAM.
-
-2000-12-05  Jonathan Larmour  <jlarmour@redhat.com>
-
-	* src/iq80310_flash.c (flash_code_overlaps): Define stext/etext
-	as array types so no assumptions can be made by the compiler about
-	location.
-
-2000-11-22  Mark Salter  <msalter@redhat.com>
-
-	* src/flash_unlock_block.c (flash_unlock_block): Fix broken
-	read of lock bits.
-
-2000-11-19  Mark Salter  <msalter@redhat.com>
-
-	* src/flash_unlock_block.c (flash_unlock_block): Fix lock state
-	query to properly use FLASH_P2V macro. Don't issue lock state
-	query for block we are unlocking.
-
-	* src/flash_program_buf.c (flash_program_buf): Fix code to skip
-	over Yavapai registers in flash memory space.
+	* include/arm_iq80310_ser.inl: Initial checkin.
+	* cdl/ser_arm_iq80310.cdl: Ditto.
 
 //===========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####

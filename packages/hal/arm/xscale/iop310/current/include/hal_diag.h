@@ -1,51 +1,13 @@
-2002-11-12  Gary Thomas  <gary@mlbassoc.com>
+#ifndef CYGONCE_HAL_DIAG_H
+#define CYGONCE_HAL_DIAG_H
 
-	* cdl/flash_iq80310.cdl: New Xscale platforms layout.
-
-2002-04-16  Jonathan Larmour  <jlarmour@redhat.com>
-
-	* cdl/flash_iq80310.cdl: Invoke $(CC) with $(CFLAGS) to ensure the
-	correct flags are passed.
-
-2001-09-28  Jonathan Larmour  <jlarmour@redhat.com>
-
-	* src/iq80310_flash.c (flash_hwr_init): Only re-enable icache if it
-	was enabled before.
-
-2001-08-04  Mark Salter  <msalter@redhat.com>
-
-	* src/flash.h (FLASH_P2V): First 4K of flash now mapped at 0xd0000000.
-
-2001-06-11  Gary Thomas  <gthomas@redhat.com>
-
-	* src/iq80310_flash.c: Remove dependency on printf() via user functions.
-
-2001-05-23  Jesper Skov  <jskov@redhat.com>
-
-	* cdl/flash_iq80310.cdl: Needs IO controller to copy functions to
-	RAM.
-
-2000-12-05  Jonathan Larmour  <jlarmour@redhat.com>
-
-	* src/iq80310_flash.c (flash_code_overlaps): Define stext/etext
-	as array types so no assumptions can be made by the compiler about
-	location.
-
-2000-11-22  Mark Salter  <msalter@redhat.com>
-
-	* src/flash_unlock_block.c (flash_unlock_block): Fix broken
-	read of lock bits.
-
-2000-11-19  Mark Salter  <msalter@redhat.com>
-
-	* src/flash_unlock_block.c (flash_unlock_block): Fix lock state
-	query to properly use FLASH_P2V macro. Don't issue lock state
-	query for block we are unlocking.
-
-	* src/flash_program_buf.c (flash_program_buf): Fix code to skip
-	over Yavapai registers in flash memory space.
-
-//===========================================================================
+/*=============================================================================
+//
+//      hal_diag.h
+//
+//      HAL Support for Kernel Diagnostic Routines
+//
+//=============================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
@@ -78,4 +40,35 @@
 // at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
-//===========================================================================
+//=============================================================================
+//#####DESCRIPTIONBEGIN####
+//
+// Author(s):    nickg, gthomas
+// Contributors: nickg, gthomas
+// Date:         1998-09-11
+// Purpose:      HAL Support for Kernel Diagnostic Routines
+// Description:  Diagnostic routines for use during kernel development.
+// Usage:        #include <cyg/hal/hal_diag.h>
+//
+//####DESCRIPTIONEND####
+//
+//===========================================================================*/
+
+#include <pkgconf/hal.h>
+
+#include <cyg/infra/cyg_type.h>
+
+#include <cyg/hal/hal_if.h>
+
+#define HAL_DIAG_INIT() hal_if_diag_init()
+#define HAL_DIAG_WRITE_CHAR(_c_) hal_if_diag_write_char(_c_)
+#define HAL_DIAG_READ_CHAR(_c_) hal_if_diag_read_char(&_c_)
+
+// Not the best place for this, but ...
+extern void hal_delay_us(cyg_uint32 usecs);
+
+#define HAL_DELAY_US(n)          hal_delay_us(n);
+
+/*---------------------------------------------------------------------------*/
+/* end of hal_diag.h                                                         */
+#endif /* CYGONCE_HAL_DIAG_H */

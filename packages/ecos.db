@@ -413,7 +413,7 @@ package CYGPKG_DEVS_FLASH_INTEL_28FXXX {
 	   Flash memory devices."
 }
 
-package CYGPKG_DEVS_FLASH_IQ80310 {
+package CYGPKG_DEVS_FLASH_ARM_XSCALE_IQ80310 {
 	alias 		{ "FLASH memory support for Cyclone IQ80310" flash_iq80310 }
 	directory	devs/flash/arm/iq80310
 	script		flash_iq80310.cdl
@@ -578,13 +578,13 @@ package CYGPKG_IO_SERIAL_ARM_EBSA285 {
     description       "Intel StrongARM/EBSA285 serial device drivers"
 }
 
-package CYGPKG_IO_SERIAL_ARM_IQ80310 {
-    alias 	      { "Intel XScale IQ80310 serial driver"
-                        devs_serial_arm_iq80310 iq80310_serial_driver }
+package CYGPKG_IO_SERIAL_ARM_XSCALE_IOP310 {
+    alias 	      { "Intel XScale IOP310 serial driver"
+                        devs_serial_arm_iop310 iop310_serial_driver }
     hardware
-    directory	      devs/serial/arm/iq80310
-    script	      ser_arm_iq80310.cdl	
-    description       "Intel XScale/IQ80310 serial device drivers"
+    directory	      devs/serial/arm/iop310
+    script	      ser_arm_iop310.cdl	
+    description       "Intel XScale IOP310 serial device drivers"
 }
 
 package CYGPKG_IO_SERIAL_ARM_IQ80321 {
@@ -1232,7 +1232,7 @@ package CYGPKG_DEVS_ETH_ARM_IQ80321 {
         description     "Ethernet driver for Intel IQ80321 with onboard 82544 NIC."
 }
 
-package CYGPKG_DEVS_ETH_ARM_IQ80310 {
+package CYGPKG_DEVS_ETH_ARM_XSCALE_IQ80310 {
 	alias 		{ "Intel IQ80310 with onboard 82559 ethernet driver"
 			   devs_eth_arm_iq80310 iq80310_eth_driver }
 	hardware
@@ -2007,14 +2007,44 @@ package CYGPKG_HAL_ARM_XSCALE_CORE {
         on all Intel XScale based systems."
 }
 
-package CYGPKG_HAL_ARM_IQ80310 {
-	alias		{ "Intel IQ80310 XScale board" hal_arm_iq80310 arm_iq80310_hal }
-	directory	hal/arm/iq80310
-	script		hal_arm_iq80310.cdl
+package CYGPKG_HAL_ARM_XSCALE_IOP310 {
+	alias		{ "Intel IOP8310 (IQ80200/IQ80310) XScale chipset" hal_arm_iop310 arm_iop310_hal }
+	directory	hal/arm/xscale/iop310
+	script		hal_arm_xscale_iop310.cdl
+	hardware
+	description "
+	The IOP310 HAL package provides the support needed to run
+	eCos on a system using the Intel XScale IOP310 (IQ80200/80310) chipset."
+}
+
+package CYGPKG_HAL_ARM_XSCALE_IQ80310 {
+	alias		{ "Intel IQ80310 (Cyclone) eval board" hal_arm_xscale_iq80310 hal_arm_xscale_cyclone }
+	directory	hal/arm/xscale/iq80310
+	script		hal_arm_xscale_iq80310.cdl
 	hardware
 	description "
 	The IQ80310 HAL package provides the support needed to run
-	eCos on an Intel XScale IQ80310 evaluation board."
+	eCos on an Intel Cyclone evaluation board, utilizing an Intel XScale 
+        IQ80200/80310 chipset."
+}
+
+package CYGPKG_HAL_ARM_XSCALE_NPWR {
+	alias		{ "NPWR Linux Engine" hal_arm_xscale_npwr }
+	directory	hal/arm/xscale/npwr
+	script		hal_arm_xscale_npwr.cdl
+	hardware
+	description "
+	The NPWR HAL package provides the support needed to run
+	eCos on a NPWR Linux Engine, utilizing an Intel XScale 
+        IQ80200/80310 chipset."
+}
+
+package CYGPKG_DEVS_ETH_ARM_XSCALE_NPWR {
+	alias 		{ "NPWR Linux Engine ethernet drivers" devs_eth_arm_xscale_npwr }
+	hardware
+	directory	devs/eth/arm/npwr
+	script		npwr_eth_drivers.cdl
+        description     "Ethernet drivers for NPWR Linux Engine via 82544 NIC."
 }
 
 package CYGPKG_HAL_ARM_XSCALE_VERDE {
@@ -3258,20 +3288,39 @@ target sa1100mm {
 }
 
 target iq80310 {
-	alias { "Intel IQ80310 XScale board" iq80310 }
+ 	alias { "Intel IQ80310 XScale board" cyclone iq80310 }
         packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_XSCALE_CORE
-                   CYGPKG_HAL_ARM_IQ80310
+                   CYGPKG_HAL_ARM_XSCALE_IOP310
+                   CYGPKG_HAL_ARM_XSCALE_IQ80310
                    CYGPKG_IO_PCI
                    CYGPKG_DEVS_ETH_INTEL_I82559
-                   CYGPKG_DEVS_ETH_ARM_IQ80310
+                   CYGPKG_DEVS_ETH_ARM_XSCALE_IQ80310
                    CYGPKG_IO_SERIAL_GENERIC_16X5X
-                   CYGPKG_IO_SERIAL_ARM_IQ80310
-                   CYGPKG_DEVS_FLASH_IQ80310
+                   CYGPKG_IO_SERIAL_ARM_XSCALE_IOP310
+                   CYGPKG_DEVS_FLASH_ARM_XSCALE_IQ80310
         }
         description "
         The iq80310 target provides the packages needed to run
         eCos on a Cyclone IQ80310 board."
+}
+
+target npwr {
+	alias { "NPWR Linux Engine (Intel XScale)" npwr }
+        packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_XSCALE_CORE
+                   CYGPKG_HAL_ARM_XSCALE_IOP310
+                   CYGPKG_HAL_ARM_XSCALE_NPWR
+                   CYGPKG_DEVS_FLASH_ARM_XSCALE_IQ80310
+                   CYGPKG_DEVS_ETH_INTEL_I82544
+                   CYGPKG_DEVS_ETH_ARM_XSCALE_NPWR
+                   CYGPKG_IO_PCI
+                   CYGPKG_IO_SERIAL_GENERIC_16X5X
+                   CYGPKG_IO_SERIAL_ARM_XSCALE_IOP310
+        }
+        description "
+        The npwr target provides the packages needed to run
+        eCos on a NPWR Linux Engine."
 }
 
 target iq80321 {

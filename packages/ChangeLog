@@ -1,3 +1,8 @@
+2002-11-12  Gary Thomas  <gary@mlbassoc.com>
+
+	* ecos.db: Add NPWR (Xscale from Team ASA).  Reorganize Xscale
+	IOP310 based platforms (IQ80310).
+
 2002-10-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* ecosadmin.tcl (ecosadmin::process_add_package): Use gzip -d, not

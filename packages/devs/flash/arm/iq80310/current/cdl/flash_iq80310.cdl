@@ -2,13 +2,14 @@
 #
 #      flash_iq80310.cdl
 #
-#      FLASH memory - Hardware support on Cyclone IQ80310
+#      FLASH memory - Hardware support on IQ80200/80310
 #
 # ====================================================================
 #####ECOSGPLCOPYRIGHTBEGIN####
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2002 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -41,7 +42,7 @@
 ######DESCRIPTIONBEGIN####
 #
 # Author(s):      msalter
-# Original data:  msalter
+# Original data:  msalter, gthomas
 # Contributors:
 # Date:           2000-10-10
 #
@@ -49,12 +50,12 @@
 #
 # ====================================================================
 
-cdl_package CYGPKG_DEVS_FLASH_IQ80310 {
+cdl_package CYGPKG_DEVS_FLASH_ARM_XSCALE_IQ80310 {
     display       "Cyclone IQ80310 FLASH memory support"
 
     parent        CYGPKG_IO_FLASH
     active_if	  CYGPKG_IO_FLASH
-    requires	  CYGPKG_HAL_ARM_IQ80310
+    requires	  CYGPKG_HAL_ARM_XSCALE_IOP310
 
     implements    CYGHWR_IO_FLASH_DEVICE
     implements    CYGHWR_IO_FLASH_DEVICE_NOT_IN_RAM

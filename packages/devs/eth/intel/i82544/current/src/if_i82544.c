@@ -538,13 +538,7 @@ static void i82544_stop( struct eth_drv_sc *sc );
 static void
 udelay(int delay)
 {
-    // Calling via the IF interface does not call hal_delay_us() as
-    // required.  God only knows why, I cannot be bothered to find out
-    // why at present, so for now call hal_delay_us() directly.
-    
-//    CYGACC_CALL_IF_DELAY_US(delay);
-    extern void hal_delay_us( int );
-    hal_delay_us( delay );
+    CYGACC_CALL_IF_DELAY_US(delay);
 }
 
 // ------------------------------------------------------------------------
@@ -1153,7 +1147,7 @@ i82544_init(struct cyg_netdevtab_entry * ndp)
         // then this is the first time ever:
         if ( ! pci_init_find_82544s() ) {
 #ifdef DEBUG
-            os_printf( "pci_init_find_82544s failed" );
+            os_printf( "pci_init_find_82544s failed\n" );
 #endif
             return 0;
         }
@@ -2337,7 +2331,7 @@ eth_isr(cyg_vector_t vector, cyg_addrword_t data)
     db_printf("eth_isr %04x\n",status);
 #endif    
 
-    return CYG_ISR_CALL_DSR;        // schedule DSR
+    return (CYG_ISR_HANDLED|CYG_ISR_CALL_DSR);        // schedule DSR
 }
 
 
@@ -2443,6 +2437,7 @@ find_82544s_match_func( cyg_uint16 v, cyg_uint16 d, cyg_uint32 c, void *p )
 {
     return ((0x8086 == v) &&
             ((0x1004 == d) ||   // 82543
+             (0x100d == d) ||   // 82543
              (0x1008 == d)      // 82544
             )
            );

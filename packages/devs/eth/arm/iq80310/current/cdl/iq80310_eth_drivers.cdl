@@ -10,6 +10,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2002 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -50,12 +51,12 @@
 #
 # ====================================================================
 
-cdl_package CYGPKG_DEVS_ETH_ARM_IQ80310 {
+cdl_package CYGPKG_DEVS_ETH_ARM_XSCALE_IQ80310 {
     display       "Intel IQ80310 with PRO/100+ ethernet driver"
 
     parent        CYGPKG_IO_ETH_DRIVERS
     active_if     CYGPKG_IO_ETH_DRIVERS
-    active_if     CYGPKG_HAL_ARM_IQ80310
+    active_if     CYGPKG_HAL_ARM_XSCALE_IOP310
 
     include_dir   cyg/io
 
@@ -67,7 +68,7 @@ cdl_package CYGPKG_DEVS_ETH_ARM_IQ80310 {
     define_proc {
         puts $::cdl_system_header "/***** ethernet driver proc output start *****/"
         puts $::cdl_system_header "#define CYGDAT_DEVS_ETH_INTEL_I82559_INL <cyg/io/devs_eth_iq80310.inl>"
-        puts $::cdl_system_header "#define CYGDAT_DEVS_ETH_INTEL_I82559_CFG <pkgconf/devs_eth_arm_iq80310.h>"
+        puts $::cdl_system_header "#define CYGDAT_DEVS_ETH_INTEL_I82559_CFG <pkgconf/devs_eth_arm_xscale_iq80310.h>"
         puts $::cdl_system_header "/*****  ethernet driver proc output end  *****/"
     }
 

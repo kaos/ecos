@@ -1,3 +1,8 @@
+2002-11-12  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/if_i82544.c: Minor fixes - use HAL_DELAY_US(), additional
+	PCI device type (0x100D) which is present on the NPWR Linux Engine.
+
 2002-06-14  Gary Thomas  <gary@chez-thomas.org>
 
 	* src/if_i82544.c: 
