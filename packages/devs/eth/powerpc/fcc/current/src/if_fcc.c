@@ -174,6 +174,11 @@ fcc_eth_init(struct cyg_netdevtab_entry *dtp)
         fcc =  (volatile t_Fcc_Pram *)((unsigned long)IMM + FCC2_PRAM_OFFSET);
         fcc_chan = FCC2_PAGE_SUBBLOCK;
         break;
+	case CYGNUM_HAL_INTERRUPT_FCC3:
+		qi->fcc_reg = &(IMM->fcc_regs[FCC3]);
+        fcc =  (volatile t_Fcc_Pram *)((unsigned long)IMM + FCC3_PRAM_OFFSET);
+        fcc_chan = FCC3_PAGE_SUBBLOCK;
+        break;
     default:
         os_printf("Can't initialize '%s' - unknown FCC!\n", dtp->name);
         return false;
@@ -331,7 +336,9 @@ fcc_eth_init(struct cyg_netdevtab_entry *dtp)
         }
     } else {
         os_printf("/***NO LINK***\n");
+#ifdef CYGPKG_REDBOOT
         return false;
+#endif
     }
     os_printf("\n");
 

@@ -56,6 +56,7 @@
 // The port connected to the ethernet
 #define FCC1  0
 #define FCC2  1
+#define FCC3  2
 
 /* ------------------------ */
 /* FCC REGISTER CONSTANTS   */
@@ -106,6 +107,7 @@
 #define FCC_PRAM_MAXD    1520
 #define FCC1_PRAM_OFFSET  0x8400      // Offset of t_Fcc_Pram in 82xx 
 #define FCC2_PRAM_OFFSET  0x8500      // Offset of t_Fcc_Pram in 82xx 
+#define FCC3_PRAM_OFFSET  0x8600      // Offset of t_Fcc_Pram in 82xx
 
 /* ------------------------------ */
 /* BUFFER DESCRIPTOR CONSTANTS    */

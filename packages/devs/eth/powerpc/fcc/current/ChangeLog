@@ -9,6 +9,12 @@
         * src/if_fcc.c (fcc_eth_can_send): Fix: check also if
         buffer was freed by the upper layer (txdone was called).
 
+2004-01-15  Tiphaine Billoir  <tbilloir@elios-informatique.fr>
+	
+	* src/if_fcc.c:
+	* src/fcc.h: Add support for FFC3.  Only treat "link not found"
+	as an error when building for RedBoot.
+	
 2003-11-07  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/if_fcc.c (fcc_eth_init): Improve messages, add device name.
