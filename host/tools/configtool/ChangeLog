@@ -1,3 +1,11 @@
+2003-04-05  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/makefile.gnu: Build Cygwin hosted configtool with
+	"--subsystem windows" to eliminate the console window.
+
+	* standalone/wxwin/admindlg.cpp: Strip CR characters from the license
+	text on Linux.
+
 2003-03-28  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/common/ecosconfig.cxx, standalone/wxwin/symbols.h:

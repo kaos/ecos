@@ -27,7 +27,7 @@ EXTRALDFLAGS=-L$(TCLDIR)/lib -L$(INSTALLDIR)/lib -lcdl -lcyginfra -ltcl
 ifeq "$(OSTYPE)" "cygwin"
   PROGRAM=configtool.exe
   CPPFLAGS=`$(WXDIR)/bin/wx-config --cppflags` -D_WIN32 -D__WIN32__ -DSTRICT
-  LDFLAGS=`$(WXDIR)/bin/wx-config --libs` -lshlwapi
+  LDFLAGS=`$(WXDIR)/bin/wx-config --libs` -lshlwapi -Wl,--subsystem,windows
   EXTRAOBJECTS=$(CTBUILDDIR)/configtoolres.o
 else
   PROGRAM=configtool
