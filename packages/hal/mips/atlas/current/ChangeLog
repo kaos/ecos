@@ -2,6 +2,7 @@
 
 	* cdl/hal_mips_atlas.cdl: Changed default startup from ROM to
 	RAM.
+	Also fixed component description.
 
 2003-02-27  Nick Garnett  <nickg@calivar.com>
 
