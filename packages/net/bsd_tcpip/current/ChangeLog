@@ -1,3 +1,13 @@
+2003-05-12  Motoya Kurotsu  <kurotsu@allied-telesis.co.jp>
+
+	* src/ecos/timeout.c (do_timeout): The head of the linked list of
+	timers is timeout, not _timeout.
+	* src/ecos/timeout.c (timeout): Linear search the array for empty 
+	entries and don't walk it like a linked list, because it is not.
+	* src/ecos/timeout.c (untimeout): Linear search is faster since 
+	there are many entries in the linked list which are not in the 
+	array.
+
 2003-05-12  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/ecos/support.c (_show_ifp): Display the IPv6 flag

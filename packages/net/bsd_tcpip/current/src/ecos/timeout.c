@@ -101,7 +101,7 @@ do_timeout(void)
     min_delta = last_delta; // local copy
     last_delta = -1; // flag recursive call underway
 
-    e = _timeouts;
+    e = timeouts;
     while (e) {
         e_next = e->next;  // Because this can change during processing
         if (e->delta) {
@@ -262,6 +262,7 @@ cyg_alarm_timeout_init( void )
 cyg_uint32
 timeout(timeout_fun *fun, void *arg, cyg_int32 delta)
 {
+    int i;
     timeout_entry *e;
     cyg_uint32 stamp;
 
@@ -270,7 +271,7 @@ timeout(timeout_fun *fun, void *arg, cyg_int32 delta)
     int spl = cyg_splinternal();
 
     stamp = 0;  // Assume no slots available
-    for (e = _timeouts;  e;  e = e->next) {
+    for (e = _timeouts, i = 0;  i < NTIMEOUTS;  i++, e++) {
         if ((e->flags & CALLOUT_PENDING) == 0) {
             // Free entry
             callout_init(e);
@@ -291,10 +292,11 @@ timeout(timeout_fun *fun, void *arg, cyg_int32 delta)
 void
 untimeout(timeout_fun *fun, void * arg)
 {
+    int i;
     timeout_entry *e;
     int spl = cyg_splinternal();
 
-    for (e = _timeouts;  e; e = e->next) {
+    for (e = _timeouts, i = 0; i < NTIMEOUTS; i++, e++) {
         if (e->delta && (e->fun == fun) && (e->arg == arg)) {
             callout_stop(e);
             break;
