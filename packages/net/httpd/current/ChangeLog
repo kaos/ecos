@@ -1,3 +1,8 @@
+2004-10-05  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/monitor.c: include sys/sysctl.h to prevent compiler
+	warnings.
+
 2004-08-16  Peter Korsgaard <jacmet@sunsite.dk>
 
 	* src/monitor.c: Added missing spaces in multi-line HTML strings.

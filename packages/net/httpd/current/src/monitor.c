@@ -91,6 +91,7 @@
 #include <netdb.h>
 #define _KERNEL
 
+#include <sys/sysctl.h>
 #include <net/if.h>
 #include <ifaddrs.h>
 #include <netinet/in.h>
