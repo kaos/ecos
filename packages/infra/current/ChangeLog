@@ -1,3 +1,10 @@
+2003-12-21  Gary Thomas  <gary@mlbassoc.com>
+
+	* tests/fc_test.c: New test/demonstration of 'fconfig' access.
+
+	* src/tcdiag.cxx (cyg_assert_msg): Interface to 'fconfig' data
+	has changed.
+
 2003-10-11  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/tcdiag.cxx (cyg_test_exit): 

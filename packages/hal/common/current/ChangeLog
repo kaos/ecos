@@ -1,3 +1,9 @@
+2003-12-21  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/hal_if.c (flash_config_op): 
+	* include/hal_if.h: New expanded functions for RedBoot 'fconfig'
+	database.
+
 2003-09-04  Patrick Doyle  <wpd@dtccom.com>
 
 	* include/hal_if.h: 

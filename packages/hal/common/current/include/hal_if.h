@@ -12,7 +12,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
-// Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2002, 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -423,12 +423,21 @@ typedef void (__call_if_reset_t)(void);
 typedef int __call_if_console_interrupt_flag_t;
 typedef void (__call_if_delay_us_t)(cyg_int32 usecs);
 typedef void (__call_if_install_bpt_fn_t)(void *__epc);
-typedef cyg_bool (__call_if_flash_cfg_op_fn_t)(int __oper, char *__key,
-                                               void *__val, int __type);
 typedef char *__call_if_monitor_version_t;
 typedef void (__call_if_monitor_return_t)(int status);
-typedef cyg_bool (__call_if_flash_fis_op_fn_t)(int __oper, char *__name,
-                                               void *__val);
+typedef cyg_bool (__call_if_flash_fis_op_fn_t)(int __oper, char *__name, void *__val);
+//
+// This structure is used to pass parameters to/from the fconfig routines.
+// This allows a single virtual vector interface, with widely varying functionality
+//
+struct cyg_fconfig {
+    char *key;      // Datum 'key'
+    int   keylen;   // Length of key
+    void *val;      // Pointer to data
+    int   type;     // Type of datum
+    int   offset;   // Offset within data (used by _NEXT)
+};
+typedef cyg_bool (__call_if_flash_cfg_op_fn_t)(int __oper, struct cyg_fconfig *__data);
 
 #ifndef CYGACC_CALL_IF_DEFINED
 
@@ -637,12 +646,17 @@ __call_voidVV1(CYGNUM_CALL_IF_INSTALL_BPT_FN, __call_if_install_bpt_fn_t, void, 
 #define CYGACC_CALL_IF_INSTALL_BPT_FN_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_INSTALL_BPT_FN]=(CYG_ADDRWORD)(_x_)
 
-#define CYGACC_CALL_IF_FLASH_CFG_OP(_o_,_k_,_d_,_t_) \
- CYGACC_CALL_VV4(__call_if_flash_cfg_op_fn_t*, CYGNUM_CALL_IF_FLASH_CFG_OP, (_o_),(_k_),(_d_),(_t_))
-__call_VV4(CYGNUM_CALL_IF_FLASH_CFG_OP, __call_if_flash_cfg_op_fn_t, cyg_bool, int, char *, void *, int)
+//
+// Access persistent data store - kept in FLASH or EEPROM by RedBoot
+//
+#define CYGNUM_CALL_IF_FLASH_CFG_GET  (0)     // Get a particular fconfig key
+#define CYGNUM_CALL_IF_FLASH_CFG_NEXT (1)     // Enumerate keys (get the next one)
+#define CYGNUM_CALL_IF_FLASH_CFG_SET  (2)     // Update particular fconfig key
+#define CYGACC_CALL_IF_FLASH_CFG_OP(_o_,_d_) \
+ CYGACC_CALL_VV2(__call_if_flash_cfg_op_fn_t*, CYGNUM_CALL_IF_FLASH_CFG_OP, (_o_),(_d_))
+__call_VV2(CYGNUM_CALL_IF_FLASH_CFG_OP, __call_if_flash_cfg_op_fn_t, cyg_bool, int, struct cyg_fconfig *)
 #define CYGACC_CALL_IF_FLASH_CFG_OP_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_FLASH_CFG_OP]=(CYG_ADDRWORD)(_x_)
-#define CYGNUM_CALL_IF_FLASH_CFG_GET (0)
 
 #define CYGACC_CALL_IF_MONITOR_RETURN(_u_) \
  CYGACC_CALL_VV1(__call_if_monitor_return_t*, CYGNUM_CALL_IF_MONITOR_RETURN, (_u_))
@@ -666,13 +680,13 @@ __call_VV3(CYGNUM_CALL_IF_FLASH_FIS_OP, __call_if_flash_fis_op_fn_t, cyg_bool, i
 
 // These need to be kept uptodate with the (unadorned) masters
 // in RedBoot's flash_config.h:
-#define CYGNUM_FLASH_CFG_OP_CONFIG_EMPTY   0
-#define CYGNUM_FLASH_CFG_OP_CONFIG_BOOL    1
-#define CYGNUM_FLASH_CFG_OP_CONFIG_INT     2
-#define CYGNUM_FLASH_CFG_OP_CONFIG_STRING  3
-#define CYGNUM_FLASH_CFG_OP_CONFIG_SCRIPT  4
-#define CYGNUM_FLASH_CFG_OP_CONFIG_IP      5
-#define CYGNUM_FLASH_CFG_OP_CONFIG_ESA     6
+#define CYGNUM_FLASH_CFG_TYPE_CONFIG_EMPTY   0
+#define CYGNUM_FLASH_CFG_TYPE_CONFIG_BOOL    1
+#define CYGNUM_FLASH_CFG_TYPE_CONFIG_INT     2
+#define CYGNUM_FLASH_CFG_TYPE_CONFIG_STRING  3
+#define CYGNUM_FLASH_CFG_TYPE_CONFIG_SCRIPT  4
+#define CYGNUM_FLASH_CFG_TYPE_CONFIG_IP      5
+#define CYGNUM_FLASH_CFG_TYPE_CONFIG_ESA     6
 
 #endif // CYGACC_CALL_IF_DEFINED
 

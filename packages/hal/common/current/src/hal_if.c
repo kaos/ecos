@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2002, 2003 Gary Thomas
 // Copyright (C) 2003 Nick Garnett <nickg@calivar.com>
 // Copyright (C) 2003 Jonathan Larmour <jlarmour@eCosCentric.com>
 //
@@ -96,15 +96,21 @@ externC void init_thread_syscall(void * vector);
 static __call_if_flash_cfg_op_fn_t flash_config_op;
 
 static cyg_bool
-flash_config_op( int op, char * key, void *val, int type)
+flash_config_op(int op, struct cyg_fconfig *fc)
 {
     cyg_bool res = false;
 
     CYGARC_HAL_SAVE_GP();
 
-    switch ( op ) {
+    switch (op) {
     case CYGNUM_CALL_IF_FLASH_CFG_GET:
-        res = flash_get_config( key, val, type );
+        res = flash_get_config(fc->key, fc->val, fc->type);
+        break;
+    case CYGNUM_CALL_IF_FLASH_CFG_NEXT:
+        res = flash_next_key(fc->key, fc->keylen, &fc->type, &fc->offset);
+        break;
+    case CYGNUM_CALL_IF_FLASH_CFG_SET:
+        res = flash_set_config(fc->key, fc->val, fc->type);
         break;
     default:
         // nothing else supported yet - though it is expected that "set"

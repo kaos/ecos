@@ -153,16 +153,22 @@ cyg_assert_msg( const char *psz_func, const char *psz_file,
     {
         int cur_console;
         int i;
+        struct cyg_fconfig fc;
+
         cur_console = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
-        if ( CYGACC_CALL_IF_FLASH_CFG_OP( CYGNUM_CALL_IF_FLASH_CFG_GET,
-                                          "info_console_force", &i,
-                                          CYGNUM_FLASH_CFG_OP_CONFIG_BOOL ) )
-            if ( i )
-                if ( CYGACC_CALL_IF_FLASH_CFG_OP( CYGNUM_CALL_IF_FLASH_CFG_GET,
-                                                  "info_console_number", &i,
-                                                  CYGNUM_FLASH_CFG_OP_CONFIG_INT ) )
+        fc.key = "info_console_force";
+        fc.type = CYGNUM_FLASH_CFG_TYPE_CONFIG_BOOL;
+        fc.val = (void *)&i;
+        if (CYGACC_CALL_IF_FLASH_CFG_OP(CYGNUM_CALL_IF_FLASH_CFG_GET, &fc)) {
+            if (i) {
+                fc.key = "info_console_number";
+                fc.type = CYGNUM_FLASH_CFG_TYPE_CONFIG_INT;
+                if (CYGACC_CALL_IF_FLASH_CFG_OP(CYGNUM_CALL_IF_FLASH_CFG_GET, &fc)) {
                     // Then i is the console to force it to:
-                    CYGACC_CALL_IF_SET_CONSOLE_COMM( i );
+                    CYGACC_CALL_IF_SET_CONSOLE_COMM(i);
+                }
+            }
+        }
 #endif
     diag_write_string("ASSERT FAIL: ");
     write_thread_id();
