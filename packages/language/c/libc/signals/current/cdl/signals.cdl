@@ -57,7 +57,7 @@ cdl_package CYGPKG_LIBC_SIGNALS {
             allowing a program to send itself signals, it is
             also possible to cause hardware exceptions to
             be signalled to the program in a similar way."
-    doc           redirect/the-iso-standard-c-and-math-libraries.html
+    doc           ref/libc.html
     include_dir   cyg/libc/signals
     parent        CYGPKG_LIBC
     implements    CYGINT_ISO_SIGNAL_NUMBERS
