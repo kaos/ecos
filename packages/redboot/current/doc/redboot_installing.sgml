@@ -887,6 +887,11 @@ Start address 0x2020040 , load size 39068
 Transfer rate: 6250 bits/sec, 500 bytes/write.
 </screen>
 At this point, set SW1 to <literal>upper mem</literal>.
+<warning><title>Warning!</title><para>Failure to set SW1 to
+<literal>upper mem</literal> will cause the installation of RedBoot
+to overwrite Angel, thus making the board <emphasis>unbootable</emphasis>.
+Only hardware JTAG can restore the board once in this state.
+</para></warning>
 <screen>
 (gdb) <userinput>cont</userinput>
 Continuing.
@@ -953,7 +958,14 @@ Transfer rate: 6264 bits/sec, 500 bytes/write.
 (gdb) <userinput>cont</userinput>
 Continuing.
 </screen>
-At this point, suspend the GDB session (use Ctrl-Z) and start a
+At this point, set JP1 to <literal>USER</literal> instead of
+<literal>STD</literal>
+<warning><title>Warning!</title><para>Failure to set JP1 to
+<literal>USER</literal> will cause the installation of RedBoot
+to overwrite Angel, thus making the board <emphasis>unbootable</emphasis>.
+Only hardware JTAG can restore the board once in this state.
+</para></warning>
+Now suspend the GDB session (use Ctrl-Z) and start a
 terminal emulator:
 <screen>
 RedBoot> <userinput>version</userinput>
