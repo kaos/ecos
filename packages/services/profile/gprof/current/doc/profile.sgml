@@ -1,98 +1,561 @@
-<PART ID="services-profile-gprof">
-<TITLE>Application profiling</TITLE>
-<PARTINTRO>
-<PARA>
-The profile_gprof package provides a mechanism to measure the
-runtime performance of an application.  This is done by gathering
-an execution histogram.
-</PARA>
-<para>
-When profiling is started on the target device, a 
-<function>TFTP</function> 
-server will be started
-which exports the single file
-<filename>PROFILE.DAT</filename>
-This analysis data can then be fetched
-by connecting to the target with a <function>TFTP</function> 
-client program
-and then be processed by the 
-<function>gprof</function>
-utility program.
-<note><title>NOTE</title>
-<para>
-Be sure and specify binary mode transfers for this data file,
-which may not be the default with on some <function>TFTP</function>
-client programs.
-</para>
-</note>
-<note><title>NOTE</title>
-<para>
-The port used for this <function>TFTP</function> server is
-configurable.  The default will be the IETF standard port
-of 69/UDP, but it may be changed to any UDP port via the
-<literal>CYGNUM_PROFILE_TFTP_PORT</literal> CDL option.
-</para>
-</note>
-</para>
-</PARTINTRO>
-<CHAPTER id="profile-functions">
-<TITLE>Profiling functions</TITLE>
-<SECT1 id="services-profile-api">
-<title> API </title>
-<para>
-In order for profile data to be gathered for an application, the
-program has to initiate the process.
-Once started, execution histogram data will be collected in a
-dynamic memory buffer.
-This data can be uploaded to a host using <emphasis>TFTP</emphasis>.
-A side effect of the upload of the data is that the histogram
-is reset.
-This is useful, especially for high resolution histograms, since
-the histogram data are collected as 16-bit counters which can be quickly
-saturated.
-For example, if the histogram is being collected at a rate of 10,000
-samples per second, a hot spot in the program could saturate after
-only 6.5 seconds.
-</para>
-<para> The API for the application profiling functions can be
-found in the file <filename>&lt;cyg/profile/profile.h&gt;</filename>.
-</para>
-<sect2 id="services-profile-api-profile-on">
-<title>profile_on</title>
-<para>
-This function is used to initiate the gathering of the
-runtime execution histogram data.
-</para>
-<programlisting>
-void profile_on(void *start, void *end, int bucket_size, int resolution);
-</programlisting>
-<para>
-Calling this function will initiate execution profiling.
-An execution histogram is collected at the rate of
-<parameter>resolution</parameter> times per second.
-The area between <parameter>start</parameter> and <parameter>end</parameter>
-will be divided up into a number of buckets, each representing 
-<parameter>bucket_size</parameter> 
-program bytes in length.  Using statistical sampling (via a high speed timer), when
-the program counter is found to be within the range 
-<parameter>start</parameter>..<parameter>end</parameter>, the appropriate
-bucket (histogram entry) will be incremented.
-</para>
-<para>
-The choice of <parameter>resolution</parameter> and <parameter>bucket_size</parameter>
-control how large the data gathered will be, as well as how much overhead is 
-encumbered for gathering the histogram.
-Smaller values for <parameter>bucket_size</parameter> will garner better
-results (<function>gprof</function> can more closely align the data with
-actual function names) at the expense of a larger data buffer.
-</para>
-<note><title>NOTE</title>
-<para>
-The value of <parameter>bucket_size</parameter> will be rounded up to a power of two.
-</para>
-</note>
-</sect2>
-</SECT1>
-</CHAPTER>
-</PART>
+<!-- DOCTYPE part  PUBLIC "-//OASIS//DTD DocBook V3.1//EN" -->
 
+<!-- {{{ Banner                         -->
+
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!--     profile.sgml                                                -->
+<!--                                                                 -->
+<!--     gprof profiling documentation.                              -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- ####COPYRIGHTBEGIN####                                          -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- Copyright (C) 2003, 2005 eCosCentric Ltd.                       -->
+<!-- This material may be distributed only subject to the terms      -->
+<!-- and conditions set forth in the Open Publication License, v1.0  -->
+<!-- or later (the latest version is presently available at          -->
+<!-- http://www.opencontent.org/openpub/)                            -->
+<!-- Distribution of the work or derivative of the work in any       -->
+<!-- standard (paper) book form is prohibited unless prior           -->
+<!-- permission obtained from the copyright holder                   -->
+<!-- =============================================================== -->
+<!--                                                                 -->      
+<!-- ####COPYRIGHTEND####                                            -->
+<!-- =============================================================== -->
+<!-- =============================================================== -->
+<!-- #####DESCRIPTIONBEGIN####                                       -->
+<!--                                                                 -->
+<!-- Author(s):   bartv                                              -->
+<!-- Date:        2003/09/01                                         -->
+<!-- Version:     0.01                                               -->
+<!--                                                                 -->
+<!-- ####DESCRIPTIONEND####                                          -->
+<!-- =============================================================== -->
+
+<!-- }}} -->
+
+<part id="services-profile-gprof"><title>gprof Profiling Support</title> 
+
+<refentry id="gprof">
+  <refmeta>
+    <refentrytitle>Profiling</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname><varname>CYGPKG_PROFILE_GPROF</varname></refname>
+    <refpurpose>eCos Support for the gprof profiling tool</refpurpose>
+  </refnamediv>
+
+  <refsect1 id="gprof-description"><title>Description</title>
+    <para>
+The GNU gprof tool provides profiling support. After a test run it can
+be used to find where the application spent most of its time, and that
+information can then be used to guide optimization effort. Typical
+gprof output will look something like this:
+    </para>
+    <screen>
+Each sample counts as 0.003003 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  us/call  us/call  name    
+ 14.15      1.45     1.45   120000    12.05    12.05  Proc_7
+ 11.55      2.63     1.18   120000     9.84     9.84  Func_1
+  8.04      3.45     0.82                             main
+  7.60      4.22     0.78    40000    19.41    86.75  Proc_1
+  6.89      4.93     0.70    40000    17.60    28.99  Proc_6
+  6.77      5.62     0.69    40000    17.31    27.14  Func_2
+  6.62      6.30     0.68    40000    16.92    16.92  Proc_8
+  5.94      6.90     0.61                             strcmp
+  5.58      7.47     0.57    40000    14.26    26.31  Proc_3
+  5.01      7.99     0.51    40000    12.79    12.79  Proc_4
+  4.46      8.44     0.46    40000    11.39    11.39  Func_3
+  3.68      8.82     0.38    40000     9.40     9.40  Proc_5
+  3.32      9.16     0.34    40000     8.48     8.48  Proc_2
+&hellip;
+    </screen>
+    <para>
+This output is known as the flat profile. The data is obtained by
+having a hardware timer generate regular interrupts. The interrupt
+handler stores the program counter of the interrupted code. gprof
+performs a statistical analysis of the resulting data and works out
+where the time was spent.
+    </para>
+    <para>
+gprof can also provide information about the call graph, for example:
+    </para>
+    <screen>
+index % time    self  children    called     name
+&hellip;
+                0.78    2.69   40000/40000       main [1]
+[2]     34.0    0.78    2.69   40000         Proc_1 [2]
+                0.70    0.46   40000/40000       Proc_6 [5]
+                0.57    0.48   40000/40000       Proc_3 [7]
+                0.48    0.00   40000/120000      Proc_7 [3]
+    </screen>
+    <para>
+This shows that function <function>Proc_1</function> was called only
+from <function>main</function>, and <function>Proc_1</function> in
+turn called three other functions. Callgraph information is obtained
+only if the application code is compiled with the <option>-pg</option>
+option. This causes the compiler to insert extra code into each
+compiled function, specifically a call to <function>mcount</function>,
+and the implementation of <function>mcount</function> stores away the
+data for subsequent processing by gprof.
+    </para>
+    <caution><para>
+There are a number of reasons why the output will not be 100%
+accurate. Collecting the flat profile typically involves timer
+interrupts so any code that runs with interrupts disabled will not
+appear. The current host-side gprof implementation maps program
+counter values onto symbols using a bin mechanism. When a bin spans
+the end of one function and the start of the next gprof may report the
+wrong function. This is especially likely on architectures with
+single-byte instructions such as an x86. When examining gprof output
+it may prove useful to look at a linker map or program disassembly.
+    </para></caution>
+    <para>
+The eCos profiling package requires some additional support from the
+HAL packages, and this may not be available on all platforms:
+    </para>
+    <orderedlist>
+      <listitem><para>
+There must be an implementation of the profiling timer. Typically this
+is provided by the variant or platform HAL using one of the hardware
+timers. If there is no implementation then the configuration tools
+will report an unresolved conflict related to
+<varname>CYGINT_PROFILE_HAL_TIMER</varname> and profiling is not
+possible. Some implementations overload the system clock, which means
+that profiling is only possible in configurations containing the eCos
+kernel and <varname>CYGVAR_KERNEL_COUNTERS_CLOCK</varname>.
+      </para></listitem>
+      <listitem><para>
+There should be a hardware-specific implementation of
+<function>mcount</function>, which in turn will call the generic
+functionality provided by this package. It is still possible to do
+some profiling without <function>mcount</function> but the resulting
+data will be less useful. To check whether or not
+<function>mcount</function> is available, look at the current value of
+the CDL interface <varname>CYGINT_PROFILE_HAL_MCOUNT</varname> in the
+graphical configuration tool or in an <filename>ecos.ecc</filename>
+save file.
+      </para></listitem>
+    </orderedlist>
+    <para>
+This document only describes the eCos profiling support. Full details
+of gprof functionality and output formats can be found in the gprof
+documentation. However it should be noted that that documentation
+describes some functionality which cannot be implemented using current
+versions of the gcc compiler: the section on annotated source listings
+is not relevant, and neither are associated command line options like
+<option>-A</option> and <option>-y</option>.
+    </para>
+  </refsect1>
+
+  <refsect1 id="gprof-process"><title>Building Applications for Profiling</title>
+    <para>
+To perform application profiling the gprof package
+<varname>CYGPKG_PROFILE_GPROF</varname> must first be added to the
+eCos configuration. On the command line this can be achieved using:
+    </para>
+    <screen>
+$ ecosconfig add profile_gprof
+$ ecosconfig tree
+$ make
+    </screen>
+    <para>
+Alternatively the same steps can be performed using the graphical
+configuration tool.
+    </para>
+    <para>
+If the HAL packages implement <function>mcount</function> for the
+target platform then usually application code should be compiled with
+<option>-pg</option>. Optionally eCos itself can also be compiled with
+this option by modifying the configuration option
+<varname>CYGBLD_GLOBAL_CFLAGS</varname>. Compiling with
+<option>-pg</option> is optional but gives more complete profiling
+data.
+    </para>
+    <note><para>
+The profiling package itself must not be compiled with
+<option>-pg</option> because that could lead to infinite recursion
+when doing <function>mcount</function> processing. This is handled
+automatically by the package's CDL.
+    </para></note>
+    <para>
+Profiling does not happen automatically. Instead it must be started
+explicitly by the application, using a call to
+<function>profile_on</function>. A typical example would be:
+    </para>
+    <programlisting>
+#include &lt;pkgconf/system.h&gt;
+#ifdef CYGPKG_PROFILE_GPROF
+# include &lt;cyg/profile/profile.h&gt;
+#endif
+&hellip;
+int
+main(int argc, char** argv)
+{
+    &hellip;
+#ifdef CYGPKG_PROFILE_GPROF
+    {
+        extern char _stext[], _etext[];
+        profile_on(_stext, _etext, 16, 3500);
+    }
+#endif
+    &hellip;
+}
+    </programlisting>
+    <para>
+The <function>profile_on</function> takes four arguments:
+    </para>
+    <variablelist>
+      <varlistentry>
+        <term><literal>start address</literal></term>
+        <term><literal>end address</literal></term>
+        <listitem><para>
+These specify the range of addresses that will be profiled. Usually
+profiling should cover the entire application. On most targets the
+linker script will export symbols <varname>_stext</varname> and
+<varname>_etext</varname> corresponding to the beginning and end of
+code, so these can be used as the addresses. It is possible to
+perform profiling on a subset of the code if that code is
+located contiguously in memory.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><literal>bucket size</literal></term>
+        <listitem><para>
+<function>profile_on</function> divides the range of addresses into a
+number of buckets of this size. It then allocates a single array of
+16-bit counters with one entry for each bucket. When the profiling
+timer interrupts the interrupt handler will examine the program
+counter of the interrupted code and, assuming it is within the range
+of valid addresses, find the containing bucket and increment the
+appropriate counter.
+        </para>
+        <para>
+The size of the array counters is determined by the range of addresses
+being profiled and by the bucket size. For a bucket size of 16, one
+counter is needed for every 16 bytes of code. For an application with
+say 512K of code that means dynamically allocating a 64K array. If the
+target hardware is low on memory then this may be unacceptable, and
+the requirements can be reduced by increasing the bucket size. However
+this will affect the accuracy of the results and gprof is more likely
+to report the wrong function. It also increases the risk of a counter
+overflow.
+        </para>
+        <para>
+For the sake of run-time efficiency the bucket size must be a power of
+2, and it will be adjusted if necessary.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><literal>time interval</literal></term>
+        <listitem><para>
+The final argument specifies the interval between profile timer
+interrupts, in units of microseconds. Increasing the interrupt
+frequency gives more accurate profiling results, but at the cost of
+higher run-time overheads and a greater risk of a counter overflow.
+The HAL package may modify this interval because of hardware
+restrictions, and the generated profile data will contain the actual
+interval that was used. Usually it is a good idea to use an interval
+that is not a simple fraction of the system clock, typically 10000
+microseconds. Otherwise there is a risk that the profiling timer will
+disproportionally sample code that runs only in response to the system
+clock.
+        </para></listitem>
+      </varlistentry>
+    </variablelist>
+    <para>
+If the eCos configuration includes a TCP/IP stack and if a tftp daemon
+will be used to <link linkend="gprof-extract">extract</link> the data
+from the target then the call to <function>profile_on</function>
+should happen after the network is up. <filename>profile_on</filename>
+will attempt to start a tftp daemon thread, and this will fail if
+networking has not yet been enabled.
+    </para>
+    <programlisting>
+int
+main(int argc, char** argv)
+{
+    &hellip;
+    init_all_network_interfaces();
+    &hellip;
+#ifdef CYGPKG_PROFILE_GPROF
+    {
+        extern char _stext[], _etext[];
+        profile_on(_stext, _etext, 16, 3000);
+    }
+#endif
+    &hellip;
+}
+    </programlisting>
+    <para>
+The application can then be linked and run as usual.
+    </para>
+    <informalfigure PgWide=1>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="gprofrun.png" Scalefit=1 Align="Center">
+        </imageobject>
+      </mediaobject>
+    </informalfigure>
+    <para>
+When gprof is used for native development rather than for embedded
+targets the profiling data will automatically be written out to a file
+<filename>gmon.out</filename> when the program exits. This is not
+possible on an embedded target because the code has no direct access
+to the host's file system. Instead the <filename>gmon.out</filename>
+file has to be <link linkend="gprof-extract">extracted</link> from
+the target as described below. gprof can then be invoked normally:
+    </para>
+    <screen>
+$ gprof dhrystone
+Flat profile:
+ 
+Each sample counts as 0.003003 seconds.
+  %   cumulative   self              self     total
+ time   seconds   seconds    calls  us/call  us/call  name
+ 14.15      1.45     1.45   120000    12.05    12.05  Proc_7
+ 11.55      2.63     1.18   120000     9.84     9.84  Func_1
+  8.04      3.45     0.82                             main
+&hellip;
+    </screen>
+    <para>
+If <filename>gmon.out</filename> does not contain call graph data,
+either because <function>mcount</function> is not supported or because
+this functionality was explicitly disabled, then the
+<option>-no-graph</option> must be used.
+    </para>
+    <screen>
+$ gprof --no-graph dhrystone
+Flat profile:
+ 
+Each sample counts as 0.003003 seconds.
+  %   cumulative   self              self     total
+ time   seconds   seconds    calls  us/call  us/call  name
+ 14.15      1.45     1.45                             Proc_7
+ 11.55      2.63     1.18                             Func_1
+  8.04      3.45     0.82                             main
+&hellip;
+    </screen>
+  </refsect1>
+
+  <refsect1 id="gprof-extract"><title>Extracting the Data</title>
+    <para>
+By default gprof expects to find the profiling data in a file
+<function>gmon.out</function> in the current directory. This package
+provides two ways of extracting data: a gdb macro or tftp transfers.
+Using tftp is faster but requires a TCP/IP stack on the target. It
+also consumes some additional target-side resources, including an
+extra tftp daemon thread and its stack. The gdb macro can be used even
+when the eCos configuration does not include a TCP/IP stack. However
+it is much slower, typically taking tens of seconds to retrieve all
+the data for a non-trivial application.
+    </para>
+    <para>
+The gdb macro is called <command>gprof_dump</command>, and can be
+found in the file <filename>gprof.gdb</filename> in the <filename
+class="directory">host</filename> subdirectory of this package. A
+typical way of using this macro is:
+    </para>
+    <screen>
+(gdb) source &lt;repo&gt;/services/profile/gprof/&lt;version&gt;/host/gprof.gdb
+(gdb) gprof_dump
+    </screen>
+    <para>
+This macro can be used any time after the call to
+<function>profile_on</function>. It will store the profiling data
+accumulated so far to the file <filename>gmon.out</filename> in the
+current directory, and then reset all counts. gprof uses only a 16 bit
+counter for every bucket of code. These counters can easily saturate
+if the profiling run goes on for a long time, or if the application
+code spends nearly all its time in just a few tight inner loops. The
+counters will not actually wrap around back to zero, instead they will
+stick at 0xFFFF, but this will still affect the accuracy of the gprof
+output. Hence it is desirable to reset the counters once the profiling
+data has been extracted.
+    </para>
+    <para>
+The file <filename>gprof.gdb</filename> contains two other macros
+which may prove useful. <command>gprof_fetch</command> extracts the
+profiling data and generates the file <filename>gmon.out</filename>,
+but does not reset the counters. <command>gprof_reset</command> only
+resets the counters, without extracting the data or overwriting
+<filename>gmon.out</filename>.
+    </para>
+    <para>
+If the configuration includes a TCP/IP stack then the profiling data
+can be extracted using tftp instead. There are two relevant
+configuration options. <varname>CYGPKG_PROFILE_TFTP</varname>
+controls whether or not tftp is supported. It is enabled by default if
+the configuration includes a TCP/IP stack, but can be disabled to save
+target-side resources.
+<varname>CYGNUM_PROFILE_TFTP_PORT</varname> controls the UDP
+port which will be used. This port cannot be shared with other tftp
+daemons. If neither application code nor any other package (for
+example the gcov test coverage package) provides a tftp service then
+the default port can be used. Otherwise it will be necessary to assign
+unique ports to each daemon.
+    </para>
+    <para>
+If enabled the tftp daemon will be started automatically by
+<function>profile_on</function>. This should only happen once the
+network is up and running, typically after the call to
+<function>init_all_network_interfaces</function>.
+    </para>
+    <para>
+The data can then be retrieved using a standard tftp client. There are
+a number of such clients available with very different interfaces, but
+a typical session might look something like this:
+    </para>
+    <screen>
+$ tftp
+tftp&gt; connect 10.1.1.134
+tftp&gt; binary
+tftp&gt; get gmon.out
+Received 64712 bytes in 0.9 seconds
+tftp&gt; quit
+    </screen>
+    <para>
+The address <literal>10.1.1.134</literal> should be replaced with the
+target's IP address. Extracting the profiling data by tftp will
+automatically reset the counters.
+    </para>
+  </refsect1>
+
+  <refsect1 id="gprof-configuration"><title>Configuration Options</title>
+    <para>
+This package contains a number of configuration options. Two of these,
+<varname>CYGPKG_PROFILE_TFTP</varname> and
+<varname>CYGNUM_PROFILE_TFTP_PORT</varname>, related to support for
+<link linkend="gprof-extract">tftp transfers</link> and have already
+been described.
+    </para>
+    <para>
+Support for collecting the call graph data via
+<function>mcount</function> is optional and can be controlled via
+<varname>CYGPKG_PROFILE_CALLGRAPH</varname>. This option will only be
+active if the HAL provides the underlying <function>mcount</function>
+support and implements <varname>CYGINT_PROFILE_HAL_MCOUNT</varname>.
+The call graph data allows gprof to produce more useful output, but at
+the cost of extra run-time and memory overheads. If this option is
+disabled then the <option>-pg</option> compiler flag should not be used.
+    </para>
+    <para>
+If <varname>CYGPKG_PROFILE_CALLGRAPH</varname> is enabled then there
+are two further options which can be used to control memory
+requirements. Collecting the data requires two blocks of memory, a
+simple hash table and an array of arc records. The
+<function>mcount</function> code uses the program counter address to
+index into the hash table, giving the first element of a singly linked
+list. The array of arc records contains the various linked lists for
+each hash slot. The required number of arc records depends on the
+number of function calls in the application. For example if a function
+<function>Proc_7</function> is called from three different places in
+the application then three arc records will be needed.
+    </para>
+    <para>
+<varname>CYGNUM_PROFILE_CALLGRAPH_HASH_SHIFT</varname> controls the
+size of the hash table. The default value of 8 means that the program
+counter is shifted right by eight places to give a hash table index.
+Hence each hash table slot corresponds to 256 bytes of code, and for
+an application with say 512K of code <filename>profile_on</filename>
+will dynamically allocate an 8K hash table. Increasing the shift size
+reduces the memory requirement, but means that each hash table slot
+will correspond to more code and hence <function>mcount</function>
+will need to traverse a longer linked list of arc records.
+    </para>
+    <para>
+<varname>CYGNUM_PROFILE_CALLGRAPH_ARC_PERCENTAGE</varname> controls
+how much memory <function>profile_on</function> will allocate for the
+arc records. This uses a simple heuristic, a percentage of the overall
+code size. By default the amount of arc record space allocated will be
+5% of the code size, so for a 512K executable that requires
+approximately 26K. This default should suffice for most applications.
+In exceptional cases it may be insufficient and a diagnostic will be
+generated when the profiling data is extracted.
+    </para>
+  </refsect1>
+
+  <refsect1 id="gprof-hal"><title>Implementing the HAL Support</title>
+    <para>
+The profiling package requires two lots of HAL support: a function
+<function>hal_enable_profile_timer</function> and an implementation
+of <function>mcount</function>. The profile timer is required.
+Typically it will be implemented by the variant or platform HAL
+using a spare hardware timer, and that HAL package will also
+implement the CDL interface
+<varname>CYGINT_PROFILE_HAL_TIMER</varname>. Support for
+<function>mcount</function> is optional but very desirable. Typically
+it will be implemented by the architectural HAL, which will also
+implement the CDL interface
+<varname>CYGINT_PROFILE_HAL_MCOUNT</varname>. 
+    </para>
+    <programlisting>
+#include &lt;pkgconf/system.h&gt;
+#ifdef CYGPKG_PROFILE_GPROF
+# include &lt;cyg/profile/profile.h&gt;
+#endif
+
+int
+hal_enable_profile_timer(int resolution)
+{
+    &hellip;
+    return actual_resolution;
+}
+    </programlisting>
+    <para>
+This function takes a single argument, a time interval in
+microseconds. It should arrange for a timer interrupt to go off
+after every interval. The timer VSR or ISR should then determine the
+program counter of the interrupted code and register this with the
+profiling package:
+    </para>
+    <programlisting>
+    &hellip;
+    __profile_hit(interrupted_pc);
+    &hellip;
+    </programlisting>
+    <para>
+The exact details of how this is achieved, especially obtaining the
+interrupted PC, are left to the HAL implementor. The HAL is allowed to
+modify the requested time interval because of hardware constraints,
+and should return the interval that is actually used.
+    </para>
+    <para>
+<function>mcount</function> can be more difficult. The calls to
+<function>mcount</function> are generated internally by the compiler
+and the details depend on the target architecture. In fact
+<function>mcount</function> may not use the standard calling
+conventions at all. Typically implementing <function>mcount</function>
+requires looking at the code that is actually generated, and possibly
+at the sources of the appropriate compiler back end.
+    </para>
+    <para>
+The HAL <function>mcount</function> function should call into the
+profiling package using standard calling conventions:
+    </para>
+    <programlisting>
+    &hellip;
+    __profile_mcount((CYG_ADDRWORD) caller_pc, (CYG_ADDRWORD) callee_pc);
+    &hellip;
+    </programlisting>
+    <para>
+If <function>mcount</function> was invoked because
+<function>main</function> called <function>Proc_1</function> then the
+caller pc should be an address inside <function>main</function>,
+typically corresponding to the return location, and the callee pc
+should be an address inside <function>Proc_1</function>, usually near
+the start of the function.
+    </para>
+    <para>
+For some targets the compiler does additional work, for example
+automatically allocating a per-function word of memory to eliminate
+the need for the hash table. This is too target-specific and hence
+cannot easily be used by the generic profiling package.
+    </para>
+  </refsect1>
+
+</refentry>
+</part>

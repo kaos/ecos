@@ -11,6 +11,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 2003 eCosCentric Limited
 // Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -44,7 +45,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: 
+// Contributors: bartv
 // Date:         2002-11-14
 // Purpose:      Define profiling support
 // Description:  
@@ -65,9 +66,12 @@ __externC void profile_on(void *start_addr, void *end_addr,
                           int bucket_size, int sample_resolution);
 
 // Callback used by timer routine
-__externC void __profile_hit(unsigned long pc);
+__externC void __profile_hit(CYG_ADDRWORD pc);
+
+// Callgraph support
+__externC void __profile_mcount(CYG_ADDRWORD /* caller_pc */, CYG_ADDRWORD /* callee_pc */);
 
 // Timer setup routine, used when enabling profiling
-__externC void hal_enable_profile_timer(int resolution);
+__externC int hal_enable_profile_timer(int resolution);
 
 #endif // CYGONCE_PROFILE_H

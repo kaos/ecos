@@ -8,6 +8,7 @@
 #####ECOSGPLCOPYRIGHTBEGIN####
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2003 eCosCentric Ltd.
 ## Copyright (C) 2002 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
@@ -42,7 +43,7 @@
 #
 # Author(s):      Gary Thomas
 # Original data:  Gary Thomas
-# Contributors:
+# Contributors:	  Bart Veer
 # Date:           2002-11-14
 #
 #####DESCRIPTIONEND####
@@ -50,45 +51,144 @@
 # ====================================================================
 
 cdl_package CYGPKG_PROFILE_GPROF {
-    display       "Gather runtime profile statistics"
-    requires      CYGPKG_NET
-    requires      CYGPKG_NET_TFTP
-    requires      CYGPKG_MEMALLOC   
-    requires      { CYGINT_PROFILE_HAL_TIMER != 0 }
-    doc           ref/services-profile-gprof.html
+    display     "Runtime profile statistics"
+    requires    CYGPKG_MEMALLOC   
+    requires    { CYGINT_PROFILE_HAL_TIMER != 0 }
 
-    include_dir   cyg/profile
-    
-    compile profile.c
+    # The profiling package itself must be built without -pg.
+    # Otherwise you can end up with infinite recursion in
+    # mcount().
+    requires	{ is_substr(CYGPKG_PROFILE_GPROF_CFLAGS_REMOVE, " -pg ") }
+    doc         ref/services-profile-gprof.html
+
+    include_dir cyg/profile
+    compile	profile.c
 
     description "
         This package enables runtime profiling of an application.
     The actual profile collection must be turned on by the application,
-    once it has been initialized.  The data collected is exported via
-    a TFTP connection to the target."
+    once it has been initialized.  The data collected on the target can
+    be extracted using either a gdb macro or tftp."
 
-    cdl_interface     CYGINT_PROFILE_HAL_TIMER {
+    cdl_interface CYGINT_PROFILE_HAL_TIMER {
         display   "High resolution timer, implemented by platform"
         description "
 	  Profiling requires access to a high resolution timer which
           is platform dependent."
     }
 
-    cdl_option CYGNUM_PROFILE_TFTP_PORT {
-        display       "Port used by TFTP server for profile data"
-        flavor        data
-        default_value 0
-        description   "
-            This option sets the port number to use for the TFTP server
-            which exports the profiling data.  A value of 0 will set
-            the port to be the IETF standard port of 69/udp."
+    cdl_interface CYGINT_PROFILE_HAL_MCOUNT {
+	display   "HAL supports call-graph profiling"
+	description "
+          On some platforms the HAL may support an mcount() call. This
+          allows the profiling package to gather additional information,
+          used by gprof to determine a call graph."
     }
 
-    cdl_option CYGPKG_PROFILE_TESTS {
-        display "Profiling tests"
-        flavor  data   
-        no_define      
-        calculated { "tests/profile.c" }
+    cdl_component CYGPKG_PROFILE_CALLGRAPH {
+	display   	"Collect call-graph profiling data"
+	active_if 	CYGINT_PROFILE_HAL_MCOUNT
+	default_value	1
+	description "
+          There are several different types of profiling information
+          that can be gathered. One type is used by gprof to determine
+          the application callgraph. This is not required but can be used
+          to gain additional insight in the application's behaviour,
+          at the cost of increased overheads in gathering the data. It
+          requires that application code be compiled with the -pg flag,
+          and it also requires HAL support that may not be available
+          on all targets."
+
+	cdl_option CYGNUM_PROFILE_CALLGRAPH_HASH_SHIFT {
+	    display		"Control size of call-graph hash table"
+	    flavor		data
+	    default_value	8
+	    legal_values	1 to 16
+	    description "
+              The call graph code uses a hash table to map program counter
+              addresses into an array index. The hash function is a simple
+              shift operation, so the size of the hash table depends on
+              the amount of code being profiled and the shift size. With
+              a default value of 8 the hash table needs one 32-bit integer
+              for every 256 bytes of code. Increasing the shift size reduces
+              memory requirements at the cost of extra run-time processing
+              to handle hash collisions."
+	}
+
+	cdl_option CYGNUM_PROFILE_CALLGRAPH_ARC_PERCENTAGE {
+	    display		"Control size of arc table"
+	    flavor		data
+	    default_value	5
+	    legal_values	1 to 100
+	    description "
+              Determining the call graph requires keeping track of where
+              every function is called from, in an arc table. The size of
+              this table is calculated as a percentage of the amount of
+              code being profiled. The default value of 5% is appropriate
+              for typical applications."
+	}
+    }
+    
+    cdl_component CYGPKG_PROFILE_TFTP {
+	display	    	"Allow the profile data to be collected by tftp"
+	default_value	1
+	active_if	CYGPKG_NET
+	requires    	CYGPKG_NET
+	requires    	CYGPKG_NET_TFTP
+	description "
+          There are two supported ways of transferring the profile data
+          from the target to the host. The first is to use a gdb macro
+          inside a gdb session, dumping the data directly from memory
+          to a file gmon.out. Usually this is the most convenient
+          approach. However it does require a gdb session and it can
+          be slow when debugging over e.g. a serial line. Alternatively
+          the profile package can provide a tftp daemon, allowing other
+          machines to retrieve the data over ethernet."
+	
+	cdl_option CYGNUM_PROFILE_TFTP_PORT {
+	    display       "Port used by TFTP server for profile data"
+	    flavor        data
+	    default_value 69
+	    description   "
+                By default the profiling package will create a tftp daemon
+                that listens on port 69, the standard port for this service.
+                If there are other packages that start a tftp daemon, or
+                if application code wants to provide this service, then
+                there is a conflict: each daemon requires a unique port.
+                This configuration option can be used to change the port
+                used by the profiling tftp daemon."
+        }
+    }
+    
+    cdl_component CYGPKG_PROFILE_GPROF_OPTIONS {
+        display "Profiling build options"
+        flavor  none
+        description   "
+	    Package specific build options including control over
+	    compiler flags used only in building this package,
+	    and details of which tests are built."
+
+
+        cdl_option CYGPKG_PROFILE_GPROF_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building this package. These flags are used in addition
+                to the set of global flags."
+        }
+
+        cdl_option CYGPKG_PROFILE_GPROF_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "-pg" }
+            description   "
+                This option modifies the set of compiler flags for
+                building this package. These flags are removed from
+                the set of global flags if present."
+        }
     }
 }
-
