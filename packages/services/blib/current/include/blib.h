@@ -268,6 +268,30 @@ int cyg_blib_flush(cyg_blib_t *bl);
 int cyg_blib_set_block_size(cyg_blib_t *bl, cyg_uint32 block_size);
 
 // --------------------------------------------------------------------
+// Gets block size 
+//
+//   bl  - block lib instance
+//
+//   returns the current block size
+
+static inline cyg_uint32 cyg_blib_get_block_size(cyg_blib_t *bl)
+{
+    return bl->block_size;
+}
+
+// --------------------------------------------------------------------
+// Gets log2 of block size 
+//
+//   bl  - block lib instance
+//
+//   returns log2 of the current block size 
+
+static inline cyg_uint32 cyg_blib_get_block_size_log2(cyg_blib_t *bl)
+{
+    return bl->block_size_log2;
+}
+
+// --------------------------------------------------------------------
 // Gets block cache statistics 
 //
 //   bl - block lib instance

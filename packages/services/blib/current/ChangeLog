@@ -1,7 +1,13 @@
+2004-08-09 Savin Zlobec <savin@elatec.si>
+
+        * inc/blib.h:
+        Extended the API with cyg_blib_get_block_size and 
+        cyg_blib_get_block_size_log2 functions.
+
 2004-06-28 Savin Zlobec <savin@elatec.si>
 
         * inc/blib.h:
-        * src/disk.c:
+        * src/blib.c:
         Implemented block memory pool without using the cyg_mempool_fix_* 
         API - blib is now free of kernel dependencies. 
 
@@ -9,7 +15,7 @@
 
         * cdl/blib.cdl:
         * inc/blib.h: 
-        * src/disk.c:  
+        * src/blib.c:  
         A block access and cache library. 
 
 
