@@ -362,6 +362,15 @@ package CYGPKG_DEVS_FLASH_FLEXANET {
            on the SA-1100 Flexanet platform."
 }
 
+package CYGPKG_DEVS_FLASH_MPC50 {
+	alias 		{ "FLASH memory support for MPC 5.0" flash_mpc50 }
+	directory	devs/flash/arm/mpc50
+	script		flash_mpc50.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the MPC 5.0."
+}
 
 package CYGPKG_DEVS_FLASH_MALTA {
 	alias 		{ "FLASH memory support for MIPS Malta board" flash_malta }
@@ -2169,6 +2178,26 @@ package CYGPKG_HAL_ARM_XSCALE_IQ80321 {
         eCos on an Intel XScale IQ80321 evaluation board."
 }
 
+package CYGPKG_HAL_ARM_XSCALE_PXA2X0 {
+	alias		{ "Intel PXA2X0" hal_arm_xscale_pxa2x0 }
+	directory	hal/arm/xscale/pxa2x0
+	script		hal_arm_xscale_pxa2x0.cdl
+	hardware
+		description "
+		The PXA2X0 HAL package provides the support needed to run
+		eCos on Intel PXA2X0 based systems."
+}
+
+package CYGPKG_HAL_ARM_XSCALE_MPC50 {
+	alias		{ "MICROPLEX Printer Controller 5.0" hal_arm_xscale_mpc50 }
+	directory	hal/arm/xscale/mpc50
+	script		hal_arm_xscale_mpc50.cdl
+	hardware
+        description "
+        The MPC50 HAL package provides the support needed to run
+        eCos on a MPC 5.0."
+}
+
 # --------------------------------------------------------------------------
 # SH packages
 package CYGPKG_HAL_SH {
@@ -3522,6 +3551,21 @@ target snds {
         The snds target provides the packages needed to run eCos on a
         Samsung SNDS eval board."
 }
+
+target mpc50 {
+	alias { "MICROPLEX Printer Controller 5.0" mpc50 }
+	packages {
+				CYGPKG_HAL_ARM
+				CYGPKG_HAL_ARM_XSCALE_CORE
+				CYGPKG_HAL_ARM_XSCALE_PXA2X0
+				CYGPKG_HAL_ARM_XSCALE_MPC50
+				CYGPKG_DEVS_FLASH_STRATA
+				CYGPKG_DEVS_FLASH_MPC50
+        }
+        description "
+        MICROPLEX Printer Controller 5.0"
+}
+
 # --------------------------------------------------------------------------
 # SH targets
 

@@ -1,3 +1,8 @@
+2003-01-24  Knud Woehler <knud.woehler@microplex.de>
+2003-01-24  Mark Salter  <msalter@redhat.com>
+
+	* ecos.db: Add packages for XScale PXA2x0/MPC50.
+
 2003-01-24  John Dallaway  <jld@ecoscentric.com>
 
 	* ecosadmin.tcl: Accommodate latest Cygwin Tcl shell (tclsh83.exe)
