@@ -63,17 +63,10 @@
 #include <network.h>
 #else
 /* eCos (lwIP stack) include */
-#include "lwip/sys.h"           /* lwIP stack includes */
+#include <lwip/sys.h>           /* lwIP stack includes */
 #define LWIP_COMPAT_SOCKETS 1
-#include "lwip/sockets.h"
-#endif
-
-#ifndef CYGPKG_NET
-/* Function prototypes that should really be in lwIP header files */
-/* Included here to remove compiler warnings */
-u32_t htonl(u32_t);
-u16_t htons(u16_t);
-void lwip_init(void);
+#include <lwip/sockets.h>
+#include <lwip/inet.h>
 #endif
 
 #define BACKLOG             5       /* Number of pending connections queue will hold */
