@@ -1,3 +1,9 @@
+2005-01-22  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/main.c (cyg_start): Fix compiler warning with 
+	HAL_THREAD_INIT_CONTEXT and the worspace end address.
+	* src/fs/disk.c (find_dos_partitions): Removed unused variable.
+
 2005-01-05  David Vrabel  <dvrabel@arcom.com>
 
 	* src/fs/fileio.c (do_ls): Remove useless "getcwd" message.

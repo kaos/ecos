@@ -67,7 +67,7 @@
 
 #include <cyg/hal/hal_tables.h>
 #include <cyg/infra/cyg_ass.h>         // assertion macros
-
+#include <cyg/infra/cyg_type.h>
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 #ifdef CYGBLD_HAL_PLATFORM_STUB_H
 #include CYGBLD_HAL_PLATFORM_STUB_H
@@ -394,7 +394,8 @@ cyg_start(void)
                 CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
 
                 // set up a temporary context that will take us to the trampoline
-                HAL_THREAD_INIT_CONTEXT(workspace_end,breakpoint, trampoline,0);
+                HAL_THREAD_INIT_CONTEXT((CYG_ADDRWORD)workspace_end,
+                                        breakpoint, trampoline,0);
 
                 // switch context to trampoline (get GDB stubs started)
                 HAL_THREAD_SWITCH_CONTEXT(&saved_context, &workspace_end);
@@ -595,7 +596,8 @@ do_go(int argc, char *argv[])
     HAL_ICACHE_INVALIDATE_ALL();
     HAL_DCACHE_INVALIDATE_ALL();
     // set up a temporary context that will take us to the trampoline
-    HAL_THREAD_INIT_CONTEXT(workspace_end, entry, trampoline, 0);
+    HAL_THREAD_INIT_CONTEXT((CYG_ADDRWORD)workspace_end, 
+                            entry, trampoline, 0);
 
     // switch context to trampoline
     HAL_THREAD_SWITCH_CONTEXT(&saved_context, &workspace_end);

@@ -91,7 +91,7 @@ u32_unaligned(void *p)
 static int
 find_dos_partitions(disk_t *d, cyg_uint8 *mbr)
 {
-    cyg_uint32 s, n, tmp;
+    cyg_uint32 s, n;
     struct mbr_partition *p;
     int i, found = 0;
 
