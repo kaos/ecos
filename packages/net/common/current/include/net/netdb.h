@@ -36,6 +36,8 @@
 #ifndef _NETDB_H_
 #define _NETDB_H_
 
+#include <sys/param.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -1,3 +1,8 @@
+2003-07-15  Nick Garnett  <nickg@balti.calivar.com>
+
+	* include/net/netdb.h: Added include for <sys/param.h>. the in.h
+	file included later needs this.
+
  2003-05-23  Andrew Lunn  <andrew.lunn@ascom.ch>
  
  	* src/network_support.c (init_all_network_interfaces): Allow IPv4
