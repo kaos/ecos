@@ -272,6 +272,28 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 #define CYG_INIT_DEFAULT                65535
 
 // -------------------------------------------------------------------------
+// Label name macros. Some toolsets generate labels with initial
+// underscores and others don't. CYG_LABEL_NAME should be used on
+// labels in C/C++ code that are defined in assembly code or linker
+// scripts. CYG_LABEL_DEFN is for use in assembly code and linker
+// scripts where we need to manufacture labels that can be used from
+// C/C++.
+// These are default implementations that should work for most targets.
+// They may be overridden in basetype.h if necessary.
+
+#ifndef CYG_LABEL_NAME
+
+#define CYG_LABEL_NAME(_name_) _name_
+
+#endif
+
+#ifndef CYG_LABEL_DEFN
+
+#define CYG_LABEL_DEFN(_label) _label
+
+#endif
+
+// -------------------------------------------------------------------------
 // COMPILER-SPECIFIC STUFF
 
 #ifdef __GNUC__
@@ -293,8 +315,10 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 // This effectively does the reverse of the previous macro. It defines
 // a name that the attributed variable or function will actually have
 // in assembler.
+#define __Str(x) #x
+#define __Xstr(x) __Str(x)
 # define CYGBLD_ATTRIB_ASM_ALIAS(__symbol__) \
-            __asm__ ( #__symbol__ )
+            __asm__ ( __Xstr( CYG_LABEL_DEFN( __symbol__ ) ) )
 
 // Shows that a function returns the same value when given the same args, but
 // note this can't be used if there are pointer args
@@ -332,28 +356,6 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 
 # define CYGBLD_ATTRIB_WEAK_ALIAS(__symbol__) \
         CYGBLD_ATTRIB_WEAK CYGBLD_ATTRIB_ALIAS(__symbol__)
-
-// -------------------------------------------------------------------------
-// Label name macros. Some toolsets generate labels with initial
-// underscores and others don't. CYG_LABEL_NAME should be used on
-// labels in C/C++ code that are defined in assembly code or linker
-// scripts. CYG_LABEL_DEFN is for use in assembly code and linker
-// scripts where we need to manufacture labels that can be used from
-// C/C++.
-// These are default implementations that should work for most targets.
-// They may be overridden in basetype.h if necessary.
-
-#ifndef CYG_LABEL_NAME
-
-#define CYG_LABEL_NAME(_name_) _name_
-
-#endif
-
-#ifndef CYG_LABEL_DEFN
-
-#define CYG_LABEL_DEFN(_label) _label
-
-#endif
 
 // -------------------------------------------------------------------------
 // Various "flavours" of memory regions that can be described by the 

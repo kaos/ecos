@@ -17,6 +17,10 @@ static uint32 crc32 (unsigned char *ptr, int len, uint32 crc);
 #include "thread-pkts.h"
   /* Defines function macros if thread support is not selected in board.h */
 
+#ifdef __ECOS__
+char GDB_stubs_version[] CYGBLD_ATTRIB_WEAK = 
+    "eCos GDB stubs - built " __DATE__ " / " __TIME__;
+#endif
 
 /****************************************************************************
 
@@ -1038,11 +1042,7 @@ __process_packet (char *packet)
 #endif
     case 'd':
       /* toggle debug flag */
-      strcpy(remcomOutBuffer, "eCos GDB stubs" 
-#ifdef CYGPKG_REDBOOT
-             " [with RedBoot]"
-#endif
-             " - built " __DATE__ " / " __TIME__);
+      strcpy(remcomOutBuffer, GDB_stubs_version);
       break;
 #endif
 #endif // __ECOS__

@@ -51,7 +51,8 @@
 #ifdef CYGPKG_KERNEL
 #include <pkgconf/kernel.h>     // CYGPKG_KERNEL_INSTRUMENT
 #endif
-
+#include CYGHWR_MEMORY_LAYOUT_H
+        
 #include <cyg/hal/arch.inc>
 #include <cyg/hal/variant.inc>
 #include <cyg/hal/sh_regs.h>
@@ -94,6 +95,9 @@ FUNC_START(_reset)
 $_reset_platform:
 #ifdef CYG_HAL_STARTUP_RAM
         .long   CYG_LABEL_DEFN(_reset_platform)
+#elif defined(CYG_HAL_STARTUP_ROMRAM)
+        // Uncached "shadow" address but adjusted for VMA/LMA differences
+        .long   __reset_platform+0x20000000-CYGMEM_REGION_ram+CYGMEM_REGION_rom
 #else
         // Uncached "shadow" address
         .long   CYG_LABEL_DEFN(_reset_platform)+0x20000000
@@ -615,11 +619,7 @@ $unmasked_SR:
 #ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
         SYM_PTR_REF(cyg_interrupt_call_pending_DSRs)
         SYM_PTR_REF(interrupt_end)
-        # cyg_scheduler_sched_lock is special as it is defined as an asm alias
-        
-        .globl cyg_scheduler_sched_lock
-$cyg_scheduler_sched_lock:	.long	cyg_scheduler_sched_lock
-        
+        SYM_PTR_REF(cyg_scheduler_sched_lock)
 #endif
 
 #---------------------------------------------------------------------------

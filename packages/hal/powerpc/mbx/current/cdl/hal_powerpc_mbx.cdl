@@ -332,6 +332,8 @@ cdl_package CYGPKG_HAL_POWERPC_MBX {
             This option lists the target's requirements for a valid Redboot
             configuration."
 
+#            compile -library=libextras.a redboot_cmds.c
+    
         cdl_option CYGBLD_BUILD_REDBOOT_BIN {
             display       "Build Redboot ROM binary image"
             active_if     CYGBLD_BUILD_REDBOOT
@@ -340,8 +342,6 @@ cdl_package CYGPKG_HAL_POWERPC_MBX {
             description "This option enables the conversion of the Redboot ELF
                          image to a binary image suitable for ROM programming."
 
-#            compile -library=libextras.a redboot_cmds.c
-    
             make -priority 325 {
                 <PREFIX>/bin/redboot.bin : <PREFIX>/bin/redboot.elf
                 $(OBJCOPY) --strip-debug $< $(@:.bin=.img) 

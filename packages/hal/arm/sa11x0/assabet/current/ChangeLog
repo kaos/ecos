@@ -1,3 +1,17 @@
+2000-12-13  Hugo Tyson  <hmt@redhat.com>
+
+	* src/assabet_misc.c: Use <cyg/hal/hal_mm.h> from the variant HAL
+	for definitions of all MM tables and so on.
+
+	* include/hal_platform_ints.h: Removed; it was the same in all
+	platforms so is now in the common variant hal, "hal_var_ints.h"
+	and accessible as CYGBLD_HAL_VAR_INTS_H <cyg/hal/hal_var_ints.h>
+	
+2000-12-08  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_arm_sa11x0_assabet.cdl: Build redboot_cmds.c in the
+	right place.
+
 2000-11-30  Gary Thomas  <gthomas@redhat.com>
 
 	* src/redboot_cmds.c (do_exec): Use new _GETS_xxx return codes.

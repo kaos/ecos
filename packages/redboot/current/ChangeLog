@@ -1,3 +1,32 @@
+2000-12-15  Gary Thomas  <gthomas@redhat.com>
+
+	* src/version.c: Define GDB stubs version here as well.  Also
+	add warnings and informationabout how all of this works.
+
+2000-12-13  Gary Thomas  <gthomas@redhat.com>
+
+	* src/version.c: New file.
+
+	* src/main.c: 
+	* cdl/redboot.cdl: Reorg - main.c is now treated like all other
+	files.  New file 'version.c' holds the special stuff used at
+	build time to get interesting version information into the
+	final product.
+
+2000-12-12  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c (get_config): Increase size of input buffer used
+	during 'fconfig' command.
+
+2000-12-11  Gary Thomas  <gthomas@redhat.com>
+
+	* src/main.c: Change in HAL layering - need to include proper
+	file to get 'reset' definition.
+
+2000-12-08  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/redboot.cdl: Tweak CYGPKG_REDBOOT_MAX_CMD_LINE description.
+
 2000-12-07  Gary Thomas  <gthomas@redhat.com>
 
 	* src/main.c (cyg_start): Make CLI command buffer static.

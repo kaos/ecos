@@ -475,7 +475,8 @@ static void
 quicc_smc_serial_flush(quicc_smc_serial_info *smc_chan)
 {
     volatile struct cp_bufdesc *txbd = smc_chan->txbd;
-    if ((txbd->length > 0) && ((txbd->ctrl & QUICC_BD_CTL_Ready) == 0)) {
+    if ((txbd->length > 0) && 
+        ((txbd->ctrl & (QUICC_BD_CTL_Ready|QUICC_BD_CTL_Int)) == 0)) {
         txbd->ctrl |= QUICC_BD_CTL_Ready|QUICC_BD_CTL_Int;  // Signal buffer ready
         if (txbd->ctrl & QUICC_BD_CTL_Wrap) {
             txbd = smc_chan->tbase;

@@ -132,6 +132,17 @@
 #define MSR_RI   0x40
 #define MSR_CD   0x80
 
+// FIFO Control Register
+#define FCR_FE   0x01    // FIFO enable
+#define FCR_CRF  0x02    // Clear receive FIFO
+#define FCR_CTF  0x04    // Clear transmit FIFO
+#define FCR_DMA  0x08    // DMA mode select
+#define FCR_F64  0x20    // Enable 64 byte fifo (16750+)
+#define FCR_RT14 0xC0    // Set Rx trigger at 14
+#define FCR_RT8  0x80    // Set Rx trigger at 8
+#define FCR_RT4  0x40    // Set Rx trigger at 4
+#define FCR_RT1  0x00    // Set Rx trigger at 1
+
 static unsigned char select_word_length[] = {
     LCR_WL5,    // 5 bits / word (char)
     LCR_WL6,
@@ -212,7 +223,7 @@ serial_config_port(serial_channel *chan,
     HAL_WRITE_UINT8(base+REG_ldl, baud_divisor & 0xFF);
     HAL_WRITE_UINT8(base+REG_lcr, _lcr);
     if (init) {
-        HAL_WRITE_UINT8(base+REG_fcr, 0x07);  // Enable and clear FIFO
+        HAL_WRITE_UINT8(base+REG_fcr, FCR_FE|FCR_CRF|FCR_CTF|FCR_RT1);  // Enable and clear FIFO
         if (chan->out_cbuf.len != 0) {
             _ier = IER_RCV;
         } else {

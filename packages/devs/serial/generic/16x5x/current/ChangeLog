@@ -1,3 +1,8 @@
+2000-12-19   Dave Airlie <airlied@parthus.com>
+
+	* src/ser_16x5x.c: Add defines for FIFO control register
+	(serial_config_port): Use these defines.
+
 2000-12-07  Jesper Skov  <jskov@redhat.com>
 
 	* src/ser_16x5x.c (ISR_LS): Corrected value. Spotted by Dave Airlie.

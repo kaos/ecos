@@ -56,7 +56,6 @@
 #include <cyg/hal/hal_misc.h>           // User break
 
 #include <cyg/hal/hal_stub.h>           // stub functionality
-#include <cyg/hal/plf_stub.h>           // reset entry - FIXME, should be moved
 
 #include <cyg/hal/hal_intr.h>           // hal_vsr_table and others
 
@@ -444,7 +443,7 @@ hal_ctrlc_check(CYG_ADDRWORD vector, CYG_ADDRWORD data)
     if (CYGNUM_CALL_IF_TABLE_VERSION+1 == CYGACC_CALL_IF_VERSION()) {
         gdb_vector = CYGACC_COMM_IF_CONTROL(*chan, __COMMCTL_DBG_ISR_VECTOR);
     }
-    if( vector == gdb_vector ) {
+    if (vector == gdb_vector) {
         isr_ret = CYGACC_COMM_IF_DBG_ISR(*chan, &ctrlc, vector, data);
         if (ctrlc)
             cyg_hal_user_break( (CYG_ADDRWORD *)hal_saved_interrupt_state );

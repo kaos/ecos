@@ -229,14 +229,6 @@ warm_reset:
         LED 7
 
         mov     r0,#0           // move vectors
-        // We cannot perform a store until after PLATFORM_SETUP1
-#ifndef CYGPKG_HAL_ARM_EBSA285  // EBSA285 sets the DRAM size above
-#ifndef CYGPKG_HAL_ARM_SA11X0   // SA11x0 also uses this
-        ldr     r1,=hal_dram_size
-        str     r0, [r1]        // DRAM size to zero => unknown
-#endif
-#endif
-
         ldr     r1,=__exception_handlers
 #ifndef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
         // Wait with this if stubs are included (see further down).

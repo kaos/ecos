@@ -1,3 +1,9 @@
+2000-12-08  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/thread.cdl (CYGFUN_KERNEL_ALL_THREADS_STACK_CHECKING): 
+	Requires threads list, rather than active_if them so that
+	inference engine can do its thang.
+
 2000-12-07  Jesper Skov  <jskov@redhat.com>
 
 	* src/debug/dbg-thread-demux.c: Add comment about the use of

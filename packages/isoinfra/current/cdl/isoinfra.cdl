@@ -999,6 +999,25 @@ cdl_package CYGPKG_ISOINFRA {
     }
 
 # ====================================================================
+
+    cdl_component CYGPKG_ISO_DLFCN {
+        display       "Dynamic load API"
+        flavor        none
+        no_define
+
+        cdl_interface CYGINT_ISO_DLFCN {
+            display       "Dynamic load implementations"
+            requires      { 1 >= CYGINT_ISO_DLFCN }
+        }
+    
+        cdl_option CYGBLD_ISO_DLFCN_HEADER {
+            display       "Dynamic load implementation header"
+            flavor        booldata
+            default_value 0
+        }
+    }
+    
+# ====================================================================
     
         cdl_component CYGPKG_ISOINFRA_OPTIONS {
         display "Build options"

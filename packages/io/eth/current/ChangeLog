@@ -1,3 +1,8 @@
+2000-12-11  Gary Thomas  <gthomas@redhat.com>
+
+	* src/net/eth_drv.c (eth_drv_run_deliveries): Support ^C when
+	using network based debug channel.
+
 2000-12-02  Gary Thomas  <gthomas@redhat.com>
 
 	* src/stand_alone/eth_drv.c (eth_drv_write): Debug: dump packet

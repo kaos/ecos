@@ -51,7 +51,11 @@
 #include CYGHWR_MEMORY_LAYOUT_H
 
 #include <cyg/hal/hal_tables.h>
+#ifdef CYGBLD_HAL_PLATFORM_STUB_H
+#include CYGBLD_HAL_PLATFORM_STUB_H
+#else
 #include <cyg/hal/plf_stub.h>
+#endif
 
 // Builtin Self Test (BIST)
 externC void bist(void);
@@ -108,7 +112,8 @@ extern void HAL_ARCH_PROGRAM_NEW_STACK(void *fun);
 void
 do_version(int argc, char *argv[])
 {
-    printf("\nRedBoot(tm) debug environment - built %s, %s\n", __TIME__, __DATE__);
+    extern char RedBoot_version[];
+    printf(RedBoot_version);
 #ifdef HAL_PLATFORM_CPU
     printf("Platform: %s (%s) %s\n", HAL_PLATFORM_BOARD, HAL_PLATFORM_CPU, HAL_PLATFORM_EXTRA);
 #endif

@@ -1,3 +1,10 @@
+2000-12-13  Daniel Lind <daniel.lind@sth.frontec.se>
+
+	* src/quicc_smc_serial.c (quicc_smc_serial_flush): 
+	Don't mark a buffer ready unless it has been fully serviced - in
+	particular, the interrupt bit must be clear.
+	[2000-12-13] committed by Gary Thomas <gthomas@redhat.com>
+
 2000-12-06  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/quicc_smc_serial.c: Remove unread tx_enabled variable from

@@ -1,3 +1,15 @@
+2000-12-13  Hugo Tyson  <hmt@redhat.com>
+
+	* include/hal_intr.h: Handle variant-, and possible overriding
+	platform-, specific interrupt files <cyg/hal/hal_platform_ints.h>.
+	This is to simplify the multiple SA11x0 targets which have no
+	variation there.	
+
+2000-12-11  Gary Thomas  <gthomas@redhat.com>
+
+	* src/vectors.S (warm_reset): 'hal_dram_size' is now only set in
+	platform code - no need to mess with (pure pollution) it here.
+
 2000-11-19  Gary Thomas  <gthomas@redhat.com>
 
 	* include/hal_io.h: Use CYGBLD_HAL_PLATFORM_IO_H for those platforms

@@ -1,3 +1,19 @@
+2000-12-13  Hugo Tyson  <hmt@redhat.com>
+
+	* cdl/hal_arm_sa11x0.cdl: Define a symbol CYGBLD_HAL_VAR_INTS_H so
+	that the architectural HAL can see <cyg/hal/hal_var_ints.h> below.
+
+	* include/hal_var_ints.h: New file; actually a copy of all the
+	platforms' hal_platform_ints.h for all the sa11x0 platforms.
+
+	* include/hal_mm.h: New file; actually an excerpt from all the
+	platforms' $PLATFORM_misc.h for all the sa11x0 platforms, which
+	describes MM table layout and macros for initializing it.
+
+2000-12-12  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_arm_sa11x0.cdl: Allow RTC clock rate to be changable.
+
 2000-12-04  Hugo Tyson  <hmt@redhat.com>
 
 	* include/hal_cache.h: Consistently ensure that ARM registers used

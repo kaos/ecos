@@ -94,7 +94,7 @@ cdl_component CYGFUN_KERNEL_THREADS_STACK_CHECKING {
 
     cdl_option CYGFUN_KERNEL_ALL_THREADS_STACK_CHECKING {
 	display   "Check all threads whenever possible"
-	active_if  CYGVAR_KERNEL_THREADS_LIST
+	requires  CYGVAR_KERNEL_THREADS_LIST
 	default_value 0
 	description "
 	This option enables more active checking of all threads for

@@ -1,8 +1,8 @@
-#ifndef CYGONCE_HAL_PLATFORM_INTS_H
-#define CYGONCE_HAL_PLATFORM_INTS_H
+#ifndef CYGONCE_HAL_VAR_INTS_H
+#define CYGONCE_HAL_VAR_INTS_H
 //==========================================================================
 //
-//      hal_platform_ints.h
+//      hal_var_ints.h
 //
 //      HAL Interrupt and clock support
 //
@@ -37,9 +37,12 @@
 // Contributors: gthomas
 // Date:         2000-05-08
 // Purpose:      Define Interrupt support
-// Description:  The interrupt details for the SA1100/Brutus are defined here.
+// Description:  The interrupt details for the SA1110/Assabet are defined here.
 // Usage:
-//               #include <cyg/hal/hal_platform_ints.h>
+//		 #include <pkgconf/system.h>
+//		 #include CYGBLD_HAL_VARIANT_H
+//               #include CYGBLD_HAL_VAR_INTS_H
+//
 //               ...
 //              
 //
@@ -58,7 +61,7 @@
 #define CYGNUM_HAL_INTERRUPT_GPIO8   8
 #define CYGNUM_HAL_INTERRUPT_GPIO9   9
 #define CYGNUM_HAL_INTERRUPT_GPIO10  10
-#define CYGNUM_HAL_INTERRUPT_GPIO    11  // Don't use directly
+#define CYGNUM_HAL_INTERRUPT_GPIO    11  // Don't use directly!
 #define CYGNUM_HAL_INTERRUPT_LCD     12
 #define CYGNUM_HAL_INTERRUPT_UDC     13
 #define CYGNUM_HAL_INTERRUPT_UART1   15
@@ -105,4 +108,4 @@
 // The vector used by the Real time clock
 #define CYGNUM_HAL_INTERRUPT_RTC        CYGNUM_HAL_INTERRUPT_TIMER0
 
-#endif // CYGONCE_HAL_PLATFORM_INTS_H
+#endif // CYGONCE_HAL_VAR_INTS_H

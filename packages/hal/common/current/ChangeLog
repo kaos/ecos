@@ -1,3 +1,16 @@
+2000-12-15  Gary Thomas  <gthomas@redhat.com>
+
+	* src/generic-stub.c: Define 'version' string to be a weak
+	symbol that can be easily overridden (e.g. by RedBoot).
+
+2000-12-11  Gary Thomas  <gthomas@redhat.com>
+
+	* src/hal_if.c: Remove unnecessary (polluting) include file.
+
+	* include/hal_stub.h: Support platform/variant supplied
+	include files.  <cyg/hal/plf_XXX.h> can now be layered
+	as <cyg/hal/var_XXX.h> which includes <cyg/hal/plf_XXX.h>.
+
 2000-12-06  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_if.c (delay_us): Ensure proper _GP save/restore.

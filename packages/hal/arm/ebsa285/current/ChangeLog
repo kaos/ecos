@@ -1,3 +1,13 @@
+2000-12-11  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_arm_ebsa285.cdl: 
+	Enable CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_GUARANTEED - required
+	to fully support RedBoot networking I/O and ^C.
+
+2000-12-08  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_arm_ebsa285.cdl: Build redboot_cmds.c in the right place.
+
 2000-12-04  Hugo Tyson  <hmt@redhat.com>
 
 	* include/hal_cache.h: Consistently ensure that ARM registers used

@@ -51,11 +51,18 @@ cdl_package CYGPKG_HAL_ARM_SA11X0 {
         necessary to select a specific target platform HAL
         package."
 
+    # Let the architectural HAL see this variant's interrupts file -
+    # the SA11x0 has no variation between targets here.
+    define_proc {
+        puts $::cdl_header \
+       "#define CYGBLD_HAL_VAR_INTS_H <cyg/hal/hal_var_ints.h>"
+    }
 
     compile       hal_diag.c sa11x0_misc.c
 
     cdl_option CYGHWR_HAL_ARM_SA11X0_PROCESSOR_CLOCK {
         display       "Processor clock rate"
+        active_if     { CYG_HAL_STARTUP == "ROM" }
         flavor        data
         legal_values  59000 73700 88500 103200 118000 132700 147500 162200 176900 191700 206400 221200
         default_value 221200
@@ -81,12 +88,18 @@ cdl_package CYGPKG_HAL_ARM_SA11X0 {
         cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
             display       "Real-time clock denominator"
             flavor        data
-            calculated    100
+            default_value 100
+            description   "
+              This option selects the heartbeat rate for the real-time clock.
+              The rate is specified in ticks per second.  Change this value
+              with caution - too high and your system will become saturated
+              just handling clock interrupts, too low and some operations
+              such as thread scheduling may become sluggish."
         }
         cdl_option CYGNUM_HAL_RTC_PERIOD {
             display       "Real-time clock period"
             flavor        data
-            calculated    36864        ;# Clock for OS Timer is 3.6864MHz
+            calculated    (3686400/CYGNUM_HAL_RTC_DENOMINATOR)        ;# Clock for OS Timer is 3.6864MHz
         }
     }
 

@@ -53,7 +53,19 @@
 #include <pkgconf/hal.h>
 
 #include <cyg/infra/cyg_type.h>
-#include <cyg/hal/hal_platform_ints.h>
+
+// This is to allow a variant to decide that there is no platform-specific
+// interrupts file; and that in turn can be overridden by a platform that
+// refines the variant's ideas.
+#ifdef    CYGBLD_HAL_PLF_INTS_H
+# include CYGBLD_HAL_PLF_INTS_H // should include variant data as required
+#else 
+# ifdef    CYGBLD_HAL_VAR_INTS_H
+#  include CYGBLD_HAL_VAR_INTS_H
+# else
+#  include <cyg/hal/hal_platform_ints.h> // default less-complex platforms
+# endif
+#endif
 
 //--------------------------------------------------------------------------
 // ARM exception vectors.

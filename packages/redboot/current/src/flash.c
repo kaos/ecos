@@ -844,7 +844,7 @@ extern struct config_option __CONFIG_options_TAB__[], __CONFIG_options_TAB_END__
 static int
 get_config(struct config_option *opt, int offset, bool list_only)
 {
-    char line[80], *sp, *lp;
+    char line[256], *sp, *lp;
     int ret;
     bool hold_bool_val, enable;
     unsigned long hold_int_val;

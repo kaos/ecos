@@ -741,7 +741,14 @@ void eth_drv_run_deliveries( void )
     for (t = &__NETDEVTAB__[0]; t != &__NETDEVTAB_END__; t++) {
         struct eth_drv_sc *sc = (struct eth_drv_sc *)t->device_instance;
         if ( ETH_DRV_NEEDS_DELIVERY & sc->state ) {
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
+            cyg_bool was_ctrlc_int;
+#endif
             sc->state &=~ETH_DRV_NEEDS_DELIVERY;
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
+            was_ctrlc_int = HAL_CTRLC_CHECK((*sc->funs->int_vector)(sc), sc);
+            if (!was_ctrlc_int) // Fall through and run normal code
+#endif
             (*sc->funs->deliver)(sc);
         }
     }
@@ -749,10 +756,6 @@ void eth_drv_run_deliveries( void )
 
 
 // ------------------------------------------------------------------------
-
-
-
-
 
 #ifdef CYGPKG_IO_PCMCIA
 // Lookup a 'netdev' entry, assuming that it is an ethernet device.

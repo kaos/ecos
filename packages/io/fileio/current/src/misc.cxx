@@ -62,6 +62,8 @@
 # include <cyg/io/wallclock.hxx>       // Wallclock class
 #endif
 
+#include <cyg/kernel/clock.inl>         // Clock inlines
+
 #include "fio.h"                       // Private header
 
 //==========================================================================
@@ -400,7 +402,7 @@ __externC time_t cyg_timestamp()
     // convert it to seconds ourself.
     
     static struct Cyg_Clock::converter sec_converter;
-    struct cyg_bool initialized = false;
+    static cyg_bool initialized = false;
     cyg_tick_count ticks;
     
     if( !initialized )
@@ -411,7 +413,7 @@ __externC time_t cyg_timestamp()
 
     ticks = Cyg_Clock::real_time_clock->current_value();
     
-    return (time_t) Cyg_Clock::convert( ticks, &sec_converter )
+    return (time_t) Cyg_Clock::convert( ticks, &sec_converter );
         
 #endif    
     

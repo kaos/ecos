@@ -1,3 +1,12 @@
+2000-12-13  Hugo Tyson  <hmt@redhat.com>
+
+	* src/sa1100mm_misc.c: Use <cyg/hal/hal_mm.h> from the variant HAL
+	for definitions of all MM tables and so on.
+
+	* include/hal_platform_ints.h: Removed; it was the same in all
+	platforms so is now in the common variant hal, "hal_var_ints.h"
+	and accessible as CYGBLD_HAL_VAR_INTS_H <cyg/hal/hal_var_ints.h>
+
 2000-11-27  Drew Moseley  <dmoseley@redhat.com>
 
 	* src/sa1100mm_misc.c (sa1100mm_program_new_stack): New function

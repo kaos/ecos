@@ -67,7 +67,11 @@ typedef cyg_uint32 uint32;
 typedef cyg_int32  int32;
 #endif // __CYGMON_TYPES
 
+#ifdef CYGBLD_HAL_PLATFORM_STUB_H
+#include CYGBLD_HAL_PLATFORM_STUB_H
+#else
 #include <cyg/hal/plf_stub.h>
+#endif
 #include <cyg/hal/generic-stub.h>
 
 #ifdef __cplusplus

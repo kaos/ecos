@@ -1,3 +1,15 @@
+2000-12-15  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/clist.hxx: Added this implementation of simple circular
+	list classes. This is not immediately useful, except to the
+	dynamic loader, but it is intended to simplify the MLQ scheduler
+	with these classes eventually.
+
+2000-12-13  Jesper Skov  <jskov@redhat.com>
+
+	* include/cyg_type.h (CYGBLD_ATTRIB_ASM_ALIAS): Mangle assembler
+	symbols properly.
+
 2000-09-08  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/cyg_type.h (CYGBLD_ATTRIB_SECTION): Don't stringify arg.

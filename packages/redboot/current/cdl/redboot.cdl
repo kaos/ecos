@@ -74,17 +74,18 @@ cdl_package CYGPKG_REDBOOT {
                      stripping before being converted to a binary image.
                      This is handled by a rule in the target CDL."
 
+        compile main.c
 	compile printf.c misc_funs.c io.c parse.c ticks.c xyzModem.c syscall.c
-        compile -library=libextras.a load.c
+        compile -library=libextras.a load.c 
 
         make -priority 320 {
-            <PREFIX>/bin/redboot.elf : $(PREFIX)/lib/target.ld $(PREFIX)/lib/vectors.o $(PREFIX)/lib/libtarget.a $(PREFIX)/lib/libextras.a main.o
+            <PREFIX>/bin/redboot.elf : $(PREFIX)/lib/target.ld $(PREFIX)/lib/vectors.o $(PREFIX)/lib/libtarget.a $(PREFIX)/lib/libextras.a version.o
                     @sh -c "mkdir -p $(dir $@)"
-	            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ main.o
+	            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ version.o
         }
 	make -priority 319 {
-           main.o: $(REPOSITORY)/$(PACKAGE)/src/main.c $(PREFIX)/lib/libtarget.a
-             $(CC) -c $(INCLUDE_PATH) $(CFLAGS) -o main.o $(REPOSITORY)/$(PACKAGE)/src/main.c
+           version.o: $(REPOSITORY)/$(PACKAGE)/src/version.c $(PREFIX)/lib/libtarget.a
+             $(CC) -c $(INCLUDE_PATH) $(CFLAGS) -o version.o $(REPOSITORY)/$(PACKAGE)/src/version.c
 	}
     }
 
@@ -143,8 +144,8 @@ cdl_package CYGPKG_REDBOOT {
         default_value 256
         description   "
           This option allows control over how long the CLI command line
-          should be.  As such, it allows control over how much stack space 
-          is required by RedBoot during command processing."
+          should be.  This space will be allocated statically
+          rather than from RedBoot's stack."
     }
 
     cdl_component CYGPKG_REDBOOT_FLASH {
