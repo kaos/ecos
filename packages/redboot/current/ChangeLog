@@ -1,3 +1,10 @@
+2003-09-20  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/net/bootp.c: Rework to use full DHCP protocol.  Previously,
+	once an offer came in, RedBoot was happy, without actually making
+	the address reservation and waiting for the final acknowledgement.
+	Also, added CDL to enable/disable DHCP.  BUG #1000053
+
 2003-09-20  Chris Garry  <cgarry@sweeneydesign.co.uk>
 	
 	* src/main.c: Modified the way multiple "RAM" segments are reported.

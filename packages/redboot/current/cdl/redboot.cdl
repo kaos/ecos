@@ -315,10 +315,20 @@ cdl_package CYGPKG_REDBOOT {
                 }
             }
     
+            cdl_component CYGSEM_REDBOOT_NETWORKING_DHCP {
+                display          "Use DHCP to get IP information"
+                flavor           bool
+                default_value    1
+                description      "
+                    Use DHCP protocol to obtain pertinent IP addresses, such as
+                    the client, server, gateway, etc."
+            }
+    
             cdl_component CYGSEM_REDBOOT_NETWORKING_USE_GATEWAY {
                 display          "Use a gateway for non-local IP traffic"
                 flavor           bool
                 default_value    1
+                requires         CYGSEM_REDBOOT_NETWORKING_DHCP
                 description      "
                   Enabling this option will allow the RedBoot networking
                 stack to use a \[single\] gateway to reach a non-local
