@@ -1,3 +1,16 @@
+2003-10-09  Roland Cassebohm  <roland.cassebohm@visionsystems.de> 
+ 
+ 	* src/ks5000_ether.c: Set ifStats.description only one time while
+        initialization, it will never change.
+        Set ifStats.supports_dot3 to 1, to support snmp mib dot3.
+        Set ifStats.snmp_chipset to be interpreted as "nullobjid" in the
+        snmp dot3 agent. It is not a string it is an oid as byte array.
+        The link status of the phy are read while initializion and in the
+        command ETH_DRV_GET_IF_STATS to be up to date without phy interrupt
+        support.
+        Change firstTime in installInterrupts() to be static to be sure
+        interrupts will only one time be installed.
+ 
 2003-06-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/ks5000_ether.c: Some tidies of the previous changes.

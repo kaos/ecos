@@ -677,6 +677,10 @@ static tEthBuffer *ks32c5000_eth_get_recv_buffer(void)
 //======================================================================
 static int EthInit(U08* mac_address)
 {
+#if CYGINT_DEVS_ETH_ARM_KS32C5000_PHY && defined(CYGPKG_NET)
+  unsigned linkStatus;
+#endif
+
   if (mac_address)
     debug2_printf("EthInit(%02x:%02x:%02x:%02x:%02x:%02x)\n",
                 mac_address[0],mac_address[1],mac_address[2],
@@ -732,6 +736,25 @@ static int EthInit(U08* mac_address)
               *((volatile unsigned char*)CAM_BaseAddr+3),
               *((volatile unsigned char*)CAM_BaseAddr+4),
               *((volatile unsigned char*)CAM_BaseAddr+5));
+
+#if CYGINT_DEVS_ETH_ARM_KS32C5000_PHY && defined(CYGPKG_NET)
+  // Read link status to be up to date
+  linkStatus = PhyStatus();
+  if (linkStatus & PhyStatus_FullDuplex)
+    ifStats.duplex = 3;
+  else
+    ifStats.duplex = 2;
+
+  if (linkStatus & PhyStatus_LinkUp)
+    ifStats.operational = 3;
+  else
+    ifStats.operational = 2;
+
+  if (linkStatus & PhyStatus_100Mb)
+    ifStats.speed = 100000000;
+  else
+    ifStats.speed = 10000000;
+#endif
 
 #if SoftwareCRC
   debug2_printf("Software CRC\n");
@@ -1110,7 +1133,7 @@ static void ks32c5000_eth_deliver(struct eth_drv_sc *sc)
 static void installInterrupts(void)
 {
   extern struct eth_drv_sc ks32c5000_sc;
-  bool firstTime=true;
+  static bool firstTime=true;
 
   debug1_printf("ks5000_ether: installInterrupts()\n");
   
@@ -1184,6 +1207,9 @@ static bool ks32c5000_eth_init(struct cyg_netdevtab_entry *tab)
   ifStats.duplex = 1;      //unknown
   ifStats.operational = 1; //unknown
   ifStats.tx_queue_len = MAX_TX_FRAME_DESCRIPTORS;
+  strncpy(ifStats.description,"Ethernet device",sizeof(ifStats.description));
+  ifStats.snmp_chipset[0] = 0;
+  ifStats.supports_dot3 = 1; // support dot3
 #endif  
   installInterrupts();
   EthInit(myMacAddr);
@@ -1233,11 +1259,29 @@ static int ks32c5000_eth_control(struct eth_drv_sc *sc,
      case ETH_DRV_GET_IF_STATS:
         {
           struct ether_drv_stats *p = (struct ether_drv_stats*)data;
+
+#if CYGINT_DEVS_ETH_ARM_KS32C5000_PHY
+          unsigned linkStatus;
+
+          // Read link status to be up to date
+          linkStatus = PhyStatus();
+          if (linkStatus & PhyStatus_FullDuplex)
+            ifStats.duplex = 3;
+          else
+            ifStats.duplex = 2;
+
+          if (linkStatus & PhyStatus_LinkUp)
+            ifStats.operational = 3;
+          else
+            ifStats.operational = 2;
+
+          if (linkStatus & PhyStatus_100Mb)
+            ifStats.speed = 100000000;
+          else
+            ifStats.speed = 10000000;
+#endif
+
           *p = ifStats;
-          strncpy(p->description,"description goes here",sizeof(p->description)-1);
-		  p->description[sizeof(p->description)-1] = '\0';
-          strncpy(p->snmp_chipset,"chipset name",sizeof(p->snmp_chipset)-1);
-		  p->snmp_chipset[sizeof(p->snmp_chipset)-1] = '\0';
           return 0;
         }
 #endif      
