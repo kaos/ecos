@@ -242,7 +242,7 @@ cdl_package CYGPKG_HAL_I386_PC {
         cdl_option CYGBLD_BUILD_GDB_STUBS {
             display "Build GDB stub loader image"
             default_value 0
-            requires { CYG_HAL_STARTUP == "FLOPPY" }
+            requires { CYG_HAL_STARTUP == "FLOPPY" || CYG_HAL_STARTUP == "GRUB" }
             requires CYGSEM_HAL_ROM_MONITOR
             requires CYGBLD_BUILD_COMMON_GDB_STUBS
             requires CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
@@ -266,11 +266,25 @@ cdl_package CYGPKG_HAL_I386_PC {
         }
     }
 
+     cdl_option CYGHWR_HAL_I386_PC_LOAD_HIGH {
+	 display       "Load into higher memory (2MB)"
+	 flavor        bool
+	 default_value 0
+         requires { CYG_HAL_STARTUP == "RAM" }
+	 no_define
+	 description "This option enables building RAM applications
+	              which have a start address outside of the area
+		      used by redboot_GRUB."
+     }
+     
     cdl_component CYGHWR_MEMORY_LAYOUT {
         display "Memory layout"
         flavor data
         no_define
-        calculated { CYG_HAL_STARTUP == "RAM"  ? "i386_pc_ram" : \
+        calculated { CYG_HAL_STARTUP == "RAM"  ?  \
+		         (CYGHWR_HAL_I386_PC_LOAD_HIGH ? \
+			                         "i386_pc_ram_hi" : \
+						 "i386_pc_ram") : \
 		     CYG_HAL_STARTUP == "ROM"  ? "i386_pc_rom" : \
 		     CYG_HAL_STARTUP == "GRUB" ? "i386_pc_grub" : \
 	                                         "i386_pc_floppy" }
@@ -280,7 +294,10 @@ cdl_package CYGPKG_HAL_I386_PC {
             flavor data
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_LDI
-            calculated { CYG_HAL_STARTUP == "RAM"  ? "<pkgconf/mlt_i386_pc_ram.ldi>" : \
+            calculated { CYG_HAL_STARTUP == "RAM"  ? \
+		             (CYGHWR_HAL_I386_PC_LOAD_HIGH ? \
+			                             "<pkgconf/mlt_i386_pc_ram_hi.ldi>" : \
+						     "<pkgconf/mlt_i386_pc_ram.ldi>") : \
 		         CYG_HAL_STARTUP == "ROM"  ? "<pkgconf/mlt_i386_pc_rom.ldi>" : \
 		         CYG_HAL_STARTUP == "GRUB" ? "<pkgconf/mlt_i386_pc_grub.ldi>" : \
                                                      "<pkgconf/mlt_i386_pc_floppy.ldi>" }
@@ -291,10 +308,13 @@ cdl_package CYGPKG_HAL_I386_PC {
             flavor data
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_H
-            calculated { CYG_HAL_STARTUP == "RAM"  ? "<pkgconf/mlt_i386_pc_ram.h>" : \
+            calculated { CYG_HAL_STARTUP == "RAM"  ? \
+		             (CYGHWR_HAL_I386_PC_LOAD_HIGH ? \
+			                             "<pkgconf/mlt_i386_pc_ram_hi.h>" : \
+						     "<pkgconf/mlt_i386_pc_ram.h>") : \
 		         CYG_HAL_STARTUP == "ROM"  ? "<pkgconf/mlt_i386_pc_rom.h>" : \
 		         CYG_HAL_STARTUP == "GRUB" ? "<pkgconf/mlt_i386_pc_grub.h>" : \
-                                                     "<pkgconf/mlt_i386_pc_floppy.h>" }
+                                                       "<pkgconf/mlt_i386_pc_floppy.h>" }
         }
     }
 
@@ -304,7 +324,7 @@ cdl_package CYGPKG_HAL_I386_PC {
         default_value 0
 	
         parent        CYGPKG_HAL_ROM_MONITOR
-        requires      { CYG_HAL_STARTUP == "FLOPPY" || CYG_HAL_STARTUP == "ROM" }
+        requires      { CYG_HAL_STARTUP == "FLOPPY" || CYG_HAL_STARTUP == "ROM" || CYG_HAL_STARTUP == "GRUB" }
 	requires      { !CYGHWR_HAL_I386_FPU_SWITCH_LAZY }
         description   "
             Enable this option if this program is to be used as a ROM monitor,

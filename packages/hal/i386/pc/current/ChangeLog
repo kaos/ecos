@@ -1,3 +1,15 @@
+2004-08-14  David Brennan <eCos@brennanhome.com>
+
+	 * cdl/hal_i386_pc.cdl: Added capability to build redboot with GRUB
+	 startup type. Also added capability to load applications into a 
+	 higher RAM address (2MB) so they work with new GRUB based redboot.
+	 * include/pkgconf/mlt_i386_pc_ram_hi.mlt: 
+	 * include/pkgconf/mlt_i386_pc_ram_hi.h: 
+	 * include/pkgconf/mlt_i386_pc_ram_hi.ldi: New files for loading
+	 applications at 2MB.
+	 * misc/redboot_GRUB.ecm: New file for creating GRUB loadable
+	 redboot
+
 2004-04-22  Jani Monoses <jani@iv.ro>
 
 	 * cdl/hal_i386_pc.cdl :
