@@ -1,3 +1,8 @@
+2002-12-12  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/stdlib.h: #include cyg_type.h, now that this header
+	uses NORET attributes
+
 2002-11-10  Nick Garnett  <nickg@ecoscentric.com>
 
 	* include/sys/types.h: Add define/undefine for __NEED_FD_SETS_ONLY

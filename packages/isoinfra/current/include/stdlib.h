@@ -70,6 +70,8 @@
 #define __need_wchar_t
 #include <stddef.h>
 
+#include <cyg/infra/cyg_type.h>     /* For CYGBLD_ATTRIB_NORET etc. */
+
 /*==========================================================================*/
 
 #if CYGINT_ISO_STDLIB_STRCONV
