@@ -231,6 +231,7 @@ __clear_breakpoint_list (void)
 int
 __display_breakpoint_list (void (*print_func)(target_register_t))
 {
+    return 0;
 }
 #endif // (CYGNUM_HAL_BREAKPOINT_LIST_SIZE > 0)
 
