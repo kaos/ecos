@@ -1,3 +1,8 @@
+2003-09-23  Jani Monoses <jani@iv.ro>
+	
+        * src/diag/diag.c: Only use ethernet if CYGPKG_IO_ETH_DRIVERS
+        is enabled.
+
 2003-09-21  Gary Thomas  <gary@mlbassoc.com>
 
 	* misc/redboot_RAM.ecm: 

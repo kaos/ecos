@@ -53,7 +53,9 @@
 //==========================================================================
 
 #include <redboot.h>
+#ifdef CYGPKG_IO_ETH_DRIVERS
 #include <cyg/io/eth/eth_drv.h>
+#endif
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_intr.h>
 #include <cyg/hal/hal_cache.h>
@@ -86,7 +88,9 @@ void do_hdwr_diag(int arg, char *argv[])
     if (__chan)
 	CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_IRQ_DISABLE);
 
+#ifdef CYGPKG_IO_ETH_DRIVERS
     HAL_INTERRUPT_MASK(eth_drv_int_vector());
+#endif
 
     hdwr_diag();
 }
