@@ -5,7 +5,7 @@
 The CRC package provides implementation of CRC algorithms. This
 includes the POSIX CRC calculation which produces the same result as
 the cksum command on Linux, another 32 bit CRC by Gary S. Brown and a
-16bit CRC.
+16bit CRC. The CRC used for Ethernet FCS is also implemented.
 </PARA>
 </PARTINTRO>
 <CHAPTER id="crc-functions">
@@ -35,17 +35,45 @@ CRC is returned as an unsigned long.</para>
 <sect2 id="services-crc-api-cyg-crc32">
 <title>cyg_crc32</title>
 <para>
-This function implements a 32 bit CRC by Gary S. Brown. It uses the
+These functions implements a 32 bit CRC by Gary S. Brown. It uses the
 polynomial
 X^32+X^26+X^23+X^22+X^16+X^12+X^11+X^10+X^8+X^7+X^5+X^4+X^2+X^1+X^0.
 </para>
 <programlisting>
 unsigned long cyg_crc32(unsigned char &ast; s, int len);
+unsigned long cyg_crc32_accumulate(unsigned long crc, unsigned char &ast; s, int len);
 </programlisting>
 <para>
 The CRC calculation is run over the data pointed to by
 <parameter>s</parameter>, of length <parameter>len</parameter>. The
-CRC is returned as an unsigned long.</para>
+CRC is returned as an unsigned long.</para> 
+
+<para> The CRC can be calculated over data separated into multiple
+buffers by using the function <parameter> cyg_crc32_accumulate()
+</parameter>. The parameter <parameter>crc</parameter> should be the
+result from the previous CRC calculation.
+</para>
+</sect2>
+
+<sect2 id="services-crc-api-cyg-ether-crc32">
+<title>cyg_ether_crc32</title>
+<para>
+These functions implements the 32 bit CRC used by the Ethernet FCS word.
+</para>
+<programlisting>
+unsigned long cyg_ether_crc32(unsigned char &ast; s, int len);
+unsigned long cyg_ether_crc32_accumulate(unsigned long crc, unsigned char &ast; s, int len);
+</programlisting>
+<para>
+The CRC calculation is run over the data pointed to by
+<parameter>s</parameter>, of length <parameter>len</parameter>. The
+CRC is returned as an unsigned long.</para> 
+
+<para> The CRC can be calculated over data separated into multiple
+buffers by using the function <parameter> cyg_ether_crc32_accumulate()
+</parameter>. The parameter <parameter>crc</parameter> should be the
+result from the previous CRC calculation.
+</para>
 </sect2>
 
 <sect2 id="services-crc-api-cyg-crc16">

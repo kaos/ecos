@@ -120,17 +120,49 @@ static const unsigned long crc32_tab[] = {
       0x2d02ef8dL
    };
 
-/* Return a 32-bit CRC of the contents of the buffer. */
-
+/* This is the standard Gary S. Brown's 32 bit CRC algorithm, but
+   accumulate the CRC into the result of a previous CRC. */
 unsigned long 
-cyg_crc32(unsigned char *s, int len)
+cyg_crc32_accumulate(unsigned long crc32val, unsigned char *s, int len)
 {
   int i;
-  unsigned long crc32val;
-  
-  crc32val = 0;
+
   for (i = 0;  i < len;  i++) {
-      crc32val = crc32_tab[(crc32val ^ s[i]) & 0xff] ^ (crc32val >> 8);
+    crc32val = crc32_tab[(crc32val ^ s[i]) & 0xff] ^ (crc32val >> 8);
   }
   return crc32val;
 }
+
+/* This is the standard Gary S. Brown's 32 bit CRC algorithm */
+unsigned long 
+cyg_crc32(unsigned char *s, int len)
+{
+  return (cyg_crc32_accumulate(0,s,len));
+}
+
+/* Return a 32-bit CRC of the contents of the buffer accumulating the
+   result from a previous CRC calculation. This uses the Ethernet FCS
+   algorithm.*/
+unsigned long 
+cyg_ether_crc32_accumulate(unsigned long crc32val, unsigned char *s, int len)
+{
+  int i;
+
+  if (s == 0) return 0L;
+  
+  crc32val = crc32val ^ 0xffffffff;
+  for (i = 0;  i < len;  i++) {
+      crc32val = crc32_tab[(crc32val ^ s[i]) & 0xff] ^ (crc32val >> 8);
+  }
+  return crc32val ^ 0xffffffff;
+}
+
+/* Return a 32-bit CRC of the contents of the buffer, using the
+   Ethernet FCS algorithm. */
+unsigned long 
+cyg_ether_crc32(unsigned char *s, int len)
+{
+  return cyg_ether_crc32_accumulate(0,s,len);
+}
+
+

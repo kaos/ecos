@@ -65,6 +65,23 @@ cyg_posix_crc32(unsigned char *s, int len);
 unsigned long 
 cyg_crc32(unsigned char *s, int len);
 
+// Gary S. Brown's 32 bit CRC, but accumulate the result from a
+// previous CRC calculation
+
+unsigned long 
+cyg_crc32_accumulate(unsigned long crc, unsigned char *s, int len);
+
+// Ethernet FCS Algorithm
+
+unsigned long 
+cyg_ether_crc32(unsigned char *s, int len);
+
+// Ethernet FCS algorithm, but accumulate the result from a previous
+// CRC calculation.
+
+unsigned long 
+cyg_ether_crc32_accumulate(unsigned long crc, unsigned char *s, int len);
+
 // 16 bit CRC with polynomial x^16+x^12+x^5+1
 
 unsigned short
