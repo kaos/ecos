@@ -58,16 +58,7 @@
 #include <stdlib.h>
 #include <vnc-server.h>
 
-#ifdef CYGPKG_NET
-/* eCos (BSD stack) include */
 #include <network.h>
-#else
-/* eCos (lwIP stack) include */
-#include <lwip/sys.h>           /* lwIP stack includes */
-#define LWIP_COMPAT_SOCKETS 1
-#include <lwip/sockets.h>
-#include <lwip/inet.h>
-#endif
 
 #define BACKLOG             5       /* Number of pending connections queue will hold */
 #define MESSAGE_BUFFER_SIZE 50

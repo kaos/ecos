@@ -1,7 +1,12 @@
+2004-05-31  Jani Monoses <jani@iv.ro>
+		
+	* src/vnc-server.c:
+	lwIP has network.h too so get rid of ifdefs.
+
 2004-02-17  Chris Garry  <cgarry@sweeneydesign.co.uk>
-    * src/vnc-server.c:
-    Remove prototypes for lwIP functions - now contained in lwIP
-    header files.
+	* src/vnc-server.c:
+	Remove prototypes for lwIP functions - now contained in lwIP
+	header files.
 
 2003-10-24  Gary Thomas  <gary@mlbassoc.com>
 
