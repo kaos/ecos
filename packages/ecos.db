@@ -492,6 +492,16 @@ package CYGPKG_DEVS_FLASH_ARM_INNOVATOR {
 	   on the Innovator platform."
 }
 
+package CYGPKG_DEVS_FLASH_ARM_AIM711 {
+        alias           { "Support for flash memory on AIM 711 board" flash_arm_snds }
+        directory       devs/flash/arm/aim711
+        script          flash_arm_aim711.cdl
+        hardware
+        description "
+           This package contains hardware support for flash memory
+           on the ARM Industrial Module AIM 711 platform."
+}
+
 package CYGPKG_DEVS_FLASH_NANO {
 	alias 		{ "FLASH memory support for Intel SA1110 nanoEngine" flash_nano }
 	directory	devs/flash/arm/nano
@@ -868,6 +878,46 @@ package CYGPKG_IO_SERIAL_ARM_E7T {
     directory         devs/serial/arm/e7t
     script            ser_arm_e7t.cdl   
     description       "ARM AEB-2 (E7T) serial device drivers"
+}
+
+package CYGPKG_IO_SERIAL_ARM_S3C4510 {
+    alias             { "Generig ARM S3C4510 serial device driver"
+                        devs_serial_arm_s3c4510 s3c4510_serial_driver }
+    hardware
+    directory         devs/serial/arm/s3c4510
+    script            ser_arm_s3c4510.cdl
+    description       "Generic serial device driver for the internal
+                       serial interface of the S3C4510"
+}
+
+package CYGPKG_IO_SERIAL_ARM_AIM711 {
+    alias             { "AIM 711 serial device drivers"
+                        devs_serial_arm_aim711 aim711_serial_driver }
+    hardware
+    directory         devs/serial/arm/aim711
+    script            ser_arm_aim711.cdl
+    description       "ARM Industral Module AIM 711 serial device drivers"
+}
+
+package CYGPKG_IO_SERIAL_ARM_AIM711_S3C4510 {
+    alias             { "AIM 711 S3C4510 serial device driver"
+                        devs_serial_arm_aim711_s3c4510 aim711_s3c4510_serial_driver }
+    hardware
+    directory         devs/serial/arm/aim711
+    script            ser_arm_aim711_s3c4510.cdl
+    description       "ARM Industral Module AIM 711 serial device driver
+                       for the internal serial interface of the S3C4510"
+}
+
+package CYGPKG_IO_SERIAL_ARM_AIM711_16X5X {
+    alias             { "ARM AIM711 16x5x serial device driver"
+                        devs_serial_arm_aim711_16x5x aim711_16x5x_serial_driver }
+    hardware
+    directory         devs/serial/arm/aim711
+    script            ser_arm_aim711_16x5x.cdl
+    description       "ARM Industral Module AIM 711 serial device driver
+                       for the external 16550 device using the generic 
+                       16x5x driver"
 }
 
 package CYGPKG_IO_SERIAL_ARM_INTEGRATOR {
@@ -1865,6 +1915,17 @@ package CYGPKG_DEVS_WALLCLOCK_SYNTH {
            synthetic target."
 }
 
+package CYGPKG_DEVICES_WALLCLOCK_ARM_AIM711 {
+       alias           { "Wallclock driver for AIM 711" devs_wallclock_arm_aim711 aim711_rt
+c }
+       directory       devs/wallclock/arm/aim711
+       script          aim711_wallclock_drivers.cdl
+       hardware
+        description "
+           This package provides a wallclock driver implementation for the
+           ARM Industrial Module AIM 711."
+}
+
 package CYGPKG_DEVICES_WATCHDOG_ARM_AEB {
 	alias		{ "Watchdog driver for ARM/AEB board" devices_watchdog_aeb device_watchdog_aeb }
 	directory	devs/watchdog/arm/aeb
@@ -2529,6 +2590,17 @@ package CYGPKG_HAL_ARM_CMA230 {
         description "
 The cma230 HAL package provides the support needed to run eCos on a Cogent 
 CMA230 (ARM7TDMI) or CMA222 (ARM710T) eval board."
+}
+
+package CYGPKG_HAL_ARM_AIM711 {
+      alias       { "ARM Industial Module AIM 711" hal_arm_aim711 arm_aim711_hal}
+      directory   hal/arm/aim711
+      script      hal_arm_aim711.cdl
+      hardware
+      description "
+          The ARM Industial Module AIM 711 HAL package provides the support
+          needed to run eCos on a ARM Industial Module AIM 711 from
+          Vision Systems GmbH."
 }
 
 package CYGPKG_HAL_ARM_XSCALE_CORE {
@@ -4219,6 +4291,28 @@ target snds {
         The snds target provides the packages needed to run eCos on a
         Samsung SNDS eval board."
 }
+
+target aim711 {
+      alias { "ARM Industrial Module AIM 711" AIM711 aim711 }
+      packages {
+                   CYGPKG_HAL_ARM 
+                   CYGPKG_HAL_ARM_AIM711 
+                   CYGPKG_DEVS_FLASH_SST_39VFXXX
+                   CYGPKG_DEVS_FLASH_ARM_AIM711
+                   CYGPKG_DEVS_ETH_ARM_KS32C5000
+                   CYGPKG_IO_SERIAL_ARM_AIM711
+                   CYGPKG_IO_SERIAL_ARM_S3C4510
+                   CYGPKG_IO_SERIAL_ARM_AIM711_S3C4510
+                   CYGPKG_IO_SERIAL_GENERIC_16X5X
+                   CYGPKG_IO_SERIAL_ARM_AIM711_16X5X
+                   CYGPKG_DEVICES_WALLCLOCK_ARM_AIM711
+                   CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS1307 
+               }
+      description "
+        The aim711 target provides the packages needed to run eCos on a
+        ARM Industrial Module AIM 711."
+ }
+
 
 target mpc50 {
 	alias { "MICROPLEX Printer Controller 5.0" mpc50 }
