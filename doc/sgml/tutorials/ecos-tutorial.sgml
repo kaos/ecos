@@ -5253,6 +5253,12 @@ V850 CPU variant must be changed in the CEB-V850 HAL to the SB1.</PARA>
 </SECT1>
 <SECT1 id="setup-i386-pc">
 <TITLE>i386 PC Hardware Setup</TITLE>
+<para>
+eCos application on the PC can be run in three ways: via RedBoot,
+loaded directly from a floppy disk, or loaded by the GRUB bootloader.
+</para>
+<sect2>
+<title>RedBoot Support</title>
 <PARA>For information about setting up the PC to run with RedBoot,
 consult the RedBoot User&quot;s Guide. If using serial debugging,
 the serial line runs at 38400 baud 8-N-1 and should be connected
@@ -5263,6 +5269,146 @@ on the target PC and connected to the development PC running GDB.
 When RedBoot is configured appropriately to have an IP address set,
 then GDB will be able to debug directly over TCP/IP to the
 target PC.</PARA>
+</sect2>
+<sect2>
+<title>Floppy Disk Support</title>
+<para>
+If an application is built with a startup type of FLOPPY, then it is
+configured to be a self-booting image that must be written onto a
+formatted floppy disk. This will erase any existing file system or
+data that is already on the disk, so proceed
+with caution.
+</para>
+<para>
+To write an application to floppy disk, it must first be converted to
+a pure binary format. This is done with the following command:
+</para>
+<screen width=72>
+$ <userinput>i386-elf-objcopy -O binary app.elf app.bin</userinput>
+</screen>
+<para>
+Here <filename>app.elf</filename> is the final linked application
+executable, in ELF format (it may not have a <filename>.elf</filename>
+extension). The file <filename>app.bin</filename> is the resulting
+pure binary file. This must be written to the floppy disk with the
+following command:
+<screen width=72>
+$ <userinput>dd conv=sync if=app.bin of=/dev/fd0</userinput>
+</screen>
+</para>
+<para>For NT Cygwin users, this can be done by first ensuring that the raw
+floppy device is mounted as <filename>/dev/fd0</filename>. To check if this
+is the case, type the command <command>mount</command> at the Cygwin bash
+prompt. If the floppy drive is already mounted, it will be listed as something
+similar to the following line:</para>
+<screen>  \\.\a: /dev/fd0 user binmode</screen>
+<para>If this line is not listed, then mount the floppy drive using the command:
+</para>
+<screen>$ <userinput>mount -f -b //./a: /dev/fd0</userinput></screen>
+<para>To actually install the boot image on the floppy, use the command:</para>
+<screen>
+$ <userinput>dd conv=sync if=app.bin of=/dev/fd0</userinput>
+</screen>
+<para>Insert this floppy in the A: drive of the PC to be used as a target
+and ensure that the BIOS is configured to boot from A: by default. On reset,
+the PC will boot from the floppy and the eCos application will load
+itself and execute immediately.</para>
+<note><title>NOTE</title>
+<para>Unreliable floppy media may cause the write to silently fail. This
+can be determined if the RedBoot image does not correctly
+boot. In such cases, the floppy should be (unconditionally) reformatted
+using the <command>fdformat</command> command on Linux, or
+<command>format a: /u</command> on DOS/Windows. If this fails, try a
+different disk.</para>
+</note>
+</sect2>
+<sect2>
+<title>GRUB Bootloader Support</title>
+<para>
+If an application is built with the GRUB startup type, it is
+configured to be loaded by the GRUB bootloader.
+</para>
+<para>
+GRUB is an open source boot loader that supports many different
+operating systems. It is available from
+<ulink
+url="http://www.gnu.org/software/grub">http://www.gnu.org/software/grub</ulink>.
+The latest version of GRUB should be downloaded from there and installed.
+In Red Hat Linux version 7.2 and later it is the default bootloader
+for Linux and therefore is already installed.
+</para>
+<para>
+To install GRUB on a floppy disk from Linux you need to execute the
+following commands:
+</para>
+<screen>
+$ <userinput>mformat a:</userinput>
+$ <userinput>mount /mnt/floppy</userinput>
+$ <userinput>grub-install --root-directory=/mnt/floppy '(fd0)'</userinput>
+Probing devices to guess BIOS drives. This may take a long time.
+Installation finished. No error reported.
+This is the contents of the device map /mnt/floppy/boot/grub/device.map.
+Check if this is correct or not. If any of the lines is incorrect,
+fix it and re-run the script `grub-install'.
+
+(fd0)	/dev/fd0
+$ <userinput>cp $ECOS_REPOSITORY/packages/hal/i386/pc/current/misc/menu.lst /mnt/floppy/boot/grub</userinput>
+$ <userinput>umount /mnt/floppy</userinput>
+</screen>
+<para>
+The file <filename>menu.lst</filename> is an example GRUB menu
+configuration file. It contains menu items to load some of the
+standard eCos tests from floppy or from partition zero of the first
+hard disk. You should, of course, customize this file to load your own
+application. Alternatively you can use the command-line interface of
+GRUB to input commands yourself.
+</para>
+<para>
+Applications can be installed, or updated simply by copying them to
+the floppy disk at the location expected by the
+<filename>menu.lst</filename> file. For booting from floppy disks it
+is recommended that the executable be stripped of all debug and symbol
+table information before copying. This reduces the size of the file
+and can make booting faster.
+</para>
+<para>
+To install GRUB on a hard disk, refer to the GRUB documentation. Be
+warned, however, that if you get this wrong it may compromise any
+existing bootloader that exists on the hard disk and may make any
+other operating systems unbootable. Practice on floppy disks or
+sacrificial hard disks first. On machines running Red Hat Linux
+version 7.2 and later, you can just add your own menu items to the
+<filename>/boot/grub/menu.lst</filename> file that already exists.
+</para>
+</sect2>
+<sect2>
+<title>Debugging FLOPPY and GRUB Applications</title>
+<para>
+When RedBoot loads an application it also provides debugging services
+in the form of GDB remote protocol stubs. When an application is
+loaded stand-alone from a floppy disk, or by GRUB, these services are
+not present. To allow these application to be debugged, it is possible
+to include GDB stubs into the application.
+</para>
+<para>
+To do this, set the &quot;Support for GDB stubs&quot;
+(<literal>CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS</literal>) configuration
+option. Following this any application built will allow GDB to connect
+to the debug serial port (by default serial device 0, also known as
+COM1) whenever the application takes an exception, or if a Control-C
+is typed to the debug port. Ethernet debugging is not supported.
+</para>
+<para>
+The option &quot;Enable initial breakpoint&quot;
+(<literal>CYGDBG_HAL_DEBUG_GDB_INITIAL_BREAK</literal>) causes the HAL
+to take a breakpoint immediately before calling cyg_start(). This
+gives the developer a chance to set any breakpoints or inspect the
+system state before it proceeds. The configuration sets this option by
+default if GDB stubs are included, and this is not a RedBoot build. To
+make the application execute immediately either disable this option,
+or disable <literal>CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS</literal>.
+</para>
+</sect2>
 </SECT1>
 <SECT1 id="setup-synth-i386linux">
 <TITLE><!-- <conditionaltext> --><!-- <index></index> -->i386/Linux Synthetic Target Setup</TITLE>

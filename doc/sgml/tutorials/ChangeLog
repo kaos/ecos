@@ -1,3 +1,9 @@
+2002-12-01  Nick Garnett  <nickg@ecoscentric.com>
+
+	* ecos-tutorial.sgml: Expanded "i386 PC Hardware Setup" section to
+	include information about FLOPPY and GRUB booting, and to add a
+	section about debugging standalone applications.
+
 2002-10-15  Iztok Zupet <iz@vsr.si>
 
 	* ecos-tutorial.sgml: pictures (gif==>png)
