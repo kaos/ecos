@@ -1303,21 +1303,22 @@ do_dhcp_down_net(const char *intf, struct bootp *res,
 #ifdef INET6
     {
       int s6;
-    
+      struct if_laddrreq iflr;
+      
       s6 = socket(AF_INET6, SOCK_DGRAM, 0);
       if (s6 < 0) {
         perror("socket AF_INET6");
         return false;
       }
       // Now delete the ipv6 addr
-      strcpy(ifr.ifr_name, intf);
-      if (ioctl(s6, SIOCGLIFADDR, &ifr)) {
+      strcpy(iflr.iflr_name, intf);
+      if (ioctl(s6, SIOCGLIFADDR, &iflr)) {
 	perror("SIOCGIFADDR_IN6 1");
 	return false;
       }
       
-      strcpy(ifr.ifr_name, intf);
-      if (ioctl(s6, SIOCDLIFADDR, &ifr)) { /* delete IF addr */
+      strcpy(iflr.iflr_name, intf);
+      if (ioctl(s6, SIOCDLIFADDR, &iflr)) { /* delete IF addr */
         perror("SIOCDIFADDR_IN61");
       }
       close(s6);
