@@ -340,8 +340,8 @@ load_elf_image(getc_t getc, unsigned long base)
         // Set address offset based on lowest address in file.
         addr_offset = 0xFFFFFFFF;
         for (phx = 0;  phx < ehdr.e_phnum;  phx++) {    
-            if (phdr[phx].p_vaddr < addr_offset) {
-                addr_offset = phdr[phx].p_vaddr;
+            if (phdr[phx].p_paddr < addr_offset) {
+                addr_offset = phdr[phx].p_paddr;
             }
         }
         addr_offset = (unsigned long)base - addr_offset;
@@ -351,7 +351,7 @@ load_elf_image(getc_t getc, unsigned long base)
     for (phx = 0;  phx < ehdr.e_phnum;  phx++) {
         if (phdr[phx].p_type == PT_LOAD) {
             // Loadable segment
-            addr = (unsigned char *)phdr[phx].p_vaddr;
+            addr = (unsigned char *)phdr[phx].p_paddr;
             len = phdr[phx].p_filesz;
             if ((unsigned long)addr < lowest_address) {
                 lowest_address = (unsigned long)addr;

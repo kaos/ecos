@@ -1,3 +1,10 @@
+2003-09-29  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/load.c (load_elf_image): Use LMA (loader memory address), instead
+	of VMA (virtual memory address) to load code.  If LMA != VMA, it's up
+	to the loaded program to figure it out.  
+	Inspired by Artur Lipowski <LAL@pro.onet.pl>
+
 2003-09-26  Nick Garnett  <nickg@balti.calivar.com>
 
 	* doc/redboot_installing.sgml: Fixed bogus memory sizes in AT91
