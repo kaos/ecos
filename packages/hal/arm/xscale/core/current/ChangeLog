@@ -1,3 +1,8 @@
+2002-09-20  Mark Salter  <msalter@redhat.com>
+
+	* src/xscale_stub.c: Fill in holes in logic used to decide which
+	of two watchpoints caused exception.
+
 2002-09-19  Mark Salter  <msalter@redhat.com>
 
 	* Initial checkin.

@@ -322,8 +322,32 @@ is_thumb_store_insn(unsigned pc)
 static int
 waddr_match(unsigned waddr, unsigned addr, int size)
 {
-    if (addr <= waddr && waddr <= (addr + size))
+    if (addr <= waddr && waddr < (addr + size))
 	return 1;
+    return 0;
+}
+
+// Return non-zero if given value matches value at watchpoint address.
+static int
+wval_match(unsigned waddr, unsigned val, int size)
+{
+    unsigned wval = *(unsigned *)(waddr & ~3);
+    int i;
+
+    if (size == 4)
+	return (wval == val);
+    if (size == 2) {
+	val &= 0xffff;
+	return ((wval & 0xffff) == val || ((wval >> 16) == val));
+    }
+    if (size == 1) {
+	val &= 0xff;
+	for (i = 0; i < 4; i++) {
+	    if ((wval & 0xff) == val)
+		return 1;
+	    wval >>= 8;
+	}
+    }
     return 0;
 }
 
@@ -337,7 +361,7 @@ find_thumb_watch_address(unsigned wa0, int mode0, unsigned wa1, int mode1)
     unsigned pc = get_register(PC) - 4;
     unsigned short opcode = *(unsigned short *)pc;
     unsigned short opcode_f8, opcode_fe;
-    unsigned val, addr = 0;
+    unsigned val, wd0, wd1, addr = 0;
     int  is_store, use_val, i, offset, size, Rn, Rd, Rm;
 
     opcode_f8 = opcode & 0xf800;
@@ -345,7 +369,7 @@ find_thumb_watch_address(unsigned wa0, int mode0, unsigned wa1, int mode1)
 
     size = 0;
     is_store = 0;
-    use_val = 0;
+    val = use_val = 0;
 
     switch (opcode_f8) {
     case 0xc000: // STMIA Rn!, <list>
@@ -359,10 +383,21 @@ find_thumb_watch_address(unsigned wa0, int mode0, unsigned wa1, int mode1)
 	if (!is_store && (opcode & (1 << Rn))) {
 	    // We can't reconstruct address from opcode because base
 	    // was destroyed. Best we can do is try to match data at
-            // or around watchpoint addresses with data in one of the
-	    // registers.
-	    use_val = 1;
-	    val = 0;  // FIXME
+            // watchpoint addresses with data in one of the registers.
+	    wd0 = *(unsigned *)(wa0 & ~3);
+	    wd1 = *(unsigned *)(wa1 & ~3);
+	    if (wd0 != wd1) {
+		for (i = size = 0; i < 8; i++) {
+		    if (opcode & (1 << i)) {
+			val = get_register(i);
+			if (val == wd0)
+			    return wa0;
+			else if (val == wd1)
+			    return wa1;
+		    }
+		}
+	    }
+	    return wa0;  // 50% chance of being right
 	} else
 	    addr = get_register(Rn) - size;
 	break;
@@ -440,17 +475,20 @@ find_thumb_watch_address(unsigned wa0, int mode0, unsigned wa1, int mode1)
 	break;
     }
     if (use_val) {
-	// FIXME
 	// We can read from watchpoint addresses and compare against
 	// whatever is in the Rd from a load. This is not perfect,
 	// but its the best we can do.
+	if (wval_match(wa0, val, size))
+	    return wa0;
+	if (wval_match(wa1, val, size))
+	    return wa1;
     } else if (size) {
 	if (waddr_match(wa0, addr, size))
 	    return wa0;
 	if (waddr_match(wa1, addr, size))
 	    return wa1;
     }
-    return 0;  // should never happen
+    return wa0;  // should never happen, but return valid address
 }
 
 // Given the watch addresses and watch modes for each of the enabled
@@ -460,7 +498,7 @@ find_watch_address(unsigned wa0, int mode0, unsigned wa1, int mode1)
 {
     unsigned pc = get_register(PC) - 4;
     unsigned cpsr = get_register(PS);
-    unsigned opcode, Rn, Rd, Rm, base, addr, val;
+    unsigned opcode, Rn, Rd, Rm, base, addr, val, wd0, wd1;
     int  is_store, use_val, i, offset, shift, size;
 
     if (cpsr & CPSR_THUMB_ENABLE)
@@ -485,6 +523,7 @@ find_watch_address(unsigned wa0, int mode0, unsigned wa1, int mode1)
 	return wa0;
 
     // Okay. Now try to figure out address by decoding the opcode.
+
     if (cpsr & CPSR_THUMB_ENABLE)
 	return find_thumb_watch_address(wa0, mode0, wa1, mode1);
 
@@ -606,32 +645,69 @@ find_watch_address(unsigned wa0, int mode0, unsigned wa1, int mode1)
 	    if (opcode & (1 << i))
 		size += 4;
 
-	if ((opcode & (1 << Rn)) && (opcode & L_bit)) {
+	base = get_register(Rn);
+	if (!is_store && (opcode & (1 << Rn))) {
 	    // We can't reconstruct address from opcode because base
 	    // was destroyed. Best we can do is try to match data at
-            // or around watchpoint addresses with data in one of the
-	    // registers.
-	    use_val = 1;
-	    val = 0;  // FIXME
+            // watchpoint addresses with data in one of the registers.
+	    wd0 = *(unsigned *)(wa0 & ~3);
+	    wd1 = *(unsigned *)(wa1 & ~3);
+	    if (wd0 != wd1) {
+		for (i = size = 0; i < 16; i++) {
+		    if (opcode & (1 << i)) {
+			val = get_register(i);
+			if (val == wd0)
+			    return wa0;
+			else if (val == wd1)
+			    return wa1;
+		    }
+		}
+	    }
+	    return wa0;  // 50% chance of being right
 	} else {
+	    if (opcode & U_bit){
+		if (opcode & W_bit)
+		    addr = base - size;
+		else
+		    addr = base;
+		if (opcode & P_bit)
+		    addr += 4;
+	    } else {
+		if (opcode & W_bit)
+		    addr = base;
+		else
+		    addr = base - size;
+		if ((opcode & P_bit) == 0)
+		    addr += 4;
+	    }
 	}
     } else if ((opcode & 0x0e000000) == 0x0c000000) {
 	// LDC/STC      xxxx 110P UNWL _Rn_ CRd_ CP#_ iiii iiii
-	// FIXME
+	size = 4;
+	offset = (opcode & 0xff) * 4;
+	if ((opcode & U_bit) == 0)
+	    offset = -offset;
+	if ((opcode & P_bit) && (opcode & W_bit))
+	    addr = get_register(Rn);
+	else
+	    addr = get_register(Rn) + offset;
     }
 
     if (use_val) {
-	// FIXME
 	// We can read from watchpoint addresses and compare against
 	// whatever is in the Rd from a load. This is not perfect,
 	// but its the best we can do.
+	if (wval_match(wa0, val, size))
+	    return wa0;
+	if (wval_match(wa1, val, size))
+	    return wa1;
     } else {
 	if (waddr_match(wa0, addr, size))
 	    return wa0;
 	if (waddr_match(wa1, addr, size))
 	    return wa1;
     }
-    return 0;  // should never happen
+    return wa0;  // should never happen, but return valid address
 }
 #endif
 
