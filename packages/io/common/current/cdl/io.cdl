@@ -51,7 +51,7 @@
 
 cdl_package CYGPKG_IO {
     display       "I/O sub-system"
-    doc           redirect/ecos-device-drivers.html
+    doc           ref/io.html
     include_dir   cyg/io
     requires      CYGPKG_ERROR
     description   "
