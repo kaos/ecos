@@ -68,7 +68,7 @@ flash_query(unsigned char *data)  __attribute__ ((section (".2ram.flash_query"))
 int
 flash_query(unsigned char *data)
 {
-    volatile flash_t *ROM;
+    volatile flash_t *ROM, *p, dummy;
     int i, cnt;
 
     // Get base address and map addresses to virtual addresses
@@ -85,19 +85,24 @@ flash_query(unsigned char *data)
 #endif // Not CYGOPT_FLASH_IS_BOOTBLOCK
 
     for (cnt = CNT;  cnt > 0;  cnt--) ;
-    for ( /* i */;  i > 0;  i--, ++ROM) {
+    p = ROM;
+    while ( i--) {
         // It is very deliberate that data is chars NOT flash_t:
         // The info comes out in bytes regardless of device.
-        *data++ = (unsigned char) CYGHWR_FLASH_READ_QUERY(ROM);
+        *data++ = (unsigned char) CYGHWR_FLASH_READ_QUERY(p++);
 #ifndef CYGOPT_FLASH_IS_BOOTBLOCK
 # if  8 == CYGNUM_FLASH_WIDTH
 	// strata flash with 'byte-enable' contains the configuration data
 	// at even addresses
-	++ROM;
+        ++p;
 # endif
 #endif
     }
+    // Reset the flash to array mode. The dummy read is required on MIPS
+    // platforms (don't know about others) to force the write out. Should
+    // there be direct HAL support for this kind of operation?
     ROM[0] = FLASH_Reset;
+    dummy = ROM[0];
 
     return 0;
 }

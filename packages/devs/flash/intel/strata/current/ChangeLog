@@ -1,3 +1,9 @@
+2005-01-14  Thomas Koeller  <thomas.koeller@baslerweb.com>
+
+	* src/flash_query.c (flash_query): Fix switching the flash back to
+	array mode, which was broken on MIPS platforms. Always write
+	control codes to offset 0.
+
 2004-09-02  Mark Salter  <msalter@redhat.com>
 
 	* src/flash_query.c (CYGHWR_FLASH_READ_QUERY): Add platform hook
