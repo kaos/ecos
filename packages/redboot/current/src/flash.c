@@ -1218,6 +1218,7 @@ do_flash_init(void)
             fis_addr = (void *)((CYG_ADDRESS)flash_start + 
                                 (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK*flash_block_size));
         }
+		memcpy(fis_work_block, fis_addr, flash_block_size);
 #endif
         __flash_init = 1;
     }

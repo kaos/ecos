@@ -42,7 +42,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   jskov
-// Contributors:jskov
+// Contributors:jskov, woehler
 // Date:        2000-06-07
 //
 //####DESCRIPTIONEND####
@@ -74,6 +74,9 @@
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
 #include <redboot.h>
 #include <flash_config.h>
+#endif
+#ifdef CYGOPT_REDBOOT_FIS
+#include <fis.h>
 #endif
 #endif
 
@@ -109,6 +112,39 @@ flash_config_op( int op, char * key, void *val, int type)
 
     CYGARC_HAL_RESTORE_GP();
     return res;
+}
+#endif
+
+#ifdef CYGOPT_REDBOOT_FIS
+
+static __call_if_flash_fis_op_fn_t flash_fis_op;
+
+static cyg_bool
+flash_fis_op( int op, char *name, void *val)
+{
+	cyg_bool res = false;
+	struct fis_image_desc *fis;
+	int num;
+
+	CYGARC_HAL_SAVE_GP();
+	fis = fis_lookup(name, &num);
+	if(fis != NULL)
+	{
+		switch ( op ) {
+		case CYGNUM_CALL_IF_FLASH_FIS_GET_FLASH_BASE:
+			*(CYG_ADDRESS *)val = fis->flash_base; 
+			res = true;
+			break;
+		case CYGNUM_CALL_IF_FLASH_FIS_GET_SIZE:
+			*(unsigned long *)val = fis->size;
+			res = true;
+			break;
+		default:
+			break;
+		}
+	}
+	CYGARC_HAL_RESTORE_GP();
+	return res;
 }
 #endif
 
@@ -891,6 +927,10 @@ hal_if_init(void)
     CYGACC_CALL_IF_FLASH_CFG_OP_SET(flash_config_op);
 #endif
 
+#ifdef CYGOPT_REDBOOT_FIS
+    CYGACC_CALL_IF_FLASH_FIS_OP_SET(flash_fis_op);
+#endif
+
     // Data entries not currently supported in eCos
 #ifdef CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DATA
     CYGACC_CALL_IF_DBG_DATA_SET(0);
@@ -971,3 +1011,4 @@ hal_if_init(void)
     plf_if_init();
 #endif
 }
+

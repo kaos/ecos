@@ -522,7 +522,7 @@ set_comm_baud_rate(hal_virtual_comm_table_t *chan, int rate)
 int
 set_console_baud_rate(int rate)
 {
-    int ret;
+    int ret = -1;
 #ifdef CYGPKG_REDBOOT_ANY_CONSOLE
     if (!console_selected) {
         int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);

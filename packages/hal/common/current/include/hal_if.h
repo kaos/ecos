@@ -45,7 +45,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   jskov
-// Contributors:jskov
+// Contributors:jskov, woehler
 // Date:        2000-06-07
 // Purpose:     HAL RAM/ROM calling interface
 // Description: ROM/RAM calling interface table	definitions. The layout is a
@@ -366,8 +366,9 @@ __call_COMM1(IF_GETC_TIMEOUT, cyg_bool, __comm_if_getc_timeout_t, cyg_uint8 *)
 #define CYGNUM_CALL_IF_DBG_DATA                   19
 #define CYGNUM_CALL_IF_FLASH_CFG_OP               20
 #define CYGNUM_CALL_IF_MONITOR_RETURN             21
+#define CYGNUM_CALL_IF_FLASH_FIS_OP               22
 
-#define CYGNUM_CALL_IF_LAST_ENTRY                 CYGNUM_CALL_IF_MONITOR_RETURN
+#define CYGNUM_CALL_IF_LAST_ENTRY                 CYGNUM_CALL_IF_FLASH_FIS_OP
 
 #define CYGNUM_CALL_IF_INSTALL_BPT_FN             35
 
@@ -426,6 +427,8 @@ typedef cyg_bool (__call_if_flash_cfg_op_fn_t)(int __oper, char *__key,
                                                void *__val, int __type);
 typedef char *__call_if_monitor_version_t;
 typedef void (__call_if_monitor_return_t)(int status);
+typedef cyg_bool (__call_if_flash_fis_op_fn_t)(int __oper, char *__name,
+                                               void *__val);
 
 #ifndef CYGACC_CALL_IF_DEFINED
 
@@ -493,6 +496,26 @@ __call_vv_##_n_(_t1_ _p1_, _t2_ _p2_)                                   \
 {                                                                       \
     _ENTER_MONITOR();                                                   \
     ((_tt_ *)hal_virtual_vector_table[_n_])(_p1_,_p2_);                 \
+    _EXIT_MONITOR();                                                    \
+}
+
+#define __call_VV3(_n_,_tt_,_rt_,_t1_,_t2_,_t3_)                        \
+static __inline__ _rt_                                                  \
+__call_vv_##_n_(_t1_ _p1_, _t2_ _p2_, _t3_ _p3_)                        \
+{                                                                       \
+    _rt_ res;                                                           \
+    _ENTER_MONITOR();                                                   \
+    res = ((_tt_ *)hal_virtual_vector_table[_n_])(_p1_,_p2_,_p3_);      \
+    _EXIT_MONITOR();                                                    \
+    return res;                                                         \
+}
+
+#define __call_voidVV3(_n_,_tt_,_rt_,_t1_,_t2_,_t3_)                    \
+static __inline__ _rt_                                                  \
+__call_vv_##_n_(_t1_ _p1_, _t2_ _p2_, _t3_ _p3_)                        \
+{                                                                       \
+    _ENTER_MONITOR();                                                   \
+    ((_tt_ *)hal_virtual_vector_table[_n_])(_p1_,_p2_,_p3_);            \
     _EXIT_MONITOR();                                                    \
 }
 
@@ -626,6 +649,14 @@ __call_VV4(CYGNUM_CALL_IF_FLASH_CFG_OP, __call_if_flash_cfg_op_fn_t, cyg_bool, i
 __call_voidVV1(CYGNUM_CALL_IF_MONITOR_RETURN, __call_if_monitor_return_t, void, int)
 #define CYGACC_CALL_IF_MONITOR_RETURN_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_MONITOR_RETURN]=(CYG_ADDRWORD)(_x_)
+
+#define CYGACC_CALL_IF_FLASH_FIS_OP(_o_,_k_,_d_) \
+ CYGACC_CALL_VV3(__call_if_flash_fis_op_fn_t*, CYGNUM_CALL_IF_FLASH_FIS_OP, (_o_),(_k_),(_d_))
+__call_VV3(CYGNUM_CALL_IF_FLASH_FIS_OP, __call_if_flash_fis_op_fn_t, cyg_bool, int, char *, void *)
+#define CYGACC_CALL_IF_FLASH_FIS_OP_SET(_x_) \
+ hal_virtual_vector_table[CYGNUM_CALL_IF_FLASH_FIS_OP]=(CYG_ADDRWORD)(_x_)
+#define CYGNUM_CALL_IF_FLASH_FIS_GET_FLASH_BASE (0)
+#define CYGNUM_CALL_IF_FLASH_FIS_GET_SIZE		(1)
 
 // These need to be kept uptodate with the (unadorned) masters
 // in RedBoot's flash_config.h:

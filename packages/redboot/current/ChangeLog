@@ -1,3 +1,12 @@
+2003-03-03  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/main.c (set_console_baud_rate): Avoid "unused" warning.
+
+2003-03-03  Knud Woehler  <knud.woehler@microplex.de>
+
+	* src/flash.c: fis_work_block was not initialized in do_flash_init()
+	thus fis_lookup() does not work if called via the virtual vector table.
+	
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* doc/redboot.sgml: De-vendorise a little.
