@@ -198,7 +198,7 @@ GROUP(libtarget.a libgcc.a)
 #define SECTION_bss(_region_, _vma_, _lma_)		\
     .bss _vma_ : _lma_					\
     { CYG_LABEL_DEFN(_bss_start) = ABSOLUTE (.);	\
-      FORCE_OUTPUT; *(.dynbss) *(.bss) *(COMMON)	\
+      FORCE_OUTPUT; *(.dynbss) *(.bss*) *(COMMON)	\
       . = ALIGN(4);                                     \
       CYG_LABEL_DEFN(_bss_end) = ABSOLUTE (.); }	\
     > _region_

@@ -1,3 +1,8 @@
+2003-07-29  Gary Thomas  <gary@mlbassoc.com> on behalf of
+2003-07-29  Yoshinori Sato <ysato@users.sourceforge.jp>	
+
+	* src/sh.ld: Handle all bss* sections (newer compilers).
+
 2003-07-18  Nick Garnett  <nickg@balti.calivar.com>
 
 	* cdl/hal_sh.cdl:
