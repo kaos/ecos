@@ -1,3 +1,8 @@
+2003-03-05  John Dallaway  <jld@ecoscentric.com>
+
+	* ecosadmin.tcl: Prevent calls to 'cygpath' with an empty
+	path argument.
+
 2003-02-25  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* ecos.db: Added the Simple Network Time Protocol (SNTP) client.
