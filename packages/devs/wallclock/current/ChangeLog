@@ -1,3 +1,7 @@
+1999-07-14  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/emulate.cxx: Include pkgconf/kernel.h.
+
 1999-04-20  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* tests/wallclock.cxx (cyg_start): Output message to show the test

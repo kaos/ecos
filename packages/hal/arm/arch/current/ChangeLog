@@ -1,3 +1,8 @@
+1999-07-14  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/vectors.S: Add some startup debug via a LED macro - which
+	has different content depending on platform, of course.
+
 1999-06-22  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/vectors.S: Fix names of 'report' functions (debug dumps

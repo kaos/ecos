@@ -344,7 +344,7 @@ FUNC_START(__default_exception_vsr)
 	# save remaining machine state registers	
 	mfc0	t0,cause
 	mfc0	t1,status
-	mfc0	t2,cache
+	mfc0	t2,cachectrl
 	mfc0	t3,badvr
 	mfc0	t4,config
 	mfc0	t5,prid
@@ -352,7 +352,7 @@ FUNC_START(__default_exception_vsr)
 	
 	sw	t0,mipsreg_cause(sp)
 	sw	t1,mipsreg_sr(sp)
-	sw	t2,mipsreg_cache(sp)
+	sw	t2,mipsreg_cachectrl(sp)
 	sw	t3,mipsreg_badvr(sp)
 	sw	t4,mipsreg_config(sp)
 	sw	t5,mipsreg_prid(sp)
@@ -451,11 +451,11 @@ FUNC_START(__default_interrupt_vsr)
 	sw	k1,(mipsreg_regs+29*4)(sp)	# store in reg dump	
 		
 	mfc0	t1,status
-	mfc0	t2,cache
+	mfc0	t2,cachectrl
 	mfc0	t3,epc
 	
 	sw	t1,mipsreg_sr(sp)
-	sw	t2,mipsreg_cache(sp)
+	sw	t2,mipsreg_cachectrl(sp)
 	sw	t3,mipsreg_pc(sp)
 
 	hal_fpu_save sp
@@ -605,11 +605,11 @@ restore_state:
 
 	hal_fpu_load sp
 	
-	lw	t0,mipsreg_cache(sp)
+	lw	t0,mipsreg_cachectrl(sp)
 	lw	t1,mipsreg_hi(sp)
 	lw	t2,mipsreg_lo(sp)
 
-	mtc0	t0,cache
+	mtc0	t0,cachectrl
 	mthi	t1
 	mtlo	t2
 

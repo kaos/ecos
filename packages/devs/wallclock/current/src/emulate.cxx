@@ -40,6 +40,10 @@
 
 #include <pkgconf/wallclock.h>  // Wallclock device config
 
+#ifdef CYGIMP_WALLCLOCK_EMULATE
+
+#include <pkgconf/kernel.h>             // Kernel config
+
 #include <cyg/infra/cyg_type.h> // Common type definitions and support
 #include <cyg/hal/hal_diag.h>   // HAL diagnostic output
 
@@ -51,7 +55,6 @@
 
 #include <cyg/kernel/sched.inl>
 
-#ifdef CYGIMP_WALLCLOCK_EMULATE
 
 /*---------------------------------------------------------------------------*/
 // Local static variables

@@ -45,6 +45,8 @@
 
 #ifdef CYGIMP_WATCHDOG_EMULATE
 
+#include <pkgconf/kernel.h>             // Kernel config
+
 #include <cyg/kernel/ktypes.h>          // base kernel types
 #include <cyg/infra/cyg_trac.h>         // tracing macros
 #include <cyg/infra/cyg_ass.h>          // assertion macros

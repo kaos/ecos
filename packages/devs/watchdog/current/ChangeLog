@@ -1,3 +1,9 @@
+1999-07-14  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/mn10300.cxx: 
+	* src/emulate.cxx: 
+	Include pkgconf/kernel.h.
+
 1999-04-21  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* tests/watchdog.cxx: The 'keep alive' message was interfering

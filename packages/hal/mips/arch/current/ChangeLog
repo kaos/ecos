@@ -1,3 +1,20 @@
+1999-07-09  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/mips.inc:
+	* include/arch.inc:
+	* src/vectors.S:
+	Rename "cache" register to "cachectrl" to prevent confusion with
+	the "cache" instruction.
+	For symmetry therefore also rename mipsreg_cache to mipsreg_cachectrl
+
+	* include/arch.inc (hal_cache_init):
+	Invalidate caches at startup
+
+	* include/hal_cache.h:
+	Allow cache invalidation when cache disabled
+	Add _HAL_ASM_SET_MIPS_ISA() to allow use of cache macros in code
+	compiled with a MIPS ISA below 3
+
 1999-06-25  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/arch.inc:

@@ -52,6 +52,13 @@
 
 #include <cyg/hal/var_cache.h>
 
+// Use this macro to allow the assembler to accept "cache" instructions,
+// which are MIPS ISA 3. This is useful if someone is compiling
+// with -mips2, but the architecture is really MIPS ISA 3.
+
+#define _HAL_ASM_SET_MIPS_ISA( _isal_ ) asm volatile ( ".set mips" ## #_isal_ )
+
+
 //=============================================================================
 // Default Implementation. This uses the standard MIPS CP0 registers and
 // cache instructions. Note that not all variants will have all of the
@@ -113,11 +120,10 @@
     register CYG_ADDRESS _baddr_ = 0x80000000;                                  \
     register CYG_ADDRESS _addr_ = 0x80000000;                                   \
     register CYG_WORD _size_ = HAL_DCACHE_SIZE;                                 \
-    register CYG_WORD _state_;                                                  \
-    HAL_DCACHE_IS_ENABLED( _state_ );                                           \
-    if( _state_ )                                                               \
-        for( ; _addr_ <= _baddr_+_size_; _addr_ += HAL_DCACHE_LINE_SIZE )       \
-        { asm volatile ("cache 0x01,0(%0)" : : "r"(_addr_) ); }                 \
+    _HAL_ASM_SET_MIPS_ISA(3);                                                   \
+    for( ; _addr_ <= _baddr_+_size_; _addr_ += HAL_DCACHE_LINE_SIZE )           \
+    { asm volatile ("cache 0x01,0(%0)" : : "r"(_addr_) ); }                     \
+    _HAL_ASM_SET_MIPS_ISA(0);                                                   \
 }
 #endif
 
@@ -141,9 +147,12 @@ CYG_MACRO_START                                                                 
     register CYG_WORD _size_ = (_asize_);                                       \
     register CYG_WORD _state_;                                                  \
     HAL_DCACHE_IS_ENABLED( _state_ );                                           \
-    if( _state_ )                                                               \
+    if( _state_ ) {                                                             \
+        _HAL_ASM_SET_MIPS_ISA(3);                                               \
         for( ; _addr_ <= _baddr_+_size_; _addr_ += HAL_DCACHE_LINE_SIZE )       \
         { asm volatile ("cache 0x1d,0(%0)" : : "r"(_addr_) ); }                 \
+        _HAL_ASM_SET_MIPS_ISA(0);                                               \
+    }                                                                           \
 CYG_MACRO_END
 #endif
 
@@ -172,16 +181,19 @@ CYG_MACRO_END
 // This uses the hit-writeback-invalidate cache operation.
 #ifndef HAL_DCACHE_FLUSH_DEFINED
 #define HAL_DCACHE_FLUSH( _base_ , _asize_ )                                    \
-{                                                                               \
+CYG_MACRO_START                                                                 \
     register CYG_ADDRESS _baddr_ = (CYG_ADDRESS)(_base_);                       \
     register CYG_ADDRESS _addr_ = (CYG_ADDRESS)(_base_);                        \
     register CYG_WORD _size_ = (_asize_);                                       \
     register CYG_WORD _state_;                                                  \
     HAL_DCACHE_IS_ENABLED( _state_ );                                           \
-    if( _state_ )                                                               \
+    if( _state_ ) {                                                             \
+        _HAL_ASM_SET_MIPS_ISA(3);                                               \
         for( ; _addr_ <= _baddr_+_size_; _addr_ += HAL_DCACHE_LINE_SIZE )       \
         { asm volatile ("cache 0x15,0(%0)" : : "r"(_addr_) ); }                 \
-}
+        _HAL_ASM_SET_MIPS_ISA(0);                                               \
+    }                                                                           \
+CYG_MACRO_END
 #endif
 
 // Invalidate cache lines in the given range without writing to memory.
@@ -192,11 +204,10 @@ CYG_MACRO_END
     register CYG_ADDRESS _baddr_ = (CYG_ADDRESS)(_base_);                       \
     register CYG_ADDRESS _addr_ = (CYG_ADDRESS)(_base_);                        \
     register CYG_WORD _size_ = (_asize_);                                       \
-    register CYG_WORD _state_;                                                  \
-    HAL_DCACHE_IS_ENABLED( _state_ );                                           \
-    if( _state_ )                                                               \
-        for( ; _addr_ <= _baddr_+_size_; _addr_ += HAL_DCACHE_LINE_SIZE )       \
-        { asm volatile ("cache 0x11,0(%0)" : : "r"(_addr_) ); }                 \
+    _HAL_ASM_SET_MIPS_ISA(3);                                                   \
+    for( ; _addr_ <= _baddr_+_size_; _addr_ += HAL_DCACHE_LINE_SIZE )           \
+    { asm volatile ("cache 0x11,0(%0)" : : "r"(_addr_) ); }                     \
+    _HAL_ASM_SET_MIPS_ISA(0);                                                   \
 }
 #endif
 
@@ -204,16 +215,19 @@ CYG_MACRO_END
 // This uses the hit-writeback cache operation.
 #ifndef HAL_DCACHE_STORE_DEFINED
 #define HAL_DCACHE_STORE( _base_ , _asize_ )                                    \
-{                                                                               \
+CYG_MACRO_START                                                                 \
     register CYG_ADDRESS _baddr_ = (CYG_ADDRESS)(_base_);                       \
     register CYG_ADDRESS _addr_ = (CYG_ADDRESS)(_base_);                        \
     register CYG_WORD _size_ = (_asize_);                                       \
     register CYG_WORD _state_;                                                  \
     HAL_DCACHE_IS_ENABLED( _state_ );                                           \
-    if( _state_ )                                                               \
+    if( _state_ ) {                                                             \
+        _HAL_ASM_SET_MIPS_ISA(3);                                               \
         for( ; _addr_ <= _baddr_+_size_; _addr_ += HAL_DCACHE_LINE_SIZE )       \
         { asm volatile ("cache 0x19,0(%0)" : : "r"(_addr_) ); }                 \
-}
+        _HAL_ASM_SET_MIPS_ISA(0);                                               \
+    }                                                                           \
+CYG_MACRO_END
 #endif
 
 // Preread the given range into the cache with the intention of reading
@@ -248,15 +262,14 @@ CYG_MACRO_END
 // Invalidate the entire cache
 // This uses the index-invalidate cache operation.
 #ifndef HAL_ICACHE_INVALIDATE_ALL_DEFINED
-#define HAL_ICACHE_INVALIDATE_ALL()                                                     \
-{                                                                                       \
-    register CYG_ADDRESS _baddr_ = 0x80000000;                                          \
-    register CYG_ADDRESS _addr_ = 0x80000000;                                           \
-    register CYG_WORD _state_;                                                          \
-    HAL_ICACHE_IS_ENABLED( _state_ );                                                   \
-    if( _state_ )                                                                       \
-        for( ; _addr_ < _baddr_+HAL_ICACHE_SIZE; _addr_ += HAL_ICACHE_LINE_SIZE )       \
-        { asm volatile ("cache 0x00,0(%0)" : : "r"(_addr_) ); }                         \
+#define HAL_ICACHE_INVALIDATE_ALL()                                             \
+{                                                                               \
+    register CYG_ADDRESS _baddr_ = 0x80000000;                                  \
+    register CYG_ADDRESS _addr_ = 0x80000000;                                   \
+    _HAL_ASM_SET_MIPS_ISA(3);                                                   \
+    for( ; _addr_ < _baddr_+HAL_ICACHE_SIZE; _addr_ += HAL_ICACHE_LINE_SIZE )   \
+    { asm volatile ("cache 0x00,0(%0)" : : "r"(_addr_) ); }                     \
+    _HAL_ASM_SET_MIPS_ISA(0);                                                   \
 }
 #endif
 
@@ -280,9 +293,12 @@ CYG_MACRO_START                                                                 
     register CYG_WORD _size_ = (_asize_);                                       \
     register CYG_WORD _state_;                                                  \
     HAL_ICACHE_IS_ENABLED( _state_ );                                           \
-    if( _state_ )                                                               \
+    if( _state_ ) {                                                             \
+        _HAL_ASM_SET_MIPS_ISA(3);                                               \
         for( ; _addr_ <= _baddr_+_size_; _addr_ += HAL_DCACHE_LINE_SIZE )       \
         { asm volatile ("cache 0x1c,0(%0)" : : "r"(_addr_) ); }                 \
+        _HAL_ASM_SET_MIPS_ISA(0);                                               \
+    }                                                                           \
 CYG_MACRO_END
 #endif
 
@@ -307,11 +323,10 @@ CYG_MACRO_END
     register CYG_ADDRESS _baddr_ = (CYG_ADDRESS)(_base_);                       \
     register CYG_ADDRESS _addr_ = (CYG_ADDRESS)(_base_);                        \
     register CYG_WORD _size_ = (_asize_);                                       \
-    register CYG_WORD _state_;                                                  \
-    HAL_ICACHE_IS_ENABLED( _state_ );                                           \
-    if( _state_ )                                                               \
-        for( ; _addr_ <= _baddr_+_size_; _addr_ += HAL_ICACHE_LINE_SIZE )       \
-        { asm volatile ("cache 0x10,0(%0)" : : "r"(_addr_) ); }                 \
+    _HAL_ASM_SET_MIPS_ISA(3);                                                   \
+    for( ; _addr_ <= _baddr_+_size_; _addr_ += HAL_ICACHE_LINE_SIZE )           \
+    { asm volatile ("cache 0x10,0(%0)" : : "r"(_addr_) ); }                     \
+    _HAL_ASM_SET_MIPS_ISA(0);                                                   \
 }
 #endif
 

@@ -539,6 +539,9 @@ static void time_dlock(void)
 // -------------------------------------------------------------------------
 static void entry0( cyg_addrword_t data )
 {
+#ifdef HAL_DCACHE_QUERY_WRITE_MODE
+    int wmode;
+#endif
 #ifdef HAL_DCACHE_LOCK
     time_dlock();
 #endif
@@ -559,7 +562,10 @@ static void entry0( cyg_addrword_t data )
 #endif
 
     // The below tests only work on a copy-back cache.
-    if (0) {
+#ifdef HAL_DCACHE_QUERY_WRITE_MODE
+    HAL_DCACHE_QUERY_WRITE_MODE( wmode );
+ 
+    if ( HAL_DCACHE_WRITEBACK_MODE == wmode ) {
 #ifdef HAL_DCACHE_FLUSH
         test_dflush();
 #endif
@@ -567,6 +573,7 @@ static void entry0( cyg_addrword_t data )
         test_dinvalidate();
 #endif
     }
+#endif // def HAL_DCACHE_QUERY_WRITE_MODE
 
     CYG_TEST_PASS_FINISH("End of test");
 }

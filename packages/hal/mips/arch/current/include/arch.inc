@@ -111,8 +111,8 @@
 #endif
 #define	mipsreg_pc	(mipsreg_vector+mips_regsize)
 #define	mipsreg_sr	(mipsreg_pc+mips_regsize)
-#define	mipsreg_cache	(mipsreg_sr+mips_regsize)
-#define	mipsreg_cause	(mipsreg_cache+mips_regsize)
+#define	mipsreg_cachectrl (mipsreg_sr+mips_regsize)
+#define	mipsreg_cause	(mipsreg_cachectrl+mips_regsize)
 #define	mipsreg_badvr	(mipsreg_cause+mips_regsize)
 #define	mipsreg_prid	(mipsreg_badvr+mips_regsize)
 #define	mipsreg_config	(mipsreg_prid+mips_regsize)
@@ -536,6 +536,33 @@ hal_intc_translation_table:
 	nop
 	nop
 	nop
+
+        .set mips3                      # Set ISA to MIPS 3 to allow cache insns
+
+        # Now ensure the caches are invalidated - may be applicable if the
+        # target has soft-reset
+        # D-cache:
+        la      a0,0x80000000
+        addi    a1,a0,0x2000
+1:
+        cache   0x01,0(a0)
+        addi    a0,a0,0x10
+        sub     v0,a1,a0
+        bgez    v0,1b
+        nop                             # delay slot
+
+        # I-cache:
+        la      a0,0x80000000
+        addi    a1,a0,0x4000
+1:
+        cache   0x00,0(a0)
+        addi    a0,a0,0x20
+        sub     v0,a1,a0
+        bgez    v0,1b
+        nop                             # delay slot
+
+        .set mips0                      # reset ISA to default
+
 	.endm
 #endif
 

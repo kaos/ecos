@@ -1,3 +1,22 @@
+1999-07-14  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/kcache1.c (entry0): Also perform timing tests with
+	HAL_DCACHE_INVALIDATE_ALL and/or HAL_ICACHE_INVALIDATE_ALL in the
+	loop if provided by the HAL.  Invalidating the Data cache can
+	spoil clock operation, so elapsed time appears to be 0.
+
+	* tests/kcache2.c (entry0): Replace the "if (0)" for having a
+	copy-back cache with a proper test on a HAL macro.  Even though I
+	couldn't actually get those parts of the test to work on the
+	platform I'm currently working on.
+
+1999-07-09  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 20210, 20142
+	* tests/stress_threads.c: Shifted thread priorities to make room
+	for main() at priority 0.
+
+	Fixed indentation.
+	
 1999-07-08  Jesper Skov  <jskov@cygnus.co.uk>
         PR 20244
 	* tests/stress_threads.c: Changed cyg_user_start() to main()

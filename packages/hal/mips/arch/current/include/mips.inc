@@ -127,7 +127,7 @@
 #define	context		$4	// TLB context register
 #define pagemask	$5	// TLB page size mask
 #define	wired		$6	// TLB wired boundary
-#define cache		$7	// Cache control
+#define cachectrl	$7	// Cache control
 #define badvr		$8	// Bad virtual address
 #define count		$9	// Timer cycle count register
 #define	tlbhi		$10	// TLB virtual address match register

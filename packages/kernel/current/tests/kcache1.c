@@ -128,6 +128,86 @@ void time1(void)
 }
 
 // -------------------------------------------------------------------------
+// With an ICache invalidate in the middle:
+#ifdef HAL_ICACHE_INVALIDATE_ALL
+static void time0II(register cyg_uint32 stride)
+{
+    register cyg_uint32 j,k;
+    cyg_tick_count_t count0, count1;
+    cyg_ucount32 t;
+    register char c;
+
+    count0 = cyg_current_time();
+
+    k = 0;
+    if ( cyg_test_is_simulator )
+        k = 3960;
+
+    for(; k<4000;k++) {
+        for(j=0; j<(HAL_DCACHE_SIZE/HAL_DCACHE_LINE_SIZE); j++) {
+            HAL_ICACHE_INVALIDATE_ALL();
+            c=m[stride*j];
+        }
+    }
+
+    count1 = cyg_current_time();
+    t = count1 - count0;
+    diag_printf("stride=%d, time=%d\n", stride, t);
+}
+
+// -------------------------------------------------------------------------
+
+void time1II(void)
+{
+    cyg_uint32 i;
+
+    for(i=1; i<=MAX_STRIDE; i+=i) {
+        time0II(i);
+    }
+}
+#endif
+// -------------------------------------------------------------------------
+// With a DCache invalidate in the middle:
+#ifdef HAL_DCACHE_INVALIDATE_ALL
+static void time0DI(register cyg_uint32 stride)
+{
+    register cyg_uint32 j,k;
+    cyg_tick_count_t count0, count1;
+    cyg_ucount32 t;
+    register char c;
+
+    count0 = cyg_current_time();
+
+    HAL_DCACHE_SYNC();
+
+    k = 0;
+    if ( cyg_test_is_simulator )
+        k = 3960;
+
+    for(; k<4000;k++) {
+        for(j=0; j<(HAL_DCACHE_SIZE/HAL_DCACHE_LINE_SIZE); j++) {
+            HAL_DCACHE_INVALIDATE_ALL();
+            c=m[stride*j];
+        }
+    }
+
+    count1 = cyg_current_time();
+    t = count1 - count0;
+    diag_printf("stride=%d, time=%d\n", stride, t);
+}
+
+// -------------------------------------------------------------------------
+
+void time1DI(void)
+{
+    cyg_uint32 i;
+
+    for(i=1; i<=MAX_STRIDE; i+=i) {
+        time0DI(i);
+    }
+}
+#endif
+// -------------------------------------------------------------------------
 // This test could be improved by counting number of passes possible 
 // in a given number of ticks.
 
@@ -203,8 +283,43 @@ static void entry0( cyg_addrword_t data )
     HAL_ICACHE_DISABLE();
     HAL_DCACHE_DISABLE();
     HAL_RESTORE_INTERRUPTS(oldints);    
-    CYG_TEST_INFO("Dcache off Icache off");
+    CYG_TEST_INFO("Dcache off Icache off (again)");
     time1();
+
+#if defined(HAL_DCACHE_INVALIDATE_ALL) || defined(HAL_ICACHE_INVALIDATE_ALL)
+    HAL_DISABLE_INTERRUPTS(oldints);
+    HAL_DCACHE_PURGE_ALL();
+    HAL_ICACHE_INVALIDATE_ALL();
+    HAL_DCACHE_INVALIDATE_ALL();
+    HAL_ICACHE_ENABLE();
+    HAL_DCACHE_ENABLE();
+    HAL_RESTORE_INTERRUPTS(oldints);    
+    CYG_TEST_INFO("Dcache on Icache on (again)");
+    time1();
+
+#ifdef HAL_ICACHE_INVALIDATE_ALL
+    HAL_DISABLE_INTERRUPTS(oldints);
+    HAL_DCACHE_PURGE_ALL();
+    HAL_ICACHE_INVALIDATE_ALL();
+    HAL_DCACHE_INVALIDATE_ALL();
+    HAL_ICACHE_ENABLE();
+    HAL_DCACHE_ENABLE();
+    HAL_RESTORE_INTERRUPTS(oldints);    
+    CYG_TEST_INFO("Dcache on Icache on: invalidate ICache each time");
+    time1II();
+#endif
+#ifdef HAL_DCACHE_INVALIDATE_ALL
+    HAL_DISABLE_INTERRUPTS(oldints);
+    HAL_DCACHE_PURGE_ALL();
+    HAL_ICACHE_INVALIDATE_ALL();
+    HAL_DCACHE_INVALIDATE_ALL();
+    HAL_ICACHE_ENABLE();
+    HAL_DCACHE_ENABLE();
+    HAL_RESTORE_INTERRUPTS(oldints);    
+    CYG_TEST_INFO("Dcache on Icache on: invalidate DCache (expect bogus times)");
+    time1DI();
+#endif
+#endif // either INVALIDATE_ALL macro
 
 #endif // HAL_CACHE_UNIFIED
 
