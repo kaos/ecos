@@ -1,3 +1,9 @@
+2002-07-15  Mark Salter  <msalter@redhat.com>
+
+	* include/pkgconf/mlt_arm_xscale_iq80321_rom.mlt: Add mmu_tables section.
+	* include/pkgconf/mlt_arm_xscale_iq80321_rom.ldi: Regenerated.
+	* include/pkgconf/mlt_arm_xscale_iq80321_rom.h: Ditto.
+
 2002-05-28  Mark Salter  <msalter@redhat.com>
 
 	* cdl/hal_arm_xscale_iq80321.cdl: Add HAL_PLATFORM_MACHINE_TYPE.
