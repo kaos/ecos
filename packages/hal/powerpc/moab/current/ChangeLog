@@ -1,3 +1,12 @@
+2003-09-20  Gary Thomas  <gary@mlbassoc.com>
+
+	* misc/redboot_BOOT.ecm: Disable PCI in BOOT configuration
+
+	* include/plf_io.h: Fix PCI I/O addresses
+
+	* src/moab_ide.c: 
+	* cdl/hal_powerpc_moab.cdl: Add IDE support
+
 2003-09-19  Gary Thomas  <gary@mlbassoc.com>
 
 	* support/make_MOAB_flash.c: Tool to create boot flash image

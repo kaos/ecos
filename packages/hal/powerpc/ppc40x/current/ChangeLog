@@ -1,3 +1,8 @@
+2003-09-20  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/ppc405_pci.c: Need call to cyg_pci_init() to get proper I/O
+	addressing setup.
+
 2003-09-19  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/ppc405_pci.c: New file - basic support for PCI on PPC 405GP
