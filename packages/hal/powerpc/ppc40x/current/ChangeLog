@@ -1,3 +1,8 @@
+2004-02-17  Gary Thomas  <gary@mlbassoc.com>
+
+	* cdl/hal_powerpc_ppc40x.cdl: Fix real time clock - this counter
+	has no dividers in the chain (hence no need to divide by 4)
+
 2003-10-15  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/var_regs.h: Changes to allow building with GCC-3.3.x

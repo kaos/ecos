@@ -184,7 +184,7 @@ cdl_package CYGPKG_HAL_POWERPC_PPC40x {
         cdl_option CYGNUM_HAL_RTC_PERIOD {
             display       "Real-time clock period"
             flavor        data
-            calculated    { (((CYGHWR_HAL_POWERPC_CPU_SPEED*4*1000000)/16)/100) }
+            calculated    { (((CYGHWR_HAL_POWERPC_CPU_SPEED*1000000))/CYGNUM_HAL_RTC_DENOMINATOR) }
         }
     }
 
