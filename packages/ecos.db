@@ -504,14 +504,15 @@ package CYGPKG_DEVS_FLASH_STRATA {
 	   StrataFLASH memory devices."
 }
 
-package CYGPKG_DEVS_FLASH_SST_39VF400 {
-    alias       { "Support for SST 39VF400 flash memory" flash_sst_39vf4000 }
-    directory   devs/flash/sst/39vf400
-    script      flash_sst_39vf400.cdl
+package CYGPKG_DEVS_FLASH_SST_39VFXXX {
+    alias       { "Support for SST 39VFXXX flash memory" flash_sst_39vfXXX }
+    directory   devs/flash/sst/39vfxxx
+    script      flash_sst_39vfxxx.cdl
     hardware
         description "
-           This package contains hardware support for SST 39VF400
-           flash memory devices."
+           This package contains hardware support for SST 39VFxxx
+           flash memory devices. Until now it supports SST 39VF080,
+           39VF016 and 39VF400 devices."
 }
 
 package CYGPKG_DEVS_FLASH_INTEL_28FXXX {
