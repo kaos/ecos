@@ -49,7 +49,6 @@ cdl_package CYGPKG_IO_SERIAL_MCF5272_UART {
     description   "
            This option enables the serial device drivers for the
            GMPU boards."
-    doc           redirect/ecos-device-drivers.html
 
     compile       -library=libextras.a   ser_mcf5272_uart.c
 
