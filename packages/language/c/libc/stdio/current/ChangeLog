@@ -1,3 +1,10 @@
+2003-03-06  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/input/fread.cxx (fread): Simple EOF should not set error.
+
+	* tests/fileio.c: New file.
+	* cdl/stdio.cdl: Add new file I/O tests.
+
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/stdio.cdl: Fix doc link.

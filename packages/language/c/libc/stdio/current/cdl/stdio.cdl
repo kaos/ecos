@@ -391,7 +391,10 @@ cdl_package CYGPKG_LIBC_STDIO {
             display "C library stdio function tests"
             flavor  data
             no_define
-            calculated { "tests/sprintf1 tests/sprintf2 tests/sscanf tests/stdiooutput" }
+            calculated { 
+                "tests/sprintf1 tests/sprintf2 tests/sscanf tests/stdiooutput " 
+                . ((CYGPKG_IO_FILEIO && CYGPKG_FS_RAM) ? "tests/fileio " : "")
+            }
             description   "
                 This option specifies the set of tests for the C library
                 stdio functions."
