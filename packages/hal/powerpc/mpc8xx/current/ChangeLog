@@ -1,3 +1,7 @@
+2001-06-29  Jesper Skov  <jskov@redhat.com>
+
+	* src/var_intr.c: Include new arbiter header.
+
 2001-06-28  Jesper Skov  <jskov@redhat.com>
 
 	* src/var_intr.c: Moved hal_call_isr to hal_misc.h in common HAL.

@@ -44,7 +44,7 @@
 
 #include <pkgconf/hal.h>
 #include <cyg/hal/ppc_regs.h>
-#include <cyg/hal/hal_misc.h>
+#include <cyg/hal/hal_arbiter.h>
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #ifdef CYGPKG_HAL_POWERPC_MPC860

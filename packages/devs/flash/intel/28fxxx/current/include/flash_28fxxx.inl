@@ -83,7 +83,7 @@
 // And select one of the below device variants
 
 #ifdef CYGPKG_DEVS_FLASH_INTEL_28F160
-# define FLASH_BLOCK_SIZE               (0x8000*CYGNUM_FLASH_INTERLEAVE)
+# define FLASH_BLOCK_SIZE               (0x10000*CYGNUM_FLASH_INTERLEAVE)
 # define FLASH_NUM_REGIONS              (32)
 # define CYGNUM_FLASH_WIDTH             (16)
 # define CYGNUM_FLASH_BLANK             (1)

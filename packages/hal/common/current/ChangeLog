@@ -1,3 +1,9 @@
+2001-06-29  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_misc.h: Moved arbiter helper to
+	* include/hal_arbiter.h: this file to avoid header file inclusion
+	order problems.
+
 2001-06-28  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_misc.h (hal_call_isr): Added. Used by ISR arbiters.

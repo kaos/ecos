@@ -1,3 +1,7 @@
+2001-06-29  Jesper Skov  <jskov@redhat.com>
+
+	* include/flash_28fxxx.inl: Fix 28F160 block size.
+
 2001-06-20  Jesper Skov  <jskov@redhat.com>
 
 	* include/flash_28fxxx.inl (flash_hwr_init): Fix bad size
