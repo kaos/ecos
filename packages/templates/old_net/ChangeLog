@@ -1,3 +1,8 @@
+2004-04-15  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* current.ect: Provide default for CYGBLD_ISO_STDIO_FILEOPS_HEADER
+	and CYGBLD_ISO_STDIO_FILEPOS_HEADER.
+
 2003-02-25  Andrew Lunn       <andrew.lunn@ascom.ch>
 	
 	* Added the Simple Network Time Protocol (SNTP) Client
