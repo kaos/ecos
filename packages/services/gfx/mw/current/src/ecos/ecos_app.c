@@ -60,14 +60,6 @@ cyg_handle_t startup_thread;
 cyg_thread   startup_thread_obj;
 
 
-// Functions not provided in eCos by standard...
-char *
-strdup(char *string) {
-    char *newbit = malloc(strlen(string)+1);
-    strcpy(newbit,string);
-    return newbit;
-}
-
 int 
 gettimeofday(struct timeval *tv,
              struct timezone *tz)

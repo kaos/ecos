@@ -1,3 +1,8 @@
+2004-06-08  Chris Garry <cgarry@sweeneydesign.co.uk>
+
+        * src/ecos/ecos_app.c:  Remove 'strdup' definition.
+        Now provided in string.h.
+
 2003-10-24  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/drivers/scr_vnc_ecos.c: Support true color (32 bit) 0888 format.
