@@ -2937,7 +2937,7 @@ architecture, in particular where interrupts are enabled and disabled.
 <!-- }}} -->
 <!-- {{{ Porting Guide -->
 
-&hal-common-current-doc-porting-sgml;
+&hal-common-porting-sgml;
 
 <!-- }}} -->
 <!-- {{{ Future Developments -->

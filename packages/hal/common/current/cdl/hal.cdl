@@ -62,7 +62,7 @@ cdl_package CYGPKG_HAL {
         select one target architecture and one platform for that
         architecture. There are also a number of configuration
         options that are common to all HAL packages."
-    doc           redirect/the-ecos-hardware-abstraction-layer-hal.html
+    doc           ref/the-ecos-hardware-abstraction-layer.html
 
     compile       drv_api.c
     compile       -library=libextras.a dummy.c
