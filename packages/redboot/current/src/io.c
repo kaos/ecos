@@ -172,7 +172,7 @@ mon_read_char_with_timeout(char *c)
 #ifdef CYGPKG_REDBOOT_ANY_CONSOLE
     if (!console_selected) {
         int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
-        int i, tot;
+        int i, j, tot;
         // Try input from all channels
         tot = 0;
         while (tot < _mon_timeout) {
@@ -186,6 +186,15 @@ mon_read_char_with_timeout(char *c)
                         // Don't chose this unless real data have arrived
                         console_selected = true;
                         CYGACC_CALL_IF_SET_DEBUG_COMM(i);
+                        // Disable interrupts on all channels but this one
+                        for (j = 0;  j < CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS;  j++) {
+                            if (i != j) {
+                                CYGACC_CALL_IF_SET_CONSOLE_COMM(j);
+                                __chan = CYGACC_CALL_IF_CONSOLE_PROCS();
+                                CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_IRQ_DISABLE);
+                            }
+                        }
+                        CYGACC_CALL_IF_SET_CONSOLE_COMM(i);
                         return res;
                     }
                 }
