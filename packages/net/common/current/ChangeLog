@@ -1,3 +1,7 @@
+2004-02-17	Matt Jerdonek <maj1224@yahoo.com>
+
+	* src/dhcp_prot.c: Fix initialization of DHCP sec field
+
 2003-12-10  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/inet_ntoa.c: Add thread safe inet_ntoa_r() and change

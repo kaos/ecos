@@ -743,7 +743,7 @@ do_dhcp(const char *intf, struct bootp *res,
             xmit->bp_htype = HTYPE_ETHERNET;
             xmit->bp_hlen = IFHWADDRLEN;
             xmit->bp_xid = xid;
-            xmit->bp_secs = 0;
+            xmit->bp_secs = cyg_current_time() / 100;
             xmit->bp_flags = htons(0x8000); // BROADCAST FLAG
             bcopy(ifr.ifr_hwaddr.sa_data, &xmit->bp_chaddr, xmit->bp_hlen);
             bcopy(mincookie, xmit->bp_vend, sizeof(mincookie));
