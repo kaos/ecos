@@ -1,3 +1,8 @@
+2003-04-08  Mark Salter  <msalter@redhat.com>
+
+	* src/hal_misc.c (hal_default_isr): Allow HAL to override default
+	GDB vector matching test.
+
 2003-04-08  Yoshinori Sato  <qzb04471@nifty.ne.jp>
 2003-04-08  Jonathan Larmour  <jifl@eCosCentric.com>
 

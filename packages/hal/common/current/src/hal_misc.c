@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -87,6 +87,12 @@ __backup_return_address:                                \
 // Macro for finding PC in saved regs
 #ifndef CYGARC_HAL_GET_PC_REG
 #define CYGARC_HAL_GET_PC_REG(_regs_,_val_) ((_val_) = (_regs_)->pc)
+#endif
+
+//--------------------------------------------------------------------------
+// Macro for matching interrupt vector to GDB comm channel.
+#ifndef CYGHWR_HAL_GDB_PORT_VECTORS_MATCH
+#define CYGHWR_HAL_GDB_PORT_VECTORS_MATCH(_v_,_gv_) ((_v_)==(_gv_))
 #endif
 
 #if defined(CYGPKG_CYGMON)
@@ -170,7 +176,7 @@ hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
         if (__chan)
             gdb_vector = CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_DBG_ISR_VECTOR);
     }
-    if( vector == gdb_vector )
+    if( CYGHWR_HAL_GDB_PORT_VECTORS_MATCH(vector, gdb_vector) )
 #else
     // Old code using hardwired channels. This should go away eventually.
     if( vector == CYGHWR_HAL_GDB_PORT_VECTOR )
