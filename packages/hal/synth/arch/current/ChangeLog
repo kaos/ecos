@@ -1,3 +1,10 @@
+2002-12-03  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/synth_entry.c:
+	Provide dummy versions of __cxa_atexit() and __dso_handle, to
+	satisfy requirements of recent versions of the compiler configured
+	for native Linux development.
+
 2002-09-22  Bart Veer  <bartv@ecoscentric.com>
 
 	* host/configure.in:
