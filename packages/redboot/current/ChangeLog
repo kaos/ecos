@@ -1,3 +1,37 @@
+2001-04-13  Gary Thomas  <gthomas@redhat.com>
+
+	* src/net/ping.c (do_ping): Tidy message.
+
+2001-04-12  Robin Farine  <acnrf@dial.eunet.ch>
+2001-04-12  Jonathan Larmour  <jlarmour@redhat.com>
+
+        * src/io.c (gets): Checks for buffer overflow and returns buflen
+        if it reaches the end of the buffer.
+	* src/main.c (cyg_start): Cope with gets() return being the
+	buffer length.
+
+2001-04-12  Mark Salter  <msalter@redhat.com>
+2001-04-12  Robin Farine  <acnrf@dial.eunet.ch>
+
+	* src/net/enet.c (__eth_install_listener): Does not accept a
+	handler for an eth_type less than 0x800.
+	(__enet_poll): Only scan the handlers for a frame type greater
+	than 0x800.
+
+2001-04-09  Mark Salter  <msalter@redhat.com>
+
+	* src/printf.c (_vprintf): Fixed some portability problems where
+	sizeof(int) != sizeof(long).
+
+2001-04-09  Hugo Tyson	<hmt@redhat.com>
+
+	* src/main.c (do_cksum): Reduce warning absent posix_crc32().
+
+	* src/main.c (cyg_start): Compare ram_end against workspace_end to
+	see if there is *less* SDRAM than the MLT suggested, and shorten
+	workspace et al accordingly.  This is needed if some SDRAM is
+	"stolen" for use by eg. a PCI window, and mapped far away.
+
 2001-04-03  Gary Thomas  <gthomas@redhat.com>
 
 	* src/load.c (do_load): Fix 'raw' loading to check for valid

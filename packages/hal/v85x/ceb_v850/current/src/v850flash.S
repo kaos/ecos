@@ -53,7 +53,7 @@ _start:
         st.b r1,0xFFFFF064[r0]
 
         jr 0x0FFFF4 // jump to 0x100000
-        jr 0x100000 // jump to 0x100010
+        jr 0x0FFFF2 // jump to 0x100002
         
         .org 0x20
         .rept 0x3E

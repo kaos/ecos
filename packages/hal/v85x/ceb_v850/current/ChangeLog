@@ -1,3 +1,14 @@
+2001-04-24  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_v85x_ceb_v850.cdl: Embryonic attempt at diag output via
+	ICE failed, but checked in for posterity anyway.
+	* src/v850flash.S: Use standard Cosmo flash image
+	* images/v850flash.img: Regenerate
+	* images/v850flash.hex: Regenerate
+	* images/v850sa1/gdb_module.*: Regenerate
+	* images/v850sb1/16mhz/gdb_module.*: Regenerate
+	* images/v850sb1/8mhz/gdb_module.*: Regenerate
+
 2001-03-21  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/hal_v85x_ceb_v850.cdl: Support choice between V850/SA1 and

@@ -1,3 +1,7 @@
+2001-04-16  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_arm_sa11x0_sa1100mm.cdl: Need CDL for UART interfaces.
+
 2001-03-08  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_arm_sa11x0_sa1100mm.cdl:  Removed

@@ -158,6 +158,18 @@ static void init_converters()
     }
 }
 
+static cyg_bool valid_timespec( const struct timespec *tp )
+{
+    // Fail a NULL pointer
+    if( tp == NULL ) return false;
+
+    // Fail illegal nanosecond values
+    if( tp->tv_nsec < 0 || tp->tv_nsec > 1000000000 )
+        return false;
+
+    return true;
+}
+
 externC cyg_tick_count cyg_timespec_to_ticks( const struct timespec *tp,
                                          cyg_bool roundup = false)
 {
@@ -199,28 +211,17 @@ externC void cyg_ticks_to_timespec( cyg_tick_count ticks, struct timespec *tp )
         tp->tv_nsec = 0;
         return;
     }
-    
-    // Calculate number of seconds
-    tp->tv_sec = Cyg_Clock::convert( ticks, &sec_inverter );
 
-    // Convert back and subtract from ticks to get fraction of second
-    ticks -= Cyg_Clock::convert( tp->tv_sec, &sec_converter );
+    // Convert everything to nanoseconds with a long long. For 64-bits,
+    // this is safe for 544 years. We'll think about it more closer to
+    // the time...
 
-    // Convert fraction to nanoseconds
-    tp->tv_nsec = Cyg_Clock::convert( ticks, &ns_inverter );    
-    
-}
+    unsigned long long nsecs = Cyg_Clock::convert( ticks, &ns_inverter );
 
-static cyg_bool valid_timespec( const struct timespec *tp )
-{
-    // Fail a NULL pointer
-    if( tp == NULL ) return false;
+    tp->tv_sec = (long)(nsecs / 1000000000ll);
+    tp->tv_nsec = (long)(nsecs % 1000000000ll);
 
-    // Fail illegal nanosecond values
-    if( tp->tv_nsec < 0 || tp->tv_nsec > 1000000000 )
-        return false;
-
-    return true;
+    CYG_POSTCONDITION(valid_timespec(tp), "Failed to make valid timespec!");
 }
 
 //==========================================================================

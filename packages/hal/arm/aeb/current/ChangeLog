@@ -1,3 +1,7 @@
+2001-04-16  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_arm_aeb.cdl: Add CDL to describe CPU family.
+
 2001-03-08  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_arm_aeb.cdl: Does not guarantee virtual vector support.

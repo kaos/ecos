@@ -1,3 +1,14 @@
+2001-04-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/time.cxx (cyg_ticks_to_timespec): Actually don't bother
+	with working out seconds using convertors. Instead just divide
+	down ns from a long long.
+
+2001-04-19  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/time.cxx (cyg_ticks_to_timespec): Clock convertors round off,
+	so adjust timespec accordingly.
+
 2001-02-14  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/pthread.h: Remove pthread_canceled() and

@@ -76,7 +76,6 @@
     HAL_WRITE_UINT32(E7T_SYSCFG, syscfg);       \
     CYG_MACRO_END
 
-
 // Disable the cache
 #define HAL_UCACHE_DISABLE()                    \
     CYG_MACRO_START                             \
@@ -90,9 +89,13 @@
 #define HAL_UCACHE_INVALIDATE_ALL()                             \
     CYG_MACRO_START                                             \
     register cyg_uint32* tag = (cyg_uint32*)E7T_CACHE_TAG_ADDR; \
-    int i;                                                      \
-    for (i = 0; i < HAL_UCACHE_SETS; i++)                       \
+    register int i;                                             \
+    for (i = 0; i < HAL_UCACHE_SETS/4; i++) {                   \
         *tag++ = 0;                                             \
+        *tag++ = 0;                                             \
+        *tag++ = 0;                                             \
+        *tag++ = 0;                                             \
+    }                                                           \
     CYG_MACRO_END
 
 // Synchronize the contents of the cache with memory.

@@ -84,8 +84,13 @@ cdl_package CYGPKG_HAL_ARM {
         @rm target.tmp
     }
 
+    cdl_interface CYGINT_HAL_ARM_THUMB_ARCH {
+        display "The CPU architecture supports THUMB mode"
+    }
+
     cdl_option CYGHWR_THUMB {
         display          "Enable Thumb instruction set"
+        active_if        { CYGINT_HAL_ARM_THUMB_ARCH != 0 }
         default_value    0
         description      "
             Enable use of the Thumb instruction set."
@@ -96,6 +101,7 @@ cdl_package CYGPKG_HAL_ARM {
     # under a ARM ROM monitor.
     cdl_option CYGBLD_ARM_ENABLE_THUMB_INTERWORK {
         display       "Enable Thumb interworking compiler option"
+        active_if        { CYGINT_HAL_ARM_THUMB_ARCH != 0 }
         default_value { (CYGHWR_THUMB || CYGSEM_HAL_ROM_MONITOR) }
         description "
             This option controls the use of -mthumb-interwork in the
@@ -104,23 +110,52 @@ cdl_package CYGPKG_HAL_ARM {
             footprint where interworking is not a requirement."
     }
 
+    cdl_interface CYGINT_HAL_ARM_BIGENDIAN {
+        display "The platform and architecture supports Big Endian operation"
+    }
+
     cdl_option CYGHWR_HAL_ARM_BIGENDIAN {
         display          "Use big-endian mode"
+        active_if        { CYGINT_HAL_ARM_BIGENDIAN != 0 }
         default_value    0
         description      "
             Use the CPU in big-endian mode."
     }
 
+    cdl_interface CYGINT_HAL_ARM_ARCH_ARM7 {
+        display "The platform uses a processor with an ARM7 core"
+    }
+
+    cdl_interface CYGINT_HAL_ARM_ARCH_ARM9 {
+        display "The platform uses a processor with an ARM9 core"
+    }
+
+    cdl_interface CYGINT_HAL_ARM_ARCH_STRONGARM {
+        display "The platform uses a processor with a StrongARM core"
+    }
+
+    cdl_interface CYGINT_HAL_ARM_ARCH_XSCALE {
+        display "The platform uses a processor with a XScale core"
+    }
+
     cdl_option CYGHWR_HAL_ARM_CPU_FAMILY {
         display       "ARM CPU family"
         flavor        data
-        legal_values  {"ARM7" "ARM9"}
-        default_value {"ARM7"}
+        legal_values  { (CYGINT_HAL_ARM_ARCH_ARM7 != 0) ? "ARM7" : ""
+                        (CYGINT_HAL_ARM_ARCH_ARM9 != 0) ? "ARM9" : ""
+                        (CYGINT_HAL_ARM_ARCH_STRONGARM != 0) ? "StrongARM" : ""
+                        (CYGINT_HAL_ARM_ARCH_XSCALE != 0) ? "XScale" : ""
+                        "" }
+        default_value  { (CYGINT_HAL_ARM_ARCH_ARM7 != 0) ? "ARM7" : 
+                         (CYGINT_HAL_ARM_ARCH_ARM9 != 0) ? "ARM9" : 
+                         (CYGINT_HAL_ARM_ARCH_STRONGARM != 0) ? "StrongARM" : 
+                         (CYGINT_HAL_ARM_ARCH_XSCALE != 0) ? "XScale" :
+                         "unknown" }
         no_define
         description   "
-             It is possible to optimize code for either the ARM7 or
-             ARM9 CPU family. This option selects which CPU to
-             optimize for on boards that support both CPUs."
+             It is possible to optimize code for different
+             ARM CPU families. This option selects which CPU to
+             optimize for on boards that support multiple CPU types."
     }
 
     cdl_option CYGHWR_HAL_ARM_DUMP_EXCEPTIONS {

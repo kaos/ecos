@@ -143,6 +143,29 @@ void iq80310_program_new_stack(void *func)
     return;
 }
 
+/*------------------------------------------------------------------------*/
+
+//
+// Memory layout
+//
+
+externC cyg_uint8 *
+hal_arm_mem_real_region_top( cyg_uint8 *regionend )
+{
+    CYG_ASSERT( hal_dram_size > 0, "Didn't detect DRAM size!" );
+    CYG_ASSERT( hal_dram_size <=  512<<20,
+                "More than 512MB reported - that can't be right" );
+
+    // is it the "normal" end of the DRAM region? If so, it should be
+    // replaced by the real size
+    if ( regionend ==
+         ((cyg_uint8 *)CYGMEM_REGION_ram + CYGMEM_REGION_ram_SIZE) ) {
+        regionend = (cyg_uint8 *)CYGMEM_REGION_ram + hal_dram_size;
+    }
+    return regionend;
+} // hal_arm_mem_real_region_top()
+
+
 // -------------------------------------------------------------------------
 
 // Clock can come from the PMU or from an external timer.

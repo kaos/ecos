@@ -817,11 +817,19 @@ bool CMainFrame::PrepareEnvironment(bool bWithBuildTools /* = true */)
       ::GetModuleFileName (::GetModuleHandle (NULL), strHostToolsBinDir.GetBuffer (1 + MAX_PATH), MAX_PATH);
       strHostToolsBinDir.ReleaseBuffer ();
       strHostToolsBinDir = strHostToolsBinDir.Head ();
+#ifdef _DEBUG
+      strHostToolsBinDir = _T("C:\\Progra~1\\Redhat~1\\eCos");
+#endif
 
       // tools directories are in the order host-tools, user-tools, comp-tools, install/bin (if present), contrib-tools (if present) on the path
       const CFileName strContribBinDir(strUserBinDir,_T("..\\contrib\\bin"));
-      const CFileName strUsrBinDir(strUserBinDir,_T("..\\usr\\bin"));
+      CFileName strUsrBinDir(strUserBinDir,_T("..\\usr\\bin"));
       const CFileName strInstallBinDir(pDoc->InstallTree (),_T("bin"));
+
+      // In case strUserBinDir is e.g. c:\program files\red hat\cygwin-00r1\usertools\h-i686-pc-cygwin\bin
+      if (!strUsrBinDir.IsDir ())
+          strUsrBinDir = CFileName(strUserBinDir + _T("..\\..\\..\\H-i686-pc-cygwin\\bin"));
+
       if (
         (strUsrBinDir.IsDir ()     && ! CUtils::AddToPath (strUsrBinDir)) || 
         (strContribBinDir.IsDir () && ! CUtils::AddToPath (strContribBinDir)) || 
@@ -846,6 +854,13 @@ bool CMainFrame::PrepareEnvironment(bool bWithBuildTools /* = true */)
             CygMount(pDoc->InstallTree()[0]);
           if (! pDoc->Repository().IsEmpty())
             CygMount(pDoc->Repository()[0]);
+
+#ifdef _DEBUG
+          TCHAR buf[512];
+          ::GetEnvironmentVariable(_T("PATH"), buf, 512);
+          CConfigTool::Log(buf);
+#endif
+
         }
       }
     }

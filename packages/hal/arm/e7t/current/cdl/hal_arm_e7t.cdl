@@ -54,6 +54,8 @@ cdl_package CYGPKG_HAL_ARM_E7T {
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
     implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
+    implements    CYGINT_HAL_ARM_ARCH_ARM7
+    implements    CYGINT_HAL_ARM_THUMB_ARCH
 
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_arm.h>"
@@ -166,7 +168,7 @@ cdl_package CYGPKG_HAL_ARM_E7T {
             display "Global compiler flags"
             flavor  data
             no_define
-            default_value { "-mcpu=arm7di -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
+            default_value { "-mcpu=arm7tdmi -mno-short-load-words -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
             description   "
                 This option controls the global compiler flags which are used to
                 compile all packages by default. Individual packages may define
@@ -177,7 +179,7 @@ cdl_package CYGPKG_HAL_ARM_E7T {
             display "Global linker flags"
             flavor  data
             no_define
-            default_value { "-mcpu=arm7di -Wl,--gc-sections -Wl,-static -g -nostdlib" }
+            default_value { "-mcpu=arm7tdmi -mno-short-load-words -Wl,--gc-sections -Wl,-static -g -nostdlib" }
             description   "
                 This option controls the global linker flags. Individual
                 packages may define options which override these global flags."

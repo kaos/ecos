@@ -1,3 +1,39 @@
+2001-04-17  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_e7t.cdl: Fix compiler flags. In particular, do now
+	allow unaligned access since the CPU doesn't handle it.
+
+	* include/hal_platform_setup.h (PLATFORM_SETUP1): Use proper
+	spells to init memory interface.
+
+	* src/e7t_misc.c (hal_hardware_init): Removed debug code, fix
+	cache init code.
+
+	* include/plf_io.h: Use uncached addresses for IO registers.
+
+	* include/hal_platform_setup.h: Found a hint for problems with
+	memory init.
+
+	* include/hal_cache.h (HAL_UCACHE_INVALIDATE_ALL): Tried to make
+	this a bit faster. Didn't help much though.
+
+	* src/hal_diag.c (cyg_hal_plf_serial_init): Remove unused variable.
+
+2001-04-16  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_arm_e7t.cdl: Add CDL to describe CPU family.
+
+2001-04-11  Jesper Skov  <jskov@redhat.com>
+
+	* src/e7t_misc.c (hal_delay_us): Fixed.
+
+	* include/pkgconf/mlt_arm_e7t_rom.ldi: Updated.
+	* include/pkgconf/mlt_arm_e7t_rom.mlt: Same.
+	* include/pkgconf/mlt_arm_e7t_rom.h:   Same.
+	* include/pkgconf/mlt_arm_e7t_ram.ldi: Updated.
+	* include/pkgconf/mlt_arm_e7t_ram.mlt: Same.
+	* include/pkgconf/mlt_arm_e7t_ram.h:   Same.
+
 2001-04-05  Jesper Skov  <jskov@redhat.com>
 
 	* misc/redboot_ROM.ecm: Only read from debug port.

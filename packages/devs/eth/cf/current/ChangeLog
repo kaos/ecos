@@ -1,3 +1,8 @@
+2001-04-13  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_sc_lpe.c (sc_lpe_card_handler): Work around broken card(s)
+	which do not have valid ESA in config EPROM.
+
 2000-09-15  Gary Thomas  <gthomas@redhat.com>
 
 	* src/if_sc_lpe.c: Suppress noisy message which seems to sometimes

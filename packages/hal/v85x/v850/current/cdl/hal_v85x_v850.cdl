@@ -59,6 +59,12 @@ cdl_package CYGPKG_HAL_V85X_V850 {
     cdl_interface CYGINT_HAL_V850_DIAG_ONCHIP_SERIAL0 {
         display  "Defined if platform uses standard on-chip serial0"
     }
+        
+    cdl_option CYGBLD_HAL_V850_DIAG_USE_ONCHIP_SERIAL0 {
+        display    "Build diag driver for on-chip V850 serial 0"
+        active_if  { CYGINT_HAL_V850_DIAG_ONCHIP_SERIAL0 != 0 }
+        compile hal_diag.c
+    }
 
     cdl_interface CYGINT_HAL_V850_VARIANT_SA1 {
         display  "Defined if CPU is a V850/SA1"
@@ -74,9 +80,11 @@ cdl_package CYGPKG_HAL_V85X_V850 {
 
     cdl_option CYGDBG_HAL_V850_ICE {
         display   "Support debugging via ICE"
-        default_value { 0 != CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT }
+        default_value { (0 != CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT) && \
+                        ("RAM" != CYG_HAL_STARTUP) }
         requires   CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT
         implements CYGINT_HAL_V85X_ICE_DEBUG
+        compile    -library=libextras.a v850_ice.cxx
         description \
                "This option enables additional support for debugging via
                 ICE, chiefly in the form of an interface to gdbserv which

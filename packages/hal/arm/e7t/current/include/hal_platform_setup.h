@@ -60,74 +60,70 @@
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 #define PLATFORM_SETUP1                                                 ;\
-4:	ldr	r1,=register_setups                                     ;\
-10:	ldr	r2,[r1,#0]	/* register address */                  ;\
-	cmp	r2,#0                                                   ;\
-	beq	20f                                                     ;\
-	ldr	r3,[r1,#4]	/* register value */                    ;\
-	str	r3,[r2,#0x00]                                           ;\
-	add	r1,r1,#8	/* next register  */                    ;\
-	b	10b                                                     ;\
-register_setups:                                                        ;\
-        /* Clear LEDs */                                                ;\
-        .long   E7T_IOPMOD                                              ;\
-        .long   0x0001fcf0 /* set led + seg to output */                ;\
-        .long   E7T_IOPDATA                                             ;\
-        .long   0x00000000                                              ;\
+        ldr     r1,=E7T_IOPMOD                                          ;\
+        ldr     r2,=0x0001fcf0 /* set led + seg to output */            ;\
+        str     r2,[r1,#0x00]                                           ;\
+        ldr     r1,=E7T_IOPDATA                                         ;\
+        ldr     r2,=0x00000050 /* set leds */                           ;\
+        str     r2,[r1,#0x00]                                           ;\
+                                                                        ;\
+20:     ldr     lr,=33f                                                 ;\
+        ldr     r0,=12f                                                 ;\
+        ldm     r0,{r1-r12}                                             ;\
+        ldr     r0,=E7T_EXTDBWTH                                        ;\
+        stm     r0,{r1-r12}                                             ;\
+        mov     pc,lr                                                   ;\
+                                                                        ;\
+        /* The below are set with a store-multiple instruction */       ;\
         /* Flash is 16 bit, SRAM is 32 bit */                           ;\
-        .long   E7T_EXTDBWTH                                            ;\
-        .long  ( (E7T_EXTDBWTH_16BIT<<E7T_EXTDBWTH_DSR0_shift)           \
+        /* .long   E7T_EXTDBWTH */                                      ;\
+12:     .long  ( (E7T_EXTDBWTH_16BIT<<E7T_EXTDBWTH_DSR0_shift)           \
                 |(E7T_EXTDBWTH_32BIT<<E7T_EXTDBWTH_DSR1_shift)           \
                 |(E7T_EXTDBWTH_32BIT<<E7T_EXTDBWTH_DSR2_shift) )        ;\
-        .long   E7T_IOPDATA                                             ;\
-        .long   0x00000010                                              ;\
-        /* Set LEDs */                                                  ;\
-        .long   E7T_IOPDATA                                             ;\
-        .long   0x00000050                                              ;\
-	.long 0                                                         ;\
-20:
-#else
-#define PLATFORM_SETUP1
-#endif
-
-#if 0
-/*
- These are the values left by the boot monitor. That's what we want to
- program as well, but it seems changing the ROMCONs at this time is
- too late. So just leave it as is.
-
-0x03FF0000 0x07FFFFA0
-0x03FF3000 0x00000000
-0x03FF3008 0x00000000
-0x03FF300C 0x00000000
-0x03FF3010 0x0000003E
-0x03FF3014 0x18860030
-0x03FF3018 0x00400010
-0x03FF301C 0x00801010 */
-
         /* Flash at 0x01800000-0x01880000, 5 cycles, 4 cycles */        ;\
-	.long   E7T_ROMCON0                                             ;\
+        /* .long   E7T_ROMCON0 */                                       ;\
         .long  ( (E7T_ROMCON_PMC_ROM)                                    \
                 |(E7T_ROMCON_TPA_5C)                                     \
                 |(E7T_ROMCON_TACC_4C)                                    \
                 |((0x01800000 >> 16) << E7T_ROMCON_BASE_shift)           \
                 |((0x01880000 >> 16) << E7T_ROMCON_NEXT_shift))         ;\
         /* SRAM at 0x00000000-0x00400000, 5 cycles, 2 cycles */         ;\
-        .long   E7T_ROMCON1                                             ;\
+        /* .long   E7T_ROMCON1 */                                       ;\
         .long  ( (E7T_ROMCON_PMC_ROM)                                    \
                 |(E7T_ROMCON_TPA_5C)                                     \
                 |(E7T_ROMCON_TACC_2C)                                    \
                 |((0x00000000 >> 16) << E7T_ROMCON_BASE_shift)           \
                 |((0x00040000 >> 16) << E7T_ROMCON_NEXT_shift))         ;\
         /* SRAM at 0x00400000-0x00800000, 5 cycles, 2 cycles */         ;\
-        .long   E7T_ROMCON2                                             ;\
+        /* .long   E7T_ROMCON2 */                                       ;\
         .long  ( (E7T_ROMCON_PMC_ROM)                                    \
                 |(E7T_ROMCON_TPA_5C)                                     \
                 |(E7T_ROMCON_TACC_2C)                                    \
                 |((0x00040000 >> 16) << E7T_ROMCON_BASE_shift)           \
                 |((0x00080000 >> 16) << E7T_ROMCON_NEXT_shift))         ;\
-
+        /* Below values are what Boot Monitor sets up */                ;\
+        /* .long   E7T_ROMCON3 */                                       ;\
+        .long   0x08018020                                              ;\
+        /* .long   E7T_ROMCON4 */                                       ;\
+        .long   0x0a020040                                              ;\
+        /* .long   E7T_ROMCON5 */                                       ;\
+        .long   0x0c028040                                              ;\
+        /* .long   E7T_DRAMCON0 */                                      ;\
+        .long   0x00000000                                              ;\
+        /* .long   E7T_DRAMCON1 */                                      ;\
+        .long   0x00000000                                              ;\
+        /* .long   E7T_DRAMCON2 */                                      ;\
+        .long   0x00000000                                              ;\
+        /* .long   E7T_DRAMCON3 */                                      ;\
+        .long   0x00000000                                              ;\
+        /* .long   E7T_REFEXTCON */                                     ;\
+        .long   0x9c218360                                              ;\
+                                                                        ;\
+33:
+#else
+#define PLATFORM_SETUP1
 #endif
+
 //-----------------------------------------------------------------------------
 // end of hal_platform_setup.h
 #endif // CYGONCE_HAL_PLATFORM_SETUP_H

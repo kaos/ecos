@@ -187,7 +187,7 @@ Cyg_Mempool_Joined<T>::resize_alloc( cyg_uint8 *alloc_ptr, cyg_int32 newsize,
                                      cyg_int32 *oldsize=NULL )
 {
     T *pool;
-    cyg_bool ret;
+    cyg_uint8 * ret;
     
     CYG_REPORT_FUNCTYPE( "success=" );
     CYG_REPORT_FUNCARG3( "alloc_ptr=%08x, newsize=%d, &oldsize=%08x",

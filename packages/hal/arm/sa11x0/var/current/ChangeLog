@@ -1,3 +1,7 @@
+2001-04-16  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_arm_sa11x0.cdl: Add CDL to describe CPU family.
+
 2001-03-23  Gary Thomas  <gthomas@redhat.com>
 
 	* src/redboot_linux_exec.c (do_exec): 

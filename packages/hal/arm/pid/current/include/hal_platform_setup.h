@@ -61,7 +61,9 @@
 #define MEM_RESET         0x0B000020  // Write to this location to enable RAM
 
 #define PLATFORM_SETUP1                                 \
-	ldr	r0,=MEM_RESET	/* enable RAM */       ;\
+        ldr     r0,=10f                                ;\
+        mov     pc,r0                                  ;\
+10:	ldr	r0,=MEM_RESET	/* enable RAM */       ;\
 	str	r0,[r0]
 
 /*---------------------------------------------------------------------------*/

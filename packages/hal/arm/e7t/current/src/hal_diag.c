@@ -293,7 +293,6 @@ cyg_hal_plf_serial_init(void)
 {
     hal_virtual_comm_table_t* comm;
     int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
-    channel_data_t* chan;
 
     // Init channels
     cyg_hal_plf_serial_init_channel(&e7t_ser_channels[0]);

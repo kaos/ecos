@@ -95,6 +95,25 @@
 //               hard-wiring the ESA's into each executable by means of the
 //               usual CDL configuration.
 //
+//               Platform def CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM
+//               is for hardware with multiple devices, but only one with a
+//               serial EEPROM installed.  The 2nd device would get either
+//               the same ESA - because they are certain to be on different
+//               segment and internets - or the same ESA incremented by
+//               CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM_MAC_ADJUST.
+//               CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM should be the
+//               number (0 or 1) of the device that does have the EEPROM.
+//
+//               CYGHWR_DEVS_ETH_INTEL_I82559_PCIMEM_DISCONTIGUOUS enables
+//               checking code for breaks in the physical address of PCI
+//               window memory.  This can happen on some boards where a
+//               smaller SDRAM is fitted than the hardware allows, so some
+//               higher-order address bits are ignored.  We make SDRAM
+//               contiguous in mapped memory, but what the i82559 sees
+//               might be discontiguous.  The checking code skips any
+//               allocated chunk who appears to contain such a break, and
+//               tries again.
+//
 //
 //        FIXME: replace -1/-2 return values with proper E-defines
 //        FIXME: For 82557/8 compatibility i82559_configure() function
@@ -164,6 +183,18 @@
 #ifdef CYGHWR_DEVS_ETH_INTEL_I82559_GET_ESA
 #ifndef CYGHWR_DEVS_ETH_INTEL_I82559_HAS_NO_EEPROM
 #error This platform has EEPROM, yet external ..._GET_ESA is defined
+#endif
+#endif
+
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_HAS_NO_EEPROM
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM
+#error This platform has no EEPROM, yet it also HAS_ONE_EEPROM
+#endif
+#endif
+
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_GET_ESA
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM
+#error This platform has one EEPROM, yet external ..._GET_ESA is defined
 #endif
 #endif
 
@@ -800,7 +831,7 @@ static void *mem_reserved_ioctl = (void*)0;
 static int pci_init_find_82559s(void);
 
 static void i82559_reset(struct i82559* p_i82559);
-static int eth_set_mac_address(struct i82559* p_i82559, char *addr);
+static int eth_set_mac_address(struct i82559* p_i82559, char *addr, int eeprom );
 
 static void InitRxRing(struct i82559* p_i82559);
 static void ResetRxRing(struct i82559* p_i82559);
@@ -814,7 +845,12 @@ eth_isr(cyg_vector_t vector, cyg_addrword_t data);
 
 static int i82559_configure(struct i82559* p_i82559, int promisc, int oversized);
 #ifdef CYGPKG_DEVS_ETH_INTEL_I82559_WRITE_EEPROM
-static void program_eeprom(cyg_uint32 , cyg_uint32 , cyg_uint8 * );
+static void
+program_eeprom(cyg_uint32 ioaddr, cyg_uint32 eeprom_size, cyg_uint8 *data);
+static void
+write_eeprom(long ioaddr, int location, int addr_len, unsigned short value);
+static int
+write_enable_eeprom(long ioaddr,  int addr_len);
 #endif
 
 // debugging/logging only:
@@ -1020,6 +1056,30 @@ pciwindow_mem_alloc(int size)
             *p++ = 0;
     }
 
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_PCIMEM_DISCONTIGUOUS
+    // Then the underlying physical address can have breaks in it.
+    // We cannot use such a block, clearly, so we just discard and re-do.
+    if ( p_memory ) {
+        char *bpm = (char *)VIRT_TO_BUS( p_memory );
+        char *bmf = (char *)VIRT_TO_BUS( i82559_heap_free );
+        
+        if ( bpm + size != bmf ) {
+            // then we found a break; retry:
+            if ( (i82559_heap_free+size) < (i82559_heap_base+i82559_heap_size) ) {
+                cyg_uint32 *p;
+                p_memory = (void *)i82559_heap_free;
+                i82559_heap_free += size;
+                for ( p = (cyg_uint32 *)p_memory; _size > 0; _size -= 4 )
+                    *p++ = 0;
+            }
+        }
+    }
+#endif
+    CYG_ASSERT(
+        NULL == p_memory ||
+        VIRT_TO_BUS( p_memory ) + size == VIRT_TO_BUS( i82559_heap_free ),
+        "Discontiguous PCI memory in real addresses" );
+
     return p_memory;
 }
 
@@ -1074,9 +1134,11 @@ get_eeprom_size(long ioaddr)
 #ifdef DEBUG_EE
         os_printf( "*****EEPROM data bits not 6, 8 or 1*****\n" );
 #endif
-        i = 6;
+        i = 6; // guess, to complete this routine
+        addrbits = 1; // Flag no eeprom here.
     }
-    addrbits = i;
+    else
+        addrbits = i;
 
     // clear the dataval, leave the clock low to read in the data regardless
     OUTW(EE_ENB, ee_addr);
@@ -1240,6 +1302,8 @@ i82559_init(struct cyg_netdevtab_entry * ndp)
     if (0 == p_i82559->found)
         return 0;
 
+    p_i82559->mac_addr_ok = 0;
+
     ioaddr = p_i82559->io_address; // get I/O address for 82559
 
 #ifdef DEBUG
@@ -1303,7 +1367,7 @@ i82559_init(struct cyg_netdevtab_entry * ndp)
         mac_address[4] = p_i82559->mac_address[4];
         mac_address[5] = p_i82559->mac_address[5];
 
-        eth_set_mac_address(p_i82559, mac_address);
+        eth_set_mac_address(p_i82559, mac_address, 0);
 
     } else {
 
@@ -1314,12 +1378,17 @@ i82559_init(struct cyg_netdevtab_entry * ndp)
         int ok = false;
         CYGHWR_DEVS_ETH_INTEL_I82559_GET_ESA( p_i82559, mac_address, ok );
         if ( ok )
-            eth_set_mac_address(p_i82559, mac_address);
+            eth_set_mac_address(p_i82559, mac_address, 0);
 
 #else // ! CYGHWR_DEVS_ETH_INTEL_I82559_GET_ESA
+
 #ifndef CYGHWR_DEVS_ETH_INTEL_I82559_HAS_NO_EEPROM
         int addr_length, i;
         cyg_uint16 checksum;
+
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM
+        if ( CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM == p_i82559->index ) {
+#endif // CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM
 
         // read eeprom and get 82559's mac address
         addr_length = get_eeprom_size(ioaddr);
@@ -1367,6 +1436,7 @@ i82559_init(struct cyg_netdevtab_entry * ndp)
 #ifdef DEBUG_EE
                 os_printf("Valid EEPROM checksum\n");
 #endif
+                eth_set_mac_address(p_i82559, mac_address, 0);
             }
         }
 
@@ -1377,6 +1447,30 @@ i82559_init(struct cyg_netdevtab_entry * ndp)
         p_i82559->mac_address[3] = mac_address[3];
         p_i82559->mac_address[4] = mac_address[4];
         p_i82559->mac_address[5] = mac_address[5];
+
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM
+        }
+        else { // We are now "in" another device
+#if 1 < CYGNUM_DEVS_ETH_INTEL_I82559_DEV_COUNT
+            struct i82559 *other; // The one that *is* set up from EEPROM
+            other = i82559_priv_array[CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM];
+            if ( other->mac_addr_ok ) {
+                mac_address[0] = other->mac_address[0];
+                mac_address[1] = other->mac_address[1];
+                mac_address[2] = other->mac_address[2];
+                mac_address[3] = other->mac_address[3];
+                mac_address[4] = other->mac_address[4];
+                mac_address[5] = other->mac_address[5];
+
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM_MAC_ADJUST
+                mac_address[5] += CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM_MAC_ADJUST;
+#endif
+                eth_set_mac_address(p_i82559, mac_address, 0);
+            }
+#endif // 1 < CYGNUM_DEVS_ETH_INTEL_I82559_DEV_COUNT
+        }
+#endif // CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM
+
 #endif // ! CYGHWR_DEVS_ETH_INTEL_I82559_HAS_NO_EEPROM
 #endif // ! CYGHWR_DEVS_ETH_INTEL_I82559_GET_ESA
     }
@@ -1415,8 +1509,6 @@ i82559_start( struct eth_drv_sc *sc, unsigned char *enaddr, int flags )
 {
     struct i82559 *p_i82559;
     cyg_uint32 ioaddr;
-    int count;
-    cyg_uint16 status;
 #ifdef KEEP_STATISTICS
     void *p_statistics;
 #endif
@@ -1459,19 +1551,11 @@ i82559_start( struct eth_drv_sc *sc, unsigned char *enaddr, int flags )
     wait_for_cmd_done(ioaddr, WAIT_CU);
     OUTW(SCB_M | CU_DUMPSTATS, ioaddr + SCBCmd); // start register dump
     // ...and wait for it to complete operation
-    count = 1000;
-    do {
-      READMEM16((cyg_uint8*)p_statistics + CFG_STATUS, status);
-      udelay(1);
-    } while (0 == (status & CFG_STATUS_C) && (count-- > 0));
-#ifdef CYGDBG_USE_ASSERTS
-    {
-      READMEM16((cyg_uint8*)p_statistics + CFG_STATUS, status);
-      CYG_ASSERT((CFG_STATUS_C | CFG_STATUS_OK)
-                 == (status & (CFG_STATUS_C | CFG_STATUS_OK)),
-                 "Dump stat command incomplete/failedd");
-    }
-#endif // CYGDBG_USE_ASSERTS
+
+    // The code to wait was bogus; it was looking at the structure in the
+    // wrong way.  In any case, there is no need to wait, the
+    // wait_for_cmd_done() in any following activity is good enough.
+
 #endif
 #endif
 
@@ -2948,7 +3032,7 @@ static char eeprom_burn[126] = {
 //           non0 = It failed.
 // ------------------------------------------------------------------------
 static int
-eth_set_mac_address(struct i82559* p_i82559, char *addr)
+eth_set_mac_address(struct i82559* p_i82559, char *addr, int eeprom)
 {
     cyg_uint32  ioaddr;
     cyg_uint16 status;
@@ -3004,7 +3088,31 @@ eth_set_mac_address(struct i82559* p_i82559, char *addr)
     }
 
 #ifdef CYGPKG_DEVS_ETH_INTEL_I82559_WRITE_EEPROM
-    {
+    if ( 0 == eeprom 
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM
+    || CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM != p_i82559->index
+#endif
+        ) {
+        // record the MAC address in the device structure
+        p_i82559->mac_address[0] = addr[0];
+        p_i82559->mac_address[1] = addr[1];
+        p_i82559->mac_address[2] = addr[2];
+        p_i82559->mac_address[3] = addr[3];
+        p_i82559->mac_address[4] = addr[4];
+        p_i82559->mac_address[5] = addr[5];
+        p_i82559->mac_addr_ok = 1;
+
+#ifdef DEBUG
+        os_printf( "No EEPROM write: MAC Address = %02X %02X %02X %02X %02X %02X (ok %d)\n",
+                   p_i82559->mac_address[0],
+                   p_i82559->mac_address[1],
+                   p_i82559->mac_address[2],
+                   p_i82559->mac_address[3],
+                   p_i82559->mac_address[4],
+                   p_i82559->mac_address[5],
+                   p_i82559->mac_addr_ok       );
+#endif
+    } else {
         int checksum, i, count;
         // (this is the length of the *EEPROM*s address, not MAC address)
         int addr_length;
@@ -3066,7 +3174,7 @@ eth_set_mac_address(struct i82559* p_i82559, char *addr)
 #endif
             p_i82559->mac_addr_ok = 0;
         }
-
+    }
 #else // CYGPKG_DEVS_ETH_INTEL_I82559_WRITE_EEPROM
 
     // record the MAC address in the device structure
@@ -3079,7 +3187,7 @@ eth_set_mac_address(struct i82559* p_i82559, char *addr)
     p_i82559->mac_addr_ok = 1;
 
 #ifdef DEBUG
-    os_printf( "No EEPROM configured: MAC Address = %02X %02X %02X %02X %02X %02X (ok %d)\n",
+    os_printf( "Set MAC Address = %02X %02X %02X %02X %02X %02X (ok %d)\n",
                p_i82559->mac_address[0],
                p_i82559->mac_address[1],
                p_i82559->mac_address[2],
@@ -3239,7 +3347,7 @@ i82559_ioctl(struct eth_drv_sc *sc, unsigned long key,
         return -1;
     }
 
-#ifdef DEBUG
+#ifdef ioctlDEBUG
     db_printf( "i82559_ioctl: device eth%d at %x; key is 0x%x, data at %x[%d]\n",
                p_i82559->index, p_i82559, key, data, data_length );
 #endif
@@ -3250,7 +3358,7 @@ i82559_ioctl(struct eth_drv_sc *sc, unsigned long key,
     case ETH_DRV_SET_MAC_ADDRESS:
         if ( 6 != data_length )
             return -2;
-        return eth_set_mac_address( p_i82559, data );
+        return eth_set_mac_address( p_i82559, data, 1 /* do write eeprom */ );
 #endif
 
 #ifdef ETH_DRV_GET_MAC_ADDRESS

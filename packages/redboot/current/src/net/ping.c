@@ -203,7 +203,7 @@ do_ping(int argc, char *argv[])
         if (icmp_received) {
             received++;
             if (verbose) {
-                printf("icmp - seq: %ld, time: %ld (ticks)\n",
+                printf(" seq: %ld, time: %ld (ticks)\n",
                        ntohs(hold_hdr.seqnum), end_time-start_time);
             }
         }

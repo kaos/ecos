@@ -52,6 +52,9 @@
 # undef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
 # undef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
 #endif
+#if defined(CYG_HAL_STARTUP_ROM)
+#define CYG_HAL_ROM_RESET_USES_JUMP
+#endif                
 #include <cyg/hal/hal_platform_setup.h>
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
@@ -133,7 +136,6 @@ _name_:
 #define UNMAPPED_PTR(name)              \
 .##name: .word  UNMAPPED(name)
 
-
         .file   "vectors.S"
 
 
@@ -159,7 +161,7 @@ _name_:
         .section ".vectors","ax"
         .global __exception_handlers
 __exception_handlers:
-#if !defined(CYGPKG_HAL_ARM_IQ80310) && defined(CYG_HAL_STARTUP_ROM)
+#ifdef CYG_HAL_ROM_RESET_USES_JUMP
 // Assumption:  ROM code has these vectors at the hardware reset address.
 // A simple jump removes any address-space dependencies [i.e. safer]
         b       reset_vector                    // 0x00

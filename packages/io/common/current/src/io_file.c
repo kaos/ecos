@@ -68,7 +68,7 @@ falloc(struct file **fp, int *fd)
             return 0;
         }
     }
-    return -EMFILE;  // No more files
+    return EMFILE;  // No more files
 }
 
 //

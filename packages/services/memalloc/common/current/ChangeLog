@@ -1,3 +1,8 @@
+2001-04-12  Hugo Tyson  <hmt@redhat.com>
+
+	* include/memjoin.inl (resize_alloc): Fix typo so it compiles.
+	This only applies if you configure multiple heaps.
+
 2001-03-21  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/memalloc.cdl: Specify explicit output file when preprocessing

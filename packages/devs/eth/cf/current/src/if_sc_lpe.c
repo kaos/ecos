@@ -103,7 +103,7 @@ NETDEVTAB_ENTRY(sc_lpe_netdev,
                 &sc_lpe_sc);
 
 // Updated to actual address when card is inserted
-static unsigned char enaddr[] = { 0x08, 0x88, 0x12, 0x34, 0x56, 0x78};
+static unsigned char enaddr[] = { 0x00, 0xC0, 0x1B, 0x04, 0x31, 0xEE};
 
 static void sc_lpe_int(struct eth_drv_sc *sc);
 
@@ -203,10 +203,15 @@ sc_lpe_card_handler(cyg_addrword_t param)
 //                diag_printf("Couldn't find COR pointer!\n");
                 continue;
             }
+
             // Fetch hardware address from card - terrible, but not well defined
-            for (i = 0;  i < ETHER_ADDR_LEN;  i++) {
-                enaddr[i] = slot->attr[0x1C0+(i*2)];
+            // Note: at least one card has been known to not have a valid ESA anywhere
+            if (slot->attr[0x1C0] != (unsigned char)0xFF) {
+                for (i = 0;  i < ETHER_ADDR_LEN;  i++) {
+                    enaddr[i] = slot->attr[0x1C0+(i*2)];
+                }
             }
+
             ptr = 0;
             if (cf_get_CIS(slot, CF_CISTPL_CFTABLE_ENTRY, buf, &len, &ptr)) {
                 if (cf_parse_cftable(buf, len, &cftable)) {

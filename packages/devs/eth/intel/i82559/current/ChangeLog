@@ -1,3 +1,38 @@
+2001-04-09  Hugo Tyson  <hmt@redhat.com>
+
+	* src/if_i82559.c (pciwindow_mem_alloc): If asked, by
+	CYGHWR_DEVS_ETH_INTEL_I82559_PCIMEM_DISCONTIGUOUS, check for
+	breaks in the physical address of PCI window memory, and discard
+	any block with a break in it, then redo the alloc.  This is for
+	targets where smaller SDRAM chips are fitted than the address
+	width, so they end up with gaps in (physical) memory.
+
+2001-04-09  Hugo Tyson  <hmt@redhat.com>
+
+	* src/if_i82559.c (i82559_init): Support hardware with only one
+	serial EEPROM attached to one device, but multiple devices.  This
+	generally involves moving some decisions for eg. programming
+	EEPROM or not, optionally from compiletime to runtime.  Improved
+	the diagnostics a bit also, and fixed some bugs.
+	(eth_set_mac_address): now takes an arg to say whether we want to
+	program the EEPROM, or are just setting up the chip.
+	(i82559_ioctl): This is the only place we set that arg to write
+	the EEPROM, startup never tries to write EEPROM from any external
+	source such as configured ESA or RedBoot params.
+
+2001-04-09  Hugo Tyson  <hmt@redhat.com>
+
+	* src/if_i82559.c (i82559_start): Warnings fixed; unused vars
+	following previous change.
+
+2001-04-09  Hugo Tyson  <hmt@redhat.com>
+
+	* src/if_i82559.c (i82559_start): Do not wait for command
+	completion after the initial DUMPSTATS operation.  The code to
+	wait was bogus; it was looking at the structure in the wrong way.
+	In any case, there is no need to wait, the wait_for_cmd_done() in
+	any following activity is good enough.
+
 2001-03-28  Hugo Tyson  <hmt@redhat.com>
 
 	* src/if_i82559.c (update_statistics): Fix warning - only declare

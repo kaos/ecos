@@ -257,6 +257,8 @@ gets(char *buf, int buflen, int timeout)
             *ptr++ = c;
         }
         last_ch = c;
+        if (ptr == buf + buflen) // Buffer full
+            return buflen;
     }
 }
 

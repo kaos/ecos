@@ -32,7 +32,13 @@
 #include <pkgconf/system.h>
 
 STARTUP(vectors.o)
+// Enter at reset_vector in non-RAM startups so they are more representative
+// of actual execution when loaded over ICE
+#ifdef CYG_HAL_STARTUP_RAM
 ENTRY(start)
+#else
+ENTRY(reset_vector)
+#endif
 #ifdef EXTRAS
 INPUT(extras.o)
 #endif

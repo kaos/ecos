@@ -190,6 +190,13 @@ cyg_start(void)
     workspace_size = CYGMEM_REGION_ram_SIZE;
 #endif
 
+    if ( ram_end < workspace_end ) {
+        // when *less* SDRAM is installed than the possible maximum,
+        // but the heap1 region remains greater...
+        workspace_end = ram_end;
+        workspace_size = workspace_end - workspace_start;
+    }
+
     bist();
 
     for (init_entry = __RedBoot_INIT_TAB__; init_entry != &__RedBoot_INIT_TAB_END__;  init_entry++) {
@@ -216,7 +223,7 @@ cyg_start(void)
         res = _GETS_CTRLC;  // Treat 0 timeout as ^C
         while (script_timeout_ms >= CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT) {
             res = gets(line, sizeof(line), CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT);
-            if (res == _GETS_OK) {
+            if (res >= _GETS_OK) {
                 printf("== Executing boot script in %d.%03d seconds - enter ^C to abort\n", 
                        script_timeout_ms/1000, script_timeout_ms%1000);
                 continue;  // Ignore anything but ^C
@@ -353,6 +360,10 @@ do_dump(int argc, char *argv[])
 void
 do_cksum(int argc, char *argv[])
 {
+    // Compute a CRC, using the POSIX 1003 definition
+    extern unsigned long 
+        posix_crc32(unsigned char *s, int len);
+
     struct option_info opts[2];
     unsigned long base, len, crc;
     bool base_set, len_set;

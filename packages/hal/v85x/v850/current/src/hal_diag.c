@@ -172,7 +172,7 @@ cyg_hal_plf_serial_read(void* __ch_data, cyg_uint8* __buf, cyg_uint32 __len)
     CYGARC_HAL_RESTORE_GP();
 }
 
-cyg_int32 msec_timeout = 1000;
+static cyg_int32 msec_timeout = 1000;
 
 cyg_bool
 cyg_hal_plf_serial_getc_timeout(void* __ch_data, cyg_uint8* ch)
@@ -283,6 +283,8 @@ cyg_hal_plf_serial_init(void)
     CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
 }
 
+__externC void cyg_hal_plf_ice_diag_init();
+
 void
 cyg_hal_plf_comms_init(void)
 {
@@ -294,6 +296,10 @@ cyg_hal_plf_comms_init(void)
     initialized = 1;
 
     cyg_hal_plf_serial_init();
+
+#ifdef CYGDBG_HAL_V85X_V850_ICE_DIAG
+    cyg_hal_plf_ice_diag_init();
+#endif
 }
 
 //=============================================================================

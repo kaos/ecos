@@ -51,6 +51,8 @@ cdl_package CYGPKG_HAL_ARM_SA11X0 {
         necessary to select a specific target platform HAL
         package."
 
+    implements    CYGINT_HAL_ARM_ARCH_STRONGARM
+
     # Let the architectural HAL see this variant's interrupts file -
     # the SA11x0 has no variation between targets here.
     define_proc {

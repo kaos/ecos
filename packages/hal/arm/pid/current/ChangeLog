@@ -1,3 +1,12 @@
+2001-04-16  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_arm_pid.cdl: Add CDL to describe CPU family.
+
+2001-04-13  Gary Thomas  <gthomas@redhat.com>
+
+	* include/hal_platform_setup.h (PLATFORM_SETUP1): Ensure running
+	in proper address space (in ROM startup mode).
+
 2001-03-08  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_arm_pid.cdl: Does not guarantee virtual vector support.

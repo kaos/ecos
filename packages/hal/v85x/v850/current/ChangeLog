@@ -1,3 +1,15 @@
+2001-04-24  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_v85x_v850.cdl: Separate v850_ice.cxx into separate file
+	and only build if CYGDBG_HAL_V850_ICE. Also only build for ROM
+	or ROMRAM startup.
+	* src/hal_diag.c: msec_timeout can be static
+	* src/v850_stub.c: Separate ICE support into new v850_ice.cxx file from
+	here
+	* src/v850_ice.cxx: New file
+	* src/v85x_v850.ld: Enter at reset_vector for ROM or ROMRAM startup.
+	This is better when loading via ICE.
+
 2001-03-29  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/hal_v85x_v850.cdl: Fix typo.

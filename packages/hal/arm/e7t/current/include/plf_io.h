@@ -46,7 +46,7 @@
 
 // non-caching by accessing addr|0x04000000
 
-#define E7T_REG_BASE              0x03ff0000
+#define E7T_REG_BASE              0x07ff0000
 
 // -----------------------------------------------------------------------------
 // System config (register bases and caching)
@@ -224,11 +224,9 @@
 
 //-----------------------------------------------------------------------------
 // Cache
-#define E7T_CACHE_SET0_ADDR       0x10000000
-#define E7T_CACHE_SET1_ADDR       0x10800000
-#define E7T_CACHE_TAG_ADDR        0x11000000
-
-
+#define E7T_CACHE_SET0_ADDR       0x14000000
+#define E7T_CACHE_SET1_ADDR       0x14800000
+#define E7T_CACHE_TAG_ADDR        0x15000000
 
 //-----------------------------------------------------------------------------
 // end of plf_io.h

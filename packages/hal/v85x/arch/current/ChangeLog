@@ -1,3 +1,10 @@
+2001-04-24  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/vectors.S: Support daft platforms like the CEB which have
+	default on-chip flash that vector NMI to 2 insns after reset.
+	Also place hal_v85x_ice_syscall_info in fixed location, only
+	for ROM/ROMRAM builds.
+
 2001-03-28  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/vectors.S: Overhaul...

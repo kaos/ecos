@@ -1,3 +1,8 @@
+2001-04-18  Jesper Skov  <jskov@redhat.com>
+	Case 105926
+	* src/io_file.c (falloc): Don't return -EMFILE, but EMFILE. Found
+	by Andrew Lunn.
+
 2000-11-22  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/io.cdl: Only put ioinit.cxx in extras.o. Build others normally.

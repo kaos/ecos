@@ -215,7 +215,10 @@ ins_will_execute(unsigned long ins)
         res = TRUE;
         break;
     case 0xF: // NV
-        res = FALSE;
+        if (((ins & 0x0E000000) >> 24) == 0xA)
+	    res = TRUE;
+	else
+	    res = FALSE;
         break;
     }
     return res;
@@ -261,10 +264,11 @@ target_ins(unsigned long *pc, unsigned long ins)
     unsigned long new_pc, offset, op2;
     unsigned long Rn;
     int i, reg_count, c;
+
     switch ((ins & 0x0C000000) >> 26) {
     case 0x0:
-        // BX
-        if ((ins & 0x0FFFFFF0) == 0x012FFF10) {
+        // BX or BLX
+        if ((ins & 0x0FFFFFD0) == 0x012FFF10) {
             new_pc = (unsigned long)get_register(ins & 0x0000000F);
             return ((unsigned long *)new_pc);
         }
@@ -408,6 +412,12 @@ target_ins(unsigned long *pc, unsigned long ins)
                 offset = (ins & 0x00FFFFFF) << 2;
                 if (ins & 0x00800000) offset |= 0xFC000000;  // sign extend
                 new_pc = (unsigned long)(pc+2) + offset;
+		// If its BLX, make new_pc a thumb address.
+		if ((ins & 0xFE000000) == 0xFA000000) {
+		    if ((ins & 0x01000000) == 0x01000000)
+			new_pc |= 2;
+		    new_pc = MAKE_THUMB_ADDR(new_pc);
+		}
                 return ((unsigned long *)new_pc);
             } else {
                 // Falls through
@@ -434,8 +444,8 @@ target_thumb_ins(unsigned long pc, unsigned short ins)
 
     switch ((ins & 0xf000) >> 12) {
     case 0x4:
-        // Check for BX
-        if ((ins & 0xff87) == 0x4700)
+        // Check for BX or BLX
+        if ((ins & 0xff07) == 0x4700)
             new_pc = (unsigned long)get_register((ins & 0x00078) >> 3);
         break;
     case 0xd:
@@ -457,15 +467,26 @@ target_thumb_ins(unsigned long pc, unsigned short ins)
         }
         break;
     case 0xf:
-        // BL (4byte instruction!)
+        // BL/BLX (4byte instruction!)
         // First instruction (bit 11 == 0) holds top-part of offset
-        offset = (ins & 0x07FF) << 12;
-        if (ins & 0x0400) offset |= 0xFF800000;  // sign extend
-        // Get second instruction
-        // Second instruction (bit 11 == 1) holds bottom-part of offset
-        ins = *(unsigned short*)(pc+2);
-        offset |= (ins & 0x07ff) << 1;
-        new_pc = MAKE_THUMB_ADDR((unsigned long)(pc+4) + offset);
+        if ((ins & 0x0800) == 0) {
+	    offset = (ins & 0x07FF) << 12;
+	    if (ins & 0x0400) offset |= 0xFF800000;  // sign extend
+	    // Get second instruction
+	    // Second instruction (bit 11 == 1) holds bottom-part of offset
+	    ins = *(unsigned short*)(pc+2);
+	    // Check for BL/BLX
+	    if ((ins & 0xE800) == 0xE800) {
+		offset |= (ins & 0x07ff) << 1;
+		new_pc = (unsigned long)(pc+4) + offset;
+		// If its BLX, force a full word alignment
+		// Otherwise, its a thumb address.
+		if (!(ins & 0x1000))
+		    new_pc &= ~3;
+		else
+		    new_pc = MAKE_THUMB_ADDR(new_pc);
+	    }
+	}
         break;
     }
 

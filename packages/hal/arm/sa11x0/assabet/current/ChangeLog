@@ -1,3 +1,7 @@
+2001-04-09  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/lcd_support.c: Frame pointer was right before.
+
 2001-03-08  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_arm_sa11x0_assabet.cdl: Removed

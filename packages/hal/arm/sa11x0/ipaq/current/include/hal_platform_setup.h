@@ -53,7 +53,7 @@
 #include <cyg/hal/hal_mmu.h>            // MMU definitions
 #include <cyg/hal/ipaq.h>               // Platform specific hardware definitions
 
-#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_WinCE)
+#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_Compaq) || defined(CYG_HAL_STARTUP_WinCE)
 #define PLATFORM_SETUP1 _platform_setup1
 #define CYGHWR_HAL_ARM_HAS_MMU
 #if defined(CYG_HAL_STARTUP_WinCE)
@@ -172,7 +172,7 @@
         mov     r2, #SA11X0_UART_BAUD_RATE_DIVISOR(CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD)
         str     r2, [r1, #SA1100_UTCR2]
         /* enable the UART TX and RX */
-InitUart3Enable:        
+//InitUart3Enable:        
         mov     r2, #(SA1100_UTCR3_RXE|SA1100_UTCR3_TXE)
         str     r2, [r1, #SA1100_UTCR3]
 
@@ -267,7 +267,7 @@ hexR6:
         mov     pc,lr        
 54:             
 #endif // DEBUG_INIT
-      
+
         // Make sure MMU is OFF
 	mov r0,#0xE0000000	// Force cache writeback by reloading
 	add r2,r0,#0x4000	// cache from the zeros bank
@@ -495,6 +495,11 @@ dram_table:
 #endif // DEBUG_INIT
         str     r4,[r1]
         .endm
+
+#if defined(CYG_HAL_STARTUP_Compaq)
+#define CYG_HAL_STARTUP_ROM
+#define CYG_HAL_ROM_RESET_USES_JUMP
+#endif
 
 #else // defined(CYG_HAL_STARTUP_ROM)
 #define PLATFORM_SETUP1

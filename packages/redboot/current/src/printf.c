@@ -44,6 +44,7 @@
 //==========================================================================
 
 #include <stdarg.h>
+#include <limits.h>
 #include <redboot.h>
 
 static int
@@ -76,13 +77,13 @@ _vprintf(void (*putc)(char c), char *fmt0, va_list ap)
 {
     char buf[32];
     char c, sign, *cp=buf;
-    int left_prec, right_prec, zero_fill, pad, pad_on_right;
+    int left_prec, right_prec, zero_fill, pad, pad_on_right, islong;
     long val;
     int res = 0, length = 0;
     while ((c = *fmt0++) != '\0') {
         if (c == '%') {
             c = *fmt0++;
-            left_prec = right_prec = pad_on_right = 0;
+            left_prec = right_prec = pad_on_right = islong = 0;
             if (c == '-') {
                 c = *fmt0++;
                 pad_on_right++;
@@ -111,9 +112,11 @@ _vprintf(void (*putc)(char c), char *fmt0, va_list ap)
             if (c == 'l') {
                 // 'long' qualifier
                 c = *fmt0++;
+		islong = 1;
             }
             switch (c) {
             case 'p':  // Pointer
+		islong = 1;
                 (*putc)('0');
                 (*putc)('x');
                 zero_fill = true;
@@ -122,7 +125,10 @@ _vprintf(void (*putc)(char c), char *fmt0, va_list ap)
             case 'u':
             case 'x':
             case 'X':
-                val = va_arg(ap, long);
+	        if (islong)
+                  val = va_arg(ap, long);
+		else
+		  val = va_arg(ap, int);
                 switch (c) {
                 case 'd':
                     if (val < 0) {
@@ -134,9 +140,17 @@ _vprintf(void (*putc)(char c), char *fmt0, va_list ap)
                     break;
                 case 'p':
                 case 'x':
+#if INT_MAX < LONG_MAX
+		    if (!islong)
+			val &= (1L << (sizeof(int) * 8)) - 1;
+#endif
                     length = _cvt(val, buf, 16, "0123456789abcdef");
                     break;
                 case 'X':
+#if INT_MAX < LONG_MAX
+		    if (!islong)
+			val &= (1L << (sizeof(int) * 8)) - 1;
+#endif
                     length = _cvt(val, buf, 16, "0123456789ABCDEF");
                     break;
                 }
@@ -147,7 +161,7 @@ _vprintf(void (*putc)(char c), char *fmt0, va_list ap)
                 length = strlen(cp);
                 break;
             case 'c':
-                c = va_arg(ap, long /*char*/);
+                c = va_arg(ap, int /*char*/);
                 (*putc)(c);
                 res++;
                 continue;

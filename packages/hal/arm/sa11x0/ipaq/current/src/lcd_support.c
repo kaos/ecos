@@ -100,7 +100,7 @@ static struct lcd_frame {
 #define RGB_BLUE(x)  (((x)&0x0F)<<1)
 #endif
 
-static struct lcd_frame * volatile fp;
+static volatile struct lcd_frame *fp;
 
 // Physical screen info
 //static int lcd_depth  = LCD_DEPTH;  // Should be 1, 2, or 4

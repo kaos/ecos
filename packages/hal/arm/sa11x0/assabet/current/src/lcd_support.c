@@ -72,7 +72,7 @@ static struct lcd_frame {
 #define RGB_GREEN(x) (((x)&0x3F)<<5)
 #define RGB_BLUE(x)  ((x)&0x1F)
 
-static struct lcd_frame * volatile fp;
+static volatile struct lcd_frame *fp;
 
 static int
 _hexdigit(char c)

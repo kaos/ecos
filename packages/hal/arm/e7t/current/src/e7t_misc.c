@@ -127,14 +127,14 @@ void hal_clock_read(cyg_uint32 *pvalue)
 //
 void hal_delay_us(cyg_int32 usecs)
 {
-    cyg_uint32 intpnd;
-    cyg_uint64 ticks = ((CYGNUM_HAL_RTC_PERIOD*CYGNUM_HAL_RTC_DENOMINATOR)/1000000);
+    cyg_uint32 count;
+    cyg_uint32 ticks = ((CYGNUM_HAL_RTC_PERIOD*CYGNUM_HAL_RTC_DENOMINATOR)/1000000) * usecs;
     cyg_uint32 tmod;
 
     // Disable timer 1
     HAL_READ_UINT32(E7T_TMOD, tmod);
     tmod &= ~(E7T_TMOD_TE1);
-    HAL_WRITE_UINT32(E7T_TMOD, 0);
+    HAL_WRITE_UINT32(E7T_TMOD, tmod);
 
     tmod &= ~(E7T_TMOD_TMD1 | E7T_TMOD_TCLR1);
     tmod |= E7T_TMOD_TE1;
@@ -148,22 +148,23 @@ void hal_delay_us(cyg_int32 usecs)
     // And enable timer
     HAL_WRITE_UINT32(E7T_TMOD, tmod);
 
-    hal_interrupt_unmask(CYGNUM_HAL_INTERRUPT_TIMER1);
+    // Wait for timer to underflow. Can't test the timer completion
+    // bit without actually enabling the interrupt. So instead watch
+    // the counter.
+    ticks /= 2;                         // wait for this threshold
 
-    // Wait for timer to underflow
-    while (0 < usecs--) {
-        do {
-            HAL_READ_UINT32(E7T_INTPND, intpnd);
-        } while ((intpnd & (1 << CYGNUM_HAL_INTERRUPT_TIMER1)) == 0);
-        // Clear pending flag
-        hal_interrupt_acknowledge(CYGNUM_HAL_INTERRUPT_TIMER1);
-    }
+    // Wait till timer counts below threshold
+    do {
+        HAL_READ_UINT32(E7T_TCNT1, count);
+    } while (count >= ticks);
+    // then wait for it to be reloaded
+    do {
+        HAL_READ_UINT32(E7T_TCNT1, count);
+    } while (count < ticks);
 
     // Then disable timer 1 again
     tmod &= ~E7T_TMOD_TE1;
     HAL_WRITE_UINT32(E7T_TMOD, tmod);
-
-    hal_interrupt_mask(CYGNUM_HAL_INTERRUPT_TIMER1);
 }
 
 // -------------------------------------------------------------------------
@@ -171,22 +172,13 @@ void hal_delay_us(cyg_int32 usecs)
 void hal_hardware_init(void)
 {
     cyg_uint32 intmask;
-#if 0
-    extern void init_ser(void);
-    extern void putint(int c);
-    cyg_uint32 v, a;
-    init_ser();
-    a = (E7T_IOPMOD);
-    HAL_READ_UINT32(a, v);
-    putint(a);
-    putint(v);
-#endif
 
     // Set up eCos/ROM interfaces
     hal_if_init();
 
+    // Enable cache
     HAL_WRITE_UINT32(E7T_SYSCFG, 
-                     0x07FFFFA0|E7T_SYSCFG_CM_0R_8C|E7T_SYSCFG_WE);
+                     0x07FFFF80|E7T_SYSCFG_CM_0R_8C|E7T_SYSCFG_WE);
     HAL_UCACHE_INVALIDATE_ALL();
     HAL_UCACHE_ENABLE();
 

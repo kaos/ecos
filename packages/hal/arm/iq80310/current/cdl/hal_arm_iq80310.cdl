@@ -54,6 +54,8 @@ cdl_package CYGPKG_HAL_ARM_IQ80310 {
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
     implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
+    implements    CYGINT_HAL_ARM_MEM_REAL_REGION_TOP
+    implements    CYGINT_HAL_ARM_ARCH_XSCALE
 
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_arm.h>"
@@ -192,8 +194,7 @@ cdl_package CYGPKG_HAL_ARM_IQ80310 {
             display "Global compiler flags"
             flavor  data
             no_define
-#            default_value { "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority -mapcs-frame" }
-            default_value { "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -fno-rtti -fno-exceptions -fvtable-gc -finit-priority -mapcs-frame" }
+            default_value { "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority -mapcs-frame" }
             description   "
                 This option controls the global compiler flags which are used to
                 compile all packages by default. Individual packages may define

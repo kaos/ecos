@@ -75,22 +75,25 @@ __eth_install_listener(int eth_type, pkt_handler_t handler)
     int i, empty;
     pkt_handler_t old;
 
-    empty = -1;
-    for (i = 0;  i < NUM_EXTRA_HANDLERS;  i++) {
-        if (eth_handlers[i].type == eth_type) {
-            // Replace existing handler
-            old = eth_handlers[i].handler;
-            eth_handlers[i].handler = handler;
-            return old;
-        }
-        if (eth_handlers[i].type == 0) {
-            empty = i;
-        }
-    }
-    if (empty >= 0) {
-        // Found a free slot
-        eth_handlers[empty].type = eth_type;
-        eth_handlers[empty].handler = handler;
+    if (eth_type > 0x800 || handler != (pkt_handler_t)0) {
+	empty = -1;
+	for (i = 0;  i < NUM_EXTRA_HANDLERS;  i++) {
+	    if (eth_handlers[i].type == eth_type) {
+		// Replace existing handler
+		old = eth_handlers[i].handler;
+		eth_handlers[i].handler = handler;
+		return old;
+	    }
+	    if (eth_handlers[i].type == 0) {
+		empty = i;
+	    }
+	}
+	if (empty >= 0) {
+	    // Found a free slot
+	    eth_handlers[empty].type = eth_type;
+	    eth_handlers[empty].handler = handler;
+	    return (pkt_handler_t)0;
+	}
     }
     printf("** Warning: can't install listener for ethernet type 0x%02x\n", eth_type);
     return (pkt_handler_t)0;
@@ -171,11 +174,13 @@ __enet_poll(void)
 #endif
 
             default:
-                for (i = 0;  i < NUM_EXTRA_HANDLERS;  i++) {
-                    if (eth_handlers[i].type == type) {
-                        (eth_handlers[i].handler)(pkt, &eth_hdr);
-                    }
-                }
+	        if (type > 0x800) {
+		    for (i = 0;  i < NUM_EXTRA_HANDLERS;  i++) {
+			if (eth_handlers[i].type == type) {
+			    (eth_handlers[i].handler)(pkt, &eth_hdr);
+			}
+		    }
+		}
                 __pktbuf_free(pkt);
                 break;
             }

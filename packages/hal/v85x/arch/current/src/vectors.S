@@ -88,6 +88,7 @@ reset_vector:
 //
 __ROM_vsr:
         // start of ROM
+        mov     r0,sp  // needed for platforms that have NMI 2 insns after reset
         // This jump works even for ROMRAM because it is PC relative
         jr      start
 
@@ -104,6 +105,18 @@ __ROM_vsr:
         .text
         .globl  start
 start:
+#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_ROMRAM)
+        // Before anything else, *carefully* check if this was actually an NMI
+        // The assumption is that the stack pointer can only be 0 on reset
+        // as set above at __ROM_vsr
+        cmp     r0,sp
+        be      1f
+        addi    -CYGARC_EXCEPTION_FRAME_SIZE,sp,sp
+        movea   1,r0,r8
+        jr      exception
+1:      
+#endif
+        
         // Perform hardware initialization
         PLATFORM_SETUP1
 
@@ -210,11 +223,6 @@ ___romram_jump_vector:
         // Run through static constructors
         jarl    _cyg_hal_invoke_constructors,r31
 
-#if CYGINT_HAL_V85x_ICE_DEBUG
-        // Initialize ICE debugging info
-        jarl    _hal_v85x_init_ice_syscall_info,r31
-#endif
-        
         // Ready to start the eCos kernel
         jarl    _cyg_start,r31
 
@@ -570,6 +578,14 @@ _hal_virtual_vector_table:
         .rept   CYGNUM_CALL_IF_TABLE_SIZE
         .word   0
         .endr
+
+#if CYGINT_HAL_V85X_ICE_DEBUG
+        .globl  _hal_v85x_ice_syscall_info
+_hal_v85x_ice_syscall_info:
+         .rept  48
+         .long  0
+         .endr
+#endif // if CYGINT_HAL_V85X_ICE_DEBUG
 #endif // if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_ROMRAM)
         
         .data
@@ -623,13 +639,5 @@ _hal_interrupt_objects:
 	.long	0
 	.endr
 
-#if CYGINT_HAL_V85x_ICE_DEBUG
-        .globl  _hal_v85x_ice_syscall_info
-_hal_v85x_ice_syscall_info:
-         .rept  32
-         .long  0
-         .endr
-#endif
-        
 // -------------------------------------------------------------------------
 // EOF vectors.S

@@ -231,6 +231,16 @@ package CYGPKG_DEVS_FLASH_IPAQ {
 	   on the Intel StrongARM SA-1110 iPAQ platform."
 }
 
+package CYGPKG_DEVS_FLASH_NANO {
+	alias 		{ "FLASH memory support for Intel SA1110 nanoEngine" flash_nano }
+	directory	devs/flash/arm/nano
+	script		flash_nano.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the StrongARM SA-1110 nanoEngine platform."
+}
+
 package CYGPKG_DEVS_FLASH_STRATA {
 	alias 		{ "Generic FLASH memory support for Intel StrataFLASH" strata }
 	directory	devs/flash/intel/strata
@@ -1053,6 +1063,27 @@ package CYGPKG_HAL_ARM_SA11X0_IPAQ {
         eCos on a Intel StrongARM SA1110 pocket PC (Compaq iPAQ)."
 }
 
+
+package CYGPKG_HAL_ARM_SA11X0_NANO {
+	alias		{ "Intel SA1110 nanoEngine eval board" hal_arm_sa11x0_nano }
+	directory	hal/arm/sa11x0/nano
+	script		hal_arm_sa11x0_nano.cdl
+	hardware
+        description "
+        The nanoEngine HAL package provides the support needed to run
+        eCos on the Bright Star Engineering nanoEngine StrongARM SA1110 board."
+}
+
+package CYGPKG_DEVS_ETH_ARM_NANO {
+	alias 		{ "BSE nanoEngine with 82559 ethernet driver"
+			   devs_eth_arm_nano nano_eth_driver }
+	hardware
+	directory	devs/eth/arm/nano
+	script		nano_eth_drivers.cdl
+        description     "Ethernet driver for SA11x0 nanoEngine with Intel
+                         i82559 ethernet interfaces."
+}
+
 package CYGPKG_HAL_ARM_SA11X0_BRUTUS {
 	alias		{ "Intel SA1100 Brutus eval board" hal_arm_sa11x0_brutus }
 	directory	hal/arm/sa11x0/brutus
@@ -1682,6 +1713,24 @@ target ipaq {
         eCos on an Intel StrongARM SA1110 Pocket PC (Compaq iPAQ)."
 }
 
+
+target nano {
+	alias { "nanoEngine StrongARM SA1110 board" nano nanoEngine }
+        packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_SA11X0
+                   CYGPKG_HAL_ARM_SA11X0_NANO
+                   CYGPKG_IO_SERIAL_ARM_SA11X0
+                   CYGPKG_DEVS_FLASH_NANO
+                   CYGPKG_DEVS_FLASH_STRATA
+		   CYGPKG_DEVICES_WATCHDOG_ARM_SA11X0
+                   CYGPKG_IO_PCI
+                   CYGPKG_DEVS_ETH_ARM_NANO
+                   CYGPKG_DEVS_ETH_INTEL_I82559
+        }
+        description "
+        The nanoEngine target provides the packages needed to run
+        eCos on a Bright Star Engineering nanoEngine StrongARM SA1110 board."
+}
 target brutus {
 	alias { "Intel StrongARM SA1100 board" brutus }
 	packages { CYGPKG_HAL_ARM

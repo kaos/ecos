@@ -1,0 +1,147 @@
+2001-04-12  Hugo Tyson  <hmt@redhat.com>
+
+	* src/nano_misc.c (hal_arm_mem_real_region_top): Also report
+	variants on the CYGMEM_SECTION_heap1 as described by default.
+	This is ugly, but necessary, else the heap tries to use memory
+	that is not installed.  Oh, for a proper MLT!
+
+2001-04-02  Hugo Tyson  <hmt@redhat.com>
+
+	* misc/readme.txt: Update the readme to reflect more info about
+	using the nano target.
+
+2001-03-29  Hugo Tyson  <hmt@redhat.com>
+
+	* src/nano_misc.c (hal_mmu_init): Find the real physical address
+	for mapping the uncacheable, unbufferable PCI window - it might be
+	various places depending on what SDRAMs are installed.
+
+2001-03-14  Hugo Tyson  <hmt@redhat.com>
+
+	* include/nano.h (HAL_PCI_INIT): Disconnect the two ethernet
+	devices from the PCI bus during init so that we can re-scan during
+	startup regardless of what happened before - such as
+	network-enabled RedBoot doing the same setup already.
+
+	* misc/redboot_POST.ecm: 
+	* misc/redboot_RAM.ecm: 
+	Enable package CYGPKG_IO_ETH_DRIVERS so that RedBoot is network
+	capable.  Disable CYGPKG_DEVS_ETH_ARM_NANO_ETH1 so that it uses
+	only the first ether device.  Tidy some comments and whitespace.
+
+2001-03-08  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_sa11x0_nano.cdl:  Removed
+	CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_GUARANTEED which is now the
+	default.
+
+2001-03-01  Hugo Tyson  <hmt@redhat.com>
+
+	* include/pkgconf/mlt_arm_sa11x0_nano_post.h:
+	* include/pkgconf/mlt_arm_sa11x0_nano_post.ldi:	
+	* include/pkgconf/mlt_arm_sa11x0_nano_post.mlt:
+	* include/pkgconf/mlt_arm_sa11x0_nano_ram.h:
+	* include/pkgconf/mlt_arm_sa11x0_nano_ram.ldi:
+	* include/pkgconf/mlt_arm_sa11x0_nano_ram.mlt:
+	Add MLT definition of PCI window.
+	I chose 0x1e00000 ie. megabyte 30 because I believe
+	megabyte 31 is used by RedBoot for buffers or stacks.
+	
+	* include/nano.h: Take external MLT definition of PCI window for
+	defining BASE, SIZE symbols.  Set the interrupts on GPIO0 and
+	GPIO1 to be falling-edge in HAL_PCI_INIT().  Don't define any of
+	this unless CYGPKG_IO_PCI and not assembler.
+
+	* src/nano_misc.c (hal_mmu_init): Take external MLT definition of
+	PCI window.  Also define and initialize an int holding the real
+	address of the PCI window, if CYGPKG_IO_PCI.
+
+2001-02-28  Hugo Tyson  <hmt@redhat.com>
+
+	* include/plf_mmap.h (HAL_VIRT_TO_PHYS_ADDRESS): [et al] Use
+	variant HAL routines which scan the true memory map installed.
+	This is necessary for dealing with eg. PCI window - also future
+	similar targets with different physical memory arrangements,
+	cf. the PLC2's "gappy" SDRAM ram.
+
+	* src/nano_misc.c (plf_hardware_init): Perform MMU initialization
+	even in RAM startup - so that different configurations of
+	ROM(RedBoot) and RAM app can work together.
+	(hal_mmu_init): Perform partial initialization when in RAM startup
+	- so that ROM settings can be overridden eg. for PCI non-cacheable
+	memory windows and the like.  [Incomplete initial version.]
+
+	* include/nano.h (HAL_PCI_INIT): Implement this and all its mates,
+	ie. a PCI device driver for the nanoBridge and *very specifically*
+	its two attached i82559s only - it's by no means general, because
+	it's not a proper implementation of a PCI bridge.
+
+2001-02-22  Hugo Tyson  <hmt@redhat.com>
+
+	* misc/redboot_POSTecm: 
+	* misc/redboot_RAM.ecm: add configuration of the Flash Image
+	System initialization in RedBoot.
+
+2001-02-20  Hugo Tyson  <hmt@redhat.com>
+
+	* cdl/hal_arm_sa11x0_nano.cdl: New CDL describing serial
+	ports - CYGHWR_HAL_ARM_SA11X0_UART1,3.
+
+	* cdl/hal_arm_sa11x0_nano.cdl: Also changed the default baud rates
+	to 38400, having realized that the other port works just fine too.
+	So you can put your serial line on the non-BSE port for normal
+	work and not be hassled by out-of-time characters over reset.
+
+2001-02-15  Hugo Tyson  <hmt@redhat.com>
+
+	* misc/redboot_POST.ecm: 
+	* misc/redboot_RAM.ecm:
+	Add CYGPKG_IO_FLASH for RedBoot builds now that flash driver
+	exists.   CYGPKG_DEVS_FLASH_NANO + CYGPKG_DEVS_FLASH_STRATA
+
+2001-02-14  Hugo Tyson  <hmt@redhat.com>
+
+	* include/hal_platform_setup.h: Clean up debug and cache hacks to
+	get it limping along.  Import proper value (as read from system
+	regs) to SDRAM controller setup - in case true ROM startup is ever
+	used.
+
+	* src/nano_misc.c (hal_arm_mem_real_region_top): Add.  Support
+	hal_dram_size.
+	(hal_mmu_init): Add a SDRAM sizer like others we have.  Just in
+	case.  Deals with 32Mb sized parts also.
+
+	* cdl/hal_arm_sa11x0_nano.cdl: implements
+	CYGINT_HAL_ARM_MEM_REAL_REGION_TOP
+
+2001-02-14  Hugo Tyson  <hmt@redhat.com>
+
+	* hal/arm/sa11x0/nano: New package, based on Assabet and plc2
+	HALs.  This is the nanoEngine from Bright Star Engineering; an
+	SA1110 CPU + 2x i82559 ethernets.
+
+//===========================================================================
+//####COPYRIGHTBEGIN####
+//                                                                          
+// -------------------------------------------                              
+// The contents of this file are subject to the Red Hat eCos Public License 
+// Version 1.1 (the "License"); you may not use this file except in         
+// compliance with the License.  You may obtain a copy of the License at    
+// http://www.redhat.com/                                                   
+//                                                                          
+// Software distributed under the License is distributed on an "AS IS"      
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+// License for the specific language governing rights and limitations under 
+// the License.                                                             
+//                                                                          
+// The Original Code is eCos - Embedded Configurable Operating System,      
+// released September 30, 1998.                                             
+//                                                                          
+// The Initial Developer of the Original Code is Red Hat.                   
+// Portions created by Red Hat are                                          
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.  
+// All Rights Reserved.                                                     
+// -------------------------------------------                              
+//                                                                          
+//####COPYRIGHTEND####
+//===========================================================================

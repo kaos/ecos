@@ -1,3 +1,23 @@
+2001-04-19  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_arm.cdl: Fix typo for ARM9 systems.
+
+2001-04-18  Gary Thomas  <gthomas@redhat.com>
+
+	* src/vectors.S: Add new flag 'CYG_HAL_ROM_RESET_USES_JUMP' to control
+	how RESET is handled.  This is normally set for ROM applications, but
+	can be overridden by platform code for situations when it is unsuitable
+	to have a branch as the RESET instruction.
+
+2001-04-16  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_arm.cdl: Add new interfaces to describe CPU family and
+	option possiblities.
+
+2001-04-07  Mark Salter  <msalter@redhat.com>
+
+	* src/arm_stub.c: Add support for v5T BLX insn.
+
 2001-03-30  Mark Salter  <msalter@redhat.com>
 
 	* src/vectors.S (__exception_handlers): Don't use relative branch
