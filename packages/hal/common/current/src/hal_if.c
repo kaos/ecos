@@ -10,6 +10,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2003 Nick Garnett <nickg@calivar.com>
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -34,8 +35,8 @@
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
 //
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
+// Alternative licenses for eCos may be arranged by contacting the copyright
+// holders.
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //=============================================================================
@@ -160,20 +161,38 @@ delay_us(cyg_int32 usecs)
     CYGARC_HAL_SAVE_GP();
 #ifdef CYGPKG_KERNEL
     {
-        cyg_int32 start, elapsed;
-        cyg_int32 usec_ticks, slice;
-
-        // How many ticks total we should wait for.
-        usec_ticks = usecs*CYGNUM_KERNEL_COUNTERS_RTC_PERIOD;
-        usec_ticks /= CYGNUM_HAL_RTC_NUMERATOR/CYGNUM_HAL_RTC_DENOMINATOR/1000;
-
+        cyg_int32 start, elapsed, elapsed_usec;
+        cyg_int32 slice;
+        cyg_int32 usec_per_period = CYGNUM_HAL_RTC_NUMERATOR/CYGNUM_HAL_RTC_DENOMINATOR/1000;
+        cyg_int32 ticks_per_usec = CYGNUM_KERNEL_COUNTERS_RTC_PERIOD/usec_per_period;
+        
         do {
             // Spin in slices of 1/2 the RTC period. Allows interrupts
-            // time to run without messing up the algorithm. If we spun
-            // for 1 period (or more) of the RTC, there'd be also problems
-            // figuring out when the timer wrapped.  We may lose a tick or
-            // two for each cycle but it shouldn't matter much.
-            slice = usec_ticks % (CYGNUM_KERNEL_COUNTERS_RTC_PERIOD / 2);
+            // time to run without messing up the algorithm. If we
+            // spun for 1 period (or more) of the RTC, there would also
+            // be problems figuring out when the timer wrapped.  We
+            // may lose a tick or two for each cycle but it shouldn't
+            // matter much.
+
+            // The tests against CYGNUM_KERNEL_COUNTERS_RTC_PERIOD
+            // check for a value that would cause a 32 bit signed
+            // multiply to overflow. But this also implies that just
+            // multiplying by ticks_per_usec will yield a good
+            // approximation.  Otherwise we need to do the full
+            // multiply+divide to get sufficient accuracy. Note that
+            // this test is actually constant, so the compiler will
+            // eliminate it and only compile the branch that is
+            // selected.
+            
+            if( usecs > usec_per_period/2 )
+                slice = CYGNUM_KERNEL_COUNTERS_RTC_PERIOD/2;
+            else if( CYGNUM_KERNEL_COUNTERS_RTC_PERIOD >= 0x7FFFFFFF/usec_per_period )
+                slice = usecs * ticks_per_usec;
+            else
+            {
+                slice = usecs*CYGNUM_KERNEL_COUNTERS_RTC_PERIOD;
+                slice /= usec_per_period;
+            }
     
             HAL_CLOCK_READ(&start);
             do {
@@ -183,10 +202,25 @@ delay_us(cyg_int32 usecs)
                     elapsed += CYGNUM_KERNEL_COUNTERS_RTC_PERIOD;
             } while (elapsed < slice);
             
-            // Adjust by elapsed, not slice, since an interrupt may have
-            // been stalling us for some time.
-            usec_ticks -= elapsed;
-        } while (usec_ticks > 0);
+            // Adjust by elapsed, not slice, since an interrupt may
+            // have been stalling us for some time.
+
+            if( CYGNUM_KERNEL_COUNTERS_RTC_PERIOD >= 0x7FFFFFFF/usec_per_period )
+                elapsed_usec = elapsed / ticks_per_usec;
+            else
+            {
+                elapsed_usec = elapsed * usec_per_period;
+                elapsed_usec = elapsed_usec / CYGNUM_KERNEL_COUNTERS_RTC_PERIOD;
+            }
+
+            // It is possible for elapsed_usec to end up zero in some
+            // circumstances and we could end up looping indefinitely.
+            // Avoid that by ensuring that we always decrement usec by
+            // at least 1 each time.
+            
+            usecs -= elapsed_usec ? elapsed_usec : 1;
+            
+        } while (usecs > 0);
     }
 #else // CYGPKG_KERNEL
 #ifdef HAL_DELAY_US
