@@ -1,3 +1,8 @@
+2004-11-15  Jani Monoses <jani@iv.ro>
+
+	* include/hal_platform_setup.h: 
+	Fix build in THUMB mode by using ldr instead of mov.
+
 2004-09-12  Jani Monoses <jani@iv.ro>
 
 	* cdl/hal_arm_lpc2xxx_mcb2100.cdl: 

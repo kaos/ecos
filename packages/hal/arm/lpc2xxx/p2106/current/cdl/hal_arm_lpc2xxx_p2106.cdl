@@ -46,14 +46,14 @@
 # ====================================================================
 
 cdl_package CYGPKG_HAL_ARM_LPC2XXX_P2106 {
-    display       "Keil P2106 eval board HAL"
+    display       "Olimex P2106 eval board HAL"
     parent        CYGPKG_HAL_ARM_LPC2XXX
     define_header hal_arm_lpc2xxx_p2106.h
     include_dir   cyg/hal
     hardware
     description   "
         The P2106 HAL package provides the support needed to run
-        eCos on an Keil P2106 eval board."
+        eCos on an Olimex P2106 eval board."
 
     compile       p2106_misc.c
 
@@ -65,7 +65,7 @@ cdl_package CYGPKG_HAL_ARM_LPC2XXX_P2106 {
         puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_arm_lpc2xxx_p2106.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_ARM_VAR_IO_H"
         puts $::cdl_header "#define HAL_PLATFORM_CPU    \"ARM7TDMI-S\""
-        puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"Keil LPC2XXX/P2106\""
+        puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"Olimex LPC2XXX/P2106\""
         puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
     }
     

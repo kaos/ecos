@@ -1,3 +1,14 @@
+2004-11-15  Jani Monoses <jani@iv.ro>
+
+	* include/hal_platform_setup.h:
+	Use ldr instead of mov so it builds in THUMB mode.
+	* include/pkgconf/mlt_arm_lpc2xxx_p2106_ram.ldi:
+	Fix RAM startup. 
+	* cdl/hal_arm_lpc2xxx_p2106.cdl: 
+	* src/p2106_misc.c:
+	s/Keil/Olimex/ 
+
+
 2004-10-8  Jani Monoses <jani@iv.ro>
 
 	* cdl/hal_arm_lpc2xxx_p2106.cdl: 
@@ -5,6 +16,8 @@
 	* include/hal_platform_setup.h: 
 	* include/pkgconf/mlt_arm_lpc2xxx_p2106_rom.ldi: 
 	* include/pkgconf/mlt_arm_lpc2xxx_p2106_rom.h: 
+	* include/pkgconf/mlt_arm_lpc2xxx_p2106_ram.ldi: 
+	* include/pkgconf/mlt_arm_lpc2xxx_p2106_ram.h: 
 	* src/p2106_misc.c: 
 	New HAL platform added to support the Olimex LPC-P2106 board.
 

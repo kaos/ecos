@@ -81,7 +81,6 @@ static unsigned int select_baud[] = {
 // we need dynamically generated divider values because they depend on the 
 // value of pclk which in turn is changeable
 
-externC int cyg_var_baud_generator(int baud);
 #define CYG_IO_SERIAL_GENERIC_16X5X_BAUD_GENERATOR \
             CYG_HAL_ARM_LPC2XXX_BAUD_GENERATOR 
 

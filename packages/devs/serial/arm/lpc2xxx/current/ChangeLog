@@ -1,3 +1,8 @@
+2004-11-15  Jani Monoses <jani@iv.ro>
+
+	* include/arm_lpc2xxx_ser.inl: 
+	Get rid of unused external function declaration.
+	
 2004-09-12 Jani Monoses <jani@iv.ro>
 
 	* include/arm_lpc2xxx_ser.inl: 

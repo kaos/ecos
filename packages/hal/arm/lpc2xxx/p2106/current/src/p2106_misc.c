@@ -2,7 +2,7 @@
 //
 //      lpc_misc.c
 //
-//      HAL misc board support code for Keil P2106 
+//      HAL misc board support code for Olimex P2106 
 //
 //==========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####

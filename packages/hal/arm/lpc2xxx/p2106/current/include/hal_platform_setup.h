@@ -59,15 +59,15 @@
 
 	.macro  _led_init
         ldr r0,=CYGARC_HAL_LPC2XXX_REG_IO_BASE
-        mov r1,#(1<<7)	                // GPIO0 pins 7 is LED output
+        ldr r1,=(1<<7)	                // GPIO0 pins 7 is LED output
 	str r1,[r0,#CYGARC_HAL_LPC2XXX_REG_IODIR]
         .endm
 
         .macro _led x
 	ldr r0,=CYGARC_HAL_LPC2XXX_REG_IO_BASE
-	mov r1,#(1<<7)
+	ldr r1,=(1<<7)
 	str r1,[r0,#CYGARC_HAL_LPC2XXX_REG_IOCLR]
-	mov r1,#((\x & 1)<<7)
+	ldr r1,=((\x & 1)<<7)
 	str r1,[r0,#CYGARC_HAL_LPC2XXX_REG_IOSET]
 	.endm
 	
