@@ -28,7 +28,7 @@
 
 cdl_package CYGPKG_NET {
     display       "Basic networking framework"
-    doc           doc/index.html
+    doc           ref/net-common-tcpip.html
     include_dir   .
     requires      CYGPKG_IO
     requires      CYGPKG_ISOINFRA

@@ -8,11 +8,10 @@
   <title>TCP/IP Library Reference</title>
 
 
-  <sect1 id="GETDOMAINNAME">
-    <title>GETDOMAINNAME</title>
+  <sect1 id="net-common-tcpip-manpages-getdomainname">
+    <title>getdomainname</title>
     <screen>
-
-GETDOMAINNAME(3)          System Programmer's Manual          GETDOMAINNAME(3)
+GETDOMAINNAME(3)        System Library Functions Manual       GETDOMAINNAME(3)
 
 NAME
      getdomainname, setdomainname - get/set YP domain name of current host
@@ -21,10 +20,10 @@ SYNOPSIS
      #include &lt;unistd.h>
 
      int
-     getdomainname(char *name, size_t namelen)
+     getdomainname(char *name, size_t namelen);
 
      int
-     setdomainname(const char *name, size_t namelen)
+     setdomainname(const char *name, size_t namelen);
 
 DESCRIPTION
      The getdomainname() function returns the YP domain name for the current
@@ -34,25 +33,24 @@ DESCRIPTION
      nated.
 
      setdomainname() sets the domain name of the host machine to be name,
-     which has length namelen. This call is restricted to the superuser and is
-     normally used only when the system is bootstrapped.
+     which has length namelen.  This call is restricted to the superuser and
+     is normally used only when the system is bootstrapped.
 
 RETURN VALUES
-     If the call succeeds a value of 0 is returned.  If the call fails, a val-
-     ue of -1 is returned and an error code is placed in the global variable
-     errno.
+     If the call succeeds a value of 0 is returned.  If the call fails, a
+     value of -1 is returned and an error code is placed in the global vari-
+     able errno.
 
 ERRORS
      The following errors may be returned by these calls:
 
-     [EFAULT]      The name or namelen parameter gave an invalid address.
+     [EFAULT]           The name or namelen parameter gave an invalid address.
 
-     [EPERM]       The caller tried to set the domain name and was not the su-
-                   peruser.
+     [EPERM]            The caller tried to set the domain name and was not
+                        the superuser.
 
 SEE ALSO
-     domainname(1),  gethostid(3),  gethostname(3),  sysctl(3),  sysctl(8),
-     yp(8)
+     domainname(1), gethostid(3), gethostname(3), sysctl(3), sysctl(8), yp(8)
 
 BUGS
      Domain names are limited to MAXHOSTNAMELEN (from &lt;sys/param.h>) charac-
@@ -64,15 +62,14 @@ BUGS
 HISTORY
      The getdomainname function call appeared in SunOS 3.x.
 
-BSD Experimental                  May 6, 1994                                1
+BSD                               May 6, 1994                              BSD
     </screen>
   </sect1>
 
-  <sect1 id="GETHOSTNAME">
-    <title>GETHOSTNAME</title>
+  <sect1 id="net-common-tcpip-manpages-gethostname">
+    <title>gethostname</title>
     <screen>
-
-GETHOSTNAME(3)            System Programmer's Manual            GETHOSTNAME(3)
+GETHOSTNAME(3)          System Library Functions Manual         GETHOSTNAME(3)
 
 NAME
      gethostname, sethostname - get/set name of current host
@@ -81,10 +78,10 @@ SYNOPSIS
      #include &lt;unistd.h>
 
      int
-     gethostname(char *name, size_t namelen)
+     gethostname(char *name, size_t namelen);
 
      int
-     sethostname(const char *name, size_t namelen)
+     sethostname(const char *name, size_t namelen);
 
 DESCRIPTION
      The gethostname() function returns the standard host name for the current
@@ -94,28 +91,28 @@ DESCRIPTION
      nated.
 
      sethostname() sets the name of the host machine to be name, which has
-     length namelen. This call is restricted to the superuser and is normally
+     length namelen.  This call is restricted to the superuser and is normally
      used only when the system is bootstrapped.
 
 RETURN VALUES
-     If the call succeeds a value of 0 is returned.  If the call fails, a val-
-     ue of -1 is returned and an error code is placed in the global variable
-     errno.
+     If the call succeeds a value of 0 is returned.  If the call fails, a
+     value of -1 is returned and an error code is placed in the global vari-
+     able errno.
 
 ERRORS
      The following errors may be returned by these calls:
 
-     [EFAULT]      The name or namelen parameter gave an invalid address.
+     [EFAULT]           The name or namelen parameter gave an invalid address.
 
-     [EPERM]       The caller tried to set the hostname and was not the supe-
-                   ruser.
+     [EPERM]            The caller tried to set the hostname and was not the
+                        superuser.
 
 SEE ALSO
-     hostname(1),  getdomainname(3),  gethostid(3),  sysctl(3),  sysctl(8),
-     yp(8)
+     hostname(1), getdomainname(3), gethostid(3), sysctl(3), sysctl(8), yp(8)
 
 STANDARDS
-     The gethostname() function call conforms to .
+     The gethostname() function call conforms to X/Open Portability Guide
+     Issue 4.2 (``XPG4.2'').
 
 HISTORY
      The gethostname() function call appeared in 4.2BSD.
@@ -127,15 +124,14 @@ BUGS
      If the buffer passed to gethostname() is smaller than MAXHOSTNAMELEN,
      other operating systems may not guarantee termination with NUL.
 
-BSD Experimental                 June 4, 1993                                1
+BSD                              June 4, 1993                              BSD
     </screen>
   </sect1>
 
-  <sect1 id="BYTEORDER">
-    <title>BYTEORDER</title>
+  <sect1 id="net-common-tcpip-manpages-byteorder">
+    <title>byteorder</title>
     <screen>
-
-BYTEORDER(3)              System Programmer's Manual              BYTEORDER(3)
+BYTEORDER(3)            System Library Functions Manual           BYTEORDER(3)
 
 NAME
      htonl, htons, ntohl, ntohs, htobe32, htobe16, betoh32, betoh16, htole32,
@@ -147,46 +143,46 @@ SYNOPSIS
      #include &lt;machine/endian.h>
 
      u_int32_t
-     htonl(u_int32_t host32)
+     htonl(u_int32_t host32);
 
      u_int16_t
-     htons(u_int16_t host16)
+     htons(u_int16_t host16);
 
      u_int32_t
-     ntohl(u_int32_t net32)
+     ntohl(u_int32_t net32);
 
      u_int16_t
-     ntohs(u_int16_t net16)
+     ntohs(u_int16_t net16);
 
      u_int32_t
-     htobe32(u_int32_t host32)
+     htobe32(u_int32_t host32);
 
      u_int16_t
-     htobe16(u_int16_t host16)
+     htobe16(u_int16_t host16);
 
      u_int32_t
-     betoh32(u_int32_t big32)
+     betoh32(u_int32_t big32);
 
      u_int16_t
-     betoh16(u_int16_t big16)
+     betoh16(u_int16_t big16);
 
      u_int32_t
-     htole32(u_int32_t host32)
+     htole32(u_int32_t host32);
 
      u_int16_t
-     htole16(u_int16_t host16)
+     htole16(u_int16_t host16);
 
      u_int32_t
-     letoh32(u_int32_t little32)
+     letoh32(u_int32_t little32);
 
      u_int16_t
-     letoh16(u_int16_t little16)
+     letoh16(u_int16_t little16);
 
      u_int32_t
-     swap32(u_int32_t val32)
+     swap32(u_int32_t val32);
 
      u_int16_t
-     swap16(u_int16_t val16)
+     swap16(u_int16_t val16);
 
 DESCRIPTION
      These routines convert 16- and 32-bit quantities between different byte
@@ -198,19 +194,20 @@ DESCRIPTION
      {src-order}to{dst-order}{size}.  Both {src-order} and {dst-order} can
      take the following forms:
 
-
-
            h    Host order.
            n    Network order (big-endian).
            be   Big-endian (most significant byte first).
            le   Little-endian (least significant byte first).
 
-     One of the specified orderings must be `h'. {size} will take these forms:
+     One of the specified orderings must be `h'.  {size} will take these
+     forms:
 
-           l    Long (32-bit, used in conjunction with forms involving `n').
-           s    Short (16-bit, used in conjunction with forms involving `n').
-           16   16-bit.
-           32   32-bit.
+           l  Long (32-bit, used in conjunction with forms involving `n').
+           s  Short (16-bit, used in conjunction with forms involving `n').
+           16
+              16-bit.
+           32
+              32-bit.
 
      The swap functions are of the form: swap{size}.
 
@@ -223,8 +220,8 @@ DESCRIPTION
 
      The functions involving either ``be'', ``le'', or ``swap'' use the num-
      bers 16 and 32 for specifying the bitwidth of the quantities they operate
-     on.  Currently all supported architectures are either big- or little-en-
-     dian so either the ``be'' or ``le'' variants are implemented as null
+     on.  Currently all supported architectures are either big- or little-
+     endian so either the ``be'' or ``le'' variants are implemented as null
      macros.
 
      The routines mentioned above which have either {src-order} or {dst-order}
@@ -232,7 +229,7 @@ DESCRIPTION
      ports as returned by gethostbyname(3) and getservent(3).
 
 SEE ALSO
-     gethostbyname(3),  getservent(3)
+     gethostbyname(3), getservent(3)
 
 HISTORY
      The byteorder functions appeared in 4.2BSD.
@@ -242,15 +239,14 @@ BUGS
      from most everyone else in the world.  This is not expected to be fixed
      in the near future.
 
-BSD Experimental                 June 4, 1993                                2
+BSD                              June 4, 1993                              BSD
     </screen>
   </sect1>
 
-  <sect1 id="ETHERS">
-    <title>ETHERS</title>
+  <sect1 id="net-common-tcpip-manpages-ethers">
+    <title>ethers</title>
     <screen>
-
-ETHERS(3)                 System Programmer's Manual                 ETHERS(3)
+ETHERS(3)               System Library Functions Manual              ETHERS(3)
 
 NAME
      ether_aton, ether_ntoa, ether_addr, ether_ntohost, ether_hostton,
@@ -260,19 +256,19 @@ SYNOPSIS
      #include &lt;netinet/if_ether.h>
 
      char *
-     ether_ntoa(struct ether_addr *e)
+     ether_ntoa(struct ether_addr *e);
 
      struct ether_addr *
-     ether_aton(char *s)
+     ether_aton(char *s);
 
      int
-     ether_ntohost(char *hostname, struct ether_addr *e)
+     ether_ntohost(char *hostname, struct ether_addr *e);
 
      int
-     ether_hostton(char *hostname, struct ether_addr *e)
+     ether_hostton(char *hostname, struct ether_addr *e);
 
      int
-     ether_line(char *l, struct ether_addr *e, char *hostname)
+     ether_line(char *l, struct ether_addr *e, char *hostname);
 
 DESCRIPTION
      Ethernet addresses are represented by the following structure:
@@ -285,17 +281,17 @@ DESCRIPTION
      the form ``xx:xx:xx:xx:xx:xx'', consisting of 6 hexadecimal numbers sepa-
      rated by colons.  It returns a pointer to a static buffer that is reused
      for each call.  The ether_aton() converts an ASCII string of the same
-     form and to a structure containing the 6 octets of the address.  It re-
-     turns a pointer to a static structure that is reused for each call.
+     form and to a structure containing the 6 octets of the address.  It
+     returns a pointer to a static structure that is reused for each call.
 
      The ether_ntohost() and ether_hostton() functions interrogate the
-     database mapping host names to Ethernet addresses, /etc/ethers. The
+     database mapping host names to Ethernet addresses, /etc/ethers.  The
      ether_ntohost() function looks up the given Ethernet address and writes
      the associated host name into the character buffer passed.  This buffer
      should be MAXHOSTNAMELEN characters in size.  The ether_hostton() func-
-     tion looks up the given host name and writes the associated Ethernet ad-
-     dress into the structure passed.  Both functions return zero if they find
-     the requested host name or address, and -1 if not.
+     tion looks up the given host name and writes the associated Ethernet
+     address into the structure passed.  Both functions return zero if they
+     find the requested host name or address, and -1 if not.
 
      Each call reads /etc/ethers from the beginning; if a `+' appears alone on
      a line in the file, then ether_hostton() will consult the ethers.byname
@@ -315,22 +311,22 @@ SEE ALSO
 
 HISTORY
      The ether_ntoa(), ether_aton(), ether_ntohost(), ether_hostton(), and
-     ether_line() functions were adopted from SunOS and appeared in
+     ether_line() functions were adopted from SunOS and appeared in NetBSD 0.9
+     b.
 
 BUGS
      The data space used by these functions is static; if future use requires
      the data, it should be copied before any subsequent calls to these func-
      tions overwrite it.
 
-BSD Experimental               December 16, 1993                             2
+BSD                            December 16, 1993                           BSD
     </screen>
   </sect1>
 
-  <sect1 id="GETADDRINFO">
-    <title>GETADDRINFO</title>
+  <sect1 id="net-common-tcpip-manpages-getaddrinfo">
+    <title>getaddrinfo</title>
     <screen>
-
-GETADDRINFO(3)            System Programmer's Manual            GETADDRINFO(3)
+GETADDRINFO(3)          System Library Functions Manual         GETADDRINFO(3)
 
 NAME
      getaddrinfo, freeaddrinfo, gai_strerror - nodename-to-address translation
@@ -343,18 +339,19 @@ SYNOPSIS
 
      int
      getaddrinfo(const char *nodename, const char *servname,
-             const struct addrinfo *hints, struct addrinfo **res)
+             const struct addrinfo *hints, struct addrinfo **res);
 
      void
-     freeaddrinfo(struct addrinfo *ai)
+     freeaddrinfo(struct addrinfo *ai);
 
      char *
-     gai_strerror(int ecode)
+     gai_strerror(int ecode);
 
 DESCRIPTION
      The getaddrinfo() function is defined for protocol-independent nodename-
-     to-address translation.  It performs the functionality of gethostby-
-     name(3) and getservbyname(3),  but in a more sophisticated manner.
+     to-address translation.  It performs the functionality of
+     gethostbyname(3) and getservbyname(3), but in a more sophisticated man-
+     ner.
 
      The addrinfo structure is defined as a result of including the &lt;netdb.h>
      header:
@@ -371,7 +368,7 @@ DESCRIPTION
      };
 
      The nodename and servname arguments are pointers to NUL-terminated
-     strings or NULL. One or both of these two arguments must be a non-null
+     strings or NULL.  One or both of these two arguments must be a non-null
      pointer.  In the normal client scenario, both the nodename and servname
      are specified.  In the normal server scenario, only the servname is spec-
      ified.  A non-null nodename string can be either a node name or a numeric
@@ -390,19 +387,19 @@ DESCRIPTION
      and not UDP, then the ai_socktype member of the hints structure should be
      set to SOCK_STREAM when getaddrinfo() is called.  If the caller handles
      only IPv4 and not IPv6, then the ai_family member of the hints structure
-     should be set to PF_INET when getaddrinfo() is called.  If the third ar-
-     gument to getaddrinfo() is a null pointer, this is the same as if the
+     should be set to PF_INET when getaddrinfo() is called.  If the third
+     argument to getaddrinfo() is a null pointer, this is the same as if the
      caller had filled in an addrinfo structure initialized to zero with
      ai_family set to PF_UNSPEC.
 
      Upon successful return a pointer to a linked list of one or more addrinfo
      structures is returned through the final argument.  The caller can pro-
-     cess each addrinfo structure in this list by following the ai_next point-
-     er, until a null pointer is encountered.  In each returned addrinfo
+     cess each addrinfo structure in this list by following the ai_next
+     pointer, until a null pointer is encountered.  In each returned addrinfo
      structure the three members ai_family, ai_socktype, and ai_protocol are
      the corresponding arguments for a call to the socket() function.  In each
-     addrinfo structure the ai_addr member points to a filled-in socket ad-
-     dress structure whose length is specified by the ai_addrlen member.
+     addrinfo structure the ai_addr member points to a filled-in socket
+     address structure whose length is specified by the ai_addrlen member.
 
      If the AI_PASSIVE bit is set in the ai_flags member of the hints struc-
      ture, then the caller plans to use the returned socket address structure
@@ -414,10 +411,10 @@ DESCRIPTION
      If the AI_PASSIVE bit is not set in the ai_flags member of the hints
      structure, then the returned socket address structure will be ready for a
      call to connect() (for a connection-oriented protocol) or either
-     connect(), sendto(), or sendmsg() (for a connectionless protocol). In
-     this case, if the nodename argument is a null pointer, then the IP ad-
-     dress portion of the socket address structure will be set to the loopback
-     address.
+     connect(), sendto(), or sendmsg() (for a connectionless protocol).  In
+     this case, if the nodename argument is a null pointer, then the IP
+     address portion of the socket address structure will be set to the loop-
+     back address.
 
      If the AI_CANONNAME bit is set in the ai_flags member of the hints struc-
      ture, then upon successful return the ai_canonname member of the first
@@ -452,14 +449,13 @@ DESCRIPTION
          because the numeric servname does not identify any socket type, and
          getaddrinfo() is not allowed to glob the argument in such case.
 
-     All of the information returned by getaddrinfo() is dynamically allocat-
-     ed: the addrinfo structures, the socket address structures, and canonical
-     node name strings pointed to by the addrinfo structures.  To return this
-     information to the system the function freeaddrinfo() is called.  The
-     addrinfo structure pointed to by the ai argument is freed, along with any
-     dynamic storage pointed to by the structure.  This operation is repeated
-     until a NULL ai_next pointer is encountered.
-
+     All of the information returned by getaddrinfo() is dynamically allo-
+     cated: the addrinfo structures, the socket address structures, and canon-
+     ical node name strings pointed to by the addrinfo structures.  To return
+     this information to the system the function freeaddrinfo() is called.
+     The addrinfo structure pointed to by the ai argument is freed, along with
+     any dynamic storage pointed to by the structure.  This operation is
+     repeated until a NULL ai_next pointer is encountered.
 
      To aid applications in printing error messages based on the EAI_xxx codes
      returned by getaddrinfo(), gai_strerror() is defined.  The argument is
@@ -470,14 +466,14 @@ DESCRIPTION
 
    Extension for scoped IPv6 address
      The implementation allows experimental numeric IPv6 address notation with
-     scope identifier.  By appending the percent character and scope identifi-
-     er to addresses, you can fill sin6_scope_id field for addresses.  This
+     scope identifier.  By appending the percent character and scope identi-
+     fier to addresses, you can fill sin6_scope_id field for addresses.  This
      would make management of scoped address easier, and allows cut-and-paste
      input of scoped address.
 
      At this moment the code supports only link-local addresses with the for-
      mat.  Scope identifier is hardcoded to name of hardware interface associ-
-     ated with the link.  (such as ne0). Example would be like
+     ated with the link.  (such as ne0).  Example would be like
      ``fe80::1%ne0'', which means ``fe80::1 on the link associated with ne0
      interface''.
 
@@ -595,13 +591,13 @@ DIAGNOSTICS
      whose contents indicate an unknown error.
 
 SEE ALSO
-     getnameinfo(3),  gethostbyname(3),  getservbyname(3),  hosts(5),
-     resolv.conf(5),  services(5),  hostname(7),  named(8)
+     getnameinfo(3), gethostbyname(3), getservbyname(3), hosts(5),
+     resolv.conf(5), services(5), hostname(7), named(8)
 
      R. Gilligan, S. Thomson, J. Bound, and W. Stevens, Basic Socket Interface
      Extensions for IPv6, RFC2553, March 1999.
 
-     Tatsuya Jinmei, and Atsushi Onoe, An Extension of Format for IPv6 Scoped
+     Tatsuya Jinmei and Atsushi Onoe, An Extension of Format for IPv6 Scoped
      Addresses, internet draft, draft-ietf-ipngwg-scopedaddr-format-02.txt,
      work in progress material.
 
@@ -622,15 +618,14 @@ BUGS
 
      The text was shamelessly copied from RFC2553.
 
-BSD Experimental                 May 25, 1995                                5
+BSD                              May 25, 1995                              BSD
     </screen>
   </sect1>
 
-  <sect1 id="GETHOSTBYNAME">
-    <title>GETHOSTBYNAME</title>
+  <sect1 id="net-common-tcpip-manpages-gethostbyname">
+    <title>gethostbyname</title>
     <screen>
-
-GETHOSTBYNAME(3)          System Programmer's Manual          GETHOSTBYNAME(3)
+GETHOSTBYNAME(3)        System Library Functions Manual       GETHOSTBYNAME(3)
 
 NAME
      gethostbyname, gethostbyname2, gethostbyaddr, gethostent, sethostent,
@@ -641,36 +636,36 @@ SYNOPSIS
      extern int h_errno;
 
      struct hostent *
-     gethostbyname(const char *name)
+     gethostbyname(const char *name);
 
      struct hostent *
-     gethostbyname2(const char *name, int af)
+     gethostbyname2(const char *name, int af);
 
      struct hostent *
-     gethostbyaddr(const char *addr, int len, int af)
+     gethostbyaddr(const char *addr, int len, int af);
 
      struct hostent *
-     gethostent(void)
+     gethostent(void);
 
      void
-     sethostent(int stayopen)
+     sethostent(int stayopen);
 
      void
-     endhostent(void)
+     endhostent(void);
 
      void
-     herror(const char *string)
+     herror(const char *string);
 
      const char *
-     hstrerror(int err)
+     hstrerror(int err);
 
 DESCRIPTION
      The gethostbyname() and gethostbyaddr() functions each return a pointer
      to an object with the following structure describing an internet host
      referenced by name or by address, respectively.  This structure contains
      either information obtained from the name server (i.e., resolver(3) and
-     named(8)),  broken-out fields from a line in /etc/hosts, or database en-
-     tries supplied by the yp(8) system.  resolv.conf(5) describes how the
+     named(8)), broken-out fields from a line in /etc/hosts, or database
+     entries supplied by the yp(8) system.  resolv.conf(5) describes how the
      particular database is chosen.
 
      struct  hostent {
@@ -693,7 +688,6 @@ DESCRIPTION
      h_length     The length, in bytes, of the address.
 
      h_addr_list  A zero-terminated array of network addresses for the host.
-
                   Host addresses are returned in network byte order.
 
      h_addr       The first address in h_addr_list; this is for backward com-
@@ -707,7 +701,7 @@ DESCRIPTION
      lookups in address families other than AF_INET, for example AF_INET6.
 
      The gethostbyaddr() function will search for the specified address of
-     length len in the address family af. The only address family currently
+     length len in the address family af.  The only address family currently
      supported is AF_INET.
 
      The sethostent() function may be used to request the use of a connected
@@ -738,38 +732,38 @@ DIAGNOSTICS
 
      HOST_NOT_FOUND  No such host is known.
 
-     TRY_AGAIN       This is usually a temporary error and means that the lo-
-                     cal server did not receive a response from an authorita-
-                     tive server.  A retry at some later time may succeed.
+     TRY_AGAIN       This is usually a temporary error and means that the
+                     local server did not receive a response from an authori-
+                     tative server.  A retry at some later time may succeed.
 
      NO_RECOVERY     Some unexpected server failure was encountered.  This is
                      a non-recoverable error.
 
-     NO_DATA         The requested name is valid but does not have an IP ad-
-                     dress; this is not a temporary error.  This means that
-                     the name is known to the name server but there is no ad-
-                     dress associated with this name.  Another type of request
-                     to the name server using this domain name will result in
-                     an answer; for example, a mail-forwarder may be regis-
-                     tered for this domain.
+     NO_DATA         The requested name is valid but does not have an IP
+                     address; this is not a temporary error.  This means that
+                     the name is known to the name server but there is no
+                     address associated with this name.  Another type of
+                     request to the name server using this domain name will
+                     result in an answer; for example, a mail-forwarder may be
+                     registered for this domain.
 
 SEE ALSO
-     resolver(3),  getaddrinfo(3),  getnameinfo(3),  hosts(5),
-     resolv.conf(5),  hostname(7),  named(8)
+     resolver(3), getaddrinfo(3), getnameinfo(3), hosts(5), resolv.conf(5),
+     hostname(7), named(8)
 
 CAVEAT
      If the search routines in resolv.conf(5) decide to read the /etc/hosts
      file, gethostent() and other functions will read the next line of the
      file, re-opening the file if necessary.
 
-     The sethostent() function opens and/or rewinds the file /etc/hosts. If
+     The sethostent() function opens and/or rewinds the file /etc/hosts.  If
      the stayopen argument is non-zero, the file will not be closed after each
      call to gethostbyname(), gethostbyname2(), or gethostbyaddr().
 
      The endhostent() function closes the file.
 
 HISTORY
-     The herror() function appeared in 4.3BSD. The endhostent(),
+     The herror() function appeared in 4.3BSD.  The endhostent(),
      gethostbyaddr(), gethostbyname(), gethostent(), and sethostent() func-
      tions appeared in 4.2BSD.
 
@@ -781,15 +775,14 @@ BUGS
      YP does not support any address families other than AF_INET and uses the
      traditional database format.
 
-BSD Experimental                March 13, 1997                               3
+BSD                             March 13, 1997                             BSD
     </screen>
   </sect1>
 
-  <sect1 id="GETIFADDRS">
-    <title>GETIFADDRS</title>
+  <sect1 id="net-common-tcpip-manpages-getifaddrs">
+    <title>getifaddrs</title>
     <screen>
-
-GETIFADDRS(3)             System Programmer's Manual             GETIFADDRS(3)
+GETIFADDRS(3)           System Library Functions Manual          GETIFADDRS(3)
 
 NAME
      getifaddrs - get interface addresses
@@ -800,17 +793,17 @@ SYNOPSIS
      #include &lt;ifaddrs.h>
 
      int
-     getifaddrs(struct ifaddrs **ifap)
+     getifaddrs(struct ifaddrs **ifap);
 
      void
-     freeifaddrs(struct ifaddrs *ifap)
+     freeifaddrs(struct ifaddrs *ifap);
 
 DESCRIPTION
      The getifaddrs() function stores a reference to a linked list of the net-
      work interfaces on the local machine in the memory referenced by ifap.
      The list consists of ifaddrs structures, as defined in the include file
-     &lt;ifaddrs.h>. The ifaddrs structure contains at least the following en-
-     tries:
+     &lt;ifaddrs.h>.  The ifaddrs structure contains at least the following
+     entries:
 
          struct ifaddrs   *ifa_next;         /* Pointer to next struct */
          char             *ifa_name;         /* Interface name */
@@ -847,15 +840,15 @@ DESCRIPTION
              if one exists, otherwise it is NULL.
 
      ifa_dstaddr
-             References the destination address on a P2P interface, if one ex-
-             ists, otherwise it is NULL.
+             References the destination address on a P2P interface, if one
+             exists, otherwise it is NULL.
 
      ifa_data
              References address family specific data.  For AF_LINK addresses
-             it contains a pointer to the struct if_data (as defined in in-
-             clude file &lt;net/if.h>) which contains various interface at-
-             tributes and statistics.  For all other address families, it con-
-             tains a pointer to the struct ifa_data (as defined in include
+             it contains a pointer to the struct if_data (as defined in
+             include file &lt;net/if.h>) which contains various interface
+             attributes and statistics.  For all other address families, it
+             contains a pointer to the struct ifa_data (as defined in include
              file &lt;net/if.h>) which contains per-address interface statistics.
 
      The data returned by getifaddrs() is dynamically allocated and should be
@@ -867,29 +860,27 @@ RETURN VALUES
 
 ERRORS
      The getifaddrs() may fail and set errno for any of the errors specified
-     for the library routines ioctl(2),  socket(2),  malloc(3),  or sysctl(3).
-
+     for the library routines ioctl(2), socket(2), malloc(3), or sysctl(3).
 
 BUGS
      If both &lt;net/if.h> and &lt;ifaddrs.h> are being included, &lt;net/if.h> must be
      included before &lt;ifaddrs.h>.
 
 SEE ALSO
-     ioctl(2),  socket(2),  sysctl(3),  networking(4),  ifconfig(8)
+     ioctl(2), socket(2), sysctl(3), networking(4), ifconfig(8)
 
 HISTORY
      The getifaddrs() function first appeared in BSDI BSD/OS.  The function is
-     supplied on since
+     supplied on OpenBSD since OpenBSD 2.7.
 
-                                January 4, 2002                              2
+BSD                            February 24, 2003                           BSD
     </screen>
   </sect1>
 
-  <sect1 id="GETNAMEINFO">
-    <title>GETNAMEINFO</title>
+  <sect1 id="net-common-tcpip-manpages-getnameinfo">
+    <title>getnameinfo</title>
     <screen>
-
-GETNAMEINFO(3)            System Programmer's Manual            GETNAMEINFO(3)
+GETNAMEINFO(3)          System Library Functions Manual         GETNAMEINFO(3)
 
 NAME
      getnameinfo - address-to-nodename translation in protocol-independent
@@ -902,13 +893,13 @@ SYNOPSIS
 
      int
      getnameinfo(const struct sockaddr *sa, socklen_t salen, char *host,
-             size_t hostlen, char *serv, size_t servlen, int flags)
+             size_t hostlen, char *serv, size_t servlen, int flags);
 
 DESCRIPTION
      The getnameinfo() function is defined for protocol-independent address-
      to-nodename translation.  Its functionality is a reverse conversion of
-     getaddrinfo(3),  and implements similar functionality with gethostbyad-
-     dr(3) and getservbyport(3) in more sophisticated manner.
+     getaddrinfo(3), and implements similar functionality with
+     gethostbyaddr(3) and getservbyport(3) in more sophisticated manner.
 
      This function looks up an IP address and port number provided by the
      caller in the DNS and system-specific database, and returns text strings
@@ -933,8 +924,8 @@ DESCRIPTION
 
      Unfortunately most systems do not provide constants that specify the max-
      imum size of either a fully-qualified domain name or a service name.
-     Therefore to aid the application in allocating buffers for these two re-
-     turned strings the following constants are defined in &lt;netdb.h>:
+     Therefore to aid the application in allocating buffers for these two
+     returned strings the following constants are defined in &lt;netdb.h>:
 
      #define NI_MAXHOST    MAXHOSTNAMELEN
      #define NI_MAXSERV    32
@@ -952,8 +943,8 @@ DESCRIPTION
      If the flag bit NI_NUMERICHOST is set, or if the host's name cannot be
      located in the DNS, the numeric form of the host's address is returned
      instead of its name (e.g., by calling inet_ntop() instead of
-     gethostbyaddr()). If the flag bit NI_NAMEREQD is set, an error is re-
-     turned if the host's name cannot be located in the DNS.
+     gethostbyaddr()).  If the flag bit NI_NAMEREQD is set, an error is
+     returned if the host's name cannot be located in the DNS.
 
      If the flag bit NI_NUMERICSERV is set, the numeric form of the service
      address is returned (e.g., its port number) instead of its name.  The two
@@ -962,16 +953,16 @@ DESCRIPTION
 
      A fifth flag bit, NI_DGRAM, specifies that the service is a datagram ser-
      vice, and causes getservbyport() to be called with a second argument of
-     "udp" instead of its default of "tcp". This is required for the few ports
-     (512-514) that have different services for UDP and TCP.
+     "udp" instead of its default of "tcp".  This is required for the few
+     ports (512-514) that have different services for UDP and TCP.
 
      These NI_xxx flags are defined in &lt;netdb.h>.
 
    Extension for scoped IPv6 address
      The implementation allows experimental numeric IPv6 address notation with
      scope identifier.  IPv6 link-local address will appear as string like
-     ``fe80::1%ne0'', if NI_WITHSCOPEID bit is enabled in flags argument.  Re-
-     fer to getaddrinfo(3) for the notation.
+     ``fe80::1%ne0'', if NI_WITHSCOPEID bit is enabled in flags argument.
+     Refer to getaddrinfo(3) for the notation.
 
 EXAMPLES
      The following code tries to get numeric hostname, and service name, for
@@ -1005,34 +996,33 @@ DIAGNOSTICS
      The function indicates successful completion by a zero return value; a
      non-zero return value indicates failure.  Error codes are as below:
 
-     EAI_AGAIN     The name could not be resolved at this time.  Future at-
-                   tempts may succeed.
+     EAI_AGAIN          The name could not be resolved at this time.  Future
+                        attempts may succeed.
 
-     EAI_BADFLAGS  The flags had an invalid value.
+     EAI_BADFLAGS       The flags had an invalid value.
 
-     EAI_FAIL      A non-recoverable error occurred.
+     EAI_FAIL           A non-recoverable error occurred.
 
-     EAI_FAMILY    The address family was not recognized or the address length
-                   was invalid for the specified family.
+     EAI_FAMILY         The address family was not recognized or the address
+                        length was invalid for the specified family.
 
-     EAI_MEMORY    There was a memory allocation failure.
+     EAI_MEMORY         There was a memory allocation failure.
 
-     EAI_NONAME    The name does not resolve for the supplied parameters.
-                   NI_NAMEREQD is set and the host's name cannot be located,
+     EAI_NONAME         The name does not resolve for the supplied parameters.
+                        NI_NAMEREQD is set and the host's name cannot be
+                        located, or both nodename and servname were null.
 
-                   or both nodename and servname were null.
-
-     EAI_SYSTEM    A system error occurred.  The error code can be found in
-                   errno.
+     EAI_SYSTEM         A system error occurred.  The error code can be found
+                        in errno.
 
 SEE ALSO
-     getaddrinfo(3),  gethostbyaddr(3),  getservbyport(3),  hosts(5),
-     resolv.conf(5),  services(5),  hostname(7),  named(8)
+     getaddrinfo(3), gethostbyaddr(3), getservbyport(3), hosts(5),
+     resolv.conf(5), services(5), hostname(7), named(8)
 
      R. Gilligan, S. Thomson, J. Bound, and W. Stevens, Basic Socket Interface
      Extensions for IPv6, RFC2553, March 1999.
 
-     Tatsuya Jinmei, and Atsushi Onoe, An Extension of Format for IPv6 Scoped
+     Tatsuya Jinmei and Atsushi Onoe, An Extension of Format for IPv6 Scoped
      Addresses, internet draft, draft-ietf-ipngwg-scopedaddr-format-02.txt,
      work in progress material.
 
@@ -1053,18 +1043,17 @@ BUGS
 
      The text was shamelessly copied from RFC2553.
 
-     intentionally uses different NI_MAXHOST value from what RFC2553 suggests,
-     to avoid buffer length handling mistakes.
+     OpenBSD intentionally uses different NI_MAXHOST value from what RFC2553
+     suggests, to avoid buffer length handling mistakes.
 
-BSD Experimental                 May 25, 1995                                3
+BSD                              May 25, 1995                              BSD
     </screen>
   </sect1>
 
-  <sect1 id="GETNETENT">
-    <title>GETNETENT</title>
+  <sect1 id="net-common-tcpip-manpages-getnetent">
+    <title>getnetent</title>
     <screen>
-
-GETNETENT(3)              System Programmer's Manual              GETNETENT(3)
+GETNETENT(3)            System Library Functions Manual           GETNETENT(3)
 
 NAME
      getnetent, getnetbyaddr, getnetbyname, setnetent, endnetent - get network
@@ -1074,19 +1063,19 @@ SYNOPSIS
      #include &lt;netdb.h>
 
      struct netent *
-     getnetent(void)
+     getnetent(void);
 
      struct netent *
-     getnetbyname(char *name)
+     getnetbyname(char *name);
 
      struct netent *
-     getnetbyaddr(in_addr_t net, int type)
+     getnetbyaddr(in_addr_t net, int type);
 
      void
-     setnetent(int stayopen)
+     setnetent(int stayopen);
 
      void
-     endnetent(void)
+     endnetent(void);
 
 DESCRIPTION
      The getnetent(), getnetbyname(), and getnetbyaddr() functions each return
@@ -1128,14 +1117,13 @@ DESCRIPTION
      or until EOF is encountered.  Network numbers are supplied in host order.
 
 FILES
-
      /etc/networks
 
 DIAGNOSTICS
      Null pointer (0) returned on EOF or error.
 
 SEE ALSO
-     resolver(3),  networks(5)
+     resolver(3), networks(5)
 
 HISTORY
      The getnetent(), getnetbyaddr(), getnetbyname(), setnetent(), and
@@ -1148,15 +1136,14 @@ BUGS
      stood.  Expecting network numbers to fit in no more than 32 bits is
      naive.
 
-BSD Experimental                March 13, 1997                               2
+BSD                             March 13, 1997                             BSD
     </screen>
   </sect1>
 
-  <sect1 id="GETPROTOENT">
-    <title>GETPROTOENT</title>
+  <sect1 id="net-common-tcpip-manpages-getprotoent">
+    <title>getprotoent</title>
     <screen>
-
-GETPROTOENT(3)            System Programmer's Manual            GETPROTOENT(3)
+GETPROTOENT(3)          System Library Functions Manual         GETPROTOENT(3)
 
 NAME
      getprotoent, getprotobynumber, getprotobyname, setprotoent, endprotoent -
@@ -1166,19 +1153,19 @@ SYNOPSIS
      #include &lt;netdb.h>
 
      struct protoent *
-     getprotoent(void)
+     getprotoent(void);
 
      struct protoent *
-     getprotobyname(char *name)
+     getprotobyname(char *name);
 
      struct protoent *
-     getprotobynumber(int proto)
+     getprotobynumber(int proto);
 
      void
-     setprotoent(int stayopen)
+     setprotoent(int stayopen);
 
      void
-     endprotoent(void)
+     endprotoent(void);
 
 DESCRIPTION
      The getprotoent(), getprotobyname(), and getprotobynumber() functions
@@ -1218,8 +1205,6 @@ RETURN VALUES
      Null pointer (0) returned on EOF or error.
 
 FILES
-
-
      /etc/protocols
 
 SEE ALSO
@@ -1234,15 +1219,14 @@ BUGS
      use, it should be copied before any subsequent calls overwrite it.  Only
      the Internet protocols are currently understood.
 
-BSD Experimental                 June 4, 1993                                2
+BSD                              June 4, 1993                              BSD
     </screen>
   </sect1>
 
-  <sect1 id="GETRRSETBYNAME">
-    <title>GETRRSETBYNAME</title>
+  <sect1 id="net-common-tcpip-manpages-getrrsetbyname">
+    <title>getrrsetbyname</title>
     <screen>
-
-GETRRSETBYNAME(3)         System Programmer's Manual         GETRRSETBYNAME(3)
+GETRRSETBYNAME(3)       System Library Functions Manual      GETRRSETBYNAME(3)
 
 NAME
      getrrsetbyname - retrieve DNS records
@@ -1252,14 +1236,14 @@ SYNOPSIS
 
      int
      getrrsetbyname(const char *hostname, unsigned int rdclass,
-             unsigned int rdtype, unsigned int flags, struct rrsetinfo **res)
+             unsigned int rdtype, unsigned int flags, struct rrsetinfo **res);
 
      int
-     freerrset(struct rrsetinfo **rrset)
+     freerrset(struct rrsetinfo **rrset);
 
 DESCRIPTION
      getrrsetbyname() gets a set of resource records associated with a
-     hostname, class and type. hostname is a pointer a to null-terminated
+     hostname, class and type.  hostname is a pointer a to null-terminated
      string.  The flags field is currently unused and must be zero.
 
      After a successful call to getrrsetbyname(), *res is a pointer to an
@@ -1299,13 +1283,12 @@ DESCRIPTION
      getrrsetbyname() is released by freerrset().  rrset is a pointer to a
      struct rrset created by a call to getrrsetbyname().
 
-     If the EDNS0 option is activated in resolv.conf(3),  getrrsetbyname()
-     will request DNSSEC authentication using the EDNS0 DNSSEC OK (DO) bit.
+     If the EDNS0 option is activated in resolv.conf(3), getrrsetbyname() will
+     request DNSSEC authentication using the EDNS0 DNSSEC OK (DO) bit.
 
 RETURN VALUES
      getrrsetbyname() returns zero on success, and one of the following error
      codes if an error occurred:
-
 
      ERRSET_NONAME    the name does not exist
      ERRSET_NODATA    the name exists, but does not have data of the desired
@@ -1315,14 +1298,14 @@ RETURN VALUES
      ERRSET_FAIL      other failure
 
 SEE ALSO
-     resolver(3),  resolv.conf(5),  named(8)
+     resolver(3), resolv.conf(5), named(8)
 
 AUTHORS
      Jakob Schlyter &lt;jakob@openbsd.org>
 
 HISTORY
-     getrrsetbyname() first appeared in The API first appeared in ISC BIND
-     version 9.
+     getrrsetbyname() first appeared in OpenBSD 3.0.  The API first appeared
+     in ISC BIND version 9.
 
 BUGS
      The data in *rdi_data should be returned in uncompressed wire format.
@@ -1330,20 +1313,19 @@ BUGS
      press since it doesn't have the full message.
 
 CAVEATS
-     The RRSET_VALIDATED flag in rri_flags is set if the AD (autenticated da-
-     ta) bit in the DNS answer is set. This flag should not be trusted unless
-     the transport between the nameserver and the resolver is secure (e.g.
-     IPsec, trusted network, loopback communication).
+     The RRSET_VALIDATED flag in rri_flags is set if the AD (autenticated
+     data) bit in the DNS answer is set. This flag should not be trusted
+     unless the transport between the nameserver and the resolver is secure
+     (e.g. IPsec, trusted network, loopback communication).
 
-BSD Experimental                 Oct 18, 2000                                2
+BSD                              Oct 18, 2000                              BSD
     </screen>
   </sect1>
 
-  <sect1 id="GETSERVENT">
-    <title>GETSERVENT</title>
+  <sect1 id="net-common-tcpip-manpages-getservent">
+    <title>getservent</title>
     <screen>
-
-GETSERVENT(3)             System Programmer's Manual             GETSERVENT(3)
+GETSERVENT(3)           System Library Functions Manual          GETSERVENT(3)
 
 NAME
      getservent, getservbyport, getservbyname, setservent, endservent - get
@@ -1353,23 +1335,23 @@ SYNOPSIS
      #include &lt;netdb.h>
 
      struct servent *
-     getservent(void)
+     getservent(void);
 
      struct servent *
-     getservbyname(char *name, char *proto)
+     getservbyname(char *name, char *proto);
 
      struct servent *
-     getservbyport(int port, char *proto)
+     getservbyport(int port, char *proto);
 
      void
-     setservent(int stayopen)
+     setservent(int stayopen);
 
      void
-     endservent(void)
+     endservent(void);
 
 DESCRIPTION
-     The getservent(), getservbyname(), and getservbyport() functions each re-
-     turn a pointer to an object with the following structure containing the
+     The getservent(), getservbyname(), and getservbyport() functions each
+     return a pointer to an object with the following structure containing the
      broken-out fields of a line in the network services database,
      /etc/services.
 
@@ -1402,19 +1384,18 @@ DESCRIPTION
 
      The getservbyname() and getservbyport() functions sequentially search
      from the beginning of the file until a matching protocol name or port
-     number (specified in network byte order) is found, or until EOF is en-
-     countered.  If a protocol name is also supplied (non-null), searches must
-     also match the protocol.
+     number (specified in network byte order) is found, or until EOF is
+     encountered.  If a protocol name is also supplied (non-null), searches
+     must also match the protocol.
 
 FILES
-
      /etc/services
 
 DIAGNOSTICS
      Null pointer (0) returned on EOF or error.
 
 SEE ALSO
-     getprotoent(3),  services(5)
+     getprotoent(3), services(5)
 
 HISTORY
      The getservent(), getservbyport(), getservbyname(), setservent(), and
@@ -1422,18 +1403,17 @@ HISTORY
 
 BUGS
      These functions use static data storage; if the data is needed for future
-     use, it should be copied before any subsequent calls overwrite it.  Ex-
-     pecting port numbers to fit in a 32-bit quantity is probably naive.
+     use, it should be copied before any subsequent calls overwrite it.
+     Expecting port numbers to fit in a 32-bit quantity is probably naive.
 
-BSD Experimental               January 12, 1994                              2
+BSD                            January 12, 1994                            BSD
     </screen>
   </sect1>
 
-  <sect1 id="IF-NAMETOINDEX">
-    <title>IF_NAMETOINDEX</title>
+  <sect1 id="net-common-tcpip-manpages-if-nametoindex">
+    <title>if_nametoindex</title>
     <screen>
-
-IF_NAMETOINDEX(3)         System Programmer's Manual         IF_NAMETOINDEX(3)
+IF_NAMETOINDEX(3)       System Library Functions Manual      IF_NAMETOINDEX(3)
 
 NAME
      if_nametoindex, if_indextoname, if_nameindex, if_freenameindex - convert
@@ -1443,16 +1423,16 @@ SYNOPSIS
      #include &lt;net/if.h>
 
      unsigned int
-     if_nametoindex(const char *ifname)
+     if_nametoindex(const char *ifname);
 
      char *
-     if_indextoname(unsigned int ifindex, char *ifname)
+     if_indextoname(unsigned int ifindex, char *ifname);
 
      struct if_nameindex *
-     if_nameindex(void)
+     if_nameindex(void);
 
      void
-     if_freenameindex(struct if_nameindex *ptr)
+     if_freenameindex(struct if_nameindex *ptr);
 
 DESCRIPTION
      These functions map interface indexes to interface names (such as
@@ -1462,14 +1442,14 @@ DESCRIPTION
      ifname argument to an interface index (positive integer value).  If the
      specified interface does not exist, 0 will be returned.
 
-     if_indextoname() converts an interface index specified by the ifindex ar-
-     gument to an interface name.  The ifname argument must point to a buffer
-     of at least IF_NAMESIZE bytes into which the interface name corresponding
-     to the specified index is returned.  (IF_NAMESIZE is also defined in
-     &lt;net/if.h> and its value includes a terminating null byte at the end of
-     the interface name.)  This pointer is also the return value of the func-
-     tion.  If there is no interface corresponding to the specified index,
-     NULL is returned.
+     if_indextoname() converts an interface index specified by the ifindex
+     argument to an interface name.  The ifname argument must point to a
+     buffer of at least IF_NAMESIZE bytes into which the interface name corre-
+     sponding to the specified index is returned.  (IF_NAMESIZE is also
+     defined in &lt;net/if.h> and its value includes a terminating null byte at
+     the end of the interface name.)  This pointer is also the return value of
+     the function.  If there is no interface corresponding to the specified
+     index, NULL is returned.
 
      if_nameindex() returns an array of if_nameindex structures.
      if_nametoindex is also defined in &lt;net/if.h>, and is as follows:
@@ -1480,10 +1460,10 @@ DESCRIPTION
      };
 
      The end of the array of structures is indicated by a structure with an
-     if_index of 0 and an if_name of NULL. The function returns a null pointer
-     on error.  The memory used for this array of structures along with the
-     interface names pointed to by the if_name members is obtained dynamical-
-     ly.  This memory is freed by the if_freenameindex() function.
+     if_index of 0 and an if_name of NULL.  The function returns a null
+     pointer on error.  The memory used for this array of structures along
+     with the interface names pointed to by the if_name members is obtained
+     dynamically.  This memory is freed by the if_freenameindex() function.
 
      if_freenameindex() takes a pointer that was returned by if_nameindex() as
      argument (ptr), and it reclaims the region allocated.
@@ -1500,15 +1480,14 @@ STANDARDS
      These functions are defined in ``Basic Socket Interface Extensions for
      IPv6'' (RFC2533).
 
-BSD Experimental                 May 21, 1998                                2
+BSD                              May 21, 1998                              BSD
     </screen>
   </sect1>
 
-  <sect1 id="INET">
-    <title>INET</title>
+  <sect1 id="net-common-tcpip-manpages-inet">
+    <title>inet</title>
     <screen>
-
-INET(3)                   System Programmer's Manual                   INET(3)
+INET(3)                 System Library Functions Manual                INET(3)
 
 NAME
      inet_addr, inet_aton, inet_lnaof, inet_makeaddr, inet_netof,
@@ -1521,48 +1500,48 @@ SYNOPSIS
      #include &lt;arpa/inet.h>
 
      in_addr_t
-     inet_addr(const char *cp)
+     inet_addr(const char *cp);
 
      int
-     inet_aton(const char *cp, struct in_addr *addr)
+     inet_aton(const char *cp, struct in_addr *addr);
 
      in_addr_t
-     inet_lnaof(struct in_addr in)
+     inet_lnaof(struct in_addr in);
 
      struct in_addr
-     inet_makeaddr(unsigned long net, unsigned long lna)
+     inet_makeaddr(unsigned long net, unsigned long lna);
 
      in_addr_t
-     inet_netof(struct in_addr in)
+     inet_netof(struct in_addr in);
 
      in_addr_t
-     inet_network(const char *cp)
+     inet_network(const char *cp);
 
      char *
-     inet_ntoa(struct in_addr in)
+     inet_ntoa(struct in_addr in);
 
      const char *
-     inet_ntop(int af, const void *src, char *dst, size_t size)
+     inet_ntop(int af, const void *src, char *dst, size_t size);
 
      int
-     inet_pton(int af, const char *src, void *dst)
+     inet_pton(int af, const char *src, void *dst);
 
 DESCRIPTION
      The routines inet_aton(), inet_addr() and inet_network() interpret char-
      acter strings representing numbers expressed in the Internet standard `.'
-     notation.  The inet_pton() function converts a presentation format ad-
-     dress (that is, printable form as held in a character string) to network
-     format (usually a struct in_addr or some other internal binary represen-
-     tation, in network byte order).  It returns 1 if the address was valid
-     for the specified address family, or 0 if the address wasn't parseable in
-     the specified address family, or -1 if some system error occurred (in
-     which case errno will have been set).  This function is presently valid
-     for AF_INET and AF_INET6. The inet_aton() routine interprets the speci-
-     fied character string as an Internet address, placing the address into
-     the structure provided.  It returns 1 if the string was successfully in-
-     terpreted, or 0 if the string was invalid.  The inet_addr() and
-     inet_network() functions return numbers suitable for use as Internet ad-
-     dresses and Internet network numbers, respectively.
+     notation.  The inet_pton() function converts a presentation format
+     address (that is, printable form as held in a character string) to net-
+     work format (usually a struct in_addr or some other internal binary rep-
+     resentation, in network byte order).  It returns 1 if the address was
+     valid for the specified address family, or 0 if the address wasn't
+     parseable in the specified address family, or -1 if some system error
+     occurred (in which case errno will have been set).  This function is
+     presently valid for AF_INET and AF_INET6.  The inet_aton() routine inter-
+     prets the specified character string as an Internet address, placing the
+     address into the structure provided.  It returns 1 if the string was suc-
+     cessfully interpreted, or 0 if the string was invalid.  The inet_addr()
+     and inet_network() functions return numbers suitable for use as Internet
+     addresses and Internet network numbers, respectively.
 
      The function inet_ntop() converts an address from network format (usually
      a struct in_addr or some other binary form, in network byte order) to
@@ -1573,8 +1552,8 @@ DESCRIPTION
      senting the address in `.' notation.  The routine inet_makeaddr() takes
      an Internet network number and a local network address and constructs an
      Internet address from it.  The routines inet_netof() and inet_lnaof()
-     break apart Internet host addresses, returning the network number and lo-
-     cal network address part, respectively.
+     break apart Internet host addresses, returning the network number and
+     local network address part, respectively.
 
      All Internet addresses are returned in network order (bytes ordered from
      left to right).  All network numbers and local address parts are returned
@@ -1593,12 +1572,13 @@ INTERNET ADDRESSES (IP VERSION 4)
      Note that when an Internet address is viewed as a 32-bit integer quantity
      on a system that uses little-endian byte order (such as the Intel 386,
      486 and Pentium processors) the bytes referred to above appear as
-     ``d.c.b.a''. That is, little-endian bytes are ordered from right to left.
+     ``d.c.b.a''.  That is, little-endian bytes are ordered from right to
+     left.
 
      When a three part address is specified, the last part is interpreted as a
-     16-bit quantity and placed in the rightmost two bytes of the network ad-
-     dress.  This makes the three part address format convenient for specify-
-     ing Class B network addresses as ``128.net.host''.
+     16-bit quantity and placed in the rightmost two bytes of the network
+     address.  This makes the three part address format convenient for speci-
+     fying Class B network addresses as ``128.net.host''.
 
      When a two part address is supplied, the last part is interpreted as a
      24-bit quantity and placed in the rightmost three bytes of the network
@@ -1608,14 +1588,14 @@ INTERNET ADDRESSES (IP VERSION 4)
      When only one part is given, the value is stored directly in the network
      address without any byte rearrangement.
 
-     All numbers supplied as ``parts'' in a `.' notation may be decimal, oc-
-     tal, or hexadecimal, as specified in the C language (i.e., a leading 0x
+     All numbers supplied as ``parts'' in a `.' notation may be decimal,
+     octal, or hexadecimal, as specified in the C language (i.e., a leading 0x
      or 0X implies hexadecimal; otherwise, a leading 0 implies octal; other-
      wise, the number is interpreted as decimal).
 
 INTERNET ADDRESSES (IP VERSION 6)
-     In order to support scoped IPv6 addresses, getaddrinfo(3) and getnamein-
-     fo(3) are recommended rather than the functions presented here.
+     In order to support scoped IPv6 addresses, getaddrinfo(3) and
+     getnameinfo(3) are recommended rather than the functions presented here.
 
      The presentation format of an IPv6 address is given in [RFC1884 2.2]:
 
@@ -1637,12 +1617,11 @@ INTERNET ADDRESSES (IP VERSION 6)
           will be common for addresses to contain long strings of zero bits.
           In order to make writing addresses
 
-
           containing zero bits easier a special syntax is available to com-
           press the zeros.  The use of ``::'' indicates multiple groups of 16
           bits of zeros.  The ``::'' can only appear once in an address.  The
-          ``::'' can also be used to compress the leading and/or trailing ze-
-          ros in an address.
+          ``::'' can also be used to compress the leading and/or trailing
+          zeros in an address.
 
           For example the following addresses:
 
@@ -1678,41 +1657,41 @@ DIAGNOSTICS
      for malformed requests.
 
 SEE ALSO
-     byteorder(3),  gethostbyname(3),  getnetent(3),  inet_net(3),  hosts(5),
+     byteorder(3), gethostbyname(3), getnetent(3), inet_net(3), hosts(5),
      networks(5)
 
 STANDARDS
      The inet_ntop and inet_pton functions conforms to the IETF IPv6 BSD API
-     and address formatting specifications.  Note that inet_pton does not ac-
-     cept 1-, 2-, or 3-part dotted addresses; all four parts must be speci-
+     and address formatting specifications.  Note that inet_pton does not
+     accept 1-, 2-, or 3-part dotted addresses; all four parts must be speci-
      fied.  This is a narrower input set than that accepted by inet_aton.
 
 HISTORY
      The inet_addr, inet_network, inet_makeaddr, inet_lnaof and inet_netof
-     functions appeared in 4.2BSD. The inet_aton and inet_ntoa functions ap-
-     peared in 4.3BSD. The inet_pton and inet_ntop functions appeared in BIND
-     4.9.4.
+     functions appeared in 4.2BSD.  The inet_aton and inet_ntoa functions
+     appeared in 4.3BSD.  The inet_pton and inet_ntop functions appeared in
+     BIND 4.9.4.
 
 BUGS
      The value INADDR_NONE (0xffffffff) is a valid broadcast address, but
      inet_addr() cannot return that value without indicating failure.  Also,
-     inet_addr() should have been designed to return a struct in_addr. The
+     inet_addr() should have been designed to return a struct in_addr.  The
      newer inet_aton() function does not share these problems, and almost all
      existing code should be modified to use inet_aton() instead.
 
      The problem of host byte ordering versus network byte ordering is confus-
      ing.
 
-
      The string returned by inet_ntoa() resides in a static memory area.
+
+BSD                              June 18, 1997                             BSD
     </screen>
   </sect1>
 
-  <sect1 id="INET6-OPTION-SPACE">
-    <title>INET6_OPTION_SPACE</title>
+  <sect1 id="net-common-tcpip-manpages-inet6-option-space">
+    <title>inet6_option_space</title>
     <screen>
-
-INET6_OPTION_SPACE(3)     System Programmer's Manual     INET6_OPTION_SPACE(3)
+INET6_OPTION_SPACE(3)   System Library Functions Manual  INET6_OPTION_SPACE(3)
 
 NAME
      inet6_option_space, inet6_option_init, inet6_option_append,
@@ -1723,40 +1702,41 @@ SYNOPSIS
      #include &lt;netinet/in.h>
 
      int
-     inet6_option_space(int nbytes)
+     inet6_option_space(int nbytes);
 
      int
-     inet6_option_init(void *bp, struct cmsghdr **cmsgp, int type)
+     inet6_option_init(void *bp, struct cmsghdr **cmsgp, int type);
 
      int
      inet6_option_append(struct cmsghdr *cmsg, const u_int8_t *typep,
-             int multx, int plusy)
+             int multx, int plusy);
 
      u_int8_t *
      inet6_option_alloc(struct cmsghdr *cmsg, int datalen, int multx,
-             int plusy);
+             int plusy);;
 
      int
-     inet6_option_next(const struct cmsghdr *cmsg, u_int8_t **tptrp)
+     inet6_option_next(const struct cmsghdr *cmsg, u_int8_t **tptrp);
 
      int
-     inet6_option_find(const struct cmsghdr *cmsg, u_int8_t **tptrp, int type)
+     inet6_option_find(const struct cmsghdr *cmsg, u_int8_t **tptrp,
+             int type);
 
 DESCRIPTION
-     Building and parsing the Hop-by-Hop and Destination options is complicat-
-     ed due to alignment constranints, padding and ancillary data manipula-
+     Building and parsing the Hop-by-Hop and Destination options is compli-
+     cated due to alignment constranints, padding and ancillary data manipula-
      tion.  RFC2292 defines a set of functions to help the application.  The
      function prototypes for these functions are all in the &lt;netinet/in.h>
      header.
 
    inet6_option_space
-     inet6_option_space() returns the number of bytes required to hold an op-
-     tion when it is stored as ancillary data, including the cmsghdr structure
-     at the beginning, and any padding at the end (to make its size a multiple
-     of 8 bytes). The argument is the size of the structure defining the op-
-     tion, which must include any pad bytes at the beginning (the value y in
-     the alignment term ``xn + y''), the type byte, the length byte, and the
-     option data.
+     inet6_option_space() returns the number of bytes required to hold an
+     option when it is stored as ancillary data, including the cmsghdr struc-
+     ture at the beginning, and any padding at the end (to make its size a
+     multiple of 8 bytes).  The argument is the size of the structure defining
+     the option, which must include any pad bytes at the beginning (the value
+     y in the alignment term ``xn + y''), the type byte, the length byte, and
+     the option data.
 
      Note: If multiple options are stored in a single ancillary data object,
      which is the recommended technique, this function overestimates the
@@ -1771,17 +1751,16 @@ DESCRIPTION
      contain either Hop-by-Hop or Destination options.  It returns 0 on suc-
      cess or -1 on an error.
 
-     bp is a pointer to previously allocated space that will contain the an-
-     cillary data object.  It must be large enough to contain all the individ-
-     ual options to be added by later calls to inet6_option_append() and
+     bp is a pointer to previously allocated space that will contain the
+     ancillary data object.  It must be large enough to contain all the indi-
+     vidual options to be added by later calls to inet6_option_append() and
      inet6_option_alloc().
-
 
      cmsgp is a pointer to a pointer to a cmsghdr structure.  *cmsgp is ini-
      tialized by this function to point to the cmsghdr structure constructed
      by this function in the buffer pointed to by bp.
 
-     type is either IPV6_HOPOPTS or IPV6_DSTOPTS. This type is stored in the
+     type is either IPV6_HOPOPTS or IPV6_DSTOPTS.  This type is stored in the
      cmsg_type member of the cmsghdr structure pointed to by *cmsgp.
 
    inet6_option_append
@@ -1804,10 +1783,10 @@ DESCRIPTION
      The option data length must have a value between 0 and 255, inclusive,
      and is the length of the option data that follows.
 
-     multx is the value x in the alignment term ``xn + y''. It must have a
+     multx is the value x in the alignment term ``xn + y''.  It must have a
      value of 1, 2, 4, or 8.
 
-     plusy is the value y in the alignment term ``xn + y''. It must have a
+     plusy is the value y in the alignment term ``xn + y''.  It must have a
      value between 0 and 7, inclusive.
 
    inet6_option_alloc
@@ -1817,8 +1796,8 @@ DESCRIPTION
      starts the option on success, or NULL on an error.
 
      The difference between this function and inet6_option_append() is that
-     the latter copies the contents of a previously built option into the an-
-     cillary data object while the current function returns a pointer to the
+     the latter copies the contents of a previously built option into the
+     ancillary data object while the current function returns a pointer to the
      space in the data object where the option's TLV must then be built by the
      caller.
 
@@ -1827,24 +1806,24 @@ DESCRIPTION
 
      datalen is the value of the option data length byte for this option.
      This value is required as an argument to allow the function to determine
-     if padding must be appended at the end of the option.  argument  since
-     the option data length must already be stored by the caller. (The
-     inet6_option_append() function does not need  a  data  length)
+     if padding must be appended at the end of the option.  (The
+     inet6_option_append() function does not need a data length argument since
+     the option data length must already be stored by the caller.)
 
-     multx is the value x in the alignment term ``xn + y''. It must have a
+     multx is the value x in the alignment term ``xn + y''.  It must have a
      value of 1, 2, 4, or 8.
 
-     plusy is the value y in the alignment term ``xn + y''. It must have a
+     plusy is the value y in the alignment term ``xn + y''.  It must have a
      value between 0 and 7, inclusive.
 
    inet6_option_next
      This function processes the next Hop-by-Hop option or Destination option
      in an ancillary data object.  If another option remains to be processed,
-     the return value of the function is 0 and *tptrp points to the 8-bit op-
-     tion type field the option data (which  is  followed  by the 8-bit option
-     data length, followed by). If no more options remain to be processed, the
-     return value is -1 and *tptrp is NULL. If an error occurs, the return
-     value is -1 and *tptrp is not NULL.
+     the return value of the function is 0 and *tptrp points to the 8-bit
+     option type field (which is followed by the 8-bit option data length,
+     followed by the option data).  If no more options remain to be processed,
+     the return value is -1 and *tptrp is NULL.  If an error occurs, the
+     return value is -1 and *tptrp is not NULL.
 
      cmsg is a pointer to cmsghdr structure of which cmsg_level equals
      IPPROTO_IPV6 and cmsg_type equals either IPV6_HOPOPTS or IPV6_DSTOPTS.
@@ -1854,27 +1833,27 @@ DESCRIPTION
      the function is called.  The first time this function is called for a
      given ancillary data object, *tptrp must be set to NULL.
 
-     Each time this function returns success, *tptrp points to the 8-bit op-
-     tion type field for the next option to be processed.
+     Each time this function returns success, *tptrp points to the 8-bit
+     option type field for the next option to be processed.
 
    inet6_option_find
      This function is similar to the previously described inet6_option_next()
      function, except this function lets the caller specify the option type to
-     be searched for, instead of always returning the next option in the an-
-     cillary data object.  cmsg is a pointer to cmsghdr structure of which
+     be searched for, instead of always returning the next option in the
+     ancillary data object.  cmsg is a pointer to cmsghdr structure of which
      cmsg_level equals IPPROTO_IPV6 and cmsg_type equals either IPV6_HOPOPTS
      or IPV6_DSTOPTS.
 
      tptrp is a pointer to a pointer to an 8-bit byte and *tptrp is used by
      the function to remember its place in the ancillary data object each time
      the function is called.  The first time this function is called for a
-     given ancillary data object, *tptrp must be set to NULL. ~ This function
+     given ancillary data object, *tptrp must be set to NULL.  ~ This function
      starts searching for an option of the specified type beginning after the
-     value of *tptrp. If an option of the specified type is located, this
+     value of *tptrp.  If an option of the specified type is located, this
      function returns 0 and *tptrp points to the 8- bit option type field for
      the option of the specified type.  If an option of the specified type is
-     not located, the return value is -1 and *tptrp is NULL. If an error oc-
-     curs, the return value is -1 and *tptrp is not NULL.
+     not located, the return value is -1 and *tptrp is NULL.  If an error
+     occurs, the return value is -1 and *tptrp is not NULL.
 
 DIAGNOSTICS
      inet6_option_init() and inet6_option_append() return 0 on success or -1
@@ -1889,10 +1868,10 @@ EXAMPLES
      RFC2292 gives comprehensive examples in chapter 6.
 
 SEE ALSO
-     W. Stevens, and M. Thomas, Advanced Sockets API for IPv6, RFC2292,
+     W. Stevens and M. Thomas, Advanced Sockets API for IPv6, RFC2292,
      February 1998.
 
-     S. Deering, and R. Hinden, Internet Protocol, Version 6 (IPv6)
+     S. Deering and R. Hinden, Internet Protocol, Version 6 (IPv6)
      Specification, RFC2460, December 1998.
 
 HISTORY
@@ -1905,15 +1884,14 @@ STANDARDS
 BUGS
      The text was shamelessly copied from RFC2292.
 
-BSD Experimental               December 10, 1999                             3
+BSD                            December 10, 1999                           BSD
     </screen>
   </sect1>
 
-  <sect1 id="INET6-RTHDR-SPACE">
-    <title>INET6_RTHDR_SPACE</title>
+  <sect1 id="net-common-tcpip-manpages-inet6-rthdr-space">
+    <title>inet6_rthdr_space</title>
     <screen>
-
-INET6_RTHDR_SPACE(3)      System Programmer's Manual      INET6_RTHDR_SPACE(3)
+INET6_RTHDR_SPACE(3)    System Library Functions Manual   INET6_RTHDR_SPACE(3)
 
 NAME
      inet6_rthdr_space, inet6_rthdr_init, inet6_rthdr_add,
@@ -1925,29 +1903,29 @@ SYNOPSIS
      #include &lt;netinet/in.h>
 
      size_t
-     inet6_rthdr_space(int type, int segments)
+     inet6_rthdr_space(int type, int segments);
 
      struct cmsghdr *
-     inet6_rthdr_init(void *bp, int type)
+     inet6_rthdr_init(void *bp, int type);
 
      int
      inet6_rthdr_add(struct cmsghdr *cmsg, const struct in6_addr *addr,
-             unsigned int flags)
+             unsigned int flags);
 
      int
-     inet6_rthdr_lasthop(struct cmsghdr *cmsg, unsigned int flags)
+     inet6_rthdr_lasthop(struct cmsghdr *cmsg, unsigned int flags);
 
      int
-     inet6_rthdr_reverse(const struct cmsghdr *in, struct cmsghdr *out)
+     inet6_rthdr_reverse(const struct cmsghdr *in, struct cmsghdr *out);
 
      int
-     inet6_rthdr_segments(const struct cmsghdr *cmsg)
+     inet6_rthdr_segments(const struct cmsghdr *cmsg);
 
      struct in6_addr *
-     inet6_rthdr_getaddr(struct cmsghdr *cmsg, int index)
+     inet6_rthdr_getaddr(struct cmsghdr *cmsg, int index);
 
      int
-     inet6_rthdr_getflags(const struct cmsghdr *cmsg, int index)
+     inet6_rthdr_getflags(const struct cmsghdr *cmsg, int index);
 
 DESCRIPTION
      RFC2292 IPv6 advanced API defines eight functions that the application
@@ -1978,26 +1956,26 @@ DESCRIPTION
    inet6_rthdr_space
      This function returns the number of bytes required to hold a Routing
      header of the specified type containing the specified number of segments
-     (addresses). For an IPv6 Type 0 Routing header, the number of segments
+     (addresses).  For an IPv6 Type 0 Routing header, the number of segments
      must be between 1 and 23, inclusive.  The return value includes the size
-     of the cmsghdr structure that precedes the Routing header, and any re-
-     quired padding.
+     of the cmsghdr structure that precedes the Routing header, and any
+     required padding.
 
      If the return value is 0, then either the type of the Routing header is
      not supported by this implementation or the number of segments is invalid
      for this type of Routing header.
 
-     Note: This function returns the size but does not allocate the space re-
-     quired for the ancillary data.  This allows an application to allocate a
-     larger buffer, if other ancillary data objects are desired, since all the
-     ancillary data objects must be specified to sendmsg(2) as a single
+     Note: This function returns the size but does not allocate the space
+     required for the ancillary data.  This allows an application to allocate
+     a larger buffer, if other ancillary data objects are desired, since all
+     the ancillary data objects must be specified to sendmsg(2) as a single
      msg_control buffer.
 
    inet6_rthdr_init
      This function initializes the buffer pointed to by bp to contain a
-     cmsghdr structure followed by a Routing header of the specified type. The
-     cmsg_len member of the cmsghdr structure is initialized to the size of
-     the structure plus the amount of space required by the Routing header.
+     cmsghdr structure followed by a Routing header of the specified type.
+     The cmsg_len member of the cmsghdr structure is initialized to the size
+     of the structure plus the amount of space required by the Routing header.
      The cmsg_level and cmsg_type members are also initialized as required.
 
      The caller must allocate the buffer and its size can be determined by
@@ -2010,7 +1988,7 @@ DESCRIPTION
    inet6_rthdr_add
      This function adds the address pointed to by addr to the end of the Rout-
      ing header being constructed and sets the type of this hop to the value
-     of flags. For an IPv6 Type 0 Routing header, flags must be either
+     of flags.  For an IPv6 Type 0 Routing header, flags must be either
      IPV6_RTHDR_LOOSE or IPV6_RTHDR_STRICT.
 
      If successful, the cmsg_len member of the cmsghdr structure is updated to
@@ -2039,26 +2017,24 @@ DESCRIPTION
 
    inet6_rthdr_segments
      This function returns the number of segments (addresses) contained in the
-     Routing header described by cmsg. On success the return value is between
-     1 and 23, inclusive.  The return value of the function is -1 upon an er-
-     ror.
-
+     Routing header described by cmsg.  On success the return value is between
+     1 and 23, inclusive.  The return value of the function is -1 upon an
+     error.
 
    inet6_rthdr_getaddr
      This function returns a pointer to the IPv6 address specified by index
-     inet6_rthdr_segments() (which must have a value between  1  and  the
-     value  returned  by) in the Routing header described by cmsg. An applica-
-     tion should first call inet6_rthdr_segments() to obtain the number of
-     segments in the Routing header.
+     (which must have a value between 1 and the value returned by
+     inet6_rthdr_segments()) in the Routing header described by cmsg.  An
+     application should first call inet6_rthdr_segments() to obtain the number
+     of segments in the Routing header.
 
      Upon an error the return value of the function is NULL.
 
    inet6_rthdr_getflags
-     This function returns the flags value specified by index
-     inet6_rthdr_segments() (which  must  have  a  value  between  0 and the
-     value returned by) in the Routing header described by cmsg. For an IPv6
-     Type 0 Routing header the return value will be either IPV6_RTHDR_LOOSE or
-     IPV6_RTHDR_STRICT.
+     This function returns the flags value specified by index (which must have
+     a value between 0 and the value returned by inet6_rthdr_segments()) in
+     the Routing header described by cmsg.  For an IPv6 Type 0 Routing header
+     the return value will be either IPV6_RTHDR_LOOSE or IPV6_RTHDR_STRICT.
 
      Upon an error the return value of the function is -1.
 
@@ -2079,10 +2055,10 @@ EXAMPLES
      RFC2292 gives comprehensive examples in chapter 8.
 
 SEE ALSO
-     W. Stevens, and M. Thomas, Advanced Sockets API for IPv6, RFC2292,
+     W. Stevens and M. Thomas, Advanced Sockets API for IPv6, RFC2292,
      February 1998.
 
-     S. Deering, and R. Hinden, Internet Protocol, Version 6 (IPv6)
+     S. Deering and R. Hinden, Internet Protocol, Version 6 (IPv6)
      Specification, RFC2460, December 1998.
 
 HISTORY
@@ -2097,15 +2073,14 @@ BUGS
 
      inet6_rthdr_reverse() is not implemented yet.
 
-BSD Experimental               December 10, 1999                             3
+BSD                            December 10, 1999                           BSD
     </screen>
   </sect1>
 
-  <sect1 id="INET-NET">
-    <title>INET_NET</title>
+  <sect1 id="net-common-tcpip-manpages-inet-net">
+    <title>inet_net</title>
     <screen>
-
-INET_NET(3)               System Programmer's Manual               INET_NET(3)
+INET_NET(3)             System Library Functions Manual            INET_NET(3)
 
 NAME
      inet_net_ntop, inet_net_pton - Internet network number manipulation rou-
@@ -2117,10 +2092,10 @@ SYNOPSIS
      #include &lt;arpa/inet.h>
 
      char *
-     inet_net_ntop(int af, const void *src, int bits, char *dst, size_t size)
+     inet_net_ntop(int af, const void *src, int bits, char *dst, size_t size);
 
      int
-     inet_net_pton(int af, const char *src, void *dst, size_t size)
+     inet_net_pton(int af, const char *src, void *dst, size_t size);
 
 DESCRIPTION
      The inet_net_ntop() function converts an Internet network number from
@@ -2139,8 +2114,8 @@ DESCRIPTION
      failure occurred (in which case errno will have been set.  It will be set
      to ENOENT if the Internet network number was not valid).
 
-     The only value for af currently supported is AF_INET. size is the size of
-     the result buffer dst.
+     The only value for af currently supported is AF_INET.  size is the size
+     of the result buffer dst.
 
 NETWORK NUMBERS (IP VERSION 4)
      Internet network numbers may be specified in one of the following forms:
@@ -2156,7 +2131,7 @@ NETWORK NUMBERS (IP VERSION 4)
      number.  Note that when an Internet network number is viewed as a 32-bit
      integer quantity on a system that uses little-endian byte order (such as
      the Intel 386, 486, and Pentium processors) the bytes referred to above
-     appear as ``d.c.b.a''. That is, little-endian bytes are ordered from
+     appear as ``d.c.b.a''.  That is, little-endian bytes are ordered from
      right to left.
 
      When a three part number is specified, the last part is interpreted as a
@@ -2169,31 +2144,29 @@ NETWORK NUMBERS (IP VERSION 4)
      network number.  This makes the two part number format convenient for
      specifying Class A network numbers as ``net.host''.
 
-
      When only one part is given, the value is stored directly in the Internet
      network number without any byte rearrangement.
 
-     All numbers supplied as ``parts'' in a `.' notation may be decimal, oc-
-     tal, or hexadecimal, as specified in the C language (i.e., a leading 0x
+     All numbers supplied as ``parts'' in a `.' notation may be decimal,
+     octal, or hexadecimal, as specified in the C language (i.e., a leading 0x
      or 0X implies hexadecimal; otherwise, a leading 0 implies octal; other-
      wise, the number is interpreted as decimal).
 
 SEE ALSO
-     byteorder(3),  inet(3),  networks(5)
+     byteorder(3), inet(3), networks(5)
 
 HISTORY
      The inet_net_ntop and inet_net_pton functions first appeared in BIND
      4.9.4.
 
-BSD Experimental                 June 18, 1997                               2
+BSD                              June 18, 1997                             BSD
     </screen>
   </sect1>
 
-  <sect1 id="IPX">
-    <title>IPX</title>
+  <sect1 id="net-common-tcpip-manpages-ipx">
+    <title>ipx</title>
     <screen>
-
-IPX(3)                    System Programmer's Manual                    IPX(3)
+IPX(3)                  System Library Functions Manual                 IPX(3)
 
 NAME
      ipx_addr, ipx_ntoa - IPX address conversion routines
@@ -2203,14 +2176,14 @@ SYNOPSIS
      #include &lt;netipx/ipx.h>
 
      struct ipx_addr
-     ipx_addr(const char *cp)
+     ipx_addr(const char *cp);
 
      char *
-     ipx_ntoa(struct ipx_addr ipx)
+     ipx_ntoa(struct ipx_addr ipx);
 
 DESCRIPTION
-     The routine ipx_addr() interprets character strings representing IPX ad-
-     dresses, returning binary information suitable for use in system calls.
+     The routine ipx_addr() interprets character strings representing IPX
+     addresses, returning binary information suitable for use in system calls.
      The routine ipx_ntoa() takes IPX addresses and returns ASCII strings rep-
      resenting the address in a notation in common use:
 
@@ -2223,23 +2196,23 @@ DESCRIPTION
      An effort has been made to ensure that ipx_addr() be compatible with most
      formats in common use.  It will first separate an address into 1 to 3
      fields using a single delimiter chosen from period (`.'), colon (`:'), or
-     pound-sign (`#'). Each field is then examined for byte separators (colon
+     pound-sign (`#').  Each field is then examined for byte separators (colon
      or period).  If there are byte separators, each subfield separated is
      taken to be a small hexadecimal number, and the entirety is taken as a
-     network-byte-ordered quantity to be zero extended in the high-network-or-
-     der bytes.  Next, the field is inspected for hyphens, in which case the
+     network-byte-ordered quantity to be zero extended in the high-network-
+     order bytes.  Next, the field is inspected for hyphens, in which case the
      field is assumed to be a number in decimal notation with hyphens separat-
-     ing the millenia.  Next, the field is assumed to be a number: It is in-
-     terpreted as hexadecimal if there is a leading `0x' (as in C), a trailing
-     `H' (as in Mesa), or there are any super-decimal digits present.  It is
-     interpreted as octal is there is a leading `0' and there are no super-oc-
-     tal digits.  Otherwise, it is converted as a decimal number.
+     ing the millenia.  Next, the field is assumed to be a number: It is
+     interpreted as hexadecimal if there is a leading `0x' (as in C), a trail-
+     ing `H' (as in Mesa), or there are any super-decimal digits present.  It
+     is interpreted as octal is there is a leading `0' and there are no super-
+     octal digits.  Otherwise, it is converted as a decimal number.
 
 RETURN VALUES
      None.  (See BUGS.)
 
 SEE ALSO
-     ns(4),  hosts(5),  networks(5)
+     ns(4), hosts(5), networks(5)
 
 HISTORY
      The precursor ns_addr() and ns_ntoa() functions appeared in 4.3BSD.
@@ -2249,15 +2222,14 @@ BUGS
      function ipx_addr() should diagnose improperly formed input, and there
      should be an unambiguous way to recognize this.
 
-BSD Experimental                 June 4, 1993                                1
+BSD                              June 4, 1993                              BSD
     </screen>
   </sect1>
 
-  <sect1 id="ISO-ADDR">
-    <title>ISO_ADDR</title>
+  <sect1 id="net-common-tcpip-manpages-iso-addr">
+    <title>iso_addr</title>
     <screen>
-
-ISO_ADDR(3)               System Programmer's Manual               ISO_ADDR(3)
+ISO_ADDR(3)             System Library Functions Manual            ISO_ADDR(3)
 
 NAME
      iso_addr, iso_ntoa - network address conversion routines for Open System
@@ -2268,14 +2240,14 @@ SYNOPSIS
      #include &lt;netiso/iso.h>
 
      struct iso_addr *
-     iso_addr(char *cp)
+     iso_addr(char *cp);
 
      char *
-     iso_ntoa(struct iso_addr *isoa)
+     iso_ntoa(struct iso_addr *isoa);
 
 DESCRIPTION
-     The routine iso_addr() interprets character strings representing OSI ad-
-     dresses, returning binary information suitable for use in system calls.
+     The routine iso_addr() interprets character strings representing OSI
+     addresses, returning binary information suitable for use in system calls.
      The routine iso_ntoa() takes OSI addresses and returns ASCII strings rep-
      resenting NSAPs (network service access points) in a notation inverse to
      that accepted by iso_addr().
@@ -2296,7 +2268,7 @@ DESCRIPTION
 
 RETURN VALUES
      iso_ntoa() always returns a null terminated string.  iso_addr() always
-     returns a pointer to a struct iso_addr. (See BUGS.)
+     returns a pointer to a struct iso_addr.  (See BUGS.)
 
 SEE ALSO
      iso(4)
@@ -2310,15 +2282,14 @@ BUGS
      The function iso_addr() should diagnose improperly formed input, and
      there should be an unambiguous way to recognize this.
 
-BSD Experimental                 June 4, 1993                                1
+BSD                              June 4, 1993                              BSD
     </screen>
   </sect1>
 
-  <sect1 id="LINK-ADDR">
-    <title>LINK_ADDR</title>
+  <sect1 id="net-common-tcpip-manpages-link-addr">
+    <title>link_addr</title>
     <screen>
-
-LINK_ADDR(3)              System Programmer's Manual              LINK_ADDR(3)
+LINK_ADDR(3)            System Library Functions Manual           LINK_ADDR(3)
 
 NAME
      link_addr, link_ntoa - elementary address specification routines for link
@@ -2330,10 +2301,10 @@ SYNOPSIS
      #include &lt;net/if_dl.h>
 
      void
-     link_addr(const char *addr, struct sockaddr_dl *sdl)
+     link_addr(const char *addr, struct sockaddr_dl *sdl);
 
      char *
-     link_ntoa(const struct sockaddr_dl *sdl)
+     link_ntoa(const struct sockaddr_dl *sdl);
 
 DESCRIPTION
      The link_addr() function interprets character strings representing link-
@@ -2345,10 +2316,10 @@ DESCRIPTION
 
      For link_addr(), the string addr may contain an optional network inter-
      face identifier of the form ``name unit-number'', suitable for the first
-     argument to ifconfig(8),  followed in all cases by a colon and an inter-
-     face address in the form of groups of hexadecimal digits separated by pe-
-     riods.  Each group represents a byte of address; address bytes are filled
-     left to right from low order bytes through high order bytes.
+     argument to ifconfig(8), followed in all cases by a colon and an inter-
+     face address in the form of groups of hexadecimal digits separated by
+     periods.  Each group represents a byte of address; address bytes are
+     filled left to right from low order bytes through high order bytes.
 
      Thus le0:8.0.9.13.d.30 represents an Ethernet address to be transmitted
      on the first Lance Ethernet interface.
@@ -2358,7 +2329,7 @@ RETURN VALUES
      return value.  (See BUGS.)
 
 SEE ALSO
-     iso(4),  ifconfig(8)
+     iso(4), ifconfig(8)
 
 HISTORY
      The link_addr() and link_ntoa() functions appeared in 4.3BSD-Reno.
@@ -2374,15 +2345,14 @@ BUGS
      translated address is given to link_addr() without inserting an initial
      colon, the latter will not interpret it correctly.
 
-BSD Experimental                 July 28, 1993                               1
+BSD                              July 28, 1993                             BSD
     </screen>
   </sect1>
 
-  <sect1 id="NET-ADDRCMP">
-    <title>NET_ADDRCMP</title>
+  <sect1 id="net-common-tcpip-manpages-net-addrcmp">
+    <title>net_addrcmp</title>
     <screen>
-
-NET_ADDRCMP(3)            System Programmer's Manual            NET_ADDRCMP(3)
+NET_ADDRCMP(3)          System Library Functions Manual         NET_ADDRCMP(3)
 
 NAME
      net_addrcmp - compare socket address structures
@@ -2391,7 +2361,7 @@ SYNOPSIS
      #include &lt;netdb.h>
 
      int
-     net_addrcmp(struct sockaddr *sa1, struct sockaddr *sa2)
+     net_addrcmp(struct sockaddr *sa1, struct sockaddr *sa2);
 
 DESCRIPTION
      The net_addrcmp() function compares two socket address structures, sa1
@@ -2414,17 +2384,16 @@ RETURN VALUES
      is returned; otherwise, a value >0 or &lt;0 is returned.
 
 HISTORY
-     A net_addrcmp() function was added in
+     A net_addrcmp() function was added in OpenBSD 2.5.
 
-BSD Experimental                 July 3, 1999                                1
+BSD                              July 3, 1999                              BSD
     </screen>
   </sect1>
 
-  <sect1 id="NS">
-    <title>NS</title>
+  <sect1 id="net-common-tcpip-manpages-ns">
+    <title>ns</title>
     <screen>
-
-NS(3)                     System Programmer's Manual                     NS(3)
+NS(3)                   System Library Functions Manual                  NS(3)
 
 NAME
      ns_addr, ns_ntoa - Xerox NS(tm) address conversion routines
@@ -2434,14 +2403,14 @@ SYNOPSIS
      #include &lt;netns/ns.h>
 
      struct ns_addr
-     ns_addr(char *cp)
+     ns_addr(char *cp);
 
      char *
-     ns_ntoa(struct ns_addr ns)
+     ns_ntoa(struct ns_addr ns);
 
 DESCRIPTION
-     The routine ns_addr() interprets character strings representing XNS ad-
-     dresses, returning binary information suitable for use in system calls.
+     The routine ns_addr() interprets character strings representing XNS
+     addresses, returning binary information suitable for use in system calls.
      The routine ns_ntoa() takes XNS addresses and returns ASCII strings rep-
      resenting the address in a notation in common use in the Xerox Develop-
      ment Environment:
@@ -2452,27 +2421,28 @@ DESCRIPTION
      adecimal, in a format suitable for input to ns_addr().  Any fields lack-
      ing super-decimal digits will have a trailing `H' appended.
 
-     Unfortunately, no universal standard exists for representing XNS address-
-     es.  An effort has been made to ensure that ns_addr() be compatible with
-     most formats in common use.  It will first separate an address into 1 to
-     3 fields using a single delimiter chosen from period (`.'), colon (`:'),
-     or pound-sign `#'. Each field is then examined for byte separators (colon
-     or period).  If there are byte separators, each subfield separated is
-     taken to be a small hexadecimal number, and the entirety is taken as a
-     network-byte-ordered quantity to be zero extended in the high-network-or-
-     der bytes.  Next, the field is inspected for hyphens, in which case the
-     field is assumed to be a number in decimal notation with hyphens separat-
-     ing the millenia.  Next, the field is assumed to be a number: It is in-
-     terpreted as hexadecimal if there is a leading `0x' (as in C), a trailing
-     `H' (as in Mesa), or there are any super-decimal digits present.  It is
-     interpreted as octal is there is a leading `0' and there are no super-oc-
-     tal digits.  Otherwise, it is converted as a decimal number.
+     Unfortunately, no universal standard exists for representing XNS
+     addresses.  An effort has been made to ensure that ns_addr() be compati-
+     ble with most formats in common use.  It will first separate an address
+     into 1 to 3 fields using a single delimiter chosen from period (`.'),
+     colon (`:'), or pound-sign `#'.  Each field is then examined for byte
+     separators (colon or period).  If there are byte separators, each sub-
+     field separated is taken to be a small hexadecimal number, and the
+     entirety is taken as a network-byte-ordered quantity to be zero extended
+     in the high-network-order bytes.  Next, the field is inspected for
+     hyphens, in which case the field is assumed to be a number in decimal
+     notation with hyphens separating the millenia.  Next, the field is
+     assumed to be a number: It is interpreted as hexadecimal if there is a
+     leading `0x' (as in C), a trailing `H' (as in Mesa), or there are any
+     super-decimal digits present.  It is interpreted as octal is there is a
+     leading `0' and there are no super-octal digits.  Otherwise, it is con-
+     verted as a decimal number.
 
 RETURN VALUES
      None.  (See BUGS.)
 
 SEE ALSO
-     hosts(5),  networks(5)
+     hosts(5), networks(5)
 
 HISTORY
      The ns_addr() and ns_toa() functions appeared in 4.3BSD.
@@ -2482,15 +2452,14 @@ BUGS
      function ns_addr() should diagnose improperly formed input, and there
      should be an unambiguous way to recognize this.
 
-BSD Experimental                 June 4, 1993                                1
+BSD                              June 4, 1993                              BSD
     </screen>
   </sect1>
 
-  <sect1 id="RESOLVER">
-    <title>RESOLVER</title>
+  <sect1 id="net-common-tcpip-manpages-resolver">
+    <title>resolver</title>
     <screen>
-
-RESOLVER(3)               System Programmer's Manual               RESOLVER(3)
+RESOLVER(3)             System Library Functions Manual            RESOLVER(3)
 
 NAME
      res_query, res_search, res_mkquery, res_send, res_init, dn_comp,
@@ -2503,37 +2472,37 @@ SYNOPSIS
      #include &lt;resolv.h>
 
      int
-     res_query(char *dname, int class, int type, u_char *answer, int anslen)
+     res_query(char *dname, int class, int type, u_char *answer, int anslen);
 
      int
-     res_search(char *dname, int class, int type, u_char *answer, int anslen)
+     res_search(char *dname, int class, int type, u_char *answer, int anslen);
 
      int
      res_mkquery(int op, char *dname, int class, int type, char *data,
-             int datalen, struct rrec *newrr, char *buf, int buflen)
+             int datalen, struct rrec *newrr, char *buf, int buflen);
 
      int
-     res_send(char *msg, int msglen, char *answer, int anslen)
+     res_send(char *msg, int msglen, char *answer, int anslen);
 
      int
-     res_init(void)
+     res_init(void);
 
      int
      dn_comp(char *exp_dn, char *comp_dn, int length, char **dnptrs,
-             char **lastdnptr)
+             char **lastdnptr);
 
      int
      dn_expand(u_char *msg, u_char *eomorig, u_char *comp_dn, u_char *exp_dn,
-             int length)
+             int length);
 
 DESCRIPTION
      These routines are used for making, sending, and interpreting query and
      reply messages with Internet domain name servers.
 
      Global configuration and state information that is used by the resolver
-     routines is kept in the structure _res. Most of the values have reason-
-     able defaults and can be ignored.  Options stored in _res.options are de-
-     fined in &lt;resolv.h> and are as follows.  Options are stored as a simple
+     routines is kept in the structure _res.  Most of the values have reason-
+     able defaults and can be ignored.  Options stored in _res.options are
+     defined in &lt;resolv.h> and are as follows.  Options are stored as a simple
      bit mask containing the bitwise OR of the options enabled.
 
      RES_INIT       True if the initial name server address and default domain
@@ -2548,18 +2517,17 @@ DESCRIPTION
 
      RES_USEVC      Use TCP connections for queries instead of UDP datagrams.
 
-     RES_STAYOPEN   Used with RES_USEVC to keep the TCP connection open be-
-                    tween queries.  This is useful only in programs that regu-
-                    larly do many queries.  UDP should be the normal mode
+     RES_STAYOPEN   Used with RES_USEVC to keep the TCP connection open
+                    between queries.  This is useful only in programs that
+                    regularly do many queries.  UDP should be the normal mode
                     used.
 
      RES_IGNTC      Unused currently (ignore truncation errors, i.e., don't
-
                     retry with TCP).
 
-     RES_RECURSE    Set the recursion-desired bit in queries.  This is the de-
-                    fault.  (res_send() does not do iterative queries and ex-
-                    pects the name server to handle recursion.)
+     RES_RECURSE    Set the recursion-desired bit in queries.  This is the
+                    default.  (res_send() does not do iterative queries and
+                    expects the name server to handle recursion.)
 
      RES_DEFNAMES   If set, res_search() will append the default domain name
                     to single-component names (those that do not contain a
@@ -2568,22 +2536,22 @@ DESCRIPTION
      RES_DNSRCH     If this option is set, res_search() will search for host
                     names in the current domain and in parent domains; see
                     hostname(7).  This is used by the standard host lookup
-                    routine gethostbyname(3).  This option is enabled by de-
-                    fault.
+                    routine gethostbyname(3).  This option is enabled by
+                    default.
 
      RES_USE_INET6  Enables support for IPv6-only applications.  This causes
                     IPv4 addresses to be returned as an IPv4 mapped address.
                     For example, 10.1.1.1 will be returned as ::ffff:10.1.1.1.
-                    The option is not meaningful on
+                    The option is not meaningful on OpenBSD.
 
      The res_init() routine reads the configuration file (if any; see
-     resolv.conf(5))  to get the default domain name, search list, and the In-
-     ternet address of the local name server(s).  If no server is configured,
-     the host running the resolver is tried.  The current domain name is de-
-     fined by the hostname if not specified in the configuration file; it can
-     be overridden by the environment variable LOCALDOMAIN. This environment
-     variable may contain several blank-separated tokens if you wish to over-
-     ride the search list on a per-process basis.  This is similar to the
+     resolv.conf(5)) to get the default domain name, search list, and the
+     Internet address of the local name server(s).  If no server is config-
+     ured, the host running the resolver is tried.  The current domain name is
+     defined by the hostname if not specified in the configuration file; it
+     can be overridden by the environment variable LOCALDOMAIN.  This environ-
+     ment variable may contain several blank-separated tokens if you wish to
+     override the search list on a per-process basis.  This is similar to the
      search command in the configuration file.  Another environment variable
      RES_OPTIONS can be set to override certain internal resolver options
      which are otherwise set by changing fields in the _res structure or are
@@ -2593,10 +2561,10 @@ DESCRIPTION
      routines.
 
      The res_query() function provides an interface to the server query mecha-
-     nism.  It constructs a query, sends it to the local server, awaits a re-
-     sponse, and makes preliminary checks on the reply.  The query requests
+     nism.  It constructs a query, sends it to the local server, awaits a
+     response, and makes preliminary checks on the reply.  The query requests
      information of the specified type and class for the specified fully qual-
-     ified domain name dname. The reply message is left in the answer buffer
+     ified domain name dname.  The reply message is left in the answer buffer
      with length anslen supplied by the caller.
 
      The res_search() routine makes a query and awaits a response like
@@ -2606,24 +2574,24 @@ DESCRIPTION
 
      The remaining routines are lower-level routines used by res_query().  The
      res_mkquery() function constructs a standard query message and places it
-     in buf. It returns the size of the query, or -1 if the query is larger
-     than buflen. The query type op is usually QUERY, but can be any of the
-     query types defined in &lt;arpa/nameser.h>. The domain name for the query is
-     given by dname. newrr is currently unused but is intended for making up-
-     date messages.
+     in buf.  It returns the size of the query, or -1 if the query is larger
+     than buflen.  The query type op is usually QUERY, but can be any of the
+     query types defined in &lt;arpa/nameser.h>.  The domain name for the query
+     is given by dname.  newrr is currently unused but is intended for making
+     update messages.
 
      The res_send() routine sends a pre-formatted query and returns an answer.
-     It will call res_init() if RES_INIT is not set, send the query to the lo-
-     cal name server, and handle timeouts and retries.  The length of the re-
-     ply message is returned, or -1 if there were errors.
+     It will call res_init() if RES_INIT is not set, send the query to the
+     local name server, and handle timeouts and retries.  The length of the
+     reply message is returned, or -1 if there were errors.
 
      The dn_comp() function compresses the domain name exp_dn and stores it in
-     comp_dn. The size of the compressed name is returned or -1 if there were
+     comp_dn.  The size of the compressed name is returned or -1 if there were
      errors.  The size of the array pointed to by comp_dn is given by length.
      The compression uses an array of pointers dnptrs to previously compressed
      names in the current message.  The first pointer points to the beginning
-     of the message and the list ends with NULL. The limit to the array is
-     specified by lastdnptr. A side effect of dn_comp() is to update the list
+     of the message and the list ends with NULL.  The limit to the array is
+     specified by lastdnptr.  A side effect of dn_comp() is to update the list
      of pointers for labels inserted into the message as the name is com-
      pressed.  If dnptr is NULL, names are not compressed.  If lastdnptr is
      NULL, the list of labels is not updated.
@@ -2632,14 +2600,14 @@ DESCRIPTION
      full domain name The compressed name is contained in a query or reply
      message; msg is a pointer to the beginning of the message.  The uncom-
      pressed name is placed in the buffer indicated by exp_dn which is of size
-     length. The size of compressed name is returned or -1 if there was an er-
-     ror.
+     length.  The size of compressed name is returned or -1 if there was an
+     error.
 
 FILES
      /etc/resolv.conf configuration file see resolv.conf(5).
 
 SEE ALSO
-     gethostbyname(3),  resolv.conf(5),  hostname(7),  named(8)
+     gethostbyname(3), resolv.conf(5), hostname(7), named(8)
 
      RFC1032, RFC1033, RFC1034, RFC1035, RFC1535, RFC974
 
@@ -2648,15 +2616,14 @@ SEE ALSO
 HISTORY
      The res_query function appeared in 4.3BSD.
 
-BSD Experimental                 June 4, 1993                                3
+BSD                              June 4, 1993                              BSD
     </screen>
   </sect1>
 
-  <sect1 id="ACCEPT">
-    <title>ACCEPT</title>
+  <sect1 id="net-common-tcpip-manpages-accept">
+    <title>accept</title>
     <screen>
-
-ACCEPT(2)                 System Programmer's Manual                 ACCEPT(2)
+ACCEPT(2)                     System Calls Manual                    ACCEPT(2)
 
 NAME
      accept - accept a connection on a socket
@@ -2666,11 +2633,11 @@ SYNOPSIS
      #include &lt;sys/socket.h>
 
      int
-     accept(int s, struct sockaddr *addr, socklen_t *addrlen)
+     accept(int s, struct sockaddr *addr, socklen_t *addrlen);
 
 DESCRIPTION
-     The argument s is a socket that has been created with socket(2),  bound
-     to an address with bind(2),  and is listening for connections after a
+     The argument s is a socket that has been created with socket(2), bound to
+     an address with bind(2), and is listening for connections after a
      listen(2).  The accept() argument extracts the first connection request
      on the queue of pending connections, creates a new socket with the same
      properties of s, and allocates a new file descriptor for the socket.  If
@@ -2681,23 +2648,23 @@ DESCRIPTION
      The accepted socket may not be used to accept more connections.  The
      original socket s remains open.
 
-     The argument addr is a result parameter that is filled in with the ad-
-     dress of the connecting entity as known to the communications layer.  The
-     exact format of the addr parameter is determined by the domain in which
-     the communication is occurring.  The addrlen is a value-result parameter;
-     it should initially contain the amount of space pointed to by addr; on
-     return it will contain the actual length (in bytes) of the address re-
-     turned.  This call is used with connection-based socket types, currently
-     with SOCK_STREAM.
+     The argument addr is a result parameter that is filled in with the
+     address of the connecting entity as known to the communications layer.
+     The exact format of the addr parameter is determined by the domain in
+     which the communication is occurring.  The addrlen is a value-result
+     parameter; it should initially contain the amount of space pointed to by
+     addr; on return it will contain the actual length (in bytes) of the
+     address returned.  This call is used with connection-based socket types,
+     currently with SOCK_STREAM.
 
      It is possible to select(2) or poll(2) a socket for the purposes of doing
      an accept() by selecting it for read.
 
      For certain protocols which require an explicit confirmation, such as ISO
      or DATAKIT, accept() can be thought of as merely dequeuing the next con-
-     nection request and not implying confirmation.  Confirmation can be im-
-     plied by a normal read or write on the new file descriptor, and rejection
-     can be implied by closing the new socket.
+     nection request and not implying confirmation.  Confirmation can be
+     implied by a normal read or write on the new file descriptor, and rejec-
+     tion can be implied by closing the new socket.
 
      One can obtain user connection request data without confirming the con-
      nection by issuing a recvmsg(2) call with an msg_iovlen of 0 and a non-
@@ -2713,46 +2680,41 @@ RETURN VALUES
 ERRORS
      The accept() will fail if:
 
-     [EBADF]       The descriptor is invalid.
+     [EBADF]            The descriptor is invalid.
 
-     [ENOTSOCK]    The descriptor references a file, not a socket.
+     [ENOTSOCK]         The descriptor references a file, not a socket.
 
-     [EOPNOTSUPP]  The referenced socket is not of type SOCK_STREAM.
+     [EOPNOTSUPP]       The referenced socket is not of type SOCK_STREAM.
 
-     [EINVAL]      The referenced socket is not listening for connections
+     [EINVAL]           The referenced socket is not listening for connections
+                        (that is, listen(2) has not yet been called).
 
-                   (that is, listen(2) has not yet been called).
+     [EFAULT]           The addr parameter is not in a writable part of the
+                        user address space.
 
-     [EFAULT]      The addr parameter is not in a writable part of the user
-                   address space.
+     [EWOULDBLOCK]      The socket is marked non-blocking and no connections
+                        are present to be accepted.
 
-     [EWOULDBLOCK]
-                   The socket is marked non-blocking and no connections are
-                   present to be accepted.
+     [EMFILE]           The per-process descriptor table is full.
 
-     [EMFILE]      The per-process descriptor table is full.
+     [ENFILE]           The system file table is full.
 
-     [ENFILE]      The system file table is full.
-
-     [ECONNABORTED]
-                   A connection has been aborted.
+     [ECONNABORTED]     A connection has been aborted.
 
 SEE ALSO
-     bind(2),  connect(2),  listen(2),  poll(2),  select(2),  poll(2),  sock-
-     et(2)
+     bind(2), connect(2), listen(2), poll(2), select(2), poll(2), socket(2)
 
 HISTORY
      The accept() function appeared in 4.2BSD.
 
-BSD Experimental               February 15, 1999                             2
+BSD                            February 15, 1999                           BSD
     </screen>
   </sect1>
 
-  <sect1 id="BIND">
-    <title>BIND</title>
+  <sect1 id="net-common-tcpip-manpages-bind">
+    <title>bind</title>
     <screen>
-
-BIND(2)                   System Programmer's Manual                   BIND(2)
+BIND(2)                       System Calls Manual                      BIND(2)
 
 NAME
      bind - bind a name to a socket
@@ -2762,7 +2724,7 @@ SYNOPSIS
      #include &lt;sys/socket.h>
 
      int
-     bind(int s, const struct sockaddr *name, socklen_t namelen)
+     bind(int s, const struct sockaddr *name, socklen_t namelen);
 
 DESCRIPTION
      bind() assigns a name to an unnamed socket.  When a socket is created
@@ -2784,63 +2746,60 @@ RETURN VALUES
 ERRORS
      The bind() call will fail if:
 
-     [EBADF]       S is not a valid descriptor.
+     [EBADF]            S is not a valid descriptor.
 
-     [ENOTSOCK]    S is not a socket.
+     [ENOTSOCK]         S is not a socket.
 
-     [EADDRNOTAVAIL]
-                   The specified address is not available from the local ma-
-                   chine.
+     [EADDRNOTAVAIL]    The specified address is not available from the local
+                        machine.
 
-     [EADDRINUSE]  The specified address is already in use.
+     [EADDRINUSE]       The specified address is already in use.
 
-     [EINVAL]      The socket is already bound to an address.
+     [EINVAL]           The socket is already bound to an address.
 
-     [EINVAL]      The family of the socket and that requested in
-                   name->sa_family are not equivalent.
+     [EINVAL]           The family of the socket and that requested in
+                        name->sa_family are not equivalent.
 
-     [EACCES]      The requested address is protected, and the current user
-                   has inadequate permission to access it.
+     [EACCES]           The requested address is protected, and the current
+                        user has inadequate permission to access it.
 
-     [EFAULT]      The name parameter is not in a valid part of the user ad-
-                   dress space.
+     [EFAULT]           The name parameter is not in a valid part of the user
+                        address space.
 
      The following errors are specific to binding names in the UNIX domain.
 
-     [ENOTDIR]     A component of the path prefix is not a directory.
+     [ENOTDIR]          A component of the path prefix is not a directory.
 
-     [ENAMETOOLONG]
-                   A component of a pathname exceeded {NAME_MAX} characters,
-                   or an entire path name exceeded {PATH_MAX} characters.
+     [ENAMETOOLONG]     A component of a pathname exceeded {NAME_MAX} charac-
+                        ters, or an entire path name exceeded {PATH_MAX} char-
+                        acters.
 
-     [ENOENT]      A prefix component of the path name does not exist.
+     [ENOENT]           A prefix component of the path name does not exist.
 
-     [ELOOP]       Too many symbolic links were encountered in translating the
+     [ELOOP]            Too many symbolic links were encountered in translat-
+                        ing the pathname.
 
-                   pathname.
+     [EIO]              An I/O error occurred while making the directory entry
+                        or allocating the inode.
 
-     [EIO]         An I/O error occurred while making the directory entry or
-                   allocating the inode.
+     [EROFS]            The name would reside on a read-only file system.
 
-     [EROFS]       The name would reside on a read-only file system.
-
-     [EISDIR]      An empty pathname was specified.
+     [EISDIR]           An empty pathname was specified.
 
 SEE ALSO
-     connect(2),  getsockname(2),  listen(2),  socket(2)
+     connect(2), getsockname(2), listen(2), socket(2)
 
 HISTORY
      The bind() function call appeared in 4.2BSD.
 
-BSD Experimental               February 15, 1999                             2
+BSD                            February 15, 1999                           BSD
     </screen>
   </sect1>
 
-  <sect1 id="CONNECT">
-    <title>CONNECT</title>
+  <sect1 id="net-common-tcpip-manpages-connect">
+    <title>connect</title>
     <screen>
-
-CONNECT(2)                System Programmer's Manual                CONNECT(2)
+CONNECT(2)                    System Calls Manual                   CONNECT(2)
 
 NAME
      connect - initiate a connection on a socket
@@ -2850,20 +2809,20 @@ SYNOPSIS
      #include &lt;sys/socket.h>
 
      int
-     connect(int s, const struct sockaddr *name, socklen_t namelen)
+     connect(int s, const struct sockaddr *name, socklen_t namelen);
 
 DESCRIPTION
      The parameter s is a socket.  If it is of type SOCK_DGRAM, this call
-     specifies the peer with which the socket is to be associated; this ad-
-     dress is that to which datagrams are to be sent, and the only address
+     specifies the peer with which the socket is to be associated; this
+     address is that to which datagrams are to be sent, and the only address
      from which datagrams are to be received.  If the socket is of type
      SOCK_STREAM, this call attempts to make a connection to another socket.
      The other socket is specified by name, which is an address in the commu-
      nications space of the socket.  Each communications space interprets the
-     name parameter in its own way.  Generally, stream sockets may successful-
-     ly connect() only once; datagram sockets may use connect() multiple times
-     to change their association.  Datagram sockets may dissolve the associa-
-     tion by connecting to an invalid address, such as a null address.
+     name parameter in its own way.  Generally, stream sockets may success-
+     fully connect() only once; datagram sockets may use connect() multiple
+     times to change their association.  Datagram sockets may dissolve the
+     association by connecting to an invalid address, such as a null address.
 
 RETURN VALUES
      If the connection or binding succeeds, 0 is returned.  Otherwise a -1 is
@@ -2872,85 +2831,78 @@ RETURN VALUES
 ERRORS
      The connect() call fails if:
 
-     [EBADF]       S is not a valid descriptor.
+     [EBADF]            S is not a valid descriptor.
 
-     [ENOTSOCK]    S is a descriptor for a file, not a socket.
+     [ENOTSOCK]         S is a descriptor for a file, not a socket.
 
-     [EADDRNOTAVAIL]
-                   The specified address is not available on this machine.
+     [EADDRNOTAVAIL]    The specified address is not available on this
+                        machine.
 
-     [EAFNOSUPPORT]
-                   Addresses in the specified address family cannot be used
-                   with this socket.
+     [EAFNOSUPPORT]     Addresses in the specified address family cannot be
+                        used with this socket.
 
-     [EISCONN]     The socket is already connected.
+     [EISCONN]          The socket is already connected.
 
-     [ETIMEDOUT]   Connection establishment timed out without establishing a
-                   connection.
+     [ETIMEDOUT]        Connection establishment timed out without establish-
+                        ing a connection.
 
-     [EINVAL]      A TCP connection with a local broadcast, the all-ones or a
-                   multicast address as the peer was attempted.
+     [EINVAL]           A TCP connection with a local broadcast, the all-ones
+                        or a multicast address as the peer was attempted.
 
-     [ECONNREFUSED]
-                   The attempt to connect was forcefully rejected.
+     [ECONNREFUSED]     The attempt to connect was forcefully rejected.
 
-     [EINTR]       A connect was interrupted before it succeeded by the deliv-
-                   ery of a signal.
+     [EINTR]            A connect was interrupted before it succeeded by the
+                        delivery of a signal.
 
-     [ENETUNREACH]
-                   The network isn't reachable from this host.
+     [ENETUNREACH]      The network isn't reachable from this host.
 
-     [EADDRINUSE]  The address is already in use.
+     [EADDRINUSE]       The address is already in use.
 
-     [EFAULT]      The name parameter specifies an area outside the process
+     [EFAULT]           The name parameter specifies an area outside the pro-
+                        cess address space.
 
-                   address space.
+     [EINPROGRESS]      The socket is non-blocking and the connection cannot
+                        be completed immediately.  It is possible to select(2)
+                        or poll(2) for completion by selecting the socket for
+                        writing, and also use getsockopt(2) with SO_ERROR to
+                        check for error conditions.
 
-     [EINPROGRESS]
-                   The socket is non-blocking and the connection cannot be
-                   completed immediately.  It is possible to select(2) or
-                   poll(2) for completion by selecting the socket for writing,
-                   and also use getsockopt(2) with SO_ERROR to check for error
-                   conditions.
-
-     [EALREADY]    The socket is non-blocking and a previous connection at-
-                   tempt has not yet been completed.
+     [EALREADY]         The socket is non-blocking and a previous connection
+                        attempt has not yet been completed.
 
      The following errors are specific to connecting names in the UNIX domain.
      These errors may not apply in future versions of the UNIX IPC domain.
 
-     [ENOTDIR]     A component of the path prefix is not a directory.
+     [ENOTDIR]          A component of the path prefix is not a directory.
 
-     [ENAMETOOLONG]
-                   A component of a pathname exceeded {NAME_MAX} characters,
-                   or an entire path name exceeded {PATH_MAX} characters.
+     [ENAMETOOLONG]     A component of a pathname exceeded {NAME_MAX} charac-
+                        ters, or an entire path name exceeded {PATH_MAX} char-
+                        acters.
 
-     [ENOENT]      The named socket does not exist.
+     [ENOENT]           The named socket does not exist.
 
-     [EACCES]      Search permission is denied for a component of the path
-                   prefix.
+     [EACCES]           Search permission is denied for a component of the
+                        path prefix.
 
-     [EACCES]      Write access to the named socket is denied.
+     [EACCES]           Write access to the named socket is denied.
 
-     [ELOOP]       Too many symbolic links were encountered in translating the
-                   pathname.
+     [ELOOP]            Too many symbolic links were encountered in translat-
+                        ing the pathname.
 
 SEE ALSO
-     accept(2),  getsockname(2),  getsockopt(2),  poll(2),  select(2),  sock-
-     et(2)
+     accept(2), getsockname(2), getsockopt(2), poll(2), select(2), socket(2)
 
 HISTORY
      The connect() function call appeared in 4.2BSD.
 
-BSD Experimental               February 15, 1999                             2
+BSD                            February 15, 1999                           BSD
     </screen>
   </sect1>
 
-  <sect1 id="GETPEERNAME">
-    <title>GETPEERNAME</title>
+  <sect1 id="net-common-tcpip-manpages-getpeername">
+    <title>getpeername</title>
     <screen>
-
-GETPEERNAME(2)            System Programmer's Manual            GETPEERNAME(2)
+GETPEERNAME(2)                System Calls Manual               GETPEERNAME(2)
 
 NAME
      getpeername - get name of connected peer
@@ -2960,11 +2912,11 @@ SYNOPSIS
      #include &lt;sys/socket.h>
 
      int
-     getpeername(int s, struct sockaddr *name, socklen_t *namelen)
+     getpeername(int s, struct sockaddr *name, socklen_t *namelen);
 
 DESCRIPTION
      getpeername() returns the address information of the peer connected to
-     socket s. One common use occurs when a process inherits an open socket,
+     socket s.  One common use occurs when a process inherits an open socket,
      such as TCP servers forked from inetd(8).  In this scenario,
      getpeername() is used to determine the connecting client's IP address.
 
@@ -2994,39 +2946,38 @@ DESCRIPTION
 
 RETURN VALUES
      If the call succeeds, a 0 is returned and namelen is set to the actual
-     size of the socket address returned in name. Otherwise, errno is set and
+     size of the socket address returned in name.  Otherwise, errno is set and
      a value of -1 is returned.
 
 ERRORS
      On failure, errno is set to one of the following:
 
-     [EBADF]       The argument s is not a valid descriptor.
+     [EBADF]            The argument s is not a valid descriptor.
 
-     [ENOTSOCK]    The argument s is a file, not a socket.
+     [ENOTSOCK]         The argument s is a file, not a socket.
 
-     [ENOTCONN]    The socket is not connected.
+     [ENOTCONN]         The socket is not connected.
 
-     [ENOBUFS]     Insufficient resources were available in the system to per-
-                   form the operation.
+     [ENOBUFS]          Insufficient resources were available in the system to
+                        perform the operation.
 
-     [EFAULT]      The name parameter points to memory not in a valid part of
-                   the process address space.
+     [EFAULT]           The name parameter points to memory not in a valid
+                        part of the process address space.
 
 SEE ALSO
-     accept(2),  bind(2),  getsockname(2),  getpeereid(2),  socket(2)
+     accept(2), bind(2), getsockname(2), getpeereid(2), socket(2)
 
 HISTORY
      The getpeername() function call appeared in 4.2BSD.
 
-BSD Experimental                 July 17, 1999                               2
+BSD                              July 17, 1999                             BSD
     </screen>
   </sect1>
 
-  <sect1 id="GETSOCKNAME">
-    <title>GETSOCKNAME</title>
+  <sect1 id="net-common-tcpip-manpages-getsockname">
+    <title>getsockname</title>
     <screen>
-
-GETSOCKNAME(2)            System Programmer's Manual            GETSOCKNAME(2)
+GETSOCKNAME(2)                System Calls Manual               GETSOCKNAME(2)
 
 NAME
      getsockname - get socket name
@@ -3036,7 +2987,7 @@ SYNOPSIS
      #include &lt;sys/socket.h>
 
      int
-     getsockname(int s, struct sockaddr *name, socklen_t *namelen)
+     getsockname(int s, struct sockaddr *name, socklen_t *namelen);
 
 DESCRIPTION
      getsockname() returns the locally bound address information for a speci-
@@ -3080,26 +3031,24 @@ DESCRIPTION
 
 RETURN VALUES
      On success, getsockname() returns a 0, and namelen is set to the actual
-     size of the socket address returned in name. Otherwise, errno is set, and
-     a value of -1 is returned.
+     size of the socket address returned in name.  Otherwise, errno is set,
+     and a value of -1 is returned.
 
 ERRORS
      If getsockname() fails, errno is set to one of the following:
 
-     [EBADF]       The argument s is not a valid descriptor.
+     [EBADF]            The argument s is not a valid descriptor.
 
+     [ENOTSOCK]         The argument s is a file, not a socket.
 
+     [ENOBUFS]          Insufficient resources were available in the system to
+                        perform the operation.
 
-     [ENOTSOCK]    The argument s is a file, not a socket.
-
-     [ENOBUFS]     Insufficient resources were available in the system to per-
-                   form the operation.
-
-     [EFAULT]      The name parameter points to memory not in a valid part of
-                   the process address space.
+     [EFAULT]           The name parameter points to memory not in a valid
+                        part of the process address space.
 
 SEE ALSO
-     accept(2),  bind(2),  getpeername(2),  getpeereid(2),  socket(2)
+     accept(2), bind(2), getpeername(2), getpeereid(2), socket(2)
 
 BUGS
      Names bound to sockets in the UNIX domain are inaccessible; getsockname
@@ -3108,15 +3057,14 @@ BUGS
 HISTORY
      The getsockname() function call appeared in 4.2BSD.
 
-BSD Experimental                 July 17, 1999                               2
+BSD                              July 17, 1999                             BSD
     </screen>
   </sect1>
 
-  <sect1 id="GETSOCKOPT">
-    <title>GETSOCKOPT</title>
+  <sect1 id="net-common-tcpip-manpages-getsockopt">
+    <title>getsockopt</title>
     <screen>
-
-GETSOCKOPT(2)             System Programmer's Manual             GETSOCKOPT(2)
+GETSOCKOPT(2)                 System Calls Manual                GETSOCKOPT(2)
 
 NAME
      getsockopt, setsockopt - get and set options on sockets
@@ -3127,11 +3075,11 @@ SYNOPSIS
 
      int
      getsockopt(int s, int level, int optname, void *optval,
-             socklen_t *optlen)
+             socklen_t *optlen);
 
      int
      setsockopt(int s, int level, int optname, const void *optval,
-             socklen_t optlen)
+             socklen_t optlen);
 
 DESCRIPTION
      getsockopt() and setsockopt() manipulate the options associated with a
@@ -3140,11 +3088,11 @@ DESCRIPTION
 
      When manipulating socket options the level at which the option resides
      and the name of the option must be specified.  To manipulate options at
-     the socket level, level is specified as SOL_SOCKET. To manipulate options
-     at any other level the protocol number of the appropriate protocol con-
-     trolling the option is supplied.  For example, to indicate that an option
-     is to be interpreted by the TCP protocol, level should be set to the pro-
-     tocol number of TCP; see getprotoent(3).
+     the socket level, level is specified as SOL_SOCKET.  To manipulate
+     options at any other level the protocol number of the appropriate proto-
+     col controlling the option is supplied.  For example, to indicate that an
+     option is to be interpreted by the TCP protocol, level should be set to
+     the protocol number of TCP; see getprotoent(3).
 
      The parameters optval and optlen are used to access option values for
      setsockopt().  For getsockopt() they identify a buffer in which the value
@@ -3160,15 +3108,15 @@ DESCRIPTION
      below.  Options at other protocol levels vary in format and name; consult
      the appropriate entries in section 4 of the manual.
 
-     Most socket-level options utilize an int parameter for optval. For
-     setsockopt(), the parameter should be non-zero to enable a boolean op-
-     tion, or zero if the option is to be disabled.  SO_LINGER uses a struct
+     Most socket-level options utilize an int parameter for optval.  For
+     setsockopt(), the parameter should be non-zero to enable a boolean
+     option, or zero if the option is to be disabled.  SO_LINGER uses a struct
      linger parameter, defined in &lt;sys/socket.h>, which specifies the desired
      state of the option and the linger interval (see below).  SO_SNDTIMEO and
      SO_RCVTIMEO use a struct timeval parameter, defined in &lt;sys/time.h>.
 
-     The following options are recognized at the socket level.  Except as not-
-     ed, each may be examined with getsockopt() and set with setsockopt().
+     The following options are recognized at the socket level.  Except as
+     noted, each may be examined with getsockopt() and set with setsockopt().
 
            SO_DEBUG        enables recording of debugging information
            SO_REUSEADDR    enables local address reuse
@@ -3178,8 +3126,6 @@ DESCRIPTION
            SO_LINGER       linger on close if data present
            SO_BROADCAST    enables permission to transmit broadcast messages
            SO_OOBINLINE    enables reception of out-of-band data in band
-
-
            SO_SNDBUF       set buffer size for output
            SO_RCVBUF       set buffer size for input
            SO_SNDLOWAT     set minimum count for output
@@ -3205,9 +3151,9 @@ DESCRIPTION
      the network portion of the destination address.
 
      SO_LINGER controls the action taken when unsent messages are queued on
-     socket and a close(2) is performed.  If the socket promises reliable de-
-     livery of data and SO_LINGER is set, the system will block the process on
-     the close(2) attempt until it is able to transmit the data or until it
+     socket and a close(2) is performed.  If the socket promises reliable
+     delivery of data and SO_LINGER is set, the system will block the process
+     on the close(2) attempt until it is able to transmit the data or until it
      decides it is unable to deliver the information (a timeout period mea-
      sured in seconds, termed the linger interval, is specified in the
      setsockopt() call when SO_LINGER is requested).  If SO_LINGER is disabled
@@ -3227,33 +3173,32 @@ DESCRIPTION
      system places an absolute limit on these values.
 
      SO_SNDLOWAT is an option to set the minimum count for output operations.
-     Most output operations process all of the data supplied by the call, de-
-     livering data to the protocol for transmission and blocking as necessary
-     for flow control.  Nonblocking output operations will process as much da-
-     ta as permitted subject to flow control without blocking, but will pro-
-     cess no data if flow control does not allow the smaller of the low water
-     mark value or the entire request to be processed.  A select(2) or poll(2)
-     operation testing the ability to write to a socket will return true only
-     if the low water mark amount could be processed.  The default value for
-     SO_SNDLOWAT is set to a convenient size for network efficiency, often
-     1024.  SO_RCVLOWAT is an option to set the minimum count for input opera-
-     tions.  In general, receive calls will block until any (non-zero) amount
-     of data is received, then return with the smaller of the amount available
-     or the amount requested.  The default value for SO_RCVLOWAT is 1.  If
-     SO_RCVLOWAT is set to a larger value, blocking receive calls normally
-     wait until they have received the smaller of the low water mark value or
-     the requested amount.  Receive calls may still return less than the low
-     water mark if an error occurs, a signal is caught, or the type of data
-     next in the receive queue is different than that returned.
-
+     Most output operations process all of the data supplied by the call,
+     delivering data to the protocol for transmission and blocking as neces-
+     sary for flow control.  Nonblocking output operations will process as
+     much data as permitted subject to flow control without blocking, but will
+     process no data if flow control does not allow the smaller of the low
+     water mark value or the entire request to be processed.  A select(2) or
+     poll(2) operation testing the ability to write to a socket will return
+     true only if the low water mark amount could be processed.  The default
+     value for SO_SNDLOWAT is set to a convenient size for network efficiency,
+     often 1024.  SO_RCVLOWAT is an option to set the minimum count for input
+     operations.  In general, receive calls will block until any (non-zero)
+     amount of data is received, then return with the smaller of the amount
+     available or the amount requested.  The default value for SO_RCVLOWAT is
+     1.  If SO_RCVLOWAT is set to a larger value, blocking receive calls nor-
+     mally wait until they have received the smaller of the low water mark
+     value or the requested amount.  Receive calls may still return less than
+     the low water mark if an error occurs, a signal is caught, or the type of
+     data next in the receive queue is different than that returned.
 
      SO_SNDTIMEO is an option to set a timeout value for output operations.
-     It accepts a struct timeval parameter with the number of seconds and mi-
-     croseconds used to limit waits for output operations to complete.  If a
+     It accepts a struct timeval parameter with the number of seconds and
+     microseconds used to limit waits for output operations to complete.  If a
      send operation has blocked for this much time, it returns with a partial
      count or with the error EWOULDBLOCK if no data was sent.  In the current
-     implementation, this timer is restarted each time additional data are de-
-     livered to the protocol, implying that the limit applies to output por-
+     implementation, this timer is restarted each time additional data are
+     delivered to the protocol, implying that the limit applies to output por-
      tions ranging in size from the low water mark to the high water mark for
      output.  SO_RCVTIMEO is an option to set a timeout value for input opera-
      tions.  It accepts a struct timeval parameter with the number of seconds
@@ -3277,21 +3222,20 @@ RETURN VALUES
 ERRORS
      The call succeeds unless:
 
-     [EBADF]       The argument s is not a valid descriptor.
+     [EBADF]            The argument s is not a valid descriptor.
 
-     [ENOTSOCK]    The argument s is a file, not a socket.
+     [ENOTSOCK]         The argument s is a file, not a socket.
 
-     [ENOPROTOOPT]
-                   The option is unknown at the level indicated.
+     [ENOPROTOOPT]      The option is unknown at the level indicated.
 
-     [EFAULT]      The address pointed to by optval is not in a valid part of
-                   the process address space.  For getsockopt(), this error
-                   may also be returned if optlen is not in a valid part of
-                   the process address space.
+     [EFAULT]           The address pointed to by optval is not in a valid
+                        part of the process address space.  For getsockopt(),
+                        this error may also be returned if optlen is not in a
+                        valid part of the process address space.
 
 SEE ALSO
-     connect(2),  ioctl(2),  poll(2),  select(2),  poll(2),  socket(2),
-     getprotoent(3),  protocols(5)
+     connect(2), ioctl(2), poll(2), select(2), poll(2), socket(2),
+     getprotoent(3), protocols(5)
 
 BUGS
      Several of the socket options should be handled at lower levels of the
@@ -3300,15 +3244,14 @@ BUGS
 HISTORY
      The getsockopt() system call appeared in 4.2BSD.
 
-BSD Experimental               February 15, 1999                             3
+BSD                            February 15, 1999                           BSD
     </screen>
   </sect1>
 
-  <sect1 id="IOCTL">
-    <title>IOCTL</title>
+  <sect1 id="net-common-tcpip-manpages-ioctl">
+    <title>ioctl</title>
     <screen>
-
-IOCTL(2)                  System Programmer's Manual                  IOCTL(2)
+IOCTL(2)                      System Calls Manual                     IOCTL(2)
 
 NAME
      ioctl - control device
@@ -3317,7 +3260,7 @@ SYNOPSIS
      #include &lt;sys/ioctl.h>
 
      int
-     ioctl(int d, unsigned long request, ...)
+     ioctl(int d, unsigned long request, ...);
 
 DESCRIPTION
      The ioctl() function manipulates the underlying device parameters of spe-
@@ -3329,10 +3272,10 @@ DESCRIPTION
      perform the requested function.  arg is either an int or a pointer to a
      device-specific data structure, depending upon the given request.
 
-     An ioctl request has encoded in it whether the argument is an ``in'' pa-
-     rameter or ``out'' parameter, and the size of the third argument (arg) in
-     bytes.  Macros and defines used in specifying an ioctl request are locat-
-     ed in the file &lt;sys/ioctl.h>.
+     An ioctl request has encoded in it whether the argument is an ``in''
+     parameter or ``out'' parameter, and the size of the third argument (arg)
+     in bytes.  Macros and defines used in specifying an ioctl request are
+     located in the file &lt;sys/ioctl.h>.
 
 RETURN VALUES
      If an error has occurred, a value of -1 is returned and errno is set to
@@ -3341,32 +3284,32 @@ RETURN VALUES
 ERRORS
      ioctl() will fail if:
 
-     [EBADF]       d is not a valid descriptor.
+     [EBADF]            d is not a valid descriptor.
 
-     [ENOTTY]      d is not associated with a character special device.
+     [ENOTTY]           d is not associated with a character special device.
 
-     [ENOTTY]      The specified request does not apply to the kind of object
-                   that the descriptor d references.
+     [ENOTTY]           The specified request does not apply to the kind of
+                        object that the descriptor d references.
 
-     [EINVAL]      request or arg is not valid.
+     [EINVAL]           request or arg is not valid.
 
-     [EFAULT]      arg points outside the process's allocated address space.
+     [EFAULT]           arg points outside the process's allocated address
+                        space.
 
 SEE ALSO
-     cdio(1),  chio(1),  mt(1),  execve(2),  fcntl(2),  intro(4),  tty(4)
+     cdio(1), chio(1), mt(1), execve(2), fcntl(2), intro(4), tty(4)
 
 HISTORY
      An ioctl() function call appeared in Version 7 AT&amp;T UNIX.
 
-BSD Experimental               December 11, 1993                             1
+BSD                            December 11, 1993                           BSD
     </screen>
   </sect1>
 
-  <sect1 id="POLL">
-    <title>POLL</title>
+  <sect1 id="net-common-tcpip-manpages-poll">
+    <title>poll</title>
     <screen>
-
-POLL(2)                   System Programmer's Manual                   POLL(2)
+POLL(2)                       System Calls Manual                      POLL(2)
 
 NAME
      poll - synchronous I/O multiplexing
@@ -3375,7 +3318,7 @@ SYNOPSIS
      #include &lt;poll.h>
 
      int
-     poll(struct pollfd *fds, int nfds, int timeout)
+     poll(struct pollfd *fds, int nfds, int timeout);
 
 DESCRIPTION
      poll() provides a mechanism for reporting I/O conditions across a set of
@@ -3399,8 +3342,8 @@ DESCRIPTION
 
      timeout  Maximum interval to wait for the poll to complete, in millisec-
               onds.  If this value is 0, then poll() will return immediately.
-              If this value is INFTIM (-1), poll() will block indefinitely un-
-              til a condition is found.
+              If this value is INFTIM (-1), poll() will block indefinitely
+              until a condition is found.
 
      The calling process sets the events bitmask and poll() sets the revents
      bitmask.  Each call to poll() resets the revents bitmask for accuracy.
@@ -3429,7 +3372,6 @@ DESCRIPTION
 
      POLLWRNORM  Same as POLLOUT.
 
-
      POLLWRBAND  Same as POLLOUT.
 
      POLLMSG     This flag is not used in this implementation and is provided
@@ -3444,14 +3386,14 @@ DESCRIPTION
      for fds.
 
 WARNINGS
-     The POLLHUP flag is only a close approximation and may not always be ac-
-     curate.
+     The POLLHUP flag is only a close approximation and may not always be
+     accurate.
 
 RETURN VALUES
-     Upon error, poll() returns a -1 and sets the global variable errno to in-
-     dicate the error.  If the timeout interval was reached before any events
-     occurred, a 0 is returned.  Otherwise, poll() returns the number of file
-     descriptors for which revents is non-zero.
+     Upon error, poll() returns a -1 and sets the global variable errno to
+     indicate the error.  If the timeout interval was reached before any
+     events occurred, a 0 is returned.  Otherwise, poll() returns the number
+     of file descriptors for which revents is non-zero.
 
 ERRORS
      poll() will fail if:
@@ -3470,20 +3412,19 @@ ERRORS
      [EINTR]    poll() caught a signal during the polling process.
 
 SEE ALSO
-     poll(2),  select(2),  sysconf(3)
+     poll(2), select(2), sysconf(3)
 
 HISTORY
      A poll() system call appeared in AT&amp;T System V UNIX.
 
-BSD Experimental               December 13, 1994                             2
+BSD                            December 13, 1994                           BSD
     </screen>
   </sect1>
 
-  <sect1 id="SELECT">
-    <title>SELECT</title>
+  <sect1 id="net-common-tcpip-manpages-select">
+    <title>select</title>
     <screen>
-
-SELECT(2)                 System Programmer's Manual                 SELECT(2)
+SELECT(2)                     System Calls Manual                    SELECT(2)
 
 NAME
      select - synchronous I/O multiplexing
@@ -3495,15 +3436,15 @@ SYNOPSIS
 
      int
      select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
-             struct timeval *timeout)
+             struct timeval *timeout);
 
-     FD_SET(fd, &amp;fdset)
+     FD_SET(fd, &amp;fdset);
 
-     FD_CLR(fd, &amp;fdset)
+     FD_CLR(fd, &amp;fdset);
 
-     FD_ISSET(fd, &amp;fdset)
+     FD_ISSET(fd, &amp;fdset);
 
-     FD_ZERO(&amp;fdset)
+     FD_ZERO(&amp;fdset);
 
 DESCRIPTION
      select() examines the I/O descriptor sets whose addresses are passed in
@@ -3520,8 +3461,8 @@ DESCRIPTION
      following macros are provided for manipulating such descriptor sets:
      FD_ZERO(&amp;fdset) initializes a descriptor set fdset to the null set.
      FD_SET(fd, &amp;fdset) includes a particular descriptor fd in fdset.
-     FD_CLR(fd, &amp;fdset) removes fd from fdset. FD_ISSET(fd, &amp;fdset) is non-ze-
-     ro if fd is a member of fdset, zero otherwise.  The behavior of these
+     FD_CLR(fd, &amp;fdset) removes fd from fdset.  FD_ISSET(fd, &amp;fdset) is non-
+     zero if fd is a member of fdset, zero otherwise.  The behavior of these
      macros is undefined if a descriptor value is less than zero or greater
      than or equal to FD_SETSIZE, which is normally at least equal to the max-
      imum number of descriptors supported by the system.
@@ -3538,28 +3479,29 @@ DESCRIPTION
 
 RETURN VALUES
      select() returns the number of ready descriptors that are contained in
-     the descriptor sets, or -1 is an error occurred.  If the time limit ex-
-     pires, select() returns 0.  If select() returns with an error, including
-     one due to an interrupted call, the descriptor sets will be unmodified.
+     the descriptor sets, or -1 is an error occurred.  If the time limit
+     expires, select() returns 0.  If select() returns with an error, includ-
+     ing one due to an interrupted call, the descriptor sets will be unmodi-
+     fied.
 
 ERRORS
      An error return from select() indicates:
 
-     [EFAULT]      One or more of readfds, writefds, or exceptfds points out-
+     [EFAULT]           One or more of readfds, writefds, or exceptfds points
+                        outside the process's allocated address space.
 
-                   side the process's allocated address space.
+     [EBADF]            One of the descriptor sets specified an invalid
+                        descriptor.
 
-     [EBADF]       One of the descriptor sets specified an invalid descriptor.
+     [EINTR]            A signal was delivered before the time limit expired
+                        and before any of the selected events occurred.
 
-     [EINTR]       A signal was delivered before the time limit expired and
-                   before any of the selected events occurred.
-
-     [EINVAL]      The specified time limit is invalid.  One of its components
-                   is negative or too large.
+     [EINVAL]           The specified time limit is invalid.  One of its com-
+                        ponents is negative or too large.
 
 SEE ALSO
-     accept(2),  connect(2),  gettimeofday(2),  poll(2),  read(2),  recv(2),
-     send(2),  write(2),  getdtablesize(3)
+     accept(2), connect(2), gettimeofday(2), poll(2), read(2), recv(2),
+     send(2), write(2), getdtablesize(3)
 
 BUGS
      Although the provision of getdtablesize(3) was intended to allow user
@@ -3571,12 +3513,12 @@ BUGS
      date programs which might potentially use a larger number of open files
      with select, it is possible to increase this size within a program by
      providing a larger definition of FD_SETSIZE before the inclusion of
-     &lt;sys/types.h>. The kernel will cope, and the userland libraries provided
+     &lt;sys/types.h>.  The kernel will cope, and the userland libraries provided
      with the system are also ready for large numbers of file descriptors.
 
      Alternatively, to be really safe, it is possible to allocate fd_set bit-
      arrays dynamically.  The idea is to permit a program to work properly
-     even if it is execve(2)'d  with 4000 file descriptors pre-allocated.  The
+     even if it is execve(2)'d with 4000 file descriptors pre-allocated.  The
      following illustrates the technique which is used by userland libraries:
 
                    fd_set *fdsr;
@@ -3600,8 +3542,8 @@ BUGS
 
      select() should probably have been designed to return the time remaining
      from the original timeout, if any, by modifying the time value in place.
-     Even though some systems stupidly act in this different way, it is un-
-     likely this semantic will ever be commonly implemented, as the change
+     Even though some systems stupidly act in this different way, it is
+     unlikely this semantic will ever be commonly implemented, as the change
      causes massive source code compatibility problems.  Furthermore, recent
      new standards have dictated the current behaviour.  In general, due to
      the existence of those brain-damaged non-conforming systems, it is unwise
@@ -3617,15 +3559,14 @@ BUGS
 HISTORY
      The select() function call appeared in 4.2BSD.
 
-BSD Experimental                March 25, 1994                               3
+BSD                             March 25, 1994                             BSD
     </screen>
   </sect1>
 
-  <sect1 id="SEND">
-    <title>SEND</title>
+  <sect1 id="net-common-tcpip-manpages-send">
+    <title>send</title>
     <screen>
-
-SEND(2)                   System Programmer's Manual                   SEND(2)
+SEND(2)                       System Calls Manual                      SEND(2)
 
 NAME
      send, sendto, sendmsg - send a message from a socket
@@ -3635,14 +3576,14 @@ SYNOPSIS
      #include &lt;sys/socket.h>
 
      ssize_t
-     send(int s, const void *msg, size_t len, int flags)
+     send(int s, const void *msg, size_t len, int flags);
 
      ssize_t
      sendto(int s, const void *msg, size_t len, int flags,
-             const struct sockaddr *to, socklen_t tolen)
+             const struct sockaddr *to, socklen_t tolen);
 
      ssize_t
-     sendmsg(int s, const struct msghdr *msg, int flags)
+     sendmsg(int s, const struct msghdr *msg, int flags);
 
 DESCRIPTION
      send(), sendto(), and sendmsg() are used to transmit a message to another
@@ -3650,12 +3591,12 @@ DESCRIPTION
      while sendto() and sendmsg() may be used at any time.
 
      The address of the target is given by to with tolen specifying its size.
-     The length of the message is given by len. If the message is too long to
+     The length of the message is given by len.  If the message is too long to
      pass atomically through the underlying protocol, the error EMSGSIZE is
      returned, and the message is not transmitted.
 
-     No indication of failure to deliver is implicit in a send().  Locally de-
-     tected errors are indicated by a return value of -1.
+     No indication of failure to deliver is implicit in a send().  Locally
+     detected errors are indicated by a return value of -1.
 
      If no messages space is available at the socket to hold the message to be
      transmitted, then send() normally blocks, unless the socket has been
@@ -3668,100 +3609,97 @@ DESCRIPTION
      #define MSG_DONTROUTE  0x4  /* bypass routing, use direct interface */
 
      The flag MSG_OOB is used to send ``out-of-band'' data on sockets that
-     support this notion (e.g., SOCK_STREAM); the underlying protocol must al-
-     so support ``out-of-band'' data.  MSG_DONTROUTE is usually used only by
+     support this notion (e.g., SOCK_STREAM); the underlying protocol must
+     also support ``out-of-band'' data.  MSG_DONTROUTE is usually used only by
      diagnostic or routing programs.
 
      See recv(2) for a description of the msghdr structure.
 
 RETURN VALUES
-     The call returns the number of characters sent, or -1 if an error oc-
-     curred.
+     The call returns the number of characters sent, or -1 if an error
+     occurred.
 
 ERRORS
      send(), sendto(), and sendmsg() fail if:
 
-     [EBADF]       An invalid descriptor was specified.
+     [EBADF]            An invalid descriptor was specified.
 
-     [ENOTSOCK]    The argument s is not a socket.
+     [ENOTSOCK]         The argument s is not a socket.
 
-     [EFAULT]      An invalid user space address was specified for a parame-
-                   ter.
+     [EFAULT]           An invalid user space address was specified for a
+                        parameter.
 
-     [EMSGSIZE]    The socket requires that message be sent atomically, and
+     [EMSGSIZE]         The socket requires that message be sent atomically,
+                        and the size of the message to be sent made this
+                        impossible.
 
-                   the size of the message to be sent made this impossible.
+     [EAGAIN]           The socket is marked non-blocking and the requested
+                        operation would block.
 
-     [EAGAIN]      The socket is marked non-blocking and the requested opera-
-                   tion would block.
+     [ENOBUFS]          The system was unable to allocate an internal buffer.
+                        The operation may succeed when buffers become avail-
+                        able.
 
-     [ENOBUFS]     The system was unable to allocate an internal buffer.  The
-                   operation may succeed when buffers become available.
+     [ENOBUFS]          The output queue for a network interface was full.
+                        This generally indicates that the interface has
+                        stopped sending, but may be caused by transient con-
+                        gestion.
 
-     [ENOBUFS]     The output queue for a network interface was full.  This
-                   generally indicates that the interface has stopped sending,
-                   but may be caused by transient congestion.
+     [EACCES]           The SO_BROADCAST option is not set on the socket, and
+                        a broadcast address was given as the destination.
 
-     [EACCES]      The SO_BROADCAST option is not set on the socket, and a
-                   broadcast address was given as the destination.
+     [EHOSTUNREACH]     The destination address specified an unreachable host.
 
-     [EHOSTUNREACH]
-                   The destination address specified an unreachable host.
+     [EINVAL]           The flags parameter is invalid.
 
-     [EINVAL]      The flags parameter is invalid.
+     [EHOSTDOWN]        The destination address specified a host that is down.
 
-     [EHOSTDOWN]   The destination address specified a host that is down.
+     [ENETDOWN]         The destination address specified a network that is
+                        down.
 
-     [ENETDOWN]    The destination address specified a network that is down.
+     [ECONNREFUSED]     The destination host rejected the message (or a previ-
+                        ous one).  This error can only be returned by con-
+                        nected sockets.
 
-     [ECONNREFUSED]
-                   The destination host rejected the message (or a previous
-                   one).  This error can only be returned by connected sock-
-                   ets.
+     [ENOPROTOOPT]      There was a problem sending the message.  This error
+                        can only be returned by connected sockets.
 
-     [ENOPROTOOPT]
-                   There was a problem sending the message.  This error can
-                   only be returned by connected sockets.
+     [EDESTADDRREQ]     The socket is not connected, and no destination
+                        address was specified.
 
-     [EDESTADDRREQ]
-                   The socket is not connected, and no destination address was
-                   specified.
-
-     [EISCONN]     The socket is already connected, and a destination address
-                   was specified.
+     [EISCONN]          The socket is already connected, and a destination
+                        address was specified.
 
      In addition, send() and sendto() may return the following error:
 
-     [EINVAL]      len was larger than SSIZE_MAX.
+     [EINVAL]           len was larger than SSIZE_MAX.
 
      Also, sendmsg() may return the following errors:
 
-     [EINVAL]      The sum of the iov_len values in the msg_iov array over-
-                   flowed an ssize_t.
+     [EINVAL]           The sum of the iov_len values in the msg_iov array
+                        overflowed an ssize_t.
 
-     [EMSGSIZE]    The msg_iovlen member of msg was less than 0 or larger than
-                   IOV_MAX.
+     [EMSGSIZE]         The msg_iovlen member of msg was less than 0 or larger
+                        than IOV_MAX.
 
-     [EAFNOSUPPORT]
-                   Addresses in the specified address family cannot be used
-                   with this socket.
+     [EAFNOSUPPORT]     Addresses in the specified address family cannot be
+                        used with this socket.
 
 SEE ALSO
-     fcntl(2),  getsockopt(2),  poll(2),  recv(2),  select(2),  poll(2),
-     socket(2),  write(2)
+     fcntl(2), getsockopt(2), poll(2), recv(2), select(2), poll(2), socket(2),
+     write(2)
 
 HISTORY
      The send() function call appeared in 4.2BSD.
 
-BSD Experimental                 July 28, 1998                               2
+BSD                              July 28, 1998                             BSD
     </screen>
   </sect1>
 
-  <sect1 id="SHUTDOWN">
-    <title>SHUTDOWN</title>
+  <sect1 id="net-common-tcpip-manpages-shutdown">
+    <title>shutdown</title>
     <screen>
-
-SHUTDOWN(2)               System Programmer's Manual               SHUTDOWN(2)
+SHUTDOWN(2)                   System Calls Manual                  SHUTDOWN(2)
 
 NAME
      shutdown - shut down part of a full-duplex connection
@@ -3771,14 +3709,14 @@ SYNOPSIS
      #include &lt;sys/socket.h>
 
      int
-     shutdown(int s, int how)
+     shutdown(int s, int how);
 
 DESCRIPTION
      The shutdown() call causes all or part of a full-duplex connection on the
-     socket associated with s to be shut down.  If how is SHUT_RD, further re-
-     ceives will be disallowed.  If how is SHUT_WR, further sends will be dis-
-     allowed.  If how is SHUT_RDWR, further sends and receives will be disal-
-     lowed.
+     socket associated with s to be shut down.  If how is SHUT_RD, further
+     receives will be disallowed.  If how is SHUT_WR, further sends will be
+     disallowed.  If how is SHUT_RDWR, further sends and receives will be dis-
+     allowed.
 
 RETURN VALUES
      A 0 is returned if the call succeeds, -1 if it fails.
@@ -3786,30 +3724,30 @@ RETURN VALUES
 ERRORS
      The call succeeds unless:
 
-     [EINVAL]      how is not SHUT_RD, SHUT_WR, or SHUT_RDWR.
+     [EINVAL]           how is not SHUT_RD, SHUT_WR, or SHUT_RDWR.
 
-     [EBADF]       s is not a valid descriptor.
+     [EBADF]            s is not a valid descriptor.
 
-     [ENOTSOCK]    s is a file, not a socket.
+     [ENOTSOCK]         s is a file, not a socket.
 
-     [ENOTCONN]    The specified socket is not connected.
+     [ENOTCONN]         The specified socket is not connected.
 
 SEE ALSO
-     connect(2),  socket(2)
+     connect(2), socket(2)
 
 HISTORY
-     The shutdown() function call appeared in 4.2BSD. The how arguments used
-     to be simply 0, 1, and 2, but now have named values as specified by .
+     The shutdown() function call appeared in 4.2BSD.  The how arguments used
+     to be simply 0, 1, and 2, but now have named values as specified by
+     X/Open Portability Guide Issue 4 (``XPG4'').
 
-BSD Experimental                 June 4, 1993                                1
+BSD                              June 4, 1993                              BSD
     </screen>
   </sect1>
 
-  <sect1 id="SOCKET">
-    <title>SOCKET</title>
+  <sect1 id="net-common-tcpip-manpages-socket">
+    <title>socket</title>
     <screen>
-
-SOCKET(2)                 System Programmer's Manual                 SOCKET(2)
+SOCKET(2)                     System Calls Manual                    SOCKET(2)
 
 NAME
      socket - create an endpoint for communication
@@ -3819,7 +3757,7 @@ SYNOPSIS
      #include &lt;sys/socket.h>
 
      int
-     socket(int domain, int type, int protocol)
+     socket(int domain, int type, int protocol);
 
 DESCRIPTION
      socket() creates an endpoint for communication and returns a descriptor.
@@ -3847,17 +3785,17 @@ DESCRIPTION
            SOCK_RDM
 
      A SOCK_STREAM type provides sequenced, reliable, two-way connection based
-     byte streams.  An out-of-band data transmission mechanism may be support-
-     ed.  A SOCK_DGRAM socket supports datagrams (connectionless, unreliable
-     messages of a fixed (typically small) maximum length).  A SOCK_SEQPACKET
-     socket may provide a sequenced, reliable, two-way connection-based data
-     transmission path for datagrams of fixed maximum length; a consumer may
-     be required to read an entire packet with each read system call.  This
-     facility is protocol specific, and presently implemented only for PF_NS.
-     SOCK_RAW sockets provide access to internal network protocols and inter-
-     faces.  The types SOCK_RAW, which is available only to the superuser, and
-     SOCK_RDM, which is planned, but not yet implemented, are not described
-     here.
+     byte streams.  An out-of-band data transmission mechanism may be sup-
+     ported.  A SOCK_DGRAM socket supports datagrams (connectionless, unreli-
+     able messages of a fixed (typically small) maximum length).  A
+     SOCK_SEQPACKET socket may provide a sequenced, reliable, two-way connec-
+     tion-based data transmission path for datagrams of fixed maximum length;
+     a consumer may be required to read an entire packet with each read system
+     call.  This facility is protocol specific, and presently implemented only
+     for PF_NS.  SOCK_RAW sockets provide access to internal network protocols
+     and interfaces.  The types SOCK_RAW, which is available only to the supe-
+     ruser, and SOCK_RDM, which is planned, but not yet implemented, are not
+     described here.
 
      The protocol specifies a particular protocol to be used with the socket.
      Normally only a single protocol exists to support a particular socket
@@ -3874,21 +3812,21 @@ DESCRIPTION
      with a connect(2) call.  Once connected, data may be transferred using
      read(2) and write(2) calls or some variant of the send(2) and recv(2)
      calls.  When a session has been completed a close(2) may be performed.
-     Out-of-band data may also be transmitted as described in send(2) and re-
-     ceived as described in recv(2).
+     Out-of-band data may also be transmitted as described in send(2) and
+     received as described in recv(2).
 
      The communications protocols used to implement a SOCK_STREAM ensure that
      data is not lost or duplicated.  If a piece of data for which the peer
      protocol has buffer space cannot be successfully transmitted within a
      reasonable length of time, then the connection is considered broken and
      calls will indicate an error with -1 returns and with ETIMEDOUT as the
-     specific code in the global variable errno. The protocols optionally keep
-     sockets ``warm'' by forcing transmissions roughly every minute in the ab-
-     sence of other activity.  An error is then indicated if no response can
-     be elicited on an otherwise idle connection for a extended period (e.g.,
-     5 minutes).  A SIGPIPE signal is raised if a process sends on a broken
-     stream; this causes naive processes, which do not handle the signal, to
-     exit.
+     specific code in the global variable errno.  The protocols optionally
+     keep sockets ``warm'' by forcing transmissions roughly every minute in
+     the absence of other activity.  An error is then indicated if no response
+     can be elicited on an otherwise idle connection for a extended period
+     (e.g., 5 minutes).  A SIGPIPE signal is raised if a process sends on a
+     broken stream; this causes naive processes, which do not handle the sig-
+     nal, to exit.
 
      SOCK_SEQPACKET sockets employ the same system calls as SOCK_STREAM sock-
      ets.  The only difference is that read(2) calls will return only the
@@ -3897,42 +3835,41 @@ DESCRIPTION
 
      SOCK_DGRAM and SOCK_RAW sockets allow sending of datagrams to correspon-
      dents named in send(2) calls.  Datagrams are generally received with
-     recvfrom(2),  which returns the next datagram with its return address.
+     recvfrom(2), which returns the next datagram with its return address.
 
      An fcntl(2) call can be used to specify a process group to receive a
      SIGURG signal when the out-of-band data arrives.  It may also enable non-
      blocking I/O and asynchronous notification of I/O events via SIGIO.
 
-     The operation of sockets is controlled by socket level options. These op-
-     tions are defined in the file &lt;sys/socket.h>. setsockopt(2) and getsock-
-     opt(2) are used to set and get options, respectively.
+     The operation of sockets is controlled by socket level options.  These
+     options are defined in the file &lt;sys/socket.h>.  setsockopt(2) and
+     getsockopt(2) are used to set and get options, respectively.
 
 RETURN VALUES
-     A -1 is returned if an error occurs, otherwise the return value is a de-
-     scriptor referencing the socket.
+     A -1 is returned if an error occurs, otherwise the return value is a
+     descriptor referencing the socket.
 
 ERRORS
      The socket() call fails if:
 
-     [EPROTONOSUPPORT]
-                   The protocol type or the specified protocol is not support-
-                   ed within this domain.
+     [EPROTONOSUPPORT]  The protocol type or the specified protocol is not
+                        supported within this domain.
 
-     [EMFILE]      The per-process descriptor table is full.
+     [EMFILE]           The per-process descriptor table is full.
 
-     [ENFILE]      The system file table is full.
+     [ENFILE]           The system file table is full.
 
-     [EACCES]      Permission to create a socket of the specified type and/or
-                   protocol is denied.
+     [EACCES]           Permission to create a socket of the specified type
+                        and/or protocol is denied.
 
-     [ENOBUFS]     Insufficient buffer space is available.  The socket cannot
-                   be created until sufficient resources are freed.
+     [ENOBUFS]          Insufficient buffer space is available.  The socket
+                        cannot be created until sufficient resources are
+                        freed.
 
 SEE ALSO
-     accept(2),  bind(2),  connect(2),  getsockname(2),  getsockopt(2),
-     ioctl(2),  listen(2),  poll(2),  read(2),  recv(2),  select(2),  send(2),
-      setsockopt(2),  shutdown(2),  socketpair(2),  write(2),  getprotoent(3),
-      netintro(4)
+     accept(2), bind(2), connect(2), getsockname(2), getsockopt(2), ioctl(2),
+     listen(2), poll(2), read(2), recv(2), select(2), send(2), setsockopt(2),
+     shutdown(2), socketpair(2), write(2), getprotoent(3), netintro(4)
 
      An Introductory 4.3 BSD Interprocess Communication Tutorial, reprinted in
      UNIX Programmer's Supplementary Documents Volume 1.
@@ -3943,15 +3880,14 @@ SEE ALSO
 HISTORY
      The socket() function call appeared in 4.2BSD.
 
-BSD Experimental                 June 4, 1993                                3
+BSD                              June 4, 1993                              BSD
     </screen>
   </sect1>
 
-  <sect1 id="SOCKETPAIR">
-    <title>SOCKETPAIR</title>
+  <sect1 id="net-common-tcpip-manpages-socketpair">
+    <title>socketpair</title>
     <screen>
-
-SOCKETPAIR(2)             System Programmer's Manual             SOCKETPAIR(2)
+SOCKETPAIR(2)                 System Calls Manual                SOCKETPAIR(2)
 
 NAME
      socketpair - create a pair of connected sockets
@@ -3961,13 +3897,13 @@ SYNOPSIS
      #include &lt;sys/socket.h>
 
      int
-     socketpair(int d, int type, int protocol, int *sv)
+     socketpair(int d, int type, int protocol, int *sv);
 
 DESCRIPTION
      The socketpair() call creates an unnamed pair of connected sockets in the
      specified domain d, of the specified type, and using the optionally spec-
-     ified protocol. The descriptors used in referencing the new sockets are
-     returned in sv[0] and sv[1]. The two sockets are indistinguishable.
+     ified protocol.  The descriptors used in referencing the new sockets are
+     returned in sv[0] and sv[1].  The two sockets are indistinguishable.
 
 RETURN VALUES
      A 0 is returned if the call succeeds, -1 if it fails.
@@ -3975,25 +3911,24 @@ RETURN VALUES
 ERRORS
      The call succeeds unless:
 
-     [EMFILE]      Too many descriptors are in use by this process.
+     [EMFILE]           Too many descriptors are in use by this process.
 
-     [EAFNOSUPPORT]
-                   The specified address family is not supported on this ma-
-                   chine.
+     [EAFNOSUPPORT]     The specified address family is not supported on this
+                        machine.
 
-     [EPROTONOSUPPORT]
-                   The specified protocol is not supported on this machine.
+     [EPROTONOSUPPORT]  The specified protocol is not supported on this
+                        machine.
 
-     [EOPNOTSUPP]  The specified protocol does not support creation of socket
-                   pairs.
+     [EOPNOTSUPP]       The specified protocol does not support creation of
+                        socket pairs.
 
-     [EFAULT]      The address sv does not specify a valid part of the process
-                   address space.
+     [EFAULT]           The address sv does not specify a valid part of the
+                        process address space.
 
-     [ENFILE]      The system file table is full.
+     [ENFILE]           The system file table is full.
 
 SEE ALSO
-     pipe(2),  read(2),  write(2)
+     pipe(2), read(2), write(2)
 
 BUGS
      This call is currently implemented only for the LOCAL domain.  Many oper-
@@ -4001,12 +3936,13 @@ BUGS
      instead of PF_LOCAL for maximal portability.
 
 STANDARDS
-     The socketpair() function conforms to .
+     The socketpair() function conforms to X/Open Portability Guide Issue 4.2
+     (``XPG4.2'').
 
 HISTORY
      The socketpair() function call appeared in 4.2BSD.
 
-BSD Experimental                 June 4, 1993                                1
+BSD                              June 4, 1993                              BSD
     </screen>
   </sect1>
 
