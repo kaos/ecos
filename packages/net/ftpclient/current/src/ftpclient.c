@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Andrew Lunn.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -54,6 +55,7 @@
 
 #include <network.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -128,7 +130,9 @@ get_reply(int s,ftp_printf_t ftp_printf) {
   char buf[BUFSIZ];
   int more = 0;
   int ret;
-
+  int first_line=1;
+  int code=0;
+  
   do {
     
     if ((ret=get_line(s,buf,sizeof(buf),ftp_printf)) < 0) {
@@ -137,7 +141,19 @@ get_reply(int s,ftp_printf_t ftp_printf) {
     
     ftp_printf(0,"FTP: %s\n",buf);
     
-    more = (buf[3] == '-'); 
+    if (first_line) {
+      code = strtoul(buf,NULL,0);
+      first_line=0;
+      more = (buf[3] == '-');
+    } else {
+      if (isdigit(buf[0]) && isdigit(buf[1]) && isdigit(buf[2]) &&
+          (code == strtoul(buf,NULL,0)) && 
+          buf[3]==' ') {
+        more=0;
+      } else {
+        more =1;
+      }
+    }
   } while (more);
 
   return (buf[0] - '0');
@@ -461,7 +477,7 @@ static int quit(int s,
   
   int ret;
   
-  ret = command("QUIT","",s,msgbuf,msgbuflen,ftp_printf);
+  ret = command("QUIT",NULL,s,msgbuf,msgbuflen,ftp_printf);
   if (ret < 0) {
     return (ret);
   }
