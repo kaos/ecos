@@ -1,3 +1,14 @@
+2003-04-11  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/socket.cxx: Give nstab_lock mutex a priority. Also it's
+	local, so make static.
+	Change nstab and nstab_end to cyg_nstab and cyg_nstab_end for
+	cleaner namespace.
+	* include/sockio.h: nstab -> cyg_nstab.
+	* src/misc.cxx, src/dir.cxx, src/fio.h, src/file.cxx: Change
+	fstab, fstab_end, mtab, mtab_end, cdir_dir, cdir_mtab_entry to
+	have cyg_ prefix for cleaner namespace.
+
 2003-03-20  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/devfs.cxx: Remove unnecessary checks for -EAGAIN (should

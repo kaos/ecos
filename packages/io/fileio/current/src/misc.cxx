@@ -93,42 +93,42 @@ __externC int chdir( const char *path );
 
 // This array contains entries for all filesystem that are installed in
 // the system.
-__externC cyg_fstab_entry fstab[];
-CYG_HAL_TABLE_BEGIN( fstab, fstab );
+__externC cyg_fstab_entry cyg_fstab[];
+CYG_HAL_TABLE_BEGIN( cyg_fstab, fstab );
 
 // end of filesystem table, set in linker script.
-__externC cyg_fstab_entry fstab_end;
-CYG_HAL_TABLE_END( fstab_end, fstab );
+__externC cyg_fstab_entry cyg_fstab_end;
+CYG_HAL_TABLE_END( cyg_fstab_end, fstab );
 
 #ifdef CYGPKG_KERNEL
 // Array of mutexes for locking the fstab entries
-Cyg_Mutex fstab_lock[CYGNUM_FILEIO_FSTAB_MAX] CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_IO_FS);
+static Cyg_Mutex fstab_lock[CYGNUM_FILEIO_FSTAB_MAX] CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_IO_FS);
 #endif
 
 // -------------------------------------------------------------------------
 // Mount table.
 
 // This array contains entries for all valid running filesystems.
-__externC cyg_mtab_entry mtab[];
-CYG_HAL_TABLE_BEGIN( mtab, mtab );
+__externC cyg_mtab_entry cyg_mtab[];
+CYG_HAL_TABLE_BEGIN( cyg_mtab, mtab );
 
 // Extra entries at end of mtab for dynamic mount points.
-cyg_mtab_entry mtab_extra[CYGNUM_FILEIO_MTAB_EXTRA] CYG_HAL_TABLE_EXTRA(mtab) = { { NULL } };
+cyg_mtab_entry cyg_mtab_extra[CYGNUM_FILEIO_MTAB_EXTRA] CYG_HAL_TABLE_EXTRA(mtab) = { { NULL } };
 
 // End of mount table, set in the linker script.
-__externC cyg_mtab_entry mtab_end;
-CYG_HAL_TABLE_END( mtab_end, mtab );
+__externC cyg_mtab_entry cyg_mtab_end;
+CYG_HAL_TABLE_END( cyg_mtab_end, mtab );
 
 #ifdef CYGPKG_KERNEL
 // Array of mutexes for locking the mtab entries
-Cyg_Mutex mtab_lock[CYGNUM_FILEIO_MTAB_MAX] CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_IO_FS);
+static Cyg_Mutex mtab_lock[CYGNUM_FILEIO_MTAB_MAX] CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_IO_FS);
 #endif
 
 //==========================================================================
 // Current directory
 
-cyg_mtab_entry *cdir_mtab_entry = NULL;
-cyg_dir cdir_dir = CYG_DIR_NULL;
+cyg_mtab_entry *cyg_cdir_mtab_entry = NULL;
+cyg_dir cyg_cdir_dir = CYG_DIR_NULL;
 
 //==========================================================================
 // Initialization object
@@ -157,7 +157,7 @@ static void cyg_mtab_init()
 {
     cyg_mtab_entry *m;
     
-    for( m = &mtab[0]; m != &mtab_end; m++ )
+    for( m = &cyg_mtab[0]; m != &cyg_mtab_end; m++ )
     {
         const char *fsname = m->fsname;
         cyg_fstab_entry *f;
@@ -167,13 +167,13 @@ static void cyg_mtab_init()
             continue;
         
         // stop if there are more than the configured maximum
-        if( m-&mtab[0] >= CYGNUM_FILEIO_MTAB_MAX )
+        if( m-&cyg_mtab[0] >= CYGNUM_FILEIO_MTAB_MAX )
             break;
         
-        for( f = &fstab[0]; f != &fstab_end; f++ )
+        for( f = &cyg_fstab[0]; f != &cyg_fstab_end; f++ )
         {
             // stop if there are more than the configured maximum
-            if( f-&fstab[0] >= CYGNUM_FILEIO_FSTAB_MAX )
+            if( f-&cyg_fstab[0] >= CYGNUM_FILEIO_FSTAB_MAX )
                 break;
             
             if( strcmp( fsname, f->name) == 0 )
@@ -241,7 +241,7 @@ __externC int cyg_mtab_lookup( cyg_dir *dir, const char **name, cyg_mtab_entry *
     }
 
     // Otherwise search the mount table.
-    for( m = &mtab[0]; m != &mtab_end; m++ )
+    for( m = &cyg_mtab[0]; m != &cyg_mtab_end; m++ )
     {
         if( m->name != NULL && m->valid )
         {
@@ -278,33 +278,33 @@ __externC int mount( const char *devname,
     int result = ENOERR;
 
     // Search the mount table for an empty entry
-    for( m = &mtab[0]; m != &mtab_end; m++ )
+    for( m = &cyg_mtab[0]; m != &cyg_mtab_end; m++ )
     {
         // stop if there are more than the configured maximum
-        if( m-&mtab[0] >= CYGNUM_FILEIO_MTAB_MAX )
+        if( m-&cyg_mtab[0] >= CYGNUM_FILEIO_MTAB_MAX )
         {
-            m = &mtab_end;
+            m = &cyg_mtab_end;
             break;
         }
 
          if( m->name == NULL ) break;
     }
 
-    if( m == &mtab_end )
+    if( m == &cyg_mtab_end )
         FILEIO_RETURN(ENOMEM);
 
     // Now search the fstab for the filesystem implementation
-    for( f = &fstab[0]; f != &fstab_end; f++ )
+    for( f = &cyg_fstab[0]; f != &cyg_fstab_end; f++ )
     {
         // stop if there are more than the configured maximum
-        if( f-&fstab[0] >= CYGNUM_FILEIO_FSTAB_MAX )
+        if( f-&cyg_fstab[0] >= CYGNUM_FILEIO_FSTAB_MAX )
             break;
             
         if( strcmp( fsname, f->name) == 0 )
             break;
     }
 
-    if( f == &fstab_end )
+    if( f == &cyg_fstab_end )
         FILEIO_RETURN(ENODEV);
             
     // We have a match.
@@ -327,8 +327,8 @@ __externC int mount( const char *devname,
 
     // Make sure that there is something to search (for open)
 
-    if (cdir_mtab_entry == (cyg_mtab_entry *)NULL) {
-        cdir_mtab_entry = m;
+    if (cyg_cdir_mtab_entry == (cyg_mtab_entry *)NULL) {
+        cyg_cdir_mtab_entry = m;
     }
 
     FILEIO_RETURN(result);
@@ -346,12 +346,12 @@ __externC int umount( const char *name)
     cyg_mtab_entry *m;
 
     // Search the mount table for a matching entry
-    for( m = &mtab[0]; m != &mtab_end; m++ )
+    for( m = &cyg_mtab[0]; m != &cyg_mtab_end; m++ )
     {
         // stop if there are more than the configured maximum
-        if( m-&mtab[0] >= CYGNUM_FILEIO_MTAB_MAX )
+        if( m-&cyg_mtab[0] >= CYGNUM_FILEIO_MTAB_MAX )
         {
-            m = &mtab_end;
+            m = &cyg_mtab_end;
             break;
         }
 
@@ -364,7 +364,7 @@ __externC int umount( const char *name)
          // Match device name too?
     }
 
-    if( m == &mtab_end )
+    if( m == &cyg_mtab_end )
         FILEIO_RETURN(EINVAL);
 
     // We have a match, call the umount function
@@ -388,13 +388,13 @@ void cyg_fs_lock( cyg_mtab_entry *mte, cyg_uint32 syncmode )
     CYG_ASSERT(mte != NULL, "Bad mount table entry");
 
     if( syncmode & CYG_SYNCMODE_FILE_FILESYSTEM ) {
-        CYG_ASSERT(mte->fs-&fstab[0] < CYGNUM_FILEIO_FSTAB_MAX, "Bad file system");
-        FILEIO_MUTEX_LOCK( fstab_lock[mte->fs-&fstab[0]] );
+        CYG_ASSERT(mte->fs-&cyg_fstab[0] < CYGNUM_FILEIO_FSTAB_MAX, "Bad file system");
+        FILEIO_MUTEX_LOCK( fstab_lock[mte->fs-&cyg_fstab[0]] );
     }
 
     if( syncmode & CYG_SYNCMODE_FILE_MOUNTPOINT ) {
-        CYG_ASSERT(mte-&mtab[0] < CYGNUM_FILEIO_MTAB_MAX, "Bad mount point");
-        FILEIO_MUTEX_LOCK( mtab_lock[mte-&mtab[0]] );
+        CYG_ASSERT(mte-&cyg_mtab[0] < CYGNUM_FILEIO_MTAB_MAX, "Bad mount point");
+        FILEIO_MUTEX_LOCK( mtab_lock[mte-&cyg_mtab[0]] );
     }
 }
 
@@ -403,13 +403,13 @@ void cyg_fs_unlock( cyg_mtab_entry *mte, cyg_uint32 syncmode )
     CYG_ASSERT(mte != NULL, "Bad mount table entry");
 
     if( syncmode & CYG_SYNCMODE_FILE_FILESYSTEM ) {
-        CYG_ASSERT(mte->fs-&fstab[0] < CYGNUM_FILEIO_FSTAB_MAX, "Bad file system");
-        FILEIO_MUTEX_UNLOCK( fstab_lock[mte->fs-&fstab[0]] );
+        CYG_ASSERT(mte->fs-&cyg_fstab[0] < CYGNUM_FILEIO_FSTAB_MAX, "Bad file system");
+        FILEIO_MUTEX_UNLOCK( fstab_lock[mte->fs-&cyg_fstab[0]] );
     }
 
     if( syncmode & CYG_SYNCMODE_FILE_MOUNTPOINT ) {
-        CYG_ASSERT(mte-&mtab[0] < CYGNUM_FILEIO_MTAB_MAX, "Bad mount point");
-        FILEIO_MUTEX_UNLOCK( mtab_lock[mte-&mtab[0]] );
+        CYG_ASSERT(mte-&cyg_mtab[0] < CYGNUM_FILEIO_MTAB_MAX, "Bad mount point");
+        FILEIO_MUTEX_UNLOCK( mtab_lock[mte-&cyg_mtab[0]] );
     }
 }
 

@@ -114,7 +114,7 @@ static void update_cwd( cyg_mtab_entry *mte, cyg_dir dir, const char *path )
 {
     char *p = cwd;
 
-    if( mte != cdir_mtab_entry || dir != cdir_dir )
+    if( mte != cyg_cdir_mtab_entry || dir != cyg_cdir_dir )
     {
         // Here, the path is relative to the root of the filesystem,
         // or in a totally new filesystem, initialize the cwd with the
@@ -193,8 +193,8 @@ __externC int open( const char *path, int oflag, ... )
     int ret = 0;
     int fd;
     cyg_file *file;
-    cyg_mtab_entry *mte = cdir_mtab_entry;
-    cyg_dir dir = cdir_dir;
+    cyg_mtab_entry *mte = cyg_cdir_mtab_entry;
+    cyg_dir dir = cyg_cdir_dir;
     const char *name = path;
 
     // At least one of O_RDONLY, O_WRONLY, O_RDWR must be provided
@@ -261,8 +261,8 @@ __externC int unlink( const char *path )
     FILEIO_ENTRY();
     
     int ret = 0;
-    cyg_mtab_entry *mte = cdir_mtab_entry;
-    cyg_dir dir = cdir_dir;
+    cyg_mtab_entry *mte = cyg_cdir_mtab_entry;
+    cyg_dir dir = cyg_cdir_dir;
     const char *name = path;
 
     ret = cyg_mtab_lookup( &dir, &name, &mte );
@@ -287,8 +287,8 @@ __externC int mkdir( const char *path, mode_t mode )
     FILEIO_ENTRY();
     
     int ret = 0;
-    cyg_mtab_entry *mte = cdir_mtab_entry;
-    cyg_dir dir = cdir_dir;
+    cyg_mtab_entry *mte = cyg_cdir_mtab_entry;
+    cyg_dir dir = cyg_cdir_dir;
     const char *name = path;
 
     mode=mode;
@@ -315,8 +315,8 @@ __externC int rmdir( const char *path )
     FILEIO_ENTRY();
     
     int ret = 0;
-    cyg_mtab_entry *mte = cdir_mtab_entry;
-    cyg_dir dir = cdir_dir;
+    cyg_mtab_entry *mte = cyg_cdir_mtab_entry;
+    cyg_dir dir = cyg_cdir_dir;
     const char *name = path;
 
     ret = cyg_mtab_lookup( &dir, &name, &mte );
@@ -341,10 +341,10 @@ __externC int rename( const char *path1, const char *path2 )
     FILEIO_ENTRY();
     
     int ret = 0;
-    cyg_mtab_entry *mte1 = cdir_mtab_entry;
-    cyg_mtab_entry *mte2 = cdir_mtab_entry;
-    cyg_dir dir1 = cdir_dir;
-    cyg_dir dir2 = cdir_dir;
+    cyg_mtab_entry *mte1 = cyg_cdir_mtab_entry;
+    cyg_mtab_entry *mte2 = cyg_cdir_mtab_entry;
+    cyg_dir dir1 = cyg_cdir_dir;
+    cyg_dir dir2 = cyg_cdir_dir;
     const char *name1 = path1;
     const char *name2 = path2;
 
@@ -379,10 +379,10 @@ __externC int link( const char *path1, const char *path2 )
     FILEIO_ENTRY();
     
     int ret = 0;
-    cyg_mtab_entry *mte1 = cdir_mtab_entry;
-    cyg_mtab_entry *mte2 = cdir_mtab_entry;
-    cyg_dir dir1 = cdir_dir;
-    cyg_dir dir2 = cdir_dir;
+    cyg_mtab_entry *mte1 = cyg_cdir_mtab_entry;
+    cyg_mtab_entry *mte2 = cyg_cdir_mtab_entry;
+    cyg_dir dir1 = cyg_cdir_dir;
+    cyg_dir dir2 = cyg_cdir_dir;
     const char *name1 = path1;
     const char *name2 = path2;
 
@@ -417,8 +417,8 @@ __externC int chdir( const char *path )
     FILEIO_ENTRY();
     
     int ret = 0;
-    cyg_mtab_entry *mte = cdir_mtab_entry;
-    cyg_dir dir = cdir_dir;
+    cyg_mtab_entry *mte = cyg_cdir_mtab_entry;
+    cyg_dir dir = cyg_cdir_dir;
     cyg_dir newdir;
     const char *name = path;
 
@@ -440,24 +440,24 @@ __externC int chdir( const char *path )
     update_cwd( mte, dir, name );
 #endif
     
-    if( cdir_mtab_entry != NULL && cdir_dir != CYG_DIR_NULL )
+    if( cyg_cdir_mtab_entry != NULL && cyg_cdir_dir != CYG_DIR_NULL )
     {
-        // Now detach from current cdir. We call the current directory's
+        // Now detach from current cyg_cdir. We call the current directory's
         // chdir routine with a NULL dir_out pointer.
 
-        LOCK_FS(cdir_mtab_entry);
+        LOCK_FS(cyg_cdir_mtab_entry);
 
-        ret = cdir_mtab_entry->fs->chdir( cdir_mtab_entry, cdir_dir, NULL, NULL );
+        ret = cyg_cdir_mtab_entry->fs->chdir( cyg_cdir_mtab_entry, cyg_cdir_dir, NULL, NULL );
     
-        UNLOCK_FS(cdir_mtab_entry);
+        UNLOCK_FS(cyg_cdir_mtab_entry);
 
         // We really shouldn't get an error here.
         if( 0 != ret )
             FILEIO_RETURN(ret);
     }
     
-    cdir_mtab_entry = mte;
-    cdir_dir = newdir;
+    cyg_cdir_mtab_entry = mte;
+    cyg_cdir_dir = newdir;
     
     FILEIO_RETURN(ENOERR);
 }
@@ -470,8 +470,8 @@ __externC int stat( const char *path, struct stat *buf )
     FILEIO_ENTRY();
     
     int ret = 0;
-    cyg_mtab_entry *mte = cdir_mtab_entry;
-    cyg_dir dir = cdir_dir;
+    cyg_mtab_entry *mte = cyg_cdir_mtab_entry;
+    cyg_dir dir = cyg_cdir_dir;
     const char *name = path;
 
     ret = cyg_mtab_lookup( &dir, &name, &mte );
@@ -496,8 +496,8 @@ __externC long pathconf( const char *path, int vname )
     FILEIO_ENTRY();
     
     int ret = 0;
-    cyg_mtab_entry *mte = cdir_mtab_entry;
-    cyg_dir dir = cdir_dir;
+    cyg_mtab_entry *mte = cyg_cdir_mtab_entry;
+    cyg_dir dir = cyg_cdir_dir;
     const char *name = path;
 
     ret = cyg_mtab_lookup( &dir, &name, &mte );
@@ -559,8 +559,8 @@ __externC char *getcwd( char *buf, size_t size )
     FILEIO_ENTRY();
 
     int err = ENOERR;
-    cyg_mtab_entry *mte = cdir_mtab_entry;
-    cyg_dir dir = cdir_dir;
+    cyg_mtab_entry *mte = cyg_cdir_mtab_entry;
+    cyg_dir dir = cyg_cdir_dir;
     cyg_getcwd_info info;
 
     if( size == 0 )

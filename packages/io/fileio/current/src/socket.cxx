@@ -110,14 +110,14 @@ static void cyg_sock_unlock( cyg_file *fp );
 // Tables and local variables
 
 // Array of network stacks installed
-__externC cyg_nstab_entry nstab[];
-CYG_HAL_TABLE_BEGIN( nstab, nstab );
+__externC cyg_nstab_entry cyg_nstab[];
+CYG_HAL_TABLE_BEGIN( cyg_nstab, nstab );
 
 // End of array marker
-__externC cyg_nstab_entry nstab_end;
-CYG_HAL_TABLE_END( nstab_end, nstab );
+__externC cyg_nstab_entry cyg_nstab_end;
+CYG_HAL_TABLE_END( cyg_nstab_end, nstab );
 
-Cyg_Mutex nstab_lock[CYGNUM_FILEIO_NSTAB_MAX];
+static Cyg_Mutex nstab_lock[CYGNUM_FILEIO_NSTAB_MAX] CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_IO_FS);
 
 //==========================================================================
 // Initialization
@@ -126,10 +126,10 @@ __externC void cyg_nstab_init()
 {
     cyg_nstab_entry *n;
 
-    for( n = &nstab[0]; n != &nstab_end; n++ )
+    for( n = &cyg_nstab[0]; n != &cyg_nstab_end; n++ )
     {
         // stop if there are more than the configured maximum
-        if( n-&nstab[0] >= CYGNUM_FILEIO_NSTAB_MAX )
+        if( n-&cyg_nstab[0] >= CYGNUM_FILEIO_NSTAB_MAX )
             break;
 
         if( n->init( n ) == 0 )
@@ -167,7 +167,7 @@ __externC int	socket (int domain, int type, int protocol)
 
     cyg_nstab_entry *n;
 
-    for( n = &nstab[0]; n != &nstab_end; n++ )
+    for( n = &cyg_nstab[0]; n != &cyg_nstab_end; n++ )
     {
         LOCK_NS( n );
         
@@ -697,7 +697,7 @@ static void cyg_ns_lock( cyg_nstab_entry *ns )
 {
     if( ns->syncmode & CYG_SYNCMODE_SOCK_NETSTACK )
     {
-        nstab_lock[ns-&nstab[0]].lock();
+        nstab_lock[ns-&cyg_nstab[0]].lock();
     }
 }
 
@@ -705,7 +705,7 @@ static void cyg_ns_unlock( cyg_nstab_entry *ns )
 {
     if( ns->syncmode & CYG_SYNCMODE_SOCK_NETSTACK )
     {
-        nstab_lock[ns-&nstab[0]].unlock();
+        nstab_lock[ns-&cyg_nstab[0]].unlock();
     }
 }
 
@@ -714,7 +714,7 @@ static void cyg_sock_lock( cyg_file *fp )
     cyg_nstab_entry *ns = (cyg_nstab_entry *)fp->f_mte;
 
     if( fp->f_syncmode & CYG_SYNCMODE_SOCK_NETSTACK )
-        nstab_lock[ns-&nstab[0]].lock();
+        nstab_lock[ns-&cyg_nstab[0]].lock();
 
     cyg_file_lock( fp, fp->f_syncmode>>CYG_SYNCMODE_SOCK_SHIFT);
 }
@@ -724,7 +724,7 @@ static void cyg_sock_unlock( cyg_file *fp )
     cyg_nstab_entry *ns = (cyg_nstab_entry *)fp->f_mte;
 
     if( fp->f_syncmode & CYG_SYNCMODE_SOCK_NETSTACK )
-        nstab_lock[ns-&nstab[0]].unlock();
+        nstab_lock[ns-&cyg_nstab[0]].unlock();
 
     cyg_file_unlock( fp, fp->f_syncmode>>CYG_SYNCMODE_SOCK_SHIFT);
 }

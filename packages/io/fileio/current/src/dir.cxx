@@ -98,8 +98,8 @@ extern DIR *opendir( const char *dirname )
     int ret = 0;
     int fd;
     cyg_file *file;
-    cyg_mtab_entry *mte = cdir_mtab_entry;
-    cyg_dir dir = cdir_dir;
+    cyg_mtab_entry *mte = cyg_cdir_mtab_entry;
+    cyg_dir dir = cyg_cdir_dir;
     const char *name = dirname;
 
     fd = cyg_fd_alloc(1); // Never return fd 0

@@ -184,8 +184,8 @@ CYG_MACRO_END
 // Exports from misc.cxx
 
 // Current directory info
-__externC cyg_mtab_entry *cdir_mtab_entry;
-__externC cyg_dir cdir_dir;
+__externC cyg_mtab_entry *cyg_cdir_mtab_entry;
+__externC cyg_dir cyg_cdir_dir;
 
 __externC int cyg_mtab_lookup( cyg_dir *dir, const char **name, cyg_mtab_entry **mte);
 
