@@ -161,8 +161,14 @@ struct ip6protosw {
 #ifdef __bsdi__
 	int	(*pr_output)();		/* output to protocol (from above) */
 #else
-	int	(*pr_output)		/* output to protocol (from above) */
-			__P((struct mbuf *, ...));
+#if (defined(__FreeBSD__) && __FreeBSD__ >= 4)
+        int	(*rip6_output) 
+                        __P((struct mbuf *, struct socket *,
+			    struct sockaddr_in6 *, struct mbuf *));
+#else
+int	int     (*rip6_output) 
+                        __P((struct mbuf *, ...));
+#endif /* (defined(__FreeBSD__) && __FreeBSD__ >= 4) */
 #endif
 	void	(*pr_ctlinput)		/* control input (from below) */
 			__P((int, struct sockaddr *, void *));

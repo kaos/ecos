@@ -894,6 +894,10 @@ in6_control(so, cmd, data, ifp)
 	return(0);
 }
 
+#ifdef __ECOS
+extern void _show_ifp(struct ifnet *ifp);
+#endif
+
 /*
  * Update parameters of an IPv6 interface address.
  * If necessary, a new entry is created and linked into address chains.

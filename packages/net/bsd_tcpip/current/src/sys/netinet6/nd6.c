@@ -66,6 +66,7 @@
 #include <sys/protosw.h>
 #include <sys/errno.h>
 #include <sys/queue.h>
+#include <sys/sysctl.h>
 
 #include <net/if.h>
 #include <net/if_dl.h>
@@ -2390,3 +2391,133 @@ nd6_storelladdr(ifp, rt, m, dst, desten)
 	bcopy(LLADDR(sdl), desten, sdl->sdl_alen);
 	return(1);
 }
+
+#ifdef CYGPKG_NET_FREEBSD_SYSCTL
+static int nd6_sysctl_drlist(SYSCTL_HANDLER_ARGS);
+static int nd6_sysctl_prlist(SYSCTL_HANDLER_ARGS);
+#endif
+#ifdef SYSCTL_DECL
+SYSCTL_DECL(_net_inet6_icmp6);
+#endif
+SYSCTL_NODE(_net_inet6_icmp6, ICMPV6CTL_ND6_DRLIST, nd6_drlist,
+	CTLFLAG_RD, nd6_sysctl_drlist, "");
+SYSCTL_NODE(_net_inet6_icmp6, ICMPV6CTL_ND6_PRLIST, nd6_prlist,
+	CTLFLAG_RD, nd6_sysctl_prlist, "");
+
+#ifdef CYGPKG_NET_FREEBSD_SYSCTL
+static int
+nd6_sysctl_drlist(SYSCTL_HANDLER_ARGS)
+{
+	int error;
+	char buf[1024];
+	struct in6_defrouter *d, *de;
+	struct nd_defrouter *dr;
+
+	if (req->newptr)
+		return EPERM;
+	error = 0;
+
+	for (dr = TAILQ_FIRST(&nd_defrouter);
+	     dr;
+	     dr = TAILQ_NEXT(dr, dr_entry)) {
+		d = (struct in6_defrouter *)buf;
+		de = (struct in6_defrouter *)(buf + sizeof(buf));
+
+		if (d + 1 <= de) {
+			bzero(d, sizeof(*d));
+			d->rtaddr.sin6_family = AF_INET6;
+			d->rtaddr.sin6_len = sizeof(d->rtaddr);
+			if (in6_recoverscope(&d->rtaddr, &dr->rtaddr,
+			    dr->ifp) != 0)
+				log(LOG_ERR,
+				    "scope error in "
+				    "default router list (%s)\n",
+				    ip6_sprintf(&dr->rtaddr));
+			d->flags = dr->flags;
+			d->rtlifetime = dr->rtlifetime;
+			d->expire = dr->expire;
+			d->if_index = dr->ifp->if_index;
+		} else
+			panic("buffer too short");
+
+		error = SYSCTL_OUT(req, buf, sizeof(*d));
+		if (error)
+			break;
+	}
+	return error;
+}
+
+static int
+nd6_sysctl_prlist(SYSCTL_HANDLER_ARGS)
+{
+	int error;
+	char buf[1024];
+	struct in6_prefix *p, *pe;
+	struct nd_prefix *pr;
+
+	if (req->newptr)
+		return EPERM;
+	error = 0;
+
+	for (pr = nd_prefix.lh_first; pr; pr = pr->ndpr_next) {
+		u_short advrtrs=0;
+		size_t advance;
+		struct sockaddr_in6 *sin6, *s6;
+		struct nd_pfxrouter *pfr;
+
+		p = (struct in6_prefix *)buf;
+		pe = (struct in6_prefix *)(buf + sizeof(buf));
+
+		if (p + 1 <= pe) {
+			bzero(p, sizeof(*p));
+			sin6 = (struct sockaddr_in6 *)(p + 1);
+
+			p->prefix = pr->ndpr_prefix;
+			if (in6_recoverscope(&p->prefix,
+			    &p->prefix.sin6_addr, pr->ndpr_ifp) != 0)
+				log(LOG_ERR,
+				    "scope error in prefix list (%s)\n",
+				    ip6_sprintf(&p->prefix.sin6_addr));
+			p->raflags = pr->ndpr_raf;
+			p->prefixlen = pr->ndpr_plen;
+			p->vltime = pr->ndpr_vltime;
+			p->pltime = pr->ndpr_pltime;
+			p->if_index = pr->ndpr_ifp->if_index;
+			p->expire = pr->ndpr_expire;
+			p->refcnt = pr->ndpr_refcnt;
+			p->flags = pr->ndpr_stateflags;
+			p->origin = PR_ORIG_RA;
+			advrtrs = 0;
+			for (pfr = pr->ndpr_advrtrs.lh_first;
+			     pfr;
+			     pfr = pfr->pfr_next) {
+				if ((void *)&sin6[advrtrs + 1] >
+				    (void *)pe) {
+					advrtrs++;
+					continue;
+				}
+				s6 = &sin6[advrtrs];
+				bzero(s6, sizeof(*s6));
+				s6->sin6_family = AF_INET6;
+				s6->sin6_len = sizeof(*sin6);
+				if (in6_recoverscope(s6,
+				    &pfr->router->rtaddr,
+				    pfr->router->ifp) != 0)
+					log(LOG_ERR,
+					    "scope error in "
+					    "prefix list (%s)\n",
+					    ip6_sprintf(&pfr->router->rtaddr));
+				advrtrs++;
+			}
+			p->advrtrs = advrtrs;
+		} else 
+			panic("buffer too short");
+
+		advance = sizeof(*p) + sizeof(*sin6) * advrtrs;
+		error = SYSCTL_OUT(req, buf, advance);
+		if (error)
+			break;
+	}
+	return error;
+}
+#endif

@@ -151,8 +151,18 @@ cdl_package CYGPKG_NET_FREEBSD_STACK {
 ## Only if firewall enabled
 ##              sys/netinet6/ip6_fw.c \
 ##
-
         }
+        cdl_option CYGPKG_NET_FREEBSD_SYSCTL {
+            display       "sysctl support"
+            flavor        bool
+            default_value 0
+            description   "
+                This option enables support for the system call sysctl used
+            to configure options/variables in the stack and retrieve statistics. "
+            # This file was derived from FreeBSD and carries that copyright
+            compile \
+              sys/kern/kern_sysctl.c
+        } 
     }
 
     cdl_option CYGPKG_NET_NGIF {
@@ -320,5 +330,14 @@ cdl_package CYGPKG_NET_FREEBSD_STACK {
                 building the networking package. These flags are removed from
                 the set of global flags if present."
         }
+    }
+    cdl_option CYGPKG_NET_FREEBSD_STACK_TESTS {
+        display       "FreeBSD network stack tests"
+        flavor        data
+        no_define
+        calculated { CYGPKG_NET_FREEBSD_SYSCTL ? "tests/sysctl1" : "" }
+        description  "
+            These are test specifically for the FreeBSD stack. These test features
+            which only the FreeBSD stack has"
     }
 }

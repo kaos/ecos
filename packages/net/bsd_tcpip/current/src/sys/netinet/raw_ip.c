@@ -61,6 +61,7 @@
 #include <sys/protosw.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
+#include <sys/sysctl.h>
 
 #include <net/if.h>
 #include <net/route.h>
@@ -468,6 +469,11 @@ rip_ctlinput(cmd, sa, vip)
 u_long	rip_sendspace = RIPSNDQ;
 u_long	rip_recvspace = RIPRCVQ;
 
+SYSCTL_INT(_net_inet_raw, OID_AUTO, maxdgram, CTLFLAG_RW,
+    &rip_sendspace, 0, "Maximum outgoing raw IP datagram size");
+SYSCTL_INT(_net_inet_raw, OID_AUTO, recvspace, CTLFLAG_RW,
+    &rip_recvspace, 0, "Maximum incoming raw IP datagram size");
+
 static int
 rip_attach(struct socket *so, int proto, struct proc *p)
 {
@@ -590,6 +596,94 @@ rip_send(struct socket *so, int flags, struct mbuf *m, struct sockaddr *nam,
 	}
 	return rip_output(m, so, dst);
 }
+
+#ifdef CYGPKG_NET_FREEBSD_SYSCTL
+static int
+rip_pcblist(SYSCTL_HANDLER_ARGS)
+{
+	int error, i, n, s;
+	struct inpcb *inp, **inp_list;
+	inp_gen_t gencnt;
+	struct xinpgen xig;
+
+	/*
+	 * The process of preparing the TCB list is too time-consuming and
+	 * resource-intensive to repeat twice on every request.
+	 */
+	if (req->oldptr == 0) {
+		n = ripcbinfo.ipi_count;
+		req->oldidx = 2 * (sizeof xig)
+			+ (n + n/8) * sizeof(struct xinpcb);
+		return 0;
+	}
+
+	if (req->newptr != 0)
+		return EPERM;
+
+	/*
+	 * OK, now we're committed to doing something.
+	 */
+	s = splnet();
+	gencnt = ripcbinfo.ipi_gencnt;
+	n = ripcbinfo.ipi_count;
+	splx(s);
+
+	xig.xig_len = sizeof xig;
+	xig.xig_count = n;
+	xig.xig_gen = gencnt;
+	xig.xig_sogen = so_gencnt;
+	error = SYSCTL_OUT(req, &xig, sizeof xig);
+	if (error)
+		return error;
+
+	inp_list = malloc(n * sizeof *inp_list, M_TEMP, M_WAITOK);
+	if (inp_list == 0)
+		return ENOMEM;
+	
+	s = splnet();
+	for (inp = ripcbinfo.listhead->lh_first, i = 0; inp && i < n;
+	     inp = inp->inp_list.le_next) {
+		if (inp->inp_gencnt <= gencnt)
+			inp_list[i++] = inp;
+	}
+	splx(s);
+	n = i;
+
+	error = 0;
+	for (i = 0; i < n; i++) {
+		inp = inp_list[i];
+		if (inp->inp_gencnt <= gencnt) {
+			struct xinpcb xi;
+			xi.xi_len = sizeof xi;
+			/* XXX should avoid extra copy */
+			bcopy(inp, &xi.xi_inp, sizeof *inp);
+			if (inp->inp_socket)
+				sotoxsocket(inp->inp_socket, &xi.xi_socket);
+			error = SYSCTL_OUT(req, &xi, sizeof xi);
+		}
+	}
+	if (!error) {
+		/*
+		 * Give the user an updated idea of our state.
+		 * If the generation differs from what we told
+		 * her before, she knows that something happened
+		 * while we were processing this request, and it
+		 * might be necessary to retry.
+		 */
+		s = splnet();
+		xig.xig_gen = ripcbinfo.ipi_gencnt;
+		xig.xig_sogen = so_gencnt;
+		xig.xig_count = ripcbinfo.ipi_count;
+		splx(s);
+		error = SYSCTL_OUT(req, &xig, sizeof xig);
+	}
+	free(inp_list, M_TEMP);
+	return error;
+}
+#endif
+
+SYSCTL_PROC(_net_inet_raw, OID_AUTO/*XXX*/, pcblist, CTLFLAG_RD, 0, 0,
+	    rip_pcblist, "S,xinpcb", "List of active raw IP sockets");
 
 struct pr_usrreqs rip_usrreqs = {
 	rip_abort, pru_accept_notsupp, rip_attach, rip_bind, rip_connect,

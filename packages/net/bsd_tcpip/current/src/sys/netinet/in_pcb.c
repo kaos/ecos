@@ -62,6 +62,7 @@
 #include <sys/protosw.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
+#include <sys/sysctl.h>
 
 #include <net/if.h>
 #include <net/if_types.h>
@@ -94,6 +95,43 @@ int	ipport_lastauto  = IPPORT_USERRESERVED;		/* 5000 */
 int	ipport_hifirstauto = IPPORT_HIFIRSTAUTO;	/* 49152 */
 int	ipport_hilastauto  = IPPORT_HILASTAUTO;		/* 65535 */
 
+#define RANGECHK(var, min, max) \
+	if ((var) < (min)) { (var) = (min); } \
+	else if ((var) > (max)) { (var) = (max); }
+
+#ifdef CYGPKG_NET_FREEBSD_SYSCTL
+static int
+sysctl_net_ipport_check(SYSCTL_HANDLER_ARGS)
+{
+	int error = sysctl_handle_int(oidp,
+		oidp->oid_arg1, oidp->oid_arg2, req);
+	if (!error) {
+		RANGECHK(ipport_lowfirstauto, 1, IPPORT_RESERVED - 1);
+		RANGECHK(ipport_lowlastauto, 1, IPPORT_RESERVED - 1);
+		RANGECHK(ipport_firstauto, IPPORT_RESERVED, USHRT_MAX);
+		RANGECHK(ipport_lastauto, IPPORT_RESERVED, USHRT_MAX);
+		RANGECHK(ipport_hifirstauto, IPPORT_RESERVED, USHRT_MAX);
+		RANGECHK(ipport_hilastauto, IPPORT_RESERVED, USHRT_MAX);
+	}
+	return error;
+}
+#endif
+#undef RANGECHK
+
+SYSCTL_NODE(_net_inet_ip, IPPROTO_IP, portrange, CTLFLAG_RW, 0, "IP Ports");
+
+SYSCTL_PROC(_net_inet_ip_portrange, OID_AUTO, lowfirst, CTLTYPE_INT|CTLFLAG_RW,
+	   &ipport_lowfirstauto, 0, &sysctl_net_ipport_check, "I", "");
+SYSCTL_PROC(_net_inet_ip_portrange, OID_AUTO, lowlast, CTLTYPE_INT|CTLFLAG_RW,
+	   &ipport_lowlastauto, 0, &sysctl_net_ipport_check, "I", "");
+SYSCTL_PROC(_net_inet_ip_portrange, OID_AUTO, first, CTLTYPE_INT|CTLFLAG_RW,
+	   &ipport_firstauto, 0, &sysctl_net_ipport_check, "I", "");
+SYSCTL_PROC(_net_inet_ip_portrange, OID_AUTO, last, CTLTYPE_INT|CTLFLAG_RW,
+	   &ipport_lastauto, 0, &sysctl_net_ipport_check, "I", "");
+SYSCTL_PROC(_net_inet_ip_portrange, OID_AUTO, hifirst, CTLTYPE_INT|CTLFLAG_RW,
+	   &ipport_hifirstauto, 0, &sysctl_net_ipport_check, "I", "");
+SYSCTL_PROC(_net_inet_ip_portrange, OID_AUTO, hilast, CTLTYPE_INT|CTLFLAG_RW,
+	   &ipport_hilastauto, 0, &sysctl_net_ipport_check, "I", "");
 
 /*
  * in_pcb.c: manage the Protocol Control Blocks.

@@ -59,6 +59,7 @@
 #include <sys/mbuf.h>
 #include <sys/protosw.h>
 #include <sys/socket.h>
+#include <sys/sysctl.h>
 
 #include <net/if.h>
 #include <net/route.h>
@@ -83,10 +84,21 @@
  * host table maintenance routines.
  */
 
-struct icmpstat icmpstat;
+struct	icmpstat icmpstat;
+SYSCTL_STRUCT(_net_inet_icmp, ICMPCTL_STATS, stats, CTLFLAG_RD,
+	&icmpstat, icmpstat, "");
+
 static int	icmpmaskrepl = 0;
+SYSCTL_INT(_net_inet_icmp, ICMPCTL_MASKREPL, maskrepl, CTLFLAG_RW,
+	&icmpmaskrepl, 0, "");
+
 static int	drop_redirect = 0;
+SYSCTL_INT(_net_inet_icmp, OID_AUTO, drop_redirect, CTLFLAG_RW, 
+	&drop_redirect, 0, "");
+
 static int	log_redirect = 0;
+SYSCTL_INT(_net_inet_icmp, OID_AUTO, log_redirect, CTLFLAG_RW, 
+	&log_redirect, 0, "");
 
 #ifdef ICMP_BANDLIM 
  
@@ -96,17 +108,24 @@ static int	log_redirect = 0;
  */     
     
 static int      icmplim = 200;
+SYSCTL_INT(_net_inet_icmp, ICMPCTL_ICMPLIM, icmplim, CTLFLAG_RW,
+	&icmplim, 0, "");
 #else
 
-/* static int      icmplim = -1; */
-
-#endif 
-
+#ifdef CYGPKG_NET_FREEBSD_SYSCTL
+static int      icmplim = -1;
+SYSCTL_INT(_net_inet_icmp, ICMPCTL_ICMPLIM, icmplim, CTLFLAG_RD,
+	&icmplim, 0, "");
+#endif	
+#endif
 /*
  * ICMP broadcast echo sysctl
  */
 
 static int	icmpbmcastecho = 0;
+SYSCTL_INT(_net_inet_icmp, OID_AUTO, bmcastecho, CTLFLAG_RW,
+	&icmpbmcastecho, 0, "");
+
 
 #ifdef ICMPPRINTFS
 int	icmpprintfs = 0;

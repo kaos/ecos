@@ -606,6 +606,10 @@ success:
 	return 0;
 }
 
+#ifdef __ECOS
+extern void _show_ifp(struct ifnet *ifp);
+#endif
+
 static int
 in6_ifattach_linklocal(ifp, altifp)
 	struct ifnet *ifp;

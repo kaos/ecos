@@ -75,6 +75,7 @@
 #include <sys/mbuf.h>
 #include <sys/socket.h>
 #include <sys/protosw.h>
+#include <sys/sysctl.h>
 
 #include <net/if.h>
 #include <net/route.h>
@@ -91,6 +92,9 @@ static struct router_info *
 		find_rti __P((struct ifnet *ifp));
 
 static struct igmpstat igmpstat;
+
+SYSCTL_STRUCT(_net_inet_igmp, IGMPCTL_STATS, stats, CTLFLAG_RD,
+	&igmpstat, igmpstat, "");
 
 static int igmp_timers_are_running;
 static u_long igmp_all_hosts_group;

@@ -60,5 +60,7 @@ externC void cyg_net_free(caddr_t addr, int type);
 #define M_IP6NDP        90
 #define M_MRTABLE       89
 #define M_FTABLE        88
+#define M_SYSCTLOID    100     
+#define M_SYSCTL       101     
 
 #endif // _SYS_MALLOC_H_

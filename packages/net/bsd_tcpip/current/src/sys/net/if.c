@@ -62,6 +62,7 @@
 #include <sys/socketvar.h>
 #include <sys/protosw.h>
 #include <sys/sockio.h>
+#include <sys/sysctl.h>
 
 #include <net/if.h>
 #include <net/if_arp.h>
@@ -1727,3 +1728,6 @@ ifmaof_ifpforaddr(sa, ifp)
 
 	return ifma;
 }
+
+SYSCTL_NODE(_net, PF_LINK, link, CTLFLAG_RW, 0, "Link layers");
+SYSCTL_NODE(_net_link, 0, generic, CTLFLAG_RW, 0, "Generic link-management");

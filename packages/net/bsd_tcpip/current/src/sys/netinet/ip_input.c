@@ -63,6 +63,7 @@
 #include <sys/domain.h>
 #include <sys/protosw.h>
 #include <sys/socket.h>
+#include <sys/sysctl.h>
 
 #include <net/if.h>
 #include <net/if_var.h>
@@ -97,13 +98,41 @@ static int ip_rsvp_on;
 struct socket *ip_rsvpd;
 
 int	ipforwarding = 0;
+SYSCTL_INT(_net_inet_ip, IPCTL_FORWARDING, forwarding, CTLFLAG_RW,
+    &ipforwarding, 0, "Enable IP forwarding between interfaces");
+
 static int	ipsendredirects = 1; /* XXX */
+SYSCTL_INT(_net_inet_ip, IPCTL_SENDREDIRECTS, redirect, CTLFLAG_RW,
+    &ipsendredirects, 0, "Enable sending IP redirects");
+
 int	ip_defttl = IPDEFTTL;
+SYSCTL_INT(_net_inet_ip, IPCTL_DEFTTL, ttl, CTLFLAG_RW,
+    &ip_defttl, 0, "Maximum TTL on IP packets");
+
 static int	ip_dosourceroute = 0;
+SYSCTL_INT(_net_inet_ip, IPCTL_SOURCEROUTE, sourceroute, CTLFLAG_RW,
+    &ip_dosourceroute, 0, "Enable forwarding source routed IP packets");
+
 static int	ip_acceptsourceroute = 0;
-#if defined(NFAITH) && 0 < NFAITH
+SYSCTL_INT(_net_inet_ip, IPCTL_ACCEPTSOURCEROUTE, accept_sourceroute, 
+    CTLFLAG_RW, &ip_acceptsourceroute, 0, 
+    "Enable accepting source routed IP packets");
+
+#if defined(NFAITH) && 0 < NFAITH || defined(CYGPKG_NET_FREEBSD_SYSCTL)
 static int	ip_keepfaith = 0;
 #endif
+
+SYSCTL_INT(_net_inet_ip, IPCTL_KEEPFAITH, keepfaith, CTLFLAG_RW,
+	&ip_keepfaith,	0,
+	"Enable packet capture for FAITH IPv4->IPv6 translater daemon");
+
+#ifdef CYGPKG_NET_FREEBSD_SYSCTL
+static int	ip_maxfragpackets;	/* initialized in ip_init() */
+#endif
+SYSCTL_INT(_net_inet_ip, OID_AUTO, maxfragpackets, CTLFLAG_RW,
+	&ip_maxfragpackets, 0,
+	"Maximum number of IPv4 fragment reassembly queue entries");
+
 static int    nipq = 0;         /* total # of reass queues */
 static int    maxnipq;
 
@@ -121,6 +150,8 @@ static int    maxnipq;
  * packets for those addresses are received.
  */
 static int	ip_checkinterface = 0;
+SYSCTL_INT(_net_inet_ip, OID_AUTO, check_interface, CTLFLAG_RW,
+    &ip_checkinterface, 0, "Verify packet arrives on correct interface");
 
 #ifdef DIAGNOSTIC
 static int	ipprintfs = 0;
@@ -131,7 +162,14 @@ extern	struct protosw inetsw[];
 u_char	ip_protox[IPPROTO_MAX];
 static int	ipqmaxlen = IFQ_MAXLEN;
 struct	in_ifaddrhead in_ifaddrhead; /* first inet address */
+SYSCTL_INT(_net_inet_ip, IPCTL_INTRQMAXLEN, intr_queue_maxlen, CTLFLAG_RW,
+    &ipintrq.ifq_maxlen, 0, "Maximum size of the IP input queue");
+SYSCTL_INT(_net_inet_ip, IPCTL_INTRQDROPS, intr_queue_drops, CTLFLAG_RD,
+    &ipintrq.ifq_drops, 0, "Number of packets dropped from the IP input queue");
+
 struct ipstat ipstat;
+SYSCTL_STRUCT(_net_inet_ip, IPCTL_STATS, stats, CTLFLAG_RD,
+    &ipstat, ipstat, "IP statistics (struct ipstat, netinet/ip_var.h)");
 
 /* Packet reassembly stuff */
 #define IPREASS_NHASH_LOG2      6
@@ -143,8 +181,15 @@ struct ipstat ipstat;
 static struct ipq ipq[IPREASS_NHASH];
 const  int    ipintrq_present = 1;
 
+#ifdef IPCTL_DEFMTU
+SYSCTL_INT(_net_inet_ip, IPCTL_DEFMTU, mtu, CTLFLAG_RW,
+    &ip_mtu, 0, "Default MTU");
+#endif
+
 #ifdef IPSTEALTH
 static int	ipstealth = 0;
+SYSCTL_INT(_net_inet_ip, OID_AUTO, stealth, CTLFLAG_RW,
+    &ipstealth, 0, "");
 #endif
 
 

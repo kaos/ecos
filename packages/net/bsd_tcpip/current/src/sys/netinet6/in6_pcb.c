@@ -748,7 +748,7 @@ in6_pcbnotify(head, dst, fport_arg, src, lport_arg, cmd, cmdarg, notify)
 	struct sockaddr_in6 sa6_src, *sa6_dst;
 	u_short	fport = fport_arg, lport = lport_arg;
 	u_int32_t flowinfo;
-	int errno, s;
+	int _errno, s;
 
 	if ((unsigned)cmd > PRC_NCMDS || dst->sa_family != AF_INET6)
 		return;
@@ -779,7 +779,7 @@ in6_pcbnotify(head, dst, fport_arg, src, lport_arg, cmd, cmdarg, notify)
 		if (cmd != PRC_HOSTDEAD)
 			notify = in6_rtchange;
 	}
-	errno = inet6ctlerrmap[cmd];
+	_errno = inet6ctlerrmap[cmd];
 	s = splnet();
  	for (inp = LIST_FIRST(head); inp != NULL; inp = ninp) {
  		ninp = LIST_NEXT(inp, inp_list);
@@ -829,7 +829,7 @@ in6_pcbnotify(head, dst, fport_arg, src, lport_arg, cmd, cmdarg, notify)
 
 	  do_notify:
 		if (notify)
-			(*notify)(inp, errno);
+			(*notify)(inp, _errno);
 	}
 	splx(s);
 }

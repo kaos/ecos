@@ -57,6 +57,7 @@
 
 #include <sys/param.h>
 #include <sys/malloc.h>
+#include <sys/sysctl.h>
 #include <sys/mbuf.h>
 #ifdef INET6
 #include <sys/domain.h>
@@ -105,22 +106,53 @@
 #include <sys/md5.h>
 
 int 	tcp_mssdflt = TCP_MSS;
+SYSCTL_INT(_net_inet_tcp, TCPCTL_MSSDFLT, mssdflt, CTLFLAG_RW, 
+    &tcp_mssdflt , 0, "Default TCP Maximum Segment Size");
 
 #ifdef INET6
 int	tcp_v6mssdflt = TCP6_MSS;
+SYSCTL_INT(_net_inet_tcp, TCPCTL_V6MSSDFLT, v6mssdflt,
+	CTLFLAG_RW, &tcp_v6mssdflt , 0,
+	"Default TCP Maximum Segment Size for IPv6");
 #endif
 
 #if 0
 static int 	tcp_rttdflt = TCPTV_SRTTDFLT / PR_SLOWHZ;
+SYSCTL_INT(_net_inet_tcp, TCPCTL_RTTDFLT, rttdflt, CTLFLAG_RW, 
+    &tcp_rttdflt , 0, "Default maximum TCP Round Trip Time");
 #endif
 
 static int	tcp_do_rfc1323 = 1;
+SYSCTL_INT(_net_inet_tcp, TCPCTL_DO_RFC1323, rfc1323, CTLFLAG_RW, 
+    &tcp_do_rfc1323 , 0, "Enable rfc1323 (high performance TCP) extensions");
+
 static int	tcp_do_rfc1644 = 0;
+SYSCTL_INT(_net_inet_tcp, TCPCTL_DO_RFC1644, rfc1644, CTLFLAG_RW, 
+    &tcp_do_rfc1644 , 0, "Enable rfc1644 (TTCP) extensions");
+
 static int	tcp_tcbhashsize = 0;
+SYSCTL_INT(_net_inet_tcp, OID_AUTO, tcbhashsize, CTLFLAG_RD,
+     &tcp_tcbhashsize, 0, "Size of TCP control-block hashtable");
+
 static int	do_tcpdrain = 1;
+SYSCTL_INT(_net_inet_tcp, OID_AUTO, do_tcpdrain, CTLFLAG_RW, &do_tcpdrain, 0,
+     "Enable tcp_drain routine for extra help when low on mbufs");
+
+SYSCTL_INT(_net_inet_tcp, OID_AUTO, pcbcount, CTLFLAG_RD, 
+    &tcbinfo.ipi_count, 0, "Number of active PCBs");
+
 static int	icmp_may_rst = 1;
+SYSCTL_INT(_net_inet_tcp, OID_AUTO, icmp_may_rst, CTLFLAG_RW, &icmp_may_rst, 0, 
+    "Certain ICMP unreachable messages may abort connections in SYN_SENT");
+
 static int	tcp_strict_rfc1948 = 0;
+SYSCTL_INT(_net_inet_tcp, OID_AUTO, strict_rfc1948, CTLFLAG_RW,
+    &tcp_strict_rfc1948, 0, "Determines if RFC1948 is followed exactly");
+
 static int	tcp_isn_reseed_interval = 0;
+SYSCTL_INT(_net_inet_tcp, OID_AUTO, isn_reseed_interval, CTLFLAG_RW,
+    &tcp_isn_reseed_interval, 0, "Seconds between reseeding of ISN secret");
+
 static void	tcp_cleartaocache __P((void));
 static void	tcp_notify __P((struct inpcb *, int));
 
@@ -783,6 +815,100 @@ tcp_notify(inp, error)
 	sowwakeup(so);
 #endif
 }
+
+#ifdef CYGPKG_NET_FREEBSD_SYSCTL
+static int
+tcp_pcblist(SYSCTL_HANDLER_ARGS)
+{
+	int error, i, n, s;
+	struct inpcb *inp, **inp_list;
+	inp_gen_t gencnt;
+	struct xinpgen xig;
+
+	/*
+	 * The process of preparing the TCB list is too time-consuming and
+	 * resource-intensive to repeat twice on every request.
+	 */
+	if (req->oldptr == 0) {
+		n = tcbinfo.ipi_count;
+		req->oldidx = 2 * (sizeof xig)
+			+ (n + n/8) * sizeof(struct xtcpcb);
+		return 0;
+	}
+
+	if (req->newptr != 0)
+		return EPERM;
+
+	/*
+	 * OK, now we're committed to doing something.
+	 */
+	s = splnet();
+	gencnt = tcbinfo.ipi_gencnt;
+	n = tcbinfo.ipi_count;
+	splx(s);
+
+	xig.xig_len = sizeof xig;
+	xig.xig_count = n;
+	xig.xig_gen = gencnt;
+	xig.xig_sogen = so_gencnt;
+	error = SYSCTL_OUT(req, &xig, sizeof xig);
+	if (error)
+		return error;
+
+	inp_list = malloc(n * sizeof *inp_list, M_TEMP, M_WAITOK);
+	if (inp_list == 0)
+		return ENOMEM;
+	
+	s = splnet();
+	for (inp = LIST_FIRST(tcbinfo.listhead), i = 0; inp && i < n;
+	     inp = LIST_NEXT(inp, inp_list)) {
+		if (inp->inp_gencnt <= gencnt)
+			inp_list[i++] = inp;
+	}
+	splx(s);
+	n = i;
+
+	error = 0;
+	for (i = 0; i < n; i++) {
+		inp = inp_list[i];
+		if (inp->inp_gencnt <= gencnt) {
+			struct xtcpcb xt;
+			caddr_t inp_ppcb;
+			xt.xt_len = sizeof xt;
+			/* XXX should avoid extra copy */
+			bcopy(inp, &xt.xt_inp, sizeof *inp);
+			inp_ppcb = inp->inp_ppcb;
+			if (inp_ppcb != NULL)
+				bcopy(inp_ppcb, &xt.xt_tp, sizeof xt.xt_tp);
+			else
+				bzero((char *) &xt.xt_tp, sizeof xt.xt_tp);
+			if (inp->inp_socket)
+				sotoxsocket(inp->inp_socket, &xt.xt_socket);
+			error = SYSCTL_OUT(req, &xt, sizeof xt);
+		}
+	}
+	if (!error) {
+		/*
+		 * Give the user an updated idea of our state.
+		 * If the generation differs from what we told
+		 * her before, she knows that something happened
+		 * while we were processing this request, and it
+		 * might be necessary to retry.
+		 */
+		s = splnet();
+		xig.xig_gen = tcbinfo.ipi_gencnt;
+		xig.xig_sogen = so_gencnt;
+		xig.xig_count = tcbinfo.ipi_count;
+		splx(s);
+		error = SYSCTL_OUT(req, &xig, sizeof xig);
+	}
+	free(inp_list, M_TEMP);
+	return error;
+}
+#endif
+
+SYSCTL_PROC(_net_inet_tcp, TCPCTL_PCBLIST, pcblist, CTLFLAG_RD, 0, 0,
+	    tcp_pcblist, "S,xtcpcb", "List of active TCP connections");
 
 void
 tcp_ctlinput(cmd, sa, vip)

@@ -90,6 +90,9 @@
 #define _NETINET_TCP6_VAR_H_
 
 #ifdef _KERNEL
+#ifdef SYSCTL_DECL
+SYSCTL_DECL(_net_inet6_tcp6);
+#endif
 
 extern	int tcp_v6mssdflt;	/* XXX */
 

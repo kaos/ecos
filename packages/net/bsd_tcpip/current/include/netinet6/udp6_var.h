@@ -89,6 +89,7 @@
 #define _NETINET6_UDP6_VAR_H_
 
 #ifdef _KERNEL
+SYSCTL_DECL(_net_inet6_udp6);
 
 extern struct	pr_usrreqs udp6_usrreqs;
 

@@ -57,6 +57,7 @@
 
 
 #include <sys/param.h>
+#include <sys/sysctl.h>
 #include <sys/malloc.h>
 #include <sys/mbuf.h>
 #include <sys/socket.h>
@@ -85,6 +86,10 @@ static struct mbuf *
 static int	rt_msg2 __P((int,
 		    struct rt_addrinfo *, caddr_t, struct walkarg *));
 static int	rt_xaddrs __P((caddr_t, caddr_t, struct rt_addrinfo *));
+#ifdef CYGPKG_NET_FREEBSD_SYSCTL
+static int	sysctl_dumpentry __P((struct radix_node *rn, void *vw));
+static int	sysctl_iflist __P((int af, struct walkarg *w));
+#endif
 static int	 route_output __P((struct mbuf *, struct socket *));
 static void	 rt_setmetrics __P((u_long, struct rt_metrics *, struct rt_metrics *));
 
@@ -872,6 +877,144 @@ rt_newmaddrmsg(cmd, ifma)
 	route_proto.sp_protocol = ifma->ifma_addr->sa_family;
 	raw_input(m, &route_proto, &route_src, &route_dst);
 }
+
+#ifdef CYGPKG_NET_FREEBSD_SYSCTL
+/*
+ * This is used in dumping the kernel table via sysctl().
+ */
+int
+sysctl_dumpentry(rn, vw)
+	struct radix_node *rn;
+	void *vw;
+{
+	register struct walkarg *w = vw;
+	register struct rtentry *rt = (struct rtentry *)rn;
+	int error = 0, size;
+	struct rt_addrinfo info;
+
+	if (w->w_op == NET_RT_FLAGS && !(rt->rt_flags & w->w_arg))
+		return 0;
+	bzero((caddr_t)&info, sizeof(info));
+	dst = rt_key(rt);
+	gate = rt->rt_gateway;
+	netmask = rt_mask(rt);
+	genmask = rt->rt_genmask;
+	size = rt_msg2(RTM_GET, &info, 0, w);
+	if (w->w_req && w->w_tmem) {
+		register struct rt_msghdr *rtm = (struct rt_msghdr *)w->w_tmem;
+
+		rtm->rtm_flags = rt->rt_flags;
+		rtm->rtm_use = rt->rt_use;
+		rtm->rtm_rmx = rt->rt_rmx;
+		rtm->rtm_index = rt->rt_ifp->if_index;
+		rtm->rtm_errno = rtm->rtm_pid = rtm->rtm_seq = 0;
+		rtm->rtm_addrs = info.rti_addrs;
+		error = SYSCTL_OUT(w->w_req, (caddr_t)rtm, size);
+		return (error);
+	}
+	return (error);
+}
+
+int
+sysctl_iflist(af, w)
+	int	af;
+	register struct	walkarg *w;
+{
+	register struct ifnet *ifp;
+	register struct ifaddr *ifa;
+	struct	rt_addrinfo info;
+	int	len, error = 0;
+
+	bzero((caddr_t)&info, sizeof(info));
+	for (ifp = ifnet.tqh_first; ifp; ifp = ifp->if_link.tqe_next) {
+		if (w->w_arg && w->w_arg != ifp->if_index)
+			continue;
+		ifa = ifp->if_addrhead.tqh_first;
+		ifpaddr = ifa->ifa_addr;
+		len = rt_msg2(RTM_IFINFO, &info, (caddr_t)0, w);
+		ifpaddr = 0;
+		if (w->w_req && w->w_tmem) {
+			register struct if_msghdr *ifm;
+
+			ifm = (struct if_msghdr *)w->w_tmem;
+			ifm->ifm_index = ifp->if_index;
+			ifm->ifm_flags = (u_short)ifp->if_flags;
+			ifm->ifm_data = ifp->if_data;
+			ifm->ifm_addrs = info.rti_addrs;
+			error = SYSCTL_OUT(w->w_req,(caddr_t)ifm, len);
+			if (error)
+				return (error);
+		}
+		while ((ifa = ifa->ifa_link.tqe_next) != 0) {
+			if (af && af != ifa->ifa_addr->sa_family)
+				continue;
+			ifaaddr = ifa->ifa_addr;
+			netmask = ifa->ifa_netmask;
+			brdaddr = ifa->ifa_dstaddr;
+			len = rt_msg2(RTM_NEWADDR, &info, 0, w);
+			if (w->w_req && w->w_tmem) {
+				register struct ifa_msghdr *ifam;
+
+				ifam = (struct ifa_msghdr *)w->w_tmem;
+				ifam->ifam_index = ifa->ifa_ifp->if_index;
+				ifam->ifam_flags = ifa->ifa_flags;
+				ifam->ifam_metric = ifa->ifa_metric;
+				ifam->ifam_addrs = info.rti_addrs;
+				error = SYSCTL_OUT(w->w_req, w->w_tmem, len);
+				if (error)
+					return (error);
+			}
+		}
+		ifaaddr = netmask = brdaddr = 0;
+	}
+	return (0);
+}
+
+static int
+sysctl_rtsock(SYSCTL_HANDLER_ARGS)
+{
+	int	*name = (int *)arg1;
+	u_int	namelen = arg2;
+	register struct radix_node_head *rnh;
+	int	i, s, error = EINVAL;
+	u_char  af;
+	struct	walkarg w;
+
+	name ++;
+	namelen--;
+	if (req->newptr)
+		return (EPERM);
+	if (namelen != 3)
+		return (EINVAL);
+	af = name[0];
+	Bzero(&w, sizeof(w));
+	w.w_op = name[1];
+	w.w_arg = name[2];
+	w.w_req = req;
+
+	s = splnet();
+	switch (w.w_op) {
+
+	case NET_RT_DUMP:
+	case NET_RT_FLAGS:
+		for (i = 1; i <= AF_MAX; i++)
+			if ((rnh = rt_tables[i]) && (af == 0 || af == i) &&
+			    (error = rnh->rnh_walktree(rnh,
+							sysctl_dumpentry, &w)))
+				break;
+		break;
+
+	case NET_RT_IFLIST:
+		error = sysctl_iflist(af, &w);
+	}
+	splx(s);
+	if (w.w_tmem)
+		free(w.w_tmem, M_RTABLE);
+	return (error);
+}
+#endif
+
+SYSCTL_NODE(_net, PF_ROUTE, routetable, CTLFLAG_RD, sysctl_rtsock, "");
 
 /*
  * Definitions of protocols supported in the ROUTE domain.

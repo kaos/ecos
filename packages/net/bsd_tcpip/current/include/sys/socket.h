@@ -244,7 +244,6 @@ struct sockaddr_storage {
 
 #define	PF_MAX		AF_MAX
 
-#if 0 // sysctl() interface not supported
 /*
  * Definitions for network related sysctl, CTL_NET.
  *
@@ -310,7 +309,6 @@ struct sockaddr_storage {
 	{ "flags", CTLTYPE_STRUCT }, \
 	{ "iflist", CTLTYPE_STRUCT }, \
 }
-#endif // sysctl() support
 
 /*
  * Maximum queue length specifiable by listen.

@@ -60,6 +60,7 @@
 #include <sys/mbuf.h>
 #include <sys/protosw.h>
 #include <sys/socket.h>
+#include <sys/sysctl.h>
 #include <sys/socketvar.h>
 
 #include <net/if.h>
@@ -85,6 +86,7 @@
 #include <netinet/tcp_seq.h>
 #include <netinet/tcp_timer.h>
 #include <netinet/tcp_var.h>
+
 #ifdef INET6
 #include <netinet6/tcp6_var.h>
 #endif
@@ -105,13 +107,31 @@ static int	tcprexmtthresh = 3;
 tcp_cc	tcp_ccgen;
 
 struct	tcpstat tcpstat;
+SYSCTL_STRUCT(_net_inet_tcp, TCPCTL_STATS, stats, CTLFLAG_RD, 
+    &tcpstat , tcpstat, "TCP statistics (struct tcpstat, netinet/tcp_var.h)");
+
 static int log_in_vain = 0;
+SYSCTL_INT(_net_inet_tcp, OID_AUTO, log_in_vain, CTLFLAG_RW, 
+    &log_in_vain, 0, "Log all incoming TCP connections");
+
 static int blackhole = 0;
+SYSCTL_INT(_net_inet_tcp, OID_AUTO, blackhole, CTLFLAG_RW,
+	&blackhole, 0, "Do not send RST when dropping refused connections");
+
 int tcp_delack_enabled = 1;
+SYSCTL_INT(_net_inet_tcp, OID_AUTO, delayed_ack, CTLFLAG_RW, 
+    &tcp_delack_enabled, 0, 
+    "Delay ACK to try and piggyback it onto a data packet");
+
 int tcp_lq_overflow = 1;
+SYSCTL_INT(_net_inet_tcp, OID_AUTO, tcp_lq_overflow, CTLFLAG_RW,
+    &tcp_lq_overflow, 0, 
+    "Listen Queue Overflow");
 
 #ifdef TCP_DROP_SYNFIN
 static int drop_synfin = 0;
+SYSCTL_INT(_net_inet_tcp, OID_AUTO, drop_synfin, CTLFLAG_RW,
+    &drop_synfin, 0, "Drop TCP packets with SYN+FIN set");
 #endif
 
 struct inpcbhead tcb;

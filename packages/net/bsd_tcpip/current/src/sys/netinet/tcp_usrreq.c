@@ -56,6 +56,7 @@
  */
 
 #include <sys/param.h>
+#include <sys/sysctl.h>
 #include <sys/mbuf.h>
 #ifdef INET6
 #include <sys/domain.h>
@@ -996,7 +997,11 @@ tcp_ctloutput(so, sopt)
  * be set by the route).
  */
 u_long	tcp_sendspace = 1024*16;
+SYSCTL_INT(_net_inet_tcp, TCPCTL_SENDSPACE, sendspace, CTLFLAG_RW, 
+    &tcp_sendspace , 0, "Maximum outgoing TCP datagram size");
 u_long	tcp_recvspace = 1024*16;
+SYSCTL_INT(_net_inet_tcp, TCPCTL_RECVSPACE, recvspace, CTLFLAG_RW, 
+    &tcp_recvspace , 0, "Maximum incoming TCP datagram size");
 
 /*
  * Attach TCP protocol to socket, allocating

@@ -113,5 +113,18 @@ void	igmp_leavegroup __P((struct in_multi *));
 void	igmp_fasttimo __P((void));
 void	igmp_slowtimo __P((void));
 
+SYSCTL_DECL(_net_inet_igmp);
+
 #endif
+
+/*
+ * Names for IGMP sysctl objects
+ */
+#define IGMPCTL_STATS		1	/* statistics (read-only) */
+#define IGMPCTL_MAXID		2
+
+#define IGMPCTL_NAMES { \
+	{ 0, 0 }, \
+	{ "stats", CTLTYPE_STRUCT }, \
+}
 #endif

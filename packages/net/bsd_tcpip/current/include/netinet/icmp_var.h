@@ -79,7 +79,23 @@ struct	icmpstat {
 	u_long	icps_bmcasttstamp; 	/* b/mcast tstamp requests dropped */
 };
 
+/*
+ * Names for ICMP sysctl objects
+ */
+#define	ICMPCTL_MASKREPL	1	/* allow replies to netmask requests */
+#define	ICMPCTL_STATS		2	/* statistics (read-only) */
+#define ICMPCTL_ICMPLIM		3
+#define ICMPCTL_MAXID		4
+
+#define ICMPCTL_NAMES { \
+	{ 0, 0 }, \
+	{ "maskrepl", CTLTYPE_INT }, \
+	{ "stats", CTLTYPE_STRUCT }, \
+	{ "icmplim", CTLTYPE_INT }, \
+}
+
 #ifdef _KERNEL
+SYSCTL_DECL(_net_inet_icmp);
 #ifdef ICMP_BANDLIM
 extern int badport_bandlim __P((int));
 #endif

@@ -1,3 +1,60 @@
+2003-07-25  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/netinet/icmp_var.h 
+	* include/netinet/igmp_var.h
+	* include/netinet/in_var.h
+	* include/netinet/udp_var.h
+	* include/netinet6/tcp6_var.h
+	* include/netinet6/udp6_var.h
+	* include/sys/socket.h
+	* src/sys/net/if.c
+	* src/sys/net/if_ethersubr.c
+	* src/sys/net/rtsock.c
+	* sys/netinet/if_ether.c
+	* sys/netinet/igmp.c
+	* src/sys/netinet/in.c
+	* src/sys/netinet/in_pcb.c
+	* src/sys/netinet/in_proto.c
+	* src/sys/netinet/in_rmx.c
+	* src/sys/netinet/ip_flow.c
+	* src/sys/netinet/ip_icmp.c
+	* src/sys/netinet/ip_input.c
+	* src/sys/netinet/ip_output.c
+	* src/sys/netinet/raw_ip.c
+	* src/sys/netinet/tcp_input.c
+	* src/sys/netinet/tcp_output.c
+	* src/sys/netinet/tcp_output.c
+	* src/sys/netinet/tcp_subr.c
+	* src/sys/netinet/tcp_timer.c
+	* src/sys/netinet/tcp_usrreq.c
+	* src/sys/netinet/udp_usrreq.c
+	* src/sys/netinet6/in6_proto.c
+	* src/sys/netinet6/in6_rmx.c
+	* src/sys/netinet6/nd6.c
+	* src/sys/netinet6/udp6_output.c
+	* sys/netinet6/udp6_usrreq.c: Added back the support for sysctl 
+	which was removed in the port of the stack into eCos.
+	* include/sys/malloc.h (M_SYSCTL): SYSCTL types for malloc
+	* sys/kern/kern_sysctl.c (NEW): sysctl system call and support 
+	functions
+	* include/sys/sysctrl.h (NEW): header file for sysctl. 
+	* cdl/freebsd_net.cdl: CDL to enable/disable sysctl and a test case.
+	* tests/sysctl1.c (NEW): Test program for sysctl.
+	
+2003-07-25  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/sys/param.h: Fixed some compiler warnings.
+	* src/sys/netinet6/in6_ifattach.c: More fixes.
+	* src/sys/netinet6/in6.c: And some more.
+	* src/sys/netinet6/in6_pcb.c: YACW.	
+	* include/netinet6/ip6protosw.h: Maybe the last one?
+	* include/netinet6/ip6protosw.h: Nope
+	* include/sys/param.h:
+	* sys/kern/uipc_socket.c: More warnings
+	* src/sys/netinet6/in6_pcb.c: rename errno to _errno to avoid conflict.
+	* src/sys/netinet6/in6_ifattach.c: Prototype for _show_ifp().
+	* src/sys/netinet6/in6.c: Prototype for _show_ifp().
+
 2003-07-28  Jay Foster  <jay@systech.com>
 
 	* src/sys/kern/sockio.c:

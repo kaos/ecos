@@ -63,6 +63,7 @@
 
 #include <sys/param.h>
 #include <sys/queue.h>
+#include <sys/sysctl.h>
 #include <sys/mbuf.h>
 #include <sys/malloc.h>
 #include <sys/socket.h>
@@ -87,10 +88,20 @@
 #define SIN(s) ((struct sockaddr_in *)s)
 #define SDL(s) ((struct sockaddr_dl *)s)
 
+SYSCTL_DECL(_net_link_ether);
+SYSCTL_NODE(_net_link_ether, PF_INET, inet, CTLFLAG_RW, 0, "");
+
 /* timer values */
 static int arpt_prune = (5*60*1); /* walk list every 5 minutes */
 static int arpt_keep = (20*60); /* once resolved, good for 20 more minutes */
 static int arpt_down = 20;	/* once declared down, don't send for 20 sec */
+
+SYSCTL_INT(_net_link_ether_inet, OID_AUTO, prune_intvl, CTLFLAG_RW,
+	   &arpt_prune, 0, "");
+SYSCTL_INT(_net_link_ether_inet, OID_AUTO, max_age, CTLFLAG_RW, 
+	   &arpt_keep, 0, "");
+SYSCTL_INT(_net_link_ether_inet, OID_AUTO, host_down_time, CTLFLAG_RW,
+	   &arpt_down, 0, "");
 
 #define	rt_expire rt_rmx.rmx_expire
 
@@ -110,6 +121,13 @@ static int	arp_inuse, arp_allocated;
 static int	arp_maxtries = 5;
 static int	useloopback = 1; /* use loopback interface for local traffic */
 static int	arp_proxyall = 0;
+
+SYSCTL_INT(_net_link_ether_inet, OID_AUTO, maxtries, CTLFLAG_RW,
+	   &arp_maxtries, 0, "");
+SYSCTL_INT(_net_link_ether_inet, OID_AUTO, useloopback, CTLFLAG_RW,
+	   &useloopback, 0, "");
+SYSCTL_INT(_net_link_ether_inet, OID_AUTO, proxyall, CTLFLAG_RW,
+	   &arp_proxyall, 0, "");
 
 static void	arp_rtrequest __P((int, struct rtentry *, struct sockaddr *));
 static void	arprequest __P((struct arpcom *,
@@ -503,9 +521,9 @@ arpintr()
  */
 static int log_arp_wrong_iface = 1;
 
-//SYSCTL_INT(_net_link_ether_inet, OID_AUTO, log_arp_wrong_iface, CTLFLAG_RW,
-//	&log_arp_wrong_iface, 0,
-//	"log arp packets arriving on the wrong interface");
+SYSCTL_INT(_net_link_ether_inet, OID_AUTO, log_arp_wrong_iface, CTLFLAG_RW,
+	&log_arp_wrong_iface, 0,
+	"log arp packets arriving on the wrong interface");
 
 static void
 in_arpinput(m)

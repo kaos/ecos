@@ -91,6 +91,7 @@
 #include <sys/protosw.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
+#include <sys/sysctl.h>
 #include <sys/errno.h>
 
 #include <net/if.h>

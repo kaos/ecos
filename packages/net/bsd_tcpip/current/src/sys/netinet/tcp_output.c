@@ -56,6 +56,7 @@
  */
 
 #include <sys/param.h>
+#include <sys/sysctl.h>
 #include <sys/mbuf.h>
 #include <sys/domain.h>
 #include <sys/protosw.h>
@@ -94,10 +95,20 @@ extern struct mbuf *m_copypack();
 #endif
 
 static int path_mtu_discovery = 1;
-int ss_fltsz = 1;
-int ss_fltsz_local = TCP_MAXWIN;               /* something large */
-int     tcp_do_newreno = 1;
+SYSCTL_INT(_net_inet_tcp, OID_AUTO, path_mtu_discovery, CTLFLAG_RW,
+	&path_mtu_discovery, 1, "Enable Path MTU Discovery");
 
+int ss_fltsz = 1;
+SYSCTL_INT(_net_inet_tcp, OID_AUTO, slowstart_flightsize, CTLFLAG_RW,
+	&ss_fltsz, 1, "Slow start flight size");
+
+int ss_fltsz_local = TCP_MAXWIN;               /* something large */
+SYSCTL_INT(_net_inet_tcp, OID_AUTO, local_slowstart_flightsize, CTLFLAG_RW,
+	&ss_fltsz_local, 1, "Slow start flight size for local networks");
+
+int     tcp_do_newreno = 1;
+SYSCTL_INT(_net_inet_tcp, OID_AUTO, newreno, CTLFLAG_RW, &tcp_do_newreno,
+        0, "Enable NewReno Algorithms");
 /*
  * Tcp output routine: figure out what should be sent and send it.
  */

@@ -62,6 +62,7 @@
 #include <sys/protosw.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
+#include <sys/sysctl.h>
 
 #include <net/if.h>
 #include <net/route.h>
@@ -96,9 +97,17 @@ int	udpcksum = 1;
 #else
 int	udpcksum = 0;		/* XXX */
 #endif
+SYSCTL_INT(_net_inet_udp, UDPCTL_CHECKSUM, checksum, CTLFLAG_RW,
+		&udpcksum, 0, "");
 
 int	log_in_vain = 0;
+SYSCTL_INT(_net_inet_udp, OID_AUTO, log_in_vain, CTLFLAG_RW, 
+    &log_in_vain, 0, "Log all incoming UDP packets");
+
 static int	blackhole = 0;
+SYSCTL_INT(_net_inet_udp, OID_AUTO, blackhole, CTLFLAG_RW,
+	&blackhole, 0, "Do not send port unreachables for refused connects");
+
 struct	inpcbhead udb;		/* from udp_var.h */
 
 #define	udb6	udb  /* for KAME src sync over BSD*'s */
@@ -109,6 +118,9 @@ struct	inpcbinfo udbinfo;
 #endif
 
 struct	udpstat udpstat;	/* from udp_var.h */
+SYSCTL_STRUCT(_net_inet_udp, UDPCTL_STATS, stats, CTLFLAG_RD,
+    &udpstat, udpstat, "UDP statistics (struct udpstat, netinet/udp_var.h)");
+
 
 static struct	sockaddr_in udp_in = { sizeof(udp_in), AF_INET };
 #ifdef INET6
@@ -558,6 +570,93 @@ udp_ctlinput(cmd, sa, vip)
 	} else
 		in_pcbnotifyall(&udb, faddr, inetctlerrmap[cmd], notify);
 }
+#ifdef CYGPKG_NET_FREEBSD_SYSCTL
+static int
+udp_pcblist(SYSCTL_HANDLER_ARGS)
+{
+	int error, i, n, s;
+	struct inpcb *inp, **inp_list;
+	inp_gen_t gencnt;
+	struct xinpgen xig;
+
+	/*
+	 * The process of preparing the TCB list is too time-consuming and
+	 * resource-intensive to repeat twice on every request.
+	 */
+	if (req->oldptr == 0) {
+		n = udbinfo.ipi_count;
+		req->oldidx = 2 * (sizeof xig)
+			+ (n + n/8) * sizeof(struct xinpcb);
+		return 0;
+	}
+
+	if (req->newptr != 0)
+		return EPERM;
+
+	/*
+	 * OK, now we're committed to doing something.
+	 */
+	s = splnet();
+	gencnt = udbinfo.ipi_gencnt;
+	n = udbinfo.ipi_count;
+	splx(s);
+
+	xig.xig_len = sizeof xig;
+	xig.xig_count = n;
+	xig.xig_gen = gencnt;
+	xig.xig_sogen = so_gencnt;
+	error = SYSCTL_OUT(req, &xig, sizeof xig);
+	if (error)
+		return error;
+
+	inp_list = malloc(n * sizeof *inp_list, M_TEMP, M_WAITOK);
+	if (inp_list == 0)
+		return ENOMEM;
+	
+	s = splnet();
+	for (inp = LIST_FIRST(udbinfo.listhead), i = 0; inp && i < n;
+	     inp = LIST_NEXT(inp, inp_list)) {
+		if (inp->inp_gencnt <= gencnt)
+			inp_list[i++] = inp;
+	}
+	splx(s);
+	n = i;
+
+	error = 0;
+	for (i = 0; i < n; i++) {
+		inp = inp_list[i];
+		if (inp->inp_gencnt <= gencnt) {
+			struct xinpcb xi;
+			xi.xi_len = sizeof xi;
+			/* XXX should avoid extra copy */
+			bcopy(inp, &xi.xi_inp, sizeof *inp);
+			if (inp->inp_socket)
+				sotoxsocket(inp->inp_socket, &xi.xi_socket);
+			error = SYSCTL_OUT(req, &xi, sizeof xi);
+		}
+	}
+	if (!error) {
+		/*
+		 * Give the user an updated idea of our state.
+		 * If the generation differs from what we told
+		 * her before, she knows that something happened
+		 * while we were processing this request, and it
+		 * might be necessary to retry.
+		 */
+		s = splnet();
+		xig.xig_gen = udbinfo.ipi_gencnt;
+		xig.xig_sogen = so_gencnt;
+		xig.xig_count = udbinfo.ipi_count;
+		splx(s);
+		error = SYSCTL_OUT(req, &xig, sizeof xig);
+	}
+	free(inp_list, M_TEMP);
+	return error;
+}
+#endif
+
+SYSCTL_PROC(_net_inet_udp, UDPCTL_PCBLIST, pcblist, CTLFLAG_RD, 0, 0,
+	    udp_pcblist, "S,xinpcb", "List of active UDP sockets");
 
 static int
 udp_output(inp, m, addr, control, p)
@@ -668,6 +767,9 @@ release:
 
 u_long	udp_sendspace = 9216;		/* really max datagram size */
 					/* 40 1K datagrams */
+SYSCTL_INT(_net_inet_udp, UDPCTL_MAXDGRAM, maxdgram, CTLFLAG_RW,
+    &udp_sendspace, 0, "Maximum outgoing UDP datagram size");
+
 u_long	udp_recvspace = 40 * (1024 +
 #ifdef INET6
 				      sizeof(struct sockaddr_in6)
@@ -675,6 +777,8 @@ u_long	udp_recvspace = 40 * (1024 +
 				      sizeof(struct sockaddr_in)
 #endif
 				      );
+SYSCTL_INT(_net_inet_udp, UDPCTL_RECVSPACE, recvspace, CTLFLAG_RW,
+    &udp_recvspace, 0, "Maximum incoming UDP datagram size");
 
 static int
 udp_abort(struct socket *so)

@@ -63,6 +63,8 @@
 #include <sys/protosw.h>
 #include <sys/socket.h>
 
+#include <sys/sysctl.h>
+
 #include <net/if.h>
 #include <net/route.h>
 
@@ -81,6 +83,8 @@ static int ipflow_inuse;
 #define	IPFLOW_MAX		256
 
 static int ipflow_active = 0;
+SYSCTL_INT(_net_inet_ip, IPCTL_FASTFORWARDING, fastforwarding, CTLFLAG_RW,
+    &ipflow_active, 0, "Enable flow-based IP forwarding");
 
 static unsigned
 ipflow_hash(

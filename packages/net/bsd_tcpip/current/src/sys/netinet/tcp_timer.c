@@ -56,6 +56,7 @@
  */
 
 #include <sys/param.h>
+#include <sys/sysctl.h>
 #include <sys/mbuf.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
@@ -80,12 +81,52 @@
 #include <netinet/tcp_debug.h>
 #endif
 
+#ifdef CYGPKG_NET_FREEBSD_SYSCTL
+static int
+sysctl_msec_to_ticks(SYSCTL_HANDLER_ARGS)
+{
+	int error, s, tt;
+
+	tt = *(int *)oidp->oid_arg1;
+	s = tt * 1000 / hz;
+
+	error = sysctl_handle_int(oidp, &s, 0, req);
+	if (error || !req->newptr)
+		return (error);
+
+	tt = s * hz / 1000;
+	if (tt < 1)
+		return (EINVAL);
+
+	*(int *)oidp->oid_arg1 = tt;
+        return (0);
+}
+#endif
 int	tcp_keepinit;
+SYSCTL_PROC(_net_inet_tcp, TCPCTL_KEEPINIT, keepinit, CTLTYPE_INT|CTLFLAG_RW,
+    &tcp_keepinit, 0, sysctl_msec_to_ticks, "I", "");
+
 int	tcp_keepidle;
+SYSCTL_PROC(_net_inet_tcp, TCPCTL_KEEPIDLE, keepidle, CTLTYPE_INT|CTLFLAG_RW,
+    &tcp_keepidle, 0, sysctl_msec_to_ticks, "I", "");
+
 int	tcp_keepintvl;
+SYSCTL_PROC(_net_inet_tcp, TCPCTL_KEEPINTVL, keepintvl, CTLTYPE_INT|CTLFLAG_RW,
+    &tcp_keepintvl, 0, sysctl_msec_to_ticks, "I", "");
+
 int	tcp_delacktime;
+SYSCTL_PROC(_net_inet_tcp, TCPCTL_DELACKTIME, delacktime,
+    CTLTYPE_INT|CTLFLAG_RW, &tcp_delacktime, 0, sysctl_msec_to_ticks, "I",
+    "Time before a delayed ACK is sent");
+ 
 int	tcp_msl;
+SYSCTL_PROC(_net_inet_tcp, OID_AUTO, msl, CTLTYPE_INT|CTLFLAG_RW,
+    &tcp_msl, 0, sysctl_msec_to_ticks, "I", "Maximum segment lifetime");
+
 static int	always_keepalive = 0;
+SYSCTL_INT(_net_inet_tcp, OID_AUTO, always_keepalive, CTLFLAG_RW, 
+    &always_keepalive , 0, "Assume SO_KEEPALIVE on all TCP connections");
+
 static int	tcp_keepcnt = TCPTV_KEEPCNT;
 	/* max idle probes */
 int	tcp_maxpersistidle;

@@ -91,6 +91,7 @@
 #include <sys/protosw.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
+#include <sys/sysctl.h>
 #include <sys/errno.h>
 
 #include <net/if.h>
@@ -717,3 +718,4 @@ struct pr_usrreqs udp6_usrreqs = {
 	pru_rcvoob_notsupp, udp6_send, pru_sense_null, udp_shutdown,
 	in6_mapped_sockaddr, sosend, soreceive, sopoll
 };
+

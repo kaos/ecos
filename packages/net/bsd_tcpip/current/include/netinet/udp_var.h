@@ -94,7 +94,27 @@ struct	udpstat {
 	u_long	udps_noportmcast;
 };
 
+/*
+ * Names for UDP sysctl objects
+ */
+#define	UDPCTL_CHECKSUM		1	/* checksum UDP packets */
+#define UDPCTL_STATS		2	/* statistics (read-only) */
+#define	UDPCTL_MAXDGRAM		3	/* max datagram size */
+#define	UDPCTL_RECVSPACE	4	/* default receive buffer space */
+#define	UDPCTL_PCBLIST		5	/* list of PCBs for UDP sockets */
+#define UDPCTL_MAXID		6
+
+#define UDPCTL_NAMES { \
+	{ 0, 0 }, \
+	{ "checksum", CTLTYPE_INT }, \
+	{ "stats", CTLTYPE_STRUCT }, \
+	{ "maxdgram", CTLTYPE_INT }, \
+	{ "recvspace", CTLTYPE_INT }, \
+	{ "pcblist", CTLTYPE_STRUCT }, \
+}
+
 #ifdef _KERNEL
+SYSCTL_DECL(_net_inet_udp);
 
 extern struct	pr_usrreqs udp_usrreqs;
 extern struct	inpcbhead udb;

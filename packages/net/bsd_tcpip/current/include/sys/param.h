@@ -734,11 +734,6 @@ extern void getmicrouptime(struct timeval *tp);
 extern int  tvtohz(struct timeval *tv);
 extern int  arc4random(void);
 
-//extern u_int in_cksum_hdr(const struct ip *ip);
-//extern u_short in_cksum_skip(struct mbuf *m, int len, int skip);
-//extern u_short in_pseudo(u_int32_t a, u_int32_t b, u_int32_t c);
-
-
 // Function mappings
 
 extern int  cyg_ticks(void);
@@ -896,7 +891,7 @@ struct init_tab_entry {
 #define _cat(a,b) a##b
 #define __Net_init(_p1_,_p2_,_f_,_d_)                                    \
 struct init_tab_entry _cat(_net_init_tab,_p1_##_p2_##_f_) \
-  CYG_HAL_TABLE_QUALIFIED_ENTRY(_Net_inits,_p1_##_p2_##_f_) = { _f_, _d_, #_f_ }; 
+  CYG_HAL_TABLE_QUALIFIED_ENTRY(_Net_inits,_p1_##_p2_##_f_) = { (_init_fun_ptr) _f_, _d_, #_f_ }; 
 #define _Net_init(_p1_,_p2_,_f_,_d_)                                    \
         __Net_init(_p1_,_p2_,_f_,_d_)                                    
 
@@ -988,5 +983,5 @@ if (cyg_net_log_mask & lvl)
 #endif
 
 #endif // _KERNEL
-
+int extern cyg_arc4random(void);
 #endif //_SYS_PARAM_H_

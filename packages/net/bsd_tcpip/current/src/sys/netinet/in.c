@@ -59,6 +59,7 @@
 #include <sys/sockio.h>
 #include <sys/malloc.h>
 #include <sys/socket.h>
+#include <sys/sysctl.h>
 
 #include <net/if.h>
 #include <net/if_types.h>
@@ -80,6 +81,8 @@ static int	in_ifinit __P((struct ifnet *,
 	    struct in_ifaddr *, struct sockaddr_in *, int));
 
 static int subnetsarelocal = 0;
+SYSCTL_INT(_net_inet_ip, OID_AUTO, subnets_are_local, CTLFLAG_RW, 
+	&subnetsarelocal, 0, "");
 
 struct in_multihead in_multihead; /* XXX BSS initialization */
 
