@@ -1,3 +1,10 @@
+2003-01-24  Mark Salter  <msalter@redhat.com>
+
+	* include/hal_verde.h: Add some arbitatration unit defines.
+	* src/verde_misc.c (_scrub_ecc): Make scrub an atomic operation on
+	the bus. Thanks to rickr@mn.rr.com for pointing out the need for
+	this.
+
 2002-11-12  Mark Salter  <msalter@redhat.com>
 
 	* include/hal_var_ints.h (CYGNUM_HAL_INTERRUPT_MSG_IBPQ): IRQ 26

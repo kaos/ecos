@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -126,8 +126,28 @@ hal_IRQ_handler(void)
 static inline void
 _scrub_ecc(unsigned p)
 {
+    cyg_uint32 iacr;
+
+    // The following ldr/str pair need to be atomic on the bus. Since
+    // the XScale core doesn't support atomic RMW, we have to disable
+    // arbitration to prevent other bus masters from taking the bus
+    // between the the ldr and str.
+
+    // Disable internal bus arbitration for everything except the CPU
+    iacr = *ARB_IACR;
+    *ARB_IACR = IACR_ATU(IACR_PRI_OFF)  | IACR_DMA0(IACR_PRI_OFF) |
+  	        IACR_DMA1(IACR_PRI_OFF) | IACR_AAU(IACR_PRI_OFF)  |
+	        IACR_PBI(IACR_PRI_OFF)  | IACR_CORE(IACR_PRI_HIGH);
+
+    // drain write buffer
+    asm volatile ("mrc  p15,0,r1,c7,c10,4\n");
+    CPWAIT();
+
     asm volatile ("ldrb r4, [%0]\n"
 		  "strb r4, [%0]\n" : : "r"(p) : "r4");
+
+    // Restore normal internal bus arbitration priorities
+    *ARB_IACR = iacr;
 }
 
 static cyg_uint32

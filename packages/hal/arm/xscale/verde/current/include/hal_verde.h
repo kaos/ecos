@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -343,6 +343,25 @@
 
 #define	IDBR_MASK	0x000000ff
 #define	IDBR_MODE	0x01
+
+// --------------------------------------------------------------------------
+// Arbitration (Chapter 11)
+#define ARB_IACR        REG32(0,0xffffe780)
+#define ARB_MTTR1       REG32(0,0xffffe784)
+#define ARB_MTTR2       REG32(0,0xffffe788)
+
+#define IACR_PRI_HIGH    0
+#define IACR_PRI_MED     1
+#define IACR_PRI_LOW     2
+#define IACR_PRI_OFF     3
+
+// macros to set priority for various units
+#define IACR_ATU(x)      ((x) << 0)
+#define IACR_DMA0(x)     ((x) << 4)
+#define IACR_DMA1(x)     ((x) << 6)
+#define IACR_CORE(x)     ((x) << 10)
+#define IACR_AAU(x)      ((x) << 12)
+#define IACR_PBI(x)      ((x) << 14)
 
 
 // --------------------------------------------------------------------------
