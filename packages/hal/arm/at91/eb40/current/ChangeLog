@@ -1,3 +1,8 @@
+2003-07-15  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/hal_platform_ints.h (HAL_PLATFORM_RESET): Actually use
+	hal_at91_reset_cpu().
+
 2003-05-12  Nick Garnett  <nickg@balti.calivar.com>
 	
 	* src/eb40_misc.c: Changed set_leds() to hal_at91_set_leds() to

@@ -1,3 +1,8 @@
+2003-07-15  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/hal_platform_ints.h (HAL_PLATFORM_RESET): Actually use
+	hal_at91_reset_cpu().
+
 2003-06-11  Oyvind Harboe  <oyvind.harboe@zylin.com>
 	
 	* src/eb40a_misc.c:

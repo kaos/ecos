@@ -102,7 +102,8 @@
 //----------------------------------------------------------------------------
 // Reset.
 
-#define HAL_PLATFORM_RESET()
+__externC void hal_at91_reset_cpu(void);
+#define HAL_PLATFORM_RESET() hal_at91_reset_cpu()
 
 #define HAL_PLATFORM_RESET_ENTRY 0x01000000
 
