@@ -57,7 +57,7 @@ cdl_package CYGPKG_IO_SERIAL {
     description   "
         This option enables drivers for basic I/O services on
         serial devices."
-    doc           redirect/ecos-device-drivers.html
+    doc           ref/io.html
 
     compile       -library=libextras.a common/serial.c
  
