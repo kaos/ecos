@@ -909,10 +909,6 @@
 	Remove thumb variant hardware templates as thumb support
 	is now controlled by a CDL option.
 
-1999-10-19  Nick Garnett  <nickg@cygnus.co.uk>
-
-	* targets: Removed romram startup from brother platform.
-	
 1999-10-19  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* targets: Added pid9 target.
@@ -938,12 +934,6 @@
 	problems, but Tcl 8.2.1 appears to have been fixed and now
 	attempts variable substitution. Appropriate backslashes have been
 	added. 
-
-1999-10-13  Nick Garnett  <nickg@cygnus.co.uk>
-
-	* packages:
-	* targets: 
-	Added Brother platform/package to VR4300 target.
 
 1999-10-07  Jesper Skov  <jskov@cygnus.co.uk>
 
