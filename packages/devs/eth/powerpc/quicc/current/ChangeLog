@@ -1,3 +1,8 @@
+2003-08-19  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/if_quicc.c (quicc_eth_init): Use 'quicc_eth_command()'
+	function instead of brute-force inline code.
+
 2003-07-14  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/if_quicc.c (quicc_eth_init): Only flush cache if enabled.

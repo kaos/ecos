@@ -1009,6 +1009,14 @@ package CYGPKG_IO_SERIAL_SH_SCIF {
     description       "SH SCIF serial device drivers"
 }
 
+package CYGPKG_DEVS_ETH_PHY {
+	alias 		{ "Generic PHY support" eth_phy_support }
+	hardware
+	directory	devs/eth/phy
+	script		phy_eth_drivers.cdl
+        description     "PHY (ethernet physical transciever) API."
+}
+
 package CYGPKG_DEVS_ETH_ARM_CERF {
 	alias 		{ "Crystal LAN ethernet driver for Cerf boards" cerf_eth_driver }
 	hardware
@@ -1420,6 +1428,14 @@ package CYGPKG_DEVS_ETH_POWERPC_FEC {
 	directory	devs/eth/powerpc/fec
 	script		fec_eth_drivers.cdl
         description     "Ethernet driver for PowerPC FEC (MPC8xxT) based boards."
+}
+
+package CYGPKG_DEVS_ETH_POWERPC_FCC {
+	alias 		{ "FCC ethernet driver" fcc_eth_driver }
+	hardware
+	directory	devs/eth/powerpc/fcc
+	script		fcc_eth_drivers.cdl
+        description     "Fast ethernet driver for PowerPC MPCxxx based boards."
 }
 
 package CYGPKG_DEVS_ETH_POWERPC_VIPER {
@@ -2792,6 +2808,17 @@ package CYGPKG_HAL_POWERPC_MPC8260 {
 	hardware
         description "
            The PowerPC MPC8260 PowerQUICCII variant HAL package provides 
+           support for this processor variant. It is also necessary to
+           select a specific target platform HAL package."
+}
+
+package CYGPKG_HAL_POWERPC_MPC8XXX {
+	alias		{ "PowerPC MPC8XXX variant HAL" hal_mpc8xxx }
+	directory	hal/powerpc/mpc8xxx/
+	script		hal_powerpc_mpc8xxx.cdl
+	hardware
+        description "
+           The PowerPC MPC8XXX PowerQUICCII variant HAL package provides 
            support for this processor variant. It is also necessary to
            select a specific target platform HAL package."
 }
@@ -4901,4 +4928,50 @@ target adderII {
         description "
             The adderII target provides the packages needed to run
             eCos on a A&M Adder PPC852T board."
+}
+
+# --------------------------------------------------------------------------
+
+package CYGPKG_HAL_POWERPC_RATTLER {
+	alias		{ "A&M Rattler MPC8250 board" hal_powerpc_rattler powerpc_rattler_hal }
+	directory	hal/powerpc/rattler
+	script		hal_powerpc_rattler.cdl
+	hardware
+        description "
+            The RATTLER HAL package provides the support needed to run
+            eCos on a A&M RATTLER board equipped with a PowerPC processor."
+}
+
+package CYGPKG_DEVS_ETH_POWERPC_RATTLER {
+        alias           { "A&M Rattler ethernet driver" rattler_eth_driver }
+        hardware
+        directory       devs/eth/powerpc/rattler
+        script          rattler_eth_drivers.cdl
+        description     "Ethernet driver specifics for A&M Rattler (MPC8250) based boards."
+}
+
+package CYGPKG_DEVS_FLASH_POWERPC_RATTLER {
+	alias 		{ "FLASH memory support for A&M Rattler (MPC8250)" flash_rattler }
+	directory	devs/flash/powerpc/rattler
+	script		flash_rattler.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the A&M Rattler (MPC8250) platforms."
+}
+
+target rattler {
+        alias		{ "A&M Rattler (8250) board" }
+	packages        { CYGPKG_HAL_POWERPC
+                          CYGPKG_HAL_POWERPC_MPC8XXX
+                          CYGPKG_HAL_POWERPC_RATTLER
+                          CYGPKG_DEVS_FLASH_POWERPC_RATTLER
+                          CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
+                          CYGPKG_DEVS_ETH_POWERPC_FCC
+                          CYGPKG_DEVS_ETH_POWERPC_RATTLER
+                          CYGPKG_DEVS_ETH_PHY
+        }
+        description "
+            The rattler target provides the packages needed to run
+            eCos on an Analogue & Micro Rattler (MPC8250) board."
 }

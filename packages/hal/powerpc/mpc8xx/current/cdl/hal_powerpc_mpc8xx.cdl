@@ -105,7 +105,7 @@ cdl_package CYGPKG_HAL_POWERPC_MPC8xx {
     cdl_component CYGHWR_HAL_POWERPC_MPC8XX {
         display       "PowerPC 8xx microprocessor family"
         flavor        data
-	legal_values  { "823" "850" "852T" "855T" "860" "860T" "862T" "862P" }
+	legal_values  { "823" "850" "852T" "855T" "860" "860T" "862T" "862P" "866T" }
         default_value "860"
         implements    CYGINT_HAL_POWERPC_VARIANT
         description "

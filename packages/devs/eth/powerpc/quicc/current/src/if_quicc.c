@@ -159,6 +159,7 @@ static cyg_interrupt quicc_eth_interrupt;
 static cyg_handle_t  quicc_eth_interrupt_handle;
 #endif
 static void          quicc_eth_int(struct eth_drv_sc *data);
+static void          quicc_eth_command(struct eth_drv_sc *sc, unsigned long cmd);
 
 #ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
 // This ISR is called when the ethernet interrupt occurs
@@ -366,8 +367,7 @@ quicc_eth_init(struct cyg_netdevtab_entry *tab)
     enet_pram->taddr_l = 0;
 
     // Initialize the CPM (set up buffer pointers, etc).
-    eppc->cp_cr = QUICC_CPM_SCCx | QUICC_CPM_CR_INIT_TXRX | QUICC_CPM_CR_BUSY;
-    while (eppc->cp_cr & QUICC_CPM_CR_BUSY) ;
+    quicc_eth_command(sc, QUICC_CPM_CR_INIT_TXRX);
 
     // Clear any pending interrupt/exceptions
     scc->scc_scce = 0xFFFF;
@@ -709,14 +709,12 @@ quicc_eth_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
 
 }
 
-
 static void
 quicc_eth_command( struct eth_drv_sc *sc, unsigned long cmd)
 {
    volatile EPPC *eppc = (volatile EPPC *)eppc_base();
    
    eppc->cp_cr = QUICC_CPM_SCCx | cmd | QUICC_CPM_CR_BUSY;
-
    while (eppc->cp_cr & QUICC_CPM_CR_BUSY )
        continue;
 }

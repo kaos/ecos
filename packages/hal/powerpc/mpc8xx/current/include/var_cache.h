@@ -83,6 +83,7 @@
 #if defined(CYGHWR_HAL_POWERPC_MPC8XX_860) || \
     defined(CYGHWR_HAL_POWERPC_MPC8XX_860T) || \
     defined(CYGHWR_HAL_POWERPC_MPC8XX_862T) || \
+    defined(CYGHWR_HAL_POWERPC_MPC8XX_866T) || \
     defined(CYGHWR_HAL_POWERPC_MPC8XX_855T) || \
     defined(CYGHWR_HAL_POWERPC_MPC8XX_852T)
 // Data cache

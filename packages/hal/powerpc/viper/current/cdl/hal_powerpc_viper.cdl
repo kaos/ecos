@@ -68,15 +68,49 @@ cdl_package CYGPKG_HAL_POWERPC_VIPER {
     implements    CYGNUM_HAL_QUICC_SMC1
     implements    CYGNUM_HAL_QUICC_SCC1
 
-    requires      { (CYGHWR_HAL_POWERPC_MPC8XX == "860T") || (CYGHWR_HAL_POWERPC_MPC8XX == "862P") }
-
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_powerpc_mpc8xx.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_powerpc_viper.h>"
+    }
 
-	puts $::cdl_header "#define HAL_PLATFORM_CPU    \"PowerPC 860\""
-        puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"A&M VIPER\""
-        puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
+    cdl_component CYGPKG_HAL_POWERPC_VIPER_MODEL {
+        display       "Viper model"
+        requires      { (CYGHWR_HAL_POWERPC_VIPER_I + CYGHWR_HAL_POWERPC_VIPER_II) == 1 }
+        default_value 1
+        no_define
+        description "
+           The sub-options of this component define the model of Viper"
+
+        cdl_option  CYGHWR_HAL_POWERPC_VIPER_I {
+            display       "Viper-I with 860T"
+            requires      !CYGHWR_HAL_POWERPC_VIPER_II
+            requires      { (CYGHWR_HAL_POWERPC_MPC8XX == "860T") ||
+                            (CYGHWR_HAL_POWERPC_MPC8XX == "862P") }
+            default_value 1
+            define_proc {
+                puts $::cdl_header "#define HAL_PLATFORM_CPU    \"PowerPC 860T\""
+                puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"A&M VIPER\""
+                puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
+            }
+            description "
+                Select this model for an original Viper with the PPC860T or PPC862P processor."
+        }
+
+        cdl_option  CYGHWR_HAL_POWERPC_VIPER_II {
+            display       "Viper-I with 860T"
+            requires      !CYGHWR_HAL_POWERPC_VIPER_I
+            requires      { (CYGHWR_HAL_POWERPC_MPC8XX == "860T") ||
+                            (CYGHWR_HAL_POWERPC_MPC8XX == "866T") }
+            default_value 0
+            define_proc {
+                puts $::cdl_header "#define HAL_PLATFORM_CPU    \"PowerPC 860T\""
+                puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"A&M VIPER\""
+                puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
+            }
+            description "
+                Select this model for a Viper with the new board layout.  This
+                version will be outfitted with either a PPC860T or PPC866T processor."
+        }
     }
 
     cdl_component CYG_HAL_STARTUP {
@@ -96,7 +130,7 @@ cdl_package CYGPKG_HAL_POWERPC_VIPER {
     cdl_option CYGHWR_HAL_POWERPC_BOARD_SPEED {
         display          "Development board clock speed (MHz)"
         flavor           data
-        legal_values     { 47 51 55 59 63 100 }
+        legal_values     { 47 51 55 59 63 100 133 }
         default_value    63
         description      "
            VIPER Development Boards have various system clock speeds

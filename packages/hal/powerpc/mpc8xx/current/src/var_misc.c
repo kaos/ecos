@@ -130,6 +130,7 @@ hal_variant_idle_thread_action( cyg_uint32 count )
     defined(CYGHWR_HAL_POWERPC_MPC8XX_852T) || \
     defined(CYGHWR_HAL_POWERPC_MPC8XX_855T) || \
     defined(CYGHWR_HAL_POWERPC_MPC8XX_862T) || \
+    defined(CYGHWR_HAL_POWERPC_MPC8XX_866T) || \
     defined(CYGHWR_HAL_POWERPC_MPC8XX_862P)
 #define NUM_TLBS 32
 #elif defined(CYGHWR_HAL_POWERPC_MPC8XX_823) || defined(CYGHWR_HAL_POWERPC_MPC8XX_850)

@@ -96,7 +96,7 @@ cdl_package CYGPKG_HAL_POWERPC_ADDER {
         }
 
         cdl_option  CYGHWR_HAL_POWERPC_ADDER_II {
-            display       "Adder-I with 852T"
+            display       "Adder-II with 852T"
             requires      !CYGHWR_HAL_POWERPC_ADDER_I
             requires      { CYGHWR_HAL_POWERPC_MPC8XX == "852T" }
             default_value 0

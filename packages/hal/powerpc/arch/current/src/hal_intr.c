@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -55,6 +56,8 @@
 
 #include <cyg/hal/hal_intr.h>
 
+static unsigned long ticks_per_us;
+
 externC void
 hal_IRQ_init(void)
 {
@@ -64,6 +67,9 @@ hal_IRQ_init(void)
 
     // Initialize real-time clock (for delays, etc, even if kernel doesn't use it)
     HAL_CLOCK_INITIALIZE(CYGNUM_HAL_RTC_PERIOD);
+
+    // Pre-calculate this factor to avoid the extra calculations on each delay
+    ticks_per_us = ((long long)1 * (CYGNUM_HAL_RTC_PERIOD * 100)) / 1000000;
 }
 
 // Delay for some number of useconds.
@@ -76,7 +82,11 @@ hal_delay_us(int us)
 
     // Note: the system constant CYGNUM_HAL_RTC_PERIOD corresponds to 10,000us
     // Scale the desired number of microseconds to be a number of decrementer ticks
-    ticks = ((long long)us * (CYGNUM_HAL_RTC_PERIOD * 100)) / 1000000;
+    if (ticks_per_us > 0) {
+        ticks = us * ticks_per_us;
+    } else {
+        ticks = ((long long)us * (CYGNUM_HAL_RTC_PERIOD * 100)) / 1000000;
+    }
     asm volatile("mfdec  %0;" : "=r"(old_dec) : );
     while (ticks > 0) {
         do {

@@ -1,3 +1,9 @@
+2003-08-19  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/var_misc.c: 
+	* include/var_cache.h: 
+	* cdl/hal_powerpc_mpc8xx.cdl: New variant 866T.
+
 2003-07-14  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/var_cache.h: Data cache flush on 850 fails when using 

@@ -1,3 +1,7 @@
+* New port to Analogue & Micro Rattler (Motorola MPC8250)
+* Improved support for ethernet PHY devices.
+* Improved variant support for Motorola Power-QUICC2 systems.
+* Vastly improved networking speeds in RedBoot stack.
 * New port for Motorola PrPMC1100 (Intel XScale IXC1100)
 * SNTP client supports IPv6 multicast packets from time servers.
 * DNS client support looking up IPv6 addresses and reverse lookups

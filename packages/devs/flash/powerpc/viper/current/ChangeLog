@@ -1,3 +1,10 @@
+2003-08-19  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/viper_flash.c: Support new board layout which has 16bit
+	wide FLASH devices.
+	
+	* cdl/flash_viper.cdl: Add new 8MB device AM29LV640.
+
 2002-06-24  Gary Thomas  <gary@chez-thomas.org>
 
 	* cdl/flash_viper.cdl: Old devices use AM29LV800 chip.

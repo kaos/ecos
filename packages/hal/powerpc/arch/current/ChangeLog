@@ -1,3 +1,9 @@
+2003-08-19  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/hal_intr.c (hal_IRQ_init): Precalculate clock tick per
+	microsecond (us) ratio to reduce overheads in delay.  Without
+	this, delays of small numbers of microseconds were inaccurate.
+
 2003-08-06  Bob Koninckx <bob.koninckx@mech.kuleuven.ac.be>
 
 	* src/vectors.S (cyg_hal_default_interrupt_vsr): Removed ifdef on

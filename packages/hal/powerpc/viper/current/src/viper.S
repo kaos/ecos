@@ -233,10 +233,15 @@ FUNC_START( hal_hardware_init )
 	LED( 0x12 )
 
 	/*
-	 * Set refresh timer prescaler to divide by 8.
+	 * Set refresh timer prescaler to divide by 32 or 64
 	 */
-        li	r3,PTP_DIV32
-        sth	r3,MPTPR(r4)
+#ifdef CYGHWR_HAL_POWERPC_MPC8XX_866T
+        li      r3,PTP_DIV64 //use 64 divide as we have run out of bits in the PTA at 133Mhz core
+        sth    r3,MPTPR(r4)
+#else   
+        li     r3,PTP_DIV32
+        sth    r3,MPTPR(r4)
+#endif
 
         /*
 	 * See Table 15-16 MPC860 User's Manual.
@@ -258,32 +263,37 @@ FUNC_START( hal_hardware_init )
 //        
 // PTA field is (System Clock in MHz * Refresh rate in us) / Prescale
 // e.g.  ((14*3.6864)*62.5)/32 => 100.8 => 101        
-//                
+//
+#ifdef CYGHWR_HAL_POWERPC_MPC8XX_866T
+#define PLPRCR_PTX 0x1a8d4000 // (133MHz core 10meg input
+#define MAMR_PTA 129          // use 133Mhz core as reference
+#else        
 #if (CYGHWR_HAL_POWERPC_BOARD_SPEED == 47)
-#define PLPRCR_PTX 0x00C // (47MHz/3.6864MHz)-1
+#define PLPRCR_PTX 0x00C04000 // (47MHz/3.6864MHz)-1
 #define MAMR_PTA 94        
 #endif        
 #if (CYGHWR_HAL_POWERPC_BOARD_SPEED == 51)
-#define PLPRCR_PTX 0x00D // (51.6MHz/3.6864MHz)-1
+#define PLPRCR_PTX 0x00D04000 // (51.6MHz/3.6864MHz)-1
 #define MAMR_PTA 101
 #endif        
 #if (CYGHWR_HAL_POWERPC_BOARD_SPEED == 55)
-#define PLPRCR_PTX 0x00E // (55.3MHz/3.6864MHz)-1
+#define PLPRCR_PTX 0x00E04000 // (55.3MHz/3.6864MHz)-1
 #define MAMR_PTA 108
 #endif        
 #if (CYGHWR_HAL_POWERPC_BOARD_SPEED == 59)
-#define PLPRCR_PTX 0x00F // (58.9MHz/3.6864MHz)-1
+#define PLPRCR_PTX 0x00F04000 // (58.9MHz/3.6864MHz)-1
 #define MAMR_PTA 116
 #endif        
 #if (CYGHWR_HAL_POWERPC_BOARD_SPEED == 63)
-#define PLPRCR_PTX 0x010 // (62.7MHz/3.6864MHz)-1
+#define PLPRCR_PTX 0x01004000 // (62.7MHz/3.6864MHz)-1
 #define MAMR_PTA 123
 #endif        
 #if (CYGHWR_HAL_POWERPC_BOARD_SPEED == 100)
-#define PLPRCR_PTX 0x01A // (99.53MHz/3.6864MHz)-1
+#define PLPRCR_PTX 0x01A04000 // (99.53MHz/3.6864MHz)-1
 #define MAMR_PTA 194
 #endif        
 //#define MAMR_PTA (((((((PLPRCR_PTX+1)*3686400)*625)/10000000)+31)/32)&0xFF)
+#endif                
         lwi     r3,0x00802114|(MAMR_PTA<<24)
         stw	r3,MAMR(r4)
         stw	r3,MBMR(r4)
@@ -293,8 +303,13 @@ FUNC_START( hal_hardware_init )
 	 */
 
        	/* BOOT ROM */
+#ifdef CYGHWR_HAL_POWERPC_VIPER_I  // Old board layout
         lwi	r3,0xFE000401	# 8-bit, GPCM
         lwi	r5,0xFF800774   # 7 wait states, up to 8MB
+#else
+        lwi	r3,0xFE000801	# 16-bit, GPCM
+        lwi	r5,0xFF800774   # 7 wait states, up to 8MB
+#endif                
         stw	r3,BR0(r4)
         stw	r5,OR0(r4)
 
@@ -388,7 +403,7 @@ FUNC_START( hal_hardware_init )
 // 	Field FIOPD (bit 26) = 0
 // 	Field Reserved (bits 27-31) = 0
 	 */
-	lwi	r3,0x04000|(PLPRCR_PTX<<20)
+        lwi     r3,PLPRCR_PTX
 	stw	r3,PLPRCR(r4)
 
 	LED(0xE0)

@@ -1,3 +1,9 @@
+2003-08-19  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/viper.S: 
+	* cdl/hal_powerpc_viper.cdl: Support new model Viper which
+	has slightly different layout and 16bit FLASH (instead of 8bit)
+
 2003-07-18  Nick Garnett  <nickg@balti.calivar.com>
 
 	* cdl/hal_powerpc_viper.cdl:
