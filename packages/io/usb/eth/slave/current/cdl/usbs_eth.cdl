@@ -8,6 +8,7 @@
 #####ECOSGPLCOPYRIGHTBEGIN####
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2003 Bart Veer
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
@@ -118,5 +119,35 @@ cdl_package CYGPKG_IO_USB_SLAVE_ETH {
 	    implements    CYGHWR_NET_DRIVER_ETH1
 	    requires      !CYGHWR_NET_DRIVER_ETH1_BOOTP
 	}
+    }
+    
+    cdl_component CYGPKG_IO_USB_SLAVE_ETH_OPTIONS {
+	display     "Build options"
+	flavor      none
+
+	description "
+	    Package-specific build options including control over compiler
+	    flags used only in building this package."
+
+	cdl_option CYGPKG_IO_USB_SLAVE_ETH_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "-D_KERNEL -D__ECOS" }
+            description   "
+                This option modifies the set of compiler flags for
+                building this package. These flags are used in addition
+                to the set of global flags."
+	}
+        cdl_option CYGPKG_IO_USB_SLAVE_ETH_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building this package. These flags are removed from
+                the set of global flags if present."
+        }
     }
 }

@@ -1,3 +1,9 @@
+2003-04-19  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/usbs_eth.cdl: Add per-package compiler flag support and
+	default to -D_KERNEL and -D__ECOS for use with the new network
+	stack.
+
 2003-04-17  Bart Veer  <bartv@ecoscentric.com>
 
 	* doc/usbseth.sgml: Fix typo reported by Patrick Doyle
