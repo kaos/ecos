@@ -1,3 +1,7 @@
+2003-10-08  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/quicc_smc_serial.c: Fix compile error for Adder-II (852T)
+
 2003-09-08  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/quicc_smc_serial.h: Fix baud rate clock setup - was off by 1.

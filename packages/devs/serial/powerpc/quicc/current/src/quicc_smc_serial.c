@@ -726,7 +726,8 @@ quicc_sxx_serial_init(struct cyg_devtab_entry *tab)
                                    0x0030, // PortA mask
                                    0x0000, // PortB mask
                                    0x0000, // PortC mask
-#err "Cannot route SCC3"
+#else
+#error "Cannot route SCC3"
 #endif
                                    QUICC_CPM_SCC3
             );
