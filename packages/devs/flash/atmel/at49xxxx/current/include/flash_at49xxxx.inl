@@ -57,6 +57,7 @@
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_cache.h>
+#include <cyg/hal/hal_diag.h>
 #include CYGHWR_MEMORY_LAYOUT_H
 
 #define  _FLASH_PRIVATE_
@@ -70,7 +71,8 @@
 #define FLASH_Program                   FLASHWORD( 0xA0 )
 #define FLASH_Sector_Erase              FLASHWORD( 0x30 )
 
-#define FLASH_Busy                      FLASHWORD( 0x40 ) // "Toggle" bit
+#define FLASH_Busy                      FLASHWORD( 0x40 ) // "Toggle" bit, I/O 6
+#define FLASH_InverseData               FLASHWORD( 0x80 ) // I/O 7, Inverse data
 
 #define FLASH_Setup_Addr1               (0x5555)
 #define FLASH_Setup_Addr2               (0x2AAA)
@@ -126,7 +128,7 @@ int  flash_erase_block(void* block, unsigned int size)
     __attribute__ ((section (".2ram.flash_erase_block")));
 int  flash_program_buf(void* addr, void* data, int len)
     __attribute__ ((section (".2ram.flash_program_buf")));
-static int wait_while_busy(int timeout, volatile flash_data_t* addr_ptr)
+static int wait_while_busy(int timeout, volatile flash_data_t* addr_ptr, flash_data_t value)
     __attribute__ ((section (".2ram.text")));
 
 //----------------------------------------------------------------------------
@@ -237,21 +239,25 @@ flash_query(void* data)
     // FIXME: 10ms delay?
 }
 
-// Wait for completion (bit 6 stops toggling)
-static int wait_while_busy(int timeout, volatile flash_data_t* addr_ptr)
+// Wait for completion. While programming/erasing check
+// that i/o 7 is inverse of data as described in Atmels examples.
+
+static int wait_while_busy(int timeout, volatile flash_data_t* addr_ptr, flash_data_t expected)
 {
-        flash_data_t state, prev_state;
-        prev_state = *addr_ptr & FLASH_Busy;
+	int val;
+	flash_data_t state;
         while (true) {
-            state = *addr_ptr & FLASH_Busy;
-            if (prev_state == state) {
-            	return FLASH_ERR_OK;
+            state = *addr_ptr & FLASH_InverseData;
+            if (state==(expected&FLASH_InverseData)) {
+            	val=FLASH_ERR_OK;
+            	break;
 	    }
             if (--timeout == 0) {
-                return FLASH_ERR_DRV_TIMEOUT;
+                val=FLASH_ERR_DRV_TIMEOUT;
+                break;
             }
-            prev_state = state;
         }
+        return val;
 }
 
 //----------------------------------------------------------------------------
@@ -303,16 +309,15 @@ flash_erase_block(void* block, unsigned int size)
         ROM[FLASH_Setup_Addr2] = FLASH_Setup_Code2;
         *b_p = FLASH_Sector_Erase;
 
-        res = wait_while_busy(5000000,b_p);
-
         size -= len;  // This much has been erased
+
+	res = wait_while_busy(66000000, b_p, FLASH_BlankValue);
 
         // Verify erase operation
         if (FLASH_ERR_OK == res) {
             while (len > 0) {
                 if (*b_p != FLASH_BlankValue) {
-                    // Only update return value if erase operation was OK
-                    res = FLASH_ERR_DRV_VERIFY;
+                    break;
                 }
                 len -= sizeof(*b_p);
                 b_p++;
@@ -354,7 +359,7 @@ flash_program_buf(void* addr, void* data, int len)
         ROM[FLASH_Setup_Addr1] = FLASH_Program;
         addr_ptr[0] = data_ptr[0];
                 
-        res = wait_while_busy(5000000,addr_ptr);
+        res = wait_while_busy(5000000,addr_ptr, data_ptr[0]);
 
         if (*addr_ptr++ != *data_ptr++) {
             // Only update return value if operation was OK

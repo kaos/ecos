@@ -1,3 +1,9 @@
+2003-08-08  Oyvind Harboe <oyvind.harboe@zylin.com>
+
+	* include/flash_at49xxxx.inl: the program/erase completion had a
+	race condtion.  Changes algorithms to one that does not suffer
+	from potential race conditions.
+
 2003-07-15  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/flash_at49xxxx.inl: Reorganise to support boot blocks,
