@@ -12,6 +12,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -53,7 +54,12 @@
 //
 //==========================================================================
 
+// User-defined function for printing diagnostic messages
 typedef void (*ftp_printf_t)(unsigned error, const char *, ...);
+// User-defined function used to provide data
+typedef int (*ftp_read_t)(char *buf, int bufsize, void *priv);
+// User-defined function used to process data
+typedef int (*ftp_write_t)(char *buf, int bufsize, void *priv);
 
 /* Use the FTP protocol to retrieve a file from a server. Only binary
    mode is supported. The filename can include a directory name. Only
@@ -71,6 +77,19 @@ int ftp_get(char * hostname,
             unsigned buf_size,
             ftp_printf_t ftp_printf);
 
+//
+// Just like 'ftp_get()' except that the "write()" function is called
+// as data arrives instead of using a fixed buffer.  Returns the total
+// amount of data read, or an error indication (negative codes)
+//
+int ftp_get_var(char *hostname,
+                char *username,
+                char *passwd,
+                char *filename,
+                ftp_write_t ftp_write,
+                void *ftp_write_priv,
+                ftp_printf_t ftp_printf);
+
 /*Use the FTP protocol to send a file from a server. Only binary mode
   is supported. The filename can include a directory name. Only use
   unix style / not M$'s \. The contents of buf is placed into the file
@@ -84,6 +103,19 @@ int ftp_put(char * hostname,
             char * buf, 
             unsigned buf_size,
             ftp_printf_t ftp_printf);
+
+//
+// Just like 'ftp_put()' except that the "read()" function is called
+// to fetch the data to write instead of using a fixed buffer.  Returns 
+// the total amount of data written, or an error indication (negative codes)
+//
+int ftp_put_var(char *hostname,
+                char *username,
+                char *passwd,
+                char *filename,
+                ftp_read_t ftp_read,
+                void *ftp_read_priv,
+                ftp_printf_t ftp_printf);
 
 /*ftp_get() and ftp_put take the name of a function to call to print
   out diagnostic and error messages. This is a sample implementation
@@ -101,6 +133,7 @@ void ftpclient_printf(unsigned error, const char *fmt, ...);
 #define FTP_BADUSER     -4 /* Username/Password failed */
 #define FTP_TOOBIG      -5 /* Out of buffer space or disk space */ 
 #define FTP_BADFILENAME -6 /* The file does not exist */
+#define FTP_NOMEMORY    -7 /* Unable to allocate memory for internal buffers */
 
-#endif CYGONCE_NET_FTPCLIENT_FTPCLIENT
+#endif // CYGONCE_NET_FTPCLIENT_FTPCLIENT
 

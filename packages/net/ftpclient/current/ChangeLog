@@ -1,3 +1,10 @@
+2004-05-24  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/ftpclient.c: 
+	* include/ftpclient.h:
+	* cdl/ftpclient.cdl: Add new functions 'ftp_get_var()' and 'ftp_put_var()'
+	which allow for streams of data instead of fixed buffers.
+
 2003-07-02  Daniel Néri  <daniel.neri@sigicom.se>
 
 	* src/ftpclient.c (send_cmd): Fix typo in error message.

@@ -10,6 +10,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2002 Andrew Lunn.
+// Copyright (C) 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -52,6 +53,7 @@
 //==========================================================================
 
 #include <pkgconf/system.h>
+#include <pkgconf/net_ftpclient.h>
 
 #include <network.h>
 #include <stdio.h>
@@ -88,8 +90,8 @@ build_cmd(char *buf,
    buffer. If we do reach the end of the buffer, discard the rest of
    the line. */
 static int 
-get_line(int s, char *buf, unsigned buf_size,ftp_printf_t ftp_printf) {
-  
+get_line(int s, char *buf, unsigned buf_size, ftp_printf_t ftp_printf) 
+{
   int eol = 0;
   int cnt = 0;
   int ret;
@@ -125,8 +127,8 @@ get_line(int s, char *buf, unsigned buf_size,ftp_printf_t ftp_printf) {
    reply can be spread over multiple lines. When this happens the line
    will start with a - to indicate there is more*/
 static int 
-get_reply(int s,ftp_printf_t ftp_printf) {
-
+get_reply(int s, ftp_printf_t ftp_printf) 
+{
   char buf[BUFSIZ];
   int more = 0;
   int ret;
@@ -161,8 +163,8 @@ get_reply(int s,ftp_printf_t ftp_printf) {
 
 /* Send a command to the server */
 static int 
-send_cmd(int s,char * msgbuf,ftp_printf_t ftp_printf) {
-  
+send_cmd(int s, char * msgbuf, ftp_printf_t ftp_printf) 
+{  
   int len;
   int slen = strlen(msgbuf);
   
@@ -186,8 +188,8 @@ command(char * cmd,
         int s, 
         char *msgbuf, 
         int msgbuflen,
-        ftp_printf_t ftp_printf) {
-
+        ftp_printf_t ftp_printf) 
+{
   int err;
   
   if (!build_cmd(msgbuf,msgbuflen,cmd,arg)) {
@@ -311,178 +313,196 @@ opendatasock(int ctrl_s,
              struct sockaddr *ctrl, 
              char *msgbuf, 
              unsigned msgbuflen,
-             ftp_printf_t ftp_printf) {
+             ftp_printf_t ftp_printf) 
+{
+    struct sockaddr local;
+    char name[64];
+    char port[10];
+    socklen_t len;
+    int on = 1;
+    char buf[80];
+    int ret;
+    int s;
 
-  struct sockaddr local;
-  char name[64];
-  char port[10];
-  socklen_t len;
-  int on = 1;
-  char buf[80];
-  int ret;
-  int s;
-
-  s = socket(ctrl->sa_family, SOCK_STREAM, 0);
-  if (s < 0) {
-    ftp_printf(1,"socket: %s\n",strerror(errno));
-    return FTP_BAD;
-  }
+    s = socket(ctrl->sa_family, SOCK_STREAM, 0);
+    if (s < 0) {
+        ftp_printf(1,"socket: %s\n",strerror(errno));
+        return FTP_BAD;
+    }
   
-  if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof (on)) < 0) {
-    ftp_printf(1,"setsockopt: %s\n",strerror(errno));
-    close(s);
-    return FTP_BAD;
-  }
+    if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof (on)) < 0) {
+        ftp_printf(1,"setsockopt: %s\n",strerror(errno));
+        close(s);
+        return FTP_BAD;
+    }
   
-  memcpy(&local,ctrl,sizeof(struct sockaddr));
-  switch (ctrl->sa_family) {
+    memcpy(&local,ctrl,sizeof(struct sockaddr));
+    switch (ctrl->sa_family) {
     case AF_INET: {
-      struct sockaddr_in * sa4 = (struct sockaddr_in *) &local;
-      sa4->sin_port = 0;
-      break;
+        struct sockaddr_in * sa4 = (struct sockaddr_in *) &local;
+        sa4->sin_port = 0;
+        break;
     }
 #ifdef CYGPKG_NET_INET6
     case AF_INET6: {
-      struct sockaddr_in6 * sa6 = (struct sockaddr_in6 *) &local;
-      sa6->sin6_port = 0;
-      break;
+        struct sockaddr_in6 * sa6 = (struct sockaddr_in6 *) &local;
+        sa6->sin6_port = 0;
+        break;
     }
 #endif
     default:
-      close (s);
-      return FTP_BAD;
-  }
+        close (s);
+        return FTP_BAD;
+    }
 
-  if (bind(s,&local,local.sa_len) < 0) {
-    ftp_printf(1,"bind: %s\n",strerror(errno));
-    close(s);
-    return FTP_BAD;   
-  }
+    if (bind(s,&local,local.sa_len) < 0) {
+        ftp_printf(1,"bind: %s\n",strerror(errno));
+        close(s);
+        return FTP_BAD;   
+    }
   
-  len = sizeof(local);
-  if (getsockname(s,&local,&len) < 0) {
-    ftp_printf(1,"getsockname: %s\n",strerror(errno));
-    close(s);
-    return FTP_BAD;   
-  }
+    len = sizeof(local);
+    if (getsockname(s,&local,&len) < 0) {
+        ftp_printf(1,"getsockname: %s\n",strerror(errno));
+        close(s);
+        return FTP_BAD;   
+    }
   
-  if (listen(s, 1) < 0) {
-    ftp_printf(1,"listen: %s\n",strerror(errno));
-    close(s);
-    return FTP_BAD;   
-  }
+    if (listen(s, 1) < 0) {
+        ftp_printf(1,"listen: %s\n",strerror(errno));
+        close(s);
+        return FTP_BAD;   
+    }
   
-  getnameinfo(&local,sizeof(local),name,sizeof(name), port, sizeof(port),
-              NI_NUMERICHOST|NI_NUMERICSERV);
-  switch (local.sa_family) {
-  case AF_INET: {
-    snprintf(buf, sizeof(buf), "|1|%s|%s|", name, port);
-    break;
-  }
+    getnameinfo(&local, sizeof(local), name, sizeof(name), port, sizeof(port),
+                NI_NUMERICHOST|NI_NUMERICSERV);
+    switch (local.sa_family) {
+    case AF_INET: {
+        snprintf(buf, sizeof(buf), "|1|%s|%s|", name, port);
+        break;
+    }
 #ifdef CYGPKG_NET_INET6
-  case AF_INET6: {
-    snprintf(buf, sizeof(buf), "|2|%s|%s|", name, port);
-    break;
-  }
+    case AF_INET6: {
+        snprintf(buf, sizeof(buf), "|2|%s|%s|", name, port);
+        break;
+    }
 #endif
-  default:
-    close (s);
-    return (FTP_BAD);
-  }
+    default:
+        close (s);
+        return (FTP_BAD);
+    }
 
-  ret = command("EPRT",buf,ctrl_s,msgbuf,msgbuflen,ftp_printf);
-  if (ret < 0) {
-    close(s);
-    return (ret);
-  }
+    ret = command("EPRT",buf,ctrl_s,msgbuf,msgbuflen,ftp_printf);
+    if (ret < 0) {
+        close(s);
+        return (ret);
+    }
 
-  if (ret != 2) {
-    ftp_printf(1,"FTP: PORT failed!\n");
-    close(s);
-    return (FTP_BAD);
-  }
-  return (s);
+    if (ret != 2) {
+        int _port = atoi(port);
+        char *s = name;
+        while (*s) {
+            if (*s == '.') *s = ',';
+            s++;
+        }
+        snprintf(buf, sizeof(buf), "%s,%d,%d", name, _port/256, _port%256);
+        ret = command("PORT",buf,ctrl_s,msgbuf,msgbuflen,ftp_printf);
+        if (ret < 0) {
+            close(s);
+            return (ret);
+        }
+        if (ret != 2) {
+            ftp_printf(1,"FTP: PORT failed!\n");
+            close(s);
+            return (FTP_BAD);
+        }
+    }
+    return (s);
 }
 
 /* Receive the file into the buffer and close the data socket
    afterwards */
 static int 
-receive_file(int data_s, char *buf, int buf_size,ftp_printf_t ftp_printf)
+receive_file(int data_s, ftp_write_t ftp_write, void *ftp_write_priv, ftp_printf_t ftp_printf)
 {
-  int remaining = buf_size;
-  int finished = 0;
-  int total_size=0;
-  char *bufp = buf;
-  int len;
-  int s;
-  
-  s = accept(data_s,NULL,0);
-  if (s<0) {
-    ftp_printf(1,"listen: %s\n",strerror(errno));
-    return FTP_BAD;   
-  }
-  
-  do {
-    len = read(s,bufp,remaining);
-    if (len < 0) {
-      ftp_printf(1,"read: %s\n",strerror(errno));
-      close(s);
-      return FTP_BAD;   
-    }
+    char *buf;
+    int finished = 0;
+    int total_size=0;
+    int len, wlen;
+    int s;
 
-    if (len == 0) {
-      finished = 1;
-    } else {
-      total_size += len;
-      remaining -= len;
-      bufp += len;
-    
-      if (total_size == buf_size) {
-        ftp_printf(1,"FTP: File too big!\n");
-        close(s);
-        return FTP_TOOBIG;
-      }
+    if ((buf = (char *)malloc(CYGNUM_NET_FTPCLIENT_BUFSIZE)) == (char *)0) {
+        return FTP_NOMEMORY;
     }
-  } while (!finished);
+    s = accept(data_s, NULL, 0);
+    if (s < 0) {
+        ftp_printf(1, "listen: %s\n",strerror(errno));
+        free(buf);
+        return FTP_BAD;   
+    }
   
-  close(s);
-  return total_size;
+    do {
+        len = read(s, buf, CYGNUM_NET_FTPCLIENT_BUFSIZE);
+        if (len < 0) {
+            ftp_printf(1, "read: %s\n",strerror(errno));
+            close(s);
+            free(buf);
+            return FTP_BAD;   
+        }
+
+        if (len == 0) {
+            finished = 1;
+        } else {
+            wlen = (*ftp_write)(buf, len, ftp_write_priv);
+            if (wlen != len) {
+                ftp_printf(1, "FTP: File too big!\n");
+                close(s);
+                free(buf);
+                return FTP_TOOBIG;
+            }
+            total_size += len;
+        }
+    } while (!finished);
+  
+    close(s);
+    free(buf);
+    return total_size;
 }
 
 /* Receive the file into the buffer and close the socket afterwards*/
 static int 
-send_file(int data_s, char *buf, int buf_size,ftp_printf_t ftp_printf)
+send_file(int data_s, ftp_read_t ftp_read, void *ftp_read_priv, ftp_printf_t ftp_printf)
 {
-  int remaining=buf_size;
-  int finished = 0;
-  char * bufp = buf;
-  int len;
-  int s;
+    char *buf;
+    int len, rlen;
+    int s;
   
-  s = accept(data_s,NULL,0);
-  if (s<0) {
-    ftp_printf(1,"listen: %s\n",strerror(errno));
-    return FTP_BAD;   
-  }
-  
-  do { 
-    len = write(s,bufp,remaining);
-    if (len < 0) {
-      ftp_printf(1,"write: %s\n",strerror(errno));
-      close(s);
-      return FTP_BAD;   
+    if ((buf = (char *)malloc(CYGNUM_NET_FTPCLIENT_BUFSIZE)) == (char *)0) {
+        return FTP_NOMEMORY;
     }
-    
-    if (len == remaining) {
-      finished = 1;
-    } else {
-      remaining -= len;
-      bufp += len;
+    s = accept(data_s,NULL,0);
+    if (s<0) {
+        ftp_printf(1,"listen: %s\n",strerror(errno));
+        free(buf);
+        return FTP_BAD;   
     }
-  } while (!finished);
   
-  close(s);
-  return 0;
+    do { 
+        rlen = (*ftp_read)(buf, CYGNUM_NET_FTPCLIENT_BUFSIZE, ftp_read_priv);
+        if (rlen > 0) {
+            len = write(s, buf, rlen);
+            if (len < 0) {
+                ftp_printf(1,"write: %s\n",strerror(errno));
+                close(s);
+                free(buf);
+                return FTP_BAD;   
+            }
+        }
+    } while (rlen > 0);
+  
+    close(s);
+    free(buf);
+    return 0;
 }
 
 /* All done, say bye, bye */
@@ -518,6 +538,48 @@ static int quit(int s,
    bytes received is returned. On error a negative value is returned
    indicating the type of error. */
 
+struct _ftp_data{
+    char *buf;
+    int   len;
+    int   max_len;
+};
+
+static int _ftp_read(char *buf, int len, void *priv)
+{
+    struct _ftp_data *dp = (struct _ftp_data *)priv;
+    int res = 0;
+
+    // FTP data channel desires to write 'len' bytes.  Fetch up
+    // to that amount into 'buf'
+    if (dp->len > 0) {
+        res = dp->len;
+        if (res > len) res = len;
+        memcpy(buf, dp->buf, res);
+        dp->buf += len;
+        dp->len -= res;
+    }
+    return res;
+}
+
+static int _ftp_write(char *buf, int len, void *priv)
+{
+    struct _ftp_data *dp = (struct _ftp_data *)priv;
+    int res = 0;
+
+    // FTP data channel has 'len' bytes that have been read.
+    // Move into 'buf', respecting the max size of 'buf'
+    if (dp->len < dp->max_len) {
+        res = dp->max_len - dp->len;
+        if (res > len) {
+            res = len;
+        }
+        memcpy(dp->buf, buf, res);
+        dp->buf += len;
+        dp->len += res;
+    }
+    return res;
+}
+
 int ftp_get(char * hostname, 
             char * username, 
             char * passwd, 
@@ -525,6 +587,22 @@ int ftp_get(char * hostname,
             char * buf, 
             unsigned buf_size,
             ftp_printf_t ftp_printf)
+{
+    struct _ftp_data ftp_data;
+
+    ftp_data.buf = buf;
+    ftp_data.len = 0;
+    ftp_data.max_len = buf_size;
+    return ftp_get_var(hostname, username, passwd, filename, _ftp_write, &ftp_data, ftp_printf);
+}
+
+int ftp_get_var(char *hostname,
+                char *username,
+                char *passwd,
+                char *filename,
+                ftp_write_t ftp_write,
+                void *ftp_write_priv,
+                ftp_printf_t ftp_printf)
 {
 
   struct sockaddr local;
@@ -575,7 +653,7 @@ int ftp_get(char * hostname,
     return (FTP_BADFILENAME);
   }
   
-  if ((bytes=receive_file(data_s,buf,buf_size,ftp_printf)) < 0) {
+  if ((bytes=receive_file(data_s,ftp_write,ftp_write_priv,ftp_printf)) < 0) {
     ftp_printf(0,"FTP: Receiving file failed\n");
     close (data_s);
     close(s);
@@ -618,6 +696,21 @@ int ftp_put(char * hostname,
             char * buf, 
             unsigned buf_size,
             ftp_printf_t ftp_printf)
+{
+    struct _ftp_data ftp_data;
+
+    ftp_data.buf = buf;
+    ftp_data.len = buf_size;
+    return ftp_put_var(hostname, username, passwd, filename, _ftp_read, &ftp_data, ftp_printf);
+}
+
+int ftp_put_var(char *hostname,
+                char *username,
+                char *passwd,
+                char *filename,
+                ftp_read_t ftp_read,
+                void *ftp_read_priv,
+                ftp_printf_t ftp_printf)
 {
 
   struct sockaddr local;
@@ -667,7 +760,7 @@ int ftp_put(char * hostname,
     return (FTP_BADFILENAME);
   }
   
-  if ((ret = send_file(data_s,buf,buf_size,ftp_printf)) < 0) {
+  if ((ret = send_file(data_s,ftp_read,ftp_read_priv,ftp_printf)) < 0) {
     ftp_printf(1,"FTP: Sending file failed\n");
     close (data_s);
     close(s);

@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2004 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -53,6 +54,8 @@ cdl_package CYGPKG_NET_FTPCLIENT {
     display       "FTP client"
     parent        CYGPKG_NET
     requires      CYGPKG_IO
+    requires      CYGPKG_NET
+    requires      CYGPKG_MEMALLOC
     requires      { 0 != CYGINT_ISO_STRING_STRFUNCS }
     requires      { 0 != CYGINT_ISO_STRING_MEMFUNCS }
     requires      { 0 != CYGINT_ISO_STDLIB_STRCONV }
@@ -61,7 +64,6 @@ cdl_package CYGPKG_NET_FTPCLIENT {
     requires      { 0 != CYGINT_ISO_ERRNO }
     requires      { 0 != CYGINT_ISO_ERRNO_CODES }
     requires      { 0 != CYGINT_ISO_CTYPE }
-    requires      CYGPKG_NET
     description   "
         FTP client support. Provides ftp_put and ftp_get to put a file
         onto a remote FTP server and get a file from a remote server. 
@@ -69,6 +71,16 @@ cdl_package CYGPKG_NET_FTPCLIENT {
     doc           ref/net-ftpclient.html
 
     compile       ftpclient.c
+
+    cdl_option CYGNUM_NET_FTPCLIENT_BUFSIZE {
+        display "Size of internal buffers used during FTP transfers"
+        flavor  data
+        default_value 512
+        description "
+          The FTP data transfer functions buffer the data as it
+          passes between systems.  This option controls the size
+          of that buffer, which will be allocated using 'malloc'"
+    }
 
     cdl_component CYGPKG_NET_FTPCLIENT_OPTIONS {
         display "FTP client build options"
