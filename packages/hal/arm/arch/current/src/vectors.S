@@ -622,13 +622,16 @@ call_exception_handler:
         mov     r0,sp
         ldr     r1,.__dump_procs
         ldr     r2,[sp,#armreg_vector]
+        ldr     r1,[r1,r2,lsl #2]
+        THUMB_MODE(r9,10)
         mov     lr,pc
-        ldr     pc,[r1,r2,lsl #2]
+        mov     pc,r1
+#else
+        THUMB_MODE(r9,10)
 #endif
 
         // call exception handler
         mov     r0,sp
-        THUMB_MODE(r9,10)
         bl      exception_handler
 
 #ifdef  CYGHWR_HAL_ARM_DUMP_EXCEPTIONS
