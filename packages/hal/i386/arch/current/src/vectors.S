@@ -494,7 +494,8 @@ __default_interrupt_vsr:
 	hal_fpu_push_int	# save FPU state
 
 #if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) || \
-    defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
+    defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT) || \
+    defined(CYGPKG_PROFILE_GPROF)
 	# Save the context just to be able to set a breakpoint
 	# when we have a CTRL-C
 	.extern hal_saved_interrupt_state

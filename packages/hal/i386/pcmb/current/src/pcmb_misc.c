@@ -8,6 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 2005 eCosCentric Ltd
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -51,6 +52,7 @@
 //
 //========================================================================*/
 
+#include <pkgconf/system.h>
 #include <pkgconf/hal.h>
 #include <pkgconf/hal_i386.h>
 #include <pkgconf/hal_i386_pcmb.h>
@@ -59,6 +61,7 @@
 #include <cyg/infra/cyg_trac.h>         // tracing macros
 #include <cyg/infra/cyg_ass.h>          // assertion macros
 
+#include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_intr.h>
 #include <cyg/hal/hal_io.h>
 #include <cyg/hal/hal_smp.h>
@@ -227,6 +230,47 @@ void hal_idle_thread_action(cyg_uint32 loop_count)
     
 #endif
 }
+
+// ----------------------------------------------------------------------------
+// Profiling support. mcount() is provided by the architectural HAL
+// but the timer has to be provided by the platform. This is tricky on
+// a PC because there is only a single clock which can generate
+// interrupts, and that gets used for the system clock. To get around
+// this we assume that the system clock has already been enabled,
+// and we sneak in a new ISR routine which will chain to the default
+// one. This is possible because of the way the interrupt subsystem
+// is implemented in the x86 architectural HAL.
+
+#ifdef CYGFUN_HAL_I386_PCMB_GPROF_SUPPORT
+# include <cyg/profile/profile.h>
+
+extern HAL_SavedRegisters *hal_saved_interrupt_state;
+static int  (*hal_pcmb_profile_saved_isr)(CYG_ADDRWORD, CYG_ADDRWORD);
+
+static int
+hal_pcmb_profile_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
+{
+    // Now chain to the saved ISR.
+    __profile_hit(hal_saved_interrupt_state->pc);
+    return (*hal_pcmb_profile_saved_isr)(vector, data);
+}
+
+int
+hal_enable_profile_timer(int resolution)
+{
+    cyg_uint64  actual_resolution;
+
+    hal_pcmb_profile_saved_isr  = (int (*)(CYG_ADDRWORD, CYG_ADDRWORD)) hal_interrupt_handlers[CYGNUM_HAL_INTERRUPT_TIMER - CYGNUM_HAL_ISR_MIN];
+    hal_interrupt_handlers[CYGNUM_HAL_INTERRUPT_TIMER - CYGNUM_HAL_ISR_MIN]  = (CYG_ADDRESS) &hal_pcmb_profile_isr;
+    
+    // The only resolution that can be supported is that of the system
+    // clock. RTC_PERIOD works in terms of a 1193180Hz clock, and we
+    // need to return microseconds.
+    actual_resolution = (1000000ll * CYGNUM_HAL_RTC_PERIOD) / 1193180;
+    return actual_resolution;
+}
+
+#endif  // CYGFUN_HAL_I386_PCMB_GPROF_SUPPORT
 
 /*------------------------------------------------------------------------*/
 /* End of pcmb_misc.c                                                      */

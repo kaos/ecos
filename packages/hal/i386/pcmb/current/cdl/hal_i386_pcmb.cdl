@@ -173,6 +173,27 @@ cdl_package CYGPKG_HAL_I386_PCMB {
 	    puts $::cdl_header ""
 	}
     }
+
+    # Profiling support. This is not really a user-settable option,
+    # just a way of associating a constraint with a description. The
+    # profiling timer involves munging the system timer so profiling
+    # is only possible in suitable kernel configurations.
+    cdl_option CYGFUN_HAL_I386_PCMB_GPROF_SUPPORT {
+	display		"Support for gprof profiling"
+	active_if	CYGPKG_PROFILE_GPROF
+	calculated	1
+	implements	CYGINT_PROFILE_HAL_TIMER
+	requires	CYGVAR_KERNEL_COUNTERS_CLOCK
+	description "
+            The PC HAL support can provide a profiling timer for use
+          by the gprof package. However the hardware only provides a
+          single source of timer interrupts so this must be shared
+          between the system clock and the profiling code. The current
+          implementation requires that the system clock be initialized
+          first (which happens in a static constructor with priority
+          CYG_INIT_CLOCK), then profiling can be enabled via a call
+          to profile_on()."
+    }
     
     cdl_interface CYGINT_HAL_I386_PCMB_SCREEN_SUPPORT {
 	display       "Enable PC screen support"

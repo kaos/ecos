@@ -51,6 +51,7 @@
 //
 //===========================================================================
 
+#include <pkgconf/system.h>
 #include <pkgconf/hal.h>
 
 #include <cyg/infra/cyg_type.h>
@@ -58,6 +59,7 @@
 #include <cyg/infra/diag.h>      // diag_printf
 
 #include <cyg/hal/hal_arch.h>
+#include <cyg/hal/hal_intr.h>
 
 #include <cyg/hal/hal_if.h>
 
@@ -154,6 +156,85 @@ externC cyg_uint32 hal_arch_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
     
     return 0;
 }
+
+//---------------------------------------------------------------------------
+// Profiling support. The timer has to be implemented by the platform
+// HAL, but mcount() is generic for all x86 processors. There are three
+// complications: the generic profile code assumes that __profile_mcount()
+// is called with interrupts disabled; on an SMP system there may be
+// concurrent calls to mcount(); and if eCos itself is built with
+// -pg then there may be recursive calls to mcount() which we have
+// to guard against.
+//
+// With i386-elf-gcc the call is to _mcount(), not mcount(), and there
+// is already a return address in %edx. For now the latter is ignored.
+// It would be useful in assembler code, but because we have to worry
+// about interrupts and spinlocks a implementation is rather easier.
+
+#ifdef CYGPKG_PROFILE_GPROF
+#include <cyg/profile/profile.h>
+
+# ifdef CYGPKG_HAL_SMP_SUPPORT
+static HAL_SMP_CPU_TYPE     mcount_cpu  = HAL_SMP_CPU_NONE;
+static HAL_SPINLOCK_TYPE    mcount_lock = HAL_SPINLOCK_INIT_CLEAR;
+
+void
+_mcount(void)
+{
+    int                 ints_enabled;
+    HAL_SMP_CPU_TYPE    this_cpu;
+    
+    HAL_DISABLE_INTERRUPTS(ints_enabled);
+
+    // This cpu is now not going to run any other code. So, did it
+    // already own the spinlock?
+    this_cpu = HAL_SMP_CPU_THIS();
+    if (mcount_cpu != this_cpu) {
+        // Nope, so this cannot be a nested call to mcount()
+        HAL_SPINLOCK_SPIN(mcount_lock);
+        // And no other cpu is executing inside mcount() either
+        mcount_cpu  = this_cpu;
+        // A possibly-recursive call is now safe.
+        __profile_mcount((CYG_ADDRWORD)__builtin_return_address(1),
+                         (CYG_ADDRWORD)__builtin_return_address(0));
+        // All done.
+        mcount_cpu = HAL_SMP_CPU_NONE;
+        HAL_SPINLOCK_CLEAR(mcount_lock);
+    }
+    
+    HAL_RESTORE_INTERRUPTS(ints_enabled);
+}
+
+# else   // ! SMP
+
+static int  mcount_nested;
+
+void
+_mcount(void)
+{
+    int ints_enabled;
+    HAL_DISABLE_INTERRUPTS(ints_enabled);
+    if (! mcount_nested) {
+        mcount_nested   = 1;
+        __profile_mcount((CYG_ADDRWORD)__builtin_return_address(1),
+                         (CYG_ADDRWORD)__builtin_return_address(0));
+        mcount_nested   = 0;
+    }
+    HAL_RESTORE_INTERRUPTS(ints_enabled);
+}
+
+# endif // SMP
+
+// The main VSR will update hal_saved_interrupt_state if profiling is
+// enabled, on the assumption that the platform-specific
+// hal_enable_profile_timer() will somehow make use of timer
+// interrupts. The generic HAL will only provide that if GDB break
+// support is enabled.
+# if !( defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT))
+struct HAL_SavedRegisters *hal_saved_interrupt_state;
+# endif
+
+#endif  // CYGPKG_PROFILE_GPROF
 
 //---------------------------------------------------------------------------
 // End of hal_misc.c

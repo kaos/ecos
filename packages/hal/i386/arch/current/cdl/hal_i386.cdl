@@ -61,6 +61,8 @@ cdl_package CYGPKG_HAL_I386 {
         necessary to select a specific target platform HAL
         package."
 
+    implements	  CYGINT_PROFILE_HAL_MCOUNT
+    
     compile       hal_misc.c context.S i386_stub.c hal_syscall.c
 
     make {
