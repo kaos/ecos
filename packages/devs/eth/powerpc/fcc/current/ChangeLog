@@ -1,3 +1,7 @@
+2003-11-07  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/if_fcc.c (fcc_eth_init): Improve messages, add device name.
+
 2003-10-02  Gary Thomas  <gary@mlbassoc.com>
 
 	* cdl/fcc_eth_drivers.cdl: Buffers need to be a multiple of cache

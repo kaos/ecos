@@ -317,7 +317,7 @@ fcc_eth_init(struct cyg_netdevtab_entry *dtp)
     _eth_phy_reset(qi->phy);
 #endif
     phy_state = _eth_phy_state(qi->phy);
-    os_printf("FCC ETH: ");
+    os_printf("FCC %s: ", sc->dev_name);
     if ((phy_state & ETH_PHY_STAT_LINK) != 0) {
         if ((phy_state & ETH_PHY_STAT_100MB) != 0) {
             // Link can handle 100Mb
@@ -330,7 +330,7 @@ fcc_eth_init(struct cyg_netdevtab_entry *dtp)
             os_printf("10Mb");
         }
     } else {
-        os_printf("/***NO LINK***");
+        os_printf("/***NO LINK***\n");
         return false;
     }
     os_printf("\n");
