@@ -1,5 +1,6 @@
 2004-04-23  Gary Thomas  <gary@mlbassoc.com>
 
+	* include/hal_arch.h: 
 	* src/redboot_linux_exec.c (do_exec): Fix compiler warning about bad
 	cast (dereferencing type-punned pointer will break strict-aliasing rules)
 

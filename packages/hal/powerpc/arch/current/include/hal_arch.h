@@ -12,6 +12,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -269,7 +270,7 @@ typedef struct {
 // GDB ordered array.    
 #define HAL_GET_GDB_REGISTERS( _aregval_, _regs_ )              \
     CYG_MACRO_START                                             \
-    GDB_Registers *_gdb_ = (GDB_Registers *)(_aregval_);        \
+    GDB_Registers *_gdb_ = (GDB_Registers *)((void *)(_aregval_));      \
     int _i_;                                                    \
                                                                 \
     for( _i_ = 0; _i_ < 32; _i_++ )                             \
@@ -281,13 +282,13 @@ typedef struct {
     _gdb_->lr    = (_regs_)->lr;                                \
     _gdb_->ctr   = (_regs_)->ctr;                               \
     _gdb_->xer   = (_regs_)->xer;                               \
-	HAL_GET_GDB_FLOATING_POINT_REGISTERS(_gdb_, _regs_);        \
+    HAL_GET_GDB_FLOATING_POINT_REGISTERS(_gdb_, _regs_);        \
     CYG_MACRO_END
 
 // Copy a GDB ordered array into a HAL_SavedRegisters structure.
 #define HAL_SET_GDB_REGISTERS( _regs_ , _aregval_ )             \
     CYG_MACRO_START                                             \
-    GDB_Registers *_gdb_ = (GDB_Registers *)(_aregval_);        \
+    GDB_Registers *_gdb_ = (GDB_Registers *)((void *)(_aregval_));      \
     int _i_;                                                    \
                                                                 \
     for( _i_ = 0; _i_ < 32; _i_++ )                             \
@@ -299,7 +300,7 @@ typedef struct {
     (_regs_)->lr  = _gdb_->lr;                                  \
     (_regs_)->ctr = _gdb_->ctr;                                 \
     (_regs_)->xer = _gdb_->xer;                                 \
-	HAL_SET_GDB_FLOATING_POINT_REGISTERS(_regs_, _gdb_);        \
+    HAL_SET_GDB_FLOATING_POINT_REGISTERS(_regs_, _gdb_);        \
     CYG_MACRO_END
 
 //-----------------------------------------------------------------------------
