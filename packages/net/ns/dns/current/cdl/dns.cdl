@@ -108,6 +108,31 @@ cdl_package CYGPKG_NS_DNS {
             default_value { "default.domain.com" }
         }
     }
+
+    cdl_option CYGNUM_NS_DNS_GETADDRINFO_ADDRESSES {
+        display "Max number of results for getaddrinfo"
+        flavor data
+        default_value 5
+        description "
+            This option controls the number of addresses the DNS client
+            can return to getaddrinfo and hence the size of the buffer
+            passed to the DNS client."
+    }       
+
+    cdl_option CYGOPT_NS_DNS_FIRST_FAMILY {
+        display       "AF_INET or AF_INET6 first in the getaddrinfo list"
+        active_if     CYGPKG_NET_INET6
+        flavor        data
+        default_value {"AF_INET6"}
+        legal_values  {"AF_INET4" "AF_INET6"}
+        description   "
+           This option controls the order DNS results will appear in the 
+           information returned by getaddrinfo. This will in turn control 
+           the order in which network clients try talking to servers,
+           ie does it try IPv6 or IPv4 addresses first when it has both 
+           types of addresses."
+    }
+
     cdl_component CYGPKG_NS_DNS_OPTIONS {
         display "DNS support build options"
         flavor  none
@@ -142,7 +167,7 @@ cdl_package CYGPKG_NS_DNS {
         flavor  data
         active_if CYGPKG_NS_DNS_BUILD
         no_define
-        calculated { "tests/dns1 tests/dns2" }
+        calculated { "tests/dns1" }
 
         description   "
             This option specifies the set of tests for the DNS package."

@@ -191,7 +191,7 @@ real_name(char *msg, unsigned char *qname)
 /* Build a query message which can be sent to the server. If something
    goes wrong return -1, otherwise the length of the query message */
 static int 
-build_query(char * msg, const char * hostname, short rr_type)
+build_query(const char * msg, const char * hostname, short rr_type)
 {
     struct dns_header *dns_hdr;
     char *ptr;
@@ -250,6 +250,33 @@ dot_hostname(const char *hostname)
     }
     return hent;
 }
+
+#ifdef CYGPKG_NET_INET6
+/* Check if the hostname is actually colon format of IPv6. If so convert it 
+   and return host entity structure. If not, return NULL. */
+static struct hostent *
+colon_hostname(const char *hostname) 
+{   
+  struct sockaddr_in6 addr;
+  struct hostent *hent = NULL;
+
+  if (inet_pton(AF_INET6, hostname, (void *)&addr)) {
+    hent = alloc_hent();
+    if (hent) {
+      memcpy(hent->h_addr_list[0], &addr, sizeof(addr));
+      hent->h_addrtype = AF_INET6;
+      hent->h_length = sizeof(addr);
+      hent->h_name = alloc_string(strlen(hostname)+1);
+      if (!hent->h_name) {
+        free_hent(hent);
+        return NULL;
+      }
+      strcpy(hent->h_name, hostname);
+    }
+  }
+  return hent;
+}
+#endif
 
 /* Decode the answer from the server. Returns NULL if failed, or 
    a hostent structure containing different data depending on the
@@ -418,14 +445,37 @@ gethostbyaddr(const char *addr, int len, int type)
     return hent;
 }
 
+/* Build message, send, receive and decode */
+static struct hostent *
+do_query(const char * hostname) 
+{
+    unsigned char msg[MAXDNSMSGSIZE];
+    int len;
+        
+    memset(msg, 0, sizeof(msg));
+    len = build_query(msg, hostname, DNS_TYPE_A);
+    if (len < 0) {
+        return NULL;
+    }
+  
+    /* Send the query and wait for an answer */
+    len = send_recv(msg, len, sizeof(msg));
+    if (len < 0) {
+        return NULL;
+    }
+  
+    /* Decode the answer */
+    return parse_answer(msg, DNS_TYPE_A);
+}
+
+
 /* Given a hostname find out the IP address */
 struct hostent *
 gethostbyname(const char * hostname)
 {
-    unsigned char msg[MAXDNSMSGSIZE];
     char name[256];
+    char * dot;
     struct hostent *hent;
-    int len;
 
     CYG_REPORT_FUNCNAMETYPE( "gethostbyname", "returning %08x" );
     CYG_REPORT_FUNCARG1( "hostname=%08x", hostname );
@@ -448,42 +498,25 @@ gethostbyname(const char * hostname)
     free_stored_hent();
   
     if (!valid_hostname(hostname)) {
-        /* It could be a dot address */
-        hent = dot_hostname(hostname);
-        store_hent(hent);
-        CYG_REPORT_RETVAL( hent );
-        return hent;
+         /* It could be a dot address */
+         if ((hent = dot_hostname(hostname)) != NULL) {
+              store_hent(hent);
+              CYG_REPORT_RETVAL( hent );
+              return hent;
+         }
+#ifdef CYGPKG_NET_INET6
+         /* It could be a colon seperated IPv6 address */
+         if ((hent = colon_hostname(hostname)) != NULL) {
+              store_hent(hent);
+              CYG_REPORT_RETVAL( hent );
+              return hent;
+         }
+#endif
+         CYG_REPORT_RETVAL( hent );
+         return hent;
     }
-
     cyg_drv_mutex_lock(&dns_mutex);
 
-    /* First try the name as passed in */
-    memset(msg, 0, sizeof(msg));
-    len = build_query(msg, hostname, DNS_TYPE_A);
-    if (len < 0) {
-        cyg_drv_mutex_unlock(&dns_mutex);
-        CYG_REPORT_RETVAL( NULL );
-        return NULL;
-    }
-  
-    /* Send the query and wait for an answer */
-    len = send_recv(msg, len, sizeof(msg));
-    if (len < 0) {
-        cyg_drv_mutex_unlock(&dns_mutex);
-        CYG_REPORT_RETVAL( NULL );
-        return NULL;
-    }
-  
-    /* Decode the answer */
-    hent = parse_answer(msg, DNS_TYPE_A);
-    if (hent) {
-        cyg_drv_mutex_unlock(&dns_mutex); 
-        store_hent(hent);
-        CYG_REPORT_RETVAL( hent );
-        return hent;
-    }
-
-    /* If no match, try appending the domainname if we have one */
     if (domainname) {
         if ((strlen(hostname) + strlen(domainname)) > 254) {
             h_errno = NO_RECOVERY;
@@ -494,27 +527,36 @@ gethostbyname(const char * hostname)
         strcpy(name, hostname);
         strcat(name, ".");
         strcat(name, domainname);
-    
-        memset(msg, 0, sizeof(msg));
-        len = build_query(msg, name, DNS_TYPE_A);
-        if (len < 0) {
-            cyg_drv_mutex_unlock(&dns_mutex);
-            CYG_REPORT_RETVAL( NULL );
-            return NULL;
-        }
-    
-        /* Send the query and wait for an answer */
-        len = send_recv(msg, len, sizeof(msg));
-        if (len < 0) {
-            cyg_drv_mutex_unlock(&dns_mutex);
-            CYG_REPORT_RETVAL( NULL );
-            return NULL;
-        }
-    
-        /* Decode the answer */
-        hent = parse_answer(msg, DNS_TYPE_A);
     }
 
+        /* If the hostname ends with . it a FQDN. Don't bother adding the
+    domainname. If it does not contain a . , try appending with the
+    domainname first. If it does have a . , try without a domain name
+    first. */
+
+    dot = rindex(hostname,'.');
+    if (dot) {
+        if (*(dot+1) == '\0') {
+            /* FQDN */
+            hent = do_query(hostname);
+        } else {
+          /* Dot somewhere */
+          hent = do_query(hostname);
+          if (domainname && (hent == NULL)) { 
+            hent = do_query(name);
+          }
+        }
+    } else {
+    /* No Dot. Try adding domainname first */
+        hent = NULL;
+        if (domainname) {
+            hent = do_query(name);
+        }
+        if (hent == NULL) {
+            hent = do_query(hostname);
+        }
+    }
+    
     cyg_drv_mutex_unlock(&dns_mutex); 
     store_hent(hent);
     CYG_REPORT_RETVAL( hent );
@@ -526,6 +568,7 @@ int
 setdomainname(const char *name, size_t len)
 {
     char * ptr;
+    int length;
 
     CYG_REPORT_FUNCNAMETYPE( "setdomainname", "returning %d" );
     CYG_REPORT_FUNCARG2( "name=%08x, len=%d", name, len );
@@ -537,13 +580,28 @@ setdomainname(const char *name, size_t len)
     }
     if (len != 0) {
         CYG_CHECK_DATA_PTR( name, "name is not a valid pointer!" );
-        ptr = alloc_string(len+1);
+        length = strlen(name);
+        if (length > len) {
+            h_errno = NO_RECOVERY;
+            CYG_REPORT_RETVAL( -1 );
+            return -1;
+        }
+        if (name[length-1] != '.') {
+                length++;
+        }       
+        ptr = alloc_string(length+1);
         if (!ptr) {         
+            h_errno = NO_RECOVERY;
             CYG_REPORT_RETVAL( -1 );
             return -1;
         } 
         memcpy(ptr, name, len);
-        ptr[len]=0;
+        if (name[length-1] != '.') {
+            ptr[length-1] = '.';
+            ptr[length] = '\0';
+        } else {
+            ptr[len]=0;
+        }
     } else {
         ptr = NULL;
     }

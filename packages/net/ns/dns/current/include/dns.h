@@ -83,6 +83,15 @@ externC const char* hstrerror(int err);
 #define NO_RECOVERY    3
 #define NO_DATA        4
 
+// Interface between the DNS client and getaddrinfo
+externC int 
+cyg_dns_getaddrinfo(const char * hostname, 
+                    struct sockaddr addrs[], int num,
+                    int family, char **canon);
+// Interface between the DNS client and getnameinfo
+externC int
+cyg_dns_getnameinfo(const struct sockaddr * sa, char * host, size_t hostlen);
+
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_NS_DNS_DNS_H
 // End of dns.h

@@ -112,6 +112,7 @@ struct resource_record {
 #define DNS_TYPE_NS    2   /* Authoritative name server */
 #define DNS_TYPE_CNAME 5   /* Canonical name for an alias */
 #define DNS_TYPE_PTR   12  /* Domain name pointer */
+#define DNS_TYPE_AAAA  28  /* IPv6 host address */
 
 /* DNS CLASSs */
 #define DNS_CLASS_IN   1   /* Internet */
