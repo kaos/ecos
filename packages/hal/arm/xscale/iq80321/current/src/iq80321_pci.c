@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -124,6 +124,9 @@ cyg_hal_plf_pci_init(void)
     *GPIO_GPOD |= (1 << IQ80321_GBE_GPIO_PIN);
 
     hal_pci_inbound_window_mask = ~dram_limit;
+
+    // Force BAR0 to be non-prefetchable to allow proper MU usage
+    *ATU_IABAR0 &= ~CYG_PRI_CFG_BAR_MEM_PREFETCH;
 
 #ifdef CYG_HAL_STARTUP_ROM
 #ifdef CYGSEM_HAL_ARM_IQ80321_CLEAR_PCI_RETRY
