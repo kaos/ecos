@@ -1,3 +1,8 @@
+2003-06-26  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* doc/redboot_installing.sgml: Clarify use of correct cables with
+	serial ports with AT91 boards.
+
 2003-06-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* doc/redboot_cmds.sgml (IP): Clarify last change a bit and fix typos

@@ -792,8 +792,12 @@ flash management is provided, comprising of just the <command>fis
 erase</command> and <command>fis write</command> commands.
 </para>
 <para>
-RedBoot supports both serial ports.
-The default serial port settings are 38400,8,N,1. 
+RedBoot supports both serial ports. On all AT91 evaluation boards, serial
+port A requires a straight through cable to connect with a PC, whereas
+serial port B requires a null modem cable. If you fail to be able to
+connect to Angel in the instructions below when installing RedBoot, be
+sure to verify you are using the appropriate cable for the serial port.
+The default serial port settings for RedBoot are 38400,8,N,1. 
 </para>
 
 <para>The following RedBoot configurations are supported:
