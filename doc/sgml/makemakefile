@@ -45,9 +45,6 @@ cat > makefile <<EOF
 #
 # This exception does not invalidate any other reasons why a work based on
 # this file might be covered by the GNU General Public License.
-#
-# Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-# at http://sources.redhat.com/ecos/ecos-license
 # -------------------------------------------
 #####ECOSGPLCOPYRIGHTEND####
 #=============================================================================
@@ -182,7 +179,7 @@ modified version of the <ulink url="http://www.gnu.org/copyleft/gpl.html">GNU
 General Public Licence</ulink>,
 and you are welcome to change it and/or distribute copies of it under certain
 conditions. See <ulink
-url="http://sources.redhat.com/ecos/license-overview.html">http://sources.redhat.com/ecos/license-overview.html
+url="http://ecos.sourceware.org/license-overview.html">http://ecos.sourceware.org/license-overview.html
 </ulink> for more information about the license.</para>
 <para>eCos and RedBoot software have NO WARRANTY. </para>
 <para>Because this software is licensed free of charge, there are no warranties
