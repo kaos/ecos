@@ -381,6 +381,7 @@ CYG_MACRO_END
 //#define HAL_DCACHE_ZERO( _base_ , _size_ )
 // This feature is not available on the SA11X0.
 
+
 //-----------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_CACHE_H
 // End of hal_cache.h

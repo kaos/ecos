@@ -1999,7 +1999,7 @@ CMA230 (ARM7TDMI) or CMA222 (ARM710T) eval board."
 
 package CYGPKG_HAL_ARM_XSCALE_CORE {
 	alias		{ "Intel XScale Core" hal_arm_xscale_core }
-	directory	hal/arm/xscale/core
+	directory	hal/arm/xscale/cores
 	script		hal_arm_xscale_core.cdl
 	hardware
         description "
