@@ -59,11 +59,17 @@ ifneq ($(wildcard *.deps),)
 include $(wildcard *.deps)
 endif
 
+# GCC since 2.95 does -finit-priority by default so remove it from old HALs
+CFLAGS := $(subst -finit-priority,,$(CFLAGS))
+CFLAGS := $(subst -fvtable-gc,,$(CFLAGS))
+
 # Separate C++ flags out from C flags.
 ACTUAL_CFLAGS = $(CFLAGS)
 ACTUAL_CFLAGS := $(subst -fno-rtti,,$(ACTUAL_CFLAGS))
 ACTUAL_CFLAGS := $(subst -Woverloaded-virtual,,$(ACTUAL_CFLAGS))
 ACTUAL_CFLAGS := $(subst -fvtable-gc,,$(ACTUAL_CFLAGS))
+
+ACTUAL_CXXFLAGS = $(CFLAGS)
 
 # pattern matching rules to generate a library object from source code
 # object filenames are prefixed to avoid name clashes
@@ -84,7 +90,7 @@ ifeq ($(HOST),CYGWIN)
 else
 	@mkdir -p $(dir $@)
 endif
-	$(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -Wp,-MD,$(@:.o.d=.tmp) -o $(dir $@)$(OBJECT_PREFIX)_$(notdir $(@:.o.d=.o)) $<
+	$(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(ACTUAL_CXXFLAGS) -Wp,-MD,$(@:.o.d=.tmp) -o $(dir $@)$(OBJECT_PREFIX)_$(notdir $(@:.o.d=.o)) $<
 	@sed -e '/^ *\\/d' -e "s#.*: #$@: #" $(@:.o.d=.tmp) > $@
 	@rm $(@:.o.d=.tmp)
 
@@ -94,7 +100,7 @@ ifeq ($(HOST),CYGWIN)
 else
 	@mkdir -p $(dir $@)
 endif
-	$(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -Wp,-MD,$(@:.o.d=.tmp) -o $(dir $@)$(OBJECT_PREFIX)_$(notdir $(@:.o.d=.o)) $<
+	$(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(ACTUAL_CXXFLAGS) -Wp,-MD,$(@:.o.d=.tmp) -o $(dir $@)$(OBJECT_PREFIX)_$(notdir $(@:.o.d=.o)) $<
 	@sed -e '/^ *\\/d' -e "s#.*: #$@: #" $(@:.o.d=.tmp) > $@
 	@rm $(@:.o.d=.tmp)
 
@@ -127,7 +133,7 @@ ifeq ($(HOST),CYGWIN)
 else
 	@mkdir -p $(dir $@)
 endif
-	$(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -Wp,-MD,$(@:.d=.tmp) -o $(@:.d=.o) $<
+	$(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(ACTUAL_CXXFLAGS) -Wp,-MD,$(@:.d=.tmp) -o $(@:.d=.o) $<
 	@sed -e '/^ *\\/d' -e "s#.*: #$@: #" $(@:.d=.tmp) > $@
 	@rm $(@:.d=.tmp)
 
@@ -137,7 +143,7 @@ ifeq ($(HOST),CYGWIN)
 else
 	@mkdir -p $(dir $@)
 endif
-	$(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -Wp,-MD,$(@:.d=.tmp) -o $(@:.d=.o) $<
+	$(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(ACTUAL_CXXFLAGS) -Wp,-MD,$(@:.d=.tmp) -o $(@:.d=.o) $<
 	@sed -e '/^ *\\/d' -e "s#.*: #$@: #" $(@:.d=.tmp) > $@
 	@rm $(@:.d=.tmp)
 
