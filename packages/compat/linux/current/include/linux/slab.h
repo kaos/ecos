@@ -7,6 +7,8 @@
 
 #define kmalloc(x, y) malloc(x)
 #define kfree(x) free(x)
+#define vmalloc(x) malloc(x)
+#define vfree(x) free(x)
 
 #endif /* __LINUX_SLAB_H__ */
 

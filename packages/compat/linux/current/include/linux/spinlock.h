@@ -4,6 +4,7 @@
 
 typedef struct { } spinlock_t;
 #define SPIN_LOCK_UNLOCKED (spinlock_t) { }
+#define DEFINE_SPINLOCK(x) spinlock_t x = SPIN_LOCK_UNLOCKED
 
 #define spin_lock_init(lock)             \
 CYG_MACRO_START;                         \
