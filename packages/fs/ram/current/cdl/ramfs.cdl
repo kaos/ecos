@@ -61,6 +61,8 @@ cdl_package CYGPKG_FS_RAM {
     requires       CYGINT_ISO_ERRNO
     requires       CYGINT_ISO_ERRNO_CODES
 
+    implements     CYGINT_IO_FILEIO_FS
+
     compile        -library=libextras.a ramfs.c
 
     # ----------------------------------------------------------------------

@@ -67,6 +67,8 @@ cdl_package CYGPKG_FS_JFFS2 {
     requires       CYGPKG_IO_FLASH_BLOCK_DEVICE
     requires       CYGPKG_IO_FILEIO_INODE
 
+    implements     CYGINT_IO_FILEIO_FS      
+
     compile        -library=libextras.a jffs2.c
     compile        build.c scan.c malloc-ecos.c nodelist.c nodemgmt.c readinode.c erase.c dir-ecos.c write.c gc.c read.c compr.c compr_zlib.c compr_rtime.c compr_rubin.c file-ecos.c
 

@@ -1,3 +1,7 @@
+2002-12-06  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/ramfs.cdl: Implements the CYGINT_IO_FILEIO_FS interface
+
 2002-01-25  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* tests/fileio1.c (main): Check in listdir that the number of 

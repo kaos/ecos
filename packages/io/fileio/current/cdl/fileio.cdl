@@ -72,6 +72,15 @@ cdl_package CYGPKG_IO_FILEIO {
     compile 	   fd.cxx file.cxx io.cxx dir.cxx
     compile        -library=libextras.a misc.cxx
 
+    cdl_interface     CYGINT_IO_FILEIO_FS {
+        display       "Filesystems interfacing to FILEIO"
+        no_define
+        description "
+           Each filesystem driver which FILEIO can use implements
+           this interface. You can use this to determine if there are
+           any filesystems configured in the system." 
+    }
+
     cdl_option CYGFUN_IO_FILEIO_SELECT {
 	display          "Enable support for select()"
 	active_if        CYGPKG_KERNEL

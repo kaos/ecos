@@ -1,3 +1,8 @@
+2003-01-30  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/fileio.cdl: Added interface CYGINT_IO_FILEIO_FS which any
+	FS which FILEIO can use should implement. 
+
 2003-01-23  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/misc.cxx (cyg_mtab_lookup): Return an error if the current
