@@ -109,7 +109,7 @@ FUNC_START( hal_hardware_init )
         lwi     r3,0x00004080
         stw     r3,0(r4)
         lwi     r4,GPIO_TCR             // Tri-state control - enables outputs
-        lwi     r3,0x0003C080
+        lwi     r3,0x00034080
         stw     r3,0(r4)
         
         li      r3,DCR_SDRAM0_CFG          // See if SDRAM already configured

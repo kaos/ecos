@@ -1,3 +1,7 @@
+2003-09-24  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/moab.S: Disable GPIO16 (watchdog timer) as output by default.
+
 2003-09-22  Gary Thomas  <gary@mlbassoc.com>
 
 	* cdl/hal_powerpc_moab.cdl: Need to force 'fconfig' since that is now
