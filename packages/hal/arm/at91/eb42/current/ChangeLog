@@ -1,3 +1,8 @@
+2004-08-30  Thomas Koeller <thomas.koeller@baslerweb.com>
+
+	* cdl//hal_arm_at91_eb42.cdl: Undid last change. These
+	options are not really common among all platforms.
+
 2004-02-12  Jani Monoses <jani@iv.ro>
 
 	* cdl/hal_arm_at91_eb42.cdl: Move configuration options 

@@ -1,3 +1,9 @@
+2004-08-30  Thomas Koeller <thomas.koeller@baslerweb.com>
+
+	* cdl/hal_arm_at91.cdl: Reversed change of 2004-02-12 that move
+	seemingly 'common' options from the platform to the variant. This
+	was breaking some platform HALs.
+
 2004-08-12  Jani Monoses <jani@iv.ro>
 
 	* src/at91_misc.c: Mask all interrupts before calling 

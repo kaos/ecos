@@ -1,3 +1,9 @@
+2004-08-30  Thomas Koeller  <thomas.koeller@baslerweb.com>
+
+	* cdl/hal_arm_at91_eb55.cdl: Reversed change of 2004-02-12.
+	The options moved to the variant hal were not truly common
+	amoung all platforms.
+
 2004-04-08  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* misc/redboot_ROMRAM.ecm: Deleted since this is no longer
