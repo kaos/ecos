@@ -56,7 +56,7 @@ standard - ISO/IEC 9899:1990. This allows the user application to use
 well known standard C library functions, and in eCos starts a thread
 to invoke the user function main(). This package is a top-level placeholder
 to contain the implementations."
-    doc           redirect/the-iso-standard-c-and-math-libraries.html
+    doc           ref/libc.html
 }
 
 # ====================================================================
