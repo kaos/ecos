@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -144,7 +144,7 @@ pci_config(cyg_uint32 bus, cyg_uint32 devfn, cyg_uint32 offset, cyg_uint32 cmd, 
 	// than config read/write are desired, bus 0, devfn 0 is used to
 	// indicate that the offset should be used as the address.
 	if (devfn == 0) {
-	    *IXP425_PCI_NP_AD = offset & ~3;
+	    *IXP425_PCI_NP_AD = offset;
 	} else {
 	    // type 0
 	    //

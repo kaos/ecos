@@ -1,3 +1,7 @@
+2004-09-27  Mark Salter  <msalter@redhat.com>
+
+	* src/ixp425_pci.c (pci_config): Fix offset handling.
+
 2004-09-02  Mark Salter  <msalter@redhat.com>
 
 	* include/var_io.h: Add externs for hal_flash_{read,program}.
