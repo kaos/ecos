@@ -530,7 +530,7 @@ target_ins(unsigned long *pc, unsigned long ins)
     case 0x3:  // Coprocessor & SWI
         if (((ins & 0x03000000) == 0x03000000) && ins_will_execute(ins)) {
            // SWI
-           return (CYGNUM_HAL_VECTOR_SOFTWARE_INTERRUPT * 4);
+           return (unsigned long *)(CYGNUM_HAL_VECTOR_SOFTWARE_INTERRUPT * 4);
         } else {
            return (pc+1);
         }

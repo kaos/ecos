@@ -1,3 +1,8 @@
+2004-10-07  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/arm_stub.c (target_ins): Added a cast to prevent a compiler
+	warning.
+
 2004-09-02  Mark Salter  <msalter@redhat.com>
 
 	* cdl/hal_arm.cdl (CYGHWR_REDBOOT_LINUX_EXEC_X_SWITCH): New
