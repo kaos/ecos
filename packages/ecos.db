@@ -35,9 +35,6 @@
 ##
 ## This exception does not invalidate any other reasons why a work based on
 ## this file might be covered by the GNU General Public License.
-##
-## Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-## at http://sources.redhat.com/ecos/ecos-license/
 ## -------------------------------------------
 #####ECOSGPLCOPYRIGHTEND####
 #=============================================================================
@@ -3723,6 +3720,7 @@ target e7t {
                    CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
                    CYGPKG_DEVS_FLASH_SST_39VFXXX
 	           CYGPKG_IO_SERIAL_ARM_E7T
+                   CYGPKG_DEVS_ETH_ARM_KS32C5000
         }
         description "
  The e7t target provides the packages needed to run eCos on an ARM
@@ -4190,6 +4188,7 @@ target snds {
       alias { "Samsung SNDS" SNDS snds snds100 }
       packages { CYGPKG_HAL_ARM 
                  CYGPKG_HAL_ARM_SNDS 
+                 CYGPKG_DEVS_ETH_ARM_KS32C5000
                }
       enable { CYGHWR_HAL_ARM_BIGENDIAN }
       description "

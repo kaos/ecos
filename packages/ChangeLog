@@ -1,3 +1,8 @@
+2004-02-20  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* ecos.db: Include CYGPKG_DEVS_ETH_ARM_KS32C5000 in snds100 and
+	e7t targets.
+
 2004-01-30  John Dallaway  <jld@ecoscentric.com>
 
 	* ecos.db: Add 'hardware' attribute to CYGPKG_DEVS_ETH_ARM_KS32C5000.
