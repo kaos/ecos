@@ -64,6 +64,7 @@
 
 #include <cyg/io/pci.h>
 #include <cyg/infra/cyg_ass.h>
+#include <cyg/infra/diag.h>
 
 static cyg_bool cyg_pci_lib_initialized = false;
 static CYG_PCI_ADDRESS64 cyg_pci_memory_base;

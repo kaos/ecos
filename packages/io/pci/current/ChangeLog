@@ -1,3 +1,8 @@
+2004-10-13  David Brennan <eCos@brennanhome.com>
+
+	* src/pci.c: Added include of cyg/infra/diag.h to fix compiler
+	warning.
+
 2004-10-12  Mark Salter  <msalter@redhat.com>
 
 	* cdl/io_pci.cdl (CYGPKG_IO_PCI_CONFIGURE_INTLINE): New option.
