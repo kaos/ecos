@@ -1,3 +1,8 @@
+2003-03-14  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/mn10300_am33.ld: add entries for debug sections, needed by
+	current tools
+
 2003-03-11  Mark Salter  <msalter@redhat.com>
 
 	* src/redboot_linux_exec.c (do_exec): Call eth_drv_stop as necessary.

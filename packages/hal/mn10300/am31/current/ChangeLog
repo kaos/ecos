@@ -1,3 +1,8 @@
+2003-03-14  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/mn10300_am31.ld: add entries for debug sections, needed by
+	current tools
+
 2002-05-21  Jesper Skov  <jskov@redhat.com>
 
 	* include/var_cache.h (HAL_DCACHE_STORE): Fix warning.
