@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: compr.c,v 1.29 2003/11/20 16:40:35 dwmw2 Exp $
+ * $Id: compr.c,v 1.33 2003/11/28 17:22:54 dwmw2 Exp $
  *
  */
 
@@ -17,6 +17,7 @@
 #include <linux/types.h>
 #include <linux/slab.h>
 #include <linux/jffs2.h>
+#include "nodelist.h"
 
 int jffs2_zlib_compress(unsigned char *data_in, unsigned char *cpage_out, uint32_t *sourcelen, uint32_t *dstlen);
 void jffs2_zlib_decompress(unsigned char *data_in, unsigned char *cpage_out, uint32_t srclen, uint32_t destlen);
@@ -54,42 +55,43 @@ unsigned char jffs2_compress(unsigned char *data_in, unsigned char **cpage_out,
 	*cpage_out = kmalloc(*cdatalen, GFP_KERNEL);
 	if (!*cpage_out) {
 		printk(KERN_WARNING "No memory for compressor allocation. Compression failed\n");
-		return JFFS2_COMPR_NONE;
+		goto out;
 	}
 
 #ifdef JFFS2_USE_ZLIB
-	ret = jffs2_zlib_compress(data_in, cpage_out, datalen, cdatalen);
+	ret = jffs2_zlib_compress(data_in, *cpage_out, datalen, cdatalen);
 	if (!ret) {
 		return JFFS2_COMPR_ZLIB;
 	}
 #endif
 #ifdef JFFS2_USE_DYNRUBIN
-	ret = jffs2_dynrubin_compress(data_in, cpage_out, datalen, cdatalen);
+	ret = jffs2_dynrubin_compress(data_in, *cpage_out, datalen, cdatalen);
 	if (!ret) {
 		return JFFS2_COMPR_DYNRUBIN;
 	}
 #endif
 #ifdef JFFS2_USE_RUBINMIPS
-	ret = jffs2_rubinmips_compress(data_in, cpage_out, datalen, cdatalen);
+	ret = jffs2_rubinmips_compress(data_in, *cpage_out, datalen, cdatalen);
 	if (!ret) {
 		return JFFS2_COMPR_RUBINMIPS;
 	}
 #endif
 #ifdef JFFS2_USE_RTIME
 	/* rtime does manage to recompress already-compressed data */
-	ret = jffs2_rtime_compress(data_in, cpage_out, datalen, cdatalen);
+	ret = jffs2_rtime_compress(data_in, *cpage_out, datalen, cdatalen);
 	if (!ret) {
 		return JFFS2_COMPR_RTIME;
 	}
 #endif
 	kfree(*cpage_out);
 #endif /* Compression */
+ out:
 	*cpage_out = data_in;
 	*datalen = *cdatalen;
 	return JFFS2_COMPR_NONE; /* We failed to compress */
 }
 
-void jffs2_free_comprbuf(unsigned char *orig, unsigned char *comprbuf)
+void jffs2_free_comprbuf(unsigned char *comprbuf, unsigned char *orig)
 {
 	if (orig != comprbuf)
 		kfree(comprbuf);

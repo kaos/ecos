@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: nodemgmt.c,v 1.106 2003/11/03 17:33:54 dwmw2 Exp $
+ * $Id: nodemgmt.c,v 1.107 2003/11/26 15:30:58 dwmw2 Exp $
  *
  */
 
@@ -708,3 +708,34 @@ void jffs2_dump_block_lists(struct jffs2_sb_info *c)
 	}
 }
 #endif /* CONFIG_JFFS2_FS_DEBUG */
+
+int jffs2_thread_should_wake(struct jffs2_sb_info *c)
+{
+	int ret = 0;
+	uint32_t dirty;
+
+	if (c->unchecked_size) {
+		D1(printk(KERN_DEBUG "jffs2_thread_should_wake(): unchecked_size %d, checked_ino #%d\n",
+			  c->unchecked_size, c->checked_ino));
+		return 1;
+	}
+
+	/* dirty_size contains blocks on erase_pending_list
+	 * those blocks are counted in c->nr_erasing_blocks.
+	 * If one block is actually erased, it is not longer counted as dirty_space
+	 * but it is counted in c->nr_erasing_blocks, so we add it and subtract it
+	 * with c->nr_erasing_blocks * c->sector_size again.
+	 * Blocks on erasable_list are counted as dirty_size, but not in c->nr_erasing_blocks
+	 * This helps us to force gc and pick eventually a clean block to spread the load.
+	 */
+	dirty = c->dirty_size + c->erasing_size - c->nr_erasing_blocks * c->sector_size;
+
+	if (c->nr_free_blocks + c->nr_erasing_blocks < c->resv_blocks_gctrigger && 
+			(dirty > c->nospc_dirty_size)) 
+		ret = 1;
+
+	D1(printk(KERN_DEBUG "jffs2_thread_should_wake(): nr_free_blocks %d, nr_erasing_blocks %d, dirty_size 0x%x: %s\n", 
+		  c->nr_free_blocks, c->nr_erasing_blocks, c->dirty_size, ret?"yes":"no"));
+
+	return ret;
+}

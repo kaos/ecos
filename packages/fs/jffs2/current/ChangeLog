@@ -1,3 +1,18 @@
+2003-11-26  David Woodhouse  <dwmw2@redhat.com>
+
+	JFFS2 cleanup and import of newer code. Remove last vestiges of
+	Linuxisms such as 'struct inode' from the core code, leaving eCos
+	with no excuse, and renaming the eCos 'struct inode' to make that
+	point. Fix i_count handling throughout. Clean up remaining Linuxisms
+	such as 'struct qstr' to the point where jffs2port.h can be removed.
+	Add skeleton for background garbage-collect thread. Fix compression
+	so that it's actually called, and even with the right pointers. Turn
+	on -Werror again. Zero tolerance is a good thing. Make the i_mode
+	conversion functions non-inline to avoid warnings. Fix namespace
+	pollution (of all but ^jffs2_* at least). Move physical flash I/O
+	functions into separate file flashio.c for relatively easy
+	substitution. Various other cruftectomy.
+
 2003-11-25  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/fs-ecos.c: ARM gcc 3.2.3 is also broken. Complain with any

@@ -4,7 +4,7 @@
 #
 #      JFFS2 Filesystem configuration data
 #
-#      $Id: jffs2.cdl,v 1.6 2003/11/20 16:41:57 dwmw2 Exp $
+#      $Id: jffs2.cdl,v 1.13 2003/11/29 00:30:30 dwmw2 Exp $
 #
 # ====================================================================
 #####ECOSGPLCOPYRIGHTBEGIN####
@@ -72,7 +72,30 @@ cdl_package CYGPKG_FS_JFFS2 {
     implements     CYGINT_IO_FILEIO_FS      
 
     compile        -library=libextras.a fs-ecos.c
-    compile        build.c scan.c malloc-ecos.c nodelist.c nodemgmt.c readinode.c erase.c dir-ecos.c write.c gc.c read.c compr.c file-ecos.c
+    compile        build.c scan.c malloc-ecos.c nodelist.c nodemgmt.c readinode.c dir-ecos.c read.c compr.c
+    # This could be overridden by an alternative direct I/O method.
+    compile        flashio.c
+
+    cdl_option CYGOPT_FS_JFFS2_GCTHREAD {
+	display         "Support garbage-collection background thread"
+	flavor          bool
+	compile         gcthread.c
+# Leave this off till it's been implemented. And don't implement it till
+# icache locking has been made thread-safe.
+ 	requires        CYGPKG_KERNEL && 0
+        description     "
+            Enable background garbage collection thread, for making 
+	    free space ahead of time."
+    }
+
+    cdl_option CYGOPT_FS_JFFS2_WRITE {
+	display         "Include write support for JFFS2"
+	flavor          bool
+	compile		gc.c write.c erase.c
+	default_value   1
+        description     "
+            Enable writing to JFFS2 file systems; not only reading."
+    }
 
     cdl_option CYGOPT_FS_JFFS2_NAND {
 	display         "Support for NAND flash"
@@ -166,28 +189,15 @@ cdl_package CYGPKG_FS_JFFS2 {
 	display "Additional compiler flags"
 	flavor  data
 	no_define
-	# We add -D__ECOS to trigger eCos-specific code in places.
-	# We add -Werror because I find it useful.
+	# We add '-D__ECOS' to trigger eCos-specific code in places.
+	# We add '-nostdinc -iwithprefix include' to avoid picking up
+	#    native <linux/*.h> include files when building on Linux.
 	default_value { "-D__ECOS -nostdinc -iwithprefix include" }
 	description   "
 	    This option modifies the set of compiler flags for
             building the JFFS2 package.
             These flags are used in addition
             to the set of global flags."
-        }
-
-    cdl_option CYGPKG_FS_JFFS2_CFLAGS_REMOVE {
-	display "Suppressed compiler flags"
-	flavor  data
-	no_define
-	# We remove -Wpointer-arith so that some of the hacky Linux-compat code 
-	# (in file.c) compiled. We can probably remove it when that's replaced
-	# properly.
-	default_value { "-Wpointer-arith" }
-	description   "
-	    This option modifies the set of compiler flags for
-            building the JFFS2 package. These flags are removed from
-            the set of global flags if present."
         }
 
     # ----------------------------------------------------------------

@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: erase.c,v 1.57 2003/11/04 14:46:13 dwmw2 Exp $
+ * $Id: erase.c,v 1.58 2003/11/26 13:02:46 dwmw2 Exp $
  *
  */
 
@@ -281,11 +281,6 @@ static void jffs2_free_all_node_refs(struct jffs2_sb_info *c, struct jffs2_erase
 		jffs2_free_raw_node_ref(ref);
 	}
 	jeb->last_node = NULL;
-}
-
-void jffs2_erase_pending_trigger(struct jffs2_sb_info *c)
-{
-	OFNI_BS_2SFFJ(c)->s_dirt = 1;
 }
 
 static void jffs2_mark_erased_block(struct jffs2_sb_info *c, struct jffs2_eraseblock *jeb)

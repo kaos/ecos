@@ -1,13 +1,13 @@
 /*
  * JFFS2 -- Journalling Flash File System, Version 2.
  *
- * Copyright (C) 2002 Red Hat, Inc.
+ * Copyright (C) 2002-2003 Red Hat, Inc.
  *
  * Created by David Woodhouse <dwmw2@cambridge.redhat.com>
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: os-ecos.h,v 1.8 2003/11/20 16:41:58 dwmw2 Exp $
+ * $Id: os-ecos.h,v 1.19 2003/11/28 11:38:45 dwmw2 Exp $
  *
  */
 
@@ -20,102 +20,66 @@
 #include <asm/atomic.h>
 #include <linux/stat.h>
 #include <linux/compiler.h>
-#include "jffs2port.h"
 
-#ifndef CONFIG_JFFS2_FS_DEBUG
-# define CONFIG_JFFS2_FS_DEBUG 0
-#endif
+#include <pkgconf/system.h>
+#include <pkgconf/hal.h>
+#include <pkgconf/io_fileio.h>
 
-static inline uint32_t os_to_jffs2_mode(uint32_t osmode)
-{
-	uint32_t jmode = ((osmode & S_IRUSR)?00400:0) |
-		((osmode & S_IWUSR)?00200:0) |
-		((osmode & S_IXUSR)?00100:0) |
-		((osmode & S_IRGRP)?00040:0) |
-		((osmode & S_IWGRP)?00020:0) |
-		((osmode & S_IXGRP)?00010:0) |
-		((osmode & S_IROTH)?00004:0) |
-		((osmode & S_IWOTH)?00002:0) |
-		((osmode & S_IXOTH)?00001:0);
+#include <cyg/infra/cyg_trac.h>        // tracing macros
+#include <cyg/infra/cyg_ass.h>         // assertion macros
 
-	switch (osmode & S_IFMT) {
-	case S_IFSOCK:
-		return jmode | 0140000;
-	case S_IFLNK:
-		return jmode | 0120000;
-	case S_IFREG:
-		return jmode | 0100000;
-	case S_IFBLK:
-		return jmode | 0060000;
-	case S_IFDIR:
-		return jmode | 0040000;
-	case S_IFCHR:
-		return jmode | 0020000;
-	case S_IFIFO:
-		return jmode | 0010000;
-	case S_ISUID:
-		return jmode | 0004000;
-	case S_ISGID:
-		return jmode | 0002000;
-#ifdef S_ISVTX
-	case S_ISVTX:
-		return jmode | 0001000;
-#endif
+#include <unistd.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include <dirent.h>
+
+#include <stdlib.h>
+#include <string.h>
+
+#include <cyg/fileio/fileio.h>
+
+#include <cyg/hal/drv_api.h>
+#include <cyg/infra/diag.h>
+
+#include <cyg/io/flash.h>
+
+#include <linux/types.h>
+#include <linux/list.h>
+#include <asm/bug.h>
+
+#define printf diag_printf
+
+struct _inode;
+struct super_block;
+
+struct iovec {
+        void *iov_base;
+        ssize_t iov_len; 
+};
+
+static inline unsigned int full_name_hash(const unsigned char * name, unsigned int len) {
+
+	unsigned hash = 0;
+ 	while (len--) {
+		hash = (hash << 4) | (hash >> 28);
+		hash ^= *(name++);
 	}
-	printf("os_to_jffs2_mode() cannot convert 0x%x\n", osmode);
-	BUG();
-	return 0;
+	return hash;
 }
 
-static inline uint32_t jffs2_to_os_mode (uint32_t jmode)
-{
-	uint32_t osmode = ((jmode & 00400)?S_IRUSR:0) |
-		((jmode & 00200)?S_IWUSR:0) |
-		((jmode & 00100)?S_IXUSR:0) |
-		((jmode & 00040)?S_IRGRP:0) |
-		((jmode & 00020)?S_IWGRP:0) |
-		((jmode & 00010)?S_IXGRP:0) |
-		((jmode & 00004)?S_IROTH:0) |
-		((jmode & 00002)?S_IWOTH:0) |
-		((jmode & 00001)?S_IXOTH:0);
-
-	switch(jmode & 00170000) {
-	case 0140000:
-		return osmode | S_IFSOCK;
-	case 0120000:
-		return osmode | S_IFLNK;
-	case 0100000:
-		return osmode | S_IFREG;
-	case 0060000:
-		return osmode | S_IFBLK;
-	case 0040000:
-		return osmode | S_IFDIR;
-	case 0020000:
-		return osmode | S_IFCHR;
-	case 0010000:
-		return osmode | S_IFIFO;
-	case 0004000:
-		return osmode | S_ISUID;
-	case 0002000:
-		return osmode | S_ISGID;
-#ifdef S_ISVTX
-	case 0001000:
-		return osmode | S_ISVTX;
-#endif
-	}
-	printf("jffs2_to_os_mode() cannot convert 0x%x\n", osmode);
-	BUG();
-	return 0;
-}
-
- /* Read-only operation not currently implemented on eCos */
+#ifdef CYGOPT_FS_JFFS2_WRITE
 #define jffs2_is_readonly(c) (0)
+#else
+#define jffs2_is_readonly(c) (1)
+#endif
 
 /* NAND flash not currently supported on eCos */
 #define jffs2_can_mark_obsolete(c) (1)
 
 #define JFFS2_INODE_INFO(i) (&(i)->jffs2_i)
-#define OFNI_EDONI_2SFFJ(f)  ((struct inode *) ( ((char *)f) - ((char *)(&((struct inode *)NULL)->jffs2_i)) ) )
+#define OFNI_EDONI_2SFFJ(f)  ((struct _inode *) ( ((char *)f) - ((char *)(&((struct _inode *)NULL)->jffs2_i)) ) )
  
 #define JFFS2_F_I_SIZE(f) (OFNI_EDONI_2SFFJ(f)->i_size)
 #define JFFS2_F_I_MODE(f) (OFNI_EDONI_2SFFJ(f)->i_mode)
@@ -126,108 +90,98 @@ static inline uint32_t jffs2_to_os_mode (uint32_t jmode)
 #define JFFS2_F_I_ATIME(f) (OFNI_EDONI_2SFFJ(f)->i_atime)
 
 /* FIXME: eCos doesn't hav a concept of device major/minor numbers */
-#define JFFS2_F_I_RDEV_MIN(f) (MINOR(to_kdev_t(OFNI_EDONI_2SFFJ(f)->i_rdev)))
-#define JFFS2_F_I_RDEV_MAJ(f) (MAJOR(to_kdev_t(OFNI_EDONI_2SFFJ(f)->i_rdev)))
+#define JFFS2_F_I_RDEV_MIN(f) ((OFNI_EDONI_2SFFJ(f)->i_rdev)&0xff)
+#define JFFS2_F_I_RDEV_MAJ(f) ((OFNI_EDONI_2SFFJ(f)->i_rdev)>>8)
 
-
-//#define ITIME(sec) (sec)
-//#define I_SEC(x) (x)
 #define get_seconds cyg_timestamp
 
-struct inode {
-	//struct list_head	i_hash;
-	//struct list_head	i_list;
-	struct list_head	i_dentry;
-
+struct _inode {
 	cyg_uint32		i_ino;
-	atomic_t		i_count;
-	//kdev_t			i_dev;
+
+	int			i_count;
 	mode_t			i_mode;
-	nlink_t			i_nlink;
+	nlink_t			i_nlink; // Could we dispense with this?
 	uid_t			i_uid;
 	gid_t			i_gid;
-	kdev_t			i_rdev;
-	off_t			i_size;
 	time_t			i_atime;
 	time_t			i_mtime;
 	time_t			i_ctime;
-	unsigned long		i_blksize;
-	unsigned long		i_blocks;
-	//unsigned long		i_version;
-	//struct semaphore	i_sem;
-	//struct semaphore	i_zombie;
-	struct inode_operations	*i_op;
-	struct file_operations	*i_fop;	// former ->i_op->default_file_ops 
-	struct super_block	*i_sb;
-	//wait_queue_head_t	i_wait;
-	//struct file_lock	*i_flock;
-	//struct address_space	*i_mapping;
-	//struct address_space	i_data;	
-	//struct dquot		*i_dquot[MAXQUOTAS];
-	//struct pipe_inode_info	*i_pipe;
-	//struct block_device	*i_bdev;
+//	union {
+		unsigned short	i_rdev; // For devices only
+		struct _inode *	i_parent; // For directories only
+		off_t		i_size; // For files only
+//	};
+	struct super_block *	i_sb;
 
-	//unsigned long		i_state;
-
-	unsigned int		i_flags;
-	//unsigned char		i_sock;
-
-	atomic_t		i_writecount;
-	//unsigned int		i_attr_flags;
-	//uint32_t			i_generation;
 	struct jffs2_inode_info	jffs2_i;
 
-        struct inode *i_parent;
-
-        struct inode *i_cache_prev;
-        struct inode *i_cache_next;
+        struct _inode *		i_cache_prev; // We need doubly-linked?
+        struct _inode *		i_cache_next;
 };
 
 #define JFFS2_SB_INFO(sb) (&(sb)->jffs2_sb)
-
 #define OFNI_BS_2SFFJ(c)  ((struct super_block *) ( ((char *)c) - ((char *)(&((struct super_block *)NULL)->jffs2_sb)) ) )
 
 struct super_block {
-	unsigned long		s_blocksize;
-	unsigned char		s_blocksize_bits;
-	unsigned char		s_dirt;
-	//struct super_operations	*s_op;
-	unsigned long		s_flags;
-	unsigned long		s_magic;
-	//struct dentry		*s_root;
-	struct inode		*s_root;
-	struct jffs2_sb_info jffs2_sb;
-        unsigned long       s_mount_count;
-    cyg_io_handle_t     s_dev;
+	struct jffs2_sb_info	jffs2_sb;
+	struct _inode *		s_root;
+        unsigned long		s_mount_count;
+	cyg_io_handle_t		s_dev;
 };
 
-#define sleep_on_spinunlock(wq, sl) do { ; } while(0)
+#define sleep_on_spinunlock(wq, sl) spin_unlock(sl)
 #define EBADFD 32767
 
 /* background.c */
+#ifdef CYGOPT_FS_JFFS2_GCTHREAD
+void jffs2_garbage_collect_trigger(struct jffs2_sb_info *c);
+void jffs2_start_garbage_collect_thread(struct jffs2_sb_info *c);
+void jffs2_stop_garbage_collect_thread(struct jffs2_sb_info *c);
+#else
 static inline void jffs2_garbage_collect_trigger(struct jffs2_sb_info *c)
 {
 	/* We don't have a GC thread in eCos (yet) */
 }
+#endif
 
-/* dir.c */
-extern struct file_operations jffs2_dir_operations;
-extern struct inode_operations jffs2_dir_inode_operations;
+/* fs-ecos.c */
+struct _inode *jffs2_new_inode (struct _inode *dir_i, int mode, struct jffs2_raw_inode *ri);
+struct _inode *jffs2_iget(struct super_block *sb, cyg_uint32 ino);
+void jffs2_iput(struct _inode * i);
+void jffs2_gc_release_inode(struct jffs2_sb_info *c, struct jffs2_inode_info *f);
+struct jffs2_inode_info *jffs2_gc_fetch_inode(struct jffs2_sb_info *c, int inum, int nlink);
+unsigned char *jffs2_gc_fetch_page(struct jffs2_sb_info *c, struct jffs2_inode_info *f, 
+				   unsigned long offset, unsigned long *priv);
+void jffs2_gc_release_page(struct jffs2_sb_info *c, unsigned char *pg, unsigned long *priv);
 
-/* file.c */
-extern struct file_operations jffs2_file_operations;
-extern struct inode_operations jffs2_file_inode_operations;
-extern struct address_space_operations jffs2_file_address_operations;
-int jffs2_null_fsync(struct file *, struct dentry *, int);
-int jffs2_setattr (struct dentry *dentry, struct iattr *iattr);
-int jffs2_do_readpage_nolock (struct inode *inode, struct page *pg);
-int jffs2_do_readpage_unlock (struct inode *inode, struct page *pg);
-//int jffs2_readpage (struct file *, struct page *);
-int jffs2_readpage (struct inode *d_inode, struct page *pg);
-//int jffs2_prepare_write (struct file *, struct page *, unsigned, unsigned);
-int jffs2_prepare_write (struct inode *d_inode, struct page *pg, unsigned start, unsigned end);
-//int jffs2_commit_write (struct file *, struct page *, unsigned, unsigned);
-int jffs2_commit_write (struct inode *d_inode, struct page *pg, unsigned start, unsigned end);
+/* Avoid polluting eCos namespace with names not starting in jffs2_ */
+#define os_to_jffs2_mode(x) jffs2_from_os_mode(x)
+uint32_t jffs2_from_os_mode(uint32_t osmode);
+uint32_t jffs2_to_os_mode (uint32_t jmode);
+
+
+/* flashio.c */
+cyg_bool jffs2_flash_read(struct jffs2_sb_info *c, cyg_uint32 read_buffer_offset,
+			  const size_t size, size_t * return_size, char * write_buffer);
+cyg_bool jffs2_flash_write(struct jffs2_sb_info *c, cyg_uint32 write_buffer_offset,
+			   const size_t size, size_t * return_size, char * read_buffer);
+int jffs2_flash_direct_writev(struct jffs2_sb_info *c, const struct iovec *vecs,
+			      unsigned long count, loff_t to, size_t *retlen);
+cyg_bool jffs2_flash_erase(struct jffs2_sb_info *c, struct jffs2_eraseblock *jeb);
+
+// dir-ecos.c
+struct _inode *jffs2_lookup(struct _inode *dir_i, const unsigned char *name, int namelen);
+int jffs2_create(struct _inode *dir_i, const unsigned char *d_name, int mode, struct _inode **new_i);
+int jffs2_mkdir (struct _inode *dir_i, const unsigned char *d_name, int mode);
+int jffs2_link (struct _inode *old_d_inode, struct _inode *dir_i, const unsigned char *d_name);
+int jffs2_unlink(struct _inode *dir_i, struct _inode *d_inode, const unsigned char *d_name);
+int jffs2_rmdir (struct _inode *dir_i, struct _inode *d_inode, const unsigned char *d_name);
+int jffs2_rename (struct _inode *old_dir_i, struct _inode *d_inode, const unsigned char *old_d_name,
+		  struct _inode *new_dir_i, const unsigned char *new_d_name);
+
+/* erase.c */
+static inline void jffs2_erase_pending_trigger(struct jffs2_sb_info *c)
+{ }
 
 #ifndef CONFIG_JFFS2_FS_NAND
 #define jffs2_can_mark_obsolete(c) (1)
@@ -247,16 +201,9 @@ int jffs2_commit_write (struct inode *d_inode, struct page *pg, unsigned start, 
 #else
 #error no nand yet
 #endif
-struct inode *jffs2_new_inode (struct inode *dir_i, int mode, struct jffs2_raw_inode *ri);
-void jffs2_clear_inode (struct inode *inode);
-void jffs2_read_inode (struct inode *inode);
 
-static inline void jffs2_init_inode_info(struct jffs2_inode_info *f)
-{
-	memset(f, 0, sizeof(*f));
-	init_MUTEX_LOCKED(&f->sem);
-}
-
+#ifndef BUG_ON
 #define BUG_ON(x) do { if (unlikely(x)) BUG(); } while(0)
+#endif
 
 #endif /* __JFFS2_OS_ECOS_H__ */

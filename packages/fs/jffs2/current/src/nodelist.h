@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: nodelist.h,v 1.113 2003/11/20 16:40:14 dwmw2 Exp $
+ * $Id: nodelist.h,v 1.115 2003/11/26 15:30:58 dwmw2 Exp $
  *
  */
 
@@ -378,6 +378,7 @@ struct rb_node *rb_prev(struct rb_node *);
 void rb_replace_node(struct rb_node *victim, struct rb_node *new, struct rb_root *root);
 
 /* nodemgmt.c */
+int jffs2_thread_should_wake(struct jffs2_sb_info *c);
 int jffs2_reserve_space(struct jffs2_sb_info *c, uint32_t minsize, uint32_t *ofs, uint32_t *len, int prio);
 int jffs2_reserve_space_gc(struct jffs2_sb_info *c, uint32_t minsize, uint32_t *ofs, uint32_t *len);
 int jffs2_add_physical_node_ref(struct jffs2_sb_info *c, struct jffs2_raw_node_ref *new);
@@ -453,7 +454,6 @@ int jffs2_do_mount_fs(struct jffs2_sb_info *c);
 /* erase.c */
 void jffs2_erase_block(struct jffs2_sb_info *c, struct jffs2_eraseblock *jeb);
 void jffs2_erase_pending_blocks(struct jffs2_sb_info *c, int count);
-void jffs2_erase_pending_trigger(struct jffs2_sb_info *c);
 
 #ifdef CONFIG_JFFS2_FS_NAND
 /* wbuf.c */

@@ -1,13 +1,13 @@
 /*
  * JFFS2 -- Journalling Flash File System, Version 2.
  *
- * Copyright (C) 2001, 2002 Red Hat, Inc.
+ * Copyright (C) 2001-2003 Red Hat, Inc.
  *
  * Created by David Woodhouse <dwmw2@cambridge.redhat.com>
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: malloc-ecos.c,v 1.2 2003/01/09 13:53:44 dwmw2 Exp $
+ * $Id: malloc-ecos.c,v 1.4 2003/11/26 15:55:35 dwmw2 Exp $
  *
  */
 

@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: gc.c,v 1.129 2003/11/20 16:40:14 dwmw2 Exp $
+ * $Id: gc.c,v 1.132 2003/12/01 11:32:11 dwmw2 Exp $
  *
  */
 
@@ -36,7 +36,7 @@ static int jffs2_garbage_collect_dnode(struct jffs2_sb_info *c, struct jffs2_era
 				       struct jffs2_inode_info *f, struct jffs2_full_dnode *fn,
 				       uint32_t start, uint32_t end);
 static int jffs2_garbage_collect_live(struct jffs2_sb_info *c,  struct jffs2_eraseblock *jeb,
-			       struct jffs2_raw_node_ref *raw, struct jffs2_inode_cache *ic);
+			       struct jffs2_raw_node_ref *raw, struct jffs2_inode_info *f);
 
 /* Called with erase_completion_lock held */
 static struct jffs2_eraseblock *jffs2_find_gc_block(struct jffs2_sb_info *c)
@@ -112,10 +112,11 @@ static struct jffs2_eraseblock *jffs2_find_gc_block(struct jffs2_sb_info *c)
  */
 int jffs2_garbage_collect_pass(struct jffs2_sb_info *c)
 {
+	struct jffs2_inode_info *f;
 	struct jffs2_inode_cache *ic;
 	struct jffs2_eraseblock *jeb;
 	struct jffs2_raw_node_ref *raw;
-	int ret = 0;
+	int ret = 0, inum, nlink;
 
 	if (down_interruptible(&c->alloc_sem))
 		return -EINTR;
@@ -249,7 +250,9 @@ int jffs2_garbage_collect_pass(struct jffs2_sb_info *c)
 
 	ic = jffs2_raw_ref_to_ic(raw);
 
-	/* We need to hold the inocache */
+	/* We need to hold the inocache. Either the erase_completion_lock or
+	   the inocache_lock are sufficient; we trade down since the inocache_lock 
+	   causes less contention. */
 	spin_lock(&c->inocache_lock);
 
 	spin_unlock(&c->erase_completion_lock);
@@ -343,14 +346,26 @@ int jffs2_garbage_collect_pass(struct jffs2_sb_info *c)
 		/* Fall through if it wanted us to, with inocache_lock held */
 	}
 
-	/* FIXME: We still have the inocache_lock held. This is ugly.
-	   It's done to prevent the fairly unlikely race where the
-	   gcblock is entirely obsoleted by the final close of a file
-	   which had the only valid nodes in the block, followed by
-	   erasure, followed by freeing of the ic because the erased
-	   block(s) held _all_ the nodes of that inode.... never been
-	   seen but it's vaguely possible. */
-	ret = jffs2_garbage_collect_live(c, jeb, raw, ic);
+	/* Prevent the fairly unlikely race where the gcblock is
+	   entirely obsoleted by the final close of a file which had
+	   the only valid nodes in the block, followed by erasure,
+	   followed by freeing of the ic because the erased block(s)
+	   held _all_ the nodes of that inode.... never been seen but
+	   it's vaguely possible. */
+
+	inum = ic->ino;
+	nlink = ic->nlink;
+	spin_unlock(&c->inocache_lock);
+
+	f = jffs2_gc_fetch_inode(c, inum, nlink);
+	if (IS_ERR(f))
+		return PTR_ERR(f);
+	if (!f)
+		return 0;
+
+	ret = jffs2_garbage_collect_live(c, jeb, raw, f);
+
+	jffs2_gc_release_inode(c, f);
 
  release_sem:
 	up(&c->alloc_sem);
@@ -374,78 +389,14 @@ int jffs2_garbage_collect_pass(struct jffs2_sb_info *c)
 }
 
 static int jffs2_garbage_collect_live(struct jffs2_sb_info *c,  struct jffs2_eraseblock *jeb,
-				      struct jffs2_raw_node_ref *raw, struct jffs2_inode_cache *ic)
+				      struct jffs2_raw_node_ref *raw, struct jffs2_inode_info *f)
 {
-	struct jffs2_inode_info *f;
 	struct jffs2_node_frag *frag;
 	struct jffs2_full_dnode *fn = NULL;
 	struct jffs2_full_dirent *fd;
 	uint32_t start = 0, end = 0, nrfrags = 0;
-	struct inode *inode;
 	int ret = 0;
 
-	if (!ic->nlink) {
-		int inum = ic->ino;
-
-		spin_unlock(&c->inocache_lock);
-
-		/* The inode has zero nlink but its nodes weren't yet marked
-		   obsolete. This has to be because we're still waiting for 
-		   the final (close() and) iput() to happen.
-
-		   There's a possibility that the final iput() could have 
-		   happened while we were contemplating. In order to ensure
-		   that we don't cause a new read_inode() (which would fail)
-		   for the inode in question, we use ilookup() in this case
-		   instead of iget().
-
-		   The nlink can't _become_ zero at this point because we're 
-		   holding the alloc_sem, and jffs2_do_unlink() would also
-		   need that while decrementing nlink on any inode.
-		*/
-		inode = ilookup(OFNI_BS_2SFFJ(c), inum);
-		if (!inode) {
-			D1(printk(KERN_DEBUG "ilookup() failed for ino #%u; inode is probably deleted.\n",
-				  inum));
-
-			spin_lock(&c->inocache_lock);
-			ic = jffs2_get_ino_cache(c, inum);
-			if (!ic) {
-				D1(printk(KERN_DEBUG "Inode cache for ino #%u is gone.\n", inum));
-				spin_unlock(&c->inocache_lock);
-				return 0;
-			}
-			if (ic->state != INO_STATE_CHECKEDABSENT) {
-				/* Wait for progress. Don't just loop */
-				D1(printk(KERN_DEBUG "Waiting for ino #%u in state %d\n",
-					  ic->ino, ic->state));
-				sleep_on_spinunlock(&c->inocache_wq, &c->inocache_lock);
-			} else {
-				spin_unlock(&c->inocache_lock);
-			}
-
-			return 0;
-		}
-	} else {
-		spin_unlock(&c->inocache_lock);
-
-		/* Inode has links to it still; they're not going away because
-		   jffs2_do_unlink() would need the alloc_sem and we have it.
-		   Just iget() it, and if read_inode() is necessary that's OK.
-		*/
-		inode = iget(OFNI_BS_2SFFJ(c), ic->ino);
-		if (!inode)
-			return -ENOMEM;
-	}
-	if (is_bad_inode(inode)) {
-		printk(KERN_NOTICE "Eep. read_inode() failed for ino #%u. nlink %d, state %d\n",
-		       ic->ino, ic->nlink, ic->state);
-		/* NB. This will happen again. We need to do something appropriate here. */
-		ret = -EIO;
-		goto put_out;
-	}
-
-	f = JFFS2_INODE_INFO(inode);
 	down(&f->sem);
 
 	/* Now we have the lock for this inode. Check that it's still the one at the head
@@ -486,10 +437,10 @@ static int jffs2_garbage_collect_live(struct jffs2_sb_info *c,  struct jffs2_era
 	}
 	if (fn) {
 		if (ref_flags(raw) == REF_PRISTINE) {
-			ret = jffs2_garbage_collect_pristine(c, ic, raw);
+			ret = jffs2_garbage_collect_pristine(c, f->inocache, raw);
 			if (!ret) {
 				/* Urgh. Return it sensibly. */
-				frag->node->raw = ic->nodes;
+				frag->node->raw = f->inocache->nodes;
 			}	
 			if (ret != -EBADFD)
 				goto upnout;
@@ -526,8 +477,6 @@ static int jffs2_garbage_collect_live(struct jffs2_sb_info *c,  struct jffs2_era
 	}
  upnout:
 	up(&f->sem);
- put_out:
-	iput(inode);
 
 	return ret;
 }
@@ -1075,10 +1024,9 @@ static int jffs2_garbage_collect_dnode(struct jffs2_sb_info *c, struct jffs2_era
 	uint32_t alloclen, phys_ofs, offset, orig_end, orig_start;	
 	int ret = 0;
 	unsigned char *comprbuf = NULL, *writebuf;
-	struct page *pg;
+	unsigned long pg;
 	unsigned char *pg_ptr;
-	/* FIXME: */ struct inode *inode = OFNI_EDONI_2SFFJ(f);
-
+ 
 	memset(&ri, 0, sizeof(ri));
 
 	D1(printk(KERN_DEBUG "Writing replacement dnode for ino #%u from offset 0x%x to 0x%x\n",
@@ -1217,16 +1165,12 @@ static int jffs2_garbage_collect_dnode(struct jffs2_sb_info *c, struct jffs2_era
 	 *    page OK. We'll actually write it out again in commit_write, which is a little
 	 *    suboptimal, but at least we're correct.
 	 */
-#ifdef __ECOS
-	pg = read_cache_page(start >> PAGE_CACHE_SHIFT, (void *)jffs2_do_readpage_unlock, inode);
-#else
-	pg = read_cache_page(inode->i_mapping, start >> PAGE_CACHE_SHIFT, (void *)jffs2_do_readpage_unlock, inode);
-#endif
-	if (IS_ERR(pg)) {
-		printk(KERN_WARNING "read_cache_page() returned error: %ld\n", PTR_ERR(pg));
-		return PTR_ERR(pg);
+	pg_ptr = jffs2_gc_fetch_page(c, f, start, &pg);
+
+	if (IS_ERR(pg_ptr)) {
+		printk(KERN_WARNING "read_cache_page() returned error: %ld\n", PTR_ERR(pg_ptr));
+		return PTR_ERR(pg_ptr);
 	}
-	pg_ptr = (char *)kmap(pg);
 
 	offset = start;
 	while(offset < orig_end) {
@@ -1267,7 +1211,7 @@ static int jffs2_garbage_collect_dnode(struct jffs2_sb_info *c, struct jffs2_era
 		ri.dsize = cpu_to_je32(datalen);
 		ri.compr = comprtype;
 		ri.node_crc = cpu_to_je32(crc32(0, &ri, sizeof(ri)-8));
-		ri.data_crc = cpu_to_je32(crc32(0, writebuf, cdatalen));
+		ri.data_crc = cpu_to_je32(crc32(0, comprbuf, cdatalen));
 	
 		new_fn = jffs2_write_dnode(c, f, &ri, comprbuf, cdatalen, phys_ofs, ALLOC_GC);
 
@@ -1287,10 +1231,7 @@ static int jffs2_garbage_collect_dnode(struct jffs2_sb_info *c, struct jffs2_era
 		}
 	}
 
-	kunmap(pg);
-	/* XXX: Does the page get freed automatically? */
-	/* AAA: Judging by the unmount getting stuck in __wait_on_page, nope. */
-	page_cache_release(pg);
+	jffs2_gc_release_page(c, pg_ptr, &pg);
 	return ret;
 }
 

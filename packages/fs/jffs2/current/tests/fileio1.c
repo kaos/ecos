@@ -97,7 +97,7 @@ diag_printf("<FAIL>: " #_fn "() returned %d %s\n", _res, _res<0?strerror(errno):
 
 //==========================================================================
 
-#define IOSIZE  100
+#define IOSIZE  1000
 
 #define LONGNAME1       "long_file_name_that_should_take_up_more_than_one_directory_entry_1"
 #define LONGNAME2       "long_file_name_that_should_take_up_more_than_one_directory_entry_2"
@@ -182,7 +182,7 @@ static void listdir( char *name, int statp, int numexpected, int *numgot )
 
 static void createfile( char *name, size_t size )
 {
-    char buf[IOSIZE];
+    unsigned char buf[IOSIZE];
     int fd;
     ssize_t wrote;
     int i;
@@ -255,7 +255,7 @@ static void maxfile( char *name )
 
 static void checkfile( char *name )
 {
-    char buf[IOSIZE];
+    unsigned char buf[IOSIZE];
     int fd;
     ssize_t done;
     int i;

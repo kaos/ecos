@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: write.c,v 1.77 2003/11/18 21:14:02 dwmw2 Exp $
+ * $Id: write.c,v 1.79 2003/12/03 09:41:03 dwmw2 Exp $
  *
  */
 
@@ -373,8 +373,8 @@ int jffs2_write_inode_range(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 			break;
 		}
 		down(&f->sem);
-		datalen = writelen;
-		cdatalen = min_t(uint32_t, alloclen - sizeof(*ri), writelen);
+		datalen = min_t(uint32_t, writelen, PAGE_CACHE_SIZE - (offset & (PAGE_CACHE_SIZE-1)));
+		cdatalen = min_t(uint32_t, alloclen - sizeof(*ri), datalen);
 
 		comprtype = jffs2_compress(buf, &comprbuf, &datalen, &cdatalen);
 
