@@ -56,9 +56,10 @@ cdl_package CYGPKG_COMPRESS_ZLIB {
     include_dir   cyg/compress
 
     requires      CYGPKG_ISOINFRA
+    requires      CYGPKG_CRC
 
     compile       infblock.c infcodes.c inffast.c inflate.c
-    compile       inftrees.c infutil.c adler32.c crc32.c
+    compile       inftrees.c infutil.c adler32.c 
     compile       zutil.c deflate.c trees.c compress.c uncompr.c
 
     cdl_interface CYGINT_COMPRESS_ZLIB_LOCAL_ALLOC {

@@ -15,6 +15,7 @@
 
 #ifdef __ECOS__
 #include <cyg/compress/zlib.h>
+#include <cyg/crc/crc.h>
 #else
 #include "zlib.h"
 #endif // __ECOS__

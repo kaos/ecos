@@ -1,3 +1,11 @@
+2002-10-10  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/zutil.h:
+	* include/zlib.h:
+	* src/inflate.c (inflate): Use the CRC function from the CRC
+	package.
+	* src/crc32.c: Removed.
+
 2002-09-09  Mark Salter  <msalter@redhat.com>
 
 	* inflate.c (inflate): Fix CRC calculation over multiple invocations

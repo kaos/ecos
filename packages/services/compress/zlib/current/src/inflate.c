@@ -392,9 +392,10 @@ int f;
         r = f;
 #ifdef __ECOS__
       if (z->state->gz_mode != DONE)
-        z->state->gz_sum = gz_crc32(z->state->gz_sum,
-				    z->state->gz_start,
-				    z->next_out - z->state->gz_start);
+        z->state->gz_sum = cyg_ether_crc32_accumulate(z->state->gz_sum,
+                                                      z->state->gz_start,
+                                                      z->next_out - 
+                                                      z->state->gz_start);
 #endif
       if (r != Z_STREAM_END)
         return r;

@@ -836,9 +836,7 @@ ZEXTERN uLong ZEXPORT adler32 OF((uLong adler, const Bytef *buf, uInt len));
      if (adler != original_adler) error();
 */
 
-#if 1 // __ECOS__
-ZEXTERN uLong ZEXPORT gz_crc32   OF((uLong crc, const Bytef *buf, uInt len));
-#else
+#ifndef __ECOS__
 ZEXTERN uLong ZEXPORT crc32   OF((uLong crc, const Bytef *buf, uInt len));
 #endif // __ECOS__
 /*
