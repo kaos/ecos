@@ -1,3 +1,8 @@
+2003-05-02  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/appsettings.cpp: Don't use "." in the PATH to
+	look for build tools and user tools.
+
 2003-05-01  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/common/cdl_exec.cxx: Generate Cygwin text-mode mounts

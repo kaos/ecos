@@ -109,7 +109,7 @@ ecSettings::ecSettings()
     m_showShortDescrWindow = TRUE;
     m_showMemoryWindow = FALSE;
     m_showOutputWindow = TRUE;
-    
+
     m_showMacroNames = FALSE;
     
     m_bUseCustomViewer = FALSE;
@@ -257,7 +257,7 @@ bool ecSettings::LoadConfig()
     config.Read(_("/Window Size/WindowY"), & m_frameSize.y);
     config.Read(_("/Window Size/WindowWidth"), & m_frameSize.width);
     config.Read(_("/Window Size/WindowHeight"), & m_frameSize.height);
-    
+
     config.Read(_("/Window Size/TreeSashWidth"), & m_treeSashSize.x);
     config.Read(_("/Window Size/TreeSashHeight"), & m_treeSashSize.y);
     config.Read(_("/Window Size/ConfigPaneWidth"), & m_configPaneWidth);
@@ -412,22 +412,25 @@ bool ecSettings::LoadConfig()
 
 	    wxArrayString arstrPath;
             ecUtils::Chop(strPath, arstrPath, wxT(':'));
-            
+
             for (int i = arstrPath.GetCount()-1;i >= 0; --i)
             { // Reverse order is important to treat path correctly
-                wxLogNull log;
-                wxDir finder(arstrPath[i]);
-                wxString filename;
-            
-                if (finder.IsOpened())
+                if (wxT(".") != arstrPath[i] && !arstrPath[i].IsEmpty())
                 {
-                    bool bMore = finder.GetFirst(& filename, gccExe);
-                    while (bMore)
+                    wxLogNull log;
+                    wxDir finder(arstrPath[i]);
+                    wxString filename;
+
+                    if (finder.IsOpened())
                     {
-                        wxString targetName = filename.Left(filename.Find(wxT("-gcc")));
-                        m_arstrBinDirs.Set(targetName, arstrPath[i]);
-                    
-                        bMore = finder.GetNext(& filename);
+                        bool bMore = finder.GetFirst(& filename, gccExe);
+                        while (bMore)
+                        {
+                            wxString targetName = filename.Left(filename.Find(wxT("-gcc")));
+                            m_arstrBinDirs.Set(targetName, arstrPath[i]);
+
+                            bMore = finder.GetNext(& filename);
+                        }
                     }
                 }
             }
@@ -457,7 +460,7 @@ bool ecSettings::LoadConfig()
     // Read toolchain paths (local machine again)
 #ifdef __WXMSW__    
     wxArrayString arstrToolChainPaths;
-    
+
     // Use eCos just as a test.
     //GetRepositoryRegistryClues(arstrToolChainPaths,_T("eCos"));
     GetRepositoryRegistryClues(arstrToolChainPaths,_T("GNUPro eCos"));
@@ -546,20 +549,23 @@ bool ecSettings::LoadConfig()
             
             for (int i = arstrPath.GetCount()-1;i >= 0; --i)
             { // Reverse order is important to treat path correctly
-                
+
                 const ecFileName &strFolder = arstrPath[i];
-                ecFileName strFile(strFolder);
-                strFile += wxT("ls.exe");
-                if ( strFile.Exists() )
+                if (wxT(".") != strFolder && !strFolder.IsEmpty())
                 {
-                    if (!wxArrayStringIsMember(m_userToolPaths, strFolder))
+                    ecFileName strFile(strFolder);
+                    strFile += wxT("ls.exe");
+                    if ( strFile.Exists() )
                     {
-                        m_userToolPaths.Add(strFolder);
-                    }
-                    
-                    if ( m_userToolsDir.IsEmpty() )
-                    {
-                        m_userToolsDir = strFolder;
+                        if (!wxArrayStringIsMember(m_userToolPaths, strFolder))
+                        {
+                            m_userToolPaths.Add(strFolder);
+                        }
+
+                        if ( m_userToolsDir.IsEmpty() )
+                        {
+                            m_userToolsDir = strFolder;
+                        }
                     }
                 }
             }
@@ -570,7 +576,7 @@ bool ecSettings::LoadConfig()
     {
         wxConfig eCosConfig(wxGetApp().GetSettings().GetConfigAppName(), wxEmptyString, wxEmptyString, wxEmptyString, wxCONFIG_USE_GLOBAL_FILE|wxCONFIG_USE_LOCAL_FILE);
         wxConfigPathChanger path(& config, wxT("/Repository/"));
-        
+
         //if (!eCosConfig.Read(wxT("Folder"), & m_strRepository))
         if (!eCosConfig.Read(wxT("/Paths/RepositoryDir"), & m_strRepository))
         {
@@ -704,7 +710,7 @@ bool ecSettings::SaveConfig()
     config.Write(_("/Paths/BuildToolsDir"), m_buildToolsDir);
     
     config.Write(_("/Build/Make Options"), m_strMakeOptions);
-    
+
     // Find dialog settings
     config.Write(_("/Find/Text"), m_findText);
     config.Write(_("/Find/MatchWholeWord"), m_findMatchWholeWord);
@@ -785,11 +791,11 @@ ecFileName ecSettings::m_strDefaultExternalBrowser;
 int ecSettings::GetRepositoryRegistryClues(wxArrayString& arstr, const wxString& pszPrefix)
 {
     arstr.Clear();
-    
+
 #ifdef __WXMSW__
     wxConfig config(wxT("Windows"), wxT("Microsoft"), wxEmptyString, wxEmptyString, wxCONFIG_USE_GLOBAL_FILE);
     config.SetPath(wxT("/CurrentVersion/App Paths"));
-    
+
     wxString key(wxT(""));
     long index;
     bool bMore = config.GetFirstGroup(key, index);
