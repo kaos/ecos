@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Jonathan Larmour
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -49,6 +50,7 @@
 
 
 #include <cyg/infra/testcase.h>
+#include <cyg/infra/diag.h>
 #include <pkgconf/posix.h>
 #include <pkgconf/system.h>
 #ifdef CYGPKG_KERNEL
@@ -206,8 +208,6 @@ extern bool measure_clock_latency;
 #endif
 
 //==========================================================================
-
-externC void diag_printf(const char *, ...);
 
 void run_sched_tests(void);
 void run_thread_tests(void);

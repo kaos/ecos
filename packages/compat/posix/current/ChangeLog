@@ -1,3 +1,8 @@
+2002-11-05  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* tests/tm_basic.cxx: Use <cyg/infra/diag.h> for diag_printf
+	prototype.
+
 2002-05-23  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/posix.cdl: Don't build tests using signals when posix
