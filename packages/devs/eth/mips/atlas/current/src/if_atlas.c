@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Nick Garnett <nickg@calivar.com>
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -33,8 +34,8 @@
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
 //
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
+// Alternative licenses for eCos may be arranged by contacting the copyright
+// holders.
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //####BSDCOPYRIGHTBEGIN####
@@ -51,7 +52,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    msalter
-// Contributors: msalter
+// Contributors: msalter, nickg
 // Date:         2000-12-06
 // Purpose:      
 // Description:  hardware driver for SAA9730 ethernet
@@ -77,6 +78,7 @@
 #include <cyg/hal/hal_endian.h>
 #include <cyg/hal/hal_intr.h>
 #include <cyg/hal/hal_cache.h>
+#include <cyg/hal/hal_if.h>
 #include <cyg/infra/diag.h>
 #include <cyg/hal/drv_api.h>
 #include <cyg/io/eth/netdev.h>
@@ -112,6 +114,9 @@ RedBoot_config_option("Network hardware address [MAC]",
 // Exported statistics and the like
 #include <cyg/io/eth/eth_drv_stats.h>
 
+#ifndef CYGPKG_REDBOOT
+//#define DEBUG
+#endif
 #define db_printf diag_printf
 
 #define ETHER_ADDR_LEN 6
@@ -167,8 +172,8 @@ NETDEVTAB_ENTRY(atlas_netdev,
                 atlas_saa9730_init, 
                 &atlas_sc);
 
-#ifdef CYGSEM_ARM_ATLAS_SET_ESA
-static unsigned char enaddr[] = CYGDAT_ARM_ATLAS_ESA;
+#ifdef CYGSEM_MIPS_ATLAS_SET_ESA
+static unsigned char enaddr[] = CYGDAT_MIPS_ATLAS_ESA;
 #else
 static unsigned char enaddr[ETHER_ADDR_LEN];
 #endif
@@ -179,9 +184,17 @@ static void saa9730_poll(struct eth_drv_sc *sc);
 static int
 saa9730_isr(cyg_vector_t vector, cyg_addrword_t data)
 {
+    struct saa9730_priv_data *spd = (struct saa9730_priv_data *)data;
+    unsigned long __base = spd->base;    
+
 #ifndef CYGPKG_REDBOOT    
+    SAA9730_EVM_IER_SW &= ~(SAA9730_EVM_LAN_INT|SAA9730_EVM_MASTER);
+    SAA9730_EVM_ISR = SAA9730_EVM_LAN_INT;
     cyg_drv_interrupt_mask(vector);
-#endif    
+#endif
+#ifdef DEBUG
+    db_printf("saa9730_isr\n");
+#endif
     return (CYG_ISR_HANDLED|CYG_ISR_CALL_DSR);  // Run the DSR
 }
 
@@ -192,6 +205,9 @@ void saa9730_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     struct saa9730_priv_data *spd = (struct saa9730_priv_data *)data;
     struct cyg_netdevtab_entry *ndp = (struct cyg_netdevtab_entry *)(spd->ndp);
     struct eth_drv_sc *sc = (struct eth_drv_sc *)(ndp->device_instance);
+#ifdef DEBUG
+    db_printf("saa9730_dsr\n");    
+#endif
 
     eth_drv_dsr(vector, count, (cyg_addrword_t)sc);
 }
@@ -251,6 +267,7 @@ __select_buffer(struct saa9730_priv_data *spd, int buf_nr)
         SAA9730_OK2USE |= SAA9730_OK2USE_RXB;
     else
         SAA9730_OK2USE |= SAA9730_OK2USE_RXA;
+
 }
 
 static void
@@ -315,7 +332,7 @@ __init_dma(struct saa9730_priv_data *spd)
 		      (SAA9730_RXPKTS_PER_BUFFER <<  8) |
 		      (SAA9730_RXPKTS_PER_BUFFER <<  0));
 
-    SAA9730_OK2USE = SAA9730_OK2USE_RXA | SAA9730_OK2USE_RXB;
+    SAA9730_OK2USE = 0;
 
     __select_buffer(spd, 0);
 
@@ -323,10 +340,13 @@ __init_dma(struct saa9730_priv_data *spd)
     SAA9730_DMACTL = SAA9730_DMACTL_BLKINT |
 	             SAA9730_DMACTL_MAXXFER_ANY |
 	             SAA9730_DMACTL_ENDIAN_LITTLE;
-#ifdef CYGPKG_REDBOOT
+
     SAA9730_DMACTL |= SAA9730_DMACTL_RXINT;
     SAA9730_DMACTL |= (1<<SAA9730_DMACTL_RXINTCNT_SHIFT);
     SAA9730_DMACTL &= ~SAA9730_DMACTL_BLKINT;
+
+#ifndef CYGPKG_REDBOOT
+    SAA9730_DMACTL |= SAA9730_DMACTL_TXINT;
 #endif
     
     SAA9730_TIMOUT = 200;
@@ -339,6 +359,7 @@ __init_dma(struct saa9730_priv_data *spd)
     SAA9730_RXCTL |= SAA9730_RXCTL_STRIPCRC;
 
     SAA9730_CAMENA = 1;
+
 }
 
 static void
@@ -347,6 +368,10 @@ __check_mii(struct saa9730_priv_data *spd)
     unsigned long __base = spd->base;
     cyg_uint32 opmode;
 
+#ifdef DEBUG
+    db_printf("__check_mii\n");    
+#endif
+    
     // spin till station is not busy
     while (SAA9730_MDCTL & SAA9730_MDCTL_BUSY)
 	;
@@ -378,7 +403,7 @@ __check_mii(struct saa9730_priv_data *spd)
         opmode = (SAA9730_MDDATA & PHY_REG31_OPMODE_MSK) >> PHY_REG31_OPMODE_SHIFT;
 
 #ifdef DEBUG
-	diag_printf("MII mode %d\n", opmode);
+	db_printf("MII mode %d\n", opmode);
 #endif
 
 	if ((opmode == OPMODE_10BASET_FULLDUPLEX) ||
@@ -389,7 +414,7 @@ __check_mii(struct saa9730_priv_data *spd)
     }
 #ifdef DEBUG
     else
-	diag_printf("Link is down\n");
+	db_printf("Link is down\n");
 #endif
 }
 
@@ -430,7 +455,7 @@ atlas_saa9730_init(struct cyg_netdevtab_entry *tab)
     struct saa9730_priv_data *spd = (struct saa9730_priv_data *)sc->driver_private;
 
 #ifdef DEBUG
-    diag_printf("atlas_saa9730_init\n");
+    db_printf("atlas_saa9730_init\n");
 #endif
 
     if (0 == initialized) {
@@ -481,6 +506,8 @@ atlas_saa9730_init(struct cyg_netdevtab_entry *tab)
 		      spd->base, spd->vector);
 #endif
 
+            spd->ndp = tab;
+            
 #ifndef CYGPKG_REDBOOT
 	    cyg_drv_interrupt_create(
 		    spd->vector,
@@ -494,7 +521,7 @@ atlas_saa9730_init(struct cyg_netdevtab_entry *tab)
 	    cyg_drv_interrupt_attach(spd->interrupt_handle);
 	    cyg_drv_interrupt_acknowledge(spd->vector);
 	    cyg_drv_interrupt_unmask(spd->vector);
-#else
+#endif
             {
                 // When in Redboot we want to get RX interrupts. These
                 // will be picked up by the default interrupt handler and
@@ -504,7 +531,6 @@ atlas_saa9730_init(struct cyg_netdevtab_entry *tab)
                 SAA9730_EVM_IER |= (SAA9730_EVM_LAN_INT|SAA9730_EVM_MASTER);
                 SAA9730_EVM_ISR |= (SAA9730_EVM_LAN_INT|SAA9730_EVM_MASTER);
             }
-#endif
 
 #ifdef DEBUG
 	    db_printf(" **** Device enabled for I/O and Memory and Bus Master\n");
@@ -516,6 +542,8 @@ atlas_saa9730_init(struct cyg_netdevtab_entry *tab)
 #endif
         }
 
+        saa9730_stop(sc);
+        
 	spd->active = 0;
 
 	initialized = 1;
@@ -524,15 +552,15 @@ atlas_saa9730_init(struct cyg_netdevtab_entry *tab)
     // Fetch hardware address
 #if defined(CYGPKG_REDBOOT) && \
     defined(CYGSEM_REDBOOT_FLASH_CONFIG) && \
-    !defined(CYGSEM_ARM_ATLAS_SET_ESA)
+    !defined(CYGSEM_MIPS_ATLAS_SET_ESA)
     flash_get_config("atlas_esa", enaddr, CONFIG_ESA);
 #else
-#if 0
-    for (i = 0;  i < ETHER_ADDR_LEN;  i += 2) {
-        unsigned short esa_reg = get_reg(PP_IA+i);
-        enaddr[i] = esa_reg & 0xFF;
-        enaddr[i+1] = esa_reg >> 8;
-    }
+#define CONFIG_ESA     6
+    CYGACC_CALL_IF_FLASH_CFG_OP( CYGNUM_CALL_IF_FLASH_CFG_GET,
+                                 "atlas_esa", enaddr, CONFIG_ESA );
+#ifdef DEBUG
+    db_printf("ESA: %02x:%02x:%02x:%02x:%02x:%02x\n",
+              enaddr[0],enaddr[1],enaddr[2],enaddr[3],enaddr[4],enaddr[5]);
 #endif
 #endif
 
@@ -583,6 +611,8 @@ __do_start(struct saa9730_priv_data *spd)
     // for rx, turn on DMA first
     SAA9730_DMACTL |= SAA9730_DMACTL_ENRX;
     SAA9730_RXCTL |= SAA9730_RXCTL_ENRX;
+
+    __select_buffer(spd, spd->next_rx_bindex);    
 }
 
 //
@@ -738,7 +768,11 @@ __check_rxstate(struct saa9730_priv_data *spd)
     cyg_uint32  *pkt;
     int         i, j;
 
-#ifdef CYGPKG_REDBOOT    
+#ifdef DEBUG
+    db_printf("__check_rxstate\n");        
+#endif
+
+#ifdef CYGPKG_REDBOOT
     // Clear SAA9730 LAN interrupt and re-enable interrupts.
     SAA9730_EVM_ISR = SAA9730_EVM_LAN_INT;
     SAA9730_EVM_IER_SW |= (SAA9730_EVM_LAN_INT|SAA9730_EVM_MASTER);
@@ -748,7 +782,7 @@ __check_rxstate(struct saa9730_priv_data *spd)
         // re-init driver and controller
 #ifdef DEBUG
         db_printf("DBGRXS: reset\n");
-#endif        
+#endif
 	saa9730_reset(spd);
 	__do_start(spd);
 	return;
@@ -765,7 +799,7 @@ __check_rxstate(struct saa9730_priv_data *spd)
 		// re-init driver and controller
 #ifdef DEBUG
                 db_printf("rxpkt: reset\n");
-#endif                
+#endif
 		saa9730_reset(spd);
 		__do_start(spd);
 		return;
@@ -859,6 +893,9 @@ __rx_poll(struct eth_drv_sc *sc)
     volatile cyg_uint32 *pkt;
     cyg_uint32           status, pktlen; 
 
+#ifdef DEBUG
+    db_printf("__rx_poll\n");
+#endif
     if (!spd->active)
 	return;
 
@@ -875,7 +912,9 @@ __rx_poll(struct eth_drv_sc *sc)
 	// stop now if no more packets
         if (((status = CYG_LE32_TO_CPU(*pkt)) & RXPACKET_STATUS_FLAG_MASK) == RX_READY)
             break;
-
+#ifdef DEBUG
+        db_printf("__rx_poll pkt %08x status %08x\n",pkt,status);
+#endif
 	// if this is the first packet in a buffer, switch the SAA9730 to
 	// use the next buffer for subsequent incoming packets.
 	if (pindex == 0)
@@ -891,7 +930,11 @@ __rx_poll(struct eth_drv_sc *sc)
 		// done = 1;
 	    }
 	}
-
+#ifdef DEBUG
+        else
+            db_printf("rx bad: %08x %08x\n",pkt,status);
+#endif
+        
 	/* go to next packet in sequence */
 	spd->next_rx_pindex++;
 	if (spd->next_rx_pindex >= SAA9730_RXPKTS_PER_BUFFER) {
@@ -976,7 +1019,7 @@ saa9730_poll(struct eth_drv_sc *sc)
 #ifndef CYGPKG_REDBOOT
     cyg_drv_interrupt_mask(spd->vector);
 #endif
-    
+
     (void)saa9730_isr(spd->vector, (cyg_addrword_t)spd);
 
     __do_deliver(sc);
@@ -994,9 +1037,18 @@ static void
 saa9730_deliver(struct eth_drv_sc *sc)
 {
     struct saa9730_priv_data *spd = (struct saa9730_priv_data *)sc->driver_private;
+    unsigned long __base = spd->base;    
 
     if (spd->active)
 	__do_deliver(sc);
+
+    cyg_drv_interrupt_acknowledge(spd->vector);
+
+#ifndef CYGPKG_REDBOOT
+    // Clear SAA9730 LAN interrupt and re-enable interrupts.
+    SAA9730_EVM_IER_SW |= (SAA9730_EVM_LAN_INT|SAA9730_EVM_MASTER);
+    cyg_drv_interrupt_unmask(spd->vector);
+#endif    
 }
 
 

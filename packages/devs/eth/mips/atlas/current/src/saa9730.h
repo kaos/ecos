@@ -11,6 +11,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Nick Garnett <nickg@calivar.com>
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -35,15 +36,15 @@
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
 //
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
+// Alternative licenses for eCos may be arranged by contacting the copyright
+// holders.
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     msalter
-// Contributors:  msalter
+// Contributors:  msalter, nickg
 // Date:          2000-12-09
 // Description:   Definitions for Philips SAA9730 Ethernet module.
 //
@@ -308,6 +309,10 @@
 #  define SAA9730_DBGRXS_RXDII_MASK          0x1ff
 #  define SAA9730_DBGRXS_RXDII_ERROR         8
 
+
+#define SAA9730_DBGRXFIFO       *((volatile unsigned *)(__base + 0x20510)) // DEBUG
+
+#define SAA9730_DBGLANSTA       *((volatile unsigned *)(__base + 0x20514)) // DEBUG
 
 // ******** Packet control/status **********
 

@@ -1,3 +1,9 @@
+2003-03-21  Nick Garnett  <nickg@balti.calivar.com>
+
+	* src/saa9730.h: 
+	* src/if_atlas.c:
+	Many small changes to make this driver work correctly in eCos.
+
 2003-03-13  Nick Garnett  <nickg@balti.calivar.com>
 
 	* cdl/atlas_eth_drivers.cdl:
