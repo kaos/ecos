@@ -547,6 +547,7 @@ find_free(struct free_chunk *chunks)
                             // This free chunk has collapsed
                             while (idx < (num_chunks-1)) {
                                 chunks[idx] = chunks[idx+1];
+                                idx++;
                             }
                             num_chunks--;
                         }
@@ -1076,7 +1077,7 @@ fis_load(int argc, char *argv[])
         if (cksum != img->file_cksum) {
             diag_printf("** Warning - checksum failure.  stored: 0x%08lx, computed: 0x%08lx\n",
                         img->file_cksum, cksum);
-            entry_address = NO_MEMORY;
+            entry_address = (unsigned long)NO_MEMORY;
         }
     }
 #endif
