@@ -4,21 +4,35 @@
 <PARA>
 The profile_gprof package provides a mechanism to measure the
 runtime performance of an application.  This is done by gathering
-an execution histogram, which can then be uploaded to a host
-and analyzed using the 
-<function>gprof</function>
-utility program.
+an execution histogram.
 </PARA>
 <para>
-Since the collected histogram data is volatile, some mechanism 
-must be used to export the data from the target.  
-Currently, this process is done using
-<emphasis>TFTP</emphasis>.
 When profiling is started on the target device, a 
-<emphasis>TFTP</emphasis>
+<function>TFTP</function> 
 server will be started
 which exports the single file
 <filename>PROFILE.DAT</filename>
+This analysis data can then be fetched
+by connecting to the target with a <function>TFTP</function> 
+client program
+and then be processed by the 
+<function>gprof</function>
+utility program.
+<note><title>NOTE</title>
+<para>
+Be sure and specify binary mode transfers for this data file,
+which may not be the default with on some <function>TFTP</function>
+client programs.
+</para>
+</note>
+<note><title>NOTE</title>
+<para>
+The port used for this <function>TFTP</function> server is
+configurable.  The default will be the IETF standard port
+of 69/UDP, but it may be changed to any UDP port via the
+<literal>CYGNUM_PROFILE_TFTP_PORT</literal> CDL option.
+</para>
+</note>
 </para>
 </PARTINTRO>
 <CHAPTER id="profile-functions">
