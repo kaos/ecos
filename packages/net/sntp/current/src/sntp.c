@@ -65,7 +65,7 @@
 #define MODE_BROADCAST 5
 
 struct sntp_srv_s {
-  struct sockaddr_in addr;
+  struct sockaddr addr;
   int stratum;
   int version;
   cyg_uint32 timestamp;
@@ -95,7 +95,7 @@ static int is_better(struct sntp_srv_s *newer, struct sntp_srv_s *old) {
    
   time_t last_time, diff;
   
-  if (newer->addr.sin_addr.s_addr == old->addr.sin_addr.s_addr) return 1;
+  if (!memcmp(&newer->addr, &old->addr, newer->addr.sa_len)) return 1;
   if (newer->stratum < old->stratum) return 1;
 
   if (old->timestamp != 0xffffffff) {
@@ -109,6 +109,8 @@ static int is_better(struct sntp_srv_s *newer, struct sntp_srv_s *old) {
   return 1;
 }
 
+const struct in6_addr in6addr_ntp_multicast = IN6ADDR_NTP_MULTICAST;
+
 static void sntp_fn(cyg_addrword_t data) {
   int fd;
   int ret;
@@ -120,6 +122,13 @@ static void sntp_fn(cyg_addrword_t data) {
   int mode;
   int len;
   time_t new_time, current_time, diff;
+  fd_set readfds;
+  int n;
+#ifdef CYGPKG_NET_INET6
+  int fd6 = -1;
+  struct ipv6_mreq mreq;
+  struct sockaddr_in6 local6;
+#endif
 
   memset(&best_srv,0xff,sizeof(best_srv));
 
@@ -131,17 +140,87 @@ static void sntp_fn(cyg_addrword_t data) {
 
   memset(&local,0,sizeof(local));
   local.sin_family = AF_INET;
+  local.sin_len = sizeof(local);
   local.sin_port = serv->s_port;
   local.sin_addr.s_addr = INADDR_ANY;
-  
+
   ret=bind(fd,(struct sockaddr *)&local,sizeof(local));
   CYG_ASSERT(0 == ret, "Bind failed");
 
-  while (1) {
-    len = sizeof(new_srv.addr);
-    ret=recvfrom(fd,buf,sizeof(buf),0,(struct sockaddr *)&new_srv.addr,&len);
-    CYG_ASSERT(0 < ret,"recvfrom");
+  n = fd;
 
+#ifdef CYGPKG_NET_INET6
+  fd6 = socket(AF_INET6, SOCK_DGRAM,0);
+  CYG_ASSERT(-1 != fd,"Failed to open socket");
+  mreq.ipv6mr_multiaddr = in6addr_ntp_multicast;
+  mreq.ipv6mr_interface = 0;
+
+  // Node-Local
+  ret = setsockopt(fd6, IPPROTO_IPV6, IPV6_JOIN_GROUP, &mreq, sizeof(mreq));
+  CYG_ASSERT(0 == ret, "setsockopt(IPV6_JOIN_GROUP) Node-Local");
+
+#ifdef CYGHWR_NET_DRIVER_ETH0
+  // Link-Local
+  mreq.ipv6mr_multiaddr.s6_addr[1]=0x02;
+  mreq.ipv6mr_interface = if_nametoindex("eth0");
+  if (mreq.ipv6mr_interface != 0 ) {
+    ret = setsockopt(fd6, IPPROTO_IPV6, IPV6_JOIN_GROUP, &mreq, sizeof(mreq));
+    CYG_ASSERT(0 == ret, "setsockopt(IPV6_JOIN_GROUP) Link-Local eth0");
+  }
+#endif
+#ifdef CYGHWR_NET_DRIVER_ETH1
+  // Link-Local
+  mreq.ipv6mr_multiaddr.s6_addr[1]=0x02;
+  mreq.ipv6mr_interface = if_nametoindex("eth1");
+  if (mreq.ipv6mr_interface != 0 ) {
+    ret = setsockopt(fd6, IPPROTO_IPV6, IPV6_JOIN_GROUP, &mreq, sizeof(mreq));
+    CYG_ASSERT(0 == ret, "setsockopt(IPV6_JOIN_GROUP) Link-Local eth1");
+  }
+#endif
+
+  // Site-Local
+  mreq.ipv6mr_multiaddr.s6_addr[1]=0x05;
+  ret = setsockopt(fd6, IPPROTO_IPV6, IPV6_JOIN_GROUP, &mreq, sizeof(mreq));
+  CYG_ASSERT(0 == ret, "setsockopt(IPV6_JOIN_GROUP) Site-Local");
+
+  // Global
+  mreq.ipv6mr_multiaddr.s6_addr[1]=0x0e;
+  ret = setsockopt(fd6, IPPROTO_IPV6, IPV6_JOIN_GROUP, &mreq, sizeof(mreq));
+  CYG_ASSERT(0 == ret, "setsockopt(IPV6_JOIN_GROUP) Global");
+  
+  memset(&local6,0,sizeof(local6));
+  local6.sin6_family = AF_INET6;
+  local6.sin6_len = sizeof(local6);
+  local6.sin6_port = serv->s_port;
+  local6.sin6_addr = in6addr_any;
+  
+  ret = bind(fd6, (struct sockaddr *)&local6,sizeof(local6));
+  CYG_ASSERT(0 == ret, "Bind6 failed");
+  
+  n = (n > fd6 ? n : fd6);
+#endif
+
+  while (1) {
+    FD_ZERO(&readfds);
+    FD_SET(fd,&readfds);
+#ifdef CYGPKG_NET_INET6
+    FD_SET(fd6,&readfds);
+#endif
+    
+    ret = select(n+1, &readfds,NULL,NULL,NULL);
+    CYG_ASSERT(-1 != ret, "Select");
+
+    len = sizeof(new_srv.addr);
+    if (FD_ISSET(fd,&readfds)) {
+      ret=recvfrom(fd,buf,sizeof(buf),0,(struct sockaddr *)&new_srv.addr,&len);
+    }
+#ifdef CYGPKG_NET_INET6
+    if (FD_ISSET(fd6,&readfds)) {
+      ret=recvfrom(fd6,buf,sizeof(buf),0,(struct sockaddr *)&new_srv.addr,&len);
+    }
+#endif
+    CYG_ASSERT(0 < ret,"recvfrom");
+      
     /* We expect at least enough bytes to fill the buffer. There could
        be more if there is a digest, but we ignore that. */
     if (ret < sizeof(buf))

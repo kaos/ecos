@@ -52,6 +52,11 @@
 
 #include <cyg/infra/cyg_type.h>
 
+// Multicast address used by IPv6
+#define IN6ADDR_NTP_MULTICAST \
+	{{{ 0xff, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, \
+	    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01 }}}
+
 /* Call this function to start the SNTP Client */
 __externC void 
 cyg_sntp_start(void);

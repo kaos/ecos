@@ -82,7 +82,7 @@ net_test(cyg_addrword_t param)
 
   cyg_sntp_start();
 
-  for (seconds = 120; seconds > 0; seconds--) {
+  for (seconds = 20; seconds > 0; seconds--) {
     now = time(NULL);
     ctime_r(&now, time_info);
     time_info[strlen(time_info)-1] = '\0';  // Strip \n
@@ -103,7 +103,7 @@ net_test(cyg_addrword_t param)
 	break;
     }
     tm.tm_mon = i;
-    tm.tm_mday++;
+    tm.tm_year -= 1900;
 
     build_time = mktime(&tm);
     CYG_ASSERT(-1 != build_time,"mktime returned -1");
@@ -111,7 +111,7 @@ net_test(cyg_addrword_t param)
     if (build_time > time(NULL)) {
       CYG_TEST_FAIL_FINISH("Build time is ahead of SNTP time");
     } else {
-      if ((build_time + 60 * 60 * 24 * 90) > time(NULL)) {
+      if ((build_time + 60 * 60 * 24 * 90) < time(NULL)) {
 	CYG_TEST_FAIL_FINISH("Build time is more than 90 days old");
       }
     }
