@@ -492,6 +492,7 @@ externC int cyg_hal_sys_readdir(unsigned int fd,
                                 unsigned int count);
 externC int cyg_hal_sys_lstat(const char* name, struct cyg_hal_sys_stat *buf);
 externC int cyg_hal_sys_fstat(int fd, struct cyg_hal_sys_stat *buf);
+externC int cyg_hal_sys_mkdir(const char* path, int mode);
 
 // Access to environmental data
 extern int              cyg_hal_sys_argc;

@@ -240,13 +240,19 @@ externC cyg_uint32      hal_clock_read(void);
     CYG_MACRO_END
 
 // ----------------------------------------------------------------------------
-// Test case exit support.
+// Resetting the Synth target is not possible, but existing the process is.
 externC void            cyg_hal_sys_exit(int); 
+#define HAL_PLATFORM_RESET()                                    \
+    CYG_MACRO_START                                             \
+    cyg_hal_sys_exit(0)                                         \
+    CYG_MACRO_END
+
+// ----------------------------------------------------------------------------
+// Test case exit support.
 #define CYGHWR_TEST_PROGRAM_EXIT()                              \
     CYG_MACRO_START                                             \
     cyg_hal_sys_exit(0);                                        \
     CYG_MACRO_END
-
 //---------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_HAL_INTR_H
 // End of hal_intr.h
