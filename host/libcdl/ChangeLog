@@ -1,3 +1,16 @@
+2000-07-04  Bart Veer  <bartv@redhat.com>
+
+	* value.cxx (save):
+	The comment "# This value cannot be modified here." was being
+	added even for modifiable options, courtesy of some earlier
+	code rearrangement.
+
+	* config.cxx (change_package_version):
+	Prevent assertion failure/crash when changing the version of a
+	package that has not been loaded (not uncommon when using
+	ecosconfig and confusing the order of the version and the
+	package(s)).
+
 2000-06-28  Bart Veer  <bartv@redhat.com>
 
 	* transact.cxx, cdlcore.hxx:

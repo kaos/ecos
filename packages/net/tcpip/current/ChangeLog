@@ -1,3 +1,8 @@
+2000-07-04  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/bootp.h: Fix namespace pollution from "#define int32
+	int" - it fights against application code too much.
+
 2000-06-26  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* tests/ping_test.c (net_test): Added use of the

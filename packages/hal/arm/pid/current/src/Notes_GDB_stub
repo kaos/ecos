@@ -50,8 +50,6 @@ This will install some files in ./install/bin:
 
 Make FLASH tool
 ~~~~~~~~~~~~~~~
-Make FLASH tool
-~~~~~~~~~~~~~~~
 
 Again, these are the necessary CLI instructions. It can also be done
 from the Configtool by selecting the appropriate templates, and

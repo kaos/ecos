@@ -86,7 +86,7 @@ SOFTWARE.
  */
 
 #ifdef __ECOS
-#define int32 int
+#include <machine/types.h>
 #else
 #include "bptypes.h"	/* for int32, u_int32 */
 #endif
@@ -102,7 +102,11 @@ struct bootp {
     unsigned char    bp_htype;			/* hardware addr type */
     unsigned char    bp_hlen;			/* hardware addr length */
     unsigned char    bp_hops;			/* gateway hops */
-    unsigned int32   bp_xid;			/* transaction ID */
+#ifdef __ECOS
+    u_int32_t        bp_xid;			/* transaction ID */
+#else
+    unsigned int     bp_xid;			/* transaction ID */
+#endif
     unsigned short   bp_secs;			/* seconds since boot began */
     unsigned short   bp_flags;			/* RFC1532 broadcast, etc. */
     struct in_addr   bp_ciaddr;			/* client IP address */
@@ -295,13 +299,21 @@ struct bootp {
 
 struct cmu_vend {
 	char		v_magic[4];	/* magic number */
-	unsigned int32	v_flags;	/* flags/opcodes, etc. */
+#ifdef __ECOS
+	u_int32_t	v_flags;	/* flags/opcodes, etc. */
+#else
+        unsigned int32  v_flags;        /* flags/opcodes, etc. */
+#endif
 	struct in_addr 	v_smask;	/* Subnet mask */
 	struct in_addr 	v_dgate;	/* Default gateway */
 	struct in_addr	v_dns1, v_dns2; /* Domain name servers */
 	struct in_addr	v_ins1, v_ins2; /* IEN-116 name servers */
 	struct in_addr	v_ts1, v_ts2;	/* Time servers */
-	int32		v_unused[6];	/* currently unused */
+#ifdef __ECOS
+	int32_t		v_unused[6];	/* currently unused */
+#else
+        int32           v_unused[6];	/* currently unused */
+#endif
 };
 
 

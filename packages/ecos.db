@@ -95,6 +95,15 @@ package CYGPKG_IO_SERIAL_ARM_EBSA285 {
     description       "Intel StrongARM/EBSA285 serial device drivers"
 }
 
+package CYGPKG_IO_SERIAL_ARM_SA11X0 {
+    alias 	      { "Intel StrongARM SA11x0 serial driver"
+                        devs_serial_arm_sa11x0 sa11x0_serial_driver }
+    hardware
+    directory	      devs/serial/arm/sa11x0
+    script	      ser_arm_sa11x0.cdl	
+    description       "Intel StrongARM/SA11x0 serial device drivers"
+}
+
 package CYGPKG_IO_SERIAL_ARM_PID {
     alias             { "ARM PID serial device drivers"
                         devs_serial_arm_pid pid_serial_driver }
@@ -473,6 +482,34 @@ package CYGPKG_HAL_ARM_EBSA285 {
         description "
         The EBSA285 HAL package provides the support needed to run
         eCos on a Intel EBSA285 StrongARM eval board."
+}
+
+package CYGPKG_HAL_ARM_SA11X0 {
+	alias		{ "Intel SA11X0 Chipset" hal_arm_sa11x0 }
+	directory	hal/arm/sa11x0/var
+	script		hal_arm_sa11x0.cdl
+	hardware
+        description "
+        The SA11X0 HAL package provides the support needed to run
+        eCos on a Intel StrongARM SA11X0 based systems."
+}
+package CYGPKG_HAL_ARM_SA11X0_ASSABET {
+	alias		{ "Intel SA1110 Assabet eval board" hal_arm_sa11x0_assabet }
+	directory	hal/arm/sa11x0/assabet
+	script		hal_arm_sa11x0_assabet.cdl
+	hardware
+        description "
+        The ASSABET HAL package provides the support needed to run
+        eCos on a Intel StrongARM SA1110 evaulation board (assabet)."
+}
+package CYGPKG_HAL_ARM_SA11X0_BRUTUS {
+	alias		{ "Intel SA1100 Brutus eval board" hal_arm_sa11x0_brutus }
+	directory	hal/arm/sa11x0/brutus
+	script		hal_arm_sa11x0_brutus.cdl
+	hardware
+        description "
+        The BRUTUS HAL package provides the support needed to run
+        eCos on a Intel StrongARM SA1110 evaulation board (brutus)."
 }
 
 package CYGPKG_HAL_ARM_EDB7XXX {
@@ -905,6 +942,29 @@ target ebsa285 {
         description "
         The ebsa285 target provides the packages needed to run
         eCos on an Intel EBSA285 StrongARM board."
+}
+
+target assabet {
+	alias { "Intel StrongARM SA1110 board" assabet }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_SA11X0
+                   CYGPKG_HAL_ARM_SA11X0_ASSABET
+		   CYGPKG_IO_SERIAL_ARM_SA11X0
+        }
+        description "
+        The assabet target provides the packages needed to run
+        eCos on an Intel StrongARM SA1110 evaluation board."
+}
+target brutus {
+	alias { "Intel StrongARM SA1100 board" brutus }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_SA11X0
+                   CYGPKG_HAL_ARM_SA11X0_BRUTUS
+		   CYGPKG_IO_SERIAL_ARM_SA11X0
+        }
+        description "
+        The brutus target provides the packages needed to run
+        eCos on an Intel StrongARM SA1100 evaluation board."
 }
 
 target edb7xxx {

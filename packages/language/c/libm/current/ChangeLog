@@ -155,6 +155,7 @@
 
 	* src/PKGconf.mak: More brute-force fix for ARM compiler
 	problems - PR 19772
+
 1999-03-31  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* include/pkgconf/libm.h: Remove unnecessary define

@@ -395,6 +395,9 @@ CdlConfigurationBody::change_package_version(CdlTransaction transaction, std::st
     }
     // For now it is illegal to change the version of package that has
     // not been loaded yet
+    if (0 == package) {
+        throw CdlInputOutputException(std::string("Cannot change version of \"") + name + "\" , this package is not loaded");
+    }
     CYG_ASSERT_CLASSC(package);
     
     this->change_package_version(transaction, package, new_version, error_fn, warn_fn, limbo);

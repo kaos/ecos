@@ -131,6 +131,15 @@
 #  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
 # endif
 #endif
+#if defined(CYGPKG_HAL_ARM_SA11X0_ASSABET)                    \
+    && defined(CYGPKG_IO_SERIAL_ARM_SA11X0)                \
+    && defined(CYGPKG_IO_SERIAL_ARM_SA11X0_SERIAL1)
+# define TEST_CRASH_ID "assabet"
+# define TEST_SER_DEV CYGDAT_IO_SERIAL_ARM_SA11X0_SERIAL1_NAME
+# if defined(CYGPKG_IO_SERIAL_TTY_TTY1)
+#  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
+# endif
+#endif
 #if defined(CYGPKG_HAL_MIPS_TX39_JMR3904)               \
     && defined(CYGPKG_IO_SERIAL_TX39_JMR3904)           \
     && defined(CYGPKG_IO_SERIAL_TX39_JMR3904_SERIAL0)

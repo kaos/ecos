@@ -1,0 +1,113 @@
+2000-06-30  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c: calling i/f macro changes.
+
+2000-06-28  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_sa11x0.cdl: 
+	* include/plf_stub.h:
+	* src/plf_stub.c: [deleted]
+	Stub uses vector table for all IO.
+	
+	* src/sa11x0_misc.c: Fix compiler warning.
+
+2000-06-27  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c: Some fixes and code layout changes (Gary
+	Thomas).
+
+	* src/hal_diag.c:
+	* include/hal_diag.h:
+	* include/hal_sa11x0.h:
+	Changed to initialize all procs tables. Added timeout getc, and
+	proper debug channel switch behavior.
+
+2000-06-24  Gary Thomas  <gthomas@redhat.com>
+
+	* src/sa11x0_misc.c (hal_clock_reset): Add code to compensate for
+	clock drift since this hardware does not reset on interrupts.
+	(hal_clock_read): Also adjust the value returned here for same reason.
+
+2000-06-22  Gary Thomas  <gthomas@redhat.com>
+
+	* src/hal_diag.c (hal_diag_write_char): 
+	Fix typo: CYGINT_HAL_GDB_PORT_VECTOR to be CYGHWR_HAL_GDB_PORT_VECTOR
+	
+2000-06-19  Gary Thomas  <gthomas@redhat.com>
+
+	* include/hal_diag.h: 
+	* include/plf_stub.h: 
+	* src/hal_diag.c: 
+	* src/sa11x0_misc.c: Update for virtual vector (debug) support.
+
+2000-06-12  Gary Thomas  <gthomas@redhat.com>
+
+	* src/hal_diag.c: Fix baud rates for 960,19200.  Take out "announce"
+	string in ROM mode.
+
+2000-06-05  Gary Thomas  <gthomas@redhat.com>
+
+	* src/plf_stub.c: 
+	* include/plf_stub.h: 'sa1100' shared items renamed to 'sa11x0'.
+
+	* src/sa11x0_misc.c (hal_IRQ_handler): 
+	(hal_interrupt_mask): 
+	(hal_interrupt_unmask): 
+	(hal_interrupt_acknowledge): 
+	(hal_interrupt_configure): Complete support for GPIO interrupts.  
+	Some of these are direct, others are grouped and the code needs 
+	to handle both.  Also update support for GPIO edge detect interrupt 
+	circuitry.
+
+2000-06-04  Gary Thomas  <gthomas@redhat.com>
+
+	* include/hal_cache.h: 
+	* src/hal_diag.c: 
+	* src/sa11x0_misc.c: Renaming of 'sa1100' shared stuff to be
+	'sa11x0'.
+	
+	* include/hal_sa11x0.h: Renamed from 'hal_sa1100.h'.
+
+2000-06-01  Gary Thomas  <gthomas@redhat.com>
+
+	* src/sa11x0_misc.c: Enable caches.
+
+	* include/hal_sa1100.h: Misc cleanups and additions necessary for
+	ROM startup mode.
+
+2000-05-10  Gary Thomas  <gthomas@redhat.com>
+
+	* current/src/plf_stub.c:
+	* current/src/hal_diag.c:
+	* current/src/sa11x0_misc.c: 
+	* current/include/hal_diag.h: 
+	* current/include/hal_sa1100.h: 
+	* current/include/hal_cache.h: 
+	* current/include/plf_stub.h: 
+	* current/cdl/hal_arm_sa11x0.cdl: New file(s).
+
+//===========================================================================
+//####COPYRIGHTBEGIN####
+//                                                                          
+// -------------------------------------------                              
+// The contents of this file are subject to the Red Hat eCos Public License 
+// Version 1.1 (the "License"); you may not use this file except in         
+// compliance with the License.  You may obtain a copy of the License at    
+// http://www.redhat.com/                                                   
+//                                                                          
+// Software distributed under the License is distributed on an "AS IS"      
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+// License for the specific language governing rights and limitations under 
+// the License.                                                             
+//                                                                          
+// The Original Code is eCos - Embedded Configurable Operating System,      
+// released September 30, 1998.                                             
+//                                                                          
+// The Initial Developer of the Original Code is Red Hat.                   
+// Portions created by Red Hat are                                          
+// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// All Rights Reserved.                                                     
+// -------------------------------------------                              
+//                                                                          
+//####COPYRIGHTEND####
+//===========================================================================

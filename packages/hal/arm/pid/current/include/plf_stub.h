@@ -54,36 +54,30 @@
 #include <cyg/hal/arm_stub.h>           // architecture stub support
 
 //----------------------------------------------------------------------------
-// Define serial stuff.
+// Define some platform specific communication details. This is mostly
+// handled by hal_if now, but we need to make sure the comms tables are
+// properly initialized.
 
-extern void hal_pid_init_serial(void);
-extern int  hal_pid_get_char(void);
-extern void hal_pid_put_char(int c);
-extern int  hal_pid_interruptible(int);
+externC void cyg_hal_plf_comms_init(void);
 
-#define HAL_STUB_PLATFORM_INIT_SERIAL()       hal_pid_init_serial()
-#define HAL_STUB_PLATFORM_GET_CHAR()          hal_pid_get_char()
-#define HAL_STUB_PLATFORM_PUT_CHAR(c)         hal_pid_put_char((c))
+#define HAL_STUB_PLATFORM_INIT_SERIAL()       cyg_hal_plf_comms_init()
+
 #define HAL_STUB_PLATFORM_SET_BAUD_RATE(baud) CYG_UNUSED_PARAM(int, (baud))
-#define HAL_STUB_PLATFORM_INTERRUPTIBLE       (&hal_pid_interruptible)
+#define HAL_STUB_PLATFORM_INTERRUPTIBLE       0
 #define HAL_STUB_PLATFORM_INIT_BREAK_IRQ()    CYG_EMPTY_STATEMENT
 
 //----------------------------------------------------------------------------
 // Stub initializer.
 #define HAL_STUB_PLATFORM_INIT()              CYG_EMPTY_STATEMENT
 
+#endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+
 //----------------------------------------------------------------------------
 // Reset.
-#ifdef CYGSEM_HAL_ROM_MONITOR
-// Just call the ROM's entry point. Not as safe as a reset, but the PID
-// doesn't have a watchdog, so this'll have to do.
-externC void reset_vector(void);
-#define HAL_STUB_PLATFORM_RESET() reset_vector()
-#else
-#define HAL_STUB_PLATFORM_RESET() CYG_EMPTY_STATEMENT
-#endif
 
-#endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+#define HAL_STUB_PLATFORM_RESET() CYG_EMPTY_STATEMENT
+
+#define HAL_STUB_PLATFORM_RESET_ENTRY 0x4000000
 
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_PLF_STUB_H

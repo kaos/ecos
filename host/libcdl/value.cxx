@@ -3790,10 +3790,10 @@ CdlValuableBody::save(CdlInterpreter interp, Tcl_Channel chan, int indentation, 
             data += indent_string + "# Calculated value: " +
                 CdlInterpreterBody::extend_comment(expr->get_original_string(), indentation, 4) + '\n';
             data += CdlInterpreterBody::multiline_comment(follow_expr_references(expr, expr), indentation, 4);
-        } else {
+        } else if (!modifiable) {
             data += indent_string + "# This value cannot be modified here.\n";
         }
-        
+         
         // Output the flavor. This clutters up the savefile a bit.
         // However it is necessary so that the user can distinguish
         // between bool, booldata and data items

@@ -1,0 +1,322 @@
+//==========================================================================
+//
+//      io/serial/arm/sa11x0/sa11x0_serial.c
+//
+//      StrongARM SA11x0 Serial I/O Interface Module (interrupt driven)
+//
+//==========================================================================
+//####COPYRIGHTBEGIN####
+//                                                                          
+// -------------------------------------------                              
+// The contents of this file are subject to the Red Hat eCos Public License 
+// Version 1.1 (the "License"); you may not use this file except in         
+// compliance with the License.  You may obtain a copy of the License at    
+// http://www.redhat.com/                                                   
+//                                                                          
+// Software distributed under the License is distributed on an "AS IS"      
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+// License for the specific language governing rights and limitations under 
+// the License.                                                             
+//                                                                          
+// The Original Code is eCos - Embedded Configurable Operating System,      
+// released September 30, 1998.                                             
+//                                                                          
+// The Initial Developer of the Original Code is Red Hat.                   
+// Portions created by Red Hat are                                          
+// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// All Rights Reserved.                                                     
+// -------------------------------------------                              
+//                                                                          
+//####COPYRIGHTEND####
+//==========================================================================
+//#####DESCRIPTIONBEGIN####
+//
+// Author(s):     gthomas
+// Contributors:  gthomas
+// Date:          2000-05-08
+// Purpose:       StrongARM SA11x0 Serial I/O module (interrupt driven version)
+// Description: 
+//
+//####DESCRIPTIONEND####
+//
+//==========================================================================
+
+#include <pkgconf/system.h>
+#include <pkgconf/io_serial.h>
+#include <pkgconf/io.h>
+#include <pkgconf/kernel.h>
+
+#include <cyg/io/io.h>
+#include <cyg/hal/hal_intr.h>
+#include <cyg/io/devtab.h>
+#include <cyg/io/serial.h>
+#include <cyg/infra/diag.h>
+
+#ifdef CYGPKG_IO_SERIAL_ARM_SA11X0
+
+#include "sa11x0_serial.h"
+
+typedef struct sa11x0_serial_info {
+    CYG_ADDRWORD   base;
+    CYG_WORD       int_num;
+    cyg_interrupt  serial_interrupt;
+    cyg_handle_t   serial_interrupt_handle;
+} sa11x0_serial_info;
+
+static bool sa11x0_serial_init(struct cyg_devtab_entry *tab);
+static bool sa11x0_serial_putc(serial_channel *chan, unsigned char c);
+static Cyg_ErrNo sa11x0_serial_lookup(struct cyg_devtab_entry **tab, 
+                                   struct cyg_devtab_entry *sub_tab,
+                                   const char *name);
+static unsigned char sa11x0_serial_getc(serial_channel *chan);
+static bool sa11x0_serial_set_config(serial_channel *chan, cyg_serial_info_t *config);
+static void sa11x0_serial_start_xmit(serial_channel *chan);
+static void sa11x0_serial_stop_xmit(serial_channel *chan);
+
+static cyg_uint32 sa11x0_serial_ISR(cyg_vector_t vector, cyg_addrword_t data);
+static void       sa11x0_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data);
+
+static SERIAL_FUNS(sa11x0_serial_funs, 
+                   sa11x0_serial_putc, 
+                   sa11x0_serial_getc,
+                   sa11x0_serial_set_config,
+                   sa11x0_serial_start_xmit,
+                   sa11x0_serial_stop_xmit
+    );
+
+#ifdef CYGPKG_IO_SERIAL_ARM_SA11X0_SERIAL0
+static sa11x0_serial_info sa11x0_serial_info0 = {(CYG_ADDRWORD)SA11X0_UART3_CONTROL0,
+                                                 CYGNUM_HAL_INTERRUPT_UART3};
+#if CYGNUM_IO_SERIAL_ARM_SA11X0_SERIAL0_BUFSIZE > 0
+static unsigned char sa11x0_serial_out_buf0[CYGNUM_IO_SERIAL_ARM_SA11X0_SERIAL0_BUFSIZE];
+static unsigned char sa11x0_serial_in_buf0[CYGNUM_IO_SERIAL_ARM_SA11X0_SERIAL0_BUFSIZE];
+
+static SERIAL_CHANNEL_USING_INTERRUPTS(sa11x0_serial_channel0,
+                                       sa11x0_serial_funs, 
+                                       sa11x0_serial_info0,
+                                       CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_ARM_SA11X0_SERIAL0_BAUD),
+                                       CYG_SERIAL_STOP_DEFAULT,
+                                       CYG_SERIAL_PARITY_DEFAULT,
+                                       CYG_SERIAL_WORD_LENGTH_DEFAULT,
+                                       CYG_SERIAL_FLAGS_DEFAULT,
+                                       &sa11x0_serial_out_buf0[0], sizeof(sa11x0_serial_out_buf0),
+                                       &sa11x0_serial_in_buf0[0], sizeof(sa11x0_serial_in_buf0)
+    );
+#else
+static SERIAL_CHANNEL(sa11x0_serial_channel0,
+                      sa11x0_serial_funs, 
+                      sa11x0_serial_info0,
+                      CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_ARM_SA11X0_SERIAL0_BAUD),
+                      CYG_SERIAL_STOP_DEFAULT,
+                      CYG_SERIAL_PARITY_DEFAULT,
+                      CYG_SERIAL_WORD_LENGTH_DEFAULT,
+                      CYG_SERIAL_FLAGS_DEFAULT
+    );
+#endif
+
+DEVTAB_ENTRY(sa11x0_serial_io0, 
+             CYGDAT_IO_SERIAL_ARM_SA11X0_SERIAL0_NAME,
+             0,                     // Does not depend on a lower level interface
+             &cyg_io_serial_devio, 
+             sa11x0_serial_init, 
+             sa11x0_serial_lookup,     // Serial driver may need initializing
+             &sa11x0_serial_channel0
+    );
+#endif //  CYGPKG_IO_SERIAL_ARM_SA11X0_SERIAL1
+
+#ifdef CYGPKG_IO_SERIAL_ARM_SA11X0_SERIAL1
+static sa11x0_serial_info sa11x0_serial_info1 = {(CYG_ADDRWORD)SA11X0_UART1_CONTROL0,
+                                                 CYGNUM_HAL_INTERRUPT_UART1};
+#if CYGNUM_IO_SERIAL_ARM_SA11X0_SERIAL1_BUFSIZE > 0
+static unsigned char sa11x0_serial_out_buf1[CYGNUM_IO_SERIAL_ARM_SA11X0_SERIAL1_BUFSIZE];
+static unsigned char sa11x0_serial_in_buf1[CYGNUM_IO_SERIAL_ARM_SA11X0_SERIAL1_BUFSIZE];
+
+static SERIAL_CHANNEL_USING_INTERRUPTS(sa11x0_serial_channel1,
+                                       sa11x0_serial_funs, 
+                                       sa11x0_serial_info1,
+                                       CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_ARM_SA11X0_SERIAL1_BAUD),
+                                       CYG_SERIAL_STOP_DEFAULT,
+                                       CYG_SERIAL_PARITY_DEFAULT,
+                                       CYG_SERIAL_WORD_LENGTH_DEFAULT,
+                                       CYG_SERIAL_FLAGS_DEFAULT,
+                                       &sa11x0_serial_out_buf1[0], sizeof(sa11x0_serial_out_buf1),
+                                       &sa11x0_serial_in_buf1[0], sizeof(sa11x0_serial_in_buf1)
+    );
+#else
+static SERIAL_CHANNEL(sa11x0_serial_channel1,
+                      sa11x0_serial_funs, 
+                      sa11x0_serial_info1,
+                      CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_ARM_SA11X0_SERIAL1_BAUD),
+                      CYG_SERIAL_STOP_DEFAULT,
+                      CYG_SERIAL_PARITY_DEFAULT,
+                      CYG_SERIAL_WORD_LENGTH_DEFAULT,
+                      CYG_SERIAL_FLAGS_DEFAULT
+    );
+#endif
+
+DEVTAB_ENTRY(sa11x0_serial_io1, 
+             CYGDAT_IO_SERIAL_ARM_SA11X0_SERIAL1_NAME,
+             0,                     // Does not depend on a lower level interface
+             &cyg_io_serial_devio, 
+             sa11x0_serial_init, 
+             sa11x0_serial_lookup,     // Serial driver may need initializing
+             &sa11x0_serial_channel1
+    );
+#endif //  CYGPKG_IO_SERIAL_ARM_SA11X0_SERIAL1
+
+// Internal function to actually configure the hardware to desired baud rate, etc.
+static bool
+sa11x0_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config, bool init)
+{
+    sa11x0_serial_info *sa11x0_chan = (sa11x0_serial_info *)chan->dev_priv;
+    volatile struct serial_port *port = (volatile struct serial_port *)sa11x0_chan->base;
+    unsigned char parity = select_parity[new_config->parity];
+    unsigned char word_length = select_word_length[new_config->word_length-CYGNUM_SERIAL_WORD_LENGTH_5];
+    unsigned char stop_bits = select_stop_bits[new_config->stop];
+    int baud = SA11X0_UART_BAUD_RATE_DIVISOR(select_baud[new_config->baud]);
+    if ((word_length == 0xFF) ||
+        (parity == 0xFF) ||
+        (stop_bits == 0xFF)) {
+        return false;  // Unsupported configuration
+    }
+    // Disable Receiver and Transmitter (clears FIFOs)
+    port->ctl3 = SA11X0_UART_RX_DISABLED |
+                 SA11X0_UART_TX_DISABLED;
+
+    // Clear sticky (writable) status bits.
+    port->stat0 = SA11X0_UART_RX_IDLE |
+                  SA11X0_UART_RX_BEGIN_OF_BREAK |
+                  SA11X0_UART_RX_END_OF_BREAK;
+
+    // Set parity, word length, stop bits
+    port->ctl0 = parity |
+                 word_length |
+                 stop_bits;
+
+    // Set the desired baud rate.
+    port->ctl1 = (baud >> 8) & SA11X0_UART_H_BAUD_RATE_DIVISOR_MASK;
+    port->ctl2 = baud & SA11X0_UART_L_BAUD_RATE_DIVISOR_MASK;
+
+    // Enable the receiver (with interrupts) and the transmitter.
+    port->ctl3 = SA11X0_UART_RX_ENABLED |
+                 SA11X0_UART_TX_ENABLED |
+                 SA11X0_UART_RX_FIFO_INT_ENABLED;
+    return true;
+}
+
+// Function to initialize the device.  Called at bootstrap time.
+static bool 
+sa11x0_serial_init(struct cyg_devtab_entry *tab)
+{
+    serial_channel *chan = (serial_channel *)tab->priv;
+    sa11x0_serial_info *sa11x0_chan = (sa11x0_serial_info *)chan->dev_priv;
+    int res;
+#ifdef CYGDBG_IO_INIT
+    diag_printf("SA11X0 SERIAL init - dev: %x.%d\n", sa11x0_chan->base, sa11x0_chan->int_num);
+#endif
+    (chan->callbacks->serial_init)(chan);  // Really only required for interrupt driven devices
+    if (chan->out_cbuf.len != 0) {
+        cyg_drv_interrupt_create(sa11x0_chan->int_num,
+                                 99,                     // Priority - unused
+                                 (cyg_addrword_t)chan,   // Data item passed to interrupt handler
+                                 sa11x0_serial_ISR,
+                                 sa11x0_serial_DSR,
+                                 &sa11x0_chan->serial_interrupt_handle,
+                                 &sa11x0_chan->serial_interrupt);
+        cyg_drv_interrupt_attach(sa11x0_chan->serial_interrupt_handle);
+        cyg_drv_interrupt_unmask(sa11x0_chan->int_num);
+    }
+    res = sa11x0_serial_config_port(chan, &chan->config, true);
+    return res;
+}
+
+// This routine is called when the device is "looked" up (i.e. attached)
+static Cyg_ErrNo 
+sa11x0_serial_lookup(struct cyg_devtab_entry **tab, 
+                  struct cyg_devtab_entry *sub_tab,
+                  const char *name)
+{
+    serial_channel *chan = (serial_channel *)(*tab)->priv;
+    (chan->callbacks->serial_init)(chan);  // Really only required for interrupt driven devices
+    return ENOERR;
+}
+
+// Send a character to the device output buffer.
+// Return 'true' if character is sent to device
+static bool
+sa11x0_serial_putc(serial_channel *chan, unsigned char c)
+{
+    sa11x0_serial_info *sa11x0_chan = (sa11x0_serial_info *)chan->dev_priv;
+    volatile struct serial_port *port = (volatile struct serial_port *)sa11x0_chan->base;
+    if (port->stat1 & SA11X0_UART_TX_FIFO_NOT_FULL) {
+        port->data = c;
+        return true;
+    } else {
+        return false;  // Couldn't send, tx was busy
+    }
+}
+
+// Fetch a character from the device input buffer, waiting if necessary
+static unsigned char 
+sa11x0_serial_getc(serial_channel *chan)
+{
+    sa11x0_serial_info *sa11x0_chan = (sa11x0_serial_info *)chan->dev_priv;
+    volatile struct serial_port *port = (volatile struct serial_port *)sa11x0_chan->base;
+    return port->data;
+}
+
+// Set up the device characteristics; baud rate, etc.
+static bool 
+sa11x0_serial_set_config(serial_channel *chan, cyg_serial_info_t *config)
+{
+    return sa11x0_serial_config_port(chan, config, false);
+}
+
+// Enable the transmitter on the device
+static void
+sa11x0_serial_start_xmit(serial_channel *chan)
+{
+    sa11x0_serial_info *sa11x0_chan = (sa11x0_serial_info *)chan->dev_priv;
+    volatile struct serial_port *port = (volatile struct serial_port *)sa11x0_chan->base;
+    (chan->callbacks->xmt_char)(chan);  // Kick transmitter (if necessary)
+    port->ctl3 |= SA11X0_UART_TX_FIFO_INT_ENABLED;
+}
+
+// Disable the transmitter on the device
+static void 
+sa11x0_serial_stop_xmit(serial_channel *chan)
+{
+    sa11x0_serial_info *sa11x0_chan = (sa11x0_serial_info *)chan->dev_priv;
+    volatile struct serial_port *port = (volatile struct serial_port *)sa11x0_chan->base;
+    port->ctl3 &= ~SA11X0_UART_TX_FIFO_INT_ENABLED;
+}
+
+// Serial I/O - low level interrupt handler (ISR)
+static cyg_uint32 
+sa11x0_serial_ISR(cyg_vector_t vector, cyg_addrword_t data)
+{
+    cyg_drv_interrupt_mask(vector);
+    cyg_drv_interrupt_acknowledge(vector);
+    return CYG_ISR_CALL_DSR;  // Cause DSR to be run
+}
+
+// Serial I/O - high level interrupt handler (DSR)
+static void       
+sa11x0_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
+{
+    serial_channel *chan = (serial_channel *)data;
+    sa11x0_serial_info *sa11x0_chan = (sa11x0_serial_info *)chan->dev_priv;
+    volatile struct serial_port *port = (volatile struct serial_port *)sa11x0_chan->base;
+    unsigned int stat0 = port->stat0;
+    if (stat0 & SA11X0_UART_TX_SERVICE_REQUEST) {
+        (chan->callbacks->xmt_char)(chan);
+    }
+    if (stat0 & SA11X0_UART_RX_INTS) {
+        while (port->stat1 & SA11X0_UART_RX_FIFO_NOT_EMPTY) {
+            (chan->callbacks->rcv_char)(chan, port->data);
+        }
+        port->stat0 = SA11X0_UART_RX_IDLE;  // Need to clear this manually
+    }
+    cyg_drv_interrupt_unmask(vector);
+}
+#endif

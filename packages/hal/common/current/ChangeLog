@@ -697,6 +697,7 @@
 
 	* include/pkgconf/hal.h: GDB_BREAK support now available for ARM
 	targets.
+
 1999-04-16  Bart Veer  <bartv@cygnus.co.uk>
 
 	* src/PKGconf.mak: 

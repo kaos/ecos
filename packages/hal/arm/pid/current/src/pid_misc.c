@@ -51,6 +51,7 @@
 #include <cyg/hal/hal_arch.h>           // Register state info
 #include <cyg/hal/hal_diag.h>
 #include <cyg/hal/hal_intr.h>           // necessary?
+#include <cyg/hal/hal_if.h>             // calling interface
 
 /*------------------------------------------------------------------------*/
 // On-board timer
@@ -131,6 +132,9 @@ void hal_hardware_init(void)
     // Any hardware/platform initialization that needs to be done.
     HAL_WRITE_UINT32(CYG_DEVICE_IRQ_EnableClear, 0xFFFF); // Clear all
                                                          // interrupt sources
+
+    // Set up eCos/ROM interfaces
+    hal_if_init();
 }
 
 //
