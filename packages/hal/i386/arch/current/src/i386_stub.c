@@ -1,6 +1,6 @@
 /* i386_stub.c - helper functions for stub, generic to all i386 processors
  * 
- * Copyright (c) 1998,1999 Cygnus Solutions
+ * Copyright (c) 1998,1999, 2001 Cygnus Solutions
  *
  * The authors hereby grant permission to use, copy, modify, distribute,
  * and license this software and its documentation for any purpose, provided
@@ -22,6 +22,9 @@
 
 #include <pkgconf/hal.h>
 
+#ifdef CYGPKG_REDBOOT
+#include <pkgconf/redboot.h>
+#endif
 
 #ifdef CYGPKG_HAL_I386_SIM
 #error "GDB Stub support not implemented for i386 SIM"
@@ -105,6 +108,13 @@ int __get_trap_number (void)
     return hal_pc_trap_number ;
 #endif        
 }
+
+#if defined(CYGSEM_REDBOOT_BSP_SYSCALLS)
+int __is_bsp_syscall(void) 
+{
+    return __get_trap_number() == 0x80;
+}
+#endif
 
 /* Set the currently-saved pc register value to PC. */
 

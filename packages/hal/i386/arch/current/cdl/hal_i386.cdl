@@ -52,7 +52,7 @@ cdl_package CYGPKG_HAL_I386 {
         necessary to select a specific target platform HAL
         package."
 
-    compile       hal_misc.c context.S i386_stub.c
+    compile       hal_misc.c context.S i386_stub.c hal_syscall.c
 
     make {
         <PREFIX>/lib/vectors.o : <PACKAGE>/src/vectors.S

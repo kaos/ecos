@@ -1,3 +1,16 @@
+2001-10-05  Mark Salter  <msalter@redhat.com>
+
+	* src/vectors.S: Support separate stub stack.
+	(__syscall_tramp): Trampoline for GNUPRo syscalls (int $0x80).
+
+	* src/i386_stub.c (__is_bsp_syscall): New function.
+
+	* src/hal_misc.c (cyg_hal_exception_handler): Add mem fault handling.
+
+	* cdl/hal_i386.cdl: Add hal_syscalls.c to compile list.
+
+	* src/hal_syscall.c: New file. Support GNUPro syscalls.
+
 2001-10-01  Ian Campbell  <icampbell@arcom.co.uk>
 
 	* src/vectors.S: include CYGBLD_HAL_PLATFORM_H rather than

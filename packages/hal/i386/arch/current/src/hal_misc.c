@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -90,10 +90,19 @@ cyg_hal_invoke_constructors (void)
 externC void __handle_exception (void);
 externC HAL_SavedRegisters *_hal_registers;
 
+externC void* volatile __mem_fault_handler;
+
 void
 cyg_hal_exception_handler(HAL_SavedRegisters *regs)
 {
 #if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS) && !defined(CYGPKG_CYGMON)
+
+    // If we caught an exception inside the stubs, see if we were expecting it
+    // and if so jump to the saved address
+    if (__mem_fault_handler) {
+        regs->pc = (CYG_ADDRWORD)__mem_fault_handler;
+        return; // Caught an exception inside stubs        
+    }
 
     _hal_registers = regs;
     __handle_exception();

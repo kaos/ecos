@@ -1,3 +1,7 @@
+2001-10-05  Jesper Skov  <jskov@redhat.com>
+
+	* include/config.h: CYGINT_ISO_DNS changed to bool.
+
 2001-09-24  Jesper Skov  <jskov@redhat.com>
 
 	* include/config.h: Define HAVE_GETHOSTBYNAME only if a DNS

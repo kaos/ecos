@@ -43,3 +43,8 @@ cdl_option CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS {
 #cdl_option CYGBLD_REDBOOT_FLASH_BOOT_OFFSET {
 #  inferred_value 0x1C00000
 #};
+
+cdl_option CYGSEM_REDBOOT_BSP_SYSCALLS {
+  user_value 1
+};
+

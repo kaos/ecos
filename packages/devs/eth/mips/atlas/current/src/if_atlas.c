@@ -63,6 +63,7 @@
 #endif
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/hal_arch.h>
+#include <cyg/hal/hal_endian.h>
 #include <cyg/hal/hal_intr.h>
 #include <cyg/hal/hal_cache.h>
 #include <cyg/infra/diag.h>
@@ -212,7 +213,7 @@ __init_buffers(struct saa9730_priv_data *spd)
     for (i = 0; i < SAA9730_BUFFERS; i++) {
         for (j = 0; j < SAA9730_TXPKTS_PER_BUFFER; j++) {
 	    memset(bufp, 0, 2048);
-	    *bufp = cpu_to_le32(TX_EMPTY);
+	    *bufp = CYG_CPU_TO_LE32(TX_EMPTY);
             spd->tx_buffer[i][j] = bufp;
             bufp += SAA9730_PACKET_SIZE/sizeof(*bufp);
 	}
@@ -234,7 +235,7 @@ __select_buffer(struct saa9730_priv_data *spd, int buf_nr)
     // Enable RX buffer
     for (i = 0; i < SAA9730_RXPKTS_PER_BUFFER; i++) {
         p = spd->rx_buffer[buf_nr][i];
-        *p = cpu_to_le32(RX_READY);
+        *p = CYG_CPU_TO_LE32(RX_READY);
     }
 
     if (buf_nr)
@@ -261,7 +262,7 @@ __init_cam(struct saa9730_priv_data *spd)
     for (i = 0; i < SAA9730_CAM_ENTRIES; i++) {
 	for (j = 0; j < 3; j++, cam_offset++) {
 	    SAA9730_CAMADR = cam_offset;
-	    SAA9730_CAMDAT = cpu_to_be32(abuf[j]);
+	    SAA9730_CAMDAT = CYG_CPU_TO_BE32(abuf[j]);
 	}
     }
 }
@@ -703,7 +704,7 @@ saa9730_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
     }
 
     // Set transmit status WORD for hardware (LAN-DMA-ENGINE)
-    *pktstat = cpu_to_le32(TX_READY | pktlen);
+    *pktstat = CYG_CPU_TO_LE32(TX_READY | pktlen);
 
     // start hardware
     if (bindex == 0)
@@ -746,7 +747,7 @@ __check_rxstate(struct saa9730_priv_data *spd)
     for (i = 0; i < SAA9730_BUFFERS; i++) {
         for (j = 1; j < SAA9730_RXPKTS_PER_BUFFER; j++) {
             pkt = spd->rx_buffer[i][j];
-            status = le32_to_cpu(*pkt);
+            status = CYG_LE32_TO_CPU(*pkt);
             size   = status & RXPACKET_STATUS_SIZE_MASK;
             flag   = status & RXPACKET_STATUS_FLAG_MASK;
             if (flag == RX_INVALID_STAT || size > 1514 || *(pkt - 1)) {
@@ -779,7 +780,7 @@ __tx_poll(struct eth_drv_sc *sc)
 
     pktstat = spd->tx_buffer[bindex][pindex];
 
-    status = le32_to_cpu(*pktstat);
+    status = CYG_LE32_TO_CPU(*pktstat);
     if ((status & TXPACKET_STATUS_FLAG_MASK) != TX_HWDONE) {
 
 	hal_delay_us(1000);
@@ -804,7 +805,7 @@ __tx_poll(struct eth_drv_sc *sc)
     for (pindex = 0; pindex < spd->tx_used[bindex]; pindex++) {
 	/* Check for error. */
 	pktstat = spd->tx_buffer[bindex][pindex];
-	status = le32_to_cpu(*pktstat);
+	status = CYG_LE32_TO_CPU(*pktstat);
 
 	if (status & TXPACKET_STATUS_ERROR) {
 	    if (status & TXPACKET_STATUS_EXDEFER)
@@ -823,7 +824,7 @@ __tx_poll(struct eth_drv_sc *sc)
 		db_printf("tx sq\n");
 	}
 	/* free the space */
-	*pktstat = cpu_to_le32(TX_EMPTY);
+	*pktstat = CYG_CPU_TO_LE32(TX_EMPTY);
 
 	(sc->funs->eth_drv->tx_done)(sc, spd->tx_key[bindex][pindex], 1 /* status */);
     }
@@ -861,7 +862,7 @@ __rx_poll(struct eth_drv_sc *sc)
         pkt = spd->rx_buffer[bindex][pindex];
 
 	// stop now if no more packets
-        if (((status = le32_to_cpu(*pkt)) & RXPACKET_STATUS_FLAG_MASK) == RX_READY)
+        if (((status = CYG_LE32_TO_CPU(*pkt)) & RXPACKET_STATUS_FLAG_MASK) == RX_READY)
             break;
 
 	// if this is the first packet in a buffer, switch the SAA9730 to
@@ -908,7 +909,7 @@ saa9730_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
 
     pkt = spd->rx_buffer[spd->next_rx_bindex][spd->next_rx_pindex];
 
-    status = le32_to_cpu(*pkt);
+    status = CYG_LE32_TO_CPU(*pkt);
     if (status & RXPACKET_STATUS_GOOD) {
 	// packet is good
 	pktlen = status & RXPACKET_STATUS_SIZE_MASK;

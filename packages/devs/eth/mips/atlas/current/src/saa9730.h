@@ -121,32 +121,6 @@
 // This number is arbitrary and can be increased if needed
 #define SAA9730_MAX_MULTICAST_ADDRESSES           20 
 
-// These macros are machine dependent.  
-// They convert the big endian representation to the little endian
-// format, used by the DMA-engine of the LAN-controller on the PCI-bus.
-// Convert by BE:
-#ifdef MIPSEL
-#define cpu_to_le32(x) (x)
-#define le32_to_cpu(x) (x)
-#else
-#define cpu_to_le32(x) ((((cyg_uint32)(x)) << 24) |   \
-                       ((0x0000FF00UL & ((cyg_uint32)(x))) <<  8) |   \
-                       ((0x00FF0000UL & ((cyg_uint32)(x))) >>  8) |   \
-                       (((cyg_uint32)(x))  >> 24))
-#define le32_to_cpu(x) cpu_to_le32(x)
-#endif
-// Convert by LE:
-#ifdef MIPSEB
-#define cpu_to_be32( value ) (value)
-#define be32_to_cpu( value ) (value)
-#else
-#define cpu_to_be32(x) ((((cyg_uint32)(x)) << 24) |   \
-                       ((0x0000FF00UL & ((cyg_uint32)(x))) <<  8) |   \
-                       ((0x00FF0000UL & ((cyg_uint32)(x))) >>  8) |   \
-                       (((cyg_uint32)(x))  >> 24))
-#define be32_to_cpu(x) cpu_to_be32(x)
-#endif
-
 // SAA9730 Event Manager Registers
 #define SAA9730_EVM_ISR         *((volatile unsigned *)(__base + 0x02000))
 #define SAA9730_EVM_IER         *((volatile unsigned *)(__base + 0x02004))

@@ -453,10 +453,14 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 #define CYGARC_KSEG_UNCACHED                           (0xA0000000)
 #define CYGARC_KSEG_CACHED_BASE                        (0x80000000)
 #define CYGARC_KSEG_UNCACHED_BASE                      (0xA0000000)
+#ifndef __ASSEMBLER__
 #define CYGARC_CACHED_ADDRESS(x)                       ((((CYG_ADDRESS)(x)) & ~CYGARC_KSEG_MASK) | CYGARC_KSEG_CACHED)
 #define CYGARC_UNCACHED_ADDRESS(x)                     ((((CYG_ADDRESS)(x)) & ~CYGARC_KSEG_MASK) | CYGARC_KSEG_UNCACHED)
 #define CYGARC_PHYSICAL_ADDRESS(x)                     (((CYG_ADDRESS)(x)) & ~CYGARC_KSEG_MASK)
-#ifdef __ASSEMBLER__
+#else // __ASSEMBLER__
+#define CYGARC_CACHED_ADDRESS(x)                       ((((x)) & ~CYGARC_KSEG_MASK) | CYGARC_KSEG_CACHED)
+#define CYGARC_UNCACHED_ADDRESS(x)                     ((((x)) & ~CYGARC_KSEG_MASK) | CYGARC_KSEG_UNCACHED)
+#define CYGARC_PHYSICAL_ADDRESS(x)                     (((x)) & ~CYGARC_KSEG_MASK)
 #define CYGARC_ADDRESS_REG_CACHED(reg)                 \
         and     reg, reg, ~CYGARC_KSEG_MASK;           \
         or      reg, reg, CYGARC_KSEG_CACHED

@@ -1,3 +1,12 @@
+2001-10-05  Mark Salter  <msalter@redhat.com>
+
+	* src/plf_stub.c (hal_pc_stubs_init): Install idt entry for GNUPro
+	syscalls.
+
+	* misc/redboot_FLOPPY.ecm: Turn on CYGSEM_REDBOOT_BSP_SYSCALLS.
+
+	* include/plf_misc.h: Add extern decl for cyg_hal_pc_set_idt_entry.
+
 2001-10-02  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/hal_i386_pc.cdl 

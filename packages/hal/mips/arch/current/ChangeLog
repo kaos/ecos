@@ -1,3 +1,8 @@
+2001-10-05  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_arch.h: Provide CYGARC_CACHED_ADDRESS() and friends
+	without casting for use in assembler files.
+
 2001-09-17  Nick Garnett  <nickg@redhat.com>
 
 	* src/hal_misc.c (hal_delay_us): Rewrote this routine to work

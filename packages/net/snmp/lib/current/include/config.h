@@ -1163,7 +1163,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define HAVE_LIBRPM 1
 
 /* define if you have gethostbyname */
-#if CYGINT_ISO_DNS
+#ifdef CYGINT_ISO_DNS
 # define HAVE_GETHOSTBYNAME 1
 #endif
 

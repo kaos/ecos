@@ -26,7 +26,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -66,6 +66,9 @@ extern void patch_dbg_syscalls(void * vector);
 void hal_platform_init(void) ;
 
 void hal_pc_reset(void) ;
+
+externC void cyg_hal_pc_set_idt_entry(CYG_ADDRESS routine,short *idtEntry);
+
 
 /*------------------------------------------------------------------------*/
 /* End of plf_misc.h                                                      */

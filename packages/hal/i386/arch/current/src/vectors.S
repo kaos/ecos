@@ -23,7 +23,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -150,12 +150,47 @@ _start:
 __default_exception_vsr:
 
 	## We enter here with the CPU state still in the registers and:
-	##  0(%esp)	vector number pushed by trampoline
-	##  4(%esp)	PC pushed by hardware
-	##  8(%esp)	CS pushed by hardware
 	## 12(%esp)	EFLAGS pushed by hardware
+	##  8(%esp)	CS pushed by hardware
+	##  4(%esp)	PC pushed by hardware
+	##  0(%esp)	vector number pushed by trampoline
 
 	pusha			# save all registers
+
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+	mov	%esp,%ebp                 # save SP
+	cmpl	$__stub_stack_base,%esp   # compare SP with stub stack base
+	jb	1f                        # if sp < istack base, switch
+	cmpl	$__stub_stack,%esp        # compare SP with stub stack top
+	jbe	2f                        # if sp < stack top, dont switch
+1:
+	movl	$__stub_stack,%esp        # move to stub stack
+	
+	## We switched stacks with previous ESP in EBP
+	## 44(%ebp)	EFLAGS pushed by hardware
+	## 40(%ebp)	CS pushed by hardware
+	## 36(%ebp)	PC pushed by hardware
+	## 32(%ebp)	vector number pushed by trampoline
+	## 28(%ebp)	EAX
+	## 24(%ebp)	ECX
+	## 20(%ebp)	EDX
+	## 16(%ebp)	EBX
+	## 12(%ebp)	(ESP - 16)
+	##  8(%ebp)	EBP
+	##  4(%ebp)	ESI
+	##  0(%ebp)	EDI
+	
+	pushl	44(%ebp)		# copy EFLAGS from original stack
+	pushl	40(%ebp)		# copy CS
+	pushl	36(%ebp)		# copy PC
+	pushl	32(%ebp)		# copy vector number
+	pusha
+	movl	8(%ebp),%eax		# copy EBP
+	movl	%eax,8(%esp)
+	movl	12(%ebp),%eax		# copy ESP
+	movl	%eax,12(%esp)
+2:
+#endif
 	hal_fpu_push_exc	# save FPU state
 
 	mov	%esp,%edi	# save state pointer in EDI
@@ -176,6 +211,40 @@ __default_exception_vsr:
 		
 
 	hal_fpu_pop_exc		# restore FPU state
+
+	## At this point, the stack contains:
+	## 44(%esp)	EFLAGS pushed by hardware
+	## 40(%esp)	CS pushed by hardware
+	## 36(%esp)	PC pushed by hardware
+	## 32(%esp)	vector number pushed by trampoline
+	## 28(%esp)	EAX
+	## 24(%esp)	ECX
+	## 20(%esp)	EDX
+	## 16(%esp)	EBX
+	## 12(%esp)	ESP
+	##  8(%esp)	EBP
+	##  4(%esp)	ESI
+	##  0(%esp)	EDI
+	
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+	movl	12(%esp),%ebp	# pre-exception ESP
+	sub	$48,%ebp	# adjust for current stack frame
+	cmpl	%esp,%ebp
+	je	1f
+
+	## need to switch stacks
+	xchg	%esp,%ebp
+	add	$48,%esp
+	pushl	44(%ebp)	# EFLAGS
+	pushl	40(%ebp)	# CS
+	pushl	36(%ebp)	# PC
+	mov	%ebp,%esp
+	popa
+	movl	-20(%esp),%esp	# popa doesn't restore %esp
+	sub	$12,%esp	# adjust for EFLAGS, CS, and PC
+	iret	
+1:
+#endif
 	popa			# restore all our registers.
 	addl	$4, %esp	# skip the vector number
                                 # Note: we do not need to re-adjust ESP
@@ -550,10 +619,17 @@ default_vsr_iret:
 	add $4,%esp
 	iret
 
+	# GNUPro apps use "int $0x80" for syscalls.
+        # There is no vsr table entry for this.
+	.global __syscall_tramp
+__syscall_tramp:
+	pushl $0x80
+	jmp __default_exception_vsr
+
 #==============================================================================
 # Initial and interrupt stack
 
-#ifndef CYG_HAL_PPC_INTERRUPT_STACK_DEFINED
+#ifndef CYG_HAL_I386_INTERRUPT_STACK_DEFINED
 	        
 	.bss
 
@@ -569,11 +645,24 @@ __interrupt_stack_base:
 	.global cyg_interrupt_stack
 cyg_interrupt_stack:
 __interrupt_stack:
+        
+        .long   0,0,0,0,0,0,0,0
+#endif
 
-	.long	0,0,0,0,0,0,0,0	
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+	.global __stub_stack_base
+__stub_stack_base:
+	.rept CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE
+	.byte 0
+	.endr
+	.balign 16
+	.global __stub_stack
+__stub_stack:
+        
+        .long   0,0,0,0,0,0,0,0
+#endif
 
 
-#endif	
 		
 #------------------------------------------------------------------------------
 # end of vectors.S

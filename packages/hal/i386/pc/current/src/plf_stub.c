@@ -27,7 +27,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -48,6 +48,10 @@
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
+#ifdef CYGPKG_REDBOOT
+#include <pkgconf/redboot.h>
+#endif
+
 #include <cyg/hal/hal_stub.h>
 
 #include <cyg/hal/hal_io.h>             // HAL IO macros
@@ -60,12 +64,21 @@
 
 externC void __default_exception_vsr(void);
 
+#if defined(CYGSEM_REDBOOT_BSP_SYSCALLS)
+externC void __syscall_tramp(void);
+externC char idtStart[];
+#endif // CYGSEM_REDBOOT_BSP_SYSCALLS
+
+
 void hal_pc_stubs_init(void)
 {
     int i ;
     for(i=0; i<=31; i++)
         HAL_VSR_SET(i,&__default_exception_vsr,NULL);	
 
+#if defined(CYGSEM_REDBOOT_BSP_SYSCALLS)
+    cyg_hal_pc_set_idt_entry((CYG_ADDRESS)__syscall_tramp, (short *)(idtStart + (0x80 * 8)));
+#endif // CYGSEM_REDBOOT_BSP_SYSCALLS
 }
 
 
