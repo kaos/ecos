@@ -94,7 +94,7 @@ cdl_package CYGPKG_IO_WATCHDOG {
         }
 
         cdl_option CYGIMP_WATCHDOG_NONE {
-            display       "No wallclock"
+            display       "No watchdog"
             default_value 0
             implements    CYGINT_WATCHDOG_IMPLEMENTATIONS
             description   "Disables the watchdog."
