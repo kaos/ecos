@@ -65,7 +65,7 @@ static int get_port = 7700;
 
 static struct {
     bool open;
-    int  total_timeouts;
+    int  total_timeouts, packets_received;
     unsigned short last_good_block;
     int  avail, actual_len;
     struct sockaddr_in local_addr, from_addr;
@@ -123,6 +123,7 @@ tftp_stream_open(connection_info_t *info,
     tftp_stream.last_good_block = 0;
     tftp_stream.total_timeouts = 0;
     tftp_stream.from_addr.sin_port = 0;
+    tftp_stream.packets_received = 0;
 
     // Try and read the first byte [block] since no errors are
     // reported until then.
@@ -137,9 +138,28 @@ tftp_stream_open(connection_info_t *info,
     }
 }
 
+static int
+tftp_ack(int *err)
+{
+    struct tftphdr *hdr = (struct tftphdr *)tftp_stream.data;
+    // ACK last packet so server can shut down
+    if (tftp_stream.packets_received > 0) {
+        hdr->th_opcode = htons(ACK);
+        hdr->th_block = htons(tftp_stream.last_good_block);
+        if (__udp_sendto(tftp_stream.data, 4 /* FIXME */, 
+                         &tftp_stream.from_addr, &tftp_stream.local_addr) < 0) {
+            // Problem sending ACK
+            *err = TFTP_NETERR;
+            return -1;
+        }
+    }
+    return 0;
+}
+
 void
 tftp_stream_close(int *err)
 {
+    tftp_ack(err);
     tftp_stream.open = false;
 }
 
@@ -164,16 +184,8 @@ tftp_stream_read(char *buf,
             tftp_stream.avail -= size;
             total_bytes += size;
         } else {
-            if (tftp_stream.last_good_block != 0) {
-                // Send out the ACK
-                hdr->th_opcode = htons(ACK);
-                hdr->th_block = htons(tftp_stream.last_good_block);
-                if (__udp_sendto(tftp_stream.data, 4 /* FIXME */, 
-                                 &tftp_stream.from_addr, &tftp_stream.local_addr) < 0) {
-                    // Problem sending ACK
-                    *err = TFTP_NETERR;
-                    return -1;
-                }
+            if (tftp_ack(err) < 0) {
+                return -1;
             }
             if ((tftp_stream.actual_len >= 0) && (tftp_stream.actual_len < SEGSIZE)) {
                 // Out of data
@@ -191,7 +203,12 @@ tftp_stream_read(char *buf,
                     *err = TFTP_TIMEOUT;
                     return -1;
                 }
+                // Send out the ACK for the last block - maybe server will retry
+                if (tftp_ack(err) < 0) {
+                    return -1;
+                }
             } else {
+                tftp_stream.packets_received++;
                 if (ntohs(hdr->th_opcode) == DATA) {
                     if (ntohs(hdr->th_block) == (tftp_stream.last_good_block+1)) {
                         // Consume this data

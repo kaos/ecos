@@ -1,3 +1,8 @@
+2003-04-18  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/net/tftp_client.c: Arrange to ACK last good packet when closing.
+	Without this, the host can be left tryint to send that packet forever.
+
 2003-04-14  Jani Monoses  <jani@iv.ro>	
 	
 	* src/load.c:
