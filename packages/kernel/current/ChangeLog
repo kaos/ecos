@@ -1,3 +1,13 @@
+1999-06-10  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/debug/dbg_gdb.cxx (dbg_threadinfo): Report counted sleep
+	correctly; both COUNTSLEEP and SLEEPING are set.
+
+1999-06-01  Hugo Tyson  <hmt@masala.cygnus.co.uk>
+
+	* src/debug/dbg_gdb.cxx (dbg_threadinfo): Make the thread state
+	string a little more sensible when read as plain english.
+
 1999-05-27  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/intr/intr.cxx (Cyg_Interrupt::chain_isr): Calls

@@ -300,29 +300,13 @@
 //#define HAL_DCACHE_INVALIDATE( _base_ , _size_ )
 
 // Write dirty cache lines to memory for the given address range.
-#define HAL_DCACHE_STORE( _base_ , _size_ )                     \
-{                                                               \
-    volatile register CYG_BYTE *way0 = HAL_DCACHE_PURGE_WAY0;   \
-    volatile register CYG_BYTE *way1 = HAL_DCACHE_PURGE_WAY1;   \
-    int i;                                                      \
-    register CYG_ADDRWORD state;                                \
-                                                                \
-    HAL_DCACHE_IS_ENABLED(state);                               \
-    if (state)                                                  \
-        HAL_DCACHE_DISABLE();                                   \
-                                                                \
-    way0 += ((CYG_ADDRWORD)_base_) & 0x000007f0;                \
-    way1 += ((CYG_ADDRWORD)_base_) & 0x000007f0;                \
-    for( i = 0; i < (_size_) ; i += HAL_DCACHE_LINE_SIZE )      \
-    {                                                           \
-        *(CYG_ADDRWORD *)way0 = 0;                              \
-        *(CYG_ADDRWORD *)way1 = 0;                              \
-        way0 += HAL_DCACHE_LINE_SIZE;                           \
-        way1 += HAL_DCACHE_LINE_SIZE;                           \
-    }                                                           \
-    if (state)                                                  \
-        HAL_DCACHE_ENABLE();                                    \
-}
+
+// This functionality requires 4 register variables. To prevent register
+// spilling, put the code in a separate function.
+externC void cyg_hal_dcache_store(CYG_ADDRWORD base, int size);
+
+#define HAL_DCACHE_STORE( _base_ , _size_ ) \
+    cyg_hal_dcache_store((_base_), (_size_))
 
 // Preread the given range into the cache with the intention of reading
 // from it later.

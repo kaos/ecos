@@ -2062,7 +2062,9 @@ proc pkgconf::process_arguments { } {
 	set pkgconf::config_data(platform) $platform
     }
 
-    set pkgconf::config_data(base_platform) [get_base_platform $target $platform]
+    if { ($target != "") && ($platform != "") } {
+	set pkgconf::config_data(base_platform) [get_base_platform $target $platform]
+    }
 
     if { ($target != "") && ($platform != "") && ($pkgconf::startup_arg != "" ) } {
 	
@@ -5607,8 +5609,8 @@ endif"
 
 	# Additions for the MLT
 	puts $file "\n"
-	puts $file "#define CYGHWR_MEMORY_LAYOUT_LDI <pkgconf/mlt_[set pkgconf::config_data(target)]_[set pkgconf::config_data(base_platform)]_[set pkgconf::config_data(startup)].ldi>"
-	puts $file "#define CYGHWR_MEMORY_LAYOUT_H   <pkgconf/mlt_[set pkgconf::config_data(target)]_[set pkgconf::config_data(base_platform)]_[set pkgconf::config_data(startup)].h>"
+	puts $file "#define CYGHWR_MEMORY_LAYOUT_LDI <pkgconf/mlt_[set pkgconf::config_data(target)]_[set pkgconf::config_data(platform)]_[set pkgconf::config_data(startup)].ldi>"
+	puts $file "#define CYGHWR_MEMORY_LAYOUT_H   <pkgconf/mlt_[set pkgconf::config_data(target)]_[set pkgconf::config_data(platform)]_[set pkgconf::config_data(startup)].h>"
 
 	# Also output details of the HAL header files that should be included
 	puts $file "\n"

@@ -55,7 +55,7 @@
 //----------------------------------------------------------------------------
 // Define serial stuff. All comes from the quicc_smc.c file.
 
-#include <cyg/hal/quicc_smc.h>
+#include <cyg/hal/quicc_smc2.h>
 
 #define HAL_STUB_PLATFORM_INIT_SERIAL()       cyg_smc2_init(38400)
 #define HAL_STUB_PLATFORM_GET_CHAR()          cyg_smc2_getchar()

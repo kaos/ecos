@@ -157,7 +157,7 @@ cyg_hal_exception_handler(HAL_SavedRegisters *regs)
 }
 
 //---------------------------------------------------------------------------
-// Default ISR
+// Default ISRs
 
 externC cyg_uint32
 hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
@@ -165,6 +165,17 @@ hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
     diag_printf("Interrupt: %d\n", vector);
 
     CYG_FAIL("Spurious Interrupt!!!");
+    return 0;
+}
+
+// The decrementer default ISR has to do nothing. The reason is that
+// decrementer interrupts cannot be disabled - if a kernel configuration
+// does not use the RTC, but does use external interrupts, the decrementer
+// underflow could cause a CYG_FAIL (as above) even though the user did
+// not expect any decrementer interrupts to happen.
+externC cyg_uint32
+hal_default_decrementer_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
+{
     return 0;
 }
 

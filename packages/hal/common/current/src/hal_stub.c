@@ -62,9 +62,9 @@
 
 // Saved registers.
 HAL_SavedRegisters *_hal_registers;
-target_register_t * _registers;         // Pointer to current set of registers
 target_register_t registers[NUMREGS];
-target_register_t alt_registers[NUMREGS] ; // Thread or saved process state
+target_register_t alt_registers[NUMREGS] ;  // Thread or saved process state
+target_register_t * _registers = registers; // Pointer to current set of registers
 
 // Interrupt control.
 static volatile __PFI __interruptible_control;

@@ -1,5 +1,5 @@
-#ifndef CYGONCE_QUICC_SMC_H
-#define CYGONCE_QUICC_SMC_H
+#ifndef CYGONCE_HAL_PPC_FADS_QUICC_SMC2_H
+#define CYGONCE_HAL_PPC_FADS_QUICC_SMC2_H
 //=============================================================================
 //####UNSUPPORTEDBEGIN####
 //
@@ -35,6 +35,4 @@ extern void  cyg_smc2_init(unsigned long baudRate);
 extern void  cyg_smc2_putchar(char);
 extern char  cyg_smc2_getchar(void);
 
-#endif
-
-
+#endif /* CYGONCE_HAL_PPC_FADS_QUICC_SMC2_H */

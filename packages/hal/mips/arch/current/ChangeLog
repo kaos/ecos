@@ -1,3 +1,16 @@
+1999-06-10  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/hal_arch.h: Added macros to copy FPU registers between
+	HAL and GDB register save states.
+
+1999-06-08  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/vectors.S: Dummy __gccmain did not have a delay slot after
+	the "jr ra".
+
+	* include/hal_arch.h: Make value of CYGNUM_HAL_STACK_SIZE_TYPICAL
+	always be greater than CYGNUM_HAL_STACK_SIZE_MINIMUM.
+
 1999-06-02  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/hal_misc.c (cyg_hal_invoke_constructors): 

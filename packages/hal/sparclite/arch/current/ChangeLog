@@ -1,3 +1,8 @@
+1999-06-07  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/hal_arch.h (hal_jmp_buf): force this to be 64-bit
+	aligned so that std ops in hal_setjmp(), hal_longjmp() work.
+
 1999-06-03  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/hal_boot.c: Add a dummy __gccmain() to prevent ctors being

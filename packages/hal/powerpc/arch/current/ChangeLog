@@ -1,3 +1,22 @@
+1999-06-10  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/vectors.S (_start): Add better support for various startup
+	options, including CygMon loading.
+
+	* src/PKGconf.mak (COMPILE): remove quicc_smc.c; it has been
+	reorganized and renamed into the FADS component.
+
+	* include/quicc_smc.h, src/ppc_860.h, src/quicc_smc.c: removed;
+	reorganized and renamed into the FADS component.
+
+1999-06-08  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_intr.h: 
+	* src/vectors.S (hal_vsr_table): 
+	* src/hal_misc.c (hal_default_decrementer_isr): 
+	Use NOP default ISR for decrementer.
+	Fix hal_intr macros.
+	
 1999-06-04  Jesper Skov  <jskov@cygnus.co.uk>
 	PR 20146
 	* src/ppc_860.h: Added padding to some structures, reported by

@@ -32,7 +32,7 @@ PACKAGE       := hal_powerpc
 include ../../../../../pkgconf/pkgconf.mak
 
 LIBRARY       := libtarget.a
-COMPILE       := hal_misc.c context.S ppc_stub.c hal_intr.c quicc_smc.c
+COMPILE       := hal_misc.c context.S ppc_stub.c hal_intr.c
 OTHER_OBJS    :=
 OTHER_TARGETS := vectors.stamp ldscript.stamp
 OTHER_DEPS    := $(PACKAGE)_vectors.d ldscript.d

@@ -1,3 +1,14 @@
+1999-06-08  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_misc.c (cyg_hal_dcache_store): Only define for HW target.
+
+1999-06-07  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 20136
+	* src/hal_misc.c (cyg_hal_dcache_store): 
+	* include/hal_cache.h (HAL_DCACHE_STORE):
+	DCACHE store operation needs 4 register variables. Put it in a
+	separate function to ensure registers are availble.
+
 1999-05-21  Hugo Tyson  <hmt@masala.cygnus.co.uk>
 
 	* include/hal_intr.h: Define HAL_INTERRUPT_STACK_BASE and

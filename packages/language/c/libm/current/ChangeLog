@@ -1,7 +1,14 @@
+1999-06-07  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/mathincl/fdlibm.h: Fix for alias problem
+	Fix for PR 19698
+	* src/PKGconf.mak: workaround no longer needed
+
 1999-06-04  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/PKGconf.mak: 
 	Only use -fno-strict-aliasing if we have enough a recent toolchain
+	Default is that we have
 	
 1999-06-03  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 

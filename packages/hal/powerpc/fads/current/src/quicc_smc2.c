@@ -57,7 +57,7 @@
 *
 *-------------------------------------------------------------------------*/
 
-#include <cyg/hal/quicc_smc.h>
+#include <cyg/hal/quicc_smc2.h>
 #include "ppc_860.h"
 
 /***********************/
@@ -443,4 +443,4 @@ static unsigned long GetIMMR(void)
 }
 
 
-
+/* EOF hal/powerpc/fads/quicc_smc2.c */

@@ -71,10 +71,11 @@
 
 // MACRO DEFINITIONS
 
-#define CYG_LIBM_HI(__x)  (*cyg_libm_hi(&__x))
-#define CYG_LIBM_LO(__x)  (*cyg_libm_lo(&__x))
-#define CYG_LIBM_HIp(__x) (*cyg_libm_hi(__x))
-#define CYG_LIBM_LOp(__x) (*cyg_libm_lo(__x))
+#define CYG_LIBM_HI(__x)  (((Cyg_libm_ieee_double_shape_type *)&__x)->parts.msw)
+#define CYG_LIBM_LO(__x)  (((Cyg_libm_ieee_double_shape_type *)&__x)->parts.lsw)
+#define CYG_LIBM_HIp(__x) (((Cyg_libm_ieee_double_shape_type *)__x)->parts.msw)
+#define CYG_LIBM_LOp(__x) (((Cyg_libm_ieee_double_shape_type *)__x)->parts.lsw)
+
 
 // REPLACEMENTS FOR STUFF FROM MATH.H DUE TO CONFIG OPTION
 
@@ -100,25 +101,6 @@ externC int
 matherr( struct exception * );    // User-overridable error handling - see
                                   // <pkgconf/libm.h> for a discussion
 #endif // ifdef CYGSYM_LIBM_NO_XOPEN_SVID_NAMESPACE_POLLUTION
-
-
-// INLINE FUNCTIONS
-
-static __inline__ cyg_uint32 *
-cyg_libm_hi(double *__x)
-{
-    Cyg_libm_ieee_double_shape_type *__y;
-    __y = (Cyg_libm_ieee_double_shape_type *)__x;
-    return &__y->parts.msw;
-}
-
-static __inline__ cyg_uint32 *
-cyg_libm_lo(double *__x)
-{
-    Cyg_libm_ieee_double_shape_type *__y;
-    __y = (Cyg_libm_ieee_double_shape_type *)__x;
-    return &__y->parts.lsw;
-}
 
 
 // FUNCTION PROTOTYPES

@@ -51,6 +51,9 @@
 
 //--------------------------------------------------------------------------
 // Processor saved states:
+//
+// All these structures must be doubleword (64 bit) aligned.
+// The code that creates them on the stack will ensure this is so.
 
 #define HAL_THREAD_CONTEXT_GLOBAL_BASE 0
 #define HAL_THREAD_CONTEXT_OUT_BASE    8
@@ -236,9 +239,11 @@ CYG_MACRO_END
 //---------------------------------------------------------------------------
 // HAL setjmp
 
-#define HAL_JMP_BUF_SIZE 32 // laziness; use a thread context for now
+#define HAL_JMP_BUF_SIZE 32 // (words)
 
-typedef cyg_uint32 hal_jmp_buf[HAL_JMP_BUF_SIZE];
+// this too must be doubleword aligned (64 bit)
+
+typedef cyg_uint64 hal_jmp_buf[ HAL_JMP_BUF_SIZE / 2 ];
 
 externC int hal_setjmp(hal_jmp_buf env);
 externC void hal_longjmp(hal_jmp_buf env, int val);

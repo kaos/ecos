@@ -71,14 +71,4 @@ OTHER_OBJS    :=
 OTHER_TARGETS :=
 OTHER_CLEAN   :=
 
-# Work-around for PR 19698
-
-ifdef CYGPKG_HAL_ARM
-RECENT_TOOLCHAIN=1
-endif
-
-ifeq ($(RECENT_TOOLCHAIN),1)
-CFLAGS += -fno-strict-aliasing
-endif
-
 include $(COMPONENT_REPOSITORY)/pkgconf/makrules.src

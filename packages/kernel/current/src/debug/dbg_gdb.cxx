@@ -277,15 +277,24 @@ externC int dbg_threadinfo(
     switch( thread->get_state() & ~Cyg_Thread::SUSPENDED )
     {
     case Cyg_Thread::RUNNING:
-        s = "running";                  break;
+        if ( Cyg_Scheduler::get_current_thread() == thread ) {
+            s = "running";              break;
+        }
+        else if ( thread->get_state() & Cyg_Thread::SUSPENDED ) {
+            s = ""; sbp--; /*kill '+'*/ break;
+        }
+        else {
+            s = "ready";                break;
+        }
     case Cyg_Thread::SLEEPING:
         s = "sleeping";                 break;
+    case Cyg_Thread::COUNTSLEEP | Cyg_Thread::SLEEPING:
     case Cyg_Thread::COUNTSLEEP:
         s = "counted sleep";            break;
     case Cyg_Thread::CREATING:
-        s = "creating";                 break;
+        s = "creating"; sbp = statebuf; break;
     case Cyg_Thread::EXITED:
-        s = "exited";                   break;
+        s = "exited"; sbp = statebuf;   break;
     default:
         s = "unknown state";            break;
     }

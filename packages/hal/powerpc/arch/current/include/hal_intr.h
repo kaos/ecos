@@ -249,9 +249,11 @@ externC volatile CYG_ADDRESS    hal_interrupt_objects[CYGNUM_HAL_ISR_COUNT];
 externC volatile CYG_ADDRESS    hal_vsr_table[CYGNUM_HAL_VSR_COUNT];
 
 //--------------------------------------------------------------------------
-// Default ISR
+// Default ISRs
 
 externC cyg_uint32 hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data);
+externC cyg_uint32 hal_default_decrementer_isr(CYG_ADDRWORD vector, 
+                                               CYG_ADDRWORD data);
 
 //--------------------------------------------------------------------------
 // Interrupt state storage
@@ -343,41 +345,49 @@ externC void hal_interrupt_stack_call_pending_DSRs(void);
 //--------------------------------------------------------------------------
 // Interrupt and VSR attachment macros
 
-#define HAL_INTERRUPT_IN_USE( _vector_, _state_)                          \
-    CYG_MACRO_START                                                       \
-    cyg_uint32 _index_;                                                   \
-    HAL_TRANSLATE_VECTOR ((_vector_), _index_);                           \
-                                                                          \
-    if( hal_interrupt_handlers[_index_] == (CYG_ADDRESS)hal_default_isr ) \
-        (_state_) = 0;                                                    \
-    else                                                                  \
-        (_state_) = 1;                                                    \
+#define HAL_INTERRUPT_IN_USE( _vector_, _state_)                             \
+    CYG_MACRO_START                                                          \
+    cyg_uint32 _index_;                                                      \
+    HAL_TRANSLATE_VECTOR ((_vector_), _index_);                              \
+                                                                             \
+    if((hal_interrupt_handlers[_index_]                                      \
+            == (CYG_ADDRESS)hal_default_decrementer_isr)                     \
+       || (hal_interrupt_handlers[_index_] == (CYG_ADDRESS)hal_default_isr)) \
+        (_state_) = 0;                                                       \
+    else                                                                     \
+        (_state_) = 1;                                                       \
     CYG_MACRO_END
 
-#define HAL_INTERRUPT_ATTACH( _vector_, _isr_, _data_, _object_ )         \
-    CYG_MACRO_START                                                       \
-    cyg_uint32 _index_;                                                   \
-    HAL_TRANSLATE_VECTOR ((_vector_), _index_);                           \
-                                                                          \
-    if( hal_interrupt_handlers[_index_] == (CYG_ADDRESS)hal_default_isr ) \
-    {                                                                     \
-        hal_interrupt_handlers[_index_] = (CYG_ADDRESS)_isr_;             \
-        hal_interrupt_data[_index_] = (CYG_ADDRWORD) _data_;              \
-        hal_interrupt_objects[_index_] = (CYG_ADDRESS)_object_;           \
-    }                                                                     \
+#define HAL_INTERRUPT_ATTACH( _vector_, _isr_, _data_, _object_ )            \
+    CYG_MACRO_START                                                          \
+    cyg_uint32 _index_;                                                      \
+    HAL_TRANSLATE_VECTOR ((_vector_), _index_);                              \
+                                                                             \
+    if((hal_interrupt_handlers[_index_]                                      \
+            == (CYG_ADDRESS)hal_default_decrementer_isr)                     \
+       || (hal_interrupt_handlers[_index_] == (CYG_ADDRESS)hal_default_isr)) \
+    {                                                                        \
+        hal_interrupt_handlers[_index_] = (CYG_ADDRESS)_isr_;                \
+        hal_interrupt_data[_index_] = (CYG_ADDRWORD) _data_;                 \
+        hal_interrupt_objects[_index_] = (CYG_ADDRESS)_object_;              \
+    }                                                                        \
     CYG_MACRO_END
 
-#define HAL_INTERRUPT_DETACH( _vector_, _isr_ )                         \
-    CYG_MACRO_START                                                     \
-    cyg_uint32 _index_;                                                 \
-    HAL_TRANSLATE_VECTOR ((_vector_), _index_);                         \
-                                                                        \
-    if( hal_interrupt_handlers[_index_] == (CYG_ADDRESS)_isr_ )         \
-    {                                                                   \
-        hal_interrupt_handlers[_index_] = (CYG_ADDRESS)hal_default_isr; \
-        hal_interrupt_data[_index_] = 0;                                \
-        hal_interrupt_objects[_index_] = 0;                             \
-    }                                                                   \
+#define HAL_INTERRUPT_DETACH( _vector_, _isr_ )                             \
+    CYG_MACRO_START                                                         \
+    cyg_uint32 _index_;                                                     \
+    HAL_TRANSLATE_VECTOR ((_vector_), _index_);                             \
+                                                                            \
+    if( hal_interrupt_handlers[_index_] == (CYG_ADDRESS)_isr_ )             \
+    {                                                                       \
+        if (CYGNUM_HAL_INTERRUPT_DECREMENTER == (_vector_))                 \
+            hal_interrupt_handlers[_index_] =                               \
+                (CYG_ADDRESS)hal_default_decrementer_isr;                   \
+        else                                                                \
+            hal_interrupt_handlers[_index_] = (CYG_ADDRESS)hal_default_isr; \
+        hal_interrupt_data[_index_] = 0;                                    \
+        hal_interrupt_objects[_index_] = 0;                                 \
+    }                                                                       \
     CYG_MACRO_END
 
 #define HAL_VSR_GET( _vector_, _pvsr_ )                                 \

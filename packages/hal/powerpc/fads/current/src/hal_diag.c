@@ -75,7 +75,7 @@
 #endif
 
 #include <cyg/hal/ppc_regs.h>
-#include <cyg/hal/quicc_smc.h>
+#include <cyg/hal/quicc_smc2.h>
 
 //-----------------------------------------------------------------------------
 // Select default diag channel to use

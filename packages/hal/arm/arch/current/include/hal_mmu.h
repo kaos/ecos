@@ -65,8 +65,9 @@
 #define MMU_AP_ap1_Any     0x0C0
 #define MMU_AP_ap2_Any     0x300
 #define MMU_AP_ap3_Any     0xC00
-
 #define MMU_AP_All (MMU_AP_ap0_Any|MMU_AP_ap1_Any|MMU_AP_ap2_Any|MMU_AP_ap3_Any)
+
+#define MMU_DOMAIN(x)      ((x)<<5)
 
 #define MMU_PAGE_SIZE      0x1000
 #define MMU_SECTION_SIZE   0x100000

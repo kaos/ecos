@@ -1,3 +1,7 @@
+1999-06-09  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/vectors.S (reset_vector): Streamline ROM/STUBS code.
+
 1999-05-25  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/vectors.S (_eCos_id): Add version string.  Useful for

@@ -1,3 +1,15 @@
+1999-06-10  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/PKGconf.mak: Add quicc_smc2.c, which now lives in here;
+	moved from the architectural HAL.
+
+	* src/hal_diag.c: use local quicc_smc2.c module for IO.
+
+	* include/plf_stub.h: use local quicc_smc2.c module for IO.
+
+	* include/quicc_smc2.h, src/quicc_smc2.c, src/ppc_860.h: new
+	files; renamed and reorganized from the architectural HAL.
+	
 1999-05-20  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/pkgconf/hal_powerpc_fads.h: Move RTC setup here.

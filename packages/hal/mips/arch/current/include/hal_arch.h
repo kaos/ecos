@@ -116,10 +116,10 @@ externC cyg_uint32 hal_msbit_index(cyg_uint32 mask);
 
 // Optional FPU context initialization
 #ifdef CYGHWR_HAL_MIPS_FPU
-#define HAL_THREAD_INIT_FPU_CONTEXT( _regs_, _id_ )                     \
-{                                                                       \
-    for( _i_ = 0; _i_ < 32; _i_++ ) (_regs_)->f[_i_] = (_id_)|_i_;      \
-    (_regs_)->fcr31 = 0;                                                \
+#define HAL_THREAD_INIT_FPU_CONTEXT( _regs_, _id_ )                             \
+{                                                                               \
+    for( _i_ = 0; _i_ < 32; _i_++ ) (_regs_)->f[_i_] = (_id_)|0xFF00|_i_;       \
+    (_regs_)->fcr31 = 0;                                                        \
 }
 #else
 #define HAL_THREAD_INIT_FPU_CONTEXT( _regs_, _id_ )
@@ -209,6 +209,27 @@ asm volatile (" .globl  " #_label_ ";"          \
 #define HAL_THREAD_GET_SAVED_REGISTERS( _sp_, _regs_ )          \
         (_regs_) = (HAL_SavedRegisters *)(_sp_)
 
+// If the CPU has an FPU, we also need to move the FPU registers.
+#ifdef CYGHWR_HAL_MIPS_FPU
+#define HAL_GET_GDB_FPU_REGISTERS( _regval_ , _regs_ )  \
+CYG_MACRO_START                                         \
+    int _i_;                                            \
+    for( _i_ = 0; _i_ < 32; _i_++ )                     \
+        _regval_[38+_i_] = (_regs_)->f[_i_];            \
+    _regval_[70] = (_regs_)->fcr31;                     \
+CYG_MACRO_END
+#define HAL_SET_GDB_FPU_REGISTERS( _regs_ , _regval_ )  \
+CYG_MACRO_START                                         \
+    int _i_;                                            \
+    for( _i_ = 0; _i_ < 32; _i_++ )                     \
+        (_regs_)->f[_i_] = _regval_[38+_i_];            \
+    (_regs_)->fcr31 = _regval_[70];                     \
+CYG_MACRO_END
+#else
+#define HAL_GET_GDB_FPU_REGISTERS( _regval_ , _regs_ )
+#define HAL_SET_GDB_FPU_REGISTERS( _regs_ , _regval_ )
+#endif
+
 // Copy a set of registers from a HAL_SavedRegisters structure into a
 // GDB ordered array.    
 #define HAL_GET_GDB_REGISTERS( _aregval_ , _regs_ )             \
@@ -218,6 +239,8 @@ asm volatile (" .globl  " #_label_ ";"          \
                                                                 \
     for( _i_ = 0; _i_ < 32; _i_++ )                             \
         _regval_[_i_] = (_regs_)->d[_i_];                       \
+                                                                \
+    HAL_GET_GDB_FPU_REGISTERS( _regval_, _regs_ );              \
                                                                 \
     _regval_[32] = (_regs_)->sr;                                \
     _regval_[33] = (_regs_)->lo;                                \
@@ -235,6 +258,8 @@ asm volatile (" .globl  " #_label_ ";"          \
                                                                 \
     for( _i_ = 0; _i_ < 32; _i_++ )                             \
         (_regs_)->d[_i_] = _regval_[_i_];                       \
+                                                                \
+    HAL_SET_GDB_FPU_REGISTERS( _regs_, _regval_ );              \
                                                                 \
     (_regs_)->sr = _regval_[32];                                \
     (_regs_)->lo = _regval_[33];                                \
@@ -326,7 +351,7 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 #define CYGNUM_HAL_STACK_SIZE_MINIMUM (CYGNUM_HAL_STACK_CONTEXT_SIZE+      \
                                        CYGNUM_HAL_STACK_INTERRUPT_SIZE*2+  \
                                        CYGNUM_HAL_STACK_FRAME_SIZE*8)
-#define CYGNUM_HAL_STACK_SIZE_TYPICAL (2048)
+#define CYGNUM_HAL_STACK_SIZE_TYPICAL (CYGNUM_HAL_STACK_SIZE_MINIMUM+1024)
 
 #else // CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK 
 

@@ -1,3 +1,14 @@
+1999-06-09  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* pkgconf.tcl (pkgconf::produce_misc_files): MLT files need
+	actual platform name, not base platform, to be compatible with
+	the ConfigTool.
+
+1999-06-07  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* pkgconf.tcl (pkgconf::process_arguments): Fix GUI problem with
+	new 'base_platform' stuff.
+
 1999-06-04  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* pkgconf.tcl (command_prefix): Allow command_prefix to be overridden

@@ -606,12 +606,13 @@ FUNC_START(hal_interrupt_stack_call_pending_DSRs)
 FUNC_END(hal_interrupt_stack_call_pending_DSRs)	
 #endif		
 
+##-----------------------------------------------------------------------------	
+## Short circuit in case any code tries to use "__gccmain()"
 
-// Short circuit in case any code tries to use "__gccmain()"
 FUNC_START(__gccmain)
 	jr	ra
+	nop
 FUNC_END(__gccmain)
-
 	
 ##-----------------------------------------------------------------------------
 ## Interrupt Stack.

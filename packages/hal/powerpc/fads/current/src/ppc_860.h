@@ -1,5 +1,5 @@
-#ifndef CYGONCE_PPC_860_H
-#define CYGONCE_PPC_860_H
+#ifndef CYGONCE_HAL_PPC_FADS_PPC_860_H
+#define CYGONCE_HAL_PPC_FADS_PPC_860_H
 
 //=============================================================================
 //####UNSUPPORTEDBEGIN####
@@ -1309,4 +1309,4 @@ typedef struct BufferDescRings
 } BDRINGS;
 
 
-#endif
+#endif /* CYGONCE_HAL_PPC_FADS_PPC_860_H */

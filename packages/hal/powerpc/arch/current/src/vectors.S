@@ -87,11 +87,12 @@ name:
 #define CYG_MSR CYG_MSR_COMMON
 #endif
 #ifdef CYG_HAL_POWERPC_SIM
-# When building for SIM, don't enable MMU -- it's not needed since caches
+# When building for SIM, don~t enable MMU -- it~s not needed since caches
 # are disabled, and there is a runtime simulation overhead.
 #undef CYG_MSR
 #define CYG_MSR (CYG_MSR_COMMON & ~(MSR_IR | MSR_DR))
 #endif
+
 
 #===========================================================================
 # If the following option is enabled, we only save registers up to R12.
@@ -283,9 +284,11 @@ _start:
         cmplw   r4,r5                   # compare
         blt     1b                      # loop if not yet done
 2:
+#endif
         
-#ifdef CYG_HAL_POWERPC_COPY_VECTORS
-        # Copy RAM exception vectors from ROM to RAM    
+        
+#ifdef CYG_HAL_POWERPC_COPY_VECTORS // only for CygMon-supported startup
+        # Copy RAM exception vectors from ROM (or load place) to RAM
         lwi     r3,rom_vectors          # r3 = rom start
         lwi     r4,0                    # r4 = ram start
         lwi     r5,rom_vectors_end      # r5 = rom end
@@ -301,8 +304,6 @@ _start:
         cmplw   r3,r5                   # compare
         blt     1b                      # loop if not yet done
 2:
-#endif
-        
 #endif
 
         # clear BSS
@@ -353,7 +354,7 @@ _start:
         sync
         mtmsr   r3
         sync
-
+	
         # Enable caches
         .extern hal_enable_caches
         bl      hal_enable_caches
@@ -367,6 +368,7 @@ _start:
         bl      initialize_stub
 #endif
 
+	
         .extern cyg_start
         bl      cyg_start                       # call cyg_start
 9:      
@@ -939,11 +941,13 @@ hal_vsr_table:
         .section ".sdata","aw"
 #endif
 
+        .extern hal_default_decrementer_isr
         .extern hal_default_isr
 
         .globl  hal_interrupt_handlers
 hal_interrupt_handlers:
-        .rept   CYG_ISR_TABLE_SIZE
+        .long   hal_default_decrementer_isr
+        .rept   CYG_ISR_TABLE_SIZE-1
         .long   hal_default_isr
         .endr
 

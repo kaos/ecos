@@ -247,4 +247,33 @@ cyg_hal_exception_handler(HAL_SavedRegisters *regs)
 }
 
 /*------------------------------------------------------------------------*/
+/* Cache functions.                                                       */
+
+#if !defined(CYG_HAL_MN10300_SIM) && defined(CYG_HAL_MN10300_MN103002)
+void cyg_hal_dcache_store(CYG_ADDRWORD base, int size)
+{
+    volatile register CYG_BYTE *way0 = HAL_DCACHE_PURGE_WAY0;
+    volatile register CYG_BYTE *way1 = HAL_DCACHE_PURGE_WAY1;
+    register int i;
+    register CYG_ADDRWORD state;
+
+    HAL_DCACHE_IS_ENABLED(state);
+    if (state)
+        HAL_DCACHE_DISABLE();
+
+    way0 += base & 0x000007f0;
+    way1 += base & 0x000007f0;
+    for( i = 0; i < size; i += HAL_DCACHE_LINE_SIZE )
+    {
+        *(CYG_ADDRWORD *)way0 = 0;
+        *(CYG_ADDRWORD *)way1 = 0;
+        way0 += HAL_DCACHE_LINE_SIZE;
+        way1 += HAL_DCACHE_LINE_SIZE;
+    }
+    if (state)
+        HAL_DCACHE_ENABLE();
+}
+#endif
+
+/*------------------------------------------------------------------------*/
 /* End of hal_misc.c                                                      */

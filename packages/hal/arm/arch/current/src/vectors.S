@@ -126,15 +126,18 @@ reset_vector:
 	str	r2,[r0,#0x24]
 	ldr	r2,[r1,#0x08]	// software interrupt
 	str	r2,[r0,#0x08]
+#if defined(CYG_HAL_STARTUP_RAM)
+// Ugly hack to get into supervisor mode        
 	ldr	r2,[r1,#0x40]
 	str	r2,[r0,#0x28]
 	swi			// switch to supervisor mode
+#endif        
 
 // =========================================================================
 // Real startup code. We jump here from the reset vector to set up the world.
 	.globl	start
 start:	
-
+        
 #if defined(CYG_HAL_STARTUP_RAM) && \
     !defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
 // If we get restarted, hang here to avoid corrupting memory
@@ -532,6 +535,9 @@ IRQ:
 	str	r4,[r3]
 #endif
 
+// TEMP
+	mov	r0,v6
+// TEMP
 	bl	hal_IRQ_handler		// determine interrupt source
 	mov	v1,r0			// returned vector #
 
@@ -634,6 +640,7 @@ hal_interrupt_stack_call_pending_DSRs:
 
 	ldmfd	sp!,{r4,r5,pc}		// return
 #endif // CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+        
 
 // Dummy functions
 
