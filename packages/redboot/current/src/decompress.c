@@ -313,6 +313,9 @@ gzip_close(_pipe_t* p, int err)
         err = 0;
         break;
     case Z_OK:
+        if (stream_end) {
+          break;
+        }
         // Decompression didn't complete
         p->msg = "premature end of input";
         // fall-through

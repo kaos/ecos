@@ -1,3 +1,8 @@
+2002-12-31  Patrick Doyle  <wpd@delcomsys.com>
+
+	* src/decompress.c (gzip_close): Don't complain that decompression
+	didn't complete when the stream reaches its end.
+
 2002-12-18  David Mazur  <david@mind.be>
 2002-12-18  Mark Salter  <msalter@redhat.com>
 
