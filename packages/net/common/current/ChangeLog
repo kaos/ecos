@@ -1,3 +1,15 @@
+2003-03-21  Nick Garnett  <nickg@balti.calivar.com>
+
+	* include/network.h: Added include of pkgconf/io_eth_drivers.h
+	since the recent move of CYGHWR_NET_DRIVERS prevented some tests
+	building. This fixes the problem.
+
+	* tests/dhcp_test2.c: Sorted out ifdefs so that this test builds
+	when DHCP is disabled.
+
+	* cdl/net.cdl: Reinstated dhcp_test2 into list of tests: it was
+	accidentally removed in the 2003-03-14 checkin.
+	
 2003-03-20  Mark Salter  <msalter@redhat.com>
 
 	* cdl/net.cdl (CYGHWR_NET_DRIVERS): Removed to io/eth.

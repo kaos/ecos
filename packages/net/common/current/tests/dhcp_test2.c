@@ -43,6 +43,8 @@
 
 #include <cyg/infra/testcase.h>
 
+#ifdef CYGPKG_NET_DHCP
+
 #ifdef CYGBLD_DEVS_ETH_DEVICE_H    // Get the device config if it exists
 #include CYGBLD_DEVS_ETH_DEVICE_H  // May provide CYGTST_DEVS_ETH_TEST_NET_REALTIME
 #endif
@@ -160,10 +162,6 @@ static void
 dhcp_if_fn(cyg_addrword_t data)
 {
     CYG_TEST_INIT();
-#ifndef CYGPKG_NET_DHCP
-    CYG_TEST_NA( "DHCP is not enabled" );
-    CYG_TEST_EXIT( "DHCP is not enabled" );
-#else
 
 #ifdef CYGHWR_NET_DRIVER_ETH0
     tdhcp_init( 0 );
@@ -196,7 +194,6 @@ dhcp_if_fn(cyg_addrword_t data)
 #endif // CYGHWR_NET_DRIVER_ETH1
     }
     CYG_TEST_PASS_EXIT( "All done" );
-#endif // CYGPKG_NET_DHCP
 }
 
 
@@ -217,6 +214,19 @@ void cyg_user_start(void)
                       (void *)stack[0], STACKSIZE, &thread[0], &thread_obj[0]);
     cyg_thread_resume(thread[0]);
 }
+
+// ------------------------------------------------------------------------
+
+#else // CYGPKG_NET_DHCP
+
+void cyg_user_start(void)
+{
+    CYG_TEST_INIT();
+    CYG_TEST_NA( "DHCP is not enabled" );
+    CYG_TEST_EXIT( "DHCP is not enabled" );
+}
+
+#endif // CYGPKG_NET_DHCP
 
 // ------------------------------------------------------------------------
 

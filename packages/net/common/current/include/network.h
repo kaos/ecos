@@ -36,6 +36,7 @@
 
 #include <pkgconf/system.h>
 #include <pkgconf/net.h>
+#include <pkgconf/io_eth_drivers.h>
 #undef _KERNEL
 #include <sys/param.h>
 #include <sys/socket.h>

@@ -365,6 +365,7 @@ cdl_package CYGPKG_NET {
                     tests/flood \
                     tests/ping_test \
                     tests/dhcp_test \
+                    tests/dhcp_test2 \
                     tests/ping_lo_test \
                     tests/tcp_lo_test \
                     tests/udp_lo_test \
