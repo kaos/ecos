@@ -1,3 +1,9 @@
+2005-01-18  Savin Zlobec  <savin@elatec.si>
+
+	* src/fatfs_supp.c:
+	Fixed FAT12/16 root dir size checking in read_next_raw_dentry - 
+	reported by Stephane Royo.
+
 2004-12-13  John Dallaway  <jld@ecoscentric.com>
 
 	* tests/fileio1.c: Rename to fatfs1.c. eCos test names should be

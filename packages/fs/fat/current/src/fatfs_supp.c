@@ -1491,7 +1491,7 @@ read_next_raw_dentry(fatfs_disk_t        *disk,
         // FAT12/16 root dir check
         if (0 == pos->cluster) 
         {
-            if (pos->cluster_pos >= disk->fat_root_dir_nents)
+            if (pos->cluster_pos >= disk->fat_root_dir_size)
                 err = EEOF;
         }
         else
