@@ -126,14 +126,14 @@ RedBoot_cmd("exec",
 #define CYGARC_HAL_MMU_OFF(__paddr__)  \
   "   mcr p15,0,r0,c7,c10,4\n"         \
   "   mcr p15,0,r0,c7,c7,0\n"          \
-  __CYGARC_GET_CTLREG                  \  
+  __CYGARC_GET_CTLREG                  \
   __CYGARC_CLR_MMU_BITS                \
   __CYGARC_SET_CTLREG(__paddr__)
 
 #define CYGARC_HAL_MMU_OFF_X(__paddr__)  \
   "   mcr p15,0,r0,c7,c10,4\n"           \
   "   mcr p15,0,r0,c7,c7,0\n"            \
-  __CYGARC_GET_CTLREG                    \  
+  __CYGARC_GET_CTLREG                    \
   __CYGARC_CLR_MMU_BITS_X                \
   __CYGARC_SET_CTLREG(__paddr__)
 
