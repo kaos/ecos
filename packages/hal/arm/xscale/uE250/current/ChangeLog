@@ -1,5 +1,7 @@
 2003-02-25  Gary Thomas  <gary@mind.be>
 
+	* src/vga_support.c (vga_on): Fix screen enable/disable code.
+
 	* src/uE250_pci.c: Initialize super I/O chip - used for legacy devices.
 
 	* src/font.h: 

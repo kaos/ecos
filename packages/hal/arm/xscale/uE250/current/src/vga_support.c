@@ -112,18 +112,18 @@ vga_fb(int row, int col)
 void
 vga_on(bool enable)
 {
-#if 0
     static bool on = false;
+    volatile struct VGA_ctlr *ctlr = vga.ctlr;
 
     if (enable) {
         if (!on) {
-            (*vga.on)();
+            ctlr->enable = 1;
         }
         on = true;
     } else {
-        (*vga.off)();
+        ctlr->enable = 0;
+        on = false;
     }
-#endif
 }
 
 // Initialize VGA hardware
