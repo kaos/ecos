@@ -1945,10 +1945,21 @@ fi
             ecos_LIBS="${ecos_LIBS} -ltcl${ecos_tcl_version} ${TCL_LIBS}"
         fi
 
-        if test \! -r "${ecos_tcl_libdir}/tkConfig.sh" ; then
+        possible_tk_libdir=`echo ${ecos_tcl_libdir} | sed -e 's,tcl,tk,'`
+        possibles="${ecos_tcl_libdir} ${possible_tk_libdir}"
+        
+    ecos_tk_libdir=""
+    for i in ${possibles}; do
+        if test -r "$i/"tkConfig.sh""; then
+            ecos_tk_libdir=$i
+            break
+        fi
+    done
+
+        if test \! -r "${ecos_tk_libdir}/tkConfig.sh" ; then
             { echo "configure: error: unable to locate Tk config file tkConfig.sh" 1>&2; exit 1; }
         else
-            . ${ecos_tcl_libdir}/tkConfig.sh
+            . ${ecos_tk_libdir}/tkConfig.sh
             ecos_tk_libs="-ltk${ecos_tcl_version} ${TK_LIBS}"
                                     for lib in ${TCL_LIBS} ; do
                 ecos_tk_libs=`echo ${ecos_tk_libs} | sed -e "s!${lib}!!"`

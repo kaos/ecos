@@ -504,10 +504,13 @@ AC_DEFUN(ECOS_PATH_TCL, [
             ecos_LIBS="${ecos_LIBS} -ltcl${ecos_tcl_version} ${TCL_LIBS}"
         fi
 
-        if test \! -r "${ecos_tcl_libdir}/tkConfig.sh" ; then
+        possible_tk_libdir=`echo ${ecos_tcl_libdir} | sed -e 's,tcl,tk,'`
+        possibles="${ecos_tcl_libdir} ${possible_tk_libdir}"
+        AC_FIND_FILE("tkConfig.sh", ${possibles}, ecos_tk_libdir)
+        if test \! -r "${ecos_tk_libdir}/tkConfig.sh" ; then
             AC_MSG_ERROR(unable to locate Tk config file tkConfig.sh)
         else
-            . ${ecos_tcl_libdir}/tkConfig.sh
+            . ${ecos_tk_libdir}/tkConfig.sh
             ecos_tk_libs="-ltk${ecos_tcl_version} ${TK_LIBS}"
             dnl Remove any library duplicates. It is not quite clear why,
             dnl but they seem to cause problems.
@@ -798,7 +801,8 @@ AC_DEFUN(ECOS_PACKAGE_DIRS,[
     package_dir=`dirname ${package_dir}`
     package_dir=`dirname ${package_dir}`
 
-    possibles="${package_dir}/.. ${package_dir}/../.. ${package_dir}/../../.. ${package_dir}/../../../.. ${package_dir}/../../../../../.." 
+    possibles="${package_dir}/.. ${package_dir}/../.. ${package_dir}/../../.. ${package_dir}/../../../.."
+    possibles="${possibles} ${package_dir}/../../../../.. ${package_dir}/../../../../../.." 
     AC_FIND_DIR("acsupport", ${possibles}, repository_root)
     if test "${repository_root}" = "" ; then
         AC_MSG_ERROR([Failed to identify this package's position within the eCos repository])
