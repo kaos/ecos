@@ -1,3 +1,8 @@
+2003-01-23  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/misc.cxx (cyg_mtab_lookup): Return an error if the current
+	directory is not known - happens if no file systems are mounted.
+
 2002-11-10  Nick Garnett  <nickg@ecoscentric.com>
 
 	* src/fio.h: Added macros to deal with signal handling. These will

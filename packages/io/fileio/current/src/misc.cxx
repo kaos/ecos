@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -230,7 +231,14 @@ __externC int cyg_mtab_lookup( cyg_dir *dir, const char **name, cyg_mtab_entry *
     int best_len = 0;
 
     // Unrooted file names go straight to current dir
-    if( **name != '/' ) return 0;
+    if( **name != '/' ) {
+        if (*mte == (cyg_mtab_entry *)NULL) {
+            // No known current directory
+            return -1;
+        }
+        // Current directory is well known
+        return 0;
+    }
 
     // Otherwise search the mount table.
     for( m = &mtab[0]; m != &mtab_end; m++ )
