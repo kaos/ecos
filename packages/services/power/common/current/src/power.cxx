@@ -90,7 +90,7 @@ static cyg_sem_t        power_thread_action;
 
 #else
 static cyg_bool         power_doing_it      = false;
-static cyg_uint         power_todo_count    = 0;
+static cyg_uint32       power_todo_count    = 0;
 #endif
 
 // ----------------------------------------------------------------------------
