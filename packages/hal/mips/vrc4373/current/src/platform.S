@@ -141,7 +141,7 @@ hal_bus_error_vsr:
 	# Check for special address
 	
 	la	k1,hal_pci_config_read_load
-	mfc0	k0,epc
+	mvafc0	k0,epc
 	bne	k0,k1,1f
 	nop
 
@@ -157,7 +157,7 @@ hal_bus_error_vsr:
 	nop
 	nop
 	addi	k0,k0,4			# skip offending instruction
-	mtc0	k0,epc			# return to EPC
+	mvatc0	k0,epc			# return to EPC
 	nop				# let it work
 	nop
 	nop

@@ -68,4 +68,12 @@
 // The vector used by the Real time clock
 #define CYGNUM_HAL_INTERRUPT_RTC               CYGNUM_HAL_INTERRUPT_TIMER0
 
+
+//----------------------------------------------------------------------------
+// Reset.
+extern void hal_aeb_reset(void);
+#define HAL_PLATFORM_RESET()             hal_aeb_reset()
+
+#define HAL_PLATFORM_RESET_ENTRY 0x4018000
+
 #endif // CYGONCE_HAL_PLATFORM_INTS_H

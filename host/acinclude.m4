@@ -245,6 +245,29 @@ fi
 
 ])
 
+dnl ====================================================================
+dnl Inspired by KDE's autoconfig
+dnl This macro takes three Arguments like this:
+dnl AC_FIND_FILE(foo.h, $incdirs, incdir)
+dnl the filename to look for, the list of paths to check and
+dnl the variable with the result.
+
+AC_DEFUN(AC_FIND_FILE,
+[
+$3=NO
+for i in $2;
+do
+  for j in $1;
+  do
+    if test -r "$i/$j"; then
+      $3=$i
+      break 2
+    fi
+  done
+done
+])
+
+
 dnl --------------------------------------------------------------------
 dnl Convert a cygwin pathname to something acceptable to VC++ (but
 dnl still invoked from bash and cygwin's make). This means using
@@ -321,35 +344,26 @@ AC_SUBST(cyg_ac_tcl_version)
 
 dnl Where is the Tcl installation? By default assume Tcl is already
 dnl installed in the same place as the eCos host-side.
+
 AC_ARG_WITH(tcl,[ --with-tcl-header=<path>        location of Tcl header])
 AC_ARG_WITH(tcl,[ --with-tcl-lib=<path>        location of Tcl libraries])
+AC_ARG_WITH(tcl,[ --with-tcl=<path>        location of Tcl header and libraries])
 
 AC_MSG_CHECKING(for Tcl installation)
-AC_ARG_WITH(tcl,[ --with-tcl=<path>        location of Tcl header and libraries],[
-  cyg_ac_tcl_incdir=${with_tcl}/include
-  cyg_ac_tcl_libdir=${with_tcl}/lib
-],[
-  if test "${with_tcl_header}" = "no"; then
-    cyg_ac_tcl_incdir=${prefix}/include
-  else
-    with_tcl=yes
-    cyg_ac_tcl_incdir=${with_tcl_header}/include
-  fi
 
-  if test "${with_tcl_lib}" = "no"; then
-    cyg_ac_tcl_libdir=${prefix}/lib
-  else
-    with_tcl=yes
-    cyg_ac_tcl_libdir=${with_tcl_lib}/lib
-  fi
-])
-AC_MSG_RESULT(${cyg_ac_tcl_libdir})
+tcl_incdirs="${with_tcl_header} ${with_tcl}/include ${prefix}/include /usr/include/tcl$cyg_ac_tcl_version /usr/include"
+AC_FIND_FILE(tcl.h, $tcl_incdirs, cyg_ac_tcl_incdir)
 
 dnl Sanity check, make sure that there is a tcl.h header file.
 dnl If not then there is no point in proceeding.
 if test \! -r ${cyg_ac_tcl_incdir}/tcl.h ; then
   AC_MSG_ERROR(unable to locate Tcl header file tcl.h)
 fi
+
+tcl_libdirs="${with_tcl_lib} ${with_tcl}/lib ${prefix}/lib /usr/lib/tcl$cyg_ac_tcl_version /usr/lib"
+AC_FIND_FILE(tclConfig.sh, $tcl_libdirs, cyg_ac_tcl_libdir)
+
+AC_MSG_RESULT(${cyg_ac_tcl_libdir})
 
 dnl If using VC++ then there is no tclConfig.sh file, so the
 dnl library information has to be hard-wired. Otherwise ther

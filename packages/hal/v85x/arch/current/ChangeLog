@@ -1,3 +1,11 @@
+2001-01-26  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/hal_intr.h: Move HAL_STUB_PLATFORM_RESET and
+	HAL_STUB_PLATFORM_RESET_ENTRY here from platform stub headers.
+	Also rename to HAL_PLATFORM_RESET and HAL_PLATFORM_RESET_ENTRY
+
+	* src/vectors.S (_hal_reset_board): Renamed from hal_plf_reset_board
+
 2001-01-18  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/vectors.S: Added underscore to reference to

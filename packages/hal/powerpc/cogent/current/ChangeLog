@@ -1,3 +1,9 @@
+2001-01-26  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c: Removed CYGSEM_HAL_VIRTUAL_VECTOR_DIAG check.
+	* include/plf_stub.h: Moved reset macro to
+	* include/plf_intr.h: this file.
+
 2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/pkgconf/mlt_powerpc_cogent_ram.h:

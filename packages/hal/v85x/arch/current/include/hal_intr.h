@@ -262,5 +262,14 @@ externC cyg_uint32 hal_clock_read(void);
 #endif
 
 //--------------------------------------------------------------------------
+// Reset.
+
+#ifndef HAL_PLATFORM_RESET
+extern void hal_reset_board(void);
+#define HAL_PLATFORM_RESET()             hal_reset_board()
+#define HAL_PLATFORM_RESET_ENTRY         0x00000000
+#endif
+
+//--------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_HAL_INTR_H
 // End of hal_intr.h

@@ -71,7 +71,7 @@ RedBoot_cmd("version",
     );
 RedBoot_cmd("help", 
             "Help about help?", 
-            "<topic>",
+            "[<topic>]",
             do_help 
     );
 RedBoot_cmd("go", 
@@ -89,7 +89,7 @@ RedBoot_cmd("cache",
             "[ON | OFF]",
             do_caches 
     );
-#ifdef HAL_STUB_PLATFORM_RESET
+#ifdef HAL_PLATFORM_RESET
 RedBoot_cmd("reset", 
             "Reset the system", 
             "",
@@ -101,9 +101,14 @@ RedBoot_cmd("reset",
 CYG_HAL_TABLE_BEGIN( __RedBoot_INIT_TAB__, RedBoot_inits );
 CYG_HAL_TABLE_END( __RedBoot_INIT_TAB_END__, RedBoot_inits );
 extern struct init_tab_entry __RedBoot_INIT_TAB__[], __RedBoot_INIT_TAB_END__;
+
 CYG_HAL_TABLE_BEGIN( __RedBoot_CMD_TAB__, RedBoot_commands );
 CYG_HAL_TABLE_END( __RedBoot_CMD_TAB_END__, RedBoot_commands );
 extern struct cmd __RedBoot_CMD_TAB__[], __RedBoot_CMD_TAB_END__;
+
+CYG_HAL_TABLE_BEGIN( __RedBoot_IDLE_TAB__, RedBoot_idle );
+CYG_HAL_TABLE_END( __RedBoot_IDLE_TAB_END__, RedBoot_idle );
+extern struct idle_tab_entry __RedBoot_IDLE_TAB__[], __RedBoot_IDLE_TAB_END__;
 
 #ifdef HAL_ARCH_PROGRAM_NEW_STACK
 extern void HAL_ARCH_PROGRAM_NEW_STACK(void *fun);
@@ -133,8 +138,9 @@ cyg_start(void)
     struct cmd *cmd;
     int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
     struct init_tab_entry *init_entry;
+    struct idle_tab_entry *idle_entry;
 
-    CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL);
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL);
 #ifdef CYGPKG_REDBOOT_ANY_CONSOLE
     console_selected = false;
 #endif
@@ -154,8 +160,6 @@ cyg_start(void)
 
     do_version(0,0);
 
-    config_ok = false;
-
     for (init_entry = __RedBoot_INIT_TAB__; init_entry != &__RedBoot_INIT_TAB_END__;  init_entry++) {
         (*init_entry->fun)();
     }
@@ -168,21 +172,19 @@ cyg_start(void)
         printf("== Executing boot script in %d.%03d seconds - enter ^C to abort\n", 
                script_timeout_ms/1000, script_timeout_ms%1000);
         script = (unsigned char *)0;
-        while (script_timeout_ms >= 10) {
-            res = gets(line, sizeof(line), 10);
+        while (script_timeout_ms >= CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT) {
+            res = gets(line, sizeof(line), CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT);
             if (res == _GETS_OK) {
                 printf("== Executing boot script in %d.%03d seconds - enter ^C to abort\n", 
                        script_timeout_ms/1000, script_timeout_ms%1000);
                 continue;  // Ignore anything but ^C
             }
             if (res != _GETS_TIMEOUT) break;
-#ifdef CYGPKG_REDBOOT_NETWORKING
-            if (have_net) {
-                // Check for incoming TCP debug connection
-                net_io_test();
+            for (idle_entry = __RedBoot_IDLE_TAB__; 
+                 idle_entry != &__RedBoot_IDLE_TAB_END__;  idle_entry++) {
+                (*idle_entry->fun)();
             }
-#endif
-            script_timeout_ms -= 10;
+            script_timeout_ms -= CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT;
         }
         if (res == _GETS_CTRLC) {
             script = (unsigned char *)0;  // Disable script
@@ -197,18 +199,17 @@ cyg_start(void)
             printf("RedBoot> ");
             prompt = false;
         }
-        res = gets(line, sizeof(line), 250);
+        res = gets(line, sizeof(line), CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT);
         if (res == _GETS_TIMEOUT) {
             // No input arrived
-#ifdef CYGPKG_REDBOOT_NETWORKING
-            if (have_net) {
-                // Check for incoming TCP debug connection
-                net_io_test();
+            for (idle_entry = __RedBoot_IDLE_TAB__; 
+                 idle_entry != &__RedBoot_IDLE_TAB_END__;  idle_entry++) {
+                (*idle_entry->fun)();
             }
-#endif
         } else {
             if (res == _GETS_GDB) {
                 // Special case of '$' - need to start GDB protocol
+                gdb_active = true;
                 CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
 #ifdef HAL_ARCH_PROGRAM_NEW_STACK
                 HAL_ARCH_PROGRAM_NEW_STACK(breakpoint);
@@ -233,6 +234,7 @@ void
 do_caches(int argc, char *argv[])
 {
     unsigned long oldints;
+
     if (argc == 2) {
         if (strcmpci(argv[1], "on") == 0) {
             HAL_DISABLE_INTERRUPTS(oldints);
@@ -261,10 +263,26 @@ void
 do_help(int argc, char *argv[])
 {
     struct cmd *cmd;
+    char *which = (char *)0;
+    bool show;
+    int len = 0;
 
+    if (!scan_opts(argc, argv, 1, 0, 0, (void **)&which, OPTION_ARG_TYPE_STR, "<topic>")) {
+        printf("Invalid argument\n");
+        return;
+    }
+    if (which) {
+        len = strlen(which);
+    }
     cmd = __RedBoot_CMD_TAB__;
     while (cmd != &__RedBoot_CMD_TAB_END__) {
-        printf("%s\n   %s %s\n", cmd->help, cmd->str, cmd->usage);
+        show = true;
+        if (which && (strncmpci(which, cmd->str, len) != 0)) {
+            show = false;
+        }
+        if (show) {
+            printf("%s\n   %s %s\n", cmd->help, cmd->str, cmd->usage);
+        }
         cmd++;
     }
     return;
@@ -337,7 +355,7 @@ do_go(int argc, char *argv[])
 #endif
 }
 
-#ifdef HAL_STUB_PLATFORM_RESET
+#ifdef HAL_PLATFORM_RESET
 void
 do_reset(int argc, char *argv[])
 {
@@ -345,7 +363,7 @@ do_reset(int argc, char *argv[])
     CYGACC_CALL_IF_DELAY_US(2*100000);
     printf("\n");
     CYGACC_CALL_IF_DELAY_US(50000);
-    HAL_STUB_PLATFORM_RESET();
+    HAL_PLATFORM_RESET();
     printf("!! oops, RESET not working on this platform\n");
 }
 #endif

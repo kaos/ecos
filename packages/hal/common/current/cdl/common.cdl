@@ -52,22 +52,6 @@ cdl_option CYGFUN_HAL_COMMON_KERNEL_SUPPORT {
         code can be eliminated."
 }
 
-cdl_interface CYGINT_HAL_DIAG_DISABLE_GDB_PROTOCOL_SUPPORTED {
-    display "HAL allows GDB protocol to be disabled for..."
-    no_define
-}
-
-cdl_option CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL {
-    display       "Disable GDB protocol for diagnostic output"
-    active_if     CYGINT_HAL_DIAG_DISABLE_GDB_PROTOCOL_SUPPORTED
-    default_value 0
-    description "
-        This option forces diagnostic output to not use the GDB
-        protocol.  Most programs will use the GDB protocol for
-        diagnostic I/O because of the environment.  This option
-        allows for an explicit override in these cases."
-}
-
 # NOTE: The requirement for kernel exception support is bogus in that
 # the user can supply a deliver_exception function herself. In that
 # case, however, it is easy to force the kernel option off while leaving
@@ -123,5 +107,32 @@ cdl_option CYGSEM_HAL_STATIC_MMU_TABLES {
        Management Unit (MMU) tables are constant.  Normally used by ROM
        based environments, this provides a way to save RAM usage which
        would otherwise be required for these tables."
+}
+
+cdl_component CYGDBG_HAL_DIAG_TO_DEBUG_CHAN {
+    display       "Route diagnostic output to debug channel"
+    default_value { (CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS \
+                     || CYG_HAL_STARTUP == "RAM") ? 1 : 0}
+    active_if     !CYGSEM_HAL_VIRTUAL_VECTOR_INHERIT_CONSOLE
+    active_if     { CYGPKG_HAL_ARM || CYGPKG_HAL_POWERPC_MPC8xx \
+                    || CYGPKG_HAL_V85X_V850 || CYGSEM_HAL_VIRTUAL_VECTOR_DIAG }
+    description   "
+        If not inheriting the console setup from the ROM monitor,
+        it is possible to redirect diagnostic output to the debug
+        channel by enabling this option. Depending on the debugger
+        used it may also be necessary to select a mangler for the
+        output to be displayed by the debugger."
+
+    cdl_option CYGSEM_HAL_DIAG_MANGLER {
+        display       "Mangler used on diag output"
+        flavor        data
+        legal_values  {"GDB" "None"}
+        default_value { "GDB" }
+        description   "
+            It is sometimes necessary to mangle (encode) the
+            diag ASCII text output in order for it to show up at the
+            other end. In particular, GDB may silently ignore raw
+            ASCII text."
+    }
 }
 

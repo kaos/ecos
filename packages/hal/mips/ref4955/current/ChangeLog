@@ -1,3 +1,14 @@
+2001-02-08  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_mips_tx49_ref4955.cdl: Respect channel configuration
+	constraints.
+
+2001-01-26  Jesper Skov  <jskov@redhat.com>
+
+	* src/pc87338.c: Removed CYGSEM_HAL_VIRTUAL_VECTOR_DIAG check.
+	* include/plf_stub.h: Reset macros moved
+	* include/plf_intr.h: to this file.
+
 2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/pkgconf/mlt_mips_tx49_ref4955_ram.mlt:

@@ -1,3 +1,39 @@
+2001-02-11  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* tests/stress_threads.c: CYGINT_ISO_STDIO_FORMATTED_IO needs a
+	#ifdef not an #if.
+	* tests/dhrystone.c: Ditto.
+
+2001-02-04  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* tests/kill.cxx: Increase delay for all targets, just in case some
+	are slow.
+
+2001-01-30  Hugo Tyson  <hmt@redhat.com>
+
+	* src/common/clock.cxx (rem_alarm): Must clear the enabled flag;
+	this disappeared in the changes to using clists of 2001-01-09.
+	Symptom was that an alarm, once disabled, could never be
+	re-attached to its counter because it claimed it already was.
+	Plus asserts with multiple disables - "bad counter object".
+
+2001-01-30  Hugo Tyson  <hmt@redhat.com>
+
+	* src/common/thread.cxx (reinitialize): Following change of
+	2000-12-05, if CYGFUN_KERNEL_THREADS_STACK_CHECKING, this was
+	using the stack_base/stack_size variables directly to reinitialize
+	the stack area.  This was wrong, and leaked store off the top and
+	bottom of the stacks because the "buffer zone" was carved off
+	repeatedly.  Fix is to use the published APIs which compensate.
+
+2001-01-26  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/mlqueue.hxx: 
+	* src/sched/mlqueue.cxx:
+	Restored Cyg_ThreadQueue_Implementation::remove() since it must
+	clear the thread's queue pointer, which the base clist class
+	remove() does not.
+
 2001-01-24  Jesper Skov  <jskov@redhat.com>
 
 	* src/sched/mlqueue.cxx (highpri): Fix trace call.

@@ -1,3 +1,33 @@
+2001-02-02  Jesper Skov  <jskov@redhat.com>
+
+	* src/sh3_sci.c: Baud rate is always specified, remove fallback
+	hack. Proper macro renaming.
+	* src/sh3_scif.c: Same.  Proper macro renaming.
+	* cdl/hal_sh_sh3.cdl: Added baud rate options which get default
+	values from platform CDL if it needs to be different from 38400
+	baud.
+
+2001-01-31  Jesper Skov  <jskov@redhat.com>
+
+	* include/sh3_scif.h: Moved init_channel function into private
+	part.
+	* include/sh3_sci.h: Same.
+
+2001-01-30  Jesper Skov  <jskov@redhat.com>
+
+	* include/sh3_sci.h: Separate exported API from definitions used
+	in the driver.
+	* include/sh3_scif.h: Same.
+	* src/sh3_sci.c: Request private definitions.
+	* src/sh3_scif.c: Same.
+
+2001-01-26  Jesper Skov  <jskov@redhat.com>
+
+	* src/sh3_sci.c: Removed CYGSEM_HAL_VIRTUAL_VECTOR_DIAG check.
+	* src/sh3_scif.c: Same.
+
+	* include/var_intr.h: Include platform interrupt header.
+
 2001-01-18  Jesper Skov  <jskov@redhat.com>
 
 	Case 105302

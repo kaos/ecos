@@ -1,3 +1,13 @@
+2001-01-31  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c: Included private parts of serial driver.
+
+2001-01-26  Jesper Skov  <jskov@redhat.com>
+
+	* include/plf_stub.h: Moved reset macro to
+	* include/plf_intr.h: this file.
+	* src/hal_diag.c: Removed CYGSEM_HAL_VIRTUAL_VECTOR_DIAG check.
+
 2001-01-23  Jesper Skov  <jskov@redhat.com>
 
 	* include/platform.inc: Properly init interrupt VSR.

@@ -1,3 +1,8 @@
+2001-02-05  Jesper Skov  <jskov@redhat.com>
+
+	* src/ppc_stub.c (__computeSignal): Hack to allow thread debugging
+	on 40x cores.
+
 2001-01-24  Jesper Skov  <jskov@redhat.com>
 
 	* src/powerpc.ld: Added .sdata to .sdata pattern.

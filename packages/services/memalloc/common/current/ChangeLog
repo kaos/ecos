@@ -1,3 +1,7 @@
+2001-02-01  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* tests/malloc4.cxx: Use semaphores to sync startup order.
+
 2000-11-28  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/heapgen.tcl: Don't use cygpath -s for now as not all cygwins

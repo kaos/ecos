@@ -1,3 +1,7 @@
+2001-01-30  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_edb7xxx.c: New RedBoot config data layout.
+
 2001-01-01  David Geng <deli.geng@ncl.ac.uk> 
 
 	* src/if_edb7xxx.c (cs8900_start): Set 'txbusy' false after reset

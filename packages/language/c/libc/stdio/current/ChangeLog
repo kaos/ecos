@@ -1,3 +1,8 @@
+2001-02-01  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/stdio.cdl (CYGPKG_LIBC_STDIO_OPEN): Implements
+	CYGINT_ISO_STDIO_POSIX_FDFUNCS ( fileno() and fdopen() ).
+
 2000-11-01  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/stdio.h: Make FILE array type larger to be more resistant

@@ -90,7 +90,6 @@ flash_dev_query(void* data)
     int code_len;
     code_fun *_flash_query;
     int d_cache, i_cache;
-    void* flash_id;
 
     // Query the device driver - copy 'query' code to RAM for execution
     code_len = (unsigned long)&flash_query_end - (unsigned long)&flash_query;
@@ -147,7 +146,7 @@ flash_erase(void *addr, int len, void **err_addr)
     int stat = 0;
     extern char flash_erase_block[], flash_erase_block_end[];
     int code_len;
-    typedef int code_fun(unsigned short *);
+    typedef int code_fun(unsigned short *, unsigned int);
     code_fun *_flash_erase_block;
     int d_cache, i_cache;
 
@@ -170,7 +169,8 @@ flash_erase(void *addr, int len, void **err_addr)
 #ifdef RAM_FLASH_DEV_DEBUG
         _flash_erase_block = &flash_erase_block;
 #endif
-        stat = (*_flash_erase_block)(block);
+        // Supply the blocksize for a gross check for erase success
+        stat = (*_flash_erase_block)(block, flash_info.block_size);
         stat = flash_hwr_map_error(stat);
         if (stat) {
             *err_addr = (void *)block;
@@ -351,3 +351,5 @@ flash_errmsg(int err)
         return "Unknown error";
     }
 }
+
+// EOF io/flash/..../flash.c

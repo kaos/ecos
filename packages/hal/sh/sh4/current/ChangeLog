@@ -1,3 +1,21 @@
+2001-02-02  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_sh_sh4.cdl: Added baud rate option.
+
+	* src/sh4_scif.c (cyg_hal_plf_scif_init_channel): Use specified
+	baud rate.
+
+2001-01-31  Jesper Skov  <jskov@redhat.com>
+
+	* include/sh4_scif.h: Separate exported API from definitions used
+	in the driver.
+	* src/sh4_scif.c: Request private definitions.
+
+2001-01-26  Jesper Skov  <jskov@redhat.com>
+
+	* src/sh4_sci.c: Removed CYGSEM_HAL_VIRTUAL_VECTOR_DIAG check.
+	* src/sh4_scif.c: Same.
+
 2001-01-18  Jesper Skov  <jskov@redhat.com>
 
 	Case 105302

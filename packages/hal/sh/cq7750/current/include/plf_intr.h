@@ -51,9 +51,14 @@
 
 #include <pkgconf/hal.h>
 
-//--------------------------------------------------------------------------
 
-// No platform specific stuff at present.
+//----------------------------------------------------------------------------
+// Reset.
+// Block interrupts and cause an exception. This forces a reset.
+#define HAL_PLATFORM_RESET() \
+    asm volatile ("ldc %0,sr;trapa #0x00;" : : "r" (CYGARC_REG_SR_BL))
+    
+#define HAL_PLATFORM_RESET_ENTRY 0xa0000000
 
 //--------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_PLF_INTR_H

@@ -75,10 +75,6 @@ externC void hal_pc_reset(void) ;
 
 #define HAL_STUB_PLATFORM_INIT()        hal_pc_stubs_init()
 
-//----------------------------------------------------------------------------
-// Reset.
-#define HAL_STUB_PLATFORM_RESET()             hal_pc_reset()
-
 #endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
 //-----------------------------------------------------------------------------

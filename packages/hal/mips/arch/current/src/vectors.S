@@ -241,7 +241,7 @@ FUNC_START(__warm_start)
 #	hal_diag_init
 
 	hal_diag_writec '$'
-	mfc0	a0,$30			# get ErrorEPC
+	mvafc0	a0,$30			# get ErrorEPC
 	lar	k0,hal_diag_ai_write_hex8
 	jalr	k0
 	nop
@@ -280,9 +280,9 @@ FUNC_START(__nmi_entry)
 	
 	# Move the ErrorEPC register to the EPC register so that the
 	# default exception handler saves the right PC value.
-	mfc0	k0,$30
+	mvafc0	k0,$30
 	nop; nop; nop;
-	mtc0	k0,epc
+	mvatc0	k0,epc
 	nop; nop; nop;	
 
 #if (INITIAL_SR & 0x00400000) == 0
@@ -302,7 +302,6 @@ FUNC_START(__nmi_entry)
 	
 FUNC_END(__nmi_entry)
 
-	
 ##-----------------------------------------------------------------------------
 ## Default exception VSR.
 ## Saves machine state and calls external handling code.
@@ -374,18 +373,18 @@ FUNC_START(__default_exception_vsr)
 	mfc0	t0,cause
 	mfc0	t1,status
 	mfc0	t2,cachectrl
-	mfc0	t3,badvr
+	mvafc0	t3,badvr
 	mfc0	t4,config
 	mfc0	t5,prid
-	mfc0	t6,epc
+	mvafc0	t6,epc
 	
 	sw	t0,mipsreg_cause(sp)
 	sw	t1,mipsreg_sr(sp)
 	sw	t2,mipsreg_cachectrl(sp)
-	sw	t3,mipsreg_badvr(sp)
+	sva	t3,mipsreg_badvr(sp)
 	sw	t4,mipsreg_config(sp)
 	sw	t5,mipsreg_prid(sp)
-	sw	t6,mipsreg_pc(sp)
+	sva	t6,mipsreg_pc(sp)
 
 	hal_fpu_save sp
 	
@@ -481,11 +480,11 @@ FUNC_START(__default_interrupt_vsr)
 		
 	mfc0	t1,status
 	mfc0	t2,cachectrl
-	mfc0	t3,epc
+	mvafc0	t3,epc
 	
 	sw	t1,mipsreg_sr(sp)
 	sw	t2,mipsreg_cachectrl(sp)
-	sw	t3,mipsreg_pc(sp)
+	sva	t3,mipsreg_pc(sp)
 
 	hal_fpu_save sp
 		
@@ -503,16 +502,16 @@ FUNC_START(__default_interrupt_vsr)
 #endif
 
 	move	s0,sp				# save pointer to saved state
-	
+
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK	
 
 	la	a0,__interrupt_stack		# a0 = stack top
 	la	a1,__interrupt_stack_base	# a1 = stack base
 	sub	a3,sp,a1			# a3 = sp - base
-	bltz	a3,1f				# if < 0 - not on istack
+	bltz	a3,1f				# not on istack if < 0 
 	nop					# delay slot
 	sub	t0,a0,sp			# t0 = top - sp
-	bgtz	t0,8f				# if > 0 - already on istack
+	bgtz	t0,8f				# already on istack if > 0 
 	nop					# delay slot
 1:	
 	move	sp,a0				# switch to istack
@@ -684,7 +683,6 @@ restore_state:
 	lgpr	31,sp	# == RA
 	.set	at
 
-
 #if defined(CYGSEM_HAL_USE_ROM_MONITOR_CygMon)
 
         # If we have a Cygmon that wants to listen to network interrupts, then
@@ -713,7 +711,7 @@ restore_state:
         srl	k0,1
     1:
 #endif
-	lw	k0,mipsreg_pc(sp)		# K0 = return PC
+	lva	k0,mipsreg_pc(sp)		# K0 = return PC
 	lw	k1,mipsreg_sr(sp)		# K1 = saved SR
 	lsp	sp,sp				# load SP
 
@@ -777,7 +775,7 @@ FUNC_END(__gccmain)
 ## can handle these without affecting the debugger.
 	
 FUNC_START(__break_vsr_springboard)
-	mfc0	k0,epc
+	mvafc0	k0,epc
 	mfc0	k1,cause
 	bltzl   k1,1f
 	addi    k0,k0,4                 # delay slot (only executed if BD set)

@@ -1,3 +1,7 @@
+2001-01-26  Jesper Skov  <jskov@redhat.com>
+
+	* tests/intr0.c: Moved test header inclusion to proper location.
+
 2001-01-18  Jesper Skov  <jskov@redhat.com>
 
 	Case 105302

@@ -23,7 +23,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -162,18 +162,171 @@ cdl_package CYGPKG_HAL {
                 defines a calling interface between applications running in
                 RAM and the ROM monitor."
             compile     hal_if.c hal_misc.c
-            
+
+
+            cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_INHERIT_CONSOLE {
+                display       "Inherit console settings from ROM monitor"
+	        active_if     CYGSEM_HAL_USE_ROM_MONITOR
+                default_value { CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_GUARANTEED \
+                                && !CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_COMMS }
+                description   "
+                    When this option is set, the application will inherit
+	            the console as set up by the ROM monitor. This means
+                    that the application will use whatever channel and
+                    mangling style was used by the ROM monitor when
+                    the application was launched."
+            }
+
+            cdl_option CYGPRI_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL_CONFIGURABLE {
+                display       "Debug channel is configurable"
+                calculated    { CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_COMMS }
+                description   "
+                    This option is a configuration hint - it is enabled
+                    when the HAL initialization code will make use
+                    of the debug channel configuration option."
+            }
+
+            cdl_option CYGPRI_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_CONFIGURABLE {
+                display       "Console channel is configurable"
+                calculated    { !CYGSEM_HAL_VIRTUAL_VECTOR_INHERIT_CONSOLE \
+                                && !CYGDBG_HAL_DIAG_TO_DEBUG_CHAN }
+                description   "
+                    This option is a configuration hint - it is enabled
+                    when the HAL initialization code will make use
+                    of the console channel configuration option."
+            }
+                
+
+            cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_INIT_WHOLE_TABLE {
+                display       "Initialize whole of virtual vector table"
+                default_value { CYG_HAL_STARTUP != "RAM" || !CYGSEM_HAL_USE_ROM_MONITOR || !CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_GUARANTEED }
+                requires CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_ICTRL
+                requires CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_RESET
+                requires CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DELAY_US
+                requires CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_CACHE
+                requires CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DATA
+                requires CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_COMMS
+                description   "
+                    This option will cause the whole of the virtual
+                    vector table to be initialized with dummy values on
+                    startup. When this option is enabled, all the
+                    options below must also be enabled - or the
+                    table would be empty when the application
+                    launches.
+
+                    On targets where older ROM monitors without
+                    virtual vector support may still be in use, it is
+                    necessary for RAM applictions to initialize the
+                    table (since all HAL diagnostics and debug IO
+                    happens via the table). The default setting of
+                    this option will see to this, but it is still
+                    possible to override the option when a target with
+                    a newer ROM monitor is used."
+            }
+
+            cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DEFAULT {
+                display       "Claim virtual vector table entries by default"
+		active_if     !CYGSEM_HAL_VIRTUAL_VECTOR_INIT_WHOLE_TABLE
+                default_value 1
+                description "
+                    By default most virtual vectors will be claimed by
+                    RAM startup configurations, meaning that the RAM
+                    application will provide the services. The
+                    exception is COMMS support (HAL
+                    diagnostics/debugging IO) which is left in the
+                    control of the ROM monitor.
+
+                    The reasoning behind this is to get as much of the
+                    code exercised during regular development so it
+                    is known to be working the few times a new ROM
+                    monitor or a ROM production configuration is used
+                    - COMMS are excluded only by necessity in order to
+                    avoid breaking an existing debugger connections
+                    (there may be ways around this).
+
+                    For production RAM configurations this option can
+                    be switched off, causing the appliction to rely on
+                    the ROM monitor for these services, thus
+                    saving some space.
+
+                    Individual vectors may also be left unclaimed,
+                    controlled by the below options (meaning that the
+                    associated service provided by the ROM monitor
+                    will be used)."
+            }
+
+            cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_ICTRL {
+                display       "Claim ictrl/exc virtual vectors"
+                default_value { CYGSEM_HAL_VIRTUAL_VECTOR_INIT_WHOLE_TABLE \
+                                || CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DEFAULT }
+                description   "
+                    This option will cause the ictrl/exc virtual
+                    vectors to be claimed. These are pointers to
+                    the HAL interrupt handlers table and the HAL VSR
+                    table."
+            }
+
+            cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_RESET {
+                display       "Claim reset virtual vectors"
+                default_value { CYGSEM_HAL_VIRTUAL_VECTOR_INIT_WHOLE_TABLE \
+                                || CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DEFAULT }
+                description   "
+                    This option will cause the reset and kill_by_reset
+                    virtual vectors to be claimed."
+            }
+
+            cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DELAY_US {
+                display       "Claim delay_us virtual vector"
+                default_value { CYGSEM_HAL_VIRTUAL_VECTOR_INIT_WHOLE_TABLE \
+                                || CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DEFAULT }
+                description   "
+                    This option will cause the delay_us
+                    virtual vector to be claimed."
+            }
+
+            cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_CACHE {
+                display       "Claim cache virtual vectors"
+                default_value { CYGSEM_HAL_VIRTUAL_VECTOR_INIT_WHOLE_TABLE \
+                                || CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DEFAULT }
+                description   "
+                    This option will cause the cache virtual vectors
+                    to be claimed."
+            }
+
+            cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DATA {
+                display       "Claim data virtual vectors"
+                default_value { CYGSEM_HAL_VIRTUAL_VECTOR_INIT_WHOLE_TABLE \
+                                || CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DEFAULT }
+                description   "
+                    This option will cause the data virtual vectors
+                    to be claimed. These are (unused at present)
+                    pointers to CPU, board and debug information."
+            }
+
+            cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_COMMS {
+                display       "Claim comms virtual vectors"
+                default_value { CYGSEM_HAL_VIRTUAL_VECTOR_INIT_WHOLE_TABLE \
+                                || CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS }
+                description   "
+                    This option will cause the communication tables
+                    that are part of the virtual vectors mechanism to
+                    be claimed. Note that doing this may cause an
+                    existing ROM monitor communication connection to
+                    be closed. For this reason, the option is disabled
+                    per default for normal application
+                    configurations."
+            }
+
             cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_DIAG {
                 display       "Do diagnostic IO via virtual vector table"
-                default_value { CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_GUARANTEED }
+                calculated    1
                 description   "
-                    The virtual vector table provides functions for
-                    diagnostic IO. Using these both reduce the application
-                    size a bit, and allow the ROM monitor to control which
-                    communication intererface to use. Careful when enabling
-                    this option as it may cause output to disappear (if
-                    the ROM monitor does not provide the necessary
-                    services)."
+                    All HAL IO happens via the virtual vector table / comm
+                    tables when those tables are supported by the HAL.
+
+                    If so desired, the low-level IO functions can
+                    still be provided by the RAM application by
+                    enabling the CLAIM_COMMS option."
             }
         }
 

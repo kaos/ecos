@@ -48,6 +48,15 @@
 //
 //==========================================================================
 
+
+//----------------------------------------------------------------------------
+// Reset.
+// The Cogent does not have a watchdog (not one we can easily use for this
+// purpose anyway).
+#define HAL_PLATFORM_RESET()             CYG_EMPTY_STATEMENT
+
+#define HAL_PLATFORM_RESET_ENTRY 0xfff00100
+
 //--------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_PLF_INTR_H
 // End of plf_intr.h

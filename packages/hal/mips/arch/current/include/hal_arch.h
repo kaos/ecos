@@ -54,6 +54,9 @@
 // Processor saved states:
 // The layout of this structure is also defined in "arch.inc", for assembly
 // code. Do not change this without changing that (or vice versa).
+// Notes: This structure is carefully laid out. It is a multiple of 8
+// bytes and the pc and badvr fields are positioned to ensure that
+// they are on 8 byte boundaries. 
 
 #ifdef CYGHWR_HAL_MIPS_64BIT
 # define CYG_HAL_MIPS_REG CYG_WORD64
@@ -81,25 +84,25 @@ typedef struct
     CYG_HAL_MIPS_REG    lo;             /* lo word of mpy/div reg       */
 #ifdef CYGHWR_HAL_MIPS_FPU
     CYG_HAL_FPU_REG     f[32];          /* FPU registers                */
-    CYG_ADDRWORD        fcr31;          /* FPU control/status register  */
-    CYG_ADDRWORD        fppad;          /* Dummy location to make this  */
+    CYG_WORD32          fcr31;          /* FPU control/status register  */
+    CYG_WORD32          fppad;          /* Dummy location to make this  */
                                         /* structure a multiple of 8    */
                                         /* bytes long.                  */
 #endif
     
     // These are only saved for exceptions and interrupts
-    CYG_ADDRWORD        vector;         /* Vector number                */
-    CYG_ADDRWORD        pc;             /* Program Counter              */
-    CYG_ADDRWORD        sr;             /* Status Reg                   */
-    CYG_ADDRWORD        cache;          /* Cache control register       */
+    CYG_WORD32          vector;         /* Vector number                */
+    CYG_WORD32          sr;             /* Status Reg                   */
+    CYG_HAL_MIPS_REG    pc;             /* Program Counter              */
+    CYG_WORD32          cache;          /* Cache control register       */
 
 
     // These are only saved for exceptions, and are not restored
     // when continued.
-    CYG_ADDRWORD        cause;          /* Exception cause register     */
-    CYG_ADDRWORD        badvr;          /* Bad virtual address reg      */
-    CYG_ADDRWORD        prid;           /* Processor Version            */
-    CYG_ADDRWORD        config;         /* Config register              */
+    CYG_WORD32          cause;          /* Exception cause register     */
+    CYG_HAL_MIPS_REG    badvr;          /* Bad virtual address reg      */
+    CYG_WORD32          prid;           /* Processor Version            */
+    CYG_WORD32          config;         /* Config register              */
 } HAL_SavedRegisters;
 
 //--------------------------------------------------------------------------

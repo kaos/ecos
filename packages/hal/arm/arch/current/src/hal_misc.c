@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -182,8 +182,6 @@ hal_arch_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 {
     CYG_TRACE1(true, "Interrupt: %d", vector);
 
-    diag_printf("Spurious Interrupt!!! - vector: %d, data: %x\n", vector, 
-                data);
     CYG_FAIL("Spurious Interrupt!!!");
     return 0;
 }

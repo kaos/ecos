@@ -40,6 +40,8 @@
 //
 //####DESCRIPTIONEND####
 
+// #define DEBUGTEST
+
 // INCLUDES
 
 #include <pkgconf/system.h>
@@ -54,6 +56,7 @@
 # include <cyg/kernel/thread.inl>
 # include <cyg/kernel/sched.hxx>
 # include <cyg/kernel/sched.inl>
+# include <cyg/kernel/sema.hxx>
 #endif
 #include <cyg/infra/testcase.h>
 
@@ -93,7 +96,8 @@ cyg_start()
 
 #include <cyg/infra/diag.h>
 
-volatile int gonow = 0;
+Cyg_Counting_Semaphore startsema;
+
 volatile int stopnow = 0;
 
 struct ptr {
@@ -168,8 +172,7 @@ thrmalloc( CYG_ADDRWORD data )
     void *mem;
     unsigned int seed;
 
-    while (!gonow)
-        Cyg_Thread::self()->delay(1);
+    startsema.wait();
         
     while (!stopnow) {
         r = myrand( NUM_PTRS-1, &seed );
@@ -192,7 +195,9 @@ thrmalloc( CYG_ADDRWORD data )
         ptrs[i].p = (char *)mem;
         ptrs[i].size = r;
         if ( NULL != mem ) {
-//            diag_printf("malloc=%08x size=%d\n", mem, r);
+#ifdef DEBUGTEST
+            diag_printf("malloc=%08x size=%d\n", mem, r);
+#endif
             fill_with_data( &ptrs[i] );
         }
         ptrs[i].busy = 0;        
@@ -207,8 +212,7 @@ thrcalloc( CYG_ADDRWORD data )
     void *mem;
     unsigned int seed;
 
-    while (!gonow)
-        Cyg_Thread::self()->delay(1);
+    startsema.wait();
         
     while (!stopnow) {
         r = myrand( NUM_PTRS-1, &seed );
@@ -231,7 +235,9 @@ thrcalloc( CYG_ADDRWORD data )
         ptrs[i].p = (char *)mem;
         ptrs[i].size = r;
         if ( NULL != mem ) {
-//            diag_printf("calloc=%08x size=%d\n", mem, r);
+#ifdef DEBUGTEST
+            diag_printf("calloc=%08x size=%d\n", mem, r);
+#endif
             check_zeroes( &ptrs[i] );
             fill_with_data( &ptrs[i] );
         }
@@ -247,8 +253,7 @@ thrrealloc( CYG_ADDRWORD data )
     void *mem;
     unsigned int seed;
 
-    while (!gonow)
-        Cyg_Thread::self()->delay(1);
+    startsema.wait();
         
     while (!stopnow) {
         r = myrand( NUM_PTRS-1, &seed );
@@ -270,7 +275,9 @@ thrrealloc( CYG_ADDRWORD data )
         r = myrand(memsize, &seed);
         mem = realloc( (void *)ptrs[i].p, r );
         if ( NULL != mem ) {
-//            diag_printf("realloc=%08x oldsize=%d newsize=%d\n", mem, ptrs[i].size, r);
+#ifdef DEBUGTEST
+            diag_printf("realloc=%08x oldsize=%d newsize=%d\n", mem, ptrs[i].size, r);
+#endif
             ptrs[i].size = r;
             ptrs[i].p = (char *)mem;
             fill_with_data( &ptrs[i] );
@@ -292,7 +299,9 @@ thrfree( CYG_ADDRWORD data )
     memsize = (unsigned long) minfo.maxfree;
     diag_printf("INFO:<Iteration 0, arenasize=%d, space free=%d, maxfree=%d>\n",
                 minfo.arena, minfo.fordblks, minfo.maxfree );
-    gonow++;
+
+    // wake the three threads above.
+    startsema.post(); startsema.post(); startsema.post();
         
     Cyg_Thread::self()->delay(1);
 
@@ -343,7 +352,9 @@ thrfree( CYG_ADDRWORD data )
         ptrs[i].busy = 1;
         Cyg_Scheduler::unlock();
         check_data( &ptrs[i] );
-//        diag_printf("about to free %08x\n", ptrs[i].p);
+#ifdef DEBUGTEST
+        diag_printf("about to free %08x\n", ptrs[i].p);
+#endif
         free( (void *)ptrs[i].p );
         ptrs[i].p = NULL;
         ptrs[i].busy = 0;

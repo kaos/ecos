@@ -46,6 +46,10 @@
 
 #include <pkgconf/hal.h>
 
+#ifdef CYGPKG_REDBOOT
+#include <pkgconf/redboot.h>
+#endif
+
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
 #include <cyg/hal/hal_stub.h>
@@ -54,6 +58,7 @@
 #include <cyg/hal/mips-regs.h>
 
 #include <cyg/hal/hal_arch.h>
+#include <cyg/hal/hal_intr.h>
 #include <cyg/hal/mips_opcode.h>
 
 typedef unsigned long t_inst;
@@ -170,6 +175,13 @@ int __get_trap_number (void)
 {
   return (get_register (CAUSE) & CAUSE_EXCMASK) >> CAUSE_EXCSHIFT;
 }
+
+#if defined(CYGSEM_REDBOOT_BSP_SYSCALLS)
+int __is_bsp_syscall(void) 
+{
+    return __get_trap_number() == EXC_SYS;
+}
+#endif
 
 /* Set the currently-saved pc register value to PC. This also updates NPC
    as needed. */

@@ -1,3 +1,14 @@
+2001-02-09  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* pkgconf/rules.mak: Revert below change for now until we work
+	out something better.
+
+2001-02-06  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* pkgconf/rules.mak: When generating dependencies, accomodate
+	new gcc dependency output format (and preserve compatibility
+	with the old - it just generates a redundant dependency).
+
 2001-01-25  Jesper Skov  <jskov@redhat.com>
 
 	* ecos.db: Added generic i82559 ethernet driver.
@@ -7,6 +18,12 @@
 
 	* pkgconf/rules.mak (mlt_headers): Rewrite to work under Solaris,
 	and without excessive rebuilds.
+
+2000-11-21  Bart Veer  <bartv@redhat.com>
+
+	* ecos.db:
+	* customers:
+	Added USB support
 
 2000-11-16  Jesper Skov  <jskov@redhat.com>
 

@@ -72,12 +72,7 @@ extern void hal_stdeval1_init_break_irq( void );
 // Stub initializer.
 #define HAL_STUB_PLATFORM_INIT()              CYG_EMPTY_STATEMENT
 
-//----------------------------------------------------------------------------
-// Reset.
-#define HAL_STUB_PLATFORM_RESET()             CYG_EMPTY_STATEMENT
-
 #endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_PLF_STUB_H
 // End of plf_stub.h

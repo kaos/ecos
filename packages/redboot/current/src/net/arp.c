@@ -151,7 +151,7 @@ __arp_request(ip_addr_t *ip_addr, enet_addr_t *eth_addr)
         __enet_send(pkt, &bcast_addr, ETH_TYPE_ARP);
 
         retry_start = MS_TICKS();
-	while ((MS_TICKS() - retry_start) < 250) {
+	while ((MS_TICKS_DELAY() - retry_start) < 250) {
 	    __enet_poll();
 	    if (!arp_req.waiting) {
 		__pktbuf_free(pkt);

@@ -352,9 +352,9 @@ struct pthread_cleanup_buffer
 // location we define we can ensure that it differs from NULL and any
 // other valid pointer (as required by the standard).
 
-externC int pthread_canceled;
+externC int pthread_canceled_dummy_var;
 
-#define PTHREAD_CANCELED                ((void *)(&pthread_canceled))
+#define PTHREAD_CANCELED                ((void *)(&pthread_canceled_dummy_var))
 
 //-----------------------------------------------------------------------------
 // Cancelability enable and type
@@ -383,6 +383,15 @@ externC int pthread_cancel (pthread_t thread);
 // the thread if there is one.
 externC void pthread_testcancel (void);
 
+// eCos extension:
+// Test for a pending cancellation for the current thread and terminate
+// the thread if there is one, unlocking the supplied mutex first.
+externC void pthread_testcancel_unlock ( pthread_mutex_t *__mut );
+
+// eCos extension:
+// Test for a pending cancellation for the current thread and return
+// non-zero if this thread has a deferred cancellation pending
+externC int pthread_canceled (void);
 
 // Install a cleanup routine.
 // Note that pthread_cleanup_push() and pthread_cleanup_pop() are macros that

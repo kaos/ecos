@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -54,13 +54,10 @@
 #include <cyg/hal/hal_if.h>             // Calling-if API
 #include <cyg/hal/sh_regs.h>            // serial register definitions
 
+#define CYGPRI_HAL_SH_SH3_SCI_PRIVATE
 #include <cyg/hal/sh3_sci.h>            // our header
 
 //--------------------------------------------------------------------------
-
-#ifndef CYGNUM_HAL_SH_SH3_SCI_DEFAULT_BAUD_RATE
-# define CYGNUM_HAL_SH_SH3_SCI_DEFAULT_BAUD_RATE 38400
-#endif
 
 void
 cyg_hal_plf_sci_init_channel(const channel_data_t* chan)
@@ -78,9 +75,9 @@ cyg_hal_plf_sci_init_channel(const channel_data_t* chan)
     // Set speed to CYGNUM_HAL_SH_SH3_SCI_DEFAULT_BAUD_RATE
     HAL_READ_UINT8(base+_REG_SCSMR, tmp);
     tmp &= ~CYGARC_REG_SCSMR_CKSx_MASK;
-    tmp |= CYGARC_SCBRR_CKSx(CYGNUM_HAL_SH_SH3_SCI_DEFAULT_BAUD_RATE);
+    tmp |= CYGARC_SCBRR_CKSx(CYGNUM_HAL_SH_SH3_SCI_BAUD_RATE);
     HAL_WRITE_UINT8(base+_REG_SCSMR, tmp);
-    HAL_WRITE_UINT8(base+_REG_SCBRR, CYGARC_SCBRR_N(CYGNUM_HAL_SH_SH3_SCI_DEFAULT_BAUD_RATE));
+    HAL_WRITE_UINT8(base+_REG_SCBRR, CYGARC_SCBRR_N(CYGNUM_HAL_SH_SH3_SCI_BAUD_RATE));
 }
 
 static cyg_bool
@@ -137,8 +134,6 @@ cyg_hal_plf_sci_putc(void* __ch_data, cyg_uint8 c)
     CYGARC_HAL_RESTORE_GP();
 }
 
-#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) \
-    || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
 
 static channel_data_t channels[CYGNUM_HAL_SH_SH3_SCI_PORTS];
 
@@ -298,8 +293,6 @@ cyg_hal_plf_sci_init(int sci_index, int comm_index,
     // Restore original console
     CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
 }
-
-#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG || CYGPRI_HAL_IMPLEMENTS_IF_SERVICES
 
 #endif // CYGNUM_HAL_SH_SH3_SCI_PORTS
 

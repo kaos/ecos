@@ -70,26 +70,6 @@ externC void cyg_hal_plf_comms_init(void);
 #define HAL_STUB_PLATFORM_INIT()        CYG_EMPTY_STATEMENT
 
 #endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-
-//----------------------------------------------------------------------------
-// Reset.
-#define HAL_STUB_PLATFORM_RESET()                                          \
-    CYG_MACRO_START                                                        \
-    cyg_uint32 ctrl;                                                       \
-                                                                           \
-    /* By disabling interupts we will just hang in the loop below      */  \
-    /* if for some reason the software reset fails.                    */  \
-    HAL_DISABLE_INTERRUPTS(ctrl);                                          \
-                                                                           \
-    /* Software reset. */                                                  \
-    *SA11X0_RESET_SOFTWARE_RESET = SA11X0_INVOKE_SOFTWARE_RESET;           \
-                                                                           \
-    for(;;); /* hang here forever if reset fails */                        \
-    CYG_MACRO_END
-
-// Fallback (never really used)
-#define HAL_STUB_PLATFORM_RESET_ENTRY 0x00000000
-
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_PLF_STUB_H
 // End of plf_stub.h

@@ -466,8 +466,8 @@ call_via_r1:
 //
 // Reset the board
 //
-        .globl  _hal_plf_reset_board
-_hal_plf_reset_board:   
+        .globl  _hal_reset_board
+_hal_reset_board:   
         di                      // Turn off interrupts
         jmp     [r0]            // Restart machine        
 

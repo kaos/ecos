@@ -1,3 +1,8 @@
+2001-01-26  Jesper Skov  <jskov@redhat.com>
+
+	* include/plf_stub.h: Reset macros moved
+	* include/plf_intr.h: to this file.
+
 2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/pkgconf/mlt_mips_tx39_jmr3904_ram.mlt:

@@ -498,6 +498,8 @@ CYG_MACRO_END
 
 //--------------------------------------------------------------------------
 // Microsecond delay function provided in hal_misc.c
+externC void hal_delay_us(int us);
+
 #define HAL_DELAY_US(n)          hal_delay_us(n)
 
 //--------------------------------------------------------------------------

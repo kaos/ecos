@@ -56,8 +56,6 @@
 
 //-----------------------------------------------------------------------------
 
-#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) \
-    || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
 
 void
 cyg_hal_plf_comms_init(void)
@@ -71,8 +69,6 @@ cyg_hal_plf_comms_init(void)
 
     cyg_hal_plf_scif_init(0, 0, CYGNUM_HAL_INTERRUPT_SCIF_RXI, SCI_BASE);
 }
-
-#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG || CYGPRI_HAL_IMPLEMENTS_IF_SERVICES
 
 //=============================================================================
 // Led control
@@ -96,6 +92,9 @@ hal_diag_led_off( void )
 //=============================================================================
 
 #ifndef CYGSEM_HAL_VIRTUAL_VECTOR_DIAG
+
+#define CYGPRI_HAL_SH_SH4_SCIF_PRIVATE
+#include <cyg/hal/sh4_scif.h>            // driver API
 
 static channel_data_t channel = { (cyg_uint8*)SCI_BASE, 0, 0};
 

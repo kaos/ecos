@@ -55,9 +55,6 @@
 #include <cyg/hal/hal_if.h>             // Calling-if API
 
 
-#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) \
-    || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
-
 static void cyg_hal_plf_serial_init(void);
 static void cyg_hal_plf_lcd_init(void);
 
@@ -74,7 +71,6 @@ cyg_hal_plf_comms_init(void)
     cyg_hal_plf_serial_init();
     cyg_hal_plf_lcd_init();
 }
-#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG || CYGPRI_HAL_IMPLEMENTS_IF_SERVICES
 
 //=============================================================================
 // Serial driver
@@ -261,9 +257,6 @@ cyg_hal_plf_serial_putc(void* __ch_data, cyg_uint8 c)
     CYGARC_HAL_RESTORE_GP();
 }
 
-#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) \
-    || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
-
 static const channel_data_t channels[2] = {
     { (cyg_uint8*)CYG_DEV_SERIAL_BASE_A, 1000, CYGNUM_HAL_INTERRUPT_SIU_IRQ1},
     { (cyg_uint8*)CYG_DEV_SERIAL_BASE_B, 1000, CYGNUM_HAL_INTERRUPT_SIU_IRQ1}
@@ -437,8 +430,6 @@ cyg_hal_plf_serial_init(void)
     CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
 }
 
-#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG || CYGPRI_HAL_IMPLEMENTS_IF_SERVICES
-
 
 //=============================================================================
 // LCD driver
@@ -446,8 +437,6 @@ cyg_hal_plf_serial_init(void)
 
 // The LCD driver is only used by the new vector code. Cannot be used
 // by the old compatibility cruft.
-#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) \
-    || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
 
 // FEMA 162B 16 character x 2 line LCD
 // base addresses and register offsets *
@@ -659,7 +648,6 @@ cyg_hal_plf_lcd_init(void)
     // Restore original console
     CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
 }
-#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG || CYGPRI_HAL_IMPLEMENTS_IF_SERVICES
 
 //=============================================================================
 // Compatibility with older stubs

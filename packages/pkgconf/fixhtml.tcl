@@ -55,6 +55,19 @@
 
 set year [clock format [clock seconds] -format "%Y"]
 
+set copyright_banner \
+"<!-- Copyright (C) $year Red Hat, Inc.                                -->
+<!-- This material may be distributed only subject to the terms      -->
+<!-- and conditions set forth in the Open Publication License, v1.0  -->
+<!-- or later (the latest version is presently available at          -->
+<!-- http://www.opencontent.org/openpub/)                            -->
+<!-- Distribution of substantively modified versions of this         -->
+<!-- document is prohibited without the explicit permission of the   -->
+<!-- copyright holder.                                               -->
+<!-- Distribution of the work or derivative of the work in any       -->
+<!-- standard (paper) book form is prohibited unless prior           -->
+<!-- permission obtained from the copyright holder                   -->"
+
 # The generated files all have a .htm suffix rather than a .html
 # suffix. For now this is preserved, to avoid having to change all the
 # anchors. It might be better to rename all the files to .html in
@@ -77,7 +90,7 @@ foreach file $files {
 	    regsub -all "\n>" $data ">\n" data
 	    
 	    # Add a copyright banner
-	    set data [concat "<!-- Copyright (C) $year Red Hat, Inc. -->\n" $data]
+	    set data "[set copyright_banner]\n[set data]"
 
 	    # Take care of some character entities that Netscape does not understand
 	    regsub -all "&mgr;"    $data "\\&#03BC;" data

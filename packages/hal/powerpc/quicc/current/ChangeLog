@@ -1,3 +1,7 @@
+2001-01-26  Jesper Skov  <jskov@redhat.com>
+
+	* src/quicc_smc1.c: Removed CYGSEM_HAL_VIRTUAL_VECTOR_DIAG check. 
+
 2001-01-15  Gary Thomas  <gthomas@redhat.com>
 
 	* src/quicc_smc1.c: Provide for multiple serial input buffers

@@ -1,3 +1,17 @@
+2001-02-05  Jesper Skov  <jskov@redhat.com>
+
+	* include/plf_io.h: Ignore devices not on bus 0.
+
+2001-01-31  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/platform.S: Added *va* (see mips/arch/.../arch.inc) macros
+	when manipulating values that are potentially 64 bits.
+
+2001-01-26  Jesper Skov  <jskov@redhat.com>
+
+	* include/plf_stub.h: Reset macros moved
+	* include/plf_intr.h: to this file.
+
 2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/pkgconf/mlt_mips_vr4300_vrc4373_ram.mlt:

@@ -332,6 +332,7 @@ static void entry0( cyg_addrword_t data )
 
     cyg_test_is_simulator = 1;
 #endif    
+
 #ifdef HAL_ICACHE_INVALIDATE_ALL
     HAL_DISABLE_INTERRUPTS(oldints);
     HAL_DCACHE_PURGE_ALL();

@@ -164,7 +164,7 @@ static pthread_t main_thread;
 //=============================================================================
 // Exported variables
 
-int pthread_canceled;           // pointed to by PTHREAD_CANCELED
+int pthread_canceled_dummy_var;           // pointed to by PTHREAD_CANCELED
 
 //=============================================================================
 // Internal functions
@@ -269,6 +269,27 @@ static void *call_main( void * )
     cyg_libc_invoke_main();
     return NULL; // placate compiler
 }
+
+//-----------------------------------------------------------------------------
+// Check whether there is a cancel pending and if so, whether
+// cancellations are enabled. We do it in this order to reduce the
+// number of tests in the common case - when no cancellations are
+// pending.
+// We make this inline so it can be called directly below for speed
+
+static __inline__ int
+checkforcancel( void )
+{
+     pthread_info *self = pthread_self_info();
+
+    if( self != NULL &&
+        self->cancelpending &&
+        self->cancelstate == PTHREAD_CANCEL_ENABLE )
+        return 1;
+    else
+        return 0;
+}
+
 
 //-----------------------------------------------------------------------------
 // POSIX ASR
@@ -763,6 +784,9 @@ externC int pthread_join (pthread_t thread, void **thread_return)
 {
     PTHREAD_ENTRY();
     
+    // check for cancellation first.
+    pthread_testcancel();
+
     pthread_mutex.lock();
     
     // Dispose of any dead threads
@@ -787,8 +811,11 @@ externC int pthread_join (pthread_t thread, void **thread_return)
     {
     case PTHREAD_STATE_RUNNING:
         // The thread is still running, we must wait for it.
-        while( joinee->state == PTHREAD_STATE_RUNNING )
+        while( joinee->state == PTHREAD_STATE_RUNNING ) {
             joinee->joiner->wait();
+            // check if we were woken because we were being cancelled
+            pthread_testcancel_unlock( (pthread_mutex_t *)&pthread_mutex);
+        }
 
         // check that the thread is still joinable
         if( joinee->state == PTHREAD_STATE_JOIN )
@@ -1641,11 +1668,17 @@ externC int pthread_cond_wait (pthread_cond_t *cond,
 {
     PTHREAD_ENTRY();
 
+    // check for cancellation first.
+    pthread_testcancel();
+
     PTHREAD_CHECK( cond );
     PTHREAD_CHECK( mutex );    
 
     ((Cyg_Condition_Variable *)cond)->wait( *(Cyg_Mutex *)mutex );
     
+    // check if we were woken because we were being cancelled
+    pthread_testcancel();
+
     PTHREAD_RETURN(0);
 }
 
@@ -1657,6 +1690,9 @@ externC int pthread_cond_timedwait (pthread_cond_t *cond,
                                     const struct timespec *abstime)
 {
     PTHREAD_ENTRY();
+
+    // check for cancellation first.
+    pthread_testcancel();
 
     PTHREAD_CHECK( cond );
     PTHREAD_CHECK( mutex );    
@@ -1673,6 +1709,9 @@ externC int pthread_cond_timedwait (pthread_cond_t *cond,
     
     ((Cyg_Condition_Variable *)cond)->wait( *(Cyg_Mutex *)mutex, ticks );
     
+    // check if we were woken because we were being cancelled
+    pthread_testcancel();
+
     PTHREAD_RETURN(0);
 }
 
@@ -1920,25 +1959,72 @@ externC int pthread_cancel (pthread_t thread)
 
     th->cancelpending = true;
 
-    if( th->cancelstate == PTHREAD_CANCEL_ENABLE &&
-        th->canceltype == PTHREAD_CANCEL_ASYNCHRONOUS )
+    if ( th->cancelstate == PTHREAD_CANCEL_ENABLE )
     {
-        // If the thread has cancellation enabled, and it is in
-        // asynchronous mode, set the eCos thread's ASR pending to
-        // deal with it when the thread wakes up. We also release the
-        // thread out of any current wait to make it wake up.
+        if ( th->canceltype == PTHREAD_CANCEL_ASYNCHRONOUS )
+        {
+            // If the thread has cancellation enabled, and it is in
+            // asynchronous mode, set the eCos thread's ASR pending to
+            // deal with it when the thread wakes up. We also release the
+            // thread out of any current wait to make it wake up.
         
-        th->thread->set_asr_pending();
-        th->thread->release();
+            th->thread->set_asr_pending();
+            th->thread->release();
+        }
+        else if ( th->canceltype == PTHREAD_CANCEL_DEFERRED )
+        {
+            // If the thread has cancellation enabled, and it is in 
+            // deferred mode, wake the thread up so that cancellation
+            // points can test for cancellation.
+            th->thread->release();
+        }
+        else
+            CYG_FAIL("Unknown cancellation type");
     }
-    // Otherwise the thread either has cancellation disabled, or is
-    // in deferred mode. In either case it is up to the thread to
-    // get into a state to deal with the pending cancellation.
+
+    // Otherwise the thread has cancellation disabled, in which case
+    // it is up to the thread to enable cancellation
     
     pthread_mutex.unlock();   
    
     
     PTHREAD_RETURN(0);
+}
+
+//-----------------------------------------------------------------------------
+// eCos extension:
+// Test for a pending cancellation for the current thread and return
+// non-zero if this thread has a deferred cancellation pending
+
+externC int pthread_canceled(void)
+{
+    PTHREAD_ENTRY();
+    PTHREAD_RETURN( checkforcancel() );
+}
+
+//-----------------------------------------------------------------------------
+// eCos extension:
+// Test for a pending cancellation for the current thread and terminate
+// the thread if there is one, unlocking the supplied mutex first.
+
+externC void pthread_testcancel_unlock( pthread_mutex_t *__mut )
+{
+    PTHREAD_ENTRY_VOID();
+    
+    if( checkforcancel() )
+    {
+        Cyg_Mutex *mut = (Cyg_Mutex *)__mut;
+        mut->unlock();
+
+        // If we have cancellation enabled, and there is a cancellation
+        // pending, then go ahead and do the deed. 
+        
+        // Exit now with special retval. pthread_exit() calls the
+        // cancellation handlers implicitly.
+        pthread_exit(PTHREAD_CANCELED);
+    }
+        
+    PTHREAD_RETURN_VOID;
 }
 
 //-----------------------------------------------------------------------------
@@ -1949,17 +2035,7 @@ externC void pthread_testcancel (void)
 {
     PTHREAD_ENTRY_VOID();
 
-    pthread_info *self = pthread_self_info();
-
-    // Check whether there is a cancel pending and if so, whether
-    // cancellations are enabled. We do it in this order to reduce the
-    // number of tests in the common case - when no cancellations are
-    // pending.
-
-    if( self != NULL &&
-        self->cancelpending &&
-        self->cancelstate == PTHREAD_CANCEL_ENABLE )
-        
+    if( checkforcancel() )
     {
         // If we have cancellation enabled, and there is a cancellation
         // pending, then go ahead and do the deed. 

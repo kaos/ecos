@@ -167,9 +167,9 @@ interrupt_end(
 
 cyg_uint32 chain_isr(cyg_vector_t vector, CYG_ADDRWORD data)
 {
-    CYG_REPORT_FUNCTION();
- 
     cyg_interrupt *p = *(cyg_interrupt **)data;
+
+    CYG_REPORT_FUNCTION();
 
     while( p != NULL )
     {
@@ -526,36 +526,39 @@ externC void cyg_drv_interrupt_attach( cyg_handle_t interrupt )
 
     CYG_ASSERT( intr->next == NULL , "cyg_interrupt already on a list");
 
-    cyg_uint32 index;
-
-    HAL_TRANSLATE_VECTOR( intr->vector, index );
-
-    if( chain_list[index] == NULL )
     {
-        // First Interrupt on this chain, just assign it and register
-        // the chain_isr with the HAL.
-        
-        chain_list[index] = intr;
+        cyg_uint32 index;
 
-        HAL_INTERRUPT_ATTACH( intr->vector, chain_isr, &chain_list[index], NULL );
-    }
-    else
-    {
-        // There are already interrupts chained, add this one into the
-        // chain in priority order.
-        
-        Cyg_Interrupt **p = &chain_list[index];
+        HAL_TRANSLATE_VECTOR( intr->vector, index );
 
-        while( *p != NULL )
+        if( chain_list[index] == NULL ) 
         {
-            cyg_interrupt *n = *p;
+            // First Interrupt on this chain, just assign it and
+            // register the chain_isr with the HAL.
+        
+            chain_list[index] = intr;
 
-            if( n->priority < intr->priority ) break;
+            HAL_INTERRUPT_ATTACH( intr->vector, chain_isr, 
+                                  &chain_list[index], NULL );
+        } 
+        else
+        {
+            // There are already interrupts chained, add this one into
+            // the chain in priority order.
+        
+            cyg_interrupt **p = &chain_list[index];
+
+            while( *p != NULL )
+            {
+                cyg_interrupt *n = *p;
+                
+                if( n->priority < intr->priority ) break;
             
-            p = &n->next;
+                p = &n->next;
+            }
+            intr->next = *p;
+            *p = intr;
         }
-        next = *p;
-        *p = intr;
     }
     
 #else
@@ -583,30 +586,33 @@ externC void cyg_drv_interrupt_detach( cyg_handle_t interrupt )
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
 
     // Remove the interrupt object from the vector chain.
-    
-    cyg_uint32 index;
 
-    HAL_TRANSLATE_VECTOR( vector, index );
+    {    
+        cyg_uint32 index;
+        cyg_interrupt **p;
 
-    cyg_interrupt **p = &chain_list[index];
+        HAL_TRANSLATE_VECTOR( vector, index );
 
-    while( *p != NULL )
-    {
-        cyg_interrupt *n = *p;
+        p = &chain_list[index];
 
-        if( n == intr )
+        while( *p != NULL )
         {
-            *p = intr->next;
-            break;
-        }
+            cyg_interrupt *n = *p;
             
-        p = &n->next;
-    }
+            if( n == intr )
+            {
+                *p = intr->next;
+                break;
+            }
+            
+            p = &n->next;
+        }
 
-    // If this was the last one, detach the vector.
+        // If this was the last one, detach the vector.
     
-    if( chain_list[index] == NULL )
-        HAL_INTERRUPT_DETACH( intr->vector, chain_isr );
+        if( chain_list[index] == NULL )
+            HAL_INTERRUPT_DETACH( intr->vector, chain_isr );
+    }
     
 #else
     

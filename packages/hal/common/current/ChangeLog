@@ -1,3 +1,90 @@
+2001-02-09  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/debugging.cdl: Make CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT and 
+	CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT options have sensible defaults.
+
+2001-02-08  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal.cdl: Added CYGSEM_HAL_VIRTUAL_VECTOR_INHERIT_CONSOLE and
+	CHANNEL_CONFIGURABLE options.
+	* cdl/common.cdl: Added CYGDBG_HAL_DIAG_TO_DEBUG_CHAN option.
+	* src/hal_if.c: Changes to respect new options. Always do platform
+	driver init from CLAIM_COMMS code.
+	* src/hal_stub.c: Leave channel setup to CLAIM_COMMS code.
+
+	* src/hal_if.c: Added null mangler that gets called via the
+	virtual vector console comms entry and just forwards IO to the
+	debug comms entries.  This differs from setting the console
+	channel to the same as the debug channel in that console output
+	will go to the debug channel even if the debug channel is changed.
+
+2001-02-07  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_if.h: Allow architecture to override COMM and CALL
+	accessor macros.
+
+2001-02-03  Gary Thomas  <gthomas@redhat.com>
+
+	* src/bplist-dynamic.c (__set_breakpoint, __remove_breakpoint): 
+	Fix error introduced below when no breakpoint list defined.
+
+2001-02-02  Mark Salter  <msalter@redhat.com>
+
+	* src/generic-stub.c: __set_breakpoint and __remove_breakpoint now
+	take a length argument.
+
+	* src/bplist-dynamic.c: Support breakpoint length. Use 
+	HAL_BREAKINST_ADDR macro (if defined) to get actual breakpoint based
+	on breakpoint length.
+
+	* include/hal_stub.h: Add len argument to __set_breakpoint and
+	__remove_breakpoint.
+
+2001-02-01  Jesper Skov  <jskov@redhat.com>
+
+	* src/drv_api.c: Make it build with chaining.
+
+	* include/hal_if.h: Introduce macros for legal version range and
+	special hacked version number used by ctrlc magic.
+	* src/hal_if.c (hal_ctrlc_isr_init): Be more careful with how the
+	version number is checked (and trashed) by the ctrlc init code.
+	* src/hal_misc.c (hal_default_isr): Same.
+
+	* src/hal_stub.c: Moved mangling code to hal_if.c
+	* src/hal_if.c: New policies for when and how to initialize the
+	IO channels. Mangler code now set up by diag_init to allow for
+	mangling when no stub is included.
+
+	* include/hal_if.h: Added COMM version in upper 16 bits of version
+	word. Removed CYGPRI_HAL_IMPLEMENTS_IF_SERVICES.
+	* src/hal_misc.c: Use masks when checking vv versions.
+
+	* cdl/hal.cdl: Add new options for selecting which parts of the
+	virtual vector table to initialize.
+	* src/hal_if.c: Matching granularity in initialization code.
+	Extra checking of services before using these.
+	
+	* cdl/debugging.cdl: Require channel initialization when enabling
+	stubs.
+
+2001-01-31  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/common.cdl: Get rid of CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL
+	options. They are replaced by the CYGSEM_HAL_DIAG_MANGLER option.
+
+2001-01-31  Hugo Tyson  <hmt@redhat.com>
+
+	* include/hal_if.h: Make it possible to build logical ether driver
+	even without virtual vectors present, by defining a dummy
+	HAL_CTRLC_CHECK in that case; other code invokes it if debugging
+	per se is enabled.
+
+2001-01-26  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_stub.c (__reset): Rename HAL_STUB_PLATFORM_RESETx macros
+	to HAL_PLATFORM_RESETx.
+	* src/hal_if.c (reset): Same.
+
 2001-01-15  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/drv_api.c: Initialized isr_disable_counter to 1 so that it
@@ -1456,7 +1543,7 @@ Mon Aug 31 09:16:08 1998  Jesper Skov  <jskov@cygnus.co.uk>
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

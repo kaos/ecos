@@ -78,15 +78,6 @@ extern void hal_plf_stub_init( void );
 #define HAL_STUB_PLATFORM_INIT()              hal_plf_stub_init();
 
 #endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-
-//----------------------------------------------------------------------------
-// Reset.
-// The Cogent does not have a watchdog (not one we can easily use for this
-// purpose anyway).
-#define HAL_STUB_PLATFORM_RESET()             CYG_EMPTY_STATEMENT
-
-#define HAL_STUB_PLATFORM_RESET_ENTRY 0xfff00100
-
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_PLF_STUB_H
 // End of plf_stub.h

@@ -128,17 +128,6 @@ pci_test( void )
                    "cyg_pci_allocate_io_priv(256) size failed");
     CYG_TEST_CHECK(0x0100 == io_assigned_addr,
                    "cyg_pci_allocate_io_priv(256) align failed");
-    // Check IO space limit
-    io_base = 0x100000-0x80;
-    dev_info.base_size[0] = CYG_PCI_CFG_BAR_SPACE_IO | 0xffffff00;
-    CYG_TEST_CHECK(!cyg_pci_allocate_io_priv(&dev_info, 0, &io_base,
-                                             &io_assigned_addr),
-                   "cyg_pci_allocate_io_priv overflow");
-    dev_info.base_size[0] = CYG_PCI_CFG_BAR_SPACE_IO | 0xffffff80;
-    CYG_TEST_CHECK(cyg_pci_allocate_io_priv(&dev_info, 0, &io_base,
-                                            &io_assigned_addr),
-                   "cyg_pci_allocate_io_priv overflow (on limit)");
-
 
     // Check allocation and alignment of MEM space
     mem_base = 0x00000000;

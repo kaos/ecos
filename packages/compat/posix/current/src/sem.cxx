@@ -135,10 +135,20 @@ externC int sem_wait  (sem_t *sem)
     
     SEMA_ENTRY();
 
+#ifdef CYGPKG_POSIX_PTHREAD
+    // check for cancellation first.
+    pthread_testcancel();
+#endif
+
     Cyg_Counting_Semaphore *sema = (Cyg_Counting_Semaphore *)sem;
 
     if( !sema->wait() ) retval = EINTR;
     
+#ifdef CYGPKG_POSIX_PTHREAD
+    // check if we were woken because we were being cancelled
+    pthread_testcancel();
+#endif
+
     SEMA_RETURN(retval);
 }
 

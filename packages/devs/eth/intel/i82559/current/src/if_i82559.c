@@ -75,6 +75,8 @@
 //               some tweaking - config bits differ slightly but
 //               crucially.
 //        FIXME: EEPROM code not tested on a BE system.
+//        FIXME: Apparently promiscuous mode cannot be disabled (on
+//               BE systems?)
 //
 //####DESCRIPTIONEND####
 //

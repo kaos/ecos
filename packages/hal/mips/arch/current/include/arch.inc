@@ -54,18 +54,35 @@
 
 ##-----------------------------------------------------------------------------	
 ## Set up the value for the initial status register
-	
+
+
+# Either the variant or platform may define an INITIAL_SR of its
+#own. If not then provide a default value here.
+
 #ifndef INITIAL_SR
+
+# Both the variant and platform HALs have the option to add some bits
+# to the default status register. If they do not choose to do so,
+# supply default zeroes here.
+
+# ifndef INITIAL_SR_VAR
+#  define INITIAL_SR_VAR 0x00000000
+# endif
+# ifndef INITIAL_SR_PLF
+#  define INITIAL_SR_PLF 0x00000000
+# endif
 
 #if defined(CYG_HAL_STARTUP_RAM)
 # if defined(CYGPKG_HAL_MIPS_SIM) || !defined(CYGSEM_HAL_USE_ROM_MONITOR)
-#  define INITIAL_SR	0x1000ff00	/* CP0 usable, Ints enabled, master interrupt disable	*/
+#  define INITIAL_SR_ARCH 	0x1000ff00 /* CP0 usable, Ints enabled, master interrupt disable */
 # else
-#  define INITIAL_SR	0x1040ff00	/* as above + ROM vectors used	*/
+#  define INITIAL_SR_ARCH 	0x1040ff00	/* as above + ROM vectors used	*/
 # endif	
 #elif defined(CYG_HAL_STARTUP_ROM)
-# define INITIAL_SR	0x1040ff00	/* as above + ROM vectors used	*/
+# define INITIAL_SR_ARCH	0x1040ff00	/* as above + ROM vectors used	*/
 #endif
+
+#define INITIAL_SR 	(INITIAL_SR_ARCH|INITIAL_SR_VAR|INITIAL_SR_PLF)
 
 #endif
 
@@ -83,14 +100,17 @@
 ## HAL_SavedRegisters in hal_arch.h. Do not change this without changing the
 ## layout there, or viceversa.	
 
+# Size of registers that change size between 32 and 64 bit implementations
 #ifdef CYGHWR_HAL_MIPS_64BIT
 # define mips_regsize 	8
 #else
 # define mips_regsize 	4
 #endif
 
+# Size of registers that stay the same size in all implementations
 # define mips_regsize32	4
 
+# Size of FPU registers.
 #if defined(CYGHWR_HAL_MIPS_FPU)
 # if defined(CYGHWR_HAL_MIPS_FPU_64BIT)
 #  define mips_fpuregsize 8
@@ -111,18 +131,22 @@
 # define mipsreg_fppad  (mipsreg_fcr31+mips_regsize32)
 # define mipsreg_vector	(mipsreg_fppad+mips_regsize32)
 #else
-# define mipsreg_vector	(mipsreg_lo+mips_regsize32)
+# define mipsreg_vector	(mipsreg_lo+mips_regsize)
 #endif
-#define	mipsreg_pc	(mipsreg_vector+mips_regsize32)
-#define	mipsreg_sr	(mipsreg_pc+mips_regsize32)
-#define	mipsreg_cachectrl (mipsreg_sr+mips_regsize32)
+#define	mipsreg_sr	(mipsreg_vector+mips_regsize32)
+#define	mipsreg_pc	(mipsreg_sr+mips_regsize32)
+#define	mipsreg_cachectrl (mipsreg_pc+mips_regsize)
 #define	mipsreg_cause	(mipsreg_cachectrl+mips_regsize32)
 #define	mipsreg_badvr	(mipsreg_cause+mips_regsize32)
-#define	mipsreg_prid	(mipsreg_badvr+mips_regsize32)
+#define	mipsreg_prid	(mipsreg_badvr+mips_regsize)
 #define	mipsreg_config	(mipsreg_prid+mips_regsize32)
 #define	mipsreg_size	(mipsreg_config+mips_regsize32)
 
-#define mips_exception_decrement	(mipsreg_size*2)
+# The following expression ensures that the decrement is always a
+# multiple of 16 bytes. This is a requirement of the MEABI used in
+# MIPS32/64 targets.
+
+#define mips_exception_decrement	((mipsreg_size*2)&~0xF)
 
 ##-----------------------------------------------------------------------------
 ## Minimal stack frame size uses to call functions from asm.
@@ -155,7 +179,7 @@
 
 	mtc0	zero,cause		# zero cause reg
 	nop
-	la	v0,INITIAL_SR		# initialize status register
+	la	v0,INITIAL_SR 		# initialize status register
 	mtc0	v0,status
 	nop
 	nop
@@ -258,7 +282,7 @@
 	nop
 	nop
 	nop
-	mtc0	\pc,epc				# put PC in EPC
+	mvatc0	\pc,epc				# put PC in EPC
 	nop
 	nop
 	nop
@@ -295,8 +319,11 @@
 
 #ifndef CYGPKG_HAL_MIPS_INTC_DECODE_DEFINED
 	.macro	hal_intc_decode vnum
+	mfc0	v1,status		# get status register (interrupt mask)
+	nop				# delay slot
 	mfc0	v0,cause		# get cause register
 	nop				# delay slot
+	and	v0,v0,v1		# apply interrupt mask
 	srl	v0,v0,10		# shift interrupt bits down
 	andi	v0,v0,0x7f		# isolate 6 interrupt bits
 	la	v1,hal_intc_translation_table
@@ -377,6 +404,30 @@ hal_intc_translation_table:
 	ld	\reg,(mipsreg_regs+29*mips_regsize)(\ptr)
 	.endm
 
+	.macro sva reg,val
+	sd	\reg,\val
+	.endm
+
+	.macro lva reg,val
+	ld	\reg,\val
+	.endm
+
+	.macro mvafc0 gpr,cpr
+	dmfc0	\gpr,\cpr
+	.endm
+
+	.macro mvatc0 gpr,cpr
+	dmtc0	\gpr,\cpr
+	.endm
+
+	.macro lpc reg,ptr
+	ld	\reg,(mipsreg_pc)(\ptr)
+	.endm
+
+	.macro spc reg,ptr
+	sd	\reg,(mipsreg_pc)(\ptr)
+	.endm
+
 #else
 
 	.macro sgpr reg,ptr
@@ -411,9 +462,21 @@ hal_intc_translation_table:
 	lw	\reg,(mipsreg_regs+29*mips_regsize)(\ptr)
 	.endm
 
-#endif
+	.macro sva reg,val
+	sw	\reg,\val
+	.endm
 
-# PC is always 32-bit for us
+	.macro lva reg,val
+	lw	\reg,\val
+	.endm
+
+	.macro mvafc0 gpr,cpr
+	mfc0	\gpr,\cpr
+	.endm
+
+	.macro mvatc0 gpr,cpr
+	mtc0	\gpr,\cpr
+	.endm
 
 	.macro lpc reg,ptr
 	lw	\reg,(mipsreg_pc)(\ptr)
@@ -422,6 +485,7 @@ hal_intc_translation_table:
 	.macro spc reg,ptr
 	sw	\reg,(mipsreg_pc)(\ptr)
 	.endm
+#endif
 
 #------------------------------------------------------------------------------
 # FPU macros.

@@ -122,9 +122,6 @@ package CYGPKG_DEVS_FLASH_INTEL_BOOTBLOCK {
            This package contains hardware support for Intel boot block flash memory."
 }
 
-
-
-
 package CYGPKG_DEVS_FLASH_EBSA285 {
 	alias 		{ "FLASH memory support for StrongARM EBSA-285" flash_ebsa285 }
 	directory	devs/flash/arm/ebsa285
@@ -164,8 +161,6 @@ package CYGPKG_DEVS_FLASH_ASSABET {
            This package contains hardware support for FLASH memory
 	   on the Intel StrongARM SA-1110 Assabet platform."
 }
-
-
 package CYGPKG_DEVS_FLASH_MBX {
 	alias 		{ "FLASH memory support for Motorola PowerPC/860 MBX" flash_mbx }
 	directory	devs/flash/powerpc/mbx
@@ -176,7 +171,6 @@ package CYGPKG_DEVS_FLASH_MBX {
 	   on the Motorola PowerPC/860 MBX platform."
 }
 
-
 package CYGPKG_IO_SERIAL_ARM_EBSA285 {
     alias 	      { "Intel EBSA285 serial driver"
                         devs_serial_arm_ebsa285 ebsa285_serial_driver }
@@ -185,7 +179,6 @@ package CYGPKG_IO_SERIAL_ARM_EBSA285 {
     script	      ser_arm_ebsa285.cdl	
     description       "Intel StrongARM/EBSA285 serial device drivers"
 }
-
 
 package CYGPKG_IO_SERIAL_ARM_SA11X0 {
     alias 	      { "Intel StrongARM SA11x0 serial driver"
@@ -271,7 +264,6 @@ package CYGPKG_IO_SERIAL_TX39_JMR3904 {
     description       "TX39 JMR3904 serial device drivers"
 }
 
-
 package CYGPKG_IO_SERIAL_MIPS_REF4955 {
     alias             { "TX49 REF4955 serial device drivers"
                         devs_serial_mips_ref4955 ref4955_serial_driver }
@@ -280,7 +272,6 @@ package CYGPKG_IO_SERIAL_MIPS_REF4955 {
     script	      ser_mips_ref4955.cdl	
     description       "TX49 REF4955 serial device drivers"
 }
-
 
 package CYGPKG_IO_SERIAL_MIPS_VRC4373 {
     alias             { "VRC4373 serial device drivers"
@@ -357,7 +348,6 @@ package CYGPKG_IO_SERIAL_SH_CQ7708 {
     description       "SH3 cq7708 serial device drivers"
 }
 
-
 package CYGPKG_IO_SERIAL_V85X_V850 {
     alias             { "NEC V850 serial device drivers"
                         devs_serial_v85x_v850 v850_serial_driver }
@@ -400,6 +390,36 @@ package CYGPKG_IO_ETH_DRIVERS {
         description     "Platform independent ethernet support."
 }
 
+package CYGPKG_IO_USB { 
+        alias           { "Generic USB support" usb }
+        hardware
+        directory       io/usb/common
+        script          usb.cdl
+        description     "Generic USB support"
+}
+
+package CYGPKG_IO_USB_SLAVE {
+	alias           { "Generic USB slave-side support" usbs }
+        hardware
+        directory       io/usb/slave
+        script          usbs.cdl
+	description     "Generic USB slave-side support"
+}
+
+package CYGPKG_IO_USB_SLAVE_ETH {
+        alias		{ "USB slave-side ethernet class drivers" usbs_eth }
+        directory       io/usb/eth/slave
+        script          usbs_eth.cdl
+        description     "Support for USB peripherals that provide an ethernet-class function"
+}
+
+package CYGPKG_DEVS_USB_SA11X0 {
+        alias           { "Device-driver for the SA11X0 on-chip USB support" usb_sa11x0 }
+        hardware
+        directory       devs/usb/sa11x0
+        script          usbs_sa11x0.cdl
+        description     "A device driver for the SA11X0 on-chip USB slave port"
+}
 
 package CYGPKG_NET {
 	alias 		{ "Networking" net }
@@ -430,7 +450,6 @@ package CYGPKG_DEVS_ETH_ARM_EDB7XXX {
         description     "Ethernet driver for Cirrus Logic EDB7xxx development boards."
 }
 
-
 package CYGPKG_DEVS_ETH_ARM_EBSA285 {
 	alias 		{ "Intel EBSA285 with PRO/100+ ethernet driver"
 			   devs_eth_arm_ebsa285 ebsa285_eth_driver }
@@ -456,8 +475,6 @@ package CYGPKG_DEVS_ETH_INTEL_I82559 {
 	script		intel_i82559_eth_drivers.cdl
         description     "Ethernet driver for Intel 82559 NIC."
 }
-
-
 
 # Not sure whether this should be "hardware"; if so, it should be mentioned
 # in all targets that can use it.
@@ -514,7 +531,6 @@ package CYGPKG_DEVICES_WALLCLOCK_MIPS_REF4955 {
            This package provides a wallclock driver implementation for the
            Toshiba REF4955 board."
 }
-
 
 package CYGPKG_DEVICES_WATCHDOG_ARM_AEB {
 	alias		{ "Watchdog driver for ARM/AEB board" devices_watchdog_aeb device_watchdog_aeb }
@@ -585,7 +601,6 @@ This package provides memory allocator infrastructure required for
 dynamic memory allocators, including the ISO standard malloc
 interface. It also contains some sample implementations."
 }
-
 package CYGPKG_UITRON {
 	alias		{ "uITRON compatibility" uitron }
 	directory	compat/uitron
@@ -795,8 +810,6 @@ package CYGPKG_HAL_ARM_EBSA285 {
         eCos on a Intel EBSA285 StrongARM eval board."
 }
 
-
-
 package CYGPKG_HAL_ARM_SA11X0 {
 	alias		{ "Intel SA11X0 Chipset" hal_arm_sa11x0 }
 	directory	hal/arm/sa11x0/var
@@ -806,6 +819,7 @@ package CYGPKG_HAL_ARM_SA11X0 {
         The SA11X0 HAL package provides the support needed to run
         eCos on a Intel StrongARM SA11X0 based systems."
 }
+
 package CYGPKG_HAL_ARM_SA11X0_ASSABET {
 	alias		{ "Intel SA1110 Assabet eval board" hal_arm_sa11x0_assabet }
 	directory	hal/arm/sa11x0/assabet
@@ -815,6 +829,7 @@ package CYGPKG_HAL_ARM_SA11X0_ASSABET {
         The ASSABET HAL package provides the support needed to run
         eCos on a Intel StrongARM SA1110 evaulation board (assabet)."
 }
+
 package CYGPKG_HAL_ARM_SA11X0_BRUTUS {
 	alias		{ "Intel SA1100 Brutus eval board" hal_arm_sa11x0_brutus }
 	directory	hal/arm/sa11x0/brutus
@@ -853,7 +868,6 @@ package CYGPKG_HAL_ARM_CMA230 {
 The cma230 HAL package provides the support needed to run eCos on a Cogent 
 CMA230 (ARM7TDMI) or CMA222 (ARM710T) eval board."
 }
-
 
 # --------------------------------------------------------------------------
 # SH packages
@@ -898,6 +912,7 @@ package CYGPKG_HAL_SH_EDK7708 {
            This SH HAL package provides the support needed to run
            eCos on a Hitachi SH3 EDK7708 board."
 }
+
 package CYGPKG_HAL_SH_SH7708_CQ7708 {
         alias           { "CqREEK SH7708 board" hal_sh_cq sh_cq_hal }
         directory       hal/sh/cq7708
@@ -1143,7 +1158,6 @@ package CYGPKG_HAL_MIPS_TX39_JMR3904 {
            `target sim --board=jmr3904' should be used from inside gdb."
 }
 
-
 package CYGPKG_HAL_MIPS_TX49 {
 	alias		{ "TX49 chip HAL" hal_tx49 tx49_hal tx49_arch_hal }
 	directory	hal/mips/tx49/
@@ -1164,8 +1178,6 @@ package CYGPKG_HAL_MIPS_TX49_REF4955 {
            The REF4955 HAL package should be used when targetting the
            actual hardware."
 }
-
-
 
 package CYGPKG_HAL_MIPS_VR4300 {
 	alias		{ "VR4300 chip HAL" hal_vr4300 vr4300_hal vr4300_arch_hal }
@@ -1293,6 +1305,7 @@ package CYGPKG_HAL_V85X_V850_CEB {
 The CEB-V850/SA1 HAL package provides the support needed to run eCos on a Cosmo CEB-V850/SA1
 evaluation board."
 }
+
 # ==========================================================================
 # --------------------------------------------------------------------------
 # ARM targets
@@ -1320,6 +1333,7 @@ target aeb {
 The aeb target provides the packages needed to run eCos on an ARM
 evaluation board (AEB-1)."
 }
+
 target ebsa285 {
 	alias { "Intel EBSA285 StrongARM board" ebsa }
 	packages { CYGPKG_HAL_ARM
@@ -1335,8 +1349,6 @@ target ebsa285 {
         eCos on an Intel EBSA285 StrongARM board."
 }
 
-
-
 target assabet {
 	alias { "Intel StrongARM SA1110 board" assabet }
 	packages { CYGPKG_HAL_ARM
@@ -1345,12 +1357,14 @@ target assabet {
 		   CYGPKG_IO_SERIAL_ARM_SA11X0
 		   CYGPKG_DEVS_PCMCIA_ASSABET
 		   CYGPKG_DEVS_FLASH_ASSABET
+                   CYGPKG_IO_USB
+                   CYGPKG_IO_USB_SLAVE
+                   CYGPKG_DEVS_USB_SA11X0
         }
         description "
         The assabet target provides the packages needed to run
         eCos on an Intel StrongARM SA1110 evaluation board."
 }
-
 
 target brutus {
 	alias { "Intel StrongARM SA1100 board" brutus }
@@ -1376,7 +1390,6 @@ target sa1100mm {
         eCos on an Intel StrongARM SA1100 Multimedia evaluation board."
 }
 
-
 target edb7xxx {
         alias		{ "Cirrus Logic development board" edb7211 eb7xxx eb7211 }
 	packages	{ CYGPKG_HAL_ARM
@@ -1399,6 +1412,7 @@ target cma230 {
 The cma230 target provides the packages needed to run eCos on a Cogent 
 CMA230 (ARM7TDMI) or CMA222 (ARM710T) board."
     }
+
 # --------------------------------------------------------------------------
 # SH targets
 
@@ -1416,7 +1430,6 @@ target sh7708 {
            The sh7708 target provides the packages needed to run
            eCos on a Hitachi EDK/SH7708 board."
 }
-
 target cq7708 {
         alias { "CqREEK SH7708 board" cq7708 }
         packages { CYGPKG_HAL_SH
@@ -1648,14 +1661,15 @@ target stb {
 # NEC targets
 
 target ceb_v850 {
-	alias { "Cosmo CEB-V850/SA1 board" CEB }
+	alias { "Cosmo CEB-V850/SA1 board" CEB ceb_v850_sa1 }
 	packages { CYGPKG_HAL_V85X
                    CYGPKG_HAL_V85X_V850
                    CYGPKG_HAL_V85X_V850_CEB
                    CYGPKG_IO_SERIAL_V85X_V850
         }
         description "
-The ceb target provides the packages needed to run eCos on a Cosmo CEB-V850/SA1
-evaluation board."
+The ceb_v850 target provides the packages needed to run eCos on a
+Cosmo CEB-V850 evaluation board fitted with a V850/SA1."
 }
+
 # --------------------------------------------------------------------------

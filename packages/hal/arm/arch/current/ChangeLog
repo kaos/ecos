@@ -1,3 +1,53 @@
+2001-02-09  Hugo Tyson  <hmt@redhat.com>
+
+	* src/vectors.S (UNMAPPED()): Handle CYGHWR_HAL_ROM_VADDR if so
+	defined; this is used when compiling for a different location from
+	the base of ROM.  hal_platform_setup.h might define it.  For
+	example, if flash is from 0x50000000 upwards (as on SA11x0), and
+	we are to execute at 0x50040000, then we want the reset vector to
+	point to 0x0004pqrs - the unmapped ROM address of the code -
+	rather than 0x0000pqrs, which is the offset into our flash block.
+	But usually it's not defined, so the behaviour is the obvious.
+
+2001-02-08  Jesper Skov  <jskov@redhat.com>
+
+	* include/arm_vv.h: Removed again, compiler does magic to thumb
+	function pointers.
+	* include/hal_arch.h: Same.
+
+2001-02-07  Jesper Skov  <jskov@redhat.com>
+
+	* include/arm_vv.h: Added virtual vector accessor macros that will
+	properly mangle function pointers in thumb mode.
+	* include/hal_arch.h: Include arm_vv.h
+	* src/vectors.S: ctrlc_init can be called for thumb now (but
+	requires ROM monitor to be built with -mthumb-interwork)
+
+2001-02-02  Mark Salter  <msalter@redhat.com>
+
+	* src/arm_stub.c (__arm_breakinst): New ARM breakpoint insn.
+	(__thumb_breakinst): New thumb breakpoint insn.
+	(__is_bsp_syscall): Check for actual SWI number and support
+	thumb.
+
+	* include/hal_arch.h (HAL_BREAKINST_ADDR): New macro to provide
+	address of correct breakpoint insn of the given length.
+
+2001-02-01  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_misc.c: Don't use diag_printf directly (rely on tracing
+	macros).
+
+2001-01-31  Mark Salter  <msalter@redhat.com>
+
+	* src/vectors.S (FIQ): Fix broken fiq handling.
+
+2001-01-31  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm.cdl:  Get rid of CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL
+	options. They are replaced by the
+	CYGSEM_HAL_DIAG_MANGLER option.
+
 2001-01-24  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/vectors.S (init_flag): Add explicit alignment, just in case.

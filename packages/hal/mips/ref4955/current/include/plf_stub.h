@@ -70,16 +70,7 @@ externC void cyg_hal_plf_comms_init(void);
 extern void hal_plf_stub_init( void );
 #define HAL_STUB_PLATFORM_INIT()              hal_plf_stub_init();
 
-//----------------------------------------------------------------------------
-// Reset.
-#define CYGARC_REG_BOARD_RESET 0xb5400000
-
-#define HAL_STUB_PLATFORM_RESET() HAL_WRITE_UINT8(CYGARC_REG_BOARD_RESET,0)
-
-#define HAL_STUB_PLATFORM_RESET_ENTRY 0xbfc00000
-
 #endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_PLF_STUB_H
 // End of plf_stub.h

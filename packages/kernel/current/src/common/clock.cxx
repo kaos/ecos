@@ -407,6 +407,8 @@ void Cyg_Counter::rem_alarm( Cyg_Alarm *alarm )
 
     alarm_list_ptr->remove( alarm );
     
+    alarm->enabled = false;
+
     Cyg_Scheduler::unlock();            
 }
 

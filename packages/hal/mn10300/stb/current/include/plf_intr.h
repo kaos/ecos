@@ -68,6 +68,11 @@ externC cyg_uint32 hal_ctrlc_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data);
 
 #endif
 
+
+//----------------------------------------------------------------------------
+// Reset.
+#define HAL_PLATFORM_RESET()             CYG_EMPTY_STATEMENT
+
 //--------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_PLF_INTR_H
 // End of plf_intr.h

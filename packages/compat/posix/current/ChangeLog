@@ -1,3 +1,32 @@
+2001-02-11  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/pthread.h: Add new pthread_testcancel_unlock and
+	pthread_canceled functions as eCos extensions.
+	Rename existing pthread_canceled variable to pthread_cancelled_dummy_var
+	
+	* src/pthread.cxx (pthread_canceled): New function to interrogate if
+	current thread has deferred cancel pending
+	(pthread_testcancel_unlock): New function. Like testcancel, but unlocks
+	a mutex before exitting the thread.
+	(checkforcancel): New internal function
+	(pthread_join): Add thread cancellation checks.
+	(pthread_cond_wait): Ditto.
+	(pthread_cond_timedwait): Ditto.
+	(pthread_testcancel): Use checkforcancel()
+	
+	* src/sem.cxx (sem_wait): Add thread cancellation checks
+	* src/signal.cxx (sigtimedwait): Ditto.
+	Also make compilation of this file conditional on CYGPKG_POSIX_SIGNALS
+	* src/time.cxx (nanosleep): Ditto.
+	Also make compilation of this file conditional on CYGPKG_POSIX_TIMERS
+
+	* cdl/posix.cdl (CYGPKG_POSIX_TIMERS): Implements POSIX timer ops.
+	Add explicit kernel and pthread dependencies.
+
+	* tests/sigsetjmp.c (pthread_entry1): Fix incorrect thread no. output
+
+	* tests/pthread3.c: Add deferred cancellation test.
+
 2001-01-11  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/pthread.cxx (pthread_testcancel): Added test for self !=

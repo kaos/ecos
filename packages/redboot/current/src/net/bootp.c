@@ -131,7 +131,7 @@ __bootp_find_local_ip(bootp_header_t *info)
 		__udp_remove_listener(IPPORT_BOOTPC);
 		return 0;
 	    }
-	} while ((MS_TICKS() - start) < RETRY_TIME);
+	} while ((MS_TICKS_DELAY() - start) < RETRY_TIME);
     }
 
     /* timed out */

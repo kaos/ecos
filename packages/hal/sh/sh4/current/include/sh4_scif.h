@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -46,6 +46,16 @@
 #include <pkgconf/hal.h>
 
 #ifdef CYGNUM_HAL_SH_SH4_SCIF_PORTS
+
+//--------------------------------------------------------------------------
+// Exported functions
+
+externC cyg_uint8 cyg_hal_plf_scif_getc(void* __ch_data);
+externC void cyg_hal_plf_scif_putc(void* __ch_data, cyg_uint8 c);
+void cyg_hal_plf_scif_init(int scif_index, int comm_index, 
+                           int rcv_vect, cyg_uint8* base);
+
+#ifdef CYGPRI_HAL_SH_SH4_SCIF_PRIVATE
 
 //--------------------------------------------------------------------------
 // SCIF register offsets
@@ -73,13 +83,10 @@ typedef struct {
 #if !defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG)
 // This one should only be used by old-stub compatibility code!
 externC void cyg_hal_plf_scif_init_channel(const channel_data_t* chan);
+#warning "You should not be using anything but vv diag"
 #endif
 
-externC cyg_uint8 cyg_hal_plf_scif_getc(void* __ch_data);
-externC void cyg_hal_plf_scif_putc(void* __ch_data, cyg_uint8 c);
-void cyg_hal_plf_scif_init(int scif_index, int comm_index, 
-                           int rcv_vect, cyg_uint8* base);
-
+#endif // CYGPRI_HAL_SH_SH4_SCIF_PRIVATE
 
 #endif // CYGNUM_HAL_SH_SH4_SCIF_PORTS
 //-----------------------------------------------------------------------------

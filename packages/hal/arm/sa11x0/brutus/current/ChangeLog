@@ -1,3 +1,8 @@
+2001-02-08  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_sa11x0_brutus.cdl: Respect channel configuration
+	constraints.
+
 2001-01-05  Hugo Tyson  <hmt@redhat.com>
 
 	* include/plf_mmap.h: New file.  Statically defined macros for

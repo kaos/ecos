@@ -292,6 +292,27 @@ cdl_package CYGPKG_HAL_SH_SH3 {
         }
     }
 
+    cdl_option CYGNUM_HAL_SH_SH3_SCI_BAUD_RATE {
+        display          "SCI serial port default baud rate"
+        flavor data
+        legal_values     { 4800 9600 14400 19200 38400 57600 115200 }
+        default_value    { CYGNUM_HAL_SH_SH3_SCI_BAUD_RATE_DEFAULT ? \
+                           CYGNUM_HAL_SH_SH3_SCI_BAUD_RATE_DEFAULT : 38400 }
+        description      "
+           This controls the default baud rate used for communicating
+           with GDB / displaying diagnostic output."
+    }
+
+    cdl_option CYGNUM_HAL_SH_SH3_SCIF_BAUD_RATE {
+        display          "SCIF serial ports default baud rate"
+        flavor data
+        legal_values     { 4800 9600 14400 19200 38400 57600 115200 }
+        default_value    { CYGNUM_HAL_SH_SH3_SCIF_BAUD_RATE_DEFAULT ? \
+                           CYGNUM_HAL_SH_SH3_SCIF_BAUD_RATE_DEFAULT : 38400 }
+        description      "
+           This controls the default baud rate used for communicating
+           with GDB / displaying diagnostic output."
+    }
 
     cdl_component CYGPKG_HAL_SH_INTERRUPT {
         display          "Interrupt controls"

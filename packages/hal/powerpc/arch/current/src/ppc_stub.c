@@ -90,6 +90,11 @@ int __computeSignal (unsigned int trap_number)
         return SIGTRAP;
       
     case CYGNUM_HAL_VECTOR_PROGRAM:
+#ifdef CYGPKG_HAL_POWERPC_PPC40x
+        // The 40x is b0rken, returning 0 for these bits. Translate to
+        // SIGTRAP to allow thread debugging.
+        return SIGTRAP;
+#else
         // The register PS contains the value of SRR1 at the time of
         // exception entry. Bits 11-15 contain information about the
         // cause of the exception. Bits 16-31 the PS (MSR) state.
@@ -109,6 +114,7 @@ int __computeSignal (unsigned int trap_number)
         default:                        /* should never happen! */
             return SIGILL;
         }            
+#endif
 
     case CYGNUM_HAL_VECTOR_RESERVED_A:
     case CYGNUM_HAL_VECTOR_RESERVED_B:

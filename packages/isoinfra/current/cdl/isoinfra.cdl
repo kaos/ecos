@@ -266,6 +266,18 @@ cdl_package CYGPKG_ISOINFRA {
             default_value 0
         }
 
+        cdl_interface CYGINT_ISO_STDIO_POSIX_FDFUNCS {
+            display       "POSIX fd-related function implementations"
+            flavor        booldata
+            requires      { 1 >=  CYGINT_ISO_STDIO_POSIX_FDFUNCS }
+        }
+    
+        cdl_option CYGBLD_ISO_STDIO_POSIX_FDFUNCS_HEADER {
+            display       "POSIX fd-related function implementation header"
+            flavor        booldata
+            default_value 0
+        }
+
     }
 
 # ====================================================================
@@ -1017,6 +1029,26 @@ cdl_package CYGPKG_ISOINFRA {
         }
     }
     
+# ====================================================================
+
+    cdl_component CYGPKG_ISO_UNISTD {
+        display       "UNIX standard functions"
+        flavor        none
+        no_define
+
+        cdl_interface CYGINT_ISO_POSIX_TIMER_OPS {
+            display       "POSIX timer operations implementations"
+            flavor        booldata
+            requires      { 1 >= CYGINT_ISO_POSIX_TIMER_OPS }
+        }
+    
+        cdl_option CYGBLD_ISO_POSIX_TIMER_OPS_HEADER {
+            display       "POSIX timer operations implementation header"
+            flavor        booldata
+            default_value 0
+        }
+    }
+
 # ====================================================================
     
         cdl_component CYGPKG_ISOINFRA_OPTIONS {

@@ -1,3 +1,7 @@
+2001-01-30  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_quicc.c: New RedBoot config data layout.
+
 2001-01-03  Gary Thomas  <gthomas@redhat.com>
 
 	* src/if_quicc.c: Add support in RedBoot to keep ESA (since

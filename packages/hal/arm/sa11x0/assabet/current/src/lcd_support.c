@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -103,6 +103,26 @@ parse_color(char *cp)
     }
 }
 
+#ifndef CYGPKG_LIBC_STDIO
+static int
+get_int(char **_cp)
+{
+    char *cp = *_cp;
+    char c;
+    int val = 0;
+    
+    while ((c = *cp++) && (c != ' ')) {
+        if ((c >= '0') && (c <= '9')) {
+            val = val * 10 + (c - '0');
+        } else {
+            return -1;
+        }
+    }
+    *_cp = cp;
+    return val;
+}
+#endif
+
 void
 show_xpm(char *xpm[])
 {
@@ -112,7 +132,13 @@ show_xpm(char *xpm[])
     unsigned short colors[256];  // Mapped by character index
 
     cp = xpm[0];
+#ifdef CYGPKG_LIBC_STDIO
     if (sscanf(cp, "%d %d %d", &ncols, &nrows, &nclrs) != 3) {
+#else
+    if (((ncols = get_int(&cp)) < 0) ||
+        ((nrows = get_int(&cp)) < 0) ||
+        ((nclrs = get_int(&cp)) < 0)) {
+#endif
         diag_printf("Can't parse XPM data, sorry\n");
         return;
     }

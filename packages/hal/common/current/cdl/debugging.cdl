@@ -23,7 +23,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -52,13 +52,16 @@ cdl_option CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS {
     active_if     CYGINT_HAL_DEBUG_GDB_STUBS
     default_value 0
     requires      ! CYGSEM_HAL_USE_ROM_MONITOR
+    requires      { !CYGSEM_HAL_VIRTUAL_VECTOR_DIAG \
+                    || CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_COMMS }
     description   "
         This option causes a set of GDB stubs to be included into the
         system. On some target systems the GDB support will be
         provided by other means, for example by a ROM monitor. On
         other targets, especially when building a ROM-booting system,
         the necessary support has to go into the target library
-        itself."
+        itself. When GDB stubs are include in a configuration, HAL
+        serial drivers must also be included."
 }
 
 cdl_interface CYGINT_HAL_DEBUG_GDB_STUBS_BREAK {
@@ -73,7 +76,7 @@ cdl_option CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT {
     display       "Include GDB external break support for stubs"
     active_if     CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
     requires      CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-    default_value 0
+    default_value CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
     description   "
         This option causes the GDB stub to add a serial interrupt handler
         which will listen for GDB break packets. This lets you stop the
@@ -93,7 +96,7 @@ cdl_option CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT {
     requires      !CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
     active_if     { CYGSEM_HAL_USE_ROM_MONITOR || CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS }
     active_if     { CYGINT_HAL_DEBUG_GDB_CTRLC_UNSUPPORTED == 0 }
-    default_value 1
+    default_value { !CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS }
     description   "
         This option adds an interrupt handler for the GDB serial line
         which will listen for GDB break packets. This lets you stop the

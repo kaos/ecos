@@ -24,7 +24,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -66,17 +66,20 @@ struct breakpoint_list {
   char old_contents [HAL_BREAKINST_SIZE];
   struct breakpoint_list *next;
   char in_memory;
+  char length;
 } *breakpoint_list = NULL;
 
+#ifndef HAL_BREAKINST_ADDR
 static HAL_BREAKINST_TYPE break_inst = HAL_BREAKINST;
-static void *_break_inst = &break_inst;
+#define HAL_BREAKINST_ADDR(x) ((void*)&break_inst)
+#endif
 
 static struct breakpoint_list bp_list [CYGNUM_HAL_BREAKPOINT_LIST_SIZE];
 static struct breakpoint_list *free_bp_list = NULL;
 static int curr_bp_num = 0;
 
 int
-__set_breakpoint (target_register_t addr)
+__set_breakpoint (target_register_t addr, target_register_t len)
 {
   struct breakpoint_list **addent = &breakpoint_list;
   struct breakpoint_list *l = breakpoint_list;
@@ -111,12 +114,14 @@ __set_breakpoint (target_register_t addr)
   newent->addr = addr;
   newent->in_memory = 0;
   newent->next = l;
+  newent->length = len;
   *addent = newent;
+
   return 0;
 }
 
 int
-__remove_breakpoint (target_register_t addr)
+__remove_breakpoint (target_register_t addr, target_register_t len)
 {
   struct breakpoint_list *l = breakpoint_list;
   struct breakpoint_list *prev = NULL;
@@ -160,12 +165,12 @@ __install_breakpoint_list (void)
 	  int len = sizeof (l->old_contents);
 	  if (__read_mem_safe (&l->old_contents[0], (void*)l->addr, len) == len)
 	    {
-	      if (__write_mem_safe (_break_inst, (void*)l->addr, len) == len)
+	      if (__write_mem_safe (HAL_BREAKINST_ADDR(l->length),
+				    (void*)l->addr, l->length) == l->length)
 		{
 		  l->in_memory = 1;
 		}
 	    }
-
 	}
       l = l->next;
     }
@@ -220,13 +225,13 @@ typedef unsigned long target_register_t;
 #endif
 
 int
-__set_breakpoint (target_register_t addr)
+__set_breakpoint (target_register_t addr, target_register_t len)
 {
   return 1;
 }
 
 int
-__remove_breakpoint (target_register_t addr)
+__remove_breakpoint (target_register_t addr, target_register_t len)
 {
   return 1;
 }

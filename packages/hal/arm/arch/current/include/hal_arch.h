@@ -26,7 +26,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -208,6 +208,13 @@ asm volatile (" .globl  " #_label_ ";"            \
 #define HAL_BREAKINST_TYPE       cyg_uint32
 #endif // __thumb__
 
+
+extern cyg_uint32 __arm_breakinst;
+extern cyg_uint16 __thumb_breakinst;
+#define HAL_BREAKINST_ADDR(x) (((x)==2)? \
+                              ((void*)&__thumb_breakinst) : \
+                              ((void*)&__arm_breakinst))
+
 //--------------------------------------------------------------------------
 // Thread register state manipulation for GDB support.
 
@@ -349,8 +356,6 @@ __xstring(CYG_LABEL_DEFN(_label)) ":\n"                                         
 // code in ROM to code in RAM or vice versa).
 #define CYGARC_HAL_SAVE_GP()
 #define CYGARC_HAL_RESTORE_GP()
-
-//-----------------------------------------------------------------------------
 
 #endif // CYGONCE_HAL_ARCH_H
 // End of hal_arch.h

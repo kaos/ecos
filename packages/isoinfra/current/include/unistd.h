@@ -51,6 +51,7 @@
 
 #include <pkgconf/isoinfra.h>          /* Configuration header */
 
+
 /* INCLUDES */
 
 #include <sys/types.h>
@@ -61,6 +62,39 @@
 #define __need_NULL
 #define __need_size_t
 #include <stddef.h>
+
+
+#ifdef CYGINT_ISO_POSIX_TIMER_OPS
+# ifdef CYGBLD_ISO_POSIX_TIMER_OPS_HEADER
+#  include CYGBLD_ISO_POSIX_TIMER_OPS_HEADER
+# else
+
+#  ifdef __cplusplus
+extern "C" {
+#  endif
+
+extern unsigned int
+alarm( unsigned int __seconds );
+
+extern int 
+pause( void );
+
+unsigned int
+sleep( unsigned int __seconds );
+
+#  ifdef __cplusplus
+}   /* extern "C" */
+#  endif
+
+# endif
+#endif
+
+
+/* ------------------------------------------------------------------- */
+
+/* FIXME: The below was copied in verbatim by Nick, but needs to be grouped
+   by functionality and linked with interfaces as with everything else
+*/
 
 /* CONSTANTS */
 

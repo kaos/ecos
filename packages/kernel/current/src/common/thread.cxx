@@ -256,7 +256,7 @@ Cyg_Thread::reinitialize()
     new(this) Cyg_Thread( pri,
                           entry_point, entry_data,
                           name_arg,
-                          stack_base, stack_size );
+                          get_stack_base(), get_stack_size() );
     // the constructor re-registers the thread with the scheduler.
 
     CYG_ASSERTCLASS( this, "Thread corrupted by reinitialize");    

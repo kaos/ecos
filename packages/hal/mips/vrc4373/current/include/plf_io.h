@@ -205,6 +205,10 @@ CYG_MACRO_END
     }                                                                         \
     CYG_MACRO_END
 
+// Ignore all devices on not on bus 0 since those all seem to map to the
+// Nile II controller itself.
+#define HAL_PCI_IGNORE_DEVICE(__bus, __dev, __fn) \
+    ((__bus) != 0)
 
 //-----------------------------------------------------------------------------
 // end of plf_io.h

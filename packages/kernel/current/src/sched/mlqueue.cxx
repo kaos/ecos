@@ -548,6 +548,21 @@ Cyg_ThreadQueue_Implementation::dequeue(void)
 
 // -------------------------------------------------------------------------
 
+void
+Cyg_ThreadQueue_Implementation::remove( Cyg_Thread *thread )
+{
+    CYG_REPORT_FUNCTION();
+    CYG_REPORT_FUNCARG1("thread=%08x", thread);
+
+    thread->queue = NULL;
+
+    Cyg_CList_T<Cyg_Thread>::remove( thread );
+
+    CYG_REPORT_RETURN();
+}
+
+// -------------------------------------------------------------------------
+
 Cyg_Thread *
 Cyg_ThreadQueue_Implementation::highpri(void)
 {

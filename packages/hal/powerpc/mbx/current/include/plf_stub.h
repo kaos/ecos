@@ -74,16 +74,6 @@ externC void hal_mbx_set_led( int val );
 #endif
 
 #endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-
-//----------------------------------------------------------------------------
-// Reset.
-
-// The MBX does not have a watchdog (not one we can easily use for this
-// purpose anyway).
-#define HAL_STUB_PLATFORM_RESET() CYG_EMPTY_STATEMENT
-
-#define HAL_STUB_PLATFORM_RESET_ENTRY 0xfe000100
-
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_PLF_STUB_H
 // End of plf_stub.h

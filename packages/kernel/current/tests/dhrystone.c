@@ -40,7 +40,7 @@
 # include <pkgconf/isoinfra.h>
 
 # if !defined(CYGFUN_KERNEL_API_C) \
-    || CYGINT_ISO_STDIO_FORMATTED_IO == 0 \
+    || defined(CYGINT_ISO_STDIO_FORMATTED_IO) \
     || CYGINT_ISO_MALLOC == 0 \
     || CYGINT_ISO_STRING_STRFUNCS == 0
 

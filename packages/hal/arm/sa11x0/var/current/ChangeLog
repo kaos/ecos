@@ -1,3 +1,24 @@
+2001-02-08  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c: Replace CYGSEM_HAL_DIAG_MANGLER_None with
+	CYGDBG_HAL_DIAG_TO_DEBUG_CHAN.
+
+2001-02-01  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_var_ints.h: Include registers definitions used in
+	reset macro.
+
+2001-01-31  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c: Replaced CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL
+	with CYGSEM_HAL_DIAG_MANGLER_None
+
+2001-01-26  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c: Removed CYGSEM_HAL_VIRTUAL_VECTOR_DIAG check.
+	* include/plf_stub.h: Moved reset macro to
+	* include/hal_var_ints.h: this file.
+
 2001-01-05  Hugo Tyson  <hmt@redhat.com>
 
 	* include/hal_mm.h: Change bitfields within memmap entry to

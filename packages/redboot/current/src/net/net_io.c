@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -57,12 +57,14 @@
 RedBoot_config_option("GDB connection port",
                       gdb_port,
                       ALWAYS_ENABLED, true,
-                      CONFIG_INT
+                      CONFIG_INT,
+                      CYGNUM_REDBOOT_NETWORKING_TCP_PORT
     );
 RedBoot_config_option("Network debug at boot time", 
                       net_debug, 
                       ALWAYS_ENABLED, true,
-                      CONFIG_BOOL
+                      CONFIG_BOOL,
+                      false
     );
 // Note: the following options are related.  If 'bootp' is false, then
 // the other values are used in the configuration.  Because of the way
@@ -74,17 +76,20 @@ RedBoot_config_option("Network debug at boot time",
 RedBoot_config_option("Use BOOTP for network configuration",
                       bootp, 
                       ALWAYS_ENABLED, true,
-                      CONFIG_BOOL
+                      CONFIG_BOOL,
+                      true
     );
 RedBoot_config_option("Local IP address",
                       bootp_my_ip,
                       "bootp", false,
-                      CONFIG_IP
+                      CONFIG_IP,
+                      0
     );
 RedBoot_config_option("Default server IP address",
                       bootp_server_ip,
                       "bootp", false,
-                      CONFIG_IP
+                      CONFIG_IP,
+                      0
     );
 #endif
 
@@ -160,32 +165,39 @@ _net_io_getc_nonblock(void* __ch_data, cyg_uint8* ch)
 static cyg_bool
 net_io_getc_nonblock(void* __ch_data, cyg_uint8* ch)
 {
-    if (_net_io_getc_nonblock(__ch_data, ch)) {
-        if (*ch == TELNET_IAC) {
-            cyg_uint8 esc;
-            // Telnet escape - need to read/handle more
-            while (!_net_io_getc_nonblock(__ch_data, &esc)) ;
-            if (esc == TELNET_IP) {
-                // Special case for ^C == Interrupt Process
-                *ch = 0x03;  
-                // Just in case the other end needs synchronizing
-                net_io_putc(__ch_data, TELNET_IAC);
-                net_io_putc(__ch_data, TELNET_WONT);
-                net_io_putc(__ch_data, TELNET_TM);
-                net_io_flush();
-                return true;
-            }
-            if (esc == TELNET_DO) {
-                // Telnet DO option
-                while (!_net_io_getc_nonblock(__ch_data, &esc)) ;                
-                // Respond with WONT option
-                net_io_putc(__ch_data, TELNET_IAC);
-                net_io_putc(__ch_data, TELNET_WONT);
-                net_io_putc(__ch_data, esc);
-                return false;  // Ignore this whole thing!
-            }
-        }
-    } else {
+    cyg_uint8 esc;
+
+    if (!_net_io_getc_nonblock(__ch_data, ch))
+        return false;
+
+    if (gdb_active || *ch != TELNET_IAC)
+        return true;
+
+    // Telnet escape - need to read/handle more
+    while (!_net_io_getc_nonblock(__ch_data, &esc)) ;
+
+    switch (esc) {
+    case TELNET_IAC:
+        // The other special case - escaped escape
+        return true;
+    case TELNET_IP:
+        // Special case for ^C == Interrupt Process
+        *ch = 0x03;  
+        // Just in case the other end needs synchronizing
+        net_io_putc(__ch_data, TELNET_IAC);
+        net_io_putc(__ch_data, TELNET_WONT);
+        net_io_putc(__ch_data, TELNET_TM);
+        net_io_flush();
+        return true;
+    case TELNET_DO:
+        // Telnet DO option
+        while (!_net_io_getc_nonblock(__ch_data, &esc)) ;                
+        // Respond with WONT option
+        net_io_putc(__ch_data, TELNET_IAC);
+        net_io_putc(__ch_data, TELNET_WONT);
+        net_io_putc(__ch_data, esc);
+        return false;  // Ignore this whole thing!
+    default:
         return false;
     }
 }
@@ -194,16 +206,16 @@ static cyg_uint8
 net_io_getc(void* __ch_data)
 {
     cyg_uint8 ch;
-    int idle_timeout = 100;  // 10ms
+    int idle_timeout = 10;  // 10ms
 
     CYGARC_HAL_SAVE_GP();
     while (true) {
         if (net_io_getc_nonblock(__ch_data, &ch)) break;
         if (--idle_timeout == 0) {
             net_io_flush();
-            idle_timeout = 100;
+            idle_timeout = 10;
         } else {
-            CYGACC_CALL_IF_DELAY_US(100);
+            MS_TICKS_DELAY();
         }
     }
     CYGARC_HAL_RESTORE_GP();
@@ -314,13 +326,13 @@ net_io_getc_timeout(void* __ch_data, cyg_uint8* ch)
     CYGARC_HAL_SAVE_GP();
 
     net_io_flush();  // Make sure any output has been sent
-    delay_count = _timeout * 10; // delay in .1 ms steps
+    delay_count = _timeout;
 
     for(;;) {
         res = net_io_getc_nonblock(__ch_data, ch);
         if (res || 0 == delay_count--)
             break;
-        CYGACC_CALL_IF_DELAY_US(100);
+        MS_TICKS_DELAY();
     }
 
     CYGARC_HAL_RESTORE_GP();
@@ -457,6 +469,7 @@ net_io_init(void)
         CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
 
         init = 1;
+        gdb_active = false;
     }
     __tcp_listen(&tcp_sock, gdb_port);
     state = tcp_sock.state; 
@@ -465,9 +478,11 @@ net_io_init(void)
 #endif
 }
 
+// Check for incoming TCP debug connection
 void
 net_io_test(void)
 {
+    if (!have_net) return;
     __tcp_poll();
     if (state != tcp_sock.state) {
         // Something has changed
@@ -483,6 +498,11 @@ net_io_test(void)
     }
     state = tcp_sock.state;
 }
+
+// This schedules the 'net_io_test()' function to be run by RedBoot's
+// main command loop when idle (i.e. when no input arrives after some
+// period of time).
+RedBoot_idle(net_io_test, RedBoot_IDLE_NETIO);
 
 //
 // Network initialization
@@ -502,20 +522,18 @@ net_init(void)
 {
     cyg_netdevtab_entry_t *t;
 
-    if (!config_ok) {
-        // Set defaults as appropriate
-        use_bootp = true;
-        net_debug = false;
-        gdb_port = CYGNUM_REDBOOT_NETWORKING_TCP_PORT;
+    // Set defaults as appropriate
+    use_bootp = true;
+    net_debug = false;
+    gdb_port = CYGNUM_REDBOOT_NETWORKING_TCP_PORT;
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
-    } else {
-        flash_get_config("net_debug", &net_debug, CONFIG_BOOL);
-        flash_get_config("gdb_port", &gdb_port, CONFIG_INT);
-        flash_get_config("bootp", &use_bootp, CONFIG_BOOL);
-        flash_get_config("bootp_my_ip", &__local_ip_addr, CONFIG_IP);
-        flash_get_config("bootp_server_ip", &my_bootp_info.bp_siaddr, CONFIG_IP);
+    // Fetch values from saved config data, if available
+    flash_get_config("net_debug", &net_debug, CONFIG_BOOL);
+    flash_get_config("gdb_port", &gdb_port, CONFIG_INT);
+    flash_get_config("bootp", &use_bootp, CONFIG_BOOL);
+    flash_get_config("bootp_my_ip", &__local_ip_addr, CONFIG_IP);
+    flash_get_config("bootp_server_ip", &my_bootp_info.bp_siaddr, CONFIG_IP);
 #endif
-    }
     have_net = false;
     // Make sure the recv buffers are set up
     eth_drv_buffers_init();

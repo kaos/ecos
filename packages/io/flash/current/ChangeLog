@@ -1,3 +1,10 @@
+2001-02-06  Hugo Tyson  <hmt@redhat.com>
+
+	* src/flash.c (flash_erase): Add an additional argument to the
+	call into the driver, being the blocksize (as discovered).  This
+	allows a gross check for actual erase in some drivers.  Those that
+	don't use it, it's harmless - after all, this is an API by trust.
+
 2000-12-06  Jesper Skov  <jskov@redhat.com>
 
 	* src/flash.c (flash_dev_query): Added. Allows reloc/cache magic

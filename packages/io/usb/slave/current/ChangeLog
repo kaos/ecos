@@ -1,0 +1,75 @@
+2001-02-02  Bart Veer  <bartv@redhat.com>
+
+	* cdl/usbs.cdl:
+	Add doc property to point at the HTML
+
+	* doc/usbs.sgml, *.html:
+	Incorporate changes from docs department, regenerate HTML
+
+2001-01-25  Bart Veer  <bartv@redhat.com>
+
+	* src/usbs.c: 
+	* include/usbs.h:
+	Only declare the devtab support functions if the I/O package is
+	present, since that provides required data types.
+
+	* cdl/usbs.cdl:
+	devtab support should be enabled by default iff the I/O package is
+	present. 
+
+2001-01-22  Bart Veer  <bartv@redhat.com>
+
+	* doc/usbs.sgml, doc/makefile:
+	Added documentation
+
+2001-01-16  Bart Veer  <bartv@redhat.com>
+
+	* include/usbs.h:
+	* src/usbs.c:
+	Update the start() and poll() functions to match the documentation.
+
+2000-12-15  Bart Veer  <bartv@redhat.com>
+
+	* src/usbs.c:
+	Fix missing return statements.
+
+2000-11-28  Bart Veer  <bartv@redhat.com>
+
+	* cdl/usbs.cdl
+	* include/usbs.h:
+	* usbs.c
+	Update interface to USB device drivers
+
+2000-11-22  Bart Veer  <bartv@redhat.com>
+
+	* include/usbs.h: Fix nested #include protection
+
+2000-11-21  Bart Veer  <bartv@redhat.com>
+
+	* First check-in of eCos USB support.
+
+//===========================================================================
+//####COPYRIGHTBEGIN####
+//                                                                          
+// -------------------------------------------                              
+// The contents of this file are subject to the Red Hat eCos Public License 
+// Version 1.1 (the "License"); you may not use this file except in         
+// compliance with the License.  You may obtain a copy of the License at    
+// http://www.redhat.com/                                                   
+//                                                                          
+// Software distributed under the License is distributed on an "AS IS"      
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+// License for the specific language governing rights and limitations under 
+// the License.                                                             
+//                                                                          
+// The Original Code is eCos - Embedded Configurable Operating System,      
+// released September 30, 1998.                                             
+//                                                                          
+// The Initial Developer of the Original Code is Red Hat.                   
+// Portions created by Red Hat are                                          
+// Copyright (C) 2000, 2001 Red Hat, Inc.                             
+// All Rights Reserved.                                                     
+// -------------------------------------------                              
+//                                                                          
+//####COPYRIGHTEND####
+//===========================================================================

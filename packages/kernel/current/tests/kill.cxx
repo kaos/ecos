@@ -56,18 +56,11 @@
 
 #include "testaux.hxx"
 
-#ifdef CYGPKG_HAL_I386_LINUX
-// On the synthetic target the delay needs to be a bit bigger to avoid
+// In general, this delay has to be long enough to account for slow targets
+// and potential problems on e.g. the linux synthetic target to avoid
 // potential problems due to timing inaccuracy and scheduling of Linux
-// tasks.
+// tasks. It is decreased further below for simulators.
 int delay_ticks = 5;
-#else
-// if we delayed for just one tick, there's a good chance the clock may
-// roll over immediately, giving a negligible practical delay. So always use
-// a value greater than 1
-int delay_ticks = 2;
-#endif
-
 
 
 static Cyg_Binary_Semaphore s0, s1;
@@ -157,6 +150,9 @@ static void entry2( CYG_ADDRWORD data )
 void release_main(void)
 {
     CYG_TEST_INIT();
+
+    if (cyg_test_is_simulator)
+        delay_ticks = 2;
 
     new_thread( entry0, 0);
     new_thread( entry1, 1);

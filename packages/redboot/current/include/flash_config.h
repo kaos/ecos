@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -46,8 +46,10 @@
 #ifndef _FLASH_CONFIG_H_
 #define _FLASH_CONFIG_H_
 
-#define MAX_SCRIPT_LENGTH 512
+#define MAX_SCRIPT_LENGTH CYGNUM_REDBOOT_FLASH_SCRIPT_SIZE
+#define MAX_CONFIG_DATA   CYGNUM_REDBOOT_FLASH_CONFIG_SIZE
 
+#define CONFIG_EMPTY   0
 #define CONFIG_BOOL    1
 #define CONFIG_INT     2
 #define CONFIG_STRING  3
@@ -63,14 +65,22 @@ struct config_option {
     char *enable;
     bool  enable_sense;
     int   type;
+    unsigned long dflt;
 } CYG_HAL_TABLE_TYPE;
 
 #define ALWAYS_ENABLED (char *)0
 
-#define RedBoot_config_option(_t_,_n_,_e_,_ie_,_type_)                                  \
-struct config_option _config_option_##_n_                                               \
-CYG_HAL_TABLE_QUALIFIED_ENTRY(RedBoot_config_options,_n_) = {#_n_,_t_,_e_,_ie_,_type_};
+#define RedBoot_config_option(_t_,_n_,_e_,_ie_,_type_,_dflt_)        \
+struct config_option _config_option_##_n_                               \
+CYG_HAL_TABLE_QUALIFIED_ENTRY(RedBoot_config_options,_n_) =             \
+   {#_n_,_t_,_e_,_ie_,_type_,(unsigned long)_dflt_};
 
-void flash_get_config(char *key, void *val, int type);
+// Cause the in-memory configuration data to be written to flash
+void flash_write_config(void);
+// Fetch a data item from flash storage, returns 'false' if not found
+bool flash_get_config(char *key, void *val, int type);
+// Add a new data item to configuration data base.  Returns 'false'
+// if no space is available.
+bool flash_add_config(struct config_option *opt);
 
 #endif // _FLASH_CONFIG_H_

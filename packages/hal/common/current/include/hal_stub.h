@@ -26,7 +26,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -167,10 +167,10 @@ extern void __reset (void);
 
 // Multi-bp support.
 #ifndef __set_breakpoint
-extern int __set_breakpoint (target_register_t addr);
+extern int __set_breakpoint (target_register_t addr, target_register_t len);
 #endif
 #ifndef __remove_breakpoint
-extern int __remove_breakpoint (target_register_t addr);
+extern int __remove_breakpoint (target_register_t addr, target_register_t len);
 #endif
 
 /* Install the standard set of trap handlers for the stub. */

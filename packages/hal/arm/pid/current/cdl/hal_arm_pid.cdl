@@ -130,6 +130,7 @@ cdl_package CYGPKG_HAL_ARM_PID {
  
     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL {
         display          "Debug serial port"
+        active_if        CYGPRI_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL_CONFIGURABLE
         flavor data
         legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
         default_value    0
@@ -141,6 +142,7 @@ cdl_package CYGPKG_HAL_ARM_PID {
  
      cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL {
          display          "Diagnostic serial port"
+         active_if        CYGPRI_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_CONFIGURABLE
          flavor data
          legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
          default_value    0

@@ -1,3 +1,7 @@
+2001-01-26  Jesper Skov  <jskov@redhat.com>
+
+	* src/if_i82559.c: Added FIXME for promisuous mode.
+
 2001-01-25  Jesper Skov  <jskov@redhat.com>
 
 	* src/if_i82559.c: Replace CYGNUM_HAL_INTERRUPT_PCI_IRQ with

@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -136,18 +136,20 @@ hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
     // This check only to avoid crash on older stubs in case of unhandled
     // interrupts. It is a bit messy, but required in a transition period.
 #ifndef CYGSEM_HAL_ROM_MONITOR
-    if (CYGNUM_CALL_IF_TABLE_VERSION+1 == CYGACC_CALL_IF_VERSION())
+    if (CYGNUM_CALL_IF_TABLE_VERSION_CALL_HACK ==
+        (CYGACC_CALL_IF_VERSION() & CYGNUM_CALL_IF_TABLE_VERSION_CALL_MASK))
 #endif
     {
-        hal_virtual_comm_table_t* comm = CYGACC_CALL_IF_DEBUG_PROCS();
-        gdb_vector = CYGACC_COMM_IF_CONTROL(*comm, __COMMCTL_DBG_ISR_VECTOR);
+        hal_virtual_comm_table_t* __chan = CYGACC_CALL_IF_DEBUG_PROCS();
+        if (__chan)
+            gdb_vector = CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_DBG_ISR_VECTOR);
     }
     if( vector == gdb_vector )
 #else
     // Old code using hardwired channels. This should go away eventually.
     if( vector == CYGHWR_HAL_GDB_PORT_VECTOR )
 #endif
-#endif        
+#endif
     {
         result = HAL_CTRLC_ISR( vector, data );
         if( 0 != result ) return result;

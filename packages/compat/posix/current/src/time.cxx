@@ -44,9 +44,12 @@
 //
 //==========================================================================
 
+#include <pkgconf/posix.h>
+
+#ifdef CYGPKG_POSIX_TIMERS
+
 #include <pkgconf/hal.h>
 #include <pkgconf/kernel.h>
-#include <pkgconf/posix.h>
 
 #include <cyg/kernel/ktypes.h>          // base kernel types
 #include <cyg/infra/cyg_trac.h>         // tracing macros
@@ -605,6 +608,9 @@ externC int nanosleep( const struct timespec *rqtp,
 
     TIME_ENTRY();
 
+    // check for cancellation first.
+    pthread_testcancel();
+
     // Fail an invalid timespec
     if( !valid_timespec( rqtp ) )
         TIME_RETURN(EINVAL);
@@ -623,8 +629,10 @@ externC int nanosleep( const struct timespec *rqtp,
     
     // Do the delay, keeping track of how long we actually slept for.
     then = Cyg_Clock::real_time_clock->current_value();
-    
+
     self->thread->delay( ticks );
+    // check if we were woken up because we were cancelled.
+    pthread_testcancel();
 
     now = Cyg_Clock::real_time_clock->current_value();
 
@@ -643,6 +651,8 @@ externC int nanosleep( const struct timespec *rqtp,
     
     TIME_RETURN(0);
 }    
+
+#endif // ifdef CYGPKG_POSIX_TIMERS
 
 // -------------------------------------------------------------------------
 // EOF time.cxx

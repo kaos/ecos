@@ -139,6 +139,13 @@
 #define	epc		$14	// Exception pc value
 #define prid		$15	// processor ID
 #define config0		$16	// Config register 0
+#define lladdr          $17     // LLAdddr
+#define xcontext        $20     // XContext register
+#define ecc             $26     // Error Checking and Correcting
+#define cache_err       $27     // Cache Error and Status
+#define taglo           $28     // TagLo
+#define taghi           $29     // TagHi
+#define error_epc       $30     // Error exception pc value
 
 
 #------------------------------------------------------------------------------

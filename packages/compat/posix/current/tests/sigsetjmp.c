@@ -145,7 +145,7 @@ void *pthread_entry1( void *arg)
         CYG_TEST_INFO( "Thread1: calling pause()");        
         pause();
 
-        CYG_TEST_INFO( "Thread2: pause() returned");        
+        CYG_TEST_INFO( "Thread1: pause() returned");        
     } while(1);
 
     CYG_TEST_INFO( "Thread1: calling pthread_exit()");    

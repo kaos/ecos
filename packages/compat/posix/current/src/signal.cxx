@@ -44,9 +44,12 @@
 //
 //==========================================================================
 
+#include <pkgconf/posix.h>
+
+#ifdef CYGPKG_POSIX_SIGNALS
+
 #include <pkgconf/hal.h>
 #include <pkgconf/kernel.h>
-#include <pkgconf/posix.h>
 #include <pkgconf/isoinfra.h>
 
 #include <cyg/kernel/ktypes.h>          // base kernel types
@@ -769,6 +772,9 @@ externC int sigtimedwait  (const sigset_t *set, siginfo_t *info,
 {
     SIGNAL_ENTRY();
 
+    // check for cancellation first.
+    pthread_testcancel();
+
     int err = 0;
     cyg_tick_count ticks;
 
@@ -792,6 +798,9 @@ externC int sigtimedwait  (const sigset_t *set, siginfo_t *info,
         {
             if( ticks == 0 || !signal_sigwait.wait(ticks) )
             {
+                // first check we weren't woken up to be cancelled
+                pthread_testcancel_unlock( (pthread_mutex_t *)&signal_mutex );
+
                 // If the timeout is actually zero, or we have waited and
                 // timed out, then we must quit with an error.
                 err = EAGAIN;
@@ -803,6 +812,9 @@ externC int sigtimedwait  (const sigset_t *set, siginfo_t *info,
         // Special case check for SIGALRM since the fact SIGALRM is masked
         // would have prevented it being set pending in the alarm handler.
         check_sigalarm();
+
+        // check we weren't woken up to be cancelled
+        pthread_testcancel_unlock( (pthread_mutex_t *)&signal_mutex );
     }
 
     if( err == 0 )
@@ -1124,6 +1136,8 @@ __externC void siglongjmp( sigjmp_buf env, int val )
 #endif
     
 }
+
+#endif // ifdef CYGPKG_POSIX_SIGNALS
 
 // -------------------------------------------------------------------------
 // EOF signal.cxx

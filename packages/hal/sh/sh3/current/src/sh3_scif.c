@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -60,13 +60,10 @@
 #include <cyg/hal/sh_regs.h>            // serial register definitions
 #include <cyg/hal/sh_stub.h>            // target_register_t
 
+#define CYGPRI_HAL_SH_SH3_SCIF_PRIVATE
 #include <cyg/hal/sh3_scif.h>           // our header
 
 //--------------------------------------------------------------------------
-
-#ifndef CYGNUM_HAL_SH_SH3_SCIF_DEFAULT_BAUD_RATE
-# define CYGNUM_HAL_SH_SH3_SCIF_DEFAULT_BAUD_RATE 38400
-#endif
 
 void
 cyg_hal_plf_scif_init_channel(const channel_data_t* chan)
@@ -88,9 +85,9 @@ cyg_hal_plf_scif_init_channel(const channel_data_t* chan)
     // Set speed to CYGNUM_HAL_SH_SH3_SCIF_DEFAULT_BAUD_RATE
     HAL_READ_UINT8(base+_REG_SCSMR, tmp);
     tmp &= ~CYGARC_REG_SCSMR2_CKSx_MASK;
-    tmp |= CYGARC_SCBRR_CKSx(CYGNUM_HAL_SH_SH3_SCIF_DEFAULT_BAUD_RATE);
+    tmp |= CYGARC_SCBRR_CKSx(CYGNUM_HAL_SH_SH3_SCIF_BAUD_RATE);
     HAL_WRITE_UINT8(base+_REG_SCSMR, tmp);
-    HAL_WRITE_UINT8(base+_REG_SCBRR, CYGARC_SCBRR_N(CYGNUM_HAL_SH_SH3_SCIF_DEFAULT_BAUD_RATE));
+    HAL_WRITE_UINT8(base+_REG_SCBRR, CYGARC_SCBRR_N(CYGNUM_HAL_SH_SH3_SCIF_BAUD_RATE));
 
     // Let things settle: Here we should should wait the equivalent of
     // one bit interval,
@@ -173,8 +170,6 @@ cyg_hal_plf_scif_putc(void* __ch_data, cyg_uint8 c)
     CYGARC_HAL_RESTORE_GP();
 }
 
-#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) \
-    || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
 
 static channel_data_t channels[CYGNUM_HAL_SH_SH3_SCIF_PORTS];
 
@@ -335,8 +330,6 @@ cyg_hal_plf_scif_init(int scif_index, int comm_index,
     // Restore original console
     CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
 }
-
-#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG || CYGPRI_HAL_IMPLEMENTS_IF_SERVICES
 
 #endif // CYGNUM_HAL_SH_SH3_SCIF_PORTS
 

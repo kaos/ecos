@@ -110,10 +110,22 @@ _name_:
 #define PTR(name)               \
 .##name: .word  name
 
+// CYGHWR_HAL_ROM_VADDR is used when compiling for a different location
+// from the base of ROM.  hal_platform_setup.h might define it.  For
+// example, if flash is from 0x50000000 upwards (as on SA11x0), and we are
+// to execute at 0x50040000, then we want the reset vector to point to
+// 0x0004pqrs - the unmapped ROM address of the code - rather than
+// 0x0000pqrs, which is the offset into our flash block.
+// 
+// But usually it's not defined, so the behaviour is the obvious.
+
 #ifdef CYGHWR_HAL_ARM_HAS_MMU
-#define UNMAPPED(x) ((x)-__exception_handlers)
+# ifndef CYGHWR_HAL_ROM_VADDR
+#  define CYGHWR_HAL_ROM_VADDR __exception_handlers
+# endif
+# define UNMAPPED(x) ((x)-CYGHWR_HAL_ROM_VADDR)
 #else
-#define UNMAPPED(x) (x)
+# define UNMAPPED(x) (x)
 #endif
                                 
 #define UNMAPPED_PTR(name)              \
@@ -331,9 +343,6 @@ start:
         mov     r0,#(CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE|CPSR_IRQ_MODE)
         msr     cpsr,r0
         ldr     sp,.__exception_stack
-        mov     r0,#(CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE|CPSR_FIQ_MODE)
-        msr     cpsr,r0
-        ldr     sp,.__FIQ_exception_stack
         mov     r0,#(CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE|CPSR_UNDEF_MODE)
         msr     cpsr,r0
         ldr     sp,.__exception_stack
@@ -386,16 +395,12 @@ start:
         str     r2,[r0,#0x24]
 #endif
 
-	// FIXME: The line with the thumb check is a hack, allowing
-	// the farm to run test. Problem is that virtual vector table
-	// API needs to be ARM/Thumb consistent. Will fix later.
-#if !defined(__thumb__) || defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
 #if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
     || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
         .extern hal_ctrlc_isr_init
         bl      hal_ctrlc_isr_init
 #endif
-#endif
+
         LED 2
         
         // Run through static constructors
@@ -633,14 +638,29 @@ call_exception_handler:
 
         .code   32
 FIQ:
-        // Note: I use this exception stack while saving the context because
-        // the current SP does not seem to be always valid in this CPU mode.
-        ldr     sp,.__FIQ_exception_stack       // get good stack
-        sub     lr,lr,#4                // PC at time of interrupt
-        stmfd   sp!,{r0,fp,ip,lr}               
-        mrs     r0,spsr
-        stmfd   sp!,{r0}
-        b       handle_IRQ_or_FIQ
+        // We can get here from supervisor mode or from IRQ mode.
+        mrs     r8,spsr                 // CPSR at time of interrupt
+        and     r9,r8,#CPSR_MODE_BITS   // isolate pre-interrupt mode
+        cmp	r9,#CPSR_IRQ_MODE
+        bne	1f
+        // If FIQ interrupted IRQ mode, just return with FIQ disabled.
+        // The common interrupt handling takes care of the rest.
+        orr	r8,r8,#CPSR_FIQ_DISABLE
+        msr	spsr,r8
+        subs	pc,lr,#4
+    1:
+        // If FIQ interrupted supervisor mode, switch to IRQ mode and
+        // fall through to IRQ handler.
+        ldr     sp,.__exception_stack   // get good stack to save lr and spsr
+        stmdb   sp,{r8,lr}
+        mov     r8,#CPSR_IRQ_MODE|CPSR_FIQ_DISABLE|CPSR_IRQ_DISABLE
+        msr     cpsr,r8			// switch to IRQ mode
+        ldr     sp,.__exception_stack   // get regs saved in FIQ mode
+        ldmdb	sp,{sp,lr}
+        msr     spsr,sp
+
+        // now it looks like we got an IRQ instead of an FIQ except that
+        // FIQ is disabled so we don't recurse.
 
 IRQ:
         // Note: I use this exception stack while saving the context because
@@ -936,7 +956,6 @@ PTR(__GDB_stack_base)
 PTR(__GDB_stack)
 #endif
 PTR(__startup_stack)
-PTR(__FIQ_exception_stack)
 PTR(__exception_stack)
 PTR(__undef_exception_stack)
 PTR(__bss_start)
@@ -1006,10 +1025,6 @@ hal_interrupt_objects:
 
 // Small stacks, only used for saving information between CPU modes
 __exception_stack_base: 
-        .rept   32
-        .long   0
-        .endr
-__FIQ_exception_stack:
         .rept   32
         .long   0
         .endr

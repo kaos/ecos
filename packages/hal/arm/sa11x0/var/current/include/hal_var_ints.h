@@ -50,6 +50,8 @@
 //
 //==========================================================================
 
+#include <cyg/hal/hal_sa11x0.h>         // registers
+
 #define CYGNUM_HAL_INTERRUPT_GPIO0   0
 #define CYGNUM_HAL_INTERRUPT_GPIO1   1
 #define CYGNUM_HAL_INTERRUPT_GPIO2   2
@@ -107,5 +109,26 @@
 
 // The vector used by the Real time clock
 #define CYGNUM_HAL_INTERRUPT_RTC        CYGNUM_HAL_INTERRUPT_TIMER0
+
+
+
+//----------------------------------------------------------------------------
+// Reset.
+#define HAL_PLATFORM_RESET()                                               \
+    CYG_MACRO_START                                                        \
+    cyg_uint32 ctrl;                                                       \
+                                                                           \
+    /* By disabling interupts we will just hang in the loop below      */  \
+    /* if for some reason the software reset fails.                    */  \
+    HAL_DISABLE_INTERRUPTS(ctrl);                                          \
+                                                                           \
+    /* Software reset. */                                                  \
+    *SA11X0_RESET_SOFTWARE_RESET = SA11X0_INVOKE_SOFTWARE_RESET;           \
+                                                                           \
+    for(;;); /* hang here forever if reset fails */                        \
+    CYG_MACRO_END
+
+// Fallback (never really used)
+#define HAL_PLATFORM_RESET_ENTRY 0x00000000
 
 #endif // CYGONCE_HAL_VAR_INTS_H

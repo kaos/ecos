@@ -347,9 +347,6 @@ cyg_hal_plf_serial_getc(void* __ch_data)
 
 
 
-#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) \
-    || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
-
 static void
 cyg_hal_plf_serial_write(void* __ch_data, const cyg_uint8* __buf, 
                          cyg_uint32 __len)
@@ -510,8 +507,6 @@ cyg_hal_plf_serial_init(void)
     // Restore original console
     CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
 }
-
-#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG || CYGPRI_HAL_IMPLEMENTS_IF_SERVICES
 
 #endif // CYGPKG_HAL_POWERPC_MPC860
 // EOF quicc_smc1.c

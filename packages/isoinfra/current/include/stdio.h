@@ -114,6 +114,27 @@
 # endif
 #endif
 
+#ifdef CYGINT_ISO_STDIO_POSIX_FDFUNCS
+# ifdef CYGBLD_ISO_STDIO_POSIX_FDFUNCS_HEADER
+#  include CYGBLD_ISO_STDIO_POSIX_FDFUNCS_HEADER
+# else
+
+#  ifdef __cplusplus
+extern "C" {
+#  endif
+
+extern int
+fileno( FILE *__stream );
+
+extern FILE *
+fdopen( int __fildes, const char *__type );
+
+#  ifdef __cplusplus
+} // extern "C"
+#  endif
+# endif
+#endif
+
 #endif /* CYGONCE_ISO_STDIO_H multiple inclusion protection */
 
 /* EOF stdio.h */

@@ -217,9 +217,6 @@ cyg_hal_plf_serial_getc(void* __ch_data)
     return ch;
 }
 
-#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) \
-    || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
-
 static const channel_data_t channels[2] = {
     { (cyg_uint8*)CYG_DEVICE_SERIAL_SCC1, 1000, CYGNUM_HAL_INTERRUPT_DEBUG_UART},
     { (cyg_uint8*)CYG_DEVICE_SERIAL_SCC2, 1000, CYGNUM_HAL_INTERRUPT_USER_UART}
@@ -406,7 +403,6 @@ cyg_hal_plf_comms_init(void)
 
     cyg_hal_plf_serial_init();
 }
-#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG || CYGPRI_HAL_IMPLEMENTS_IF_SERVICES
 
 //-----------------------------------------------------------------------------
 // end of pc87338.c

@@ -177,9 +177,6 @@ cyg_hal_plf_serial_getc(void* __ch_data)
     return ch;
 }
 
-#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) \
-    || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
-
 static channel_data_t ser_channels[2] = {
     { (volatile struct sa11x0_serial*)SA11X0_UART1_BASE, 1000, CYGNUM_HAL_INTERRUPT_UART1 },
     { (volatile struct sa11x0_serial*)SA11X0_UART3_BASE, 1000, CYGNUM_HAL_INTERRUPT_UART3 }
@@ -365,8 +362,6 @@ cyg_hal_plf_comms_init(void)
 
     cyg_hal_plf_serial_init();
 }
-#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG || CYGPRI_HAL_IMPLEMENTS_IF_SERVICES
-
 
 //=============================================================================
 // Compatibility with older stubs
@@ -391,7 +386,7 @@ cyg_hal_plf_comms_init(void)
 
 #if defined(CYG_HAL_STARTUP_ROM) && !defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
 #define HAL_DIAG_USES_HARDWARE
-#elif defined(CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL)
+#elif !defined(CYGDBG_HAL_DIAG_TO_DEBUG_CHAN)
 #define HAL_DIAG_USES_HARDWARE
 #elif CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL != CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL
 #define HAL_DIAG_USES_HARDWARE

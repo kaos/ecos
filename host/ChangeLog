@@ -1,3 +1,7 @@
+2001-01-29  Andreas Schuldei  <andreas@schuldei.org>
+
+	* acinclude.m4 (CYG_AC_PATH_TCL): Simplify Tcl installation searching
+
 2000-10-23  Jesper Skov  <jskov@redhat.com>
 
 	* configure: Disable ser_filter magic for now - properly this time!

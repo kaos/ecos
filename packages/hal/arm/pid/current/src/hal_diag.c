@@ -204,9 +204,6 @@ cyg_hal_plf_serial_getc(void* __ch_data)
     return ch;
 }
 
-#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) \
-    || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
-
 static channel_data_t pid_ser_channels[2] = {
     { (cyg_uint8*)0x0D800000, 1000, CYGNUM_HAL_INTERRUPT_SERIALA },
     { (cyg_uint8*)0x0D800020, 1000, CYGNUM_HAL_INTERRUPT_SERIALB }
@@ -386,7 +383,6 @@ cyg_hal_plf_comms_init(void)
 
     cyg_hal_plf_serial_init();
 }
-#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG || CYGPRI_HAL_IMPLEMENTS_IF_SERVICES
 
 /*---------------------------------------------------------------------------*/
 
@@ -431,7 +427,7 @@ static channel_data_t pid_ser_channel = {
 // Assumption: all diagnostic output must be GDB packetized unless this is a ROM (i.e.
 // totally stand-alone) system.
 
-#if defined(CYG_HAL_STARTUP_ROM) || defined(CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL)
+#if defined(CYG_HAL_STARTUP_ROM) || !defined(CYGDBG_HAL_DIAG_TO_DEBUG_CHAN)
 #define HAL_DIAG_USES_HARDWARE
 #endif
 

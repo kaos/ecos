@@ -1,3 +1,83 @@
+2001-02-12  Jesper Skov  <jskov@redhat.com>
+
+	* src/main.c: Use CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL instead
+	of CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL.
+
+2001-02-11  Gary Thomas  <gthomas@redhat.com>
+
+	* src/net/ping.c (do_ping): Accomodate new MS_TICKS scheme.
+
+2001-02-09  Grant Edwards  <grante@visi.com>
+
+	* include/net/net.h (MS_TICKS_DELAY): New macro, different from
+	MS_TICKS() so that MS_TICKS() gets the current tick count, and
+	MS_TICKS_DELAY is used in a delay loop to actually do a delay.
+
+	* src/ticks.c (get_ms_ticks): New function imlementing rework of
+	MS_TICKS
+
+	* src/net/net_io.c (net_io_getc): Use MS_TICKS_DELAY() instead of
+	CYGACC_CALL_IF_DELAY_US() directly
+	(net_io_getc_timeout): Likewise
+
+	* src/net/udp.c (__udp_recvfrom): MS_TICKS -> MS_TICKS_DELAY
+	* src/net/bootp.c (__bootp_find_local_ip): Likewise
+
+2001-02-09  Jonathan Larmour  <jlarmour@redhat.com>
+2001-02-09  Grant Edwards  <grante@visi.com>
+
+	* src/net/net_io.c (net_io_getc_nonblock): Silence compiler warning
+
+2001-01-31  Gary Thomas  <gthomas@redhat.com>
+
+	* include/redboot.h: 
+	* cdl/redboot.cdl: 
+	* src/flash.c: Use new CRC functions.
+
+	* src/crc.c: New file - supports 16 and 32 bit CRC functions.
+
+2001-01-31  Grant Edwards <grante@visi.com>
+
+	* src/net/net_io.c (net_io_test): Use new idle function to
+	poll for incoming network connections.  Removes #if requirements
+	from the main CLI loop.
+
+	* src/main.c (cyg_start): 
+	* include/redboot.h (RedBoot_idle): Add new tables to support
+	user defined functions to be called when idle (during command input).
+
+2001-01-31  Gary Thomas  <gthomas@redhat.com>
+
+	* include/redboot.h: 
+	* src/main.c (cyg_start): 
+	* src/net/net_io.c (net_io_getc_nonblock): Forgo TELNET escape
+	processing if GDB is active (requires 8-bit clean connection).
+
+2001-01-31  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/syscall.c (__do_syscall):
+	Added SYS_meminfo syscall.
+
+	* src/net/net_io.c (net_io_getc_nonblock):
+	Telnet escape processing temporarily disabled because it does not
+	work.
+
+2001-01-31  Grant Edwards <grante@visi.com>
+
+	* include/net/net.h: 
+	* src/net/enet.c (__eth_install_listener, __eth_remove_listener): 
+	New functions - allow user registerable callout to handle 
+	non-standard ethernet packets.
+
+2001-01-30  Gary Thomas  <gthomas@redhat.com>
+
+	* src/main.c (do_reset): HAL macro name changed.
+
+	* src/net/ping.c (do_ping): Remove warning.
+
+	* src/main.c (do_help): Only display help for selected topic
+	if provided.
+
 2001-01-24  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/main.c (cyg_start): Rework last change to use more generic
@@ -11,7 +91,8 @@
 
 2001-01-22  Gary Thomas  <gthomas@redhat.com>
 
-	* src/net/inet_addr.c (inet_aton): Fix byte order on big endian systems.
+	* src/net/inet_addr.c (inet_aton): Fix byte order on big endian 
+	systems.
 
 	* src/net/icmp.c (__icmp_install_listener): 
 	(__icmp_remove_listener): New functions.
@@ -352,7 +433,7 @@
 2000-09-07 Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/load.c, include/redboot.h: renamed the getc functions to
- 	redboot_getc and made them globel so custom boot loaders can use
+ 	redboot_getc and made them global so custom boot loaders can use
  	them.
 
 2000-09-06  Gary Thomas  <gthomas@redhat.com>

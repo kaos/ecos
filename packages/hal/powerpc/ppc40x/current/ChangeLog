@@ -1,3 +1,7 @@
+2001-01-26  Jesper Skov  <jskov@redhat.com>
+
+	* include/var_intr.h: Include plf_intr.h
+
 2001-01-18  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/hal_powerpc_ppc40x.cdl: Move CYGSEM_HAL_USE_ROM_MONITOR to

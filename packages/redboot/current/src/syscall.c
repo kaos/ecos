@@ -72,9 +72,9 @@
 #define SYS_time 	18
 
 #define SYS_interrupt   1000
+#define SYS_meminfo     1001
 
 #define __GET_SHARED  0xbaad
-
 
 /*
  * Clients of this BSP will need to have access to BSP functions and
@@ -230,11 +230,11 @@ sys_utime(unsigned long *p)
 //  module, 1 otherwise. This allows applications to
 //  extend the syscall handler by using exception chaining.
 //
-int
-__do_syscall(int func,			// syscall function number
-	     long arg1, long arg2,	// up to four args.
-	     long arg3, long arg4,
-	     int *retval)		// syscall return value
+CYG_ADDRWORD
+__do_syscall(CYG_ADDRWORD func,			// syscall function number
+	     CYG_ADDRWORD arg1, CYG_ADDRWORD arg2,	// up to four args.
+	     CYG_ADDRWORD arg3, CYG_ADDRWORD arg4,
+	     CYG_ADDRWORD *retval)		// syscall return value
 {
     int err = 0;
 
@@ -264,6 +264,12 @@ __do_syscall(int func,			// syscall function number
 	err = sys_utime((unsigned long *)arg1);
 	break;
 
+      case SYS_meminfo:
+        err = 1;
+        *(unsigned long *)arg1 = (unsigned long)(ram_end-ram_start);
+        *(unsigned long *)arg2 = (unsigned long)ram_end;
+        break;
+        
       case __GET_SHARED:
 	*(__shared_t **)arg1 = &__shared_data;
 	break;

@@ -149,9 +149,6 @@ cyg_hal_plf_serial_getc(void* __ch_data)
     return ch;
 }
 
-#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) \
-    || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
-
 static cyg_int32 msec_timeout;
 
 static void
@@ -306,8 +303,6 @@ cyg_hal_plf_comms_init(void)
 
     cyg_hal_plf_serial_init();
 }
-#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG || CYGPRI_HAL_IMPLEMENTS_IF_SERVICES
-
 
 
 //=============================================================================
@@ -325,7 +320,7 @@ cyg_hal_plf_comms_init(void)
 #undef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 #endif
 
-#if defined(CYG_HAL_STARTUP_ROM) || defined(CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL)
+#if defined(CYG_HAL_STARTUP_ROM) || !defined(CYGDBG_HAL_DIAG_TO_DEBUG_CHAN)
 #define HAL_DIAG_USES_HARDWARE
 #endif
 

@@ -1,3 +1,21 @@
+2001-02-08  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_powerpc_mbx.cdl: Respect channel configuration
+	constraints.
+
+	* src/hal_diag.c: Replace CYGSEM_HAL_DIAG_MANGLER_None with
+	CYGDBG_HAL_DIAG_TO_DEBUG_CHAN.
+
+2001-01-31  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c: Replaced CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL
+	with CYGSEM_HAL_DIAG_MANGLER_GDB/None
+
+2001-01-26  Jesper Skov  <jskov@redhat.com>
+
+	* include/plf_stub.h: Moved reset macro to
+	* include/plf_intr.h: this file.
+
 2001-01-19  Gary Thomas  <gthomas@redhat.com>
 
 	* include/hal_diag.h: Remove unwarranted disclaimer [commentary].

@@ -45,10 +45,17 @@
 
 #include "redboot.h"
 
+static unsigned long ticks = 0;
+
 unsigned long
 do_ms_tick(void)
 {
-    static unsigned long ticks = 0;
     CYGACC_CALL_IF_DELAY_US(1000);   // Wait for 1ms
     return ++ticks;
+}
+
+unsigned long
+get_ms_ticks(void)
+{
+    return ticks;
 }

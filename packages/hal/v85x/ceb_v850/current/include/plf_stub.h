@@ -70,13 +70,6 @@ extern void hal_plf_stub_init(void);
 
 #endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
-//----------------------------------------------------------------------------
-// Reset.
-
-extern void hal_plf_reset_board(void);
-#define HAL_STUB_PLATFORM_RESET()             hal_plf_reset_board()
-#define HAL_STUB_PLATFORM_RESET_ENTRY         0x00000000
-
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_PLF_STUB_H
 // End of plf_stub.h

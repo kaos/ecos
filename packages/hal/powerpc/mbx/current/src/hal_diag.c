@@ -135,7 +135,7 @@ void hal_diag_init(void)
 
     // init the actual serial port
     cyg_hal_plf_serial_init_channel();
-#ifndef CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL
+#ifdef CYGSEM_HAL_DIAG_MANGLER_GDB
 #ifndef CYG_HAL_STARTUP_ROM
     // We are talking to GDB; ack the "go" packet!
     cyg_hal_plf_serial_putc(eppc, '+');
@@ -151,7 +151,7 @@ void hal_diag_write_char_serial( char c )
     HAL_RESTORE_INTERRUPTS(__state);
 }
 
-#if defined(CYG_HAL_STARTUP_ROM) || defined(CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL)
+#if defined(CYG_HAL_STARTUP_ROM) || !defined(CYGDBG_HAL_DIAG_TO_DEBUG_CHAN)
 void hal_diag_write_char(char c)
 {
 #ifdef CYGDBG_DIAG_BUF

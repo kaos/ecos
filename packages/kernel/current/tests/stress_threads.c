@@ -62,7 +62,7 @@
 
 #include <cyg/kernel/kapi.h>
 
-#if CYGINT_ISO_STDIO_FORMATTED_IO
+#ifdef CYGINT_ISO_STDIO_FORMATTED_IO
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -58,6 +58,16 @@
 // Defined by the quicc driver
 #include <cyg/hal/quicc/quicc_smc1.h>
 
+
+//----------------------------------------------------------------------------
+// Reset.
+
+// The MBX does not have a watchdog (not one we can easily use for this
+// purpose anyway).
+#define HAL_PLATFORM_RESET() CYG_EMPTY_STATEMENT
+
+#define HAL_PLATFORM_RESET_ENTRY 0xfe000100
+
 //--------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_PLF_INTR_H
 // End of plf_intr.h

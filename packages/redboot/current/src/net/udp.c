@@ -239,7 +239,7 @@ __udp_recvfrom(char *data, int len, struct sockaddr_in *server,
     total_ms = (timo->tv_sec * 1000) + (timo->tv_usec / 1000);
     start = MS_TICKS();
     res = -1;
-    while ((MS_TICKS() - start) < total_ms) {
+    while ((MS_TICKS_DELAY() - start) < total_ms) {
         __enet_poll();  // Handle the hardware
         if (!recvfrom_buf) {
             // Data have arrived

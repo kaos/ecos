@@ -71,12 +71,12 @@ EXTERN int argc;
 EXTERN char *argv[MAX_ARGV];
 EXTERN unsigned char *ram_start, *ram_end;
 EXTERN unsigned long *entry_address;
-EXTERN bool config_ok;
 
 #ifdef CYGPKG_REDBOOT_ANY_CONSOLE
 EXTERN bool console_selected;
 #endif
 EXTERN bool console_echo;
+EXTERN bool gdb_active;
 
 #ifdef CYGPKG_REDBOOT_NETWORKING
 EXTERN bool have_net, use_bootp;
@@ -120,6 +120,10 @@ int  gets(char *line, int len, int timeout);
 int  start_console(void);
 void end_console(int old_console);
 
+// CRC support
+unsigned short crc16(unsigned char *buf, int len);
+unsigned long  crc32(unsigned char *buf, int len);
+
 // CLI support functions
 bool parse_num(char *s, unsigned long *val, char **es, char *delim);
 bool parse_bool(char *s, bool *val);
@@ -155,7 +159,19 @@ struct init_tab_entry {
 struct init_tab_entry _init_tab_##_p_##_f_ CYG_HAL_TABLE_QUALIFIED_ENTRY(RedBoot_inits,_f_) = { _f_ }; 
 #define RedBoot_init(_f_,_p_) _RedBoot_init(_f_,_p_)
 
-
+// Main loop [idle] call-back functions
+#define RedBoot_IDLE_FIRST          0000
+#define RedBoot_IDLE_BEFORE_NETIO   3000
+#define RedBoot_IDLE_NETIO          5000
+#define RedBoot_IDLE_AFTER_NETIO    7000
+#define RedBoot_IDLE_LAST           9999
+struct idle_tab_entry {
+    void_fun_ptr fun;
+} CYG_HAL_TABLE_TYPE;
+#define _RedBoot_idle(_f_,_p_)                                          \
+struct idle_tab_entry _idle_tab_##_p_##_f_ CYG_HAL_TABLE_QUALIFIED_ENTRY(RedBoot_idle,_f_) = { _f_ }; 
+#define RedBoot_idle(_f_,_p_) _RedBoot_idle(_f_,_p_)
+ 
 // Option processing support
 
 struct option_info {

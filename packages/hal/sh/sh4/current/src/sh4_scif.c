@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -56,6 +56,7 @@
 #include <cyg/hal/sh_regs.h>            // serial register definitions
 #include <cyg/hal/sh_stub.h>            // target_register_t
 
+#define CYGPRI_HAL_SH_SH4_SCIF_PRIVATE
 #include <cyg/hal/sh4_scif.h>           // our header
 
 //--------------------------------------------------------------------------
@@ -77,15 +78,16 @@ cyg_hal_plf_scif_init_channel(const channel_data_t* chan)
     // 8-1-no parity.
     HAL_WRITE_UINT16(base+_REG_SCSMR, 0);
 
-    // Set speed to 38400
+    // Set desired baudrate
     HAL_READ_UINT16(base+_REG_SCSMR, tmp);
     tmp &= ~CYGARC_REG_SCSMR2_CKSx_MASK;
-    tmp |= CYGARC_SCBRR_CKSx(38400);
+    tmp |= CYGARC_SCBRR_CKSx(CYGNUM_HAL_SH_SH4_SCIF_BAUD_RATE);
     HAL_WRITE_UINT16(base+_REG_SCSMR, tmp);
-    HAL_WRITE_UINT8(base+_REG_SCBRR, CYGARC_SCBRR_N(38400));
+    HAL_WRITE_UINT8(base+_REG_SCBRR, 
+                    CYGARC_SCBRR_N(CYGNUM_HAL_SH_SH4_SCIF_BAUD_RATE));
 
     // Let things settle: Here we should should wait the equivalent of
-    // one bit interval, i.e. 1/38400 second, but until we have
+    // one bit interval, i.e. 1/<baudrate> second, but until we have
     // something like the Linux delay loop, it's hard to do reliably. So
     // just move on and hope for the best (this is unlikely to cause
     // problems since the CPU has just come out of reset anyway).
@@ -162,8 +164,6 @@ cyg_hal_plf_scif_putc(void* __ch_data, cyg_uint8 c)
     CYGARC_HAL_RESTORE_GP();
 }
 
-#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) \
-    || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
 
 static channel_data_t channels[CYGNUM_HAL_SH_SH4_SCIF_PORTS];
 
@@ -324,8 +324,6 @@ cyg_hal_plf_scif_init(int scif_index, int comm_index,
     // Restore original console
     CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
 }
-
-#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG || CYGPRI_HAL_IMPLEMENTS_IF_SERVICES
 
 #endif // CYGNUM_HAL_SH_SH4_SCIF_PORTS
 

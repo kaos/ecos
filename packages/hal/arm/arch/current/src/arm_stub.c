@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -77,6 +77,11 @@
 #include <cyg/hal/dbg-threads-api.h>    // dbg_currthread_id
 #endif
 
+#if defined(CYGNUM_HAL_BREAKPOINT_LIST_SIZE) && (CYGNUM_HAL_BREAKPOINT_LIST_SIZE > 0)
+cyg_uint32 __arm_breakinst = HAL_BREAKINST_ARM;
+cyg_uint16 __thumb_breakinst = HAL_BREAKINST_THUMB;
+#endif
+
 /* Given a trap value TRAP, return the corresponding signal. */
 
 int __computeSignal (unsigned int trap_number)
@@ -117,7 +122,16 @@ int __get_trap_number (void)
 #if defined(CYGSEM_REDBOOT_BSP_SYSCALLS)
 int __is_bsp_syscall(void) 
 {
-    return _hal_registers->vector == CYGNUM_HAL_EXCEPTION_INTERRUPT;
+    unsigned long pc = get_register(PC);
+    unsigned long cpsr = get_register(PS);  // condition codes
+
+    if (_hal_registers->vector == CYGNUM_HAL_EXCEPTION_INTERRUPT) {
+	if (cpsr & CPSR_THUMB_ENABLE)
+	    return *(unsigned short *)pc == 0xdf18;
+	else
+	    return *(unsigned *)pc == 0xef180001;
+    }
+    return 0;
 }
 #endif
 

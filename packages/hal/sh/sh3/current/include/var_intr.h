@@ -51,7 +51,10 @@
 //==========================================================================
 
 #include <pkgconf/hal.h>
+
 #include CYGBLD_HAL_CPU_MODULES_H       // INTC module selection
+
+#include <cyg/hal/plf_intr.h>
 
 //----------------------------------------------------------------------------
 // Additional vectors provided by INTC V2

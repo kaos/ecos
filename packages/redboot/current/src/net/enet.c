@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -59,6 +59,55 @@ static int num_received = 0;
 static int num_transmitted = 0;
 #endif
 
+//
+// Support for user handlers of additional ethernet packets (nonIP)
+//
+
+#define NUM_EXTRA_HANDLERS 4
+static struct {
+    int type;
+    pkt_handler_t handler;
+} eth_handlers[NUM_EXTRA_HANDLERS];
+
+pkt_handler_t 
+__eth_install_listener(int eth_type, pkt_handler_t handler)
+{
+    int i, empty;
+    pkt_handler_t old;
+
+    empty = -1;
+    for (i = 0;  i < NUM_EXTRA_HANDLERS;  i++) {
+        if (eth_handlers[i].type == eth_type) {
+            // Replace existing handler
+            old = eth_handlers[i].handler;
+            eth_handlers[i].handler = handler;
+            return old;
+        }
+        if (eth_handlers[i].type == 0) {
+            empty = i;
+        }
+    }
+    if (empty >= 0) {
+        // Found a free slot
+        eth_handlers[empty].type = eth_type;
+        eth_handlers[empty].handler = handler;
+    }
+    printf("** Warning: can't install listener for ethernet type 0x%02x\n", eth_type);
+    return (pkt_handler_t)0;
+}
+
+void 
+__eth_remove_listener(int eth_type)
+{
+    int i;
+    
+    for (i = 0;  i < NUM_EXTRA_HANDLERS;  i++) {
+        if (eth_handlers[i].type == eth_type) {
+            eth_handlers[i].type = 0;
+        }
+    }    
+}
+
 /*
  * Non-blocking poll of ethernet link. Process packets until no more
  * are available.
@@ -68,6 +117,7 @@ __enet_poll(void)
 {
     pktbuf_t *pkt;
     eth_header_t eth_hdr;
+    int i, type;
 
     while (true) {
         /*
@@ -86,7 +136,7 @@ __enet_poll(void)
 #if ENET_STATS
             ++num_received;
 #endif
-            switch (ntohs(eth_hdr.type)) {
+            switch (type = ntohs(eth_hdr.type)) {
 
             case ETH_TYPE_IP:
 #if ENET_STATS
@@ -115,6 +165,11 @@ __enet_poll(void)
 #endif
 
             default:
+                for (i = 0;  i < NUM_EXTRA_HANDLERS;  i++) {
+                    if (eth_handlers[i].type == type) {
+                        (eth_handlers[i].handler)(pkt, &eth_hdr);
+                    }
+                }
                 __pktbuf_free(pkt);
                 break;
             }
@@ -145,7 +200,6 @@ __enet_send(pktbuf_t *pkt, enet_addr_t *dest, int eth_type)
     ++num_transmitted;
 #endif
 }
-
 
 #ifdef __LITTLE_ENDIAN__
 

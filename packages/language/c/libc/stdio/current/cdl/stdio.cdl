@@ -251,6 +251,7 @@ cdl_package CYGPKG_LIBC_STDIO {
     cdl_option CYGPKG_LIBC_STDIO_OPEN {
         display       "Dynamic opening/closing of files"
         requires      CYGINT_ISO_MALLOC
+        implements    CYGINT_ISO_STDIO_POSIX_FDFUNCS
         default_value { 0 != CYGINT_ISO_MALLOC }
         description   "
             fopen() and fclose() use dynamic memory

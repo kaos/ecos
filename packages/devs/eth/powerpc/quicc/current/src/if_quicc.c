@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -89,7 +89,7 @@ static unsigned char enaddr[] = { 0x08, 0x00, 0x3E, 0x28, 0x79, 0xB8};
 RedBoot_config_option("Network hardware address [MAC]",
                       quicc_esa,
                       ALWAYS_ENABLED, true,
-                      CONFIG_ESA
+                      CONFIG_ESA, 0
     );
 #endif
 #endif

@@ -1300,9 +1300,9 @@ __process_packet (char *packet)
           {
             mode = *(ptr++);
             if (mode == 'C')
-              __remove_breakpoint (addr);
+              __remove_breakpoint (addr,0);
             else
-              __set_breakpoint (addr);
+              __set_breakpoint (addr,0);
             strcpy (remcomOutBuffer, "OK");
           }
         else
@@ -1358,9 +1358,9 @@ __process_packet (char *packet)
 		    case 0:
 		      /* sw breakpoint */
 		      if (is_Z)
-			err = __set_breakpoint(addr);
+			err = __set_breakpoint(addr,length);
 		      else
-			err = __remove_breakpoint(addr);
+			err = __remove_breakpoint(addr,length);
 		      if (!err)
 			strcpy (remcomOutBuffer, "OK");
 		      else

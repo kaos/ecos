@@ -182,13 +182,13 @@ do_ping(int argc, char *argv[])
         start_time = MS_TICKS();
         timer = start_time + timeout;
         icmp_received = false;
-        while (!icmp_received && (MS_TICKS() < timer)) {
+        while (!icmp_received && (MS_TICKS_DELAY() < timer)) {
             __enet_poll();
         } 
         end_time = MS_TICKS();
 
         timer = MS_TICKS() + rate;
-        while (MS_TICKS() < timer) {
+        while (MS_TICKS_DELAY() < timer) {
             __enet_poll();
         } 
 
@@ -198,7 +198,7 @@ do_ping(int argc, char *argv[])
         if (icmp_received) {
             received++;
             if (verbose) {
-                printf("icmp - seq: %d, time: %d (ticks)\n",
+                printf("icmp - seq: %ld, time: %ld (ticks)\n",
                        ntohs(hold_hdr.seqnum), end_time-start_time);
             }
         }

@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -78,7 +78,7 @@
 RedBoot_config_option("Network hardware address [MAC]",
                       edb7xxx_esa,
                       ALWAYS_ENABLED, true,
-                      CONFIG_ESA
+                      CONFIG_ESA, 0
     );
 #endif
 #endif

@@ -53,7 +53,9 @@
 extern bool net_debug;
 
 extern unsigned long do_ms_tick(void);
-#define MS_TICKS() do_ms_tick()
+extern unsigned long get_ms_ticks(void);
+#define MS_TICKS() get_ms_ticks()
+#define MS_TICKS_DELAY() do_ms_tick()
 
 /* #define NET_SUPPORT_RARP  1 */
 #define NET_SUPPORT_ICMP 1
@@ -280,7 +282,7 @@ typedef struct _pktbuf {
 
 
 /* protocol handler */
-typedef void (*pkt_handler_t)(pktbuf_t *pkt);
+typedef void (*pkt_handler_t)(pktbuf_t *pkt, eth_header_t *eth_hdr);
 
 /* ICMP fielder */
 typedef void (*icmp_handler_t)(pktbuf_t *pkt, ip_route_t *src_route);
@@ -377,17 +379,13 @@ extern void __pktbuf_dump(void);
  * Install handlers for ethernet packets.
  * Returns old handler.
  */
-extern pkt_handler_t __eth_install_handler(int eth_type,
-					   pkt_handler_t handler);
-/*
- * Set tcp port number for debugging. If not called, a default
- * will be selected.
- */
-extern void _bsp_net_set_debug_port(int portnum);
+extern pkt_handler_t __eth_install_listener(int eth_type,
+                                            pkt_handler_t handler);
+extern void __eth_remove_listener(int eth_type);
 
 /*
- * Non-blocking poll of ethernet link. Processes at most
- * one packet.
+ * Non-blocking poll of ethernet link. Processes all pending
+ * input packets.
  */
 extern void __enet_poll(void);
 

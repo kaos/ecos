@@ -1,3 +1,9 @@
+2001-01-31  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_powerpc_mpc8xx.cdl: Get rid of
+	CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL options. They are replaced by
+	the CYGSEM_HAL_DIAG_MANGLER option.
+
 2000-11-04  Gary Thomas  <gthomas@redhat.com>
 
 	* include/var_intr.h: Export symbols used in assembly code.

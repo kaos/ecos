@@ -57,9 +57,6 @@
 #include <cyg/hal/drv_api.h>            // driver API
 #include <cyg/hal/hal_misc.h>           // Helper functions
 
-#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) \
-    || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
-
 static void cyg_hal_plf_serial_init(void);
 
 // FIXME: Copy LCD driver from powerpc/cogent
@@ -78,7 +75,6 @@ cyg_hal_plf_comms_init(void)
     cyg_hal_plf_serial_init();
 //    cyg_hal_plf_lcd_init();
 }
-#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG || CYGPRI_HAL_IMPLEMENTS_IF_SERVICES
 
 //=============================================================================
 // Serial driver
@@ -257,9 +253,6 @@ cyg_hal_plf_serial_putc(void* __ch_data, cyg_uint8 c)
     CYGARC_HAL_RESTORE_GP();
 }
 
-#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) \
-    || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
-
 static const channel_data_t channels[2] = {
     { (cyg_uint8*)CMA101_DUARTA, 1000, CYGNUM_HAL_INTERRUPT_SERIAL_A},
     { (cyg_uint8*)CMA101_DUARTB, 1000, CYGNUM_HAL_INTERRUPT_SERIAL_B}
@@ -433,9 +426,6 @@ cyg_hal_plf_serial_init(void)
     CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
 }
 
-#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG || CYGPRI_HAL_IMPLEMENTS_IF_SERVICES
-
-
 //=============================================================================
 // Compatibility with older stubs
 //=============================================================================
@@ -451,7 +441,7 @@ cyg_hal_plf_serial_init(void)
 // Assumption: all diagnostic output must be GDB packetized unless this is a ROM (i.e.
 // totally stand-alone) system.
 
-#if defined(CYG_HAL_STARTUP_ROM) || defined(CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL)
+#if defined(CYG_HAL_STARTUP_ROM) || !defined(CYGDBG_HAL_DIAG_TO_DEBUG_CHAN)
 #define HAL_DIAG_USES_HARDWARE
 #endif
 

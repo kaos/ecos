@@ -71,35 +71,6 @@ externC void cyg_hal_plf_comms_init(void);
 #define HAL_STUB_PLATFORM_INIT()              CYG_EMPTY_STATEMENT
 
 #endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-
-//----------------------------------------------------------------------------
-// Reset.
-#include <cyg/hal/hal_ebsa285.h>        // registers
-#include <cyg/hal/hal_io.h>             // IO macros
-
-#define HAL_STUB_PLATFORM_RESET()                                          \
-    CYG_MACRO_START                                                        \
-    cyg_uint32 ctrl;                                                       \
-                                                                           \
-    /* If watchdog is already enabled, writing to timer4 has no effect. */ \
-    /* But by disabling interupts and just hanging in the loop below    */ \
-    /* the timer might run out eventually (not guaranteed).             */ \
-    HAL_DISABLE_INTERRUPTS(ctrl);                                          \
-                                                                           \
-    /* Set timer4 (must be done before enabling watchdog) */               \
-    HAL_WRITE_UINT32(SA110_TIMER4_LOAD, 2);                                \
-    HAL_WRITE_UINT32(SA110_TIMER4_CONTROL, SA110_TIMER_CONTROL_ENABLE);    \
-                                                                           \
-    /* Enable watchdog */                                                  \
-    HAL_READ_UINT32(SA110_CONTROL, ctrl);                                  \
-    ctrl |= SA110_CONTROL_WATCHDOG;                                        \
-    HAL_WRITE_UINT32(SA110_CONTROL, ctrl);                                 \
-                                                                           \
-    for(;;); /* wait for it */                                             \
-    CYG_MACRO_END
-
-#define HAL_STUB_PLATFORM_RESET_ENTRY 0x41000000
-
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_PLF_STUB_H
 // End of plf_stub.h

@@ -121,6 +121,9 @@ protected:
                                         // remove first thread on queue    
     Cyg_Thread          *dequeue();
 
+                                        // Remove thread from queue
+    void                remove(Cyg_Thread *thread);
+
 };
 
 // thread queue used exclusively by the scheduler, with simpler enqueueing

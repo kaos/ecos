@@ -74,7 +74,7 @@ cdl_package CYGPKG_REDBOOT {
                      stripping before being converted to a binary image.
                      This is handled by a rule in the target CDL."
 
-        compile main.c
+        compile main.c crc.c
 	compile printf.c misc_funs.c io.c parse.c ticks.c xyzModem.c syscall.c
         compile -library=libextras.a load.c 
 
@@ -149,6 +149,18 @@ cdl_package CYGPKG_REDBOOT {
           rather than from RedBoot's stack."
     }
 
+    cdl_option CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT {
+        display       "Command processing idle timeout (ms)"
+        flavor        data
+        default_value 10
+        description   "
+          This option controls the timeout period before the
+          command processing is considered 'idle'.  Making this
+          number smaller will cause idle processing to take place
+          more often, etc.  The default value of 10ms is a reasonable
+          tradeoff between responsiveness and overhead."
+    }
+
     cdl_component CYGPKG_REDBOOT_FLASH {
         display       "Allow RedBoot to support FLASH programming"
         flavor        bool
@@ -180,7 +192,7 @@ cdl_package CYGPKG_REDBOOT {
               relative to the start of FLASH."
         }
 
-        cdl_option CYGSEM_REDBOOT_FLASH_CONFIG {
+        cdl_component CYGSEM_REDBOOT_FLASH_CONFIG {
             display       "Keep RedBoot configuration data in FLASH"
             flavor        bool
             default_value 1
@@ -188,6 +200,24 @@ cdl_package CYGPKG_REDBOOT {
               When this option is enabled, RedBoot will keep configuration
               data in a separate block of FLASH memory.  This data will
               include such items as the node IP address or startup scripts."
+
+            cdl_option CYGNUM_REDBOOT_FLASH_CONFIG_SIZE {
+                display       "Length of configuration data in FLASH"
+                flavor        data
+                default_value 1024
+                description "
+                  This option is used to control the amount of memory and FLASH
+                  to be used for configuration options (persistent storage)."
+            }
+
+            cdl_option CYGNUM_REDBOOT_FLASH_SCRIPT_SIZE {
+                display       "Length of configuration script(s) in FLASH"
+                flavor        data
+                default_value 512
+                description "
+                  This option is used to control the amount of memory and FLASH
+                  to be used for configuration options (persistent storage)."
+            }
         }
 
         cdl_option CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL {

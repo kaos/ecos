@@ -47,6 +47,8 @@
 
 #include <pkgconf/system.h>
 
+#include <cyg/hal/hal_io.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -115,6 +117,10 @@ void __single_step (void);
 /* Clear the single-step state. */
 void __clear_single_step (void);
 
+extern int __is_bsp_syscall(void);
+
+extern int hal_syscall_handler(void);
+    
 /* If the breakpoint we hit is in the breakpoint() instruction, return a
    non-zero value. */
 #ifndef __is_breakpoint_function

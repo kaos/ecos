@@ -114,10 +114,14 @@ cdl_package CYGPKG_POSIX {
 	default_value    1
         implements       CYGINT_ISO_POSIX_TIMER_TYPES
         implements       CYGINT_ISO_POSIX_TIMERS
+        implements       CYGINT_ISO_POSIX_TIMER_OPS
         requires         { CYGBLD_ISO_POSIX_TIMER_TYPES_HEADER == \
                              "<cyg/posix/time.h>" }
         requires         { CYGBLD_ISO_POSIX_TIMERS_HEADER == \
                              "<cyg/posix/time.h>" }
+        requires         CYGPKG_KERNEL
+        requires         CYGVAR_KERNEL_COUNTERS_CLOCK
+        requires         CYGPKG_POSIX_PTHREAD
 	description      "This component provides configuration controls for
 	                  the POSIX timers."
     }
@@ -194,6 +198,8 @@ cdl_package CYGPKG_POSIX {
 	flavor           bool
 	default_value    1
 	requires	 CYGPKG_KERNEL_EXCEPTIONS
+        requires         CYGPKG_POSIX_PTHREAD
+        requires         CYGPKG_POSIX_TIMERS
         implements       CYGINT_POSIX_REALTIME_SIGNALS
 	description      "This component provides configuration controls for
 	                  the POSIX signals."

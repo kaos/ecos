@@ -1,3 +1,24 @@
+2001-02-08  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c: Replace CYGSEM_HAL_DIAG_MANGLER_None with
+	CYGDBG_HAL_DIAG_TO_DEBUG_CHAN.
+
+	* cdl/hal_arm_pid.cdl: Respect channel configuration constraints.
+
+	* src/pid_misc.c (hal_hardware_init): Safe to call hal_if_init in
+	thumb mode now.
+
+2001-01-31  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c: Replaced CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL
+	with CYGSEM_HAL_DIAG_MANGLER_None
+
+2001-01-26  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c: Removed CYGSEM_HAL_VIRTUAL_VECTOR_DIAG check.
+	* include/plf_stub.h: Moved reset macro to
+	* include/hal_platform_ints.h: this file.
+
 2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/pkgconf/mlt_arm_pid_ram.h:

@@ -1,3 +1,19 @@
+2001-02-11  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/isoinfra.cdl: Add CYGPKG_ISO_UNISTD to deal with unistd.h
+	Include POSIX timer operations underneath it.
+
+	* include/unistd.h: Add support for conditional inclusion of
+	POSIX timer operations.
+
+2001-02-01  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/isoinfra.cdl: Add CYGINT_ISO_STDIO_POSIX_FDFUNCS and
+	CYGBLD_ISO_STDIO_POSIX_FDFUNCS_HEADER primarily for fileno()
+	and fdopen()
+	* include/stdio.h: Use above to provide default protos for fileno
+	and fdopen.
+
 2000-12-15  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/dlfcn.h: 

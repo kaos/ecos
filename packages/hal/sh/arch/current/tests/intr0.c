@@ -39,6 +39,8 @@
 
 #include <pkgconf/system.h>
 
+#include <cyg/infra/testcase.h>
+
 #if defined(CYGPKG_KERNEL)
 
 #include <pkgconf/kernel.h>
@@ -48,8 +50,6 @@
 #include <cyg/hal/hal_arch.h>           // CYGNUM_HAL_STACK_SIZE_TYPICAL
 
 #include <cyg/kernel/kapi.h>
-
-#include <cyg/infra/testcase.h>
 
 #include <cyg/hal/hal_intr.h>
 

@@ -323,136 +323,6 @@ interruptible(int state)
     }
 }
 
-#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
-//-----------------------------------------------------------------------------
-// GDB O-packetizer function.
-
-// This gets called via the virtual vector debug comms entry and
-// handles O-packetization. The debug comms entries are used for the
-// actual device IO.
-
-static cyg_uint8
-cyg_hal_gdb_diag_getc(void* __ch_data)
-{
-    cyg_uint8 __ch;
-    hal_virtual_comm_table_t* __chan = CYGACC_CALL_IF_DEBUG_PROCS();
-    CYGARC_HAL_SAVE_GP();
-
-    __ch = CYGACC_COMM_IF_GETC(*__chan);
-
-    CYGARC_HAL_RESTORE_GP();
-
-    return __ch;
-}
-
-
-static void
-cyg_hal_gdb_diag_putc(void* __ch_data, cyg_uint8 c)
-{
-    static char line[100];
-    static int pos = 0;
-    CYGARC_HAL_SAVE_GP();
-
-    // No need to send CRs
-    if( c == '\r' ) return;
-
-    line[pos++] = c;
-
-    if( c == '\n' || pos == sizeof(line) )
-    {
-        CYG_INTERRUPT_STATE old;
-        hal_virtual_comm_table_t* __chan = CYGACC_CALL_IF_DEBUG_PROCS();
-
-        // Disable interrupts. This prevents GDB trying to interrupt us
-        // while we are in the middle of sending a packet. The serial
-        // receive interrupt will be seen when we re-enable interrupts
-        // later.
-#ifdef CYG_HAL_STARTUP_ROM
-        HAL_DISABLE_INTERRUPTS(old);
-#else
-        CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION(old);
-#endif
-        
-        while(1)
-        {
-            static const char hex[] = "0123456789ABCDEF";
-            cyg_uint8 csum = 0, c1;
-            int i;
-        
-            CYGACC_COMM_IF_PUTC(*__chan, '$');
-            CYGACC_COMM_IF_PUTC(*__chan, 'O');
-            csum += 'O';
-            for( i = 0; i < pos; i++ )
-            {
-                char ch = line[i];
-                char h = hex[(ch>>4)&0xF];
-                char l = hex[ch&0xF];
-                CYGACC_COMM_IF_PUTC(*__chan, h);
-                CYGACC_COMM_IF_PUTC(*__chan, l);
-                csum += h;
-                csum += l;
-            }
-            CYGACC_COMM_IF_PUTC(*__chan, '#');
-            CYGACC_COMM_IF_PUTC(*__chan, hex[(csum>>4)&0xF]);
-            CYGACC_COMM_IF_PUTC(*__chan, hex[csum&0xF]);
-
-        nak:
-            c1 = CYGACC_COMM_IF_GETC(*__chan);
-
-            if( c1 == '+' ) break;
-
-            if( cyg_hal_is_break( &c1 , 1 ) ) {
-                // Caller's responsibility to react on this.
-                CYGACC_CALL_IF_CONSOLE_INTERRUPT_FLAG_SET(1);
-                break;
-            }
-            if( c1 != '-' ) goto nak;
-        }
-
-        pos = 0;
-        // And re-enable interrupts
-#ifdef CYG_HAL_STARTUP_ROM
-        HAL_RESTORE_INTERRUPTS(old);
-#else
-        CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION(old);
-#endif
-    }
-
-    CYGARC_HAL_RESTORE_GP();
-}
-
-static void
-cyg_hal_gdb_diag_write(void* __ch_data, const cyg_uint8* __buf, 
-                       cyg_uint32 __len)
-{
-    CYGARC_HAL_SAVE_GP();
-
-    while(__len-- > 0)
-        cyg_hal_gdb_diag_putc(__ch_data, *__buf++);
-
-    CYGARC_HAL_RESTORE_GP();
-}
-
-static void
-cyg_hal_gdb_diag_read(void* __ch_data, cyg_uint8* __buf, cyg_uint32 __len)
-{
-    CYGARC_HAL_SAVE_GP();
-
-    while(__len-- > 0)
-        *__buf++ = cyg_hal_gdb_diag_getc(__ch_data);
-
-    CYGARC_HAL_RESTORE_GP();
-}
-
-static int
-cyg_hal_gdb_diag_control(void *__ch_data, __comm_control_cmd_t __func, ...)
-{
-    // Do nothing (yet).
-    return 0;
-}
-#endif
-
-
 //-----------------------------------------------------------------------------
 // eCos stub entry and exit magic.
 
@@ -565,33 +435,6 @@ initHardware (void)
     // Get serial port initialized.
     HAL_STUB_PLATFORM_INIT_SERIAL();
 
-#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
-    {
-        hal_virtual_comm_table_t* comm;
-        int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
-
-        // Initialize mangler procs
-        CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_MANGLER);
-        comm = CYGACC_CALL_IF_CONSOLE_PROCS();
-        CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_gdb_diag_write);
-        CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_gdb_diag_read);
-        CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_gdb_diag_putc);
-        CYGACC_COMM_IF_GETC_SET(*comm, cyg_hal_gdb_diag_getc);
-        CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_gdb_diag_control);
-
-        // Now either restore the previous console channel, or let the
-        // mangler stay in its place. The latter happens if the
-        // console channel was previously unspecified, or if the
-        // previous channel matches the used for GDB communication.
-        if (CYGNUM_CALL_IF_SET_COMM_ID_EMPTY != cur
-            && CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL != cur)
-            CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
-
-        // Set the debug channel.
-        CYGACC_CALL_IF_SET_DEBUG_COMM(CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL);
-    }
-#endif // CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
-
 #ifdef HAL_STUB_PLATFORM_INIT
     // If the platform defines any initialization code, call it here.
     HAL_STUB_PLATFORM_INIT();
@@ -614,7 +457,7 @@ __reset (void)
     if (__rom_reset)
         __rom_reset();
 #else
-    HAL_STUB_PLATFORM_RESET();
+    HAL_PLATFORM_RESET();
 #endif
 }
 

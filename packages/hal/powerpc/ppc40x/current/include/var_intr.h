@@ -47,6 +47,7 @@
 //
 //=============================================================================
 
+#include <cyg/hal/plf_intr.h>
 
 // Special handling for additional exceptions
 

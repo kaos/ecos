@@ -297,6 +297,15 @@
 
 #define CYGHWR_HAL_INTERRUPT_CONTROLLER_ACCESS_DEFINED
 
+
+//----------------------------------------------------------------------------
+// Reset.
+#define CYGARC_REG_BOARD_RESET 0xb5400000
+
+#define HAL_PLATFORM_RESET() HAL_WRITE_UINT8(CYGARC_REG_BOARD_RESET,0)
+
+#define HAL_PLATFORM_RESET_ENTRY 0xbfc00000
+
 //--------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_PLF_INTR_H
 // End of plf_intr.h

@@ -71,17 +71,6 @@ externC void cyg_hal_plf_comms_init(void);
 #define HAL_STUB_PLATFORM_INIT()              CYG_EMPTY_STATEMENT
 
 #endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-
-//----------------------------------------------------------------------------
-// Reset.
-
-// Try and force the board into a reset state.  Since this hardware requires
-// a "wakeup" signal, we can't just use a watchdog/reset approach.
-externC void reset_platform(void);
-#define HAL_STUB_PLATFORM_RESET() reset_platform()
-
-#define HAL_STUB_PLATFORM_RESET_ENTRY 0xe0000000
-
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_PLF_STUB_H
 // End of plf_stub.h

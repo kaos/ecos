@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     nickg
-// Contributors:  nickg
+// Contributors:  nickg, jlarmour
 // Date:          2000-04-10
 // Description:   Tests POSIX cancellation.
 //
@@ -41,13 +41,14 @@
 
 #include <sys/types.h>
 #include <pthread.h>
+#include <unistd.h> // sleep()
 
 #include <cyg/infra/testcase.h>
 
 //--------------------------------------------------------------------------
 // Thread info
 
-#define NTHREADS 2
+#define NTHREADS 3
 
 char thread_stack[NTHREADS][PTHREAD_STACK_MIN*2];
 
@@ -55,11 +56,13 @@ pthread_t thread[NTHREADS];
 
 void *pthread_entry1( void *arg);
 void *pthread_entry2( void *arg);
+void *pthread_entry3( void *arg);
 
 void *(*pthread_entry[NTHREADS])(void *) =
 {
     pthread_entry1,
-    pthread_entry2
+    pthread_entry2,
+    pthread_entry3
 };
 
 //--------------------------------------------------------------------------
@@ -67,6 +70,7 @@ void *(*pthread_entry[NTHREADS])(void *) =
 volatile cyg_bool cancel_handler1_called = false;
 volatile cyg_bool cancel_handler2_called = false;
 volatile cyg_bool cancel_handler3_called = false;
+volatile cyg_bool thread_ready[NTHREADS];
 
 //--------------------------------------------------------------------------
 
@@ -129,6 +133,8 @@ void *pthread_entry1( void *arg)
     
     pthread_cleanup_push( cancel_handler1, arg );
 
+    thread_ready[0] = true;
+
     function1();    
     
     pthread_cleanup_pop( 0 );
@@ -148,10 +154,30 @@ void *pthread_entry2( void *arg)
     
     pthread_cleanup_push( cancel_handler3, arg );
 
+    thread_ready[1] = true;
+
     for(;;) sched_yield();
     
     pthread_cleanup_pop( 0 );
 
+    pthread_exit( (void *)retval );
+}
+
+//--------------------------------------------------------------------------
+
+void *pthread_entry3( void *arg)
+{
+    int retval = 1;
+
+    CYG_TEST_INFO( "pthread_entry3 entered");
+
+    pthread_setcanceltype( PTHREAD_CANCEL_DEFERRED, NULL );
+    
+    thread_ready[2] = true;
+
+    // stop in a cancellation point
+    sleep( 99999 );
+    
     pthread_exit( (void *)retval );
 }
 
@@ -182,9 +208,10 @@ int main(int argc, char **argv)
     }
 
     // Let the threads get going
-    sched_yield();
-    sched_yield();
-    sched_yield();
+    for ( i = 0; i < NTHREADS ; i++ ) {
+        while ( thread_ready[i] == false )
+            sched_yield();
+    }
 
     // Now cancel them
     for( i = 0; i < NTHREADS; i++ )    
@@ -197,14 +224,13 @@ int main(int argc, char **argv)
 
     // check retvals
     for( i = 0; i < NTHREADS; i++ )
-        if( retval[0] != PTHREAD_CANCELED )
-            CYG_TEST_FAIL_FINISH( "pthread3" );
+        CYG_TEST_CHECK( retval[i] == PTHREAD_CANCELED,
+                        "thread didn't exit with PTHREAD_CANCELED" );
 
-    if( !cancel_handler1_called ) CYG_TEST_FAIL_FINISH( "pthread3" );
-    if( !cancel_handler2_called ) CYG_TEST_FAIL_FINISH( "pthread3" );
-    if( !cancel_handler3_called ) CYG_TEST_FAIL_FINISH( "pthread3" );
+    CYG_TEST_CHECK( cancel_handler1_called, "cancel_handler1 not called" );
+    CYG_TEST_CHECK( cancel_handler2_called, "cancel_handler2 not called" );
+    CYG_TEST_CHECK( cancel_handler3_called, "cancel_handler3 not called" );
 
-    
     CYG_TEST_PASS_FINISH( "pthread3" );
         
 }
