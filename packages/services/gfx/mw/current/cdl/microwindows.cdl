@@ -51,7 +51,6 @@
 
 cdl_package CYGPKG_MICROWINDOWS {
     display       "MicroWindows"
-    doc           doc/index.html
     requires      CYGPKG_POSIX
     requires      CYGPKG_ISOINFRA
     requires      CYGINT_ISO_C_TIME_TYPES
