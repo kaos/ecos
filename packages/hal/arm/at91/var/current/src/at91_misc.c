@@ -42,7 +42,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas, jskov, nickg
+// Contributors: gthomas, jskov, nickg, tkoeller
 // Date:         2001-07-12
 // Purpose:      HAL board support
 // Description:  Implementations of HAL board interfaces
@@ -263,6 +263,16 @@ void hal_show_IRQ(int vector, int data, int handler)
 //    UNDEFINED(__FUNCTION__);  // FIXME
 }
 
+
+/* Use the watchdog to generate a reset */
+void hal_at91_reset_cpu(void)
+{
+    HAL_WRITE_UINT32(AT91_WD + AT91_WD_OMR, AT91_WD_OMR_OKEY);
+    HAL_WRITE_UINT32(AT91_WD + AT91_WD_CMR, AT91_WD_CMR_CKEY);
+    HAL_WRITE_UINT32(AT91_WD + AT91_WD_CR, AT91_WD_CR_RSTKEY);
+    HAL_WRITE_UINT32(AT91_WD + AT91_WD_OMR, AT91_WD_OMR_OKEY | AT91_WD_OMR_RSTEN | AT91_WD_OMR_WDEN);
+    while(1) CYG_EMPTY_STATEMENT;
+}
 
 //--------------------------------------------------------------------------
 // EOF at91_misc.c

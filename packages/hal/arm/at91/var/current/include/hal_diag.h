@@ -44,7 +44,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   jskov
-// Contributors:jskov, gthomas
+// Contributors:jskov, gthomas, tkoeller
 // Date:        2001-07-12
 // Purpose:     HAL Support for Kernel Diagnostic Routines
 // Description: Diagnostic routines for use during kernel development.
@@ -73,6 +73,11 @@ externC void hal_diag_led(int mask);
 
 extern void hal_delay_us(cyg_int32 usecs);
 #define HAL_DELAY_US(n) hal_delay_us(n);
+
+//-----------------------------------------------------------------------------
+// reset
+
+extern void hal_at91_reset_cpu(void);
 
 //-----------------------------------------------------------------------------
 // end of hal_diag.h
