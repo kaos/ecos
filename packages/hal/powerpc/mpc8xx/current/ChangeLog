@@ -1,3 +1,8 @@
+2002-12-02  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* src/variant.S (_mpc8xx_reset): New function, used to cause a
+	hardware reset of the platform.
+
 2002-11-25  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* include/var_regs.h: Add CICR definitions.

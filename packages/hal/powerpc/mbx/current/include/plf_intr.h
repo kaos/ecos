@@ -12,6 +12,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -44,7 +45,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    jskov
-// Contributors: jskov
+// Contributors: jskov, gthomas
 // Date:         2000-06-13
 // Purpose:      Define platform specific interrupt support
 //              
@@ -71,9 +72,8 @@
 //----------------------------------------------------------------------------
 // Reset.
 
-// The MBX does not have a watchdog (not one we can easily use for this
-// purpose anyway).
-#define HAL_PLATFORM_RESET() CYG_EMPTY_STATEMENT
+externC void _mpc8xx_reset(void);
+#define HAL_PLATFORM_RESET() _mpc8xx_reset()
 
 #define HAL_PLATFORM_RESET_ENTRY 0xfe000100
 

@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2002 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -41,7 +42,7 @@
 #######DESCRIPTIONBEGIN####
 ##
 ## Author(s): 	jskov
-## Contributors:jskov
+## Contributors:jskov, gthomas
 ## Date:	2000-02-04
 ## Purpose:	PowerPC MPC8xx variant code
 ## Description:	Variant specific code for PowerPC MPC8xx CPUs.
@@ -51,6 +52,9 @@
 ##=============================================================================
 
 #include <cyg/hal/arch.inc>
+#include <cyg/hal/ppc_regs.h>		/* on-chip resource layout, special */
+					/* registers, IMM layout...         */
+#include <cyg/hal/quicc/ppc8xx.h>       /* more of the same */
         
 #---------------------------------------------------------------------------
 # Interrupt vector tables.
@@ -80,6 +84,35 @@ hal_interrupt_objects:
         .rept   CYGNUM_HAL_ISR_COUNT
         .long   0
         .endr
+
+        
+#---------------------------------------------------------------------------
+# Hard reset support
+#
+
+        .text                
+        .globl  _mpc8xx_reset
+_mpc8xx_reset:                                                  
+	lwi     r4,CYGARC_REG_IMM_BASE  # base address of control registers
+
+        // Enable checkstop reset
+        lwz     r3,PLPRCR(r4)
+        ori     r3,r3,0x0080  // Bit 24
+	stw	r3,PLPRCR(r4)
+        mfmsr   r3
+        lwi     r5,~MSR_ME
+        and     r3,r3,r5
+        mtmsr   r3
+
+        // Pull the plug by disabling CS0 & CS1.  This will cause a checkstop.
+        li      r0,0
+        stw     r0,BR0(r4)
+        stw     r0,BR1(r4)
+        lwi     r3,_end
+10:     nop
+        lwzu    r3,4(r2)        // Force a memory access
+        b       10b        
+                        
 
 ##-----------------------------------------------------------------------------
 ## end of variant.S

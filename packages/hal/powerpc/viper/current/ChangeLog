@@ -1,3 +1,7 @@
+2002-12-02  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* include/plf_intr.h: Use MPC8xx variant RESET support.
+
 2002-11-26  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* cdl/hal_powerpc_viper.cdl: Move platform define to platform package.

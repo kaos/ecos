@@ -45,7 +45,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    jskov
-// Contributors: jskov
+// Contributors: jskov, gthomas
 // Date:         2000-06-13
 // Purpose:      Define platform specific interrupt support
 //              
@@ -72,9 +72,8 @@
 //----------------------------------------------------------------------------
 // Reset.
 
-// The ADDER does not have a watchdog (not one we can easily use for this
-// purpose anyway).
-#define HAL_PLATFORM_RESET() CYG_EMPTY_STATEMENT
+externC void _mpc8xx_reset(void);
+#define HAL_PLATFORM_RESET() _mpc8xx_reset()
 
 #define HAL_PLATFORM_RESET_ENTRY 0xfe000100
 
