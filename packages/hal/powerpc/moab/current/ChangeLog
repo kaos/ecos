@@ -1,3 +1,9 @@
+2004-02-26  Gary Thomas  <gary@mlbassoc.com>
+
+	* misc/redboot_BOOT.ecm: 
+	* cdl/hal_powerpc_moab.cdl: Use HAL_PLATFORM_EXTRA to display operating
+	mode of RedBoot (BOOT, NAND FLASH or RAM)
+
 2004-02-25  Gary Thomas  <gary@mlbassoc.com>
 
 	* misc/redboot_RAM+FLASH.ecm: Remove FIS - can't be supported in

@@ -9,7 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-## Copyright (C) 2002, 2003 Gary Thomas
+## Copyright (C) 2002, 2003, 2004 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -86,10 +86,6 @@ cdl_package CYGPKG_HAL_POWERPC_MOAB {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_powerpc_ppc40x.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_powerpc_moab.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_PLF_IO_H   <cyg/hal/plf_io.h>"
-
-	puts $::cdl_header "#define HAL_PLATFORM_CPU    \"PowerPC 405GPr\""
-        puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"TAMS MOAB\""
-        puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
     }
 
     cdl_component CYG_HAL_STARTUP {
@@ -311,6 +307,27 @@ cdl_package CYGPKG_HAL_POWERPC_MOAB {
         description   "
             This option lists the target's requirements for a valid Redboot
             configuration."
+
+        define_proc {
+    	    puts $::cdl_header "#define HAL_PLATFORM_CPU    \"PowerPC 405GPr\""
+            puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"TAMS MOAB\""
+        }
+
+        cdl_option CYGBLD_REDBOOT_MODE {
+            display        "RedBoot operational mode"
+            flavor         data
+            legal_values   { "BOOT" "NAND" "RAM" }
+            default_value  { CYG_HAL_STARTUP == "RAM" ? "RAM" : "NAND" }
+            define_proc {
+                puts $::cdl_header "#if defined(CYGBLD_REDBOOT_MODE_BOOT)"
+                puts $::cdl_header "#define HAL_PLATFORM_EXTRA \"\[Bootstrap\]\""
+                puts $::cdl_header "#elif defined(CYGBLD_REDBOOT_MODE_NAND)"
+                puts $::cdl_header "#define HAL_PLATFORM_EXTRA \"\""
+                puts $::cdl_header "#else"
+                puts $::cdl_header "#define HAL_PLATFORM_EXTRA \"\[RAM\]\""
+                puts $::cdl_header "#endif"
+            }
+        }
 
         cdl_option CYGSEM_REDBOOT_PLF_LINUX_BOOT {
             active_if      CYGBLD_BUILD_REDBOOT_WITH_EXEC

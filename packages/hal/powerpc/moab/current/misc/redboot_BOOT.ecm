@@ -19,7 +19,9 @@ cdl_configuration eCos {
     package -hardware CYGPKG_DEVS_FLASH_TOSHIBA_TC58XXX current ;
     package -hardware CYGPKG_DEVS_ETH_POWERPC_MOAB current ;
     package -hardware CYGPKG_DEVS_ETH_POWERPC_PPC405 current ;
+    package -hardware CYGPKG_DEVS_ETH_NS_DP83816 current ;
     package -hardware CYGPKG_DEVS_ETH_PHY current ;
+    package -hardware CYGPKG_IO_PCI current ;
     package -hardware CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS1307 current ;
     package -hardware CYGPKG_DEVICES_WALLCLOCK_POWERPC_MOAB current ;
     package -hardware CYGPKG_IO_SERIAL_GENERIC_16X5X current ;
@@ -50,6 +52,10 @@ cdl_option CYGSEM_IO_ETH_DRIVERS_WARN {
 
 cdl_option CYGHWR_DEVS_ETH_PHY_DP83847 {
     inferred_value 1
+};
+
+cdl_option CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK {
+    inferred_value 0
 };
 
 cdl_option CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE {
@@ -84,6 +90,10 @@ cdl_option CYGHWR_HAL_POWERPC_ENABLE_MMU {
     inferred_value 0
 };
 
+cdl_option CYGSEM_HAL_POWERPC_PPC405_PCI_SHOW_BUS {
+    user_value 0
+};
+
 cdl_component CYG_HAL_STARTUP {
     user_value ROMRAM
 };
@@ -102,6 +112,10 @@ cdl_option CYGNUM_REDBOOT_NETWORKING_MAX_PKTBUF {
 
 cdl_option CYGSEM_REDBOOT_PLF_STARTUP {
     user_value 1
+};
+
+cdl_option CYGSEM_REDBOOT_PLF_ESA_VALIDATE {
+    inferred_value 1
 };
 
 cdl_option CYGBLD_REDBOOT_MIN_IMAGE_SIZE {
@@ -126,6 +140,10 @@ cdl_option CYGNUM_REDBOOT_FLASH_SCRIPT_SIZE {
 
 cdl_option CYGSEM_REDBOOT_FLASH_CONFIG_READONLY_FALLBACK {
     inferred_value 0
+};
+
+cdl_option CYGBLD_REDBOOT_MODE {
+    user_value BOOT
 };
 
 cdl_option CYGBLD_ISO_STRTOK_R_HEADER {
