@@ -55,6 +55,7 @@ cdl_package CYGPKG_DEVS_ETH_PHY {
 
     parent        CYGPKG_IO_ETH_DRIVERS
     active_if	  CYGPKG_IO_ETH_DRIVERS
+    requires      CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
 
     include_dir   cyg/io
 
