@@ -1,3 +1,9 @@
+2003-11-07  Thomas Koeller  <thomas.koeller@baslerweb.com>
+
+	* src/at91_serial.c:
+	* cdl/ser_arm_at91.cdl: Major rewrite to achieve reliable
+	operation at higher baud rates.
+
 2003-10-16  Nick Garnett  <nickg@balti.calivar.com>
 
 	* src/at91_serial.c (at91_serial_config_port): Added update of
