@@ -72,6 +72,15 @@ proc dputs { args } {
     }
 }
 
+proc tcl_path { posix_path } {
+    global tcl_platform
+    if { $tcl_platform(platform) == "windows" } {
+        return [ exec cygpath -w $posix_path ]
+    } else {
+        return $posix_path
+    }
+}
+
 dputs "argc=" $argc
 dputs "argv=" $argv
 
@@ -79,8 +88,8 @@ if { $argc != 2 } {
     error "Usage: heapgen.tcl installdir builddir"
 }
 
-set installdir [ lindex $argv 0 ]
-set builddir   [ lindex $argv 1 ]
+set installdir [ tcl_path [ lindex $argv 0 ] ]
+set builddir   [ tcl_path [ lindex $argv 1 ] ]
 
 dputs "builddir=" $builddir
 dputs "installdir=" $installdir
