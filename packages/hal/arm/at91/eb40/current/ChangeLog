@@ -1,3 +1,8 @@
+2003-09-30 Jani Monoses <jani@iv.ro> 
+
+	* cdl/hal_arm_at91_eb40.cdl: Interfaces are already implemented by
+	AT91 variant .cdl, do not duplicate them here.
+	
 2003-08-05  Thomas Koeller <thomas.koeller@baslerweb.com>
 
 	* misc/redboot_*.ecm: Updated to use the new eb40 flash drive.
