@@ -161,16 +161,37 @@ cdl_package CYGPKG_REDBOOT {
               additional segments."
         }
     
-        cdl_option CYGBLD_BUILD_REDBOOT_WITH_ZLIB {
+        cdl_component CYGBLD_BUILD_REDBOOT_WITH_ZLIB {
             display       "Include support gzip/zlib decompression"
             active_if     CYGPKG_COMPRESS_ZLIB
-## FIXME!
-            requires      { !CYGSEM_IO_FLASH_READ_INDIRECT }
-## FIXME!
-            no_define
             default_value 1
             implements    CYGINT_COMPRESS_ZLIB_LOCAL_ALLOC
             compile       decompress.c
+
+            cdl_option CYGNUM_REDBOOT_LOAD_ZLIB_BUFFER {
+                display       "Size of zlib decompression buffer"
+                flavor        data
+                default_value 64
+                legal_values  5 to 256
+                description   "
+                    This is the size of the buffer filled with incoming data
+                    during load before calls are made to the decompressor
+                    function. For ethernet downloads this can be made bigger
+                    (at the cost of memory), but for serial downloads on slow
+                    processors it may be necessary to reduce the size to
+                    avoid serial overruns. zlib appears to bail out if less than
+                    five bytes are available initially so this is the minimum."
+            }
+    
+            cdl_option CYGPRI_REDBOOT_ZLIB_FLASH {
+                 display       "Support compression of Flash images"
+                 active_if     CYGPKG_REDBOOT_FLASH
+                 active_if     !CYGSEM_IO_FLASH_READ_INDIRECT
+                 calculated    1
+                 description   "
+                        This CDL indicates whether flash images can
+                        be decompressed from gzip/zlib format into RAM."
+            }
         }
 
         cdl_option CYGBLD_BUILD_REDBOOT_WITH_XYZMODEM {
@@ -503,22 +524,6 @@ cdl_package CYGPKG_REDBOOT {
               number smaller will cause idle processing to take place
               more often, etc.  The default value of 10ms is a reasonable
               tradeoff between responsiveness and overhead."
-        }
-    
-        cdl_option CYGNUM_REDBOOT_LOAD_ZLIB_BUFFER {
-            display       "Size of zlib decompression buffer"
-            active_if     CYGPKG_COMPRESS_ZLIB
-            flavor        data
-            default_value 64
-            legal_values  5 to 256
-            description   "
-                This is the size of the buffer filled with incoming data
-                during load before calls are made to the decompressor
-                function. For ethernet downloads this can be made bigger
-                (at the cost of memory), but for serial downloads on slow
-                processors it may be necessary to reduce the size to
-                avoid serial overruns. zlib appears to bail out if less than
-                five bytes are available initially so this is the minimum."
         }
     
         cdl_option CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS {

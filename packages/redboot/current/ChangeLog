@@ -1,5 +1,15 @@
 2004-02-11  Jonathan Larmour  <jifl@eCosCentric.com>
 
+	* cdl/redboot.cdl: Bring CYGNUM_REDBOOT_LOAD_ZLIB_BUFFER under
+	CYGBLD_BUILD_REDBOOT_WITH_ZLIB. Add CYGPRI_REDBOOT_ZLIB_FLASH to
+	control whether decompression can be used with flash images.
+	* src/flash.c: Use CYGPRI_REDBOOT_ZLIB_FLASH instead of
+	CYGPKG_COMPRESS_ZLIB.
+	* src/load.c: Use CYGBLD_BUILD_REDBOOT_WITH_ZLIB in place of
+	CYGPKG_COMPRESS_ZLIB.
+	* src/main.c: only set fis_zlib_common_buffer if
+	CYGPRI_REDBOOT_ZLIB_FLASH.
+
 	* src/main.c (set_comm_baud_rate): Get current rate with GETBAUD
 	not SETBAUD!
 

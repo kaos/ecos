@@ -98,7 +98,7 @@ local_cmd_entry("delete",
     );
 
 static char fis_load_usage[] = 
-#ifdef CYGPKG_COMPRESS_ZLIB
+#ifdef CYGPRI_REDBOOT_ZLIB_FLASH
                       "[-d] "
 #endif
                       "[-b <memory_load_address>] [-c] name";
@@ -986,7 +986,7 @@ fis_load(int argc, char *argv[])
     unsigned long cksum;
 #endif
     int num_options;
-#ifdef CYGPKG_COMPRESS_ZLIB
+#ifdef CYGPRI_REDBOOT_ZLIB_FLASH
     bool decompress = false;
 #endif
     void *err_addr;
@@ -996,7 +996,7 @@ fis_load(int argc, char *argv[])
     init_opts(&opts[1], 'c', false, OPTION_ARG_TYPE_FLG, 
               (void **)&show_cksum, (bool *)0, "display checksum");
     num_options = 2;
-#ifdef CYGPKG_COMPRESS_ZLIB
+#ifdef CYGPRI_REDBOOT_ZLIB_FLASH
     init_opts(&opts[num_options], 'd', false, OPTION_ARG_TYPE_FLG, 
               (void **)&decompress, 0, "decompress");
     num_options++;
@@ -1021,7 +1021,7 @@ fis_load(int argc, char *argv[])
         return;
     }
 #endif
-#ifdef CYGPKG_COMPRESS_ZLIB
+#ifdef CYGPRI_REDBOOT_ZLIB_FLASH
     if (decompress) {
         int err;
         _pipe_t fis_load_pipe;
@@ -1330,7 +1330,7 @@ do_flash_init(void)
 #ifdef CYGOPT_REDBOOT_FIS
         fisdir_size = CYGNUM_REDBOOT_FIS_DIRECTORY_ENTRY_COUNT * CYGNUM_REDBOOT_FIS_DIRECTORY_ENTRY_SIZE;
         fisdir_size = ((fisdir_size + flash_block_size - 1) / flash_block_size) * flash_block_size;
-# ifdef CYGOPT_REDBOOT_FIS_ZLIB_COMMON_BUFFER
+# if defined(CYGPRI_REDBOOT_ZLIB_FLASH) && defined(CYGOPT_REDBOOT_FIS_ZLIB_COMMON_BUFFER)
 	fis_work_block = fis_zlib_common_buffer;
 	if(CYGNUM_REDBOOT_FIS_ZLIB_COMMON_BUFFER_SIZE < fisdir_size) {
             diag_printf("FLASH: common buffer too small\n");

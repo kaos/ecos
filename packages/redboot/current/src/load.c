@@ -74,7 +74,7 @@
 #endif
 
 static char usage[] = "[-r] [-v] "
-#ifdef CYGPKG_COMPRESS_ZLIB
+#ifdef CYGBLD_BUILD_REDBOOT_WITH_ZLIB
                       "[-d] "
 #endif
                       "[-h <host>] [-m <varies>] "
@@ -108,7 +108,7 @@ struct {
     unsigned char *bufp;
     int   avail, len, err;
     int   verbose, decompress, tick;
-#ifdef CYGPKG_COMPRESS_ZLIB
+#ifdef CYGBLD_BUILD_REDBOOT_WITH_ZLIB
     int (*raw_fun)(char *, int len, int *err);
     _pipe_t load_pipe;
     unsigned char _buffer[CYGNUM_REDBOOT_LOAD_ZLIB_BUFFER];
@@ -156,7 +156,7 @@ redboot_getc(void)
     return *getc_info.bufp++;
 }
 
-#ifdef CYGPKG_COMPRESS_ZLIB
+#ifdef CYGBLD_BUILD_REDBOOT_WITH_ZLIB
 //
 // Called to fetch a new chunk of data and decompress it
 //
@@ -211,7 +211,7 @@ redboot_getc_init(connection_info_t *info, getc_io_funcs_t *funcs,
     getc_info.verbose = verbose;
     getc_info.decompress = decompress;
     getc_info.tick = 0;
-#ifdef CYGPKG_COMPRESS_ZLIB
+#ifdef CYGBLD_BUILD_REDBOOT_WITH_ZLIB
     if (decompress) {
         _pipe_t* p = &getc_info.load_pipe;
         p->out_buf = &getc_info.buf[0];
@@ -247,7 +247,7 @@ static void
 redboot_getc_close(void)
 {
     (getc_info.io->close)(&getc_info.err);
-#ifdef CYGPKG_COMPRESS_ZLIB
+#ifdef CYGBLD_BUILD_REDBOOT_WITH_ZLIB
     if (getc_info.decompress) {
         _pipe_t* p = &getc_info.load_pipe;
         int err = getc_info.err;
@@ -570,7 +570,7 @@ load_srec_image(getc_t getc, unsigned long base)
 //   -b - specify a load [base] address
 //   -m - specify an I/O stream/method
 //   -c - Alternate serial I/O channel
-#ifdef CYGPKG_COMPRESS_ZLIB
+#ifdef CYGBLD_BUILD_REDBOOT_WITH_ZLIB
 //   -d - Decompress data [packed via 'zlib']
 #endif
 //
@@ -631,7 +631,7 @@ do_load(int argc, char *argv[])
               (void **)&hostname, (bool *)&hostname_set, "host name or IP address");
     num_options++;
 #endif
-#ifdef CYGPKG_COMPRESS_ZLIB
+#ifdef CYGBLD_BUILD_REDBOOT_WITH_ZLIB
     init_opts(&opts[num_options], 'd', false, OPTION_ARG_TYPE_FLG, 
               (void **)&decompress, 0, "decompress");
     num_options++;

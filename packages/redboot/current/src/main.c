@@ -297,7 +297,7 @@ cyg_start(void)
 
     bist();
 
-#ifdef CYGOPT_REDBOOT_FIS_ZLIB_COMMON_BUFFER
+#if defined(CYGPRI_REDBOOT_ZLIB_FLASH) && defined(CYGOPT_REDBOOT_FIS_ZLIB_COMMON_BUFFER)
     fis_zlib_common_buffer =
     workspace_end -= CYGNUM_REDBOOT_FIS_ZLIB_COMMON_BUFFER_SIZE;
 #endif
