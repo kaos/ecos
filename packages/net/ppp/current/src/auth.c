@@ -90,7 +90,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <cyg/ppp/syslog.h>
+#ifndef __ECOS
 #include <paths.h>
+#endif
 //#include <pwd.h>
 #include <string.h>
 #include <sys/types.h>

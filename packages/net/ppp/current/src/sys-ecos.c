@@ -169,7 +169,7 @@ void cyg_ppp_serial_callback( cyg_serial_line_status_t *s,
                                      CYG_ADDRWORD priv );
 #endif
 
-u_int32_t netmask;	/* IP netmask to set on interface */
+extern u_int32_t netmask;	/* IP netmask to set on interface */
 
 //==========================================================================
 /*

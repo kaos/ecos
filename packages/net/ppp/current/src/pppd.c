@@ -82,9 +82,13 @@
 #include <sys/param.h>
 #include <netdb.h>
 #include <sys/types.h>
+#ifndef __ECOS
 #include <sys/wait.h>
+#endif
 #include <sys/time.h>
+#ifndef __ECOS
 #include <sys/resource.h>
+#endif
 #include <sys/stat.h>
 #include <sys/socket.h>
 
