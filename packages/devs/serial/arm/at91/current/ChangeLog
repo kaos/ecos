@@ -1,3 +1,8 @@
+2003-10-16  Nick Garnett  <nickg@balti.calivar.com>
+
+	* src/at91_serial.c (at91_serial_config_port): Added update of
+	channel configuration, which was missing.
+
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/ser_arm_at91.cdl: Remove irrelevant doc link.

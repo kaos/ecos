@@ -209,6 +209,10 @@ at91_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config, boo
     // Enable RX and TX
     HAL_WRITE_UINT32(base+AT91_US_CR, AT91_US_CR_RxENAB | AT91_US_CR_TxENAB);
 
+    if (new_config != &chan->config) {
+        chan->config = *new_config;
+    }
+
     return true;
 }
 
