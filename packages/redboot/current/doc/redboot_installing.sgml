@@ -10,7 +10,7 @@
 <!-- ####COPYRIGHTBEGIN####                                          -->
 <!--                                                                 -->
 <!-- =============================================================== -->
-<!-- Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.  -->
+<!-- Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.  -->
 <!-- This material may be distributed only subject to the terms      -->
 <!-- and conditions set forth in the Open Publication License, v1.0  -->
 <!-- or later (the latest version is presently available at          -->
@@ -2804,7 +2804,7 @@ description of the associated modes.</para>
 
 
 <sect1 id="iq80310">
-<title>ARM/Xscale Cyclone IQ80310</title>
+<title>ARM/XScale Cyclone IQ80310</title>
 <sect2>
 <title>Overview</title>
 <para><indexterm><primary>Cyclone IQ80310</primary><secondary>installing and
@@ -3145,7 +3145,7 @@ for networking and XModem file transfers.</para>
 
 <?Pub _newpage>
 <sect1 id="iq80321">
-<title>ARM/Xscale Intel IQ80321</title>
+<title>ARM/XScale Intel IQ80321</title>
 <sect2>
 <title>Overview</title>
 <para><indexterm><primary>Intel IQ80321</primary><secondary>installing and
@@ -3626,6 +3626,374 @@ Alternate Virtual Map    X C B  Description
 <para>The Verde programmable timer0 is used for timeout support
 for networking and XModem file transfers.</para>
 </sect2></sect1>
+
+<?Pub _newpage>
+<sect1 id="IXDP425">
+<title>ARM/Intel XScale IXDP425 Network Processor Evaluation Board</title>
+<sect2>
+<title>Overview</title>
+<para><indexterm><primary>Intel IXDP425</primary><secondary>installing and
+testing</secondary></indexterm><indexterm><primary>installing and testing
+</primary><secondary>Intel IXDP</secondary></indexterm>RedBoot supports
+the builtin high-speed and console UARTs and a PCI based i82559 ethernet
+card for communication and downloads. The default serial port settings are
+115200,8,N,1. RedBoot also supports flash management for the 16MB boot flash
+on the mainboard.</para>
+
+<para>The following RedBoot configurations are supported:
+
+      <informaltable frame="all">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
+	  <thead>
+	    <row>
+	      <entry>Configuration</entry>
+	      <entry>Mode</entry>
+	      <entry>Description</entry>
+	      <entry>File</entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry>ROM</entry>
+	      <entry>[ROM]</entry>
+	      <entry>RedBoot running from flash
+	      sector.</entry>
+	      <entry>redboot_ROM.ecm</entry>
+	    </row>
+	    <row>
+	      <entry>RAM</entry>
+	      <entry>[RAM]</entry>
+	      <entry>RedBoot running from RAM with RedBoot in the
+	      flash boot sector.</entry>
+	      <entry>redboot_RAM.ecm</entry>
+	    </row>
+</tbody>
+</tgroup>
+</informaltable>
+</para>
+
+</sect2>
+<sect2>
+<title>Initial Installation Method</title>
+<para>The IXDP425 flash is socketed, so initial installation may be done using
+an appropriate device programmer. JTAG based initial may also be used. In either
+case, the ROM mode RedBoot is programmed into the boot flash at address 0x00000000.
+</para>
+
+<para>After booting the initial installation of RedBoot, this warning may
+be printed: <screen>flash configuration checksum error or invalid key
+</screen>This is normal, and indicates that the flash should be configured
+for use by RedBoot. See <xref linkend="Persistent-State-Flash"> for more
+details.
+</para></sect2>
+<sect2>
+<title>LED Codes</title>
+<para>RedBoot uses the 4 digit LED display to indicate status during board
+initialization. Possible codes are:</para>
+
+<literallayout width=72>
+LED     Actions
+-------------------------------------------------------------
+  	Power-On/Reset
+        Set the CPSR
+        Enable coprocessor access
+        Drain write and fill buffer
+        Setup expansion bus chip selects
+1001
+        Enable Icache
+1002
+        Initialize SDRAM controller
+1003
+        Switch flash (CS0) from 0x00000000 to 0x50000000
+1004
+        Copy MMU table to RAM
+1005
+        Setup TTB and domain permissions
+1006
+        Enable MMU
+1007
+        Enable DCache
+1008
+        Enable branch target buffer
+1009
+        Drain write and fill buffer
+        Flush caches
+100A
+        Start up the eCos kernel or RedBoot
+0001
+
+</literallayout>
+</sect2>
+<sect2>
+<title>Rebuilding RedBoot </title>
+
+<para>These shell variables provide the platform-specific information
+needed for building RedBoot according to the procedure described in
+<xref linkend="Rebuilding-Redboot">:
+<programlisting>
+export TARGET=ixdp425
+export ARCH_DIR=arm
+export PLATFORM_DIR=xscale/ixdp425
+</programlisting>
+</para>
+
+<para>The names of configuration files are listed above with the
+description of the associated modes.</para>
+</sect2>
+
+<sect2>
+<title>Interrupts</title>
+<para>RedBoot uses an interrupt vector table which is located at address 0x8004.
+Entries in this table are pointers to functions with this protoype::      <programlisting>
+int irq_handler( unsigned vector, unsigned data )</programlisting>On the Mainstone
+board, the vector argument is one of many interrupts defined in <computeroutput>
+hal/arm/xscale/ixp425/current/include/hal_var_ints.h:</computeroutput>:   <programlisting>
+#define CYGNUM_HAL_INTERRUPT_NPEA         0
+#define CYGNUM_HAL_INTERRUPT_NPEB         1
+#define CYGNUM_HAL_INTERRUPT_NPEC         2
+#define CYGNUM_HAL_INTERRUPT_QM1          3
+#define CYGNUM_HAL_INTERRUPT_QM2          4
+#define CYGNUM_HAL_INTERRUPT_TIMER0       5
+#define CYGNUM_HAL_INTERRUPT_GPIO0        6
+#define CYGNUM_HAL_INTERRUPT_GPIO1        7
+#define CYGNUM_HAL_INTERRUPT_PCI_INT      8
+#define CYGNUM_HAL_INTERRUPT_PCI_DMA1     9
+#define CYGNUM_HAL_INTERRUPT_PCI_DMA2     10
+#define CYGNUM_HAL_INTERRUPT_TIMER1       11
+#define CYGNUM_HAL_INTERRUPT_USB          12
+#define CYGNUM_HAL_INTERRUPT_UART2        13
+#define CYGNUM_HAL_INTERRUPT_TIMESTAMP    14
+#define CYGNUM_HAL_INTERRUPT_UART1        15
+#define CYGNUM_HAL_INTERRUPT_WDOG         16
+#define CYGNUM_HAL_INTERRUPT_AHB_PMU      17
+#define CYGNUM_HAL_INTERRUPT_XSCALE_PMU   18
+#define CYGNUM_HAL_INTERRUPT_GPIO2        19
+#define CYGNUM_HAL_INTERRUPT_GPIO3        20
+#define CYGNUM_HAL_INTERRUPT_GPIO4        21
+#define CYGNUM_HAL_INTERRUPT_GPIO5        22
+#define CYGNUM_HAL_INTERRUPT_GPIO6        23
+#define CYGNUM_HAL_INTERRUPT_GPIO7        24
+#define CYGNUM_HAL_INTERRUPT_GPIO8        25
+#define CYGNUM_HAL_INTERRUPT_GPIO9        26
+#define CYGNUM_HAL_INTERRUPT_GPIO10       27
+#define CYGNUM_HAL_INTERRUPT_GPIO11       28           
+#define CYGNUM_HAL_INTERRUPT_GPIO12       29
+#define CYGNUM_HAL_INTERRUPT_SW_INT1      30
+#define CYGNUM_HAL_INTERRUPT_SW_INT2      31
+</programlisting>
+The data passed to the ISR is pulled from a data table <computeroutput>(hal_interrupt_data)
+</computeroutput> which immediately follows the interrupt vector table. With
+32 interrupts, the data table starts at address 0x8084.   </para>
+<para>An application may create a normal C function with the above prototype
+to be an ISR. Just poke its address into the table at the correct index and
+enable the interrupt at its source. The return value of the ISR is ignored
+by RedBoot.</para>
+</sect2>
+<sect2>
+<title>Memory Maps</title>
+<para>The RAM based page table is located at RAM start + 0x4000.
+<note><title>NOTE</title>
+<para>The virtual memory maps in this section use a C, B, and X column to indicate
+the caching policy for the region..</para>
+</note></para>
+<para><programlisting>
+X C B  Description
+- - -  ---------------------------------------------
+0 0 0  Uncached/Unbuffered
+0 0 1  Uncached/Buffered
+0 1 0  Cached/Buffered    Write Through, Read Allocate
+0 1 1  Cached/Buffered    Write Back, Read Allocate
+1 0 0  Invalid -- not used
+1 0 1  Uncached/Buffered  No write buffer coalescing
+1 1 0  Mini DCache - Policy set by Aux Ctl Register
+1 1 1  Cached/Buffered    Write Back, Read/Write Allocate
+
+Virtual Address   Physical Address  XCB  Size (MB)  Description
+---------------   ----------------  ---  ---------  -----------
+   0x00000000       0x00000000      010     256     SDRAM (cached)
+   0x10000000       0x10000000      010     256     SDRAM (alias)
+   0x20000000       0x00000000      000     256     SDRAM (uncached)
+   0x48000000       0x48000000      000      64     PCI Data
+   0x50000000       0x50000000      010      16     Flash (CS0)
+   0x51000000       0x51000000      000     112     CS1 - CS7
+   0x60000000       0x60000000      000      64     Queue Manager
+   0xC0000000       0xC0000000      000       1     PCI Controller
+   0xC4000000       0xC4000000      000       1     Exp. Bus Config
+   0xC8000000       0xC8000000      000       1     Misc IXP425 IO
+   0xCC000000       0xCC000000      000       1     SDRAM Config
+
+</programlisting></para>
+</sect2>
+<sect2>
+<title>Platform Resource Usage</title>
+<para>The IXP425 programmable OStimer0 is used for timeout support
+for networking and XModem file transfers.</para>
+</sect2></sect1>
+
+<?Pub _newpage>
+<sect1 id="GRG">
+<title>ARM/Intel XScale Generic Residential Gateway</title>
+<sect2>
+<title>Overview</title>
+<para><indexterm><primary>Intel GRG</primary><secondary>installing and
+testing</secondary></indexterm><indexterm><primary>installing and testing
+</primary><secondary>Intel GRG</secondary></indexterm>RedBoot supports
+the console UART and a PCI based i82559 ethernet card for communication
+and downloads. The default serial port settings are 115200,8,N,1. RedBoot
+also supports flash management for the 16MB onboard flash.</para>
+
+<para>The following RedBoot configurations are supported:
+
+      <informaltable frame="all">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
+	  <thead>
+	    <row>
+	      <entry>Configuration</entry>
+	      <entry>Mode</entry>
+	      <entry>Description</entry>
+	      <entry>File</entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry>ROM</entry>
+	      <entry>[ROM]</entry>
+	      <entry>RedBoot running from flash
+	      sector.</entry>
+	      <entry>redboot_ROM.ecm</entry>
+	    </row>
+	    <row>
+	      <entry>RAM</entry>
+	      <entry>[RAM]</entry>
+	      <entry>RedBoot running from RAM with RedBoot in the
+	      flash boot sector.</entry>
+	      <entry>redboot_RAM.ecm</entry>
+	    </row>
+</tbody>
+</tgroup>
+</informaltable>
+</para>
+
+</sect2>
+<sect2>
+<title>Initial Installation Method</title>
+<para>The GRG flash is socketed, so initial installation may be done using
+an appropriate device programmer. JTAG based initial may also be used. In either
+case, the ROM mode RedBoot is programmed into the boot flash at address 0x00000000.
+</para>
+
+<para>After booting the initial installation of RedBoot, this warning may
+be printed: <screen>flash configuration checksum error or invalid key
+</screen>This is normal, and indicates that the flash should be configured
+for use by RedBoot. See <xref linkend="Persistent-State-Flash"> for more
+details.
+</para></sect2>
+<sect2>
+<title>Rebuilding RedBoot </title>
+
+<para>These shell variables provide the platform-specific information
+needed for building RedBoot according to the procedure described in
+<xref linkend="Rebuilding-Redboot">:
+<programlisting>
+export TARGET=grg
+export ARCH_DIR=arm
+export PLATFORM_DIR=xscale/grg
+</programlisting>
+</para>
+
+<para>The names of configuration files are listed above with the
+description of the associated modes.</para>
+</sect2>
+
+<sect2>
+<title>Interrupts</title>
+<para>RedBoot uses an interrupt vector table which is located at address 0x8004.
+Entries in this table are pointers to functions with this protoype::      <programlisting>
+int irq_handler( unsigned vector, unsigned data )</programlisting>On the Mainstone
+board, the vector argument is one of many interrupts defined in <computeroutput>
+hal/arm/xscale/ixp425/current/include/hal_var_ints.h:</computeroutput>:   <programlisting>
+#define CYGNUM_HAL_INTERRUPT_NPEA         0
+#define CYGNUM_HAL_INTERRUPT_NPEB         1
+#define CYGNUM_HAL_INTERRUPT_NPEC         2
+#define CYGNUM_HAL_INTERRUPT_QM1          3
+#define CYGNUM_HAL_INTERRUPT_QM2          4
+#define CYGNUM_HAL_INTERRUPT_TIMER0       5
+#define CYGNUM_HAL_INTERRUPT_GPIO0        6
+#define CYGNUM_HAL_INTERRUPT_GPIO1        7
+#define CYGNUM_HAL_INTERRUPT_PCI_INT      8
+#define CYGNUM_HAL_INTERRUPT_PCI_DMA1     9
+#define CYGNUM_HAL_INTERRUPT_PCI_DMA2     10
+#define CYGNUM_HAL_INTERRUPT_TIMER1       11
+#define CYGNUM_HAL_INTERRUPT_USB          12
+#define CYGNUM_HAL_INTERRUPT_UART2        13
+#define CYGNUM_HAL_INTERRUPT_TIMESTAMP    14
+#define CYGNUM_HAL_INTERRUPT_UART1        15
+#define CYGNUM_HAL_INTERRUPT_WDOG         16
+#define CYGNUM_HAL_INTERRUPT_AHB_PMU      17
+#define CYGNUM_HAL_INTERRUPT_XSCALE_PMU   18
+#define CYGNUM_HAL_INTERRUPT_GPIO2        19
+#define CYGNUM_HAL_INTERRUPT_GPIO3        20
+#define CYGNUM_HAL_INTERRUPT_GPIO4        21
+#define CYGNUM_HAL_INTERRUPT_GPIO5        22
+#define CYGNUM_HAL_INTERRUPT_GPIO6        23
+#define CYGNUM_HAL_INTERRUPT_GPIO7        24
+#define CYGNUM_HAL_INTERRUPT_GPIO8        25
+#define CYGNUM_HAL_INTERRUPT_GPIO9        26
+#define CYGNUM_HAL_INTERRUPT_GPIO10       27
+#define CYGNUM_HAL_INTERRUPT_GPIO11       28           
+#define CYGNUM_HAL_INTERRUPT_GPIO12       29
+#define CYGNUM_HAL_INTERRUPT_SW_INT1      30
+#define CYGNUM_HAL_INTERRUPT_SW_INT2      31
+</programlisting>
+The data passed to the ISR is pulled from a data table <computeroutput>(hal_interrupt_data)
+</computeroutput> which immediately follows the interrupt vector table. With
+32 interrupts, the data table starts at address 0x8084.   </para>
+<para>An application may create a normal C function with the above prototype
+to be an ISR. Just poke its address into the table at the correct index and
+enable the interrupt at its source. The return value of the ISR is ignored
+by RedBoot.</para>
+</sect2>
+<sect2>
+<title>Memory Maps</title>
+<para>The RAM based page table is located at RAM start + 0x4000.
+<note><title>NOTE</title>
+<para>The virtual memory maps in this section use a C, B, and X column to indicate
+the caching policy for the region..</para>
+</note></para>
+<para><programlisting>
+X C B  Description
+- - -  ---------------------------------------------
+0 0 0  Uncached/Unbuffered
+0 0 1  Uncached/Buffered
+0 1 0  Cached/Buffered    Write Through, Read Allocate
+0 1 1  Cached/Buffered    Write Back, Read Allocate
+1 0 0  Invalid -- not used
+1 0 1  Uncached/Buffered  No write buffer coalescing
+1 1 0  Mini DCache - Policy set by Aux Ctl Register
+1 1 1  Cached/Buffered    Write Back, Read/Write Allocate
+
+Virtual Address   Physical Address  XCB  Size (MB)  Description
+---------------   ----------------  ---  ---------  -----------
+   0x00000000       0x00000000      010      32     SDRAM (cached)
+   0x10000000       0x00000000      010      32     SDRAM (alias)
+   0x20000000       0x00000000      000      32     SDRAM (uncached)
+   0x48000000       0x48000000      000      64     PCI Data
+   0x50000000       0x50000000      010      16     Flash (CS0)
+   0x51000000       0x51000000      000     112     CS1 - CS7
+   0x60000000       0x60000000      000      64     Queue Manager
+   0xC0000000       0xC0000000      000       1     PCI Controller
+   0xC4000000       0xC4000000      000       1     Exp. Bus Config
+   0xC8000000       0xC8000000      000       1     Misc IXP425 IO
+   0xCC000000       0xCC000000      000       1     SDRAM Config
+
+</programlisting></para>
+</sect2>
+<sect2>
+<title>Platform Resource Usage</title>
+<para>The IXP425 programmable OStimer0 is used for timeout support
+for networking and XModem file transfers.</para>
+</sect2></sect1>
+
 
 <!-- ********************** CalmRISC ********************** -->
 <?Pub _newpage>

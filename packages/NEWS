@@ -1,3 +1,5 @@
+* New ports for Intel XScale IXP425 boards (IXDP425 and Generic Residential
+  Gateway).
 * SNMP code now works with the FreeBSD stack
 * Simple Network Time Protocol (SNTP) client contributed by Andrew Lunn.
 * Added port for NMI uE250 (ARM Xscale PXA250) platform, contributed 

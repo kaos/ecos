@@ -1,3 +1,7 @@
+2003-03-18  Mark Salter  <msalter@redhat.com>
+
+	* doc/redboot_installing.sgml: Add XScale IXDP425 and GRG.
+
 2003-03-05  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/main.c (do_version): Test for CYGPKG_REDBOOT_FLASH as

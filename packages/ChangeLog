@@ -1,3 +1,7 @@
+2003-03-18  Mark Salter  <msalter@redhat.com>
+
+        * ecos.db: Add support for XScale IXP425, IXDP425, GRG.
+
 2003-03-05  John Dallaway  <jld@ecoscentric.com>
 
 	* ecosadmin.tcl: Prevent calls to 'cygpath' with an empty

@@ -462,6 +462,26 @@ package CYGPKG_DEVS_FLASH_IQ80321 {
 	   on the IQ80321 platform."
 }
 
+package CYGPKG_DEVS_FLASH_IXDP425 {
+	alias 		{ "FLASH memory support for IXDP425" flash_ixdp425 }
+	directory	devs/flash/arm/ixdp425
+	script		flash_ixdp425.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the IXDP425 platform."
+}
+
+package CYGPKG_DEVS_FLASH_GRG {
+	alias 		{ "FLASH memory support for GRG" flash_grg }
+	directory	devs/flash/arm/grg
+	script		flash_grg.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the Intel Generic Residential Gateway platform."
+}
+
 package CYGPKG_DEVS_FLASH_ARM_INTEGRATOR {
         alias           { "FLASH memory support for ARM INTEGRATOR" flash_integrator }
         directory       devs/flash/arm/integrator
@@ -1393,6 +1413,24 @@ package CYGPKG_DEVS_ETH_ARM_XSCALE_IQ80310 {
         description     "Ethernet driver for Intel IQ80310 with onboard 82559 NIC."
 }
 
+package CYGPKG_DEVS_ETH_ARM_IXDP425_I82559 {
+	alias 		{ "IXDP425 (PCI) / Intel 82559 ethernet driver"
+			   devs_eth_arm_ixdp425_i82559 }
+	hardware
+	directory	devs/eth/arm/ixdp425/i82559
+	script		ixdp425_i82559_eth_driver.cdl
+        description     "Ethernet driver for IXDP425 with Intel 82559 PCI NIC."
+}
+
+package CYGPKG_DEVS_ETH_ARM_GRG_I82559 {
+	alias 		{ "GRG / Intel 82559 ethernet driver"
+			   devs_eth_arm_grg_i82559 }
+	hardware
+	directory	devs/eth/arm/grg/i82559
+	script		grg_i82559_eth_driver.cdl
+        description     "Ethernet driver for GRG with Intel 82559 PCI NIC."
+}
+
 package CYGPKG_DEVS_ETH_I386_PC_I82559 {
 	alias 		{ "Standard PC with EtherPro 10/100 ethernet device"
 			   devs_eth_i386_pc_i82559 pc_etherpro }
@@ -2251,6 +2289,36 @@ package CYGPKG_HAL_ARM_XSCALE_IQ80321 {
         description "
         The IQ80321 HAL package provides the support needed to run
         eCos on an Intel XScale IQ80321 evaluation board."
+}
+
+package CYGPKG_HAL_ARM_XSCALE_IXP425 {
+	alias		{ "Intel XScale IXP425 Network Processor" hal_arm_xscale_ixp425 }
+	directory	hal/arm/xscale/ixp425
+	script		hal_arm_xscale_ixp425.cdl
+	hardware
+        description "
+        The XScale IXP425 HAL package provides the support needed to run
+        eCos on Intel XScale IXP425 network processor based systems."
+}
+
+package CYGPKG_HAL_ARM_XSCALE_IXDP425 {
+	alias		{ "Intel XScale IXDP425 Network Processor eval board" hal_arm_xscale_ixdp425 }
+	directory	hal/arm/xscale/ixdp425
+	script		hal_arm_xscale_ixdp425.cdl
+	hardware
+        description "
+        The IXDP425 HAL package provides the support needed to run
+        eCos on an Intel XScale IXDP425 network processor evaluation board."
+}
+
+package CYGPKG_HAL_ARM_XSCALE_GRG {
+	alias		{ "Intel XScale Generic Residential Gateway" hal_arm_xscale_grg }
+	directory	hal/arm/xscale/grg
+	script		hal_arm_xscale_grg.cdl
+	hardware
+        description "
+        The GRG HAL package provides the support needed to run eCos on an
+        Intel Generic Residential Gateway evaluation board."
 }
 
 package CYGPKG_HAL_ARM_XSCALE_PXA2X0 {
@@ -3631,6 +3699,40 @@ target iq80321 {
         description "
         The IQ80321 target provides the packages needed to run
         eCos on an Intel XScale IQ80321 board."
+}
+
+target ixdp425 {
+	alias { "IXDP425 board" ixdp425 }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_XSCALE_CORE
+	           CYGPKG_HAL_ARM_XSCALE_IXP425
+                   CYGPKG_HAL_ARM_XSCALE_IXDP425
+		   CYGPKG_IO_PCI
+                   CYGPKG_DEVS_ETH_INTEL_I82559
+		   CYGPKG_DEVS_ETH_ARM_IXDP425_I82559
+                   CYGPKG_DEVS_FLASH_STRATA
+		   CYGPKG_DEVS_FLASH_IXDP425
+        }
+        description "
+        The ixdp425 target provides the packages needed to run
+        eCos on an Intel network processor evaluation board."
+}
+
+target grg {
+	alias { "Generic Residential Gateway" grg }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_XSCALE_CORE
+	           CYGPKG_HAL_ARM_XSCALE_IXP425
+                   CYGPKG_HAL_ARM_XSCALE_GRG
+		   CYGPKG_IO_PCI
+                   CYGPKG_DEVS_ETH_INTEL_I82559
+                   CYGPKG_DEVS_ETH_ARM_GRG_I82559
+                   CYGPKG_DEVS_FLASH_STRATA
+		   CYGPKG_DEVS_FLASH_GRG
+        }
+        description "
+        The grg target provides the packages needed to run
+        eCos on an Intel Generic Residential Gateway board."
 }
 
 target edb7xxx {
