@@ -1,3 +1,16 @@
+2002-12-13  Mark Salter  <msalter@redhat.com>
+
+	* include/platform.inc: Fix memory size test. Reduce wait counts
+	for chip select 3 (16550 uart).
+	* misc/redboot_FLASH.ecm: Turn off hw flow control on 16550.
+	* misc/redboot_FULLRAM.ecm: Ditto.
+	* misc/redboot_RAM.ecm: Ditto.
+	* misc/redboot_ROM.ecm: Ditto.
+
+	* cdl/hal_mn10300_am33_asb2305.cdl: Add support for CPU serial ports.
+	* src/ser_asb.c: Support configurations no 16550 and with
+	builtin AM33 serial ports.
+
 2002-12-06  Mark Salter  <msalter@redhat.com>
 
 	* cdl/hal_mn10300_am33_asb2305.cdl (CYG_HAL_FULL_RAM): New option to

@@ -208,6 +208,24 @@ cdl_package CYGPKG_HAL_MN10300_AM33_ASB2305 {
            The ASB2305 debug serial port RTS/CTS flow control setting."
     }
 
+    cdl_option CYGSEM_HAL_AM33_PLF_USES_SERIAL0 {
+        display       "ASB2305 uses AM33 SERIAL0"
+        flavor        bool
+        default_value 1
+        description   "
+            Enable this option if AM33 SERIAL0 is to be used as a virtual vector
+            communications channel."
+    }
+
+    cdl_option CYGSEM_HAL_AM33_PLF_USES_SERIAL1 {
+        display       "ASB2305 uses AM33 SERIAL1"
+        flavor        bool
+        default_value 0
+        description   "
+            Enable this option if AM33 SERIAL1 is to be used as a virtual vector
+            communications channel."
+    }
+
     cdl_option CYGNUM_HAL_AM33_PLF_SERIAL_CHANNELS {
         display       "ASB2305 has one comm channels."
         flavor        data

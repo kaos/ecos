@@ -58,6 +58,8 @@
 #include <cyg/hal/hal_misc.h>           // Helper functions
 #include <cyg/hal/drv_api.h>            // CYG_ISR_HANDLED
 
+#if defined(CYGNUM_HAL_AM33_PLF_SERIAL_CHANNELS) && CYGNUM_HAL_AM33_PLF_SERIAL_CHANNELS > 0
+
 /*---------------------------------------------------------------------------*/
 /* From serial_16550.h */
 #if CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD==9600
@@ -492,7 +494,13 @@ cyg_hal_plf_comms_init(void)
     initialized = 1;
 
     cyg_hal_plf_serial_init();
+
+#if defined(CYGNUM_HAL_AM33_SERIAL_CHANNELS) && CYGNUM_HAL_AM33_SERIAL_CHANNELS > 0
+    cyg_hal_am33_serial_init(1);
+#endif
 }
+
+#endif // defined(CYGNUM_HAL_AM33_PLF_SERIAL_CHANNELS) && CYGNUM_HAL_AM33_PLF_SERIAL_CHANNELS > 0
 
 /*---------------------------------------------------------------------------*/
 /* End of ser_asb.c */

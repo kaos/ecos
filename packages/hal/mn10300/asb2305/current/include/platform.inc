@@ -213,7 +213,7 @@ x\@:
 #define SBCTRL20                0xD8C00220
 #define SBCTRL20_INIT				0x21111000
 #define SBCTRL30                0xD8C00230
-#define SBCTRL30_INIT				0x21111000
+#define SBCTRL30_INIT				0x11111000
 #define SBCTRL40                0xD8C00240
 #define SBCTRL40_INIT				0x00140000
 #define SBCTRL50                0xD8C00250
@@ -230,7 +230,7 @@ x\@:
 #define SBCTRL21		0xD8C00224
 #define SBCTRL21_INIT				0x00100200
 #define SBCTRL31		0xD8C00234
-#define SBCTRL31_INIT				0x00100200
+#define SBCTRL31_INIT				0x00100100
 #define SBCTRL41		0xD8C00244
 #define SBCTRL41_INIT				0x11011100
 #define SBCTRL51		0xD8C00254
@@ -247,7 +247,7 @@ x\@:
 #define SBCTRL22		0xD8C00228
 #define SBCTRL22_INIT				0x00000004
 #define SBCTRL32		0xD8C00238
-#define SBCTRL32_INIT				0x00000004
+#define SBCTRL32_INIT				0x00000002
 #define SBCTRL42		0xD8C00248
 #define SBCTRL42_INIT				0x01000001
 #define SBCTRL52		0xD8C00258
@@ -387,11 +387,11 @@ x\@:
         // Check for 16MB and 32MB shadowing to determine actual amount of
         // memory installed. This assumes 8M, 16M, or 32M configs.
         mov     0,d0
+        mov     d0,(0x90800000)
         mov     d0,(0x91000000)
-        mov     d0,(0x92000000)
         mov     0xaaaaaaaa,d0
         mov     d0,(0x90000000)
-        mov     (0x91000000),d1
+        mov     (0x90800000),d1
         cmp     d0,d1
         bne     1f
 
@@ -410,7 +410,7 @@ x\@:
         mov     d0,(a0)
         jmp     2f
 1:
-        mov     (0x92000000),d1
+        mov     (0x91000000),d1
         cmp     d0,d1
         bne     2f
 
