@@ -1,9 +1,11 @@
 2004-11-14  Per Hedblom  <perhedblom@abem.se>
- 
+            Andrew Lunn  <andrew.lunn@ascom.ch> 
+	
  	* src/os-ecos.h: Added gc tread support
  	* src/fs-ecos.c: Removed some includes
  	* cdl/jffs2.cdl: Added gc thread support
- 
+	* tests/jffs2_3.c: New text to exersise the garbage collect code.
+	
 2004-12-13  John Dallaway  <jld@ecoscentric.com>
 
 	* tests/fileio1.c: Rename to jffs2_1.c. eCos test names should be
