@@ -1,3 +1,8 @@
+2004-12-08  Daniel Neri  <daniel.neri@sigicom.se>
+
+	* cdl/stdio.cdl (CYGPKG_LIBC_STDIO_FILEIO): The FILEIO variant of
+	vsnprintf breaks if CYGSEM_LIBC_STDIO_DYNAMIC_SETVBUF is disabled.
+	
 2004-09-27  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/stdio.cdl (CYGFUN_LIBC_STDIO_OPEN_POSIX_FDFUNCS): New option,

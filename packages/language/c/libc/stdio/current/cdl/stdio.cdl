@@ -387,6 +387,7 @@ cdl_package CYGPKG_LIBC_STDIO {
 	display "Enable use of FILEIO package for IO operations."
 	active_if CYGPKG_IO_FILEIO
 	requires CYGSEM_LIBC_STDIO_WANT_BUFFERED_IO
+	requires CYGSEM_LIBC_STDIO_DYNAMIC_SETVBUF
 	calculated 1
         description "
                 This CDL exists to control how the standard I/O functions
