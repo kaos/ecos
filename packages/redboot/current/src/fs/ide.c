@@ -80,15 +80,18 @@ static inline int
 __wait_for_drq(int ctlr)
 {
     cyg_uint8 status;
+    cyg_ucount32 tries;
 
     CYGACC_CALL_IF_DELAY_US(10);
-    do {
+    for (tries=0; tries<1000000; tries++) {
 	HAL_IDE_READ_UINT8(ctlr, IDE_REG_STATUS, status);
-	if (status & IDE_STAT_DRQ)
-	    return 1;
-    } while (status & IDE_STAT_BSY);
-
-    return 0;
+        if (!(status & IDE_STAT_BSY)) {
+            if (status & IDE_STAT_DRQ)
+                return 1;
+            else
+                return 0;
+        }
+    }
 }
 
 static int
@@ -102,15 +105,15 @@ ide_reset(int ctlr)
     HAL_IDE_WRITE_CONTROL(ctlr, 2);	// polled mode, reset cleared
     CYGACC_CALL_IF_DELAY_US((cyg_uint32)50000);
 
-    // wait 30 seconds max for not busy
+    // wait 30 seconds max for not busy and drive ready
     for (delay = 0; delay < 300; ++delay) {
 	CYGACC_CALL_IF_DELAY_US((cyg_uint32)100000);
 	HAL_IDE_READ_UINT8(ctlr, IDE_REG_STATUS, status);
-	// bail out early on bogus status
-	if ((status & (IDE_STAT_BSY|IDE_STAT_DRDY)) == (IDE_STAT_BSY|IDE_STAT_DRDY))
-	    break;
-	if (!(status & IDE_STAT_BSY))
+	  if (!(status & IDE_STAT_BSY)) {
+		if (status & IDE_STAT_DRDY) {
 	    return 1;
+    }
+	  }
     }
     return 0;
 }

@@ -1,3 +1,9 @@
+2004-05-16  Andrew Dyer  <adyer@righthandtech.com>
+2004-05-27  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/fs/ide.c: make sure IDE_STAT_BSY is 0 before checking other
+	bits in the status register
+
 2004-05-21  Ian Campbell  <icampbell@arcom.com>
 	 
 	* src/main.c: Make it build without CYGSEM_REDBOOT_FLASH_ALIASES.
