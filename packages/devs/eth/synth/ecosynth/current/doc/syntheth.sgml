@@ -33,7 +33,8 @@
 
 <!-- }}} -->
 
-<reference id="devs-eth-synth-ecosynth-ref">
+<part id="devs-eth-synth-ecosynth-ref">
+<!-- reference id="devs-eth-synth-ecosynth-ref" -->
   <title>Synthetic Target Ethernet Driver</title>
 
 <refentry id="devs-eth-synth-ecosynth">
@@ -515,4 +516,5 @@ instantiated, for example <literal>{eth0 eth1}</literal>.
   </refsect1>
 
 </refentry>
-</reference>
+</part>
+<!-- /reference -->
