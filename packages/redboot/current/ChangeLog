@@ -1,7 +1,7 @@
 2003-09-09  Gary Thomas  <gary@mlbassoc.com>
 
-	* src/flash.c (flash_config_insert_value): Default values were
-	wrong for IP & ESA types.
+	* src/flash.c (flash_config_insert_value): Default value was
+	wrong for ESA type.
 
 2003-08-19  Gary Thomas  <gary@mlbassoc.com>
 
