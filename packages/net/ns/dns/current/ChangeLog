@@ -1,3 +1,7 @@
+2003-05-14  Mark Salter  <msalter@redhat.com>
+
+	* include/dns_impl.inl: Use strrchr instead of rindex.
+
 2003-04-25  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* doc/dns.sgml: Updated to reflect changes for IPv6.

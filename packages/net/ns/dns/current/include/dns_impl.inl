@@ -534,7 +534,7 @@ gethostbyname(const char * hostname)
     domainname first. If it does have a . , try without a domain name
     first. */
 
-    dot = rindex(hostname,'.');
+    dot = strrchr(hostname,'.');
     if (dot) {
         if (*(dot+1) == '\0') {
             /* FQDN */
