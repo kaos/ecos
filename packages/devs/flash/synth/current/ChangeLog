@@ -1,3 +1,8 @@
+2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/flash1.c: gcc 3.x does not like string continuing
+	over lines with the " open.
+	
 2004-12-15  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/synth.c: Moved cyg_hal_sys_mmap into the HAL.
