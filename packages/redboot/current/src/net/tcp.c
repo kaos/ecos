@@ -64,6 +64,8 @@
 #define SEQ_GT(a,b) ((int)((a)-(b)) > 0)
 #define SEQ_GE(a,b) ((int)((a)-(b)) >= 0)
 
+/* Set a timer which will send an RST and abort a connection. */
+static timer_t abort_timer;
 
 static void do_retrans(void *p);
 static void do_close(void *p);
@@ -689,6 +691,25 @@ __tcp_drain(tcp_socket_t *s)
 }
 
 
+/*
+ * Close the tcp connection.
+ */
+static void
+do_abort(void *s)
+{
+    BSPLOG(bsp_log("do_abort: send RST\n"));
+    tcp_send((tcp_socket_t *)s, TCP_FLAG_ACK | TCP_FLAG_RST, 0);
+    __timer_cancel(&abort_timer);
+    ((tcp_socket_t *)s)->state = _CLOSED;
+    free_rxlist((tcp_socket_t *)s);
+    unlink_socket((tcp_socket_t *)s);
+}
+
+void
+__tcp_abort(tcp_socket_t *s, unsigned long delay)
+{
+  __timer_set(&abort_timer, delay, do_abort, s);
+}
 
 /*
  * Close the tcp connection.

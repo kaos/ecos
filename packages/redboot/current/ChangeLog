@@ -1,3 +1,19 @@
+2002-07-16  Hendrik Ruijter  <Hendrik.Ruijter@axis.com>
+2002-07-16  Mark Salter  <msalter@redhat.com>
+
+	* include/net/net.h: Add __tcp_abort prototype.
+
+	* src/net/icmp.c: The default handler can be replaced by a
+	user defined handler which handles all ICMP segments.
+
+	* src/net/ping.c
+	(handle_icmp): Only ICMP Echo Reply segments must be counted and
+	ICMP Echo Requests are handled in the user defined handler.
+
+	* src/net/tcp.c
+	(do_abort, __tcp_abort): Send an RST flag in order to abort a
+	connection. May use a delay to send the flag.
+
 2002-07-15  Mark Salter  <msalter@redhat.com>
 
 	* src/net/net_io.c: Increase size of out_buf to 1024 bytes.

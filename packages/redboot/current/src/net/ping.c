@@ -74,10 +74,22 @@ static void
 handle_icmp(pktbuf_t *pkt, ip_route_t *src_route)
 {
     icmp_header_t *icmp;
+    unsigned short cksum;
 
     icmp = pkt->icmp_hdr;
-    memcpy(&hold_hdr, icmp, sizeof(*icmp));
-    icmp_received = true;
+    if (icmp->type == ICMP_TYPE_ECHOREQUEST
+	&& icmp->code == 0
+	&& __sum((word *)icmp, pkt->pkt_bytes, 0) == 0) {
+
+	icmp->type = ICMP_TYPE_ECHOREPLY;
+	icmp->checksum = 0;
+        cksum = __sum((word *)icmp, pkt->pkt_bytes, 0);
+	icmp->checksum = htons(cksum);
+        __ip_send(pkt, IP_PROTO_ICMP, src_route);
+    } else if (icmp->type == ICMP_TYPE_ECHOREPLY) {
+        memcpy(&hold_hdr, icmp, sizeof(*icmp));
+        icmp_received = true;
+    }
 }
 
 static void

@@ -469,6 +469,10 @@ extern void __ip_handler(pktbuf_t *pkt, enet_addr_t *src_enet_addr);
  */
 extern int __ip_send(pktbuf_t *pkt, int protocol, ip_route_t *dest);
 
+/*
+ * Abort connection.
+ */
+extern void __tcp_abort(tcp_socket_t *s, unsigned long delay);
 
 /*
  * Handle incoming ICMP packets.
