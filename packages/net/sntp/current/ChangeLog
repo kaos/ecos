@@ -1,3 +1,8 @@
+2003-04-09  Michael Checky  <Michael_Checky@Thermoking.com>
+
+	* src/sntp.c: In function sntp_fn() changed 'version' to
+	'new_srv.version' in the CYG_TRACE1() call.
+
 2003-02-25  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/sntp.h: Include <cyg/infra/cyg_type.h> for __externC.

@@ -154,7 +154,7 @@ static void sntp_fn(cyg_addrword_t data) {
     
     /* Only support protocol versions 3 or 4 */
     if (new_srv.version < 3 || new_srv.version > 4) {
-      CYG_TRACE1(1, "Unsupported version of NTP. Version %d",version);
+      CYG_TRACE1(1, "Unsupported version of NTP. Version %d",new_srv.version);
       continue;
     }
     
