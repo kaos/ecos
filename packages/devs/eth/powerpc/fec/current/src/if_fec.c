@@ -672,10 +672,7 @@ fec_eth_RxEvent(struct eth_drv_sc *sc)
 {
     struct fec_eth_info *qi = (struct fec_eth_info *)sc->driver_private;
     volatile struct fec_bd *rxbd, *rxfirst;
-    int cache_state;
 
-    // Note: the MPC8xx does not seem to snoop/invalidate the data cache properly!
-    HAL_DCACHE_IS_ENABLED(cache_state);
     rxbd = rxfirst = qi->rnext;
     while (true) {
         if ((rxbd->ctrl & FEC_BD_Rx_Empty) == 0) {
