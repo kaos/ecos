@@ -158,16 +158,16 @@ hal_platform_init(void)
     //        +--------------------------
     //       +---------------------------
     //      +----------------------------
-    //     +-----------------------------
-    //    +------------------------------
-    //   +-------------------------------
+    //     +-----------------------------  LED2
+    //    +------------------------------  LED1
+    //   +-------------------------------  LED0
     //   ++++ ++++ ++++ ++AA AACC CC++ ++BB DDBB
     //   0000 0000 0000 0011 1111 1100 0011 1111 PAR
     //   0000 0000 0000 0000 0000 0000 0011 1111 SOR
     //   0000 0000 0000 0000 0011 1100 0000 1100 DIR
     IMM->io_regs[PORT_A].ppar = 0x0003FC3F;
     IMM->io_regs[PORT_A].psor = 0x0000003F;
-    IMM->io_regs[PORT_A].pdir = 0x00003C0C;
+    IMM->io_regs[PORT_A].pdir = 0xE0003C0C;
     IMM->io_regs[PORT_A].podr = 0x00000000;
 
     // Port B
@@ -421,6 +421,24 @@ _rattler_reset(void)
     CYGARC_MTSPR(CYGARC_REG_HID0, hid0); 
     diag_printf("...RESET\n");
     while (1) ;
+}
+
+//
+// Display a value in the LEDs
+// Note: the values used/returned by this function are positive
+// i.e. a value of 0 is all LEDs off, 0x7 is all on
+//
+#define LED_SHIFT 29  // LEDs are in bits A0..A2
+#define LED_MASK   7  // 3 bits total
+int
+_rattler_leds(int val)
+{
+    volatile t_PQ2IMM  *IMM = (volatile t_PQ2IMM *)CYGARC_IMM_BASE;
+    unsigned int old_val = ~(IMM->io_regs[PORT_A].pdat >> LED_SHIFT) & LED_MASK;
+    unsigned int new_val = (old_val & ~(LED_MASK<<LED_SHIFT)) | ((~val&LED_MASK)<<LED_SHIFT);
+
+    IMM->io_regs[PORT_A].pdat = new_val;
+    return old_val;
 }
 
 // EOF hal_aux.c
