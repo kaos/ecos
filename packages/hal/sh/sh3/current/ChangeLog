@@ -1,3 +1,8 @@
+2003-04-27  Rod Campbell  <rodc@sigmaelectronics.com>
+
+	* include/mod_regs_cpg.h (CYGARC_REG_FRQCR_INIT_DIVIDER2): Fix
+	FRQCR_INIT_DIVIDER2 value when CYGHWR_HAL_SH_OOC_DIVIDER_2 set at 6.
+
 2003-01-18  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/variant.S, include/variant.inc:

@@ -200,7 +200,7 @@
 #elif (CYGHWR_HAL_SH_OOC_DIVIDER_2 == 4)
 # define CYGARC_REG_FRQCR_INIT_DIVIDER2 0x0002
 #elif (CYGHWR_HAL_SH_OOC_DIVIDER_2 == 6)
-# define CYGARC_REG_FRQCR_INIT_DIVIDER2 0x2002
+# define CYGARC_REG_FRQCR_INIT_DIVIDER2 0x2001
 #else
 # error "Unsupported Divider2 setting"
 #endif
