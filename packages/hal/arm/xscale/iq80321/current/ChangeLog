@@ -1,3 +1,7 @@
+2002-09-23  Mark Salter  <msalter@redhat.com>
+
+	* include/plf_mmap.h: Remove. Not used.
+
 2002-09-19  Mark Salter  <msalter@redhat.com>
 
 	* misc/redboot_RAM.ecm: Add CYGPKG_HAL_ARM_XSCALE_CORE.

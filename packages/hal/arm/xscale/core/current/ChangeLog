@@ -1,3 +1,8 @@
+2002-09-23  Mark Salter  <msalter@redhat.com>
+
+	* include/hal_cache.h: Remove mmap-related externs which don't belong
+	here.
+
 2002-09-20  Mark Salter  <msalter@redhat.com>
 
 	* src/xscale_stub.c: Fill in holes in logic used to decide which
