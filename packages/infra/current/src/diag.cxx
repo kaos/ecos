@@ -453,11 +453,13 @@ _vprintf(void (*putc)(char c, void **param), void **param, const char *fmt, va_l
                 break;
             case '%':
                 (*putc)('%', param);
-                break;
+                res++;
+                continue;
             default:
                 (*putc)('%', param);
                 (*putc)(c, param);
                 res += 2;
+                continue;
             }
             pad = left_prec - length;
             if (sign != '\0') {
