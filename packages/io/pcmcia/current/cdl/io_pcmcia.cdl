@@ -56,10 +56,11 @@ cdl_package CYGPKG_IO_PCMCIA {
         This option enables drivers for basic I/O services on
         pcmcia devices."
     doc           ref/io.html
-
+    requires      CYGHWR_IO_PCMCIA_DEVICE
     compile       pcmcia.c
- 
-    define_proc {
+    
+        
+   define_proc {
 	puts $::cdl_header "#include <pkgconf/system.h>"
 	puts $::cdl_header "#ifdef CYGDAT_IO_PCMCIA_DEVICE_HEADER"
 	puts $::cdl_header "# include CYGDAT_IO_PCMCIA_DEVICE_HEADER"

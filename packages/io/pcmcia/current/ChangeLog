@@ -1,3 +1,7 @@
+2004-10-04  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/io_pcmcia.cdl: Require that the hardware implements PCMCIA
+
 2004-08-11  Mark Salter  <msalter@redhat.com>
 
 	* include/pcmcia.h: Add some useful defines.
