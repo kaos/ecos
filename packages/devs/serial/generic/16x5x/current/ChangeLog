@@ -1,3 +1,7 @@
+2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/ser_generic_16x5x.cdl: Remove irrelevant doc link.
+
 2001-06-19  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/ser_generic_16x5x.cdl: Only define

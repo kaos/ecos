@@ -64,7 +64,6 @@ cdl_package CYGPKG_IO_SERIAL_GENERIC_16X5X {
     description   "
            This option enables the serial device drivers for the
            16x5x compatiple controllers."
-    doc           redirect/ecos-device-drivers.html
 
     compile       -library=libextras.a   ser_16x5x.c
 
