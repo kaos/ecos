@@ -1,3 +1,8 @@
+2001-06-22  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* ecos.db: Add CYGPKG_NET_ETH_DRIVERS alias for CYGPKG_IO_ETH_DRIVERS
+	temporarily
+
 2001-06-22  Hugo Tyson  <hmt@redhat.com>
 
 	* ecos.db: Add entry for generic SMSC lan91cxx ethernet controller.
@@ -10,6 +15,10 @@
 	* ecos.db: Include CYGPKG_DEVS_ETH_CF and CYGPKG_DEVS_ETH_NS_DP83902A
 	packages in those targets which can use them.
 	Make CYGPKG_DEVS_ETH_CF have hardware attribute.
+
+2001-06-13  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added DP83902A driver.
 
 2001-06-08  Jonathan Larmour  <jlarmour@redhat.com>
 

@@ -1,58 +1,43 @@
-2001-06-25  Jesper Skov  <jskov@redhat.com>
+2001-06-21  Jesper Skov  <jskov@redhat.com>
 
-	* include/var_cache.h: Default definition for
-	CYGHWR_HAL_MIPS_RM7000_CACHE_SCRUB_BASE.
-	* src/var_mk_defs.c: export CYGHWR_HAL_MIPS_RM7000_CACHE_SCRUB_BASE.
-	* include/variant.inc: Use CYGHWR_HAL_MIPS_RM7000_CACHE_SCRUB_BASE.
+	* src/if_dp83902a.c: Fix various build problems when net package
+	is included.
 
-2001-06-08  Jesper Skov  <jskov@redhat.com>
+2001-06-16  Jesper Skov  <jskov@redhat.com>
 
-	* include/variant.inc: Scrub cache according to erratum #31.
+	* src/if_dp83902a.c (dp83902a_poll): Ignore spurious Tx events.
 
-	* src/var_mk_defs.c: Added.
+2001-06-15  Jesper Skov  <jskov@redhat.com>
 
-	* cdl/hal_mips_rm7000.cdl: Make var_defs.inc.
+	* src/if_dp83902a.c: Added crude CR race check. Use plf interrupt
+	clear to allow for CF driver to use this driver. Cleaned up debug
+	output some.
+	(dp83902a_send): Added some magic delays to get driver working on
+	some (apparently) broken boards.
 
-2001-05-23  Jesper Skov  <jskov@redhat.com>
+	* src/dp83902a.h: Moved..
+	* include/dp83902a.h: to here. Moved macro definitions here from
+	the src file.
 
-	* src/mips_rm7000.ld: Added .2ram handling.
+	* cdl/ns_dp83902a_eth_drivers.cdl: Export header file.
 
-2001-01-26  Jesper Skov  <jskov@redhat.com>
+2001-06-14  Jesper Skov  <jskov@redhat.com>
 
-	* include/variant.inc: Remove hal_intc_decode macro since it's a
-	change needed in arch.
+	* src/if_dp83902a.c: Added some more debug info.
 
-2001-01-25  Jesper Skov  <jskov@redhat.com>
+	* src/dp83902a.h: Added 16bit/BE macros (untested).
 
-	* include/variant.inc: Added hal_intc_decode macro which masks the
-	cause register with the status register. Works around what would
-	appear to be a HW bug.
-	
-2001-01-19  Jesper Skov  <jskov@redhat.com>
+	* src/if_dp83902a.c: Add some debug code, fix endian issue. Proper
+	handling of odd-length reads in 16bit mode.
 
-	* src/var_misc.c (hal_variant_init): Enable caches.
+2001-06-13  Jesper Skov  <jskov@redhat.com>
 
-	* include/variant.inc: Fixed typos in icache clear code.
+	* src/if_dp83902a.c: Assume LE ordering of read header data.
 
-2001-01-10  Jesper Skov  <jskov@redhat.com>
+	* src/dp83902a.h: BE/LE versions of data IO. Define proper DCR
+	init value depending on data access width.
 
-	* cdl/hal_mips_rm7000.cdl: Fix typo.
-
-2000-12-07  Jesper Skov  <jskov@redhat.com>
-
-	* src/var_misc.c (hal_variant_init): Disable caches until flash
-	stuff is working.
-
-2000-12-06  Jesper Skov  <jskov@redhat.com>
-
-	* src/mips_rm7000.ld: Include extras.o regardless of CYGPKG_IO
-	presence.
-
-	* src/var_misc.c: Enable caches.
-
-2000-11-30  Jesper Skov  <jskov@redhat.com>
-
-	* Cloned from hal/mips/tx49
+	* Cloned from DP8390 driver.
 
 //===========================================================================
 //####COPYRIGHTBEGIN####
@@ -73,9 +58,12 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
 //####COPYRIGHTEND####
 //===========================================================================
+	
+	
+

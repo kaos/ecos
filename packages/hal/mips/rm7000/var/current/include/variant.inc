@@ -110,20 +110,32 @@
         mtc0    zero,taghi
 
         # D-cache:
-        la      t0,0x80000000
+        la      t0,CYGHWR_HAL_MIPS_RM7000_CACHE_SCRUB_BASE
         ori     t1,t0,HAL_DCACHE_SIZE
 1:
         cache   0x09,0x0000(t0)
         cache   0x09,0x1000(t0)
         cache   0x09,0x2000(t0)
         cache   0x09,0x3000(t0)
+
+	# Clear area so Icache loads below will read valid
+	# instructions.
+	sw	zero,0x00(t0)
+	sw	zero,0x04(t0)
+	sw	zero,0x08(t0)
+	sw	zero,0x0c(t0)
+	sw	zero,0x10(t0)
+	sw	zero,0x14(t0)
+	sw	zero,0x18(t0)
+	sw	zero,0x1c(t0)
+	
         addi    t0,t0,0x20
         sub     v0,t1,t0
         bgez    v0,1b
          nop
 
         # I-cache:
-        la      a0,0x80000000
+        la      a0,CYGHWR_HAL_MIPS_RM7000_CACHE_SCRUB_BASE
         ori     a1,a0,HAL_ICACHE_SIZE
 1:
         cache   0x08,0x0000(a0)

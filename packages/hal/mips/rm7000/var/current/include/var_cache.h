@@ -50,11 +50,22 @@
 //=============================================================================
 
 #include <pkgconf/hal.h>
+#include CYGHWR_MEMORY_LAYOUT_H
+
 #include <cyg/infra/cyg_type.h>
 
 #include <cyg/hal/mips-regs.h>
 
 #include <cyg/hal/plf_cache.h>
+
+
+//=============================================================================
+// Area to use for cache scrubbing. This must be a cache sized area in
+// cachable space which can be cleared. Defaults to use the area reserved
+// for shared PCI memory space.
+#ifndef CYGHWR_HAL_MIPS_RM7000_CACHE_SCRUB_BASE
+# define CYGHWR_HAL_MIPS_RM7000_CACHE_SCRUB_BASE  CYGMEM_SECTION_pci_window
+#endif
 
 //=============================================================================
 // QED RM7000A

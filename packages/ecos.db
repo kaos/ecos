@@ -560,7 +560,7 @@ package CYGPKG_FS_ROM {
 }
 
 package CYGPKG_IO_ETH_DRIVERS {
-	alias 		{ "Common ethernet support" net_drivers eth_drivers }
+	alias 		{ "Common ethernet support" net_drivers eth_drivers CYGPKG_NET_ETH_DRIVERS }
 	directory	io/eth
 	script		eth_drivers.cdl
         description     "Platform independent ethernet support."
@@ -695,6 +695,14 @@ package CYGPKG_DEVS_ETH_MIPS_ATLAS {
 	directory	devs/eth/mips/atlas
 	script		atlas_eth_drivers.cdl
         description     "Ethernet driver for MIPS Atlas with onboard SAA9730 NIC."
+}
+
+package CYGPKG_DEVS_ETH_NS_DP83902A {
+	alias 		{ "NS DP83902A ethernet driver" dp83902a_eth_driver }
+	hardware
+	directory	devs/eth/ns/dp83902a
+	script		ns_dp83902a_eth_drivers.cdl
+        description     "Ethernet driver for NS DP83902A controller."
 }
 
 # Not sure whether this should be "hardware"; if so, it should be mentioned
