@@ -1,3 +1,4 @@
+* Port of ezXML parser added.
 * Port to the Keil MCB2100, Olimex P2106 and Olimex LPC-MT by Jani Monoses
 * Generic support for the lpc2xxx, hal, serial and watchdog by Jani Monoses
 * Support for generic IDE disks using PIO, by Iztok Zupet.

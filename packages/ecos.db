@@ -2131,7 +2131,14 @@ package CYGPKG_PROFILE_GPROF {
 This package instruments applications to collect profiling data,
 using a methodology compatible with the gprof utility."
 }     
-                                   
+                  
+package CYGPKG_EZXML {
+        alias           { "ezXML" XML ezxml }
+        directory       services/ezxml
+        script          ezxml.cdl
+        description     "ezXML, Simple XML Parser"
+}
+                 
 package CYGPKG_UITRON {
 	alias		{ "uITRON compatibility" uitron }
 	directory	compat/uitron
