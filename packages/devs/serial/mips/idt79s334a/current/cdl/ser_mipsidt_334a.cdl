@@ -63,7 +63,6 @@ cdl_package CYGPKG_IO_SERIAL_MIPS_IDT79S334A {
     description   "
            This package contains the serial device drivers for the
            MIPS IDT79RC32334 reference platform."
-    doc           redirect/ecos-device-drivers.html
 
     compile       -library=libextras.a   mipsidt_serial.c
 
