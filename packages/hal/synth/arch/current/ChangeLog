@@ -1,3 +1,8 @@
+2003-03-30  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/synth_intr.c (synth_auxiliary_xchgmsg): fix typo reported
+	by Savin Zlobec
+
 2003-03-26  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/synth_intr.c (synth_start_auxiliary): When an empty string
