@@ -1,3 +1,4 @@
+* New package for application level profiling (histogram only)
 * Support for NPWR Linux Engine (Xscale IOP310) from Team ASA
 * Support for Allied Telesyn TS1000 (PowerPC 855T based design)
 * Yoshinori Sato has contributed a watchdog driver for the Hitachi H8/300H.

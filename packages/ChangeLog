@@ -1,3 +1,7 @@
+2002-11-14  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* ecos.db: Add application profiling package.
+
 2002-11-14  Mark Salter  <msalter@redhat.com>
 
 	* ecos.db: Add flash package for AM33 ASB2303.

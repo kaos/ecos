@@ -1581,6 +1581,14 @@ This package measures the CPU load over the last 100ms, 1second
 and 10 second. All loads are returned as a percentage, ie 0-100.
 This is only a rough measure."
 }     
+
+package CYGPKG_PROFILE {
+        alias           { "Application profile support" profile }
+        directory       services/profile
+        script          profile.cdl
+        description "
+This package instruments applications to collect profiling data."
+}     
                                    
 package CYGPKG_UITRON {
 	alias		{ "uITRON compatibility" uitron }

@@ -1,6 +1,6 @@
 # ====================================================================
 #
-#      cpuload.cdl
+#      profile.cdl
 #
 #      cpu load measurements
 #
@@ -8,7 +8,7 @@
 #####ECOSGPLCOPYRIGHTBEGIN####
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
-## Copyright (C) 2002 Andrew Lunn
+## Copyright (C) 2002 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -40,33 +40,43 @@
 # ====================================================================
 ######DESCRIPTIONBEGIN####
 #
-# Author(s):      Andrew Lunn
-# Original data:  Andrew Lunn
+# Author(s):      Gary Thomas
+# Original data:  Gary Thomas
 # Contributors:
-# Date:           2002-08-12
+# Date:           2002-11-14
 #
 #####DESCRIPTIONEND####
 #
 # ====================================================================
 
-cdl_package CYGPKG_CPULOAD {
-    display       "Measure the current CPU load"
-    requires      CYGPKG_KERNEL
-    requires      !CYGPKG_KERNEL_SMP_SUPPORT
-    include_dir   cyg/cpuload
-    
-    compile cpuload.cxx
-    description "
-       This package measures the CPU load over the last 100ms, 1second 
-       and 10 second. All loads are returned as a percentage, ie 0-100.
-       This is only a rough measure. Any clever power management, sleep 
-       modes etc, will cause these results to be wrong."
+cdl_package CYGPKG_PROFILE {
+    display       "Gather runtime profile statistics"
+    requires      CYGPKG_NET
+    requires      CYGPKG_MEMALLOC
+    requires      { CYGPKG_PROFILE_TIMER != 0 }
 
-    cdl_option CYGPKG_CPULOAD_TESTS {
-        display "CPU load measurement tests"
+    include_dir   cyg/infra
+    
+    compile profile.c
+
+    description "
+        This package enables runtime profiling of an application.
+    The actual profile collection must be turned on by the application,
+    once it has been initialized.  The data collected is exported via
+    a TFTP connection to the target."
+
+    cdl_interface     CYGPKG_PROFILE_TIMER {
+        display   "High resolution timer, implemented by platform"
+        description "
+	  Profiling requires access to a high resolution timer which
+          is platform dependent."
+    }
+
+    cdl_option CYGPKG_PROFILE_TESTS {
+        display "Profiling tests"
         flavor  data   
         no_define      
-        calculated { "tests/cpuload.c" }
+        calculated { "tests/profile.c" }
     }
 }
 
