@@ -140,8 +140,8 @@ static SERIAL_CHANNEL(quicc_sxx_serial_channel_smc1,
     );
 #endif
 
-static unsigned char quicc_smc1_txbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_TxNUM][CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_TxSIZE + HAL_DCACHE_LINE_SIZE-1];
-static unsigned char quicc_smc1_rxbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_RxNUM][CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_RxSIZE + HAL_DCACHE_LINE_SIZE-1];
+static unsigned char quicc_smc1_txbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_TxNUM*CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_TxSIZE+HAL_DCACHE_LINE_SIZE];
+static unsigned char quicc_smc1_rxbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_RxNUM*CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_RxSIZE+HAL_DCACHE_LINE_SIZE];
 
 DEVTAB_ENTRY(quicc_smc_serial_io_smc1, 
              CYGDAT_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_NAME,
@@ -185,8 +185,8 @@ static SERIAL_CHANNEL(quicc_sxx_serial_channel_smc2,
                       CYG_SERIAL_FLAGS_DEFAULT
     );
 #endif
-static unsigned char quicc_smc2_txbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_TxNUM][CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_TxSIZE + HAL_DCACHE_LINE_SIZE-1];
-static unsigned char quicc_smc2_rxbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_RxNUM][CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_RxSIZE + HAL_DCACHE_LINE_SIZE-1];
+static unsigned char quicc_smc2_txbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_TxNUM*CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_TxSIZE+HAL_DCACHE_LINE_SIZE];
+static unsigned char quicc_smc2_rxbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_RxNUM*CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_RxSIZE+HAL_DCACHE_LINE_SIZE];
 
 DEVTAB_ENTRY(quicc_smc_serial_io_smc2, 
              CYGDAT_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_NAME,
@@ -230,8 +230,8 @@ static SERIAL_CHANNEL(quicc_sxx_serial_channel_scc1,
                       CYG_SERIAL_FLAGS_DEFAULT
     );
 #endif
-static unsigned char quicc_scc1_txbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC1_TxNUM][CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC1_TxSIZE + HAL_DCACHE_LINE_SIZE-1];
-static unsigned char quicc_scc1_rxbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC1_RxNUM][CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC1_RxSIZE + HAL_DCACHE_LINE_SIZE-1];
+static unsigned char quicc_scc1_txbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC1_TxNUM*CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC1_TxSIZE+HAL_DCACHE_LINE_SIZE];
+static unsigned char quicc_scc1_rxbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC1_RxNUM*CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC1_RxSIZE+HAL_DCACHE_LINE_SIZE];
 
 DEVTAB_ENTRY(quicc_smc_serial_io_scc1, 
              CYGDAT_IO_SERIAL_POWERPC_QUICC_SMC_SCC1_NAME,
@@ -275,8 +275,8 @@ static SERIAL_CHANNEL(quicc_sxx_serial_channel_scc2,
                       CYG_SERIAL_FLAGS_DEFAULT
     );
 #endif
-static unsigned char quicc_scc2_txbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC2_TxNUM][CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC2_TxSIZE + HAL_DCACHE_LINE_SIZE-1];
-static unsigned char quicc_scc2_rxbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC2_RxNUM][CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC2_RxSIZE + HAL_DCACHE_LINE_SIZE-1];
+static unsigned char quicc_scc2_txbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC2_TxNUM*CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC2_TxSIZE+HAL_DCACHE_LINE_SIZE];
+static unsigned char quicc_scc2_rxbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC2_RxNUM*CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC2_RxSIZE+HAL_DCACHE_LINE_SIZE];
 
 DEVTAB_ENTRY(quicc_smc_serial_io_scc2, 
              CYGDAT_IO_SERIAL_POWERPC_QUICC_SMC_SCC2_NAME,
@@ -320,8 +320,8 @@ static SERIAL_CHANNEL(quicc_sxx_serial_channel_scc3,
                       CYG_SERIAL_FLAGS_DEFAULT
     );
 #endif
-static unsigned char quicc_scc3_txbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC3_TxNUM][CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC3_TxSIZE + HAL_DCACHE_LINE_SIZE-1];
-static unsigned char quicc_scc3_rxbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC3_RxNUM][CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC3_RxSIZE + HAL_DCACHE_LINE_SIZE-1];
+static unsigned char quicc_scc3_txbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC3_TxNUM*CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC3_TxSIZE+HAL_DCACHE_LINE_SIZE];
+static unsigned char quicc_scc3_rxbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC3_RxNUM*CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC3_RxSIZE+HAL_DCACHE_LINE_SIZE];
 
 DEVTAB_ENTRY(quicc_smc_serial_io_scc3, 
              CYGDAT_IO_SERIAL_POWERPC_QUICC_SMC_SCC3_NAME,
@@ -632,11 +632,11 @@ quicc_sxx_serial_init(struct cyg_devtab_entry *tab)
                                    TxBD, 
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_TxNUM,
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_TxSIZE,
-                                   ALIGN_TO_CACHELINES(&quicc_smc1_txbuf[0][0]),
+                                   ALIGN_TO_CACHELINES(&quicc_smc1_txbuf[0]),
                                    RxBD, 
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_RxNUM,
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_RxSIZE,
-                                   ALIGN_TO_CACHELINES(&quicc_smc1_rxbuf[0][0]),
+                                   ALIGN_TO_CACHELINES(&quicc_smc1_rxbuf[0]),
                                    0xC0, // PortB mask
                                    QUICC_CPM_SMC1
             );
@@ -652,11 +652,11 @@ quicc_sxx_serial_init(struct cyg_devtab_entry *tab)
                                    TxBD, 
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_TxNUM,
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_TxSIZE,
-                                   ALIGN_TO_CACHELINES(&quicc_smc2_txbuf[0][0]),
+                                   ALIGN_TO_CACHELINES(&quicc_smc2_txbuf[0]),
                                    RxBD, 
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_RxNUM,
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_RxSIZE,
-                                   ALIGN_TO_CACHELINES(&quicc_smc2_rxbuf[0][0]),
+                                   ALIGN_TO_CACHELINES(&quicc_smc2_rxbuf[0]),
                                    0xC00, // PortB mask
                                    QUICC_CPM_SMC2
             );
@@ -672,11 +672,11 @@ quicc_sxx_serial_init(struct cyg_devtab_entry *tab)
                                    TxBD, 
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC1_TxNUM,
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC1_TxSIZE,
-                                   ALIGN_TO_CACHELINES(&quicc_scc1_txbuf[0][0]),
+                                   ALIGN_TO_CACHELINES(&quicc_scc1_txbuf[0]),
                                    RxBD, 
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC1_RxNUM,
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC1_RxSIZE,
-                                   ALIGN_TO_CACHELINES(&quicc_scc1_rxbuf[0][0]),
+                                   ALIGN_TO_CACHELINES(&quicc_scc1_rxbuf[0]),
                                    0x0003, // PortA mask
                                    0x1000, // PortB mask
                                    0x0800, // PortC mask
@@ -694,11 +694,11 @@ quicc_sxx_serial_init(struct cyg_devtab_entry *tab)
                                    TxBD, 
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC2_TxNUM,
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC2_TxSIZE,
-                                   ALIGN_TO_CACHELINES(&quicc_scc2_txbuf[0][0]),
+                                   ALIGN_TO_CACHELINES(&quicc_scc2_txbuf[0]),
                                    RxBD, 
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC2_RxNUM,
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC2_RxSIZE,
-                                   ALIGN_TO_CACHELINES(&quicc_scc2_rxbuf[0][0]),
+                                   ALIGN_TO_CACHELINES(&quicc_scc2_rxbuf[0]),
                                    0x000C, // PortA mask
                                    0x2000, // PortB mask
                                    0x0C00, // PortC mask
@@ -716,11 +716,11 @@ quicc_sxx_serial_init(struct cyg_devtab_entry *tab)
                                    TxBD, 
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC3_TxNUM,
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC3_TxSIZE,
-                                   ALIGN_TO_CACHELINES(&quicc_scc3_txbuf[0][0]),
+                                   ALIGN_TO_CACHELINES(&quicc_scc3_txbuf[0]),
                                    RxBD, 
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC3_RxNUM,
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC3_RxSIZE,
-                                   ALIGN_TO_CACHELINES(&quicc_scc3_rxbuf[0][0]),
+                                   ALIGN_TO_CACHELINES(&quicc_scc3_rxbuf[0]),
                                    0x0000, // PortA mask
                                    0x00C0, // PortB mask
                                    0x0000, // PortC mask
