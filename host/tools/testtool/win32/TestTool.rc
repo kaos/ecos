@@ -214,23 +214,27 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,112,48,50,14
 END
 
-IDD_TT_PLATFORM DIALOG DISCARDABLE  0, 0, 226, 106
+IDD_TT_PLATFORM DIALOG DISCARDABLE  0, 0, 231, 214
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "New Platform"
 FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           "Platform &name:",IDC_STATIC,7,10,48,8
-    LTEXT           "Command &prefix:",IDC_STATIC,7,30,53,8
-    LTEXT           "Platform &type:",IDC_STATIC,7,48,44,8
-    COMBOBOX        IDC_TYPE_COMBO,76,45,143,55,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Arguments for &GDB:",IDC_STATIC,7,67,64,8
-    EDITTEXT        IDC_TT_NEW_PLATFORM_GDB,76,63,143,14,ES_AUTOHSCROLL
-    DEFPUSHBUTTON   "OK",IDOK,115,85,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,169,85,50,14
-    EDITTEXT        IDC_TT_NEW_PLATFORM,76,7,143,14,ES_AUTOHSCROLL
-    COMBOBOX        IDC_TT_NEW_PLATFORM_PREFIX,76,25,143,74,CBS_DROPDOWN | 
+    LTEXT           "Platform &name:",IDC_STATIC,7,7,48,8
+    LTEXT           "Command &prefix:",IDC_STATIC,7,27,53,8
+    LTEXT           "Arguments for &GDB:",IDC_STATIC,7,45,64,8
+    EDITTEXT        IDC_TT_NEW_PLATFORM_GDB,81,45,143,70,ES_MULTILINE | 
+                    WS_VSCROLL | WS_HSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,115,193,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,174,193,50,14
+    EDITTEXT        IDC_TT_NEW_PLATFORM,81,7,143,14,ES_AUTOHSCROLL
+    COMBOBOX        IDC_TT_NEW_PLATFORM_PREFIX,81,27,143,74,CBS_DROPDOWN | 
                     CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Inferior:",IDC_STATIC,7,121,24,8
+    EDITTEXT        IDC_INFERIOR,81,121,143,14,ES_AUTOHSCROLL
+    LTEXT           "Prompt:",IDC_STATIC,7,141,25,8
+    EDITTEXT        IDC_PROMPT,81,141,143,14,ES_AUTOHSCROLL
+    CONTROL         "Server-side GDB",IDC_SERVER_SIDE_GDB,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,81,161,69,10
 END
 
 IDD_TT_NEW_PLATFORM DIALOG DISCARDABLE  0, 0, 168, 50
@@ -323,24 +327,6 @@ BEGIN
     0
 END
 
-IDD_TT_PLATFORM DLGINIT
-BEGIN
-    IDC_TYPE_COMBO, 0x403, 33, 0
-0x6148, 0x6472, 0x6177, 0x6572, 0x7720, 0x7469, 0x2068, 0x7262, 0x6165, 
-0x706b, 0x696f, 0x746e, 0x7320, 0x7075, 0x6f70, 0x7472, "\000" 
-    IDC_TYPE_COMBO, 0x403, 10, 0
-0x6953, 0x756d, 0x616c, 0x6f74, 0x0072, 
-    IDC_TYPE_COMBO, 0x403, 17, 0
-0x7953, 0x746e, 0x6568, 0x6974, 0x2063, 0x6174, 0x6772, 0x7465, "\000" 
-    IDC_TYPE_COMBO, 0x403, 36, 0
-0x6148, 0x6472, 0x6177, 0x6572, 0x7720, 0x7469, 0x6f68, 0x7475, 0x6220, 
-0x6572, 0x6b61, 0x6f70, 0x6e69, 0x2074, 0x7573, 0x7070, 0x726f, 0x0074, 
-
-    IDC_TYPE_COMBO, 0x403, 17, 0
-0x6552, 0x6f6d, 0x6574, 0x7320, 0x6d69, 0x6c75, 0x7461, 0x726f, "\000" 
-    0
-END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -412,9 +398,9 @@ BEGIN
     IDD_TT_PLATFORM, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 219
+        RIGHTMARGIN, 224
         TOPMARGIN, 7
-        BOTTOMMARGIN, 99
+        BOTTOMMARGIN, 207
     END
 
     IDD_TT_NEW_PLATFORM, DIALOG
@@ -491,7 +477,6 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     IDC_TT_NEW_PLATFORM_GDB "Specifies any additional arguments to be used when invoking gdb."
-    IDC_TYPE_COMBO          "Specifies the type of the platform - for example whether hardware or simulator, whether breakpoints are supported.  The information is used to drive gdb when running executables."
     IDC_TT_NEW_PLATFORM     "Specifies the name of the platform.  Platform names are arbitrary strings, but must be unique for a given user."
     IDC_TT_DELETE_PLATFORM  "Removes the currently selected platform."
     IDC_TT_ADD_PLATFORM     "Adds a new platform."

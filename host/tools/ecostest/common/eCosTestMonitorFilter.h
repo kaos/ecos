@@ -41,8 +41,8 @@
 
 #include "eCosStd.h"
 #include "eCosTest.h"
-#include "eCosTestSocket.h"
-#include "eCosTestSerial.h"
+#include "eCosSocket.h"
+#include "eCosSerial.h"
 
 //----------------------------------------------------------------------------
 // The filter class
@@ -82,8 +82,8 @@ private:
 
 extern bool CALLBACK SerialMonitorFunction(void*& pBuf,
                                            unsigned int& nRead,
-                                           CeCosTestSerial& serial,
-                                           CeCosTestSocket& socket,
+                                           CeCosSerial& serial,
+                                           CeCosSocket& socket,
                                            void* pParem);
     
 #endif // _CECOSMONITORFILTER_H

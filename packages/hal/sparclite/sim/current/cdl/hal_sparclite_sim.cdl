@@ -160,7 +160,7 @@ cdl_package CYGPKG_HAL_SPARCLITE_SIM {
         }
 
         cdl_option CYGPKG_HAL_SPARCLITE_SIM_CFLAGS_REMOVE {
-            display "Supressed compiler flags"
+            display "Suppressed compiler flags"
             flavor  data
             no_define
             default_value { "" }

@@ -65,7 +65,7 @@ cdl_exec::cdl_exec (const std::string repository_tree, const std::string savefil
 bool cdl_exec::cmd_new (const std::string cdl_hardware, const std::string cdl_template /* = "default" */, const std::string cdl_version /* = "" */) {
 	bool status = false;
 	try {
-		pkgdata = CdlPackagesDatabaseBody::make (repository);
+		pkgdata = CdlPackagesDatabaseBody::make (repository, &diagnostic_handler, &diagnostic_handler);
 		interp = CdlInterpreterBody::make ();
 		config = CdlConfigurationBody::make ("eCos", pkgdata, interp);
 		config->set_hardware (resolve_hardware_alias (cdl_hardware), &diagnostic_handler, &diagnostic_handler);
@@ -91,7 +91,7 @@ bool cdl_exec::cmd_new (const std::string cdl_hardware, const std::string cdl_te
 bool cdl_exec::cmd_target (const std::string cdl_target) {
 	bool status = false;
 	try {
-		pkgdata = CdlPackagesDatabaseBody::make (repository);
+		pkgdata = CdlPackagesDatabaseBody::make (repository, &diagnostic_handler, &diagnostic_handler);
 		interp = CdlInterpreterBody::make ();
 		config = CdlConfigurationBody::load (savefile, pkgdata, interp, &diagnostic_handler, &diagnostic_handler);
 		config->set_hardware (resolve_hardware_alias (cdl_target), &diagnostic_handler, &diagnostic_handler);
@@ -110,7 +110,7 @@ bool cdl_exec::cmd_target (const std::string cdl_target) {
 bool cdl_exec::cmd_template (const std::string cdl_template, const std::string cdl_version /* = "" */) {
 	bool status = false;
 	try {
-		pkgdata = CdlPackagesDatabaseBody::make (repository);
+		pkgdata = CdlPackagesDatabaseBody::make (repository, &diagnostic_handler, &diagnostic_handler);
 		interp = CdlInterpreterBody::make ();
 		config = CdlConfigurationBody::load (savefile, pkgdata, interp, &diagnostic_handler, &diagnostic_handler);
 		if (pkgdata->is_known_template (cdl_template) && ! cdl_version.empty ()) {
@@ -135,7 +135,7 @@ bool cdl_exec::cmd_template (const std::string cdl_template, const std::string c
 bool cdl_exec::cmd_export (const std::string cdl_savefile) {
 	bool status = false;
 	try {
-		pkgdata = CdlPackagesDatabaseBody::make (repository);
+		pkgdata = CdlPackagesDatabaseBody::make (repository, &diagnostic_handler, &diagnostic_handler);
 		interp = CdlInterpreterBody::make ();
 		config = CdlConfigurationBody::load (savefile, pkgdata, interp, &diagnostic_handler, &diagnostic_handler);
 		config->save (cdl_savefile, /* minimal = */ true);
@@ -153,7 +153,7 @@ bool cdl_exec::cmd_export (const std::string cdl_savefile) {
 bool cdl_exec::cmd_import (const std::string cdl_savefile) {
 	bool status = false;
 	try {
-		pkgdata = CdlPackagesDatabaseBody::make (repository);
+		pkgdata = CdlPackagesDatabaseBody::make (repository, &diagnostic_handler, &diagnostic_handler);
 		interp = CdlInterpreterBody::make ();
 		config = CdlConfigurationBody::load (savefile, pkgdata, interp, &diagnostic_handler, &diagnostic_handler);
 		config->add (cdl_savefile, &diagnostic_handler, &diagnostic_handler);
@@ -172,7 +172,7 @@ bool cdl_exec::cmd_import (const std::string cdl_savefile) {
 bool cdl_exec::cmd_add (const std::vector<std::string> cdl_packages) {
 	bool status = false;
 	try {
-		pkgdata = CdlPackagesDatabaseBody::make (repository);
+		pkgdata = CdlPackagesDatabaseBody::make (repository, &diagnostic_handler, &diagnostic_handler);
 		interp = CdlInterpreterBody::make ();
 		config = CdlConfigurationBody::load (savefile, pkgdata, interp, &diagnostic_handler, &diagnostic_handler);
 		for (unsigned int n = 0; n < cdl_packages.size (); n++) {
@@ -194,7 +194,7 @@ bool cdl_exec::cmd_remove (const std::vector<std::string> cdl_packages) {
 	unsigned int n;
 	bool status = false;
 	try {
-		pkgdata = CdlPackagesDatabaseBody::make (repository);
+		pkgdata = CdlPackagesDatabaseBody::make (repository, &diagnostic_handler, &diagnostic_handler);
 		interp = CdlInterpreterBody::make ();
 		config = CdlConfigurationBody::load (savefile, pkgdata, interp, &diagnostic_handler, &diagnostic_handler);
 		for (n = 0; n < cdl_packages.size (); n++) {
@@ -220,7 +220,7 @@ bool cdl_exec::cmd_remove (const std::vector<std::string> cdl_packages) {
 bool cdl_exec::cmd_version (const std::string cdl_version, const std::vector<std::string> cdl_packages) {
 	bool status = false;
 	try {
-		pkgdata = CdlPackagesDatabaseBody::make (repository);
+		pkgdata = CdlPackagesDatabaseBody::make (repository, &diagnostic_handler, &diagnostic_handler);
 		interp = CdlInterpreterBody::make ();
 		config = CdlConfigurationBody::load (savefile, pkgdata, interp, &diagnostic_handler, &diagnostic_handler);
 		for (unsigned int n = 0; n < cdl_packages.size (); n++) {
@@ -241,7 +241,7 @@ bool cdl_exec::cmd_version (const std::string cdl_version, const std::vector<std
 bool cdl_exec::cmd_tree () {
 	bool status = false;
 	try {
-		pkgdata = CdlPackagesDatabaseBody::make (repository);
+		pkgdata = CdlPackagesDatabaseBody::make (repository, &diagnostic_handler, &diagnostic_handler);
 		interp = CdlInterpreterBody::make ();
 		config = CdlConfigurationBody::load (savefile, pkgdata, interp, &diagnostic_handler, &diagnostic_handler);
 		char * cwd = getcwd (NULL, 0);
@@ -268,14 +268,13 @@ bool cdl_exec::cmd_tree () {
 bool cdl_exec::cmd_list () {
 	bool status = false;
 	try {
-		pkgdata = CdlPackagesDatabaseBody::make (repository);
+		pkgdata = CdlPackagesDatabaseBody::make (repository, &diagnostic_handler, &diagnostic_handler);
 
 		// list the installed packages
 		std::vector<std::string> packages = pkgdata->get_packages ();
 		std::sort (packages.begin (), packages.end ());
 		for (unsigned int package = 0; package < packages.size (); package++) {
 			const std::vector<std::string> & aliases = pkgdata->get_package_aliases (packages [package]);
-			printf ("Package %s (%s):\n aliases:", packages [package].c_str (), aliases [0].c_str ());
 			for (unsigned int alias = 1; alias < aliases.size (); alias++) {
 				printf (" %s", aliases [alias].c_str ());
 			}
@@ -328,7 +327,7 @@ bool cdl_exec::cmd_check () {
 
 	try {
 		CdlTransactionBody::disable_automatic_inference ();
-		pkgdata = CdlPackagesDatabaseBody::make (repository);
+		pkgdata = CdlPackagesDatabaseBody::make (repository, &diagnostic_handler, &diagnostic_handler);
 		interp = CdlInterpreterBody::make ();
 		config = CdlConfigurationBody::load (savefile, pkgdata, interp, &diagnostic_handler, &diagnostic_handler);
 		config->save (savefile); // tidy up any manual edits
@@ -415,7 +414,7 @@ bool cdl_exec::cmd_resolve () {
 	bool status = false;
 
 	try {
-		pkgdata = CdlPackagesDatabaseBody::make (repository);
+		pkgdata = CdlPackagesDatabaseBody::make (repository, &diagnostic_handler, &diagnostic_handler);
 		interp = CdlInterpreterBody::make ();
 		config = CdlConfigurationBody::load (savefile, pkgdata, interp, &diagnostic_handler, &diagnostic_handler);
 		config->resolve_all_conflicts ();

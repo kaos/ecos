@@ -1,3 +1,73 @@
+2000-04-13  Jesper Skov  <jskov@redhat.com>
+
+	* unix/Makefile: add randfile
+
+2000-04-13  Jesper Skov  <jskov@redhat.com>
+
+	* common/eCosTestDownloadFilter.cpp: Cast Write arguments to void*.
+
+2000-04-13 Simon FitzMaurice <sdf@redhat.co.uk>
+  * common\ResetAttributes.cpp
+    common\eCosTest.cpp
+    common\eCosTestClient.cpp
+
+  Ensure socket timeout matches on_off/off_on delay for reset
+  Correct parsing of eCosTestClient delay args.
+  Use remote resource to determine baud rate for default download timeout.
+
+2000-04-13 Simon FitzMaurice <sdf@redhat.co.uk>
+  * common\ResetAttributes.cpp
+    common\eCosTest.cpp
+    common\eCosTest.h
+    common\eCosTestClient.cpp
+    common\eCosTestServer.cpp
+    common\eCosTestUtils.cpp
+    common\rgdb.cpp
+    common\summlog.cpp
+    common\x10reset.cpp
+    win32\eCosTest.dsp
+
+  Tidy up reset output.
+  Police use of -f and -r switches more accurately.
+  Set default timeout in all cases.
+
+2000-04-11 Simon FitzMaurice <sdf@redhat.co.uk>
+  * common\ResetAttributes.cpp
+    common\ResetAttributes.h
+    common\ResourceServer.cpp
+    common\TestResource.cpp
+    common\TestResource.h
+    common\X10.h
+    common\X10d.cpp
+    common\eCosTest.cpp
+    common\eCosTest.h
+    common\eCosTestClient.cpp
+    common\eCosTestDownloadFilter.cpp
+    common\eCosTestDownloadFilter.h
+    common\eCosTestMonitorFilter.cpp
+    common\eCosTestMonitorFilter.h
+    common\eCosTestSerialFilter.cpp
+    common\eCosTestSerialFilter.h
+    common\eCosTestServer.cpp
+    common\eCosTestUtils.cpp
+    common\eCosTestUtils.h
+    common\resetall.cpp
+    common\rgdb.cpp
+    common\ser_filter.cpp
+    common\stat.cpp
+    common\summlog.cpp
+    common\x10reset.cpp
+    unix\Makefile
+    win32\eCosTest.dsp
+    win32\Amplicon\AmpliconD.cpp
+
+  General tidy-up.
+
+2000-04-10  Bart Veer  <bartv@redhat.com>
+
+	* common/permtest.cxx (main):
+	Add diagnostics callbacks to database initialization.
+
 2000-03-20  John Dallaway  <jld@cygnus.co.uk>
 
 	* win32/eCosTest.dsp:

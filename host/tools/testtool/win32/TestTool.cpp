@@ -71,7 +71,8 @@ CRunTestsApp theApp;
 
 BOOL CRunTestsApp::InitInstance()
 {
-  CeCosTest::Init();
+  CeCosSocket::Init();
+  CeCosTestPlatform::Load();
   CFileName strCSHFile;
   ::GetModuleFileName(::GetModuleHandle(NULL),strCSHFile.GetBuffer(1+MAX_PATH),MAX_PATH);
   strCSHFile.ReleaseBuffer();
@@ -123,7 +124,9 @@ BOOL CRunTestsApp::InitInstance()
 	
     // Since the dialog has been closed, return FALSE so that we exit the
 	//  application, rather than start the application's message pump.
-  CeCosTest::Term();
+  CeCosSocket::Term();
+  CeCosTestPlatform::RemoveAllPlatforms();
+
 	return FALSE;
 }
 
@@ -131,10 +134,10 @@ void CALLBACK CRunTestsApp::InitFunc(CProperties *pProp, bool bSave)
 {
     static bool bFirstTime=true;
     if(bSave){
-        pProp->Save();
+        pProp->SaveToRegistry(HKEY_CURRENT_USER,_T("Software\\Red Hat\\eCos\\RunTests"));
     } else {
         pProp->LoadFromCommandString(GetCommandLine());
-        pProp->Load();
+        pProp->LoadFromRegistry(HKEY_CURRENT_USER,_T("Software\\Red Hat\\eCos\\RunTests"));
     }
     bFirstTime=false;
 }

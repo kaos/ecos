@@ -81,7 +81,7 @@ cdl_package CYGPKG_DEVICES_WALLCLOCK_SH3 {
         }
 
         cdl_option CYGPKG_DEVICES_WALLCLOCK_SH3_CFLAGS_REMOVE {
-            display "Supressed compiler flags"
+            display "Suppressed compiler flags"
             flavor  data
             no_define
             default_value { "" }

@@ -1014,6 +1014,7 @@ CdlLoadableBody::CdlLoadableBody(CdlToplevel toplevel, std::string dir)
     CdlInterpreter master = toplevel->get_interpreter();
     CYG_ASSERTC(0 != master);
     interp      = master->create_slave(this, false);
+    interp->push_context(this->get_name());
     CYGDBG_MEMLEAK_CONSTRUCTOR();
     
     CYG_POSTCONDITION_THISC();
@@ -1247,7 +1248,7 @@ CdlLoadableBody::bind(CdlTransaction transaction)
         }
     }
 
-    // Nodes start of inactive. Check each one whether or not it
+    // Nodes start off inactive. Check each one whether or not it
     // should be active.
     // NOTE: possibly this should be done via a per-node init
     // update instead.
@@ -1471,7 +1472,7 @@ set filename [file join $::cdl_topdir $::cdl_pkgdir $::cdl_target]              
 if {[file exists $filename]} {                                                  \n\
     return \"[set filename][set cdl_anchor]\"                                   \n\
 }                                                                               \n\
-return -error \"\"                                                              \n\
+return \"\"                                                                     \n\
 ";
 
 std::string
@@ -1519,7 +1520,7 @@ set filename $::cdl_target                                                      
 if {[file exists [file join $::cdl_topdir $::cdl_pkgdir $filename]]} {          \n\
     return \"[set filename][set cdl_anchor]\"                                   \n\
 }                                                                               \n\
-return -error \"\"                                                              \n\
+return \"\"                                                                     \n\
 ";
 
 std::string
@@ -1558,9 +1559,9 @@ CdlLoadableBody::find_relative_file(std::string filename, std::string dirname) c
 static char has_subdirectory_script[] = "                               \n\
 set dirname [file join $::cdl_topdir $::cdl_pkgdir $::cdl_target]       \n\
 if {[file isdirectory $dirname] == 0} {                                 \n\
-    return -error \"\"                                                  \n\
+    return 0                                                            \n\
 }                                                                       \n\
-return 0                                                                \n\
+return 1                                                                \n\
 ";
 
 bool
@@ -1579,7 +1580,7 @@ CdlLoadableBody::has_subdirectory(std::string name) const
 
     std::string tcl_result;
     int tmp = interp->eval(has_subdirectory_script, tcl_result);
-    if (TCL_OK == tmp) {
+    if ((TCL_OK == tmp) && ("1" == tcl_result)) {
         result = true;
     }
 
@@ -2756,12 +2757,13 @@ CdlToplevelBody::savefile_handle_command(CdlInterpreter interp, int argc, char**
     CYG_ASSERTC(toplevel->savefile_commands_initialized);
 
     if (1 == argc) {
-        CdlParse::report_error(interp, "expecting at least one argument to cdl_savefile_command");
+        CdlParse::report_error(interp, "", "Expecting at least one argument to cdl_savefile_command");
     } else if (2 == argc) {
-        CdlParse::report_warning(interp, std::string("missing third argument to `cdl_savefile_command ") + argv[1] +
+        CdlParse::report_warning(interp, "",
+                                 std::string("Missing third argument to `cdl_savefile_command ") + argv[1] +
                                  "'\n.Expecting an additional list of subcommands.");
     } else if (3 != argc) {
-        CdlParse::report_warning(interp, std::string("unexpected additional arguments to `cdl_savefile_command ") +
+        CdlParse::report_warning(interp, "", std::string("Unexpected additional arguments to `cdl_savefile_command ") +
                                  argv[1] + " { " + argv[2] + " }");
     }
 
@@ -2802,7 +2804,7 @@ CdlToplevelBody::savefile_handle_command(CdlInterpreter interp, int argc, char**
         try {
             Tcl_Interp* tcl_interp = interp->get_tcl_interpreter();
             if (TCL_OK != Tcl_SplitList(tcl_interp, argv[2], &list_count, &list_entries)) {
-                CdlParse::report_error(interp, std::string("invalid subcommand list for `cdl_command ") + argv[1] + "'.");
+                CdlParse::report_error(interp, "", std::string("Invalid subcommand list for `cdl_command ") + argv[1] + "'.");
             }
 
             for (int i = 0; i < list_count; i++) {
@@ -2934,8 +2936,7 @@ CdlToplevelBody::savefile_handle_unknown(CdlInterpreter interp, int argc, char**
     CYG_REPORT_FUNCARG2XV(interp, argc);
     CYG_PRECONDITION_CLASSC(interp);
 
-    std::string msg = std::string("Unknown command `") + argv[1] + "'.";
-    CdlParse::report_error(interp, msg);
+    CdlParse::report_error(interp, "", std::string("Unknown command `") + argv[1] + "'.");
     
     CYG_UNUSED_PARAM(int, argc);
     return TCL_OK;
@@ -2971,16 +2972,17 @@ CdlToplevelBody::savefile_handle_version(CdlInterpreter interp, int argc, char**
     CYG_PRECONDITION_CLASSC(interp);
 
     if (1 == argc) {
-        CdlParse::report_warning(interp, "expecting one argument to cdl_savefile_version");
+        CdlParse::report_warning(interp, "", "Expecting one argument to cdl_savefile_version");
     } else {
         if (2 != argc) {
-            CdlParse::report_warning(interp, std::string("unexpected number of arguments to cdl_savefile_version\n") +
+            CdlParse::report_warning(interp, "",
+                                     std::string("Unexpected number of arguments to cdl_savefile_version\n") +
                                      "There should be exactly one argument, the savefile format version number.");
         }
         cdl_int tmp;
         if (!Cdl::string_to_integer(argv[1], tmp)) {
-            CdlParse::report_error(interp, std::string("invalid version number `") + argv[1] +
-                                   "' for cdl_savefile_version");
+            CdlParse::report_error(interp, "",
+                                   std::string("Invalid version number `") + argv[1] + "' for cdl_savefile_version");
         } else {
             // Store the data in a Tcl variable. This is at least as convenient
             // as assoc data.
@@ -3002,7 +3004,7 @@ CdlToplevelBody::get_savefile_version(CdlInterpreter interp)
     std::string version = interp->get_variable("cdl_savefile_version");
     if ("" != version) {
         if (!Cdl::string_to_integer(version, result)) {
-            CdlParse::report_error(interp, std::string("invalid cdl_savefile_version number `") + version + "'");
+            CdlParse::report_error(interp, "", std::string("Invalid cdl_savefile_version number `") + version + "'");
         }
     }
 
@@ -3306,13 +3308,13 @@ CdlUserVisibleBody::check_properties(CdlInterpreter interp)
     CYG_PRECONDITION_CLASSC(interp);
 
     if (count_properties(CdlPropertyId_Display) > 1) {
-        CdlParse::report_error(interp, "There should be at most one display property.");
+        CdlParse::report_error(interp, "", "There should be at most one display property.");
     }
     if (count_properties(CdlPropertyId_Description) > 1) {
-        CdlParse::report_error(interp, "There should be at most one description property.");
+        CdlParse::report_error(interp, "", "There should be at most one description property.");
     }
     if (count_properties(CdlPropertyId_Doc) > 1) {
-        CdlParse::report_error(interp, "There should be at most one doc property.");
+        CdlParse::report_error(interp, "", "There should be at most one doc property.");
     }
     
     // FIXME: more validation of the doc property, in particular check that
@@ -3530,12 +3532,12 @@ CdlParentableBody::check_properties(CdlInterpreter interp)
 
     if (has_property(CdlPropertyId_Parent)) {
         if (count_properties(CdlPropertyId_Parent) > 1) {
-            CdlParse::report_error(interp, "There should be at most one `parent' property.");
+            CdlParse::report_error(interp, "", "There should be at most one `parent' property.");
         }
         CdlProperty_Reference refprop = dynamic_cast<CdlProperty_Reference>(get_property(CdlPropertyId_Parent));
         CYG_ASSERT_CLASSC(this);
         if (get_name() == refprop->get_destination_name()) {
-            CdlParse::report_error(interp, std::string("Node ") + get_name() + " cannot be its own parent.");
+            CdlParse::report_error(interp, "", std::string("Node ") + get_name() + " cannot be its own parent.");
         }
     }
 

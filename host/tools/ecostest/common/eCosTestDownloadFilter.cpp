@@ -53,7 +53,7 @@
 #include "eCosStd.h"
 #include "eCosTrace.h"
 
-#define DL_FILTER_VER "$Id: eCosTestDownloadFilter.cpp,v 1.3 2000/04/07 07:45:09 jlarmour Exp $"
+#define DL_FILTER_VER "$Id: eCosTestDownloadFilter.cpp,v 1.4 2000/04/18 21:51:58 jlarmour Exp $"
 #include "eCosTestDownloadFilter.h"
 
 CeCosTestDownloadFilter::CeCosTestDownloadFilter():
@@ -145,7 +145,7 @@ CeCosTestDownloadFilter::PrintHex(const unsigned char* d1, int len, data_origin_
 }
 
 void
-CeCosTestDownloadFilter::TargetWrite(CeCosTestSerial &pSer, 
+CeCosTestDownloadFilter::TargetWrite(CeCosSerial &pSer, 
                                     const unsigned char* buffer, int len)
 {
     unsigned int __written;
@@ -213,7 +213,7 @@ int
 CeCosTestDownloadFilter::put_binary (unsigned char* buf, int len,
                                      unsigned long dl_address,
                                      int packet_size,
-                                     CeCosTestSerial& serial)
+                                     CeCosSerial& serial)
 {
     int i;
     unsigned char csum;
@@ -323,7 +323,7 @@ CeCosTestDownloadFilter::put_binary (unsigned char* buf, int len,
                     serial.Read(ok_msg, 6, __read);
                     
                     // Reply with ACK
-                    serial.Write("+", 1, __written);
+                    serial.Write((void*)"+", 1, __written);
                     
                     // And process next packet.
                     resend = 0;
@@ -353,8 +353,8 @@ CeCosTestDownloadFilter::put_binary (unsigned char* buf, int len,
 bool CALLBACK
 DownloadFilterFunction(void*& pBuf,
                        unsigned int& nRead,
-                       CeCosTestSerial& serial,
-                       CeCosTestSocket& socket,
+                       CeCosSerial& serial,
+                       CeCosSocket& socket,
                        void* pParem)
 {
     CeCosTestDownloadFilter* p = (CeCosTestDownloadFilter*) pParem;
@@ -376,8 +376,8 @@ DownloadFilterFunction(void*& pBuf,
 bool
 CeCosTestDownloadFilter::FilterFunctionProper(void*& pBuf,
                                               unsigned int& nRead,
-                                              CeCosTestSerial& serial,
-                                              CeCosTestSocket& socket)
+                                              CeCosSerial& serial,
+                                              CeCosSocket& socket)
 {
     char* buffer = (char*) pBuf;
 
@@ -461,7 +461,7 @@ CeCosTestDownloadFilter::FilterFunctionProper(void*& pBuf,
 
                 // Send + to target, acking whatever packet was pending
                 unsigned int __written = 0;
-                serial.Write("+", 1, __written);
+                serial.Write((void*)"+", 1, __written);
                 
                 // Convert to packets and transfer to target.
                 if (put_binary((unsigned char*) buf.Data(), 
@@ -469,7 +469,7 @@ CeCosTestDownloadFilter::FilterFunctionProper(void*& pBuf,
                     // Send detach signal to target
                     unsigned char ch;
                     unsigned int __read;
-                    serial.Write("$D#44", 5, __written);
+                    serial.Write((void*)"$D#44", 5, __written);
                     serial.Read(&ch, 1, __read);
                     
                     // Reply to host marking end of download

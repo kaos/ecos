@@ -3402,28 +3402,28 @@ CdlValuableBody::check_properties(CdlInterpreter interp)
     //       This could prove useful if there are a sensible number
     //       of library check_proc's.
     if (count_properties(CdlPropertyId_Flavor) > 1) {
-        CdlParse::report_error(interp, "There should be at most one flavor property.");
+        CdlParse::report_error(interp, "", "There should be at most one flavor property.");
     }
     if (count_properties(CdlPropertyId_EntryProc) > 1) {
-        CdlParse::report_error(interp, "There should be at most one entry_proc property.");
+        CdlParse::report_error(interp, "", "There should be at most one entry_proc property.");
     }
     if (count_properties(CdlPropertyId_CheckProc) > 1) {
-        CdlParse::report_error(interp, "There should be at most one check_proc property.");
+        CdlParse::report_error(interp, "", "There should be at most one check_proc property.");
     }
     if (count_properties(CdlPropertyId_DefaultValue) > 1) {
-        CdlParse::report_error(interp, "There should be at most one default_value property.");
+        CdlParse::report_error(interp, "", "There should be at most one default_value property.");
     }
     if (count_properties(CdlPropertyId_LegalValues) > 1) {
-        CdlParse::report_error(interp, "There should be at most one legal_values property.");
+        CdlParse::report_error(interp, "", "There should be at most one legal_values property.");
     }
     if (count_properties(CdlPropertyId_Dialog) > 1) {
-        CdlParse::report_error(interp, "There should be at most one dialog property.");
+        CdlParse::report_error(interp, "", "There should be at most one dialog property.");
     }
     if (count_properties(CdlPropertyId_Wizard) > 1) {
-        CdlParse::report_error(interp, "There should be at most one wizard property.");
+        CdlParse::report_error(interp, "", "There should be at most one wizard property.");
     }
     if (count_properties(CdlPropertyId_Calculated) > 1) {
-        CdlParse::report_error(interp, "There should be at most one calculated property.");
+        CdlParse::report_error(interp, "", "There should be at most one calculated property.");
     }
 
     // If there is a flavor property, update the flavor in the base class
@@ -3435,7 +3435,7 @@ CdlValuableBody::check_properties(CdlInterpreter interp)
         CdlValueFlavor flavor;
         // The property parsing code should have caught any problems already.
         if (!Cdl::string_to_flavor(flavor_string, flavor)) {
-            CdlParse::report_error(interp, "Invalid flavor " + flavor_string);
+            CdlParse::report_error(interp, "", "Invalid flavor " + flavor_string);
         } else {
             value.set_flavor(flavor);
         }
@@ -3456,13 +3456,13 @@ CdlValuableBody::check_properties(CdlInterpreter interp)
     // that the current value is legal.
     if (CdlValueFlavor_Bool == get_flavor()) {
         if (has_property(CdlPropertyId_LegalValues)) {
-            CdlParse::report_error(interp, "The \"legal_values\" property is not applicable to boolean entities."); 
+            CdlParse::report_error(interp, "", "The \"legal_values\" property is not applicable to boolean entities."); 
         }
     }
 
     // default_value and calculated are mutually exclusive
     if (has_property(CdlPropertyId_Calculated) && has_property(CdlPropertyId_DefaultValue)) {
-        CdlParse::report_error(interp, "The properties \"default_value\" and \"calculated\" cannot be used together.");
+        CdlParse::report_error(interp, "", "The properties \"default_value\" and \"calculated\" cannot be used together.");
     }
 
 #if 0
@@ -3471,7 +3471,7 @@ CdlValuableBody::check_properties(CdlInterpreter interp)
     // a text entry widget will be used and an entry_proc may well be
     // applicable.
     if (has_property(CdlPropertyId_Dialog) && has_property(CdlPropertyId_EntryProc)) {
-        CdlParse::report_error(interp, "The properties \"dialog\" and \"entry_proc\" cannot be used together.");
+        CdlParse::report_error(interp, "", "The properties \"dialog\" and \"entry_proc\" cannot be used together.");
     }
 #endif    
 
@@ -3943,7 +3943,7 @@ CdlValuableBody::savefile_value_source_command(CdlInterpreter interp, int argc, 
         } else {
             msg += "The specified value source is not valid.";
         }
-        CdlParse::report_error(interp, msg);
+        CdlParse::report_error(interp, "", msg);
     } else {
         valuable->set_source(transaction, source);
     }
@@ -4012,9 +4012,9 @@ CdlValuableBody::savefile_xxx_value_command(CdlInterpreter interp, int argc, cha
         msg = std::string("Invalid value command for ") + valuable->get_class_name() + " " + valuable->get_name() + "\n"
             + msg;
         if (error) {
-            CdlParse::report_error(interp, msg);
-        }else {
-            CdlParse::report_warning(interp, msg);
+            CdlParse::report_error(interp, "", msg);
+        } else {
+            CdlParse::report_warning(interp, "", msg);
         }
     }
 

@@ -1,3 +1,11 @@
+2000-04-12  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/debugging.cdl: Don't let interfaces define anything.
+
+2000-04-07  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal.cdl: Fix dependencies for stub.
+
 2000-03-28  Jesper Skov  <jskov@redhat.com>
 
 	* src/generic-stub.c (__process_packet): Added 'z' packet reply.

@@ -26,46 +26,22 @@
 //
 //////////////////////////////////////////////////////////////////////
 #include "Properties.h"
-#if defined (_AFXDLL) || defined(_AFXEXT)
-    // MFC
-    //#ifdef _DEBUG
-    //#undef THIS_FILE
-    //static char THIS_FILE[]=__FILE__;
-    //#define new DEBUG_NEW
-    //#endif
-    #include <assert.h>
-    #include <sys/types.h> 
-    #include <sys/stat.h>
-    #include <direct.h>
-#endif
-
+#include "eCosTrace.h"
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CProperties::CProperties(LPCTSTR pszKey,void *hKey):
-  m_strName(pszKey),
-  m_hKey(hKey)
+CProperties::CProperties()
 {
 }
 
 CProperties::~CProperties()
 {
-    RemoveAll();
-}
-
-void CProperties::RemoveAll()
-{
-    for(int i=ar.size()-1;i>=0;--i){
-        delete (CProperties::CProperty *)ar[i];
-    }
-    ar.clear();
 }
 
 #ifdef _WIN32
-bool CProperties::LoadFromRegistry(HKEY hTopKey,LPCTSTR szRegKey,LPCTSTR pszPrefix)
+bool CProperties::LoadFromRegistry(HKEY hTopKey,LPCTSTR szRegKey)
 {
-  int nPrefixlen=_tcslen(pszPrefix);
   HKEY hKey;
   LONG l=RegOpenKeyEx (hTopKey, szRegKey, 0L, KEY_QUERY_VALUE, &hKey);
   bool rc=(ERROR_SUCCESS==l);
@@ -78,67 +54,63 @@ bool CProperties::LoadFromRegistry(HKEY hTopKey,LPCTSTR szRegKey,LPCTSTR pszPref
       char *Data=new char[dwMaxDatalen];
       DWORD dwDatalen=dwMaxDatalen;
       for(DWORD dwIndex=0;ERROR_SUCCESS==RegEnumValue(hKey, dwIndex, szName, &dwSizeName, NULL, &dwType, (LPBYTE)Data, &dwDatalen);dwIndex++){ 
-        if(0!=_tcsncmp(pszPrefix,szName,nPrefixlen)){
-          continue;
-        }
         
-        CProperties::CProperty *p=Lookup(szName+nPrefixlen);
+        CProperties::CProperty *p=Lookup(szName);
         if(p){
           switch(p->Type){
-          case CProperty::Integer:
-            if(REG_DWORD==dwType){
-              p->SetValue(*(int *)Data);
-            } else {
-              //TRACE(_T("Type mismatch - %s: expected REG_DWORD, got %d\n"),(LPCTSTR)p->strName,dwType);
-              rc=false;
-            }
-            break;
-          case CProperty::Bool:
-            if(REG_DWORD==dwType){
-              p->SetValue((bool)0!=*(int *)Data);
-            } else {
-              //TRACE(_T("Type mismatch - %s: expected REG_DWORD, got %d\n"),(LPCTSTR)p->strName,dwType);
-              rc=false;
-            }
-            break;
-          case CProperty::Char:
-            if(REG_DWORD==dwType){
-              p->SetValue(*(char *)Data);
-            } else {
-              //TRACE(_T("Type mismatch - %s: expected REG_DWORD, got %d\n"),(LPCTSTR)p->strName,dwType);
-              rc=false;
-            }
-            break;
-          case CProperty::Short:
-            if(REG_DWORD==dwType){
-              p->SetValue(*(short *)Data);
-            } else {
-              //TRACE(_T("Type mismatch - %s: expected REG_DWORD, got %d\n"),(LPCTSTR)p->strName,dwType);
-              rc=false;
-            }
-            break;
-          case CProperty::Float:
-          case CProperty::Double:
-          case CProperty::szString: 
-          case CProperty::GPString: 
-            if(REG_SZ==dwType){
-              rc&=p->SetValue((LPCTSTR)Data);
-            } else {
-              //TRACE(_T("Type mismatch - %s: expected REG_SZ, got %d\n"),(LPCTSTR)p->strName,dwType);
-              rc=false;
-            }
-            break;
-          case CProperty::Void:
-            if(REG_BINARY==dwType){
-              memcpy(p->pData,Data,min(dwDatalen,p->nLength));
-            } else {
-              //TRACE(_T("Type mismatch - %s: expected REG_BINARY, got %d\n"),(LPCTSTR)p->strName,dwType);
-              rc=false;
-            }
-            break;
+            case CProperty::Integer:
+              if(REG_DWORD==dwType){
+                p->SetValue(*(int *)Data);
+              } else {
+                TRACE(_T("Type mismatch - %s: expected REG_DWORD, got %d\n"),(LPCTSTR)p->strName,dwType);
+                rc=false;
+              }
+              break;
+            case CProperty::Bool:
+              if(REG_DWORD==dwType){
+                p->SetValue((bool)0!=*(int *)Data);
+              } else {
+                TRACE(_T("Type mismatch - %s: expected REG_DWORD, got %d\n"),(LPCTSTR)p->strName,dwType);
+                rc=false;
+              }
+              break;
+            case CProperty::Char:
+              if(REG_DWORD==dwType){
+                p->SetValue(*(char *)Data);
+              } else {
+                TRACE(_T("Type mismatch - %s: expected REG_DWORD, got %d\n"),(LPCTSTR)p->strName,dwType);
+                rc=false;
+              }
+              break;
+            case CProperty::Short:
+              if(REG_DWORD==dwType){
+                p->SetValue(*(short *)Data);
+              } else {
+                TRACE(_T("Type mismatch - %s: expected REG_DWORD, got %d\n"),(LPCTSTR)p->strName,dwType);
+                rc=false;
+              }
+              break;
+            case CProperty::Float:
+            case CProperty::Double:
+            case CProperty::szString: 
+              if(REG_SZ==dwType){
+                rc&=p->SetValue((LPCTSTR)Data);
+              } else {
+                TRACE(_T("Type mismatch - %s: expected REG_SZ, got %d\n"),(LPCTSTR)p->strName,dwType);
+                rc=false;
+              }
+              break;
+            case CProperty::Void:
+              if(REG_BINARY==dwType){
+                memcpy(p->pData,Data,min(dwDatalen,p->nLength));
+              } else {
+                TRACE(_T("Type mismatch - %s: expected REG_BINARY, got %d\n"),(LPCTSTR)p->strName,dwType);
+                rc=false;
+              }
+              break;
           }
         } else {
-          //TRACE(_T("CProperties::LoadFromRegistry - unrecognized value %s\\%s\n"),szRegKey,szName);
+          TRACE(_T("CProperties::LoadFromRegistry - unrecognized value %s in key %s\n"),szName,szRegKey);
           rc=false;
         }
         dwSizeName=sizeof szName;
@@ -149,13 +121,13 @@ bool CProperties::LoadFromRegistry(HKEY hTopKey,LPCTSTR szRegKey,LPCTSTR pszPref
     }
     RegCloseKey(hKey);
   } else {
-    //TRACE(_T("Failed to open %s\n"),szRegKey);
+    TRACE(_T("Failed to open %s\n"),szRegKey);
   }
   
   return rc;
 }
 
-bool CProperties::SaveToRegistry(HKEY hTopKey,LPCTSTR szRegKey,LPCTSTR pszPrefix) const
+bool CProperties::SaveToRegistry(HKEY hTopKey,LPCTSTR szRegKey) const
 {
   HKEY hKey;
   CreateKey(szRegKey);
@@ -169,38 +141,35 @@ bool CProperties::SaveToRegistry(HKEY hTopKey,LPCTSTR szRegKey,LPCTSTR pszPrefix
       // strValue and dw *must* be in scope for RegSetValueEx below.
       DWORD dw;
       String strValue;
-      CProperties::CProperty *p=(CProperties::CProperty *)ar[i];
-      switch(p->Type){
+      const CProperty &p=ar[i];
+      switch(p.Type){
         case CProperties::CProperty::Integer:
         case CProperties::CProperty::Bool:
         case CProperties::CProperty::Char:
         case CProperties::CProperty::Short:
           dwType=REG_DWORD;
           dwDatalen=sizeof(DWORD);
-          dw=p->GetValue();
+          dw=p.GetValue();
           Data=(BYTE *)&dw;
           break;
         case CProperties::CProperty::Float:
         case CProperties::CProperty::Double:
         case CProperties::CProperty::szString:
-        case CProperties::CProperty::GPString:
-          strValue=p->GetStringValue();
+          strValue=p.GetStringValue();
           Data=(BYTE *)(LPCTSTR)strValue;
           dwType=REG_SZ;
-          dwDatalen=(1+strValue.GetLength())*sizeof(_TCHAR);
+          dwDatalen=(1+strValue.size())*sizeof(_TCHAR);
           break;
         case CProperties::CProperty::Void:
-          Data=(BYTE *)p->pData;
+          Data=(BYTE *)p.pData;
           dwType=REG_BINARY;
-          dwDatalen=p->nLength;
+          dwDatalen=p.nLength;
           break;
         default:
           assert(false);
           break;
       }
-      String strName(pszPrefix);
-      strName+=p->strName;
-      rc&=(ERROR_SUCCESS==RegSetValueEx(hKey,strName,0,dwType,Data,dwDatalen));
+      rc&=(ERROR_SUCCESS==RegSetValueEx(hKey,p.strName,0,dwType,Data,dwDatalen));
     }
   }   
   RegCloseKey(hKey);
@@ -210,50 +179,49 @@ bool CProperties::SaveToRegistry(HKEY hTopKey,LPCTSTR szRegKey,LPCTSTR pszPrefix
 // Create all keys down to the one specified
 bool CProperties::CreateKey(LPCTSTR pszKey,HKEY hKey/*=HKEY_CURRENT_USER*/)
 {
-    bool rc=true;
-    LPCTSTR pcStart=pszKey;
-    LPCTSTR pcEnd;
-    do {
-        HKEY hKey2;
-        pcEnd=_tcschr(pcStart,_TCHAR('\\'));
-        if(NULL==pcEnd){
-            pcEnd=pcStart+_tcslen(pcStart);
-        }
-        String strKey(pcStart,pcEnd-pcStart);
-        if(ERROR_SUCCESS!=RegCreateKeyEx(hKey,                // handle to an open key
-              strKey,         // address of subkey name
-              0,           // reserved
-              0,           // address of class string
-              REG_OPTION_NON_VOLATILE,          // special options flag
-              KEY_ALL_ACCESS,        // desired security access
-              NULL,
-                                        // address of key security structure
-              &hKey2,          // address of buffer for opened handle
-              NULL// address of disposition value buffer);
-              )){
-            rc=false;
-            break;
-        }
-        RegCloseKey(hKey);
-        hKey=hKey2;
-        pcStart=pcEnd+1;
-    } while (_TCHAR('\0')!=*pcEnd);
+  bool rc=true;
+  LPCTSTR pcStart=pszKey;
+  LPCTSTR pcEnd;
+  do {
+    HKEY hKey2;
+    pcEnd=_tcschr(pcStart,_TCHAR('\\'));
+    if(NULL==pcEnd){
+      pcEnd=pcStart+_tcslen(pcStart);
+    }
+    String strKey(pcStart,pcEnd-pcStart);
+    if(ERROR_SUCCESS!=RegCreateKeyEx(hKey,                // handle to an open key
+      strKey,         // address of subkey name
+      0,           // reserved
+      0,           // address of class string
+      REG_OPTION_NON_VOLATILE,          // special options flag
+      KEY_ALL_ACCESS,        // desired security access
+      NULL,
+      // address of key security structure
+      &hKey2,          // address of buffer for opened handle
+      NULL// address of disposition value buffer);
+      )){
+      rc=false;
+      break;
+    }
     RegCloseKey(hKey);
-    return rc;
+    hKey=hKey2;
+    pcStart=pcEnd+1;
+  } while (_TCHAR('\0')!=*pcEnd);
+  RegCloseKey(hKey);
+  return rc;
 }
 
 #endif
 
-bool CProperties::LoadFromCommandString(LPCTSTR psz,LPCTSTR pszPrefix/*=_T("-")*/)
+bool CProperties::LoadFromCommandString(LPCTSTR psz)
 {
   bool rc=true;
   const TCHAR *cNext;
-  int nPrefixlen=_tcslen(pszPrefix);
-  for(LPCTSTR c=_tcsstr(psz,pszPrefix);c;c=_tcsstr(cNext,pszPrefix)){
-    c+=nPrefixlen;
+  for(LPCTSTR c=_tcschr(psz,_TCHAR('-'));c;c=_tcschr(cNext,_TCHAR('-'))){
+    c++;
     const TCHAR *pEq=_tcschr(c,_TCHAR('='));
     if(NULL==pEq){
-      //TRACE(_T("Failed to find '=' after %s\n"),c);
+      TRACE(_T("Failed to find '=' after %s\n"),c);
       rc=false;
       break;
     }
@@ -277,45 +245,57 @@ bool CProperties::LoadFromCommandString(LPCTSTR psz,LPCTSTR pszPrefix/*=_T("-")*
     if(p){
       rc&=p->SetValue(str);
     } else {
-      //TRACE(_T("Properties: unrecognized attribute %s in command string\n"),(LPCTSTR)strName);
+      TRACE(_T("Properties: unrecognized attribute %s in command string\n"),(LPCTSTR)strName);
       rc=false;
     }
+    c=cNext;
   }
   return rc;
 }
 
 CProperties::CProperty * CProperties::Lookup(LPCTSTR pszName)
 {
-    for(int i=ar.size()-1;i>=0;--i){
-        CProperties::CProperty *p=(CProperties::CProperty *)ar[i];
-        if(p->strName==pszName){
-            return p;
-        }
+  for(int i=ar.size()-1;i>=0;--i){
+    CProperties::CProperty &p=ar[i];
+    if(0==_tcsicmp(p.strName,pszName)){
+      return &p;
     }
-    return NULL;
+  }
+  return NULL;
 }
 
-String CProperties::MakeCommandString(LPCTSTR pszPrefix/*=_T("-")*/) const
+String CProperties::MakeCommandString() const
 {
   String strResult;
   bool bFirst=true;
   for(int i=ar.size()-1;i>=0;--i){
     String str;    
-    CProperties::CProperty *p=(CProperties::CProperty *)ar[i];
-    switch(p->Type){
-    case CProperties::CProperty::Integer:
-    case CProperties::CProperty::Bool:
-    case CProperties::CProperty::Char:
-    case CProperties::CProperty::Short:
-      str.Format(_T("%s%s=%u"),pszPrefix,(LPCTSTR)p->strName,p->GetValue());
-      break;
-    case CProperties::CProperty::szString:
-    case CProperties::CProperty::GPString:
-    case CProperties::CProperty::Float:
-    case CProperties::CProperty::Double:
-    case CProperties::CProperty::Void:
-      str.Format(_T("%s%s=\"%s\""),pszPrefix,(LPCTSTR)p->strName,(LPCTSTR)p->GetStringValue());
-      break;
+    const CProperty &p=ar[i];
+    switch(p.Type){
+      case CProperties::CProperty::Integer:
+      case CProperties::CProperty::Bool:
+      case CProperties::CProperty::Char:
+      case CProperties::CProperty::Short:
+        str.Format(_T("-%s=%u"),(LPCTSTR)p.strName,p.GetValue());
+        break;
+      case CProperties::CProperty::szString:
+        {
+          // Quote the string, escaping existing quotes as necessary
+          str.Format(_T("-%s=\""),(LPCTSTR)p.strName);
+          for(LPCTSTR c=p.GetStringValue();*c;c++){
+            if(_TCHAR('"')==*c){
+              str+=_TCHAR('\\');
+            }
+            str+=*c;
+          }
+          str+=_TCHAR('"');
+        }
+        break;
+      case CProperties::CProperty::Float:
+      case CProperties::CProperty::Double:
+      case CProperties::CProperty::Void:
+        str.Format(_T("-%s=%s"),(LPCTSTR)p.GetStringValue());
+        break;
     }
     if(!bFirst){
       strResult+=_TCHAR(' ');
@@ -328,60 +308,53 @@ String CProperties::MakeCommandString(LPCTSTR pszPrefix/*=_T("-")*/) const
 
 bool CProperties::CreatePathToFile(LPCTSTR pszDir) 
 {
-    // Create intermediate directories
-    #ifdef _WIN32
-    const TCHAR cSep='\\';
-    #else // UNIX
-    const TCHAR cSep='/';
-    #endif
-    for(LPCTSTR c=_tcschr(pszDir,cSep);c;c=_tcschr(c+1,cSep)){
-        #ifdef _WIN32
-        if(c==pszDir+2 && _istalpha(pszDir[0]) && _TCHAR(':')==pszDir[1]){
-            continue; // don't attempt to create "C:"
-        }
-        #endif
-        String strDir(pszDir,c-pszDir);
-        struct _stat buf;
-        if(!(0==_tstat(strDir,&buf) && (S_IFDIR&buf.st_mode))){
-            // Need to create directory
-            bool b=(0==_tmkdir(strDir));
-            //TRACE(_T("Create directory %s rc=%d\n"),(LPCTSTR)strDir,b);
-            if(!b){
-                return false;
-            }
-        }
+  // Create intermediate directories
+#ifdef _WIN32
+  const TCHAR cSep='\\';
+#else // UNIX
+  const TCHAR cSep='/';
+#endif
+  for(LPCTSTR c=_tcschr(pszDir,cSep);c;c=_tcschr(c+1,cSep)){
+#ifdef _WIN32
+    if(c==pszDir+2 && _istalpha(pszDir[0]) && _TCHAR(':')==pszDir[1]){
+      continue; // don't attempt to create "C:"
     }
-    return true;
+#endif
+    String strDir(pszDir,c-pszDir);
+    struct _stat buf;
+    if(!(0==_tstat(strDir,&buf) && (S_IFDIR&buf.st_mode))){
+      // Need to create directory
+      bool b=(0==_tmkdir(strDir));
+      TRACE(_T("Create directory %s rc=%d\n"),(LPCTSTR)strDir,b);
+      if(!b){
+        return false;
+      }
+    }
+  }
+  return true;
 }
 
-bool CProperties::SaveToFile(LPCTSTR pszFileName,LPCTSTR pszPrefix) const
+bool CProperties::SaveToFile(LPCTSTR pszFileName) const
 {
   CreatePathToFile(pszFileName);
-  // If we have a prefix, we assume we're tagging on to an existing file
-  FILE *f=_tfopen(pszFileName,(_TCHAR('\0')==*pszPrefix)?_T("wt"):_T("at"));
+  FILE *f=_tfopen(pszFileName,_T("w") MODE_TEXT);
   if(f){
     for(int i=ar.size()-1;i>=0;--i){
-      CProperties::CProperty *p=(CProperties::CProperty *)ar[i];
-      String str(pszPrefix);
-      str+=p->strName;
+      const CProperty &p=ar[i];
+      String str(p.strName);
       str+=_TCHAR('=');
-      switch(p->Type){
+      switch(p.Type){
         case CProperties::CProperty::Integer:
         case CProperties::CProperty::Bool:
         case CProperties::CProperty::Char:
         case CProperties::CProperty::Short:
-          {
-            String strN;
-            strN.Format(_T("%u"),p->GetValue());
-            str+=strN;
-          }
+          str+=String::SFormat(_T("%u"),p.GetValue());
           break;
         case CProperties::CProperty::Float:
         case CProperties::CProperty::Double:
         case CProperties::CProperty::szString:
-        case CProperties::CProperty::GPString:
         case CProperties::CProperty::Void:
-          str+=p->GetStringValue();
+          str+=p.GetStringValue();
           break;
       }
       str+=_TCHAR('\n');
@@ -392,36 +365,50 @@ bool CProperties::SaveToFile(LPCTSTR pszFileName,LPCTSTR pszPrefix) const
   return (0!=f);
 }
 
-bool CProperties::LoadFromFile(LPCTSTR pszFileName,LPCTSTR pszPrefix)
+bool CProperties::LoadFromFile(LPCTSTR pszFileName)
 {
-  int nPrefixlen=_tcslen(pszPrefix);
-  FILE *f=_tfopen(pszFileName,_T("rt"));
+  FILE *f=_tfopen(pszFileName,_T("r") MODE_TEXT);
   bool rc=(0!=f);
   if(rc){
-    TCHAR c[256];
-    while(_fgetts(c,sizeof(c)-1,f)){
-      if(_TCHAR('\0')!=c[0]){
-        c[_tcslen(c)-1]=_TCHAR('\0'); // remove trailing \n
-      }
-      if((signed)_tcslen(c)>nPrefixlen && 0==_tcsncmp(c,pszPrefix,nPrefixlen)){
-        TCHAR *pEq=_tcschr(c,_TCHAR('='));
-        if(pEq){
-          const String strName(c+nPrefixlen,pEq-c-nPrefixlen);
-          CProperties::CProperty *p=Lookup(strName);
-          if(p){
-            pEq++;
-            rc&=p->SetValue(pEq);
-          } else {
-            //TRACE(_T("Failed to find %s\n"),(LPCTSTR)strName);
-            rc=false;
+    TCHAR buf[4096];
+    int nLine=0;
+    String str;
+    while(_fgetts(buf,sizeof(buf)-1,f)){
+      
+      nLine++;
+      int nLen=_tcslen(buf);
+      if(nLen>0){
+        // Remove trailing '\n'
+        if(_TCHAR('\n')==buf[nLen-1]){
+          buf[--nLen]=_TCHAR('\0');
+        }
+        
+        // Check for continuation lines
+        if(_TCHAR('\\')==buf[nLen-1]){
+          buf[--nLen]=_TCHAR('\0');
+          str+=buf;
+        } else {
+          str+=buf;
+          LPCTSTR c=(LPCTSTR)str;
+          const TCHAR *pEq=_tcschr(c,_TCHAR('='));
+          if(pEq){
+            const String strName(c,pEq-c);
+            CProperties::CProperty *p=Lookup(strName);
+            if(p){
+              pEq++;
+              rc&=p->SetValue(pEq);
+            } else {
+              ERROR(_T("Unknown attribute %s found in %s line %d\n"),(LPCTSTR)strName,pszFileName,nLine);
+              rc=false;
+            }
           }
+          str=_T("");
         }
       }
     }
     fclose(f);
   }
   return rc;
-  
 }
 
 CProperties::CProperty::CProperty(LPCTSTR pszName,Typetype type,void *_pData):
@@ -435,310 +422,212 @@ CProperties::CProperty::~CProperty()
 {
 }
 
-void CProperties::Add(LPCTSTR pszName,int &n,int _nDefault) 
+void CProperties::Add(LPCTSTR pszName,int &n) 
 {
-    CProperty *p=new CProperty(pszName,CProperty::Integer,&n);
-    p->nDefault=_nDefault;
-    ar.push_back(p);
+  CProperty p(pszName,CProperty::Integer,&n);
+  ar.push_back(p);
 }
 
-void CProperties::Add(LPCTSTR pszName,unsigned int &n,unsigned int _nDefault)
+void CProperties::Add(LPCTSTR pszName,unsigned int &n)
 {
-    CProperty *p=new CProperty(pszName,CProperty::Integer,&n);
-    p->nDefault=_nDefault;
-    ar.push_back(p);
+  CProperty p(pszName,CProperty::Integer,&n);
+  ar.push_back(p);
 }
 
-void CProperties::Add(LPCTSTR pszName,bool &b,bool _bDefault)
+void CProperties::Add(LPCTSTR pszName,bool &b)
 {
-    CProperty *p=new CProperty(pszName,CProperty::Bool,&b);
-    p->nDefault=_bDefault;
-    ar.push_back(p);
+  CProperty p(pszName,CProperty::Bool,&b);
+  ar.push_back(p);
 }
 
-void CProperties::Add(LPCTSTR pszName,char &c,char _cDefault)
+void CProperties::Add(LPCTSTR pszName,char &c)
 {
-    CProperty *p=new CProperty(pszName,CProperty::Char,&c);
-    p->nDefault=_cDefault;
-    ar.push_back(p);
+  CProperty p(pszName,CProperty::Char,&c);
+  ar.push_back(p);
 }
 
-void CProperties::Add(LPCTSTR pszName,unsigned char &c,unsigned char _cDefault)
+void CProperties::Add(LPCTSTR pszName,unsigned char &c)
 {
-    CProperty *p=new CProperty(pszName,CProperty::Char,&c);
-    p->nDefault=_cDefault;
-    ar.push_back(p);
+  CProperty p(pszName,CProperty::Char,&c);
+  ar.push_back(p);
 }
 
-void CProperties::Add(LPCTSTR pszName,short &s,short _sDefault)
+void CProperties::Add(LPCTSTR pszName,short &s)
 {
-    CProperty *p=new CProperty(pszName,CProperty::Short,&s);
-    p->nDefault=_sDefault;
-    ar.push_back(p);
+  CProperty p(pszName,CProperty::Short,&s);
+  ar.push_back(p);
 }
 
-void CProperties::Add(LPCTSTR pszName,unsigned short &s,unsigned short _sDefault)
+void CProperties::Add(LPCTSTR pszName,unsigned short &s)
 {
-    CProperty *p=new CProperty(pszName,CProperty::Short,&s);
-    p->nDefault=_sDefault;
-    ar.push_back(p);
+  CProperty p(pszName,CProperty::Short,&s);
+  ar.push_back(p);
 }
 
-void CProperties::Add(LPCTSTR pszName,float &f,float _fDefault)
+void CProperties::Add(LPCTSTR pszName,float &f)
 {
-    CProperty *p=new CProperty(pszName,CProperty::Float,&f);
-    p->dDefault=_fDefault;
-    ar.push_back(p);
+  CProperty p(pszName,CProperty::Float,&f);
+  ar.push_back(p);
 }
 
-void CProperties::Add(LPCTSTR pszName,double &f,double dDefault) 
+void CProperties::Add(LPCTSTR pszName,double &f) 
 {
-    CProperty *p=new CProperty(pszName,CProperty::Double,&f);
-    p->dDefault=dDefault;
-    ar.push_back(p);
+  CProperty p(pszName,CProperty::Double,&f);
+  ar.push_back(p);
 }
 
-void CProperties::Add(LPCTSTR pszName,void *pv,unsigned int _nLength,void *pvDefault)
+void CProperties::Add(LPCTSTR pszName,void *pv,unsigned int _nLength)
 {
-    CProperty *p=new CProperty(pszName,CProperty::Void,pv);
-    p->nLength=_nLength;
-    p->pvDefault=pvDefault;
-    ar.push_back(p);
+  CProperty p(pszName,CProperty::Void,pv);
+  p.nLength=_nLength;
+  ar.push_back(p);
 }
 
-void CProperties::Add(LPCTSTR pszName,LPTSTR s,unsigned int _nLength,LPCTSTR _pszDefault)
+void CProperties::Add(LPCTSTR pszName,String &s)
 {
-    CProperty *p=new CProperty(pszName,CProperty::szString,s);
-    p->nLength=_nLength;
-    p->strDefault=_pszDefault;
-    ar.push_back(p);
-}
-
-void CProperties::Add (LPCTSTR pszName,void *pObj,getFn *getFn,putFn *putFn,LPCTSTR pszDefault)
-{
-    CProperty *p=new CProperty(pszName,CProperty::GPString,pObj);
-    p->strDefault=pszDefault;
-    p->pgetFn=getFn;
-    p->pputFn=putFn;
-    p->strDefault=pszDefault;
-    ar.push_back(p);
+  CProperty p(pszName,CProperty::szString,(void *)&s);
+  ar.push_back(p);
 }
 
 unsigned long CProperties::CProperty::GetValue() const
 {
-    unsigned long dw;
-    switch(Type){
-        case Integer:
-            dw=*(int *)pData;
-            break;
-        case Bool:
-            dw=*(bool *)pData;
-            break;
-        case Char:
-            dw=*(char *)pData;
-            break;
-        case Short:
-            dw=*(short *)pData;
-            break;
-        default:
-            dw=0;
-            assert(false);
-    }
-    return dw;
+  unsigned long dw;
+  switch(Type){
+    case Integer:
+      dw=*(int *)pData;
+      break;
+    case Bool:
+      dw=*(bool *)pData;
+      break;
+    case Char:
+      dw=*(char *)pData;
+      break;
+    case Short:
+      dw=*(short *)pData;
+      break;
+    default:
+      dw=0;
+      assert(false);
+  }
+  return dw;
 }
 
 const String CProperties::CProperty::GetStringValue() const 
 {
-    String str;
-    switch(Type){
-        case szString:
-            str=(LPCTSTR)(pData); 
-            break;
-        case GPString:
-            str=pgetFn(pData); 
-            break;
-        case CProperties::CProperty::Integer:
-        case CProperties::CProperty::Bool:
-        case CProperties::CProperty::Char:
-        case CProperties::CProperty::Short:
-            str.Format(_T("%u"),GetValue());
-            break;
-        case CProperties::CProperty::Float:
-            str.Format(_T("%e"),*(float *)(pData));
-            break;
-        case CProperties::CProperty::Double:
-            str.Format(_T("%e"),*(double *)(pData));
-            break;
-        case CProperties::CProperty::Void:
-            {
-                unsigned char *c=(unsigned char *)pData;
-                for(unsigned int i=0;i<nLength;i++){
-                    TCHAR buf[3];
-                    _tprintf(buf,_T("%02x"),c[i]);
-                    str+=buf;
-                }
-            }
-            break;
-        default:
-            break;
-    }
-    return str;
+  String str;
+  switch(Type){
+    case szString:
+      str=*(String *)pData; 
+      break;
+    case CProperties::CProperty::Integer:
+    case CProperties::CProperty::Bool:
+    case CProperties::CProperty::Char:
+    case CProperties::CProperty::Short:
+      str.Format(_T("%u"),GetValue());
+      break;
+    case CProperties::CProperty::Float:
+      str.Format(_T("%e"),*(float *)(pData));
+      break;
+    case CProperties::CProperty::Double:
+      str.Format(_T("%e"),*(double *)(pData));
+      break;
+    case CProperties::CProperty::Void:
+      {
+        unsigned char *c=(unsigned char *)pData;
+        for(unsigned int i=0;i<nLength;i++){
+          TCHAR buf[3];
+          _tprintf(buf,_T("%02x"),c[i]);
+          str+=buf;
+        }
+      }
+      break;
+    default:
+      break;
+  }
+  return str;
 }
 
 bool CProperties::CProperty::SetValue(int n)
 {
-    bool rc=true;
-    switch(Type){
-        case Integer:
-            *(int *)(pData)=n;
-            break;
-        case Bool:
-            *(bool *)(pData)=(0!=n);
-            break;
-        case Char:
-            *(char *)(pData)=(char)n; //FIXME: range checks
-            break;
-        case Short:
-            *(short *)(pData)=(short)n;//FIXME: range checks
-            break;
-        default:
-            //TRACE(_T("Failed to set '%s' to integer value '%d'\n"),(LPCTSTR)strName,n);
-            break;
-    }
-    return rc;
+  bool rc=true;
+  switch(Type){
+    case Integer:
+      *(int *)(pData)=n;
+      break;
+    case Bool:
+      *(bool *)(pData)=(0!=n);
+      break;
+    case Char:
+      *(char *)(pData)=(char)n; //FIXME: range checks
+      break;
+    case Short:
+      *(short *)(pData)=(short)n;//FIXME: range checks
+      break;
+    default:
+      TRACE(_T("Failed to set '%s' to integer value '%d'\n"),(LPCTSTR)strName,n);
+      break;
+  }
+  return rc;
 }
 
 bool CProperties::CProperty::SetValue(double n)
 {
-    bool rc=true;
-    switch(Type){
-        case Double:
-            *(float *)(pData)=(float)n;//FIXME: range checks?
-            break;
-        case Float:
-            *(double *)(pData)=n;
-            break;
-        default:
-            //TRACE(_T("Failed to set '%s' to double value '%f'\n"),(LPCTSTR)strName,n);
-            rc=false;
-            break;
-    }
-
-    return rc;
+  bool rc=true;
+  switch(Type){
+    case Double:
+      *(float *)(pData)=(float)n;//FIXME: range checks?
+      break;
+    case Float:
+      *(double *)(pData)=n;
+      break;
+    default:
+      TRACE(_T("Failed to set '%s' to double value '%f'\n"),(LPCTSTR)strName,n);
+      rc=false;
+      break;
+  }
+  
+  return rc;
 }
 
 bool CProperties::CProperty::SetValue(LPCTSTR psz)
 {
-    bool rc=false;
-    TCHAR *pEnd;
-    double d;
-    long l;
-    switch(Type){
-        case szString:
-            _tcsncpy((LPTSTR)pData,psz,nLength);
-            if(nLength<=_tcslen(psz)){
-                ((LPTSTR)pData)[nLength]=_TCHAR('\0');
-            }
-            rc=true;
-            break;
-        case GPString:
-            pputFn(pData,psz);
-            rc=true;
-            break;             
-        case Float:
-            d=_tcstod(psz,&pEnd);
-            rc=(_TCHAR('\0')==*pEnd);
-            if(rc){
-                SetValue((float)d);
-            }
-            break;
-        case Double:
-            d=_tcstod(psz,&pEnd);
-            rc=(_TCHAR('\0')==*pEnd);
-            if(rc){
-                SetValue(d);
-            }
-            break;
-        case Integer:
-        case Bool:
-        case Char:
-        case Short:
-            l=_tcstol(psz,&pEnd,10);
-            rc=(_TCHAR('\0')==*pEnd);
-            if(rc){
-                SetValue((int)l);
-            }
-            break;
-        default:
-            //TRACE(_T("Failed to set '%s' to string value '%s'\n"),(LPCTSTR)strName,psz);
-            break;
-    }
-    return rc;
+  bool rc=false;
+  TCHAR *pEnd;
+  double d=0.0;
+  long l=0;
+  switch(Type){
+    case szString:
+      *(String *)pData=psz;
+      rc=true;
+      break;
+    case Float:
+      d=_tcstod(psz,&pEnd);
+      rc=(_TCHAR('\0')==*pEnd);
+      if(rc){
+        SetValue((float)d);
+      }
+      break;
+    case Double:
+      d=_tcstod(psz,&pEnd);
+      rc=(_TCHAR('\0')==*pEnd);
+      if(rc){
+        SetValue(d);
+      }
+      break;
+    case Integer:
+    case Bool:
+    case Char:
+    case Short:
+      l=_tcstol(psz,&pEnd,10);
+      rc=(_TCHAR('\0')==*pEnd);
+      if(rc){
+        SetValue((int)l);
+      }
+      break;
+    default:
+      TRACE(_T("Failed to set '%s' to string value '%s'\n"),(LPCTSTR)strName,psz);
+      break;
+  }
+  return rc;
 }
 
-void CProperties::CProperty::SetDefault()
-{
-    switch(Type){
-        case Bool:
-        case Integer:
-        case Char:
-        case Short:
-            SetValue(nDefault);
-            break;
-        case Float:
-        case Double:
-            SetValue(dDefault);
-            break;
-        case szString:
-        case GPString:
-            SetValue(strDefault);
-            break;
-        case Void:
-            if(pvDefault){
-                memcpy(pData,pvDefault,nLength);
-            }
-            break;
-        default:
-            assert(false);
-    }
-
-}
-
-void CProperties::SetDefaults()
-{
-    for(int i=ar.size()-1;i>=0;--i){
-        ((CProperty*)ar[i])->SetDefault();
-    }
-}
-
-bool CProperties::Load(LPCTSTR pszPrefix)
-{
-    #ifdef _WIN32
-    return m_hKey?LoadFromRegistry((HKEY)m_hKey,m_strName,pszPrefix):LoadFromFile(m_strName,pszPrefix);
-    #else // UNIX
-    return LoadFromFile(m_strName,pszPrefix);
-    #endif
-}
-
-bool CProperties::Save(LPCTSTR pszPrefix)
-{
-    #ifdef _WIN32
-    return m_hKey?SaveToRegistry((HKEY)m_hKey,m_strName,pszPrefix):SaveToFile(m_strName,pszPrefix);
-    #else // UNIX
-    return SaveToFile(m_strName,pszPrefix);
-    #endif
-}
-/*
-bool CProperties::Remove(LPCTSTR pszName)
-{
-    for(int i=ar.size()-1;i>=0;--i){
-        CProperties::CProperty *p=(CProperties::CProperty *)ar[i];
-        if(p->strName==pszName){
-            delete p;
-            ar.RemoveAt(i);
-            return true;
-        }
-    }
-    return false;
-}
-*/

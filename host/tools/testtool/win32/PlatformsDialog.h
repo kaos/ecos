@@ -42,10 +42,10 @@ class CPlatformsDialog : public CeCosDialog
 // Construction
   static const LPCTSTR arpszTypes[];
 public:
-  CeCosTest::TargetInfo *Platform (int i) { return (CeCosTest::TargetInfo *)m_arTargetInfo[i]; }
+  CeCosTestPlatform *Platform (int i) { return (CeCosTestPlatform *)m_arTargetInfo[i]; }
   unsigned int PlatformCount() const { return m_arTargetInfo.GetSize(); }
 	CPlatformsDialog(CWnd* pParent = NULL);   // standard constructor
-  void Add(const CeCosTest::TargetInfo &ti);
+  void Add(const CeCosTestPlatform &ti);
 
 // Dialog Data
 	//{{AFX_DATA(CPlatformsDialog)

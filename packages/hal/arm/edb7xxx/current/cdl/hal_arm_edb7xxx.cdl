@@ -365,7 +365,7 @@ cdl_package CYGPKG_HAL_ARM_EDB7XXX {
                 @echo >> $(notdir $@).deps
                 # warning: no proper deps here
                 $(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -o misc/i2s_audio_fiq.o $(REPOSITORY)/$(PACKAGE)/misc/i2s_audio_fiq.S
-                $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ misc/lcd_test.o misc/i2s_audio_fiq.o
+                $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ misc/i2s_audio_test.o misc/i2s_audio_fiq.o
             }
 
         }
@@ -396,7 +396,7 @@ cdl_package CYGPKG_HAL_ARM_EDB7XXX {
         }
 
         cdl_option CYGPKG_HAL_ARM_EDB7XXX_CFLAGS_REMOVE {
-            display "Supressed compiler flags"
+            display "Suppressed compiler flags"
             flavor  data
             no_define
             default_value { "" }

@@ -1,3 +1,8 @@
+* SH HAL
+  Now provides ROMRAM startup type, copying code and data to RAM before
+  executing, improving performance at cost of memory.
+* IO serial drivers reworked by separating into distinct platform
+  packages, making it simpler to implement new drivers.
 * WallClock reworked, making it simpler to implement new drivers.
   New drivers
   o SH3 RTC module

@@ -22,7 +22,7 @@
 // ----------------------------------------------------------------------------
 //                                                                          
 //####COPYRIGHTEND####
-    // ExecutionPage.cpp : implementation file
+// ExecutionPage.cpp : implementation file
 //
 #include "stdafx.h"
 #include "ExecutionPage.h"
@@ -43,13 +43,14 @@ const UINT arIds []={IDC_TT_SELECT_ALL,IDC_TT_UNSELECT_ALL,IDC_TT_ADD, IDC_TT_FO
 IMPLEMENT_DYNCREATE(CExecutionPage, CeCosPropertyPage)
 
 CExecutionPage::CExecutionPage() : 
-    CeCosPropertyPage(IDD_TT_EXECUTION_PAGE)
+  CeCosPropertyPage(IDD_TT_EXECUTION_PAGE),
+  m_strExtension(_T("*.exe"))
 {
-    GetCurrentDirectory(MAX_PATH,m_strFolder.GetBuffer(MAX_PATH));
-    m_strFolder.ReleaseBuffer();
-	//{{AFX_DATA_INIT(CExecutionPage)
+  GetCurrentDirectory(MAX_PATH,m_strFolder.GetBuffer(MAX_PATH));
+  m_strFolder.ReleaseBuffer();
+  //{{AFX_DATA_INIT(CExecutionPage)
 		// NOTE: the ClassWizard will add member initialization here
-	//}}AFX_DATA_INIT
+  //}}AFX_DATA_INIT
 }
 
 CExecutionPage::~CExecutionPage()
@@ -58,24 +59,24 @@ CExecutionPage::~CExecutionPage()
 
 void CExecutionPage::DoDataExchange(CDataExchange* pDX)
 {
-	CeCosPropertyPage::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CExecutionPage)
-	DDX_Control(pDX, IDC_TT_RUNTESTS_LIST, m_List);
-	//}}AFX_DATA_MAP
+  CeCosPropertyPage::DoDataExchange(pDX);
+  //{{AFX_DATA_MAP(CExecutionPage)
+  DDX_Control(pDX, IDC_TT_RUNTESTS_LIST, m_List);
+  //}}AFX_DATA_MAP
 }
 
 
 BEGIN_MESSAGE_MAP(CExecutionPage, CeCosPropertyPage)
-	//{{AFX_MSG_MAP(CExecutionPage)
-	ON_BN_CLICKED(IDC_TT_FOLDER, OnFolder)
-	ON_BN_CLICKED(IDC_TT_SELECT_ALL, OnSelectAll)
-	ON_BN_CLICKED(IDC_TT_UNSELECT_ALL, OnUnselectAll)
-	ON_BN_CLICKED(IDC_TT_ADD, OnAdd)
-	ON_BN_CLICKED(IDC_TT_REMOVE, OnRemove)
-	ON_WM_SIZE()
-    ON_MESSAGE(WM_KICKIDLE, OnKickIdle)
-	ON_WM_CHAR()
-	//}}AFX_MSG_MAP
+//{{AFX_MSG_MAP(CExecutionPage)
+ON_BN_CLICKED(IDC_TT_FOLDER, OnFolder)
+ON_BN_CLICKED(IDC_TT_SELECT_ALL, OnSelectAll)
+ON_BN_CLICKED(IDC_TT_UNSELECT_ALL, OnUnselectAll)
+ON_BN_CLICKED(IDC_TT_ADD, OnAdd)
+ON_BN_CLICKED(IDC_TT_REMOVE, OnRemove)
+ON_WM_SIZE()
+ON_MESSAGE(WM_KICKIDLE, OnKickIdle)
+ON_WM_CHAR()
+//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -83,118 +84,122 @@ END_MESSAGE_MAP()
 CExecutionPage *CExecutionPage::pDlg=NULL;
 LRESULT CALLBACK CExecutionPage::WindowProcNew(HWND hwnd,UINT message, WPARAM wParam, LPARAM lParam)
 {
-    if (message ==  WM_COMMAND) {
-        switch(wParam){
-            case MAKEWPARAM(IDC_TT_RECURSE,BN_CLICKED):
-                pDlg->m_bRecurse ^= 1;
-                pDlg->m_Button.SetCheck(pDlg->m_bRecurse);
-		return 0;
-            case MAKEWPARAM(IDC_TT_EXTENSION,EN_CHANGE):
-                pDlg->m_Combo.GetWindowText(pDlg->m_strExtension);
-		        return 0;
-            default:
-                break;
-	}
-	}
-	return CallWindowProc(pDlg->m_wndProc, hwnd, message, wParam, lParam);
-}
- 
-int CALLBACK CExecutionPage::CBBrowseCallbackProc( HWND hwnd, 
-	UINT uMsg, 
-	LPARAM lParam, 
-	LPARAM lpData 
-	)
-{
-    pDlg=(CExecutionPage *)lpData;
-    switch(uMsg){
-        case BFFM_INITIALIZED:
-          {
-            ::SendMessage(hwnd,BFFM_SETSELECTION,TRUE,(LPARAM)(LPCTSTR)pDlg->m_strFolder);
-            CWnd *pWnd=CWnd::FromHandle(hwnd);
-            pWnd->SetWindowText(_T("Add Files from Folder"));
-            
-            // Get rect of IDCANCEL button to the right
-            CRect rect,rect1,rect2;
-            pWnd->GetDlgItem(IDCANCEL)->GetWindowRect(&rect1);
-            pWnd->GetWindowRect(&rect2);
-            int nDlgMargin=rect2.right-rect1.right;
-            int nButtonHeight=rect1.Height();
-            rect.left=rect.top=nDlgMargin;
-            rect.right=rect.left+6*nButtonHeight;
-            rect.bottom=rect.top+(10*nButtonHeight)/14;
-            WPARAM wFont=(WPARAM)GetStockObject(DEFAULT_GUI_FONT);
-            pDlg->m_Button.CreateEx(0,_T("BUTTON"),NULL, WS_VISIBLE|WS_CHILD|BS_CHECKBOX, rect, pWnd, IDC_TT_RECURSE);
-            pDlg->m_Button.SetWindowText(_T("&Add from subfolders"));
-            pDlg->m_Button.SendMessage(WM_SETFONT, wFont, 0);
-            pDlg->m_Button.SetCheck(pDlg->m_bRecurse);
-            
-            rect.left=rect.right+(4*nButtonHeight)/14;
-            rect.right=rect.left+3*nButtonHeight;
-            rect.bottom+=2*GetSystemMetrics(SM_CYBORDER)+4;
-            pDlg->m_Static.Create(_T("Files of type:"),WS_VISIBLE|WS_CHILD|SS_LEFT, rect, pWnd);
-            pDlg->m_Static.SendMessage(WM_SETFONT, wFont, 0);
-            rect.bottom-=2*GetSystemMetrics(SM_CYBORDER)+4;
-            
-            rect.left=rect.right+(4*nButtonHeight)/14;
-            rect.right=rect.left+3*nButtonHeight;
-            //rect.bottom=rect.top+2*nButtonHeight;
-            rect.top=rect.bottom-(12*nButtonHeight)/14;
-            pDlg->m_Combo.CreateEx(WS_EX_CLIENTEDGE,_T("Edit"),NULL,WS_VISIBLE|WS_CHILD|WS_BORDER|ES_LEFT/*|CBS_DROPDOWN*/, rect, pWnd, IDC_TT_EXTENSION);
-            //pDlg->m_Combo.AddString(pDlg->m_strExtension);
-            //pDlg->m_Combo.SetCurSel(0);
-            pDlg->m_Combo.SetWindowText(pDlg->m_strExtension);
-            pDlg->m_Combo.SendMessage(WM_SETFONT, wFont, 0);
-            
-            pDlg->m_wndProc = (WNDPROC)SetWindowLong(hwnd, GWL_WNDPROC, (long)WindowProcNew);
-            
-          }
-        case BFFM_SELCHANGED:
-            {
-                // Change the cwd such that if the New button is used, we know where we are to start from
-                ITEMIDLIST *iil=(ITEMIDLIST *)lParam;
-                CString strFolder;
-		        SHGetPathFromIDList(iil,strFolder.GetBuffer(MAX_PATH));
-                strFolder.ReleaseBuffer();
-                SetCurrentDirectory(strFolder);
-            }
-            break;
-        default:
-            ;
+  if (message ==  WM_COMMAND) {
+    switch(wParam){
+    case MAKEWPARAM(IDC_TT_RECURSE,BN_CLICKED):
+      pDlg->m_bRecurse ^= 1;
+      pDlg->m_Button.SetCheck(pDlg->m_bRecurse);
+      return 0;
+    case MAKEWPARAM(IDC_TT_EXTENSION,EN_CHANGE):
+      {
+        CString str;
+        pDlg->m_Combo.GetWindowText(str);
+        pDlg->m_strExtension=(LPCTSTR)str;
+      }
+      return 0;
+    default:
+      break;
     }
+  }
+  return CallWindowProc(pDlg->m_wndProc, hwnd, message, wParam, lParam);
+}
 
-	return 0;
+int CALLBACK CExecutionPage::CBBrowseCallbackProc( HWND hwnd, 
+                                                  UINT uMsg, 
+                                                  LPARAM lParam, 
+                                                  LPARAM lpData 
+                                                  )
+{
+  pDlg=(CExecutionPage *)lpData;
+  switch(uMsg){
+  case BFFM_INITIALIZED:
+    {
+      ::SendMessage(hwnd,BFFM_SETSELECTION,TRUE,(LPARAM)(LPCTSTR)pDlg->m_strFolder);
+      CWnd *pWnd=CWnd::FromHandle(hwnd);
+      pWnd->SetWindowText(_T("Add Files from Folder"));
+      
+      // Get rect of IDCANCEL button to the right
+      CRect rect,rect1,rect2;
+      pWnd->GetDlgItem(IDCANCEL)->GetWindowRect(&rect1);
+      pWnd->GetWindowRect(&rect2);
+      int nDlgMargin=rect2.right-rect1.right;
+      int nButtonHeight=rect1.Height();
+      rect.left=rect.top=nDlgMargin;
+      rect.right=rect.left+6*nButtonHeight;
+      rect.bottom=rect.top+(10*nButtonHeight)/14;
+      WPARAM wFont=(WPARAM)GetStockObject(DEFAULT_GUI_FONT);
+      pDlg->m_Button.CreateEx(0,_T("BUTTON"),NULL, WS_VISIBLE|WS_CHILD|BS_CHECKBOX, rect, pWnd, IDC_TT_RECURSE);
+      pDlg->m_Button.SetWindowText(_T("&Add from subfolders"));
+      pDlg->m_Button.SendMessage(WM_SETFONT, wFont, 0);
+      pDlg->m_Button.SetCheck(pDlg->m_bRecurse);
+      
+      rect.left=rect.right+(4*nButtonHeight)/14;
+      rect.right=rect.left+3*nButtonHeight;
+      rect.bottom+=2*GetSystemMetrics(SM_CYBORDER)+4;
+      pDlg->m_Static.Create(_T("Files of type:"),WS_VISIBLE|WS_CHILD|SS_LEFT, rect, pWnd);
+      pDlg->m_Static.SendMessage(WM_SETFONT, wFont, 0);
+      rect.bottom-=2*GetSystemMetrics(SM_CYBORDER)+4;
+      
+      rect.left=rect.right+(4*nButtonHeight)/14;
+      rect.right=rect.left+3*nButtonHeight;
+      //rect.bottom=rect.top+2*nButtonHeight;
+      rect.top=rect.bottom-(12*nButtonHeight)/14;
+      pDlg->m_Combo.CreateEx(WS_EX_CLIENTEDGE,_T("Edit"),NULL,WS_VISIBLE|WS_CHILD|WS_BORDER|ES_LEFT/*|CBS_DROPDOWN*/, rect, pWnd, IDC_TT_EXTENSION);
+      //pDlg->m_Combo.AddString(pDlg->m_strExtension);
+      //pDlg->m_Combo.SetCurSel(0);
+      pDlg->m_Combo.SetWindowText(pDlg->m_strExtension);
+      pDlg->m_Combo.SendMessage(WM_SETFONT, wFont, 0);
+      
+      pDlg->m_wndProc = (WNDPROC)SetWindowLong(hwnd, GWL_WNDPROC, (long)WindowProcNew);
+      
+    }
+  case BFFM_SELCHANGED:
+    {
+      // Change the cwd such that if the New button is used, we know where we are to start from
+      ITEMIDLIST *iil=(ITEMIDLIST *)lParam;
+      CString strFolder;
+      SHGetPathFromIDList(iil,strFolder.GetBuffer(MAX_PATH));
+      strFolder.ReleaseBuffer();
+      SetCurrentDirectory(strFolder);
+    }
+    break;
+  default:
+    ;
+  }
+  
+  return 0;
 }
 
 void CExecutionPage::OnFolder() 
 {
-
-	BROWSEINFO bi;
-    bi.hwndOwner = GetSafeHwnd(); 
-    bi.pidlRoot = NULL;   
-    bi.pszDisplayName = m_strFolder.GetBuffer(MAX_PATH);
-    bi.lpszTitle = _T("");
-    bi.ulFlags = BIF_RETURNONLYFSDIRS|BIF_STATUSTEXT/*|0x0010 BIF_EDITBOX*/;             
-    bi.lpfn = (BFFCALLBACK)CBBrowseCallbackProc;
-    bi.lParam = (LPARAM)this;
-
-    bool bSaveRecurse=m_bRecurse;
-    LPITEMIDLIST iil = SHBrowseForFolder(&bi);
-	m_strFolder.ReleaseBuffer();
-    if(iil){
-		SHGetPathFromIDList(iil,m_strFolder.GetBuffer(MAX_PATH));
-        m_strFolder.ReleaseBuffer();
-        SetModified();
-        FillListBox(m_strFolder);
-    } else {
-        m_bRecurse=bSaveRecurse;
-    }
-
+  
+  BROWSEINFO bi;
+  bi.hwndOwner = GetSafeHwnd(); 
+  bi.pidlRoot = NULL;   
+  bi.pszDisplayName = m_strFolder.GetBuffer(MAX_PATH);
+  bi.lpszTitle = _T("");
+  bi.ulFlags = BIF_RETURNONLYFSDIRS|BIF_STATUSTEXT/*|0x0010 BIF_EDITBOX*/;             
+  bi.lpfn = (BFFCALLBACK)CBBrowseCallbackProc;
+  bi.lParam = (LPARAM)this;
+  
+  bool bSaveRecurse=m_bRecurse;
+  LPITEMIDLIST iil = SHBrowseForFolder(&bi);
+  m_strFolder.ReleaseBuffer();
+  if(iil){
+    SHGetPathFromIDList(iil,m_strFolder.GetBuffer(MAX_PATH));
+    m_strFolder.ReleaseBuffer();
+    SetModified();
+    FillListBox(m_strFolder);
+  } else {
+    m_bRecurse=bSaveRecurse;
+  }
+  
 }
 
 /*
 void CExecutionPage::OnRefresh() 
 {
-    FillListBox(m_strFolder);
+FillListBox(m_strFolder);
 }
 */
 
@@ -240,21 +245,21 @@ void CExecutionPage::FillListBox(LPCTSTR pszFolder)
 
 void CExecutionPage::OnSelectAll() 
 {
-	for(int i=0;i<m_List.GetCount();i++){
-		m_List.SetCheck(i,TRUE);
-	}
+  for(int i=0;i<m_List.GetCount();i++){
+    m_List.SetCheck(i,TRUE);
+  }
 }
 
 void CExecutionPage::OnUnselectAll() 
 {
-	for(int i=0;i<m_List.GetCount();i++){
-		m_List.SetCheck(i,FALSE);
-	}
+  for(int i=0;i<m_List.GetCount();i++){
+    m_List.SetCheck(i,FALSE);
+  }
 }
 
 bool CExecutionPage::IsSelected(int i)
 {
-    return TRUE==m_List.GetCheck(i);
+  return TRUE==m_List.GetCheck(i);
 }
 
 void CExecutionPage::OnAdd() 
@@ -297,33 +302,33 @@ void CExecutionPage::OnAdd()
 
 int CExecutionPage::SelectedTestCount()
 {
-    int n=0;
-    if(IsWindow(m_List.m_hWnd)){
-        for(int i=0;i<m_List.GetCount();i++){
-            n+=m_List.GetCheck(i);
-        }
+  int n=0;
+  if(IsWindow(m_List.m_hWnd)){
+    for(int i=0;i<m_List.GetCount();i++){
+      n+=m_List.GetCheck(i);
     }
-    return n;
+  }
+  return n;
 }
 
 CString CExecutionPage::SelectedTest(int nIndex)
 {
-    CString str;
-    for(int i=0;i<m_List.GetCount();i++){
-        if(m_List.GetCheck(i)){
-            if(0==nIndex--){
-                m_List.GetText(i,str);
-                break;
-            }
-        }
+  CString str;
+  for(int i=0;i<m_List.GetCount();i++){
+    if(m_List.GetCheck(i)){
+      if(0==nIndex--){
+        m_List.GetText(i,str);
+        break;
+      }
     }
-    return str;
-
+  }
+  return str;
+  
 }
 
 BOOL CExecutionPage::OnInitDialog() 
 {
-	CeCosPropertyPage::OnInitDialog();
+  CeCosPropertyPage::OnInitDialog();
   for(POSITION pos = m_arstrPreLoad.GetStartPosition(); pos != NULL; ){
     CString strFile;
     void *p;
@@ -382,44 +387,44 @@ void CExecutionPage::OnSize(UINT nType, int cx, int cy)
 
 LRESULT CExecutionPage::OnKickIdle(WPARAM, LPARAM)
 {
-    if(IsWindow(m_List.m_hWnd)){
-        int n=m_List.GetCount();
-        bool bSelectAll=false;
-        bool bUnSelectAll=false;
-        if(n>0){
-            bool bPrev=false;
-            for(int i=0;i<n;i++){
-                bool bCheck=(TRUE==m_List.GetCheck(i));
-                if(bCheck){
-                    bUnSelectAll=true;
-                } else {
-                    bSelectAll=true;
-                }
-                if(i>0 && bCheck!=bPrev){
-                    break;
-                }
-                bPrev=bCheck;
-            }
+  if(IsWindow(m_List.m_hWnd)){
+    int n=m_List.GetCount();
+    bool bSelectAll=false;
+    bool bUnSelectAll=false;
+    if(n>0){
+      bool bPrev=false;
+      for(int i=0;i<n;i++){
+        bool bCheck=(TRUE==m_List.GetCheck(i));
+        if(bCheck){
+          bUnSelectAll=true;
+        } else {
+          bSelectAll=true;
         }
-        GetDlgItem(IDC_TT_SELECT_ALL)->EnableWindow(bSelectAll);
-        GetDlgItem(IDC_TT_UNSELECT_ALL)->EnableWindow(bUnSelectAll);
+        if(i>0 && bCheck!=bPrev){
+          break;
+        }
+        bPrev=bCheck;
+      }
     }
-	return 0;
+    GetDlgItem(IDC_TT_SELECT_ALL)->EnableWindow(bSelectAll);
+    GetDlgItem(IDC_TT_UNSELECT_ALL)->EnableWindow(bUnSelectAll);
+  }
+  return 0;
 }
 
 bool CExecutionPage::SomeTestsSelected()
 {
-    bool b=0;
-    if(IsWindow(m_List.m_hWnd)){
-        for(int i=0;i<m_List.GetCount();i++){
-            if(m_List.GetCheck(i)){
-                b=true;
-                break;
-            }
-        }
+  bool b=0;
+  if(IsWindow(m_List.m_hWnd)){
+    for(int i=0;i<m_List.GetCount();i++){
+      if(m_List.GetCheck(i)){
+        b=true;
+        break;
+      }
     }
-    return b;
-
+  }
+  return b;
+  
 }
 
 void CExecutionPage::OnRemove() 

@@ -128,6 +128,14 @@ SOURCE=..\..\Utils\win32\eCosPropertySheet.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\Utils\common\eCosSerial.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Utils\common\eCosSocket.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\Utils\common\eCosStd.cpp
 # End Source File
 # Begin Source File
@@ -140,15 +148,11 @@ SOURCE=..\..\ecostest\common\eCosTestDownloadFilter.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\ecostest\common\eCosTestSerial.cpp
+SOURCE=..\..\ecostest\common\eCosTestPlatform.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\ecostest\common\eCosTestSerialFilter.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\ecostest\common\eCosTestSocket.cpp
 # End Source File
 # Begin Source File
 
@@ -216,7 +220,7 @@ SOURCE=.\StdAfx.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Utils\win32\SubProcess.cpp
+SOURCE=..\..\Utils\common\Subprocess.cpp
 # End Source File
 # Begin Source File
 
@@ -289,6 +293,14 @@ SOURCE=..\..\Utils\win32\eCosPropertySheet.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\Utils\common\eCosSerial.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Utils\common\eCosSocket.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\Utils\common\eCosStd.h
 # End Source File
 # Begin Source File
@@ -301,15 +313,7 @@ SOURCE=..\..\ecostest\common\eCosTestDownloadFilter.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\ecostest\common\eCosTestSerial.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\ecostest\common\eCosTestSerialFilter.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\ecostest\common\eCosTestSocket.h
 # End Source File
 # Begin Source File
 
@@ -389,7 +393,7 @@ SOURCE=.\StdAfx.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Utils\win32\SubProcess.h
+SOURCE=..\..\Utils\common\Subprocess.h
 # End Source File
 # Begin Source File
 

@@ -1,3 +1,12 @@
+2000-04-13  Jesper Skov  <jskov@redhat.com>
+
+	* tests/wallclock.cxx: Use TEST_NA if N/A.
+	Split in two separate parts (accuracy & info).
+
+2000-04-12  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/wallclock.cdl: Don't let interfaces define anything.
+
 2000-04-06  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* tests/wallclock2.cxx: Test correct libc feature CDL

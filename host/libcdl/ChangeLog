@@ -1,3 +1,36 @@
+2000-04-11  Bart Veer  <bartv@redhat.com>
+
+	* infer.cxx (infer_make_active):
+	Fix infinite recursion. Naughty inference engine.
+
+	* interp.cxx (eval):
+	Diagnostics enhancement tweak.
+
+	* build.cxx (generate_config_header):
+	Add a context when generating header files.
+
+	* base.cxx (CdlLoadableBody):
+	Add a context to the CdlInterpreter on creation, for better
+	diagnostics.
+	Do not raise errors in the internal Tcl scripts, since those
+	may now get reported.
+
+	* database.cxx (new_package):
+	A single spurious subdirectory in a package should not invalidate
+	the entire package.
+
+2000-04-10  Bart Veer  <bartv@redhat.com>
+
+	* base.cxx, build.cxx, cdl.hxx, cdlcore.hxx, cdlmisc.cxx,
+	component.cxx, config.cxx, database.cxx, dialog.cxx, expr.cxx,
+	interface.cxx, interp.cxx, option.cxx, package.cxx, parse.cxx,
+	property.cxx, value.cxx, wizard.cxx
+	Improved diagnostics support.
+
+	* build.cxx, property.cxx, parse.cxx:
+	Allow for string vector properties with no elements. Use this
+	for the include_files property.
+
 2000-03-13  John Dallaway  <jld@cygnus.co.uk>
 
 	* cdl.dsp:

@@ -1,0 +1,181 @@
+# ====================================================================
+#
+#      ser_arm_edb7xxx.cdl
+#
+#      eCos serial ARM/EDB7XXX configuration data
+#
+# ====================================================================
+#####COPYRIGHTBEGIN####
+#                                                                          
+# -------------------------------------------                              
+# The contents of this file are subject to the Red Hat eCos Public License 
+# Version 1.1 (the "License"); you may not use this file except in         
+# compliance with the License.  You may obtain a copy of the License at    
+# http://www.redhat.com/                                                   
+#                                                                          
+# Software distributed under the License is distributed on an "AS IS"      
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+# License for the specific language governing rights and limitations under 
+# the License.                                                             
+#                                                                          
+# The Original Code is eCos - Embedded Configurable Operating System,      
+# released September 30, 1998.                                             
+#                                                                          
+# The Initial Developer of the Original Code is Red Hat.                   
+# Portions created by Red Hat are                                          
+# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# All Rights Reserved.                                                     
+# -------------------------------------------                              
+#                                                                          
+#####COPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      jskov
+# Original data:  gthomas
+# Contributors:
+# Date:           1999-07-08
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+
+cdl_package CYGPKG_IO_SERIAL_ARM_EDB7XXX {
+    display       "ARM EDB7XXX serial device drivers"
+
+    parent        CYGPKG_IO_SERIAL_DEVICES
+    active_if     CYGPKG_IO_SERIAL
+    active_if     CYGPKG_HAL_ARM_EDB7XXX
+
+    requires      CYGPKG_ERROR
+    include_dir   cyg/io
+#    include_files ; # none _exported_ whatsoever
+    description   "
+           This option enables the serial device drivers for the
+           Cirrus Logic EDB7XXX."
+    doc           redirect/ecos-device-drivers.html
+
+    compile       -library=libextras.a   edb7xxx_serial.c
+
+    define_proc {
+        puts $::cdl_system_header "/***** serial driver proc output start *****/"
+        puts $::cdl_system_header "#define CYGDAT_IO_SERIAL_DEVICE_HEADER <pkgconf/io_serial_arm_edb7xxx.h>"
+        puts $::cdl_system_header "/*****  serial driver proc output end  *****/"
+    }
+
+cdl_component CYGPKG_IO_SERIAL_ARM_EDB7XXX_SERIAL1 {
+    display       "Cirrus Logic EDB7XXX serial port 1 driver"
+    flavor        bool
+    default_value 1
+    description   "
+        This option includes the serial device driver for the Cirrus Logic EDB7XXX
+        port 1."
+
+
+    cdl_option CYGDAT_IO_SERIAL_ARM_EDB7XXX_SERIAL1_NAME {
+        display       "Device name for the Cirrus Logic EDB7XXX serial port 1 driver"
+        flavor        data
+        default_value {"\"/dev/ser1\""}
+        description   "
+            This option specifies the name of serial device for the ARM 
+            EDB7XXX port 1."
+    }
+
+    cdl_option CYGNUM_IO_SERIAL_ARM_EDB7XXX_SERIAL1_BAUD {
+        display       "Baud rate for the Cirrus Logic EDB7XXX serial port 1 driver"
+        flavor        data
+        legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400 3600
+                      4800 7200 9600 14400 19200 38400 57600 115200 234000
+        }
+        default_value 38400
+        description   "
+            This option specifies the default baud rate (speed) for the ARM
+            EDB7XXX port 1."
+    }
+
+    cdl_option CYGNUM_IO_SERIAL_ARM_EDB7XXX_SERIAL1_BUFSIZE {
+        display       "Buffer size for the Cirrus Logic EDB7XXX serial port 1 driver"
+        flavor        data
+        default_value 128
+        legal_values  0 to 8192
+        description   "
+            This option specifies the size of the internal buffers used 
+            for the Cirrus Logic EDB7XXX port 1."
+    }
+}
+
+cdl_component CYGPKG_IO_SERIAL_ARM_EDB7XXX_SERIAL2 {
+    display       "Cirrus Logic EDB7XXX serial port 2 driver"
+    flavor        bool
+    default_value 1
+    description   "
+        This option includes the serial device driver for the ARM 
+        EDB7XXX port 2."
+
+    cdl_option CYGDAT_IO_SERIAL_ARM_EDB7XXX_SERIAL2_NAME {
+        display       "Device name for the Cirrus Logic EDB7XXX serial port 2 driver"
+        flavor        data
+        default_value {"\"/dev/ser2\""}
+        description   "
+            This option specifies the name of serial device for the ARM 
+            EDB7XXX port 2."
+    }
+
+    cdl_option CYGNUM_IO_SERIAL_ARM_EDB7XXX_SERIAL2_BAUD {
+        display       "Baud rate for the Cirrus Logic EDB7XXX serial port 2 driver"
+        flavor        data
+        legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400 3600
+                      4800 7200 9600 14400 19200 38400 57600 115200 234000
+        }
+        default_value 38400
+        description   "
+            This option specifies the default baud rate (speed) for the 
+            Cirrus Logic EDB7XXX port 2."
+    }
+
+    cdl_option CYGNUM_IO_SERIAL_ARM_EDB7XXX_SERIAL2_BUFSIZE {
+        display       "Buffer size for the Cirrus Logic EDB7XXX serial port 2 driver"
+        flavor        data
+        legal_values  0 to 8192
+        default_value 128
+        description   "
+            This option specifies the size of the internal buffers used for
+            the Cirrus Logic EDB7XXX port 2."
+    }
+}
+
+    cdl_component CYGPKG_IO_SERIAL_ARM_EDB7XXX_OPTIONS {
+        display "Serial device driver build options"
+        flavor  none
+        description   "
+	    Package specific build options including control over
+	    compiler flags used only in building this package,
+	    and details of which tests are built."
+
+
+        cdl_option CYGPKG_IO_SERIAL_ARM_EDB7XXX_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building these serial device drivers. These flags are used in addition
+                to the set of global flags."
+        }
+
+        cdl_option CYGPKG_IO_SERIAL_ARM_EDB7XXX_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building these serial device drivers. These flags are removed from
+                the set of global flags if present."
+        }
+    }
+}
+
+# EOF ser_arm_edb7xxx.cdl

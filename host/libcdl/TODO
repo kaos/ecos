@@ -89,6 +89,12 @@ Minor
 18) evalexception conflicts. What should happen if the node is disabled or inactive? 
     Especially if it is the default_value expression that is causing the problem.
 
+19) add diagnostic callback support to the inference engine so that I
+    can figure out what is going on.
+
+20) make version comparison completely case insensitive, to avoid
+    problems on some file systems.
+
 Intermediate
 ------------
 
@@ -106,14 +112,7 @@ Intermediate
 4) get safe interpreters working, and make sure that only safe
    file I/O operations are permitted.
 
-5) diagnostic messages. These need to follow a suitable convention and
-   made generally more comprehensible.
-
-   Huge> Oh yeah, if the cdl file quoted to a script in a package in ecos.db is
-   Huge> mis-named, there error message is something about "no package
-   Huge> versions found" - a simple "file not found:
-   Huge> /masala/hmt/work/ecc/net/ecc/ecc/net/drivers/eth/ebsa285/*/cdl/ebsa285_eth_drivers.cdl"
-   Huge> would be far more informative.
+5) Improve diagnostic messages, including line numbers.
 
 6) extend the inference engine to support more operators.
 
@@ -146,6 +145,9 @@ Intermediate
      appropriate $build/config_deps/* dependencies. That makes for one
      smoooking fast dependency system. It doesn't get finer-grained than
      this.
+
+13) friend packages, allowing one package to see the implementation
+    details of another. Also, handle documentation links between these.
 
 Major
 -----

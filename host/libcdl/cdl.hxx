@@ -116,7 +116,9 @@ class CdlPackagesDatabaseBody {
     
   public:
 
-    static CdlPackagesDatabase  make(std::string = "") throw(CdlInputOutputException,std::bad_alloc);
+    static CdlPackagesDatabase  make(std::string = "", CdlDiagnosticFnPtr /* error */ = 0,
+                                     CdlDiagnosticFnPtr /* warn */ = 0)
+        throw(CdlInputOutputException,std::bad_alloc);
     bool                        update(void) throw(CdlInputOutputException,std::bad_alloc);
     ~CdlPackagesDatabaseBody();
 
@@ -136,8 +138,6 @@ class CdlPackagesDatabaseBody {
     const std::string&                  get_target_description(std::string) const;
     const std::vector<std::string>&     get_target_aliases(std::string) const;
     const std::vector<std::string>&     get_target_packages(std::string) const;
-    const std::string&                  get_target_command_prefix(std::string) const;
-    const std::vector<std::pair<std::string,std::string> >& get_target_compiler_flags(std::string) const;
     const std::vector<std::string>&     get_target_enables(std::string) const;
     const std::vector<std::string>&     get_target_disables(std::string) const;
     const std::vector<std::pair<std::string,std::string> >& get_target_set_values(std::string) const;
@@ -163,7 +163,8 @@ class CdlPackagesDatabaseBody {
     // The only valid constructor gets invoked from the make() member function.
     // The argument should be a pathname for the component repository. The
     // constructor is responsible for reading in the whole packages file.
-    CdlPackagesDatabaseBody(std::string) throw(CdlInputOutputException,std::bad_alloc);
+    CdlPackagesDatabaseBody(std::string, CdlDiagnosticFnPtr, CdlDiagnosticFnPtr)
+        throw(CdlInputOutputException,std::bad_alloc);
 
     std::string                         component_repository;
     std::vector<std::string>            package_names;
@@ -184,8 +185,6 @@ class CdlPackagesDatabaseBody {
         std::string                     description;
         std::vector<std::string>        aliases;
         std::vector<std::string>        packages;
-        std::string                     command_prefix;
-        std::vector<std::pair<std::string,std::string> > cflags;
         std::vector<std::string>        enable;
         std::vector<std::string>        disable;
         std::vector<std::pair<std::string, std::string> > set_values;

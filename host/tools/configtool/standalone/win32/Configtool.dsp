@@ -298,6 +298,16 @@ SOURCE=..\..\..\Utils\win32\eCosPropertySheet.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Utils\common\eCosSerial.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Utils\common\eCosSocket.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Utils\common\eCosStd.cpp
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
@@ -313,17 +323,12 @@ SOURCE=..\..\..\ecostest\common\eCosTestDownloadFilter.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\ecostest\common\eCosTestSerial.cpp
+SOURCE=..\..\..\ecostest\common\eCosTestPlatform.cpp
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\..\ecostest\common\eCosTestSerialFilter.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\ecostest\common\eCosTestSocket.cpp
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
@@ -529,7 +534,7 @@ SOURCE=..\..\..\Utils\win32\StringEdit.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\Utils\win32\SubProcess.cpp
+SOURCE=..\..\..\Utils\common\Subprocess.cpp
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
@@ -696,6 +701,14 @@ SOURCE=..\..\..\Utils\win32\eCosPropertySheet.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\Utils\common\eCosSerial.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Utils\common\eCosSocket.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Utils\common\eCosStd.h
 # End Source File
 # Begin Source File
@@ -708,15 +721,11 @@ SOURCE=..\..\..\ecostest\common\eCosTestDownloadFilter.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\ecostest\common\eCosTestSerial.h
+SOURCE=..\..\..\ecostest\common\eCosTestPlatform.h
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\..\ecostest\common\eCosTestSerialFilter.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\ecostest\common\eCosTestSocket.h
 # End Source File
 # Begin Source File
 
@@ -916,7 +925,7 @@ SOURCE=..\..\..\Utils\win32\StringEdit.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\Utils\win32\SubProcess.h
+SOURCE=..\..\..\Utils\common\Subprocess.h
 # End Source File
 # Begin Source File
 

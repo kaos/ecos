@@ -194,7 +194,7 @@ infer_make_active(CdlTransaction transaction, CdlNode node, int level)
     CdlContainer parent = node->get_parent();
     CYG_ASSERT_CLASSC(parent);
     if (!transaction->is_active(parent)) {
-        if (!infer_make_active(transaction, node, level)) {
+        if (!infer_make_active(transaction, parent, level)) {
             CYG_REPORT_RETVAL(result);
             return result;
         }

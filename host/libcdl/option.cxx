@@ -119,18 +119,16 @@ CdlOptionBody::parse_option(CdlInterpreter interp, int argc, char** argv)
     CYG_REPORT_FUNCARG1("argc %d", argc);
     CYG_PRECONDITION_CLASSC(interp);
     
-    const char* diag_argv0      = CdlParse::get_tcl_cmd_name(argv[0]);
+    std::string  diag_argv0      = CdlParse::get_tcl_cmd_name(argv[0]);
 
     CdlLoadable  loadable       = interp->get_loadable();
     CdlPackage   package        = dynamic_cast<CdlPackage>(loadable);
     CdlContainer parent         = interp->get_container();       
     CdlToplevel  toplevel       = interp->get_toplevel();
-    std::string filename        = interp->get_filename();
     CYG_ASSERT_CLASSC(loadable);        // There should always be a loadable during parsing
     CYG_ASSERT_CLASSC(package);         // And packages are the only loadable for software CDL
     CYG_ASSERT_CLASSC(parent);
     CYG_ASSERT_CLASSC(toplevel);
-    CYG_ASSERTC("" != filename);
 
     // The new option should be created and added to the package
     // early on. If there is a parsing error it will get cleaned up
@@ -145,15 +143,17 @@ CdlOptionBody::parse_option(CdlInterpreter interp, int argc, char** argv)
     
         // Currently there are no command-line options. This may change in future.
         if (3 != argc) {
-            CdlParse::report_error(interp, std::string("Incorrect number of arguments to ") + diag_argv0 +
-                                         "\n    Expecting name and properties list.");
+            CdlParse::report_error(interp, "",
+                                   std::string("Incorrect number of arguments to `") + diag_argv0 +
+                                         "'\nExpecting name and properties list.");
             ok = false;
         } else if (!Tcl_CommandComplete(argv[2])) {
-            CdlParse::report_error(interp, std::string("Invalid property list for cdl_option ") + argv[1]);
+            CdlParse::report_error(interp, "",
+                                   std::string("Invalid property list for cdl_option `") + argv[1] + "'.");
             ok = false;
         } else if (0 != toplevel->lookup(argv[1])) {
-            CdlParse::report_error(interp, std::string("Option ") + argv[1] + " cannot be loaded.\n" +
-                                   "    The name is already in use.");
+            CdlParse::report_error(interp, "",
+                                   std::string("Option `") + argv[1] + "' cannot be loaded.\nThe name is already in use.");
             ok = false;
         } else {
             new_option = new CdlOptionBody(argv[1]);
@@ -167,13 +167,13 @@ CdlOptionBody::parse_option(CdlInterpreter interp, int argc, char** argv)
             return TCL_OK;
         }
     } catch(std::bad_alloc e) {
-        interp->set_result(CdlParse::get_diagnostic_prefix(interp) + "Out of memory.");
+        interp->set_result(CdlParse::construct_diagnostic(interp, "internal error", "", "Out of memory"));
         result = TCL_ERROR;
     } catch(CdlParseException e) {
         interp->set_result(e.get_message());
         result = TCL_ERROR;
     } catch(...) {
-        interp->set_result(CdlParse::get_diagnostic_prefix(interp) + "internal error, unexpected C++ exception.");
+        interp->set_result(CdlParse::construct_diagnostic(interp, "internal error", "", "Unexpected C++ exception"));
         result = TCL_ERROR;
     }
     if (TCL_OK != result) {
@@ -237,13 +237,13 @@ CdlOptionBody::parse_option(CdlInterpreter interp, int argc, char** argv)
         // Errors at this stage should be reported via Tcl, not via C++.
         // However there is no point in continuing with the parsing operation,
         // just give up.
-        interp->set_result(CdlParse::get_diagnostic_prefix(interp) + "Out of memory.");
+        interp->set_result(CdlParse::construct_diagnostic(interp, "internal error", "", "Out of memory"));
         result = TCL_ERROR;
     } catch (CdlParseException e) {
         interp->set_result(e.get_message());
         result = TCL_ERROR;
     } catch(...) {
-        interp->set_result(CdlParse::get_diagnostic_prefix(interp) + "internal error, unexpected C++ exception.");
+        interp->set_result(CdlParse::construct_diagnostic(interp, "internal error", "", "Unexpected C++ exception"));
         result = TCL_ERROR;
     }
 
@@ -326,13 +326,13 @@ CdlOptionBody::savefile_option_command(CdlInterpreter interp, int argc, char** a
     try {
         
         if (3 != argc) {
-            CdlParse::report_error(interp, "Invalid cdl_option command in savefile, expecting two arguments.");
+            CdlParse::report_error(interp, "", "Invalid cdl_option command in savefile, expecting two arguments.");
         } else {
 
             CdlNode current_node = config->lookup(argv[1]);
             if (0 == current_node) {
                 // FIXME: save value in limbo
-                CdlParse::report_error(interp,
+                CdlParse::report_error(interp, "",
                                        std::string("The savefile contains a cdl_option for an unknown option `")
                                        + argv[1] + "'");
             } else {

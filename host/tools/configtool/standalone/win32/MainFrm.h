@@ -58,8 +58,8 @@ class CCellView;
 class CDescView;
 class CConfigToolApp;
 class CSplitterWndEx;
-class CSubprocess;
 #include "BCMenu.h"
+#include "Subprocess.h"
 
 class CMainFrame : public CFrameWnd
 {
@@ -165,7 +165,7 @@ protected:
 	CString m_strBuildTarget;
 	void BumpWindow (int nInc);
 
-	CSubprocess *m_psp;
+	CSubprocess m_sp;
 	
 	void Build(const CString &strWhat=_T(""));
 	
@@ -229,9 +229,11 @@ protected:
 	afx_msg void OnUpdateToolsAdministration(CCmdUI* pCmdUI);
 	afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
 	afx_msg void OnEditPlatforms();
+  afx_msg void OnTimer(UINT nIDEvent);
 	//}}AFX_MSG
   void OnNavComplete(NMHDR*, LRESULT*);
 	DECLARE_MESSAGE_MAP()
+  static void CALLBACK SubprocessOutputFunc(void *pParam,LPCTSTR psz);
 };
 
 /////////////////////////////////////////////////////////////////////////////

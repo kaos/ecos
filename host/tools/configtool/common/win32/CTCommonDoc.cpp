@@ -1193,7 +1193,7 @@ bool CConfigToolDoc::OpenRepository (const CFileName strNewRepository,CdlPackage
           // create a CDL repository, interpreter and configuration
         
           try {// create a new package database, interpreter and configuration
-            NewCdlPkgData = CdlPackagesDatabaseBody::make (CUtils::UnicodeToStdStr(strNewPackagesDir));
+            NewCdlPkgData = CdlPackagesDatabaseBody::make (CUtils::UnicodeToStdStr(strNewPackagesDir), &CdlParseErrorHandler, &CdlParseWarningHandler);
             NewCdlInterp = CdlInterpreterBody::make ();
             NewCdlConfig = CdlConfigurationBody::make ("eCos", NewCdlPkgData, NewCdlInterp);
           }

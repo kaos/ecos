@@ -1101,21 +1101,27 @@ class CdlInterpreterBody
     ClientData get_assoc_data(const char*);
 
     // Evaluate a string as Tcl code. The return value comes from Tcl, e.g.
-    // TCL_OK or TCL_ERROR. The result string is also available.
+    // TCL_OK or TCL_ERROR. There are variants depending on whether or not
+    // the result string is of interest.
+    int eval(std::string);
     int eval(std::string, std::string&);
 
     // Ditto for any Tcl code that comes from CDL files
+    int eval_cdl_code(const cdl_tcl_code);
     int eval_cdl_code(const cdl_tcl_code, std::string&);
 
     // And support for evaluating an entire file
+    int eval_file(std::string);
     int eval_file(std::string, std::string&);
     
     // For use by commands implemented in C++, a way of setting the result
     void set_result(std::string);
 
-    // And a utility to get the result as well. This is useful for e.g.
-    // Tcl_OpenFileChannel which leaves a result string in the interpreter
+    // And a utility to get the result as well.
     std::string get_result();
+
+    // Was the result set by the Tcl interpreter or by libcdl?
+    bool result_set_by_cdl();
     
     // A utility to quote data that is going to end up in a TCL script.
     static std::string quote(std::string);
@@ -1163,7 +1169,7 @@ class CdlInterpreterBody
     CdlLoadable         get_loadable() const;
     CdlContainer        get_container() const;
     CdlNode             get_node() const;
-    std::string         get_filename() const;
+    std::string         get_context() const;
     CdlDiagnosticFnPtr  get_error_fn_ptr() const;
     CdlDiagnosticFnPtr  get_warning_fn_ptr() const;
     CdlTransaction      get_transaction() const;
@@ -1173,13 +1179,134 @@ class CdlInterpreterBody
     void                pop_container(CdlContainer);
     CdlNode             push_node(CdlNode);
     void                pop_node(CdlNode);
-    std::string         push_filename(std::string);
-    void                pop_filename(std::string);
+    std::string         push_context(std::string);
+    void                pop_context(std::string);
     CdlDiagnosticFnPtr  push_error_fn_ptr(CdlDiagnosticFnPtr);
     void                pop_error_fn_ptr(CdlDiagnosticFnPtr);
     CdlDiagnosticFnPtr  push_warning_fn_ptr(CdlDiagnosticFnPtr);
     void                pop_warning_fn_ptr(CdlDiagnosticFnPtr);
 
+    // Provide utility classes for common push/pop combinations. The
+    // push happens during the constructor, the pop during the
+    // destructor. This can simplify some code, especially when
+    // exceptions may get thrown.
+    class DiagSupport {
+      public:
+        DiagSupport(CdlInterpreter interp_arg, CdlDiagnosticFnPtr error_fn_arg, CdlDiagnosticFnPtr warn_fn_arg) {
+            interp         = interp_arg;
+            saved_error_fn = interp->push_error_fn_ptr(error_fn_arg);
+            saved_warn_fn  = interp->push_warning_fn_ptr(warn_fn_arg);
+        }
+        ~DiagSupport() {
+            interp->pop_error_fn_ptr(saved_error_fn);
+            interp->pop_warning_fn_ptr(saved_warn_fn);
+        }
+    private:
+        DiagSupport();
+
+        CdlInterpreter     interp;
+        CdlDiagnosticFnPtr saved_error_fn;
+        CdlDiagnosticFnPtr saved_warn_fn;
+    };
+    class ContextSupport {
+      public:
+        ContextSupport(CdlInterpreter interp_arg, std::string context) {
+            interp = interp_arg;
+            saved_context = interp->push_context(context);
+        }
+        ~ContextSupport() {
+            interp->pop_context(saved_context);
+        }
+      private:
+        ContextSupport();
+        CdlInterpreter interp;
+        std::string    saved_context;
+    };
+    class ContainerSupport {
+      public:
+        ContainerSupport(CdlInterpreter interp_arg, CdlContainer container) {
+            interp = interp_arg;
+            saved_container = interp->push_container(container);
+        }
+        ~ContainerSupport() {
+            interp->pop_container(saved_container);
+        }
+      private:
+        ContainerSupport();
+        CdlInterpreter interp;
+        CdlContainer   saved_container;
+    };
+    class NodeSupport {
+      public:
+        NodeSupport(CdlInterpreter interp_arg, CdlNode node) {
+            interp = interp_arg;
+            saved_node = interp->push_node(node);
+        }
+        ~NodeSupport() {
+            interp->pop_node(saved_node);
+        }
+      private:
+        NodeSupport();
+        CdlInterpreter interp;
+        CdlNode        saved_node;
+    };
+    class CommandSupport {
+      public:
+        CommandSupport(CdlInterpreter interp_arg, std::vector<CdlInterpreterCommandEntry>& commands) {
+            interp = interp_arg;
+            saved_commands = interp->push_commands(commands);
+        }
+        CommandSupport(CdlInterpreter interp_arg, CdlInterpreterCommandEntry* commands) {
+            unsigned int i;
+            for (i = 0; 0 != commands[i].command; i++) {
+                new_commands.push_back(commands[i]);
+            }
+            interp = interp_arg;
+            saved_commands = interp->push_commands(new_commands);
+        }
+        ~CommandSupport() {
+            interp->pop_commands(saved_commands);
+        }
+
+      private:
+        CommandSupport();
+        CdlInterpreter interp;
+        std::vector<CdlInterpreterCommandEntry>* saved_commands;
+        std::vector<CdlInterpreterCommandEntry> new_commands;
+    };
+
+    // Similar utility classes for variables and assoc data.
+    class VariableSupport {
+      public:
+        VariableSupport(CdlInterpreter interp_arg, std::string varname_arg, std::string data) {
+            interp  = interp_arg;
+            varname = varname_arg;
+            interp->set_variable(varname, data);
+        }
+        ~VariableSupport() {
+            interp->unset_variable(varname);
+        }
+      private:
+        VariableSupport();
+        CdlInterpreter interp;
+        std::string    varname;
+    };
+    class AssocSupport {
+      public:
+        AssocSupport(CdlInterpreter interp_arg, const char* name_arg, ClientData data, Tcl_InterpDeleteProc* del_proc = 0) {
+            interp = interp_arg;
+            name   = name_arg;
+            interp->set_assoc_data(name, data, del_proc);
+        }
+        ~AssocSupport() {
+            interp->delete_assoc_data(name);
+        }
+      private:
+        AssocSupport();
+        CdlInterpreter interp;
+        const char*    name;
+    };
+    
     // Some command implementations may want to access other Tcl library
     // routines such as Tcl_SplitList(). This requires convenient access
     // to the underlying Tcl interpreter.
@@ -1216,9 +1343,10 @@ class CdlInterpreterBody
     CdlLoadable                 loadable;
     CdlContainer                container;
     CdlNode                     node;
-    std::string                 filename;
+    std::string                 context;
     CdlDiagnosticFnPtr          error_fn_ptr;
     CdlDiagnosticFnPtr          warning_fn_ptr;
+    bool                        cdl_result;
     
     std::vector<CdlInterpreterCommandEntry>* current_commands; // for push() and pop()
     
@@ -3100,14 +3228,17 @@ class CdlParse {
     
   public:
     // Utility routines.
-    static const char*  get_tcl_cmd_name(const char*);
+    static std::string  get_tcl_cmd_name(std::string);
     static std::string  concatenate_argv(int, char**, int);
     static int          parse_options(CdlInterpreter, std::string /* diag_prefix */, char** /* options */,
                                                int /* argc */, char** /* argv */, int /* start_index */,
                                                std::vector<std::pair<std::string,std::string> >& /* result */);
-    static std::string  get_diagnostic_prefix(CdlInterpreter);
-    static void         report_error(CdlInterpreter, std::string);
-    static void         report_warning(CdlInterpreter, std::string);
+    static std::string  construct_diagnostic(CdlInterpreter, std::string /* classification */,
+                                             std::string /* sub-identifier */, std::string /* message */);
+                                       
+    static void         report_error(CdlInterpreter, std::string /* sub-identifier */, std::string /* message */)
+        throw(CdlParseException, std::bad_alloc);
+    static void         report_warning(CdlInterpreter, std::string /* sub-identifier */, std::string /* message */);
     static void         clear_error_count(CdlInterpreter);
     static int          get_error_count(CdlInterpreter);
     static void         incr_error_count(CdlInterpreter, int=1);
@@ -3116,10 +3247,12 @@ class CdlParse {
     static int          unknown_command(CdlInterpreter, int, char**);
     
     // Property-related utilities
-    static std::string  get_property_prefix(char*);
-    static std::string  get_property_prefix(CdlProperty);
-    static void         report_property_parse_error(CdlInterpreter, char*, std::string);
-    static void         report_property_parse_error(CdlInterpreter, CdlProperty, std::string);
+    static void         report_property_parse_error(CdlInterpreter, std::string, std::string)
+        throw(CdlParseException, std::bad_alloc);
+    static void         report_property_parse_error(CdlInterpreter, CdlProperty, std::string)
+        throw(CdlParseException, std::bad_alloc);
+    static void         report_property_parse_warning(CdlInterpreter, std::string, std::string);
+    static void         report_property_parse_warning(CdlInterpreter, CdlProperty, std::string);
     
     // Utility parsing routines
     static int  parse_minimal_property(CdlInterpreter, int, char**, std::string,
@@ -3129,7 +3262,8 @@ class CdlParse {
     static int  parse_tclcode_property(CdlInterpreter, int, char**, std::string,
                                        char**, void (*)(CdlInterpreter, CdlProperty_TclCode));
     static int  parse_stringvector_property(CdlInterpreter, int, char**, std::string,
-                                            char**, void (*)(CdlInterpreter, CdlProperty_StringVector));
+                                            char**, void (*)(CdlInterpreter, CdlProperty_StringVector),
+                                            bool /* allow_empty */ = false);
     static int  parse_reference_property(CdlInterpreter, int, char**, std::string,
                                          char**, void (*)(CdlInterpreter, CdlProperty_Reference),
                                          CdlUpdateHandler);

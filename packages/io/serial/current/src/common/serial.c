@@ -142,8 +142,8 @@ serial_write(cyg_io_handle_t handle, const void *_buf, cyg_uint32 *len)
                 size--;  // Only count if actually sent!
             }
         }
-        cyg_drv_dsr_unlock();
         (funs->start_xmit)(chan);  // Start output as necessary
+        cyg_drv_dsr_unlock();
     }
     cyg_drv_mutex_unlock(&cbuf->lock);
     return res;
@@ -208,15 +208,15 @@ serial_read(cyg_io_handle_t handle, void *_buf, cyg_uint32 *len)
         }
         cyg_drv_dsr_unlock();
     }
-    cyg_drv_isr_lock();
 #ifdef XX_CYGDBG_DIAG_BUF
-            enable_diag_uart = 0;
-            HAL_CLOCK_READ(&_time);
-            _stime = (int)cyg_current_time();
-            diag_printf("READ done - size: %d, len: %d, time: %x.%x\n", size, *len, _stime, _time);
-            enable_diag_uart = _enable;
-#endif // CYGDBG_DIAG_BUF
+    cyg_drv_isr_lock();
+    enable_diag_uart = 0;
+    HAL_CLOCK_READ(&_time);
+    _stime = (int)cyg_current_time();
+    diag_printf("READ done - size: %d, len: %d, time: %x.%x\n", size, *len, _stime, _time);
+    enable_diag_uart = _enable;
     cyg_drv_isr_unlock();
+#endif // CYGDBG_DIAG_BUF
     cyg_drv_mutex_unlock(&cbuf->lock);
     return res;
 }

@@ -32,6 +32,14 @@
 //
 //####DESCRIPTIONEND####
 
+//=================================================================
+// This class handles output of errors, debugging trace and so on.  All its members are static, so it's really a namespace :-).
+// It handles two output streams - error and output - and allows these to be redirected independently to files etc...
+// Part of the justification for this (which might be carried out on the command line) involves shortcomings of
+// SAMBA client, which deals badly with the flushing of file buffers.
+// The definition of LogFunc, which defines a function (void *,LPCTSTR) to which output is sent, is in eCosStd.
+//=================================================================
+
 #ifndef _ECOSTRACE_H
 #define _ECOSTRACE_H
 #include "eCosStd.h"
@@ -39,40 +47,47 @@
 
 class CeCosTrace {
 public:
+	static const String Timestamp();
   // Diagnostic output
   static void Out(LPCTSTR  psz) { pfnOut(pOutParam,psz); }
-  static void Err(LPCTSTR  psz) { pfnError(pErrorParam,psz); }
+  static void Err(LPCTSTR  psz) { pfnError(pErrorParam,psz); } // Send to "stderr" 
+  static void TimeStampedErr(LPCTSTR pszFormat,...);
 
-  static void Trace (LPCTSTR  pszFormat,...);
-  static void Error (LPCTSTR  pszFormat,...);
+  enum TraceLevel {TRACE_LEVEL_ERRORS, TRACE_LEVEL_TRACE, TRACE_LEVEL_VTRACE}; // These are the levels of trace
+  
+  // Here's how to set and get the current trace value:
+  static void EnableTracing(TraceLevel n) { nVerbosity=n; }
+  static TraceLevel TracingEnabled() { return nVerbosity; }
 
-  static void EnableTracing(bool b) { bVerbose=b; }
-  static bool IsTracingEnabled () { return bVerbose; }
-
-  static void SetInteractive(bool b) { bInteractive=b; }
+  static void SetInteractive(bool b) { bInteractive=b; } // Declare this program to be "interactive" (usually means command-line)
   static bool IsInteractive() { return bInteractive; }
 
-  static void SetOutput (LogFunc *pFn,void *pParam) { pfnOut=pFn; pOutParam=pParam; }
-  static void SetError  (LogFunc *pFn,void *pParam) { pfnError=pFn; pErrorParam=pParam; }
+  static void SetOutput (LogFunc *pFn,void *pParam) { pfnOut=pFn; pOutParam=pParam; }     // Make stdout go to this callback
+  static void SetError  (LogFunc *pFn,void *pParam) { pfnError=pFn; pErrorParam=pParam; } // Make stderr go to this callback
 
-  static bool SetOutput (LPCTSTR pszFilename);
-  static bool SetError  (LPCTSTR pszFilename);
+  static bool SetOutput (LPCTSTR pszFilename); // Make stdout go to this file
+  static bool SetError  (LPCTSTR pszFilename); // Make stderr go to this file
 
-  #ifndef TRACE
-    #define TRACE CeCosTrace::Trace
+  // Some macros...
+  #ifndef TRACE // because if running under a debugger we might have a better definition (via OutputDebugString) already
+     // Use this to generate output that will only appear if trace level is at least TRACE_LEVEL_TRACE (turned on by -v)
+     #define TRACE if(CeCosTrace::TracingEnabled()>=CeCosTrace::TRACE_LEVEL_TRACE) CeCosTrace::TimeStampedErr
   #endif
+
   #undef ERROR
-  #define ERROR CeCosTrace::Error
 
-  #ifdef VERBOSE
-    #define VTRACE CeCosTrace::Trace
-  #else
-    #define VTRACE if(0) CeCosTrace::Trace
-  #endif
+  #define ERROR CeCosTrace::TimeStampedErr
+  // Use this to generate output that will only appear if trace level is at least TRACE_LEVEL_VTRACE (turned on by -V)
+  #define VTRACE if(CeCosTrace::TracingEnabled()>=CeCosTrace::TRACE_LEVEL_VTRACE) CeCosTrace::TimeStampedErr
+  
+  // Use this to generate output that will only appear if mode is interactive (see above)
+  #define INTERACTIVE if(CeCosTrace::IsInteractive()||CeCosTrace::TracingEnabled()>=CeCosTrace::TRACE_LEVEL_TRACE) CeCosTrace::TimeStampedErr
 
+  // Thus log function can be used to direct output to a FILE* (e.g. stdout) passed as the first argument:
   static void CALLBACK StreamLogFunc  (void *, LPCTSTR psz);
 
 protected:
+  // Information we need to know for a stream (error or output)
   struct StreamInfo {
     Time tLastReopen;
     String strFilename;
@@ -81,13 +96,14 @@ protected:
     ~StreamInfo() { fclose(f); }
   };
   
+  // Here are the two streams
   static StreamInfo OutInfo,ErrInfo;
 
-  static void CALLBACK StreamInfoFunc  (void *, LPCTSTR psz);
+  static void CALLBACK StreamInfoFunc (void *, LPCTSTR psz);
   
   static LPCTSTR arpszDow[7];
 
-  static bool bVerbose;
+  static TraceLevel nVerbosity;
   static bool bInteractive;
   static LogFunc *pfnOut;    static void *pOutParam;
   static LogFunc *pfnError;  static void *pErrorParam;

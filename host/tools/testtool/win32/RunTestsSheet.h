@@ -56,7 +56,7 @@ public:
 public:
 protected:
     CeCosTest::ExecutionParameters m_ep;
-    CString m_strTarget;
+    String m_strTarget;
     int m_nTimeout;
     int m_nDownloadTimeout;
     int m_nTimeoutType;
@@ -64,12 +64,12 @@ protected:
     bool m_bRemote;
     bool m_bSerial;
     int m_nBaud;
-    CString m_strLocalTCPIPHost;
+    String m_strLocalTCPIPHost;
     int m_nLocalTCPIPPort;
     int m_nReset;
-    CString m_strResourceHost;
+    String m_strResourceHost;
     int m_nResourcePort;
-    CString m_strReset;
+    String m_strReset;
     static void CALLBACK RunLocalFunc(void *pParam);
     static void CALLBACK RunRemoteFunc(void *pParam);
 
@@ -105,7 +105,7 @@ protected:
 	bool m_bHideTarget;
 	UINT m_nRemotePort;
 	bool m_bFarmed;
-	CString m_strPort;
+	String m_strPort;
 	int m_cyMin;
 	int m_cxMin;
 	CRect m_rcPrev,m_rcOffset;
@@ -123,14 +123,12 @@ protected:
 public:
 	void Populate (LPCTSTR pszFile,bool bSelect=true);
 	void HideRemoteControls();
-	CString m_strRemoteHost;
+	String m_strRemoteHost;
 private:
-    static LPCTSTR CALLBACK GetFn (void *pObj) { return (LPCTSTR)*(CString *)pObj; }
-    static void    CALLBACK PutFn (void *pObj,LPCTSTR psz) { *(CString *)pObj=psz; }
     COutputPage outputpage;
     CSummaryPage summarypage;
 	//{{AFX_MSG(CRunTestsSheet)
-	afx_msg void OnRun();
+	afx_msg void OnRun();   
 	afx_msg void OnProperties();
 	afx_msg void OnClose();
     afx_msg LRESULT OnTestOutput(WPARAM wParam, LPARAM lParam);

@@ -449,7 +449,6 @@ CdlProperty_StringVectorBody::CdlProperty_StringVectorBody(CdlNode node_arg, std
 {
     CYG_REPORT_FUNCNAME("CdlProperty_StringVector:: constructor");
     CYG_REPORT_FUNCARG1("this %p", this);
-    CYG_PRECONDITION(0 < data_arg.size(), "there should be some data");
     
     data = data_arg;
     cdlproperty_stringvectorbody_cookie = CdlProperty_StringVectorBody_Magic;
@@ -479,8 +478,14 @@ CdlProperty_StringVectorBody::get_first_string(void) const
     CYG_REPORT_FUNCARG1("this %p", this);
     CYG_PRECONDITION_THISC();
 
+    std::string result;
+    if (0 == data.size()) {
+        result = "";
+    } else {
+        result = data[0];
+    }
     CYG_REPORT_RETURN();
-    return data[0];
+    return result;
 }
 
 unsigned int

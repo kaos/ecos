@@ -27,7 +27,7 @@
 
 #include "stdafx.h"
 #include "RemotePropertiesDialog.h"
-#include "eCosTestSocket.h"
+#include "eCosSocket.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -110,9 +110,9 @@ BOOL CRemotePropertiesDialog::OnInitDialog()
 void CRemotePropertiesDialog::OnOK() 
 {
     UpdateData();
-    if(m_bFarmed && !CeCosTestSocket::IsLegalHostPort(CeCosTestSocket::HostPort(m_strResourceHost,m_nResourcePort))){
+    if(m_bFarmed && !CeCosSocket::IsLegalHostPort(CeCosSocket::HostPort(m_strResourceHost,m_nResourcePort))){
         MessageBox(_T("Please provide a valid host/port combination for resource server"));
-    } else if (!m_bFarmed && !CeCosTestSocket::IsLegalHostPort(CeCosTestSocket::HostPort(m_strRemoteHost,m_nRemotePort))){
+    } else if (!m_bFarmed && !CeCosSocket::IsLegalHostPort(CeCosSocket::HostPort(m_strRemoteHost,m_nRemotePort))){
         MessageBox(_T("Please provide a valid host/port combination for remote execution"));
     } else {
     	CeCosDialog::OnOK();

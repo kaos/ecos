@@ -42,28 +42,19 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include "eCosStd.h"
 #include "eCosTest.h"
+#include "eCosTestPlatform.h"
 #include "eCosTrace.h"
 #include "TestResource.h"
 #include "eCosTestUtils.h"
-#include "eCosTestSocket.h"
-#include "eCosTestSerial.h"
+#include "eCosSocket.h"
+#include "eCosSerial.h"
 #include "eCosTestSerialFilter.h"
 #include "eCosTestDownloadFilter.h"
+#include "Properties.h"
+#include "Subprocess.h"
 
 #define WF(n) (n+50)/1000,((n+50)%1000)/100     // Present n as whole and fractional part.  Round to nearest least significant digit
 #define WFS   _T("%u.%u")                           // The format string to output the above
-
-static int nAuxPort; //hack
-static int nAuxListenSock; // hack
-
-#ifdef _WIN32
-  #include "Subprocess.h"
-  #ifdef _DEBUG
-    #define CloseHandle(x) try { ::CloseHandle(x); } catch(...) { TRACE(_T("!!! Exception caught closing handle %08x\n"),x); }
-  #endif
-#endif
-
-std::vector<CeCosTest::TargetInfo> CeCosTest::arTargetInfo;
 
 LPCTSTR  const CeCosTest::arResultImage[1+CeCosTest::StatusTypeMax]=
 {_T("NotStarted"), _T("NoResult"), _T("Inapplicable"), _T("Pass"), _T("DTimeout"), _T("Timeout"), _T("Cancelled"), _T("Fail"), _T("AssertFail"), _T("Unknown")};
@@ -76,218 +67,6 @@ LPCTSTR  const CeCosTest::arServerStatusImage[1+CeCosTest::ServerStatusMax]={
 LPCTSTR  CeCosTest::ExecutionParameters::arRequestImage [1+ExecutionParameters::RequestTypeMax]={
   _T("Run"), _T("Query"), _T("Lock"), _T("Unlock"), _T("Stop"), _T("Bad request") };
   
-const CeCosTest::TargetInfo CeCosTest::tDefault(_T("Unknown"),_T(""),-1);
-
-// Do not use spaces in image strings for consideration of _stscanf
-// One day this can be loadable from some external resource.
-int CeCosTest::InitTargetInfo(LPCTSTR pszFilename)
-{
-  TRACE(_T("InitTargetInfo %s\n"),pszFilename);
-  FILE *f=_tfopen(pszFilename,_T("rt"));
-  if(f){
-    enum {BUFSIZE=512};
-    int nLine=0;
-    TCHAR buf[BUFSIZE];
-    while(_fgetts(buf,sizeof(buf)-1,f)){
-      nLine++;
-      StringArray ar;
-      String(buf).Chop(ar);
-      switch(ar.size()){
-        // <target> <prefix> <nType> [<gdbcmds>]
-        case 0:
-          continue;
-        case 3:
-          arTargetInfo.push_back(TargetInfo(ar[0],ar[1],ar[2],0));
-          break;
-        case 1:
-        case 2:
-          ERROR(_T("Illegal configuration at line %d\n"),nLine);
-          continue;
-        default:
-          arTargetInfo.push_back(TargetInfo(ar[0],ar[1],ar[2],ar[3]));
-          break;
-      }
-    }
-    fclose(f);
-  }
-  return arTargetInfo.size();
-}
-
-int CeCosTest::InitTargetInfoReg(LPCTSTR pszRegKey)
-{
-  
-#ifdef _WIN32
-  HKEY hKey;
-  bool rc=ERROR_SUCCESS==RegOpenKeyEx (HKEY_LOCAL_MACHINE, pszRegKey, 0L, KEY_READ, &hKey);
-  DWORD dwSubKeys=0;
-  if(rc){
-    // Found the given key.
-    // Subkeys' names are the target image names:
-    // Subkeys's values are:
-    //      Prefix  String
-    //      Type    String 
-    //      GdbCmd  String [optional]
-    FILETIME ftLastWriteTime;
-    DWORD dwMaxSubKeyLen;
-    if(ERROR_SUCCESS==RegQueryInfoKey(hKey,NULL,NULL,NULL,&dwSubKeys,&dwMaxSubKeyLen,NULL,NULL,NULL,NULL,NULL,NULL)){
-      TCHAR *szName=new TCHAR[1+dwMaxSubKeyLen];
-      DWORD dwSizeName=dwMaxSubKeyLen;
-      for(DWORD dwIndex=0;ERROR_SUCCESS==RegEnumKeyEx(hKey, dwIndex, szName, &dwSizeName, NULL, NULL, NULL, &ftLastWriteTime); dwIndex++){
-        HKEY hKey2;
-        if(ERROR_SUCCESS!=RegOpenKeyEx (hKey, szName, 0L, KEY_READ, &hKey2)){
-          ERROR(_T("Failed to open %s\\%s\n"),pszRegKey,szName);
-          rc=false;
-        } else {
-          DWORD dwMaxValueLen;
-          if(ERROR_SUCCESS==RegQueryInfoKey(hKey2,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&dwMaxValueLen,NULL,NULL)){
-            DWORD dwSizePrefix=dwMaxValueLen;
-            DWORD dwSizeGdbCmd=dwMaxValueLen;
-            DWORD dwSizeHwType=dwMaxValueLen;
-            TCHAR *szPrefix=new TCHAR[1+dwMaxValueLen];
-            TCHAR *szGdbCmd=new TCHAR[1+dwMaxValueLen];
-            TCHAR *szHwType=new TCHAR[1+dwMaxValueLen];
-            if(ERROR_SUCCESS==RegQueryValueEx(hKey2, _T("Prefix"),NULL, NULL,(LPBYTE)szPrefix,&dwSizePrefix)){
-              arTargetInfo.push_back(TargetInfo(szName,szPrefix,
-                (ERROR_SUCCESS==RegQueryValueEx(hKey2,_T("HwType"),NULL, NULL,(LPBYTE)szHwType,&dwSizeHwType))?szHwType:_T(""),
-                (ERROR_SUCCESS==RegQueryValueEx(hKey2,_T("GdbCmd"),NULL, NULL,(LPBYTE)szGdbCmd,&dwSizeGdbCmd))?szGdbCmd:0
-                ));
-            }
-            delete [] szPrefix;
-            delete [] szGdbCmd;
-            delete [] szHwType;
-          }
-          RegCloseKey(hKey2);
-        }
-        dwSizeName=dwMaxSubKeyLen;
-      }
-      delete [] szName;
-    }
-    RegCloseKey(hKey);
-  }
-  return rc?dwSubKeys:0;
-#else // UNIX
-  return 0;
-#endif
-}
-
-bool CeCosTest::Init()
-{
-  TRACE(_T("CeCosTest::Init\n"));
-  srand( (unsigned)time( NULL ) );
-  
-#ifdef _WIN32
-  WSADATA wsaData;
-  WORD wVersionRequested = MAKEWORD( 2, 0 ); 
-  WSAStartup( wVersionRequested, &wsaData );
-
-  // get target info from the registry
-  String strPlatformsKey = _T("Software\\Red Hat\\eCos\\");
-  strPlatformsKey += GetGreatestSubkey (_T("Software\\Red Hat\\eCos"));
-  strPlatformsKey += _T("\\Platforms");
-  InitTargetInfoReg (strPlatformsKey);
-  
-  // add target info from .eCosrc
-  LPCTSTR psz=_tgetenv(_T("HOMEDRIVE"));
-  if(psz){
-    String strFile(psz);
-    psz=_tgetenv(_T("HOMEPATH"));
-    if(psz){
-      strFile+=psz;
-    }
-    if(_TCHAR('\\')!=strFile[strFile.GetLength()-1]){
-      strFile+=_TCHAR('\\');
-    }
-    strFile+=_T(".eCosrc");
-    InitTargetInfo(strFile);
-  }
-#else // UNIX
-  sigset_t mask;
-  
-  // Clean out all the signals
-  sigemptyset(&mask);
-  
-  // Add our sigpipe
-  sigaddset(&mask, SIGPIPE);
-  
-  sigprocmask(SIG_SETMASK, &mask, NULL);
-
-  // _WIN32 not defined so get target info from .eCosrc
-  LPCTSTR psz=_tgetenv(_T("HOME"));
-  if(psz){
-    String strFile(psz);
-    strFile+=_T("/.eCosrc");
-    InitTargetInfo(strFile);
-  }
-#endif
-  if(0==TargetTypeMax()){
-    ERROR(_T("Failed to initialize any targets\n"));
-  }
-  return true;
-}
-
-void CeCosTest::Term()
-{
-  
-  TRACE(_T("CeCosTest::Term\n"));
-
-#ifdef _WIN32
-  WSACleanup();
-#endif
-};
-
-bool CeCosTest::SaveTargetInfo()
-{
-#ifdef _WIN32
-  // save target info to the registry
-  String strPlatformsKey = _T("Software\\Red Hat\\eCos\\");
-  strPlatformsKey += GetGreatestSubkey (_T("Software\\Red Hat\\eCos"));
-  strPlatformsKey += _T("\\Platforms");
-  return SaveTargetInfoReg (strPlatformsKey);
-#else // UNIX
-  // get target info from .eCosrc
-  String strFile=_tgetenv(_T("HOME"));
-  if(strFile.GetLength()>0){
-    strFile+=_T("/.eCosrc");
-    return SaveTargetInfo(strFile);
-  } else {
-    return false;
-  }
-#endif
-}
-
-bool CeCosTest::SaveTargetInfo(LPCTSTR pszFilename)
-{
-  return false; //FIXME
-}
-
-#ifdef _WIN32
-bool CeCosTest::SaveTargetInfoReg(LPCTSTR pszRegKey)
-{
-  CProperties::CreateKey(pszRegKey,HKEY_LOCAL_MACHINE);
-  HKEY hKey;
-  bool rc=ERROR_SUCCESS==RegOpenKeyEx (HKEY_LOCAL_MACHINE, pszRegKey, 0L, KEY_ALL_ACCESS, &hKey);
-  if(rc){
-    for(int i=0;i<(signed)arTargetInfo.size();i++){
-      HKEY hKey2;
-      DWORD dwDisp;
-      const TargetInfo &ti=arTargetInfo[i];
-      rc&=(ERROR_SUCCESS==RegCreateKeyEx(hKey,ti.Image(), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &hKey2, &dwDisp));
-      if(rc){
-        LPCTSTR pszPrefix=ti.Prefix();
-        LPCTSTR pszGdb   =ti.GdbCmd();
-        LPCTSTR pszHwType=CeCosTest::TargetInfo::arHwTypeImage[ti.Type()];
-        rc&=(ERROR_SUCCESS==RegSetValueEx(hKey2,_T("Prefix"),0,REG_SZ,   (CONST BYTE *)pszPrefix,(1+_tcslen(pszPrefix))*sizeof TCHAR)) &&
-            (ERROR_SUCCESS==RegSetValueEx(hKey2,_T("HwType"),0,REG_SZ,   (CONST BYTE *)pszHwType,(1+_tcslen(pszHwType))*sizeof TCHAR)) &&
-            (ERROR_SUCCESS==RegSetValueEx(hKey2,_T("GdbCmd"),0,REG_SZ,   (CONST BYTE *)pszGdb,(1+_tcslen(pszGdb))*sizeof TCHAR));
-      }
-      RegCloseKey(hKey2);
-    }
-    RegCloseKey(hKey);
-  }
-  return rc;
-}
-#endif
-
 static bool CALLBACK IsCancelled(void *pThis)
 {
   return CeCosTest::Cancelled==((CeCosTest *)pThis)->Status();
@@ -295,7 +74,7 @@ static bool CALLBACK IsCancelled(void *pThis)
 
 // Ctors and dtors:
 CeCosTest::CeCosTest(const ExecutionParameters &e, LPCTSTR pszExecutable,LPCTSTR pszTitle):
-m_nRunCount(0),
+  m_pspPipe(0),
   m_nStrippedSize(0),
   m_nFileSize(0),
   m_bDownloading(false),
@@ -306,13 +85,22 @@ m_nRunCount(0),
   m_nDownloadTime(0),
   m_nTotalTime(0),
   m_nMaxInactiveTime(0),
-  m_pPort(0)
+  m_pResource(0),
+  m_psp(0)
 {
+  
+  assert(e.Platform());
+  
   SetExecutable (pszExecutable);
   
   TRACE(_T("%%%% Create test instance %08x count:=%d\n"),this,InstanceCount+1);  
-  
-  GetPath(m_strPath);
+
+  // By recording the path now, we ensure processes are always run in the context in which the test instance
+  // is created (important for the ConfigTool to be able to call PrepareEnvironment).
+  LPCTSTR pszPath=_tgetenv(_T("PATH"));
+  if(pszPath){
+    m_strPath=pszPath;
+  }
   
   ENTERCRITICAL;
   InstanceCount++;
@@ -328,13 +116,18 @@ m_nRunCount(0),
 
 CeCosTest::~CeCosTest()
 {
+  for(int i=0;i<(signed)m_arpExecsp.size();i++){
+    delete (CSubprocess *)m_arpExecsp[i];
+  }
+  delete m_pspPipe;
+
   TRACE(_T("%%%% Delete test instance %08x\n"),this);
   Cancel();
   CloseSocket();
-  if(m_pPort){
-    m_pPort->Release();
-    //delete m_pPort;
-    //m_pPort=0;
+  if(m_pResource){
+    m_pResource->Release();
+    //delete m_pResource;
+    //m_pResource=0;
   }
   
   VTRACE(_T("~CeCosTest(): EnterCritical and decrease instance count\n"));
@@ -356,10 +149,8 @@ CeCosTest::~CeCosTest()
 bool CeCosTest::RunRemote (LPCTSTR pszRemoteHostPort)
 {
   bool rc=false;
-  m_nRunCount++;
   TRACE(_T("RunRemote\n"));
   m_strExecutionHostPort=pszRemoteHostPort;
-  SetPath(m_strPath);
   m_Status=NotStarted;
   
   VTRACE(_T("RemoteThreadFunc()\n"));
@@ -367,7 +158,7 @@ bool CeCosTest::RunRemote (LPCTSTR pszRemoteHostPort)
   // Find a server.
   ConnectForExecution();
   if(Cancelled!=Status()){       
-    if(ServerSideGdb()){
+    if(m_ep.Platform()->ServerSideGdb()){
       // The executable is transmitted to the server for execution.
       // Send file size
       if(m_pSock->sendInteger(m_nFileSize,_T("file size"))&&m_nFileSize>0){
@@ -377,16 +168,16 @@ bool CeCosTest::RunRemote (LPCTSTR pszRemoteHostPort)
         int nToSend=m_nFileSize;
         FILE *f1=_tfopen(m_strExecutable,_T("rb"));
         if(0==f1){
-          Log(_T("Failed to open %s - %s\n"),(LPCTSTR )m_strExecutable,strerror(errno));
+          Log(_T("Failed to open %s - %s\n"),(LPCTSTR)m_strExecutable,strerror(errno));
         } else {
           while (nToSend>0){
             int nRead=fread( b.Data(), 1, nBufSize, f1);
             if(nRead<=0){
-              Log(_T("Failure reading %s - %s\n"),(LPCTSTR )m_strExecutable,strerror(errno));
+              Log(_T("Failure reading %s - %s\n"),(LPCTSTR)m_strExecutable,strerror(errno));
               break;
             }
             if(!send( b.Data(), nRead, _T("executable"))){
-              Log(_T("Failure sending %s - %s\n"),(LPCTSTR )m_strExecutable,(LPCTSTR )m_pSock->SocketErrString());
+              Log(_T("Failure sending %s - %s\n"),(LPCTSTR)m_strExecutable,(LPCTSTR)m_pSock->SocketErrString());
               break;
             }
             nToSend-=nRead;
@@ -395,7 +186,7 @@ bool CeCosTest::RunRemote (LPCTSTR pszRemoteHostPort)
           f1=0;
           if(nToSend>0){
             TRACE(_T("done [%d bytes sent]\n"),m_nFileSize-nToSend);
-            Log(_T("Failed to transmit %s - %d/%d bytes sent\n"),(LPCTSTR )m_strExecutable,m_nFileSize-nToSend,m_nFileSize);
+            Log(_T("Failed to transmit %s - %d/%d bytes sent\n"),(LPCTSTR)m_strExecutable,m_nFileSize-nToSend,m_nFileSize);
           } else {
             TRACE(_T("done\n"));
             rc=true;
@@ -405,12 +196,11 @@ bool CeCosTest::RunRemote (LPCTSTR pszRemoteHostPort)
           Log(_T("Failed to receive result from remote server\n"));
           rc=false;
         }
-        m_pSock->sendInteger(1); // send an ack [n'importe quoi]
+        m_pSock->sendInteger(456); // send an ack [n'importe quoi]
         CloseSocket();
       }
     } else {
       // The server sets up a connection between port and tcp/ip socket, and gdb is run locally
-      String strHostPort,strOutput;
       // Big timeout here because we have to wait for the target to be reset
       // We do this:
       // do {
@@ -418,50 +208,50 @@ bool CeCosTest::RunRemote (LPCTSTR pszRemoteHostPort)
       //     any output so far
       // } while (2==target ready indicator)
       // read host:port
+      String strHostPort;
       if(GetTargetReady(strHostPort)){
-        ENTERCRITICAL;
-        m_pPort=new CTestResource(Target(), strHostPort, 0);
-        m_pPort->Use();
-        LEAVECRITICAL;
+        // Fix up a resource to represent permission to use the host:port we have been told about
+        CTestResource resource;
+        resource.SetTarget(m_ep.PlatformName());
+        resource.SetDownload(strHostPort,0);
+        m_pResource=&resource;
         RunLocal();
-        delete m_pPort;
-        m_pPort=0;
-        m_pSock->sendInteger(123,_T("Terminating ack"));
+        m_pResource=0;
+        m_pSock->sendInteger(Status(),_T("Terminating ack"));
         m_pSock->Close();
         rc=true;
       }
     }
   }
-  TRACE(_T("RemoteThreadFunc(): Exiting\n"));
+  TRACE(_T("RemoteThreadFunc - exiting\n"));
   return rc;
 }
 
 // Run the test locally
 bool CeCosTest::RunLocal()
 {
-  m_nRunCount++;
   bool rc=false;
-  if(0==CTestResource::Count(m_ep)){
-    Log(_T("Cannot run a %s test\n"),m_ep.Target());
+
+  TRACE(_T("RunLocal %s\n"),(LPCTSTR)Executable());
+
+  if(!CeCosTestUtils::IsFile(Executable())){
+    Log(_T("Cannot run - %s is not a file\n"),(LPCTSTR)Executable());
+  } else if(0==m_pResource && 0==CTestResource::Count(m_ep)){
+    Log(_T("Cannot run a %s test\n"),(LPCTSTR)m_ep.PlatformName());
   } else {
     
-    TRACE(_T("Run %s, timeouts: active=%d elapsed=%d\n"),(LPCTSTR )m_strExecutable, ActiveTimeout(), DownloadTimeout());
     m_Status=NotStarted;
-    m_tPrevSample=Now();
-    m_tGdbCpuTime=0;
 
-    GetPath(m_strPath);
-    
-    TRACE(_T("LocalThreadFunc - target=%s\n"),Target());
+    TRACE(_T("LocalThreadFunc - target=%s\n"),(LPCTSTR)m_ep.PlatformName());
     // Acquire a port (our caller may have done this for us)
     VTRACE(_T("LocalThreadFunc():Tring to acquire a port\n"));
-    if(0==m_pPort){
+    if(0==m_pResource){
       for(;;){
-        m_pPort=CTestResource::GetResource(m_ep);
-        if(m_pPort||Cancelled==Status()){
+        m_pResource=CTestResource::GetResource(m_ep);
+        if(m_pResource||Cancelled==Status()){
           break;
         }
-        Sleep(2000);
+        CeCosThreadUtils::Sleep(2000);
         TRACE(_T("Waiting for a port\n"));
       }
     }
@@ -470,117 +260,50 @@ bool CeCosTest::RunLocal()
     if(Cancelled!=Status()){
       // This means we have acquired a local port 
       bool bTargetReady=false;
-      if(!m_pPort->HasReset()){
+      if(!m_pResource->HasReset()){
         bTargetReady=true;
       } else {
-        bTargetReady=(CResetAttributes::RESET_OK==Reset(false));
+        bTargetReady=(CResetAttributes::RESET_OK==m_pResource->Reset(0,this));
       }
       // we may proceed to execute the test
       if(bTargetReady){
         SetStatus(NotStarted);
-        if(_TCHAR('\0')!=*(m_pPort->Serial())){
+
+        if(NOTIMEOUT==m_ep.DownloadTimeout()){
           // No elapsed timeout given - calculate from knowledge of executable size and baud rate
           // 10 baud ~= 1 byte/sec, but we halve this to account for download in hex :-(
-          // This means that a 200k executable is given ~100 seconds
-          // In any case the whole thing is an overestimate [we should use the stripped size]
-          // We use a minimum of 30 seconds and add 50% for safety
-          int nSpeed=((0==m_pPort->Baud()?9600:m_pPort->Baud())/10)/2; // Hex
-          nSpeed/=2; // Safety
-          if(NOTIMEOUT==m_ep.DownloadTimeout()){
-            m_ep.SetDownloadTimeout (1000*MAX(60,(m_nStrippedSize/nSpeed)));
+          // We use a minimum of 30 seconds and double the calculated result for safety
+          // Note that the baud rate is generally unknown on the client side.
+          int nBaud=m_pResource->Baud();
+          if(0==nBaud){
+            CTestResource *pExecutionResource=CTestResource::Lookup(m_strExecutionHostPort);
+            if(pExecutionResource){
+              nBaud=pExecutionResource->Baud();
+            } 
           }
-          TRACE(_T("Timeout=%d\n"),m_ep.DownloadTimeout());
-        }
-        if(NOTIMEOUT==m_ep.ActiveTimeout()){
-          m_ep.SetActiveTimeout(1000*(_TCHAR('\0')==*(m_pPort->Serial())?300:30));
+          if(0==nBaud){
+            nBaud=38400;
+          }
+
+          int nBytesPerSec=(nBaud/10)/2; // division by 2 assumes download in "ascii" (2 bytes/char)
+          m_ep.SetDownloadTimeout (1000*MAX(30,2*(m_nStrippedSize/nBytesPerSec)));
+          TRACE(_T("Estimated download time %d sec (%d bytes @ %d bytes/sec [%d baud])\n"),m_nStrippedSize/nBytesPerSec,m_nStrippedSize,nBytesPerSec,nBaud);
         }
 
-        {
-          // Construct commands for gdb
-          const TargetInfo &t=Target(Target());
-          TargetInfo::HwType hwt=t.Type();
-          StringArray arstrGdbCmds;
-          LPCTSTR pszPrompt;
-          String strGdb;
-            // running using gdb
-            pszPrompt=_T("(gdb) ");
-            strGdb.Format(_T("%s-gdb -nw %s"),t.Prefix(),(LPCTSTR)CygPath(m_strExecutable));
-            // Tell gdb its paper size :-)
-            arstrGdbCmds.push_back(_T("set height 0"));
-            arstrGdbCmds.push_back(_T("set remotedebug 0"));
-            
-            if(_TCHAR('\0')!=*t.GdbCmd()){
-              arstrGdbCmds.push_back(t.GdbCmd());
-            }
-            
-            String str;
-            if(_TCHAR('\0')!=*(m_pPort->Serial())){
-              // Talking remotely
-              if(CeCosTestSocket::IsLegalHostPort(m_pPort->Serial())){
-                // Talking to a tcp/ip socket
-                arstrGdbCmds.push_back(_T("set watchdog 0"));
-              } else {
-                // Talking to a serial port
-                str.Format(_T("set remotebaud %d"),m_pPort->Baud());
-                arstrGdbCmds.push_back(str);
-              }
-              str.Format(_T("target remote %s"),m_pPort->Serial());
-#ifdef _WIN32
-              // Serial names on windows must be in l.c. (gdb bug)
-              for(TCHAR *c=str.GetBuffer();*c;c++){
-                if(isalpha(*c)){
-                  *c=(TCHAR)_totlower(*c);
-                }
-              }
-              str.ReleaseBuffer();
-#endif
-              arstrGdbCmds.push_back(str);
-            }
-            
-            if(TargetInfo::SYNTHETIC!=hwt){
-              arstrGdbCmds.push_back(_T("load"));
-            }
-            
-            arstrGdbCmds.push_back(_T("break cyg_test_exit"));
-            arstrGdbCmds.push_back(_T("break cyg_assert_fail"));
-            if(/*start hack*/BreakpointsOperational()/*end hack*/){
-              arstrGdbCmds.push_back(_T("break cyg_test_init"));
-            }
-            
-            switch(hwt){
-            case TargetInfo::SYNTHETIC:
-            case TargetInfo::SIM:
-              arstrGdbCmds.push_back(_T("run"));
-              break;
-            case TargetInfo::HARDWARE:
-            case TargetInfo::HARDWARE_NO_BP:
-            case TargetInfo::REMOTE_SIM:
-              arstrGdbCmds.push_back(_T("cont")); // run the program
-              break;
-            default:
-              assert(false);
-            }
-            
-            if(BreakpointsOperational()){
-              str.Format(_T("set cyg_test_is_simulator=%d"),hwt);
-              arstrGdbCmds.push_back(str);
-              arstrGdbCmds.push_back(_T("cont")); // continue from cyg_test_init breakpoint
-            }
-            
-            // run/cont command must be the last (logic in DriveGdb)
-            
-          TRACE(_T("Calling RunGdb\n"));
-          RunGdb(strGdb,pszPrompt,arstrGdbCmds);
-          rc=true;          
-        }
+        TRACE(_T("Active timeout=%d download timeout=%d\n"),m_ep.ActiveTimeout(), m_ep.DownloadTimeout());
+
+        GetInferiorCommands(m_arstrInferiorCmds);
+        String strInferior(m_ep.Platform()->Inferior());
+        strInferior.Replace(_T("%e"),CygPath(m_strExecutable),true);
+        RunInferior(strInferior);
+        rc=true;          
       }
     }
-    TRACE(_T("LocalThreadFunc - releasing resource\n"));
-    if(m_pPort){
-      m_pPort->Release();
-      m_pPort=0;
+    if(m_pResource){
+      m_pResource->Release();
+      m_pResource=0;
     }
-    TRACE(_T("LocalThreadFunc - exiting\n"));
+    TRACE(_T("RunLocal - exiting\n"));
   }
 
   return rc;
@@ -591,11 +314,11 @@ void CeCosTest::Cancel ()
   SetStatus(Cancelled);
 }
 
-CeCosTest::ServerStatus CeCosTest::Connect (String strHost,int port, CeCosTestSocket *&pSock, const ExecutionParameters &e,String &strInfo,Duration dTimeout)
+CeCosTest::ServerStatus CeCosTest::Connect (LPCTSTR pszHostPort, CeCosSocket *&pSock, const ExecutionParameters &e,String &strInfo,Duration dTimeout)
 {
   // Find out whether this host is receptive
   ServerStatus s=CONNECTION_FAILED;
-  pSock=new CeCosTestSocket(strHost,port,dTimeout);
+  pSock=new CeCosSocket(pszHostPort,dTimeout);
   int nStatus;    
   if(pSock->Ok() &&
     pSock->sendString(e.Image(), _T("execution parameters")) &&
@@ -617,7 +340,7 @@ CeCosTest::ServerStatus CeCosTest::Connect (String strHost,int port, CeCosTestSo
 
 void CeCosTest::ConnectForExecution ()
 {
-  bool bSchedule=(0==m_strExecutionHostPort.GetLength());
+  bool bSchedule=(0==m_strExecutionHostPort.size());
   Duration nDelay=2000;
   
   m_pSock=0;
@@ -637,7 +360,7 @@ void CeCosTest::ConnectForExecution ()
       if(nChoices>0){
         TRACE(_T("ConnectForExecution: choices are:\n"));
         for(int i=0;i<nChoices;i++){
-          TRACE(_T("\t%s\n"),(LPCTSTR )arstrHostPort[i]);
+          TRACE(_T("\t%s\n"),(LPCTSTR)arstrHostPort[i]);
         }
       }
     } else {
@@ -664,29 +387,25 @@ void CeCosTest::ConnectForExecution ()
         
         m_strExecutionHostPort=arstrHostPort[nChoice];
         
-        TRACE(_T("ConnectForExecution: chosen %s\n"),(LPCTSTR )m_strExecutionHostPort);
-        String strHost;
-        int nPort;
-        CeCosTestSocket::ParseHostPort(m_strExecutionHostPort, strHost, nPort);
-        if(nPort){
+        TRACE(_T("ConnectForExecution: chosen %s\n"),(LPCTSTR)m_strExecutionHostPort);
+        if(CeCosSocket::IsLegalHostPort(m_strExecutionHostPort)){
           // If we're using the resource server we had better check that the host
           // we are about to lock has not been resource-locked (the other match checks
           // will of course always succeed)
-          String strInfo;
-          ServerStatus s=bSchedule && !CTestResource::Matches(strHost, nPort,m_ep)?
-SERVER_LOCKED:  
-          Connect(strHost,nPort,m_pSock,m_ep,strInfo);
+          String strInfo; 
+          ServerStatus s=bSchedule && !CTestResource::Matches(m_strExecutionHostPort,m_ep)?SERVER_LOCKED:  
+            Connect(m_strExecutionHostPort,m_pSock,m_ep,strInfo);
           arbHostTried[nChoice]=true;        
-          TRACE(_T("Connect: %s says %s %s\n"),(LPCTSTR )m_strExecutionHostPort,Image(s),(LPCTSTR )strInfo);
-          CTestResource *pResource=CTestResource::Lookup(strHost,nPort);
+          TRACE(_T("Connect: %s says %s %s\n"),(LPCTSTR)m_strExecutionHostPort,(LPCTSTR)Image(s),(LPCTSTR)strInfo);
+          CTestResource *pResource=CTestResource::Lookup(m_strExecutionHostPort);
           if(pResource){
             String str;
-            str.Format(_T("%s %s %s"),(LPCTSTR )pResource->Output(),(LPCTSTR )strInfo,Image(s));
+            str.Format(_T("%s %s %s"),(LPCTSTR)pResource->Image(),(LPCTSTR)strInfo,(LPCTSTR)Image(s));
             arstrTries.push_back(str);
           }
           if(SERVER_READY==s){
             // So that's ok then.  We're outta here.
-            Interactive(_T("Connected to %s\n"),(LPCTSTR )m_strExecutionHostPort);
+            INTERACTIVE(_T("Connected to %s\n"),(LPCTSTR)m_strExecutionHostPort);
             goto Done;
           } else {
             delete m_pSock;
@@ -696,23 +415,23 @@ SERVER_LOCKED:
       } 
     }
     
-    Interactive(_T("Warning - could not connect to any test servers:\n"));
+    INTERACTIVE(_T("Warning - could not connect to any test servers:\n"));
     if(arstrTries.size()>0){
       for(unsigned int i=0;i<arstrTries.size();i++){
-        Interactive(_T("    %s\n"),(LPCTSTR )arstrTries[i]);
+        INTERACTIVE(_T("    %s\n"),(LPCTSTR)arstrTries[i]);
       }
     } else {
-      Interactive(_T("No servers available to execute %s test:\n"),m_ep.Target());
+      INTERACTIVE(_T("No servers available to execute %s test:\n"),(LPCTSTR)m_ep.PlatformName());
       ENTERCRITICAL;
       for(CTestResource *pResource=CTestResource::First();pResource;pResource=pResource->Next()){
-        Interactive(_T("    %s\n"),(LPCTSTR )pResource->Output());
+        INTERACTIVE(_T("    %s\n"),(LPCTSTR)pResource->Image());
       }
       LEAVECRITICAL;
     }
-    Interactive(_T("Retry in %d seconds...\n"),nDelay/1000);
+    INTERACTIVE(_T("Retry in %d seconds...\n"),nDelay/1000);
     
     // We have tried all possibilities - sleep before retrying
-    Sleep(nDelay);
+    CeCosThreadUtils::Sleep(nDelay);
     
     if(Cancelled==m_Status){
       TRACE(_T("ConnectForExecution : cancelled\n"));
@@ -726,18 +445,11 @@ Done:
   delete [] arbHostTried;
 }
 
-void CeCosTest::LogResult()
-{
-  CeCosTrace::Out(ResultString());
-  CeCosTrace::Out(_T("\n")  );
-  CeCosTrace::Trace(_T("%s\n"),ResultString());
-}
-
 void CeCosTest::SetStatus (StatusType status)
 {
   ENTERCRITICAL;
   if((int)status>(int)m_Status){
-    TRACE(_T("Status <- %s\n"),Image(status));
+    TRACE(_T("Status <- %s\n"),(LPCTSTR)Image(status));
     m_Status=status;
   }
   LEAVECRITICAL;
@@ -747,7 +459,7 @@ bool CeCosTest::WaitForAllInstances(int nPoll,Duration nTimeout)
 {
   Time t0=Now();
   while(InstanceCount>0){
-    Sleep(nPoll);
+    CeCosThreadUtils::Sleep(nPoll);
     if(NOTIMEOUT!=nTimeout && Now()-t0>nTimeout){
       return false;
     }
@@ -816,7 +528,7 @@ bool CeCosTest::Value (
   int nDownloadTimeoutFrac=0;
   
   static String strFormat;
-  if(0==strFormat.GetLength()){
+  if(0==strFormat.size()){
     // Construct a version of the format string sans length attributes for %s items
     LPCTSTR c=pszFormat;
     TCHAR *d=strFormat.GetBuffer(_tcslen(pszFormat));
@@ -882,19 +594,20 @@ bool CeCosTest::Value (
     ;
 }
   
-LPCTSTR  const CeCosTest::ResultString(bool bIncludeOutput) const
+const String CeCosTest::ResultString(bool bIncludeOutput) const
 {
+  String strResultString;
   String strTitle(m_strTitle);
   String strExecutionHostPort(m_strExecutionHostPort);
   
-  if(0==strTitle.GetLength()){
-    strTitle=CeCosTestUtils::SimpleHostName();
+  if(0==strTitle.size()){
+    strTitle=CeCosSocket::MySimpleHostName();
     strTitle+=_TCHAR(':');
     strTitle+=m_strExecutable; 
   }
   
-  if(0==strExecutionHostPort.GetLength()){
-    strExecutionHostPort=CeCosTestUtils::SimpleHostName();
+  if(0==strExecutionHostPort.size()){
+    strExecutionHostPort=CeCosSocket::MySimpleHostName();
     strExecutionHostPort+=_T(":0");
   }
   
@@ -903,25 +616,25 @@ LPCTSTR  const CeCosTest::ResultString(bool bIncludeOutput) const
   time(&ltime);
   struct tm *now=localtime( &ltime );
   
-  m_strResultString.Format(
+  strResultString.Format(
     pszFormat,
     1900+now->tm_year,1+now->tm_mon,now->tm_mday,
     now->tm_hour,now->tm_min,now->tm_sec,               // Time of day
-    (LPCTSTR )strExecutionHostPort,               // Execution host:port
-    Target(),                                    // Target
-    ExecutableTail(),                                   // Executable
-    Image(Status()),                                    // Result
-    m_nStrippedSize/1024,m_nFileSize/1024,          // Sizes
-    WF(m_nDownloadTime),WF(DownloadTimeout()),WF(m_nTotalTime),// Times
-    WF(m_nMaxInactiveTime),WF(ActiveTimeout()),
-    (LPCTSTR )strTitle                              // Title
+    (LPCTSTR)strExecutionHostPort,                      // Execution host:port
+    (LPCTSTR)m_ep.PlatformName(),                       // Target
+    (LPCTSTR)CeCosTestUtils::Tail(m_strExecutable),     // Executable
+    (LPCTSTR)Image(Status()),                           // Result
+    m_nStrippedSize/1024,m_nFileSize/1024,              // Sizes
+    WF(m_nDownloadTime),WF(m_ep.DownloadTimeout()),WF(m_nTotalTime),// Times
+    WF(m_nMaxInactiveTime),WF(m_ep.ActiveTimeout()),
+    (LPCTSTR)strTitle                                   // Title
     );
-  if(bIncludeOutput && m_strOutput.GetLength()>0){                            
-    m_strResultString+=_TCHAR('\n');
-    m_strResultString+=m_strOutput;
+  if(bIncludeOutput && m_strOutput.size()>0){                            
+    strResultString+=_TCHAR('\n');
+    strResultString+=m_strOutput;
   }
   LEAVECRITICAL;
-  return m_strResultString;
+  return strResultString;
 }
 
 // Run as a server, listening on the port given as parameter
@@ -929,168 +642,154 @@ bool CeCosTest::RunAgent(int nTcpPort)
 {
   bool bLocked=false;
   
-  nAuxPort=nTcpPort+3000;//hack
-  nAuxListenSock=CeCosTestSocket::Listen(nAuxPort);//hack
-  if(-1!=nAuxListenSock){
-    // Create socket
-    int nSock = CeCosTestSocket::Listen(nTcpPort);
-    int nLastClient=0;
-    int nRejectionCount=0;
-    if (-1!=nSock) {
-      for (;;) {
-        try {
-          CeCosTestSocket *pSock=new CeCosTestSocket(nSock); // AcceptThreadFunc deletes if not deleted below
-          String str;
-          // Read the execution parameters
-          if(!pSock->recvString(str)){
-            // Socket error on the recv - nothing much we can do
-            TRACE(_T("RunAgent : could not read execution parameters\n"));
-            delete pSock;
-            pSock=0;
-          } else {
-            ExecutionParameters e;
-            e.FromStr(str);
-            TRACE(_T("Execution parameters: %s\n"),(LPCTSTR)e.Image());
-            bool bNuisance=false;
-            ServerStatus s;
-            CTestResource *pPort=0;
-            String strInfo;
-            if(!e.IsValid()){
-              // Looks like a confused client ...
-              strInfo.Format(_T("Bad target value %s read from client\n"),e.Target());
-              s=SERVER_CANT_RUN;
-            } else if(0==CTestResource::Count(e)){
-              // No chance of running this test
-              strInfo.Format(_T("Cannot run a %s test from this server\n"),e.Target());
-              s=SERVER_CANT_RUN;
-            } else {
-              switch(e.Request()) {
-              case ExecutionParameters::LOCK:
-                if(bLocked){
-                  s=SERVER_BUSY;
-                } else {
-                  WaitForAllInstances(1000,NOTIMEOUT);
-                  bLocked=true;
-                  s=SERVER_LOCKED;
-                }
-                break;
-              case ExecutionParameters::UNLOCK:
-                if(bLocked){
-                  bLocked=false;
-                  s=SERVER_READY;
-                } else {
-                  s=SERVER_BUSY;
-                }
-                break;
-              case ExecutionParameters::QUERY:
-                if (bLocked) {
-                  s=SERVER_LOCKED;
-                } else {
-                  pPort=CTestResource::GetResource(e);
-                  if(0==pPort){
-                    s=SERVER_BUSY;
-                    strInfo.Format(_T("serving %s"),(LPCTSTR )CeCosTestSocket::ClientName(nLastClient));
-                  } else {
-                    s=SERVER_READY;
-                    pPort->Release();
-                    pPort=0;
-                  }
-                }
-                break;
-              case ExecutionParameters::RUN:
-                if (bLocked) {
-                  s=SERVER_LOCKED;
-                } else {
-                  pPort=CTestResource::GetResource(e);
-                  if(0==pPort){
-                    // We must disappoint our client
-                    nRejectionCount++;
-                    strInfo.Format(_T("serving %s"),(LPCTSTR )CeCosTestSocket::ClientName(nLastClient));
-                    s=SERVER_BUSY;
-                    /*
-                  } else if(nLastClient==pSock->Client() && nRejectionCount>10) {
-                    // Don't answer the phone to a nuisance caller
-                    s=SERVER_BUSY;
-                    bNuisance=true;
-                    nRejectionCount--;  
-                    pPort->Release();
-                    pPort=0;
-                    */
-                  } else {
-                    s=SERVER_READY;
-                    nRejectionCount=0;
-                    nLastClient=pSock->Client();
-                  }
-                }
-                break;
-              case ExecutionParameters::STOP:
-                s=SERVER_READY;
-                break;
-              default:
-                s=SERVER_CANT_RUN;
+  // Create socket
+  int nSock = CeCosSocket::Listen(nTcpPort);
+  int nLastClient=0;
+  if (-1!=nSock) {
+    for (;;) {
+      try {
+        CeCosSocket *pSock=new CeCosSocket(nSock); // AcceptThreadFunc deletes if not deleted below
+        String str;
+        // Read the execution parameters
+        if(!pSock->recvString(str)){
+          // Socket error on the recv - nothing much we can do
+          TRACE(_T("RunAgent : could not read execution parameters\n"));
+          delete pSock;
+          pSock=0;
+        } else {
+          ExecutionParameters e;
+          e.FromStr(str);
+          TRACE(_T("Execution parameters: %s\n"),(LPCTSTR)e.Image());
+          ServerStatus s;
+          CTestResource *pPort=0;
+          String strInfo;
+
+          switch(e.Request()) {
+            case ExecutionParameters::LOCK:
+              if(bLocked){
+                s=SERVER_BUSY;
+              } else {
+                WaitForAllInstances(1000,NOTIMEOUT);
+                bLocked=true;
+                s=SERVER_LOCKED;
               }
-            }
-            
+              break;
+            case ExecutionParameters::UNLOCK:
+              if(bLocked){
+                bLocked=false;
+                s=SERVER_READY;
+              } else {
+                s=SERVER_BUSY;
+              }
+              break;
+            case ExecutionParameters::QUERY:
+              if (bLocked) {
+                s=SERVER_LOCKED;
+              } else {
+                s=SERVER_BUSY;
+                ENTERCRITICAL;
+                for(CTestResource *pResource=CTestResource::First();pResource;pResource=pResource->Next()){
+                  if(!pResource->InUse()){
+                    s=SERVER_READY;
+                    break;
+                  }
+                }
+                LEAVECRITICAL;
+                if(SERVER_READY!=s){
+                  strInfo.Format(_T("serving %s"),(LPCTSTR)CeCosSocket::ClientName(nLastClient));
+                }
+              }
+              break;
+            case ExecutionParameters::RUN:
+              if(NULL==e.Platform()){
+                // Looks like a confused client ...
+                strInfo.Format(_T("Bad target value %s read from client\n"),(LPCTSTR)str);
+                s=SERVER_CANT_RUN;
+              } else if(0==CTestResource::Count(e)){
+                // No chance of running this test
+                strInfo.Format(_T("Cannot run a %s test from this server\n"),(LPCTSTR)e.PlatformName());
+                s=SERVER_CANT_RUN;
+              } else if (bLocked) {
+                s=SERVER_LOCKED;
+              } else {
+                pPort=CTestResource::GetResource(e);
+                if(0==pPort){
+                  // We must disappoint our client
+                  strInfo.Format(_T("serving %s"),(LPCTSTR)CeCosSocket::ClientName(nLastClient));
+                  s=SERVER_BUSY;
+                } else {
+                  s=SERVER_READY;
+                  nLastClient=pSock->Client();
+                }
+              }
+              break;
+            case ExecutionParameters::STOP:
+              s=SERVER_READY;
+              break;
+            default:
+              s=SERVER_CANT_RUN;
+          }
+          
 #ifndef VERBOSE
-            if(ExecutionParameters::QUERY!=e.Request())
+          if(ExecutionParameters::QUERY!=e.Request())
 #endif
-              TRACE(_T("RunAgent : %s request tActive=%d tElapsed=%d Target=%s Reply status=%s %s Nuisance=%d\n"),
-              e.Image(e.Request()),
-              e.ActiveTimeout(),e.DownloadTimeout(),e.Target(),
-              Image(s),
-              (LPCTSTR )strInfo,
-              bNuisance);
+            TRACE(_T("RunAgent : %s request tActive=%d tDownload=%d Target=%s Reply status=%s %s\n"),
+              (LPCTSTR)e.Image(e.Request()),e.ActiveTimeout(),e.DownloadTimeout(),
+              (LPCTSTR)e.PlatformName(),
+              (LPCTSTR)Image(s),(LPCTSTR)strInfo);
+          
+          bool bSendok=pSock->sendInteger(s) && pSock->sendString(strInfo);
+          
+          if(SERVER_READY==s && bSendok && ExecutionParameters::RUN==e.Request()){
             
-            bool bSendok=pSock->sendInteger(s) && pSock->sendString(strInfo);
+            // Create a new class instance
+            // AcceptThreadFunc deletes the instance and closes new_sock
+            // RunLocal, called by AcceptThreadFunc, releases the port
+            // No need for meaningful callback, but must run asynchronously
             
-            TRACE(_T("RunAgent(1)\n"));
+            int nAuxPort=30000;
+            int nAuxListenSock=-1;
+      
+            do {
+              nAuxListenSock=CeCosSocket::Listen(nAuxPort);
+            } while (-1==nAuxListenSock && nAuxPort++<=0xffff);
             
-            if(SERVER_READY==s && bSendok && ExecutionParameters::RUN==e.Request()){
+            if(-1==nAuxListenSock){
+              ERROR(_T("Couldn't find a socket to bind to for RDI\n"));
+            } else {
               
-              // Create a new class instance
-              // AcceptThreadFunc deletes the instance and closes new_sock
-              // RunLocal, called by AcceptThreadFunc, releases the port
-              // We dream up a temporary name for the executable
-              // No need for meaningful callback, but must run asynchronously
-              String strTempFile;
-              ENTERCRITICAL;
-              strTempFile.Format(_T("%s-%s-%d"),_ttmpnam(0),e.Target(),nTcpPort);
-              LEAVECRITICAL;
-              
-              CeCosTest *pTest=new CeCosTest(e,strTempFile);
+              CeCosTest *pTest=new CeCosTest(e,NULL);
+              pTest->m_nAuxPort=nAuxPort;
+              pTest->m_nAuxListenSock=nAuxListenSock;
               pTest->m_pSock=pSock;
-              pTest->m_strExecutionHostPort.Format(_T("%s:%d"),CeCosTestUtils::HostName(),nTcpPort);
-              pTest->m_pPort=pPort;
-              
+              pTest->m_strExecutionHostPort=CeCosSocket::HostPort(CeCosSocket::MyHostName(),nTcpPort);
+              pTest->m_pResource=pPort;
               CeCosThreadUtils::RunThread(SAcceptThreadFunc,pTest,_T("SAcceptThreadFunc"));
               // AcceptThreadFunc deletes pSock
-              
-            } else {
-              TRACE(_T("RunAgent(2)\n"));
-              delete pSock;
-              pSock=0;
-              if(pPort){
-                pPort->Release();
-                pPort=0;
-              }
-              TRACE(_T("RunAgent(3)\n"));
-              if(CeCosTest::ExecutionParameters::STOP==e.Request()){
-                CancelAllInstances();
-                WaitForAllInstances(1000,20*1000);
-                break;
-              }
             }
-                }
+            
+          } else {
+            delete pSock;
+            pSock=0;
+            if(pPort){
+              pPort->Release();
+              pPort=0;
             }
-            catch(...){
-              TRACE(_T("!!! Exception caught in RunAgent()\n"));
+            if(CeCosTest::ExecutionParameters::STOP==e.Request()){
+              CancelAllInstances();
+              WaitForAllInstances(1000,20*1000);
+              break;
             }
+          }
         }
-        CeCosTestSocket::CloseSocket (nSock);
+      }
+      catch(...){
+        TRACE(_T("!!! Exception caught in RunAgent()\n"));
+      }
     }
-    VTRACE(_T("RunAgent(): returning false\n"));
-    CeCosTestSocket::CloseSocket(nAuxListenSock);
+    CeCosSocket::CloseSocket (nSock);
   }
+    
   return false;
 }
 
@@ -1108,61 +807,55 @@ CeCosTest::StatusType CeCosTest::StatusTypeValue(LPCTSTR  pszStr)
 // Thread to run ConnectSocketToSerial
 void CeCosTest::ConnectSocketToSerialThreadFunc()
 {
-  TRACE(_T("ConnectSocketToSerialThreadFunc sock=%d\n"),nAuxListenSock);
-  {
+  TRACE(_T("ConnectSocketToSerialThreadFunc sock=%d\n"),m_nAuxListenSock);
     
-    CeCosTestSerialFilter serial_filter;
-    CeCosTestSocket::FilterFunc *serial_filter_function = 
-      &SerialFilterFunction;
-    
-    CeCosTestDownloadFilter download_filter;
-    CeCosTestSocket::FilterFunc *download_filter_function = 
-      &DownloadFilterFunction;
-    
-    bool accept_connection = true;
-    
-    CeCosTestSerial serial;
-    serial.SetBlockingReads(false);
-    bool rc=false;
-    // Open serial device.
-    if (!serial.Open(m_pPort->Serial(),m_pPort->Baud())){
-      ERROR(_T("Couldn't open port %s\n"),m_pPort->Serial());
-    } else {
-      while(accept_connection) {
-        // Flush the serial buffer.
-        serial.Flush();
-        TRACE(_T("ConnectSocketToSerial: waiting for connection...\n"));
-        CeCosTestSocket socket;
-        if(!socket.Accept(nAuxListenSock,&m_bStopConnectSocketToSerial)){
-          ERROR(_T("ConnectSocketToSerial - couldn't accept\n"));
+  CeCosTestSerialFilter serial_filter;
+  CeCosTestDownloadFilter download_filter;
+  
+  CeCosSerial serial;
+  serial.SetBlockingReads(false);
+  bool rc=false;
+  // Open serial device.
+  if (!serial.Open(m_pResource->Serial(),m_pResource->Baud())){
+    ERROR(_T("Couldn't open port %s\n"),m_pResource->Serial());
+  } else {
+    for(;;){
+      // Flush the serial buffer.
+      serial.Flush();
+      TRACE(_T("ConnectSocketToSerial: waiting for connection...\n"));
+      CeCosSocket socket;
+      if(!socket.Accept(m_nAuxListenSock,&m_bStopConnectSocketToSerial)){
+        ERROR(_T("ConnectSocketToSerial - couldn't accept: %s\n"),(LPCTSTR)socket.SocketErrString());
+        break;
+      } else if (m_pSock->Client() != socket.Client()){    
+        // Make sure the client is who we think it is...
+        TRACE(_T("ConnectSocketToSerialThread - illegal connection attempted from %s\n"),(LPCTSTR)socket.ClientName(socket.Client()));
+      } else {
+        try {
+            rc=CeCosSocket::ConnectSocketToSerial(socket,serial,m_ep.m_bUseFilter?SerialFilterFunction:NULL, (void*)&serial_filter, m_ep.m_bUseFilter?DownloadFilterFunction:NULL, (void*)&download_filter, &m_bStopConnectSocketToSerial);
+          
+          // If the download filter was just active, it may
+          // allow the session to continue.
+          if(!download_filter.ContinueSession()){
+            break;
+          }
+          
+        }
+        catch (LPCTSTR pszMsg){
+          Log(_T("!!! ConnectSocketToSerial exception caught: %s!!!\n"),pszMsg);
+          rc=false;
           break;
-        } else if (m_pSock->Client() != socket.Client()){    
-          // Make sure the client is who we think it is...
-          TRACE(_T("ConnectSocketToSerialThread - illegal connection attempted from %s\n"),(LPCTSTR )socket.ClientName(socket.Client()));
-        } else {
-          try {
-            rc=CeCosTestSocket::ConnectSocketToSerial(socket,serial,m_ep.m_bUseFilter?serial_filter_function:NULL, (void*)&serial_filter, m_ep.m_bUseFilter?download_filter_function:NULL, (void*)&download_filter, &m_bStopConnectSocketToSerial);
-            
-            // If the download filter was just active, it may
-            // allow the session to continue.
-            accept_connection = download_filter.ContinueSession();
-            
-          }
-          catch (LPCTSTR pszMsg){
-            Log(_T("!!! ConnectSocketToSerial exception caught: %s!!!\n"),pszMsg);
-            rc=false;
-            break;
-          }
-          catch (...){
-            Log(_T("!!! ConnectSocketToSerial exception caught!!!\n"));
-            rc=false;
-            break;
-          }
+        }
+        catch (...){
+          Log(_T("!!! ConnectSocketToSerial exception caught!!!\n"));
+          rc=false;
+          break;
         }
       }
     }
-    TRACE(_T("ConnectSocketToSerial : done\n"));
   }
+  TRACE(_T("ConnectSocketToSerial : done\n"));
+  CeCosSocket::CloseSocket(m_nAuxListenSock);
 }
 
 static bool CALLBACK DerefBool(void *pParam)
@@ -1171,11 +864,15 @@ static bool CALLBACK DerefBool(void *pParam)
 }
 
 // Function called (on a separate thread) to process a successful connection to the RunAgent loop
+// In the case of a simulator server, we can have many of these active at the same time.
 void CeCosTest::AcceptThreadFunc()
 {
-  SetPath(m_strPath);
-  
-  if(ServerSideGdb()){
+  if(m_ep.Platform()->ServerSideGdb()){
+    // We dream up a temporary name for the executable
+    ENTERCRITICAL;
+    m_strExecutable.Format(_T("%s-%s-%d"),_ttmpnam(0),(LPCTSTR)m_ep.PlatformName(),m_nAuxPort);
+    LEAVECRITICAL;
+
     int n;
     if(m_pSock->recvInteger(n,_T("file size"))){
       m_nFileSize=n;
@@ -1185,7 +882,7 @@ void CeCosTest::AcceptThreadFunc()
       FILE *f2;
       f2=_tfopen(m_strExecutable,_T("wb"));
       if(0==f2){
-        Log(_T("Could not create %s - %s\n"),(LPCTSTR )m_strExecutable,strerror(errno));
+        Log(_T("Could not create %s - %s\n"),(LPCTSTR)m_strExecutable,strerror(errno));
         bCanRun=false;
       }
       unsigned int nBufSize=MIN(100000,m_nFileSize);
@@ -1203,7 +900,7 @@ void CeCosTest::AcceptThreadFunc()
           while(nToRead>0){
             int w=fwrite(c,1,nToRead,f2);
             if(-1==w){
-              Log(_T("Write error on %s - %s\n"),(LPCTSTR )m_strExecutable,strerror(errno));
+              Log(_T("Write error on %s - %s\n"),(LPCTSTR)m_strExecutable,strerror(errno));
               bCanRun=false;
               break;
             }
@@ -1217,9 +914,9 @@ void CeCosTest::AcceptThreadFunc()
       if(0!=f2){
         fclose(f2);
         _tchmod(m_strExecutable,00700); // user read, write and execute
-      }
+      } 
       if(0!=f2 && m_nFileSize!=nWritten){
-        Log(_T("Failed to create %s correctly [%d/%d bytes written]\n"),(LPCTSTR )m_strExecutable, nWritten, m_nFileSize);
+        Log(_T("Failed to create %s correctly [%d/%d bytes written]\n"),(LPCTSTR)m_strExecutable, nWritten, m_nFileSize);
         bCanRun=false;
       }
       SetExecutable(m_strExecutable); // to set stripped length and title
@@ -1230,29 +927,29 @@ void CeCosTest::AcceptThreadFunc()
     m_pSock->recvInteger(n); // receive an ack
   } else {
     bool bTargetReady;
-    if(_TCHAR('\0')==*(m_pPort->ResetString())){
+    if(_TCHAR('\0')==*(m_pResource->ResetString())){
       bTargetReady=true;
       TRACE(_T("No reset possible\n"));
     } else {
-      Log(_T("Resetting target using %s"),(LPCTSTR)m_pPort->ResetString());
-      bTargetReady=(CResetAttributes::RESET_OK==Reset(true));
+      Log(_T("Resetting target using %s"),(LPCTSTR)m_pResource->ResetString());
+      bTargetReady=(CResetAttributes::RESET_OK==m_pResource->Reset(ResetLogFunc,this));
     }
     TRACE(_T("Send Target Ready indicator=%d\n"),bTargetReady);
     m_pSock->sendInteger(bTargetReady,_T("target ready indicator"));
     
-    int nAck;
+    int nAck=-1;
     int dTimeout=m_ep.DownloadTimeout()+MAX(3*m_ep.ActiveTimeout(),15*60*1000);
     
     if(bTargetReady){
-      if(CeCosTestSocket::IsLegalHostPort(m_pPort->Serial())){
-        TRACE(_T("Sending %s\n"),(LPCTSTR )m_pPort->Serial());
-        m_pSock->sendString(m_pPort->Serial(),_T("Serial name"));
-        m_pSock->recvInteger(nAck,_T("Terminating ack"),dTimeout);
-        TRACE(_T("Terminating ack=%d\n"),nAck);
+      if(CeCosSocket::IsLegalHostPort(m_pResource->Serial())){
+        TRACE(_T("Sending %s\n"),(LPCTSTR)m_pResource->Serial());
+        if(m_pSock->sendString(m_pResource->Serial(),_T("Serial name")) && m_pSock->recvInteger(nAck,_T("Terminating ack"),dTimeout)){
+          TRACE(_T("Terminating ack=%d\n"),nAck);
+        }
       } else {
-        String strHostPort(CeCosTestSocket::HostPort(CeCosTestUtils::HostName(),nAuxPort));
+        String strHostPort(CeCosSocket::HostPort(CeCosSocket::MyHostName(),m_nAuxPort));
         
-        TRACE(_T("Using %s\n"),(LPCTSTR )strHostPort);
+        TRACE(_T("Using %s\n"),(LPCTSTR)strHostPort);
         
         if(m_pSock->sendString(strHostPort,_T("host:port"))){
           
@@ -1266,16 +963,17 @@ void CeCosTest::AcceptThreadFunc()
           CeCosThreadUtils::RunThread(SConnectSocketToSerialThreadFunc,this,&bConnectSocketToSerialThreadDone,_T("SConnectSocketToSerialThreadFunc")); 
           
           // Wait for either client or the ConnectSocketToSerial thread to finish.
-          m_pSock->recv(&nAck,1,_T("Terminating ack"),dTimeout,DerefBool,&bConnectSocketToSerialThreadDone);
-          TRACE(_T("Terminating ack=%d\n"),nAck);
+          if(m_pSock->recv(&nAck,sizeof(int),_T("Terminating ack"),dTimeout,DerefBool,&bConnectSocketToSerialThreadDone)){
+            TRACE(_T("Session terminated by request of client (%s)\n"),(LPCTSTR)Image((StatusType)nAck));
+          } else if(0!=m_pSock->SocketError()){
+            TRACE(_T("Session terminated by socket error - %s\n"),(LPCTSTR)m_pSock->SocketErrString());
+          }
           if(!bConnectSocketToSerialThreadDone){
             // Tap ConnectSocketToSerial thread on the shoulder
             TRACE(_T("Waiting for ConnectSocketToSerial thread to terminate...\n"));
             m_bStopConnectSocketToSerial=true;
             CeCosThreadUtils::WaitFor(bConnectSocketToSerialThreadDone);
           }
-          TRACE(_T("ConnectSocketToSerial thread terminated...\n"));
-          
         }
       }
     }
@@ -1343,190 +1041,56 @@ bool CeCosTest::recvResult(Duration dTimeout)
   return rc;
 }
 
-#ifndef _WIN32
-// This function may be run as a thread (win32) or called (unix).
-// It runs gdb.
-void CeCosTest::DriveGdb(LPCTSTR pszPrompt,const StringArray &arstrGdbCmds)
-{
-  unsigned int nCmdIndex=0;
-  
-  SetStatus(NotStarted);
-  
-  m_nMaxInactiveTime=0;
-  m_nTotalTime=0;
-  m_nDownloadTime=0;
-  
-  m_bDownloading=true;
-  
-  m_tBase=GdbTime();
-  m_tBase0=GdbTime();
-  m_tWallClock0=Now();
-  
-  TRACE(_T("DriveGdb()\n"));
-  
-  int nLastGdbInst=0;
-  
-  // Loop until 1 of:
-  //      1. Timeout detected
-  //      2. Gdb process is dead
-  //      3. At a gdb prompt and no more commands to send to gdb
-  //      4. Pipe read failure
-  //      5. Pipe write failure
-  do {
-    String str;
-    int readrc=ReadPipe(str,/*bBlockingReads=*/false);
-    switch(readrc){
-    case 0:
-      Sleep(250); // only unix will execute this
-      break;
-    case -1:
-      goto Done; // case 4
-      break;
-    default:
-      LogTimeStampedOutput(str);
-      
-      if(m_strOutput.GetLength()>20000){
-        LogString(_T("\n>>>> Infra FAIL\n*** too much output ***\n>>>>\n"));
-        SetStatus(Fail);
-        goto Done;
-      }
-      
-      // Test for program loaded and started:
-      // (remember SetStatus cannot downgrade the status if already > NoResult)
-      if(OutputContains(_T("Starting program: /")) || (OutputContains(_T("Start address"))&&OutputContains(_T("Continuing.")))){
-        SetStatus(NoResult);
-      }
-      
-      m_tBase=GdbTime();
-      //              // If can only hit a single breakpoint don't expect cyg_test_exit to stop us:
-      //              if(!BreakpointsOperational() && (OutputContains(_T("EXIT:"))||OutputContains(_T("NOTAPPLICABLE:")))){
-      //                  goto Done;
-      //              }
-      
-      if(AtPrompt(pszPrompt)){
-        m_tBase=GdbTime();
-        TRACE(_T("DriveGdb(1)\n"));
-        // gdb's output included one or more prompts
-        // Send another command along
-        if(nCmdIndex>=arstrGdbCmds.size()){
-          // Nothing further to say to gdb - exit
-          TRACE(_T("DriveGdb(2)\n"));
-          goto Done; // case 3
-        } else {
-          String strCmd(arstrGdbCmds[nCmdIndex++]);
-          TRACE(_T("DriveGdb(2a) - strCmd='%s' nLastGdbInst=%d\n"),(LPCTSTR)strCmd,nLastGdbInst);
-          // If at a prompt and we can see a GDB instruction, send it down
-          LPCTSTR pszGdbcmd=_tcsstr(nLastGdbInst+(LPCTSTR)m_strOutput,_T("GDB:"));
-          if(pszGdbcmd){
-            TRACE(_T("DriveGdb(2b)\n"));
-            pszGdbcmd+=4;
-            TCHAR cTerm;
-            if(_TCHAR('<')==*pszGdbcmd){
-              cTerm=_TCHAR('>');
-              pszGdbcmd++;
-            } else {
-              cTerm=_TCHAR('\n');
-            }
-            TRACE(_T("DriveGdb(2c)\n"));
-            LPCTSTR c=_tcschr(pszGdbcmd,cTerm);
-            if(c){
-              TRACE(_T("DriveGdb(2d)\n"));
-              strCmd=String(pszGdbcmd,c-pszGdbcmd);
-              nLastGdbInst=c+1-(LPCTSTR)m_strOutput;
-              nCmdIndex--; // undo increment above
-            }
-          }
-          strCmd+=_TCHAR('\n');
-          LogString(strCmd);
-          TRACE(_T("DriveGdb(3)\n"));
-          if(!WritePipe(strCmd)){
-            TRACE(_T("Writepipe returned error\n"));
-            goto Done; // case 5
-          }                        
-          TRACE(_T("DriveGdb(4)\n"));
-          if(0==_tcscmp(strCmd,_T("run\n"))||0==_tcscmp(strCmd,_T("cont\n"))){
-            m_tBase=GdbTime();
-            m_bDownloading=false;
-          }
-          TRACE(_T("DriveGdb(5)\n"));
-        }
-      }
-      break;
-    }
-    
-  } while (GdbProcessAlive() && CheckForTimeout()); // cases 2 and 1
-  
-Done:
-  
-  TRACE(_T("DriveGdb() - done\n"));
-  
-  Suck(pszPrompt);
-  if(GdbProcessAlive() && AtPrompt(pszPrompt)){
-    LogString(_T("bt\n"));
-    WritePipe(_T("bt\n"));
-    Suck(pszPrompt);
-    LogString(_T("quit\n"));
-    WritePipe(_T("quit\n"));
-  }
-  
-  // Read anything gdb has to say [within limits]
-  Suck(pszPrompt);
-  AnalyzeOutput();
-  
-  m_nTotalTime=Now()-m_tWallClock0;
-  TRACE(_T("Exiting DriveGdb()\n"));
-  
-}
-#endif
-
 // Return time used by inferior gdb process - CPU for sim, wallclock otherwise
-Time CeCosTest::GdbTime()
+Time CeCosTest::InferiorTime() const
 {
-  return _TCHAR('\0')==*(m_pPort->Serial())?GdbCpuTime():Now();
+  if(*(m_pResource->Serial())){
+    return Now();
+  }
+  if(!m_psp){
+    return 0;
+  }
+  Time now=Now();
+  if(now-m_tPrevSample>1000){
+    m_tPrevSample=now;
+    m_tInferiorCpuTime=m_psp->CpuTime();
+  }
+  return m_tInferiorCpuTime;
 }
 
 bool CeCosTest::CheckForTimeout()
 {
-  bool rc=false;
+  bool rc=(Cancelled!=Status());
   if(TimeOut!=m_Status && DownloadTimeOut!=m_Status){
-    Duration &dTime=m_bDownloading?m_nDownloadTime:m_nMaxInactiveTime;
-    Time t=GdbTime();
+    Time t=InferiorTime();
     if(t){
-      dTime=MAX(dTime,Duration(GdbTime()-m_tBase));
+      // We have been able to measure the time
+      if(m_bDownloading){
+        m_nDownloadTime=MAX(m_nDownloadTime,Duration(InferiorTime()-m_tBase));
+        if(m_nDownloadTime>m_ep.DownloadTimeout()){
+          Log(_T("\n*** Timeout - download time ") WFS _T(" exceeds limit of ") WFS _T("\n"),WF(m_nDownloadTime),WF(m_ep.DownloadTimeout()));
+          rc=false;
+        }
+      } else {
+        m_nMaxInactiveTime=MAX(m_nMaxInactiveTime,Duration(InferiorTime()-m_tBase));
+        if (m_nMaxInactiveTime>m_ep.ActiveTimeout()) {
+          Log(_T("\n*** Timeout - inactive time ") WFS _T(" exceeds limit of ") WFS _T("\n"),WF(m_nMaxInactiveTime),WF(m_ep.ActiveTimeout()));
+          rc=false;
+        }
+      }
     }
-    Duration dTimeout=m_bDownloading?DownloadTimeout():ActiveTimeout();
-    if(dTimeout!=NOTIMEOUT && dTime>dTimeout) {
-      Log(_T("\n*** Timeout - %s time ") WFS _T(" exceeds limit of ") WFS _T("\n"),
-        m_bDownloading?_T("download"):_T("MAX inactive"),WF(dTime),WF(dTimeout));
+    m_nTotalTime=Duration(Now()-m_tWallClock0);
+/*
+    if(m_nTotalTime>m_ep.ElapsedTimeout()){
+      Log(_T("\n*** Timeout - total time ") WFS _T(" exceeds limit of ") WFS _T("\n"),   WF(m_nTotalTime),WF(m_ep.ElapsedTimeout()));
+      rc=false;
+    }
+*/
+    if(!rc){
       SetStatus(m_bDownloading?DownloadTimeOut:TimeOut);
-    } else if(Now()-m_tWallClock0>MAX(3*dTimeout,15*60*1000)){
-      Log(_T("\n*** Timeout - total time ") WFS _T(" exceeds limit of ") WFS _T("\n"),
-        WF(Now()-m_tWallClock0),WF(MAX(3*dTimeout,15*60*1000)));
-      SetStatus(m_bDownloading?DownloadTimeOut:TimeOut);
-    } else {
-      rc=true;
     }
   }
   return rc;
-}
-
-void CeCosTest::Interactive(LPCTSTR  pszFormat, ...)
-{
-  va_list marker;
-  va_start (marker, pszFormat);
-  String str;
-  str.vFormat(pszFormat,marker);
-  va_end (marker);
-  
-  if(CeCosTrace::IsInteractive()){
-    CeCosTrace::Out(str);
-  } else {
-    CeCosTrace::Trace(_T("%s"),(LPCTSTR)str);
-  }
-}
-
-LPCTSTR  const CeCosTest::Title() const { 
-  return m_strTitle;
 }
 
 // Convert a path to something a cygwin tool will understand.  Used when invoking -size and -gdb
@@ -1559,62 +1123,62 @@ String CeCosTest::CygPath (LPCTSTR pszPath)
 void CeCosTest::SetExecutable(LPCTSTR pszExecutable)
 {
   m_strOutput=_T("");
-  m_strResultString=_T("");
-  m_strExecutable=pszExecutable;
-  if(pszExecutable && !GetSizes(m_strExecutable, m_ep.Target(), m_nFileSize, m_nStrippedSize)){
-    const TargetInfo &t=Target(Target());
-    Log(_T("Failed to run %s-size to determine executable size of %s\n"),t.Prefix(),pszExecutable);
+  if(pszExecutable){
+    m_strExecutable=pszExecutable;
+    if(m_ep.Platform()){
+      GetSizes();
+    } else {
+      ERROR(_T("Don't know how to get sizes of this platform type\n"));
+    }
+  } else {
+    m_strExecutable=_T("");
   }
 }
 
 // Calculate the sizes of the given file.  The target parameter is necessary in order to 
 // determine which -size executable to use to do the job.
-bool CeCosTest::GetSizes(LPCTSTR pszExecutable, LPCTSTR target,unsigned int &nFileSize, unsigned int &nStrippedSize)
+bool CeCosTest::GetSizes()
 {
+TRACE(_T("GetSizes %s\n"),(LPCTSTR)Executable());
   bool rc=false;
-  nStrippedSize=nFileSize=0;
+  m_nStrippedSize=m_nFileSize=0;
+  LPCTSTR pszPrefix=m_ep.Platform()->Prefix();
   struct _stat buf;
-  const TargetInfo &t=Target(target);
-  LPCTSTR pszPrefix=t.Prefix();
-  if(0==_tstat(pszExecutable,&buf) && _TCHAR('\0')!=*pszPrefix){
-    // File at least exists...
-    nFileSize=buf.st_size;
-    String strSize(pszPrefix);
-    strSize+=_T("-size ");
-    strSize+=CygPath(pszExecutable);
-    const TCHAR *c=0;
-#ifdef _WIN32
-    CSubprocess sp;
+  if(-1==_tstat(Executable(),&buf)){
+    Log(_T("%s does not exist\n"),(LPCTSTR)Executable());
+  } else if (_TCHAR('\0')==*pszPrefix){
+    LogString(_T("No prefix to run a size program\n"));
+  } else {
+    m_nFileSize=buf.st_size;
+    const String strSizeCmd(String::SFormat(_T("%s-size %s"),pszPrefix,(LPCTSTR)CygPath(Executable())));
     String strOut;
-    if(!sp.Run(strOut,strSize,NULL)){
-      return true;
+    CSubprocess sp;
+    if(!sp.Run(strOut,strSizeCmd)){
+      Log(_T("Failed to run \"%s\" - %s\n"),(LPCTSTR)strSizeCmd,(LPCTSTR)sp.ErrorString());
+    } else {
+      const TCHAR *c=_tcschr(strOut,_TCHAR('\n'));
+      if(c){
+        c++;
+      }
+      int s1=0;
+      int s2=0;
+      if(c && 2==_stscanf(c,_T(" %d %d"),&s1,&s2)){
+        rc=true;
+        m_nStrippedSize=s1+s2;
+      }
+      TRACE(_T("GetSizes %s rc=%d file size=%d stripped size=%d\n"),(LPCTSTR)Executable(),rc,m_nFileSize,m_nStrippedSize);
     }
-    c=_tcschr(strOut,_TCHAR('\n'));
-    if(c){
-      c++;
-    }
-#else // UNIX
-    TCHAR buf[256];
-    FILE *f=POPEN(strSize,_T("r"));
-    if(f){
-      _fgetts(buf,sizeof buf-1,f);
-      _fgetts(buf,sizeof buf-1,f);
-      PCLOSE(f);
-      c=buf;
-    }
-#endif
-    int s1=0;
-    int s2=0;
-    rc=(c && 2==_stscanf(c,_T(" %d %d"),&s1,&s2));
-    nStrippedSize=s1+s2;
   }
   return rc;
 }
 
-void CeCosTest::SetTimeouts (Duration dActive,Duration dElapsed)
+void CeCosTest::SetTimeouts (Duration dActive,Duration dDownload/*,Duration dElapsed*/)
 {
-  m_ep.SetActiveTimeout (dActive);
-  m_ep.SetDownloadTimeout(dElapsed);
+  m_ep.SetActiveTimeout  (dActive);
+  m_ep.SetDownloadTimeout(dDownload);
+/*
+  m_ep.SetElapsedTimeout (dElapsed);
+*/
 }
 
 void CeCosTest::CloseSocket (){
@@ -1622,72 +1186,14 @@ void CeCosTest::CloseSocket (){
   m_pSock=0;
 }
 
-bool CeCosTest::AtPrompt(LPCTSTR pszPrompt)
+bool CeCosTest::AtPrompt()
 {
-  unsigned int nPromptLen=_tcslen(pszPrompt);
+  const String strPrompt(m_ep.Platform()->Prompt());
+  unsigned int nPromptLen=_tcslen(strPrompt);
   return
-    m_strOutput.GetLength()>=nPromptLen && 
-    0==_tcscmp((LPCTSTR )m_strOutput+m_strOutput.GetLength()-nPromptLen,pszPrompt);
-}
-
-#ifndef _WIN32
-bool CeCosTest::Suck(LPCTSTR pszPrompt,Duration d)
-{
-  TRACE(_T("Suck handle=%08x\n"),m_rPipeHandle);//sdf
-  // Read until:
-  //     8k read
-  //     timeout elapsed
-  //     gdb prompt reached
-  //     pipe error
-  Time t0=Now();
-  int nLength=0;
-  while(nLength<8192 && m_rPipeHandle && !AtPrompt(pszPrompt) && Now()-t0<d){
-    String str;
-    int n=ReadPipe(str);
-    if(n>0){
-      LogTimeStampedOutput(str);
-      nLength+=n;
-    } else if (n<0) {
-      break;
-    }
-  }
-  TRACE(_T("End suck\n"));//sdf
-  return nLength>0;
-}
-#endif
-
-void CeCosTest::LogTimeStampedOutput(LPCTSTR psz)
-{
-  LogString(psz);
-  /*
-  String str(psz);
-  // Timestamp the output at each _TCHAR('\n')
-  int nLen=m_strOutput.GetLength();
-  TCHAR cPrev=(0==nLen?_TCHAR('\0'):((LPCTSTR )m_strOutput)[nLen-1]);
-  
-    TCHAR *c=str.GetBuffer();
-    LPCTSTR d=c;
-    while(*c){
-    if(_TCHAR('\n')==cPrev){
-    TCHAR cSav=*c;
-    *c=_TCHAR('\0');
-    LogString(d);
-    Duration &dTime=m_bDownloading?m_nDownloadTime:m_nMaxInactiveTime;
-    dTime=MAX(dTime,GdbTime()-m_tBase);
-    
-      String strTime;
-      strTime.Format(_T("<") WFS _T("/") WFS _T(">\t"),WF(GdbTime()-m_tBase0), WF(GdbTime()-m_tBase));
-      //strTime.Format(_T("<%03d.%d> "),t/1000,(t%1000)/100);
-      LogString(strTime);
-      *c=cSav;
-      d=c;
-      }
-      cPrev=*c;
-      c++;
-      }
-      LogString(d);
-      str.ReleaseBuffer();
-  */
+    nPromptLen>0 &&
+    m_strOutput.size()>=nPromptLen && 
+    0==_tcscmp((LPCTSTR)m_strOutput+m_strOutput.size()-nPromptLen,strPrompt);
 }
 
 #ifdef _WIN32
@@ -1701,19 +1207,24 @@ BOOL WINAPI HandlerRoutine(
 #endif
 
 
-bool CeCosTest::InteractiveGdb(const String &strHost,int nPort,TCHAR **argv)
+bool CeCosTest::InteractiveInferior(LPCTSTR pszHostPort,TCHAR **argv)
 {
   bool rc=false;
-  if(strHost.GetLength()>0){
-    m_strExecutionHostPort=CeCosTestSocket::HostPort(strHost,nPort);
-    Log(_T("Waiting to connect to %s...\n"),(LPCTSTR )m_strExecutionHostPort);
+  if(_TCHAR('\0')!=*pszHostPort){
+    if(!CeCosSocket::IsLegalHostPort(pszHostPort)){
+      ERROR(_T("Illegal host:port '%s'\n"),pszHostPort);
+      return false;
+    } else {
+      m_strExecutionHostPort=pszHostPort;
+      Log(_T("Waiting to connect to %s...\n"),(LPCTSTR)m_strExecutionHostPort);
+    }
   } else {
     Log(_T("Waiting to connect to a server...\n"));
   }
   
   ConnectForExecution();
   
-  Log(_T("Connected to %s - waiting for target reset\n"),(LPCTSTR )m_strExecutionHostPort);
+  Log(_T("Connected to %s - waiting for target reset\n"),(LPCTSTR)m_strExecutionHostPort);
   String strHostPort,strOutput;
   // We read:
   //     target ready indicator
@@ -1721,14 +1232,13 @@ bool CeCosTest::InteractiveGdb(const String &strHost,int nPort,TCHAR **argv)
   //     (if target ready) host:port
   if(GetTargetReady(strHostPort)){
     Log(_T("Use %s\n"),(LPCTSTR)strHostPort);
-    const TargetInfo &t=Target(Target());
-    String strGdb(t.Prefix());
-    strGdb+=_T("-gdb");
+    String strInferior(m_ep.Platform()->Prefix());
+    strInferior+=_T("-gdb");
 #ifdef _WIN32
     SetConsoleCtrlHandler(HandlerRoutine,TRUE);
-    int n=_tspawnvp(_P_WAIT,strGdb,argv);
+    int n=_tspawnvp(_P_WAIT,strInferior,argv);
     if(-1==n){
-      Log(_T("Failed to spawn %s\n"),(LPCTSTR)strGdb);
+      Log(_T("Failed to spawn %s\n"),(LPCTSTR)strInferior);
     } else {
       rc=(0==n);
     }   
@@ -1743,8 +1253,8 @@ bool CeCosTest::InteractiveGdb(const String &strHost,int nPort,TCHAR **argv)
       break;  
     case 0:
       // Process is created (we're the child)
-      execvp(strGdb,argv);
-      Log(_T("Error invoking %s - %s\n"),(LPCTSTR)strGdb,strerror(errno));
+      execvp(strInferior,argv);
+      Log(_T("Error invoking %s - %s\n"),(LPCTSTR)strInferior,strerror(errno));
       exit(1);
       break;
     default:
@@ -1759,11 +1269,10 @@ bool CeCosTest::InteractiveGdb(const String &strHost,int nPort,TCHAR **argv)
       break;
     }
 #endif
-    Log(_T("Gdb terminated\n"));
+    Log(_T("Inferior terminated\n"));
     // Tell the server we're through
     m_pSock->sendInteger(123,_T("Terminating ack"));
   }
-  
   return rc;
 }
 
@@ -1774,11 +1283,6 @@ void CALLBACK CeCosTest::ResetLogFunc(void *pParam, LPCTSTR psz)
   pTest->m_pSock->sendInteger(2,_T("target ready indicator"));
   TRACE(_T("Send %s\n"),psz);
   pTest->m_pSock->sendString(psz,_T("output so far"));
-}
-
-CResetAttributes::ResetResult CeCosTest::Reset(bool bSendStatus)
-{
-  return m_pPort->Reset(bSendStatus?ResetLogFunc:0,this);
 }
 
 CeCosTest::ExecutionParameters::RequestType CeCosTest::ExecutionParameters::RequestTypeValue(LPCTSTR psz)
@@ -1792,406 +1296,171 @@ CeCosTest::ExecutionParameters::RequestType CeCosTest::ExecutionParameters::Requ
   return (RequestType)r;
 }
 
-#ifdef _WIN32
-void CeCosTest::RunGdb(LPCTSTR pszCmdline,LPCTSTR pszPrompt,const StringArray &arstrGdbCmds)
+void CeCosTest::InferiorOutputFunc(LPCTSTR pszMsg)
 {
-  SetPath(m_strPath);
-  CSubprocess sp;
+  LogString(pszMsg);
 
-  unsigned int idProcess=sp.Run(GetCurrentThreadId(),pszCmdline);
-  if(!idProcess){
-    Log(_T("Failed to create gdb process: cmdline='%s'\n"),pszCmdline);
-    TCHAR *pszMsg;
-    
-    FormatMessage( 
-      FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-      NULL,
-      sp.GetExitCode(),
-      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-      (LPTSTR)&pszMsg,
-      0,
-      NULL 
-      );
-    
-    // Display the string.
-    Log(_T("%s\n"),pszMsg);
-    
-    // Free the buffer.
-    LocalFree(pszMsg);
-  } else {
+  m_nOutputLen+=_tcslen(pszMsg);
 
-    unsigned int nCmdIndex=0;
+  if(m_pspPipe){
+    m_pspPipe->Send(pszMsg);
+  }
+
+  if(m_nOutputLen>20000){
+    LogString(_T("\n>>>> Infra FAIL\n*** too much output ***\n>>>>\n"));
+    SetStatus(Fail);
+    m_psp->Kill();
+  }
   
-    SetStatus(NotStarted);
+  m_tBase=InferiorTime(); // We are seeing life, so reset the clock for timeouts
   
+  if(AtPrompt()){
+    
+    // gdb's output included one or more prompts
+    // Send another command along
+    if(m_nCmdIndex>=m_arstrInferiorCmds.size()){
+      // Nothing further to say to gdb - exit
+      
+      m_psp->Kill(); // case 3
+    } else {
+
+      if(m_nCmdIndex>0 && 0==_tcscmp(_T("load"),m_arstrInferiorCmds[m_nCmdIndex-1])){
+        // load command was previous command - we are no longer downloading
+        m_bDownloading=false;
+      }
+
+      String strCmd(m_arstrInferiorCmds[m_nCmdIndex++]);
+
+      // If we can there is a GDB instruction to send to gdb, do it
+      String str;
+      if(GetDirective(_T("GDB:"),str,m_nLastGdbInst)){
+        strCmd=str;
+        m_nCmdIndex--; // undo increment above
+      }
+
+      if(0==_tcscmp(_T("load"),strCmd)){
+        // load command issued - we are now "downloading"
+        m_bDownloading=true;
+      } else if(0==_tcscmp(_T("run"),strCmd) || 0==_tcscmp(_T("cont"),strCmd)){
+        SetStatus(NoResult);
+      } 
+      
+      strCmd+=_TCHAR('\n');
+      LogString(strCmd);
+      m_psp->Send(strCmd);          
+
+    }
+  }
+
+  // If there is a EXEC instruction to process, obey it
+  String strCmd;
+  while(GetDirective(_T("EXEC:"),strCmd,m_nLastExecInst)){
+    CSubprocess *pExecsp=new CSubprocess;
+    pExecsp->SetPath(m_strPath);
+    if(!pExecsp->Run(AppendFunc,this,(LPCTSTR)strCmd,false)){
+      Log(_T("%%%% Failed to create process '%s'\n"),(LPCTSTR)strCmd);
+      delete pExecsp;
+    } else {
+      m_arpExecsp.push_back(pExecsp);
+    }
+  }
+
+  // If there is a PIPE instruction to process, obey it
+  while(GetDirective(_T("PIPE:"),strCmd,m_nLastPipeInst)){
+    if(m_pspPipe){
+      Log(_T("%%%% Two PIPE commands are a no-no\n"));
+    } else {
+      m_pspPipe=new CSubprocess;
+      m_pspPipe->SetPath(m_strPath);
+
+      if(!m_pspPipe->Run(AppendFunc,this,(LPCTSTR)strCmd,false)){
+        Log(_T("%%%% Failed to create process '%s'\n"),(LPCTSTR)strCmd);
+        delete m_pspPipe;
+        m_pspPipe=0;
+      } else {
+        // Send what we read have so far
+        m_pspPipe->Send(m_strOutput);
+      }
+    }
+  }
+
+  while(GetDirective(_T("TIMEOUT:"),strCmd,m_nLastTimeoutInst)){
+    int n=_ttoi(strCmd);
+    if(n){
+      SetTimeouts(n); // second parameter is download timeout, which is now irrelevant
+    } else {
+      Log(_T("%%%% Illegal timeout specified: %s\n"),(LPCTSTR)strCmd);
+    }
+  }
+}
+
+void CeCosTest::RunInferior(LPCTSTR pszCmdline)
+{
+  m_psp=new CSubprocess;
+  m_psp->SetContinuationFunc(SCheckForTimeout,this);
+  try {
     m_nMaxInactiveTime=0;
     m_nTotalTime=0;
     m_nDownloadTime=0;
-  
-    m_bDownloading=true;
-  
-    m_tBase=GdbTime();
-    m_tBase0=GdbTime();
+    m_nOutputLen=0;
+    m_bDownloading=false;
+    
+    // Decide on the baseline status - NotStarted if there is a download element, NoResult otherwise.
+    m_Status=NoResult;
+    for(unsigned int i=0;i<m_arstrInferiorCmds.size();i++){
+      if(0==_tcscmp(_T("run"),m_arstrInferiorCmds[i]) || 0==_tcscmp(_T("cont"),m_arstrInferiorCmds[i])){
+        m_Status=NotStarted;
+        break;
+      }
+    }
+    TRACE(_T("Status <- %s\n"),(LPCTSTR)Image(m_Status));
+
+    m_tPrevSample=0; // force an initial reading
+    m_tInferiorCpuTime=0;
+
+    m_tBase=m_tBase0=InferiorTime(); // Returns either Now() or nothing
     m_tWallClock0=Now();
+
+    m_nCmdIndex=0;
   
-    TRACE(_T("RunGDb()\n"));
+    TRACE(_T("RunGDB()\n"));
   
-    int nLastGdbInst=0;
-  
-    while(Cancelled!=Status() && CheckForTimeout()){
-      MSG msg;
-      if(::PeekMessage(&msg,NULL,WM_SUBPROCESS,WM_SUBPROCESS+1,PM_NOREMOVE)){
-        switch(::GetMessage(&msg,NULL,WM_SUBPROCESS,WM_SUBPROCESS+1)){
-        case 0:  //WM_QUIT
-        case -1: // error
-          goto Done;
-        case 1:
-          if(WM_SUBPROCESS==msg.message && msg.wParam==idProcess){
-            if(msg.lParam){
-              LPTSTR pszMsg=(LPTSTR)msg.lParam;
-              LogTimeStampedOutput(pszMsg);
-            
-              if(m_strOutput.GetLength()>20000){
-                LogString(_T("\n>>>> Infra FAIL\n*** too much output ***\n>>>>\n"));
-                SetStatus(Fail);
-                goto Done;
-              }
-            
-              // Test for program loaded and started:
-              // (remember SetStatus cannot downgrade the status if already > NoResult)
-              if(OutputContains(_T("Starting program: /")) || (OutputContains(_T("Start address"))&&OutputContains(_T("Continuing.")))){
-                SetStatus(NoResult);
-              }
-            
-              m_tBase=GdbTime();
-              //              // If can only hit a single breakpoint don't expect cyg_test_exit to stop us:
-              //              if(!BreakpointsOperational() && (OutputContains(_T("EXIT:"))||OutputContains(_T("NOTAPPLICABLE:")))){
-              //                  goto Done;
-              //              }
-            
-              if(AtPrompt(pszPrompt)){
-                m_tBase=GdbTime();
-                TRACE(_T("RunGDb(1)\n"));
-                // gdb's output included one or more prompts
-                // Send another command along
-                if(nCmdIndex>=arstrGdbCmds.size()){
-                  // Nothing further to say to gdb - exit
-                  TRACE(_T("RunGDb(2)\n"));
-                  goto Done; // case 3
-                } else {
-                  String strCmd(arstrGdbCmds[nCmdIndex++]);
-                  TRACE(_T("RunGDb(2a) - strCmd='%s' nLastGdbInst=%d\n"),(LPCTSTR)strCmd,nLastGdbInst);
-                  // If at a prompt and we can see a GDB instruction, send it down
-                  LPCTSTR pszGdbcmd=_tcsstr(nLastGdbInst+(LPCTSTR)m_strOutput,_T("GDB:"));
-                  if(pszGdbcmd){
-                    TRACE(_T("RunGDb(2b)\n"));
-                    pszGdbcmd+=4;
-                    TCHAR cTerm;
-                    if(_TCHAR('<')==*pszGdbcmd){
-                      cTerm=_TCHAR('>');
-                      pszGdbcmd++;
-                    } else {
-                      cTerm=_TCHAR('\n');
-                    }
-                    TRACE(_T("RunGDb(2c)\n"));
-                    LPCTSTR c=_tcschr(pszGdbcmd,cTerm);
-                    if(c){
-                      TRACE(_T("RunGDb(2d)\n"));
-                      strCmd=String(pszGdbcmd,c-pszGdbcmd);
-                      nLastGdbInst=c+1-(LPCTSTR )m_strOutput;
-                      nCmdIndex--; // undo increment above
-                    }
-                  }
-                  strCmd+=_TCHAR('\n');
-                  LogString(strCmd);
-                  TRACE(_T("RunGDb(3)\n"));
-                  sp.Send(strCmd);          
-                  TRACE(_T("RunGDb(4)\n"));
-                  if(0==_tcscmp(strCmd,_T("run\n"))||0==_tcscmp(strCmd,_T("cont\n"))){
-                    m_tBase=GdbTime();
-                    m_bDownloading=false;
-                  }
-                  TRACE(_T("RunGDb(5)\n"));
-                }
-              }
-              delete [] pszMsg;
-            } else {
-              goto Done;
-            }
+    m_nLastGdbInst=m_nLastExecInst=m_nLastTimeoutInst=m_nLastPipeInst=0;
+    m_psp->SetPath(m_strPath);
+    if(m_psp->Run(SInferiorOutputFunc,this,pszCmdline,true)){
+
+      if(m_pspPipe){
+        m_pspPipe->Send(_T("\n"));
+        m_pspPipe->CloseInput();
+        if(m_pspPipe->Wait(5000)){
+          // OK the pipe process terminated.
+          int rc=m_pspPipe->GetExitCode();
+          if(0!=rc){
+            Log(_T("%%%% Pipe process returned rc=%d\n"),rc);
+            SetStatus(Fail);
           }
-          break;
-        }
-      } else { // no message
-        Sleep (500l); // sleep 500ms before the next peek
-      }
-    }
-    
-Done:  
-    // Could use CygKill here
-    sp.Kill();
-    TRACE(_T("RunGDb - Done\n"));
-    AnalyzeOutput();
-    
-    m_nTotalTime=Duration(Now()-m_tWallClock0);
-  }
-  TRACE(_T("Exiting RunGdb()\n"));
-}
-
-bool CeCosTest::GdbProcessAlive()
-{
-  DWORD dwExitRc;
-  GetExitCodeProcess((HANDLE)m_pGdbProcesshandle,&dwExitRc);
-  return STILL_ACTIVE==dwExitRc;
-}
-
-Time CeCosTest::GdbCpuTime()
-{
-  HANDLE hProcess=(HANDLE)m_pGdbProcesshandle;
-  __int64 ftCreation,ftExit,ftKernel,ftUser;
-  if(NULL!=hProcess && GetProcessTimes (hProcess,(FILETIME *)&ftCreation,(FILETIME *)&ftExit,(FILETIME *)&ftKernel,(FILETIME *)&ftUser)){
-    return Time((int)((ftKernel+ftUser)/10000));
-  } else {
-    return 0;
-  }
-}
-
-void CeCosTest::GetPath(String &strPath)
-{
-  int nSize=GetEnvironmentVariable(_T("PATH"), NULL, 0);
-  if(nSize>0){
-    GetEnvironmentVariable(_T("PATH"), strPath.GetBuffer(nSize), nSize);
-    strPath.ReleaseBuffer();
-  } else {
-    strPath=_T("");
-  }
-}
-
-void CeCosTest::SetPath(const String &strPath)
-{
-  SetEnvironmentVariable(_T("PATH"), strPath);
-}
-
-#else // UNIX
-
-void CeCosTest::RunGdb(LPCTSTR pszCmdline,LPCTSTR pszPrompt,const StringArray &arstrGdbCmds)
-{
-  int pipe_ends_w[2];
-  if (pipe(pipe_ends_w) < 0 ) { 
-    Log(_T("Failed to create pipe_ends_w - %s\n"),strerror(errno));
-  } else {
-    int pipe_ends_r[2];
-    if (pipe(pipe_ends_r) < 0 ) { 
-      Log(_T("Failed to create pipe_ends_r - %s\n"),strerror(errno));
-    } else {
-      int new_pid;			
-		  ENTERCRITICAL;
-      // Ensure no one else has the lock such that the child might block in future
-      new_pid = fork();
-      // This leave is executed in *both* the child and parent
-      LEAVECRITICAL;
-      
-      switch (new_pid) {
-        // Fork failed
-      case -1:
-        Log(_T("Failed to create gdb process - %s\n"),strerror(errno));
-        break;
-      case 0:
-        // Process is created (we're the child)
-        // No point in calling Log in this process
-        
-        // Input to child process
-        if (dup2(pipe_ends_w[0], 0) < 0) {
-          TRACE(_T("dup2 error\n"));
-          exit(1);
-        }
-        
-        // Output from process
-        if (dup2(pipe_ends_r[1], 2) < 0) {
-          TRACE(_T("dup2 error\n"));
-          exit(2);
-        }
-        if (dup2(pipe_ends_r[1], 1) < 0) {
-          TRACE(_T("dup2 error\n"));
-          exit(3);
-        }
-        setvbuf(stdout,0,_IONBF,0);
-        setvbuf(stderr,0,_IONBF,0);
-        {
-          StringArray ar;
-          int argc=String(pszCmdline).Chop(ar,_TCHAR(' '),true);
-          char **argv=new char *[1+argc];
-          int i;
-          for(i=0;i<argc;i++){
-            argv[i]=ar[i];  
-          }
-          argv[i]=0;
-          execvp(argv[0], argv);
-          delete [] argv;
-        }
-        TRACE(_T("exec error - %s\n"),strerror(errno));
-        exit(4);
-      default:
-        // Process is created (we're the parent)
-        
-        TRACE(_T("Forked to create gdb process %s - pid is <%d>\n"), pszCmdline, new_pid);
-        if (fcntl(pipe_ends_r[0], F_SETFL, O_NONBLOCK) <0) {
-          Log(_T("Couldn't set pipe non-blocking - %s\n"),strerror(errno));
         } else {
-          m_pGdbProcesshandle=(void *)new_pid;
-          VTRACE(_T("RunGdb():Calling DriveGdb\n"));
-          m_rPipeHandle=(void *)pipe_ends_r[0];
-          m_wPipeHandle=(void *)pipe_ends_w[1];
-          DriveGdb (pszPrompt,arstrGdbCmds);
-          // Finished one way or another. Kill gdb now
-          TRACE(_T("Finished processing this test.\n"));
-          if(GdbProcessAlive()){
-            TRACE(_T("Killing gdb\n"));
-
-            // We need to kill gdb *and* its children
-            FILE *f=popen(_T("ps -l"),_T("r"));
-            if(f){
-              TCHAR buf[100];
-              while(_fgetts(buf,sizeof(buf)-1,f)){
-                int F,UID,PID,PPID,C,PRI,NI,SZ,HH,MM,SS;
-                TCHAR discard[100];
-                // Output is in the form
-                //  F S   UID   PID  PPID  C PRI  NI ADDR    SZ WCHAN  TTY          TIME CMD
-                //100 S   490   877   876  0  70   0    -   368 wait4  pts/0    00:00:00 bash
-                if(15==_stscanf(buf,
-                  _T("%d %s %d %d %d %d %d %d %s %d %s %s %d:%d:%d"),&F,discard,&UID,&PID,&PPID,&C,&PRI,&NI,discard,&SZ,discard,discard,&HH,&MM,&SS) &&
-                  (PID==new_pid || PPID==new_pid)){
-                  kill(PID,SIGTERM);
-                }
-              }
-              pclose(f);
-              TRACE(_T("waitpid <%d>"), new_pid);
-              int i;
-              for(i=0;i<10;i++){
-                int status;
-                switch(waitpid(new_pid,&status,WNOHANG)){
-                  case 0:
-                    Sleep(1000);
-                    continue;
-                  case -1:
-                    Log(_T("Failed to wait for gdb process to die\n"));
-                    SetStatus(TimeOut);
-                    break;
-                  default:
-                    break;
-                }
-                break;
-              }
-              if(10==i){
-                Log(_T("Failed to wait for gdb process to die\n"));
-                SetStatus(TimeOut);
-              } else {
-                TRACE(_T("Killed gdb\n"));
-              }
-            } else {
-              Log(_T("Failed to run ps to kill gdb process %d\n"),new_pid);
-            }
-          }
-          TRACE(_T("Total elapsed time is %d\n"), m_nTotalTime);
+          LogString(_T("%%%% Pipe process would not complete\n"));
         }
-        break;
       }
-      VTRACE(_T("Closing pipe_ends_r[]\n"));
-      close (pipe_ends_r[0]);
-      close (pipe_ends_r[1]);
+
+      AnalyzeOutput();
+    
+    } else {
+      Log(_T("Failed to run \"%s\" - %s\n"),pszCmdline,(LPCTSTR)m_psp->ErrorString());
     }
-    close (pipe_ends_w[0]);
-    close (pipe_ends_w[1]);
+  } 
+  catch(...){
+    ERROR(_T("!!! Exception caught in RunInferior()\n"));
   }
-}
-
-bool CeCosTest::GdbProcessAlive()
-{
-  int status;
-  return 0==waitpid((int)m_pGdbProcesshandle,&status,WNOHANG);
-}
-
-Time CeCosTest::GdbCpuTime()
-{
-  if(GdbProcessAlive()){
-    Time now=Now();
-    if(now-m_tPrevSample>1000){
-      
-      m_tPrevSample=now;
-      // Output is in the form
-      //  F S   UID   PID  PPID  C PRI  NI ADDR    SZ WCHAN  TTY          TIME CMD
-      //100 S   490   877   876  0  70   0    -   368 wait4  pts/0    00:00:00 bash
-      FILE *f=popen(_T("ps -l"),_T("r"));
-      if(f){
-        TCHAR buf[100];
-        int t=0;
-        while(_fgetts(buf,sizeof(buf)-1,f)){
-          int F,UID,PID,PPID,C,PRI,NI,SZ,HH,MM,SS;
-          TCHAR discard[100];
-TRACE(_T("ps -l : %s\n"),buf);
-          if(15==_stscanf(buf,
-            _T("%d %s %d %d %d %d %d %d %s %d %s %s %d:%d:%d"),&F,discard,&UID,&PID,&PPID,&C,&PRI,&NI,discard,&SZ,discard,discard,&HH,&MM,&SS) &&
-            (PID==(int)m_pGdbProcesshandle || PPID==(int)m_pGdbProcesshandle)){
-            t+=SS+60*(60*HH+MM);
-          }
-        }
-        pclose(f);
-TRACE(_T("---> t=%d [secs]\n"),t);
-        m_tGdbCpuTime=Time(1000*t);
-      }
-    }
-  } else {
-    m_tGdbCpuTime=0;
+  delete m_psp; // will cause process to be killed as necessary and completion to be waited for
+  m_psp=NULL;
+  for(int i=0;i<(signed)m_arpExecsp.size();i++){
+    delete (CSubprocess *)m_arpExecsp[i]; // ditto
   }
-VTRACE(_T("GdbCpuTime rc=%d"),m_tGdbCpuTime/1000);
-  return m_tGdbCpuTime;
+  m_arpExecsp.clear();
+  TRACE(_T("Exiting RunInferior()\n"));
 }
-
-bool CeCosTest::WritePipe (const String &str)
-{
-  const char *pszBuf=(const char *)str;
-  int write_fd = (int)m_wPipeHandle;
-  int dwWritten;
-  int nToWrite=_tcslen(pszBuf);
-  do {
-    dwWritten = write(write_fd, pszBuf, nToWrite);
-    if(-1==dwWritten){
-      Log(_T("pipe write error - %s\n"),strerror(errno));
-      return false;
-    }
-    nToWrite-=(int)dwWritten;
-    pszBuf+=(int)dwWritten;
-    if(!CheckForTimeout()){
-      return false;
-    }
-  } while (nToWrite>0);
-  return true;
-}
-
-int CeCosTest::ReadPipe (String &str,bool bBlocking /* This param ignored */)
-{
-  TCHAR buf[4096];
-  int rc=read((int)m_rPipeHandle, buf, sizeof(buf)-1);
-  if(-1==rc && EAGAIN==errno){
-    rc=0;
-  }
-  buf[MAX(0,rc)]=_TCHAR('\0');
-  str=buf;
-  return rc;
-}
-
-void CeCosTest::GetPath(String &strPath)
-{
-  strPath=getenv(_T("PATH"));
-}
-
-
-void CeCosTest::SetPath(const String &strPath)
-{
-  String str;
-  str.Format(_T("PATH=%s"),(LPCTSTR )strPath);
-  putenv(str);
-}
-#endif
 
 void CeCosTest::AnalyzeOutput()
 {
@@ -2205,7 +1474,7 @@ void CeCosTest::AnalyzeOutput()
     static const StatusType arStatus[] ={Fail, Inapplicable, Pass};
     for(unsigned int i=0;i<sizeof arpszKeepAlive/sizeof arpszKeepAlive[0];i++){
       if(OutputContains(arpszKeepAlive[i])){
-        TRACE(_T("DriveGdb: saw '%s'\n"),arpszKeepAlive[i]);
+        TRACE(_T("DriveInferior: saw '%s'\n"),arpszKeepAlive[i]);
         SetStatus(arStatus[i]); // Do not break!
       }
     }
@@ -2227,51 +1496,24 @@ void CeCosTest::AnalyzeOutput()
     }
   }
   
-  // Check for expect: strings
-  static LPCTSTR szExpect=_T("EXPECT:");
-  static const int nExpectLen=_tcslen(szExpect);
-  for(const TCHAR*c=_tcsstr(m_strOutput,szExpect);c;c=_tcsstr(c,szExpect)){
-    c+=nExpectLen;
-    if(_TCHAR('<')==*c){
-      c++;
-      // Find the matching _TCHAR('>')
-      for(LPCTSTR d=_tcschr(c,_TCHAR('>'));d;d=_tcschr(d+1,_TCHAR('>'))){
-        if(d[-1]!=_TCHAR('\\')){
-          
-        /*
-        // Skip whitespace immediately following the EXPECT:<...>
-        do {
-        d++;
-        } while (_istspace(*d));
-          */
-          
-          /*
-          // Skip timestamp
-          if(_TCHAR('<')==*d){
-          d=_tcschr(d,_TCHAR('>'));
-          if(0==d){
-          continue;
-          }
-          do {
-          d++;
-          } while (_istspace(*d));
-          }
-          */
-          
-          // Now d points to the terminating _TCHAR('>') and c at the start of the expected string
-          for(LPCTSTR e=d+1;c!=d;c++,e++){
-            if(_TCHAR('\\')==*c){
-              c++;
-            }
-            if(*c!=*e){
-              LogString(_T("EXPECT:<> failure\n"));
-              SetStatus(Fail);
-              break;
-            }
-          }
-          break;
-        }
+  int nIndex=0;
+  String str;
+  while(GetDirective(_T("EXPECT:"),str,nIndex)){
+    // s1 is the pointer to the text following the expect - that to be tested
+    LPCTSTR s1=(LPCTSTR)m_strOutput+nIndex;
+    while (_istspace(*s1)){
+      s1++;
+    }
+    // whereas s2 is the pointer to the text in the expect string (what we are expecting)
+    LPCTSTR s2=(LPCTSTR)str;
+    while(*s2){
+      if(*s2!=*s1){
+        Log(_T("EXPECT:<> failure - expected '%s' saw '%s'\n"),(LPCTSTR)str,(LPCTSTR)m_strOutput+nIndex);
+        SetStatus(Fail);
+        break;
       }
+      s1++;
+      s2++;
     }
   }
 }
@@ -2312,7 +1554,7 @@ bool CeCosTest::ExecutionParameters::FromStr(LPCTSTR psz)
     }
   }
   m_Request=(RequestType)r;
-  return CeCosTest::IsValid(m_Target);
+  return CeCosTestPlatform::IsValid(m_Target);
 }
 
 CeCosTest::ExecutionParameters::ExecutionParameters (RequestType r,
@@ -2335,7 +1577,8 @@ CeCosTest::ExecutionParameters::ExecutionParameters (RequestType r,
 String CeCosTest::ExecutionParameters::Image() const
 {
   String str;
-  str.Format(_T("%s %s %d %d %d %d %d %d %d %d"),Target(),Image(Request()),ActiveTimeout(),DownloadTimeout(),
+  str.Format(_T("%s %s %d %d %d %d %d %d %d %d"),(LPCTSTR)PlatformName(),(LPCTSTR)Image(Request()),
+    ActiveTimeout(),DownloadTimeout(),
     m_nUnused1,
     m_nUnused2,
     m_nUnused3,
@@ -2345,55 +1588,13 @@ String CeCosTest::ExecutionParameters::Image() const
   return str;
 }
 
-CeCosTest::TargetInfo::TargetInfo()
-{
-};
-
-LPCTSTR CeCosTest::TargetInfo::arHwTypeImage[]={_T("HARDWARE"), _T("SIM"), _T("SYNTHETIC"), _T("HARDWARE_NO_BP"), _T("REMOTE_SIM")
-};
-
-CeCosTest::TargetInfo::TargetInfo(LPCTSTR pszIm,LPCTSTR pszPre,int nHwtype,LPCTSTR pszGdb/*=_T("")*/):
-  pszImage(pszIm),
-  pszPrefix(pszPre),
-  nType((HwType)nHwtype),
-  pszGdbcmd(pszGdb)
-{
-}
-
-CeCosTest::TargetInfo::TargetInfo(LPCTSTR pszIm,LPCTSTR pszPre,LPCTSTR pszHwtype,LPCTSTR pszGdb/*=_T("")*/):
-  pszImage(pszIm),
-  pszPrefix(pszPre),
-  nType(INVALID),
-  pszGdbcmd(pszGdb)
-{
-  if(_istdigit(pszHwtype[0])){
-    nType=(HwType)_ttoi(pszHwtype);
-    if((unsigned)nType>sizeof(arHwTypeImage)){
-      nType=INVALID;
-    }
-  } else {
-    for(unsigned int i=0;i<sizeof arHwTypeImage/sizeof arHwTypeImage[0];i++){
-      if(0==_tcsicmp(pszHwtype,arHwTypeImage[i])){
-        nType=(HwType)i;
-        break;
-      }
-    }
-  }
-}
-
-int CeCosTest::AddPlatform(const CeCosTest::TargetInfo &t)
-{
-  arTargetInfo.push_back(t);
-  return arTargetInfo.size()-1;
-}
-
 bool CeCosTest::GetTargetReady(String &strHostPort)
 {
   bool rc=false;
   int nTargetReady;
   do{
     if(!m_pSock->recvInteger(nTargetReady,_T("Target ready"),120*1000)){
-      Log(_T("Failed to read target ready indicator from server - %s\n"),(LPCTSTR )m_pSock->SocketErrString());
+      Log(_T("Failed to read target ready indicator from server - %s\n"),(LPCTSTR)m_pSock->SocketErrString());
       break;
     }
     switch(nTargetReady){
@@ -2402,10 +1603,10 @@ bool CeCosTest::GetTargetReady(String &strHostPort)
       break;
     case 1:
       if(m_pSock->recvString(strHostPort, _T("host:port"))){
-        TRACE(_T("Instructed to use %s\n"),(LPCTSTR )strHostPort);
+        TRACE(_T("Instructed to use %s\n"),(LPCTSTR)strHostPort);
         rc=true;
       } else {
-        Log(_T("Failed to read host:port - %s\n"),(LPCTSTR )m_pSock->SocketErrString());
+        Log(_T("Failed to read host:port - %s\n"),(LPCTSTR)m_pSock->SocketErrString());
       }
       break;
     case 2:
@@ -2414,7 +1615,7 @@ bool CeCosTest::GetTargetReady(String &strHostPort)
         if(m_pSock->recvString(strOutput, _T("output"))){
           LogString(strOutput);               
         } else {
-          Log(_T("Failed to read output\n"),(LPCTSTR )m_pSock->SocketErrString());
+          Log(_T("Failed to read output\n"),(LPCTSTR)m_pSock->SocketErrString());
           return false;
         }
       }
@@ -2424,39 +1625,6 @@ bool CeCosTest::GetTargetReady(String &strHostPort)
   return rc;
 }
 
-#ifdef _WIN32
-String CeCosTest::GetGreatestSubkey (LPCTSTR pszKey)
-{
-  String strSubkey = _T("");
-  HKEY hKey;
-  
-  if (ERROR_SUCCESS == RegOpenKeyEx (HKEY_LOCAL_MACHINE, pszKey, 0L, KEY_READ, &hKey))
-  {
-    DWORD dwIndex = 0;
-    TCHAR pszBuffer [MAX_PATH + 1];
-    
-    while (ERROR_SUCCESS == RegEnumKey (hKey, dwIndex++, (LPTSTR) pszBuffer, sizeof (pszBuffer)))
-    {
-      if (strSubkey.compare (pszBuffer) < 0)
-        strSubkey = pszBuffer;
-    }
-    
-    RegCloseKey (hKey);
-  }
-  
-  TRACE (_T("CeCosTest::GetGreatestSubkey(\"%s\"): %s\n"), pszKey, (LPCTSTR)strSubkey);
-  return strSubkey;
-}
-#endif
-
-
-void CeCosTest::RemoveAllPlatforms()
-{
-  for(int i=TargetTypeMax()-1;i>=0;--i){
-    delete &Target(i);
-  }
-  arTargetInfo.clear();
-}
 
 CeCosTest::ServerStatus CeCosTest::ServerStatusValue(LPCTSTR psz)
 {
@@ -2470,13 +1638,127 @@ CeCosTest::ServerStatus CeCosTest::ServerStatusValue(LPCTSTR psz)
 
 }
 
-const CeCosTest::TargetInfo &CeCosTest::Target (LPCTSTR psz) 
-{ 
-  for(int i=0;i<(signed)arTargetInfo.size();i++){
-    const TargetInfo &t=arTargetInfo[i];
-    if(0==_tcsicmp(t.Image(),psz)){
-      return t;
+// Gets a directive from the test output (like EXEC:)
+bool CeCosTest::GetDirective(LPCTSTR pszDirective, String &str, int &nIndex)
+{
+  bool rc=false;
+  ENTERCRITICAL;
+  LPCTSTR pszOutput=(LPCTSTR)m_strOutput;
+  LPCTSTR pc=_tcsstr(pszOutput+nIndex,pszDirective);
+  if(pc){
+    
+    pc+=_tcslen(pszDirective); // Now after the final character (':') of the directive
+    if(_TCHAR('<')==*pc){
+
+      pc++;
+
+      // Extract the argument
+      str=_T("");
+      while(*pc){
+        // Process escapes: FIXME more escapes?
+        TCHAR c=*pc;
+        if(_TCHAR('\\')==c){
+          switch(pc[1]){
+            case _TCHAR('t'):
+              c=_TCHAR('\t');
+              break;
+            case _TCHAR('n'):
+              c=_TCHAR('\n');
+              break;
+            case _TCHAR('\0'):
+              pc--; // avoid grief
+              break;
+            default:
+              c=pc[1];
+              break;
+          }
+          pc++;
+        } else if (_TCHAR('>')==c) {
+          nIndex=pc+1-pszOutput;
+          rc=true;
+          break;
+        } else if (_TCHAR('\n')==c) {
+          nIndex=pc+1-pszOutput;
+          Log(_T("%%%% Unterminated directive: %s"),(LPCTSTR)str);
+          break;
+        }
+        str+=c;
+        pc++;
+      }
     }
   }
-  return tDefault;
+  LEAVECRITICAL;
+  return rc;
 }
+
+void CeCosTest::GetInferiorCommands(StringArray &arstrInferiorCmds)
+{
+  arstrInferiorCmds.clear();
+
+  // Construct commands for gdb.  The commands may be found (semicolon-separated) in the target info:
+  const String strInferiorCmds(m_ep.Platform()->GdbCmds());
+  StringArray ar;
+  int nCmds=strInferiorCmds.Chop(ar,_TCHAR(';'),false);
+  for(int i=0;i<nCmds;i++){
+    // Into each command must be substituted:
+    // Baud rate (%b)  
+    // Port      (%p)  This will be a serial port (e.g. COM1) or a socket connection (e.g.aloo:8000) depending on circumstances.
+    // and escapes must be dealt with.
+    String strCmd;
+    for(const TCHAR *pc=ar[i];*pc;pc++){
+      switch(*pc){
+        // Process escapes: FIXME more escapes?
+        case _TCHAR('\\'):
+          switch(pc[1]){
+            case _TCHAR('t'):
+              strCmd+=_TCHAR('\t');
+              pc++;
+              continue;
+            case _TCHAR('n'):
+              strCmd+=_TCHAR('\n');
+              pc++;
+              continue;
+            case _TCHAR('\0'):
+              continue;
+            default:
+              break;
+          }
+          break;
+        case _TCHAR('%'):
+          switch(pc[1]){
+            case _TCHAR('%'):
+              strCmd+=_TCHAR('%');
+              pc++;
+              break;
+            case _TCHAR('b'):
+              if(0==m_pResource->Baud()){
+                goto NextCmd; // Suppress output of this command if there is no baud rate to output
+              }
+              strCmd+=String::SFormat(_T("%d"),m_pResource->Baud());
+              pc++;
+              continue;
+            case _TCHAR('p'):
+              if(_TCHAR('\0')==*(m_pResource->Serial())){
+                goto NextCmd; // Suppress output of this command if there is no serial port
+              }
+              strCmd+=m_pResource->Serial();
+              pc++;
+              continue;
+            case _TCHAR('\0'):
+              continue;
+            default:
+              break;
+          }
+          break;
+        default:
+          break;
+      }
+      strCmd+=*pc;
+    }
+    arstrInferiorCmds.push_back(strCmd);
+NextCmd:
+    ;
+  }
+  return;
+}
+

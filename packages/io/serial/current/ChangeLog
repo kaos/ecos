@@ -1,3 +1,68 @@
+2000-04-13  Gary Thomas  <gthomas@redhat.com>
+
+	* src/common/serial.c (serial_write): Make safer - only call
+	'start_xmit' with DSRs disabled.
+
+2000-04-11  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/io_serial.cdl (CYGPKG_IO_SERIAL_DEVICES): New package which
+	is a container and control for the real device drivers.
+
+2000-04-11  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/io_serial.cdl: Bad hack to build separate test.
+	* tests/serial_echo.c: Added.
+
+2000-04-11  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/ser_.... (driver-specific cdl files):
+	Remove all these; they are no longer needed following the change
+	below.  They do exist in devs/serial/ARCH/PLATFORM/VERSION/cdl/
+	directories various instead.
+
+2000-04-07  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* ecos.db: Re-organize device packages.  This is a massive change
+	involving deleting all the sources for serial and ethernet drivers
+	from where they used to live in
+	    packages/io/serial/current/src/ARCH/PLATFORM.[ch]
+	    packages/net/drivers/eth/PLATFORM/current/src/...
+	and reinstating them in
+	    packages/devs/serial/ARCH/PLATFORM/current/src/...
+	    packages/devs/eth/ARCH/PLATFORM/current/src/...
+
+	All these new packages are properly defined in ecos.db, and are
+	all of type "hardware" so that a "target" can grab them.
+	
+	This directory layout is descriptive of the devices we have right
+	now, arch and platform are separate levels just to make it easier
+	to navigate in the filesystem and similar to the HAL structure in
+	the filesystem.
+
+	It is *not* prescriptive of future work; for example, the mythical
+	common highly-portable 16550 serial driver which works on many
+	targets would be called "devs/serial/s16550/current", or a serial
+	device for a particular board (cogent springs to mind) that can
+	work with different CPUs fitted is "devs/serial/cogent/current".
+
+	Changelogs have been preserved and replicated over all the new
+	packages, so that no history is lost.
+
+	The contents of individual source files are unchanged; they build
+	in just the same emvironment except for a very few cases where the
+	config file name changed in this movement.
+
+	Targets in ecos.db have been redefined to bring in all relevant
+	hardware packages including net and serial drivers (but the newly
+	included packages are only active if their desired parent is
+	available.)
+	
+	The names of CDL options (and their #defines of course) stay the
+	same for the serial drivers, for backward compatibility.
+
+	* templates/*/current.ect: these have had CYGPKG_IO_SERIAL added
+	rather than it being in (almost) all target definitions.
+	
 2000-04-07  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* src/common/tty.c (tty_read): Correct handling of modes with newlines

@@ -457,7 +457,7 @@ externC cyg_uint8 cyg_hal_ILVL_table[];
     case CYGNUM_HAL_INTERRUPT_LVL0...CYGNUM_HAL_INTERRUPT_LVL14:          \
         /* Can only be masked by fiddling Imask in SR. */                 \
         break;                                                            \
-    case CYGNUM_HAL_INTERRUPT_TMU0_TUNI0...CYGNUM_HAL_INTERRUPT_REF_ROVI: \
+    case CYGNUM_HAL_INTERRUPT_TMU0_TUNI0...CYGNUM_HAL_ISR_MAX:            \
         HAL_INTERRUPT_SET_LEVEL((_vector_), 0);                           \
         break;                                                            \
     case CYGNUM_HAL_INTERRUPT_RESERVED_1E0:                               \
@@ -478,7 +478,7 @@ externC cyg_uint8 cyg_hal_ILVL_table[];
     case CYGNUM_HAL_INTERRUPT_LVL0...CYGNUM_HAL_INTERRUPT_LVL14:          \
         /* Can only be unmasked by fiddling Imask in SR. */               \
         break;                                                            \
-    case CYGNUM_HAL_INTERRUPT_TMU0_TUNI0...CYGNUM_HAL_INTERRUPT_REF_ROVI: \
+    case CYGNUM_HAL_INTERRUPT_TMU0_TUNI0...CYGNUM_HAL_ISR_MAX:            \
         HAL_INTERRUPT_SET_LEVEL((_vector_), 1);                           \
         break;                                                            \
     case CYGNUM_HAL_INTERRUPT_RESERVED_1E0:                               \

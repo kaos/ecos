@@ -96,10 +96,11 @@ void wallclock_thread( CYG_ADDRWORD id )
     cyg_uint32 wtime;
     cyg_tick_count ticks;
 
-    Cyg_WallClock::wallclock->set_current_time( EPOCH );
+    CYG_TEST_INFO("Testing accuracy of wallclock (10 seconds silence)");
 
     // Check clock only every other second since the call itself may
     // take about a second.
+    Cyg_WallClock::wallclock->set_current_time( EPOCH );
     for( int i = 0; i < loops; i += 2 )
     {
         // Make a note of the time
@@ -111,13 +112,36 @@ void wallclock_thread( CYG_ADDRWORD id )
             CYG_TEST_FAIL_FINISH( "Clock out of sync" );
         }
 
-        CYG_TEST_STILL_ALIVE(i, "2xtick...");
-
         // then calculate how much the above took so the delay
         // below can be made accurate.
         ticks = Cyg_Clock::real_time_clock->current_value() - ticks;
 
         th->delay( 2*one_sec - ticks );
+    }
+    
+    if ( ! cyg_test_is_simulator ) {
+        CYG_TEST_INFO("Tick output. Two seconds between each output.");
+
+        Cyg_WallClock::wallclock->set_current_time( EPOCH );
+        for( int i = 0; i < loops; i += 2 )
+        {
+            // Make a note of the time
+            ticks = Cyg_Clock::real_time_clock->current_value();
+            
+            wtime = Cyg_WallClock::wallclock->get_current_time();
+            if(wtime != EPOCH+i)
+            {
+                diag_printf("wallclock drift: saw %d expected %d\n", 
+                            wtime, EPOCH+i);
+            }
+            CYG_TEST_STILL_ALIVE(i, "2xtick...");
+            
+            // then calculate how much the above took so the delay
+            // below can be made accurate.
+            ticks = Cyg_Clock::real_time_clock->current_value() - ticks;
+            
+            th->delay( 2*one_sec - ticks );
+        }
     }
 
     CYG_TEST_PASS_FINISH("Wallclock OK");

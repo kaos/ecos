@@ -41,8 +41,8 @@
 
 #include "eCosStd.h"
 #include "eCosTest.h"
-#include "eCosTestSocket.h"
-#include "eCosTestSerial.h"
+#include "eCosSocket.h"
+#include "eCosSerial.h"
 
 //----------------------------------------------------------------------------
 // Macros to help extract values from the argument string.
@@ -68,7 +68,7 @@ struct filter_abort_t {
 typedef struct ser_cfg {
     int baud_rate;
     int data_bits;
-    CeCosTestSerial::StopBitsType stop_bits;
+    CeCosSerial::StopBitsType stop_bits;
     bool parity;
     // etc...
 } ser_cfg_t;
@@ -101,8 +101,8 @@ public:
 
     bool FilterFunctionProper(void*& pBuf,
                               unsigned int& nRead,
-                              CeCosTestSerial& serial,
-                              CeCosTestSocket& socket);
+                              CeCosSerial& serial,
+                              CeCosSocket& socket);
 
 private:
     enum {MAX_CMD_LEN=128};
@@ -118,32 +118,32 @@ private:
                   data_origin_t origin=SF_TARGET);
 
     // Target read/write methods
-    void TargetWrite(CeCosTestSerial &pSer, 
+    void TargetWrite(CeCosSerial &pSer, 
                      const unsigned char* buffer, int len);
-    void TargetASCIIWrite(CeCosTestSerial &pSer, const char* s);
-    bool TargetRead(CeCosTestSerial &pSer, 
+    void TargetASCIIWrite(CeCosSerial &pSer, const char* s);
+    bool TargetRead(CeCosSerial &pSer, 
                     unsigned char* buffer, int len);
         
     // Configuration CMD and helper methods
     void ParseConfig(char* args, ser_cfg_t* new_cfg);
-    bool SetConfig(CeCosTestSerial &pSer, const ser_cfg_t* new_cfg, 
+    bool SetConfig(CeCosSerial &pSer, const ser_cfg_t* new_cfg, 
                    ser_cfg_t* old_cfg);
-    bool VerifyConfig(CeCosTestSerial &pSer, ser_cfg_t* new_cfg);
-    void CMD_ChangeConfig(CeCosTestSerial &pSer, char* cfg_str);
-    void CMD_DefaultConfig(CeCosTestSerial &pSer);
+    bool VerifyConfig(CeCosSerial &pSer, ser_cfg_t* new_cfg);
+    void CMD_ChangeConfig(CeCosSerial &pSer, char* cfg_str);
+    void CMD_DefaultConfig(CeCosSerial &pSer);
 
     // Other CMD methods.
-    void CMD_TestBinary(CeCosTestSerial &pSer, char* args);
-    void CMD_TestText(CeCosTestSerial &pSer, char* args);
-    void CMD_TestPing(CeCosTestSerial &pSer, char* args);
+    void CMD_TestBinary(CeCosSerial &pSer, char* args);
+    void CMD_TestText(CeCosSerial &pSer, char* args);
+    void CMD_TestPing(CeCosSerial &pSer, char* args);
 
 
     // Misc helper methods
     int DoCRC(unsigned char* data, int size);
-    void SendChecksum(CeCosTestSerial &pSer, int crc);
-    void SendStatus(CeCosTestSerial &pSer, int state);
-    void ReceiveDone(CeCosTestSerial &pSer, unsigned char* data_in, int size);
-    void DispatchCommand(CeCosTestSerial &pSer, char* cmd);
+    void SendChecksum(CeCosSerial &pSer, int crc);
+    void SendStatus(CeCosSerial &pSer, int state);
+    void ReceiveDone(CeCosSerial &pSer, unsigned char* data_in, int size);
+    void DispatchCommand(CeCosSerial &pSer, char* cmd);
 
     // Options used for configuring behavior.
     bool m_bOptConsoleOutput;
@@ -164,13 +164,13 @@ private:
                                         // serial tracing while GDB is trying
                                         // to connect, or it will get confused.
 
-    CeCosTestSocket* m_cGDBSocket;      // gdb_socket
+    CeCosSocket* m_cGDBSocket;      // gdb_socket
 };
 
 extern bool CALLBACK SerialFilterFunction(void*& pBuf,
                                           unsigned int& nRead,
-                                          CeCosTestSerial& serial,
-                                          CeCosTestSocket& socket,
+                                          CeCosSerial& serial,
+                                          CeCosSocket& socket,
                                           void* pParem);
     
 #endif // _CECOSSERIALFILTER_H

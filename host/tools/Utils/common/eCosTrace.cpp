@@ -35,7 +35,7 @@
 #include "eCosThreadUtils.h"
 #include "eCosTrace.h"
 
-bool CeCosTrace::bVerbose=false;
+CeCosTrace::TraceLevel CeCosTrace::nVerbosity=CeCosTrace::TRACE_LEVEL_ERRORS;
 bool CeCosTrace::bInteractive=false;
 LPCTSTR CeCosTrace::arpszDow[7]={_T("Su"),_T("M"),_T("Tu"),_T("W"),_T("Th"),_T("F"),_T("Sa")};
 
@@ -58,12 +58,12 @@ void CALLBACK CeCosTrace::StreamLogFunc(void *pParam, LPCTSTR psz)
 
 bool CeCosTrace::SetOutput(LPCTSTR pszFilename)
 {
-  FILE *f=_tfopen(pszFilename,_T("at"));
+  FILE *f=_tfopen(pszFilename,_T("a") MODE_TEXT);
   if(f){
-    if(OutInfo.strFilename.GetLength()>0){
+    if(!OutInfo.strFilename.empty()){
       fclose(OutInfo.f);
     }
-    if(bVerbose){
+    if(nVerbosity>=TRACE_LEVEL_TRACE){
       _ftprintf(stderr,_T("Output -> %s (%08x)\n"),pszFilename,(unsigned int)f);
     }
     OutInfo.f=f;
@@ -75,9 +75,9 @@ bool CeCosTrace::SetOutput(LPCTSTR pszFilename)
 
 bool CeCosTrace::SetError(LPCTSTR pszFilename)
 {
-  FILE *f=_tfopen(pszFilename,_T("at"));
+  FILE *f=_tfopen(pszFilename,_T("a") MODE_TEXT);
   if(f){
-    if(ErrInfo.strFilename.GetLength()>0){
+    if(!ErrInfo.strFilename.empty()){
       fclose(ErrInfo.f);
     }
     ErrInfo.f=f;
@@ -92,14 +92,14 @@ void CALLBACK CeCosTrace::StreamInfoFunc(void *pParam, LPCTSTR psz)
   StreamInfo *pInfo=(StreamInfo *)pParam;
   ENTERCRITICAL;
   _fputts(psz,pInfo->f);
-  if(pInfo->strFilename.GetLength()>0 && Now()-pInfo->tLastReopen>20*1000){
+  if(!pInfo->strFilename.empty() && Now()-pInfo->tLastReopen>20*1000){
     // SAMBA clients will not honor fflush(), so we do this:
     fclose(pInfo->f);
     do {
-      pInfo->f=_tfopen(pInfo->strFilename,_T("at"));
+      pInfo->f=_tfopen(pInfo->strFilename,_T("a") MODE_TEXT);
       if(NULL==pInfo->f){
         _ftprintf(stderr,_T("Failed to reopen %s\n"),(LPCTSTR)pInfo->strFilename);
-        Sleep(1000);
+        CeCosThreadUtils::Sleep(1000);
       }
     } while (NULL==pInfo->f);
     pInfo->tLastReopen=Now();
@@ -109,19 +109,7 @@ void CALLBACK CeCosTrace::StreamInfoFunc(void *pParam, LPCTSTR psz)
   LEAVECRITICAL;
 }
 
-void CeCosTrace::Trace(LPCTSTR pszFormat, ...)
-{
-  if(bVerbose){
-    va_list marker;
-    va_start (marker, pszFormat);
-	  String str;
-    str.vFormat(pszFormat,marker);
-    va_end (marker);
-    Error(_T("%s"),(LPCTSTR)str);
-  }
-}
-
-void CeCosTrace::Error(LPCTSTR pszFormat, ...)
+void CeCosTrace::TimeStampedErr(LPCTSTR pszFormat,...)
 {
   va_list marker;
   va_start (marker, pszFormat);
@@ -129,18 +117,19 @@ void CeCosTrace::Error(LPCTSTR pszFormat, ...)
   str.vFormat(pszFormat,marker);
   va_end (marker);
 
+  Err(String::SFormat(_T("%s %s"),(LPCTSTR)Timestamp(),(LPCTSTR)str));
+}
+
+const String CeCosTrace::Timestamp()
+{
   time_t ltime;
   time(&ltime);
   struct tm *now=localtime( &ltime );
   
-  String s;
-  CeCosThreadUtils::THREAD_ID id=CeCosThreadUtils::GetThreadId();
-  s.Format(_T("[%x %s %02d:%02d:%02d%s] %s"),id,
-    arpszDow[now->tm_wday],now->tm_hour,now->tm_min,now->tm_sec,CeCosThreadUtils::CS::nCSOwner==id?_T("*"):_T(""),(LPCTSTR)str);
-  if(_TCHAR('\n')!=s[s.GetLength()-1]){
-    s+=_TCHAR('\n');
-  }
-  Err(s);
+  bool bInCriticalSection=CeCosThreadUtils::CS::InCriticalSection();
+  TCHAR c1=bInCriticalSection?_TCHAR('<'):_TCHAR('[');
+  TCHAR c2=bInCriticalSection?_TCHAR('>'):_TCHAR(']');
+  return String::SFormat(_T("%c%3x %s %02d:%02d:%02d%c"),c1,CeCosThreadUtils::GetThreadId(),
+    arpszDow[now->tm_wday],now->tm_hour,now->tm_min,now->tm_sec,c2);
+
 }
-
-

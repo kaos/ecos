@@ -56,10 +56,12 @@ cdl_package CYGPKG_IO_WALLCLOCK {
 
     cdl_interface CYGINT_WALLCLOCK_HW_IMPLEMENTATIONS {
         display       "Number of wallclock hardware implementations"
+        no_define
     }
 
     cdl_interface CYGINT_WALLCLOCK_IMPLEMENTATIONS {
         display       "Number of wallclock implementations"
+        no_define
         requires      1 == CYGINT_WALLCLOCK_IMPLEMENTATIONS
     }
 
@@ -111,7 +113,7 @@ cdl_package CYGPKG_IO_WALLCLOCK {
         }
 
         cdl_option CYGPKG_IO_WALLCLOCK_CFLAGS_REMOVE {
-            display "Supressed compiler flags"
+            display "Suppressed compiler flags"
             flavor  data
             no_define
             default_value { "" }

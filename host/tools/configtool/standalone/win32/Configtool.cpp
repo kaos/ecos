@@ -53,6 +53,7 @@
 #include "CTUtils.h"
 #include "eCosDialog.h"
 #include "eCosTest.h"
+#include "eCosSocket.h"
 #include "FileName.h"
 #include "MainFrm.h"
 #include "OutputView.h"
@@ -104,7 +105,8 @@ CConfigToolApp theApp;
 
 BOOL CConfigToolApp::InitInstance()
 {
-  CeCosTest::Init();
+  CeCosSocket::Init();
+  CeCosTestPlatform::Load();
   CFileName strCSHFile;
   ::GetModuleFileName(::GetModuleHandle(NULL),strCSHFile.GetBuffer(1+MAX_PATH),MAX_PATH);
   strCSHFile.ReleaseBuffer();
@@ -288,7 +290,8 @@ int CConfigToolApp::ExitInstance()
     WriteProfileString(CUtils::LoadString(IDS_KEY_TOOLS_DIR),strPrefix,strBinDir);
   }
   ::DeleteFile(CConfigToolDoc::HTMLHelpLinkFileName());
-  CeCosTest::Term();
+  CeCosSocket::Term();
+  CeCosTestPlatform::RemoveAllPlatforms();
   return CWinApp::ExitInstance();
 }
 

@@ -750,7 +750,7 @@ CdlConfigurationBody::load_package(CdlTransaction transaction, std::string name,
         version = *(versions.begin());
     } else {
         if (std::find(versions.begin(), versions.end(), version) == versions.end()) {
-            throw CdlInputOutputException("Package " + name + " does not have an installed version " + version);
+            throw CdlInputOutputException("Package " + name + " does not have an installed version `" + version + "'.");
         }
     }
     std::string directory       = database->get_package_directory(name);
@@ -765,13 +765,13 @@ CdlConfigurationBody::load_package(CdlTransaction transaction, std::string name,
     std::string tcl_cmd = "regsub -all -- {\\\\} [file join " + directory + " " + version + "] / result; return $result";
     std::string tcl_result;
     if (TCL_OK != interp->eval(tcl_cmd, tcl_result)) {
-        throw CdlInputOutputException("Cannot load package " + name + ", internal error constructing pathname");
+        throw CdlInputOutputException("Cannot load package `" + name + "', internal error constructing pathname.");
     }
     directory = tcl_result;
     
     tcl_cmd   = "file isdirectory [file join \"" + database->get_component_repository() + "\" " + directory + "]";
     if ((TCL_OK != interp->eval(tcl_cmd, tcl_result)) || ("1" != tcl_result)) {
-        throw CdlInputOutputException("Cannot load package " + name + ", there is no directory " + directory);
+        throw CdlInputOutputException("Cannot load package `" + name + "', there is no directory `" + directory + "'.");
     }
     
     // Make sure that there is no name conflict. No resources have been allocated
@@ -779,11 +779,11 @@ CdlConfigurationBody::load_package(CdlTransaction transaction, std::string name,
     CdlNode node = lookup(name);
     if (0 != node) {
         if (0 != dynamic_cast<CdlPackage>(node)) {
-            throw CdlInputOutputException("Package " + name + " is already loaded");
+            throw CdlInputOutputException("Package `" + name + "' is already loaded.");
         } else {
 
-            std::string msg = "Name clash for package " + name + ",there is a " +
-                node->get_class_name() + " " + name + " already loaded";
+            std::string msg = "Name clash for package `" + name + "',there is a `" +
+                node->get_class_name() + " " + name + "' already loaded";
             CdlLoadable owner_pkg = node->get_owner();
             if (0 != owner_pkg) {
                 msg += " in package " + owner_pkg->get_name();
@@ -791,7 +791,7 @@ CdlConfigurationBody::load_package(CdlTransaction transaction, std::string name,
             throw CdlInputOutputException(msg);
         }
     }
-    
+
     // Now create the package object itself.
     CdlPackage package  = 0;
     bool       bound    = false;
@@ -825,12 +825,7 @@ CdlConfigurationBody::load_package(CdlTransaction transaction, std::string name,
         }
 
         // The script is valid. Set up the interpreter appropriately.
-        CdlContainer old_container      = interp->push_container(package);
-        std::string old_filename        = interp->push_filename(actual_script);
-        CdlDiagnosticFnPtr old_error_fn = interp->push_error_fn_ptr(error_fn);
-        CdlDiagnosticFnPtr old_warn_fn  = interp->push_warning_fn_ptr(warn_fn);
         CdlParse::clear_error_count(interp);
-
         static CdlInterpreterCommandEntry commands[] =
         {
             CdlInterpreterCommandEntry("cdl_package",    &CdlPackageBody::parse_package     ),
@@ -841,26 +836,17 @@ CdlConfigurationBody::load_package(CdlTransaction transaction, std::string name,
             CdlInterpreterCommandEntry("cdl_wizard",     &CdlWizardBody::parse_wizard       ),
             CdlInterpreterCommandEntry("",               0                                  )
         };
-        std::vector<CdlInterpreterCommandEntry> new_commands;
-        for (int i = 0; 0 != commands[i].command; i++) {
-            new_commands.push_back(commands[i]);
-        }
-        std::vector<CdlInterpreterCommandEntry>* old_commands = interp->push_commands(new_commands);
+        CdlInterpreterBody::CommandSupport   interp_cmds(interp, commands);
+        CdlInterpreterBody::ContainerSupport interp_container(interp, package);
+        CdlInterpreterBody::ContextSupport   interp_context(interp, actual_script);
         
         // The interpreter is now ready.
-        if (TCL_OK != interp->eval_file(actual_script, tcl_result)) {
-            throw CdlInputOutputException("Package " + name + ", error executing CDL script.\n" + tcl_result);
-        }
+        (void) interp->eval_file(actual_script);
 
         // Clean out the commands etc. This interpreter may get used again
         // in future, and it should not be possible to define new options
         // etc. in that invocation.
         interp->remove_command("unknown");
-        interp->pop_commands(old_commands);
-        interp->pop_container(old_container);
-        interp->pop_filename(old_filename);
-        interp->pop_error_fn_ptr(old_error_fn);
-        interp->pop_warning_fn_ptr(old_warn_fn);
         
         // All the data has been read in without generating an
         // exception. However there may have been errors reported via
@@ -1059,16 +1045,20 @@ CdlConfigurationBody::set_hardware(CdlTransaction transaction, std::string targe
     CYG_PRECONDITION_THISC();
     CYG_PRECONDITION_CLASSC(transaction);
 
-    // Minimal consistency check before 
+    // Minimal consistency check before attempting anything complicated.
     if (!database->is_known_target(target_name)) {
         throw CdlInputOutputException("Unknown target " + target_name);
     }
 
-    int i;
+    CdlInterpreter interp = this->get_interpreter();
+    CdlInterpreterBody::DiagSupport    diag_support(interp, error_fn, warn_fn);
+    CdlInterpreterBody::ContextSupport context_support(interp, "Hardware selection");
+    
     CdlConfiguration_CommitCancelHardwareName* rename_op = new CdlConfiguration_CommitCancelHardwareName(current_hardware);
     try {
         transaction->add_commit_cancel_op(rename_op);
         const std::vector<CdlLoadable>& loadables = this->get_loadables();
+        int i;
         for (i = (int) loadables.size() - 1; i >= 0; i--) {
             CdlPackage package = dynamic_cast<CdlPackage>(loadables[i]);
             if ((0 != package) && package->belongs_to_hardware()) {
@@ -1082,15 +1072,23 @@ CdlConfigurationBody::set_hardware(CdlTransaction transaction, std::string targe
             const std::vector<std::string>& packages = database->get_target_packages(target_name);
             std::vector<std::string>::const_iterator    name_i;
             for (name_i = packages.begin(); name_i != packages.end(); name_i++) {
-                // It is possible for a hardware package to have been
-                // loaded separately, in which case there is no point in
-                // loading it again.
-                CYG_ASSERTC(database->is_known_package(*name_i));
-                if (0 == this->lookup(*name_i)) {
-                    this->load_package(transaction, *name_i, "", error_fn, warn_fn, limbo);
-                    CdlPackage package = dynamic_cast<CdlPackage>(this->lookup(*name_i));
-                    CYG_LOOP_INVARIANT_CLASSC(package);
-                    package->loaded_for_hardware = true;
+                // Target specifications may refer to packages that are not
+                // installed. This is useful in e.g. an anoncvs environment.
+                if (database->is_known_package(*name_i)) {
+                    // It is possible for a hardware package to have been
+                    // loaded separately, in which case there is no point in
+                    // loading it again.
+                    if (0 == this->lookup(*name_i)) {
+                        this->load_package(transaction, *name_i, "",
+                                           error_fn, warn_fn, limbo);
+                        CdlPackage package = dynamic_cast<CdlPackage>(this->lookup(*name_i));
+                        CYG_LOOP_INVARIANT_CLASSC(package);
+                        package->loaded_for_hardware = true;
+                    }
+                } else {
+                    CdlParse::report_warning(interp, "",
+                                             std::string("The target specification lists a package `") + *name_i +
+                                             "' which is not present in the component repository.");
                 }
             }
         }
@@ -1122,40 +1120,77 @@ CdlConfigurationBody::set_hardware(CdlTransaction transaction, std::string targe
             CdlValueFlavor flavor;
             
             for (opt_i = enables.begin(); opt_i != enables.end(); opt_i++) {
-                node = this->lookup(*opt_i);
+                valuable = 0;
+                node     = this->lookup(*opt_i);
                 if (0 != node) {
                     valuable = dynamic_cast<CdlValuable>(node);
                     if (0 != valuable) {
-                        flavor = valuable->get_flavor();
-                        if ((CdlValueFlavor_Bool == flavor) || (CdlValueFlavor_BoolData == flavor)) {
-                            valuable->enable(transaction, CdlValueSource_User);
-                        }
                     }
+                }
+                if (0 != valuable) {
+                    flavor = valuable->get_flavor();
+                    if ((CdlValueFlavor_Bool == flavor) || (CdlValueFlavor_BoolData == flavor)) {
+                        valuable->enable(transaction, CdlValueSource_User);
+                    } else {
+                        CdlParse::report_warning(interp, std::string("target `") + target_name + "'",
+                                                 std::string("The option `") + *opt_i +
+                                                 "' is supposed to be enabled for this target.\n" +
+                                                 "However the option does not have a bool or booldata flavors.");
+                    }
+                } else {
+                    CdlParse::report_warning(interp, std::string("target `") + target_name + "'",
+                                             std::string("The option `") + *opt_i +
+                                             "' is supposed to be enabled for this target.\n" +
+                                             "However this option is not in the current configuration.");
                 }
             }
             for (opt_i = disables.begin(); opt_i != disables.end(); opt_i++) {
+                valuable = 0;
                 node = this->lookup(*opt_i);
                 if (0 != node) {
                     valuable = dynamic_cast<CdlValuable>(node);
-                    if (0 != valuable) {
-                        flavor = valuable->get_flavor();
-                        if ((CdlValueFlavor_Bool == flavor) || (CdlValueFlavor_BoolData == flavor)) {
-                            valuable->disable(transaction, CdlValueSource_User);
-                        }
+                }
+                if (0 != valuable) {
+                    flavor = valuable->get_flavor();
+                    if ((CdlValueFlavor_Bool == flavor) || (CdlValueFlavor_BoolData == flavor)) {
+                        valuable->disable(transaction, CdlValueSource_User);
+                    } else {
+                        CdlParse::report_warning(interp, std::string("target `") + target_name + "'",
+                                                 std::string("The option `") + *opt_i +
+                                                 "' is supposed to be disabled for this target.\n" +
+                                                 "However the option does not have a bool or booldata flavors.");
                     }
+                } else {
+                    CdlParse::report_warning(interp, std::string("target `") + target_name + "'",
+                                             std::string("The option `") + *opt_i +
+                                             "' is supposed to be disabled for this target.\n" +
+                                             "However this option is not in the current configuration.");
                 }
             }
             std::vector<std::pair<std::string,std::string> >::const_iterator value_i;
             for (value_i = set_values.begin(); value_i != set_values.end(); value_i++) {
+                valuable = 0;
                 node = this->lookup(value_i->first);
                 if (0 != node) {
                     valuable = dynamic_cast<CdlValuable>(node);
-                    if (0 != valuable) {
-                        flavor = valuable->get_flavor();
-                        if ((CdlValueFlavor_BoolData == flavor) || (CdlValueFlavor_Data == flavor)) {
-                            valuable->set_value(transaction, value_i->second, CdlValueSource_User);
-                        }
+                }
+                if (0 != valuable) {
+                    flavor = valuable->get_flavor();
+                    if ((CdlValueFlavor_BoolData == flavor) || (CdlValueFlavor_Data == flavor)) {
+                        valuable->set_value(transaction, value_i->second, CdlValueSource_User);
+                    } else {
+                        CdlParse::report_warning(interp, std::string("target `") + target_name + "'",
+                                                 std::string("The option `") + *opt_i +
+                                                 "' is supposed to be given the value `" + value_i->second +
+                                                 "' for this target.\n" +
+                                                 "However the option does not have a data or booldata flavor.");
                     }
+                } else {
+                    CdlParse::report_warning(interp, std::string("target `") + target_name + "'",
+                                             std::string("The option `") + *opt_i +
+                                             "' is supposed to be given the value `" + value_i->second +
+                                             "' for this target.\n" +
+                                             "However this option is not in the current configuration.");
                 }
             }
         }
@@ -1573,31 +1608,21 @@ CdlConfigurationBody::add(CdlTransaction transaction, std::string filename,
     CYG_ASSERTC(0 == interp->get_container());
     CYG_ASSERTC(0 == interp->get_node());
     CYG_ASSERTC(0 == interp->get_transaction());
-    
+
     // Keep track of enough information to undo all the changes.
-    std::string        old_filename = interp->get_filename();
-    CdlDiagnosticFnPtr old_error_fn = interp->get_error_fn_ptr();
-    CdlDiagnosticFnPtr old_warn_fn  = interp->get_warning_fn_ptr();
-    std::vector<CdlInterpreterCommandEntry>* old_commands = 0;
-    std::vector<CdlInterpreterCommandEntry> commands;
+    CdlParse::clear_error_count(interp);
+    CdlInterpreterBody::DiagSupport    diag_support(interp, error_fn, warn_fn);
+    CdlInterpreterBody::ContextSupport context_support(interp, filename);
 
     try {
-        
-        // Associate the right information with the interpreter
-        old_filename = interp->push_filename(filename);
-        old_error_fn = interp->push_error_fn_ptr(error_fn);
-        old_warn_fn  = interp->push_warning_fn_ptr(warn_fn);
-        CdlParse::clear_error_count(interp);
-
         interp->set_transaction(transaction);
 
+        std::vector<CdlInterpreterCommandEntry> commands;
         this->get_savefile_commands(commands);
-        old_commands = interp->push_commands(commands);
+        CdlInterpreterBody::CommandSupport interp_cmds(interp, commands);
 
-        std::string tcl_result = "";
-        if (TCL_OK != interp->eval_file(filename, tcl_result)) {
-            throw CdlInputOutputException("Invalid savefile \"" + filename + "\".\n" + tcl_result);
-        }
+        interp->eval_file(filename);
+        
         // All the data has been read in without generating an
         // exception. However there may have been errors reported via
         // the error_fn handling, and any errors at all should result
@@ -1612,21 +1637,10 @@ CdlConfigurationBody::add(CdlTransaction transaction, std::string filename,
         }
         
     } catch(...) {
-
-        if (0 != old_commands) {
-            interp->pop_commands(old_commands);
-        }
-        interp->pop_filename(old_filename);
-        interp->pop_error_fn_ptr(old_error_fn);
-        interp->pop_warning_fn_ptr(old_warn_fn);
         interp->set_transaction(0);
         throw;
     }
 
-    interp->pop_filename(old_filename);
-    interp->pop_error_fn_ptr(old_error_fn);
-    interp->pop_warning_fn_ptr(old_warn_fn);
-    interp->pop_commands(old_commands);
     interp->set_transaction(0);
 
     CYG_REPORT_RETURN();
@@ -1664,7 +1678,7 @@ CdlConfigurationBody::savefile_configuration_command(CdlInterpreter interp, int 
         // A broken cdl_configuration command is pretty fatal, chances are
         // that the entire load is going to fail.
         if (data_index != (argc - 2)) {
-            CdlParse::report_error(interp, "Invalid cdl_configuration command in savefile, expecting two arguments.");
+            CdlParse::report_error(interp, "", "Invalid cdl_configuration command in savefile, expecting two arguments.");
         } else {
             config->set_name(argv[1]);
             config->get_savefile_subcommands("cdl_configuration", subcommands);
@@ -1704,7 +1718,7 @@ CdlConfigurationBody::savefile_description_command(CdlInterpreter interp, int ar
     int data_index = CdlParse::parse_options(interp, "cdl_configuration/description command", 0, argc, argv, 1, options);
         
     if (data_index != (argc - 1)) {
-        CdlParse::report_warning(interp,
+        CdlParse::report_warning(interp, "",
                                  "Ignoring invalid configuration description command, expecting a single argument.");
     } else {
         config->description = argv[1];
@@ -1728,7 +1742,7 @@ CdlConfigurationBody::savefile_hardware_command(CdlInterpreter interp, int argc,
     int data_index = CdlParse::parse_options(interp, "cdl_configuration/hardware command", 0, argc, argv, 1, options);
         
     if (data_index != (argc - 1)) {
-        CdlParse::report_warning(interp, "Ignoring invalid configuration hardware command, expecting a single argument.");
+        CdlParse::report_warning(interp, "", "Ignoring invalid configuration hardware command, expecting a single argument.");
     } else {
         config->current_hardware = argv[1];
     }
@@ -1752,7 +1766,7 @@ CdlConfigurationBody::savefile_template_command(CdlInterpreter interp, int argc,
     int data_index = CdlParse::parse_options(interp, "cdl_configuration/template command", 0, argc, argv, 1, options);
         
     if (data_index != (argc - 1)) {
-        CdlParse::report_warning(interp, "Ignoring invalid configuration template command, expecting a single argument.");
+        CdlParse::report_warning(interp, "", "Ignoring invalid configuration template command, expecting a single argument.");
     } else {
         config->current_template = argv[1];
     }
@@ -1787,7 +1801,8 @@ CdlConfigurationBody::savefile_package_command(CdlInterpreter interp, int argc, 
     int data_index = CdlParse::parse_options(interp, "cdl_configuration/package command", optlist, argc, argv, 1, options);
 
     if (data_index == (argc - 1)) {
-        CdlParse::report_warning(interp, std::string("Missing version information for package ") + argv[argc - 1]);
+        CdlParse::report_warning(interp, "", std::string("Missing version information for package `")
+                                 + argv[argc - 1] + "'.");
         pkgname = argv[argc - 1];
         pkgversion = "";
     } else if (data_index == (argc - 2)) {
@@ -1796,7 +1811,7 @@ CdlConfigurationBody::savefile_package_command(CdlInterpreter interp, int argc, 
     } else {
         // If we cannot load all the packages then much of the
         // savefile is likely to be problematical.
-        CdlParse::report_error(interp, "Invalid cdl_configuration/package command, expecting name and version");
+        CdlParse::report_error(interp, "", "Invalid cdl_configuration/package command, expecting name and version");
         CYG_REPORT_RETURN();
         return TCL_OK;
     }
@@ -1810,18 +1825,22 @@ CdlConfigurationBody::savefile_package_command(CdlInterpreter interp, int argc, 
         pkg = dynamic_cast<CdlPackage>(node);
         if (0 == pkg) {
             // The name is in use, but it is not a package
-            CdlParse::report_error(interp, std::string("Unable to load package ") + pkgname + ", the name is already in use.");
+            CdlParse::report_error(interp, "",
+                                   std::string("Unable to load package `") + pkgname + "', the name is already in use.");
         } else if (pkgversion != pkg->get_value()) {
-            CdlParse::report_warning(interp, std::string("Cannot load version ") + pkgversion + " of package " +
-                                     pkgname + ", version " + pkg->get_value() + " already loaded.");
+            CdlParse::report_warning(interp, "",
+                                     std::string("Cannot load version `") + pkgversion + "' of package `" +
+                                     pkgname + "', version `" + pkg->get_value() + "' is already loaded.");
         }
     } else if (!db->is_known_package(pkgname)) {
-        CdlParse::report_error(interp, std::string("Attempt to load an unknown package ") + pkgname);
+        CdlParse::report_error(interp, "",
+                               std::string("Attempt to load an unknown package `") + pkgname + "'.");
     } else {
         if ("" != pkgversion) {
             const std::vector<std::string>& versions = db->get_package_versions(pkgname);
             if (versions.end() == std::find(versions.begin(), versions.end(), pkgversion)) {
-                CdlParse::report_warning(interp, std::string("The savefile specifies version `") + pkgversion +
+                CdlParse::report_warning(interp, "",
+                                         std::string("The savefile specifies version `") + pkgversion +
                                          "' for package `" + pkgname + "'\nThis version is not available.\n" +
                                          "Using the most recent version instead.");
                 pkgversion = "";

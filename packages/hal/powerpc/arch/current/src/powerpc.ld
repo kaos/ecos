@@ -140,7 +140,6 @@ GROUP(libtarget.a libgcc.a)
 #include <pkgconf/system.h>
 #include CYGHWR_MEMORY_LAYOUT_LDI
 
-// Define VSR table to reside at fixed address. This address will
-// probably have to be variant specific for optimal memory usage, but
-// for now just put it above the PPC family reserved exception space.
-hal_vsr_table = 0x3000;
+// Define VSR table to reside at fixed address.
+#include CYGBLD_HAL_TARGET_H
+hal_vsr_table = CYGHWR_HAL_VSR_TABLE;

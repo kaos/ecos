@@ -49,7 +49,9 @@ public:
 	CString m_strPlatform;
 	CString m_strPrefix;
 	CString m_strGDB;
-	int		m_nType;
+	CString	m_strInferior;
+	CString	m_strPrompt;
+	BOOL	m_bServerSideGdb;
 	//}}AFX_DATA
 
 
@@ -68,6 +70,7 @@ protected:
   	virtual BOOL OnInitDialog();
 	afx_msg void OnChangeNewPlatformPrefix();
 	afx_msg void OnChangeNewPlatform();
+	virtual void OnOK();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

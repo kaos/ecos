@@ -42,6 +42,7 @@
 
 cdl_interface CYGINT_KERNEL_SCHEDULER {
     display  "Number of schedulers in this configuration"
+    no_define
     requires 1 == CYGINT_KERNEL_SCHEDULER
 }
 

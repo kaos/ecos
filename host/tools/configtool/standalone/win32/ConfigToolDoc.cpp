@@ -534,7 +534,7 @@ void CConfigToolDoc::RunTests()
   const CString strTarget(CurrentTestingIdentifier());
   TRACE (_T("OnRunSim(): test target ID = '%s'\n"), strTarget);
   
-  if (!CeCosTest::IsValid (strTarget)) {
+  if (NULL==CeCosTestPlatform::Get(strTarget)) {
     if(IDNO==CUtils::MessageBoxFT(MB_YESNO,_T("%s is not a recognized platform - do you wish to add it?"),strTarget)){
       return;
     }
@@ -545,8 +545,8 @@ void CConfigToolDoc::RunTests()
     if(IDCANCEL==dlg.DoModal()){
       return;
     }
-    CeCosTest::AddPlatform(CeCosTest::TargetInfo(dlg.m_strPlatform,dlg.m_strPrefix,dlg.m_nType,dlg.m_strGDB));  
-    CeCosTest::SaveTargetInfo();
+    CeCosTestPlatform::Add(CeCosTestPlatform(dlg.m_strPlatform,dlg.m_strPrefix,dlg.m_strPrompt,dlg.m_strGDB,dlg.m_bServerSideGdb,dlg.m_strInferior));  
+    CeCosTestPlatform::Save();
   }
 
   CFileNameArray ar;

@@ -118,16 +118,14 @@ CdlInterfaceBody::parse_interface(CdlInterpreter interp, int argc, char** argv)
     CYG_REPORT_FUNCARG1("argc %d", argc);
     CYG_PRECONDITION_CLASSC(interp);
     
-    const char* diag_argv0      = CdlParse::get_tcl_cmd_name(argv[0]);
+    std::string  diag_argv0      = CdlParse::get_tcl_cmd_name(argv[0]);
 
     CdlLoadable  loadable       = interp->get_loadable();
     CdlContainer parent         = interp->get_container();       
     CdlToplevel  toplevel       = interp->get_toplevel();
-    std::string filename        = interp->get_filename();
     CYG_ASSERT_CLASSC(loadable);        // There should always be a loadable during parsing
     CYG_ASSERT_CLASSC(parent);
     CYG_ASSERT_CLASSC(toplevel);
-    CYG_ASSERTC("" != filename);
 
     // The new interface should be created and added to the loadable.
     // early on. If there is a parsing error it will get cleaned up
@@ -142,19 +140,19 @@ CdlInterfaceBody::parse_interface(CdlInterpreter interp, int argc, char** argv)
     
         // Currently there are no command-line options. This may change in future.
         if (3 != argc) {
-            CdlParse::report_error(interp, std::string("Incorrect number of arguments to ") + diag_argv0 +
-                                   "\n    Expecting name and properties list.");
+            CdlParse::report_error(interp, "", std::string("Incorrect number of arguments to `") + diag_argv0 +
+                                   "'\nExpecting name and properties list.");
             ok = false;
         } else if (!Tcl_CommandComplete(argv[2])) {
-            CdlParse::report_error(interp, std::string("Invalid property list for cdl_interface ") + argv[1]);
+            CdlParse::report_error(interp, "", std::string("Invalid property list for cdl_interface `") + argv[1] + "'.");
             ok = false;
         } else if (0 != toplevel->lookup(argv[1])) {
             // FIXME: interfaces can be generated implicitly because of an
             // unresolved implements property. This code should look for
             // an existing auto-generated interface object and replace it
             // if necessary.
-            CdlParse::report_error(interp, std::string("Interface ") + argv[1] + " cannot be loaded.\n" +
-                                   "    The name is already in use.");
+            CdlParse::report_error(interp, "", std::string("Interface `") + argv[1] +
+                                   "' cannot be loaded.\nThe name is already in use.");
             ok = false;
         } else {
             new_interface = new CdlInterfaceBody(argv[1], false);
@@ -168,13 +166,13 @@ CdlInterfaceBody::parse_interface(CdlInterpreter interp, int argc, char** argv)
             return TCL_OK;
         }
     } catch(std::bad_alloc e) {
-        interp->set_result(CdlParse::get_diagnostic_prefix(interp) + "Out of memory.");
+        interp->set_result(CdlParse::construct_diagnostic(interp, "internal error", "", "Out of memory"));
         result = TCL_ERROR;
     } catch(CdlParseException e) {
         interp->set_result(e.get_message());
         result = TCL_ERROR;
     } catch(...) {
-        interp->set_result(CdlParse::get_diagnostic_prefix(interp) + "internal error, unexpected C++ exception.");
+        interp->set_result(CdlParse::construct_diagnostic(interp, "internal error", "", "Unexpected C++ exception"));
         result = TCL_ERROR;
     }
     if (TCL_OK != result) {
@@ -237,30 +235,30 @@ CdlInterfaceBody::parse_interface(CdlInterpreter interp, int argc, char** argv)
             // Start with the value-related ones. Interfaces always
             // have the flavor Data.
             if (new_interface->has_property(CdlPropertyId_Flavor)) {
-                CdlParse::report_error(interp, "An interface should not have a `flavor' property.");
+                CdlParse::report_error(interp, "", "An interface should not have a `flavor' property.");
             }
             // Interfaces cannot be modified directly by the user, so
             // there is no point in entry_proc, check_proc, dialog or
             // wizard
             if (new_interface->has_property(CdlPropertyId_EntryProc)) {
-                CdlParse::report_error(interp, "An interface should not have an `entry_proc' property.");
+                CdlParse::report_error(interp, "", "An interface should not have an `entry_proc' property.");
             }
             if (new_interface->has_property(CdlPropertyId_CheckProc)) {
-                CdlParse::report_error(interp, "An interface should not have a `check_proc' property.");
+                CdlParse::report_error(interp, "", "An interface should not have a `check_proc' property.");
             }
             if (new_interface->has_property(CdlPropertyId_Dialog)) {
-                CdlParse::report_error(interp, "An interface should not have a `dialog' property.");
+                CdlParse::report_error(interp, "", "An interface should not have a `dialog' property.");
             }
             if (new_interface->has_property(CdlPropertyId_Wizard)) {
-                CdlParse::report_error(interp, "An interface should not have a `wizard' property.");
+                CdlParse::report_error(interp, "", "An interface should not have a `wizard' property.");
             }
             // Calculated does not make sense, an interface is implicitly calculated
             // Nor does default_value.
             if (new_interface->has_property(CdlPropertyId_Calculated)) {
-                CdlParse::report_error(interp, "An interface should not have a `calculated' property.");
+                CdlParse::report_error(interp, "", "An interface should not have a `calculated' property.");
             }
             if (new_interface->has_property(CdlPropertyId_DefaultValue)) {
-                CdlParse::report_error(interp, "An interface should not have a `default_value' property.");
+                CdlParse::report_error(interp, "", "An interface should not have a `default_value' property.");
             }
             // active_if might make sense, as a way of controlling
             // whether or not a #define will be generated.
@@ -283,13 +281,13 @@ CdlInterfaceBody::parse_interface(CdlInterpreter interp, int argc, char** argv)
         // Errors at this stage should be reported via Tcl, not via C++.
         // However there is no point in continuing with the parsing operation,
         // just give up.
-        interp->set_result(CdlParse::get_diagnostic_prefix(interp) + "Out of memory.");
+        interp->set_result(CdlParse::construct_diagnostic(interp, "internal error", "", "Out of memory"));
         result = TCL_ERROR;
     } catch (CdlParseException e) {
         interp->set_result(e.get_message());
         result = TCL_ERROR;
     } catch(...) {
-        interp->set_result(CdlParse::get_diagnostic_prefix(interp) + "internal error, unexpected C++ exception.");
+        interp->set_result(CdlParse::construct_diagnostic(interp, "internal error", "", "Unexpected C++ exception"));
         result = TCL_ERROR;
     }
 
@@ -386,15 +384,15 @@ CdlInterfaceBody::savefile_interface_command(CdlInterpreter interp, int argc, ch
     try {
         
         if (3 != argc) {
-            CdlParse::report_error(interp, "Invalid cdl_interface command in savefile, expecting two arguments.");
+            CdlParse::report_error(interp, "", "Invalid cdl_interface command in savefile, expecting two arguments.");
         } else {
 
             CdlNode current_node = toplevel->lookup(argv[1]);
             if (0 == current_node) {
                 // FIXME: save value in limbo
-                CdlParse::report_error(interp,
+                CdlParse::report_error(interp, "",
                                        std::string("The savefile contains a cdl_interface command for an unknown interface `")
-                                       + argv[1] + "'");
+                                       + argv[1] + "'.");
             } else {
                 toplevel->get_savefile_subcommands("cdl_interface", subcommands);
                 toplevel_commands = interp->push_commands(subcommands);

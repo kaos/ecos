@@ -27,21 +27,23 @@
 // Author(s):     sdf
 // Contributors:  sdf
 // Date:          1999-04-01
-// Description:   Standard include file for test infra
+// Description:   Standard include file - include file
 // Usage:
 //
 //####DESCRIPTIONEND####
 
+// ----------------------------------------------------------------------------
+// This header sets us up with what is generally needed, both for WIN32 and UNIX
+// Apart from header includes it defines the time-related quantities:
+//     Time     - type to measure an absolute time
+//     Duration - type to measure the difference between two times, or a delay
+//     Now()    - the time now. 
+//     MIN and MAX
+//     LogFunc  - a function to which output can be sent 
+// ----------------------------------------------------------------------------
+
 #if !defined(AFX_STDAFX_H__F20BA9C4_CFD5_11D2_BF75_00A0C949ADAC__INCLUDED_)
 #define AFX_STDAFX_H__F20BA9C4_CFD5_11D2_BF75_00A0C949ADAC__INCLUDED_
-
-#ifndef CYG_UNUSED_PARAM
-  #ifdef _WIN32
-    #define CYG_UNUSED_PARAM( _name_ ) _name_
-  #else // UNIX
-    #define CYG_UNUSED_PARAM( _name_ ) { void * __tmp1 = &(_name_); __tmp1 = 0; }
-  #endif
-#endif
 
 #ifdef _WIN32
   #ifdef _UNICODE
@@ -63,61 +65,47 @@
   #ifndef _WINDOWS_
     #include <windows.h>
   #endif
-  #include <sys/types.h>
-  #include <sys/stat.h>
   #include <direct.h>
   #define cPathsep _TCHAR('\\')
   #include <io.h>
   #include <process.h>
 
-  #include <io.h>
-  #define POPEN _tpopen    
-  #define PCLOSE _pclose    
   #include <malloc.h> // _heapchk
-  //#define CHECKHEAP CeCosTestUtils::EnterCriticalSection();assert(_HEAPOK==_heapchk());CeCosTestUtils::LeaveCriticalSection()
-  #define CHECKHEAP assert(_HEAPOK==_heapchk())
-  #define CLOSESOCKET(s) if(-1!=s)closesocket(s);s=-1
 
   #define CALLBACK    __stdcall               // Calling conventions for a callback
   #define WOULDBLOCK WSAEWOULDBLOCK           // "Would blocking" error
   #define errno       (*_errno())
   #define vsnprintf _vsnprintf
-  #define Sleep(mSec) ::Sleep(mSec)
   #pragma warning (disable:4710)  // Not inlined warning
   typedef __int64 Time;
+  #define MODE_TEXT _T("t")
 #else // UNIX
   #include <termios.h>
   #include <unistd.h>
-  #include <sys/types.h>
   #include <sys/wait.h>
   #include <dirent.h>
-  #include <sys/stat.h>
   #include <sys/file.h>
-  #include <unistd.h>
   #include <sys/socket.h> // socket etc...
   #include <netinet/in.h> // inet_addr
   #include <arpa/inet.h>  // inet_addr
   #include <netdb.h>      // gethostbyname
-  #include <sys/time.h>
   #include <sys/timeb.h>
   #include <signal.h>
-  #include <fcntl.h>
   #define cPathsep '/'
+
   #include <malloc.h>     // malloc   
   #include <stdlib.h>     // atoi
   #include <errno.h>
-  #define POPEN popen    
-  #define PCLOSE pclose    
-  #define CHECKHEAP
-  #define CLOSESOCKET(s) if(-1!=s)close(s);s=-1
   #define WOULDBLOCK EWOULDBLOCK
   #define CALLBACK
 
   #include "wcharunix.h"
+  #include <sys/time.h>
 
   #define _stat stat
-  #define Sleep(nMsec) usleep((int)nMsec * 1000);
+
   typedef long long Time;
+  #define MODE_TEXT
 #endif
 
 #define ECOS_VERSION "1.3.2"
@@ -137,11 +125,9 @@ extern int MAX(int a, int b);
 #include <sys/types.h>
 #include <ctype.h>
 #include <fcntl.h>
-#include <string.h>
 #include <assert.h>
 #include <malloc.h>
 #include <stdlib.h>
-#include <ctype.h>
 #include <time.h>
 #include <stdarg.h>     // vsnprintf
 

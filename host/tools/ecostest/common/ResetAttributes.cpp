@@ -38,6 +38,22 @@
 
 const CResetAttributes CResetAttributes::NoReset;
 
+CResetAttributes::CResetAttributes(LPCTSTR psz) : 
+  // Default values:
+  m_nDelay(1000),
+  m_nReadTimeout(10*1000),
+  m_nBaud(38400)
+{
+  // Remove spaces
+  while(*psz){
+    if(!_istspace(*psz)){
+      m_str+=*psz;
+    }
+    psz++;
+  }
+}
+
+/*
 LPCTSTR CResetAttributes::Image(int nErr)
 {
   switch(nErr){
@@ -61,102 +77,99 @@ LPCTSTR CResetAttributes::Image(int nErr)
       break;
   }
 }
-
+*/
 void CResetAttributes::SuckThreadFunc()
 {
-  m_strResetOutput.SetLength(0);
+  m_strResetOutput=_T("");
   
   // Board has apparently been powered on.  Suck initial output.
-  String strMsg;
-  strMsg.Format(_T(">>> Reading board startup output from %s with timeout of %d seconds...\n"),(LPCTSTR)m_strAuxPort,m_nReadTimeout/1000);
-  ResetLog(strMsg);
+  ResetLog(String::SFormat(_T("Reading board startup output from %s with timeout of %d seconds..."),(LPCTSTR)m_strAuxPort,m_nReadTimeout/1000));
 
   enum {BUFSIZE=512};
-  TCHAR *buf=new TCHAR[BUFSIZE];
+  TCHAR buf[1+BUFSIZE];
   memset(buf,0,BUFSIZE); // safety for string functions in IsValidReset
-  TCHAR *c=buf;
   do {
     unsigned int dwRead=0;
     // We are working in non-blocking mode
     if(m_Socket.Ok()){
-      if(!m_Socket.Peek(dwRead)||!m_Socket.recv(c,MIN(dwRead,(unsigned)BUFSIZE-(c-buf)))){
+      if(!m_Socket.Peek(dwRead)||!m_Socket.recv(buf,MIN(dwRead,BUFSIZE))){
         break;
       }
-    } else if (!m_Serial.Read(c,BUFSIZE-(c-buf),dwRead)){
+    } else if (!m_Serial.Read(buf,BUFSIZE,dwRead)){
       m_Serial.ClearError();
-      c=buf;
+      continue;
     } 
     if(dwRead>0){
-      c[dwRead]=_TCHAR('\0');
-      {
-        String str;
-        for(const TCHAR *t=c;*t;t++){
-          if(_istprint(*t)){
-            str+=*t;
-          }
-        }
-        ResetLog(str);
-      }
+      buf[dwRead]=_TCHAR('\0');
       
-      for(int i=dwRead-1;i>=0;--i){
-        if(c[i]<0x20 || c[i]>=0x7f){
-          // Control character - assume nothing up to this is of interest
-          i++;
-          dwRead-=i;
-          memmove(c,c+i,dwRead);
-          break;
+      // Remove unprintable characters
+      String str;
+      for(const TCHAR *t=buf;*t;t++){
+        if(_istprint(*t)){
+          str+=*t;
         }
       }
-      c+=dwRead;
-      if(IsValidReset((void *)buf)){
-        ResetLog(_T("\n>>> Valid reset determined\n"));
+
+      if(m_pfnReset){
+        ENTERCRITICAL;
+        m_pfnReset(m_pfnResetparam,str);
+        LEAVECRITICAL;
+      }
+
+      ResetLog(str);
+      m_strResetOutput+=str;
+
+      if(IsValidReset()){
         break;
       }
-    } else { // Nothing read
-      Sleep(500);
+//    } else { // Nothing read
+//      CeCosThreadUtils::Sleep(50);
     }
   } while (0==m_tResetOccurred || Now()-m_tResetOccurred<m_nReadTimeout);
-  m_strResetOutput=buf;
-  delete [] buf;
-  if(0==m_strResetOutput.GetLength()){
-    ResetLog(_T("\n>>> No response from board\n"));
+
+  if(0==m_strResetOutput.size()){
+    ResetLog(_T("No response from board"));
+  } else {
+    if(m_pfnReset){
+      ENTERCRITICAL;
+      m_pfnReset(m_pfnResetparam,_T("\n"));
+      LEAVECRITICAL;
+    }
+    TRACE(_T("%s"),(LPCTSTR)m_strResetOutput);
   }
 }
 
 bool CResetAttributes::Reset(Action action,bool bCheckOutput)
 {
+  m_tResetOccurred=0;
   m_strResetOutput=_T("");
   bool rc=false;
-  CeCosTestSocket sock;
-  time_t ltime;
-  time(&ltime);
-  struct tm *now=localtime( &ltime );
+  CeCosSocket sock;
   String strStatus;
-
+  strStatus.Format(_T("Reset target using %s %s port=%s(%d) read timeout=%d delay=%d"),
+    (LPCTSTR)m_strHostPort,(LPCTSTR)m_strControl, 
+    (LPCTSTR)m_strAuxPort, m_nBaud, m_nReadTimeout, m_nDelay);
   if(bCheckOutput){
-    strStatus.Format(_T(">>> Reset target using %s %s port=%s(%d) read timeout=%d delay=%d [%02d:%02d:%02d]\n"),
-      (LPCTSTR)m_strHostPort,(LPCTSTR)m_strControl, (LPCTSTR)m_strAuxPort, m_nBaud, m_nReadTimeout, m_nDelay,
-      now->tm_hour,now->tm_min,now->tm_sec);
-  } else {
-    strStatus.Format(_T(">>> Reset target using %s %s delay=%d [%02d:%02d:%02d]\n"),
-      (LPCTSTR)m_strHostPort,(LPCTSTR)m_strControl, m_nDelay,
-      now->tm_hour,now->tm_min,now->tm_sec);
+    strStatus+=_T(" expect(");
+    for(unsigned int i=0;i<m_arValidResetStrings.size();i++){
+      if(i>0){
+        strStatus+=_TCHAR(',');
+      }
+      strStatus+=m_arValidResetStrings[i];
+    }
+    strStatus+=_T(")");
   }
   ResetLog(strStatus);
 
   // Open up communication to port whence we read the board startup
   bool bThreadDone=false;
-  bCheckOutput&=(m_strAuxPort.GetLength()>0);
+  bCheckOutput&=(m_strAuxPort.size()>0);
   if(bCheckOutput){
     TRACE(_T("Opening %s\n"),(LPCTSTR)m_strAuxPort);
-    String strHost;
-    int nPort;
-    if(CeCosTestSocket::ParseHostPort(m_strAuxPort,strHost,nPort)){
+    if(CeCosSocket::IsLegalHostPort(m_strAuxPort)){
       // tcp/ip port
-      if(!m_Socket.Connect(strHost,nPort,m_nReadTimeout)){
-        String str;
-        str.Format(_T("Failed to open %s - %s\n"),(LPCTSTR)m_strAuxPort,(LPCTSTR)m_Socket.SocketErrString());
-        ResetLog(str);
+      if(!m_Socket.Connect(m_strAuxPort,m_nReadTimeout)){
+        ResetLog(String::SFormat(_T("Failed to open %s - %s"),(LPCTSTR)m_strAuxPort,(LPCTSTR)m_Socket.SocketErrString()));
         return false;
       }
     } else {
@@ -165,49 +178,35 @@ bool CResetAttributes::Reset(Action action,bool bCheckOutput)
       if(m_Serial.Open(m_strAuxPort,m_nBaud)){
         m_Serial.Flush();
       } else {
-        String str;
-        str.Format(_T("Failed to open comms port %s - %s\n"),(LPCTSTR)m_strAuxPort,(LPCTSTR)m_Serial.ErrString());
-        ResetLog(str);
+        ResetLog(String::SFormat(_T("Failed to open comms port %s - %s"),(LPCTSTR)m_strAuxPort,(LPCTSTR)m_Serial.ErrString()));
         return false;
       }
     }
     CeCosThreadUtils::RunThread(SSuckThreadFunc,this,&bThreadDone,_T("SSuckThreadFunc"));
   } else {
-    ResetLog(_T(">>> [not checking output]\n"));
+    ResetLog(_T("[not checking output]"));
   }
   
-  String strHost;
-  int nPort;
   // This will be true if we need to talk to a reset server, false to talk down a local port
-  bool bRemote=CeCosTestSocket::ParseHostPort(m_strHostPort,strHost,nPort);
+  bool bRemote=CeCosSocket::IsLegalHostPort(m_strHostPort);
   if(bRemote){
-    if(sock.Connect(strHost,nPort,10*1000)){
-      m_tResetOccurred=0;
+    if(sock.Connect(m_strHostPort,10*1000)){
       // Write the message to the socket
-      String strCmd;
       int nDelay=(action==ON_OFF || action==OFF_ON)?m_nDelay:0;
-      strCmd.Format(_T("-Control=%s -Action=%d -Delay=%d"),(LPCTSTR)m_strControl,action,nDelay);
-      TRACE(_T("-Control=%s -Action=%d -Delay=%d"),(LPCTSTR)m_strControl,action,0);
-      if(sock.sendString(strCmd,_T("Reset control codes"), 10*1000)){
+      TRACE(_T("-Control=%s -Action=%d -Delay=%d"),(LPCTSTR)m_strControl,action,nDelay);
+      if(sock.sendString(String::SFormat(_T("-Control=%s -Action=%d -Delay=%d"),(LPCTSTR)m_strControl,action,nDelay),_T("Reset control codes"), 10*1000)){
         // Wait for an acknowledgement
         String strResponse;
-        if(sock.recvString(strResponse, _T("Response"), 20*1000)){
-          rc=(0==strResponse.GetLength());
+        if(sock.recvString(strResponse, _T("Response"), nDelay+20*1000)){
+          rc=(0==strResponse.size());
           if(!rc && m_pfnReset){
-            String strMsg;
-            strMsg.Format(_T("Reset server reports error '%s'\n"),(LPCTSTR)strResponse);
-            ResetLog(strMsg);
+            ResetLog(String::SFormat(_T("Reset server reports error '%s'"),(LPCTSTR)strResponse));
           }
         } else {
-          String str;
-          str.Format(_T(">>> Failed to read response from reset server %s - %s\n"),(LPCTSTR)m_strHostPort,(LPCTSTR)sock.SocketErrString());
-          ResetLog(str);
+          ResetLog(String::SFormat(_T("Failed to read response from reset server %s - %s"),(LPCTSTR)m_strHostPort,(LPCTSTR)sock.SocketErrString()));
         }
       } else {
-        String str;
-        str.Format(_T(">>> Failed to contact reset server %s - %s\n"),(LPCTSTR)m_strHostPort,(LPCTSTR)sock.SocketErrString());
-        ResetLog(str);
-        ResetLog(_T(">>> Failed to contact reset server\n"));
+        ResetLog(String::SFormat(_T("Failed to contact reset server %s - %s"),(LPCTSTR)m_strHostPort,(LPCTSTR)sock.SocketErrString()));
       }
       m_tResetOccurred=Now();
       if(bCheckOutput){
@@ -216,14 +215,11 @@ bool CResetAttributes::Reset(Action action,bool bCheckOutput)
           m_tResetOccurred=Now()-m_nReadTimeout;
         }
         CeCosThreadUtils::WaitFor(bThreadDone); // do not apply a timeout - the thread has one
-        rc=IsValidReset((void *)(LPCTSTR)m_strResetOutput);
-        ResetLog(rc?_T(">>> Reset output valid\n"):_T("!!! Reset output invalid\n"));
+        rc=IsValidReset();
+        ResetLog(rc?_T("Reset output valid"):_T("Reset output INVALID"));
       } 
     } else {
-      String str;
-      str.Format(_T(">>> Failed to contact reset server %s - %s\n"),(LPCTSTR)m_strHostPort,(LPCTSTR)sock.SocketErrString());
-      ResetLog(str);
-      ResetLog(_T(">>> Failed to contact reset server\n"));
+      ResetLog(String::SFormat(_T("Failed to contact reset server %s - %s"),(LPCTSTR)m_strHostPort,(LPCTSTR)sock.SocketErrString()));
     }
   } else {
     // Sending something locally
@@ -232,8 +228,8 @@ bool CResetAttributes::Reset(Action action,bool bCheckOutput)
     m_Serial.Write((void *)(LPCTSTR)m_strControl,1,nWritten);
     if(bCheckOutput){
       CeCosThreadUtils::WaitFor(bThreadDone);  // do not apply a timeout - the thread has one
-      rc=IsValidReset((void *)(LPCTSTR)m_strResetOutput);
-      ResetLog(rc?_T(">>> Reset output valid\n"):_T("!!! Reset output invalid\n"));
+      rc=IsValidReset();
+      ResetLog(rc?_T("Reset output valid"):_T("Reset output INVALID"));
     }
   }
 
@@ -245,6 +241,8 @@ bool CResetAttributes::Reset(Action action,bool bCheckOutput)
   return rc && bCheckOutput;
 }
 
+// We expect to be passed a string that starts with "xxx(yyy)"
+// and the task is to extract xxx into strID and yyy into strArg
 const TCHAR *CResetAttributes::GetIdAndArg (LPCTSTR psz,String &strID,String &strArg)
 {
   const TCHAR *cEnd=_tcschr(psz,_TCHAR('('));
@@ -267,45 +265,18 @@ const TCHAR *CResetAttributes::GetIdAndArg (LPCTSTR psz,String &strID,String &st
   return 0;
 }
 
-int CResetAttributes::GetArgs(LPCTSTR psz,StringArray &ar)
-{
-  ar.clear();
-  if(0==*psz){
-    return 0;
-  } else {
-    String str;
-    for(const TCHAR *c=psz;*c;c++){
-      if(_TCHAR(',')==*c){
-        ar.push_back(str);
-        str=_T("");
-      } else {
-        str+=*c;
-      }
-    }
-    ar.push_back(str);
-    return ar.size();
-  }
-}
-
-// m_str will hold something like
-//   3(off(ginga:5000,a1) delay(2000) on(,..com2,38400))
+// Do the reset
 CResetAttributes::ResetResult CResetAttributes::Reset (LogFunc *pfnLog, void *pfnLogparam,bool bCheckOnly)
 {
   m_pfnReset=pfnLog;
   m_pfnResetparam=pfnLogparam;
 
-  const TCHAR *c;
-  String str;
-  // Remove spaces
-  for(c=m_str;*c;c++){
-    if(!_istspace(*c)){
-      str+=*c;
-    }
-  }
+  // First we clean up the reset string so as to make subsequent parsing less complicated.
+  // Spaces have already been removed in the ctor
 
   // Check paren matching:
   int nNest=0;
-  for(c=str;*c;c++){
+  for(const TCHAR *c=m_str;*c;c++){
     if(_TCHAR('(')==*c){
       nNest++;
     } else if(_TCHAR(')')==*c){
@@ -321,16 +292,16 @@ CResetAttributes::ResetResult CResetAttributes::Reset (LogFunc *pfnLog, void *pf
     return INVALID_STRING;
   }
 
-  m_nReadTimeout=10*1000;
-  m_nBaud=38400;
-  m_nDelay=1000;
-  
-  return Parse(str,bCheckOnly);
+  return Parse(m_str,bCheckOnly);
 }
 
-// 3(off(ginga:5000,a1) delay(2000) on(,..com2,38400))
+// This function parses the reset string, whose form is something like:
+//     expect($T05) 3(off(ginga:5000,a1) delay(2000) on(ginga:5000,a1,com1,38400,10000))
+// It is recursive (which is another reason elementary syntax checking was carried out above)
+// and calls itself to perform repeats [e.g. 3(...)]
 CResetAttributes::ResetResult CResetAttributes::Parse (LPCTSTR psz,bool bCheckOnly)
 {
+  enum {ARGSEP=_TCHAR(',')};
   bool bCheck=false;
   for(const TCHAR *c=psz;*c;){
     String strID,strArg;
@@ -341,6 +312,7 @@ CResetAttributes::ResetResult CResetAttributes::Parse (LPCTSTR psz,bool bCheckOn
     }
 
     if(isdigit(*(LPCTSTR)strID)){
+      // Process a repeat-until-reset.  Syntax is n(resetstring)
       int nRepeat=_ttoi(strID);
       if(0==nRepeat){
         ResetLog(_T("Invalid reset string"));
@@ -356,23 +328,30 @@ CResetAttributes::ResetResult CResetAttributes::Parse (LPCTSTR psz,bool bCheckOn
           }
         }
       }
+    } else if (_T("expect")==strID) {
+      //   Expected string(s).  e.g. expect(str1,str2,...).
+      strArg.Chop(m_arValidResetStrings,ARGSEP,true);
     } else if (_T("port")==strID) {
+      // Port information.      e.g. port(com1,38400,1000)
+      // This information will apply to all subsequent actions until overwritten.
+      // Specifically args are:
       //   0. Port
       //   1. Baud
-      //   2. Timeout
+      //   2. Read timeout
       StringArray ar;
-      int nArgs=GetArgs(strArg,ar);
-      if(nArgs>0 && ar[0].GetLength()){
+      int nArgs=strArg.Chop(ar,ARGSEP,true);
+      if(nArgs>0 && ar[0].size()){
         m_strAuxPort=ar[0];
       }
-      if(nArgs>1 && ar[1].GetLength()){
+      if(nArgs>1 && ar[1].size()){
         m_nBaud=_ttoi(ar[1]);
       }
-      if(nArgs>2 && ar[2].GetLength()){
+      if(nArgs>2 && ar[2].size()){
         m_nReadTimeout=_ttoi(ar[2]);
       }
     } else if (_T("off")==strID || _T("on")==strID || _T("on_off")==strID || _T("off_on")==strID) {
-      // args are:
+      // Action information.      e.g. off(ginga:500,A4,com1,38400,10000,1000)
+      // Specifically args are:
       //   0. Reset host:port
       //   1. Control string
       //   2. Port
@@ -380,27 +359,27 @@ CResetAttributes::ResetResult CResetAttributes::Parse (LPCTSTR psz,bool bCheckOn
       //   4. Read timeout
       //   5. Delay
       StringArray ar;
-      int nArgs=GetArgs(strArg,ar);
-      if(nArgs>0 && ar[0].GetLength()){
-        m_strHostPort=ar[0];
+      int nArgs=strArg.Chop(ar,ARGSEP,true);
+      if(nArgs>0 && ar[0].size()){
+        m_strHostPort=ar[0];  
       }
-      if(nArgs>1 && ar[1].GetLength()){
+      if(nArgs>1 && ar[1].size()){
         m_strControl=ar[1];
       }
-      if(nArgs>2 && ar[2].GetLength()){
+      if(nArgs>2 && ar[2].size()){
         m_strAuxPort=ar[2];
       }
-      if(nArgs>3 && ar[3].GetLength()){
+      if(nArgs>3 && ar[3].size()){
         m_nBaud=_ttoi(ar[3]);
       }
-      if(nArgs>4 && ar[4].GetLength()){
+      if(nArgs>4 && ar[4].size()){
         m_nReadTimeout=_ttoi(ar[4]);
       }
-      if(nArgs>5 && ar[5].GetLength()){
+      if(nArgs>5 && ar[5].size()){
         m_nDelay=_ttoi(ar[5]);
       }
 
-      if(0==m_strHostPort.GetLength()){
+      if(0==m_strHostPort.size()){
         ResetLog(_T("Failed to specify reset host:port"));
         return INVALID_STRING;
       }
@@ -421,61 +400,42 @@ CResetAttributes::ResetResult CResetAttributes::Parse (LPCTSTR psz,bool bCheckOn
       }
       bCheck ^= 1;
     } else if (_T("delay")==strID) {
-      TRACE(_T("Sleep %d\n"),_ttoi(strArg));
+      // Delay for a given time right now.      e.g. delay(1000)
+      // Specifically args are:
+      //   0. msec to delay
+      TRACE(_T("CeCosThreadUtils::Sleep %d\n"),_ttoi(strArg));
       if(!bCheckOnly){
-        Sleep(_ttoi(strArg));
+        CeCosThreadUtils::Sleep(_ttoi(strArg));
       }
     } else {
-      ResetLog(_T("Unrecognized command"));
+      ResetLog(String::SFormat(_T("Unrecognized command '%s'"),(LPCTSTR)strID));
       return INVALID_STRING;
     }
   }
-  ResetLog(_T("!!! Target reset not verified\n"));
+  ResetLog(_T("Target reset not verified"));
   return NOT_RESET;
 }
 
+// Log some output to the reset log function.
 void CResetAttributes::ResetLog(LPCTSTR psz)
 {
   if(m_pfnReset){
     ENTERCRITICAL;
-    m_pfnReset(m_pfnResetparam,psz);
+    m_pfnReset(m_pfnResetparam,String::SFormat(_T("%s >>> %s\n"),(LPCTSTR)CeCosTrace::Timestamp(),psz));
     TRACE(_T("%s"),psz);
     LEAVECRITICAL;
   }
 }
 
-// This function determines whether the board startup has all that is required
-// It is a hack because it has hardwired knowledge of what boards say at startup time
-bool CALLBACK CResetAttributes::IsValidReset (void *pParam)
+bool CResetAttributes::IsValidReset()
 {
-  bool rc=false;
-  LPCTSTR pszBuf=(LPCTSTR)pParam;
-  
-  // Look for $T or $S
-  LPCTSTR pcTpkt=_tcsstr(pszBuf,_T("$T"));
-  if(0==pcTpkt){
-    pcTpkt=_tcsstr(pszBuf,_T("$S"));
+  unsigned int n=0;
+  ENTERCRITICAL;
+  for(int i=m_arValidResetStrings.size()-1;i>=0;--i){
+    if(_tcsstr(m_strResetOutput,m_arValidResetStrings[i])){
+      n++;
+    }
   }
-  
-  if(pcTpkt){
-    // T packet ends with #hh
-    LPCTSTR d=_tcschr(pcTpkt,_TCHAR('#'));
-    if(d && d[1] && d[2]){
-      rc=true;
-    }
-  } else if (_tcsstr(pszBuf,_T("cygmon> "))) {
-    rc=true;
-  } else {
-    LPCTSTR pBootp=_tcsstr(pszBuf,_T("BOOTP got "));
-    if(pBootp){
-      int i1,i2,i3,i4;
-      rc=(4==_stscanf(pBootp+10,_T("%d.%d.%d.%d"),&i1,&i2,&i3,&i4));
-    }
-  } 
-  return rc;
-}
-
-bool CResetAttributes::IsValid()
-{
-  return INVALID_STRING!=Reset (0,0,true);
+  LEAVECRITICAL;
+  return n==m_arValidResetStrings.size();
 }

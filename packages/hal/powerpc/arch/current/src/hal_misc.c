@@ -226,25 +226,26 @@ hal_default_decrementer_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 //---------------------------------------------------------------------------
 // Idle thread action
 
+externC bool hal_variant_idle_thread_action(cyg_uint32);
+
 void
 hal_idle_thread_action( cyg_uint32 count )
 {
+    // Execute variant idle thread action, while allowing it to control
+    // whether to run any of the architecture action code.
+    if (!hal_variant_idle_thread_action(count))
+        return;
+
 #if 0
-#ifdef CYGPKG_HAL_POWERPC_MPC860
-    register cyg_uint32 result;
+    do {
+        register cyg_uint32 dec;
 
-    cyg_uint32 *psivec  = (cyg_uint32*)CYGARC_REG_IMM_SIVEC ;
-    cyg_uint32 *psimask = (cyg_uint32*)CYGARC_REG_IMM_SIMASK;
-    cyg_uint32 *psipend = (cyg_uint32*)CYGARC_REG_IMM_SIPEND;
-    cyg_uint16 *ptbscr =  (cyg_uint16*)CYGARC_REG_IMM_TBSCR;
-
-    asm volatile(
-        "mfdec  %0;"
-        : "=r"(result)
-        );
-    diag_printf( "Dec %08x, TBSCR %04x, vec %d: sivec %08x, simask %08x, sipend %08x\n",
-          result, (cyg_uint32)(*ptbscr), (*psivec)>>26, *psivec,    *psimask,    *psipend   );
-#endif
+        asm volatile(
+            "mfdec  %0;"
+            : "=r"(dec)
+            );
+        diag_printf( "Decrementer %08x\n", dec);
+    } while (0);
 #endif
 }
 
@@ -291,16 +292,6 @@ hal_enable_caches(void)
     HAL_ICACHE_ENABLE();
     HAL_DCACHE_ENABLE();
 #endif
-#endif
-
-#ifdef CYGPKG_HAL_POWERPC_MPC8xx
-    // Disable serialization
-    {
-        cyg_uint32 ictrl;
-        CYGARC_MFSPR (ICTRL, ictrl);
-        ictrl |= ICTRL_NOSERSHOW;
-        CYGARC_MTSPR (ICTRL, ictrl);
-    }
 #endif
 }
 

@@ -47,7 +47,9 @@ CPlatformDialog::CPlatformDialog(CWnd* pParent /*=NULL*/)
 	m_strPlatform=_T("");
 	m_strPrefix=_T("");
 	m_strGDB=_T("");
-	m_nType = 0;
+	m_strInferior = _T("");
+	m_strPrompt = _T("");
+	m_bServerSideGdb = FALSE;
 	//}}AFX_DATA_INIT
 }
 
@@ -59,7 +61,9 @@ void CPlatformDialog::DoDataExchange(CDataExchange* pDX)
   DDX_Text(pDX, IDC_TT_NEW_PLATFORM, m_strPlatform);
   DDX_Text(pDX, IDC_TT_NEW_PLATFORM_PREFIX, m_strPrefix);
   DDX_Text(pDX, IDC_TT_NEW_PLATFORM_GDB, m_strGDB);
-	DDX_CBIndex(pDX, IDC_TYPE_COMBO, m_nType);
+	DDX_Text(pDX, IDC_INFERIOR, m_strInferior);
+	DDX_Text(pDX, IDC_PROMPT, m_strPrompt);
+	DDX_Check(pDX, IDC_SERVER_SIDE_GDB, m_bServerSideGdb);
 	//}}AFX_DATA_MAP
 }
 
@@ -76,15 +80,17 @@ END_MESSAGE_MAP()
 
 BOOL CPlatformDialog::OnInitDialog()
 {
+  m_strGDB.Replace(_T(";"),_T("\r\n"));
   CeCosDialog::OnInitDialog();
+
   SetWindowText(m_strCaption);
   if(!m_strPlatform.IsEmpty()){
     SetDlgItemText(IDC_TT_NEW_PLATFORM,m_strPlatform);
     GetDlgItem(IDC_TT_NEW_PLATFORM)->EnableWindow(false);
   }
   CMapStringToPtr map;
-  for(unsigned int i=0;i<CeCosTest::TargetTypeMax();i++){
-    map.SetAt(CeCosTest::Target(i).Prefix(),this);
+  for(unsigned int i=0;i<CeCosTestPlatform::Count();i++){
+    map.SetAt(CeCosTestPlatform::Get(i)->Prefix(),this);
   }
   for(POSITION pos = map.GetStartPosition(); pos != NULL; ){
     void *p;
@@ -108,4 +114,11 @@ void CPlatformDialog::OnChangeNewPlatform()
 {
   UpdateData(true);
   GetDlgItem(IDOK)->EnableWindow(!m_strPlatform.IsEmpty() && !m_strPrefix.IsEmpty());
+}
+
+void CPlatformDialog::OnOK() 
+{
+	UpdateData(TRUE);
+  m_strGDB.Replace(_T("\r\n"),_T(";"));
+	EndDialog(IDOK);
 }

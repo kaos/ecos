@@ -59,6 +59,7 @@ cdl_component CYGIMP_KERNEL_INTERRUPTS_DSRS {
 
     cdl_interface CYGINT_KERNEL_INTERRUPTS_DSRS {
         requires 1 == CYGINT_KERNEL_INTERRUPTS_DSRS
+        no_define
     }
 
     # NOTE: the choice of list vs table should not be two separate

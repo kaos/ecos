@@ -1,3 +1,25 @@
+2000-04-13 Simon FitzMaurice <sdf@redhat.co.uk>
+  * common\eCosSerial.cpp
+    common\eCosSocket.cpp
+    common\eCosTrace.cpp
+
+  Tidy up timestamp output.
+    
+2000-04-11 Simon FitzMaurice <sdf@redhat.co.uk>
+  * common\Collections.cpp
+    common\Collections.h
+    common\Properties.cpp
+    common\Properties.h
+    common\eCosStd.h
+    common\eCosThreadUtils.cpp
+    common\eCosThreadUtils.h
+    common\eCosTrace.cpp
+    common\eCosTrace.h
+    common\wcharunix.h
+    win32\CTUtils.cpp
+
+  General tidy-up.  
+
 2000-03-13 Simon FitzMaurice <sdf@redhat.co.uk>
   * common\Collections.cpp
     common\Properties.cpp

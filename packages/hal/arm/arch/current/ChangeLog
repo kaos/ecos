@@ -1,3 +1,11 @@
+2000-04-10  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/arm_stub.h (CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION): Only
+	use this complex version if we have
+	CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT ie. the place_break &c routines
+	existed anyway.  This is an artificial limitation, somewhat, but
+	not so painful in reality.
+
 2000-04-04  Jesper Skov  <jskov@redhat.com>
 
 	* src/context.S: 

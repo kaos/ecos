@@ -188,7 +188,7 @@ cdl_package CYGPKG_LIBM {
         }
 
         cdl_option CYGPKG_LIBM_CFLAGS_REMOVE {
-            display "Supressed compiler flags"
+            display "Suppressed compiler flags"
             flavor  data
             no_define
             default_value { "" }

@@ -45,6 +45,8 @@
 
 #include "stdafx.h"
 
+#define WM_SUBPROCESS (WM_USER+42)
+
 #include "BinDirDialog.h"
 #include "BuildOptionsDialog.h"
 #include "CTOptionsDialog.h"
@@ -155,10 +157,10 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
   ON_MESSAGE(WM_SUBPROCESS,OnSubprocess)
 	ON_UPDATE_COMMAND_UI(ID_TOOLS_ADMINISTRATION, OnUpdateToolsAdministration)
 	ON_WM_HELPINFO()
-  ON_WM_MENUCHAR()
-  ON_WM_TIMER()
-  ON_COMMAND(ID_HELP, OnHelp)
 	ON_COMMAND(ID_EDIT_PLATFORMS, OnEditPlatforms)
+  ON_WM_MENUCHAR()
+  ON_COMMAND(ID_HELP, OnHelp)
+	ON_WM_TIMER()
 	//}}AFX_MSG_MAP
   ON_NOTIFY(HHN_NAVCOMPLETE,  ID_HHNOTIFICATION, OnNavComplete)
   ON_NOTIFY(HHN_TRACK,        ID_HHNOTIFICATION, OnNavComplete)
@@ -183,8 +185,7 @@ CMainFrame::CMainFrame():
     m_strIdleMessage(),
     m_nThermometerMax(0),
     m_bFindInProgress(false),
-    m_bStatusBarCreated(false),
-    m_psp(NULL)
+    m_bStatusBarCreated(false)
 {
 }
 
@@ -443,17 +444,17 @@ void CMainFrame::OnUpdateViewOutput(CCmdUI* pCmdUI)
 	
 void CMainFrame::OnUpdateBuildConfigure(CCmdUI* pCmdUI) 
 {
-  pCmdUI->Enable(NULL==m_psp);
+  pCmdUI->Enable(!m_sp.ProcessAlive());
 }
 
 void CMainFrame::OnBuildStop() 
 {
-  m_psp->CygKill(); // leave the rest to OnSubprocessComplete()
+  m_sp.Kill(); // leave the rest to OnSubprocessComplete()
 }
 
 void CMainFrame::OnUpdateBuildStop(CCmdUI* pCmdUI) 
 {
-  pCmdUI->Enable(NULL!=m_psp);
+  pCmdUI->Enable(m_sp.ProcessAlive());
 }
 
 void CMainFrame::OnConfigurationBuild() 
@@ -467,46 +468,19 @@ DWORD CMainFrame::ThreadFunc(LPVOID param)
   CConfigToolDoc *pDoc=CConfigTool::GetConfigToolDoc();
   CString strCmd(_T("make -n "));
   strCmd+=pMain->m_strBuildTarget;
-  CSubprocess sp(true);;
-  sp.Run(GetCurrentThreadId(),strCmd, pDoc->BuildTree());
-  CString strBuf;
-  for(;;){
-    MSG msg;
-    switch(::GetMessage(&msg,NULL,WM_SUBPROCESS,WM_SUBPROCESS+1)){
-    case 0:
-      return 0; //WM_QUIT
-    case -1:
-      return 1; // error
-    case 1:
-      if(WM_SUBPROCESS==msg.message){
-        if(msg.lParam){
-          LPTSTR pszMsg=(LPTSTR)msg.lParam;
-          strBuf+=pszMsg;
-          deleteZA(pszMsg);
-        } else {
-#ifdef _DEBUG
-          CStdioFile file;
-          CFileName strFile(CFileName::GetTempPath()+_T("__ctbuffer.tmp"));
-          if(file.Open(strFile,CFile::modeCreate|CFile::modeWrite|CFile::typeText)){
-            file.WriteString(strBuf);
-            file.Close();
-          }
-#endif
+  SetCurrentDirectory(pDoc->BuildTree());
+  String strOut;
+  CSubprocess sp;
+  sp.Run(strOut,strCmd);
   // Don't attempt to change the thermometer itself - not safe from a separate thread
-          pMain->m_nThermometerMax=pDoc->GetCompilationCount(strBuf);
-        }
-      } else {
-        sp.CygKill();
-      }
-    }
-  }
+  pMain->m_nThermometerMax=pDoc->GetCompilationCount(strOut);
   
   return 0;
 }
 
 void CMainFrame::Build(const CString &strWhat/*=_T("")*/)
 {
-  ASSERT(NULL==m_psp);
+  ASSERT(!m_sp.ProcessAlive());
   CConfigToolDoc *pDoc=CConfigTool::GetConfigToolDoc();
   
   if(!arView[Output].bVisible){
@@ -538,14 +512,16 @@ void CMainFrame::Build(const CString &strWhat/*=_T("")*/)
       strMsg.Format(_T("Building %s"),strWhat);
       SetIdleMessage(strMsg);
       
-      m_psp=new CSubprocess(true); 
-      if(!m_psp->Run(m_hWnd, strCmd, pDoc->BuildTree())){ 
-        deleteZ(m_psp);
-      }
+      SetTimer(42,1000,0); // This timer checks for process completion
+      SetCurrentDirectory(pDoc->BuildTree());
+      m_sp.Run(SubprocessOutputFunc, this, strCmd, false);
       SetIdleMessage();
     }
   }
 }
+
+
+
 
 CConfigToolApp * CMainFrame::GetApp()
 {
@@ -619,8 +595,8 @@ void CMainFrame::OnDestroy()
     }
   }
   
-  if(NULL!=m_psp){
-    m_psp->CygKill();
+  if(m_sp.ProcessAlive()){
+    m_sp.Kill();
   }
   
   for(i=0;i<sizeof arView/sizeof arView[0];i++){
@@ -637,32 +613,32 @@ void CMainFrame::OnBuildTests()
 
 void CMainFrame::OnUpdateBuildTests(CCmdUI* pCmdUI) 
 {
-  pCmdUI->Enable(NULL==m_psp);
+  pCmdUI->Enable(!m_sp.ProcessAlive());
 }
 
 void CMainFrame::OnUpdateFileSave(CCmdUI* pCmdUI) 
 {
-  pCmdUI->Enable(NULL==m_psp);
+  pCmdUI->Enable(!m_sp.ProcessAlive());
 }
 
 void CMainFrame::OnUpdateFileSaveAs(CCmdUI* pCmdUI) 
 {
-  pCmdUI->Enable(NULL==m_psp);
+  pCmdUI->Enable(!m_sp.ProcessAlive());
 }
 
 void CMainFrame::OnUpdateFileOpen(CCmdUI* pCmdUI) 
 {
-  pCmdUI->Enable(NULL==m_psp);
+  pCmdUI->Enable(!m_sp.ProcessAlive());
 }
 
 void CMainFrame::OnUpdateFileNew(CCmdUI* pCmdUI) 
 {
-  pCmdUI->Enable(NULL==m_psp);
+  pCmdUI->Enable(!m_sp.ProcessAlive());
 }
 
 void CMainFrame::OnUpdateAppExit(CCmdUI* pCmdUI) 
 {
-  pCmdUI->Enable(NULL==m_psp);
+  pCmdUI->Enable(!m_sp.ProcessAlive());
 }
 
 void CMainFrame::OnSysCommand(UINT nID, LPARAM lParam) 
@@ -674,7 +650,7 @@ void CMainFrame::OnSysCommand(UINT nID, LPARAM lParam)
 void CMainFrame::OnUpdateConfigurationRefresh(CCmdUI* pCmdUI) 
 {
   CConfigToolDoc *pDoc=CConfigTool::GetConfigToolDoc();
-  pCmdUI->Enable(NULL==m_psp && !pDoc->BuildTree().IsEmpty());
+  pCmdUI->Enable(!m_sp.ProcessAlive() && !pDoc->BuildTree().IsEmpty());
 }
 
 void CMainFrame::OnConfigurationRefresh() 
@@ -712,7 +688,7 @@ void CMainFrame::OnSize(UINT nType, int cx, int cy)
 
 void CMainFrame::OnUpdateConfigurationRepository(CCmdUI* pCmdUI) 
 {
-  pCmdUI->Enable(NULL==m_psp);
+  pCmdUI->Enable(!m_sp.ProcessAlive());
 }
 
 void CMainFrame::OnWindowNext() 
@@ -791,7 +767,7 @@ void CMainFrame::OnBuildClean()
 
 void CMainFrame::OnUpdateBuildClean(CCmdUI* pCmdUI) 
 {
-  pCmdUI->Enable(NULL==m_psp);
+  pCmdUI->Enable(!m_sp.ProcessAlive());
 }
 
 void CMainFrame::OnToolsShell() 
@@ -880,11 +856,11 @@ bool CMainFrame::PrepareEnvironment(bool bWithBuildTools /* = true */)
 
 void CMainFrame::OnClose() 
 {
-  if(NULL!=m_psp){
+  if(m_sp.ProcessAlive()){
     if(IDNO==CUtils::MessageBoxFT(MB_YESNO|MB_DEFBUTTON2,_T("A build is in progress: exit anyway?"))){
       return;
     }
-    m_psp->CygKill();
+    m_sp.Kill();
   }
   SaveBarState(_T("DockState"));
   CFrameWnd::OnClose();
@@ -1073,7 +1049,7 @@ CFont &CMainFrame::GetPaneFont(PaneType pane)
 
 void CMainFrame::OnUpdateRunSim(CCmdUI* pCmdUI) 
 {
-  pCmdUI->Enable(!CConfigTool::GetConfigToolDoc()->InstallTree().IsEmpty() && NULL==m_psp);
+  pCmdUI->Enable(!CConfigTool::GetConfigToolDoc()->InstallTree().IsEmpty() && !m_sp.ProcessAlive());
 }
 
 void CMainFrame::SetFailRulePane(int nCount)
@@ -1199,34 +1175,28 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
   }
 }
 
-LRESULT CMainFrame::OnSubprocess(WPARAM, LPARAM lParam)
+void CALLBACK CMainFrame::SubprocessOutputFunc(void *pParam,LPCTSTR psz) 
 {
-  if(lParam){
-    LPTSTR psz=(LPTSTR)lParam;
+  LPTSTR pszCopy=new TCHAR[1+_tcslen(psz)];
+  _tcscpy(pszCopy,psz);
+  // Post a message to the mainframe because it wouldn't be safe to manipulate controls from a different thread
+  ((CMainFrame *)pParam)->PostMessage(WM_SUBPROCESS,(WPARAM)pszCopy);
+}
+
+LRESULT CMainFrame::OnSubprocess(WPARAM wParam, LPARAM)
+{
+  LPTSTR psz=(LPTSTR)wParam;
   CConfigToolDoc *pDoc=CConfigTool::GetConfigToolDoc();
   m_nLogicalLines+=pDoc->GetCompilationCount(psz);
   UpdateThermometer (m_nLogicalLines);
   CConfigTool::GetOutputView()->AddText(psz);
   deleteZA(psz);
-  } else {
-    ::PostThreadMessage(m_dwThreadId,WM_SUBPROCESS+1,0,0);
-  
-    TRACE(_T("m_nThermometerMax=%d m_nLogicalLines=%d\n"),m_nThermometerMax,m_nLogicalLines);
-    if(0==m_psp->GetExitCode){
-      UpdateThermometer(m_nThermometerMax);
-      Sleep(250); // Allow user to see it
-    }
-    UpdateThermometer(0);
-    SetThermometerMax(0);
-    deleteZ(m_psp);
-    return 0;
-  }
   return 0;
 }
 
 void CMainFrame::OnUpdateToolsAdministration(CCmdUI* pCmdUI) 
 {
-  pCmdUI->Enable(NULL==m_psp);
+  pCmdUI->Enable(!m_sp.ProcessAlive());
 }
 
 void CMainFrame::CygMount(TCHAR c)
@@ -1270,10 +1240,26 @@ void CMainFrame::OnEditPlatforms()
 {
   CPlatformsDialog dlg;	
   if(IDOK==dlg.DoModal()){
-    CeCosTest::RemoveAllPlatforms();
+    CeCosTestPlatform::RemoveAllPlatforms();
     for(unsigned int i=0;i<dlg.PlatformCount();i++){
-      CeCosTest::AddPlatform(*dlg.Platform(i));
+      CeCosTestPlatform::Add(*dlg.Platform(i));
     }
-    CeCosTest::SaveTargetInfo();
+    CeCosTestPlatform::Save();
   }
+}
+
+void CMainFrame::OnTimer(UINT nIDEvent) 
+{
+  if(!m_sp.ProcessAlive()){
+    KillTimer(nIDEvent);
+  
+    TRACE(_T("m_nThermometerMax=%d m_nLogicalLines=%d\n"),m_nThermometerMax,m_nLogicalLines);
+    if(0==m_sp.GetExitCode){
+      UpdateThermometer(m_nThermometerMax);
+      Sleep(250); // Allow user to see it
+    }
+    UpdateThermometer(0);
+    SetThermometerMax(0);
+  }
+	CFrameWnd::OnTimer(nIDEvent);
 }

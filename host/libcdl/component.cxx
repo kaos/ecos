@@ -119,18 +119,16 @@ CdlComponentBody::parse_component(CdlInterpreter interp, int argc, char** argv)
     CYG_REPORT_FUNCARG1("argc %d", argc);
     CYG_PRECONDITION_CLASSC(interp);
     
-    const char* diag_argv0      = CdlParse::get_tcl_cmd_name(argv[0]);
+    std::string  diag_argv0      = CdlParse::get_tcl_cmd_name(argv[0]);
 
     CdlLoadable  loadable       = interp->get_loadable();
     CdlPackage   package        = dynamic_cast<CdlPackage>(loadable);
     CdlContainer parent         = interp->get_container();       
     CdlToplevel  toplevel       = interp->get_toplevel();
-    std::string filename        = interp->get_filename();
     CYG_ASSERT_CLASSC(loadable);        // There should always be a loadable during parsing
     CYG_ASSERT_CLASSC(package);         // And packages are the only loadable for software CDL.
     CYG_ASSERT_CLASSC(parent);
     CYG_ASSERT_CLASSC(toplevel);
-    CYG_ASSERTC("" != filename);
 
     // The new component should be created and added to the package
     // early on. If there is a parsing error it will get cleaned up
@@ -145,20 +143,23 @@ CdlComponentBody::parse_component(CdlInterpreter interp, int argc, char** argv)
     
         // Currently there are no options. This may change in future.
         if (3 != argc) {
-            CdlParse::report_error(interp, std::string("Incorrect number of arguments to ") + diag_argv0 +
-                                         "\n    Expecting name and properties list.");
+            CdlParse::report_error(interp, "",
+                                   std::string("Incorrect number of arguments to `") + diag_argv0 +
+                                         "'\nExpecting name and properties list.");
             ok = false;
             goto done;
         }
         if (!Tcl_CommandComplete(argv[2])) {
-            CdlParse::report_error(interp, std::string("Invalid property list for cdl_component ") + argv[1]);
+            CdlParse::report_error(interp, "",
+                                   std::string("Invalid property list for cdl_component `") + argv[1] + "'.");
             ok = false;
             goto done;
         }
 
         if (0 != toplevel->lookup(argv[1])) {
-            CdlParse::report_error(interp, std::string("Component ") + argv[1] + " cannot be loaded.\n" +
-                                         "    The name is already in use.");
+            CdlParse::report_error(interp, "",
+                                   std::string("Component `") + argv[1] +
+                                   "' cannot be loaded.\nThe name is already in use.");
             ok = false;
         } else {
             new_component = new CdlComponentBody(argv[1]);
@@ -173,13 +174,13 @@ CdlComponentBody::parse_component(CdlInterpreter interp, int argc, char** argv)
             return TCL_OK;
         }
     } catch(std::bad_alloc e) {
-        interp->set_result(CdlParse::get_diagnostic_prefix(interp) + "Out of memory.");
+        interp->set_result(CdlParse::construct_diagnostic(interp, "internal error", "", "Out of memory"));
         result = TCL_ERROR;
     } catch(CdlParseException e) {
         interp->set_result(e.get_message());
         result = TCL_ERROR;
     } catch(...) {
-        interp->set_result(CdlParse::get_diagnostic_prefix(interp) + "internal error, unexpected C++ exception.");
+        interp->set_result(CdlParse::construct_diagnostic(interp, "internal error", "", "Unexpected C++ exception"));
         result = TCL_ERROR;
     }
     if (TCL_OK != result) {
@@ -194,7 +195,7 @@ CdlComponentBody::parse_component(CdlInterpreter interp, int argc, char** argv)
     // diagnostics. Also make it the new container.
     CdlNode      old_node       = interp->push_node(new_component);
     CdlContainer old_container  = interp->push_container(new_component);
-    std::string  old_filename;
+    std::string  old_context;
     CYG_ASSERTC(parent == old_container);
 
     // Declare these outside the scope of the try statement, to allow
@@ -262,10 +263,10 @@ CdlComponentBody::parse_component(CdlInterpreter interp, int argc, char** argv)
 
         // There should be at most one each of wizard and script.
         if (new_component->count_properties(CdlPropertyId_Wizard) > 1) {
-            CdlParse::report_error(interp, "A component should have at most one `wizard' property.");
+            CdlParse::report_error(interp, "", "A component should have at most one `wizard' property.");
         }
         if (new_component->count_properties(CdlPropertyId_Script) > 1) {
-            CdlParse::report_error(interp, "A component should have at most one `script' property.");
+            CdlParse::report_error(interp, "", "A component should have at most one `script' property.");
         }
 
         // If there is a script property, life gets more interesting.
@@ -277,13 +278,13 @@ CdlComponentBody::parse_component(CdlInterpreter interp, int argc, char** argv)
             // Try to locate this script.
             std::string script_filename = package->find_absolute_file(script_name, "cdl", false);
             if ("" == script_filename) {
-                CdlParse::report_error(interp, "Unable to find script " + script_name);
+                CdlParse::report_error(interp, "", "Unable to find script `" + script_name + "'.");
             } else {
                 // The script exists, so we need to try and execute it.
                 // The current container is still set correctly, but we need
                 // to change the filename and install a different set
                 // of commands.
-                old_filename = interp->push_filename(script_filename);
+                old_context = interp->push_context(script_filename);
                 new_commands.clear();
                 for (i = 0; 0 != script_commands[i].command; i++) {
                     new_commands.push_back(script_commands[i]);
@@ -291,25 +292,25 @@ CdlComponentBody::parse_component(CdlInterpreter interp, int argc, char** argv)
                 old_commands = interp->push_commands(new_commands);
                 result = interp->eval_file(script_filename, tcl_result);
                 interp->pop_commands(old_commands);
-                interp->pop_filename(old_filename);
+                interp->pop_context(old_context);
             }
         }
 
       done2:
         // Dummy command just to keep the compiler happy
-        filename = "";
+        old_context = "";
         
     } catch (std::bad_alloc e) {
         // Errors at this stage should be reported via Tcl, not via C++.
         // However there is no point in continuing with the parsing operation,
         // just give up.
-        interp->set_result(CdlParse::get_diagnostic_prefix(interp) + "Out of memory.");
+        interp->set_result(CdlParse::construct_diagnostic(interp, "internal error", "", "Out of memory"));
         result = TCL_ERROR;
     } catch (CdlParseException e) {
         interp->set_result(e.get_message());
         result = TCL_ERROR;
     } catch(...) {
-        interp->set_result(CdlParse::get_diagnostic_prefix(interp) + "internal error, unexpected C++ exception.");
+        interp->set_result(CdlParse::construct_diagnostic(interp, "internal error", "", "Unexpected C++ exception"));
         result = TCL_ERROR;
     }
 
@@ -425,13 +426,13 @@ CdlComponentBody::savefile_component_command(CdlInterpreter interp, int argc, ch
     try {
         
         if (3 != argc) {
-            CdlParse::report_error(interp, "Invalid cdl_component command in savefile, expecting two arguments.");
+            CdlParse::report_error(interp, "", "Invalid cdl_component command in savefile, expecting two arguments.");
         } else {
 
             CdlNode current_node = config->lookup(argv[1]);
             if (0 == current_node) {
                 // FIXME: save value in limbo
-                CdlParse::report_error(interp,
+                CdlParse::report_error(interp, "", 
                                        std::string("The savefile contains a cdl_component command for an unknown component `")
                                        + argv[1] + "'");
             } else {

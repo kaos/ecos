@@ -163,16 +163,16 @@ BOOL CUtils::StrToItemIntegerType(const CString & str,__int64 &d)
 
 const CString CUtils::IntToStr(__int64 d,bool bHex)
 {
-	CString str;
-	str.Format(bHex?_T("0x%08x"):_T("%d"),d);
-	return str;
+  CString s;
+  s.Format(bHex?_T("0x%08x"):_T("%d"),d);
+  return s;
 }
 
 const CString CUtils::DoubleToStr (double dValue)
 {
-	CString strValue;
-	strValue.Format (_T("%.*e"), DBL_DIG, dValue);
-	return strValue;
+  CString s;
+  s.Format (_T("%.*e"), DBL_DIG, dValue);
+  return s;
 }
 
 BOOL CUtils::StrToDouble (const CString & strValue, double &dValue)

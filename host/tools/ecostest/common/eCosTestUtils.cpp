@@ -41,9 +41,11 @@
 //####DESCRIPTIONEND####
 
 #include "eCosStd.h"
+#include "eCosSocket.h"
 #include "eCosTestUtils.h"
 #include "eCosThreadUtils.h"
 #include "eCosTrace.h"
+#include "TestResource.h"
 
 LPCTSTR  const CeCosTestUtils::Tail(LPCTSTR  const pszFile)
 {
@@ -53,42 +55,6 @@ LPCTSTR  const CeCosTestUtils::Tail(LPCTSTR  const pszFile)
   }
   return (0==pszTail)?pszFile:pszTail+1;
 }
-
-LPCTSTR CeCosTestUtils::HostName()
-{
-  static bool bFirstTime=true;
-  static String str;
-  static int nErr;
-  if(bFirstTime){
-    char szMyname[256];
-    nErr=gethostname(szMyname,sizeof szMyname);
-    bFirstTime=false;
-    if(0==nErr){
-      str=String::CStrToUnicodeStr(szMyname);
-    } else {
-      str=_T("");
-    }
-  }
-  return str;
-}
-
-LPCTSTR CeCosTestUtils::SimpleHostName()
-{
-  static bool bFirstTime=true;
-  static String str;
-  if(bFirstTime){
-    str=HostName();
-    // Remove all after a '.'
-    LPCTSTR c=_tcschr(str,_TCHAR('.'));
-    if(c){
-      str.SetLength(c-(LPCTSTR )str);
-    }
-    bFirstTime=false;
-  }
-  return str;
-}
-
-
 
 // File iterator.  Gets next file in directory, avoiding _T(".") and _T("..")
 bool CeCosTestUtils::NextFile (void *&pHandle,String &str)
@@ -147,19 +113,53 @@ void CeCosTestUtils::EndSearch (void *&pHandle)
   
 
 // deal with common command-line  actions
-bool CeCosTestUtils::CommandLine(int &argc,TCHAR **argv)
+bool CeCosTestUtils::CommandLine(int &argc,TCHAR **argv,bool bRequireResourceServer)
 {
+  LPCTSTR psz=_tgetenv(_T("RESOURCESERVER"));
+  if(psz && !CTestResource::SetResourceServer(psz)){
+    _ftprintf(stderr,_T("Illegal host:port '%s' defined in RESOURCESERVER environment variable\n"),psz);
+    return false;
+  }
+  
   for(int i=1;i<argc;i++){
     if(_TCHAR('-')==*argv[i]){
       if(0==_tcscmp(argv[i],_T("-v"))){
-        CeCosTrace ::EnableTracing(true);
+        CeCosTrace::EnableTracing((CeCosTrace::TraceLevel)MAX(CeCosTrace::TracingEnabled(),CeCosTrace::TRACE_LEVEL_TRACE));
+        // Shuffle the command line down to remove that which we have just seen:
+        for(TCHAR **a=argv+i;(a[0]=a[1]);a++);
+        argc--;i--; // counteract the increment
+      } else if(0==_tcscmp(argv[i],_T("-V"))){
+        CeCosTrace::EnableTracing((CeCosTrace::TraceLevel)MAX(CeCosTrace::TracingEnabled(),CeCosTrace::TRACE_LEVEL_VTRACE));
         // Shuffle the command line down to remove that which we have just seen:
         for(TCHAR **a=argv+i;(a[0]=a[1]);a++);
         argc--;i--; // counteract the increment
       } else if(0==_tcscmp(argv[i],_T("-o"))){
         if(i+1<argc){
           if(!CeCosTrace::SetOutput(argv[i+1])){
-            ERROR(_T("Failed to direct output to %s\n"),argv[i+1]);
+            _ftprintf(stderr,_T("Failed to direct output to %s\n"),argv[i+1]);
+          }
+          // Shuffle the command line down to remove that which we have just seen:
+          for(TCHAR **a=argv+i;(a[0]=a[2]);a++);
+          argc-=2;i-=2; // counteract the increment
+        } else {
+          return false;
+        }
+      } else if(0==_tcscmp(argv[i],_T("-O"))){
+        if(i+1<argc){
+          if(!CeCosTrace::SetError(argv[i+1])){
+            _ftprintf(stderr,_T("Failed to direct error to %s\n"),argv[i+1]);
+          }
+          // Shuffle the command line down to remove that which we have just seen:
+          for(TCHAR **a=argv+i;(a[0]=a[2]);a++);
+          argc-=2;i-=2; // counteract the increment
+        } else {
+          return false;
+        }
+      } else if(0==_tcscmp(argv[i],_T("-r"))){
+        if(i+1<argc){
+          if(!CTestResource::SetResourceServer(argv[i+1])){
+            _ftprintf(stderr,_T("Illegal host:port '%s'\n"),argv[i+1]);
+            return false;
           }
           // Shuffle the command line down to remove that which we have just seen:
           for(TCHAR **a=argv+i;(a[0]=a[2]);a++);
@@ -177,6 +177,92 @@ bool CeCosTestUtils::CommandLine(int &argc,TCHAR **argv)
       } 
     }
   }
+
+  if(!CeCosSocket::Init() || !CeCosTestPlatform::Load()){
+    return false;
+  }
+
+#ifndef _WIN32
+  sigset_t mask;
+  
+  // Clean out all the signals
+  sigemptyset(&mask);
+  
+  // Add our sigpipe
+  sigaddset(&mask, SIGPIPE);
+  
+  sigprocmask(SIG_SETMASK, &mask, NULL);
+
+#endif
+
+  if(CTestResource::ResourceServerSet()){
+    if(CTestResource::Load()){
+      _ftprintf(stderr,_T("Connected to resource server %s\n"),(LPCTSTR)CTestResource::GetResourceServer());
+    } else {
+      _ftprintf(stderr,_T("Can't load from resource server %s\n"),(LPCTSTR)CTestResource::GetResourceServer());
+      return false;
+    }
+  } else if (bRequireResourceServer) {
+    _ftprintf(stderr,_T("You must specify a resource server using either the -r switch or by setting the RESOURCESERVER environment variable\n"));
+    return false;
+  }
+
   return true;
+}
+
+void CeCosTestUtils::UsageMessage(bool bRequireResourceServer)
+{
+  _ftprintf(stderr,
+    _T("        -o file      : send standard output to named file\n")
+    _T("        -O file      : send standard error  to named file\n"));
+  if(bRequireResourceServer){
+    _ftprintf(stderr,
+    _T("        -r host:port : use this host:port as resourceserver [or set the RESOURCESERVER environment variable]\n")
+    );
+  }
+  _ftprintf(stderr,
+    _T("        -v           : vebose mode - trace to stderr\n")
+    _T("        -V           : very verbose mode - trace to stderr\n")
+    _T("        -version     : print a version string\n")
+  );
+}
+
+const String CeCosTestUtils::HomeFile (LPCTSTR pszFile)
+{
+  String strFile;
+#ifdef _WIN32
+  LPCTSTR psz=_tgetenv(_T("HOMEDRIVE"));
+  if(psz){
+    strFile=psz;
+    psz=_tgetenv(_T("HOMEPATH"));
+    if(psz){
+      strFile+=psz;
+    }
+    if(_TCHAR('\\')!=strFile[strFile.size()-1]){
+      strFile+=_TCHAR('\\');
+    }
+    strFile+=pszFile;
+  }
+#else // UNIX
+  LPCTSTR psz=_tgetenv(_T("HOME"));
+  if(psz){
+    strFile=psz;
+    strFile+=_TCHAR('/');
+    strFile+=pszFile;
+  }
+#endif
+  return strFile;
+}
+
+bool CeCosTestUtils::Exists(LPCTSTR pszFile)
+{
+  struct _stat buf;
+  return (0==_tstat(pszFile,&buf));
+}
+
+bool CeCosTestUtils::IsFile(LPCTSTR pszFile)
+{
+  struct _stat buf;
+  return 0==_tstat(pszFile,&buf) && 0==(S_IFDIR&buf.st_mode);
 }
 

@@ -55,6 +55,20 @@
 
 #include <cyg/hal/sh_sci.inl>
 
+//-----------------------------------------------------------------------------
+
+#if defined(CYGSEM_HAL_USE_ROM_MONITOR_GDB_stubs)
+
+#define CYG_HAL_DIAG_GDB
+
+#elif defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
+
+#define CYG_HAL_DIAG_GDB
+
+#endif
+
+//-----------------------------------------------------------------------------
+
 void hal_diag_init(void)
 {
     hal_sci_init_serial();
@@ -79,7 +93,7 @@ externC void cyg_hal_user_break(CYG_ADDRWORD *regs);
 void 
 hal_diag_write_char(char c)
 {
-
+#ifdef CYG_HAL_DIAG_GDB
     static char line[100];
     static int pos = 0;
 
@@ -149,8 +163,10 @@ hal_diag_write_char(char c)
 #else
         HAL_RESTORE_INTERRUPTS(old);
 #endif
-        
     }
+#else // CYG_HAL_DIAG_GDB
+    hal_diag_write_char_serial(c);
+#endif
 }
 
 //-----------------------------------------------------------------------------

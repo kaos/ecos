@@ -28,7 +28,7 @@
 #include "stdafx.h"
 #include "TestToolRes.h"		// main symbols
 #include "LocalPropertiesDialog.h"
-#include "eCosTestSocket.h"
+#include "eCosSocket.h"
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -198,7 +198,7 @@ void CLocalPropertiesDialog::OnOK()
     return;
   }
   
-  if(!m_bSerial && !CeCosTestSocket::IsLegalHostPort(CeCosTestSocket::HostPort(m_strLocalTCPIPHost,m_nLocalTCPIPPort))){
+  if(!m_bSerial && !CeCosSocket::IsLegalHostPort(CeCosSocket::HostPort(m_strLocalTCPIPHost,m_nLocalTCPIPPort))){
     MessageBox(_T("Please provide a valid host/port combination for TCP/IP connection"));
   } else if (RESET_X10==m_nReset && m_strReset.IsEmpty()){
     MessageBox(_T("Please provide a valid reset string for X10 reset"));

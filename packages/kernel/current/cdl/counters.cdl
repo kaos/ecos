@@ -130,6 +130,7 @@ cdl_component CYGPKG_KERNEL_COUNTERS_CLOCK_OVERRIDE {
 
 cdl_interface CYGINT_KERNEL_COUNTERS {
     requires 1 == CYGINT_KERNEL_COUNTERS
+    no_define
 }
 
 # NOTE: these option should really be a single enum.

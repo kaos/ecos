@@ -116,16 +116,14 @@ CdlWizardBody::parse_wizard(CdlInterpreter interp, int argc, char** argv)
     CYG_PRECONDITION_CLASSC(interp);
 
     int         result          = TCL_OK;
-    const char* diag_argv0      = CdlParse::get_tcl_cmd_name(argv[0]);
+    std::string diag_argv0      = CdlParse::get_tcl_cmd_name(argv[0]);
 
     CdlLoadable  loadable       = interp->get_loadable();
     CdlContainer parent         = interp->get_container();       
     CdlToplevel  toplevel       = interp->get_toplevel();
-    std::string filename        = interp->get_filename();
     CYG_ASSERT_CLASSC(loadable);        // There should always be a loadable during parsing
     CYG_ASSERT_CLASSC(parent);
     CYG_ASSERT_CLASSC(toplevel);
-    CYG_ASSERTC("" != filename);
 
     // The new wizard should be created and added to the loadable
     // early on. If there is a parsing error it will get cleaned up
@@ -138,13 +136,13 @@ CdlWizardBody::parse_wizard(CdlInterpreter interp, int argc, char** argv)
     
         // Currently there are no command-line options. This may change in future.
         if (3 != argc) {
-            CdlParse::report_error(interp, std::string("Incorrect number of arguments to ") + diag_argv0 +
-                                   "\n    Expecting name and properties list.");
+            CdlParse::report_error(interp, "", std::string("Incorrect number of arguments to `") + diag_argv0 +
+                                   "'\nExpecting name and properties list.");
         } else if (!Tcl_CommandComplete(argv[2])) {
-            CdlParse::report_error(interp, std::string("Invalid property list for cdl_wizard ") + argv[1]);
+            CdlParse::report_error(interp, "", std::string("Invalid property list for cdl_wizard `") + argv[1]+ "'.");
         } else if (0 != toplevel->lookup(argv[1])) {
-            CdlParse::report_error(interp, std::string("Wizard ") + argv[1] + " cannot be loaded.\n" +
-                                         "    The name is already in use.");
+            CdlParse::report_error(interp, "", std::string("Wizard `") + argv[1] +
+                                   "' cannot be loaded.\nThe name is already in use.");
         } else {
             new_wizard = new CdlWizardBody(argv[1]);
             toplevel->add_node(loadable, parent, new_wizard);
@@ -199,19 +197,19 @@ CdlWizardBody::parse_wizard(CdlInterpreter interp, int argc, char** argv)
                 // are compulsory, and there should be at least one screen
                 // definition.
                 if (new_wizard->count_properties(CdlPropertyId_InitProc) > 1) {
-                    CdlParse::report_error(interp, "A wizard should have only one `init_proc' property.");
+                    CdlParse::report_error(interp, "", "A wizard should have only one `init_proc' property.");
                 }
                 if (new_wizard->count_properties(CdlPropertyId_DecorationProc) > 1) {
-                    CdlParse::report_error(interp, "A wizard should have only one `decoration_proc' property.");
+                    CdlParse::report_error(interp, "", "A wizard should have only one `decoration_proc' property.");
                 }
                 if (new_wizard->count_properties(CdlPropertyId_ConfirmProc) != 1) {
-                    CdlParse::report_error(interp, "A wizard should have one `confirm_proc' property.");
+                    CdlParse::report_error(interp, "", "A wizard should have one `confirm_proc' property.");
                 }
                 if (new_wizard->count_properties(CdlPropertyId_CancelProc) != 1) {
-                    CdlParse::report_error(interp, "A wizard should have one `cancel_proc' property.");
+                    CdlParse::report_error(interp, "", "A wizard should have one `cancel_proc' property.");
                 }
                 if (new_wizard->count_properties(CdlPropertyId_Screen) < 1) {
-                    CdlParse::report_error(interp, "A wizard should have at least one `screen' property.");
+                    CdlParse::report_error(interp, "", "A wizard should have at least one `screen' property.");
                 }
 
                 // It is necessary to check that all the screen properties have unique numbers
@@ -236,7 +234,7 @@ CdlWizardBody::parse_wizard(CdlInterpreter interp, int argc, char** argv)
                         if (num1 == num2) {
                             std::string tmp = "";
                             Cdl::integer_to_string(num1, tmp);
-                            CdlParse::report_error(interp, "Duplicate definition of screen " + tmp);
+                            CdlParse::report_error(interp, "", "Duplicate definition of screen `" + tmp + "'.");
                             break;
                         }
                     } 

@@ -43,8 +43,6 @@
 #define _ECOSTHREADUTILS_H
 #include "eCosStd.h"
 #include "Collections.h"
-#define ENTERCRITICAL {CeCosThreadUtils::CS c
-#define LEAVECRITICAL }
 
 #ifndef _WIN32 // UNIX
   #ifndef NO_THREADS
@@ -52,10 +50,15 @@
   #endif 
 #endif
 
+//=================================================================
+// This class handles threads in a host-independent manner.  
+// It also contains a few thread-related functions such as Sleep
+//=================================================================
+
 class CeCosThreadUtils {
 public:
+
 #ifdef _WIN32
-  static int CALLBACK FilterFunction(LPEXCEPTION_POINTERS p);
   typedef DWORD THREAD_ID;
 #else // UNIX
   #ifndef NO_THREADS
@@ -64,38 +67,48 @@ public:
     typedef pthread_t THREAD_ID;
   #endif
 #endif
-  static THREAD_ID GetThreadId();
+
+  static THREAD_ID GetThreadId(); // Get my current thread ID, mostly for debugging
   
+  // CS supports a single system-wide critical sections (recursive mutexes).
+  // You are expected to use macros ENTERCRITICAL and LEAVECRITICAL to use this class - these macros define
+  // a block containing a CS object, which has the effect of creating a critical section.
+  // Exit from the block (by whatever means, including an exception) causes the CS dtor
+  // to be called so as to release the section.
+
   class CS{
-    // p and q routines (process-local recursive mutexes)
+  public:
+    static bool InCriticalSection();     // This thread owns the critical section
+    CS();
+    virtual ~CS();
+  protected:
+    static int m_nCriticalSectionLock; // The number of times the recursive mutex has been locked.  Management of this allows us to avoid use of true recursive mutexes on UNIX.
+    static THREAD_ID nCSOwner;         // The thread owning the resource.
 #ifdef _WIN32
-    static CRITICAL_SECTION cs;
+    static CRITICAL_SECTION cs;        // The one and only critical section
     static bool bCSInitialized;
 #else // UNIX
     #ifndef NO_THREADS
-    // Static recursive mutex for unix critical section
-    static pthread_mutex_t cs;
+    static pthread_mutex_t cs;         // The one and only critical section
     #endif
 #endif
-    
-  public:
-    
-    static int m_nCriticalSectionLock;
-    static THREAD_ID nCSOwner;
-    
-    static int AtomicIncrement (int &n); // return old value
-    static int AtomicDecrement (int &n); // return old value
-    CS();
-    virtual ~CS();
   };
+
+  #define ENTERCRITICAL {CeCosThreadUtils::CS c
+  #define LEAVECRITICAL }
+  
+  static int AtomicIncrement (int &n); // return old value
+  static int AtomicDecrement (int &n); // return old value
+
   
   // Wait for this boolean to become true, subject to the given timeout
+  // If the timeout happens first, the return code will be false - otherwise true
   static bool WaitFor (bool &b, int dTimeout=0x7fffffff);
   
   ///////////////////////////////////////////////////////////////////////////
   // Define the characteristics of a callback procedure:
   
-  // A callback procedure:
+  // A callback procedure, used both for thread entry points and thread completion callbacks
   typedef void (CALLBACK CallbackProc)(void *);
 
   // Run a thread: pThreadFunc is the entry point (passed pParam).  No notification of completion.
@@ -105,22 +118,21 @@ public:
   // Run a thread, calling the callback on completion
   static bool RunThread(CallbackProc *pThreadFunc, void *pParam, CallbackProc *pCompletionFunc, LPCTSTR pszName=_T("")) { return RunThread(pThreadFunc,pParam,pCompletionFunc,pParam,pszName); }
   
+  static void Sleep (int nMsec);
+
 protected:
 
-  // If m_pProc is non-zero then it is called
-  // If m_pProc is 0 and m_pParam is non-0 then the callback sets the boolean whose address is held in m_pParam
-  // If m_pProc is 0 and m_pParam is 0 then the callback is "blocking"
-  //bool IsBlocking() const { return 0==m_pProc && 0==m_pParam; }
-  
   // Run a thread: arbitrary callbcak
   static bool RunThread(CallbackProc *pThreadFunc, void *pParam, CallbackProc *pCompletionFunc, void *pCompletionParam, LPCTSTR pszName);
   
+  // This is the information that is passed to the host-specific thread proc.  It is simply enough to call the thread entry point and
+  // call the callback (or set the boolean) at the end.
   struct ThreadInfo {
-    CallbackProc *pThreadFunc;
-    void         *pThreadParam;
-    CallbackProc *pCompletionFunc;  // Call this function
-    void         *pCompletionParam; // With this parameter
-    String       strName;
+    CallbackProc *pThreadFunc;      // The thread proc is this function
+    void         *pThreadParam;     //            - called with this parameter
+    CallbackProc *pCompletionFunc;  // At the end - call this function
+    void         *pCompletionParam; //              with this parameter
+    String       strName;           // For debugging
     ThreadInfo (CallbackProc *_pThreadFunc,void *_pThreadParam,CallbackProc *_pCompletionFunc,void  *_pCompletionParam,LPCTSTR pszName) :
       pThreadFunc(_pThreadFunc),
       pThreadParam(_pThreadParam),
@@ -129,9 +141,10 @@ protected:
       strName(pszName){}
   };
 
-  // Result type of the thread function
+  // THREADFUNC is the result type of the thread function
   #ifdef _WIN32
     typedef unsigned long THREADFUNC; 
+    static int CALLBACK FilterFunction(LPEXCEPTION_POINTERS p);
   #else // UNIX
     typedef void * THREADFUNC;
   #endif

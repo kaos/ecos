@@ -87,17 +87,21 @@ BOOL CPlatformsDialog::OnInitDialog()
 
 	m_List.InsertColumn(0,_T("Target"));
   m_List.InsertColumn(1,_T("Prefix"));
-  m_List.InsertColumn(2,_T("GDB commands"));
-  m_List.InsertColumn(3,_T("Type"));
-  for(unsigned int i=0;i<CeCosTest::TargetTypeMax();i++){
-    Add(CeCosTest::Target(i));
+  m_List.InsertColumn(2,_T("Commands"));
+  m_List.InsertColumn(3,_T("Inferior"));
+  m_List.InsertColumn(4,_T("Prompt"));
+  m_List.InsertColumn(5,_T("ServerSideGdb"));
+  for(unsigned int i=0;i<CeCosTestPlatform::Count();i++){
+    Add(*CeCosTestPlatform::Get(i));
   }
   CRect rect;
   m_List.GetClientRect(rect);
-  m_List.SetColumnWidth(0,rect.Width()/4);
-  m_List.SetColumnWidth(1,rect.Width()/4);
-  m_List.SetColumnWidth(2,rect.Width()/4);
-  m_List.SetColumnWidth(3,rect.Width()/4);
+  m_List.SetColumnWidth(0,rect.Width()/6);
+  m_List.SetColumnWidth(1,rect.Width()/6);
+  m_List.SetColumnWidth(2,rect.Width()/6);
+  m_List.SetColumnWidth(3,rect.Width()/6);
+  m_List.SetColumnWidth(4,rect.Width()/6);
+  m_List.SetColumnWidth(5,rect.Width()/6);
 	
 	bool bSel=(NULL!=m_List.GetFirstSelectedItemPosition());
 	GetDlgItem(IDC_TT_MODIFY_PLATFORM)->EnableWindow(bSel);
@@ -115,7 +119,7 @@ void CPlatformsDialog::OnAddPlatform()
     fi.flags=LVFI_STRING;
     fi.psz=dlg.m_strPlatform;
     if(-1==m_List.FindItem(&fi)){
-      Add(CeCosTest::TargetInfo(dlg.m_strPlatform,dlg.m_strPrefix,dlg.m_nType,dlg.m_strGDB));
+      Add(CeCosTestPlatform(dlg.m_strPlatform,dlg.m_strPrefix,dlg.m_strPrompt,dlg.m_strGDB,dlg.m_bServerSideGdb,dlg.m_strInferior));  
     } else {
       MessageBox(_T("That platform name is already in use."));
     }
@@ -136,15 +140,16 @@ void CPlatformsDialog::OnDeletePlatform()
   }
 }
 
-void CPlatformsDialog::Add(const CeCosTest::TargetInfo &ti)
+void CPlatformsDialog::Add(const CeCosTestPlatform &ti)
 {
   int i=m_List.GetItemCount();
-  CeCosTest::TargetInfo *pti=new CeCosTest::TargetInfo(ti);
-  m_List.InsertItem(i,CeCosTest::Image(i));
-  m_List.SetItemText(i,1,pti->Prefix());
-  m_List.SetItemText(i,2,pti->GdbCmd());
-  m_List.SetItemText(i,3,arpszTypes[pti->Type()]);
-  m_arTargetInfo.Add(pti);
+  m_List.InsertItem(i,ti.Name());
+  m_List.SetItemText(i,1,ti.Prefix());
+  m_List.SetItemText(i,2,ti.GdbCmds());
+  m_List.SetItemText(i,3,ti.Inferior());
+  m_List.SetItemText(i,4,ti.Prompt());
+  m_List.SetItemText(i,5,ti.ServerSideGdb()?_T("y"):_T("n"));
+  m_arTargetInfo.Add(new CeCosTestPlatform(ti));
 }
 
 void CPlatformsDialog::OnDblclkPlatformList(NMHDR*, LRESULT* pResult) 
@@ -158,18 +163,22 @@ void CPlatformsDialog::OnModifyPlatform()
   POSITION pos = m_List.GetFirstSelectedItemPosition();
   if(pos){
     int nIndex= m_List.GetNextSelectedItem(pos);
-    CeCosTest::TargetInfo *pti=Platform(nIndex);
+    CeCosTestPlatform *pti=Platform(nIndex);
     CPlatformDialog dlg;
-    dlg.m_strPlatform=pti->Image();
+    dlg.m_strPlatform=pti->Name();
     dlg.m_strPrefix=pti->Prefix();
-    dlg.m_strGDB=pti->GdbCmd();
-    dlg.m_nType=pti->Type();
+    dlg.m_strGDB=pti->GdbCmds();
     dlg.m_strCaption=_T("Modify");
+    dlg.m_strPrompt=pti->Prompt();
+    dlg.m_bServerSideGdb=pti->ServerSideGdb();
+    dlg.m_strInferior=pti->Inferior();
     if(IDCANCEL!=dlg.DoModal()){
-      *pti=CeCosTest::TargetInfo(dlg.m_strPlatform,dlg.m_strPrefix,dlg.m_nType,dlg.m_strGDB);
+      *pti=CeCosTestPlatform(dlg.m_strPlatform,dlg.m_strPrefix,dlg.m_strPrompt,dlg.m_strGDB,dlg.m_bServerSideGdb,dlg.m_strInferior);
       m_List.SetItemText(nIndex,1,pti->Prefix());
-      m_List.SetItemText(nIndex,2,pti->GdbCmd());
-      m_List.SetItemText(nIndex,3,arpszTypes[pti->Type()]);
+      m_List.SetItemText(nIndex,2,pti->GdbCmds());
+      m_List.SetItemText(nIndex,3,pti->Inferior());
+      m_List.SetItemText(nIndex,4,pti->Prompt());
+      m_List.SetItemText(nIndex,5,pti->ServerSideGdb()?_T("Y"):_T("N"));
     }
   }
 }

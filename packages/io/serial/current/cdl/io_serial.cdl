@@ -51,7 +51,15 @@ cdl_package CYGPKG_IO_SERIAL {
 
     compile       -library=libextras.a common/serial.c common/tty.c \
                   common/haldiag.c
-    
+ 
+    define_proc {
+	puts $::cdl_header "/***** proc output start *****/"
+	puts $::cdl_header "#include <pkgconf/system.h>"
+	puts $::cdl_header "#ifdef CYGDAT_IO_SERIAL_DEVICE_HEADER"
+	puts $::cdl_header "# include CYGDAT_IO_SERIAL_DEVICE_HEADER"
+	puts $::cdl_header "#endif "
+	puts $::cdl_header "/****** proc output end ******/"
+    }
 
     cdl_component CYGPKG_IO_SERIAL_TTY {
         display       "TTY-mode serial device drivers"
@@ -65,181 +73,36 @@ cdl_package CYGPKG_IO_SERIAL {
         script        tty.cdl
     }
 
-    # -------------------------------------------------------------------------
-    cdl_component CYGPKG_IO_SERIAL_ARM_PID {
-        display       "ARM PID serial device drivers"
+    cdl_component CYGPKG_IO_SERIAL_DEVICES {
+        display       "Hardware serial device drivers"
         flavor        bool
-        active_if     CYGPKG_HAL_ARM_PID
         default_value 0
         description   "
-            This option enables the serial device drivers for the ARM PID."
-
-        compile       -library=libextras.a arm/pid_serial_with_ints.c
-
-        script        ser_arm_pid.cdl
+            This option enables the hardware device drivers
+	    for the current platform."
     }
 
-    # -------------------------------------------------------------------------
-    cdl_component CYGPKG_IO_SERIAL_ARM_AEB {
-        display       "ARM AEB-1 serial device drivers"
-        flavor        bool
-        active_if     CYGPKG_HAL_ARM_AEB
+    cdl_option CYGBLD_IO_SERIAL_EXTRA_TESTS {
+        display "Build extra serial tests"
         default_value 0
-        description   "
-            This option enables the serial device drivers for the ARM AEB-1."
+        no_define
+        description "
+            This option enables the building of some extra tests which
+            can be used when testing / debugging serial drivers. These
+            are not built by default since they do not use the dedicated
+            testing infrastructure."
 
-        compile       -library=libextras.a arm/aeb_serial.c
-
-        script        ser_arm_aeb.cdl
-    }
-
-    # -------------------------------------------------------------------------
-    cdl_component CYGPKG_IO_SERIAL_ARM_EDB7XXX {
-        display       "ARM EDB7XXX serial device drivers"
-        flavor        bool
-        active_if     CYGPKG_HAL_ARM_EDB7XXX
-        default_value 0
-        description   "
-            This option enables the serial device drivers for the 
-	Cirrus Logic EDB7XXX."
-
-        compile       -library=libextras.a arm/edb7xxx_serial.c
-
-        script        ser_arm_edb7xxx.cdl
-    }
-
-    # -------------------------------------------------------------------------
-    cdl_component CYGPKG_IO_SERIAL_ARM_CMA230 {
-        display       "Cogent ARM/CMA230 serial device drivers"
-        flavor        bool
-        default_value 0
-        active_if     CYGPKG_HAL_ARM_CMA230
-        description   "
-            This option enables the serial device drivers for the Cogent 
-            ARM/CMA230."
-
-        compile       -library=libextras.a arm/cma230_serial.c
-
-        script        ser_arm_cma230.cdl
-    }
-
-    # -------------------------------------------------------------------------
-    cdl_component CYGPKG_IO_SERIAL_POWERPC_COGENT {
-        display       "Cogent PowerPC serial device drivers"
-        flavor        bool
-        active_if     CYGPKG_HAL_POWERPC_COGENT
-        default_value 0
-        description   "
-            This option enables the serial device drivers for the 
-            Cogent PowerPC."
-
-        compile       -library=libextras.a powerpc/cogent_serial_with_ints.c
-
-        script        ser_powerpc_cogent.cdl
-    }
-
-    # -------------------------------------------------------------------------
-    cdl_component CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC {
-        display       "PowerPC QUICC/SMC serial device drivers"
-        flavor        bool
-        active_if     CYGPKG_HAL_QUICC
-        default_value 0
-        description   "
-            This option enables the serial device drivers for the PowerPC 
-            QUICC/SMC."
-
-        compile       -library=libextras.a powerpc/quicc_smc_serial.c
-
-        script        ser_quicc_smc.cdl
-    }
-
-    # -------------------------------------------------------------------------
-    cdl_component CYGPKG_IO_SERIAL_SPARCLITE_SLEB {
-        display       "SPARClite SLEB serial device drivers"
-        flavor        bool
-        active_if     CYGPKG_HAL_SPARCLITE_SLEB
-        default_value 0
-        description   "
-            This option enables the serial device drivers for the 
-            SPARClite SLEB."
-
-        compile       -library=libextras.a sparclite/sleb_sdtr.c
-
-        script        ser_sparclite_sleb.cdl
-    }
-
-    # -------------------------------------------------------------------------
-    cdl_component CYGPKG_IO_SERIAL_TX39_JMR3904 {
-        display       "TX39 JMR3904 serial device drivers"
-        flavor        bool
-        active_if     CYGPKG_HAL_MIPS_TX39_JMR3904
-        default_value 0
-        description   "
-            This option enables the serial device drivers for the TX39 
-            JMR3904."
-
-        compile       -library=libextras.a mips/tx3904_serial.c
-
-        script        ser_mips_jmr3904.cdl
-    }
-
-    # -------------------------------------------------------------------------
-    cdl_component CYGPKG_IO_SERIAL_MIPS_VRC4373 {
-        display       "VRC4373 serial device drivers"
-        flavor        bool
-        active_if     CYGPKG_HAL_MIPS_VR4300_VRC4373
-        default_value 0
-        description   "
-            This option enables the serial device drivers for the VRC4373."
-
-        compile       -library=libextras.a mips/vrc4373_serial.c
-
-        script        ser_mips_vrc4373.cdl
-    }
-
-    # -------------------------------------------------------------------------
-    # Note: this is not currently tied to a specific board since the
-    # ports are "on chip"
-    cdl_component CYGPKG_IO_SERIAL_MN10300 {
-        display       "MN10300 serial device drivers"
-        flavor        bool
-        active_if     CYGPKG_HAL_MN10300
-        default_value 0
-        description   "
-            This option enables the serial device drivers for the MN10300."
-
-        compile       -library=libextras.a mn10300/mn10300_serial.c
-
-        script        ser_mn10300.cdl
-    }
-
-    # -------------------------------------------------------------------------
-    cdl_component CYGPKG_IO_SERIAL_I386_PC {
-        display       "PC serial device drivers"
-        flavor        bool
-        active_if     CYGPKG_HAL_I386_PC
-        default_value 0
-        description   "
-            This option enables the serial device drivers for the PC."
-
-        compile       -library=libextras.a i386/pc_serial.c
-
-        script        ser_i386_pc.cdl
-    }
-
-    # -------------------------------------------------------------------------
-    cdl_component CYGPKG_IO_SERIAL_SH_EDK7708 {
-        display       "SH3 EDK7708 serial device drivers"
-        flavor        bool
-        active_if CYGPKG_HAL_SH_EDK7708
-        default_value 0
-        description   "
-            This option enables the serial device driver for the Hitachi
-            SH3 EDK7708 board."
-
-        compile       -library=libextras.a sh/sh_sci_serial.c
-
-        script        ser_sh_edk7708.cdl
+        make -priority 320 {
+            <PREFIX>/bin/serial_echo : <PACKAGE>/tests/serial_echo.c
+            @sh -c "mkdir -p tests $(dir $@)"
+            $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o tests/serial_echo.o $<
+            @echo $@ ": \\" > $(notdir $@).deps
+            @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
+            @tail +2 deps.tmp >> $(notdir $@).deps
+            @echo >> $(notdir $@).deps
+            @rm deps.tmp
+            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ tests/serial_echo.o
+        }
     }
 
     cdl_component CYGPKG_IO_SERIAL_OPTIONS {
@@ -263,7 +126,7 @@ cdl_package CYGPKG_IO_SERIAL {
         }
 
         cdl_option CYGPKG_IO_SERIAL_CFLAGS_REMOVE {
-            display "Supressed compiler flags"
+            display "Suppressed compiler flags"
             flavor  data
             no_define
             default_value { "" }

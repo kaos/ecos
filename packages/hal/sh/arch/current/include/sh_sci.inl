@@ -113,9 +113,9 @@ CYG_SCI_PUBLIC void NC(init_serial)( void )
         cyg_uint8 tmp;
         HAL_READ_UINT8(CYGARC_REG_SCSMR, tmp);
         tmp &= ~CYGARC_REG_SCSMR_CKSx_MASK;
-        tmp |= CYGARC_REG_CKSx_38400;
+        tmp |= CYGARC_SCBRR_CKSx(38400);
         HAL_WRITE_UINT8(CYGARC_REG_SCSMR, tmp);
-        HAL_WRITE_UINT8(CYGARC_REG_SCBRR, CYGARC_REG_SCBRR_38400);
+        HAL_WRITE_UINT8(CYGARC_REG_SCBRR, CYGARC_SCBRR_N(38400));
     }
 #endif
 }

@@ -1,3 +1,19 @@
+2000-04-12  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c: Output text raw if configuration requires it.
+
+	* include/platform.inc: 
+	* src/edk.S: [deleted]
+	* cdl/hal_sh_edk7708.cdl: 
+	Hardware init code moved to platform.inc in order to allow ROMRAM
+	startup.
+
+	* include/pkgconf/mlt_sh_edk7708_romram.h:
+	* include/pkgconf/mlt_sh_edk7708_romram.mlt:
+	* include/pkgconf/mlt_sh_edk7708_romram.ldi:
+	* cdl/hal_sh_edk7708.cdl: 
+	Add ROMRAM startup option.
+	
 2000-04-06  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* cdl/hal_sh_edk7708.cdl: Use -g now that toolchains work with that

@@ -127,23 +127,21 @@
 # DR = data address translation
 # RI = recoverable interrupt
 
-#define CYG_MSR_COMMON (MSR_FP | MSR_ME | MSR_IR | MSR_DR | MSR_RI)
-#if defined(CYG_HAL_STARTUP_ROM)
-# ifdef CYGSEM_HAL_POWERPC_COPY_VECTORS
-#  define CYG_MSR CYG_MSR_COMMON
-# else
-#  define CYG_MSR (CYG_MSR_COMMON | MSR_IP)
-# endif
-#elif defined(CYG_HAL_STARTUP_RAM)
-# define CYG_MSR CYG_MSR_COMMON
+#define CYG_MSR_COMMON (MSR_FP | MSR_ME | MSR_RI)
+
+#if (CYGHWR_HAL_POWERPC_VECTOR_BASE == 0xfff00000)
+# define IP_BIT MSR_IP
+#else
+# define IP_BIT 0
 #endif
 
-#ifdef CYGPKG_HAL_POWERPC_SIM
-# When building for SIM, don~t enable MMU -- it~s not needed since caches
-# are disabled, and there is a runtime simulation overhead.
-#undef CYG_MSR
-#define CYG_MSR (CYG_MSR_COMMON & ~(MSR_IR | MSR_DR))
+#ifdef CYGHWR_HAL_POWERPC_ENABLE_MMU
+# define IR_DR_BITS (MSR_IR | MSR_DR)
+#else
+# define IR_DR_BITS 0
 #endif
+
+#define CYG_MSR (CYG_MSR_COMMON | IP_BIT | IR_DR_BITS)
 
 # Include variant macros after MSR definition.        
 #include <cyg/hal/arch.inc>
@@ -162,9 +160,7 @@
 #endif                  
         
 
-#if     defined(CYG_HAL_STARTUP_ROM)    || \
-        defined(CYGPKG_HAL_POWERPC_SIM) || \
-        defined(CYGSEM_HAL_POWERPC_COPY_VECTORS)
+#if defined(CYGHWR_HAL_POWERPC_NEED_VECTORS)
 
 #===========================================================================
 # Start by defining the exceptions vectors that must be placed at
@@ -237,7 +233,7 @@ rom_vectors:
 
 rom_vectors_end:   
 
-#else //  CYG_HAL_STARTUP_ROM || CYGSEM_HAL_POWERPC_COPY_VECTORS
+#else //  CYGHWR_HAL_POWERPC_NEED_VECTORS
 
         # When vectors are not included this is the primary entry point.
         .globl  __exception_reset
@@ -246,7 +242,7 @@ __exception_reset:
         mtlr    r3
         blr
         
-#endif //  CYG_HAL_STARTUP_ROM || CYGSEM_HAL_POWERPC_COPY_VECTORS
+#endif //  CYGHWR_HAL_POWERPC_NEED_VECTORS
 
 
 
@@ -263,7 +259,7 @@ _start:
 
 #if !defined(CYG_HAL_STARTUP_ROM) && defined(CYGSEM_HAL_POWERPC_COPY_VECTORS)
         lwi     r3,rom_vectors-4
-        lwi     r4,0x0000-4
+        lwi     r4,(CYGHWR_HAL_POWERPC_VECTOR_BASE - 4)
         lwi     r5,rom_vectors_end-4
 0:      lwzu    r0,4(r3)
         stwu    r0,4(r4)
@@ -348,6 +344,13 @@ _start:
         stw     r0,8(sp)                        # zero return pc
         stwu    sp,-CYGARC_PPC_STACK_FRAME_SIZE(sp) # create new stack frame
 
+        # Variant HALs may need to do something special before we continue
+        bl      hal_variant_init
+
+        # MMU and cache are controlled by the same option since caching
+        # on the PPC does not make sense without the MMU to mark regions
+        # which should not be cached.
+#ifdef CYGHWR_HAL_POWERPC_ENABLE_MMU
         # Initialize MMU.
         bl      hal_MMU_init
 
@@ -359,6 +362,7 @@ _start:
 	
         # Enable caches
         bl      hal_enable_caches
+#endif // CYGHWR_HAL_POWERPC_ENABLE_MMU
 
         # call c++ constructors
         bl      cyg_hal_invoke_constructors
@@ -728,7 +732,14 @@ cyg_hal_default_interrupt_vsr:
 restore_state:  
         # All done, restore CPU state and continue
 
-        addi    sp,sp,CYGARC_PPC_STACK_FRAME_SIZE*2 # retrieve CPU state pointer
+        # retrieve CPU state pointer
+        addi    sp,sp,CYGARC_PPC_STACK_FRAME_SIZE*2
+
+        # Restore FPU registers
+        hal_fpu_load sp
+
+        # Restore variant registers
+        hal_variant_load sp
 
         # get sprs we want to restore
         # stuff some of them into the CPU

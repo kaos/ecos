@@ -1,3 +1,20 @@
+2000-04-14  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_misc.c (hal_idle_thread_action): Moved some of the code
+	to variant idle functions which now get called.
+	(hal_enable_caches): Moved serialization code to 8xx variant init.
+
+	* src/vectors.S (restore_state): Use hal_fpu_load and
+	hal_variant_load. Reported by Sergei Organov (osv at javad.ru).
+
+2000-04-11  Jesper Skov  <jskov@redhat.com>
+
+	* src/powerpc.ld: VSR table location is controlled by CDL.
+	
+	* cdl/hal_powerpc.cdl: Added new options to control vector base
+	and MMU activation. Based on a patch from Sergei Organov (osv at
+	javad.ru).
+
 2000-04-06  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* include/hal_intr.h (HAL_CLOCK_RESET): Prevent warning
@@ -151,6 +168,10 @@
 	* src/vectors.S:
         CYG_HAL_POWERPC_x->CYGPKG_...
 	
+2000-01-28  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/powerpc.ld: Add support for network package.
+
 2000-01-26  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_cache.h: Include plf_cache.h

@@ -89,6 +89,23 @@ SOURCE=..\..\Utils\common\Collections.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\Utils\common\eCosSerial.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Utils\common\eCosSocket.cpp
+
+!IF  "$(CFG)" == "eCosTest - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "eCosTest - Win32 Debug"
+
+# ADD CPP /W4
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\Utils\common\eCosStd.cpp
 # End Source File
 # Begin Source File
@@ -105,15 +122,11 @@ SOURCE=..\common\eCosTestMonitorFilter.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\common\eCosTestSerial.cpp
+SOURCE=..\common\eCosTestPlatform.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\common\eCosTestSerialFilter.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\common\eCosTestSocket.cpp
 # End Source File
 # Begin Source File
 
@@ -137,7 +150,7 @@ SOURCE=..\common\ResetAttributes.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Utils\win32\SubProcess.cpp
+SOURCE=..\..\Utils\common\Subprocess.cpp
 # End Source File
 # Begin Source File
 
@@ -150,6 +163,14 @@ SOURCE=..\common\TestResource.cpp
 # Begin Source File
 
 SOURCE=..\..\Utils\common\Collections.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Utils\common\eCosSerial.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\Utils\common\eCosSocket.h
 # End Source File
 # Begin Source File
 
@@ -169,15 +190,11 @@ SOURCE=..\common\eCosTestMonitorFilter.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\common\eCosTestSerial.h
+SOURCE=..\common\eCosTestPlatform.h
 # End Source File
 # Begin Source File
 
 SOURCE=..\common\eCosTestSerialFilter.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\common\eCosTestSocket.h
 # End Source File
 # Begin Source File
 
@@ -201,7 +218,7 @@ SOURCE=..\common\ResetAttributes.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Utils\win32\SubProcess.h
+SOURCE=..\..\Utils\common\Subprocess.h
 # End Source File
 # Begin Source File
 

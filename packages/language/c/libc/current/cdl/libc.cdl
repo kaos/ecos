@@ -322,7 +322,7 @@ cdl_package CYGPKG_LIBC {
         }
 
         cdl_option CYGPKG_LIBC_CFLAGS_REMOVE {
-            display "Supressed compiler flags"
+            display "Suppressed compiler flags"
             flavor  data
             no_define
             default_value { "" }

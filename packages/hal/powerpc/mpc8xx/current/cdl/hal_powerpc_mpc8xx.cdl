@@ -76,6 +76,11 @@ cdl_package CYGPKG_HAL_POWERPC_MPC8xx {
             exception handling to the ROM monitor."
     }
 
+    # Note: This should be sub-variant specific to reduce memory use.
+    define_proc {
+        puts $cdl_header "#define CYGHWR_HAL_VSR_TABLE (CYGHWR_HAL_POWERPC_VECTOR_BASE + 0x3000)"
+    }
+
     cdl_component CYGPKG_HAL_POWERPC_MPC823 {
         display       "PowerPC 823 microprocessor"
         implements    CYGINT_HAL_POWERPC_VARIANT

@@ -47,7 +47,7 @@ INPUT(extras.o)
 #endif
 GROUP(libtarget.a libgcc.a)
 
-#define ALIGN_LMA 4
+#define ALIGN_LMA 16
 #define FOLLOWING(_section_) AT ((LOADADDR (_section_) + SIZEOF (_section_) + ALIGN_LMA - 1) & ~ (ALIGN_LMA - 1))
 #define LMA_EQ_VMA
 #define FORCE_OUTPUT . = .
@@ -58,7 +58,8 @@ GROUP(libtarget.a libgcc.a)
 #define SECTION_vectors(_region_, _vma_, _lma_)        \
   .vectors _vma_ : _lma_                                              \
   { FORCE_OUTPUT; KEEP(*(.vectors)) }         \
-  > _region_
+  > _region_                                   \
+  __vector_code_lma = LOADADDR(.vectors);
 
 #define SECTION_text(_region_, _vma_, _lma_)           \
   .text _vma_ : _lma_                                                 \

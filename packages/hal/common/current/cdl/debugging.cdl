@@ -42,6 +42,7 @@
 
 cdl_interface CYGINT_HAL_DEBUG_GDB_STUBS {
     display       "Support for GDB stubs"
+    no_define
     description   "
         The HAL implements GDB stubs for the target."
 }
@@ -62,6 +63,7 @@ cdl_option CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS {
 
 cdl_interface CYGINT_HAL_DEBUG_GDB_STUBS_BREAK {
     display       "Support for external break support in GDB stubs"
+    no_define
     description   "
         The HAL implements external break (or asynchronous interrupt)
         in the GDB stubs for the target."  

@@ -148,16 +148,14 @@ CdlDialogBody::parse_dialog(CdlInterpreter interp, int argc, char** argv)
     CYG_REPORT_FUNCARG1("argc %d", argc);
     CYG_PRECONDITION_CLASSC(interp);
     
-    const char* diag_argv0      = CdlParse::get_tcl_cmd_name(argv[0]);
+    std::string diag_argv0      = CdlParse::get_tcl_cmd_name(argv[0]);
 
     CdlLoadable  loadable       = interp->get_loadable();
     CdlContainer parent         = interp->get_container();       
     CdlToplevel  toplevel       = interp->get_toplevel();
-    std::string filename        = interp->get_filename();
     CYG_ASSERT_CLASSC(loadable);        // There should always be a loadable during parsing
     CYG_ASSERT_CLASSC(parent);
     CYG_ASSERT_CLASSC(toplevel);
-    CYG_ASSERTC("" != filename);
 
     // The new dialog should be created and added to the loadable
     // early on. If there is a parsing error it will get cleaned up
@@ -172,13 +170,13 @@ CdlDialogBody::parse_dialog(CdlInterpreter interp, int argc, char** argv)
     
     // Currently there are no command-line options. This may change in future.
     if (3 != argc) {
-        CdlParse::report_error(interp, std::string("Incorrect number of arguments to ") + diag_argv0 +
-                               "\n    Expecting name and properties list.");
+        CdlParse::report_error(interp, "", std::string("Incorrect number of arguments to `") + diag_argv0 +
+                               "'\nExpecting name and properties list.");
     } else if (!Tcl_CommandComplete(argv[2])) {
-        CdlParse::report_error(interp, std::string("Invalid property list for cdl_dialog ") + argv[1]);
+        CdlParse::report_error(interp, "", std::string("Invalid property list for cdl_dialog `") + argv[1] + "'.");
     } else if (0 != toplevel->lookup(argv[1])) {
-        CdlParse::report_error(interp, std::string("Dialog ") + argv[1] + " cannot be loaded.\n" +
-                               "    The name is already in use.");
+        CdlParse::report_error(interp, "", std::string("Dialog `") + argv[1] + "' cannot be loaded.\n" +
+                               "The name is already in use.");
     } else {
 
         try {
@@ -231,19 +229,19 @@ CdlDialogBody::parse_dialog(CdlInterpreter interp, int argc, char** argv)
                 // The display_proc, confirm_proc and cancel_proc properties
                 // are compulsory.
                 if (new_dialog->count_properties(CdlPropertyId_InitProc) > 1) {
-                    CdlParse::report_error(interp, "A dialog should have only one `init_proc' property.");
+                    CdlParse::report_error(interp, "", "A dialog should have only one `init_proc' property.");
                 }
                 if (new_dialog->count_properties(CdlPropertyId_UpdateProc) > 1) {
-                    CdlParse::report_error(interp, "A dialog should have only one `update_proc' property.");
+                    CdlParse::report_error(interp, "", "A dialog should have only one `update_proc' property.");
                 }
                 if (new_dialog->count_properties(CdlPropertyId_DisplayProc) != 1) {
-                    CdlParse::report_error(interp, "A dialog should have one `display_proc' property.");
+                    CdlParse::report_error(interp, "", "A dialog should have one `display_proc' property.");
                 }
                 if (new_dialog->count_properties(CdlPropertyId_ConfirmProc) != 1) {
-                    CdlParse::report_error(interp, "A dialog should have one `confirm_proc' property.");
+                    CdlParse::report_error(interp, "", "A dialog should have one `confirm_proc' property.");
                 }
                 if (new_dialog->count_properties(CdlPropertyId_CancelProc) != 1) {
-                    CdlParse::report_error(interp, "A dialog should have one `cancel_proc' property.");
+                    CdlParse::report_error(interp, "", "A dialog should have one `cancel_proc' property.");
                 }
             }
             

@@ -219,7 +219,7 @@ CdlBuildableBody::parse_compile(CdlInterpreter interp, int argc, char** argv)
         0
     };
 
-    int result = CdlParse::parse_stringvector_property(interp, argc, argv, CdlPropertyId_Compile, options, 0);
+    int result = CdlParse::parse_stringvector_property(interp, argc, argv, CdlPropertyId_Compile, options, 0, true);
     
     CYG_REPORT_RETVAL(result);
     return result;
@@ -473,7 +473,7 @@ CdlBuildableBody::parse_object(CdlInterpreter interp, int argc, char** argv)
         0
     };
 
-    int result = CdlParse::parse_stringvector_property(interp, argc, argv, CdlPropertyId_Object, options, 0);
+    int result = CdlParse::parse_stringvector_property(interp, argc, argv, CdlPropertyId_Object, options, 0, true);
     
     CYG_REPORT_RETVAL(result);
     return result;
@@ -873,7 +873,7 @@ CdlBuildLoadableBody::parse_include_files(CdlInterpreter interp, int argc, char*
 {
     CYG_REPORT_FUNCNAMETYPE("parse_include_files", "result %d");
 
-    int result = CdlParse::parse_stringvector_property(interp, argc, argv, CdlPropertyId_IncludeFiles, 0, 0);
+    int result = CdlParse::parse_stringvector_property(interp, argc, argv, CdlPropertyId_IncludeFiles, 0, 0, true);
     
     CYG_REPORT_RETVAL(result);
     return result;
@@ -1217,13 +1217,13 @@ CdlDefinableBody::check_properties(CdlInterpreter interp)
 
     // There should be at most one each of no_define and define_format.
     if (count_properties(CdlPropertyId_NoDefine) > 1) {
-        CdlParse::report_error(interp, "There should be at most one no_define property.");
+        CdlParse::report_error(interp, "", "There should be at most one no_define property.");
     }
     if (count_properties(CdlPropertyId_DefineFormat) > 1) {
-        CdlParse::report_error(interp, "There should be at most one define_format property.");
+        CdlParse::report_error(interp, "", "There should be at most one define_format property.");
     }
     if (has_property(CdlPropertyId_NoDefine) && has_property(CdlPropertyId_DefineFormat)) {
-        CdlParse::report_error(interp, "The no_define and define_format properties are mutually exclusive.");
+        CdlParse::report_error(interp, "", "The no_define and define_format properties are mutually exclusive.");
     }
     // FIXME: the define_format property only makes sense for certain
     // flavors. However the flavor property may not have been processed yet.
@@ -1371,7 +1371,7 @@ CdlDefinableBody::parse_if_define(CdlInterpreter interp, int argc, char** argv)
         0
     };
     int result = CdlParse::parse_stringvector_property(interp, argc, argv, CdlPropertyId_IfDefine, options,
-                                                       &parse_if_define_final_check);
+                                                       &parse_if_define_final_check, false);
     
     CYG_REPORT_RETVAL(result);
     return result;
@@ -1651,7 +1651,7 @@ CdlDefineLoadableBody::check_properties(CdlInterpreter interp)
     // There should be at most one define_header property
     int count = count_properties(CdlPropertyId_DefineHeader);
     if (count> 1) {
-        CdlParse::report_error(interp, "There should be at most one define_header property.");
+        CdlParse::report_error(interp, "", "There should be at most one define_header property.");
     }
     // FIXME: filename validation
     
@@ -1689,6 +1689,8 @@ CdlDefineLoadableBody::generate_config_header(Tcl_Channel this_hdr, Tcl_Channel 
     Tcl_RegisterChannel(interp->get_tcl_interpreter(), this_hdr);
     Tcl_RegisterChannel(interp->get_tcl_interpreter(), system_h);
 
+    CdlInterpreterBody::ContextSupport(interp, std::string("Package ") + this->get_name() + ", header file generation");
+    
     try {
         interp->set_variable("::cdl_header", Tcl_GetChannelName(this_hdr));
         interp->set_variable("::cdl_system_header", Tcl_GetChannelName(system_h));

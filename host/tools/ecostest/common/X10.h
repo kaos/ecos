@@ -41,7 +41,7 @@
 //####DESCRIPTIONEND####
 #ifndef _CX10_H
 #define _CX10_H
-#include "eCosTestSerial.h"
+#include "eCosSerial.h"
 
 class CX10 {
 public:
@@ -51,7 +51,7 @@ public:
 	bool Power(bool bOn,int cControl1,int cControl2,int &nErr);	// Perform a reset on this port, with these control chars
 	bool Ok(){return m_Serial.Ok();}
 protected:
-  CeCosTestSerial m_Serial;
+  CeCosSerial m_Serial;
 	bool PutChar (unsigned char c);
 	bool GetChar (unsigned char &c);
 	bool ReceiveIPS();

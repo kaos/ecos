@@ -80,32 +80,32 @@ END_MESSAGE_MAP()
 
 void CSummaryPage::AddResult(CeCosTest *pTest)
 {
-    CString strResult=pTest->ResultString(false);
-    int nLength=strResult.GetLength();
-    CString arstr[8];
-    CString strTime,strDate;
-    TRACE(_T("%s\n"),strResult);
-    // 1999-05-28 10:29:28 nan:0 TX39-jmr3904-sim tx39-jmr3904sim-libc10-signal2.exe Fail 0k/1108k D=0.0/0.0 Total=9.3 E=0.6/300.0 
-    _stscanf(strResult,_T("%s %s %s %s %s %s %s %s %s %s"),strDate.GetBuffer(1+nLength),strTime.GetBuffer(1+nLength),arstr[0].GetBuffer(1+nLength),arstr[1].GetBuffer(1+nLength),arstr[2].GetBuffer(1+nLength),arstr[3].GetBuffer(1+nLength),arstr[4].GetBuffer(1+nLength),arstr[5].GetBuffer(1+nLength),arstr[6].GetBuffer(1+nLength),arstr[7].GetBuffer(1+nLength));
-    // Remove before '=' in time fields
-    for(int i=5;i<8;i++){
-        TCHAR *pch=_tcschr(arstr[i],_TCHAR('='));
-        if(pch){
-            arstr[i]=pch+1;
-        }
-    }
-    
-    strDate.ReleaseBuffer();
-    strTime.ReleaseBuffer();
-    strDate+=_TCHAR(' ');
-    strDate+=strTime;
-    int nItem=m_List.GetItemCount();
-    m_List.InsertItem(nItem,strDate);
-    m_List.SetItemData(nItem,nItem);// to support sorting
-    for(i=0;i<8;i++){
-        m_List.SetItemText(nItem,1+i,arstr[i]);
-        arstr[i].ReleaseBuffer();
-    }
+  const CString strResult((LPCTSTR)pTest->ResultString(false));
+  int nLength=strResult.GetLength();
+  CString arstr[8];
+  CString strTime,strDate;
+  TRACE(_T("%s\n"),strResult);
+  // 1999-05-28 10:29:28 nan:0 TX39-jmr3904-sim tx39-jmr3904sim-libc10-signal2.exe Fail 0k/1108k D=0.0/0.0 Total=9.3 E=0.6/300.0 
+  _stscanf(strResult,_T("%s %s %s %s %s %s %s %s %s %s"),strDate.GetBuffer(1+nLength),strTime.GetBuffer(1+nLength),arstr[0].GetBuffer(1+nLength),arstr[1].GetBuffer(1+nLength),arstr[2].GetBuffer(1+nLength),arstr[3].GetBuffer(1+nLength),arstr[4].GetBuffer(1+nLength),arstr[5].GetBuffer(1+nLength),arstr[6].GetBuffer(1+nLength),arstr[7].GetBuffer(1+nLength));
+  // Remove before '=' in time fields
+  for(int i=5;i<8;i++){
+      TCHAR *pch=_tcschr(arstr[i],_TCHAR('='));
+      if(pch){
+          arstr[i]=pch+1;
+      }
+  }
+  
+  strDate.ReleaseBuffer();
+  strTime.ReleaseBuffer();
+  strDate+=_TCHAR(' ');
+  strDate+=strTime;
+  int nItem=m_List.GetItemCount();
+  m_List.InsertItem(nItem,strDate);
+  m_List.SetItemData(nItem,nItem);// to support sorting
+  for(i=0;i<8;i++){
+      m_List.SetItemText(nItem,1+i,arstr[i]);
+      arstr[i].ReleaseBuffer();
+  }
 }
 
 BOOL CSummaryPage::OnInitDialog() 

@@ -91,10 +91,12 @@ CdlInterpreterBody::CdlInterpreterBody(Tcl_Interp* tcl_interp_arg)
     loadable            = 0;
     container           = 0;
     node                = 0;
-    filename            = "";
+    context             = "";
     error_fn_ptr        = 0;
     warning_fn_ptr      = 0;
     current_commands    = 0;
+    cdl_result          = false;
+    
     CYGDBG_MEMLEAK_CONSTRUCTOR();
     cdlinterpreterbody_cookie   = CdlInterpreterBody_Magic;
 
@@ -264,10 +266,11 @@ CdlInterpreterBody::~CdlInterpreterBody()
     loadable                    = 0;
     container                   = 0;
     node                        = 0;
-    filename                    = "";
+    context                     = "";
     error_fn_ptr                = 0;
     warning_fn_ptr              = 0;
     current_commands            = 0;
+    cdl_result                  = false;
     
     // Make sure slave interpreters get deleted before the current one
     for (std::vector<CdlInterpreter>::iterator i = slaves.begin(); i != slaves.end(); i++) {
@@ -416,14 +419,14 @@ CdlInterpreterBody::get_node() const
 }
 
 std::string
-CdlInterpreterBody::get_filename() const
+CdlInterpreterBody::get_context() const
 {
-    CYG_REPORT_FUNCNAME("CdlInterpreter::get_filename");
+    CYG_REPORT_FUNCNAME("CdlInterpreter::get_context");
     CYG_REPORT_FUNCARG1XV(this);
     CYG_PRECONDITION_THISC();
 
     CYG_REPORT_RETURN();
-    return filename;
+    return context;
 }
 
 CdlDiagnosticFnPtr
@@ -532,27 +535,27 @@ CdlInterpreterBody::pop_node(CdlNode old_node)
 }
 
 std::string
-CdlInterpreterBody::push_filename(std::string new_filename)
+CdlInterpreterBody::push_context(std::string new_context)
 {
-    CYG_REPORT_FUNCNAME("CdlInterpreter::push_filename");
+    CYG_REPORT_FUNCNAME("CdlInterpreter::push_context");
     CYG_REPORT_FUNCARG1XV(this);
     CYG_PRECONDITION_THISC();
-    CYG_PRECONDITIONC("" != new_filename);
+    CYG_PRECONDITIONC("" != new_context);
 
-    std::string result = filename;
-    filename = new_filename;
+    std::string result = context;
+    context = new_context;
     return result;
 }
 
 void
-CdlInterpreterBody::pop_filename(std::string old_filename)
+CdlInterpreterBody::pop_context(std::string old_context)
 {
-    CYG_REPORT_FUNCNAME("CdlInterpreter::pop_filename");
+    CYG_REPORT_FUNCNAME("CdlInterpreter::pop_context");
     CYG_REPORT_FUNCARG1XV(this);
     CYG_PRECONDITION_THISC();
-    CYG_PRECONDITIONC("" != filename);
+    CYG_PRECONDITIONC("" != context);
 
-    filename = old_filename;
+    context = old_context;
 
     CYG_REPORT_RETURN();
 }
@@ -650,34 +653,48 @@ CdlInterpreterBody::eval(std::string script, std::string& str_result)
 
     int result  = TCL_OK;
     int size    = script.size();
- 
+
+    // Distinguish between results set by the Tcl interpreter and results
+    // set by CDL-related commands running in that interpreter.
+    cdl_result = false;
+    
     if (size < 2048) {
         char buf[2048];
         script.copy(buf, size, 0);
         buf[size] = '\0';
         result = Tcl_Eval(tcl_interp, buf);
     } else {
-        char*   buf = static_cast<char*>(malloc(script.size() + 1));
+        char* buf = static_cast<char*>(malloc(script.size() + 1));
         if (0 == buf) {
-            // Stay within Tcl's error handling mechanism rather than
-            // throw an exception.
-            char *msg = "Out of memory";
-            Tcl_SetResult(tcl_interp, msg, TCL_STATIC);
-            str_result = msg;
-            CYG_REPORT_RETVAL(TCL_ERROR);
-            return TCL_ERROR;
+            this->set_result(CdlParse::construct_diagnostic(this, "internal error", "", "Out of memory"));
+            result = TCL_ERROR;
+        } else {
+            script.copy(buf, size, 0);
+            buf[size] = '\0';
+            result = Tcl_Eval(tcl_interp, buf);
+            free(buf);
         }
-        script.copy(buf, size, 0);
-        buf[size] = '\0';
-        result = Tcl_Eval(tcl_interp, buf);
-        free(buf);
     }
-    str_result = Tcl_GetStringResult(tcl_interp);
+
     // The distinction between TCL_OK and TCL_RETURN is probably not worth
     // worrying about.
     if (TCL_RETURN == result) {
         result = TCL_OK;
     }
+    
+    // If we have an error condition that was raised by the Tcl
+    // interpreter rather than by the library, it needs to be
+    // raised up to the library level. That way the error count
+    // etc. are kept accurate.
+    if ((TCL_OK != result) && !cdl_result) {
+        char* tcl_result = Tcl_GetStringResult(tcl_interp);
+        if ((0 == tcl_result) || ('\0' == tcl_result[0])) {
+            tcl_result = "Internal error, no additional information available.";
+        }
+        CdlParse::report_error(this, "", tcl_result);
+    }
+    
+    str_result = Tcl_GetStringResult(tcl_interp);
     CYG_REPORT_RETVAL(result);
     return result;
 }
@@ -694,33 +711,46 @@ CdlInterpreterBody::eval_cdl_code(const cdl_tcl_code script, std::string& str_re
 
     int result  = TCL_OK;
     int size    = script.size();
+    // Distinguish between results set by the Tcl interpreter and results
+    // set by CDL-related commands running in that interpreter.
+    cdl_result = false;
+    
     if (size < 2048) {
         char buf[2048];
         script.copy(buf, size, 0);
         buf[size] = '\0';
         result = Tcl_Eval(tcl_interp, buf);
     } else {
-        char*   buf = static_cast<char*>(malloc(script.size() + 1));
+        char* buf = static_cast<char*>(malloc(script.size() + 1));
         if (0 == buf) {
-            // Stay within Tcl's error handling mechanism rather than
-            // throw an exception.
-            char *msg = "Out of memory";
-            Tcl_SetResult(tcl_interp, msg, TCL_STATIC);
-            str_result = msg;
-            CYG_REPORT_RETVAL(TCL_ERROR);
-            return TCL_ERROR;
+            this->set_result(CdlParse::construct_diagnostic(this, "internal error", "", "Out of memory"));
+            result = TCL_ERROR;
+        } else {
+            script.copy(buf, size, 0);
+            buf[size] = '\0';
+            result = Tcl_Eval(tcl_interp, buf);
+            free(buf);
         }
-        script.copy(buf, size, 0);
-        buf[size] = '\0';
-        result = Tcl_Eval(tcl_interp, buf);
-        free(buf);
     }
-    str_result = Tcl_GetStringResult(tcl_interp);
     // The distinction between TCL_OK and TCL_RETURN is probably not worth
     // worrying about.
     if (TCL_RETURN == result) {
         result = TCL_OK;
     }
+    
+    // If we have an error condition that was raised by the Tcl
+    // interpreter rather than by the library, it needs to be
+    // raised up to the library level. That way the error count
+    // etc. are kept accurate.
+    if ((TCL_OK != result) && !cdl_result) {
+        char* tcl_result = Tcl_GetStringResult(tcl_interp);
+        if ((0 == tcl_result) || ('\0' == tcl_result[0])) {
+            tcl_result = "Internal error, no additional information available.";
+        }
+        CdlParse::report_error(this, "", tcl_result);
+    }
+    
+    str_result = Tcl_GetStringResult(tcl_interp);
     CYG_REPORT_RETVAL(result);
     return result;
 }
@@ -734,15 +764,54 @@ CdlInterpreterBody::eval_file(std::string script, std::string& str_result)
     CYG_PRECONDITION_THISC();
     CYG_PRECONDITIONC("" != script);
 
+    // Distinguish between results set by the Tcl interpreter and results
+    // set by CDL-related commands running in that interpreter.
+    cdl_result = false;
+    
     int result = Tcl_EvalFile(tcl_interp, const_cast<char*>(script.c_str()));
-    str_result = Tcl_GetStringResult(tcl_interp);
     // The distinction between TCL_OK and TCL_RETURN is probably not worth
     // worrying about.
     if (TCL_RETURN == result) {
         result = TCL_OK;
     }
+
+    // If we have an error condition that was raised by the Tcl
+    // interpreter rather than by the library, it needs to be
+    // raised up to the library level. That way the error count
+    // etc. are kept accurate.
+    if ((TCL_OK != result) && !cdl_result) {
+        char* tcl_result = Tcl_GetStringResult(tcl_interp);
+        if ((0 == tcl_result) || ('\0' == tcl_result[0])) {
+            tcl_result = "Internal error, no additional information available.";
+        }
+        CdlParse::report_error(this, "", tcl_result);
+    }
+    
+    str_result = Tcl_GetStringResult(tcl_interp);
     CYG_REPORT_RETVAL(result);
     return result;
+}
+
+// Variants for when the result string is of no interest
+int
+CdlInterpreterBody::eval(std::string script)
+{
+    std::string result_string;
+    return this->eval(script, result_string);
+}
+
+int
+CdlInterpreterBody::eval_cdl_code(const cdl_tcl_code script)
+{
+    std::string result_string;
+    return this->eval_cdl_code(script, result_string);
+}
+
+int
+CdlInterpreterBody::eval_file(std::string filename)
+{
+    std::string result_string;
+    return this->eval_file(filename, result_string);
 }
 
 //}}}
@@ -759,7 +828,20 @@ CdlInterpreterBody::set_result(std::string result)
     CYG_PRECONDITION_THISC();
 
     Tcl_SetResult(tcl_interp, const_cast<char*>(result.c_str()), TCL_VOLATILE);
+    this->cdl_result = true;
+    
     CYG_REPORT_RETURN();
+}
+
+bool
+CdlInterpreterBody::result_set_by_cdl()
+{
+    CYG_REPORT_FUNCNAMETYPE("CdlInterpreter::result_set_by_cdl", "result %d");
+    CYG_PRECONDITION_THISC();
+
+    bool result = this->cdl_result;
+    CYG_REPORT_RETVAL(result);
+    return result;
 }
 
 // ----------------------------------------------------------------------------
@@ -807,14 +889,14 @@ CdlInterpreterBody::tcl_command_proc(ClientData data, Tcl_Interp* tcl_interp, in
     try {
         result = (*command)(interp, argc, argv);
     } catch(std::bad_alloc e) {
-        interp->set_result(CdlParse::get_diagnostic_prefix(interp) + "Out of memory.");
+        interp->set_result(CdlParse::construct_diagnostic(interp, "internal error", "", "Out of memory."));
         result = TCL_ERROR;
     } catch(CdlStringException e) {
         interp->set_result(e.get_message());
         result = TCL_ERROR;
     } catch(...) {
         CYG_FAIL("Unexpected C++ exception");
-        interp->set_result(CdlParse::get_diagnostic_prefix(interp) + "Internal error, unexpected C++ exception.");
+        interp->set_result(CdlParse::construct_diagnostic(interp, "internal error", "", "Unexpected C++ exception."));
         result = TCL_ERROR;
     }
 
@@ -1225,7 +1307,7 @@ CdlInterpreterBody::write_data(Tcl_Channel chan, std::string data)
     CYG_PRECONDITION_THISC();
 
     if (-1 == Tcl_Write(chan, const_cast<char*>(data.data()), data.size())) {
-        std::string msg = "Unexpected error writing to file " + this->get_filename() + " : " + Tcl_PosixError(tcl_interp);
+        std::string msg = "Unexpected error writing to file " + this->get_context() + " : " + Tcl_PosixError(tcl_interp);
         throw CdlInputOutputException(msg);
     }
     

@@ -46,22 +46,33 @@
 #include "eCosStd.h"
 #include "Collections.h"
 
+//=================================================================
+// Various bits and pieces live here
+//=================================================================
+
 class CeCosTestUtils {
 public:
-	static bool CommandLine (int &argc,TCHAR **argv);
-  
-  static LPCTSTR HostName();
-  static LPCTSTR SimpleHostName();
+
+	static bool CommandLine (int &argc,TCHAR **argv,bool bRequireResourceServer=true); // Parse the command line and extract the common options "-v", "-o", ....
+	static void UsageMessage(bool bRequireResourceServer=true); // Output a usage message explaining the above
   
   // Find the tail of a filename
-  static LPCTSTR  const Tail (LPCTSTR  const pszFile);
-  
+  static LPCTSTR  const Tail (LPCTSTR  const pszFile); // Tail of a filename, in the UNIX sense
+
+  // File exists?
+  static bool Exists (LPCTSTR pszFile);
+  // And is a file? (as opposed to a directory)
+  static bool IsFile (LPCTSTR pszFile);
+
   // File iterator.  Gets next file in directory, avoiding "." and ".."
-  static bool CeCosTestUtils::NextFile (void *&pHandle,String &str);
+  static bool NextFile (void *&pHandle,String &str);
   // Start file iteration and return first file.
-  static bool CeCosTestUtils::StartSearch (void *&pHandle,String &str);
+  static bool StartSearch (void *&pHandle,String &str);
   // End file iteration
-  static void CeCosTestUtils::EndSearch (void *&pHandle);
+  static void EndSearch (void *&pHandle);
+
+  // Get the file name of a "home directory" file
+  static const String HomeFile (LPCTSTR pszFile);
 
 protected:
   

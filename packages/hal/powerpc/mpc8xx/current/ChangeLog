@@ -1,3 +1,13 @@
+2000-04-14  Jesper Skov  <jskov@redhat.com>
+
+	* src/var_misc.c (hal_variant_init): Moved serialization disable
+	code to here.
+	* src/var_misc.c (hal_variant_idle_thread_action): Added.
+
+2000-04-11  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_powerpc_mpc8xx.cdl: Define VSR table location.
+
 2000-03-02  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_powerpc_mpc8xx.cdl: Further restrictions on

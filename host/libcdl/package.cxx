@@ -145,13 +145,13 @@ CdlPackageBody::parse_package(CdlInterpreter interp, int argc, char** argv)
     CYG_REPORT_FUNCARG1("argc %d", argc);
     CYG_PRECONDITION_CLASSC(interp);
     
-    const char* diag_argv0      = CdlParse::get_tcl_cmd_name(argv[0]);
+    std::string  diag_argv0      = CdlParse::get_tcl_cmd_name(argv[0]);
 
     CdlLoadable  loadable       = interp->get_loadable();
     CdlPackage   package        = dynamic_cast<CdlPackage>(loadable);
     CdlContainer parent         = package->get_parent();       
     CdlToplevel  toplevel       = interp->get_toplevel();
-    std::string filename        = interp->get_filename();
+    std::string filename        = interp->get_context();
  
     CYG_ASSERT_CLASSC(loadable);        // There should always be a loadable during parsing
     CYG_ASSERT_CLASSC(package);         // And packages are the only loadable for software CDL
@@ -161,24 +161,19 @@ CdlPackageBody::parse_package(CdlInterpreter interp, int argc, char** argv)
     CYG_UNUSED_PARAM(CdlContainer, parent);
     CYG_UNUSED_PARAM(CdlToplevel, toplevel);
 
-    // Push the package as the current base object early on.
-    // This aids diagnostics.
-    CdlNode old_node        = interp->push_node(package);
-
     // There should be no current node, in fact the cdl_package command
     // can only exist at the toplevel of the original script courtesy
     // of commands being pushed and popped.
-    CYG_ASSERTC(0 == old_node);
-
+    CYG_ASSERTC(0 == interp->get_node());
+    
     // Also, the package should be the current container.
     CYG_ASSERTC(package == dynamic_cast<CdlPackage>(interp->get_container()));
-
+    
     // Declare these outside the scope of the try statement, to allow
     // goto calls for the error handling.
     const std::vector<CdlProperty>& properties = package->get_properties();
-    std::string tcl_result;
-    std::vector<CdlInterpreterCommandEntry>  new_commands;
-    std::vector<CdlInterpreterCommandEntry>* old_commands = 0;
+
+    CdlInterpreterBody::NodeSupport interp_node(interp, package);
     static CdlInterpreterCommandEntry commands[] =
     {
         CdlInterpreterCommandEntry("hardware",           &parse_hardware                    ),
@@ -191,6 +186,7 @@ CdlPackageBody::parse_package(CdlInterpreter interp, int argc, char** argv)
         CdlInterpreterCommandEntry("cdl_wizard",         &CdlWizardBody::parse_wizard       ),
         CdlInterpreterCommandEntry("",                   0                                  )
     };
+    std::vector<CdlInterpreterCommandEntry>  new_commands;
     int i;
     
     // All parsing errors may result in an exception, under the control of
@@ -200,142 +196,106 @@ CdlPackageBody::parse_package(CdlInterpreter interp, int argc, char** argv)
 
         // Currently there are no options. This may change in future.
         if (3 != argc) {
-            CdlParse::report_error(interp, std::string("Incorrect number of arguments to ") + diag_argv0 +
-                                   "\n    Expecting name and properties list.");
-            goto done;
-        }
-        if (argv[1] != loadable->get_name()) {
-            CdlParse::report_error(interp, std::string("Incorrect package name in CDL script.\n") +
-                                   "    This package is " + loadable->get_name() + "\n" +
-                                   "    The CDL script " + filename + " defines a package " + argv[1]);
-            goto done;
-        }
+            CdlParse::report_error(interp, "",
+                                   std::string("Incorrect number of arguments to `") + diag_argv0 +
+                                   "'\nExpecting name and properties list.");
+        } else if (argv[1] != loadable->get_name()) {
+            CdlParse::report_error(interp, "",
+                                   std::string("Incorrect package name in CDL script.\n") +
+                                   "This package is `" + loadable->get_name() + "'\n" +
+                                   "The CDL script `" + filename + "' defines a package `" + argv[1] + "'.");
+        } else if (0 != properties.size()) {
+            CdlParse::report_error(interp, "",
+                                   std::string("Duplicate cdl_package commands for package `") + argv[1] + "'.");
+        } else if (!Tcl_CommandComplete(argv[2])) {
+            CdlParse::report_error(interp, "",
+                                   std::string("Invalid property list for cdl_package `") + argv[1] + "'.");
+        } else {
+
+            for (i = 0; 0 != commands[i].command; i++) {
+                new_commands.push_back(commands[i]);
+            }
         
-        if (0 != properties.size()) {
-            CdlParse::report_error(interp, std::string("Duplicate cdl_package commands for package ") + argv[1]);
-            goto done;
-        }
-        
-        if (!Tcl_CommandComplete(argv[2])) {
-            CdlParse::report_error(interp, std::string("Invalid property list for cdl_package ") + argv[1]);
-            goto done;
-        }
+            CdlBuildLoadableBody::add_property_parsers(new_commands);
+            CdlBuildableBody::add_property_parsers(new_commands);
+            CdlDefineLoadableBody::add_property_parsers(new_commands);
+            CdlDefinableBody::add_property_parsers(new_commands);
+            CdlParentableBody::add_property_parsers(new_commands);
+            CdlValuableBody::add_property_parsers(new_commands);
+            CdlUserVisibleBody::add_property_parsers(new_commands);
+            CdlNodeBody::add_property_parsers(new_commands);
 
-        for (i = 0; 0 != commands[i].command; i++) {
-            new_commands.push_back(commands[i]);
-        }
-        
-        CdlBuildLoadableBody::add_property_parsers(new_commands);
-        CdlBuildableBody::add_property_parsers(new_commands);
-        CdlDefineLoadableBody::add_property_parsers(new_commands);
-        CdlDefinableBody::add_property_parsers(new_commands);
-        CdlParentableBody::add_property_parsers(new_commands);
-        CdlValuableBody::add_property_parsers(new_commands);
-        CdlUserVisibleBody::add_property_parsers(new_commands);
-        CdlNodeBody::add_property_parsers(new_commands);
+            // Now evaluate the body. If an error occurs then typically
+            // this will be reported via CdlParse::report_error(),
+            // but any exceptions will have been intercepted and
+            // turned into a Tcl error.
+            CdlInterpreterBody::CommandSupport interp_cmds(interp, new_commands);
+            result = interp->eval(argv[2]);
+            if (TCL_OK == result) {
 
-        // Now evaluate the body. If an error occurs then typically
-        // this will be reported via CdlParse::report_error(),
-        // but any exceptions will have been intercepted and
-        // turned into a Tcl error.
-        old_commands = interp->push_commands(new_commands);
-        result = interp->eval(argv[2], tcl_result);
-        interp->pop_commands(old_commands);
-        if (TCL_OK != result) {
-            // No point in taking any further action, just go with the flow
-            goto done;
-        }
+                // Even if there were errors, they were not fatal. There may
+                // now be a number of properties for this package, and some
+                // validation should take place. Start with the base classes.
+                package->CdlNodeBody::check_properties(interp);
+                package->CdlUserVisibleBody::check_properties(interp);
+                package->CdlValuableBody::check_properties(interp);
+                package->CdlParentableBody::check_properties(interp);
+                package->CdlBuildableBody::check_properties(interp);
+                package->CdlBuildLoadableBody::check_properties(interp);
+                package->CdlDefinableBody::check_properties(interp);
+                package->CdlDefineLoadableBody::check_properties(interp);
 
-        // Even if there were errors, they were not fatal. There may
-        // now be a number of properties for this package, and some
-        // validation should take place. Start with the base classes.
-        package->CdlNodeBody::check_properties(interp);
-        package->CdlUserVisibleBody::check_properties(interp);
-        package->CdlValuableBody::check_properties(interp);
-        package->CdlParentableBody::check_properties(interp);
-        package->CdlBuildableBody::check_properties(interp);
-        package->CdlBuildLoadableBody::check_properties(interp);
-        package->CdlDefinableBody::check_properties(interp);
-        package->CdlDefineLoadableBody::check_properties(interp);
+                // Some of the properties in the base classes are not actually
+                // appropriate. A package is valuable, but it can only be
+                // modified by loading and unloading. Many of the value-related
+                // properties do not make sense.
+                if (package->count_properties(CdlPropertyId_Flavor) > 0) {
+                    CdlParse::report_error(interp, "", "A package should not have a `flavor' property.");
+                }
+                if (package->count_properties(CdlPropertyId_EntryProc) > 0) {
+                    CdlParse::report_error(interp, "", "A package should not have an `entry_proc' property.");
+                }
+                if (package->count_properties(CdlPropertyId_CheckProc) > 0) {
+                    CdlParse::report_error(interp, "", "A package should not have a `check_proc' property.");
+                }
+                // BLV: this reasoning is faulty, it should be possible to
+                // control the enabled aspect via an expression. That would
+                // need option processing for the default_value property.
+                if (package->count_properties(CdlPropertyId_DefaultValue) > 0) {
+                    CdlParse::report_error(interp, "", "A package should not have a `default_value' property.");
+                }
+                if (package->count_properties(CdlPropertyId_LegalValues) > 0) {
+                    CdlParse::report_error(interp, "", "A package should not have a `legal_values' property.");
+                }
+                if (package->count_properties(CdlPropertyId_Calculated) > 0) {
+                    CdlParse::report_error(interp, "", "A package should not have a `calculated' property.");
+                }
+                if (package->count_properties(CdlPropertyId_Dialog) > 0) {
+                    CdlParse::report_error(interp, "", "A package should not have a `dialog' property.");
+                }
 
-        // Some of the properties in the base classes are not actually
-        // appropriate. A package is valuable, but it can only be
-        // modified by loading and unloading. Many of the value-related
-        // properties do not make sense.
-        if (package->count_properties(CdlPropertyId_Flavor) > 0) {
-            CdlParse::report_error(interp, "A package should not have a `flavor' property.");
+                // There should be at most one each of license_proc, install_proc, include_dir,
+                // export_to, library, makefile, and wizard.
+                if (package->count_properties(CdlPropertyId_LicenseProc) > 1) {
+                    CdlParse::report_error(interp, "", "A package should have at most one `license_proc' property.");
+                }
+                if (package->count_properties(CdlPropertyId_InstallProc) > 1) {
+                    CdlParse::report_error(interp, "", "A package should have at most one `install_proc' property.");
+                }
+            }
         }
-        if (package->count_properties(CdlPropertyId_EntryProc) > 0) {
-            CdlParse::report_error(interp, "A package should not have an `entry_proc' property.");
-        }
-        if (package->count_properties(CdlPropertyId_CheckProc) > 0) {
-            CdlParse::report_error(interp, "A package should not have a `check_proc' property.");
-        }
-        // BLV: this reasoning is faulty, it should be possible to
-        // control the enabled aspect via an expression. That would
-        // need option processing for the default_value property.
-        if (package->count_properties(CdlPropertyId_DefaultValue) > 0) {
-            CdlParse::report_error(interp, "A package should not have a `default_value' property.");
-        }
-        if (package->count_properties(CdlPropertyId_LegalValues) > 0) {
-            CdlParse::report_error(interp, "A package should not have a `legal_values' property.");
-        }
-        if (package->count_properties(CdlPropertyId_Calculated) > 0) {
-            CdlParse::report_error(interp, "A package should not have a `calculated' property.");
-        }
-        if (package->count_properties(CdlPropertyId_Dialog) > 0) {
-            CdlParse::report_error(interp, "A package should not have a `dialog' property.");
-        }
-
-#if 0
-        // BLV: this reasoning is faulty, since packages can get loaded
-        // because of templates or hardware without the user
-        // necesssarily understanding all the implications.
-        // Packages should not have active_if statements, only
-        // requires statements. It makes little sense to load
-        // a package and have it inactive, instead there should
-        // be conflicts re. unsatisfied goals.
-        if (package->count_properties(CdlPropertyId_ActiveIf) > 0) {
-            CdlParse::report_error(interp, "A package should not have an `active_if' property.");
-        }
-#endif
-#if 0
-        // BLV: allow hardware packages to have a define_header property for now.
-        // This simplifies things during the transition
-        // If this is a hardware package then it cannot also have a define_header property.
-        // Hardware packages always send their output to hardware.h
-        if (package->has_property(CdlPropertyId_Hardware) && package->has_property(CdlPropertyId_DefineHeader)) {
-            CdlParse::report_error(interp, "Hardware packages cannot specify their configuration header");
-        }
-#endif  
-
-        // There should be at most one each of license_proc, install_proc, include_dir,
-        // export_to, library, makefile, and wizard.
-        if (package->count_properties(CdlPropertyId_LicenseProc) > 1) {
-            CdlParse::report_error(interp, "A package should have at most one `license_proc' property.");
-        }
-        if (package->count_properties(CdlPropertyId_InstallProc) > 1) {
-            CdlParse::report_error(interp, "A package should have at most one `install_proc' property.");
-        }
-
-      done:
-        // Dummy command just to keep the compiler happy
-        filename = "";
         
     } catch (std::bad_alloc e) {
         // Errors at this stage should be reported via Tcl, not via C++
-        interp->set_result(CdlParse::get_diagnostic_prefix(interp) + "Out of memory.");
+        interp->set_result(CdlParse::construct_diagnostic(interp, "internal error", "", "Out of memory"));
         result = TCL_ERROR;
     } catch (CdlParseException e) {
         interp->set_result(e.get_message());
         result = TCL_ERROR;
     } catch(...) {
-        interp->set_result(CdlParse::get_diagnostic_prefix(interp) + "internal error, unexpected C++ exception.");
+        interp->set_result(CdlParse::construct_diagnostic(interp, "internal error", "", "Unexpected C++ exception"));
         result = TCL_ERROR;
     }
-
-    // Restore the interpreter to its prior state.
-    interp->pop_node(old_node);
     
     CYG_REPORT_RETVAL(result);
     return result;
@@ -574,12 +534,13 @@ CdlPackageBody::savefile_package_command(CdlInterpreter interp, int argc, char**
     try {
         
         if (3 != argc) {
-            CdlParse::report_error(interp, "Invalid cdl_package command in savefile, expecting two arguments.");
+            CdlParse::report_error(interp, "", "Invalid cdl_package command in savefile, expecting two arguments.");
         } else {
 
             CdlNode current_node = config->lookup(argv[1]);
             if (0 == current_node) {
-                CdlParse::report_error(interp, std::string("The savefile contains a cdl_package command for `") +
+                CdlParse::report_error(interp, "",
+                                       std::string("The savefile contains a cdl_package command for `") +
                                        argv[1] + "' which has not been loaded.");
             } else {
                 config->get_savefile_subcommands("cdl_package", subcommands);

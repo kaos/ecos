@@ -22,12 +22,20 @@
 // ----------------------------------------------------------------------------
 //                                                                          
 //####COPYRIGHTEND####
+
+// ----------------------------------------------------------------------------
+// This file defines some useful collection classes:
+//   String (a slightly extended string class, based on TCHAR)
+//   StringArray (array of the above)
+//   PtrArray (array of pointers)
+//   IntArray (array of ints)
+//   Buffer (untyped memory)
+// ----------------------------------------------------------------------------
+
 #ifndef _ECOS_COLLECTIONS_H
 #define _ECOS_COLLECTIONS_H
 #ifdef _MSC_VER
-  //#ifdef  _AFXDLL
-    //#include "stdafx.h"
-  //#endif
+  // Some standard warning-suppressions to avoid STL header verbosity:
   #pragma warning (push)
   #pragma warning(disable:4018) // signed/unsigned mismatch
   #pragma warning(disable:4097) // typedef-name 'string' used as synonym for class-name 
@@ -50,12 +58,22 @@
 #include "eCosStd.h"
 
 class String;
+
+// An array of strings:
 typedef std::vector<String> StringArray;
+// An array of integers:
+typedef std::vector<int>    IntArray;
+
+// Some extensions to the STL string class.
+// The semantics of the like-named functions is as for the MFC class CString.
+// The instantiation of the string class is based on TCHAR (the typedef is just below)
+// which of course will be a wide character when building UNICODE on Windows.
 
 typedef std::basic_string<TCHAR> string;
-
 class String : public string {
 public:
+	void Replace (LPCTSTR psz1,LPCTSTR psz2,bool bObserveEscapes=false);
+  // Standard ctors
   String() : string(),m_pszBuf(0){}
   String(const String& rhs) : string(rhs),m_pszBuf(0){}
   String(const String& rhs, size_type pos, size_type n) : string(rhs,pos,n),m_pszBuf(0){}
@@ -64,35 +82,52 @@ public:
   String(size_type n, TCHAR c) : string(n,c),m_pszBuf(0){}
   String(const_iterator first, const_iterator last) : string(first,last),m_pszBuf(0){}
   virtual ~String() { delete [] m_pszBuf; }
+
+  // Comparators
   bool operator==(const String& str) const {return 0==compare(str); }
   bool operator==(const LPCTSTR psz) const {return 0==compare(psz); }
   
+  // Implicit conversion to LPCTSTR
 	operator LPCTSTR () const { return c_str(); }
-	unsigned int GetLength() const { return size(); } 
+
+  // Access to the buffer
   LPTSTR  GetBuffer (unsigned int nLength=0);
-  void Format(LPCTSTR pszFormat,...);
-  int Chop(StringArray &ar,TCHAR cSep=_TCHAR(' '),bool bObserveStrings=true) const;
-  void SetLength(unsigned int nLen) { resize(nLen); }
   void ReleaseBuffer();
+  
+  // Format the contents of a string, as printf would do it:
+  void Format(LPCTSTR pszFormat,...);
+  static String SFormat(LPCTSTR pszFormat,...); 
+
+  // Tokenize (split into pieces at separator cSep).
+  // The bObserveStrings argument controls whether double quotes can be used to group words
+  int Chop(StringArray &ar,TCHAR cSep=_TCHAR(' '),bool bObserveStrings=true) const;
+
+  // UNICODE-ANSI conversions:
   char * GetCString () const;
   static String CStrToUnicodeStr(const char *psz);
+
   void vFormat(LPCTSTR  pszFormat, va_list marker);
+
 protected:
+
   TCHAR *m_pszBuf;
   int   m_nBufferLength;
 };
 
+// Use this class to allocate chunks of untyped memory without needing to worry about memory leaks:
 class Buffer {
-  unsigned int m_nSize;
-  void *pData;
 public:
   Buffer(unsigned int nSize) : m_nSize(nSize), pData(malloc(nSize)) {}
   ~Buffer() { free(pData); }
   void *Data() { return pData; }
   void Resize(int nSize) { pData=realloc(pData,nSize); m_nSize=nSize; }
   unsigned int Size() const { return m_nSize; }
+protected:
+  unsigned int m_nSize;
+  void *pData;
 };
 
+// An array of untyped pointers:
 typedef std::vector<void *> PtrArray;
 
 #ifdef _MSC_VER

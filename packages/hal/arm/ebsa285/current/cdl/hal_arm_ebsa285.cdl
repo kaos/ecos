@@ -212,7 +212,7 @@ cdl_package CYGPKG_HAL_ARM_EBSA285 {
         }
 
         cdl_option CYGPKG_HAL_ARM_EBSA285_CFLAGS_REMOVE {
-            display "Supressed compiler flags"
+            display "Suppressed compiler flags"
             flavor  data
             no_define
             default_value { "" }

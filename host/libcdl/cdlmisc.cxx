@@ -200,6 +200,9 @@ Cdl::string_to_integer(std::string data, cdl_int& target)
     CYG_REPORT_FUNCNAMETYPE("Cdl::string_to_integer", "success %d");
 
     bool negative       = false;
+    bool seen_plus      = false;
+    bool seen_minus     = false;
+    
     // Life is a bit easier if I can check for '\0'
     const char* ptr           = data.c_str();
 
@@ -207,7 +210,23 @@ Cdl::string_to_integer(std::string data, cdl_int& target)
     while (isspace(*ptr))
         ptr++;
 
+    if ('+' == *ptr) {
+        if (seen_plus) {
+            target = 0;
+            CYG_REPORT_RETVAL(false);
+            return false;
+        }
+        seen_plus = true;
+        ptr++;
+    }
+    
     if ('-' == *ptr) {
+        if (seen_minus) {
+            target = 0;
+            CYG_REPORT_RETVAL(false);
+            return false;
+        }
+        seen_minus = true;
         negative = true;
         ptr++;
     }

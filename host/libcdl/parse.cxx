@@ -112,14 +112,17 @@ static std::string property_string = "property ";
 // Some of the properties have aliases in the CDL data, so argv[0] has to be
 // used to work out what is actually being parsed. However the Tcl interpreter
 // may prefix the command name with :: to indicate the global namespace.
-const char*
-CdlParse::get_tcl_cmd_name(const char* name)
+std::string
+CdlParse::get_tcl_cmd_name(std::string name)
 {
+    std::string result;
+    
     if ((name[0] == ':') && (name[1] == ':')) {
-        return &(name[2]);
+        result = std::string(name, 2, name.size() - 2);
     } else {
-        return name;
+        result = name;
     }
+    return result;
 }
 
 // Given a list of arguments, concatenate them together into a C++ string.
@@ -252,7 +255,7 @@ CdlParse::parse_options(CdlInterpreter interp, std::string diag_prefix, char** o
 
         if ("" == name) {
             // One of "-", "-=xxx", or "--=x"
-            CdlParse::report_warning(interp, diag_prefix + ", invalid option string " + argv[index]);
+            CdlParse::report_warning(interp, diag_prefix, std::string("Invalid option string `") + argv[index] + "'.");
         }
 
         // Do not try to extract the value unless we are sure there
@@ -270,9 +273,10 @@ CdlParse::parse_options(CdlInterpreter interp, std::string diag_prefix, char** o
             for (i = 0; 0 != options[i]; i++) {
                 if (0 == strncmp(name.c_str(), options[i], name.size())) {
                     if (-1 != opt_index) {
-                        CdlParse::report_warning(interp, diag_prefix + ", ambiguous option name " + name +
-                                                 ", it can match " + get_option_string(options[opt_index]) +
-                                                 " or " + get_option_string(options[i]));
+                        CdlParse::report_warning(interp, diag_prefix,
+                                                 std::string("Ambiguous option name `") + name + "'.\n" +
+                                                 "It can match `" + get_option_string(options[opt_index]) + "'\n" +
+                                                 "or `" + get_option_string(options[i]) + "'.");
                         index++;
                         break;
                     } else {
@@ -282,7 +286,7 @@ CdlParse::parse_options(CdlInterpreter interp, std::string diag_prefix, char** o
             }
         }
         if (-1 == opt_index) {
-            CdlParse::report_warning(interp, diag_prefix + ", invalid option " + name);
+            CdlParse::report_warning(interp, diag_prefix, std::string("Invalid option `") + name + "'.");
             index++;
             break;
         }
@@ -315,7 +319,7 @@ CdlParse::parse_options(CdlInterpreter interp, std::string diag_prefix, char** o
             // There should not be a value. If the current argument is of the
             // form x=y then this is an error.
             if ('=' == *arg_ptr) {
-                CdlParse::report_warning(interp, diag_prefix + ", option " + name + " does not take any data");
+                CdlParse::report_warning(interp, diag_prefix,  std::string("Option `") + name + "' does not take any data.");
             }
             // Leave index pointing at the next argument to be processed.
             index++;
@@ -323,7 +327,7 @@ CdlParse::parse_options(CdlInterpreter interp, std::string diag_prefix, char** o
             if ('=' == *arg_ptr) {
                 value = std::string(++arg_ptr);
             } else if (++index == argc) {
-                CdlParse::report_warning(interp, diag_prefix + ", missing data for option " + name);
+                CdlParse::report_warning(interp, diag_prefix,  std::string("Missing data for option `") + name + "'.");
             } else {
                 value = argv[index];
             }
@@ -337,8 +341,7 @@ CdlParse::parse_options(CdlInterpreter interp, std::string diag_prefix, char** o
         if (!multiple_flag) {
             for (i = 0; i < result.size(); i++) {
                 if (name == result[i].first) {
-                    CdlParse::report_warning(interp, diag_prefix + ", option " + name +
-                                             " can only be used once.");
+                    CdlParse::report_warning(interp, diag_prefix, std::string("Option `") + name + "' can only be used once.");
                     break;
                 }
             }
@@ -353,25 +356,121 @@ CdlParse::parse_options(CdlInterpreter interp, std::string diag_prefix, char** o
 }
 
 //}}}
-//{{{  Diagnostic prefix                        
+//{{{  Diagnostic construction                  
 
-// Construct a suitable prefix for any warning or error message. This
-// should include the filename and the entity name.
+// Construct a suitable diagnostic for a parsing error. This may occur
+// when reading in a CDL script, a savefile, a database, or anything
+// similar. 
 //
-// Obviously a line number would be rather useful as well, but this is not
-// very easy because of the way Tcl interpreters work.
+// A diagnostic should take the following form:
+//
+//     <context> <linenumber> [, <node identifier>] [, <extra identifier>] : [<classification>, ] <message>
+//
+// The context should be set in the Tcl interpreter. Typically it
+// will be a filename.
+//
+// In practice generating the line number is not really feasible at
+// present, the Tcl interpreter does not keep track of sufficient
+// information. At least, not in the public data structures, there is
+// a termOffset field in the internal data structures which might
+// be used to do the right thing. I do not want to start relying
+// on Tcl internals just yet, or add support to the Tcl core for
+// keeping track of line numbers.
+//
+// For many data files there will the concept of a current node,
+// e.g. an option whose properties or savefile information are
+// being processed. The CdlInterpreter class keeps track of the
+// current node, so if it is defined then the node's class and
+// name can be part of the message. This happens automatically,
+// no effort is required on the part of calling code.
+//
+// There may also be additional information, for example
+// identifying the specific property where the error was detected.
+// This is handled by an extra argument.
+//
+// The classification is likely to be something like "warning",
+// "error", or "internal error". It is controlled by the calling
+// code, but typically it is provided by calling via report_warning()
+// etc.
+//
+// The message should identify the actual error. It should be
+// a proper sentence, i.e. begin with a capital error and end with
+// a full stop, unless the last word is an identifier or filename
+// or something similarly special in which case the trailing
+// dot will be discarded. The message should not end with a
+// newline character, and the result string will not end with one
+// either. That is left to higher level code.
 
 std::string
-CdlParse::get_diagnostic_prefix(CdlInterpreter interp)
+CdlParse::construct_diagnostic(CdlInterpreter interp, std::string classification, std::string sub_id, std::string message)
 {
-    std::string filename        = interp->get_filename();
-    CdlNode     current_node    = interp->get_node();
+    CYG_REPORT_FUNCNAME("CdlParse::construct_diagnostic");
+    CYG_PRECONDITION_CLASSC(interp);
 
-    std::string result = ("" != filename) ? filename : "<unknown data source>";
+    std::string context      = interp->get_context();
+    CdlNode     current_node = interp->get_node();
+
+    std::string result;
+    if ("" == context) {
+        result = "<unknown context>";
+    } else {
+        result = context;
+    }
     if (0 != current_node) {
         result += ", " + current_node->get_class_name() + " " + current_node->get_name();
     }
-    result += "\n    ";
+    if ("" != sub_id) {
+        result += ", " + sub_id;
+    }
+    result += ": " + classification;
+    
+    // Now it is time to start worrying about layout, indenting
+    // subsequent lines, and so on.
+    int index        = result.length();
+    int message_len  = message.length();
+    int message_index;
+    bool indent_needed = false;
+
+    // Find out how many characters there are in the message up to the first newline
+    for (message_index = 0; (message_index < message_len) && ('\n' != message[message_index]); message_index++) {
+        ;
+    }
+
+    // Should the message start on the next line, suitably indented?
+    // This depends in part on whether or not there was a classification.
+    if ("" == classification) {
+        // The current result ends with a colon and a space.
+        if ((index + message_index) <= 72) {
+            // The first line of the message can still fit. No need to do anything.
+        } else {
+            // Start indenting immediately, do not add anything else to the current line.
+            indent_needed = true;
+        }
+    } else {
+        // We may want a comma and a space after the classification
+        if ((index + 2 + message_index) <= 72) {
+            result += ", ";
+        } else {
+            indent_needed = true;
+        }
+    }
+
+    // Now we can process the message one character at a time, adding
+    // newlines and indentation just in time.
+    for (message_index = 0; message_index < message_len; message_index++) {
+        if (indent_needed) {
+            result += "\n    ";
+            indent_needed = false;
+        }
+
+        if ('\n' == message[message_index]) {
+            indent_needed = true;
+        } else {
+            result += message[message_index];
+        }
+    }
+
+    CYG_REPORT_RETURN();
     return result;
 }
 
@@ -448,47 +547,76 @@ CdlParse::get_error_count(CdlInterpreter interp)
 //}}}
 //{{{  Error and warning reporting              
 
-// Report an error or warning. This involves adding a suitable prefix
-// and invoking the reporting callback currently associated with the
-// interpreter. For errors it is also necessary to increment the error
-// counter so that later count can detect the number of errors that
-// have occurred.
+// Report errors and warnings. These will be called during parsing
+// operations, both of CDL and similar data scripts and for savefiles.
+// The parsing involves running a Tcl interpreter extended with the
+// appropriate set of commands. Typically the call graph will look
+// something like this:
 //
-// The error callback is allowed to raise a CdlParseException. This should
-// not be caught here. Instead this exception is caught in every parse
-// routine, before it can go back through the Tcl interpreter.
+//     libcdl C++ code such as load_package()
+//     libcdl CdlInterpreter::eval()
+//     Tcl interpreter
+//     libcdl parsing code
+//     report_error()
+//     
+// If the Tcl script is invalid then parsing errors may get reported
+// at the higher level code as well.
 //
-// FIXME: cope with prefixing multiline error messages.
+// There are two classes of diagnostic: errors and warnings.
+// Additional levels may be added in future, but there does not seem
+// to be an urgent need for them. Client code should provide callback
+// functions so that the messages can be displayed to the user, and
+// these callbacks will be registered with the current CdlInterpreter.
+//
+// If no error callback is defined then a ParseException will be
+// raised instead, and the rest of the current script will not be
+// processed. Alternatively the error callback itself can raise a
+// ParseException. Care is taken to ensure that the exception does not
+// go straight through the Tcl interpreter, since that would prevent
+// the Tcl code from cleaning up appropriately. If no exception is
+// raised then the library keeps track of the number of errors, and
+// this information is accessible once the script has been fully
+// processed. This allows multiple errors to be reported in a single
+// run.
+//
+// If no warning callback is provided then warnings are ignored.
 
 void
-CdlParse::report_error(CdlInterpreter interp, std::string message)
+CdlParse::report_error(CdlInterpreter interp, std::string sub_id, std::string message)
+    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlParse::report_error");
     CYG_REPORT_FUNCARG1("interp %p", interp);
     CYG_PRECONDITION_CLASSC(interp);
 
     incr_error_count(interp);
-    
-    message = get_diagnostic_prefix(interp) + message;
 
+    std::string full_message = construct_diagnostic(interp, "error", sub_id, message);
+
+    // Now, either invoke the callback if it is provided, or throw the exception.
     CdlDiagnosticFnPtr fn = interp->get_error_fn_ptr();
-    CYG_ASSERT(0 != fn, "during parsing an interpreter should have an associated error reporting function");
-    (*fn)(message);
-
+    if (0 == fn) {
+        throw CdlParseException(full_message);
+    } else {
+        (*fn)(full_message);
+    }
+    
     CYG_REPORT_RETURN();
 }
 
 void
-CdlParse::report_warning(CdlInterpreter interp, std::string message)
+CdlParse::report_warning(CdlInterpreter interp, std::string sub_id, std::string message)
 {
     CYG_REPORT_FUNCNAME("CdlParse::report_warning");
     CYG_REPORT_FUNCARG1("interp %p", interp);
     CYG_PRECONDITION_CLASSC(interp);
-    
-    message = get_diagnostic_prefix(interp) + message;
+
+    // If there is no warning callback, do nothing. This is really a
+    // bug in the calling application.
     CdlDiagnosticFnPtr fn = interp->get_warning_fn_ptr();
     if (0 != fn) {
-        (*fn)(message);
+        std::string full_message = construct_diagnostic(interp, "warning", sub_id, message);
+        (*fn)(full_message);
     }
 
     CYG_REPORT_RETURN();
@@ -512,8 +640,8 @@ CdlParse::unknown_command(CdlInterpreter interp, int argc, char** argv)
     CYG_REPORT_FUNCARG3XV(interp, argc, argv);
     CYG_PRECONDITIONC(2 <= argc);
     CYG_PRECONDITION_CLASSC(interp);
-    
-    report_error(interp, std::string("Unknown command `") + argv[1] + "'.");
+
+    report_error(interp, "", std::string("Unknown command `") + argv[1] + "'.");
     CYG_UNUSED_PARAM(int, argc);
     
     return TCL_OK;
@@ -527,49 +655,61 @@ CdlParse::unknown_command(CdlInterpreter interp, int argc, char** argv)
 // ----------------------------------------------------------------------------
 // Utilities related to parsing properties, rather than more general parsing.
 
-// Provide a prefix that matches the current property.
-std::string
-CdlParse::get_property_prefix(char* argv0)
-{
-    CYG_REPORT_FUNCNAME("CdlParse::get_property_prefix");
-
-    std::string result = std::string("Property " ) + CdlParse::get_tcl_cmd_name(argv0) + ", ";
-
-    CYG_REPORT_RETURN();
-    return result;
-}
-
-std::string
-CdlParse::get_property_prefix(CdlProperty prop)
-{
-    CYG_REPORT_FUNCNAME("CdlParse::get_property_prefix");
-
-    std::string result = std::string("Property ");
-    const std::vector<std::string>& argv = prop->get_argv();
-    result = result + argv[0] + ", ";
-    
-    CYG_REPORT_RETURN();
-    return result;
-}
-
 // A variant of report_parse_error() which also adds the property prefix.
 void
-CdlParse::report_property_parse_error(CdlInterpreter interp, char* argv0, std::string msg)
+CdlParse::report_property_parse_error(CdlInterpreter interp, std::string argv0, std::string msg)
+    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlPase::report_property_parse_error");
 
-    report_error(interp, get_property_prefix(argv0) + msg);
+    incr_error_count(interp);
+    
+    std::string diag = construct_diagnostic(interp, "error",
+                                            std::string("property ") + CdlParse::get_tcl_cmd_name(argv0),
+                                            msg);
+
+    // Now, either invoke the callback if it is provided, or throw the exception.
+    CdlDiagnosticFnPtr fn = interp->get_error_fn_ptr();
+    if (0 == fn) {
+        throw CdlParseException(diag);
+    } else {
+        (*fn)(diag);
+    }
     
     CYG_REPORT_RETURN();
 }
 
 void
 CdlParse::report_property_parse_error(CdlInterpreter interp, CdlProperty prop, std::string msg)
+    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlParse::report_property_parse_error");
+    report_property_parse_error(interp, (prop->get_argv())[0], msg);
+    CYG_REPORT_RETURN();
+}
 
-    report_error(interp, get_property_prefix(prop) + msg);
+// Repeat for warnings
+void
+CdlParse::report_property_parse_warning(CdlInterpreter interp, std::string argv0, std::string msg)
+{
+    CYG_REPORT_FUNCNAME("CdlPase::report_property_parse_warning");
 
+    CdlDiagnosticFnPtr fn = interp->get_error_fn_ptr();
+    if (0 != fn) {
+        std::string diag = construct_diagnostic(interp, "error",
+                                                std::string("property ") + CdlParse::get_tcl_cmd_name(argv0),
+                                                msg);
+        (*fn)(diag);
+    }
+    
+    CYG_REPORT_RETURN();
+}
+
+void
+CdlParse::report_property_parse_warning(CdlInterpreter interp, CdlProperty prop, std::string msg)
+{
+    CYG_REPORT_FUNCNAME("CdlParse::report_property_parse_warning");
+    report_property_parse_warning(interp, (prop->get_argv())[0], msg);
     CYG_REPORT_RETURN();
 }
 
@@ -604,7 +744,7 @@ CdlParse::parse_minimal_property(CdlInterpreter interp, int argc, char** argv, s
         int data_index = CdlParse::parse_options(interp, property_string + argv[0], options_desc, argc, argv, 1, options);
         
         if (data_index < argc) {
-            CdlParse::report_property_parse_error(interp, argv[0],  std::string("Unexpected data ") + argv[data_index]);
+            CdlParse::report_property_parse_error(interp, argv[0], std::string("Unexpected data `") + argv[data_index] + "'.");
         } else {
         
             // The command is valid, turn it into a property.
@@ -646,7 +786,7 @@ CdlParse::parse_string_property(CdlInterpreter interp, int argc, char** argv, st
         int data_index = CdlParse::parse_options(interp, property_string + argv[0], options_desc, argc, argv, 1, options);
 
         if (data_index == argc) {
-            CdlParse::report_property_parse_error(interp, argv[0], "missing argument.");
+            CdlParse::report_property_parse_error(interp, argv[0], "Missing argument.");
         } else if ((data_index + 1) < argc) {
             CdlParse::report_property_parse_error(interp, argv[0], std::string("Too many arguments, expecting just one."));
         } else {
@@ -686,12 +826,12 @@ CdlParse::parse_tclcode_property(CdlInterpreter interp, int argc, char** argv, s
         int data_index      = CdlParse::parse_options(interp, property_string + argv[0], options_desc, argc, argv, 1, options);
         
         if (data_index == argc) {
-            CdlParse::report_property_parse_error(interp, argv[0], "missing Tcl code.");
+            CdlParse::report_property_parse_error(interp, argv[0], "Missing Tcl code.");
         } else if ((data_index + 1) < argc) {
             CdlParse::report_property_parse_error(interp, argv[0], std::string("Invalid number of arguments.\n") +
-                                         "    Expecting one argument, a Tcl code fragment.");
+                                         "Expecting one argument, a Tcl code fragment.");
         } else if (!Tcl_CommandComplete(argv[data_index])) {
-            CdlParse::report_property_parse_error(interp, argv[0], "incomplete Tcl code fragment.");
+            CdlParse::report_property_parse_error(interp, argv[0], "Incomplete Tcl code fragment.");
         } else {
         
             CdlNode current_node = interp->get_node();
@@ -718,7 +858,8 @@ CdlParse::parse_tclcode_property(CdlInterpreter interp, int argc, char** argv, s
 
 int
 CdlParse::parse_stringvector_property(CdlInterpreter interp, int argc, char** argv, std::string name,
-                                      char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_StringVector))
+                                      char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_StringVector),
+                                      bool allow_empty)
 {
     CYG_REPORT_FUNCNAME("parse_tclcode_property");
     CYG_PRECONDITION_CLASSC(interp);
@@ -728,8 +869,8 @@ CdlParse::parse_stringvector_property(CdlInterpreter interp, int argc, char** ar
         std::vector<std::pair<std::string,std::string> > options;
         int data_index      = CdlParse::parse_options(interp, property_string + argv[0], options_desc, argc, argv, 1, options);
         
-        if (data_index == argc) {
-            CdlParse::report_property_parse_error(interp, argv[0], "missing arguments.");
+        if (!allow_empty && (data_index == argc)) {
+            CdlParse::report_property_parse_error(interp, argv[0], "Missing arguments.");
         } else {
 
             // Creating the property requires a vector of strings.
@@ -774,9 +915,9 @@ CdlParse::parse_reference_property(CdlInterpreter interp, int argc, char** argv,
         int data_index = CdlParse::parse_options(interp, property_string + argv[0], options_desc, argc, argv, 1, options);
         
         if (data_index == argc) {
-            CdlParse::report_property_parse_error(interp, argv[0], "missing argument.");
+            CdlParse::report_property_parse_error(interp, argv[0], "Missing argument.");
         } else if ((data_index + 1) < argc) {
-            CdlParse::report_property_parse_error(interp, argv[0], "too many arguments, expecting just one.");
+            CdlParse::report_property_parse_error(interp, argv[0], "Too many arguments, expecting just one.");
         } else {
             std::string refname = argv[data_index];
             if (!Cdl::is_valid_cdl_name(refname)) {
@@ -822,7 +963,7 @@ CdlParse::parse_expression_property(CdlInterpreter interp, int argc, char** argv
         
         std::string all_args = CdlParse::concatenate_argv(argc, argv, data_index);
         if ("" == all_args) {
-            CdlParse::report_property_parse_error(interp, argv[0], "missing expression data.");
+            CdlParse::report_property_parse_error(interp, argv[0], "Missing expression data.");
         } else {
         
             // The CdlExpression class has its own parsing routine. This
@@ -881,7 +1022,7 @@ CdlParse::parse_listexpression_property(CdlInterpreter interp, int argc, char** 
 
         std::string all_args = CdlParse::concatenate_argv(argc, argv, data_index);
         if ("" == all_args) {
-            CdlParse::report_property_parse_error(interp, argv[0], "missing list expression data.");
+            CdlParse::report_property_parse_error(interp, argv[0], "Missing list expression data.");
         } else {
         
             try {
@@ -935,7 +1076,7 @@ CdlParse::parse_goalexpression_property(CdlInterpreter interp, int argc, char** 
 
         std::string all_args = CdlParse::concatenate_argv(argc, argv, data_index);
         if ("" == all_args) {
-            CdlParse::report_property_parse_error(interp, argv[0], "missing goal expression data.");
+            CdlParse::report_property_parse_error(interp, argv[0], "Missing goal expression data.");
         } else {
 
             try {

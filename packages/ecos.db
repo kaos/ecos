@@ -82,11 +82,133 @@ package CYGPKG_IO_SERIAL {
 	alias 		{ "Serial device drivers" serial io_serial }
 	directory	io/serial
 	script		io_serial.cdl
-	hardware
         description "
            This package contains drivers for basic I/O services on
            serial devices."
 }
+
+package CYGPKG_IO_SERIAL_ARM_EBSA285 {
+    alias 	      { "Intel EBSA285 serial driver"
+                        devs_serial_arm_ebsa285 ebsa285_serial_driver }
+    hardware
+    directory	      devs/serial/arm/ebsa285
+    script	      ser_arm_ebsa285.cdl	
+    description       "Intel StrongARM/EBSA285 serial device drivers"
+}
+
+package CYGPKG_IO_SERIAL_ARM_PID {
+    alias             { "ARM PID serial device drivers"
+                        devs_serial_arm_pid pid_serial_driver }
+    hardware
+    directory	      devs/serial/arm/pid
+    script	      ser_arm_pid.cdl	
+    description       "ARM PID serial device drivers"
+}
+
+package CYGPKG_IO_SERIAL_ARM_AEB {
+    alias             { "ARM AEB-1 serial device drivers"
+                        devs_serial_arm_aeb aeb_serial_driver }
+    hardware
+    directory	      devs/serial/arm/aeb
+    script	      ser_arm_aeb.cdl	
+    description       "ARM AEB-1 serial device drivers"
+}
+
+package CYGPKG_IO_SERIAL_ARM_EDB7XXX {
+    alias             { "ARM EDB7XXX serial device drivers"
+                        devs_serial_arm_edb7xxx edb7xxx_serial_driver }
+    hardware
+    directory	      devs/serial/arm/edb7xxx
+    script	      ser_arm_edb7xxx.cdl	
+    description       "ARM EDB7XXX serial device drivers"
+}
+
+package CYGPKG_IO_SERIAL_ARM_CMA230 {
+    alias             { "Cogent ARM/CMA230 serial device drivers"
+                        devs_serial_arm_cma230 cma230_serial_driver }
+    hardware
+    directory	      devs/serial/arm/cma230
+    script	      ser_arm_cma230.cdl	
+    description       "Cogent ARM/CMA230 serial device drivers"
+}
+
+package CYGPKG_IO_SERIAL_POWERPC_COGENT {
+    alias             { "Cogent PowerPC serial device drivers"
+                        devs_serial_powerpc_cogent cogent_serial_driver }
+    hardware
+    directory	      devs/serial/powerpc/cogent
+    script	      ser_powerpc_cogent.cdl	
+    description       "Cogent PowerPC serial device drivers"
+}
+
+package CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC {
+    alias             { "PowerPC QUICC/SMC serial device drivers"
+                        devs_serial_quicc_smc quicc_smc_serial_driver
+                        devs_serial_powerpc_quicc_smc
+                        devs_serial_powerpc_quicc quicc_serial_driver }
+    hardware
+    directory	      devs/serial/powerpc/quicc
+    script	      ser_quicc_smc.cdl	
+    description       "PowerPC QUICC/SMC serial device drivers"
+}
+
+package CYGPKG_IO_SERIAL_SPARCLITE_SLEB {
+    alias             { "SPARClite SLEB serial device drivers"
+                        devs_serial_sparclite_sleb sleb_serial_driver }
+    hardware
+    directory	      devs/serial/sparclite/sleb
+    script	      ser_sparclite_sleb.cdl	
+    description       "SPARClite SLEB serial device drivers"
+}
+
+package CYGPKG_IO_SERIAL_TX39_JMR3904 {
+    alias             { "TX39 JMR3904 serial device drivers"
+                        devs_serial_tx39_jmr3904 jmr3904_serial_driver
+                        devs_serial_mips_jmr3904 tx3904_serial_driver }
+    hardware
+    directory	      devs/serial/mips/jmr3904
+    script	      ser_mips_jmr3904.cdl	
+    description       "TX39 JMR3904 serial device drivers"
+}
+
+package CYGPKG_IO_SERIAL_MIPS_VRC4373 {
+    alias             { "VRC4373 serial device drivers"
+                        devs_serial_mips_vrc4373 vrc4373_serial_driver }
+    hardware
+    directory	      devs/serial/mips/vrc4373
+    script	      ser_mips_vrc4373.cdl	
+    description       "VRC4373 serial device drivers"
+}
+
+package CYGPKG_IO_SERIAL_MN10300 {
+    alias             { "MN10300 serial device drivers"
+                        devs_serial_mn10300_mn10300
+                        devs_serial_mn10300 mn10300_serial_driver }
+    hardware
+    directory	      devs/serial/mn10300/mn10300
+    script	      ser_mn10300.cdl	
+    description       "MN10300 serial device drivers"
+}
+
+package CYGPKG_IO_SERIAL_I386_PC {
+    alias             { "PC serial device drivers"
+                        devs_serial_i386_pc pc_serial_driver }
+    hardware
+    directory	      devs/serial/i386/pc
+    script	      ser_i386_pc.cdl	
+    description       "PC serial device drivers"
+}
+
+package CYGPKG_IO_SERIAL_SH_EDK7708 {
+    alias             { "SH3 EDK7708 serial device drivers"
+                        devs_serial_sh3_edk7708
+                        devs_serial_sh_edk7708 edk7708_serial_driver }
+    hardware
+    directory	      devs/serial/sh/edk7708
+    script	      ser_sh_edk7708.cdl	
+    description       "SH3 EDK7708 serial device drivers"
+}
+
 
 package CYGPKG_IO_PCI	{
 	alias		{ "PCI configuration library" io_pci }
@@ -599,7 +721,7 @@ target pid {
 	alias { "ARM development board (PID)" PID }
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_PID
-                   CYGPKG_IO_SERIAL
+	           CYGPKG_IO_SERIAL_ARM_PID
         }
         description "
 The pid target provides the packages needed to run eCos on an ARM
@@ -610,7 +732,7 @@ target aeb {
 	alias { "ARM evaluation board (AEB-1)" aeb1 }
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_AEB
-                   CYGPKG_IO_SERIAL
+	           CYGPKG_IO_SERIAL_ARM_AEB
         }
         description "
 The aeb target provides the packages needed to run eCos on an ARM
@@ -621,8 +743,9 @@ target ebsa285 {
 	alias { "Intel EBSA285 StrongARM board" ebsa }
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_EBSA285
-                   CYGPKG_IO_SERIAL
                    CYGPKG_IO_PCI
+		   CYGPKG_DEVS_ETH_ARM_EBSA285
+		   CYGPKG_IO_SERIAL_ARM_EBSA285
         }
         description "
         The ebsa285 target provides the packages needed to run
@@ -633,7 +756,8 @@ target edb7xxx {
         alias		{ "Cirrus Logic development board" edb7211 eb7xxx eb7211 }
 	packages	{ CYGPKG_HAL_ARM
                           CYGPKG_HAL_ARM_EDB7XXX
-                          CYGPKG_IO_SERIAL
+			  CYGPKG_DEVS_ETH_ARM_EDB7XXX
+	                  CYGPKG_IO_SERIAL_ARM_EDB7XXX
         }
         description "
 The edb7xxx target provides the packages needed to run eCos on Cirrus Logic development boards."
@@ -643,7 +767,7 @@ target cma230 {
         alias		{ "Cogent CMA230/222 board" cma222 }
 	packages	{ CYGPKG_HAL_ARM
                           CYGPKG_HAL_ARM_CMA230
-                          CYGPKG_IO_SERIAL
+	                  CYGPKG_IO_SERIAL_ARM_CMA230
         }
         description "
 The cma230 target provides the packages needed to run eCos on a Cogent 
@@ -657,8 +781,8 @@ target sh7708 {
 	alias       { "Hitachi EDK/SH7708 board" edk7708 }
 	packages    { CYGPKG_HAL_SH
                       CYGPKG_HAL_SH_EDK7708
-                      CYGPKG_IO_SERIAL
                       CYGPKG_DEVICES_WALLCLOCK_SH3 
+	              CYGPKG_IO_SERIAL_SH_EDK7708
         }
 	enable      { CYGPKG_HAL_SH_7708 }
         description "
@@ -674,7 +798,6 @@ target linux {
         alias		{ "Linux synthetic target" }
 	packages        { CYGPKG_HAL_I386
                           CYGPKG_HAL_I386_LINUX
-                          CYGPKG_IO_SERIAL 
         }
         description "
     	    The linux target provides the 
@@ -686,7 +809,7 @@ target pc {
         alias		{ "i386 PC target" }
 	packages        { CYGPKG_HAL_I386
                           CYGPKG_HAL_I386_PC
-                          CYGPKG_IO_SERIAL
+	                  CYGPKG_IO_SERIAL_I386_PC
         }
         description "
     	    The pc target provides the 
@@ -701,7 +824,7 @@ target sleb {
 	alias		{ "Fujitsu MB86800-MA01 board" }
 	packages        { CYGPKG_HAL_SPARCLITE
                           CYGPKG_HAL_SPARCLITE_SLEB
-                          CYGPKG_IO_SERIAL
+	                  CYGPKG_IO_SERIAL_SPARCLITE_SLEB
         }
         description "
     	    The sleb target provides the packages need to run eCos
@@ -712,7 +835,6 @@ target sparclite_sim {
 	alias		{ "SPARClite simulator" sl_sim sparcl_sim }
 	packages        { CYGPKG_HAL_SPARCLITE 
                           CYGPKG_HAL_SPARCLITE_SIM
-                          CYGPKG_IO_SERIAL
         }
         description "
     	    The sparclite_sim target provides the packages need to run eCos
@@ -727,7 +849,7 @@ target cma28x {
 	packages        { CYGPKG_HAL_POWERPC
                           CYGPKG_HAL_POWERPC_MPC8xx 
                           CYGPKG_HAL_POWERPC_COGENT
-                          CYGPKG_IO_SERIAL
+                          CYGPKG_IO_SERIAL_POWERPC_COGENT
         }
         description "
             The cma28x target provides the packages needed to run
@@ -739,7 +861,6 @@ target fads {
 	packages        { CYGPKG_HAL_POWERPC
                           CYGPKG_HAL_POWERPC_MPC8xx 
                           CYGPKG_HAL_POWERPC_FADS
-                          CYGPKG_IO_SERIAL
         }
         description "
             The fads target provides the packages needed to run
@@ -752,7 +873,8 @@ target mbx {
                           CYGPKG_HAL_POWERPC_MPC8xx
                           CYGPKG_HAL_POWERPC_MBX
                           CYGPKG_HAL_QUICC 
-                          CYGPKG_IO_SERIAL
+                          CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC
+                          CYGPKG_DEVS_ETH_POWERPC_QUICC
         }
         description "
             The mbx target provides the packages needed to run
@@ -764,7 +886,6 @@ target psim {
 	packages        { CYGPKG_HAL_POWERPC
                           CYGPKG_HAL_POWERPC_PPC60x
                           CYGPKG_HAL_POWERPC_SIM
-                          CYGPKG_IO_SERIAL
         }
         description "
             The psim target provides the packages needed to run
@@ -779,7 +900,7 @@ target jmr3904 {
 	packages        { CYGPKG_HAL_MIPS
                           CYGPKG_HAL_MIPS_TX39
                           CYGPKG_HAL_MIPS_TX39_JMR3904
-                          CYGPKG_IO_SERIAL
+	                  CYGPKG_IO_SERIAL_TX39_JMR3904
         }
         description "
            The jmr3904 target provides the packages needed to run
@@ -810,7 +931,7 @@ target vrc4373 {
 	packages        { CYGPKG_HAL_MIPS
                           CYGPKG_HAL_MIPS_VR4300
                           CYGPKG_HAL_MIPS_VR4300_VRC4373
-                          CYGPKG_IO_SERIAL CYGPKG_IO_PCI
+	                  CYGPKG_IO_SERIAL_MIPS_VRC4373
         }
         description "
            The vrc4373 target provides the packages needed to run
@@ -838,7 +959,7 @@ target stdeval1 {
 	packages        { CYGPKG_HAL_MN10300 
                           CYGPKG_HAL_MN10300_AM31_STDEVAL1 
                           CYGPKG_HAL_MN10300_AM31 
-                          CYGPKG_IO_SERIAL 
+                          CYGPKG_IO_SERIAL_MN10300
         }
         description "
            The stdeval1 target provides the packages needed to run
@@ -852,7 +973,7 @@ target stb {
 	packages        { CYGPKG_HAL_MN10300
                           CYGPKG_HAL_MN10300_AM33_STB
                           CYGPKG_HAL_MN10300_AM33
-                          CYGPKG_IO_SERIAL 
+                          CYGPKG_IO_SERIAL_MN10300
         }
         description "
            The stb target provides the packages needed to run

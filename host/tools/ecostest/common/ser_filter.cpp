@@ -61,6 +61,7 @@
 #include "eCosTestDownloadFilter.h"
 #include "eCosTestMonitorFilter.h"
 #include "eCosTestUtils.h"
+#include "eCosThreadUtils.h"
 #include "eCosTrace.h"
 
 bool opt_ser_debug = false;
@@ -73,13 +74,13 @@ bool opt_monitor = false;
 
 void
 no_gdb(const char* pszPort, int nBaud, 
-       CeCosTestSocket::FilterFunc *pSerialToSocketFilterFunc,
+       CeCosSocket::FilterFunc *pSerialToSocketFilterFunc,
        void *pParam, bool *pbStop)
 {
   fprintf(stderr, "no_gdb, listening on %s\n",pszPort);
   
-  CeCosTestSocket dummy_socket;
-  CeCosTestSerial serial;
+  CeCosSocket dummy_socket;
+  CeCosSerial serial;
   serial.SetBlockingReads(false);
   bool rc=false;
   
@@ -102,7 +103,7 @@ no_gdb(const char* pszPort, int nBaud,
           if(nRead>0){
             break;
           }
-          Sleep(1);
+          CeCosThreadUtils::Sleep(1);
         } else {
           fprintf(stderr, "Serial read failed (%d)\n", errno);
         }
@@ -129,15 +130,13 @@ main(int argc, char** argv)
   if(!CeCosTestUtils::CommandLine(argc,argv)){
     goto Usage;
   }
-  if(!CeCosTest::Init()){
-    goto Usage;
-  }
   
   while(i<argc){
     if(argv[i][0]=='-'){
       switch(argv[i][1]){
       case 't':
-        CeCosTrace ::EnableTracing(true);
+        // redundant - -v does this
+        CeCosTrace ::EnableTracing(CeCosTrace::TRACE_LEVEL_TRACE);
         break;
       case 'f':
         opt_filter_trace = true;
@@ -196,7 +195,7 @@ main(int argc, char** argv)
     ser_port = argv[2];
     baud_rate=atoi(argv[3]);
     
-    nSock = CeCosTestSocket::Listen(nTcpPort);
+    nSock = CeCosSocket::Listen(nTcpPort);
     if (-1 == nSock) {
       fprintf(stderr, "Couldn't access socket.\n");
       throw "listen failed";
@@ -223,13 +222,13 @@ main(int argc, char** argv)
           target_filter->SetVerbose(true);
 
           // Set filter functions
-          CeCosTestSocket::FilterFunc *host_filter_function = 
+          CeCosSocket::FilterFunc *host_filter_function = 
               &SerialMonitorFunction;
-          CeCosTestSocket::FilterFunc *target_filter_function = 
+          CeCosSocket::FilterFunc *target_filter_function = 
               &SerialMonitorFunction;
           
           try {
-              CeCosTestSocket::ConnectSocketToSerial(nSock, ser_port, 
+              CeCosSocket::ConnectSocketToSerial(nSock, ser_port, 
                                                      baud_rate, 
                                                      target_filter_function, 
                                                      (void*)target_filter, 
@@ -251,7 +250,7 @@ main(int argc, char** argv)
       new CeCosTestSerialFilter();
     CeCosTestDownloadFilter* download_filter = 
       new CeCosTestDownloadFilter();
-
+    
     // Set filter configuration
     serial_filter->SetFilterTrace(opt_filter_trace);
     serial_filter->SetSerialDebug(opt_ser_debug);
@@ -262,13 +261,13 @@ main(int argc, char** argv)
     download_filter->SetSerialDebug(opt_ser_debug);
     
     // Set serial side filter
-    CeCosTestSocket::FilterFunc *ser_filter_function = 
+    CeCosSocket::FilterFunc *ser_filter_function = 
       &SerialFilterFunction;
     if (opt_null_filter)
       ser_filter_function = NULL;
     
     // Set socket side filter
-    CeCosTestSocket::FilterFunc *sock_filter_function =
+    CeCosSocket::FilterFunc *sock_filter_function =
       &DownloadFilterFunction;
     
     try {
@@ -276,7 +275,7 @@ main(int argc, char** argv)
         no_gdb(ser_port, baud_rate, ser_filter_function, 
         (void*)serial_filter, NULL);
       else
-        CeCosTestSocket::ConnectSocketToSerial(nSock, ser_port, 
+        CeCosSocket::ConnectSocketToSerial(nSock, ser_port, 
         baud_rate, 
         ser_filter_function, 
         (void*)serial_filter, 
@@ -299,26 +298,21 @@ main(int argc, char** argv)
     delete download_filter;
   }
   
-  CeCosTest::Term();
   return 0;
   
 Usage:
   const char *pszMe="ser_filter";
-  fprintf(stderr,"Usage: %s [-t -c -S -0 -Xab] TcpIPport SerialPort BaudRate\n",
-    //                                              1         2          3
-    pszMe);
-  fprintf(stderr," or:   %s -n [-t -c -S -0 -Xab] SerialPort BaudRate\n",
-    //                                              1          2
-    pszMe);
-  fprintf(stderr, " -t: Enable tracing.\n");
-  fprintf(stderr, " -f: Enable filter output tracing.\n");
-  fprintf(stderr, " -S: Output data read from serial line.\n");
-  fprintf(stderr, " -c: Output data on console instead of via GDB.\n");
-  fprintf(stderr, " -m: Work only as a monitor filter. Implies -c.\n");
-  fprintf(stderr, " -n: No GDB.\n");
-  fprintf(stderr, " -0: Use null filter.\n");
-  fprintf(stderr, " -Xab: Reset X-10 Port 'a b' when TCP connection breaks\n");
-  CeCosTest::Term();
+  fprintf(stderr,"Usage: %s [-c -S -0 -Xab] TcpIPport SerialPort BaudRate\n"
+    " or:   %s -n [-c -S -0 -Xab] SerialPort BaudRate\n"
+    " Switches:\n"
+    " -f: Enable filter output tracing.\n"
+    " -S: Output data read from serial line.\n"
+    " -c: Output data on console instead of via GDB.\n"
+    " -m: Work only as a monitor filter. Implies -c.\n"
+    " -n: No GDB.\n"
+    " -0: Use null filter.\n"
+    " -Xab: Reset X-10 Port 'a b' when TCP connection breaks\n",pszMe,pszMe);
+  CeCosTestUtils::UsageMessage();
+   
   return 1;
 }
-

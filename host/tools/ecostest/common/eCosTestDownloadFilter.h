@@ -41,8 +41,8 @@
 
 #include "eCosStd.h"
 #include "eCosTest.h"
-#include "eCosTestSocket.h"
-#include "eCosTestSerial.h"
+#include "eCosSocket.h"
+#include "eCosSerial.h"
 
 //----------------------------------------------------------------------------
 // Macros to help extract values from the argument string.
@@ -77,8 +77,8 @@ public:
 
     bool FilterFunctionProper(void*& pBuf,
                               unsigned int& nRead,
-                              CeCosTestSerial& serial,
-                              CeCosTestSocket& socket);
+                              CeCosSerial& serial,
+                              CeCosSocket& socket);
 
 private:
     // If we can guarantee a minimum buffer size in the stub, we can
@@ -94,7 +94,7 @@ private:
                   data_origin_t origin=SF_TARGET);
 
     // Target read/write methods
-    void TargetWrite(CeCosTestSerial &pSer, 
+    void TargetWrite(CeCosSerial &pSer, 
                      const unsigned char* buffer, int len);
         
     // GDB stuff
@@ -102,7 +102,7 @@ private:
     int hexnumstr(unsigned char* buf, unsigned long num);
     int hexnumlen(unsigned long num);
     int put_binary (unsigned char* buf, int cnt, unsigned long dl_address,
-                    int packet_size, CeCosTestSerial& serial);
+                    int packet_size, CeCosSerial& serial);
 
     // Options used for configuring behavior.
     bool m_bNullFilter;
@@ -118,8 +118,8 @@ private:
 
 extern bool CALLBACK DownloadFilterFunction(void*& pBuf,
                                             unsigned int& nRead,
-                                            CeCosTestSerial& serial,
-                                            CeCosTestSocket& socket,
+                                            CeCosSerial& serial,
+                                            CeCosSocket& socket,
                                             void* pParem);
     
 #endif // _CECOSDOWNLOADFILTER_H

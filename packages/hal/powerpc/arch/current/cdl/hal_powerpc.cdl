@@ -54,6 +54,7 @@ cdl_package CYGPKG_HAL_POWERPC {
 
     cdl_interface CYGINT_HAL_POWERPC_VARIANT {
         display  "Number of variant implementations in this configuration"
+        no_define
         requires 1 == CYGINT_HAL_POWERPC_VARIANT
     }
 
@@ -98,14 +99,50 @@ cdl_package CYGPKG_HAL_POWERPC {
         requires      ! CYGSEM_HAL_USE_ROM_MONITOR
         description   "
             Enable this option to force exception vectors to be copied
-            to address 0 on startup. For RAM startup this is normally
+            to the vector base on startup. For RAM startup this is normally
             disabled since the vectors would already have been provided
             by the GDB stubs - but it's possible to override, thus taking
             full control of the target. For ROM startup it is desirable to
-            enable this option for performance reasons (accessing vectors
-            in ROM is normally slower) - but if memory is tight the vectors
-            can be left in ROM."
+            enable this option if the vector base is set to RAM since
+            accessing vectors in ROM is normally slower. But if memory is
+            tight the vectors can be left in ROM."
     }
+
+    cdl_option CYGHWR_HAL_POWERPC_NEED_VECTORS {
+        display       "Exception vectors inclusion"
+        description   "
+            If eCos can rely on the target environment to provide
+            eCos compatible vector code, there is no reason to include
+            the additional data in application images. This option controls
+            the inclusion of the vector code."
+        # Platform HALs and startup configuration controls this setting.
+        calculated { ((CYGHWR_HAL_POWERPC_FORCE_VECTORS ||
+                       CYG_HAL_STARTUP != "RAM" ||
+                       CYGSEM_HAL_POWERPC_COPY_VECTORS) &&
+                      ! CYGSEM_HAL_USE_ROM_MONITOR)
+                      ? 1 : 0 }
+    }
+
+    cdl_option CYGHWR_HAL_POWERPC_VECTOR_BASE {
+        display       "Exception vectors location"
+        description   "
+            PowerPC exception vectors can reside either at 0x00000000 or
+            0xfff00000. The startup type and platform HAL controls which
+            is used."
+        flavor        data
+        calculated { (CYGHWR_HAL_POWERPC_FORCE_VECTOR_BASE_HIGH ||
+                       (CYG_HAL_STARTUP != "RAM" &&
+                        ! CYGSEM_HAL_POWERPC_COPY_VECTORS))
+                      ? 0xfff00000 : 0x00000000 }
+    }
+
+    cdl_option CYGHWR_HAL_POWERPC_ENABLE_MMU {
+        display       "Enable MMU"
+        calculated    { !CYGHWR_HAL_POWERPC_DISABLE_MMU }
+        description   "
+            Some platforms do not want the MMU enabled."
+    }
+
 
     cdl_option CYGDBG_HAL_POWERPC_FRAME_WALLS {
         display       "Exception stack-frame walls"
@@ -119,6 +156,7 @@ cdl_package CYGPKG_HAL_POWERPC {
     cdl_component CYGPKG_HAL_POWERPC_OPTIONS {
         display "PowerPC build options"
         flavor  none
+        no_define
         description   "
 	    Package specific build options including control over
 	    compiler flags used only in building this package,
@@ -137,7 +175,7 @@ cdl_package CYGPKG_HAL_POWERPC {
         }
 
         cdl_option CYGPKG_HAL_POWERPC_CFLAGS_REMOVE {
-            display "Supressed compiler flags"
+            display "Suppressed compiler flags"
             flavor  data
             no_define
             default_value { "" }

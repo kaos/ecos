@@ -46,13 +46,42 @@
 
 #define CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
 #include <cyg/hal/ppc_regs.h>
-#include <cyg/infra/cyg_type.h>
+#include <cyg/infra/cyg_type.h>         // types
+#include <cyg/infra/diag.h>             // diag_printf
 
-#include <cyg/hal/hal_mem.h>
+#include <cyg/hal/hal_mem.h>            // some of the functions defined here
 
 //--------------------------------------------------------------------------
-void hal_variant_init(void)
+void
+hal_variant_init(void)
 {
+    // Disable serialization
+    {
+        cyg_uint32 ictrl;
+        CYGARC_MFSPR (ICTRL, ictrl);
+        ictrl |= ICTRL_NOSERSHOW;
+        CYGARC_MTSPR (ICTRL, ictrl);
+    }
+}
+
+//--------------------------------------------------------------------------
+// Variant specific idle thread action.
+bool
+hal_variant_idle_thread_action( cyg_uint32 count )
+{
+#if 0
+    cyg_uint32 *psivec  = (cyg_uint32*)CYGARC_REG_IMM_SIVEC ;
+    cyg_uint32 *psimask = (cyg_uint32*)CYGARC_REG_IMM_SIMASK;
+    cyg_uint32 *psipend = (cyg_uint32*)CYGARC_REG_IMM_SIPEND;
+    cyg_uint16 *ptbscr =  (cyg_uint16*)CYGARC_REG_IMM_TBSCR;
+
+    diag_printf( "TBSCR %04x, vec %d: sivec %08x, simask %08x, sipend %08x\n",
+                 (cyg_uint32)(*ptbscr), (*psivec)>>26, *psivec,
+                 *psimask, *psipend );
+#endif
+
+    // Let architecture idle thread action run
+    return true;
 }
 
 //---------------------------------------------------------------------------

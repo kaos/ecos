@@ -145,7 +145,7 @@ cdl_package CYGPKG_HAL {
                 appropriate, controls the building of the common stub."
                          
             make -priority 315 {
-                <PREFIX>/bin/gdb_module.img : <PACKAGE>/src/stubrom/stubrom.c
+                <PREFIX>/bin/gdb_module.img : <PACKAGE>/src/stubrom/stubrom.c <PREFIX>/lib/extras.o <PREFIX>/lib/libtarget.a <PREFIX>/lib/target.ld <PREFIX>/lib/vectors.o
                 @sh -c "mkdir -p src/stubrom $(dir $@)"
                 $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o src/stubrom/gdb_module.o $<
                 @echo $@ ": \\" > $(notdir $@).deps

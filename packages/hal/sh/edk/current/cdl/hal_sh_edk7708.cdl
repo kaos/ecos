@@ -49,7 +49,7 @@ cdl_package CYGPKG_HAL_SH_EDK7708 {
         The edk HAL package provides the support needed to run
         eCos on a Hitachi SH3 EDK7708 board."
 
-    compile       hal_diag.c edk.S plf_stub.c plf_misc.c
+    compile       hal_diag.c plf_stub.c plf_misc.c
 
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
@@ -64,7 +64,7 @@ cdl_package CYGPKG_HAL_SH_EDK7708 {
     cdl_component CYG_HAL_STARTUP {
         display       "Startup type"
         flavor        data
-        legal_values  {"RAM" "ROM"}
+        legal_values  {"RAM" "ROM" "ROMRAM"}
         default_value {"RAM"}
 	no_define
 	define -file system.h CYG_HAL_STARTUP
@@ -76,7 +76,10 @@ cdl_package CYGPKG_HAL_SH_EDK7708 {
            equivalent software that allows GDB to download the eCos
            application on to the board. The ROM bootstrap typically
            requires that the eCos application be blown into EPROMs or
-           equivalent technology."
+           equivalent technology.  ROMRAM bootstrap is similar to ROM
+           bootstrap, but everything is copied to RAM before execution 
+           starts thus improving performace, but at the cost of an
+           increased RAM footprint."
     }
 
     cdl_option CYGHWR_HAL_SH_BOARD_SPEED {
@@ -137,7 +140,7 @@ cdl_package CYGPKG_HAL_SH_EDK7708 {
             display "Global compiler flags"
             flavor  data
             no_define
-              default_value { CYGHWR_HAL_SH_BIGENDIAN ? "-mb -m3 -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" : "-ml -m3 -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -ggdb -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
+              default_value { CYGHWR_HAL_SH_BIGENDIAN ? "-mb -m3 -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" : "-ml -m3 -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
             description   "
                 This option controls the global compiler flags which
                 are used to compile all packages by
@@ -186,7 +189,8 @@ cdl_package CYGPKG_HAL_SH_EDK7708 {
         flavor data
         no_define
         calculated { CYG_HAL_STARTUP == "RAM" ? "sh_edk7708_ram" : \
-                                                "sh_edk7708_rom" }
+                     CYG_HAL_STARTUP == "ROM" ? "sh_edk7708_rom" : \
+                                                "sh_edk7708_romram" }
 
         cdl_option CYGHWR_MEMORY_LAYOUT_LDI {
             display "Memory layout linker script fragment"
@@ -194,7 +198,8 @@ cdl_package CYGPKG_HAL_SH_EDK7708 {
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_LDI
             calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_sh_edk7708_ram.ldi>" : \
-                                                    "<pkgconf/mlt_sh_edk7708_rom.ldi>" }
+                         CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_sh_edk7708_rom.ldi>" : \
+                                                    "<pkgconf/mlt_sh_edk7708_romram.ldi>" }
         }
 
         cdl_option CYGHWR_MEMORY_LAYOUT_H {
@@ -203,7 +208,8 @@ cdl_package CYGPKG_HAL_SH_EDK7708 {
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_H
             calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_sh_edk7708_ram.h>" : \
-                                                    "<pkgconf/mlt_sh_edk7708_rom.h>" }
+                         CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_sh_edk7708_rom.h>" : \
+                                                    "<pkgconf/mlt_sh_edk7708_romram.h>" }
         }
     }
 

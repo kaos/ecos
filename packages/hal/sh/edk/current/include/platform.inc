@@ -50,18 +50,79 @@
 
 #include <pkgconf/hal.h>
 
+#include <cyg/hal/sh_regs.h>
 #include <cyg/hal/sh_offsets.inc>
+
+#------------------------------------------------------------------------------
+# Hardware initialization.
+
+        .macro  hal_hardware_init
+        // Set up the Bus State Controller
+        mova     BSC_settings_table,r0
+        mov      r0,r3
+1:      mov.w    @r3+,r0                // Address (or zero)
+        cmp/eq   #0,r0
+        bt       2f
+        mov.w    @r3+,r1                // data
+        bra      1b
+         mov.w    r1,@r0                // delay slot
+
+        .align  2
+BSC_settings_table:
+        # These are the settings set by the Hitachi ROM Monitor.
+
+        # BCR2: Bus size of areas 1-6 to 32 bits
+        .word   CYGARC_REG_BCR2
+        .word   0x3ffc
+        # BCR1: Areas 2 and 3 are SDRAM
+        .word   CYGARC_REG_BCR1
+        .word   0x080c
+        # BCR2: Bus size of areas 1-6 to 32 bits [note: second write!]
+        .word   CYGARC_REG_BCR2
+        .word   0x3ffc
+        # WCR1: 3 wait-state cycles inserted for all areas
+        .word   CYGARC_REG_WCR1
+        .word   0x3fff
+        # WCR2: extra wait states and full pitch for burst
+        .word   CYGARC_REG_WCR2
+        .word   0xffd7
+        # MCR: RAS/CAS & burst timing area 2/3
+        .word   CYGARC_REG_MCR
+        .word   0x963c
+        # RTCNT: refresh counter (needs a5 in top byte to accept write)
+        .word   CYGARC_REG_RTCNT
+        .word   (0xa500 | 0x0000)
+        # RTCOR: refresh time constant (needs a5 in top byte to accept write)
+        .word   CYGARC_REG_RTCOR
+        .word   (0xa500 | 0x003b)
+        # RFCR:  refresh count register (needs a4 in top byte to accept write)
+        .word   CYGARC_REG_RFCR
+        .word   (0xa400 | 0x0000)
+        # RTCSR: refresh timer control (needs a5 in top byte to accept write)
+        .word   CYGARC_REG_RTCSR
+        .word   (0xa500 | 0x0008)
+
+        # Set SDMR to 0x220
+        .word    0xd880
+        .word    0       
+        
+        # Table end
+        .word   0
+
+        .align  2
+2:      
+        .endm
 
 #------------------------------------------------------------------------------
 # Monitor initialization.
 
 #ifndef CYGPKG_HAL_SH_MON_DEFINED
 
-#if	defined(CYG_HAL_STARTUP_ROM) ||			\
+#if	!defined(CYG_HAL_STARTUP_RAM) ||		\
 	(	defined(CYG_HAL_STARTUP_RAM) &&		\
 		!defined(CYGSEM_HAL_USE_ROM_MONITOR))
 
-	# If we are starting up from ROM, or we are starting in
+	# If we are not starting up from RAM, or we are starting in
 	# RAM and NOT using a ROM monitor, initialize the VSR table.
 
 	.macro	hal_mon_init

@@ -168,4 +168,35 @@ cdl_package CYGPKG_INFRA {
         puts $::cdl_header "#include <pkgconf/system.h>"
         puts $::cdl_header "/*****  proc output end  *****/"
     }
+
+    cdl_component CYGPKG_INFRA_OPTIONS {
+        display "Infra build options"
+        flavor  none
+        description   "
+	    Package specific build options including control over
+	    compiler flags used only in building this package."
+
+
+        cdl_option CYGPKG_INFRA_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the eCos infra package. These flags are used
+                in addition to the set of global flags."
+        }
+
+        cdl_option CYGPKG_INFRA_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the eCos infra package. These flags are removed from
+                the set of global flags if present."
+        }
+    }
 }

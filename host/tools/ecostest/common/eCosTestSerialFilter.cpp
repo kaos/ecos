@@ -51,8 +51,9 @@
 
 #include "eCosStd.h"
 
-#define SER_FILTER_VER "$Id: eCosTestSerialFilter.cpp,v 1.3 2000/04/07 07:45:09 jlarmour Exp $"
+#define SER_FILTER_VER "$Id: eCosTestSerialFilter.cpp,v 1.4 2000/04/18 21:51:58 jlarmour Exp $"
 #include "eCosTestSerialFilter.h"
+#include "eCosThreadUtils.h"
 
 char msg_ok[] = "OK";
 char msg_er[] = "ER";
@@ -229,7 +230,7 @@ CeCosTestSerialFilter::PrintHex(const unsigned char* d1, int len, data_origin_t 
 }
 
 void
-CeCosTestSerialFilter::TargetWrite(CeCosTestSerial &pSer, 
+CeCosTestSerialFilter::TargetWrite(CeCosSerial &pSer, 
                                     const unsigned char* buffer, int len)
 {
     unsigned int __written;
@@ -251,7 +252,7 @@ CeCosTestSerialFilter::TargetWrite(CeCosTestSerial &pSer,
 
 
 bool
-CeCosTestSerialFilter::TargetRead(CeCosTestSerial &pSer, 
+CeCosTestSerialFilter::TargetRead(CeCosSerial &pSer, 
                                   unsigned char* buffer, int len)
 {
     unsigned int __read;
@@ -312,7 +313,7 @@ CeCosTestSerialFilter::TargetRead(CeCosTestSerial &pSer,
         }
 
         if (0 == __read) {
-            Sleep(20);
+            CeCosThreadUtils::Sleep(20);
             __timeouts++;
             if (25 == __timeouts) {
                 __timeouts = 0;
@@ -350,7 +351,7 @@ CeCosTestSerialFilter::TargetRead(CeCosTestSerial &pSer,
 
 // Send C ASCII string to target.
 void 
-CeCosTestSerialFilter::TargetASCIIWrite(CeCosTestSerial &pSer, const char* s) 
+CeCosTestSerialFilter::TargetASCIIWrite(CeCosSerial &pSer, const char* s) 
 { 
     TargetWrite(pSer, (const unsigned char*) s, strlen(s)); 
 }
@@ -359,7 +360,7 @@ CeCosTestSerialFilter::TargetASCIIWrite(CeCosTestSerial &pSer, const char* s)
 // Configuration Command.
 // Set serial configuration.
 bool
-CeCosTestSerialFilter::SetConfig(CeCosTestSerial &pSer, 
+CeCosTestSerialFilter::SetConfig(CeCosSerial &pSer, 
                                  const ser_cfg_t* new_cfg, 
                                  ser_cfg_t* old_cfg)
 {
@@ -378,7 +379,7 @@ CeCosTestSerialFilter::SetConfig(CeCosTestSerial &pSer,
 
 // Return false if the serial configuration is not valid for the host.
 bool
-CeCosTestSerialFilter::VerifyConfig(CeCosTestSerial &pSer, ser_cfg_t* new_cfg)
+CeCosTestSerialFilter::VerifyConfig(CeCosSerial &pSer, ser_cfg_t* new_cfg)
 {
     ser_cfg_t old_cfg;
     bool rc;
@@ -427,7 +428,7 @@ CeCosTestSerialFilter::VerifyConfig(CeCosTestSerial &pSer, ser_cfg_t* new_cfg)
 //  Host&protocol currently only supports:
 //   - no/even parity
 void
-CeCosTestSerialFilter::CMD_ChangeConfig(CeCosTestSerial &pSer, char* cfg_str)
+CeCosTestSerialFilter::CMD_ChangeConfig(CeCosSerial &pSer, char* cfg_str)
 {
     ser_cfg_t new_cfg, old_cfg;
 
@@ -442,7 +443,7 @@ CeCosTestSerialFilter::CMD_ChangeConfig(CeCosTestSerial &pSer, char* cfg_str)
     // Tell target we're ready to go, wait 1/10 sec, and then change
     // the config.
     TargetASCIIWrite(pSer, "OK");
-    Sleep(100);
+    CeCosThreadUtils::Sleep(100);
     SetConfig(pSer, &new_cfg, &old_cfg);
 
     int loops;
@@ -491,7 +492,7 @@ CeCosTestSerialFilter::CMD_ChangeConfig(CeCosTestSerial &pSer, char* cfg_str)
                 TargetASCIIWrite(pSer, "S");
             }
 
-            Sleep(1);
+            CeCosThreadUtils::Sleep(1);
             delay_mticks++;
             // Timeout.
             if (100 == delay_mticks/10)
@@ -516,11 +517,11 @@ CeCosTestSerialFilter::CMD_ChangeConfig(CeCosTestSerial &pSer, char* cfg_str)
 
 // Set default configuration.
 void
-CeCosTestSerialFilter::CMD_DefaultConfig(CeCosTestSerial &pSer)
+CeCosTestSerialFilter::CMD_DefaultConfig(CeCosSerial &pSer)
 {
     static const ser_cfg_t default_ser_cfg = { 9600, 
                                                8, 
-                                               CeCosTestSerial::ONE_STOP_BIT,
+                                               CeCosSerial::ONE_STOP_BIT,
                                                false };
 
     TargetASCIIWrite(pSer, "OK");
@@ -534,10 +535,10 @@ void
 CeCosTestSerialFilter::ParseConfig(char* args, ser_cfg_t* new_cfg)
 {
     int ecos_parity, ecos_stop_bits, ecos_baud_rate;
-    CeCosTestSerial::StopBitsType t2h_stop_bits[3] = {
-        CeCosTestSerial::ONE_STOP_BIT, 
-        CeCosTestSerial::ONE_POINT_FIVE_STOP_BITS,
-        CeCosTestSerial::TWO_STOP_BITS};
+    CeCosSerial::StopBitsType t2h_stop_bits[3] = {
+        CeCosSerial::ONE_STOP_BIT, 
+        CeCosSerial::ONE_POINT_FIVE_STOP_BITS,
+        CeCosSerial::TWO_STOP_BITS};
     INIT_VALUE(args);
 
     SET_VALUE(int, ecos_baud_rate);
@@ -607,7 +608,7 @@ CeCosTestSerialFilter::DoCRC(unsigned char* data, int size)
 }
 
 void
-CeCosTestSerialFilter::SendChecksum(CeCosTestSerial &pSer, int crc)
+CeCosTestSerialFilter::SendChecksum(CeCosSerial &pSer, int crc)
 {
     char buffer[128];
     int len;
@@ -618,7 +619,7 @@ CeCosTestSerialFilter::SendChecksum(CeCosTestSerial &pSer, int crc)
 }
 
 void
-CeCosTestSerialFilter::SendStatus(CeCosTestSerial &pSer, int state)
+CeCosTestSerialFilter::SendStatus(CeCosSerial &pSer, int state)
 {
     if (state)
         TargetWrite(pSer, (unsigned char*) &msg_ok, 2);
@@ -629,7 +630,7 @@ CeCosTestSerialFilter::SendStatus(CeCosTestSerial &pSer, int state)
 
 // Receive test DONE message from target.
 void
-CeCosTestSerialFilter::ReceiveDone(CeCosTestSerial &pSer, 
+CeCosTestSerialFilter::ReceiveDone(CeCosSerial &pSer, 
                                    unsigned char* data_in, int size)
 {
     static const char msg_done[] = "DONE";
@@ -679,7 +680,7 @@ CeCosTestSerialFilter::ReceiveDone(CeCosTestSerial &pSer,
 //  o Clean up the DUPLEX_ECHO implementation. Currently it's an ugly hack
 //    that doesn't match the arguments / behavior of the two other modes.
 void
-CeCosTestSerialFilter::CMD_TestBinary(CeCosTestSerial &pSer, char* args)
+CeCosTestSerialFilter::CMD_TestBinary(CeCosSerial &pSer, char* args)
 {
     int size;
     cyg_mode_t mode;
@@ -875,10 +876,8 @@ CeCosTestSerialFilter::CMD_TestBinary(CeCosTestSerial &pSer, char* args)
 // To Do:
 //  Implement.
 void
-CeCosTestSerialFilter::CMD_TestText(CeCosTestSerial &pSer, char* args)
+CeCosTestSerialFilter::CMD_TestText(CeCosSerial &pSer, char* /*args*/)
 {
-    CYG_UNUSED_PARAM(args);
-
     SendStatus(pSer, 1);
 }
 
@@ -889,17 +888,15 @@ CeCosTestSerialFilter::CMD_TestText(CeCosTestSerial &pSer, char* args)
 // Format out:
 //  OK
 void
-CeCosTestSerialFilter::CMD_TestPing(CeCosTestSerial &pSer, char* args)
+CeCosTestSerialFilter::CMD_TestPing(CeCosSerial &pSer, char* /*args*/)
 { 
-    CYG_UNUSED_PARAM(args);
-
     SendStatus(pSer, 1);
 }
 
 //-----------------------------------------------------------------------------
 // Dispatch test command. 
 void
-CeCosTestSerialFilter::DispatchCommand(CeCosTestSerial &pSer, char* cmd)
+CeCosTestSerialFilter::DispatchCommand(CeCosSerial &pSer, char* cmd)
 {
     char* args;
 
@@ -938,8 +935,8 @@ CeCosTestSerialFilter::DispatchCommand(CeCosTestSerial &pSer, char* cmd)
 bool CALLBACK
 SerialFilterFunction(void*& pBuf,
                      unsigned int& nRead,
-                     CeCosTestSerial& serial,
-                     CeCosTestSocket& socket,
+                     CeCosSerial& serial,
+                     CeCosSocket& socket,
                      void* pParem)
 {
     CeCosTestSerialFilter* p = (CeCosTestSerialFilter*) pParem;
@@ -949,8 +946,8 @@ SerialFilterFunction(void*& pBuf,
 bool
 CeCosTestSerialFilter::FilterFunctionProper(void*& pBuf,
                                             unsigned int& nRead,
-                                            CeCosTestSerial& serial,
-                                            CeCosTestSocket& socket)
+                                            CeCosSerial& serial,
+                                            CeCosSocket& socket)
 {
     char* buffer = (char*) pBuf;
 

@@ -1,3 +1,11 @@
+2000-04-13  Jesper Skov  <jskov@redhat.com>
+
+	* src/var_misc.c (hal_variant_idle_thread_action): Added.
+
+2000-04-11  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_powerpc_ppc60x.cdl: Define VSR table location.
+
 2000-03-01  Jesper Skov  <jskov@redhat.com>
 
 	* include/variant.inc: Forgot conditionals on vector copy code in

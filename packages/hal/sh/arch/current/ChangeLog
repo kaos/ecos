@@ -1,3 +1,20 @@
+2000-04-12  Jesper Skov  <jskov@redhat.com>
+
+	* src/vectors.S: Entry code rewritten to allow ROMRAM startups.
+
+	* src/sh.ld: Change LMA alignment to 16 (workaround
+	902557-CR). Provide vector LMA address.
+
+	* include/sh_sci.inl: Replaced hardcoded baud rate constant with 
+	macro function.
+
+	* cdl/hal_sh.cdl: Don't let interface define anything.
+
+2000-04-10  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_intr.h: Mask/unmask functions handle entire ISR
+	range now.
+
 2000-04-06  Jesper Skov  <jskov@redhat.com>
 
 	* src/sh.ld (_hal_vsr_table): Get address from platform CDL.

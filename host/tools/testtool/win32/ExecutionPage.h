@@ -32,6 +32,7 @@
 //
 #include "eCosPropertyPage.h"
 #include "FileListBox.h"
+#include "Collections.h"
 /////////////////////////////////////////////////////////////////////////////
 // CExecutionPage dialog
 
@@ -42,7 +43,7 @@ class CExecutionPage : public CeCosPropertyPage
 // Construction
 public:
 	bool SomeTestsSelected();
-	CString m_strExtension;
+	String m_strExtension;
 	CMapStringToPtr m_arstrPreLoad; // If set on startup, load files from here
 	CString SelectedTest(int nIndex);
 	int SelectedTestCount();

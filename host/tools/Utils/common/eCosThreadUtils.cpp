@@ -90,7 +90,6 @@ bool CeCosThreadUtils::RunThread(CallbackProc *pThreadFunc, void *pParam, Callba
   DWORD dwID;
   HANDLE hThread=CreateThread(NULL,0,SThreadFunc, pInfo, 0, &dwID);
   if(hThread){
-    TRACE(_T("RunThread: - new thread=%x\n"),dwID);
     ::CloseHandle(hThread);
     rc=true;
   } else {
@@ -100,16 +99,13 @@ bool CeCosThreadUtils::RunThread(CallbackProc *pThreadFunc, void *pParam, Callba
   #ifdef NO_THREADS
   assert(false);
   #else
-  VTRACE(_T("RunThread():Calling pthread_create()\n"));
   pthread_t hThread;
   int n=pthread_create(&hThread, NULL, SThreadFunc, pInfo);
   TRACE(  _T("RunThread: - non-blocking call (new thread=%x)\n"),hThread);
-  VTRACE(_T("RunThread(): pthread_create() returned <%d>\n"), n);
   if (n != 0) {
     ERROR(_T("RunThread(): pthread_create failed - %s\n"),strerror(errno));
   } else {
     
-    VTRACE(_T("RunThread(): Calling pthread_detach\n"));
     int n = pthread_detach(hThread);
     
     if (0==n) {
@@ -119,7 +115,6 @@ bool CeCosThreadUtils::RunThread(CallbackProc *pThreadFunc, void *pParam, Callba
       hThread=0;
     }
   }
-  VTRACE(_T("RunThread(): returned from pthread calls - exiting RunThread()\n"));
   #endif
 #endif
   if(!rc){
@@ -149,8 +144,9 @@ int CALLBACK CeCosThreadUtils::FilterFunction(EXCEPTION_POINTERS *p)
 
 CeCosThreadUtils::THREADFUNC CALLBACK CeCosThreadUtils::SThreadFunc (void *pParam)
 {
-  VTRACE(_T("SThreadFunc()\n"));
+  THREAD_ID id=GetThreadId();
   ThreadInfo *pInfo=(ThreadInfo*)pParam;
+  TRACE(_T("Thread %x [%s] created\n"),id,(LPCTSTR)pInfo->strName);
 #ifdef _WIN32
   __try {
     // Call what we are instructed to (e.g. LocalThreadFunc):
@@ -171,7 +167,6 @@ CeCosThreadUtils::THREADFUNC CALLBACK CeCosThreadUtils::SThreadFunc (void *pPara
 #endif
   
   // Call the Callback:
-  TRACE(_T("SThreadFunc - invoking callback\n"));
   if(pInfo->pCompletionFunc){
     pInfo->pCompletionFunc (pInfo->pCompletionParam);
   } else if (pInfo->pCompletionParam) {
@@ -179,13 +174,17 @@ CeCosThreadUtils::THREADFUNC CALLBACK CeCosThreadUtils::SThreadFunc (void *pPara
     *(bool *)pInfo->pCompletionParam=true;
   }
   // No more references to pInfo->pTest from now on...
-  VTRACE(_T("SThreadFunc(): deleting (ThreadInfo)pInfo\n"));
-  delete pInfo; 
-  TRACE(_T("SThreadFunc exiting\n"));
+  TRACE(_T("Thread %x [%s] terminated\n"),id,(LPCTSTR)pInfo->strName);
+  delete pInfo;
   return 0;
 }
 
-int CeCosThreadUtils::CS::AtomicIncrement (int &n)
+bool CeCosThreadUtils::CS::InCriticalSection()
+{
+  return GetThreadId()==nCSOwner;
+}
+
+int CeCosThreadUtils::AtomicIncrement (int &n)
 {
   int rc;
   ENTERCRITICAL;
@@ -194,7 +193,7 @@ int CeCosThreadUtils::CS::AtomicIncrement (int &n)
   return rc;
 }
 
-int CeCosThreadUtils::CS::AtomicDecrement (int &n)
+int CeCosThreadUtils::AtomicDecrement (int &n)
 {
   int rc;
   ENTERCRITICAL;
@@ -207,8 +206,7 @@ CeCosThreadUtils::CS::CS()
 {
   // Get mutex lock; block until available unless current
   // thread already owns the mutex.
-  if(GetThreadId()!=nCSOwner){
-    VTRACE(_T("%x try CS\n"),GetThreadId());
+  if(!InCriticalSection()){
 #ifdef _WIN32
     if(!bCSInitialized){
 		    InitializeCriticalSection(&cs);
@@ -220,19 +218,22 @@ CeCosThreadUtils::CS::CS()
       pthread_mutex_lock(&cs);
     #endif
 #endif
+    // As we now own the CS it is safe to perform the following assignment:
     nCSOwner=GetThreadId();
-    VTRACE(_T("%x has CS count=%d\n"),GetThreadId(),m_nCriticalSectionLock);//sdf
   }
+  // As we now own the CS it is safe to perform the following increment:
   m_nCriticalSectionLock++;
 }
 
 CeCosThreadUtils::CS::~CS()
 {
+  assert(InCriticalSection());
+  // As we own the CS we can safely manipulate variables:
   m_nCriticalSectionLock--;
   assert(m_nCriticalSectionLock>=0);
   if(0==m_nCriticalSectionLock){
+    // Last lock is being released - let go of the mutex
     nCSOwner=(THREAD_ID)-1;
-    VTRACE(_T("%x leaves CS count=%d\n"),GetThreadId(),m_nCriticalSectionLock);
     
     // Release mutex lock.  
 #ifdef _WIN32
@@ -245,3 +246,12 @@ CeCosThreadUtils::CS::~CS()
   }
 }
 
+void CeCosThreadUtils::Sleep(int nMsec)
+{
+#ifdef _WIN32
+  ::Sleep(nMsec);
+#else
+  sched_yield();
+  usleep((int)nMsec * 1000);
+#endif
+}

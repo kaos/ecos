@@ -1,3 +1,8 @@
+2000-04-10  Bart Veer  <bartv@redhat.com>
+
+	* cdl_exec.cxx:
+	Add diagnostic callbacks to database initialization.
+
 2000-03-08  Bart Veer  <bartv@redhat.com>
 
 	* configure.in (cyg_ac_infra_libdir):

@@ -93,7 +93,7 @@ cdl_package CYGPKG_DEVICES_WATCHDOG {
         }
 
         cdl_option CYGPKG_DEVICES_WATCHDOG_CFLAGS_REMOVE {
-            display "Supressed compiler flags"
+            display "Suppressed compiler flags"
             flavor  data
             no_define
             default_value { "" }

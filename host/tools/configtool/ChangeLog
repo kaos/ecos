@@ -1,3 +1,12 @@
+2000-04-11  John Dallaway  <jld@cygnus.co.uk>
+
+	* common/win32/CTCommonDoc.cpp:
+
+	Modify OpenRepository() to pass error and warning
+	handlers to CdlPackagesDatabaseBody::make(). This
+	allows use of the config tool with repositories
+	having missing packages.
+
 2000-03-31  John Dallaway  <jld@cygnus.co.uk>
 
 	* standalone/win32/MainFrm.cpp:

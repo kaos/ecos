@@ -26,8 +26,8 @@
 //
 
 #include "stdafx.h"
-#include "eCosTest.h"
-#include "eCosTestSocket.h"
+#include "eCosTestPlatform.h"
+#include "eCosSocket.h"
 #include "PropertiesDialog.h"
 #include "LocalPropertiesDialog.h"
 #include "RemotePropertiesDialog.h"
@@ -163,8 +163,8 @@ BOOL CPropertiesDialog::OnInitDialog()
 	CeCosDialog::OnInitDialog();
 
     CComboBox *pCombo=(CComboBox *)GetDlgItem(IDC_TT_PLATFORM);
-    for(unsigned int i=0;i<CeCosTest::TargetTypeMax();i++){
-        pCombo->AddString(CeCosTest::Image(i));
+    for(unsigned int i=0;i<CeCosTestPlatform::Count();i++){
+        pCombo->AddString(CeCosTestPlatform::Get(i)->Name());
     }
     
     UpdateData(false);
@@ -189,22 +189,21 @@ void CPropertiesDialog::OnSelchangePlatform()
 
 void CPropertiesDialog::SetButtons()
 {
-    CString strTarget;
-    GetDlgItemText(IDC_TT_PLATFORM,strTarget);
-    bool bSim=CeCosTest::IsSim(strTarget);
-    static const int arIDs[]={IDC_TT_DOWNLOADTIMEOUT,IDC_TT_SPIN4,IDC_TT_DOWNLOADTIMEOUT_COMBO};
-	for(int i=0;i<sizeof arIDs/sizeof arIDs[0];i++){
-		GetDlgItem(arIDs[i]) ->EnableWindow(!bSim);
-	}
-    GetDlgItem(IDC_TT_SETTINGS)->EnableWindow(!bSim || !((CButton *)GetDlgItem(IDC_TT_RADIO_LOCAL))->GetCheck());
-
-    bool b=(TIMEOUT_SPECIFIED==((CComboBox*)GetDlgItem(IDC_TT_TIMEOUT_COMBO))->GetCurSel());
-    GetDlgItem(IDC_TT_TESTTIMEOUT)->EnableWindow(b);
-    GetDlgItem(IDC_TT_SPIN3)->EnableWindow(b);
-    
-    b=(TIMEOUT_SPECIFIED==((CComboBox*)GetDlgItem(IDC_TT_DOWNLOADTIMEOUT_COMBO))->GetCurSel());
-    GetDlgItem(IDC_TT_DOWNLOADTIMEOUT)->EnableWindow(!bSim && b);
-    GetDlgItem(IDC_TT_SPIN4)->EnableWindow(!bSim && b);
+  CString strTarget;
+  GetDlgItemText(IDC_TT_PLATFORM,strTarget);
+  static const int arIDs[]={IDC_TT_DOWNLOADTIMEOUT,IDC_TT_SPIN4,IDC_TT_DOWNLOADTIMEOUT_COMBO};
+  for(int i=0;i<sizeof arIDs/sizeof arIDs[0];i++){
+    GetDlgItem(arIDs[i]) ->EnableWindow(true);
+  }
+  //GetDlgItem(IDC_TT_SETTINGS)->EnableWindow(!bSim || !((CButton *)GetDlgItem(IDC_TT_RADIO_LOCAL))->GetCheck());
+  
+  bool b=(TIMEOUT_SPECIFIED==((CComboBox*)GetDlgItem(IDC_TT_TIMEOUT_COMBO))->GetCurSel());
+  GetDlgItem(IDC_TT_TESTTIMEOUT)->EnableWindow(b);
+  GetDlgItem(IDC_TT_SPIN3)->EnableWindow(b);
+  
+  b=(TIMEOUT_SPECIFIED==((CComboBox*)GetDlgItem(IDC_TT_DOWNLOADTIMEOUT_COMBO))->GetCurSel());
+  GetDlgItem(IDC_TT_DOWNLOADTIMEOUT)->EnableWindow(b);
+  GetDlgItem(IDC_TT_SPIN4)->EnableWindow(b);
 }
 
 void CPropertiesDialog::OnSettings() 

@@ -28,6 +28,7 @@
 #include "stdafx.h"
 
 #include "eCosTest.h"
+#include "eCosThreadUtils.h"
 #include "eCosTrace.h"
 #include "PropertiesDialog.h"
 #include "ResetAttributes.h"
@@ -63,9 +64,20 @@ CRunTestsSheet::CRunTestsSheet(LPCTSTR pszCaption, CWnd* pParentWnd, UINT iSelec
   m_bHideTarget(false),
   m_bHideRemoteControls(false),
   m_bModal(false),
-  m_prop(_T("Software\\Red Hat\\eCos\\RunTests"),HKEY_CURRENT_USER),
   m_ppSheet(ppSheet),
-  m_ep(CeCosTest::ExecutionParameters::RUN)
+  m_ep(CeCosTest::ExecutionParameters::RUN),
+  m_nTimeout(900),
+  m_nDownloadTimeout(120),
+  m_nTimeoutType(TIMEOUT_AUTOMATIC),
+  m_nDownloadTimeoutType(TIMEOUT_AUTOMATIC),
+  m_bSerial(true),
+  m_strPort(_T("COM1")),
+  m_nBaud(38400),
+  m_nLocalTCPIPPort(1),
+  m_nReset(RESET_MANUAL),
+  m_nResourcePort(1),
+  m_nRemotePort(1),
+  m_bFarmed(true)
 {
   InitializeCriticalSection(&m_CS);
   AddPage(&executionpage);
@@ -106,29 +118,28 @@ END_MESSAGE_MAP()
 BOOL CRunTestsSheet::OnInitDialog() 
 {
   if(!m_bHideTarget){
-    m_prop.Add(_T("Platform"),(void *)&m_strTarget,GetFn,PutFn);
+    m_prop.Add(_T("Platform"),m_strTarget);
   }
-  m_prop.Add(_T("Active timeout"),m_nTimeout,900);
-  m_prop.Add(_T("Download timeout"),m_nDownloadTimeout,120);
-  m_prop.Add(_T("Active timeout type"),m_nTimeoutType,TIMEOUT_AUTOMATIC);
-  m_prop.Add(_T("Download timeout type"),m_nDownloadTimeoutType,TIMEOUT_AUTOMATIC);
+  m_prop.Add(_T("Active timeout"),m_nTimeout);
+  m_prop.Add(_T("Download timeout"),m_nDownloadTimeout);
+  m_prop.Add(_T("Active timeout type"),m_nTimeoutType);
+  m_prop.Add(_T("Download timeout type"),m_nDownloadTimeoutType);
   m_prop.Add(_T("Remote"),m_bRemote);
-  m_prop.Add(_T("Serial"),m_bSerial,true);
-  m_prop.Add(_T("Port"),(void *)&m_strPort,GetFn,PutFn,_T("COM1"));
-  m_prop.Add(_T("Baud"),m_nBaud,38400);
-  m_prop.Add(_T("Local TCPIP Host"),(void *)&m_strLocalTCPIPHost,GetFn,PutFn);
-  m_prop.Add(_T("Local TCPIP Port"),m_nLocalTCPIPPort,1);
-  m_prop.Add(_T("Reset Type"),m_nReset,RESET_MANUAL);
-  m_prop.Add(_T("Reset String"),(void *)&m_strReset,GetFn,PutFn);
-  m_prop.Add(_T("Resource Host"),(void *)&m_strResourceHost,GetFn,PutFn);
-  m_prop.Add(_T("Resource Port"),m_nResourcePort,1);
-  m_prop.Add(_T("Remote Host"),(void *)&m_strRemoteHost,GetFn,PutFn);
-  m_prop.Add(_T("Remote Port"),m_nRemotePort,1);
+  m_prop.Add(_T("Serial"),m_bSerial);
+  m_prop.Add(_T("Port"),m_strPort);
+  m_prop.Add(_T("Baud"),m_nBaud);
+  m_prop.Add(_T("Local TCPIP Host"),m_strLocalTCPIPHost);
+  m_prop.Add(_T("Local TCPIP Port"),m_nLocalTCPIPPort);
+  m_prop.Add(_T("Reset Type"),m_nReset);
+  m_prop.Add(_T("Reset String"),m_strReset);
+  m_prop.Add(_T("Resource Host"),m_strResourceHost);
+  m_prop.Add(_T("Resource Port"),m_nResourcePort);
+  m_prop.Add(_T("Remote Host"),m_strRemoteHost);
+  m_prop.Add(_T("Remote Port"),m_nRemotePort);
   m_prop.Add(_T("Recurse"),executionpage.m_bRecurse);
   //m_prop.Add(_T("Loadfromdir"),executionpage.m_strLoaddir);
-  m_prop.Add(_T("Farmed"),m_bFarmed,true);
-  m_prop.Add(_T("Extension"),(void *)&executionpage.m_strExtension,GetFn,PutFn,_T("*.exe"));
-  m_prop.SetDefaults();
+  m_prop.Add(_T("Farmed"),m_bFarmed);
+  m_prop.Add(_T("Extension"),executionpage.m_strExtension);
   
   CeCosTrace::SetOutput(TestOutputCallback,this);
   CeCosTrace::SetError (TestOutputCallback,this);
@@ -142,7 +153,7 @@ BOOL CRunTestsSheet::OnInitDialog()
   }
   GetWindowRect(m_rcPrev);
 #ifdef _DEBUG
-  CeCosTrace::EnableTracing(true);
+  CeCosTrace::EnableTracing(CeCosTrace::TRACE_LEVEL_TRACE);
 #endif
   CeCosTrace::SetInteractive(true);
   
@@ -280,23 +291,21 @@ void CRunTestsSheet::OnRun()
         TIMEOUT_NONE==m_nTimeoutType?0x7fffffff:TIMEOUT_AUTOMATIC==m_nTimeoutType?0:1000*m_nTimeout,
         TIMEOUT_NONE==m_nDownloadTimeoutType?0x7fffffff:TIMEOUT_AUTOMATIC==m_nDownloadTimeoutType?0:1000*m_nDownloadTimeout);
       if(m_bRemote){
-        CTestResource::SetResourceServer(m_strResourceHost,m_nResourcePort);
-        if(!CTestResource::LoadSocket()){
+        CTestResource::SetResourceServer(CeCosSocket::HostPort(m_strResourceHost,m_nResourcePort));
+        if(!CTestResource::Load()){
           MessageBox(_T("Could not connect to resource server"));
           return;
         }
       } else {
-        if(CeCosTest::IsSim(m_ep.Target())){
-          //for(int i=0;i<m_nSimConcurrent;i++){
-          m_pResource=new CTestResource(m_ep.Target());
-          //}
+        const String strPort(m_bSerial?(LPCTSTR)m_strPort:CeCosSocket::HostPort(m_strLocalTCPIPHost,m_nLocalTCPIPPort));
+        if(0==strPort.size()){
+          m_pResource=new CTestResource(_T(""),m_ep.PlatformName());
         } else {
-          const String strPort(m_bSerial?(LPCTSTR)m_strPort:CeCosTestSocket::HostPort(m_strLocalTCPIPHost,m_nLocalTCPIPPort));
           int nBaud=m_bSerial?m_nBaud:0;
           if (RESET_X10!=m_nReset) {
-            m_pResource=new CTestResource(m_ep.Target(),strPort,nBaud);
+            m_pResource=new CTestResource(_T(""),m_ep.PlatformName(),strPort,nBaud);
           } else {
-            m_pResource=new CTestResource(m_ep.Target(),strPort,nBaud,m_strReset);
+            m_pResource=new CTestResource(_T(""),m_ep.PlatformName(),strPort,nBaud,m_strReset);
           }
         }
       }
@@ -320,21 +329,11 @@ DWORD CRunTestsSheet::X10ThreadFunc (void *pParam)
   String str;
   bool bOk=false;
   CResetAttributes::ResetResult n=pInfo->pSheet->m_pResource->Reset(str);
-  if(CResetAttributes::RESET_OK==n){
-    str+=_TCHAR('\n');
-    if(CResetAttributes::IsValidReset((void *)(LPCTSTR )str)){
-      str+=_T(">>> Reset ok\n");
-      bOk=true;
-    } else {
-      str+=_T(">>> Could not reset target (no valid startup string seen)\n");
-    }
-  } else {
-    String str;
-    str+=_T(">>> Could not reset target - X10 error - ");
-    str+=CResetAttributes::Image(n);
-    str+=_TCHAR('\n');
+  if(CResetAttributes::RESET_OK!=n){
+    str+=_T(">>> Could not reset target\n");
   }
-  LPTSTR pszCopy=new TCHAR[1+str.GetLength()];
+  str+=_TCHAR('\n');
+  LPTSTR pszCopy=new TCHAR[1+str.size()];
   _tcscpy(pszCopy,str);
   pInfo->pSheet->PostMessage(WM_TESTOUTPUT,(WPARAM)pszCopy,0);
   
@@ -371,29 +370,25 @@ void CRunTestsSheet::SubmitTests()
       CeCosThreadUtils::RunThread(RunRemoteFunc,pInfo,RunCallback,_T("RunRemoteFunc"));
     } else {
       bool bRun=false;
-      if(CeCosTest::IsSim(m_ep.Target())){
-        bRun=true;
-      } else {
-        switch((ResetType)m_nReset){
-          case RESET_NONE:
-            bRun=true;
-            break;
-          case RESET_X10:
-            // Resetting can take a while, so spawn a thread
-            bRun=false;
-            {
-              DWORD dwID;
-              CloseHandle(CreateThread(0,0,X10ThreadFunc, pInfo, 0, &dwID));
-            }
-            break;
-          case RESET_MANUAL:
-            bRun=(IDOK==MessageBox(_T("Press OK when target is reset - cancel to abort run"),NULL,MB_OKCANCEL));
-            if(!bRun){
-              m_nNextToSubmit=executionpage.SelectedTestCount();
-              RunCallback(pInfo);
-            }
-            break;
+      switch((ResetType)m_nReset){
+        case RESET_NONE:
+          bRun=true;
+          break;
+        case RESET_X10:
+          // Resetting can take a while, so spawn a thread
+          bRun=false;
+          {
+            DWORD dwID;
+            CloseHandle(CreateThread(0,0,X10ThreadFunc, pInfo, 0, &dwID));
           }
+          break;
+        case RESET_MANUAL:
+          bRun=(IDOK==MessageBox(_T("Press OK when target is reset - cancel to abort run"),NULL,MB_OKCANCEL));
+          if(!bRun){
+            m_nNextToSubmit=executionpage.SelectedTestCount();
+            RunCallback(pInfo);
+          }
+          break;
       }
       if(bRun){
         CeCosThreadUtils::RunThread(RunLocalFunc,pInfo,RunCallback,_T("RunLocalFunc"));
@@ -479,22 +474,22 @@ void CRunTestsSheet::OnProperties()
   dlg.m_strPort=m_strPort;
   dlg.m_bFarmed=m_bFarmed;
   if(IDOK==dlg.DoModal()){
-    m_strTarget=dlg.m_strTarget;
+    m_strTarget=(LPCTSTR)dlg.m_strTarget;
     m_nTimeout=dlg.m_nTimeout;
     m_nDownloadTimeout=dlg.m_nDownloadTimeout;
     m_nTimeoutType=dlg.m_nTimeoutType;
     m_nDownloadTimeoutType=dlg.m_nDownloadTimeoutType;
     m_bRemote=dlg.m_bRemote;
     m_bSerial=dlg.m_bSerial;
-    m_strPort=dlg.m_strPort;
+    m_strPort=(LPCTSTR)dlg.m_strPort;
     m_nBaud=dlg.m_nBaud;
-    m_strLocalTCPIPHost=dlg.m_strLocalTCPIPHost;
+    m_strLocalTCPIPHost=(LPCTSTR)dlg.m_strLocalTCPIPHost;
     m_nLocalTCPIPPort=dlg.m_nLocalTCPIPPort;
     m_nReset=dlg.m_nReset;
-    m_strReset=dlg.m_strReset;
-    m_strResourceHost=dlg.m_strResourceHost;
+    m_strReset=(LPCTSTR)dlg.m_strReset;
+    m_strResourceHost=(LPCTSTR)dlg.m_strResourceHost;
     m_nResourcePort=dlg.m_nResourcePort;
-    m_strRemoteHost=dlg.m_strRemoteHost;
+    m_strRemoteHost=(LPCTSTR)dlg.m_strRemoteHost;
     m_nRemotePort=dlg.m_nRemotePort;
     m_bFarmed=dlg.m_bFarmed;
     if(m_pInitFunc){

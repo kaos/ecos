@@ -1017,6 +1017,7 @@ initialise_tokenisation(std::string data, int index)
 //   <add>          ::= <mult>   [<add op>    <mult>]          + -
 //   <mult>         ::= <unary>  [<mult op>   <unary>]         * / %
 //   <unary>        ::= -<unary> | +<unary> | !<unary> | *<unary> | ?<unary> |
+//                      ~<unary> |
 //                      <string constant> | <integer constant> |
 //                      <double constant> | <reference> |
 //                      ( <expression> )
@@ -2247,7 +2248,7 @@ CdlExpressionBody::parse(std::string data)
     // exception, or we should be at the end of the expression string.
     if (CdlExprOp_EOD != next_op) {
         delete result;
-        throw CdlParseException("unexpected data at end of expression.\n" + get_error_location());
+        throw CdlParseException("Unexpected data at end of expression.\n" + get_error_location());
     }
 
     // Keep a copy of the original string for diagnostics purposes.
@@ -2789,7 +2790,7 @@ CdlListExpressionBody::eval_internal(CdlEvalContext& context, CdlListValue& resu
                 }
                 result.double_ranges.push_back(std::make_pair(x1, x2));
             } else {
-                throw CdlEvalException("range expression involves non-numerical limits");
+                throw CdlEvalException("Range expression involves non-numerical limits");
             }
         }
         

@@ -71,6 +71,21 @@ cdl_package CYGPKG_HAL_POWERPC_SIM {
             Only RAM startup is supported at the moment."
     }
 
+    cdl_option CYGHWR_HAL_POWERPC_FORCE_VECTORS {
+        display       "Force creation of vectors section."
+        calculated    1
+    }
+
+    cdl_option CYGHWR_HAL_POWERPC_DISABLE_MMU {
+        display       "Run with MMU disabled."
+        calculated    1
+        no_define
+        description   "
+            When building for SIM, don't enable MMU -- it's not needed
+            since caches are disabled, and there is a runtime simulation
+            overhead."
+    }
+
     # Real-time clock/counter specifics
     cdl_component CYGNUM_HAL_RTC_CONSTANTS {
         display       "Real-time clock constants."

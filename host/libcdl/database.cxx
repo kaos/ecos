@@ -73,57 +73,23 @@
 char*
 CdlPackagesDatabaseBody::database_name = "ecos.db";
 
-// ----------------------------------------------------------------------------
 // The new_package etc. commands need to store the name of the
 // current package so that subsequent commands can do the right thing.
 // Using constant strings as the key avoids typo problems.
-const char*     dbparser_current_package        = "::dbparser_current_package";
-const char*     dbparser_current_target         = "::dbparser_current_target";
+const char*     dbparser_pkgname                = "::dbparser_pkgname";
+const char*     dbparser_pkgdata                = "__cdl_dbparser_pkgdata";
+const char*     dbparser_targetname             = "::dbparser_targetname";
+const char*     dbparser_targetdata             = "__cdl_dbparser_targetdata";
 const char*     dbparser_component_repository   = "::component_repository";
-const char*     dbparser_database_name          = "::database_name";
-const char*     dbparser_pkgdir                 = "::pkgdir";
-const char*     dbparser_current_version        = "::version";
-const char*     dbparser_current_script         = "::script";
-const char*     dbparser_database_key           = "dbparser_key";       // for assoc data
+const char*     dbparser_database_key           = "__dbparser_key";       // for assoc data
 const char*     template_description_key        = "__cdl_extract_template_description"; // ditto
-const char*     template_packages_key           = "_cdl_extract_template_packages";
+const char*     template_packages_key           = "__cdl_extract_template_packages";
+
+// These are useful for generating diagnostics.
+static std::string diag_package = std::string("package ");
+static std::string diag_target  = std::string("target ");
 
 CYGDBG_DEFINE_MEMLEAK_COUNTER(CdlPackagesDatabaseBody);
-
-//}}}
-//{{{  Utility Tcl scripts                                      
-
-// ----------------------------------------------------------------------------
-// Utility scripts.
-//
-// Given a directory and a filename relative to that directory,
-// extract the contents of that file and store it in a variable
-// "script".
-
-static char* read_file_script = "                                       \n\
-if {[file pathtype $::database_name] != \"relative\"} {                 \n\
-    error \"Database name \\\"$::database_name\\\" should be relative\" \n\
-}                                                                       \n\
-set filename [file join $::component_repository $::database_name]       \n\
-if {0 == [file exists $filename]} {                                     \n\
-    error \"Component repository database $filename does not exist\"    \n\
-}                                                                       \n\
-if {0 == [file readable $filename]} {                                   \n\
-    error \"Component repository database $filename is not readable\"   \n\
-}                                                                       \n\
-set fd     \"\"                                                         \n\
-set script \"\"                                                         \n\
-set status [catch {                                                     \n\
-    set fd [open $filename r]                                           \n\
-    set script [read $fd]                                               \n\
-} message]                                                              \n\
-if {$fd != \"\"} {                                                      \n\
-    close $fd                                                           \n\
-}                                                                       \n\
-if { $status != 0 } {                                                   \n\
-    error $message                                                      \n\
-}                                                                       \n\
-";
 
 //}}}
 //{{{  Tcl commands for the parser                              
@@ -148,8 +114,6 @@ class CdlDbParser {
     static int target_description(CdlInterpreter, int, char**);
     static int target_alias(CdlInterpreter, int, char**);
     static int target_packages(CdlInterpreter, int, char**);
-    static int target_command_prefix(CdlInterpreter, int, char**);
-    static int target_cflags(CdlInterpreter, int, char**);
     static int target_enable(CdlInterpreter, int, char**);
     static int target_disable(CdlInterpreter, int, char**);
     static int target_set_value(CdlInterpreter, int, char**);
@@ -172,34 +136,43 @@ CdlDbParser::new_package(CdlInterpreter interp, int argc, char** argv)
     CYG_INVARIANT_CLASSC(CdlPackagesDatabaseBody, db);
     
     if (3 != argc) {
-        interp->set_result("A package definition should include name and contents");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
+        if (argc < 2) {
+            CdlParse::report_error(interp, "", "Invalid package command, missing name and contents.");
+        } else if (argc == 2) {
+            CdlParse::report_error(interp, diag_package + argv[1], "Invalid package command, missing body.");
+        } else {
+            CdlParse::report_error(interp, diag_package + argv[1],
+                                   "Invalid package command, expecting just name and body.");
+        }
+        CYG_REPORT_RETVAL(TCL_OK);
+        return TCL_OK;
     }
     std::string pkg_name        = argv[1];
-    std::string msg             = std::string("Package ") + pkg_name + ": ";
 
     // Better make sure that this is not a duplicate definition.
     if (std::find(db->package_names.begin(), db->package_names.end(), pkg_name) != db->package_names.end()) {
-        interp->set_result(msg + "a package can only be defined once");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
+        CdlParse::report_warning(interp, diag_package + pkg_name, "Duplicate package entry, ignoring second occurence.");
+        CYG_REPORT_RETVAL(TCL_OK);
+        return TCL_OK;
     }
-    // Add this package to the list.
-    db->package_names.push_back(pkg_name);
-
-    // Also create a new package structure. This requires a default structure,
-    // which cannot be filled in until the body is executed.
-    CdlPackagesDatabaseBody::package_data tmp_struct;
-    db->packages[pkg_name]      = tmp_struct;
-
-    CdlPackagesDatabaseBody::package_data& package = db->packages[pkg_name];
+    
+    // The package data is constructed locally. It only gets added to
+    // the database in the absence of errors.
+    bool package_ok      = true;
+    int  old_error_count = CdlParse::get_error_count(interp);
+        
+    CdlPackagesDatabaseBody::package_data package;
+    package.description = "";
+    package.directory   = "";
+    package.script      = "";
+    package.hardware    = false;
+    
     // aliases and versions are vectors and will take care of themselves
-    package.description         = "";
-    package.directory           = "";
-    package.script              = "";
-    package.hardware            = false;
-
+    // And the name had better be valid as well.
+    if (!Cdl::is_valid_cdl_name(pkg_name)) {
+        CdlParse::report_error(interp, diag_package + pkg_name, "This is not a valid CDL name.");
+    }
+    
     // Sort out the commands, then invoke the script in argv[2]. There is
     // no need to worry about error recovery here, any errors will be
     // fatal anyway.
@@ -211,40 +184,74 @@ CdlDbParser::new_package(CdlInterpreter interp, int argc, char** argv)
         CdlInterpreterCommandEntry("hardware",    &CdlDbParser::package_hardware    ),
         CdlInterpreterCommandEntry("",            0                                 )
     };
-    int i;
-    std::vector<CdlInterpreterCommandEntry> new_commands;
-    for (i = 0; 0 != commands[i].command; i++) {
-        new_commands.push_back(commands[i]);
-    }
-    std::vector<CdlInterpreterCommandEntry>* old_commands    = interp->push_commands(new_commands);
-    interp->set_variable(dbparser_current_package, pkg_name);
-    std::string str_result;
-    if (TCL_OK != interp->eval(argv[2], str_result)) {
-        interp->set_result(msg + str_result);
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
-    interp->pop_commands(old_commands);
-    interp->unset_variable(dbparser_current_package);
+    CdlInterpreterBody::CommandSupport  cmds(interp, commands);
+    CdlInterpreterBody::VariableSupport interp_name(interp, dbparser_pkgname, pkg_name);
+    CdlInterpreterBody::AssocSupport    interp_data(interp, dbparser_pkgdata, static_cast<ClientData>(&package));
+    int result = interp->eval(argv[2]);
+    if (TCL_OK == result) {
+        
+        // The body has been parsed OK. Check that it is valid.
+        if ("" == package.directory) {
+            CdlParse::report_error(interp, diag_package + pkg_name, "Missing directory specification.");
+        }
+        if ("" == package.script) {
+            CdlParse::report_error(interp, diag_package + pkg_name, "Missing script specification.");
+        }
+        if (0 == package.aliases.size()) {
+            CdlParse::report_error(interp, diag_package + pkg_name, "At least one alias should be supplied.");
+        }
 
-    // Some of the fields are compulsory.
-    if ("" == package.directory) {
-        interp->set_result(msg + "missing directory specification");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
+        // Additional checks. Is the package directory actually present.
+        if ("" != package.directory) {
+            std::string repo = interp->get_variable(dbparser_component_repository);
+            CYG_ASSERTC("" != repo);
+
+            std::string pkgdir = repo + "/" + package.directory;
+            if (!interp->is_directory(pkgdir)) {
+                CdlParse::report_warning(interp, diag_package + pkg_name,
+                        std::string("This package is not present in the component repository.\nThere is no directory `")
+                                    + pkgdir + "'.");
+                package_ok = false;
+            } else {
+                
+                // Now look for version subdirectories. There should be at least one.
+                std::vector<std::string> subdirs;
+                unsigned int i;
+                interp->locate_subdirs(pkgdir, subdirs);
+                std::sort(subdirs.begin(), subdirs.end(), Cdl::version_cmp());
+                
+                for (i = 0; i < subdirs.size(); i++) {
+                    if ("CVS" == subdirs[i]) {
+                        continue;
+                    }
+                    if ("" != package.script) {
+                        if (!(interp->is_file(pkgdir + "/" + subdirs[i] + "/cdl/" + package.script) ||
+                              interp->is_file(pkgdir + "/" + subdirs[i] + "/" + package.script))) {
+                            CdlParse::report_warning(interp, diag_package + pkg_name,
+                                                     std::string("Version subdirectory `") + subdirs[i] +
+                                                     "' does not have a CDL script `" + package.script + "'.");
+                            continue;
+                        }
+                    }
+                    package.versions.push_back(subdirs[i]);
+                }
+                if (0 == package.versions.size()) {
+                    CdlParse::report_warning(interp, diag_package + pkg_name,
+                                             "This package does not have any valid version subdirectories.");
+                    package_ok = false;
+                }
+            }
+        }
     }
-    if ("" == package.script) {
-        interp->set_result(msg + "missing script specification");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
+
+    // If the package is still ok, now is the time to add it to the database.
+    if (package_ok && (old_error_count == CdlParse::get_error_count(interp))) {
+        db->package_names.push_back(pkg_name);
+        db->packages[pkg_name] = package;
     }
-    if (0 == package.aliases.size()) {
-        interp->set_result(msg + "at least one alias should be supplied");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
-    CYG_REPORT_RETVAL(TCL_OK);
-    return TCL_OK;
+
+    CYG_REPORT_RETVAL(result);
+    return result;
 }
 
 // Syntax: description <text>
@@ -255,28 +262,18 @@ CdlDbParser::package_description(CdlInterpreter interp, int argc, char** argv)
     CYG_REPORT_FUNCARG1XV(argc);
     CYG_PRECONDITION_CLASSC(interp);
 
-    CdlPackagesDatabase db      = static_cast<CdlPackagesDatabase>(interp->get_assoc_data(dbparser_database_key));
-    CYG_INVARIANT_CLASSC(CdlPackagesDatabaseBody, db);
-
-    std::string name = interp->get_variable(dbparser_current_package);
+    std::string name = interp->get_variable(dbparser_pkgname);
     CYG_ASSERTC("" != name);
-    CYG_ASSERTC(db->packages.find(name) != db->packages.end());
-    
-    CdlPackagesDatabaseBody::package_data& package = db->packages[name];
-    std::string msg = "Package " + name + ": ";
+    CdlPackagesDatabaseBody::package_data* package =
+        static_cast<CdlPackagesDatabaseBody::package_data*>(interp->get_assoc_data(dbparser_pkgdata));
 
     if (2 != argc) {
-        interp->set_result(msg + "the package description should be a single string");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
+        CdlParse::report_error(interp, diag_package + name, "Invalid description, expecting a single string.");
+    } else if ("" != package->description) {
+        CdlParse::report_warning(interp, diag_package + name, "A package should have only one description.");
+    } else {
+        package->description = argv[1];
     }
-    if ("" != package.description) {
-        interp->set_result(msg + "a package can have only one description");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
-
-    package.description = argv[1];
     
     CYG_REPORT_RETVAL(TCL_OK);
     return TCL_OK;
@@ -291,45 +288,35 @@ CdlDbParser::package_alias(CdlInterpreter interp, int argc, char** argv)
     CYG_REPORT_FUNCARG1XV(argc);
     CYG_PRECONDITION_CLASSC(interp);
 
-    CdlPackagesDatabase db      = static_cast<CdlPackagesDatabase>(interp->get_assoc_data(dbparser_database_key));
-    CYG_INVARIANT_CLASSC(CdlPackagesDatabaseBody, db);
-
-    std::string name = interp->get_variable(dbparser_current_package);
+    std::string name = interp->get_variable(dbparser_pkgname);
     CYG_ASSERTC("" != name);
-    CYG_ASSERTC(db->packages.find(name) != db->packages.end());
-    
-    CdlPackagesDatabaseBody::package_data& package = db->packages[name];
-    std::string msg = "Package " + name + ": ";
-    
-    // The alias command should be used only once
-    if (0 < package.aliases.size()) {
-        interp->set_result(msg + "there should be only one list of aliases");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
+    CdlPackagesDatabaseBody::package_data* package =
+        static_cast<CdlPackagesDatabaseBody::package_data*>(interp->get_assoc_data(dbparser_pkgdata));
+
     // There should be one argument, a list of valid packages.
+    // Also, the alias command should be used only once
     if (2 != argc) {
-        interp->set_result(msg + "alias should be followed by a list of known aliases");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
+        CdlParse::report_error(interp, diag_package + name,
+                               "The alias command should be followed by a list of known aliases.");
+    } else if (0 < package->aliases.size()) {
+        CdlParse::report_warning(interp, diag_package + name, "There should be only one list of aliases.");
+    } else {
+        int         list_count      = 0;
+        char**      list_entries    = 0;
+        Tcl_Interp* tcl_interp      = interp->get_tcl_interpreter();
+        if (TCL_OK != Tcl_SplitList(tcl_interp, argv[1], &list_count, &list_entries)) {
+            CdlParse::report_error(interp, diag_package + name, Tcl_GetStringResult(tcl_interp));
+        } else {
+            if (0 == list_count) {
+                CdlParse::report_error(interp, diag_package + name, "At least one alias should be supplied.");
+            } else {
+                for (int i = 0; i < list_count; i++) {
+                    package->aliases.push_back(list_entries[i]);
+                }
+            }
+            Tcl_Free((char*)list_entries);
+        }
     }
-    int         list_count      = 0;
-    char**      list_entries    = 0;
-    Tcl_Interp* tcl_interp      = interp->get_tcl_interpreter();
-    if (TCL_OK != Tcl_SplitList(tcl_interp, argv[1], &list_count, &list_entries)) {
-        interp->set_result(msg + Tcl_GetStringResult(tcl_interp));
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
-    if (0 == list_count) {
-        interp->set_result(msg + "at least one alias should be supplied");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
-    for (int i = 0; i < list_count; i++) {
-        package.aliases.push_back(list_entries[i]);
-    }
-    Tcl_Free((char*)list_entries);
     
     CYG_REPORT_RETVAL(TCL_OK);
     return TCL_OK;
@@ -344,30 +331,20 @@ CdlDbParser::package_directory(CdlInterpreter interp, int argc, char** argv)
     CYG_REPORT_FUNCARG1XV(argc);
     CYG_PRECONDITION_CLASSC(interp);
 
-    CdlPackagesDatabase db      = static_cast<CdlPackagesDatabaseBody*>(interp->get_assoc_data(dbparser_database_key));
-    CYG_INVARIANT_CLASSC(CdlPackagesDatabaseBody, db);
-
-    std::string name = interp->get_variable(dbparser_current_package);
+    std::string name = interp->get_variable(dbparser_pkgname);
     CYG_ASSERTC("" != name);
-    CYG_ASSERTC(db->packages.find(name) != db->packages.end());
+    CdlPackagesDatabaseBody::package_data* package =
+        static_cast<CdlPackagesDatabaseBody::package_data*>(interp->get_assoc_data(dbparser_pkgdata));
 
-    CdlPackagesDatabaseBody::package_data& package = db->packages[name];
-    std::string msg = "Package " + name + ": ";
-
-    // The directory command should be used only once
-    if ("" != package.directory) {
-        interp->set_result(msg + "a package can be located in only one directory");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
-    // And there should be exactly one argument.
+    // There should be exactly one argument, and the directory command
+    // should be used only once.
     if (2 != argc) {
-        interp->set_result(msg + "only one directory can be specified");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
+        CdlParse::report_error(interp, diag_package + name, "Only one directory can be specified.");
+    } else if ("" != package->directory) {
+        CdlParse::report_warning(interp, diag_package + name, "A package can be located in only one directory.");
+    } else {
+        package->directory = argv[1];
     }
-
-    package.directory = argv[1];
     CYG_REPORT_RETVAL(TCL_OK);
     return TCL_OK;
 }
@@ -381,27 +358,18 @@ CdlDbParser::package_hardware(CdlInterpreter interp, int argc, char** argv)
     CYG_REPORT_FUNCARG1XV(argc);
     CYG_PRECONDITION_CLASSC(interp);
 
-    CdlPackagesDatabase db      = static_cast<CdlPackagesDatabaseBody*>(interp->get_assoc_data(dbparser_database_key));
-    CYG_INVARIANT_CLASSC(CdlPackagesDatabaseBody, db);
-
-    std::string name = interp->get_variable(dbparser_current_package);
+    std::string name = interp->get_variable(dbparser_pkgname);
     CYG_ASSERTC("" != name);
-    CYG_ASSERTC(db->packages.find(name) != db->packages.end());
-
-    CdlPackagesDatabaseBody::package_data& package = db->packages[name];
-    std::string msg = "Package " + name + ": ";
+    CdlPackagesDatabaseBody::package_data* package =
+        static_cast<CdlPackagesDatabaseBody::package_data*>(interp->get_assoc_data(dbparser_pkgdata));
 
     if (1 != argc) {
-        interp->set_result(msg + "there should be no further data after hardware");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
+        CdlParse::report_error(interp, diag_package + name, "There should be no further data after hardware.");
+    } else if (package->hardware) {
+        CdlParse::report_warning(interp, diag_package + name, "The hardware property should be specified only once");
+    } else {
+        package->hardware    = true;
     }
-    if (package.hardware) {
-        interp->set_result(msg + "the hardware property should be specified only once");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
-    package.hardware    = true;
     
     CYG_REPORT_RETVAL(TCL_OK);
     return TCL_OK;
@@ -415,29 +383,20 @@ CdlDbParser::package_script(CdlInterpreter interp, int argc, char** argv)
     CYG_REPORT_FUNCARG1XV(argc);
     CYG_PRECONDITION_CLASSC(interp);
 
-    CdlPackagesDatabase db      = static_cast<CdlPackagesDatabaseBody*>(interp->get_assoc_data(dbparser_database_key));
-    CYG_INVARIANT_CLASSC(CdlPackagesDatabaseBody, db);
-
-    std::string name = interp->get_variable(dbparser_current_package);
+    std::string name = interp->get_variable(dbparser_pkgname);
     CYG_ASSERTC("" != name);
-    CYG_ASSERTC(db->packages.find(name) != db->packages.end());
+    CdlPackagesDatabaseBody::package_data* package =
+        static_cast<CdlPackagesDatabaseBody::package_data*>(interp->get_assoc_data(dbparser_pkgdata));
 
-    CdlPackagesDatabaseBody::package_data& package = db->packages[name];
-    std::string msg = "Package " + name + ": ";
-
-    // The script command should be used only once
-    if ("" != package.script) {
-        interp->set_result(msg + "a package can have only one starting CDL script");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
-    // And there should be exactly one argument.
+    // There should be exactly one argument, and the script command
+    // should be used only once
     if (2 != argc) {
-        interp->set_result(msg + "only one CDL script can be specified");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
+        CdlParse::report_error(interp, diag_package + name, "Only one CDL script can be specified.");
+    } else if ("" != package->script) {
+        CdlParse::report_warning(interp, diag_package + name, "A package can have only one starting CDL script.");
+    } else {
+        package->script = argv[1];
     }
-    package.script = argv[1];
 
     CYG_REPORT_RETVAL(TCL_OK);
     return TCL_OK;
@@ -460,31 +419,35 @@ CdlDbParser::new_target(CdlInterpreter interp, int argc, char** argv)
     CYG_INVARIANT_CLASSC(CdlPackagesDatabaseBody, db);
     
     if (3 != argc) {
-        interp->set_result("A target definition should include name and contents");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
+        if (argc < 2) {
+            CdlParse::report_error(interp, "", "Invalid target command, missing name and contents.");
+        } else if (argc == 2) {
+            CdlParse::report_error(interp, diag_target + argv[1], "Invalid target command, missing body.");
+        } else {
+            CdlParse::report_error(interp, diag_target + argv[1], "Invalid target command, expecting just name and body.");
+        }
+        CYG_REPORT_RETVAL(TCL_OK);
+        return TCL_OK;
     }
+    
     std::string target_name     = argv[1];
-    std::string msg             = std::string("Target ") + target_name + ": ";
 
     // Better make sure that this is not a duplicate definition.
     if (std::find(db->target_names.begin(), db->target_names.end(), target_name) != db->target_names.end()) {
-        interp->set_result(msg + "a target can only be defined once");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
+        CdlParse::report_warning(interp, diag_target + target_name,
+                                 "Duplicate target entry, ignoring second occurence.");
+        CYG_REPORT_RETVAL(TCL_OK);
+        return TCL_OK;
     }
-    // Add this target to the list.
-    db->target_names.push_back(target_name);
 
-    // Also create a new target structure. This requires a default structure,
-    // which cannot be filled in until the body is executed.
-    CdlPackagesDatabaseBody::target_data tmp_struct;
-    db->targets[target_name] = tmp_struct;
+    // The target data is constructed locally. It only gets added to the
+    // database in the absence of errors.
+    bool target_ok = true;
+    int old_error_count = CdlParse::get_error_count(interp);
 
-    CdlPackagesDatabaseBody::target_data& target = db->targets[target_name];
+    CdlPackagesDatabaseBody::target_data target;
+    target.description = "";
     // aliases, packages and compiler_flags are vectors and will take care of themselves
-    target.description          = "";
-    target.command_prefix       = "";
 
     // Sort out the commands, then invoke the script in argv[2]. There is
     // no need to worry about error recovery here, any errors will be
@@ -493,48 +456,33 @@ CdlDbParser::new_target(CdlInterpreter interp, int argc, char** argv)
         CdlInterpreterCommandEntry("description",    &CdlDbParser::target_description    ),
         CdlInterpreterCommandEntry("alias",          &CdlDbParser::target_alias          ),
         CdlInterpreterCommandEntry("packages",       &CdlDbParser::target_packages       ),
-        CdlInterpreterCommandEntry("command_prefix", &CdlDbParser::target_command_prefix ),
-        CdlInterpreterCommandEntry("cflags",         &CdlDbParser::target_cflags         ),
         CdlInterpreterCommandEntry("enable",         &CdlDbParser::target_enable         ),
         CdlInterpreterCommandEntry("disable",        &CdlDbParser::target_disable        ),
         CdlInterpreterCommandEntry("set_value",      &CdlDbParser::target_set_value      ),
         CdlInterpreterCommandEntry("",               0                                   )
     };
-    int i;
-    std::vector<CdlInterpreterCommandEntry> new_commands;
-    for (i = 0; 0 != commands[i].command; i++) {
-        new_commands.push_back(commands[i]);
+    CdlInterpreterBody::CommandSupport  interp_cmds(interp, commands);
+    CdlInterpreterBody::VariableSupport interp_name(interp, dbparser_targetname, target_name);
+    CdlInterpreterBody::AssocSupport    interp_data(interp, dbparser_targetdata, static_cast<ClientData>(&target));
+    int result = interp->eval(argv[2]);
+    if (TCL_OK == result) {
+        
+        if (0 == target.aliases.size()) {
+            CdlParse::report_error(interp, diag_target + target_name, "At least one alias should be supplied.");
+        }
+        
+        // There is no check for > 0 hardware packages. This is an unlikely
+        // scenario but should be allowed for.
+        // Add this target to the list.
     }
-    std::vector<CdlInterpreterCommandEntry>* old_commands    = interp->push_commands(new_commands);
-    interp->set_variable(dbparser_current_target, target_name);
-    std::string str_result;
-    if (TCL_OK != interp->eval(argv[2], str_result)) {
-        interp->set_result(msg + str_result);
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
-    interp->pop_commands(old_commands);
-    interp->unset_variable(dbparser_current_target);
 
-    // Some of the fields are compulsory.
-    if (0 == target.aliases.size()) {
-        interp->set_result(msg + "at least one alias should be supplied");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
+    if (target_ok && (old_error_count == CdlParse::get_error_count(interp))) {
+        db->target_names.push_back(target_name);
+        db->targets[target_name] = target;
     }
-#if 0
-    // command_prefix is now handled in the configuration data.
-    if ("" == target.command_prefix) {
-        interp->set_result(msg + "missing command prefix specification");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
-#endif    
-    // There is no check for > 0 hardware packages. This is an unlikely
-    // scenario but should be allowed for.
     
-    CYG_REPORT_RETVAL(TCL_OK);
-    return TCL_OK;
+    CYG_REPORT_RETVAL(result);
+    return result;
 }
 
 // Syntax: description <text>
@@ -545,28 +493,18 @@ CdlDbParser::target_description(CdlInterpreter interp, int argc, char** argv)
     CYG_REPORT_FUNCARG1XV(argc);
     CYG_PRECONDITION_CLASSC(interp);
 
-    CdlPackagesDatabase db      = static_cast<CdlPackagesDatabase>(interp->get_assoc_data(dbparser_database_key));
-    CYG_INVARIANT_CLASSC(CdlPackagesDatabaseBody, db);
-
-    std::string name = interp->get_variable(dbparser_current_target);
+    std::string name = interp->get_variable(dbparser_targetname);
     CYG_ASSERTC("" != name);
-    CYG_ASSERTC(db->targets.find(name) != db->targets.end());
-    
-    CdlPackagesDatabaseBody::target_data& target = db->targets[name];
-    std::string msg = "Target " + name + ": ";
+    CdlPackagesDatabaseBody::target_data* target =
+        static_cast<CdlPackagesDatabaseBody::target_data*>(interp->get_assoc_data(dbparser_targetdata));
 
     if (2 != argc) {
-        interp->set_result(msg + "the target description should be a single string");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
+        CdlParse::report_error(interp, diag_target + name, "The target description should be a single string.");
+    } else if ("" != target->description) {
+        CdlParse::report_warning(interp, diag_target + name, "A target should have only one description.");
+    } else {
+        target->description = argv[1];
     }
-    if ("" != target.description) {
-        interp->set_result(msg + "a target can have only one description");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
-
-    target.description = argv[1];
     
     CYG_REPORT_RETVAL(TCL_OK);
     return TCL_OK;
@@ -581,45 +519,34 @@ CdlDbParser::target_alias(CdlInterpreter interp, int argc, char** argv)
     CYG_REPORT_FUNCARG1XV(argc);
     CYG_PRECONDITION_CLASSC(interp);
 
-    CdlPackagesDatabase db      = static_cast<CdlPackagesDatabase>(interp->get_assoc_data(dbparser_database_key));
-    CYG_INVARIANT_CLASSC(CdlPackagesDatabaseBody, db);
-
-    std::string name = interp->get_variable(dbparser_current_target);
+    std::string name = interp->get_variable(dbparser_targetname);
     CYG_ASSERTC("" != name);
-    CYG_ASSERTC(db->targets.find(name) != db->targets.end());
-    
-    CdlPackagesDatabaseBody::target_data& target = db->targets[name];
-    std::string msg = "Target " + name + ": ";
-    
-    // The alias command should be used only once
-    if (0 < target.aliases.size()) {
-        interp->set_result(msg + "there should be only one list of aliases");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
+    CdlPackagesDatabaseBody::target_data* target =
+        static_cast<CdlPackagesDatabaseBody::target_data*>(interp->get_assoc_data(dbparser_targetdata));
+
     // There should be one argument, a list of valid aliases
+    // The alias command should be used only once
     if (2 != argc) {
-        interp->set_result(msg + "alias should be followed by a list of known aliases");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
+        CdlParse::report_error(interp, diag_target + name, "The alias command should be followed by a list of known aliases");
+    } else if (0 < target->aliases.size()) {
+        CdlParse::report_warning(interp, diag_target + name, "There should be only one list of aliases.");
+    } else {
+        int         list_count      = 0;
+        char**      list_entries    = 0;
+        Tcl_Interp* tcl_interp      = interp->get_tcl_interpreter();
+        if (TCL_OK != Tcl_SplitList(tcl_interp, argv[1], &list_count, &list_entries)) {
+            CdlParse::report_error(interp, diag_target + name, Tcl_GetStringResult(tcl_interp));
+        } else {
+            if (0 == list_count) {
+                CdlParse::report_error(interp, diag_target + name, "At least one alias should be supplied.");
+            } else {
+                for (int i = 0; i < list_count; i++) {
+                    target->aliases.push_back(list_entries[i]);
+                }
+            }
+            Tcl_Free((char*)list_entries);
+        }
     }
-    int         list_count      = 0;
-    char**      list_entries    = 0;
-    Tcl_Interp* tcl_interp      = interp->get_tcl_interpreter();
-    if (TCL_OK != Tcl_SplitList(tcl_interp, argv[1], &list_count, &list_entries)) {
-        interp->set_result(msg + Tcl_GetStringResult(tcl_interp));
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
-    if (0 == list_count) {
-        interp->set_result(msg + "at least one alias should be supplied");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
-    for (int i = 0; i < list_count; i++) {
-        target.aliases.push_back(list_entries[i]);
-    }
-    Tcl_Free((char*)list_entries);
     
     CYG_REPORT_RETVAL(TCL_OK);
     return TCL_OK;
@@ -634,151 +561,33 @@ CdlDbParser::target_packages(CdlInterpreter interp, int argc, char** argv)
     CYG_REPORT_FUNCARG1XV(argc);
     CYG_PRECONDITION_CLASSC(interp);
 
-    CdlPackagesDatabase db      = static_cast<CdlPackagesDatabase>(interp->get_assoc_data(dbparser_database_key));
-    CYG_INVARIANT_CLASSC(CdlPackagesDatabaseBody, db);
-
-    std::string name = interp->get_variable(dbparser_current_target);
+    std::string name = interp->get_variable(dbparser_targetname);
     CYG_ASSERTC("" != name);
-    CYG_ASSERTC(db->targets.find(name) != db->targets.end());
-    
-    CdlPackagesDatabaseBody::target_data& target = db->targets[name];
-    std::string msg = "Target " + name + ": ";
-    
-    // The packages command should be used only once
-    if (0 < target.packages.size()) {
-        interp->set_result(msg + "there should be only one list of packages");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
+    CdlPackagesDatabaseBody::target_data* target =
+        static_cast<CdlPackagesDatabaseBody::target_data*>(interp->get_assoc_data(dbparser_targetdata));
+
     // There should be one argument, a list of valid packages.
+    // The packages command should be used only once
     if (2 != argc) {
-        interp->set_result(msg + "packages should be followed by a list of known packages");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
-    int         list_count      = 0;
-    char**      list_entries    = 0;
-    Tcl_Interp* tcl_interp      = interp->get_tcl_interpreter();
-    if (TCL_OK != Tcl_SplitList(tcl_interp, argv[1], &list_count, &list_entries)) {
-        interp->set_result(msg + Tcl_GetStringResult(tcl_interp));
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
-    if (0 == list_count) {
-        interp->set_result(msg + "at least one package should be supplied");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
-    for (int i = 0; i < list_count; i++) {
-        target.packages.push_back(list_entries[i]);
-    }
-    Tcl_Free((char*)list_entries);
-    
-    CYG_REPORT_RETVAL(TCL_OK);
-    return TCL_OK;
-}
-
-// Syntax: command_prefix <string>
-int
-CdlDbParser::target_command_prefix(CdlInterpreter interp, int argc, char** argv)
-{
-    CYG_REPORT_FUNCNAMETYPE("CdlDbParser::target_command_prefix", "result %d");
-    CYG_REPORT_FUNCARG1XV(argc);
-    CYG_PRECONDITION_CLASSC(interp);
-
-    CdlPackagesDatabase db      = static_cast<CdlPackagesDatabaseBody*>(interp->get_assoc_data(dbparser_database_key));
-    CYG_INVARIANT_CLASSC(CdlPackagesDatabaseBody, db);
-
-    std::string name = interp->get_variable(dbparser_current_target);
-    CYG_ASSERTC("" != name);
-    CYG_ASSERTC(db->targets.find(name) != db->targets.end());
-
-    CdlPackagesDatabaseBody::target_data& target = db->targets[name];
-    std::string msg = "Target " + name + ": ";
-
-    // The command_prefix command should be used only once
-    if ("" != target.command_prefix) {
-        interp->set_result(msg + "a target can have only one command_prefix string");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
-    // And there should be exactly one argument.
-    if (2 != argc) {
-        interp->set_result(msg + "only one command_prefix can be specified");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
-
-    target.command_prefix = argv[1];
-    CYG_REPORT_RETVAL(TCL_OK);
-    return TCL_OK;
-}
-
-// Syntax: cflags <list of pairs> ...
-// For example: cflags { ERRFLAGS "-Wall" DBGFLAGS "-g" }
-int
-CdlDbParser::target_cflags(CdlInterpreter interp, int argc, char** argv)
-{
-    CYG_REPORT_FUNCNAMETYPE("CdlDbParser::target_cflags", "result %d");
-    CYG_REPORT_FUNCARG1XV(argc);
-    CYG_PRECONDITION_CLASSC(interp);
-
-    CdlPackagesDatabase db      = static_cast<CdlPackagesDatabase>(interp->get_assoc_data(dbparser_database_key));
-    CYG_INVARIANT_CLASSC(CdlPackagesDatabaseBody, db);
-
-    std::string name = interp->get_variable(dbparser_current_target);
-    CYG_ASSERTC("" != name);
-    CYG_ASSERTC(db->targets.find(name) != db->targets.end());
-    
-    CdlPackagesDatabaseBody::target_data& target = db->targets[name];
-    std::string msg = "Target " + name + ": ";
-    
-    // The cflags command should be used only once
-    if (0 < target.cflags.size()) {
-        interp->set_result(msg + "there should be only one set of compiler flags");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
-    // There should be one argument, a list of valid flags.
-    if (2 != argc) {
-        interp->set_result(msg + "cflags should be followed by a list of compiler flag/value pairs");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
-    int         list_count      = 0;
-    char**      list_entries    = 0;
-    Tcl_Interp* tcl_interp      = interp->get_tcl_interpreter();
-    if (TCL_OK != Tcl_SplitList(tcl_interp, argv[1], &list_count, &list_entries)) {
-        interp->set_result(msg + Tcl_GetStringResult(tcl_interp));
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
-    if (0 != (list_count % 2)) {
-        interp->set_result(msg + "compiler flags and values must occur in pairs");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
-    int i;
-    const std::vector<std::string>& valid_cflags = CdlPackagesDatabaseBody::get_valid_cflags();
-    for (i = 0; i < list_count; i+= 2) {
-        std::vector<std::string>::const_iterator j;
-        for (j = valid_cflags.begin(); j != valid_cflags.end(); j++) {
-            if (*j == list_entries[i]) {
-                break;
+        CdlParse::report_error(interp, diag_target + name, "`packages' should be followed by a list of known packages.");
+    } else if (0 < target->packages.size()) {
+        CdlParse::report_warning(interp, diag_target + name, "There should be only one list of packages.");
+    } else {
+        int         list_count      = 0;
+        char**      list_entries    = 0;
+        Tcl_Interp* tcl_interp      = interp->get_tcl_interpreter();
+        if (TCL_OK != Tcl_SplitList(tcl_interp, argv[1], &list_count, &list_entries)) {
+            CdlParse::report_error(interp, diag_target + name, Tcl_GetStringResult(tcl_interp));
+        } else {
+            // Allow for a dummy target spec, just in case it proves useful.
+            if (0 != list_count) {
+                for (int i = 0; i < list_count; i++) {
+                    target->packages.push_back(list_entries[i]);
+                }
             }
-            if (j == valid_cflags.end()) {
-                interp->set_result(msg + "invalid cflag name " + list_entries[i]);
-                CYG_REPORT_RETVAL(TCL_ERROR);
-                return TCL_ERROR;
-            }
+            Tcl_Free((char*)list_entries);
         }
     }
-    // NOTE: do the quote marks have to be removed explicitly or is that done
-    // by splitlist?
-    for (i = 0; i < list_count; i+= 2) {
-        target.cflags.push_back(std::make_pair(list_entries[i], list_entries[i+1]));
-    }
-    Tcl_Free((char*)list_entries);
     
     CYG_REPORT_RETVAL(TCL_OK);
     return TCL_OK;
@@ -793,34 +602,27 @@ CdlDbParser::target_enable(CdlInterpreter interp, int argc, char** argv)
     CYG_REPORT_FUNCARG1XV(argc);
     CYG_PRECONDITION_CLASSC(interp);
 
-    CdlPackagesDatabase db = static_cast<CdlPackagesDatabase>(interp->get_assoc_data(dbparser_database_key));
-    CYG_INVARIANT_CLASSC(CdlPackagesDatabaseBody, db);
-
-    std::string name = interp->get_variable(dbparser_current_target);
+    std::string name = interp->get_variable(dbparser_targetname);
     CYG_ASSERTC("" != name);
-    CYG_ASSERTC(db->targets.find(name) != db->targets.end());
-
-    CdlPackagesDatabaseBody::target_data& target = db->targets[name];
-    std::string msg = "Target " + name + ": ";
+    CdlPackagesDatabaseBody::target_data* target =
+        static_cast<CdlPackagesDatabaseBody::target_data*>(interp->get_assoc_data(dbparser_targetdata));
 
     // There should be one argument, a list of valid flags.
     if (2 != argc) {
-        interp->set_result(msg + "enable should be followed by a list of CDL options");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
+        CdlParse::report_error(interp, diag_target + name, "`enable' should be followed by a list of CDL options.");
+    } else {
+        int         list_count      = 0;
+        char**      list_entries    = 0;
+        Tcl_Interp* tcl_interp      = interp->get_tcl_interpreter();
+        if (TCL_OK != Tcl_SplitList(tcl_interp, argv[1], &list_count, &list_entries)) {
+            CdlParse::report_error(interp, diag_target + name, Tcl_GetStringResult(tcl_interp));
+        } else {
+            for (int i = 0; i < list_count; i++) {
+                target->enable.push_back(list_entries[i]);
+            }
+            Tcl_Free((char *) list_entries);
+        }
     }
-    int         list_count      = 0;
-    char**      list_entries    = 0;
-    Tcl_Interp* tcl_interp      = interp->get_tcl_interpreter();
-    if (TCL_OK != Tcl_SplitList(tcl_interp, argv[1], &list_count, &list_entries)) {
-        interp->set_result(msg + Tcl_GetStringResult(tcl_interp));
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
-    for (int i = 0; i < list_count; i++) {
-        target.enable.push_back(list_entries[i]);
-    }
-    Tcl_Free((char *) list_entries);
 
     CYG_REPORT_RETVAL(TCL_OK);
     return TCL_OK;
@@ -836,34 +638,27 @@ CdlDbParser::target_disable(CdlInterpreter interp, int argc, char** argv)
     CYG_REPORT_FUNCARG1XV(argc);
     CYG_PRECONDITION_CLASSC(interp);
 
-    CdlPackagesDatabase db = static_cast<CdlPackagesDatabase>(interp->get_assoc_data(dbparser_database_key));
-    CYG_INVARIANT_CLASSC(CdlPackagesDatabaseBody, db);
-
-    std::string name = interp->get_variable(dbparser_current_target);
+    std::string name = interp->get_variable(dbparser_targetname);
     CYG_ASSERTC("" != name);
-    CYG_ASSERTC(db->targets.find(name) != db->targets.end());
-
-    CdlPackagesDatabaseBody::target_data& target = db->targets[name];
-    std::string msg = "Target " + name + ": ";
+    CdlPackagesDatabaseBody::target_data* target =
+        static_cast<CdlPackagesDatabaseBody::target_data*>(interp->get_assoc_data(dbparser_targetdata));
 
     // There should be one argument, a list of valid flags.
     if (2 != argc) {
-        interp->set_result(msg + "disable should be followed by a list of CDL options");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
+        CdlParse::report_error(interp, diag_target + name, "`disable' should be followed by a list of CDL options.");
+    } else {
+        int         list_count      = 0;
+        char**      list_entries    = 0;
+        Tcl_Interp* tcl_interp      = interp->get_tcl_interpreter();
+        if (TCL_OK != Tcl_SplitList(tcl_interp, argv[1], &list_count, &list_entries)) {
+            CdlParse::report_error(interp, diag_target + name, Tcl_GetStringResult(tcl_interp));
+        } else {
+            for (int i = 0; i < list_count; i++) {
+                target->disable.push_back(list_entries[i]);
+            }
+            Tcl_Free((char *) list_entries);
+        }
     }
-    int         list_count      = 0;
-    char**      list_entries    = 0;
-    Tcl_Interp* tcl_interp      = interp->get_tcl_interpreter();
-    if (TCL_OK != Tcl_SplitList(tcl_interp, argv[1], &list_count, &list_entries)) {
-        interp->set_result(msg + Tcl_GetStringResult(tcl_interp));
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
-    }
-    for (int i = 0; i < list_count; i++) {
-        target.disable.push_back(list_entries[i]);
-    }
-    Tcl_Free((char *) list_entries);
 
     CYG_REPORT_RETVAL(TCL_OK);
     return TCL_OK;
@@ -878,23 +673,17 @@ CdlDbParser::target_set_value(CdlInterpreter interp, int argc, char** argv)
     CYG_REPORT_FUNCARG1XV(argc);
     CYG_PRECONDITION_CLASSC(interp);
 
-    CdlPackagesDatabase db = static_cast<CdlPackagesDatabase>(interp->get_assoc_data(dbparser_database_key));
-    CYG_INVARIANT_CLASSC(CdlPackagesDatabaseBody, db);
-
-    std::string name = interp->get_variable(dbparser_current_target);
+    std::string name = interp->get_variable(dbparser_targetname);
     CYG_ASSERTC("" != name);
-    CYG_ASSERTC(db->targets.find(name) != db->targets.end());
-
-    CdlPackagesDatabaseBody::target_data& target = db->targets[name];
-    std::string msg = "Target " + name + ": ";
+    CdlPackagesDatabaseBody::target_data* target =
+        static_cast<CdlPackagesDatabaseBody::target_data*>(interp->get_assoc_data(dbparser_targetdata));
 
     // There should be one argument, a list of valid flags.
     if (3 != argc) {
-        interp->set_result(msg + "set_value command should be followed by an option name and its value");
-        CYG_REPORT_RETVAL(TCL_ERROR);
-        return TCL_ERROR;
+        CdlParse::report_error(interp, diag_target + name, "`set_value' should be followed by an option name and its value.");
+    } else {
+        target->set_values.push_back(std::make_pair(std::string(argv[1]), std::string(argv[2])));
     }
-    target.set_values.push_back(std::make_pair(std::string(argv[1]), std::string(argv[2])));
 
     CYG_REPORT_RETVAL(TCL_OK);
     return TCL_OK;
@@ -903,7 +692,6 @@ CdlDbParser::target_set_value(CdlInterpreter interp, int argc, char** argv)
 //}}}
 
 //}}}
-
 //{{{  CdlPackagesDatabase:: creation                           
 
 // ----------------------------------------------------------------------------
@@ -911,7 +699,7 @@ CdlDbParser::target_set_value(CdlInterpreter interp, int argc, char** argv)
 // constructor.
 
 CdlPackagesDatabase
-CdlPackagesDatabaseBody::make(std::string repo)
+CdlPackagesDatabaseBody::make(std::string repo, CdlDiagnosticFnPtr error_fn, CdlDiagnosticFnPtr warn_fn)
     throw(CdlInputOutputException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAMETYPE("CdlPackagesDatabase::make", "database %p");
@@ -936,14 +724,14 @@ CdlPackagesDatabaseBody::make(std::string repo)
             repo[i] = '/';
         }
     }
-    CdlPackagesDatabase result = new CdlPackagesDatabaseBody(repo);
+    CdlPackagesDatabase result = new CdlPackagesDatabaseBody(repo, error_fn, warn_fn);
     CYG_REPORT_RETVAL(result);
     return result;
 }
 
 // ----------------------------------------------------------------------------
 
-CdlPackagesDatabaseBody::CdlPackagesDatabaseBody(std::string repo)
+CdlPackagesDatabaseBody::CdlPackagesDatabaseBody(std::string repo, CdlDiagnosticFnPtr error_fn, CdlDiagnosticFnPtr warn_fn)
     throw(CdlInputOutputException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlPackagesDatabase:: constructor");
@@ -960,99 +748,36 @@ CdlPackagesDatabaseBody::CdlPackagesDatabaseBody(std::string repo)
     // For now it is assumed that the supplied pathname is acceptable to
     // Tcl.
     //
-    // A Tcl interpreter can be used to read in the file. It must not start
-    // off as a safe interpreter because file I/O is needed. However it has
-    // to be turned into a safe interpreter before the packages script is
-    // actually executed.
+    // No attempt is made at this stage to use a safe interpreter.
+    // Some file I/O operations are needed while processing the data,
+    // for example to check that a package is actually installed.
+    // Additional file I/O may prove useful in future, e.g. to create
+    // some or all of a database on the fly. Obviously some
+    // restrictions are desirable (no modify access to the repository,
+    // no network capabilities, and so on.) These have to be added
+    // in future.
 
-    // No need for a try/catch here, there are no resources to free yet.
     CdlInterpreter interp = CdlInterpreterBody::make();
 
     try {
-        interp->set_variable(dbparser_component_repository, repo);
-        interp->set_variable(dbparser_database_name, database_name);
-    }
-    catch(std::bad_alloc) {
-        delete interp;
-        throw;
-    }
-    std::string str_result;
-    if (TCL_OK != interp->eval(read_file_script, str_result)) {
-        delete interp;
-        throw CdlInputOutputException(str_result);
-    }
-
-    // We have the script. It comes from a source that is not completely
-    // trusted so it can only be executed in a safe interpreter. However
-    // after the script is read it will still be necessary to perform
-    // glob commands afterwards to locate version subdirectories
-    // and to check for the existence of the script files.
-    try {
+        
+        CdlInterpreterBody::ContextSupport context(interp, database_name);
         CdlInterpreterCommandEntry commands[] =
         {
             CdlInterpreterCommandEntry("package",  &CdlDbParser::new_package  ),
             CdlInterpreterCommandEntry("target",   &CdlDbParser::new_target   ),
             CdlInterpreterCommandEntry("",         0                          )
         };
-        unsigned int i;
-        std::vector<CdlInterpreterCommandEntry> new_commands;
-        for (i = 0; 0 != commands[i].command; i++) {
-            new_commands.push_back(commands[i]);
-        }
-        interp->set_assoc_data(dbparser_database_key, static_cast<ClientData>(this));
-        interp->push_commands(new_commands);
+        CdlInterpreterBody::CommandSupport cmds(interp, commands);
+        CdlInterpreterBody::DiagSupport diag(interp, error_fn, warn_fn);
+        CdlInterpreterBody::AssocSupport assoc(interp, dbparser_database_key, static_cast<ClientData>(this));
+        CdlInterpreterBody::VariableSupport var(interp, dbparser_component_repository, repo);
+        interp->add_command("unknown", &CdlParse::unknown_command);
+        CdlParse::clear_error_count(interp);
 
-        if (TCL_OK != interp->eval("                    \n\
-                set parser [interp create -safe]        \n\
-                $parser    alias package  ::package     \n\
-                $parser    alias target   ::target      \n\
-                $parser    eval  $script                \n\
-                ", str_result)) {
-            throw CdlInputOutputException(str_result);
-        }
-
-        // There should be at least one package and target.
-        if (0 == package_names.size()) {
-            throw CdlInputOutputException("There are no packages in the database.");
-        }
-        if (0 == target_names.size()) {
-            throw CdlInputOutputException("There are no targets in the database.");
-        }
-        
-        // All of the package names should be valid CDL names.
-        std::vector<std::string>::const_iterator name_i;
-        std::vector<std::string>::const_iterator name_j;
-        for (name_i = package_names.begin(); name_i != package_names.end(); name_i++) {
-            if (!Cdl::is_valid_cdl_name(*name_i)) {
-                throw CdlInputOutputException("Package " + *name_i + ", this is not a valid CDL name.");
-            }
-        }
-        
-        // The ecos.db data has been read in. For each package, find
-        // the subdirectories and list them as versions. Each package
-        // should have at least one version. Any errors will be
-        // handled by the catch statement further down.
-        for (std::map<std::string,package_data>::iterator pkg_i = packages.begin(); pkg_i != packages.end(); pkg_i++) {
-
-            std::string pkgdir = repo + "/" + pkg_i->second.directory;
-            std::vector<std::string> subdirs;
-            unsigned int i;
-            interp->locate_subdirs(pkgdir, subdirs);
-
-            for (i = 0; i < subdirs.size(); i++) {
-                if (("CVS" != subdirs[i]) &&
-                    (interp->is_file(pkgdir + "/" + subdirs[i] + "/cdl/" + pkg_i->second.script) ||
-                     interp->is_file(pkgdir + "/" + subdirs[i] + "/" + pkg_i->second.script))) {
-                    pkg_i->second.versions.push_back(subdirs[i]);
-                }
-            }
-            
-            if (0 == pkg_i->second.versions.size()) {
-                throw CdlInputOutputException("Package " + pkg_i->first + ": there are no version subdirectories");
-            }
-            std::sort(pkg_i->second.versions.begin(), pkg_i->second.versions.end(), Cdl::version_cmp());
-        }
-
+        // Ignore errors at this stage, instead check error count at the end.
+        (void) interp->eval_file(component_repository + "/" + database_name);
+    
         // Now start looking for templates. These should reside in the
         // templates subdirectory of the component repository. Each template
         // should be in its own directory, and inside each directory should
@@ -1061,6 +786,7 @@ CdlPackagesDatabaseBody::CdlPackagesDatabaseBody(std::string repo)
         std::vector<std::string> subdirs;
         interp->locate_subdirs(templates_dir, subdirs);
 
+        unsigned int i;
         for (i = 0; i < subdirs.size(); i++) {
             // Do not add the template to the known ones until we are sure there is
             // at least one valid template.
@@ -1082,20 +808,34 @@ CdlPackagesDatabaseBody::CdlPackagesDatabaseBody(std::string repo)
             }
         }
 
-        // Consistency checks. All target-specific packages should have the
-        // hardware attribute. Also, all the packages should exist.
+        // Consistency checks. All target-specific packages should
+        // have the hardware attribute. Also, all the packages should
+        // exist. Problems only result in warnings, to allow for
+        // somewhat inconsistent repositories e.g. an anoncvs tree.
+        std::vector<std::string>::const_iterator name_i;
+        std::vector<std::string>::const_iterator name_j;
         for (name_i = target_names.begin(); name_i != target_names.end(); name_i++) {
             for (name_j = targets[*name_i].packages.begin(); name_j != targets[*name_i].packages.end(); name_j++) {
                 if (std::find(package_names.begin(), package_names.end(), *name_j) == package_names.end()) {
-                    throw CdlInputOutputException("Target " + *name_i + " refers to an unknown package " + *name_j);
+                    CdlParse::report_warning(interp, diag_target + *name_i,
+                                             std::string("This target refers to an unknown package `") + *name_j + "'.");
                 }
                 if (!packages[*name_j].hardware) {
-                    throw CdlInputOutputException("Target " + *name_i + " refers to a non-hardware package " + *name_j);
+                    CdlParse::report_warning(interp, diag_target + *name_i,
+                                             std::string("This target refers to a package `") + *name_j +
+                                             "' that is not hardware-specific.");
                 }
             }
         }
-    }
-    catch(...) {
+
+        // Now, were there any errors while reading in the database?
+        // If so it is necessary to throw an exception here, to make sure
+        // that things get cleaned up properly.
+        int error_count = CdlParse::get_error_count(interp);
+        if (0 != error_count) {
+            throw CdlInputOutputException("Invalid package database.");
+        }
+    } catch(...) {
         // Something has gone wrong. Clear out all of the data accumulated so far, as well
         // as the interpreter.
         delete interp;
@@ -1449,40 +1189,6 @@ CdlPackagesDatabaseBody::get_target_packages(std::string target_name) const
     
     CYG_FAIL("Invalid target name passed to CdlPackagesDatabase::get_target_packages()");
     static std::vector<std::string> dummy;
-    return dummy;
-}
-
-const std::string&
-CdlPackagesDatabaseBody::get_target_command_prefix(std::string target_name) const
-{
-    CYG_REPORT_FUNCNAME("CdlPackagesDatabase::get_target_command_prefix");
-    CYG_PRECONDITION_THISC();
-
-    std::map<std::string,target_data>::const_iterator target_i = targets.find(target_name);
-    if (target_i != targets.end()) {
-        CYG_REPORT_RETURN();
-        return target_i->second.command_prefix;
-    }
-    
-    CYG_FAIL("Invalid target name passed to CdlPackagesDatabase::get_target_command_prefix()");
-    static std::string dummy = "";
-    return dummy;
-}
-
-const std::vector<std::pair<std::string,std::string> >&
-CdlPackagesDatabaseBody::get_target_compiler_flags(std::string target_name) const
-{
-    CYG_REPORT_FUNCNAME("CdlPackagesDatabase::get_target_compiler_flags");
-    CYG_PRECONDITION_THISC();
-
-    std::map<std::string,target_data>::const_iterator target_i = targets.find(target_name);
-    if (target_i != targets.end()) {
-        CYG_REPORT_RETURN();
-        return target_i->second.cflags;
-    }
-    
-    CYG_FAIL("Invalid target name passed to CdlPackagesDatabase::get_target_compiler_flags()");
-    static std::vector<std::pair<std::string,std::string> > dummy;
     return dummy;
 }
 

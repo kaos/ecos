@@ -66,7 +66,6 @@
 #define IDD_TT_NEW_PLATFORM             24094
 #define IDD_TT_PLATFORMS_DIALOG         24095
 #define IDC_TT_NEW_PLATFORM_GDB         24096
-#define IDC_TYPE_COMBO                  24097
 #define IDC_TT_NEW_PLATFORM             24098
 #define IDC_TT_DELETE_PLATFORM          24099
 #define IDC_TT_ADD_PLATFORM             24100
@@ -74,6 +73,9 @@
 #define IDC_TT_MODIFY_PLATFORM          24104
 #define IDC_TT_RESETSTRING              24107
 #define IDC_EDIT1                       24108
+#define IDC_INFERIOR                    24108
+#define IDC_PROMPT                      24109
+#define IDC_SERVER_SIDE_GDB             24110
 #define ID_TT_EDIT_SAVE                 54000
 
 // Next default values for new objects
@@ -83,7 +85,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        24097
 #define _APS_NEXT_COMMAND_VALUE         54001
-#define _APS_NEXT_CONTROL_VALUE         24109
+#define _APS_NEXT_CONTROL_VALUE         24111
 #define _APS_NEXT_SYMED_VALUE           24092
 #endif
 #endif

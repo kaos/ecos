@@ -36,70 +36,69 @@
 #include "eCosStd.h"
 #include "Collections.h"
 
+//////////////////////////////////////////////////////////////////////
+// This class manages properties and their serialization.
+// What you do is this:
+//   1. Declare the CProperties object
+//   2. Call one or more "Add" functions to associate variables with names
+//   3. Call one of the "Load" or "Save" functions to load or save the values
+// There are three ways in which the "Load" or "Save" functions operate
+//   a. Loading/saving to/from a file [LoadFromFile/SaveToFile]
+//      In this case the contents of the file will look like
+//        name1=value1
+//        name2=value2
+//        ...
+//   b. Loading/saving to/from a command string [LoadFromCommandString/MakeCommandString]
+//      In this case the contents of the string will look like
+//        -name1=value1 -name2=value2 ...
+//   c. Loading/saving to/from the registry [LoadFromRegistry/SaveToRegistry]
+//      In this case the registry will contain a set of values (name1, name2,...) each of whose
+//      value data is the corresponding value.
+//////////////////////////////////////////////////////////////////////
+
 class CProperties  
 {
 public:
-//  bool Remove (LPCTSTR pszName);
-  void RemoveAll ();
+  CProperties();
+  virtual ~CProperties();
+
   // Declare various types of property.  The functions associate names with 
   // variables, but no values are assigned here.  That comes later when a
   // load function (such as LoadFromRegistry) is called.
-  void Add (LPCTSTR pszName,int &n,int nDefault=0);
-  void Add (LPCTSTR pszName,unsigned int &n,unsigned int nDefault=0);
-  void Add (LPCTSTR pszName,bool &b,bool bDefault=false);
-  void Add (LPCTSTR pszName,char &c,char cDefault='\0');
-  void Add (LPCTSTR pszName,unsigned char &c,unsigned char cDefault='\0');
-  void Add (LPCTSTR pszName,short&s,short sDefault=0);
-  void Add (LPCTSTR pszName,unsigned short&s,unsigned short sDefault=0);
-  void Add (LPCTSTR pszName,float&f,float fDefault=0.0);
-  void Add (LPCTSTR pszName,double&f,double fDefault=0.0);
-  void Add (LPCTSTR pszName,void *d,unsigned int nLength,void *pvDefault=0);
-  void Add (LPCTSTR pszName,LPTSTR s,unsigned int nLength,LPCTSTR sDefault=_T(""));
-  // String adding with caller defining get and put.  This is here to preserve the neutrality of
-  // the class - cannot assume MFC's String, for example.  Implementation of these fns might be:
-  //    static LPCTSTR CALLBACK GetFn (void *pObj) { return (LPCTSTR)*(String *)pObj; }
-  //    static void    CALLBACK PutFn (void *pObj,LPCTSTR psz) { *(String *)pObj=psz; }
-  
-  typedef void (CALLBACK putFn)(void *,LPCTSTR);
-  typedef LPCTSTR (CALLBACK getFn)(void *);
-  void Add (LPCTSTR pszName,void *pObj,getFn *pgetFn,putFn *pputFn,LPCTSTR pszDefault=_T(""));
-  
-  // Set all Added variables to their default values
-  void SetDefaults();
-  // Load (from registry ro f
-  bool Load(LPCTSTR pszPrefix=_T(""));
-  bool Save(LPCTSTR pszPrefix=_T(""));
+  void Add (LPCTSTR pszName,int &n);
+  void Add (LPCTSTR pszName,unsigned int &n);
+  void Add (LPCTSTR pszName,bool &b);
+  void Add (LPCTSTR pszName,char &c);
+  void Add (LPCTSTR pszName,unsigned char &c);
+  void Add (LPCTSTR pszName,short&s);
+  void Add (LPCTSTR pszName,unsigned short&s);
+  void Add (LPCTSTR pszName,float&f);
+  void Add (LPCTSTR pszName,double&f);
+  void Add (LPCTSTR pszName,String &s);
+  void Add (LPCTSTR pszName,void *d,unsigned int nLength);
   
   // Load from and save to a command string.
-  String MakeCommandString (LPCTSTR pszPrefix=_T("-")) const; // caller must delete []
-  bool LoadFromCommandString (LPCTSTR psz,LPCTSTR pszPrefix=_T("-"));
-  
-  CProperties(LPCTSTR pszFile,void *hKey=0);
-  virtual ~CProperties();
+  String MakeCommandString () const; // caller must delete []
+  bool LoadFromCommandString (LPCTSTR psz);
+
+  // Load from and save to a given file.  The format is name=value, one per line.
+  bool LoadFromFile(LPCTSTR pszFileName);
+  bool SaveToFile (LPCTSTR pszFileName) const;
+
 #ifdef _WIN32
+  bool LoadFromRegistry (HKEY,LPCTSTR);
+  bool SaveToRegistry(HKEY,LPCTSTR) const;
   static bool CreateKey (LPCTSTR pszKey,HKEY hKey=HKEY_CURRENT_USER);
 #endif
+
 protected:
   static bool CreatePathToFile(LPCTSTR pszDir);
-  String m_strName;
   
-  // Load from and save to a given file.  The format is name=value, one per line.
-  bool LoadFromFile(LPCTSTR pszFileName,LPCTSTR pszPrefix=_T(""));
-  bool SaveToFile (LPCTSTR pszFileName,LPCTSTR pszPrefix=_T("")) const;
-  // Load from and save to the registry
-  void *m_hKey;
-#ifdef _WIN32
-  bool SaveToRegistry(HKEY,LPCTSTR,LPCTSTR pszPrefix=_T("")) const;
-  bool LoadFromRegistry (HKEY,LPCTSTR,LPCTSTR pszPrefix=_T(""));
-#endif
-  
-  PtrArray ar; // Holds declared properties
   class CProperty {
   public:
-    enum Typetype {Integer, szString, GPString, Bool, Char, Short, Float, Double, Void};
+    enum Typetype {Integer, szString, Bool, Char, Short, Float, Double, Void};
     CProperty(LPCTSTR pszName,Typetype type,void *_pData);
     virtual ~CProperty();
-    void SetDefault();
     friend class CProperties;
     bool  SetValue(int n);
     bool  SetValue(double n);
@@ -112,17 +111,10 @@ protected:
     String strName;
     Typetype Type;
     void *pData;
-    union {
-      int    nDefault;
-      double dDefault;
-      void* pvDefault; 
-    };
-    String strDefault; // can't be in union - has copy ctor
-    getFn *pgetFn;
-    putFn *pputFn;
-    unsigned int nLength; // for szString and Void
+    unsigned int nLength; // for Void
   };
   CProperty * Lookup (LPCTSTR pszName);
+  std::vector<CProperty> ar; // Holds declared properties
 };
 
 #endif // !defined(AFX_PROPERTIES_H__DA938D29_135A_11D3_A50B_00A0C949ADAC__INCLUDED_)

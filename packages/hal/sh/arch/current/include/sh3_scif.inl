@@ -113,6 +113,8 @@ int  cyg_hal_gdb_isr( target_register_t pc ); // called from vectors.S
 
 CYG_SCIF_PUBLIC void NC(init_serial)( void )
 {
+    cyg_uint16 sr;
+
     // Disable interrupts.
 #ifdef CYG_SCIF_IRDA
     // Note: This affects out all IRDA sources, not only RXI1.
@@ -158,6 +160,10 @@ CYG_SCIF_PUBLIC void NC(init_serial)( void )
     // just move on and hope for the best (this is unlikely to cause
     // problems since the CPU has just come out of reset anyway).
 
+    // Clear status register (read back first).
+    HAL_READ_UINT16(_SCSSR, sr);
+    HAL_WRITE_UINT16(_SCSSR, 0);
+
     // Bring FIFO out of reset and set to trigger on every char in
     // FIFO (or C-c input would not be processed).
     HAL_WRITE_UINT8(_SCFCR, CYGARC_REG_SCFCR2_RTRG_1|CYGARC_REG_SCFCR2_TTRG_1);
@@ -169,7 +175,7 @@ CYG_SCIF_PUBLIC void NC(init_serial)( void )
 CYG_SCIF_PUBLIC int NC(get_char)( void )
 {
     cyg_uint8 c;
-    cyg_uint16 fdr;
+    cyg_uint16 fdr, sr;
 
     do {
         HAL_READ_UINT16(_SCFDR, fdr);
@@ -177,8 +183,9 @@ CYG_SCIF_PUBLIC int NC(get_char)( void )
 
     HAL_READ_UINT8(_SCFRDR, c);
 
-    // Clear FIFO full flag.
-    HAL_WRITE_UINT8(_SCSSR,
+    // Clear FIFO full flag (read before clearing)
+    HAL_READ_UINT16(_SCSSR, sr);
+    HAL_WRITE_UINT16(_SCSSR,
                     CYGARC_REG_SCSSR2_CLEARMASK & ~CYGARC_REG_SCSSR2_RDF);
 
     return c;
@@ -186,22 +193,23 @@ CYG_SCIF_PUBLIC int NC(get_char)( void )
 
 CYG_SCIF_PUBLIC void NC(put_char)( int c )
 {
-    cyg_uint16 fdr;
+    cyg_uint16 fdr, sr;
 
     do {
         HAL_READ_UINT16(_SCFDR, fdr);
-    } while ((fdr & CYGARC_REG_SCFDR2_TCOUNT_MASK >> CYGARC_REG_SCFDR2_TCOUNT_shift) < 16);
+    } while (((fdr & CYGARC_REG_SCFDR2_TCOUNT_MASK) >> CYGARC_REG_SCFDR2_TCOUNT_shift) == 16);
 
     HAL_WRITE_UINT8(_SCFTDR, c);
 
-    // Clear FIFO-empty/transmit end flags.
-    HAL_WRITE_UINT8(_SCSSR, CYGARC_REG_SCSSR2_CLEARMASK   
+    // Clear FIFO-empty/transmit end flags (read back SR first)
+    HAL_READ_UINT16(_SCSSR, sr);
+    HAL_WRITE_UINT16(_SCSSR, CYGARC_REG_SCSSR2_CLEARMASK   
                     & ~(CYGARC_REG_SCSSR2_TDFE | CYGARC_REG_SCSSR2_TEND ));
 
     // Hang around until the character has been safely sent.
     do {
         HAL_READ_UINT16(_SCFDR, fdr);
-    } while ((fdr & CYGARC_REG_SCFDR2_TCOUNT_MASK) == 0);
+    } while ((fdr & CYGARC_REG_SCFDR2_TCOUNT_MASK) != 0);
 }
 
 
@@ -253,15 +261,16 @@ void NC(init_break_irq)( void )
 int cyg_hal_gdb_isr( target_register_t pc )
 {
     cyg_uint8 c;
-    cyg_uint16 fdr;
+    cyg_uint16 fdr, sr;
 
     HAL_READ_UINT16(_SCFDR, fdr);
     if ((fdr & CYGARC_REG_SCFDR2_RCOUNT_MASK) != 0) {
         HAL_READ_UINT8(_SCFRDR, c);
 
-        // Clear buffer full flag.
-        HAL_WRITE_UINT8(_SCSSR, 
-                        CYGARC_REG_SCSSR2_CLEARMASK & ~CYGARC_REG_SCSSR2_RDF);
+        // Clear buffer full flag (read back first).
+        HAL_READ_UINT16(_SCSSR, sr);
+        HAL_WRITE_UINT16(_SCSSR, 
+                         CYGARC_REG_SCSSR2_CLEARMASK & ~CYGARC_REG_SCSSR2_RDF);
 
         if ( 3 == c )
         {

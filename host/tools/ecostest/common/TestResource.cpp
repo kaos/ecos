@@ -42,35 +42,32 @@
 #include "eCosStd.h"
 #include "eCosTestUtils.h"
 #include "eCosTrace.h"
-#ifdef _WIN32
-  #include "Subprocess.h"
-#endif
+#include "Subprocess.h"
+
 #include "TestResource.h"
 
 CTestResource *CTestResource::pFirstInstance=0;
 unsigned int CTestResource::nCount=0;
 
-String CTestResource::strResourceHost;
-int CTestResource::nResourcePort;
+String CTestResource::strResourceHostPort;
 
-CTestResource::CTestResource(LPCTSTR target, LPCTSTR  pszDownloadPort, int nBaud, LPCTSTR pszResetString):
+CTestResource::CTestResource(LPCTSTR pszHostPort, LPCTSTR target, LPCTSTR  pszDownloadPort, int nBaud, LPCTSTR pszResetString):
   m_strReset(pszResetString),
   m_bInUse(false),
   m_nBaud(nBaud),
   m_strPort(pszDownloadPort),
   m_bLocked(false),
-  m_Target(target),
-  m_strHost(CeCosTestUtils::HostName()),
-  m_nPort(0)
+  m_Target(target)
 {
-  VTRACE(_T("@@@ Created resource %08x %s\n"),(unsigned int)this,(LPCTSTR)Output());
+  CeCosSocket::ParseHostPort(pszHostPort,m_strHost,m_nPort);
+  VTRACE(_T("@@@ Created resource %08x %s\n"),(unsigned int)this,(LPCTSTR)Image());
   Chain();
 }
 
 CTestResource::~CTestResource()
 {
   ENTERCRITICAL;
-  VTRACE(_T("@@@ Destroy resource %08x %s\n"),this,(LPCTSTR)Output());
+  VTRACE(_T("@@@ Destroy resource %08x %s\n"),this,(LPCTSTR)Image());
   if(m_pPrevInstance || m_pNextInstance){
     nCount--;
   }
@@ -88,13 +85,17 @@ CTestResource::~CTestResource()
 
 // Find the resource matching the given host:port specification
 // Returns 0 if no such host:port found
-CTestResource * CTestResource::Lookup(LPCTSTR  pszHost, int nPort)
+CTestResource * CTestResource::Lookup(LPCTSTR pszHostPort)
 {
-  CTestResource *pResource;
+  CTestResource *pResource=NULL;
   ENTERCRITICAL;
-  for(pResource=pFirstInstance;pResource;pResource=pResource->m_pNextInstance){
-    if(nPort==pResource->TcpipPort() && 0==_tcsicmp(pszHost,pResource->Host())){
-      break;
+  String strHost;
+  int nPort;
+  if(CeCosSocket::ParseHostPort(pszHostPort,strHost,nPort)){
+    for(pResource=pFirstInstance;pResource;pResource=pResource->m_pNextInstance){
+      if(nPort==pResource->TcpIPPort() && CeCosSocket::SameHost(strHost,pResource->Host())){
+        break;
+      }
     }
   }
   LEAVECRITICAL;
@@ -118,12 +119,12 @@ bool CTestResource::GetMatches (const CeCosTest::ExecutionParameters &e, StringA
 {
   bool rc=false;
   arstr.clear();
-  if(LoadSocket()){
+  if(Load()){
     ENTERCRITICAL;
     for(CTestResource *pResource=pFirstInstance;pResource;pResource=pResource->m_pNextInstance){
-		    if(pResource->Matches(e,bIgnoreLocking)){
-		        arstr.push_back(CeCosTestSocket::HostPort(pResource->Host(),pResource->TcpipPort()));
-        }
+		  if(pResource->Matches(e,bIgnoreLocking)){
+        arstr.push_back(pResource->HostPort());
+      }
     }
     LEAVECRITICAL;
     rc=true;
@@ -140,140 +141,141 @@ void CTestResource::DeleteAllInstances()
   LEAVECRITICAL;
 }
 
-bool CTestResource::LoadFile (LPCTSTR psz,void *key)
+bool CTestResource::LoadFromDirectory (LPCTSTR psz)
 {
   bool rc=true;
   ENTERCRITICAL;
   DeleteAllInstances();
-#ifdef _WIN32
-  if(key){
-    // Find all the keys under "psz" and load from each of them
-    HKEY hKey;
-    if(ERROR_SUCCESS==RegOpenKeyEx ((HKEY)key, psz, 0L, KEY_ENUMERATE_SUB_KEYS, &hKey)){
-		    TCHAR szName[256];
-        DWORD dwSizeName=sizeof szName;
-        FILETIME ftLastWriteTime;
-        for(DWORD dwIndex=0;ERROR_SUCCESS==RegEnumKeyEx(hKey, dwIndex, szName, &dwSizeName, NULL, NULL, NULL, &ftLastWriteTime); dwIndex++){
-          CTestResource *pResource=new CTestResource(_T(""));
-          String strKey;
-          strKey.Format(_T("%s\\%s"),psz,szName);
-          CTestResourceProperties prop1(pResource,strKey,key);
-          prop1.SetDefaults();
-          prop1.Load();
-          dwSizeName=sizeof szName;
-        }
-        RegCloseKey(hKey);
-    }
-  } else
-#endif
-  {
-    // Find all the files in directory "psz" and load from each of them
+  // Find all the files in directory "psz" and load from each of them
+  TCHAR szOrigDir[256];
+  _tgetcwd(szOrigDir,sizeof szOrigDir-1);
+  if(0==_tchdir(psz)){
+    String strFile;
     void *pHandle;
-    TCHAR szOrigDir[256];
-    _tgetcwd(szOrigDir,sizeof szOrigDir-1);
-    if(0==_tchdir(psz)){
-      String strFile;
-      for(bool b=CeCosTestUtils::StartSearch(pHandle,strFile);b;b=CeCosTestUtils::NextFile(pHandle,strFile)){
-        struct _stat buf;
-        if(0==_tstat(strFile,&buf) && 0==(S_IFDIR&buf.st_mode)){
-          CTestResource *pResource=new CTestResource(_T(""));
-          CTestResourceProperties prop1(pResource,strFile);
-          prop1.SetDefaults();
-          prop1.Load();
-        }
+    for(bool b=CeCosTestUtils::StartSearch(pHandle,strFile);b;b=CeCosTestUtils::NextFile(pHandle,strFile)){
+      if(CeCosTestUtils::IsFile(strFile)){
+        CTestResource *pResource=new CTestResource(_T(""),_T(""));
+        CTestResourceProperties prop(pResource);
+        prop.LoadFromFile(strFile);
       }
-      CeCosTestUtils::EndSearch(pHandle);
-    } else {
-      TRACE(_T("Failed to change to %s from %s\n"),psz,szOrigDir);
     }
-    _tchdir(szOrigDir);
+    CeCosTestUtils::EndSearch(pHandle);
+  } else {
+    TRACE(_T("Failed to change to %s from %s\n"),psz,szOrigDir);
   }
+  _tchdir(szOrigDir);
   LEAVECRITICAL;
   
   return rc;
 }
 
-bool CTestResource::SaveFile (LPCTSTR psz,void *key)
+bool CTestResource::SaveToDirectory (LPCTSTR pszDir)
 {
   bool rc=false;    
   ENTERCRITICAL;
-#ifdef _WIN32
-  if(key){
-    // Delete all the keys under "psz"
-    HKEY hKey;
-    if(ERROR_SUCCESS==RegOpenKeyEx ((HKEY)key, psz, 0L, KEY_ENUMERATE_SUB_KEYS, &hKey)){
-		    TCHAR szName[256];
-        DWORD dwSizeName=sizeof szName;
-        FILETIME ftLastWriteTime;
-        DWORD dwIndex;
-        if(ERROR_SUCCESS==RegQueryInfoKey(hKey,0,0,0,&dwIndex,0,0,0,0,0,0,0)){
-          while((signed)--dwIndex>=0){
-            if(ERROR_SUCCESS!=RegEnumKeyEx(hKey, dwIndex, szName, &dwSizeName, NULL, NULL, NULL, &ftLastWriteTime) ||
-              ERROR_SUCCESS!=RegDeleteKey(hKey,szName)){
-              rc=false;
-            }
-            dwSizeName=sizeof szName;
-		        }
-        }
-        RegCloseKey(hKey);
-    }
-  } else
-#endif
   {
-    // Delete all the files under directory "psz"
+    // Delete all the files under directory "pszDir"
     void *pHandle;
     TCHAR szOrigDir[256];
     _tgetcwd(szOrigDir,sizeof szOrigDir-1);
-    if(0==_tchdir(psz)){
+    if(0==_tchdir(pszDir)){
       String strFile;
       for(bool b=CeCosTestUtils::StartSearch(pHandle,strFile);b;b=CeCosTestUtils::NextFile(pHandle,strFile)){
-        struct _stat buf;
-        if(0==_tstat(strFile,&buf) && 0==(S_IFDIR&buf.st_mode)){
+        if(CeCosTestUtils::IsFile(strFile)){
           _tunlink(strFile);
         }
       }
       CeCosTestUtils::EndSearch(pHandle);
+      rc=true;
+      for(CTestResource *pResource=pFirstInstance;pResource;pResource=pResource->m_pNextInstance){
+        CTestResourceProperties prop(pResource);
+        rc&=prop.SaveToFile(pResource->FileName());
+      }
     } else {
-      fprintf(stderr,"Failed to change to %s from %s\n",psz,szOrigDir);
+      fprintf(stderr,"Failed to change to %s from %s\n",pszDir,szOrigDir);
     }
     _tchdir(szOrigDir);
   }
   
-  rc=true;
-  for(CTestResource *pResource=pFirstInstance;pResource;pResource=pResource->m_pNextInstance){
-    String strName;
-    if(key){
-      strName.Format(_T("%s\\%s-%d"),psz,(LPCTSTR)pResource->m_strHost,pResource->m_nPort);
-      CTestResourceProperties prop1(pResource,strName,key);
-      rc&=prop1.Save();
-    } else {
-      strName.Format(_T("%s%c%s-%d"),psz,cPathsep,(LPCTSTR)pResource->m_strHost,pResource->m_nPort);
-      CTestResourceProperties prop1(pResource,strName,key);
-      rc&=prop1.Save();
-    }
-    
-  }
   LEAVECRITICAL;
   
   return rc;
 }
 
-CTestResource::CTestResourceProperties::CTestResourceProperties(CTestResource *pResource,LPCTSTR psz,void *key):
-  CProperties(psz,key)
+#ifdef _WIN32
+bool CTestResource::LoadFromRegistry(HKEY key,LPCTSTR psz)
 {
-  CProperties::Add(_T("Baud"),       pResource->m_nBaud,0);
-               Add(_T("BoardId"),    pResource->m_strBoardID);
-               Add(_T("Date"),       pResource->m_strDate);
-               Add(_T("Email"),      pResource->m_strEmail);
-               Add(_T("Host"),       pResource->m_strHost);
-  CProperties::Add(_T("Locked"),     pResource->m_bLocked,0);
-               Add(_T("Originator"), pResource->m_strUser);
-  CProperties::Add(_T("Port"),       pResource->m_nPort);
-               Add(_T("Reason"),     pResource->m_strReason);
-               Add(_T("Reset"),      pResource->m_strReset);
-               Add(_T("Serial"),     pResource->m_strPort);
-               Add(_T("Target"),     pResource->m_Target);
-               Add(_T("User"),       pResource->m_strUser);
+  // Find all the keys under "psz" and load from each of them
+  bool rc=false;    
+  ENTERCRITICAL;
+  HKEY hKey;
+  if(ERROR_SUCCESS==RegOpenKeyEx ((HKEY)key, psz, 0L, KEY_ENUMERATE_SUB_KEYS, &hKey)){
+		TCHAR szName[256];
+    DWORD dwSizeName=sizeof szName;
+    FILETIME ftLastWriteTime;
+    for(DWORD dwIndex=0;ERROR_SUCCESS==RegEnumKeyEx(hKey, dwIndex, szName, &dwSizeName, NULL, NULL, NULL, &ftLastWriteTime); dwIndex++){
+      CTestResource *pResource=new CTestResource(_T(""),_T(""));
+      String strKey;
+      strKey.Format(_T("%s\\%s"),psz,szName);
+      CTestResourceProperties prop1(pResource);
+      prop1.LoadFromRegistry(key,strKey);
+      dwSizeName=sizeof szName;
+    }
+    RegCloseKey(hKey);
+  }
+  LEAVECRITICAL;
+  return rc;
+}
+
+bool CTestResource::SaveToRegistry(HKEY key,LPCTSTR psz)
+{
+  bool rc=false;    
+  ENTERCRITICAL;
+  // Delete all the keys under "psz"
+  HKEY hKey;
+  if(ERROR_SUCCESS==RegOpenKeyEx ((HKEY)key, psz, 0L, KEY_ENUMERATE_SUB_KEYS, &hKey)){
+    TCHAR szName[256];
+    DWORD dwSizeName=sizeof szName;
+    FILETIME ftLastWriteTime;
+    DWORD dwIndex;
+    if(ERROR_SUCCESS==RegQueryInfoKey(hKey,0,0,0,&dwIndex,0,0,0,0,0,0,0)){
+      while((signed)--dwIndex>=0){
+        if(ERROR_SUCCESS!=RegEnumKeyEx(hKey, dwIndex, szName, &dwSizeName, NULL, NULL, NULL, &ftLastWriteTime) ||
+          ERROR_SUCCESS!=RegDeleteKey(hKey,szName)){
+          rc=false;
+        }
+        dwSizeName=sizeof szName;
+      }
+    }
+    RegCloseKey(hKey);
+  }
+  rc=true;
+  for(CTestResource *pResource=pFirstInstance;pResource;pResource=pResource->m_pNextInstance){
+    CTestResourceProperties prop1(pResource);
+    rc&=prop1.SaveToRegistry(key,pResource->FileName());
+  }
+
+  LEAVECRITICAL;
+  return rc;
+}
+
+#endif
+
+CTestResource::CTestResourceProperties::CTestResourceProperties(CTestResource *pResource)
+{
+  Add(_T("Baud"),       pResource->m_nBaud);
+  Add(_T("BoardId"),    pResource->m_strBoardID);
+  Add(_T("Date"),       pResource->m_strDate);
+  Add(_T("Email"),      pResource->m_strEmail);
+  Add(_T("Host"),       pResource->m_strHost);
+  Add(_T("Port"),       pResource->m_nPort);
+  Add(_T("Locked"),     pResource->m_bLocked);
+  Add(_T("Originator"), pResource->m_strUser);
+  Add(_T("Reason"),     pResource->m_strReason);
+  Add(_T("Reset"),      pResource->m_strReset);
+  Add(_T("Serial"),     pResource->m_strPort);
+  Add(_T("Target"),     pResource->m_Target);
+  Add(_T("User"),       pResource->m_strUser);
 }
 
 bool CTestResource::Lock()
@@ -296,7 +298,7 @@ bool CTestResource::Unlock()
   }
 }
 
-bool CTestResource::LoadSocket(LPCTSTR pszResourceHost,int nResourcePort,Duration dTimeout/*=10*1000*/)
+bool CTestResource::LoadSocket(LPCTSTR pszResourceHostPort,Duration dTimeout/*=10*1000*/)
 {
   bool rc=false;
   ENTERCRITICAL;
@@ -305,8 +307,8 @@ bool CTestResource::LoadSocket(LPCTSTR pszResourceHost,int nResourcePort,Duratio
   for(pResource=CTestResource::First();pResource;pResource=pResource->Next()){
     pResource->m_bFlag=false;
   }
-  CeCosTestSocket sock;
-  if(sock.Connect(pszResourceHost,nResourcePort,dTimeout)){
+  CeCosSocket sock;
+  if(sock.Connect(pszResourceHostPort,dTimeout)){
     // Write the message to the socket
     int nRequest=0; // read
     if(!sock.sendInteger(nRequest)){
@@ -321,9 +323,9 @@ bool CTestResource::LoadSocket(LPCTSTR pszResourceHost,int nResourcePort,Duratio
             VTRACE(_T("Recv \"%s\"\n"),(LPCTSTR)strImage);
             CTestResource tmp;
             tmp.FromStr(strImage);
-            CTestResource *pResource=Lookup(tmp.Host(),tmp.TcpipPort());
+            CTestResource *pResource=Lookup(tmp.HostPort());
             if(0==pResource){
-              pResource=new CTestResource(_T(""));
+              pResource=new CTestResource(_T(""),_T(""));
             }
             pResource->FromStr(strImage);
             pResource->m_bFlag=true;
@@ -348,12 +350,53 @@ bool CTestResource::LoadSocket(LPCTSTR pszResourceHost,int nResourcePort,Duratio
   return rc;
 }
 
+bool CTestResource::SaveSocket(LPCTSTR pszResourceHostPort,Duration dTimeout)
+{
+  bool rc=true;
+  ENTERCRITICAL;
+  CeCosSocket sock(pszResourceHostPort, dTimeout);
+  if(sock.Ok()){
+    // Write the message to the socket
+    int nRequest=1; //write
+    if(!sock.sendInteger(nRequest, _T(""),dTimeout)){
+      ERROR(_T("Failed to write to socket\n"));
+      rc=false;
+    } else {
+      int nResources=0;
+      CTestResource *pResource;
+      for(pResource=CTestResource::First();pResource;pResource=pResource->Next()){
+        nResources++;
+      }
+      if(sock.sendInteger(nResources,_T("resource count"),dTimeout)){
+        for(pResource=CTestResource::First();pResource;pResource=pResource->Next()){
+          String strImage;
+          CTestResourceProperties prop(pResource);
+          strImage=prop.MakeCommandString();
+          TRACE(_T("Send \"%s\"\n"),(LPCTSTR)strImage);
+          if(!sock.sendString (strImage, _T("reply"),dTimeout)){
+            rc=false;
+            break;
+          }
+        }
+      } else {
+        rc=false;
+      }
+    }
+  } else {
+    rc=false;
+  }
+  LEAVECRITICAL;
+  return rc;
+}
+
+/*
 void CTestResource::Image(String &str)
 {
   CTestResourceProperties prop(this);
   str=prop.MakeCommandString();
   VTRACE(_T("Make command string %s\n"),(LPCTSTR)str);
 }
+*/
 
 bool CTestResource::FromStr(LPCTSTR pszImage)
 {
@@ -378,52 +421,14 @@ void CTestResource::Chain()
 
 bool CTestResource::Matches  (const CeCosTest::ExecutionParameters &e,bool bIgnoreLocking) const
 {
-  return (bIgnoreLocking||(!m_bLocked)) && (0==_tcsicmp(e.Target(),m_Target)); 
+  return (bIgnoreLocking||(!m_bLocked)) && (0==_tcsicmp(e.PlatformName(),m_Target)); 
 };
-
-bool CTestResource::SaveSocket(LPCTSTR pszResourceServer,int nResourcePort,Duration dTimeout)
-{
-  bool rc=true;
-  ENTERCRITICAL;
-  CeCosTestSocket sock(pszResourceServer,nResourcePort, dTimeout);
-  if(sock.Ok()){
-    // Write the message to the socket
-    int nRequest=1; //write
-    if(!sock.sendInteger(nRequest, _T(""),dTimeout)){
-      ERROR(_T("Failed to write to socket\n"));
-      rc=false;
-    } else {
-      int nResources=0;
-      CTestResource *pResource;
-      for(pResource=CTestResource::First();pResource;pResource=pResource->Next()){
-        nResources++;
-      }
-      if(sock.sendInteger(nResources,_T("resource count"),dTimeout)){
-        for(pResource=CTestResource::First();pResource;pResource=pResource->Next()){
-          String strImage;
-          pResource->Image(strImage);
-          TRACE(_T("Send \"%s\"\n"),(LPCTSTR)strImage);
-          if(!sock.sendString (strImage, _T("reply"),dTimeout)){
-            rc=false;
-            break;
-          }
-        }
-      } else {
-        rc=false;
-      }
-    }
-  } else {
-    rc=false;
-  }
-  LEAVECRITICAL;
-  return rc;
-}
 
 CeCosTest::ServerStatus CTestResource::Query() 
 {
   CeCosTest::ExecutionParameters e(CeCosTest::ExecutionParameters::QUERY,m_Target);
-  CeCosTestSocket *pSock=0;
-  CeCosTest::ServerStatus s=CeCosTest::Connect(m_strHost,m_nPort,pSock,e,m_strInfo);
+  CeCosSocket *pSock=0;
+  CeCosTest::ServerStatus s=CeCosTest::Connect(HostPort(),pSock,e,m_strInfo);
   delete pSock;
   return s;
 }
@@ -472,31 +477,22 @@ CTestResource *CTestResource::GetResource (const CeCosTest::ExecutionParameters 
   return p;
 }
 
-String CTestResource::Output() const
+const String CTestResource::Image() const
 {
   String str;
-  str.Format(
-    _T("%10s:%d %20s %8s"),
-    Host(),
-    TcpipPort(),
-    Target(),
-    Serial());
-  if(HasReset()){
-    str+=_T(" Reset:");
-    str+=m_strReset;
-  }
+  str.Format(_T("%10s %20s %8s"),(LPCTSTR)HostPort(),(LPCTSTR)Target(),(LPCTSTR)Serial());
   if(IsLocked()){
     str+=_T(" [RL]");
   }
   return str;
 }
 
-bool CTestResource::Matches(LPCTSTR pszHost, int nPort, const CeCosTest::ExecutionParameters &e)
+bool CTestResource::Matches(LPCTSTR pszHostPort, const CeCosTest::ExecutionParameters &e)
 {
   bool rc=false;
   ENTERCRITICAL;
-  if(LoadSocket()){
-    CTestResource *pResource=Lookup(pszHost,nPort);
+  if(Load()){
+    CTestResource *pResource=Lookup(pszHostPort);
     if(pResource){
       rc=pResource->Matches(e);
     }
@@ -525,28 +521,23 @@ void CALLBACK CTestResource::StringLogFunc (void *pParam,LPCTSTR psz)
 
 CResetAttributes::ResetResult CTestResource::RemoteReset(LogFunc *pfnLog, void *pfnLogparam)
 {
+  String strHost;
+  int nPort;
+  CeCosSocket::ParseHostPort(HostPort(),strHost,nPort);
   String strCmd;
-  strCmd.Format(_T("rsh %s x10reset %s\n"),Host(),ResetString());
+  strCmd.Format(_T("rsh %s x10reset %s\n"),(LPCTSTR)strHost,ResetString());
   pfnLog(pfnLogparam,strCmd);
 
-#ifdef _WIN32
-  // because this can be used from GUI tools
   CSubprocess sp;
   sp.Run(pfnLog,pfnLogparam,strCmd);
-#else // UNIX
-  FILE *f=POPEN(strCmd,"rt");
-  if(f){
-    char buf[80];
-    while(fgets(buf,sizeof buf,f)){
-      pfnLog(pfnLogparam,buf);
-    }
-    PCLOSE(f);
-  } else {
-    String strMsg;
-    strMsg.Format(_T("Failed to execute '%s'\n"),(LPCTSTR)strCmd);
-    pfnLog(pfnLogparam,strMsg);
-  }
-#endif
   return CResetAttributes::RESET_OK; // FIXME
+}
+
+String CTestResource::FileName() const
+{
+  String strHost;
+  int nPort;
+  CeCosSocket::ParseHostPort(HostPort(),strHost,nPort);
+  return String::SFormat(_T("%s-%d"),(LPCTSTR)strHost,nPort);
 }
 

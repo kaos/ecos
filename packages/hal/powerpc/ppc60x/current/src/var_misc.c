@@ -55,6 +55,16 @@ void hal_variant_init(void)
 {
 }
 
+
+//--------------------------------------------------------------------------
+// Variant specific idle thread action.
+bool
+hal_variant_idle_thread_action( cyg_uint32 count )
+{
+    // Let architecture idle thread action run
+    return true;
+}
+
 //---------------------------------------------------------------------------
 // Use MMU resources to map memory regions.  
 // Takes and returns an int used to ID the MMU resource to use. This ID
