@@ -1,3 +1,7 @@
+2004-08-13  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/compr.h: Committed this file which if forgot yesterday.
+
 2004-08-12  Andrew Lunn <andrew.lunn@ascom.ch>
 	    Gary Thomas <gary@mlbassoc.com>
 
