@@ -1,3 +1,9 @@
+2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* doc/redboot.sgml: De-vendorise a little.
+
+	* cdl/redboot.cdl: Add doc links.
+
 2003-02-14  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/redboot.cdl: Put virtually all options inside

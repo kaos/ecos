@@ -87,12 +87,6 @@ of RedBoot in an eCos environment.</para>
 <sect1 id="redboot-on-the-web">
 <title>More information about RedBoot on the web</title>
 <para>
-Information about the RedBoot product, including information about
-details of porting,
-customization, training and technical support services from Red Hat, is
-available from the
-<ulink url="http://www.redhat.com/embedded/technologies/redboot/">RedBoot
-Product web site</ulink>. </para>
 <para>The <ulink url="http://sources.redhat.com/redboot/">RedBoot Net
 Distribution web site</ulink> contains downloadable sources and documentation
 for all publically released targets, including the latest features and updates.

@@ -51,6 +51,7 @@
 # ====================================================================
 cdl_package CYGPKG_REDBOOT {
     display       "Redboot ROM monitor"
+    doc           ref/redboot.html
     define_header redboot.h
     description   "
            This package supports the Redboot \[stand-alone debug monitor\]
@@ -138,6 +139,7 @@ cdl_package CYGPKG_REDBOOT {
 
         cdl_option CYGBLD_BUILD_REDBOOT_WITH_XYZMODEM {
             display       "Include support for xyzModem downloads"
+            doc           ref/download-command.html
             no_define
             default_value 1
             implements    CYGINT_REDBOOT_LOAD_METHOD
@@ -146,36 +148,42 @@ cdl_package CYGPKG_REDBOOT {
 
         cdl_option CYGBLD_BUILD_REDBOOT_WITH_CKSUM {
             display       "Include POSIX checksum command"
+            doc           ref/cksum-command.html
             default_value 1
             compile -library=libextras.a cksum.c
         }
 
         cdl_option CYGBLD_BUILD_REDBOOT_WITH_MFILL {
             display       "Include memory fill command"
+            doc           ref/mfill-command.html
             default_value 1
             compile -library=libextras.a mfill.c
         }
 
         cdl_option CYGBLD_BUILD_REDBOOT_WITH_MCMP {
             display       "Include memory compare command"
+            doc           ref/mcmp-command.html
             default_value 1
             compile -library=libextras.a mcmp.c
         }
 
         cdl_option CYGBLD_BUILD_REDBOOT_WITH_DUMP {
             display       "Include memory dump command"
+            doc           ref/dump-command.html
             default_value 1
             compile -library=libextras.a dump.c
         }
 
         cdl_option CYGBLD_BUILD_REDBOOT_WITH_CACHES {
             display       "Include cache command"
+            doc           ref/cache-command.html
             default_value 1
             compile -library=libextras.a caches.c
         }
 
         cdl_option CYGBLD_BUILD_REDBOOT_WITH_EXEC {
             display       "Include exec command"
+            doc           ref/exec-command.html
             default_value 1
             # Implemented within the platform HAL
         }
@@ -463,6 +471,7 @@ cdl_package CYGPKG_REDBOOT {
             cdl_option CYGOPT_REDBOOT_FIS {
                 display         "RedBoot Flash Image System support"
                 default_value   1
+                doc             ref/flash-image-system.html
                 description "
                     This option enables the Flash Image System commands
                     and support within RedBoot.  If disabled, simple Flash
@@ -749,6 +758,7 @@ cdl_package CYGPKG_REDBOOT {
     
         cdl_component CYGPKG_REDBOOT_BOOT_SCRIPT {
             display         "Boot scripting"
+            doc             ref/persistent-state-flash.html
             flavor          none
             no_define
             description     "
