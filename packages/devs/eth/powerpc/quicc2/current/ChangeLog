@@ -1,3 +1,8 @@
+2004-02-03  Christoph Csebits <christoph.csebits@frequentis.com>
+
+        * src/if_fcc.c (fcc_eth_can_send): Fix: check also if
+        buffer was freed by the upper layer (txdone was called).
+
 2003-03-04  Paul Fine <pfine@delcomsys.com>
 
 	* src/EnetPHY.c : Added PHY reset function for the ts6 platform.

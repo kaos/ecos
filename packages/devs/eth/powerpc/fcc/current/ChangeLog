@@ -1,3 +1,8 @@
+2004-02-03  Christoph Csebits <christoph.csebits@frequentis.com>
+
+        * src/if_fcc.c (fcc_eth_can_send): Fix: check also if
+        buffer was freed by the upper layer (txdone was called).
+
 2003-11-07  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/if_fcc.c (fcc_eth_init): Improve messages, add device name.

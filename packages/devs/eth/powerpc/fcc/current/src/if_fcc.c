@@ -413,7 +413,7 @@ fcc_eth_can_send(struct eth_drv_sc *sc)
   }
 #endif
 
-  return ((txbd->ctrl & FCC_BD_Tx_Ready) == 0);
+  return ((txbd->ctrl & (FCC_BD_Tx_TC | FCC_BD_Tx_Ready)) == 0);
 }
 
 //
