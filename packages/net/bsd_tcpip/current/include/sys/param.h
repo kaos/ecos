@@ -877,6 +877,7 @@ extern void ovbcopy(const void *s, void *d, size_t len);
 extern void get_mono_time(void);
 extern int arc4random(void);
 extern void get_random_bytes(void *buf, size_t len);
+extern void read_random(void *buf, size_t len);
 extern void read_random_unlimited(void *buf, size_t len);
 extern void *hashinit(int elements, void *type, u_long *hashmask);
 

@@ -1,3 +1,9 @@
+2003-09-08  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/ecos/support.c (read_random): New function which is needed
+	when CYGSEM_NET_RANDOMID is enabled.
+	* include/sys/param.h: Prototype for new function.
+
 2003-07-25  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/netinet/icmp_var.h 

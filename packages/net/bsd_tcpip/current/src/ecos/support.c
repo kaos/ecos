@@ -562,6 +562,13 @@ read_random_unlimited(void *buf, size_t len)
     get_random_bytes(buf, len);
 }
 
+void read_random(void *buf, size_t len) 
+{
+    CYG_ASSERT(0 == (len & ~3), "Only multiple of words allowed");
+  
+    get_random_bytes(buf, len);
+}
+
 void 
 microtime(struct timeval *tp)
 {
