@@ -1,3 +1,9 @@
+2003-07-21  Nick Garnett  <nickg@balti.calivar.com>
+
+	* doc/hal.sgml: Reorganized description of clock and timer related
+	stuff into their own section and added a piece about how to change
+	the clock frequency.
+
 2003-06-25  Nick Garnett  <nickg@balti.calivar.com>
 
 	* src/hal_if.c (delay_us): The first test against

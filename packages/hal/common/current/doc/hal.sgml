@@ -745,7 +745,7 @@ RedBoot.
 <para>
 These interfaces contain definitions related to interrupt
 handling. They include definitions of exception and interrupt numbers,
-interrupt enabling and masking, and realtime clock operations.
+interrupt enabling and masking.
 </para>
 
 <PARA>
@@ -1087,10 +1087,25 @@ the hardware priority of the interrupt. The arguments are:
 
 </SECTION>
 
+</SECTION>
+
+<!-- }}} -->
+<!-- {{{ Clocks and Timers -->
+
+<SECTION id="hal-clocks-and-timers">
+<TITLE>Clocks and Timers</TITLE>
+
+<para>
+These interfaces contain definitions related to clock and timer
+handling. They include interfaces to initialize and read a clock for
+generating regular interrupts, definitions for setting the frequency of
+the clock, and support for short timed delays.
+</para>
+
 <!-- =================================================================== -->
 
 <SECTION>
-<TITLE>Clock control</TITLE>
+<TITLE>Clock Control</TITLE>
 
 <PROGRAMLISTING>
 HAL_CLOCK_INITIALIZE( period )
@@ -1158,7 +1173,96 @@ latencies.
 
 </section>
 
-</SECTION>
+<!-- =================================================================== -->
+
+<section>
+<title>Clock Frequency Definition</title>
+
+<programlisting width=72>
+CYGNUM_HAL_RTC_NUMERATOR
+CYGNUM_HAL_RTC_DENOMINATOR
+CYGNUM_HAL_RTC_PERIOD
+</programlisting>
+
+<para>
+These macros are defined in the CDL for each platform and supply the
+necessary parameters to specify the frequency at which the clock
+interrupts. These parameters are usually found in the CDL definitions
+for the target platform, or in some cases the CPU variant.
+</para>
+
+<para>
+<literal>CYGNUM_HAL_RTC_NUMERATOR</literal> and
+<literal>CYGNUM_HAL_RTC_DENOMINATOR</literal> specify the resolution
+of the clock interrupt.  This resolution involves two separate values,
+the numerator and the denominator. The result of dividing the
+numerator by the denominator should correspond to the number of
+nanoseconds between clock interrupts. For example a numerator of
+1000000000 and a denominator of 100 means that there are 10000000
+nanoseconds (or 10 milliseconds) between clock interrupts. Expressing
+the resolution as a fraction minimizes clock drift even for
+frequencies that cannot be expressed as a simple integer. For example
+a frequency of 60Hz corresponds to a clock resolution of
+16666666.66...  nanoseconds. This can be expressed accurately as
+1000000000 over 60.
+</para>
+
+<para>
+<literal>CYGNUM_HAL_RTC_PERIOD</literal> specifies the exact value
+used to initialize the clock hardware, it is the value passed as a
+parameter to <literal>HAL_CLOCK_INITIALIZE()</literal> and
+<literal>HAL_CLOCK_RESET()</literal>. The exact meaning of the value
+and the range of legal values therefore depends on the target
+hardware, and the hardware documentation should be consulted for
+further details.
+</para>
+
+<para>
+The default values for these macros in all HALs are calculated to give
+a clock interrupt frequency of 100Hz, or 10ms between interrupts. To
+change the clock frequency, the period needs to be changed, and the
+resolution needs to be adjusted accordingly. As an example consider
+the i386 PC target. The default values for these macros are:
+</para>
+
+<programlisting width=72>
+CYGNUM_HAL_RTC_NUMERATOR     1000000000
+CYGNUM_HAL_RTC_DENOMINATOR   100
+CYGNUM_HAL_RTC_PERIOD        11932
+</programlisting>
+
+<para>
+To change to, say, a 200Hz clock the period needs to be halved to
+5966, and to compensate the denominator needs to be doubled to 200. To
+change to a 1KHz interrupt rate change the period to 1193 and the
+denominator to 1000.
+</para>
+
+<para>
+Some HALs make this process a little easier by deriving the period
+arithmetically from the denominator. This calculation may also involve
+the CPU clock frequency and possibly other factors. For example in the
+ARM AT91 variant HAL the period is defined by the following
+expression:
+</para>
+
+<programlisting width=72>
+((CYGNUM_HAL_ARM_AT91_CLOCK_SPEED/32) / CYGNUM_HAL_RTC_DENOMINATOR)
+</programlisting>
+
+<para>
+In this case it is not necessary to change the period at all, just
+change the denominator to select the desired clock frequency. However,
+note that for certain choices of frequency, rounding errors in this
+calculation may result in a small clock drift over time. This is
+usually negligible, but if perfect accuracy is required, it may be
+necessary to adjust the frequency or period by hand.
+</para>
+
+</section>
+
+
+</section>
 
 <!-- }}} -->
 <!-- {{{ Input and Output -->
