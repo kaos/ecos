@@ -178,6 +178,39 @@ cdl_package CYGPKG_INFRA {
     }
 
     # ========================================================================
+
+    cdl_option CYGFUN_INFRA_DUMMY_ABORT {
+        display       "Provide dummy abort() function"
+        requires      !CYGINT_ISO_EXIT
+        default_value { CYGINT_ISO_EXIT == 0 }
+        compile       abort.cxx
+        description   "
+            This option controls the inclusion of a dummy abort() function.
+            Parts of the C and C++ compiler runtime systems contain references
+            to abort(), particulary in the C++ exception handling code. It is
+            not possible to eliminate these references, so this dummy function
+            in included to satisfy them. It is not expected that this function
+            will ever be called, so its current behaviour is to simply loop."
+    }
+
+    # ========================================================================
+
+    cdl_option CYGFUN_INFRA_DUMMY_STRLEN {
+        display       "Provide dummy strlen() function"
+        requires      !CYGINT_ISO_STRING_STRFUNCS
+        default_value { CYGINT_ISO_STRING_STRFUNCS == 0 }
+        compile       strlen.cxx
+        description   "
+            This option controls the inclusion of a dummy strlen() function.
+            Parts of the C and C++ compiler runtime systems contain references
+            to strlen(), particulary in the C++ exception handling code. It is
+            not possible to eliminate these references, so this dummy function
+            in included to satisfy them. While it is not expected that this function
+            will ever be called, it is functional but uses the simplest, smallest
+            algorithm. There is a faster version of strlen() in the C library."
+    }
+    
+    # ========================================================================
     # Debugging-related miscellania.
 
     define_proc {
@@ -245,5 +278,35 @@ cdl_package CYGPKG_INFRA {
                 building the eCos infra package. These flags are removed from
                 the set of global flags if present."
         }
+
+        cdl_option CYGPKG_INFRA_LDFLAGS_REMOVE {
+            display "Suppressed linker flags"
+            flavor  data
+            no_define
+            default_value { "-Wl,--gc-sections" }
+            description   "
+                This option modifies the set of linker flags for
+                building the eCos infra package tests. These flags are removed from
+                the set of global flags if present."
+        }
+
+        cdl_option CYGPKG_INFRA_LDFLAGS_ADD {
+            display "Additional linker flags"
+            flavor  data
+            no_define
+            default_value { "-Wl,--fatal-warnings" }
+            description   "
+                This option modifies the set of linker flags for
+                building the eCos infra package tests. These flags are added to
+                the set of global flags if present."
+        }
+
+        cdl_option CYGPKG_INFRA_TESTS {
+            display "Infra package tests"
+            flavor  data
+            no_define
+            calculated { "tests/cxxsupp" }
+        }
+
     }
 }

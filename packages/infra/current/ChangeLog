@@ -1,3 +1,30 @@
+2003-04-10  Nick Garnett  <nickg@balti.calivar.com>
+
+	* tests/cxxsupp.cxx: Added this test program to check that basic
+	C++ support is present. It checks that pure virtual functions can
+	be defined, that new and delete are present and functional, and
+	that calls to as-yet undefined inline functions work. Most of
+	these are linker and runtime system issues, so the actual run of
+	the program is almost a non-event.
+
+	* cdl/infra.cdl:
+	Added CYGFUN_INFRA_DUMMY_ABORT and CYGFUN_INFRA_DUMMY_STRLEN
+	options to conrol inclusion of dummy abort() and strlen()
+	functions. These are needed to be present by the compiler's C++
+	runtime system, although they should never be called.
+	Added CYGPKG_INFRA_TESTS to define test programs.
+	Added CYGPKG_INFRA_LDFLAGS_REMOVE and CYGPKG_INFRA_LDFLAGS_ADD to
+	modify the linkage options for the infra package
+	tests. Specifically they remove the --gc-sections option and make
+	all linker warning fatal. This is necessary if cxxsupp.cxx is to
+	test what it needs correctly.
+	
+	* src/abort.cxx: Added this dummy implementation of abort() to
+	satisfy references in the C++ runtime system.
+
+	* src/strlen.cxx: Added this dummy implementation of strlen() to
+	satisfy references in the C++ runtime system.
+
 2003-03-27  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/pure.cxx, cdl/infra.cdl: new function __cxa_pure_virtual(),
