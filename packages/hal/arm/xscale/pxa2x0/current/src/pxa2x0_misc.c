@@ -166,15 +166,15 @@ int hal_IRQ_handler(void)
 {
     cyg_uint32 sources, index;
 
+    sources = *PXA2X0_ICIP;
+
 #ifdef HAL_EXTENDED_IRQ_HANDLER
     // Use platform specific IRQ handler, if defined
     // Note: this macro should do a 'return' with the appropriate
     // interrupt number if such an extended interrupt exists.  The
     // assumption is that the line after the macro starts 'normal' processing.
-    HAL_EXTENDED_IRQ_HANDLER(index);
+    HAL_EXTENDED_IRQ_HANDLER(sources);
 #endif
-
-    sources = *PXA2X0_ICIP;
 
     if ( sources & 0xff0000 )
         index = 16;
@@ -258,7 +258,7 @@ void hal_interrupt_unmask(int vector)
 void hal_interrupt_acknowledge(int vector)
 {
 
-#ifdef HAL_EXTENDED_INTERRUPT_UNMASK
+#ifdef HAL_EXTENDED_INTERRUPT_ACKNOWLEDGE
     // Use platform specific handling, if defined
     // Note: this macro should do a 'return' for "extended" values of 'vector'
     // Normal vectors are handled by code subsequent to the macro call.

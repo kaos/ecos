@@ -1,3 +1,8 @@
+2003-02-24  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/pxa2x0_misc.c (hal_IRQ_handler): Pass 'sources' on to any
+	extended IRQ handler (it may need them).
+
 2003-02-20  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/pxa2x0_misc.c (hal_hardware_init): Move call to hal_if_init()
