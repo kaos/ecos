@@ -91,6 +91,7 @@ SOFTWARE.
 #define BP_FILE_LEN	128
 #define BP_VEND_LEN	312
 #define BP_MINPKTSZ	300	/* to check sizeof(struct bootp) */
+#define BP_MIN_VEND_SIZE 64     /* minimum actual vendor area */
 
 typedef struct bootp {
     unsigned char    bp_op;			/* packet opcode type */

@@ -107,7 +107,7 @@ local_cmd_entry("free",
                 FIS_cmds
     );
 local_cmd_entry("delete",
-                "Display an image from FLASH Image System [FIS]",
+                "Delete an image from FLASH Image System [FIS]",
                 "name",
                 fis_delete,
                 FIS_cmds

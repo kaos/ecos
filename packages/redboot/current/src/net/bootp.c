@@ -172,6 +172,8 @@ __bootp_find_local_ip(bootp_header_t *info)
     AddOption(p,dhcpRequestOption);
     AddOption(p,dhcpEndOption);
 
+    // Some servers insist on a minimum amount of "vendor" data
+    if (p < &b.bp_vend[BP_MIN_VEND_SIZE]) p = &b.bp_vend[BP_MIN_VEND_SIZE];
     txSize = p - (unsigned char*)&b;
 #else
     txSize = sizeof(b);
