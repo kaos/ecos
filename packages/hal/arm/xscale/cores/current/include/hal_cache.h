@@ -156,27 +156,27 @@ CYG_MACRO_END
 
 // Set the instruction cache refill burst size
 //#define HAL_ICACHE_BURST_SIZE(_size_)
-// This feature is not available on the SA11X0.
+// This feature is not available on the XScale.
 
 // Load the contents of the given address range into the instruction cache
 // and then lock the cache so that it stays there.
 //#define HAL_ICACHE_LOCK(_base_, _size_)
-// This feature is not available on the SA11X0.
+// This feature is not available on the XScale.
 
 // Undo a previous lock operation
 //#define HAL_ICACHE_UNLOCK(_base_, _size_)
-// This feature is not available on the SA11X0.
+// This feature is not available on the XScale.
 
 // Unlock entire cache
 //#define HAL_ICACHE_UNLOCK_ALL()
-// This feature is not available on the SA11X0.
+// This feature is not available on the XScale.
 
 //-----------------------------------------------------------------------------
 // Instruction cache line control
 
 // Invalidate cache lines in the given range without writing to memory.
 //#define HAL_ICACHE_INVALIDATE( _base_ , _size_ )
-// This feature is not available on the SA11X0.
+// This feature is not available on the XScale.
 
 //-----------------------------------------------------------------------------
 // Global control of data cache
@@ -279,11 +279,11 @@ CYG_MACRO_END
 
 // Set the data cache refill burst size
 //#define HAL_DCACHE_BURST_SIZE(_size_)
-// This feature is not available on the SA11X0.
+// This feature is not available on the XScale.
 
 // Set the data cache write mode
 //#define HAL_DCACHE_WRITE_MODE( _mode_ )
-// This feature is not available on the SA11X0.
+// This feature is not available on the XScale.
 
 #define HAL_DCACHE_WRITETHRU_MODE       0
 #define HAL_DCACHE_WRITEBACK_MODE       1
@@ -296,15 +296,15 @@ CYG_MACRO_END
 // Load the contents of the given address range into the data cache
 // and then lock the cache so that it stays there.
 //#define HAL_DCACHE_LOCK(_base_, _size_)
-// This feature is not available on the SA11X0.
+// This feature is not available on the XScale.
 
 // Undo a previous lock operation
 //#define HAL_DCACHE_UNLOCK(_base_, _size_)
-// This feature is not available on the SA11X0.
+// This feature is not available on the XScale.
 
 // Unlock entire cache
 //#define HAL_DCACHE_UNLOCK_ALL()
-// This feature is not available on the SA11X0.
+// This feature is not available on the XScale.
 
 //-----------------------------------------------------------------------------
 // Data cache line control
@@ -312,7 +312,7 @@ CYG_MACRO_END
 // Allocate cache lines for the given address range without reading its
 // contents from memory.
 //#define HAL_DCACHE_ALLOCATE( _base_ , _size_ )
-// This feature is not available on the SA11X0.
+// This feature is not available on the XScale.
 
 // Write dirty cache lines to memory and invalidate the cache entries
 // for the given address range.
@@ -368,18 +368,18 @@ CYG_MACRO_END
 // Preread the given range into the cache with the intention of reading
 // from it later.
 //#define HAL_DCACHE_READ_HINT( _base_ , _size_ )
-// This feature is available on the SA11X0, but due to tricky
-// coherency issues with the read buffer (see SA11X0 developer's
-// manual page 6-7) we don't bother to implement it here.
+// This feature is available on the XScale, but due to tricky
+// coherency issues with the read buffer (see XScale developer's
+// manual) we don't bother to implement it here.
 
 // Preread the given range into the cache with the intention of writing
 // to it later.
 //#define HAL_DCACHE_WRITE_HINT( _base_ , _size_ )
-// This feature is not available on the SA11X0.
+// This feature is not available on the XScale.
 
 // Allocate and zero the cache lines associated with the given range.
 //#define HAL_DCACHE_ZERO( _base_ , _size_ )
-// This feature is not available on the SA11X0.
+// This feature is not available on the XScale.
 
 
 //-----------------------------------------------------------------------------

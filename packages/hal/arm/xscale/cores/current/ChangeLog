@@ -1,3 +1,7 @@
+2002-10-01  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/hal_cache.h: SA11X0 -> XScale
+
 2002-09-23  Mark Salter  <msalter@redhat.com>
 
 	* include/hal_cache.h: Remove mmap-related externs which don't belong
