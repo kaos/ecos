@@ -1,0 +1,16 @@
+2002-12-06  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/httpd.h: 
+	* src/init.cxx: 
+	* src/httpd.c: 
+	* src/monitor.c: 
+	* doc/httpd.sgml: 
+	* cdl/httpd.cdl: 
+	Created HTTPD package.
+	
+# Copyright (C) 2002 Nick Garnett
+# All Rights Reserved.
+#
+# Permission is granted to use, copy, modify and redistribute this
+# file.
+		
