@@ -16,6 +16,9 @@ net/common/current/doc/tcpip.sgml
 net/common/current/doc/tcpip-manpages.sgml
 net/bsd_tcpip/current/doc/freebsd.sgml
 net/tcpip/current/doc/openbsd.sgml
+net/tcpip/current/doc/openbsd-manpages-bridge.sgml
+net/tcpip/current/doc/openbsd-manpages-netintro.sgml
+net/tcpip/current/doc/openbsd-manpages-stp.sgml
 net/ns/dns/current/doc/dns.sgml
 net/common/current/doc/ipsec.sgml
 net/ipsec/libipsec/current/doc/libipsec-manpages.sgml

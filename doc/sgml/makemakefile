@@ -213,6 +213,9 @@ for i in `cat ${doclist}`; do
 	"`basename $i`" != "snmp-manpages.sgml" -a \
 	"`basename $i`" != "libipsec.sgml" -a \
 	"`basename $i`" != "libipsec-manpages.sgml" -a \
+	"`basename $i`" != "openbsd-manpages-bridge.sgml" -a \
+	"`basename $i`" != "openbsd-manpages-netintro.sgml" -a \
+	"`basename $i`" != "openbsd-manpages-stp.sgml" -a \
 	"`basename $i`" != "porting.sgml" ]; then
      echo "&$entityi;" >> ecos-ref.sgml
    fi

@@ -1,3 +1,7 @@
+2003-11-25  Manu Sharma <manu.sharma@ascom.com>
+
+        * sgml/doclist: Add OpenBSD specific documentation.
+ 
 2003-11-22  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* sgml/doclist: Added ipsec packages documentation
