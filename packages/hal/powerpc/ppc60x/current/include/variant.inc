@@ -94,6 +94,7 @@
 #ifndef CYGPKG_HAL_PPC_MON_DEFINED
 
 #if     defined(CYG_HAL_STARTUP_ROM) ||                 \
+        defined(CYG_HAL_STARTUP_ROMRAM) ||              \
         (       defined(CYG_HAL_STARTUP_RAM) &&         \
                 !defined(CYGSEM_HAL_USE_ROM_MONITOR))
 
