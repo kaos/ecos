@@ -1,8 +1,25 @@
+2003-03-27  Jay Foster   <jay@systech.com>
+
+	* src/ics1890.c: Added configurable PHY MII address.
+	* src/lxt970.c: Added configurable PHY MII address.
+	* src/lxt972.c: Added configurable PHY MII address.
+	* cdl/ks32c5000_eth.cdl: CDL to allow configuration of the PHY
+	MII address.  Documented support for ICS1893AF PHY.
+	* src/ks5000_ether.c: Added configurable PHY MII address.
+	Fixed local definition of eth_drv_init() macro (produces no code
+	change).  Fixed strncpy()s for the ETH_DRV_GET_IF_STATS IOCTL to
+	leave room for the NUL termination character and use parenthesis
+	with the 'sizeof' operator.  Added ETH_DRV_SET_MAC_ADDRESS IOCTL
+	support to allow setting the MAC (ESA) address from the application.
+	Fixed to only attach the CYGNUM_HAL_INTERRUPT_EXT0 if the
+	HavePHYinterrupt conditional is defined.  This prevents unhandled
+	interrupts from getting through when HavePHYinterrupt is not defined.
+
 2003-03-26  Chris Garry  <cgarry@sweeneydesign.co.uk>
 
-    * cdl/ks32c5000_eth.cdl
-    * src/ks5000_ether.c: Added CDL control for level of driver
-    debug output.
+	* cdl/ks32c5000_eth.cdl
+	* src/ks5000_ether.c: Added CDL control for level of driver
+	debug output.
 
 2003-03-20  Chris Garry  <cgarry@sweeneydesign.co.uk>
 

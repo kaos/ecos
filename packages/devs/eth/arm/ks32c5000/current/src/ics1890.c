@@ -67,7 +67,11 @@
 #define	PHY_10BOP_REG  	0x12
 #define	PHY_ECNTL_REG2 	0x13
 
-#define PHYHWADDR	0x20
+#ifdef CYGPKG_DEVS_ETH_ARM_KS32C5000_PHYADDR
+#define PHYHWADDR  CYGPKG_DEVS_ETH_ARM_KS32C5000_PHYADDR
+#else
+#define PHYHWADDR  1
+#endif
 
 #define Bit(n) (1<<(n))
 

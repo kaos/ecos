@@ -60,7 +60,7 @@
 #include <cyg/io/io.h>
 #include <cyg/io/devtab.h>
 #else
-// need to prvide fake values for errno
+// need to provide fake values for errno
 #define EIO 1
 #define EINVAL 2
 #endif
@@ -134,20 +134,20 @@
 void MiiStationWrite(U32 RegAddr, U32 PhyAddr, U32 PhyWrData)
 {
   STADATA = PhyWrData ;
-  STACON = RegAddr | PhyAddr |  MiiStart | PHYREGWRITE ;
+  STACON = RegAddr | (PhyAddr<<5) |  MiiStart | PHYREGWRITE ;
   while (STACON & MiiStart)  
     ;
-  //debug_printf("PHY Wr %x:%02x := %04x\n",PhyAddr, RegAddr, PhyWrData) ;
+  //debug1_printf("PHY Wr %x:%02x := %04x\n",PhyAddr, RegAddr, PhyWrData) ;
 }
 
 U32 MiiStationRead(U32 RegAddr, U32 PhyAddr)
 {
   U32	PhyRdData;
-  STACON = RegAddr | PhyAddr |  MiiStart;
+  STACON = RegAddr | (PhyAddr<<5) |  MiiStart;
   while (STACON & MiiStart)
     ;
   PhyRdData = STADATA;
-  //debug_printf("PHY Rd %x:%02x  %04x\n",PhyAddr,RegAddr,PhyRdData) ;
+  //debug1_printf("PHY Rd %x:%02x  %04x\n",PhyAddr,RegAddr,PhyRdData) ;
   return PhyRdData ;
 }
 #endif
@@ -772,9 +772,9 @@ static cyg_uint32 MAC_Phy_isr(cyg_vector_t vector, cyg_addrword_t data)
   ++ks5000_MAC_Phy_Cnt;
   linkStatus = PhyStatus();
   if (linkStatus & PhyStatus_FullDuplex)  
-    MACConfigVar |= (1<<3);
+    MACConfigVar |= (MACON_FULL_DUP);
   else
-    MACConfigVar &= ~(1<<3);
+    MACConfigVar &= ~(MACON_FULL_DUP);
   
 #if defined(CYGPKG_NET)      
   if (linkStatus & PhyStatus_FullDuplex)
@@ -1102,8 +1102,10 @@ static void installInterrupts(void)
   cyg_drv_interrupt_attach(macRxIntrHandle);
   cyg_drv_interrupt_attach(macTxIntrHandle);
   
+#if HavePHYinterrupt
   cyg_drv_interrupt_acknowledge(CYGNUM_HAL_INTERRUPT_EXT0);
   cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_EXT0);
+#endif  
 }
 
 //======================================================================
@@ -1120,7 +1122,7 @@ typedef struct
 ks32c5000_priv_data_t ks32c5000_priv_data;    
 
 #define eth_drv_tx_done(sc,key,retval) (sc)->funs->eth_drv->tx_done(sc,key,retval)
-#define eth_drv_init(sc,enaddr)  ((sc)->funs->eth_drv->init)(sc, myMacAddr)
+#define eth_drv_init(sc,enaddr)  ((sc)->funs->eth_drv->init)(sc, enaddr)
 #define eth_drv_recv(sc,len)  ((sc)->funs->eth_drv->recv)(sc, len)
 
 static unsigned char myMacAddr[6] = { CYGPKG_DEVS_ETH_ARM_KS32C5000_MACADDR };
@@ -1184,11 +1186,34 @@ static int ks32c5000_eth_control(struct eth_drv_sc *sc,
         {
           struct ether_drv_stats *p = (struct ether_drv_stats*)data;
           *p = ifStats;
-          strncpy(p->description,"description goes here",sizeof p->description);
-          strncpy(p->snmp_chipset,"chipset name",sizeof p->snmp_chipset);
+          strncpy(p->description,"description goes here",sizeof(p->description)-1);
+		  p->description[sizeof(p->description)-1] = '\0';
+          strncpy(p->snmp_chipset,"chipset name",sizeof(p->snmp_chipset)-1);
+		  p->snmp_chipset[sizeof(p->snmp_chipset)-1] = '\0';
           return 0;
         }
 #endif      
+     case ETH_DRV_SET_MAC_ADDRESS: {
+         int act;
+
+         if (ETHER_ADDR_LEN != len)
+             return -1;
+         debug1_printf("ks32c5000_eth_control: ETH_DRV_SET_MAC_ADDRESS.\n");
+         act = ethernetRunning;
+         ks32c5000_eth_stop(sc);
+         ks32c5000_eth_start(sc, data, 0);
+         ethernetRunning = act;
+         return 0;
+     }
+#ifdef	ETH_DRV_GET_MAC_ADDRESS
+     case ETH_DRV_GET_MAC_ADDRESS: {
+         if (len < ETHER_ADDR_LEN)
+             return -1;
+         debug1_printf("ks32c5000_eth_control: ETH_DRV_GET_MAC_ADDRESS.\n");
+         memcpy(data, (void *)CAM_BaseAddr, ETHER_ADDR_LEN);
+         return 0;
+     }
+#endif
      default:
       return -1;
     }
