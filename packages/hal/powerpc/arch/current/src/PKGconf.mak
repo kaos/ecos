@@ -57,7 +57,7 @@ ldscript.stamp: powerpc.ld
 	$(CC) -E -P -Wp,-MD,ldscript.tmp -DEXTRAS=1 -xc $(INCLUDE_PATH) $(CFLAGS) -o $(PREFIX)/lib/target.ld $<
 	@echo > ldscript.d
 	@echo $@ ':' $< '\' >> ldscript.d
-	@tail -n +2 ldscript.tmp >> ldscript.d
+	@tail +2 ldscript.tmp >> ldscript.d
 	@rm ldscript.tmp
 	$(TOUCH) $@
 

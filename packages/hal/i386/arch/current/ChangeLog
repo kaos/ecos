@@ -1,3 +1,10 @@
+1999-04-28  Bart Veer  <bartv@cygnus.co.uk>
+
+	* src/PKGconf.mak: 
+	Remove the -n argument to tail, it does not appear to be required
+	on any supported host and causes problems with some
+	implementations of tail.
+
 1999-04-14  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/PKGconf.mak (EXTRAS): Don't generate extras.o here any more

@@ -104,6 +104,7 @@ PTR(start)
 	.global	reset_vector
 	.type	reset_vector,function
 reset_vector:
+
 #if defined(CYG_HAL_STARTUP_RAM) && \
     !defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
 	mrs	r7,cpsr			// move back to IRQ mode
@@ -190,6 +191,9 @@ start:
 	// initialize interrupt/exception environments
 	ldr	sp,.__startup_stack
 	mov	r0,#(CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE|CPSR_IRQ_MODE)
+	msr	cpsr,r0
+	ldr	sp,.__exception_stack
+	mov	r0,#(CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE|CPSR_FIQ_MODE)
 	msr	cpsr,r0
 	ldr	sp,.__exception_stack
 	mov	r0,#(CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE|CPSR_UNDEF_MODE)

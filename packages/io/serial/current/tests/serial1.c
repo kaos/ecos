@@ -62,16 +62,19 @@ cyg_handle_t thread_handle;
 
 
 void
-serial_api_test(cyg_io_handle_t* handle)
+serial_api_test(int dummy)
 {
+    cyg_io_handle_t handle;
     int res, len;
     unsigned char buffer[16];
 
     // Always return...
-    if (handle)
+    if (dummy)
         return;
 
     CYG_TEST_FAIL_FINISH("Not reached");
+
+    test_open_ser(&handle);
 
     // read & write
     res = cyg_io_read(handle, &buffer[0], &len);
@@ -98,11 +101,7 @@ serial_api_test(cyg_io_handle_t* handle)
 void
 serial_test( void )
 {
-    cyg_io_handle_t ser_handle;
-
-    test_open_ser(&ser_handle);
-
-    serial_api_test(&ser_handle);
+    serial_api_test(1);
 
     CYG_TEST_PASS_FINISH("serial1 test OK");
 }

@@ -1,5 +1,8 @@
-1999-04-29  Hugo Tyson  <hmt@cygnus.co.uk>
+1999-04-30  Hugo Tyson  <hmt@cygnus.co.uk>
 
+	Merge the following changes from the 1.2.1 release branch.
+
+   1999-04-29  Hugo Tyson  <hmt@cygnus.co.uk>	
 	* src/hal_diag.c (hal_diag_write_char): Only include the code to
 	read the '+' from GDB and test for ^C there if not installing the
 	default isr to catch these: CYGDBG_HAL_MIPS_INSTALL_CTRL_C_ISR.

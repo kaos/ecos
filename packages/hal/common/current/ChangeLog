@@ -1,3 +1,8 @@
+1999-04-28  Bart Veer  <bartv@cygnus.co.uk>
+
+	* src/PKGconf.mak:
+	Use the new rules for generating libextras.a
+
 1999-04-27  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* include/pkgconf/hal.h: GDB_BREAK support now available for ARM

@@ -260,20 +260,22 @@ $(PACKAGE)_%.o : %.c
 	$(CC)  -c $(INCLUDE_PATH) $(CFLAGS) $($(notdir $<)-CFLAGS)  -Wp,-MD,$(@:.o=.tmp) -o $@ $< 
 	@echo > $(@:.o=.d)
 	@echo $@ ':' $< '\' >> $(@:.o=.d)
-	@$(TAIL) -n +2 $(@:.o=.tmp) >> $(@:.o=.d)
+	@$(TAIL) +2 $(@:.o=.tmp) >> $(@:.o=.d)
 	@$(RM) $(@:.o=.tmp)
 
 $(PACKAGE)_%.o : %.cxx
 	$(CXX) -c $(INCLUDE_PATH) $(CXXFLAGS) $($(notdir $<)-CXXFLAGS) -Wp,-MD,$(@:.o=.tmp) -o $@ $< 
 	@echo > $(@:.o=.d)
 	@echo $@ ':' $< '\' >> $(@:.o=.d)
-	@$(TAIL) -n +2 $(@:.o=.tmp) >> $(@:.o=.d)
+	@$(TAIL) +2 $(@:.o=.tmp) >> $(@:.o=.d)
 	@$(RM) $(@:.o=.tmp)
 
 $(PACKAGE)_%.o : %.S
 	$(CXX)  -c $(INCLUDE_PATH) $(CFLAGS) -Wp,-MD,$(@:.o=.tmp) -o $@ $< 
 	@echo > $(@:.o=.d)
 	@echo $@ ':' $< '\' >> $(@:.o=.d)
-	@$(TAIL) -n +2 $(@:.o=.tmp) >> $(@:.o=.d)
+	@$(TAIL) +2 $(@:.o=.tmp) >> $(@:.o=.d)
 	@$(RM) $(@:.o=.tmp)
 
+$(PREFIX)/lib/libextras.a(%) : %
+	$(AR) rcs $(PREFIX)/lib/libextras.a $<

@@ -384,6 +384,8 @@
 #define CYGNUM_IO_SERIAL_ARM_AEB_SERIAL1_BUFSIZE 128
 
 
+
+
 /* ----------------------------------------------------------------------------
    {{CFG_DATA
    cdl_component CYGPKG_IO_SERIAL_POWERPC_COGENT {

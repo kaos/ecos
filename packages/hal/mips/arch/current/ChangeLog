@@ -1,21 +1,28 @@
-1999-04-30  Jesper Skov  <jskov@cygnus.co.uk>
+1999-04-30  Hugo Tyson  <hmt@cygnus.co.uk>
 
+	Merge the following changes from the 1.2.1 release branch,
+	but without any CDL for CYGDBG_HAL_MIPS_INSTALL_CTRL_C_ISR,
+	it is always on.
+
+    1999-04-30  Jesper Skov  <jskov@cygnus.co.uk>
 	* src/hal_misc.c: Added vector decoding to the below.
-
-1999-04-30  Hugo Tyson  <hmt@masala.cygnus.co.uk>
-
+    1999-04-30  Hugo Tyson  <hmt@masala.cygnus.co.uk>
 	* src/hal_misc.c (hal_init_ctrlc_intr): Chain onto the old value
 	of the ISR when attaching the ctrl-c ISR; this allows chained
 	interrupts to work (otherwise a stack-wrecking interrupt loop
 	occurs).
-
-1999-04-29  Hugo Tyson  <hmt@cygnus.co.uk>
-
+    1999-04-29  Hugo Tyson  <hmt@cygnus.co.uk>
 	* include/pkgconf/hal_tx39.h (CYGDBG_HAL_MIPS_INSTALL_CTRL_C_ISR): 
 	New config option, on by default.
-
 	* src/hal_misc.c (hal_ctrlc_isr): Enable these features on
 	CYGDBG_HAL_MIPS_INSTALL_CTRL_C_ISR new config option.
+
+1999-04-28  Bart Veer  <bartv@cygnus.co.uk>
+
+	* src/PKGconf.mak:
+	Remove the -n argument to tail, it does not appear to be required
+	on any supported host and causes problems with some
+	implementations of tail.
 
 1999-04-20  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 

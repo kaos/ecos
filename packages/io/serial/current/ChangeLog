@@ -1,8 +1,65 @@
+
+1999-05-05  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/ser_test_protocol.inl: Tidied up a bit and added
+	description of protocol.
+
+1999-05-05  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/common/serial.c (serial_write, serial_read): Clear abort
+	flag at entry.
+
+1999-05-05  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/serial4.c (serial_test): Handle config fails correctly.
+
+	* tests/ser_test_protocol.inl: Better change_config
+	handling. Simple recovery and negotiation isn't timing
+	dependant. 
+
+1999-05-05  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/timeout.inl: Updated with the below changes.
+
+1999-05-05  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* misc/timeout.inl (timeout): Timeouts are relative, but alarms 
+	need absolute time values.
+
+1999-05-04  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 20018
+	* tests/serial1.c (serial_test): Always PASS, regardless of
+	configuration.
+
+1999-05-04  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/ser_test_protocol.inl: Reverse order of configurations -
+	run tests with slow baud rate first.
+	Only check CYG_KERNEL_DIAG_GDB_SERIAL_DIRECT for SLEB on RAM startup.
+
+1999-05-04  Jesper Skov  <jskov@cygnus.co.uk>
+ 	* src/mn10300/mn10300_serial.c:
+ 	Use interrupt enable/disable feature of serial port2 to allow
+ 	coexistence with CygMon/hal_diag.
+ 
+ 	* tests/ser_test_protocol.inl: Use port2 for MN10300.
+
+1999-04-28  Bart Veer  <bartv@cygnus.co.uk>
+
+	* src/PKGconf.mak (EXTRAS_COMPILE):
+	Use the new rules for generating libextras.a
+
+
 1999-04-20  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/arm/aeb_serial.c: 
 	* src/arm/pid_serial_with_ints.c: Fix default baud rate if unbuffered.
+1999-04-20  Jesper Skov  <jskov@cygnus.co.uk>
 
+	* tests/ser_test_protocol.inl: Added some comments. Disabled 38400
+	for SLEB. Only run test on SLEB if CygMon isn't used for diag
+	output.
+	
 1999-04-15  Jesper Skov  <jskov@cygnus.co.uk>
         PR 19752
 	* tests/serial3.c:

@@ -110,6 +110,7 @@ static void       mn10300_serial_tx_DSR(cyg_vector_t vector, cyg_ucount32 count,
 #define LCR_WL8         0x80    // 8 bit chars
 #define LCR_RXE         0x4000  // receive enable
 #define LCR_TXE         0x8000  // transmit enable
+#define LCR_TWE         0x0100  // interrupt enable (only on serial2)
 
 //-------------------------------------------------------------------------
 // MN10300 timer registers:
@@ -449,12 +450,6 @@ mn10300_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config, 
     mn10300_serial_info *mn10300_chan = (mn10300_serial_info *)chan->dev_priv;
     cyg_uint16 cr = 0;
 
-#if defined(CYG_HAL_USE_ROM_MONITOR_CYGMON)
-    // If we are using CYGMON, do not reinitialize serial 2 at this
-    // point, since it appears to upset GDB.
-    if( mn10300_chan->is_serial2 ) return true;
-#endif    
-    
     // Disable device entirely.
     HAL_WRITE_UINT16(mn10300_chan->base+SERIAL_CTR, 0);
     HAL_WRITE_UINT8(mn10300_chan->base+SERIAL_ICR, 0);
@@ -506,8 +501,13 @@ mn10300_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config, 
     // enable RX and TX
     cr |= LCR_RXE | LCR_TXE;
 #else
-    // Enable RX only
-    cr |= LCR_RXE;
+    if( mn10300_chan->is_serial2 ) {
+        cr |= LCR_RXE | LCR_TXE;        // enable Rx and TX
+        cr &= ~LCR_TWE;                 // disable transmit interrupts
+    } else {
+        // Enable RX only
+        cr |= LCR_RXE;
+    }
 #endif
     
     // Write CR into hardware
@@ -528,12 +528,6 @@ bool mn10300_serial_init(struct cyg_devtab_entry *tab)
     serial_channel *chan = (serial_channel *)tab->priv;
     mn10300_serial_info *mn10300_chan = (mn10300_serial_info *)chan->dev_priv;
 
-#if defined(CYG_HAL_USE_ROM_MONITOR_CYGMON)
-    // If we are using CYGMON, do not reinitialize serial 2. If we do then we
-    // will steal the receive interrupt and disable Ctrl-C handling.
-    if( mn10300_chan->is_serial2 ) return true;
-#endif    
-    
     (chan->callbacks->serial_init)(chan);  // Really only required for interrupt driven devices
 
 #ifndef CYGPKG_IO_SERIAL_MN10300_POLLED_MODE    
@@ -641,7 +635,10 @@ mn10300_serial_start_xmit(serial_channel *chan)
 
     HAL_READ_UINT16( mn10300_chan->base+SERIAL_CTR, cr );
 
-    cr |= LCR_TXE;
+    if( mn10300_chan->is_serial2 )
+        cr |= LCR_TWE;                  // enable transmit interrupts
+    else
+        cr |= LCR_TXE;                  // enable TX
 
     HAL_WRITE_UINT16( mn10300_chan->base+SERIAL_CTR, cr );
 
@@ -672,7 +669,10 @@ mn10300_serial_stop_xmit(serial_channel *chan)
     
     HAL_READ_UINT16( mn10300_chan->base+SERIAL_CTR, cr );
 
-    cr &= ~LCR_TXE;
+    if( mn10300_chan->is_serial2 )
+        cr &= ~LCR_TWE;                 // disable transmit interrupts
+    else
+        cr &= ~LCR_TXE;                 // disable transmission
 
     HAL_WRITE_UINT16( mn10300_chan->base+SERIAL_CTR, cr );
 

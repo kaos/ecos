@@ -56,8 +56,16 @@
 
 #include <cyg/hal/hal_intr.h>           // for reclaiming interrup vector
 
+#ifdef CYG_HAL_SPARCLITE_SLEB
+#include <pkgconf/hal_sparclite_sleb.h> // CYG_KERNEL_DIAG_GDB_SERIAL_DIRECT
+#endif
+
 //----------------------------------------------------------------------------
 // Definition of which device to run tests on on various platforms.
+
+#define NA_MSG "No test device specified"
+
+
 #if defined(CYGPKG_HAL_POWERPC_COGENT)                          \
     && defined(CYGPKG_IO_SERIAL_POWERPC_COGENT)                 \
     && defined(CYGPKG_IO_SERIAL_POWERPC_COGENT_SERIAL_B)
@@ -92,24 +100,29 @@
 #endif
 #if defined(CYGPKG_HAL_MN10300_STDEVAL1)                \
     && defined(CYGPKG_IO_SERIAL_MN10300)                \
-    && defined(CYGPKG_IO_SERIAL_MN10300_SERIAL1)
-// Note: Serial1 is *not* the same port as GDB is using. It seems that
-// CygMon is interfering with the tests if run on the same port.
-// This configuration allows the serial driver to be tested using the
-// filter in stand alone mode (option -n).
-# define TEST_SER_DEV CYGDAT_IO_SERIAL_MN10300_SERIAL1_NAME
-# if defined(CYGPKG_IO_SERIAL_TTY_TTY1)
+    && defined(CYGPKG_IO_SERIAL_MN10300_SERIAL2)
+# define TEST_SER_DEV CYGDAT_IO_SERIAL_MN10300_SERIAL2_NAME
+# if defined(CYGPKG_IO_SERIAL_TTY_TTY2)
 #  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
 # endif
 #endif
 #if defined(CYGPKG_HAL_SPARCLITE_SLEB)                    \
     && defined(CYGPKG_IO_SERIAL_SPARCLITE_SLEB)           \
     && defined(CYGPKG_IO_SERIAL_SPARCLITE_SLEB_CON1)
-# define TEST_SER_DEV CYGDAT_IO_SERIAL_SPARCLITE_SLEB_CON1_NAME
-# define SER_OVERRIDE_INT_1 CYGNUM_HAL_INTERRUPT_9
-# define SER_OVERRIDE_INT_2 CYGNUM_HAL_INTERRUPT_10
-# if defined(CYGPKG_IO_SERIAL_TTY_TTY0)
-#  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY0_DEV
+# undef NA_MSG
+# define NA_MSG "CYG_KERNEL_DIAG_GDB_SERIAL_DIRECT is unset"
+# if !defined(CYG_HAL_STARTUP_RAM) \
+     || defined(CYG_KERNEL_DIAG_GDB_SERIAL_DIRECT)
+#  define TEST_SER_DEV CYGDAT_IO_SERIAL_SPARCLITE_SLEB_CON1_NAME
+// The interrupt vectors are normally in CygMon's control. Steal them back,
+// but beware that this results in GDB acknowledge characters showing up in
+// the serial driver if CygMon is used for hal_diag output.
+// Set CYG_KERNEL_DIAG_GDB_SERIAL_DIRECT in hal_sparclite_sleb as a workaround.
+#  define SER_OVERRIDE_INT_1 CYGNUM_HAL_INTERRUPT_9
+#  define SER_OVERRIDE_INT_2 CYGNUM_HAL_INTERRUPT_10
+#  if defined(CYGPKG_IO_SERIAL_TTY_TTY0)
+#   define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY0_DEV
+#  endif
 # endif
 #endif
 
@@ -165,12 +178,21 @@ typedef struct ser_cfg {
 // A few predefined configurations. These must all be valid for any
 // given target until change_config is behaving correctly.
 cyg_ser_cfg_t test_configs[] = {
-#if !defined(CYGPKG_HAL_TX39_JMR3904) &&        \
-    !defined(CYGPKG_HAL_ARM_PID) &&             \
-    !defined(CYGPKG_HAL_ARM_AEB) &&             \
-    !defined(CYGPKG_HAL_MN10300_STDEVAL1) &&    \
-    !defined(CYGPKG_HAL_SPARCLITE_SLEB)
-    { CYGNUM_SERIAL_BAUD_115200, CYGNUM_SERIAL_WORD_LENGTH_8, 
+
+#if !defined(CYGPKG_HAL_TX39_JMR3904) && !defined(CYGPKG_HAL_ARM_PID)
+    { CYGNUM_SERIAL_BAUD_9600, CYGNUM_SERIAL_WORD_LENGTH_8, 
+      CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },
+#endif
+
+    { CYGNUM_SERIAL_BAUD_14400, CYGNUM_SERIAL_WORD_LENGTH_8, 
+      CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },
+
+    { CYGNUM_SERIAL_BAUD_19200, CYGNUM_SERIAL_WORD_LENGTH_8, 
+      CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },
+
+#if !defined(CYGPKG_HAL_SPARCLITE_SLEB) &&      \
+    !defined(CYGPKG_HAL_ARM_AEB)
+    { CYGNUM_SERIAL_BAUD_38400, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },
 #endif
 
@@ -181,14 +203,12 @@ cyg_ser_cfg_t test_configs[] = {
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },
 #endif
 
-    { CYGNUM_SERIAL_BAUD_38400, CYGNUM_SERIAL_WORD_LENGTH_8, 
-      CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },
-
-    { CYGNUM_SERIAL_BAUD_19200, CYGNUM_SERIAL_WORD_LENGTH_8, 
-      CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },
-
-#if !defined(CYGPKG_HAL_TX39_JMR3904) && !defined(CYGPKG_HAL_ARM_PID)
-    { CYGNUM_SERIAL_BAUD_9600, CYGNUM_SERIAL_WORD_LENGTH_8, 
+#if !defined(CYGPKG_HAL_TX39_JMR3904) &&        \
+    !defined(CYGPKG_HAL_ARM_PID) &&             \
+    !defined(CYGPKG_HAL_ARM_AEB) &&             \
+    !defined(CYGPKG_HAL_MN10300_STDEVAL1) &&    \
+    !defined(CYGPKG_HAL_SPARCLITE_SLEB)
+    { CYGNUM_SERIAL_BAUD_115200, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },
 #endif
 
@@ -252,7 +272,8 @@ do {                                            \
 
 //----------------------------------------------------------------------------
 // Macros for read/write to serial with error cheking.
-cyg_uint32 r_stamp;
+static volatile cyg_uint32 r_stamp;
+static volatile int aborted;
 
 // This routine will be called if the read "times out"
 static void
@@ -261,6 +282,7 @@ do_abort(void *handle)
     cyg_io_handle_t io_handle = (cyg_io_handle_t)handle;
     cyg_int32 len = 1;  // Need something here
     cyg_io_get_config(io_handle, CYG_IO_GET_CONFIG_SERIAL_ABORT, 0, &len);
+    aborted = 1;
 }
 #include "timeout.inl"
 
@@ -286,6 +308,7 @@ do_abort(void *handle)
     int __res;                                                          \
     cyg_uint32 __len = 1;                                               \
     __res = cyg_io_write((__h), (__d), (__l));                          \
+    if (ENOERR != __res) diag_printf("[%d]\n", __res);                  \
     CYG_TEST_CHECK(ENOERR == __res, "cyg_io_write failed");             \
     __res = cyg_io_get_config((__h),                                    \
                               CYG_IO_GET_CONFIG_SERIAL_OUTPUT_DRAIN,    \
@@ -344,27 +367,45 @@ hang(void)
 
 //-----------------------------------------------------------------------------
 // Configuration changing function.
-// FIXME: This is still slightly bogus in that it doesn't check for target
-//        capabilities. Correct way is;
-//            o try setting new cfg
-//            o restore
-//            o if OK:
-//               o send cfg to target
-//               o if reply OK:
-//                  o change to new cfg
 //
-// Host&protocol currently only supports:
-//  - no/even parity
+// First change to the new config and back again to determine if the driver
+// can handle the config.
+// If not, return error.
+//
+// Then query the host for its capability to use the config:
+// Format out:
+//  "@CONFIG:<baud rate code>:<#data bits>:<#stop bits>:<parity on/off>!"
+// Format in:
+//  OK/ER
+//
+// On ER, return error.
+//
+// On OK, change to the new configuration. Resynchronize with the host:
+//  Write 'T'-chars to the host.
+//   The host will echo anything it reads until it sees a 'O' character.
+//  Continue until four 'T'-chars has been read back.
+//  Then send a single 'O'-character. This will signal success to the host.
+//
+// If the synchronization has not succeeded within 100 ticks
+// (configurable in the protocol), both host and target will revert to
+// the previous configuration and attempt to synchronize again. If
+// this fails, this call will hang and the host will consider the test
+// a failure.
+//
+// To Do:
+//  Host&protocol currently only supports:
+//   - no/even parity
 int
 change_config(cyg_io_handle_t handle, cyg_ser_cfg_t* cfg)
 {
+    cyg_serial_info_t old_cfg, new_cfg;
     const char cmd[] = "@CONFIG:";
     char reply[2];
     int msglen;
-    int res;
+    int res, len;
     cyg_uint8 *p1;
-    
-    // Prepare and send the command.
+
+    // Prepare the command.
     p1 = &cmd_buffer[0];
     p1 = strcpy(p1, &cmd[0]);
     p1 = itoa(p1, cfg->baud_rate);
@@ -375,60 +416,179 @@ change_config(cyg_io_handle_t handle, cyg_ser_cfg_t* cfg)
     *p1++ = ':';
     p1 = itoa(p1, cfg->parity);
     *p1++ = '!';
-    *p1++ = 0;
+    *p1 = 0;                            // note: we may append to this later
 
+    // Tell user what we're up to.
     CYG_TEST_INFO(&cmd_buffer[1]);
 
+    // Change to new config and then back to determine if the driver likes it.
+    len = sizeof(old_cfg);
+    res = cyg_io_get_config(handle, CYG_IO_GET_CONFIG_SERIAL_INFO, 
+                            &old_cfg, &len);
+    res = cyg_io_get_config(handle, CYG_IO_GET_CONFIG_SERIAL_INFO, 
+                            &new_cfg, &len);
+    if (res != ENOERR) {
+        diag_printf("Can't get serial config - DEVIO error: %d\n", res);
+        hang();
+    }
+
+    new_cfg.baud = cfg->baud_rate;
+    new_cfg.word_length = cfg->data_bits;
+    new_cfg.stop = cfg->stop_bits;
+    new_cfg.parity = cfg->parity;
+
+    res = cyg_io_set_config(handle, CYG_IO_SET_CONFIG_SERIAL_INFO, 
+                            &new_cfg, &len);
+
+    // Driver didn't like it. It will not have changed anything, so it's
+    // safe to return now.
+    if (ENOERR != res) {
+        // Let user know that the config was skipped due to the target.
+        const char txt_tskipped[] = "- skipped by target!";
+        p1 = strcpy(p1, txt_tskipped);
+        *p1 = 0;
+        CYG_TEST_INFO(&cmd_buffer[1]);
+        return res;
+    }
+
+    // Succeeded. Change back to the original config so we can communicate
+    // with the host.
+    res = cyg_io_set_config(handle, CYG_IO_SET_CONFIG_SERIAL_INFO, 
+                            &old_cfg, &len);
+    if (ENOERR != res) {
+        diag_printf("change_config: set_config failed/1 (%d)\n", res);
+        hang();
+    }
+
+    // Send command to host and read host's reply.
     msglen = strlen(&cmd_buffer[0]);
     Tcyg_io_write(handle, &cmd_buffer[0], &msglen);
-
     msglen = 2;
     Tcyg_io_read(handle, &reply[0], &msglen);
 
-    if (reply[0] == 'O') {
-        // Change config
-        cyg_serial_info_t serial_info;
-        int len = sizeof(serial_info);
-        res = cyg_io_get_config(handle, CYG_IO_GET_CONFIG_SERIAL_INFO, &serial_info, &len);
-        if (res != ENOERR) {
-            diag_printf("Can't get serial config - DEVIO error: %d\n", res);
-            hang();
-        }
-
-        serial_info.baud = cfg->baud_rate;
-        serial_info.word_length = cfg->data_bits;
-        serial_info.stop = cfg->stop_bits;
-        serial_info.parity = cfg->parity;
-
-        res = cyg_io_set_config(handle, CYG_IO_SET_CONFIG_SERIAL_INFO, &serial_info, &len);
-        if (res != ENOERR) {
-            diag_printf("Can't set serial config - DEVIO error: %d\n", res);
-            hang();
-        }
-
-        res = ENOERR;
-    } else {
-        res = ENOSUPP;
-#ifdef __DEVELOPER__
+    // Did host accept configuration?
+    if ('O' != reply[0] || 'K' != reply[1]) {
+        // Let user know that the config was skipped due to the host.
+        const char txt_hskipped[] = "- skipped by host!";
+        p1 = strcpy(p1, txt_hskipped);
+        *p1 = 0;
+        CYG_TEST_INFO(&cmd_buffer[1]);
         diag_printf("Host didn't accept config (%02x, %02x).\n",
                     reply[0], reply[1]);
-#endif
+
+        res = ENOSUPP;
+        return res;
     }
 
-#if 0
-    // FIXME: This is needed to prevent sending data at the new baud rate
-    // before the host is ready.... Need to fiddle this a bit more.
-    // Loop counts for ARM and PII in host side source. Replace with
-    // timed loops.
-    {
-        int i;
-        for (i = 0; i < 100000; i++);
+    // Now test the new configuration: Loop until we read what we
+    // write.  This may hang (as seen from the host), but only when we
+    // get totally lost, in which case there's not much else to do
+    // really. In this case the host will consider the test a FAIL.
+    len = sizeof(new_cfg);
+    res = cyg_io_set_config(handle, CYG_IO_SET_CONFIG_SERIAL_INFO, 
+                            &new_cfg, &len);
+    if (ENOERR != res) {
+        diag_printf("change_config: set_config failed/2 (%d)\n", res);
+        hang();
     }
-#else
-    cyg_thread_delay(80);               // this requires kernel
-#endif
 
-    return res;
+    // Note: Only sends a single char - a string wuld be safer, but if
+    // there's not a 1-1 relationship between outgoing and incoming
+    // chars, the reader needs to be smarter. Compensate by
+    // requirering the char to be read 4 times in succession.
+    for (;;) {
+        int change_succeeded = 0;
+        int using_old_config = 0;
+        int matches = 0;
+        char in_buf[1];
+        int len;
+        char out_buf[1];
+
+        out_buf[0] = 'a';
+
+        aborted = 0;                    // global abort flag
+        // FIXME: Timeout time needs to be configurable, and needs to
+        // be sent to the host before getting here. That would allow
+        // changing the timeout by just rebuilding the test - without
+        // changing the host software.
+        r_stamp = timeout(100, do_abort, handle);
+        while (!aborted) {
+            len = 1;
+            res = cyg_io_write(handle, out_buf, &len);
+            if (ENOERR != res && -EINTR != res) {
+                // We may have to reset the driver here if the fail
+                // was due to a framing or parity error.
+                break;
+            }
+        
+            len = 1;
+            res = cyg_io_read(handle, in_buf, &len);
+            if (ENOERR != res && -EINTR != res) {
+                // We may have to reset the driver here if the fail
+                // was due to a framing or parity error.
+                break;
+            }
+        
+            // Check for match.
+            if (out_buf[0] == in_buf[0]) {
+                matches++;
+                // We want 4 in succession before we accept it.
+                if (4 == matches) {
+                    change_succeeded = 1;
+                    break;
+                }
+            } else
+                matches = 0;
+        }
+        untimeout(r_stamp);
+        
+        // Did we succeed?
+        if (change_succeeded) {
+            // Yup! Send 'O' to host so it knows we're OK.
+            const char ok_str[1] = "O";
+            len = 1;
+            res = cyg_io_write(handle, ok_str, &len);
+            if (res != ENOERR) {
+                diag_printf("write failed - DEVIO error: %d\n", res);
+                hang();
+            }
+
+            // Now wait for the 'O' to be echoed so we know both lines
+            // have been emptied.
+            r_stamp = timeout(100, do_abort, handle);
+            do {
+                len = 1;
+                res = cyg_io_read(handle, in_buf, &len);
+                CYG_ASSERT(ENOERR == res, "Failed when waiting for 'O'");
+            } while ('O' != in_buf[0]);
+            untimeout(r_stamp);
+
+            // If we had to revert to the old configuration, return error.
+            if (using_old_config)
+                return -EIO;
+            else
+                return ENOERR;
+        }
+
+        // We didn't. Due to an IO error?
+        if (ENOERR != res && -EINTR != res) {
+            // We may have to reset the driver if the fail was due to
+            // a framing or parity error.
+        }
+
+        // Revert to the old configuration and try again.
+        len = sizeof(old_cfg);
+        res = cyg_io_set_config(handle, CYG_IO_SET_CONFIG_SERIAL_INFO, 
+                                &old_cfg, &len);
+        if (res != ENOERR) {
+            diag_printf("change_config: set_config failed/3 (%d)\n", res);
+            hang();
+        }
+        out_buf[0] = 't';               // change the char so a developer can
+                                        // see this has happened by the chars
+                                        // being written.
+        using_old_config = 1;
+    }        
 }
 
 
@@ -791,7 +951,7 @@ test_open_ser( cyg_io_handle_t* handle )
         CYG_TEST_FAIL_FINISH("Can't lookup " TEST_SER_DEV);
     }
 #else
-    CYG_TEST_NA("No test device specified");
+    CYG_TEST_NA(NA_MSG);
 #endif
 }
 
@@ -818,7 +978,7 @@ test_open_tty( cyg_io_handle_t* handle )
         CYG_TEST_FAIL_FINISH("Can't lookup " TEST_TTY_DEV);
     }
 #else
-    CYG_TEST_NA("No test device specified");
+    CYG_TEST_NA(NA_MSG);
 #endif
 }
 

@@ -1,7 +1,32 @@
-1999-04-26  Bart Veer  <bartv@cygnus.co.uk>
+1999-05-10  Bart Veer  <bartv@cygnus.co.uk>
 
 	* pkgconf.tcl:
-	Temporary workaround - add a .PRECIOUS for libextras.a
+	Add new #define's for the target and platform headers.
+
+1999-04-30  Bart Veer  <bartv@cygnus.co.uk>
+
+	* pkgconf.tcl:
+	Fixed the command line used when generating extras.o (again)
+
+1999-04-28  Bart Veer  <bartv@cygnus.co.uk>
+
+	* pkgconf/makevars:
+	Remove the -n argument to tail, it does not appear to be required
+	on any supported host and causes problems with some
+	implementations of tail.
+
+	* pkgconf/makrules.tst:
+	Remove out of date device driver rules
+
+	* pkgconf/makevars: 
+	* pkgconf/makrules.src:
+	Provide general rules for updating libextras.a
+
+1999-04-27  Bart Veer  <bartv@cygnus.co.uk>
+
+	* pkgconf.tcl:
+	Add $(ARCHFLAGS) and $(LDARCHFLAGS) to the command line when
+	generating extras.o from libextras.a
 
 1999-04-16  Bart Veer  <bartv@cygnus.co.uk>
 
@@ -14,6 +39,10 @@
 	Simplify the rules for extras.o, based on the assumption that
 	libextras.a will always exist. This is now guaranteed via
 	hal/common/src/dummy.c
+
+1999-04-15  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* NEWS: Add information about available ARM ports.
 
 1999-04-15  Bart Veer  <bartv@cygnus.co.uk>
 

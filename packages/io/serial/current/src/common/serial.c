@@ -103,6 +103,7 @@ serial_write(cyg_io_handle_t handle, const void *_buf, cyg_uint32 *len)
     int next;
     cbuf_t *cbuf = &chan->out_cbuf;
     Cyg_ErrNo res = ENOERR;
+    cbuf->abort = false;
 
     cyg_drv_mutex_lock(&cbuf->lock);
     if (cbuf->len == 0) {
@@ -153,6 +154,7 @@ serial_read(cyg_io_handle_t handle, void *_buf, cyg_uint32 *len)
     cyg_int32 size = 0;
     cbuf_t *cbuf = &chan->in_cbuf;
     Cyg_ErrNo res = ENOERR;
+    cbuf->abort = false;
 
     cyg_drv_mutex_lock(&cbuf->lock);
     if (cbuf->len == 0) {

@@ -1,3 +1,8 @@
+1999-04-23  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_diag.c (hal_bsp_console_write): Added a workaround for PR
+	19926.
+
 1999-04-09  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* include/hal_cache.h (HAL_[DI]CACHE_IS_ENABLED): 

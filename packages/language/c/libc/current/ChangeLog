@@ -1,8 +1,17 @@
+1999-04-30  Jesper Skov  <jskov@lassi.cygnus.co.uk>
+        PR 19945/19946 workaround
+	* tests/signal/signal2.c: Disabled test 3 for PowerPC sim.
+
 1999-04-19  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* include/time.inl:
 	Ensure all calls to cyg_libc_time_year_is_leap() are with the full
 	year, and not the direct contents of a struct tm, which are (year-1900)
+
+1999-04-19  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 19308, 19410, 19528
+	* tests/time/clock.c (test): Also disable data cache which may
+	affect timing when tracing/assertions are enabled.
 
 1999-04-15  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 

@@ -1,6 +1,42 @@
+1999-05-10  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/stress_threads.c (main_program): Added workaround for a
+	few PRs.
+
+1999-05-07  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/common/kapi.cxx (cyg_scheduler_unlock, cyg_scheduler_lock):
+	Make these simple calls to the scheduler.
+
+1999-05-07  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/stress_threads.c (setup_death_alarm): Reduce run time on
+	synthetic target.
+
+1999-05-06  Jesper Skov  <jskov@cygnus.co.uk>
+        
+	* tests/stress_threads.c: Reversed priorities of agents.
+
+1999-05-06  Jesper Skov  <jskov@cygnus.co.uk>
+        PRs 20040, (20027), 19991
+	* tests/stress_threads.c: Added main_thread handling resource
+	deallocation and printing.
+
+1999-04-27  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* tests/stress_threads.c: 
+	If there aren't enough priorities, output an N/A, rather than
+	stopping compilation with a #error
+
 1999-04-28  Jesper Skov  <jskov@cygnus.co.uk>
         PR 19850
- 	* tests/stress_threads.c: Don't print text from alarm handler.
+	* tests/stress_threads.c: Don't print text from alarm handler.
+
+1999-04-28  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 19945 workaround
+	* tests/kexcept1.c: 
+	* tests/except1.cxx:
+	Made NA to PowerPC SIM.
 
 1999-04-27  Gary Thomas  <gthomas@cygnus.co.uk>
 
@@ -9,6 +45,8 @@
 	Add ability to compute statistics with first datum removed which
 	can show up cache effects.
 	Show thread stack usage.
+
+	Fix merge screwup :-(
 
 1999-04-26  Hugo Tyson  <hmt@cygnus.co.uk>
 
@@ -34,7 +72,7 @@
 	(perform_stressful_tasks): added writing of a bit pattern to the
 	malloc()-ed spaces.  Also reduced stack requirements for threads.
 
-1999-04-23  Hugo Tyson  <hmt@cygnus.co.uk>
+1999-04-23  Hugo Tyson  <hmt@masala.cygnus.co.uk>
 
 	* src/common/timer.cxx (Cyg_Timer::activate): we must also disable
 	the alarm when resetting it so as to remove it from its queue, so
@@ -45,7 +83,7 @@
 	enable CYGIMP_KERNEL_COUNTERS_MULTI_LIST,
 	value CYGNUM_KERNEL_COUNTERS_MULTI_LIST_SIZE {8}.
 	The PR is 19475.
-
+	
 1999-04-21  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* tests/bin_sem1.cxx (bin_sem1_main): Doh!  Use priorities 4 and 5
@@ -53,11 +91,6 @@
 	scheduler, the threads had prios 0 and 1 resp, which causes an
 	assert in the attempt to set thread 0's prio to 1, "prios not
 	unique").  PR 19904.
-
-1999-04-20  Hugo Tyson  <hmt@cygnus.co.uk>
-
-	* tests/stress_threads.c: applied my patch to fix stack sizes.
-	And timing, in simulator; branch now matches the trunk.
 
 1999-04-20  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
@@ -72,6 +105,10 @@
 	scheduling problems if the clock rolls over immediately
 	Fix for PR 19516
 
+1999-04-20  Mark Galassi  <rosalia@cygnus.com>
+
+	* tests/stress_threads.c: applied Hugo's patch to fix stack sizes.
+ 
 1999-04-19  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* tests/bin_sem1.cxx (bin_sem1_main): Add priorities to the

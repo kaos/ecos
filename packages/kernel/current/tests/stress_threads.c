@@ -30,10 +30,19 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     rosalia
-// Contributors:  rosalia
+// Contributors:  rosalia, jskov
 // Date:          1999-04-13
 // Description:   Very simple thread stress test, with some memory
 //                allocation and alarm handling.
+//
+// Notes:
+//  If client_makes_request is big, it means that there are made many more
+//  client requests than can be serviced. Consequently, clients are wasting
+//  CPU time and should be sleeping more.
+//
+//  The list of handler invocations show how many threads are running
+//  at the same time. The more powerful the CPU, the more the numbers
+//  should spread out.
 //####DESCRIPTIONEND####
 
 #include <pkgconf/system.h>
@@ -65,50 +74,59 @@
 
 /* if TIME_LIMIT is defined, it represents the number of seconds this
    test should last; if it is undefined the test will go forever */
-#define DEATH_TIME_LIMIT 15
+#define DEATH_TIME_LIMIT 20
 /*  #undef DEATH_TIME_LIMIT */
 
 #define STACK_SIZE (CYGNUM_HAL_STACK_SIZE_TYPICAL)
 #define STACK_SIZE2 (8*1024 + CYGNUM_HAL_STACK_SIZE_TYPICAL)
 
-#define N_CLIENTS 4
-#define N_LISTENERS 4
+/* Allocate priorities in this order. This ensures that handlers
+   (which are the ones using the CPU) get enough CPU time to actually
+   complete their tasks. */
+#define N_MAIN 1
 #define MAX_HANDLERS 19
+#define N_LISTENERS 4
+#define N_CLIENTS 4
 
-#if (CYGNUM_KERNEL_SCHED_PRIORITIES < (N_CLIENTS+N_LISTENERS+MAX_HANDLERS))
-# error "not enough priorities available"
-#endif
+#if (CYGNUM_KERNEL_SCHED_PRIORITIES >= (N_MAIN+MAX_HANDLERS+N_LISTENERS+N_CLIENTS))
 
 /* if we use the bitmap scheduler we must make sure we don't use the
    same priority more than once, so we must store those already in use */
-static char priority_in_use[N_CLIENTS+N_LISTENERS+MAX_HANDLERS];
+static volatile char priority_in_use[N_MAIN+MAX_HANDLERS+N_LISTENERS+N_CLIENTS];
 
 /* now declare (and allocate space for) some kernel objects, like the
    threads we will use */
-cyg_thread client_thread_s[N_CLIENTS];
-cyg_thread listener_thread_s[N_LISTENERS];
+cyg_thread main_thread_s;
 cyg_thread handler_thread_s[MAX_HANDLERS];
+cyg_thread listener_thread_s[N_LISTENERS];
+cyg_thread client_thread_s[N_CLIENTS];
 
 /* space for stacks for all threads */
-char client_stack[N_CLIENTS][STACK_SIZE];
-char listener_stack[N_LISTENERS][STACK_SIZE];
+char main_stack[STACK_SIZE];
 char handler_stack[MAX_HANDLERS][STACK_SIZE2];
+char listener_stack[N_LISTENERS][STACK_SIZE];
+char client_stack[N_CLIENTS][STACK_SIZE];
 
 /* now the handles for the threads */
-cyg_handle_t clientH[N_CLIENTS];
-cyg_handle_t listenerH[N_LISTENERS];
+cyg_handle_t mainH;
 cyg_handle_t handlerH[MAX_HANDLERS];
-
-#ifdef DEATH_TIME_LIMIT
-/* how many client threads have been killed by the death handler */
-int n_clients_killed = 0;
-#endif /* DEATH_TIME_LIMIT */
+cyg_handle_t listenerH[N_LISTENERS];
+cyg_handle_t clientH[N_CLIENTS];
 
 /* and now variables for the procedure which is the thread */
-cyg_thread_entry_t client_program, listener_program, handler_program;
+cyg_thread_entry_t main_program, client_program, listener_program, 
+    handler_program;
 
 /* a few mutexes used in the code */
-cyg_mutex_t client_request_lock, handler_slot_lock, statistics_print_lock;
+cyg_mutex_t client_request_lock, handler_slot_lock, statistics_print_lock, 
+    free_handler_lock;
+
+/* global variables with which the handler IDs and thread priorities
+   to free are communicated from handlers to main_program. Access to
+   these are protected by free_handler_lock. An id of -1 means the
+   that the variables are empty. */
+volatile int free_handler_pri = 0;
+volatile int free_handler_id = -1;
 
 /* a global variable with which the client and server coordinate */
 int client_makes_request = 0;
@@ -138,23 +156,21 @@ struct s_statistics statistics;
 /* some function prototypes; those with the sc_ prefix are
    "statistics-collecting" versions of the cyg_ primitives */
 void sc_thread_create(
-    cyg_addrword_t        sched_info,           /* scheduling info (eg pri)  */
+    cyg_addrword_t      sched_info,             /* scheduling info (eg pri)  */
     cyg_thread_entry_t  *entry,                 /* entry point function      */
-    cyg_addrword_t        entry_data,           /* entry data                */
+    cyg_addrword_t      entry_data,             /* entry data                */
     char                *name,                  /* optional thread name      */
     void                *stack_base,            /* stack base, NULL = alloc  */
     cyg_ucount32        stack_size,             /* stack size, 0 = default   */
     cyg_handle_t        *handle,                /* returned thread handle    */
     cyg_thread          *thread                 /* put thread here           */
 );
-void sc_thread_exit(void);
 
 int get_handler_slot(cyg_handle_t current_threadH);
 void perform_stressful_tasks(void);
 void permute_array(char a[], int size, int seed);
 void setup_death_alarm(cyg_addrword_t data, cyg_handle_t *deathHp,
                        cyg_alarm *death_alarm_p, int *killed_p);
-void handle_death(cyg_handle_t deathH, cyg_handle_t alarmH);
 void print_statistics(void);
 
 /* we need to declare the alarm handling function (which is defined
@@ -175,35 +191,53 @@ void cyg_user_start(void)
 
   cyg_mutex_init(&client_request_lock);
   cyg_mutex_init(&statistics_print_lock);
+  cyg_mutex_init(&free_handler_lock);
 
   /* initialize statistics */
   memset(&statistics, 0, sizeof(statistics));
+
+  /* clear priority table */
+  for (i = 0; i < sizeof(priority_in_use); i++)
+      priority_in_use[i] = 0;
+
+  /* initialize main thread */
+  {
+      char thread_name[] = "main";
+
+      sc_thread_create(0, main_program, (cyg_addrword_t) 0,
+                       thread_name, (void *) main_stack, STACK_SIZE,
+                       &mainH, &main_thread_s);
+      priority_in_use[0]++;
+  }
 
   /* initialize all handler threads to not be in use */
   for (i = 0; i < MAX_HANDLERS; ++i) {
     handler_thread_in_use[i] = 0;
   }
-  for (i = 0; i < N_CLIENTS; ++i) {
-    int prio;
-    char thread_name[20];
-    sprintf(thread_name, "client-%02d", i);
-    prio = i;
-    sc_thread_create(prio, client_program, (cyg_addrword_t) i,
-                      thread_name, (void *) client_stack[i], STACK_SIZE,
-                      &(clientH[i]), &client_thread_s[i]);
-    priority_in_use[prio] = 1;
-  }
   for (i = 0; i < N_LISTENERS; ++i) {
     int prio;
     char thread_name[20];
     sprintf(thread_name, "listener-%02d", i);
-    prio = N_CLIENTS + i;
+    prio = N_MAIN + MAX_HANDLERS + i;
     sc_thread_create(prio, listener_program, (cyg_addrword_t) i,
                       thread_name, (void *) listener_stack[i], STACK_SIZE,
                       &listenerH[i], &listener_thread_s[i]);
-    priority_in_use[prio] = 1;
+    CYG_ASSERT(0 == priority_in_use[prio], "Priority already in use!");
+    priority_in_use[prio]++;
+  }
+  for (i = 0; i < N_CLIENTS; ++i) {
+    int prio;
+    char thread_name[20];
+    sprintf(thread_name, "client-%02d", i);
+    prio = N_MAIN + MAX_HANDLERS + N_LISTENERS + i;
+    sc_thread_create(prio, client_program, (cyg_addrword_t) i,
+                      thread_name, (void *) client_stack[i], STACK_SIZE,
+                      &(clientH[i]), &client_thread_s[i]);
+    CYG_ASSERT(0 == priority_in_use[prio], "Priority already in use!");
+    priority_in_use[prio]++;
   }
 
+  cyg_thread_resume(mainH);
   for (i = 0; i < N_CLIENTS; ++i) {
     cyg_thread_resume(clientH[i]);
   }
@@ -220,11 +254,75 @@ void cyg_user_start(void)
                    (cyg_addrword_t) 4000,
                    &report_alarmH, &report_alarm);
   if (cyg_test_is_simulator) {
-    cyg_alarm_initialize(report_alarmH, cyg_current_time()+300, 400);
+    cyg_alarm_initialize(report_alarmH, cyg_current_time()+200, 200);
   } else {
     cyg_alarm_initialize(report_alarmH, cyg_current_time()+300, 4000);
   }
+}
 
+/* main_program() -- frees resources and prints status. */
+void main_program(cyg_addrword_t data)
+{
+#ifdef DEATH_TIME_LIMIT
+    cyg_handle_t deathH;
+    cyg_alarm death_alarm;
+    int is_dead = 0;
+
+    setup_death_alarm(0, &deathH, &death_alarm, &is_dead);
+#endif /* DEATH_TIME_LIMIT */
+
+    printf("# Starting main\n");
+
+    for (;;) {
+        int handler_id = -1;
+        int handler_pri = 0;
+
+        cyg_mutex_lock(&free_handler_lock); {
+            // If any handler has left its ID, copy the ID and
+            // priority values to local variables, and free up the
+            // global communication variables again.
+            if (-1 != free_handler_id) {
+                handler_id = free_handler_id;
+                handler_pri = free_handler_pri;
+                free_handler_id = -1;
+            }
+        } cyg_mutex_unlock(&free_handler_lock);
+
+        if (-1 != handler_id) {
+            // Free the handler resources. This is done outside of the
+            // free_handler_lock to avoid deadlocks.
+            cyg_mutex_lock(&handler_slot_lock); {
+                CYG_ASSERT(1 == priority_in_use[handler_pri], 
+                           "Priority not in use!");
+                CYG_ASSERT(1 == handler_thread_in_use[handler_id], 
+                           "Handler not in use!");
+                handler_thread_in_use[handler_id]--;
+                priority_in_use[handler_pri]--;
+                // Finally delete the handler thread.
+                {
+                    // workaround for PRs 20054-20058/20065
+                    cyg_thread_kill(handlerH[handler_id]);
+                }
+                cyg_thread_delete(handlerH[handler_id]);
+            } cyg_mutex_unlock(&handler_slot_lock);
+        }
+
+        // Print status if time.
+        if (time_to_report) {
+            time_to_report = 0;
+            print_statistics();
+        }
+
+#ifdef DEATH_TIME_LIMIT
+        // Stop test if time.
+        if (is_dead) {
+            print_statistics();
+            CYG_TEST_PASS_FINISH("Kernel thread stress test OK");
+        }
+#endif /* DEATH_TIME_LIMIT */
+
+        cyg_thread_delay(3);
+    }
 }
 
 /* client_program() -- an obnoxious client which makes a lot of requests */
@@ -232,19 +330,13 @@ void client_program(cyg_addrword_t data)
 {
   int delay;
 
-  cyg_handle_t counterH, deathH, system_clockH;
-  cyg_alarm death_alarm;
-  int is_dead = 0;
-
-  setup_death_alarm(data, &deathH, &death_alarm, &is_dead);
-
   printf("# Starting client-%d\n", (int) data);
 
   system_clockH = cyg_real_time_clock();
   cyg_clock_to_counter(system_clockH, &counterH);
 
   for (;;) {
-    delay = (rand() % 3);
+    delay = (rand() % 20);
 
     /* now send a request to the server */
     cyg_mutex_lock(&client_request_lock); {
@@ -254,11 +346,6 @@ void client_program(cyg_addrword_t data)
 
     cyg_thread_delay(10+delay);
 /*      cyg_thread_delay(0); */
-#ifdef DEATH_TIME_LIMIT
-    if (is_dead) {
-      handle_death(deathH, report_alarmH);
-    }
-#endif /* DEATH_TIME_LIMIT */
   }
 }
 
@@ -267,40 +354,40 @@ void client_program(cyg_addrword_t data)
 void listener_program(cyg_addrword_t data)
 {
 /*   int message = (int) data; */
-  int handler_slot;
+    int handler_slot;
 
-  printf("# Beginning execution; thread data is %d\n", (int) data);
+    printf("# Beginning execution; thread data is %d\n", (int) data);
 
-  for (;;) {
-#ifdef DEATH_TIME_LIMIT
-    /* as an extra task, the listener sees if all clients have been
-       killed off, so it can report that the test is over */
-    if (n_clients_killed == N_CLIENTS) {
-      n_clients_killed = -1;    /* so we don't call this again */
-      CYG_TEST_PASS_FINISH("Kernel thread stress test OK");
+    for (;;) {
+        int make_request = 0;
+        cyg_mutex_lock(&client_request_lock); {
+            if (client_makes_request > 0) {
+                --client_makes_request;
+                make_request = 1;
+            }
+        } cyg_mutex_unlock(&client_request_lock);
+        
+        if (make_request) {
+            int prio;
+            /* printf("just got a request from a client (count = %d)\n", */
+            /*        client_makes_request); */
+
+            handler_slot = get_handler_slot(listenerH[(int) data]);
+            prio = N_MAIN+handler_slot;
+
+            CYG_ASSERT(0 == priority_in_use[prio], "Priority already in use!");
+            priority_in_use[prio]++;
+            sc_thread_create(prio, handler_program,
+                             (cyg_addrword_t) handler_slot,
+                             "handler", (void *) handler_stack[handler_slot],
+                             STACK_SIZE2, &handlerH[handler_slot],
+                             &handler_thread_s[handler_slot]);
+            cyg_thread_resume(handlerH[handler_slot]);
+            ++statistics.handler_invocation_histogram[handler_slot];
+        }
+
+        cyg_thread_delay(2 + (rand() % 10));
     }
-#endif /* DEATH_TIME_LIMIT */
-    if (client_makes_request > 0) {
-      int prio;
-      /*          printf("just got a request from a client (count = %d)\n", */
-      /*                 client_makes_request); */
-      cyg_mutex_lock(&client_request_lock); {
-        --client_makes_request;
-      } cyg_mutex_unlock(&client_request_lock);
-
-      handler_slot = get_handler_slot(listenerH[(int) data]);
-      prio = N_CLIENTS+N_LISTENERS+handler_slot;
-      priority_in_use[prio] = 1;
-      sc_thread_create(prio, handler_program,
-                       (cyg_addrword_t) handler_slot,
-                       "handler", (void *) handler_stack[handler_slot],
-                       STACK_SIZE2, &handlerH[handler_slot],
-                       &handler_thread_s[handler_slot]);
-      cyg_thread_resume(handlerH[handler_slot]);
-      ++statistics.handler_invocation_histogram[handler_slot];
-    }
-    cyg_thread_delay(1);
-  }
 }
 
 /* handler_program() -- is spawned to handle each incoming request */
@@ -309,56 +396,56 @@ void handler_program(cyg_addrword_t data)
   /* here is where we perform specific stressful tasks */
   perform_stressful_tasks();
 
-  if (time_to_report) {
-    time_to_report = 0;
-    print_statistics();
-  }
-
   cyg_thread_delay(4 + (int) (0.5*log(1.0 + fabs((rand() % 1000000)))));
 /*    cyg_thread_delay(0); */
 
-  /* lock the scheduler before we declare this thread slot available
-     and quit; note that cyg_thread_exit() will unlock the scheduler
-     as many times as necessary */
-  cyg_mutex_lock(&handler_slot_lock); {
-    handler_thread_in_use[data] = 0;
-    priority_in_use[N_CLIENTS + N_LISTENERS + (int) data] = 0;
-  } cyg_mutex_unlock(&handler_slot_lock);
-  /* FIXME: could there be a race condition right here? I unlock the
-     scheduler, so I could get pre-empted out, but meanwhile I have
-     declared this thread available again.  must fix it. */
-  sc_thread_exit();
+  ++statistics.thread_exits;
+  {
+      // Loop until the handler id and priority can be communicated to
+      // the main_program.
+      int freed = 0;
+      do {
+          cyg_mutex_lock(&free_handler_lock); {
+              if (-1 == free_handler_id) {
+                  free_handler_id = data;
+                  free_handler_pri = N_MAIN+(int) data;
+                  freed = 1;
+              }
+          } cyg_mutex_unlock(&free_handler_lock);
+          if (!freed)
+              cyg_thread_delay(2);
+      } while (!freed);
+  }
+
+  // Then wait for the main_program to kill us.
+  for (;;) {
+      cyg_thread_delay(100);
+  }
 }
 
 /* look for an available handler thread */
 int get_handler_slot(cyg_handle_t current_threadH)
 {
-  int i;
-  int found = 0;
+    int i;
+    int found = 0;
 
-  while (!found) {
-    for (i = 0; i < MAX_HANDLERS; ++i) {
-      cyg_mutex_lock(&handler_slot_lock); {
-        if (!handler_thread_in_use[i]) {
-          found = 1;
-          handler_thread_in_use[i] = 1;
-        }
-      } cyg_mutex_unlock(&handler_slot_lock);
-      if (found) {
-        break;
-      }
-#ifdef DEATH_TIME_LIMIT
-      /* must do a check here to see if all clients have been killed,
-         since otherwise we might end up in an infinite loop */
-      if (n_clients_killed == N_CLIENTS) {
-	n_clients_killed = -1;    /* so we don't call this again */
-	CYG_TEST_PASS_FINISH("Kernel thread stress test OK");
-      }
-#endif
+    while (!found) {
+        cyg_mutex_lock(&handler_slot_lock); {
+            for (i = 0; i < MAX_HANDLERS; ++i) {
+                if (!handler_thread_in_use[i]) {
+                    found = 1;
+                    handler_thread_in_use[i]++;
+                    break;
+                }
+            }
+        } cyg_mutex_unlock(&handler_slot_lock);
+        if (!found)
+            cyg_thread_delay(1);
     }
-    cyg_thread_delay(1);
-  }
-  return i;
+
+    CYG_ASSERT(1 == handler_thread_in_use[i], "Handler usage count wrong!");
+
+    return i;
 }
 
 /* do things which will stress the system */
@@ -386,8 +473,11 @@ void perform_stressful_tasks()
     ++statistics.malloc_tries;
 /*      spaces[i] = (char *) malloc(((int)(sqrt(i*2.0))+1)*MALLOCED_BASE_SIZE); */
     spaces[i] = (char *) malloc(((int)i*2.0+1)*MALLOCED_BASE_SIZE);
-    if (i % 100 == 0) {
+    if (i % (MAX_MALLOCED_SPACES/10) == 0) {
       cyg_thread_yield();
+    }
+    if (i % (MAX_MALLOCED_SPACES/15) == 0) {
+      cyg_thread_delay(i % 5);
     }
   }
 
@@ -426,7 +516,7 @@ void perform_stressful_tasks()
 
 /* report_alarm_func() is invoked as an alarm handler, so it should be
    quick and simple.  in this case it sets a global flag which is
-   checked by threads. */
+   checked by main_program. */
 void report_alarm_func(cyg_handle_t alarmH, cyg_addrword_t data)
 {
     time_to_report = 1;
@@ -437,7 +527,6 @@ void report_alarm_func(cyg_handle_t alarmH, cyg_addrword_t data)
 void setup_death_alarm(cyg_addrword_t data, cyg_handle_t *deathHp,
                        cyg_alarm *death_alarm_p, int *killed_p)
 {
-#ifdef DEATH_TIME_LIMIT
   cyg_handle_t system_clockH, counterH;
   cyg_resolution_t rtc_res;
 
@@ -455,9 +544,14 @@ void setup_death_alarm(cyg_addrword_t data, cyg_handle_t *deathHp,
        *((double)DEATH_TIME_LIMIT)/((double)rtc_res.dividend));
     if ( cyg_test_is_simulator )
         tick_delay /= 10;
+#ifdef CYGPKG_HAL_I386_LINUX 
+    // 20 seconds is a long time compared to the run time of other tests.
+    // Reduce to 10 seconds, allowing more tests to get run.
+    tick_delay /= 2;
+#endif
+
     cyg_alarm_initialize(*deathHp, cyg_current_time() + tick_delay, 0);
   }
-#endif /* DEATH_TIME_LIMIT */
 }
 
 /* death_alarm_func() is the alarm handler that kills the current
@@ -470,23 +564,11 @@ void death_alarm_func(cyg_handle_t alarmH, cyg_addrword_t data)
   *killed_p = 1;
 }
 
-#ifdef DEATH_TIME_LIMIT
-/* handle_death is called by a client thread when it dies; it kills
-   off the alarm */
-void handle_death(cyg_handle_t deathH, cyg_handle_t alarmH)
-{
-  ++n_clients_killed;
-  cyg_alarm_delete(deathH);
-  cyg_alarm_delete(alarmH);
-  cyg_thread_exit();
-}
-#endif /* DEATH_TIME_LIMIT */
-
 /* now I write the sc_ versions of the cyg_functions */
 void sc_thread_create(
-    cyg_addrword_t        sched_info,          /* scheduling info (eg pri)  */
+    cyg_addrword_t      sched_info,            /* scheduling info (eg pri)  */
     cyg_thread_entry_t  *entry,                /* entry point function      */
-    cyg_addrword_t        entry_data,          /* entry data                */
+    cyg_addrword_t      entry_data,            /* entry data                */
     char                *name,                 /* optional thread name      */
     void                *stack_base,           /* stack base, NULL = alloc  */
     cyg_ucount32        stack_size,            /* stack size, 0 = default   */
@@ -499,14 +581,6 @@ void sc_thread_create(
   ++statistics.thread_creations;
   cyg_thread_create(sched_info, entry, entry_data, name,
                     stack_base, stack_size, handle, thread);
-}
-
-void sc_thread_exit()
-{
-/*    printf("exiting\n"); */
-/*    fflush(stdout); */
-  ++statistics.thread_exits;
-  cyg_thread_exit();
 }
 
 void print_statistics(void)
@@ -524,6 +598,12 @@ void print_statistics(void)
     printf("client_makes_request:       %d\n", client_makes_request);
   } cyg_mutex_unlock(&statistics_print_lock);
 }
+
+#else /* (CYGNUM_KERNEL_SCHED_PRIORITIES >=    */
+      /* (N_MAIN+N_CLIENTS+N_LISTENERS+MAX_HANDLERS)) */
+#define N_A_MSG "not enough priorities available"
+#endif /* (CYGNUM_KERNEL_SCHED_PRIORITIES >=    */
+       /* (N_MAIN+N_CLIENTS+N_LISTENERS+MAX_HANDLERS)) */
 
 #else /* CYGSEM_LIBC_MALLOC */
 # define N_A_MSG "this test needs malloc"

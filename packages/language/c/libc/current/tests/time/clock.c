@@ -66,6 +66,7 @@
 #if RUN_TEST
 
 #include <cyg/hal/hal_cache.h>
+#include <cyg/hal/hal_intr.h>
 
 # define START_TEST( test ) test(0)
 
@@ -112,9 +113,21 @@ test( CYG_ADDRWORD data )
     clock_t clock_init;
     clock_t clock_first=0, clock_second=0, clock_third=0;
 
-    // First disable the instruction cache - it may affect the timing loops
-    // below
-    HAL_ICACHE_DISABLE();
+    // First disable the caches - they may affect the timing loops
+    // below - especially if tracing or assertions are enabled, causing
+    // the elapsed time during the clock() call to vary.
+    {
+        register CYG_INTERRUPT_STATE oldints;
+
+        HAL_DISABLE_INTERRUPTS(oldints);
+        HAL_DCACHE_SYNC();
+        HAL_ICACHE_DISABLE();
+        HAL_DCACHE_DISABLE();
+        HAL_DCACHE_SYNC();
+        HAL_ICACHE_INVALIDATE_ALL();
+        HAL_DCACHE_INVALIDATE_ALL();
+        HAL_RESTORE_INTERRUPTS(oldints);
+    }
 
     // This waits for a clock tick, to ensure that we are at the
     // start of a clock period. Then sit in a tight loop to get

@@ -1,3 +1,10 @@
+1999-04-28  Bart Veer  <bartv@cygnus.co.uk>
+
+	* src/PKGconf.mak: 
+	Remove the -n argument to tail, it does not appear to be required
+	on any supported host and causes problems with some
+	implementations of tail.
+
 1999-04-19  Jesper Skov  <jskov@cygnus.co.uk>
         PR 19861
 	* src/vectors.S (_start): Rewrote the hal_zero_bss code in

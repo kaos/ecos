@@ -144,6 +144,7 @@ package CYGPKG_HAL_ARM_AEB {
 	hardware
 }
 
+
 package CYGPKG_HAL_I386 {
 	alias		{ "i386 common HAL" hal_i386 i386_hal i386_arch_hal }
 	directory	hal/i386/arch

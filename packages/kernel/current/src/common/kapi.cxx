@@ -104,30 +104,16 @@ externC void cyg_scheduler_start(void)
     Cyg_Scheduler::start();
 }
 
-/* Lock the scheduler. We only allow this to take the lock from */
-/* zero to 1. Any other transition implies that this function   */
-/* is being called from an ISR/DSR or some other illegal place. */
+/* Lock the scheduler. */
 externC void cyg_scheduler_lock(void)
 {
     Cyg_Scheduler::lock();
-    
-    CYG_ASSERT( Cyg_Scheduler::get_sched_lock() == 1 ,
-                "Cannot nest calls to cyg_scheduler_lock");
-
-    if( Cyg_Scheduler::get_sched_lock() != 1 )
-        Cyg_Scheduler::unlock();        
 }
 
-/* Unlock the scheduler. Like lock, we only allow a 1->0        */
-/* transition.                                                  */
+/* Unlock the scheduler. */
 externC void cyg_scheduler_unlock(void)
 {
-    CYG_ASSERT( Cyg_Scheduler::get_sched_lock() == 1 ,
-                "Bad call to cyg_scheduler_unlock");
-
-    if( Cyg_Scheduler::get_sched_lock() == 1 )
-        Cyg_Scheduler::unlock();
-    
+    Cyg_Scheduler::unlock();
 }
 
 /*---------------------------------------------------------------------------*/

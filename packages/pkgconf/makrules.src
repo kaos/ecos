@@ -40,17 +40,21 @@ VPATH        := . $(COMPONENT_REPOSITORY)/$($(PACKAGE)_DIR)/src
 # from the list of source files. OTHER_OBJS and OTHER_DEPS are
 # provided as an escape mechanism, as is OTHER_TARGETS.
 
-COMPILE      += $(DRIVERS)
-DRIVER_DEPS  := $(DRIVERS:.c=.D)
-OTHER_TARGETS += $(DRIVER_DEPS)
 OBJECTS      := $(COMPILE:.cxx=.o)
 OBJECTS      := $(OBJECTS:.c=.o)
 OBJECTS      := $(OBJECTS:.S=.o)
 OBJECTS	     := $(foreach obj,$(OBJECTS),$(dir $(obj))$(PACKAGE)_$(notdir $(obj)))
 DEPS         := $(OBJECTS:.o=.d)
 
-OBJECTS      := $(OBJECTS) $(OTHER_OBJS)
-DEPS	     := $(DEPS) $(OTHER_DEPS)
+EXTRAS_OBJECTS := $(EXTRAS_COMPILE:.cxx=.o)
+EXTRAS_OBJECTS := $(EXTRAS_OBJECTS:.c=.o)
+EXTRAS_OBJECTS := $(EXTRAS_OBJECTS:.S=.o)
+EXTRAS_OBJECTS := $(foreach obj,$(EXTRAS_OBJECTS),$(dir $(obj))$(PACKAGE)_$(notdir $(obj)))
+DEPS           := $(DEPS) $(EXTRAS_OBJECTS:.o=.d)
+
+OBJECTS        := $(OBJECTS) $(OTHER_OBJS)
+EXTRAS_OBJECTS := $(EXTRAS_OBJECTS) $(EXTRAS_OTHER_OBJECTS)
+DEPS	       := $(DEPS) $(OTHER_DEPS)
 
 # The header file search path is as follows:
 #
@@ -73,20 +77,30 @@ INCLUDE_PATH := $(INCLUDE_PATH) -I$(PREFIX)/include $(foreach dir,$(VPATH),-I$(d
 # This is the default target. It is responsible for updating the library,
 # building any special targets, and updating the dependency information.
 
-build: $(LIBRARY).stamp $(OTHER_TARGETS)
+build: $(LIBRARY).stamp extras $(OTHER_TARGETS)
 ifneq ($(strip $(DEPS)),)
 	@$(CAT) $(DEPS) > makefile.deps
 endif
 
 
 # Updating the library involves using ar with any object files that
-# have been rebuilt.
+# have been rebuilt. A few packages may not involve any object files
+# at all.
 
 $(LIBRARY).stamp: $(OBJECTS)
 ifneq ($(strip $(OBJECTS)),)
-	$(AR) crs $(PREFIX)/lib/$(LIBRARY) $?
+	$(AR) rcs $(PREFIX)/lib/$(LIBRARY) $?
 endif
 	$(TOUCH) $@
+
+# Updating libextras.a may or may not be a no-op, many packages
+# will not want to put anything there.
+.PHONY: extras
+ifeq ($(strip $(EXTRAS_OBJECTS)),)
+extras:
+else
+extras: $(PREFIX)/lib/libextras.a($(EXTRAS_OBJECTS))
+endif
 
 # The clean target cleans up the intermediate files, any object
 # files, and any dependency files.
@@ -96,6 +110,9 @@ clean: $(OTHER_CLEAN)
 	@$(RM) makefile.deps
 ifneq ($(strip $(OBJECTS)),)
 	$(RM) $(OBJECTS)
+endif
+ifneq ($(strip $(EXTRAS_OBJECTS)),)
+	$(RM) $(EXTRAS_OBJECTS)
 endif
 ifneq ($(strip $(DEPS)),)
 	@$(RM) $(DEPS)
@@ -109,6 +126,10 @@ endif
 ifneq ($(strip $(OBJECTS)),)
 $(OBJECTS) : $(BUILD_TREE)/pkgconf/pkgconf.mak
 $(OBJECTS) : $(BUILD_TREE)/pkgconf/makevars $(PACKAGE_RULES_FILE)
+endif
+ifneq ($(strip $(EXTRAS_OBJECTS)),)
+$(EXTRAS_OBJECTS) : $(BUILD_TREE)/pkgconf/pkgconf.mak
+$(EXTRAS_OBJECTS) : $(BUILD_TREE)/pkgconf/makevars $(PACKAGE_RULES_FILE)
 endif
 ifneq ($(strip $(OTHER_TARGETS)),)
 $(OTHER_TARGETS) : $(BUILD_TREE)/pkgconf/pkgconf.mak

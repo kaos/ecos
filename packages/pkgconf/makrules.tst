@@ -79,13 +79,12 @@ endif
 ifneq ($(STAMPS),)
 
 LIBDEPS := $(wildcard $(PREFIX)/lib/*)
-DRIVER_DEPS := $(wildcard $(PREFIX)/lib/*driver.o)
 
 %.stamp: $(PACKAGE)_%.o $(LIBDEPS)
 ifneq ($(IGNORE_LINK_ERRORS),)
-	-$(CC) -o $(PREFIX)/tests/$(PACKAGE)/$*$(EXEEXT) $< $(DRIVER_DEPS) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -nostdlib
+	-$(CC) -o $(PREFIX)/tests/$(PACKAGE)/$*$(EXEEXT) $< $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -nostdlib
 else
-	$(CC) -o $(PREFIX)/tests/$(PACKAGE)/$*$(EXEEXT) $< $(DRIVER_DEPS) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -nostdlib
+	$(CC) -o $(PREFIX)/tests/$(PACKAGE)/$*$(EXEEXT) $< $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -nostdlib
 endif
 	@$(TOUCH) $@
 

@@ -32,8 +32,9 @@ PACKAGE       := io
 include ../../../../pkgconf/pkgconf.mak
 include ../../../../pkgconf/system.mak
 
-LIBRARY        := libextras.a
-COMPILE        := iosys.c ioinit.cxx io_diag.c
+LIBRARY        :=
+COMPILE        :=
+EXTRAS_COMPILE := iosys.c ioinit.cxx io_diag.c
 OTHER_OBJS     :=
 OTHER_CLEAN    :=
 

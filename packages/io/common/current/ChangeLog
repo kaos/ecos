@@ -1,3 +1,8 @@
+1999-04-28  Bart Veer  <bartv@cygnus.co.uk>
+
+	* src/PKGconf.mak (EXTRAS_COMPILE):
+	Use the new rules for generating libextras.a
+
 1999-04-15  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/iosys.c (cyg_io_set_config): Only dereference len if non-NULL

@@ -28,25 +28,17 @@
 #####COPYRIGHTEND####
 #==============================================================================
 
-PACKAGE       := hal
+PACKAGE         := hal
 include ../../../../pkgconf/pkgconf.mak
 
-LIBRARY       := libtarget.a
-COMPILE       := generic-stub.c thread-packets.c hal_stub.c drv_api.c
+LIBRARY         := libtarget.a
+COMPILE         := generic-stub.c thread-packets.c hal_stub.c drv_api.c
+EXTRAS_COMPILE  := dummy.c
 
-OTHER_OBJS    :=
-OTHER_TARGETS := libextras.stamp
-OTHER_DEPS    := hal_dummy.d
-OTHER_CLEAN   := libextras.clean
+OTHER_OBJS      :=
+OTHER_TARGETS   :=
+OTHER_DEPS      :=
+OTHER_CLEAN     :=
 
 include $(COMPONENT_REPOSITORY)/pkgconf/makrules.src
 
-.PHONY: libextras.clean
-
-libextras.stamp: hal_dummy.o
-	$(AR) crs $(PREFIX)/lib/libextras.a $<
-	@$(TOUCH) $@
-
-libextras.clean:
-	$(RM) hal_dummy.o
-	$(RM) libextras.stamp

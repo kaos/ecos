@@ -69,7 +69,7 @@ typedef struct fun_times {
 } fun_times;
 
 #define NSAMPLES         32
-#define NTEST_THREADS    24
+#define NTEST_THREADS    16
 #define NTHREAD_SWITCHES 128
 #define NMUTEXES         32
 #define NMBOXES          32
@@ -1571,6 +1571,7 @@ void tm_basic_main( void )
     new_thread(run_all_tests, 0);
     
     Cyg_Scheduler::scheduler.start();
+
 }
 
 externC void

@@ -1,3 +1,28 @@
+1999-04-28  Bart Veer  <bartv@cygnus.co.uk>
+
+	* src/PKGconf.mak:
+	Remove the -n argument to tail, it does not appear to be required
+	on any supported host and causes problems with some
+	implementations of tail.
+
+1999-04-20  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/hal_cache.h: 
+	(HAL_DCACHE_IS_ENABLED) (HAL_ICACHE_IS_ENABLED): Add these new macros
+	(HAL_DCACHE_DISABLE) (HAL_ICACHE_DISABLE): Make variables register
+	variables
+	Ensure the cache has finished its operation before exitting.
+	(HAL_DCACHE_INVALIDATE_ALL) (HAL_ICACHE_INVALIDATE_ALL): Make
+	variables register variables.
+	Re-enable cache if it was enabled on entry.
+	(HAL_DCACHE_WRITE_MODE): Make variables register variables.
+	Re-enable data cache if it was enabled on entry.
+	Ensure the cache has finished its operation before exitting.
+	(HAL_DCACHE_STORE): Make variables register variables.
+	Re-enable data cache if it was enabled on entry.
+
+	These fix PR19887
+
 1999-04-15  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/mn10300.ld: Define __bss_end at the end of the BSS

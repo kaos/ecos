@@ -175,8 +175,30 @@ typedef struct {
     void *__dbg_vector;
     void *__kill_vector;
     struct bsp_comm_procs *__console_procs;
+    struct bsp_comm_procs *__debug_procs;
+    void *__flush_dcache;
+    void *__flush_icache;
+    void *__cpu_data;
+    void *__board_data;
+    void *__sysinfo;
+    int  (*__set_debug_comm)(int __comm_id);
+    void *__set_console_comm;
 } bsp_shared_t;
 
+
+static int
+hal_bsp_set_debug_comm(int arg)
+{
+    bsp_shared_t *shared;
+
+    shared = (bsp_shared_t *)
+        (CYGMON_VECTOR_TABLE[ BSP_NOTVEC_BSP_COMM_PROCS ]);
+
+    if (0 != shared->__set_debug_comm) {
+        return (*(shared->__set_debug_comm))(arg);
+    }
+    return 0;
+}
 
 static int
 hal_bsp_console_write(const char *p, int len)
@@ -191,6 +213,23 @@ hal_bsp_console_write(const char *p, int len)
 
     if (0 != com) {
         com->__write(com->ch_data, p, len);
+
+#if 1
+        // FIXME: This is a workaround for PR 19926; CygMon does not
+        // expect to be sharing the line with a serial driver (which
+        // can be excused :) and so doesn't acknowledge the interrupt.
+        // In normal circumstances CygMon would handle the resulting
+        // interrupt and do the right thing.  However, when using the
+        // serial driver it is handling the interrupts and gets
+        // mightily confused by these spurious interrupts.
+        //
+        // As a workaround, ask CygMon which communication port is
+        // using for console output. If this is the serial port 
+        // (comm 0), acknowledge the interrupt.
+        if ( 0 == hal_bsp_set_debug_comm( -1 ) )
+            HAL_INTERRUPT_ACKNOWLEDGE( CYGNUM_HAL_VECTOR_INTERRUPT_10 );
+#endif
+
         return 1;
     }
     return 0;
@@ -238,7 +277,7 @@ void hal_diag_write_char(char c)
 
         // And re-enable interrupts
         HAL_RESTORE_INTERRUPTS(old);
-       
+
     }
 }
 

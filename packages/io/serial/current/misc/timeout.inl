@@ -73,7 +73,7 @@ do_timeout(cyg_handle_t alarm, cyg_addrword_t data)
     }
     if (min_delta != 0x7FFFFFFF) {
         // Still something to do, schedule it
-        cyg_alarm_initialize(timeout_alarm_handle, min_delta, 0);
+        cyg_alarm_initialize(timeout_alarm_handle, cyg_current_time()+min_delta, 0);
         last_delta = min_delta;
     }
 }
@@ -110,7 +110,7 @@ timeout(cyg_int32 delta, timeout_fun *fun, void *arg)
     }
     if (min_delta != 0x7FFFFFFF) {
         // Still something to do, schedule it
-        cyg_alarm_initialize(timeout_alarm_handle, min_delta, 0);
+        cyg_alarm_initialize(timeout_alarm_handle, cyg_current_time()+min_delta, 0);
         last_delta = min_delta;
     }
     return stamp;

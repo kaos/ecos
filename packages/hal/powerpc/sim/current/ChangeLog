@@ -1,3 +1,9 @@
+1999-04-28  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/mlt_powerpc_sim_ram.ldi: 
+	* include/pkgconf/mlt_powerpc_sim_ram.mlt: 
+	Increased memory size to 1MB.
+	
 1999-04-08  John Dallaway  <jld@cygnus.co.uk>
 
 	* include/pkgconf/*.ldi: Revised SECTION_* macro arguments to

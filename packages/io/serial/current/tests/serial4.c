@@ -84,10 +84,11 @@ serial_test( void )
         int msglen = strlen(msg);
 
         for (i = 0; i < count; i++){
-            change_config(ser_handle, &test_configs[i]);
-            test_binary(ser_handle,    128, MODE_EOP_ECHO);
-            test_binary(ser_handle,    256, MODE_NO_ECHO);
-            Tcyg_io_write(ser_handle, msg, &msglen);
+            if (ENOERR == change_config(ser_handle, &test_configs[i])) {
+                test_binary(ser_handle,    128, MODE_EOP_ECHO);
+                test_binary(ser_handle,    256, MODE_NO_ECHO);
+                Tcyg_io_write(ser_handle, msg, &msglen);
+            }
         }
     }
 

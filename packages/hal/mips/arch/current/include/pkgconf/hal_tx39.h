@@ -68,26 +68,12 @@
            memory access speed settings."
    }
    
-   cdl_option CYGDBG_HAL_MIPS_INSTALL_CTRL_C_ISR {
-       display "Install an Interrupt Service Routine to catch HALT requests"
-       type     bool
-       parent   CYGPKG_HAL_TX39
-       description "
-           This option enables startup code to install a default ISR on the
-           serial debug connection which reads characters looking for the
-           HALT character control-C (\003). This allows a running program
-           to be interrupted from GDB. This option only has effect if eCos
-           is configured to run with the Cygmon ROM monitor on the JMR3904
-           development board. Interrupts must be enabled for the code to
-           work. The serial device drivers, if enabled, do take over the
-           ISR and function correctly."
-   }
-   
    }}CFG_DATA */
 
 
 #define CYGHWR_HAL_MIPS_CPU_FREQ        50
 
+/* NO CDL for this because we want it enabled always. */
 #define CYGDBG_HAL_MIPS_INSTALL_CTRL_C_ISR
 
 /* -------------------------------------------------------------------*/

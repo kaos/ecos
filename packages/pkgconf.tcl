@@ -5560,6 +5560,11 @@ endif"
 	puts $file "\n"
 	puts $file "#define CYGHWR_MEMORY_LAYOUT_LDI <pkgconf/mlt_[set pkgconf::config_data(target)]_[set pkgconf::config_data(platform)]_[set pkgconf::config_data(startup)].ldi>"
 	puts $file "#define CYGHWR_MEMORY_LAYOUT_H   <pkgconf/mlt_[set pkgconf::config_data(target)]_[set pkgconf::config_data(platform)]_[set pkgconf::config_data(startup)].h>"
+
+	# Also output details of the HAL header files that should be included
+	puts $file "\n"
+	puts $file "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_[set pkgconf::config_data(target)].h>"
+	puts $file "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_[set pkgconf::config_data(target)]_[set pkgconf::config_data(platform)].h>"
 	
 	puts $file "\
 \n#endif  /* CYGONCE_PKGCONF_SYSTEM_H */ 		
@@ -5656,14 +5661,13 @@ proc pkgconf::produce_makefile { } {
     puts $makefile \
 "
 include pkgconf/pkgconf.mak
-.PHONY: default build clean tests headers
-.PRECIOUS: $(PREFIX)/lib/libextras.a"
+.PHONY: default build clean tests headers"
 
     puts $makefile "\nbuild: $(PREFIX)/lib/extras.o"
     puts $makefile "\t@echo Build finished."
 
     puts $makefile "\n$(PREFIX)/lib/extras.o: $(PREFIX)/lib/libextras.a"
-    puts $makefile "\t$(LD) --whole-archive $(PREFIX)/lib/libextras.a -r -o $(PREFIX)/lib/extras.o"
+    puts $makefile "\t$(CC) $(ARCHFLAGS) $(LDARCHFLAGS) -nostdlib -Wl,-r -Wl,--whole-archive $(PREFIX)/lib/libextras.a -o $(PREFIX)/lib/extras.o"
     
     puts $makefile "\n$(PREFIX)/lib/libextras.a: headers"
     foreach src_dir $pkgconf::src_dirs {

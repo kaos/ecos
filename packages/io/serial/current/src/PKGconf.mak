@@ -32,25 +32,25 @@ PACKAGE       := io_serial
 include ../../../../pkgconf/pkgconf.mak
 include ../../../../pkgconf/system.mak
 
-LIBRARY       := libextras.a
-COMPILE       := common/serial.c common/tty.c common/haldiag.c
+LIBRARY         := 
+EXTRAS_COMPILE  := common/serial.c common/tty.c common/haldiag.c
 ifdef CYG_HAL_ARM_PID
-COMPILE       += arm/pid_serial_with_ints.c
+EXTRAS_COMPILE  += arm/pid_serial_with_ints.c
 endif
 ifdef CYG_HAL_ARM_AEB
-COMPILE       += arm/aeb_serial.c
+EXTRAS_COMPILE  += arm/aeb_serial.c
 endif
 ifdef CYG_HAL_MN10300_STDEVAL1
-COMPILE       += mn10300/mn10300_serial.c
+EXTRAS_COMPILE  += mn10300/mn10300_serial.c
 endif
 ifdef CYG_HAL_TX39
-COMPILE       += mips/tx3904_serial.c
+EXTRAS_COMPILE  += mips/tx3904_serial.c
 endif
 ifdef CYG_HAL_POWERPC_COGENT
-COMPILE       += powerpc/cogent_serial_with_ints.c
+EXTRAS_COMPILE  += powerpc/cogent_serial_with_ints.c
 endif
 ifdef CYG_HAL_SPARCLITE_SLEB
-COMPILE       += sparclite/sleb_sdtr.c
+EXTRAS_COMPILE  += sparclite/sleb_sdtr.c
 endif
 OTHER_OBJS    :=
 OTHER_CLEAN   :=

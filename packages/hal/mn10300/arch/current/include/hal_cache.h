@@ -213,7 +213,7 @@
 // Enable the data cache
 #define HAL_DCACHE_ENABLE()                     \
 {                                               \
-    CYG_ADDRWORD chctr = *HAL_CHCTR;            \
+    register CYG_ADDRWORD chctr = *HAL_CHCTR;   \
     chctr |= HAL_CHCTR_DCEN;                    \
     *HAL_CHCTR = chctr;                         \
 }
@@ -221,23 +221,33 @@
 // Disable the data cache
 #define HAL_DCACHE_DISABLE()                    \
 {                                               \
-    CYG_ADDRWORD chctr = *HAL_CHCTR;            \
+    register CYG_ADDRWORD chctr = *HAL_CHCTR;   \
     chctr &= ~HAL_CHCTR_DCEN;                   \
     *HAL_CHCTR = chctr;                         \
+    while( HAL_CHCTR_DCBUSY & *HAL_CHCTR );     \
+}
+
+// Query the state of the data cache
+#define HAL_DCACHE_IS_ENABLED(_state_)          \
+{                                               \
+    register CYG_ADDRWORD chctr = *HAL_CHCTR;   \
+    _state_ = (0 != (chctr & HAL_CHCTR_DCEN));  \
 }
 
 // Invalidate the entire cache
 #define HAL_DCACHE_INVALIDATE_ALL()             \
 {                                               \
-    CYG_ADDRWORD chctr, chctr1;                 \
-    chctr = chctr1 = *HAL_CHCTR;                \
-    chctr &= ~HAL_CHCTR_DCEN;                   \
-    *HAL_CHCTR = chctr;                         \
-    while( *HAL_CHCTR & HAL_CHCTR_DCBUSY );     \
+    register CYG_ADDRWORD chctr;                \
+    register CYG_ADDRWORD state;                \
+    HAL_DCACHE_IS_ENABLED(state);               \
+    if (state)                                  \
+        HAL_DCACHE_DISABLE();                   \
+    chctr = *HAL_CHCTR;                         \
     chctr |= HAL_CHCTR_DCINV;                   \
     *HAL_CHCTR = chctr;                         \
-    while( *HAL_CHCTR & HAL_CHCTR_DCBUSY );     \
-    *HAL_CHCTR = chctr1;                        \
+    while( HAL_CHCTR_DCBUSY & *HAL_CHCTR );     \
+    if (state)                                  \
+        HAL_DCACHE_ENABLE();                    \
 }
 
 // Synchronize the contents of the cache with memory.
@@ -249,12 +259,17 @@
 // Set the data cache write mode
 #define HAL_DCACHE_WRITE_MODE( _mode_ )         \
 {                                               \
-    CYG_ADDRWORD chctr;                         \
+    register CYG_ADDRWORD chctr;                \
+    register CYG_ADDRWORD state;                \
+    HAL_DCACHE_IS_ENABLED(state);               \
+    if (state)                                  \
+        HAL_DCACHE_DISABLE();                   \
     chctr = *HAL_CHCTR;                         \
-    HAL_DCACHE_DISABLE();                       \
-    while( *HAL_CHCTR & HAL_CHCTR_DCBUSY );     \
     chctr |= HAL_CHCTR_DCWTMD*(_mode_);         \
     *HAL_CHCTR = chctr;                         \
+    while( HAL_CHCTR_DCBUSY & *HAL_CHCTR );     \
+    if (state)                                  \
+        HAL_DCACHE_ENABLE();                    \
 }
 
 #define HAL_DCACHE_WRITEBACK_MODE       0
@@ -290,10 +305,11 @@
     volatile register CYG_BYTE *way0 = HAL_DCACHE_PURGE_WAY0;   \
     volatile register CYG_BYTE *way1 = HAL_DCACHE_PURGE_WAY1;   \
     int i;                                                      \
-    register CYG_ADDRWORD chctr;                                \
-    chctr = *HAL_CHCTR;                                         \
-    HAL_DCACHE_DISABLE();                                       \
-    while( *HAL_CHCTR & HAL_CHCTR_DCBUSY );                     \
+    register CYG_ADDRWORD state;                                \
+                                                                \
+    HAL_DCACHE_IS_ENABLED(state);                               \
+    if (state)                                                  \
+        HAL_DCACHE_DISABLE();                                   \
                                                                 \
     way0 += ((CYG_ADDRWORD)_base_) & 0x000007f0;                \
     way1 += ((CYG_ADDRWORD)_base_) & 0x000007f0;                \
@@ -304,7 +320,8 @@
         way0 += HAL_DCACHE_LINE_SIZE;                           \
         way1 += HAL_DCACHE_LINE_SIZE;                           \
     }                                                           \
-    *HAL_CHCTR = chctr;                                         \
+    if (state)                                                  \
+        HAL_DCACHE_ENABLE();                                    \
 }
 
 // Preread the given range into the cache with the intention of reading
@@ -324,7 +341,7 @@
 // Enable the instruction cache
 #define HAL_ICACHE_ENABLE()                     \
 {                                               \
-    CYG_ADDRWORD chctr = *HAL_CHCTR;            \
+    register CYG_ADDRWORD chctr = *HAL_CHCTR;   \
     chctr |= HAL_CHCTR_ICEN;                    \
     *HAL_CHCTR = chctr;                         \
 }
@@ -332,23 +349,33 @@
 // Disable the instruction cache
 #define HAL_ICACHE_DISABLE()                    \
 {                                               \
-    CYG_ADDRWORD chctr = *HAL_CHCTR;            \
+    register CYG_ADDRWORD chctr = *HAL_CHCTR;   \
     chctr &= ~HAL_CHCTR_ICEN;                   \
     *HAL_CHCTR = chctr;                         \
+    while( HAL_CHCTR_ICBUSY & *HAL_CHCTR );     \
+}
+
+// Query the state of the instruction cache
+#define HAL_ICACHE_IS_ENABLED(_state_)          \
+{                                               \
+    register CYG_ADDRWORD chctr = *HAL_CHCTR;   \
+    _state_ = (0 != (chctr & HAL_CHCTR_ICEN));  \
 }
 
 // Invalidate the entire cache
 #define HAL_ICACHE_INVALIDATE_ALL()             \
 {                                               \
-    CYG_ADDRWORD chctr, chctr1;                 \
-    chctr1 = *HAL_CHCTR;                        \
-    HAL_ICACHE_DISABLE();                       \
-    while( *HAL_CHCTR & HAL_CHCTR_ICBUSY );     \
+    register CYG_ADDRWORD chctr;                \
+    register CYG_ADDRWORD state;                \
+    HAL_ICACHE_IS_ENABLED(state);               \
+    if (state)                                  \
+        HAL_ICACHE_DISABLE();                   \
     chctr = *HAL_CHCTR;                         \
     chctr |= HAL_CHCTR_ICINV;                   \
     *HAL_CHCTR = chctr;                         \
-    while( *HAL_CHCTR & HAL_CHCTR_ICBUSY );     \
-    *HAL_CHCTR = chctr1;                        \
+    while( HAL_CHCTR_ICBUSY & *HAL_CHCTR );     \
+    if (state)                                  \
+        HAL_ICACHE_ENABLE();                    \
 }
 
 // Synchronize the contents of the cache with memory.
