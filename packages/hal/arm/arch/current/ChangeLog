@@ -1,3 +1,7 @@
+2003-02-13  Mark Salter  <msalter@redhat.com>
+
+	* src/redboot_linux_exec.c (do_exec): Add missing semicolon.
+
 2003-02-13  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/redboot_linux_exec.c (CYGHWR_REDBOOT_LINUX_ATAG_MEM): 
