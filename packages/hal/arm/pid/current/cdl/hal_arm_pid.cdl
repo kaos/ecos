@@ -244,7 +244,7 @@ cdl_package CYGPKG_HAL_ARM_PID {
             flavor  data
             no_define
 	    default_value { (CYGHWR_THUMB ? "-mthumb " : ((CYGHWR_HAL_ARM_CPU_FAMILY == "ARM9") ? "-mcpu=arm9 " : "-mcpu=arm7tdmi ")) .
-		            ((CYGBLD_ARM_ENABLE_THUMB_INTERWORK || CYGSEM_HAL_ROM_MONITOR) ? "-mthumb-interwork " : "") .
+		            (CYGBLD_ARM_ENABLE_THUMB_INTERWORK ? "-mthumb-interwork " : "") .
 		            (CYGHWR_HAL_ARM_BIGENDIAN ? "-mbig-endian " : "") .
 		            "-g -nostdlib -Wl,--gc-sections -Wl,-static" }
             description   "

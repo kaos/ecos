@@ -1,3 +1,9 @@
+2003-04-30  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/hal_arm_pid.cdl: Make CYGBLD_GLOBAL_LDFLAGS depend on
+	CYGBLD_ARM_ENABLE_THUMB_INTERWORK instead of also
+	CYGSEM_HAL_ROM_MONITOR, redundantly.
+
 2003-04-11  Bart Veer  <bartv@ecoscentric.com>
 
 	* cdl/hal_arm_pid.cdl: building for thumb now involves arm-elf-gcc
