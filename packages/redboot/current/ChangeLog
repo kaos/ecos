@@ -1,3 +1,9 @@
+2004-08-13  Jani Monoses <jani@iv.ro>
+
+	* src/net/http_client.c: Fix off-by-one error in checking
+	the HTTP response header, so the ending CRLF-CRLF is detected 
+	even if it's the last 4 bytes in the buffer.
+
 2004-06-25  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/flash.c (find_free): fix endless loop when removing a

@@ -188,7 +188,7 @@ http_stream_read(char *buf,
                             return -1;
                         }
                         // Find \r\n\r\n - end of HTTP preamble
-                        while (s->avail > 4) {
+                        while (s->avail >= 4) {
                             // This could be done faster, but not simpler
                             if (strncmp(s->bufp, "\r\n\r\n", 4) == 0) {
                                 s->bufp += 4;
