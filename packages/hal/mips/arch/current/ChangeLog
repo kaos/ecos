@@ -1,3 +1,9 @@
+2003-02-27  Nick Garnett  <nickg@calivar.com>
+
+	* include/mips-stub.h: Disabled option that makes MIPS32 targets
+	use 64 bit registers in GDB protocol. The standard GDB does not
+	support this, only MIPS own version.
+
 2003-01-31  Mark Salter  <msalter@redhat.com>
 
 	* src/hal_syscall.c (hal_syscall_handler): Let generic syscall code
