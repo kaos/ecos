@@ -1327,7 +1327,6 @@ do_flash_init(void)
         // Keep 'end' address as last valid location, to avoid wrap around problems
         flash_end = (void *)((CYG_ADDRESS)flash_end - 1);
         flash_get_block_info(&flash_block_size, &flash_num_blocks);
-        workspace_end = (unsigned char *)(workspace_end-FLASH_MIN_WORKSPACE);
 #ifdef CYGOPT_REDBOOT_FIS
         fisdir_size = CYGNUM_REDBOOT_FIS_DIRECTORY_ENTRY_COUNT * CYGNUM_REDBOOT_FIS_DIRECTORY_ENTRY_SIZE;
         fisdir_size = ((fisdir_size + flash_block_size - 1) / flash_block_size) * flash_block_size;
@@ -1335,7 +1334,6 @@ do_flash_init(void)
 	fis_work_block = fis_zlib_common_buffer;
 	if(CYGNUM_REDBOOT_FIS_ZLIB_COMMON_BUFFER_SIZE < fisdir_size) {
             diag_printf("FLASH: common buffer too small\n");
-	    workspace_end += FLASH_MIN_WORKSPACE;
             return false;
 	}
 # else
