@@ -65,41 +65,14 @@
 #include <cyg/hal/dbg-threads-api.h>    // dbg_currthread_id
 #endif
 
-/*----------------------------------------------------------------------
- * Asynchronous interrupt support
- */
-
-typedef unsigned short t_inst;
-
-static struct
-{
-  t_inst *targetAddr;
-  t_inst savedInstr;
-} asyncBuffer;
-
-/* Called to asynchronously interrupt a running program.
-   Must be passed address of instruction interrupted.
-   This is typically called in response to a debug port
-   receive interrupt.
-*/
-
-void
-install_async_breakpoint(void *pc)
-{
-  asyncBuffer.targetAddr = pc;
-  asyncBuffer.savedInstr = *(t_inst *)pc;
-  *(t_inst *)pc = (t_inst)HAL_BREAKINST;
-  __instruction_cache(CACHE_FLUSH);
-  __data_cache(CACHE_FLUSH);
-}
-
 /*--------------------------------------------------------------------*/
 /* Given a trap value TRAP, return the corresponding signal. */
 
 int __computeSignal (unsigned int trap_number)
 {
     switch (trap_number) {
-    case 11:
+    case CYGNUM_HAL_VECTOR_TRACE:
+    case CYGNUM_HAL_VECTOR_TRAP3:
         return SIGTRAP;
     default:
         return SIGINT;
@@ -128,126 +101,27 @@ void set_pc (target_register_t pc)
 
 
 /*----------------------------------------------------------------------
- * Single-step support. Lifted from CygMon.
+ * Single-step support. 
  */
-
-#define NUM_SS_BPTS 2
-static target_register_t break_mem [NUM_SS_BPTS] = {0, 0};
-static unsigned short break_mem_data [NUM_SS_BPTS];
-
-/* Set a single-step breakpoint at ADDR.  Up to two such breakpoints
-   can be set; WHICH specifies which one to set (0 or 1).  */
-
-static void
-set_single_bp (int which, unsigned char *addr)
-{
-    if (break_mem[which] == 0) {
-        break_mem[which] = (target_register_t) addr;
-        break_mem_data[which] = *(unsigned short *)addr;
-        *(unsigned short *)addr = HAL_BREAKINST;
-    }
-}
 
 /* Clear any single-step breakpoint(s) that may have been set.  */
 
 void __clear_single_step (void)
 {
-  int x;
-  for (x = 0; x < NUM_SS_BPTS; x++)
-    {
-        unsigned short* addr = (unsigned short *)break_mem[x];
-        if (addr) {
-            *addr = break_mem_data[x];
-            break_mem[x] = 0;
-        }
-    }
+    int exr;
+    exr = get_register(EXR);
+    exr &= 0x7f;  /* clear T flag */
+    put_register(EXR,exr);
 }
 
 /* Set breakpoint(s) to simulate a single step from the current PC.  */
 
-const static unsigned char opcode_length0[]={
-  0x04,0x02,0x04,0x02,0x04,0x02,0x04,0x02,  /* 0x58 */
-  0x02,0x02,0x02,0x02,0x02,0x02,0x02,0x02,  /* 0x60 */
-  0x02,0x02,0x11,0x11,0x02,0x02,0x04,0x04,  /* 0x68 */
-  0x02,0x02,0x02,0x02,0x02,0x02,0x02,0x02,  /* 0x70 */
-  0x08,0x04,0x06,0x04,0x04,0x04,0x04,0x04   /* 0x78 */
-};
-
-const static unsigned char opcode_length1[]={
-  0x10,0x00,0x00,0x00,0x11,0x00,0x00,0x00,
-  0x02,0x00,0x00,0x00,0x04,0x04,0x00,0x04
-};
-
-static int insn_length(unsigned char *pc)
-{
-  if (*pc != 0x01 && (*pc < 0x58 || *pc>=0x80)) 
-    return 2;
-  else
-    switch (*pc) {
-      case 0x01:
-	switch (*(pc+1) & 0xf0) {
-	case 0x00:
-	  if (*(pc+2)== 0x78) {
-	    return 10;
-	  } else if (*(pc+2)== 0x6b) {
-	    return (*(pc+3) & 0x20)?8:6;
-	  } else {
-	    return (*(pc+2) & 0x02)?6:4;
-	  }
-	case 0x40:
-	  return (*(pc+2) & 0x02)?8:6;
-	default:
-	  return opcode_length1[*(pc+1)>>4];
-	}
-      case 0x6a:
-      case 0x6b:
-	return (*(pc+1) & 0x20)?6:4;
-      default:
-	return opcode_length0[*pc-0x58];
-    }
-}
-
 void __single_step (void)
 {
-  unsigned int pc = get_register (PC);
-  unsigned int next;
-  unsigned int opcode;
-
-  opcode = *(unsigned short *)pc;
-  next = pc + insn_length((unsigned char *)pc);
-  if (opcode == 0x5470) {
-    /* rts */ 
-    unsigned long *sp;
-    sp = (unsigned long *)get_register(SP);
-    next = *(sp+2) & 0x00ffffff;
-  } else if (((opcode & 0xf000) == 0x4000) || ((opcode & 0xff00) == 0x5500)) { 
-    /* b**:8 */
-    char dsp;
-    dsp = (opcode & 0xff);
-    set_single_bp(1,(unsigned char *)(pc+2+dsp));
-  } else if (((opcode & 0xff00) == 0x5800) || ((opcode & 0xff00) == 0x5c00)) { 
-    /* b**:16 */
-    short dsp;
-    dsp = *(short *)(pc+2);
-    set_single_bp(1,(unsigned char *)(pc+4+dsp));
-  } else if ((opcode & 0xfb00) != 0x5800) {
-    /* jmp / jsr */
-    int regs;
-    const short reg_tbl[]={ER0,ER1,ER2,ER3,ER4,ER5,ER6,SP};
-    switch(opcode & 0xfb00) {
-    case 0x5900:
-      regs = (opcode & 0x0070) >> 8;
-      next = get_register(reg_tbl[regs]);
-      break;
-    case 0x5a00:
-      next = *(unsigned long *)(pc) & 0x00ffffff;
-      break;
-    case 0x5b00:
-      next = *(unsigned long *)(opcode & 0xff);
-      break;
-    }
-  }
-  set_single_bp(0,(unsigned char *)next);
+    int exr;
+    exr = get_register(EXR);
+    exr |= 0x80;  /* set T flag */
+    put_register(EXR,exr);
 }
 
 void __install_breakpoints (void)
@@ -274,13 +148,11 @@ __is_breakpoint_function ()
 
 
 /* Skip the current instruction. */
+/* only TRAPA instruction */
 
 void __skipinst (void)
 {
-    unsigned long pc = get_register (PC);
-
-    pc+=insn_length((unsigned char *)pc);
-    put_register (PC, (target_register_t) pc);
+    put_register (PC, get_register(PC) + 2);
 }
 
 #endif // CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS

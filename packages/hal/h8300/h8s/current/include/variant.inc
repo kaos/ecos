@@ -72,14 +72,14 @@
 # CPU state save and restore macros
 
 	.macro	hal_cpu_save_all
-	subs	#4,sp				; reserve space
-	subs	#2,sp
+	subs	#2,sp				; reserve space
+	subs	#4,sp
 	mov.l	sp,@-sp
 	stm	er0-er3,@-sp
 	stm	er4-er6,@-sp
 	sub.w	e0,e0
 	mov.w	e0,@(4*9:16,sp)			; clear exr high word
-        mov.l	@(4*10:16,sp),r0
+        mov.w	@(4*10:16,sp),r0
 	sub.l	er1,er1
 	mov.b	r0h,r1l
 	mov.l	er1,@(4*8:16,sp)		; copy ccr
@@ -88,18 +88,21 @@
 	.endm
 
 	.macro	hal_cpu_load_all
-	mov.w	@(4*8+2:16,sp),r0
-	mov.w	@(4*10:16,sp),r1
-	mov.b	r0l,r1h
-	mov.w	r1,@(4*10:16,sp)		; set ccr
+	mov.w	@(4*8+2:16,sp),r1		; load ccr
+	mov.w	@(4*10:16,sp),r0		; load pc+ccr high word
+	mov.b	r1l,r0h				; replace ccr byte
+	mov.w	r0,@(4*10:16,sp)		; restore pc+ccr high word
+	mov.w	@(4*9+2:16,sp),r0
+	mov.b	r0l,r0h
+	mov.w	r0,@(4*9+2:16,sp)		; extend exr
 	ldm	@sp+,er4-er6
 	ldm	@sp+,er0-er3
 	add.l	#10,sp
 	.endm
 
         .macro hal_cpu_save_context
-        sub.w   r2,r2
         stc     exr,r2l
+	mov.b	r2l,r2h
         mov.w   r2,@-sp
         hal_cpu_save_all
         .endm
@@ -159,6 +162,12 @@
 	and.b	#0xf8,r0h
 	or.b	r0l,r0h
 	mov.b	r0h,exr
+	.endm
+
+	.macro	h8300_trap_adjust_pc
+	mov.l	@(40:16,sp),er0
+	subs	#2,er0
+	mov.l	er0,@(40:16,sp)
 	.endm
 
 ##-----------------------------------------------------------------------------

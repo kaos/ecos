@@ -93,7 +93,7 @@ GROUP(libtarget.a libgcc.a)
     { FORCE_OUTPUT; *(.gcc_except_table) } \
     > _region_
 
-#if defined(CYGHWR_HAL_H8300_VECTOR_ADDRESS)
+#if defined(CYGSEM_HAL_H8300_VECTOR_HOOK)
 #define SECTION_int_hook_table(_region_, _vma_, _lma_) \
     .int_hook_table CYGHWR_HAL_H8300_VECTOR_ADDRESS : _lma_ \
     { CYG_LABEL_DEFN(__int_hook_start) = ABSOLUTE (.); \
@@ -130,7 +130,7 @@ GROUP(libtarget.a libgcc.a)
 #define SECTION_bss(_region_, _vma_, _lma_) \
     .bss _vma_ : _lma_ \
     { CYG_LABEL_DEFN(__bss_start) = ABSOLUTE (.); \
-    *(.scommon) *(.dynbss) *(.bss) *(COMMON) \
+    *(.scommon) *(.dynbss) *(.bss.*) *(COMMON) \
     CYG_LABEL_DEFN(__bss_end) = ABSOLUTE (.); } \
     > _region_
 

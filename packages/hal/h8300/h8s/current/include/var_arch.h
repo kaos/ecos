@@ -83,6 +83,15 @@ typedef struct HAL_SavedRegisters
     CYG_WORD32          pc;
 } HAL_SavedRegisters;
 
+#define HAL_THREAD_INIT_CONTEXT_EXTRA(_regs_, _id_) \
+    {_regs_->exr   = 0;}
+
+#define HAL_GET_GDB_EXTRA_REGISTERS(_regval_,_regs_) \
+    {_regval_[10] = (_regs_)->exr;}
+
+#define HAL_SET_GDB_EXTRA_REGISTERS( _regs_,_regval_) \
+    {(_regs_)->exr = _regval_[10];}
+
 // Internal peripheral registers
 #include <cyg/hal/mod_regs_adc.h>
 #include <cyg/hal/mod_regs_bsc.h>
@@ -95,12 +104,6 @@ typedef struct HAL_SavedRegisters
 #include <cyg/hal/mod_regs_ppg.h>
 #include <cyg/hal/mod_regs_wdt.h>
 
-//--------------------------------------------------------------------------
-
-#ifndef HAL_THREAD_INIT_CONTEXT_EXTRA
-#define HAL_THREAD_INIT_CONTEXT_EXTRA(_regs_, _id_) \
-        (_regs_)->exr = 0;
-#endif
 
 //--------------------------------------------------------------------------
 #endif // CYGONCE_HAL_VAR_ARCH_H

@@ -196,13 +196,13 @@ void
 hal_interrupt_mask(int vector)					  
 {
     CYG_BYTE ier;
-    const struct int_regs *regs=&interrupt_registers[vector-12];
+    const struct int_regs *regs=&interrupt_registers[vector-CYGNUM_HAL_INTERRUPT_EXTERNAL_0];
     if (vector == CYGNUM_HAL_INTERRUPT_WDT) {
         HAL_READ_UINT8(CYGARC_TCSR,ier);
 	ier &= ~0x20;
 	HAL_WRITE_UINT16(CYGARC_TCSR,0xa500 | ier);
     } else {
-        if ((vector > 16) && regs->ier) {
+        if ((vector >= CYGNUM_HAL_INTERRUPT_EXTERNAL_0) && regs->ier) {
             HAL_READ_UINT8(regs->ier,ier);
 	    ier &= ~(regs->mask);
             HAL_WRITE_UINT8(regs->ier,ier);
@@ -216,13 +216,13 @@ void
 hal_interrupt_unmask(int vector)					  
 {
     CYG_BYTE ier;
-    const struct int_regs *regs=&interrupt_registers[vector-12];
+    const struct int_regs *regs=&interrupt_registers[vector-CYGNUM_HAL_INTERRUPT_EXTERNAL_0];
     if (vector == CYGNUM_HAL_INTERRUPT_WDT) {
         HAL_READ_UINT8(CYGARC_TCSR,ier);
 	ier |= 0x20;
 	HAL_WRITE_UINT16(CYGARC_TCSR,0xa500 | ier);
     } else {
-        if ((vector > 16) && regs->ier) {
+        if ((vector >= CYGNUM_HAL_INTERRUPT_EXTERNAL_0) && regs->ier) {
             HAL_READ_UINT8(regs->ier,ier);
 	    ier |= regs->mask;
             HAL_WRITE_UINT8(regs->ier,ier);
@@ -236,7 +236,7 @@ void
 hal_interrupt_acknowledge(int vector)					  
 {
     CYG_BYTE isr;
-    const struct int_regs *regs=&interrupt_registers[vector-12];
+    const struct int_regs *regs=&interrupt_registers[vector-CYGNUM_HAL_INTERRUPT_EXTERNAL_0];
     if (vector >= CYGNUM_HAL_INTERRUPT_DEND0A &&
         vector <= CYGNUM_HAL_INTERRUPT_DEND1B)
         return;
@@ -245,7 +245,7 @@ hal_interrupt_acknowledge(int vector)
 	isr &= ~0x80;
 	HAL_WRITE_UINT16(CYGARC_TCSR,0xa500 | isr);
     } else {
-        if ((vector > 16) && regs->isr) {
+        if ((vector >= CYGNUM_HAL_INTERRUPT_EXTERNAL_0) && regs->isr) {
             HAL_READ_UINT8(regs->isr,isr);
 	    isr &= ~(regs->status);
             HAL_WRITE_UINT8(regs->isr,isr);
