@@ -73,6 +73,10 @@
 #include <netinet/if_ether.h>
 #endif
 
+#ifndef NBPFILTER
+#define NBPFILTER 0
+#endif
+
 #if NBPFILTER > 0
 #include <net/bpf.h>
 #include <net/bpfdesc.h>
