@@ -1,3 +1,8 @@
+2003-03-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/keytools.c (decode_keychange): Avoid undefined behaviour.
+	(encode_keychange): Ditto.
+
 2003-02-28  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/config.h: Make random use rand on FreeBSD.
