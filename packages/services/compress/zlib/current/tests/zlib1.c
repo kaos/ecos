@@ -52,6 +52,7 @@
 #include <cyg/kernel/kapi.h>
 
 #include <cyg/infra/testcase.h>
+#include <cyg/infra/diag.h>
 
 #ifdef CYGFUN_KERNEL_API_C
 
