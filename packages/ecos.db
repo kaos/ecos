@@ -2459,6 +2459,15 @@ package CYGPKG_HAL_ARM_LPC2XXX_P2106 {
         LPC-2106 evaluation board from Olimex."
 }
 
+package CYGPKG_HAL_ARM_LPC2XXX_LPCMT {
+	alias		{ "Olimex evaluation board LPC-MT " hal_lpcmt_arm }
+	directory	hal/arm/lpc2xxx/lpcmt
+	script		hal_arm_lpc2xxx_lpcmt.cdl
+	hardware
+	description "
+	The lpcmt HAL package provides the support needed to run eCos on an the 
+	LPC-MT evaluation board from Olimex."
+}
 package CYGPKG_HAL_ARM_EBSA285 {
 	alias		{ "Intel EBSA285 StrongARM board" hal_arm_ebsa285 arm_ebsa285_hal }
 	directory	hal/arm/ebsa285
@@ -4104,6 +4113,20 @@ target p2106 {
         description "
         The p2106 target provides the packages needed to run eCos on the
         LPC-P2106 evaluation board from Olimex."
+}
+
+target lpcmt {
+	alias { "Olimex evaluation board LPC-LPCMT" lpcmt }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_LPC2XXX
+                   CYGPKG_HAL_ARM_LPC2XXX_LPCMT
+                   CYGPKG_IO_SERIAL_GENERIC_16X5X
+                   CYGPKG_IO_SERIAL_ARM_LPC2XXX
+                   CYGPKG_DEVICES_WATCHDOG_ARM_LPC2XXX
+        }
+        description "
+        The lpcmt target provides the packages needed to run eCos on the
+        LPC-LPCMT evaluation board from Olimex."
 }
 
 target ebsa285 {

@@ -1,7 +1,11 @@
+2004-11-19  Jani Monoses <jani@iv.ro>
+
+	* ecos.db: New lpc2xxx platform, Olimex LPC-MT.
+
 2004-11-14  Jani Monoses <jani@iv.ro>
 
 	* ecos.db: New packages which include a hal variant port for the
-	lpc2xxxto, generic serial and watchdog drivers for the lpc2xxx and
+	lpc2xxx, generic serial and watchdog drivers for the lpc2xxx and
 	ports for the Keil MCB2100 and Olimex P2106.
 
 2004-10-17  Iztok Zupet   <iz@elsis.si>

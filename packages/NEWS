@@ -1,4 +1,4 @@
-* Port to the Keil MCB2100 and Olimex P2106 by Jani Monoses
+* Port to the Keil MCB2100, Olimex P2106 and Olimex LPC-MT by Jani Monoses
 * Generic support for the lpc2xxx, hal, serial and watchdog by Jani Monoses
 * Support for generic IDE disks using PIO, by Iztok Zupet.
 * Support for SPI on the eb55 by Savin Zlobec.
