@@ -1,3 +1,11 @@
+2003-09-08  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/hal_aux.c (hal_platform_init): Avoid performing some hardware
+	initialization for "user" programs (those that are assuming the
+	presence of a working ROM monitor).  These initializations caused
+	the monitor (RedBoot) to get totally lost, especiall when connected
+	to GDB via ethernet.
+
 2003-09-02  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/hal_aux.c (_rattler_reset): Try to be more careful when

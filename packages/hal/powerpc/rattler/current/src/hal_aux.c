@@ -114,6 +114,7 @@ CYGARC_MEMDESC_TABLE CYGBLD_ATTRIB_WEAK = {
 void
 hal_platform_init(void)
 {
+#ifndef CYGSEM_HAL_USE_ROM_MONITOR
     volatile t_PQ2IMM  *IMM = (volatile t_PQ2IMM *)CYGARC_IMM_BASE;
     cyg_bool old_board_layout = *(unsigned long *)0xFE0000FC == 0;
 
@@ -368,10 +369,12 @@ hal_platform_init(void)
     //   xx                                     SMC1 - clock on BRG7
     //        xx                                SMC2 - clock on BRG8
     IMM->cpm_mux_cmxsmr = 0x11;
+#endif // CYGSEM_HAL_USE_ROM_MONITOR
     
     // Start up system I/O
     hal_if_init();
 
+#ifndef CYGSEM_HAL_USE_ROM_MONITOR
 #ifdef CYGHWR_HAL_POWERPC_RATTLER_PCI
     if ((IMM->clocks_sccr & 0x100) != 0) {
         CYG_WORD16 pci_cfg;
@@ -398,6 +401,7 @@ hal_platform_init(void)
         diag_printf("*** Warning: PCI not responding - SCCR: %x\n", IMM->clocks_sccr);
     }
 #endif
+#endif // CYGSEM_HAL_USE_ROM_MONITOR
 }
 
 //
