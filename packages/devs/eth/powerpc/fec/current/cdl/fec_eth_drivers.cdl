@@ -65,7 +65,7 @@ cdl_package CYGPKG_DEVS_ETH_POWERPC_FEC {
     include_files ; # none _exported_ whatsoever
 
     # Debug I/O during network stack initialization is not reliable
-    requires { CYGPKG_NET_FORCE_SERIAL_CONSOLE == 1 }
+    requires { !CYGPKG_NET || CYGPKG_NET_FORCE_SERIAL_CONSOLE == 1 }
 
     description   "Fast ethernet driver for PowerPC MPC8xxT boards."
     compile       -library=libextras.a if_fec.c
