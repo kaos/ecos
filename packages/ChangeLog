@@ -1,3 +1,7 @@
+2004-04-14  Nick Garnett  <nickg@calivar.com>
+
+	* ecos.db: Added PPP package.
+
 2004-03-12  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* pkgconf/rules.mak: When linking, $LDFLAGS must be after target.ld

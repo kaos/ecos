@@ -1321,6 +1321,13 @@ This package provides a SNTP client which can recieve broadcast time
 information and set the system clock."
 }  
 
+package CYGPKG_PPP {
+	alias 		{ "PPP support" ppp }
+	directory	net/ppp
+	script		ppp.cdl
+        description     "PPP support."
+}
+
 package CYGPKG_NET_IPSEC_LIBIPSEC {
         alias           { "libipsec support" libipsec }
         directory       net/ipsec/libipsec
