@@ -127,8 +127,8 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_IXDP425 {
             display "Global linker flags"
             flavor  data
             no_define
-            default_value { CYGHWR_HAL_ARM_BIGENDIAN ? "-mbig-endian -Wl,--gc-sections -Wl,-static -g -O2 -nostdlib" :
-	                    "-Wl,--gc-sections -Wl,-static -g -O2 -nostdlib " }
+            default_value { CYGHWR_HAL_ARM_BIGENDIAN ? "-mbig-endian -mcpu=xscale -Wl,--gc-sections -Wl,-static -g -O2 -nostdlib" :
+	                    "-mcpu=xscale -Wl,--gc-sections -Wl,-static -g -O2 -nostdlib " }
             description   "
                 This option controls the global linker flags. Individual
                 packages may define options which override these global flags."
