@@ -3563,6 +3563,7 @@ target viper {
                           CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC
                           CYGPKG_DEVS_ETH_POWERPC_FEC
                           CYGPKG_DEVS_FLASH_VIPER
+                          CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
         }
         description "
             The viper target provides the packages needed to run

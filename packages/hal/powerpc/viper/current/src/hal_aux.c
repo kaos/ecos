@@ -63,7 +63,7 @@
 // it if necessary. The regions defined below are the minimum requirements.
 CYGARC_MEMDESC_TABLE CYGBLD_ATTRIB_WEAK = {
     // Mapping for the Viper 855/860 development boards
-    CYGARC_MEMDESC_CACHE(   0xfe000000, 0x00400000 ), // ROM region
+    CYGARC_MEMDESC_CACHE(   0xfe000000, 0x00800000 ), // ROM region
     CYGARC_MEMDESC_NOCACHE( 0xff000000, 0x00100000 ), // MCP registers
     CYGARC_MEMDESC_NOCACHE( 0xfa000000, 0x00400000 ), // Control/Status+LEDs
     CYGARC_MEMDESC_CACHE(   CYGMEM_REGION_ram, CYGMEM_REGION_ram_SIZE ), // Main memory

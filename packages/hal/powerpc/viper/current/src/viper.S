@@ -266,7 +266,7 @@ FUNC_START( hal_hardware_init )
 
        	/* BOOT ROM */
         lwi	r3,0xFE000401	# 8-bit, GPCM
-        lwi	r5,0xFFF00774   # 7 wait states
+        lwi	r5,0xFF800774   # 7 wait states, up to 8MB
         stw	r3,BR0(r4)
         stw	r5,OR0(r4)
 

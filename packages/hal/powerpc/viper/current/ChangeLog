@@ -1,3 +1,8 @@
+2002-06-20  Gary Thomas  <gary@chez-thomas.org>
+
+	* src/viper.S: 
+	* src/hal_aux.c: Support up to 8M of FLASH space.
+
 2002-05-30  John Dallaway  <jld@redhat.com>
 
 	* include/pkgconf/mlt*: Regenerated memory layout files.
