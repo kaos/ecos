@@ -138,7 +138,7 @@ cyg_start( void )
     pure->impure_fun1();
     pure->inline_fun1();
 
-#ifdef CYGINT_ISO_MALLOC
+#if CYGINT_ISO_MALLOC
     Derived *derived2 = new Derived(2);
     Pure *pure2 = derived2;
     

@@ -2,6 +2,7 @@
 
 	* tests/cxxsupp.cxx: don't include <pkgconf/kernel.h> as it's not
 	needed.
+	(cyg_start): CYGINT_ISO_MALLOC needs a #if test.
 
 2003-04-10  Nick Garnett  <nickg@balti.calivar.com>
 
