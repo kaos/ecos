@@ -1,3 +1,13 @@
+2003-05-27  Daniel Néri  <daniel.neri@sigicom.se>
+
+	* include/var_io.h: Add missing USART register defines.
+	Fix cut'n'paste typos in AT91_PS defines.
+
+2003-05-16  Daniel Néri  <daniel.neri@sigicom.se>
+
+	* include/var_io.h: Add missing PIO register defines. Add
+	CPU clock disable command bit.
+
 2003-05-15  Thomas Koeller  <thomas.koeller@baslerweb.com>
 
 	* include/hal_diag.h:

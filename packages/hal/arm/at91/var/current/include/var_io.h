@@ -75,6 +75,7 @@
 #define AT91_US_CR_TxENAB  (1<<6)
 #define AT91_US_CR_TxDISAB (1<<7)
 #define AT91_US_CR_RSTATUS (1<<8)
+#define AT91_US_CR_STTTO   (1<<11)
 #define AT91_US_MR  0x04  // Mode register
 #define AT91_US_MR_CLOCK   4
 #define AT91_US_MR_CLOCK_MCK  (0<<AT91_US_MR_CLOCK)
@@ -122,11 +123,17 @@
 #define AT91_US_CSR 0x14  // Channel status register
 #define AT91_US_CSR_RxRDY 0x01 // Receive data ready
 #define AT91_US_CSR_TxRDY 0x02 // Transmit ready
+#define AT91_US_CSR_OVRE  0x20 // Overrun error
+#define AT91_US_CSR_FRAME 0x40 // Framing error
 #define AT91_US_RHR 0x18  // Receive holding register
 #define AT91_US_THR 0x1C  // Transmit holding register
 #define AT91_US_BRG 0x20  // Baud rate generator
 #define AT91_US_RTO 0x24  // Receive time out
 #define AT91_US_TTG 0x28  // Transmit timer guard
+#define AT91_US_RPR 0x30  // Receive pointer register
+#define AT91_US_RCR 0x34  // Receive counter register
+#define AT91_US_TPR 0x38  // Transmit pointer register
+#define AT91_US_TCR 0x3c  // Transmit counter register
 
 #define AT91_US_BAUD(baud) (CYGNUM_HAL_ARM_AT91_CLOCK_SPEED/(16*(baud)))
 
@@ -141,9 +148,19 @@
 #define AT91_PIO_PDR  0x04  // PIO disable
 #define AT91_PIO_PSR  0x08  // PIO status
 #define AT91_PIO_OER  0x10  // Output enable
+#define AT91_PIO_ODR  0x14  // Output disable
+#define AT91_PIO_OSR  0x18  // Output status
+#define AT91_PIO_IFER 0x20  // Input Filter enable
+#define AT91_PIO_IFDR 0x24  // Input Filter disable
+#define AT91_PIO_IFSR 0x28  // Input Filter status
 #define AT91_PIO_SODR 0x30  // Set out bits
 #define AT91_PIO_CODR 0x34  // Clear out bits
+#define AT91_PIO_ODSR 0x38  // Output data status
 #define AT91_PIO_PDSR 0x3C  // Pin data status
+#define AT91_PIO_IER  0x40  // Interrupt enable
+#define AT91_PIO_IDR  0x44  // Interrupt disable
+#define AT91_PIO_IMR  0x48  // Interrupt mask
+#define AT91_PIO_ISR  0x4C  // Interrupt status
 
 //=============================================================================
 // Advanced Interrupt Controller (AIC)
@@ -378,9 +395,10 @@
 #endif
 
 #define AT91_PS_CR        0x000    // Control
+#define AT91_PS_CR_CPU    (1<<0)   // Disable CPU clock
 #define AT91_PS_PCER      0x004    // Peripheral clock enable
-#define AT91_PS_PCDR      0x004    // Peripheral clock disable
-#define AT91_PS_PCSR      0x004    // Peripheral clock status
+#define AT91_PS_PCDR      0x008    // Peripheral clock disable
+#define AT91_PS_PCSR      0x00c    // Peripheral clock status
 
 #elif defined(CYGHWR_HAL_ARM_AT91_M42800A) || \
       defined(CYGHWR_HAL_ARM_AT91_M55800A)
