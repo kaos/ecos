@@ -716,7 +716,7 @@ lan91cxx_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
         plen += sg_list[i].len;
 
     CYG_ASSERT( plen == total_len, "sg data length mismatch" );
-    
+
     // Alloc new TX packet
     do {
         put_reg(sc, LAN91CXX_MMU_COMMAND, LAN91CXX_MMU_alloc_for_tx
@@ -761,9 +761,9 @@ lan91cxx_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
     // data writes.
 
     // Prepare header:
-    put_data(sc, 0);        // reserve space for status word
+    put_data(sc, CYG_CPU_TO_LE16(0));        // reserve space for status word
     // packet length (includes status, byte-count and control shorts)
-    put_data(sc, 0x7FE & (plen + 6) ); // Always even, always < 15xx(dec)
+    put_data(sc, CYG_CPU_TO_LE16(0x7FE & (plen + 6)) ); // Always even, always < 15xx(dec)
 
     // Put data into buffer
     for (i = 0;  i < sg_len;  i++) {
@@ -959,11 +959,14 @@ lan91cxx_RxEvent(struct eth_drv_sc *sc)
                                  LAN91CXX_POINTER_AUTO_INCR | 0x0000));
 #ifdef LAN91CXX_32BIT_RX
     val = get_data(sc);
+    val = CYG_LE32_TO_CPU(val);
     stat = val & 0xffff;
     len = ((val >> 16) & 0xffff) - 6;   // minus header/footer words
 #else
     stat = get_data(sc);
-    len = get_data(sc) - 6;             // minus header/footer words
+    stat = CYG_LE16_TO_CPU(stat);
+    len = get_data(sc);
+    len = CYG_LE16_TO_CPU(len) - 6;     // minus header/footer words
 #endif
 
 #ifdef KEEP_STATISTICS
@@ -1019,7 +1022,8 @@ lan91cxx_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
     struct lan91cxx_priv_data *cpd = 
         (struct lan91cxx_priv_data *)sc->driver_private;
 #endif
-    int i, mlen=0, plen;
+    int i;
+    short mlen=0, plen;
     rxd_t *data=NULL, val;
     unsigned char *cp, cval;
 
@@ -1033,9 +1037,11 @@ lan91cxx_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
 
     // packet length (minus header/footer)
 #ifdef LAN91CXX_32BIT_RX
+    val = CYG_LE32_TO_CPU(val);
     plen = (val >> 16) - 6;
 #else
-    plen = get_data(sc) - 6;
+    plen = get_data(sc);
+    plen = CYG_LE16_TO_CPU(plen) - 6;
 #endif
     if (val & LAN91CXX_RX_STATUS_ODDFRM)
 	plen++;
@@ -1066,6 +1072,7 @@ lan91cxx_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
     }
     val = get_data(sc); // Read control word (and potential data) unconditionally
 #ifdef LAN91CXX_32BIT_RX
+    val = CYG_LE32_TO_CPU(val);
     if (plen & 2) {
 	if (data)
 	    *(cyg_uint16 *)data = val & 0xffff;

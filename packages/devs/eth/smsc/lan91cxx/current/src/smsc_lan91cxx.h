@@ -63,7 +63,7 @@
 //==========================================================================
 
 #include <cyg/hal/hal_io.h>
-
+#include <cyg/hal/hal_endian.h>
 
 #define LAN91CXX_TCR         0x00
 #define LAN91CXX_EPH_STATUS  0x01
@@ -342,8 +342,10 @@ get_reg(struct eth_drv_sc *sc, int regno)
         (struct lan91cxx_priv_data *)sc->driver_private;
     unsigned short val;
     
-    HAL_WRITE_UINT16(cpd->base+(LAN91CXX_BS << cpd->addrsh), regno>>3);
+    HAL_WRITE_UINT16(cpd->base+(LAN91CXX_BS << cpd->addrsh), CYG_CPU_TO_LE16(regno>>3));
     HAL_READ_UINT16(cpd->base+((regno&0x7) << cpd->addrsh), val);
+    val = CYG_LE16_TO_CPU(val);
+
 #if DEBUG & 2
     diag_printf("read reg %d val 0x%04x\n", regno, val);
 #endif
@@ -358,8 +360,8 @@ put_reg(struct eth_drv_sc *sc, int regno, unsigned short val)
     struct lan91cxx_priv_data *cpd =
         (struct lan91cxx_priv_data *)sc->driver_private;
 	
-    HAL_WRITE_UINT16(cpd->base+(LAN91CXX_BS << cpd->addrsh), regno>>3);
-    HAL_WRITE_UINT16(cpd->base+((regno&0x7) << cpd->addrsh), val);
+    HAL_WRITE_UINT16(cpd->base+(LAN91CXX_BS << cpd->addrsh), CYG_CPU_TO_LE16(regno>>3));
+    HAL_WRITE_UINT16(cpd->base+((regno&0x7) << cpd->addrsh), CYG_CPU_TO_LE16(val));
 
 #if DEBUG & 2
     diag_printf("write reg %d val 0x%04x\n", regno, val);
@@ -416,6 +418,7 @@ get_banksel(struct eth_drv_sc *sc)
     unsigned short val;
     
     HAL_READ_UINT16(cpd->base+(LAN91CXX_BS << cpd->addrsh), val);
+    val = CYG_LE16_TO_CPU(val);
 #if DEBUG & 2
     diag_printf("read bank val 0x%04x\n", val);
 #endif
@@ -432,7 +435,7 @@ put_att(struct eth_drv_sc *sc, int offs, unsigned char val)
     struct lan91cxx_priv_data *cpd =
         (struct lan91cxx_priv_data *)sc->driver_private;
 	
-    HAL_WRITE_UINT8(cpd->attbase + (offs << cpd->addrsh), val);
+    HAL_WRITE_UINT8(cpd->attbase + (offs << cpd->addrsh), CYG_CPU_TO_LE16(val));
 
 #if DEBUG & 2
     diag_printf("write attr %d val 0x%02x\n", offs, val);
@@ -448,6 +451,7 @@ get_att(struct eth_drv_sc *sc, int offs)
     unsigned char val;
     
     HAL_READ_UINT8(cpd->attbase + (offs << cpd->addrsh), val);
+    val = CYG_LE16_TO_CPU(val);
 #if DEBUG & 2
     diag_printf("read attr %d val 0x%02x\n", offs, val);
 #endif

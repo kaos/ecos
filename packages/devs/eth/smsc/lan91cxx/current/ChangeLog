@@ -1,3 +1,8 @@
+2003-02-26  Yoshinori Sato <ysato@users.sourceforge.jp>
+
+	* src/smsc_lan91cxx.h: Support big endian arch.	
+	* src/if_lan91cxx.c: Support big endian arch.
+
 2002-08-28  Mark Salter  <msalter@redhat.com>
 
 	* src/smsc_lan91cxx.h: Support 32-bit data reads.
