@@ -1,3 +1,8 @@
+2004-04-22  Jani Monoses <jani@iv.ro>
+
+	 * cdl/hal_sh_sh4.cdl :
+	 Invoke tail with stricter syntax that works in latest coreutils. 
+
 2003-09-21  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/var_misc.c (hal_variant_init): Set FPSCR on startup.

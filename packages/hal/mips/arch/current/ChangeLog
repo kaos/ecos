@@ -1,3 +1,8 @@
+2004-04-22  Jani Monoses <jani@iv.ro>
+
+	 * cdl/hal_mips.cdl :
+	 Invoke tail with stricter syntax that works in latest coreutils. 
+
 2003-08-06  Andy Dyer <adyer@righthandtech.com>
 
 	* include/arch.inc: Changed mask for cause register interrupt bits

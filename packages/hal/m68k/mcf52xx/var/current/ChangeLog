@@ -1,3 +1,8 @@
+2004-04-22  Jani Monoses <jani@iv.ro>
+
+	 * cdl/hal_m68k_mcf52xx.cdl :
+	 Invoke tail with stricter syntax that works in latest coreutils. 
+
 //===========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------

@@ -1,3 +1,8 @@
+2004-04-22  Jani Monoses <jani@iv.ro>
+
+	 * cdl/hal_h8300.cdl :
+	 Invoke tail with stricter syntax that works in latest coreutils. 
+
 2004-03-18  Yoshinori Sato <ysato@users.sourceforge.jp>
 
 	* src/context.S

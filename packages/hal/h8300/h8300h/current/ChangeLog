@@ -1,3 +1,8 @@
+2004-04-22  Jani Monoses <jani@iv.ro>
+
+	 * cdl/hal_h8300_h8300h.cdl :
+	 Invoke tail with stricter syntax that works in latest coreutils. 
+
 2003-03-17  Yoshinori Sato  <ysato@users.sourceforge.jp>
 
 	* src/h8300h_stub.c

@@ -215,7 +215,7 @@ cdl_package CYGPKG_HAL_ARM_GPS4020 {
                 # Prepare dependency file
                 @echo $@ ": \\" > $(notdir $@).deps
                 @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
-                @tail +2 deps.tmp >> $(notdir $@).deps
+                @tail -n +2 deps.tmp >> $(notdir $@).deps
                 @echo >> $(notdir $@).deps
                 @rm deps.tmp
                 # Then build version with checksum from previously built image.

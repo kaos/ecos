@@ -293,7 +293,7 @@ cdl_package CYGPKG_HAL_ARM_PID {
                 $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o src/prog_flash.o $<
                 @echo $@ ": \\" > $(notdir $@).deps
                 @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
-                @tail +2 deps.tmp >> $(notdir $@).deps
+                @tail -n +2 deps.tmp >> $(notdir $@).deps
                 @echo >> $(notdir $@).deps
                 @rm deps.tmp
                 $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ src/prog_flash.o
@@ -319,7 +319,7 @@ cdl_package CYGPKG_HAL_ARM_PID {
                 $(CC) -DBE_IMAGE -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o src/prog_flash_be.o $<
                 @echo $@ ": \\" > $(notdir $@).deps
                 @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
-                @tail +2 deps.tmp >> $(notdir $@).deps
+                @tail -n +2 deps.tmp >> $(notdir $@).deps
                 @echo >> $(notdir $@).deps
                 @rm deps.tmp
                 $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ src/prog_flash_be.o

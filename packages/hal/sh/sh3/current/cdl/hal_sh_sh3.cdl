@@ -76,7 +76,7 @@ cdl_package CYGPKG_HAL_SH_SH3 {
         $(CC) $(CFLAGS) $(INCLUDE_PATH) -Wp,-MD,sh3_offsets.tmp -o var_mk_defs.tmp -S $<
         fgrep .equ var_mk_defs.tmp | sed s/#// > $@
         @echo $@ ": \\" > $(notdir $@).deps
-        @tail +2 sh3_offsets.tmp >> $(notdir $@).deps
+        @tail -n +2 sh3_offsets.tmp >> $(notdir $@).deps
         @echo >> $(notdir $@).deps
         @rm sh3_offsets.tmp var_mk_defs.tmp
     }

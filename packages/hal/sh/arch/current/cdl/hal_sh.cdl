@@ -72,7 +72,7 @@ cdl_package CYGPKG_HAL_SH {
         $(CC) $(CFLAGS) $(INCLUDE_PATH) -Wp,-MD,sh_offsets.tmp -o hal_mk_defs.tmp -S $<
         fgrep .equ hal_mk_defs.tmp | sed s/#// > $@
         @echo $@ ": \\" > $(notdir $@).deps
-        @tail +2 sh_offsets.tmp >> $(notdir $@).deps
+        @tail -n +2 sh_offsets.tmp >> $(notdir $@).deps
         @echo >> $(notdir $@).deps
         @rm sh_offsets.tmp hal_mk_defs.tmp
     }
@@ -81,7 +81,7 @@ cdl_package CYGPKG_HAL_SH {
         <PREFIX>/lib/vectors.o : <PACKAGE>/src/vectors.S
         $(CC) -Wp,-MD,vectors.tmp $(INCLUDE_PATH) $(CFLAGS) -c -o $@ $<
         @echo $@ ": \\" > $(notdir $@).deps
-        @tail +2 vectors.tmp >> $(notdir $@).deps
+        @tail -n +2 vectors.tmp >> $(notdir $@).deps
         @echo >> $(notdir $@).deps
         @rm vectors.tmp
     }
@@ -90,7 +90,7 @@ cdl_package CYGPKG_HAL_SH {
         <PREFIX>/lib/target.ld: <PACKAGE>/src/sh.ld
         $(CC) -E -P -Wp,-MD,target.tmp -xc $(INCLUDE_PATH) $(CFLAGS) -o $@ $<
         @echo $@ ": \\" > $(notdir $@).deps
-        @tail +2 target.tmp >> $(notdir $@).deps
+        @tail -n +2 target.tmp >> $(notdir $@).deps
         @echo >> $(notdir $@).deps
         @rm target.tmp
     }

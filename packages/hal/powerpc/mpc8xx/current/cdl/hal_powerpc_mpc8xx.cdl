@@ -200,7 +200,7 @@ cdl_package CYGPKG_HAL_POWERPC_MPC8xx {
             $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o src/mpc8xxrev.o $<
             @echo $@ ": \\" > $(notdir $@).deps
             @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
-            @tail +2 deps.tmp >> $(notdir $@).deps
+            @tail -n +2 deps.tmp >> $(notdir $@).deps
             @echo >> $(notdir $@).deps
             @rm deps.tmp
             $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ src/mpc8xxrev.o

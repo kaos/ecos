@@ -72,7 +72,7 @@ cdl_package CYGPKG_HAL_H8300_H8300H {
         <PREFIX>/lib/target.ld: <PACKAGE>/src/h8300_h8300h.ld
         $(CC) -E -P -Wp,-MD,target.tmp -DEXTRAS=1 -xc $(INCLUDE_PATH) $(CFLAGS) -o $@ $<
         @echo $@ ": \\" > $(notdir $@).deps
-        @tail +2 target.tmp >> $(notdir $@).deps
+        @tail -n +2 target.tmp >> $(notdir $@).deps
         @echo >> $(notdir $@).deps
         @rm target.tmp
     }

@@ -68,7 +68,7 @@ cdl_package CYGPKG_HAL_FRV {
         $(CC) $(CFLAGS) $(INCLUDE_PATH) -Wp,-MD,frv.tmp -o hal_mk_defs.tmp -S $<
         fgrep .equ hal_mk_defs.tmp | sed s/#// | sed s/\\.equ/#define/ > $@
         @echo $@ ": \\" > $(notdir $@).deps
-        @tail +2 frv.tmp >> $(notdir $@).deps
+        @tail -n +2 frv.tmp >> $(notdir $@).deps
         @echo >> $(notdir $@).deps
         @rm frv.tmp hal_mk_defs.tmp
     }
@@ -77,7 +77,7 @@ cdl_package CYGPKG_HAL_FRV {
         <PREFIX>/lib/vectors.o : <PACKAGE>/src/vectors.S
         $(CC) -Wp,-MD,vectors.tmp $(INCLUDE_PATH) $(CFLAGS) -c -o $@ $<
         @echo $@ ": \\" > $(notdir $@).deps
-        @tail +2 vectors.tmp >> $(notdir $@).deps
+        @tail -n +2 vectors.tmp >> $(notdir $@).deps
         @echo >> $(notdir $@).deps
         @rm vectors.tmp
     }
@@ -86,7 +86,7 @@ cdl_package CYGPKG_HAL_FRV {
         <PREFIX>/lib/target.ld: <PACKAGE>/src/frv.ld
         $(CC) -E -P -Wp,-MD,target.tmp -DEXTRAS=1 -xc $(INCLUDE_PATH) $(CFLAGS) -o $@ $<
         @echo $@ ": \\" > $(notdir $@).deps
-        @tail +2 target.tmp >> $(notdir $@).deps
+        @tail -n +2 target.tmp >> $(notdir $@).deps
         @echo >> $(notdir $@).deps
         @rm target.tmp
     }

@@ -1,3 +1,8 @@
+2004-04-22  Jani Monoses <jani@iv.ro>
+
+	 * cdl/hal_i386_pc.cdl :
+	 Invoke tail with stricter syntax that works in latest coreutils. 
+
 2003-07-23  Nick Garnett  <nickg@balti.calivar.com>
 
 	* include/plf_intr.h: Added extern definition for hal_pc_reset().

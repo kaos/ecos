@@ -213,7 +213,7 @@ cdl_package CYGPKG_HAL_MIPS_UPD985XX {
         <PREFIX>/lib/target.ld: <PACKAGE>/src/hal_mips_upd985xx.ld
         $(CC) -E -P -Wp,-MD,target.tmp -DEXTRAS=1 -xc $(INCLUDE_PATH) $(CFLAGS) -o $@ $<
         @echo $@ ": \\" > $(notdir $@).deps
-        @tail +2 target.tmp >> $(notdir $@).deps
+        @tail -n +2 target.tmp >> $(notdir $@).deps
         @echo >> $(notdir $@).deps
         @rm target.tmp
     }

@@ -393,7 +393,7 @@ CL-PS7111 and EP7xxx based development boards."
                 $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o misc/prog_flash.o $<
                 @echo $@ ": \\" > $(notdir $@).deps
                 @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
-                @tail +2 deps.tmp >> $(notdir $@).deps
+                @tail -n +2 deps.tmp >> $(notdir $@).deps
                 @echo >> $(notdir $@).deps
                 @rm deps.tmp
                 $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ misc/prog_flash.o
@@ -417,7 +417,7 @@ CL-PS7111 and EP7xxx based development boards."
                 $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o misc/lcd_test.o $<
                 @echo $@ ": \\" > $(notdir $@).deps
                 @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
-                @tail +2 deps.tmp >> $(notdir $@).deps
+                @tail -n +2 deps.tmp >> $(notdir $@).deps
                 @echo >> $(notdir $@).deps
                 @rm deps.tmp
                 $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ misc/lcd_test.o
@@ -429,7 +429,7 @@ CL-PS7111 and EP7xxx based development boards."
                 $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o misc/panel_test.o $<
                 @echo $@ ": \\" > $(notdir $@).deps
                 @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
-                @tail +2 deps.tmp >> $(notdir $@).deps
+                @tail -n +2 deps.tmp >> $(notdir $@).deps
                 @echo >> $(notdir $@).deps
                 @rm deps.tmp
                 $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ misc/panel_test.o
@@ -441,7 +441,7 @@ CL-PS7111 and EP7xxx based development boards."
                 $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o misc/kbd_test.o $<
                 @echo $@ ": \\" > $(notdir $@).deps
                 @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
-                @tail +2 deps.tmp >> $(notdir $@).deps
+                @tail -n +2 deps.tmp >> $(notdir $@).deps
                 @echo >> $(notdir $@).deps
                 @rm deps.tmp
                 $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ misc/kbd_test.o
@@ -453,7 +453,7 @@ CL-PS7111 and EP7xxx based development boards."
                 $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o misc/i2s_audio_test.o $<
                 @echo $@ ": \\" > $(notdir $@).deps
                 @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
-                @tail +2 deps.tmp >> $(notdir $@).deps
+                @tail -n +2 deps.tmp >> $(notdir $@).deps
                 @echo >> $(notdir $@).deps
                 # warning: no proper deps here
                 $(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -o misc/i2s_audio_fiq.o $(REPOSITORY)/$(PACKAGE)/misc/i2s_audio_fiq.S

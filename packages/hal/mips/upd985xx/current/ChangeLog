@@ -1,3 +1,8 @@
+2004-04-22  Jani Monoses <jani@iv.ro>
+
+	 * cdl/hal_mips_upd985xx.cdl :
+	 Invoke tail with stricter syntax that works in latest coreutils. 
+
 2003-04-10  Nick Garnett  <nickg@balti.calivar.com>
 
 	* src/hal_mips_upd985xx.ld: 

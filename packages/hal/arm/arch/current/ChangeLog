@@ -1,3 +1,8 @@
+2004-04-22  Jani Monoses <jani@iv.ro>
+
+	 * cdl/hal_arm.cdl :
+	 Invoke tail with stricter syntax that works in latest coreutils. 
+
 2003-11-05  Roland Caﬂebohm  <roland.cassebohm@visionsystems.de>
 
         * include/hal_io.h: If defined HAL_IO_MACROS_NO_ADDRESS_MUNGING

@@ -1,3 +1,8 @@
+2004-04-22  Jani Monoses <jani@iv.ro>
+
+	 * cdl/hal_v85x.cdl :
+	 Invoke tail with stricter syntax that works in latest coreutils. 
+
 2003-12-08  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/hal_misc.c: Remove unused __mem_fault_handler declaration.

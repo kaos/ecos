@@ -140,7 +140,7 @@ cdl_package CYGPKG_HAL_MIPS_RM7000 {
         $(CC) $(CFLAGS) $(INCLUDE_PATH) -Wp,-MD,var_defs.tmp -o var_mk_defs.tmp -S $<
         fgrep .equ var_mk_defs.tmp | sed s/#// > $@
         @echo $@ ": \\" > $(notdir $@).deps
-        @tail +2 var_defs.tmp >> $(notdir $@).deps
+        @tail -n +2 var_defs.tmp >> $(notdir $@).deps
         @echo >> $(notdir $@).deps
         @rm var_defs.tmp var_mk_defs.tmp
     }
@@ -149,7 +149,7 @@ cdl_package CYGPKG_HAL_MIPS_RM7000 {
         <PREFIX>/lib/target.ld: <PACKAGE>/src/mips_rm7000.ld
         $(CC) -E -P -Wp,-MD,target.tmp -DEXTRAS=1 -xc $(INCLUDE_PATH) $(CFLAGS) -o $@ $<
         @echo $@ ": \\" > $(notdir $@).deps
-        @tail +2 target.tmp >> $(notdir $@).deps
+        @tail -n +2 target.tmp >> $(notdir $@).deps
         @echo >> $(notdir $@).deps
         @rm target.tmp
     }

@@ -1,3 +1,8 @@
+2004-04-22  Jani Monoses <jani@iv.ro>
+
+	 * cdl/hal_synth_i386.cdl :
+	 Invoke tail with stricter syntax that works in latest coreutils. 
+
 2002-09-15  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/syscall-i386-linux-1.0.S:

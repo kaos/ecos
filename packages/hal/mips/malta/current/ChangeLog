@@ -1,3 +1,8 @@
+2004-04-22  Jani Monoses <jani@iv.ro>
+
+	 * cdl/hal_mips_malta.cdl :
+	 Invoke tail with stricter syntax that works in latest coreutils. 
+
 2004-01-14  Nick Garnett  <nickg@calivar.com>
 
 	* src/plf_misc.c (hal_platform_init): Changed capitalization of

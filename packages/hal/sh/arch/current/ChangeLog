@@ -1,3 +1,8 @@
+2004-04-22  Jani Monoses <jani@iv.ro>
+
+	 * cdl/hal_sh.cdl :
+	 Invoke tail with stricter syntax that works in latest coreutils. 
+
 2004-02-05  Kelvin Lawson  <klawson@ad-holdings.co.uk>
 
 	* include/hal_var_bank.inc: Fix build error on non-FPU systems due to

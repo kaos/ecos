@@ -72,7 +72,7 @@ cdl_package CYGPKG_HAL_CALM32 {
         <PREFIX>/lib/vectors.o : <PACKAGE>/src/vectors.S
         $(CC) -Wp,-MD,vectors.tmp $(INCLUDE_PATH) $(CFLAGS) -c -o $@ $<
         @echo $@ ": \\" > $(notdir $@).deps
-        @tail +2 vectors.tmp >> $(notdir $@).deps
+        @tail -n +2 vectors.tmp >> $(notdir $@).deps
         @echo >> $(notdir $@).deps
         @rm vectors.tmp
     }

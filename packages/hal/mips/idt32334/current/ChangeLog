@@ -1,3 +1,8 @@
+2004-04-22  Jani Monoses <jani@iv.ro>
+
+	 * cdl/hal_mips_idt32334.cdl :
+	 Invoke tail with stricter syntax that works in latest coreutils. 
+
 2003-04-29  Tim Michals  <t.michals@attbi.com>
 
 	* include/variant.inc (hal_intc_translation_table): Updated.

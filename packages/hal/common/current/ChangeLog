@@ -1,3 +1,8 @@
+2004-04-22  Jani Monoses <jani@iv.ro>
+
+	 * cdl/hal.cdl :
+	 Invoke tail with stricter syntax that works in latest coreutils. 
+
 2004-02-23  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/debugging.cdl (CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS): Included

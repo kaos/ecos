@@ -73,7 +73,7 @@ cdl_package CYGPKG_HAL_V85X {
         $(CC) $(CFLAGS) $(INCLUDE_PATH) -Wp,-MD,nec_offsets.tmp -o hal_mk_defs.tmp -S $<
         fgrep .equ hal_mk_defs.tmp | sed s/#// > $@
         @echo $@ ": \\" > $(notdir $@).deps
-        @tail +2 nec_offsets.tmp >> $(notdir $@).deps
+        @tail -n +2 nec_offsets.tmp >> $(notdir $@).deps
         @echo >> $(notdir $@).deps
         @rm nec_offsets.tmp hal_mk_defs.tmp
     }
@@ -82,7 +82,7 @@ cdl_package CYGPKG_HAL_V85X {
         <PREFIX>/lib/vectors.o : <PACKAGE>/src/vectors.S
         $(CC) -Wp,-MD,vectors.tmp $(INCLUDE_PATH) $(CFLAGS) -c -o $@ $<
         @echo $@ ": \\" > $(notdir $@).deps
-        @tail +2 vectors.tmp >> $(notdir $@).deps
+        @tail -n +2 vectors.tmp >> $(notdir $@).deps
         @echo >> $(notdir $@).deps
         @rm vectors.tmp
     }

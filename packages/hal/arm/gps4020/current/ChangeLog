@@ -1,3 +1,8 @@
+2004-04-22  Jani Monoses <jani@iv.ro>
+
+	 * cdl/hal_arm_gps4020.cdl :
+	 Invoke tail with stricter syntax that works in latest coreutils. 
+
 2003-12-05  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/hal_diag.h: hal_delay_us() is a C function.

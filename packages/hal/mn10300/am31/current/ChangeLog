@@ -1,3 +1,8 @@
+2004-04-22  Jani Monoses <jani@iv.ro>
+
+	 * cdl/hal_mn10300_am31.cdl :
+	 Invoke tail with stricter syntax that works in latest coreutils. 
+
 2003-04-10  Nick Garnett  <nickg@balti.calivar.com>
 
 	* src/mn10300_am31.ld:

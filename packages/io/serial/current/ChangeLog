@@ -1,3 +1,8 @@
+2004-04-22  Jani Monoses <jani@iv.ro>
+
+	 * cdl/io_serial.cdl :
+	 Invoke tail with stricter syntax that works in latest coreutils. 
+
 2004-01-12  Dan Jakubiec <djakubiec@yahoo.com>
 
 	* src/common/serial.c: serial_write() was returning an incorrect
