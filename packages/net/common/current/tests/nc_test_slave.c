@@ -211,7 +211,7 @@ do_udp_test(int s1, struct nc_request *req, struct sockaddr_in *master)
         }
         if (need_send) {
             int retries = 10;
-            bool sent = false;
+            int sent = false;
             int res;
 
             tdp = (struct nc_test_data *)out_buf;

@@ -49,10 +49,10 @@
 #include <sys/time.h>
 
 #include <net/if.h>
+#include <netinet/in_systm.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
-#include <net/route.h>
 
 #include <netdb.h>
 
