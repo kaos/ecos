@@ -1,3 +1,9 @@
+2002-07-29  Gary Thomas  <gary@chez-thomas.org>
+2002-07-29  Motoya Kurotsu <kurotsu@allied-telesis.co.jp>
+
+	* include/flash_am29xxxxx.inl: Force routines which actually use
+	the FLASH to run from RAM.
+
 2002-07-24  Gary Thomas  <gary@chez-thomas.org>
 2002-07-24  Motoya Kurotsu <kurotsu@allied-telesis.co.jp>
 	

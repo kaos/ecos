@@ -154,6 +154,11 @@ int  flash_erase_block(void* block, unsigned int size)
     __attribute__ ((section (".2ram.flash_erase_block")));
 int  flash_program_buf(void* addr, void* data, int len)
     __attribute__ ((section (".2ram.flash_program_buf")));
+static void _flash_query(void* data) __attribute__ ((section (".2ram._flash_query")));
+static int  _flash_erase_block(void* block, unsigned int size) 
+    __attribute__ ((section (".2ram._flash_erase_block")));
+static int  _flash_program_buf(void* addr, void* data, int len)
+    __attribute__ ((section (".2ram._flash_program_buf")));
 
 //----------------------------------------------------------------------------
 // Flash Query
