@@ -584,17 +584,15 @@ static int jffs2_umount(cyg_mtab_entry * mte)
 
 	D2(printf("jffs2_umount\n"));
 
-	// Decrement the mount count
-	jffs2_sb->s_mount_count--;
-
 	// Only really umount if this is the only mount
-	if (jffs2_sb->s_mount_count == 0) {
+	if (jffs2_sb->s_mount_count == 1) {
 
 		// Check for open/inuse root or any cached inodes
 //if( root->i_count != 1 || root->i_cache_next != NULL) // root icount was set to 1 on mount
 		if (root->i_cache_next != NULL)	// root icount was set to 1 on mount
 			return EBUSY;
-
+                
+		jffs2_sb->s_mount_count--;
 		dec_refcnt(root);	// Time to free the root inode
 
 		//Clear root inode
@@ -611,7 +609,8 @@ static int jffs2_umount(cyg_mtab_entry * mte)
 		mte->fs->data = 0;	// fstab entry, visible to all mounts. No current mount
 		// That's all folks.
 		D2(printf("jffs2_umount No current mounts\n"));
-	}
+	} else
+		jffs2_sb->s_mount_count--;
 
 	return ENOERR;
 }

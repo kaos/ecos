@@ -1,3 +1,9 @@
+2003-09-21  Thomas Koeller  <thomas.koeller@baslerweb.com>
+	    Andrew Lunn     <andrew.lunn@ascom.ch>
+
+	* src/fs-ecos.c: Do not decrement mount count for unsuccessful
+	umount attempts.
+
 2003-09-19  Thomas Koeller  <thomas.koeller@baslerweb.com>
 
 	* src/fs-ecos.c: Another inode number fix.
