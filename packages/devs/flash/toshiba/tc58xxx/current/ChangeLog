@@ -1,3 +1,8 @@
+2004-08-24  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/flash_tc58xxx.inl: Initial implementation of NAND ECC 
+	support (used by JFFS2).
+
 2004-03-07  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/flash_tc58xxx.inl: Page addressing was wrong for large (> 32MB) devices.

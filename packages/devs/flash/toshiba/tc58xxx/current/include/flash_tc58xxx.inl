@@ -61,6 +61,7 @@
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_cache.h>
+#include <cyg/infra/diag.h>
 #include CYGHWR_MEMORY_LAYOUT_H
 
 #define  _FLASH_PRIVATE_
@@ -246,7 +247,6 @@ flash_erase_block(void* block, unsigned int size)
     volatile flash_data_t* ROM;
     volatile flash_data_t* b_p = (volatile flash_data_t*) block;
     int res = FLASH_ERR_OK;
-    int len = 0;
     int cnt = 0;
     flash_data_t stat;
 
@@ -272,6 +272,7 @@ flash_erase_block(void* block, unsigned int size)
     CYGHWR_FLASH_TC58XXX_CLE(1);
     put_NAND(ROM, FLASH_Start_Erase);
     CYGHWR_FLASH_TC58XXX_CLE(0);        
+    CYGACC_CALL_IF_DELAY_US(10);
     while (!CYGHWR_FLASH_TC58XXX_RDY()) cnt++;  // Wait for operation to complete
     CYGHWR_FLASH_TC58XXX_CLE(1);
     put_NAND(ROM, FLASH_Status);
@@ -284,8 +285,209 @@ flash_erase_block(void* block, unsigned int size)
 #if FLASH_DEBUG > 0
     diag_printf("block: %x, stat: %x, count = %d\n", b_p, stat, cnt);
 #endif
+    if (stat != 0xC0) {
+        diag_printf("Status after erase: %x\n", stat);
+        if ((stat & 0x80) == 0x00) {
+            res = FLASH_ERR_PROTECT;
+        } else {
+            res = FLASH_ERR_ERASE;
+        }
+    }
     return res;
 }
+
+//
+// ECC support - adapted from Linux:
+//
+//  drivers/mtd/nand_ecc.c
+//
+//  Copyright (C) 2000 Steven J. Hill (sjhill@realitydiluted.com)
+//                     Toshiba America Electronics Components, Inc.
+//
+
+static const unsigned char _nand_ecc_precalc_table[] = {
+    0x00, 0x55, 0x56, 0x03, 0x59, 0x0c, 0x0f, 0x5a, 0x5a, 0x0f, 0x0c, 0x59, 0x03, 0x56, 0x55, 0x00,
+    0x65, 0x30, 0x33, 0x66, 0x3c, 0x69, 0x6a, 0x3f, 0x3f, 0x6a, 0x69, 0x3c, 0x66, 0x33, 0x30, 0x65,
+    0x66, 0x33, 0x30, 0x65, 0x3f, 0x6a, 0x69, 0x3c, 0x3c, 0x69, 0x6a, 0x3f, 0x65, 0x30, 0x33, 0x66,
+    0x03, 0x56, 0x55, 0x00, 0x5a, 0x0f, 0x0c, 0x59, 0x59, 0x0c, 0x0f, 0x5a, 0x00, 0x55, 0x56, 0x03,
+    0x69, 0x3c, 0x3f, 0x6a, 0x30, 0x65, 0x66, 0x33, 0x33, 0x66, 0x65, 0x30, 0x6a, 0x3f, 0x3c, 0x69,
+    0x0c, 0x59, 0x5a, 0x0f, 0x55, 0x00, 0x03, 0x56, 0x56, 0x03, 0x00, 0x55, 0x0f, 0x5a, 0x59, 0x0c,
+    0x0f, 0x5a, 0x59, 0x0c, 0x56, 0x03, 0x00, 0x55, 0x55, 0x00, 0x03, 0x56, 0x0c, 0x59, 0x5a, 0x0f,
+    0x6a, 0x3f, 0x3c, 0x69, 0x33, 0x66, 0x65, 0x30, 0x30, 0x65, 0x66, 0x33, 0x69, 0x3c, 0x3f, 0x6a,
+    0x6a, 0x3f, 0x3c, 0x69, 0x33, 0x66, 0x65, 0x30, 0x30, 0x65, 0x66, 0x33, 0x69, 0x3c, 0x3f, 0x6a,
+    0x0f, 0x5a, 0x59, 0x0c, 0x56, 0x03, 0x00, 0x55, 0x55, 0x00, 0x03, 0x56, 0x0c, 0x59, 0x5a, 0x0f,
+    0x0c, 0x59, 0x5a, 0x0f, 0x55, 0x00, 0x03, 0x56, 0x56, 0x03, 0x00, 0x55, 0x0f, 0x5a, 0x59, 0x0c,
+    0x69, 0x3c, 0x3f, 0x6a, 0x30, 0x65, 0x66, 0x33, 0x33, 0x66, 0x65, 0x30, 0x6a, 0x3f, 0x3c, 0x69,
+    0x03, 0x56, 0x55, 0x00, 0x5a, 0x0f, 0x0c, 0x59, 0x59, 0x0c, 0x0f, 0x5a, 0x00, 0x55, 0x56, 0x03,
+    0x66, 0x33, 0x30, 0x65, 0x3f, 0x6a, 0x69, 0x3c, 0x3c, 0x69, 0x6a, 0x3f, 0x65, 0x30, 0x33, 0x66,
+    0x65, 0x30, 0x33, 0x66, 0x3c, 0x69, 0x6a, 0x3f, 0x3f, 0x6a, 0x69, 0x3c, 0x66, 0x33, 0x30, 0x65,
+    0x00, 0x55, 0x56, 0x03, 0x59, 0x0c, 0x0f, 0x5a, 0x5a, 0x0f, 0x0c, 0x59, 0x03, 0x56, 0x55, 0x00
+};
+
+static void 
+_nand_trans_result(unsigned char reg2, unsigned char reg3,
+                   unsigned char *ecc0, unsigned char *ecc1)
+{
+    unsigned char a, b, i, tmp1, tmp2;
+	
+    /* Initialize variables */
+    a = b = 0x80;
+    tmp1 = tmp2 = 0;
+	
+    /* Calculate first ECC byte */
+    for (i = 0; i < 4; i++) {
+        if (reg3 & a)		/* LP15,13,11,9 --> ecc_code[0] */
+            tmp1 |= b;
+        b >>= 1;
+        if (reg2 & a)		/* LP14,12,10,8 --> ecc_code[0] */
+            tmp1 |= b;
+        b >>= 1;
+        a >>= 1;
+    }
+	
+    /* Calculate second ECC byte */
+    b = 0x80;
+    for (i = 0; i < 4; i++) {
+        if (reg3 & a)		/* LP7,5,3,1 --> ecc_code[1] */
+            tmp2 |= b;
+        b >>= 1;
+        if (reg2 & a)		/* LP6,4,2,0 --> ecc_code[1] */
+            tmp2 |= b;
+        b >>= 1;
+        a >>= 1;
+    }
+	
+    /* Store two of the ECC bytes */
+    *ecc0 = tmp1;    
+    *ecc1 = tmp2;
+}
+
+//
+// Calculate 3 byte ECC on 256 bytes of data
+//
+static void
+_nand_page_ECC(unsigned char *data, unsigned char *ecc0,
+               unsigned char *ecc1, unsigned char *ecc2)
+{
+    unsigned char idx, reg1, reg2, reg3;
+    int j;
+	
+    /* Initialize variables */
+    reg1 = reg2 = reg3 = 0;
+    *ecc0 = *ecc1 = *ecc2 = 0;
+	
+    /* Build up column parity */ 
+    for(j = 0; j < 256; j++) {
+        /* Get CP0 - CP5 from table */
+        idx = _nand_ecc_precalc_table[*data++];
+        reg1 ^= (idx & 0x3f);
+        /* All bit XOR = 1 ? */
+        if (idx & 0x40) {
+            reg3 ^= (unsigned char) j;
+            reg2 ^= ~((unsigned char) j);
+        }
+    }
+	
+    /* Create non-inverted ECC code from line parity */
+    _nand_trans_result(reg2, reg3, ecc0, ecc1);
+	
+    /* Calculate final ECC code */
+    *ecc0 = ~*ecc0;
+    *ecc1 = ~*ecc1;
+    *ecc2 = ((~reg1) << 2) | 0x03;
+}
+
+//
+// Correct a buffer via ECC (1 bit, 256 byte block)
+//  Return: 0 => No error
+//          1 => Corrected
+//          2 => Not corrected, ECC updated
+//         -1 => Not correctable
+//
+int 
+_nand_correct_data(unsigned char *dat, unsigned char *read_ecc, unsigned char *calc_ecc)
+{
+    unsigned char a, b, c, d1, d2, d3, add, bit, i;
+	
+    /* Do error detection */ 
+    d1 = calc_ecc[0] ^ read_ecc[0];
+    d2 = calc_ecc[1] ^ read_ecc[1];
+    d3 = calc_ecc[2] ^ read_ecc[2];
+	
+    if ((d1 | d2 | d3) == 0) {
+        /* No errors */
+        return 0;
+    } else {
+        a = (d1 ^ (d1 >> 1)) & 0x55;
+        b = (d2 ^ (d2 >> 1)) & 0x55;
+        c = (d3 ^ (d3 >> 1)) & 0x54;
+		
+        /* Found and will correct single bit error in the data */
+        if ((a == 0x55) && (b == 0x55) && (c == 0x54)) {
+            c = 0x80;
+            add = 0;
+            a = 0x80;
+            for (i=0; i<4; i++) {
+                if (d1 & c)
+                    add |= a;
+                c >>= 2;
+                a >>= 1;
+            }
+            c = 0x80;
+            for (i=0; i<4; i++) {
+                if (d2 & c)
+                    add |= a;
+                c >>= 2;
+                a >>= 1;
+            }
+            bit = 0;
+            b = 0x04;
+            c = 0x80;
+            for (i=0; i<3; i++) {
+                if (d3 & c)
+                    bit |= b;
+                c >>= 2;
+                b >>= 1;
+            }
+            b = 0x01;
+            a = dat[add];
+            a ^= (b << bit);
+            dat[add] = a;
+            return 1;
+        } else {
+            i = 0;
+            while (d1) {
+                if (d1 & 0x01)
+                    ++i;
+                d1 >>= 1;
+            }
+            while (d2) {
+                if (d2 & 0x01)
+                    ++i;
+                d2 >>= 1;
+            }
+            while (d3) {
+                if (d3 & 0x01)
+                    ++i;
+                d3 >>= 1;
+            }
+            if (i == 1) {
+                /* ECC Code Error Correction */
+                read_ecc[0] = calc_ecc[0];
+                read_ecc[1] = calc_ecc[1];
+                read_ecc[2] = calc_ecc[2];
+                return 2;
+            } else {
+                /* Uncorrectable Error */
+                return -1;
+            }
+        }
+    }
+	
+    /* Should never happen */
+    return -1;
+}
+
 
 //----------------------------------------------------------------------------
 // Program Buffer
@@ -296,10 +498,9 @@ flash_program_buf(void* addr, void* data, int len)
     volatile flash_data_t* addr_ptr = (volatile flash_data_t*) addr;
     volatile flash_data_t* data_ptr = (volatile flash_data_t*) data;
     int res = FLASH_ERR_OK;
-
-    int i;
-    int cnt;
+    int i, cnt;
     flash_data_t stat;
+    unsigned char oob[16];
 
     ROM = (volatile flash_data_t*) CYGNUM_FLASH_BASE;
 #if FLASH_DEBUG > 0
@@ -326,6 +527,13 @@ flash_program_buf(void* addr, void* data, int len)
 #if FLASH_DEBUG > 1
         diag_printf(">>\n");
 #endif
+        // Caculate OOB data for page (ECC)
+        for (i = 0;  i < 16;  i++) {
+            oob[i] = 0xFF;
+        }
+        // Calculate ECC for page
+        _nand_page_ECC((unsigned char *)&data_ptr[0], &oob[0], &oob[1], &oob[2]);
+        _nand_page_ECC((unsigned char *)&data_ptr[256], &oob[3], &oob[6], &oob[7]);
         // Move one page of data to buffer
         for (i = 0;  i < 512;  i++) {
             put_NAND(ROM, *data_ptr++);
@@ -335,7 +543,7 @@ flash_program_buf(void* addr, void* data, int len)
         }
         // OOB data
         for (i = 0;  i < 16;  i++) {
-            put_NAND(ROM, 0xFF);
+            put_NAND(ROM, oob[i]);
 #if FLASH_DEBUG > 1
             if ((i % 16) == 15) diag_printf("\n");
 #endif
@@ -348,6 +556,7 @@ flash_program_buf(void* addr, void* data, int len)
         CYGHWR_FLASH_TC58XXX_CLE(0);
         CYGACC_CALL_IF_DELAY_US(1);  // Actually 200ns
         cnt = 0;
+        CYGACC_CALL_IF_DELAY_US(10);
         while (!CYGHWR_FLASH_TC58XXX_RDY()) cnt++;  // Wait for page data to be ready
         CYGHWR_FLASH_TC58XXX_CLE(1);
         put_NAND(ROM, FLASH_Status);
@@ -361,6 +570,14 @@ flash_program_buf(void* addr, void* data, int len)
         diag_printf("program at %x, stat: %x, count = %d\n", addr_ptr, stat, cnt);
 #endif
         addr_ptr += 512;  len -= 512;
+        if (stat != 0xC0) {
+            diag_printf("Status after write: %x\n", stat);
+            if ((stat & 0x80) == 0x00) {
+                res = FLASH_ERR_PROTECT;
+            } else {
+                res = FLASH_ERR_PROGRAM;
+            }
+        }
     }
     return res;
 }
@@ -371,12 +588,13 @@ int
 flash_read_buf(void* addr, void* data, int len)
 {
     volatile flash_data_t* ROM;
-    volatile flash_data_t  dummy;
     volatile flash_data_t* addr_ptr = (volatile flash_data_t*) addr;
     volatile flash_data_t* data_ptr = (volatile flash_data_t*) data;
+    flash_data_t *page;
     int res = FLASH_ERR_OK;
-    int i;
-    int cnt;
+    int i, cnt, offset;
+    flash_data_t stat;
+    unsigned char oob[16], dev_oob[16];
 
     ROM = (volatile flash_data_t*) CYGNUM_FLASH_BASE;
 #if FLASH_DEBUG > 1
@@ -404,25 +622,67 @@ flash_read_buf(void* addr, void* data, int len)
     diag_printf(">>\n");
 #endif
     cnt = 0;
+    CYGACC_CALL_IF_DELAY_US(10);
     while (!CYGHWR_FLASH_TC58XXX_RDY()) cnt++;  // Wait for page data to be ready 
 #if FLASH_DEBUG > 0
     diag_printf("Read data starting at %p, count = %d\n", data_ptr, cnt);
 #endif
+    offset = 0;
+    page = (unsigned char *)data_ptr;
     while (len-- > 0) {
         *data_ptr++ = *ROM;
-        if (((unsigned long)data_ptr & 0x1FF) == 0) {
-            // Data page has been read, skip over ECC/OOB data
+        if (++offset == 0x200) {
+            // Data page has been read, fetch ECC/OOB data
             for (i = 0;  i < 16;  i++) {
-                dummy = *ROM;
+                dev_oob[i] = *ROM;
+            }
+            // Calculate actual ECC on page
+            _nand_page_ECC(&page[0], &oob[0], &oob[1], &oob[2]);
+            _nand_page_ECC(&page[256], &oob[3], &oob[6], &oob[7]);
+            // Check & repair if possible
+            if ((oob[0] != dev_oob[0]) || (oob[1] != dev_oob[1]) || (oob[2] != dev_oob[2]) || 
+                (oob[3] != dev_oob[3]) || (oob[6] != dev_oob[6]) || (oob[7] != dev_oob[7])) {
+                unsigned char read_ecc[3], calc_ecc[3];
+                int res;
+
+                read_ecc[0] = dev_oob[0];  calc_ecc[0] = oob[0];
+                read_ecc[1] = dev_oob[1];  calc_ecc[1] = oob[1];
+                read_ecc[2] = dev_oob[2];  calc_ecc[2] = oob[2];
+                res = _nand_correct_data(&page[0], read_ecc, calc_ecc);
+                if ((res != 0) && (res != 1)) {
+                    diag_printf("ECC failed\n");
+                    res = FLASH_ERR_HWR;
+                    break;
+                }
+                read_ecc[0] = dev_oob[3];  calc_ecc[0] = oob[3];
+                read_ecc[1] = dev_oob[6];  calc_ecc[1] = oob[6];
+                read_ecc[2] = dev_oob[7];  calc_ecc[2] = oob[7];
+                res = _nand_correct_data(&page[256], read_ecc, calc_ecc);
+                if ((res != 0) && (res != 1)) {
+                    diag_printf("ECC failed\n");
+                    res = FLASH_ERR_HWR;
+                    break;
+                }
             }
             cnt = 0;
+            CYGACC_CALL_IF_DELAY_US(10);
             while (!CYGHWR_FLASH_TC58XXX_RDY()) cnt++;  // Wait for page data to be ready
 #if FLASH_DEBUG > 0
             diag_printf("Read data starting at %p, count = %d\n", data_ptr, cnt);
 #endif
+            offset = 0;
+            page = (unsigned char *)data_ptr;
         }
     }
+    CYGHWR_FLASH_TC58XXX_CLE(1);
+    put_NAND(ROM, FLASH_Status);
+    CYGHWR_FLASH_TC58XXX_CLE(0);        
+    stat = *ROM;
     CYGHWR_FLASH_TC58XXX_CE(0);
+    if (stat != 0xC0) {
+        diag_printf("Status after read: %x\n", stat);
+        res = FLASH_ERR_HWR;
+    }
     return res;
 }
 
