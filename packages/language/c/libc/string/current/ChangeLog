@@ -1,3 +1,13 @@
+2004-02-20  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/string.h: Prototype strdup().
+	* include/stringsupp.hxx: Prototype __strdup().
+	externC -> __externC while I'm here.
+	* src/strdup.cxx: New file implementing strdup()/__strdup().
+	* cdl/string.cdl: Build strdup.cxx if CYGINT_ISO_MALLOC.
+
+	* src/strtok.cxx (strtok): Use correct thread data type.
+
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/string.cdl: Fix doc link.

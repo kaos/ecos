@@ -68,8 +68,8 @@
 #ifndef CYGIMP_LIBC_STRING_PREFER_SMALL_TO_FAST
 
 // Masks for CYG_LIBC_STR_DETECTNULL below
-externC const cyg_uint64 Cyg_libc_str_null_mask_1;
-externC const cyg_uint64 Cyg_libc_str_null_mask_2;
+__externC const cyg_uint64 Cyg_libc_str_null_mask_1;
+__externC const cyg_uint64 Cyg_libc_str_null_mask_2;
 
 #endif
 
@@ -111,15 +111,15 @@ externC const cyg_uint64 Cyg_libc_str_null_mask_2;
 
 // 7.11.2 Copying functions
 
-externC void *
+__externC void *
 __memmove( void *, const void *, size_t );
 
 
-externC char *
+__externC char *
 __strcpy( char *, const char * );
 
 
-externC char *
+__externC char *
 __strncpy( char *, const char *, size_t );
 
 
@@ -128,11 +128,11 @@ __strncpy( char *, const char *, size_t );
 // 7.11.3 Concatenation functions
 
 
-externC char *
+__externC char *
 __strcat( char *, const char * );
 
 
-externC char *
+__externC char *
 __strncat( char *, const char *, size_t );
 
 
@@ -140,23 +140,23 @@ __strncat( char *, const char *, size_t );
 
 // 7.11.4 Comparison functions
 
-externC int
+__externC int
 __memcmp( const void *, const void *, size_t );
 
 
-externC int
+__externC int
 __strcmp( const char *, const char * );
 
 
-externC int
+__externC int
 __strcoll( const char *, const char * );
 
 
-externC int
+__externC int
 __strncmp( const char *, const char *, size_t );
 
 
-externC size_t
+__externC size_t
 __strxfrm( char *, const char *, size_t );
 
 
@@ -165,40 +165,40 @@ __strxfrm( char *, const char *, size_t );
 // 7.11.5 Search functions
 
 
-externC void *
+__externC void *
 __memchr( const void *, int , size_t );
 
 
-externC char *
+__externC char *
 __strchr( const char *, int );
 
 
-externC size_t
+__externC size_t
 __strcspn( const char *, const char * );
 
 
-externC char *
+__externC char *
 __strpbrk( const char *, const char * );
 
 
-externC char *
+__externC char *
 __strrchr( const char *, int );
 
 
-externC size_t
+__externC size_t
 __strspn( const char *, const char * );
 
 
-externC char *
+__externC char *
 __strstr( const char *, const char * );
 
 
-externC char *
+__externC char *
 __strtok( char *, const char * );
 
 // For POSIX 1003.1 section 8.3.3 strtok_r()
 
-externC char *
+__externC char *
 __strtok_r( char *, const char *, char ** );
 
 
@@ -206,8 +206,12 @@ __strtok_r( char *, const char *, char ** );
 
 // 7.11.6 Miscellaneous functions
 
-externC size_t
+__externC size_t
 __strlen( const char * );
+
+// NB This is a BSD function
+__externC char *
+__strdup( const char * );
 
 #endif // CYGONCE_LIBC_STRING_STRINGSUPP_HXX multiple inclusion protection
 

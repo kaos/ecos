@@ -150,6 +150,12 @@ strtok_r( char *, const char *, char ** );
 extern size_t
 strlen( const char * );
 
+// NB This is a BSD function
+#ifndef __STRICT_ANSI__
+extern char *
+strdup( const char * );
+#endif
+
 #ifdef __cplusplus
 }   /* extern "C" */
 #endif

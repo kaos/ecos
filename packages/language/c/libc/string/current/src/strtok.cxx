@@ -116,7 +116,9 @@ static int strtok_trace = CYGNUM_LIBC_STRING_STRTOK_TRACE_LEVEL;
 // STATICS
 
 #ifdef CYGSEM_LIBC_STRING_PER_THREAD_STRTOK
-static cyg_ucount32 strtok_data_index=CYGNUM_KERNEL_THREADS_DATA_MAX;
+static Cyg_Thread::cyg_data_index
+strtok_data_index=CYGNUM_KERNEL_THREADS_DATA_MAX;
+
 static Cyg_Mutex strtok_data_mutex CYG_INIT_PRIORITY(LIBC);
 #else
 static char *cyg_libc_strtok_last;
@@ -147,11 +149,11 @@ strtok( char *s1, const char *s2 )
         strtok_data_mutex.lock();
         if (CYGNUM_KERNEL_THREADS_DATA_MAX==strtok_data_index) {
 
-            // the kernel just throws an assert if this doesn't work
             // FIXME: Should use real CDL to pre-allocate a slot at compile
             // time to ensure there are enough slots
             strtok_data_index = self->new_data_index();
-
+            CYG_ASSERT(strtok_data_index >= 0,
+                       "failed to allocate data index" );
         }
         strtok_data_mutex.unlock();
     } // if

@@ -158,6 +158,15 @@ cdl_package CYGPKG_LIBC_STRING {
         }
     }
 
+    cdl_option CYGFUN_LIBC_STRING_STRDUP {
+        display       "strdup"
+        active_if     CYGINT_ISO_MALLOC
+        calculated    1
+        compile       strdup.cxx
+        description   "
+                This option indicates whether strdup() is to be supported."
+    }
+
     cdl_component CYGPKG_LIBC_STRING_OPTIONS {
         display "C library string functions build options"
         flavor  none
