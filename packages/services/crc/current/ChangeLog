@@ -1,3 +1,9 @@
+2003-11-21  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/crc_test.c: Made the test text gcc 3.3.2 friendly. It does
+	not like strings to continue over multiple lines when there are
+	open " marks.
+
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/crc.cdl: Add doc link.

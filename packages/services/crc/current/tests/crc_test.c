@@ -50,25 +50,25 @@
 #include <cyg/crc/crc.h>
 
 static char license_txt[] = 
-"		    GNU GENERAL PUBLIC LICENSE
-		       Version 2, June 1991
-
- Copyright (C) 1989, 1991 Free Software Foundation, Inc.
-     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- Everyone is permitted to copy and distribute verbatim copies
- of this license document, but changing it is not allowed.
-
-			    Preamble
-
-  The licenses for most software are designed to take away your
-freedom to share and change it.  By contrast, the GNU General Public
-License is intended to guarantee your freedom to share and change free
-software--to make sure the software is free for all its users.  This
-General Public License applies to most of the Free Software
-Foundation's software and to any other program whose authors commit to
-using it.  (Some other Free Software Foundation software is covered by
-the GNU Library General Public License instead.)  You can apply it to
-your programs, too.";
+"		    GNU GENERAL PUBLIC LICENSE\n"
+"		       Version 2, June 1991\n"
+"\n"
+" Copyright (C) 1989, 1991 Free Software Foundation, Inc.\n"
+"     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA\n"
+" Everyone is permitted to copy and distribute verbatim copies\n"
+" of this license document, but changing it is not allowed.\n"
+"\n"
+"			    Preamble\n"
+"\n"
+"  The licenses for most software are designed to take away your\n"
+"freedom to share and change it.  By contrast, the GNU General Public\n"
+"License is intended to guarantee your freedom to share and change free\n"
+"software--to make sure the software is free for all its users.  This\n"
+"General Public License applies to most of the Free Software\n"
+"Foundation's software and to any other program whose authors commit to\n"
+"using it.  (Some other Free Software Foundation software is covered by\n"
+"the GNU Library General Public License instead.)  You can apply it to\n"
+"your programs, too.";
 
 externC void
 cyg_start( void )
