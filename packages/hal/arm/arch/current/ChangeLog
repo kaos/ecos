@@ -1,3 +1,8 @@
+2003-04-26  Daniel Néri  <daniel.neri@sigicom.se>
+
+	* vectors.S (handle_IRQ_or_FIQ):
+	Use thumb-aware call to hal_spurious_IRQ.
+
 2003-04-13  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/vectors.S (start): fix build problem with -mthumb
