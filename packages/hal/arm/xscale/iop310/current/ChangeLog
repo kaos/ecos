@@ -1,3 +1,10 @@
+2003-01-22  Mark Salter  <msalter@redhat.com>
+
+	* include/var_io.h: Remove unused duplicate code.
+	* include/hal_iop310.h: Add some more register definitions.
+	* src/iop310_pci.c (cyg_hal_plf_pci_init): Use new register
+	definitions.
+
 2002-11-13  Mark Salter  <msalter@redhat.com>
 
 	* src/iop310_pci.c (cyg_hal_plf_pci_init): Reorganize to deal with

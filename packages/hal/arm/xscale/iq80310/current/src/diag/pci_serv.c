@@ -6,7 +6,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -103,9 +103,6 @@ typedef struct
 
 #define NUM_PCI_XINTS		4		/* XINT0 - XINT3 */
 #define MAX_PCI_HANDLERS	8		/* maximum handlers per PCI Xint */
-
-/* Table where the interrupt handler addresses are stored. */
-INT_HANDLER pci_int_handlers[4][MAX_PCI_HANDLERS];
 
 extern void hexIn(void);
 extern int pci_config_cycle;

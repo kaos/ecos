@@ -6,7 +6,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -197,7 +197,6 @@ typedef void 		(*VOIDFUNCPTR) (int);
 /* Definitions for data types and constants used in Flash.c */
 typedef unsigned long ADDR;			
 #define NO_ADDR ((ADDR)0x800000)	/* last address of Flash memory + 1 */
-int cmd_stat;						
 #ifndef ERR
 #define ERR	-1					
 #endif

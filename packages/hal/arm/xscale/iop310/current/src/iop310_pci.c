@@ -82,7 +82,7 @@ void cyg_hal_plf_pci_init(void)
     if (iop310_is_host()) {
 
 	// set the primary inbound ATU base address to the start of DRAM
-	*(cyg_uint32 *)PIABAR_ADDR = MEMBASE_DRAM & 0xFFFFF000;
+	*PIABAR_REG = MEMBASE_DRAM & 0xFFFFF000;
 
 	// ********* Set Primary Outbound Windows *********
 
@@ -92,85 +92,85 @@ void cyg_hal_plf_pci_init(void)
 	// set the primary outbound windows to directly map Local - PCI
         // requests
 	// outbound memory window
-	*(cyg_uint32 *)POMWVR_ADDR = PRIMARY_MEM_BASE;
+	*POMWVR_REG = PRIMARY_MEM_BASE;
 
 	// outbound DAC Window
-	*(cyg_uint32 *)PODWVR_ADDR = PRIMARY_DAC_BASE;
+	*PODWVR_REG = PRIMARY_DAC_BASE;
 
 	// outbound I/O window
-        *(cyg_uint32 *)POIOWVR_ADDR = PRIMARY_IO_BASE;	
+        *POIOWVR_REG = PRIMARY_IO_BASE;	
 
 	// set the bridge command register
-	*(cyg_uint16 *)PCR_ADDR = (CYG_PCI_CFG_COMMAND_SERR   | \
-				   CYG_PCI_CFG_COMMAND_PARITY | \
-				   CYG_PCI_CFG_COMMAND_MASTER | \
-				   CYG_PCI_CFG_COMMAND_MEMORY);
+	*PCR_REG = (CYG_PCI_CFG_COMMAND_SERR   | \
+		    CYG_PCI_CFG_COMMAND_PARITY | \
+		    CYG_PCI_CFG_COMMAND_MASTER | \
+		    CYG_PCI_CFG_COMMAND_MEMORY);
 
 	// set the subordinate bus number to 0xFF
-	*(cyg_uint8 *)SUBBNR_ADDR = 0xFF;
+	*SUBBNR_REG = 0xFF;
 	// set the secondary bus number to 1
-	*(cyg_uint8 *)SBNR_ADDR = SECONDARY_BUS_NUM;
-	*(cyg_uint16 *)BCR_ADDR = 0x0823;
+	*SBNR_REG = SECONDARY_BUS_NUM;
+	*BCR_REG = 0x0823;
 	// set the primary bus number to 0
-	*(cyg_uint8 *)PBNR_ADDR = PRIMARY_BUS_NUM;
+	*PBNR_REG = PRIMARY_BUS_NUM;
 
 	// allow primary ATU to act as a bus master, respond to PCI 
 	// memory accesses, assert P_SERR#, and enable parity checking
-	*(cyg_uint16 *)PATUCMD_ADDR = (CYG_PCI_CFG_COMMAND_SERR   | \
-				       CYG_PCI_CFG_COMMAND_PARITY | \
-				       CYG_PCI_CFG_COMMAND_MASTER | \
-				       CYG_PCI_CFG_COMMAND_MEMORY);
+	*PATUCMD_REG = (CYG_PCI_CFG_COMMAND_SERR   | \
+			CYG_PCI_CFG_COMMAND_PARITY | \
+			CYG_PCI_CFG_COMMAND_MASTER | \
+			CYG_PCI_CFG_COMMAND_MEMORY);
     } else {
 #ifdef CYGSEM_HAL_ARM_IOP310_CLEAR_PCI_RETRY
 	// Wait for PC BIOS to initialize bus number
 	int i;
 
 	for (i = 0; i < 15000; i++) {
-	    if (*((volatile cyg_uint16 *)PCR_ADDR) & CYG_PCI_CFG_COMMAND_MEMORY)
+	    if (*PCR_REG & CYG_PCI_CFG_COMMAND_MEMORY)
 		break;
 	    hal_delay_us(1000);  // 1msec
 	}
 	for (i = 0; i < 15000; i++) {
- 	    if (*((volatile cyg_uint8 *)SBNR_ADDR) != 0)
+ 	    if (*SBNR_REG != 0)
 		break;
 	    hal_delay_us(1000);  // 1msec
 	}
 #endif
-        if (*((volatile cyg_uint8 *)SBNR_ADDR) == 0)
-            *(cyg_uint8 *)SBNR_ADDR = SECONDARY_BUS_NUM;
-        if (*((volatile cyg_uint8 *)SUBBNR_ADDR) == 0)
-            *(cyg_uint8 *)SUBBNR_ADDR = 0xFF;
-        if (*((volatile cyg_uint16 *)BCR_ADDR) == 0)
-            *(cyg_uint16 *)BCR_ADDR = 0x0823;
-        if (*((volatile cyg_uint16 *)PCR_ADDR) == 0)
-            *(cyg_uint16 *)PCR_ADDR = (CYG_PCI_CFG_COMMAND_SERR   | \
-                                       CYG_PCI_CFG_COMMAND_PARITY | \
-                                       CYG_PCI_CFG_COMMAND_MASTER | \
-                                       CYG_PCI_CFG_COMMAND_MEMORY);
-        if (*((volatile cyg_uint16 *)PATUCMD_ADDR) == 0)
-            *(cyg_uint16 *)PATUCMD_ADDR = (CYG_PCI_CFG_COMMAND_SERR   | \
-                                           CYG_PCI_CFG_COMMAND_PARITY | \
-                                           CYG_PCI_CFG_COMMAND_MASTER | \
-                                           CYG_PCI_CFG_COMMAND_MEMORY);
+        if (*SBNR_REG == 0)
+            *SBNR_REG = SECONDARY_BUS_NUM;
+        if (*SUBBNR_REG == 0)
+            *SUBBNR_REG = 0xFF;
+        if (*BCR_REG == 0)
+            *BCR_REG = 0x0823;
+        if (*PCR_REG == 0)
+            *PCR_REG = (CYG_PCI_CFG_COMMAND_SERR   | \
+			CYG_PCI_CFG_COMMAND_PARITY | \
+			CYG_PCI_CFG_COMMAND_MASTER | \
+			CYG_PCI_CFG_COMMAND_MEMORY);
+        if (*PATUCMD_REG == 0)
+            *PATUCMD_REG = (CYG_PCI_CFG_COMMAND_SERR   | \
+			    CYG_PCI_CFG_COMMAND_PARITY | \
+			    CYG_PCI_CFG_COMMAND_MASTER | \
+			    CYG_PCI_CFG_COMMAND_MEMORY);
     }
 
     // Initialize Secondary PCI bus (bus 1)
-    *(volatile cyg_uint16 *)BCR_ADDR |= 0x40;  // reset secondary bus
+    *BCR_REG |= 0x40;           // reset secondary bus
     hal_delay_us(10 * 1000); 	// 10ms enough??
-    *(volatile cyg_uint16 *)BCR_ADDR &= ~0x40;  // release reset
+    *BCR_REG &= ~0x40;          // release reset
 
     // ******** Secondary Inbound ATU ***********
 
     // set secondary inbound ATU translate value register to point to base
     // of local DRAM
-    *(cyg_uint32 *)SIATVR_ADDR = MEMBASE_DRAM & 0xFFFFFFFC;
+    *SIATVR_REG = MEMBASE_DRAM & 0xFFFFFFFC;
 
     // set secondary inbound ATU base address to start of DRAM
-    *(cyg_uint32 *)SIABAR_ADDR = MEMBASE_DRAM & 0xFFFFF000;
+    *SIABAR_REG = MEMBASE_DRAM & 0xFFFFF000;
 
     //  always allow secondary pci access to all memory (even with A0 step)
     limit_reg = (0xFFFFFFFF - (hal_dram_size - 1)) & 0xFFFFFFF0;
-    *(cyg_uint32 *)SIALR_ADDR = limit_reg;
+    *SIALR_REG = limit_reg;
 
     // ********** Set Secondary Outbound Windows ***********
 
@@ -179,27 +179,27 @@ void cyg_hal_plf_pci_init(void)
 
     // set the secondary outbound window to directly map Local - PCI requests
     // outbound memory window
-    *(cyg_uint32 *)SOMWVR_ADDR = SECONDARY_MEM_BASE;
+    *SOMWVR_REG = SECONDARY_MEM_BASE;
 
     // outbound DAC Window
-    *(cyg_uint32 *)SODWVR_ADDR = SECONDARY_DAC_BASE;
+    *SODWVR_REG = SECONDARY_DAC_BASE;
 
     // outbound I/O window
-    *(cyg_uint32 *)SOIOWVR_ADDR = SECONDARY_IO_BASE;
+    *SOIOWVR_REG = SECONDARY_IO_BASE;
 
     // allow secondary ATU to act as a bus master, respond to PCI memory
     // accesses, and assert S_SERR#
-    *(cyg_uint16 *)SATUCMD_ADDR = (CYG_PCI_CFG_COMMAND_SERR   | \
-				   CYG_PCI_CFG_COMMAND_PARITY | \
-				   CYG_PCI_CFG_COMMAND_MASTER | \
-				   CYG_PCI_CFG_COMMAND_MEMORY);
+    *SATUCMD_REG = (CYG_PCI_CFG_COMMAND_SERR   | \
+		    CYG_PCI_CFG_COMMAND_PARITY | \
+		    CYG_PCI_CFG_COMMAND_MASTER | \
+		    CYG_PCI_CFG_COMMAND_MEMORY);
 
     // enable primary and secondary outbound ATUs, BIST, and primary bus
     // direct addressing
-    *(cyg_uint32 *)ATUCR_ADDR = 0x00000006;
+    *ATUCR_REG = 0x00000006;
 
-    pbus_nr = *(cyg_uint8 *)PBNR_ADDR;
-    sbus_nr = *(cyg_uint8 *)SBNR_ADDR;
+    pbus_nr = *PBNR_REG;
+    sbus_nr = *SBNR_REG;
 
     // Now initialize the PCI busses.
 
@@ -216,7 +216,7 @@ void cyg_hal_plf_pci_init(void)
 	sbus_nr = 0xff;
 
 	// set the primary bus number to 0
-	*(cyg_uint8 *)PBNR_ADDR = 0;
+	*PBNR_REG = 0;
 	next_bus = 1;
 
 	// Initialize Primary PCI bus (bus 0)
@@ -225,17 +225,40 @@ void cyg_hal_plf_pci_init(void)
 	cyg_pci_configure_bus(0, &next_bus);
 
 	// set the secondary bus number to next available number
-	*(cyg_uint8 *)SBNR_ADDR = sbus_nr = next_bus;
+	*SBNR_REG = sbus_nr = next_bus;
 
-	pbus_nr = *(cyg_uint8 *)PBNR_ADDR;
+	pbus_nr = *PBNR_REG;
 	next_bus = sbus_nr + 1;
     }
 
     // Initialize Secondary PCI bus (bus 1)
     cyg_pci_set_memory_base(SECONDARY_MEM_BASE);
     cyg_pci_set_io_base(SECONDARY_IO_BASE);
+    subbus_nr = 0xFF;
     cyg_pci_configure_bus(sbus_nr, &next_bus);
-    *(cyg_uint8 *)SUBBNR_ADDR = subbus_nr = next_bus - 1;
+    *SUBBNR_REG = subbus_nr = next_bus - 1;
+
+
+    if (0){
+	cyg_uint8 devfn;
+	cyg_pci_device_id devid;
+	cyg_pci_device dev_info;
+
+        diag_printf("pbus[%d] sbus[%d] subbus[%d]\n", pbus_nr, sbus_nr, subbus_nr);
+
+	devid = CYG_PCI_DEV_MAKE_ID(sbus_nr, 0) | CYG_PCI_NULL_DEVFN;
+	while (cyg_pci_find_next(devid, &devid)) {
+	    devfn = CYG_PCI_DEV_GET_DEVFN(devid);
+	    cyg_pci_get_device_info(devid, &dev_info);
+
+	    diag_printf("\n");
+	    diag_printf("            Bus:        %d\n", CYG_PCI_DEV_GET_BUS(devid));
+	    diag_printf("            PCI Device: %d\n", CYG_PCI_DEV_GET_DEV(devfn));
+	    diag_printf("            PCI Func  : %d\n", CYG_PCI_DEV_GET_FN(devfn));
+	    diag_printf("            Vendor Id : 0x%08X\n", dev_info.vendor);
+	    diag_printf("            Device Id : 0x%08X\n", dev_info.device);
+	}
+    }
 }
 
 // Use "naked" attribute to suppress C prologue/epilogue
@@ -250,16 +273,16 @@ static inline cyg_uint32 *pci_config_setup(cyg_uint32 bus,
 					   cyg_uint32 devfn,
 					   cyg_uint32 offset)
 {
-    cyg_uint32 *pdata, *paddr;
+    volatile cyg_uint32 *pdata, *paddr;
     cyg_uint32 dev = CYG_PCI_DEV_GET_DEV(devfn);
     cyg_uint32 fn  = CYG_PCI_DEV_GET_FN(devfn);
 
     if (bus < sbus_nr || bus > subbus_nr)  {
-        paddr = (cyg_uint32 *)POCCAR_ADDR;
-        pdata = (cyg_uint32 *)POCCDR_ADDR;
+        paddr = (volatile cyg_uint32 *)POCCAR_ADDR;
+        pdata = (volatile cyg_uint32 *)POCCDR_ADDR;
     } else {
-        paddr = (cyg_uint32 *)SOCCAR_ADDR;
-        pdata = (cyg_uint32 *)SOCCDR_ADDR;
+        paddr = (volatile cyg_uint32 *)SOCCAR_ADDR;
+        pdata = (volatile cyg_uint32 *)SOCCDR_ADDR;
     }
 
     /* Offsets must be dword-aligned */
@@ -284,41 +307,41 @@ static inline int pci_config_cleanup(cyg_uint32 bus)
     cyg_uint32 status = 0, err = 0;
 
     if (bus < sbus_nr || bus > subbus_nr)  {
-	status = *(cyg_uint16 *) PATUSR_ADDR;
+	status = *PATUSR_REG;
 	if ((status & 0xF900) != 0) {
 	    err = 1;
-	    *(cyg_uint16 *)PATUSR_ADDR = status & 0xF980;
+	    *PATUSR_REG = status & 0xF980;
 	}
-	status = *(cyg_uint16 *) PSR_ADDR;
+	status = *PSR_REG;
 	if ((status & 0xF900) != 0) {
 	    err = 1;
-	    *(cyg_uint16 *)PSR_ADDR = status & 0xF980;
+	    *PSR_REG = status & 0xF980;
 	}
-	status = *(cyg_uint32 *) PATUISR_ADDR;
+	status = *PATUISR_REG;
 	if ((status & 0x79F) != 0) {
 	    err = 1;
-	    *(cyg_uint32 *) PATUISR_ADDR = status & 0x79f;
+	    *PATUISR_REG = status & 0x79f;
 	}
-	status = *(cyg_uint32 *) PBISR_ADDR;
+	status = *PBISR_REG;
 	if ((status & 0x3F) != 0) {
 	    err = 1;
-	    *(cyg_uint32 *) PBISR_ADDR = status & 0x3F;
+	    *PBISR_REG = status & 0x3F;
 	}
     } else {
-	status = *(cyg_uint16 *) SATUSR_ADDR;
+	status = *SATUSR_REG;
 	if ((status & 0xF900) != 0) {
 	    err = 1;
-	    *(cyg_uint16 *) SATUSR_ADDR = status & 0xF900;
+	    *SATUSR_REG = status & 0xF900;
 	}
-	status = *(cyg_uint16 *) SSR_ADDR;
+	status = *SSR_REG;
 	if ((status & 0xF900) != 0) {
 	    err = 1;
-	    *(cyg_uint16 *) SSR_ADDR = status & 0xF980;
+	    *SSR_REG = status & 0xF980;
 	}
-	status = *(cyg_uint32 *) SATUISR_ADDR;
+	status = *SATUISR_REG;
 	if ((status & 0x69F) != 0) {
 	    err = 1;
-	    *(cyg_uint32 *) SATUISR_ADDR = status & 0x69F;
+	    *SATUISR_REG = status & 0x69F;
 	}
     }
 

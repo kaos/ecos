@@ -1,3 +1,7 @@
+2003-01-22  Mark Salter  <msalter@redhat.com>
+
+	* src/diag/diag.c: Don't define DEFINE_VARS.
+
 2002-09-23  Mark Salter  <msalter@redhat.com>
 
 	* include/plf_mmap.h: Remove. Not used.

@@ -1,3 +1,11 @@
+2003-01-22  Mark Salter  <msalter@redhat.com>
+
+	* src/diag/diag.c: Don't define DEFINE_VARS.
+	* src/diag/pci_serv.c: Remove pci_int_handlers decl.
+	* src/diag/iq80310.h: Remove cmd_stat declaration.
+	* src/diag/flash.c: Declare cmd_stat.
+	* include/plf_io.h: Remove unused duplicate code.
+
 2002-11-13  Mark Salter  <msalter@redhat.com>
 
 	* misc/redboot_RAM.ecm: Remove CYGPKG_IO_SERIAL_ARM_XSCALE_IQ80310.
