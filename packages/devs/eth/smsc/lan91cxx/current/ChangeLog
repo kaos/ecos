@@ -1,3 +1,12 @@
+2001-08-17  Hugo Tyson  <hmt@redhat.com>
+
+	* src/if_lan91cxx.c (lan91cxx_poll): The interrupt acknowledge
+	call only occurs in the ISR for this driver because the interrupt
+	via GPIO is edge triggered.  We now also acknowledge the interrupt
+	within the poll() routine - otherwise RedBoot net use never acks!
+	Which doesn't matter if the app uses the net, but in a net-free
+	app, it near enough wedges in the resulting interrupt loop.
+
 2001-08-13  Hugo Tyson  <hmt@redhat.com>
 
 	* src/smsc_lan91cxx.h (get_att,put_att): Condition out the inline

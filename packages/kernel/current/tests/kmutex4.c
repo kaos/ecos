@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//        kmutex3.c
+//        kmutex4.c
 //
-//        Mutex test 3 - priority inheritance
+//        Mutex test 4 - dynamic priority inheritance protocol
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -33,11 +33,10 @@
 //
 // Author(s):     hmt
 // Contributors:  hmt
-// Date:          2000-01-06, 2001-08-10
-// Description:   Tests mutex priority inheritance.  This is simply a
-//                translation of the similarly named kernel test to the
-//                KAPI, with the intention of also testing the new
-//                "set the protocol at run-time" extensions.
+// Date:          2000-01-06, 2001-08-10, 2001-08-21
+// Description:   Tests mutex priority inheritance.  This is an extension of
+//                kmutex3.c, to test the new "set the protocol at run-time"
+//                extensions.
 //####DESCRIPTIONEND####
 
 #include <pkgconf/hal.h>
@@ -60,11 +59,11 @@ cyg_hal_invoke_constructors();
 // should manifest as having no priority inheritance, but otherwise fine,
 // so the test should work correctly.
 
-#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK) &&    \
-    (CYGNUM_KERNEL_SCHED_PRIORITIES > 20) &&    \
-    defined(CYGFUN_KERNEL_API_C) &&             \
-    !defined(CYGPKG_KERNEL_SMP_SUPPORT)
-
+#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK) &&                                    \
+    (CYGNUM_KERNEL_SCHED_PRIORITIES > 20) &&                                    \
+    defined(CYGFUN_KERNEL_API_C) &&                                             \
+    !defined(CYGPKG_KERNEL_SMP_SUPPORT) &&                                      \
+    defined(CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DYNAMIC)      \
 
 #include <cyg/kernel/kapi.h>
 
@@ -72,50 +71,34 @@ cyg_hal_invoke_constructors();
 #include <cyg/infra/cyg_trac.h>
 #include <cyg/infra/diag.h>             // diag_printf
 
+// ------------------------------------------------------------------------
+
+#define nVERBOSE
 
 // ------------------------------------------------------------------------
-// manufacture a simpler feature test macro for priority inheritance than
-// the configuration gives us. We have priority inheritance if it is configured
-// as the only protocol, or if it is the default protocol for dynamic protocol
-// choice.
+// We have dynamic protocol choice, so we can set the protocol to whatever
+// we want.  We'll do these combinations:
+// NONE
+// INHERIT
+// CEILING = 4 = higher than any thread === INHERIT in behaviour
+// CEILING = 11 = mixed in with threads === cannot check anything
+// CEILING = 17 = lower than any threads === NONE in behaviour
 
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_INHERIT
-# ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DYNAMIC
-#  ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DEFAULT_INHERIT
-#   define PRIORITY_INHERITANCE "dynamic-default-inherit"
-#  endif
-# else
-#  define PRIORITY_INHERITANCE "static-inherit"
-# endif
-#endif
+#define PROTO_NONE            (0)
+#define PROTO_INHERIT         (1)
+#define PROTO_CEILING_HIGH    (2)
+#define PROTO_CEILING_MID     (3)
+#define PROTO_CEILING_LOW     (4)
 
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_CEILING
-# ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DYNAMIC
-#  ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DEFAULT_CEILING
-#   if CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DEFAULT_PRIORITY <= 5
-#    define PRIORITY_INHERITANCE "dynamic-default-ceiling-high"
-#   elif CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DEFAULT_PRIORITY >= 15
-#    define NO_PRIORITY_INHERITANCE "dynamic-default-ceiling-low"
-#   else
-#    define PRIORITY_UNKNOWN "dynamic-default-ceiling-mid"
-#   endif
-#  endif
-# else
-#  if CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DEFAULT_PRIORITY <= 5
-#   define PRIORITY_INHERITANCE "static-ceiling-high"
-#  elif CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DEFAULT_PRIORITY >= 15
-#   define NO_PRIORITY_INHERITANCE "static-ceiling-low"
-#  else
-#   define PRIORITY_UNKNOWN "static-ceiling-mid"
-#  endif
-# endif
-#endif
+int proto;
 
-#ifndef PRIORITY_INHERITANCE
-# ifndef NO_PRIORITY_INHERITANCE
-#  define NO_PRIORITY_INHERITANCE "no scheme selected"
-# endif
-#endif
+static char * protnames[] = {
+    "none",
+    "inherit",
+    "high ceiling",
+    "medium ceiling",
+    "low ceiling",
+};
 
 // ------------------------------------------------------------------------
 // Management functions
@@ -147,7 +130,8 @@ static int nthreads = 0;
 static cyg_handle_t new_thread( cyg_thread_entry_t *entry,
                                 cyg_addrword_t data,
                                 cyg_addrword_t priority,
-                                int do_resume )
+                                int do_resume,
+                                char *name )
 {
     CYG_ASSERT(nthreads < NTHREADS, 
                "Attempt to create more than NTHREADS threads");
@@ -155,7 +139,7 @@ static cyg_handle_t new_thread( cyg_thread_entry_t *entry,
     cyg_thread_create( priority,
                        entry,
                        data, 
-                       NULL,                // no name
+                       name,
                        (void *)(stack[nthreads]),
                        STACKSIZE,
                        &thread[nthreads],
@@ -212,7 +196,9 @@ static void extra_thread( cyg_addrword_t data )
 {
     cyg_handle_t self = cyg_thread_self();
 
-#define XINFO( z ) \
+
+#ifdef VERBOSE
+#define xXINFO( z ) \
     do { z[13] = '0' + data; CYG_TEST_INFO( z ); } while ( 0 )
 
     static char running[]  = "Extra thread Xa running";
@@ -220,6 +206,9 @@ static void extra_thread( cyg_addrword_t data )
     static char resumed[]  = "Extra thread Xa resumed";
     static char locked[]   = "Extra thread Xa locked";
     static char unlocked[] = "Extra thread Xa unlocked";
+#else
+#define XINFO( z )  /* nothing */
+#endif
 
     XINFO( running );
 
@@ -246,9 +235,9 @@ static void extra_thread( cyg_addrword_t data )
 static void t1( cyg_addrword_t data )
 {
     cyg_handle_t self = cyg_thread_self();
-
+#ifdef VERBOSE
     CYG_TEST_INFO( "Thread 1 running" );
-
+#endif
     cyg_thread_suspend( self );
 
     cyg_mutex_lock( mutex );
@@ -262,8 +251,9 @@ static void t1( cyg_addrword_t data )
     CYG_TEST_CHECK( 0 == t3ended, "T3 ended prematurely [T1,2]" );
 
     // That's all.
-
+#ifdef VERBOSE
     CYG_TEST_INFO( "Thread 1 exit" );
+#endif
 }
 
 // ------------------------------------------------------------------------
@@ -273,9 +263,9 @@ static void t2( cyg_addrword_t data )
     cyg_handle_t self = cyg_thread_self();
     int i;
     cyg_tick_count_t then, now;
-
+#ifdef VERBOSE
     CYG_TEST_INFO( "Thread 2 running" );
-
+#endif
     CYG_TEST_CHECK( 0 == (data & ~0x77), "Bad T2 arg: extra bits" );
     CYG_TEST_CHECK( 0 == (data & (data >> 4)), "Bad T2 arg: overlap" );
 
@@ -312,19 +302,22 @@ static void t2( cyg_addrword_t data )
         // Wait longer than the delay in t3 waiting on go_flag
     } while ( now < (then + 3) );
 
-#ifdef PRIORITY_UNKNOWN
-    CYG_TEST_INFO( "Not checking: " PRIORITY_UNKNOWN );
-#else
-#ifdef PRIORITY_INHERITANCE
-    CYG_TEST_INFO( "Checking priority scheme: " PRIORITY_INHERITANCE );
-    CYG_TEST_CHECK( 1 == t3ran, "Thread 3 did not run" );
-    CYG_TEST_CHECK( 1 == got_it, "Thread 1 did not get the mutex" );
-#else
-    CYG_TEST_INFO( "Checking NO priority scheme: " NO_PRIORITY_INHERITANCE );
-    CYG_TEST_CHECK( 0 == t3ran, "Thread 3 DID run" );
-    CYG_TEST_CHECK( 0 == got_it, "Thread 1 DID get the mutex" );
-#endif
-#endif
+    // Check for whatever result we expect from the protocol selected:
+    // This mirrors what is done in configury in kmutex3.c and mutex3.cxx
+    if ( PROTO_CEILING_MID == proto ) {
+        CYG_TEST_INFO( "Not checking: ceiling mid value" );
+    }
+    else if ( PROTO_INHERIT == proto ||
+              PROTO_CEILING_HIGH == proto ) {
+        CYG_TEST_INFO( "Checking priority scheme operating" );
+        CYG_TEST_CHECK( 1 == t3ran, "Thread 3 did not run" );
+        CYG_TEST_CHECK( 1 == got_it, "Thread 1 did not get the mutex" );
+    }
+    else {
+        CYG_TEST_INFO( "Checking NO priority scheme operating" );
+        CYG_TEST_CHECK( 0 == t3ran, "Thread 3 DID run" );
+        CYG_TEST_CHECK( 0 == got_it, "Thread 1 DID get the mutex" );
+    }
 
     CYG_TEST_CHECK( 0 == t3ended, "Thread 3 ended prematurely [T2,1]" );
 
@@ -349,8 +342,9 @@ static void t2( cyg_addrword_t data )
 
 static void t3( cyg_addrword_t data )
 {
+#ifdef VERBOSE
     CYG_TEST_INFO( "Thread 3 running" );
-
+#endif
     cyg_mutex_lock( mutex );
 
     cyg_thread_delay( DELAYFACTOR * 5 ); // let thread 3a run
@@ -369,8 +363,9 @@ static void t3( cyg_addrword_t data )
     t3ended ++;                         // record that we came back
 
     CYG_TEST_CHECK( 1 == got_it, "Thread 1 did not get the mutex" );
-
+#ifdef VERBOSE
     CYG_TEST_INFO( "Thread 3 exit" );
+#endif
 }
 
 // ------------------------------------------------------------------------
@@ -400,45 +395,84 @@ static void control_thread( cyg_addrword_t data )
         if ( cyg_test_is_simulator && (0 != i && 13 != i && 26 != i) )
             continue;    // 13 is 111 base 3, 26 is 222 base 3
 
-#ifdef PRIORITY_INHERITANCE
-        // If the simple scheme plus relay enhancement, or any other
-        // *complete* scheme, we can run all three ancillary threads no
-        // problem, so no special action here.
+        // Go through all these priority inversion prevention protocols:
+        // (if supported in this configuration)
+	// PROTO_NONE            (0)
+	// PROTO_INHERIT         (1)
+	// PROTO_CEILING_HIGH    (2)
+	// PROTO_CEILING_MID     (3)
+	// PROTO_CEILING_LOW     (4)
+        for ( proto = PROTO_NONE; proto <= PROTO_CEILING_LOW; proto++ ) {
 
-#else
-        // If no priority inheritance at all, running threads 1a and 2a is
-        // OK, but not thread 3a; it blocks the world.
-        if ( l )                        // Cannot run thread 3a if no
-            break;                      //     priority inheritance at all.
+            // If no priority inheritance at all, running threads 1a and 2a is
+            // OK, but not thread 3a; it blocks the world.
+            if ( PROTO_NONE == proto ||
+                 PROTO_CEILING_MID == proto ||
+                 PROTO_CEILING_LOW == proto )
+                if ( l )                // Cannot run thread 3a if no
+                    continue;           // priority inheritance at all.
+
+            mutex = &mutex_obj;
+            
+            switch ( proto ) {
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_NONE
+            case PROTO_NONE:
+                cyg_mutex_init( mutex );
+                cyg_mutex_set_protocol( mutex, CYG_MUTEX_NONE );
+                break;
 #endif
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_INHERIT
+            case PROTO_INHERIT:
+                cyg_mutex_init( mutex );
+                cyg_mutex_set_protocol( mutex, CYG_MUTEX_INHERIT );
+                break;
+#endif
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_CEILING
+            case PROTO_CEILING_HIGH:
+                cyg_mutex_init( mutex );
+                cyg_mutex_set_protocol( mutex, CYG_MUTEX_CEILING );
+                cyg_mutex_set_ceiling( mutex, (cyg_priority_t)  4 );
+                break;
+            case PROTO_CEILING_MID:
+                cyg_mutex_init( mutex );
+                cyg_mutex_set_protocol( mutex, CYG_MUTEX_CEILING );
+                cyg_mutex_set_ceiling( mutex, (cyg_priority_t) 11 );
+                break;
+            case PROTO_CEILING_LOW:
+                cyg_mutex_init( mutex );
+                cyg_mutex_set_protocol( mutex, CYG_MUTEX_CEILING );
+                cyg_mutex_set_ceiling( mutex, (cyg_priority_t) 17 );
+                break;
+#endif
+            default:
+                continue; // Break out of the prio for loop - do nothing
+            }
 
-        mutex = &mutex_obj;
-        cyg_mutex_init( mutex );
+            got_it  = 0;
+            t3ran   = 0;
+            t3ended = 0;
+            for ( z = 0; z < 4; z++ ) extras[z] = 0;
+            go_flag = 0;
+        
+            new_thread( t1, 0,  5, 1, "test 1" ); // Slot 1
+            new_thread( t2, d, 10, 1, "test 2" ); // Slot 2
+            new_thread( t3, 0, 15, 1, "test 3" ); // Slot 3
+        
+            new_thread( extra_thread, 1,  8, j, "extra 1" ); // Slot 4
+            new_thread( extra_thread, 2, 12, k, "extra 2" ); // Slot 5
+            new_thread( extra_thread, 3, 17, l, "extra 3" ); // Slot 6
+        
+            {
+                static char *a[] = { "inactive", "run early", "run late" };
+                diag_printf( "\n----- %s [%2d] New Cycle: 0x%02x, Threads 1a %s, 2a %s, 3a %s -----\n",
+                             protnames[proto], i, d,  a[j], a[k], a[l] );
+            }
 
-        got_it  = 0;
-        t3ran   = 0;
-        t3ended = 0;
-        for ( z = 0; z < 4; z++ ) extras[z] = 0;
-        go_flag = 0;
+            cyg_thread_suspend( self );
         
-        new_thread( t1, 0,  5, 1 );            // Slot 1
-        new_thread( t2, d, 10, 1 );            // Slot 2
-        new_thread( t3, 0, 15, 1 );            // Slot 3
-        
-        new_thread( extra_thread, 1,  8, j );  // Slot 4
-        new_thread( extra_thread, 2, 12, k );  // Slot 5
-        new_thread( extra_thread, 3, 17, l );  // Slot 6
-        
-        {
-            static char *a[] = { "inactive", "run early", "run late" };
-            diag_printf( "\n----- [%2d] New Cycle: 0x%02x, Threads 1a %s, 2a %s, 3a %s -----\n",
-                         i, d,  a[j], a[k], a[l] );
+            kill_threads();
+            cyg_mutex_destroy( mutex );
         }
-
-        cyg_thread_suspend( self );
-        
-        kill_threads();
-        cyg_mutex_destroy( mutex );
     }
     CYG_TEST_EXIT( "Control Thread exit" );
 }
@@ -451,7 +485,7 @@ cyg_user_start( void )
 #ifdef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
     cyg_hal_invoke_constructors();
 #endif
-    new_thread( control_thread, 0, 2, 1 );
+    new_thread( control_thread, 0, 2, 1, "control thread" );
 }
 
 #else // CYGVAR_KERNEL_COUNTERS_CLOCK &c
@@ -460,11 +494,13 @@ externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS_FINISH("KMutex3 test requires:\n"
+    CYG_TEST_PASS_FINISH("KMutex4 test requires:\n"
                          "CYGFUN_KERNEL_API_C &&\n"
                          "CYGVAR_KERNEL_COUNTERS_CLOCK &&\n"
                          "(CYGNUM_KERNEL_SCHED_PRIORITIES > 20) &&\n"
-                         "!defined(CYGPKG_KERNEL_SMP_SUPPORT)\n");
+                         "!defined(CYGPKG_KERNEL_SMP_SUPPORT) &&\n"
+    "defined(CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DYNAMIC)\n"
+        );
 }
 #endif // CYGVAR_KERNEL_COUNTERS_CLOCK &c
 
@@ -472,156 +508,7 @@ cyg_start( void )
 // ------------------------------------------------------------------------
 // Documentation: enclosed is the design of this test.
 //
-// It has been carefully constructed so that it does NOT use other kernel
-// facilities (aside from delay-task) to test that priority inheritance is
-// working, or not, as intended by the configuration.
-//
-// These notes describe the flow of control in one run of the test with the
-// ancillary tasks optionally interspersed.  The details of how those extra
-// tasks are or are not allowed to run are not described.
-// 
-// 
-// 
-// The only change in the test that depends on whether there is inheritance or
-// not is the check in thread 2 on "3-ran" and "got it" flags marked ****
-// 
-// 
-// volatile &c booleans:
-//         "got it"     = FALSE
-//         "3-ran"      = FALSE
-//         "3-ended"    = FALSE
-//         "extras"[3]  = FALSE
-// 
-// thread 1.  prio 5, self-suspend.
-// 
-// thread 1a, prio 8, self-suspend.
-// 
-// thread 2.  prio 10, self-suspend.
-// 
-// thread 2a, prio 12, self-suspend.
-// 
-// thread 3.  prio 15, runs, lock mutex, resume(2)
-// 
-// thread 3a, prio 17, self-suspend.
-// 
-//        2.  runs,
-//        2.  resume(3a) +++OPTIONAL
-//        2.  resume(2a) +++OPTIONAL
-//        2.  resume(1a) +++OPTIONAL
-//        [1a lock-fail]	thread 3->prio := 8
-// 
-//        [3. runs maybe, does the looping thing]
-// 
-//        2.  sleep a while...
-// 
-//        [2a lock-fail]	thread 3->prio := 12
-// 
-//        [3. runs maybe, does the looping thing]
-// 
-//        [3a lock-fail]   thread 3->prio unchanged
-// 
-//        [3. runs maybe, does the looping thing]
-// 
-//        2.  lock scheduler
-//        2.  set "go-flag"
-//        2.  resume(1)
-//        2.  resume(1a) +++OPTIONAL
-//        2.  resume(2a) +++OPTIONAL
-//        2.  resume(3a) +++OPTIONAL
-//        2.  unlock scheduler
-// 
-//        1.  runs, lock mutex - thread 3 has it locked
-//
-//        2.  busy-waits a bit for thread 3 to come out of its delay() loop.
-//            This must be a *busy*wait so that 3 can only run via the
-//            inherited raised priority.
-// 
-//        [xa. all do the same: lock mutex,                ]
-//        [xa. unlock mutex                                ]
-//        [xa. set a flag "extras"[x] to say we are done.  ]
-//        [xa. exit                                        ]
-// 
-// 
-// 
-// INHERIT
-// -------
-// 
-//                 thread 3->prio := 5
-// 
-//        3.  runs,
-//        3.  set a flag to say "3-ran",
-//        3.  loop with a sleep(1) until "go-flag" is set.
-//        3.  check "got it" is false,
-//        3.  then unlock mutex,
-// 
-//                 thread 3->prio := 15
-// 
-//        1.  runs, set a flag to say "got it",
-//        1.  check "3-ended" flag is false
-//        1.  unlock mutex,
-//        1.  check "3-ended" flag is still false
-//        1.  exit.
-// 
-//        [1a locks, unlocks, exits]
-// 
-//        2.  runs, check "3-ran" and "got it" flags are TRUE ****
-//        2.  check "3-ended" flag is false
-//        2.  sleeps for a while so that...
-// 
-//        [2a locks, unlocks, exits]
-//            
-//        3.  runs, set "3-ended" flag,
-//        3.  check "3-ran" and "got it" flags
-//        3.  exit
-// 
-//        [3a locks, unlocks, exits]
-// 
-//        2.  awakens, checks all flags true,
-//        2.  check that all "extra" threads that we started have indeed run
-//        2.  end of test.
-// 
-// 
-// 
-// 
-// NO-INHERIT
-// ----------
-//                 thread 1 is waiting on the mutex
-// 
-//        [1a lock-fail]
-// 
-//        2.  runs, checks that "3-ran" and "got it" flags are FALSE ****
-//        2.  check "3-ended" flag is false
-//        2.  sleeps for a while so that...
-// 
-//        [2a. lock-fail]
-//            
-//        3.  runs, set a flag to say "3-ran",
-//        3.  check "got it" is false,
-//        3.  then unlock mutex,
-// 
-//        1.  runs, set a flag to say "got it",
-//        1.  check "3-ended" flag is false
-//        1.  unlock mutex,
-//        1.  check "3-ended" flag is still false
-//        1.  exit.
-// 
-//        [1a locks, unlocks, exits]
-//        [2a locks, unlocks, exits]
-// 
-//        3.  runs, set "3-ended" flag,
-//        3.  check "3-ran" and "got it" flags
-//        3.  exit
-// 
-//        [3a locks, unlocks, exits]
-//                
-//        2.  awakens, checks all flags true, 
-//        2.  check that all "extra" threads that we started have indeed run
-//        2.  end of test.
-// 
-// 
-// (the end)
-// 
-// 
-// ------------------------------------------------------------------------
+// See mutex3.cxx or kmutex3.c
 
-// EOF mutex3.c
+// ------------------------------------------------------------------------
+// EOF mutex4.c

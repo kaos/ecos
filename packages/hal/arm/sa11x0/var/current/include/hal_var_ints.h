@@ -110,6 +110,12 @@
 // The vector used by the Real time clock
 #define CYGNUM_HAL_INTERRUPT_RTC        CYGNUM_HAL_INTERRUPT_TIMER0
 
+// SA11x0 method for reading clock interrupt latency
+#ifdef CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY
+externC void hal_clock_latency(cyg_uint32 *);
+# define HAL_CLOCK_LATENCY( _pvalue_ ) \
+         hal_clock_latency( (cyg_uint32 *)(_pvalue_) )
+#endif
 
 
 //----------------------------------------------------------------------------

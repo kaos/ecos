@@ -208,6 +208,13 @@ Cyg_Mutex::lock(void)
 
 #endif
 
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_CEILING
+    
+    IF_PROTOCOL_CEILING
+        self->set_priority_ceiling(ceiling);
+
+#endif        
+               
     while( locked && result )
     {
         CYG_ASSERT( self != owner, "Locking mutex I already own");
@@ -254,25 +261,28 @@ Cyg_Mutex::lock(void)
         locked      = true;
         owner       = self;
 
+        CYG_INSTRUMENT_MUTEX(LOCKED, this, 0);
+    }
+    else
+    {
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL
+
+        self->uncount_mutex();
+
+#endif    
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_INHERIT
+
+        IF_PROTOCOL_INHERIT
+            self->disinherit_priority();
+
+#endif
 #ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_CEILING
 
         IF_PROTOCOL_CEILING
-            self->set_priority_ceiling(ceiling);
-        
-#endif        
-               
-        CYG_INSTRUMENT_MUTEX(LOCKED, this, 0);
-    }
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_INHERIT
-    else
-    {
-        IF_PROTOCOL_INHERIT
-        {
-            self->uncount_mutex();
-            self->disinherit_priority();
-        }
-    }
+            self->clear_priority_ceiling();
+
 #endif
+    }
     
     // Unlock the scheduler and maybe switch threads
     Cyg_Scheduler::unlock();

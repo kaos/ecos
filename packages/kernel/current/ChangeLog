@@ -1,3 +1,28 @@
+2001-08-21  Hugo Tyson  <hmt@redhat.com>
+
+	* src/sync/mutex.cxx (lock): Bugfix: a ceiling priority mutex
+	wasn't elevated until after it had acquired the mutex.  This meant
+	is slept with a low priority, and so did not run when awakened by
+	the release of the mutex.  The fix is to elevate the potential
+	claimant before it sleeps in contention. 
+
+	* tests/kmutex4.c: New testcase - very similar to kmutex3 but it
+	loops a load more times using different mutex priority protocols.
+	This checks that dynamically set protos do in fact behave
+	differently from one another and as they are each intended to.
+
+	* tests/kmutex3.c: Remove FIXME comments - we now test dynamic
+	protocol.
+
+	* cdl/kernel.cdl: Build the new test.
+
+2001-08-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/kapidata.h: Reorganize most struct type definitions into
+	macros to allow compatible layout with all G++ implementations that
+	align non-POD types differently from included C structures.
+	* include/kapi.h: Similarly for cyg_resolution_t.
+
 2001-08-17  Nick Garnett  <nickg@redhat.com>
 
 	* src/sched/mlqueue.cxx (timeslice): Fix timeslice_count comparison.

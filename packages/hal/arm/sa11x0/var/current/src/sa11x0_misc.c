@@ -167,7 +167,18 @@ void hal_clock_read(cyg_uint32 *pvalue)
     HAL_DISABLE_INTERRUPTS(orig);
     *pvalue = clock_period + *SA11X0_OSCR - *SA11X0_OSMR0;
     HAL_RESTORE_INTERRUPTS(orig);
+}
 
+// This is to cope with the test read used by tm_basic with
+// CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY defined; we read the count ASAP
+// in the ISR, *before* resetting the clock.  Which returns 1tick +
+// latency if we just use plain hal_clock_read().
+void hal_clock_latency(cyg_uint32 *pvalue)
+{
+    int orig;
+    HAL_DISABLE_INTERRUPTS(orig);
+    *pvalue = *SA11X0_OSCR - *SA11X0_OSMR0;
+    HAL_RESTORE_INTERRUPTS(orig);
 }
 
 //

@@ -333,10 +333,13 @@ void cyg_counter_set_value(
 void cyg_counter_tick(cyg_handle_t counter);
 
 
+#define CYG_RESOLUTION_T_MEMBERS  \
+    cyg_uint32  dividend;         \
+    cyg_uint32  divisor;
+
 typedef struct 
 {
-    cyg_uint32  dividend;
-    cyg_uint32  divisor;
+    CYG_RESOLUTION_T_MEMBERS
 } cyg_resolution_t;
 
 /* Create a clock object                */

@@ -1,3 +1,9 @@
+2001-08-21  Hugo Tyson  <hmt@redhat.com>
+
+	* include/hal_intr.h: Only define HAL_CLOCK_LATENCY() if it's not
+	defined already (if it's needed at all).  This is for platforms
+	which need a separate routine, such as sa11x0.
+
 2001-07-19  Gary Thomas  <gthomas@redhat.com>
 
 	* src/vectors.S: Support ROMRAM startup mode.  Note: most of

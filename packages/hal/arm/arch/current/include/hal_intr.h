@@ -392,7 +392,9 @@ externC void hal_clock_reset(cyg_uint32, cyg_uint32);
 #define HAL_CLOCK_RESET( _vec_, _period_ ) hal_clock_reset( _vec_, _period_ )
 #define HAL_CLOCK_READ( _pvalue_ )         hal_clock_read( _pvalue_ )
 #ifdef CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY
-#define HAL_CLOCK_LATENCY( _pvalue_ )      HAL_CLOCK_READ( (cyg_uint32 *)_pvalue_ )
+# ifndef HAL_CLOCK_LATENCY
+#  define HAL_CLOCK_LATENCY( _pvalue_ )    HAL_CLOCK_READ( (cyg_uint32 *)_pvalue_ )
+# endif
 #endif
 
 //--------------------------------------------------------------------------

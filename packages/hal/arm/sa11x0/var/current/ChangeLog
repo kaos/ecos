@@ -1,3 +1,20 @@
+2001-08-21  Hugo Tyson  <hmt@redhat.com>
+
+	* include/hal_var_ints.h (HAL_CLOCK_LATENCY()): Define this if
+	it's needed, for the routine below.
+
+	* src/sa11x0_misc.c (hal_clock_latency): A neater fix for the
+	below change: use a separate routine for measuring latency, which
+	assumes it is called in the ISR, before the clock is reset.
+
+2001-08-20  Hugo Tyson  <hmt@redhat.com>
+
+	* src/sa11x0_misc.c (hal_clock_read): Make hal_clock_read() return
+	the true value (as expected by the kernel latency test) from the
+	last interrupt if we just had that interrupt and didn't yet reset
+	the clock.  Otherwise ISR latencies are reported as one tick (1cS,
+	10000uS) too large.
+
 2001-07-27  Gary Thomas  <gthomas@redhat.com>
 
 	* src/redboot_linux_exec.c: Fix copyright disclaimers to satisfy

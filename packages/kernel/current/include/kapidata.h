@@ -127,190 +127,279 @@ struct cyg_interrupt
 
 /*---------------------------------------------------------------------------*/
 
-struct cyg_counter
-{
+
 #if defined(CYGIMP_KERNEL_COUNTERS_SINGLE_LIST)
+# define CYG_COUNTER_ALARM_LIST_MEMBER \
     cyg_alarm           *alarm_list;
 #elif defined(CYGIMP_KERNEL_COUNTERS_MULTI_LIST)
+# define CYG_COUNTER_ALARM_LIST_MEMBER \
     cyg_alarm           *alarm_list[CYGNUM_KERNEL_COUNTERS_MULTI_LIST_SIZE];
+#else
+# define CYG_COUNTER_ALARM_LIST_MEMBER
 #endif
-    cyg_tick_count_t    counter;
+
+#define CYG_COUNTER_MEMBERS              \
+    CYG_COUNTER_ALARM_LIST_MEMBER        \
+    cyg_tick_count_t    counter;         \
     cyg_uint32          increment;
+
+struct cyg_counter
+{
+    CYG_COUNTER_MEMBERS
 };
 
 /*---------------------------------------------------------------------------*/
 
 struct cyg_clock
 {
-    cyg_counter         counter;
-    cyg_resolution_t    resolution;
+    CYG_COUNTER_MEMBERS
+    CYG_RESOLUTION_T_MEMBERS
 };
 
 /*---------------------------------------------------------------------------*/
 
+
+#if defined(CYGIMP_KERNEL_COUNTERS_SINGLE_LIST) ||  \
+    defined(CYGIMP_KERNEL_COUNTERS_MULTI_LIST)      
+# define CYG_ALARM_LIST_MEMBERS                     \
+    cyg_alarm           *next;                      \
+    cyg_alarm           *prev;
+#else 
+# define CYG_ALARM_LIST_MEMBERS
+#endif
+
+#define CYG_ALARM_MEMBERS           \
+    CYG_ALARM_LIST_MEMBERS          \
+    cyg_counter         *counter;   \
+    cyg_alarm_t         *alarm;     \
+    CYG_ADDRWORD        data;       \
+    cyg_tick_count_t    trigger;    \
+    cyg_tick_count_t    interval;   \
+    cyg_bool            enabled;
+
 struct cyg_alarm
 {
-#if defined(CYGIMP_KERNEL_COUNTERS_SINGLE_LIST) || defined(CYGIMP_KERNEL_COUNTERS_MULTI_LIST)
-    cyg_alarm           *next;    
-    cyg_alarm           *prev;    
-#endif
-    cyg_counter         *counter;
-    cyg_alarm_t         *alarm;
-    CYG_ADDRWORD        data;
-    cyg_tick_count_t    trigger;
-    cyg_tick_count_t    interval;
-    cyg_bool            enabled;
+    CYG_ALARM_MEMBERS
 };
 
 /*---------------------------------------------------------------------------*/
 /* Exception controller                                                      */
 
 #ifdef CYGPKG_KERNEL_EXCEPTIONS
+
+# ifdef CYGSEM_KERNEL_EXCEPTIONS_DECODE
+#  define CYG_EXCEPTION_CONTROL_MEMBERS                                     \
+    cyg_exception_handler_t *exception_handler[CYGNUM_HAL_EXCEPTION_COUNT]; \
+    CYG_ADDRWORD            exception_data[CYGNUM_HAL_EXCEPTION_COUNT];     
+# else
+#  define CYG_EXCEPTION_CONTROL_MEMBERS                                \
+    cyg_exception_handler_t *exception_handler; /* Handler function */ \
+    CYG_ADDRWORD            exception_data;     /* Handler data */
+# endif
+
 typedef struct
 {
-#ifdef CYGSEM_KERNEL_EXCEPTIONS_DECODE
-    cyg_exception_handler_t *exception_handler[CYGNUM_HAL_EXCEPTION_COUNT];
-    
-    CYG_ADDRWORD            exception_data[CYGNUM_HAL_EXCEPTION_COUNT];
-#else
-    cyg_exception_handler_t *exception_handler; // Handler function
-    
-    CYG_ADDRWORD            exception_data;     // Handler data
-#endif
-    
+    CYG_EXCEPTION_CONTROL_MEMBERS    
 } cyg_exception_control;
 
 #endif
 
 /*---------------------------------------------------------------------------*/
-/* Thread structure                                                          */
+/* Hardware Thread structure                                                 */
+
+#ifdef CYGFUN_KERNEL_THREADS_STACK_LIMIT
+# define CYG_HARDWARETHREAD_STACK_LIMIT_MEMBER \
+    CYG_ADDRESS         stack_limit;    /* movable stack limit */
+#else
+# define CYG_HARDWARETHREAD_STACK_LIMIT_MEMBER
+#endif
+
+#ifdef CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT
+# define CYG_HARDWARETHREAD_SAVED_CONTEXT_MEMBER \
+    void                *saved_context; // If non-zero, this points at a more
+                                        // interesting context than stack_ptr.
+#else
+# define CYG_HARDWARETHREAD_SAVED_CONTEXT_MEMBER
+#endif
+
+#define CYG_HARDWARETHREAD_MEMBERS                                           \
+    CYG_ADDRESS         stack_base;   /* pointer to base of stack area */    \
+    cyg_uint32          stack_size;   /* size of stack area in bytes */      \
+    CYG_HARDWARETHREAD_STACK_LIMIT_MEMBER                                    \
+    CYG_ADDRESS         stack_ptr;    /* pointer to saved state on stack */  \
+    CYG_ADDRWORD        entry_point;  /* main entry point (code pointer!) */ \
+    CYG_ADDRWORD        entry_data;   /* entry point argument */             \
+    CYG_HARDWARETHREAD_SAVED_CONTEXT_MEMBER
 
 typedef struct
 {
-    CYG_ADDRESS         stack_base;     /* pointer to base of stack area */
-    cyg_uint32          stack_size;     /* size of stack area in bytes */
-#ifdef CYGFUN_KERNEL_THREADS_STACK_LIMIT
-    CYG_ADDRESS         stack_limit;    /* movable stack limit */
-#endif    
-    CYG_ADDRESS         stack_ptr;      /* pointer to saved state on stack */
-    CYG_ADDRWORD        entry_point;    /* main entry point (code pointer!) */
-    CYG_ADDRWORD        entry_data;     /* entry point argument */
-#ifdef CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT
-    void                *saved_context; // If non-zero, this points at a more
-                                        // interesting context than stack_ptr.
-#endif
-    
+    CYG_HARDWARETHREAD_MEMBERS
 } cyg_hardwarethread;
-    
-typedef struct 
-{
-#if defined(CYGSEM_KERNEL_SCHED_BITMAP)
 
-    cyg_priority_t      priority;       /* current thread priority */
-    
-#elif defined(CYGSEM_KERNEL_SCHED_MLQUEUE)
-
-    cyg_thread *next;
-    cyg_thread *prev;
-
-    cyg_priority_t      priority;       /* current thread priority */
+/*---------------------------------------------------------------------------*/
+/* Scheduler Thread structure                                                */
 
 #ifdef CYGPKG_KERNEL_SMP_SUPPORT
+# define CYG_SCHEDTHREAD_CPU_MEMBER \
     cyg_uint32          cpu;            // CPU id of cpu currently running
-#endif
-    
-#ifdef CYGSEM_KERNEL_SCHED_TIMESLICE_ENABLE
-    cyg_bool            timeslice_enabled; /* per-thread timeslice enable */
-#endif    
-#elif defined(CYGSEM_KERNEL_SCHED_LOTTERY)
-
-    cyg_thread *next;
-    cyg_thread *prev;
-
-    cyg_priority_t      priority;       /* current thread priority */
-
-    cyg_priority_t      compensation_tickets;   /* sleep compensation */
-    
 #else
+# define CYG_SCHEDTHREAD_CPU_MEMBER
+#endif
 
-#error Undefined scheduler type
-    
+#ifdef CYGSEM_KERNEL_SCHED_TIMESLICE_ENABLE
+# define CYG_SCHEDTHREAD_TIMESLICE_ENABLED_MEMBER \
+    cyg_bool            timeslice_enabled; /* per-thread timeslice enable */
+#else
+# define CYG_SCHEDTHREAD_TIMESLICE_ENABLED_MEMBER
+#endif
+
+#if defined(CYGSEM_KERNEL_SCHED_BITMAP)
+# define CYG_SCHEDTHREAD_SCHEDIMP_MEMBERS \
+    cyg_priority_t      priority;       /* current thread priority */
+#elif defined(CYGSEM_KERNEL_SCHED_MLQUEUE)
+# define CYG_SCHEDTHREAD_SCHEDIMP_MEMBERS                                    \
+    cyg_thread *next;                                                        \
+    cyg_thread *prev;                                                        \
+    cyg_priority_t      priority;             /* current thread priority */  \
+    CYG_SCHEDTHREAD_CPU_MEMBER                                               \
+    CYG_SCHEDTHREAD_TIMESLICE_ENABLED_MEMBER
+#elif defined(CYGSEM_KERNEL_SCHED_LOTTERY)
+# define CYG_SCHEDTHREAD_SCHEDIMP_MEMBERS                                    \
+    cyg_thread *next;                                                        \
+    cyg_thread *prev;                                                        \
+    cyg_priority_t      priority;             /* current thread priority */  \
+    cyg_priority_t      compensation_tickets; /* sleep compensation */
+#else
+# error Undefined scheduler type
 #endif    
 
-    cyg_threadqueue     *queue;
+#ifndef CYGSEM_KERNEL_SCHED_ASR_GLOBAL
+#  define CYG_SCHEDTHREAD_ASR_NONGLOBAL_MEMBER \
+    void              (*asr)(CYG_ADDRWORD);   // ASR function
+#else
+#  define CYG_SCHEDTHREAD_ASR_NONGLOBAL_MEMBER
+#endif
+
+#ifndef CYGSEM_KERNEL_SCHED_ASR_DATA_GLOBAL
+#  define CYG_SCHEDTHREAD_ASR_DATA_NONGLOBAL_MEMBER \
+    CYG_ADDRWORD        asr_data;       // ASR data pointer
+#else
+#  define CYG_SCHEDTHREAD_ASR_DATA_NONGLOBAL_MEMBER
+#endif
 
 #ifdef CYGSEM_KERNEL_SCHED_ASR_SUPPORT
-    volatile cyg_bool   asr_inhibit;    // If true, blocks calls to ASRs
-    volatile cyg_bool   asr_pending;    // If true, this thread's ASR should be called.
-#ifndef CYGSEM_KERNEL_SCHED_ASR_GLOBAL
-    void              (*asr)(CYG_ADDRWORD);   // ASR function
-#endif    
-#ifndef CYGSEM_KERNEL_SCHED_ASR_DATA_GLOBAL
-    CYG_ADDRWORD        asr_data;       // ASR data pointer
-#endif    
-#endif    
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL
-    cyg_count32         mutex_count;
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_SIMPLE
-    cyg_priority_t      original_priority;
-    cyg_bool            priority_inherited;
-#endif
+# define CYG_SCHEDTHREAD_ASR_MEMBER                                       \
+    volatile cyg_bool   asr_inhibit; /* If true, blocks calls to ASRs */  \
+    volatile cyg_bool   asr_pending; /* If true, this thread's ASR    */  \
+                                     /* should be called. */              \
+    CYG_SCHEDTHREAD_ASR_NONGLOBAL_MEMBER                                  \
+    CYG_SCHEDTHREAD_ASR_DATA_NONGLOBAL_MEMBER                             
+#else
+# define CYG_SCHEDTHREAD_ASR_MEMBER
 #endif
 
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_SIMPLE
+# define CYG_SCHEDTHREAD_MUTEX_INV_PROTO_SIMPLE_MEMBERS \
+    cyg_priority_t      original_priority;              \
+    cyg_bool            priority_inherited;
+#else
+# define CYG_SCHEDTHREAD_MUTEX_INV_PROTO_SIMPLE_MEMBERS
+#endif
+
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL
+# define CYG_SCHEDTHREAD_MUTEX_INV_PROTO_MEMBERS   \
+    cyg_count32         mutex_count;               \
+    CYG_SCHEDTHREAD_MUTEX_INV_PROTO_SIMPLE_MEMBERS
+#else
+# define CYG_SCHEDTHREAD_MUTEX_INV_PROTO_MEMBERS
+#endif
+
+#define CYG_SCHEDTHREAD_MEMBERS               \
+    CYG_SCHEDTHREAD_SCHEDIMP_MEMBERS          \
+    cyg_threadqueue     *queue;               \
+    CYG_SCHEDTHREAD_ASR_MEMBER                \
+    CYG_SCHEDTHREAD_MUTEX_INV_PROTO_MEMBERS
+
+    
+typedef struct 
+{
+    CYG_SCHEDTHREAD_MEMBERS
 } cyg_schedthread;
+
+#define CYG_THREADTIMER_MEMBERS \
+    CYG_ALARM_MEMBERS           \
+    cyg_thread          *thread;
+
+/*---------------------------------------------------------------------------*/
+/* Thread structure                                                          */
 
 typedef struct 
 {
-    cyg_alarm           alarm;
-    cyg_thread          *thread;
+    CYG_THREADTIMER_MEMBERS
 } cyg_threadtimer;
 
 
 typedef int cyg_reason_t; /* cyg_reason is originally an enum */
 
-struct cyg_thread
-{
-    cyg_hardwarethread  hwthread;
-    cyg_schedthread     schedthread;
-
-    cyg_uint32                  state;      
-    cyg_ucount32                suspend_count;
-    cyg_ucount32                wakeup_count;
-    CYG_ADDRWORD                wait_info;
-    cyg_uint16                  unique_id;
-    
-
 #if defined(CYGPKG_KERNEL_EXCEPTIONS) && !defined(CYGSEM_KERNEL_EXCEPTIONS_GLOBAL)
-    
+# define CYG_THREAD_EXCEPTION_CONTROL_MEMBER \
     cyg_exception_control       exception_control;
-
+#else
+# define CYG_THREAD_EXCEPTION_CONTROL_MEMBER
 #endif
 
 #ifdef CYGFUN_KERNEL_THREADS_TIMER
+# define CYG_THREAD_TIMER_MEMBER \
     cyg_threadtimer     timer;
+#else
+# define CYG_THREAD_TIMER_MEMBER
 #endif
 
-    cyg_reason_t        sleep_reason;
-    cyg_reason_t        wake_reason;
-
 #ifdef CYGVAR_KERNEL_THREADS_DATA
-
+# define CYG_THREAD_THREAD_DATA_MEMBER \
     CYG_ADDRWORD        thread_data[CYGNUM_KERNEL_THREADS_DATA_MAX];
-
+#else
+# define CYG_THREAD_THREAD_DATA_MEMBER
 #endif
 
 #ifdef CYGVAR_KERNEL_THREADS_NAME
-
+# define CYG_THREAD_NAME_MEMBER \
     char                *name;
-
+#else
+# define CYG_THREAD_NAME_MEMBER
 #endif
 
 #ifdef CYGVAR_KERNEL_THREADS_LIST
-
+# define CYG_THREAD_LIST_NEXT_MEMBER \
     cyg_thread          *list_next;
-    
+#else
+# define CYG_THREAD_LIST_NEXT_MEMBER
 #endif
-    
+
+#define CYG_THREAD_MEMBERS                        \
+    CYG_HARDWARETHREAD_MEMBERS                    \
+    CYG_SCHEDTHREAD_MEMBERS                       \
+                                                  \
+    cyg_uint32                  state;            \
+    cyg_ucount32                suspend_count;    \
+    cyg_ucount32                wakeup_count;     \
+    CYG_ADDRWORD                wait_info;        \
+    cyg_uint16                  unique_id;        \
+                                                  \
+    CYG_THREAD_EXCEPTION_CONTROL_MEMBER           \
+    CYG_THREAD_TIMER_MEMBER                       \
+                                                  \
+    cyg_reason_t        sleep_reason;             \
+    cyg_reason_t        wake_reason;              \
+                                                  \
+    CYG_THREAD_THREAD_DATA_MEMBER                 \
+    CYG_THREAD_NAME_MEMBER                        \
+    CYG_THREAD_LIST_NEXT_MEMBER                   
+
+
+struct cyg_thread
+{
+    CYG_THREAD_MEMBERS
 };
 
 /*---------------------------------------------------------------------------*/

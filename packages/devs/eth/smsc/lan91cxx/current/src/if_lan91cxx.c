@@ -1019,9 +1019,12 @@ static void
 lan91cxx_poll(struct eth_drv_sc *sc)
 {
     unsigned short event;
+    struct lan91cxx_priv_data *cpd = 
+        (struct lan91cxx_priv_data *)sc->driver_private;
 
     DEBUG_FUNCTION();
     while (1) {
+        cyg_drv_interrupt_acknowledge(cpd->interrupt);
         // Get the (unmasked) requests
         event = get_reg(sc, LAN91CXX_INTERRUPT);
         event = event & (event >> 8) & 0xff;

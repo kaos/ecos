@@ -105,8 +105,9 @@ cdl_package CYGPKG_LIBC_STRING {
     
         cdl_option CYGSEM_LIBC_STRING_PER_THREAD_STRTOK {
             display       "Per-thread strtok()"
+            active_if     CYGPKG_KERNEL
             requires      CYGVAR_KERNEL_THREADS_DATA
-            default_value 0
+            default_value CYGVAR_KERNEL_THREADS_DATA
             description   "
                 This option controls whether the string function
                 strtok() has its state recorded on a per-thread
