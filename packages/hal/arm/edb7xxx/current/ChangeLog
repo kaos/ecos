@@ -1,5 +1,8 @@
 2003-02-13  Gary Thomas  <gary@mlbassoc.com>
 
+	* include/plf_io.h: Add CYG_MACRO_START/END markers to match
+	recent changes in arch code.
+
 	* cdl/hal_arm_edb7xxx.cdl: Builds without RedBoot+Linux-exec
 	were broken by recent changes.
 

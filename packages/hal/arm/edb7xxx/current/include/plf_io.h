@@ -68,6 +68,7 @@ extern unsigned long _edb7xxx_physical_address(unsigned long addr);
 #include <cyg/hal/hal_platform_setup.h>
 // Describe memory layout for Linux
 #define CYGHWR_REDBOOT_LINUX_ATAG_MEM(_p_)                                                      \
+    CYG_MACRO_START                                                                             \
     /* Next ATAG_MEM. */                                                                        \
     _p_->hdr.size = (sizeof(struct tag_mem32) + sizeof(struct tag_header))/sizeof(long);        \
     _p_->hdr.tag = ATAG_MEM;                                                                    \
@@ -77,7 +78,8 @@ extern unsigned long _edb7xxx_physical_address(unsigned long addr);
     _p_->u.mem.size  = 1<<hal_msbindex(CYGMEM_REGION_ram_SIZE);                                 \
     if (_p_->u.mem.size < CYGMEM_REGION_ram_SIZE)                                               \
 	    _p_->u.mem.size <<= 1;                                                              \
-    _p_->u.mem.start = DRAM_PA_START;
+    _p_->u.mem.start = DRAM_PA_START;                                                           \
+    CYG_MACRO_END
 #endif
 
 #endif // CYGONCE_HAL_ARM_EDB7XXX_PLF_IO_H
