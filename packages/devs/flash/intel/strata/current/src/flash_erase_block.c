@@ -54,7 +54,6 @@
 
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_arch.h>
-#include <cyg/hal/hal_cache.h>
 
 //
 // CAUTION!  This code must be copied to RAM before execution.  Therefore,
@@ -66,15 +65,8 @@ int flash_erase_block(volatile flash_t *block, unsigned int block_size)
     volatile flash_t *ROM;
     flash_t stat = 0;
     int timeout = 50000;
-    int cache_on;
     int len, block_len, erase_block_size;
     volatile flash_t *eb;
-
-    HAL_DCACHE_IS_ENABLED(cache_on);
-    if (cache_on) {
-        HAL_DCACHE_SYNC();
-        HAL_DCACHE_DISABLE();
-    }
 
     // Get base address and map addresses to virtual addresses
     ROM = FLASH_P2V(CYGNUM_FLASH_BASE_MASK & (unsigned int)block);
@@ -120,10 +112,6 @@ int flash_erase_block(volatile flash_t *block, unsigned int block_size)
             len -= sizeof(*block);
         }
         if (len == 0) stat = 0;
-    }
-
-    if (cache_on) {
-        HAL_DCACHE_ENABLE();
     }
 
     return stat;

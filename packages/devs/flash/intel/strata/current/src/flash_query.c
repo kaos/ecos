@@ -54,7 +54,6 @@
 
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_arch.h>
-#include <cyg/hal/hal_cache.h>
 #include CYGHWR_MEMORY_LAYOUT_H
 
 //
@@ -69,13 +68,6 @@ flash_query(unsigned char *data)
 {
     volatile flash_t *ROM;
     int i, cnt;
-    int cache_on;
-
-    HAL_DCACHE_IS_ENABLED(cache_on);
-    if (cache_on) {
-        HAL_DCACHE_SYNC();
-        HAL_DCACHE_DISABLE();
-    }
 
     // Get base address and map addresses to virtual addresses
     ROM = FLASH_P2V( CYGNUM_FLASH_BASE );
@@ -104,10 +96,6 @@ flash_query(unsigned char *data)
 #endif
     }
     ROM[0] = FLASH_Reset;
-
-    if (cache_on) {
-        HAL_DCACHE_ENABLE();
-    }
 
     return 0;
 }

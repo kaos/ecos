@@ -54,7 +54,6 @@
 
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_arch.h>
-#include <cyg/hal/hal_cache.h>
 
 //
 // CAUTION!  This code must be copied to RAM before execution.  Therefore,
@@ -69,16 +68,9 @@ flash_program_buf(volatile flash_t *addr, flash_t *data, int len,
     volatile flash_t *BA;
     flash_t stat = 0;
     int timeout = 50000;
-    int cache_on;
 #ifdef FLASH_Write_Buffer
     int i, wc;
 #endif
-
-    HAL_DCACHE_IS_ENABLED(cache_on);
-    if (cache_on) {
-        HAL_DCACHE_SYNC();
-        HAL_DCACHE_DISABLE();
-    }
 
     // Get base address and map addresses to virtual addresses
     ROM = FLASH_P2V( CYGNUM_FLASH_BASE_MASK & (unsigned int)addr );
@@ -163,10 +155,6 @@ flash_program_buf(volatile flash_t *addr, flash_t *data, int len,
     // Restore ROM to "normal" mode
  bad:
     ROM[0] = FLASH_Reset;            
-
-    if (cache_on) {
-        HAL_DCACHE_ENABLE();
-    }
 
     return stat;
 }
