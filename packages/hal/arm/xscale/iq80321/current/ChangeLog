@@ -1,3 +1,8 @@
+2003-07-03  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/hal_platform_setup.h: Remove erroneous 'O' that somehow
+	crept into this file.
+
 2003-06-21  Mark Salter  <msalter@redhat.com>
 
 	* include/hal_platform_setup.h: Use base+offset addressing to access

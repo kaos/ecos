@@ -770,7 +770,7 @@ icache_boundary:
 	mov	r0, #0xc
         ldr     r1, =ATU_IABAR1
 	str     r0, [r1]
-0        ldr     r1, =ATU_IABAR2
+        ldr     r1, =ATU_IABAR2
         str     r0, [r1]
 	mov	r0, #0
         ldr     r1, =ATU_IAUBAR1
