@@ -79,14 +79,17 @@
 /*
  * SA11X0 Default Memory Layout Definitions
  */
+// Typically ROM, FLASH
 #define SA11X0_ROM_BANK0_BASE                    (0)
 #define SA11X0_ROM_BANK1_BASE                    (SA11X0_ROM_BANK0_BASE + SZ_128M)
 #define SA11X0_ROM_BANK2_BASE                    (SA11X0_ROM_BANK1_BASE + SZ_128M)
 #define SA11X0_ROM_BANK3_BASE                    (SA11X0_ROM_BANK2_BASE + SZ_128M)
 
-#define SA11X0_SRAM_BANK0_BASE                   (0x40000000)
-#define SA11X0_SRAM_BANK1_BASE                   (SA11X0_SRAM_BANK0_BASE + SZ_128M)
+// May be ROM, FLASH, SRAM, etc
+#define SA11X0_ROM_BANK4_BASE                    (0x40000000)
+#define SA11X0_ROM_BANK5_BASE                    (SA11X0_ROM_BANK4_BASE + SZ_128M)
 
+// Typically DRAM
 #define SA11X0_RAM_BANK0_BASE                    (0xC0000000)
 #define SA11X0_RAM_BANK1_BASE                    (SA11X0_RAM_BANK0_BASE + SZ_128M)
 #define SA11X0_RAM_BANK2_BASE                    (SA11X0_RAM_BANK1_BASE + SZ_128M)
