@@ -677,8 +677,8 @@ fec_eth_RxEvent(struct eth_drv_sc *sc)
     while (true) {
         if ((rxbd->ctrl & FEC_BD_Rx_Empty) == 0) {
             qi->rxbd = rxbd;  // Save for callback
-            set_led(LED_RxACTIVE);
-            (sc->funs->eth_drv->recv)(sc, rxbd->length);
+            set_led(LED_RxACTIVE);     // Remove the CRC
+            (sc->funs->eth_drv->recv)(sc, rxbd->length - 4);
         }
         if (rxbd->ctrl & FEC_BD_Rx_Wrap) {
             rxbd = qi->rbase;

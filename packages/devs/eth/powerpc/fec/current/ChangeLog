@@ -1,3 +1,7 @@
+2004-10-11  Harald Kuethe  <hkuethe@controlware.de>
+
+       * src/if_fec.c (fec_eth_RxEvent): remove crc from packet.
+
 2003-12-21  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/if_fec.c (fec_eth_RxEvent): Clean up some unused variables.
