@@ -165,6 +165,7 @@ inline void Cyg_HardwareThread::attach_stack(CYG_ADDRESS s_base, cyg_uint32 s_si
 
         unsigned int i;
 
+        CYG_ASSERT( NULL != base, "stack base non-NULL" );
         CYG_ASSERT( 0 == ((sizeof(CYG_WORD)-1) & (cyg_uint32)base), "stack base alignment" );
         CYG_ASSERT( 0 == ((sizeof(CYG_WORD)-1) & (cyg_uint32)top),  "stack  top alignment" );
 

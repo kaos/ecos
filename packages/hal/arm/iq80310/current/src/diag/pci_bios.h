@@ -45,9 +45,9 @@
 /* Use:         mon960                                                      */
 /*                                                                          */
 /* $Source: /dev/shm/cvs2hg/cvs/ecos/packages/hal/arm/iq80310/current/src/diag/Attic/pci_bios.h,v $      */
-/* $Revision: 1.2 $                                                        */
+/* $Revision: 1.3 $                                                        */
 /* Last $Author: jlarmour $                                                  */
-/* $Date: 2001/02/19 17:27:11 $                                             */
+/* $Date: 2001/02/27 01:21:46 $                                             */
 /*                                                                          */
 /* Purpose:  PCI BIOS Routines                                              */
 /*                                                                          */

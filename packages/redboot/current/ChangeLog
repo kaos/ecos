@@ -1,3 +1,76 @@
+2001-02-26  Gary Thomas  <gthomas@redhat.com>
+
+	* include/redboot.h (RedBoot_INIT_PRIO): Slight change - avoid
+	arithmetic which C preprocessor doesn't handle anyway.  This also
+	fixes prioritizing init entries.
+
+	* src/flash.c (fis_load): Only load actual data [length] when loading
+	an image.  
+
+	* cdl/redboot.cdl: Change build rule to always rebuild 'version.o'
+	whenever the application is relinked.  Thus the version string will
+	always accurately reflect the actual build date/time.
+
+2001-02-22  Hugo Tyson  <hmt@redhat.com>
+
+	* cdl/redboot.cdl: New config options to control default creation
+	of various FIS image files.  Also opt for a reserved area at the
+	base of flash, eg. for user's POST or other pre-RedBoot code that
+	we must not interfere with.  This isn't the same as the extant
+	boot_offset option, so the two are made to work together.
+	Likewise an offset for the start of a POST-cooperative RedBoot
+	image, if any; the value is of course platform dependent, not
+	simply after the first RedBoot image, if there is one.
+
+	Clarification: a POST-cooperative RedBoot image is a ROM-start
+	image that runs at a higher address in ROM, and which omits some
+	of the hardware initialization because it's already done by
+	whatever came before.  Most targets do not have such a thing;
+	those that do, it is created by a config export file, not by a new
+	startup type.  A POST Redboot can be tested from a plain ROM
+	redboot by just calling its entrypoint once it is installed in
+	flash; eg. by "go 0x50040044" at the RedBoot prompt.
+
+	* src/flash.c (fis_init): Create additional optional entries for
+	  o (reserved) reserved area at start, for preboot or post code.
+	  o RedBoot itself now optional
+	  o RedBoot[post]
+	  o RedBoot[backup]
+	Also initialize their addresses, sizes, accordingly.
+	The default behaviour is unchanged.
+	The flash erase is moved to after the fis table init because the
+	fis table init most conveniently calculates the high water mark of
+	built-in default objects.
+	(fis_create): If creating a file which already exists (most likely
+	one of the preconfigured defaults) pick up Flash address and
+	length (the two required parameters) from there.  They're required
+	to be the same to it's no loss of generality, and saves typing,
+	makes the default entries far more useful and so on.
+	(fis_delete): Skip those entries which were
+	preconfigured; we want nobody to be able to delete these.
+	(fis_free): Start searching for free space to list only after the
+	reserved base area - if there is one.
+	(fis_find_free): Start searching for free space only after the
+	reserved base area...
+
+2001-02-22  Jesper Skov  <jskov@redhat.com>
+
+	* src/flash.c: Added default case to switch statement.
+
+2001-02-20  Gary Thomas  <gthomas@redhat.com>
+
+	* src/load.c: Remove unnecessary \r from usage message.
+
+	* src/printf.c (_vprintf): Ensure CR/LF sequence, not LFCR.
+
+	* src/net/ping.c: 
+	* src/flash.c: Better usage messages [no naked linefeeds].
+
+	* src/net/ping.c: Tidy up usage message.  Check for reasonable
+	packet lengths.
+
+	* src/load.c: Tidy up usage message.
+
 2001-02-16  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/flash.c (load_flash_config): Move setting of config_ok to
@@ -803,7 +876,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

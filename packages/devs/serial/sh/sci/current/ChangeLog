@@ -1,3 +1,8 @@
+2001-02-26  Jesper Skov  <jskov@redhat.com>
+
+	* src/sh_sci_serial.c (sh_serial_er_DSR): Enable interrupts on
+	exit.
+
 2000-09-26  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/ser_sh_sci.cdl: Minor hack to allow both SCI and SCIF

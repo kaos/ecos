@@ -1,3 +1,12 @@
+2001-02-23  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: MBX uses new generic AMD flash driver.
+
+2001-02-21  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Add packages for new-style AMD and Atmel flash
+	drivers. Add flash support to PID.
+
 2001-02-09  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* pkgconf/rules.mak: Revert below change for now until we work

@@ -1,4 +1,27 @@
+2001-02-23  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_cache.h (HAL_FLASH_CACHES_OLD_MACROS):  This platform
+	uses deprecated cache handling macros.
+
+2001-02-23  Gary Thomas  <gthomas@redhat.com>
+
+	* misc/edb7212_redboot_ROM.ecm: Renamed from edb7212_redboot_ROM.cfg
+
+	* misc/edb7212_redboot.ecm: Renamed from edb7212_redboot.cfg
+
+	* misc/edb7211_redboot_ROM.ecm: Renamed from edb7211_redboot_ROM.cfg
+
+	* misc/edb7211_redboot.ecm: Renamed from edb7211_redboot.cfg
+
 2001-02-13  Gary Thomas  <gthomas@redhat.com>
+
+	* include/pkgconf/mlt_arm_edb7211_ram.h: 
+	* include/pkgconf/mlt_arm_edb7211_ram.mlt: 
+	* include/pkgconf/mlt_arm_edb7211_ram.ldi: 
+	* include/pkgconf/mlt_arm_edb7212_ram.h: 
+	* include/pkgconf/mlt_arm_edb7212_ram.mlt: 
+	* include/pkgconf/mlt_arm_edb7212_ram.ldi: Adjust memory map
+	for RedBoot [with networking].
 
 	* src/edb7xxx_misc.c (hal_IRQ_handler): 
 	Return CYGNUM_HAL_INTERRUPT_NONE for spurious interrupts.	

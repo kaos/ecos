@@ -92,11 +92,11 @@ hal_isr_springboard:
 	sll	s1,s2,2				# s1 = isr table index
 
 	la	v1,hal_interrupt_handlers
-	add	v1,v1,s1			# v1 = isr handler address
+	addu	v1,v1,s1			# v1 = isr handler address
 	lw	v1,0(v1)			# v1 = isr handler
 
 	la	a1,hal_interrupt_data
-	add	a1,a1,s1			# a1 = address of data ptr
+	addu	a1,a1,s1			# a1 = address of data ptr
 	lw	a1,0(a1)			# a1 = data pointer
 
 	move	a0,s2				# pass interrupt number	
@@ -317,7 +317,7 @@ FUNC_START(hal_mmu_setup)
 2:
 	bal     resettlb
 	nop
-	addi    a0,a0,1
+	addiu   a0,a0,1
 	bne     a0,NTLBENTRIES,2b
 	nop
 	
@@ -345,7 +345,7 @@ loop:
 	li	tlblo_odd, TLBLO_V | TLBLO_D | TLBLO_G
  
 	li	tmp,PAGE_SIZE
-	add	paddr1,paddr0,tmp
+	addu	paddr1,paddr0,tmp
 	li	tmp,TLBHI_VPN2MASK
         and	a1,vaddr,tmp
 
@@ -373,8 +373,8 @@ loop:
 	addi	ix,ix,1
 
 	li	tmp,PADDR_INC
-	add	vaddr,vaddr,tmp
-	add	paddr0,paddr0,tmp
+	addu	vaddr,vaddr,tmp
+	addu	paddr0,paddr0,tmp
 
 	li	tmp,NUMB_PG
 	bne	ix,tmp,loop

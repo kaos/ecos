@@ -1,3 +1,15 @@
+2001-02-20  Hugo Tyson  <hmt@redhat.com>
+2001-02-15  Martin Buck  <martin.buck@ascom.ch>
+
+	* src/if_ebsa285.c: Configure i82559 not to drop oversized frames.
+	This is required for VLAN support (because the maximum frame size
+	including the VLAN tag is 1518 instead of 1514) and shouldn't
+	hurt otherwise. To do this, we now always configure the chip when
+	i82559_start is called, instead of relying on the default
+	configuration if promiscuous mode is off. Another advantage is that
+	we're now able to turn promiscuous mode off again after it was
+	enabled once.
+
 2001-01-02  Hugo Tyson  <hmt@redhat.com>
 
 	* src/if_ebsa285.c (find_82559s_match_func): New func to match
@@ -381,7 +393,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

@@ -125,6 +125,7 @@
 // -------------------------------------------------------------------------
 // Provide a default architecture alignment
 // This may be overridden in basetype.h if necessary.
+// These should be straightforward numbers to allow use in assembly.
 
 #ifndef CYGARC_ALIGNMENT
 # define CYGARC_ALIGNMENT 8
@@ -132,6 +133,9 @@
 // And corresponding power of two alignment
 #ifndef CYGARC_P2ALIGNMENT
 # define CYGARC_P2ALIGNMENT 3
+#endif
+#if (CYGARC_ALIGNMENT) != (1 << CYGARC_P2ALIGNMENT)
+# error "Inconsistent CYGARC_ALIGNMENT and CYGARC_P2ALIGNMENT values"
 #endif
 
 // -------------------------------------------------------------------------

@@ -808,9 +808,9 @@ sh3_scif_er_ISR(cyg_vector_t vector, cyg_addrword_t data)
     cyg_uint8 _scr;
 
     HAL_READ_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
-    _scr &= ~CYGARC_REG_SCSCR2_RIE;      // mask rx interrupts
+    _scr &= ~CYGARC_REG_SCSCR2_RIE;     // mask rx interrupts
     HAL_WRITE_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
-    return CYG_ISR_CALL_DSR;  // Cause DSR to be run
+    return CYG_ISR_CALL_DSR;            // Cause DSR to be run
 }
 
 // Serial I/O - high level error interrupt handler (DSR)
@@ -820,22 +820,25 @@ sh3_scif_er_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     serial_channel *chan = (serial_channel *)data;
     sh3_scif_info *sh_chan = (sh3_scif_info *)chan->dev_priv;
     cyg_uint16 _ssr, _ssr2;
+    cyg_uint8 _scr;
 #ifdef CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS
     cyg_serial_line_status_t stat;
 #endif
 
     HAL_READ_UINT16(sh_chan->ctrl_base+SCIF_SCSSR, _ssr);
-    _ssr2 = CYGARC_REG_SCSSR_CLEARMASK;
+    _ssr2 = CYGARC_REG_SCSSR2_CLEARMASK;
+    // Clear the ER bit
+    _ssr2 &= ~CYGARC_REG_SCSSR2_ER;
 
     if (_ssr & CYGARC_REG_SCSSR2_FER) {
-        _ssr2 &= ~CYGARC_REG_SCSSR2_FER;
+        // _ssr2 &= ~CYGARC_REG_SCSSR2_FER; // FER is read-only
 #ifdef CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS
         stat.which = CYGNUM_SERIAL_STATUS_FRAMEERR;
         (chan->callbacks->indicate_status)(chan, &stat );
 #endif
     }
     if (_ssr & CYGARC_REG_SCSSR2_PER) {
-        _ssr2 &= ~CYGARC_REG_SCSSR2_PER;
+        // _ssr2 &= ~CYGARC_REG_SCSSR2_PER; // PER is read-only
 #ifdef CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS
         stat.which = CYGNUM_SERIAL_STATUS_PARITYERR;
         (chan->callbacks->indicate_status)(chan, &stat );
@@ -850,6 +853,10 @@ sh3_scif_er_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
 #endif
     }
     HAL_WRITE_UINT16(sh_chan->ctrl_base+SCIF_SCSSR, _ssr2);
+
+    HAL_READ_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
+    _scr |= CYGARC_REG_SCSCR2_RIE;       // unmask rx interrupts
+    HAL_WRITE_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
 }
 
 #endif // ifdef CYGDAT_IO_SERIAL_SH_SCIF_INL

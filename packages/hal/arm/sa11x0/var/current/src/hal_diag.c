@@ -177,9 +177,13 @@ cyg_hal_plf_serial_getc(void* __ch_data)
     return ch;
 }
 
-static channel_data_t ser_channels[2] = {
+static channel_data_t ser_channels[] = {
+#if CYGHWR_HAL_ARM_SA11X0_UART1 != 0
     { (volatile struct sa11x0_serial*)SA11X0_UART1_BASE, 1000, CYGNUM_HAL_INTERRUPT_UART1 },
-    { (volatile struct sa11x0_serial*)SA11X0_UART3_BASE, 1000, CYGNUM_HAL_INTERRUPT_UART3 }
+#endif
+#if CYGHWR_HAL_ARM_SA11X0_UART3 != 0
+    { (volatile struct sa11x0_serial*)SA11X0_UART3_BASE, 1000, CYGNUM_HAL_INTERRUPT_UART3 },
+#endif
 };
 
 static void
@@ -311,40 +315,23 @@ cyg_hal_plf_serial_init(void)
 {
     hal_virtual_comm_table_t* comm;
     int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+    int i;
 
     // Init channels
-    init_channel(&ser_channels[0]);
-#if (CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS == 2)
-    init_channel(&ser_channels[1]);
-#endif
-
-    // Setup procs in the vector table
-
-    // Set channel 0
-    CYGACC_CALL_IF_SET_CONSOLE_COMM(0);
-    comm = CYGACC_CALL_IF_CONSOLE_PROCS();
-    CYGACC_COMM_IF_CH_DATA_SET(*comm, &ser_channels[0]);
-    CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_plf_serial_write);
-    CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_plf_serial_read);
-    CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_plf_serial_putc);
-    CYGACC_COMM_IF_GETC_SET(*comm, cyg_hal_plf_serial_getc);
-    CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_plf_serial_control);
-    CYGACC_COMM_IF_DBG_ISR_SET(*comm, cyg_hal_plf_serial_isr);
-    CYGACC_COMM_IF_GETC_TIMEOUT_SET(*comm, cyg_hal_plf_serial_getc_timeout);
-
-#if (CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS == 2)
-    // Set channel 1
-    CYGACC_CALL_IF_SET_CONSOLE_COMM(1);
-    comm = CYGACC_CALL_IF_CONSOLE_PROCS();
-    CYGACC_COMM_IF_CH_DATA_SET(*comm, &ser_channels[1]);
-    CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_plf_serial_write);
-    CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_plf_serial_read);
-    CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_plf_serial_putc);
-    CYGACC_COMM_IF_GETC_SET(*comm, cyg_hal_plf_serial_getc);
-    CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_plf_serial_control);
-    CYGACC_COMM_IF_DBG_ISR_SET(*comm, cyg_hal_plf_serial_isr);
-    CYGACC_COMM_IF_GETC_TIMEOUT_SET(*comm, cyg_hal_plf_serial_getc_timeout);
-#endif
+#define NUMOF(x) (sizeof(x)/sizeof(x[0]))
+    for (i = 0;  i < NUMOF(ser_channels);  i++) {
+        init_channel(&ser_channels[i]);
+        CYGACC_CALL_IF_SET_CONSOLE_COMM(i);
+        comm = CYGACC_CALL_IF_CONSOLE_PROCS();
+        CYGACC_COMM_IF_CH_DATA_SET(*comm, &ser_channels[i]);
+        CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_plf_serial_write);
+        CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_plf_serial_read);
+        CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_plf_serial_putc);
+        CYGACC_COMM_IF_GETC_SET(*comm, cyg_hal_plf_serial_getc);
+        CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_plf_serial_control);
+        CYGACC_COMM_IF_DBG_ISR_SET(*comm, cyg_hal_plf_serial_isr);
+        CYGACC_COMM_IF_GETC_TIMEOUT_SET(*comm, cyg_hal_plf_serial_getc_timeout);
+    }
      
     // Restore original console
     CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);

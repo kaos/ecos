@@ -1,3 +1,13 @@
+2001-02-23  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/flash_mbx.cdl: Use new generic AMD driver.
+	* src/flash.h: [deleted]
+	* src/flash_erase_block.c: [deleted]
+	* src/flash_program_buf.c: [deleted]
+	* src/flash_query.c: [deleted]
+	* src/mbx_flash.c: [deleted]
+	* src/powerpc_mbx_flash.c: [added]
+
 2000-12-05  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/mbx_flash.c (flash_code_overlaps): Define stext/etext

@@ -98,6 +98,7 @@
 #define MMU_Control_S  0x100    // Enable system protection
 #define MMU_Control_R  0x200    // Enable ROM protection
 #define MMU_Control_I  0x1000   // Enable Instruction cache
+#define MMU_Control_X  0x2000   // Set interrupt vectors at 0xFFFF0000
 #define MMU_Control_Init (MMU_Control_P|MMU_Control_D|MMU_Control_L)
 
 //-----------------------------------------------------------------------------

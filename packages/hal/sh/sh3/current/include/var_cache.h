@@ -54,6 +54,8 @@
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/hal_io.h>             // HAL_READ/WRITE macros
 
+#include <cyg/hal/plf_cache.h>          // Platform cache definitions
+
 #include CYGBLD_HAL_CPU_MODULES_H       // cache module specs
 
 #include <cyg/hal/sh_regs.h>            // CYGARC_REG_ definitions

@@ -171,7 +171,7 @@
 // When clearing the status register, always write the value:
 // CYGARC_REG_SCSSR2_CLEARMASK & ~bit
 // to prevent other bits than the one of interest to be cleared.
-#define CYGARC_REG_SCSSR1_CLEARMASK      0xf3
+#define CYGARC_REG_SCSSR1_CLEARMASK      0x00f3
 
 // Serial FIFO Control Register
 #define CYGARC_REG_SCFCR1_RTRG_MASK      0xc0   // receive fifo data trigger
@@ -251,7 +251,7 @@
 // When clearing the status register, always write the value:
 // CYGARC_REG_SCSSR2_CLEARMASK & ~bit
 // to prevent other bits than the one of interest to be cleared.
-#define CYGARC_REG_SCSSR2_CLEARMASK      0xf3
+#define CYGARC_REG_SCSSR2_CLEARMASK      0x00f3
 
 // Serial FIFO Control Register
 #define CYGARC_REG_SCFCR2_RTRG_MASK      0xc0   // receive fifo data trigger

@@ -24,7 +24,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -491,7 +491,7 @@ static void ResetTxRing(struct i82559* p_i82559);
 static void program_eeprom(cyg_uint32 , cyg_uint32 , cyg_uint8 * );
 #endif
 #ifdef CYGPKG_NET
-static int eth_set_promiscuous_mode(struct i82559* p_i82559);
+static int i82559_configure(struct i82559* p_i82559, int promisc, int oversized);
 #endif
 
 // debugging/logging only:
@@ -1031,14 +1031,11 @@ static void i82559_start( struct eth_drv_sc *sc,
     p_i82559->active = 1;
 
 #ifdef CYGPKG_NET
-    if (( 0
-#ifdef ETH_DRV_FLAGS_PROMISC_MODE
-         != (flags & ETH_DRV_FLAGS_PROMISC_MODE)
-#endif
-        ) || (ifp->if_flags & IFF_PROMISC)
-        ) {
-        eth_set_promiscuous_mode(p_i82559);
-    }
+    /* Enable promiscuous mode if requested, reception of oversized frames always.
+     * The latter is needed for VLAN support and shouldn't hurt even if we're not
+     * using VLANs.
+     */
+    i82559_configure(p_i82559, !!(ifp->if_flags & IFF_PROMISC), 1);
 #endif
 #ifdef DEBUG
     {
@@ -2115,20 +2112,20 @@ pci_init_find_82559s( void )
 #ifdef CYGPKG_NET
 // ------------------------------------------------------------------------
 //
-//  Function : eth_set_promiscuous_mode
+//  Function : i82559_configure
 //
 //  Return : 0 = It worked.
 //           non0 = It failed.
 // ------------------------------------------------------------------------
 
-static int eth_set_promiscuous_mode(struct i82559* p_i82559)
+static int i82559_configure(struct i82559* p_i82559, int promisc, int oversized)
 {
     cyg_uint32  ioaddr;
     volatile CONFIG_CMD_STRUCT *ccs;
 
     IF_BAD_82559( p_i82559 ) {
 #ifdef DEBUG
-        os_printf( "eth_set_promiscuos_mode: Bad device pointer %x\n",
+        os_printf( "i82559_configure: Bad device pointer %x\n",
                    p_i82559 );
 #endif
         return -1;
@@ -2166,9 +2163,9 @@ static int eth_set_promiscuous_mode(struct i82559* p_i82559)
     ccs->config_bytes[3]=0x0;
     ccs->config_bytes[4]=0x0;
     ccs->config_bytes[5]=0x0;
-    ccs->config_bytes[6]=0xb2; // (promisc ? 0x80 : 0) | 0x32 for small stats,
-    ccs->config_bytes[7]=0x0;  // \      ditto         | 0x12 for stats with PAUSE stats
-    ccs->config_bytes[8]=0x0;  //  \     ditto         | 0x16 for PAUSE + TCO stats
+    ccs->config_bytes[6]=0x32 | (promisc ? 0x80 : 0); //   | 0x32 for small stats,
+    ccs->config_bytes[7]=0x0;                         //\  | 0x12 for stats with PAUSE stats
+    ccs->config_bytes[8]=0x0;                         // \ | 0x16 for PAUSE + TCO stats
     ccs->config_bytes[9]=0x0;
     ccs->config_bytes[10]=0x28;
     ccs->config_bytes[11]=0x0;
@@ -2176,11 +2173,11 @@ static int eth_set_promiscuous_mode(struct i82559* p_i82559)
     ccs->config_bytes[13]=0x0;          // arp
     ccs->config_bytes[14]=0x0;          // arp
     
-    ccs->config_bytes[15]=0x81;         // promiscuous mode set
-                                        // \ or 0x80 for normal mode.
+    ccs->config_bytes[15]=0x80 | (promisc ? 1 : 0); // 0x81: promiscuous mode set
+                                                    // 0x80: normal mode
     ccs->config_bytes[16]=0x0;
     ccs->config_bytes[17]=0x40;
-    ccs->config_bytes[18]=0x72;         // Keep the Padding Enable bit
+    ccs->config_bytes[18]=0x72 | (oversized ? 8 : 0); // Keep the Padding Enable bit
     
     // wait for SCB command complete
     wait_for_cmd_done(ioaddr);   

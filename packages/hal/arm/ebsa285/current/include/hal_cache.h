@@ -53,6 +53,19 @@
 //#include <cyg/hal/hal_mmu.h>
 
 //-----------------------------------------------------------------------------
+// FIXME: This definition forces the IO flash driver to use a
+// known-good procedure for fiddling flash before calling flash device
+// driver functions. The procedure breaks on other platform/driver
+// combinations though so is depricated. Hence this definition.
+//
+// If you work on this target, please try to remove this definition
+// and verify that the flash driver still works (both from RAM and
+// flash). If it does, remove the definition and this comment for good
+// [and the old macro definition if this happens to be the last client
+// of that code].
+#define HAL_FLASH_CACHES_OLD_MACROS
+
+//-----------------------------------------------------------------------------
 // Cache dimensions
 
 #define HAL_DCACHE_SIZE                 0x4000 // Size of data cache in bytes

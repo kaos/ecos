@@ -1,3 +1,41 @@
+2001-02-23  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/lib/tftp_server.c (STACK_SIZE): Align
+
+2001-02-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/net.cdl: Avoid puts to the CDL header when a CDL
+	define will do.
+	Rename CYGPKG_NET_BRIDGE_CODE -> CYGPKG_NET_BRIDGE
+	Rename CYGPKG_NET_NBRIDGE -> CYGNUM_NET_BRIDGES
+	Rename CYGPKG_NET_BRIDGE_HANDLER -> CYGINT_NET_BRIDGE_HANDLER
+	Make if_bridge.c compilation conditional on CYGPKG_NET_BRIDGE
+
+	* src/sys/net/if_bridge.c: Reflect above renames.
+
+2001-02-20  Hugo Tyson  <hmt@redhat.com>
+2001-02-15  Martin Buck  <martin.buck@ascom.ch>
+
+	* cdl/net.cdl: Split up CYGPKG_NET_NBRIDGE into 2 parts:
+	CYGPKG_NET_NBRIDGE and CYGPKG_NET_BRIDGE_HANDLER. If
+	CYGPKG_NET_BRIDGE_HANDLER is nonzero, calls to an Ethernet
+	bridge are inserted into the stack's data path. If
+	CYGPKG_NET_NBRIDGE is nonzero, the standard OpenBSD bridge
+	code is added. This setup allows you to implement your own
+	bridge as a separate package which then implements
+	CYGPKG_NET_BRIDGE_HANDLER so it gets called by the stack.
+	NBRIDGE now is the same as CYGPKG_NET_BRIDGE_HANDLER instead
+	of CYGPKG_NET_NBRIDGE. This means it's nonzero if the bridge
+	is wanted, but it no longer contains the number of bridge
+	buffers requested. This shouldn't be a problem, because the
+	only place where the actual number of buffers is required is
+	in if_bridge.c, which now uses CYGPKG_NET_NBRIDGE instead
+	of NBRIDGE.
+
+	* src/sys/net/if_bridge.c: Use CYGPKG_NET_NBRIDGE instead of
+	NBRIDGE, because the latter one now only means that there is
+	a bridge, not that we should implement it.
+
 2001-01-07  Gary Thomas  <gthomas@redhat.com>
 
 	* src/ecos/support.c: 

@@ -768,6 +768,51 @@ FUNC_START(__gccmain)
 FUNC_END(__gccmain)
 
 ##-----------------------------------------------------------------------------
+## hal_zero_bss
+## Zero bss. Done in assembler to be optimal rather than using memset,
+## which would risk zeroing bss while using it.
+        
+FUNC_START(hal_zero_bss)
+#ifdef CYGHWR_HAL_MIPS_64BIT
+#define STORE_OP        sd
+#define BLOCK_SHIFT     6
+#else
+#define STORE_OP        sw
+#define BLOCK_SHIFT     5
+#endif
+        la      a0,__bss_start          # start of bss
+        la      a1,__bss_end            # end of bss
+        andi    a2,a0,mips_regsize-1    # is bss aligned?
+        bne     a2,zero,1f              # skip word copy
+        nop
+        
+        # loop with 8 stores per loop
+        subu            a3,a1,a0                # get length
+        srl             a3,a3,BLOCK_SHIFT       # get number of blocks
+        sll             a3,a3,BLOCK_SHIFT       # get length of blocks
+        addu            a3,a0,a3                # get end addr of blocks
+2:      STORE_OP        zero,(mips_regsize*0)(a0)
+        STORE_OP        zero,(mips_regsize*1)(a0)
+        STORE_OP        zero,(mips_regsize*2)(a0)
+        STORE_OP        zero,(mips_regsize*3)(a0)
+        STORE_OP        zero,(mips_regsize*4)(a0)
+        STORE_OP        zero,(mips_regsize*5)(a0)
+        STORE_OP        zero,(mips_regsize*6)(a0)
+        STORE_OP        zero,(mips_regsize*7)(a0)
+        addu            a0,a0,mips_regsize*8    # next addr
+        bne             a3,a0,2b                # to next store
+        nop
+
+        # finish 1 byte at a time
+1:      sb      zero,0(a0)              # zero memory
+        addiu   a0,a0,1                 # next addr
+        bne     a0,a1,1b                # to next store
+        nop
+        jr      ra
+FUNC_END(hal_zero_bss)
+
+        
+##-----------------------------------------------------------------------------
 ## VSR springboard for break instruction exceptions
 ## Both GCC and GDB use break instructions. GCC for division-by-zero
 ## notification and GDB for program-flow breakpoints. This springboard

@@ -1,3 +1,7 @@
+2001-02-26  Julian Smart <julians@redhat.com>
+
+	* assert.cxx: Cygwin 00r1 needs to include <unistd.h> for _exit.
+
 2000-09-15  Jesper Skov  <jskov@redhat.com>
 
 	* assert.cxx: Include unistd.h on unix.

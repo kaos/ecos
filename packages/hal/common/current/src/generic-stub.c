@@ -1278,9 +1278,13 @@ __process_packet (char *packet)
       hal_flush_output();
 #endif
       __process_exit_vec ();
-      return 1;
+      return -1;
 
     case 'r':           /* Reset */
+#ifdef __ECOS__
+      __putpacket (remcomOutBuffer);
+      hal_flush_output();
+#endif
       __reset ();
       break;
 

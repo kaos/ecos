@@ -17,12 +17,13 @@ cdl_configuration eCos {
     package -hardware CYGPKG_HAL_QUICC current ;
     package -hardware CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC current ;
     package -hardware CYGPKG_DEVS_ETH_POWERPC_QUICC current ;
+    package -hardware CYGPKG_DEVS_FLASH_MBX current ;
+    package -hardware CYGPKG_DEVS_FLASH_AMD_AM29XXXXX current ;
     package -template CYGPKG_HAL current ;
     package -template CYGPKG_INFRA current ;
     package -template CYGPKG_REDBOOT current ;
     package CYGPKG_IO_ETH_DRIVERS current ;
     package CYGPKG_IO_FLASH current ;
-    package CYGPKG_DEVS_FLASH_MBX current ;
 };
 
 cdl_option CYGBLD_BUILD_GDB_STUBS {

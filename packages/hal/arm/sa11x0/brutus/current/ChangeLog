@@ -1,3 +1,14 @@
+2001-02-23  Gary Thomas  <gthomas@redhat.com>
+
+	* misc/redboot_ROM.ecm: Renamed from redboot_ROM.cfg
+	
+	* misc/redboot_RAM.ecm: Renamed from redboot_RAM.cfg
+
+2001-02-20  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_arm_sa11x0_brutus.cdl: New CDL describing serial
+	ports - CYGHWR_HAL_ARM_SA11X0_UART1,3.
+
 2001-02-08  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_arm_sa11x0_brutus.cdl: Respect channel configuration

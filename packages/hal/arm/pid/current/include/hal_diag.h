@@ -82,5 +82,11 @@ externC void hal_diag_read_char(char *c);
 externC void hal_diag_led(int n);
 
 /*---------------------------------------------------------------------------*/
+// delay
+
+extern void hal_delay_us(cyg_int32 usecs);
+#define HAL_DELAY_US(n) hal_delay_us(n);
+
+/*---------------------------------------------------------------------------*/
 /* end of hal_diag.h                                                         */
 #endif /* CYGONCE_HAL_DIAG_H */

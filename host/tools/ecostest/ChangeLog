@@ -1,3 +1,8 @@
+2001-02-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* common/eCosTestClient.cpp (LocateExecutables): Add /sbin and
+	/usr/sbin to path before trying to run fuser.
+
 2000-09-28  Jesper Skov  <jskov@redhat.com>
 
 	* common/eCosTestSerialFilter.cpp (CMD_TestBinary): Reset counter

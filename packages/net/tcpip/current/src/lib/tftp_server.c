@@ -86,7 +86,7 @@ static struct info tftp_server_instrument = {
 
 #endif // CYGOPT_NET_TFTP_SERVER_INSTRUMENT
 
-#define STACK_SIZE (CYGNUM_HAL_STACK_SIZE_TYPICAL+(3*(SEGSIZE+sizeof(struct tftphdr))))
+#define STACK_SIZE (((CYGNUM_HAL_STACK_SIZE_TYPICAL+(3*(SEGSIZE+sizeof(struct tftphdr)))) + CYGARC_ALIGNMENT-1) & ~(CYGARC_ALIGNMENT-1))
 static char *TFTP_tag = "TFTPD";
 struct tftp_server {
     char                 *tag;

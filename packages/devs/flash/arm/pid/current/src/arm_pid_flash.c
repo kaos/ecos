@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//      flash_query.c
+//      arm_pid_flash.c
 //
-//      Flash programming - query device
+//      Flash programming for Atmel device on ARM PID board
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -31,9 +31,9 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    gthomas
-// Contributors: gthomas
-// Date:         2000-10-20
+// Author(s):    jskov
+// Contributors: jskov
+// Date:         2001-02-21
 // Purpose:      
 // Description:  
 //              
@@ -41,47 +41,16 @@
 //
 //==========================================================================
 
-#include "flash.h"
 
-#include <pkgconf/hal.h>
-#include <cyg/hal/hal_arch.h>
-#include <cyg/hal/hal_cache.h>
-#include CYGHWR_MEMORY_LAYOUT_H
+// There's a single AT29C040 on the PID board.
 
-//
-// CAUTION!  This code must be copied to RAM before execution.  Therefore,
-// it must not contain any code which might be position dependent!
-//
+#define CYGPKG_DEVS_FLASH_ATMEL_AT29C040A
+#define CYGNUM_FLASH_INTERLEAVE	(1)
+#define CYGNUM_FLASH_SERIES	(1)
+#define CYGNUM_FLASH_BASE 	(0x4000000u)
 
-int
-flash_query(unsigned char *data)
-{
-    volatile unsigned char *ROM;
-    int cnt;
-    int cache_on;
+#include "cyg/io/flash_at29cxxxx.inl"
 
-    HAL_DCACHE_IS_ENABLED(cache_on);
-    if (cache_on) {
-        HAL_DCACHE_SYNC();
-        HAL_DCACHE_DISABLE();
-    }
 
-    ROM = (volatile unsigned char *)0xFE000000;
-
-    ROM[FLASH_Setup_Addr1] = FLASH_Setup_Code1;
-    ROM[FLASH_Setup_Addr2] = FLASH_Setup_Code2;
-    ROM[FLASH_Setup_Addr1] = FLASH_Read_ID;
-
-    // Manufacturers' code
-    *data++ = ROM[0x00];
-    // Part number
-    *data++ = ROM[0x01];
-
-    ROM[0] = FLASH_Reset;
-
-    if (cache_on) {
-        HAL_DCACHE_ENABLE();
-    }
-
-    return 0;
-}
+// ------------------------------------------------------------------------
+// EOF arm_pid_flash.c

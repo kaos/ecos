@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -49,8 +49,8 @@
 // Buffer used by redboot_getc
 getc_info_t getc_info;
 
-static char usage[] = "[-r] [-v] [-h <host>] [-m {TFTP | xyzMODEM}]\r\n"
-"               [-b <base_address>] <file_name>";
+static char usage[] = "[-r] [-v] [-h <host>] [-m {TFTP | xyzMODEM}]\n"
+                      "        [-b <base_address>] <file_name>";
 
 // Exported CLI function
 RedBoot_cmd("load", 

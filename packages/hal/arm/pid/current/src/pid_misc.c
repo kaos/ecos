@@ -58,6 +58,20 @@
 /*------------------------------------------------------------------------*/
 
 // Timer registers
+#define CYG_DEVICE_TIMER1_BASE   0x0A800020
+#define CYG_DEVICE_TIMER1_LOAD \
+    ((volatile cyg_uint32 *) (CYG_DEVICE_TIMER1_BASE + 0x00))
+    // Load value, read/write
+#define CYG_DEVICE_TIMER1_CURRENT \
+    ((volatile cyg_uint32 *) (CYG_DEVICE_TIMER1_BASE + 0x04))
+    // Current value, read
+#define CYG_DEVICE_TIMER1_CONTROL \
+    ((volatile cyg_uint32 *) (CYG_DEVICE_TIMER1_BASE + 0x08))
+    // Control register, read/write
+#define CYG_DEVICE_TIMER1_CLEAR \
+    ((volatile cyg_uint32 *) (CYG_DEVICE_TIMER1_BASE + 0x0C))
+    // Clears interrrupt, write only
+
 #define CYG_DEVICE_TIMER_BASE   0x0A800020
 #define CYG_DEVICE_TIMER_LOAD \
     ((volatile cyg_uint32 *) (CYG_DEVICE_TIMER_BASE + 0x00))
@@ -126,6 +140,31 @@ void hal_clock_read(cyg_uint32 *pvalue)
     *pvalue = _period - (value & 0xFFFF);   // Note: counter is only 16 bits
                                             //       and decreases
 }
+
+// -------------------------------------------------------------------------
+//
+// Delay for some number of micro-seconds
+//
+void hal_delay_us(cyg_int32 usecs)
+{
+    cyg_uint32 value;
+    cyg_uint64 ticks = ((usecs*CYGNUM_HAL_RTC_PERIOD*CYGNUM_HAL_RTC_DENOMINATOR)/1000000);
+
+    HAL_WRITE_UINT32(CYG_DEVICE_TIMER1_CONTROL, CTL_DISABLE);    // Turn off
+    HAL_WRITE_UINT32(CYG_DEVICE_TIMER1_LOAD, ticks);
+    HAL_WRITE_UINT32(CYG_DEVICE_TIMER1_CONTROL,
+                     CTL_ENABLE | CTL_FREERUN | CTL_SCALE_16);
+
+    // Wait for timer to underflow
+    do {
+        HAL_READ_UINT32(CYG_DEVICE_TIMER_CURRENT, value);
+        value &= 0xFFFF;
+    } while (value < 0x7fff);
+
+    HAL_WRITE_UINT32(CYG_DEVICE_TIMER1_CONTROL, CTL_DISABLE);    // Turn off
+}
+
+// -------------------------------------------------------------------------
 
 void hal_hardware_init(void)
 {

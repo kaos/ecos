@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -178,12 +178,13 @@ _vprintf(void (*putc)(char c), char *fmt0, va_list ap)
                 res++;
             }
             while (length-- > 0) {
-                (*putc)(c = *cp++);
-                res++;
+                c = *cp++;
                 if (c == '\n') {
                     (*putc)('\r');
                     res++;
                 }
+                (*putc)(c);
+                res++;
             }
             if (pad_on_right) {
                 while (pad-- > 0) {
@@ -192,12 +193,12 @@ _vprintf(void (*putc)(char c), char *fmt0, va_list ap)
                 }
             }
         } else {
-            (*putc)(c);
-            res++;
             if (c == '\n') {
                 (*putc)('\r');
                 res++;
             }
+            (*putc)(c);
+            res++;
         }
     }
     return (res);

@@ -1,3 +1,12 @@
+2001-02-26  Jesper Skov  <jskov@redhat.com>
+
+	* include/mod_regs_ser.h: Add a couple of zeroes to
+	SCIF clear masks (for looks - no semantic change).
+
+2001-02-23  Jesper Skov  <jskov@redhat.com>
+
+	* include/var_cache.h: Include plf_cache.h
+
 2001-02-02  Jesper Skov  <jskov@redhat.com>
 
 	* src/sh3_sci.c: Baud rate is always specified, remove fallback

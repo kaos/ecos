@@ -1,3 +1,23 @@
+2001-02-24  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_arm_pid.cdl: Add CYGSEM_HAL_ARM_PID_ANGEL_BOOT so
+	startup code only includes this cruft when necessary.
+
+2001-02-22  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_diag.h: Added delay function [yes, this is a bad
+	location]. It uses Timer1 for delays.
+
+	* cdl/hal_arm_pid.cdl: Added RedBoot options.
+
+	* src/pid_misc.c (hal_delay_us): Added.
+
+2001-02-20  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_pid.cdl: Also enable -mthumb-interwork when building
+	ROM monitors (or calls from Thumb code would die on return).
+	Reworked a bit.
+
 2001-02-13  Gary Thomas  <gthomas@redhat.com>
 
 	* src/pid_misc.c (hal_IRQ_handler): 

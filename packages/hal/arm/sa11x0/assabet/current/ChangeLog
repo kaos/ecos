@@ -1,3 +1,45 @@
+2001-02-24  Gary Thomas  <gthomas@redhat.com>
+
+	* src/lcd_support.c: Make check for sscanf() consistent.
+
+	* cdl/hal_arm_sa11x0_assabet.cdl: 
+	Define machine type for Linux bootstrap.
+
+	* src/redboot_linux_exec.c: 
+	Removed - now handled by SA11x0 variant code.
+
+2001-02-23  Gary Thomas  <gthomas@redhat.com>
+
+	* misc/redboot_RAM.ecm: Renamed from redboot_RAM.cfg
+
+	* misc/redboot_ROM.ecm: Renamed from redboot_ROM.cfg
+
+2001-02-22  Gary Thomas  <gthomas@redhat.com>
+
+	* src/redboot_linux_exec.c: Add new tagged parameter support for
+	latest Linux kernel.
+
+2001-02-20  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_arm_sa11x0_assabet.cdl: Change Linux boot support.
+
+	* src/redboot_linux_exec.c: New file - replaces redboot_cmds.c
+	Supports booting Linux kernel, including image relocation and
+	passing additional info to kernel such as ramdisk size/location.
+	
+	* src/redboot_cmds.c: Depreciated.
+
+2001-02-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/lcd_support.c: Warning cleanup.
+	Access frame buffer through volatile correctly.
+	Use isoinfra to identify presence of sscanf
+
+2001-02-20  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_arm_sa11x0_assabet.cdl: Use new CDL to control
+	available serial ports - CYGHWR_HAL_ARM_SA11X0_UART1.
+
 2001-02-08  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_arm_sa11x0_assabet.cdl: Respect channel configuration

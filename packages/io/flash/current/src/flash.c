@@ -58,7 +58,8 @@
 #undef RAM_FLASH_DEV_DEBUG
 #if !defined(CYG_HAL_STARTUP_RAM) && defined(RAM_FLASH_DEV_DEBUG)
 # warning "Can only enable the flash debugging when configured for RAM startup"
-# undef RAM_FLASH_DEV_DEBUG
+# undef  CYGHWR_IO_FLASH_DEVICE_IN_RAM
+# define CYGHWR_IO_FLASH_DEVICE_IN_RAM 1
 #endif
 
 struct flash_info flash_info;
@@ -79,27 +80,44 @@ flash_init(void *work_space, int work_space_size)
     return FLASH_ERR_OK;
 }
 
+#ifdef CYGHWR_IO_FLASH_DEVICE_IN_RAM
+// Use this function to make function pointers anonymous - forcing the
+// compiler to use jumps instead of branches when calling driver
+// services.
+static void* __anonymizer(void* p)
+{
+  return p;
+}
+#endif
+
 // FIXME: Want to change all drivers to use this function. But it may
 // make sense to wait till device structure pointer arguments get
 // added as well.
 void
 flash_dev_query(void* data)
 {
-    extern char flash_query[], flash_query_end[];
     typedef void code_fun(void*);
-    int code_len;
     code_fun *_flash_query;
     int d_cache, i_cache;
 
-    // Query the device driver - copy 'query' code to RAM for execution
-    code_len = (unsigned long)&flash_query_end - (unsigned long)&flash_query;
-    _flash_query = (code_fun *)flash_info.work_space;
-    memcpy(_flash_query, &flash_query, code_len);
+#ifdef CYGHWR_IO_FLASH_DEVICE_IN_RAM
+    {
+        externC code_fun flash_query;
+        _flash_query = (code_fun*) __anonymizer(&flash_query);
+    }
+#else
+    {
+        extern char flash_query[], flash_query_end[];
+        int code_len;
+
+        // Query the device driver - copy 'query' code to RAM for execution
+        code_len = (unsigned long)&flash_query_end - (unsigned long)&flash_query;
+        _flash_query = (code_fun *)flash_info.work_space;
+        memcpy(_flash_query, &flash_query, code_len);
+    }
+#endif
 
     HAL_FLASH_CACHES_OFF(d_cache, i_cache);
-#ifdef RAM_FLASH_DEV_DEBUG
-    _flash_query = &flash_query;
-#endif
     (*_flash_query)(data);
     HAL_FLASH_CACHES_ON(d_cache, i_cache);
 }
@@ -144,8 +162,6 @@ flash_erase(void *addr, int len, void **err_addr)
 {
     unsigned short *block, *end_addr;
     int stat = 0;
-    extern char flash_erase_block[], flash_erase_block_end[];
-    int code_len;
     typedef int code_fun(unsigned short *, unsigned int);
     code_fun *_flash_erase_block;
     int d_cache, i_cache;
@@ -154,21 +170,30 @@ flash_erase(void *addr, int len, void **err_addr)
         return FLASH_ERR_NOT_INIT;
     }
 
-    // Copy 'erase' code to RAM for execution
-    code_len = (unsigned long)&flash_erase_block_end - (unsigned long)&flash_erase_block;
-    _flash_erase_block = (code_fun *)flash_info.work_space;
-    memcpy(_flash_erase_block, &flash_erase_block, code_len);
+#ifdef CYGHWR_IO_FLASH_DEVICE_IN_RAM
+    {
+        externC code_fun flash_erase_block;
+        _flash_erase_block = (code_fun*) __anonymizer(&flash_erase_block);
+    }
+#else
+    {
+        extern char flash_erase_block[], flash_erase_block_end[];
+        int code_len;
 
-    HAL_FLASH_CACHES_OFF(d_cache, i_cache);
+        // Copy 'erase' code to RAM for execution
+        code_len = (unsigned long)&flash_erase_block_end - (unsigned long)&flash_erase_block;
+        _flash_erase_block = (code_fun *)flash_info.work_space;
+        memcpy(_flash_erase_block, &flash_erase_block, code_len);
+    }
+#endif
+
     block = (unsigned short *)((unsigned long)addr & flash_info.block_mask);
     end_addr = (unsigned short *)((unsigned long)addr+len);
 
     printf("... Erase from %p-%p: ", (void*)block, (void*)end_addr);
 
+    HAL_FLASH_CACHES_OFF(d_cache, i_cache);
     while (block < end_addr) {
-#ifdef RAM_FLASH_DEV_DEBUG
-        _flash_erase_block = &flash_erase_block;
-#endif
         // Supply the blocksize for a gross check for erase success
         stat = (*_flash_erase_block)(block, flash_info.block_size);
         stat = flash_hwr_map_error(stat);
@@ -188,8 +213,7 @@ int
 flash_program(void *_addr, void *_data, int len, void **err_addr)
 {
     int stat = 0;
-    int code_len, size;
-    extern char flash_program_buf[], flash_program_buf_end[];
+    int size;
     typedef int code_fun(unsigned short *, unsigned short *, int);
     code_fun *_flash_program_buf;
     unsigned short *addr = (unsigned short *)_addr;
@@ -200,20 +224,30 @@ flash_program(void *_addr, void *_data, int len, void **err_addr)
         return FLASH_ERR_NOT_INIT;
     }
 
-    // Copy 'program' code to RAM for execution
-    code_len = (unsigned long)&flash_program_buf_end - (unsigned long)&flash_program_buf;
-    _flash_program_buf = (code_fun *)flash_info.work_space;
-    memcpy(_flash_program_buf, &flash_program_buf, code_len);
+#ifdef CYGHWR_IO_FLASH_DEVICE_IN_RAM
+    {
+        externC code_fun flash_program_buf;
+        _flash_program_buf = (code_fun*) __anonymizer(&flash_program_buf);
+    }
+#else
+    {
+        int code_len;
+        extern char flash_program_buf[], flash_program_buf_end[];
+        // Copy 'program' code to RAM for execution
+        code_len = (unsigned long)&flash_program_buf_end - (unsigned long)&flash_program_buf;
+        _flash_program_buf = (code_fun *)flash_info.work_space;
+        memcpy(_flash_program_buf, &flash_program_buf, code_len);
+    }
+#endif
+
+    printf("... Program from %p-%p at %p: ", (void*)data, 
+           (void*)(((unsigned long)data)+len), (void*)addr);
+
     HAL_FLASH_CACHES_OFF(d_cache, i_cache);
-
-    printf("... Program from %p-%p at %p: ", (void*)data, (void*)(((unsigned long)data)+len), (void*)addr);
-
     while (len > 0) {
         size = len;
         if (size > flash_info.block_size) size = flash_info.block_size;
-#ifdef RAM_FLASH_DEV_DEBUG
-        _flash_program_buf = &flash_program_buf;
-#endif
+
         stat = (*_flash_program_buf)(addr, data, size);
         stat = flash_hwr_map_error(stat);
         if (stat) {
@@ -237,8 +271,6 @@ flash_lock(void *addr, int len, void **err_addr)
 {
     unsigned short *block, *end_addr;
     int stat = 0;
-    extern char flash_lock_block[], flash_lock_block_end[];
-    int code_len;
     typedef int code_fun(unsigned short *);
     code_fun *_flash_lock_block;
     int d_cache, i_cache;
@@ -247,21 +279,29 @@ flash_lock(void *addr, int len, void **err_addr)
         return FLASH_ERR_NOT_INIT;
     }
 
-    // Copy 'lock' code to RAM for execution
-    code_len = (unsigned long)&flash_lock_block_end - (unsigned long)&flash_lock_block;
-    _flash_lock_block = (code_fun *)flash_info.work_space;
-    memcpy(_flash_lock_block, &flash_lock_block, code_len);
-    HAL_FLASH_CACHES_OFF(d_cache, i_cache);
+#ifdef CYGHWR_IO_FLASH_DEVICE_IN_RAM
+    {
+        externC code_fun flash_lock_block;
+        _flash_lock_block = (code_fun*) __anonymizer(&flash_lock_block);
+    }
+#else
+    {
+        extern char flash_lock_block[], flash_lock_block_end[];
+        int code_len;
+        // Copy 'lock' code to RAM for execution
+        code_len = (unsigned long)&flash_lock_block_end - (unsigned long)&flash_lock_block;
+        _flash_lock_block = (code_fun *)flash_info.work_space;
+        memcpy(_flash_lock_block, &flash_lock_block, code_len);
+    }
+#endif
 
     block = (unsigned short *)((unsigned long)addr & flash_info.block_mask);
     end_addr = (unsigned short *)((unsigned long)addr+len);
 
     printf("... Lock from %p-%p: ", block, end_addr);
 
+    HAL_FLASH_CACHES_OFF(d_cache, i_cache);
     while (block < end_addr) {
-#ifdef RAM_FLASH_DEV_DEBUG
-        _flash_lock_block = &flash_lock_block;
-#endif
         stat = (*_flash_lock_block)(block);
         stat = flash_hwr_map_error(stat);
         if (stat) {
@@ -281,8 +321,6 @@ flash_unlock(void *addr, int len, void **err_addr)
 {
     unsigned short *block, *end_addr;
     int stat = 0;
-    extern char flash_unlock_block[], flash_unlock_block_end[];
-    int code_len;
     typedef int code_fun(unsigned short *, int, int);
     code_fun *_flash_unlock_block;
     int d_cache, i_cache;
@@ -291,21 +329,29 @@ flash_unlock(void *addr, int len, void **err_addr)
         return FLASH_ERR_NOT_INIT;
     }
 
-    // Copy 'lock' code to RAM for execution
-    code_len = (unsigned long)&flash_unlock_block_end - (unsigned long)&flash_unlock_block;
-    _flash_unlock_block = (code_fun *)flash_info.work_space;
-    memcpy(_flash_unlock_block, &flash_unlock_block, code_len);
-    HAL_FLASH_CACHES_OFF(d_cache, i_cache);
+#ifdef CYGHWR_IO_FLASH_DEVICE_IN_RAM
+    {
+        externC code_fun flash_unlock_block;
+        _flash_unlock_block = (code_fun*) __anonymizer(&flash_unlock_block);
+    }
+#else
+    {
+        extern char flash_unlock_block[], flash_unlock_block_end[];
+        int code_len;
+        // Copy 'lock' code to RAM for execution
+        code_len = (unsigned long)&flash_unlock_block_end - (unsigned long)&flash_unlock_block;
+        _flash_unlock_block = (code_fun *)flash_info.work_space;
+        memcpy(_flash_unlock_block, &flash_unlock_block, code_len);
+    }
+#endif
 
     block = (unsigned short *)((unsigned long)addr & flash_info.block_mask);
     end_addr = (unsigned short *)((unsigned long)addr+len);
 
     printf("... Unlock from %p-%p: ", block, end_addr);
 
+    HAL_FLASH_CACHES_OFF(d_cache, i_cache);
     while (block < end_addr) {
-#ifdef RAM_FLASH_DEV_DEBUG
-        _flash_unlock_block = &flash_unlock_block;
-#endif
         stat = (*_flash_unlock_block)(block, flash_info.block_size, flash_info.blocks);
         stat = flash_hwr_map_error(stat);
         if (stat) {
@@ -347,6 +393,10 @@ flash_errmsg(int err)
         return "FLASH sub-system not initialized";
     case FLASH_ERR_DRV_VERIFY:
         return "Data verify failed after operation";
+    case FLASH_ERR_DRV_TIMEOUT:
+        return "Driver timed out waiting for device";
+    case FLASH_ERR_DRV_WRONG_PART:
+        return "Driver does not support device";
     default:
         return "Unknown error";
     }

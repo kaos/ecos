@@ -1,3 +1,14 @@
+2001-02-23  Gary Thomas  <gthomas@redhat.com>
+
+	* misc/redboot_RAM.ecm: Renamed from redboot_RAM.cfg
+
+	* misc/redboot_ROM.ecm: Renamed from redboot_ROM.cfg
+
+2001-02-23  Jesper Skov  <jskov@redhat.com>
+
+	* include/plf_cache.h (HAL_FLASH_CACHES_WANT_OPTIMAL): Added.
+	Removed again.
+
 2001-02-08  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_powerpc_mbx.cdl: Respect channel configuration

@@ -61,7 +61,7 @@
 #include <cstdio>
 #include <cstdlib>
 
-#ifdef __unix__
+#if defined(__unix__) || defined(__CYGWIN32__)
 extern "C" {
 #include <unistd.h>		// Needed for _exit()
 }

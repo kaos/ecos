@@ -23,7 +23,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -57,6 +57,8 @@ cdl_package CYGPKG_HAL_ARM_SA11X0_ASSABET {
     implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
     implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_GUARANTEED
 
+    implements    CYGHWR_HAL_ARM_SA11X0_UART1
+
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_arm.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_VARIANT_H  <pkgconf/hal_arm_sa11x0.h>"
@@ -64,6 +66,7 @@ cdl_package CYGPKG_HAL_ARM_SA11X0_ASSABET {
 	puts $::cdl_header "#define HAL_PLATFORM_CPU    \"StrongARM 1110\""
         puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"Assabet development system\""
         puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
+        puts $::cdl_header "#define HAL_PLATFORM_MACHINE_TYPE  25"
         puts $::cdl_header "#define HAL_ARCH_PROGRAM_NEW_STACK assabet_program_new_stack"
     }
 
@@ -323,8 +326,6 @@ cdl_package CYGPKG_HAL_ARM_SA11X0_ASSABET {
             This option lists the target's requirements for a valid Redboot
             configuration."
 
-        compile -library=libextras.a redboot_cmds.c
-    
         cdl_option CYGBLD_BUILD_REDBOOT_BIN {
             display       "Build Redboot ROM binary image"
             active_if     CYGBLD_BUILD_REDBOOT

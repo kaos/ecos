@@ -1,3 +1,14 @@
+2001-02-26  Mark Salter  <msalter@redhat.com>
+
+	* src/generic-stub.c (__process_packet): Change 'k' packet to cause
+	return to original context. Change 'r' packet to respond with empty
+	packet before resetting board.
+
+	* src/hal_stub.c (handle_exception_exit): New function. Restores
+	original context saved when stub was entered for the first time.
+	(handle_exception_cleanup): Save original context.
+	(__install_traps): Set __process_exit_vec to handle_exception_exit.
+
 2001-02-09  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/debugging.cdl: Make CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT and 

@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -80,6 +80,7 @@ HAL_SavedRegisters *_hal_registers;
 target_register_t registers[NUMREGS];
 target_register_t alt_registers[NUMREGS] ;  // Thread or saved process state
 target_register_t * _registers = registers; // Pointer to current set of registers
+target_register_t orig_registers[NUMREGS];  // Registers to get back to original state
 
 #if defined(HAL_STUB_HW_WATCHPOINT) || defined(HAL_STUB_HW_BREAKPOINT)
 static int  _hw_stop_reason;   // Reason we were stopped by hw.
@@ -330,10 +331,22 @@ interruptible(int state)
 int cyg_hal_gdb_break;
 #endif
 
+// Called at stub *kill*
+static void 
+handle_exception_exit( void )
+{
+    int i;
+
+    for (i = 0; i < (sizeof(registers)/sizeof(registers[0])); i++)
+	registers[i] = orig_registers[i];
+}
+
 // Called at stub *entry*
 static void 
 handle_exception_cleanup( void )
 {
+    static int orig_registers_set = 0;
+
     interruptible(0);
 
     // Expand the HAL_SavedRegisters structure into the GDB register
@@ -341,6 +354,13 @@ handle_exception_cleanup( void )
     HAL_GET_GDB_REGISTERS(&registers[0], _hal_registers);
     _registers = &registers[0];
 
+    if (!orig_registers_set) {
+	int i;
+	for (i = 0; i < (sizeof(registers)/sizeof(registers[0])); i++)
+	    orig_registers[i] = registers[i];
+	orig_registers_set = 1;
+    }
+	
 #ifdef HAL_STUB_PLATFORM_STUBS_FIXUP
     // Some architectures may need to fix the PC in case of a partial
     // or fully executed trap instruction. GDB only takes correct action
@@ -406,7 +426,7 @@ __install_traps (void)
     __process_signal_vec = &cyg_hal_process_signal;
     // Set exit vector to reset vector. This will allow automatic reset on
     // some platforms.
-    __process_exit_vec = &__reset;
+    __process_exit_vec = &handle_exception_exit;
 
     __cleanup_vec = &handle_exception_cleanup;
     __init_vec    = &handle_exception_init;

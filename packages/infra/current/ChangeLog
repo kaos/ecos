@@ -1,3 +1,7 @@
+2001-02-23  Robin Farine  <acnrf@dial.eunet.ch>
+
+	* include/cyg_type.h: Do alignment consistency check.
+
 2001-01-05  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/clist.hxx: Many changes to make these classes usable in

@@ -1,3 +1,7 @@
+* Added generic AMD AM29xxxxx flash driver based on MBX driver, and make
+  the MBX use it.
+* Added RedBoot support to PID target.
+* Added Atmel AT29C040 flash driver.
 * Added Intel XScale support with the IQ80310 Software Development and
   Processor Evaluation Kit. Support includes flash and ethernet drivers,
   and RedBoot support.

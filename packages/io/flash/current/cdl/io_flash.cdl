@@ -64,6 +64,14 @@ cdl_package CYGPKG_IO_FLASH {
 	    for the current platform."
     }
 
+    cdl_interface CYGHWR_IO_FLASH_DEVICE_IN_RAM {
+        display       "Hardware FLASH device drivers are in RAM"
+        flavor        booldata
+        description   "
+            This option prevents the IO driver from copying the device
+            driver functions to RAM before calling them."
+    }
+
     cdl_interface CYGHWR_IO_FLASH_BLOCK_LOCKING {
         display       "Hardware can support block locking"
         description   "

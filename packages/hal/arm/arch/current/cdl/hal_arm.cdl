@@ -91,6 +91,19 @@ cdl_package CYGPKG_HAL_ARM {
             Enable use of the Thumb instruction set."
     }
 
+    # Note that when building a ROM monitor we include Thumb
+    # interworking in order to support Thumb applications running
+    # under a ARM ROM monitor.
+    cdl_option CYGBLD_ARM_ENABLE_THUMB_INTERWORK {
+        display       "Enable Thumb interworking compiler option"
+        default_value { (CYGHWR_THUMB || CYGSEM_HAL_ROM_MONITOR) }
+        description "
+            This option controls the use of -mthumb-interwork in the
+            compiler flags. It defaults enabled in Thumb or ROM monitor
+            configurations, but can be overridden for reduced memory
+            footprint where interworking is not a requirement."
+    }
+
     cdl_option CYGHWR_HAL_ARM_BIGENDIAN {
         display          "Use big-endian mode"
         default_value    0

@@ -1,3 +1,20 @@
+2001-02-24  Gary Thomas  <gthomas@redhat.com>
+
+	* include/hal_mmu.h (MMU_Control_X): Add - used by Win/CE.
+
+	* src/vectors.S (__exception_handlers): Change RESET vector
+	to use jump for ROM based applications [safer].
+	(warm_reset): Only do 'swi' contortions when starting RAM
+	applications from Angel.
+
+2001-02-22  Jesper Skov  <jskov@redhat.com>
+
+	* src/arm.ld: Relocate .2ram sections to the .data section.
+
+2001-02-20  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm.cdl: Added CYGBLD_ARM_ENABLE_THUMB_INTERWORK.
+
 2001-02-13  Gary Thomas  <gthomas@redhat.com>
 
 	* src/vectors.S (handle_IRQ_or_FIQ): Change behaviour for

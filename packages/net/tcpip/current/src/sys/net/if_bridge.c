@@ -92,8 +92,6 @@
 #include "enc.h"
 #endif
 
-#if NBRIDGE > 0
-
 #include <sys/param.h>
 #ifndef __ECOS
 #include <sys/proc.h>
@@ -217,7 +215,7 @@ struct snap {
 	u_int16_t type;
 };
 
-struct bridge_softc bridgectl[NBRIDGE];
+struct bridge_softc bridgectl[CYGNUM_NET_BRIDGES];
 
 void	bridgeattach __P((int));
 int	bridge_ioctl __P((struct ifnet *, u_long, caddr_t));
@@ -269,7 +267,7 @@ bridgeattach(unused)
 	int i;
 	struct ifnet *ifp;
 
-	for (i = 0; i < NBRIDGE; i++) {
+	for (i = 0; i < CYGNUM_NET_BRIDGES; i++) {
 		bridgectl[i].sc_brtmax = BRIDGE_RTABLE_MAX;
 		bridgectl[i].sc_brttimeout = BRIDGE_RTABLE_TIMEOUT;
 		LIST_INIT(&bridgectl[i].sc_iflist);
@@ -943,7 +941,7 @@ bridgeintr(void)
 	struct mbuf *m;
 	int i, s;
 
-	for (i = 0; i < NBRIDGE; i++) {
+	for (i = 0; i < CYGNUM_NET_BRIDGES; i++) {
 		sc = &bridgectl[i];
 		for (;;) {
 			s = splimp();
@@ -2032,4 +2030,3 @@ ifpromisc(ifp, pswitch)
 	return ((*ifp->if_ioctl)(ifp, SIOCSIFFLAGS, (caddr_t)&ifr));
 }
 
-#endif  /* NBRIDGE */

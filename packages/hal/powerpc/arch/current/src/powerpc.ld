@@ -104,6 +104,8 @@ GROUP(libtarget.a libgcc.a)
       KEEP(*(SORT(.dtors*))) __DTOR_END__ = ABSOLUTE(.);                      \
       . = ALIGN(8);                                                           \
       KEEP(*( SORT (.ecos.table.*))) ;                                        \
+      . = ALIGN(4);                                                           \
+      *( .2ram.*) ;                                                           \
     __GOT2_START__ = ABSOLUTE(.); *(.got2) __GOT2_END__ = ABSOLUTE(.);        \
     __GOT_START = ABSOLUTE(.); _GLOBAL_OFFSET_TABLE_ = ABSOLUTE(. + 32768);   \
     _SDA_BASE_ = ABSOLUTE(.); *(.got.plt) *(.got)                             \

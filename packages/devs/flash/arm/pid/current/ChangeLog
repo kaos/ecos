@@ -1,10 +1,13 @@
-//==========================================================================
-//
-//      flash.h
-//
-//      Flash programming - device constants, etc.
-//
-//==========================================================================
+2001-02-20  Jesper Skov  <jskov@redhat.com>
+
+	* devs/flash/arm/pid/...: new package.  FLASH memory support for
+	ARM PID board.
+
+	* include/arm_pid_flash.inl: New file
+	
+	* cdl/flash_arm_pid.cdl: New file.
+
+//===========================================================================
 //####COPYRIGHTBEGIN####
 //                                                                          
 // -------------------------------------------                              
@@ -23,41 +26,9 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
 //####COPYRIGHTEND####
-//==========================================================================
-//#####DESCRIPTIONBEGIN####
-//
-// Author(s):    gthomas
-// Contributors: gthomas
-// Date:         2000-10-20
-// Purpose:      
-// Description:  
-//              
-//####DESCRIPTIONEND####
-//
-//==========================================================================
-
-#ifndef _FLASH_HWR_H_
-#define _FLASH_HWR_H_
-
-#define FLASH_Read_ID      0x90
-#define FLASH_Reset        0xFF
-#define FLASH_Program      0xA0
-#define FLASH_Block_Erase  0x30
-
-#define FLASH_Busy         0x40 // "Toggle" bit
-#define FLASH_Err          0x20
-
-#define FLASH_Setup_Addr1  0x555
-#define FLASH_Setup_Addr2  0x2AA
-#define FLASH_Setup_Code1  0xAA
-#define FLASH_Setup_Code2  0x55
-#define FLASH_Setup_Erase  0x80
-
-#define FLASH_BLOCK_SIZE   0x10000
-
-#endif  // _FLASH_HWR_H_
+//===========================================================================

@@ -492,7 +492,7 @@ sh_serial_er_ISR(cyg_vector_t vector, cyg_addrword_t data)
     HAL_READ_UINT8(sh_chan->ctrl_base+SCI_SCSCR, _scr);
     _scr &= ~CYGARC_REG_SCSCR_RIE;      // mask rx interrupts
     HAL_WRITE_UINT8(sh_chan->ctrl_base+SCI_SCSCR, _scr);
-    return CYG_ISR_CALL_DSR;  // Cause DSR to be run
+    return CYG_ISR_CALL_DSR;            // Cause DSR to be run
 }
 
 // Serial I/O - high level error interrupt handler (DSR)
@@ -501,7 +501,7 @@ sh_serial_er_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
 {
     serial_channel *chan = (serial_channel *)data;
     sh_sci_info *sh_chan = (sh_sci_info *)chan->dev_priv;
-    cyg_uint8 _ssr, _ssr2;
+    cyg_uint8 _ssr, _ssr2, _scr;
 
     HAL_READ_UINT8(sh_chan->ctrl_base+SCI_SCSSR, _ssr);
     _ssr2 = CYGARC_REG_SCSSR_CLEARMASK;
@@ -519,6 +519,10 @@ sh_serial_er_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
         sh_serial_error_per++;
     }
     HAL_WRITE_UINT8(sh_chan->ctrl_base+SCI_SCSSR, _ssr2);
+
+    HAL_READ_UINT8(sh_chan->ctrl_base+SCI_SCSCR, _scr);
+    _scr |= CYGARC_REG_SCSCR_RIE;       // unmask rx interrupts
+    HAL_WRITE_UINT8(sh_chan->ctrl_base+SCI_SCSCR, _scr);
 }
 
 #endif // ifdef CYGDAT_IO_SERIAL_SH_SCI_INL

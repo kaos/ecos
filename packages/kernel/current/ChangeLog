@@ -1,3 +1,7 @@
+2001-02-23  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/thread.inl (attach_stack): Check for non-NULL stack base.
+
 2001-02-11  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* tests/stress_threads.c: CYGINT_ISO_STDIO_FORMATTED_IO needs a

@@ -103,6 +103,25 @@ cdl_package CYGPKG_HAL_ARM_SA11X0 {
         }
     }
 
+    # Control over hardware layout.  
+    cdl_interface     CYGHWR_HAL_ARM_SA11X0_UART1 {
+        display   "UART1 available as diagnostic/debug channel"
+        description "
+	  The SA11x0 chip has multiple serial channels which may be
+          used for different things on different platforms.  This
+          interface allows a platform to indicate that the specified
+          serial port can be used as a diagnostic and/or debug channel."
+    }
+
+    cdl_interface     CYGHWR_HAL_ARM_SA11X0_UART3 {
+        display   "UART3 available as diagnostic/debug channel"
+        description "
+	  The SA11x0 chip has multiple serial channels which may be
+          used for different things on different platforms.  This
+          interface allows a platform to indicate that the specified
+          serial port can be used as a diagnostic and/or debug channel."
+    }
+
     cdl_option CYGPKG_HAL_ARM_SA11X0_TESTS {
 	display "SA11x0 HAL tests"
 	flavor  data
@@ -112,4 +131,24 @@ cdl_package CYGPKG_HAL_ARM_SA11X0 {
 	This option specifies the set of tests for the SA11x0 HAL."
     }
 
+    cdl_component CYGPKG_REDBOOT_SA11X0_OPTIONS {
+        display       "Redboot for SA11x0 options"
+        flavor        none
+        no_define
+        parent        CYGPKG_REDBOOT
+        active_if     CYGPKG_REDBOOT
+        description   "
+            This option lists the target's requirements for a valid Redboot
+            configuration."
+
+        cdl_option CYGSEM_REDBOOT_SA11X0_LINUX_BOOT {
+            display        "Support booting Linux via RedBoot"
+            flavor         bool
+            default_value  1
+            description    "
+               This option enables RedBoot to support booting of a Linux kernel."
+
+            compile -library=libextras.a redboot_linux_exec.c
+        }
+    }
 }

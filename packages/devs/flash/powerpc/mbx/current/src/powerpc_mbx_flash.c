@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//      flash_program_buf.c
+//      powerpc_mbx_flash.c
 //
-//      Flash programming
+//      Flash programming for Atmel device on POWERPC MBX board
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -31,9 +31,9 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    gthomas
-// Contributors: gthomas
-// Date:         2000-07-14
+// Author(s):    jskov
+// Contributors: jskov
+// Date:         2001-02-22
 // Purpose:      
 // Description:  
 //              
@@ -41,63 +41,21 @@
 //
 //==========================================================================
 
-#include "flash.h"
+//--------------------------------------------------------------------------
+// Device properties
 
-#include <pkgconf/hal.h>
-#include <cyg/hal/hal_arch.h>
-#include <cyg/hal/hal_cache.h>
+// We use the single AM29F040B on the MBX board.
+#define CYGPKG_DEVS_FLASH_AMD_AM29F040B
+#define CYGNUM_FLASH_INTERLEAVE	(1)
+#define CYGNUM_FLASH_SERIES	(1)
+#define CYGNUM_FLASH_BASE 	(0xfe000000u)
 
-//
-// CAUTION!  This code must be copied to RAM before execution.  Therefore,
-// it must not contain any code which might be position dependent!
-//
+//--------------------------------------------------------------------------
+// Platform specific extras
 
-int
-flash_program_buf(volatile unsigned char *addr, unsigned char *data, int len)
-{
-    volatile unsigned char *ROM;
-    int timeout = 50000;
-    int cache_on;
-    int erase_state, new_state;
+//--------------------------------------------------------------------------
+// Now include the driver code.
+#include "cyg/io/flash_am29xxxxx.inl"
 
-    HAL_DCACHE_IS_ENABLED(cache_on);
-    if (cache_on) {
-        HAL_DCACHE_SYNC();
-        HAL_DCACHE_DISABLE();
-    }
-
-    ROM = (volatile unsigned long *)((unsigned long)addr & 0xFF800000);
-
-    while (len > 0) {
-        // Program data [byte] - 4 step sequence
-        ROM[FLASH_Setup_Addr1] = FLASH_Setup_Code1;
-        ROM[FLASH_Setup_Addr2] = FLASH_Setup_Code2;
-        ROM[FLASH_Setup_Addr1] = FLASH_Program;
-        *addr = *data;
-        for (timeout = 50;  timeout--;  timeout > 0) ;
-        erase_state = *addr & FLASH_Busy;
-        while (true) {
-            new_state = *addr;
-            if ((new_state & FLASH_Busy) == erase_state) break;  // "toggle" stopped
-            erase_state = new_state & FLASH_Busy;
-            if (new_state & FLASH_Err) break;
-            if (--timeout == 0) break;
-        }
-        ROM[0] = FLASH_Reset;            
-        if (*addr++ != *data++) {
-            new_state = 0xFF;
-            break;
-        }
-        len -= sizeof(*data);
-    }
-    if (len == 0) new_state = 0;  // Success
-
-    // Restore ROM to "normal" mode
- bad:
-    ROM[0] = FLASH_Reset;            
-
-    if (cache_on) {
-        HAL_DCACHE_ENABLE();
-    }
-    return new_state;
-}
+// ------------------------------------------------------------------------
+// EOF powerpc_mbx_flash.c

@@ -128,22 +128,28 @@ void hal_clock_initialize(cyg_uint32 period)
 
 // Define this if you want to ensure that the clock is perfect (i.e. does
 // not drift).  One reason to leave it turned off is that it costs some
-// 1.5us per system clock interrupt for this maintenance.
+// us per system clock interrupt for this maintenance.
 #undef COMPENSATE_FOR_CLOCK_DRIFT
 
 void hal_clock_reset(cyg_uint32 vector, cyg_uint32 period)
 {
 #ifdef COMPENSATE_FOR_CLOCK_DRIFT
-    cyg_int32 ctr = (cyg_int32)*SA11X0_OSCR;    // Current value of the counter
-    ctr -= period;                              // Reset counter
-    if ((ctr < 0) || (ctr >= period)) ctr = 0;  // Adjust for missed interrupts
-    *SA11X0_OSCR = ctr;
-    clock_period = period;
+    cyg_uint32 next = *SA11X0_OSMR0 + period;    // Next interrupt time
+    *SA11X0_OSSR = SA11X0_OSSR_TIMER0;           // Clear any pending interrupt
+    *SA11X0_OSMR0 = next;                        // Load new match value
+    {
+        cyg_uint32 ctr = *SA11X0_OSCR;
+        clock_period = next - ctr;
+        if ((clock_period - 1) >= period) {      // Adjust for missed interrupts
+            *SA11X0_OSMR0 = ctr + period;
+            *SA11X0_OSSR = SA11X0_OSSR_TIMER0;   // Clear pending interrupt
+            clock_period = period;
+        }
+    }
 #else
-    *SA11X0_OSCR = 0;
+    *SA11X0_OSMR0 = *SA11X0_OSCR + period;       // Load new match value
+    *SA11X0_OSSR = SA11X0_OSSR_TIMER0;           // Clear any pending interrupt
 #endif
-    *SA11X0_OSMR0 = period;                     // Load new match value
-    *SA11X0_OSSR = SA11X0_OSSR_TIMER0;          // Clear any pending interrupt
 }
 
 // Read the current value of the clock, returning the number of hardware
@@ -153,16 +159,16 @@ void hal_clock_reset(cyg_uint32 vector, cyg_uint32 period)
 // Note: The "contract" for this function is that the value is the number
 // of hardware clocks that have happened since the last interrupt (i.e.
 // when it was reset).  This value is used to measure interrupt latencies.
-// However, since the hardware counter does not automatically reset, as
-// many do, the value may be larger than the system "tick" interval.
-// If this turns out to be the case, the result will be adjusted to be
-// within the interval [0..N-1], where N is the number of hardware clocks/tick.
-
+// However, since the hardware counter runs freely, this routine computes
+// the difference between the current clock period and the number of hardware
+// ticks left before the next timer interrupt.
 void hal_clock_read(cyg_uint32 *pvalue)
 {
-    cyg_uint32 ctr = *SA11X0_OSCR;
-    if (ctr > clock_period) ctr -= clock_period;
-    *pvalue = ctr;
+    int orig;
+    HAL_DISABLE_INTERRUPTS(orig);
+    *pvalue = clock_period + *SA11X0_OSCR - *SA11X0_OSMR0;
+    HAL_RESTORE_INTERRUPTS(orig);
+
 }
 
 //
@@ -170,22 +176,16 @@ void hal_clock_read(cyg_uint32 *pvalue)
 //
 void hal_delay_us(cyg_int32 usecs)
 {
-    int diff, diff2;
-    cyg_uint32 val1, val2;
+    cyg_uint32 val = 0;
+    cyg_uint32 ctr = *SA11X0_OSCR;
     while (usecs-- > 0) {
-        diff = 0;
-        while (diff < 3) {
-            val1 = *SA11X0_OSCR;
-            while ((val2 = *SA11X0_OSCR) == val1) ;
-            if (*SA11X0_OSMR0) {
-                // A kernel is running, the counter may get reset as we watch
-                diff2 = val2 - val1;
-                if (diff2 < 0) diff2 += *SA11X0_OSMR0;
-                diff += diff2;
-            } else {
-                diff += val2 - val1;
+        do {
+            if (ctr != *SA11X0_OSCR) {
+                val += 271267;          // 271267ps (3.6865Mhz -> 271.267ns)
+                ++ctr;
             }
-        }
+        } while (val < 1000000);
+        val -= 1000000;
     }
 }
 
@@ -455,4 +455,3 @@ cyg_uint32 hal_virt_to_uncached_address( cyg_uint32 vaddr )
 
 /*------------------------------------------------------------------------*/
 // EOF sa11x0_misc.c
-

@@ -124,7 +124,7 @@
 	.set	noat
 	la	\reg,\addr
 	la	$at,0x3fc00000
-	add	\reg,\reg,$at
+	addu	\reg,\reg,$at
 	.set	at
 	.endm
 #else
@@ -133,11 +133,11 @@
 	move	$at,ra			# save ra
 	la	\reg,\addr		# get address into register
 	la	ra,x\@			# get linked address of label
-	subu	\reg,\reg,ra		# subtract it from value
+	subiu	\reg,\reg,ra		# subtract it from value
 	bal	x\@			# branch and link to label
 	nop				#  to get current actual address
 x\@:
-	addu	\reg,\reg,ra		# add actual address
+	addiu	\reg,\reg,ra		# add actual address
 	move	ra,$at			# restore ra
 	.set	at
 	.endm
@@ -191,9 +191,9 @@ hal_mmu_setup_return:
 	la	t3,__ram_data_end	# end dest addr
 1:	
 	lw	v0,0(t1)		# get word
-	addi	t1,t1,4
+	addiu	t1,t1,4
 	sw	v0,0(t0)		# write word
-	addi	t0,t0,4
+	addiu	t0,t0,4
 	bne	t0,t3,1b
 	nop
 

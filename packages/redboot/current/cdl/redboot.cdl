@@ -79,14 +79,11 @@ cdl_package CYGPKG_REDBOOT {
         compile -library=libextras.a load.c 
 
         make -priority 320 {
-            <PREFIX>/bin/redboot.elf : $(PREFIX)/lib/target.ld $(PREFIX)/lib/vectors.o $(PREFIX)/lib/libtarget.a $(PREFIX)/lib/libextras.a version.o
+            <PREFIX>/bin/redboot.elf : $(PREFIX)/lib/target.ld $(PREFIX)/lib/vectors.o $(PREFIX)/lib/libtarget.a $(PREFIX)/lib/libextras.a
                     @sh -c "mkdir -p $(dir $@)"
+                    $(CC) -c $(INCLUDE_PATH) $(CFLAGS) -o version.o $(REPOSITORY)/$(PACKAGE)/src/version.c
 	            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ version.o
         }
-	make -priority 319 {
-           version.o: $(REPOSITORY)/$(PACKAGE)/src/version.c $(PREFIX)/lib/libtarget.a
-             $(CC) -c $(INCLUDE_PATH) $(CFLAGS) -o version.o $(REPOSITORY)/$(PACKAGE)/src/version.c
-	}
     }
 
     cdl_component CYGPKG_REDBOOT_NETWORKING {
@@ -186,11 +183,89 @@ cdl_package CYGPKG_REDBOOT {
         cdl_option CYGBLD_REDBOOT_FLASH_BOOT_OFFSET {
             display       "Offset from start of FLASH to RedBoot boot image"
             flavor        data
-            default_value 0
+            default_value CYGNUM_REDBOOT_FLASH_RESERVED_BASE
+	    requires      { CYGNUM_REDBOOT_FLASH_RESERVED_BASE <= \
+		            CYGBLD_REDBOOT_FLASH_BOOT_OFFSET }
             description "
               This option controls where the RedBoot boot image is located
               relative to the start of FLASH."
         }
+
+        cdl_option CYGNUM_REDBOOT_FLASH_RESERVED_BASE {
+            display       "Size of reserved area at start of FLASH"
+            flavor        data
+            default_value 0
+            description "
+              This option reserves an area at the start of FLASH where RedBoot
+	      will never interfere; it is expected that this area contains
+              (non-RedBoot-based) POST code or some other boot monitor that
+              executes before RedBoot."
+        }
+
+	cdl_component CYGPKG_REDBOOT_FIS_CONTENTS {
+	    display       "Flash Image System default directory contents"
+	    calculated 1
+
+	    cdl_option CYGOPT_REDBOOT_FIS_RESERVED_BASE {
+		display		"Pseudo-file to describe reserved area"
+		active_if	{ 0 != CYGNUM_REDBOOT_FLASH_RESERVED_BASE }
+		default_value	1
+		description "
+		    If an area of FLASH is reserved, it is informative to
+		    have a fis entry describing it.  This option controls
+		    creation of such an entry by default in the fis init
+		    command."
+	    }
+
+	    cdl_option CYGOPT_REDBOOT_FIS_REDBOOT {
+		display		"File to describe RedBoot boot image"
+		default_value	1
+		description "
+		    Normally a ROM-startup RedBoot image is first in the
+		    FLASH, and the system boots using that image.  This
+		    option controls creation of an entry describing it in
+		    the fis init command.  It might be disabled if a
+		    platform has an immutable boot image of its own, where
+		    we use a POST-startup RedBoot instead, which performs
+		    less board initialization."
+	    }
+
+	    cdl_component CYGOPT_REDBOOT_FIS_REDBOOT_POST {
+		display		"File to describe RedBoot POST-compatible image"
+		default_value	!CYGOPT_REDBOOT_FIS_REDBOOT
+		description "
+		    This option controls creation of an entry describing a
+		    POST-startup RedBoot image in the fis init command.
+		    Not all platforms support POST-startup.  A platform
+		    might have both for testing purposes, where the
+		    eventual user would substitute their own POST code for
+		    the initial ROM-startup RedBoot, and then jump to the
+		    POST-compatible RedBoot immediately following."
+		cdl_option CYGNUM_REDBOOT_FIS_REDBOOT_POST_OFFSET {
+		    display    "Offset of POST image from FLASH start"
+		    flavor     booldata
+		    default_value 0
+		    requires   { CYGNUM_REDBOOT_FIS_REDBOOT_POST_OFFSET >= \
+			         CYGBLD_REDBOOT_FLASH_BOOT_OFFSET }
+		    description "
+	            This option specifies the offset for a POST image from
+		    the start of FLASH.  If unset, then the fis entry
+		    describing the POST image will be placed where
+		    convenient."
+		}
+	    }   
+
+	    cdl_option CYGOPT_REDBOOT_FIS_REDBOOT_BACKUP {
+		display		"File to describe RedBoot backup image"
+		default_value	1
+		description "
+		    This option controls creation of an entry describing a
+		    backup RedBoot image in the fis init command.
+		    Conventionally a RAM-startup RedBoot image is kept
+		    under this name for use in updating the ROM-based
+		    RedBoot that boots the board."
+	    }
+	}
 
         cdl_component CYGSEM_REDBOOT_FLASH_CONFIG {
             display       "Keep RedBoot configuration data in FLASH"

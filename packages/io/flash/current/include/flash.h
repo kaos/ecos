@@ -77,6 +77,8 @@ externC int printf(char* fmt, ...);
 #define FLASH_ERR_ERASE_SUSPEND   0x09  // Device is in erase suspend mode
 #define FLASH_ERR_PROGRAM_SUSPEND 0x0a  // Device is in in program suspend mode
 #define FLASH_ERR_DRV_VERIFY      0x0b  // Driver failed to verify data
+#define FLASH_ERR_DRV_TIMEOUT     0x0c  // Driver timed out waiting for device
+#define FLASH_ERR_DRV_WRONG_PART  0x0d  // Driver does not support device
 
 #ifdef _FLASH_PRIVATE_
 
@@ -90,28 +92,26 @@ struct flash_info {
     int   init;
 };
 
-extern struct flash_info flash_info;
-extern int  flash_hwr_init(void);
-extern int  flash_hwr_map_error(int err);
+externC struct flash_info flash_info;
+externC int  flash_hwr_init(void);
+externC int  flash_hwr_map_error(int err);
 
 
 //---------------------------------------------------------------------------
-//Execution of relocated code must be done inside a
-//HAL_FLASH_CACHES_OFF/HAL_FLASH_CACHES_ON region - disabling the
-//cache on unified cache systems is necessary to prevent burst access
-//to the flash area being programmed. With Harvard style caches, only
-//the data cache needs to be disabled, but the instruction cache must
-//still be invalidated to ensure the relocated code is properly
-//fetched from memory.
+// Execution of flash code must be done inside a
+// HAL_FLASH_CACHES_OFF/HAL_FLASH_CACHES_ON region - disabling the
+// cache on unified cache systems is necessary to prevent burst access
+// to the flash area being programmed. With Harvard style caches, only
+// the data cache needs to be disabled, but the instruction cache is
+// disabled for consistency.
 
 // Targets may provide alternative implementations for these macros in
 // the hal_cache.h (or var/plf) files.
 
-// The first part below is the optimal implementation, but it does not
-// always work. The second part is a more safe implementation that has
-// been tested to work on some targets - it may not be suitable for
-// targets that would do burst access to the flash (data cache needs
-// disabling as well).
+// The first part below is a generic, optimal implementation.  The
+// second part is the old implementation that has been tested to work
+// on some targets - but it is not be suitable for targets that would
+// do burst access to the flash (it does not disable the data cache).
 
 // NOTE: Do _not_ change any of the below macros without checking that
 //       the changed code still works on _all_ platforms that rely on these
@@ -121,7 +121,8 @@ extern int  flash_hwr_map_error(int err);
 
 #ifndef HAL_FLASH_CACHES_OFF
 
-#ifdef HAL_FLASH_CACHES_WANT_OPTIMAL // Optimal implementation
+// Some drivers have only been tested with the old macros below.
+#ifndef HAL_FLASH_CACHES_OLD_MACROS
 
 #ifdef HAL_CACHE_UNIFIED
 
@@ -159,7 +160,7 @@ extern int  flash_hwr_map_error(int err);
 
 #endif // HAL_CACHE_UNIFIED
 
-#else  // HAL_FLASH_CACHES_WANT_OPTIMAL
+#else  // HAL_FLASH_CACHES_OLD_MACROS
 
 // Note: This implementation is broken as it will always enable the i-cache
 //       even if it was not enabled before. It also doesn't work if the
@@ -177,7 +178,7 @@ extern int  flash_hwr_map_error(int err);
 #define HAL_FLASH_CACHES_ON(_d_, _i_)           \
     HAL_ICACHE_ENABLE();
 
-#endif  // HAL_FLASH_CACHES_WANT_OPTIMAL
+#endif  // HAL_FLASH_CACHES_OLD_MACROS
 
 #endif  // HAL_FLASH_CACHES_OFF
 

@@ -23,7 +23,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -102,6 +102,16 @@ cdl_package CYGPKG_HAL_ARM_PID {
         default_value 38400
         description   "
             This option controls the baud rate used for the GDB connection."
+    }
+
+    cdl_option CYGSEM_HAL_ARM_PID_ANGEL_BOOT {
+        display          "Support startup from Angel"
+        default_value    0
+        description      "
+            The Angel monitor can be used for some simple initial bootstrap
+            operations.  However, since Angel starts applications in user
+            mode, the eCos startup code must jump through certain hoops
+            to get started."
     }
 
     cdl_option CYGHWR_HAL_ARM_PID_DIAG_LEDS {
@@ -196,24 +206,25 @@ cdl_package CYGPKG_HAL_ARM_PID {
             display "Global compiler flags"
             flavor  data
             no_define
-            default_value { (CYGHWR_THUMB && CYGHWR_HAL_ARM_BIGENDIAN) ? "-mthumb-interwork -mbig-endian -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" :
-            CYGHWR_THUMB ? "-mthumb-interwork -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" :
+            default_value { (CYGBLD_ARM_ENABLE_THUMB_INTERWORK && CYGHWR_HAL_ARM_BIGENDIAN) ? "-mthumb-interwork -mbig-endian -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" :
+            CYGBLD_ARM_ENABLE_THUMB_INTERWORK ? "-mthumb-interwork -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" :
             (CYGHWR_HAL_ARM_CPU_FAMILY == "ARM9") && CYGHWR_HAL_ARM_BIGENDIAN ? "-mcpu=arm9 -mbig-endian -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" :
             (CYGHWR_HAL_ARM_CPU_FAMILY == "ARM9") && ! CYGHWR_HAL_ARM_BIGENDIAN ? "-mcpu=arm9 -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" :
             (CYGHWR_HAL_ARM_CPU_FAMILY != "ARM9") && CYGHWR_HAL_ARM_BIGENDIAN ? "-mcpu=arm7tdmi -mbig-endian -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" :
             "-mcpu=arm7tdmi -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
             description   "
-                This option controls the global compiler flags which are used to
-                compile all packages by default. Individual packages may define
-                options which override these global flags."
+                This option controls the global compiler flags which
+                are used to compile all packages by default.
+                Individual packages may define options which override
+                these global flags."
         }
 
         cdl_option CYGBLD_GLOBAL_LDFLAGS {
             display "Global linker flags"
             flavor  data
             no_define
-            default_value { (CYGHWR_THUMB && CYGHWR_HAL_ARM_BIGENDIAN) ? "-mthumb-interwork -mbig-endian -g -nostdlib -Wl,--gc-sections -Wl,-static" :
-            CYGHWR_THUMB ? "-mthumb-interwork -g -nostdlib -Wl,--gc-sections -Wl,-static" :
+            default_value { ((CYGHWR_THUMB || CYGSEM_HAL_ROM_MONITOR) && CYGHWR_HAL_ARM_BIGENDIAN) ? "-mthumb-interwork -mbig-endian -g -nostdlib -Wl,--gc-sections -Wl,-static" :
+            (CYGHWR_THUMB || CYGSEM_HAL_ROM_MONITOR) ? "-mthumb-interwork -g -nostdlib -Wl,--gc-sections -Wl,-static" :
             (CYGHWR_HAL_ARM_CPU_FAMILY == "ARM9") && CYGHWR_HAL_ARM_BIGENDIAN ? "-mcpu=arm9 -mbig-endian -g -nostdlib -Wl,--gc-sections -Wl,-static" :
             (CYGHWR_HAL_ARM_CPU_FAMILY == "ARM9") && ! CYGHWR_HAL_ARM_BIGENDIAN ? "-mcpu=arm9 -g -nostdlib -Wl,--gc-sections -Wl,-static" :
             (CYGHWR_HAL_ARM_CPU_FAMILY != "ARM9") && CYGHWR_HAL_ARM_BIGENDIAN ? "-mcpu=arm7tdmi -mbig-endian -g -nostdlib -Wl,--gc-sections -Wl,-static" :
@@ -388,4 +399,31 @@ cdl_package CYGPKG_HAL_ARM_PID {
              the ROM monitor or boot ROM."
      }
 
+
+    cdl_component CYGPKG_REDBOOT_HAL_OPTIONS {
+        display       "Redboot HAL options"
+        flavor        none
+        no_define
+        parent        CYGPKG_REDBOOT
+        active_if     CYGPKG_REDBOOT
+        description   "
+            This option lists the target's requirements for a valid Redboot
+            configuration."
+
+        cdl_option CYGBLD_BUILD_REDBOOT_BIN {
+            display       "Build Redboot ROM binary image"
+            active_if     CYGBLD_BUILD_REDBOOT
+            default_value 1
+            no_define
+            description "This option enables the conversion of the Redboot ELF
+                         image to a binary image suitable for ROM programming."
+    
+            make -priority 325 {
+                <PREFIX>/bin/redboot.bin : <PREFIX>/bin/redboot.elf
+                $(OBJCOPY) --strip-debug $< $(@:.bin=.img) 
+                $(OBJCOPY) -O srec $< $(@:.bin=.srec)
+                $(OBJCOPY) -O binary $< $@
+            }
+        }
+    }
 }

@@ -1,3 +1,55 @@
+2001-02-24  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_arm_sa11x0.cdl: Add RedBoot commands/options.
+	
+	* src/redboot_linux_exec.c: New file - RedBoot commands to
+	support booting Linux kernel.
+
+2001-02-23  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_cache.h (HAL_FLASH_CACHES_OLD_MACROS): Some
+	platforms use deprecated cache handling macros.
+
+2001-02-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_arm_sa11x0.cdl: Clarify CYGHWR_HAL_ARM_SA11X0_UART1,3
+	description.
+
+2001-02-20  Gary Thomas  <gthomas@redhat.com>
+
+	* src/hal_diag.c: 
+	* cdl/hal_arm_sa11x0.cdl: Add CDL to control which serial ports
+	are available/used.
+
+2001-02-20  Hugo Tyson  <hmt@redhat.com>
+2001-02-12  Robin Farine  <acnrf@dial.eunet.ch>
+
+	* include/hal_sa11x0.h (SA11X0_IRQ_GPIO_9_EDGE_DETECT): Define
+	this to be 9 not 0 - simple typo.  Thanks Robin!
+
+2001-02-19  Hugo Tyson  <hmt@redhat.com>
+2001-02-12  Robin Farine  <acnrf@dial.eunet.ch>
+
+	* src/sa11x0_misc.c (hal_clock_reset): Handles SA11X0_OSCR as a
+	free running counter.
+	(hal_clock_read): Adapts to changes in hal_clock_reset().
+	(hal_delay_us): Likewise.
+
+	There is only one counting register (OSCR), but multiple match
+	registers and interrupt sources (OSMR1-OSMR3).  Setting our match
+	register to COUNT and the counter register to 0 each tick makes it
+	very hard to use the other match registers - whereas they are
+	intended for easy general use.
+
+	This change sets our match register OSMR0 to the next time
+	interval and leaves the OSCR freerunning so that other match
+	registers can easily be used, which is much more flexible, and
+	much more what was intented.
+
+	Because the OSCR is just a counter, and the match registers
+	compare only for exact equality, no special measures to deal with
+	the counter wrapping/overflowing are needed.
+
 2001-02-08  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_diag.c: Replace CYGSEM_HAL_DIAG_MANGLER_None with

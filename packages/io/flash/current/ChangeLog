@@ -1,3 +1,23 @@
+2001-02-23  Jesper Skov  <jskov@redhat.com>
+
+	* include/flash.h: HAL_FLASH_CACHES_WANT_OPTIMAL replaced with
+	(opposite sense) HAL_FLASH_CACHES_OLD_MACROS.
+
+	* src/flash.c (__anonymizer): Use to force the compiler to use
+	jumps instead of branches.
+
+2001-02-22  Jesper Skov  <jskov@redhat.com>
+
+	* include/flash_dev.h: Added. Contains macros and definitions
+	common to all (new style) flash device drivers.
+
+	* include/flash.h: Added two new error codes.
+	* cdl/io_flash.cdl: Added CYGHWR_IO_FLASH_DEVICE_IN_RAM.
+	* src/flash.c: Made functions respect
+	CYGHWR_IO_FLASH_DEVICE_IN_RAM and jump directly to the code
+	instead of copying it around.
+	(__arm_broken): Work around problem with ARM tools.
+
 2001-02-06  Hugo Tyson  <hmt@redhat.com>
 
 	* src/flash.c (flash_erase): Add an additional argument to the

@@ -119,6 +119,7 @@ _name_:
 // 
 // But usually it's not defined, so the behaviour is the obvious.
 
+#ifndef UNMAPPED        
 #ifdef CYGHWR_HAL_ARM_HAS_MMU
 # ifndef CYGHWR_HAL_ROM_VADDR
 #  define CYGHWR_HAL_ROM_VADDR __exception_handlers
@@ -127,6 +128,7 @@ _name_:
 #else
 # define UNMAPPED(x) (x)
 #endif
+#endif        
                                 
 #define UNMAPPED_PTR(name)              \
 .##name: .word  UNMAPPED(name)
@@ -157,7 +159,13 @@ _name_:
         .section ".vectors","ax"
         .global __exception_handlers
 __exception_handlers:
+#if defined(CYG_HAL_STARTUP_ROM)
+// Assumption:  ROM code has these vectors at the hardware reset address.
+// A simple jump removes any address-space dependencies [i.e. safer]
+        b       reset_vector                    // 0x00
+#else        
         ldr     pc,.reset_vector                // 0x00
+#endif        
         ldr     pc,.undefined_instruction       // 0x04
         ldr     pc,.software_interrupt          // 0x08 start && software int
         ldr     pc,.abort_prefetch              // 0x0C
@@ -178,7 +186,9 @@ PTR(abort_data)                                 // 0x30
         .word   0                               // 0x34
 PTR(IRQ)                                        // 0x38
 PTR(FIQ)                                        // 0x3c
+#ifdef CYGSEM_HAL_ARM_PID_ANGEL_BOOT         
 PTR(start) // This is copied to 0x28 for bootup // 0x40
+#endif        
            // location 0x40 is used for storing DRAM size if known
            // for some platforms.
         
@@ -257,7 +267,7 @@ warm_reset:
         str     r2,[r0,#0x08]
 
 
-#if defined(CYG_HAL_STARTUP_RAM)
+#if defined(CYGSEM_HAL_ARM_PID_ANGEL_BOOT)
 // Ugly hack to get into supervisor mode
         ldr     r2,[r1,#0x40]
         str     r2,[r0,#0x28]

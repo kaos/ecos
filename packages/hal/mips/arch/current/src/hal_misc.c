@@ -252,17 +252,6 @@ void hal_copy_data(void)
 }
 #endif
 
-extern CYG_SYM_ADDRESS __bss_start;
-extern CYG_SYM_ADDRESS __bss_end;
-
-void hal_zero_bss(void)
-{
-    char *p = (char *)&__bss_start;
-
-    while( p != (char *)&__bss_end )
-        *p++ = 0;   
-}
-
 /*------------------------------------------------------------------------*/
 
 #ifdef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG

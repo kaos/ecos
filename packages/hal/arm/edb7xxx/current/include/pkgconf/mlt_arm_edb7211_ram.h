@@ -8,7 +8,7 @@
 
 #endif
 #define CYGMEM_REGION_ram (0)
-#define CYGMEM_REGION_ram_SIZE (0xfd9000)
+#define CYGMEM_REGION_ram_SIZE (0xfd8000)
 #define CYGMEM_REGION_ram_ATTR (CYGMEM_REGION_ATTR_R | CYGMEM_REGION_ATTR_W)
 #ifndef __ASSEMBLER__
 extern char CYG_LABEL_NAME (__heap1) [];

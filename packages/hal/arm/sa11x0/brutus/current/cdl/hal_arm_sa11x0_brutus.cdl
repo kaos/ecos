@@ -57,6 +57,9 @@ cdl_package CYGPKG_HAL_ARM_SA11X0_BRUTUS {
     implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
     implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_GUARANTEED
 
+    implements    CYGHWR_HAL_ARM_SA11X0_UART1
+    implements    CYGHWR_HAL_ARM_SA11X0_UART3
+
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_arm.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_VARIANT_H  <pkgconf/hal_arm_sa11x0.h>"

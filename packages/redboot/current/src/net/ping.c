@@ -53,7 +53,8 @@
 static void do_ping(int argc, char *argv[]);
 RedBoot_cmd("ping", 
             "Network connectivity test",
-            "[-v] [-n <count>] [-t <timeout>] [-i <IP_addr>] -h <IP_addr>",
+            "[-v] [-n <count>] [-l <length>] [-t <timeout>] [-r <rate>]\n"
+            "        [-i <IP_addr>] -h <IP_addr>",
             do_ping
     );
 
@@ -136,6 +137,10 @@ do_ping(int argc, char *argv[])
     }
     if (!length_set) {
         length = DEFAULT_LENGTH;
+    }
+    if ((length < 64) || (length > 1400)) {
+        printf("Invalid length specified: %d\n", length);
+        return;
     }
     if (!count_set) {
         count = DEFAULT_COUNT;

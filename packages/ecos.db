@@ -122,6 +122,36 @@ package CYGPKG_DEVS_FLASH_INTEL_BOOTBLOCK {
            This package contains hardware support for Intel boot block flash memory."
 }
 
+package CYGPKG_DEVS_FLASH_AMD_AM29XXXXX {
+	alias 		{ "Support for AMD AM29xxxxx flash memory" flash_amd_am29xxxxx }
+	directory	devs/flash/amd/am29xxxxx
+	script		flash_amd_am29xxxxx.cdl
+	hardware
+        description "
+           This package contains hardware support for AMD AM29xxxxx
+           flash memory devices."
+}
+
+package CYGPKG_DEVS_FLASH_ATMEL_AT29CXXXX {
+	alias 		{ "Support for Atmel AT29Cxxxx flash memory" flash_atmel_at29cxxxx }
+	directory	devs/flash/atmel/at29cxxxx
+	script		flash_atmel_at29cxxxx.cdl
+	hardware
+        description "
+           This package contains hardware support for Atmel AT29Cxxxx
+           flash memory devices."
+}
+
+package CYGPKG_DEVS_FLASH_ARM_PID {
+	alias 		{ "Support for flash memory on ARM/PID board" flash_arm_pid }
+	directory	devs/flash/arm/pid
+	script		flash_arm_pid.cdl
+	hardware
+        description "
+           This package contains hardware support for flash memory
+	   on the ARM PID platform."
+}
+
 package CYGPKG_DEVS_FLASH_EBSA285 {
 	alias 		{ "FLASH memory support for StrongARM EBSA-285" flash_ebsa285 }
 	directory	devs/flash/arm/ebsa285
@@ -1354,6 +1384,8 @@ target pid {
                    CYGPKG_HAL_ARM_PID
                    CYGPKG_IO_SERIAL_GENERIC_16X5X
 	           CYGPKG_IO_SERIAL_ARM_PID
+                   CYGPKG_DEVS_FLASH_ARM_PID
+                   CYGPKG_DEVS_FLASH_ATMEL_AT29CXXXX
         }
         description "
 The pid target provides the packages needed to run eCos on an ARM
@@ -1588,6 +1620,7 @@ target mbx {
                           CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC
                           CYGPKG_DEVS_ETH_POWERPC_QUICC
                           CYGPKG_DEVS_FLASH_MBX
+                          CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
         }
         description "
             The mbx target provides the packages needed to run

@@ -180,7 +180,7 @@ cdl_package CYGPKG_HAL_ARM_CMA230 {
             display "Global compiler flags"
             flavor  data
             no_define
-            default_value { CYGHWR_THUMB ? "-mthumb-interwork -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" :
+            default_value { CYGBLD_ARM_ENABLE_THUMB_INTERWORK ? "-mthumb-interwork -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" :
             "-mcpu=arm7tdmi -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
             description   "
                 This option controls the global compiler flags which are used to
@@ -214,7 +214,7 @@ cdl_package CYGPKG_HAL_ARM_CMA230 {
             display "Global linker flags"
             flavor  data
             no_define
-            default_value { CYGHWR_THUMB ? "-g -nostdlib -Wl,--gc-sections -Wl,-static -mthumb-interwork" :
+            default_value { CYGBLD_ARM_ENABLE_THUMB_INTERWORK ? "-g -nostdlib -Wl,--gc-sections -Wl,-static -mthumb-interwork" :
             "-mcpu=arm7tdmi -g -nostdlib -Wl,--gc-sections -Wl,-static" }
             description   "
                 This option controls the global linker flags. Individual

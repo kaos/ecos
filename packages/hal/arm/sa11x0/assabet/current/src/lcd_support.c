@@ -48,6 +48,13 @@
 #include <cyg/hal/assabet.h>
 #include <cyg/hal/hal_cache.h>
 
+#ifdef CYGPKG_ISOINFRA
+# include <pkgconf/isoinfra.h>
+# ifdef CYGINT_ISO_STDIO_FORMATTED_IO
+#  include <stdio.h>  // sscanf
+# endif
+#endif
+
 #include "banner.xpm"
 
 #ifndef FALSE
@@ -65,7 +72,7 @@ static struct lcd_frame {
 #define RGB_GREEN(x) (((x)&0x3F)<<5)
 #define RGB_BLUE(x)  ((x)&0x1F)
 
-static volatile struct lcd_frame *fp;
+static struct lcd_frame * volatile fp;
 
 static int
 _hexdigit(char c)
@@ -103,7 +110,7 @@ parse_color(char *cp)
     }
 }
 
-#ifndef CYGPKG_LIBC_STDIO
+#ifndef CYGINT_ISO_STDIO_FORMATTED_IO
 static int
 get_int(char **_cp)
 {
@@ -132,7 +139,7 @@ show_xpm(char *xpm[])
     unsigned short colors[256];  // Mapped by character index
 
     cp = xpm[0];
-#ifdef CYGPKG_LIBC_STDIO
+#ifdef CYGINT_ISO_STDIO_FORMATTED_IO
     if (sscanf(cp, "%d %d %d", &ncols, &nrows, &nclrs) != 3) {
 #else
     if (((ncols = get_int(&cp)) < 0) ||
@@ -170,7 +177,7 @@ show_xpm(char *xpm[])
 #define FONT_WIDTH  8
 #define CURSOR_ON  0x5F
 #define CURSOR_OFF 0x20
-static char font_table[LAST_CHAR-FIRST_CHAR+1][8] =
+static const char font_table[LAST_CHAR-FIRST_CHAR+1][8] =
 {
         {        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, /*   */
         {        0x18, 0x18, 0x18, 0x18, 0x18, 0x00, 0x18, 0x00 }, /* ! */
@@ -280,15 +287,15 @@ static char font_table[LAST_CHAR-FIRST_CHAR+1][8] =
 #define PIXEL_MASK      ((1<<PIXELS_PER_BYTE)-1)
 
 // Physical screen info
-static int lcd_depth  = LCD_DEPTH;  // Should be 1, 2, or 4
+//static int lcd_depth  = LCD_DEPTH;  // Should be 1, 2, or 4
 static int lcd_width  = LCD_WIDTH;
 static int lcd_height = LCD_HEIGHT;
 
 // Virtual screen info
 static int curX = 0;  // Last used position
 static int curY = 0;
-static int width = LCD_WIDTH / (FONT_WIDTH*NIBBLES_PER_PIXEL);
-static int height = LCD_HEIGHT / (FONT_HEIGHT*SCREEN_SCALE);
+//static int width = LCD_WIDTH / (FONT_WIDTH*NIBBLES_PER_PIXEL);
+//static int height = LCD_HEIGHT / (FONT_HEIGHT*SCREEN_SCALE);
 static int fg = RGB_RED(0) | RGB_GREEN(0) | RGB_BLUE(0);
 static int bg = RGB_RED(31) | RGB_GREEN(63) | RGB_BLUE(31);
 #define SCREEN_WIDTH  (LCD_WIDTH/FONT_WIDTH)
@@ -365,7 +372,7 @@ lcd_drawc(cyg_int8 c, int x, int y)
     // Currently hard-coded for 16bpp
     cyg_uint8 bits;
     cyg_uint16 *pixels;
-    int l, p, w;
+    int l, p;
 
     screen[curY][curX] = c;
     for (l = 0;  l < FONT_HEIGHT;  l++) {

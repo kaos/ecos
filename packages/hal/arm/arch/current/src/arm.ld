@@ -148,7 +148,8 @@ OUTPUT_FORMAT(elf32-bigarm)
     . = ALIGN (4); \
     __CTOR_LIST__ = ABSOLUTE (.); KEEP (*(SORT (.ctors*))) __CTOR_END__ = ABSOLUTE (.); \
     __DTOR_LIST__ = ABSOLUTE (.); KEEP (*(SORT (.dtors*))) __DTOR_END__ = ABSOLUTE (.); \
-    *(.dynamic) *(.sdata*) *(.sbss*) } \
+    *(.dynamic) *(.sdata*) *(.sbss*) \
+    . = ALIGN (4); *(.2ram.*) } \
     > _region_ \
     __rom_data_start = LOADADDR (.data); \
     __ram_data_end = .; PROVIDE (__ram_data_end = .); _edata = .; PROVIDE (edata = .); \
