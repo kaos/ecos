@@ -1,13 +1,37 @@
+2000-04-06  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/wallclock_sh3.cdl: Only active when wallclock is.
+
+2000-04-05  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/wallclock_sh3.cdl: 
+
+	Provide hardware wallclock implementation as a radio button.
+
 2000-04-05  Jesper Skov  <jskov@redhat.com>
 
-	* current.ect: Wallclock moved.
+	* src/wallclock_sh3.cxx: 
+	Moved from devs/wallclock/current to here.
+	Get API from io/wallclock.
+	Deleted all non-SH3 changelog entries
 
-1999-12-09  Bart Veer  <bartv@cygnus.co.uk>
+2000-03-29  Jesper Skov  <jskov@redhat.com>
 
-	* templates/all directory created
-	
+	* tests/wallclock2.cxx:
+	* include/wallclock.hxx:
+	* src/sh3.cxx: 
+	* src/wallclock.cxx: 
+	* cdl/wallclock.cdl:
+	Reworked WallClock API. It should now be simpler to add new
+	wallclock drivers. Added a simple test to print out the current
+	wallclock value so a human can verify battery backup works.
 
-//===========================================================================
+2000-03-17  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/wallclock.cdl: 
+	* src/sh3.cxx: 
+	Added wallclock driver for SH3 RTC module.
+
 //####COPYRIGHTBEGIN####
 //                                                                          
 // -------------------------------------------                              
@@ -31,4 +55,5 @@
 // -------------------------------------------                              
 //                                                                          
 //####COPYRIGHTEND####
-//===========================================================================
+
+

@@ -166,11 +166,12 @@ tty_write(cyg_io_handle_t handle, const void *_buf, cyg_uint32 *len)
     bytes_successful = 0;
     actually_written = 0;
     while (bytes_successful++ < *len) {
-        xbuf[size++] = (c = *buf++);
+        c = *buf++;
         if ((c == '\n') &&
             (priv->dev_info.tty_out_flags & CYG_TTY_OUT_FLAGS_CRLF)) {
             xbuf[size++] = '\r';
         }
+        xbuf[size++] = c;
         // Always leave room for possible CR/LF expansion
         if ((size == (BUFSIZE-1)) ||
             (bytes_successful == *len)) {
@@ -209,7 +210,9 @@ tty_read(cyg_io_handle_t handle, void *_buf, cyg_uint32 *len)
         }
         buf[size++] = c;
         if ((priv->dev_info.tty_in_flags & CYG_TTY_IN_FLAGS_BINARY) == 0) {
-            if ((c == '\b') || (c == 0x7F)) {
+            switch (c) {
+            case '\b':    /* drop through */
+            case 0x7f:
                 size -= 2;  // erase one character + 'backspace' char
                 if (size < 0) {
                     size = 0;
@@ -217,21 +220,35 @@ tty_read(cyg_io_handle_t handle, void *_buf, cyg_uint32 *len)
                     clen = 3;
                     cyg_io_write(chan, "\b \b", &clen);
                 }
-            } else if ((c == '\n') || (c == '\r')) {
-                clen = 2;
-                if (priv->dev_info.tty_in_flags & CYG_TTY_IN_FLAGS_ECHO) {
-                    cyg_io_write(chan, "\n\r", &clen);
-                }
+                break;
+            case '\r':
                 if (priv->dev_info.tty_in_flags & CYG_TTY_IN_FLAGS_CRLF) {
+                    /* Don't do anything because a '\n' will come next */
+                    break;
+                }
+                if (priv->dev_info.tty_in_flags & CYG_TTY_IN_FLAGS_CR) {
                     c = '\n';  // Map CR -> LF
                 }
+                /* drop through */
+            case '\n':
+                if (priv->dev_info.tty_in_flags & CYG_TTY_IN_FLAGS_ECHO) {
+                    if (priv->dev_info.tty_out_flags & CYG_TTY_OUT_FLAGS_CRLF) {
+                        clen = 2;
+                        cyg_io_write(chan, "\r\n", &clen);
+                    } else {
+                        clen = 1;
+                        cyg_io_write(chan, &c, &clen);
+                    }
+                }
                 buf[size-1] = c;
-                break;
-            } else {
+                *len = size;
+                return ENOERR;
+            default:
                 if (priv->dev_info.tty_in_flags & CYG_TTY_IN_FLAGS_ECHO) {
                     clen = 1;
                     cyg_io_write(chan, &c, &clen);
                 }
+                break;
             }
         }
     }

@@ -63,7 +63,7 @@
 # ----------------------------------------------------------------------------
 # ecosadmin.tcl requires at least version 8.0 of Tcl, since it makes use of
 # namespaces. It is possible that some users still have older versions.
-set a b
+
 if { [info tclversion] < 8.0 } {
 	puts "This script requires Tcl 8.0 or later. You are running Tcl [info patchlevel]."
 	return

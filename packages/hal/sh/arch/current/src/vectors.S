@@ -675,7 +675,7 @@ $_cyg_hal_gdb_isr:
 
 #ifdef CYGSEM_HAL_COMMON_INTERRUPTS_ALLOW_NESTING
 
-#ifdef CYGPKG_HAL_SH_EDK7708
+#if defined(CYGPKG_HAL_SH_7708) || defined(CYGPKG_HAL_SH_7709A)
         # The interrupt mask bits in the SR are not updated by the
         # CPU. Proper nested operation requires the level to be
         # found and put in the SR.
@@ -964,11 +964,11 @@ _cyg_hal_ILVL_table:
 
         # The rest of the table consists of programmable levels, maintained
         # by the HAL_INTERRUPT_SET_LEVEL macro.
-#ifdef CYGPKG_HAL_SH_EDK7708
+#if defined(CYGPKG_HAL_SH_7708) || defined(CYGPKG_HAL_SH_7709A)
         .rept   (CYGNUM_HAL_ISR_MAX-CYGNUM_HAL_INTERRUPT_RESERVED_3E0)
         .byte   0xf
         .endr
-#endif // CYGPKG_HAL_SH_EDK7708
+#endif // CYGPKG_HAL_SH_7708 || CYGPKG_HAL_SH_7709A
 #endif // CYGSEM_HAL_COMMON_INTERRUPTS_ALLOW_NESTING
 
 #---------------------------------------------------------------------------

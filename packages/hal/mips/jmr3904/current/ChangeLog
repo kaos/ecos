@@ -1,3 +1,19 @@
+2000-04-04  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/pkgconf/mlt_mips_tx39_jmr3904_rom.ldi: 
+	* include/pkgconf/mlt_mips_tx39_jmr3904_rom.mlt: 
+	* include/pkgconf/mlt_mips_tx39_jmr3904_ram.ldi: 
+	* include/pkgconf/mlt_mips_tx39_jmr3904_ram.mlt: 
+	Split lit section into lit4 and lit8
+	DEVTAB -> devtab
+	Update alignments
+	For ROM startup, ensure all relevant sections are relocated,
+	not just .data
+	Above changed as per new mips_tx39.ld in variant HAL
+
+	* cdl/hal_mips_tx39_jmr3904.cdl (CYG_HAL_STARTUP): Fix board
+	name typo
+
 2000-03-16  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* include/pkgconf/mlt_mips_tx39_jmr3904_ram.h,

@@ -1,3 +1,14 @@
+2000-04-06  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/mips_tx39.ld: Define __CTOR_LIST__, __CTOR_END__, __DTOR_LIST__,
+	__DTOR_END__ regardless, for compatibility with old toolchains
+
+2000-04-04  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/mips_tx39.ld: Make sure some potentially empty sections are
+	output.	Replace __rom_data_start which was accidentally removed.
+	Split lit section into lit8 and lit4.
+
 2000-03-16  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* src/mips_tx39.ld: Update from latest "mips-tx39-elf-ld --verbose"

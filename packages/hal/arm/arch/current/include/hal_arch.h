@@ -193,7 +193,7 @@ asm volatile (" .code 16;"                               \
 
 # define HAL_BREAKINST           HAL_BREAKINST_THUMB
 # define HAL_BREAKINST_SIZE      HAL_BREAKINST_THUMB_SIZE
-#else
+#else // __thumb__
 
 #define HAL_BREAKPOINT(_label_)                   \
 asm volatile (" .globl  " #_label_ ";"            \

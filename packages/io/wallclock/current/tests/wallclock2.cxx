@@ -1,11 +1,8 @@
-#ifndef CYGONCE_DEVS_WALLCLOCK_HXX
-#define CYGONCE_DEVS_WALLCLOCK_HXX
-
 //==========================================================================
 //
-//      wallclock.hxx
+//        wallclock2.cxx
 //
-//      Wallclock interface declaration
+//        WallClock battery backed up test
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -34,47 +31,76 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):     nickg
-// Contributors:  nickg
-// Date:          1999-03-05
-// Purpose:       Wall Clock declarations
-// Description:   This file defines the interface to the wall clock device
-//                that provides real time stamps. This is either an interface
-//                to a hardware RTC like the Dallas DS12887, or it is emulated
-//                using the kernel clock.
-// Usage:         #include <cyg/devs/wallclock.hxx>
-//
+// Author(s):     jskov
+// Contributors:  jskov
+// Date:          2000-03-29
+// Description:   Tests the WallClock device.
+//                Prints wallclock setting (for human verification that time
+//                matches the expected value). Then tries to set/restore
+//                clock value, and verifies that the WallClock epoch matches
+//                that of the libc.
 //####DESCRIPTIONEND####
-//
-//==========================================================================
+// -------------------------------------------------------------------------
 
-#include <cyg/infra/cyg_type.h>
+#include <pkgconf/system.h>
+#include <cyg/infra/testcase.h>
+#include <cyg/infra/diag.h>
+#ifdef CYGPKG_LIBC
+#include <pkgconf/libc.h>
+#endif
+
+#if defined(CYGSEM_LIBC_TIME_CLOCK_WORKING)
+
+#include <time.h>
+#include <cyg/io/wallclock.hxx>
 
 // -------------------------------------------------------------------------
-// Wallclock class
 
-class Cyg_WallClock
+
+externC int
+main (void )
 {
+    time_t now, test;
 
-public:
+    CYG_TEST_INIT();
 
-    Cyg_WallClock();
+    // make this predictable - independent of the user option
+    cyg_libc_time_setzoneoffsets(0, 3600);
+    cyg_libc_time_setdst( CYG_LIBC_TIME_DSTOFF );
 
-    // Returns the current timestamp. This may involve reading the
-    // hardware, so it may take anything up to a second to complete.
-    cyg_uint32 get_current_time();
+    // Print out current setting so a human can verify that clock state
+    // was valid.
+    now = (time_t) Cyg_WallClock::wallclock->get_current_time();
+    diag_printf("WallClock is set to: %s", ctime(&now));
 
-    // Sets the value of the timestamp relative to now. This may involve
-    // writing to the hardware, so it may take anything up to a second to
-    // complete.
-    void set_current_time( cyg_uint32 time_stamp );
+    // Check that set/get works
+    Cyg_WallClock::wallclock->set_current_time( 0 );
+    test = (time_t) Cyg_WallClock::wallclock->get_current_time();
+    Cyg_WallClock::wallclock->set_current_time( now );
+    CYG_TEST_PASS_FAIL(0 == test, "Can set WallClock to epoch");
+    
+    // Test that the wallclock and libc use same epoch.
+    test = (time_t) 0;
+    CYG_TEST_PASS_FAIL(!strcmp(ctime(&test), "Thu Jan 01 00:00:00 1970\n"),
+                       "WallClock epoch matches libc epoch");
 
-    // A static pointer to the single system defined wall clock device.
-    static Cyg_WallClock *wallclock;
+    CYG_TEST_FINISH("Finished wallclock battery test");
+}
 
-};
+#else 
+#define NA_MSG "Requires libc time functions"
+#endif
+
+#ifdef NA_MSG
+
+externC void
+cyg_start( void )
+{
+    CYG_TEST_INIT();
+    CYG_TEST_PASS_FINISH(NA_MSG);
+}
+
+#endif // NA_MSG
 
 // -------------------------------------------------------------------------
-
-#endif // ifndef CYGONCE_DEVS_WALLCLOCK_HXX
-// EOF wallclock.hxx
+// EOF wallclock2.cxx

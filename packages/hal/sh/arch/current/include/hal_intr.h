@@ -51,6 +51,7 @@
 //==========================================================================
 
 #include <pkgconf/hal.h>
+#include CYGBLD_HAL_CPU_MODULES_H       // INTC module selection
 
 // More include statements below. First part of this file must be
 // usable for both assembly and C files, so only use defines here.
@@ -127,10 +128,11 @@
 #define CYGNUM_HAL_INTERRUPT_REF_RCMI        30
 #define CYGNUM_HAL_INTERRUPT_REF_ROVI        31
 
+#define CYGNUM_HAL_ISR_MAX                   CYGNUM_HAL_INTERRUPT_REF_ROVI
+
 
 // CYGNUM_HAL_ISR_COUNT must match CYG_ISR_TABLE_SIZE defined in vectors.S.
 #define CYGNUM_HAL_ISR_MIN                   CYGNUM_HAL_INTERRUPT_NMI
-#define CYGNUM_HAL_ISR_MAX                   CYGNUM_HAL_INTERRUPT_REF_ROVI
 #define CYGNUM_HAL_ISR_COUNT                 ( CYGNUM_HAL_ISR_MAX + 1 )
 
 // Exception vectors. These are the values used when passed out to an
@@ -416,6 +418,15 @@ externC cyg_uint8 cyg_hal_ILVL_table[];
         break;                                                           \
                                                                          \
     /* IPRB */                                                           \
+    case CYGNUM_HAL_INTERRUPT_SCI_ERI:                                   \
+    case CYGNUM_HAL_INTERRUPT_SCI_RXI:                                   \
+    case CYGNUM_HAL_INTERRUPT_SCI_TXI:                                   \
+    case CYGNUM_HAL_INTERRUPT_SCI_TEI:                                   \
+        HAL_READ_UINT16(CYGARC_REG_IPRB, iprX);                          \
+        iprX &= ~CYGARC_REG_IPRB_SCI_MASK;                               \
+        iprX |= (_level_)*CYGARC_REG_IPRB_SCI_PRI1;                      \
+        HAL_WRITE_UINT16(CYGARC_REG_IPRB, iprX);                         \
+        break;                                                           \
     case CYGNUM_HAL_INTERRUPT_WDT_ITI:                                   \
         HAL_READ_UINT16(CYGARC_REG_IPRB, iprX);                          \
         iprX &= ~CYGARC_REG_IPRB_WDT_MASK;                               \
@@ -427,15 +438,6 @@ externC cyg_uint8 cyg_hal_ILVL_table[];
         HAL_READ_UINT16(CYGARC_REG_IPRB, iprX);                          \
         iprX &= ~CYGARC_REG_IPRB_REF_MASK;                               \
         iprX |= (_level_)*CYGARC_REG_IPRB_REF_PRI1;                      \
-        HAL_WRITE_UINT16(CYGARC_REG_IPRB, iprX);                         \
-        break;                                                           \
-    case CYGNUM_HAL_INTERRUPT_SCI_ERI:                                   \
-    case CYGNUM_HAL_INTERRUPT_SCI_RXI:                                   \
-    case CYGNUM_HAL_INTERRUPT_SCI_TXI:                                   \
-    case CYGNUM_HAL_INTERRUPT_SCI_TEI:                                   \
-        HAL_READ_UINT16(CYGARC_REG_IPRB, iprX);                          \
-        iprX &= ~CYGARC_REG_IPRB_SCI_MASK;                               \
-        iprX |= (_level_)*CYGARC_REG_IPRB_SCI_PRI1;                      \
         HAL_WRITE_UINT16(CYGARC_REG_IPRB, iprX);                         \
         break;                                                           \
                                                                          \

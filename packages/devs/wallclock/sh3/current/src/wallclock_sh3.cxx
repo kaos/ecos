@@ -36,11 +36,6 @@
 // Date:          2000-03-17
 // Purpose:       Wallclock driver for SH3 CPU RTC module
 //
-// Notes:         Currently only reads from the RTC. There should be a config
-//                option for selecting whether to do init-read or read-write
-//                to the clock. This will be useful on targets which have
-//                battery backing on the RTC circuitry.
-//
 //####DESCRIPTIONEND####
 //
 //==========================================================================
@@ -49,32 +44,17 @@
 #include <pkgconf/wallclock.h>          // Wallclock device config
 
 #include <cyg/infra/cyg_type.h>         // Common type definitions and support
-#include <cyg/kernel/sched.inl>
 
-#include <cyg/devs/wallclock.hxx>
+#define __CYGBLD_DRIVER_PRIVATE
+#include <cyg/io/wallclock.hxx>         // The WallClock API
 
 #include <cyg/hal/sh_regs.h>            // RTC register definitions
 
-#include <cyg/infra/diag.h>         // Common type definitions and support
+#include <cyg/hal/hal_io.h>             // IO macros
+
+#include <cyg/infra/diag.h>             // For debugging
 
 
-//-----------------------------------------------------------------------------
-// Local static variables
-
-static Cyg_WallClock wallclock_instance CYG_INIT_PRIORITY( CLOCK );
-
-static cyg_uint32 hw_epoch_base;
-
-static cyg_uint32 epoch_ticks;
-static cyg_uint32 epoch_time_stamp;
-
-Cyg_WallClock *Cyg_WallClock::wallclock;
-
-
-//-----------------------------------------------------------------------------
-// BCD helper macros
-#define TO_BCD(x) (((x/10)<<4) | (x%10))
-#define TO_DEC(x) (((x>>4)*10) + (x&0xf))
 
 //-----------------------------------------------------------------------------
 // Functions for setting and getting the hardware clock counters
@@ -133,40 +113,11 @@ get_sh3_hwclock(cyg_uint32* year, cyg_uint32* month, cyg_uint32* mday,
 }
 
 //-----------------------------------------------------------------------------
-// Functions providing a simple read-elapsed-seconds interface to the
-// hardware clock
+// Functions required for the hardware-driver API.
 
-// This function is from the Linux kernel.
-//
-// Converts Gregorian date to seconds since 1970-01-01 00:00:00.
-// Assumes input in normal date format, i.e. 1980-12-31 23:59:59
-// => year=1980, mon=12, day=31, hour=23, min=59, sec=59.
-//
-// This algorithm was first published by Gauss (I think).
-//
-// WARNING: this function will overflow on 2106-02-07 06:28:16 on
-// machines were long is 32-bit! (However, as time_t is signed, we
-// will already get problems at other places on 2038-01-19 03:14:08)
-static cyg_uint32
-_simple_mktime(cyg_uint32 year, cyg_uint32 mon,
-		     cyg_uint32 day, cyg_uint32 hour,
-		     cyg_uint32 min, cyg_uint32 sec)
-{
-	if (0 >= (int) (mon -= 2)) {	/* 1..12 -> 11,12,1..10 */
-		mon += 12;	/* Puts Feb last since it has leap day */
-		year -= 1;
-	}
-	return (((
-		(cyg_uint32)(year/4 - year/100 + year/400 + 367*mon/12 + day) +
-		year*365 - 719499
-		)*24 + hour /* now have hours */
-		)*60 + min /* now have minutes */
-		)*60 + sec; /* finally seconds */
-}
-
-// Returns number of elapsed ticks since the hw_epoch_base
-static inline cyg_uint32 
-get_hw_ticks(void)
+// Returns the number of seconds elapsed since 1970-01-01 00:00:00.
+cyg_uint32 
+Cyg_WallClock::get_hw_seconds(void)
 {
     cyg_uint32 year, month, mday, hour, minute, second;
 
@@ -183,60 +134,35 @@ get_hw_ticks(void)
     diag_printf("second %02d\n", second);
 #endif
 
+#ifndef CYGSEM_WALLCLOCK_SET_GET_MODE
+    // We know what we initialized the hardware for : 1970, so by doing this
+    // the returned time should be OK for 30 years uptime.
+    year += 1900;
+#else
+    // Need to use sliding window or similar to figure out what the
+    // century should be... Patent issue is unclear, and since there's
+    // no battery backup of the clock, there's little point in
+    // investigating.
+# error "Need some magic here to figure out century counter"
+#endif
+
     cyg_uint32 now = _simple_mktime(year, month, mday, hour, minute, second);
-    return now - hw_epoch_base;
+    return now;
 }
 
-static inline void
-init_hw_ticks(void)
+#ifndef CYGSEM_WALLCLOCK_SET_GET_MODE
+
+void
+Cyg_WallClock::init_hw_seconds(void)
 {
     // This is our base: 1970-01-01 00:00:00
     // Set the HW clock - if for nothing else, just to be sure it's in a
     // legal range. Any arbitrary base could be used.
     // After this the hardware clock is only read.
-    hw_epoch_base = _simple_mktime(1970,1,1,0,0,0);
     set_sh3_hwclock(70,1,1,0,0,0);
 }
 
-//-----------------------------------------------------------------------------
-// Constructor
-
-Cyg_WallClock::Cyg_WallClock()
-{
-    // install instance pointer
-    wallclock = &wallclock_instance;
-
-    init_hw_ticks();
-}
-
-//-----------------------------------------------------------------------------
-// Returns the current timestamp. This may involve reading the
-// hardware, so it may take anything up to a second to complete.
-
-cyg_uint32 Cyg_WallClock::get_current_time()
-{
-    Cyg_Scheduler::lock();
-
-    cyg_uint32 diff = get_hw_ticks() - epoch_ticks;
-
-    Cyg_Scheduler::unlock();
-
-    return epoch_time_stamp + diff;
-}
-
-//-----------------------------------------------------------------------------
-// Sets the value of the timestamp relative to now. This may involve
-// writing to the hardware, so it may take anything up to a second to
-// complete.
-void Cyg_WallClock::set_current_time( cyg_uint32 time_stamp )
-{
-    Cyg_Scheduler::lock();
-
-    epoch_time_stamp    = time_stamp;
-    epoch_ticks         = get_hw_ticks();
-
-    Cyg_Scheduler::unlock();
-}
+#endif // CYGSEM_WALLCLOCK_SET_GET_MODE
 
 //-----------------------------------------------------------------------------
 // End of devs/wallclock/sh3.cxx

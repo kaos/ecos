@@ -43,9 +43,15 @@ INPUT(extras.o)
 #endif
 GROUP(libtarget.a libgcc.a)
 
+/* FIXME: The MLT should pass in the required alignment since it must be
+ * the same as the VMA's alignment. As a result of this bug, all the JMR3904
+ * ROM mlt files have alignment 8, when some should have alignment 4
+ * (902557-CR)
+ */
 #define ALIGN_LMA 8
 #define FOLLOWING(_section_) AT ((LOADADDR (_section_) + SIZEOF (_section_) + ALIGN_LMA - 1) & ~ (ALIGN_LMA - 1))
 #define LMA_EQ_VMA
+#define FORCE_OUTPUT . = .
 
 #define SECTIONS_BEGIN
 
@@ -140,7 +146,7 @@ GROUP(libtarget.a libgcc.a)
 #define SECTION_init(_region_, _vma_, _lma_)   \
   .init _vma_ : _lma_                          \
     {                                          \
-      KEEP (*(.init))                          \
+      FORCE_OUTPUT; KEEP (*(.init))            \
     } > _region_ =0
 
 #define SECTION_text(_region_, _vma_, _lma_)   \
@@ -159,25 +165,25 @@ GROUP(libtarget.a libgcc.a)
 #define SECTION_fini(_region_, _vma_, _lma_)   \
   .fini _vma_ : _lma_                          \
     {                                          \
-      KEEP (*(.fini))                          \
+      FORCE_OUTPUT; KEEP (*(.fini))                   \
     } > _region_ =0
 
 #define SECTION_rodata(_region_, _vma_, _lma_)        \
   .rodata _vma_ : _lma_                               \
     {                                                 \
-      *(.rodata*) *(.rodata.*) *(.gnu.linkonce.r*)    \
+      FORCE_OUTPUT; *(.rodata) *(.rodata.*) *(.gnu.linkonce.r*)    \
     } > _region_
 
 #define SECTION_rodata1(_region_, _vma_, _lma_)       \
   .rodata1 _vma_ : _lma_                              \
     {                                                 \
-      *(.rodata1) *(.rodata1.*)                       \
+     FORCE_OUTPUT; *(.rodata1) *(.rodata1.*)          \
     } > _region_
 
 #define SECTION_vsr_table(_region_, _vma_, _lma_)     \
   .vsr_table _vma_ : _lma_                            \
     {                                                 \
-      *(.vsr_table)                                   \
+      FORCE_OUTPUT; *(.vsr_table)                     \
     } > _region_
 
 #define SECTION_data(_region_, _vma_, _lma_)          \
@@ -187,24 +193,25 @@ GROUP(libtarget.a libgcc.a)
       *(.data) *(.data.*) *(.gnu.linkonce.d*)         \
     . = ALIGN (8);                                    \
     SORT(CONSTRUCTORS)                                \
-    } > _region_
+    } > _region_                                      \
+    __rom_data_start = LOADADDR(.data);
 
 #define SECTION_data1(_region_, _vma_, _lma_)         \
   .data1 _vma_ : _lma_                                \
     {                                                 \
-       *(.data1) *(.data1.*)                          \
+       FORCE_OUTPUT; *(.data1) *(.data1.*)            \
     } > _region_
 
 #define SECTION_eh_frame(_region_, _vma_, _lma_)      \
   .eh_frame _vma_ : _lma_                             \
     {                                                 \
-       *(.eh_frame)                                   \
+       FORCE_OUTPUT; *(.eh_frame)                     \
     } > _region_
 
 #define SECTION_gcc_except_table(_region_, _vma_, _lma_) \
   .gcc_except_table _vma_ : _lma_                        \
     {                                                    \
-      *(.gcc_except_table)                               \
+      FORCE_OUTPUT; *(.gcc_except_table)                 \
     } > _region_
 
 
@@ -223,31 +230,43 @@ GROUP(libtarget.a libgcc.a)
        The .ctor section from the crtend file contains the
        end of ctors marker and it must be last */
 
+/* FIXME: We shouldn't need to define __CTOR_LIST__/__CTOR_END__
+   and __DTOR_LIST__/__DTOR_END__ except by the PROVIDE lines.
+   However this doesn't work for old (99r1-era) toolchains, so
+   leave it for now. */
+
 #define SECTION_ctors(_region_, _vma_, _lma_)     \
   .ctors _vma_ : _lma_                            \
     {                                             \
+      FORCE_OUTPUT;                               \
       KEEP (*crtbegin.o(.ctors))                  \
+      __CTOR_LIST__ = .;                \
       PROVIDE (__CTOR_LIST__ = .);                \
       KEEP (*(EXCLUDE_FILE (*crtend.o) .ctors))   \
       KEEP (*(SORT(.ctors.*)))                    \
       KEEP (*(.ctors))                            \
+      __CTOR_END__ = .;                 \
       PROVIDE (__CTOR_END__ = .);                 \
     } > _region_
 
 #define SECTION_dtors(_region_, _vma_, _lma_)     \
   .dtors _vma_ : _lma_                            \
     {                                             \
+      FORCE_OUTPUT;                               \
       KEEP (*crtbegin.o(.dtors))                  \
+      __DTOR_LIST__ = .;                \
       PROVIDE (__DTOR_LIST__ = .);                \
       KEEP (*(EXCLUDE_FILE (*crtend.o) .dtors))   \
       KEEP (*(SORT(.dtors.*)))                    \
       KEEP (*(.dtors))                            \
+      __DTOR_END__ = .;                 \
       PROVIDE (__DTOR_END__ = .);                 \
     } > _region_
 
-#define SECTION_DEVTAB(_region_, _vma_, _lma_)    \
+#define SECTION_devtab(_region_, _vma_, _lma_)    \
   .devtab _vma_ : _lma_                           \
     {                                             \
+      FORCE_OUTPUT;                               \
       __DEVTAB__ = .;                             \
       KEEP (*(SORT(.devtab*)))                    \
        __DEVTAB_END__ = .;                        \
@@ -260,42 +279,44 @@ GROUP(libtarget.a libgcc.a)
   _gp = ALIGN(16) + 0x7ff0;                     \
   .got _vma_ : _lma_                            \
     {                                           \
-      *(.got.plt) *(.got)                       \
+      FORCE_OUTPUT; *(.got.plt) *(.got)         \
     } > _region_
 
 #define SECTION_dynamic(_region_, _vma_, _lma_) \
   .dynamic _vma_ : _lma_                        \
     {                                           \
-      *(.dynamic)                               \
+      FORCE_OUTPUT; *(.dynamic)                 \
     } > _region_
 
   /* We want the small data sections together, so single-instruction offsets
      can access them all, and initialized data all before uninitialized, so
      we can shorten the on-disk segment size.  */
 
-#define SECTION_sdata(_region_, _vma_, _lma_)   \
-  .sdata _vma_ : _lma_                          \
-    {                                           \
-      *(.sdata) *(.sdata.*) *(.gnulinkonce.s*)  \
+#define SECTION_sdata(_region_, _vma_, _lma_)                 \
+  .sdata _vma_ : _lma_                                        \
+    {                                                         \
+      FORCE_OUTPUT; *(.sdata) *(.sdata.*) *(.gnulinkonce.s*)  \
     } > _region_
 
-#define SECTION_lit(_region_, _vma_, _lma_)     \
+#define SECTION_lit8(_region_, _vma_, _lma_)    \
   .lit8 _vma_ : _lma_                           \
     {                                           \
-      *(.lit8)                                  \
-    } > _region_                                \
+      FORCE_OUTPUT; *(.lit8)                    \
+    } > _region_
+
+#define SECTION_lit4(_region_, _vma_, _lma_)    \
   .lit4 : FOLLOWING(.lit8)                      \
     {                                           \
-      *(.lit4)                                  \
+      FORCE_OUTPUT; *(.lit4)                    \
     } > _region_                                \
   __ram_data_end = .; _edata = . ;              \
   PROVIDE (edata = .);
 
-#define SECTION_sbss(_region_, _vma_, _lma_)      \
-  __bss_start = .; _fbss = .;                     \
-  .sbss _vma_ : _lma_                             \
-    {                                             \
-      *(.dynsbss) *(.sbss) *(.sbss.*) *(.scommon) \
+#define SECTION_sbss(_region_, _vma_, _lma_)                    \
+  __bss_start = .; _fbss = .;                                   \
+  .sbss _vma_ : _lma_                                           \
+    {                                                           \
+      FORCE_OUTPUT; *(.dynsbss) *(.sbss) *(.sbss.*) *(.scommon) \
     } > _region_
 
 #define SECTION_bss(_region_, _vma_, _lma_)       \

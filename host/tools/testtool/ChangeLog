@@ -1,3 +1,9 @@
+2000-04-05  John Dallaway  <jld@cygnus.co.uk>
+
+	* win32/TestTool.rc:
+
+	Relocate the OK button in the IDD_TT_PROPERTIES dialog.
+
 2000-03-13  John Dallaway  <jld@cygnus.co.uk>
 
 	* win32/testtoolres.h,

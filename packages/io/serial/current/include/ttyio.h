@@ -60,13 +60,13 @@ typedef struct {
 } cyg_tty_info_t;
 
 // TTY flags - used to control behaviour when sending data to tty
-#define CYG_TTY_OUT_FLAGS_CRLF  0x0001  // Map '\n' => '\n\r' on output
+#define CYG_TTY_OUT_FLAGS_CRLF  0x0001  // Map '\n' => '\r\n' on output
 
 #define CYG_TTY_OUT_FLAGS_DEFAULT (CYG_TTY_OUT_FLAGS_CRLF)
 
 // TTY flags - used to control behaviour when receiving data from tty
 #define CYG_TTY_IN_FLAGS_CR      0x0001  // Map '\r' => '\n' on input
-#define CYG_TTY_IN_FLAGS_CRLF    0x0002  // Map '\n\r' => '\n' on input
+#define CYG_TTY_IN_FLAGS_CRLF    0x0002  // Map '\r\n' => '\n' on input
 #define CYG_TTY_IN_FLAGS_ECHO    0x0004  // Echo characters as processed
 #define CYG_TTY_IN_FLAGS_BINARY  0x0008  // No input processing
 

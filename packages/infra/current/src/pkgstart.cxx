@@ -67,6 +67,7 @@
 # include <cyg/compat/uitron/uit_func.h>
 #endif
 
+
 // FUNCTION PROTOTYPES
 
 externC void
@@ -86,6 +87,7 @@ cyg_package_start( void )
     cyg_uitron_start();
 #endif
 
+    
 #ifdef CYGSEM_START_ISO_C_COMPATIBILITY
     // This works even if the kernel is there, but if not, then it
     // calls the user main() and doesn't return until it does!

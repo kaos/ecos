@@ -122,9 +122,13 @@ _strerror( Cyg_ErrNo );
 #define ERANGE           34    // Math result cannot be represented
 #define ENOSYS           38    // Function not implemented
 
+#define ENOTSUP          95    // POSIX not supported error
+
 #define EEOF             200   // End of file reached
 #define ENOSUPP          201   // Operation not supported
 #define EDEVNOSUPP       202   // Device does not support this operation
+
+#define EDEADLK          301   // POSIX deadlock error
 
 #ifdef CYGPKG_NET
 // Additional errors used by networking

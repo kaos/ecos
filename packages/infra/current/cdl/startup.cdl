@@ -93,3 +93,4 @@ cdl_option CYGSEM_START_UITRON_COMPATIBILITY {
         you must call cyg_uitron_start() from your own
         cyg_package_start() or cyg_userstart()."
 }
+

@@ -1,3 +1,8 @@
+2000-04-06  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/hal_intr.h (HAL_CLOCK_RESET): Prevent warning
+	(patch thanks to Sergei Organov (osv at javad.ru))
+
 2000-03-13  Jesper Skov  <jskov@redhat.com>
 	Case 103356
 	* include/hal_intr.h (HAL_CLOCK_RESET): Add to decrementer instead

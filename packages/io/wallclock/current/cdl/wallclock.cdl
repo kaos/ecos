@@ -1,0 +1,134 @@
+# ====================================================================
+#
+#      wallclock.cdl
+#
+#      eCos wallclock configuration data
+#
+# ====================================================================
+#####COPYRIGHTBEGIN####
+#                                                                          
+# -------------------------------------------                              
+# The contents of this file are subject to the Red Hat eCos Public License 
+# Version 1.1 (the "License"); you may not use this file except in         
+# compliance with the License.  You may obtain a copy of the License at    
+# http://www.redhat.com/                                                   
+#                                                                          
+# Software distributed under the License is distributed on an "AS IS"      
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+# License for the specific language governing rights and limitations under 
+# the License.                                                             
+#                                                                          
+# The Original Code is eCos - Embedded Configurable Operating System,      
+# released September 30, 1998.                                             
+#                                                                          
+# The Initial Developer of the Original Code is Red Hat.                   
+# Portions created by Red Hat are                                          
+# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# All Rights Reserved.                                                     
+# -------------------------------------------                              
+#                                                                          
+#####COPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      jskov
+# Original data:  nickg
+# Contributors:
+# Date:           1999-07-13
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_IO_WALLCLOCK {
+    display       "Wallclock device"
+    include_dir   cyg/io
+    define_header wallclock.h
+    description   "
+        The wallclock device provides real time stamps, as opposed
+        to the eCos kernel timers which typically just count the
+        number of clock ticks since the hardware was powered up.
+        Depending on the target platform this device may involve
+        interacting with a suitable clock chip, or it may be
+        emulated by using the kernel timers."
+
+    compile       wallclock.cxx
+
+    cdl_interface CYGINT_WALLCLOCK_HW_IMPLEMENTATIONS {
+        display       "Number of wallclock hardware implementations"
+    }
+
+    cdl_interface CYGINT_WALLCLOCK_IMPLEMENTATIONS {
+        display       "Number of wallclock implementations"
+        requires      1 == CYGINT_WALLCLOCK_IMPLEMENTATIONS
+    }
+
+    cdl_component CYGPKG_IO_WALLCLOCK_IMPLEMENTATION {
+        display "Wallclock implementation"
+        flavor none
+        no_define
+        description "Implementations of the wallclock device."
+
+        cdl_option CYGPKG_WALLCLOCK_EMULATE {
+            default_value { 0 == CYGINT_WALLCLOCK_HW_IMPLEMENTATIONS }
+            display       "Wallclock emulator"
+            implements    CYGINT_WALLCLOCK_IMPLEMENTATIONS
+            compile       emulate.cxx
+            define_proc {
+                puts $::cdl_header "#undef CYGSEM_WALLCLOCK_SET_GET_MODE"
+            }
+            description   "
+                When this option is enabled, a wallclock device will be
+                emulated using the kernel real-time clock."
+        }
+
+        cdl_option CYGIMP_WALLCLOCK_NONE {
+            display       "No wallclock"
+            default_value 0
+            implements    CYGINT_WALLCLOCK_IMPLEMENTATIONS
+            description   "Disables the wallclock."
+        }
+    }
+
+    cdl_component CYGPKG_IO_WALLCLOCK_OPTIONS {
+        display "Wallclock build options"
+        flavor  none
+        description   "
+	    Package specific build options including control over
+	    compiler flags used only in building this package,
+	    and details of which tests are built."
+
+
+        cdl_option CYGPKG_IO_WALLCLOCK_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the wallclock device. These flags are used in addition
+                to the set of global flags."
+        }
+
+        cdl_option CYGPKG_IO_WALLCLOCK_CFLAGS_REMOVE {
+            display "Supressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the wallclock device. These flags are removed from
+                the set of global flags if present."
+        }
+
+        cdl_option CYGPKG_IO_WALLCLOCK_TESTS {
+            display "Wallclock tests"
+            flavor  data
+            no_define
+            calculated { "tests/wallclock tests/wallclock2" }
+            description   "
+                This option specifies the set of tests for the
+                wallclock device."
+        }
+    }
+}

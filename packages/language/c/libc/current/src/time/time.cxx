@@ -56,7 +56,7 @@
 #include <time.h>                  // Main date and time definitions
 
 #ifdef CYGSEM_LIBC_TIME_TIME_WORKING
-# include <cyg/devs/wallclock.hxx> // Wallclock class definitions
+# include <cyg/io/wallclock.hxx> // Wallclock class definitions
 #endif
 
 // FUNCTIONS

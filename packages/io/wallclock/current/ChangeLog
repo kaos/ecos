@@ -1,3 +1,40 @@
+2000-04-06  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* tests/wallclock2.cxx: Test correct libc feature CDL
+
+2000-04-05  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/wallclock.cdl:
+
+	Implement wallclock implementations as radio buttons.
+
+2000-04-05  Jesper Skov  <jskov@redhat.com>
+
+	* tests/wallclock.cxx: 
+	Increase precision of test.
+	
+	* src/wallclock.cxx: 
+	* src/emulate.cxx: 
+	* tests/wallclock.cxx: 
+	* tests/wallclock2.cxx: 
+
+	* Moved common code, emulation device and tests to io/wallclock.
+
+2000-04-04  Jesper Skov  <jskov@redhat.com>
+
+	* tests/wallclock2.cxx: Include testcase.h before conditional NA.
+
+2000-03-29  Jesper Skov  <jskov@redhat.com>
+
+	* tests/wallclock2.cxx:
+	* include/wallclock.hxx:
+	* src/sh3.cxx: 
+	* src/wallclock.cxx: 
+	* cdl/wallclock.cdl:
+	Reworked WallClock API. It should now be simpler to add new
+	wallclock drivers. Added a simple test to print out the current
+	wallclock value so a human can verify battery backup works.
+
 2000-03-17  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/wallclock.cdl: 

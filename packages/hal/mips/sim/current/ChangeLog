@@ -1,3 +1,12 @@
+2000-04-04  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/pkgconf/mlt_mips_tx39_sim_ram.ldi,
+	  include/pkgconf/mlt_mips_tx39_sim_ram.mlt: 
+	Split lit section into lit4 and lit8
+	DEVTAB -> devtab
+	Update alignments
+	Above changed as per new mips_tx39.ld in variant HAL
+
 2000-03-16  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* sim/current/include/pkgconf/mlt_mips_tx39_sim_ram.h,

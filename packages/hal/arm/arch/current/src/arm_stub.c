@@ -637,5 +637,4 @@ cyg_hal_gdb_break_is_set (void)
 }
 
 
-
 #endif // CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS

@@ -1,3 +1,21 @@
+2000-04-06  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/hal_sh_edk7708.cdl: Use -g now that toolchains work with that
+	(and in fact new toolchains no longer work with -ggdb)
+
+2000-04-06  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_sh_edk7708.cdl: Define vsr base location.
+
+2000-04-04  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c (hal_diag_write_char): Add GDB critical IO region
+	handling.
+
+2000-03-20  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_sh_edk7708.cdl: Added board speed variable.
+
 2000-03-09  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_diag.c: Fix compiler warning.

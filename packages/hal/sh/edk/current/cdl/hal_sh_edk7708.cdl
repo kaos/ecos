@@ -57,6 +57,8 @@ cdl_package CYGPKG_HAL_SH_EDK7708 {
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_sh.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_sh_edk7708.h>"
+
+        puts $::cdl_header "#define CYGHWR_HAL_VSR_TABLE 0x08000000"
     }
 
     cdl_component CYG_HAL_STARTUP {
@@ -76,6 +78,14 @@ cdl_package CYGPKG_HAL_SH_EDK7708 {
            requires that the eCos application be blown into EPROMs or
            equivalent technology."
     }
+
+    cdl_option CYGHWR_HAL_SH_BOARD_SPEED {
+        display          "Development board clock speed (MHz)"
+        flavor           data
+        calculated       15
+        description      "
+           The EDK/7708 board uses a 15MHz crystal."
+   }
 
     # Real-time clock/counter specifics
     cdl_component CYGNUM_HAL_RTC_CONSTANTS {
@@ -100,7 +110,7 @@ cdl_package CYGPKG_HAL_SH_EDK7708 {
         cdl_option CYGNUM_HAL_RTC_PERIOD {
             display       "Real-time clock period"
             flavor        data
-           calculated     37500
+            calculated    { CYGHWR_HAL_SH_BOARD_SPEED*1000000/CYGNUM_HAL_RTC_DENOMINATOR/4 }
         }
     }
 
@@ -127,7 +137,7 @@ cdl_package CYGPKG_HAL_SH_EDK7708 {
             display "Global compiler flags"
             flavor  data
             no_define
-            default_value { CYGHWR_HAL_SH_BIGENDIAN ? "-mb -m3 -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -ggdb -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" : "-ml -m3 -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -ggdb -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
+              default_value { CYGHWR_HAL_SH_BIGENDIAN ? "-mb -m3 -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" : "-ml -m3 -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -ggdb -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
             description   "
                 This option controls the global compiler flags which
                 are used to compile all packages by
@@ -139,7 +149,7 @@ cdl_package CYGPKG_HAL_SH_EDK7708 {
             display "Global linker flags"
             flavor  data
             no_define
-            default_value { CYGHWR_HAL_SH_BIGENDIAN ? "-mb -m3 -ggdb -nostdlib -Wl,--gc-sections -Wl,-static" : "-ml -m3 -ggdb -nostdlib -Wl,--gc-sections -Wl,-static" }
+            default_value { CYGHWR_HAL_SH_BIGENDIAN ? "-mb -m3 -nostdlib -Wl,--gc-sections -Wl,-static" : "-ml -m3 -nostdlib -Wl,--gc-sections -Wl,-static" }
             description   "
                 This option controls the global linker flags. Individual
                 packages may define options which override these global flags."

@@ -1,3 +1,7 @@
+2000-03-31  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/codes.h: Added some further codes.
+
 1999-04-14  John Dallaway  <jld@cygnus.co.uk>
 
 	* include/pkgconf/error.h: Add cdl_package doc attribute.

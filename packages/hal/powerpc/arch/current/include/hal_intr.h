@@ -354,7 +354,7 @@ externC void cyg_hal_default_exception_vsr( void );
         "bgt    1f;"                            \
         "mr     %0,%1;"                         \
         "1: mtdec %0;"                          \
-        : "&=r" (tmp)                           \
+        : "=&r" (tmp)                           \
         : "r"(_period_)                         \
         : "cc"                                  \
         );                                      \

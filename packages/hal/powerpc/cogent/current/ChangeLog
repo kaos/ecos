@@ -1,3 +1,8 @@
+2000-04-04  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c (hal_diag_write_char): Add GDB critical IO region
+	handling.
+
 2000-03-02  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_diag.c (ai_write_char): fix typos.

@@ -53,7 +53,7 @@
 #include <cyg/infra/cyg_ass.h>     // Assertion infrastructure
 #include <cyg/infra/cyg_trac.h>    // Tracing infrastructure
 #ifdef CYGSEM_LIBC_TIME_SETTIME_WORKING
-# include <cyg/devs/wallclock.hxx> // Wallclock class definitions
+# include <cyg/io/wallclock.hxx> // Wallclock class definitions
 #endif
 
 // FUNCTIONS

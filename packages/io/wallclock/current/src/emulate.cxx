@@ -1,6 +1,6 @@
 //==========================================================================
 //
-//      devs/wallclock/emulate.cxx
+//      io/wallclock/emulate.cxx
 //
 //      Wallclock emulation implementation
 //
@@ -40,80 +40,46 @@
 //
 //==========================================================================
 
-#include <pkgconf/wallclock.h>  // Wallclock device config
-
-#ifdef CYGIMP_WALLCLOCK_EMULATE
-
+#include <pkgconf/wallclock.h>          // Wallclock device config
 #include <pkgconf/kernel.h>             // Kernel config
 
-#include <cyg/infra/cyg_type.h> // Common type definitions and support
-#include <cyg/hal/hal_diag.h>   // HAL diagnostic output
-
-#include <cyg/devs/wallclock.hxx>
-
+#include <cyg/infra/cyg_type.h>         // Common type definitions and support
 #include <cyg/kernel/ktypes.h>
-#include <cyg/kernel/sched.hxx>
-#include <cyg/kernel/clock.hxx>
 
-#include <cyg/kernel/sched.inl>
+#include <cyg/io/wallclock.hxx>         // The WallClock API
+
+#include <cyg/kernel/clock.hxx>         // Access to kernel clock
+#include <cyg/kernel/clock.inl>
 
 
-/*---------------------------------------------------------------------------*/
-// Local static variables
-
-static Cyg_WallClock wallclock_instance CYG_INIT_PRIORITY( CLOCK );
-
+// Remember the tick count at the time of initialization.
 static cyg_tick_count epoch_ticks;
 
-static cyg_uint32 epoch_time_stamp;
-
-Cyg_WallClock *Cyg_WallClock::wallclock;
-
-/*---------------------------------------------------------------------------*/
-// Constructor
-
-Cyg_WallClock::Cyg_WallClock()
+//-----------------------------------------------------------------------------
+// Called to initialize the hardware clock with a known valid
+// time. Which of course isn't required when doing emulation using the
+// kernel clock. But we set the private epoch base to "now".
+void
+Cyg_WallClock::init_hw_seconds( void )
 {
-    // install instance pointer
-    wallclock = &wallclock_instance;
+    // Remember the current clock tick count.
+    epoch_ticks = Cyg_Clock::real_time_clock->current_value();
 }
 
-/*---------------------------------------------------------------------------*/
-// Returns the current timestamp. This may involve reading the
-// hardware, so it may take anything up to a second to complete.
-
-cyg_uint32 Cyg_WallClock::get_current_time()
+//-----------------------------------------------------------------------------
+// Returns the number of seconds elapsed since the init call.
+cyg_uint32 
+Cyg_WallClock::get_hw_seconds( void )
 {
-    Cyg_Clock::cyg_resolution res = Cyg_Clock::real_time_clock->get_resolution();
-        
-    Cyg_Scheduler::lock();
+    Cyg_Clock::cyg_resolution res = 
+        Cyg_Clock::real_time_clock->get_resolution();
+    cyg_tick_count secs = Cyg_Clock::real_time_clock->current_value()
+        - epoch_ticks;
 
-    cyg_tick_count diff = Cyg_Clock::real_time_clock->current_value()
-                          - epoch_ticks;
+    secs = ( secs * res.dividend ) / ( res.divisor * 1000000000LL ) ;
 
-    diff = ( diff * res.dividend ) / ( res.divisor * 1000000000LL ) ;
-    
-    Cyg_Scheduler::unlock();
-
-    return epoch_time_stamp + diff;
+    return secs;
 }
 
-/*---------------------------------------------------------------------------*/
-// Sets the value of the timestamp relative to now. This may involve
-// writing to the hardware, so it may take anything up to a second to
-// complete.
-void Cyg_WallClock::set_current_time( cyg_uint32 time_stamp )
-{
-    Cyg_Scheduler::lock();
-
-    epoch_time_stamp    = time_stamp;
-    epoch_ticks         = Cyg_Clock::real_time_clock->current_value();
-
-    Cyg_Scheduler::unlock();
-}
-
-/*---------------------------------------------------------------------------*/
-
-#endif
-/*---------------------------------------------------------------------------*/
-/* End of devs/wallclock/emulate.cxx */
+//-----------------------------------------------------------------------------
+// End of devs/wallclock/emulate.cxx

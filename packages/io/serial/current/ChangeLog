@@ -1,3 +1,21 @@
+2000-04-07  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/common/tty.c (tty_read): Correct handling of modes with newlines
+
+2000-04-05  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/common/tty.c (tty_read): CRLF conversion should use \r\n not \n\r
+	(tty_write): Similarly
+
+	* include/ttyio.h: Update CYG_TTY_IN_FLAGS_CRLF and
+	CYG_TTY_IN_FLAGS_CRLF to match
+
+2000-03-31  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/ser_sh_edk7708.cdl: Limit legal baud rate range.
+	* src/sh/sh_sci_serial.c: Use baud rate macro instead of hardwired
+	constants.
+
 2000-03-28  John Dallaway  <jld@cygnus.co.uk>
 
 	* cdl/io_serial.cdl,

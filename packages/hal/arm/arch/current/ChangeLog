@@ -1,3 +1,11 @@
+2000-04-04  Jesper Skov  <jskov@redhat.com>
+
+	* src/context.S: 
+	* src/vectors.S: 
+	Wrap the trivial thumb stuff in macros so the important bits stand
+	out.
+	Fix dumb bug.
+	
 2000-03-24  Jesper Skov  <jskov@redhat.com>
 
 	* src/arm_stub.c: Make place_break thumb-aware.

@@ -1,3 +1,18 @@
+2000-03-31  John Dallaway  <jld@cygnus.co.uk>
+
+	* standalone/win32/MainFrm.cpp:
+
+	Modify CygMount() to call the correct overloaded form
+	of CSubprocess::Run().
+
+2000-03-29  John Dallaway  <jld@cygnus.co.uk>
+
+	* standalone/win32/Configtool.rc,
+	  standalone/common/ecosconfig.cxx,
+	  standalone/win32/res/Splsh16.bmp:
+
+	Update version strings.	
+
 2000-03-28  John Dallaway  <jld@cygnus.co.uk>
 
 	* standalone/win32/cdl.sh,

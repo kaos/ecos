@@ -1,3 +1,18 @@
+2000-04-06  Jesper Skov  <jskov@redhat.com>
+
+	* src/sh.ld (_hal_vsr_table): Get address from platform CDL.
+
+2000-03-31  Jesper Skov  <jskov@redhat.com>
+
+	* include/sh_regs.h: Added bit definitions for BSC.
+
+	* include/sh_regs.h: Replaced hardcoded baud rate constants with
+	a macro which calculates the proper values based on baud rate
+	and CPU clock speed.
+
+	* src/vectors.S: ISR mask tables enabled per CPU variant, not
+	target.
+
 2000-03-20  Jesper Skov  <jskov@redhat.com>
 
 	* include/sh_regs.h: Add definitions for RTC module.

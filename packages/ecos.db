@@ -97,12 +97,23 @@ package CYGPKG_IO_PCI	{
            This package contains the PCI configuration library."
 }
 
-package CYGPKG_DEVICES_WALLCLOCK {
-	alias		{ "Wallclock device code" wallclock devices_wallclock device_wallclock }
-	directory	devs/wallclock
+package CYGPKG_IO_WALLCLOCK {
+	alias		{ "Wallclock device framework" wallclock devices_wallclock device_wallclock }
+	directory	io/wallclock
 	script          wallclock.cdl
         description "
-           This package provides a wallclock device."
+           This package provides a wallclock device framework. It is
+           also necessary to select an actual driver implementation."
+}
+
+package CYGPKG_DEVICES_WALLCLOCK_SH3 {
+	alias		{ "Wallclock driver for SH3 RTC module" devices_wallclock_sh3 device_wallclock_sh3 }
+	directory	devs/wallclock/sh3
+	script          wallclock_sh3.cdl
+	hardware
+        description "
+           This package provides a wallclock driver implementation for the
+           Hitachi SH3 CPU's RTC module."
 }
 
 package CYGPKG_DEVICES_WATCHDOG {
@@ -135,6 +146,7 @@ eCos supports a uITRON Compatibility Layer, providing full Level S
 many Level E (Extended) features. uITRON is the premier Japanese
 embedded RTOS standard."
 }
+
 
 package CYGPKG_LIBC {
 	alias		{ "C library" libc clib clibrary }
@@ -264,6 +276,7 @@ package CYGPKG_HAL_SH_EDK7708 {
            The edk HAL package provides the support needed to run
            eCos on a Hitachi SH3 EDK7708 board."
 }
+
 
 # --------------------------------------------------------------------------
 # i386 packages
@@ -584,7 +597,10 @@ package CYGPKG_HAL_MN10300_AM33_STB {
 
 target pid {
 	alias { "ARM development board (PID)" PID }
-	packages { CYGPKG_HAL_ARM CYGPKG_HAL_ARM_PID CYGPKG_IO_SERIAL }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_PID
+                   CYGPKG_IO_SERIAL
+        }
         description "
 The pid target provides the packages needed to run eCos on an ARM
 development board (formerly known as PID)."
@@ -592,7 +608,10 @@ development board (formerly known as PID)."
 
 target aeb {
 	alias { "ARM evaluation board (AEB-1)" aeb1 }
-	packages { CYGPKG_HAL_ARM CYGPKG_HAL_ARM_AEB CYGPKG_IO_SERIAL }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_AEB
+                   CYGPKG_IO_SERIAL
+        }
         description "
 The aeb target provides the packages needed to run eCos on an ARM
 evaluation board (AEB-1)."
@@ -600,7 +619,11 @@ evaluation board (AEB-1)."
 
 target ebsa285 {
 	alias { "Intel EBSA285 StrongARM board" ebsa }
-	packages { CYGPKG_HAL_ARM CYGPKG_HAL_ARM_EBSA285 CYGPKG_IO_SERIAL CYGPKG_IO_PCI }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_EBSA285
+                   CYGPKG_IO_SERIAL
+                   CYGPKG_IO_PCI
+        }
         description "
         The ebsa285 target provides the packages needed to run
         eCos on an Intel EBSA285 StrongARM board."
@@ -608,15 +631,20 @@ target ebsa285 {
 
 target edb7xxx {
         alias		{ "Cirrus Logic development board" edb7211 eb7xxx eb7211 }
-	packages	{ CYGPKG_HAL_ARM CYGPKG_HAL_ARM_EDB7XXX
-                          CYGPKG_IO_SERIAL }
+	packages	{ CYGPKG_HAL_ARM
+                          CYGPKG_HAL_ARM_EDB7XXX
+                          CYGPKG_IO_SERIAL
+        }
         description "
 The edb7xxx target provides the packages needed to run eCos on Cirrus Logic development boards."
     }
 
 target cma230 {
         alias		{ "Cogent CMA230/222 board" cma222 }
-	packages	{ CYGPKG_HAL_ARM CYGPKG_HAL_ARM_CMA230 CYGPKG_IO_SERIAL }
+	packages	{ CYGPKG_HAL_ARM
+                          CYGPKG_HAL_ARM_CMA230
+                          CYGPKG_IO_SERIAL
+        }
         description "
 The cma230 target provides the packages needed to run eCos on a Cogent 
 CMA230 (ARM7TDMI) or CMA222 (ARM710T) board."
@@ -627,18 +655,27 @@ CMA230 (ARM7TDMI) or CMA222 (ARM710T) board."
 
 target sh7708 {
 	alias       { "Hitachi EDK/SH7708 board" edk7708 }
-	packages    { CYGPKG_HAL_SH CYGPKG_HAL_SH_EDK7708 CYGPKG_IO_SERIAL }
+	packages    { CYGPKG_HAL_SH
+                      CYGPKG_HAL_SH_EDK7708
+                      CYGPKG_IO_SERIAL
+                      CYGPKG_DEVICES_WALLCLOCK_SH3 
+        }
 	enable      { CYGPKG_HAL_SH_7708 }
         description "
            The sh7708 target provides the packages needed to run
            eCos on a Hitachi EDK/SH7708 board."
 }
 
+
+
 # --------------------------------------------------------------------------
 # i386 targets
 target linux {
         alias		{ "Linux synthetic target" }
-	packages        { CYGPKG_HAL_I386 CYGPKG_HAL_I386_LINUX CYGPKG_IO_SERIAL }
+	packages        { CYGPKG_HAL_I386
+                          CYGPKG_HAL_I386_LINUX
+                          CYGPKG_IO_SERIAL 
+        }
         description "
     	    The linux target provides the 
     	    packages needed to run eCos binaries on top of the i386
@@ -647,7 +684,10 @@ target linux {
 
 target pc {
         alias		{ "i386 PC target" }
-	packages        { CYGPKG_HAL_I386 CYGPKG_HAL_I386_PC CYGPKG_IO_SERIAL }
+	packages        { CYGPKG_HAL_I386
+                          CYGPKG_HAL_I386_PC
+                          CYGPKG_IO_SERIAL
+        }
         description "
     	    The pc target provides the 
     	    packages needed to run eCos binaries on a standard i386
@@ -659,7 +699,10 @@ target pc {
 
 target sleb {
 	alias		{ "Fujitsu MB86800-MA01 board" }
-	packages        { CYGPKG_HAL_SPARCLITE CYGPKG_HAL_SPARCLITE_SLEB CYGPKG_IO_SERIAL }
+	packages        { CYGPKG_HAL_SPARCLITE
+                          CYGPKG_HAL_SPARCLITE_SLEB
+                          CYGPKG_IO_SERIAL
+        }
         description "
     	    The sleb target provides the packages need to run eCos
             on a Fujitsu MB86800-MA01 board."
@@ -667,7 +710,10 @@ target sleb {
 
 target sparclite_sim {
 	alias		{ "SPARClite simulator" sl_sim sparcl_sim }
-	packages        { CYGPKG_HAL_SPARCLITE CYGPKG_HAL_SPARCLITE_SIM CYGPKG_IO_SERIAL }
+	packages        { CYGPKG_HAL_SPARCLITE 
+                          CYGPKG_HAL_SPARCLITE_SIM
+                          CYGPKG_IO_SERIAL
+        }
         description "
     	    The sparclite_sim target provides the packages need to run eCos
             on the SPARClite simulator."
@@ -678,7 +724,11 @@ target sparclite_sim {
 
 target cma28x {
         alias		{ "Cogent CMA286/287 board" cma286 cma287 }
-	packages        { CYGPKG_HAL_POWERPC CYGPKG_HAL_POWERPC_MPC8xx CYGPKG_HAL_POWERPC_COGENT CYGPKG_IO_SERIAL }
+	packages        { CYGPKG_HAL_POWERPC
+                          CYGPKG_HAL_POWERPC_MPC8xx 
+                          CYGPKG_HAL_POWERPC_COGENT
+                          CYGPKG_IO_SERIAL
+        }
         description "
             The cma28x target provides the packages needed to run
             eCos on a Cogent CMA286 or CMA287 board."
@@ -686,7 +736,11 @@ target cma28x {
 
 target fads {
         alias		{ "Motorola MPC8xxFADS board" }
-	packages        { CYGPKG_HAL_POWERPC CYGPKG_HAL_POWERPC_MPC8xx CYGPKG_HAL_POWERPC_FADS CYGPKG_IO_SERIAL }
+	packages        { CYGPKG_HAL_POWERPC
+                          CYGPKG_HAL_POWERPC_MPC8xx 
+                          CYGPKG_HAL_POWERPC_FADS
+                          CYGPKG_IO_SERIAL
+        }
         description "
             The fads target provides the packages needed to run
             eCos on a Motorola MPC8xxFADS board."
@@ -694,7 +748,12 @@ target fads {
 
 target mbx {
         alias		{ "Motorola MBX860/821 board" mbx860 mbx821 }
-	packages        { CYGPKG_HAL_POWERPC CYGPKG_HAL_POWERPC_MPC8xx CYGPKG_HAL_POWERPC_MBX CYGPKG_HAL_QUICC CYGPKG_IO_SERIAL }
+	packages        { CYGPKG_HAL_POWERPC
+                          CYGPKG_HAL_POWERPC_MPC8xx
+                          CYGPKG_HAL_POWERPC_MBX
+                          CYGPKG_HAL_QUICC 
+                          CYGPKG_IO_SERIAL
+        }
         description "
             The mbx target provides the packages needed to run
             eCos on a Motorola MBX860 or MBX821 board."
@@ -702,7 +761,11 @@ target mbx {
 
 target psim {
 	alias		{ "PowerPC simulator" ppc_sim powerpc_sim }
-	packages        { CYGPKG_HAL_POWERPC CYGPKG_HAL_POWERPC_PPC60x CYGPKG_HAL_POWERPC_SIM CYGPKG_IO_SERIAL }
+	packages        { CYGPKG_HAL_POWERPC
+                          CYGPKG_HAL_POWERPC_PPC60x
+                          CYGPKG_HAL_POWERPC_SIM
+                          CYGPKG_IO_SERIAL
+        }
         description "
             The psim target provides the packages needed to run
             eCos in the PSIM simulator."
@@ -713,7 +776,11 @@ target psim {
 
 target jmr3904 {
         alias		{ "Toshiba JMR-TX3904 board" jmr tx39 }
-	packages        { CYGPKG_HAL_MIPS CYGPKG_HAL_MIPS_TX39 CYGPKG_HAL_MIPS_TX39_JMR3904 CYGPKG_IO_SERIAL }
+	packages        { CYGPKG_HAL_MIPS
+                          CYGPKG_HAL_MIPS_TX39
+                          CYGPKG_HAL_MIPS_TX39_JMR3904
+                          CYGPKG_IO_SERIAL
+        }
         description "
            The jmr3904 target provides the packages needed to run
            eCos on a Toshiba JMR-TX3904 board. This target can also
@@ -725,7 +792,10 @@ target jmr3904 {
 
 target tx39_sim {
         alias		{ "TX39 minimal simulator" }
-	packages        { CYGPKG_HAL_MIPS CYGPKG_HAL_MIPS_TX39 CYGPKG_HAL_MIPS_SIM }
+	packages        { CYGPKG_HAL_MIPS
+                          CYGPKG_HAL_MIPS_TX39
+                          CYGPKG_HAL_MIPS_SIM
+        }
         description "
            The tx39_sim target provides the packages needed to run
            eCos in the TX39 minimal simulator. To use this minimal
@@ -737,7 +807,11 @@ target tx39_sim {
 
 target vrc4373 {
         alias		{ "NEC VRC4373 board" }
-	packages        { CYGPKG_HAL_MIPS CYGPKG_HAL_MIPS_VR4300 CYGPKG_HAL_MIPS_VR4300_VRC4373 CYGPKG_IO_SERIAL CYGPKG_IO_PCI }
+	packages        { CYGPKG_HAL_MIPS
+                          CYGPKG_HAL_MIPS_VR4300
+                          CYGPKG_HAL_MIPS_VR4300_VRC4373
+                          CYGPKG_IO_SERIAL CYGPKG_IO_PCI
+        }
         description "
            The vrc4373 target provides the packages needed to run
 eCos on an NEC VRC4373 board."
@@ -748,7 +822,10 @@ eCos on an NEC VRC4373 board."
 
 target am31_sim {
         alias		{ "MN10300 AM31 minimal simulator" }
-	packages        { CYGPKG_HAL_MN10300 CYGPKG_HAL_MN10300_AM31 CYGPKG_HAL_MN10300_AM31_SIM }
+	packages        { CYGPKG_HAL_MN10300
+                          CYGPKG_HAL_MN10300_AM31
+                          CYGPKG_HAL_MN10300_AM31_SIM
+        }
         description "
            The am31_sim target provides the packages need to run
            eCos in the MN10300 minimal simulator. It is not possible to
@@ -758,7 +835,11 @@ target am31_sim {
 
 target stdeval1 {
         alias		{ "Matsushita stdeval1 board" }
-	packages        { CYGPKG_HAL_MN10300 CYGPKG_HAL_MN10300_AM31_STDEVAL1 CYGPKG_HAL_MN10300_AM31 CYGPKG_IO_SERIAL }
+	packages        { CYGPKG_HAL_MN10300 
+                          CYGPKG_HAL_MN10300_AM31_STDEVAL1 
+                          CYGPKG_HAL_MN10300_AM31 
+                          CYGPKG_IO_SERIAL 
+        }
         description "
            The stdeval1 target provides the packages needed to run
            eCos on a Matsushita stdeval1 board. This target can also
@@ -768,7 +849,11 @@ target stdeval1 {
 
 target stb {
         alias		{ "Matsushita STB board" }
-	packages        { CYGPKG_HAL_MN10300 CYGPKG_HAL_MN10300_AM33_STB CYGPKG_HAL_MN10300_AM33 CYGPKG_IO_SERIAL }
+	packages        { CYGPKG_HAL_MN10300
+                          CYGPKG_HAL_MN10300_AM33_STB
+                          CYGPKG_HAL_MN10300_AM33
+                          CYGPKG_IO_SERIAL 
+        }
         description "
            The stb target provides the packages needed to run
            eCos on a Matsushita STB board."

@@ -143,6 +143,87 @@
 #define CYGARC_REG_BCR1_DRAMTP1         0x0008
 #define CYGARC_REG_BCR1_DRAMTP0         0x0004
 
+// Bus widths for areas
+#define CYGARC_REG_BCR2_A6_8            0x1000
+#define CYGARC_REG_BCR2_A6_16           0x2000
+#define CYGARC_REG_BCR2_A6_32           0x3000
+#define CYGARC_REG_BCR2_A5_8            0x0400
+#define CYGARC_REG_BCR2_A5_16           0x0800
+#define CYGARC_REG_BCR2_A5_32           0x0c00
+#define CYGARC_REG_BCR2_A4_8            0x0100
+#define CYGARC_REG_BCR2_A4_16           0x0200
+#define CYGARC_REG_BCR2_A4_32           0x0300
+#define CYGARC_REG_BCR2_A3_8            0x0040
+#define CYGARC_REG_BCR2_A3_16           0x0080
+#define CYGARC_REG_BCR2_A3_32           0x00c0
+#define CYGARC_REG_BCR2_A2_8            0x0010
+#define CYGARC_REG_BCR2_A2_16           0x0020
+#define CYGARC_REG_BCR2_A2_32           0x0030
+
+// Memory type selection and other IO behavior controls
+#define CYGARC_REG_BCR1_PULA            0x8000 // Pin A25 to A0 Pull-Up
+#define CYGARC_REG_BCR1_PULD            0x4000 // Pin D31 to D0 Pull-Up
+#define CYGARC_REG_BCR1_HIZMEM          0x2000 // Hi-Z memory control
+#define CYGARC_REG_BCR1_HIZCNT          0x1000 // High-Z Control
+#define CYGARC_REG_BCR1_ENDIAN          0x0800 // Endian Flag
+#define CYGARC_REG_BCR1_A0_BST_MASK     0x0600 // Area 0 Burst ROM Control
+#define CYGARC_REG_BCR1_A0_BST_4        0x0200
+#define CYGARC_REG_BCR1_A0_BST_8        0x0400
+#define CYGARC_REG_BCR1_A0_BST_16       0x0600
+#define CYGARC_REG_BCR1_A5_BST_MASK     0x0180 // Area 5 Burst ROM Control
+#define CYGARC_REG_BCR1_A5_BST_4        0x0080
+#define CYGARC_REG_BCR1_A5_BST_8        0x0100
+#define CYGARC_REG_BCR1_A5_BST_16       0x0180
+#define CYGARC_REG_BCR1_A6_BST_MASK     0x0060 // Area 6 Burst ROM Control
+#define CYGARC_REG_BCR1_A6_BST_4        0x0020
+#define CYGARC_REG_BCR1_A6_BST_8        0x0040
+#define CYGARC_REG_BCR1_A6_BST_16       0x0060
+#define CYGARC_REG_BCR1_DRAMTP_MASK     0x001c // Area 2, Area 3 Memory Type
+#define CYGARC_REG_BCR1_A5PCM           0x0002 // Area 5 Bus Type
+#define CYGARC_REG_BCR1_A6PCM           0x0001 // Area 6 Bus Type
+
+// Intercycle wait states
+#define CYGARC_REG_WCR1_WAITSEL         0x8000 // WAIT Sampling Timing Select
+#define CYGARC_REG_WCR1_A6I_MASK        0x3000 // Intercycle Idle Specification
+#define CYGARC_REG_WCR1_A6I_SHIFT       12
+#define CYGARC_REG_WCR1_A5I_MASK        0x0c00
+#define CYGARC_REG_WCR1_A5I_SHIFT       10
+#define CYGARC_REG_WCR1_A4I_MASK        0x0300
+#define CYGARC_REG_WCR1_A4I_SHIFT       8
+#define CYGARC_REG_WCR1_A3I_MASK        0x00c0
+#define CYGARC_REG_WCR1_A3I_SHIFT       6
+#define CYGARC_REG_WCR1_A2I_MASK        0x0030
+#define CYGARC_REG_WCR1_A2I_SHIFT       4
+#define CYGARC_REG_WCR1_A0I_MASK        0x0003
+#define CYGARC_REG_WCR1_A0I_SHIFT       0
+
+#define CYGARC_REG_WCR1_1WS         1
+#define CYGARC_REG_WCR1_2WS         2
+#define CYGARC_REG_WCR1_3WS         3
+
+
+// Wait states
+#define CYGARC_REG_WCR2_A6_MASK         0xe000 // Wait states + burst pitch
+#define CYGARC_REG_WCR2_A6_SHIFT        13
+#define CYGARC_REG_WCR2_A5_MASK         0x1c00 // Wait states + burst pitch
+#define CYGARC_REG_WCR2_A5_SHIFT        10
+#define CYGARC_REG_WCR2_A4_MASK         0x0380 // Wait states
+#define CYGARC_REG_WCR2_A4_SHIFT        7
+#define CYGARC_REG_WCR2_A3_MASK         0x0060 // Wait states / CAS latency
+#define CYGARC_REG_WCR2_A3_SHIFT        5
+#define CYGARC_REG_WCR2_A2_MASK         0x0018 // Wait states / CAS latency
+#define CYGARC_REG_WCR2_A2_SHIFT        3
+#define CYGARC_REG_WCR2_A0_MASK         0x0007 // Wait states + burst pitch
+#define CYGARC_REG_WCR2_A0_SHIFT        0
+
+#define CYGARC_REG_WCR2_1WS             1
+#define CYGARC_REG_WCR2_2WS             2
+#define CYGARC_REG_WCR2_3WS             3
+#define CYGARC_REG_WCR2_4WS             4
+#define CYGARC_REG_WCR2_6WS             5
+#define CYGARC_REG_WCR2_8WS             6
+#define CYGARC_REG_WCR2_10WS            7
+
 
 
 //++++++ Module UBC ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -263,6 +344,7 @@
 #define CYGARC_REG_IPRB_SCI_MASK        0x00f0
 #define CYGARC_REG_IPRB_SCI_PRI1        0x0010
 
+
 //++++++ Module RTC ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 //--------------------------------------------------------------------------
@@ -353,53 +435,17 @@
 // to prevent other bits than the one of interest to be cleared.
 #define CYGARC_REG_SCSSR_CLEARMASK      0xf8
 
-// FIXME: Let config control this
 // Baud rate values calculated for peripheral clock = 15MHz (Pf = 15). 
 // n is CKS setting (0-3)
-// N = (Pf/(64^(n-1)*B))*10^6-1
+// N = (Pf/(64*2^(2n-1)*B))*10^6-1
 // E(%) = ((Pf*10^6/((N+1)*B*(64^(n-1)))-1)*100
-#define CYGARC_REG_SCBRR_50
-#define CYGARC_REG_CKSx_50
-#define CYGARC_REG_SCBRR_75
-#define CYGARC_REG_CKSx_75
-#define CYGARC_REG_SCBRR_110
-#define CYGARC_REG_CKSx_110
-#define CYGARC_REG_SCBRR_134_5
-#define CYGARC_REG_CKSx_134_5
-#define CYGARC_REG_SCBRR_150
-#define CYGARC_REG_CKSx_150
-#define CYGARC_REG_SCBRR_200
-#define CYGARC_REG_CKSx_200
-#define CYGARC_REG_SCBRR_300
-#define CYGARC_REG_CKSx_300
-#define CYGARC_REG_SCBRR_600
-#define CYGARC_REG_CKSx_600
-#define CYGARC_REG_SCBRR_1200
-#define CYGARC_REG_CKSx_1200
-#define CYGARC_REG_SCBRR_1800
-#define CYGARC_REG_CKSx_1800
-#define CYGARC_REG_SCBRR_2400
-#define CYGARC_REG_CKSx_2400
-#define CYGARC_REG_SCBRR_3600
-#define CYGARC_REG_CKSx_3600
-#define CYGARC_REG_SCBRR_4800           97
-#define CYGARC_REG_CKSx_4800            0
-#define CYGARC_REG_SCBRR_7200
-#define CYGARC_REG_CKSx_7200
-#define CYGARC_REG_SCBRR_9600           48
-#define CYGARC_REG_CKSx_9600            0
-#define CYGARC_REG_SCBRR_14400          32
-#define CYGARC_REG_CKSx_14400           0
-#define CYGARC_REG_SCBRR_19200          23
-#define CYGARC_REG_CKSx_19200           0
-#define CYGARC_REG_SCBRR_38400          11
-#define CYGARC_REG_CKSx_38400           0
-#define CYGARC_REG_SCBRR_57600          7
-#define CYGARC_REG_CKSx_57600           0
-#define CYGARC_REG_SCBRR_115200         3
-#define CYGARC_REG_CKSx_115200          0
-#define CYGARC_REG_SCBRR_234000
-#define CYGARC_REG_CKSx_234000
+//  So this macro is only valid when serial is configured for n=0:
+//       N = (Pf/(32*B))*10^6-1
+#define CYGARC_SCBRR_N(_b_)     \
+    (((_b_) < 4800) ? 0 :       \
+      ((_b_) > 115200) ? 0 :    \
+       (CYGHWR_HAL_SH_BOARD_SPEED*1000000/(32*(_b_))-1))
+#define CYGARC_SCBRR_CKSx(_b_) 0
 
 
 

@@ -1,3 +1,7 @@
+2000-04-05  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Wallclock moved.
+
 2000-03-24  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* ecosrelease.tcl: Allow running if cygtclsh80 is the tcl shell, as

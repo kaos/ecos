@@ -119,8 +119,8 @@ GROUP(libtarget.a libgcc.a)
 
 #include <pkgconf/system.h>
 #include CYGHWR_MEMORY_LAYOUT_LDI
+#include CYGBLD_HAL_PLATFORM_H
 
-// Define VSR table to reside at fixed address. This address will
-// probably have to be platform specific...
-_hal_vsr_table = 0x08000000;
+// Define VSR table to reside at fixed address.
+_hal_vsr_table = CYGHWR_HAL_VSR_TABLE;
 

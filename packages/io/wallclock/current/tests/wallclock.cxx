@@ -51,7 +51,7 @@
 
 #include <cyg/kernel/diag.h>
 
-#include <cyg/devs/wallclock.hxx>
+#include <cyg/io/wallclock.hxx>
 
 #include <cyg/infra/testcase.h>
 
@@ -82,7 +82,7 @@ Cyg_Thread *th;
 
 // MN10300 sim takes 1min15secs to do one loop on 300MHz PII.
 #define LOOPS_SIM       2
-#define LOOPS_HW        20
+#define LOOPS_HW        10
 
 cyg_int32 loops = LOOPS_HW;
 cyg_tick_count one_sec;
@@ -94,21 +94,30 @@ cyg_tick_count one_sec;
 void wallclock_thread( CYG_ADDRWORD id )
 {
     cyg_uint32 wtime;
+    cyg_tick_count ticks;
 
     Cyg_WallClock::wallclock->set_current_time( EPOCH );
 
-    for( int i = 0; i < loops; i++ )
+    // Check clock only every other second since the call itself may
+    // take about a second.
+    for( int i = 0; i < loops; i += 2 )
     {
-        CYG_TEST_STILL_ALIVE(i, "tick...");
+        // Make a note of the time
+        ticks = Cyg_Clock::real_time_clock->current_value();
 
         wtime = Cyg_WallClock::wallclock->get_current_time();
-
         if(wtime != EPOCH+i)
         {
             CYG_TEST_FAIL_FINISH( "Clock out of sync" );
         }
 
-        th->delay( one_sec );        
+        CYG_TEST_STILL_ALIVE(i, "2xtick...");
+
+        // then calculate how much the above took so the delay
+        // below can be made accurate.
+        ticks = Cyg_Clock::real_time_clock->current_value() - ticks;
+
+        th->delay( 2*one_sec - ticks );
     }
 
     CYG_TEST_PASS_FINISH("Wallclock OK");

@@ -1235,10 +1235,12 @@ void CMainFrame::CygMount(TCHAR c)
   c=towlower(c);
   if(!m_arMounted[c-_TCHAR('a')]){
     m_arMounted[c-_TCHAR('a')]=true;
-    CString strCmd,strOutput;
+    CString strCmd;
+    String strOutput;
 
     strCmd.Format(_T("mount %c: /%c"),c,c);
-    CSubprocess::Run(strOutput,strCmd);
+    CSubprocess sub;
+    sub.Run(strOutput,strCmd);
   }
 }
 

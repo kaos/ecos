@@ -55,7 +55,7 @@ cdl_option CYGSEM_LIBC_TIME_CLOCK_WORKING {
 
 cdl_option CYGSEM_LIBC_TIME_TIME_WORKING {
     display       "Working time() function"
-    requires      CYGPKG_DEVICES_WALLCLOCK
+    requires      CYGPKG_IO_WALLCLOCK
     default_value 1
     description   "
         This option controls whether time() will
@@ -67,7 +67,7 @@ cdl_option CYGSEM_LIBC_TIME_TIME_WORKING {
 
 cdl_option CYGSEM_LIBC_TIME_SETTIME_WORKING {
     display       "Working cyg_libc_time_settime() function"
-    requires      CYGPKG_DEVICES_WALLCLOCK
+    requires      CYGPKG_IO_WALLCLOCK
     default_value 1
     description   "
         This option controls whether cyg_libc_time_settime()

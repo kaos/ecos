@@ -53,7 +53,7 @@
 #include "eCosStd.h"
 #include "eCosTrace.h"
 
-#define DL_FILTER_VER "$Id: eCosTestDownloadFilter.cpp,v 1.2 2000/03/28 20:13:33 jlarmour Exp $"
+#define DL_FILTER_VER "$Id: eCosTestDownloadFilter.cpp,v 1.3 2000/04/07 07:45:09 jlarmour Exp $"
 #include "eCosTestDownloadFilter.h"
 
 CeCosTestDownloadFilter::CeCosTestDownloadFilter():

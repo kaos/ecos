@@ -150,5 +150,18 @@ set cksum [checksum $args(1)]
     set cksum [bswap $cksum]
 # }
 
-puts "[format 0x%8.8X $cksum]"
+# Tcl up to at least version 8.3 has problems on alphas,
+# Tcl_FormatObjCmd() invokes Tcl_GetIntFromObj() which
+# ends up doing dodgy conversions between int and long.
+# This results in an error if bit 32 is set. Rewriting
+# the format string to output one byte at a time is
+# safer.
+
+# puts "[format 0x%8.8X $cksum]"
+
+puts [format "0x%02X%02X%02X%02X"       \
+	[expr (($cksum >> 24) & 0x0FF)] \
+	[expr (($cksum >> 16) & 0x0FF)] \
+	[expr (($cksum >>  8) & 0x0FF)] \
+	[expr (($cksum      ) & 0x0FF)]]
 
