@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Jonathan Larmour
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -346,32 +347,35 @@ void Cyg_Counter::add_alarm( Cyg_Alarm *alarm )
 #ifdef CYGIMP_KERNEL_COUNTERS_SORT_LIST
         
     // Now that we have the list pointer, we can use common code for
-    // both list oragnizations.
+    // both list organizations.
 
     Cyg_Alarm *list_alarm = alarm_list_ptr->get_head();
 
     if( list_alarm != NULL )
+    {
         do
         {
             CYG_ASSERTCLASS(list_alarm, "Bad alarm in counter list" );
 
-            // The alarms are in ascending trigger order. When we
-            // find an alarm that is later than us, we go in front of
-            // it.
+            // The alarms are in ascending trigger order. If we
+            // find an alarm that triggers later than us, we go
+            // in front of it.
         
             if( list_alarm->trigger > alarm->trigger )
             {
                 alarm_list_ptr->insert( list_alarm, alarm );
-                break;
+                goto add_alarm_unlock_return;
             }
 
             list_alarm = list_alarm->get_next();
             
         } while( list_alarm != alarm_list_ptr->get_head() );
+        // a lower or equal alarm time was not found, so drop through
+        // so it is added to the list tail
+    }
+    alarm_list_ptr->add_tail( alarm );
 
-    else
-        alarm_list_ptr->add_tail( alarm );
-
+ add_alarm_unlock_return:
 #else    
     
     alarm_list_ptr->add_tail( alarm );

@@ -2485,6 +2485,10 @@ a clock interrupt. If the alarm is associated with some other
 application-specific counter then the details will depend on how that
 counter is updated.
       </para>
+      <para>
+If two or more alarms are registered for precisely the same counter tick,
+the order of execution of the alarm functions is unspecified.
+      </para>
     </refsect1>
 
     <refsect1 id="kernel-alarms-context"><title>Valid contexts</title>
