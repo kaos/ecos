@@ -1,3 +1,11 @@
+2003-07-15  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/flash_at49xxxx.inl: Reorganise to support boot blocks,
+	multiple flash types from the same driver, and do proper
+	verification.
+	* include/flash_at49xxxx_parts.inl: New file to describe flash
+	part information.
+
 2003-06-10  Øyvind Harboe  <oyvind.harboe@zylin.com>
 
 	* include/flash_at49xxxx.inl: wait_while_busy needs to be in RAM

@@ -11,6 +11,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Jonathan Larmour
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -44,7 +45,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    Jani Monoses <jani@iv.ro>
-// Contributors: Cristian Vlasin <cris@iv.ro>, tdrury
+// Contributors: Cristian Vlasin <cris@iv.ro>, tdrury, jlarmour
 // Date:         2002-06-24
 // Purpose:
 // Description:
@@ -77,44 +78,45 @@
 #define FLASH_Setup_Code2               FLASHWORD( 0x55 )
 #define FLASH_Setup_Erase               FLASHWORD( 0x80 )
 
-// Platform code must define the below
-// #define CYGNUM_FLASH_INTERLEAVE      : Number of interleaved devices (in parallel)
-// #define CYGNUM_FLASH_SERIES          : Number of devices in series
-// #define CYGNUM_FLASH_BASE            : Address of first device
-// And select one of the below device variants
+#define CYGNUM_FLASH_BLANK             (1)
 
-#ifdef CYGPKG_DEVS_FLASH_ATMEL_AT49LV8011
-# define FLASH_BLOCK_SIZE               (0x10000*CYGNUM_FLASH_INTERLEAVE)
-# define FLASH_NUM_REGIONS              (14)
-# define CYGNUM_FLASH_WIDTH             (16)
-# define CYGNUM_FLASH_BLANK             (1)
-# define CYGNUM_FLASH_ID_MANUFACTURER   FLASHWORD(0x1F)
-# define CYGNUM_FLASH_ID_DEVICE         FLASHWORD(0xCB)
+#ifndef CYGNUM_FLASH_ID_MANUFACTURER
+# define CYGNUM_FLASH_ID_MANUFACTURER  FLASHWORD(0x1F)
 #endif
-#ifdef CYGPKG_DEVS_FLASH_ATMEL_AT49LV8011T
-# define FLASH_BLOCK_SIZE               (0x10000*CYGNUM_FLASH_INTERLEAVE)
-# define FLASH_NUM_REGIONS              (14)
-# define CYGNUM_FLASH_WIDTH             (16)
-# define CYGNUM_FLASH_BLANK             (1)
-# define CYGNUM_FLASH_ID_MANUFACTURER   FLASHWORD(0x1F)
-# define CYGNUM_FLASH_ID_DEVICE         FLASHWORD(0x4A)
-#endif
-#ifdef CYGPKG_DEVS_FLASH_ATMEL_AT49LV1614
-// NOTE: the smaller plane A of the flash is ignored for now (tdrury)
-# define FLASH_BLOCK_SIZE               (0x10000*CYGNUM_FLASH_INTERLEAVE)
-# define FLASH_NUM_REGIONS              (31)
-# define CYGNUM_FLASH_WIDTH             (16)
-# define CYGNUM_FLASH_BLANK             (1)
-# define CYGNUM_FLASH_ID_MANUFACTURER   FLASHWORD(0x1F)
-# define CYGNUM_FLASH_ID_DEVICE         FLASHWORD(0xC0)
-#endif
-
-#define FLASH_DEVICE_SIZE               (FLASH_BLOCK_SIZE*FLASH_NUM_REGIONS)
 
 //----------------------------------------------------------------------------
 // Now that device properties are defined, include magic for defining
 // accessor type and constants.
 #include <cyg/io/flash_dev.h>
+
+//----------------------------------------------------------------------------
+// Information about supported devices
+typedef struct flash_dev_info {
+    flash_data_t device_id;
+#ifdef CYG_FLASH_LONG_DEVICE_NEEDED
+    cyg_bool     long_device_id;
+    flash_data_t device_id2;
+    flash_data_t device_id3;
+#endif
+    cyg_uint32   block_size;
+    cyg_int32    block_count;
+    cyg_uint32   base_mask;
+    cyg_uint32   device_size;
+    cyg_bool     bootblock;
+    cyg_uint32   bootblocks[64];         // 0 is bootblock offset, 1-11 sub-sector sizes (or 0)
+#ifdef NOTYET // FIXME: not supported yet (use am29xxxxx for template)
+    cyg_bool     banked;
+    cyg_uint32   banks[8];               // bank offsets, highest to lowest (lowest should be 0)
+                                         // (only one entry for now, increase to support devices
+                                         // with more banks).
+#endif
+} flash_dev_info_t;
+
+static const flash_dev_info_t* flash_dev_info;
+static const flash_dev_info_t supported_devices[] = {
+#include <cyg/io/flash_at49xxxx_parts.inl>
+};
+#define NUM_DEVICES (sizeof(supported_devices)/sizeof(flash_dev_info_t))
 
 //----------------------------------------------------------------------------
 // Functions that put the flash device into non-read mode must reside
@@ -132,21 +134,51 @@ static int wait_while_busy(int timeout, volatile flash_data_t* addr_ptr)
 int
 flash_hwr_init(void)
 {
-    flash_data_t id[2];
+    flash_data_t id[4];
+    int i;
+
+#ifdef CYGHWR_FLASH_AT49XXXX_PLF_INIT
+    CYGHWR_FLASH_AT49XXXX_PLF_INIT();
+#endif
 
     flash_dev_query(id);
 
     // Check that flash_id data is matching the one the driver was
     // configured for.
-    if (id[0] != CYGNUM_FLASH_ID_MANUFACTURER
-        || id[1] != CYGNUM_FLASH_ID_DEVICE)
+
+    // Check manufacturer
+    if (id[0] != CYGNUM_FLASH_ID_MANUFACTURER)
+        return FLASH_ERR_DRV_WRONG_PART;
+
+    // Look through table for device data
+    flash_dev_info = supported_devices;
+#ifdef CYG_FLASH_LONG_DEVICE_NEEDED
+    for (i = 0; i < NUM_DEVICES; i++) {
+        if (!flash_dev_info->long_device_id && flash_dev_info->device_id == id[1])
+            break;
+        else if ( flash_dev_info->long_device_id && flash_dev_info->device_id == id[1] 
+                  && flash_dev_info->device_id2 == id[2] 
+                  && flash_dev_info->device_id3 == id[3] )
+            break;
+        flash_dev_info++;
+    }
+#else
+    for (i = 0; i < NUM_DEVICES; i++) {
+        if (flash_dev_info->device_id == id[1])
+            break;
+        flash_dev_info++;
+    }
+#endif
+
+    // Did we find the device? If not, return error.
+    if (NUM_DEVICES == i)
         return FLASH_ERR_DRV_WRONG_PART;
 
     // Hard wired for now
-    flash_info.block_size = FLASH_BLOCK_SIZE;
-    flash_info.blocks = FLASH_NUM_REGIONS;
+    flash_info.block_size = flash_dev_info->block_size;
+    flash_info.blocks = flash_dev_info->block_count * CYGNUM_FLASH_SERIES;
     flash_info.start = (void *)CYGNUM_FLASH_BASE;
-    flash_info.end = (void *)(CYGNUM_FLASH_BASE+ (FLASH_NUM_REGIONS * FLASH_BLOCK_SIZE * CYGNUM_FLASH_SERIES));
+    flash_info.end = (void *)(CYGNUM_FLASH_BASE+ (flash_dev_info->device_size * CYGNUM_FLASH_SERIES));
     return FLASH_ERR_OK;
 }
 
@@ -184,7 +216,6 @@ flash_query(void* data)
 {
     volatile flash_data_t *ROM;
     flash_data_t* id = (flash_data_t*) data;
-    int i;
 
     ROM = (volatile flash_data_t*) CYGNUM_FLASH_BASE;
 
@@ -226,43 +257,76 @@ static int wait_while_busy(int timeout, volatile flash_data_t* addr_ptr)
 //----------------------------------------------------------------------------
 // Erase Block
 int
-flash_erase_block(void* block, unsigned int len)
+flash_erase_block(void* block, unsigned int size)
 {
-	volatile flash_data_t* ROM;
-	volatile flash_data_t* addr_ptr = (volatile flash_data_t*) block;
+    volatile flash_data_t* ROM;
+    volatile flash_data_t* b_p = (volatile flash_data_t*) block;
 
-	int res = FLASH_ERR_OK;
-        int  i;
+    int res = FLASH_ERR_OK;
+    int len = 0;
+    cyg_bool bootblock = false;
+    cyg_uint32 *bootblocks = (cyg_uint32 *)0;
 
-        flash_data_t state, prev_state;
+    //	diag_printf("\nERASE: Block %p, size: %u\n",block,size);
 
-//	diag_printf("\nERASE: Block %p, len: %u\n",addr_ptr,len);
-
-	// Base address of device(s) being programmed.
-        ROM = (volatile flash_data_t*) CYGNUM_FLASH_BASE;
+    // Base address of device(s) being programmed.
+    ROM = (volatile flash_data_t*) ((unsigned long)block & flash_dev_info->base_mask);
 
 
-	//Erase sector 6-byte sequence
+    // Assume not "boot" sector, full size
+    bootblock = false;
+    len = flash_dev_info->block_size;
+        
+    // Is this in a "boot" sector?
+    if (flash_dev_info->bootblock) {
+        bootblocks = (cyg_uint32 *)&flash_dev_info->bootblocks[0];
+        while (*bootblocks != _LAST_BOOTBLOCK) {
+            if (*bootblocks++ == ((unsigned long)block - (unsigned long)ROM)) {
+                len = *bootblocks++;  // Size of first sub-block
+                bootblock = true;
+                //	diag_printf("\nERASE: Is Boot block - size: %d, ptr %p\n",len,b_p);
+                break;
+            } else {
+                int ls = flash_dev_info->block_size;
+                // Skip over segment
+                while ((ls -= *bootblocks++) > 0) ;
+            }
+        }
+    }
+
+    while (size > 0) {
+        //Erase sector 6-byte sequence
         ROM[FLASH_Setup_Addr1] = FLASH_Setup_Code1;
         ROM[FLASH_Setup_Addr2] = FLASH_Setup_Code2;
         ROM[FLASH_Setup_Addr1] = FLASH_Setup_Erase;
         ROM[FLASH_Setup_Addr1] = FLASH_Setup_Code1;
         ROM[FLASH_Setup_Addr2] = FLASH_Setup_Code2;
-        addr_ptr[0] = FLASH_Sector_Erase;
+        *b_p = FLASH_Sector_Erase;
 
-	res = wait_while_busy(5000000,addr_ptr);
-#if 0
-	// Verify loaded data bytes
-        for (i = 0; i < len;) {
-            if (*addr_ptr != FLASH_BlankValue) {
-                // Only update return value if erase operation was OK
-                if (FLASH_ERR_OK == res) res = FLASH_ERR_DRV_VERIFY;
-                break;
-            }
-            addr_ptr++;
-            i += sizeof(*addr_ptr);
+        res = wait_while_busy(5000000,b_p);
+
+        size -= len;  // This much has been erased
+
+        // Verify erase operation
+        if (FLASH_ERR_OK == res) {
+            while (len > 0) {
+                if (*b_p != FLASH_BlankValue) {
+                    // Only update return value if erase operation was OK
+                    res = FLASH_ERR_DRV_VERIFY;
+                }
+                len -= sizeof(*b_p);
+                b_p++;
+            }                    
         }
-#endif
+                    
+        if (FLASH_ERR_OK != res)
+            break;
+
+        if (bootblock) {
+            len = *bootblocks++;
+            //	diag_printf("\nERASE: Is Boot block - size: %d, len %d, ptr %p\n",size,len,b_p);
+        }
+    }
     return res;
 }
 
@@ -271,49 +335,39 @@ flash_erase_block(void* block, unsigned int len)
 int
 flash_program_buf(void* addr, void* data, int len)
 {
-	volatile flash_data_t* ROM;
-	volatile flash_data_t* addr_ptr = (volatile flash_data_t*) addr;
-	volatile flash_data_t* data_ptr = (volatile flash_data_t*) data;
-
-	int res = FLASH_ERR_OK;
+    volatile flash_data_t* ROM;
+    volatile flash_data_t* addr_ptr = (volatile flash_data_t*) addr;
+    volatile flash_data_t* data_ptr = (volatile flash_data_t*) data;
+    int res = FLASH_ERR_OK;
 	
-	// Base address of device(s) being programmed. 
-        ROM = (volatile flash_data_t*) CYGNUM_FLASH_BASE;
+    // check the address is suitably aligned
+    if ((unsigned long)addr & (CYGNUM_FLASH_INTERLEAVE * CYGNUM_FLASH_WIDTH / 8 - 1))
+        return FLASH_ERR_INVALID;
 
-	while ((FLASH_ERR_OK == res) && (len > 0)) {
-        	// Program data [byte] - 4 step sequence
-	        ROM[FLASH_Setup_Addr1] = FLASH_Setup_Code1;
-	        ROM[FLASH_Setup_Addr2] = FLASH_Setup_Code2;
-	        ROM[FLASH_Setup_Addr1] = FLASH_Program;
-		addr_ptr[0] = data_ptr[0];
+    // Base address of device(s) being programmed. 
+    ROM = (volatile flash_data_t*)((unsigned long)addr_ptr & flash_dev_info->base_mask);
 
-		addr_ptr++;
-		data_ptr++;
-		
-		//if (*data_ptr++ == 0)
-		//	*addr_ptr = 0;
-		
-		len -= sizeof (flash_data_t);
+    while ((FLASH_ERR_OK == res) && (len > 0)) {
+        // Program data [byte] - 4 step sequence
+        ROM[FLASH_Setup_Addr1] = FLASH_Setup_Code1;
+        ROM[FLASH_Setup_Addr2] = FLASH_Setup_Code2;
+        ROM[FLASH_Setup_Addr1] = FLASH_Program;
+        addr_ptr[0] = data_ptr[0];
+                
+        res = wait_while_busy(5000000,addr_ptr);
 
-		res = wait_while_busy(5000000,addr_ptr);
-//		if (res==FLASH_ERR_DRV_TIMEOUT) break;
-		
-	}
-#if 0
-        // Verify loaded data bytes
-        for (i = 0; (i<len);) {
-            if (*addr_ptr != *data_ptr) {
-                // Only update return value if erase operation was OK
-                if (FLASH_ERR_OK == res) res = FLASH_ERR_DRV_VERIFY;
-                break;
-            }
-            addr_ptr++;
-            data_ptr++;
-            i += sizeof(*data_ptr);
+        if (*addr_ptr++ != *data_ptr++) {
+            // Only update return value if operation was OK
+            if (FLASH_ERR_OK == res) res = FLASH_ERR_DRV_VERIFY;
+            break;
         }
-#endif	
+
+        len -= sizeof (*data_ptr);
+    }
 
     return res;
 }
 
 #endif // CYGONCE_DEVS_FLASH_ATMEL_AT49XXXX_INL
+
+// EOF flash_at49xxxx.inl
