@@ -402,7 +402,7 @@
 #define CYG_HAL_USE_ROM_MONITOR
 #define CYG_HAL_USE_ROM_MONITOR_CYGMON
 #endif
-#if defined(CYG_HAL_MN10300_STDEVAL1) && defined(CYG_HAL_STARTUP_RAM)
+#if defined(CYG_HAL_MN10300_AM31_STDEVAL1) && defined(CYG_HAL_STARTUP_RAM)
 #define CYG_HAL_USE_ROM_MONITOR
 #define CYG_HAL_USE_ROM_MONITOR_CYGMON
 #endif
@@ -440,13 +440,6 @@
  *
  * NOTE: Currently the code also needs these #defines.
  */
-#ifdef CYG_HAL_MN10300_STDEVAL1
-# define CYG_HAL_MN10300_MN103002
-#endif
-#ifdef CYG_HAL_MN10300_SIM
-# define CYG_HAL_MN10300_MN103002
-#endif
-
 #ifdef CYG_HAL_POWERPC_COGENT
 # define CYG_HAL_POWERPC_MPC8xx
 # define CYG_HAL_POWERPC_MPC860
@@ -462,7 +455,7 @@
 #endif
 
 
-#ifdef CYGPKG_HAL_MIPS
+#if defined(CYGPKG_HAL_MIPS) || defined(CYGPKG_HAL_MN10300)
 #include CYGBLD_HAL_TARGET_H
 #endif
 

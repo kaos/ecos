@@ -49,52 +49,10 @@
 #include <pkgconf/kernel.h>
 	
 #endif		
-	
-	.extern _cyg_instrument
 
-	
-##-----------------------------------------------------------------------------
-## Register addresses and initialization values
-	
-	.equ	IOBCTR	,0x32000010
-	.equ	MEMCTR0	,0x32000020
-	.equ	MEMCTR1	,0x32000022
-	.equ	MEMCTR2	,0x32000024
-	.equ	MEMCTR3	,0x32000026
-	.equ	MEMCTR4	,0x32000028
-	.equ	MEMCTR5	,0x3200002a
-	.equ	MEMCTR6	,0x3200002c
-	.equ	MEMCTR7	,0x3200002e
-	.equ	DRAMCTR	,0x32000040
-	.equ	REFCNT	,0x32000042
-
-#ifdef CYG_HAL_MN10300_STDEVAL1	
-	.equ	INIT_MEMCTR0,0x1200	# 2wait
-	.equ	INIT_MEMCTR1,0x0120	# 1wait-32bit-
-	.equ	INIT_MEMCTR2,0x0065
-	.equ	INIT_DRAMCTR,0x0287
-	.equ	INIT_REFCNT,0x00eb	
-#endif	
-
-	.equ	P2OUT	,0x36008004
-	.equ	P2MD	,0x36008024
-	.equ	P2SS	,0x36008044
-	.equ	P2DIR	,0x36008064
-
-	.equ	INIT_P2MD,0xf0
-	.equ	INIT_P2DIR,0xff
-
-##-----------------------------------------------------------------------------
+#include <cyg/hal/arch.inc>	
 		
-	.macro	led val
-	movm	[d2],(sp)
-	mov	\val,d2
-	asl	4,d2
-	movbu	d2,(P2OUT)
-	movm	(sp),[d2]
-	.endm
-
-			
+	
 ##-----------------------------------------------------------------------------
 	
 	.file	"vectors.S"
@@ -125,8 +83,8 @@ reset_vector:
 	.globl __nmi
 __nmi:
 	add	-4,sp				# space for SP
-	movm	[d2,d3,a2,a3,other],(sp)	# push all registers
-	mov	(_hal_vsr_table+28),a0
+	hal_cpu_save_all			# push all registers
+	mov	(_hal_vsr_table+28),a0 
 	jmp	(a0)
 
 ##-----------------------------------------------------------------------------
@@ -135,7 +93,7 @@ __nmi:
 	.globl __trap
 __trap:
 	add	-8,sp				# space for SP and PSW
-	movm	[d2,d3,a2,a3,other],(sp)	# push all registers
+	hal_cpu_save_all			# push all registers
 	mov	(_hal_vsr_table+32),a0
 	jmp	(a0)
 		
@@ -146,7 +104,7 @@ __trap:
 	.globl	__hardware_vector_\name
 __hardware_vector_\name:
 	add	-4,sp				# space for SP
-	movm	[d2,d3,a2,a3,other],(sp)	# push all registers
+	hal_cpu_save_all
 	mov	\name,d0			# d0 = vector id
 	mov	d0,(0,sp)			# save in dummy stack loc
 	mov	_hal_vsr_table,a0		# a0 = vsr table
@@ -175,44 +133,22 @@ __hardware_vector_\name:
 	.globl	_start
 _start:
 
-#if defined(CYG_HAL_MN10300_STDEVAL1) 
-	mov	INIT_MEMCTR0,d2
-	movhu	d2,(MEMCTR0)
-
-	mov	INIT_MEMCTR1,d2
-	movhu	d2,(MEMCTR1)
-
-	mov	INIT_MEMCTR2,d2
-	movhu	d2,(MEMCTR2)
-
-	mov	INIT_REFCNT,d2
-	movhu	d2,(REFCNT)
-
-	mov	INIT_DRAMCTR,d2
-	movhu	d2,(DRAMCTR)
-
-	# Set up LED
-	
-	mov	INIT_P2MD,d2
-	movbu	d2,(P2MD)
-
-	mov	INIT_P2DIR,d2
-	movbu	d2,(P2DIR)
-
-
-#endif	
-	
-	# Set up the PSW
-
-	mov	0x0700,d0
-	mov	d0,psw
-
 	# set up stack
 
 	mov	__interrupt_stack,a0
 	sub	8,a0
 	mov	a0,sp
-	
+
+	# Initialize hardware
+	hal_cpu_init
+	hal_mmu_init
+	hal_memc_init
+	hal_diag_init
+	hal_intc_init
+	hal_cache_init
+	hal_timer_init
+	hal_mon_init
+
 #ifdef CYG_HAL_STARTUP_ROM
 	
 	# Copy data from ROM to RAM
@@ -247,59 +183,20 @@ _start:
 	cmp	a0,a1
 	bne	1b	
 8:	
-	# Install interrupt vectors
 
-#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_MN10300_SIM)
-	mov	_mn10300_interrupt_vectors,a0
-	mov	__hardware_vector_0,d0
-	movhu	d0,(0,a0)
-	mov	__hardware_vector_1,d0
-	movhu	d0,(4,a0)
-	mov	__hardware_vector_2,d0
-	movhu	d0,(8,a0)
-	mov	__hardware_vector_3,d0
-	movhu	d0,(12,a0)
-	mov	__hardware_vector_4,d0
-	movhu	d0,(16,a0)
-	mov	__hardware_vector_5,d0
-	movhu	d0,(20,a0)
-	mov	__hardware_vector_6,d0
-	movhu	d0,(24,a0)
-#endif
-#if defined(CYG_HAL_STARTUP_RAM) && !defined(CYG_HAL_MN10300_SIM)
+	# Call variant and platform HAL
+	# initialization routines.
 
-	# init vsr table in SRAM where the ROM
-	# vectors the interrupts.
+	.extern _hal_variant_init
+	call    _hal_variant_init,[],0
 
-	mov	_hal_vsr_table,a0
-	mov	__default_interrupt_vsr,d0
-	mov	d0,(0,a0)	
-	mov	d0,(4,a0)
-	mov	d0,(8,a0)
-#ifndef CYG_HAL_USE_ROM_MONITOR_CYGMON
-	# When using Cygmon, leave level 3 for GDB
-	# Ctrl-C interrupts.
-	mov	d0,(12,a0)	
-#endif	
-	mov	d0,(16,a0)	
-	mov	d0,(20,a0)	
-	mov	d0,(24,a0)
-	mov	__default_nmi_vsr,d0
-	mov	d0,(28,a0)
-	mov	__default_trap_vsr,d0
-	mov	d0,(32,a0)
-#endif
+	.extern _hal_platform_init
+	call	_hal_platform_init,[],0
 	
 	# Call constructors
 
 	.extern _cyg_hal_invoke_constructors
 	call    _cyg_hal_invoke_constructors,[],0
-
-	.extern _cyg_hal_enable_caches
-	call    _cyg_hal_enable_caches,[],0
-
-	.extern _cyg_hal_debug_init
-	call    _cyg_hal_debug_init,[],0
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
         .extern _initialize_stub
@@ -309,43 +206,13 @@ _start:
        	# Call cyg_start
 	clr	d0
 	mov	d0,(4,sp)
-
+	
 	.extern _cyg_start
 	call    _cyg_start,[],0
 
-9:	
+9:
 	bra	9b		# Loop if we return
 
-##-----------------------------------------------------------------------------
-## Debug code to count interrupts on the led. 
-
-#ifdef CYG_HAL_MN10300_STDEVAL1
-
-	.macro	show_interrupts	
-	mov	(led_count),d1
-	inc	d1
-#	cmp	20000,d1
-#	ble	2f
-	mov	0,d1
-	movbu	(led_value),d0
-	movbu	d0,(P2OUT)
-	add	16,d0
-	cmp	0x90,d0
-	bne	1f
-	mov	0,d0
-1:		
-	movbu	d0,(led_value)
-2:
-	mov	d1,(led_count)
-	.endm
-
-#else
-
-	.macro	show_interrupts	
-	.endm
-			
-#endif
-	
 ##-----------------------------------------------------------------------------
 ## The following macros are defined depending on whether the HAL is configured
 ## to support the kernel or not. 
@@ -370,82 +237,6 @@ _start:
 #endif		
 
 ##-----------------------------------------------------------------------------
-## The following macros are defined depending on whether the Interrupt
-## system is using isr tables or chaining.
-	
-#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
-
-#if defined(CYG_HAL_MN10300_MN103000)
-
-#define CYG_ISR_TABLE_SIZE	7
-		
-	# decode the interrupt
-	.macro  decode_interrupt dreg,areg,dreg1
-	mov	_mn10300_interrupt_control,\areg
-	movhu	(0x100,\areg),\dreg		# dreg = IAGR
-	movhu	(\dreg,\areg),\dreg1		# dreg1 = IGR[dreg]
-	and	0xf,\dreg1			# dreg1 = ID0..3
-	mov	hal_lsbit_table,\areg		# areg = ls bit table
-	movbu	(\dreg1,\areg),\dreg1		# dreg1 = ls bit index
-	add	\dreg,\dreg1			# dreg1 = word index of isr
-	mov	(0,a2),\dreg			# dreg = vector priority
-	mov	\dreg1,(0,a2)			# store real vector in saved state
-	asl	2,\dreg				# dreg = byte index of isr
-	.endm
-	
-#elif defined(CYG_HAL_MN10300_MN103002)	
-
-#define CYG_ISR_TABLE_SIZE	10
-	
-	# decode the interrupt
-	.macro  decode_interrupt dreg,areg,dreg1
-	mov	_mn10300_interrupt_control,\areg
-	movhu	(0x100,\areg),\dreg1		# dreg1 = IAGR
-	mov	(0,a2),\dreg			# dreg = vector priority
-	mov	\dreg1,(0,a2)			# store real vector in saved state
-	asl	2,\dreg				# dreg = byte index of isr
-	add	12,\dreg			# skip NMI vectors
-	.endm
-		
-#endif
-
-#else
-
-#if defined(CYG_HAL_MN10300_MN103000)
-
-#define CYG_ISR_TABLE_SIZE	100
-
-	# decode the interrupt
-	.macro  decode_interrupt dreg,areg,dreg1
-	mov	_mn10300_interrupt_control,\areg
-	movhu	(0x100,\areg),\dreg		# dreg = IAGR
-	movhu	(\dreg,\areg),\dreg1		# dreg1 = IGR[dreg]
-	and	0xf,\dreg1			# dreg1 = ID0..3
-	mov	hal_lsbit_table,\areg		# areg = ls bit table
-	movbu	(\dreg1,\areg),\dreg1		# dreg1 = ls bit index
-	add	\dreg1,\dreg			# dreg = word index of isr
-	mov	\dreg,(0,a2)			# store real vector in saved state
-	asl	2,\dreg				# dreg = byte index of isr
-	.endm
-
-	
-#elif defined(CYG_HAL_MN10300_MN103002)	
-
-#define CYG_ISR_TABLE_SIZE	 34
-
-	# decode the interrupt
-	.macro  decode_interrupt dreg,areg,dreg1
-	mov	_mn10300_interrupt_control,\areg
-	movhu	(0x100,\areg),\dreg		# dreg = IAGR
-	mov	\dreg,(0,a2)			# store real vector in saved state
-	add	12,\dreg			# skip NMI vectors
-	.endm
-		
-#endif
-		
-#endif
-	
-##-----------------------------------------------------------------------------
 ## Default interrupt VSR
 
 	.text
@@ -455,6 +246,8 @@ __default_interrupt_vsr:
 	# We come here with all the registers pushed
 	# onto the stack.
 
+	hal_diag_intr_start
+	
 	increment_sched_lock
 	
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
@@ -478,17 +271,16 @@ __default_interrupt_vsr:
 	# stack. We will be executing either on the same stack
 	# or on the interrupt stack, depending on config options.
 		
-	decode_interrupt d3,a3,d0
+	hal_intc_decode d3,a3,d0
 
 	# Here D3 contains the table byte offset of the vector to
-	# call. On the MN103000 this needs to be shifted right by
-	# two to derive the vector. On the MN103002 this correponds
-	# exactly to the vector used to attach it.
+	# call.
 
 #if defined(CYGPKG_KERNEL_INSTRUMENT) && defined(CYGDBG_KERNEL_INSTRUMENT_INTR)
 
 	# Call cyg_instrument to record that this interrupt is being raised.
-	
+
+	.extern _cyg_instrument		
 	add	-16,sp				# make space for return link + args	
 	mov	0x0301,d0			# d0 = type = INTR,RAISE
 	mov	(0,a2),d1			# d1 = arg1 = vector
@@ -521,7 +313,18 @@ __default_interrupt_vsr:
 	
 	or	0x0800,psw
 	
-#endif	
+#endif
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
+
+	# If we have Ctrl-C support enabled, save a pointer to the
+	# saved CPU state here so we can plant a breakpoint there if
+	# this is a ^C.
+	
+	.extern _hal_saved_interrupt_state
+	mov	a2,(_hal_saved_interrupt_state)
+	
+#endif
+		
 	mov	_hal_interrupt_handlers,a0	# a0 = isr table
 	mov	(d3,a0),a0			# a0 = isr
 	
@@ -530,9 +333,7 @@ __default_interrupt_vsr:
 
 	mov	(0,a2),d0			# d0 = vector. (d3 is...
 						# ...adjusted for table reads)
-#if defined(CYG_HAL_MN10300_MN103000)	
-	lsr	2,d0				# d0 = vector number
-#endif
+
 	add	-16,sp				# make space for return link
 
 	calls	(a0)				# call isr
@@ -580,14 +381,6 @@ __default_interrupt_vsr:
 	# _interrupt_end() to post the DSR and decrement the scheduler
 	# lock.
 		
-	# interrupt_end must be called with interrupts enabled.
-	# At this point we restore the PSW of the code we interrupted
-	# to get the IPL bits back. By definition this PSW must have
-	# interrupts enabled.
-	mov	(52,a2),d2
-
-	mov	d2,psw
-
 	mov	a2,(12,sp)			# arg3 = saved state.
 	
 	calls	_interrupt_end			# call interrupt end fn		
@@ -595,25 +388,45 @@ __default_interrupt_vsr:
 
 	add	16,sp				# pop return link
 
-	show_interrupts
+#	show_interrupts
+
+	hal_diag_restore
 	
-	movm	(sp),[d2,d3,a2,a3,other]	# pop regs
+	hal_cpu_load_all
 	add	4,sp
 	rti					# and return
 
-hal_lsbit_table:
-	.byte	0, 0, 1, 0
-	.byte	2, 0, 1, 0
-	.byte	3, 0, 1, 0
-	.byte	2, 0, 1, 0
+##-----------------------------------------------------------------------------
+## Execute pending DSRs on the interrupt stack with interrupts enabled.
+## Note: this can only be called from code running on a thread stack
+	
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+	.extern _cyg_interrupt_call_pending_DSRs
+	.global _hal_interrupt_stack_call_pending_DSRs
 
+_hal_interrupt_stack_call_pending_DSRs:		
+	movm	[d2,a2],(sp)			# save some work regs
+	mov	__interrupt_stack,a0		# interrupt stack pointer
+	mov	sp,a2				# save current SP
+	mov	a0,sp				# set SP to interrupt stack
+	hal_cpu_get_psw d2			# save PSW
+	hal_cpu_int_enable			# enable interrupts
 
+	# Call kernel code to invoke DSRs.
+	calls	_cyg_interrupt_call_pending_DSRs	
+
+	# On return the old SP in a2 and the old PSW in d2 will 
+	# have been preserved by the calling conventions.
+	
+	hal_cpu_int_merge d2			# Restore previous PSW
+	mov	a2,sp				# restore old SP
+	movm	(sp),[d2,a2]			# Retrieve old work regs
+	ret	[],0				# and return
+		
+#endif		
+		
 ##-----------------------------------------------------------------------------
 ## Default NMI VSR
-
-#define NMICR	0x34000100
-#define DCR	0x20000030
-#define ISR	0x20000034
 
 	.globl	_cyg_hal_exception_handler
 	
@@ -624,6 +437,8 @@ __default_nmi_vsr:
 	# We come here with all the registers saved
 	# on the stack.
 
+	hal_diag_excpt_start
+	
 	# Decode the cause of the NMI and cancel all the bits in all
 	# the registers. We need to clear any bits set in the ISR and
 	# then clear any bits set in the NMICR. Note that we can only 
@@ -634,8 +449,8 @@ __default_nmi_vsr:
 	movhu	(DCR),d1			# D1 = Debug Control Register
 	mov	d1,d2				# D2 = copy of DCR
 	movhu	(ISR),d3			# D3 = Interrupt Status Register
-	
-	or	0x0010,d1			# Set DE bit
+
+	or	DCR_DE,d1			# Set DE bit	
 	movhu	d1,(DCR)			
 
 	movhu	d3,(ISR)			# clear ISR bits
@@ -651,35 +466,33 @@ __default_nmi_vsr:
 						## 1 = Watchdog
 						## 2 = System Error
 
+	add	9,d1				# offset into exception number space
 	
-	# It appears that there is an undocumented extra bit
-	# in the PSW that masks the delivery of NMIs. It is in
-	# the upper 16 bits of the register that we cannot access
-	# directly. So, to clear it, we must set up a fake interrupt
-	# state and do an RTI to load the PSW. We need to do this if
-	# we are going to be able to set breakpoints in NMI handlers.
-	# Note that the AM33 has a documented NMID at bit 17 of the
-	# extended PSW (along with instructions to access it).
-	
-	mov	PSW,d3				# D3 = PSW
-	and	0xFFFF,d3
-	mov	1f,d2				# D2 = Next PC
-	movm	[d2,d3],(sp)			# Push
-	rti					# and load into CPU
-1:	
-	
+	hal_cpu_clear_nmid
+
 	mov	sp,a1				# a1 = saved state
 	mov	a1,d0				# d0 = arg1 = saved state
 
 	add	-16,sp				# return link + args
-	mov	d1,(16,sp)			# save in spare save slot
+	mov	d1,(16,sp)			# save initial vector in spare save slot
+	mov	d3,d1				# d1 = arg2 = ISR value
 
 	calls	_cyg_hal_exception_handler	# call C code
+
 	add	16,sp				# pop args
-	movm	(sp),[d2,d3,a2,a3,other]	# pop all registers
+
+	hal_cpu_load_all
+
 	add	4,sp
 	rti
 
+	.globl hal_lsbit_table
+hal_lsbit_table:
+	.byte	0, 0, 1, 0
+	.byte	2, 0, 1, 0
+	.byte	3, 0, 1, 0
+	.byte	2, 0, 1, 0
+	
 ##-----------------------------------------------------------------------------
 ## Default TRAP VSR
 
@@ -695,16 +508,16 @@ __default_trap_vsr:
 	mov	d1,(0,sp)			# save in spare save slot
 	calls	_cyg_hal_exception_handler	# call C code
 	add	8,sp				# pop args
-	movm	(sp),[d2,d3,a2,a3,other]	# pop all registers
+	hal_cpu_load_all
 	add	4,sp
 	rets
-				
+
 ##-----------------------------------------------------------------------------
 ## VSR table. The VSRs pointed to by this table are called from the stubs
 ## connected to the hardware.
 
-#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_MN10300_SIM)
-			
+#ifndef CYG_HAL_MN10300_VSR_TABLE_DEFINED
+	
 	.data
 
 	.globl	_hal_vsr_table
@@ -719,17 +532,39 @@ _hal_vsr_table:
 	.long	__default_nmi_vsr
 	.long	__default_trap_vsr
 
+	.long	__default_nmi_vsr
+	.long	__default_nmi_vsr
+	.long	__default_nmi_vsr
+	
+	.long	__default_nmi_vsr
+	.long	__default_nmi_vsr
+	.long	__default_nmi_vsr
+	.long	__default_nmi_vsr
+	.long	__default_nmi_vsr
+	.long	__default_nmi_vsr
+	.long	__default_nmi_vsr
+	.long	__default_nmi_vsr
+	.long	__default_nmi_vsr
+	.long	__default_nmi_vsr
+	.long	__default_nmi_vsr
+	.long	__default_nmi_vsr
+	.long	__default_nmi_vsr
+	.long	__default_nmi_vsr
+	.long	__default_nmi_vsr
+	.long	__default_nmi_vsr
 #endif
-		
+	
 ##-----------------------------------------------------------------------------
 ## Interrupt tables
 	
-	.section ".bss"
+	.data
 
+	.extern _hal_default_isr
+	
 	.globl	_hal_interrupt_handlers
 _hal_interrupt_handlers:
 	.rept	CYG_ISR_TABLE_SIZE
-	.long	0
+	.long	_hal_default_isr
 	.endr
 	
 	.globl	_hal_interrupt_data
@@ -765,16 +600,9 @@ __interrupt_stack:
 	.long	0,0,0,0,0,0,0,0	
 
 ##-----------------------------------------------------------------------------
-		
-#ifdef CYG_HAL_MN10300_STDEVAL1
+
 	.data
-## Keep alignment to work around compiler/linker bug
-led_count:	.long 0
-led_value:	.byte 0x40
-led_foo1:	.byte 0x00
-led_foo2:	.byte 0x00
-led_foo3:	.byte 0x00
-#endif
+	hal_diag_data
 
 ##-----------------------------------------------------------------------------
 ## end of vectors.S

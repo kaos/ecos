@@ -2,7 +2,7 @@
 #
 #    makefile
 #
-#    hal/mn10300/arch/src
+#    hal/mn10300/am31/src
 #
 #==============================================================================
 #####COPYRIGHTBEGIN####
@@ -28,25 +28,35 @@
 #####COPYRIGHTEND####
 #==============================================================================
 
-PACKAGE       := hal_mn10300
+PACKAGE       := hal_mn10300_am31
 include ../../../../../pkgconf/pkgconf.mak
 
 LIBRARY       := libtarget.a
-COMPILE       := hal_misc.c context.S mn10300_stub.c
-OTHER_OBJS    := 
-OTHER_TARGETS := vectors.stamp
-OTHER_DEPS    := $(PACKAGE)_vectors.d
-OTHER_CLEAN   := vectors.clean
+COMPILE       := var_misc.c
+OTHER_OBJS    :=
+OTHER_TARGETS := ldscript.stamp
+OTHER_CLEAN   := ldscript.clean
+OTHER_DEPS    := ldscript.d
 
 include $(COMPONENT_REPOSITORY)/pkgconf/makrules.src
 
-vectors.stamp: $(PACKAGE)_vectors.o
-	$(CP) $< $(PREFIX)/lib/vectors.o
-	@$(TOUCH) $@
+.PHONY: ldscript.clean
 
-vectors.clean:
-	$(RM) $(PREFIX)/lib/vectors.o $(PACKAGE)_vectors.o
-	$(RM) vectors.stamp
+EXTRAS = $(wildcard $(PREFIX)/lib/libextras.a)
 
-$(PACKAGE)_vectors.o: $(BUILD_TREE)/pkgconf/pkgconf.mak \
-    $(BUILD_TREE)/pkgconf/makevars $(PACKAGE_RULES_FILE)
+ldscript.stamp: mn10300_am31.ld $(EXTRAS)
+ifneq ($(EXTRAS),)
+	$(LD) -EL --whole-archive $(PREFIX)/lib/libextras.a -r -o $(PREFIX)/lib/extras.o
+	$(CC) -E -P -Wp,-MD,ldscript.tmp -DEXTRAS=$(EXTRAS) -xc $(INCLUDE_PATH) $(CFLAGS) -o $(PREFIX)/lib/target.ld $<
+else
+	$(CC) -E -P -Wp,-MD,ldscript.tmp -xc $(INCLUDE_PATH) $(CFLAGS) -o $(PREFIX)/lib/target.ld $<
+endif
+	@echo > ldscript.d
+	@echo $@ ':' $< '\' >> ldscript.d
+	@tail -n +2 ldscript.tmp >> ldscript.d
+	@rm ldscript.tmp
+	$(TOUCH) $@
+
+ldscript.clean:
+	$(RM) -f $(PREFIX)/lib/target.ld
+	$(RM) -f ldscript.stamp

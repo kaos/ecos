@@ -99,7 +99,12 @@ externC int dbg_thread_capabilities(struct dbg_capabilities * cpb)
 
 static void dbg_make_threadref(Cyg_Thread *thread, threadref *ref )
 {
-    if( thread == NULL )                     
+    // The following test tries to avoid accessing uninitialized pointers.
+    // This can happen if we take a breakpoint before the data is copied
+    // or the BSS zeroed. We currently assume that RAM will reset to zero
+    // or 0xff. If it is random, we have no hope.
+
+    if( (CYG_ADDRWORD)thread == 0 || (CYG_ADDRWORD)thread == 0xffffffff )                     
     {
         ((unsigned long *)ref)[0] = 0;
         ((unsigned long *)ref)[1] = 0;

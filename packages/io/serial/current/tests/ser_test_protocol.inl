@@ -98,7 +98,7 @@
 #  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
 # endif
 #endif
-#if defined(CYGPKG_HAL_MN10300_STDEVAL1)                \
+#if defined(CYGPKG_HAL_MN10300_AM31_STDEVAL1)           \
     && defined(CYGPKG_IO_SERIAL_MN10300)                \
     && defined(CYGPKG_IO_SERIAL_MN10300_SERIAL2)
 # define TEST_SER_DEV CYGDAT_IO_SERIAL_MN10300_SERIAL2_NAME
@@ -218,8 +218,11 @@ cyg_ser_cfg_t test_configs[] = {
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },
 #endif
 
+#if !defined(CYGPKG_HAL_MN10300_AM31) &&    \
+    1
     { CYGNUM_SERIAL_BAUD_14400, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },
+#endif
 
     { CYGNUM_SERIAL_BAUD_19200, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },
@@ -232,7 +235,8 @@ cyg_ser_cfg_t test_configs[] = {
 
 #if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904) &&   \
     !defined(CYGPKG_HAL_ARM_AEB) &&             \
-    !defined(CYGPKG_HAL_SPARCLITE_SLEB)
+    !defined(CYGPKG_HAL_SPARCLITE_SLEB) &&      \
+    1
     { CYGNUM_SERIAL_BAUD_57600, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },
 #endif
@@ -466,7 +470,8 @@ change_config(cyg_io_handle_t handle, cyg_ser_cfg_t* cfg)
                             &old_cfg, &len);
     res = cyg_io_get_config(handle, CYG_IO_GET_CONFIG_SERIAL_INFO, 
                             &new_cfg, &len);
-    if (res != ENOERR) {
+
+     if (res != ENOERR) {
         diag_printf("Can't get serial config - DEVIO error: %d\n", res);
         hang();
     }
@@ -561,7 +566,6 @@ change_config(cyg_io_handle_t handle, cyg_ser_cfg_t* cfg)
                     // was due to a framing or parity error.
                     break;
                 }
-
                 if ('R' == in_buf[0]) {
                     // Resync - host didn't see our message. Try again.
                     saw_host_sync = 0;

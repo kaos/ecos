@@ -48,6 +48,7 @@
 //
 //=============================================================================
 
+#include <pkgconf/system.h>
 #include <cyg/infra/cyg_type.h>
 
 //-----------------------------------------------------------------------------
@@ -132,7 +133,8 @@ typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
 // Enforce a flow "barrier" to prevent optimizing compiler from reordering 
 // operations.
 #define HAL_IO_BARRIER()
-    
+
+
 //-----------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_IO_H
 // End of hal_io.h

@@ -40,7 +40,7 @@ endif
 ifdef CYG_HAL_ARM_AEB
 EXTRAS_COMPILE  += arm/aeb_serial.c
 endif
-ifdef CYG_HAL_MN10300_STDEVAL1
+ifdef CYG_HAL_MN10300_AM31
 EXTRAS_COMPILE  += mn10300/mn10300_serial.c
 endif
 ifdef CYG_HAL_MIPS_TX39

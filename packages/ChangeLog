@@ -1,3 +1,9 @@
+1999-08-16  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* packages:
+	* targets:
+	Rename all mentions of am32 to am31
+
 1999-06-09  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* pkgconf.tcl (pkgconf::produce_misc_files): MLT files need

@@ -60,7 +60,7 @@
     !defined(CYG_KERNEL_DIAG_SERIAL2) && \
     !defined(CYG_KERNEL_DIAG_ROMART)
 
-# if defined(CYG_HAL_MN10300_STDEVAL1)
+# if defined(CYG_HAL_MN10300_AM31_STDEVAL1)
 
 #  if defined(CYG_HAL_STARTUP_RAM)
 
@@ -68,7 +68,7 @@
 
      // If loaded into RAM via CYGMON we diag via
      // serial 2 using GDB protocol
-    
+
 #    define CYG_KERNEL_DIAG_SERIAL2
 #    define CYG_KERNEL_DIAG_GDB
 
@@ -97,7 +97,7 @@
     
 #  endif // defined(CYG_HAL_STARTUP_RAM)
     
-# endif // defined(CYG_HAL_MN10300_STDEVAL1)
+# endif // defined(CYG_HAL_MN10300_AM31_STDEVAL1)
 
 #endif // if ...
     
@@ -106,7 +106,7 @@
 
 #if defined(CYG_HAL_MN10300_STDEVAL1_ROMART) || defined(CYG_KERNEL_DIAG_ROMART)
 
-#ifdef CYG_HAL_MN10300_STDEVAL1
+#ifdef CYG_HAL_MN10300_AM31_STDEVAL1
 #define PROMICE_AILOC           0x40008000
 #endif
 
@@ -282,6 +282,9 @@ void hal_diag_read_char_serial1(char *c)
 
     *c = *tty_rx;
 
+    // We must ack the interrupt caused by that read to avoid
+    // confusing cygmon.
+    HAL_INTERRUPT_ACKNOWLEDGE( CYGNUM_HAL_INTERRUPT_SERIAL_1_RX );
 }
 
 #if defined(CYG_KERNEL_DIAG_SERIAL1)
@@ -295,7 +298,7 @@ void hal_diag_read_char_serial1(char *c)
 
 #endif
 
-#if defined(CYG_HAL_MN10300_STDEVAL1)
+#if defined(CYG_HAL_MN10300_AM31_STDEVAL1)
 
 void led(int x)
 {
@@ -378,6 +381,10 @@ void hal_diag_read_char_serial2(char *c)
     while( (*tty_status & SIO2_LSTAT_RRDY) == 0 ) continue;
 
     *c = *tty_rx;
+
+    // We must ack the interrupt caused by that read to avoid
+    // confusing cygmon.
+    HAL_INTERRUPT_ACKNOWLEDGE( CYGNUM_HAL_INTERRUPT_SERIAL_2_RX );
 }
 
 #if defined(CYG_KERNEL_DIAG_SERIAL2)
@@ -443,41 +450,18 @@ void hal_diag_write_char(char c)
             hal_diag_write_char_serial(hex[(csum>>4)&0xF]);
             hal_diag_write_char_serial(hex[csum&0xF]);
 
-#if 0
+
             {
                 char c1;
 
                 hal_diag_read_char_serial( &c1 );
 
-                // We must ack the interrupt caused by that read to avoid
-                // confusing the GDB stub ROM.
-                HAL_INTERRUPT_ACKNOWLEDGE( CYGNUM_HAL_INTERRUPT_EXTERNAL_2 );
-            
                 if( c1 == '+' ) break;
 
-                ai_writes("hal_diag_read_char_serial(");
-                ai_write_char(c1);
-                ai_writes(")\r\n");
-                ai_writes("retry\r\n");
-
-#if defined(CYG_HAL_USE_ROM_MONITOR) && defined(CYG_HAL_USE_ROM_MONITOR_CYGMON)
-                if( c1 == 3 )
-                {
-                    // Ctrl-C: breakpoint.
-//                HAL_BREAKPOINT(_breakinst);
-                    typedef void bpt_fn();
-                    bpt_fn *bfn = ((bpt_fn **)0x80000100)[61];
-
-                    bfn();
-                
-                    break;
-                }
-#endif
+                if( cyg_hal_is_break( &c1, 1 ) )
+                    cyg_hal_user_break( NULL );
 
             }
-#else
-            break;
-#endif
         }
         
         pos = 0;

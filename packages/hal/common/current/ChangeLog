@@ -1,3 +1,12 @@
+1999-08-16  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/pkgconf/hal.h: Rename CYG_HAL_MN10300_AM32_STDEVAL1 to
+	CYG_HAL_MN10300_AM31_STDEVAL1
+
+1999-08-13  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/hal_stub.c: Removed superfluous trace() extern.
+
 1999-08-06  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* src/generic-stub.c (__process_packet): FLush and clear caches

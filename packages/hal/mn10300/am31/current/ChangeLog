@@ -1,0 +1,69 @@
+1999-08-16  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+        Copy entire package from hal/mn10300/am32
+
+	* include/pkgconf/hal_mn10300_am31.h: 
+	* include/variant.inc: 
+	* include/var_intr.h:
+	* include/var_arch.h:
+	* include/var_cache.h:
+	* src/PKGconf.mak: 
+	* src/mn10300_am31.ld
+	* src/var_misc.c:
+	Rename all files and contents of files that mention am32, to am31
+
+1999-08-11  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/var_intr.h: Fixed up some typos.
+
+	* include/variant.inc: Moved diagnostic data here into a macro.
+
+1999-08-10  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/pkgconf/hal_mn10300_am32.h:
+	reparent CYGPKG_HAL_MN10300_AM32 under CYGPKG_HAL_MN10300_VARIANTS
+
+1999-07-30  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/var_intr.h: Moved HAL_INTERRUPT_CONFIGURE() here since
+	it now has to be variant-specific.
+	Reorganized and renumbered exceptions.
+
+1999-07-27  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/variant.inc: Changed all *_MIPS_* macros to *_MN10300_*.
+	Added definition of DCR_DE bit.
+
+1999-07-08  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/variant.inc:
+	Added definitions of NMICR, DCR and ISR addresses.
+	Added hal_cpu_clear_nmid macro.
+
+1999-07-07  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/variant.inc:
+	Added macros to get and set PSW in a CPU specific way.	
+
+1999-06-30  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/var_misc.c (cyg_hal_dcache_store):
+	changed name of symbol for testing for SIM build.
+
+	* include/variant.inc:
+	Added CPU register save and restore macros.
+
+1999-06-29  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/var_arch.h: 
+	* include/var_intr.h: 
+	* include/var_cache.h: 
+	* include/variant.inc: 
+	* include/pkgconf/hal_mn10300_am32.h:
+	* src/PKGconf.mak: 
+	* src/mn10300_am32.ld:
+	* src/var_misc.c:
+	Added these files to contain AM32 variant implementations of the
+	HAL.
+	
+	

@@ -44,6 +44,8 @@
 #include <pkgconf/hal.h>
 #include <cyg/infra/cyg_type.h>
 
+#include <cyg/hal/var_arch.h>
+
 //--------------------------------------------------------------------------
 // Processor saved states:
 
@@ -51,26 +53,26 @@ typedef struct HAL_SavedRegisters
 {
     // These are common to all saved states and are in the order
     // stored and loaded by the movm instruction.
-    cyg_uint32  vector;                 /* Vector number/dummy          */
-    cyg_uint32  lar;                    /* Loop address register        */
-    cyg_uint32  lir;                    /* Loop instruction register    */
-    cyg_uint32  mdr;                    /* Multiply/Divide register     */
-    cyg_uint32  a1;
-    cyg_uint32  a0;
-    cyg_uint32  d1;
-    cyg_uint32  d0;
-    cyg_uint32  a3;
-    cyg_uint32  a2;
-    cyg_uint32  d3;
-    cyg_uint32  d2;
-
+    CYG_ADDRWORD        vector;         /* Vector number/dummy          */
+    CYG_ADDRWORD        lar;            /* Loop address register        */
+    CYG_ADDRWORD        lir;            /* Loop instruction register    */
+    CYG_ADDRWORD        mdr;            /* Multiply/Divide register     */
+    CYG_ADDRWORD        a1;
+    CYG_ADDRWORD        a0;
+    CYG_ADDRWORD        d1;
+    CYG_ADDRWORD        d0;
+    CYG_ADDRWORD        a3;
+    CYG_ADDRWORD        a2;
+    CYG_ADDRWORD        d3;
+    CYG_ADDRWORD        d2;
+    
     /* On interrupts the PC and PSW are pushed automatically by the     */
     /* CPU and SP is pushed for debugging reasons. On a thread switch   */
     /* the saved context is made to look the same.                      */
 
-    cyg_uint32  sp;             /* Saved copy of SP in some states      */
-    cyg_uint32  psw;            /* Status word                          */
-    cyg_uint32  pc;             /* Program Counter                      */
+    CYG_ADDRWORD  sp;             /* Saved copy of SP in some states      */
+    CYG_ADDRWORD  psw;            /* Status word                          */
+    CYG_ADDRWORD  pc;             /* Program Counter                      */
     
 } HAL_SavedRegisters;
 
@@ -102,12 +104,16 @@ externC cyg_uint32 hal_msbit_index(cyg_uint32 mask);
 // _entry_ entry point address.
 // _id_ bit pattern used in initializing registers, for debugging.
 
+#ifndef HAL_THREAD_INIT_CONTEXT_EXTRA
+#define HAL_THREAD_INIT_CONTEXT_EXTRA(_regs_, _id_)
+#endif
 
 #define HAL_THREAD_INIT_CONTEXT( _sp_, _thread_, _entry_, _id_ )            \
 {                                                                           \
     register HAL_SavedRegisters *_regs_;                                    \
     _regs_ = (HAL_SavedRegisters *)(((CYG_ADDRWORD)(_sp_)&~15) -            \
                                     sizeof(HAL_SavedRegisters)*2);          \
+    HAL_THREAD_INIT_CONTEXT_EXTRA(_regs_, _id_);                            \
     _regs_->d0    = (CYG_WORD)(_thread_);                                   \
     _regs_->d1    = (_id_)|0xddd1;                                          \
     _regs_->d2    = (_id_)|0xddd2;                                          \
@@ -119,7 +125,7 @@ externC cyg_uint32 hal_msbit_index(cyg_uint32 mask);
     _regs_->mdr   = 0;                                                      \
     _regs_->lir   = 0;                                                      \
     _regs_->lar   = 0;                                                      \
-/*    _regs_->psw   = 0x0F00;  */                                           \
+    _regs_->psw   = 0x0000F00;                                              \
     _regs_->pc    = (CYG_WORD)(_entry_);                                    \
     _sp_          = (CYG_ADDRESS)_regs_;                                    \
 }
@@ -174,29 +180,38 @@ asm volatile (" .globl  " #_label_ ";"          \
 #define HAL_THREAD_GET_SAVED_REGISTERS( _sp_, _regs_ )                     \
         (_regs_) = (HAL_SavedRegisters *)(_sp_)
 
+#ifndef HAL_GET_GDB_EXTRA_REGISTERS
+#define HAL_GET_GDB_EXTRA_REGISTERS( _regval_, _regs_ )
+#endif
+#ifndef HAL_SET_GDB_EXTRA_REGISTERS
+#define HAL_SET_GDB_EXTRA_REGISTERS( _regs_, _regval_ )
+#endif
+
+
 // Copy a set of registers from a HAL_SavedRegisters structure into a
 // GDB ordered array.    
-#define HAL_GET_GDB_REGISTERS( _aregval_ , _regs_ )                     \
-{                                                                       \
-    CYG_ADDRWORD *_regval_ = (CYG_ADDRWORD *)(_aregval_);               \
-                                                                        \
-    _regval_[0]         = (_regs_)->d0;                                 \
-    _regval_[1]         = (_regs_)->d1;                                 \
-    _regval_[2]         = (_regs_)->d2;                                 \
-    _regval_[3]         = (_regs_)->d3;                                 \
-    _regval_[4]         = (_regs_)->a0;                                 \
-    _regval_[5]         = (_regs_)->a1;                                 \
-    _regval_[6]         = (_regs_)->a2;                                 \
-    _regval_[7]         = (_regs_)->a3;                                 \
-                                                                        \
-    _regval_[8]         = (CYG_ADDRWORD)(_regs_) +                      \
-                          sizeof(HAL_SavedRegisters);                   \
-    _regval_[9]         = (_regs_)->pc;                                 \
-    _regval_[10]        = (_regs_)->mdr;                                \
-    _regval_[11]        = (_regs_)->psw;                                \
-                                                                        \
-    _regval_[12]        = (_regs_)->lar;                                \
-    _regval_[13]        = (_regs_)->lir;                                \
+#define HAL_GET_GDB_REGISTERS( _aregval_ , _regs_ )             \
+{                                                               \
+    CYG_ADDRWORD *_regval_ = (CYG_ADDRWORD *)(_aregval_);       \
+                                                                \
+    _regval_[0]         = (_regs_)->d0;                         \
+    _regval_[1]         = (_regs_)->d1;                         \
+    _regval_[2]         = (_regs_)->d2;                         \
+    _regval_[3]         = (_regs_)->d3;                         \
+    _regval_[4]         = (_regs_)->a0;                         \
+    _regval_[5]         = (_regs_)->a1;                         \
+    _regval_[6]         = (_regs_)->a2;                         \
+    _regval_[7]         = (_regs_)->a3;                         \
+                                                                \
+    _regval_[8]         = (CYG_ADDRWORD)(_regs_) +              \
+                          sizeof(HAL_SavedRegisters);           \
+    _regval_[9]         = (_regs_)->pc;                         \
+    _regval_[10]        = (_regs_)->mdr;                        \
+    _regval_[11]        = (_regs_)->psw;                        \
+                                                                \
+    _regval_[12]        = (_regs_)->lar;                        \
+    _regval_[13]        = (_regs_)->lir;                        \
+    HAL_GET_GDB_EXTRA_REGISTERS( _regval_, _regs_ );            \
 }
 
 // Copy a GDB ordered array into a HAL_SavedRegisters structure.
@@ -223,6 +238,8 @@ asm volatile (" .globl  " #_label_ ";"          \
      * mess up the saved state. No PSW is saved on thread context       \
      * switches, so there is nowhere to save it to.                     \
      */                                                                 \
+                                                                        \
+     HAL_SET_GDB_EXTRA_REGISTERS( _regs_, _regval_ );                   \
 }
 
 //-------------------------------------------------------------------------
@@ -250,9 +267,9 @@ externC void hal_longjmp(hal_jmp_buf env, int val);
 // chance to insert code. Typical idle thread behaviour might be to halt the
 // processor.
 
-//externC void hal_idle_thread_action(cyg_uint32 loop_count);
+externC void hal_idle_thread_action(cyg_uint32 loop_count);
 
-#define HAL_IDLE_THREAD_ACTION(_count_)
+#define HAL_IDLE_THREAD_ACTION(_count_) hal_idle_thread_action(_count_)
 
 //-----------------------------------------------------------------------------
 // Minimal and sensible stack sizes: the intention is that applications

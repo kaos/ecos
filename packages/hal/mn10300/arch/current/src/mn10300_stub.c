@@ -27,14 +27,52 @@
 #include <cyg/hal/dbg-threads-api.h>    // dbg_currthread_id
 #endif
 
+/*----------------------------------------------------------------------
+ * Asynchronous interrupt support
+ */
+
+typedef unsigned char t_inst;
+
+static struct
+{
+  t_inst *targetAddr;
+  t_inst savedInstr;
+} asyncBuffer;
+
+/* Called to asynchronously interrupt a running program.
+   Must be passed address of instruction interrupted.
+   This is typically called in response to a debug port
+   receive interrupt.
+*/
+
+void
+install_async_breakpoint(void *pc)
+{
+  asyncBuffer.targetAddr = pc;
+  asyncBuffer.savedInstr = *(t_inst *)pc;
+  *(t_inst *)pc = (t_inst)HAL_BREAKINST;
+  __instruction_cache(CACHE_FLUSH);
+  __data_cache(CACHE_FLUSH);
+}
+
+/*--------------------------------------------------------------------*/
 /* Given a trap value TRAP, return the corresponding signal. */
 
 int __computeSignal (unsigned int trap_number)
 {
+    if (asyncBuffer.targetAddr != NULL)
+    {
+        /* BP installed by serial driver to stop running program */
+        *asyncBuffer.targetAddr = asyncBuffer.savedInstr;
+        __instruction_cache(CACHE_FLUSH);
+        __data_cache(CACHE_FLUSH);
+        asyncBuffer.targetAddr = NULL;
+        return SIGINT;
+    }
     return SIGTRAP;
 }
 
-
+/*--------------------------------------------------------------------*/
 /* Return the trap number corresponding to the last-taken trap. */
 
 int __get_trap_number (void)
@@ -44,6 +82,7 @@ int __get_trap_number (void)
     return _hal_registers->vector;
 }
 
+/*--------------------------------------------------------------------*/
 /* Set the currently-saved pc register value to PC. This also updates NPC
    as needed. */
 

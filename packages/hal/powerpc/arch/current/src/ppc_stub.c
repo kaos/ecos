@@ -149,7 +149,7 @@ void set_pc (target_register_t pc)
    This may be done by setting breakpoints or setting a single step flag
    in the saved user registers, for example. */
 
-static target_register_t irq_state;
+static target_register_t irq_state = 0;
 
 void __single_step (void)
 {
@@ -177,6 +177,13 @@ void __clear_single_step (void)
     // interrupt state - or single-stepping a MSR changing instruction
     // may result in a wrong EE. Not a very likely scenario though.
     msr |= irq_state;
+
+    // This function is called much more than its counterpart
+    // __single_step.  Only re-enable interrupts if they where
+    // disabled during the previous cal to __single_step. Otherwise,
+    // this function only makes "extra sure" that no trace or branch
+    // exception will happen.
+    irq_state = 0;
 
     put_register (PS, msr);
 }

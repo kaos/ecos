@@ -43,19 +43,8 @@
 
 #include <pkgconf/hal.h>
 
-#------------------------------------------------------------------------------
-# Configure to use either a minimal or maximal thread state
-	
-#ifdef CYGDBG_HAL_COMMON_CONTEXT_SAVE_MINIMUM
+#include <cyg/hal/arch.inc>
 
-#define SAVE_REGS [d2,d3,a2,a3,other]	
-	
-#else
-
-#define SAVE_REGS [d2,d3,a2,a3,other]		
-
-#endif
-	
 #------------------------------------------------------------------------------
 # hal_thread_switch_context
 # Switch thread contexts
@@ -65,9 +54,12 @@
 	.global	_hal_thread_switch_context
 _hal_thread_switch_context:
 	add	-8,sp		# space for SP and PSW
-	movm	SAVE_REGS,(sp)	# dump all registers onto stack
-	mov	psw,d2		# put PSW into saved state
-	mov	d2,(52,sp)
+	mov	d2,a0		# move d2->a0 since PSW can only be
+				# saved to a data register
+	hal_cpu_get_psw	d2	# save PSW to d2
+	mov	d2,(4,sp)	# store in stack loc
+	mov	a0,d2		# retrieve old d2 value
+	hal_cpu_save_all	# save entire register set
 	mov	d1,a2		# move save loc addr to A2
 	mov	sp,(0,a2)	# store SP in save location
 
@@ -86,9 +78,11 @@ _hal_thread_load_context:
 
 	mov	d0,a2		# move next sp loc to a2
 	mov	(0,a2),sp	# load SP with new value
-	movm	(sp),SAVE_REGS	# load all registers
-	add	8,sp		# skip SP & PSW, we never restore them.
-	ret	[],0
+	hal_cpu_load_all	# load whole register set
+	mov	(4,sp),d1	# retrieve saved PSW
+	hal_cpu_set_psw d1	# and restore it
+	add	8,sp		# skip saved SP and PSW
+	ret	[],0		# and return
 	
 ##-----------------------------------------------------------------------------
 ## HAL longjmp(), setjmp() implementations

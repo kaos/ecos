@@ -70,15 +70,18 @@ serial_test( void )
     // We need the filter for this test.
     test_ping(ser_handle);
 
-#if defined(CYGPKG_HAL_ARM_AEB)
+
+#if defined(CYGPKG_HAL_MN10300)         \
+    || defined(CYGPKG_HAL_ARM_AEB)      \
+    || 0
     {
-        // The AEB board is too slow to run the driver in interrupt mode
+        // Some boards are too slow to run the driver in interrupt mode
         // at the default 38400 baud when doing this test.
-        cyg_ser_cfg_t arm_aeb_cfg = { 
+        cyg_ser_cfg_t cfg = { 
             CYGNUM_SERIAL_BAUD_9600, CYGNUM_SERIAL_WORD_LENGTH_8, 
             CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE };
 
-        change_config(ser_handle, &arm_aeb_cfg);
+        change_config(ser_handle, &cfg);
     }
 #endif
 

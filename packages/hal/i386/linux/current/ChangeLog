@@ -1,3 +1,9 @@
+1999-08-16  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/hal_i386_linux.h:
+
+	Proper case package display string.
+
 1999-05-20  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/pkgconf/hal_i386_linux.h: Move RTC setup here.

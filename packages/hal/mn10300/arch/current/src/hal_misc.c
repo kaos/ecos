@@ -43,6 +43,7 @@
 #include <pkgconf/hal.h>
 
 #include <cyg/infra/cyg_type.h>
+#include <cyg/infra/cyg_trac.h>
 
 #include <cyg/hal/hal_arch.h>
 
@@ -97,44 +98,6 @@ cyg_hal_invoke_constructors(void)
 #endif
 
 } // cyg_hal_invoke_constructors()
-
-void
-cyg_hal_enable_caches(void)
-{
-#ifdef CYG_HAL_MN10300_STDEVAL1    
-
-    // On the real hardware we also enable the cache.
-    // doing this here is a temporary measure until we
-    // have a proper platform specific place to do it.
-    
-    // Note that the hardware seems to come up with the
-    // caches containing random data. Hence they must be
-    // invalidated before being enabled.
-    
-    HAL_ICACHE_INVALIDATE_ALL();    
-    HAL_ICACHE_ENABLE();
-    HAL_DCACHE_INVALIDATE_ALL();
-    HAL_DCACHE_ENABLE();
-
-#endif
-
-} // cyg_hal_enable_caches()
-
-void
-cyg_hal_debug_init(void)
-{
-#if defined(CYGPKG_KERNEL)                      && \
-    defined(CYGFUN_HAL_COMMON_KERNEL_SUPPORT)   && \
-    defined(CYG_HAL_USE_ROM_MONITOR)            && \
-    defined(CYG_HAL_USE_ROM_MONITOR_CYGMON)
-    {
-        extern CYG_ADDRESS hal_virtual_vector_table[32];
-        extern void patch_dbg_syscalls(void * vector);
-        patch_dbg_syscalls( (void *)(&hal_virtual_vector_table[0]) );
-    }
-#endif
-
-}
 
 /*------------------------------------------------------------------------*/
 /* Determine the index of the ls bit of the supplied mask.                */
@@ -192,8 +155,21 @@ externC void __handle_exception (void);
 externC HAL_SavedRegisters *_hal_registers;
 
 void
-cyg_hal_exception_handler(HAL_SavedRegisters *regs)
+cyg_hal_exception_handler(HAL_SavedRegisters *regs, CYG_WORD32 isr)
 {
+    CYG_WORD vector = regs->vector;
+
+#if defined(CYGNUM_HAL_EXCEPTION_SYSTEM_ERROR) && defined(CYGNUM_HAL_EXCEPTION_JTAG) 
+    if( vector == CYGNUM_HAL_EXCEPTION_SYSTEM_ERROR )
+    {
+        // Translate vector number via ISR bits into the full
+        // set.
+        vector = CYGNUM_HAL_EXCEPTION_JTAG+hal_lsbit_index( isr );
+
+        regs->vector = vector;
+    }
+#endif
+    
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
     // Set the pointer to the registers of the current exception
@@ -205,8 +181,6 @@ cyg_hal_exception_handler(HAL_SavedRegisters *regs)
 
 #elif defined(CYGFUN_HAL_COMMON_KERNEL_SUPPORT)
     
-    CYG_WORD vector = regs->vector;
-
     if( vector == CYGNUM_HAL_INTERRUPT_WATCHDOG )
     {
         // Special case the watchdog timer exception, look for an
@@ -247,33 +221,35 @@ cyg_hal_exception_handler(HAL_SavedRegisters *regs)
 }
 
 /*------------------------------------------------------------------------*/
-/* Cache functions.                                                       */
+/* default ISR                                                            */
 
-#if !defined(CYG_HAL_MN10300_SIM) && defined(CYG_HAL_MN10300_MN103002)
-void cyg_hal_dcache_store(CYG_ADDRWORD base, int size)
+externC cyg_uint32 hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 {
-    volatile register CYG_BYTE *way0 = HAL_DCACHE_PURGE_WAY0;
-    volatile register CYG_BYTE *way1 = HAL_DCACHE_PURGE_WAY1;
-    register int i;
-    register CYG_ADDRWORD state;
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) &&      \
+    defined(CYGHWR_HAL_GDB_PORT_VECTOR) &&              \
+    defined(HAL_CTRLC_ISR)
 
-    HAL_DCACHE_IS_ENABLED(state);
-    if (state)
-        HAL_DCACHE_DISABLE();
-
-    way0 += base & 0x000007f0;
-    way1 += base & 0x000007f0;
-    for( i = 0; i < size; i += HAL_DCACHE_LINE_SIZE )
+#ifndef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN    
+    if( vector == CYGHWR_HAL_GDB_PORT_VECTOR )
+#endif        
     {
-        *(CYG_ADDRWORD *)way0 = 0;
-        *(CYG_ADDRWORD *)way1 = 0;
-        way0 += HAL_DCACHE_LINE_SIZE;
-        way1 += HAL_DCACHE_LINE_SIZE;
+        cyg_uint32 result = HAL_CTRLC_ISR( vector, data );
+        if( result != 0 ) return result;
     }
-    if (state)
-        HAL_DCACHE_ENABLE();
-}
+    
 #endif
+    
+    CYG_TRACE1(true, "Interrupt: %d", vector);
+    CYG_FAIL("Spurious Interrupt!!!");
+    return 0;
+}
+
+/*------------------------------------------------------------------------*/
+/* Idle thread activity.                                                  */
+   
+externC void hal_idle_thread_action(cyg_uint32 loop_count)
+{
+}
 
 /*------------------------------------------------------------------------*/
 /* End of hal_misc.c                                                      */

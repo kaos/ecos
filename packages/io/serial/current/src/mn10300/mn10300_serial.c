@@ -110,7 +110,12 @@ static void       mn10300_serial_tx_DSR(cyg_vector_t vector, cyg_ucount32 count,
 #define LCR_WL8         0x80    // 8 bit chars
 #define LCR_RXE         0x4000  // receive enable
 #define LCR_TXE         0x8000  // transmit enable
-#define LCR_TWE         0x0100  // interrupt enable (only on serial2)
+
+#if defined(CYG_HAL_MN10300_AM31)
+#define LCR_TWE         0x0100  // interrupt enable (only on serial2/AM31)
+#else
+#define LCR_TWE         0x0000  // Bit does not exist in other variants
+#endif
 
 //-------------------------------------------------------------------------
 // MN10300 timer registers:
@@ -121,9 +126,49 @@ static void       mn10300_serial_tx_DSR(cyg_vector_t vector, cyg_ucount32 count,
 #define TIMER_BR        0x10
 
 //-------------------------------------------------------------------------
-// IO Port:
+// Serial and timer base registers:
 
-#define PORT3_MD        0x36008025
+#if defined(CYG_HAL_MN10300_AM31)
+
+#define SERIAL0_BASE            0x34000800
+#define SERIAL1_BASE            0x34000810
+#define SERIAL2_BASE            0x34000820
+
+#define TIMER0_BASE             0x34001000
+#define TIMER1_BASE             0x34001001
+#define TIMER2_BASE             0x34001002
+
+#define SERIAL0_TIMER_SELECT    0x0004          // timer 0
+#define SERIAL1_TIMER_SELECT    0x0004          // timer 1
+#define SERIAL2_TIMER_SELECT    0x0001          // timer 2
+
+#ifdef CYG_HAL_MN10300_AM31_STDEVAL1
+// The use of PORT3 to provide CTS/CTR is specific to
+// the STDEVAL1 board only.
+#define PORT3_MD                0x36008025
+#endif
+
+#define ENABLE_TRANSMIT_INTERRUPT(mn10300_chan) \
+CYG_MACRO_START                                 \
+    if( mn10300_chan->is_serial2 )              \
+        cr |= LCR_TWE;                          \
+    else                                        \
+        cr |= LCR_TXE;                          \
+CYG_MACRO_END
+
+#define DISABLE_TRANSMIT_INTERRUPT(mn10300_chan)        \
+CYG_MACRO_START                                         \
+    if( mn10300_chan->is_serial2 )                      \
+        cr &= ~LCR_TWE;                                 \
+    else                                                \
+        cr &= ~LCR_TXE;                                 \
+CYG_MACRO_END
+
+#else
+
+#error Unsupported MN10300 variant
+
+#endif
 
 //-------------------------------------------------------------------------
 // Tables to map input values to hardware settings
@@ -149,6 +194,8 @@ static unsigned char select_parity[] = {
     LCR_PM,     // Mark parity
     LCR_PS,     // Space parity
 };
+
+#if defined(CYG_HAL_MN10300_AM31)
 
 static unsigned short select_baud_01[] = {
     0,          // Unused
@@ -208,6 +255,11 @@ static struct
     {  62,   0 },       // 230400
 };
 
+#else
+
+#error Unsupported MN10300 variant
+
+#endif
 
 //-------------------------------------------------------------------------
 // Info for each serial device controlled
@@ -215,6 +267,7 @@ static struct
 typedef struct mn10300_serial_info {
     CYG_ADDRWORD   base;
     CYG_ADDRWORD   timer_base;
+    CYG_WORD       timer_select;
     CYG_WORD       rx_int;
     CYG_WORD       tx_int;
     cyg_bool       is_serial2;
@@ -241,8 +294,9 @@ static SERIAL_FUNS(mn10300_serial_funs,
 #ifndef CYG_HAL_MN10300_STDEVAL1
 #ifdef CYGPKG_IO_SERIAL_MN10300_SERIAL0
 static mn10300_serial_info mn10300_serial_info0 = {
-    0x34000800,
-    0x34001000,
+    SERIAL0_BASE,
+    TIMER0_BASE,
+    SERIAL0_TIMER_SELECT,
     CYGNUM_HAL_INTERRUPT_SERIAL_0_RX,
     CYGNUM_HAL_INTERRUPT_SERIAL_0_TX,
     false
@@ -256,8 +310,9 @@ static unsigned char mn10300_serial_in_buf0[CYGNUM_IO_SERIAL_MN10300_SERIAL0_BUF
 
 #ifdef CYGPKG_IO_SERIAL_MN10300_SERIAL1
 static mn10300_serial_info mn10300_serial_info1 = {
-    0x34000810,
-    0x34001001,    
+    SERIAL1_BASE,
+    TIMER1_BASE,    
+    SERIAL1_TIMER_SELECT,
     CYGNUM_HAL_INTERRUPT_SERIAL_1_RX,
     CYGNUM_HAL_INTERRUPT_SERIAL_1_TX,
     false
@@ -270,8 +325,9 @@ static unsigned char mn10300_serial_in_buf1[CYGNUM_IO_SERIAL_MN10300_SERIAL1_BUF
 
 #ifdef CYGPKG_IO_SERIAL_MN10300_SERIAL2
 static mn10300_serial_info mn10300_serial_info2 = {
-    0x34000820,
-    0x34001002,    
+    SERIAL2_BASE,
+    TIMER2_BASE,    
+    SERIAL2_TIMER_SELECT,
     CYGNUM_HAL_INTERRUPT_SERIAL_2_RX,
     CYGNUM_HAL_INTERRUPT_SERIAL_2_TX,
     true
@@ -450,8 +506,8 @@ mn10300_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config, 
     mn10300_serial_info *mn10300_chan = (mn10300_serial_info *)chan->dev_priv;
     cyg_uint16 cr = 0;
     cyg_uint16 sr;
-
-    // wait for the device to become acquiescent. This could take some time
+ 
+    // wait for the device to become quiescent. This could take some time
     // if the device had been transmitting at a low baud rate.
     do {
         sr = mn10300_read_sr(mn10300_chan);
@@ -470,7 +526,7 @@ mn10300_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config, 
         // baud rate is controlled.
 
         cyg_uint8 baud_divisor = select_baud_2[new_config->baud].timer2_val;
-        
+
         if (baud_divisor == 0)
             return false; // Invalid baud rate selected
         
@@ -482,23 +538,27 @@ mn10300_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config, 
 
         HAL_WRITE_UINT8(mn10300_chan->base+SERIAL_TIM, baud_divisor);
         
-        cr |= 0x0001;   // Source clock from timer 2
+        cr |= mn10300_chan->timer_select;
     }
     else
     {
-        cyg_uint8 baud_divisor = select_baud_01[new_config->baud];
-        
+        cyg_uint16 baud_divisor = select_baud_01[new_config->baud];
+        cyg_uint8 timer_mode = 0x80;
+
         if (baud_divisor == 0)
             return false; // Invalid baud rate selected
 
+
         HAL_WRITE_UINT8(mn10300_chan->timer_base+TIMER_BR, baud_divisor);
 
-        HAL_WRITE_UINT8(mn10300_chan->timer_base+TIMER_MD, 0x80 );
+        HAL_WRITE_UINT8(mn10300_chan->timer_base+TIMER_MD, timer_mode );
 
-        cr |= 0x0004;   // Source clock from timer 0 or 1
+        cr |= mn10300_chan->timer_select;
     }
 
+#ifdef PORT3_MD    
     HAL_WRITE_UINT8( PORT3_MD, 0x01 );
+#endif
     
     // set up other config values:
 
@@ -506,23 +566,21 @@ mn10300_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config, 
     cr |= select_stop_bits[new_config->stop];
     cr |= select_parity[new_config->parity];
 
-#ifdef CYGPKG_IO_SERIAL_MN10300_POLLED_MODE
-    // enable RX and TX
-    cr |= LCR_RXE | LCR_TXE;
-#else
-    if( mn10300_chan->is_serial2 ) {
-        cr |= LCR_RXE | LCR_TXE;        // enable Rx and TX
-        cr &= ~LCR_TWE;                 // disable transmit interrupts
-    } else {
-        // Enable RX only
-        cr |= LCR_RXE;
-    }
-#endif
+    cr |= LCR_RXE | LCR_TXE;        // enable Rx and Tx
     
+#ifdef CYG_HAL_MN10300_AM31
+    if( mn10300_chan->is_serial2 )
+    {
+        // AM31 has an extra TX interrupt enable bit for serial 2.
+        DISABLE_TRANSMIT_INTERRUPT(mn10300_chan);
+    }
+#endif        
+
     // Write CR into hardware
     HAL_WRITE_UINT16(mn10300_chan->base+SERIAL_CTR, cr);    
 
-    mn10300_read_sr(mn10300_chan);
+    sr = mn10300_read_sr(mn10300_chan);
+
     if (new_config != &chan->config) {
         chan->config = *new_config;
     }
@@ -644,10 +702,7 @@ mn10300_serial_start_xmit(serial_channel *chan)
 
     HAL_READ_UINT16( mn10300_chan->base+SERIAL_CTR, cr );
 
-    if( mn10300_chan->is_serial2 )
-        cr |= LCR_TWE;                  // enable transmit interrupts
-    else
-        cr |= LCR_TXE;                  // enable TX
+    ENABLE_TRANSMIT_INTERRUPT(mn10300_chan);    
 
     HAL_WRITE_UINT16( mn10300_chan->base+SERIAL_CTR, cr );
 
@@ -678,11 +733,8 @@ mn10300_serial_stop_xmit(serial_channel *chan)
     
     HAL_READ_UINT16( mn10300_chan->base+SERIAL_CTR, cr );
 
-    if( mn10300_chan->is_serial2 )
-        cr &= ~LCR_TWE;                 // disable transmit interrupts
-    else
-        cr &= ~LCR_TXE;                 // disable transmission
-
+    DISABLE_TRANSMIT_INTERRUPT(mn10300_chan);
+    
     HAL_WRITE_UINT16( mn10300_chan->base+SERIAL_CTR, cr );
 
     cyg_drv_interrupt_mask(mn10300_chan->tx_int);
@@ -700,7 +752,7 @@ mn10300_serial_rx_ISR(cyg_vector_t vector, cyg_addrword_t data)
 {
     serial_channel *chan = (serial_channel *)data;
     mn10300_serial_info *mn10300_chan = (mn10300_serial_info *)chan->dev_priv;
-
+ 
     cyg_drv_interrupt_mask(mn10300_chan->rx_int);
     cyg_drv_interrupt_acknowledge(mn10300_chan->rx_int);
 

@@ -1,3 +1,12 @@
+1999-08-16  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/sload/sload.c: Rename AM32 to AM31
+
+1999-08-12  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/debug/dbg_gdb.cxx (dbg_make_threadref): Extended test for
+	uninitialized thread pointer.
+
 1999-07-29  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* src/sync/mutex.cxx (lock): Removed assertion again. Not possible

@@ -49,7 +49,6 @@
        display "MN10300 architecture"
        type    radio
        parent  CYGPKG_HAL
-       target  mn10300
        description "
            The MN10300 architecture HAL package provides generic
            support for this processor architecture. It is also
@@ -57,6 +56,14 @@
            package."
    }
    
+   cdl_package CYGPKG_HAL_MN10300_VARIANTS {
+       display     "MN10300 family variants"
+       type        dummy
+       parent      CYGPKG_HAL_MN10300
+       description "The MN10300/AM3x family of processors have a number of
+                    architectural variants. You must choose one."
+   }
+
    }}CFG_DATA */
 
 /* -------------------------------------------------------------------*/

@@ -1,3 +1,69 @@
+1999-08-16  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/pkgconf/hal_mn10300_am32_stdeval1.h:
+	Rename to include/pkgconf/hal_mn10300_am31_stdeval1.h, changing
+	all mentions of am32 to am31
+
+	* include/pkgconf/mlt_mn10300_am32_stdeval1_ram.ldi:
+	* include/pkgconf/mlt_mn10300_am32_stdeval1_rom.ldi:
+	* include/pkgconf/mlt_mn10300_am32_stdeval1_ram.mlt:
+	* include/pkgconf/mlt_mn10300_am32_stdeval1_rom.mlt:
+	Rename to:
+	  include/pkgconf/mlt_mn10300_am31_stdeval1_ram.ldi:
+	  include/pkgconf/mlt_mn10300_am31_stdeval1_rom.ldi:
+	  include/pkgconf/mlt_mn10300_am31_stdeval1_ram.mlt:
+	  include/pkgconf/mlt_mn10300_am31_stdeval1_rom.mlt:
+
+	* src/PKGconf.mak:
+	Rename package name from hal_mn10300_am32_stdeval1 to
+	hal_mn10300_am31_stdeval1
+
+	* src/hal_diag.c:
+	Rename all mentions of am32 to am31
+
+1999-08-12  Nick Garnett  <nickg@cygnus.co.uk>
+
+	Imported following changes from development branch:
+	
+    1999-08-11  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/plf_misc.c: Tidied up cyg_hal_user_break().
+
+	* src/hal_diag.c: Added interrupt acknowledgements to serial line
+	read routines. Tidied up Ctrl-C detection when reading O packet
+	ack.
+
+    1999-08-10  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/pkgconf/hal_mn10300_am32_stdeval1.h: 
+	Rename all mn10300_stdeval1 -> mn10300_am32_stdeval1
+	Ensure CYGPKG_HAL_MN10300_AM32_STDEVAL1 requires CYGPKG_HAL_MN10300_AM32
+
+    1999-06-29  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/platform.inc:
+	* include/plf_intr.h:
+	* src/plf_misc.c:
+	Added these files to contain platform specific code for the HAL.
+
+	* src/hal_diag.c
+	Modified to work with new naming conventions.
+	
+	* include/pkgconf/hal_mn10300_stdeval1.h:
+	* include/pkgconf/mlt_mn10300_stdeval1_ram.ldi:
+	* include/pkgconf/mlt_mn10300_stdeval1_ram.mlt:
+	* include/pkgconf/mlt_mn10300_stdeval1_rom.ldi:
+	* include/pkgconf/mlt_mn10300_stdeval1_rom.mlt:
+	* include/pkgconf/hal_mn10300_am32_stdeval1.h:
+	* include/pkgconf/mlt_mn10300_am32_stdeval1_ram.ldi:
+	* include/pkgconf/mlt_mn10300_am32_stdeval1_ram.mlt:
+	* include/pkgconf/mlt_mn10300_am32_stdeval1_rom.ldi:
+	* include/pkgconf/mlt_mn10300_am32_stdeval1_rom.mlt:
+	Renamed these files to match new target naming conventions.
+
+	* src/stdeval1.S:
+	Removed, since it is no longer needed.
+	
 1999-05-20  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/pkgconf/hal_mn10300_stdeval1.h: Move RTC setup here.

@@ -1,3 +1,34 @@
+1999-08-16  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/PKGconf.mak:
+	* src/mn10300/mn10300_serial.c:
+	* tests/ser_test_protocol.inl:
+	Rename all am32 -> am31
+
+1999-08-12  Nick Garnett  <nickg@cygnus.co.uk>
+
+	Imported following changes from development branch:
+	
+    1999-08-11  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* tests/serial5.c: Modified config test for boards that need a lower
+	speed for this test.
+
+	* tests/ser_test_protocol.inl: Removed 14400 baud tests for all
+	MN10300 variants. The MN10300 cannot currently do this speed.
+
+	* src/mn10300/mn10300_serial.c: Tidied up the transmit interrupt
+	enable/disable code to be variant specific.
+
+	* include/pkgconf/io_serial.h: Undid Jonathan's change, since the
+	same options are used for all MN10300 variants.
+	
+    1999-08-10  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/pkgconf/io_serial.h:
+        Reparent CYGPKG_IO_SERIAL_MN10300 from under CYGPKG_HAL_MN10300 to
+        CYGPKG_HAL_MN10300_AM32_STDEVAL1 since it's stdeval1 specific
+
 1999-07-08  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* tests/ser_test_protocol.inl (change_config): Changed implementation.

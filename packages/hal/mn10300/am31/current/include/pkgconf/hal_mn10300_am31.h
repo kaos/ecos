@@ -1,8 +1,8 @@
-#ifndef CYGONCE_PKGCONF_HAL_MN10300_STDEVAL1_H
-#define CYGONCE_PKGCONF_HAL_MN10300_STDEVAL1_H
+#ifndef CYGONCE_PKGCONF_HAL_MN10300_AM31_H
+#define CYGONCE_PKGCONF_HAL_MN10300_AM31_H
 // ====================================================================
 //
-//      pkgconf/hal_mn10300_stdeval1.h
+//      pkgconf/hal_mn10300_am31.h
 //
 //      HAL configuration file
 //
@@ -45,47 +45,20 @@
 /* ---------------------------------------------------------------------
    {{CFG_DATA
 
-   cdl_package CYGPKG_HAL_MN10300_STDEVAL1 {
-       display  "stdeval1 evaluation board"
-       type     radio
-       parent   CYGPKG_HAL_MN10300
-       platform stdeval1
+   cdl_package CYGPKG_HAL_MN10300_AM31 {
+       display "MN10300 AM31 variant"
+       type    radio
+       parent  CYGPKG_HAL_MN10300_VARIANTS
+       target  mn10300_am31
        description "
-           The stdeval1 HAL package should be used when targetting the
-           actual hardware. The same package can also be used when
-           running on the full MN10300 simulator, since this provides
-           an accurate simulation of the full hardware including I/O
-           devices."
-   }
-   
-   cdl_option CYGHWR_HAL_MN10300_STDEVAL1_STARTUP {
-       display          "Startup type"
-       parent           CYGPKG_HAL_MN10300_STDEVAL1
-       #type             count
-       type             enum
-       legal_values     ram rom
-       startup
-       description      "
-           When targetting the stdeval1 board it is possible to build
-           the system for either RAM bootstrap or ROM bootstrap. The
-           former generally requires that the board is equipped with
-           ROMs containing the Cygmon ROM monitor or equivalent
-           software that allows gdb to download the eCos application
-           on to the board. The latter typically requires that the
-           eCos application be blown into EPROMs or equivalent
-           technology."
+           The MN10300 AM31 variant HAL package provides generic
+           support for this processor architecture. It is also
+           necessary to select a specific target platform HAL
+           package."
    }
    
    }}CFG_DATA */
-#define CYGHWR_HAL_MN10300_STDEVAL1_STARTUP     ram
-
-// Real-time clock/counter specifics
-
-#define CYGNUM_HAL_RTC_NUMERATOR     1000000000
-#define CYGNUM_HAL_RTC_DENOMINATOR   100
-#define CYGNUM_HAL_RTC_PERIOD        150000
-
 
 /* -------------------------------------------------------------------*/
-#endif  /* CYGONCE_PKGCONF_HAL_MN10300_STDEVAL1_H */
-/* EOF hal_mn10300_stdeval1.h */
+#endif  /* CYGONCE_PKGCONF_HAL_MN10300_AM31_H */
+/* EOF hal_mn10300_am31.h */

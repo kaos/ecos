@@ -117,7 +117,9 @@ __set_baud_rate (int baud)
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
 
-#if (HAL_BREAKINST_SIZE == 2)
+#if (HAL_BREAKINST_SIZE == 1)
+typedef cyg_uint8 t_inst;
+#elif (HAL_BREAKINST_SIZE == 2)
 typedef cyg_uint16 t_inst;
 #elif (HAL_BREAKINST_SIZE == 4)
 typedef cyg_uint32 t_inst;
@@ -421,11 +423,6 @@ __instruction_cache (cache_control_t request)
         break;
     case CACHE_FLUSH:
         HAL_ICACHE_SYNC();
-#ifndef CYGPKG_HAL_MIPS
-        // SYNC and INVALIDATE_ALL are the same on the MIPS,
-        // so avoid doing it twice.
-        HAL_ICACHE_INVALIDATE_ALL();
-#endif        
         break;
     case CACHE_NOOP:
         /* fall through */
@@ -457,11 +454,6 @@ __data_cache (cache_control_t request)
         break;
     case CACHE_FLUSH:
         HAL_DCACHE_SYNC();
-#ifndef CYGPKG_HAL_MIPS
-        // SYNC and INVALIDATE_ALL are the same on the MIPS,
-        // so avoid doing it twice.
-        HAL_DCACHE_INVALIDATE_ALL();
-#endif        
         break;
     case CACHE_NOOP:
         /* fall through */

@@ -80,7 +80,7 @@
 /* ---------------------------------------------------------------------
    {{CFG_DATA
    cdl_option CYGHWR_HAL_ARM_PID_DIAG_PORT {
-       display          "Diagnostic Serial Port"
+       display          "Diagnostic serial port"
        parent           CYGPKG_HAL_ARM_PID
        type             enum
        legal_values     0 1
@@ -95,7 +95,7 @@
 /* ---------------------------------------------------------------------
    {{CFG_DATA
    cdl_option CYGHWR_HAL_ARM_PID_DIAG_BAUD {
-       display          "Diagnostic Serial Port Baud Rate"
+       display          "Diagnostic serial port baud rate"
        parent           CYGPKG_HAL_ARM_PID
        type             enum
        legal_values     9600 19200 38400 115200
@@ -111,7 +111,7 @@
 /* ---------------------------------------------------------------------
    {{CFG_DATA
    cdl_option CYGHWR_HAL_ARM_PID_GDB_PORT {
-       display          "GDB Serial Port"
+       display          "GDB serial port"
        parent           CYGPKG_HAL_ARM_PID
        type             enum
        legal_values     0 1
@@ -127,7 +127,7 @@
 /* ---------------------------------------------------------------------
    {{CFG_DATA
    cdl_option CYGHWR_HAL_ARM_PID_GDB_BAUD {
-       display          "GDB Serial Port Baud Rate"
+       display          "GDB serial port baud rate"
        parent           CYGPKG_HAL_ARM_PID
        type             enum
        legal_values     9600 19200 38400 115200

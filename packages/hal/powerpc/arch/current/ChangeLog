@@ -1,3 +1,8 @@
+1999-08-16  Bob Koninckx <bob.koninckx@mail.mech.kuleuven.ac.be>
+
+	* src/ppc_stub.c (__clear_single_step): Clear irq_state to prevent
+	interrupt avalanche.
+
 1999-06-29  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* include/hal_intr.h (CYGNUM_HAL_EXCEPTION_DATA_ACCESS): Define

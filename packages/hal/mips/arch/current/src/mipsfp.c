@@ -285,13 +285,13 @@ cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs )
     cyg_uint8 computational_insn=1;  // computational FP instruction
     cyg_bool delay_slot;             // did it happen in a delay slot
 
+    CYG_REPORT_FUNCNAMETYPE("cyg_hal_mips_process_fpe", "returning %d");
+
     CYG_CHECK_DATA_PTR( regs,
                     "cyg_hal_mips_process_fpe() called with invalid regs ptr");
 
     CYG_PRECONDITION( (regs->vector>>2) == CYGNUM_HAL_VECTOR_FPE,
                       "Asked to process non-FPE exception");
-
-    CYG_REPORT_FUNCNAMETYPE("cyg_hal_mips_process_fpe", "returning %d");
 
     // First of all, we only handle the unimplemented operation exception
     // here, so if we don't have that, we just exit

@@ -1,8 +1,8 @@
-#ifndef CYGONCE_PKGCONF_HAL_I386_LINUX_H
-#define CYGONCE_PKGCONF_HAL_I386_LINUX_H
+#ifndef CYGONCE_PKGCONF_HAL_MN10300_AM31_STDEVAL1_H
+#define CYGONCE_PKGCONF_HAL_MN10300_AM31_STDEVAL1_H
 // ====================================================================
 //
-//      pkgconf/hal_i386_linux.h
+//      pkgconf/hal_mn10300_am31_stdeval1.h
 //
 //      HAL configuration file
 //
@@ -31,9 +31,9 @@
 // ====================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):           jskov
-// Contributors:        jskov
-// Date:                1999-01-12      
+// Author(s):           bartv
+// Contributors:        bartv
+// Date:                1998-09-02      
 // Purpose:             To allow the user to edit HAL configuration options.
 // Description:
 //
@@ -45,40 +45,48 @@
 /* ---------------------------------------------------------------------
    {{CFG_DATA
 
-   cdl_package CYGPKG_HAL_I386_LINUX {
-       display  "Linux i386 synthetic target"
+   cdl_package CYGPKG_HAL_MN10300_AM31_STDEVAL1 {
+       display  "stdeval1 evaluation board"
        type     radio
-       parent   CYGPKG_HAL_I386
-       platform linux
+       parent   CYGPKG_HAL_MN10300
+       requires CYGPKG_HAL_MN10300_AM31
+       platform stdeval1
        description "
-           The Linux i386 Synthetic Target HAL package provides the 
-           support needed to run eCos binaries on top of the i386
-           Linux kernel."
+           The stdeval1 HAL package should be used when targetting the
+           actual hardware. The same package can also be used when
+           running on the full MN10300 simulator, since this provides
+           an accurate simulation of the full hardware including I/O
+           devices."
    }
-
-   cdl_option CYGSEM_HAL_I386_LINUX_REAL_TIME {
-       display          "Use Linux real-time timer"
-       parent           CYGPKG_HAL_I386_LINUX
+   
+   cdl_option CYGHWR_HAL_MN10300_AM31_STDEVAL1_STARTUP {
+       display          "Startup type"
+       parent           CYGPKG_HAL_MN10300_AM31_STDEVAL1
+       #type             count
+       type             enum
+       legal_values     ram rom
+       startup
        description      "
-           By default the eCos timer will driven by a virtual timer,
-           meaning that it will only tick when the Linux task is
-           executing. This prevents (to some degree) time skew in
-           the eCos kernel due to heavy load on Linux. By checking
-           this option, the eCos timer can be driven by the Linux
-           real-time timer instead."
+           When targetting the stdeval1 board it is possible to build
+           the system for either RAM bootstrap or ROM bootstrap. The
+           former generally requires that the board is equipped with
+           ROMs containing the Cygmon ROM monitor or equivalent
+           software that allows gdb to download the eCos application
+           on to the board. The latter typically requires that the
+           eCos application be blown into EPROMs or equivalent
+           technology."
    }
-
+   
    }}CFG_DATA */
-
-#define CYGHWR_HAL_I386_LINUX_STARTUP       ram
-#undef  CYGSEM_HAL_I386_LINUX_REAL_TIME
+#define CYGHWR_HAL_MN10300_AM31_STDEVAL1_STARTUP     ram
 
 // Real-time clock/counter specifics
 
 #define CYGNUM_HAL_RTC_NUMERATOR     1000000000
 #define CYGNUM_HAL_RTC_DENOMINATOR   100
-#define CYGNUM_HAL_RTC_PERIOD        10000
+#define CYGNUM_HAL_RTC_PERIOD        150000
+
 
 /* -------------------------------------------------------------------*/
-#endif  /* CYGONCE_PKGCONF_HAL_I386_LINUX_H */
-/* EOF hal_i386_linux.h */
+#endif  /* CYGONCE_PKGCONF_HAL_MN10300_AM31_STDEVAL1_H */
+/* EOF hal_mn10300_am31_stdeval1.h */

@@ -29,11 +29,11 @@
 #===============================================================================
 
 
-PACKAGE       := hal_mn10300_stdeval1
+PACKAGE       := hal_mn10300_am31_stdeval1
 include ../../../../../pkgconf/pkgconf.mak
 
 LIBRARY       := libtarget.a
-COMPILE       := hal_diag.c stdeval1.S plf_stub.c
+COMPILE       := hal_diag.c plf_stub.c plf_misc.c
 OTHER_OBJS    :=
 OTHER_TARGETS :=
 OTHER_CLEAN   :=

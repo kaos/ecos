@@ -1,3 +1,127 @@
+1999-08-16  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/arch.inc: rename CYGPKG_HAL_MN10300_AM32_STDEVAL1 to
+	CYGPKG_HAL_MN10300_AM31_STDEVAL1
+
+1999-08-12  Nick Garnett  <nickg@cygnus.co.uk>
+
+	Imported following changed from development branch.
+	
+    1999-08-11  Nick Garnett  <nickg@cygnus.co.uk>	
+
+	* src/vectors.S: Removed debug code.
+
+	* include/hal_intr.h: Made mn10300_interrupt_control[] unsized
+	since it is different sizes on different variants.
+
+	* include/arch.inc:
+	Changed hal_cpu_int_merge so that both the IE and IPL bits are
+	changed across a thread switch.
+	Some minor tweaks to trace code for AM32.
+
+    1999-08-10  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/pkgconf/hal_mn10300.h:
+	Move CYGPKG_HAL_MN10300's "target mn10300" under the variant
+	packages instead.
+	Add CYGPKG_HAL_MN10300_VARIANTS
+
+    1999-07-30  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/hal_misc.c: Added default ISR.
+
+	* src/vectors.S:
+	Added Ctrl-C support. Extended VSR table to include new
+	exceptions. Install default ISR by default.
+
+	* src/mn10300_stub.c:
+	Added asynchronous breakpoint support.
+	[Later] Tidied up install_async_breakpoint() and fixed indirection
+	bug.
+
+	* include/hal_intr.h:
+	Added default ISR. Removed HAL_INTERRUPT_CONFIGURE(), this is now
+	variant-specific.
+
+    1999-07-27  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/vectors.S: 
+	Some reorganization to make code more generic.
+	Some diagnostic macros added.
+	Note: some trace/debug code has been left in place temporarily,
+	this will be removed eventually.
+
+	* include/arch.inc:
+	Changed all *_MIPS_* to *_MN10300_*.
+	Added some temporary trace/debug macros.
+
+    1999-07-16  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/hal_misc.c: 
+	* include/hal_arch.h:
+	Added hal_idle_thread_action();
+
+	* include/arch.inc: Made hal_cpu_init definition optional.
+
+    1999-07-08  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/vectors.S: 
+	Moved some code to variant specific macros. Now pass ISR register
+	to cyg_hal_exception_handler() to enable further decoding.
+	
+	* src/hal_misc.c (cyg_hal_exception_handler):
+	Added extra argument to pass ISR register value. Now decodes ISR
+	value to specify extra exceptions.
+
+    1999-07-07  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/hal_intr.h:
+	Added HAL_INTERRUPT_STACK_CALL_PENDING_DSRS() macro to support
+	calling of DSRs on the interrupt stack.
+
+	* include/hal_arch.h (HAL_THREAD_INIT_CONTEXT):
+	Initialize the PSW to enable all interrupts on entry to thread.
+
+	* include/arch.inc:
+	Added implementations of CPU control macros.
+
+	* src/context.S:
+	Added code to preserve PSW across context switches.
+
+	* src/vectors.S:
+	Implemented mechanism to call DSRs on the interrupt stack.
+	Refined condition for defining VSR table here.
+
+    1999-06-30  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/context.S: 
+	* src/vectors.S:
+	Use hal_cpu_save_all and hal_cpu_load_all macros to save and
+	restore CPU register sets.
+
+	* include/hal_arch.h:
+	Modified HAL_THREAD_INIT_CONTEXT_EXTRA() to take some arguments.
+
+    1999-06-29  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/hal_arch.h:
+	Added include of variant header.
+
+	* include/hal_cache.h: 
+	* include/hal_intr.h: 
+	* src/vectors.S:
+	* src/hal_misc.c: 
+	Extensive changes to convert to new HAL organization. These mostly
+	involve moving variant and platform specific stuff out to the
+	appropriate headers in the variant and platform directories.
+
+	* src/PKGconf.mak:
+	* src/mn10300.ld (removed):
+	Moved build of target.ld to variant directory.
+
+	* include/arch.inc:
+	Added this file to contain architecture specific macros.
+	
 1999-06-08  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* src/hal_misc.c (cyg_hal_dcache_store): Only define for HW target.

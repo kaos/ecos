@@ -182,7 +182,14 @@ package CYGPKG_HAL_MN10300 {
 	hardware
 }
 
-package CYGPKG_HAL_MN10300_STDEVAL1 {
+package CYGPKG_HAL_MN10300_AM31 {
+	alias		{ "MN10300 AM31 variant HAL" hal_mn10300_am31 mn10300_am31_hal }
+	directory	hal/mn10300/am31
+	include_dir	cyg/hal
+	hardware
+}
+
+package CYGPKG_HAL_MN10300_AM31_STDEVAL1 {
 	alias		{ "MN10300 stdeval1 support" hal_mn10300_stdeval1 mn10300_stdeval1_hal }
 	directory	hal/mn10300/stdeval1
 	include_dir	cyg/hal
@@ -274,6 +281,8 @@ package CYGPKG_IO_SERIAL	{
 	default_value	1
 	include_dir	cyg/io
 }
+
+
 
 package CYGPKG_DEVICES_WALLCLOCK {
 	alias		{ "Wallclock Device Code" wallclock devices_wallclock device_wallclock }

@@ -1,3 +1,8 @@
+1999-08-10  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/mipsfp.c (cyg_hal_mips_process_fpe): CYG_REPORT_FUNCNAMETYPE()
+	must be first in a C file
+
 1999-07-15  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* include/arch.inc (hal_fpu_save_caller): Save fcr31 first as
