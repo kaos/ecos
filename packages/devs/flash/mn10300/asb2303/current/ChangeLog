@@ -1,3 +1,6 @@
+2002-12-04  Mark Salter  <msalter@redhat.com>
+
+	* cdl/flash_asb2303.cdl: Support AM29DL322D.
 
 //===========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####

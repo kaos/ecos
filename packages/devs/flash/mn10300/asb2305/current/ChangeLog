@@ -1,3 +1,7 @@
+2002-12-04  Mark Salter  <msalter@redhat.com>
+
+	* cdl/flash_asb2305.cdl: Support AM29DL322D.
+
 2001-06-08  Jesper Skov  <jskov@redhat.com>
         From dhowells@redhat.com
 	* src/mn10300_asb2305_flash.c: New package/file(s).
