@@ -41,7 +41,7 @@
 ######DESCRIPTIONBEGIN####
 #
 # Author(s):      dwmw2
-# Contributors:
+# Contributors:   tkoeller
 # Date:           2003-01-08
 #
 #####DESCRIPTIONEND####
@@ -57,8 +57,20 @@ cdl_package CYGPKG_LINUX_COMPAT {
         assistance in porting drivers and file system code from Linux.
         Note this does not provide Linux compatibility to applications."
 
-     compile      rbtree.c
+    compile      rbtree.c
 
+    cdl_option CYGNUM_LINUX_COMPAT_PAGE_SIZE_EXPONENT {
+        display         "Define page size"
+        flavor          data
+        legal_values    10 to 16
+        default_value   12
+        no_define
+        define          PAGE_SHIFT
+        description     "
+            Define the page size. The value entered here is used as an
+            exponent X in the expression 2^^X to ensure that the page
+            size is always an integer power of two."  
+     } 
 }
 
 # EOF linux.cdl

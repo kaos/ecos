@@ -1,12 +1,19 @@
+2003-11-12  Thomas Koeller <thomas.koeller@baslerweb.com>
+
+        * cdl/linux.cdl:
+        * include/asm/page.h:
+        Make page size configurable via cdl.
+
 2003-10-18  Gary Thomas  <gary@mlbassoc.com>
 
-	* src/rbtree.c (rb_erase): Fix bug in red-black tree which caused
-	node corruption - merge from external sources, found by Scott Wilkerson.
+        * src/rbtree.c (rb_erase): Fix bug in red-black tree which caused
+        node corruption - merge from external sources, found by Scott 
+	Wilkerson.
 
 2003-10-18  Savin Zlobec <savin@elatec.si>
 
-    * include/linux/rbtree.h: 
-    Fixed 'pointer of type `void *' used in subtraction' compiler warrning.
+        * include/linux/rbtree.h: 
+        Fixed 'pointer of type `void *' used in subtraction' compiler warrning.
 
 2003-07-27  Andrew Lunn  <andrew.lunn@ascom.ch>
 
