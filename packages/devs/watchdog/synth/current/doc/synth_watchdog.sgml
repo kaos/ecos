@@ -33,7 +33,8 @@
 
 <!-- }}} -->
 
-<reference id="devs-watchdog-synth-ref">
+<part id="devs-watchdog-synth-ref">
+<!-- reference id="devs-watchdog-synth-ref" -->
   <title>Synthetic Target Watchdog Device</title>
 
 <refentry id="devs-watchdog-synth">
@@ -337,4 +338,5 @@ variables for use by other scripts.
   </refsect1>
 
 </refentry>
-</reference>
+</part>
+<!-- /reference -->
