@@ -188,7 +188,7 @@ bool CeCosTestPlatform::Load()
   const String strDir(CeCosTestUtils::HomeFile(_T(".eCosPlatforms")));
 #ifdef _WIN32
   if(!CeCosTestUtils::Exists(strDir)){
-    return rc;
+    return true;
   }
 #endif
   LoadFromDir(strDir);

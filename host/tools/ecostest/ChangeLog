@@ -1,3 +1,10 @@
+2003-04-11  John Dallaway  <jld@ecoscentric.com>
+
+	* common/eCosTestPlatform.cpp (CeCosTestPlatform::Load): Return
+	true since it's not a problem if there are no platforms defined.
+
+	* unix/Makefile: Allow ser_filter to build under Cygwin.
+
 2003-02-21  John Dallaway  <jld@ecoscentric.com>
 
 	* common/eCosTestPlatform.cpp (CeCosTestPlatform::Load): Allow an

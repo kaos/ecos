@@ -25,12 +25,16 @@ programs = ser_filter
 
 CXX=g++
 
-ifeq ($(shell uname), SunOS)
-# SunOS
-LIBS :=  -lpthread -lsocket -lxnet -lstdc++ -lposix4
-else
-# Linux
-LIBS :=  -lpthread -efence -lstdc++
+ifneq (,$(findstring CYGWIN, $(shell uname)))
+LIBS := -lwsock32
+endif
+
+ifneq (, $(findstring SunOS, $(shell uname)))
+LIBS := -lpthread -lsocket -lxnet -lstdc++ -lposix4
+endif
+
+ifneq (, $(findstring Linux, $(shell uname)))
+LIBS := -lpthread -efence -lstdc++
 endif
 
 # Look in these directories for source/make files
@@ -52,7 +56,7 @@ CXXFLAGS=-g -O2 -Wall -D_REENTRANT -D_DEBUG $(CPPFLAGS)
 all: $(programs)
 
 ser_filter: $(common_objects) ser_filter.o
-	$(CXX) -o $@  $(CXXFLAGS) $(LIBPATH) $(LIBS) $^
+	$(CXX) -o $@  $(CXXFLAGS) $^ $(LIBPATH) $(LIBS)
 
 
 .PHONY: clean
