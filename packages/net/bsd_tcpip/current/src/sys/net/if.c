@@ -128,12 +128,6 @@ ifinit(dummy)
 	for (ifp = ifnet.tqh_first; ifp; ifp = ifp->if_link.tqe_next) {
             printf("IFP: %p, next: %p\n", ifp, ifp->if_link.tqe_next);
         }
-	for (ifp = ifnet.tqh_first; ifp; ifp = ifp->if_link.tqe_next)
-		if (ifp->if_snd.ifq_maxlen == 0) {
-			printf("%s%d XXX: driver didn't set ifq_maxlen\n",
-			    ifp->if_name, ifp->if_unit);
-			ifp->if_snd.ifq_maxlen = ifqmaxlen;
-		}
 	splx(s);
 	if_slowtimo(0);
 }
@@ -198,6 +192,12 @@ if_attach(ifp)
 		TAILQ_INIT(&ifnet);
 		inited = 1;
 	}
+
+        if (ifp->if_snd.ifq_maxlen == 0) {
+            printf("%s%d XXX: driver didn't set ifq_maxlen\n",
+                   ifp->if_name, ifp->if_unit);
+            ifp->if_snd.ifq_maxlen = ifqmaxlen;
+        }
 
 	TAILQ_INSERT_TAIL(&ifnet, ifp, if_link);
 	ifp->if_index = ++if_index;

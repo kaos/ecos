@@ -1,3 +1,9 @@
+2002-11-04  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* src/sys/net/if.c (if_attach): Moved check for ifq_maxlen to
+	this function since it can't be checked until the device comes
+	online, which may not be a sysinit time for PCMCIA devices.
+
 2002-11-03  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* src/sys/kern/sockio.c (bsd_getname): Fix error where getsockname()
