@@ -480,5 +480,57 @@ __externC int isatty( int fd )
     FILEIO_RETURN_VALUE(ret);
 }
 
+//==========================================================================
+// File get info.
+
+__externC int cyg_fs_fgetinfo( int fd, int key, void *buf, int len )
+{
+    FILEIO_ENTRY();
+
+    int ret;
+    cyg_file *fp;
+
+    fp = cyg_fp_get( fd );
+
+    if( fp == NULL )
+        FILEIO_RETURN(EBADF);
+       
+    LOCK_FILE( fp );
+
+    ret = fp->f_ops->fo_getinfo( fp, key, buf, len );
+    
+    UNLOCK_FILE( fp );
+
+    cyg_fp_free( fp );    
+    
+    FILEIO_RETURN(ret);
+}
+
+//==========================================================================
+// File set info.
+
+__externC int cyg_fs_fsetinfo( int fd, int key, void *buf, int len )
+{
+    FILEIO_ENTRY();
+
+    int ret;
+    cyg_file *fp;
+
+    fp = cyg_fp_get( fd );
+
+    if( fp == NULL )
+        FILEIO_RETURN(EBADF);
+       
+    LOCK_FILE( fp );
+
+    ret = fp->f_ops->fo_setinfo( fp, key, buf, len );
+    
+    UNLOCK_FILE( fp );
+
+    cyg_fp_free( fp );    
+    
+    FILEIO_RETURN(ret);
+}
+
 // -------------------------------------------------------------------------
 // EOF io.cxx

@@ -756,5 +756,57 @@ __externC char *getcwd( char *buf, size_t size )
     FILEIO_RETURN_VALUE(buf);
 }
 
+//==========================================================================
+// FS get info.
+
+__externC int cyg_fs_getinfo( const char *path, int key, void *buf, int len )
+{
+    FILEIO_ENTRY();
+    
+    int ret = 0;
+    cyg_mtab_entry *mte = cyg_cdir_mtab_entry;
+    cyg_dir dir = cyg_cdir_dir;
+    const char *name = path;
+    
+    ret = cyg_mtab_lookup( &dir, &name, &mte );
+    
+    if( 0 != ret )
+        FILEIO_RETURN(ENOENT);
+
+    LOCK_FS( mte );
+    
+    ret = mte->fs->getinfo( mte, dir, name, key, buf, len );
+    
+    UNLOCK_FS( mte );
+    
+    FILEIO_RETURN(ret);
+}
+
+//==========================================================================
+// FS set info.
+
+__externC int cyg_fs_setinfo( const char *path, int key, void *buf, int len )
+{
+    FILEIO_ENTRY();
+    
+    int ret = 0;
+    cyg_mtab_entry *mte = cyg_cdir_mtab_entry;
+    cyg_dir dir = cyg_cdir_dir;
+    const char *name = path;
+    
+    ret = cyg_mtab_lookup( &dir, &name, &mte );
+    
+    if( 0 != ret )
+        FILEIO_RETURN(ENOENT);
+
+    LOCK_FS( mte );
+    
+    ret = mte->fs->setinfo( mte, dir, name, key, buf, len );
+    
+    UNLOCK_FS( mte );
+    
+    FILEIO_RETURN(ret);
+}
+
 // -------------------------------------------------------------------------
 // EOF file.cxx

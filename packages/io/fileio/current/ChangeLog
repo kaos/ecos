@@ -1,3 +1,12 @@
+2003-10-23  Savin Zlobec  <savin@elatec.si>
+
+	* src/io.cxx: Added cyg_fs_fsetinfo and cyg_fs_fgetinfo functions.
+	
+	* src/file.cxx: Added cyg_fs_setinfo and cyg_fs_getinfo functions.
+	
+	* include/fileio.h: Added cyg_fs_fsetinfo, cyg_fs_fgetinfo,
+	cyg_fs_setinfo and cyg_fs_getinfo function prototypes.
+
 2003-10-16  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/socket.cxx (bind): Pass a copy of the socket address so the

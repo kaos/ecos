@@ -380,6 +380,14 @@ __externC int mount( const char *devname,
 __externC int umount( const char *name);
 
 //=============================================================================
+// Get/Set info functions
+
+__externC int cyg_fs_getinfo( const char *path, int key, void *buf, int len );
+__externC int cyg_fs_setinfo( const char *path, int key, void *buf, int len );
+__externC int cyg_fs_fgetinfo( int fd, int key, void *buf, int len );
+__externC int cyg_fs_fsetinfo( int fd, int key, void *buf, int len );
+
+//=============================================================================
 // Select support
 
 //-----------------------------------------------------------------------------
