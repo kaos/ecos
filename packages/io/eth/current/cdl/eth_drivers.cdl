@@ -109,6 +109,17 @@ cdl_package CYGPKG_IO_ETH_DRIVERS {
                 properties of the system even in extremis."
 	}
 
+    	cdl_option CYGNUM_IO_ETH_DRIVERS_SG_LIST_SIZE {
+	    display	"Size of scatter-gather I/O lists"
+	    flavor	data
+	    default_value 32
+	    description "
+	        A scatter-gather list is used to pass requests to/from
+                the physical device driver.  This list can typically be
+                small, as the data is normally already packed into reasonable
+                chunks."
+	}
+
 	cdl_component CYGPKG_IO_ETH_DRIVERS_SIMULATED_FAILURES {
 	    display		"Simulate network failures for testing"
 	    flavor		bool

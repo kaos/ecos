@@ -619,6 +619,9 @@ static void
 eth_drv_send(struct ifnet *ifp)
 {
     struct eth_drv_sc *sc = ifp->if_softc;
+#if MAX_ETH_DRV_SG > 64
+    static  // Avoid large stack requirements
+#endif
     struct eth_drv_sg sg_list[MAX_ETH_DRV_SG];
     int sg_len;
     struct mbuf *m0, *m;
@@ -692,8 +695,12 @@ eth_drv_send(struct ifnet *ifp)
 #endif
             if ( MAX_ETH_DRV_SG < sg_len ) {
 #ifdef CYGPKG_IO_ETH_DRIVERS_WARN_NO_MBUFS
+                int needed = 0;
+                struct mbuf *m1;
+                for (m1 = m0; m1 ; m1 = m1->m_next) needed++;
                 START_CONSOLE();
-                diag_printf("too many mbufs to tx, %d > %d\n", sg_len, MAX_ETH_DRV_SG );
+                diag_printf("too many mbufs to tx, %d > %d, need %d\n", 
+                            sg_len, MAX_ETH_DRV_SG, needed );
                 END_CONSOLE();
 #endif
                 sg_len = 0;
@@ -784,6 +791,9 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
     struct mbuf *top, **mp, *m;
     int mlen;
     unsigned char *data;
+#if MAX_ETH_DRV_SG > 64
+    static  // Avoid large stack requirements
+#endif
     struct eth_drv_sg sg_list[MAX_ETH_DRV_SG];
     int sg_len;
 

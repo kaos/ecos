@@ -57,6 +57,7 @@
 #define _ETH_DRV_H_
 
 #include <pkgconf/system.h>
+#include <pkgconf/io_eth_drivers.h>
 
 #ifdef CYGPKG_NET
 #include <sys/param.h>
@@ -86,9 +87,7 @@ struct eth_drv_sg {
     CYG_ADDRWORD len;
 };
 
-// This is 16 to ensure that an MTU made of mbufs (not clusters) will fit.
-// 1600 is more that the MTU of 1500; it must be right.
-#define MAX_ETH_DRV_SG 16
+#define MAX_ETH_DRV_SG CYGNUM_IO_ETH_DRIVERS_SG_LIST_SIZE
 
 struct eth_drv_sc;
 
