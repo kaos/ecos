@@ -2,7 +2,8 @@
 
 	* tests/pselect.c: Added check for POSIX signals while building
 	the test case.
-
+	* tests/select.c: Include sys/select.h to prevent a possible warning.
+	
 2004-10-01  Oyvind Harboe  <oyvind.harboe@zylin.com>
 
         * src/select.cxx: place the CYGBLD_ATTRIB_INIT_PRI such that it
