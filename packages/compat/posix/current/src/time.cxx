@@ -183,7 +183,7 @@ static cyg_bool valid_timespec( const struct timespec *tp )
 }
 
 externC cyg_tick_count cyg_timespec_to_ticks( const struct timespec *tp,
-                                         cyg_bool roundup = false)
+                                              cyg_bool roundup)
 {
     init_converters();
 

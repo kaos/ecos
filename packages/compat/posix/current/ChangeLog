@@ -1,3 +1,10 @@
+2003-01-20  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/signal.cxx (cyg_posix_deliver_signals): silence warning.
+
+	* src/time.cxx (cyg_timespec_to_ticks): Remove use of default arg in
+	definition.
+
 2003-01-18  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/mqueue.cxx: Fix multi-line string literal warning.

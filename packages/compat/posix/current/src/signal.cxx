@@ -773,12 +773,15 @@ externC void cyg_posix_deliver_signals( const sigset_t *mask )
             oldmask = self->sigmask;
             self->sigmask = *mask;
         }
+        else
+            oldmask = 0;   // silence warning
 
         cyg_deliver_signals();
 
         if( mask != NULL )        
             self->sigmask = oldmask;
     }
+    return;
 }
 
 // -------------------------------------------------------------------------
