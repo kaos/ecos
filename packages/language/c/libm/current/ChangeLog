@@ -1,3 +1,19 @@
+1999-06-04  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/PKGconf.mak: 
+	Only use -fno-strict-aliasing if we have enough a recent toolchain
+	
+1999-06-03  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/PKGconf.mak: 
+	Finally found the option to do the right workaround:
+	-fno-strict-aliasing
+
+1999-06-02  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/PKGconf.mak (SPECIAL_FLAGS): Don't use -fschedule-insns[2] on
+	mn10300
+
 1999-05-27  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/PKGconf.mak (SPECIAL_FLAGS): Add workaround flags for new

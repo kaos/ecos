@@ -73,66 +73,12 @@ OTHER_CLEAN   :=
 
 # Work-around for PR 19698
 
-SPECIAL_FLAGS := -O1 -fschedule-insns -fschedule-insns2 -fexpensive-optimizations -fstrength-reduce -fthread-jumps -fcse-follow-jumps -fcse-skip-blocks -frerun-cse-after-loop
-
-ifdef CYG_HAL_SPARCLITE
-SPECIAL_FLAGS += -fdelayed-branch
-endif
-ifdef CYG_HAL_MIPS_TX39
-SPECIAL_FLAGS += -fdelayed-branch
-endif
-ifdef CYG_HAL_POWERPC
-SPECIAL_FLAGS += -fdelayed-branch
+ifdef CYGPKG_HAL_ARM
+RECENT_TOOLCHAIN=1
 endif
 
-s_atan.c-CFLAGS += $(SPECIAL_FLAGS)
-s_ceil.c-CFLAGS += $(SPECIAL_FLAGS)
-s_copysign.c-CFLAGS += $(SPECIAL_FLAGS)
-s_cos.c-CFLAGS += $(SPECIAL_FLAGS)
-s_expm1.c-CFLAGS += $(SPECIAL_FLAGS)
-s_fabs.c-CFLAGS += $(SPECIAL_FLAGS)
-s_finite.c-CFLAGS += $(SPECIAL_FLAGS)
-s_floor.c-CFLAGS += $(SPECIAL_FLAGS)
-s_frexp.c-CFLAGS += $(SPECIAL_FLAGS)
-s_isnan.c-CFLAGS += $(SPECIAL_FLAGS)
-s_ldexp.c-CFLAGS += $(SPECIAL_FLAGS)
-s_rint.c-CFLAGS += $(SPECIAL_FLAGS)
-s_scalbn.c-CFLAGS += $(SPECIAL_FLAGS)
-s_sin.c-CFLAGS += $(SPECIAL_FLAGS)
-s_tan.c-CFLAGS += $(SPECIAL_FLAGS)
-s_modf.c-CFLAGS += $(SPECIAL_FLAGS)
-s_tanh.c-CFLAGS += $(SPECIAL_FLAGS)
-s_asinh.c-CFLAGS += $(SPECIAL_FLAGS)
-s_cbrt.c-CFLAGS += $(SPECIAL_FLAGS)
-s_erf.c-CFLAGS += $(SPECIAL_FLAGS)
-s_ilogb.c-CFLAGS += $(SPECIAL_FLAGS)
-s_log1p.c-CFLAGS += $(SPECIAL_FLAGS)
-s_logb.c-CFLAGS += $(SPECIAL_FLAGS)
-s_nextafter.c-CFLAGS += $(SPECIAL_FLAGS)
-s_significand.c-CFLAGS += $(SPECIAL_FLAGS)
-e_fmod.c-CFLAGS += $(SPECIAL_FLAGS)
-w_fmod.c-CFLAGS += $(SPECIAL_FLAGS)
-e_acos.c-CFLAGS += $(SPECIAL_FLAGS)
-e_acosh.c-CFLAGS += $(SPECIAL_FLAGS)
-e_asin.c-CFLAGS += $(SPECIAL_FLAGS)
-e_atan2.c-CFLAGS += $(SPECIAL_FLAGS)
-e_atanh.c-CFLAGS += $(SPECIAL_FLAGS)
-e_cosh.c-CFLAGS += $(SPECIAL_FLAGS)
-e_exp.c-CFLAGS += $(SPECIAL_FLAGS)
-e_fmod.c-CFLAGS += $(SPECIAL_FLAGS)
-e_hypot.c-CFLAGS += $(SPECIAL_FLAGS)
-e_j0.c-CFLAGS += $(SPECIAL_FLAGS)
-e_j1.c-CFLAGS += $(SPECIAL_FLAGS)
-e_jn.c-CFLAGS += $(SPECIAL_FLAGS)
-e_lgamma_r.c-CFLAGS += $(SPECIAL_FLAGS)
-e_log.c-CFLAGS += $(SPECIAL_FLAGS)
-e_log10.c-CFLAGS += $(SPECIAL_FLAGS)
-e_pow.c-CFLAGS += $(SPECIAL_FLAGS)
-e_rem_pio2.c-CFLAGS += $(SPECIAL_FLAGS)
-e_remainder.c-CFLAGS += $(SPECIAL_FLAGS)
-e_sinh.c-CFLAGS += $(SPECIAL_FLAGS)
-e_sqrt.c-CFLAGS += $(SPECIAL_FLAGS)
-k_cos.c-CFLAGS += $(SPECIAL_FLAGS)
-k_tan.c-CFLAGS += $(SPECIAL_FLAGS)
+ifeq ($(RECENT_TOOLCHAIN),1)
+CFLAGS += -fno-strict-aliasing
+endif
 
 include $(COMPONENT_REPOSITORY)/pkgconf/makrules.src

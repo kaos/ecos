@@ -1,3 +1,9 @@
+1999-06-02  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/pkgconf/mlt_mips_tx39_sim_ram.ldi: 
+	* include/pkgconf/mlt_mips_tx39_sim_ram.mlt: 
+	Add support for ctors/dtors sections required by new compiler
+
 1999-05-20  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/pkgconf/hal_mips_sim.h: Move RTC setup here.

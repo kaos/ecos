@@ -562,6 +562,8 @@ struct spi_pram
    cyg_uint16   tbptr;          /* Tx BD pointer */
    cyg_uint16   tcount;         /* Tx byte count */
    cyg_uint32      ttemp;               /* Tx temp */
+
+    cyg_uint8     RESERVED12[8]; /* Reserved */
 };
 
 
@@ -591,7 +593,19 @@ struct i2c_pram
    cyg_uint16   tbptr;          /* Tx BD pointer */
    cyg_uint16   tcount;         /* Tx byte count */
    cyg_uint32      ttemp;               /* Tx temp */
+
+    cyg_uint8     RESERVED13[8];    
 };
+
+/*--------------------------------------------------------------------------*/
+/*                       MISC parameter RAM                                                                             */
+/*--------------------------------------------------------------------------*/
+
+struct misc_pram 
+{
+    cyg_uint8    RESERVED14[16];
+};
+
 
 
 /*--------------------------------------------------------------------------*/
@@ -1143,6 +1157,7 @@ typedef struct eppc
          
             {
                struct i2c_pram  i2c;     /* I2C   */
+               struct misc_pram misc;    /* MISC  */
                struct idma_pram idma1;   /* IDMA1 */
 
             } i2c_idma; 

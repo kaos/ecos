@@ -38,6 +38,8 @@ SECTIONS
     SECTION_rom_vectors (rom, 0xbfc00000, LMA_EQ_VMA)
     SECTION_text (rom, ALIGN (0x1), LMA_EQ_VMA)
     SECTION_fini (rom, ALIGN (0x1), LMA_EQ_VMA)
+    SECTION_ctors (rom, ALIGN (0x1), LMA_EQ_VMA)
+    SECTION_dtors (rom, ALIGN (0x1), LMA_EQ_VMA)
     SECTION_rodata (rom, ALIGN (0x1), LMA_EQ_VMA)
     SECTION_rodata1 (rom, ALIGN (0x1), LMA_EQ_VMA)
     SECTION_fixup (rom, ALIGN (0x1), LMA_EQ_VMA)

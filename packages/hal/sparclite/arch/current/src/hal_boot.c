@@ -107,9 +107,9 @@ cyg_hal_invoke_constructors (void)
 #endif
 }
 
-// Override any __eabi the compiler might generate. We don't want
+// Override any __gccmain the compiler might generate. We don't want
 // constructors to be called twice.
-void __eabi (void) {}
+void  __gccmain(void) {}
 
 /*------------------------------------------------------------------------*/
 /*   CYG_HAL_START - pre-main-entrypoint                                  */

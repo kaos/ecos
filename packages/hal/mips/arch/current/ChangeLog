@@ -1,3 +1,9 @@
+1999-06-02  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/hal_misc.c (cyg_hal_invoke_constructors): 
+	Rework for new constructor scheme for new compilers. Should work
+	with old compilers too.
+
 1999-05-28  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/vectors.S:

@@ -1160,7 +1160,12 @@ proc pkgconf::read_targets { } {
 	}
 	
 	proc command_prefix { str } {
-	    set_target_data "$::current_target,prefix" $str
+	    # Allow the command prefix to be overridden on a per-platform basis
+	    if { $::current_platform != "" } {
+		set_target_data "$::current_target,$::current_platform,prefix" $str
+	    } else {
+		set_target_data "$::current_target,prefix" $str
+	    }
 	}
 
 	proc packages { list } {
@@ -1176,6 +1181,14 @@ proc pkgconf::read_targets { } {
 		set_target_data "$::current_target,$::current_platform,haldir" $dir
 	    } else {
 		set_target_data "$::current_target,haldir" $dir
+	    }
+	}
+	
+	proc base_platform { str } {
+	    if { $::current_platform != "" } {
+		set_target_data "$::current_target,$::current_platform,base_platform" $str
+	    } else {
+		set_target_data "$::current_target,base_platform" $str
 	    }
 	}
 	
@@ -1511,6 +1524,24 @@ proc pkgconf::get_default_platform { target } {
     return $platform
 }
 
+proc pkgconf::get_base_platform { target platform } {
+
+    ASSERT { $target   != "" }
+    ASSERT { $platform != "" }
+
+    set target [find_target $target]
+    ASSERT { $target != "" }
+    set platform [find_platform $target $platform]
+    ASSERT { $platform != "" }
+    
+    if [info exists pkgconf::target_data($target,$platform,base_platform) ] {
+	set base_platform [lindex $pkgconf::target_data($target,$platform,base_platform) 0]
+    } else {
+	set base_platform $platform
+    }
+    return $base_platform
+}
+
 proc pkgconf::get_default_startup { target platform } {
 
     ASSERT { $target   != "" }
@@ -1550,6 +1581,7 @@ proc pkgconf::setup_defaults { } {
     
     set pkgconf::config_data(target)    ""
     set pkgconf::config_data(platform)  ""
+    set pkgconf::config_data(base_platform)  ""
     set pkgconf::config_data(startup)   ""
     set pkgconf::config_data(prefix)    ""
     set pkgconf::config_data(use_links) 0
@@ -1590,6 +1622,7 @@ proc pkgconf::setup_defaults { } {
 
 	ASSERT { $pkgconf::target_data($pkgconf::config_data(target),known_platforms) != "" }
 	set pkgconf::config_data(platform) [get_default_platform $pkgconf::config_data(target)]
+	set pkgconf::config_data(base_platform) [get_base_platform $pkgconf::config_data(target) $pkgconf::config_data(platform)]
 
 	ASSERT { $pkgconf::target_data($pkgconf::config_data(target),$pkgconf::config_data(platform),startup) != "" }
 	set pkgconf::config_data(startup) [get_default_startup $pkgconf::config_data(target) $pkgconf::config_data(platform)]
@@ -1670,6 +1703,7 @@ proc pkgconf::read_save_file { } {
 	    set pkgconf::saved_data(target)    $target_name
 	    set pkgconf::config_data(target)   $target_name
 	    set pkgconf::config_data(platform) [get_default_platform $pkgconf::config_data(target)]
+	    set pkgconf::config_data(base_platform) [get_base_platform $pkgconf::config_data(target) $pkgconf::config_data(platform)]
 	    set pkgconf::config_data(startup) \
 		    [get_default_startup $pkgconf::config_data(target) $pkgconf::config_data(platform)]
 	}
@@ -1690,6 +1724,7 @@ The platform $pkgconf::config_data(platform) has been substituted."
 	    } else {
 		set pkgconf::saved_data(platform)  $platform_name
 		set pkgconf::config_data(platform) $platform_name
+		set pkgconf::config_data(base_platform) [get_base_platform $pkgconf::config_data(target) $pkgconf::saved_data(platform)]
 		set pkgconf::config_data(startup) [get_default_startup $pkgconf::config_data(target) $platform_name]
 	    }
 	    
@@ -1865,6 +1900,10 @@ proc pkgconf::write_save_file { } {
 	    puts $open_file "set_saved_data platform $pkgconf::config_data(platform)"
 	    set pkgconf::saved_data(platform) $pkgconf::config_data(platform)
 	}
+	if { $pkgconf::config_data(base_platform) != "" } {
+	    puts $open_file "set_saved_data base_platform $pkgconf::config_data(base_platform)"
+	    set pkgconf::saved_data(base_platform) $pkgconf::config_data(base_platform)
+	}
 	if { $pkgconf::config_data(startup) != "" } {
 	    puts $open_file "set_saved_data startup  $pkgconf::config_data(startup)"
 	    set pkgconf::saved_data(startup) $pkgconf::config_data(startup)
@@ -1990,6 +2029,7 @@ proc pkgconf::process_arguments { } {
 	if { $platform != "" } {
 	    set platform [find_platform $target $platform]
 	    set pkgconf::config_data(platform) $platform
+	    set pkgconf::config_data(base_platform) [get_base_platform $target $platform]
 	    if { ($platform != "") && ($startup != "") } {
 		if { [lsearch -exact $pkgconf::target_data($target,$platform,startup) $startup] == -1 } {
 		    set startup ""
@@ -2021,6 +2061,8 @@ proc pkgconf::process_arguments { } {
 	} 
 	set pkgconf::config_data(platform) $platform
     }
+
+    set pkgconf::config_data(base_platform) [get_base_platform $target $platform]
 
     if { ($target != "") && ($platform != "") && ($pkgconf::startup_arg != "" ) } {
 	
@@ -3041,6 +3083,7 @@ proc pkgconf::nbpage_targets_leave { win } {
 
 	set config_data(target)     [lindex $target_page_data(selection) 0]
 	set config_data(platform)   [lindex $target_page_data(selection) 1]
+	set config_data(base_platform) [get_base_platform $config_data(target) $config_data(platform)]
 	set config_data(startup)    [lindex $target_page_data(selection) 2]
 	set build_tree_needs_update 1
 
@@ -5437,7 +5480,12 @@ proc pkgconf::produce_misc_files { } {
 	# and hence the default.
 	puts $file "\ndefault: build\n"
 	
-	set command_prefix $pkgconf::target_data($pkgconf::config_data(target),prefix)
+	set platform $pkgconf::config_data(platform)
+	if [info exists pkgconf::target_data($pkgconf::config_data(target),$platform,prefix)] {
+	    set command_prefix $pkgconf::target_data($pkgconf::config_data(target),$platform,prefix)
+	} else {
+	    set command_prefix $pkgconf::target_data($pkgconf::config_data(target),prefix)
+	}
 
 	puts $file ""
 	puts $file "COMPONENT_REPOSITORY\t\t:= [get_pathname_for_make $pkgconf::component_repository]"
@@ -5447,6 +5495,7 @@ proc pkgconf::produce_misc_files { } {
 	# per-target files.
 	puts $file "TARGET\t\t\t\t:= $pkgconf::config_data(target)"
 	puts $file "PLATFORM\t\t\t:= $pkgconf::config_data(platform)"
+	puts $file "BASE_PLATFORM\t\t\t:= $pkgconf::config_data(base_platform)"
 	puts $file "STARTUP\t\t\t\t:= $pkgconf::config_data(startup)"
 	
 	# The prefix (i.e. install directory) should default to somewhere
@@ -5558,13 +5607,13 @@ endif"
 
 	# Additions for the MLT
 	puts $file "\n"
-	puts $file "#define CYGHWR_MEMORY_LAYOUT_LDI <pkgconf/mlt_[set pkgconf::config_data(target)]_[set pkgconf::config_data(platform)]_[set pkgconf::config_data(startup)].ldi>"
-	puts $file "#define CYGHWR_MEMORY_LAYOUT_H   <pkgconf/mlt_[set pkgconf::config_data(target)]_[set pkgconf::config_data(platform)]_[set pkgconf::config_data(startup)].h>"
+	puts $file "#define CYGHWR_MEMORY_LAYOUT_LDI <pkgconf/mlt_[set pkgconf::config_data(target)]_[set pkgconf::config_data(base_platform)]_[set pkgconf::config_data(startup)].ldi>"
+	puts $file "#define CYGHWR_MEMORY_LAYOUT_H   <pkgconf/mlt_[set pkgconf::config_data(target)]_[set pkgconf::config_data(base_platform)]_[set pkgconf::config_data(startup)].h>"
 
 	# Also output details of the HAL header files that should be included
 	puts $file "\n"
 	puts $file "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_[set pkgconf::config_data(target)].h>"
-	puts $file "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_[set pkgconf::config_data(target)]_[set pkgconf::config_data(platform)].h>"
+	puts $file "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_[set pkgconf::config_data(target)]_[set pkgconf::config_data(base_platform)].h>"
 	
 	puts $file "\
 \n#endif  /* CYGONCE_PKGCONF_SYSTEM_H */ 		
@@ -5879,6 +5928,7 @@ proc pkgconf::initialise_data { } {
     if { 0 } {
 	puts "target:   $pkgconf::config_data(target)"
 	puts "platform: $pkgconf::config_data(platform)"
+	puts "base_platform: $pkgconf::config_data(base_platform)"
 	puts "startup:  $pkgconf::config_data(startup)"
 	puts "prefix:   $pkgconf::config_data(prefix)"
 	puts "packages: $pkgconf::config_data(packages)"

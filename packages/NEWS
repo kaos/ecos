@@ -1,0 +1,77 @@
+* Will be new in eCos 1.3
+
+** Target side platforms
+
+*** These are the eCos 1.2.1 platforms...
+
+**** ARM:
+     ARM7TDMI - ARM PID7T board
+     Sharp LH77790 (ARM7DI core) - ARM AEB-1 board
+
+**** Fujitsu SPARClite:
+     MB86831, MB86832, MB86833 - Fujitsu MB86800-MA01 board
+     SIS - SPARClite simulator
+
+**** Matsushita MN10300:
+     MN103002 - standard evaluation board
+     MN103002 - standard evaluation board simulator
+
+**** Toshiba TX39 (MIPS R3900 derivative):
+     TX39 - JMR3904 evaluation board
+     TX39 - JMR3904 evaluation board simulator
+
+**** MPC800 PowerPC:
+     MPC823 - Cogent CMA287-23
+     MPC850 - Cogent CMA287-50
+     MPC860 - Cogent CMA286-60
+     MPC860 - MPC8xxFADS (NB unsupported by Cygnus,
+                          contributed by Kevin Hester)
+     MPC823, MPC850, MPC860 - PSIM simulator
+
+**** i386/Linux synthetic target
+     
+*** The following are the new target platforms...
+
+
+
+
+** Host side platforms
+
+*** These are the eCos 1.2.1 platforms....
+**** Redhat Linux 4.2 and later
+**** Solaris 2.5.1 and later
+**** Windows NT 4.0SP3 and later
+**** Windows 95/98 (Beta)
+
+*** These are the new host platforms...
+
+**** FIXME
+
+** Host tool features
+
+**** FIXME
+
+** New toolchain features
+
+** API additions (are there any?)
+
+*** FIXME
+
+** API changes
+
+*** Kernel
+
+**** Debugging
+	The file <cyg/kernel/test/stackmon.h> defines some functions
+	that can be used to profile stack usage.
+
+**** KAPI
+	include/kapi.h (cyg_thread_delete): is now a boolean function to
+	indicate success.  Failure is when the thread needs to run in
+	order to become killed.
+
+** ISO C library
+
+** HAL changes
+
+*** Common

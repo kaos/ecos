@@ -48,7 +48,5 @@ ifndef CYGPKG_HAL_ARM_AEB
 TESTS   += stress_threads
 endif
 
+
 include $(COMPONENT_REPOSITORY)/pkgconf/makrules.tst
-
-
-

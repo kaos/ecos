@@ -117,7 +117,13 @@ __set_baud_rate (int baud)
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
 
-typedef unsigned long t_inst;
+#if (HAL_BREAKINST_SIZE == 2)
+typedef cyg_uint16 t_inst;
+#elif (HAL_BREAKINST_SIZE == 4)
+typedef cyg_uint32 t_inst;
+#else
+#error "Don't know how to handle that size"
+#endif
 
 typedef struct
 {

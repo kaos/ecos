@@ -37,6 +37,8 @@ SECTIONS
     SECTION_rom_vectors (ram, 0x80008000, LMA_EQ_VMA)
     SECTION_text (ram, ALIGN (0x1), LMA_EQ_VMA)
     SECTION_fini (ram, ALIGN (0x1), LMA_EQ_VMA)
+    SECTION_ctors (ram, ALIGN (0x1), LMA_EQ_VMA)
+    SECTION_dtors (ram, ALIGN (0x1), LMA_EQ_VMA)
     SECTION_rodata (ram, ALIGN (0x1), LMA_EQ_VMA)
     SECTION_rodata1 (ram, ALIGN (0x1), LMA_EQ_VMA)
     SECTION_fixup (ram, ALIGN (0x1), LMA_EQ_VMA)

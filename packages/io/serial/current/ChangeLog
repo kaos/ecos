@@ -12,7 +12,6 @@
 	Fix for PR 20047
 	
 
-
 1999-05-25  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* tests/ser_test_protocol.inl: 
@@ -23,7 +22,6 @@
 
 	* src/PKGconf.mak (EXTRAS_COMPILE): Change CYG_HAL_TX39 to
 	CYG_HAL_MIPS_TX39
-
 1999-05-18  Jesper Skov  <jskov@cygnus.co.uk>
         PR 19926
 	* src/sparclite/sleb_sdtr.c (sleb_sdtr_rx_DSR): Only read chan if

@@ -1,3 +1,8 @@
+1999-06-04  Jesper Skov  <jskov@cygnus.co.uk>
+	PR 20146
+	* src/ppc_860.h: Added padding to some structures, reported by
+	Jean-Dominique Orvoen (orvoen@email.enst.fr)
+
 1999-05-26  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* include/hal_cache.h (HAL_DCACHE_LOCK):

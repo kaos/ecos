@@ -1,3 +1,9 @@
+1999-06-02  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/mips_tx39.ld: 
+	Add .ctors and .dtors sections as required by new compilers, but
+	keep around old SORT(CONSTRUCTORS) for use by old compilers.
+
 1999-05-27  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/hal_diag.c (hal_diag_write_char): Tidied away defunct code

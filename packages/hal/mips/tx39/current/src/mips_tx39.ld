@@ -79,6 +79,24 @@ GROUP(libtarget.a libgcc.a)
     { FORCE_OUTPUT; *(.fini) } \
     > _region_
 
+#define SECTION_ctors(_region_, _vma_, _lma_)	\
+   .ctors _vma_ : _lma_				\
+   {						\
+     __CTOR_LIST__ = ABSOLUTE (.);		\
+     KEEP(*(.ctors))				\
+     KEEP(*(SORT(.ctors.*)))			\
+     __CTOR_END__ = ABSOLUTE (.);		\
+   } > _region_
+
+#define SECTION_dtors(_region_, _vma_, _lma_)	\
+   .dtors _vma_ : _lma_				\
+   {						\
+     __DTOR_LIST__ = ABSOLUTE (.);		\
+     KEEP(*(SORT(.dtors.*)))			\
+     KEEP(*(.dtors))				\
+     __DTOR_END__ = ABSOLUTE (.);		\
+   } > _region_
+
 #define SECTION_rodata(_region_, _vma_, _lma_) \
     .rodata _vma_ : _lma_ \
     { FORCE_OUTPUT; *(.rodata*) } \
@@ -109,6 +127,9 @@ GROUP(libtarget.a libgcc.a)
     { FORCE_OUTPUT; *(.gcc_except_table) } \
     > _region_
 
+/* FIXME: The SORT(CONSTRUCTORS) line below is for backwards compatibility
+ * with older (pre-99r1) toolchains
+ */
 #define SECTION_data(_region_, _vma_, _lma_) \
     .data _vma_ : _lma_ \
     { __ram_data_start = ABSOLUTE (.); \
@@ -116,7 +137,7 @@ GROUP(libtarget.a libgcc.a)
     _GOT1_START_ = ABSOLUTE (.); *(.got1) _GOT1_END_ = ABSOLUTE (.); \
     _GOT2_START_ = ABSOLUTE (.); *(.got2) _GOT2_END_ = ABSOLUTE (.); \
     . = ALIGN (8); \
-    SORT (CONSTRUCTORS) *(.ctors*) *(.dtors*) \
+    SORT (CONSTRUCTORS) \
     . = ALIGN (8); \
     __DEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.devtab*))) __DEVTAB_END__ = ABSOLUTE (.); \
     . = ALIGN (8); \

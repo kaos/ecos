@@ -147,41 +147,28 @@ cyg_bool cyg_hal_stop_constructors;
 
 typedef void (*pfunc) (void);
 extern pfunc __CTOR_LIST__[];
+extern pfunc __CTOR_END__[];
 
 void
 cyg_hal_invoke_constructors(void)
 {
-#if 0
-
-#else    
-
-    pfunc p;
-
 #ifdef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
-    static long i = 0;
-    long j = (long)(__CTOR_LIST__[0]);
+    static pfunc *p = &__CTOR_END__[-1];
     
-    cyg_hal_stop_constructors=0;
-    for ( ; i < j; i++ )
-    {
-        p = __CTOR_LIST__[j - i];
-        p ();
+    cyg_hal_stop_constructors = 0;
+    for (; p >= __CTOR_LIST__; p--) {
+        (*p) ();
         if (cyg_hal_stop_constructors) {
-            i++;
+            p--;
             break;
         }
     }
 #else
-    long i = (long)(__CTOR_LIST__[0]);
-    
-    for ( ; i > 0; i-- )
-    {
-        p = __CTOR_LIST__[i];
-        p ();
-    }
-#endif
+    pfunc *p;
 
-#endif    
+    for (p = &__CTOR_END__[-1]; p >= __CTOR_LIST__; p--)
+        (*p) ();
+#endif
     
 } // cyg_hal_invoke_constructors()
 

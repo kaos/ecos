@@ -1,3 +1,11 @@
+1999-06-02  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/pkgconf/mlt_mips_tx39_jmr3904_rom.mlt: 
+	* include/pkgconf/mlt_mips_tx39_jmr3904_rom.mlt: 
+	* include/pkgconf/mlt_mips_tx39_jmr3904_ram.ldi: 
+	* include/pkgconf/mlt_mips_tx39_jmr3904_rom.ldi: 
+	Use ctors/dtors sections as required by new compilers
+
 1999-05-27  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/plf_misc.c: Reorganized and generally fixed up Ctrl-C

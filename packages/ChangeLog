@@ -1,3 +1,13 @@
+1999-06-04  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* pkgconf.tcl (command_prefix): Allow command_prefix to be overridden
+	on a per-platform basis.
+
+1999-06-03  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* pkgconf.tcl: Support 'base_platform' in target specification.  This
+	performs the inverse of what the "platform" entry in CDL options does.
+
 1999-05-26  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* NEWS: Added Kernel/Debugging entry.
