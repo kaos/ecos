@@ -63,13 +63,13 @@
            Cirrus Logic CL7111 board with ARM710C processor."
    }
 
-   cdl_option CYGHWR_HAL_ARM_CLxx11_CL7211 {
-       display "CL7211-1 variant"
+   cdl_option CYGHWR_HAL_ARM_CLxx11_EB7211 {
+       display "EB7211-1 variant"
        parent CYGPKG_HAL_ARM_CL7211
-       platform cl7211
+       platform eb7211
        type radio
        description "
-           Cirrus Logic CL7211 board with ARM720 processor."
+           Cirrus Logic EB7211 board with CL7211 (ARM720) processor."
    }
 
    cdl_option CYGHWR_HAL_ARM_CL7211_STARTUP {
@@ -196,7 +196,7 @@
    }
 
    }}CFG_DATA */
-#undef CYGHWR_HAL_ARM_CL7211_LCD_INSTALLED
+#define CYGHWR_HAL_ARM_CL7211_LCD_INSTALLED
 
 // Real-time clock/counter specifics
 

@@ -312,7 +312,7 @@
      display    "Include GDB stubs in HAL"
      parent     CYGPKG_HAL_DEBUG
      requires   !CYGPKG_HAL_POWERPC_SIM
-     requires   !CYGPKG_HAL_MN10300_SIM
+     requires   !CYGPKG_HAL_MN10300_AM31_SIM
      requires   !CYGPKG_HAL_MIPS_SIM
      requires   !CYGPKG_HAL_I386_LINUX
      requires   !CYGPKG_HAL_SPARCLITE

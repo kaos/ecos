@@ -58,15 +58,8 @@
 #include <cyg/hal/hal_intr.h>           // HAL_INTERRUPT_UNMASK(...)
 #endif
 
-#if 40 == CYGHWR_HAL_POWERPC_MBX_BOARD_SPEED
-# define __40MHZ 1
-#elif 50 == CYGHWR_HAL_POWERPC_MBX_BOARD_SPEED
-# define __50MHZ 1
-#else
-# error Bad Board speed defined: see CYGBLD_HAL_PLATFORM_H
-#endif
-
-#define USE38400BAUD // otherwise it uses 9600 by default
+#define UART_BIT_RATE(n) (((CYGHWR_HAL_POWERPC_MBX_BOARD_SPEED*1000000)/16)/n)
+#define UART_BAUD_RATE 38400
 
 #define Rxbd     0x2800       /* Rx Buffer Descriptor Offset */
 #define Txbd     0x2808       /* Tx Buffer Descriptor Offset */
@@ -110,27 +103,9 @@ init_smc1_uart(void)
     eppc->pip_pbpar |= 0xc0;
     eppc->pip_pbdir &= ~0xc0;
 
-#ifdef __50MHZ
-    /*
-     *  Configure BRG for 9600 baud @ 50MHZ sysclk
-     *  (Section 16.13.2)
-     */
-#ifdef USE38400BAUD
-    eppc->brgc1 = 0x100a2;
-#else
-    eppc->brgc1 = 0x10288;
-#endif
-#else
-    /*
-     *  Configure BRG for 9600 baud @ 40MHz sysclk
-     *  (Section 16.13.2)
-     */
-#ifdef USE38400BAUD
-    eppc->brgc1 = 0x10082;
-#else
-    eppc->brgc1 = 0x10204;
-#endif
-#endif
+
+    /* Configure baud rate generator (Section 16.13.2) */
+    eppc->brgc1 = 0x10000 | (UART_BIT_RATE(UART_BAUD_RATE)<<1);
 
 
     /*

@@ -137,7 +137,7 @@ DEVTAB_ENTRY(cl7211_serial_io1,
              cl7211_serial_lookup,     // Serial driver may need initializing
              &cl7211_serial_channel1
     );
-#endif //  CYGPKG_IO_SERIAL_ARM_CL7212_SERIAL2
+#endif //  CYGPKG_IO_SERIAL_ARM_CL7211_SERIAL2
 
 #ifdef CYGPKG_IO_SERIAL_ARM_CL7211_SERIAL2
 static cl7211_serial_info cl7211_serial_info2 = {UARTDR2, // Data register
@@ -182,7 +182,7 @@ DEVTAB_ENTRY(cl7211_serial_io2,
              cl7211_serial_lookup,     // Serial driver may need initializing
              &cl7211_serial_channel2
     );
-#endif //  CYGPKG_IO_SERIAL_ARM_CL7212_SERIAL2
+#endif //  CYGPKG_IO_SERIAL_ARM_CL7211_SERIAL2
 
 // Internal function to actually configure the hardware to desired baud rate, etc.
 static bool

@@ -179,9 +179,9 @@ unsigned long swap32(unsigned long x)
 int dbg_currthread_id(void)
 {
     threadref ref;
-    dbg_currthread( &ref );
-
-    return (cyg_uint16)swap32(((unsigned long *)ref)[1]);
+    if( dbg_currthread( &ref ) )
+        return (cyg_uint16)swap32(((unsigned long *)ref)[1]);
+    else return 0;
 }
 
 #endif

@@ -1,3 +1,9 @@
+1999-09-07  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/plf_stub.h: 
+	* src/plf_stub.c (hal_aeb_reset): 
+	Added reset on detach.
+	
 1999-08-08  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* misc/Notes: 

@@ -1,3 +1,29 @@
+1999-09-09  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/plf_misc.c: New file.
+
+	* src/PKGconf.mak (PACKAGE): Rename hal_mn10300_sim to
+	hal_mn10300_am31_sim
+	(COMPILE): Add plf_misc.c
+
+	* tests/PKGconf.mak (PACKAGE): Likewise
+
+	* include/platform.inc: New file, effectively empty
+	* include/plf_intr.h: Likewise
+	* include/pkgconf/mlt_mn10300_sim_ram.ldi: Rename to
+	mlt_mn10300_am31_sim_ram.ldi
+	* include/pkgconf/mlt_mn10300_am31_sim_ram.ldi: New file
+	* include/pkgconf/mlt_mn10300_sim_ram.mlt: Rename to
+	mlt_mn10300_am31_sim_ram.mlt
+	* include/pkgconf/mlt_mn10300_am31_sim_ram.mlt: New file
+	* src/makefile: delete
+
+1999-09-06  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/pkgconf/hal_mn10300_sim.h: Rename to hal_mn10300_am31_sim.h
+	* include/pkgconf/hal_mn10300_am31_sim.h: New file
+	Require AM31 target
+
 1999-05-20  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/pkgconf/hal_mn10300_sim.h: Move RTC setup here.

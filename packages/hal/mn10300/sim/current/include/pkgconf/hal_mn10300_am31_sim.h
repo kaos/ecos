@@ -1,8 +1,8 @@
-#ifndef CYGONCE_PKGCONF_HAL_MN10300_SIM_H
-#define CYGONCE_PKGCONF_HAL_MN10300_SIM_H
+#ifndef CYGONCE_PKGCONF_HAL_MN10300_AM31_SIM_H
+#define CYGONCE_PKGCONF_HAL_MN10300_AM31_SIM_H
 // ====================================================================
 //
-//      pkgconf/hal_mn10300_sim.h
+//      pkgconf/hal_mn10300_am31_sim.h
 //
 //      HAL configuration file
 //
@@ -45,10 +45,11 @@
 /* ---------------------------------------------------------------------
    {{CFG_DATA
 
-   cdl_package CYGPKG_HAL_MN10300_SIM {
-       display  "Minimal simulator"
+   cdl_package CYGPKG_HAL_MN10300_AM31_SIM {
+       display  "AM31 minimal simulator"
        type     radio
        parent   CYGPKG_HAL_MN10300
+       requires CYGPKG_HAL_MN10300_AM31
        platform sim
        description "
            The minimal simulator HAL package is provided for use when
@@ -69,5 +70,5 @@
 #define CYGNUM_HAL_RTC_DENOMINATOR   100
 #define CYGNUM_HAL_RTC_PERIOD        9999
 
-#endif  /* CYGONCE_PKGCONF_HAL_MN10300_SIM_H */
-/* EOF hal_mn10300_sim.h */
+#endif  /* CYGONCE_PKGCONF_HAL_MN10300_AM31_SIM_H */
+/* EOF hal_mn10300_am31_sim.h */

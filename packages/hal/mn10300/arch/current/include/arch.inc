@@ -183,49 +183,5 @@
 #endif	
 
 #------------------------------------------------------------------------------
-# temporary trace macros
-
-#if 1
-
-#ifdef CYGPKG_HAL_MN10300_AM31_STDEVAL1
-#define TRACE_BASE 0x48100000
-#else
-#error TRACE_BASE not defined for platform
-#endif
-
-	.macro traceinit
-	mov	TRACE_BASE,a2
-	mov	TRACE_BASE+0x10,d0
-	mov	d0,(a2)
-	.endm
-	
-	.macro trace,tag,arg1=0,arg2=0
-	movm	[d2,a2,a3],(sp)
-	mov	TRACE_BASE,a2
-	mov	(a2),a3
-	mov	\tag,d2
-	mov	d2,(a3)
-	mov	(12,a2),d2
-	mov	d2,(4,a3)
-	add	1,d2
-	mov	d2,(12,a2)
-	mov	\arg1,d2
-	mov	d2,(8,a3)
-	mov	\arg2,d2
-	mov	d2,(12,a3)
-	add	16,a3
-	mov	a3,(a2)
-	movm	(sp),[d2,a2,a3]
-	.endm
-#else
-	.macro traceinit
-	.endm
-
-	.macro trace,tag,arg1=0,arg2=0
-	.endm
-#endif
-
-
-#------------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_ARCH_INC
 # end of arch.inc

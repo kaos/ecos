@@ -26,15 +26,14 @@
 //####COPYRIGHTEND####
 //===========================================================================
 
-
-// eCos memory layout - Mon May 17 08:14:13 1999
+// eCos memory layout - Tue Jun 15 18:13:06 1999
 
 // This is a generated file - do not edit
 
 MEMORY
 {
-    ram : ORIGIN = 0xc0000000, LENGTH = 0x200000
-    rom : ORIGIN = 0xe0000000, LENGTH = 0x40000
+    ram : ORIGIN = 0x1000, LENGTH = 0x00FFF000
+    rom : ORIGIN = 0xe0000000, LENGTH = 0x800000
 }
 
 SECTIONS
@@ -47,7 +46,7 @@ SECTIONS
     SECTION_rodata1 (rom, ALIGN (0x1), LMA_EQ_VMA)
     SECTION_fixup (rom, ALIGN (0x1), LMA_EQ_VMA)
     SECTION_gcc_except_table (rom, ALIGN (0x1), LMA_EQ_VMA)
-    SECTION_data (ram, 0xc0000000, FOLLOWING (.gcc_except_table))
+    SECTION_data (ram, 0x1000, FOLLOWING (.gcc_except_table))
     SECTION_bss (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTIONS_END
 }

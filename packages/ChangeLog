@@ -1,3 +1,27 @@
+1999-09-10  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* packages: Tidy whitespace a bit
+
+1999-09-10  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* targets: Update processor type for EB7211 board (arm7tdmi).
+
+1999-09-09  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* packages: Rename CYGPKG_HAL_MN10300_SIM to CYGPKG_HAL_MN10300_AM31_SIM
+
+1999-09-08  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* targets: Missing base platform for EB7211 ==> CL7211
+
+1999-09-07  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* NEWS: Added drivers/watchdog
+
+1999-09-06  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* targets: Rename Cirrus Logic platforms to match actual boards.
+
 1999-08-16  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* packages:

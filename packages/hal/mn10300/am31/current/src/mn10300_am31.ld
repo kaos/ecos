@@ -111,7 +111,7 @@ GROUP(libtarget.a libgcc.a)
 _mn10300_interrupt_control = 0x34000100;
 _mn10300_interrupt_vectors = 0x20000000;
 
-#if (defined (CYG_HAL_STARTUP_RAM) && ! defined (CYGPKG_HAL_MN10300_SIM))
+#if (defined (CYG_HAL_STARTUP_RAM) && ! defined (CYGPKG_HAL_MN10300_AM31_SIM))
 #define VSR_BASE 0x48000000
 _hal_vsr_table = VSR_BASE;
 _hal_virtual_vector_table = VSR_BASE + 0x80;

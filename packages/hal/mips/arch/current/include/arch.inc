@@ -407,8 +407,8 @@ hal_intc_translation_table:
 
 	# General macro to save everything
 	.macro	hal_fpu_save regs
-	hal_fpu_save_callee \regs
 	hal_fpu_save_caller \regs
+	hal_fpu_save_callee \regs
 	.endm
 
 	# Reload the caller-saved registers.
@@ -526,6 +526,7 @@ hal_intc_translation_table:
 	.endm
 #else
 	.macro	hal_cache_init
+
 	mfc0	v0,config0		# disable Kseg0 caching in config0 register
 	nop
 	nop
@@ -536,32 +537,6 @@ hal_intc_translation_table:
 	nop
 	nop
 	nop
-
-        .set mips3                      # Set ISA to MIPS 3 to allow cache insns
-
-        # Now ensure the caches are invalidated - may be applicable if the
-        # target has soft-reset
-        # D-cache:
-        la      a0,0x80000000
-        addi    a1,a0,0x2000
-1:
-        cache   0x01,0(a0)
-        addi    a0,a0,0x10
-        sub     v0,a1,a0
-        bgez    v0,1b
-        nop                             # delay slot
-
-        # I-cache:
-        la      a0,0x80000000
-        addi    a1,a0,0x4000
-1:
-        cache   0x00,0(a0)
-        addi    a0,a0,0x20
-        sub     v0,a1,a0
-        bgez    v0,1b
-        nop                             # delay slot
-
-        .set mips0                      # reset ISA to default
 
 	.endm
 #endif

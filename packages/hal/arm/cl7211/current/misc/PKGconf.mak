@@ -34,24 +34,22 @@ include ../../../../../pkgconf/system.mak
 
 ifdef CYG_HAL_STARTUP_STUBS
 PROGS	      := gdb_module
-OTHER_PROGS   := gdb_module.img
+OTHER_PROGS   := gdb_module.bin
 endif
 ifdef CYG_HAL_STARTUP_RAM
 PROGS	      := prog_flash 
-ifdef CYG_HAL_CL7111
-PROGS         += lcd_test
-endif
+PROGS         += lcd_test panel_test kbd_test
 endif
 WHEREAMI      := misc
 
 include $(COMPONENT_REPOSITORY)/pkgconf/makrules.prv
 
 ifdef CYG_HAL_STARTUP_STUBS
-gdb_module.img: gdb_module.stamp
-	$(OBJCOPY) --strip-all gdb_module$(EXEEXT) gdb_module.img.XX
-	$(OBJCOPY) -O binary gdb_module gdb_module.bin
-	$(RM) -f gdb_module.img.XX
+gdb_module.bin: gdb_module.stamp
+	$(OBJCOPY) -O binary gdb_module$(EXEEXT) gdb_module.bin
 endif
+
+
 
 
 

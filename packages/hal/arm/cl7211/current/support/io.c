@@ -61,7 +61,7 @@ uspin(int len)
 {
     volatile int cnt;
     while (--len >= 0) {
-        for (cnt = 1;  cnt < 100;  cnt++) ;
+        for (cnt = 1;  cnt < 2000;  cnt++) ;
     }
 }
 

@@ -1,3 +1,16 @@
+1999-09-09  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/pkgconf/hal.h (CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS): Rename
+	CYGPKG_HAL_MN10300_SIM to CYGPKG_HAL_MN10300_AM31_SIM
+
+1999-09-07  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/dbg-threads-syscall.c (dbg_currthread_id): Fixed to return
+	zero if dbg_currthread() returns false. Previously it could have
+	returned a random value which would have made GDB think there had
+	been a thread switch when there hadn't. It was particularly prone
+	to do this in configurations where the kernel was absent.
+
 1999-09-01  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/pkgconf/hal.h: Always include target and platform package

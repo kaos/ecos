@@ -73,7 +73,8 @@ extern int  hal_aeb_interruptible(int);
 
 //----------------------------------------------------------------------------
 // Reset.
-#define HAL_STUB_PLATFORM_RESET()             CYG_EMPTY_STATEMENT
+extern void hal_aeb_reset(void);
+#define HAL_STUB_PLATFORM_RESET()             hal_aeb_reset()
 
 #endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 

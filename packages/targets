@@ -100,7 +100,7 @@ target mn10300_am31 {
         alias		{ "Simulator" }
 	startup		{ ram }
 	packages	{
-            CYGPKG_HAL_MN10300_SIM
+            CYGPKG_HAL_MN10300_AM31_SIM
         }
     }
 }
@@ -266,9 +266,10 @@ target arm {
         }
     }
 # FIXME:           ARCHFLAGS        "-mcpu=arm720"
-    platform cl7211 {
-        alias		{ "Cirrus Logic Eval Board (CL7211)" }
+    platform eb7211 {
+        alias		{ "Cirrus Logic Eval Board (EB7211)" }
 	startup		{ ram rom stubs }
+	base_platform	cl7211
 	packages	{
 	    CYGPKG_HAL_ARM_CL7211
 	}

@@ -1,3 +1,21 @@
+1999-09-09  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/pkgconf/watchdog.h: Rename CYGPKG_HAL_MN10300_SIM to
+	CYGPKG_HAL_MN10300_AM31_SIM
+
+1999-09-07  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/watchdog.h:
+	* src/aeb1.cxx: [added]
+	* src/PKGconf.mak:
+	* tests/PKGconf.mak:
+	Added watchdog driver for AEB-1 board.
+
+1999-09-07  Jesper Skov  <jskov@cygnus.co.uk>
+        PRs 20427, 20428, 20432
+	* tests/PKGconf.mak (TESTS): Clear on targets that reset the
+	board.
+
 1999-08-27  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* tests/watchdog_reset.cxx: 

@@ -73,10 +73,14 @@
 
 #define CYGIMP_WATCHDOG_EMULATE
 
-#if defined(CYGPKG_HAL_MN10300) && !defined(CYGPKG_HAL_MN10300_SIM)
+#if defined(CYGPKG_HAL_MN10300) && !defined(CYGPKG_HAL_MN10300_AM31_SIM)
 #undef CYGIMP_WATCHDOG_EMULATE
 #endif
 
+
+#if defined(CYGPKG_HAL_ARM_AEB)
+#undef CYGIMP_WATCHDOG_EMULATE
+#endif
 
 
 /* -------------------------------------------------------------------- */

@@ -140,14 +140,17 @@ reset_vector:
 	// We cannot perform a store until after PLATFORM_SETUP1
 	str	r0, [r0,#0x40]  // DRAM size to zero => unknown
 	ldr	r1,.__exception_handlers
+#ifndef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+	// Wait with this if stubs are included (see further down).
 	ldr	r2,[r1,#0x04]	// undefined instruction
 	str	r2,[r0,#0x04]
 	ldr	r2,[r1,#0x24]	
 	str	r2,[r0,#0x24]
+#endif
 	ldr	r2,[r1,#0x08]	// software interrupt
 	str	r2,[r0,#0x08]
 #if defined(CYG_HAL_STARTUP_RAM)
-// Ugly hack to get into supervisor mode        
+// Ugly hack to get into supervisor mode
 	ldr	r2,[r1,#0x40]
 	str	r2,[r0,#0x28]
 
@@ -259,14 +262,25 @@ start:
 	// Call platform specific hardware initialization
 	bl	hal_hardware_init
 
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+	bl      initialize_stub
+
+	// Now that stub is initialized, change vector. It is possible
+	// to single-step through most of the init code, except the below.
+	// Put a breakpoint at the call to cyg_hal_invoke_constructors to
+	// pass over this bit (s-s depends on internal state in the stub).
+	mov	r0,#0		// move vectors
+	ldr	r1,=__exception_handlers
+	ldr	r2,[r1,#0x04]	// undefined instruction
+	str	r2,[r0,#0x04]
+	ldr	r2,[r1,#0x24]	
+	str	r2,[r0,#0x24]
+#endif
+
 	LED 2
 	
 	// Run through static constructors
 	bl	cyg_hal_invoke_constructors
-
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-        bl      initialize_stub
-#endif
 
 	LED 1
 	

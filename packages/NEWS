@@ -57,6 +57,10 @@
 
 **** FIXME
 
+** Drivers
+*** Watchdog Drivers added for:
+     Sharp LH77790 (ARM7DI core) - ARM AEB-1 board
+
 ** New toolchain features
 
 ** API additions (are there any?)

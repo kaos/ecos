@@ -1,3 +1,15 @@
+1999-09-06  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/uit_objs.hxx (CYG_UITRON_OBJS_INIT_PRIORITY): Revert the
+	below change - we may still be shipping antiquated compilers to
+	customers. Sigh.
+
+1999-09-02  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/uit_objs.hxx (CYG_UITRON_OBJS_INIT_PRIORITY): Enable
+	using init priority on uitron objects, now that the compilers all
+	support it fully.  AFAI can tell from a quite broad experiment.
+
 1999-09-01  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* tests/testintr.cxx (attach_isr): Make it all work: my chosen

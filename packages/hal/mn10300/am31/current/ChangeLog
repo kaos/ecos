@@ -1,3 +1,20 @@
+1999-09-10  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/var_misc.c (cyg_hal_dcache_store): Condition on
+	CYG_HAL_MN10300_AM31_SIM rather than CYG_HAL_MN10300_SIM
+
+1999-09-10  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/variant.inc: Added test to code that installs hardware
+	interrupt vectors so that it also works in the minimal simulator.
+	Also changed instance of CYG_HAL_MN10300_SIM to
+	CYGPKG_HAL_MN10300_AM31_SIM.
+
+1999-09-09  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/mn10300_am31.ld: Rename CYGPKG_HAL_MN10300_SIM to
+	CYGPKG_HAL_MN10300_AM31_SIM
+
 1999-08-16  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
         Copy entire package from hal/mn10300/am32

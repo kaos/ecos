@@ -1,3 +1,7 @@
+1999-09-07  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/plf_stub.h: Include proper config header file.
+
 1999-08-27  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/hal_diag.c (hal_diag_write_char): Added code to disable

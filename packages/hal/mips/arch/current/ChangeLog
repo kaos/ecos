@@ -1,3 +1,14 @@
+1999-09-09  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/arch.inc:
+	Moved code to initialize cache out to variant header since it is
+	variant specific.
+
+1999-09-08  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/hal_misc.c (exception_handler): Catch exceptions that come from
+	within GDB stubs and return if that's what the stubs intend
+
 1999-08-19  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/hal_io.h: Added include of plf_io.h.

@@ -1,3 +1,8 @@
+1999-09-09  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/hal_powerpc_mbx.h (CYGHWR_HAL_POWERPC_MBX_BOARD_SPEED): 
+	Rename CDL option to avoid a name clash.
+
 1999-07-27  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/mbx.S: Fix typo in PLL setup value.  Reported from the net.

@@ -57,6 +57,11 @@
 #define PEDDR   0x800000C0 // Port E data direction register
 
 #define SYSCON1 0x80000100 // System control register #1
+#define SYSCON1_KBD_CTL     0xF // Keyboard scan - mask
+#define SYSCON1_KBD_HIGH      0 // Keyboard scan - all columns high
+#define SYSCON1_KBD_LOW       1 // Keyboard scan - all columns low
+#define SYSCON1_KBD_TRISTATE  2 // Keyboard scan - all columns tri-state
+#define SYSCON1_KBD_COL(n) (n+8)// Keyboard scan - select column 'n'
 #define SYSCON1_TC1M    (1<<4)  // Timer/counter #1 - prescale mode
 #define SYSCON1_TC1S    (1<<5)  // Timer/counter #1 - source (1=512KHz,0=2KHz)
 #define SYSCON1_TC2M    (1<<6)  // Timer/counter #2 - prescale mode
@@ -70,6 +75,10 @@
 #define SYSCON1_CDENRX  (1<<14) // Enable Rx on CODEC
 #define SYSCON1_SIREN   (1<<15) // Enable SIR protocol on UART #1
 #define SYSCON1_ADCKSEL (3<<16) // Microwire clock
+#define SYSCON1_ADC_CLOCK_4kHZ    (0<<16)
+#define SYSCON1_ADC_CLOCK_16kHZ   (1<<16)
+#define SYSCON1_ADC_CLOCK_64kHZ   (2<<16)
+#define SYSCON1_ADC_CLOCK_128kHZ  (3<<16)
 #define SYSCON1_EXCKEN  (1<<18) // External expansion clock enable
 #define SYSCON1_WAKEDIS (1<<19) // Disable wakeup from snooze (do not disturb)
 #define SYSCON1_IRTXM   (1<<20) // IrDA Tx mode
@@ -92,6 +101,7 @@
 #define SYSCON2_BUZFREQ (1<<14) // Buzzer frequency 0=timer, 1=fixed PLL/xtal
 
 #define SYSCON3 0x80002200 // System control #3
+#define SYSCON3_ADCCON    (1<<0) // ADC enable
 #define SYSCON3_CLKCTL(n) (n<<1) // Processor block speed ((n+1)*18.432)MHz
 
 #define SYSFLG1 0x80000140 // System flags #1
@@ -148,7 +158,9 @@
 #define INTMR2  0x80001280 // Interrupt mask #2
 
 #define INTSR3  0x80002240 // Interrupt status #3
+#if defined(__CL7211)
 #define INTSR3_MCPINT (1<<0) // MCP interrupt
+#endif
 #define INTMR3  0x80002280 // Interrupt mask #3
 
 #define UARTDR1 0x80000480 // UART #1 data register
@@ -227,16 +239,21 @@
 
 #define SNOOZE  0x80001800 // Enter 'snooze' state
 
+#if defined(__CL7211)
 #define MCCR    0x80002000 // MCP control register
 #define MCDR0   0x80002040 // MCP data register #0
 #define MCDR1   0x80002080 // MCP data register #1
 #define MCDR2   0x800020C0 // MCP data register #2
 #define MCSR    0x80002100 // MCP status register
+#endif
+
 
 #define LEDFLSH 0x800022C0 // LED flash control
 #define LEDFLSH_ENABLE      (1<<6)      // LED enabled
 #define LEDFLSH_DUTY(n)     ((n-1)<<2)  // LED on ratio
 #define LEDFLSH_PERIOD(n)   (n-1)       // LED active time (1..4)
+
+#define KBD_PORT 0x30010000 // Extra 8 bits of keyboard data
 
 /*---------------------------------------------------------------------------*/
 /* end of hal_cl7211.h                                                         */

@@ -50,12 +50,14 @@
 #include <pkgconf/hal.h>
 #include <cyg/infra/cyg_type.h>
 
+#if !defined(CYG_HAL_MN10300_AM31_SIM)
+
 #include <cyg/hal/var_cache.h>
+
+#else
 
 //=============================================================================
 // MN10300 Simulator
-
-#if defined(CYG_HAL_MN10300_SIM)
 
 //-----------------------------------------------------------------------------
 // Cache dimensions

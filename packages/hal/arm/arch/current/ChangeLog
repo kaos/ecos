@@ -1,3 +1,14 @@
+1999-09-11  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/arm_stub.c (__computeSignal): Synchronise return value with
+	what libbsp does and GDB expects
+	(__get_trap_number): Don't shift right 8 - it's already the right number
+
+1999-09-10  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S (start): Moved stub vector changeover to after
+	stub init.
+
 1999-08-24  Hugo Tyson  <hmt@masala.cygnus.co.uk>
 
 	* src/vectors.S (handle_IRQ_or_FIQ): Set up the pointer-to-regset

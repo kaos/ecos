@@ -28,11 +28,11 @@
 #####COPYRIGHTEND####
 #===============================================================================
 
-PACKAGE       := hal_mn10300_sim
+PACKAGE       := hal_mn10300_am31_sim
 include ../../../../../pkgconf/pkgconf.mak
 
 LIBRARY       := libtarget.a
-COMPILE       := hal_diag.c
+COMPILE       := hal_diag.c plf_misc.c
 OTHER_OBJS    :=
 OTHER_TARGETS :=
 OTHER_CLEAN   :=

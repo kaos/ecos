@@ -32,7 +32,7 @@ PACKAGE       := devices_watchdog
 include ../../../../pkgconf/pkgconf.mak
 
 LIBRARY       := libtarget.a
-COMPILE       := emulate.cxx
+COMPILE       := emulate.cxx aeb1.cxx
 COMPILE       := $(COMPILE) mn10300.cxx
 OTHER_OBJS    :=
 OTHER_TARGETS :=

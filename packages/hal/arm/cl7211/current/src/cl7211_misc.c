@@ -54,7 +54,7 @@
 #include <cyg/hal/hal_cache.h>
 #include <cyg/hal/hal_cl7211.h>         // Hardware definitions
 
-#define CYGHWR_HAL_ARM_CL7211_BATLOW
+// #define CYGHWR_HAL_ARM_CL7211_BATLOW
 #ifdef CYGHWR_HAL_ARM_CL7211_BATLOW
 #include <cyg/hal/hal_intr.h>           // HAL interrupt macros
 #include <cyg/hal/drv_api.h>            // HAL ISR support
@@ -188,7 +188,7 @@ static cyg_uint32 hal_interrupt_clear_map[] = {
     0,      // CYGNUM_HAL_INTERRUPT_URXINT1    14
     UMSEOI, // CYGNUM_HAL_INTERRUPT_UMSINT     15
     0,      // CYGNUM_HAL_INTERRUPT_SSEOTI     16
-    0,      // CYGNUM_HAL_INTERRUPT_KBDINT     17
+    KBDEOI, // CYGNUM_HAL_INTERRUPT_KBDINT     17
     0,      // CYGNUM_HAL_INTERRUPT_SS2RX      18
     0,      // CYGNUM_HAL_INTERRUPT_SS2TX      19
     0,      // CYGNUM_HAL_INTERRUPT_UTXINT2    20
@@ -248,7 +248,7 @@ void hal_hardware_init(void)
     // Reset all interrupt masks (disable all interrupt sources)
     *(volatile cyg_uint32 *)INTMR1 = 0;
     *(volatile cyg_uint32 *)INTMR2 = 0;
-#if defined(__CL7211)
+#if !defined(__CL7111)
     *(volatile cyg_uint32 *)INTMR3 = 0;
     *(volatile cyg_uint8 *)SYSCON3 = SYSCON3_CLKCTL(CPU_CLOCK);
 #endif
@@ -315,7 +315,7 @@ void hal_interrupt_unmask(int vector)
 void hal_interrupt_acknowledge(int vector)
 {
     // Some interrupt sources have a register for this.
-    volatile cyg_uint32 *icr;
+    volatile cyg_uint8 *icr;
     icr = (volatile cyg_uint32 *)hal_interrupt_clear_map[vector];
     if (icr) {
         *icr = 0;  // Any data clears interrupt

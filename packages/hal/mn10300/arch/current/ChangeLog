@@ -1,3 +1,9 @@
+1999-09-10  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/hal_cache.h: Change CYG_HAL_MN10300_SIM to
+	CYG_HAL_MN10300_AM31_SIM
+	Only include var_cache.h when not sim
+
 1999-08-18  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/hal_misc.c (cyg_hal_exception_handler):

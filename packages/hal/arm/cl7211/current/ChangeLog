@@ -1,3 +1,69 @@
+1999-09-10  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/hal_platform_setup.h: Fix spelling error.
+
+1999-09-08  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* misc/panel_test.c: Trick for these interrupts is that they
+	only happen when the drive is 0x70.
+
+	* misc/kbd_test.c: Found trick to get interrupts - need to leave
+	columns hot!
+
+	* include/pkgconf/mlt_arm_eb7211_rom.mlt: 
+	* include/pkgconf/mlt_arm_eb7211_rom.ldi: Change RAM layout.
+
+	* include/hal_platform_setup.h: Made ROM segment #1 non-cacheable.
+
+	* misc/kbd_test.c: New test for ASCII keyboard.  Interrupts
+	not yet working.
+
+	* misc/panel_test.c: Fix panel driving code.  Can now read
+	panel samples, but no interrupts.
+
+	* src/cl7211_misc.c: Add missing clear for keyboard interrupt.
+
+1999-09-06  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* misc/PKGconf.mak (PROGS): Add new test.
+
+	* misc/panel_test.c: New file.  Test code for LCD touch panel.
+
+	* misc/lcd_support.c: New file.
+
+	* misc/lcd_test.c: Move LCD driving code to 'lcd_support.c' so it
+	can be shared.
+
+1999-09-03  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* misc/lcd_test.c (lcd_drawc): Correct drawing of larger characters.
+
+	* misc/PKGconf.mak: Make LCD test program for all platforms.
+
+	* include/pkgconf/mlt_arm_cl7211_rom.mlt: 
+	* include/pkgconf/mlt_arm_cl7211_rom.ldi: 
+	* include/pkgconf/mlt_arm_cl7211_ram.mlt: 
+	* include/pkgconf/mlt_arm_cl7211_ram.ldi: 72xx has 16M by default.
+
+	* misc/PKGconf.mak: Remove extra [left over] step in make.
+
+1999-09-02  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* misc/PKGconf.mak: Use correct EXEEXT for gdb_module program.
+
+1999-09-02  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* support/io.c (uspin): Change timing - ugly.
+
+	* src/cl7211_misc.c: Disable out BATLOW testing code.
+
+	* include/hal_platform_setup.h: Better setup when LCD is installed.
+
+	* include/pkgconf/hal_arm_cl7211.h: Make LCD installed by default.
+
+	* misc/lcd_test.c: Rework for larger ALPS unit.  Also make characters
+	twice as big (so there's a chance at seeing them!)
+
 1999-08-16  John Dallaway  <jld@cygnus.co.uk>
 
 	* include/pkgconf/hal_arm_cl7211.h:

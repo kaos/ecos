@@ -138,19 +138,18 @@ package CYGPKG_HAL_ARM_PID {
 }
 
 package CYGPKG_HAL_ARM_AEB {
-	alias		{ "Arm evaulation board (AEB-1) support" hal_arm_aeb arm_aeb_hal }
+	alias		{ "Arm evaluation board (AEB-1) support" hal_arm_aeb arm_aeb_hal }
 	directory	hal/arm/aeb
         include_dir	cyg/hal
 	hardware
 }
 
 package CYGPKG_HAL_ARM_CL7211 {
-	alias		{ "Cirrus Logic CL7211 evaulation board support" hal_arm_cl7211 arm_cl7211_hal }
+	alias		{ "Cirrus Logic CL7211 evaluation board support" hal_arm_cl7211 arm_cl7211_hal }
 	directory	hal/arm/cl7211
         include_dir	cyg/hal
 	hardware
 }
-
 
 
 package CYGPKG_HAL_I386 {
@@ -202,7 +201,7 @@ package CYGPKG_HAL_MN10300_AM31_STDEVAL1 {
 	hardware
 }
 
-package CYGPKG_HAL_MN10300_SIM {
+package CYGPKG_HAL_MN10300_AM31_SIM {
 	alias		{ "MN10300 simulator support" hal_mn10300_sim mn10300_sim_hal }
 	directory	hal/mn10300/sim
         include_dir	cyg/hal
@@ -230,7 +229,6 @@ package CYGPKG_HAL_POWERPC_FADS {
 	hardware
 }
 
-
 package CYGPKG_HAL_POWERPC_MBX {
 	alias		{ "PowerPC Motorola MBX860/821 board support" hal_powerpc_mbx powerpc_mbx_hal }
 	directory	hal/powerpc/mbx
@@ -249,7 +247,6 @@ package CYGPKG_HAL_POWERPC_SIM {
         include_dir	cyg/hal
 	hardware
 }
-
 
 package CYGPKG_HAL_SPARCLITE {
 	alias		{ "SPARClite common HAL" hal_sparclite sparclite_hal sparclite_arch_hal }
@@ -286,7 +283,6 @@ package CYGPKG_HAL_MIPS_TX39_JMR3904 {
 	hardware
 }
 
-
 package CYGPKG_IO	{
 	alias		{ "Common I/O Code" io io_common }
 	directory	io/common
@@ -300,8 +296,6 @@ package CYGPKG_IO_SERIAL	{
 	default_value	1
 	include_dir	cyg/io
 }
-
-
 
 package CYGPKG_DEVICES_WALLCLOCK {
 	alias		{ "Wallclock Device Code" wallclock devices_wallclock device_wallclock }

@@ -68,6 +68,8 @@ externC void __handle_exception (void);
 
 externC HAL_SavedRegisters *_hal_registers;
 
+externC void *__mem_fault_handler;
+
 externC cyg_uint8 cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs );
 
 externC void exception_handler(HAL_SavedRegisters *regs)
@@ -87,6 +89,13 @@ externC void exception_handler(HAL_SavedRegisters *regs)
 #endif
 
 #if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
+
+    // If we caught an exception inside the stubs, see if we were expecting it
+    // and if so jump to the saved address
+    if (__mem_fault_handler) {
+        regs->pc = (CYG_ADDRWORD)__mem_fault_handler;
+        return; // Caught an exception inside stubs        
+    }
 
     // Set the pointer to the registers of the current exception
     // context. At entry the GDB stub will expand the

@@ -1,3 +1,9 @@
+1999-09-06  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_misc.c (hal_null_call): 
+	* src/vectors.S: 
+	Trap calls to address 0.
+	
 1999-09-01  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/hal_misc.c: Clean up list of included files.  <hal.h>

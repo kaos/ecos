@@ -171,7 +171,7 @@ externC void hal_thread_load_context( CYG_ADDRESS to )
 // HAL_BREAKINST is the value of the breakpoint instruction and 
 // HAL_BREAKINST_SIZE is its size in bytes.
 
-#define HAL_BREAKPOINT(_label_)                 \
+#define HAL_BREAKPOINT(_label_)                \
 asm volatile (" .globl  " #_label_ ";"         \
               #_label_":"                      \
               " .word 0xE7FFDEFE"              \

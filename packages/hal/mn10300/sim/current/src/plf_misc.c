@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//      var_misc.c
+//      plf_misc.c
 //
-//      HAL CPU variant miscellaneous functions
+//      HAL platform miscellaneous functions
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -31,7 +31,7 @@
 //
 // Author(s):    nickg
 // Contributors: nickg, jlarmour
-// Date:         1999-01-21
+// Date:         1999-09-09
 // Purpose:      HAL miscellaneous functions
 // Description:  This file contains miscellaneous functions provided by the
 //               HAL.
@@ -43,47 +43,24 @@
 #include <pkgconf/hal.h>
 
 #include <cyg/infra/cyg_type.h>         // Base types
-#include <cyg/infra/cyg_trac.h>         // tracing macros
-#include <cyg/infra/cyg_ass.h>          // assertion macros
 
-#include <cyg/hal/hal_cache.h>
+#include <cyg/hal/hal_arch.h>           // architectural definitions
 
 /*------------------------------------------------------------------------*/
-/* Variant specific initialization routine.                               */
 
-void hal_variant_init(void)
+void hal_platform_init(void)
 {
+    /* Nothing to do here */
 }
 
 /*------------------------------------------------------------------------*/
-/* Cache functions.                                                       */
+/* Control C ISR support                                                  */
 
-#if !defined(CYG_HAL_MN10300_AM31_SIM)
-void cyg_hal_dcache_store(CYG_ADDRWORD base, int size)
-{
-    volatile register CYG_BYTE *way0 = HAL_DCACHE_PURGE_WAY0;
-    volatile register CYG_BYTE *way1 = HAL_DCACHE_PURGE_WAY1;
-    register int i;
-    register CYG_ADDRWORD state;
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
 
-    HAL_DCACHE_IS_ENABLED(state);
-    if (state)
-        HAL_DCACHE_DISABLE();
+struct Hal_SavedRegisters *hal_saved_interrupt_state;
 
-    way0 += base & 0x000007f0;
-    way1 += base & 0x000007f0;
-    for( i = 0; i < size; i += HAL_DCACHE_LINE_SIZE )
-    {
-        *(CYG_ADDRWORD *)way0 = 0;
-        *(CYG_ADDRWORD *)way1 = 0;
-        way0 += HAL_DCACHE_LINE_SIZE;
-        way1 += HAL_DCACHE_LINE_SIZE;
-    }
-    if (state)
-        HAL_DCACHE_ENABLE();
-}
 #endif
 
-
 /*------------------------------------------------------------------------*/
-/* End of var_misc.c                                                      */
+/* End of plf_misc.c                                                      */

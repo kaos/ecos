@@ -120,17 +120,11 @@
         .section ".vectors","ax"
 
 #---------------------------------------------------------------------------
-# Unused first vector.
+# Unused first vector. Jump to special handler, trapping null-pointer calls.
 
-rom_vectors:    
-        lwi     r3,_start
-        mtlr    r3
-        blr
-                
-        .byte   0x11
-        .byte   0x22
-        .byte   0x33
-        .byte   0x44
+rom_vectors:
+        .extern hal_null_call
+        b       hal_null_call
         
 #---------------------------------------------------------------------------
 # Reset vector. 

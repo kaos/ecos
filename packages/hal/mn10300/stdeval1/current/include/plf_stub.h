@@ -44,7 +44,7 @@
 //=============================================================================
 
 #include <pkgconf/hal.h>
-#include <pkgconf/hal_mn10300_stdeval1.h>
+#include <pkgconf/hal_mn10300_am31_stdeval1.h>
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 

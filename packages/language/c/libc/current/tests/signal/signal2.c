@@ -241,6 +241,8 @@ main( int argc, char *argv[] )
     // See linux.S for details.
 #elif defined(CYGPKG_HAL_POWERPC)
     CYG_TEST_PASS("Test 3 not applicable to PowerPC");
+#elif defined(CYGPKG_HAL_ARM)
+    CYG_TEST_PASS("Test 3 not applicable to ARM");
 #else
 
     if (0==setjmp(jbuf)) {

@@ -248,7 +248,8 @@ led_foo3:	.byte 0x00
 	hal_mon_init_vsr
 	.endm
 
-#if defined(CYG_HAL_STARTUP_ROM)
+#if defined(CYG_HAL_STARTUP_ROM) ||		\
+    defined(CYGPKG_HAL_MN10300_AM31_SIM)
 	.macro	hal_mon_init_vectors
 	mov	_mn10300_interrupt_vectors,a0
 	mov	__hardware_vector_0,d0
@@ -301,8 +302,8 @@ led_foo3:	.byte 0x00
 	.endm
 #endif
 
-#if !(defined(CYG_HAL_STARTUP_ROM)	|| \
-	defined(CYG_HAL_MN10300_SIM)	|| \
+#if !(defined(CYG_HAL_STARTUP_ROM)	 	|| \
+	defined(CYGPKG_HAL_MN10300_AM31_SIM)	|| \
 	!defined(CYG_HAL_USE_ROM_MONITOR))
 
 #define CYG_HAL_MN10300_VSR_TABLE_DEFINED

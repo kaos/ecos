@@ -511,4 +511,14 @@ hal_enable_caches(void)
 }
 
 //---------------------------------------------------------------------------
+//A jump via a null pointer causes the CPU to end up here.
+externC void
+hal_null_call()
+{
+    
+    CYG_FAIL("Call via NULL-pointer!");
+    for(;;);
+}
+
+//---------------------------------------------------------------------------
 // End of hal_misc.c

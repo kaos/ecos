@@ -69,7 +69,7 @@
            using powerpc-eabi-gdb."
    }
 
-   cdl_option CYGHWR_HAL_POWERPC_MBX_BOARD_SPEED {
+   cdl_option CYGHWR_HAL_POWERPC_BOARD_SPEED {
        display          "Development board clock speed (MHz)"
        parent           CYGPKG_HAL_POWERPC_MBX
        #type             count
@@ -96,6 +96,8 @@
 // Period is busclock/16/100.
 #define CYGNUM_HAL_RTC_NUMERATOR     1000000000
 #define CYGNUM_HAL_RTC_DENOMINATOR   100
+
+# define CYGHWR_HAL_POWERPC_MBX_BOARD_SPEED CYGHWR_HAL_POWERPC_BOARD_SPEED
 
 #if 40 == CYGHWR_HAL_POWERPC_MBX_BOARD_SPEED
 # define CYGNUM_HAL_RTC_PERIOD        25000

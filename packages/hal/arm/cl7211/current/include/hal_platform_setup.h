@@ -50,7 +50,7 @@
 
 #define CYGHWR_HAL_ARM_HAS_MMU        // This processor has an MMU
 
-#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_STUBS) 
+#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_STUBS)
 
 //
 // Memory map - set up by ROM (GDB stubs)
@@ -69,14 +69,12 @@
 //   ROM           0xF0000000..0xFFFFFFFF        0x10000000
 
 #ifdef CYGHWR_HAL_ARM_CL7211_LCD_INSTALLED
-#define MMU_BASE         0xC0020000
-#define PTE_BASE         0xC0024000
 #define LCD_BUFFER_SIZE  0x00020000
 #else
-#define MMU_BASE         0xC0000000
-#define PTE_BASE         0xC0004000
 #define LCD_BUFFER_SIZE  0x00000000
 #endif
+#define MMU_BASE         0xC0000000+LCD_BUFFER_SIZE
+#define PTE_BASE         0xC0004000+LCD_BUFFER_SIZE
 #if (CYGHWR_HAL_ARM_CL7211_DRAM_SIZE == 2)
 #define MMU_TABLES_SIZE  0x4000+0x1000+0x1000     // RAM used for PTE entries
 #define DRAM_LA_END      0x00200000-MMU_TABLES_SIZE
@@ -91,6 +89,7 @@
 #define LCD_PA           0xC0000000
 #define ROM0_LA_START    0xE0000000
 #define ROM0_PA          0x00000000
+#define ROM0_LA_END      0xF0000000
 #define ROM1_LA_START    0xF0000000
 #define ROM1_LA_END      0x00000000
 #define ROM1_PA          0x10000000
@@ -290,7 +289,7 @@
 	add	r3,r3,r7                                                                ;\
 	cmp	r3,r4                                                                   ;\
 	bne	10b                                                                     ;\
-/* EXPANSION2, EXNAPSION3, PCMCIA0, PCMCIA1 */                                          ;\
+/* EXPANSION2, EXPANSION3, PCMCIA0, PCMCIA1 */                                          ;\
 	ldr	r3,=EXPANSION2_LA_START                                                 ;\
 	ldr	r4,=SRAM_LA_START                                                       ;\
 	ldr	r5,=EXPANSION2_PA                                                       ;\
@@ -368,11 +367,23 @@
 	add	r3,r3,r7                                                                ;\
 	cmp	r3,r4                                                                   ;\
 	bne	10b                                                                     ;\
-/* ROM0, ROM1 */                                                                        ;\
+/* ROM0 */                                                                              ;\
 	ldr	r3,=ROM0_LA_START                                                       ;\
-	ldr	r4,=ROM1_LA_END                                                         ;\
+	ldr	r4,=ROM0_LA_END                                                         ;\
 	ldr	r5,=ROM0_PA                                                             ;\
 	ldr	r6,=MMU_L1_TYPE_Section|MMU_AP_Any|MMU_Cacheable                        ;\
+	ldr	r7,=MMU_SECTION_SIZE                                                    ;\
+10:	orr	r0,r5,r6                                                                ;\
+	str	r0,[r1],#4                                                              ;\
+	add	r5,r5,r7                                                                ;\
+	add	r3,r3,r7                                                                ;\
+	cmp	r3,r4                                                                   ;\
+	bne	10b                                                                     ;\
+/* ROM1 */                                                                              ;\
+	ldr	r3,=ROM1_LA_START                                                       ;\
+	ldr	r4,=ROM1_LA_END                                                         ;\
+	ldr	r5,=ROM1_PA                                                             ;\
+	ldr	r6,=MMU_L1_TYPE_Section|MMU_AP_Any                                      ;\
 	ldr	r7,=MMU_SECTION_SIZE                                                    ;\
 10:	orr	r0,r5,r6                                                                ;\
 	str	r0,[r1],#4                                                              ;\

@@ -80,16 +80,35 @@
 /* #undef DEATH_TIME_LIMIT */
 
 // STACK_SIZE is typical +2kB for printf family calls which use big
-// auto variables.
+// auto variables. Add more for handler which calls perform_stressful_tasks()
 #define STACK_SIZE (2*1024 + CYGNUM_HAL_STACK_SIZE_TYPICAL)
-#define STACK_SIZE2 (8*1024 + CYGNUM_HAL_STACK_SIZE_TYPICAL)
+#define STACK_SIZE_HANDLER (4*1024 + CYGNUM_HAL_STACK_SIZE_TYPICAL)
 
-// The number of instances in each thread class
 #define N_MAIN 1
+
+//-----------------------------------------------------------------------
+// Some targets need to define a smaller number of handlers due to
+// memory restrictions.
+#ifdef CYGPKG_HAL_ARM_AEB
+#define MAX_HANDLERS 4
+#define N_LISTENERS 1
+#define N_CLIENTS 1
+#define N_THREADS (N_MAIN+MAX_HANDLERS+N_LISTENERS+N_CLIENTS)
+
+#undef STACK_SIZE
+#undef STACK_SIZE_HANDLER
+#define STACK_SIZE (1024 + CYGNUM_HAL_STACK_SIZE_TYPICAL)
+#define STACK_SIZE_HANDLER (1024 + CYGNUM_HAL_STACK_SIZE_TYPICAL)
+#endif
+
+//-----------------------------------------------------------------------
+// If no target specific definitions, use defaults
+#ifndef MAX_HANDLERS
 #define MAX_HANDLERS 19
 #define N_LISTENERS 4
 #define N_CLIENTS 4
 #define N_THREADS (N_MAIN+MAX_HANDLERS+N_LISTENERS+N_CLIENTS)
+#endif
 
 /* Allocate priorities in this order. This ensures that handlers
    (which are the ones using the CPU) get enough CPU time to actually
@@ -117,7 +136,7 @@ cyg_thread client_thread_s[N_CLIENTS];
 
 /* space for stacks for all threads */
 char main_stack[STACK_SIZE];
-char handler_stack[MAX_HANDLERS][STACK_SIZE2];
+char handler_stack[MAX_HANDLERS][STACK_SIZE_HANDLER];
 char listener_stack[N_LISTENERS][STACK_SIZE];
 char client_stack[N_CLIENTS][STACK_SIZE];
 
@@ -272,7 +291,7 @@ main(void)
     if (cyg_test_is_simulator) {
         time_report_delay = 2;
     } else {
-        time_report_delay = 30;
+        time_report_delay = 60;
     }
 
     cyg_alarm_initialize(report_alarmH, cyg_current_time()+200, 
@@ -397,7 +416,7 @@ void listener_program(cyg_addrword_t data)
             sc_thread_create(prio, handler_program,
                              (cyg_addrword_t) handler_slot,
                              name, (void *) handler_stack[handler_slot],
-                             STACK_SIZE2, &handlerH[handler_slot],
+                             STACK_SIZE_HANDLER, &handlerH[handler_slot],
                              &handler_thread_s[handler_slot]);
             cyg_thread_resume(handlerH[handler_slot]);
             ++statistics.handler_invocation_histogram[handler_slot];
@@ -601,19 +620,51 @@ void sc_thread_create(
 }
 
 
+#define MINS_HOUR (60)
+#define MINS_DAY  (60*24)
+externC void *cyg_libc_get_pool( void );
+
 void print_statistics(int print_full)
 {
     int i;
+    static int stat_dumps = 0;
     static int print_count = 0;
+    static int shift_count = 0;
+    int minutes;
 
-    printf("State dump %d (time %02d.%02d.%02d)\n",
-           print_count,
-           print_count*time_report_delay / (60*60),   // hours
-           (print_count*time_report_delay / 60) % 60, // minutes
-           (print_count*time_report_delay ) % 60); // seconds
-    print_count++;
+    stat_dumps++;
+
+    // Find number of minutes.
+    minutes = time_report_delay*stat_dumps / 60;
+
+    if (!print_full) {
+        // Return if time/minutes not integer.
+        if ((time_report_delay*stat_dumps % 60) != 0)
+            return;
+
+        // After the first day, only dump stat once per day. Do print
+        // a . on the hour though.
+        if ((minutes > MINS_DAY) && ((minutes % MINS_DAY) != 0)) {
+            if ((minutes % MINS_HOUR) == 0)
+                printf(".");
+            return;
+        }
+
+        // After the first hour of the first day, only dump stat once
+        // per hour. Do print . each minute though.
+        if ((minutes < MINS_DAY) && (minutes > MINS_HOUR)
+            && ((minutes % MINS_HOUR) != 0)) {
+            printf(".");
+            return;
+        }
+    }
+
+    printf("\nState dump %d (%d hours, %d minutes) [numbers >>%d]\n",
+           ++print_count, minutes / MINS_HOUR, minutes, shift_count);
 
     cyg_mutex_lock(&statistics_print_lock); {
+        //--------------------------------
+        // Information private to this test:
         printf(" Handler-invocations: ");
         for (i = 0; i < MAX_HANDLERS; ++i) {
             printf("%4lu ", statistics.handler_invocation_histogram[i]);
@@ -622,12 +673,53 @@ void print_statistics(int print_full)
         printf(" malloc()-tries/failures: -- %7lu %7lu\n",
                statistics.malloc_tries, statistics.malloc_failures);
         printf(" client_makes_request:       %d\n", client_makes_request);
+
+        // Check for big numbers and reduce if getting close to overflow
+        if (statistics.malloc_tries > 0x40000000) {
+            shift_count++;
+            for (i = 0; i < MAX_HANDLERS; ++i) {
+                statistics.handler_invocation_histogram[i] >>= 1;
+            }
+            statistics.malloc_tries >>= 1;
+            statistics.malloc_failures >>= 1;
+        }
+
+        //--------------------------------
+        // System information
+#if 0
+        // We want to (occasionally) pause the test so all memory is
+        // freed. Otherwise it's hard to tell if there's a malloc
+        // leak.
+        {
+            cyg_mempool_info mem_info;
+
+            cyg_mempool_var_get_info((cyg_handle_t) cyg_libc_get_pool(), 
+                                     &mem_info);
+            printf(" Memory system: Total=0x%08x Free=0x%08x Max=0x%08x\n", 
+                   mem_info.totalmem, mem_info.freemem, mem_info.maxfree);
+        }
+#endif
+
     } cyg_mutex_unlock(&statistics_print_lock);
 
-    // Add: Also occasionally dump individual threads' stack status.
-    if (0 == print_count % 5 || print_full) {
-        cyg_test_dump_interrupt_stack_stats( " Status" );
-        cyg_test_dump_idlethread_stack_stats( " Status" );
+    // Dump stack status
+    printf(" Stack usage:\n");
+    cyg_test_dump_interrupt_stack_stats( "  Interrupt" );
+    cyg_test_dump_idlethread_stack_stats( "  Idle" );
+
+    cyg_test_dump_stack_stats("  Main", main_stack, 
+                              main_stack + sizeof(main_stack));
+    for (i = 0; i < MAX_HANDLERS; i++) {
+        cyg_test_dump_stack_stats("  Handler", handler_stack[i], 
+                                  handler_stack[i] + sizeof(handler_stack[i]));
+    }
+    for (i = 0; i < N_LISTENERS; i++) {
+        cyg_test_dump_stack_stats("  Listener", listener_stack[i], 
+                                  listener_stack[i] + sizeof(listener_stack[i]));
+    }
+    for (i = 0; i < N_CLIENTS; i++) {
+        cyg_test_dump_stack_stats("  Client", client_stack[i], 
+                                  client_stack[i] + sizeof(client_stack[i]));
     }
 }
 

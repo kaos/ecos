@@ -218,6 +218,14 @@ _realloc( void *ptr, size_t size )
     return ret_ptr;
 } // _realloc()
 
+
+// Allows stress_threads test to access memory pool information.
+externC void *
+cyg_libc_get_malloc_pool( void )
+{
+    return (void*) &pool;
+}
+
 #endif // ifdef CYGPKG_LIBC_MALLOC
 
 // EOF malloc.cxx

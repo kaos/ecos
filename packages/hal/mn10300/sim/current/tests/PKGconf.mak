@@ -28,7 +28,7 @@
 #####COPYRIGHTEND####
 #===============================================================================
 
-PACKAGE       := hal_mn10300_sim
+PACKAGE       := hal_mn10300_am31_sim
 include ../../../../../pkgconf/pkgconf.mak
 
 TESTS	      := 

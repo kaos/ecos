@@ -35,7 +35,7 @@
 // Contributors: gthomas
 // Date:         1999-04-21
 // Purpose:      Define Interrupt support
-// Description:  The interrupt details for the CL7211 are defined here.
+// Description:  The interrupt details for the CL7xxx are defined here.
 // Usage:
 //               #include <cyg/hal/hal_platform_ints.h>
 //               ...
@@ -72,10 +72,10 @@
 #endif
 
 #define CYGNUM_HAL_ISR_MIN              0
-#if defined(__CL7211)
-#define CYGNUM_HAL_ISR_MAX              22
-#else
+#if defined(__CL7111)
 #define CYGNUM_HAL_ISR_MAX              21
+#else
+#define CYGNUM_HAL_ISR_MAX              22
 #endif
 #define CYGNUM_HAL_ISR_COUNT            (CYGNUM_HAL_ISR_MAX+1)
 

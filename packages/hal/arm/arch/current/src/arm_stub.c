@@ -32,6 +32,7 @@
 #define TRUE  1
 #endif
 
+
 #ifdef CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
 #include <cyg/hal/dbg-threads-api.h>    // dbg_currthread_id
 #endif
@@ -40,7 +41,16 @@
 
 int __computeSignal (unsigned int trap_number)
 {
+    // should also catch CYGNUM_HAL_VECTOR_UNDEF_INSTRUCTION here but we
+    // can't tell the different between a real one and a breakpoint :-(
     switch (trap_number) {
+    case CYGNUM_HAL_VECTOR_ABORT_PREFETCH:      // Fall through
+    case CYGNUM_HAL_VECTOR_ABORT_DATA:          // Fall through
+    case CYGNUM_HAL_VECTOR_reserved:
+        return SIGBUS;
+    case CYGNUM_HAL_VECTOR_IRQ:
+    case CYGNUM_HAL_VECTOR_FIQ:
+        return SIGINT;
     default:
         return SIGTRAP;
     }
@@ -48,12 +58,12 @@ int __computeSignal (unsigned int trap_number)
 
 
 /* Return the trap number corresponding to the last-taken trap. */
-
+volatile int jifl;
 int __get_trap_number (void)
 {
     // The vector is not not part of the GDB register set so get it
     // directly from the save context.
-    return _hal_registers->vector >> 8;
+    return _hal_registers->vector;
 }
 
 /* Set the currently-saved pc register value to PC. This also updates NPC
@@ -76,6 +86,7 @@ void set_pc (target_register_t pc)
 #define NULL_PTR (unsigned long *)0
 static unsigned long *ss_saved_pc = NULL_PTR;
 static unsigned long ss_saved_instr;
+
 
 #define FIXME() {diag_printf("FIXME - %s\n", __FUNCTION__); }
 
@@ -390,5 +401,6 @@ void __skipinst (void)
 {
     put_register (PC, get_register (PC) + 4);
 }
+
 
 #endif // CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS

@@ -1,3 +1,7 @@
+1999-09-02  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/quicc_smc1.c (init_smc1_uart): Generalize baud rate computation.
+
 1999-09-01  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/ppc8xx.h: Add some missing definitions (MAR, MBMR).

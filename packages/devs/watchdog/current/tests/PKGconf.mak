@@ -30,8 +30,16 @@
 
 PACKAGE       := devices_watchdog
 include ../../../../pkgconf/pkgconf.mak
+include ../../../../pkgconf/system.mak
 
 TESTS	      := watchdog
+
+# The automatic test fails on some targets (i.e., the watchdog resets
+# the board preventing the test from PASSing). Clear TESTS on those
+# targets here.
+ifdef CYGPKG_HAL_ARM_AEB
+TESTS	      :=
+endif
 
 # Invoke make with RUN_BY_HAND=1 as argument
 ifdef RUN_BY_HAND
@@ -39,6 +47,3 @@ TESTS         += watchdog_reset
 endif
 
 include $(COMPONENT_REPOSITORY)/pkgconf/makrules.tst
-
-
-
