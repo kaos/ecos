@@ -87,7 +87,7 @@ cdl_package CYGPKG_DEVS_ETH_MIPS_RM7000_OCELOT {
         cdl_component CYGSEM_DEVS_ETH_MIPS_RM7000_OCELOT_ETH0_SET_ESA {
             display       "Set the ethernet station address"
             flavor        bool
-            calculated    1
+            default_value 0
             description   "Enabling this option will allow the ethernet
             station address to be forced to the value set by the
             configuration.  This may be required if the hardware does

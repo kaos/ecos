@@ -96,7 +96,6 @@ CdlReference::CdlReference(const std::string dest_arg)
 {
     CYG_REPORT_FUNCNAME("CdlReference:: constructor");
     CYG_REPORT_FUNCARG1("this %p", this);
-    CYG_PRECONDITIONC("" != dest_arg);
     
     dest_name           = dest_arg;
     dest                = 0;

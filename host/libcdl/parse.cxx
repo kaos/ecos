@@ -801,7 +801,8 @@ CdlParse::parse_string_property(CdlInterpreter interp, int argc, char** argv, st
         }
         throw;
     }
-    
+
+    CYG_REPORT_RETURN();
     return TCL_OK;
 }
 
@@ -901,7 +902,7 @@ CdlParse::parse_stringvector_property(CdlInterpreter interp, int argc, char** ar
 int
 CdlParse::parse_reference_property(CdlInterpreter interp, int argc, char** argv, std::string name,
                                    char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_Reference),
-                                   CdlUpdateHandler update_handler)
+                                   bool allow_empty, CdlUpdateHandler update_handler)
 {
     CYG_REPORT_FUNCNAME("parse_reference_property");
     CYG_PRECONDITION_CLASSC(interp);
@@ -917,7 +918,7 @@ CdlParse::parse_reference_property(CdlInterpreter interp, int argc, char** argv,
             CdlParse::report_property_parse_error(interp, argv[0], "Too many arguments, expecting just one.");
         } else {
             std::string refname = argv[data_index];
-            if (!Cdl::is_valid_cdl_name(refname)) {
+            if (!(Cdl::is_valid_cdl_name(refname) || (allow_empty && ("" == refname)))) {
                 CdlParse::report_property_parse_error(interp, argv[0], "`" + refname + "' is not a valid CDL name");
             } else {
                 CdlNode current_node = interp->get_node();

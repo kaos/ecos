@@ -53,25 +53,19 @@ endif
 %.o.d : %.c
 	@mkdir -p $(dir $@)
 	$(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -Wp,-MD,$(@:.o.d=.tmp) -o $(dir $@)$(OBJECT_PREFIX)_$(notdir $(@:.o.d=.o)) $<
-	@echo $@ ':' $< '\' > $@
-	@tail +2 $(@:.o.d=.tmp) >> $@
-	@echo >> $@
+	@sed -e '/^ *\\/d' -e "s#.*: #$@: #" $(@:.o.d=.tmp) > $@
 	@rm $(@:.o.d=.tmp)
 
 %.o.d : %.cxx
 	@mkdir -p $(dir $@)
 	$(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -Wp,-MD,$(@:.o.d=.tmp) -o $(dir $@)$(OBJECT_PREFIX)_$(notdir $(@:.o.d=.o)) $<
-	@echo $@ ':' $< '\' > $@
-	@tail +2 $(@:.o.d=.tmp) >> $@
-	@echo >> $@
+	@sed -e '/^ *\\/d' -e "s#.*: #$@: #" $(@:.o.d=.tmp) > $@
 	@rm $(@:.o.d=.tmp)
 
 %.o.d : %.S
 	@mkdir -p $(dir $@)
 	$(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -Wp,-MD,$(@:.o.d=.tmp) -o $(dir $@)$(OBJECT_PREFIX)_$(notdir $(@:.o.d=.o)) $<
-	@echo $@ ':' $< '\' > $@
-	@tail +2 $(@:.o.d=.tmp) >> $@
-	@echo >> $@
+	@sed -e '/^ *\\/d' -e "s#.*: #$@: #" $(@:.o.d=.tmp) > $@
 	@rm $(@:.o.d=.tmp)
 
 # pattern matching rules to generate a test object from source code
@@ -80,25 +74,19 @@ endif
 %.d : %.c
 	@mkdir -p $(dir $@)
 	$(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -Wp,-MD,$(@:.d=.tmp) -o $(@:.d=.o) $<
-	@echo $@ ':' $< '\' > $@
-	@tail +2 $(@:.d=.tmp) >> $@
-	@echo >> $@
+	@sed -e '/^ *\\/d' -e "s#.*: #$@: #" $(@:.o.d=.tmp) > $@
 	@rm $(@:.d=.tmp)
 
 %.d : %.cxx
 	@mkdir -p $(dir $@)
 	$(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -Wp,-MD,$(@:.d=.tmp) -o $(@:.d=.o) $<
-	@echo $@ ':' $< '\' > $@
-	@tail +2 $(@:.d=.tmp) >> $@
-	@echo >> $@
+	@sed -e '/^ *\\/d' -e "s#.*: #$@: #" $(@:.o.d=.tmp) > $@
 	@rm $(@:.d=.tmp)
 
 %.d : %.S
 	@mkdir -p $(dir $@)
 	$(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -Wp,-MD,$(@:.d=.tmp) -o $(@:.d=.o) $<
-	@echo $@ ':' $< '\' > $@
-	@tail +2 $(@:.d=.tmp) >> $@
-	@echo >> $@
+	@sed -e '/^ *\\/d' -e "s#.*: #$@: #" $(@:.o.d=.tmp) > $@
 	@rm $(@:.d=.tmp)
 
 # rule to generate a test executable from object code

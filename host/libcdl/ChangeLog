@@ -1,3 +1,36 @@
+2001-06-21  Bart Veer  <bartv@redhat.com>
+
+	<merge of development work>
+	* base.cxx, cdlcore.hxx, property.cxx, parse.cxx, value.cxx, refer.cxx:
+	Allow an empty string to be used for parent properties, implying
+	reparenting below the root
+
+	* expr.cxx, cdlcore.hxx, infer.cxx:
+	Add support for new operators implies, xor and eqv
+
+	* func.cxx:
+	Add new function is_xsubstr(), is_loaded(), is_active(),
+	is_enabled(), get_data() and version_cmp()
+
+	* doc/main.sgml: 
+	Add 2001 to copyright year.
+	
+	* doc/language.sgml, doc/reference.sgml:
+	Document the above changes
+
+	* doc/*.html:
+	Regenerate following above changes, and using newer stylesheets
+	etc. 
+
+2001-06-20  Bart Veer  <bartv@redhat.com>
+
+	* database.cxx, cdl.hxx:
+	
+	Add a verbosity flag to control whether or not certain warnings
+	are issued. The main warnings of interest are inconsistencies
+	between the database and the repository, e.g. packages listed
+	but not actually installed, as can happen in anoncvs checkouts.
+
 2001-05-16  Bart Veer  <bartv@redhat.com>
 
 	* Makefile.am: use new compiler flag support

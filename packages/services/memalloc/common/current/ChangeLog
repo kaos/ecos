@@ -1,3 +1,26 @@
+2001-06-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/mvarimpl.inl (get_status): Correct calculation of maxfree
+	by taking into account metadata.
+
+2001-06-18  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/memalloc.cdl: Add heaptest test.
+
+	* tests/heaptest.c: New test to do a memory check of all of heap.
+
+	* src/dlmalloc.cxx (get_status): Correct maxfree and totalfree
+	by accounting for block headers.
+
+	* tests/realloc.c (cyg_start): Remove warning from declaration.
+	* tests/malloc1.c (cyg_start): Ditto.
+	* tests/malloc2.c (cyg_start): Ditto.
+	* tests/malloc3.c (cyg_start): Ditto.
+	* tests/malloc4.cxx (cyg_start): Ditto. Also add DEBUGTEST define
+	and fix comment.
+
+	* tests/testaux.hxx (STACKSIZE): Double.
+
 2001-05-02  Hugo Tyson  <hmt@redhat.com>
 
 	* src/dlmalloc.cxx (Cyg_Mempool_dlmalloc_Implementation): Fix

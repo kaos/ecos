@@ -1579,6 +1579,11 @@ class CdlEvalContext {
 
     CdlEvalContext(CdlTransaction, CdlNode = 0, CdlProperty = 0, CdlToplevel = 0);
     ~CdlEvalContext();
+
+    // Given a reference inside an expression, try to resolve this to either
+    // a node or, more specifically, a valuable.
+    CdlNode             resolve_reference(CdlExpression, int);
+    CdlValuable         resolve_valuable_reference(CdlExpression, int);
     
     bool                check_this(cyg_assert_class_zeal = cyg_quick) const;
     CYGDBG_DECLARE_MEMLEAK_COUNTER();
@@ -2128,7 +2133,10 @@ enum CdlExprOp {
     CdlExprOp_And               = 32,   // x && y
     CdlExprOp_Or                = 33,   // x || y
     CdlExprOp_Cond              = 34,   // x ? a : b
-    CdlExprOp_StringConcat      = 35    // x . y
+    CdlExprOp_StringConcat      = 35,   // x . y
+    CdlExprOp_Implies           = 36,   // x implies y
+    CdlExprOp_Xor               = 37,   // x xor y
+    CdlExprOp_Eqv               = 38    // x eqv y
 };
 
 // ----------------------------------------------------------------------------
@@ -3314,6 +3322,8 @@ class CdlParse {
     static int          get_error_count(CdlInterpreter);
     static void         incr_error_count(CdlInterpreter, int=1);
 
+    static std::string  get_expression_error_location(void);
+    
     // Support for Tcl's "unknown" command
     static int          unknown_command(CdlInterpreter, int, char**);
     
@@ -3335,6 +3345,7 @@ class CdlParse {
                                             bool /* allow_empty */ = false);
     static int  parse_reference_property(CdlInterpreter, int, char**, std::string,
                                          char**, void (*)(CdlInterpreter, CdlProperty_Reference),
+                                         bool /* allow_empty */,
                                          CdlUpdateHandler);
     static int  parse_expression_property(CdlInterpreter, int, char**, std::string, 
                                           char **, void (*)(CdlInterpreter, CdlProperty_Expression),

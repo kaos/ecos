@@ -1,3 +1,12 @@
+2001-06-19  Hugo Tyson  <hmt@redhat.com>
+
+	* src/flash.c (flash_program): Only verify program with memcmp if
+	the status code suggests the programming went OK so far.
+	Otherwise all errors become verify errors.
+
+	(flash_init): Fix bug in removal of dependency of printf().  The
+	pointer was not initialized until after the call into the driver.
+
 2001-06-11  Gary Thomas  <gthomas@redhat.com>
 
 	* src/flash.c: 

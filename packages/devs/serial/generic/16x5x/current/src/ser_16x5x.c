@@ -93,7 +93,7 @@
 #define LCR_SB1_5 0x04  // 1.5 -> only valid with 5 bit words
 #define LCR_SB2 0x04
 #define LCR_PN  0x00    // Parity mode - none
-#define LCR_PE  0x0C    // Parity mode - even
+#define LCR_PE  0x18    // Parity mode - even
 #define LCR_PO  0x08    // Parity mode - odd
 #define LCR_PM  0x28    // Forced "mark" parity
 #define LCR_PS  0x38    // Forced "space" parity
@@ -416,7 +416,7 @@ pc_serial_set_config(serial_channel *chan, cyg_uint32 key, const void *xbuf,
           cyg_addrword_t base = ser_chan->base;
           cyg_uint8 *f = (cyg_uint8 *)xbuf;
           unsigned char mask=0;
-          if ( *len < *f )
+          if ( *len < sizeof(*f) )
               return -EINVAL;
           
           if ( chan->config.flags & CYGNUM_SERIAL_FLOW_RTSCTS_RX )

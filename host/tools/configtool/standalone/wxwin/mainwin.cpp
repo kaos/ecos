@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/24
-// Version:     $Id: mainwin.cpp,v 1.42 2001/05/16 16:08:24 julians Exp $
+// Version:     $Id: mainwin.cpp,v 1.43 2001/06/18 14:41:13 julians Exp $
 // Purpose:
 // Description: Implementation file for the ConfigTool main window
 // Requires:
@@ -1508,7 +1508,11 @@ void ecMainFrame::OnBuildTests(wxCommandEvent& event)
 void ecMainFrame::OnStopBuild(wxCommandEvent& event)
 {
     if (wxGetApp().m_pipedProcess)
+    {
+        long pid = wxGetApp().m_pipedProcess->GetPid();
         wxGetApp().m_pipedProcess->Detach();
+        ecKill(pid, wxSIGKILL);
+    }
 }
 
 void ecMainFrame::OnClean(wxCommandEvent& event)

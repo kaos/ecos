@@ -1416,6 +1416,7 @@ i82559_init(struct cyg_netdevtab_entry * ndp)
                 }
             }
 
+#ifndef CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM_WITHOUT_CRC
             // If the EEPROM checksum is wrong, the MAC address read
             // from the EEPROM is probably wrong as well. In that
             // case, we don't set mac_addr_ok, but continue the
@@ -1430,7 +1431,9 @@ i82559_init(struct cyg_netdevtab_entry * ndp)
                 os_printf("Warning: Invalid EEPROM checksum %04X for device %d\n",
                           checksum, p_i82559->index);
 #endif
-            } else {
+            } else // trailing block
+#endif
+            {
                 p_i82559->mac_addr_ok = 1;
 #ifdef DEBUG_EE
                 os_printf("Valid EEPROM checksum\n");

@@ -1,3 +1,8 @@
+2001-06-18  Julian Smart <julians@redhat.com>
+
+    * Added possible fix for Tcl crash bug under Windows 9x, by
+    using the wxWindows Mkdir function instead of Tcl's mkdir.
+
 2001-06-04  Julian Smart <julians@redhat.com>
 
     * Changed cygpath in build.cxx to use /cygdrive notation,

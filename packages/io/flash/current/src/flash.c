@@ -68,6 +68,7 @@ flash_init(void *work_space, int work_space_size, _printf *pf)
     int err;
 
     if (flash_info.init) return FLASH_ERR_OK;
+    flash_info.pf = pf; // Do this before calling into the driver
     flash_info.work_space = work_space;
     flash_info.work_space_size = work_space_size;
     if ((err = flash_hwr_init()) != FLASH_ERR_OK) {
@@ -75,7 +76,6 @@ flash_init(void *work_space, int work_space_size, _printf *pf)
     }
     flash_info.block_mask = ~(flash_info.block_size-1);
     flash_info.init = 1;
-    flash_info.pf = pf;
     return FLASH_ERR_OK;
 }
 
@@ -255,10 +255,11 @@ flash_program(void *_addr, void *_data, int len, void **err_addr)
                                      flash_info.block_mask, flash_info.buffer_size);
         stat = flash_hwr_map_error(stat);
 #ifdef CYGSEM_IO_FLASH_VERIFY_PROGRAM
-        if (memcmp(addr, data, size) != 0) {
-            stat = 0x0BAD;
-            (*flash_info.pf)("V");
-        }
+        if (0 == stat) // Claims to be OK
+            if (memcmp(addr, data, size) != 0) {
+                stat = 0x0BAD;
+                (*flash_info.pf)("V");
+            }
 #endif
         if (stat) {
             *err_addr = (void *)addr;

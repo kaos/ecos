@@ -1619,9 +1619,9 @@ Cyg_Mempool_dlmalloc_Implementation::get_status(
             status.totalallocated = arenasize - avail;
         // as quick or quicker to just set most of these, rather than
         // test flag first
-        status.totalfree = avail;
+        status.totalfree = avail  - (2*SIZE_SZ) - MINSIZE;
         status.freeblocks = navail;
-        status.maxfree = maxfree;
+        status.maxfree = maxfree  - (2*SIZE_SZ) - MINSIZE;
     } // if
 
     // as quick or quicker to just set most of these, rather than

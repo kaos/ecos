@@ -1,3 +1,9 @@
+2001-06-22  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/time.cdl (CYGFUN_LIBC_TIME_SUS_EXTNS): Added.
+	* src/strftime.cxx (do_format): Added some Single UNIX
+	extensions.
+
 2001-04-25  Bart Veer  <bartv@redhat.com>
 
 	* tests/time.c (MAX_TIMEOUT):

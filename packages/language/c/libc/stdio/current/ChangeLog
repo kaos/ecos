@@ -1,3 +1,13 @@
+2001-06-18  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/input/fread.cxx (fread): Fix compilation problem with below
+	change.
+
+2001-06-15  Rob Jansen  <rwjansen@planet.nl>
+
+	* src/input/fread.cxx (fread): Changed to read the requested amount
+	of data items instead of stopping on CYG_LIBC_STDIO_BUFSIZE boundaries.
+
 2001-06-08  Jeff Johnston  <jjohnstn@redhat.com>
 
 	* src/input/vfscanf.cxx (vfscanf)[CYGINT_LIBC_I18N_MB_REQUIRED]: Added

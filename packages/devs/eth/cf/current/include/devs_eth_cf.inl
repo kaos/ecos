@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//      devs/eth/mips/ocelot/include/devs_eth_mips_rm7000_ocelot.inl
+//      devs_eth_cf.inl
 //
-//      Ocelot ethernet I/O definitions.
+//      CF (PCMCIA) ethernet I/O definitions.
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -33,77 +33,63 @@
 //
 // Author(s):   jskov
 // Contributors:jskov
-// Date:        2001-01-25
-// Purpose:     Ocelot ethernet defintions
+// Date:        2001-06-15
+// Purpose:     PCMCIA ethernet defintions
+//
 //####DESCRIPTIONEND####
 //==========================================================================
 
 #include <cyg/hal/hal_intr.h>           // CYGNUM_HAL_INTERRUPT_ETHR
+#include <cyg/hal/hal_if.h>
+#include <cyg/infra/cyg_type.h>
+#include <cyg/io/pcmcia.h>
 
-#ifdef CYGPKG_DEVS_ETH_MIPS_RM7000_OCELOT_ETH0
+#ifdef __WANT_CONFIG
 
-#ifndef CYGSEM_DEVS_ETH_MIPS_RM7000_OCELOT_ETH0_SET_ESA
-# define CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM 0
-# define CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM_WITHOUT_CRC
-#endif
+#undef CYGHWR_NS_DP83902A_PLF_INT_CLEAR
+#define CYGHWR_NS_DP83902A_PLF_INT_CLEAR(_dp_)                  \
+    CYG_MACRO_START                                             \
+    struct cf_slot* slot = (struct cf_slot*) (_dp_)->plf_priv;  \
+    cf_clear_interrupt(slot);                                   \
+    CYG_MACRO_END
 
-#define CYGHWR_INTEL_I82559_PCI_MEM_MAP_BASE (CYGARC_UNCACHED_ADDRESS(0x0ff00000))
-#define CYGHWR_INTEL_I82559_PCI_MEM_MAP_SIZE 0x00100000
+#endif // __WANT_CONFIG
 
-static I82559 i82559_eth0_priv_data = { 
-#ifdef CYGSEM_DEVS_ETH_MIPS_RM7000_OCELOT_ETH0_SET_ESA
-    hardwired_esa: 1,
-    mac_address: CYGDAT_DEVS_ETH_MIPS_RM7000_OCELOT_ETH0_ESA
+#ifdef __WANT_DEVS
+
+externC int cyg_sc_lpe_int_vector(struct eth_drv_sc *sc);
+externC bool cyg_sc_lpe_init(struct cyg_netdevtab_entry *tab);
+
+#ifdef CYGPKG_DEVS_ETH_CF_ETH0
+
+static dp83902a_priv_data_t dp83902a_eth0_priv_data = { 
+#ifdef CYGSEM_DEVS_ETH_CF_ETH0_SET_ESA
+    esa : CYGDAT_DEVS_ETH_CF_ETH0_ESA,
+    hardwired_esa : true,
 #else
-    hardwired_esa: 0,
+    hardwired_esa : false,
 #endif
 };
 
-ETH_DRV_SC(i82559_sc0,
-           &i82559_eth0_priv_data,      // Driver specific data
-           CYGDAT_DEVS_ETH_MIPS_RM7000_OCELOT_ETH0_NAME, // Name for device
-           i82559_start,
-           i82559_stop,
-           i82559_ioctl,
-           i82559_can_send,
-           i82559_send,
-           i82559_recv,
-           i82559_deliver,
-           i82559_poll,
-           i82559_int_vector
-    );
+ETH_DRV_SC(dp83902a_sc,
+           &dp83902a_eth0_priv_data, // Driver specific data
+           CYGDAT_DEVS_ETH_CF_ETH0_NAME,
+           dp83902a_start,
+           dp83902a_stop,
+           dp83902a_control,
+           dp83902a_can_send,
+           dp83902a_send,
+           dp83902a_recv,
+           dp83902a_deliver,     // "pseudoDSR" called from fast net thread
+           dp83902a_poll,        // poll function, encapsulates ISR and DSR
+           cyg_sc_lpe_int_vector);
 
-NETDEVTAB_ENTRY(i82559_netdev0, 
-                "i82559_" CYGDAT_DEVS_ETH_MIPS_RM7000_OCELOT_ETH0_NAME,
-                i82559_init, 
-                &i82559_sc0);
+NETDEVTAB_ENTRY(dp83902a_netdev, 
+                "dp83902a_" CYGDAT_DEVS_ETH_CF_ETH0_NAME,
+                cyg_sc_lpe_init, 
+                &dp83902a_sc);
+#endif // CYGPKG_DEVS_ETH_CF_ETH0
 
-#endif // CYGPKG_DEVS_ETH_MIPS_RM7000_OCELOT_ETH0
+#endif // __WANT_DEVS
 
-
-// These arrays are used for sanity checking of pointers
-I82559 *
-i82559_priv_array[CYGNUM_DEVS_ETH_INTEL_I82559_DEV_COUNT] = {
-#ifdef CYGPKG_DEVS_ETH_MIPS_RM7000_OCELOT_ETH0
-    &i82559_eth0_priv_data,
-#endif
-};
-
-#ifdef CYGDBG_USE_ASSERTS
-// These are only used when assertions are enabled
-cyg_netdevtab_entry_t *
-i82559_netdev_array[CYGNUM_DEVS_ETH_INTEL_I82559_DEV_COUNT] = {
-#ifdef CYGPKG_DEVS_ETH_MIPS_RM7000_OCELOT_ETH0
-    &i82559_netdev0,
-#endif
-};
-
-struct eth_drv_sc *
-i82559_sc_array[CYGNUM_DEVS_ETH_INTEL_I82559_DEV_COUNT] = {
-#ifdef CYGPKG_DEVS_ETH_MIPS_RM7000_OCELOT_ETH0
-    &i82559_sc0,
-#endif
-};
-#endif // CYGDBG_USE_ASSERTS
-
-// EOF devs_eth_mips_rm7000_ocelot.inl
+// EOF devs_eth_cf.inl

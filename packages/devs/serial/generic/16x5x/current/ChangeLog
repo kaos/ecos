@@ -1,3 +1,16 @@
+2001-06-19  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/ser_generic_16x5x.cdl: Only define
+	CYGDAT_IO_SERIAL_DEVICE_HEADER when necessary.
+
+2001-06-18  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/ser_16x5x.c (pc_serial_set_config): Fix length check typo
+
+2001-06-18  Jesper Skov  <jskov@masala.cambridge.redhat.com>
+
+	* src/ser_16x5x.c (LCR_PE): Set correct bits (from Boris V. Guzhov)
+
 2001-06-08  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/ser_16x5x.c: Support FIFOs better by detecting what we've got,

@@ -1,3 +1,8 @@
+2001-06-21  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* images/redboot*: Remove. Don't bloat repository with things already
+	on the web.
+
 2001-04-27  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/hal_arm_sa11x0_assabet.cdl: Remove redundant -Wl,-N from link

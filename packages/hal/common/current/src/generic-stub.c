@@ -143,7 +143,15 @@ memset(void* s, int c, int size)
 /************************************************************************/
 /* BUFMAX defines the maximum number of characters in inbound/outbound buffers*/
 /* at least NUMREGBYTES*2 are needed for register packets */
+#ifdef __ECOS__
+#ifdef NUMREGBYTES
+#define BUFMAX (32 + (NUMREGBYTES*2))
+#else
 #define BUFMAX 2048
+#endif
+#else
+#define BUFMAX 2048
+#endif
 
 static int initialized = 0;     /* !0 means we've been initialized */
 
@@ -1162,6 +1170,7 @@ __process_packet (char *packet)
 
     case 'A': /* set program arguments */
       {
+#ifdef CYGSEM_ECOS_SUPPORTS_PROGRAM_ARGS
         if (packet[1] == '\0')
           {
             __free_program_args ();
@@ -1202,6 +1211,9 @@ __process_packet (char *packet)
             else
               strcpy (remcomOutBuffer, "E01");
           }
+#else
+        strcpy (remcomOutBuffer, "E01");
+#endif
       }
       break;
 

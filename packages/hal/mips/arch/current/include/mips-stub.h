@@ -25,7 +25,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -54,7 +54,11 @@
 extern "C" {
 #endif
 
+#if defined(CYGPKG_HAL_MIPS_MIPS32)
+#define NUMREGS   107
+#else
 #define NUMREGS    90
+#endif
 
 #if defined(__mips64)
   // The simple case of 64-bit regs represented to GDB as 64-bit regs.

@@ -1,3 +1,7 @@
+2001-06-18  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/stdlib.cdl: requires string functions, so say so.
+
 2001-02-14  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/rand.cxx: Fix typo

@@ -34,7 +34,7 @@
 // Author(s):   jskov
 // Contributors:jskov
 // Date:        2000-10-30
-//              
+//
 //####DESCRIPTIONEND####
 //
 //=============================================================================
@@ -63,7 +63,7 @@
 #define CYGARC_REG_BRCR_PCBB            0x0040 // post execute channel B
 #define CYGARC_REG_BRCR_SEQ             0x0008 // sequence condition select
 
-#if (CYGARC_SH_MOD_UBC == 1)
+#if defined(CYGARC_SH_MOD_UBC) && (CYGARC_SH_MOD_UBC == 1)
 #define CYGARC_REG_BAMRA_BASMA          0x04   // BASRA masked
 #define CYGARC_REG_BAMRA_BARA_UNMASKED  0x00   // BARA not masked
 #define CYGARC_REG_BAMRA_BARA_10BIT     0x01   // Lowest 10 bit masked
@@ -85,7 +85,7 @@
 
 //----------------------------------------------------------------------------
 // Other types
-#if (CYGARC_SH_MOD_UBC >= 3)
+#if defined(CYGARC_SH_MOD_UBC) && (CYGARC_SH_MOD_UBC >= 3)
 #define CYGARC_REG_BETR                 0xffffff9c // 16 bit
 #define CYGARC_REG_BRSR                 0xffffffac // 32 bit
 #define CYGARC_REG_BRDR                 0xffffffbc // 32 bit

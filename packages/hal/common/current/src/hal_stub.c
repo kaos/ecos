@@ -721,6 +721,10 @@ __do_copy_mem (unsigned char* src, unsigned char* dst)
     unsigned short *short_dst;
     unsigned short *short_src;
 
+    // Zero memCount is not really an error, but the goto is necessary to
+    // keep some compilers from reordering stuff across the 'err' label.
+    if (memCount == 0) goto err;
+
     __mem_fault = 1;                      /* Defaults to 'fail'. Is cleared */
                                           /* when the copy loop completes.  */
     __mem_fault_handler = &&err;
@@ -798,6 +802,10 @@ __do_copy_from_progmem (unsigned char* src, unsigned char* dst)
     unsigned short *short_dst;
     unsigned short *short_src;
 
+    // Zero memCount is not really an error, but the goto is necessary to
+    // keep some compilers from reordering stuff across the 'err' label.
+    if (memCount == 0) goto err;
+
     __mem_fault = 1;                      /* Defaults to 'fail'. Is cleared */
                                           /* when the copy loop completes.  */
     __mem_fault_handler = &&err;
@@ -847,6 +855,10 @@ __do_copy_to_progmem (unsigned char* src, unsigned char* dst)
     unsigned long *long_src;
     unsigned short *short_dst;
     unsigned short *short_src;
+
+    // Zero memCount is not really an error, but the goto is necessary to
+    // keep some compilers from reordering stuff across the 'err' label.
+    if (memCount == 0)	goto err;
 
     __mem_fault = 1;                      /* Defaults to 'fail'. Is cleared */
                                           /* when the copy loop completes.  */

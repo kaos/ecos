@@ -10,7 +10,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 1999, 2000 Red Hat, Inc.
+// Copyright (C) 1999, 2000, 2001 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
 //
@@ -1587,7 +1587,7 @@ CdlValuableBody::parse_dialog(CdlInterpreter interp, int argc, char** argv)
 {
     CYG_REPORT_FUNCNAMETYPE("parse_dialog", "result %d");
 
-    int result = CdlParse::parse_reference_property(interp, argc, argv, CdlPropertyId_Dialog, 0, 0, &dialog_update_handler);
+    int result = CdlParse::parse_reference_property(interp, argc, argv, CdlPropertyId_Dialog, 0, 0, false, &dialog_update_handler);
     
     CYG_REPORT_RETVAL(result);
     return result;
@@ -1686,7 +1686,7 @@ CdlValuableBody::parse_wizard(CdlInterpreter interp, int argc, char** argv)
 {
     CYG_REPORT_FUNCNAMETYPE("parse_wizard", "result %d");
 
-    int result = CdlParse::parse_reference_property(interp, argc, argv, CdlPropertyId_Wizard, 0, 0, &wizard_update_handler);
+    int result = CdlParse::parse_reference_property(interp, argc, argv, CdlPropertyId_Wizard, 0, 0, false, &wizard_update_handler);
     CYG_REPORT_RETVAL(result);
     return result;
 }
@@ -1872,7 +1872,6 @@ int
 CdlValuableBody::parse_default_value(CdlInterpreter interp, int argc, char** argv)
 {
     CYG_REPORT_FUNCNAMETYPE("parse_default_value", "result %d");
-
     int result = CdlParse::parse_expression_property(interp, argc, argv, CdlPropertyId_DefaultValue, 0, 0,
                                                      &default_value_update_handler);
     CYG_REPORT_RETVAL(result);
@@ -2235,7 +2234,7 @@ CdlValuableBody::parse_implements(CdlInterpreter interp, int argc, char** argv)
 {
     CYG_REPORT_FUNCNAMETYPE("parse_implements", "result %d");
 
-    int result = CdlParse::parse_reference_property(interp, argc, argv, CdlPropertyId_Implements, 0, 0,
+    int result = CdlParse::parse_reference_property(interp, argc, argv, CdlPropertyId_Implements, 0, 0, false,
                                                     &implements_update_handler);
     
     CYG_REPORT_RETVAL(result);
@@ -3267,7 +3266,7 @@ CdlValuableBody::set_enabled(CdlTransaction transaction, bool enabled_arg, CdlVa
     CYG_ASSERTC((source == CdlValueSource_Default) || !has_property(CdlPropertyId_Calculated));
     CYG_PRECONDITION_THISC();
     CYG_PRECONDITION_CLASSC(transaction);
-    
+
     const CdlValue& old_value = transaction->get_whole_value(this);
     CdlValue        new_value = old_value;
     new_value.set_enabled(enabled_arg, source);

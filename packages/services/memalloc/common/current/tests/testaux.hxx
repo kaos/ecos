@@ -59,7 +59,7 @@ cyg_hal_invoke_constructors();
 #ifdef NTHREADS
 
 #ifndef STACKSIZE
-#define STACKSIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
+#define STACKSIZE CYGNUM_HAL_STACK_SIZE_TYPICAL*2
 #endif
 
 static Cyg_Thread *thread[NTHREADS];

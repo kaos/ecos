@@ -1,4 +1,4 @@
-    Source: c:\winnt\system32\tcl82.dll; DestDir: {sys}\; DestName: tcl82.dll; CopyMode: onlyifdoesntexist; Flags: uninsneveruninstall
+    Source: c:\winnt\system32\tcl84.dll; DestDir: {sys}\; DestName: tcl84.dll; CopyMode: onlyifdoesntexist; Flags: uninsneveruninstall
     Source: c:\winnt\system32\msvcirt.dll; DestDir: {sys}\; DestName: msvcirt.dll; CopyMode: onlyifdoesntexist; Flags: uninsneveruninstall
     Source: c:\winnt\system32\msvcp60.dll; DestDir: {sys}\; DestName: msvcp60.dll; CopyMode: onlyifdoesntexist; Flags: uninsneveruninstall
     Source: c:\winnt\system32\msvcrt.dll; DestDir: {sys}\; DestName: msvcrt.dll; CopyMode: onlyifdoesntexist; Flags: uninsneveruninstall

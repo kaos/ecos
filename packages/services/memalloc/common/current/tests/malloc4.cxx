@@ -83,14 +83,14 @@
 #ifdef NA_MSG
 
 externC void
-cyg_start()
+cyg_start(void)
 {
     CYG_TEST_INIT();
     CYG_TEST_NA( NA_MSG );
     CYG_TEST_FINISH("Done");
 }
 #else
-
+//#define DEBUGTEST 1
 #define NTHREADS 4
 #include "testaux.hxx"
 
@@ -364,7 +364,7 @@ thrfree( CYG_ADDRWORD data )
 
 
 externC void
-cyg_start()
+cyg_start(void)
 {
 #ifdef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
     cyg_hal_invoke_constructors();
@@ -380,7 +380,7 @@ cyg_start()
     Cyg_Scheduler::start();
 
     CYG_TEST_FAIL_FINISH("Not reached");
-} // main()
+} // cyg_start()
 
 #endif // !NA_MSG
 

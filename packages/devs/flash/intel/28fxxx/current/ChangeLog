@@ -1,3 +1,8 @@
+2001-06-20  Jesper Skov  <jskov@redhat.com>
+
+	* include/flash_28fxxx.inl (flash_hwr_init): Fix bad size
+	calculations.
+
 2001-05-23  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/flash_intel_28fxxx.cdl: Links flash functions to RAM. IO

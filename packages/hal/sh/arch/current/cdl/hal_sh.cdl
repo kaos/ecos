@@ -174,4 +174,5 @@ cdl_package CYGPKG_HAL_SH {
         description   "
             This option specifies the set of tests for the SH HAL."
     }
+
 }

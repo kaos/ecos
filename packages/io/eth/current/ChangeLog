@@ -1,3 +1,9 @@
+2001-06-21  David Woodhouse <dwmw2@redhat.com>
+
+	* src/stand_alone/eth_drv.c: Timeout when waiting for Ethernet
+	driver to finish sending packet.
+	* src/stand_alone/eth_drv.c: Don't delay if it's ready immediately.
+
 2001-06-11  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/eth_drivers.cdl: Make debug default for RedBoot.

@@ -1,3 +1,9 @@
+2001-06-19  Mark Salter  <msalter@redhat.com>
+
+	* include/hal_arch.h: Support saving/restoring CP0 registers for GDB.
+
+	* include/mips-stub.h (NUMREGS): Use different value for mips32.
+
 2001-06-08  Jesper Skov  <jskov@redhat.com>
 
 	* include/mips.inc (FUNC_START): Added .noreorder.

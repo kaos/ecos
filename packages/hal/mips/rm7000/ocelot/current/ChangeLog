@@ -1,3 +1,8 @@
+2001-06-22  Jesper Skov  <jskov@redhat.com>
+
+	* misc/redboot_RAM.ecm: Force 32k stack.
+	* misc/redboot_ROM.ecm: Same.
+
 2001-06-08  David Woodhouse <dwmw2@redhat.com>
 
 	* src/platform.S: Change CS bank 3 parameters to 8-bit.

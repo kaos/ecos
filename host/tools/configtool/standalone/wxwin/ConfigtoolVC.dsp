@@ -643,11 +643,19 @@ SOURCE=.\about.htm
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\ChangeLog
+# End Source File
+# Begin Source File
+
 SOURCE=.\setup\innobott.txt
 # End Source File
 # Begin Source File
 
 SOURCE=.\setup\innotop.txt
+# End Source File
+# Begin Source File
+
+SOURCE=.\Makefile
 # End Source File
 # Begin Source File
 
@@ -668,6 +676,10 @@ SOURCE=.\README.txt
 # Begin Source File
 
 SOURCE=.\symbols.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\TODO.txt
 # End Source File
 # End Group
 # Begin Source File

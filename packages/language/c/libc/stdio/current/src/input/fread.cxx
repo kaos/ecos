@@ -63,7 +63,10 @@ fread( void *ptr, size_t object_size, size_t num_objects, FILE *stream )
 {
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)stream;
     cyg_ucount32 bytes_read;
+    cyg_ucount32 bytes_to_read;
+    cyg_ucount32 total_read;
     Cyg_ErrNo err;
+    cyg_uint8 *ptrc = (cyg_uint8 *)ptr;
     
 
     CYG_REPORT_FUNCNAMETYPE( "fread", "read %d objects" );
@@ -71,20 +74,30 @@ fread( void *ptr, size_t object_size, size_t num_objects, FILE *stream )
                          "stream=%08x", ptr, object_size, num_objects,
                          stream );
 
-    if ( (object_size==0) || (num_objects==0) ) {
+    bytes_to_read = object_size*num_objects;
+    total_read = 0;
+
+    if ( !bytes_to_read ) {
         CYG_REPORT_RETVAL(0);
         return 0;
     } // if
 
-    err = real_stream->read( (cyg_uint8 *)ptr, object_size*num_objects,
+    err = real_stream->read( (cyg_uint8 *)ptr, bytes_to_read,
                              &bytes_read );
+    bytes_to_read -= bytes_read;
+    total_read += bytes_read;
+    ptrc += bytes_read;
 
-    if (!err && !bytes_read) { // if no err, but nothing to read, try again
+    while (!err && bytes_to_read) { // if no err, but not finished - get next
         err = real_stream->refill_read_buffer();
-        if ( !err )
-            err = real_stream->read( (cyg_uint8 *)ptr, object_size*num_objects,
+        if ( !err ) {
+            err = real_stream->read( (cyg_uint8 *)ptr, bytes_to_read,
                                      &bytes_read );
-    } // if
+            bytes_to_read -= bytes_read;
+            total_read += bytes_read;
+            ptrc += bytes_read;
+        } // if
+    } // while
 
     if (err) {
         real_stream->set_error( err );
@@ -94,7 +107,7 @@ fread( void *ptr, size_t object_size, size_t num_objects, FILE *stream )
     // we return the number of _objects_ read. Simple division is
     // sufficient as this returns the quotient rather than rounding
     CYG_REPORT_RETVAL( bytes_read/object_size );
-    return bytes_read/object_size;
+    return total_read/object_size;
 
 } // fread()
 

@@ -1,3 +1,7 @@
+2001-06-22  Jesper Skov  <jskov@redhat.com>
+
+	* src/if_i82559.c (i82559_init): Handle EEPROMS without CRC.
+
 2001-05-16  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/if_i82559.c (udelay): Use virtual vector rather than assuming

@@ -56,12 +56,13 @@
 extern void diag_dump_buf(void *buf, CYG_ADDRWORD len);
 
 extern int strncmp(const char *s1, const char *s2, int len);
+extern void *memcpy( void *, const void *, size_t );
 
 int
 flash_hwr_init(void)
 {
     struct FLASH_query data, *qp;
-    extern char flash_query, flash_query_end;
+    extern char flash_query[], flash_query_end[];
     typedef int code_fun(unsigned char *);
     code_fun *_flash_query;
     int code_len, stat, num_regions, region_size, buffer_size;
@@ -148,6 +149,10 @@ flash_hwr_init(void)
                 (*flash_info.pf)("\nFLASH: Oversized device!  End addr %p changed to %p\n",
                        flash_info.end, (void *)x );
                 flash_info.end = (void *)x;
+                // Also adjust the block count else unlock crashes!
+                x = ((cyg_uint8 *)flash_info.end - (cyg_uint8 *)flash_info.start)
+                    / flash_info.block_size;
+                flash_info.blocks = x;
             }
         }
 #endif // CYGNUM_FLASH_BASE_MASK

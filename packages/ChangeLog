@@ -1,3 +1,16 @@
+2001-06-22  Hugo Tyson  <hmt@redhat.com>
+
+	* ecos.db: Add entry for generic SMSC lan91cxx ethernet controller.
+
+2001-06-21  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* pkgconf/rules.mak: Use sed to process dependency files in a way
+	that will work with both new and old format gcc dependency files.
+
+	* ecos.db: Include CYGPKG_DEVS_ETH_CF and CYGPKG_DEVS_ETH_NS_DP83902A
+	packages in those targets which can use them.
+	Make CYGPKG_DEVS_ETH_CF have hardware attribute.
+
 2001-06-08  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* ecos.db: PC target uses generic 16x5x serial driver now.

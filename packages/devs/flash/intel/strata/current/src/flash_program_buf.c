@@ -96,7 +96,7 @@ flash_program_buf(volatile flash_t *addr, flash_t *data, int len,
         }
         *BA = FLASHWORD(wc-1);  // Count is 0..N-1
         for (i = 0;  i < wc;  i++) {
-            *addr++ = *data++;
+            *(addr+i) = *(data+i);
         }
         *BA = FLASH_Confirm;
     
@@ -104,6 +104,18 @@ flash_program_buf(volatile flash_t *addr, flash_t *data, int len,
         timeout = 5000000;
         while(((stat = ROM[0]) & FLASH_Status_Ready) != FLASH_Status_Ready) {
             if (--timeout == 0) {
+                goto bad;
+            }
+        }
+        // Jump out if there was an error
+        if (stat & FLASH_ErrorMask) {
+            goto bad;
+        }
+        // And verify the data - also increments the pointers.
+        *BA = FLASH_Reset;            
+        for (i = 0;  i < wc;  i++) {
+            if ( *addr++ != *data++ ) {
+                stat = FLASH_ErrorNotVerified;
                 goto bad;
             }
         }

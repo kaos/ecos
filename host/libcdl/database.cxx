@@ -73,6 +73,9 @@
 char*
 CdlPackagesDatabaseBody::database_name = "ecos.db";
 
+// Should warnings be issued for minor database inconsistencies?
+bool CdlPackagesDatabaseBody::verbose_mode      = false;
+
 // The new_package etc. commands need to store the name of the
 // current package so that subsequent commands can do the right thing.
 // Using constant strings as the key avoids typo problems.
@@ -201,16 +204,21 @@ CdlDbParser::new_package(CdlInterpreter interp, int argc, char** argv)
             CdlParse::report_error(interp, diag_package + pkg_name, "At least one alias should be supplied.");
         }
 
-        // Additional checks. Is the package directory actually present.
+        // Additional checks. Is the package directory actually present?
+        // Note that there are scenarios where a package may be listed
+        // in the database but not installed, e.g. an anoncvs checkout
+        // of selected modules.
         if ("" != package.directory) {
             std::string repo = interp->get_variable(dbparser_component_repository);
             CYG_ASSERTC("" != repo);
 
             std::string pkgdir = repo + "/" + package.directory;
             if (!interp->is_directory(pkgdir)) {
-                CdlParse::report_warning(interp, diag_package + pkg_name,
-                        std::string("This package is not present in the component repository.\nThere is no directory `")
-                                    + pkgdir + "'.");
+                if (CdlPackagesDatabaseBody::verbose_mode) {
+                    CdlParse::report_warning(interp, diag_package + pkg_name,
+                                             std::string("This package is not present in the component repository.\n"
+                                                         "There is no directory `") + pkgdir + "'.");
+                }
                 package_ok = false;
             } else {
                 
@@ -808,24 +816,26 @@ CdlPackagesDatabaseBody::CdlPackagesDatabaseBody(std::string repo, CdlDiagnostic
 
         // Consistency checks. All target-specific packages should
         // have the hardware attribute. Also, all the packages should
-        // exist. Problems only result in warnings, to allow for
-        // somewhat inconsistent repositories e.g. an anoncvs tree.
-        std::vector<std::string>::const_iterator name_i;
-        std::vector<std::string>::const_iterator name_j;
-        for (name_i = target_names.begin(); name_i != target_names.end(); name_i++) {
-            for (name_j = targets[*name_i].packages.begin(); name_j != targets[*name_i].packages.end(); name_j++) {
-                if (std::find(package_names.begin(), package_names.end(), *name_j) == package_names.end()) {
-                    CdlParse::report_warning(interp, diag_target + *name_i,
-                                             std::string("This target refers to an unknown package `") + *name_j + "'.");
-                }
-                if (!packages[*name_j].hardware) {
-                    CdlParse::report_warning(interp, diag_target + *name_i,
-                                             std::string("This target refers to a package `") + *name_j +
-                                             "' that is not hardware-specific.");
+        // exist. Problems only result in warnings and only when
+        // operating in verbose mode, to allow for somewhat
+        // inconsistent repositories e.g. an anoncvs tree.
+        if (CdlPackagesDatabaseBody::verbose_mode) {
+            std::vector<std::string>::const_iterator name_i;
+            std::vector<std::string>::const_iterator name_j;
+            for (name_i = target_names.begin(); name_i != target_names.end(); name_i++) {
+                for (name_j = targets[*name_i].packages.begin(); name_j != targets[*name_i].packages.end(); name_j++) {
+                    if (std::find(package_names.begin(), package_names.end(), *name_j) == package_names.end()) {
+                        CdlParse::report_warning(interp, diag_target + *name_i,
+                                                 std::string("This target refers to an unknown package `") + *name_j + "'.");
+                    }
+                    if (!packages[*name_j].hardware) {
+                        CdlParse::report_warning(interp, diag_target + *name_i,
+                                                 std::string("This target refers to a package `") + *name_j +
+                                                 "' that is not hardware-specific.");
+                    }
                 }
             }
         }
-
         // Now, were there any errors while reading in the database?
         // If so it is necessary to throw an exception here, to make sure
         // that things get cleaned up properly.
@@ -967,6 +977,17 @@ CdlPackagesDatabaseBody::get_component_repository() const
 
     CYG_REPORT_RETURN();
     return component_repository;
+}
+
+void
+CdlPackagesDatabaseBody::set_verbose(bool new_mode)
+{
+    CYG_REPORT_FUNCNAME("CdlPackagesDatabase::set_verbose");
+    CYG_REPORT_FUNCARG1XV(new_mode);
+
+    verbose_mode = new_mode;
+    
+    CYG_REPORT_RETURN();
 }
 
 //}}}

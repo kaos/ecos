@@ -70,6 +70,10 @@
 #endif
 #endif
 
+#ifdef __WXMSW__
+#include <tlhelp32.h>
+#endif
+
 #if 0
 
 #define INCLUDEFILE <string>
@@ -1005,3 +1009,432 @@ bool wxWindowSettings::ApplyFontsToWindows()
     }
     return TRUE;
 }
+
+#if TODO
+
+#ifdef _WIN32
+class wxProcessInfo: public wxObject
+{
+public:
+    wxProcessInfo() {}
+
+    wxProcessInfo *pParent;
+#ifdef _WIN32
+    __int64 tCreation;
+#endif
+    Time tCpu;
+    int PID;
+    int PPID;
+    bool IsChildOf(int pid) const;
+};
+
+void wxSetProcessInfoParents(CSubprocess::PInfoArray &arPinfo)
+{
+  int i;
+  for(i=0;i<(signed)arPinfo.size();i++){
+    PInfo &p=arPinfo[i];
+    p.pParent=0;
+    for(int j=0;j<(signed)arPinfo.size();j++){
+      if(arPinfo[j].PID==p.PPID 
+#ifdef _WIN32
+        && arPinfo[j].tCreation<p.tCreation
+#endif
+        )
+      {
+        arPinfo[i].pParent=&arPinfo[j];
+        break;
+      }
+    }
+  }
+
+  // Check for circularity
+  bool bCircularity=false;
+  for(i=0;i<(signed)arPinfo.size();i++){
+    PInfo *p=&arPinfo[i];
+    for(int j=0;j<(signed)arPinfo.size() && p;j++){
+      p=p->pParent;
+    }
+    // If all is well, p should be NULL here.  Otherwise we have a loop.
+    if(p){
+      // Make sure it can't foul things up:
+      arPinfo[i].pParent=0;
+      bCircularity=true;
+    }
+  }
+  
+  if(bCircularity){
+    ERROR(_T("!!! Circularly linked process list at index %d\n"),i);
+    for(int k=0;k<(signed)arPinfo.size();k++){
+      const PInfo &p=arPinfo[k];
+      ERROR(_T("%d: %s ppid=%4d\n"),k,(LPCTSTR)Name(p.PID),p.PPID);
+    }
+  }
+}
+
+bool CSubprocess::PInfo::IsChildOf(int pid) const
+{
+  for(PInfo *p=pParent;p && p!=this;p=p->pParent) { // guard against circular linkage
+    if(p->PID==pid){
+      return true;
+    }
+  }
+  return false;
+}
+
+
+bool wxGetChildProcesses(wxList& children)
+{
+    int osVersion = wxGetOsVersion() ;
+    HINSTANCE hInstLib1 = wxWINDOWS_NT==osVersion ? LoadLibrary(_T("PSAPI.DLL")):LoadLibrary(_T("Kernel32.DLL")) ;
+    HINSTANCE hInstLib2 = wxWINDOWS_NT==osVersion ? LoadLibrary(_T("NTDLL.DLL")):NULL;
+    
+    bool rc=false;
+    children.Clear();
+    // If Windows NT:
+    switch (osVersion)
+    {
+    case wxWINDOWS_NT:
+        if(hInstLib1)
+        {
+            
+            // Get procedure addresses.
+            static BOOL (WINAPI *lpfEnumProcesses)( DWORD *, DWORD cb, DWORD * ) = (BOOL(WINAPI *)(DWORD *,DWORD,DWORD*))GetProcAddress( hInstLib1, "EnumProcesses" ) ;
+            if (lpfEnumProcesses)
+            {
+                
+                if (hInstLib2)
+                {
+                    
+                    static DWORD (WINAPI *lpfNtQueryInformationProcess)( HANDLE, int, void *, DWORD, LPDWORD ) =
+                        (DWORD(WINAPI *)(HANDLE, int, void *, DWORD, LPDWORD)) GetProcAddress( hInstLib2,"NtQueryInformationProcess" ) ;
+                    
+                    if(lpfNtQueryInformationProcess)
+                    {
+                        DWORD dwMaxPids=256;
+                        DWORD dwPidSize;
+                        DWORD *arPids = NULL ;
+                        do {
+                            delete [] arPids;
+                            arPids=new DWORD[dwMaxPids];
+                        } while(lpfEnumProcesses(arPids, dwMaxPids, &dwPidSize) && dwPidSize/sizeof(DWORD)==dwMaxPids) ;
+                        
+                        if(dwPidSize/sizeof(DWORD)<dwMaxPids)
+                        {
+                            rc=true;
+                            for ( DWORD dwIndex = 0 ; (signed)dwIndex < dwPidSize/sizeof(DWORD); dwIndex++ ) {
+                                // Regardless of OpenProcess success or failure, we
+                                // still call the enum func with the ProcID.
+                                DWORD pid=arPids[dwIndex];
+                                HANDLE hProcess=::OpenProcess( PROCESS_QUERY_INFORMATION, FALSE, pid ); 
+                                if (hProcess ) {
+                                    struct {
+                                        DWORD ExitStatus; // receives process termination status
+                                        DWORD PebBaseAddress; // receives process environment block address
+                                        DWORD AffinityMask; // receives process affinity mask
+                                        DWORD BasePriority; // receives process priority class
+                                        ULONG UniqueProcessId; // receives process identifier
+                                        ULONG InheritedFromUniqueProcessId; // receives parent process identifier
+                                    } pbi;
+                                    memset( &pbi, 0, sizeof(pbi)); 
+                                    DWORD retLen; 
+                                    __int64 ftCreation,ftExit,ftKernel,ftUser;
+                                    if(lpfNtQueryInformationProcess(hProcess, 0 /*ProcessBasicInformation*/, &pbi, sizeof(pbi), &retLen)>=0 &&
+                                        TRUE==::GetProcessTimes (hProcess,(FILETIME *)&ftCreation,(FILETIME *)&ftExit,(FILETIME *)&ftKernel,(FILETIME *)&ftUser)){
+                                        // The second test is important.  It excludes orphaned processes who appear to have been adopted by virtue of a new
+                                        // process having been created with the same ID as their original parent.
+                                        wxProcessInfo* p = new wxProcessInfo;
+                                        p->PID=pid;
+                                        p->PPID=pbi.InheritedFromUniqueProcessId;
+                                        p->tCreation=ftCreation;
+                                        p->tCpu=Time((ftKernel+ftUser)/10000);
+                                        children.Append(p);
+                                    }
+                                    
+                                    CloseHandle(hProcess); 
+                                    
+                                }
+                            }
+                        }
+                        delete [] arPids;
+                    }          
+                }
+            }      
+        }
+        break;
+    case wxWIN95:
+        
+        if( hInstLib1) {
+            
+            static HANDLE (WINAPI *lpfCreateToolhelp32Snapshot)(DWORD,DWORD)=
+                (HANDLE(WINAPI *)(DWORD,DWORD))GetProcAddress( hInstLib1,"CreateToolhelp32Snapshot" ) ;
+            static BOOL (WINAPI *lpfProcess32First)(HANDLE,LPPROCESSENTRY32)=
+                (BOOL(WINAPI *)(HANDLE,LPPROCESSENTRY32))GetProcAddress( hInstLib1, "Process32First" ) ;
+            static BOOL (WINAPI *lpfProcess32Next)(HANDLE,LPPROCESSENTRY32)=
+                (BOOL(WINAPI *)(HANDLE,LPPROCESSENTRY32))GetProcAddress( hInstLib1, "Process32Next" ) ;
+            if( lpfProcess32Next && lpfProcess32First && lpfCreateToolhelp32Snapshot) {
+                
+                // Get a handle to a Toolhelp snapshot of the systems
+                // processes.
+                HANDLE hSnapShot = lpfCreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) ;
+                if(INVALID_HANDLE_VALUE != hSnapShot) {
+                    // Get the first process' information.
+                    PROCESSENTRY32 procentry;
+                    procentry.dwSize = sizeof(PROCESSENTRY32) ;
+                    if(lpfProcess32First( hSnapShot, &procentry )){
+                        rc=true;
+                        do {
+                            PInfo p;
+                            p.PID=procentry.th32ProcessID;
+                            p.PPID=procentry.th32ParentProcessID;
+                            arPinfo.push_back(p);
+                        } while(lpfProcess32Next( hSnapShot, &procentry ));
+                    }
+                    CloseHandle(hSnapShot);
+                }
+            }
+        }
+        break;
+    default:
+        break;
+    }    
+    
+    SetParents(children);
+    
+    if(!rc){
+        wxMessageBox(_T("Couldn't get process information!\n"));
+    }
+    return rc;
+}
+#endif
+
+#endif
+
+#ifdef __WIN32__
+// This will be obsolete when we switch to using the version included
+// in wxWindows (from wxWin 2.3.1 onwards)
+enum ecKillError
+{
+    ecKILL_OK,              // no error
+    ecKILL_BAD_SIGNAL,      // no such signal
+    ecKILL_ACCESS_DENIED,   // permission denied
+    ecKILL_NO_PROCESS,      // no such process
+    ecKILL_ERROR            // another, unspecified error
+};
+#endif
+
+// ----------------------------------------------------------------------------
+// process management
+// ----------------------------------------------------------------------------
+
+#ifdef __WIN32__
+
+// structure used to pass parameters from wxKill() to wxEnumFindByPidProc()
+struct wxNewFindByPidParams
+{
+    wxNewFindByPidParams() { hwnd = 0; pid = 0; }
+
+    // the HWND used to return the result
+    HWND hwnd;
+
+    // the PID we're looking from
+    DWORD pid;
+};
+
+// wxKill helper: EnumWindows() callback which is used to find the first (top
+// level) window belonging to the given process
+static BOOL CALLBACK wxEnumFindByPidProc(HWND hwnd, LPARAM lParam)
+{
+    DWORD pid;
+    (void)::GetWindowThreadProcessId(hwnd, &pid);
+
+    wxNewFindByPidParams *params = (wxNewFindByPidParams *)lParam;
+    if ( pid == params->pid )
+    {
+        // remember the window we found
+        params->hwnd = hwnd;
+
+        // return FALSE to stop the enumeration
+        return FALSE;
+    }
+
+    // continue enumeration
+    return TRUE;
+}
+
+// This will be obsolete when we switch to using the version included
+// in wxWindows (from wxWin 2.3.1 onwards)
+int wxNewKill(long pid, wxSignal sig, ecKillError *krc = NULL)
+{
+#ifdef __WIN32__
+    // get the process handle to operate on
+    HANDLE hProcess = ::OpenProcess(SYNCHRONIZE |
+                                    PROCESS_TERMINATE |
+                                    PROCESS_QUERY_INFORMATION,
+                                    FALSE, // not inheritable
+                                    (DWORD)pid);
+    if ( hProcess == NULL )
+    {
+        if ( krc )
+        {
+            if ( ::GetLastError() == ERROR_ACCESS_DENIED )
+            {
+                *krc = ecKILL_ACCESS_DENIED;
+            }
+            else
+            {
+                *krc = ecKILL_NO_PROCESS;
+            }
+        }
+
+        return -1;
+    }
+
+    bool ok = TRUE;
+    switch ( sig )
+    {
+        case wxSIGKILL:
+            // kill the process forcefully returning -1 as error code
+            if ( !::TerminateProcess(hProcess, (UINT)-1) )
+            {
+                wxLogSysError(_("Failed to kill process %d"), pid);
+
+                if ( krc )
+                {
+                    // this is not supposed to happen if we could open the
+                    // process
+                    *krc = ecKILL_ERROR;
+                }
+
+                ok = FALSE;
+            }
+            break;
+
+        case wxSIGNONE:
+            // do nothing, we just want to test for process existence
+            break;
+
+        default:
+            // any other signal means "terminate"
+            {
+                wxNewFindByPidParams params;
+                params.pid = (DWORD)pid;
+
+                // EnumWindows() has nice semantics: it returns 0 if it found
+                // something or if an error occured and non zero if it
+                // enumerated all the window
+                if ( !::EnumWindows(wxEnumFindByPidProc, (LPARAM)&params) )
+                {
+                    // did we find any window?
+                    if ( params.hwnd )
+                    {
+                        // tell the app to close
+                        //
+                        // NB: this is the harshest way, the app won't have
+                        //     opportunity to save any files, for example, but
+                        //     this is probably what we want here. If not we
+                        //     can also use SendMesageTimeout(WM_CLOSE)
+                        if ( !::PostMessage(params.hwnd, WM_QUIT, 0, 0) )
+                        {
+                            wxLogLastError(_T("PostMessage(WM_QUIT)"));
+                        }
+                    }
+                    else // it was an error then
+                    {
+                        wxLogLastError(_T("EnumWindows"));
+
+                        ok = FALSE;
+                    }
+                }
+                else // no windows for this PID
+                {
+                    if ( krc )
+                    {
+                        *krc = ecKILL_ERROR;
+                    }
+
+                    ok = FALSE;
+                }
+            }
+    }
+
+    // the return code
+    DWORD rc;
+
+    if ( ok )
+    {
+        // as we wait for a short time, we can use just WaitForSingleObject()
+        // and not MsgWaitForMultipleObjects()
+        switch ( ::WaitForSingleObject(hProcess, 500 /* msec */) )
+        {
+            case WAIT_OBJECT_0:
+                // process terminated
+                if ( !::GetExitCodeProcess(hProcess, &rc) )
+                {
+                    wxLogLastError(_T("GetExitCodeProcess"));
+                }
+                break;
+
+            default:
+                wxFAIL_MSG( _T("unexpected WaitForSingleObject() return") );
+                // fall through
+
+            case WAIT_FAILED:
+                wxLogLastError(_T("WaitForSingleObject"));
+                // fall through
+
+            case WAIT_TIMEOUT:
+                if ( krc )
+                {
+                    *krc = ecKILL_ERROR;
+                }
+
+                rc = STILL_ACTIVE;
+                break;
+        }
+    }
+    else // !ok
+    {
+        // just to suppress the warnings about uninitialized variable
+        rc = 0;
+    }
+
+    ::CloseHandle(hProcess);
+
+    // the return code is the same as from Unix kill(): 0 if killed
+    // successfully or -1 on error
+    if ( sig == wxSIGNONE )
+    {
+        if ( ok && rc == STILL_ACTIVE )
+        {
+            // there is such process => success
+            return 0;
+        }
+    }
+    else // not SIGNONE
+    {
+        if ( ok && rc != STILL_ACTIVE )
+        {
+            // killed => success
+            return 0;
+        }
+    }
+#else // Win15
+    wxFAIL_MSG( _T("not implemented") );
+#endif // Win32/Win16
+
+    // error
+    return -1;
+}
+#endif
+
+int ecKill(long pid, wxSignal sig)
+{
+#ifdef __UNIX__
+    return wxKill(pid, sig);
+#elif defined(__WXMSW__)
+    return wxNewKill(pid, sig);
+#else
+    return -1;
+#endif
+}
+

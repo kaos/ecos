@@ -312,7 +312,7 @@ cdl_package CYGPKG_HAL_V85X_V850_CEB {
             define -file system.h CYGHWR_MEMORY_LAYOUT_H
             calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_v85x_v850_ceb_ram.h>" : \
                          CYG_HAL_STARTUP == "ROM" ? \
-                         CYG_HAL_V85X_STARTUP_FLASH == 0 ? "<pkgconf/mlt_v85x_v850_ceb_rom.h>" : "<pkgconf/mlt_v85x_v850_ceb_rom.h>" : \
+                         CYG_HAL_V85X_STARTUP_FLASH == 0 ? "<pkgconf/mlt_v85x_v850_ceb_rom.h>" : "<pkgconf/mlt_v85x_v850_ceb_flash.h>" : \
                          CYG_HAL_V85X_STARTUP_FLASH == 0 ? "<pkgconf/mlt_v85x_v850_ceb_romram.h>" : "<pkgconf/mlt_v85x_v850_ceb_flashromram.h>" }
         }
     }

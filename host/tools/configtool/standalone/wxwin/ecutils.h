@@ -203,6 +203,9 @@ void wxRefreshControls(wxWindow* win);
 // e.g. opt_ecos_ecos-1.4.5 out of /opt/ecos/ecos-1.4.5
 wxString ecMakeNameFromPath(const wxString& path);
 
+// Kill a process
+int ecKill(long pid, wxSignal sig);
+
 class WXDLLEXPORT wxOutputStream;
 
 wxOutputStream& operator <<(wxOutputStream&, const wxString& s);

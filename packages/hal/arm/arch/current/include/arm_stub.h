@@ -53,6 +53,8 @@ extern "C" {
 
 #define REGSIZE( _x_ ) (((_x_) < F0 || (_x_) >= FPS) ? 4 : 12)
 
+#define NUMREGBYTES ((16*4)+(8*12)+(2*4))
+
 #ifndef TARGET_REGISTER_T_DEFINED
 #define TARGET_REGISTER_T_DEFINED
 typedef unsigned long target_register_t;

@@ -1,3 +1,29 @@
+2001-06-22  Hugo Tyson  <hmt@redhat.com>
+
+	* src/strata.c (flash_hwr_init): Need to refer to the query code
+	as extern char flash_query[], flash_query_end[]; (with the []) or
+	MIPS code gen assumes these are short offsets and linking fails.
+	The generic flash code in io/flash already uses this idiom.
+
+2001-06-22  Hugo Tyson  <hmt@redhat.com>
+
+	* src/strata.c (flash_hwr_init): Warnings reduced.  No arithmetic
+	on void *.
+
+2001-06-21  Hugo Tyson  <hmt@redhat.com>
+
+	* src/flash_program_buf.c (flash_program_buf): The buffered write
+	code didn't jump out if there was a write error, nor verify the
+	data by reading back.  This isn't consistent with the slow case,
+	and made it take an age if the device is unhappy, and then report
+	a bizarre error code.  Both issues fixed.
+
+2001-06-21  Hugo Tyson  <hmt@redhat.com>
+
+	* src/strata.c (flash_hwr_init): If shrinking to fit, must also
+	adjust the flash_info.blocks field, else unlock crashes trying to
+	get status of all those extra blocks that we cannot actually see.
+
 2001-06-11  Gary Thomas  <gthomas@redhat.com>
 
 	* src/strata.c: Remove dependency on printf() via user functions.

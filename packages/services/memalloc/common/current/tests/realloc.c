@@ -62,7 +62,7 @@
 
 #ifdef NA_MSG
 void
-cyg_start()
+cyg_start(void)
 {
     CYG_TEST_INIT();
     CYG_TEST_NA( NA_MSG );

@@ -7,7 +7,7 @@
 MEMORY
 {
     rom : ORIGIN = 0x100000, LENGTH = 0x80000
-    ram : ORIGIN = 0xfc0000, LENGTH = 0x3f000
+    ram : ORIGIN = 0xfc0000, LENGTH = 0x3c000
 }
 
 SECTIONS

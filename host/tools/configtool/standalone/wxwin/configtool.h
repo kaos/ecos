@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/24
-// Version:     $Id: configtool.h,v 1.22 2001/05/02 10:36:15 julians Exp $
+// Version:     $Id: configtool.h,v 1.23 2001/06/18 14:41:13 julians Exp $
 // Purpose:
 // Description: main header file for the ConfigTool application
 // Requires:
@@ -242,6 +242,7 @@ public:
     {
         Redirect();
         m_pingTimer.Start(100);
+        m_pid = 0;
     }
     ~ecPipedProcess()
     {
@@ -254,8 +255,13 @@ public:
 //// Operations
     virtual bool HasInput();
 
+//// Accessors
+    void SetPid(long pid) { m_pid = pid; }
+    long GetPid() const { return m_pid; }
+
 protected:
     ecPingTimer m_pingTimer;
+    long        m_pid;
 };
 
 // IDs for the controls and the menu commands

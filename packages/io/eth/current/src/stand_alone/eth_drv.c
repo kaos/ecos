@@ -250,8 +250,16 @@ eth_drv_write(char *eth_hdr, char *buf, int len)
 #endif
     (sc->funs->send)(sc, sg_list, sg_len, len+14, (CYG_ADDRWORD)&packet_sent);
 
-    while (!packet_sent) {
+    wait_time = 500;
+    while (1) {
         (sc->funs->poll)(sc);
+
+	if(packet_sent)
+	    break;
+	
+        CYGACC_CALL_IF_DELAY_US(2*1000);
+        if (--wait_time <= 0)
+            goto reset_and_out;  // Give up on sending packet
     }
  reset_and_out:   
     if (dbg) {

@@ -343,7 +343,7 @@ cdl_package CYGPKG_MEMALLOC {
             display "Tests"
             flavor  data
             no_define
-            calculated { "tests/dlmalloc1 tests/dlmalloc2 tests/kmemfix1 tests/kmemvar1 tests/malloc1 tests/malloc2 tests/malloc3 tests/malloc4 tests/memfix1 tests/memfix2 tests/memvar1 tests/memvar2 tests/realloc" }
+            calculated { "tests/dlmalloc1 tests/dlmalloc2 tests/heaptest tests/kmemfix1 tests/kmemvar1 tests/malloc1 tests/malloc2 tests/malloc3 tests/malloc4 tests/memfix1 tests/memfix2 tests/memvar1 tests/memvar2 tests/realloc" }
             description   "
                 This option specifies the set of tests for this package."
         }

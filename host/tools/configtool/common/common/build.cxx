@@ -45,6 +45,14 @@
 #ifdef __CYGWIN__
 	#include <sys/cygwin.h> /* for cygwin_conv_to_posix_path() */
 #endif
+#ifdef __WXMSW__
+// We take advantage of wxWindows' recursive wxFileName::Mkdir function
+// to workaround a bug in Tcl on Windows 9x
+#include "wx/filename.h"
+#  ifdef new
+#    undef new
+#  endif
+#endif
 #include "flags.hxx"
 #include "build.hxx"
 
@@ -185,7 +193,15 @@ std::string cygpath (const std::string input) {
 
 // create a directory
 bool create_directory (const std::string directory) {
-	return eval_tcl_command ("file mkdir \"" + directory + "\"");
+// We take advantage of wxWindows' recursive wxFileName::Mkdir function
+// to workaround a bug in Tcl on Windows 9x
+#if defined(__WXMSW__)
+    if (wxDirExists(directory.c_str()))
+        return TRUE;
+    return wxFileName::Mkdir(directory.c_str(), 0777, TRUE);
+#else
+    return eval_tcl_command ("file mkdir \"" + directory + "\"");
+#endif
 }
 
 // copy a file

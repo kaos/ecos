@@ -1,3 +1,14 @@
+2001-06-22  Gary Thomas  <gthomas@redhat.com>
+
+	* misc/redboot_WinCE.ecm: 
+	* misc/redboot_ROM.ecm: 
+	* misc/redboot_RAM.ecm: Force stack size to 6K.
+
+2001-06-21  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* images/*: Remove. Don't bloat repository with things already on
+	the web.
+
 2001-06-08  Gary Thomas  <gthomas@redhat.com>
 
 	* include/pkgconf/mlt_arm_sa11x0_ipaq_rom.mlt: 

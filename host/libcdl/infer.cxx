@@ -621,7 +621,7 @@ infer_handle_reference_value(CdlTransaction transaction, CdlValuable valuable, C
 }
 
 //}}}
-//{{{  infer_handle_string_constant()           
+//{{{  infer_handle_xxx_constant()              
 
 // ----------------------------------------------------------------------------
 // Somewhere in the expression processing we have encountered a string
@@ -661,9 +661,6 @@ infer_handle_string_constant_value(CdlSimpleValue& constant, CdlSimpleValue& goa
     return result;
 }
 
-//}}}
-//{{{  infer_handle_integer_constant()          
-
 // ----------------------------------------------------------------------------
 // Integers are also fairly straightforward.
 static bool
@@ -701,9 +698,6 @@ infer_handle_integer_constant_value(CdlSimpleValue& constant, CdlSimpleValue& go
     CYG_REPORT_RETVAL(result);
     return result;
 }
-
-//}}}
-//{{{  infer_handle_double_constant()           
 
 // ----------------------------------------------------------------------------
 // Doubles are also straightforward, except than an exact comparision may
@@ -746,7 +740,7 @@ infer_handle_double_constant_value(CdlSimpleValue& constant, CdlSimpleValue& goa
 }
 
 //}}}
-//{{{  infer_handle_logical_NOT()               
+//{{{  infer_handle_logical_xxx()               
 
 // ----------------------------------------------------------------------------
 // Logical not simply involves inverting the goal and then trying to infer
@@ -762,29 +756,9 @@ infer_handle_logical_NOT_bool(CdlTransaction transaction, CdlExpression expr, un
     return result;
 }
 
-static bool
-infer_handle_logical_NOT_value(CdlTransaction transaction, CdlExpression expr, unsigned int index,
-                               CdlSimpleValue& goal, int level)
-{
-    CYG_REPORT_FUNCNAMETYPE("infer_handle_logical_NOT_value", "result %d");
-
-    bool new_goal = false;
-    if (("0" == goal.get_value()) || ("" == goal.get_value())) {
-        new_goal = true;
-    }
-
-    bool result = CdlInfer::subexpr_bool(transaction, expr, index, new_goal, level);
-    CYG_REPORT_RETVAL(result);
-    return result;
-}
-
-//}}}
-//{{{  infer_handle_AND()                       
-
 // ----------------------------------------------------------------------------
 // Depending on the goal, we want either both sides of the AND to evaluate to
 // true, or we want one of the sides to evaluate to false.
-
 static bool
 infer_handle_AND_bool(CdlTransaction transaction, CdlExpression expr, unsigned int lhs, unsigned int rhs,
                       bool goal, int level)
@@ -799,13 +773,18 @@ infer_handle_AND_bool(CdlTransaction transaction, CdlExpression expr, unsigned i
     
     if (goal) {
         // Both sides must be true in the same transaction, in case
-        // the solutions overlap in conflicting ways.
-        // NOTE: this leaves the transaction argument in an indeterminate
-        // state. Care has to be taken in the calling code.
-        if (CdlInfer::subexpr_bool(transaction, expr, lhs, true, level) &&
-            CdlInfer::subexpr_bool(transaction, expr, rhs, true, level)) {
+        // the solutions overlap in conflicting ways. A sub-transaction
+        // is still used to avoid polluting current values if the lhs
+        // can be inferred but not the rhs.
+        CdlTransaction sub_transaction = transaction->make(transaction->get_conflict());
+        if (CdlInfer::subexpr_bool(sub_transaction, expr, lhs, true, level) &&
+            CdlInfer::subexpr_bool(sub_transaction, expr, rhs, true, level)) {
+            sub_transaction->commit();
             result = true;
+        } else {
+            sub_transaction->cancel();
         }
+        delete sub_transaction;
     } else {
         // We need to try out both sides of the OR and see which one is preferable.
         // An optimization would be to only try the LHS, but trying both allows
@@ -822,26 +801,9 @@ infer_handle_AND_bool(CdlTransaction transaction, CdlExpression expr, unsigned i
     return result;
 }
 
-static bool
-infer_handle_AND_value(CdlTransaction transaction, CdlExpression expr, unsigned int lhs, unsigned int rhs,
-                       CdlSimpleValue& goal, int level)
-{
-    CYG_REPORT_FUNCNAMETYPE("infer_handle_AND_value", "result %d");
-
-    bool new_goal = true;
-    if (("0" == goal.get_value()) || ("" == goal.get_value())) {
-        new_goal = false;
-    }
-    bool result = infer_handle_AND_bool(transaction, expr, lhs, rhs, new_goal, level);
-    CYG_REPORT_RETVAL(result);
-    return result;
-}
-
-//}}}
-//{{{  infer_handle_OR()                        
-
 // ----------------------------------------------------------------------------
-// The support for OR logic is much the same as for AND
+// The support for the other logical operations involves basically minor
+// variants of the above.
 
 static bool
 infer_handle_OR_bool(CdlTransaction transaction, CdlExpression expr, unsigned int lhs, unsigned int rhs,
@@ -866,31 +828,154 @@ infer_handle_OR_bool(CdlTransaction transaction, CdlExpression expr, unsigned in
         bool rhs_result = CdlInfer::subexpr_bool(rhs_transaction, expr, rhs, true, level);
 
         result = infer_choose2(lhs_transaction, lhs_result, rhs_transaction, rhs_result);
-        
     } else {
         
         // !(A || B) -> !A && !B
-        if (CdlInfer::subexpr_bool(transaction, expr, lhs, false, level) &&
-            CdlInfer::subexpr_bool(transaction, expr, rhs, false, level)) {
+        CdlTransaction sub_transaction = transaction->make(transaction->get_conflict());
+        if (CdlInfer::subexpr_bool(sub_transaction, expr, lhs, false, level) &&
+            CdlInfer::subexpr_bool(sub_transaction, expr, rhs, false, level)) {
+            sub_transaction->commit();
             result = true;
+        } else {
+            sub_transaction->cancel();
         }
+        delete sub_transaction;
     }
     
     CYG_REPORT_RETVAL(result);
     return result;
 }
 
-static bool
-infer_handle_OR_value(CdlTransaction transaction, CdlExpression expr, unsigned int lhs, unsigned int rhs,
-                CdlSimpleValue& goal, int level)
-{
-    CYG_REPORT_FUNCNAMETYPE("infer_handle_OR_value", "result %d");
+// ----------------------------------------------------------------------------
 
-    bool new_goal = true;
-    if (("0" == goal.get_value()) || ("" == goal.get_value())) {
-        new_goal = false;
+static bool
+infer_handle_IMPLIES_bool(CdlTransaction transaction, CdlExpression expr, unsigned int lhs, unsigned int rhs,
+                     bool goal, int level)
+{
+    CYG_REPORT_FUNCNAMETYPE("infer_handle_implies_bool", "result %d");
+    CYG_REPORT_FUNCARG4XV(transaction, expr, lhs, rhs);
+    CYG_PRECONDITION_CLASSC(transaction);
+    CYG_PRECONDITION_CLASSC(expr);
+    CYG_PRECONDITIONC(lhs != rhs);
+
+
+    bool result = false;
+    
+    if (goal) {
+        // A implies B -> !A || B
+        // Given a choice between !A or B, arguably the "implies"
+        // operator has the connotation that B is preferred. All other
+        // things being equal, infer_choose2() will prefer the rhs
+        // over the lhs so this is achieved automagically.
+        
+        CdlTransaction lhs_transaction = transaction->make(transaction->get_conflict());
+        CdlTransaction rhs_transaction = transaction->make(transaction->get_conflict());
+        bool lhs_result = CdlInfer::subexpr_bool(lhs_transaction, expr, lhs, false, level);
+        bool rhs_result = CdlInfer::subexpr_bool(rhs_transaction, expr, rhs, true, level);
+
+        result = infer_choose2(lhs_transaction, lhs_result, rhs_transaction, rhs_result);
+        
+    } else {
+        
+        // !(A implies B) -> !(!A || B) -> (A && !B)
+        CdlTransaction sub_transaction = transaction->make(transaction->get_conflict());
+        if (CdlInfer::subexpr_bool(sub_transaction, expr, lhs, true, level) &&
+            CdlInfer::subexpr_bool(sub_transaction, expr, rhs, false, level)) {
+            sub_transaction->commit();
+            result = true;
+        } else {
+            sub_transaction->cancel();
+        }
+        delete sub_transaction;
     }
-    bool result = infer_handle_OR_bool(transaction, expr, lhs, rhs, new_goal, level);
+    
+    CYG_REPORT_RETVAL(result);
+    return result;
+}
+
+// ----------------------------------------------------------------------------
+
+static bool
+infer_handle_XOR_bool(CdlTransaction transaction, CdlExpression expr, unsigned int lhs, unsigned int rhs,
+                     bool goal, int level)
+{
+    CYG_REPORT_FUNCNAMETYPE("infer_handle_XOR_bool", "result %d");
+    CYG_REPORT_FUNCARG4XV(transaction, expr, lhs, rhs);
+    CYG_PRECONDITION_CLASSC(transaction);
+    CYG_PRECONDITION_CLASSC(expr);
+    CYG_PRECONDITIONC(lhs != rhs);
+
+
+    bool result = false;
+    
+    if (goal) {
+        // (A xor B) -> (A && !B) || (!A && B)
+
+        CdlTransaction sub1 = transaction->make(transaction->get_conflict());
+        CdlTransaction sub2 = transaction->make(transaction->get_conflict());
+        bool result1 = (CdlInfer::subexpr_bool(sub1, expr, lhs, true, level) &&
+                        CdlInfer::subexpr_bool(sub1, expr, rhs, false, level));
+        bool result2 = (CdlInfer::subexpr_bool(sub2, expr, lhs, false, level) &&
+                        CdlInfer::subexpr_bool(sub2, expr, rhs, true, level));
+                           
+        result = infer_choose2(sub1, result1, sub2, result2);
+        
+    } else {
+        
+        // !(A xor B) -> (!A && !B) || (A && B)
+        CdlTransaction sub1 = transaction->make(transaction->get_conflict());
+        CdlTransaction sub2 = transaction->make(transaction->get_conflict());
+        bool result1 = (CdlInfer::subexpr_bool(sub1, expr, lhs, false, level) &&
+                        CdlInfer::subexpr_bool(sub1, expr, rhs, false, level));
+        bool result2 = (CdlInfer::subexpr_bool(sub2, expr, lhs, true, level) &&
+                        CdlInfer::subexpr_bool(sub2, expr, rhs, true, level));
+                           
+        result = infer_choose2(sub1, result1, sub2, result2);
+    }
+    
+    CYG_REPORT_RETVAL(result);
+    return result;
+}
+
+// ----------------------------------------------------------------------------
+
+static bool
+infer_handle_EQV_bool(CdlTransaction transaction, CdlExpression expr, unsigned int lhs, unsigned int rhs,
+                     bool goal, int level)
+{
+    CYG_REPORT_FUNCNAMETYPE("infer_handle_EQV_bool", "result %d");
+    CYG_REPORT_FUNCARG4XV(transaction, expr, lhs, rhs);
+    CYG_PRECONDITION_CLASSC(transaction);
+    CYG_PRECONDITION_CLASSC(expr);
+    CYG_PRECONDITIONC(lhs != rhs);
+
+
+    bool result = false;
+    
+    if (goal) {
+        // (A eqv B) -> (A && B) || (!A && !B)
+
+        CdlTransaction sub1 = transaction->make(transaction->get_conflict());
+        CdlTransaction sub2 = transaction->make(transaction->get_conflict());
+        bool result1 = (CdlInfer::subexpr_bool(sub1, expr, lhs, true, level) &&
+                        CdlInfer::subexpr_bool(sub1, expr, rhs, true, level));
+        bool result2 = (CdlInfer::subexpr_bool(sub2, expr, lhs, false, level) &&
+                        CdlInfer::subexpr_bool(sub2, expr, rhs, false, level));
+                           
+        result = infer_choose2(sub1, result1, sub2, result2);
+    } else {
+        // !(A eqv B) -> (A && !B) || (!A && B)
+
+        CdlTransaction sub1 = transaction->make(transaction->get_conflict());
+        CdlTransaction sub2 = transaction->make(transaction->get_conflict());
+        bool result1 = (CdlInfer::subexpr_bool(sub1, expr, lhs, true, level) &&
+                        CdlInfer::subexpr_bool(sub1, expr, rhs, false, level));
+        bool result2 = (CdlInfer::subexpr_bool(sub2, expr, lhs, false, level) &&
+                        CdlInfer::subexpr_bool(sub2, expr, rhs, true, level));
+                           
+        result = infer_choose2(sub1, result1, sub2, result2);
+    }
+    
     CYG_REPORT_RETVAL(result);
     return result;
 }
@@ -1090,6 +1175,18 @@ CdlInfer::subexpr_bool(CdlTransaction transaction, CdlExpression expr, unsigned 
           result = infer_handle_OR_bool(transaction, expr, subexpr.lhs_index, subexpr.rhs_index, goal, level);
           break;
 
+      case CdlExprOp_Implies :
+          result = infer_handle_IMPLIES_bool(transaction, expr, subexpr.lhs_index, subexpr.rhs_index, goal, level);
+          break;
+        
+      case CdlExprOp_Xor :
+          result = infer_handle_XOR_bool(transaction, expr, subexpr.lhs_index, subexpr.rhs_index, goal, level);
+          break;
+        
+      case CdlExprOp_Eqv :
+          result = infer_handle_EQV_bool(transaction, expr, subexpr.lhs_index, subexpr.rhs_index, goal, level);
+          break;
+        
       case CdlExprOp_Equal :
           result = infer_handle_equal_bool(transaction, expr, subexpr.lhs_index, subexpr.rhs_index, goal, level);
           break;
@@ -1101,23 +1198,13 @@ CdlInfer::subexpr_bool(CdlTransaction transaction, CdlExpression expr, unsigned 
           // <= is satisfied by a numerical equality. However the inverse relation > cannot be handled that way
           // The other comparison operators are much the same.
       case CdlExprOp_LessEqual :
-          if (goal) {
-              result = infer_handle_numerical_equal_bool(transaction, expr, subexpr.lhs_index, subexpr.rhs_index, true, level);
-          }
-          break;
-
-      case CdlExprOp_LessThan :
-          if (!goal) {
-              result = infer_handle_numerical_equal_bool(transaction, expr, subexpr.lhs_index, subexpr.rhs_index, true, level);
-          }
-          break;
-          
       case CdlExprOp_GreaterEqual :
           if (goal) {
               result = infer_handle_numerical_equal_bool(transaction, expr, subexpr.lhs_index, subexpr.rhs_index, true, level);
           }
           break;
 
+      case CdlExprOp_LessThan :
       case CdlExprOp_GreaterThan :
           if (!goal) {
               result = infer_handle_numerical_equal_bool(transaction, expr, subexpr.lhs_index, subexpr.rhs_index, true, level);
@@ -1180,17 +1267,20 @@ CdlInfer::subexpr_value(CdlTransaction transaction, CdlExpression expr, unsigned
           break;
 
       case CdlExprOp_LogicalNot         :
-          result = infer_handle_logical_NOT_value(transaction, expr, subexpr.lhs_index, goal, level);
+      case CdlExprOp_And                :
+      case CdlExprOp_Or                 :
+      case CdlExprOp_Implies            :
+      case CdlExprOp_Xor                :
+      case CdlExprOp_Eqv                :
+      {
+          bool  new_goal = true;
+          if (("0" == goal.get_value()) || ("" == goal.get_value())) {
+              new_goal = false;
+          }
+          result = CdlInfer::subexpr_bool(transaction, expr, index, new_goal, level);
           break;
+      }
           
-      case CdlExprOp_And         :
-          result = infer_handle_OR_value(transaction, expr, subexpr.lhs_index, subexpr.rhs_index, goal, level);
-          break;
-          
-      case CdlExprOp_Or          :
-          result = infer_handle_AND_value(transaction, expr, subexpr.lhs_index, subexpr.rhs_index, goal, level);
-          break;
-
       case CdlExprOp_Function :
           result = CdlFunction::infer_value(transaction, expr, index, goal, level);
           break;
@@ -1283,19 +1373,19 @@ CdlConflict_RequiresBody::inner_resolve(CdlTransaction transaction, int level)
     CYG_PRECONDITION_CLASSC(transaction);
 
     bool result = false;
+
+    CdlProperty_GoalExpression  gexpr   = dynamic_cast<CdlProperty_GoalExpression>(this->get_property());
+    CdlExpression               expr    = gexpr->get_expression();
     
-    CdlProperty_GoalExpression gexpr = dynamic_cast<CdlProperty_GoalExpression>(this->get_property());
-    CdlExpression expr  = gexpr->get_expression();
-    
-    // Only create the sub-transactions when needed
+    // Only create the sub-transactions when needed.
     CdlTransaction expr_transaction     = 0;
     CdlTransaction disable_transaction  = 0;
     CdlTransaction inactive_transaction = 0;
 
     // Keep track of the preferred solution found to date.
     CdlTransaction preferred_transaction = 0;
-    
-    expr_transaction     = transaction->make(this);
+
+    expr_transaction = transaction->make(this);
     if (!CdlInfer::subexpr_bool(expr_transaction, expr, expr->first_subexpression, true, level)) {
         // No luck here.
         expr_transaction->cancel();

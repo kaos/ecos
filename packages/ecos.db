@@ -703,6 +703,7 @@ package CYGPKG_DEVS_ETH_CF {
 	alias 		{ "PCMCIA (Compact Flash) ethernet drivers" cf_eth_drivers }
 	directory	devs/eth/cf
 	script		cf_eth_drivers.cdl
+        hardware
         description     "Ethernet drivers for PCMCIA (Compact Flash) cardss."
 }
 package CYGPKG_IO_PCI	{
@@ -1089,6 +1090,14 @@ package CYGPKG_HAL_ARM_SA11X0_IPAQ {
         description "
         The IPAQ HAL package provides the support needed to run
         eCos on a Intel StrongARM SA1110 pocket PC (Compaq iPAQ)."
+}
+
+package CYGPKG_DEVS_ETH_SMSC_LAN91CXX {
+	alias 		{ "SMSC LAN91CXX ethernet driver" lan91cxx_eth_driver lan9000_eth_driver }
+	hardware
+	directory	devs/eth/smsc/lan91cxx
+	script		smsc_lan91cxx_eth_drivers.cdl
+        description     "Ethernet driver for SMSC LAN91CXX (LAN9000) controller."
 }
 
 
@@ -1766,6 +1775,8 @@ target assabet {
                    CYGPKG_IO_USB_SLAVE
                    CYGPKG_DEVS_USB_SA11X0
 		   CYGPKG_DEVICES_WATCHDOG_ARM_SA11X0
+                   CYGPKG_DEVS_ETH_CF
+                   CYGPKG_DEVS_ETH_NS_DP83902A
         }
         description "
         The assabet target provides the packages needed to run
@@ -1784,6 +1795,8 @@ target ipaq {
 		   CYGPKG_DEVICES_WATCHDOG_ARM_SA11X0
                    CYGPKG_DEVS_TOUCH_IPAQ
                    CYGPKG_DEVS_KBD_IPAQ
+                   CYGPKG_DEVS_ETH_CF
+                   CYGPKG_DEVS_ETH_NS_DP83902A
         }
         description "
         The IPAQ target provides the packages needed to run

@@ -1,3 +1,15 @@
+2001-06-22  Gary Thomas  <gthomas@redhat.com>
+
+	* src/generic-stub.c (BUFMAX): Define as platform specific, thus
+	reducing memory requirements.
+	(__process_packet): Eliminate program arguments support until eCos
+	makes use of them (more memory savings).
+
+2001-06-22  Mark Salter  <msalter@redhat.com>
+
+	* src/hal_stub.c (__do_copy_mem): Add goto statement to prevent
+	compiler from moving instructions across 'err' label.
+
 2001-06-14  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/generic-stub.c (__process_packet): Don't reset the board

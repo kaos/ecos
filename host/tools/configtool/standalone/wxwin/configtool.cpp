@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/24
-// Version:     $Id: configtool.cpp,v 1.34 2001/05/02 10:36:15 julians Exp $
+// Version:     $Id: configtool.cpp,v 1.35 2001/06/18 14:41:13 julians Exp $
 // Purpose:
 // Description: Implementation file for the ConfigTool application class
 // Requires:
@@ -1037,9 +1037,10 @@ void ecApp::Build(const wxString &strWhat /*=wxT("")*/ )
             // wxSetWorkingDirectory(pDoc->GetBuildTree());
 
             m_pipedProcess = new ecPipedProcess;
-            int pid = wxExecute(strCmd, FALSE, m_pipedProcess);
+            long pid = wxExecute(strCmd, FALSE, m_pipedProcess);
             if ( pid )
             {
+                m_pipedProcess->SetPid(pid);
                 // wxLogStatus(_T("Process %ld (%s) launched."), pid, cmd.c_str());
             }
             else

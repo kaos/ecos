@@ -1,3 +1,8 @@
+2001-06-21  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* tests/wallclock2.cxx: No need to check for CYGINT_LIBC_STARTUP_CONTEXT
+	as it is required by CYGPKG_LIBC_STARTUP.
+
 2001-04-06  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/wallclock/wallclock.inl (_simple_mkdate): Fix small

@@ -582,7 +582,7 @@ CdlProperty_ReferenceBody::~CdlProperty_ReferenceBody()
 // ----------------------------------------------------------------------------
 // Reference handling. It is useful at this level to cope with the
 // four cases of Loaded, Unloaded, Created, and Destroyed. In addition
-// the update handler needs to be invoked.
+// the property-specific update handler needs to be invoked.
 
 void
 CdlProperty_ReferenceBody::update(CdlTransaction transact, CdlNode source, CdlNode dest, CdlUpdate change)
@@ -596,13 +596,18 @@ CdlProperty_ReferenceBody::update(CdlTransaction transact, CdlNode source, CdlNo
       case CdlUpdate_Loaded :
       {
         // The source has just been loaded, try to resolve the reference.
+        // Note that e.g. the parent property allow for a reference to ""
+        // The necessary validation will have happened during parsing.
         CYG_ASSERTC(0 == dest);
         CdlToplevel toplevel = source->get_toplevel();
-        dest = toplevel->lookup(get_destination_name());
-        if (0 == dest) {
-            CdlConflict_UnresolvedBody::make(transact, source, this, get_destination_name());
-        } else {
-            bind(source, this, dest);
+        std::string dest_name = get_destination_name();
+        if ("" != dest_name) {
+            dest = toplevel->lookup(dest_name);
+            if (0 == dest) {
+                CdlConflict_UnresolvedBody::make(transact, source, this, get_destination_name());
+            } else {
+                bind(source, this, dest);
+            }
         }
         break;
       }

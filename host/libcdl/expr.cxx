@@ -130,6 +130,56 @@ CdlEvalContext::~CdlEvalContext()
     CYG_REPORT_RETURN();
 }
 
+// Given a context and a reference inside an expression, obtain the node
+// being referenced - if it is loaded.
+CdlNode
+CdlEvalContext::resolve_reference(CdlExpression expr, int index)
+{
+    CYG_REPORT_FUNCNAMETYPE("CdlEvalContext::resolve_reference", "result %");
+    CYG_REPORT_FUNCARG2XV(expr, index);
+    CYG_PRECONDITION_THISC();
+    CYG_PRECONDITION_CLASSC(expr);
+    CYG_PRECONDITIONC((0 <= index) && (index <= (int)expr->references.size()));
+
+    // This expression may be happening in the context of a particular
+    // property. If so then the destination may or may not be
+    // resolved, which will have been handled when the containing package
+    // was loaded. Alternatively this expression may be evaluated inside
+    // some arbitrary Tcl code, in which case references remain unbound
+    // and need to be resolved the hard way.
+    CdlNode result = 0;
+    if (0 != this->property) {
+        // There is a property, use the bound/unbound reference.
+        result = expr->references[index].get_destination();
+    } else {
+        // The destination name can be retrieved, but we still need some
+        // way of resolving it.
+        if (0 != this->toplevel) {
+            std::string destination_name = expr->references[index].get_destination_name();
+            result = this->toplevel->lookup(destination_name);
+        }
+    }
+    
+    CYG_REPORT_RETVAL(result);
+    return result;
+}
+
+// Ditto, but also check that the result is a valuable.
+CdlValuable
+CdlEvalContext::resolve_valuable_reference(CdlExpression expr, int index)
+{
+    CYG_REPORT_FUNCNAMETYPE("CdlEvalContext::resolve_reference", "result %");
+    CYG_REPORT_FUNCARG2XV(expr, index);
+
+    CdlValuable result  = 0;
+    CdlNode     node = this->resolve_reference(expr, index);
+    if (0 != node) {
+        result = dynamic_cast<CdlValuable>(node);
+    }
+    CYG_REPORT_RETVAL(result);
+    return result;
+}
+
 bool
 CdlEvalContext::check_this(cyg_assert_class_zeal zeal) const
 {
@@ -234,7 +284,10 @@ enum token {
     T_Colon             = 29,   // : (in a conditional)
     T_StringConcat      = 30,   // .
     T_Function          = 31,   // is_substr etc.
-    T_Comma             = 32    // , (inside a function)
+    T_Comma             = 32,   // , (inside a function)
+    T_Implies           = 33,   // implies
+    T_Xor               = 34,   // xor
+    T_Eqv               = 35    // eqv
     
 };
 
@@ -249,6 +302,7 @@ static int              current_char            = EOF;
 static token            current_token           = T_Invalid;
 static std::string      current_string          = "";
 static std::string      current_reference       = "";
+static std::string      current_special         = "";
 static cdl_int          current_int             = 0;
 static double           current_double          = 0.0;
 static CdlValueFormat   current_format          = CdlValueFormat_Default;
@@ -331,6 +385,14 @@ get_error_location()
     return result;
 }
 
+// Export this functionality available to other modules, especially func.cxx and its
+// argument checking routines.
+std::string
+CdlParse::get_expression_error_location(void)
+{
+    return get_error_location();
+}
+
 //}}}
 //{{{  Token translation                
 
@@ -363,6 +425,9 @@ token_to_binary_expr_op()
       case T_And:               result = CdlExprOp_And; break;
       case T_Or:                result = CdlExprOp_Or; break;
       case T_StringConcat:      result = CdlExprOp_StringConcat; break;
+      case T_Implies:           result = CdlExprOp_Implies; break;
+      case T_Xor:               result = CdlExprOp_Xor; break;
+      case T_Eqv:               result = CdlExprOp_Eqv; break;
       default:                  result = CdlExprOp_Invalid; break;
     }
     
@@ -459,6 +524,9 @@ token_to_string()
       case T_Or:                result = "or operator ||"; break;
       case T_Colon:             result = "colon"; break;
       case T_StringConcat:      result = "string concatenation operator ."; break;
+      case T_Implies:           result = "implies operator"; break;
+      case T_Xor:               result = "logical xor operator"; break;
+      case T_Eqv:               result = "logical equivalence operator eqv"; break;
       case T_Function:          result = std::string("function call ") + CdlFunction::get_name(current_function_id); break;
       case T_Invalid:
       default:                  result = "<invalid token>"; break;
@@ -788,13 +856,23 @@ process_special()
     if ("to" == current_reference) {
         current_token  = T_Range;
         result = true;
+    } else if ("implies" == current_reference) {
+        current_token  = T_Implies;
+        result = true;
+    } else if ("xor" == current_reference) {
+        current_token  = T_Xor;
+        result = true;
+    } else if ("eqv" == current_reference) {
+        current_token  = T_Eqv;
+        result = true;
     } else if (CdlFunction::is_function(current_reference.c_str(), current_function_id)) {
-        current_token           = T_Function;
+        current_token  = T_Function;
         result = true;
     }
 
     if (result) {
-        current_reference = "";
+        current_special     = current_reference;
+        current_reference   = "";
     }
     CYG_REPORT_RETVAL(result);
     return result;
@@ -817,6 +895,7 @@ next_token()
     current_token       = T_Invalid;
     current_string      = "";
     current_reference   = "";
+    current_special     = "";
     current_int         = 0;
     current_double      = 0.0;
     current_format      = CdlValueFormat_Default;
@@ -1059,17 +1138,19 @@ initialise_tokenisation(std::string data, int index)
 // The BNF of CDL expressions is something like this:
 //
 //   <expression>   ::= <conditional>
-//   <conditional>  ::= <or> ? <conditional> : <conditional> | <or>
-//   <or>           ::= <and>    [<or op>     <and>]           ||
-//   <and>          ::= <bitor>  [<and op>    <bitor>]         ??
-//   <bitor>        ::= <bitxor> [<bitor op>  <bitxor>]        |
-//   <bitxor>       ::= <bitand> [<bitxor op> <bitand>]        ^
-//   <bitand>       ::= <eq>     [<bitand op> <eq>]            &
-//   <eq>           ::= <comp>   [<eq op>     <comp>]          == !=
-//   <comp>         ::= <shift>  [<comp op>   <shift>]         < <= > >=
-//   <shift>        ::= <add>    [<shift op>  <add>]           << >>
-//   <add>          ::= <mult>   [<add op>    <mult>]          + - .
-//   <mult>         ::= <unary>  [<mult op>   <unary>]         * / %
+//   <conditional>  ::= <implies> ? <conditional> : <conditional> | <implies>
+//   <implies>      ::= <eqv>    [<implies op>  <implies>]      implies
+//   <eqv>          ::= <or>     [<eqv op>      <eqv>]          xor, eqv        
+//   <or>           ::= <and>    [<or op>       <or>]           ||
+//   <and>          ::= <bitor>  [<and op>      <and>]          &&
+//   <bitor>        ::= <bitxor> [<bitor op>    <bitor>]        |
+//   <bitxor>       ::= <bitand> [<bitxor op>   <bitxor>]       ^
+//   <bitand>       ::= <eq>     [<bitand op>   <and>]          &
+//   <eq>           ::= <comp>   [<eq op>       <eq>]           == !=
+//   <comp>         ::= <shift>  [<comp op>     <comp>]         < <= > >=
+//   <shift>        ::= <add>    [<shift op>    <shift>]        << >>
+//   <add>          ::= <mult>   [<add op>      <add>]          + - .
+//   <mult>         ::= <unary>  [<mult op>     <mult>]         * / %
 //   <unary>        ::= -<unary> | +<unary> | !<unary> | *<unary> | ?<unary> |
 //                      ~<unary> |
 //                      <string constant> | <integer constant> |
@@ -1135,7 +1216,7 @@ parse_function(CdlExpression expr)
 
     int number_of_args  = CdlFunction::get_args_count(current_function_id);
     CYG_ASSERTC((0 < number_of_args) && (number_of_args <= CdlFunction_MaxArgs));
-    std::string name    = current_reference;
+    std::string name    = current_special;
 
     // check for the opening bracket: xyzzy(arg1, arg2)
     next_token();
@@ -1155,6 +1236,9 @@ parse_function(CdlExpression expr)
             }
             next_token();
         }
+    }
+    if (T_Comma == current_token) {
+        throw CdlParseException(std::string("Too many arguments passed to function ") + name + "\n" + get_error_location());
     }
     if (T_CloseBracket != current_token) {
         throw CdlParseException(std::string("Expected closing bracket after function ") + name + "\n" + get_error_location());
@@ -1559,11 +1643,55 @@ parse_or(CdlExpression expr)
 }
 
 static void
+parse_eqv(CdlExpression expr)
+{
+    CYG_REPORT_FUNCNAME("parse_eqv");
+
+    parse_or(expr);
+    while ((T_Xor == current_token) || (T_Eqv == current_token)) {
+        
+        CdlSubexpression subexpr;
+        subexpr.op = (T_Xor == current_token) ? CdlExprOp_Xor : CdlExprOp_Eqv;
+        subexpr.lhs_index = expr->first_subexpression;
+        
+        next_token();
+        parse_or(expr);
+
+        subexpr.rhs_index = expr->first_subexpression;
+        push_subexpression(expr, subexpr);
+    }
+    
+    CYG_REPORT_RETURN();
+}
+
+static void
+parse_implies(CdlExpression expr)
+{
+    CYG_REPORT_FUNCNAME("parse_implies");
+
+    parse_eqv(expr);
+    while (T_Implies == current_token) {
+        
+        CdlSubexpression subexpr;
+        subexpr.op = CdlExprOp_Implies;
+        subexpr.lhs_index = expr->first_subexpression;
+        
+        next_token();
+        parse_eqv(expr);
+
+        subexpr.rhs_index = expr->first_subexpression;
+        push_subexpression(expr, subexpr);
+    }
+    
+    CYG_REPORT_RETURN();
+}
+
+static void
 parse_conditional(CdlExpression expr)
 {
     CYG_REPORT_FUNCNAME("parse_conditional");
 
-    parse_or(expr);
+    parse_implies(expr);
     if (T_Questionmark == current_token) {
         CdlSubexpression subexpr;
         subexpr.op = CdlExprOp_Cond;
@@ -2151,6 +2279,60 @@ evaluate_subexpr(CdlEvalContext& context, CdlExpression expr, int subexpr_index,
                 result = false;
             }
         }
+        break;
+    }
+    case CdlExprOp_Xor :
+    {
+        // x xor y. Both sides should be interpreted as boolean values.
+        CdlSimpleValue lhs;
+        CdlSimpleValue rhs;
+        evaluate_subexpr(context, expr, subexpr.lhs_index, lhs);
+        evaluate_subexpr(context, expr, subexpr.rhs_index, rhs);
+
+        bool lhs_bool = lhs.get_bool_value();
+        bool rhs_bool = rhs.get_bool_value();
+        if ((lhs_bool && !rhs_bool) || (!lhs_bool && rhs_bool)) {
+            result = true;
+        } else {
+            result = false;
+        }
+        
+        break;
+    }
+    case CdlExprOp_Eqv :
+    {
+        // x eqv y. Both sides should be interpreted as boolean values.
+        CdlSimpleValue lhs;
+        CdlSimpleValue rhs;
+        evaluate_subexpr(context, expr, subexpr.lhs_index, lhs);
+        evaluate_subexpr(context, expr, subexpr.rhs_index, rhs);
+
+        bool lhs_bool = lhs.get_bool_value();
+        bool rhs_bool = rhs.get_bool_value();
+        if ((!lhs_bool && !rhs_bool) || (lhs_bool && rhs_bool)) {
+            result = true;
+        } else {
+            result = false;
+        }
+        
+        break;
+    }
+    case CdlExprOp_Implies :
+    {
+        // x implies y. Both sides should be interpreted as boolean values.
+        CdlSimpleValue lhs;
+        CdlSimpleValue rhs;
+        evaluate_subexpr(context, expr, subexpr.lhs_index, lhs);
+        evaluate_subexpr(context, expr, subexpr.rhs_index, rhs);
+
+        bool lhs_bool = lhs.get_bool_value();
+        bool rhs_bool = rhs.get_bool_value();
+        if (!lhs_bool || rhs_bool) {
+            result = true;
+        } else {
+            result = false;
+        }
+        
         break;
     }
     case CdlExprOp_Cond :

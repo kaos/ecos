@@ -46,11 +46,6 @@
 #include <redboot.h>
 #include <xyzModem.h>
 
-#ifdef CYGPKG_COMPRESS_ZLIB
-static unsigned char _buffer[CYGNUM_REDBOOT_LOAD_ZLIB_BUFFER];
-static _pipe_t load_pipe;
-#endif
-
 // Buffer used by redboot_getc
 getc_info_t getc_info;
 
@@ -395,7 +390,10 @@ do_load(int argc, char *argv[])
     if (raw) {
 #ifdef CYGPKG_COMPRESS_ZLIB
         if (decompress) {
+            _pipe_t load_pipe;
             _pipe_t* p = &load_pipe;
+            unsigned char _buffer[CYGNUM_REDBOOT_LOAD_ZLIB_BUFFER];
+
             p->out_buf = (unsigned char*) base;
             p->out_size = 0;
             p->in_buf = _buffer;

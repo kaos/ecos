@@ -1,3 +1,11 @@
+2001-06-22  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/mips_rm7000_ocelot_eth_drivers.cdl: Default to getting ESA
+	from EEPROM.
+
+	* include/devs_eth_mips_rm7000_ocelot.inl: Tell driver to expect
+	EEPROM without CRC.
+
 2001-03-02  Jesper Skov  <jskov@redhat.com>
 
 	* include/devs_eth_mips_rm7000_ocelot.inl: Define controller PCI

@@ -88,6 +88,10 @@ do_format(cyg_uint8 fmtchar, cyg_ucount32 sizeleft, char *buf,
         for (i=0; i<cyg_libc_time_day_name_len[timeptr->tm_wday]; ++i)
             buf[i] = cyg_libc_time_day_name[timeptr->tm_wday][i];
         return i;
+#ifdef CYGFUN_LIBC_TIME_SUS_EXTNS
+    case 'h':
+        // ** fall through **
+#endif
     case 'b':
         if (sizeleft<3)
             return -1;
@@ -117,6 +121,15 @@ do_format(cyg_uint8 fmtchar, cyg_ucount32 sizeleft, char *buf,
         buf[0] = (timeptr->tm_mday / 10) + '0';
         buf[1] = (timeptr->tm_mday % 10) + '0';
         return 2;
+#ifdef CYGFUN_LIBC_TIME_SUS_EXTNS
+    case 'e':
+        if (sizeleft < 2)
+            return -1;
+        i = (timeptr->tm_mday / 10);
+        buf[0] = (0 == i) ? ' ' : i + '0';
+        buf[1] = (timeptr->tm_mday % 10) + '0';
+        return 2;
+#endif
     case 'H':
         if (sizeleft < 2)
             return -1;
@@ -160,6 +173,18 @@ do_format(cyg_uint8 fmtchar, cyg_ucount32 sizeleft, char *buf,
         buf[0] = (timeptr->tm_sec / 10) + '0';
         buf[1] = (timeptr->tm_sec % 10) + '0';
         return 2;
+#ifdef CYGFUN_LIBC_TIME_SUS_EXTNS
+    case 'T':
+        if (sizeleft < 8)
+            return -1;
+
+        // Recurse! Note that we know that we will have left room for the
+        // trailing NULL in the strftime body
+        
+        i = strftime( buf, sizeleft+1, "%H:%M:%S", timeptr);
+        
+        return ((0==i) ? -1 : i);
+#endif
     case 'U':
         if (sizeleft < 2)
             return -1;

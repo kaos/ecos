@@ -139,10 +139,10 @@ flash_hwr_init(void)
         return FLASH_ERR_DRV_WRONG_PART;
 
     // Hard wired for now
-    flash_info.block_size = FLASH_BLOCK_SIZE * CYGNUM_FLASH_INTERLEAVE;
+    flash_info.block_size = FLASH_BLOCK_SIZE;
     flash_info.blocks = FLASH_NUM_REGIONS;
     flash_info.start = (void *)CYGNUM_FLASH_BASE;
-    flash_info.end = (void *)(CYGNUM_FLASH_BASE+ (FLASH_NUM_REGIONS * FLASH_BLOCK_SIZE * CYGNUM_FLASH_INTERLEAVE * CYGNUM_FLASH_SERIES));
+    flash_info.end = (void *)(CYGNUM_FLASH_BASE+ (FLASH_NUM_REGIONS * FLASH_BLOCK_SIZE * CYGNUM_FLASH_SERIES));
     flash_info.buffer_size = FLASH_BUFFER_SIZE;
 
     return FLASH_ERR_OK;

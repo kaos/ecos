@@ -1,3 +1,20 @@
+2001-06-20  Grant Edwards <grante@visi.com>
+2001-06-20  Hugo Tyson  <hmt@redhat.com>
+
+	* src/lib/dhcp_prot.c (alarm_function): Change the lease state
+	before re-enabling the alarm so that if it somehow gets times of
+	zero (ie. right now) it quickly completes the state machine rather
+	than recursing to its doom.
+	(new_lease): Test the retcode of get_bootp_option() and use
+	obvious defaults if the T1 and T2 times are not provided - this is
+	RFC compliant! - and use "infinite lease" if the lease time is not
+	provided at all.
+
+2001-06-19  Trenton D. Adams  <tadams@extremeeng.com>
+
+	* tests/server_test.c (server_test): Null terminate read string
+	at right place.
+
 2001-06-13  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/net.cdl: Make debug output an option. Include DHCP.

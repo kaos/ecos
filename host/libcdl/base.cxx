@@ -485,9 +485,14 @@ CdlNodeBody::is_active(CdlTransaction transaction)
     CYG_REPORT_FUNCNAMETYPE("CdlNode::is_active", "result %d");
     CYG_REPORT_FUNCARG2XV(this, transaction);
     CYG_PRECONDITION_THISC();
-    CYG_PRECONDITION_CLASSC(transaction);
+    CYG_PRECONDITION_ZERO_OR_CLASSC(transaction);
 
-    bool result = transaction->is_active(this);
+    bool result;
+    if (0 != transaction) {
+        result = transaction->is_active(this);
+    } else {
+        result = active;
+    }
     CYG_REPORT_RETVAL(result);
     return result;
 }
@@ -3598,16 +3603,35 @@ CdlParentableBody::update_handler(CdlTransaction transaction, CdlNode source, Cd
     }
     
     // Now either dest is valid or it is not. If it is then we need to
-    // reparent below the destination. Otherwise we need to reparent
-    // below the orphans container. There are also a few nasty special
-    // cases to consider.
-
+    // reparent below the destination. Otherwise if the specified
+    // parent is "" then we need to reparent below the root. Otherwise
+    // the node ends up in the orphans container. There are a few
+    // nasty special cases to consider like reparenting below
+    // something that is not a container.
     if (0 == dest) {
-        // Orphan the node. It still has a parent, either as a
-        // consequence of the loading process or because of a previous
-        // binding operation.
         CdlToplevel  toplevel = source->get_toplevel();
-        toplevel->change_parent(source->get_owner(), source->get_parent(), 0, source);
+        
+        CdlProperty_Reference refprop = dynamic_cast<CdlProperty_Reference>(prop);
+        if ("" == refprop->get_destination_name()) {
+            dest = toplevel;
+            // Now to find the correct insertion point. Nodes which should be
+            // reparented below the root should come first, ahead of any nodes
+            // which are not specifically reparented.
+            const std::vector<CdlNode>& contents = toplevel->get_contents();
+            unsigned int index;
+            for (index = 0; index < contents.size(); index++) {
+                if (!contents[index]->has_property(CdlPropertyId_Parent)) {
+                    break;
+                }
+            }
+            toplevel->change_parent(source->get_owner(), source->get_parent(), toplevel, source, index);
+            
+        } else {
+            // Orphan the node. It still has a parent, either as a
+            // consequence of the loading process or because of a previous
+            // binding operation.
+            toplevel->change_parent(source->get_owner(), source->get_parent(), 0, source);
+        }
         
         // The Unresolved conflict is handled by
         // CdlProperty_Reference::update(). The "else" code below may
@@ -3674,7 +3698,7 @@ CdlParentableBody::parse_parent(CdlInterpreter interp, int argc, char** argv)
 {
     CYG_REPORT_FUNCNAMETYPE("parse_parent", "result %d");
 
-    int result = CdlParse::parse_reference_property(interp, argc, argv, CdlPropertyId_Parent, 0, 0, &update_handler);
+    int result = CdlParse::parse_reference_property(interp, argc, argv, CdlPropertyId_Parent, 0, 0, true, &update_handler);
     
     CYG_REPORT_RETVAL(result);
     return result;

@@ -1,3 +1,8 @@
+2001-06-19  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/if_edb7xxx.c (edb7xxx_cs8900_init): Don't retrieve ESA if
+	it's been set in the config.
+
 2001-01-30  Gary Thomas  <gthomas@redhat.com>
 
 	* src/if_edb7xxx.c: New RedBoot config data layout.

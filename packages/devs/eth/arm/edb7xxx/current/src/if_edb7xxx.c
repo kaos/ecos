@@ -205,7 +205,7 @@ edb7xxx_cs8900_init(struct cyg_netdevtab_entry *tab)
     defined(CYGSEM_REDBOOT_FLASH_CONFIG) && \
     !defined(CYGSEM_ARM_EDB7XXX_SET_ESA)
     flash_get_config("edb7xxx_esa", enaddr, CONFIG_ESA);
-#else
+#elif !defined(CYGSEM_ARM_EDB7XXX_SET_ESA)
     for (i = 0;  i < ETHER_ADDR_LEN;  i += 2) {
         unsigned short esa_reg = get_reg(PP_IA+i);
         enaddr[i] = esa_reg & 0xFF;

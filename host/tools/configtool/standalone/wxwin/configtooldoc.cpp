@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/10/05
-// Version:     $Id: configtooldoc.cpp,v 1.30 2001/06/11 14:49:49 julians Exp $
+// Version:     $Id: configtooldoc.cpp,v 1.31 2001/06/18 14:41:13 julians Exp $
 // Purpose:
 // Description: Implementation file for the ecConfigToolDoc class
 // Requires:
@@ -68,7 +68,7 @@
 
 #ifdef __WXMSW__
 #include <windows.h>
-#ifndef __GNUWIN32__
+#ifndef __CYGWIN__
 #include <shlobj.h>
 #endif
 #include "wx/msw/winundef.h"
@@ -110,9 +110,9 @@ ecConfigToolDoc::~ecConfigToolDoc()
 {
     wxGetApp().m_currentDoc = NULL;
     wxGetApp().GetSettings().m_strRepository = m_strRepository;
-    
+
     CloseRepository();
-    
+
     // Delete remaining items -- most (if not all) should already
     // have been deleted via the tree item client data
     DeleteItems();
@@ -126,7 +126,7 @@ void ecConfigToolDoc::DeleteItems()
     {
         ecConfigItem* item = wxDynamicCast(node->Data(), ecConfigItem);
         wxNode* next = node->Next();
-        
+
         // Note: automatically removes itself from this list in ~ecConfigItem
         delete item;
         node = next;
@@ -164,7 +164,7 @@ bool ecConfigToolDoc::Save()
 bool ecConfigToolDoc::OnCreate(const wxString& path, long flags)
 {
     wxGetApp().m_currentDoc = this;
-    
+
     if (flags & wxDOC_NEW)
     {
         m_bRepositoryOpen = FALSE;
@@ -196,13 +196,13 @@ bool ecConfigToolDoc::OnCreate(const wxString& path, long flags)
         {
             wxBusyCursor wait;
 
-            ecConfigToolHint hint(NULL, ecSelChanged);           
+            ecConfigToolHint hint(NULL, ecSelChanged);
             UpdateAllViews (NULL, & hint);
 
             SetFilename(GetFilename(), TRUE);
 
             // load the memory layout for the default target-platform-startup from the current repository
-            
+
             // TODO
             // m_memoryMap.set_map_size (0xFFFFFFFF); // set the maximum memory map size
             // NewMemoryLayout (CFileName (m_strPackagesDir, m_strMemoryLayoutFolder, _T("include\\pkgconf")));
@@ -221,73 +221,73 @@ bool ecConfigToolDoc::OnCreate(const wxString& path, long flags)
 bool ecConfigToolDoc::OnSaveDocument(const wxString& filename)
 {
     wxBusyCursor cursor;
-    
+
     const wxString strOldPath(GetFilename());
 
-#if 0    
+#if 0
     bool bSaveAs=(filename!=strOldPath);
     if(!IsModified() && wxFileExists(filename))
     {
         return TRUE;
     }
 #endif
-    
+
     bool rc=FALSE;
     if (CheckConflictsBeforeSave())
     { // errors already emitted
-        
+
         const wxString strPathName(filename);
-        
+
         wxString str;
         str.Printf(_("Saving configuration %s"), (const wxChar*) filename);
-        
+
         /* TODO
         CIdleMessage IM(str);
         if(CConfigTool::GetCellView()){
         CConfigTool::GetCellView()->CancelCellEdit();
         }
         */
-        
+
         // check the configuration
-        
+
         wxASSERT (m_CdlConfig->check_this (cyg_extreme));
-        
+
         // save the configuration
-        
+
         try
         {
             m_CdlConfig->save ((const wxChar*) filename);
             rc=TRUE;
         }
-        
+
         catch (CdlStringException exception)
         {
             wxString msg;
             msg.Printf(_("Error saving eCos configuration:\n\n%s"), exception.get_message ().c_str ());
             wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_EXCLAMATION|wxOK);
         }
-        
+
         catch (...)
         {
             wxString msg;
             msg.Printf(_("Error saving eCos configuration"));
             wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_EXCLAMATION|wxOK);
         }
-        
+
         if(rc){
             rc=FALSE;
             SetFilename (filename); // called to ensure that MLTDir() will work in this function TODO??
-            
+
             // save the memory layout files to the build tree and copy to the install tree
-            /* TODO            
+            /* TODO
             if (bSaveAs || MemoryMap.map_modified ()) {
             SaveMemoryMap();
             }
             */
-            
+
             ecConfigToolHint hint(NULL, ecAllSaved);
             UpdateAllViews (NULL, & hint);
-            
+
             wxASSERT( !m_strBuildTree.IsEmpty() );
             wxASSERT( !m_strInstallTree.IsEmpty() );
 
@@ -309,9 +309,9 @@ bool ecConfigToolDoc::OnSaveDocument(const wxString& filename)
                 rc=generate_build_tree (GetCdlConfig(), ecUtils::UnicodeToStdStr(m_strBuildTree), ecUtils::UnicodeToStdStr(m_strInstallTree));
                 rc = TRUE;
             }
-            
+
         }
-    }  
+    }
     if(rc)
     {
         Modify(FALSE);
@@ -322,6 +322,7 @@ bool ecConfigToolDoc::OnSaveDocument(const wxString& filename)
     {
         SetFilename(strOldPath);
     }
+    wxGetApp().GetMainFrame()->UpdateFrameTitle();
     return rc;
 }
 
@@ -330,15 +331,15 @@ bool ecConfigToolDoc::OnOpenDocument(const wxString& filename)
     wxGetApp().GetSettings().m_lastFilename = filename;
 
     wxBusyCursor cursor;
-    
+
     bool rc=FALSE; // Assume the worst
     CdlInterpreter NewCdlInterp = NULL;
     CdlConfiguration NewCdlConfig = NULL;
-    
+
     // We have to open the repository or m_CdlPkgData and co. won't be set
     if (!OpenRepository())
         return FALSE;
-   
+
     wxString str;
     str.Printf(_("Opening save file %s"), (const wxChar*) filename);
     wxGetApp().SetStatusText(str);
@@ -363,28 +364,28 @@ bool ecConfigToolDoc::OnOpenDocument(const wxString& filename)
         msg.Printf(_("Error opening eCos configuration"));
         wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_EXCLAMATION|wxOK);
     }
-    
+
     if (rc)
     {
         rc=FALSE;
         // check the new configuration
-        
+
         wxASSERT (NewCdlConfig->check_this (cyg_extreme));
-        
+
         // switch to the new configuration
-        
+
         delete m_CdlConfig;
         delete m_CdlInterp;
         m_CdlInterp = NewCdlInterp;
         m_CdlConfig = NewCdlConfig;
         //SetPathName (lpszPathName, TRUE); // called to ensure that MLTDir() will work in this function
-        
+
         AddAllItems (); // must precede NewMemoryLayout() [CurrentLinkerScript() calls Find()]
-        
+
         // load the memory layout from the build tree
         // TODO
         NewMemoryLayout (MLTDir ());
-        
+
         UpdateFailingRuleCount();
 
         UpdateBuildInfo();
@@ -396,10 +397,10 @@ bool ecConfigToolDoc::OnOpenDocument(const wxString& filename)
         ecConfigToolHint hint(NULL, ecFilenameChanged);
         UpdateAllViews (NULL, & hint);
     }
-    
-    // re-enable the transaction callback   
+
+    // re-enable the transaction callback
     EnableCallbacks(TRUE);
-    
+
     SetDocumentSaved(TRUE); // Necessary or it will pop up the Save As dialog
 
     wxGetApp().SetStatusText(wxEmptyString, FALSE);
@@ -411,30 +412,30 @@ void ecConfigToolDoc::AddAllItems()
 {
     ecConfigTreeCtrl* treeCtrl = wxGetApp().GetMainFrame()->GetTreeCtrl();
     // Ensure there's no dangling pointer
-    wxGetApp().GetMainFrame()->GetPropertyListWindow()->Fill(NULL);    
+    wxGetApp().GetMainFrame()->GetPropertyListWindow()->Fill(NULL);
 
     treeCtrl->DeleteAllItems();
 
     m_strMemoryLayoutFolder = wxT("");
     m_strLinkerScriptFolder = wxT("");
-    
+
     // Add the root item
     ecConfigItem* item = NULL;
     wxTreeItemId rootId = treeCtrl->AddRoot(_(""), -1, -1, new ecTreeItemData(item = new ecConfigItem(NULL, _("Configuration"), ecContainer)));
     item->SetTreeItem(rootId);
     item->UpdateTreeItem(* treeCtrl);
     item->SetDescription(_("The root node for all configurable items"));
-    m_items.Append(item);   
-    
+    m_items.Append(item);
+
     AddContents(m_CdlConfig, item);
     treeCtrl->Expand(rootId);
-    
+
     // check that exactly one radio button in each group is enabled
     CheckRadios ();
-    
+
     // update the rules (conflicts) view
     UpdateFailingRuleCount ();
-    
+
     if( ! wxGetApp().GetMainFrame() || ! wxGetApp().GetMainFrame()->GetConflictsWindow() ||
         ! wxGetApp().GetMainFrame()->GetConflictsWindow()->IsShown())
     {
@@ -458,7 +459,7 @@ void ecConfigToolDoc::AddAllItems()
 void ecConfigToolDoc::AddContents (const CdlContainer container, ecConfigItem *pParent)
 {
     // determine the container contents
-    
+
     const std::vector<CdlNode>& contents = container->get_contents ();
     std::vector<CdlNode>::const_iterator node_i;
     for (node_i = contents.begin (); node_i != contents.end (); node_i++)
@@ -468,7 +469,7 @@ void ecConfigToolDoc::AddContents (const CdlContainer container, ecConfigItem *p
         const CdlComponent comp = dynamic_cast<CdlComponent> (node);
         const CdlOption opt = dynamic_cast<CdlOption> (node);
         const CdlContainer contnr = dynamic_cast<CdlContainer> (node);
-        
+
         // if the node in the container is a package, component or option
         // then it is visible and should be added to the tree
         if  (0 != pkg) // the node is a package
@@ -483,10 +484,10 @@ void ecConfigToolDoc::AddContents (const CdlContainer container, ecConfigItem *p
         }
         else if (0 != opt) // the node is an option
             AddItem (opt, pParent); // add the option
-        
+
         else if (0 != contnr) // if the node is a container
             AddContents (contnr, pParent); // add the container contents
-        
+
         // ignore nodes of any other class
     }
 }
@@ -494,9 +495,9 @@ void ecConfigToolDoc::AddContents (const CdlContainer container, ecConfigItem *p
 ecConfigItem * ecConfigToolDoc::AddItem (const CdlUserVisible vitem, ecConfigItem * pParent)
 {
     ecConfigItem * pItem = new ecConfigItem (pParent, vitem);
-    
+
     m_items.Append(pItem);
-    
+
     if (vitem->get_name () == "CYGHWR_MEMORY_LAYOUT")
     {
         wxASSERT (m_strMemoryLayoutFolder.IsEmpty ());
@@ -506,7 +507,7 @@ ecConfigItem * ecConfigToolDoc::AddItem (const CdlUserVisible vitem, ecConfigIte
 #endif
         //TRACE (_T("Found memory layout folder: %s\n"), m_strMemoryLayoutFolder);
     }
-    
+
     if (vitem->get_name () == "CYGBLD_LINKER_SCRIPT")
     {
         wxASSERT (m_strLinkerScriptFolder.IsEmpty ());
@@ -515,25 +516,25 @@ ecConfigItem * ecConfigToolDoc::AddItem (const CdlUserVisible vitem, ecConfigIte
         m_strLinkerScriptFolder.Replace(wxT("/"),wxT("\\"));
 #endif
         //TRACE (_T("Found linker script folder: %s\n"), m_strLinkerScriptFolder);
-        
+
         // the CDL hardware template name will eventually become the target name,
         // but for now we must deduce the target name from the linker script file name
-        
+
         const CdlValuable valuable = dynamic_cast<CdlValuable> (vitem);
         ecFileName strLinkerScript (m_strPackagesDir, m_strLinkerScriptFolder, wxString (valuable->get_value ().c_str ()));
 
 #ifdef __WXMSW__
         strLinkerScript.Replace (wxT("/"), wxT("\\"));
 #endif
-        
+
         if(!strLinkerScript.Exists ()){
             wxString msg;
             msg.Printf(wxT("%s does not exist\n"), (const wxChar*) strLinkerScript);
             wxGetApp().Log(msg);
         }
         //TRACE (_T("Target '%s' selected\n"), strLinkerScript.Tail ().Root (), pItem->Macro());
-    }	
-    
+    }
+
     //TRACE(_T("Created new item from cdl: "));
     //pItem->DumpItem();
     return pItem;
@@ -541,17 +542,17 @@ ecConfigItem * ecConfigToolDoc::AddItem (const CdlUserVisible vitem, ecConfigIte
 
 void ecConfigToolDoc::CheckRadios()
 {
-    int nItem;    
+    int nItem;
     for(nItem=0; nItem < GetItems().Number() ; nItem++)
     {
         ecConfigItem *pItem=(ecConfigItem*) GetItems()[nItem];
-        
+
         if(pItem->HasRadio () && pItem==pItem->FirstRadio())
         {
             wxString strMsg;
             ecConfigItem *pFirstSet=NULL;
             ecConfigItem *pSibItem;
-            
+
             for ( pSibItem=pItem; pSibItem; pSibItem = pSibItem->NextRadio() )
             {
                 if(pSibItem->IsEnabled ())
@@ -566,7 +567,7 @@ void ecConfigToolDoc::CheckRadios()
                     }
                 }
             }
-            
+
             if ( !strMsg.IsEmpty() )
             {
                 wxString msg2;
@@ -655,14 +656,14 @@ bool ecConfigToolDoc::OpenRepository(const wxString& pszRepository /* = wxEmptyS
     if(!m_bRepositoryOpen)
     {
         UpdateFailingRuleCount();
-        
+
         wxString strNewRepository;
         while(!m_bRepositoryOpen)
         {
             if(bPromptInitially)
             {
                 ecChooseRepositoryDialog dlg(wxGetApp().GetTopWindow());
-                
+
                 if(wxID_CANCEL==dlg.ShowModal()){
                     wxGetApp().SetStatusText(wxEmptyString);
                     return FALSE;
@@ -675,7 +676,7 @@ bool ecConfigToolDoc::OpenRepository(const wxString& pszRepository /* = wxEmptyS
                     strNewRepository = pszRepository;
                 else
                     strNewRepository = m_strRepository;
-                
+
                 bPromptInitially=TRUE;
             }
             wxString str;
@@ -683,15 +684,15 @@ bool ecConfigToolDoc::OpenRepository(const wxString& pszRepository /* = wxEmptyS
                 str.Printf(_("Opening repository..."));
             else
                 str.Printf(_("Opening repository %s..."), (const wxChar*) strNewRepository);
-            wxGetApp().SetStatusText(str);       
-            
+            wxGetApp().SetStatusText(str);
+
             CdlPackagesDatabase NewCdlPkgData = NULL;
             CdlInterpreter      NewCdlInterp  = NULL;
             CdlConfiguration    NewCdlConfig  = NULL;
             wxString strNewPackagesDir;
-            
+
             EnableCallbacks(FALSE); // disable transaction callbacks until the config tree is regenerated
-            
+
             wxBusyCursor wait;
             if(OpenRepository(strNewRepository,NewCdlPkgData,NewCdlInterp,NewCdlConfig,strNewPackagesDir))
             {
@@ -705,7 +706,7 @@ bool ecConfigToolDoc::OpenRepository(const wxString& pszRepository /* = wxEmptyS
                     if (templates.size () != 0)
                         default_template = templates [0];
                 }
-                
+
                 m_templateVersion = "";
                 try
                 {
@@ -723,33 +724,33 @@ bool ecConfigToolDoc::OpenRepository(const wxString& pszRepository /* = wxEmptyS
                     msg.Printf(_("Error loading package template '%s'."), default_template.c_str ());
                     wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_EXCLAMATION|wxOK);
                 }
-                
+
                 // check the configuration
                 wxASSERT (NewCdlConfig->check_this (cyg_extreme));
-                
+
                 // use the new package database, interpreter and configuration
                 delete m_CdlConfig; // delete the previous configuration
                 delete m_CdlInterp; // delete the previous interpreter
                 delete m_CdlPkgData; // delete the previous package database
-                
+
                 m_CdlPkgData = NewCdlPkgData;
                 m_CdlInterp  = NewCdlInterp;
                 m_CdlConfig  = NewCdlConfig;
-                
+
                 // save the repository location
-                
+
                 SetRepository(strNewRepository);
                 m_strPackagesDir = strNewPackagesDir;
-                
+
                 // clear the previously specified document file name (if any),
                 // OnNewDocument() calls DeleteContents() so must be called
                 // before AddAllItems()
-                
+
                 wxDocument::OnNewDocument ();
-                
+
                 // generate the CConfigItems from their CDL descriptions
                 AddAllItems ();
-                
+
                 m_bRepositoryOpen=TRUE;
 
                 // Rebuild help index if it needs building
@@ -760,13 +761,13 @@ bool ecConfigToolDoc::OpenRepository(const wxString& pszRepository /* = wxEmptyS
                 delete NewCdlConfig; NewCdlConfig = NULL;
                 delete NewCdlInterp; NewCdlInterp = NULL;
                 delete NewCdlPkgData; NewCdlPkgData = NULL;
-                
+
             }
-            
+
             // install a transaction handler callback function now that the tree exists
             EnableCallbacks(TRUE);
         }
-        
+
     }
     wxGetApp().SetStatusText(wxEmptyString, FALSE);
     return m_bRepositoryOpen;
@@ -775,7 +776,7 @@ bool ecConfigToolDoc::OpenRepository(const wxString& pszRepository /* = wxEmptyS
 bool ecConfigToolDoc::OpenRepository (const ecFileName& strNewRepository, CdlPackagesDatabase &NewCdlPkgData,CdlInterpreter &NewCdlInterp,CdlConfiguration &NewCdlConfig, wxString &strNewPackagesDir)
 {
     bool rc=FALSE;
-    
+
     if(!strNewRepository.IsEmpty())
     {
         // Now strNewRepository is guaranteed non-empty, but does it exist?
@@ -785,7 +786,7 @@ bool ecConfigToolDoc::OpenRepository (const ecFileName& strNewRepository, CdlPac
             msg.Printf(_("Cannot open repository - the folder %s does not exist"), (const wxChar*) strNewRepository);
             wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_EXCLAMATION|wxOK);
         } else
-        {           
+        {
             // Ok so it exists, but does it look right?
             //strNewPackagesDir=strNewRepository+wxString(wxFILE_SEP_PATH)+wxT("ecc");
             strNewPackagesDir=strNewRepository + wxT("ecc");
@@ -794,7 +795,7 @@ bool ecConfigToolDoc::OpenRepository (const ecFileName& strNewRepository, CdlPac
                 //strNewPackagesDir=strNewRepository+wxString(wxFILE_SEP_PATH)+wxT("packages");
                 strNewPackagesDir=strNewRepository + wxT("packages");
             }
-            
+
             if(!wxDirExists(strNewPackagesDir))
             {
                 // Don't mention the ecc\ attempt
@@ -803,7 +804,7 @@ bool ecConfigToolDoc::OpenRepository (const ecFileName& strNewRepository, CdlPac
                     (const wxChar*) strNewRepository, (const wxChar*) strNewPackagesDir);
                 wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_EXCLAMATION|wxOK);
             } else {
-                
+
                 const wxString strDatabase = strNewPackagesDir + wxString(wxFILE_SEP_PATH) + wxT("ecos.db");
                 if(!wxFileExists(strDatabase))
                 {
@@ -811,7 +812,7 @@ bool ecConfigToolDoc::OpenRepository (const ecFileName& strNewRepository, CdlPac
                     msg.Printf(_("%s does not seem to be a source repository: %s does not exist"), (const wxChar*) strNewRepository, (const wxChar*) strDatabase);
                     wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_EXCLAMATION|wxOK);
                 } else {
-                    
+
                     // create a CDL repository, interpreter and configuration
                     try {// create a new package database, interpreter and configuration
                         NewCdlPkgData = CdlPackagesDatabaseBody::make ((const wxChar*) strNewPackagesDir, &CdlParseErrorHandler, &CdlParseWarningHandler);
@@ -849,7 +850,7 @@ bool ecConfigToolDoc::OpenRepository (const ecFileName& strNewRepository, CdlPac
                             default_hardware = targets [0].c_str();
                         }
                     }
-                    
+
                     try {
                         m_strCdlErrorMessage = wxT("");
                         NewCdlConfig->set_hardware ((const wxChar*) default_hardware, &CdlParseErrorHandler, &CdlParseWarningHandler);
@@ -880,17 +881,17 @@ bool ecConfigToolDoc::OpenRepository (const ecFileName& strNewRepository, CdlPac
             }
         }
     }
-    
+
     return rc;
 }
 
 void ecConfigToolDoc::SelectTemplate (const wxString& newTemplate, const wxString& newTemplateVersion)
 {
     if ((newTemplate != m_CdlConfig->get_template().c_str()) || (newTemplateVersion != m_templateVersion)){
-        
+
         wxBusyCursor wait; // this may take a little while
         DeleteItems();
-        
+
         m_templateVersion = wxT("");
         try
         {
@@ -909,8 +910,8 @@ void ecConfigToolDoc::SelectTemplate (const wxString& newTemplate, const wxStrin
             msg.Printf(wxT("Error loading package template '%s'."), (const wxChar*) newTemplate.c_str ());
             wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_EXCLAMATION|wxOK);
         }
-        RegenerateData();  
-        
+        RegenerateData();
+
         if (!GetFilename().IsEmpty())
         { // not a new document
 #if 0 // TODO
@@ -938,7 +939,7 @@ void ecConfigToolDoc::RegenerateData()
 #if 0
     SwitchMemoryLayout (TRUE); // the hardware template may have changed
 #endif
-    
+
     UpdateBuildInfo();
     // TODO
     // CConfigTool::GetControlView()->SelectItem(Item(0));
@@ -949,7 +950,7 @@ void ecConfigToolDoc::SelectHardware (const wxString& newTemplate)
     const std::string OldTemplate=m_CdlConfig->get_hardware();
     if (newTemplate != OldTemplate.c_str()){
         DeleteItems();
-        
+
         try
         {
             m_CdlConfig->set_hardware (newTemplate.c_str(), CdlParseErrorHandler, CdlParseWarningHandler);
@@ -968,9 +969,9 @@ void ecConfigToolDoc::SelectHardware (const wxString& newTemplate)
             wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_EXCLAMATION|wxOK);
             m_CdlConfig->set_hardware (OldTemplate, CdlParseErrorHandler, CdlParseWarningHandler);
         }
-        
+
         RegenerateData();
-        
+
         // TODO
 #if 0
         if (!GetFilename().IsEmpty())
@@ -978,7 +979,7 @@ void ecConfigToolDoc::SelectHardware (const wxString& newTemplate)
             CopyMLTFiles (); // copy new MLT files to the build tree as necessary
         }
 #endif
-        
+
         Modify(TRUE);
         wxGetApp().GetMainFrame()->UpdateFrameTitle();
     }
@@ -989,13 +990,13 @@ void ecConfigToolDoc::SelectPackages ()
     // Crashes the Cygwin 1.0 compiler
 #ifndef __CYGWIN10__
     ecPackagesDialog dlg(wxGetApp().GetTopWindow());
-    
+
     // This map holds the ecConfigItem pointers for the packages loaded before the dialog is invoked.
     // We cannot use Find(), which traverses all items - potentially those that have been removed
     wxHashTable arLoadedPackages(wxKEY_STRING);
-    
+
     wxBeginBusyCursor();
-    
+
     // generate the contents of the add/remove list boxes
     const std::vector<std::string> & packages = m_CdlPkgData->get_packages ();
     std::vector<std::string>::const_iterator package_i;
@@ -1005,7 +1006,7 @@ void ecConfigToolDoc::SelectPackages ()
         {
             const std::vector<std::string> & aliases = m_CdlPkgData->get_package_aliases (* package_i);
             wxString strMacroName = package_i->c_str ();
-            
+
             // use the first alias (if any) as the package identifier
             wxString strPackageName = aliases.size () ? aliases [0].c_str () : strMacroName.c_str();
             ecConfigItem * pItem = Find (strMacroName);
@@ -1023,28 +1024,28 @@ void ecConfigToolDoc::SelectPackages ()
             }
         }
     }
-    
+
     wxEndBusyCursor();
-    
+
     if (wxID_OK == dlg.ShowModal ())
     {
         bool bChanged = FALSE; // until proved otherwise
-        
+
         // determine whether each package has changed loaded/unloaded state
         for (package_i = packages.begin (); package_i != packages.end (); package_i++)
             //			if (! m_CdlPkgData->is_hardware_package (* package_i)) // do not check hardware packages
         {
             const std::vector<std::string> & aliases = m_CdlPkgData->get_package_aliases (* package_i);
             wxString strMacroName = package_i->c_str ();
-            
+
             // use the first alias (if any) as the package identifier
             wxString strPackageName = aliases.size () ? aliases [0].c_str () : strMacroName.c_str();
-            
+
             ecConfigItem *pItem = (ecConfigItem *) arLoadedPackages.Get(strMacroName);
             //bool bPreviouslyLoaded=arLoadedPackages.Lookup(strMacroName,(void *&)pItem);
             bool bPreviouslyLoaded = (pItem != NULL);
             bool bNowLoaded=dlg.IsAdded (strPackageName);
-            
+
             // unload packages which are no longer required before
             // loading new ones to avoid potential duplicate macro definitions
             if (! bNowLoaded && bPreviouslyLoaded){
@@ -1077,9 +1078,9 @@ void ecConfigToolDoc::SelectPackages ()
                         wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_EXCLAMATION|wxOK);
                     }
                 }
-            }				
+            }
         }
-        
+
         if (bChanged) {// at least one package was loaded, unloaded or changed version
             Modify(TRUE);
             wxGetApp().GetMainFrame()->UpdateFrameTitle();
@@ -1107,7 +1108,7 @@ wxString ecConfigToolDoc::GetDefaultHardware ()
 #ifdef __WXMSW__
     // get the greatest eCos version subkey
     wxConfig config(wxT("eCos"), wxT("Red Hat"), wxEmptyString, wxEmptyString, wxCONFIG_USE_GLOBAL_FILE);
-    
+
     wxString versionKey(wxT(""));
     wxString key(wxT(""));
     long index;
@@ -1116,10 +1117,10 @@ wxString ecConfigToolDoc::GetDefaultHardware ()
     {
         if (wxIsdigit(key[0]) && versionKey.CompareTo(key) < 0)
             versionKey = key;
-        
+
         bMore = config.GetNextGroup(key, index);
     }
-    
+
     if (!versionKey.IsEmpty())
     {
         wxString defaultHardware;
@@ -1146,16 +1147,16 @@ void ecConfigToolDoc::EnableCallbacks (bool bEnable/*=TRUE*/)
 CdlInferenceCallbackResult ecConfigToolDoc::CdlGlobalInferenceHandler(CdlTransaction transaction)
 {
     CdlInferenceCallbackResult rc=CdlInferenceCallbackResult_Continue;
-    
+
     ecConfigToolDoc *pDoc = wxGetApp().GetConfigToolDoc();
     pDoc->m_ConflictsOutcome=NotDone;  // prepare for the case that there are no solutions
 
-    const std::list<CdlConflict>& conflicts=pDoc->GetCdlConfig()->get_all_conflicts();  
+    const std::list<CdlConflict>& conflicts=pDoc->GetCdlConfig()->get_all_conflicts();
     ecResolveConflictsDialog dlg(wxGetApp().GetTopWindow(), conflicts, transaction, &pDoc->m_arConflictsOfInterest);
 
     rc = (wxID_OK == dlg.ShowModal()) ? CdlInferenceCallbackResult_Continue:CdlInferenceCallbackResult_Cancel;
     pDoc->m_ConflictsOutcome=(CdlInferenceCallbackResult_Continue==rc)?OK:Cancel;
-    
+
     return rc;
 }
 
@@ -1181,12 +1182,12 @@ CdlInferenceCallbackResult ecConfigToolDoc::CdlInferenceHandler (CdlTransaction 
 
                 ecResolveConflictsDialog dlg(wxGetApp().GetTopWindow(), s_conflicts, transaction);
                 int ret = dlg.ShowModal() ;
-                
+
                 wxGetApp().UnlockValues();
 
                 return (wxID_OK == ret ? CdlInferenceCallbackResult_Continue:CdlInferenceCallbackResult_Cancel);
             }
-        } 
+        }
 
         wxGetApp().LockValues();
 
@@ -1240,9 +1241,9 @@ void ecConfigToolDoc::CdlTransactionHandler (const CdlTransactionCallback & data
     {
         const wxString strName((*node_i)->get_class_name().c_str());
         //TRACE(_T("%s %s : the legal_values list has changed, a new widget may be needed.\n"),
-        //    CString ((*val_i)->get_class_name().c_str()), strName);               
+        //    CString ((*val_i)->get_class_name().c_str()), strName);
     }
-    
+
     for (val_i = data.value_source_changes.begin(); val_i != data.value_source_changes.end(); val_i++)
     {
         const wxString strName((*val_i)->get_name().c_str());
@@ -1256,7 +1257,7 @@ void ecConfigToolDoc::CdlTransactionHandler (const CdlTransactionCallback & data
 */
         pControlView->Refresh (strName);
     }
-    
+
     pDoc->UpdateFailingRuleCount();
     nNesting--;
 }
@@ -1264,19 +1265,19 @@ void ecConfigToolDoc::CdlTransactionHandler (const CdlTransactionCallback & data
 bool ecConfigToolDoc::ShowURL(const wxString& strURL1)
 {
     bool rc = TRUE;
-    
+
     wxString strURL(strURL1);
 
-/*    
+/*
     if(!QualifyDocURL(strURL)){
         return FALSE; // error message already output
     }
 */
-    
+
     switch (wxGetApp().GetSettings().m_eUseCustomBrowser)
     {
     case ecInternal:
-        rc = ShowInternalHtmlHelp(strURL);  
+        rc = ShowInternalHtmlHelp(strURL);
         break;
     case ecAssociatedExternal:
         {
@@ -1399,10 +1400,10 @@ bool ecConfigToolDoc::ShowExternalHtmlHelp (const wxString& strURL)
     }
     return rc;
 
-#else    
+#else
     wxMessageBox(_("Sorry, ShowHtmlHelp not yet implemented"), wxGetApp().GetSettings().GetAppName(), wxICON_EXCLAMATION|wxOK);
     return FALSE;
-#endif    
+#endif
 }
 
 bool ecConfigToolDoc::ShowInternalHtmlHelp (const wxString& strURL)
@@ -1471,10 +1472,10 @@ bool ecConfigToolDoc::ShowInternalHtmlHelp (const wxString& strURL)
     }
     return rc;
 
-#else    
+#else
     wxMessageBox(_("Sorry, ShowHtmlHelp not yet implemented"), wxGetApp().GetSettings().GetAppName(), wxICON_EXCLAMATION|wxOK);
     return FALSE;
-#endif    
+#endif
 }
 
 const wxString ecConfigToolDoc::HTMLHelpLinkFileName()
@@ -1501,7 +1502,7 @@ bool ecConfigToolDoc::QualifyDocURL(wxString &strURL, bool prefix)
         if (prefix)
             strURL = wxT("file://") + strURL;
     }
-    
+
     if(0==strURL.Find(wxT("file://")))
     {
         ecFileName strFile(strURL.Right(strURL.Length()-7));
@@ -1537,7 +1538,7 @@ wxString ecConfigToolDoc::GetPackageName (const wxString & strAlias)
         if (aliases.size () && (strAlias == strPackageAlias))
             return package_i->c_str ();
     }
-    return wxEmptyString;    
+    return wxEmptyString;
 }
 
 const wxString ecConfigToolDoc::GetCurrentTargetPrefix()
@@ -1569,7 +1570,7 @@ ecConfigToolDoc::GlobalConflictOutcome ecConfigToolDoc::ResolveGlobalConflicts(w
     CdlTransactionBody::set_inference_callback_fn(fn);
     if(NotDone==m_ConflictsOutcome){
         // No solutions were available, but we'll run the dialog anyway
-        const std::list<CdlConflict>& conflicts=GetCdlConfig()->get_all_conflicts();  
+        const std::list<CdlConflict>& conflicts=GetCdlConfig()->get_all_conflicts();
         ecResolveConflictsDialog dlg(wxGetApp().GetTopWindow(), conflicts, NULL, &m_arConflictsOfInterest);
         m_ConflictsOutcome = (wxID_OK == dlg.ShowModal())?OK:Cancel;
     }
@@ -1622,11 +1623,11 @@ void ecConfigToolDoc::UpdateFailingRuleCount()
     if (GetCdlConfig ())
     {
         // if configuration information
-        
+
         // calculate the number of conflicts
         nCount = GetCdlConfig ()->get_all_conflicts ().size ();
             //	        GetCdlConfig ()->get_structural_conflicts ().size () +    ignore for now
-        
+
         // update the conflicts view
         if (wxGetApp().GetMainFrame() && wxGetApp().GetMainFrame()->GetConflictsWindow())
         {
@@ -1653,7 +1654,7 @@ void ecConfigToolDoc::LogConflicts (const std::list<CdlConflict> & conflicts)
 bool ecConfigToolDoc::SetValue (ecConfigItem &ti, double dValue, CdlTransaction transaction/*=NULL*/)
 {
     wxASSERT (ti.GetOptionType () == ecDouble);
-    
+
     // test if the new double value is in range
     const CdlValuable valuable = ti.GetCdlValuable();
     CdlListValue list_value;
@@ -1671,10 +1672,10 @@ bool ecConfigToolDoc::SetValue (ecConfigItem &ti, double dValue, CdlTransaction 
         if (wxNO == wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_QUESTION|wxYES_NO))
             return FALSE;
     }
-    
+
     if (! ti.SetValue (dValue,transaction))
         return FALSE;
-    
+
     Modify(TRUE);
     wxGetApp().GetMainFrame()->UpdateFrameTitle();
 
@@ -1695,7 +1696,7 @@ bool ecConfigToolDoc::SetValue(ecConfigItem &ti, const wxString &strValue, CdlTr
         (IDCANCEL == CUtils::MessageBoxFT (MB_OKCANCEL, _T("Changes to the current memory layout will be lost."))))
         return false;
 #endif
-    
+
     bool rc = FALSE;
 
     switch(ti.GetOptionType())
@@ -1721,7 +1722,7 @@ bool ecConfigToolDoc::SetValue(ecConfigItem &ti, const wxString &strValue, CdlTr
     default:
         wxASSERT(FALSE);
         break;
-        
+
     }
     if(rc){
         Modify(TRUE);
@@ -1746,19 +1747,19 @@ bool ecConfigToolDoc::SetValue(ecConfigItem &ti, long nValue, CdlTransaction tra
         wxASSERT(FALSE);
         break;
     }
-    
+
     bool rc = FALSE;
 
     // TODO
 #if 0
     bool bChangingMemmap = MemoryMap.map_modified () && ((ti.Macro ().Compare (_T ("CYG_HAL_STARTUP")) == 0));
 #endif
-    
+
     if(nValue==ti.Value())
     {
         return TRUE;
     }
-    
+
     // test if the new integer value is in range
     if (ecLong == ti.GetOptionType ())
     {
@@ -1778,17 +1779,17 @@ bool ecConfigToolDoc::SetValue(ecConfigItem &ti, long nValue, CdlTransaction tra
                 goto Exit;
         };
     }
-    
+
     // TODO
 #if 0
     // warn the user if the current memory layout has been changed and will be lost
     // this will happen when the layout has been modified and the target-platform-startup is changed
-    
+
     if (bChangingMemmap && IDCANCEL==CUtils::MessageBoxFT(MB_OKCANCEL,_T("Changes to the current memory layout will be lost."))){
         goto Exit;
     }
 #endif
-    
+
     // Save state
     if(!ti.SetValue(nValue,transaction)){
         // CanSetValue above should have caught this
@@ -1796,8 +1797,8 @@ bool ecConfigToolDoc::SetValue(ecConfigItem &ti, long nValue, CdlTransaction tra
         msg.Printf(_("Cannot set '%s' to %d"), (const wxChar*) ti.GetItemNameOrMacro(), nValue);
         wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_EXCLAMATION|wxOK);
         goto Exit;
-    } 
-    
+    }
+
     rc = TRUE;
 Exit:
     if(rc)
@@ -1816,7 +1817,7 @@ Exit:
 bool ecConfigToolDoc::SetEnabled(ecConfigItem &ti, bool bEnabled, CdlTransaction transaction/*=NULL*/)
 {
     const bool bStatus = ti.SetEnabled (bEnabled, transaction);
-    
+
     if (bStatus)
     {
         Modify(TRUE);
@@ -1934,7 +1935,7 @@ bool ecConfigToolDoc::SaveMemoryMap()
                 rc=MemoryMap.export_files (strMLTInstallBase + _T(".ldi"), strMLTInstallBase + _T(".h"));
             }
         }
-    }    
+    }
     return rc;
 #else
     return FALSE;
@@ -1946,7 +1947,7 @@ bool ecConfigToolDoc::CopyMLTFiles()
     wxString sep(wxFILE_SEP_PATH);
 
     // copy default MLT files for the selected target/platform from the repository if they do not already exist
-    
+
     // TRACE (_T("Looking for MLT files at %s\n"), PackagesDir() + m_strMemoryLayoutFolder + _T("include\\pkgconf\\mlt_*.*"));
     const ecFileName strInstallDestination(GetInstallTree () + sep + wxString(wxT("include")) + sep + wxT("pkgconf"));
     const ecFileName strMLTDestination (MLTDir ());
@@ -1988,7 +1989,7 @@ bool ecConfigToolDoc::CopyMLTFiles()
             }
             else // a .h or .ldi file
             {
-                if (!ecFileName (strInstallDestination, ecFileName (fileName)).Exists () && 
+                if (!ecFileName (strInstallDestination, ecFileName (fileName)).Exists () &&
                     !wxCopyFile (fullPath, strInstallDestination + ecFileName (fileName))){
                     return FALSE; // message already emitted
                 }
@@ -2063,7 +2064,7 @@ bool ecConfigToolDoc::ImportFile()
             wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_EXCLAMATION|wxOK);
             return FALSE;
         }
-        
+
         wxBusyCursor wait;
 
         AddAllItems (); // regenerate all the config items since the topology may have changed
@@ -2093,7 +2094,7 @@ bool ecConfigToolDoc::SwitchMemoryLayout (bool bNewTargetPlatform)
         // copy default MLT save files for the selected target/platform from the repository to the build tree if they do not already exist
         CopyMLTFiles();
     }
-    
+
     if (m_strBuildTree.IsEmpty ()) // load the memory layout from the repository
     {
         wxString sep(wxFILE_SEP_PATH);
@@ -2111,7 +2112,7 @@ bool ecConfigToolDoc::SwitchMemoryLayout (bool bNewTargetPlatform)
     {
         rc = NewMemoryLayout (MLTDir ());
     }
-    
+
     return TRUE; // FIXME
 }
 
@@ -2125,7 +2126,7 @@ bool ecConfigToolDoc::NewMemoryLayout (const wxString &strPrefix)
     m_memoryMap.new_memory_layout (); // delete the old memory layout regardless
     if (! strFileName.IsEmpty ())
         m_memoryMap.import_linker_defined_sections (strFileName); // read the linker-defined section names from the repository (failure is silent)
-    
+
     wxString strMemoryLayoutFileName = strPrefix + sep + wxString(wxT("mlt_")) + CurrentMemoryLayout () + wxT(".mlt");
 
     m_memoryMap.load_memory_layout (strMemoryLayoutFileName); // load the new memory layout (failure is silent)

@@ -193,6 +193,7 @@ Cyg_Thread::Cyg_Thread(
     // Start the thread in suspended state.
     state               = SUSPENDED;
     suspend_count       = 1;
+    wakeup_count        = 0;
 
     // Initialize sleep_reason which is used by kill, release
     sleep_reason        = NONE;

@@ -13,7 +13,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
 //
@@ -154,6 +154,9 @@ class CdlPackagesDatabaseBody {
     // For now the library provides a static vector of these things, but
     // this area is likely to change in future
     static const std::vector<std::string>& get_valid_cflags();
+
+    // Control verbosity when reading in a database
+    static void set_verbose(bool);
     
     bool check_this(cyg_assert_class_zeal = cyg_quick) const;
     CYGDBG_DECLARE_MEMLEAK_COUNTER();
@@ -210,6 +213,10 @@ class CdlPackagesDatabaseBody {
     // This allows test cases to overwrite the name of the file
     // containing the database information.
     static char* database_name;
+
+    // Control whether or not minor problems with the database should be
+    // reported.
+    static bool verbose_mode;
     
     // The default constructor, copy constructor and assignment operator are illegal.
     CdlPackagesDatabaseBody();

@@ -1,3 +1,26 @@
+2001-06-18  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_v85x_ceb_v850.cdl (CYGHWR_MEMORY_LAYOUT_H): Fix name for
+	flash startup.
+	
+	* include/pkgconf/mlt_v85x_v850_ceb_flash.h:
+	* include/pkgconf/mlt_v85x_v850_ceb_flash.ldi:
+	* include/pkgconf/mlt_v85x_v850_ceb_flash.mlt:
+	* include/pkgconf/mlt_v85x_v850_ceb_flashromram.h:
+	* include/pkgconf/mlt_v85x_v850_ceb_flashromram.ldi:
+	* include/pkgconf/mlt_v85x_v850_ceb_flashromram.mlt:
+	* include/pkgconf/mlt_v85x_v850_ceb_ram.h:
+	* include/pkgconf/mlt_v85x_v850_ceb_ram.ldi:
+	* include/pkgconf/mlt_v85x_v850_ceb_ram.mlt:
+	* include/pkgconf/mlt_v85x_v850_ceb_rom.h:
+	* include/pkgconf/mlt_v85x_v850_ceb_rom.ldi:
+	* include/pkgconf/mlt_v85x_v850_ceb_rom.mlt:
+	* include/pkgconf/mlt_v85x_v850_ceb_romram.h:
+	* include/pkgconf/mlt_v85x_v850_ceb_romram.ldi:
+	* include/pkgconf/mlt_v85x_v850_ceb_romram.mlt:
+	Resize RAM to 0x3c000 long (i.e. top of RAM is 0xffc000).
+	This avoids problems with variable sizes of internal RAM.
+
 2001-05-21  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/hal_v85x_ceb_v850.cdl: Change tools back to v850-elf now.

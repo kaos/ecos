@@ -111,7 +111,16 @@ cdl_package CYGPKG_LIBC_TIME {
             asctime_r(), ctime_r(), gmtime_r(), and
             localtime_r()."
     }
-    
+
+    cdl_option CYGFUN_LIBC_TIME_SUS_EXTNS {
+	display       "Single UNIX extensions"
+	default_value 0
+	description   "
+            Enabling this option allows the use of
+            certain additional conversion specifiers
+            in the strftime function."
+    }
+
     cdl_component CYGPKG_LIBC_TIME_ZONES {
         display       "Time zone offsets"
         flavor        none

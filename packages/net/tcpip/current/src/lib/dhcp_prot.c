@@ -277,14 +277,14 @@ static void alarm_function(cyg_handle_t alarm, cyg_addrword_t data)
         cyg_alarm_disable( alarm );
     }
     else if ( lease->next & DHCP_LEASE_T2 ) {
+        lease->next = DHCP_LEASE_EX;
         cyg_alarm_initialize( lease->alarm, lease->expiry, 0 );
         cyg_alarm_enable( lease->alarm );
-        lease->next = DHCP_LEASE_EX;
     }
     else if ( lease->next & DHCP_LEASE_T1 ) {
+        lease->next = DHCP_LEASE_T2;
         cyg_alarm_initialize( lease->alarm, lease->t2, 0 );
         cyg_alarm_enable( lease->alarm );
-        lease->next = DHCP_LEASE_T2;
     }
 }
 
@@ -303,6 +303,7 @@ static inline void new_lease( struct bootp *bootp, struct dhcp_lease *lease )
     cyg_tick_count_t now = cyg_current_time();
     cyg_tick_count_t then;
     cyg_uint32 tag = 0;
+    cyg_uint32 expiry_then;
     cyg_resolution_t resolution = 
         cyg_clock_get_resolution(cyg_real_time_clock());
     cyg_handle_t h;
@@ -315,7 +316,8 @@ static inline void new_lease( struct bootp *bootp, struct dhcp_lease *lease )
                       &lease->alarm, &lease->alarm_obj );
 
     // extract the lease time and scale it &c to now.
-    get_bootp_option( bootp, TAG_DHCP_LEASE_TIME, &tag );
+    if(!get_bootp_option( bootp, TAG_DHCP_LEASE_TIME, &tag ))
+        tag = 0xffffffff;
 
     if ( 0xffffffff == tag ) {
         lease->expiry = 0xffffffffffffffff;
@@ -325,19 +327,24 @@ static inline void new_lease( struct bootp *bootp, struct dhcp_lease *lease )
     }
 
     then = (cyg_uint64)(ntohl(tag));
+    expiry_then = then;
 
     then *= 1000000000; // into nS - we know there is room in a tick_count_t
     then = (then / resolution.dividend) * resolution.divisor; // into system ticks
     lease->expiry = now + then;
 
-    get_bootp_option( bootp, TAG_DHCP_REBIND_TIME, &tag );
-    then = (cyg_uint64)(ntohl(tag));
+    if (get_bootp_option( bootp, TAG_DHCP_REBIND_TIME, &tag ))
+        then = (cyg_uint64)(ntohl(tag));
+    else
+        then = expiry_then - expiry_then/4;
     then *= 1000000000; // into nS - we know there is room in a tick_count_t
     then = (then / resolution.dividend) * resolution.divisor; // into system ticks
     lease->t2 = now + then;
 
-    get_bootp_option( bootp, TAG_DHCP_RENEWAL_TIME, &tag );
-    then = (cyg_uint64)(ntohl(tag));
+    if (get_bootp_option( bootp, TAG_DHCP_RENEWAL_TIME, &tag ))
+        then = (cyg_uint64)(ntohl(tag));
+    else
+        then = expiry_then/2;
     then *= 1000000000; // into nS - we know there is room in a tick_count_t
     then = (then / resolution.dividend) * resolution.divisor; // into system ticks
     lease->t1 = now + then;
@@ -346,6 +353,13 @@ static inline void new_lease( struct bootp *bootp, struct dhcp_lease *lease )
     lease->expiry = now + 5000; // 1000 here makes for failure in the DHCP test
     lease->t2     = now + 3500;
     lease->t1     = now + 2500;
+#endif
+
+#ifdef CYGDBG_NET_DHCP_CHATTER
+    diag_printf("new_lease:\n");
+    diag_printf("  expiry = %d\n",lease->expiry);
+    diag_printf("      t1 = %d\n",lease->t1);
+    diag_printf("      t2 = %d\n",lease->t2);
 #endif
 
     lease->next = DHCP_LEASE_T1;

@@ -1,3 +1,18 @@
+2001-06-16  Jesper Skov  <jskov@redhat.com>
+
+	* src/if_sc_lpe.c: Use generic DP83902A driver, only redefining
+	the init function to handle card details (which incidently do not
+	appear to be fully working).
+
+	* include/devs_eth_cf.inl: Device details moved here so the
+	generic driver can access them.
+
+	* cdl/cf_eth_drivers.cdl: Changes to use generic driver. Allow ESA
+	to be configured.
+	Require DP83902A package.
+
+	* src/dp8390.h: Deleted.
+
 2001-04-13  Gary Thomas  <gthomas@redhat.com>
 
 	* src/if_sc_lpe.c (sc_lpe_card_handler): Work around broken card(s)

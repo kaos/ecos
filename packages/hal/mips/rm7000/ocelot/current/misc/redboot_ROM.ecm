@@ -19,6 +19,7 @@ cdl_configuration eCos {
     package -hardware CYGPKG_DEVS_FLASH_AMD_AM29XXXXX current ;
     package -hardware CYGPKG_IO_SERIAL_GENERIC_16X5X current ;
     package -hardware CYGPKG_DEVS_ETH_INTEL_I82559 current ;
+    package -hardware CYGPKG_DEVS_ETH_MIPS_RM7000_OCELOT current ;
     package -template CYGPKG_HAL current ;
     package -template CYGPKG_INFRA current ;
     package -template CYGPKG_REDBOOT current ;
@@ -28,6 +29,10 @@ cdl_configuration eCos {
 
 cdl_option CYGBLD_BUILD_GDB_STUBS {
     user_value 0
+};
+
+cdl_option CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE {
+    user_value 32768
 };
 
 cdl_option CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT {
@@ -64,6 +69,10 @@ cdl_component CYG_HAL_STARTUP {
 
 cdl_component CYGBLD_BUILD_REDBOOT {
     user_value 1
+};
+
+cdl_option CYGHWR_DEVS_FLASH_AMD_AM29F040B {
+    inferred_value 1
 };
 
 

@@ -131,8 +131,8 @@ server_test(struct bootp *bp)
         FD_SET(client, &in_fds);
         num = select(client+1, &in_fds, 0, 0, &tv);
         if (num > 0) {
-            len = read(client, buf, sizeof(buf));
-            buf[len-1] = '\0';
+            len = read(client, buf, sizeof(buf)-1);
+            buf[len] = '\0';
             diag_printf("buf = '%s'\n", buf);
         } else {
             perror("select");

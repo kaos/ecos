@@ -4,13 +4,13 @@
 
 [Setup]
     MinVersion=4.0,4.0
-    AppName=eCos Configuration Tool 2.01
+    AppName=eCos Configuration Tool 2.02
     AppId=eCos Configuration Tool
     CreateUninstallRegKey=1
     UsePreviousAppDir=1
     UsePreviousGroup=1
-    AppVersion=2.01
-    AppVerName=eCos Configuration Tool 2.01
+    AppVersion=2.02
+    AppVerName=eCos Configuration Tool 2.02
     AppCopyright=Copyright © Red Hat Inc., 2001
     BackColor=$FF0000
     BackColor2=$000000
@@ -183,7 +183,7 @@
   Source: v:\deliver\configtool\README.txt; DestDir: {app}\
   Source: v:\deliver\configtool\rhlogo.png; DestDir: {app}\
 
-    Source: c:\winnt\system32\tcl82.dll; DestDir: {sys}\; DestName: tcl82.dll; CopyMode: onlyifdoesntexist; Flags: uninsneveruninstall
+    Source: c:\winnt\system32\tcl84.dll; DestDir: {sys}\; DestName: tcl84.dll; CopyMode: onlyifdoesntexist; Flags: uninsneveruninstall
     Source: c:\winnt\system32\msvcirt.dll; DestDir: {sys}\; DestName: msvcirt.dll; CopyMode: onlyifdoesntexist; Flags: uninsneveruninstall
     Source: c:\winnt\system32\msvcp60.dll; DestDir: {sys}\; DestName: msvcp60.dll; CopyMode: onlyifdoesntexist; Flags: uninsneveruninstall
     Source: c:\winnt\system32\msvcrt.dll; DestDir: {sys}\; DestName: msvcrt.dll; CopyMode: onlyifdoesntexist; Flags: uninsneveruninstall
@@ -214,7 +214,7 @@
 ; DO NOT DELETE THEM or you may be unable to reload the script
 
 ;[ScriptSetup]
-;VerNum=2.01
+;VerNum=2.02
 ;InnoVer=1.3
 ;AddVerTo=AppVerName
 ;SetupFilename=setup.exe

@@ -424,7 +424,7 @@ Cyg_Mempool_Variable_Implementation::get_status(
             if(dq->size > mf)
                 mf = dq->size;
         } while(1);
-        status.maxfree = mf;
+        status.maxfree = mf - sizeof(struct memdq);
     }
 // as quick or quicker to just set it, rather than test flag first
     status.origbase = obase;

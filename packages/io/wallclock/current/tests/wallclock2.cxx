@@ -56,8 +56,6 @@
 # define NA_MSG "Requires libc time functions"
 #elif !defined(CYGPKG_LIBC_STARTUP)
 # define NA_MSG "Requires libc startup package"
-#elif !defined(CYGINT_LIBC_STARTUP_CONTEXT)
-# define NA_MSG "Requires main to be invoked"
 #endif
 
 #ifndef NA_MSG

@@ -1,3 +1,8 @@
+2001-06-22  Gary Thomas  <gthomas@redhat.com>
+
+	* src/load.c (do_load): Move [static] data used by decompression
+	code into this routine where it is used - no longer static.
+
 2001-06-14  Gary Thomas  <gthomas@redhat.com>
 
 	* src/xyzModem.c (xyzModem_get_hdr): More resilient header scan,
