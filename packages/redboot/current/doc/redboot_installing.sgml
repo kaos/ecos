@@ -788,9 +788,8 @@ installing and testing</primary><secondary>Atmel AT91/EB40
 The default serial port settings are 38400,8,N,1. RedBoot
 also supports minimal flash management on the EB40.
 However, since the flash device (AT29LV1024) is so small (only the upper 64K is
-available for general use), only 'fconfig' is
-supported, along with the simple flash write command, 'fis
-write'.</para>
+available for general use), only the simple flash write command 'fis
+write' is supported.</para>
 
 <para>The following RedBoot configurations are supported:
 
@@ -844,11 +843,11 @@ it has been installed.
 <para>
 Set SW1 to "lower mem" and connect serial port A to a host computer.  Using GDB
 from the host and Angel on the board, download the RAM mode image of RedBoot
-to the board.  Once this is started, the Angel session must be interrupted (on
+to the board. SW1 should then be set to "upper mem" just before starting RedBoot using
+the 'cont' command. Once RedBoot is started, the Angel session must be interrupted (on
 Linux this can be done using ^Z).  Follow this by connecting to the board using
 minicom at 38400-8N1.  At this point, RedBoot will be running on the board in
-RAM.  Now, download the ROMRAM mode image and program it to flash.  Be sure and
-first set SW1 to "upper mem".
+RAM.  Now, download the ROMRAM mode image and program it to flash.
 <screen>
 <userinput>arm-elf-gdb redboot_RAM.elf</userinput>
 (gdb) <userinput>tar rdi s=/dev/ttyS0</userinput>
@@ -857,7 +856,7 @@ AT91EB40 (2.00)
 Angel Debug Monitor rebuilt on Apr 07 2000 at 12:40:31
 Serial Rate:   9600
 Connected to ARM RDI target.
-(gdb) <userinput>set $ps=0xd3</userinput>
+(gdb) <userinput>set $cpsr=0xd3</userinput>
 (gdb) <userinput>load</userinput>
 Loading section .rom_vectors, size 0x40 lma 0x2020000
 Loading section .text, size 0x7fd8 lma 0x2020040
@@ -865,6 +864,9 @@ Loading section .rodata, size 0x15a0 lma 0x2028018
 Loading section .data, size 0x2e4 lma 0x20295b8
 Start address 0x2020040 , load size 39068
 Transfer rate: 6250 bits/sec, 500 bytes/write.
+</screen>
+At this point, set SW1 to "upper mem".
+<screen>
 (gdb) <userinput>cont</userinput>
 Continuing.
 </screen>
@@ -886,9 +888,9 @@ RedBoot> <userinput>load -m ymodem -b %{FREEMEMLO}</userinput>
 </screen>
 Use minicom to send the file redboot_ROMRAM.srec via YModem.
 <screen>
-RedBoot> <userinput>fi wr -f 0x01010000 -b %{FREEMEMLO} -l 0xe000</userinput>
+RedBoot> <userinput>fi wr -f 0x01010000 -b %{FREEMEMLO} -l 0xe100</userinput>
 </screen>
-Set switch SW1 to "upper mem", press the "reset" pushbutton and RedBoot
+Press the "reset" pushbutton and RedBoot
 should come up on the board.
 </para>
 </sect2>
