@@ -1,3 +1,8 @@
+2002-08-05  Gary Thomas  <gary@chez-thomas.org>
+2002-08-05  Bob Koninckx <bob.koninckx@mech.kuleuven.ac.be>	
+
+	* include/arch.inc: hal_fpu_load regs was not loading registers!
+
 2002-04-29  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/vectors.S:

@@ -182,7 +182,7 @@ name:
 #ifdef CYGHWR_HAL_POWERPC_FPU
         .set _freg, 0
         .rept MAX_SAVE_FREG+1
-        stfd _freg,(CYGARC_PPCREG_FREGS+_freg*8)(\regs)
+        lfd _freg,(CYGARC_PPCREG_FREGS+_freg*8)(\regs)
         .set _freg, _freg+1
         .endr
 #endif
