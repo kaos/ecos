@@ -1,3 +1,9 @@
+2003-05-20  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/common/kapi.cxx (cyg_thread_get_next): Passing a *current
+	pointer as NULL if how you start the walk of the linked list. So
+	don't assert on NULL. Reported by Daniel Lidsten.
+
 2003-05-05  Gary Thomas  <gary@mlbassoc.com>
 
 	* tests/tm_basic.cxx: Support new option controlling number of times

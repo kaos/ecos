@@ -331,7 +331,7 @@ cyg_bool_t cyg_thread_get_next( cyg_handle_t *current, cyg_uint16 *id )
     Cyg_Scheduler::lock();
 
     Cyg_Thread *thread = (Cyg_Thread *)*current;
-    CYG_ASSERT_CLASSC( thread );
+    CYG_ASSERT_ZERO_OR_CLASSC( thread );
     if( *current == 0 )
     {
         thread = Cyg_Thread::get_list_head();
