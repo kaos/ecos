@@ -4656,6 +4656,285 @@ description of the associated modes.</para>
 
 </sect1>
 
+<?Pub _newpage>
+<sect1 id="mb93091">
+<title>Fujitsu FR-V Design Kit (MB93091-CBxx)</title>
+<sect2>
+<title>Overview</title>
+
+<para><indexterm><primary>Fujitsu FR-V MB93091-CBxx Design
+Kit</primary> <secondary>installing and
+testing</secondary></indexterm><indexterm><primary> installing and
+testing </primary><secondary>Fujitsu FR-V MB93091-CBxx Design
+Kit</secondary></indexterm> RedBoot supports both serial ports, which
+are available via the stacked serial connectors on the mother board in
+the case of the FR400 CPU board, and via serial connectors present on
+the other supported CPU boards themselves. The topmost port is the
+default and is considered to be port 0 by RedBoot.  The bottommost
+port is serial port 1.  The default serial port settings are
+115200,8,N,1. The serial port supports baud rates up to 460800, which
+can be set using the <command>baud</command> command as described in
+<xref linkend="RedBoot-Commands-and-Examples">.
+
+</para>
+<para>
+FLASH management is also supported, but only for the FLASH device in IC7. 
+This arrangement allows for IC8 to retain either the original Fujitsu board
+firmware, or some application specific contents.
+Two basic RedBoot configurations are supported:
+
+      <informaltable frame="all">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
+	  <thead>
+	    <row>
+	      <entry>Configuration</entry>
+	      <entry>Mode</entry>
+	      <entry>Description</entry>
+	      <entry>File</entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry>ROMRAM</entry>
+	      <entry>[ROMRAM]</entry>
+	      <entry>RedBoot running from RAM, but contained in the
+	      board's flash boot sector.</entry>
+	      <entry>redboot_ROMRAM.ecm</entry>
+	    </row>
+	    <row>
+	      <entry>RAM</entry>
+	      <entry>[RAM]</entry>
+	      <entry>RedBoot running from RAM with RedBoot in the
+	      flash boot sector.</entry>
+	      <entry>redboot_RAM.ecm</entry>
+	    </row>
+</tbody>
+</tgroup>
+</informaltable>
+</para>
+<para>Since the normal RedBoot configuration does not use the FLASH ROM
+except during startup, it is unnecessary to load a RAM-based RedBoot
+before reprogramming the FLASH.</para>
+</sect2>
+
+<sect2>
+<title>Initial Installation Method </title>
+
+<para>
+RedBoot can be installed by directly programming the FLASH device in IC7
+or by using the Fujitsu provided software to download and install a
+version into the FLASH device.  Complete instructions are provided
+separately.
+</para>
+
+</sect2>
+
+<sect2>
+<title>Special RedBoot Commands</title>
+
+<para>The <command>exec</command> command as described in <xref linkend="RedBoot-Commands-and-Examples">
+is supported by RedBoot on this target, for executing Linux kernels. Only the command line and timeout options
+are relevant to this platform.</para>
+</sect2>
+
+<sect2>
+<title>Memory Maps</title>
+
+<para>The memory map of this platform is fixed by the hardware (cannot
+be changed by software).  The only attributes which can be modified are
+control over cacheability, as noted below.
+<screen>
+Address                 Cache?      Resource
+00000000-03EFFFFF         Yes       SDRAM (via plugin DIMM)
+03F00000-03FFFFFF         No        SDRAM (used for PCI window)
+10000000-1FFFFFFF         No        MB86943 PCI bridge
+20000000-201FFFFF         No        SRAM
+21000000-23FFFFFF         No        Motherboard resources
+24000000-25FFFFFF         No        PCI I/O space
+26000000-2FFFFFFF         No        PCI Memory space
+30000000-FDFFFFFF         ??        Unused
+FE000000-FEFFFFFF         No        I/O devices
+FF000000-FF1FFFFF         No        IC7 - RedBoot FLASH
+FF200000-FF3FFFFF         No        IC8 - unused FLASH
+FF400000-FFFFFFFF         No        Misc other I/O
+</screen>
+</para>
+
+<note> <title>NOTE</title>
+<para>
+The only configuration currently suppored requires a 64MiB SDRAM 
+DIMM to be present on the CPU card.  No other memory configuration
+is supported at this time.
+</para>
+</note>
+
+</sect2>
+
+<sect2>
+<title>Rebuilding RedBoot</title>
+
+<para>These shell variables provide the platform-specific information
+needed for building RedBoot according to the procedure described in
+<xref linkend="Rebuilding-Redboot">:
+<programlisting>
+export TARGET=mb93091
+export ARCH_DIR=frv
+export PLATFORM_DIR=mb93091
+</programlisting>
+</para>
+
+<para>The names of configuration files are listed above with the
+description of the associated modes.</para>
+</sect2>
+
+<sect2>
+<title>Resource Usage</title>
+
+<para>
+The RedBoot image occupies flash addresses 0xFF000000 - 0xFF03FFFF. To
+execute it copies itself out of there to RAM at 0x03E00000. RedBoot
+reserves memory from 0x00000000 to 0x0001FFFF for its own use.
+User programs can use memory from 0x00020000 to 0x03DFFFFF.
+RAM based RedBoot configurations are
+designed to run from RAM at 0x00020000.
+</para>
+</sect2>
+
+</sect1>
+
+<?Pub _newpage>
+<sect1 id="mb93093">
+<title>Fujitsu FR-V Portable Demonstration Kit (MB93093-PD00)</title>
+<sect2>
+<title>Overview</title>
+
+<para><indexterm><primary>Fujitsu FR-V Portable Demonstration Kit</primary>
+<secondary>installing and testing</secondary></indexterm><indexterm><primary>
+installing and testing
+</primary><secondary>Fujitsu FR-V Portable Demonstration Kit</secondary></indexterm>
+RedBoot supports the serial port which is available via a special cable connected 
+to the CON_UART connector on the board. The default serial port settings are 115200,8,N,1. 
+The serial port supports baud rates up to 460800, which can be set using the <command>baud</command>
+command as described in <xref linkend="RedBoot-Commands-and-Examples">.
+</para>
+
+<para>
+FLASH management is also supported. 
+Two basic RedBoot configurations are supported:
+
+      <informaltable frame="all">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
+	  <thead>
+	    <row>
+	      <entry>Configuration</entry>
+	      <entry>Mode</entry>
+	      <entry>Description</entry>
+	      <entry>File</entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry>ROMRAM</entry>
+	      <entry>[ROMRAM]</entry>
+	      <entry>RedBoot running from RAM, but contained in the
+	      board's flash boot sector.</entry>
+	      <entry>redboot_ROMRAM.ecm</entry>
+	    </row>
+	    <row>
+	      <entry>RAM</entry>
+	      <entry>[RAM]</entry>
+	      <entry>RedBoot running from RAM with RedBoot in the
+	      flash boot sector.</entry>
+	      <entry>redboot_RAM.ecm</entry>
+	    </row>
+</tbody>
+</tgroup>
+</informaltable>
+</para>
+<para>Since the normal RedBoot configuration does not use the FLASH ROM
+except during startup, it is unnecessary to load a RAM-based RedBoot
+before reprogramming the FLASH.</para>
+</sect2>
+
+<sect2>
+<title>Initial Installation Method </title>
+
+<para>
+The Portable Demonstration Kit should have been shipped with an existing
+version of RedBoot, which can be upgraded to the current version using
+the instructions below. 
+</para>
+
+</sect2>
+
+<sect2>
+<title>Special RedBoot Commands</title>
+
+<para>The <command>exec</command> command as described in <xref linkend="RedBoot-Commands-and-Examples">
+is supported by RedBoot on this target, for executing Linux kernels. Only the command line and timeout options
+are relevant to this platform.</para>
+</sect2>
+
+<sect2>
+<title>Memory Maps</title>
+
+<para>The memory map of this platform is fixed by the hardware (cannot
+be changed by software).  The only attributes which can be modified are
+control over cacheability, as noted below.
+<screen>
+Address                 Cache?      Resource
+00000000-03EFFFFF         Yes       SDRAM (via plugin DIMM)
+03F00000-03FFFFFF         No        Unused (SDRAM)
+10000000-1FFFFFFF         No        AX88796 Ethernet
+20000000-2FFFFFFF         No        System FPGA
+30000000-3FFFFFFF         No        MB93493 companion chip (unused)
+40000000-FCFFFFFF         ??        Unused
+FD000000-FDFFFFFF         ??        FLASH (ROM3,ROM4) (unused)
+FE000000-FEFFFFFF         No        Miscellaneous on-chip I/O
+FF000000-FFFFFFFF         No        RedBoot FLASH (16MiB)
+</screen>
+</para>
+
+<note> <title>NOTE</title>
+<para>
+The only configuration currently suppored requires a 64MiB SDRAM 
+DIMM to be present on the CPU card.  No other memory configuration
+is supported at this time.
+</para>
+</note>
+
+</sect2>
+
+<sect2>
+<title>Rebuilding RedBoot</title>
+
+<para>These shell variables provide the platform-specific information
+needed for building RedBoot according to the procedure described in
+<xref linkend="Rebuilding-Redboot">:
+<programlisting>
+export TARGET=mb93093
+export ARCH_DIR=frv
+export PLATFORM_DIR=mb93093
+</programlisting>
+</para>
+</sect2>
+
+<sect2>
+<title>Resource Usage</title>
+
+<para>
+The RedBoot image occupies flash addresses 0xFF000000 - 0xFF03FFFF. To
+execute it copies itself out of there to RAM at 0x03E00000. RedBoot
+reserves memory from 0x00000000 to 0x0001FFFF for its own use.
+User programs can use memory from 0x00020000 to 0x03DFFFFF.
+RAM based RedBoot configurations are
+designed to run from RAM at 0x00020000.
+</para>
+</sect2>
+
+</sect1>
+
+
 <!-- ********************************* IA32  *************************** -->
 <?Pub _newpage>
 <sect1 id="x86pc">

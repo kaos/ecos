@@ -1,3 +1,7 @@
+2004-09-05  Mark Salter  <msalter@redhat.com>
+
+	* ecos.db: Add new frv packages.
+
 2004-08-24  Bart Veer  <bartv@ecoscentric.com>
 
 	* ecos.db: add SPI package

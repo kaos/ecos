@@ -1,3 +1,7 @@
+2004-09-05  Mark Salter  <msalter@redhat.com>
+
+	* doc/redboot_installing.sgml: Add mb93091 and mb93093.
+
 2004-09-02  Mark Salter  <msalter@redhat.com>
 
 	* doc/redboot_cmds.sgml: Add -x option to exec command.

@@ -1,8 +1,13 @@
+2004-09-05  Mark Salter  <msalter@redhat.com>	
+            David Woodhouse  <dwmw2@redhat.com>
+
+	* cdl/flash_frv_frv400.cdl: Build on frvgen too.
+
 //===========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free

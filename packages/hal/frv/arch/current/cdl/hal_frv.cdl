@@ -60,7 +60,7 @@ cdl_package CYGPKG_HAL_FRV {
         necessary to select a specific target platform HAL
         package."
 
-    compile       hal_misc.c context.S frv_stub.c hal_syscall.c
+    compile       hal_diag.c hal_misc.c context.S frv_stub.c hal_syscall.c
 
     # special rule used to build any include files, etc, used by assembly code
     make -priority 1 {
@@ -130,6 +130,7 @@ cdl_package CYGPKG_HAL_FRV {
         display       "Number of breakpoints supported by the HAL."
         flavor        data
         default_value 32
+	compile       hal_breakpoint.c
         active_if     CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
         description   "
             This option determines the number of breakpoints supported by the HAL."
@@ -138,7 +139,7 @@ cdl_package CYGPKG_HAL_FRV {
     cdl_option CYGSEM_HAL_FRV_USE_BREAK_INSTRUCTION {
         display       "Use 'break' for breakpoints."
         flavor        bool
-        default_value 1
+        default_value 0
 	active_if     { CYGINT_HAL_FRV_ARCH_FR500 != 0 }
         requires      CYGNUM_HAL_BREAKPOINT_LIST_SIZE 
         description   "
@@ -146,12 +147,37 @@ cdl_package CYGPKG_HAL_FRV {
             This option can only be used if the GDB stubs use local breakpoints."
     }
 
-    cdl_option CYGSEM_HAL_FRV_HW_DEBUG {
-        display       "Hardware debug features available"
-        flavor        bool
-        default_value 1
-	active_if     { CYGINT_HAL_FRV_ARCH_FR500 != 0 }
+    cdl_component CYGPKG_REDBOOT_FRV_OPTIONS {
+        display       "Redboot for FR-V options"
+        flavor        none
+        no_define
+        parent        CYGPKG_REDBOOT
+        active_if     CYGPKG_REDBOOT
         description   "
-            Select this option to enable the use of a hardware debug unit."
+            This option lists the target's requirements for a valid Redboot
+            configuration."
+                                                                                                                           
+        cdl_component CYGSEM_REDBOOT_FRV_LINUX_BOOT {
+            active_if      CYGBLD_BUILD_REDBOOT_WITH_EXEC
+            display        "Support booting Linux via RedBoot"
+            flavor         bool
+            default_value  1
+            description    "
+               This option allows RedBoot to support booting of a Linux kernel."
+            compile -library=libextras.a redboot_linux_exec.c
+ 
+            cdl_option CYGDAT_REDBOOT_FRV_LINUX_BOOT_ENTRY {
+                display        "Default kernel entry address"
+                flavor         data
+                default_value  0xff040000
+            }
+ 
+            cdl_option CYGDAT_REDBOOT_FRV_LINUX_BOOT_COMMAND_LINE {
+                display        "Default COMMAND_LINE"
+                flavor         data
+                default_value  { "" }
+            }
+        }
     }
+
 }

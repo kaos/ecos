@@ -1,3 +1,32 @@
+2004-09-03  Mark Salter  <msalter@redhat.com>
+2004-09-03  David Woodhouse  <dwmw2@redhat.com>
+
+	* src/vectors.S (reset_vector): Add some debug-only led setting code.
+	* src/redboot_linux_exec.c: Rename auto-variable for clarity.
+	* include/fr-v.h: Add defines for baud clock prescaler.
+	* src/vectors.S: Fix check for PDM bits in potential resume.
+	* src/vectors.S: Handle resume from sleep modes.
+	* src/redboot_linux_exec.c: Fix argv parsing for exec() command.
+	* include/hal_diag.h src/hal_diag.c: Move support for the built-in
+	16550-like chips found on all known implementations of these CPUs 
+	into the arch directory to avoid duplication.
+	* include/fr400.h include/fr500.h include/fr-v.h: Likewise many
+	other register definitions.
+	* src/hal_breakpoint.c: Likewise breakpoint/watchpoint stuff.
+	* cdl/hal_frv.cdl: Changes to reflect the above.
+	* src/vectors.S: Install exception vectors if not defined
+	CYGSEM_HAL_USE_ROM_MONITOR. This way, syscalls and GDB work
+	in RAM RedBoot.
+	* cdl/hal_frv.cdl, src/redboot_linux_exec.c: Exec command.
+	* src/vectors.S, src/context.S, include/hal_arch.h: Save extra GP
+	and FP regs only when they're actually available on this CPU, if
+	multiple CPUs are supported.
+	* cdl/hal_frv.cdl: Disable use of break insn for trap. Remove 
+		seemingly unnecessary option for hardware debugging.
+	* include/hal_arch.h: Add _PSR_CM bit. It's not always hardwired.
+	* src/hal_mk_defs.c: Ditto. Rename _HAL_THREAD_INIT_CONTEXT
+	* src/vectors.S: Some ifdef cleanup, enable _PSR_CM
+	
 2004-04-22  Jani Monoses <jani@iv.ro>
 
 	 * cdl/hal_frv.cdl :

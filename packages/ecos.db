@@ -710,6 +710,16 @@ package CYGPKG_DEVS_FLASH_FRV_FRV400 {
            on the Fujitsu FRV400 platform."
 }
 
+package CYGPKG_DEVS_FLASH_FRV_PDK403 {
+        alias           { "Fujitsu MB93093 FLASH memory support" flash_mb93093 }
+        directory       devs/flash/frv/pdk403
+        script          flash_frv_pdk403.cdl
+        hardware
+        description "
+           This package contains hardware support for FLASH memory
+           on the Fujitsu MB93093-PD00 Portable Development Kit."
+}
+
 package CYGPKG_DEVS_TOUCH_IPAQ {
 	alias 		{ "Touch screen support for iPAQ" touch_ipaq }
 	directory	devs/touch/arm/ipaq
@@ -3737,6 +3747,26 @@ The FRV400 HAL package provides the support needed to run eCos on a FUJITSU
 MB93091 (FR-V 400) eval board."
 }
 
+package CYGPKG_HAL_FRV_MB93091 {
+	alias		{ "FUJITSU development board (FR-V)" mb93091 }
+	directory	hal/frv/mb93091
+	script		hal_frv_mb93091.cdl
+	hardware
+        description "
+The FRV Generic HAL package provides the support needed to run eCos on 
+various FUJITSU FR-V eval boards."
+}
+
+package CYGPKG_HAL_FRV_MB93093 {
+	alias		{ "FUJITSU MB93093-PD00 Portable Development Kit (FR-V)" mb93093 }
+	directory	hal/frv/mb93093
+	script		hal_frv_mb93093.cdl
+	hardware
+        description "
+The MB93093 HAL package provides the support needed to run eCos on 
+the Fujitsu MB93093-PD00 Portable Development Kit board."
+}
+
 package CYGPKG_DEVS_ETH_FRV_FRV400 {
 	alias 		{ "Fujitsu FR-V 400 with 82559 ethernet driver"
 			   devs_eth_frv_frv400 frv400_eth_driver }
@@ -3746,6 +3776,17 @@ package CYGPKG_DEVS_ETH_FRV_FRV400 {
         description     "Ethernet driver for Fujitsu FR-V 400 with Intel
                          i82559 ethernet interfaces."
 }
+
+package CYGPKG_DEVS_ETH_FRV_PDK403 {
+	alias 		{ "Fujitsu MB93093-PD00 with AXL88796 ethernet driver"
+			   devs_eth_frv_pdk403 pdk403_eth_driver }
+	hardware
+	directory	devs/eth/frv/pdk403
+	script		pdk403_eth_drivers.cdl
+        description     "Ethernet driver for Fujitsu MB93093-PD00 Portable
+			 Demonstration Kit with AXL88796 Ethernet device"
+}
+
 # --------------------------------------------------------------------------
 
 # ==========================================================================
@@ -3765,6 +3806,36 @@ target frv400 {
         description "
 The frv400 target provides the packages needed to run eCos on a Fujistu
 development board (FR-V 400)."
+}
+
+target mb93091 {
+	alias { "Fujitsu MB93091 development board (FR-V 4xx,5xx)" MB93091 }
+	packages { CYGPKG_HAL_FRV
+                   CYGPKG_HAL_FRV_MB93091
+                   CYGPKG_IO_PCI
+                   CYGPKG_DEVS_ETH_FRV_FRV400
+                   CYGPKG_DEVS_ETH_NS_DP83902A
+                   CYGPKG_DEVS_ETH_FRV_CB70
+                   CYGPKG_DEVS_FLASH_FRV_FRV400
+                   CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
+        }
+        description "
+The MB93091 target provides the packages needed to run eCos on a Fujitsu
+MB93091 development board (FR-V 400 etc.)."
+}
+
+target mb93093 {
+	alias { "Fujitsu development board (FR-V 400)" MB93093 }
+	packages { CYGPKG_HAL_FRV
+                   CYGPKG_HAL_FRV_MB93093
+                   CYGPKG_DEVS_ETH_FRV_PDK403
+                   CYGPKG_DEVS_ETH_NS_DP83902A
+                   CYGPKG_DEVS_FLASH_FRV_PDK403
+                   CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
+        }
+        description "
+The MB93093 target provides the packages needed to run eCos on a Fujitsu
+MB93090-PD00 Portable Development Kit."
 }
 
 

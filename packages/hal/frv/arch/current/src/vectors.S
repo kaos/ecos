@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -140,6 +140,12 @@
         sti     gr30,@(\base,_TS_GPR30)
         sti     gr31,@(\base,_TS_GPR31)        
 #if _NGPR != 32
+#ifdef CYGINT_HAL_FRV_ARCH_FR400
+	movsg	HSR0,gr5
+	srli	gr5,#10,gr5
+	andicc	gr5,#1,gr0,icc0
+	bne	icc0,0,1f
+#endif
         sti     gr32,@(\base,_TS_GPR32)
         sti     gr33,@(\base,_TS_GPR33)
         sti     gr34,@(\base,_TS_GPR34)
@@ -172,6 +178,7 @@
         sti     gr61,@(\base,_TS_GPR61)
         sti     gr62,@(\base,_TS_GPR62)
         sti     gr63,@(\base,_TS_GPR63)
+1:	
 #endif
 	movsg	psr,gr5
 	sti	gr5,@(\base,_TS_PSR)
@@ -180,10 +187,8 @@
 	movsg	cccr,gr5
 	sti	gr5,@(\base,_TS_CCCR)
 	movsg	bpcsr,gr5
-#if defined( CYGSEM_HAL_FRV_HW_DEBUG ) || defined(CYGPKG_HAL_FRV_FRV400)
         cmpi    gr4,#CYGNUM_HAL_VECTOR_BREAKPOINT,icc0
         beq     icc0,0,10f
-#endif        
 5:      movsg	pcsr,gr5
         cmpi    gr4,#CYGNUM_HAL_VECTOR_SYSCALL,icc0
         blt     icc0,0,10f
@@ -205,37 +210,13 @@
         movgs   gr5,lcr
 	ldi	@(\base,_TS_CCCR),gr5
         movgs   gr5,cccr
-        ldi     @(\base,_TS_GPR2),gr2
-        ldi     @(\base,_TS_GPR3),gr3
-        ldi     @(\base,_TS_GPR4),gr4
-        ldi     @(\base,_TS_GPR5),gr5
-        ldi     @(\base,_TS_GPR6),gr6
-        ldi     @(\base,_TS_GPR7),gr7
-        ldi     @(\base,_TS_GPR8),gr8
-        ldi     @(\base,_TS_GPR9),gr9
-        ldi     @(\base,_TS_GPR10),gr10
-        ldi     @(\base,_TS_GPR11),gr11
-        ldi     @(\base,_TS_GPR12),gr12
-        ldi     @(\base,_TS_GPR13),gr13
-        ldi     @(\base,_TS_GPR14),gr14
-        ldi     @(\base,_TS_GPR15),gr15
-        ldi     @(\base,_TS_GPR16),gr16
-        ldi     @(\base,_TS_GPR17),gr17
-        ldi     @(\base,_TS_GPR18),gr18
-        ldi     @(\base,_TS_GPR19),gr19
-        ldi     @(\base,_TS_GPR20),gr20
-        ldi     @(\base,_TS_GPR21),gr21
-        ldi     @(\base,_TS_GPR22),gr22
-        ldi     @(\base,_TS_GPR23),gr23
-        ldi     @(\base,_TS_GPR24),gr24
-        ldi     @(\base,_TS_GPR25),gr25
-        ldi     @(\base,_TS_GPR26),gr26
-        ldi     @(\base,_TS_GPR27),gr27
-        ldi     @(\base,_TS_GPR28),gr28
-        ldi     @(\base,_TS_GPR29),gr29
-        ldi     @(\base,_TS_GPR30),gr30
-        ldi     @(\base,_TS_GPR31),gr31
 #if _NGPR != 32
+#ifdef CYGINT_HAL_FRV_ARCH_FR400
+	movsg	HSR0,gr5
+	srli	gr5,#10,gr5
+	andicc	gr5,#1,gr0,icc0
+	bne	icc0,0,1f
+#endif
         ldi     @(\base,_TS_GPR32),gr32
         ldi     @(\base,_TS_GPR33),gr33
         ldi     @(\base,_TS_GPR34),gr34
@@ -268,13 +249,44 @@
         ldi     @(\base,_TS_GPR61),gr61
         ldi     @(\base,_TS_GPR62),gr62
         ldi     @(\base,_TS_GPR63),gr63
+1:	
 #endif        
+        ldi     @(\base,_TS_GPR2),gr2
+        ldi     @(\base,_TS_GPR3),gr3
+        ldi     @(\base,_TS_GPR4),gr4
+        ldi     @(\base,_TS_GPR5),gr5
+        ldi     @(\base,_TS_GPR6),gr6
+        ldi     @(\base,_TS_GPR7),gr7
+        ldi     @(\base,_TS_GPR8),gr8
+        ldi     @(\base,_TS_GPR9),gr9
+        ldi     @(\base,_TS_GPR10),gr10
+        ldi     @(\base,_TS_GPR11),gr11
+        ldi     @(\base,_TS_GPR12),gr12
+        ldi     @(\base,_TS_GPR13),gr13
+        ldi     @(\base,_TS_GPR14),gr14
+        ldi     @(\base,_TS_GPR15),gr15
+        ldi     @(\base,_TS_GPR16),gr16
+        ldi     @(\base,_TS_GPR17),gr17
+        ldi     @(\base,_TS_GPR18),gr18
+        ldi     @(\base,_TS_GPR19),gr19
+        ldi     @(\base,_TS_GPR20),gr20
+        ldi     @(\base,_TS_GPR21),gr21
+        ldi     @(\base,_TS_GPR22),gr22
+        ldi     @(\base,_TS_GPR23),gr23
+        ldi     @(\base,_TS_GPR24),gr24
+        ldi     @(\base,_TS_GPR25),gr25
+        ldi     @(\base,_TS_GPR26),gr26
+        ldi     @(\base,_TS_GPR27),gr27
+        ldi     @(\base,_TS_GPR28),gr28
+        ldi     @(\base,_TS_GPR29),gr29
+        ldi     @(\base,_TS_GPR30),gr30
+        ldi     @(\base,_TS_GPR31),gr31
         ldi     @(\base,_TS_SP),gr1   // This has to be last - Stack pointer
         rett    #\retv
         .endm
-        
-#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_ROMRAM)
 
+#ifndef CYGSEM_HAL_USE_ROM_MONITOR
+	
         .macro  exception_VSR
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
         subi    sp,24,sp
@@ -287,19 +299,16 @@
         bra     _exception
         .endm
 
-#if defined(CYGPKG_HAL_FRV_FRV400) && defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
-        .macro  break_VSR
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+        .macro  break_VSR
         subi    sp,24,sp
         sti     gr4,@(sp,0)
-#else
-        subi    sp,_TS_size,sp
-        sti     gr4,@(sp,_TS_GPR4)
-#endif                
         addi    gr0,#((.-8)-_vectors)/16,gr4
         bra     _break
         .endm
-#endif // CYGPKG_HAL_FRV_FRV400 && STUBS
+#else
+#define break_VSR exception_VSR
+#endif // STUBS
 
         .macro  interrupt_VSR
         subi    sp,_TS_size,sp
@@ -308,9 +317,16 @@
         bra     _interrupt
         .endm
         
+#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_ROMRAM)
         .section ".rom_vectors","ax"
 _vectors:               
         call    reset_vector
+#else /* RAM */
+	.section ".rodata","a"
+	.balign	4096
+_vectors:               
+	nop
+#endif	
         nop	// I hate fencepost stuff like this....                 
         nop	// (NEXT_INDEX_AFTER_THIS - 1) - (PREVIOUS_INDEX_FILLED)
         nop	// (LAST_INDEX_TO_FILL)        - (PREVIOUS_INDEX_FILLED)
@@ -323,21 +339,16 @@ _vectors:
         .rept   (254) - CYGNUM_HAL_VECTOR_EXTERNAL_INTERRUPT_LEVEL_15
         exception_VSR
         .endr
-#if defined(CYGPKG_HAL_FRV_FRV400) && defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
 	break_VSR // in index 255
-#else
-	exception_VSR // another one
-#endif // CYGPKG_HAL_FRV_FRV400 && STUBS
 	
 //
 // Handle a break
 //
 // just like _exception, but it calls break_handler instead.
 //
-#if defined(CYGPKG_HAL_FRV_FRV400) && defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
-	_break:
-        // Save current register state
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+_break:
+        // Save current register state
         sti     gr5,@(sp,4)
 
 	// First, check BRR to see whether we're processing a break
@@ -412,21 +423,18 @@ _vectors:
         subi    sp,_TS_size,sp          // Space for scratch saves
         save_GDB_exception_regs sp,gr6
         save_state sp
-#else
-        save_exception_regs sp
-        save_state sp
-#endif
-        LED     0x0FFF
+
+        LED     0x0FF1
         add     sp,gr0,gr8
         call    break_handler
         restore_state sp,bpcsr,1
-#endif // CYGPKG_HAL_FRV_FRV400 && STUBS
+#endif // STUBS
 
 //
 // Handle an exception
 //
 _exception:
-        // Save current register state
+	// Save current register state
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
         sti     gr5,@(sp,4)
         sti     gr6,@(sp,8)
@@ -457,8 +465,8 @@ _exception:
         save_exception_regs sp
         save_state sp
 #endif
-        LED     0x0FFF
-        add     sp,gr0,gr8
+        LED     0x0FF2
+	mov	sp,gr8
         call    exception_handler
         bra     _exception_return
 
@@ -521,23 +529,78 @@ _exception_return:
         LED     0x0000
         restore_state sp,pcsr,0
 
+#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_ROMRAM)
         .global reset_vector
 reset_vector:
-
+#if 1
+	// I'm not sure why this is necessary, but power on reset
+	// of CB70/VDK appears very unreliable without it.
+	setlos	#1000,gr4
+99:	subicc	gr4,#1,gr4,icc0
+	bne	icc0,0,99b
+#endif
         // Make sure the CPU is in the proper mode (system), interrupts disabled
         movsg   psr,gr4
         li      ~(_PSR_ET|_PSR_PS|_PSR_PIVL_MASK),gr5
         and     gr4,gr5,gr4
-        li      (_PSR_S|_PSR_ET|(0x0F<<_PSR_PIVL_SHIFT)),gr5
+        li      (_PSR_S|_PSR_ET|_PSR_CM|(0x0F<<_PSR_PIVL_SHIFT)),gr5
         or      gr4,gr5,gr4
-        movgs   gr4,psr
+	movgs   gr4,psr
         
-        // Make sure caches, MMUs are disabled
         movsg   hsr0,gr4
-        li      ~(_HSR0_ICE|_HSR0_DCE|_HSR0_IMMU|_HSR0_DMMU),gr5
-        and     gr4,gr5,gr4
-        movgs   gr4,hsr0
-        
+        // Make sure caches, MMUs, sleep states are disabled
+        li      ~(_HSR0_ICE|_HSR0_DCE|_HSR0_IMMU|_HSR0_DMMU|7),gr5
+        and     gr4,gr5,gr5
+        movgs   gr5,hsr0
+
+#ifdef __CB70_DEBUG
+	membar
+	sethi	#0xffc0,gr11
+	setlo	#0x0000,gr11
+
+	setlo	#0x5555,gr6
+	sthi	gr6,@(gr11,0x100)  // leds
+	membar
+#endif
+	
+#ifdef CYGSEM_REDBOOT_FRV_LINUX_BOOT
+	andicc	gr4,#7,gr0,icc0	// Were we in a sleep state?
+	beq	icc0,0,3f	// No... normal startup
+
+#ifdef __CB70_DEBUG
+	setlo	#1,gr6
+	sthi	gr6,@(gr11,0x100)  // leds
+	membar
+#endif
+	
+	not	gr14,gr5	// If gr14 = ~gr13 then gr14 is return address
+	cmp	gr5,gr13,icc0	// ... else normal startup
+	bne	icc0,0,3f
+
+#ifdef __CB70_DEBUG
+	setlo	#2,gr6
+	sthi	gr6,@(gr11,0x100)  // leds
+	membar
+#endif
+	
+	// Assume FR400 since FR5xx doesn't run Linux (yet)
+	li	_FRV400_SDRAM_STS, gr4
+	sti	gr0,@(gr4,8)	// DRCN. Turn off self-refresh.
+2:	
+	ldi	@(gr4,0),gr5	// Wait for it to come back...
+	andicc	gr5,#1,gr0,icc0
+	bne	icc0,0,2b
+
+#ifdef __CB70_DEBUG
+	setlo	#4,gr6
+	sthi	gr6,@(gr11,0x100)  // leds
+	membar
+#endif
+
+	jmpil	@(gr14,#0)
+	
+3:
+#endif		
         // Initialize hardware platform - this macro only contains
         // code which must be run before any "normal" accesses are
         // allowed, such as enabling DRAM controllers, etc.
@@ -563,19 +626,21 @@ reset_vector:
 	stu	gr5,@(gr6,gr7)
 	cmp	gr6,gr8,icc0
 	bne	icc0,0,15b        
+        LED     0x5001
         jmpl    @(gr10,gr0)
 20:     nop        
-#endif
+#endif // ROMRAM
 
         // Fall through to normal program startup
-        
-#endif  //  CYG_HAL_STARTUP_ROM
+#endif // ROM || ROMRAM        
+#endif  // !CYGSEM_HAL_USE_ROM_MONITOR
 
         .text
         
         .global _start
 _start:         
-        // Set the global offset register (gr16)
+        LED 0x5002
+        // Set the global offset register (gr16) call
         call    .Lcall
     .Lcall:
         movsg   lr,gr4
@@ -584,13 +649,14 @@ _start:
         sub     gr4,gr5,gr16
 
         LED     0x0000
-        
-#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_ROMRAM)
+#ifndef CYGSEM_HAL_USE_ROM_MONITOR        
         // Set up trap base register                
         lda     _vectors,gr4
         movgs   gr4,tbr
 
         LED     0x0001
+#endif
+#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_ROMRAM)
         
         // Relocate [copy] data from ROM to RAM
         lda     __rom_data_start,gr4

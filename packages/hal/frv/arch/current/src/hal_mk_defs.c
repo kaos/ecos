@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -177,6 +177,7 @@ main(void)
     DEFINE(_PSR_ET, _PSR_ET);
     DEFINE(_PSR_S, _PSR_S);
     DEFINE(_PSR_PS, _PSR_PS);
+    DEFINE(_PSR_CM, _PSR_CM);
     DEFINE(_PSR_PIVL_MASK, _PSR_PIVL_MASK);
     DEFINE(_PSR_PIVL_SHIFT, _PSR_PIVL_SHIFT);
 

@@ -143,7 +143,7 @@ _frv400_eth_init(dp83902a_priv_data_t *dp)
         }
 #else
         // Read ESA from EEPROM
-        DP_OUT(dp->base, DP_DCR, 0x49);  // Wordwide access
+        DP_OUT(dp->base, DP_DCR, 0x48);  // Bytewide access
         DP_OUT(dp->base, DP_RBCH, 0);    // Remote byte count
         DP_OUT(dp->base, DP_RBCL, 0);
         DP_OUT(dp->base, DP_ISR, 0xFF);  // Clear any pending interrupts
@@ -219,6 +219,170 @@ NETDEVTAB_ENTRY(dp83902a_netdev,
                 dp83902a_init, 
                 &dp83902a_sc);
 
+
+#ifdef CYGPKG_REDBOOT
+
+
+#define EECS (0x80|(1<<3))
+#define EESK (1<<2)
+#define EEDI (1<<1)
+#define EEDO (1<<0)
+#define dprintf(x...) do { } while(0)
+
+
+static int eeprom_cmd(dp83902a_priv_data_t *dp, int cmd, int cmd_len)
+{
+	unsigned retval = 0;
+
+        DP_OUT(dp->base, 1, EECS);
+	CYGACC_CALL_IF_DELAY_US(2000);
+
+	dprintf("Enabled for %08x (%d bits)\n", cmd, cmd_len);
+
+        DP_OUT(dp->base, 1, EECS | EESK);
+	CYGACC_CALL_IF_DELAY_US(2000);
+
+	dprintf("Clock\n");
+
+	/* Shift the command bits out. */
+        do {
+                short databit = (cmd & (1 << cmd_len)) ? EEDI : 0;
+		unsigned char tmp, tmp2;
+                DP_OUT(dp->base, 1, EECS | databit); 
+		CYGACC_CALL_IF_DELAY_US(2000);
+		dprintf("Bit %d ... ", !!(cmd&(1<<cmd_len)));
+                DP_OUT(dp->base, 1, EECS | databit | EESK);
+		CYGACC_CALL_IF_DELAY_US(2000);
+		dprintf(" \b");
+		DP_IN(dp->base, 0, tmp2);
+		DP_IN(dp->base, 1, tmp);
+		CYGACC_CALL_IF_DELAY_US(2000);
+                retval = (retval << 1) | !!(tmp & EEDO);
+		dprintf(" \b");
+		dprintf("Got bit %d (%02x %02x)\n", retval & 1, tmp2, tmp);
+        } while (--cmd_len >= 0);
+        DP_OUT(dp->base, 1, EECS);
+	CYGACC_CALL_IF_DELAY_US(2000);
+	dprintf("Last enb...\n");
+
+        /* Terminate the EEPROM access. */
+        DP_OUT(dp->base, 1, 0x80);
+	CYGACC_CALL_IF_DELAY_US(2000);
+	dprintf("Bye. retval %x\n", retval);
+        return retval;
+}
+
+static void setmac(dp83902a_priv_data_t *dp, unsigned short *newmac)
+{
+	unsigned char old_cr, old_ee;
+	int i;
+
+	DP_IN(dp->base, DP_CR, old_cr);
+	DP_OUT(dp->base, DP_CR, old_cr | 0xc0); // Select page 3.
+	CYGACC_CALL_IF_DELAY_US(2000);
+
+	DP_IN(dp->base, 1, old_ee);
+	DP_OUT(dp->base, 1, 0x80);
+	CYGACC_CALL_IF_DELAY_US(2000);
+
+	/* Write enable */
+	eeprom_cmd(dp, (4<<6) + (0x30), 8);
+
+	for (i=0; i<3; i++) {
+		unsigned adr = i+1;
+		/* Erase word */
+//		eeprom_cmd(dp, (7<<6) + (adr), 8);
+		/* Write word */
+		eeprom_cmd(dp, (5<<22) + (adr<<16) + newmac[i], 24);
+	}
+
+	/* Write disable */
+	eeprom_cmd(dp, (4<<6), 8);
+
+#if 0
+	unsigned long words[16];
+	for (i=0; i<15; i++) {
+		unsigned long cmd = (6<<22) + (i<<16);
+		words[i] = eeprom_cmd(dp, cmd /*6<<23 + (i<<16)*/, 24);
+	}
+
+	for (i=0; i<15; i++) {
+		diag_printf("Words[%d] %08x\n", i, words[i]);
+	}
+#endif
+	DP_OUT(dp->base, 1, old_ee);
+	CYGACC_CALL_IF_DELAY_US(2000);
+	DP_OUT(dp->base, DP_CR, old_cr);
+	CYGACC_CALL_IF_DELAY_US(2000);
+}
+
+
+#include <redboot.h>
+static void do_setmac(int argc, char *argv[]);
+RedBoot_cmd("setmac", 
+            "Set Ethernet MAC address", 
+            "<xx:xx:xx:xx:xx:xx>",
+            do_setmac
+    );
+
+static void 
+do_setmac(int argc, char *argv[])
+{
+	unsigned char *mac = NULL;
+	unsigned char mac_nybble[12];
+	unsigned short mac_word[3];
+	int c, n;
+
+	if (!scan_opts(argc, argv, 1, NULL, 0, (void *)&mac,
+		       OPTION_ARG_TYPE_STR, "<MAC address>"))
+		return;
+
+	if (!mac) {
+		diag_printf("Must supply MAC address\n");
+		return;
+	}
+	for (c=n=0; n<12; c++) {
+		if (mac[c] == ':' && !((c+1) % 3))
+			/* Colon in an allowed place */
+			continue;
+
+		if (mac[c] >= '0' && mac[c] <= '9')
+			mac_nybble[n] = mac[c] - '0';
+ 		else if (mac[c] >= 'A' && mac[c] <= 'F')
+			mac_nybble[n] = mac[c] - 'A' + 10;
+ 		else if (mac[c] >= 'a' && mac[c] <= 'f')
+			mac_nybble[n] = mac[c] - 'a' + 10;
+		else {
+			diag_printf("Invalid MAC address bad char %x\n", mac[c]);
+			return;
+		}
+
+		n++;
+	}
+	if (mac[c] || n!=12 || (mac_nybble[1]&1)) {
+		diag_printf("Invalid MAC address\n");
+		return;
+	}
+	mac_word[0] = (mac_nybble[2] << 12) |
+		      (mac_nybble[3] << 8) |
+		      (mac_nybble[0] << 4) |
+		      (mac_nybble[1]);
+	mac_word[1] = (mac_nybble[6] << 12) |
+		      (mac_nybble[7] << 8) |
+		      (mac_nybble[4] << 4) |
+		      (mac_nybble[5]);
+	mac_word[2] = (mac_nybble[10] << 12) |
+		      (mac_nybble[11] << 8) |
+		      (mac_nybble[8] << 4) |
+		      (mac_nybble[9]);
+
+	diag_printf("Setting MAC address...");
+
+	setmac(&dp83902a_eth0_priv_data, mac_word);
+	diag_printf("... done. Reset to take effect.\n");
+	return;
+}
+#endif /* CYGPKG_REDBOOT */
 #endif // CYGPKG_DEVS_ETH_FRV400_ETH0
 
 #endif // __WANT_DEVS

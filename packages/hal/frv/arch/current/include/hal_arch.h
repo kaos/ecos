@@ -11,7 +11,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -57,16 +57,13 @@
 #include <pkgconf/hal.h>         // To decide on stack usage
 #include <cyg/infra/cyg_type.h>
 
-#if CYGINT_HAL_FRV_ARCH_FR400 != 0
-#define _NGPR 32
-#define _NFPR 32
-#endif
 #if CYGINT_HAL_FRV_ARCH_FR500 != 0
 #define _NGPR 64
 #define _NFPR 64
-#endif
-
-#ifndef _NGPR
+#elif CYGINT_HAL_FRV_ARCH_FR400 != 0
+#define _NGPR 32
+#define _NFPR 32
+#else
 #error No architecture defined?
 #endif
 
@@ -79,10 +76,13 @@
 #define _PSR_S          (1<<2)                    // Supervisor state
 #define _PSR_PS         (1<<1)                    // Previous supervisor state
 #define _PSR_ET         (1<<0)                    // Enable interrupts
+#define _PSR_CM		(1<<13)			  // Enable conditionals
 
-#define _PSR_INITIAL (_PSR_S|_PSR_PS|_PSR_ET)     // Supervisor mode, exceptions
+#define _PSR_INITIAL (_PSR_S|_PSR_PS|_PSR_ET|_PSR_CM)     // Supervisor mode, exceptions
 
 // Hardware status register
+#define _HSR0_FRN	(1<<11)
+#define _HSR0_GRN	(1<<10)
 #define _HSR0_ICE       (1<<31)                   // Instruction cache enable
 #define _HSR0_DCE       (1<<30)                   // Data cache enable
 #define _HSR0_IMMU      (1<<26)                   // Instruction MMU enable
@@ -161,7 +161,7 @@ externC int hal_msbindex(int);
 // _entry_ entry point address.
 // _id_ bit pattern used in initializing registers, for debugging.
 
-#define _HAL_THREAD_INIT_CONTEXT( _sparg_, _thread_, _entry_, _id_ )             \
+#define HAL_THREAD_INIT_CONTEXT( _sparg_, _thread_, _entry_, _id_ )             \
     CYG_MACRO_START                                                             \
     register CYG_WORD _sp_ = ((CYG_WORD)_sparg_) &~15;                          \
     register HAL_SavedRegisters *_regs_;                                        \

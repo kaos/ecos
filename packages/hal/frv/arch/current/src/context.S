@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -99,6 +99,12 @@ hal_thread_switch_context:
         sti     gr30,@(sp,_TS_GPR30)
         sti     gr31,@(sp,_TS_GPR31)
 #if _NGPR != 32
+#ifdef CYGINT_HAL_FRV_ARCH_FR400	
+	movsg	HSR0,gr5
+	srli	gr5,#10,gr5
+	andicc	gr5,#1,gr0,icc0
+	bne	icc0,0,1f
+#endif
         sti     gr32,@(sp,_TS_GPR32)
         sti     gr33,@(sp,_TS_GPR33)
         sti     gr34,@(sp,_TS_GPR34)
@@ -131,6 +137,7 @@ hal_thread_switch_context:
         sti     gr61,@(sp,_TS_GPR61)
         sti     gr62,@(sp,_TS_GPR62)
         sti     gr63,@(sp,_TS_GPR63)
+1:	
 #endif        
         movsg   psr,gr4
         sti     gr4,@(sp,_TS_PSR)
@@ -173,37 +180,13 @@ hal_thread_load_context:
         movgs   gr8,lcr
         ldi     @(sp,_TS_CCCR),gr8
         movgs   gr8,cccr
-        ldi     @(sp,_TS_GPR2),gr2       // Restore registers
-        ldi     @(sp,_TS_GPR3),gr3
-        ldi     @(sp,_TS_GPR4),gr4
-        ldi     @(sp,_TS_GPR5),gr5
-        ldi     @(sp,_TS_GPR6),gr6
-        ldi     @(sp,_TS_GPR7),gr7
-        ldi     @(sp,_TS_GPR8),gr8
-        ldi     @(sp,_TS_GPR9),gr9
-        ldi     @(sp,_TS_GPR10),gr10
-        ldi     @(sp,_TS_GPR11),gr11
-        ldi     @(sp,_TS_GPR12),gr12
-        ldi     @(sp,_TS_GPR13),gr13
-        ldi     @(sp,_TS_GPR14),gr14
-        ldi     @(sp,_TS_GPR15),gr15
-        ldi     @(sp,_TS_GPR16),gr16
-        ldi     @(sp,_TS_GPR17),gr17
-        ldi     @(sp,_TS_GPR18),gr18
-        ldi     @(sp,_TS_GPR19),gr19
-        ldi     @(sp,_TS_GPR20),gr20
-        ldi     @(sp,_TS_GPR21),gr21
-        ldi     @(sp,_TS_GPR22),gr22
-        ldi     @(sp,_TS_GPR23),gr23
-        ldi     @(sp,_TS_GPR24),gr24
-        ldi     @(sp,_TS_GPR25),gr25
-        ldi     @(sp,_TS_GPR26),gr26
-        ldi     @(sp,_TS_GPR27),gr27
-        ldi     @(sp,_TS_GPR28),gr28
-        ldi     @(sp,_TS_GPR29),gr29
-        ldi     @(sp,_TS_GPR30),gr30
-        ldi     @(sp,_TS_GPR31),gr31
 #if _NGPR != 32
+#ifdef CYGINT_HAL_FRV_ARCH_FR400	
+	movsg	HSR0,gr5
+	srli	gr5,#10,gr5
+	andicc	gr5,#1,gr0,icc0
+	bne	icc0,0,1f
+#endif	
         ldi     @(sp,_TS_GPR32),gr32
         ldi     @(sp,_TS_GPR33),gr33
         ldi     @(sp,_TS_GPR34),gr34
@@ -236,7 +219,38 @@ hal_thread_load_context:
         ldi     @(sp,_TS_GPR61),gr61
         ldi     @(sp,_TS_GPR62),gr62
         ldi     @(sp,_TS_GPR63),gr63
+1:	
 #endif        
+        ldi     @(sp,_TS_GPR2),gr2       // Restore registers
+        ldi     @(sp,_TS_GPR3),gr3
+        ldi     @(sp,_TS_GPR4),gr4
+        ldi     @(sp,_TS_GPR5),gr5
+        ldi     @(sp,_TS_GPR6),gr6
+        ldi     @(sp,_TS_GPR7),gr7
+        ldi     @(sp,_TS_GPR8),gr8
+        ldi     @(sp,_TS_GPR9),gr9
+        ldi     @(sp,_TS_GPR10),gr10
+        ldi     @(sp,_TS_GPR11),gr11
+        ldi     @(sp,_TS_GPR12),gr12
+        ldi     @(sp,_TS_GPR13),gr13
+        ldi     @(sp,_TS_GPR14),gr14
+        ldi     @(sp,_TS_GPR15),gr15
+        ldi     @(sp,_TS_GPR16),gr16
+        ldi     @(sp,_TS_GPR17),gr17
+        ldi     @(sp,_TS_GPR18),gr18
+        ldi     @(sp,_TS_GPR19),gr19
+        ldi     @(sp,_TS_GPR20),gr20
+        ldi     @(sp,_TS_GPR21),gr21
+        ldi     @(sp,_TS_GPR22),gr22
+        ldi     @(sp,_TS_GPR23),gr23
+        ldi     @(sp,_TS_GPR24),gr24
+        ldi     @(sp,_TS_GPR25),gr25
+        ldi     @(sp,_TS_GPR26),gr26
+        ldi     @(sp,_TS_GPR27),gr27
+        ldi     @(sp,_TS_GPR28),gr28
+        ldi     @(sp,_TS_GPR29),gr29
+        ldi     @(sp,_TS_GPR30),gr30
+        ldi     @(sp,_TS_GPR31),gr31
         ldi     @(sp,_TS_SP),sp
         rett    #0
 
@@ -266,6 +280,12 @@ hal_setjmp:
 	stdi	gr28, @(gr8,48)
 	stdi	gr30, @(gr8,56)
 #if _NGPR != 32
+#ifdef CYGINT_HAL_FRV_ARCH_FR400	
+	movsg	HSR0,gr5
+	srli	gr5,#10,gr5
+	andicc	gr5,#1,gr0,icc0
+	bne	icc0,0,1f
+#endif	
 	stdi	gr48, @(gr8,64)
 	stdi	gr50, @(gr8,72)
 	stdi	gr52, @(gr8,80)
@@ -274,6 +294,7 @@ hal_setjmp:
 	stdi	gr58, @(gr8,104)
 	stdi	gr60, @(gr8,112)
 	stdi	gr62, @(gr8,120)
+1:	
 #endif
 
 #if _NFPR != 0
@@ -286,6 +307,12 @@ hal_setjmp:
 	stdfi	fr28, @(gr8,176)
 	stdfi	fr30, @(gr8,184)
 #if _NFPR != 32
+#ifdef CYGINT_HAL_FRV_ARCH_FR400	
+	movsg	HSR0,gr5
+	srli	gr5,#11,gr5
+	andicc	gr5,#1,gr0,icc0
+	bne	icc0,0,1f
+#endif	
 	stdfi	fr48, @(gr8,192)
 	stdfi	fr50, @(gr8,200)
 	stdfi	fr52, @(gr8,208)
@@ -294,6 +321,7 @@ hal_setjmp:
 	stdfi	fr58, @(gr8,232)
 	stdfi	fr60, @(gr8,240)
 	stdfi	fr62, @(gr8,248)
+1:	
 #endif
 #endif
 
@@ -309,26 +337,7 @@ hal_setjmp:
 
 	.global	hal_longjmp
 	.type	hal_longjmp,@function
-hallongjmp:
-	lddi	@(gr8,0), gr16
-	lddi	@(gr8,8), gr18
-	lddi 	@(gr8,16), gr20
-	lddi	@(gr8,24), gr22
-	lddi	@(gr8,32), gr24
-	lddi	@(gr8,40), gr26
-	lddi	@(gr8,48), gr28
-	lddi	@(gr8,56), gr30
-#if _NGPR != 32
-	lddi	@(gr8,64), gr48
-	lddi	@(gr8,72), gr50
-	lddi	@(gr8,80), gr52
-	lddi	@(gr8,88), gr54
-	lddi	@(gr8,96), gr56
-	lddi	@(gr8,104), gr58
-	lddi	@(gr8,112), gr60
-	lddi	@(gr8,120), gr62
-#endif
-
+hal_longjmp:
 #if _NFPR != 0
 	lddfi	@(gr8,128), fr16
 	lddfi	@(gr8,136), fr18
@@ -339,6 +348,12 @@ hallongjmp:
 	lddfi	@(gr8,176), fr28
 	lddfi	@(gr8,184), fr30
 #if _NFPR != 32
+#ifdef CYGINT_HAL_FRV_ARCH_FR400	
+	movsg	HSR0,gr5
+	srli	gr5,#11,gr5
+	andicc	gr5,#1,gr0,icc0
+	bne	icc0,0,1f
+#endif	
 	lddfi	@(gr8,192), fr48
 	lddfi	@(gr8,200), fr50
 	lddfi	@(gr8,208), fr52
@@ -347,8 +362,36 @@ hallongjmp:
 	lddfi	@(gr8,232), fr58
 	lddfi	@(gr8,240), fr60
 	lddfi	@(gr8,248), fr62
+1:
 #endif
 #endif
+
+#if _NGPR != 32
+#ifdef CYGINT_HAL_FRV_ARCH_FR400	
+	movsg	HSR0,gr5
+	srli	gr5,#10,gr5
+	andicc	gr5,#1,gr0,icc0
+	bne	icc0,0,1f
+#endif	
+	lddi	@(gr8,64), gr48
+	lddi	@(gr8,72), gr50
+	lddi	@(gr8,80), gr52
+	lddi	@(gr8,88), gr54
+	lddi	@(gr8,96), gr56
+	lddi	@(gr8,104), gr58
+	lddi	@(gr8,112), gr60
+	lddi	@(gr8,120), gr62
+1:	
+#endif
+	lddi	@(gr8,0), gr16
+	lddi	@(gr8,8), gr18
+	lddi 	@(gr8,16), gr20
+	lddi	@(gr8,24), gr22
+	lddi	@(gr8,32), gr24
+	lddi	@(gr8,40), gr26
+	lddi	@(gr8,48), gr28
+	lddi	@(gr8,56), gr30
+
 
         ldi     @(gr8,256), gr4
 	movgs   gr4,lr
