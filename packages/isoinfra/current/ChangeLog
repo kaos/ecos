@@ -1,3 +1,8 @@
+2003-06-10  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/sys/stat.h: S_IFFIFO defies logic and should be called
+	S_IFIFO!
+
 2003-05-26  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/sys/stat.h (S_IF*): Added macros to test the type of a

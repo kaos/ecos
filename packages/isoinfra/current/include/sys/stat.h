@@ -85,11 +85,11 @@
 #define S_IFCHR          (__stat_mode_CHR)
 #define S_IFBLK          (__stat_mode_BLK)
 #define S_IFREG          (__stat_mode_REG)
-#define S_IFFIFO         (__stat_mode_FIFO)
+#define S_IFIFO          (__stat_mode_FIFO)
 #define S_IFLNK          (__stat_mode_LNK)
 #define S_IFSOCK         (__stat_mode_SOCK)
 #define S_IFMT           (S_IFDIR|S_IFCHR|S_IFBLK|S_IFREG| \
-                          S_IFFIFO|S_IFLNK|S_IFSOCK)
+                          S_IFIFO|S_IFLNK|S_IFSOCK)
 #endif
 
 #define S_ISDIR(__mode)  ((__mode) & __stat_mode_DIR )
