@@ -1,3 +1,9 @@
+2003-07-23  Patrick Doyle  <wpd@dtccom.com>
+
+	* src/flash.c (fis_find_free)
+	* src/flash.c (fis_free): Do not search areas reserved for RedBoot
+	when scanning for free space.
+
 2003-07-16  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/net/ping.c:

@@ -508,7 +508,9 @@ fis_free(int argc, char *argv[])
     unsigned long *area_start;
 
     // Do not search the area reserved for pre-RedBoot systems:
-    fis_ptr = (unsigned long *)((CYG_ADDRESS)flash_start + CYGNUM_REDBOOT_FLASH_RESERVED_BASE);
+    fis_ptr = (unsigned long *)((CYG_ADDRESS)flash_start + 
+                                CYGNUM_REDBOOT_FLASH_RESERVED_BASE + 
+                                CYGBLD_REDBOOT_MIN_IMAGE_SIZE);
     fis_end = (unsigned long *)(CYG_ADDRESS)flash_end;
     area_start = fis_ptr;
     while (fis_ptr < fis_end) {
@@ -545,7 +547,9 @@ fis_find_free(CYG_ADDRESS *addr, unsigned long length)
     unsigned long *area_start;
 
     // Do not search the area reserved for pre-RedBoot systems:
-    fis_ptr = (unsigned long *)((CYG_ADDRESS)flash_start + CYGNUM_REDBOOT_FLASH_RESERVED_BASE);
+    fis_ptr = (unsigned long *)((CYG_ADDRESS)flash_start + 
+                                CYGNUM_REDBOOT_FLASH_RESERVED_BASE + 
+                                CYGBLD_REDBOOT_MIN_IMAGE_SIZE);
     fis_end = (unsigned long *)(CYG_ADDRESS)flash_end;
     area_start = fis_ptr;
     while (fis_ptr < fis_end) {
