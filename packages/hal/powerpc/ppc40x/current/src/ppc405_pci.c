@@ -100,6 +100,7 @@ hal_ppc405_pci_init(void)
     // Setup for bus mastering
     HAL_PCI_CFG_READ_UINT32(0, CYG_PCI_DEV_MAKE_DEVFN(0,0),
                             CYG_PCI_CFG_COMMAND, cmd_state);
+    cyg_pci_init();
     if ((cmd_state & CYG_PCI_CFG_COMMAND_MEMORY) == 0) {
         diag_printf("Configure PCI bus\n");
         HAL_PCI_CFG_WRITE_UINT32(0, CYG_PCI_DEV_MAKE_DEVFN(0,0),

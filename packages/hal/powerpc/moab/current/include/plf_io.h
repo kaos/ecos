@@ -71,17 +71,45 @@
 
 // Map PCI device resources starting from these addresses in PCI space.
 #define HAL_PCI_ALLOC_BASE_MEMORY                 0x00000000
-#define HAL_PCI_ALLOC_BASE_IO                     0x00000000
+#define HAL_PCI_ALLOC_BASE_IO                     0x00800000
 
 // This is where the PCI spaces are mapped in the CPU's address space.
 #define HAL_PCI_PHYSICAL_MEMORY_BASE              0xA0000000
-#define HAL_PCI_PHYSICAL_IO_BASE                  0xE8800000
+#define HAL_PCI_PHYSICAL_IO_BASE                  0xE8000000
 
 #if 1 // This is an old-school idea about how to handle PCI devices
 // These seem to be defined multiple ways?
 #define CYGMEM_SECTION_pci_window                 0x03F00000
 #define CYGMEM_SECTION_pci_window_SIZE            0x00100000
 #endif
+
+// IDE support
+#define HAL_IDE_NUM_CONTROLLERS 2  // One card, two controllers
+
+externC cyg_uint8 cyg_hal_plf_ide_read_uint8(int ctlr, cyg_uint32 reg);
+externC void cyg_hal_plf_ide_write_uint8(int ctlr, cyg_uint32 reg, cyg_uint8 val);
+externC cyg_uint16 cyg_hal_plf_ide_read_uint16(int ctlr, cyg_uint32 reg);
+externC void cyg_hal_plf_ide_write_uint16(int ctlr, cyg_uint32 reg, cyg_uint16 val);
+externC void cyg_hal_plf_ide_write_control(int ctlr, cyg_uint8 val);
+externC int cyg_hal_plf_ide_init(void);
+
+#define HAL_IDE_READ_UINT8( __ctlr, __reg, __val) \
+    __val = cyg_hal_plf_ide_read_uint8((__ctlr),  (__reg))
+
+#define HAL_IDE_READ_UINT16( __ctlr, __reg, __val) \
+    __val = cyg_hal_plf_ide_read_uint16((__ctlr),  (__reg))
+
+#define HAL_IDE_WRITE_UINT8( __ctlr, __reg, __val) \
+    cyg_hal_plf_ide_write_uint8((__ctlr),  (__reg), (__val))
+
+#define HAL_IDE_WRITE_UINT16( __ctlr, __reg, __val) \
+    cyg_hal_plf_ide_write_uint16((__ctlr),  (__reg), (__val))
+
+#define HAL_IDE_WRITE_CONTROL( __ctlr, __val) \
+    cyg_hal_plf_ide_write_control((__ctlr),  (__val))
+
+#define HAL_IDE_INIT() cyg_hal_plf_ide_init()
+
 
 //-----------------------------------------------------------------------------
 // end of plf_io.h

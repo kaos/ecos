@@ -20,7 +20,6 @@ cdl_configuration eCos {
     package -hardware CYGPKG_DEVS_ETH_POWERPC_MOAB current ;
     package -hardware CYGPKG_DEVS_ETH_POWERPC_PPC405 current ;
     package -hardware CYGPKG_DEVS_ETH_PHY current ;
-    package -hardware CYGPKG_IO_PCI current ;
     package -hardware CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS1307 current ;
     package -hardware CYGPKG_DEVICES_WALLCLOCK_POWERPC_MOAB current ;
     package -hardware CYGPKG_IO_SERIAL_GENERIC_16X5X current ;

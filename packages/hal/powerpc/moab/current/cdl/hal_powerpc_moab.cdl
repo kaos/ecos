@@ -65,6 +65,7 @@ cdl_package CYGPKG_HAL_POWERPC_MOAB {
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
     implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
+
     requires      CYGSEM_HAL_POWERPC_RESET_USES_JUMP        
     requires      { CYGHWR_HAL_POWERPC_PPC4XX == "405GP" }
 # work around DCACHE problems - see errata for details, but
@@ -136,6 +137,18 @@ cdl_package CYGPKG_HAL_POWERPC_MOAB {
            run, either from RAM or ROM (flash) memory.  ROM based applications
            must be self contained, while RAM applications will typically assume
            the existence of a debug environment, such as GDB stubs."
+    }
+
+    cdl_component CYGSEM_HAL_IDE_SUPPORT {
+        display       "HAL support for IDE disks"
+        flavor        bool
+        active_if     CYGPKG_IO_PCI
+        default_value 1
+        implements    CYGINT_HAL_PLF_IF_IDE
+        compile       moab_ide.c
+        description   "
+           Enable this option to get support for IDE devices.  This is useful
+           to allow RedBoot to boot directly from disk."
     }
     
     cdl_component CYGBLD_GLOBAL_OPTIONS {
