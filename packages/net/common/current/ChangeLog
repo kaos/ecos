@@ -1,3 +1,8 @@
+2003-03-18 Barton Meeks  <bartonm2002@yahoo.com>
+
+        * src/tftp_client.c: Reduce size of initial request packet
+        for compatibility with some tftp servers.
+	
 2003-03-14  Nick Garnett  <nickg@balti.calivar.com>
 
 	* cdl/net.cdl: Added CYGDBG_NET_SHOW_MBUFS option to turn on

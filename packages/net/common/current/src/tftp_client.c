@@ -137,7 +137,7 @@ tftp_get(char *filename,
     }
 
     // Send request
-    if (sendto(s, data, sizeof(data), 0, 
+    if (sendto(s, data, (int)(cp - data), 0, 
                (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
         // Problem sending request
         *err = TFTP_NETERR;
@@ -306,7 +306,7 @@ tftp_put(char *filename,
         while (*fp) *cp++ = *fp++;
         *cp++ = '\0';
         // Send request
-        if (sendto(s, data, sizeof(data), 0, 
+        if (sendto(s, data, (int)(cp-data), 0, 
                    (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
             // Problem sending request
             *err = TFTP_NETERR;
