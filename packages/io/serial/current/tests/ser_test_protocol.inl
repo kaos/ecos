@@ -415,12 +415,17 @@ hang(void)
 // On ER, return error.
 //
 // On OK, change to the new configuration. Resynchronize with the host:
-//  Write 'T'-chars to the host.
-//   The host will echo anything it reads until it sees a 'O' character.
-//  Continue until four 'T'-chars has been read back.
-//  Then send a single 'O'-character. This will signal success to the host.
+//  Target waits for host to send S(ync) 
+//     [host will delay at least .1 secs after changing baud rate so the 
+//      line has time to settle.]
 //
-// If the synchronization has not succeeded within 100 ticks
+//  When receiving S(ync), target replies OK to the host which then
+//  acknowledges with D(one).
+//
+//  Host can also send R(esync) which means it didn't receieve the OK. If
+//  so the target resends its S(ync) message.
+//
+// If the synchronization has not succeeded within 1 second
 // (configurable in the protocol), both host and target will revert to
 // the previous configuration and attempt to synchronize again. If
 // this fails, this call will hang and the host will consider the test
@@ -490,7 +495,7 @@ change_config(cyg_io_handle_t handle, cyg_ser_cfg_t* cfg)
     // with the host.
     res = cyg_io_set_config(handle, CYG_IO_SET_CONFIG_SERIAL_INFO, 
                             &old_cfg, &len);
-    cyg_thread_delay(10);  // Some chips don't like changes to happen to fast...
+    cyg_thread_delay(10); // Some chips don't like changes to happen to fast...
     if (ENOERR != res) {
         diag_printf("change_config: set_config failed/1 (%d)\n", res);
         hang();
@@ -516,10 +521,12 @@ change_config(cyg_io_handle_t handle, cyg_ser_cfg_t* cfg)
         return res;
     }
 
-    // Now test the new configuration: Loop until we read what we
-    // write.  This may hang (as seen from the host), but only when we
-    // get totally lost, in which case there's not much else to do
-    // really. In this case the host will consider the test a FAIL.
+    // Now change config and wait for host to send us a S(ync)
+    // character.  
+    // Loop until protocol exchange completed. This may hang (as seen
+    // from the host), but only when we get totally lost, in which
+    // case there's not much else to do really. In this case the host
+    // will consider the test a FAIL.
     len = sizeof(new_cfg);
     res = cyg_io_set_config(handle, CYG_IO_SET_CONFIG_SERIAL_INFO, 
                             &new_cfg, &len);
@@ -529,104 +536,76 @@ change_config(cyg_io_handle_t handle, cyg_ser_cfg_t* cfg)
         hang();
     }
 
-    // Note: Only sends a single char - a string wuld be safer, but if
-    // there's not a 1-1 relationship between outgoing and incoming
-    // chars, the reader needs to be smarter. Compensate by
-    // requirering the char to be read 4 times in succession.
-    for (;;) {
+    {
         int change_succeeded = 0;
         int using_old_config = 0;
-        int matches = 0;
         char in_buf[1];
         int len;
-        char out_buf[1];
+        int saw_host_sync;
 
-        out_buf[0] = 'a';
+        for (;;) {
+            aborted = 0;                    // global abort flag
 
-        aborted = 0;                    // global abort flag
-        // FIXME: Timeout time needs to be configurable, and needs to
-        // be sent to the host before getting here. That would allow
-        // changing the timeout by just rebuilding the test - without
-        // changing the host software.
-        r_stamp = timeout(100, do_abort, handle);
-        while (!aborted) {
-            len = 1;
-            res = cyg_io_write(handle, out_buf, &len);
-            if (ENOERR != res && -EINTR != res) {
-                // We may have to reset the driver here if the fail
-                // was due to a framing or parity error.
-                break;
-            }
-        
-            len = 1;
-            res = cyg_io_read(handle, in_buf, &len);
-            if (ENOERR != res && -EINTR != res) {
-                // We may have to reset the driver here if the fail
-                // was due to a framing or parity error.
-                break;
-            }
-        
-            // Check for match.
-            if (out_buf[0] == in_buf[0]) {
-                matches++;
-                // We want 4 in succession before we accept it.
-                if (4 == matches) {
+            // FIXME: Timeout time needs to be configurable, and needs to
+            // be sent to the host before getting here. That would allow
+            // changing the timeout by just rebuilding the test - without
+            // changing the host software.
+            saw_host_sync = 0;
+            r_stamp = timeout(100, do_abort, handle);
+            while(!aborted) {
+                len = 1;
+                in_buf[0] = 0;
+                res = cyg_io_read(handle, in_buf, &len);
+                if (ENOERR != res && -EINTR != res) {
+                    // We may have to reset the driver here if the fail
+                    // was due to a framing or parity error.
+                    break;
+                }
+
+                if ('R' == in_buf[0]) {
+                    // Resync - host didn't see our message. Try again.
+                    saw_host_sync = 0;
+                } else if ('S' == in_buf[0] && !saw_host_sync) {
+                    // In sync - reply to host if we haven't already
+                    char ok_msg[2] = "OK";
+                    int ok_len = 2;
+                    Tcyg_io_write(handle, ok_msg, &ok_len);
+                    saw_host_sync = 1;
+                } else if ('D' == in_buf[0] && saw_host_sync) {
+                    // Done - exchange completed.
                     change_succeeded = 1;
                     break;
                 }
-            } else
-                matches = 0;
-        }
-        untimeout(r_stamp);
-        
-        // Did we succeed?
-        if (change_succeeded) {
-            // Yup! Send 'O' to host so it knows we're OK.
-            const char ok_str[1] = "O";
-            len = 1;
-            res = cyg_io_write(handle, ok_str, &len);
-            if (res != ENOERR) {
-                diag_printf("write failed - DEVIO error: %d\n", res);
-                hang();
             }
-
-            // Now wait for the 'O' to be echoed so we know both lines
-            // have been emptied.
-            r_stamp = timeout(100, do_abort, handle);
-            do {
-                len = 1;
-                res = cyg_io_read(handle, in_buf, &len);
-                CYG_ASSERT(ENOERR == res, "Failed when waiting for 'O'");
-            } while ('O' != in_buf[0]);
             untimeout(r_stamp);
 
-            // If we had to revert to the old configuration, return error.
-            if (using_old_config)
-                return -EIO;
-            else
-                return ENOERR;
+            if (change_succeeded) {
+                // If we had to revert to the old configuration, return error.
+                if (using_old_config)
+                    return -EIO;
+                else
+                    return ENOERR;
+            }
+
+            // We didn't synchronize with the host. Due to an IO error?
+            if (ENOERR != res && -EINTR != res) {
+                // We may have to reset the driver if the fail was due to
+                // a framing or parity error.
+            }
+
+            // Revert to the old configuration and try again.
+            len = sizeof(old_cfg);
+            res = cyg_io_set_config(handle, CYG_IO_SET_CONFIG_SERIAL_INFO, 
+                                    &old_cfg, &len);
+            cyg_thread_delay(10);  // Some chips don't like changes to happen to fast...
+            if (res != ENOERR) {
+                diag_printf("change_config: set_config failed/3 (%d)\n", res);
+                hang();
+            }
+            using_old_config = 1;
         }
 
-        // We didn't. Due to an IO error?
-        if (ENOERR != res && -EINTR != res) {
-            // We may have to reset the driver if the fail was due to
-            // a framing or parity error.
-        }
-
-        // Revert to the old configuration and try again.
-        len = sizeof(old_cfg);
-        res = cyg_io_set_config(handle, CYG_IO_SET_CONFIG_SERIAL_INFO, 
-                                &old_cfg, &len);
-        cyg_thread_delay(10);  // Some chips don't like changes to happen to fast...
-        if (res != ENOERR) {
-            diag_printf("change_config: set_config failed/3 (%d)\n", res);
-            hang();
-        }
-        out_buf[0] = 't';               // change the char so a developer can
-                                        // see this has happened by the chars
-                                        // being written.
-        using_old_config = 1;
-    }        
+    }
 }
 
 

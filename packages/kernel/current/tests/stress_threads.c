@@ -79,7 +79,9 @@
 #define DEATH_TIME_LIMIT 20
 /* #undef DEATH_TIME_LIMIT */
 
-#define STACK_SIZE (CYGNUM_HAL_STACK_SIZE_TYPICAL)
+// STACK_SIZE is typical +2kB for printf family calls which use big
+// auto variables.
+#define STACK_SIZE (2*1024 + CYGNUM_HAL_STACK_SIZE_TYPICAL)
 #define STACK_SIZE2 (8*1024 + CYGNUM_HAL_STACK_SIZE_TYPICAL)
 
 /* Allocate priorities in this order. This ensures that handlers
@@ -185,8 +187,9 @@ cyg_alarm_t report_alarm_func, death_alarm_func;
 cyg_handle_t report_alarmH, counterH, system_clockH;
 cyg_alarm report_alarm;
 
-/* we install our own startup routine which sets up threads */
-void cyg_user_start(void)
+/* main launches all the threads of the test */
+int
+main(void)
 {
   int i;
 

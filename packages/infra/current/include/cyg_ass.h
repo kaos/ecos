@@ -583,6 +583,11 @@ externC void cyg_assert_failure_invoke_callbacks(
                 void (*)(const char* /* callback data */ ),
                 void (*)(void) );
 
+// This function is intended to be called from inside gdb instead of
+// cyg_assert_fail(),, without the need to specify a filename or
+// anything else.
+externC void cyg_assert_quickfail(void);
+
 #endif // CYG_DECLARE_HOST_ASSERTION_SUPPORT
     
 // -------------------------------------------------------------------------

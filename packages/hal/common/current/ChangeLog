@@ -1,3 +1,7 @@
+1999-07-05  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/intr.c: Don't use kernel's RTC definitions.
+
 1999-07-02  Jesper Skov  <jskov@cygnus.co.uk>
         PR20157
 	* tests/cache.c: Print stride values, preventing timeout on slow

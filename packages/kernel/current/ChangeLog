@@ -1,3 +1,9 @@
+1999-07-08  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 20244
+	* tests/stress_threads.c: Changed cyg_user_start() to main()
+	ensuring a bigger stack (it calls sprintf).
+	Increased STACK_SIZE by 2kB for printf calls.
+
 1999-06-30  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* tests/dhrystone.c: Also NA-quit if CYGPKG_INFRA_DEBUG or
