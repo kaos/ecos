@@ -76,6 +76,8 @@
 
 #include <cyg/infra/cyg_type.h>
 
+#include <cyg/hal/var_io.h>     // Variant-specific definitions
+
 //-----------------------------------------------------------------------------
 // IO Register address.
 // This type is for recording the address of an IO register.
@@ -231,8 +233,10 @@ typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
 #define CYG_HAL_SYS_SA_NOCLDSTOP        0x00000001
 #define CYG_HAL_SYS_SA_NOCLDWAIT        0x00000002
 #define CYG_HAL_SYS_SA_SIGINFO          0x00000004
+#define CYG_HAL_SYS_SA_RESTORER         0x04000000
 #define CYG_HAL_SYS_SA_RESTART          0x10000000
 #define CYG_HAL_SYS_SA_NODEFER          0x40000000
+
 #define CYG_HAL_SYS_SIG_BLOCK           0
 #define CYG_HAL_SYS_SIG_UNBLOCK         1
 #define CYG_HAL_SYS_SIG_SETMASK         2
@@ -275,11 +279,17 @@ typedef struct cyg_hal_sys_sigset_t {
 #define CYG_HAL_SYS_SIGISMEMBER(_set_, _bit_)                                                   \
     (0 != ((_set_)->hal_sig_bits[CYG_HAL_SYS__SIGELT(_bit_ - 1)] & CYG_HAL_SYS__SIGMASK(_bit_ - 1)))
 
+// The kernel sigaction structure has changed, to allow for >32
+// signals. This is the old version, i.e. a struct old_sigaction, for
+// use with the sigaction() system call rather than rt_sigaction(). It
+// is preferred to the more modern version because gdb knows about
+// rt_sigaction() and will start intercepting signals, but it seems to
+// ignore sigaction().
 struct cyg_hal_sys_sigaction {
     void        (*hal_handler)(int);
     long        hal_mask;
     int         hal_flags;
-    void        (*hal_bogus)(int);
+    void        (*hal_restorer)(void);
 };
 
 // Time support.

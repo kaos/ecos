@@ -8,6 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 2005 eCosCentric Ltd
 // Copyright (C) 2002 Bart Veer
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
@@ -1278,8 +1279,11 @@ synth_hardware_init(void)
     // instead of having the signal handler return immediately.
     action.hal_mask     = 0;
     action.hal_flags    = CYG_HAL_SYS_SA_NODEFER;
-    action.hal_bogus    = (void (*)(int)) 0;
     action.hal_handler  = &synth_alrm_sighandler;
+    action.hal_restorer = (void (*)(void)) 0;
+#ifdef CYG_HAL_SYS_SIGACTION_ADJUST
+    CYG_HAL_SYS_SIGACTION_ADJUST(CYG_HAL_SYS_SIGALRM, &action);
+#endif    
     if (0 != cyg_hal_sys_sigaction(CYG_HAL_SYS_SIGALRM, &action, (struct cyg_hal_sys_sigaction*) 0)) {
         CYG_FAIL("Failed to install signal handler for SIGALRM");
     }

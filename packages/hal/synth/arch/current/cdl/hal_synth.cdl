@@ -81,24 +81,32 @@ cdl_package CYGPKG_HAL_SYNTH {
     cdl_component CYGNUM_HAL_RTC_CONSTANTS {
         display       "Real-time clock constants."
         description   "
-            These values are used in the usec field of the itimerval structure
-            when using getitimer/setitimer."
+            In the synthetic target the system clock is implemented using
+            Linux setitimer() and a SIGALRM signal. The PERIOD value is the
+            number of microseconds between signals, the usec field of an
+            itimerval structure. It should be a multiple of 10000 because
+            Linux will not generate signals at a finer grain than that.
+            The NUMERATOR and DENOMINATOR are derived from the period."
         flavor        none
     
+        cdl_option CYGNUM_HAL_RTC_PERIOD {
+            display       "Real-time clock period"
+            flavor        data
+            default_value 10000
+	    requires	  { 0 == (CYGNUM_HAL_RTC_PERIOD % 10000) }
+	    description "
+                This option corresponds to the number of microseconds between
+                clock interrupts."
+        }
         cdl_option CYGNUM_HAL_RTC_NUMERATOR {
             display       "Real-time clock numerator"
             flavor        data
-            default_value 1000000000
+            calculated    CYGNUM_HAL_RTC_DENOMINATOR * 1000 * CYGNUM_HAL_RTC_PERIOD
         }
         cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
             display       "Real-time clock denominator"
             flavor        data
             default_value 100
-        }
-        cdl_option CYGNUM_HAL_RTC_PERIOD {
-            display       "Real-time clock period"
-            flavor        data
-            default_value 10000
         }
     }
     # What to do when idling
