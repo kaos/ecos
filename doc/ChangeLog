@@ -1,3 +1,8 @@
+2002-10-28  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* sgml/makemakefile: Removed the second OTHER_SGML which clobbers
+	the first correct definition, so stopping dependencies working.
+
 2002-10-15  Iztok Zupet <iz@vsr.si>
 
 	* sgml/README-PDF: added

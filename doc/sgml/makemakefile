@@ -82,7 +82,6 @@ cat >> makefile <<EOF
 
 MAIN_HTML  := ecos.html
 MAIN_PDF   := ecos.pdf
-OTHER_SGML :=
 PICTURES   :=
 
 include \$(TOPLEVEL)/pkgconf/rules.doc
@@ -192,3 +191,5 @@ for i in `cat doclist`; do
 done
 
 echo '</book>' >> ecos.sgml
+
+
