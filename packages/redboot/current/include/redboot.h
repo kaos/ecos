@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2002, 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -139,6 +139,10 @@ externC int  _rb_gets_preloaded(char *line, int len, int timeout);
 #define _GETS_CTRLC   -2
 #define _GETS_GDB      0
 #define _GETS_OK       1
+// Test for ^C on the console.  This function should only be used if any
+// other console input can be discarded, e.g. while performing some long
+// computation, waiting for the network, etc.  Returns 'true' if ^C typed.
+externC bool _rb_break(int timeout);
 
 // "console" selection
 externC int  start_console(void);

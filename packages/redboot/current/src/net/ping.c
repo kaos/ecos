@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -177,9 +178,10 @@ do_ping(int argc, char *argv[])
                 inet_ntoa((in_addr_t *)&host_addr));
     received = 0;    
     __icmp_install_listener(handle_icmp);
+    // Save default "local" address
+    memcpy(hold_addr, __local_ip_addr, sizeof(hold_addr));
     for (tries = 0;  tries < count;  tries++) {
         // The network stack uses the global variable '__local_ip_addr'
-        memcpy(hold_addr, __local_ip_addr, sizeof(hold_addr));
         memcpy(__local_ip_addr, &local_addr, sizeof(__local_ip_addr));
         // Build 'ping' request
         if ((pkt = __pktbuf_alloc(ETH_MAX_PKTLEN)) == NULL) {
@@ -209,18 +211,23 @@ do_ping(int argc, char *argv[])
         start_time = MS_TICKS();
         timer = start_time + timeout;
         icmp_received = false;
-        while (!icmp_received && (MS_TICKS_DELAY() < timer)) {
+        while (!icmp_received && (MS_TICKS_DELAY() < timer)) {            
+            if (_rb_break(1)) {
+                goto abort;
+            }
+            MS_TICKS_DELAY();
             __enet_poll();
         } 
         end_time = MS_TICKS();
 
         timer = MS_TICKS() + rate;
         while (MS_TICKS_DELAY() < timer) {
+            if (_rb_break(1)) {
+                goto abort;
+            }
+            MS_TICKS_DELAY();
             __enet_poll();
         } 
-
-        // Clean up
-        memcpy(__local_ip_addr, &hold_addr, sizeof(__local_ip_addr));
 
         if (icmp_received) {
             received++;
@@ -230,7 +237,10 @@ do_ping(int argc, char *argv[])
             }
         }
     }
+ abort:
     __icmp_remove_listener();
+    // Clean up
+    memcpy(__local_ip_addr, &hold_addr, sizeof(__local_ip_addr));
     // Report
     diag_printf("PING - received %ld of %ld expected\n", received, count);
 }

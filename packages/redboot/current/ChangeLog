@@ -1,3 +1,12 @@
+2003-07-16  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/net/ping.c:
+	* src/net/bootp.c: Allow ^C to abort.
+
+	* src/io.c: 
+	* include/redboot.h: New function _rb_break() used to test for ^C
+	on the console.  Used to break out of long operations like BOOTP.
+
 2003-07-15  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/net/bootp.c: Use correct options for DHCP discover.  This has

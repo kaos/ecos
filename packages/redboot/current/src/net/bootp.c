@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2002, 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -62,7 +62,7 @@ extern int net_debug;
 #define SHOULD_BE_RANDOM  0x12345555
 
 /* How many milliseconds to wait before retrying the request */
-#define RETRY_TIME  1000
+#define RETRY_TIME   500
 #define MAX_RETRIES   30
 
 static bootp_header_t *bp_info;
@@ -155,6 +155,7 @@ __bootp_find_local_ip(bootp_header_t *info)
     unsigned char *p;
 #endif
     int txSize;
+    bool abort = false;
 
     bp_info = info;
 
@@ -199,8 +200,8 @@ __bootp_find_local_ip(bootp_header_t *info)
     /* setup a socket listener for bootp replies */
     __udp_install_listener(&udp_skt, IPPORT_BOOTPC, bootp_handler);
 
-    retry = MAX_RETRIES;
-    while (retry-- > 0) {
+    retry = MAX_RETRIES;  
+    while (!abort && (retry-- > 0)) {
 	start = MS_TICKS();
 
 	__udp_send((char *)&b, txSize, &r, IPPORT_BOOTPS, IPPORT_BOOTPC);
@@ -213,7 +214,18 @@ __bootp_find_local_ip(bootp_header_t *info)
 		__udp_remove_listener(IPPORT_BOOTPC);
 		return 0;
 	    }
+            if (_rb_break(1)) {
+                // The user typed ^C on the console
+                abort = true;
+                break;
+            }
+            MS_TICKS_DELAY();  // Count for ^C test
 	} while ((MS_TICKS_DELAY() - start) < RETRY_TIME);
+
+        // Warn the user that we're polling for BOOTP info
+        if (retry == (MAX_RETRIES-1)) {
+            diag_printf("... waiting for BOOTP information\n");
+        }
     }
 
     /* timed out */

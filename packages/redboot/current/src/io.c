@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
-// Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2002, 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -245,6 +245,22 @@ mon_set_read_char_timeout(int ms)
             CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_SET_TIMEOUT, ms);
         }
     }
+}
+
+//
+// Test for ^C on the console.  CAUTION! discards all console input
+//
+bool
+_rb_break(int timeout)
+{
+    char c;
+    mon_set_read_char_timeout(timeout);
+    if (mon_read_char_with_timeout(&c)) {
+        if (c == 0x03) {  // Test for ^C
+            return true;
+        }
+    }
+    return false;
 }
 
 #ifdef CYGFUN_REDBOOT_BOOT_SCRIPT
