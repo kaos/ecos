@@ -1064,12 +1064,12 @@ static void installInterrupts(void)
   cyg_drv_mutex_init(&oldRxMutex);
   cyg_drv_cond_init(&oldRxCond,&oldRxMutex);
 
-  cyg_drv_interrupt_create(CYGNUM_HAL_INTERRUPT_EtherBDMARx,0,(unsigned)&ks32c5000_sc,BDMA_Rx_isr,eth_drv_dsr,&bdmaRxIntrHandle,&bdmaRxIntrObject);
-  cyg_drv_interrupt_create(CYGNUM_HAL_INTERRUPT_EtherBDMATx,0,0,BDMA_Tx_isr,BDMA_Tx_dsr,&bdmaTxIntrHandle,&bdmaTxIntrObject);
-  cyg_drv_interrupt_create(CYGNUM_HAL_INTERRUPT_EtherMacRx,0,0,MAC_Rx_isr,NULL,&macRxIntrHandle,&macRxIntrObject);
-  cyg_drv_interrupt_create(CYGNUM_HAL_INTERRUPT_EtherMacTx,0,0,MAC_Tx_isr,NULL,&macTxIntrHandle,&macTxIntrObject);
+  cyg_drv_interrupt_create(CYGNUM_HAL_INTERRUPT_ETH_BDMA_RX,0,(unsigned)&ks32c5000_sc,BDMA_Rx_isr,eth_drv_dsr,&bdmaRxIntrHandle,&bdmaRxIntrObject);
+  cyg_drv_interrupt_create(CYGNUM_HAL_INTERRUPT_ETH_BDMA_TX,0,0,BDMA_Tx_isr,BDMA_Tx_dsr,&bdmaTxIntrHandle,&bdmaTxIntrObject);
+  cyg_drv_interrupt_create(CYGNUM_HAL_INTERRUPT_ETH_MAC_RX,0,0,MAC_Rx_isr,NULL,&macRxIntrHandle,&macRxIntrObject);
+  cyg_drv_interrupt_create(CYGNUM_HAL_INTERRUPT_ETH_MAC_TX,0,0,MAC_Tx_isr,NULL,&macTxIntrHandle,&macTxIntrObject);
 #if HavePHYinterrupt
-  cyg_drv_interrupt_create(CYGNUM_HAL_INTERRUPT_Ext0,0,0,MAC_Phy_isr,NULL,&macPhyIntrHandle,&macPhyIntrObject);
+  cyg_drv_interrupt_create(CYGNUM_HAL_INTERRUPT_EXT0,0,0,MAC_Phy_isr,NULL,&macPhyIntrHandle,&macPhyIntrObject);
   cyg_drv_interrupt_attach(macPhyIntrHandle);
 #endif  
   
@@ -1078,8 +1078,8 @@ static void installInterrupts(void)
   cyg_drv_interrupt_attach(macRxIntrHandle);
   cyg_drv_interrupt_attach(macTxIntrHandle);
   
-  cyg_drv_interrupt_acknowledge(CYGNUM_HAL_INTERRUPT_Ext0);
-  cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_Ext0);
+  cyg_drv_interrupt_acknowledge(CYGNUM_HAL_INTERRUPT_EXT0);
+  cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_EXT0);
 }
 
 //======================================================================
@@ -1115,10 +1115,10 @@ static bool ks32c5000_eth_init(struct cyg_netdevtab_entry *tab)
 #endif  
   installInterrupts();
   EthInit(myMacAddr);
-  cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_EtherBDMARx);
-  cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_EtherBDMATx);
-  cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_EtherMacRx);
-  cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_EtherMacTx);
+  cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_ETH_BDMA_RX);
+  cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_ETH_BDMA_TX);
+  cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_ETH_MAC_RX);
+  cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_ETH_MAC_TX);
   configDone = 1;
   ethernetRunning = 1;
   eth_drv_init(sc, myMacAddr);
@@ -1130,15 +1130,15 @@ static void ks32c5000_eth_start(struct eth_drv_sc *sc, unsigned char *enaddr, in
   debug_printf("ks32c5000_eth_start()\n");
   if (!ethernetRunning)
     {
-      cyg_drv_interrupt_mask(CYGNUM_HAL_INTERRUPT_EtherBDMARx);
-      cyg_drv_interrupt_mask(CYGNUM_HAL_INTERRUPT_EtherBDMATx);
-      cyg_drv_interrupt_mask(CYGNUM_HAL_INTERRUPT_EtherMacRx);
-      cyg_drv_interrupt_mask(CYGNUM_HAL_INTERRUPT_EtherMacTx);
+      cyg_drv_interrupt_mask(CYGNUM_HAL_INTERRUPT_ETH_BDMA_RX);
+      cyg_drv_interrupt_mask(CYGNUM_HAL_INTERRUPT_ETH_BDMA_TX);
+      cyg_drv_interrupt_mask(CYGNUM_HAL_INTERRUPT_ETH_MAC_RX);
+      cyg_drv_interrupt_mask(CYGNUM_HAL_INTERRUPT_ETH_MAC_TX);
       EthInit(enaddr);
-      cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_EtherBDMARx);
-      cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_EtherBDMATx);
-      cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_EtherMacRx);
-      cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_EtherMacTx);
+      cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_ETH_BDMA_RX);
+      cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_ETH_BDMA_TX);
+      cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_ETH_MAC_RX);
+      cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_ETH_MAC_TX);
       ethernetRunning = 1;
     }
 }
@@ -1314,7 +1314,7 @@ static void ks32c5000_eth_poll(struct eth_drv_sc *sc)
 
 static int ks32c5000_eth_int_vector(struct eth_drv_sc *sc)
 {
-  return CYGNUM_HAL_INTERRUPT_EtherBDMARx;
+  return CYGNUM_HAL_INTERRUPT_ETH_BDMA_RX;
 }
 
 
