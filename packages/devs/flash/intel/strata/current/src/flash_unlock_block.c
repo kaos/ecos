@@ -72,11 +72,15 @@
 int
 flash_unlock_block(volatile flash_t *block, int block_size, int blocks)
 {
-    volatile flash_t *ROM, *bp, *bpv;
+    volatile flash_t *ROM;
     flash_t stat;
     int timeout = 5000000;
+    int cache_on;
+#ifndef CYGOPT_FLASH_IS_SYNCHRONOUS
+    int i;
+    volatile flash_t *bp, *bpv;
     unsigned char is_locked[MAX_FLASH_BLOCKS];
-    int i, cache_on;
+#endif
 
     HAL_DCACHE_IS_ENABLED(cache_on);
     if (cache_on) {
@@ -91,6 +95,14 @@ flash_unlock_block(volatile flash_t *block, int block_size, int blocks)
     // Clear any error conditions
     ROM[0] = FLASH_Clear_Status;
 
+#ifdef CYGOPT_FLASH_IS_SYNCHRONOUS
+    // Clear lock bit
+    block[0] = FLASH_Clear_Locks;
+    block[0] = FLASH_Clear_Locks_Confirm;  // Confirmation
+    while(((stat = ROM[0]) & FLASH_Status_Ready) != FLASH_Status_Ready) {
+        if (--timeout == 0) break;
+    }
+#else
     // Get current block lock state.  This needs to access each block on
     // the device so currently locked blocks can be re-locked.
     bp = ROM;
@@ -131,6 +143,7 @@ flash_unlock_block(volatile flash_t *block, int block_size, int blocks)
         }
         bp += block_size / sizeof(*bp);
     }
+#endif  // CYGOPT_FLASH_IS_SYNCHRONOUS
 
     // Restore ROM to "normal" mode
     ROM[0] = FLASH_Reset;

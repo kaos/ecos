@@ -1,3 +1,8 @@
+2002-08-12  Mark Salter  <msalter@redhat.com>
+
+	* src/flash_unlock_block.c: Add synchronous strataflash support.
+	* src/strata.h: Add comments regarding synchronous strataflash.
+
 2002-04-30  Christoph Csebits  <christoph.csebits@frequentis.com>
 
 	* src/flash_unlock_block.c: Getting the current block lock

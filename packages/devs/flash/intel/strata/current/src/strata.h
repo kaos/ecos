@@ -61,18 +61,20 @@
 // It is expected that the above include defined all the properties of the
 // device we want to drive: the choices this module supports include:
 //
-//                                 Buffered  Read     Block
-//                                  write    query    locking
-// 28FxxxB3 - Bootblock            - no      no       no
-// 28FxxxC3 - StrataFlash          - no      yes      yes
-// 28FxxxJ3 - Advanced StrataFlash - yes     yes      yes
+//                                    Buffered  Read     Block
+//                                     write    query    locking
+// 28FxxxB3 - Bootblock               - no      no       no
+// 28FxxxC3 - StrataFlash             - no      yes      yes
+// 28FxxxJ3 - Advanced StrataFlash    - yes     yes      yes
+// 28FxxxK3 - Synchronous StrataFlash - yes     yes      yes
 // 
 // These options are controlled by defining or not, in that include file,
 // these symbols (not CDL options, just symbols - though they could be CDL
 // in future)
 //         CYGOPT_FLASH_IS_BOOTBLOCK     - for xxxB3 devices.
 //         CYGOPT_FLASH_IS_NOT_ADVANCED  - for xxxC3 devices.
-//         neither                       - for xxxJ3 devices.  
+//         CYGOPT_FLASH_IS_SYNCHRONOUS   - for xxxK3 devices.
+//         none of the above             - for xxxJ3 devices.  
 // (Advanced seems to be usual these days hence the sense of that opt)
 //
 // Other properties are controlled by these symbols:
