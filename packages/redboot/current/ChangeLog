@@ -1,3 +1,9 @@
+2003-01-10  Patrick Doyle  <wpd@delcomsys.com>
+
+	* src/load.c (do_load): Don't abort and complain about overwriting
+	the end of RAM when loading raw data files and we already asked
+	the user if it was ok to write outside what we believe to be RAM.
+
 2002-12-31  Patrick Doyle  <wpd@delcomsys.com>
 
 	* src/decompress.c (gzip_close): Don't complain that decompression

@@ -590,6 +590,9 @@ do_load(int argc, char *argv[])
     connection_info_t info;
     getc_io_funcs_t *io;
     struct load_io_entry *io_tab;
+#ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
+    bool spillover_ok = false;
+#endif
 
 #ifdef CYGPKG_REDBOOT_NETWORKING
     memset((char *)&host, 0, sizeof(host));
@@ -688,6 +691,7 @@ do_load(int argc, char *argv[])
          (base > (unsigned long)user_ram_end))) {
         if (!verify_action("Specified address (%p) is not believed to be in RAM", (void*)base))
             return;
+        spillover_ok = true;
     }
 #endif
     if (raw && !base_addr_set) {
@@ -711,7 +715,7 @@ do_load(int argc, char *argv[])
         err = 0;
         while ((res = redboot_getc()) >= 0) {
 #ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
-            if (mp >= user_ram_end) {
+            if (mp >= user_ram_end && !spillover_ok) {
                 // Only if there is no need to stop the download
                 // before printing output can we ask confirmation
                 // questions.
