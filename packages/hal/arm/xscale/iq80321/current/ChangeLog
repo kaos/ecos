@@ -1,3 +1,8 @@
+2003-06-21  Mark Salter  <msalter@redhat.com>
+
+	* include/hal_platform_setup.h: Use base+offset addressing to access
+	I2C port.
+
 2003-02-22  Mark Salter  <msalter@redhat.com>
 
 	* src/iq80321_pci.c (cyg_hal_plf_pci_init): Make BAR0 non-prefetchable.
