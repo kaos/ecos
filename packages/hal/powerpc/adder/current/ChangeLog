@@ -1,3 +1,10 @@
+2003-12-10  Gary Thomas  <gary@mlbassoc.com>
+
+	* cdl/hal_powerpc_adder.cdl: System clock was using wrong frequency
+	(time base).  On this platform, it's configured to use the raw
+	OSCLK which is a constant 10MHz, not the higher speed PLL based 
+	clocks.
+
 2003-12-08  Gary Thomas  <gary@mlbassoc.com>
 
 	* cdl/hal_powerpc_adder.cdl: 

@@ -88,10 +88,10 @@ cdl_package CYGPKG_HAL_POWERPC_ADDER {
             implements    CYGNUM_HAL_QUICC_SMC2
             implements    CYGNUM_HAL_QUICC_SCC3
             define_proc {
-                puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"A&M ADDER\""
+                puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"A&M Adder\""
             }
             description "
-                Select this model for an Adder with the PPC850 processor."
+                Select this model for an Adder with the MPC850 processor."
         }
 
         cdl_option  CYGHWR_HAL_POWERPC_ADDER_II {
@@ -105,7 +105,7 @@ cdl_package CYGPKG_HAL_POWERPC_ADDER {
                 puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"A&M AdderII\""
             }
             description "
-                Select this model for an Adder with the PPC852T processor."
+                Select this model for an Adder with the MPC852T processor."
         }
     }
 
@@ -157,7 +157,8 @@ cdl_package CYGPKG_HAL_POWERPC_ADDER {
         cdl_option CYGNUM_HAL_RTC_PERIOD {
             display       "Real-time clock period"
             flavor        data
-            default_value { ((((CYGHWR_HAL_POWERPC_BOARD_SPEED*1000000)/4)/16)/CYGNUM_HAL_RTC_DENOMINATOR) }
+# Timer clocks are based on OSCLK = 10MHz
+            default_value { (((10*1000000)/4)/CYGNUM_HAL_RTC_DENOMINATOR) }
         }
     }
     
