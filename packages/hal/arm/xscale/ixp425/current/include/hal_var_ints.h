@@ -10,7 +10,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -121,6 +121,17 @@ hal_clock_reinitialize(          int *pfreq,    /* inout */
         hal_clock_reinitialize( &_freq, &_period, _old_hz )
 
 #define HAL_PLATFORM_RESET_ENTRY 0x00000000
+
+
+// ------------------------------------------------------------------------
+// Used for to tell if interrupt belongs to GDB comm channel
+//
+#define CYGHWR_HAL_GDB_PORT_VECTORS_MATCH(_v_, _gv_) \
+    (((_v_) == (_gv_)) || \
+     ((_v_) == CYGNUM_HAL_INTERRUPT_QM1 && \
+       ((_gv_) == CYGNUM_HAL_INTERRUPT_NPEB || \
+        (_gv_) == CYGNUM_HAL_INTERRUPT_NPEC)))
+
 
 #endif // CYGONCE_HAL_VAR_INTS_H
 // EOF hal_var_ints.h

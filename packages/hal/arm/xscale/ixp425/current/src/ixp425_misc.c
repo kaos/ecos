@@ -131,6 +131,8 @@ hal_IRQ_handler(void)
 void
 hal_interrupt_mask(int vector)
 {
+    unsigned val;
+
     if (vector < CYGNUM_HAL_ISR_MIN || CYGNUM_HAL_ISR_MAX < vector)
 	return;
 
@@ -141,12 +143,24 @@ hal_interrupt_mask(int vector)
     }
 #endif
 
-    *IXP425_INTR_EN &= ~(1 << vector);
+    val = *IXP425_INTR_EN & ~(1 << vector);
+
+    // If unmasking NPE interrupt, also unmask QM1 which is
+    // shared by all NPE ports.
+    if (vector == CYGNUM_HAL_INTERRUPT_NPEB ||
+	vector == CYGNUM_HAL_INTERRUPT_NPEC) {
+	if (!(val & (CYGNUM_HAL_INTERRUPT_NPEB | CYGNUM_HAL_INTERRUPT_NPEC)))
+	    val &= ~(1 << CYGNUM_HAL_INTERRUPT_QM1);
+    }
+    
+    *IXP425_INTR_EN = val;
 }
 
 void
 hal_interrupt_unmask(int vector)
 {
+    unsigned val;
+
     if (vector < CYGNUM_HAL_ISR_MIN || CYGNUM_HAL_ISR_MAX < vector)
 	return;
 
@@ -157,7 +171,16 @@ hal_interrupt_unmask(int vector)
     }
 #endif
 
-    *IXP425_INTR_EN |= (1 << vector);
+    val = *IXP425_INTR_EN | (1 << vector);
+
+    // If all NPE interrupts are masked, also mask QM1 which is
+    // shared by all NPE ports.
+    if (vector == CYGNUM_HAL_INTERRUPT_NPEB ||
+	vector == CYGNUM_HAL_INTERRUPT_NPEC) {
+	val |= (1 << CYGNUM_HAL_INTERRUPT_QM1);
+    }
+
+    *IXP425_INTR_EN = val;
 }
 
 void

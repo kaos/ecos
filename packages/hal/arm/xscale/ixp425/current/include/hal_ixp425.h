@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -270,7 +270,7 @@
 #define IXP425_INTR_FIQ_ST         REG32(IXP425_INTR_CFG_BASE,0x10)
 #define IXP425_INTR_PRTY           REG32(IXP425_INTR_CFG_BASE,0x14)
 #define IXP425_INTR_IRQ_ENC_ST     REG32(IXP425_INTR_CFG_BASE,0x18)
-#define IXP425_INTR_FIQ_ENC_ST     REG32(IXP425_INTR_CFG_BASE,0x18)
+#define IXP425_INTR_FIQ_ENC_ST     REG32(IXP425_INTR_CFG_BASE,0x1C)
 
 // --------------------------------------------------------------------------
 // Timers (Chapter 15)
