@@ -157,6 +157,7 @@ static void          fec_eth_int(struct eth_drv_sc *data);
 #define FEC_EPPC_BD_OFFSET CYGNUM_DEVS_ETH_POWERPC_FEC_BD_OFFSET
 #endif
 
+#ifdef CYGSEM_DEVS_ETH_POWERPC_FEC_STATUS_LEDS
 // LED activity [exclusive of hardware bits]
 #ifndef _get_led
 #define _get_led()  
@@ -179,6 +180,10 @@ clear_led(int bit)
 {
   _set_led(_get_led() & ~(1<<bit));
 }
+#else
+#define set_led(b)
+#define clear_led(b)
+#endif
 
 #ifdef _FEC_USE_INTS
 // This ISR is called when the ethernet interrupt occurs

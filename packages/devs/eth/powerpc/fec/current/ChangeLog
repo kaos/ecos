@@ -1,3 +1,10 @@
+2003-05-04  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/if_fec.c: 
+	* cdl/fec_eth_drivers.cdl: Add control over use of LED display, since
+	it may interfere with some user programs.  Also, debug I/O during
+	network intialization seems frail, so force it to be disabled.
+
 2003-03-28  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/if_fec.c: Use new CPM/DPRAM buffer allocation scheme.  Also,

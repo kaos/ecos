@@ -64,6 +64,9 @@ cdl_package CYGPKG_DEVS_ETH_POWERPC_FEC {
     include_dir   .
     include_files ; # none _exported_ whatsoever
 
+    # Debug I/O during network stack initialization is not reliable
+    requires { CYGPKG_NET_FORCE_SERIAL_CONSOLE == 1 }
+
     description   "Fast ethernet driver for PowerPC MPC8xxT boards."
     compile       -library=libextras.a if_fec.c
 
@@ -121,6 +124,18 @@ cdl_package CYGPKG_DEVS_ETH_POWERPC_FEC {
                 This option specifies initial mode for the physical
                 link.  The PHY will be reset and then set to this mode."
         }
+    }
+
+    cdl_component CYGSEM_DEVS_ETH_POWERPC_FEC_STATUS_LEDS {
+        display "Display I/O status via LEDs"
+        flavor  bool
+        default_value 1
+        description "
+            If this option is set, and the platform defines LED access
+            functions, then I/O status will be displayed using the LEDs.
+            In particular, varying LEDs will be illuminated while the
+            device is busy transmitting a buffer, or handing an input
+            packet."
     }
 
     cdl_component CYGPKG_DEVS_ETH_POWERPC_FEC_OPTIONS {
