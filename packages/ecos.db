@@ -1303,6 +1303,14 @@ This package provides a SNTP client which can recieve broadcast time
 information and set the system clock."
 }  
 
+package CYGPKG_NET_IPSEC_LIBIPSEC {
+        alias           { "libipsec support" libipsec }
+        directory       net/ipsec/libipsec
+        script          libipsec.cdl
+        description "
+This package provides the libipsec library used by racoon etc for 
+configuring IPSEC"
+}
 
 package CYGPKG_DEVS_ETH_ARM_EDB7XXX {
 	alias 		{ "Cirrus Logic ethernet driver for EP7xxx boards" edb7xxx_eth_driver }

@@ -1,3 +1,7 @@
+2003-11-22  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* ecos.db: Added libipsec package.
+
 2003-11-09  Gary Thomas  <gary@mlbassoc.com>
 
 	* ecos.db: Add serial I/O package for Motorola MPC8xxx (QUICC-II)
