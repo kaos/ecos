@@ -138,7 +138,7 @@ struct cyg_fstab_entry
     cyg_fsop_stat       *stat;
     cyg_fsop_getinfo    *getinfo;
     cyg_fsop_setinfo    *setinfo;
-};
+} CYG_HAL_TABLE_TYPE;
 
 //-----------------------------------------------------------------------------
 // Keys for getinfo() and setinfo()
@@ -192,7 +192,7 @@ struct cyg_mtab_entry
     cyg_bool            valid;          // Valid entry?
     cyg_fstab_entry     *fs;            // pointer to fstab entry
     cyg_dir             root;           // root directory pointer
-};
+} CYG_HAL_TABLE_TYPE;
 
 
 // This macro defines an initialized mtab entry

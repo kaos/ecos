@@ -1,3 +1,14 @@
+2000-09-04  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/flash_config.h (struct config_option): Apply
+	CYG_HAL_TABLE_TYPE
+	* include/redboot.h: Ditto for struct cmd and void_fun_ptr	
+
+2000-09-01  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/flash.c: CYGHWR_IO_FLASH_BLOCK_LOCKING is an interface, so
+	it's always defined; look for > 0 instead.
+
 2000-08-28  Gary Thomas  <gthomas@redhat.com>
 
 	* src/flash.c: Support block locking if available.

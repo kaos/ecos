@@ -119,7 +119,7 @@ int main(int argc, char **argv)
         pthread_attr_t attr;
         pthread_attr_init( &attr );
 
-        pthread_attr_setstackaddr( &attr, (void *)&thread_stack[i][sizeof(thread_stack)] );
+        pthread_attr_setstackaddr( &attr, (void *)&thread_stack[i][sizeof(thread_stack[i])] );
         pthread_attr_setstacksize( &attr, sizeof(thread_stack[i]) );
 
         ret = pthread_create( &thread[i],

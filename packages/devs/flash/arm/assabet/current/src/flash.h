@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//      flash_config.h
+//      flash.h
 //
-//      Flash configuration data tables for RedBoot
+//      Flash programming - device constants, etc.
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -33,44 +33,56 @@
 //
 // Author(s):    gthomas
 // Contributors: gthomas
-// Date:         2000-08-21
+// Date:         2000-07-26
 // Purpose:      
 // Description:  
 //              
-// This code is part of RedBoot (tm).
-//
 //####DESCRIPTIONEND####
 //
 //==========================================================================
 
-#ifndef _FLASH_CONFIG_H_
-#define _FLASH_CONFIG_H_
+#ifndef _FLASH_HWR_H_
+#define _FLASH_HWR_H_
 
-#define MAX_SCRIPT_LENGTH 512
+#define FLASH_BOOT_BLOCK_SIZE   0x4000
 
-#define CONFIG_BOOL    1
-#define CONFIG_INT     2
-#define CONFIG_STRING  3
-#define CONFIG_SCRIPT  4
-#ifdef CYGPKG_REDBOOT_NETWORKING
-#define CONFIG_IP      5
-#define CONFIG_ESA     6
-#endif
+#define FLASH_Intel_code   0x89
 
-struct config_option {
-    char *key;
-    char *title;
-    char *enable;
-    bool  enable_sense;
-    int   type;
-} CYG_HAL_TABLE_TYPE;
+#define FLASH_Read_ID      0x00900090
+#define FLASH_Read_Query   0x00980098
+#define FLASH_Read_Status  0x00700070
+#define FLASH_Clear_Status 0x00500050
+#define FLASH_Status_Ready 0x00800080
+#define FLASH_Write_Buffer 0x00E800E8
+#define FLASH_Program      0x00100010
+#define FLASH_Block_Erase  0x00200020
+#define FLASH_Set_Lock     0x00600060
+#define FLASH_Clear_Locks  0x00600060
+#define FLASH_Confirm      0x00D000D0
+#define FLASH_Configure    0x00B800B8
+#define FLASH_Configure_ReadyWait      0x00000000
+#define FLASH_Configure_PulseOnErase   0x00010001
+#define FLASH_Configure_PulseOnProgram 0x00020002
+#define FLASH_Configure_PulseOnBoth    0x00030003
+#define FLASH_Reset        0x00FF00FF
 
-#define ALWAYS_ENABLED (char *)0
+#define FLASH_BLOCK_SIZE   0x10000
 
-#define RedBoot_config_option(_t_,_n_,_e_,_ie_,_type_)                                  \
-struct config_option _config_option_##_n_                                               \
-CYG_HAL_TABLE_QUALIFIED_ENTRY(RedBoot_config_options,_n_) = {#_n_,_t_,_e_,_ie_,_type_};
+#define FLASH_Intel_code   0x89
 
-void flash_get_config(char *key, void *val, int type);
+// Extended query information
+struct FLASH_query {
+    unsigned char manuf_code;
+    unsigned char device_code;
+    unsigned char _unused0[14];
+    unsigned char id[3];  // Q R Y
+    unsigned char _unused1[20];
+    unsigned char device_size;
+    unsigned char device_interface[2];
+    unsigned char buffer_size[2];
+    unsigned char is_block_oriented;
+    unsigned char num_regions[2];
+    unsigned char region_size[2];
+};
 
-#endif // _FLASH_CONFIG_H_
+#endif  // _FLASH_HWR_H_

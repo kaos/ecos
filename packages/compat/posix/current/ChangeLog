@@ -1,3 +1,12 @@
+2000-09-04  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* tests/pthread2.c: 
+	* tests/pthread3.c:
+	Fixed bug in calculation of thread stack addresses.
+
+	* src/misc.cxx (sysconf): Change zero returns to -1 when a feature
+	is not supported.
+
 2000-08-08  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* include/limits.h: Don't define SSIZE_MAX here, leave it to the

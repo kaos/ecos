@@ -168,7 +168,7 @@ typedef cyg_uint8 (*__comm_if_getc_t)(void* __ch_data);
 typedef int (*__comm_if_control_t)(void *__ch_data, 
                                    __comm_control_cmd_t __func, ...);
 #define CYGACC_COMM_IF_CONTROL(_t_, args...) \
- ((__comm_if_control_t)(((_t_))[CYGNUM_COMM_IF_CONTROL]))(CYGACC_COMM_IF_CH_DATA(_t_), ## args)
+ ((__comm_if_control_t)(((_t_))[CYGNUM_COMM_IF_CONTROL]))(CYGACC_COMM_IF_CH_DATA(_t_), args)
 #define CYGACC_COMM_IF_CONTROL_SET(_t_, _x_) \
  (_t_)[CYGNUM_COMM_IF_CONTROL]=(CYG_ADDRWORD)(_x_)
 

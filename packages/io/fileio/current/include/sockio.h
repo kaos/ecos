@@ -96,7 +96,7 @@ struct cyg_nstab_entry
     int     (*init)( cyg_nstab_entry *nste );
     int     (*socket)( cyg_nstab_entry *nste, int domain, int type,
 		       int protocol, cyg_file *file );
-};
+} CYG_HAL_TABLE_TYPE;
 
 #define NSTAB_ENTRY( _l, _syncmode, _name, _devname, _data, _init, _socket )    \
 struct cyg_nstab_entry _l CYG_HAL_TABLE_ENTRY(nstab) =                          \

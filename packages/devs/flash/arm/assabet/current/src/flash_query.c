@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//      flash_config.h
+//      flash_query.c
 //
-//      Flash configuration data tables for RedBoot
+//      Flash programming - query device
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -33,44 +33,62 @@
 //
 // Author(s):    gthomas
 // Contributors: gthomas
-// Date:         2000-08-21
+// Date:         2000-07-26
 // Purpose:      
 // Description:  
 //              
-// This code is part of RedBoot (tm).
-//
 //####DESCRIPTIONEND####
 //
 //==========================================================================
 
-#ifndef _FLASH_CONFIG_H_
-#define _FLASH_CONFIG_H_
+#include "flash.h"
 
-#define MAX_SCRIPT_LENGTH 512
+#include <pkgconf/hal.h>
+#include <cyg/hal/hal_arch.h>
+#include <cyg/hal/hal_cache.h>
+#include CYGHWR_MEMORY_LAYOUT_H
 
-#define CONFIG_BOOL    1
-#define CONFIG_INT     2
-#define CONFIG_STRING  3
-#define CONFIG_SCRIPT  4
-#ifdef CYGPKG_REDBOOT_NETWORKING
-#define CONFIG_IP      5
-#define CONFIG_ESA     6
+//
+// CAUTION!  This code must be copied to RAM before execution.  Therefore,
+// it must not contain any code which might be position dependent!
+//
+
+#define CNT 20*1000*10  // Approx 20ms
+
+int
+flash_query(unsigned char *data)
+{
+    volatile unsigned long *ROM;
+    int i, cnt;
+    int cache_on;
+
+    HAL_DCACHE_IS_ENABLED(cache_on);
+    if (cache_on) {
+        HAL_DCACHE_SYNC();
+        HAL_DCACHE_DISABLE();
+    }
+
+#if 0
+    ROM = (volatile unsigned long *)0x50000000;
+
+    ROM[0] = FLASH_Read_ID;
+    for (cnt = CNT;  cnt > 0;  cnt--) ;
+    *data++ = *ROM++;  // Manufacturer code
+    *data++ = *ROM++;  // Device identifier
 #endif
 
-struct config_option {
-    char *key;
-    char *title;
-    char *enable;
-    bool  enable_sense;
-    int   type;
-} CYG_HAL_TABLE_TYPE;
+    ROM = (volatile unsigned long *)0x50000000;
+    ROM[0] = FLASH_Read_Query;
+    for (cnt = CNT;  cnt > 0;  cnt--) ;
+    for (i = 0;  i < sizeof(struct FLASH_query);  i++) {
+        *data++ = *ROM++;
+    }
 
-#define ALWAYS_ENABLED (char *)0
+    ROM[0] = FLASH_Reset;
 
-#define RedBoot_config_option(_t_,_n_,_e_,_ie_,_type_)                                  \
-struct config_option _config_option_##_n_                                               \
-CYG_HAL_TABLE_QUALIFIED_ENTRY(RedBoot_config_options,_n_) = {#_n_,_t_,_e_,_ie_,_type_};
+    if (cache_on) {
+        HAL_DCACHE_ENABLE();
+    }
 
-void flash_get_config(char *key, void *val, int type);
-
-#endif // _FLASH_CONFIG_H_
+    return 0;
+}

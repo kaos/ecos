@@ -1368,7 +1368,6 @@ target tx39_sim {
            use any of the eCos device drivers when the simulator
            is running in this mode."
 }
-
 target vrc4373 {
         alias		{ "NEC VRC4373 board" }
 	packages        { CYGPKG_HAL_MIPS

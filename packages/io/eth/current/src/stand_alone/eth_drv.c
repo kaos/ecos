@@ -433,3 +433,15 @@ eth_drv_int_vector(void)
     struct eth_drv_sc *sc = __local_enet_sc;
     return sc->funs->int_vector(sc);
 }
+
+
+void eth_drv_dsr(cyg_vector_t vector,
+                 cyg_ucount32 count,
+                 cyg_addrword_t data)
+{
+    printf( "eth_drv_dsr should not be called: vector %d, data %x\n",
+            vector, data );
+}
+
+
+// EOF src/stand_alone/eth_drv.c

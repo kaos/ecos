@@ -54,6 +54,7 @@
 #define CYGARC_SH_MOD_IRDA
 #define CYGARC_SH_MOD_SCIF
 #define CYGARC_SH_MOD_PFC
+#define CYGARC_SH_MOD_UBC
 
 //-----------------------------------------------------------------------------
 // Extra details for Cache Module (CAC)

@@ -114,7 +114,8 @@ ETH_DRV_SC(edb7xxx_sc,
            cs8900_can_send,
            cs8900_send,
            cs8900_recv,
-           cs8900_int,
+           cs8900_deliver,     // "pseudoDSR" called from fast net thread
+           cs8900_int,         // poll function, encapsulates ISR and DSR
            cs8900_int_vector);
 
 NETDEVTAB_ENTRY(edb7xxx_netdev, 
@@ -140,11 +141,11 @@ cs8900_isr(cyg_vector_t vector, cyg_addrword_t data, HAL_SavedRegisters *regs)
     return (CYG_ISR_HANDLED|CYG_ISR_CALL_DSR);  // Run the DSR
 }
 
-// This DSR handles the ethernet [logical] processing
+// The deliver function (ex-DSR)  handles the ethernet [logical] processing
 static void
-cs8900_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
+cs8900_deliver(struct eth_drv_sc *sc)
 {
-    cs8900_int((struct eth_drv_sc *)data);
+    cs8900_int(sc);
     // Allow interrupts to happen again
     cyg_drv_interrupt_acknowledge(CYGNUM_HAL_INTERRUPT_EINT3);
     cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_EINT3);
@@ -168,7 +169,7 @@ edb7xxx_cs8900_init(struct cyg_netdevtab_entry *tab)
                              99, // Priority - what goes here?
                              (cyg_addrword_t)sc, //  Data item passed to interrupt handler
                              (cyg_ISR_t *)cs8900_isr,
-                             (cyg_DSR_t *)cs8900_dsr,
+                             (cyg_DSR_t *)eth_drv_dsr, // The logical driver DSR
                              &cs8900_interrupt_handle,
                              &cs8900_interrupt);
     cyg_drv_interrupt_attach(cs8900_interrupt_handle);

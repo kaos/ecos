@@ -408,6 +408,7 @@ ETH_DRV_SC(ebsa285_sc0,
            i82559_can_send,
            i82559_send,
            i82559_recv,
+           i82559_deliver,
            i82559_poll,
            i82559_int_vector);
 
@@ -429,6 +430,7 @@ ETH_DRV_SC(ebsa285_sc1,
            i82559_can_send,
            i82559_send,
            i82559_recv,
+           i82559_deliver,
            i82559_poll,
            i82559_int_vector);
 
@@ -1134,7 +1136,7 @@ static void ResetRxRing(struct i82559* p_i82559)
 
 // ------------------------------------------------------------------------
 //
-//  Function : PacketRxReady        (Called from DSR)
+//  Function : PacketRxReady        (Called from delivery thread)
 //
 // ------------------------------------------------------------------------
 static void PacketRxReady(struct i82559* p_i82559)
@@ -1395,8 +1397,8 @@ static void TxMachine(struct i82559* p_i82559)
     tx_descriptor_active = p_i82559->tx_descriptor_active;
     ioaddr = p_i82559->io_address;  
     
-    // See if the CU is idle when we think it isn't:
-    // (Recovers from a dropped interrupt)
+    // See if the CU is idle when we think it isn't; this is the only place
+    // tx_descriptor_active is advanced. (Also recovers from a dropped intr)
     if ( p_i82559->tx_in_progress ) {
         cyg_uint16 status;
         status = INW(ioaddr + SCBStatus);
@@ -1435,7 +1437,7 @@ static void TxMachine(struct i82559* p_i82559)
 
 // ------------------------------------------------------------------------
 //
-//  Function : TxDone          (Called from DSR)
+//  Function : TxDone          (Called from delivery thread)
 //
 // This returns Tx's from the Tx Machine to the stack (ie. reports
 // completion) - allowing for missed interrupts, and so on.
@@ -1607,6 +1609,9 @@ i82559_send(struct eth_drv_sc *sc,
             tx_descriptor_add = 0;
         p_i82559->tx_descriptor_add = tx_descriptor_add;
 
+        // From this instant, interrupts can advance the world and start,
+        // even complete, this tx request...
+
         if ( p_i82559->tx_descriptor_remove == tx_descriptor_add )
             p_i82559->tx_queue_full = 1;
     }
@@ -1618,11 +1623,17 @@ i82559_send(struct eth_drv_sc *sc,
 
     // Check that either:
     //     tx is already active, there is other stuff queued,
-    // OR  this tx just added is the current active one.
-    CYG_ASSERT( (p_i82559->tx_in_progress == 1) ||
-       ((p_i82559->tx_descriptor_add-1) == p_i82559->tx_descriptor_active)
-    || ((0 == p_i82559->tx_descriptor_add) &&
-        ((MAX_TX_DESCRIPTORS-1) == p_i82559->tx_descriptor_active)),
+    // OR  this tx just added is the current active one
+    // OR  this tx just added is already complete
+    CYG_ASSERT(
+        // The machine is busy:
+        (p_i82559->tx_in_progress == 1) ||
+        // or: The machine is idle and this just added is the next one
+        (((p_i82559->tx_descriptor_add-1) == p_i82559->tx_descriptor_active)
+         || ((0 == p_i82559->tx_descriptor_add) &&
+             ((MAX_TX_DESCRIPTORS-1) == p_i82559->tx_descriptor_active))) ||
+        // or: This tx is already complete
+        (p_i82559->tx_descriptor_add == p_i82559->tx_descriptor_active),
                 "Active/add mismatch" );
 
     // Advance TxMachine atomically
@@ -1732,10 +1743,23 @@ static cyg_uint32 eth_mux_isr(cyg_vector_t vector, cyg_addrword_t data)
 
 // ------------------------------------------------------------------------
 
+static 
 void eth_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
 {
     struct i82559* p_i82559 = (struct i82559 *)data;
+    struct cyg_netdevtab_entry *ndp =
+        (struct cyg_netdevtab_entry *)(p_i82559->ndp);
+    struct eth_drv_sc *sc = (struct eth_drv_sc *)(ndp->device_instance);
 
+    // but here, it must be a *sc:
+    eth_drv_dsr( vector, count, (cyg_addrword_t)sc );
+}
+
+// ------------------------------------------------------------------------
+// This is called from the function below (used to be uni-DSR)
+static inline void
+uni_deliver(struct i82559* p_i82559)
+{
     // First pass any rx data up the stack
     PacketRxReady(p_i82559);
 
@@ -1745,17 +1769,18 @@ void eth_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
 
 
 // ------------------------------------------------------------------------
-void eth_mux_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
+void i82559_deliver(struct eth_drv_sc *sc)
 {
-    int device_index = mux_device_index;
     struct i82559* p_i82559;
+    int device_index = mux_device_index;
+
+    // Since this must mux both devices, the incoming arg is ignored.
 
     mux_device_index ^= 1; // look at the other one first next time.
-                           // (non-atomicity wrt IRQ does not matter)
     do {
         p_i82559 = &i82559[device_index];
         if ( p_i82559->active )
-            eth_dsr( vector, count, (cyg_addrword_t)p_i82559 );
+            uni_deliver( p_i82559 );
         device_index ^= 1;
     } while ( device_index == mux_device_index );
 }
@@ -1777,10 +1802,13 @@ void i82559_poll(struct eth_drv_sc *sc)
 
     // As it happens, this driver always requests the DSR to be called:
     (void)eth_mux_isr( CYGNUM_HAL_INTERRUPT_PCI_IRQ, (cyg_addrword_t)p_i82559 );
-    eth_mux_dsr( CYGNUM_HAL_INTERRUPT_PCI_IRQ, 1, (cyg_addrword_t)p_i82559 );
+
+    i82559_deliver( NULL /* arg is not used */ );
 }
 
-// Determine interrupt vector used by a device
+// ------------------------------------------------------------------------
+// Determine interrupt vector used by a device - for attaching GDB stubs
+// packet handler.
 int
 i82559_int_vector(struct eth_drv_sc *sc)
 {
@@ -1879,9 +1907,9 @@ pci_init_find_82559s( void )
                     cyg_drv_interrupt_create(
                         CYGNUM_HAL_INTERRUPT_PCI_IRQ,
                         0,              // Priority - unused
-                        0,              // Data item passed to ISR (not used)
+                        (CYG_ADDRWORD)p_i82559,// Data item passed to ISR and DSR
                         eth_mux_isr,    // ISR
-                        eth_mux_dsr,    // DSR
+                        eth_dsr,        // DSR
                         &mux_interrupt_handle,
                         &mux_interrupt_object );
                     

@@ -1,3 +1,15 @@
+2000-09-01  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/if_quicc.c (quicc_eth_init): Work with new fast net
+	thread to do all the copying work instead of loading up DSR time.
+	In detail:
+	 o New "deliver" function in the interface record.
+	 o The DSR changed to be that new function; its arg is now the sc
+	   pointer already, no cast needed.
+	 o In creating the interrupt, use eth_drv_dsr (from the logical
+	   driver) instead of quicc_eth_dsr (which is gone).
+
+
 2000-08-23  Gary Thomas  <gthomas@redhat.com>
 
 	* src/if_quicc.c: Add function to return interrupt vector used

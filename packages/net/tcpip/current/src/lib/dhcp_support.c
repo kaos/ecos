@@ -213,7 +213,7 @@ void dhcp_start_dhcp_mgt_thread( void )
 {
     if ( ! dhcp_mgt_thread_h ) {
         cyg_thread_create(
-            CYGPKG_NET_THREAD_PRIORITY+1, /* scheduling info (eg pri) */
+            CYGPKG_NET_DHCP_THREAD_PRIORITY, /* scheduling info (eg pri) */
             dhcp_mgt_entry,             /* entry point function */
             CYGOPT_NET_DHCP_DHCP_THREAD_PARAM, /* entry data */
             "DHCP lease mgt",           /* optional thread name */

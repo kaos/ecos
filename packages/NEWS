@@ -11,8 +11,8 @@
 * Added flash memory support for ARM-EBSA285 and ARM-EDB7xxx boards
 * Added Compact Flash Ethernet driver
 * Hitachi SH7707a variant support added.
-* Support added for both software and hardware flow control (the latter
-  initially only for the ARM PID board)
+* Support added for both software and hardware flow control with an initial
+  version of the latter available only for the ARM PID board at present.
 * Loopback serial device driver added
 * POSIX termios support added for EL/IX level 1 compatibility
 * Improved dynamic memory management support in the memory allocator
@@ -58,9 +58,10 @@
 * Most targets now implement a standard form of "virtual vectors" - a
   mechanism to allow enhanced co-operation between ROM monitors and running
   applications. This allows the application to leave to the ROM things that
-  the ROM supports rather than duplicating. It also will permit network
-  debugging in future. To take advantage of this, new GDB stub
-  images/CygMon images should be programmed onto boards.
+  the ROM supports rather than duplicating, including debug channels that may
+  be via serial or ethernet. To take advantage of this, new GDB stub
+  images/CygMon images should be programmed onto boards, although old images
+  will continue to work - they will just not be able to use the new facilities.
 * DHCP support has been added to the TCP/IP support, in addition to the
   existing BOOTP support
 * CDL now supports type bool and booldata for interfaces

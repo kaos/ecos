@@ -1,3 +1,21 @@
+2000-09-04  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/hal_tables.h (CYG_HAL_TABLE_END): Use CYGARC_P2ALIGNMENT
+	to align label
+	(CYG_HAL_TABLE_TYPE): Define
+
+2000-09-01  Jonathan Larmour  <jlarmour@redhat.com>
+
+        * src/hal_stub.c (__build_t_packet): Ensure sign extension applies
+        in the higher word, not the lower.
+	(__build_t_packet): Don't need to conditionalize on
+	CYGARC_REGSIZE_DIFFERS_FROM_TARGET_REGISTER_T as there should be no
+	problems with the current code.
+	* src/generic-stub.c (stub_format_registers): Likewise
+
+	* include/hal_if.h (CYGACC_COMM_IF_CONTROL): Remove warning due to
+	unnecessary use of cpp paste operator
+
 2000-08-28  Gary Thomas  <gthomas@redhat.com>
 
 	* src/hal_if.c: 

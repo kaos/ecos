@@ -1,7 +1,19 @@
+2000-09-01  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/mips-stub.h: No longer need to define
+	CYGARC_REGSIZE_DIFFERS_FROM_TARGET_REGISTER_T
+	(CYGARC_SIGN_EXTEND_REGISTERS): 
+
+        * include/mips-stub.h: Change vr4300 register sizes to use 32-bit
+        target_register_t, and tell the generic stub to use sign extension.
+	* include/hal_cache.h (_HAL_ASM_SET_MIPS_ISA): Don't use pasting
+	when it doesn't result in a preprocessing token. Just use string
+	concatenation.
+
 2000-07-21  Drew Moseley  <dmoseley@redhat.com>
 
-	* src/vectors.S: Only jump uncached to _start if CYGARC_START_FUNC_UNCACHED
-	is defined.
+	* src/vectors.S: Only jump uncached to _start if
+	CYGARC_START_FUNC_UNCACHED is defined.
 
 2000-07-14  Drew Moseley  <dmoseley@redhat.com>
 

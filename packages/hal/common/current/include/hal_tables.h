@@ -35,14 +35,13 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   nickg
-// Date:        1999-02-24
-// Purpose:     Driver API
-// Description: This file defines the API used by device drivers to access
-//              system services. When the kernel is present it maps directly
-//              to the Kernel C API. When the kernel is absent, it is provided
-//              by a set of HAL functions.
+// Date:        2000-09-04
+// Purpose:     Provide HAL tables
+// Description: This file defines a mechanism to include "tables" of objects
+//              that are always included in the image no matter what, and are
+//              constrained between labels.
 //              
-// Usage:       #include <cyg/kernel/kapi.h>
+// Usage:       #include <cyg/hal/hal_tables.h>
 //
 //####DESCRIPTIONEND####
 //
@@ -59,40 +58,49 @@
 #define __xstring(_x) __string(_x)
 
 #ifndef CYG_HAL_TABLE_BEGIN
-#define CYG_HAL_TABLE_BEGIN( _label, _name )                                    \
-__asm__(".section \"" __string(.ecos.table.##_name##.begin) "\",\"aw\"\n"       \
-	".globl " __xstring(CYG_LABEL_DEFN(_label)) "\n"                        \
-	".type    " __xstring(CYG_LABEL_DEFN(_label)) ",@object\n"              \
-	".p2align 2\n"                                                          \
-__xstring(CYG_LABEL_DEFN(_label)) ":\n"                                         \
-	".previous\n"                                                           \
+#define CYG_HAL_TABLE_BEGIN( _label, _name )                                  \
+__asm__(".section \"" __string(.ecos.table.##_name##.begin) "\",\"aw\"\n"     \
+	".globl " __xstring(CYG_LABEL_DEFN(_label)) "\n"                      \
+	".type    " __xstring(CYG_LABEL_DEFN(_label)) ",@object\n"            \
+	".p2align " __xstring(CYGARC_P2ALIGNMENT) "\n"                        \
+__xstring(CYG_LABEL_DEFN(_label)) ":\n"                                       \
+	".previous\n"                                                         \
        )
 #endif
 
 #ifndef CYG_HAL_TABLE_END
-#define CYG_HAL_TABLE_END( _label, _name )                                      \
-__asm__(".section \"" __string(.ecos.table.##_name##.finish) "\",\"aw\"\n"      \
-	".globl " __xstring(CYG_LABEL_DEFN(_label)) "\n"                        \
-	".type    " __xstring(CYG_LABEL_DEFN(_label)) ",@object\n"              \
-	".p2align 2\n"                                                          \
-__xstring(CYG_LABEL_DEFN(_label)) ":\n"                                         \
-	".previous\n"                                                           \
+#define CYG_HAL_TABLE_END( _label, _name )                                    \
+__asm__(".section \"" __string(.ecos.table.##_name##.finish) "\",\"aw\"\n"    \
+	".globl " __xstring(CYG_LABEL_DEFN(_label)) "\n"                      \
+	".type    " __xstring(CYG_LABEL_DEFN(_label)) ",@object\n"            \
+	".p2align " __xstring(CYGARC_P2ALIGNMENT) "\n"                        \
+__xstring(CYG_LABEL_DEFN(_label)) ":\n"                                       \
+	".previous\n"                                                         \
        )
+#endif
+
+// This macro must be applied to any types whose objects are to be placed in
+// tables
+#ifndef CYG_HAL_TABLE_TYPE
+#define CYG_HAL_TABLE_TYPE CYGBLD_ATTRIB_ALIGN( CYGARC_ALIGNMENT )
 #endif
 
 #ifndef CYG_HAL_TABLE_EXTRA
 #define CYG_HAL_TABLE_EXTRA( _name ) \
-        CYGBLD_ATTRIB_SECTION(.ecos.table.##_name##.extra)
+        CYGBLD_ATTRIB_SECTION(.ecos.table.##_name##.extra) \
+        CYGBLD_ATTRIB_ALIGN( CYGARC_ALIGNMENT )
 #endif
 
 #ifndef CYG_HAL_TABLE_ENTRY
 #define CYG_HAL_TABLE_ENTRY( _name ) \
-        CYGBLD_ATTRIB_SECTION(.ecos.table.##_name##.data)
+        CYGBLD_ATTRIB_SECTION(.ecos.table.##_name##.data) \
+        CYGBLD_ATTRIB_ALIGN( CYGARC_ALIGNMENT )
 #endif
 
 #ifndef CYG_HAL_TABLE_QUALIFIED_ENTRY
 #define CYG_HAL_TABLE_QUALIFIED_ENTRY( _name, _qual ) \
-        CYGBLD_ATTRIB_SECTION(.ecos.table.##_name##.data.##_qual)
+        CYGBLD_ATTRIB_SECTION(.ecos.table.##_name##.data.##_qual) \
+        CYGBLD_ATTRIB_ALIGN( CYGARC_ALIGNMENT )
 #endif
 
 /*------------------------------------------------------------------------*/

@@ -1,3 +1,40 @@
+2000-09-01  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/stand_alone/eth_drv.c (eth_drv_dsr): New function, never
+	called but maybe referenced in stand_alone context, which lets
+	redboot work in the new world.
+
+2000-09-01  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* OVERVIEW: This is part of the change to the network stack to
+	greatly reduce latencies both of (other) DSRs and of thread
+	scheduling.  All the work that the network stack *and* individual
+	ether drivers used to do in DSRs (including alarm callbacks and
+	data copies to/from the device memory) is moved into a "fast
+	network thread" instead.  It calls a device's "deliver" function
+	to do the work that was previously in the DSR.  This is a separate
+	thread so that it can be set higher priority than application
+	threads in order to minimize packet loss (depending on the
+	driver), if required (the application threads presumed to be
+	higher priority in turn than the network thread).  A crucial
+	consequence of this is that we are no longer locking against DSRs,
+	so a plain mutex can be used rather than the global scheduler
+	lock, thus simplifying all the splfoo/splx() style functions.
+
+	These changes WILL BREAK individual device drivers until they are
+	updated AND the standalone logical ether driver in this component,
+	until it is updated also.
+
+	* include/eth_drv.h (ETH_DRV_SC): Add "deliver" entry to struct
+	eth_hwr_funs interface record; declare available DSR and flag for
+	"needs delivery" in SC status field.
+
+	* src/net/eth_drv.c (eth_drv_run_deliveries): New function,
+	performs callbacks to deliver funcs for all devs that want it.
+	(eth_drv_dsr): New function, sets flag in sc and calls up to net
+	stack to schedule the fast network thread.
+	(eth_drv_send): No need to lock scheduler here.
+
 2000-08-29  Gary Thomas  <gthomas@redhat.com>
 
 	* src/stand_alone/eth_drv.c: Use null buffer, (char *)0,

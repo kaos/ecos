@@ -1,3 +1,7 @@
+2000-09-01  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/misc/infconst.c: Silence warning about number of brackets
+
 2000-08-31  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/math.h: Declare cyg_libm_infinity as an array type for correct

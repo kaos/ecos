@@ -112,6 +112,44 @@ set_pc(target_register_t pc)
     put_register(PC, pc);
 }
 
+#ifdef CYGARC_SH_MOD_UBC
+
+// This implementation of the single-stepper relies on the User Break
+// Controller which may not be available on all cores.
+
+// Note: This should be enhanced to coorperate with either two regular
+// breakpoints or watchpoints. Requires GDB to be aware of the stub's
+// ability though, so for now just use channel A without further
+// considerations.
+
+/* Set things up so that the next user resume will execute one instruction.
+   This may be done by setting breakpoints or setting a single step flag
+   in the saved user registers, for example. */
+
+void __single_step (void)
+{
+    // The address of the instruction to execute.
+    HAL_WRITE_UINT32(CYGARC_REG_BARA, get_register(PC));
+    // Match entire address.
+    HAL_WRITE_UINT8(CYGARC_REG_BAMRA, CYGARC_REG_BAMRA_BARA_UNMASKED);
+    // Stop after instruction at matching address has executed.
+    HAL_WRITE_UINT16(CYGARC_REG_BRCR, CYGARC_REG_BRCR_PCBA);
+    // Stop on IFETCH/READ
+    HAL_WRITE_UINT16(CYGARC_REG_BBRA, 
+                     CYGARC_REG_BBRA_IFETCH|CYGARC_REG_BBRA_READ);
+}
+
+/* Clear the single-step state. */
+
+void __clear_single_step (void)
+{
+    // Don't stop on any condition
+    HAL_WRITE_UINT16(CYGARC_REG_BBRA, 0);
+    // Clear status flags
+    HAL_WRITE_UINT16(CYGARC_REG_BRCR, 0);
+}
+
+#else // CYGARC_SH_MOD_UBC
 
 /*----------------------------------------------------------------------
  * Single-step support, copied from gdb/sh-stub.c, written by Ben Lee
@@ -247,6 +285,8 @@ void __clear_single_step (void)
     }
     stepped = 0;
 }
+
+#endif // CYGARC_SH_MOD_UBC
 
 
 void __install_breakpoints (void)

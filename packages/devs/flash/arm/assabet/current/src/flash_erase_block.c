@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//      flash_config.h
+//      flash_erase_block.c
 //
-//      Flash configuration data tables for RedBoot
+//      Flash programming
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -33,44 +33,68 @@
 //
 // Author(s):    gthomas
 // Contributors: gthomas
-// Date:         2000-08-21
+// Date:         2000-07-14
 // Purpose:      
 // Description:  
 //              
-// This code is part of RedBoot (tm).
-//
 //####DESCRIPTIONEND####
 //
 //==========================================================================
 
-#ifndef _FLASH_CONFIG_H_
-#define _FLASH_CONFIG_H_
+#include "flash.h"
 
-#define MAX_SCRIPT_LENGTH 512
+#include <pkgconf/hal.h>
+#include <cyg/hal/hal_arch.h>
+#include <cyg/hal/hal_cache.h>
 
-#define CONFIG_BOOL    1
-#define CONFIG_INT     2
-#define CONFIG_STRING  3
-#define CONFIG_SCRIPT  4
-#ifdef CYGPKG_REDBOOT_NETWORKING
-#define CONFIG_IP      5
-#define CONFIG_ESA     6
-#endif
+//
+// CAUTION!  This code must be copied to RAM before execution.  Therefore,
+// it must not contain any code which might be position dependent!
+//
 
-struct config_option {
-    char *key;
-    char *title;
-    char *enable;
-    bool  enable_sense;
-    int   type;
-} CYG_HAL_TABLE_TYPE;
+int flash_erase_block(volatile unsigned long *block)
+{
+    volatile unsigned long *ROM;
+    unsigned long stat;
+    int timeout = 50000;
+    int cache_on;
+    int len;
 
-#define ALWAYS_ENABLED (char *)0
+    HAL_DCACHE_IS_ENABLED(cache_on);
+    if (cache_on) {
+        HAL_DCACHE_SYNC();
+        HAL_DCACHE_DISABLE();
+    }
 
-#define RedBoot_config_option(_t_,_n_,_e_,_ie_,_type_)                                  \
-struct config_option _config_option_##_n_                                               \
-CYG_HAL_TABLE_QUALIFIED_ENTRY(RedBoot_config_options,_n_) = {#_n_,_t_,_e_,_ie_,_type_};
+    ROM = (volatile unsigned long *)((unsigned long)block & 0xFF800000);
 
-void flash_get_config(char *key, void *val, int type);
+    // Clear any error conditions
+    ROM[0] = FLASH_Clear_Status;
 
-#endif // _FLASH_CONFIG_H_
+    // Erase block
+    ROM[0] = FLASH_Block_Erase;
+    *block = FLASH_Confirm;
+    timeout = 5000000;
+    while(((stat = ROM[0]) & FLASH_Status_Ready) != FLASH_Status_Ready) {
+        if (--timeout == 0) break;
+    }
+
+    // Restore ROM to "normal" mode
+    ROM[0] = FLASH_Reset;
+
+    // If an error was reported, see if the block erased anyway
+    if (stat & 0x007E007E) {
+        len = FLASH_BLOCK_SIZE;
+        while (len > 0) {
+            if (*block++ != 0xFFFFFFFF) break;
+            len -= sizeof(*block);
+        }
+        if (len == 0) stat = 0;
+    }
+
+    if (cache_on) {
+        HAL_DCACHE_ENABLE();
+    }
+
+    return stat;
+}

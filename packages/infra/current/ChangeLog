@@ -1,3 +1,11 @@
+2000-09-04  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/cyg_type.h (CYGARC_ALIGNMENT): Add default of 8
+	(CYGARC_P2ALIGNMENT): Add corresponding default of 3
+	(CYGBLD_ATTRIB_ALIGN): Define to allow alignment
+	* include/cyg_type.inc: As above for CYGARC_ALIGNMENT and
+	CYGARC_P2ALIGNMENT
+
 2000-07-25  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* include/cyg_type.inc: Create. Used for the equivalent stuff of

@@ -96,7 +96,7 @@ local_cmd_entry("erase",
                 fis_erase,
                 FIS_cmds
     );
-#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
+#if 0 < CYGHWR_IO_FLASH_BLOCK_LOCKING // This is an *interface*
 local_cmd_entry("lock",
                 "LOCK FLASH contents",
                 "-f <flash_addr> -l <length>",
@@ -483,7 +483,7 @@ fis_erase(int argc, char *argv[])
     }
 }
 
-#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
+#if 0 < CYGHWR_IO_FLASH_BLOCK_LOCKING // This is an *interface*
 
 static void
 fis_lock(int argc, char *argv[])

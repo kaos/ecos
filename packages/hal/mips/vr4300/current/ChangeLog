@@ -1,3 +1,8 @@
+2000-09-01  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/var_arch.h (CYG_HAL_GDB_REG): vr4300 GDB stubs now use 
+	32-bits internally to represent registers
+
 2000-06-21  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/mips_vr4300.ld:

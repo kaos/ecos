@@ -123,6 +123,18 @@
 #endif
 
 // -------------------------------------------------------------------------
+// Provide a default architecture alignment
+// This may be overridden in basetype.h if necessary.
+
+#ifndef CYGARC_ALIGNMENT
+# define CYGARC_ALIGNMENT 8
+#endif
+// And corresponding power of two alignment
+#ifndef CYGARC_P2ALIGNMENT
+# define CYGARC_P2ALIGNMENT 3
+#endif
+
+// -------------------------------------------------------------------------
 // The obvious few that compilers may define for you.
 // But in case they don't:
 
@@ -291,6 +303,9 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 // Assign a defined variable to a specific section
 # define CYGBLD_ATTRIB_SECTION(__sect__) __attribute__((section (#__sect__)))
 
+// Give a type or object explicit minimum alignment
+# define CYGBLD_ATTRIB_ALIGN(__align__) __attribute__((aligned(__align__)))
+
 #else // non-GNU
 
 # define CYGBLD_ATTRIB_CONSTRUCTOR
@@ -307,6 +322,8 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 # define CYGBLD_ATTRIB_ASM_ALIAS(__symbol__) !!!-- Asm alias not defined --!!!
 
 # define CYGBLD_ATTRIB_CONST
+
+# define CYGBLD_ATTRIB_ALIGN(__align__) !!!-- Alignment alias not defined --!!!
 
 #endif
 

@@ -56,6 +56,7 @@ cdl_package CYGPKG_NET {
     requires      { CYGBLD_ISO_BSDTYPES_HEADER == "<sys/bsdtypes.h>" }
     
     compile ecos/support.c \
+	ecos/synch.c \
 	ecos/timeout.c \
         ecos/init.cxx \
         sys/kern/uipc_mbuf.c \
@@ -255,6 +256,17 @@ cdl_package CYGPKG_NET {
 	        the thread exits if a lease expires, and the application
 	        must detect this and tidy up or reboot the whole machine."
 	}
+	cdl_option CYGPKG_NET_DHCP_THREAD_PRIORITY {
+	    display "DHCP management thread priority"
+	    flavor  data
+	    default_value CYGPKG_NET_THREAD_PRIORITY + 1
+	    active_if CYGOPT_NET_DHCP_DHCP_THREAD
+	    description "
+	    This option sets the thread priority level used by the DHCP
+	    management thread.  It should be high enough that it can run
+	    when necessary, but it does not need to be as high as the
+	    network thread itself."
+	}
     }
 
     cdl_option CYGPKG_NET_SYSCTL {
@@ -275,6 +287,21 @@ cdl_package CYGPKG_NET {
 	high enough that sufficient CPU resources are available to
 	process network data, but may be adjusted so that application
 	threads can have precedence over network processing."
+    }
+
+    cdl_option CYGPKG_NET_FAST_THREAD_PRIORITY {
+        display "Priority level for fast network processing."
+        flavor  data
+        default_value CYGPKG_NET_THREAD_PRIORITY - 1
+        description   "
+            This option sets the thread priority level used by the fast
+	network thread.  The fast network thread runs often but briefly, to
+	service network device interrupts and network timeout events.  This
+	thread should have higher priority than the background network
+	thread.  It is reasonable to set this thread's priority higher than
+	application threads for best network throughput, or to set it lower
+	than application threads for best latency for those application
+	threads themselves, potentially at a cost to network throughput."
     }
 
     cdl_option CYGPKG_NET_NBPF {

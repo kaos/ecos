@@ -54,6 +54,8 @@
 
 // Timeout support
 
+void alarm_timeout_init(void);
+
 #ifndef NTIMEOUTS
 #define NTIMEOUTS 8
 #endif
@@ -68,10 +70,23 @@ static cyg_alarm timeout_alarm;
 static cyg_int32 last_delta;
 static cyg_tick_count_t last_set_time;
 
-extern cyg_uint32 cyg_in_softnet( void );
+#define STACK_SIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
+static char alarm_stack[STACK_SIZE];
+static cyg_thread alarm_thread_data;
+static cyg_handle_t alarm_thread_handle;
 
+static cyg_flag_t alarm_flag;  
+
+// ------------------------------------------------------------------------
+// This routine exists so that this module can synchronize:
+extern cyg_uint32 cyg_splinternal(void);
+
+// ------------------------------------------------------------------------
+// CALLBACK FUNCTION
+// Called from the thread, this runs the alarm callbacks.
+// Locking is already in place when this is called.
 static void
-do_timeout(cyg_handle_t alarm, cyg_addrword_t data)
+do_timeout(void)
 {
     int i;
     cyg_int32 min_delta;
@@ -118,25 +133,95 @@ do_timeout(cyg_handle_t alarm, cyg_addrword_t data)
     }
 }
 
+// ------------------------------------------------------------------------
+// ALARM EVENT FUNCTION
+// This is the DSR for the alarm firing:
+static void
+do_alarm(cyg_handle_t alarm, cyg_addrword_t data)
+{
+    cyg_flag_setbits( &alarm_flag, 1 ); 
+}
+
+void ecos_synch_eth_drv_dsr(void)
+{
+    cyg_flag_setbits( &alarm_flag, 2 ); 
+}
+
+// ------------------------------------------------------------------------
+// HANDLER THREAD ENTRY ROUTINE
+// This waits on the DSR to tell it to run:
+static void
+alarm_thread(cyg_addrword_t param)
+{
+    // This is from the logical ethernet dev; it calls those delivery
+    // functions who need attention.
+    extern void eth_drv_run_deliveries( void );
+
+    while ( 1 ) {
+        int spl;
+        int x = cyg_flag_wait(
+            &alarm_flag,
+            -1,
+            CYG_FLAG_WAITMODE_OR | CYG_FLAG_WAITMODE_CLR );
+
+        CYG_ASSERT( 3 & x, "Lost my bits" );
+        CYG_ASSERT( !((~3) & x), "Extra bits" );
+
+        spl = cyg_splinternal();
+
+        CYG_ASSERT( 0 == spl, "spl nonzero" );
+
+        if ( 2 & x )
+            eth_drv_run_deliveries();
+       
+        if ( 1 & x )
+            do_timeout();
+
+        cyg_splx(spl);
+    }
+}
+
+// ------------------------------------------------------------------------
+// INITIALIZATION FUNCTION
+void
+cyg_alarm_timeout_init( void )
+{
+    // Init the alarm object, attached to the real time clock
+    cyg_handle_t h;
+    cyg_clock_to_counter(cyg_real_time_clock(), &h);
+    cyg_alarm_create(h, do_alarm, 0, &timeout_alarm_handle, &timeout_alarm);
+    // Init the flag of waking up
+    cyg_flag_init( &alarm_flag );
+    // Create alarm background thread to run the callbacks
+    cyg_thread_create(
+        CYGPKG_NET_FAST_THREAD_PRIORITY, // Priority
+        alarm_thread,                   // entry
+        0,                              // entry parameter
+        "Network alarm support",        // Name
+        &alarm_stack[0],                // Stack
+        STACK_SIZE,                     // Size
+        &alarm_thread_handle,           // Handle
+        &alarm_thread_data              // Thread data structure
+        );
+    cyg_thread_resume(alarm_thread_handle);    // Start it
+}
+
+// ------------------------------------------------------------------------
+// EXPORTED API: SET A TIMEOUT
+// This can be called from anywhere, including recursively from the timeout
+// functions themselves.
 cyg_uint32
 timeout(timeout_fun *fun, void *arg, cyg_int32 delta)
 {
     int i;
-    static bool init = false;
     timeout_entry *e;
     cyg_uint32 stamp;
 
+    // this needs to be atomic - recursive calls from the alarm
+    // handler thread itself are allowed:
+    int spl = cyg_splinternal();
+
     CYG_ASSERT( 0 < delta, "delta is right now, or even sooner!" );
-
-    // this needs to be atomic wrt threads and DSRs
-    cyg_scheduler_lock();
-
-    if (!init) {
-        cyg_handle_t h;
-        cyg_clock_to_counter(cyg_real_time_clock(), &h);
-        cyg_alarm_create(h, do_timeout, 0, &timeout_alarm_handle, &timeout_alarm);
-        init = true;
-    }
 
     // Renormalize delta wrt the existing set alarm, if there is one
     if ( last_delta > 0 )
@@ -185,12 +270,13 @@ timeout(timeout_fun *fun, void *arg, cyg_int32 delta)
 #ifdef CYGPKG_INFRA_DEBUG
     // Do some more checking akin to that in the alarm handler:
     if ( last_delta != -1 ) { // not a recursive call
+        cyg_tick_count_t now = cyg_current_time();
         CYG_ASSERT( last_delta >= 0, "Bad last delta" );
         delta = 0x7fffffff;
         for (e = timeouts, i = 0;  i < NTIMEOUTS;  i++, e++) {
             if (e->delta) {
                 CYG_ASSERT( e->delta >= last_delta, "e->delta underflow" );
-                CYG_ASSERT( last_set_time + e->delta > cyg_current_time(),
+                CYG_ASSERT( last_set_time + e->delta + 1000 > now,
                             "Recorded alarm not in the future!" );
                 if ( e->delta < delta )
                     delta = e->delta;
@@ -202,17 +288,21 @@ timeout(timeout_fun *fun, void *arg, cyg_int32 delta)
     }
 #endif
 
-    cyg_scheduler_unlock();
-
+    cyg_splx(spl);
     return stamp;
 }
 
+// ------------------------------------------------------------------------
+// EXPORTED API: CANCEL A TIMEOUT
+// This can be called from anywhere, including recursively from the timeout
+// functions themselves.
 void
 untimeout(timeout_fun *fun, void * arg)
 {
     int i;
     timeout_entry *e;
-    cyg_scheduler_lock();
+    int spl = cyg_splinternal();
+
     for (e = timeouts, i = 0; i < NTIMEOUTS; i++, e++) {
         if (e->delta && (e->fun == fun) && (e->arg == arg)) {
             e->delta = 0;
@@ -220,7 +310,9 @@ untimeout(timeout_fun *fun, void * arg)
             break;
         }
     }
-    cyg_scheduler_unlock();
+    cyg_splx(spl);
 }
+
+// ------------------------------------------------------------------------
 
 // EOF timeout.c

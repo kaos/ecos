@@ -85,6 +85,7 @@ ETH_DRV_SC(quicc_eth0_sc,
            quicc_eth_can_send,
            quicc_eth_send,
            quicc_eth_recv,
+           quicc_eth_deliver,
            quicc_eth_int,
            quicc_eth_int_vector);
 
@@ -107,11 +108,11 @@ quicc_eth_isr(cyg_vector_t vector, cyg_addrword_t data, HAL_SavedRegisters *regs
     return (CYG_ISR_HANDLED|CYG_ISR_CALL_DSR);  // Run the DSR
 }
 
-// This DSR handles the ethernet [logical] processing
+// Deliver function (ex-DSR) handles the ethernet [logical] processing
 static void
-quicc_eth_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
+quicc_eth_deliver(struct eth_drv_sc * sc)
 {
-    quicc_eth_int((struct eth_drv_sc *)data);
+    quicc_eth_int(sc);
     // Allow interrupts to happen again
     cyg_drv_interrupt_acknowledge(CYGNUM_HAL_INTERRUPT_CPM_SCC1);
     cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_CPM_SCC1);
@@ -150,7 +151,7 @@ quicc_eth_init(struct cyg_netdevtab_entry *tab)
                              CYGARC_SIU_PRIORITY_HIGH,
                              (cyg_addrword_t)sc, //  Data item passed to interrupt handler
                              (cyg_ISR_t *)quicc_eth_isr,
-                             (cyg_DSR_t *)quicc_eth_dsr,
+                             (cyg_DSR_t *)eth_drv_dsr,
                              &quicc_eth_interrupt_handle,
                              &quicc_eth_interrupt);
     cyg_drv_interrupt_attach(quicc_eth_interrupt_handle);

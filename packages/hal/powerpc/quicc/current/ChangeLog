@@ -1,3 +1,8 @@
+2000-08-30  Jesper Skov  <jskov@redhat.com>
+
+	* src/quicc_smc1.c (cyg_hal_plf_serial_init_channel): Move all
+	init code to init_channel.
+
 2000-06-30  Jesper Skov  <jskov@redhat.com>
 
 	* src/quicc_smc1.c: calling i/f macro changes.

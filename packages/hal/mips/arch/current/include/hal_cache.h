@@ -60,7 +60,7 @@
 
 #define _hal_asm_mips_cpp_stringize( _x_ ) #_x_
 #define _HAL_ASM_SET_MIPS_ISA( _isal_ ) asm volatile ( \
-      ".set mips" ## _hal_asm_mips_cpp_stringize(_isal_) )
+      ".set mips" _hal_asm_mips_cpp_stringize(_isal_) )
 
 
 //=============================================================================

@@ -1,3 +1,12 @@
+2000-08-31  Jesper Skov  <jskov@redhat.com>
+
+	* include/mod_7709a.h: Added UBC definition.
+	* include/mod_7708.h: Same.
+	* include/mod_7707a.h: Same.
+	* include/sh_regs.h: Extra UBC definitions.
+	* src/sh_stub.c: If core supports UBC, use it for
+	single-stepping.
+
 2000-07-20  Jesper Skov  <jskov@redhat.com>
 
 	* src/sh_stub.c (__single_step): Skip trap instructions.

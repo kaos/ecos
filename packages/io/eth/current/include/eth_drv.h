@@ -127,6 +127,9 @@ struct eth_hwr_funs {
     void (*recv)(struct eth_drv_sc *sc,
                  struct eth_drv_sg *sg_list,
                  int sg_len);
+    // Deliver data to/from device from/to stack memory space
+    // (moves lots of memcpy()s out of DSRs into thread)
+    void (*deliver)(struct eth_drv_sc *sc);
     // Poll for interrupts/device service
     void (*poll)(struct eth_drv_sc *sc);
     // Get interrupt information from hardware driver
@@ -149,13 +152,14 @@ struct eth_drv_sc {
     struct arpcom        sc_arpcom; /* ethernet common */
 };
 
-#define ETH_DRV_SC(sc,priv,name,start,stop,control,can_send,send,recv,poll,int_vector) \
+#define ETH_DRV_SC(sc,priv,name,start,stop,control,can_send,send,recv,deliver,poll,int_vector) \
 static void start(struct eth_drv_sc *sc, unsigned char *enaddr, int flags); \
 static void stop(struct eth_drv_sc *sc); \
 static int  control(struct eth_drv_sc *sc, unsigned long key, void *data, int data_length); \
 static int  can_send(struct eth_drv_sc *sc); \
 static void send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len, int total, unsigned long key); \
 static void recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len); \
+static void deliver(struct eth_drv_sc *sc); \
 static void poll(struct eth_drv_sc *sc); \
 static int  int_vector(struct eth_drv_sc *sc); \
 static struct eth_hwr_funs sc##_funs = {        \
@@ -165,14 +169,23 @@ static struct eth_hwr_funs sc##_funs = {        \
     can_send,                                   \
     send,                                       \
     recv,                                       \
+    deliver,                                    \
     poll,                                       \
     int_vector,                                 \
     &eth_drv_funs,                              \
     (struct eth_drv_funs *)0 };                 \
 struct eth_drv_sc sc = {&sc##_funs, priv, name};
 
-#define ETH_DRV_STATE_ACTIVE 0x0001
-#define ETH_DRV_STATE_DEBUG  0x1000
+#define ETH_DRV_STATE_ACTIVE   0x0001
+#define ETH_DRV_NEEDS_DELIVERY 0x0002
+#define ETH_DRV_STATE_DEBUG    0x1000
+
+// Register this as your DSR within your driver: it will cause your deliver
+// routine to be called from the network thread.  The "data" parameter
+// *must* be your own "struct eth_drv_sc *sc" pointer.
+extern void eth_drv_dsr(cyg_vector_t vector,
+                        cyg_ucount32 count,
+                        cyg_addrword_t data);
 
 extern struct eth_drv_funs eth_drv_funs;
 

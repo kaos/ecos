@@ -1,3 +1,54 @@
+2000-09-01  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/ecos/support.c (cyg_net_init): You can't print things while
+	initializing the network!  Well, not if connected to GDB over the
+	network anyway.  The printf("Init device '%s'...); removed.
+
+2000-09-01  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* OVERVIEW: This is part of the change to the network stack to
+	greatly reduce latencies both of (other) DSRs and of thread
+	scheduling.  All the work that the network stack *and* individual
+	ether drivers used to do in DSRs (including alarm callbacks and
+	data copies to/from the device memory) is moved into a "fast
+	network thread" instead.  It calls a device's "deliver" function
+	to do the work that was previously in the DSR.  This is a separate
+	thread so that it can be set higher priority than application
+	threads in order to minimize packet loss (depending on the
+	driver), if required (the application threads presumed to be
+	higher priority in turn than the network thread).  A crucial
+	consequence of this is that we are no longer locking against DSRs,
+	so a plain mutex can be used rather than the global scheduler
+	lock, thus simplifying all the splfoo/splx() style functions.
+
+	* src/ecos/timeout.c (alarm_thread): Addition of the "fast network
+	thread" which runs DSR-like activities.
+	(do_timeout): Timeout function morphed for calling from that.
+	(do_alarm, ecos_synch_eth_drv_dsr): new DSR functions to signal to
+	the thread.
+	(timeout): Race condition fixed.  splinternal() used for locking
+	instead of scheduler.
+	
+	* src/ecos/support.c (cyg_net_init): Splfoo/splx() functions,
+	together with tsleep/wakeup functions, all removed to separate
+	them from the mixed bag of utilities in this file.  What remains
+	is mbuf wrapper routines and the like, plus the network "netisr"
+	thread itself, the caller into the stack that does the slower
+	priority work.
+
+	* src/ecos/synch.c: New file; implemtation of new splfoo/splx()
+	functions, together with tsleep/wakeup functions, since they are
+	related now.
+
+	* cdl/net.cdl: Compile new file synch.c; two new options, one for
+	"fast thread" priority, and one for DHCP manager thread priority,
+	as I was adding prio configury.  CYGPKG_NET_FAST_THREAD_PRIORITY
+	and CYGPKG_NET_DHCP_THREAD_PRIORITY resp, with suitable default
+	values relative to the CYGPKG_NET_THREAD_PRIORITY.
+
+	* src/lib/dhcp_support.c (dhcp_start_dhcp_mgt_thread): Use the
+	configured priority rather than just "net thread - 1"
+
 2000-08-31  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* tests/tcp_echo.c: Change the priorities of the main and loading

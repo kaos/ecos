@@ -909,7 +909,7 @@ stub_format_registers(char *ptr)
                 int x;
                 char extend_val = 0;
 
-#if defined(CYGARC_REGSIZE_DIFFERS_FROM_TARGET_REGISTER_T) && defined(CYGARC_SIGN_EXTEND_REGISTERS)
+#ifdef CYGARC_SIGN_EXTEND_REGISTERS
                 {
                     unsigned long bits_in_addr = (sizeof(addr) << 3);  // ie Size in bytes * 8
                     target_register_t sign_bit_mask = (1 << (bits_in_addr - 1));

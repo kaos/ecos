@@ -247,10 +247,25 @@
 
 #define CYGARC_REG_BRCR_CMFA            0x8000 // condition match flag A
 #define CYGARC_REG_BRCR_CMFB            0x4000 // condition match flag B
-#define CYGARC_REG_BRCR_PCBA            0x0400 // PC break select A
+#define CYGARC_REG_BRCR_PCBA            0x0400 // post execute channel A
 #define CYGARC_REG_BRCR_DBEB            0x0080 // data break enable B
-#define CYGARC_REG_BRCR_PCBB            0x0040 // PC break select B
+#define CYGARC_REG_BRCR_PCBB            0x0040 // post execute channel B
 #define CYGARC_REG_BRCR_SEQ             0x0008 // sequence condition select
+
+#define CYGARC_REG_BAMRA_BASMA          0x04   // BASRA masked
+#define CYGARC_REG_BAMRA_BARA_UNMASKED  0x00   // BARA not masked
+#define CYGARC_REG_BAMRA_BARA_10BIT     0x01   // Lowest 10 bit masked
+#define CYGARC_REG_BAMRA_BARA_12BIT     0x02   // Lowest 12 bit masked
+#define CYGARC_REG_BAMRA_BARA_MASKED    0x03   // All bits masked
+
+#define CYGARC_REG_BBRA_DFETCH          0x0020 // Break on DFETCH
+#define CYGARC_REG_BBRA_IFETCH          0x0010 // Break on IFETCH
+#define CYGARC_REG_BBRA_WRITE           0x0008 // Break on WRITE
+#define CYGARC_REG_BBRA_READ            0x0004 // Break on READ
+#define CYGARC_REG_BBRA_SIZE_LONG       0x0003 // Break on long access
+#define CYGARC_REG_BBRA_SIZE_WORD       0x0002 // Break on word access
+#define CYGARC_REG_BBRA_SIZE_BYTE       0x0001 // Break on byte access
+#define CYGARC_REG_BBRA_SIZE_ANY        0x0000 // Break on any size
 
 
 //++++++ Module CPG ++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -93,6 +93,7 @@ void
 cyg_hal_plf_serial_init_channel(void)
 {
     EPPC *eppc;
+    int i;
     volatile struct smc_uart_pram *uart_pram;
     struct cp_bufdesc *txbd, *rxbd;
 
@@ -101,6 +102,12 @@ cyg_hal_plf_serial_init_channel(void)
     init_done++;
 
     eppc = eppc_base();
+
+    /*
+     *  Reset communications processor
+     */
+    eppc->cp_cr = QUICC_CPM_CR_RESET | QUICC_CPM_CR_BUSY;
+    for (i = 0; i < 100000; i++);
 
     /* SMC1 Uart parameter ram */
     uart_pram = &eppc->pram[2].scc.pothers.smc_modem.psmc.u;
@@ -460,17 +467,10 @@ cyg_hal_plf_serial_init(void)
     hal_virtual_comm_table_t* comm;
     int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
     volatile EPPC *eppc = eppc_base();
-    int i;
 
     static int init = 0;  // It's wrong to do this more than once
     if (init) return;
     init++;
-
-    /*
-     *  Reset communications processor
-     */
-    eppc->cp_cr = QUICC_CPM_CR_RESET | QUICC_CPM_CR_BUSY;
-    for (i = 0; i < 100000; i++);
 
     cyg_hal_plf_serial_init_channel();
 

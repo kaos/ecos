@@ -656,8 +656,6 @@ __build_t_packet (int sigval, char *buf)
     *ptr++ = __tohex (PC);
     *ptr++ = ':';
     addr = get_register (PC);
-#ifdef CYGARC_REGSIZE_DIFFERS_FROM_TARGET_REGISTER_T
-    ptr = __mem2hex((char *)&addr, ptr, sizeof(addr), 0);
     if (sizeof(addr) < REGSIZE(PC))
     {
         // GDB is expecting REGSIZE(PC) number of bytes.
@@ -674,17 +672,13 @@ __build_t_packet (int sigval, char *buf)
 #endif
         ptr = __mem2hex((char *)&extend_val, ptr, REGSIZE(PC) - sizeof(addr), 0);
     }
-#else
-    ptr = __mem2hex((char *)&addr, ptr, REGSIZE(PC), 0);
-#endif
+    ptr = __mem2hex((char *)&addr, ptr, sizeof(addr), 0);
     *ptr++ = ';';
 
     *ptr++ = __tohex (SP >> 4);
     *ptr++ = __tohex (SP);
     *ptr++ = ':';
     addr = (target_register_t) get_register (SP);
-#ifdef CYGARC_REGSIZE_DIFFERS_FROM_TARGET_REGISTER_T
-    ptr = __mem2hex((char *)&addr, ptr, sizeof(addr), 0);
     if (sizeof(addr) < REGSIZE(SP))
     {
         // GDB is expecting REGSIZE(SP) number of bytes.
@@ -701,9 +695,7 @@ __build_t_packet (int sigval, char *buf)
 #endif
         ptr = __mem2hex((char *)&extend_val, ptr, REGSIZE(SP) - sizeof(addr), 0);
     }
-#else
-    ptr = __mem2hex((char *)&addr, ptr, REGSIZE(SP), 0);
-#endif
+    ptr = __mem2hex((char *)&addr, ptr, sizeof(addr), 0);
     *ptr++ = ';';
     
     *ptr++ = 0;

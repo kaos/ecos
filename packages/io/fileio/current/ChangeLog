@@ -1,3 +1,9 @@
+2000-09-04  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/sockio.h (struct cyg_nstab_entry): Apply CYG_HAL_TABLE_TYPE
+	* include/fileio.h (struct cyg_mtab_entry): Ditto
+	(FSTAB_ENTRY): Ditto
+
 2000-08-31  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/select.cxx (select): Added scheduler unlock in timeout

@@ -1,3 +1,7 @@
+2000-09-04  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/devtab.h (cyg_devtab_entry_t): Apply CYG_HAL_TABLE_TYPE	
+
 2000-08-01  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* include/config_keys.h: 

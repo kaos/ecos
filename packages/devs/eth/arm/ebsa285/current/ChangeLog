@@ -1,3 +1,34 @@
+2000-09-01  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* OVERVIEW: This is part of the change to the network stack to
+	greatly reduce latencies both of (other) DSRs and of thread
+	scheduling.  All the work that the network stack *and* individual
+	ether drivers used to do in DSRs (including alarm callbacks and
+	data copies to/from the device memory) is moved into a "fast
+	network thread" instead.  It calls a device's "deliver" function
+	to do the work that was previously in the DSR.  This is a separate
+	thread so that it can be set higher priority than application
+	threads in order to minimize packet loss (depending on the
+	driver), if required (the application threads presumed to be
+	higher priority in turn than the network thread).  A crucial
+	consequence of this is that we are no longer locking against DSRs,
+	so a plain mutex can be used rather than the global scheduler
+	lock, thus simplifying all the splfoo/splx() style functions.
+
+	* src/if_ebsa285.c: Minor: fix the big assert in i82559_send()
+	which suffered a race condition when called from the fast thread
+	rather than from a DSR.  Major: Add a "deliver" entry to the
+	interface record for the "fast thread" implementation of the
+	network internal comms system.  Provide a pass-up DSR to the
+	logical ether driver's DSR and appropriate delivery routine(s).
+	i82559_poll() now calls i82559_deliver() rather than the DSR.  Add
+	valid data for mux'd DSR to pass on up.
+
+2000-09-01  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/test_net_realtime.h: Tighten up the latency requirements
+	by a factor of 5; it all seems happy, so committed.
+
 2000-08-25  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/if_ebsa285.c (i82559_ioctl): A little further diddling; have

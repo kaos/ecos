@@ -189,7 +189,7 @@ flash_program(void *_addr, void *_data, int len, void **err_addr)
     return (stat);
 }
 
-#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
+#if 0 < CYGHWR_IO_FLASH_BLOCK_LOCKING // This is an *interface*
 
 int
 flash_lock(void *addr, int len, void **err_addr)

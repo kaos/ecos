@@ -50,11 +50,12 @@
 #include <cyg/infra/cyg_type.h>
 
 // -------------------------------------------------------------------------
-// Because the 4300 is really a 64 bit CPU, GDB expects all registers
-// to be 64 bits wide. We redefine the type used to store GDB
-// registers here:
+// Although the VR4300 is really a 64 bit CPU, we have defined
+// target_register_t elsewhere to be 32-bits because we only support
+// 32-bit mode. Registers will still be sent to GDB as 64-bit, but that's
+// not relevant for CYG_HAL_GDB_REG.
 
-#define CYG_HAL_GDB_REG CYG_WORD64
+#define CYG_HAL_GDB_REG CYG_WORD32
 
 //--------------------------------------------------------------------------
 #endif // CYGONCE_HAL_VAR_ARCH_H

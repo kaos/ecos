@@ -132,7 +132,7 @@ typedef struct cyg_devtab_entry {
                                const char *name);
     void              *priv;
     unsigned long     status;
-} cyg_devtab_entry_t;
+} cyg_devtab_entry_t CYG_HAL_TABLE_TYPE;
 
 #define CYG_DEVTAB_STATUS_AVAIL   0x0001
 #define CYG_DEVTAB_STATUS_CHAR    0x1000

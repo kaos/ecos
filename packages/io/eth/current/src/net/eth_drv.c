@@ -83,6 +83,7 @@
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_if.h>
 #include <eth_drv.h>
+#include <netdev.h>
 
 static int  eth_drv_ioctl(struct ifnet *, u_long, caddr_t);
 static void eth_drv_send(struct ifnet *);
@@ -93,7 +94,7 @@ extern int net_debug;  // FIXME
 
 static void eth_drv_init(struct eth_drv_sc *sc, unsigned char *enaddr);
 static void eth_drv_recv(struct eth_drv_sc *sc, int total_len);
-static void eth_drv_tx_done(struct eth_drv_sc *sc, unsigned long key, int status);
+static void eth_drv_tx_done(struct eth_drv_sc *sc, CYG_ADDRESS key, int status);
 
 struct eth_drv_funs eth_drv_funs = {eth_drv_init, eth_drv_recv, eth_drv_tx_done};
 
@@ -295,10 +296,11 @@ eth_drv_send(struct ifnet *ifp)
     int len, total_len;
     unsigned char *data;
 
-    cyg_scheduler_lock();  // Prevent DSRs from running
+    // This is now only called from network threads, so no guarding is
+    // required; locking is in place via the splfoo() mechanism already.
+
     if ((ifp->if_flags & IFF_RUNNING) != IFF_RUNNING) {
-        cyg_scheduler_unlock();
-        return;
+         return;
     }
 
     while ((sc->funs->can_send)(sc) > 0) {
@@ -346,8 +348,6 @@ eth_drv_send(struct ifnet *ifp)
         if ( sg_len )
             (sc->funs->send)(sc, sg_list, sg_len, total_len, (unsigned long)m0);
     }
-
-    cyg_scheduler_unlock();  // Allow DSRs to run
 }
 
 //
@@ -357,7 +357,7 @@ eth_drv_send(struct ifnet *ifp)
 static struct mbuf *mbuf_key;
 
 static void
-eth_drv_tx_done(struct eth_drv_sc *sc, unsigned long key, int status)
+eth_drv_tx_done(struct eth_drv_sc *sc, CYG_ADDRESS key, int status)
 {
     struct ifnet *ifp = &sc->sc_arpcom.ac_if;
     struct mbuf *m0 = (struct mbuf *)key;
@@ -494,6 +494,45 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
     // Push data into protocol stacks
     ether_input(ifp, eh, m);
 }
+
+
+// ------------------------------------------------------------------------
+// DSR to schedule network delivery thread
+
+extern void ecos_synch_eth_drv_dsr(void); // from ecos/timeout.c in net stack
+
+void
+eth_drv_dsr(cyg_vector_t vector,
+            cyg_ucount32 count,
+            cyg_addrword_t data)
+{
+    struct eth_drv_sc *sc = (struct eth_drv_sc *)data;
+
+    sc->state |= ETH_DRV_NEEDS_DELIVERY;
+
+    ecos_synch_eth_drv_dsr(); // [request] run delivery function for this dev
+}
+
+// This is called from the delivery thread, to do just that:
+void eth_drv_run_deliveries( void )
+{
+    cyg_netdevtab_entry_t *t;
+    for (t = &__NETDEVTAB__[0]; t != &__NETDEVTAB_END__; t++) {
+        struct eth_drv_sc *sc = (struct eth_drv_sc *)t->device_instance;
+        int state = sc->state;
+        sc->state &=~ETH_DRV_NEEDS_DELIVERY;
+        if ( ETH_DRV_NEEDS_DELIVERY & state ) {
+            (*sc->funs->deliver)(sc);
+        }
+    }
+}
+
+
+// ------------------------------------------------------------------------
+
+
+
+
 
 #ifdef CYGPKG_IO_PCMCIA
 // Lookup a 'netdev' entry, assuming that it is an ethernet device.

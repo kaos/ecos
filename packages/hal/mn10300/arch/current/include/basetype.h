@@ -56,6 +56,12 @@
 #define CYG_LABEL_DEFN(_name_) _##_name_
 
 //-----------------------------------------------------------------------------
+// MN10300 only requires four byte alignment
+
+#define CYGARC_ALIGNMENT 4
+#define CYGARC_P2ALIGNMENT 2
+
+//-----------------------------------------------------------------------------
 // Define the standard variable sizes
 
 // The MN10300 architecture uses the default definitions of the base types,

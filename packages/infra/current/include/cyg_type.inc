@@ -47,8 +47,30 @@
 
 #include <cyg/hal/basetype.h>
 
+// -------------------------------------------------------------------------
+// Label name macros. Some toolsets generate labels with initial
+// underscores and others don't. CYG_LABEL_NAME should be used on
+// labels in C/C++ code that are defined in assembly code or linker
+// scripts. CYG_LABEL_DEFN is for use in assembly code and linker
+// scripts where we need to manufacture labels that can be used from
+// C/C++.
+// These are default implementations that should work for most targets.
+// They may be overridden in basetype.h if necessary.
+
 #ifndef CYG_LABEL_DEFN
 # define CYG_LABEL_DEFN(_label) _label
+#endif
+
+// -------------------------------------------------------------------------
+// Provide a default architecture alignment.
+// This may be overridden in basetype.h if necessary.
+
+#ifndef CYGARC_ALIGNMENT
+# define CYGARC_ALIGNMENT 8
+#endif
+// And corresponding power of two alignment
+#ifndef CYGARC_P2ALIGNMENT
+# define CYGARC_P2ALIGNMENT 3
 #endif
 
 #endif /* CYGONCE_INFRA_CYG_TYPE_INC */

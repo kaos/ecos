@@ -1,3 +1,8 @@
+2000-09-04  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/basetype.h (CYGARC_ALIGNMENT): mn10300 has 4 byte alignment
+	(CYGARC_P2ALIGNMENT): Likewise
+
 2000-08-29  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* src/vectors.S (__default_nmi_vsr): Fix quoting in comment problem

@@ -95,9 +95,16 @@
 //   100[characters] * 8[bits/byte] / 38400[Baud]  [Seconds] = 20mS.
 
 // Use the fclk_in divided-by 256 mode:
+#if 0 // Default, really 1mS, 2mS, 500uS
 #define TNR_TIMER1_PERIOD_1mS     ((50 * 1000)     >>8)
 #define TNR_TIMER1_PERIOD_2mS     ((50 * 1000 * 2) >>8)
 #define TNR_TIMER2_PERIOD_500uS   ((50 *  500)     >>8)
+#else // pushing the envelope... 1/5 as much:
+#define FACTOR 200 // 1000 is "normal"
+#define TNR_TIMER1_PERIOD_1mS     ((50 * FACTOR)     >>8)
+#define TNR_TIMER1_PERIOD_2mS     ((50 * FACTOR * 2) >>8)
+#define TNR_TIMER2_PERIOD_500uS   ((50 * FACTOR / 2) >>8)
+#endif
 
 #define TNR_TIMER1_INIT   (0x88)  // Enabled, free running, fclk_in/256
 #define TNR_TIMER2_INIT   (0xc8)  // Enabled, periodic, fclk_in/256

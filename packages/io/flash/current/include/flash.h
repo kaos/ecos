@@ -51,7 +51,7 @@
 extern int flash_init(void *work_space, int work_space_length);
 extern int flash_erase(void *base, int len, void **err_address);
 extern int flash_program(void *flash_base, void *ram_base, int len, void **err_address);
-#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
+#if 0 < CYGHWR_IO_FLASH_BLOCK_LOCKING // This is an *interface*
 extern int flash_lock(void *base, int len, void **err_address);
 extern int flash_unlock(void *base, int len, void **err_address);
 #endif

@@ -1,3 +1,13 @@
+2000-09-01  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/if_sc_lpe.c (sc_lpe_init): Work with new fast net
+	thread to do all the copying work instead of loading up DSR time.
+	In detail:
+	 o New "deliver" function in the interface record.  It's the same
+	 function as the poll entry; sc_lpe_int().
+	 o In registering the interrupt handler, use eth_drv_dsr (from the
+	   logical driver) instead of sc_lpe_int.
+
 2000-08-29  Gary Thomas  <gthomas@redhat.com>
 
 	* src/if_sc_lpe.c (sc_lpe_recv): Better handling if upper layer

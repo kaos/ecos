@@ -92,6 +92,7 @@ ETH_DRV_SC(sc_lpe_sc,
            sc_lpe_can_send,
            sc_lpe_send,
            sc_lpe_recv,
+           sc_lpe_int, // deliver function, called from fast net thread
            sc_lpe_int,
            sc_lpe_int_vector
     );
@@ -266,7 +267,8 @@ sc_lpe_init(struct cyg_netdevtab_entry *tab)
     cyg_thread_resume(sc_lpe_card_handler_thread_handle);    // Start it
 
     // Initialize environment, setup interrupt handler
-    cf_register_handler(dp->slot, sc_lpe_int, sc);
+    // eth_drv_dsr is used to tell the fast net thread to run the deliver funcion.
+    cf_register_handler(dp->slot, eth_drv_dsr, sc);
 
     return false;  // Device is not ready until inserted, powered up, etc.
 #else
