@@ -1,3 +1,10 @@
+2004-12-13  John Dallaway  <jld@ecoscentric.com>
+
+	* tests/fileio1.c: Rename to jffs2_1.c. eCos test names should be
+	unique.
+	* tests/fseek1.c: Rename to jffs2_2.c.
+	* cdl/jffs2.cdl: Build the renamed tests.
+
 2004-12-10  Per Hedblom  <per.hedblom@abem.se>
 
 	* src/fs-ecos.c: Use filesystem locking not file locking otherwise
@@ -432,6 +439,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2004 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free

@@ -1,6 +1,6 @@
 //==========================================================================
 //
-//      fseek1.c
+//      jffs2_2.c
 //
 //      Test fseek on a filesystem
 //
@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 2004 Andrew Lunn
+// Copyright (C) 2004 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -63,6 +64,7 @@
 #include <string.h>
 
 #include <cyg/fileio/fileio.h>
+#include <cyg/io/flash.h>
 
 #include <cyg/infra/testcase.h>
 #include <cyg/infra/diag.h>            // HAL polled output
@@ -91,7 +93,8 @@ int main( int argc, char **argv )
     // --------------------------------------------------------------
 
     CYG_TEST_INFO("mount /");    
-    err = mount( "", "/", "ramfs" );
+    err = mount( CYGDAT_IO_FLASH_BLOCK_DEVICE_NAME_1, "/", "jffs2" );
+
     if( err < 0 ) SHOW_RESULT( mount, err );    
     
     CYG_TEST_INFO("creating /fseek");    
@@ -121,7 +124,7 @@ int main( int argc, char **argv )
 
     /* Seek back to the beginning of the file */
     err = fseek(stream, 0, SEEK_SET);
-    if ( err < 0 ) SHOW_RESULT( fwrite, err );
+    if ( err < 0 ) SHOW_RESULT( fseek, err );
 
     pos = ftell(stream);
     
@@ -162,12 +165,78 @@ int main( int argc, char **argv )
       CYG_TEST_FAIL("File contents inconsistent");
     }
     
+    CYG_TEST_INFO("closing file");
+
     err = fclose(stream);
     if (err != 0) SHOW_RESULT( fclose, err );
 
+    CYG_TEST_INFO("open file /fseek");
+    stream = fopen("/fseek", "r+");
+    if (!stream) {
+      diag_printf("<FAIL>: fopen() returned NULL, %s\n", strerror(errno));
+    }
+
+    CYG_TEST_INFO("fseek()ing past the end to create a hole");
+    /* Seek 1K after the end of the file */
+    err = fseek(stream, sizeof(buf), SEEK_END);
+    if ( err < 0 ) SHOW_RESULT( fseek, err );
+
+    pos = ftell(stream);
+    
+    if (pos < 0) SHOW_RESULT( ftell, pos );
+    if (pos != (2*sizeof(buf))) CYG_TEST_FAIL("ftell is not telling the truth");
+    
+    CYG_TEST_INFO("writing test pattern");    
+    err=fwrite(buf,sizeof(buf), 1, stream);
+    if ( err < 0 ) SHOW_RESULT( fwrite, err );
+    
+    pos = ftell(stream);
+    
+    if (pos < 0) SHOW_RESULT( ftell, pos );
+    if (pos != (3*sizeof(buf))) CYG_TEST_FAIL("ftell is not telling the truth");
+
+    CYG_TEST_INFO("closing file");
+    err = fclose(stream);
+    if (err != 0) SHOW_RESULT( fclose, err );
+
+    CYG_TEST_INFO("open file /fseek");
+    stream = fopen("/fseek", "r+");
+    if (!stream) {
+      diag_printf("<FAIL>: fopen() returned NULL, %s\n", strerror(errno));
+    }
+    
+    err = fread(buf1,sizeof(buf1),1, stream);
+    if (err != 1) SHOW_RESULT( fread, err );
+    
+    CYG_TEST_INFO("Comparing contents");
+    if (memcmp(buf, buf1, sizeof(buf1))) {
+      CYG_TEST_FAIL("File contents inconsistent");
+    }
+
+    err = fread(buf1,sizeof(buf1),1, stream);
+    if (err != 1) SHOW_RESULT( fread, err );
+    
+    for (i = 0; i< sizeof(buf); i++) {
+      if (buf1[i] != 0)
+        CYG_TEST_FAIL("Hole does not contain zeros");
+    }
+    
+    err = fread(buf1,sizeof(buf1),1, stream);
+    if (err != 1) SHOW_RESULT( fread, err );
+    
+    if (memcmp(buf, buf1, sizeof(buf1))) {
+      CYG_TEST_FAIL("File contents inconsistent");
+    }
+
+    CYG_TEST_INFO("closing file");
+
+    /* Close the file */
+    err = fclose(stream);
+    if (err != 0) SHOW_RESULT( fclose, err );
+    
     CYG_TEST_INFO("umount /");    
     err = umount( "/" );
     if( err < 0 ) SHOW_RESULT( umount, err );    
     
-    CYG_TEST_PASS_FINISH("fseek1");
+    CYG_TEST_PASS_FINISH("jffs2_2");
 }

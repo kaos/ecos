@@ -2,7 +2,8 @@
 
 	* tests/fileio1.c: Rename to ramfs1.c. eCos test names should be
 	unique.
-	* cdl/ramfs.cdl: Build the ramfs1 test.
+	* tests/fseek1.c: Rename to ramfs2.c:
+	* cdl/ramfs.cdl: Build the renamed tests.
 
 2004-03-29  Andrew Lunn  <andrew.lunn@ascom.ch>
 

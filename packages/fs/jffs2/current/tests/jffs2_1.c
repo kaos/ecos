@@ -1,6 +1,6 @@
 //==========================================================================
 //
-//      fileio1.c
+//      jffs2_1.c
 //
 //      Test fileio system
 //
@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2004 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -58,11 +59,13 @@
 //==========================================================================
 
 #include <pkgconf/hal.h>
+#include <pkgconf/kernel.h>
 #include <pkgconf/io_fileio.h>
-#include <pkgconf/fs_fat.h>
 
+#include <cyg/kernel/ktypes.h>         // base kernel types
 #include <cyg/infra/cyg_trac.h>        // tracing macros
 #include <cyg/infra/cyg_ass.h>         // assertion macros
+#include <cyg/io/flash.h>
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -70,15 +73,23 @@
 #include <errno.h>
 #include <string.h>
 #include <dirent.h>
-#include <stdio.h>
 
 #include <cyg/fileio/fileio.h>
 
 #include <cyg/infra/testcase.h>
 #include <cyg/infra/diag.h>            // HAL polled output
-#include <cyg/fs/fatfs.h>
 
+#include <pkgconf/fs_jffs2.h>	// Address of JFFS2
 
+//==========================================================================
+
+#if 0
+MTAB_ENTRY( jffs2_mte1,
+                   "/",
+                   "jffs2",
+                   CYGDAT_IO_FLASH_BLOCK_DEVICE_NAME_1,
+                   0);
+#endif
 
 //==========================================================================
 
@@ -87,7 +98,7 @@ diag_printf("<FAIL>: " #_fn "() returned %d %s\n", _res, _res<0?strerror(errno):
 
 //==========================================================================
 
-#define IOSIZE  100
+#define IOSIZE  1000
 
 #define LONGNAME1       "long_file_name_that_should_take_up_more_than_one_directory_entry_1"
 #define LONGNAME2       "long_file_name_that_should_take_up_more_than_one_directory_entry_2"
@@ -172,7 +183,7 @@ static void listdir( char *name, int statp, int numexpected, int *numgot )
 
 static void createfile( char *name, size_t size )
 {
-    char buf[IOSIZE];
+    unsigned char buf[IOSIZE];
     int fd;
     ssize_t wrote;
     int i;
@@ -205,6 +216,7 @@ static void createfile( char *name, size_t size )
 
 //==========================================================================
 
+#if 0
 static void maxfile( char *name )
 {
     char buf[IOSIZE];
@@ -213,10 +225,8 @@ static void maxfile( char *name )
     int i;
     int err;
     size_t size = 0;
-    size_t prevsize = 0;
     
     diag_printf("<INFO>: create maximal file %s\n",name);
-    diag_printf("<INFO>: This may take a few minutes\n");
 
     err = access( name, F_OK );
     if( err < 0 && errno != EACCES ) SHOW_RESULT( access, err );
@@ -229,16 +239,9 @@ static void maxfile( char *name )
     do
     {
         wrote = write( fd, buf, IOSIZE );
-        //if( wrote < 0 ) SHOW_RESULT( write, wrote );        
+        if( wrote < 0 ) SHOW_RESULT( write, wrote );        
 
-        if( wrote >= 0 )
-            size += wrote;
-
-        if( (size-prevsize) > 100000 )
-        {
-            diag_printf("<INFO>: size = %d \n", size);
-            prevsize = size;
-        }
+        size += wrote;
         
     } while( wrote == IOSIZE );
 
@@ -247,12 +250,13 @@ static void maxfile( char *name )
     err = close( fd );
     if( err < 0 ) SHOW_RESULT( close, err );
 }
+#endif
 
 //==========================================================================
 
 static void checkfile( char *name )
 {
-    char buf[IOSIZE];
+    unsigned char buf[IOSIZE];
     int fd;
     ssize_t done;
     int i;
@@ -287,26 +291,6 @@ static void checkfile( char *name )
     err = close( fd );
     if( err < 0 ) SHOW_RESULT( close, err );
 }
-
-#ifdef CYGCFG_FS_FAT_USE_ATTRIBUTES
-//==========================================================================
-
-static void checkattrib(const char *name, 
-                        const cyg_fs_attrib_t test_attrib )
-{
-    int err;
-    cyg_fs_attrib_t file_attrib;
-
-    diag_printf("<INFO>: check attrib %s\n",name);
-
-    err = cyg_fs_get_attrib(name, &file_attrib);
-    if( err != 0 ) SHOW_RESULT( stat, err );
-
-    if ( (file_attrib & S_FATFS_ATTRIB) != test_attrib )
-        diag_printf("<FAIL>: attrib %s incorrect\n\tExpected %x Was %x\n",
-                    name,test_attrib,(file_attrib & S_FATFS_ATTRIB));
-}
-#endif // CYGCFG_FS_FAT_USE_ATTRIBUTES
 
 //==========================================================================
 
@@ -430,13 +414,14 @@ void checkcwd( const char *cwd )
 int main( int argc, char **argv )
 {
     int err;
+    //int i;
     int existingdirents=-1;
 
     CYG_TEST_INIT();
 
     // --------------------------------------------------------------
 
-    err = mount( "/dev/disk0/1", "/", "fatfs" );    
+    err = mount( CYGDAT_IO_FLASH_BLOCK_DEVICE_NAME_1, "/", "jffs2" );
     if( err < 0 ) SHOW_RESULT( mount, err );    
 
     err = chdir( "/" );
@@ -445,10 +430,12 @@ int main( int argc, char **argv )
     checkcwd( "/" );
     
     listdir( "/", true, -1, &existingdirents );
+    if ( existingdirents < 2 )
+        CYG_TEST_FAIL("Not enough dir entries\n");
 
     // --------------------------------------------------------------
 
-    createfile( "/foo", 20257 );
+    createfile( "/foo", 202 );
     checkfile( "foo" );
     copyfile( "foo", "fee");
     checkfile( "fee" );
@@ -481,6 +468,23 @@ int main( int argc, char **argv )
 
     // --------------------------------------------------------------
 
+    createfile( LONGNAME1, 123 );
+    checkfile( LONGNAME1 );
+    copyfile( LONGNAME1, LONGNAME2 );
+
+    listdir( "", false, 6, NULL );
+    
+    diag_printf("<INFO>: unlink " LONGNAME1 "\n");    
+    err = unlink( LONGNAME1 );
+    if( err < 0 ) SHOW_RESULT( unlink, err );
+
+    diag_printf("<INFO>: unlink " LONGNAME2 "\n");    
+    err = unlink( LONGNAME2 );
+    if( err < 0 ) SHOW_RESULT( unlink, err );
+    
+    
+    // --------------------------------------------------------------
+
     diag_printf("<INFO>: unlink fee\n");    
     err = unlink( "/fee" );
     if( err < 0 ) SHOW_RESULT( unlink, err );
@@ -507,50 +511,52 @@ int main( int argc, char **argv )
 
     // --------------------------------------------------------------
 
-#if 0
-    diag_printf("<INFO>: mkdir disk2\n");
-    err = mkdir( "/disk2", 0 );
-    if( err < 0 ) SHOW_RESULT( mkdir, err );
-#else
-    diag_printf("<INFO>: mount /disk2\n");    
-    err = mount( "/dev/disk0/2", "/disk2", "fatfs" );    
+    diag_printf("<INFO>: mount /jffs2 \n");
+    err = mount( CYGDAT_IO_FLASH_BLOCK_DEVICE_NAME_1, "/jffs2", "jffs2" );
     if( err < 0 ) SHOW_RESULT( mount, err );    
-#endif
-    
-    listdir( "/disk2" , true, -1, &existingdirents);
-        
-    createfile( "/disk2/tinky", 4567 );
-    copyfile( "/disk2/tinky", "/disk2/laalaa" );
-    checkfile( "/disk2/tinky");
-    checkfile( "/disk2/laalaa");
-    comparefiles( "/disk2/tinky", "/disk2/laalaa" );
 
-    diag_printf("<INFO>: cd /disk2\n");    
-    err = chdir( "/disk2" );
+    createfile( "/jffs2/tinky", 456 );
+    copyfile( "/jffs2/tinky", "/jffs2/laalaa" );
+    checkfile( "/jffs2/tinky");
+    checkfile( "/jffs2/laalaa");
+    comparefiles( "/jffs2/tinky", "/jffs2/laalaa" );
+
+    diag_printf("<INFO>: cd /jffs2\n");    
+    err = chdir( "/jffs2" );
     if( err < 0 ) SHOW_RESULT( chdir, err );
 
-    checkcwd( "/disk2" );
+    checkcwd( "/jffs2" );
         
     diag_printf("<INFO>: mkdir noonoo\n");    
     err = mkdir( "noonoo", 0 );
     if( err < 0 ) SHOW_RESULT( mkdir, err );
 
-    listdir( "/disk2" , true, existingdirents+3, NULL);
+    listdir( "." , true, existingdirents+3, NULL);
 
     diag_printf("<INFO>: cd noonoo\n");
     err = chdir( "noonoo" );
     if( err < 0 ) SHOW_RESULT( chdir, err );
 
-    checkcwd( "/disk2/noonoo" );
+    checkcwd( "/jffs2/noonoo" );
     
-    createfile( "tinky", 6789 );
+    createfile( "tinky", 678 );
     checkfile( "tinky" );
 
-    createfile( "dipsy", 34567 );
+    createfile( "dipsy", 3456 );
     checkfile( "dipsy" );
     copyfile( "dipsy", "po" );
     checkfile( "po" );
     comparefiles( "dipsy", "po" );
+
+
+    /*for(i=0;i<2048;i++) {
+        diag_printf("<INFO>: churningchurningchurning................................ITERATION = %d\n", i);    
+        createfile( "churningchurningchurning", 4096 );
+        diag_printf("<INFO>: unlink churningchurningchurning\n");    
+        err = unlink( "churningchurningchurning" );
+        if( err < 0 ) SHOW_RESULT( unlink, err );
+    }*/
+
 
     listdir( ".", true, 5, NULL );
     listdir( "", true, 5, NULL );
@@ -573,7 +579,7 @@ int main( int argc, char **argv )
     diag_printf("<INFO>: cd ..\n"); 
     err = chdir( ".." );
     if( err < 0 ) SHOW_RESULT( chdir, err );
-    checkcwd( "/disk2" );
+    checkcwd( "/jffs2" );
     
     diag_printf("<INFO>: rmdir noonoo\n"); 
     err = rmdir( "noonoo" );
@@ -593,30 +599,30 @@ int main( int argc, char **argv )
     err = mkdir( "x/y/z/w", 0 );
     if( err < 0 ) SHOW_RESULT( mkdir, err );
     
-    diag_printf("<INFO>: cd /disk2/x/y/z/w\n");
-    err = chdir( "/disk2/x/y/z/w" );
+    diag_printf("<INFO>: cd /jffs2/x/y/z/w\n");
+    err = chdir( "/jffs2/x/y/z/w" );
     if( err < 0 ) SHOW_RESULT( chdir, err );
-    checkcwd( "/disk2/x/y/z/w" );
+    checkcwd( "/jffs2/x/y/z/w" );
 
     diag_printf("<INFO>: cd ..\n");
     err = chdir( ".." );
     if( err < 0 ) SHOW_RESULT( chdir, err );
-    checkcwd( "/disk2/x/y/z" );
+    checkcwd( "/jffs2/x/y/z" );
     
     diag_printf("<INFO>: cd .\n");
     err = chdir( "." );
     if( err < 0 ) SHOW_RESULT( chdir, err );
-    checkcwd( "/disk2/x/y/z" );
+    checkcwd( "/jffs2/x/y/z" );
 
     diag_printf("<INFO>: cd ../../y\n");
     err = chdir( "../../y" );
     if( err < 0 ) SHOW_RESULT( chdir, err );
-    checkcwd( "/disk2/x/y" );
+    checkcwd( "/jffs2/x/y" );
 
     diag_printf("<INFO>: cd ../..\n");
     err = chdir( "../.." );
     if( err < 0 ) SHOW_RESULT( chdir, err );
-    checkcwd( "/disk2" );
+    checkcwd( "/jffs2" );
 
     diag_printf("<INFO>: rmdir x/y/z/w\n"); 
     err = rmdir( "x/y/z/w" );
@@ -635,8 +641,6 @@ int main( int argc, char **argv )
     if( err < 0 ) SHOW_RESULT( rmdir, err );
     
     // --------------------------------------------------------------
-
-    checkcwd( "/disk2" );
     
     diag_printf("<INFO>: unlink tinky\n");    
     err = unlink( "tinky" );
@@ -650,96 +654,17 @@ int main( int argc, char **argv )
     err = chdir( "/" );
     if( err < 0 ) SHOW_RESULT( chdir, err );
     checkcwd( "/" );
-
-    listdir( "/disk2", true, -1, NULL );
     
-#if 0
-    diag_printf("<INFO>: rmdir dir\n"); 
-    err = rmdir( "disk2" );
-    if( err < 0 ) SHOW_RESULT( rmdir, err );
-#else
-    diag_printf("<INFO>: umount /disk2\n");    
-    err = umount( "/disk2" );
+    diag_printf("<INFO>: umount /jffs2\n");    
+    err = umount( "/jffs2" );
     if( err < 0 ) SHOW_RESULT( umount, err );    
-#endif
     
-#ifdef CYGCFG_FS_FAT_USE_ATTRIBUTES
-    // Create file
-    diag_printf("<INFO>: create /foo\n");
-    createfile( "/foo", 20257 );
-
-    // Verify it is created with archive bit set
-    checkattrib( "/foo", S_FATFS_ARCHIVE );
-
-    // Make it System
-    diag_printf("<INFO>: attrib -A+S /foo\n");
-    err = cyg_fs_set_attrib( "/foo", S_FATFS_SYSTEM );
-    if( err < 0 ) SHOW_RESULT( chmod system , err );
-
-    // Verify it is now System
-    checkattrib( "/foo", S_FATFS_SYSTEM );
-
-    // Make it Hidden
-    diag_printf("<INFO>: attrib -S+H /foo\n");
-    err = cyg_fs_set_attrib( "/foo", S_FATFS_HIDDEN );
-    if( err < 0 ) SHOW_RESULT( chmod system , err );
-
-    // Verify it is now Hidden
-    checkattrib( "/foo", S_FATFS_HIDDEN );
-
-    // Make it Read-only
-    diag_printf("<INFO>: attrib -H+R /foo\n");
-    err = cyg_fs_set_attrib( "/foo", S_FATFS_RDONLY );
-    if( err < 0 ) SHOW_RESULT( chmod system , err );
-
-    // Verify it is now Read-only
-    checkattrib( "/foo", S_FATFS_RDONLY );
-
-    // Verify we cannot unlink a read-only file
-    diag_printf("<INFO>: unlink /foo\n");
-    err = unlink( "/foo" );
-    if( (err != -1) || (errno != EPERM) ) SHOW_RESULT( unlink, err );
-
-    // Verify we cannot rename a read-only file
-    diag_printf("<INFO>: rename /foo bundy\n");
-    err = rename( "/foo", "bundy" );
-    if( (err != -1) || (errno != EPERM) ) SHOW_RESULT( rename, err );
-
-    // Verify we cannot open read-only file for writing
-    int fd;
-    diag_printf("<INFO>: create file /foo\n");
-    fd = open( "/foo", O_WRONLY );
-    if( (err != -1) || (errno != EACCES) ) SHOW_RESULT( open, err );
-    if( err > 0 ) close(fd);
-
-    // Make it Normal
-    diag_printf("<INFO>: attrib -H /foo\n");
-    err = cyg_fs_set_attrib( "/foo", 0 );
-    if( err < 0 ) SHOW_RESULT( chmod none , err );
-
-    // Verify it is now nothing
-    checkattrib( "/foo", 0 );
-
-    // Now delete our test file
-    diag_printf("<INFO>: unlink /foo\n");
-    err = unlink( "/foo" );
-    if( err < 0 ) SHOW_RESULT( unlink, err );
-
-#endif // CYGCFG_FS_FAT_USE_ATTRIBUTES
-
-    maxfile("file.max");
-
-    listdir( "/", true, -1, NULL );    
-        
-    diag_printf("<INFO>: unlink file.max\n");    
-    err = unlink( "file.max" );
-    if( err < 0 ) SHOW_RESULT( unlink, err );    
     diag_printf("<INFO>: umount /\n");    
     err = umount( "/" );
     if( err < 0 ) SHOW_RESULT( umount, err );    
     
-    CYG_TEST_PASS_FINISH("fileio1");
+    CYG_TEST_PASS_FINISH("jffs2_1");
 }
 
 // -------------------------------------------------------------------------
-// EOF fileio1.c
+// EOF jffs2_1.c
