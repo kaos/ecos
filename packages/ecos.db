@@ -5023,3 +5023,14 @@ target rattler {
             The rattler target provides the packages needed to run
             eCos on an Analogue & Micro Rattler (MPC8250) board."
 }
+
+# --------------------------------------------------------------------------
+
+package CYGPKG_VNC_SERVER {
+    alias       { "VNC server" vnc_server }
+    directory   net/vnc_server
+    script      vnc-server.cdl
+    description "VNC server."
+}
+
+# --------------------------------------------------------------------------

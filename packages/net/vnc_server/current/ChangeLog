@@ -1,0 +1,37 @@
+2003-08-22  Chris Garry  <cgarry@sweeneydesign.co.uk>
+
+	* tests/vnc-test.c: 
+
+	* src/fonts/winFreeSystem14x16.c: 
+	* src/fonts/winFreeSansSerif11x13.c: 
+	* src/fonts/symbol.c: 
+	* src/fonts/rom8x8.c: 
+	* src/fonts/rom8x16.c: 
+	* src/fonts/helvR10.c: 
+	* src/fonts/helvB12.c: 
+	* src/fonts/helvB10.c: 
+	* src/fonts/device.h: 
+	* src/fonts/X6x13.c: 
+	* src/fonts/X5x7.c: 
+
+	* include/vnc-server.h: 
+
+	* cdl/vnc-server.cdl:
+	* doc/vnc-server.html:
+	
+	* src/init.cxx:
+	* src/vnc_kbd.c:
+	* src/vnc_mouse.c:
+	* src/vnc-server.c:
+	Created VNC Server package.
+	
+
+#####ECOSPDCOPYRIGHTBEGIN####
+#
+# Copyright (C) 2000, 2001, 2002, 2003 Red Hat, Inc.
+# All Rights Reserved.
+#
+# Permission is granted to use, copy, modify and redistribute this
+# file.
+#
+#####ECOSPDCOPYRIGHTEND####

@@ -1,3 +1,5 @@
+* VNC server (remote access graphic system), contributed by
+  Chris Garry  <cgarry@sweeneydesign.co.uk>
 * New port to Analogue & Micro Rattler (Motorola MPC8250)
 * Improved support for ethernet PHY devices.
 * Improved variant support for Motorola Power-QUICC2 systems.

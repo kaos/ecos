@@ -1,3 +1,7 @@
+2003-08-22  Chris Garry  <cgarry@sweeneydesign.co.uk>
+
+	* ecos.db: Add new VNC server package.
+
 2003-08-22  Gary Thomas  <gary@mind.be>
 
 	* ecos.db: Add support for picasso - another NMI uEngine (PXA255)
