@@ -1,5 +1,7 @@
 2003-10-24  Gary Thomas  <gary@mlbassoc.com>
 
+	* src/drivers/scr_vnc_ecos.c: Support true color (32 bit) 0888 format.
+
 	* src/demos/nanox/ntetris.c (main): Start with a good known
 	state (by zeroing) - otherwise, the results are unpredictable
 	and often crash.
@@ -15,10 +17,10 @@
 
 2003-09-01  Chris Garry <cgarry@sweeneydesign.co.uk>
 
-    * src/ecos/ecos_app.c:
-    * src/ecos/ecos_init.c:
-    Do not use ARM display hardware setup routines when VNC server
-    drivers are used.
+	* src/ecos/ecos_app.c:
+	* src/ecos/ecos_init.c:
+	Do not use ARM display hardware setup routines when VNC server
+	drivers are used.
 
 2003-09-01  Gary Thomas  <gary@mlbassoc.com>
 
@@ -55,27 +57,27 @@
 
 2003-08-22  Chris Garry <cgarry@sweeneydesign.co.uk>
 
-    * cdl/microwindows.cdl
-    Added support for VNC server.
-    
-    * src/include/device.h:
-    Remove COLOR2PIXEL555 hack for strongarm lcd when VNC server screen
-    driver is used.
-    
-    * src/nanox/clientfb.c:
-    Removed assumption that CYGPKG_HAL_ARM means target is a strongarm
-    lcd when VNC server is used.
-    
-    * src/drivers/kbd_vnc_ecos.c:
-    * src/drivers/mou_vnc_ecos.c:
-    * src/drivers/scr_vnc_ecos.c:
-    New keyboard, mouse and screen drivers for VNC server.
+	* cdl/microwindows.cdl
+	Added support for VNC server.
+	
+	* src/include/device.h:
+	Remove COLOR2PIXEL555 hack for strongarm lcd when VNC server screen
+	driver is used.
+	
+	* src/nanox/clientfb.c:
+	Removed assumption that CYGPKG_HAL_ARM means target is a strongarm
+	lcd when VNC server is used.
+	
+	* src/drivers/kbd_vnc_ecos.c:
+	* src/drivers/mou_vnc_ecos.c:
+	* src/drivers/scr_vnc_ecos.c:
+	New keyboard, mouse and screen drivers for VNC server.
 
 2003-07-21  Chris Garry <cgarry@sweeneydesign.co.uk>
 
-    * src/nanox/client.c
-    Set the length field in the sockaddr_in structure name before
-    trying to connect to the server.
+	* src/nanox/client.c
+	Set the length field in the sockaddr_in structure name before
+	trying to connect to the server.
 
 2003-06-13  Jonathan Larmour  <jifl@eCosCentric.com>
 

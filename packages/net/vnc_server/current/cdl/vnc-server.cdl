@@ -196,6 +196,14 @@ cdl_package CYGPKG_VNC_SERVER {
             implements CYGNUM_VNC_SERVER_PIXEL_SELECTED
             description "This selects 16-bit, RGB565 pixel format."
         }
+
+        cdl_option CYGNUM_VNC_SERVER_PIXEL_TRUECOLOR0888 {
+            display     "True Color pixel format (32-bit)"
+            flavor bool
+            default_value 0
+            implements CYGNUM_VNC_SERVER_PIXEL_SELECTED
+            description "This selects 32-bit, TRUECOLOR0888 pixel format."
+        }
         
         cdl_option CYGNUM_VNC_SERVER_INCLUDE_VNC_PRINTF {
             display "Include VncPrintf() function"

@@ -64,6 +64,7 @@ typedef struct
     bool       rgb555;
     bool       rgb565;
     bool       bgr233;
+    bool       truecolor0888;
 } vnc_frame_format_t;
 
 
@@ -101,6 +102,9 @@ typedef cyg_uint8 vnc_colour_t;
 #elif defined(CYGNUM_VNC_SERVER_PIXEL_RGB555) || defined(CYGNUM_VNC_SERVER_PIXEL_RGB565)
 typedef cyg_uint16 vnc_color_t;
 typedef cyg_uint16 vnc_colour_t;
+#elif defined(CYGNUM_VNC_SERVER_PIXEL_TRUECOLOR0888)
+typedef cyg_uint32 vnc_color_t;
+typedef cyg_uint32 vnc_colour_t;
 #else
 #error "Unsupported color model"
 #endif
@@ -147,6 +151,11 @@ vnc_printf_return_t VncPrintf(MWCFONT* font, int do_print, vnc_colour_t colour, 
 #define VNC_RGB2COL(r,g,b) (vnc_colour_t)(((((cyg_uint8)r)&0xF8) << 8)  \
                                        |((((cyg_uint8)g)&0xFC) << 3)  \
                                        |((((cyg_uint8)b)&0xF8) >> 3))
+#endif
+#ifdef CYGNUM_VNC_SERVER_PIXEL_TRUECOLOR0888
+#define VNC_RGB2COL(r,g,b) (vnc_colour_t)(((((cyg_uint8)r)&0xFF) << 16)  \
+                                       |((((cyg_uint8)g)&0xFF) << 8)  \
+                                       |((((cyg_uint8)b)&0xFF) << 0))
 #endif
 
 

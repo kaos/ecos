@@ -127,6 +127,17 @@ void lwip_init(void);
 #define BLUE_SHIFT          0
 #endif
 
+#ifdef CYGNUM_VNC_SERVER_PIXEL_TRUECOLOR0888
+#define BITS_PER_PIXEL      32     /* Bits per pixel */
+#define PIXEL_DEPTH         24     /* Usefull bits per pixel */
+#define RED_MAX             255
+#define GREEN_MAX           255
+#define BLUE_MAX            255
+#define RED_SHIFT           16
+#define GREEN_SHIFT         8
+#define BLUE_SHIFT          0
+#endif
+
 /* Client to Server message types */
 #define SET_PIXEL_FORMAT         0
 #define FIX_COLOUR_MAP_ENTRIES   1
@@ -242,10 +253,16 @@ vnc_frame_format_t frame_format = {CYGNUM_VNC_SERVER_FRAME_WIDTH,
                                    0,
 #endif
 #ifdef CYGNUM_VNC_SERVER_PIXEL_BGR233
-                                   1};
+                                   1,
 #else
-                                   0};
+                                   0,
 #endif
+#ifdef CYGNUM_VNC_SERVER_PIXEL_TRUECOLOR0888
+                                   1,
+#else
+                                   0,
+#endif
+};
 
 
 /* Structure to hold the encoding type details */

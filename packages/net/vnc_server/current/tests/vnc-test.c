@@ -152,6 +152,10 @@ int main()
     {
         VncPrintf(0, 1, VNC_BLACK, 1, 345, "Pixel format: BGR233");
     }
+    else if (display_info->truecolor0888)
+    {
+        VncPrintf(0, 1, VNC_BLACK, 1, 345, "Pixel format: TrueColor0888");
+    }
     else
     {
         VncPrintf(0, 1, VNC_BLACK, 1, 345, "Pixel format: Unknown");

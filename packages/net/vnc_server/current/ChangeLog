@@ -1,19 +1,25 @@
+2003-10-24  Gary Thomas  <gary@mlbassoc.com>
+
+	* tests/vnc-test.c: 
+	* src/vnc-server.c: 
+	* include/vnc-server.h: 
+	* cdl/vnc-server.cdl: Add support for 32 bit framebufer (0/8/8/8)
+
 2003-09-16  Chris Garry  <cgarry@sweeneydesign.co.uk>
 
-    * doc/vnc-server.html:
-    * src/vnc-server.c:
-    * include/vnc-server.h:
-    Added new function VncCopyBuffer2RectMask().
+	* doc/vnc-server.html:
+	* src/vnc-server.c:
+	* include/vnc-server.h:
+	Added new function VncCopyBuffer2RectMask().
 
-    * tests/vnc-test.c:
-    Modifed to include a cursor.
+	* tests/vnc-test.c:
+	Modifed to include a cursor.
 
 2003-09-02  Chris Garry  <cgarry@sweeneydesign.co.uk>
 
-    * tests/vnc-test.c:
-    * doc/vnc-server.html:
-    Modified for new BGR233 mode.
-
+	* tests/vnc-test.c:
+	* doc/vnc-server.html:
+	Modified for new BGR233 mode.
 
 2003-09-01  Gary Thomas  <gary@mlbassoc.com>
 
@@ -24,20 +30,20 @@
 
 2003-08-31  Chris Garry  <cgarry@sweeneydesign.co.uk>
 
-    * src/vnc-server.c:
-    Always send colour data to client in big endian format.
-    When doing frame updates, do not call send command until there
-    if 1460 bytes of data unless the data is all that is left for the
-    cuurent frame update (huge improvement with lwIP stack).
-    Fixed bug where VncPrintf() did not handle characters not defined
-    for the selected font.
-    VncPrintf() does not mark tiles for update when do_print argument
-    is not set.
-    
-    * tests/vnc-test.c:
-    Modifed the test to use select() function.  Added more examples
-    of using the VNC server API.
-    
+	* src/vnc-server.c:
+	Always send colour data to client in big endian format.
+	When doing frame updates, do not call send command until there
+	if 1460 bytes of data unless the data is all that is left for the
+	cuurent frame update (huge improvement with lwIP stack).
+	Fixed bug where VncPrintf() did not handle characters not defined
+	for the selected font.
+	VncPrintf() does not mark tiles for update when do_print argument
+	is not set.
+	
+	* tests/vnc-test.c:
+	Modifed the test to use select() function.  Added more examples
+	of using the VNC server API.
+	
 2003-08-22  Chris Garry  <cgarry@sweeneydesign.co.uk>
 
 	* tests/vnc-test.c: 
