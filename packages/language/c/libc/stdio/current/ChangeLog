@@ -2,6 +2,12 @@
 
 	* cdl/stdio.cdl (CYGFUN_LIBC_STDIO_OPEN_POSIX_FDFUNCS): New option,
 	to control whether or not fdopen()/fileno() are implemented.
+	Only build fopen/fclose if CYGPKG_LIBC_STDIO_OPEN.
+
+	* src/common/fclose.cxx: Can remove ifdef CYGPKG_LIBC_STDIO_OPEN since
+	file now isn't even built if not.
+	* src/common/fopen.cxx: Ditto. Also condition on
+	CYGFUN_LIBC_STDIO_OPEN_POSIX_FDFUNCS so decision is centralised in CDL.
 
 2004-08-18  Jonathan Larmour  <jifl@eCosCentric.com>
 

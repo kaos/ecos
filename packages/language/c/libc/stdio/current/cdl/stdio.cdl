@@ -98,8 +98,7 @@ cdl_package CYGPKG_LIBC_STDIO {
     # particularly since scanf is also dependent on the optional ungetc.
     requires      CYGINT_ISO_STDLIB_STRCONV
 
-    compile       common/fclose.cxx       common/feof.cxx        \
-                  common/fflush.cxx       common/fopen.cxx       \
+    compile       common/fflush.cxx       common/feof.cxx        \
                   common/freopen.cxx      common/setvbuf.cxx     \
                   common/snprintf.cxx     common/sprintf.cxx     \
                   common/sscanf.cxx       common/stderr.cxx      \
@@ -278,6 +277,7 @@ cdl_package CYGPKG_LIBC_STDIO {
         display       "Dynamic opening/closing of files"
         requires      CYGINT_ISO_MALLOC
         default_value { 0 != CYGINT_ISO_MALLOC }
+        compile       common/fopen.cxx common/fclose.cxx
         description   "
             fopen() and fclose() use dynamic memory
             allocation routines to allocate memory for

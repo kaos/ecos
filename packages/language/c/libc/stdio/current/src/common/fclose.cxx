@@ -56,9 +56,6 @@
 #include <pkgconf/libc_stdio.h>   // Configuration header
 #include <pkgconf/infra.h>
 
-// We can't have fclose() without fopen()
-#if defined(CYGPKG_LIBC_STDIO_OPEN)
-
 // INCLUDES
 
 #include <cyg/infra/cyg_type.h>     // Common project-wide type definitions
@@ -131,6 +128,4 @@ fclose( FILE *stream ) __THROW
 
 } // fclose()
         
-#endif // if defined(CYGPKG_LIBC_STDIO_OPEN)
-
 // EOF fclose.cxx

@@ -56,9 +56,6 @@
 #include <pkgconf/libc_stdio.h>   // Configuration header
 
 
-// Do we want fopen()?
-#if defined(CYGPKG_LIBC_STDIO_OPEN)
-
 // INCLUDES
 
 #include <cyg/infra/cyg_type.h>     // Common project-wide type definitions
@@ -234,9 +231,7 @@ fopen( const char *filename, const char *mode ) __THROW
 } // fopen()
 
 
-#endif // defined(CYGPKG_LIBC_STDIO_OPEN)
-
-#ifdef CYGPKG_LIBC_STDIO_FILEIO
+#ifdef CYGFUN_LIBC_STDIO_OPEN_POSIX_FDFUNCS
 
 externC int fileno( FILE *stream ) __THROW
 {
@@ -269,7 +264,7 @@ externC FILE *fdopen( int fd, const char *mode ) __THROW
     return f;
 }
 
-#endif // def CYGPKG_LIBC_STDIO_FILEIO
+#endif // def CYGFUN_LIBC_STDIO_OPEN_POSIX_FDFUNCS
 
 
 // EOF fopen.cxx
