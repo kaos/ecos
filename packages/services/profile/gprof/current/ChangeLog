@@ -1,3 +1,11 @@
+2002-11-15  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* src/profile.c: 
+	* include/profile.h: Add proper C++ protections.  Change timer
+	callback function to be __profile_hit() - less polluting.
+
+	* doc/profile.sgml: New file.
+
 2002-11-14  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* src/profile.c: 

@@ -50,21 +50,24 @@
 // Description:  
 //              
 // Usage:
-//               #include <cyg/infra/profile.h>
+//               #include <cyg/profile/profile.h>
 //              
 //
 //####DESCRIPTIONEND####
 //
 //==========================================================================
 
+#include <pkgconf/profile_gprof.h>
+#include <cyg/infra/cyg_type.h>
+
 // Enable profiling
-extern void profile_on(void *start_addr, void *end_addr, 
-                       int bucket_size, int sample_resolution);
+__externC void profile_on(void *start_addr, void *end_addr, 
+                          int bucket_size, int sample_resolution);
 
 // Callback used by timer routine
-extern void profile_hit(unsigned long pc);
+__externC void __profile_hit(unsigned long pc);
 
 // Timer setup routine, used when enabling profiling
-extern void hal_enable_profile_timer(int resolution);
+__externC void hal_enable_profile_timer(int resolution);
 
 #endif // CYGONCE_PROFILE_H

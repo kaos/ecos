@@ -192,7 +192,7 @@ profile_read(int fd, void *buf, int len)
 }
 
 void
-profile_hit(unsigned long pc)
+__profile_hit(unsigned long pc)
 {
     int bucket;
     if (enabled) {
