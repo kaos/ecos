@@ -1,3 +1,7 @@
+2003-05-28  Gary Thomas  <gary@mind.be>
+
+	* src/xilinx-load.c: Improve feedback during FPGA downloads.
+
 2003-03-08  Gary Thomas  <gary@mind.be>
 
 	* include/pkgconf/mlt_arm_xscale_uE250_ram.mlt: 

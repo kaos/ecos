@@ -133,6 +133,8 @@ _zchar(void)
 {
     int err;
     struct _zchar_info *info = (struct _zchar_info *)stream.opaque;
+    static char spin[] = "|/-\\|-";
+    static int tick = 0;
 
     if (info->avail == 0) {
         stream.next_out = info->buf;
@@ -141,7 +143,10 @@ _zchar(void)
         err = inflate(&stream, Z_SYNC_FLUSH);
         info->avail = (char *)stream.next_out - info->buf;
         if (--info->feedback == 0) {
-            diag_printf(".");
+            diag_printf("%c\b", spin[tick++]);
+            if (tick >= (sizeof(spin)-1)) {
+                tick = 0;
+            }
             info->feedback = FEEDBACK_COUNT;
         }
     }
@@ -216,11 +221,9 @@ bitfile_process_string_tag(char *description, _bitfile_fun *_bitfile)
 
     len = bitfile_get_len16(_bitfile);
     diag_printf(description);
-    diag_printf(": ");
     for (i = 0; i < len; i++) {
         diag_printf("%c", (*_bitfile)());
     }
-    diag_printf("\n");
 }
 
 /**
@@ -325,7 +328,7 @@ download_bitstream(char *title, _bitfile_fun *_bitfile, _download_fun *_download
 {
     int len, tag;
 
-    diag_printf("Loading %s Bitstream\n", title);
+    diag_printf("Load %s(", title);
 
     len = bitfile_get_len16(_bitfile);
     while (len-- > 0) {
@@ -339,19 +342,19 @@ download_bitstream(char *title, _bitfile_fun *_bitfile, _download_fun *_download
         tag = bitfile_get_tag(_bitfile);
         switch (tag) {
         case 'a':
-            bitfile_process_string_tag("Design name", _bitfile);
+            bitfile_process_string_tag("Design:", _bitfile);
             break;
 
         case 'b':
-            bitfile_process_string_tag("Part name", _bitfile);
+            bitfile_process_string_tag(", Part:", _bitfile);
             break;
 
         case 'c':
-            bitfile_process_string_tag("Date", _bitfile);
+            bitfile_process_string_tag(", Date:", _bitfile);
             break;
 
         case 'd':
-            bitfile_process_string_tag("Time", _bitfile);
+            bitfile_process_string_tag(" ", _bitfile);
             break;
 
         case 'e':
@@ -392,9 +395,9 @@ load_fpga(cyg_uint8 *compressed_bitfile, int len)
     }
     // Set up to download FPGA bitstreap
     *PXA2X0_GPSR0 = FPGA_PROG;
-    download_bitstream("PCI Controller", _zchar, bitfile_process_tag_e);
+    download_bitstream("PCI ctlr", _zchar, bitfile_process_tag_e);
     inflateEnd(&stream);
-    diag_printf(" %x bytes processed\n", zchar_data.total);
+    diag_printf(") %x bytes\n", zchar_data.total);
 }
 
 /**
@@ -421,8 +424,8 @@ load_vga(cyg_uint8 *compressed_bitfile, int len)
         diag_printf("%s: Can't init stream\n", __FUNCTION__);
         return;
     }
-    download_bitstream("VGA Controller", _zchar, vga_bitfile_process_tag_e);
+    download_bitstream("VGA ctlr", _zchar, vga_bitfile_process_tag_e);
     inflateEnd(&stream);
-    diag_printf(" %x bytes processed\n", zchar_data.total);
+    diag_printf(") %x bytes\n", zchar_data.total);
 }
 

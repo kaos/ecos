@@ -188,7 +188,7 @@ externC void pci_io_write_32(cyg_uint32 address, cyg_uint32 value);
 #define CYG_PCI_MAX_FN 1
 
 
-#define HAL_IDE_NUM_CONTROLLERS 1
+#define HAL_IDE_NUM_CONTROLLERS 1  // Default card has two controllers - maybe should be 2?
 
 #define HAL_IDE_READ_UINT8( __ctlr, __reg, __val) \
     __val = cyg_hal_plf_ide_read_uint8((__ctlr),  (__reg))
