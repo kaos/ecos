@@ -1,3 +1,11 @@
+2003-08-08  Gary Thomas  <gary@mind.be>
+
+	* src/uE250_pci.c: 
+	* src/uE250_misc.c: Improve PCI initialization, including support
+	for external bus masters.
+
+	* include/plf_io.h: Define CYGARC_PCI_DMA_ADDRESS()
+
 2003-05-28  Gary Thomas  <gary@mind.be>
 
 	* src/xilinx-load.c: Improve feedback during FPGA downloads.

@@ -235,6 +235,7 @@ static inline unsigned cygarc_virtual_address(unsigned pa)
 }
 
 #define CYGARC_VIRTUAL_ADDRESS(_x_) cygarc_virtual_address(_x_)
+#define CYGARC_PCI_DMA_ADDRESS(_x_) (_x_)
 
 //-----------------------------------------------------------------------------
 // end of plf_io.h

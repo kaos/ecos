@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -433,6 +434,14 @@
 #define PXA2X0_GAFR1_U				PXA2X0_REGISTER( PXA2X0_GPIO_BASE+0x0060 )
 #define PXA2X0_GAFR2_L				PXA2X0_REGISTER( PXA2X0_GPIO_BASE+0x0064 )
 #define PXA2X0_GAFR2_U				PXA2X0_REGISTER( PXA2X0_GPIO_BASE+0x0068 )
+
+#define PXA2X0_GPIO_NORM 0x00
+#define PXA2X0_GPIO_AF1  0x01
+#define PXA2X0_GPIO_AF2  0x02
+#define PXA2X0_GPIO_AF3  0x03
+#define PXA2X0_GPIO_IN      0
+#define PXA2X0_GPIO_OUT     1
+
 
 // Power Manager and Reset Control
 #define PXA2X0_PM_BASE				( PXA2X0_PERIPHERALS_BASE + 0x0f00000 )

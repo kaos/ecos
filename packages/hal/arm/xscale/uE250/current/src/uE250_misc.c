@@ -133,12 +133,6 @@ plf_hardware_init(void)
     hal_if_init();
 
     cyg_hal_plf_pci_init();
-    // Set up to handle PCI interrupts
-    HAL_INTERRUPT_CONFIGURE(CYGNUM_HAL_INTERRUPT_GPIO1, 0, 0);  // Falling edge
-    HAL_INTERRUPT_UNMASK(CYGNUM_HAL_INTERRUPT_GPIO1);
-    PCICTL_INT_RESET = 0xFF;  // Clear all pending interrupts
-    PCICTL_INT_EDGE = 0xFF;   // Generate interrupts
-    PCICTL_IRQ_MASK = 0x00;   // All masked
 
     initialize_plx_bridge();
 }

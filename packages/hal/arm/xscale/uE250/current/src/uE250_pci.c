@@ -114,11 +114,15 @@ cyg_hal_plf_pci_init(void)
     *PXA2X0_GPCR1 |= (0x01 << (45-32));
   
     // Set busmastering
+    _pxa2x0_set_GPIO_mode(13, PXA2X0_GPIO_AF2, PXA2X0_GPIO_OUT);
+    _pxa2x0_set_GPIO_mode(14, PXA2X0_GPIO_AF1, PXA2X0_GPIO_IN);
+
 //    diag_printf("Activating PCI bridge.\n");
-    PCICTL_MISC |= (1 | PCI_SDRAM_128) | PCI_TIMER;
+    PCICTL_MISC |= (1 | PCI_SDRAM_256) | PCI_TIMER;
 
     // Set command master
-    cyg_hal_plf_pci_cfg_write_byte(0,0, CYG_PCI_CFG_COMMAND, CYG_PCI_CFG_COMMAND_MASTER);
+    cyg_hal_plf_pci_cfg_write_word(0, 0, CYG_PCI_CFG_COMMAND, 
+                                   CYG_PCI_CFG_COMMAND_MEMORY|CYG_PCI_CFG_COMMAND_MASTER);
 
 //    diag_printf("Scanning PCI bridge...\n");
 
@@ -128,6 +132,13 @@ cyg_hal_plf_pci_init(void)
     // Configure PCI bus.
     next_bus = 1;
     cyg_pci_configure_bus(0, &next_bus);
+
+    // Set up to handle PCI interrupts
+    HAL_INTERRUPT_CONFIGURE(CYGNUM_HAL_INTERRUPT_GPIO1, 0, 0);  // Falling edge
+    HAL_INTERRUPT_UNMASK(CYGNUM_HAL_INTERRUPT_GPIO1);
+    PCICTL_INT_RESET = 0xFF;  // Clear all pending interrupts
+    PCICTL_INT_EDGE = 0xFF;   // Generate interrupts
+    PCICTL_IRQ_MASK = 0x00;   // All masked
 
     if (0){
         cyg_uint8 devfn;
@@ -146,6 +157,7 @@ cyg_hal_plf_pci_init(void)
             diag_printf("PCI Func  : %d\n", CYG_PCI_DEV_GET_FN(devfn));
             diag_printf("Vendor Id : 0x%08X\n", dev_info.vendor);
             diag_printf("Device Id : 0x%08X\n", dev_info.device);
+            diag_printf("Command:    0x%04X\n", dev_info.command);
             for (i = 0; i < dev_info.num_bars; i++) {
                 diag_printf("  BAR[%d]    0x%08x /", i, dev_info.base_address[i]);
                 diag_printf(" probed size 0x%08x / CPU addr 0x%08x\n",

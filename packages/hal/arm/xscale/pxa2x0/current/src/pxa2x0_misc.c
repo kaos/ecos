@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -100,6 +101,26 @@ void hal_hardware_init(void)
     HAL_ICACHE_ENABLE();
 #endif
 }
+
+//
+// GPIO support functions
+//
+void
+_pxa2x0_set_GPIO_mode(int bit, int mode, int dir)
+{
+    int bank = bit / 32;
+    unsigned long *gpdr, *gafr;
+
+    gpdr = &PXA2X0_GPDR0[bank];
+    gafr = &PXA2X0_GAFR0_L[(bit&0x30)>>4];
+    bit %= 32;
+    // Data direction registers have 1 bit per GPIO
+    *gpdr = (*gpdr & ~(1<<bit)) | (dir<<bit);
+    // Alternate function regusters have 2 bits per GPIO
+    bit = (bit & 0x0F) * 2;
+    *gafr = (*gafr & ~(3<<bit)) | (mode<<bit);
+}
+
 
 // Initialize the clock
 static cyg_uint32  clock_period;
