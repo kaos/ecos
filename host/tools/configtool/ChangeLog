@@ -1,3 +1,8 @@
+2003-03-28  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/packagesdlg.cpp: Fix population of package lists
+	to ensure the last package is seen. [ Bugzilla 87520 ]
+
 2003-03-26  Bart Veer  <bartv@ecoscentric.com>
 
 	* common/common/build.cxx: There is no longer a single repository,

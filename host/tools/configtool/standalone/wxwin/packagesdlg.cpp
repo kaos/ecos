@@ -2,6 +2,7 @@
 //
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 2003 John Dallaway
 //
 // This program is part of the eCos host tools.
 //
@@ -27,7 +28,7 @@
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   julians
+// Author(s):   julians, jld
 // Contact(s):  julians
 // Date:        2000/09/28
 // Version:     $Id: packagesdlg.cpp,v 1.9 2001/12/14 17:34:03 julians Exp $
@@ -127,7 +128,7 @@ void ecPackagesDialog::CreateControls(wxWindow* parent)
     wxSizer *item1 = new wxBoxSizer( wxHORIZONTAL );
     
     wxSizer *item2 = new wxBoxSizer( wxVERTICAL );
-    
+
     wxStaticText *item3 = new wxStaticText( parent, wxID_STATIC, _("Available &packages:"), wxDefaultPosition, wxDefaultSize, 0 );
     item2->Add( item3, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
     
@@ -225,7 +226,7 @@ void ecPackagesDialog::CreateControls(wxWindow* parent)
     
     wxButton *item7 = new wxButton( parent, ecID_PACKAGES_DIALOG_REMOVE, _("<< &Remove"), wxDefaultPosition, wxDefaultSize, 0 );
     item5->Add( item7, 0, wxALIGN_CENTRE|wxALL, 5 );
-    
+
     item1->Add( item5, 0, wxALIGN_CENTRE|wxALL, 0 );
     
     wxSizer *item8 = new wxBoxSizer( wxVERTICAL );
@@ -274,7 +275,7 @@ void ecPackagesDialog::CreateControls(wxWindow* parent)
     wxButton *item20 = new wxButton( parent, wxID_OK, _("&OK"), wxDefaultPosition, wxDefaultSize, 0 );
     item20->SetDefault();
     item18->Add( item20, 0, wxALIGN_CENTRE|wxALL, 5 );
-    
+
     wxButton *item21 = new wxButton( parent, wxID_CANCEL, _("&Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
     item18->Add( item21, 0, wxALIGN_CENTRE|wxALL, 5 );
     
@@ -387,7 +388,7 @@ void ecPackagesDialog::Fill()
     }
     
     // Initialize the controls
-    for (i = 0; i < GetCount()-1; i++)
+    for (i = 0; i < GetCount(); i++)
     {
         const wxString& str = m_items[i];
         wxListBox* lb = m_arnItems[i] ? useList : availableList;
