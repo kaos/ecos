@@ -108,7 +108,8 @@ lcd_on(bool enable)
         }
         on = true;
     } else {
-//        (*lcd.off)();
+        (*lcd.off)();
+        on = false;
     }
 }
 
