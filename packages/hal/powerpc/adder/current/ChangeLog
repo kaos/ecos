@@ -1,3 +1,9 @@
+2004-09-16  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/hal_aux.c (hal_platform_init): Move parallel port initializations
+	from variant here (comment says they are required re: errata, but no
+	supporting documentation is known)
+
 2003-12-21  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/adder.S: Only clear caches on non-RAM startup modes.  This fixes

@@ -1,3 +1,8 @@
+2004-09-16  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/var_misc.c (hal_variant_init): Remove [possibly incorrect]
+	parallel port initializations - leave them to the platform.
+
 2004-04-22  Jani Monoses <jani@iv.ro>
 
 	 * cdl/hal_powerpc_mpc8xx.cdl :

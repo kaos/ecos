@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002, 2003 Gary Thomas
+// Copyright (C) 2002, 2003, 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -93,6 +93,20 @@ hal_platform_init(void)
 #endif
 
 #if defined(CYGHWR_HAL_POWERPC_ADDER_II)  
+
+#if defined(CYGHWR_HAL_POWERPC_MPC8XX_852T)
+    // Special settings - according to manual errata
+    eppc->pio_papar &= ~0xffffffff;   // PA manatory settings
+    eppc->pio_padir |=  0xffffffff;
+
+    eppc->pip_pbpar &= ~0x0003ff07;   // PB29..31 AS GPIO
+    eppc->pip_pbdir |=  0x0003ff07;
+    eppc->pip_pbdat  =  0x00010007;
+    
+    eppc->pio_pcpar &= ~0xffffffff;   // PC manatory settings
+    eppc->pio_pcdir |=  0xffffffff;
+#endif
+
     eppc->pip_pbpar &= ~0x00000007;   // PB29..31 AS GPIO for LEDS
     eppc->pip_pbdir |=  0x00000007;
     eppc->pip_pbdat |=  0x00000007;
