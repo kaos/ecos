@@ -179,6 +179,25 @@ cdl_package CYGPKG_HAL_ARM_IQ80310 {
         }
     }
 
+    cdl_component CYGPKG_REDBOOT_XSCALE_OPTIONS {
+        display       "Redboot for XScale options"
+        flavor        none
+        no_define
+        parent        CYGPKG_REDBOOT
+        active_if     CYGPKG_REDBOOT
+        description   "
+            This option lists the target's requirements for a valid Redboot
+            configuration."
+
+        # RedBoot details
+        requires { CYGSEM_REDBOOT_ARM_LINUX_BOOT }
+        requires { CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS_DEFAULT == 0xa0008000 }
+        define_proc {
+            puts $::cdl_header "#define CYGHWR_REDBOOT_ARM_TRAMPOLINE_ADDRESS 0xA1FF0000"
+	    puts $::cdl_header "#define HAL_PLATFORM_MACHINE_TYPE  70"
+        }
+    }
+
     cdl_component CYGBLD_GLOBAL_OPTIONS {
         display "Global build options"
         flavor  none

@@ -71,13 +71,7 @@
 #include <cyg/hal/drv_api.h>
 #include <cyg/io/eth/eth_drv.h>
 #include <cyg/io/eth/netdev.h>
-
-#ifdef CYGPKG_NET
-#include <pkgconf/net.h>
 #include <pkgconf/io_eth_drivers.h>
-#else
-#include <cyg/hal/hal_if.h>
-#endif
 
 #include <cyg/io/dp83902a.h>
 
@@ -85,7 +79,7 @@
 #include CYGDAT_DEVS_ETH_NS_DP83902A_INL
 #undef __WANT_DEVS
 
-#ifdef CYGPKG_NET
+#ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
 // This ISR is called when the ethernet interrupt occurs
 static cyg_uint32
 dp83902a_isr(cyg_vector_t vector, cyg_addrword_t data)
@@ -121,7 +115,7 @@ dp83902a_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
 # endif
 #endif
 }
-#endif // CYGPKG_NET
+#endif // CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
 
 // The deliver function (ex-DSR)  handles the ethernet [logical] processing
 static void
@@ -180,7 +174,7 @@ dp83902a_init(struct cyg_netdevtab_entry *tab)
                 dp->esa[4],
                 dp->esa[5] );
 
-#ifdef CYGPKG_NET
+#ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
     cyg_drv_interrupt_create(
         dp->interrupt,
         0,                  // Priority - unused

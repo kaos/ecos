@@ -1,4 +1,4 @@
-// eCos memory layout - Fri Oct 20 10:35:23 2000
+// eCos memory layout - Thu May 30 10:05:45 2002
 
 // This is a generated file - do not edit
 
@@ -6,16 +6,13 @@
 
 MEMORY
 {
-    ram : ORIGIN = 0, LENGTH = 0x0800000
+    ram : ORIGIN = 0, LENGTH = 0x800000
 }
 
 SECTIONS
 {
     SECTIONS_BEGIN
-    SECTION_vectors (ram, 0x000000, LMA_EQ_VMA)
-    CYG_LABEL_DEFN(__reserved_vectors) = 0; . = CYG_LABEL_DEFN(__reserved_vectors) + 0x3000;
-    CYG_LABEL_DEFN(__reserved_vsr_table) = ALIGN (0x10); . = CYG_LABEL_DEFN(__reserved_vsr_table) + 0x200;
-    CYG_LABEL_DEFN(__reserved_virtual_table) = ALIGN (0x10); . = CYG_LABEL_DEFN(__reserved_virtual_table) + 0x100;
+    SECTION_vectors (ram, 0, LMA_EQ_VMA)
     SECTION_text (ram, 0x3400, LMA_EQ_VMA)
     SECTION_fini (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_rodata1 (ram, ALIGN (0x8), LMA_EQ_VMA)

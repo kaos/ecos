@@ -756,7 +756,7 @@ RedBoot> <userinput>d -b 0xfe00b000 -l 0x80</userinput>
   </refentry>
 
 <!-- ******** help *************************************************** -->
-  <refentry>
+  <refentry id="help-command">
     <refnamediv>
       <refname>help</refname>
       <refpurpose>Display help on available commands</refpurpose>

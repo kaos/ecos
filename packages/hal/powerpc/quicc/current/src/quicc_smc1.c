@@ -90,7 +90,7 @@
 #define QUICC_SMCE_TX  0x02  // Tx interrupt
 #define QUICC_SMCE_RX  0x01  // Rx interrupt
 
-static struct cp_bufdesc *next_rxbd;
+static volatile struct cp_bufdesc *next_rxbd;
 
 /*
  *  Initialize SMC1 as a uart.
@@ -443,7 +443,7 @@ cyg_hal_plf_serial_isr(void *__ch_data, int* __ctrlc,
                        CYG_ADDRWORD __vector, CYG_ADDRWORD __data)
 {
     EPPC *eppc = (EPPC*) __ch_data;
-    struct cp_bufdesc *bd;
+    volatile struct cp_bufdesc *bd;
     char ch;
     int res = 0;
     CYGARC_HAL_SAVE_GP();

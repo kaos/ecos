@@ -69,12 +69,6 @@
 #include <cyg/io/eth/eth_drv.h>
 #include <cyg/io/eth/netdev.h>
 
-#ifdef CYGPKG_NET
-#include <pkgconf/net.h>
-#else
-#include <cyg/hal/hal_if.h>
-#endif
-
 #define DP_CARD_RESET 0x1f
 
 #include <cyg/io/dp83902a.h>

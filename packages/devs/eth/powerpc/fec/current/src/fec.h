@@ -92,8 +92,8 @@ struct fec_bd {
 struct fec_eth_info {
     volatile struct fec        *fec;
     volatile struct fec_bd     *txbd, *rxbd;     // Next Tx,Rx descriptor to use
-    struct fec_bd              *tbase, *rbase;   // First Tx,Rx descriptor
-    struct fec_bd              *tnext, *rnext;   // Next descriptor to check for interrupt
+    volatile struct fec_bd     *tbase, *rbase;   // First Tx,Rx descriptor
+    volatile struct fec_bd     *tnext, *rnext;   // Next descriptor to check for interrupt
     int                         txsize, rxsize;  // Length of individual buffers
     int                         txactive;        // Count of active Tx buffers
     unsigned long               txkey[CYGNUM_DEVS_ETH_POWERPC_FEC_TxNUM];
@@ -104,8 +104,8 @@ struct fec_eth_info {
 struct fec {
     unsigned long  addr[2];    // ESA
     unsigned long  hash[2];    // Address hash mask
-    struct fec_bd *RxRing;
-    struct fec_bd *TxRing;
+    volatile struct fec_bd *RxRing;
+    volatile struct fec_bd *TxRing;
     unsigned long  RxBufSize;
     unsigned char  _fill0[0x40-0x1C];
     unsigned long  eControl;   // Master control register

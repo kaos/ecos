@@ -91,6 +91,20 @@ RedBoot_cmd("exec",
             do_exec
     );
 
+// CYGARC_HAL_MMU_OFF inserts code to turn off MMU and jump to a physical
+// address. Some ARM implementations may need special handling and define
+// their own version.
+#ifndef CYGARC_HAL_MMU_OFF
+#define CYGARC_HAL_MMU_OFF(__paddr__) \
+  "   mcr p15,0,r0,c7,c10,4\n"        \
+  "   mcr p15,0,r0,c7,c7,0\n"         \
+  "   mrc p15,0,r0,c1,c0,0\n"         \
+  "   bic r0,r0,#0xd\n"               \
+  "   bic r0,r0,#0x1000\n"            \
+  "   mcr p15,0,r0,c1,c0,0\n"         \
+  "   mov pc," #__paddr__ "\n"
+#endif
+
 //
 // Parameter info for Linux kernel
 //   ** C A U T I O N **  This setup must match "asm-arm/setup.h"
@@ -243,9 +257,12 @@ do_exec(int argc, char *argv[])
     struct option_info opts[6];
     char line[8];
     char *cmd_line;
-    struct tag *params = (struct tag *)0x0100;
+    struct tag *params = (struct tag *)CYGHWR_REDBOOT_ARM_LINUX_TAGS_ADDRESS;
+    extern char __tramp_start__[], __tramp_end__[];
 
-    entry = (unsigned long)CYGARC_PHYSICAL_ADDRESS(CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS);  // Default Linux execute address
+    // Default physical entry point for Linux is kernel base.
+    entry = (unsigned long)CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS;
+
     base_addr = load_address;
     length = load_address_end - load_address;
     ramdisk_size = 4096*1024;
@@ -339,73 +356,49 @@ do_exec(int argc, char *argv[])
     HAL_ICACHE_INVALIDATE_ALL();
     HAL_DCACHE_INVALIDATE_ALL();
 
-    // Tricky code.  We are currently running with the MMU on and the
-    // memory map convoluted from 1-1.  The trampoline code between
-    // labels 1 and 2 must be copied to RAM and then executed at the
-    // non-mapped address.  Then when the code turns off the MMU, the
-    // control flow is unchanged and control can be passed safely to
-    // the program to be executed.
-    // Note: This only works if phys=virt (or there are appropriate
-    //       double mapping of the memory). This should be rewritten
-    //       so a jump follows immediately after the MMU disable
-    //       operation.
+    // Tricky code. We are currently running with the MMU on and the
+    // memory map possibly convoluted from 1-1.  The trampoline code
+    // between labels __tramp_start__ and __tramp_end__ must be copied
+    // to RAM and then executed at the non-mapped address.
     // 
-    // This magic was created in order to
-    // be able to execute standard Linux kernels with as little
-    // change/perturberance as possible.
-    asm volatile ("\n"                  // Copy code between labels 1-2 to the
-                  " ldr r2,=1f;\n"      // trampoline address...
-                  " ldr r3,=2f;\n"
-                  " mov r5,%0;\n"
-                  "4:\n"
-                  " ldr r1,[r2],#4;\n"
-                  " str r1,[r5],#4;\n"
-                  " cmp r2,r3;\n"
-                  " bne 4b;\n"
-                  " nop;nop;nop;nop;nop;nop;nop;nop;\n"
-                  " mov r5,%1;\n"
-		  " mov r2,%2;\n"
-		  " mov r3,%3;\n"
-                  " mov r7,%4;\n"
-		  " mov r6,%5;\n"
-		  " mov pc,%0;\n"       //... and jump to it.
-                  " \n"
-                  "1:\n"
-                  " mrs r1,cpsr;\n"     // Put processor in IRQ mode
-                  " bic r0,r1,#0x1F;\n"
-                  " orr r0,r0,#0x12;\n"
-                  " msr cpsr,r0;\n"
-                  " msr spsr,r1;\n"
-                  " mov lr,r5;\n"       // Set kernel entry point
-                  " mov sp,r5;\n"       // Give the kernel a stack just below the entry point
-                  " mov r1,#0;\n"       // Turn off MMU and caches
-                  " mcr p15,0,r1,c1,c0;\n"
-                  " nop;nop;nop;\n"
-                  " cmp r2,r6;\n"       // Default kernel load address. Relocate
-                  " beq 10f;\n"         // kernel image there if necessary, and
-		  " cmp r3,#0;\n"       // if size is non-zero
-		  " beq 10f;\n"
-		  "05:\n"
-		  " ldr r4,[r2],#4;\n"
-		  " str r4,[r6],#4;\n"
-		  " sub r3,r3,#4;\n"
-		  " cmp r3,#0;\n"
-		  " bne 05b;\n"
-		  "10:\n"
-                  " mov r0,#0;\n"        // Set board type and start the kernel
-                  " mov r1,r7;\n" 
-                  " movs pc,lr;\n"
-                  "2:\n"
-                  : : 
-                  "r"(CYGARC_PHYSICAL_ADDRESS(CYGHWR_REDBOOT_ARM_TRAMPOLINE_ADDRESS)),
-		  "r"(entry),
-                  "r"(CYGARC_PHYSICAL_ADDRESS(base_addr)),
-                  "r"(length),
-                  "r"(CYGHWR_REDBOOT_ARM_MACHINE_TYPE),
-                  "r"(CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS) : 
-                  "r7","r6","r5","r2","r3","r1");
-}
+    // This magic was created in order to be able to execute standard
+    // Linux kernels with as little change/perturberance as possible.
 
+    // copy the trampline code
+    memcpy((char *)CYGHWR_REDBOOT_ARM_TRAMPOLINE_ADDRESS,
+	   __tramp_start__,
+	   __tramp_end__ - __tramp_start__);
+
+    asm volatile (
+        CYGARC_HAL_MMU_OFF(%5)
+        "__tramp_start__:\n"
+        " cmp %1,%4;\n"       // Default kernel load address. Relocate
+        " beq 2f;\n"          // kernel image there if necessary, and
+        " cmp %2,#0;\n"       // if size is non-zero
+        " beq 2f;\n"
+        "1:\n"
+        " ldr r0,[%1],#4;\n"
+        " str r0,[%4],#4;\n"
+        " subs %2,%2,#4;\n"
+        " bne 1b;\n"
+        "2:\n"
+        " mov r0,#0;\n"       // Set board type
+        " mov r1,%3;\n"       // Machine type
+        " mov r2,%6;\n"       // Kernel parameters
+        " mov pc,%0;\n"       // Jump to kernel
+        "__tramp_end__:\n"
+        : : 
+        "r"(entry),
+        "r"(CYGARC_PHYSICAL_ADDRESS(base_addr)),
+        "r"(length),
+        "r"(CYGHWR_REDBOOT_ARM_MACHINE_TYPE),
+        "r"(CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS),
+        "r"(CYGARC_PHYSICAL_ADDRESS(CYGHWR_REDBOOT_ARM_TRAMPOLINE_ADDRESS)),
+        "r"(CYGARC_PHYSICAL_ADDRESS(CYGHWR_REDBOOT_ARM_LINUX_TAGS_ADDRESS))
+        : "r0", "r1"
+        );
+}
+      
 #endif // HAL_PLATFORM_MACHINE_TYPE - otherwise we do not support this stuff...
 
 // EOF redboot_linux_exec.c

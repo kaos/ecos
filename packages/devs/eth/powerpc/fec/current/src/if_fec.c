@@ -129,7 +129,7 @@ NETDEVTAB_ENTRY(fec_netdev,
                 fec_eth_init, 
                 &fec_eth0_sc);
 
-#ifdef CYGPKG_NET
+#ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
 #define _FEC_USE_INTS
 #ifdef _FEC_USE_INTS
 static cyg_interrupt fec_eth_interrupt;
@@ -141,7 +141,7 @@ static cyg_thread fec_fake_int_thread_data;
 static cyg_handle_t fec_fake_int_thread_handle;
 static void fec_fake_int(cyg_addrword_t);
 #endif // _FEC_USE_INTS
-#endif // CYGPKG_NET
+#endif // CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
 static void          fec_eth_int(struct eth_drv_sc *data);
 
 #define FEC_ETH_INT CYGNUM_HAL_INTERRUPT_SIU_LVL1
@@ -238,7 +238,7 @@ fec_eth_reset(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
     struct fec_eth_info *qi = (struct fec_eth_info *)sc->driver_private;
     volatile EPPC *eppc = (volatile EPPC *)eppc_base();
     volatile struct fec *fec = (volatile struct fec *)((unsigned char *)eppc + FEC_OFFSET);
-    struct fec_bd *rxbd, *txbd;
+    volatile struct fec_bd *rxbd, *txbd;
     unsigned char *RxBUF, *TxBUF;
     int cache_state, int_state;
     int i;
@@ -394,7 +394,7 @@ fec_eth_init(struct cyg_netdevtab_entry *tab)
     qi->fec = fec;
     fec_eth_stop(sc);  // Make sure it's not running yet
 
-#ifdef CYGPKG_NET
+#ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
 #ifdef _FEC_USE_INTS
     // Set up to handle interrupts
     cyg_drv_interrupt_create(FEC_ETH_INT,
@@ -455,6 +455,7 @@ fec_eth_init(struct cyg_netdevtab_entry *tab)
     CYGACC_CALL_IF_DELAY_US(10000);   // 10ms
     eppc->pip_pbdat |= 0x00004000;   // Enable PHY chip
     // Enable transceiver (PHY)    
+    phy_ok = 0;
     phy_write(PHY_BMCR, 0, PHY_BMCR_RESET);
     for (i = 0;  i < 10;  i++) {
         phy_ok = phy_read(PHY_BMCR, 0, &phy_state);
@@ -524,7 +525,6 @@ fec_eth_control(struct eth_drv_sc *sc, unsigned long key,
                   void *data, int length)
 {
 #ifdef ETH_DRV_SET_MC_ALL
-    struct eth_drv_mc_list *mc_list;
     struct fec_eth_info *qi = (struct fec_eth_info *)sc->driver_private;
     volatile struct fec *fec = qi->fec;
 #endif
@@ -769,7 +769,7 @@ fec_eth_int_vector(struct eth_drv_sc *sc)
     return (FEC_ETH_INT);
 }
 
-#if defined(CYGPKG_NET) && ~defined(_FEC_USE_INTS)
+#if defined(CYGINT_IO_ETH_INT_SUPPORT_REQUIRED) && ~defined(_FEC_USE_INTS)
 void
 fec_fake_int(cyg_addrword_t param)
 {

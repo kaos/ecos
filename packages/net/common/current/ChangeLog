@@ -1,3 +1,7 @@
+2002-05-30  Jesper Skov  <jskov@redhat.com>
+
+	* tests/flood.c (floodsend): Fixed warning.
+
 2002-05-28  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/dhcp_prot.c (do_dhcp): xmit2 need not be static.

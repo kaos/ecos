@@ -1,3 +1,10 @@
+2002-05-28  Mark Salter  <msalter@redhat.com>
+
+	* cdl/hal_arm_xscale_verde.cdl: Fix linux exec address test.
+
+	* include/hal_verde.h (CYGARC_HAL_MMU_OFF): XScale has
+	special requirements for turning off MMU.
+
 2002-05-24  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/hal_arm_xscale_verde.cdl: Remove implement of

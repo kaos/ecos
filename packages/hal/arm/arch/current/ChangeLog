@@ -1,3 +1,13 @@
+2002-05-28  Mark Salter  <msalter@redhat.com>
+
+	* cdl/hal_arm.cdl: Tweaked description for
+	CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS.
+	Add CYGHWR_REDBOOT_ARM_LINUX_TAGS_ADDRESS.
+
+	* src/redboot_linux_exec.c (do_exec): Rework transition to MMU
+	off and jump to kernel so that it works for non 1-1 mapped
+	platforms.
+
 2002-05-20  Gary Thomas  <gthomas@redhat.com>
 
 	* include/hal_io.h: Fix ...STRING macros - not using index.

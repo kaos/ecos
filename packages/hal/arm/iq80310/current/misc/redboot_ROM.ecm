@@ -99,6 +99,14 @@ cdl_component CYGSEM_REDBOOT_BSP_SYSCALLS {
     inferred_value 1
 };
 
+cdl_option CYGSEM_REDBOOT_ARM_LINUX_BOOT {
+    inferred_value 1
+};
+
+cdl_option CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS_DEFAULT {
+    inferred_value 0xA0008000
+};
+
 cdl_option CYGBLD_ISO_STRTOK_R_HEADER {
     inferred_value 1 <cyg/libc/string/string.h>
 };

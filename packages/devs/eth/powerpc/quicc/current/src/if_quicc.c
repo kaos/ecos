@@ -130,13 +130,13 @@ NETDEVTAB_ENTRY(quicc_netdev,
 
 extern int _mbx_fetch_VPD(int, void *, int);
 
-#ifdef CYGPKG_NET
+#ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
 static cyg_interrupt quicc_eth_interrupt;
 static cyg_handle_t  quicc_eth_interrupt_handle;
 #endif
 static void          quicc_eth_int(struct eth_drv_sc *data);
 
-#ifdef CYGPKG_NET
+#ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
 // This ISR is called when the ethernet interrupt occurs
 static int
 quicc_eth_isr(cyg_vector_t vector, cyg_addrword_t data, HAL_SavedRegisters *regs)
@@ -152,7 +152,7 @@ static void
 quicc_eth_deliver(struct eth_drv_sc * sc)
 {
     quicc_eth_int(sc);
-#ifdef CYGPKG_NET
+#ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
     // Allow interrupts to happen again
     cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_CPM_SCC1);
 #endif
@@ -200,7 +200,7 @@ quicc_eth_init(struct cyg_netdevtab_entry *tab)
     HAL_DCACHE_SYNC();
     HAL_DCACHE_DISABLE();
 
-#ifdef CYGPKG_NET
+#ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
     // Set up to handle interrupts
     cyg_drv_interrupt_create(CYGNUM_HAL_INTERRUPT_CPM_SCC1,
                              CYGARC_SIU_PRIORITY_HIGH,

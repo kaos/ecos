@@ -1,3 +1,12 @@
+2002-05-28  Mark Salter  <msalter@redhat.com>
+
+	* cdl/hal_arm_iq80310.cdl: Add Linux boot support.
+	* misc/redboot_RAM.ecm: Ditto.
+	* misc/redboot_ROM.ecm: Ditto.
+
+	* include/hal_iq80310.h (CYGARC_HAL_MMU_OFF): Xscale has
+	special requirements for turning off MMU.
+
 2002-05-24  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/hal_diag.c: Support dynamic getting and setting of baud rates.

@@ -1,3 +1,8 @@
+2002-05-30  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/if_quicc.c: Use CYGINT_IO_ETH_INT_SUPPORT_REQUIRED where
+	appropriate.
+
 2001-08-22  Gary Thomas  <gthomas@redhat.com>
 
 	* src/if_quicc.c: 

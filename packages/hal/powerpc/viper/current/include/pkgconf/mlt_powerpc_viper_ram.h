@@ -1,4 +1,4 @@
-// eCos memory layout - Fri Oct 20 10:35:23 2000
+// eCos memory layout - Thu May 30 10:27:39 2002
 
 // This is a generated file - do not edit
 
@@ -8,7 +8,7 @@
 
 #endif
 #define CYGMEM_REGION_ram (0)
-#define CYGMEM_REGION_ram_SIZE (0x0800000)
+#define CYGMEM_REGION_ram_SIZE (0x800000)
 #define CYGMEM_REGION_ram_ATTR (CYGMEM_REGION_ATTR_R | CYGMEM_REGION_ATTR_W)
 #ifndef __ASSEMBLER__
 extern char CYG_LABEL_NAME (__reserved_vectors) [];

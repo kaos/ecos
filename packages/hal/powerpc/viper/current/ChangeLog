@@ -1,3 +1,7 @@
+2002-05-30  John Dallaway  <jld@redhat.com>
+
+	* include/pkgconf/mlt*: Regenerated memory layout files.
+
 2002-04-30  Nick Garnett  <nickg@redhat.com>
 
 	* src/viper.S: Changed boot ROM wait states from 4 to 7.

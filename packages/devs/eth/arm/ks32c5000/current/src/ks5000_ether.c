@@ -1113,12 +1113,10 @@ static bool ks32c5000_eth_init(struct cyg_netdevtab_entry *tab)
 #endif  
   installInterrupts();
   EthInit(myMacAddr);
-#if defined(CYGPKG_NET)  
   cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_EtherBDMARx);
   cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_EtherBDMATx);
   cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_EtherMacRx);
   cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_EtherMacTx);
-#endif  
   configDone = 1;
   ethernetRunning = 1;
   eth_drv_init(sc, myMacAddr);
@@ -1252,7 +1250,7 @@ static void ks32c5000_eth_send(struct eth_drv_sc *sc,
   
   while(!ks32c5000_eth_buffer_send(buf))
     {
-#if defined(CYGPKG_NET)
+#if defined(CYGPKG_KERNEL)
       // wait a tick and try again.
       cyg_thread_delay(1);
 #else

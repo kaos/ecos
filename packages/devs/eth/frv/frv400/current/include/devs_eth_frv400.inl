@@ -172,7 +172,7 @@ _frv400_eth_init(dp83902a_priv_data_t *dp)
 
 #define CYGHWR_NS_DP83902A_PLF_INIT(dp) _frv400_eth_init(dp)
 
-#ifndef CYGPKG_NET
+#ifndef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
 static void
 _frv400_eth_int_clear(dp83902a_priv_data_t *dp)
 {

@@ -1,3 +1,8 @@
+2002-05-30  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/devs_eth_frv400.inl: Use CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
+	instead of CYGPKG_NET where required.
+
 2002-03-28  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/frv400_eth_drivers.cdl: Don't define CYGHWR_NET_DRIVERS as this

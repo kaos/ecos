@@ -1,3 +1,9 @@
+2002-05-30  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/cs8900.h: Check for lost ints if we can - when kernel present.
+	* src/if_cs8900a.c: Use CYGINT_IO_ETH_INT_SUPPORT_REQUIRED where
+	appropriate.
+
 2002-03-20  Gary Thomas  <gthomas@redhat.com>
 2002-03-06  Pieter Truter <ptruter@intrinsyc.com>
 

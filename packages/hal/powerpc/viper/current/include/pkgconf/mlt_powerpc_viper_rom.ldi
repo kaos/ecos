@@ -1,4 +1,4 @@
-// eCos memory layout - Fri Oct 20 10:35:48 2000
+// eCos memory layout - Thu May 30 10:21:41 2002
 
 // This is a generated file - do not edit
 

@@ -85,12 +85,12 @@
 
 
 
-#ifdef CYGPKG_NET
+#ifdef CYGPKG_KERNEL
 #define STACK_SIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
 static char sc_lpe_card_handler_stack[STACK_SIZE];
 static cyg_thread sc_lpe_card_handler_thread_data;
 static cyg_handle_t sc_lpe_card_handler_thread_handle;
-#endif  // CYGPKG_NET
+#endif  // CYGPKG_KERNEL
 
 static void
 do_delay(int ticks)
@@ -107,7 +107,7 @@ do_delay(int ticks)
 // and deletions need to be handled and they take time/coordination, thus the
 // separate thread.
 //
-#ifdef CYGPKG_NET
+#ifdef CYGPKG_KERNEL
 static void
 #else
 static int
@@ -123,7 +123,7 @@ sc_lpe_card_handler(cyg_addrword_t param)
     unsigned char buf[256], *cp;
     cyg_uint8* base;
     unsigned char *vers_product, *vers_manuf, *vers_revision, *vers_date;
-#ifndef CYGPKG_NET
+#ifndef CYGPKG_KERNEL
     int tries = 0;
 #endif
     bool first = true;
@@ -141,7 +141,7 @@ sc_lpe_card_handler(cyg_addrword_t param)
             }
             if (slot->state != CF_SLOT_STATE_Ready) {
                 diag_printf("CF card won't go ready!\n");
-#ifndef CYGPKG_NET
+#ifndef CYGPKG_KERNEL
                 return false;
 #else
                 continue;
@@ -166,7 +166,7 @@ sc_lpe_card_handler(cyg_addrword_t param)
                 vers_revision = cp;
                 while (*cp++) ;  // Skip to nul
                 vers_date = cp;
-#ifndef CYGPKG_NET
+#ifndef CYGPKG_KERNEL
                 if (tries != 0) diag_printf("\n");
                 diag_printf("%s: %s %s %s\n", vers_manuf, vers_product, vers_revision, vers_date);
 #endif
@@ -249,7 +249,7 @@ sc_lpe_card_handler(cyg_addrword_t param)
                     (sc->funs->eth_drv->init)(sc, dp->esa);
                     // Tell system card is ready to talk
                     dp->tab->status = CYG_NETDEVTAB_STATUS_AVAIL;
-#ifndef CYGPKG_NET
+#ifndef CYGPKG_KERNEL
                     cyg_drv_dsr_unlock();
                     return true;
 #endif
@@ -266,7 +266,7 @@ sc_lpe_card_handler(cyg_addrword_t param)
         } else {
             cyg_drv_dsr_unlock();
             do_delay(50);  // FIXME!
-#ifndef CYGPKG_NET
+#ifndef CYGPKG_KERNEL
             if (tries == 0) diag_printf("... Waiting for network card: ");
             diag_printf(".");
             if (++tries == 10) {
@@ -291,7 +291,7 @@ cyg_sc_lpe_init(struct cyg_netdevtab_entry *tab)
     slot = dp->plf_priv = (void*)cf_get_slot(0);
     dp->tab = tab;
 
-#ifdef CYGPKG_NET
+#ifdef CYGPKG_KERNEL
     // Create card handling [background] thread
     cyg_thread_create(CYGPKG_NET_THREAD_PRIORITY-1,          // Priority
                       sc_lpe_card_handler,                   // entry

@@ -1,3 +1,7 @@
+2002-05-30  Jesper Skov  <jskov@redhat.com>
+
+	* src/quicc_smc1.c: Fix warning.
+
 2001-09-10  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/hal_powerpc_quicc.cdl (CYGNUM_HAL_QUICC_DIAG_BAUD):

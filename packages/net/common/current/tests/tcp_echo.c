@@ -65,9 +65,13 @@
 
 // Network throughput test code
 
-#include <lib/libkern/libkern.h>
-
 #include <network.h>
+
+static __inline__ int
+max(int m, int n)
+{
+    return m > n ? m : n;
+}
 
 #define SOURCE_PORT 9990
 #define SINK_PORT   9991

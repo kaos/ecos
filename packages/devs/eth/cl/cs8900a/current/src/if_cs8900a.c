@@ -67,8 +67,7 @@
 //==========================================================================
 
 #include <pkgconf/system.h>
-#ifdef CYGPKG_NET
-#include <pkgconf/net.h>
+#ifdef CYGPKG_KERNEL
 #include <cyg/kernel/kapi.h>
 #endif
 #include <pkgconf/io_eth_drivers.h>
@@ -89,7 +88,7 @@
 #undef __WANT_DEVS
 
 // NOINTS operation only relevant when the NET package is loaded
-#ifndef CYGPKG_NET
+#if !defined(CYGPKG_NET) || !defined(CYGPKG_KERNEL)
 # undef CYGSEM_DEVS_ETH_CL_CS8900A_NOINTS
 #endif
 
@@ -106,7 +105,7 @@ extern int cyg_io_eth_net_debug;
 #endif
 
 static void cs8900a_poll(struct eth_drv_sc *sc);
-#ifdef CYGPKG_NET
+#ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
 // This ISR is called when the ethernet interrupt occurs
 static int
 cs8900a_isr(cyg_vector_t vector, cyg_addrword_t data, HAL_SavedRegisters *regs)
@@ -123,7 +122,7 @@ cs8900a_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     // This conditioning out is necessary because of explicit calls to this
     // DSR - which would not ever be called in the case of a polled mode
     // usage ie. in RedBoot.
-#ifdef CYGPKG_IO_ETH_DRIVERS_NET
+#ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
     cs8900a_priv_data_t* cpd = (cs8900a_priv_data_t *)data;
     struct cyg_netdevtab_entry *ndp = (struct cyg_netdevtab_entry *)(cpd->tab);
     struct eth_drv_sc *sc = (struct eth_drv_sc *)(ndp->device_instance);
@@ -145,7 +144,7 @@ static void
 cs8900a_deliver(struct eth_drv_sc *sc)
 {
     cs8900a_poll(sc);
-#ifdef CYGPKG_NET
+#ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
     {
         cs8900a_priv_data_t *cpd = (cs8900a_priv_data_t *)sc->driver_private;
         // Allow interrupts to happen again
@@ -176,7 +175,7 @@ cs8900a_init(struct cyg_netdevtab_entry *tab)
 
     CYGHWR_CL_CS8900A_PLF_INIT(cpd);
 
-#ifdef CYGPKG_NET
+#ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
     // Initialize environment, setup interrupt handler
     cyg_drv_interrupt_create(cpd->interrupt,
                              0, // Priority - what goes here?
@@ -381,7 +380,7 @@ cs8900a_can_send(struct eth_drv_sc *sc)
     if ((stat & PP_LineStat_LinkOK) == 0) {
         return false;  // Link not connected
     }
-#ifdef CYGPKG_NET
+#ifdef CYGPKG_KERNEL
     // Horrible hack!
     if (cpd->txbusy) {
         cyg_tick_count_t now = cyg_current_time();
@@ -416,7 +415,7 @@ cs8900a_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
     // Mark xmitter busy
     cpd->txbusy = true;
     cpd->txkey = key;
-#ifdef CYGPKG_NET
+#ifdef CYGPKG_KERNEL
     cpd->txstart = cyg_current_time();
 #endif
     // Start the xmit sequence

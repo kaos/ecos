@@ -90,7 +90,7 @@ cdl_option CYGSEM_REDBOOT_ARM_LINUX_BOOT {
 };
 
 cdl_option CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS_DEFAULT {
-    inferred_value 0xC0008000
+    inferred_value 0xA0008000
 };
 
 cdl_option CYGBLD_ISO_STRTOK_R_HEADER {

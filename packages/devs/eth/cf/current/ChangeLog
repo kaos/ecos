@@ -1,3 +1,8 @@
+2002-05-30  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/if_sc_lpe.c: Conditionalize use of thread on CYGPKG_KERNEL
+	not CYGPKG_NET.
+
 2002-04-12  Gary Thomas  <gthomas@redhat.com>
 
 	* src/if_sc_lpe.c: Clean up warnings.

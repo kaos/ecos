@@ -149,7 +149,7 @@ static void
 thread_destructor(CYG_ADDRWORD data)
 {
     struct hostent *hent;
-    hent = (struct hostent *)cyg_thread_get_data(index);
+    hent = (struct hostent *)cyg_thread_get_data(ptdindex);
     if (hent)
         free_hent(hent);
     return;
@@ -163,7 +163,7 @@ store_hent(struct hostent *hent)
     // Prevent memory leaks by setting a destructor to be
     // called on thread exit to free per-thread data.
     cyg_thread_add_destructor( &thread_destructor, 0 );
-    cyg_thread_set_data(index, (CYG_ADDRWORD)hent);
+    cyg_thread_set_data(ptdindex, (CYG_ADDRWORD)hent);
 }
 
 /* If there is an answer to an old query, free the memory it uses. */
@@ -171,10 +171,10 @@ static void
 free_stored_hent(void)
 {
     struct hostent *hent;
-    hent = (struct hostent *)cyg_thread_get_data(index);
+    hent = (struct hostent *)cyg_thread_get_data(ptdindex);
     if (hent) {
         free_hent(hent);
-        cyg_thread_set_data(index, (CYG_ADDRWORD)NULL);
+        cyg_thread_set_data(ptdindex, (CYG_ADDRWORD)NULL);
         cyg_thread_rem_destructor( &thread_destructor, 0 );
     }
 }

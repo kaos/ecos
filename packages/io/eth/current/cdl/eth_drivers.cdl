@@ -91,6 +91,7 @@ cdl_package CYGPKG_IO_ETH_DRIVERS {
         flavor        bool
         active_if     CYGPKG_NET
         requires      CYGINT_ISO_STRING_STRFUNCS
+        implements    CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
         default_value 1
         compile       net/eth_drv.c
 
@@ -201,8 +202,17 @@ cdl_package CYGPKG_IO_ETH_DRIVERS {
         requires      !CYGPKG_NET
         active_if     CYGPKG_NET_LWIP
         default_value 1
+        implements    CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
         compile       lwip/eth_drv.c
     }	
+
+    cdl_interface CYGINT_IO_ETH_INT_SUPPORT_REQUIRED {
+        display       "Interrupt support required"
+        flavor        booldata
+        description   "This interface is used to indicate to the low
+                       level device drivers that interrupt driven operation
+                       is required by higher layers."
+    }
 
     cdl_component CYGPKG_IO_ETH_DRIVERS_OPTIONS {
         display "Common ethernet support build options"

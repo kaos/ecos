@@ -1,3 +1,8 @@
+2002-05-30  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/if_dp83902a.c: Use CYGINT_IO_ETH_INT_SUPPORT_REQUIRED instead
+	of CYGPKG_NET where required.
+
 2002-04-12  Gary Thomas  <gthomas@redhat.com>
 
 	* src/if_dp83902a.c: Clean up warnings.

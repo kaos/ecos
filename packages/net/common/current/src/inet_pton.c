@@ -39,7 +39,7 @@
  */
 
 //#if defined(LIBC_SCCS) && !defined(lint)
-//static char rcsid[] = "$Id: inet_pton.c,v 1.4 2002/03/06 15:20:46 gthomas Exp $";
+//static char rcsid[] = "$Id: inet_pton.c,v 1.3 2002/02/20 17:39:39 gthomas Exp $";
 //#endif /* LIBC_SCCS and not lint */
 
 //#ifdef HAVE_CONFIG_H

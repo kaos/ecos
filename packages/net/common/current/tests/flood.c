@@ -266,10 +266,14 @@ pingsend( int seq, struct sockaddr_in *host,
 static void
 floodsend(cyg_addrword_t param)
 {
-    unsigned char pkt0[MAX_PACKET], pkt1[MAX_PACKET];
-
+#ifdef CYGHWR_NET_DRIVER_ETH0
+    unsigned char pkt0[MAX_PACKET];
     struct icmp *icmp0 = (struct icmp *)pkt0;
+#endif
+#ifdef CYGHWR_NET_DRIVER_ETH1
+    unsigned char pkt1[MAX_PACKET];
     struct icmp *icmp1 = (struct icmp *)pkt1;
+#endif
 
     int icmp_len = 64;
     int seq;

@@ -118,7 +118,7 @@ typedef struct cs8900a_priv_data {
     cyg_addrword_t base;
     cyg_uint32 txkey;   // Used to ack when packet sent
     struct cyg_netdevtab_entry *tab;
-#ifdef CYGPKG_NET
+#ifdef CYGPKG_KERNEL
     cyg_tick_count_t txstart;
 #endif
 } cs8900a_priv_data_t;

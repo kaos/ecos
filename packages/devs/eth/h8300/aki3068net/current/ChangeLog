@@ -1,3 +1,7 @@
+2002-05-28  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/if_aki3068net.c: Remove unused includes.
+
 2002-04-24  Yoshinori Sato  <qzb04471@nifty.ne.jp>
 
 	* New package.

@@ -233,22 +233,32 @@ cdl_package CYGPKG_HAL_ARM {
         }
 
         cdl_option CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS {
-            display       "Linux execution address"
+            display       "Physical base address of linux kernel"
             flavor        data
             default_value CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS_DEFAULT
             description   "
-                This is the physical address where Linux expects to be started
-                from."
+                This is the physical address of the base of the Linux kernel
+                image."
         }
 
         cdl_option CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS_DEFAULT {
-            display       "Linux execution address"
+            display       "Default physical base address of linux kernel"
             flavor        data
             default_value 0x00008000
             no_define
             description   "
-                This is the physical address where Linux expects to be started
-                from. This option gets set by the platform CDL."
+                This is the physical address of the base of the Linux kernel
+                image. This option gets set by the platform CDL."
+        }
+
+        cdl_option CYGHWR_REDBOOT_ARM_LINUX_TAGS_ADDRESS {
+            display       "Base address of linux kernel parameter tags"
+            flavor        data
+            default_value 0x100
+            description   "
+                This is the base address of the area of memory used to
+                pass parameters to the Linux kernel. This should be chosen
+                to avoid overlap with the kernel and any ramdisk image."
         }
 
     }

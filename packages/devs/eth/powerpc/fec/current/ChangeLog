@@ -1,3 +1,15 @@
+2002-05-30  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/if_fec.c: Use CYGINT_IO_ETH_INT_SUPPORT_REQUIRED where
+        appropriate.
+
+2002-05-30  Jesper Skov  <jskov@redhat.com>
+
+	* src/if_fec.c: Initialized a variable and removed an unused
+	variable. Also made one volatile. All to remove warnings.
+	* src/fec.h: Made more pointers volatile to avoid compiler
+	warnings.
+
 2002-04-30  Nick Garnett  <nickg@redhat.com>
 
 	* src/if_fec.c: Changed order of initialization and made code more
