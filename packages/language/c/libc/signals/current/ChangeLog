@@ -1,3 +1,8 @@
+2003-02-13  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/signal.inl (raise): Use if/else rather than switch to
+	avoid GCC 3.2 bug.
+
 2002-05-23  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/signals.cdl: Don't build signal2 test when it'll N/A

@@ -233,23 +233,16 @@ raise(int __sig)
 
     __sigfun = cyg_libc_signal_handlers[__sig];
 
-    switch ( (CYG_ADDRESS)__sigfun ) {
-        
-    case (CYG_ADDRESS)SIG_DFL:
+    if ( __sigfun == SIG_DFL {
         CYG_TRACE0(cyg_libc_signals_raise_trace_level,
                    "signal handler returned is SIG_DFL");
         cyg_libc_signals_unlock();
         cyg_libc_signals_default_handler(__sig);
-        break;
-
-    case (CYG_ADDRESS)SIG_IGN:
+    } else if ( __sigfun == SIG_IGN ) {
         CYG_TRACE0(cyg_libc_signals_raise_trace_level,
                    "signal handler returned is SIG_IGN");
         cyg_libc_signals_unlock();
-
-        break;
-
-    default:
+    } else {
         CYG_TRACE1(cyg_libc_signals_raise_trace_level,
                    "signal handler returned is at %08x", __sigfun);
         // call the signal handler directly
@@ -259,7 +252,6 @@ raise(int __sig)
         CYG_CHECK_FUNC_PTR( __sigfun, "returned signal handler invalid!");
 
         (*__sigfun)(__sig);
-        break;
     }
 
     CYG_REPORT_RETVAL( __ret );
