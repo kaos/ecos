@@ -411,6 +411,10 @@ return_to_redboot(int status)
     go_return_status = status;
     HAL_THREAD_LOAD_CONTEXT(&go_saved_context);
     // never returns
+
+    // need this to balance above CYGARC_HAL_SAVE_GP on
+    // some platforms. It will never run, though.
+    CYGARC_HAL_RESTORE_GP();
 }
 
 void

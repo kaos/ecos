@@ -1,3 +1,8 @@
+2003-02-04  Mark Salter  <msalter@redhat.com>
+2003-02-04  Brian Murphy <brian@murphy.dk>
+
+	* src/main.c (return_to_redboot): Add CYGARC_HAL_RESTORE_GP.
+
 2003-01-10  Patrick Doyle  <wpd@delcomsys.com>
 
 	* src/load.c (do_load): Don't abort and complain about overwriting
