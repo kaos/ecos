@@ -1,3 +1,12 @@
+2003-08-06  Bob Koninckx <bob.koninckx@mech.kuleuven.ac.be>
+
+	* src/drv_api.c: Added definition of cyg_interrupt_post_dsr() for
+	use in those HALs that need it.
+
+	* include/hal_arbiter.h (hal_call_isr): Removed ifdef on
+	CYGFUN_HAL_COMMON_KERNEL_SUPPORT around test and call to
+	cyg_interrupt_post_dsr().
+
 2003-07-21  Nick Garnett  <nickg@balti.calivar.com>
 
 	* doc/hal.sgml: Reorganized description of clock and timer related

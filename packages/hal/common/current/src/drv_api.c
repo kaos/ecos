@@ -143,6 +143,15 @@ cyg_interrupt_call_pending_DSRs(void)
     call_dsrs();
 }
 
+//--------------------------------------------------------------------------
+// This is called from springboard ISRs in some HALs.
+
+externC void
+cyg_interrupt_post_dsr(CYG_ADDRWORD data)
+{
+  cyg_interrupt * intr = (cyg_interrupt *)data;
+  post_dsr(intr);
+}
 
 //--------------------------------------------------------------------------
 // Interrupt end function called from HAL VSR to tidy up. This is where

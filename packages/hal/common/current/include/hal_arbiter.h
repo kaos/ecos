@@ -106,11 +106,9 @@ hal_call_isr (cyg_uint32 vector)
 
     isr_ret = (*isr) (vector, data);
 
-#ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
     if (isr_ret & CYG_ISR_CALL_DSR) {
         cyg_interrupt_post_dsr (hal_interrupt_objects[vector]);
     }
-#endif
 
     return isr_ret & ~CYG_ISR_CALL_DSR;
 }
