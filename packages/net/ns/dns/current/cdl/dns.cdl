@@ -52,12 +52,12 @@
 cdl_package CYGPKG_NS_DNS {
     display       "DNS client"
     include_dir   cyg/ns/dns
-    implements    CYGINT_ISO_DNS
     requires      { CYGBLD_ISO_DNS_HEADER == "<cyg/ns/dns/dns.h>" }
 
     cdl_option CYGPKG_NS_DNS_BUILD {
         display       "Build DNS NS client package"
         default_value 1
+        implements    CYGINT_ISO_DNS
 
         requires      CYGPKG_NET
         requires      CYGINT_ISO_CTYPE
