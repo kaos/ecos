@@ -89,7 +89,7 @@ cdl_package CYGPKG_DEVS_ETH_POWERPC_FEC {
         display       "Number of output buffers"
         flavor        data
         legal_values  2 to 16
-        default_value 4
+        default_value 16
         description   "
             This option specifies the number of output buffer packets
             to be used for the PowerPC FEC/ethernet device."
@@ -99,7 +99,7 @@ cdl_package CYGPKG_DEVS_ETH_POWERPC_FEC {
         display       "Number of input buffers"
         flavor        data
         legal_values  2 to 16
-        default_value 4
+        default_value 16
         description   "
             This option specifies the number of input buffer packets
             to be used for the PowerPC FEC/ethernet device."

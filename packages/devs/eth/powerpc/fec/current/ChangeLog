@@ -1,3 +1,8 @@
+2002-11-14  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* cdl/fec_eth_drivers.cdl: Increase default number of buffers (to a
+	more reasonable amount).
+
 2002-10-18  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* src/if_fec.c: Reduce warnings when PHY code is not used.
