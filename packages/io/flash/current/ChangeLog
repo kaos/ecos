@@ -1,3 +1,8 @@
+2004-06-20  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+        * doc/flash.sgml
+	* cdl/io_flash.cdl: Added documentation of the FLASH API
+
 2004-04-29  Sebastien Couret  <sebastien.couret@elios-informatique.com>
 2004-04-29  Jonathan Larmour  <jifl@eCosCentric.com>
 

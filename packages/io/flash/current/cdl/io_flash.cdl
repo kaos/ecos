@@ -53,6 +53,7 @@
 cdl_package CYGPKG_IO_FLASH {
     display       "FLASH device drivers"
     include_dir   cyg/io
+    doc           ref/flash.html
     description   "
         This option enables drivers for basic I/O services on
         flash devices."
