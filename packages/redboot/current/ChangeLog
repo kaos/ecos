@@ -1,3 +1,7 @@
+2004-9-23   Bob Koninckx <bob.koninckx@o-3s.com>
+
+	* src/net/tc.c: Removed unneccesary call to MS_TICKS_DELAY
+
 2004-09-19  Mark Salter  <msalter@redhat.com>
 
 	* cdl/redboot.cdl: Add CYGSEM_REDBOOT_NETWORK_INIT_ONE_DEVICE
