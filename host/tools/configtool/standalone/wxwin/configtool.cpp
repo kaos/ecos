@@ -909,7 +909,7 @@ bool ecApp::Launch(const wxString & strFileName,const wxString &strViewer)
                 ext.c_str());
             return FALSE;
         }
-        
+
         bool ok = ft->GetOpenCommand(&cmd,
             wxFileType::MessageParameters(strFileName, _T("")));
         delete ft;
@@ -1281,7 +1281,7 @@ void ecApp::CygMountText(wxChar c)
             DWORD disposition;
             HKEY hSubKey = 0;
 
-            if (ERROR_SUCCESS == RegCreateKeyEx(hKey, key, NULL, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS,
+            if (ERROR_SUCCESS == RegCreateKeyEx(hKey, key, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS,
                 NULL, & hSubKey, & disposition))
             {
                 RegSetValueEx(hSubKey, "native", 0, REG_SZ, (unsigned char*) (const wxChar*) value, value.Length() + 1);
