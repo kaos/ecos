@@ -11,6 +11,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 2002 Bart Veer
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -60,6 +61,7 @@
 //
 //==========================================================================*/
 
+#include <pkgconf/system.h>
 #include <pkgconf/kernel.h>
 
 #include <cyg/infra/cyg_type.h>
@@ -511,7 +513,9 @@ struct cyg_spinlock_t
 /* Memory allocator types now come from the "memalloc" package which is   */
 /* where the implementation lives.                                        */
 
-#include <cyg/memalloc/kapidata.h>
+#ifdef CYGPKG_MEMALLOC
+# include <cyg/memalloc/kapidata.h>
+#endif
 
 #ifdef __cplusplus
 }

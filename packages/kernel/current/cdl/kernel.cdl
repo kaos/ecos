@@ -258,8 +258,6 @@ cdl_package CYGPKG_KERNEL {
         cdl_option CYGFUN_KERNEL_API_C {
             display       "Provide C API"
             default_value 1
-            requires      CYGPKG_MEMALLOC
-            requires      CYGFUN_MEMALLOC_KAPI
             description   "
                 The eCos kernel is implemented in C++, but there is an
                 optional C API for use by application code. This C API can be

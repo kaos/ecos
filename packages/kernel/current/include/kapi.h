@@ -11,6 +11,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 2002 Bart Veer
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -56,6 +57,7 @@
 //
 //========================================================================*/
 
+#include <pkgconf/system.h>
 #include <pkgconf/kernel.h>
 
 #ifdef CYGFUN_KERNEL_API_C
@@ -479,7 +481,9 @@ cyg_bool_t cyg_mbox_waiting_to_put(cyg_handle_t mbox);
 /* These definitions are found in the "memalloc" package as this is      */
 /* where the implementation lives.                                       */
 
-#include <cyg/memalloc/kapi.h>
+#ifdef CYGPKG_MEMALLOC
+# include <cyg/memalloc/kapi.h>
+#endif
 
 /*---------------------------------------------------------------------------*/
 /* Semaphores                                                                */

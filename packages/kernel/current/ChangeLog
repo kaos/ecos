@@ -1,3 +1,8 @@
+2002-08-05  Bart Veer  <bartv@tymora.demon.co.uk>
+
+	* cdl/kernel.cdl, include/kapidata.h, include/kapi.h:
+	Allow configurations with the kernel but no malloc
+
 2002-06-05  Gary Thomas  <gary@chez-thomas.org>
 
 	* include/kapi.h: Fix prototype (to allow builds with net stack).
