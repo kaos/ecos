@@ -21,23 +21,8 @@ cat <<EOF >Makefile
 # Makefile for eCos tests
 #
 
-# Copied from 'makefile' the "install" tree
-
-EOF
-
-grep export ${HOME}/makefile >>Makefile
-
-cat <<EOF >>Makefile
-
-#
-# Target specific flags, etc.
-#
-
-EOF
-
-cat ${HOME}/install/include/pkgconf/ecos.mak >>Makefile
-
-cat <<EOF >>Makefile
+# Platform specific setups
+include Make.params
 
 # Simple build rules
 
@@ -54,3 +39,9 @@ DST=${DST-result_prog}
 \${DST}: \${OBJS}
 
 EOF
+
+# Create actual parameters
+
+`dirname $0`/build_Make.params ${HOME}
+
+
