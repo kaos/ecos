@@ -725,11 +725,14 @@ externC void cyg_pthread_sigmask_set (const sigset_t *set, sigset_t *oset)
 {
     pthread_info *self = pthread_self_info();
 
-    if( oset != NULL )
-        *oset = self->sigmask;
+    if( self != NULL )
+    {
+        if( oset != NULL )
+            *oset = self->sigmask;
 
-    if( set != NULL )
-        self->sigmask = *set;
+        if( set != NULL )
+            self->sigmask = *set;
+    }
 }
 
 // -------------------------------------------------------------------------
@@ -744,6 +747,9 @@ externC cyg_bool cyg_posix_sigpending(void)
 {
     pthread_info *self = pthread_self_info();
 
+    if( self == NULL )
+        return false;
+    
     return ( ((sig_pending | self->sigpending) & ~self->sigmask) != 0 );
 }
 
@@ -760,16 +766,19 @@ externC void cyg_posix_deliver_signals( const sigset_t *mask )
     sigset_t oldmask;
     pthread_info *self = pthread_self_info();
 
-    if( mask != NULL )
+    if( self != NULL )
     {
-        oldmask = self->sigmask;
-        self->sigmask = *mask;
+        if( mask != NULL )
+        {
+            oldmask = self->sigmask;
+            self->sigmask = *mask;
+        }
+
+        cyg_deliver_signals();
+
+        if( mask != NULL )        
+            self->sigmask = oldmask;
     }
-
-    cyg_deliver_signals();
-
-    if( mask != NULL )        
-        self->sigmask = oldmask;
 }
 
 // -------------------------------------------------------------------------
