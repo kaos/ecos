@@ -1,3 +1,9 @@
+2003-02-10  Nick Garnett  <nickg@calivar.com>
+
+	* misc/redboot_ROMA.ecm:
+	Changed reference to CYGSCYGSEM_HAL_ARM_IQ80310_ARMBOOT to
+	CYGSEM_HAL_ARM_IOP310_ARMBOOT.
+
 2003-02-05  Nick Garnett  <nickg@calivar.com>
 
 	* src/diag/iq80310.h: Added CYGONCE_IQ80310_H to avoid compilation
