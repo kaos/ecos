@@ -686,7 +686,7 @@ static int jffs2_open(cyg_mtab_entry * mte, cyg_dir dir, const char *name,
 	if (!dir)
 		dir = mte->root;
 
-#ifdef CYGOPT_FS_JFFS2_WRITE
+#ifndef CYGOPT_FS_JFFS2_WRITE
 	if (mode & (O_CREAT|O_TRUNC|O_WRONLY))
 		return EROFS;
 #endif

@@ -1,3 +1,9 @@
+2004-03-17  Oyvind Harboe <oyvind.harboe@zylin.com>
+
+	* src/fs-ecos.c: 
+	With CYGOPT_FS_JFFS2_WRITE=1, file creation failed. The problem
+	was introduced in fs-ecos.c 1.20
+	
 2004-03-11  Oyvind Harboe <oyvind.harboe@zylin.com>
 	
 	* src/fs-ecos.c:
