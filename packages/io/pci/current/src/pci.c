@@ -674,7 +674,7 @@ cyg_pci_configure_device( cyg_pci_device *dev_info )
 
     if (dev_info->num_bars > 0) {
         for (bar = 0; bar < CYG_PCI_MAX_BAR; bar++) {
-            if (!dev_info->base_address[bar]) {
+            if (!dev_info->base_size[bar]) {
                 continue;
             }
 	    flags = dev_info->base_size[bar];

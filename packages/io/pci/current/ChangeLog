@@ -1,3 +1,8 @@
+2004-11-03  David Vrabel  <dvrabel@arcom.com>
+	 
+	 * src/pci.c (cyg_pci_configure_device): Fix bug which caused
+	 memory resources to be not allocated.
+	
 2004-10-13  David Brennan <eCos@brennanhome.com>
 
 	* src/pci.c: Added include of cyg/infra/diag.h to fix compiler
