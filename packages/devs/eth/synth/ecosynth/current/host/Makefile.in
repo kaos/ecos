@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p6 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -13,7 +13,7 @@
 ######COPYRIGHTBEGIN####
 #                                                                          
 # ----------------------------------------------------------------------------
-# Copyright (C) 2002 Bart Veer
+# Copyright (C) 2002, 2003 Bart Veer
 #
 # This file is part of the eCos synthetic target ethernet support.
 #
@@ -445,6 +445,9 @@ mostlyclean distclean maintainer-clean
 @SUPPORTED_TRUE@install-data-hook:
 @SUPPORTED_TRUE@	chown root $(etherdir)/rawether
 @SUPPORTED_TRUE@	chmod u+s $(etherdir)/rawether
+
+@SUPPORTED_FALSE@install-data-hook:
+@SUPPORTED_FALSE@	echo Nothing to be done for this platform
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

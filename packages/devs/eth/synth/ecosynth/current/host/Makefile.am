@@ -10,7 +10,7 @@
 ######COPYRIGHTBEGIN####
 #                                                                          
 # ----------------------------------------------------------------------------
-# Copyright (C) 2002 Bart Veer
+# Copyright (C) 2002, 2003 Bart Veer
 #
 # This file is part of the eCos synthetic target ethernet support.
 #
@@ -88,4 +88,10 @@ install-data-hook:
 	chown root $(etherdir)/rawether
 	chmod u+s $(etherdir)/rawether
 
+else
+## When automake scans for hooks it does not take conditionals fully
+## into account. If the conditional is not satisfied the generated
+## makefile will still try to invoke the hook, so dummy hooks are needed.
+install-data-hook:
+	echo Nothing to be done for this platform
 endif

@@ -1,3 +1,10 @@
+2003-07-09  Bart Veer  <bartv@ecoscentric.com>
+
+	* host/Makefile.am: add a dummy install-data-hook if not
+	supported.
+
+	* host/Makefile.in, host/aclocal.m4, host/configure: regenerate
+
 2003-05-06  Bart Veer  <bartv@ecoscentric.com>
 
 	* host/ethernet.tcl (filters_initialize):
