@@ -102,7 +102,7 @@ bool CProperties::LoadFromRegistry(HKEY hTopKey,LPCTSTR szRegKey)
               break;
             case CProperty::Void:
               if(REG_BINARY==dwType){
-                memcpy(p->pData,Data,min(dwDatalen,p->nLength));
+                memcpy(p->pData,Data,MIN(dwDatalen,p->nLength));
               } else {
                 TRACE(_T("Type mismatch - %s: expected REG_BINARY, got %d\n"),(LPCTSTR)p->strName,dwType);
                 rc=false;

@@ -46,21 +46,10 @@
 #define AFX_STDAFX_H__F20BA9C4_CFD5_11D2_BF75_00A0C949ADAC__INCLUDED_
 
 #if defined(__CYGWIN__)
+  #include <winsock2.h>
   #include <winsock.h>
-
-#if 0
-  #include <termios.h>
   #include <unistd.h>
-  #include <sys/wait.h>
-  #include <dirent.h>
-  #include <sys/file.h>
-
-  #include <sys/socket.h> // socket etc...
-  #include <netinet/in.h> // inet_addr
-  #include <arpa/inet.h>  // inet_addr
-  #include <netdb.h>      // gethostbyname
-#endif
-  #include <sys/timeb.h>
+  #include <process.h>
   #include <signal.h>
   #define cPathsep '/'
 
