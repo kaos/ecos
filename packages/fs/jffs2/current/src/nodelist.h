@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: nodelist.h,v 1.115 2003/11/26 15:30:58 dwmw2 Exp $
+ * $Id: nodelist.h,v 1.116 2004/03/08 15:29:09 dwmw2 Exp $
  *
  */
 
@@ -432,16 +432,20 @@ void jffs2_free_inode_cache(struct jffs2_inode_cache *);
 int jffs2_garbage_collect_pass(struct jffs2_sb_info *c);
 
 /* read.c */
-int jffs2_read_dnode(struct jffs2_sb_info *c, struct jffs2_full_dnode *fd, unsigned char *buf, int ofs, int len);
+int jffs2_read_dnode(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
+		     struct jffs2_full_dnode *fd, unsigned char *buf,
+		     int ofs, int len);
 int jffs2_read_inode_range(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 			   unsigned char *buf, uint32_t offset, uint32_t len);
 char *jffs2_getlink(struct jffs2_sb_info *c, struct jffs2_inode_info *f);
 
 /* compr.c */
-unsigned char jffs2_compress(unsigned char *data_in, unsigned char **cpage_out, 
+unsigned char jffs2_compress(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
+			     unsigned char *data_in, unsigned char **cpage_out, 
 			     uint32_t *datalen, uint32_t *cdatalen);
 void jffs2_free_comprbuf(unsigned char *comprbuf, unsigned char *orig);
-int jffs2_decompress(unsigned char comprtype, unsigned char *cdata_in, 
+int jffs2_decompress(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
+		     unsigned char comprtype, unsigned char *cdata_in, 
 		     unsigned char *data_out, uint32_t cdatalen, uint32_t datalen);
 
 /* scan.c */

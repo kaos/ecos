@@ -1,5 +1,11 @@
-$Id: TODO,v 1.15 2003/10/06 14:50:37 dwmw2 Exp $
+$Id: TODO,v 1.16 2004/03/20 15:01:34 dwmw2 Exp $
 
+ - support asynchronous operation -- add a per-fs 'reserved_space' count,
+   let each outstanding write reserve the _maximum_ amount of physical
+   space it could take. Let GC flush the outstanding writes because the
+   reservations will necessarily be pessimistic. With this we could even
+   do shared writable mmap, if we can have a fs hook for do_wp_page() to
+   make the reservation.
  - disable compression in commit_write()?
  - fine-tune the allocation / GC thresholds
  - chattr support - turning on/off and tuning compression per-inode

@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: write.c,v 1.81 2004/02/17 14:58:16 dwmw2 Exp $
+ * $Id: write.c,v 1.83 2004/03/30 09:36:09 dwmw2 Exp $
  *
  */
 
@@ -375,7 +375,7 @@ int jffs2_write_inode_range(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 		datalen = min_t(uint32_t, writelen, PAGE_CACHE_SIZE - (offset & (PAGE_CACHE_SIZE-1)));
 		cdatalen = min_t(uint32_t, alloclen - sizeof(*ri), datalen);
 
-		comprtype = jffs2_compress(buf, &comprbuf, &datalen, &cdatalen);
+		comprtype = jffs2_compress(c, f, buf, &comprbuf, &datalen, &cdatalen);
 
 		ri->magic = cpu_to_je16(JFFS2_MAGIC_BITMASK);
 		ri->nodetype = cpu_to_je16(JFFS2_NODETYPE_INODE);
@@ -543,48 +543,75 @@ int jffs2_do_unlink(struct jffs2_sb_info *c, struct jffs2_inode_info *dir_f,
 	uint32_t alloclen, phys_ofs;
 	int ret;
 
-	rd = jffs2_alloc_raw_dirent();
-	if (!rd)
-		return -ENOMEM;
+	if (1 /* alternative branch needs testing */ || 
+	    !jffs2_can_mark_obsolete(c)) {
+		/* We can't mark stuff obsolete on the medium. We need to write a deletion dirent */
 
-	ret = jffs2_reserve_space(c, sizeof(*rd)+namelen, &phys_ofs, &alloclen, ALLOC_DELETION);
-	if (ret) {
+		rd = jffs2_alloc_raw_dirent();
+		if (!rd)
+			return -ENOMEM;
+
+		ret = jffs2_reserve_space(c, sizeof(*rd)+namelen, &phys_ofs, &alloclen, ALLOC_DELETION);
+		if (ret) {
+			jffs2_free_raw_dirent(rd);
+			return ret;
+		}
+
+		down(&dir_f->sem);
+
+		/* Build a deletion node */
+		rd->magic = cpu_to_je16(JFFS2_MAGIC_BITMASK);
+		rd->nodetype = cpu_to_je16(JFFS2_NODETYPE_DIRENT);
+		rd->totlen = cpu_to_je32(sizeof(*rd) + namelen);
+		rd->hdr_crc = cpu_to_je32(crc32(0, rd, sizeof(struct jffs2_unknown_node)-4));
+		
+		rd->pino = cpu_to_je32(dir_f->inocache->ino);
+		rd->version = cpu_to_je32(++dir_f->highest_version);
+		rd->ino = cpu_to_je32(0);
+		rd->mctime = cpu_to_je32(get_seconds());
+		rd->nsize = namelen;
+		rd->type = DT_UNKNOWN;
+		rd->node_crc = cpu_to_je32(crc32(0, rd, sizeof(*rd)-8));
+		rd->name_crc = cpu_to_je32(crc32(0, name, namelen));
+
+		fd = jffs2_write_dirent(c, dir_f, rd, name, namelen, phys_ofs, ALLOC_DELETION);
+		
 		jffs2_free_raw_dirent(rd);
-		return ret;
-	}
 
-	down(&dir_f->sem);
+		if (IS_ERR(fd)) {
+			jffs2_complete_reservation(c);
+			up(&dir_f->sem);
+			return PTR_ERR(fd);
+		}
 
-	/* Build a deletion node */
-	rd->magic = cpu_to_je16(JFFS2_MAGIC_BITMASK);
-	rd->nodetype = cpu_to_je16(JFFS2_NODETYPE_DIRENT);
-	rd->totlen = cpu_to_je32(sizeof(*rd) + namelen);
-	rd->hdr_crc = cpu_to_je32(crc32(0, rd, sizeof(struct jffs2_unknown_node)-4));
-
-	rd->pino = cpu_to_je32(dir_f->inocache->ino);
-	rd->version = cpu_to_je32(++dir_f->highest_version);
-	rd->ino = cpu_to_je32(0);
-	rd->mctime = cpu_to_je32(get_seconds());
-	rd->nsize = namelen;
-	rd->type = DT_UNKNOWN;
-	rd->node_crc = cpu_to_je32(crc32(0, rd, sizeof(*rd)-8));
-	rd->name_crc = cpu_to_je32(crc32(0, name, namelen));
-
-	fd = jffs2_write_dirent(c, dir_f, rd, name, namelen, phys_ofs, ALLOC_DELETION);
-	
-	jffs2_free_raw_dirent(rd);
-
-	if (IS_ERR(fd)) {
-		jffs2_complete_reservation(c);
+		/* File it. This will mark the old one obsolete. */
+		jffs2_add_fd_to_list(c, fd, &dir_f->dents);
 		up(&dir_f->sem);
-		return PTR_ERR(fd);
+	} else {
+		struct jffs2_full_dirent **prev = &dir_f->dents;
+		uint32_t nhash = full_name_hash(name, namelen);
+
+		down(&dir_f->sem);
+
+		while ((*prev) && (*prev)->nhash <= nhash) {
+			if ((*prev)->nhash == nhash && 
+			    !memcmp((*prev)->name, name, namelen) &&
+			    !(*prev)->name[namelen]) {
+				struct jffs2_full_dirent *this = *prev;
+
+				D1(printk(KERN_DEBUG "Marking old dirent node (ino #%u) @%08x obsolete\n",
+					  this->ino, ref_offset(this->raw)));
+
+				*prev = this->next;
+				jffs2_mark_node_obsolete(c, (this->raw));
+				jffs2_free_full_dirent(this);
+				break;
+			}
+			prev = &((*prev)->next);
+		}
+		up(&dir_f->sem);
 	}
 
-	/* File it. This will mark the old one obsolete. */
-	jffs2_add_fd_to_list(c, fd, &dir_f->dents);
-
-	up(&dir_f->sem);
-	
 	/* dead_f is NULL if this was a rename not a real unlink */
 	/* Also catch the !f->inocache case, where there was a dirent
 	   pointing to an inode which didn't exist. */

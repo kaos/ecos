@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: gc.c,v 1.132 2003/12/01 11:32:11 dwmw2 Exp $
+ * $Id: gc.c,v 1.133 2004/03/08 15:29:09 dwmw2 Exp $
  *
  */
 
@@ -674,7 +674,7 @@ static int jffs2_garbage_collect_metadata(struct jffs2_sb_info *c, struct jffs2_
 			printk(KERN_WARNING "kmalloc of mdata failed in jffs2_garbage_collect_metadata()\n");
 			return -ENOMEM;
 		}
-		ret = jffs2_read_dnode(c, fn, mdata, 0, mdatalen);
+		ret = jffs2_read_dnode(c, f, fn, mdata, 0, mdatalen);
 		if (ret) {
 			printk(KERN_WARNING "read of old metadata failed in jffs2_garbage_collect_metadata(): %d\n", ret);
 			kfree(mdata);
@@ -1190,7 +1190,7 @@ static int jffs2_garbage_collect_dnode(struct jffs2_sb_info *c, struct jffs2_era
 
 		writebuf = pg_ptr + (offset & (PAGE_CACHE_SIZE -1));
 
-		comprtype = jffs2_compress(writebuf, &comprbuf, &datalen, &cdatalen);
+		comprtype = jffs2_compress(c, f, writebuf, &comprbuf, &datalen, &cdatalen);
 
 		ri.magic = cpu_to_je16(JFFS2_MAGIC_BITMASK);
 		ri.nodetype = cpu_to_je16(JFFS2_NODETYPE_INODE);

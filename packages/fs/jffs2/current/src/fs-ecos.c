@@ -8,7 +8,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: fs-ecos.c,v 1.33 2003/12/02 10:43:03 dwmw2 Exp $
+ * $Id: fs-ecos.c,v 1.34 2004/03/31 12:17:09 dwmw2 Exp $
  *
  */
 
@@ -1347,6 +1347,7 @@ static int jffs2_fo_write(struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio)
 		if (err)
 			return -err;
 	}
+	ri.isize = cpu_to_je32(inode->i_size);
 
 	// Now loop over the iovecs until they are all done, or
 	// we get an error.

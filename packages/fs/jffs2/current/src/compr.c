@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: compr.c,v 1.33 2003/11/28 17:22:54 dwmw2 Exp $
+ * $Id: compr.c,v 1.34 2004/03/08 15:29:09 dwmw2 Exp $
  *
  */
 
@@ -46,8 +46,9 @@ void jffs2_dynrubin_decompress(unsigned char *data_in, unsigned char *cpage_out,
  * jffs2_compress should compress as much as will fit, and should set 
  * *datalen accordingly to show the amount of data which were compressed.
  */
-unsigned char jffs2_compress(unsigned char *data_in, unsigned char **cpage_out, 
-		    uint32_t *datalen, uint32_t *cdatalen)
+unsigned char jffs2_compress(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
+			     unsigned char *data_in, unsigned char **cpage_out, 
+			     uint32_t *datalen, uint32_t *cdatalen)
 {
 #ifdef JFFS2_COMPRESSION
 	int ret;
@@ -97,7 +98,8 @@ void jffs2_free_comprbuf(unsigned char *comprbuf, unsigned char *orig)
 		kfree(comprbuf);
 }
 
-int jffs2_decompress(unsigned char comprtype, unsigned char *cdata_in, 
+int jffs2_decompress(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
+		     unsigned char comprtype, unsigned char *cdata_in, 
 		     unsigned char *data_out, uint32_t cdatalen, uint32_t datalen)
 {
 	switch (comprtype) {
