@@ -1,3 +1,7 @@
+2002-08-04  Bart Veer  <bartv@tymora.demon.co.uk>
+
+	* include/hal_io.h: added argv/argv/environ definitions
+
 2002-05-23  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_synth.cdl: Don't run cache tests.

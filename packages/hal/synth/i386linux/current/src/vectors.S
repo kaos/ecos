@@ -47,20 +47,56 @@
 ## Description: When running on real hardware vectors.S contains
 ##	        initialization code and usually the low-level interrupt and
 ##              exception support. On the synthetic target the latter is
-##              handled by C code. The only initialization that is needed is
+##              handled by C code. The main initialization that is needed is
 ##              to jump into the C startup.        
 ##
 ######DESCRIPTIONEND####
 ##
 ##=============================================================================
 
+# According the SVR4/i386 ABI, most registers are undefined. However
+# there is some interesting information on the stack:   
+#     %esp              argc
+#     %esp+4            argv[0]
+#     ...               argv[1 onwards]
+#     %esp + (argc*4)   NULL
+#     ...               environ[0]
+#     ...               ...
+#     ...               NULL                                                
+#
+# There are some other things that could be done, for example aligning
+# the stack to a 16-byte boundary for SSE, but it is not clear which of
+# those things are actually useful. The glibc source file
+# sysdeps/i386/elf/start.S contains some relevant information.
 
 #==============================================================================
 
-//        .file   "vectors.S"
+        .file   "vectors.S"
 
 	.extern	_linux_entry
+        
+        .data
+        .global cyg_hal_sys_argc
+cyg_hal_sys_argc:       
+        .long   0
+        .global cyg_hal_sys_argv
+cyg_hal_sys_argv:
+        .long   0
+        .global cyg_hal_sys_environ
+cyg_hal_sys_environ:
+        .long 0
+        
 	.text
 	.globl	_start
 _start:
+        popl    %eax
+        movl    %eax, cyg_hal_sys_argc
+        movl    %esp, %ebx
+        movl    %ebx, cyg_hal_sys_argv
+        inc     %eax
+        addl    %eax, %eax
+        addl    %eax, %eax
+        addl    %eax, %ebx
+        movl    %ebx, cyg_hal_sys_environ
+        
 	jmp	_linux_entry

@@ -409,6 +409,11 @@ externC int             cyg_hal_sys_getcwd(char*, int);
 // mmap on the "host" system - this may be unportable.
 externC int             cyg_hal_sys_mmap(struct cyg_hal_sys_mmap_args *);
 
+// Access to environmental data
+extern int              cyg_hal_sys_argc;
+extern const char**     cyg_hal_sys_argv;
+extern const char**     cyg_hal_sys_environ;
+
 // ----------------------------------------------------------------------------
 // Interaction between the application and the auxiliary.
 // Not yet available, but there is a hardware-initialization routine.
