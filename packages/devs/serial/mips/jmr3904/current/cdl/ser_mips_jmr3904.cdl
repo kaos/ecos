@@ -63,7 +63,6 @@ cdl_package CYGPKG_IO_SERIAL_TX39_JMR3904 {
     description   "
            This option enables the serial device drivers for the
            TX39 JMR3904."
-    doc           redirect/ecos-device-drivers.html
 
     compile       -library=libextras.a   tx3904_serial.c
 
