@@ -57,8 +57,14 @@
 #include <cyg/hal/arch.inc>
 #include <cyg/hal/basetype.h>
 
-	.h8300h
 
+#ifdef CYGPKG_HAL_H8300_H8300H
+	.h8300h
+#endif
+#ifdef CYGPKG_HAL_H8300_H8S
+	.h8300s
+#endif
+	
 #------------------------------------------------------------------------------
 # hal_thread_switch_context
 # Switch thread contexts
@@ -67,7 +73,7 @@
 
 	.global	CYG_LABEL_DEFN(hal_thread_switch_context)
 CYG_LABEL_DEFN(hal_thread_switch_context):
-	hal_cpu_save_all
+	hal_cpu_save_context
 	mov.l	sp,@er1
 	
 	# Now load the destination thread by dropping through
@@ -85,7 +91,7 @@ CYG_LABEL_DEFN(hal_thread_load_context):
 
 	mov.l	@er0,sp
 	hal_cpu_load_all
-	rts
+	rte
 	
 ##-----------------------------------------------------------------------------
 ## HAL longjmp(), setjmp() implementations

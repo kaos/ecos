@@ -1,8 +1,8 @@
 //=============================================================================
 //
-//      h8_sci.c
+//      sci.c
 //
-//      Simple driver for the H8/300H Serial Communication Interface (SCI)
+//      Simple driver for the H8/300 Serial Communication Interface (SCI)
 //
 //=============================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
@@ -43,7 +43,7 @@
 // Author(s):   ysato
 // Contributors:ysato
 // Date:        2002-03-21
-// Description: Simple driver for the H8/300H Serial Communication Interface
+// Description: Simple driver for the H8/300 Serial Communication Interface
 //              Clients of this file can configure the behavior with:
 //              CYGNUM_SCI_PORTS:  number of SCI ports
 //
@@ -80,12 +80,12 @@ cyg_hal_plf_sci_init_channel(void* chan)
     // 8-1-no parity.
     HAL_WRITE_UINT8(base+_REG_SCSMR, 0);
 
-    // Set speed to CYGNUM_HAL_H8300_H8300H_SCI_DEFAULT_BAUD_RATE
+    // Set speed to CYGNUM_HAL_H8300_SCI_DEFAULT_BAUD_RATE
     HAL_READ_UINT8(base+_REG_SCSMR, tmp);
     tmp &= ~CYGARC_REG_SCSMR_CKSx_MASK;
-    tmp |= CYGARC_SCBRR_CKSx(CYGNUM_HAL_H8300_H8300H_SCI_BAUD_RATE);
+    tmp |= CYGARC_SCBRR_CKSx(CYGNUM_HAL_H8300_SCI_BAUD_RATE);
     HAL_WRITE_UINT8(base+_REG_SCSMR, tmp);
-    HAL_WRITE_UINT8(base+_REG_SCBRR, CYGARC_SCBRR_N(CYGNUM_HAL_H8300_H8300H_SCI_BAUD_RATE));
+    HAL_WRITE_UINT8(base+_REG_SCBRR, CYGARC_SCBRR_N(CYGNUM_HAL_H8300_SCI_BAUD_RATE));
 }
 
 static cyg_bool
@@ -315,7 +315,7 @@ cyg_hal_plf_sci_init(int sci_index, int comm_index,
     CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
 }
 
-#endif // CYGNUM_HAL_H8300_H8300H_SCI_PORTS
+#endif // CYGNUM_HAL_H8300_SCI_PORTS
 
 //-----------------------------------------------------------------------------
-// end of sh_sci.c
+// end of sci.c

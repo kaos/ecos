@@ -40,10 +40,10 @@
 # ====================================================================
 ######DESCRIPTIONBEGIN####
 #
-# Author(s):      jskov
+# Author(s):      yoshinori sato
 # Original data:  bartv
-# Contributors:
-# Date:           1999-11-02
+# Contributors:   yoshinori sato
+# Date:           2002-04-10
 #
 #####DESCRIPTIONEND####
 #
@@ -62,11 +62,12 @@ cdl_package CYGPKG_HAL_H8300_H8300H_AKI3068NET {
            The aki HAL package provides the support needed to run
            eCos on a Akizuki H8/3068 Network micom board." 
 
-    compile       hal_diag.c plf_misc.c delay_us.S
+    compile       hal_diag.c plf_misc.c delay_us.S plf_ide.c
 
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H <pkgconf/hal_h8300_h8300h.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_h8300_h8300h_aki3068net.h>"
+	puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_IO_H <cyg/hal/plf_io.h>"
 
         puts $::cdl_header "#define CYG_HAL_H8300"
 	puts $::cdl_header "#define CYGNUM_HAL_H8300_SCI_PORTS 1"
@@ -80,7 +81,7 @@ cdl_package CYGPKG_HAL_H8300_H8300H_AKI3068NET {
         display       "Startup type"
         flavor        data
         legal_values  {"ROM" "RAM"}
-        default_value {"ROM"}
+        default_value {"RAM"}
 	no_define
 	define -file system.h CYG_HAL_STARTUP
         description   "
@@ -162,6 +163,12 @@ cdl_package CYGPKG_HAL_H8300_H8300H_AKI3068NET {
 	default_value 1
     }
 
+    cdl_option CYGHWR_HAL_AKI3068NET_IDE {
+	display "IDE I/F expand"
+	flavor	bool
+	default_value 0
+    }
+
     cdl_component CYGBLD_GLOBAL_OPTIONS {
         display "Global build options"
         flavor  none
@@ -197,10 +204,31 @@ cdl_package CYGPKG_HAL_H8300_H8300H_AKI3068NET {
             display "Global linker flags"
             flavor  data
             no_define
-            default_value { "-g -nostdlib -Wl,--gc-sections -Wl,-static -mh" }
+            default_value { "-g -nostdlib -Wl,--gc-sections -Wl,-static -mh -mint32" }
             description   "
                 This option controls the global linker flags. Individual
                 packages may define options which override these global flags."
+        }
+        cdl_option CYGBLD_BUILD_GDB_STUBS {
+            display "Build GDB stub ROM image"
+            default_value 0
+            requires CYGSEM_HAL_ROM_MONITOR
+            requires CYGBLD_BUILD_COMMON_GDB_STUBS
+            requires CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+            requires CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+            requires CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
+            no_define
+            description "
+                This option enables the building of the GDB stubs for the
+                board. The common HAL controls takes care of most of the
+                build process, but the final conversion from ELF image to
+                binary data is handled by the platform CDL, allowing
+                relocation of the data if necessary."
+
+            make -priority 320 {
+                <PREFIX>/bin/gdb_module.bin : <PREFIX>/bin/gdb_module.img
+                $(OBJCOPY) -O binary $< $@
+            }
         }
     }
 
@@ -229,6 +257,36 @@ cdl_package CYGPKG_HAL_H8300_H8300H_AKI3068NET {
                                                     "<pkgconf/mlt_h8300_h8300h_aki3068net_rom.h>" }
         }
     }
+
+    cdl_component CYGHWR_AKI3068NET_IDE_OPTIONS {
+        display "IDE Expand Setting"
+        flavor  none
+        parent  CYGPKG_NONE
+	active_if CYGHWR_HAL_AKI3068NET_IDE
+	implements CYGINT_HAL_PLF_IF_IDE
+        description   "
+	    IDE Expand Hardware Setting."
+
+	cdl_option CYGHWR_HAL_IDE_REGISTER {
+	    display "IDE Register base address"
+	    flavor  data
+	    default_value 0x600000
+        }
+
+        cdl_option CYGHWR_HAL_IDE_ALT_REGS {
+	    display "IDE AlternateRegister base address"
+	    flavor  data
+	    default_value 0x600020
+        }
+
+        cdl_option CYGHWR_HAL_IDE_BUSWIDTH {
+	    display "IDE bus width"
+	    flavor  data
+	    legal_values  {8 16}
+	    default_value 8
+        }
+    }
+
     cdl_option CYGSEM_HAL_ROM_MONITOR {
         display       "Behave as a ROM monitor"
         flavor        bool
@@ -241,5 +299,29 @@ cdl_package CYGPKG_HAL_H8300_H8300H_AKI3068NET {
             ROM monitor may process exceptions or interrupts generated from the
             application. This enables features such as utilizing a separate
             interrupt stack when exceptions are generated."
+    }
+    cdl_option CYGSEM_HAL_H8300_VECTOR_HOOK {
+        display       "Interrupt Vector Hook"
+        flavor        bool
+        default_value 1
+        parent        CYGPKG_HAL_ROM_MONITOR
+        description   "
+            Interrupt Vector Table Hooking Support"
+    }
+    cdl_option CYGHWR_HAL_H8300_VECTOR_ADDRESS {
+        display       "Hook Vector Address"
+        flavor        data
+        default_value 0xffbf20
+        parent        CYGPKG_HAL_ROM_MONITOR
+        requires      { CYGSEM_HAL_H8300_VECTOR_HOOK == 1 }
+        description   "
+            Hooking Vector Table Address"
+    }
+    cdl_option CYGHAL_PLF_SCI_BASE {
+        display "SCI Base address"
+        flavor data
+	default_value 0xffffb8
+        description   "
+            Used SCI Channel base address."
     }
 }

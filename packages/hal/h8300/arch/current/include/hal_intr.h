@@ -109,47 +109,6 @@ externC void hal_interrupt_stack_call_pending_DSRs(void);
 
 #endif
 
-//--------------------------------------------------------------------------
-// Interrupt control macros
-
-#define HAL_DISABLE_INTERRUPTS(_old_)   \
-        asm volatile (                  \
-            "sub.l er0,er0\n\t"         \
-            "stc ccr,r0l\n\t"           \
-            "orc #0x80,ccr\n\t"        \
-            "and.b #0xc0,r0l\n\t"       \
-            "mov.l er0,%0"          \
-            : "=r"(_old_)               \
-            :                           \
-            : "er0"                      \
-            );
-
-#define HAL_ENABLE_INTERRUPTS()         \
-        asm volatile (                  \
-            "andc #0x3f,ccr"             \
-            );
-
-#define HAL_RESTORE_INTERRUPTS(_old_)   \
-        asm volatile (                  \
-            "mov.l %0,er0\n\t"          \
-            "and.b #0xc0,r0l\n\t"       \
-            "stc ccr,r0h\n\t"           \
-            "and.b #0x3f,r0h\n\t"       \
-            "or.b r0h,r0l\n\t"          \
-            "ldc r0l,ccr"               \
-            :                           \
-            : "r"(_old_)                \
-            : "er0"                     \
-            );
-
-#define HAL_QUERY_INTERRUPTS(_old_)     \
-        asm volatile (                  \
-            "sub.l er0,er0\n\t"         \
-            "stc ccr,r0l\n\t"           \
-            "and.b #0xc0,r0l\n\t"       \
-            "mov.l er0,%0"              \
-            : "=r"(_old_)               \
-            );
 
 #ifndef HAL_TRANSLATE_VECTOR
 

@@ -54,6 +54,9 @@
 #include <cyg/infra/testcase.h>
 #include <cyg/infra/diag.h>
 
+// The H8300 does not have C++ support in its toolchain
+#ifndef CYGPKG_HAL_H8300
+
 #include <new>
 
 //==========================================================================
@@ -170,6 +173,19 @@ void Pure::inline_fun1()
 {
     diag_printf("%s(%d) called\n",__PRETTY_FUNCTION__,instance);
 }
+
+#else
+
+__externC void
+cyg_start( void )
+{
+
+    CYG_TEST_INIT();
+
+    CYG_TEST_NA("C++ not supported on this architecture\n");
+}
+
+#endif
 
 //==========================================================================
 // EOF cxxsupp.cxx

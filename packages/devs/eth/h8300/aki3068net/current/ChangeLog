@@ -1,3 +1,6 @@
+2002-12-10  Yoshinori Sato  <ysato@users.sourceforge.jp>
+	* include/devs_eth_h8300_aki3068net.inl: interrupt no fix.
+
 2002-08-14  Yoshinori Sato  <qzb04471@nifty.ne.jp>
 2002-08-14  Jonathan Larmour  <jifl@ecoscentric.com>
 

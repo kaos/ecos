@@ -42,9 +42,9 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):     nickg
-// Contributors:  nickg
-// Date:          1999-02-18
+// Author(s):     Yoshinori Sato
+// Contributors:  Yoshinori Sato
+// Date:          2002-02-13
 // Purpose:       Define architecture abstractions
 // Usage:         #include <cyg/hal/hal_arch.h>
 //              
@@ -102,8 +102,8 @@ externC cyg_uint32 hal_msbit_index(cyg_uint32 mask);
     _regs_->er4   = (_id_)|0xddd4;                                          \
     _regs_->er5   = (_id_)|0xddd5;                                          \
     _regs_->er6   = (_id_)|0xddd6;                                          \
-    _regs_->ccr   = 0x00;                                                   \
     _regs_->pc    = (CYG_WORD)(_entry_);                                    \
+    _regs_->ccr   = 0x00;                                                   \
     _sp_          = (CYG_ADDRESS)_regs_;                                    \
 }
 
@@ -146,7 +146,7 @@ asm volatile (" .globl  " __HAL_BREAKPOINT(_label_) "\n" \
               "trapa #3"                                       \
     );
 
-#define HAL_BREAKINST           0x5703
+#define HAL_BREAKINST           0x5730
 
 #define HAL_BREAKINST_SIZE      2
 
@@ -180,10 +180,9 @@ asm volatile (" .globl  " __HAL_BREAKPOINT(_label_) "\n" \
     _regval_[5]         = (_regs_)->er5;                        \
     _regval_[6]         = (_regs_)->er6;                        \
                                                                 \
-    _regval_[7]         = (CYG_ADDRWORD)(_regs_) +              \
-                          sizeof(HAL_SavedRegisters);           \
-    _regval_[8]         = (_regs_)->pc;                         \
-    _regval_[9]         = (_regs_)->ccr;                        \
+    _regval_[7]         = (_regs_)->sp;                         \
+    _regval_[8]         = (_regs_)->ccr;                        \
+    _regval_[9]         = (_regs_)->pc & 0xffffff;              \
                                                                 \
     HAL_GET_GDB_EXTRA_REGISTERS( _regval_, _regs_ );            \
 }
@@ -201,8 +200,8 @@ asm volatile (" .globl  " __HAL_BREAKPOINT(_label_) "\n" \
     (_regs_)->er5            = _regval_[5];                             \
     (_regs_)->er6            = _regval_[6];                             \
                                                                         \
-    (_regs_)->pc             = _regval_[8];                             \
-    (_regs_)->ccr            = _regval_[9];                             \
+    (_regs_)->ccr            = _regval_[8];                             \
+    (_regs_)->pc             = (_regval_[9] & 0xffffff);                \
                                                                         \
     /* We do not allow the SP or PSW to be set. Changing the SP will    \
      * mess up the saved state. No PSW is saved on thread context       \
@@ -211,6 +210,10 @@ asm volatile (" .globl  " __HAL_BREAKPOINT(_label_) "\n" \
                                                                         \
      HAL_SET_GDB_EXTRA_REGISTERS( _regs_, _regval_ );                   \
 }
+
+#ifndef CYGARC_HAL_GET_PC_REG
+#define CYGARC_HAL_GET_PC_REG(_regs_,_val_) ((_val_) = (_regs_)->pc & 0xffffff)
+#endif
 
 //-------------------------------------------------------------------------
 // HAL setjmp
@@ -267,7 +270,7 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 // Interrupt + call to ISR, interrupt_end() and the DSR
 #define CYGNUM_HAL_STACK_INTERRUPT_SIZE (128)
 
-#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK 
+#if 0 //def CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK 
 
 // An interrupt stack which is large enough for all possible interrupt
 // conditions (and only used for that purpose) exists.  "User" stacks

@@ -1645,6 +1645,22 @@ package CYGPKG_DEVS_ETH_H8300_AKI3068NET {
    	                 micom board."
 }
 
+package CYGPKG_DEVS_ETH_H8300_H8MAX {
+	alias 		{ "H8MAX Board ethernet driver" h8max_eth_drivers }
+	directory	devs/eth/h8300/h8max
+	script		h8300_h8max_eth_drivers.cdl
+        hardware
+        description     "Ethernet drivers for H8MAX board."
+}
+
+package CYGPKG_DEVS_ETH_H8300_EDOSK2674 {
+	alias 		{ "EDOSK-2674R Board ethernet driver" edosk2674_eth_drivers }
+	directory	devs/eth/h8300/edosk2674
+	script		h8300_edosk2674_eth_drivers.cdl
+        hardware
+        description     "Ethernet drivers for EDOSK-2674R board."
+}
+
 package CYGPKG_DEVS_ETH_MCF5272 {
         alias           { "MCF5272 Fast Ethernet Controller driver" mcf5272_eth_driver}
         hardware
@@ -2662,7 +2678,7 @@ package CYGPKG_HAL_SH_SH7751_SE7751 {
 }
 
 # --------------------------------------------------------------------------
-# H8300 packages
+# H8/300 packages
 package CYGPKG_HAL_H8300 {
 	alias		{ "Hitachi H8300 common HAL" hal_h8300 h8300_hal}
 	directory	hal/h8300/arch
@@ -2680,8 +2696,18 @@ package CYGPKG_HAL_H8300_H8300H {
 	script		hal_h8300_h8300h.cdl
 	hardware
         description "
-The H8300H HAL package provides the support needed to run eCos on a Hitachi
+The H8/300H HAL package provides the support needed to run eCos on a Hitachi
 H8/300H processor."
+}
+
+package CYGPKG_HAL_H8300_H8S {
+	alias		{ "Hitachi H8S variant HAL" hal_h8s h8300h_hal}
+	directory	hal/h8300/h8s
+	script		hal_h8300_h8s.cdl
+	hardware
+        description "
+The H8S HAL package provides the support needed to run eCos on a Hitachi
+H8S processor."
 }
 
 package CYGPKG_HAL_H8300_H8300H_SIM {
@@ -2703,8 +2729,41 @@ package CYGPKG_HAL_H8300_H8300H_AKI3068NET {
 	script		hal_h8300_h8300h_aki3068net.cdl
 	hardware
         description "
-           The aki HAL package provides the support needed to run
+           The aki3068net HAL package provides the support needed to run
            eCos on a Akizuki H8/3068 Network micom board." 
+}
+
+package CYGPKG_HAL_H8300_H8300H_H8MAX {
+	alias		{ "H8MAX board" hal_h8300h_h8max h8300h_h8max_hal }
+	directory	hal/h8300/h8max
+	script		hal_h8300_h8300h_h8max.cdl
+	hardware
+        description "
+           The h8max HAL package provides the support needed to run
+           eCos on a H8MAX board." 
+}
+
+package CYGPKG_HAL_H8300_H8S_SIM {
+	alias		{ "H8S simulator" hal_h8s_sim h8s_sim_hal }
+	directory	hal/h8300/sim_s
+	script		hal_h8300_h8s_sim.cdl
+	hardware
+        description "
+           The minimal simulator HAL package is provided for use when
+           only a simple simulation of the processor architecture is
+           desired, as opposed to detailed simulation of any specific
+           board. In particular it is not possible to simulate any of
+           the I/O devices, so device drivers cannot be used."
+}
+
+package CYGPKG_HAL_H8300_H8S_EDOSK2674 {
+	alias		{ "EDOSK-2674R board" hal_h8s_edosk2674 h8s_edosk2674_hal }
+	directory	hal/h8300/edosk2674
+	script		hal_h8300_h8s_edosk2674.cdl
+	hardware
+        description "
+           The edosk2674 HAL package provides the support needed to run
+           eCos on a Hitachi Micro System Europe EDOSK-2674R Evalution board." 
 }
 
 # ==========================================================================
@@ -4765,10 +4824,24 @@ target mcf5272c3 {
 # H8 targets
 
 target h8300h_sim {
-        alias		{ "H8300H minimal simulator" }
+        alias		{ "H8/300H minimal simulator" }
 	packages        { CYGPKG_HAL_H8300
                           CYGPKG_HAL_H8300_H8300H
                           CYGPKG_HAL_H8300_H8300H_SIM
+                          CYGPKG_IO_SERIAL_H8300_SCI
+        }
+        description "
+           The h8300h_sim target provides the packages need to run
+           eCos in the H8/300H minimal simulator. It is not possible to
+           use any of the eCos device drivers when the simulator
+           is running in this mode."
+}
+
+target h8s_sim {
+        alias		{ "H8S minimal simulator" }
+	packages        { CYGPKG_HAL_H8300
+                          CYGPKG_HAL_H8300_H8S
+                          CYGPKG_HAL_H8300_H8S_SIM
                           CYGPKG_IO_SERIAL_H8300_SCI
         }
         description "
@@ -4785,10 +4858,38 @@ target aki3068net {
                           CYGPKG_HAL_H8300_H8300H_AKI3068NET
                           CYGPKG_IO_SERIAL_H8300_SCI
 			  CYGPKG_DEVS_ETH_H8300_AKI3068NET
+                          CYGPKG_DEVICES_WATCHDOG_H8300_H8300H
         }
         description "
            The aki3068net target provides the packages need to run
            eCos in the Akizuki H8/3068 Network board."
+}
+
+target h8max {
+        alias		{ "H8MAX" }
+	packages        { CYGPKG_HAL_H8300
+                          CYGPKG_HAL_H8300_H8300H
+                          CYGPKG_HAL_H8300_H8300H_H8MAX
+                          CYGPKG_IO_SERIAL_H8300_SCI
+			  CYGPKG_DEVS_ETH_H8300_H8MAX
+                          CYGPKG_DEVICES_WATCHDOG_H8300_H8300H
+        }
+        description "
+           The h8max target provides the packages need to run
+           eCos in the strawberry-linux.com H8MAX board."
+}
+
+target edosk2674 {
+        alias		{ "EDOSK-2674R" }
+	packages        { CYGPKG_HAL_H8300
+                          CYGPKG_HAL_H8300_H8S
+                          CYGPKG_HAL_H8300_H8S_EDOSK2674
+                          CYGPKG_IO_SERIAL_H8300_SCI
+			  CYGPKG_DEVS_ETH_H8300_EDOSK2674
+        }
+        description "
+           The h8max target provides the packages need to run
+           eCos in the Hitachi Micro System Europe EDOSK-2674R Evalution board."
 }
 
 # --------------------------------------------------------------------------

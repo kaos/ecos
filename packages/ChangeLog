@@ -97,6 +97,12 @@
 
         * ecos.db: Add support for XScale IXP425, IXDP425, GRG.
 
+2003-03-09  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* ecos.db: New variant H8S (H8/300 architecture)
+	New platform H8MAX (H8/300H)
+	New platform EDOSK-2674 (H8S)
+
 2003-03-05  John Dallaway  <jld@ecoscentric.com>
 
 	* ecosadmin.tcl: Prevent calls to 'cygpath' with an empty

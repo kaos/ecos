@@ -44,7 +44,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    jlarmour
-// Contributors: jlarmour
+// Contributors: jlarmour,ysato
 // Date:         1999-09-09
 // Purpose:      Define Interrupt support
 // Description:  The macros defined here provide the HAL APIs for handling

@@ -9,7 +9,8 @@ OUTPUT_ARCH(h8300h)
 
 MEMORY
 {
-    ram : ORIGIN = 0x400000, LENGTH = 0x20000
+    ram : ORIGIN = 0x400000, LENGTH = 0x28000
+    iram : ORIGIN = 0xffbf20, LENGTH = 0x4000-0x100
 }
 
 SECTIONS
@@ -21,10 +22,8 @@ SECTIONS
     SECTION_rodata1 (ram, ALIGN (0x1), LMA_EQ_VMA)
     SECTION_fixup (ram, ALIGN (0x1), LMA_EQ_VMA)
     SECTION_gcc_except_table (ram, ALIGN (0x1), LMA_EQ_VMA)
-    SECTION_int_fook_table (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_data (ram, ALIGN (0x4),LMA_EQ_VMA)
     SECTION_bss (ram, ALIGN (0x4),LMA_EQ_VMA)
+    SECTION_int_hook_table (iram, CYGHWR_HAL_H8300_VECTOR_ADDRESS, FOLLOWING (.data))
     SECTIONS_END
 }
-
-fook_table_address = 0xffbf20;

@@ -9,12 +9,15 @@ OUTPUT_ARCH(h8300h)
 
 MEMORY
 {
+#define IRAM_TOP 0xffbf20
     rom : ORIGIN = 0x000000, LENGTH = 0x60000
 #if !defined(CYGPKG_IO_ETH_DRIVERS)
-    ram : ORIGIN = 0xffbf20, LENGTH = 0x4000-0x100
+#define WORK (IRAM_TOP+0x100)
+    ram : ORIGIN = WORK, LENGTH = 0x4000-0x100
 #else
-    ram : ORIGIN = 0x5F4000, LENGTH = 0xC000
-    iram : ORIGIN = 0xffbf20, LENGTH = 0x4000-0x100
+#define WORK 0x5f4000
+    ram : ORIGIN = WORK, LENGTH = 0xC000
+    iram : ORIGIN = IRAM_TOP, LENGTH = 0x4000-0x100
 #endif
 }
 
@@ -28,14 +31,14 @@ SECTIONS
     SECTION_rodata1 (rom, ALIGN (0x1), LMA_EQ_VMA)
     SECTION_fixup (rom, ALIGN (0x1), LMA_EQ_VMA)
     SECTION_gcc_except_table (rom, ALIGN (0x1), LMA_EQ_VMA)
+    SECTION_data (ram, WORK, FOLLOWING (.gcc_except_table))
+    SECTION_bss (ram, ALIGN (0x4), LMA_EQ_VMA)
 #if !defined(CYGPKG_IO_ETH_DRIVERS)
-    SECTION_int_fook_table (ram, 0xffbf20,FOLLOWING (.gcc_except_table))
-    SECTION_data (ram, ALIGN (0x4),FOLLOWING (.int_fook_table))
-    SECTION_bss (ram, ALIGN (0x4),LMA_EQ_VMA)
+    SECTION_int_hook_table (ram, CYGHWR_HAL_H8300_VECTOR_ADDRESS,FOLLOWING (.data))
 #else
-    SECTION_data (ram, 0x5F4000,FOLLOWING (.gcc_except_table))
-    SECTION_bss (ram, ALIGN (0x4),LMA_EQ_VMA)
-    SECTION_int_fook_table (iram, 0xffbf20,FOLLOWING (.data))
+    SECTION_int_hook_table (iram, CYGHWR_HAL_H8300_VECTOR_ADDRESS,FOLLOWING (.data))
 #endif
     SECTIONS_END
 }
+
+#undef WORK

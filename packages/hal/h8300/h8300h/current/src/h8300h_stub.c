@@ -1,6 +1,6 @@
 //========================================================================
 //
-//      h8300_stub.c
+//      h8300h_stub.c
 //
 //      Helper functions for H8/300H stub
 //
@@ -40,9 +40,9 @@
 //========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):     Red Hat, jskov
-// Contributors:  Red Hat, jskov
-// Date:          1998-11-06
+// Author(s):     Yoshinori Sato
+// Contributors:  Yoshinori Sato
+// Date:          2002-05-03
 // Purpose:       
 // Description:   Helper functions for H8/300H stub
 // Usage:         
@@ -133,7 +133,7 @@ void set_pc (target_register_t pc)
 
 #define NUM_SS_BPTS 2
 static target_register_t break_mem [NUM_SS_BPTS] = {0, 0};
-static unsigned char break_mem_data [NUM_SS_BPTS];
+static unsigned short break_mem_data [NUM_SS_BPTS];
 
 /* Set a single-step breakpoint at ADDR.  Up to two such breakpoints
    can be set; WHICH specifies which one to set (0 or 1).  */
@@ -155,7 +155,7 @@ void __clear_single_step (void)
   int x;
   for (x = 0; x < NUM_SS_BPTS; x++)
     {
-        unsigned char* addr = (unsigned char*) break_mem[x];
+        unsigned short* addr = (unsigned short *)break_mem[x];
         if (addr) {
             *addr = break_mem_data[x];
             break_mem[x] = 0;
@@ -219,7 +219,17 @@ void __single_step (void)
     /* rts */ 
     unsigned long *sp;
     sp = (unsigned long *)get_register(SP);
-    next = *sp & 0x00ffffff;
+    next = *(sp+2) & 0x00ffffff;
+  } else if (((opcode & 0xf000) == 0x4000) || ((opcode & 0xff00) == 0x5500)) { 
+    /* b**:8 */
+    char dsp;
+    dsp = (opcode & 0xff);
+    set_single_bp(1,(unsigned char *)(pc+2+dsp));
+  } else if (((opcode & 0xff00) == 0x5800) || ((opcode & 0xff00) == 0x5c00)) { 
+    /* b**:16 */
+    short dsp;
+    dsp = *(short *)(pc+2);
+    set_single_bp(1,(unsigned char *)(pc+4+dsp));
   } else if ((opcode & 0xfb00) != 0x5800) {
     /* jmp / jsr */
     int regs;
@@ -230,22 +240,12 @@ void __single_step (void)
       next = get_register(reg_tbl[regs]);
       break;
     case 0x5a00:
-      next = *(unsigned long *)(pc+2) & 0x00ffffff;
+      next = *(unsigned long *)(pc) & 0x00ffffff;
       break;
     case 0x5b00:
       next = *(unsigned long *)(opcode & 0xff);
       break;
     }
-  } else if (((opcode & 0xf000) == 0x4000) || ((opcode & 0xff00) == 0x5500)) { 
-    /* b**:8 */
-    unsigned long dsp;
-    dsp = (long)(opcode && 0xff)+pc+2;
-    set_single_bp(1,(unsigned char *)dsp);
-  } else if (((opcode & 0xff00) == 0x5800) || ((opcode & 0xff00) == 0x5c00)) { 
-    /* b**:16 */
-    unsigned long dsp;
-    dsp = *(unsigned short *)(pc+2)+pc+4;
-    set_single_bp(1,(unsigned char *)dsp);
   }
   set_single_bp(0,(unsigned char *)next);
 }

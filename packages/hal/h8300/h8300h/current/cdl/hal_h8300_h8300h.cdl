@@ -66,7 +66,7 @@ cdl_package CYGPKG_HAL_H8300_H8300H {
         puts $::cdl_header "#include <pkgconf/hal_h8300.h>"
     }
 
-    compile       var_misc.c h8_sci.c
+    compile       var_misc.c h8300h_stub.c
 
     make {
         <PREFIX>/lib/target.ld: <PACKAGE>/src/h8300_h8300h.ld
@@ -109,11 +109,5 @@ cdl_package CYGPKG_HAL_H8300_H8300H {
                  The core (CPU) speed is computed from
                  the input clock speed and the divider setting."
          }
-    }
-    cdl_option CYGNUM_HAL_H8300_H8300H_SCI_BAUD_RATE {
-        display          "SCI serial port default baud rate"
-        flavor data
-        legal_values     { 4800 9600 14400 19200 38400 57600 115200 }
-        default_value    { 38400 }
     }
 }

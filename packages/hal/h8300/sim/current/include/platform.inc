@@ -4,7 +4,7 @@
 ##
 ##	platform.inc
 ##
-##	AM31 simulator "board" assembler header file
+##	H8/300H simulator "board" assembler header file
 ##
 ##=============================================================================
 #####ECOSGPLCOPYRIGHTBEGIN####
@@ -43,9 +43,9 @@
 #######DESCRIPTIONBEGIN####
 ##
 ## Author(s): 	 jlarmour
-## Contributors: jlarmour
-## Date:	 1999-09-09
-## Purpose:	 AM31 Simulator "board" definitions.
+## Contributors: yoshinori sato
+## Date:	 2002-02-20
+## Purpose:	 H8/300H Simulator "board" definitions.
 ## Description:	 This file contains various definitions and macros that are
 ##               required for writing assembly code for the am31 simulator.
 ##               Currently there are none

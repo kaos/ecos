@@ -57,16 +57,32 @@
 extern "C" {
 #endif
 
-#define NUMREGS    32
+#ifdef CYGPKG_HAL_H8300_H8300H
+#define NUMREGS     10
+
+#define NUMREGBYTES (4*10)
+
+enum regnames {
+  ER0,ER1,ER2,ER3,ER4,ER5,ER6,
+  SP, CCR,PC
+};
+#endif
+
+#ifdef CYGPKG_HAL_H8300_H8S
+#define NUMREGS     11
+
+#define NUMREGBYTES (4*11)
+
+enum regnames {
+  ER6,ER5,ER4,ER3,ER2,ER1,ER0,
+  SP, EXR,CCR,PC
+};
+#endif
 
 #define REGSIZE( _x_ ) (4)
 
 typedef unsigned long target_register_t;
 
-enum regnames {
-  ER0,ER1,ER2,ER3,ER4,ER5,ER6,
-  SP, PC, CCR
-};
 
 typedef enum regnames regnames_t;
 

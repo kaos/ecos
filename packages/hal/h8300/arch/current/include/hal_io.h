@@ -60,6 +60,9 @@
 //=============================================================================
 
 #include <cyg/infra/cyg_type.h>
+#if defined(CYGBLD_HAL_PLATFORM_IO_H)
+#include CYGBLD_HAL_PLATFORM_IO_H
+#endif
 
 //-----------------------------------------------------------------------------
 // IO Register address.

@@ -39,16 +39,17 @@
 
 #include <pkgconf/system.h>
 #include <cyg/hal/basetype.h>
+#include <pkgconf/hal.h>
 STARTUP(vectors.o)
 ENTRY(CYG_LABEL_DEFN(_start))
 #ifdef EXTRAS
 INPUT(extras.o)
 #endif
-#if (__GNUC__ >= 3)
-GROUP(libtarget.a libgcc.a libsupc++.a)
-#else
+//#if (__GNUC__ >= 3)
+//GROUP(libtarget.a libgcc.a libsupc++.a)
+//#else
 GROUP(libtarget.a libgcc.a)
-#endif
+//#endif
 
 #define ALIGN_LMA 4
 #define FOLLOWING(_section_) AT ((LOADADDR (_section_) + SIZEOF (_section_) + ALIGN_LMA - 1) & ~ (ALIGN_LMA - 1))
@@ -64,10 +65,10 @@ GROUP(libtarget.a libgcc.a)
 
 #define SECTION_text(_region_, _vma_, _lma_) \
     .text _vma_ : _lma_ \
-    { CYG_LABEL_DEFN(__stext) = ABSOLUTE(.); \
+    { CYG_LABEL_DEFN(_stext) = ABSOLUTE(.); \
     *(.text*) *(.gnu.warning) *(.gnu.linkonce*) *(.init) } \
     > _region_ \
-    CYG_LABEL_DEFN(__etext) = .; PROVIDE (etext = .);
+    CYG_LABEL_DEFN(_etext) = .; PROVIDE (etext = .);
 
 #define SECTION_fini(_region_, _vma_, _lma_) \
     .fini _vma_ : _lma_ \
@@ -94,13 +95,21 @@ GROUP(libtarget.a libgcc.a)
     { FORCE_OUTPUT; *(.gcc_except_table) } \
     > _region_
 
-#define SECTION_int_fook_table(_region_, _vma_, _lma_) \
-    .int_fook_table _vma_ : _lma_ \
-    { CYG_LABEL_DEFN(__int_fook_start) = ABSOLUTE (.); \
-      FORCE_OUTPUT; *(.int_fook_table) } \
+#if defined(CYGHWR_HAL_H8300_VECTOR_ADDRESS)
+#define SECTION_int_hook_table(_region_, _vma_, _lma_) \
+    .int_hook_table CYGHWR_HAL_H8300_VECTOR_ADDRESS : _lma_ \
+    { CYG_LABEL_DEFN(__int_hook_start) = ABSOLUTE (.); \
+      FORCE_OUTPUT; *(.int_hook_table) } \
     > _region_ \
-    CYG_LABEL_DEFN(__rom_int_fook_start) = LOADADDR (.int_fook_table); \
-    CYG_LABEL_DEFN(__int_fook_end) = .;
+    CYG_LABEL_DEFN(__rom_int_hook_table) = LOADADDR(.int_hook_table); \
+    CYG_LABEL_DEFN(__int_hook_end) = .;
+#else
+#define SECTION_int_hook_table(_region_, _vma_, _lma_) \
+    .int_hook_table _vma_ : _lma_ \
+    { CYG_LABEL_DEFN(__int_hook_start) = ABSOLUTE (.); \
+      FORCE_OUTPUT; *(.int_hook_table) } \
+    > _region_
+#endif
 
 #define SECTION_data(_region_, _vma_, _lma_) \
     .data _vma_ : _lma_ \
@@ -134,5 +143,3 @@ GROUP(libtarget.a libgcc.a)
 #include CYGBLD_HAL_PLATFORM_H
 
 CYG_LABEL_DEFN(hal_virtual_vector_table) = CYGHWR_HAL_VECTOR_TABLE;
-
-

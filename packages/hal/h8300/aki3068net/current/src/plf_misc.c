@@ -40,9 +40,9 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    nickg
-// Contributors: nickg, jlarmour
-// Date:         1999-09-09
+// Author(s):    yoshinori sato
+// Contributors: yoshinori sato
+// Date:         2002-04-05
 // Purpose:      HAL miscellaneous functions
 // Description:  This file contains miscellaneous functions provided by the
 //               HAL.
@@ -121,41 +121,6 @@ void hal_clock_read(cyg_uint32 *pvalue)
     HAL_READ_UINT8(CYGARC_8TCNT3,val);
     *pvalue = val;
 }
-
-//---------------------------------------------------------------------------
-// Low-level delay (in microseconds)
-
-#if 0
-void hal_delay_us(int usecs)
-{
-    volatile CYG_BYTE *tcr  = (CYG_BYTE *)CYGARC_8TCR2;
-    volatile CYG_BYTE *tcnt = (CYG_BYTE *)CYGARC_8TCNT2;
-    short clocks_per_us = (CYGHWR_HAL_H8300_PROCESSOR_SPEED/1000000)/8*25;
-    //short clocks_per_us = (CYGHWR_HAL_H8300_PROCESSOR_SPEED/1000000)/20;
-    unsigned char val1,val2;
-    short diff;
-
-    usecs /= 25;
-
-    *tcnt = 0x00;
-    *tcr  = 0x01;
-    
-    diff = 0;
-    while (usecs > 0) {
-	while (diff < clocks_per_us) {
-            val1 = *tcnt;
-	    while ((val2 = *tcnt) == val1);
-	    if (val2 < val1)
-	        diff += val2 + 0x100 - val1;
-	    else
-		diff += val2 - val1;
-	}
-	usecs -= diff / clocks_per_us;
-	diff -= clocks_per_us;
-    }
-    *tcr  = 0x00;
-}
-#endif
 
 /*------------------------------------------------------------------------*/
 /* End of plf_misc.c                                                      */

@@ -5,7 +5,7 @@
 //
 //      mod_regs_tmr.h
 //
-//      16bit/8bit/WatchDog Timer Register
+//      16bit/8bit Timer Register
 //
 //==========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
@@ -104,9 +104,5 @@
 #define CYGARC_TCORB3 0xFFFF97
 #define CYGARC_8TCNT2 0xFFFF98
 #define CYGARC_8TCNT3 0xFFFF99
-
-#define CYGARC_TCSR   0xFFFF8C
-#define CYGARC_TCNT   0xFFFF8D
-#define CYGARC_RSTCSR 0xFFFF8F
 
 #endif

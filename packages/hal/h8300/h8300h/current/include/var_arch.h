@@ -65,22 +65,21 @@ typedef struct HAL_SavedRegisters
 {
     // These are common to all saved states and are in the order
     // stored and loaded by the movm instruction.
-    CYG_ADDRWORD        er0;
-    CYG_ADDRWORD        er1;
-    CYG_ADDRWORD        er2;
-    CYG_ADDRWORD        er3;
-    CYG_ADDRWORD        er4;
-    CYG_ADDRWORD        er5;
-    CYG_ADDRWORD        er6;
+    CYG_WORD32          er0;
+    CYG_WORD32          er1;
+    CYG_WORD32          er2;
+    CYG_WORD32          er3;
+    CYG_WORD32          er4;
+    CYG_WORD32          er5;
+    CYG_WORD32          er6;
     
     /* On interrupts the PC and PSW are pushed automatically by the     */
     /* CPU and SP is pushed for debugging reasons. On a thread switch   */
     /* the saved context is made to look the same.                      */
 
-    CYG_ADDRWORD  sp;             /* Saved copy of SP in some states      */
-    CYG_WORD32    ccr;
-    CYG_ADDRWORD  pc;             /* Program Counter                      */
-    
+    CYG_WORD32          sp;
+    CYG_WORD32          ccr;
+    CYG_WORD32          pc;
 } HAL_SavedRegisters;
 
 // Internal peripheral registers
@@ -93,6 +92,7 @@ typedef struct HAL_SavedRegisters
 #include <cyg/hal/mod_regs_sys.h>
 #include <cyg/hal/mod_regs_tmr.h>
 #include <cyg/hal/mod_regs_tpc.h>
+#include <cyg/hal/mod_regs_wdt.h>
 
 //--------------------------------------------------------------------------
 #endif // CYGONCE_HAL_VAR_ARCH_H

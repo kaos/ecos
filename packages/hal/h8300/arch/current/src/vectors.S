@@ -40,8 +40,8 @@
 ##=============================================================================
 #######DESCRIPTIONBEGIN####
 ##
-## Author(s): 	nickg
-## Contributors:	nickg, dmoseley, dhowells
+## Author(s): 	Yoshinori Sato
+## Contributors: Yoshinori Sato
 ## Date:	2002-02-14
 ## Purpose:	H8/300 exception vectors
 ## Description:	This file defines the code placed into the exception
@@ -67,12 +67,31 @@
 
 #include <cyg/hal/arch.inc>	
 #include <cyg/hal/basetype.h>	
-		
+#include <cyg/hal/variant.inc>
+			
 	
 ##-----------------------------------------------------------------------------
 	
-//	.file	"vectors.S"
+#ifdef CYGPKG_HAL_H8300_H8300H
 	.h8300h
+	.macro	shll2 reg
+	shll.l	\reg
+	shll.l	\reg
+	.endm
+	.macro	shlr2 reg
+	shlr.l	\reg
+	shlr.l	\reg
+	.endm
+#endif
+#ifdef CYGPKG_HAL_H8300_H8S
+	.h8300s
+	.macro	shll2 reg
+	shll.l	#2,\reg
+	.endm
+	.macro	shlr2 reg
+	shlr.l	#2,\reg
+	.endm
+#endif
 	
 #ifdef CYGPKG_CYGMON
 ##-----------------------------------------------------------------------------
@@ -115,8 +134,8 @@
 	; need to restore the exception frame.
 	mov.l	@sp+,er0
 	mov.l	@sp+,er1
-	mov.l	er1,@er0
-	mov.l	er0,sp				// Restore the frame-adjusted SP
+	mov.l	er0,@er1
+	mov.l	er1,sp				// Restore the frame-adjusted SP
 
 	; Restore the scratch registers
 	mov.l	@er0_save,er0
@@ -127,7 +146,10 @@
 
 ##-----------------------------------------------------------------------------
 		
-#if defined(CYG_HAL_STARTUP_ROM) || defined(CYGPKG_HAL_H8300_H8300H_SIM)
+#if (defined(CYG_HAL_STARTUP_ROM) || \
+     defined(CYGPKG_HAL_H8300_H8300H_SIM) || \
+     defined(CYGPKG_HAL_H8300_H8S_SIM))
+    
 	.section .vectors,"a"
 	
 	.globl	reset_vector
@@ -135,7 +157,10 @@
 reset_vector:
 	; Reset vector
 	.long	CYG_LABEL_DEFN(_start)
-	.space	6*4
+	.long	CYG_LABEL_DEFN(_start)
+	.space	3*4
+	.long	__interrupt5
+	.long	__interrupt6
 	.long	__interrupt7
 	.long	__interrupt8
 	.long	__interrupt9
@@ -193,16 +218,84 @@ reset_vector:
 	.long	__interrupt61
 	.long	__interrupt62
 	.long	__interrupt63
-	
+
+#ifdef CYGPKG_HAL_H8300_H8S
+	.long	__interrupt64
+	.long	__interrupt65
+	.long	__interrupt66
+	.long	__interrupt67
+	.long	__interrupt68
+	.long	__interrupt69
+	.long	__interrupt70
+	.long	__interrupt71
+	.long	__interrupt72
+	.long	__interrupt73
+	.long	__interrupt74
+	.long	__interrupt75
+	.long	__interrupt76
+	.long	__interrupt77
+	.long	__interrupt78
+	.long	__interrupt79
+	.long	__interrupt80
+	.long	__interrupt81
+	.long	__interrupt82
+	.long	__interrupt83
+	.long	__interrupt84
+	.long	__interrupt85
+	.long	__interrupt86
+	.long	__interrupt87
+	.long	__interrupt88
+	.long	__interrupt89
+	.long	__interrupt90
+	.long	__interrupt91
+	.long	__interrupt92
+	.long	__interrupt93
+	.long	__interrupt94
+	.long	__interrupt95
+	.long	__interrupt96
+	.long	__interrupt97
+	.long	__interrupt98
+	.long	__interrupt99
+	.long	__interrupt100
+	.long	__interrupt101
+	.long	__interrupt102
+	.long	__interrupt103
+	.long	__interrupt104
+	.long	__interrupt105
+	.long	__interrupt106
+	.long	__interrupt107
+	.long	__interrupt108
+	.long	__interrupt109
+	.long	__interrupt110
+	.long	__interrupt111
+	.long	__interrupt112
+	.long	__interrupt113
+	.long	__interrupt114
+	.long	__interrupt115
+	.long	__interrupt116
+	.long	__interrupt117
+	.long	__interrupt118
+	.long	__interrupt119
+	.long	__interrupt120
+	.long	__interrupt121
+	.long	__interrupt122
+	.long	__interrupt123
+	.long	__interrupt124
+	.long	__interrupt125
+	.long	__interrupt126
+	.long	__interrupt127
+#endif
 #endif
 
 #define INTERRUPT_ENTRY(no) \
 __interrupt##no:	    \
 	jsr	@interrupt_entry
 
-	.section .int_fook_table,"a"
-	.space	7*4	
+	.section .int_hook_table,"ax"
+	.space	5*4	
 __interrupt_table:
+INTERRUPT_ENTRY(5)
+INTERRUPT_ENTRY(6)
 INTERRUPT_ENTRY(7)
 INTERRUPT_ENTRY(8)
 INTERRUPT_ENTRY(9)
@@ -260,7 +353,73 @@ INTERRUPT_ENTRY(60)
 INTERRUPT_ENTRY(61)
 INTERRUPT_ENTRY(62)
 INTERRUPT_ENTRY(63)
-		
+#ifdef CYGPKG_HAL_H8300_H8S
+INTERRUPT_ENTRY(64)
+INTERRUPT_ENTRY(65)
+INTERRUPT_ENTRY(66)
+INTERRUPT_ENTRY(67)
+INTERRUPT_ENTRY(68)
+INTERRUPT_ENTRY(69)
+INTERRUPT_ENTRY(70)
+INTERRUPT_ENTRY(71)
+INTERRUPT_ENTRY(72)
+INTERRUPT_ENTRY(73)
+INTERRUPT_ENTRY(74)
+INTERRUPT_ENTRY(75)
+INTERRUPT_ENTRY(76)
+INTERRUPT_ENTRY(77)
+INTERRUPT_ENTRY(78)
+INTERRUPT_ENTRY(79)
+INTERRUPT_ENTRY(80)
+INTERRUPT_ENTRY(81)
+INTERRUPT_ENTRY(82)
+INTERRUPT_ENTRY(83)
+INTERRUPT_ENTRY(84)
+INTERRUPT_ENTRY(85)
+INTERRUPT_ENTRY(86)
+INTERRUPT_ENTRY(87)
+INTERRUPT_ENTRY(88)
+INTERRUPT_ENTRY(89)
+INTERRUPT_ENTRY(90)
+INTERRUPT_ENTRY(91)
+INTERRUPT_ENTRY(92)
+INTERRUPT_ENTRY(93)
+INTERRUPT_ENTRY(94)
+INTERRUPT_ENTRY(95)
+INTERRUPT_ENTRY(96)
+INTERRUPT_ENTRY(97)
+INTERRUPT_ENTRY(98)
+INTERRUPT_ENTRY(99)
+INTERRUPT_ENTRY(100)
+INTERRUPT_ENTRY(101)
+INTERRUPT_ENTRY(102)
+INTERRUPT_ENTRY(103)
+INTERRUPT_ENTRY(104)
+INTERRUPT_ENTRY(105)
+INTERRUPT_ENTRY(106)
+INTERRUPT_ENTRY(107)
+INTERRUPT_ENTRY(108)
+INTERRUPT_ENTRY(109)
+INTERRUPT_ENTRY(110)
+INTERRUPT_ENTRY(111)
+INTERRUPT_ENTRY(112)
+INTERRUPT_ENTRY(113)
+INTERRUPT_ENTRY(114)
+INTERRUPT_ENTRY(115)
+INTERRUPT_ENTRY(116)
+INTERRUPT_ENTRY(117)
+INTERRUPT_ENTRY(118)
+INTERRUPT_ENTRY(119)
+INTERRUPT_ENTRY(120)
+INTERRUPT_ENTRY(121)
+INTERRUPT_ENTRY(122)
+INTERRUPT_ENTRY(123)
+INTERRUPT_ENTRY(124)
+INTERRUPT_ENTRY(125)
+INTERRUPT_ENTRY(126)
+INTERRUPT_ENTRY(127)
+#endif
+			
 ##-----------------------------------------------------------------------------
 ## Startup code
 			
@@ -271,7 +430,6 @@ CYG_LABEL_DEFN(_start):
 	; set up stack
 
 	mov.l	#__interrupt_stack,sp
-	ldc	#0x80,ccr
 	
 	; Initialize hardware
 	hal_cpu_init
@@ -299,17 +457,19 @@ CYG_LABEL_DEFN(_start):
 
 #endif
 
+#if defined(CYGSEM_HAL_H8300_VECTOR_HOOK)
 	; Setup Interrupt Vector (virtual)
-	mov.l	#CYG_LABEL_DEFN(__rom_int_fook_start),er5
-	mov.l	#CYG_LABEL_DEFN(__int_fook_start),er6
-	mov.l	#CYG_LABEL_DEFN(__int_fook_end),er4
+	mov.l	#CYG_LABEL_DEFN(__rom_int_hook_table),er5
+	mov.l	#CYG_LABEL_DEFN(__int_hook_start),er6
+	mov.l	#CYG_LABEL_DEFN(__int_hook_end),er4
 	sub.l	er6,er4
 1:	
 	eepmov.w
 	dec.w	#1,e4
 	cmp.w	#-1,e4
 	bhi	1b
-
+#endif
+	
 	; Clear BSS
 	mov.l	#CYG_LABEL_DEFN(__bss_start),er5
 	mov.l	er5,er6
@@ -351,8 +511,6 @@ CYG_LABEL_DEFN(_start):
 #endif
 
 
-	mov.b	#0x9a,r0l
-	mov.b	r0l,@0xfee027	
        	; Call cyg_start
 	sub.l	er0,er0
 		
@@ -368,18 +526,15 @@ interrupt_entry:
 	sub.l	#__interrupt_table,er0
 	shlr.l	er0
 	shlr.l	er0
-	add.w	#7,r0
+	add.w	#5-1,r0
 	mov.l	er0,@CYG_LABEL_DEFN(_intvector)
 	mov.l	@sp+,er0
 	adds	#4,sp
 #ifdef CYGPKG_CYGMON
 	hal_cygmon_switch_app_stack
 #endif
-	hal_cpu_save_all			; push all registers
-	mov.l	@CYG_LABEL_DEFN(_intvector),er0
-	shll.l	er0
-	shll.l	er0
-	mov.l	@(CYG_LABEL_DEFN(hal_vsr_table),er0),er0
+	hal_cpu_save_all
+	h8300_var_interrupt_entry		; load isr address
 	jmp	@er0
 
 ##-----------------------------------------------------------------------------
@@ -418,10 +573,10 @@ CYG_LABEL_DEFN(__default_interrupt_vsr):
 	hal_diag_intr_start
 	
 	increment_sched_lock
-	
+
 #if defined(CYGPKG_CYGMON)
         // For Cygmon, we saved this back when we originally switched stacks.
-	mov.l	@sp,er1				; A2 = saved thread state
+	mov.l	sp,er1				; A2 = saved thread state
 #elif defined(CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK)
 	; Increment interrupt nesting counter
 	mov.l	sp,er1
@@ -434,11 +589,11 @@ CYG_LABEL_DEFN(__default_interrupt_vsr):
 	mov.l	er0,sp				; switch to new SP
 8:
 	mov.l	er1,@-sp			; save old SP
-	mov.l	@er1,er1
 	
 #else
-	mov	@sp,er1				; A2 = saved thread state
+	mov	sp,er1				; A2 = saved thread state
 #endif
+	mov.l	er1,er4
 
 	; Here D3 contains the table byte offset of the vector to
 	; call.
@@ -448,7 +603,6 @@ CYG_LABEL_DEFN(__default_interrupt_vsr):
 	; Call cyg_instrument to record that this interrupt is being raised.
 
 	.extern CYG_LABEL_DEFN(cyg_instrument)
-	mov.l	er1,er3
 	mov.l	#0x0301,er0			; type = INTR,RAISE
 	mov.l	@CYG_LABEL_DEFN(_intvector),er2		; arg2 = table offset
 	jsr	CYG_LABEL_DEFN(cyg_instrument)	; call instrumentation
@@ -464,8 +618,9 @@ CYG_LABEL_DEFN(__default_interrupt_vsr):
 	; Cyg_Interrupt::acknowledge_interrupt(). At some future point
 	; we may want to do the ack stuff here to allow immediate nesting.
 	
-	andc	#0x7f,ccr
-	
+	mov.l	@CYG_LABEL_DEFN(_intvector),er0
+	mov.b	@(CYG_LABEL_DEFN(cyg_hal_level_table),er0),r0l
+	hal_cpu_set_int_level
 #endif
 #if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) || \
     defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
@@ -475,18 +630,16 @@ CYG_LABEL_DEFN(__default_interrupt_vsr):
 	; this is a ^C.
 	
 	.extern CYG_LABEL_DEFN(hal_saved_interrupt_state)
-	mov.l	er3,@CYG_LABEL_DEFN(hal_saved_interrupt_state)
+	mov.l	er4,@CYG_LABEL_DEFN(hal_saved_interrupt_state)
 	
 #endif
 	mov.l	@CYG_LABEL_DEFN(_intvector),er0
-	shll.l	er0
-	shll.l	er0
+	shll2	er0
 	mov.l	@(CYG_LABEL_DEFN(hal_interrupt_handlers),er0),er2
 	
 	mov.l	@(CYG_LABEL_DEFN(hal_interrupt_data),er0),er1
 
-	shlr.l	er0
-	shlr.l	er0
+	shlr2	er0
 
 	jsr	@er2
 
@@ -523,8 +676,7 @@ CYG_LABEL_DEFN(__default_interrupt_vsr):
 	; Using the vector offset in D3, get the interrupt object pointer
 	; into D1.
 	mov.l	@CYG_LABEL_DEFN(_intvector),er1
-	shll.l	er1
-	shll.l	er1
+	shll2	er1
 	mov.l	@(CYG_LABEL_DEFN(hal_interrupt_objects),er1),er1
 
 	; Even when this is not the last nested interrupt, we must call
@@ -540,18 +692,25 @@ CYG_LABEL_DEFN(__default_interrupt_vsr):
 #	show_interrupts
 
 	hal_diag_restore
-	
+
 	hal_cpu_load_all
 #ifdef CYGPKG_CYGMON
 	hal_cygmon_restore_app_stack
 #endif
+        mov.l   er0,@-sp
+        mov.l   @(4:16,sp),er0
+        mov.l   er0,@__lastpc
+        mov.l   @sp+,er0
+        
 	rte					; and return
 
 	.section	.bss
 	.global	CYG_LABEL_DEFN(_intvector)
 CYG_LABEL_DEFN(_intvector):
 	.long	0
-
+        .global __lastpc        
+__lastpc:
+        .long   0
 	.text	
 ##-----------------------------------------------------------------------------
 ## Execute pending DSRs on the interrupt stack with interrupts enabled.
@@ -562,25 +721,7 @@ CYG_LABEL_DEFN(_intvector):
 	.global CYG_LABEL_DEFN(hal_interrupt_stack_call_pending_DSRs)
 
 CYG_LABEL_DEFN(hal_interrupt_stack_call_pending_DSRs):
-	mov.l	er5,@-sp			; save some work regs
-	mov.l	er6,@-sp
-	mov.l	sp,er6				; save current SP
-	mov.l	#__interrupt_stack,sp		; interrupt stack pointer
-	stc	ccr,r5l				; save PSW
-	hal_cpu_int_enable			; enable interrupts
-
-	; Call kernel code to invoke DSRs.
-	jsr	@CYG_LABEL_DEFN(cyg_interrupt_call_pending_DSRs)
-
-	; On return the old SP in a2 and the old PSW in d2 will 
-	; have been preserved by the calling conventions.
-	
-	hal_cpu_int_merge r5l			; Restore previous PSW
-	mov.l	er6,sp				; restore old SP
-	mov.l	@sp+,er6			; Retrieve old work regs
-	mov.l	@sp+,er5
-	rts					; and return
-		
+	h8300_var_call_pending_DSR
 #endif		
 		
 #ifdef CYGPKG_CYGMON
@@ -588,18 +729,6 @@ CYG_LABEL_DEFN(hal_interrupt_stack_call_pending_DSRs):
 er0_save:
 	.long	0
 er1_save:
-	.long	0
-er2_save:
-	.long	0
-er3_save:
-	.long	0
-er4_save:
-	.long	0
-er5_save:
-	.long	0
-er6_save:
-	.long	0
-sp_save:
 	.long	0
 #endif
 
@@ -613,7 +742,9 @@ CYG_LABEL_DEFN(__default_trap_vsr):
 #ifdef CYG_HAL_DIAG_EXCPT_END
 	hal_diag_excpt_start
 #endif
-
+	mov.l	@(32,sp),er0
+	subs	#2,er0
+	mov.l	er0,@(32,sp)
 	mov.l	sp,er0
 	mov.l	@CYG_LABEL_DEFN(_intvector),er1	
 
@@ -639,21 +770,21 @@ CYG_LABEL_DEFN(__default_trap_vsr):
 	.globl	CYG_LABEL_DEFN(hal_vsr_table)
 CYG_LABEL_DEFN(hal_vsr_table):	
 	.long	CYG_LABEL_DEFN(__default_trap_vsr)
+	.long	CYG_LABEL_DEFN(__default_trap_vsr)
 	.long	0
 	.long	0
 	.long	0
-	.long	0
-	.long	0
-	.long	0
+	.long	CYG_LABEL_DEFN(__default_trap_vsr)
+	.long	CYG_LABEL_DEFN(__default_trap_vsr)
 	.long	CYG_LABEL_DEFN(__default_trap_vsr)
 	.long	CYG_LABEL_DEFN(__default_trap_vsr)
 	.long	CYG_LABEL_DEFN(__default_trap_vsr)
 	.long	CYG_LABEL_DEFN(__default_trap_vsr)
 	.long	CYG_LABEL_DEFN(__default_trap_vsr)
 
-	.rept	64-12
+	.rept	CYG_ISR_TABLE_SIZE-12
 	.long	CYG_LABEL_DEFN(__default_interrupt_vsr)
-	.endr		
+	.endr
 #endif
 	
 ##-----------------------------------------------------------------------------
@@ -687,26 +818,26 @@ CYG_LABEL_DEFN(hal_interrupt_objects):
 	
 	.section	.bss
 
-	.balign 16
+	.balign 2
 	.global _cyg_interrupt_stack_base
 _cyg_interrupt_stack_base:
 __interrupt_stack_base:
 	.rept CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE
 	.byte 0
 	.endr
-	.balign 16
+	.balign 2
 	.global _cyg_interrupt_stack
 _cyg_interrupt_stack:
 __interrupt_stack:
 	
 #ifdef CYGPKG_CYGMON
-	.balign 16
+	.balign 2
 	.global __cygmon_interrupt_stack_base
 __cygmon_interrupt_stack_base:
 	.rept CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE
 	.byte 0
 	.endr
-	.balign 16
+	.balign 2
 	.global __cygmon_interrupt_stack
 __cygmon_interrupt_stack:
 #endif

@@ -40,10 +40,10 @@
 # ====================================================================
 ######DESCRIPTIONBEGIN####
 #
-# Author(s):      jskov
+# Author(s):      yoshinori sato
 # Original data:  bartv, nickg
-# Contributors:   dmoseley
-# Date:           1999-11-02
+# Contributors:   yoshinori sato
+# Date:           2002-02-16
 #
 #####DESCRIPTIONEND####
 #
@@ -76,7 +76,7 @@ cdl_package CYGPKG_HAL_H8300 {
             control C handling."
     }
 
-    compile       hal_misc.c hal_syscall.c context.S h8300_stub.c
+    compile       hal_misc.c hal_syscall.c context.S sci.c
 
     make {
         <PREFIX>/lib/vectors.o : <PACKAGE>/src/vectors.S
@@ -85,5 +85,54 @@ cdl_package CYGPKG_HAL_H8300 {
         @tail +2 vectors.tmp >> $(notdir $@).deps
         @echo >> $(notdir $@).deps
         @rm vectors.tmp
+    }
+    cdl_component CYGPKG_REDBOOT_H8300_OPTIONS {
+        display       "Redboot for H8300 options"
+        flavor        none
+        no_define
+        parent        CYGPKG_REDBOOT
+        active_if     CYGPKG_REDBOOT
+        description   "
+            This option lists the target's requirements for a valid Redboot
+            configuration."
+
+        cdl_component CYGSEM_REDBOOT_H8300_LINUX_BOOT {
+            display        "Support booting uCinux via RedBoot"
+            flavor         bool
+            default_value  1
+            description    "
+               This option enables RedBoot to support booting of a uClinux kernel."
+            compile -library=libextras.a redboot_linux_exec.c
+
+            cdl_option CYGDAT_REDBOOT_H8300_LINUX_BOOT_ENTRY {
+                display        "Default kernel entry address"
+                flavor         data
+                default_value  0x400000
+                description    "
+                   This option uClinux kernel entry address of default."
+            }
+
+            cdl_option CYGDAT_REDBOOT_H8300_LINUX_COMMAND_START {
+                display        "Default kernel command line start address"
+                flavor         data
+                default_value  0x5ffe00
+                description    "
+                   This option uClinux kernel command line start address of default."
+            }
+
+            cdl_option CYGDAT_REDBOOT_H8300_LINUX_BOOT_COMMAND_LINE {
+                display        "Default command line"
+                flavor         data
+                default_value  { "console=/dev/ttyS1" }
+                description    "
+                   This option uClinux kernel startup command line of default."
+            }
+        }
+    }
+    cdl_option CYGNUM_HAL_H8300_SCI_BAUD_RATE {
+        display          "SCI serial port default baud rate"
+        flavor data
+        legal_values     { 4800 9600 14400 19200 38400 57600 115200 }
+        default_value    { 38400 }
     }
 }

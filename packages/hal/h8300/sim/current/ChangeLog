@@ -6,6 +6,27 @@
         "default_value" from "calculated". This makes it easier
         to change these values globally.
         
+2003-03-09  Yoshinori Sato <ysato@users.sourceforge.jp>
+
+	* cdl/hal_h8300_h8300h_sim.cdl
+	* src/hal_diag.c
+	CYGHAL_PLF_SCI_BASE add.
+
+2002-10-13  Yoshinori Sato <ysato@users.sourceforge.jp>
+
+	* cdl/hal_h8300_h8300h_sim.cdl
+	GLOBAL_LD_FLAGS add -mint32 option.
+
+2002-10-13  Yoshinori Sato <ysato@users.sourceforge.jp>
+
+	* include/pkgconf/mlt_h8300_h8300h_sim_ram.ldi
+	typo fix.
+
+2002-05-27  Yoshinori Sato <ysato@users.sourceforge.jp>
+
+	* src/hal_diag.c
+	delete hal_diag_led_on/hal_diag_led_off.
+
 2002-04-29  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/delay_us.S:

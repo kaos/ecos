@@ -74,26 +74,6 @@
 	.endm
 #endif
 
-	# Enable interrupts
-	.macro hal_cpu_int_enable
-	andc	#0x3f,ccr
-	.endm		
-
-	# Disable interrupts
-	.macro hal_cpu_int_disable
-	orc	#0xc0,ccr
-	.endm	
-
-	# Merge the interrupt enable state of the status register in
-	# \sr with the current sr.
-	.macro	hal_cpu_int_merge sr wk=r0l
-	and.b	#0xc0,\sr
-	stc	ccr,\wk
-	bclr	#7,\wk
-	or	\sr,\wk
-	ldc	\wk,ccr
-	.endm
-
 	# Enable further exception processing, and disable
 	# interrupt processing.
 	.macro hal_cpu_except_enable

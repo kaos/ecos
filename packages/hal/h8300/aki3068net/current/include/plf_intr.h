@@ -43,9 +43,9 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    jlarmour
-// Contributors: jlarmour
-// Date:         1999-09-09
+// Author(s):    ysato
+// Contributors: ysato
+// Date:         2002-04-06
 // Purpose:      Define Interrupt support
 // Description:  The macros defined here provide the HAL APIs for handling
 //               interrupts and the clock for the simulator. This file
@@ -69,7 +69,7 @@ externC void hal_delay_us(int usecs);
 #define HAL_PLATFORM_RESET(x)
 #define HAL_PLATFORM_RESET_ENTRY &h8300h_reset
 
-#define HAL_DELAY_US(n) hal_delay_us((n) / 16)
+#define HAL_DELAY_US(n) hal_delay_us((n))
 
 //--------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_PLF_INTR_H

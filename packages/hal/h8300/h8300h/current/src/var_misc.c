@@ -40,9 +40,9 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    nickg
-// Contributors: nickg, jlarmour
-// Date:         1999-01-21
+// Author(s):    ysato
+// Contributors: ysato
+// Date:         2002-03-01
 // Purpose:      HAL miscellaneous functions
 // Description:  This file contains miscellaneous functions provided by the
 //               HAL.
@@ -77,7 +77,7 @@ struct int_regs {
 #define REGS_DEF(ier,isr,mask,status) \
         {(CYG_BYTE *)ier,(CYG_BYTE *)isr,mask,status}
 
-struct int_regs interrupt_registers[]= {
+const struct int_regs interrupt_registers[]= {
     REGS_DEF(CYGARC_IER,CYGARC_ISR,0x01,0x01),
     REGS_DEF(CYGARC_IER,CYGARC_ISR,0x02,0x02),
     REGS_DEF(CYGARC_IER,CYGARC_ISR,0x04,0x04),
@@ -136,7 +136,10 @@ void
 hal_interrupt_mask(int vector)					  
 {
     CYG_BYTE ier;
-    struct int_regs *regs=&interrupt_registers[vector-12];
+    const struct int_regs *regs;
+    if( vector < 12 )
+        return;
+    regs=&interrupt_registers[vector-12];
     if (vector == CYGNUM_HAL_INTERRUPT_WDT) {
         HAL_READ_UINT8(CYGARC_TCSR,ier);
 	ier &= ~0x20;
@@ -156,7 +159,10 @@ void
 hal_interrupt_unmask(int vector)					  
 {
     CYG_BYTE ier;
-    struct int_regs *regs=&interrupt_registers[vector-12];
+    const struct int_regs *regs;
+    if( vector < 12 )
+        return;
+    regs=&interrupt_registers[vector-12];
     if (vector == CYGNUM_HAL_INTERRUPT_WDT) {
         HAL_READ_UINT8(CYGARC_TCSR,ier);
 	ier |= 0x20;
@@ -176,7 +182,10 @@ void
 hal_interrupt_acknowledge(int vector)					  
 {
     CYG_BYTE isr;
-    struct int_regs *regs=&interrupt_registers[vector-12];
+    const struct int_regs *regs;
+    if( vector < 12 )
+        return;
+    regs=&interrupt_registers[vector-12];    
     if (vector >= CYGNUM_HAL_INTERRUPT_DEND0A &&
         vector <= CYGNUM_HAL_INTERRUPT_DEND1B)
         return;
@@ -195,7 +204,7 @@ hal_interrupt_acknowledge(int vector)
     }
 }
 
-const short priority_table[]={
+const char priority_table[]={
    7, 6, 5, 5, 4, 4,-1,-1,
    3, 3,-1, 3, 2, 2, 2, 2,
    1, 1, 1, 1, 0, 0, 0, 0,
@@ -205,19 +214,26 @@ const short priority_table[]={
    9,9,9,9
 };
 
+CYG_BYTE cyg_hal_level_table[64];
+
 void
 hal_interrupt_set_level(int vector,int level)
 {
     CYG_BYTE *ipr;
     CYG_BYTE ipr_mask;
-    int priority = priority_table[vector-12];
+    int priority;
+    if( vector < 12 )
+        return;
+    priority = priority_table[vector-12];
     ipr = (CYG_BYTE *)CYGARC_IPRA + ((priority & 0xf8) >> 3);
     if (priority>=0) {
         ipr_mask = 1 << (priority & 0x07);
 	if (level == 0) {
 	    *ipr &= ~ipr_mask;
+	    cyg_hal_level_table[vector] = 0x00;
 	} else {
 	    *ipr |= ipr_mask;
+	    cyg_hal_level_table[vector] = 0x80;
 	}
     } else {
         CYG_FAIL("Unknown interrupt vector");                             
@@ -240,8 +256,6 @@ hal_interrupt_configure(int vector,int level,int up)
 	}
         CYG_ASSERT(!(up && level), "Cannot trigger on high level!"); 
         HAL_WRITE_UINT8(CYGARC_ISCR,iscr);
-    } else {
-        CYG_FAIL("Unhandled interrupt vector");
     }
 }
 

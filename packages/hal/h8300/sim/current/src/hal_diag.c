@@ -40,9 +40,9 @@
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   dsm
-// Contributors:        dsm
-// Date:        1998-03-13
+// Author(s):   yoshinori sato
+// Contributors: yoshinori sato
+// Date:        2002-02-16
 // Purpose:     HAL diagnostic output
 // Description: Implementations of HAL diagnostic output support.
 //
@@ -56,9 +56,9 @@
 #include <cyg/hal/h8_sci.h>
 #include <cyg/hal/var_intr.h>
 
-#define SCI_BASE ((cyg_uint8*)0xffffb0)
+#define SCI_BASE ((cyg_uint8*)CYGHAL_PLF_SCI_BASE)
 
-static channel_data_t channel = { (cyg_uint8*)SCI_BASE, 0, 0};
+const static channel_data_t channel = { (cyg_uint8*)SCI_BASE, 0, 0};
 
 void
 cyg_hal_plf_comms_init(void)

@@ -67,17 +67,17 @@
 // Cache dimensions
 
 // Data cache
-#define HAL_DCACHE_SIZE                 0       // Size of data cache in bytes
-#define HAL_DCACHE_LINE_SIZE            0       // Size of a data cache line
-#define HAL_DCACHE_WAYS                 0       // Associativity of the cache
+//#define HAL_DCACHE_SIZE                 0       // Size of data cache in bytes
+//#define HAL_DCACHE_LINE_SIZE            0       // Size of a data cache line
+//#define HAL_DCACHE_WAYS                 0       // Associativity of the cache
 
 // Instruction cache
-#define HAL_ICACHE_SIZE                 0       // Size of cache in bytes
-#define HAL_ICACHE_LINE_SIZE            0       // Size of a cache line
-#define HAL_ICACHE_WAYS                 0       // Associativity of the cache
+//#define HAL_ICACHE_SIZE                 0       // Size of cache in bytes
+//#define HAL_ICACHE_LINE_SIZE            0       // Size of a cache line
+//#define HAL_ICACHE_WAYS                 0       // Associativity of the cache
 
-#define HAL_DCACHE_SETS (HAL_DCACHE_SIZE/(HAL_DCACHE_LINE_SIZE*HAL_DCACHE_WAYS))
-#define HAL_ICACHE_SETS (HAL_ICACHE_SIZE/(HAL_ICACHE_LINE_SIZE*HAL_ICACHE_WAYS))
+//#define HAL_DCACHE_SETS (HAL_DCACHE_SIZE/(HAL_DCACHE_LINE_SIZE*HAL_DCACHE_WAYS))
+//#define HAL_ICACHE_SETS (HAL_ICACHE_SIZE/(HAL_ICACHE_LINE_SIZE*HAL_ICACHE_WAYS))
 
 //-----------------------------------------------------------------------------
 // Global control of data cache

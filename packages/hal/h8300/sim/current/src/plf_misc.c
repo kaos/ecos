@@ -40,9 +40,9 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    nickg
-// Contributors: nickg, jlarmour
-// Date:         1999-09-09
+// Author(s):    yoshinori sato
+// Contributors: yoshinori sato
+// Date:         2002-02-17
 // Purpose:      HAL miscellaneous functions
 // Description:  This file contains miscellaneous functions provided by the
 //               HAL.

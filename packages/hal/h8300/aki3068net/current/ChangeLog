@@ -6,6 +6,53 @@
         "default_value" from "calculated". This makes it easier
         to change these values globally.
         
+2003-03-09  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* cdl/hal_h8300_h8300h_aki3068net.cdl
+	* src/hal_diag.c
+	CYGHAL_PLF_SCI_BASE add.
+
+2003-02-28  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* cdl/hal_h8300_h8300h_aki3068net.cdl
+	* src/plf_ide.c
+	* include/plf_io.h
+	* include/platform.inc
+	IDE I/F Support.
+
+2003-01-29  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* include/platform.inc
+	DRAM setup delay fix.
+
+2002-11-26  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* include/platform.inc
+	Buscontroler setting tuneing.
+	* cdl/hal_h8300_h8300h_aki3068net.cdl
+	CYGBLD_GLOBAL_LDFLAGS option "-mint32" add.
+	* include/plf_intr.h
+	delay_us scale fix.
+	* src/delay_us.S
+	timing tune.
+	
+2002-10-15  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* include/pkgconf/mlt_h8300_h8300h_aki3068net_rom.ldi
+	typo fixed.
+
+2002-10-15  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* cdl/hal_h8300_h8300h_aki3068net.cdl
+	CYGSEM_HAL_H8300_VECTOR_HOOK,CYGHWR_HAL_H8300_VECTOR_ADDRESS add.
+	* include/pkgconf/mlt_h8300_h8300h_aki3068net_ram.cdl
+	typo fixed.
+
+2002-05-31  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* src/hal_diag.c
+	delete hal_delay_us function.
+
 2002-04-29  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/delay_us.S:

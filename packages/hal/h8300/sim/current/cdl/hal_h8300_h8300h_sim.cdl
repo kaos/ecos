@@ -173,7 +173,7 @@ cdl_package CYGPKG_HAL_H8300_H8300H_SIM {
             display "Global linker flags"
             flavor  data
             no_define
-            default_value { "-g -nostdlib -Wl,--gc-sections -Wl,-static -mh" }
+            default_value { "-g -nostdlib -Wl,--gc-sections -Wl,-static -mh -mint32" }
             description   "
                 This option controls the global linker flags. Individual
                 packages may define options which override these global flags."
@@ -201,5 +201,12 @@ cdl_package CYGPKG_HAL_H8300_H8300H_SIM {
             define -file system.h CYGHWR_MEMORY_LAYOUT_H
             calculated { "<pkgconf/mlt_h8300_h8300h_sim_ram.h>" }
         }
+    }
+    cdl_option CYGHAL_PLF_SCI_BASE {
+        display "SCI Base address"
+        flavor data
+	default_value 0xffffb0
+        description   "
+            Used SCI Channel base address."
     }
 }

@@ -42,9 +42,9 @@
 ##=============================================================================
 #######DESCRIPTIONBEGIN####
 ##
-## Author(s): 	 jlarmour
+## Author(s): 	 Yoshinori Saro
 ## Contributors: Yoshinori Sato
-## Date:	 1999-09-09
+## Date:	 2002-04-06
 ## Purpose:	 AKI3068NET "board" definitions.
 ## Description:	 This file contains various definitions and macros that are
 ##               required for writing assembly code for the AKI3068NET board
@@ -65,39 +65,61 @@
 
 ##-----------------------------------------------------------------------------
 
+#if CYGINT_HAL_PLF_IF_IDE != 0
+#define ABWCR_VAL ~((1 << ((CYGHWR_HAL_IDE_REGISTER >> 25) & 7)) |\
+                    (1 << ((CYGHWR_HAL_IDE_ALT_REGS >> 25) & 7))) 
+#else
+#define ABWCR_VAL 0xff
+#endif
+
 #define CYGPKG_HAL_H8300_MEMC_DEFINED
 	.macro	hal_memc_init
 #if defined(CYG_HAL_STARTUP_ROM)
 	mov.l	#init_regs,er0
-	mov.w	#8,e1
 1:
-	mov.l	@er0+,er2
+	mov.w	@er0+,r2
+	beq	1f
+	cmp.w	#0xf000,r2
+	bhi	2f
+	mov.w	#0x00fe,e2
+	bra	3f
+2:
+	mov.w	#0x00ff,e2
+3:
 	mov.w	@er0+,r1
 	mov.b	r1l,@er2
-	dec.w	#1,e1
-	bne	1b
-	bra	2f
+	bra	1b
+
+#define INIT_REGS_DATA(REGS,DATA) \
+	.word	(REGS & 0xffff),DATA
 
 init_regs:
-	.long	CYGARC_RTCOR
-	.word	5		; 1.5[ms] reflesh cycle
-	.long	CYGARC_RTMCSR
-	.word	0x30		; clk x 2048
-	.long	CYGARC_DRCRB
-	.word	0x90
-	.long	CYGARC_DRCRA
-	.word	0x22
-	.long	CYGARC_P1DDR
-	.word	0xff
-	.long	CYGARC_P2DDR
-	.word	0xff
-	.long	CYGARC_P5DDR
-	.word	0x01
-	.long	CYGARC_P8DDR
-	.word	0x0c
+INIT_REGS_DATA(CYGARC_RTCOR,9)
+INIT_REGS_DATA(CYGARC_RTMCSR,0x30)
+INIT_REGS_DATA(CYGARC_DRCRB,0x98)
+INIT_REGS_DATA(CYGARC_DRCRA,0x3c)
+INIT_REGS_DATA(CYGARC_ASTCR,0xfb)
+INIT_REGS_DATA(CYGARC_ABWCR,ABWCR_VAL)
+INIT_REGS_DATA(CYGARC_P1DDR,0xff)
+INIT_REGS_DATA(CYGARC_P2DDR,0xff)
+INIT_REGS_DATA(CYGARC_P5DDR,0x01)
+INIT_REGS_DATA(CYGARC_P8DDR,0x0c)
+	.word	0
 init_regs_end:
+;; Thanks Hiroyuki Senshu
 
+;; DRAM Setup delay
+1:
+	mov.b	#8,r0h
 2:
+	mov.b	#0,r0l
+3:
+	dec.b	r0l
+	bne	3b
+	mov.b	@CYGARC_RTMCSR,r0l
+	bpl	2b
+	dec	r0h
+	bne	2b
 #endif
 	.endm
 
