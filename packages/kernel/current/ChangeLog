@@ -1,3 +1,8 @@
+2004-04-11  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* doc/kernel.sgml: Expanded the documentation about the use of
+	CYG_FLAG_WAITMODE_CLR.
+
 2004-03-27  Sebastien Couret	<sebastien.couret@elios-informatique.fr>
 
 	* src/debug/dbg-thread-demux.c (dbg_thread_syscall_rmt): Only

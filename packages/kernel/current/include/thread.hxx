@@ -562,7 +562,7 @@ public:
     void                remove(Cyg_Thread *thread);
 
                         // test if queue is empty
-    cyg_bool            empty();
+    inline cyg_bool     empty();
     
 };
 

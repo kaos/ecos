@@ -3822,8 +3822,17 @@ with a value of 0.
       <para>
 <function>cyg_flag_setbits</function> is called by a producer thread
 or from inside a DSR when an event occurs. The specified bits are or'd
-into the current event flag value. This may cause a waiting thread to
-be woken up, if its condition is now satisfied.
+into the current event flag value. This may cause one or more waiting 
+threads to be woken up, if their conditions are now satisfied. How many 
+threads are awoken depends on the use of <literal>CYG_FLAG_WAITMODE_CLR
+</literal>. The queue of threads waiting on the flag is walked to find 
+threads which now have their wake condition fulfilled. If the awoken thread 
+has passed <literal>CYG_FLAG_WAITMODE_CLR</literal> the walking of the queue 
+is terminated, otherwise the walk continues. Thus if no threads have passed 
+<literal>CYG_FLAG_WAITMORE_CLR</literal> all threads with fulfilled 
+conditions will be awoken. If <literal>CYG_FLAG_WAITMODE_CLR</literal> is 
+passed by threads with fulfilled conditions, the number of awoken threads 
+will depend on the order the threads are in the queue.
       </para>
       <para>
 <function>cyg_flag_maskbits</function> can be used to clear one or
