@@ -1,3 +1,9 @@
+2003-11-07  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/flash.c (fis_init): Take out misleading warning - since the
+	new [default] behaviour of "fis free" means free space need not
+	be necessarily erased on the device.
+
 2003-11-04  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/flash.c (find_free): Better handling of end address - otherwise

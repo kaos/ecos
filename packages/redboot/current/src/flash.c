@@ -428,10 +428,14 @@ fis_init(int argc, char *argv[])
             diag_printf("   initialization failed at %p: %s\n",
                         err_addr, flash_errmsg(stat));
         }
+#ifndef CYGDAT_REDBOOT_FIS_MAX_FREE_CHUNKS
+    // In this case, 'fis free' works by scanning for erased blocks.  Since the
+    // "-f" option was not supplied, there may be areas which are not used but
+    // don't appear to be free since they are not erased - thus the warning
     } else {
         diag_printf("    Warning: device contents not erased, some blocks may not be usable\n");
+#endif
     }
-
     fis_update_directory();
 }
 
