@@ -306,7 +306,7 @@ struct sockaddr_in {
 	u_char	sin_family;
 	u_short	sin_port;
 	struct	in_addr sin_addr;
-	char	sin_zero[8];
+	char	sin_zero[24];
 };
 
 #define	INET_ADDRSTRLEN                 16

@@ -42,6 +42,7 @@ externC void cyg_net_free(caddr_t addr, int type);
 #define free(addr, type) FREE(addr, (int)type)
 
 // Memory types
+#define M_DEVBUF        3
 #define M_PCB           (void *)4       /* protocol control block */
 #define M_RTABLE        5       /* routing tables */
 #define M_IFADDR        9       /* interface address */

@@ -130,7 +130,8 @@ spl_any( cyg_uint32 which )
 {
     cyg_uint32 old_spl = spl_state;
     if ( cyg_thread_self() != splx_thread ) {
-        cyg_mutex_lock( &splx_mutex );
+        while ( !cyg_mutex_lock( &splx_mutex ) )
+            continue;
         old_spl = 0; // Free when we unlock this context
         CYG_ASSERT( 0 == splx_thread, "Thread still owned" );
         CYG_ASSERT( 0 == spl_state, "spl still set" );
