@@ -89,6 +89,14 @@
 
 #define N_MAIN 1
 
+// If we have instrumentation enabled, make the execution time in the
+// simulator even shorter that we were going to anyway.
+#ifdef CYGPKG_KERNEL_INSTRUMENT
+#define SIM_DELAY_DIVISOR 100
+#else
+#define SIM_DELAY_DIVISOR 10
+#endif
+
 //-----------------------------------------------------------------------
 // Some targets need to define a smaller number of handlers due to
 // memory restrictions.
@@ -657,7 +665,7 @@ void setup_death_alarm(cyg_addrword_t data, cyg_handle_t *deathHp,
             ((1000000000.0*rtc_res.divisor)
              *((double)DEATH_TIME_LIMIT)/((double)rtc_res.dividend));
         if ( cyg_test_is_simulator )
-            tick_delay /= 10;
+            tick_delay /= SIM_DELAY_DIVISOR;
 #ifdef CYGPKG_HAL_I386_LINUX 
         // 20 seconds is a long time compared to the run time of other tests.
         // Reduce to 10 seconds, allowing more tests to get run.

@@ -87,3 +87,11 @@ cdl_option CYGBLD_REDBOOT_FLASH_BOOT_OFFSET {
 cdl_option CYGNUM_IO_ETH_DRIVERS_NUM_PKT {
   user_value 2
 };
+
+cdl_option CYGSEM_REDBOOT_FIS_CRC_CHECK {
+  user_value 0
+};
+
+cdl_option CYGSEM_IO_FLASH_VERIFY_PROGRAM {
+  user_value 0
+};

@@ -80,7 +80,7 @@ cdl_package CYGPKG_HAL_ARM_SA11X0_IPAQ {
         display       "Startup type"
         flavor        data
         default_value {"RAM"}
-        legal_values  {"RAM" "ROM" "WinCE"}
+        legal_values  {"RAM" "ROM" "WinCE" "Compaq"}
 	no_define
 	define -file system.h CYG_HAL_STARTUP
         description   "
@@ -93,7 +93,7 @@ cdl_package CYGPKG_HAL_ARM_SA11X0_IPAQ {
 
 	cdl_option CYGBLD_HAL_STARTUP_ROM_INIT_DRAM {
 	    display "Initialize DRAM"
-	    active_if     { (CYG_HAL_STARTUP == "ROM") || (CYG_HAL_STARTUP == "WinCE") }
+	    active_if     { (CYG_HAL_STARTUP == "ROM") || (CYG_HAL_STARTUP == "Compaq") }
 	    default_value { (CYG_HAL_STARTUP == "ROM") }
 	    description "
                 If the ROM startup code is run from something other than
@@ -285,6 +285,7 @@ cdl_package CYGPKG_HAL_ARM_SA11X0_IPAQ {
         flavor data
         no_define
         calculated { CYG_HAL_STARTUP == "RAM" ? "arm_sa11x0_ipaq_ram" : \
+	             CYG_HAL_STARTUP == "Compaq" ? "arm_sa11x0_ipaq_compaq" : \
 	             CYG_HAL_STARTUP == "WinCE" ? "arm_sa11x0_ipaq_wince" : \
                                                 "arm_sa11x0_ipaq_rom" }
 
@@ -294,6 +295,7 @@ cdl_package CYGPKG_HAL_ARM_SA11X0_IPAQ {
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_LDI
             calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_arm_sa11x0_ipaq_ram.ldi>" : \
+  	                 CYG_HAL_STARTUP == "Compaq" ? "<pkgconf/mlt_arm_sa11x0_ipaq_compaq.ldi>" : \
   	                 CYG_HAL_STARTUP == "WinCE" ? "<pkgconf/mlt_arm_sa11x0_ipaq_wince.ldi>" : \
                                                     "<pkgconf/mlt_arm_sa11x0_ipaq_rom.ldi>" }
         }
@@ -304,6 +306,7 @@ cdl_package CYGPKG_HAL_ARM_SA11X0_IPAQ {
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_H
             calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_arm_sa11x0_ipaq_ram.h>" : \
+  	                 CYG_HAL_STARTUP == "Compaq" ? "<pkgconf/mlt_arm_sa11x0_ipaq_compaq.h>" : \
   	                 CYG_HAL_STARTUP == "WinCE" ? "<pkgconf/mlt_arm_sa11x0_ipaq_wince.h>" : \
                                                     "<pkgconf/mlt_arm_sa11x0_ipaq_rom.h>" }
         }

@@ -1,3 +1,29 @@
+2001-04-03  Mark Salter  <msalter@redhat.com>
+
+	* src/diag/flash.c: Don't compile unless CYGPKG_IO_FLASH defined.
+	* src/diag/xscale_test.c (testMenu): Only add flash_test if
+	CYGPKG_IO_FLASH is defined.
+
+2001-03-31  Mark Salter  <msalter@redhat.com>
+
+	* src/diag/xscale_test.c: Merge in latest changes from Cyclone.
+	* src/diag/iq80310.h: Ditto.
+	* src/diag/external_timer.c: Ditto.
+
+2001-03-30  Mark Salter  <msalter@redhat.com>
+
+	* misc/redboot_RAM.ecm: Disable CYGSEM_REDBOOT_FIS_CRC_CHECK
+	and CYGSEM_IO_FLASH_VERIFY_PROGRAM.
+	* misc/redboot_RAMA.ecm: Ditto.
+	* misc/redboot_ROM.ecm: Ditto.
+	* misc/redboot_ROMA.ecm: Ditto.
+
+	* include/pkgconf/mlt_arm_iq80310_rom.h: Fix heap1_SIZE.
+	* include/pkgconf/mlt_arm_iq80310_ram.h Ditto: 
+	* include/pkgconf/mlt_arm_iq80310_ram.mlt: Remove PCI window.
+
+	* include/hal_platform_setup.h: Fix page table comment.
+
 2001-03-12  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/iq80310_misc.c: Ensure case ranges have spaces around

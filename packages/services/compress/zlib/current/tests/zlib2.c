@@ -246,7 +246,6 @@ static void entry0( cyg_addrword_t data )
 
     switch (err) {
     case Z_OK:
-        CYG_TEST_FAIL_FINISH("Unexpected success!");
         break;
     case Z_MEM_ERROR:
         CYG_TEST_NA("Not enough memory for decompression");
@@ -256,10 +255,6 @@ static void entry0( cyg_addrword_t data )
         break;
     case Z_DATA_ERROR:
         CYG_TEST_FAIL_FINISH("Decompression failed");
-        break;
-    case Z_BAD_CRC:
-        // This is what we hoped for! zlib CRC is bad because it's
-        // different from gz CRC.
         break;
     default:
         CYG_TEST_FAIL_FINISH("Unknown decompression error");

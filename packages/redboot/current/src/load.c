@@ -366,6 +366,10 @@ do_load(int argc, char *argv[])
         printf("Specified address (%p) is not in RAM.\n", (void*)base);
         return;
     }
+    if (raw && !base_addr_set) {
+        printf("Raw load requires a memory address\n");
+        return;
+    }
 #ifdef CYGPKG_REDBOOT_NETWORKING
     if (mode == MODE_TFTP) {
         res = tftp_stream_open(filename, &host, TFTP_OCTET, &err);    
@@ -385,63 +389,59 @@ do_load(int argc, char *argv[])
         // Suppress verbosity when using xyz modem download
         redboot_getc_init(xyzModem_stream_read, 0 && verbose);
     }
-    // Read initial header - to determine file [image] type
-    for (i = 0;  i < sizeof(type);  i++) {
-        if ((res = redboot_getc()) < 0) {
-            err = getc_info.err;
-            break;
-        } 
-        type[i] = res;
-    }
-    if (res >= 0) {
-        redboot_getc_rewind();  // Restore header to stream
-        if (raw) {
-            if (!base_addr_set) {
-                printf("Raw load requires a memory address\n");
-            } else {
+    if (raw) {
 #ifdef CYGPKG_COMPRESS_ZLIB
-                if (decompress) {
-                    _pipe_t* p = &load_pipe;
-                    p->out_buf = (unsigned char*) base;
-                    p->out_size = 0;
-                    p->in_buf = _buffer;
+        if (decompress) {
+            _pipe_t* p = &load_pipe;
+            p->out_buf = (unsigned char*) base;
+            p->out_size = 0;
+            p->in_buf = _buffer;
                 
-                    err = (*_dc_init)(p);
+            err = (*_dc_init)(p);
 
-                    while (0 == err) {
-                        p->in_avail = 0;
-                        for (i = 0; i < CYGNUM_REDBOOT_LOAD_ZLIB_BUFFER; i++) {
-                            res = redboot_getc();
-                            if (res < 0) break;
-                            p->in_buf[p->in_avail++] = res;
-                        }
-                        if (0 == p->in_avail) break;
-
-                        err = (*_dc_inflate)(p);
-                    }
-
-                    // Free used resources, do final translation of
-                    // error value.
-                    err = (*_dc_close)(p, err);
-
-                    if (0 != err && p->msg)
-                        printf("zlib: %s\n", p->msg);
-
-                    end = (unsigned long) base + p->out_size;
-                } else // dangling block
-#endif
-                {
-                    unsigned char *mp = (unsigned char *)base;
-                    while ((res = redboot_getc()) >= 0) {
-                        *mp++ = res;
-                    }
-                    err = 0;
-                    end = (unsigned long) mp;
+            while (0 == err) {
+                p->in_avail = 0;
+                for (i = 0; i < CYGNUM_REDBOOT_LOAD_ZLIB_BUFFER; i++) {
+                    res = redboot_getc();
+                    if (res < 0) break;
+                    p->in_buf[p->in_avail++] = res;
                 }
-                if (0 == err)
-                    printf("Raw file loaded %p-%p\n", (void *)base, (void *)end);
+                if (0 == p->in_avail) break;
+
+                err = (*_dc_inflate)(p);
             }
-        } else {
+
+            // Free used resources, do final translation of
+            // error value.
+            err = (*_dc_close)(p, err);
+
+            if (0 != err && p->msg)
+                printf("zlib: %s\n", p->msg);
+
+            end = (unsigned long) base + p->out_size;
+        } else // dangling block
+#endif
+        {
+            unsigned char *mp = (unsigned char *)base;
+            while ((res = redboot_getc()) >= 0) {
+                *mp++ = res;
+            }
+            err = 0;
+            end = (unsigned long) mp;
+        }
+        if (0 == err)
+            printf("Raw file loaded %p-%p\n", (void *)base, (void *)end);
+    } else {
+        // Read initial header - to determine file [image] type
+        for (i = 0;  i < sizeof(type);  i++) {
+            if ((res = redboot_getc()) < 0) {
+                err = getc_info.err;
+                break;
+            } 
+            type[i] = res;
+        }
+        if (res >= 0) {
+            redboot_getc_rewind();  // Restore header to stream
             // Treat data as some sort of executable image
             if (strncmp(&type[1], "ELF", 3) == 0) {
                 end = load_elf_image(redboot_getc);

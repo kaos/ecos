@@ -1,3 +1,8 @@
+2001-04-03  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* ecos.db:
+	Include flash driver in sa1100mm target.
+
 2001-03-29  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* ecos.db: Add Atlas flash and ethernet drivers to target description.
@@ -12,6 +17,10 @@
 
 	* ecos.db: Added new Intel 28Fxxx package. Only supports flash
 	file at the moment.
+
+2001-03-16  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added E7T package.
 
 2001-03-15  Gary Thomas  <gthomas@redhat.com>
 

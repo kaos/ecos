@@ -343,6 +343,15 @@ cdl_package CYGPKG_REDBOOT {
               This option is used to set the default timeout for startup
               scripts, when they are enabled."
         }
+
+        cdl_option CYGSEM_REDBOOT_FIS_CRC_CHECK {
+            display       "Use CRC checksums on FIS images."
+            flavor        bool
+            default_value 1
+            description "
+              When this option is enabled, RedBoot will use CRC checksums
+              when reading and writing flash images."
+        }
     }
 
     cdl_option CYGPRI_REDBOOT_ROM_MONITOR {

@@ -269,13 +269,13 @@ cdl_package CYGPKG_NET {
         }
     }
 
-    cdl_option CYGPKG_NET_SYSCTL {
-        display "Support BSD 'sysctl()' function"
-        flavor  bool
-        default_value 0
-        description   "
-            This option includes support for the 'sysctl()' functions."
-    }
+#    cdl_option CYGPKG_NET_SYSCTL {
+#        display "Support BSD 'sysctl()' function"
+#        flavor  bool
+#        default_value 0
+#        description   "
+#            This option includes support for the 'sysctl()' functions."
+#    }
 
     cdl_option CYGPKG_NET_THREAD_PRIORITY {
         display "Priority level for backgound network processing."

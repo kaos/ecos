@@ -1,3 +1,10 @@
+2001-04-05  Bart Veer  <bartv@redhat.com>
+
+	* src/usbs_sa11x0.c (usbs_sa11x0_ep0_fill_fifo):
+	Set the DATA_END and IN_READY bits in one operation.
+	This seems to avoid problems when the target needs to send
+	back a zero-length control packet.
+
 2001-02-02  Bart Veer  <bartv@redhat.com>
 
 	* cdl/usbs_sa11x0.cdl:

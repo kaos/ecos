@@ -1,3 +1,7 @@
+2001-04-02  Jesper Skov  <jskov@redhat.com>
+
+	* tests/zlib2.c: Removed BAD_CRC state.
+
 2001-03-12  Jesper Skov  <jskov@redhat.com>
 
 	* src/inflate.c: Remove BAD_CRC state. Do separate CRC for

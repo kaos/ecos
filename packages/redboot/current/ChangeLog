@@ -1,3 +1,27 @@
+2001-04-03  Gary Thomas  <gthomas@redhat.com>
+
+	* src/load.c (do_load): Fix 'raw' loading to check for valid
+	base address _before_ trying to load anything.  Also, some
+	reorg to make raw vs non-raw cleaner.
+
+2001-04-02  Hugo Tyson  <hmt@redhat.com>
+
+	* src/flash.c (get_config): Update to support some new syntax:
+	fco -l -n        ... lists showing nicknames instead of titles.
+	fco -l -n -f     ... lists showing both nicknames and titles.
+	fco nickname     ... goes straight to editing only nickname.
+	fco nick value   ... sets nickname to value.
+	All then follow the usual flow out, including the question
+	Update RedBoot non-volatile configuration - are you sure (y/n)
+	as it should be if you made a change.
+
+2001-03-29  Mark Salter  <msalter@redhat.com>
+
+	* cdl/redboot.cdl (CYGSEM_REDBOOT_FIS_CRC_CHECK): New option to 
+	enable (default) or disable CRC checks in FIS images.
+	* src/flash.c: Use CYGSEM_REDBOOT_FIS_CRC_CHECK to decide whether
+	to provide CRC for flash images.
+
 2001-03-28  Mark Salter  <msalter@redhat.com>
 
 	* src/net/tcp.c (__tcp_handler): Don't send ACK from TIME_WAIT state

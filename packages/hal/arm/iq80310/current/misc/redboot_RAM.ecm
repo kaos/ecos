@@ -83,3 +83,11 @@ cdl_option CYGBLD_REDBOOT_MIN_IMAGE_SIZE {
 cdl_option CYGNUM_IO_ETH_DRIVERS_NUM_PKT {
   user_value 2
 };
+
+cdl_option CYGSEM_REDBOOT_FIS_CRC_CHECK {
+  user_value 0
+};
+
+cdl_option CYGSEM_IO_FLASH_VERIFY_PROGRAM {
+  user_value 0
+};

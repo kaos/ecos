@@ -252,7 +252,7 @@
 	.set	__base,__base+1		   
 
 	// Map remainder of first meg of SDRAM
-	//   Read-Write, cacheable, non-bufferable
+	//   Read-Write, cacheable, bufferable
 	.set    __base,0xA0001
 	.rept	0x100 - 0x1
 	SL_XSMPAGE_ENTRY __base,1,3,1,1

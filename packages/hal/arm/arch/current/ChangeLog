@@ -1,3 +1,8 @@
+2001-03-30  Mark Salter  <msalter@redhat.com>
+
+	* src/vectors.S (__exception_handlers): Don't use relative branch
+	for reset on iq80310.
+
 2001-03-28  Hugo Tyson  <hmt@redhat.com>
 
 	* src/vectors.S (__GDB_stack_base): Increase stubs stack size to

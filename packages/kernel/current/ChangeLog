@@ -1,3 +1,16 @@
+2001-04-05  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* tests/flag1.cxx: Apply same changes here as were applied to
+	kflag1 on 2000-07-17. This allows this test to run to completion
+	in slow targets, especially simulators.
+
+	* tests/stress_threads.c: Reduce run time even further in
+	simulator runs where instrumentation is enabled.
+
+2001-04-03  Jesper Skov  <jskov@redhat.com>
+
+	* tests/dhrystone.c: Fix feature check.
+
 2001-03-28  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/kernel.cdl: Only need to compile dbg_gdb.cxx with

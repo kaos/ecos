@@ -40,6 +40,7 @@
 //===========================================================================*/
 
 #include <redboot.h>
+#ifdef CYGPKG_IO_FLASH
 #include <cyg/io/flash.h>
 
 #include "iq80310.h"	/* 80310 chip set specific */
@@ -1215,3 +1216,4 @@ finish:
 
 }
 
+#endif // CYGPKG_IO_FLASH

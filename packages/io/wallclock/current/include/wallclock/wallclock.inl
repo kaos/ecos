@@ -102,7 +102,7 @@ _simple_mkdate(time_t time,
     // Nothing fancy about the time - no leap year magic involved
     *sec = hms % 60;
     *min = (hms % (60*60)) / 60;
-    *hour = hms / 60*60;
+    *hour = hms / (60*60);
 
     // Find year
     for (y = 1970; days >= year_days(y); y++)

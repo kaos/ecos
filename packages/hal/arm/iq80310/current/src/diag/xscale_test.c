@@ -46,7 +46,11 @@
 /* --------------------													*/
 /* 11oct00, ejb, Created for IQ80310 StrongARM2							*/
 /* 18dec00  jwf                                                         */
-/* 02feb01  jwf	for snc														*/
+/* 02feb01  jwf	added tests: _coy_tight_loop, cache_loop, LoopMemTest,  */
+/*              special_mem_test written by snc							*/     
+/* 07feb01  jwf added function calls to a variable delay time generator */
+/* 09feb01  jwf added function version_info to show version information */
+/*              about OS, BOARD, CPLD, 80200 ID, 80312 ID.              */
 /************************************************************************/
 
 
@@ -79,6 +83,10 @@ extern void flash_test(void) RAM_FUNC_SECT;
 extern STATUS pci_isr_connect (int intline, int bus, int device, int (*handler)(int), int arg);
 extern STATUS pci_to_xint(int device, int intpin, int *xint);
 extern void timer_test (void);
+
+/* 02/07/01 jwf */
+extern void time_delay (UINT32 count, volatile int num_tmr_int);
+
 extern int memTest (long startAddr, long endAddr);
 
 /* 02/02/01 jwf */
@@ -110,7 +118,12 @@ void ether_test (void);
 void gpio_test (void);
 
 /* 02/02/01 jwf */
-void cache_loop (void);
+void static cache_loop (void);
+
+/* 02/09/01 jwf */
+void version_info (void);
+void read_coyanosa_id_reg (void);
+char board_revision (void);
 
 static void battery_test_menu (void);
 static void battery_test_write (void);
@@ -163,7 +176,9 @@ static MENU_ITEM testMenu[] =
 	{"Backplane Detection Test",				backplane_detection,  0},
 	{"Battery Status Test",						battery_status,       0},
 	{"External Timer Test",						timer_test,           0},
+#ifdef CYGPKG_IO_FLASH
 	{"Flash Test",								flash_test,			  0},
+#endif
 	{"i82559 Ethernet Configuration",			enet_setup,			  0},
 	{"i82559 Ethernet Test",					ether_test,			  0},
 	{"i960Rx/303 PCI Interrupt Test",			pci_int_test,		  0},
@@ -174,7 +189,9 @@ static MENU_ITEM testMenu[] =
 	{"GPIO Test",								gpio_test,			  0},
 /* 02/02/01 jwf */
 	{"Repeat-On-Fail Memory Test",				special_mem_test,	  0},
-	{"Coyonosa Cache Loop (No return)",			cache_loop,			  0}
+	{"Coyonosa Cache Loop (No return)",			cache_loop,			  0},
+/* 02/09/01 jwf */
+	{"Show Software and Hardware Revision",		version_info,		  0}
 };
 
 #define NUM_MENU_ITEMS	(sizeof (testMenu) / sizeof (testMenu[0]))
@@ -503,10 +520,12 @@ void seven_segment_display (void)
 	unsigned char SevSegDecode;
 	int DisplaySequence;
 	int SelectLed;
-	const unsigned long TIME_OUT=6000000;
 
+/* 02/07/01 jwf */
+/*	const unsigned long TIME_OUT=6000000;*/
 /* 02/02/01 jwf */
-	volatile unsigned long Dwell;
+/*	unsigned long Dwell;*/
+/*	volatile unsigned long Dwell;*/
 
 	*( unsigned char * ) 0xfe840000 = DISPLAY_OFF;		/* blank MSD 7 segment LEDS */
 
@@ -617,8 +636,10 @@ void seven_segment_display (void)
 					break;
 			} /* end switch( SelectLed ) */
 
+/* 02/07/01 jwf */
 			/* time delay, allows user enough time to read a value on display */
-		for (Dwell=TIME_OUT; Dwell > 0; --Dwell );
+/*			for (Dwell=TIME_OUT; Dwell > 0; --Dwell );*/
+			time_delay (0x325aa0, 4);/* Delay 0.4 second. Load counter with a 100ms count down (3300000)d per timer interrupt, 5 timer interrupts */
 
 		} /* end for(DisplaySequence~) */
 
@@ -646,34 +667,28 @@ void rotary_switch (void)
 	unsigned char debounce;									/* keeps tally of equal rotary switch data reads in a loop */
 	unsigned char SevSegDecode;					/* holds decode data for a 7 segment LED display */
 
-	unsigned char ri_state;
-	unsigned char board_rev;
+	char board_rev;	/* holds a Board Revision number */
 
-	const unsigned long TIME_OUT = 4000000;
-
+/* 02/07/01 jwf */
+/*	const unsigned long TIME_OUT = 4000000;*/
 /* 02/02/01 jwf */
-	volatile unsigned int Dwell;
+/*	volatile unsigned int Dwell;*/
 
 	*( unsigned char * ) 0xfe840000 = DISPLAY_OFF;	/* turn off the 7 segment MSD LED */
 	*( unsigned char * ) 0xfe850000 = DISPLAY_OFF;	/* turn off the 7 segment LSD LED */
 
-	ri_state = *( unsigned char * ) 0xfe810006;	/* access CYGMON serial port J9 MSR at addr fe810006 */
-	ri_state &= RI_MASK;
-	if(ri_state == RI_MASK)						/* RI# pin on UART2 is grounded */
+	board_rev= board_revision ();			/* Determine Board Revision Number */
+	if (board_rev >= BOARD_REV_E)			/* Board Rev is at E or higher */
 	{
-		board_rev = *BOARD_REV_REG_ADDR;		/* read Board Revision register */
-		board_rev &= BOARD_REV_MASK;			/* isolate LSN */
-		if (board_rev >= BOARD_REV_E)			/* Board Rev is at E or higher */
-		{
-			printf("\n\nThe 7-Segment LSD LED shows the Rotary Switch position selected, i.e., 0-F.");
-			printf("\n\nSlowly dial the Rotary Switch through each position 0-F and confirm reading.");
-		}
+		printf("\n\nThe 7-Segment LSD LED shows the Rotary Switch position selected, i.e., 0-F.");
+		printf("\n\nSlowly dial the Rotary Switch through each position 0-F and confirm reading.");
 	}
-	else										/* RI# pin on UART2 is pulled up to 3.3V. Cannot read board revision register, not implemented */
+	else			/* Unknown Board Revision, might be D or B or A. */
 	{
 		printf("\n\nThe 7-Segment LSD LED shows the Rotary Switch position selected, i.e., 0-3.");
 		printf("\n\nSlowly dial the Rotary Switch through each position 0-3 and confirm reading.");
 	}
+
 	printf( "\n\nStrike <CR> to exit this test." );
 	while ( recv_data != 0x0d )	/* run until User types a <CR> to exit */
 	{
@@ -775,7 +790,9 @@ void rotary_switch (void)
 		{
 			recv_data = *(volatile unsigned char *) 0xfe810000;	/* read character from J9 serial port receiver buffer */
 		}
-		for (Dwell=TIME_OUT; Dwell > 0; --Dwell );
+/* 02/07/01 jwf */
+/*		for (Dwell=TIME_OUT; Dwell > 0; --Dwell );*/
+		time_delay (0x325aa0, 2);/* Delay 0.2 second. Load counter with a 100ms count down (3300000)d per timer interrupt, 2 timer interrupts */
 	}
 
 	*( unsigned char * ) 0xfe840000 = LETTER_S;	/* show S on the 7 segment MSD LED */
@@ -1776,6 +1793,8 @@ static void battery_test_menu (void)
 }
 
 /* 01/11/01 jwf */
+/* Make the user select their host test platform type from a list of choices. */
+/* If the user picks a Cyclone SB923 then modify the Outbound PCI Translate Register on the IQ80310 for the SB923 */
 void select_host_test_system (void)
 {
 	char selection;
@@ -1797,5 +1816,120 @@ void select_host_test_system (void)
 		*(volatile UINT32 *) POMWVR_ADDR = 0xa0000000;
 	}
 }
+
+
+/* 02/09/01 jwf */
+/* Read the 80200 Coyanosa ID register */
+/* Use a base address equal to the fourth memory location from the last memory location */
+/* in a 32MB SDRAM DIMM */
+/* Store from coprocessor register 15 to memory. */
+/* ARM register R0 is the address after the transfer */
+void read_coyanosa_id_reg (void)
+{
+
+	__asm__ ("ldr r0, = 0xA1FFFFFC");
+
+	__asm__ ("mrc p15, 0, r1, c0, c0, 0");
+
+	__asm__ ("str r1, [r0], #0");
+
+}
+
+
+/* 02/09/01 jwf */
+/*
+*Display the following version information.
+*1. Software version of Red Boot or Cygnus Cygmon Rom Monitor.
+*2. Cpld version.  Located in the 0xFE840000 (Read)
+*3. Board Revision. Located at 0xFE830000 (Read)
+*4. 80200 ID data Located in CP15 Register 0
+*5. 80312 Stepping Located at 0x00001008
+*/
+void version_info (void)
+{
+	char board_rev;
+
+/* show revision information for operating system */
+#if CYGNUS_CYGMON_OS
+	extern void version(void); /* is defined in monitor.c */
+	version();
+#endif
+
+#if REDHAT_REDBOOT_OS
+	extern void do_version(int argc, char *argv[]);/* is defined in main.c */
+	do_version(0,0);
+#endif
+
+	board_rev = board_revision();
+	if ( board_rev >= BOARD_REV_E )
+	{
+			/* read Board revision register and adjust numeric revision to letter revision, 0x1 <--> A */	
+		printf("\nBoard Revision = %c\n",(*BOARD_REV_REG_ADDR & BOARD_REV_MASK) + 'A' - 1 );
+	}
+	else
+	{
+			/* Board letter revision might be A or B or C or D */	
+		printf("\nBoard Revision Unknown!\n");
+	}
+
+		/* read CPLD revision register and adjust numeric revision to letter revision, 0x1 <--> A */
+	printf("CPLD Revision = %c\n",(*CPLD_REV_REG_ADDR & BOARD_REV_MASK) + 'A' - 1 );
+
+		/* Read the 80200 Coyanosa ID register */
+	read_coyanosa_id_reg();
+
+	printf( "80200 Revision ID = 0x%x\n", ( *(volatile unsigned long *) COYANOSA_ID_BASE_ADDR) );
+	
+		/* read the 80312 Yavapai Revision ID register */
+	printf( "80312 Revision ID = %d\n", (*(volatile unsigned char *) RIDR_ADDR) );
+
+	printf ("\n\nStrike <CR> to exit this test.\n\n");
+	
+	hexIn();
+
+}
+
+
+/* 02/09/01 jwf */
+/* Determine if the CPLD supports a Board Revision Register. */
+/* If a Board Revision Register exists then return the board revision number read from a dedicated CPLD register at memory address 0xfe830000 */
+/* Otherwise return a default board revision number. */
+char board_revision ()
+{
+		/* represents the ring indicator bit logic level in UART2 */
+	unsigned char ri_state;
+
+		/* holds a board revision number */
+	char board_rev;
+
+		/* access UART2 MSR at memory address 0xfe810006 through the CYGMON serial port, J9 */
+	ri_state = *( unsigned char * ) 0xfe810006;
+	ri_state &= RI_MASK;
+
+		/* RI# pin on UART2 is grounded */
+		/* CPLD design supports a Board Revision Register implemention */
+	if(ri_state == RI_MASK)
+	{
+			/* read Board Revision register and isolate LSN */
+		board_rev = (*BOARD_REV_REG_ADDR & BOARD_REV_MASK);
+
+			/* Board Rev is at E or higher */
+		if (board_rev >= BOARD_REV_E)
+		{
+			return (board_rev);
+		}
+	}
+
+		/* RI# pin on UART2 is pulled up to 3.3V. */
+		/* Unknown Board Revision! */
+		/* Unable to determine a board revision because the CPLD Board Revision Register */
+		/* was never implemented for IQ80310 PCI-700 board REVs A,B,C, or D. */
+		/* set a default board revision value of 0x2 <--> Rev B. */
+	board_rev = 0x2;
+
+		/* return a default value */
+	return (board_rev);
+}
+
 
 

@@ -157,6 +157,7 @@ flash_get_block_info(int *block_size, int *blocks)
     *blocks = flash_info.blocks;
     return FLASH_ERR_OK;
 }
+
 int
 flash_erase(void *addr, int len, void **err_addr)
 {
@@ -254,10 +255,12 @@ flash_program(void *_addr, void *_data, int len, void **err_addr)
         stat = (*_flash_program_buf)(addr, data, size, 
                                      flash_info.block_mask, flash_info.buffer_size);
         stat = flash_hwr_map_error(stat);
+#ifdef CYGSEM_IO_FLASH_VERIFY_PROGRAM
         if (memcmp(addr, data, size) != 0) {
             stat = 0x0BAD;
             printf("V");
         }
+#endif
         if (stat) {
             *err_addr = (void *)addr;
             break;

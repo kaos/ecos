@@ -1,3 +1,7 @@
+2001-03-30  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/net.cdl (CYGPKG_NET_SYSCTL): Comment out - currently unsupported.
+
 2001-03-28  Richard Panton  <rpanton@3glab.com>
 
 	* include/bootp.h: Define func protos with C linkage

@@ -56,7 +56,7 @@ RedBoot_cmd("fis",
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
 RedBoot_cmd("fconfig",
             "Manage configuration kept in FLASH memory",
-            "[-l]",
+            "[-l] [-n] [-f] | nickname [value]",
             do_flash_config
     );
 #endif
@@ -68,9 +68,17 @@ local_cmd_entry("init",
                 fis_init,
                 FIS_cmds
     );
+
+
+#ifdef CYGSEM_REDBOOT_FIS_CRC_CHECK
+# define FIS_LIST_OPTS "[-c] [-d]"
+#else
+# define FIS_LIST_OPTS "[-d]"
+#endif
+
 local_cmd_entry("list",
                 "Display contents of FLASH Image System [FIS]",
-                "[-c] [-d]",
+		FIS_LIST_OPTS,
                 fis_list,
                 FIS_cmds
     );
@@ -324,11 +332,16 @@ fis_list(int argc, char *argv[])
     bool show_datalen = false;
     struct option_info opts[2];
 
-    init_opts(&opts[0], 'c', false, OPTION_ARG_TYPE_FLG, 
-              (void **)&show_cksums, (bool *)0, "display checksums");
-    init_opts(&opts[1], 'd', false, OPTION_ARG_TYPE_FLG, 
+    init_opts(&opts[0], 'd', false, OPTION_ARG_TYPE_FLG, 
               (void **)&show_datalen, (bool *)0, "display data length");
-    if (!scan_opts(argc, argv, 2, opts, 2, 0, 0, ""))
+#ifdef CYGSEM_REDBOOT_FIS_CRC_CHECK
+    init_opts(&opts[1], 'c', false, OPTION_ARG_TYPE_FLG, 
+              (void **)&show_cksums, (bool *)0, "display checksums");
+    i = 2;
+#else
+    i = 1;
+#endif
+    if (!scan_opts(argc, argv, 2, opts, i, 0, 0, ""))
     {
         return;
     }
@@ -345,8 +358,13 @@ fis_list(int argc, char *argv[])
         if (img->name[0] != (unsigned char)0xFF) {
             printf("%-16s  0x%08lX  0x%08lX  0x%08lX  0x%08lX\n", img->name, 
                    img->flash_base, 
+#ifdef CYGSEM_REDBOOT_FIS_CRC_CHECK
                    show_cksums ? img->file_cksum : img->mem_base, 
                    show_datalen ? img->data_length : img->size, 
+#else
+                   img->mem_base, 
+                   img->size, 
+#endif
                    img->entry_point);
         }
     }
@@ -614,7 +632,9 @@ fis_create(int argc, char *argv[])
     img->entry_point = entry_addr_set ? entry_addr : (unsigned long)entry_address;  // Hope it's been set
     img->size = length;
     img->data_length = img_size;
+#ifdef CYGSEM_REDBOOT_FIS_CRC_CHECK
     img->file_cksum = crc32((unsigned char *)flash_addr, img_size);
+#endif
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
     // Insure [quietly] that the directory is unlocked before trying to update
     flash_unlock((void *)fis_addr, block_size, (void **)&err_addr);
@@ -969,6 +989,7 @@ fis_load(int argc, char *argv[])
         memcpy((void *)mem_addr, (void *)img->flash_base, img->data_length);
     }
     entry_address = (unsigned long *)img->entry_point;
+#ifdef CYGPKG_REDBOOT_FIS_CRC_CHECK
     cksum = crc32((unsigned char *)mem_addr, img->data_length);
     if (show_cksum) {
         printf("Checksum: 0x%08lx\n", cksum);
@@ -980,6 +1001,7 @@ fis_load(int argc, char *argv[])
                    img->file_cksum, cksum);
         }
     }
+#endif
 }
 
 static bool
@@ -1105,8 +1127,12 @@ extern struct config_option __CONFIG_options_TAB__[], __CONFIG_options_TAB_END__
 #define CONFIG_OBJECT_ENABLE_KEY(dp)    ((dp)+4+CONFIG_OBJECT_KEYLEN(dp))
 #define CONFIG_OBJECT_VALUE(dp)         ((dp)+4+CONFIG_OBJECT_KEYLEN(dp)+CONFIG_OBJECT_ENABLE_KEYLEN(dp))
 
+#define LIST_OPT_LIST_ONLY (1)
+#define LIST_OPT_NICKNAMES (2)
+#define LIST_OPT_FULLNAMES (4)
+
 static int
-get_config(unsigned char *dp, char *title, bool list_only)
+get_config(unsigned char *dp, char *title, int list_opt, char *newvalue )
 {
     char line[256], *sp, *lp;
     int ret;
@@ -1129,10 +1155,14 @@ get_config(unsigned char *dp, char *title, bool list_only)
         }
     }
     val_ptr = (void *)CONFIG_OBJECT_VALUE(dp);
-    if (title != (char *)NULL) {
-        printf("%s: ", title);
-    } else {
+    if (LIST_OPT_NICKNAMES & list_opt)
         printf("%s: ", CONFIG_OBJECT_KEY(dp));
+    if (LIST_OPT_FULLNAMES & list_opt) {
+        if (title != (char *)NULL) {
+            printf("%s: ", title);
+        } else {
+            printf("%s: ", CONFIG_OBJECT_KEY(dp));
+        }
     }
     switch (type = CONFIG_OBJECT_TYPE(dp)) {
     case CONFIG_BOOL:
@@ -1170,12 +1200,20 @@ get_config(unsigned char *dp, char *title, bool list_only)
         }
         break;
     }
-    if (list_only) {
+    if (LIST_OPT_LIST_ONLY & list_opt) {
         printf("\n");
         return CONFIG_OK;
     }
     if (type != CONFIG_SCRIPT) {
-        ret = gets(line, sizeof(line), 0);    
+        if (NULL != newvalue) {
+            ret = strlen(newvalue);
+            if (ret > sizeof(line))
+                return CONFIG_BAD;
+            strcpy(line, newvalue);
+            printf("Setting to %s\n", newvalue);
+        }
+        else // read from terminal
+            ret = gets(line, sizeof(line), 0);
         if (ret < 0) return CONFIG_ABORT;
         if (strlen(line) == 0) return CONFIG_OK;  // Just a CR - leave value untouched
         if (line[0] == '.') return CONFIG_DONE;
@@ -1292,21 +1330,44 @@ do_flash_config(int argc, char *argv[])
     struct config_option *optend = __CONFIG_options_TAB_END__;
     struct config_option *opt = __CONFIG_options_TAB__;
     struct _config hold_config;
-    struct option_info opts[1];
+    struct option_info opts[3];
     bool list_only;
+    bool nicknames;
+    bool fullnames;
+    int list_opt = 0;
     unsigned char *dp;
     int len, ret;
     char *title;
+    char *onlyone = NULL;
+    char *onevalue = NULL;
+    bool doneone = false;
 
     if (!do_flash_init()) return;
     memcpy(&hold_config, &config, sizeof(config));
     script = (unsigned char *)0;
 
     init_opts(&opts[0], 'l', false, OPTION_ARG_TYPE_FLG, 
-              (void **)&list_only, (bool *)0, "list configuration only");
-    if (!scan_opts(argc, argv, 1, opts, 1, 0, 0, ""))
-    {
-        return;
+                  (void **)&list_only, (bool *)0, "list configuration only");
+    init_opts(&opts[1], 'n', false, OPTION_ARG_TYPE_FLG, 
+              (void **)&nicknames, (bool *)0, "show nicknames");
+    init_opts(&opts[2], 'f', false, OPTION_ARG_TYPE_FLG, 
+              (void **)&fullnames, (bool *)0, "show full names");
+
+    // First look to see if we are setting or getting a single option
+    // by just quoting its nickname
+    if ( (2 == argc && '-' != argv[1][0]) ||
+         (3 == argc && '-' != argv[1][0] && '-' != argv[2][0])) {
+        // then the command was "fconfig foo [value]"
+        onlyone = argv[1];
+        onevalue = (3 == argc) ? argv[2] : NULL;
+        list_opt = LIST_OPT_NICKNAMES;
+    }
+    else {
+        if (!scan_opts(argc, argv, 1, opts, 3, 0, 0, ""))
+            return;
+        list_opt |= list_only ? LIST_OPT_LIST_ONLY : 0;
+        list_opt |= nicknames ? LIST_OPT_NICKNAMES : LIST_OPT_FULLNAMES;
+        list_opt |= fullnames ? LIST_OPT_FULLNAMES : 0;
     }
 
     dp = &config.config_data[0];
@@ -1326,7 +1387,12 @@ do_flash_config(int argc, char *argv[])
             }
             opt++;
         }
-        ret = get_config(dp, title, list_only);
+        if ( onlyone && 0 != strcmp(opt->key, onlyone) )
+            ret = CONFIG_OK; // skip this entry
+        else {
+            doneone = true;
+            ret = get_config(dp, title, list_opt, onevalue); // do this opt
+        }
         switch (ret) {
         case CONFIG_DONE:
             goto done;
@@ -1348,7 +1414,10 @@ do_flash_config(int argc, char *argv[])
     }
 
  done:
-    if (!need_update) return;
+    if (NULL != onlyone && !doneone)
+        printf("** entry '%s' not found\n", onlyone);
+    if (!need_update)
+        return;
     flash_write_config();
 }
 

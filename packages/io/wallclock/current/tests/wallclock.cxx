@@ -183,10 +183,12 @@ cyg_start( void )
 #endif
     CYG_TEST_INIT();
 
+    // Dont run this test if we are in a simulator, it just takes far too long.
+    if( cyg_test_is_simulator )
+        CYG_TEST_NA("Wallclock test takes too long in simulators");
+    
     CYG_TEST_INFO("Starting wallclock test");
 
-    if( cyg_test_is_simulator ) loops = LOOPS_SIM;
-    
     Cyg_Clock::cyg_resolution res = Cyg_Clock::real_time_clock->get_resolution();
     
     one_sec = ( res.divisor * 1000000000LL ) / res.dividend ;

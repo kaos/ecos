@@ -46,6 +46,7 @@
 /* --------------------														  */
 /* 07sep00, ejb, Written for IQ80310 Cygmon diagnostics						  */
 /* 18dec00  jwf                                                               */
+/* 09feb01  jwf                                                               */
 /******************************************************************************/
 
 #ifndef NULL
@@ -69,6 +70,15 @@
 #endif
 
 #define RAM_FUNC_SECT
+
+/* 02/09/01 jwf */
+/* Specify the operating system for version information retrieval */
+#define CYGNUS_CYGMON_OS			FALSE
+#if CYGNUS_CYGMON_OS
+	#define REDHAT_REDBOOT_OS		FALSE
+#else
+	#define REDHAT_REDBOOT_OS		TRUE
+#endif
 
 typedef int				STATUS;
 typedef unsigned char	UCHAR;
@@ -126,16 +136,16 @@ typedef void 			(*VOIDFUNCPTR) ();
 
 /* 12/18/00 jwf */
 /* CPLD Read only Registers */
-#define BOARD_REV_REG_ADDR	(volatile unsigned char *)0xfe830000	/* Board Revision Register, xxxxxbbb=0x2<-->Rev B Board, Note: This is not implemented in the CPLD yet */
+#define BOARD_REV_REG_ADDR	(volatile unsigned char *)0xfe830000	/* Board Revision Register, xxxxbbbb=0x2<-->Rev B Board, Note: This was not implemented in the CPLD for board revisions A,B,C and D. */
 #define BOARD_REV_E			(unsigned char)0x5						/* BOARD REV E */
 #define BOARD_REV_MASK		(unsigned char)0xf						/* use only b0-b3 */
-#define CPLD_REV_REG_ADDR	(volatile unsigned char *)0xfe840000	/* CPLD Revision Register, data examples: xxxxxbbb=0x3<-->Rev C CPLD(used on PCI-700 Rev D Board), xxxxxbbb=0x4<-->Rev D CPLD(used on PCI-700 Rev E Board) */
+#define CPLD_REV_REG_ADDR	(volatile unsigned char *)0xfe840000	/* CPLD Revision Register, data examples: xxxxbbbb=0x3<-->Rev C CPLD(used on PCI-700 Rev D Board), xxxxbbbb=0x4<-->Rev D CPLD(used on PCI-700 Rev E Board) */
 #define SINT_REG_ADDR		(volatile unsigned char *)0xfe850000	/* SINTA-SINTC secondary PCI interrupt status register */
 /* SINT_REG_ADDR Register Interrupt Status bit definitions */
 #define SINTA_INT			(unsigned char)0x1						/* b0=1, Secondary PCI (S_INTA) Interrupt Pending */
 #define SINTB_INT			(unsigned char)0x2						/* b1=1, Secondary PCI (S_INTB) Interrupt Pending */
 #define SINTC_INT			(unsigned char)0x4						/* b2=1, Secondary PCI (S_INTC) Interrupt Pending */
-#define SINT_MASK			(unsigned char)0x7						/* isolate bits b0-b3 */
+#define SINT_MASK			(unsigned char)0x7						/* isolate bits b0-b2 */
 #define RI_MASK				(unsigned char)0x40						/* use to isolate bit 6, Ring Indicator, of MSR in UART 2 */
 
 /* Intel 28F640J3A Strata Flash Memory Definitions */
@@ -164,6 +174,12 @@ typedef void 			(*VOIDFUNCPTR) ();
 #define	SDRAM_BATTERY_TEST_BASE		0xA1FFFFF0		/* base address of last 16 memory locations in 32MB SDRAM */
 /* #define BATTERY_TEST_PATTERN		0xBAEBAEBA */
 #define BATTERY_TEST_PATTERN		0x55555555
+
+
+/* 02/09/01 jwf */
+/* Use a base address set to the fourth memory location from the last memory location */
+/* in a 32MB SDRAM DIMM to store the 80200 Coyanosa ID 32 bit data */
+#define	COYANOSA_ID_BASE_ADDR		0xA1FFFFFC
 
 /* Definitions for data types and constants used in Flash.c */
 typedef unsigned long ADDR;			

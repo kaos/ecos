@@ -456,3 +456,32 @@ void timer_test (void)
 } /* end timer_test() */
 
 
+/* 02/07/01 jwf */
+/* Use the CPLD 22 bit timer to generate a variable delay time */
+/* set up the timer to generate a t msec tick, where ( 0mS < t < 127mS ) */
+/* count=(33MHZ)(t/1 timer interrupt) where ( 0x0 < count <= 0x3fffff ) */
+/* set total number of timer interrupts to num_tmr_int */
+/* generate t(delay)=(count)(num_tmr_int) */
+void time_delay (UINT32 count, volatile int num_tmr_int)
+{
+
+	/* write the initial count to the timer */
+	write_timer_count (count);
+
+	/* enable the interrupt at the timer */
+	EXT_TIMER_INT_ENAB();
+
+	/* enable the timer to count */
+	EXT_TIMER_CNT_ENAB();
+
+	/* generate tmr_int timer interrupts */
+	while (timer_ticks < num_tmr_int);
+
+	timer_ticks = 0;
+
+	/* disable timer */
+	EXT_TIMER_INT_DISAB();
+	EXT_TIMER_CNT_DISAB();
+
+} /* end time_delay() */
+

@@ -698,7 +698,8 @@ usbs_sa11x0_ep0_fill_fifo(void)
     int filled      = 0;
     int max;
     int fifo_count  = *EP0_WRITE_COUNT;
-
+    int bits_to_set = 0;
+    
     // The host can interrupt the current control message at any time
     // with a new one. In practice this is unlikely, things could get
     // rather confused on the host side. However if a control message
@@ -803,10 +804,12 @@ usbs_sa11x0_ep0_fill_fifo(void)
 
         // This informs the hardware that the control message has been
         // handled.
-        usbs_sa11x0_poke(EP0_CONTROL, EP0_DATA_END, EP0_DATA_END, 0);
+        bits_to_set = EP0_DATA_END;
     }
+    
     // This allows another IN operation to empty the fifo.
-    usbs_sa11x0_poke(EP0_CONTROL, EP0_IN_READY, EP0_IN_READY, 0);
+    bits_to_set |= EP0_IN_READY;
+    usbs_sa11x0_poke(EP0_CONTROL, bits_to_set, bits_to_set, 0);
 }
 
 // Another utility function to empty the fifo. This involves similar

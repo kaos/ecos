@@ -159,7 +159,7 @@ _name_:
         .section ".vectors","ax"
         .global __exception_handlers
 __exception_handlers:
-#if defined(CYG_HAL_STARTUP_ROM)
+#if !defined(CYGPKG_HAL_ARM_IQ80310) && defined(CYG_HAL_STARTUP_ROM)
 // Assumption:  ROM code has these vectors at the hardware reset address.
 // A simple jump removes any address-space dependencies [i.e. safer]
         b       reset_vector                    // 0x00

@@ -1003,6 +1003,16 @@ The aeb HAL package provides the support needed to run eCos on a ARM
 AEB-1 eval board."
 }
 
+package CYGPKG_HAL_ARM_E7T {
+	alias		{ "ARM Evaluator7T board (AEB-2)" hal_arm_e7t arm_e7t_hal }
+	directory	hal/arm/e7t
+	script		hal_arm_e7t.cdl
+	hardware
+        description "
+The e7t HAL package provides the support needed to run eCos on a ARM
+Evaluator7T board (aka the AEB-2)."
+}
+
 package CYGPKG_HAL_ARM_EBSA285 {
 	alias		{ "Intel EBSA285 StrongARM board" hal_arm_ebsa285 arm_ebsa285_hal }
 	directory	hal/arm/ebsa285
@@ -1611,6 +1621,15 @@ The aeb target provides the packages needed to run eCos on an ARM
 evaluation board (AEB-1)."
 }
 
+target e7t {
+	alias { "ARM Evaluator7T board (AEB-2)" aeb2 }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_E7T
+        }
+        description "
+The aeb target provides the packages needed to run eCos on an ARM
+Evaluator7T board (aka AEB-2)."
+}
 
 target ebsa285 {
 	alias { "Intel EBSA285 StrongARM board" ebsa }
@@ -1681,6 +1700,7 @@ target sa1100mm {
                    CYGPKG_HAL_ARM_SA11X0
                    CYGPKG_HAL_ARM_SA11X0_SA1100MM
 		   CYGPKG_IO_SERIAL_ARM_SA11X0
+		   CYGPKG_DEVS_FLASH_SA1100MM
         }
         description "
         The sa1100mm target provides the packages needed to run

@@ -1,3 +1,4 @@
+* Added support for ARM Evaluator7T (e7t) board.
 * Ported to Compaq StrongARM SA1110 PocketPC (iPAQ), including keypad,
   touch screen, watchdog, FLASH, PCMCIA and Compact Flash drivers.
   Also includes RedBoot, with support for booting ARM Linux.

@@ -78,4 +78,12 @@ cdl_package CYGPKG_IO_FLASH {
             This option will be enabled by devices which can support
             locking (write-protection) of individual blocks."
     }
+    cdl_option CYGSEM_IO_FLASH_VERIFY_PROGRAM {
+        display          "Verify data programmed to flash"
+        flavor           bool
+        default_value    1
+        description      "
+           Selecting this option will cause verification of data
+           programmed to flash."
+    }
 }

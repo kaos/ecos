@@ -1,3 +1,54 @@
+2001-04-03  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* misc/elinux.patch: Add patch for Linux to allow co-existence
+	with RedBoot. (authored by Gary)
+
+2001-04-03  Gary Thomas  <gthomas@redhat.com>
+
+	* include/pkgconf/mlt_arm_sa11x0_ipaq_compaq.mlt: 
+	* include/pkgconf/mlt_arm_sa11x0_ipaq_compaq.ldi: 
+	* include/pkgconf/mlt_arm_sa11x0_ipaq_compaq.h: New file(s).
+
+	* src/lcd_support.c (lcd_comm_getc_nonblock): Force LCD on
+	whenever there is a keystroke or button pushed.
+
+	* misc/redboot_WinCE.ecm: 
+	* misc/redboot_ROM.ecm: 
+	* misc/redboot_RAM.ecm: 
+	* misc/redboot_Compaq.ecm: New file(s) - standard RedBoot configurations.
+	* images/redboot_WinCE.srec: 
+	* images/redboot_WinCE.elf: 
+	* images/redboot_WinCE.bin: 
+	* images/redboot_ROM.srec: 
+	* images/redboot_ROM.elf: 
+	* images/redboot_ROM.bin: 
+	* images/redboot_RAM.srec: 
+	* images/redboot_RAM.elf: 
+	* images/redboot_RAM.bin: 
+	* images/redboot_Compaq.srec: 
+	* images/redboot_Compaq.elf: 
+	* images/redboot_Compaq.bin: New file(s) - standard RedBoot images.
+
+	* images/OSloader: New file - imported from Compaq.
+
+	* cdl/hal_arm_sa11x0_ipaq.cdl: Add 'Compaq' startup type.
+
+2001-04-02  Gary Thomas  <gthomas@redhat.com>
+
+	* src/lcd_support.c: Define virtual screen to be 80x??, with only
+	a 30 character wide window showing (in portrait mode).  Use the 
+	joypad to pan around.  Also, restore cursor support.
+	(lcd_comm_init): Set up default keyboard parameters and let the
+	initialization (calibration) abort/timeout.
+	(lcd_refresh): Fix problem with pan right.
+
+	* src/kbd.xpm: Revert to using "small" keyboard graphic.
+
+	* src/font.h: Add special character for block cursor.
+
+	* src/lcd_support.c (lcd_comm_getc_nonblock): Rework keyboard 
+	input to make it more responsive/smoother.
+
 2001-03-24  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/hal_arm_sa11x0_ipaq.cdl: LCD comm only in RedBoot mode.	

@@ -102,12 +102,6 @@ static struct lcd_frame {
 
 static struct lcd_frame * volatile fp;
 
-// This can be 1 or 2
-#define SCREEN_SCALE 2
-#define NIBBLES_PER_PIXEL (1*SCREEN_SCALE)
-#define PIXELS_PER_BYTE (2/NIBBLES_PER_PIXEL)
-#define PIXEL_MASK      ((1<<PIXELS_PER_BYTE)-1)
-
 // Physical screen info
 //static int lcd_depth  = LCD_DEPTH;  // Should be 1, 2, or 4
 static int lcd_bpp;
@@ -119,16 +113,22 @@ static int curX = 0;  // Last used position
 static int curY = 0;
 //static int width = LCD_WIDTH / (FONT_WIDTH*NIBBLES_PER_PIXEL);
 //static int height = LCD_HEIGHT / (FONT_HEIGHT*SCREEN_SCALE);
-static int fg = RGB_RED(0) | RGB_GREEN(0) | RGB_BLUE(0);
-static int bg = RGB_RED(31) | RGB_GREEN(63) | RGB_BLUE(0/*31*/);
-#define SCREEN_WIDTH  (LCD_WIDTH/FONT_WIDTH)
-#define SCREEN_HEIGHT (LCD_HEIGHT/FONT_HEIGHT)
+
+static int fg = RGB_RED(15) | RGB_GREEN(63) | RGB_BLUE(8);
+static int bg = RGB_RED(0) | RGB_GREEN(0) | RGB_BLUE(15/*31*/);
+
+#define SCREEN_PAN            20
+#define SCREEN_WIDTH          80
+#define SCREEN_HEIGHT         (LCD_HEIGHT/FONT_HEIGHT)
+#define VISIBLE_SCREEN_WIDTH  (LCD_WIDTH/FONT_WIDTH)
+#define VISIBLE_SCREEN_HEIGHT (LCD_HEIGHT/FONT_HEIGHT)
 static char screen[SCREEN_HEIGHT][SCREEN_WIDTH];
 static int screen_start = 0;
 static int screen_height = SCREEN_HEIGHT;
 static int screen_width = SCREEN_WIDTH;
+static int screen_pan = 0;
 
-static bool cursor_enable = false;
+static bool cursor_enable = true;
 
 static int kbd_pos;
 
@@ -258,7 +258,6 @@ show_xpm(char *xpm[], int screen_pos)
             set_pixel(row+offset, col, colors[(unsigned int)*cp++]);
         }
     }
-    //    cyg_thread_delay(100);
 #ifdef LOGO_AT_TOP
     screen_start = (nrows + (FONT_HEIGHT-1))/FONT_HEIGHT;
     return offset+nrows;
@@ -401,7 +400,7 @@ lcd_clear(void)
     kbd_pos = show_xpm(banner_xpm, pos);
     curX = 0;  curY = screen_start;
     if (cursor_enable) {
-        lcd_drawc(CURSOR_ON, curX, curY);
+        lcd_drawc(CURSOR_ON, curX-screen_pan, curY);
     }
 }
 
@@ -410,7 +409,7 @@ void
 lcd_moveto(int X, int Y)
 {
     if (cursor_enable) {
-        lcd_drawc(CURSOR_OFF, curX, curY);
+        lcd_drawc(screen[curY][curX], curX-screen_pan, curY);
     }
     if (X < 0) X = 0;
     if (X >= screen_width) X = screen_width-1;
@@ -419,26 +418,22 @@ lcd_moveto(int X, int Y)
     if (Y >= screen_height) Y = screen_height-1;
     curY = Y;
     if (cursor_enable) {
-        lcd_drawc(CURSOR_ON, curX, curY);
+        lcd_drawc(CURSOR_ON, curX-screen_pan, curY);
     }
 }
-
-int holdX, holdY, holdC;
 
 // Render a character at position (X,Y) with current background/foreground
 static void
 lcd_drawc(cyg_int8 c, int x, int y)
 {
-    // Currently hard-coded for 16bpp
     cyg_uint8 bits;
     int l, p;
 
-    holdX = x;  holdY = y;  holdC = c;
-    if ((c < FIRST_CHAR) || (c > LAST_CHAR)) c = '.';
-    screen[y][x] = c;
+    if ((x < 0) || (x >= VISIBLE_SCREEN_WIDTH) || 
+        (y < 0) || (y >= screen_height)) return;  
     for (l = 0;  l < FONT_HEIGHT;  l++) {
         bits = font_table[c-FIRST_CHAR][l]; 
-        for (p = 0;  p < 8;  p++) {
+        for (p = 0;  p < FONT_WIDTH;  p++) {
             if (bits & 0x01) {
                 set_pixel(y*FONT_HEIGHT+l, x*FONT_WIDTH + p, fg);
             } else {
@@ -450,33 +445,21 @@ lcd_drawc(cyg_int8 c, int x, int y)
 }
 
 static void
-lcd_scroll(void)
+lcd_refresh(void)
 {
     int row, col;
-    cyg_uint8 *c1, *c2;
-#ifndef PORTRAIT_MODE
-    cyg_uint16 *p1, *p2;
-#endif
-
-    // First scroll up the virtual screen
-    for (row = (screen_start+1);  row < screen_height;  row++) {
-        c1 = &screen[row-1][0];
-        c2 = &screen[row][0];
-        for (col = 0;  col < screen_width;  col++) {
-            *c1++ = *c2++;
-        }
-    } 
-    c1 = &screen[screen_height-1][0];
-    for (col = 0;  col < screen_width;  col++) {
-        *c1++ = 0x20;
-    }
 #ifdef PORTRAIT_MODE
     for (row = screen_start;  row < screen_height;  row++) {
-        for (col = 0;  col < screen_width;  col++) {
-            lcd_drawc(screen[row][col], col, row);
+        for (col = 0;  col < VISIBLE_SCREEN_WIDTH;  col++) {
+            if ((col+screen_pan) < screen_width) {
+                lcd_drawc(screen[row][col+screen_pan], col, row);
+            } else {
+                lcd_drawc(' ', col, row);
+            }
         }
     }
 #else
+    cyg_uint16 *p1, *p2;
     // Now the physical screen
     for (row = FONT_HEIGHT*(screen_start+1);  row < LCD_HEIGHT;  row++) {        
         p1 = &fp->pixels[row-FONT_HEIGHT][0];
@@ -492,6 +475,30 @@ lcd_scroll(void)
         }
     }
 #endif
+    if (cursor_enable) {
+        lcd_drawc(CURSOR_ON, curX-screen_pan, curY);
+    }
+}
+
+static void
+lcd_scroll(void)
+{
+    int row, col;
+    cyg_uint8 *c1, *c2;
+
+    // First scroll up the virtual screen
+    for (row = (screen_start+1);  row < screen_height;  row++) {
+        c1 = &screen[row-1][0];
+        c2 = &screen[row][0];
+        for (col = 0;  col < screen_width;  col++) {
+            *c1++ = *c2++;
+        }
+    } 
+    c1 = &screen[screen_height-1][0];
+    for (col = 0;  col < screen_width;  col++) {
+        *c1++ = 0x20;
+    }
+    lcd_refresh();
 }
 
 // Draw one character at the current position
@@ -499,7 +506,7 @@ void
 lcd_putc(cyg_int8 c)
 {
     if (cursor_enable) {
-        lcd_drawc(CURSOR_OFF, curX, curY);
+        lcd_drawc(screen[curY][curX], curX-screen_pan, curY);
     }
     switch (c) {
     case '\r':
@@ -517,7 +524,9 @@ lcd_putc(cyg_int8 c)
         }
         break;
     default:
-        lcd_drawc(c, curX, curY);
+        if (((cyg_uint8)c < FIRST_CHAR) || ((cyg_uint8)c > LAST_CHAR)) c = '.';
+        screen[curY][curX] = c;
+        lcd_drawc(c, curX-screen_pan, curY);
         curX++;
         if (curX == screen_width) {
             curY++;
@@ -529,7 +538,7 @@ lcd_putc(cyg_int8 c)
         curY = (screen_height-1);
     }
     if (cursor_enable) {
-        lcd_drawc(CURSOR_ON, curX, curY);
+        lcd_drawc(CURSOR_ON, curX-screen_pan, curY);
     }
 }
 
@@ -676,13 +685,13 @@ lcd_vprintf(void (*putc)(cyg_int8), const char *fmt0, va_list ap)
 int
 lcd_printf(char const *fmt, ...)
 {
-	int ret;
-	va_list ap;
+    int ret;
+    va_list ap;
 
-	va_start(ap, fmt);
-	ret = lcd_vprintf(lcd_putc, fmt, ap);
-	va_end(ap);
-	return (ret);
+    va_start(ap, fmt);
+    ret = lcd_vprintf(lcd_putc, fmt, ap);
+    va_end(ap);
+    return (ret);
 }
 
 void
@@ -769,7 +778,7 @@ static kbd_map kbd_shift_map = {
 };
 
 static kbd_map *cur_kbd_map = &kbd_norm_map;
-static bool kbd_active = false;
+static bool kbd_active = true;
 
 // Pseudo-keyboard indicator
 #define LCD_KBD_NORM  0
@@ -846,20 +855,52 @@ static cyg_bool
 lcd_comm_getc_nonblock(void* __ch_data, cyg_uint8* ch)
 {
     static bool pen_down = false;
+    static bool waiting_for_pen_down = true;
     static int  total_events = 0;
+    static int  pen_idle;
     static unsigned long totalX, totalY;
     struct ts_event tse;
     struct key_event ke;
+//#define KBD_DEBUG
+#ifdef KBD_DEBUG
+    static bool dump_info = false;
+#endif
+#define PEN_IDLE_TIMEOUT 50000
+#define MIN_KBD_EVENTS   10
 
     // See if any buttons have been pushed
     if (key_get_event(&ke)) {
         if ((ke.button_info & ATMEL_BUTTON_STATE) == ATMEL_BUTTON_STATE_UP) {
 //            diag_printf("Key = %x\n", ke.button_info);
+            lcd_on(true);
             switch (ke.button_info & ATMEL_BUTTON_VALUE) {
             case ATMEL_BUTTON_RETURN:
                 *ch = CTRL('C');
                 return true;
+            case ATMEL_BUTTON_JOY_DOWN:
+            case ATMEL_BUTTON_JOY_UP:
+                screen_pan = 0;
+                lcd_refresh();
+                break;
+            case ATMEL_BUTTON_JOY_LEFT:
+                screen_pan -= SCREEN_PAN;
+                if (screen_pan < 0) screen_pan = 0;
+                lcd_refresh();
+                break;
+            case ATMEL_BUTTON_JOY_RIGHT:
+                screen_pan += SCREEN_PAN;
+                if (screen_pan > (SCREEN_WIDTH-SCREEN_PAN)) screen_pan = SCREEN_WIDTH-SCREEN_PAN;
+                lcd_refresh();
+                break;
             default:
+#ifdef KBD_DEBUG
+                {
+                    int cur = start_console(0);
+                    printf("pen: %d, waiting: %d, total: %d\n", pen_down, waiting_for_pen_down, total_events);
+                    end_console(cur);
+                    dump_info = !dump_info;
+                }
+#endif
                 return false;
             }
         }
@@ -870,43 +911,65 @@ lcd_comm_getc_nonblock(void* __ch_data, cyg_uint8* ch)
         return false;
     }
     // Wait for pen down
-    if (!pen_down && (total_events == 0)) {
+    if (waiting_for_pen_down) {
         if (ts_get_event(&tse)) {
+            lcd_on(true);
             if (!tse.up) {
                 pen_down = true;
+                waiting_for_pen_down = false;
                 totalX = totalY = 0;
-            }
-        }
-        return false;
-    }
-    // Now that the pen is down, accumulate some data
-    if (total_events < 50) {
-        if (ts_get_event(&tse)) {
-            if (tse.up) {
-                pen_down = false;
-            } else {
-                total_events++;
-                pen_down = true;
-#ifdef PORTRAIT_MODE
-                totalX += tse.y;
-                totalY += tse.x;
-#else
-                totalX += tse.x;
-                totalY += tse.y;
+                total_events = 0;
+                pen_idle = PEN_IDLE_TIMEOUT;
+#ifdef KBD_DEBUG
+                if (dump_info) {
+                    int cur = start_console(0);
+                    printf("start pen: %d, waiting: %d, total: %d\n", pen_down, waiting_for_pen_down, total_events);
+                    end_console(cur);
+                }
 #endif
             }
         }
         return false;
-    } 
-    // Now wait for the pen to go up
-    while (pen_down) {
-        if (ts_get_event(&tse)) {
-            if (tse.up) {
-                pen_down = false;
-            }
-        }
     }
-    if (true) {
+    // While the pen is down, accumulate some data
+    if (ts_get_event(&tse)) {
+        pen_idle = PEN_IDLE_TIMEOUT;
+        if (tse.up) {
+            pen_down = false;
+            waiting_for_pen_down = true;
+        } else {
+            total_events++;
+            pen_down = true;
+#ifdef PORTRAIT_MODE
+            totalX += tse.y;
+            totalY += tse.x;
+#else
+            totalX += tse.x;
+            totalY += tse.y;
+#endif
+        }
+    } else {
+        if (--pen_idle == 0) {
+            pen_down = false;
+            waiting_for_pen_down = true;
+#ifdef KBD_DEBUG
+            if (dump_info) {
+                int cur = start_console(0);
+                printf("going idle\n");
+                end_console(cur);
+            }
+#endif
+        }
+        return false;
+    }
+#ifdef KBD_DEBUG
+    if (dump_info) {
+        int cur = start_console(0);
+        printf("pen: %d, waiting: %d, total: %d\n", pen_down, waiting_for_pen_down, total_events);
+        end_console(cur);
+    }
+#endif
+    if (total_events == MIN_KBD_EVENTS) {
         // If pen just went up then see if this was a valid
         // character (inside the keyboard picture, etc)
         int x = totalX/total_events;
@@ -914,14 +977,13 @@ lcd_comm_getc_nonblock(void* __ch_data, cyg_uint8* ch)
         int row, col;
         int char_width, char_height;
         unsigned char kbd_ch;
-#if 0
-        {
-        int cur = start_console(0);
-        printf("Pen[%d] at %d/%d\n", total_events, x, y);
-        end_console(cur);
+#ifdef KBD_DEBUG
+        if (dump_info) {
+            int cur = start_console(0);
+            printf("Pen[%d] at %d/%d\n", total_events, x, y);
+            end_console(cur);
         }
 #endif
-        total_events = 0;
         // Try and determine row/col in our keyboard matrix
         if (inside(x, minX, maxX) && inside(y, minY, maxY)) {
             // Point seems to be with the matrix
@@ -930,8 +992,8 @@ lcd_comm_getc_nonblock(void* __ch_data, cyg_uint8* ch)
             col = abs(x-maxX) / char_width;
             row = abs(y-minY) / char_height;
             kbd_ch = (*cur_kbd_map)[row][col];
-#if 0
-            {
+#ifdef KBD_DEBUG
+            if (dump_info) {
                 int cur = start_console(0);
                 printf("Row/Col = %d/%d = %x\n", row, col, kbd_ch);
                 end_console(cur);
@@ -1105,12 +1167,13 @@ static bool
 init_kbd_coord(int indx, char *prompt_char)
 {
     char prompt[] = "Press %s on kbd graphic";
-    int off = ((screen_width-sizeof(prompt))/2)-1;
-    int off2 = ((screen_width-20)/2)-1;
+    int off = ((VISIBLE_SCREEN_WIDTH-sizeof(prompt))/2)-1;
+    int off2 = ((VISIBLE_SCREEN_WIDTH-20)/2)-1;
     struct ts_event tse;
     struct key_event ke;
     bool pen_down;
     int i, down_timer, total_events;
+    int timeout = 100000;
     unsigned long totalX, totalY;
 
     lcd_moveto(off, screen_height/2);
@@ -1134,6 +1197,10 @@ init_kbd_coord(int indx, char *prompt_char)
             if (ke.button_info == (ATMEL_BUTTON_STATE_UP|ATMEL_BUTTON_RETURN)) {
                 return true;
             }
+        }
+        if (--timeout == 0) {
+            // Give up if the guy hasn't pressed anything
+            return true;
         }
     }
     // Now accumulate data 
@@ -1234,12 +1301,25 @@ lcd_comm_init(void)
         }
         need_params = cksum != _ipaq_LCD_params[(4*2)+1];
 
+        // If the data are currently bad, set up some defaults
+        if (need_params) {
+            kbd_limits[CS_UL].x = 994;
+            kbd_limits[CS_UL].y = 710;
+            kbd_limits[CS_UR].x = 413;
+            kbd_limits[CS_UR].y = 710;
+            kbd_limits[CS_LL].x = 989;
+            kbd_limits[CS_LL].y = 839;
+            kbd_limits[CS_LR].x = 411;
+            kbd_limits[CS_LR].y = 836;
+        }
+
         if (!need_params) {
             // See if the guy wants to force new parameters
             lcd_clear();
             lcd_moveto(5, screen_height/2);
             lcd_printf("Calibrate touch screen?\n");
-            for (i = 0;  i < 20;  i++) {
+            lcd_moveto(5, (screen_height/2)+1);
+            for (i = 0;  i < 10;  i++) {
                 struct key_event ke;
                 if (key_get_event(&ke) && ((ke.button_info & ATMEL_BUTTON_STATE) == ATMEL_BUTTON_STATE_UP)) {
                     need_params = (ke.button_info & ATMEL_BUTTON_VALUE) != ATMEL_BUTTON_RETURN;
@@ -1266,7 +1346,7 @@ lcd_comm_init(void)
             if (init_kbd_coord(CS_LR, "'/'  ")) {
                 goto no_kbd;
             }
-//            cursor_enable = true;
+            cursor_enable = true;
             if (close(kbd_limits[CS_UL].x, kbd_limits[CS_LL].x) &&
                 close(kbd_limits[CS_UR].x, kbd_limits[CS_LR].x) &&
                 close(kbd_limits[CS_UL].y, kbd_limits[CS_UR].y) &&
@@ -1285,8 +1365,8 @@ lcd_comm_init(void)
                 break;
             }
         }
-        kbd_active = true;
 
+    no_kbd:
         // Munge the limits to allow for some slop
         if (kbd_limits[CS_UL].x < kbd_limits[CS_UR].x) {
             minX = min(kbd_limits[CS_UL].x, kbd_limits[CS_LL].x) - KBD_FUZZ;
@@ -1302,17 +1382,12 @@ lcd_comm_init(void)
             minY = min(kbd_limits[CS_LR].y, kbd_limits[CS_LL].y) - KBD_FUZZ;
             maxY = max(kbd_limits[CS_UL].y, kbd_limits[CS_UR].y) + KBD_FUZZ;
         }
-    no_kbd:
+        cursor_enable = true;
         lcd_clear();
         if (kbd_active) {
             lcd_kbd(LCD_KBD_NORM);
         }
 #if 0
-        printf("Limits[] = %d/%d, %d/%d, %d/%d, %d/%d\n",
-               limits[CS_UL].x, limits[CS_UL].y,
-               limits[CS_UR].x, limits[CS_UR].y,
-               limits[CS_LL].x, limits[CS_LL].y,
-               limits[CS_LR].x, limits[CS_LR].y);
         printf("KBD Limits[] = %d/%d, %d/%d, %d/%d, %d/%d\n",
                kbd_limits[CS_UL].x, kbd_limits[CS_UL].y,
                kbd_limits[CS_UR].x, kbd_limits[CS_UR].y,
