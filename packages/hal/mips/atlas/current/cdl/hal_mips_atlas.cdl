@@ -277,7 +277,7 @@ cdl_package CYGPKG_HAL_MIPS_ATLAS {
     cdl_option CYGSEM_HAL_ROM_MONITOR {
         display       "Behave as a ROM monitor"
         flavor        bool
-        default_value 1
+        default_value 0
         parent        CYGPKG_HAL_ROM_MONITOR
         requires      { CYG_HAL_STARTUP == "ROM" }
         description   "

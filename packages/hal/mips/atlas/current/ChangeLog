@@ -1,3 +1,8 @@
+2003-05-08  Nick Garnett  <nickg@balti.calivar.com>
+
+	* cdl/hal_mips_atlas.cdl: Change default_value of
+	CYGSEM_HAL_ROM_MONITOR to zero.
+
 2003-04-29  Nick Garnett  <nickg@balti.calivar.com>
 
 	* cdl/hal_mips_atlas.cdl: Changed default startup from ROM to
