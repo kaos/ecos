@@ -1,3 +1,8 @@
+2003-02-05  John Dallaway  <jld@ecoscentric.com>
+
+	* common/eCosTest.cpp (CygPath): Get the cygdrive prefix from
+	the registry.
+
 2003-01-20  John Dallaway  <jld@ecoscentric.com>
 
 	* common/eCosTestPlatform.cpp (CProperties::CreateKey):

@@ -1109,15 +1109,38 @@ bool CeCosTest::CheckForTimeout()
 String CeCosTest::CygPath (LPCTSTR pszPath)
 {
 #ifdef _WIN32
-  String str;
-  TCHAR *buf=str.GetBuffer(2+MAX_PATH);
+  String str = "";
+  HKEY hKey = 0;
+  DWORD type;
+  BYTE value[256];
+  DWORD sz = sizeof(value);
+
+  // look for the cygdrive prefix in the user's registry settings
+  if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\Cygnus Solutions\\Cygwin\\mounts v2", 0, KEY_READ, &hKey)) {
+    if (ERROR_SUCCESS == RegQueryValueEx(hKey, "cygdrive prefix", NULL, & type, value, & sz)) {
+      str = (const char*) value;
+    }
+    RegCloseKey(hKey);
+  }
+
+  // if not yet found, look for the cygdrive prefix in the system registry settings
+  hKey = 0;
+  sz = sizeof(value);
+  if (str.empty() && (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\Cygnus Solutions\\Cygwin\\mounts v2", 0, KEY_READ, &hKey))) {
+    if (ERROR_SUCCESS == RegQueryValueEx(hKey, "cygdrive prefix", NULL, & type, value, & sz)) {
+      str = (const char*) value;
+    }
+    RegCloseKey(hKey);
+  }
+
+  int prefixlen = str.length();
+  TCHAR *buf=str.GetBuffer(prefixlen+1+MAX_PATH);
   TCHAR *pszFname;
-  if(::GetFullPathName(pszPath,MAX_PATH,1+buf, &pszFname)){
-    GetShortPathName(1+buf,1+buf,MAX_PATH); // ignore errors
-    buf[0]=_TCHAR('/');
-    buf[2]=buf[1];
-    buf[1]=_TCHAR('/');
-    for(int i=3;buf[i];i++){
+  if(::GetFullPathName(pszPath,MAX_PATH,prefixlen+buf, &pszFname)){
+    GetShortPathName(prefixlen+buf,prefixlen+buf,MAX_PATH); // ignore errors
+    buf[prefixlen+1]=buf[prefixlen];
+    buf[prefixlen]=_TCHAR('/');
+    for(int i=prefixlen+2;buf[i];i++){
       if(_TCHAR('\\')==buf[i]){
         buf[i]=_TCHAR('/');
       }
