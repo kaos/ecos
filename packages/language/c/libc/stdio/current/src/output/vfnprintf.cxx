@@ -240,7 +240,7 @@ CYG_MACRO_END
         (flags&QUADINT ? va_arg(arg, cyg_int64) : \
             flags&LONGINT ? va_arg(arg, long) : \
             flags&SHORTINT ? (long)(short)va_arg(arg, int) : \
-            flags&SIZET ? va_arg(arg, size_t) : \
+            flags&SIZET ? (long)va_arg(arg, size_t) : \
             (long)va_arg(arg, int))
 #define UARG() \
         (flags&QUADINT ? va_arg(arg, cyg_uint64) : \

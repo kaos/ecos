@@ -1,3 +1,11 @@
+2003-06-10  Andrew Lunn  <andrew.lunn@ascom.ch>
+	    Knud Wöhler  <woehler@ossi.fho-emden.de>    
+	
+	* src/output/vfnprintf.cxx (SARG): Cast size_t to long. This seems
+	to stop gcc from producing wrong code for the plain int clause. The 
+	wrong code causes negative numbers to be printed as positive because
+	the sign extend from 32 bits to 64 bits is wrong.
+
 2003-03-06  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/input/fread.cxx (fread): Simple EOF should not set error.
