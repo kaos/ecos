@@ -1,3 +1,8 @@
+2003-10-06  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/dlmalloc.cxx (Cyg_Mempool_dlmalloc_Implementation): Fixed
+	compiler warning added by previous patch.
+
 2003-09-30  Eric Doenges <Eric.Doengea@DynaPel.com>
 
 	* cdl/memalloc.cdl, src/dlmalloc.cxx: Make the minimum memory
