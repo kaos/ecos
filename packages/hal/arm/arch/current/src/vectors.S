@@ -585,6 +585,7 @@ call_exception_handler:
         mov     r0,sp                   // r0 survives mode switch
         mrs     r2,cpsr                 // Save current psr for return
         orr     r1,r1,#CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE
+        bic     r1,r1,#CPSR_THUMB_ENABLE
         msr     cpsr,r1
         stmfd   r0!,{r8-r12,sp,lr}
         msr     cpsr,r2                 // back to svc mode
@@ -644,6 +645,7 @@ return_from_exception:
         add     r2,sp,#armreg_r8
         mrs     r1,cpsr
         orr     r0,r0,#CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE
+        bic     r0,r0,#CPSR_THUMB_ENABLE
         msr     cpsr,r0
         ldmfd   r2,{r8-r14}
         msr     cpsr, r1        // back to svc mode
@@ -724,6 +726,7 @@ handle_IRQ_or_FIQ:
         mov     r0,sp                   // r0 survives mode switch
         mrs     r2,cpsr                 // Save current psr for return
         orr     r1,r1,#CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE
+        bic     r1,r1,#CPSR_THUMB_ENABLE
         msr     cpsr,r1
         stmfd   r0!,{r8-r12,sp,lr}
         msr     cpsr,r2                 // back to svc mode
