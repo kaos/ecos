@@ -150,12 +150,6 @@ cyg_pci_get_device_info ( cyg_pci_device_id devid, cyg_pci_device *dev_info )
             dev_info->base_size[i] = size;
             dev_info->base_map[i] = 0xffffffff;
 
-	    // No reason to scan beyond first inactive BAR.
-	    if (size == 0) {
-		dev_info->num_bars = i;
-		break;
-	    }
-
             // Check for a 64bit memory region.
             if (CYG_PCI_CFG_BAR_SPACE_MEM == 
                 (size & CYG_PCI_CFG_BAR_SPACE_MASK)) {
@@ -177,12 +171,6 @@ cyg_pci_get_device_info ( cyg_pci_device_id devid, cyg_pci_device *dev_info )
 	    dev_info->base_size[i] = 0;
 
             bar = dev_info->base_address[i];
-
-	    // No reason to scan beyond first inactive BAR.
-	    if ((i != 0) && (bar == 0)) {
-		dev_info->num_bars = i;
-		break;
-	    }
 
 	    if ((bar & CYG_PCI_CFG_BAR_SPACE_MASK) == CYG_PCI_CFG_BAR_SPACE_IO) {
 		dev_info->base_map[i] = (bar & CYG_PRI_CFG_BAR_IO_MASK) + HAL_PCI_PHYSICAL_IO_BASE;
