@@ -55,6 +55,8 @@
 
 // The uEngine uE250 system has two 16-bit devices.
 
+#include <cyg/hal/uE250.h>
+
 #define CYGNUM_FLASH_DEVICES 	(2)
 #define CYGNUM_FLASH_BASE 	UE250_FLASH_ADDR
 #define CYGNUM_FLASH_BASE_MASK  (0xFC000000u) // 32Mb total
