@@ -94,7 +94,7 @@ GROUP(libtarget.a libgcc.a)
     . = ALIGN(8);							 \
       KEEP(*( SORT (.ecos.table.*))) ;					 \
     . = ALIGN(4);                                                        \
-     *(.stack)                                                           \     
+     *(.stack)                                                           \
     } > _region_							 \
     CYG_LABEL_DEFN(_rom_data_start) = LOADADDR(.data);			 \
     CYG_LABEL_DEFN(_ram_data_end) = .; PROVIDE(_ram_data_end = .);	 \
