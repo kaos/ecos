@@ -123,7 +123,7 @@ cdl_package CYGPKG_LIBC_TIME {
     cdl_option CYGFUN_LIBC_TIME_POSIX {
         display       "POSIX time functions"
         default_value 1
-        requires      CYGFUN_LIBC_STRING_BSD_FUNCS
+        requires      CYGINT_ISO_STRING_BSD_FUNCS
         compile       strptime.cxx
         description   "
             Enabling this option allows the use of the
