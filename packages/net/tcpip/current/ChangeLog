@@ -1,3 +1,7 @@
+2003-12-10  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/netinet/in.h: Prototype for inet_ntoa_r()
+
 2003-11-25  Manu Sharma <manu.sharma@ascom.com>
         * src/sys/net/bridgestp.c: Code for Spanning Tree Protocol (STP).
 

@@ -67,6 +67,7 @@ extern struct in_addr	 inet_makeaddr __P((u_long , u_long));
 extern unsigned long	 inet_netof __P((struct in_addr));
 extern unsigned long	 inet_network __P((const char *));
 extern char		*inet_ntoa __P((struct in_addr));
+extern char		*inet_ntoa_r __P((struct in_addr, char *));
 __END_DECLS
 
 #endif /* !_ARPA_INET_H_ */

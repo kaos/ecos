@@ -1,3 +1,11 @@
+2003-12-10  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/inet_ntoa.c: Add thread safe inet_ntoa_r() and change
+	inet_ntoa() to use it.  Inspired by Matt Jerdonek.
+
+	* include/net/netdb.h: 
+	* include/arpa/inet.h: Prototype for inet_ntoa_r()
+
 2003-11-25  Manu Sharma <manu.sharma@ascom.com>
 
          * tests/bridge.c: Changes to enable Spanning Tree Protocol if the

@@ -135,6 +135,7 @@ int getnameinfo (const struct sockaddr *sa, socklen_t salen,
 // Miscellaneous address manipulation functions
 #include <netinet/in.h>
 char     *inet_ntoa(struct in_addr);
+char     *inet_ntoa_r(struct in_addr, char *);
 char     *inet_ntop(int af, const char *src, char *dst, size_t len);
 int      inet_pton(int af, const char *src, char *dst);
 char     *_inet_ntop(struct sockaddr *sa, char *dst, size_t len);

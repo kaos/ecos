@@ -517,6 +517,7 @@ u_short  in_pseudo __P((u_int32_t, u_int32_t, u_int32_t));
 u_short  in_addword __P((u_short, u_short));
 int	 in_localaddr __P((struct in_addr));
 char 	*inet_ntoa __P((struct in_addr));
+char 	*inet_ntoa_r __P((struct in_addr, char *));
 
 #endif
 

@@ -674,6 +674,7 @@ int	   in_cksum __P((struct mbuf *, int));
 int	   in_localaddr __P((struct in_addr));
 void	   in_socktrim __P((struct sockaddr_in *));
 char	  *inet_ntoa __P((struct in_addr));
+char 	  *inet_ntoa_r __P((struct in_addr, char *));
 
 #define	satosin(sa)	((struct sockaddr_in *)(sa))
 #define	sintosa(sin)	((struct sockaddr *)(sin))
