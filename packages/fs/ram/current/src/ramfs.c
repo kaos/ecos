@@ -905,7 +905,7 @@ static int findbuffer_node( ramfs_node  *node,
                                      alloc);
 #endif
 
-    return EINVAL;
+    return ENOSPC;
 }
 
 // -------------------------------------------------------------------------
