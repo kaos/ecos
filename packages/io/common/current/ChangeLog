@@ -1,3 +1,8 @@
+2004-12-23  Peter Korsgaard  <jacmet@sunsite.dk>
+
+	* doc/io.sgml: Match CYG_TTY_IN_FLAGS_ECHO and
+	CYG_TTY_IN_FLAGS_BINARY values with source code.
+
 2004-09-21  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* doc/io.sgml: Rename incorrect cyg_drv_mutex to cyg_drv_mutex_t.

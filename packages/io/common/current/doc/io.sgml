@@ -870,20 +870,20 @@ character sequence &quot;\r\n&quot; (often sent by DOS/Windows
 based terminals) will be mapped to &quot;\n&quot;. </PARA>
 
 <PROGRAMLISTING>
-#define CYG_TTY_IN_FLAGS_BINARY 0x0004 // No input processing
-</PROGRAMLISTING>
-
-<PARA>If this bit is set in <structfield>tty_in_flags</structfield>, the
-input will not be manipulated in any way before being placed in
-the user&rsquo;s buffer. </PARA>
-
-<PROGRAMLISTING>
-#define CYG_TTY_IN_FLAGS_ECHO 0x0008 // Echo characters as processed
+#define CYG_TTY_IN_FLAGS_ECHO 0x0004 // Echo characters as processed
 </PROGRAMLISTING>
 
 <PARA>
 If this bit is set in <structfield>tty_in_flags</structfield>, characters
 will be echoed back to the serial port as they are processed. </PARA>
+
+<PROGRAMLISTING>
+#define CYG_TTY_IN_FLAGS_BINARY 0x0008 // No input processing
+</PROGRAMLISTING>
+
+<PARA>If this bit is set in <structfield>tty_in_flags</structfield>, the
+input will not be manipulated in any way before being placed in
+the user&rsquo;s buffer. </PARA>
 
 </SECTION>
 
