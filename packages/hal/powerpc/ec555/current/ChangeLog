@@ -1,3 +1,9 @@
+2004-09-23  Bob Koninckx <bob.koninckx@o-3s.com>
+
+	* src/ec555.S: Updated memory controller settings for ethernet card. Now
+	it also works for redboot running out of internal FLASH, and with a longer
+	system bus.
+
 2004-04-19  Bob Koninckx <bob.koninckx@o-3s.com>
 	
 	* src/ec555.S: Corrected typo in initialisation of SYPCR to make sure

@@ -51,6 +51,7 @@
 //=============================================================================
 
 #include <pkgconf/hal.h>
+#include <pkgconf/system.h>
 #include <cyg/hal/hal_mem.h>            // HAL memory definitions
 #include <cyg/hal/hal_if.h>             // hal_if_init
 
@@ -73,6 +74,12 @@ hal_platform_init(void)
 
 #if defined CYGSEM_HAL_VIRTUAL_VECTOR_DIAG  
   HAL_DIAG_INIT();
+#endif
+
+#ifdef CYGPKG_DEVS_ETH_POWERPC_EC555
+  // Give the CS8900a chip a chance to complete its self-test. Cirrus prescribes
+  // 10 milliseconds, so 20 should be safe
+  HAL_DELAY_US(20000);
 #endif
 }
 

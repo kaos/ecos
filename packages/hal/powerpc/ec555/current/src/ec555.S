@@ -166,7 +166,7 @@ hal_hardware_init:
 #if   (CYGNUM_DEVS_ETH_POWERPC_EC555_ETH0_CS == 2)
         lwi     r4, (EC555_CS2_BASE_ADDRESS | 0x00000803)
         stw     r4, (CYGARC_REG_IMM_BR2-CYGARC_REG_IMM_BASE)(r3)
-        lwi     r4, 0xffff8e60
+        lwi     r4, 0xffff8ca0
         stw     r4, (CYGARC_REG_IMM_OR2-CYGARC_REG_IMM_BASE)(r3)
 
         lwi     r4, EC555_CS3_BASE_ADDRESS
@@ -181,7 +181,7 @@ hal_hardware_init:
 
         lwi     r4, (EC555_CS3_BASE_ADDRESS | 0x00000803)
         stw     r4, (CYGARC_REG_IMM_BR3-CYGARC_REG_IMM_BASE)(r3)
-        lwi     r4, 0xffff8e60
+        lwi     r4, 0xffff8ca0
         stw     r4, (CYGARC_REG_IMM_OR3-CYGARC_REG_IMM_BASE)(r3)
 #else
 #error "Invalid chip select for ethernet card specified"
