@@ -592,6 +592,7 @@ do_dhcp(const char *intf, struct bootp *res,
             return false;
 
         *pstate = DHCPSTATE_INIT;
+        lease->which = lease->next = 0;
     }
 
     s = socket(AF_INET, SOCK_DGRAM, 0);
@@ -1189,7 +1190,7 @@ do_dhcp(const char *intf, struct bootp *res,
             // No lease active
             no_lease( lease );
             // Leave interface up so app can tidy.
-            return false;
+            return true;
 
         case DHCPSTATE_FAILED:
             // All done with socket

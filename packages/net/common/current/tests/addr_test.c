@@ -58,6 +58,22 @@ walk_addrs(struct addrinfo *ai, char *title)
         _inet_ntop(ai->ai_addr, addr_buf, sizeof(addr_buf));
         diag_printf("INFO: Family: %2d, Socket: %d, Addr: %s, Port: %d\n", 
                     ai->ai_family, ai->ai_socktype, addr_buf, _inet_port(ai->ai_addr));
+        switch (ai->ai_family) {
+        case AF_INET:
+          if (ai->ai_addrlen != sizeof(struct sockaddr_in)) {
+            CYG_TEST_FAIL("ai_addrlen wrong for an IPv4 address");
+          }
+          break;
+#ifdef CYGPKG_NET_INET6
+        case AF_INET6:
+          if (ai->ai_addrlen != sizeof(struct sockaddr_in6)) {
+            CYG_TEST_FAIL("ai_addrlen wrong for an IPv6 address");
+          }
+          break;
+#endif
+        default:
+          CYG_TEST_FAIL("Unknown address family");
+        }
         ai = ai->ai_next;
     }
 }

@@ -1,3 +1,11 @@
+2003-07-29  Motoya Kurotsu  <kurotsu@allied-telesis.co.jp>
+
+        * src/dhcp_prot.c (do_dhcp): (re)Initialize the lease when
+        dhcp is (re)initialized or retried.
+        Return true when the state falls into DHCPSTATE_NOTBOUND so that it 
+        knows the interface it still up and can later bring it down when 
+        cleaning up.
+
 2003-07-24  Nick Garnett  <nickg@balti.calivar.com>
 
 	* src/dhcp_prot.c: Added a declaration for cyg_arc4random() to
