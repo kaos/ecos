@@ -57,6 +57,13 @@
 extern "C" {
 #endif
 
+// The ARM has float (and possibly other coprocessor) registers that are
+// larger than it can hold in a target_register_t.
+#define TARGET_HAS_LARGE_REGISTERS
+
+// ARM stub has special needs for register handling (not all regs are the
+// the same size), so special put_register and get_register are provided.
+#define CYGARC_STUB_REGISTER_ACCESS_DEFINED 1
 
 #define NUMREGS    (16+8+2)  // 16 GPR, 8 FPR (unused), 2 PS
 
@@ -76,6 +83,9 @@ enum regnames {
     F0, F1, F2, F3, F4, F5, F6, F7, 
     FPS, PS
 };
+
+#define HAL_STUB_REGISTERS_SIZE \
+ ((sizeof(GDB_Registers) + sizeof(target_register_t) - 1) / sizeof(target_register_t))
 
 #define PS_N 0x80000000
 #define PS_Z 0x40000000

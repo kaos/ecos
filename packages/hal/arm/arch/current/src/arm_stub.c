@@ -151,6 +151,87 @@ void set_pc (target_register_t pc)
     put_register (PC, pc);
 }
 
+// Calculate byte offset a given register from start of register save area.
+static int
+reg_offset(regnames_t reg)
+{
+    int base_offset;
+
+    if (reg < F0)
+	return reg * 4;
+
+    base_offset = 16 * 4;
+
+    if (reg < FPS)
+	return base_offset + ((reg - F0) * 12);
+
+    base_offset += (8 * 12);
+
+    if (reg <= PS)
+	return base_offset + ((reg - FPS) * 4);
+
+    return -1;  // Should never happen!
+}
+
+
+// Return the currently-saved value corresponding to register REG of
+// the exception context.
+target_register_t 
+get_register (regnames_t reg)
+{
+    target_register_t val;
+    int offset = reg_offset(reg);
+
+    if (REGSIZE(reg) > sizeof(target_register_t) || offset == -1)
+	return -1;
+
+    val = _registers[offset/sizeof(target_register_t)];
+
+    return val;
+}
+
+// Store VALUE in the register corresponding to WHICH in the exception
+// context.
+void 
+put_register (regnames_t which, target_register_t value)
+{
+    int offset = reg_offset(which);
+
+    if (REGSIZE(which) > sizeof(target_register_t) || offset == -1)
+	return;
+
+    _registers[offset/sizeof(target_register_t)] = value;
+}
+
+// Write the contents of register WHICH into VALUE as raw bytes. This
+// is only used for registers larger than sizeof(target_register_t).
+// Return non-zero if it is a valid register.
+int
+get_register_as_bytes (regnames_t which, char *value)
+{
+    int offset = reg_offset(which);
+
+    if (offset != -1) {
+	memcpy (value, (char *)_registers + offset, REGSIZE(which));
+	return 1;
+    }
+    return 0;
+}
+
+// Alter the contents of saved register WHICH to contain VALUE. This
+// is only used for registers larger than sizeof(target_register_t).
+// Return non-zero if it is a valid register.
+int
+put_register_as_bytes (regnames_t which, char *value)
+{
+    int offset = reg_offset(which);
+
+    if (offset != -1) {
+	memcpy ((char *)_registers + offset, value, REGSIZE(which));
+	return 1;
+    }
+    return 0;
+}
 
 /*----------------------------------------------------------------------
  * Single-step support

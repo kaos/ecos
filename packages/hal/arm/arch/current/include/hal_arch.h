@@ -229,52 +229,78 @@ extern cyg_uint16 __thumb_breakinst;
 //--------------------------------------------------------------------------
 // Thread register state manipulation for GDB support.
 
-// GDB expects the registers in this structure:
-//   r0..r10, fp, ip, sp, lr, pc  - 4 bytes each
-//   f0..f7                       - 12 bytes each (N/A on ARM7)
-//   fps                          - 4 bytes       (N/A on ARM7)
-//   ps                           - 4 bytes
+// Register layout expected by GDB
+typedef struct
+{
+    cyg_uint32  gpr[16];
+    cyg_uint32  f0[3];
+    cyg_uint32  f1[3];
+    cyg_uint32  f2[3];
+    cyg_uint32  f3[3];
+    cyg_uint32  f4[3];
+    cyg_uint32  f5[3];
+    cyg_uint32  f6[3];
+    cyg_uint32  f7[3];
+    cyg_uint32  fps;
+    cyg_uint32  ps;
+} GDB_Registers;
 
 // Translate a stack pointer as saved by the thread context macros above into
 // a pointer to a HAL_SavedRegisters structure.
 #define HAL_THREAD_GET_SAVED_REGISTERS( _sp_, _regs_ )  \
         (_regs_) = (HAL_SavedRegisters *)(_sp_)
 
-// Copy a set of registers from a HAL_SavedRegisters structure into a
-// GDB ordered array.    
-#define HAL_GET_GDB_REGISTERS( _aregval_, _regs_ )              \
+// Copy a set of coprocessor registers from a HAL_SavedRegisters structure
+// into a GDB_Registers structure. GDB expects placeholders for FP regs
+// even for non-FP targets, so we just zero fill the fields.
+#define HAL_GET_GDB_COPROCESSOR_REGISTERS( _gdb_, _regs_ )      \
     CYG_MACRO_START                                             \
-    CYG_ADDRWORD *_regval_ = (CYG_ADDRWORD *)(_aregval_);       \
-    int _i_;                                                    \
-                                                                \
-    for( _i_ = 0; _i_ <= 10; _i_++ )                            \
-        _regval_[_i_] = (_regs_)->d[_i_];                       \
-                                                                \
-    _regval_[11] = (_regs_)->fp;                                \
-    _regval_[12] = (_regs_)->ip;                                \
-    _regval_[13] = (_regs_)->sp;                                \
-    _regval_[14] = (_regs_)->lr;                                \
-    _regval_[15] = (_regs_)->pc;                                \
-    _regval_[25] = (_regs_)->cpsr;                              \
-    for( _i_ = 0; _i_ < 8; _i_++ )                              \
-        _regval_[_i_+16] = 0;                                   \
+    cyg_uint32 *_p_ = _gdb_->f0;                                \
+    for(_i_ = 0; _i_ < (8 * 3); _i_++)                          \
+        *_p_++ = 0;                                             \
+    _gdb_->fps = 0;                                             \
     CYG_MACRO_END
 
-// Copy a GDB ordered array into a HAL_SavedRegisters structure.
-#define HAL_SET_GDB_REGISTERS( _regs_ , _aregval_ )             \
+// Copy coprocessor registers from a GDB_Registers structure into a
+// HAL_SavedRegisters structure.
+#define HAL_SET_GDB_COPROCESSOR_REGISTERS( _regs_, _gdb_ )
+
+// Copy a set of registers from a HAL_SavedRegisters structure into a
+// GDB_Registers structure.
+#define HAL_GET_GDB_REGISTERS( _aregval_, _regs_ )              \
     CYG_MACRO_START                                             \
-    CYG_ADDRWORD *_regval_ = (CYG_ADDRWORD *)(_aregval_);       \
+    GDB_Registers *_gdb_ = (GDB_Registers *)(_aregval_);        \
     int _i_;                                                    \
                                                                 \
     for( _i_ = 0; _i_ <= 10; _i_++ )                            \
-        (_regs_)->d[_i_] = _regval_[_i_];                       \
+        _gdb_->gpr[_i_] = (_regs_)->d[_i_];                     \
                                                                 \
-    (_regs_)->fp = _regval_[11];                                \
-    (_regs_)->ip = _regval_[12];                                \
-    (_regs_)->sp = _regval_[13];                                \
-    (_regs_)->lr = _regval_[14];                                \
-    (_regs_)->pc = _regval_[15];                                \
-    (_regs_)->cpsr = _regval_[25];                              \
+    _gdb_->gpr[11] = (_regs_)->fp;                              \
+    _gdb_->gpr[12] = (_regs_)->ip;                              \
+    _gdb_->gpr[13] = (_regs_)->sp;                              \
+    _gdb_->gpr[14] = (_regs_)->lr;                              \
+    _gdb_->gpr[15] = (_regs_)->pc;                              \
+    _gdb_->ps = (_regs_)->cpsr;                                 \
+    HAL_GET_GDB_COPROCESSOR_REGISTERS(_gdb_,_regs_);            \
+    CYG_MACRO_END
+
+// Copy a set of registers from a GDB_Registers structure into a
+// HAL_SavedRegisters structure.
+#define HAL_SET_GDB_REGISTERS( _regs_ , _aregval_ )             \
+    CYG_MACRO_START                                             \
+    GDB_Registers *_gdb_ = (GDB_Registers *)(_aregval_);        \
+    int _i_;                                                    \
+                                                                \
+    for( _i_ = 0; _i_ <= 10; _i_++ )                            \
+        (_regs_)->d[_i_] = _gdb_->gpr[_i_];                     \
+                                                                \
+    (_regs_)->fp = _gdb_->gpr[11];                              \
+    (_regs_)->ip = _gdb_->gpr[12];                              \
+    (_regs_)->sp = _gdb_->gpr[13];                              \
+    (_regs_)->lr = _gdb_->gpr[14];                              \
+    (_regs_)->pc = _gdb_->gpr[15];                              \
+    (_regs_)->cpsr = _gdb_->ps;                                 \
+    HAL_SET_GDB_COPROCESSOR_REGISTERS(_regs_,_gdb_);            \
     CYG_MACRO_END
 
 #if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
