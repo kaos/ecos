@@ -263,10 +263,10 @@ flash_erase_block(void* block, unsigned int size)
     put_NAND(ROM, FLASH_Block_Erase);
     CYGHWR_FLASH_TC58XXX_CLE(0);
     CYGHWR_FLASH_TC58XXX_ALE(1);
-    put_NAND(ROM, ((unsigned long)b_p & 0x0001FE00) >> 9);     // A9..A16
-    put_NAND(ROM, ((unsigned long)b_p & 0x01FE0000) >> 17);  // A17..A24
+    put_NAND(ROM, ((unsigned long)b_p & 0x0001FE00) >> 9);      // A9..A16
+    put_NAND(ROM, ((unsigned long)b_p & 0x01FE0000) >> 17);     // A17..A24
     if (flash_dev_info->device_size > 0x02000000) {
-        put_NAND(ROM, ((unsigned long)b_p & 0x06000000) >> 19);  // A26..A27
+        put_NAND(ROM, ((unsigned long)b_p & 0x06000000) >> 25); // A26..A27
     }
     CYGHWR_FLASH_TC58XXX_ALE(0);
     CYGHWR_FLASH_TC58XXX_CLE(1);
@@ -320,7 +320,7 @@ flash_program_buf(void* addr, void* data, int len)
         put_NAND(ROM, ((unsigned long)addr_ptr & 0x0001FE00) >> 9);   // A9..A16
         put_NAND(ROM, ((unsigned long)addr_ptr & 0x01FE0000) >> 17);  // A17..A24
         if (flash_dev_info->device_size > 0x02000000) {
-            put_NAND(ROM, ((unsigned long)addr_ptr & 0x06000000) >> 19);  // A26..A27
+            put_NAND(ROM, ((unsigned long)addr_ptr & 0x06000000) >> 25);  // A26..A27
         }
         CYGHWR_FLASH_TC58XXX_ALE(0);
 #if FLASH_DEBUG > 1
@@ -397,7 +397,7 @@ flash_read_buf(void* addr, void* data, int len)
     put_NAND(ROM, ((unsigned long)addr_ptr & 0x0001FE00) >> 9);   // A9..A16
     put_NAND(ROM, ((unsigned long)addr_ptr & 0x01FE0000) >> 17);  // A17..A24
     if (flash_dev_info->device_size > 0x02000000) {
-        put_NAND(ROM, ((unsigned long)addr_ptr & 0x06000000) >> 19);  // A26..A27
+        put_NAND(ROM, ((unsigned long)addr_ptr & 0x06000000) >> 25);  // A26..A27
     }
     CYGHWR_FLASH_TC58XXX_ALE(0);
 #if FLASH_DEBUG > 1
