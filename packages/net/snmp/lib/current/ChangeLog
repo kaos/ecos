@@ -1,3 +1,9 @@
+2003-02-28  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/config.h: Make random use rand on FreeBSD.
+	* include/system.h: For FreeBSD include param.h so we get the aliases.
+	#Undefine printf so stdio.h will compile. printf is not used anywhere.
+
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/snmplib.cdl: Add doc link.

@@ -1157,7 +1157,14 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define srandom(s) srand48(s)
 #else
 #ifdef HAVE_RAND
+#ifdef __ECOS
+#include <pkgconf/system.h>
+#ifndef CYGPKG_NET_FREEBSD_STACK
+
 #define random rand
+
+#endif //CYGPKG_NET_FREEBSD_STACK
+#endif // __ECOS
 #define srandom(s) srand(s)
 #endif
 #endif
@@ -1221,7 +1228,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define HAVE_SYS_FILE_H                         0
 #define HAVE_KSTAT_H                            0
 #define HAVE_SYS_UN_H                           0
-#define SOCK_MAXADDRLEN                         0
+#define SOCK_MAXADDRLEN                         255
 #define HAVE_SYS_STREAM_H                       0
 #define HAVE_INET_MIB2_H                        0
 #define HAVE_GETPID                             0

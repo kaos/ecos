@@ -189,6 +189,14 @@ char *strdup (const char *);
 int setenv (const char *, const char *, int);
 #endif
 
+#ifdef __ECOS
+#include <pkgconf/system.h>
+#ifdef CYGPKG_NET_FREEBSD_STACK
+#include <sys/param.h>
+#undef printf
+#endif //CYGPKG_NET_FREEBSD_STACK
+#endif // __ECOS
+
 #if TIME_WITH_SYS_TIME	
 #	ifdef WIN32
 #		include <sys/timeb.h>
