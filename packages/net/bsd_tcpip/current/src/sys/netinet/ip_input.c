@@ -102,8 +102,8 @@ int	ip_defttl = IPDEFTTL;
 static int	ip_dosourceroute = 0;
 static int	ip_acceptsourceroute = 0;
 static int	ip_keepfaith = 0;
-static int	ip_nfragpackets = 0;
-static int	ip_maxfragpackets;	/* initialized in ip_init() */
+static int    nipq = 0;         /* total # of reass queues */
+static int    maxnipq;
 
 /*
  * XXX - Setting ip_checkinterface mostly implements the receive side of
@@ -139,8 +139,6 @@ struct ipstat ipstat;
 	(((((x) & 0xF) | ((((x) >> 8) & 0xF) << 4)) ^ (y)) & IPREASS_HMASK)
 
 static struct ipq ipq[IPREASS_NHASH];
-static int    nipq = 0;         /* total # of reass queues */
-static int    maxnipq;
 const  int    ipintrq_present = 1;
 
 #ifdef IPSTEALTH
@@ -226,7 +224,6 @@ ip_init()
 	    ipq[i].next = ipq[i].prev = &ipq[i];
 
 	maxnipq = nmbclusters / 4;
-	ip_maxfragpackets = nmbclusters / 4;
 
 #ifndef RANDOM_IP_ID
 	ip_id = time_second & 0xffff;
@@ -678,6 +675,14 @@ ours:
 			ip = mtod(m, struct ip *);
 		}
 #endif
+
+		/* If maxnipq is 0, never accept fragments. */
+		if (maxnipq == 0) {
+                	ipstat.ips_fragments++;
+			ipstat.ips_fragdropped++;
+			goto bad;
+		}
+
 		sum = IPREASS_HASH(ip->ip_src.s_addr, ip->ip_id);
 		/*
 		 * Look for queue of fragments
@@ -692,8 +697,12 @@ ours:
 
 		fp = 0;
 
-		/* check if there's a place for the new queue */
-		if (nipq > maxnipq) {
+		/*
+		 * Enforce upper bound on number of fragmented packets
+		 * for which we attempt reassembly;
+		 * If maxnipq is -1, accept all fragments without limitation.
+		 */
+		if ((nipq > maxnipq) && (maxnipq > 0)) {
 		    /*
 		     * drop something from the tail of the current queue
 		     * before proceeding further
@@ -702,11 +711,14 @@ ours:
 			for (i = 0; i < IPREASS_NHASH; i++) {
 			    if (ipq[i].prev != &ipq[i]) {
 				ip_freef(ipq[i].prev);
+				ipstat.ips_fragtimeout++;
 				break;
 			    }
 			}
-		    } else
+		    } else {
 			ip_freef(ipq[sum].prev);
+			ipstat.ips_fragtimeout++;
+		    }
 		}
 found:
 		/*
@@ -899,15 +911,6 @@ ip_reass(m, fp, where)
 	 * If first fragment to arrive, create a reassembly queue.
 	 */
 	if (fp == 0) {
-		/*
-		 * Enforce upper bound on number of fragmented packets
-		 * for which we attempt reassembly;
-		 * If maxfrag is 0, never accept fragments.
-		 * If maxfrag is -1, accept all fragments without limitation.
-		 */
-		if ((ip_maxfragpackets >= 0) && (ip_nfragpackets >= ip_maxfragpackets))
-			goto dropfrag;
-		ip_nfragpackets++;
 		if ((t = m_get(M_DONTWAIT, MT_FTABLE)) == NULL)
 			goto dropfrag;
 		fp = mtod(t, struct ipq *);
@@ -1056,7 +1059,6 @@ inserted:
 	remque(fp);
 	nipq--;
 	(void) m_free(dtom(fp));
-	ip_nfragpackets--;
 	m->m_len += (IP_VHL_HL(ip->ip_vhl) << 2);
 	m->m_data -= (IP_VHL_HL(ip->ip_vhl) << 2);
 	/* some debugging cruft by sklower, below, will go away soon */
@@ -1097,7 +1099,6 @@ ip_freef(fp)
 	}
 	remque(fp);
 	(void) m_free(dtom(fp));
-	ip_nfragpackets--;
 	nipq--;
 }
 
@@ -1131,9 +1132,9 @@ ip_slowtimo()
 	 * (due to the limit being lowered), drain off
 	 * enough to get down to the new limit.
 	 */
-	for (i = 0; i < IPREASS_NHASH; i++) {
-		if (ip_maxfragpackets >= 0) {
-			while ((ip_nfragpackets > ip_maxfragpackets) &&
+	if (maxnipq >= 0 && nipq > maxnipq) {
+		for (i = 0; i < IPREASS_NHASH; i++) {
+			while ((nipq > maxnipq) &&
 				(ipq[i].next != &ipq[i])) {
 				ipstat.ips_fragdropped++;
 				ip_freef(ipq[i].next);

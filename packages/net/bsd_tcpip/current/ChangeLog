@@ -1,3 +1,14 @@
+2003-06-12  Motoya Kurotsu  <kurotsu@allied-telesis.co.jp>
+
+        * src/sys/netinet/ip_input.c(ip_reass):
+	ip_nfragpackets is increasing by dropping fragments due to mbuf 
+	starvation and eventually exceeds ip_maxfragpackets, which 
+	results in refusing all fragments later. On the other hand, nipq 
+	and maxnipq can be used as a substitute for ip_nfragpackets and 
+	ip_maxfragpackets. This fix is the collection of the fixes done 
+	at the following revisions of freebsd main branch; 1.221, 1.222, 
+	1.223 and 1.229.
+
 2003-06-23  Michael Checky  <Michael_Checky@ThermoKing.com>
  
 	* include/netinet/icmp_var.h: Changed icmpstat definition to a
