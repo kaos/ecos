@@ -1,3 +1,7 @@
+2003-07-23  Nick Garnett  <nickg@balti.calivar.com>
+
+	* include/hal_intr.h: Tidied up some compiler warnings.
+
 2003-04-10  Nick Garnett  <nickg@balti.calivar.com>
 
 	* src/i386.ld:

@@ -209,8 +209,8 @@ externC void hal_interrupt_stack_call_pending_DSRs(void);
     cyg_uint32 _index_;                                 \
     HAL_TRANSLATE_VECTOR ((_vector_), _index_);         \
                                                         \
-    if (hal_interrupt_handlers[_index_]             \
-        ==(CYG_ADDRESS)HAL_DEFAULT_ISR)            \
+    if (hal_interrupt_handlers[_index_]                 \
+        ==(CYG_ADDRESS)HAL_DEFAULT_ISR)                 \
         (_state_) = 0;                                  \
     else                                                \
         (_state_) = 1;                                  \
@@ -218,18 +218,18 @@ externC void hal_interrupt_stack_call_pending_DSRs(void);
 
 #ifndef HAL_INTERRUPT_ATTACH
 externC void __default_interrupt_vsr(void);
-#define HAL_INTERRUPT_ATTACH( _vector_, _isr_, _data_, _object_ )       \
-    CYG_MACRO_START                                                     \
-    cyg_uint32 _index_;                                                 \
-    HAL_TRANSLATE_VECTOR((_vector_), _index_);                          \
-                                                                        \
-    HAL_VSR_SET( _vector_, &__default_interrupt_vsr , NULL);		\
-    if( hal_interrupt_handlers[_index_] == (CYG_ADDRESS)HAL_DEFAULT_ISR )   \
-    {                                                                   \
-        hal_interrupt_handlers[_index_] = (CYG_ADDRESS)(_isr_);     \
-        hal_interrupt_data[_index_] = (CYG_ADDRWORD)(_data_);       \
-        hal_interrupt_objects[_index_] = (CYG_ADDRESS)(_object_);   \
-    }                                                                   \
+#define HAL_INTERRUPT_ATTACH( _vector_, _isr_, _data_, _object_ )               \
+    CYG_MACRO_START                                                             \
+    cyg_uint32 _index_;                                                         \
+    HAL_TRANSLATE_VECTOR((_vector_), _index_);                                  \
+                                                                                \
+    HAL_VSR_SET( _vector_, &__default_interrupt_vsr , NULL);                    \
+    if( hal_interrupt_handlers[_index_] == (CYG_ADDRESS)HAL_DEFAULT_ISR )       \
+    {                                                                           \
+        hal_interrupt_handlers[_index_] = (CYG_ADDRESS)(_isr_);                 \
+        hal_interrupt_data[_index_] = (CYG_ADDRWORD)(_data_);                   \
+        hal_interrupt_objects[_index_] = (CYG_ADDRESS)(_object_);               \
+    }                                                                           \
     CYG_MACRO_END
 #endif /* HAL_INTERRUPT_ATTACH */
 
@@ -238,13 +238,13 @@ externC void __default_interrupt_vsr(void);
     cyg_uint32 _index_;                         \
     HAL_TRANSLATE_VECTOR((_vector_), _index_);  \
                                                 \
-    if (hal_interrupt_handlers[_index_]     \
+    if (hal_interrupt_handlers[_index_]         \
         == (CYG_ADDRESS)(_isr_))                \
     {                                           \
-        hal_interrupt_handlers[_index_] =   \
-            (CYG_ADDRESS)HAL_DEFAULT_ISR;  \
-        hal_interrupt_data[_index_] = 0;    \
-        hal_interrupt_objects[_index_] = 0; \
+        hal_interrupt_handlers[_index_] =       \
+            (CYG_ADDRESS)HAL_DEFAULT_ISR;       \
+        hal_interrupt_data[_index_] = 0;        \
+        hal_interrupt_objects[_index_] = 0;     \
     }                                           \
     CYG_MACRO_END
 
@@ -252,11 +252,12 @@ externC void __default_interrupt_vsr(void);
     *((CYG_ADDRESS *)(_pvsr_)) = hal_vsr_table[(_vector_)];
     
 
-#define HAL_VSR_SET( _vector_, _vsr_, _poldvsr_ )                       \
-    CYG_MACRO_START                                                     \
-    if( (_poldvsr_) != NULL )                                           \
-        *(CYG_ADDRESS *)(_poldvsr_) = hal_vsr_table[(_vector_)];    \
-    hal_vsr_table[(_vector_)] = (CYG_ADDRESS)(_vsr_);               \
+#define HAL_VSR_SET( _vector_, _vsr_, _poldvsr_ )               \
+    CYG_MACRO_START                                             \
+    CYG_ADDRESS *__poldvsr = (CYG_ADDRESS *)(_poldvsr_);        \
+    if( __poldvsr != NULL )                                     \
+        *__poldvsr = hal_vsr_table[(_vector_)];                 \
+    hal_vsr_table[(_vector_)] = (CYG_ADDRESS)(_vsr_);           \
     CYG_MACRO_END
 
 // This is an ugly name, but what it means is: grab the VSR back to eCos
