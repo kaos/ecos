@@ -201,7 +201,8 @@ getifaddrs(struct ifaddrs **pif)
         if ((sa->sa_family == AF_INET) || (sa->sa_family == AF_INET6)) {
           struct sockaddr *sa_netmask = NULL;
           struct sockaddr *sa_broadcast = NULL;
-
+          struct sockaddr *sa_dst = NULL;
+          
           memset(&ifrq,0,sizeof(ifrq));
           strcpy(ifrq.ifr_name,ifr->ifr_name);
           ioctl( sock, SIOCGIFFLAGS, &ifrq );
@@ -228,7 +229,7 @@ getifaddrs(struct ifaddrs **pif)
           data += SA_RLEN(sa_netmask);
 
           memcpy(&ifrq.ifr_addr, ift->ifa_addr,sizeof(struct sockaddr));
-          if (sa->sa_family == AF_INET) {
+          if ((sa->sa_family == AF_INET) && (ift->ifa_flags & IFF_BROADCAST)) {
             if (ioctl(sock, SIOCGIFBRDADDR, &ifrq) == 0) {
               sa_broadcast = &ifrq.ifr_addr;
               ift->ifa_broadaddr = (struct sockaddr *)data;
@@ -236,7 +237,19 @@ getifaddrs(struct ifaddrs **pif)
               data += SA_RLEN(sa_broadcast);
             }
           }
+
+          memcpy(&ifrq.ifr_addr, ift->ifa_addr,sizeof(struct sockaddr));
+          if ((sa->sa_family == AF_INET) && 
+              (ift->ifa_flags & IFF_POINTOPOINT)) {
+            if (ioctl(sock, SIOCGIFDSTADDR, &ifrq) == 0) {
+              sa_dst = &ifrq.ifr_addr;
+              ift->ifa_dstaddr = (struct sockaddr *)data;
+              memcpy(data, sa_dst, SA_LEN(sa_dst));
+              data += SA_RLEN(sa_dst);
+            }
+          }
         }
+        
         if (SA_LEN(sa) < sizeof(*sa))
             ifr = (struct ifreq *)(((char *)sa) + sizeof(*sa));
         else

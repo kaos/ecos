@@ -1,3 +1,10 @@
+2004-06-17  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/ifaddrs.c (getifaddrs): Return destination address for P2P
+	devices. Also don't bother trying to get the broadcast address for
+	interfaces that don't have a valid broadcast address. Inspired by
+	Kelvin Lawson
+
 2004-06-08  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/network.h: Added a __THROW to perror so that it matches
