@@ -1,3 +1,4 @@
+* Add support for Analogue & Micro Adder (PowerPC 850) boards
 * Update MN10300 ASB2303 HAL to support RedBoot
 * New package for application level profiling (histogram only)
 * Support for NPWR Linux Engine (Xscale IOP310) from Team ASA

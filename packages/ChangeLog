@@ -1,3 +1,8 @@
+2002-11-25  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* ecos.db: Add support for A&M "Adder" (PowerPC 850)
+	Split PowerPC QUICC ethernet driver into generic+platform.
+
 2002-11-14  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* ecos.db: Add application profiling package.
