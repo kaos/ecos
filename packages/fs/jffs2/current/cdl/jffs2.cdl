@@ -58,7 +58,6 @@ cdl_package CYGPKG_FS_JFFS2 {
 
     requires       CYGPKG_IO_FILEIO
     requires       CYGPKG_IO_FLASH
-    requires       CYGPKG_COMPRESS_ZLIB
     requires       CYGINT_ISO_MALLOC
 
     requires       CYGPKG_ISOINFRA

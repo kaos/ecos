@@ -1,3 +1,8 @@
+2003-11-21  Thomas Koeller  <thomas.koeller@baslerweb.com>
+
+        * cdl/jffs2.cdl: Do not require zlib package if no
+	compression configured.
+
 2003-11-20  Thomas Koeller  <thomas.koeller@baslerweb.com>
 
         * cdl/jffs2.cdl:
