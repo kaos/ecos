@@ -490,7 +490,7 @@ _rb_gets_preloaded(char *buf, int buflen, int timeout)
 	    }
             last_ch = c;
 #if CYGNUM_REDBOOT_CMD_LINE_EDITING != 0
-            if (cmd_history) {
+            if (cmd_history && (buf != eol)) {
                 // Save current line - only when enabled
                 if (++_cl_index == _CL_NUM_LINES) _cl_index = 0;
                 if (_cl_index > _cl_max_index) _cl_max_index = _cl_index;

@@ -131,16 +131,15 @@ http_stream_read(char *buf,
                     if (s->sock.data_bytes == 0 && s->sock.rxcnt == 0) {
                         __tcp_close(&s->sock);
                         return total;
-                    }
-                }
-                if (s->sock.state == _CLOSED) {
-                    // The connection is gone
-                    s->open = false;
-                    
+                    }  
+                } else if (s->sock.state == _CLOSED) {
+                    	// The connection is gone
+                    	s->open = false;
+                    	return -1;
+                } else {	
+                    *err = HTTP_IO;
                     return -1;
-                }
-                *err = HTTP_IO;
-                return -1;
+		}
             }
             s->actual_len = __tcp_read(&s->sock, s->data, sizeof(s->data));
             if (s->actual_len > 0) {
