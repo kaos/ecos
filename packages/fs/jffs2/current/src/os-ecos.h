@@ -127,6 +127,19 @@ struct super_block {
 	struct _inode *		s_root;
         unsigned long		s_mount_count;
 	cyg_io_handle_t		s_dev;
+
+#ifdef CYGOPT_FS_JFFS2_GCTHREAD
+	cyg_mutex_t s_lock;             // Lock the inode cache
+	cyg_flag_t  s_gc_thread_flags;  // Communication with the gcthread
+	cyg_handle_t s_gc_thread_handle; 
+	cyg_thread s_gc_thread;
+#if (CYGNUM_JFFS2_GC_THREAD_STACK_SIZE >= CYGNUM_HAL_STACK_SIZE_MINIMUM)
+        char s_gc_thread_stack[CYGNUM_JFFS2_GC_THREAD_STACK_SIZE];
+#else
+        char s_gc_thread_stack[CYGNUM_HAL_STACK_SIZE_MINIMUM];
+#endif
+       cyg_mtab_entry *mte;
+#endif
 };
 
 #define sleep_on_spinunlock(wq, sl) spin_unlock(sl)

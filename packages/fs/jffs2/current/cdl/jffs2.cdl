@@ -77,16 +77,47 @@ cdl_package CYGPKG_FS_JFFS2 {
     # This could be overridden by an alternative direct I/O method.
     compile        flashio.c
 
-    cdl_option CYGOPT_FS_JFFS2_GCTHREAD {
+    cdl_component CYGOPT_FS_JFFS2_GCTHREAD {
 	display         "Support garbage-collection background thread"
 	flavor          bool
+        default_value   0
 	compile         gcthread.c
-# Leave this off till it's been implemented. And don't implement it till
-# icache locking has been made thread-safe.
- 	requires        CYGPKG_KERNEL && 0
+ 	requires        CYGPKG_KERNEL
         description     "
             Enable background garbage collection thread, for making 
-	    free space ahead of time."
+	    free space ahead of time. Leave this off till it's been 
+	   implemented. And don't implement it till icache locking has
+	 been made thread-safe.
+	"	
+
+
+        cdl_option CYGNUM_JFFS2_GC_THREAD_PRIORITY {
+            display "jffs2 gc thread priority"
+            flavor data
+            default_value { CYGNUM_KERNEL_SCHED_PRIORITIES-2 }
+            legal_values 0 to CYGNUM_KERNEL_SCHED_PRIORITIES
+            description "The jffs2 system contains one garbage collect thread."
+        }
+
+        cdl_option CYGNUM_JFFS2_GC_THREAD_STACK_SIZE {
+            display        "jffs2 gc stackstack size"
+            flavor         data
+            legal_values   2048 to 0x7fffffff
+            default_value  8192
+            description    "
+                This option sets the size of the stack used
+                for jffs2 garbage collect thread"
+        }
+        
+        cdl_option CYGNUM_JFFS2_GS_THREAD_TICKS {
+            display       "ticks between each garbage collect"
+            flavor        data
+            default_value 100
+            description   "
+                This option sets how many clock ticks there will be between
+                each garbage collect operation triggered by the background
+                thread"
+        }    
     }
 
     cdl_option CYGOPT_FS_JFFS2_WRITE {
@@ -229,9 +260,10 @@ cdl_package CYGPKG_FS_JFFS2 {
 	display "JFFS2 FS tests"
 	flavor  data
 	no_define
-	calculated { "tests/jffs2_1 tests/jffs2_2" }
+	calculated { "tests/jffs2_1 tests/jffs2_2 tests/jffs2_3" }
             description   "
-                This option specifies the set of tests for the JFFS2 FS package."
+                This option specifies the set of tests for the JFFS2    
+                FS package."
         }
     
 }

@@ -654,11 +654,15 @@ int main( int argc, char **argv )
     err = chdir( "/" );
     if( err < 0 ) SHOW_RESULT( chdir, err );
     checkcwd( "/" );
+#ifdef CYGOPT_FS_JFFS2_GCTHREAD    
+    diag_printf("<INFO>: Letting garbage collect thread run\n");
+    cyg_thread_delay(2*100);
+#endif
     
     diag_printf("<INFO>: umount /jffs2\n");    
     err = umount( "/jffs2" );
     if( err < 0 ) SHOW_RESULT( umount, err );    
-    
+
     diag_printf("<INFO>: umount /\n");    
     err = umount( "/" );
     if( err < 0 ) SHOW_RESULT( umount, err );    

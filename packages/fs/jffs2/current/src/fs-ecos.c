@@ -12,20 +12,13 @@
  *
  */
 
-#include <linux/types.h>
-#include <linux/stat.h>
 #include <linux/kernel.h>
-#include <linux/jffs2.h>
-#include <linux/jffs2_fs_sb.h>
-#include <linux/jffs2_fs_i.h>
+#include "nodelist.h"
 #include <linux/pagemap.h>
 #include <linux/crc32.h>
-#include "nodelist.h"
 #include "compr.h"
-
 #include <errno.h>
 #include <string.h>
-#include <cyg/io/io.h>
 #include <cyg/io/config_keys.h>
 
 #if (__GNUC__ == 3) && (__GNUC_MINOR__ == 2) && defined (__ARM_ARCH_4__)
@@ -1721,7 +1714,6 @@ static struct _inode *new_inode(struct super_block *sb)
 			break;
 		}
 	}
-
 	return inode;
 }
 
@@ -1737,7 +1729,6 @@ static struct _inode *ilookup(struct super_block *sb, cyg_uint32 ino)
 			break;
 		}
 	}
-
 	return inode;
 }
 
@@ -1797,8 +1788,8 @@ void jffs2_iput(struct _inode *i)
 		BUG();
 
 	if (i->i_count)
-		return;
-
+                return;
+        
 	if (!i->i_nlink) {
 		struct _inode *parent;
 

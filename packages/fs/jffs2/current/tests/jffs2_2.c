@@ -45,7 +45,7 @@
 // Contributors:        asl
 // Date:                2004-03-29
 // Purpose:             Test fseek on a filesystem
-// Description:         This test uses the ramfs to check out the fseek
+// Description:         This test uses the jffs2 to check out the fseek
 //                      operation on a filesystem.
 //                      
 //                      
