@@ -1,3 +1,8 @@
+2004-03-29  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+        * test/fseek1.c: Test the fseek/ftell functions
+        * cdl/ramfs.cdl: Added a fseek1 test to the build
+
 2004-03-15  Sebastien Couret <sebastien.couret@elios-informatique.fr>
 
 	* src/ramfs.c (block_init): Fixed compiler warning.

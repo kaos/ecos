@@ -182,7 +182,7 @@ cdl_package CYGPKG_FS_RAM {
 	display "RAM FS tests"
 	flavor  data
 	no_define
-	calculated { "tests/fileio1.c" }
+	calculated { "tests/fileio1.c tests/fseek1.c" }
             description   "
                 This option specifies the set of tests for the RAM FS package."
         }
