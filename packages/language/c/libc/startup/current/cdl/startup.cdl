@@ -60,7 +60,7 @@ cdl_package CYGPKG_LIBC_STARTUP {
             It also includes at the other end of things,
             what happens when main() returns or exit() is
             called."
-    doc           redirect/c-library-startup.html
+    doc           ref/c-library-startup.html
     include_dir   cyg/libc/startup
     parent        CYGPKG_LIBC
     requires      CYGPKG_ISOINFRA
