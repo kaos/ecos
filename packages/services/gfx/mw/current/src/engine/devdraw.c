@@ -640,6 +640,9 @@ GdDrawImage(PSD psd, MWCOORD x, MWCOORD y, PMWIMAGEHDR pimage)
 		case MWPF_TRUECOLOR332:
 			pixel = COLOR2PIXEL332(cr);
 			break;
+		case MWPF_TRUECOLOR233:
+			pixel = COLOR2PIXEL233(cr);
+			break;
 		}
 		break;
 	default:
@@ -734,6 +737,7 @@ GdReadArea(PSD psd, MWCOORD x, MWCOORD y, MWCOORD width, MWCOORD height,
  * MWPF_TRUECOLOR565	unsigned short
  * MWPF_TRUECOLOR555	unsigned short
  * MWPF_TRUECOLOR332	unsigned char
+ * MWPF_TRUECOLOR233	unsigned char
  *
  * NOTE: Currently, no translation is performed if the pixtype
  * is not MWPF_RGB.  Pixtype is only then used to determine the 
@@ -859,6 +863,7 @@ GdArea(PSD psd, MWCOORD x, MWCOORD y, MWCOORD width, MWCOORD height, void *pixel
 		break;
 	case MWPF_PALETTE:
 	case MWPF_TRUECOLOR332:
+	case MWPF_TRUECOLOR233:
 		pixsize = sizeof(unsigned char);
 		break;
 	case MWPF_TRUECOLOR0888:
@@ -891,6 +896,7 @@ GdArea(PSD psd, MWCOORD x, MWCOORD y, MWCOORD width, MWCOORD height, void *pixel
 		break;
 	case MWPF_PALETTE:
 	case MWPF_TRUECOLOR332:
+	case MWPF_TRUECOLOR233:
 		gr_foreground = *PIXELS++;
 		break;
 	case MWPF_TRUECOLOR0888:
@@ -934,6 +940,7 @@ GdArea(PSD psd, MWCOORD x, MWCOORD y, MWCOORD width, MWCOORD height, void *pixel
 			break;
 		case MWPF_PALETTE:
 		case MWPF_TRUECOLOR332:
+		case MWPF_TRUECOLOR233:
 			if(gr_foreground != *(unsigned char *)PIXELS)
 				goto breakwhile;
 			++PIXELS;
@@ -1365,6 +1372,7 @@ GdCalcMemGCAlloc(PSD psd, unsigned int width, unsigned int height, int planes,
  * MWPF_TRUECOLOR565	unsigned short
  * MWPF_TRUECOLOR555	unsigned short
  * MWPF_TRUECOLOR332	unsigned char
+ * MWPF_TRUECOLOR233	unsigned char
  */
 void
 GdTranslateArea(MWCOORD width, MWCOORD height, void *in, int inpixtype,
@@ -1404,6 +1412,10 @@ GdTranslateArea(MWCOORD width, MWCOORD height, void *in, int inpixtype,
 		case MWPF_TRUECOLOR332:
 			pixelval = *inbuf++;
 			colorval = PIXEL332TOCOLORVAL(pixelval);
+			break;
+		case MWPF_TRUECOLOR233:
+			pixelval = *inbuf++;
+			colorval = PIXEL233TOCOLORVAL(pixelval);
 			break;
 		case MWPF_TRUECOLOR0888:
 			pixelval = *(unsigned long *)inbuf;
@@ -1452,6 +1464,9 @@ GdTranslateArea(MWCOORD width, MWCOORD height, void *in, int inpixtype,
 			break;
 		case MWPF_TRUECOLOR332:
 			*outbuf++ = COLOR2PIXEL332(colorval);
+			break;
+		case MWPF_TRUECOLOR233:
+			*outbuf++ = COLOR2PIXEL233(colorval);
 			break;
 		case MWPF_TRUECOLOR0888:
 			*(unsigned long *)outbuf = COLOR2PIXEL888(colorval);

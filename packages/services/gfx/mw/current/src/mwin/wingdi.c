@@ -376,6 +376,10 @@ GetPixel(HDC hdc, int x, int y)
 		/* create RGB colorval from 3/3/2 pixel*/
 		return PIXEL332TOCOLORVAL(pixel);
 
+	case MWPF_TRUECOLOR233:
+		/* create RGB colorval from 2/3/3 pixel*/
+		return PIXEL233TOCOLORVAL(pixel);
+
 	case MWPF_PALETTE:
 		if(GdGetPalette(hdc->psd, pixel, 1, &rgb))
 			return RGB(rgb.r, rgb.g, rgb.b);

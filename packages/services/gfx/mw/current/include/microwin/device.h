@@ -280,6 +280,10 @@ typedef struct {
 #define RGB2PIXEL332(r,g,b)	\
 	(((r) & 0xe0) | (((g) & 0xe0) >> 3) | (((b) & 0xc0) >> 6))
 
+/* create 8 bit 2/3/3 format pixel from RBG triplet*/
+#define RGB2PIXEL233(r,g,b)	\
+	((((r) & 0xe0) >> 5) | (((g) & 0xe0) >> 2) | (((b) & 0xc0) >> 0))
+
 /*
  * Conversion from MWCOLORVAL to MWPIXELVAL
  */
@@ -304,7 +308,11 @@ typedef struct {
 
 /* create 8 bit 3/3/2 format pixel from RGB colorval (0x00BBGGRR)*/
 #define COLOR2PIXEL332(c)	\
-	(((c) & 0xe0) | (((c) & 0xe000) >> 11) | (((c) & 0xc00000) >> 22))
+	((((c) & 0xe0) >> 5) | (((c) & 0xe000) >> 9) | (((c) & 0xc00000) >> 16))
+
+/* create 8 bit 2/3/3 format pixel from RGB colorval (0x00BBGGRR)*/
+#define COLOR2PIXEL233(c)	\
+        ((((c) & 0xC00000) >> 16) | (((c) & 0x00E000) >> 10) | (((c) & 0xE0) >> 5))
 
 /*
  * Conversion from MWPIXELVAL to red, green or blue components
@@ -329,6 +337,11 @@ typedef struct {
 #define PIXEL332GREEN(pixelval)		(((pixelval) >> 2) & 0x07)
 #define PIXEL332BLUE(pixelval)		((pixelval) & 0x03)
 
+/* return 2/3/3 bit b, g, r component of 8 bit pixelval*/
+#define PIXEL233RED(pixelval)		((pixelval) & 0x07)
+#define PIXEL233GREEN(pixelval)		(((pixelval) >> 3) & 0x07)
+#define PIXEL233BLUE(pixelval)		(((pixelval) >> 6) & 0x03)
+
 /*
  * Conversion from MWPIXELVAL to MWCOLORVAL
  */
@@ -346,6 +359,10 @@ typedef struct {
 /* create RGB colorval (0x00BBGGRR) from 3/3/2 format pixel*/
 #define PIXEL332TOCOLORVAL(p)	\
 	((((p) & 0xe0)) | (((p) & 0x1c) << 11) | (((p) & 0x03) << 19))
+
+/* create RGB colorval (0x00BBGGRR) from 2/3/3 format pixel*/
+#define PIXEL233TOCOLORVAL(p)	\
+	(((p) & 0x07) | (((p) & 0x38) << 5) | (((p) & 0xC0) << 14))
 
 #if (MWPIXEL_FORMAT == MWPF_TRUECOLOR888) || (MWPIXEL_FORMAT == MWPF_TRUECOLOR0888)
 #define RGB2PIXEL(r,g,b)	RGB2PIXEL888(r,g,b)
@@ -381,6 +398,15 @@ typedef struct {
 #define PIXEL2RED(p)		PIXEL332RED(p)
 #define PIXEL2GREEN(p)		PIXEL332GREEN(p)
 #define PIXEL2BLUE(p)		PIXEL332BLUE(p)
+#endif
+
+#if MWPIXEL_FORMAT == MWPF_TRUECOLOR233
+#define RGB2PIXEL(r,g,b)	RGB2PIXEL233(r,g,b)
+#define COLORVALTOPIXELVAL(c)	COLOR2PIXEL233(c)
+#define PIXELVALTOCOLORVAL(p)	PIXEL233TOCOLORVAL(p)
+#define PIXEL2RED(p)		PIXEL233RED(p)
+#define PIXEL2GREEN(p)		PIXEL233GREEN(p)
+#define PIXEL2BLUE(p)		PIXEL233BLUE(p)
 #endif
 
 /* Alpha blend two pixels using 8-bit alpha */

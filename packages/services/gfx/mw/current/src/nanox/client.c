@@ -2567,6 +2567,7 @@ void GrDrawImageFromBuffer(GR_DRAW_ID id, GR_GC_ID gc, GR_COORD x, GR_COORD y,
  * MWPF_TRUECOLOR565	unsigned short
  * MWPF_TRUECOLOR555	unsigned short
  * MWPF_TRUECOLOR332	unsigned char
+ * MWPF_TRUECOLOR223	unsigned char
  */
 /**
  * GrArea:
@@ -2603,6 +2604,7 @@ GrArea(GR_DRAW_ID id, GR_GC_ID gc, GR_COORD x, GR_COORD y, GR_SIZE width,
 		break;
 	case MWPF_PALETTE:
 	case MWPF_TRUECOLOR332:
+	case MWPF_TRUECOLOR233:
 		pixsize = sizeof(unsigned char);
 		break;
 	case MWPF_TRUECOLOR0888:

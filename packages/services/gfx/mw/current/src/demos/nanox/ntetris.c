@@ -700,6 +700,7 @@ static int random8(int limit)
 
 static void choose_new_shape(nstate *state)
 {
+    diag_printf("%s - state: %x\n", __FUNCTION__, state);
 	state->current_shape.type = state->next_shape.type;
 	state->current_shape.orientation = state->next_shape.orientation;
 	state->current_shape.colour = state->next_shape.colour;

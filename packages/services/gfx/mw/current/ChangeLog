@@ -1,3 +1,18 @@
+2003-09-01  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/nanox/client.c: 
+	* src/mwin/wingdi.c: 
+	* src/engine/devopen.c: 
+	* src/engine/devfont.caching.c: 
+	* src/engine/devfont.c: 
+	* src/engine/devdraw.c: 
+	* src/drivers/scr_vnc_ecos.c: 
+	* src/demos/nanox/ntetris.c: 
+	* src/Configs/config.ecos: 
+	* include/microwin/mwtypes.h: 
+	* include/microwin/device.h: Support BGR233 mode which is used by
+	the VNC server.
+
 2003-08-30  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/ecos/world_thread.c: 

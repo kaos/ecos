@@ -122,6 +122,7 @@
 #define MWPF_TRUECOLOR565  5	/* pixel is packed 16 bits 5/6/5 truecolor*/
 #define MWPF_TRUECOLOR555  6	/* pixel is packed 16 bits 5/5/5 truecolor*/
 #define MWPF_TRUECOLOR332  7	/* pixel is packed 8 bits 3/3/2 truecolor*/
+#define MWPF_TRUECOLOR233  8	/* pixel is packed 8 bits 2/3/3 truecolor (BGR) */
 
 /*
  * MWPIXELVAL definition: changes based on target system
@@ -153,7 +154,7 @@
 #if (MWPIXEL_FORMAT == MWPF_TRUECOLOR565) || (MWPIXEL_FORMAT == MWPF_TRUECOLOR555)
 typedef unsigned short MWPIXELVAL;
 #else
-  #if MWPIXEL_FORMAT == MWPF_TRUECOLOR332
+  #if (MWPIXEL_FORMAT == MWPF_TRUECOLOR332) || (MWPIXEL_FORMAT == MWPF_TRUECOLOR233)
   typedef unsigned char MWPIXELVAL;
   #else
     #if MWPIXEL_FORMAT == MWPF_PALETTE

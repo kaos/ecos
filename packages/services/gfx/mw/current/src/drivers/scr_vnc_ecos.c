@@ -177,6 +177,12 @@ static PSD vnc_open(PSD psd)
         psd->ncolors = 0xFFFF + 1;
         psd->pixtype = MWPF_TRUECOLOR565;
     }
+    else if (frame_format->bgr233)
+    {
+        psd->bpp = 8;
+        psd->ncolors = 0xFF + 1;
+        psd->pixtype = MWPF_TRUECOLOR233;
+    }
     else
     {
         EPRINTF("Unsupported display type\n");
@@ -228,6 +234,11 @@ static void vnc_getscreeninfo(PSD psd,PMWSCREENINFO psi)
         psi->rmask = 0xE0;
         psi->gmask = 0x1C;
         psi->bmask = 0x03;
+        break;
+    case MWPF_TRUECOLOR233:
+        psi->rmask = 0x07;
+        psi->gmask = 0x38;
+        psi->bmask = 0xC0;
         break;
     case MWPF_TRUECOLOR555:
         psi->rmask = 0x7c00;
