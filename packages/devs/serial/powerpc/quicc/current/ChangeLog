@@ -1,3 +1,8 @@
+2002-12-10  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* cdl/ser_quicc_smc.cdl: Only enable devices which exist - as described
+	by the HAL/CDL interfaces.
+
 2001-11-30  Jonathan Larmour  <jlarmour@redhat.com>
 2001-11-29  Christoph Csebits  <christoph.csebits@frequentis.com>
 
