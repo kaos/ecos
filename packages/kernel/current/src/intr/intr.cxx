@@ -270,9 +270,10 @@ interrupt_end(
 
     // Sometimes we have a NULL intr object pointer.
     cyg_vector vector = (intr!=NULL)?intr->vector:0;
-    
+
     CYG_INSTRUMENT_INTR(END, vector, isr_ret);
     
+    CYG_UNUSED_PARAM( cyg_vector, vector ); // prevent compiler warning
     
 #ifndef CYGIMP_KERNEL_INTERRUPTS_CHAIN
 

@@ -61,6 +61,23 @@ cdl_package CYGPKG_IO_SERIAL {
 	puts $::cdl_header "/****** proc output end ******/"
     }
 
+    cdl_option CYGOPT_IO_SERIAL_SUPPORT_NONBLOCKING {
+        display       "Support non-blocking read and write calls"
+        default_value 0
+        description   "
+            This option enables extra code in the generic serial driver
+            which allows clients to switch read() and write() call
+            semantics from blocking to non-blocking."
+    }
+
+    cdl_interface CYGINT_IO_SERIAL_BLOCK_TRANSFER {
+        display       "Driver requires block transfer callback functions"
+        description   "
+            Some low-level drivers can be optimized to transfer blocks
+            of data instead of a single character at a time. These usually
+            rely on a hardware FIFO of some sort."
+    }
+
     cdl_component CYGPKG_IO_SERIAL_TTY {
         display       "TTY-mode serial device drivers"
         flavor        bool
@@ -140,7 +157,7 @@ cdl_package CYGPKG_IO_SERIAL {
             display "Serial device driver tests"
             flavor  data
             no_define
-            calculated { "tests/serial1 tests/serial2 tests/serial3 tests/serial4 tests/serial5 tests/tty1 tests/tty2" }
+            calculated { CYGPKG_IO_SERIAL_DEVICES ? "tests/serial1 tests/serial2 tests/serial3 tests/serial4 tests/serial5 tests/tty1 tests/tty2" : "" }
             description   "
                 This option specifies the set of tests for the serial device drivers."
         }

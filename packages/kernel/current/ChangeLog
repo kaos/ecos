@@ -1,3 +1,16 @@
+2000-05-04  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/instrmnt.h: Remove all CYG_UNUSED_PARAMs as they could
+	cause problems when used with volatile arguments
+	* src/intr/intr.cxx: Use CYG_UNUSED_PARAM to silence warning that
+	appears because of the above change.
+
+2000-05-02  Gary Thomas  <gthomas@redhat.com>
+
+	* tests/kintr0.c:
+	* tests/intr0.cxx: Correct test for cases when VSR_MIN or
+	ISR_MIN are not zero (bad assumption).
+
 2000-04-26  Jesper Skov  <jskov@redhat.com>
 
 	* tests/kcache1.c: Also to flush testing with unified caches.

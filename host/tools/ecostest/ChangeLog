@@ -1,3 +1,10 @@
+2000-05-03  Bart Veer  <bartv@redhat.com>
+
+	* common/permtest.cxx (find_ptest):
+	Do a little bit of searching for the permutation file.
+	Catch errors and give a diagnostic, rather than aborting because
+	of an uncaught C++ exception.
+
 2000-04-14 Simon FitzMaurice <sdf@redhat.co.uk>
   * common\ResetAttributes.cpp : do not carry forward values for skipped fields in reset strings
   * common\eCosTest.cpp : Avoid overflow in socket timeouts

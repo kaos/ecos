@@ -46,6 +46,8 @@
 // Serial I/O interfaces
 
 #include <pkgconf/system.h>
+#include <pkgconf/io_serial.h>
+
 #include <cyg/infra/cyg_type.h>
 #include <cyg/io/io.h>
 #include <cyg/io/serialio.h>
@@ -62,14 +64,40 @@ typedef struct {
     void (*xmt_char)(serial_channel *chan);
     // Consume an input character
     void (*rcv_char)(serial_channel *chan, unsigned char c);
+
+#ifdef CYGINT_IO_SERIAL_BLOCK_TRANSFER
+    // Request space for input characters
+    bool (*data_rcv_req)(serial_channel *chan, int avail, 
+                         int* space_avail, unsigned char** space);
+    // Receive operation completed
+    void (*data_rcv_done)(serial_channel *chan);
+    // Request characters for transmission
+    bool (*data_xmt_req)(serial_channel *chan, int space,
+                         int* chars_avail, unsigned char** chars);
+    // Transmit operation completed
+    void (*data_xmt_done)(serial_channel *chan);
+#endif // CYGINT_IO_SERIAL_BLOCK_TRANSFER
 } serial_callbacks_t;
 
+#ifdef CYGINT_IO_SERIAL_BLOCK_TRANSFER
+#define SERIAL_CALLBACKS(_l,_init,_xmt_char,_rcv_char, _data_rcv_req, _data_rcv_done, _data_xmt_req, _data_xmt_done)  \
+serial_callbacks_t _l = {                               \
+    _init,                                              \
+    _xmt_char,                                          \
+    _rcv_char,                                          \
+    _data_rcv_req,                                      \
+    _data_rcv_done,                                     \
+    _data_xmt_req,                                      \
+    _data_xmt_done                                      \
+};
+#else 
 #define SERIAL_CALLBACKS(_l,_init,_xmt_char,_rcv_char)  \
 serial_callbacks_t _l = {                               \
     _init,                                              \
     _xmt_char,                                          \
     _rcv_char                                           \
 };
+#endif
 
 extern serial_callbacks_t cyg_io_serial_callbacks;
 
@@ -82,6 +110,9 @@ typedef struct {
     cyg_drv_cond_t           wait;
     cyg_drv_mutex_t          lock;
     bool                     waiting;
+#ifdef CYGOPT_IO_SERIAL_SUPPORT_NONBLOCKING
+    bool                     blocking;
+#endif
     volatile bool            abort;       // Set by an outsider to kill processing
     volatile cyg_int32       pending;     // This many bytes waiting to be sent
 } cbuf_t;

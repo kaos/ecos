@@ -1,3 +1,8 @@
+* IO serial driver
+  The common serial driver has been extended with a configurable option for
+  a non-blocking read/write mode. It has also been given some new callbacks
+  which allow low-level drivers to transfer data in blocks instead of as
+  single characters.
 * SH HAL
   Now provides ROMRAM startup type, copying code and data to RAM before
   executing, improving performance at cost of memory.

@@ -116,6 +116,14 @@ typedef struct {
     cyg_uint32               flags;
 } cyg_serial_info_t;
 
+typedef struct {  
+    cyg_int32 rx_bufsize;
+    cyg_int32 rx_count;
+    cyg_int32 tx_bufsize;
+    cyg_int32 tx_count;
+} cyg_serial_buf_info_t;
+
+
 #define CYG_SERIAL_INFO_INIT(_baud,_stop,_parity,_word_length,_flags) \
   { _baud, _stop, _parity, _word_length, _flags}
 

@@ -1,3 +1,33 @@
+2000-05-05  Grant Edwards  <grante@visi.com>
+
+	* src/common/serial.c (serial_get_config): Support
+	CYG_IO_GET_CONFIG_SERIAL_BUFFER_INFO key to get buffer information
+
+	* include/serialio.h: Add cyg_serial_buf_info_t
+
+2000-05-04  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/io_serial.cdl: Only build tests when drivers enabled.
+
+2000-05-02  Jesper Skov  <jskov@redhat.com>
+
+	* src/common/serial.c (serial_set_config): Set proper parity for
+	blocking options.
+	(serial_get_config): Fix copy'n'paste buglet.
+	
+2000-05-01  Jesper Skov  <jskov@redhat.com>
+
+	* src/common/serial.c: Added non-blocking config and operation for
+	read/write calls.
+	Added block transfer rcv/xmt callbacks.
+	Added (disabled for now) check for rcv overflow. [need to add
+	handling]
+	
+	* include/serial.h: Added non-blocking callbacks.
+
+	* cdl/io_serial.cdl: Added non-blocking option. Added block
+	transfer interface.
+
 2000-04-17  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/PKGconf.mak: remove; it's obsolete.
