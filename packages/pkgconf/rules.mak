@@ -61,11 +61,22 @@ endif
 
 # GCC since 2.95 does -finit-priority by default so remove it from old HALs
 CFLAGS := $(subst -finit-priority,,$(CFLAGS))
+
+# -fvtable-gc is known to be broken in all recent GCC.
 CFLAGS := $(subst -fvtable-gc,,$(CFLAGS))
+
+# To support more recent GCC whilst preserving existing behaviour, we need
+# to increase the inlining limit globally from the default 600. Note this
+# will break GCC 2.95 based tools and earlier. You must use "make OLDGCC=1"
+# to avoid this.
+ifneq ($(OLDGCC),1)
+CFLAGS := -finline-limit=7000 $(CFLAGS)
+endif
 
 # Separate C++ flags out from C flags.
 ACTUAL_CFLAGS = $(CFLAGS)
 ACTUAL_CFLAGS := $(subst -fno-rtti,,$(ACTUAL_CFLAGS))
+ACTUAL_CFLAGS := $(subst -frtti,,$(ACTUAL_CFLAGS))
 ACTUAL_CFLAGS := $(subst -Woverloaded-virtual,,$(ACTUAL_CFLAGS))
 ACTUAL_CFLAGS := $(subst -fvtable-gc,,$(ACTUAL_CFLAGS))
 
@@ -165,9 +176,9 @@ else
 	@mkdir -p $(dir $@)
 endif	
 ifneq ($(IGNORE_LINK_ERRORS),)
-	-$(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ $(<:.d=.o)
+	-$(CC) -L$(PREFIX)/lib -Ttarget.ld -o $@ $(<:.d=.o) $(LDFLAGS)
 else
-	$(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ $(<:.d=.o)
+	$(CC) -L$(PREFIX)/lib -Ttarget.ld -o $@ $(<:.d=.o) $(LDFLAGS) 
 endif
 
 # rule to generate all tests and create a dependency file "tests.deps" by

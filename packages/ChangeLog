@@ -1,3 +1,10 @@
+2004-03-12  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* pkgconf/rules.mak: When linking, $LDFLAGS must be after target.ld
+	so that -nostdlib works in all cases, so place it at the end.
+	Add -finline-limit hack to preserve behaviour with newer GCC.
+	Treat -frtti like -fno-rtti.
+
 2004-02-27  Iztok Zupet  <iz@elsis.si>
 
         * ecos.db: Added the LANCEPCI packages and support for the vmWare
