@@ -49,6 +49,7 @@ struct internal_state {
     uInt gz_flag;
     int gz_cnt;
     unsigned char* gz_start;
+    uLong gz_sum;
 #endif
 
   /* mode dependent information */
@@ -325,6 +326,7 @@ int f;
       // gz stream by setting the gz_mode.
       z->state->gz_start = z->next_out;
       z->state->gz_mode = BLOCKS;
+      z->state->gz_sum = 0;
 
       // Depending on the flag select correct next step
       // (clone of code in FLAG)
@@ -375,6 +377,10 @@ int f;
       z->state->sub.marker = 0;       /* can try inflateSync */
       return Z_STREAM_ERROR;
     case BLOCKS:
+#ifdef __ECOS__
+      if (z->state->gz_mode != DONE)
+        z->state->gz_start = z->next_out;
+#endif
       r = inflate_blocks(z->state->blocks, z, r);
       if (r == Z_DATA_ERROR)
       {
@@ -384,6 +390,12 @@ int f;
       }
       if (r == Z_OK)
         r = f;
+#ifdef __ECOS__
+      if (z->state->gz_mode != DONE)
+        z->state->gz_sum = gz_crc32(z->state->gz_sum,
+				    z->state->gz_start,
+				    z->next_out - z->state->gz_start);
+#endif
       if (r != Z_STREAM_END)
         return r;
       r = f;
@@ -414,7 +426,7 @@ int f;
       if (z->state->gz_mode != DONE) {
           // Byte swap CRC since it is read in the opposite order as
           // written by gzip.
-          unsigned long c = gz_crc32(0, z->state->gz_start, z->next_out - z->state->gz_start);
+          unsigned long c = z->state->gz_sum;
           z->state->sub.check.was = (((c & 0xff000000) >> 24) | ((c & 0x00ff0000) >> 8)
                                      | ((c & 0x0000ff00) << 8) | ((c & 0x000000ff) << 24));
           

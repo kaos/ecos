@@ -1,3 +1,8 @@
+2002-09-09  Mark Salter  <msalter@redhat.com>
+
+	* inflate.c (inflate): Fix CRC calculation over multiple invocations
+	with same output buffer. 
+	
 2002-02-18  Jesper Skov  <jskov@redhat.com>
 
 	* src/infblock.c: Applied fix for double-free which could cause a
