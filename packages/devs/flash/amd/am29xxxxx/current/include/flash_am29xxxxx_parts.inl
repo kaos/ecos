@@ -88,7 +88,8 @@
         device_size: 0x80000 * CYGNUM_FLASH_INTERLEAVE,
         base_mask  : ~(0x80000 * CYGNUM_FLASH_INTERLEAVE - 1),
         bootblock  : false,
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29LV160
@@ -106,7 +107,8 @@
                        0x004000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
     {   // MBM29LV160-B | AM29LV160-B
         device_id  : FLASHWORD(0x49),
@@ -122,7 +124,8 @@
                        0x008000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29LV200
@@ -140,7 +143,8 @@
                        0x004000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
     {   // AM29LV200-B
         device_id  : FLASHWORD(0xbf),
@@ -156,7 +160,8 @@
                        0x008000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29LV320D
@@ -178,7 +183,8 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
     {   // AM29LV320D
         device_id  : FLASHWORD(0xF9),
@@ -198,7 +204,8 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29DL322D
@@ -223,7 +230,8 @@
         banked     : true,
         banks      : { 0x380000 * CYGNUM_FLASH_INTERLEAVE,
                        0
-                     }
+                     },
+        bufsiz     : 1
     },
     {   // AM29DL322D-B
         device_id  : FLASHWORD(0x56),
@@ -246,7 +254,8 @@
         banked     : true,
         banks      : { 0x80000 * CYGNUM_FLASH_INTERLEAVE,
                        0
-                     }
+                     },
+        bufsiz     : 1
     },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29DL323D
@@ -271,7 +280,8 @@
         banked     : true,
         banks      : { 0x300000 * CYGNUM_FLASH_INTERLEAVE,
                        0
-                     }
+                     },
+        bufsiz     : 1
     },
     {   // AM29DL323D-B
         device_id  : FLASHWORD(0x53),
@@ -294,7 +304,8 @@
         banked     : true,
         banks      : { 0x100000 * CYGNUM_FLASH_INTERLEAVE,
                        0
-                     }
+                     },
+        bufsiz     : 1
     },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29DL324D
@@ -319,7 +330,8 @@
         banked     : true,
         banks      : { 0x200000 * CYGNUM_FLASH_INTERLEAVE,
                        0
-                     }
+                     },
+        bufsiz     : 1
     },
     {   // AM29DL324D-B
         device_id  : FLASHWORD(0x5f),
@@ -342,7 +354,8 @@
         banked     : true,
         banks      : { 0x200000 * CYGNUM_FLASH_INTERLEAVE,
                        0
-                     }
+                     },
+        bufsiz     : 1
     },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29DL640D
@@ -381,7 +394,8 @@
                        0x0400000 * CYGNUM_FLASH_INTERLEAVE,
                        0x0100000 * CYGNUM_FLASH_INTERLEAVE,
                        0
-                     }
+                     },
+        bufsiz     : 1
     }
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29F800
@@ -399,7 +413,8 @@
                        0x04000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
     {   // AM29F800-B
         device_id  : FLASHWORD(0x58),
@@ -415,7 +430,8 @@
                        0x008000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29LV800
@@ -433,7 +449,8 @@
                        0x04000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
     {   // AM29LV800-B
         device_id  : FLASHWORD(0x5b),
@@ -449,7 +466,8 @@
                        0x008000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_TC58FVB800
@@ -467,7 +485,8 @@
                        0x008000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
 #endif
 
@@ -481,7 +500,8 @@
         device_size: 0x1000000 * CYGNUM_FLASH_INTERLEAVE,
         base_mask  : ~(0x1000000 * CYGNUM_FLASH_INTERLEAVE - 1),
         bootblock  : false,
-        banked     : false
+        banked     : false,
+        bufsiz     : 16
     },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29LV160
@@ -499,7 +519,8 @@
                        0x004000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
     {   // MBM29LV160-B | AM29LV160-B
         device_id  : FLASHWORD(0x2249),
@@ -515,7 +536,8 @@
                        0x008000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29PL160
@@ -533,7 +555,8 @@
                        0x038000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29LV200
@@ -551,7 +574,8 @@
                        0x004000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
     {   // AM29LV200-B
         device_id  : FLASHWORD(0x22bf),
@@ -567,7 +591,8 @@
                        0x008000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_ST_M29W200B
@@ -585,7 +610,8 @@
                        0x004000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
     {   // ST M29W200BB
         device_id  : FLASHWORD(0x0057),
@@ -601,7 +627,8 @@
                        0x008000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29LV320D
@@ -623,7 +650,8 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
     {   // AM29LV320D
         device_id  : FLASHWORD(0x22F9),
@@ -643,7 +671,8 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29DL322D
@@ -668,7 +697,8 @@
         banked     : true,
         banks      : { 0x380000 * CYGNUM_FLASH_INTERLEAVE,
                        0
-                     }
+                     },
+        bufsiz     : 1
     },
     {   // AM29DL322D-B
         device_id  : FLASHWORD(0x2256),
@@ -691,7 +721,8 @@
         banked     : true,
         banks      : { 0x80000 * CYGNUM_FLASH_INTERLEAVE,
                        0
-                     }
+                     },
+        bufsiz     : 1
     },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29DL323D
@@ -716,7 +747,8 @@
         banked     : true,
         banks      : { 0x300000 * CYGNUM_FLASH_INTERLEAVE,
                        0
-                     }
+                     },
+        bufsiz     : 1
     },
     {   // AM29DL323D-B
         device_id  : FLASHWORD(0x2253),
@@ -739,7 +771,8 @@
         banked     : true,
         banks      : { 0x100000 * CYGNUM_FLASH_INTERLEAVE,
                        0
-                     }
+                     },
+        bufsiz     : 1
     },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29DL324D
@@ -764,7 +797,8 @@
         banked     : true,
         banks      : { 0x200000 * CYGNUM_FLASH_INTERLEAVE,
                        0
-                     }
+                     },
+        bufsiz     : 1
     },
     {   // AM29DL324D-B
         device_id  : FLASHWORD(0x225f),
@@ -787,7 +821,8 @@
         banked     : true,
         banks      : { 0x200000 * CYGNUM_FLASH_INTERLEAVE,
                        0
-                     }
+                     },
+        bufsiz     : 1
     },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29DL640D
@@ -826,7 +861,8 @@
                        0x400000 * CYGNUM_FLASH_INTERLEAVE,
                        0x100000 * CYGNUM_FLASH_INTERLEAVE,
                        0
-                     }
+                     },
+        bufsiz     : 1
     }
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29LV400
@@ -844,7 +880,8 @@
                        0x04000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
     {   // AM29LV400-B
         device_id  : FLASHWORD(0x22ba),
@@ -860,7 +897,8 @@
                        0x008000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29F800
@@ -878,7 +916,8 @@
                        0x04000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
     {   // AM29F800-B
         device_id  : FLASHWORD(0x2258),
@@ -894,7 +933,8 @@
                        0x008000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29LV800
@@ -912,7 +952,8 @@
                        0x04000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
     {   // AM29LV800-B
         device_id  : FLASHWORD(0x225b),
@@ -928,7 +969,8 @@
                        0x008000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29LV640
@@ -939,7 +981,8 @@
         device_size: 0x800000 * CYGNUM_FLASH_INTERLEAVE,
         base_mask  : ~(0x800000 * CYGNUM_FLASH_INTERLEAVE - 1),
         bootblock  : false,  
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_TC58FVB800
@@ -957,7 +1000,8 @@
                        0x008000 * CYGNUM_FLASH_INTERLEAVE,
                        _LAST_BOOTBLOCK
                      },
-        banked     : false
+        banked     : false,
+        bufsiz     : 1
     },
 #endif
 

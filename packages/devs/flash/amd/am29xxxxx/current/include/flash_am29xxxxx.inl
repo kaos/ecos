@@ -68,6 +68,7 @@
 #include <pkgconf/devs_flash_amd_am29xxxxx.h>
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_cache.h>
+#include <cyg/hal/hal_misc.h>
 #include CYGHWR_MEMORY_LAYOUT_H
 
 #define  _FLASH_PRIVATE_
@@ -80,6 +81,8 @@
 #define FLASH_Reset                     FLASHWORD( 0xF0 )
 #define FLASH_Program                   FLASHWORD( 0xA0 )
 #define FLASH_Block_Erase               FLASHWORD( 0x30 )
+#define FLASH_Load_Buffer               FLASHWORD( 0x25 )
+#define FLASH_Flush_Buffer              FLASHWORD( 0x29 )
 
 #define FLASH_Data                      FLASHWORD( 0x80 ) // Data complement
 #define FLASH_Busy                      FLASHWORD( 0x40 ) // "Toggle" bit
@@ -169,6 +172,7 @@ typedef struct flash_dev_info {
     cyg_uint32   banks[8];               // bank offsets, highest to lowest (lowest should be 0)
                                          // (only one entry for now, increase to support devices
                                          // with more banks).
+    cyg_uint32   bufsiz;                 // write buffer size in units of flash_data_t
 } flash_dev_info_t;
 
 static const flash_dev_info_t* flash_dev_info;
@@ -185,6 +189,13 @@ int  flash_erase_block(void* block, unsigned int size)
     __attribute__ ((section (".2ram.flash_erase_block")));
 int  flash_program_buf(void* addr, void* data, int len)
     __attribute__ ((section (".2ram.flash_program_buf")));
+
+//----------------------------------------------------------------------------
+// Auxiliary functions
+static flash_data_t * find_bank(volatile flash_data_t * base, void * addr, CYG_ADDRWORD * bo)
+    __attribute__ ((section (".2ram.find_bank")));
+static flash_data_t * find_sector(volatile flash_data_t * addr, unsigned long *remain_size)
+    __attribute__ ((section (".2ram.find_sector")));
 
 //----------------------------------------------------------------------------
 // Flash Query
@@ -306,22 +317,8 @@ flash_erase_block(void* block, unsigned int size)
     cyg_bool bootblock = false;
     cyg_uint32 *bootblocks = (cyg_uint32 *)0;
     CYG_ADDRWORD bank_offset;
-    BANK = ROM = (volatile flash_data_t*)((unsigned long)block & flash_dev_info->base_mask);
-
-    // If this is a banked device, find the bank where commands should
-    // be addressed to.
-    if (flash_dev_info->banked) {
-        int b = 0;
-        bank_offset = (unsigned long)block & ~(flash_dev_info->block_size-1);
-        bank_offset -= (unsigned long) ROM;
-        for(;;) {
-            if (bank_offset >= flash_dev_info->banks[b]) {
-                BANK = (volatile flash_data_t*) ((unsigned long)ROM + flash_dev_info->banks[b]);
-                break;
-            }
-            b++;
-        }
-    }
+    ROM = (volatile flash_data_t*)((unsigned long)block & flash_dev_info->base_mask);
+    BANK = find_bank(ROM, block, &bank_offset);
 
     f_s0 = FLASH_P2V(BANK);
     f_s1 = FLASH_P2V(BANK + FLASH_Setup_Addr1);
@@ -434,50 +431,75 @@ flash_program_buf(void* addr, void* data, int len)
 {
     volatile flash_data_t* ROM;
     volatile flash_data_t* BANK;
+    volatile flash_data_t* SECT;
     volatile flash_data_t* data_ptr = (volatile flash_data_t*) data;
-    volatile flash_data_t* addr_v;
     volatile flash_data_t* addr_p = (flash_data_t*) addr;
+    volatile flash_data_t* addr_v = FLASH_P2V(addr_p);
     volatile flash_data_t *f_s1, *f_s2;
     CYG_ADDRWORD bank_offset;
     int timeout;
     int res = FLASH_ERR_OK;
+    const CYG_ADDRWORD mask  =
+        flash_dev_info->bufsiz * sizeof (flash_data_t) - 1;
+    unsigned long rem_sect_size;
 
     // check the address is suitably aligned
     if ((unsigned long)addr & (CYGNUM_FLASH_INTERLEAVE * CYGNUM_FLASH_WIDTH / 8 - 1))
         return FLASH_ERR_INVALID;
 
     // Base address of device(s) being programmed.
-    BANK = ROM = (volatile flash_data_t*)((unsigned long)addr_p & flash_dev_info->base_mask);
-
-    // If this is a banked device, find the bank where commands should
-    // be addressed to.
-    if (flash_dev_info->banked) {
-        int b = 0;
-        bank_offset = (unsigned long)addr & ~(flash_dev_info->block_size-1);
-        bank_offset -= (unsigned long) ROM;
-        for(;;) {
-            if (bank_offset >= flash_dev_info->banks[b]) {
-                BANK = (volatile flash_data_t*) ((unsigned long)ROM + flash_dev_info->banks[b]);
-                break;
-            }
-            b++;
-        }
-    }
+    ROM = (volatile flash_data_t*)((unsigned long)addr_p & flash_dev_info->base_mask);
+    BANK = find_bank(ROM, addr, &bank_offset);
 
     f_s1 = FLASH_P2V(BANK + FLASH_Setup_Addr1);
     f_s2 = FLASH_P2V(BANK + FLASH_Setup_Addr2);
+    rem_sect_size = 0;
+    len /= sizeof (flash_data_t);
 
     while (len > 0) {
         flash_data_t state;
+        unsigned int nwords;
 
-        addr_v = FLASH_P2V(addr_p++);
+        addr_v = FLASH_P2V(addr_p);
 
-        // Program data [byte] - 4 step sequence
-        *f_s1 = FLASH_Setup_Code1;
-        *f_s2 = FLASH_Setup_Code2;
-        *f_s1 = FLASH_Program;
-        *addr_v = *data_ptr;
+        if (flash_dev_info->bufsiz > 1) {
+            // Assume buffer size is power of two
+            unsigned int i;
+            
+            if (rem_sect_size == 0) {
+                SECT = find_sector(addr_v, &rem_sect_size);
+                rem_sect_size /= sizeof (flash_data_t);
+            }
 
+            // Computer word count to write                
+            nwords = flash_dev_info->bufsiz
+                - (((CYG_ADDRWORD) addr_v & mask) / sizeof (flash_data_t));
+            if (nwords > len)
+                nwords = len;
+
+            // Initiate buffered write
+            *f_s1 = FLASH_Setup_Code1;
+            *f_s2 = FLASH_Setup_Code2;
+            *SECT = FLASH_Load_Buffer;
+            *SECT = nwords - 1;
+
+            // Load data into write buffer, flush buffer
+            for(i = 0; i < nwords; i++)
+                *addr_v++ = *data_ptr++;
+            --addr_v; --data_ptr;
+            *SECT = FLASH_Flush_Buffer;
+            rem_sect_size -= nwords;
+        } else {
+            // Program data [byte] - 4 step sequence
+            *f_s1 = FLASH_Setup_Code1;
+            *f_s2 = FLASH_Setup_Code2;
+            *f_s1 = FLASH_Program;
+            *addr_v = *data_ptr;
+            
+            nwords = 1;
+        }
+
+        addr_p += nwords;
         timeout = CYGNUM_FLASH_TIMEOUT_PROGRAM;
         while (true) {
             state = *addr_v;
@@ -502,12 +524,65 @@ flash_program_buf(void* addr, void* data, int len)
             if (FLASH_ERR_OK == res) res = FLASH_ERR_DRV_VERIFY;
             break;
         }
-        len -= sizeof(*data_ptr);
+        len -= nwords;
     }
 
     // Ideally, we'd want to return not only the failure code, but also
     // the address/device that reported the error.
     return res;
+}
+
+static flash_data_t *
+find_bank(volatile flash_data_t * base, void * addr, CYG_ADDRWORD * bo)
+{
+    volatile flash_data_t * res = base;
+
+    if (flash_dev_info->banked) {
+        int b = 0;
+        *bo = (unsigned long)addr & ~(flash_dev_info->block_size-1);
+        *bo -= (unsigned long) base;
+        for(;;) {
+            if (*bo >= flash_dev_info->banks[b]) {
+                res = (volatile flash_data_t*) ((unsigned long)base + flash_dev_info->banks[b]);
+                break;
+            }
+            b++;
+        }
+    }
+    
+    return res;
+}
+
+static flash_data_t *
+find_sector(volatile flash_data_t * addr, unsigned long *remain_size)
+{
+    const CYG_ADDRESS mask = flash_dev_info->block_size - 1;
+    const CYG_ADDRESS a = (CYG_ADDRESS) addr;
+    const CYG_ADDRESS base = a & flash_dev_info->base_mask;
+    const CYG_ADDRESS res = a & ~mask;
+    
+    *remain_size = flash_dev_info->block_size - (a & mask);
+
+    if (flash_dev_info->bootblock) {
+        cyg_uint32 * bootblocks = flash_dev_info->bootblocks;
+        while (*bootblocks != _LAST_BOOTBLOCK) {
+            int ls = flash_dev_info->block_size;
+
+            if (*bootblocks++ == (res - base)) {
+                while (res + *bootblocks < a) {
+                    res += *bootblocks++;
+                }
+            } else {
+                // Skip over segment
+                while ((ls -= *bootblocks++) > 0) ;
+            }
+        }
+
+        if (*bootblocks != _LAST_BOOTBLOCK)   
+            *remain_size = *bootblocks - (a - res);
+    }
+    
+    return (flash_data_t *) res;
 }
 
 #endif // CYGONCE_DEVS_FLASH_AMD_AM29XXXXX_INL
