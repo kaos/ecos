@@ -517,7 +517,7 @@ cdl_package CYGPKG_HAL_ARM_ARM9_AAED2000 {
         requires {!CYGPKG_REDBOOT_FLASH || CYGOPT_REDBOOT_FIS_REDBOOT_BACKUP == 0}
 
         # RedBoot details
-        requires { CYGSEM_REDBOOT_ARM_LINUX_BOOT }
+        requires { CYGPKG_REDBOOT_ARM_LINUX_EXEC }
         requires { CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS_DEFAULT == 0xf0008000 }
         define_proc {
             puts $::cdl_header "#define CYGHWR_REDBOOT_ARM_TRAMPOLINE_ADDRESS 0x00001f00"

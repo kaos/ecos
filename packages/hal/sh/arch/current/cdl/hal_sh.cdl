@@ -231,6 +231,7 @@ cdl_package CYGPKG_HAL_SH {
             configuration."
 
         cdl_component CYGSEM_REDBOOT_SH_LINUX_BOOT {
+            active_if      CYGBLD_BUILD_REDBOOT_WITH_EXEC
             display        "Support booting Linux via RedBoot"
             flavor         bool
             default_value  1
@@ -294,3 +295,4 @@ cdl_package CYGPKG_HAL_SH {
         }
     }
 }
+

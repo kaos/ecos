@@ -1,3 +1,8 @@
+2002-08-02  Andrew Lunn <Andrew.Lunn@ascom.ch>
+
+	* cdl/hal_mips.cdl: Redboot exec command can now be disabled 
+	  by CDL
+	
 2002-05-17  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_intr.h: Fix CYGNUM_HAL_EXCEPTION_MIN definition so

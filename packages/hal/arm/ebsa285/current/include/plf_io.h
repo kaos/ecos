@@ -63,6 +63,9 @@
 #include <cyg/hal/hal_io.h>             // IO macros
 #include <cyg/hal/hal_platform_ints.h>  // Interrupt vectors
 
+// Memory map is 1-1
+#define CYGARC_PHYSICAL_ADDRESS(_x_) (_x_)
+
 // The PCI resources required by the EBSA are hardcoded to the lowest
 // addresses in the PCI address space, thus:
 // PCI Memory Space

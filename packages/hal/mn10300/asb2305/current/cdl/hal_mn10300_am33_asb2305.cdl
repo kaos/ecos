@@ -373,8 +373,19 @@ cdl_package CYGPKG_HAL_MN10300_AM33_ASB2305 {
         description   "
             This option lists the target's requirements for a valid Redboot
             configuration."
-
-        compile -library=libextras.a redboot_cmds.c
+            
+        cdl_component CYGPKG_REDBOOT_HAL_LINUX_EXEC {
+            display       "Provide the exec command in RedBoot"
+            flavor        none
+            no_define
+            parent        CYGPKG_REDBOOT_HAL_OPTIONS
+            active_if     CYGBLD_BUILD_REDBOOT_WITH_EXEC
+            description "
+                This option contains requirements for booting linux
+                from RedBoot. The component is enabled/disabled from
+                RedBoots CDL."
+            compile -library=libextras.a redboot_cmds.c
+        }
 
         cdl_option CYGBLD_BUILD_REDBOOT_BIN {
             display       "Build Redboot ROM binary image"

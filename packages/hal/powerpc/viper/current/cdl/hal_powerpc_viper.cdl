@@ -335,6 +335,7 @@ cdl_package CYGPKG_HAL_POWERPC_VIPER {
             configuration."
 
         cdl_option CYGSEM_REDBOOT_HAL_LINUX_BOOT {
+            active_if      CYGBLD_BUILD_REDBOOT_WITH_EXEC
             display        "Support booting Linux via RedBoot"
             flavor         bool
             default_value  1

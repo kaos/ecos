@@ -1,3 +1,8 @@
+2002-08-02  Andrew Lunn <Andrew.Lunn@ascom.ch>
+
+	* src/redboot_cmds.c: Redboot exec command can now be disabled by CDL
+	* cdl/hal_arm_ebsa285.cdl: Support needed for above.
+	
 2002-05-14  Jesper Skov  <jskov@redhat.com>
 
 	* src/ebsa285_misc.c: Fixed warning.

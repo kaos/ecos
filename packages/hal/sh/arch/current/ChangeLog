@@ -1,3 +1,8 @@
+2002-08-02  Andrew Lunn <Andrew.Lunn@ascom.ch>
+
+	* cdl/hal_sh.cdl: The Redboot exec command can now be 
+	  disabled by CDL
+	
 2002-04-30  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_var_sp.inc: Allow variant to provide custom
