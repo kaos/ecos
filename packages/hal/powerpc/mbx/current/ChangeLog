@@ -1,3 +1,7 @@
+2003-03-07  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/plf_stub.h: Remove [confusing] platform specific include.
+
 2002-12-02  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* include/plf_intr.h: Use MPC8xx variant RESET support.

@@ -12,6 +12,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -44,7 +45,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   jskov
-// Contributors:jskov
+// Contributors:jskov, gthomas
 // Date:        1999-02-12
 // Purpose:     Platform HAL stub support for PowerPC/VIPER board.
 // Usage:       #include <cyg/hal/plf_stub.h>
@@ -54,7 +55,6 @@
 //=============================================================================
 
 #include <pkgconf/hal.h>
-#include <pkgconf/hal_powerpc_viper.h>
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 

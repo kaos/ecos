@@ -1,3 +1,7 @@
+2003-03-07  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/plf_stub.h: Remove superfluous include <pkgconf/hal_powerpc_viper.h>
+
 2003-03-04  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/viper.S: 

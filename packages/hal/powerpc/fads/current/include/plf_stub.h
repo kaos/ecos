@@ -54,7 +54,6 @@
 //=============================================================================
 
 #include <pkgconf/hal.h>
-#include <pkgconf/hal_powerpc_fads.h>
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 

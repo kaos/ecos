@@ -1,3 +1,7 @@
+2003-03-07  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/plf_stub.h: Remove [confusing] platform specific include.
+
 2003-03-04  Paul Fine <pfine@delcomsys.com>
 	
 	* cdl/hal_powerpc_ts6.cdl: Now that the cache control macros

@@ -1,3 +1,7 @@
+2003-03-07  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/plf_stub.h: Remove [confusing] platform specific include.
+
 2003-02-10  Nick Garnett  <nickg@calivar.com>
 
 	* misc/redboot_RAM.ecm: Brought up to date with ROM version.
