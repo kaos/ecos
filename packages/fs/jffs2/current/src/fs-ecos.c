@@ -190,7 +190,7 @@ static void icache_evict(struct inode *root_i, struct inode *i)
 		     cached_inode = next_inode) {
 			next_inode = cached_inode->i_cache_next;
 			if (cached_inode->i_count == 0) {
-				cached_inode->i_cache_prev->i_cache_next = cached_inode->i_cache_next;	// Prveious entry points ahead of us
+				cached_inode->i_cache_prev->i_cache_next = cached_inode->i_cache_next;	// Previous entry points ahead of us
 				if (cached_inode->i_cache_next != NULL)
 					cached_inode->i_cache_next->i_cache_prev = cached_inode->i_cache_prev;	// Next entry points behind us
 				jffs2_clear_inode(cached_inode);
@@ -1759,9 +1759,11 @@ void iput(struct inode *i)
 		for (cached_inode = i->i_sb->s_root; cached_inode != NULL;
 		     cached_inode = cached_inode->i_cache_next) {
 			if (cached_inode == i) {
-				cached_inode->i_cache_prev->i_cache_next = cached_inode->i_cache_next;	// Prveious entry points ahead of us
-				if (cached_inode->i_cache_next != NULL)
-					cached_inode->i_cache_next->i_cache_prev = cached_inode->i_cache_prev;	// Next entry points behind us
+                                if(cached_inode->i_cache_prev != NULL) {
+				        cached_inode->i_cache_prev->i_cache_next = cached_inode->i_cache_next;	// Previous entry points ahead of us
+				        if (cached_inode->i_cache_next != NULL)
+					        cached_inode->i_cache_next->i_cache_prev = cached_inode->i_cache_prev;	// Next entry points behind us
+                                }
 				break;
 			}
 		}
