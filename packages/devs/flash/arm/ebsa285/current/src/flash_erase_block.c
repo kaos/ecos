@@ -54,7 +54,6 @@
 
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_arch.h>
-#include <cyg/hal/hal_cache.h>
 
 //
 // CAUTION!  This code must be copied to RAM before execution.  Therefore,
@@ -66,13 +65,6 @@ flash_erase_block(volatile unsigned long *block)
 {
     unsigned long stat;
     int timeout = 5000000;    
-    int cache_on;
-
-    HAL_DCACHE_IS_ENABLED(cache_on);
-    if (cache_on) {
-        HAL_DCACHE_SYNC();
-        HAL_DCACHE_DISABLE();
-    }
 
     // Clear any error conditions
     *block = FLASH_Clear_Status;
@@ -86,10 +78,6 @@ flash_erase_block(volatile unsigned long *block)
 
     // Restore ROM to "normal" mode
     *block = FLASH_Reset;
-
-    if (cache_on) {
-        HAL_DCACHE_ENABLE();
-    }
 
     return stat;
 }

@@ -1,3 +1,10 @@
+2002-04-03  Jani Monoses <jani@iv.ro>
+
+	* src/flash_erase_block.c (flash_erase_block): 
+	* src/flash_query.c (flash_query): 
+	* src/flash_program_buf.c (flash_program_buf):
+	Cache enabling and disabling are already handled by generic flash
+
 2001-09-28  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/ebsa285_flash.c (flash_hwr_init): Only re-enable icache if it
