@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -41,7 +42,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     jskov, based on kcache1.c by dsm
-// Contributors:  jskov
+// Contributors:  jskov, gthomas
 // Date:          1998-12-10
 // Description:   Tests some of the more exotic cache macros.
 //####DESCRIPTIONEND####
@@ -72,6 +73,12 @@
 #define TIME_ILOCK_LOOPS 10000 // default number of loops for time_ilock()
 #define TIME_DLOCK_LOOPS 10000 // default number of loops for time_dlock()
 
+// Define this to enable a simple, but hopefully useful, data cache
+// test.  It may help discover if the cache support has been defined
+// properly (in terms of size and shape)
+#ifdef HAL_DCACHE_SIZE
+//#define _TEST_DCACHE_OPERATION
+#endif
 
 static cyg_handle_t thread[NTHREADS];
 
@@ -119,6 +126,15 @@ static void test_dzero(void)
         p = aligned_p;
         for (i = 0; i < HAL_DCACHE_SETS; i++) {
 #if (16 == HAL_DCACHE_LINE_SIZE)
+            *p++ = 0;
+            *p++ = 0;
+            *p++ = 0;
+            *p++ = 0;
+#elif (32 == HAL_DCACHE_LINE_SIZE)
+            *p++ = 0;
+            *p++ = 0;
+            *p++ = 0;
+            *p++ = 0;
             *p++ = 0;
             *p++ = 0;
             *p++ = 0;
@@ -292,6 +308,59 @@ static void test_dstore(void)
 //  o Check that flushed data is written to memory.
 //  o Simple invocation check of macro.
 #ifdef HAL_DCACHE_LINE_SIZE // So we can find our way around memory
+
+#ifdef _TEST_DCACHE_OPERATION
+static void
+test_dcache_operation(void)
+{
+    long *lp = (long *)m;
+    int i, errs;
+
+    CYG_TEST_INFO("Data cache basic");
+
+    HAL_DISABLE_INTERRUPTS(oldints);
+    HAL_DCACHE_SYNC();
+    HAL_DCACHE_DISABLE();
+    HAL_DCACHE_SYNC();
+    // Fill test buffer
+    for (i = 0;  i < sizeof(m)/sizeof(*lp);  i++) {
+        lp[i] = i;
+    }
+    HAL_DCACHE_INVALIDATE_ALL();
+    HAL_DCACHE_ENABLE();
+    // Now push data through the cache
+    for (i = 256;  i < 256+HAL_DCACHE_SIZE/sizeof(*lp);  i++) {
+        lp[i] = 0xFF000000 + i;
+    }
+    // Now force cache clean and off
+    HAL_DCACHE_SYNC();
+    HAL_DCACHE_DISABLE();
+    // Verify the data
+    diag_printf("Verify data with cache off\n");
+    errs = 0;
+    for (i = 0;  i < sizeof(m)/sizeof(*lp);  i++) {
+        if ((i >= 256) && (i < 256+HAL_DCACHE_SIZE/sizeof(*lp))) {
+            if (lp[i] != (0xFF000000 + i)) {
+                if (++errs < 16) {
+                    diag_printf("Data inside test range changed - was: %x, is %x, index: %x\n",
+                                0xFF000000+i, lp[i], i);
+                }
+            }
+        } else {
+            if (lp[i] != i) {
+                if (++errs < 16) {
+                    diag_printf("Data outside test range changed - was: %x, is %x, index: %x\n",
+                                i, lp[i], i);
+                }
+            }
+        }
+    }
+    diag_printf("%d total errors during compare\n", errs);
+    diag_dump_buf(&lp[240], 128);
+    HAL_RESTORE_INTERRUPTS(oldints);
+}
+#endif
+
 static void test_dsync(void)
 {
     volatile cyg_uint8* aligned_p;
@@ -326,6 +395,7 @@ static void test_dsync(void)
 
     HAL_DCACHE_INVALIDATE_ALL();
 
+    diag_printf("Data: %x %x\n", aligned_p[0], aligned_p[HAL_DCACHE_LINE_SIZE]);
     CYG_TEST_CHECK(42 == aligned_p[0],
                    "memory didn't contain flushed data after invalidate");
     CYG_TEST_CHECK(43 == aligned_p[HAL_DCACHE_LINE_SIZE], 
@@ -749,6 +819,9 @@ static void time_dlock(void)
 static void entry0( cyg_addrword_t data )
 {
     int numtests = 0;
+#ifdef _TEST_DCACHE_OPERATION
+    test_dcache_operation();
+#endif
 #ifdef HAL_DCACHE_QUERY_WRITE_MODE
     int wmode;
 #endif

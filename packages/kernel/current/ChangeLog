@@ -1,3 +1,7 @@
+2003-01-02  Gary Thomas  <gary@mlbassoc.com>
+
+	* tests/kcache2.c: New subtest for raw data cache operations.
+
 2002-12-12  Nick Garnett  <nickg@ecoscentric.com>
 
 	* src/common/kapi.cxx: 
