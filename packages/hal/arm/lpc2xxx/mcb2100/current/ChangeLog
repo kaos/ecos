@@ -1,3 +1,8 @@
+2004-11-19  Jani Monoses <jani@iv.ro>
+
+	* include/hal_platform_setup.h: 
+	Fix previous fix. LDR needs its operand prefixed with = not #.
+	
 2004-11-15  Jani Monoses <jani@iv.ro>
 
 	* include/hal_platform_setup.h: 

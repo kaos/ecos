@@ -59,17 +59,15 @@
 
 	.macro  _led_init
 	ldr r0,=CYGARC_HAL_LPC2XXX_REG_IO_BASE
-	ldr r1,#0x00FF0000	                        // GPIO1 pins
-                                                        // 16..23
-                                                        // outputs
+	ldr r1,=0x00FF0000	//GPIO1 pins 16..23 outputs
 	str r1,[r0,#CYGARC_HAL_LPC2XXX_REG_IO1DIR]
 	.endm
 
 	.macro _led x
 	ldr r0,=CYGARC_HAL_LPC2XXX_REG_IO_BASE
-	ldr r1,#0x00FF0000
+	ldr r1,=0x00FF0000
 	str r1,[r0,#CYGARC_HAL_LPC2XXX_REG_IO1CLR]
-	ldr r1,#(\x<<16)
+	ldr r1,=(\x<<16)
 	str r1,[r0,#CYGARC_HAL_LPC2XXX_REG_IO1SET]
 	.endm
 	
