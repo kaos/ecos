@@ -1,3 +1,8 @@
+2003-04-11  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/hal_arm_cma230.cdl: building for thumb now involves
+	arm-elf-gcc -mthumb, not thumb-elf-gcc
+
 2002-08-06  Gary Thomas  <gary@chez-thomas.org>
 2002-08-06  Motoya Kurotsu <kurotsu@allied-telesis.co.jp>	
 

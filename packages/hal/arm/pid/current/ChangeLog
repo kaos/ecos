@@ -1,3 +1,8 @@
+2003-04-11  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/hal_arm_pid.cdl: building for thumb now involves arm-elf-gcc
+	-mthumb, not thumb-elf-gcc
+
 2003-02-05  Nick Garnett  <nickg@calivar.com>
 
 	* include/plf_io.h (CYGARC_PHYSICAL_ADDRESS): Added this

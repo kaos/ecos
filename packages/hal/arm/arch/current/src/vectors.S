@@ -463,7 +463,8 @@ start:
         
         // This starts up the eCos kernel
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
-        ldr     sp,.__startup_stack
+        ldr     r1,=__startup_stack
+        mov     sp,r1
 #endif        
         bl      cyg_start
 _start_hang:

@@ -1,3 +1,8 @@
+2003-04-11  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/hal_arm_integrator.cdl: thumb is not supported so the
+	reference to thumb-elf was spurious.
+
 2002-05-27  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_arm_integrator.cdl: Don't run cache tests.
