@@ -305,7 +305,7 @@ cdl_package CYGPKG_IO_SERIAL {
 	display "Enable serial device select support"
 	flavor bool
 	active_if CYGPKG_IO_FILEIO
-	requires  CYGPKG_IO_FILEIO
+	requires  { CYGFUN_IO_FILEIO_SELECT == 1 }
 	default_value 1
 	description "
 	    This option enables support for the select() API function on all

@@ -1,3 +1,9 @@
+2004-11-30  Jani Monoses <jani@iv.ro>
+
+	 * cdl/io_serial.cdl : CYGPKG_IO_SERIAL_SELECT_SUPPORT requires 
+	 CYGFUN_IO_FILEIO_SELECT specifically not just CYGPKG_FILEIO. The 
+	 latter provides select support only in kernel configurations.
+	 
 2004-04-22  Jani Monoses <jani@iv.ro>
 
 	 * cdl/io_serial.cdl :
