@@ -1,3 +1,8 @@
+2004-11-12  Jani Monoses <jani@iv.ro>
+
+	* include/var_io.h: Added defines for some missing UART bits,
+	corrected a few timer capture mode register bits.
+
 2004-11-12  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/hal_diag.c: Only support the third serial port if we have

@@ -123,8 +123,12 @@
 #define AT91_US_CSR 0x14  // Channel status register
 #define AT91_US_CSR_RxRDY 0x01 // Receive data ready
 #define AT91_US_CSR_TxRDY 0x02 // Transmit ready
+#define AT91_US_CSR_RXBRK 0x04 // Transmit ready
+#define AT91_US_CSR_ENDRX 0x08 // Transmit ready
+#define AT91_US_CSR_ENDTX 0x10 // Transmit ready
 #define AT91_US_CSR_OVRE  0x20 // Overrun error
 #define AT91_US_CSR_FRAME 0x40 // Framing error
+#define AT91_US_CSR_TIMEOUT 0x80 // Timeout
 #define AT91_US_RHR 0x18  // Receive holding register
 #define AT91_US_THR 0x1C  // Transmit holding register
 #define AT91_US_BRG 0x20  // Baud rate generator
@@ -396,10 +400,10 @@
 #define AT91_TC_CMR_LDRA_TIOA_NEG  (1<<16)
 #define AT91_TC_CMR_LDRA_TIOA_POS  (2<<16)
 #define AT91_TC_CMR_LDRA_TIOA_BOTH (3<<16)
-#define AT91_TC_CMR_LDRB_NONE      (0<<16)
-#define AT91_TC_CMR_LDRB_TIOA_NEG  (1<<16)
-#define AT91_TC_CMR_LDRB_TIOA_POS  (2<<16)
-#define AT91_TC_CMR_LDRB_TIOA_BOTH (3<<16)
+#define AT91_TC_CMR_LDRB_NONE      (0<<18)
+#define AT91_TC_CMR_LDRB_TIOA_NEG  (1<<18)
+#define AT91_TC_CMR_LDRB_TIOA_POS  (2<<18)
+#define AT91_TC_CMR_LDRB_TIOA_BOTH (3<<18)
 // Waveform mode definitions
 #define AT91_TC_CMR_CPCSTOP        (1<<6)
 #define AT91_TC_CMR_CPCDIS	   (1<<7)
