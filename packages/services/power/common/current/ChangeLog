@@ -1,3 +1,10 @@
+2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/power.cdl: Fix doc links for config tool's doc system.
+
+	* doc/power.sgml: Comment out DOCTYPE for now to allow building
+	with standard doc build.
+
 2001-11-21  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/power.h: Use a POWER_INLINE macro for "inline" to allow

@@ -51,7 +51,7 @@
 
 cdl_package CYGPKG_POWER {
     display     "Generic power management support"
-    doc         services-power.html
+    doc         ref/services-power.html
     parent      CYGPKG_IO
     include_dir "cyg/power"
     compile     power.cxx
@@ -59,7 +59,7 @@ cdl_package CYGPKG_POWER {
     
     cdl_option CYGIMP_POWER_PROVIDE_STRINGS {
 	display        "Provide a string for every power controller"
-	doc            power-info.html#POWER-MANAGEMENT-INFO_IDS
+	doc            ref/power-info.html#POWER-MANAGEMENT-INFO_IDS
 	default_value  1
 	description "
             Optionally each power controller can contain a string identifying
@@ -72,7 +72,7 @@ cdl_package CYGPKG_POWER {
 
     cdl_option CYGIMP_POWER_PROVIDE_POLICY_DATA {
 	display        "Reserve space in each power controller for use by the policy manager"
-	doc            power-policy.html#POWER-POLICY-DATA
+	doc            ref/power-policy.html#POWER-POLICY-DATA
 	default_value  1
 	description "
 	    Optionally each power controller can provide a word of data
@@ -85,7 +85,7 @@ cdl_package CYGPKG_POWER {
     
     cdl_component CYGPKG_POWER_THREAD {
 	display        "Run a separate thread within the power management package"
-	doc            power-intro.html#POWER-INTRO-OPERATION
+	doc            ref/power-intro.html#POWER-INTRO-OPERATION
 	active_if      CYGPKG_KERNEL
 	default_value  1
 	description "
