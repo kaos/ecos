@@ -101,31 +101,6 @@ cdl_package CYGPKG_FS_JFFS2 {
             the set of global flags if present."
         }
 
-    cdl_option CYGNUM_FS_JFFS2_SECTOR_SIZE {
-       display         "Physical sector size of the flash devices"
-       flavor          data
-       default_value   { 0x10000 }
-       description     "64 KiB for synthetic target."
-    }
-
-    cdl_option CYGNUM_FS_JFFS2_FLASH_SIZE {
-       display         "Amount of flash committed to JFFS2"
-       flavor          data
-       default_value   { 0x100000 }
-       description     "1 MiB (giving 16 sectors, realistic minimum!)"
-    }
-
-    cdl_option CYGNUM_FS_JFFS2_BASE_ADDRESS {
-       display         "Base of the JFFS2 filesystem in memory"
-       flavor          data
-       default_value   { 0x40000000 }
-       description     "Set this value to the base address of the JFFS2
-               filesystem in memory. By coincidence, this matches the
-               address at which the synthetic target will mmap its
-               backing store. Perhaps we should make it work through
-               something other than coincidence?"
-    }
-
     # ----------------------------------------------------------------
     # Tests
 
