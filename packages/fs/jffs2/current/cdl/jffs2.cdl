@@ -4,7 +4,7 @@
 #
 #      JFFS2 Filesystem configuration data
 #
-#      $Id: jffs2.cdl,v 1.13 2003/11/29 00:30:30 dwmw2 Exp $
+#      $Id: jffs2.cdl,v 1.14 2004/02/17 15:40:36 gthomas Exp $
 #
 # ====================================================================
 #####ECOSGPLCOPYRIGHTBEGIN####
