@@ -1082,6 +1082,12 @@ package CYGPKG_SNMPAGENT {
         description     "UCD SNMP agent."
 }
 
+package CYGPKG_HTTPD {
+	alias 		{ "HTTP server" httpd }
+	directory	net/httpd
+	script		httpd.cdl
+        description     "HTTP server."
+}
 
 package CYGPKG_NS_DNS {
 	alias 		{ "DNS" dns }

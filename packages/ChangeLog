@@ -1,3 +1,7 @@
+2002-12-22  Nick Garnett  <nickg@ecoscentric.com>
+
+	* ecos.db: Add HTTPD package.
+
 2002-12-12  Gary Thomas  <gthomas@ecoscentric.com>
 2002-12-12  Patrick Doyle <wpd@delcomsys.com>
 
