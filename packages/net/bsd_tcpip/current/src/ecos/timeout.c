@@ -402,8 +402,11 @@ callout_reset(struct callout *c, int delta, timeout_fun *f, void *p)
         for (e = timeouts;  e;  e = e->next) {
             if (e->delta) {
                 CYG_ASSERT( e->delta >= last_delta, "e->delta underflow" );
+                // the following triggers if the "next" timeout has not just
+                // passed, but passed by 1000 ticks - which with the normal
+                // 1 tick = 10ms means 10 seconds - a long time.
                 CYG_ASSERT( last_set_time + e->delta + 1000 > now,
-                            "Recorded alarm not in the future!" );
+                            "Recorded alarm not in the future! Starved network thread?" );
                 if ( e->delta < delta )
                     delta = e->delta;
             } else {
