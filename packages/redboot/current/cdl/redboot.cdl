@@ -545,6 +545,20 @@ cdl_package CYGPKG_REDBOOT {
                     FLASH manipulation, but do not have the need or space for
                     complete image management."
             }
+
+            cdl_option CYGDAT_REDBOOT_FIS_MAX_FREE_CHUNKS {
+                display        "Max number of chunks of free space to manage"
+                flavor         booldata
+                default_value  32
+                description    "
+                  If this option is defined then \"fis free\" will rely on the
+                  FIS directory to determine what space is free within the FLASH.
+                  This option controls the maximum number of free segment which
+                  can be handled (typically this number is small).  If this option
+                  is not enabled, the the archaic behaviour of actually scanning
+                  the FLASH for erased sectors (unreliable) will be used to 
+                  determine what's free and what's not."
+            }
     
             cdl_component CYGPKG_REDBOOT_FIS_CONTENTS {
                 display       "Flash Image System default directory contents"

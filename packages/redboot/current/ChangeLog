@@ -1,3 +1,11 @@
+2003-10-11  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/flash.c: 
+	* cdl/redboot.cdl: Change 'fis free' to use the directory structure
+	to determine what space is free in the FLASH.  This is controlled 
+	by the CDL option CYGDAT_REDBOOT_FIS_MAX_FREE_CHUNKS so the old
+	behaviour can still be defined if desired.
+
 2003-10-09  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/flash.c (fis_create): Check whole length of image, not just 

@@ -508,9 +508,71 @@ fis_list(int argc, char *argv[])
     } while (image_found == true);
 }
 
+#ifdef CYGDAT_REDBOOT_FIS_MAX_FREE_CHUNKS
+struct free_chunk {
+    CYG_ADDRESS start, end;
+};
+
+static int
+find_free(struct free_chunk *chunks)
+{
+    CYG_ADDRESS *fis_ptr, *fis_end;
+    void *err_addr;
+    struct fis_image_desc *img;
+    int i, idx;
+    int num_chunks = 1;
+
+    // Do not search the area reserved for pre-RedBoot systems:
+    fis_ptr = (CYG_ADDRESS *)((CYG_ADDRESS)flash_start + 
+                                CYGNUM_REDBOOT_FLASH_RESERVED_BASE + 
+                                CYGBLD_REDBOOT_MIN_IMAGE_SIZE);
+    fis_end = (CYG_ADDRESS *)(CYG_ADDRESS)flash_end;
+    chunks[num_chunks-1].start = (CYG_ADDRESS)fis_ptr;
+    chunks[num_chunks-1].end = (CYG_ADDRESS)fis_end;
+    flash_read(fis_addr, fis_work_block, fisdir_size, (void **)&err_addr);
+    img = (struct fis_image_desc *) fis_work_block;
+    for (i = 0;  i < fisdir_size/sizeof(*img);  i++, img++) {
+        if (img->name[0] != (unsigned char)0xFF) {
+            // Figure out which chunk this is in and split it
+            for (idx = 0;  idx < num_chunks;  idx++) {
+                if ((img->flash_base >= chunks[idx].start) && 
+                    (img->flash_base <= chunks[idx].end)) {
+                    if (img->flash_base == chunks[idx].start) {
+                        chunks[idx].start += img->size;
+                        if (chunks[idx].start == chunks[idx].end) {
+                            // This free chunk has collapsed
+                            while (idx < (num_chunks-1)) {
+                                chunks[idx] = chunks[idx+1];
+                            }
+                            num_chunks--;
+                        }
+                    } else if ((img->flash_base+img->size) == chunks[idx].end) {
+                        chunks[idx].end = img->flash_base;
+                    } else {
+                        // Split chunk into two parts
+                        if ((img->flash_base+img->size) < (CYG_ADDRESS)fis_end) {
+                            chunks[idx+1].start = img->flash_base + img->size;
+                            chunks[idx+1].end = chunks[idx].end;
+                            if (++num_chunks == CYGDAT_REDBOOT_FIS_MAX_FREE_CHUNKS) {
+                                diag_printf("Warning: too many free chunks\n");
+                                return num_chunks;
+                            }
+                        }
+                        chunks[idx].end = img->flash_base;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    return num_chunks;
+}
+#endif // CYGDAT_REDBOOT_FIS_MAX_FREE_CHUNKS
+
 static void
 fis_free(int argc, char *argv[])
 {
+#ifndef CYGDAT_REDBOOT_FIS_MAX_FREE_CHUNKS
     unsigned long *fis_ptr, *fis_end, flash_data;
     unsigned long *area_start;
     void *err_addr;
@@ -547,12 +609,22 @@ fis_free(int argc, char *argv[])
         diag_printf("  0x%08lX .. 0x%08lX\n", 
                     (CYG_ADDRESS)area_start, (CYG_ADDRESS)fis_ptr);
     }
+#else
+    struct free_chunk chunks[CYGDAT_REDBOOT_FIS_MAX_FREE_CHUNKS];
+    int idx, num_chunks;
+
+    num_chunks = find_free(chunks);
+    for (idx = 0;  idx < num_chunks;  idx++) {
+        diag_printf("  0x%08lX .. 0x%08lX\n", chunks[idx].start, chunks[idx].end);
+    }
+#endif
 }
 
 // Find the first unused area of flash which is long enough
 static bool
 fis_find_free(CYG_ADDRESS *addr, unsigned long length)
 {
+#ifndef CYGDAT_REDBOOT_FIS_MAX_FREE_CHUNKS
     unsigned long *fis_ptr, *fis_end, flash_data;
     unsigned long *area_start;
     void *err_addr;
@@ -594,6 +666,19 @@ fis_find_free(CYG_ADDRESS *addr, unsigned long length)
         }
     }
     return false;
+#else
+    struct free_chunk chunks[CYGDAT_REDBOOT_FIS_MAX_FREE_CHUNKS];
+    int idx, num_chunks;
+
+    num_chunks = find_free(chunks);
+    for (idx = 0;  idx < num_chunks;  idx++) {
+        if ((chunks[idx].end - chunks[idx].start) >= length) {
+            *addr = (CYG_ADDRESS)chunks[idx].start;
+            return true;
+        }
+    }
+    return false;
+#endif
 }
 
 static void
