@@ -105,7 +105,7 @@ http_stream_close(int *err)
     struct _stream *s = &http_stream;
 
     if (s->open) {
-        __tcp_close(&s->sock);
+        __tcp_abort(&s->sock,1);
         s->open = false;    
     }
 }
