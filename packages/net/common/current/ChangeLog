@@ -1,3 +1,7 @@
+2002-06-20  Gary Thomas  <gary@chez-thomas.org>
+
+	* src/inet_ntop.c: Fix build error when used with newer compilers.
+
 2002-06-05  Gary Thomas  <gary@chez-thomas.org>
 
 	* src/dhcp_prot.c (_dhcp_copy): New function used to better handle

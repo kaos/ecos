@@ -45,7 +45,9 @@
 #include <arpa/nameser.h>
 #include <string.h>
 #include <errno.h>
+#ifndef CYGPKG_NET_FREEBSD_STACK
 #include <stdio.h>
+#endif
 
 #ifndef IN6ADDRSZ
 #define IN6ADDRSZ    16      /* IPv6 T_AAAA */

@@ -936,6 +936,7 @@ void      zfreei(vm_zone_t z, void *item);
 
 // Function mapping
 #define printf     diag_printf
+#define sprintf    diag_sprintf
 #define snprintf   diag_snprintf
 
 // Missing standard functions
