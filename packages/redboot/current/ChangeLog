@@ -1,3 +1,8 @@
+2004-02-24  Gary Thomas  <gary@mlbassoc.com>
+
+	* cdl/redboot.cdl: net_io needs to be in libextras to enable network
+	support (failed if network debug was disabled)
+
 2004-02-23  Uwe Kindler  <uwe_kindler@web.de>
 
 	* src/cksum.c:
