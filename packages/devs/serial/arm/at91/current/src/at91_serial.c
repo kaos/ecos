@@ -95,12 +95,18 @@ typedef struct at91_serial_info {
 
 static bool at91_serial_init(struct cyg_devtab_entry *tab);
 static bool at91_serial_putc_interrupt(serial_channel *chan, unsigned char c);
+#if (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL0) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL0_BUFSIZE == 0) \
+ || (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL1) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL1_BUFSIZE == 0)
 static bool at91_serial_putc_polled(serial_channel *chan, unsigned char c);
+#endif
 static Cyg_ErrNo at91_serial_lookup(struct cyg_devtab_entry **tab, 
                                     struct cyg_devtab_entry *sub_tab,
                                     const char *name);
 static unsigned char at91_serial_getc_interrupt(serial_channel *chan);
+#if (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL0) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL0_BUFSIZE == 0) \
+ || (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL1) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL1_BUFSIZE == 0)
 static unsigned char at91_serial_getc_polled(serial_channel *chan);
+#endif
 static Cyg_ErrNo at91_serial_set_config(serial_channel *chan, cyg_uint32 key,
                                         const void *xbuf, cyg_uint32 *len);
 static void at91_serial_start_xmit(serial_channel *chan);
@@ -331,6 +337,8 @@ at91_serial_putc_interrupt(serial_channel *chan, unsigned char c)
     return res;
 }
 
+#if (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL0) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL0_BUFSIZE == 0) \
+ || (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL1) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL1_BUFSIZE == 0)
 static bool
 at91_serial_putc_polled(serial_channel *chan, unsigned char c)
 {
@@ -343,6 +351,7 @@ at91_serial_putc_polled(serial_channel *chan, unsigned char c)
     HAL_WRITE_UINT32(base + AT91_US_THR, c);
     return true;
 }
+#endif
 
 // Fetch a character from the device input buffer, waiting if necessary
 static unsigned char 
@@ -357,6 +366,8 @@ at91_serial_getc_interrupt(serial_channel *chan)
     return (unsigned char) c;
 }
 
+#if (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL0) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL0_BUFSIZE == 0) \
+ || (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL1) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL1_BUFSIZE == 0)
 static unsigned char 
 at91_serial_getc_polled(serial_channel *chan)
 {
@@ -370,7 +381,7 @@ at91_serial_getc_polled(serial_channel *chan)
     HAL_READ_UINT32(base + AT91_US_RHR, c);
     return (unsigned char) c;
 }
-
+#endif
 // Set up the device characteristics; baud rate, etc.
 static Cyg_ErrNo
 at91_serial_set_config(serial_channel *chan, cyg_uint32 key,
@@ -485,37 +496,6 @@ at91_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     at91_chan->stat = 0;
     cyg_drv_interrupt_unmask(vector);    
 
-    if (stat & AT91_US_IER_TxRDY) {
-        at91_chan->flags &= ~SIFLG_XMIT_BUSY;
-        (chan->callbacks->xmt_char)(chan);
-        if (at91_chan->flags & SIFLG_XMIT_CONTINUE)
-            HAL_WRITE_UINT32(base + AT91_US_IER, AT91_US_IER_TxRDY);
-    }
-    
-    if (stat & AT91_US_IER_ENDTX) {
-        (chan->callbacks->data_xmt_done)(chan, at91_chan->transmit_size);
-        if (at91_chan->flags & SIFLG_XMIT_CONTINUE) {
-            unsigned char * chars;
-            xmt_req_reply_t res;
-
-            res = (chan->callbacks->data_xmt_req)(chan, 0xffff, &at91_chan->transmit_size, &chars);
-
-            switch (res)
-            {
-                case CYG_XMT_OK:
-                    HAL_WRITE_UINT32(base + AT91_US_TPR, (CYG_WORD32) chars);
-                    HAL_WRITE_UINT32(base + AT91_US_TCR, at91_chan->transmit_size);
-                    at91_chan->flags |= SIFLG_XMIT_CONTINUE;
-                    HAL_WRITE_UINT32(base + AT91_US_IER, AT91_US_IER_ENDTX);
-                    break;
-                default:
-                    // No data or unknown error - can't do anything about it
-                    // CYG_XMT_DISABLED should not happen here!
-                    break;
-            }
-        }
-    }
-
     if (stat & (AT91_US_IER_ENDRX | AT91_US_IER_TIMEOUT)) {
         const cyg_uint8 cb = at91_chan->curbuf, nb = cb ^ 0x01;
         const cyg_uint8 * p = at91_chan->rcv_buffer[cb], * end;
@@ -531,7 +511,7 @@ at91_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
             base + AT91_US_IER,
             AT91_US_IER_ENDRX | AT91_US_IER_TIMEOUT
         );
-        
+
         while (p < end) {
             rcv_req_reply_t res;
             int space_avail;
@@ -559,6 +539,37 @@ at91_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
                     // Discard data
                     CYG_FAIL("Serial receiver buffer overflow");
                     p = end;
+                    break;
+            }
+        }
+    }
+
+    if (stat & AT91_US_IER_TxRDY) {
+        at91_chan->flags &= ~SIFLG_XMIT_BUSY;
+        (chan->callbacks->xmt_char)(chan);
+        if (at91_chan->flags & SIFLG_XMIT_CONTINUE)
+            HAL_WRITE_UINT32(base + AT91_US_IER, AT91_US_IER_TxRDY);
+    }
+    
+    if (stat & AT91_US_IER_ENDTX) {
+        (chan->callbacks->data_xmt_done)(chan, at91_chan->transmit_size);
+        if (at91_chan->flags & SIFLG_XMIT_CONTINUE) {
+            unsigned char * chars;
+            xmt_req_reply_t res;
+
+            res = (chan->callbacks->data_xmt_req)(chan, 0xffff, &at91_chan->transmit_size, &chars);
+
+            switch (res)
+            {
+                case CYG_XMT_OK:
+                    HAL_WRITE_UINT32(base + AT91_US_TPR, (CYG_WORD32) chars);
+                    HAL_WRITE_UINT32(base + AT91_US_TCR, at91_chan->transmit_size);
+                    at91_chan->flags |= SIFLG_XMIT_CONTINUE;
+                    HAL_WRITE_UINT32(base + AT91_US_IER, AT91_US_IER_ENDTX);
+                    break;
+                default:
+                    // No data or unknown error - can't do anything about it
+                    // CYG_XMT_DISABLED should not happen here!
                     break;
             }
         }

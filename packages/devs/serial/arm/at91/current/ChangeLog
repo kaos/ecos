@@ -1,3 +1,16 @@
+2004-01-26  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/at91_serial.c (at91_serial_getc_polled) 
+	* src/ay91_serial.c (at91_serial_putc_polled):
+	Only define these functions if polled IO is configured so
+	avoiding compiler warnings.
+
+2004-01-16  Thomas Koeller  <thomas.koeller@baslerweb.com>
+
+	* src/at91_serial.c: If both a transmitter and a receiver
+	interrupt arrive at the same time, process the receiver
+	interrupt first.
+
 2003-11-21  Thomas Koeller  <thomas.koeller@baslerweb.com>
 
 	* src/at91_serial.c: Fix endless loop that would occur if
