@@ -199,10 +199,6 @@ __externC cyg_dir cyg_cdir_dir;
 
 __externC int cyg_mtab_lookup( cyg_dir *dir, const char **name, cyg_mtab_entry **mte);
 
-__externC void cyg_fs_lock( cyg_mtab_entry *mte, cyg_uint32 syncmode );
-
-__externC void cyg_fs_unlock( cyg_mtab_entry *mte, cyg_uint32 syncmode );
-
 //-----------------------------------------------------------------------------
 // Exports from fd.cxx
 

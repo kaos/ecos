@@ -414,6 +414,23 @@ void cyg_fs_unlock( cyg_mtab_entry *mte, cyg_uint32 syncmode )
 }
 
 //==========================================================================
+// Search mount table for a filesystems root. 
+
+__externC cyg_mtab_entry * cyg_fs_root_lookup( cyg_dir *root ) 
+{
+     cyg_mtab_entry *m;
+
+     for( m = &cyg_mtab[0]; m != &cyg_mtab_end; m++ ) 
+     {
+          if( (cyg_dir *)m->root == root )
+          {
+               return m;
+          }
+     }
+     return NULL;
+}
+
+//==========================================================================
 // Timestamp support
 // This provides access to the current time/date, expressed as a
 // time_t.  It uses a number of mechanisms to do this, selecting

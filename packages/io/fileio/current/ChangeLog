@@ -1,3 +1,14 @@
+2005-01-22  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/misc.cxx (cyg_fs_root_lookup): New function to find the mount
+	point of a give filesystems root directory.
+	* src/fio.h:
+	* include/fileio.h: Made cyg_fs_{un}lock accessible outside of the 
+	fileio package.
+
+2004-01-22  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* 
 2004-12-15  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/select.cxx (cyg_pselect): We need the oldmask under all

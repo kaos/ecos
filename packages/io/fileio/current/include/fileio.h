@@ -440,6 +440,19 @@ __externC int cyg_fs_set_attrib( const char *fname,
 __externC int cyg_fs_get_attrib( const char *fname, 
                                  cyg_fs_attrib_t * const file_attrib );
 
+// Functions to lock and unlock a filesystem. These are normally used
+// internally by the fileio layer, but the file system might need to
+// use them when it needs to lock itself, eg when performing garbage
+// collect.
+__externC void cyg_fs_lock( cyg_mtab_entry *mte, cyg_uint32 syncmode );
+
+__externC void cyg_fs_unlock( cyg_mtab_entry *mte, cyg_uint32 syncmode );
+
+// To be able to lock the filesystem you need the mte. This function
+// allows the table of mounted filesystems to be searched to find an
+// mte which uses the give filesystem root.
+
+__externC cyg_mtab_entry * cyg_fs_root_lookup( cyg_dir *root );
 
 //=============================================================================
 // Default functions.
