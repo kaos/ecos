@@ -256,7 +256,14 @@ cyg_test_exit(void)
 #ifdef CYGHWR_TEST_PROGRAM_EXIT
     CYGHWR_TEST_PROGRAM_EXIT();
 #endif
-
+#ifdef CYGSEM_INFRA_RESET_ON_TEST_EXIT
+#ifdef HAL_PLATFORM_RESET
+    HAL_PLATFORM_RESET();
+#else
+#warning "Reset selected for test case exit, but none defined"
+#endif
+#endif
+    // Default behaviour - simply hang in a loop
     for(;;)
         ;
 }

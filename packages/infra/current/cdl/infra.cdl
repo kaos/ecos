@@ -195,6 +195,17 @@ cdl_package CYGPKG_INFRA {
 
     # ========================================================================
 
+    cdl_option CYGSEM_INFRA_RESET_ON_TEST_EXIT {
+        display       "Reset platform at end of test case execution"
+        default_value 0
+        description   "
+            If this option is set then test case programs will reset the platform
+            when they terminate, as opposed to the default which is to just hang
+            in a loop."
+    }
+
+    # ========================================================================
+
     cdl_option CYGFUN_INFRA_DUMMY_STRLEN {
         display       "Provide dummy strlen() function"
         requires      !CYGINT_ISO_STRING_STRFUNCS
