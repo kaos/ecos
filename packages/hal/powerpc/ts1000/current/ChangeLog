@@ -1,5 +1,7 @@
 2002-10-18  Gary Thomas  <gthomas@ecoscentric.com>
 
+	* cdl/hal_powerpc_ts1000.cdl: Fix clock rate calculation.
+
 	* misc/redboot_ROMRAM.ecm: 
 	* misc/redboot_ROM.ecm: 
 	* misc/redboot_RAM.ecm: FLASH package name change.
