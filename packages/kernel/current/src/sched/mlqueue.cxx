@@ -799,7 +799,7 @@ Cyg_ThreadQueue_Implementation::enqueue(Cyg_Thread *thread)
             // Scan the queue until we find a higher or equal
             // priority thread.
 
-            while( thread->priority > qtmp->priority )
+            while( qtmp->priority > thread->priority )
                 qtmp = qtmp->get_prev();
 
             // Append ourself after the node pointed to by qtmp.
