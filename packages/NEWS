@@ -1,3 +1,5 @@
+* Port added for Texas Instruments ARM9 OMAP Innovator board. Contributed by
+  Patrick Doyle of Delphi Communication Systems.
 * Add XScale PXA2x0 support, with Microplex Printer control 5.0 (mpc50)
   target incorporating flash support.
 * Add support for Cogent CSB281 - PowerPC 8245 board.

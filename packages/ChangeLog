@@ -1,3 +1,8 @@
+2003-02-05  Patrick Doyle  <wpd@delcomsys.com>
+
+	* ecos.db: Add Texas Instruments ARM9 OMAP Innovator port. Redboot
+	only for now.
+
 2003-01-29  John Dallaway  <jld@ecoscentric.com>
 
 	* ecosadmin.tcl: Accommodate UNIX-style paths under Cygwin when

@@ -392,6 +392,16 @@ package CYGPKG_DEVS_FLASH_ARM_EXCALIBUR {
 	   on the Altera Excalibur platform."
 }
 
+package CYGPKG_DEVS_FLASH_ARM_INNOVATOR {
+	alias 		{ "FLASH memory support for the Innovator" flash_innovator }
+	directory	devs/flash/arm/innovator
+	script		flash_innovator.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the Innovator platform."
+}
+
 package CYGPKG_DEVS_FLASH_NANO {
 	alias 		{ "FLASH memory support for Intel SA1110 nanoEngine" flash_nano }
 	directory	devs/flash/arm/nano
@@ -1221,6 +1231,15 @@ package CYGPKG_DEVS_ETH_ARM_FLEXANET {
                    ethernet device on the Flexanet board."
 }
 
+package CYGPKG_DEVS_ETH_ARM_INNOVATOR {
+      alias           { "OMAP Innovator onboard ethernet support" devs_eth_arm_innovator }
+      hardware
+      directory       devs/eth/arm/innovator
+      script          innovator_eth_drivers.cdl
+      description "This package contains hardware support for onboard SMC91C96
+                   ethernet device on the Innovator board."
+}
+
 package CYGPKG_DEVS_ETH_ARM_INTEGRATOR {
         alias           { "ARM INTEGRATOR with Intel PRO/100+ ethernet driver"
                            devs_eth_arm_integrator integrator_eth_driver }
@@ -1968,6 +1987,22 @@ package CYGPKG_HAL_ARM_ARM9_EXCALIBUR {
         description "
         The Excalibur HAL package provides the support needed to run
         eCos on an Altera Excalibur ARM9 board."
+}
+
+package CYGPKG_HAL_ARM_ARM9_INNOVATOR {
+	alias		{ "Innovator (ARM)" hal_arm_arm9_innovator }
+	directory	hal/arm/arm9/innovator
+	script		hal_arm_arm9_innovator.cdl
+	hardware
+        description "
+        The Innovator HAL package provides the support needed to run
+        RedBoot on the ARM processor of the Innovator.
+	
+	NOTE: Full support for eCos is not provided yet.  This HAL
+	contains only the minimum amount necessary to run RedBoot
+	on the Innovator.  In particular, interrupts are not yet
+	supported.  Watch this space for more details in the near
+	future."
 }
 
 package CYGPKG_HAL_ARM_SA11X0 {
@@ -3308,6 +3343,25 @@ target excalibur_arm9 {
         description "
         The Excalibur target provides the packages needed to run
         eCos on an Altera Excalibur board."
+}
+
+target innovator {
+	alias { "Innovator (ARM) board" innovator }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_ARM9
+                   CYGPKG_HAL_ARM_ARM9_INNOVATOR
+                   CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
+                   CYGPKG_DEVS_FLASH_ARM_INNOVATOR
+        }
+        description "
+        The Innovator HAL package provides the support needed to run
+        RedBoot on the ARM processor of the Innovator.
+	
+	NOTE: Full support for eCos is not provided yet.  This HAL
+	contains only the minimum amount necessary to run RedBoot
+	on the Innovator.  In particular, interrupts are not yet
+	supported.  Watch this space for more details in the near
+	future."
 }
 
 target assabet {
