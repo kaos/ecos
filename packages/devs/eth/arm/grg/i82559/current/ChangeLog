@@ -1,3 +1,10 @@
+2003-03-26  Mark Salter  <msalter@redhat.com>
+
+	* cdl/grg_i82559_eth_driver.cdl: Default to off for
+	CYGPKG_DEVS_ETH_I82559_ETH_REDBOOT_HOLDS_ESA.
+
+	* include/grg_i82559.inl: Fix commenting of copyright.
+
 2003-03-24  Mark Salter  <msalter@redhat.com>
 
 	* cdl/grg_i82559_eth_driver.cdl: Fix copyright notice.

@@ -101,7 +101,7 @@ cdl_package CYGPKG_DEVS_ETH_ARM_GRG_I82559 {
     cdl_component CYGPKG_DEVS_ETH_I82559_ETH_REDBOOT_HOLDS_ESA {
 	display         "RedBoot manages ESA initialization data"
 	flavor          bool
-	default_value	1
+	default_value	0
 
 	active_if     CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
 
