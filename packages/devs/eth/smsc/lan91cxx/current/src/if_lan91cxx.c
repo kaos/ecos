@@ -184,9 +184,8 @@ static cyg_interrupt lan91cxx_interrupt;
 static cyg_handle_t  lan91cxx_interrupt_handle;
 
 // This ISR is called when the ethernet interrupt occurs
-static int
-lan91cxx_isr(cyg_vector_t vector, cyg_addrword_t data
-             /* , HAL_SavedRegisters *regs */ )
+static int lan91cxx_isr(cyg_vector_t vector, cyg_addrword_t data)
+             /* , HAL_SavedRegisters *regs */
 {
     struct eth_drv_sc *sc = (struct eth_drv_sc *)data;
     struct lan91cxx_priv_data *cpd =
@@ -870,7 +869,7 @@ lan91cxx_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
         control |= LAN91CXX_CONTROLBYTE_ODD;
     }
     control |= LAN91CXX_CONTROLBYTE_CRC; // Just in case...
-    put_data(sc, control);
+    put_data(sc, CYG_CPU_TO_LE16(control));
 
     // Enqueue the packet
     put_reg(sc, LAN91CXX_MMU_COMMAND, LAN91CXX_MMU_enq_packet);
@@ -1122,6 +1121,7 @@ lan91cxx_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
     val = CYG_LE32_TO_CPU(val);
     plen = (val >> 16) - 6;
 #else
+    val = CYG_LE16_TO_CPU(val);
     plen = get_data(sc);
     plen = CYG_LE16_TO_CPU(plen) - 6;
 #endif
@@ -1163,6 +1163,8 @@ lan91cxx_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
 	val >>= 16;
 	mlen -= 2;
     } else
+#else
+    val = CYG_LE16_TO_CPU(val);
 #endif
 	cp = (unsigned char *)data;
 

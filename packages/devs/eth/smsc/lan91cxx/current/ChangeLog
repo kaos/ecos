@@ -1,3 +1,7 @@
+2003-12-10  Uwe Kindler <uwe_kindler@web.de>
+
+	* src/if_lan91cxx.c: Add some missing endian swapping calls.
+
 2003-12-05  Nick Garnett  <nickg@calivar.com>
 
 	* src/if_lan91cxx.c: Added support for revA of the LAN91C111 which
