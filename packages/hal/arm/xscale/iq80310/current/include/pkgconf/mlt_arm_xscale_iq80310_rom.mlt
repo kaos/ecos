@@ -1,5 +1,5 @@
 version 0
-region ram a0000000 2000000 0 !
+region ram a0000000 20000000 0 !
 region rom 00000000 800000 1 !
 section fixed_vectors 0 1 0 1 1 0 1 0 20 20 !
 section data 0 1 1 1 1 1 0 0 8000 bss !
