@@ -11,6 +11,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Nick Garnett 
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -53,7 +54,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    jskov
-// Contributors: jskov, hmt, jco
+// Contributors: jskov, hmt, jco, nickg
 // Date:         2001-01-22
 // Purpose:      Hardware description of LAN9000 series, LAN91C96/110.
 // Description:  
@@ -144,7 +145,7 @@
 #define LAN91CXX_INTERRUPT_TX_INT         0x0002 // also ack
 #define LAN91CXX_INTERRUPT_RCV_INT        0x0001
 
-#if 0 // Whichever we choose, the behaviour is the same.
+#if 1 // Whichever we choose, the behaviour is the same.
 #define LAN91CXX_INTERRUPT_TX_SET         0x0002 // TX
 #define LAN91CXX_INTERRUPT_TX_SET_ACK     0x0000 // -none-
 #define LAN91CXX_INTERRUPT_TX_FIFO_ACK    0x0002 // TX alone
@@ -328,6 +329,7 @@ typedef struct lan91cxx_priv_data {
     int rxpacket;
     int within_send;
     int addrsh;                         // Address bits to shift
+    int c111_reva;                      // true if this is a revA LAN91C111
 #ifdef KEEP_STATISTICS
     struct smsc_lan91cxx_stats stats;
 #endif

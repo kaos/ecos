@@ -1,3 +1,9 @@
+2003-12-05  Nick Garnett  <nickg@calivar.com>
+
+	* src/if_lan91cxx.c: Added support for revA of the LAN91C111 which
+	has a bug. Fixed up debugging messages so that it uses serial
+	output in RedBoot.
+
 2003-03-03  Patrick Doyle  <wpd@delcomsys.com>
 
 	* src/smsc_lan91cxx.h

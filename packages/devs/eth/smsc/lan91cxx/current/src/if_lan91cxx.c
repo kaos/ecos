@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Nick Garnett 
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -52,7 +53,7 @@
 //
 // Author(s):    hmt, based on lan900 (for LAN91C110) driver by jskov
 //               jskov, based on CS8900 driver by Gary Thomas
-// Contributors: gthomas, jskov, hmt, jco@ict.es
+// Contributors: gthomas, jskov, hmt, jco@ict.es, nickg
 // Date:         2001-01-22
 // Purpose:      
 // Description:  hardware driver for LAN91CXX "LAN9000" ethernet
@@ -109,8 +110,31 @@ int lan91cxx_txfifo_bad = 0;
 // 8 for only startup status, so we can tell we're installed OK
 #define DEBUG 0
 
+
+#if DEBUG
+#if defined(CYGPKG_REDBOOT)
+static void db_printf( char *fmt, ... )
+{
+    extern int start_console(void);
+    extern void end_console(int);
+    va_list a;
+    int old_console;
+    va_start( a, fmt );
+    old_console = start_console();  
+    diag_vprintf( fmt, a );
+    end_console(old_console);
+    va_end( a );
+}
+#else
+#define db_printf diag_printf
+#endif
+#else
+#define db_printf( fmt, ... )
+#endif
+
+
 #if DEBUG & 1
-#define DEBUG_FUNCTION() do { diag_printf("%s\n", __FUNCTION__); } while (0)
+#define DEBUG_FUNCTION() do { db_printf("%s\n", __FUNCTION__); } while (0)
 #else
 #define DEBUG_FUNCTION() do {} while(0)
 #endif
@@ -136,6 +160,25 @@ static cyg_uint16 lan91cxx_read_phy(struct eth_drv_sc *sc, cyg_uint8 phyaddr,
 
 static void lan91cxx_poll(struct eth_drv_sc *sc);
 
+
+#ifdef LAN91CXX_IS_LAN91C111
+// Revision A of the LAN91C111 has a bug in which it does not set the
+// ODD bit in the status word and control byte of received packets. We
+// work around this by assuming the bit is always set and tacking the
+// extra odd byte onto the packet anyway. Higher protocol levels never
+// believe the packet size reported by the driver and always use the
+// values in the protocol headers. So this workaround is quite safe.
+// In theory nobody should be using the RevA part now, but it appears
+// that some people still have some in their parts bins.
+#define LAN91CXX_RX_STATUS_IS_ODD(__cpd,__stat) \
+        (((__cpd)->c111_reva)?1:((__stat) & LAN91CXX_RX_STATUS_ODDFRM))
+#define LAN91CXX_CONTROLBYTE_IS_ODD(__cpd,__val) \
+        (((__cpd)->c111_reva)?1:((__val) & LAN91CXX_CONTROLBYTE_ODD))
+#else
+#define LAN91CXX_RX_STATUS_IS_ODD(__cpd,__stat) ((__stat) & LAN91CXX_RX_STATUS_ODDFRM)
+#define LAN91CXX_CONTROLBYTE_IS_ODD(__cpd,__val) ((__val) & LAN91CXX_CONTROLBYTE_ODD)
+#endif
+
 #ifndef CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
 static cyg_interrupt lan91cxx_interrupt;
 static cyg_handle_t  lan91cxx_interrupt_handle;
@@ -155,6 +198,7 @@ lan91cxx_isr(cyg_vector_t vector, cyg_addrword_t data
 
     cyg_drv_interrupt_mask(cpd->interrupt);
     cyg_drv_interrupt_acknowledge(cpd->interrupt);
+
     return (CYG_ISR_HANDLED|CYG_ISR_CALL_DSR);  // Run the DSR
 }
 #endif
@@ -229,7 +273,7 @@ smsc_lan91cxx_init(struct cyg_netdevtab_entry *tab)
 
     // verify the register contents
     if (ecor != get_att(sc, LAN91CXX_ECOR))
-        diag_printf("LAN91CXX - Cannot access PCMCIA attribute registers\n");
+        db_printf("LAN91CXX - Cannot access PCMCIA attribute registers\n");
 	
     ecsr = get_att(sc, LAN91CXX_ECSR);
 #ifdef CYGSEM_DEVS_ETH_SMSC_LAN91CXX_8_BIT
@@ -245,7 +289,7 @@ smsc_lan91cxx_init(struct cyg_netdevtab_entry *tab)
 #ifndef CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
     // Initialize environment, setup interrupt handler
     cyg_drv_interrupt_create(cpd->interrupt,
-                            99, // Priority - what goes here?
+                             3, // Priority - what goes here?
                              (cyg_addrword_t)sc, //  Data item passed to interrupt handler
                              (cyg_ISR_t *)lan91cxx_isr,
                              (cyg_DSR_t *)eth_drv_dsr, // The logical driver DSR
@@ -261,7 +305,7 @@ smsc_lan91cxx_init(struct cyg_netdevtab_entry *tab)
     // probe chip by reading the signature in BS register
     val = get_banksel(sc);
 #if DEBUG & 9
-    diag_printf("LAN91CXX - supposed BankReg @ %x = %04x\n",
+    db_printf("LAN91CXX - supposed BankReg @ %x = %04x\n",
                 cpd->base+LAN91CXX_BS, val );
 #endif
     CYG_ASSERT( 0x3300 == (0xff00 & val), "No 91Cxx signature" );
@@ -269,10 +313,15 @@ smsc_lan91cxx_init(struct cyg_netdevtab_entry *tab)
     val = get_reg(sc, LAN91CXX_REVISION);
 
 #if DEBUG & 9
-    diag_printf("LAN91CXX - type: %01x, rev: %01x\n",
+    db_printf("LAN91CXX - type: %01x, rev: %01x\n",
                 (val>>4)&0xf, val & 0xf);
 #endif
 
+#ifdef LAN91CXX_IS_LAN91C111
+    // Set RevA flag for LAN91C111 so we can cope with the odd-bit bug.
+    cpd->c111_reva = (val == 0x3390);
+#endif
+    
     // The controller may provide a function used to set up the ESA
     if (cpd->config_enaddr)
         (*cpd->config_enaddr)(cpd);
@@ -284,13 +333,13 @@ smsc_lan91cxx_init(struct cyg_netdevtab_entry *tab)
     val = get_reg(sc, LAN91CXX_EPH_STATUS);
 
 #if DEBUG & 9
-    diag_printf("LAN91CXX - status: %04x\n", val);
+    db_printf("LAN91CXX - status: %04x\n", val);
 #endif
 
 #if 0 < CYGINT_DEVS_ETH_SMSC_LAN91CXX_STATIC_ESA
     // Use statically configured ESA from the private data
 #if DEBUG & 9
-    diag_printf("LAN91CXX - static ESA: %02x:%02x:%02x:%02x:%02x:%02x\n",
+    db_printf("LAN91CXX - static ESA: %02x:%02x:%02x:%02x:%02x:%02x\n",
                 cpd->enaddr[0],
                 cpd->enaddr[1],
                 cpd->enaddr[2],
@@ -313,14 +362,14 @@ smsc_lan91cxx_init(struct cyg_netdevtab_entry *tab)
         esa_configured = cpd->provide_esa(cpd);
 # if DEBUG & 8
         if (esa_configured)
-            diag_printf("Got ESA from RedBoot option\n");
+            db_printf("Got ESA from RedBoot option\n");
 # endif
     }
     if (!esa_configured && cpd->hardwired_esa) {
         // ESA is already set in cpd->esa[]
         esa_configured = true;
 # if DEBUG & 8
-        diag_printf("Got ESA from cpd\n");
+        db_printf("Got ESA from cpd\n");
 # endif
     }
     if (esa_configured) {
@@ -338,11 +387,11 @@ smsc_lan91cxx_init(struct cyg_netdevtab_entry *tab)
         }
         esa_configured = true;
 # if DEBUG & 8
-        diag_printf("Got ESA from eeprom\n");
+        db_printf("Got ESA from eeprom\n");
 # endif
     }
 #if DEBUG & 9
-    diag_printf("LAN91CXX - ESA: %02x:%02x:%02x:%02x:%02x:%02x\n",
+    db_printf("LAN91CXX - ESA: %02x:%02x:%02x:%02x:%02x:%02x\n",
                 cpd->enaddr[0],
                 cpd->enaddr[1],
                 cpd->enaddr[2],
@@ -370,7 +419,7 @@ lan91cxx_stop(struct eth_drv_sc *sc)
     if ( cpd->txbusy ) {
         cpd->txbusy = 0;
 #if DEBUG & 9
-        diag_printf("LAN91CXX - Stopping, cleaning up pending TX\n" );
+        db_printf("LAN91CXX - Stopping, cleaning up pending TX\n" );
 #endif
         (sc->funs->eth_drv->tx_done)(sc, cpd->txkey, 0);
     }
@@ -473,7 +522,7 @@ lan91cxx_control(struct eth_drv_sc *sc, unsigned long key,
     switch (key) {
     case ETH_DRV_SET_MAC_ADDRESS:
 #if 9 & DEBUG
-        diag_printf("LAN91CXX - set ESA: %02x:%02x:%02x:%02x:%02x:%02x\n",
+        db_printf("LAN91CXX - set ESA: %02x:%02x:%02x:%02x:%02x:%02x\n",
                 esa[0],
                 esa[1],
                 esa[2],
@@ -481,7 +530,7 @@ lan91cxx_control(struct eth_drv_sc *sc, unsigned long key,
                 esa[4],
                 esa[5] );
 #ifndef CYGSEM_DEVS_ETH_SMSC_LAN91CXX_WRITE_EEPROM
-        diag_printf("*** PERMANENT EEPROM WRITE NOT ENABLED ***\n");
+        db_printf("*** PERMANENT EEPROM WRITE NOT ENABLED ***\n");
 #endif
 #endif // DEBUG
 
@@ -539,7 +588,7 @@ lan91cxx_control(struct eth_drv_sc *sc, unsigned long key,
             cpd->enaddr[i+1] = (unsigned char)(0xff & (z >> 8));
         }
 #if DEBUG & 9
-        diag_printf("LAN91CXX - eeprom new ESA: %02x:%02x:%02x:%02x:%02x:%02x\n",
+        db_printf("LAN91CXX - eeprom new ESA: %02x:%02x:%02x:%02x:%02x:%02x\n",
                     cpd->enaddr[0],
                     cpd->enaddr[1],
                     cpd->enaddr[2],
@@ -651,6 +700,7 @@ lan91cxx_control(struct eth_drv_sc *sc, unsigned long key,
     }
 #endif
     default:
+        break;
     }
     return 1;
 }
@@ -672,7 +722,7 @@ lan91cxx_can_send(struct eth_drv_sc *sc)
     // LINK_OK on 91C111 is just a general purpose input and may not
     // have anything to do with the link.
     if ((get_reg(sc, LAN91CXX_EPH_STATUS) & LAN91CXX_STATUS_LINK_OK) == 0) {
-	diag_printf("no link\n");
+	db_printf("no link\n");
         return false;  // Link not connected
     }
 #endif
@@ -683,13 +733,13 @@ lan91cxx_can_send(struct eth_drv_sc *sc)
     tcr = get_reg(sc, LAN91CXX_TCR);
     if ( 0 == (LAN91CXX_TCR_TXENA & tcr) ) {
 #if DEBUG & 1
-        diag_printf("%s: ENGINE RESTART: tcr %x\n", __FUNCTION__, tcr );
+        db_printf("%s: ENGINE RESTART: tcr %x\n", __FUNCTION__, tcr );
 #endif
         // Complete any outstanding activity:
         if ( cpd->txbusy ) {
             cpd->txbusy = 0;
 #if DEBUG & 9
-            diag_printf("LAN91CXX - can_send, cleaning up pending TX\n" );
+            db_printf("LAN91CXX - can_send, cleaning up pending TX\n" );
 #endif
             (sc->funs->eth_drv->tx_done)(sc, cpd->txkey, 0);
         }
@@ -726,7 +776,7 @@ lan91cxx_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
     tcr = get_reg(sc, LAN91CXX_TCR);
     if ( 0 == (LAN91CXX_TCR_TXENA & tcr) ) {
 #if DEBUG & 1
-        diag_printf("%s: ENGINE RESTART: tcr %x\n", __FUNCTION__, tcr );
+        db_printf("%s: ENGINE RESTART: tcr %x\n", __FUNCTION__, tcr );
 #endif
         tcr |= LAN91CXX_TCR_TXENA;
         put_reg(sc, LAN91CXX_TCR, tcr);
@@ -765,13 +815,13 @@ lan91cxx_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
         else
             packet = 0xffff;
 #if DEBUG & 1
-        diag_printf("%s: allocated packet %04x\n", __FUNCTION__, packet);
+        db_printf("%s: allocated packet %04x\n", __FUNCTION__, packet);
 #endif
         packet = packet >> 8;
         if (packet & 0x80) {
             // Hm.. Isn't this a dead end?
 #if DEBUG & 1
-            diag_printf("%s: Allocation failed! Retrying...\n", __FUNCTION__ );
+            db_printf("%s: Allocation failed! Retrying...\n", __FUNCTION__ );
 #endif
             // Not if we can make progress with what's filling memory.
             lan91cxx_poll( sc ); // Deal with any outstanding state
@@ -780,7 +830,7 @@ lan91cxx_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
     } while (0);
 
 #if DEBUG & 4
-    diag_printf("#####Tx packet allocated %x (previous %x)\n",
+    db_printf("#####Tx packet allocated %x (previous %x)\n",
                 packet, cpd->txpacket);
 #endif
     cpd->txpacket = packet;
@@ -832,7 +882,7 @@ lan91cxx_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
 
 #if DEBUG & 1
     ints = get_reg(sc, LAN91CXX_INTERRUPT);
-    diag_printf("%s:END: ints at TX: %04x\n", __FUNCTION__, ints);
+    db_printf("%s:END: ints at TX: %04x\n", __FUNCTION__, ints);
 #endif
 }
 
@@ -857,7 +907,7 @@ lan91cxx_TxEvent(struct eth_drv_sc *sc, int stat)
     // Get number of completed packet and read the status word
     packet = get_reg(sc, LAN91CXX_FIFO_PORTS);
 #if DEBUG & 1
-    diag_printf("%s:START: fifo %04x ints %04x\n", __FUNCTION__, packet, ints);
+    db_printf("%s:START: fifo %04x ints %04x\n", __FUNCTION__, packet, ints);
 #endif
 
 #ifdef KEEP_STATISTICS
@@ -898,7 +948,7 @@ lan91cxx_TxEvent(struct eth_drv_sc *sc, int stat)
     tcr = get_reg(sc, LAN91CXX_TCR);
     if ( 0 == (LAN91CXX_TCR_TXENA & tcr) ) {
 #if DEBUG & 1
-        diag_printf("%s: ENGINE RESTART: tcr %x ints %04x\n", __FUNCTION__, tcr, ints);
+        db_printf("%s: ENGINE RESTART: tcr %x ints %04x\n", __FUNCTION__, tcr, ints);
 #endif
         tcr |= LAN91CXX_TCR_TXENA;
         put_reg(sc, LAN91CXX_TCR, tcr);
@@ -919,7 +969,7 @@ lan91cxx_TxEvent(struct eth_drv_sc *sc, int stat)
         lan91cxx_txfifo_good++;
 #endif
 #if DEBUG & 4
-    diag_printf("#####Tx packet freed %x (expected %x)\n", packet, cpd->txpacket );
+    db_printf("#####Tx packet freed %x (expected %x)\n", packet, cpd->txpacket );
 #endif
     // and then free the packet
     put_reg(sc, LAN91CXX_PNR, cpd->txpacket);
@@ -935,7 +985,7 @@ lan91cxx_TxEvent(struct eth_drv_sc *sc, int stat)
     // Hm... The free doesn't seem to have the desired effect?!?
     ints = get_reg(sc, LAN91CXX_INTERRUPT);
     packet = get_reg(sc, LAN91CXX_FIFO_PORTS);
-    diag_printf("%s:END: fifo %04x ints %04x\n", __FUNCTION__, packet, ints);
+    db_printf("%s:END: fifo %04x ints %04x\n", __FUNCTION__, packet, ints);
 #endif
 
     if ( cpd->txbusy ) {
@@ -966,12 +1016,12 @@ lan91cxx_RxEvent(struct eth_drv_sc *sc)
 
     stat = get_reg(sc, LAN91CXX_FIFO_PORTS);
 #if DEBUG & 1
-    diag_printf("RxEvent - FIFOs: 0x%04x\n", stat);
+    db_printf("RxEvent - FIFOs: 0x%04x\n", stat);
 #endif
     if ( 0x8000 & stat ) {
         // Then the Rx FIFO is empty
 #if DEBUG & 4
-        diag_printf("#####RxEvent with empty fifo\n");
+        db_printf("#####RxEvent with empty fifo\n");
 #endif
         return;
     }
@@ -979,7 +1029,7 @@ lan91cxx_RxEvent(struct eth_drv_sc *sc)
     INCR_STAT( rx_count );
 
 #if DEBUG & 4
-    diag_printf("#####Rx packet allocated %x (previous %x)\n",
+    db_printf("#####Rx packet allocated %x (previous %x)\n",
                 0xff & (stat >> 8), cpd->rxpacket );
 #endif
     // There is an Rx Packet ready
@@ -1013,11 +1063,11 @@ lan91cxx_RxEvent(struct eth_drv_sc *sc)
         INCR_STAT( rx_good );
         // Then it's OK
 
-	if (stat & LAN91CXX_RX_STATUS_ODDFRM)
+        if( LAN91CXX_RX_STATUS_IS_ODD(cpd,stat) )
             len++;
 
 #if DEBUG & 1
-        diag_printf("RxEvent good rx - stat: 0x%04x, len: 0x%04x\n", stat, len);
+        db_printf("RxEvent good rx - stat: 0x%04x, len: 0x%04x\n", stat, len);
 #endif
         // Check for bogusly short packets; can happen in promisc mode:
         // Asserted against and checked by upper layer driver.
@@ -1032,7 +1082,7 @@ lan91cxx_RxEvent(struct eth_drv_sc *sc)
 
     // Not OK for one reason or another...
 #if DEBUG & 1
-    diag_printf("RxEvent - bad rx: stat: 0x%04x, len: 0x%04x\n", stat, len);
+    db_printf("RxEvent - bad rx: stat: 0x%04x, len: 0x%04x\n", stat, len);
 #endif
 
     // Free packet
@@ -1049,7 +1099,8 @@ lan91cxx_RxEvent(struct eth_drv_sc *sc)
 static void
 lan91cxx_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
 {
-#if (4 & DEBUG) || defined(CYGPKG_INFRA_DEBUG) || defined(KEEP_STATISTICS)
+#if (4 & DEBUG) || defined(CYGPKG_INFRA_DEBUG) || \
+    defined(KEEP_STATISTICS) || defined(LAN91CXX_IS_LAN91C111)
     struct lan91cxx_priv_data *cpd = 
         (struct lan91cxx_priv_data *)sc->driver_private;
 #endif
@@ -1074,7 +1125,8 @@ lan91cxx_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
     plen = get_data(sc);
     plen = CYG_LE16_TO_CPU(plen) - 6;
 #endif
-    if (val & LAN91CXX_RX_STATUS_ODDFRM)
+
+    if( LAN91CXX_RX_STATUS_IS_ODD(cpd,val) )
 	plen++;
 
     for (i = 0;  i < sg_len;  i++) {
@@ -1084,7 +1136,7 @@ lan91cxx_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
         CYG_ASSERT(0 == (mlen & (sizeof(*data) - 1)) || (i == (sg_len-1)), "odd length");
 
 #if DEBUG & 1
-        diag_printf("%s : mlen %x, plen %x\n", __FUNCTION__, mlen, plen);
+        db_printf("%s : mlen %x, plen %x\n", __FUNCTION__, mlen, plen);
 #endif
         if (data) {
             while (mlen >= sizeof(*data)) {
@@ -1116,9 +1168,9 @@ lan91cxx_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
 
     CYG_ASSERT(val & LAN91CXX_CONTROLBYTE_RX, 
                "Controlbyte is not for Rx");
-    CYG_ASSERT( (1 == mlen) == (0 != (val & LAN91CXX_CONTROLBYTE_ODD)), 
+    CYG_ASSERT( (1 == mlen) == (0 != LAN91CXX_CONTROLBYTE_IS_ODD(cpd,val)), 
                 "Controlbyte does not match");
-    if (data && (1 == mlen) && (val & LAN91CXX_CONTROLBYTE_ODD)) {
+    if (data && (1 == mlen) && LAN91CXX_CONTROLBYTE_IS_ODD(cpd,val) ) {
         cval = val & 0x00ff;    // last byte contains data
         *cp = cval;
     }
@@ -1126,10 +1178,10 @@ lan91cxx_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
     val = get_reg(sc, LAN91CXX_FIFO_PORTS);
 #if DEBUG & 4
     if ( 0x8000 & val ) // Then the Rx FIFO is empty
-        diag_printf("#####Rx packet NOT freed, stat is %x (expected %x)\n",
+        db_printf("#####Rx packet NOT freed, stat is %x (expected %x)\n",
                     val, cpd->rxpacket);
     else
-        diag_printf("#####Rx packet freed %x (expected %x)\n",
+        db_printf("#####Rx packet freed %x (expected %x)\n",
                     0xff & (val >> 8), cpd->rxpacket );
 #endif
     CYG_ASSERT( (0xff & (val >> 8)) == cpd->rxpacket, "Unexpected rx packet" );
@@ -1145,7 +1197,7 @@ lan91cxx_poll(struct eth_drv_sc *sc)
     struct lan91cxx_priv_data *cpd = 
         (struct lan91cxx_priv_data *)sc->driver_private;
 
-    DEBUG_FUNCTION();
+//    DEBUG_FUNCTION();
     while (1) {
         cyg_drv_interrupt_acknowledge(cpd->interrupt);
         // Get the (unmasked) requests
@@ -1175,7 +1227,7 @@ lan91cxx_poll(struct eth_drv_sc *sc)
             lan91cxx_RxEvent(sc);
         }
         if (event & ~(LAN91CXX_INTERRUPT_TX_SET | LAN91CXX_INTERRUPT_RCV_INT))
-            diag_printf("%s: Unknown interrupt: 0x%04x\n",
+            db_printf("%s: Unknown interrupt: 0x%04x\n",
 			__FUNCTION__, event);
     }
 }
