@@ -47,6 +47,7 @@
 //
 // Author(s):    Jani Monoses <jani@iv.ro>
 // Contributors: Cristian Vlasin <cris@iv.ro>, tdrury, jlarmour
+//               J. Tinembart
 // Date:         2002-06-24
 // Purpose:
 // Description:
@@ -77,8 +78,13 @@
 #define FLASH_Busy                      FLASHWORD( 0x40 ) // "Toggle" bit, I/O 6
 #define FLASH_InverseData               FLASHWORD( 0x80 ) // I/O 7, Inverse data
 
+#ifdef CYGHWR_DEVS_FLASH_ATMEL_AT49LV161
+#define FLASH_Setup_Addr1               (0x555)
+#define FLASH_Setup_Addr2               (0xAAA)
+#else
 #define FLASH_Setup_Addr1               (0x5555)
 #define FLASH_Setup_Addr2               (0x2AAA)
+#endif
 #define FLASH_Setup_Code1               FLASHWORD( 0xAA )
 #define FLASH_Setup_Code2               FLASHWORD( 0x55 )
 #define FLASH_Setup_Erase               FLASHWORD( 0x80 )

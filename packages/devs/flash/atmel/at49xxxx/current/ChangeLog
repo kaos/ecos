@@ -1,3 +1,8 @@
+2005-02-15  Jacques Tinembart <Jacques.Tinembart@eig.unige.ch>
+ 
+ 	* include/flash_at49xxxx.inl, include/flash_at49xxxx_parts.inl:
+ 	add support for AT49LV161 and AT49BV322A
+ 
 2004-11-12  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/flash_at49xxxx_parts.inl: Give a compiler error if the
