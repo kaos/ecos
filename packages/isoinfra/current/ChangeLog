@@ -1,3 +1,9 @@
+2001-09-10  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/isoinfra.cdl: Add CYGINT_ISO_PTHREAD_MUTEX and
+	CYGBLD_ISO_PTHREAD_MUTEX_HEADER.
+	* include/pthread.h: Include above header if set.
+
 2001-08-06  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/isoinfra.cdl: Add a separate POSIX mutex types header option.

@@ -150,6 +150,8 @@ static int fisdir_size;  // Size of FIS directory.  Note: zero if FIS not enable
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
 static void *cfg_base;   // Location in Flash of config data
 static int   cfg_size;   // Length of config data - rounded to Flash block size
+// Prototypes for local functions
+static unsigned char *flash_lookup_config(char *key);
 #endif
 
 static void
@@ -167,7 +169,13 @@ fis_lookup(char *name)
     void *fis_addr;
     struct fis_image_desc *img;
 
-    fis_addr = (void *)((unsigned long)flash_end - block_size);
+    if (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK < 0) {
+        fis_addr = (void *)((unsigned long)flash_end + 
+                            (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK*block_size));
+    } else {
+        fis_addr = (void *)((unsigned long)flash_start + 
+                            (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK*block_size));
+    }
     memcpy(fis_work_block, fis_addr, block_size);
     img = (struct fis_image_desc *)fis_work_block;
     for (i = 0;  i < block_size/sizeof(*img);  i++, img++) {
@@ -251,6 +259,13 @@ fis_init(int argc, char *argv[])
     // And a descriptor for the configuration data
     memset(img, 0, sizeof(*img));
     strcpy(img->name, "RedBoot config");
+    if (CYGNUM_REDBOOT_FLASH_CONFIG_BLOCK < 0) {
+        cfg_base = (void *)((unsigned long)flash_end + 
+                            (CYGNUM_REDBOOT_FLASH_CONFIG_BLOCK*block_size));
+    } else {
+        cfg_base = (void *)((unsigned long)flash_start + 
+                            (CYGNUM_REDBOOT_FLASH_CONFIG_BLOCK*block_size));
+    }
     img->flash_base = (unsigned long)cfg_base;
     img->mem_base = (unsigned long)cfg_base;
     img->size = cfg_size;
@@ -259,7 +274,13 @@ fis_init(int argc, char *argv[])
     // And a descriptor for the descriptor table itself
     memset(img, 0, sizeof(*img));
     strcpy(img->name, "FIS directory");
-    fis_base = (void *)((unsigned long)flash_end - block_size);
+    if (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK < 0) {
+        fis_base = (void *)((unsigned long)flash_end + 
+                            (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK*block_size));
+    } else {
+        fis_base = (void *)((unsigned long)flash_start + 
+                            (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK*block_size));
+    }
     img->flash_base = (unsigned long)fis_base;
     img->mem_base = (unsigned long)fis_base;
     img->size = block_size;
@@ -270,10 +291,9 @@ fis_init(int argc, char *argv[])
 
     if (full_init) {
         unsigned long erase_start, erase_size;
-        // Erase everything except default RedBoot images, fis block, and config block.
-        // FIXME! This still assumes that fis and config blocks can use top of FLASH.
-
-        // first deal with the possible first part, before RedBoot images:
+        // Erase everything except default RedBoot images, fis block, 
+        // and config block.
+        // First deal with the possible first part, before RedBoot images:
         erase_start = (unsigned long)flash_start + CYGNUM_REDBOOT_FLASH_RESERVED_BASE;
         erase_size =  (unsigned long)flash_start + CYGBLD_REDBOOT_FLASH_BOOT_OFFSET;
         if ( erase_size > erase_start ) {
@@ -286,11 +306,42 @@ fis_init(int argc, char *argv[])
         }
         // second deal with the larger part in the main:
         erase_start = redboot_flash_start; // high water of created images
+        // Now the empty bits between the end of Redboot and the cfg and dir 
+        // blocks. 
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
-        erase_size = (unsigned long)cfg_base - erase_start; // the gap between HWM and config data
-#else
+        if (fis_base > cfg_base) {
+          erase_size = (unsigned long)cfg_base - erase_start; // the gap between HWM and config data
+        } else {
+          erase_size = (unsigned long)fis_base - erase_start; // the gap between HWM and fis data
+        }
+        if ((stat = flash_erase((void *)erase_start, erase_size,
+                                (void **)&err_addr)) != 0) {
+          diag_printf("   initialization failed %p: %s\n",
+                 err_addr, flash_errmsg(stat));
+        }
+        erase_start += (erase_size + block_size);
+        if (fis_base > cfg_base) {
+          erase_size = (unsigned long)fis_base - erase_start; // the gap between config and fis data
+        } else {
+          erase_size = (unsigned long)cfg_base - erase_start; // the gap between fis and config data
+        }
+        if ((stat = flash_erase((void *)erase_start, erase_size,
+                                (void **)&err_addr)) != 0) {
+          diag_printf("   initialization failed %p: %s\n",
+                 err_addr, flash_errmsg(stat));
+        }
+        erase_start += (erase_size + block_size);
+#else  // !CYGSEM_REDBOOT_FLASH_CONFIG        
         erase_size = (unsigned long)fis_base - erase_start; // the gap between HWM and fis data
+        if ((stat = flash_erase((void *)erase_start, erase_size,
+                                (void **)&err_addr)) != 0) {
+          diag_printf("   initialization failed %p: %s\n",
+                 err_addr, flash_errmsg(stat));
+        }
+        erase_start += (erase_size + block_size);          
 #endif
+        // Lastly, anything at the end
+        erase_size = (unsigned long)flash_end - erase_start;
         if ((stat = flash_erase((void *)erase_start, erase_size,
                                 (void **)&err_addr)) != 0) {
             diag_printf("   initialization failed at %p: %s\n",
@@ -342,9 +393,14 @@ fis_list(int argc, char *argv[])
     {
         return;
     }
-
-    img = (struct fis_image_desc *)((unsigned long)flash_end - block_size);
-    // Let diag_printf do the formatting in both cases, rather than cnouting
+    if (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK < 0) {
+        img = (void *)((unsigned long)flash_end + 
+                       (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK*block_size));
+    } else {
+        img = (void *)((unsigned long)flash_start + 
+                       (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK*block_size));
+    }
+    // Let diag_printf do the formatting in both cases, rather than counting
     // cols by hand....
     diag_printf("%-16s  %-10s  %-10s  %-10s  %-s\n",
                 "Name","FLASH addr",
@@ -487,7 +543,13 @@ fis_create(int argc, char *argv[])
     defaults_assumed = false;
     if (name) {
         // Search existing files to acquire defaults for params not specified:
-        fis_addr = (void *)((unsigned long)flash_end - block_size);
+        if (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK < 0) {
+            fis_addr = (void *)((unsigned long)flash_end + 
+                                (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK*block_size));
+        } else {
+            fis_addr = (void *)((unsigned long)flash_start + 
+                                (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK*block_size));
+        }
         memcpy(fis_work_block, fis_addr, block_size);
         img = (struct fis_image_desc *)fis_work_block;
         for (i = 0;  i < block_size/sizeof(*img);  i++, img++) {
@@ -560,7 +622,13 @@ fis_create(int argc, char *argv[])
     // Find a slot in the directory for this entry
     // First, see if an image by this name is already present
     slot_found = false;
-    fis_addr = (void *)((unsigned long)flash_end - block_size);
+    if (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK < 0) {
+        fis_addr = (void *)((unsigned long)flash_end + 
+                            (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK*block_size));
+    } else {
+        fis_addr = (void *)((unsigned long)flash_start + 
+                            (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK*block_size));
+    }
     memcpy(fis_work_block, fis_addr, block_size);
     img = (struct fis_image_desc *)fis_work_block;
     for (i = 0;  i < block_size/sizeof(*img);  i++, img++) {
@@ -656,7 +724,7 @@ static void
 fis_delete(int argc, char *argv[])
 {
     char *name;
-    int i, stat;
+    int num_reserved, i, stat;
     void *fis_addr, *err_addr;
     struct fis_image_desc *img;
     bool slot_found;
@@ -666,34 +734,42 @@ fis_delete(int argc, char *argv[])
         fis_usage("invalid arguments");
         return;
     }
-
     slot_found = false;
-    fis_addr = (void *)((unsigned long)flash_end - block_size);
+    if (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK < 0) {
+        fis_addr = (void *)((unsigned long)flash_end + 
+                            (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK*block_size));
+    } else {
+        fis_addr = (void *)((unsigned long)flash_start + 
+                            (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK*block_size));
+    }
     memcpy(fis_work_block, fis_addr, block_size);
     img = (struct fis_image_desc *)fis_work_block;
-    i = 0;
+    num_reserved = 0;
 #ifdef CYGOPT_REDBOOT_FIS_RESERVED_BASE
-    i++;
+    num_reserved++;
 #endif
 #ifdef CYGOPT_REDBOOT_FIS_REDBOOT
-    i++;
+    num_reserved++;
 #endif
 #ifdef CYGOPT_REDBOOT_FIS_REDBOOT_BACKUP
-    i++;
+    num_reserved++;
 #endif
 #ifdef CYGOPT_REDBOOT_FIS_REDBOOT_POST
-    i++;
+    num_reserved++;
 #endif
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
-    i++;
+    num_reserved++;
 #endif
 #if 1 // And the descriptor for the descriptor table itself
-    i++;
+    num_reserved++;
 #endif
-    img += i;  // Skip reserved files
 
-    for ( /* i, img */;  i < block_size/sizeof(*img);  i++, img++) {
+    for (i = 0;  i < block_size/sizeof(*img);  i++, img++) {
         if ((img->name[0] != (unsigned char)0xFF) && (strcmp(name, img->name) == 0)) {
+            if (i < num_reserved) {
+                diag_printf("Sorry, '%s' is a reserved image and cannot be deleted\n", img->name);
+                return;
+            }
             if (!verify_action("Delete image '%s'", name)) {
                 return;
             } else {
@@ -1636,6 +1712,13 @@ flash_write_config(void)
     config.key1 = CONFIG_KEY1;  
     config.key2 = CONFIG_KEY2;
     config.cksum = crc32((unsigned char *)&config, sizeof(config)-sizeof(config.cksum));
+    if (CYGNUM_REDBOOT_FLASH_CONFIG_BLOCK < 0) {
+        cfg_base = (void *)((unsigned long)flash_end + 
+                            (CYGNUM_REDBOOT_FLASH_CONFIG_BLOCK*block_size));
+    } else {
+        cfg_base = (void *)((unsigned long)flash_start + 
+                            (CYGNUM_REDBOOT_FLASH_CONFIG_BLOCK*block_size));
+    }
     if (verify_action("Update RedBoot non-volatile configuration")) {
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
         // Insure [quietly] that the config page is unlocked before trying to update
@@ -1854,7 +1937,13 @@ load_flash_config(void)
 #define _roundup(n,s) ((((n)+(s-1))/s)*s)
     cfg_size = (block_size > sizeof(config)) ? sizeof(config) : 
                                                _roundup(sizeof(config), block_size);
-    cfg_base = (void *)((unsigned long)flash_end - _roundup(cfg_size+fisdir_size, block_size));
+    if (CYGNUM_REDBOOT_FLASH_CONFIG_BLOCK < 0) {
+        cfg_base = (void *)((unsigned long)flash_end + 
+                            (CYGNUM_REDBOOT_FLASH_CONFIG_BLOCK*block_size));
+    } else {
+        cfg_base = (void *)((unsigned long)flash_start + 
+                            (CYGNUM_REDBOOT_FLASH_CONFIG_BLOCK*block_size));
+    }
     memcpy(&config, cfg_base, sizeof(config));
     if ((crc32((unsigned char *)&config, sizeof(config)-sizeof(config.cksum)) != config.cksum) ||
         (config.key1 != CONFIG_KEY1)|| (config.key2 != CONFIG_KEY2)) {

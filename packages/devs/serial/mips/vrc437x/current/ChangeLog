@@ -1,3 +1,16 @@
+2001-09-10  Jonathan Larmour  <jlarmour@redhat.com>
+
+        * cdl/ser_mips_vrc437x.cdl:        
+        Fix 234000->230400 typo.
+
+2001-09-07  Nick Garnett  <nickg@redhat.com>
+
+	* cdl/ser_mips_vrc437x.cdl:
+	* src/vrc437x_serial.h:
+	* src/vrc437x_serial.c:
+	Moved this entire tree over to vrc437x from vrc4373 to make it
+	generic to both kinds of board.
+
 2000-10-12  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/ser_mips_vrc4373.cdl: Moved testing parameters here.

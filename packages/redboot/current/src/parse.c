@@ -56,16 +56,21 @@ extern struct cmd __RedBoot_CMD_TAB__[], __RedBoot_CMD_TAB_END__;
 //
 // Scan through an input line and break it into "arguments".  These
 // are space delimited strings.  Return a structure which points to
-// the strings, similar to a Unix program.
+// the strings, similar to a Unix program. Multiple commands in the line
+// are separated by ; similar to sh. If we find a semi we stop processing the 
+// line, terminate the current command with a null and return the start 
+// of the next command in *line. parse() can then be called again to 
+// process the next command on the line.
 // Note: original input is destroyed by replacing the delimiters with 
 // null ('\0') characters for ease of use.
 //
 struct cmd *
-parse(char *line, int *argc, char **argv)
+parse(char **line, int *argc, char **argv)
 {
-    char *cp = line;
+    char *cp = *line;
     char *pp;
     int indx = 0;
+    int semi = 0;
 
     while (*cp) {
         // Skip leading spaces
@@ -73,6 +78,11 @@ parse(char *line, int *argc, char **argv)
         if (!*cp) {
             break;  // Line ended with a string of spaces
         }
+	if (*cp == ';') {
+            *cp = '\0';
+            semi=1;
+            break;
+	}
         if (indx < MAX_ARGV) {
             argv[indx++] = cp;
         } else {
@@ -82,7 +92,9 @@ parse(char *line, int *argc, char **argv)
             if (*cp == ' ') {
                 *cp++ = '\0';
                 break;
-            } else if (*cp == '"') {
+            } else if (*cp == ';') {
+                break;
+	    } else if (*cp == '"') {
                 // Swallow quote, scan till following one
                 if (argv[indx-1] == cp) {
                     argv[indx-1] = ++cp;
@@ -107,6 +119,11 @@ parse(char *line, int *argc, char **argv)
                 cp++;
             }
         }
+    }
+    if (semi) {
+        *line = cp + 1;
+    } else {
+        *line = cp;
     }
     *argc = indx;
     return cmd_search(__RedBoot_CMD_TAB__, &__RedBoot_CMD_TAB_END__, argv[0]);

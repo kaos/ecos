@@ -229,12 +229,11 @@ static cyg_bool diag_check_string( const char *str )
         
         if( s-str > 256 ) result = false;
 
-        /* We only really support CR and NL at present. If we want to
-         * use tabs or other special chars, this test will have to be
-         * expanded.
-         */
-        
-        if( c == '\n' || c == '\r' )
+        /* We only really support CR, NL, and backspace at present. If
+         * we want to use tabs or other special chars, this test will
+         * have to be expanded.  */
+
+        if( c == '\n' || c == '\r' || c == '\b' )
             continue;
 
         /* Check for printable chars. This assumes ASCII */

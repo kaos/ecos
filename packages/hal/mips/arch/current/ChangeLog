@@ -1,3 +1,15 @@
+2001-09-07  Nick Garnett  <nickg@redhat.com>
+
+	* include/mips-stub.h: Returned target_register_t to long long
+	type for VR4300 target. This is the only platform that does 64bit
+	register saves/restores, and the GDB registers must be full sized.
+
+	* include/arch.inc: Added option to select correct initial SR
+	value when the startup is ROMRAM.
+	Disabled setting of status and config registers when using a ROM
+	monitor. The monitor should have already set these to appropriate
+	values.
+
 2001-08-22  Gary Thomas  <gthomas@redhat.com>
 
 	* src/redboot_linux_exec.c: 

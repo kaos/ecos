@@ -55,7 +55,7 @@
 // 32-bit mode. Registers will still be sent to GDB as 64-bit, but that's
 // not relevant for CYG_HAL_GDB_REG.
 
-#define CYG_HAL_GDB_REG CYG_WORD32
+#define CYG_HAL_GDB_REG CYG_WORD64
 
 //--------------------------------------------------------------------------
 #endif // CYGONCE_HAL_VAR_ARCH_H

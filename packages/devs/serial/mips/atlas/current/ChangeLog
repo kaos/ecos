@@ -1,3 +1,8 @@
+2001-09-10  Jonathan Larmour  <jlarmour@redhat.com>
+
+        * cdl/ser_mips_atlas.cdl:        
+        Fix 234000->230400 typo.
+
 2000-08-01  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* src/atlas_serial.c (atlas_serial_set_config): Now use keys to make

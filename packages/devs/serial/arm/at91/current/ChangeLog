@@ -1,3 +1,8 @@
+2001-09-10  Jonathan Larmour  <jlarmour@redhat.com>
+
+        * cdl/ser_arm_at91.cdl:        
+        Fix 234000->230400 typo.
+
 2001-08-14  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/at91_serial.c (at91_serial_stop_xmit): Write to IDR, not IER.

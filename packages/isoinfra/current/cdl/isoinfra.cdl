@@ -966,6 +966,17 @@ cdl_package CYGPKG_ISOINFRA {
             flavor        booldata
             default_value 0
         }
+
+        cdl_interface CYGINT_ISO_PTHREAD_MUTEX {
+            display       "POSIX mutex/cond var implementations"
+            requires      { 1 >= CYGINT_ISO_PTHREAD_MUTEX }
+        }
+    
+        cdl_option CYGBLD_ISO_PTHREAD_MUTEX_HEADER {
+            display       "POSIX mutex/cond var implementation header"
+            flavor        booldata
+            default_value 0
+        }
     }
 
 # ====================================================================

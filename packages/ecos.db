@@ -172,6 +172,16 @@ package CYGPKG_DEVS_FLASH_MIPS_OCELOT {
 	   on the PMC-Sierra Ocelot platform."
 }
 
+package CYGPKG_DEVS_FLASH_MIPS_VRC437X {
+	alias 		{ "Support for flash memory on VRC437X boards" flash_vrc437x }
+	directory	devs/flash/mips/vrc437x
+	script		flash_mips_vrc437x.cdl
+	hardware
+        description "
+           This package contains hardware support for flash memory
+	   on the VRC437X platform."
+}
+
 package CYGPKG_DEVS_FLASH_EBSA285 {
 	alias 		{ "FLASH memory support for StrongARM EBSA-285" flash_ebsa285 }
 	directory	devs/flash/arm/ebsa285
@@ -471,13 +481,13 @@ package CYGPKG_IO_SERIAL_MIPS_REF4955 {
     description       "TX49 REF4955 serial device drivers"
 }
 
-package CYGPKG_IO_SERIAL_MIPS_VRC4373 {
-    alias             { "VRC4373 serial device drivers"
-                        devs_serial_mips_vrc4373 vrc4373_serial_driver }
+package CYGPKG_IO_SERIAL_MIPS_VRC437X {
+    alias             { "VRC437X serial device drivers"
+                        devs_serial_mips_vrc437x vrc437x_serial_driver }
     hardware
-    directory	      devs/serial/mips/vrc4373
-    script	      ser_mips_vrc4373.cdl	
-    description       "VRC4373 serial device drivers"
+    directory	      devs/serial/mips/vrc437x
+    script	      ser_mips_vrc437x.cdl	
+    description       "VRC437X serial device drivers"
 }
 
 package CYGPKG_IO_SERIAL_MN10300 {
@@ -1714,6 +1724,16 @@ package CYGPKG_HAL_MIPS_VR4300_VRC4373 {
            actual hardware."
 }
 
+package CYGPKG_HAL_MIPS_VR4300_VRC437X {
+	alias		{ "NEC VRC437X support" hal_vrc437x vrc437x_hal }
+	directory	hal/mips/vrc437x
+	script		hal_mips_vr4300_vrc437x.cdl
+	hardware
+	description "
+           The VRC437X HAL package should be used when targetting harware
+           that contains either a VRC437X companion chip."
+}
+
 # --------------------------------------------------------------------------
 # MN10300 packages
 
@@ -2300,12 +2320,15 @@ target vrc4373 {
 	packages        { CYGPKG_HAL_MIPS
                           CYGPKG_HAL_MIPS_VR4300
                           CYGPKG_HAL_MIPS_VR4300_VRC4373
-	                  CYGPKG_IO_SERIAL_MIPS_VRC4373
-                          CYGPKG_IO_PCI
+                          CYGPKG_HAL_MIPS_VR4300_VRC437X
+	                  CYGPKG_IO_SERIAL_MIPS_VRC437X
+                          CYGPKG_DEVS_FLASH_MIPS_VRC437X
+			  CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
+			  CYGPKG_IO_PCI
         }
         description "
            The vrc4373 target provides the packages needed to run
-eCos on an NEC VRC4373 board."
+           eCos on an NEC VRC4373 board."
 }
 
 # --------------------------------------------------------------------------

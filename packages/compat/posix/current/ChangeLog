@@ -1,3 +1,20 @@
+2001-09-10  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/pthread.h: Separate mutex and condvar API into separate
+	header file to fix configury problems.
+	* include/mutex.h: New file for the above.
+	* cdl/posix.cdl: provide the correct configury for the isoinfra
+	package to include the above file.
+	* cdl/pthread.cdl: Move _POSIX_PTHREAD_PRIO_INHERIT and
+	_POSIX_THREAD_PRIO_PROTECT to cdl/posix.cdl.
+	
+2001-09-07  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/sem.cxx (sem_trywait): Actually use the return value.
+
+	* src/sched.cxx (sched_get_priority_max): Use MAX not MIN
+	(sched_get_priority_min): Use MIN not MAX.
+
 2001-09-06  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/posix.cdl: Moved signal implements statements to the

@@ -289,7 +289,7 @@ static inline char *strcpy( char *s, const char *t)
     return r;
 }
 
-static inline int strlen( const char *s )
+static inline size_t strlen( const char *s )
 {
     int r = 0;
     while( *s++ ) r++;

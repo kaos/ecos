@@ -87,6 +87,13 @@ cyg_hal_plf_sci_getc_nonblock(void* __ch_data, cyg_uint8* ch)
     cyg_uint8 sr;
 
     HAL_READ_UINT8(base+_REG_SCSSR, sr);
+    if (sr & CYGARC_REG_SCSSR_ORER) {
+        // Serial RX overrun. Clear error and let caller try again.
+        HAL_WRITE_UINT8(base+_REG_SCSSR, 
+                        CYGARC_REG_SCSSR_CLEARMASK & ~CYGARC_REG_SCSSR_ORER);
+        return false;
+    }
+
     if ((sr & CYGARC_REG_SCSSR_RDRF) == 0)
         return false;
 
@@ -239,7 +246,13 @@ cyg_hal_plf_sci_isr(void *__ch_data, int* __ctrlc,
 
     *__ctrlc = 0;
     HAL_READ_UINT8(base+_REG_SCSSR, sr);
-    if (sr & CYGARC_REG_SCSSR_RDRF) {
+    if (sr & CYGARC_REG_SCSSR_ORER) {
+        // Serial RX overrun. Clear error and hope protocol recovers.
+        HAL_WRITE_UINT8(base+_REG_SCSSR, 
+                        CYGARC_REG_SCSSR_CLEARMASK & ~CYGARC_REG_SCSSR_ORER);
+        res = CYG_ISR_HANDLED;
+    } else if (sr & CYGARC_REG_SCSSR_RDRF) {
+        // Received character
         HAL_READ_UINT8(base+_REG_SCRDR, c);
 
         // Clear buffer full flag.

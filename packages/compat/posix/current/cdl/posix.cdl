@@ -54,12 +54,37 @@ cdl_package CYGPKG_POSIX {
 
     implements     CYGINT_ISO_SCHED_IMPL
     implements     CYGINT_ISO_POSIX_LIMITS
+    implements     CYGINT_ISO_PMUTEXTYPES
+    implements     CYGINT_ISO_PTHREAD_MUTEX
     requires       { CYGBLD_ISO_POSIX_LIMITS_HEADER == \
                          "<cyg/posix/limits.h>" }
+    requires       { CYGBLD_ISO_PMUTEXTYPES_HEADER == \
+                         "<cyg/posix/muttypes.h>" }
+    requires       { CYGBLD_ISO_PTHREAD_MUTEX_HEADER == \
+                         "<cyg/posix/mutex.h>" }
     
     compile        mqueue.cxx mutex.cxx sem.cxx misc.cxx
     compile       -library=libextras.a startup.cxx
 
+    cdl_option _POSIX_THREAD_PRIO_INHERIT {
+        display		"POSIX mutex priority inheritance feature test macro"
+        flavor        	bool
+        default_value 	1
+        requires	CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_INHERIT
+        description	"This option defines the POSIX feature test macro
+                         for supporting priority inheritance protocol in
+                         mutexes."
+    }
+    
+    cdl_option _POSIX_THREAD_PRIO_PROTECT {
+        display		"POSIX mutex priority ceiling feature test macro"
+        flavor        	bool
+        default_value 	1
+        requires	CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_CEILING
+        description	"This option defines the POSIX feature test macro
+                         for supporting priority ceiling protocol in mutexes."
+    }
+    
     # ----------------------------------------------------------------
     # Scheduling component
     

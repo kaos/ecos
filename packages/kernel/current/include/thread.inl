@@ -134,8 +134,13 @@ inline void Cyg_HardwareThread::check_stack(void)
 #ifdef CYGFUN_KERNEL_THREADS_STACK_MEASUREMENT
 inline cyg_uint32 Cyg_HardwareThread::measure_stack_usage(void)
 {
+#ifdef CYGFUN_KERNEL_THREADS_STACK_LIMIT
+    CYG_WORD *base = (CYG_WORD *)stack_limit;
+    cyg_uint32 size = (stack_size - (stack_limit-stack_base))/sizeof(CYG_WORD);
+#else
     CYG_WORD *base = (CYG_WORD *)stack_base;
     cyg_uint32 size = stack_size/sizeof(CYG_WORD);
+#endif
     cyg_ucount32 i;
 
     // Work up the stack comparing with the preset value

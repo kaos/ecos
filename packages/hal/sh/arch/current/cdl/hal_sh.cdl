@@ -113,9 +113,18 @@ cdl_package CYGPKG_HAL_SH {
 
         cdl_option CYGHWR_HAL_SH_BIGENDIAN {
             display          "Use big-endian mode"
-            default_value    1
+            default_value    { (CYGINT_HAL_SH_PLF_BIGENDIAN_DEFAULT != 0) \
+                                ? 1 : 0 }
             description      "
                 Use the CPU in big-endian mode."
+        }
+
+        cdl_interface CYGINT_HAL_SH_PLF_BIGENDIAN_DEFAULT {
+            display          "Platform wants default BE"
+            no_define
+            description      "
+                This interface is set by the platform, not by the user,
+                to indicate what the default endianness should be."
         }
     }
     

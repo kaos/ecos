@@ -1,3 +1,8 @@
+2001-09-10  Nick Garnett  <nickg@redhat.com>
+
+	* ecos.db:
+	Added FLASH support for VRC437X based boards.
+
 2001-07-31  Bart Veer  <bartv@redhat.com>
 
 	* pkgconf/rules.mak:

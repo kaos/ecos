@@ -57,6 +57,12 @@
 #include <pkgconf/hal.h>
 
 #------------------------------------------------------------------------------
+# Initial SR value
+# Set the KX bit to enable 64bit accesses in kernel mode.
+
+#define INITIAL_SR_VAR	0x00000080
+
+#------------------------------------------------------------------------------
 # Set up initial value for config register. Sets endian mode and
 # disables the cache on kseg0.
 

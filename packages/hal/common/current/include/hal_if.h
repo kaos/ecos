@@ -554,8 +554,9 @@ __data_VV(CYGNUM_CALL_IF_DBG_DATA, __call_if_dbg_data_t)
 #define CYGACC_CALL_IF_DBG_DATA_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_DBG_DATA]=(CYG_ADDRWORD)(_x_)
 
-#define CYGACC_CALL_IF_DBG_SYSCALL() \
- CYGACC_CALL_VV2(__call_if_dbg_syscall_t, CYGNUM_CALL_IF_DBG_SYSCALL)
+#define CYGACC_CALL_IF_DBG_SYSCALL(_id_,_p_) \
+ CYGACC_CALL_VV2(__call_if_dbg_syscall_t, CYGNUM_CALL_IF_DBG_SYSCALL, _id_, _p_)
+__call_VV2(CYGNUM_CALL_IF_DBG_SYSCALL, __call_if_dbg_syscall_t, int, enum dbg_syscall_ids ,  union dbg_thread_syscall_parms  *)
 #define CYGACC_CALL_IF_DBG_SYSCALL_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_DBG_SYSCALL]=(CYG_ADDRWORD)(_x_)
 

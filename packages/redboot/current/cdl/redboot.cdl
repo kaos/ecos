@@ -239,7 +239,7 @@ cdl_package CYGPKG_REDBOOT {
         display       "Allow RedBoot to support FLASH programming"
         flavor        bool
         default_value 1
-        active_if     CYGPKG_IO_FLASH
+        active_if     CYGHWR_IO_FLASH_DEVICE
         description   "
           If this option is enabled then RedBoot will provide commands
           to manage images in FLASH memory.  These images can be loaded
@@ -295,6 +295,17 @@ cdl_package CYGPKG_REDBOOT {
             display       "Flash Image System default directory contents"
             active_if     CYGOPT_REDBOOT_FIS
             calculated    1
+
+            cdl_option CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK {
+                display         "Flash block containing the Directory"
+                flavor          data
+                default_value   (-1)
+                description "
+                  Which block of flash should hold the directory 
+                  information. Positive numbers are absolute block numbers. 
+                  Negative block numbers count backwards from the last block.
+                  eg 2 means block 2, -2 means the last but one block."
+            }
 
             cdl_option CYGOPT_REDBOOT_FIS_RESERVED_BASE {
                 display         "Pseudo-file to describe reserved area"
@@ -373,6 +384,17 @@ cdl_package CYGPKG_REDBOOT {
                 description "
                   This option is used to control the amount of memory and FLASH
                   to be used for configuration options (persistent storage)."
+            }
+
+            cdl_option CYGNUM_REDBOOT_FLASH_CONFIG_BLOCK {
+                display       "Which block of flash to use" 
+                flavor         data
+                default_value  (-2)
+                description "
+                  Which block of flash should hold the configuration 
+                  information. Positive numbers are absolute block numbers. 
+                  Negative block numbers count backwards from the last block.
+                  eg 2 means block 2, -2 means the last but one block."
             }
 
             cdl_option CYGSEM_REDBOOT_FLASH_ALIASES {

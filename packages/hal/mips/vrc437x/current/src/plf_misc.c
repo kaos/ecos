@@ -60,6 +60,11 @@
 
 void hal_platform_init(void)
 {
+#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT)
+    // Set up eCos/ROM interfaces
+    hal_if_init();
+#endif    
+
 #if defined(CYGFUN_HAL_COMMON_KERNEL_SUPPORT)      && \
     (defined(CYGSEM_HAL_USE_ROM_MONITOR_CygMon)    || \
      defined(CYGSEM_HAL_USE_ROM_MONITOR_GDB_stubs))
@@ -75,6 +80,9 @@ void hal_platform_init(void)
 /*------------------------------------------------------------------------*/
 /* Functions to support the detection and execution of a user provoked    */
 /* program break. These are usually called from interrupt routines.       */
+
+#if !defined(CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT) && \
+    defined(CYGDBG_HAL_MIPS_DEBUG_GDB_CTRLC_SUPPORT)
 
 cyg_bool cyg_hal_is_break(char *buf, int size)
 {
@@ -120,12 +128,15 @@ void cyg_hal_user_break( CYG_ADDRWORD *regs )
 
 }
 
+#endif
+
 /*------------------------------------------------------------------------*/
 /* Control C ISR support                                                  */
 
-#if defined(CYGDBG_HAL_MIPS_DEBUG_GDB_CTRLC_SUPPORT)
+#if !defined(CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT) && \
+    defined(CYGDBG_HAL_MIPS_DEBUG_GDB_CTRLC_SUPPORT)
 
-#if CYGHWR_HAL_MIPS_VR4300_VRC4373_GDB_PORT == 0
+#if CYGHWR_HAL_MIPS_VR4300_VRC437X_GDB_PORT == 0
 #define DUART_CHAN      DUART_A
 #else
 #define DUART_CHAN      DUART_B

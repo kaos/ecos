@@ -5,7 +5,7 @@
 //
 //      plf_intr.h
 //
-//      VRC4373 Interrupt and clock support
+//      VRC437X Interrupt and clock support
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -40,7 +40,7 @@
 // Date:         1999-02-16
 // Purpose:      Define Interrupt support
 // Description:  The macros defined here provide the HAL APIs for handling
-//               interrupts and the clock for the VRC4373 board.
+//               interrupts and the clock for the VRC437X board.
 //              
 // Usage:
 //              #include <cyg/hal/plf_intr.h>
@@ -59,7 +59,7 @@
 // Interrupt controller stuff.
 
 // The first 6 correspond to the interrupt lines in the status/cause regs
-#define CYGNUM_HAL_INTERRUPT_VRC4373            0
+#define CYGNUM_HAL_INTERRUPT_VRC437X            0
 #define CYGNUM_HAL_INTERRUPT_IPL0               1
 #define CYGNUM_HAL_INTERRUPT_IPL1               2
 #define CYGNUM_HAL_INTERRUPT_IPL2               3
@@ -119,18 +119,18 @@
 //--------------------------------------------------------------------------
 // controller access code
 
-#define CYGHWR_HAL_MIPS_VRC4373_BASE            0xbc000000
-#define CYGHWR_HAL_MIPS_VRC4373_INTC_POL        (CYGHWR_HAL_MIPS_VRC4373_BASE+0x200)
-#define CYGHWR_HAL_MIPS_VRC4373_INTC_TRIG       (CYGHWR_HAL_MIPS_VRC4373_BASE+0x204)
-#define CYGHWR_HAL_MIPS_VRC4373_INTC_PINS       (CYGHWR_HAL_MIPS_VRC4373_BASE+0x208)
-#define CYGHWR_HAL_MIPS_VRC4373_INTC_MASK0      (CYGHWR_HAL_MIPS_VRC4373_BASE+0x20c)
-#define CYGHWR_HAL_MIPS_VRC4373_INTC_STAT0      (CYGHWR_HAL_MIPS_VRC4373_BASE+0x210)
-#define CYGHWR_HAL_MIPS_VRC4373_INTC_MASK1      (CYGHWR_HAL_MIPS_VRC4373_BASE+0x214)
-#define CYGHWR_HAL_MIPS_VRC4373_INTC_STAT1      (CYGHWR_HAL_MIPS_VRC4373_BASE+0x218)
-#define CYGHWR_HAL_MIPS_VRC4373_INTC_MASK2      (CYGHWR_HAL_MIPS_VRC4373_BASE+0x21c)
-#define CYGHWR_HAL_MIPS_VRC4373_INTC_STAT2      (CYGHWR_HAL_MIPS_VRC4373_BASE+0x220)
+#define CYGHWR_HAL_MIPS_VRC4372_BASE            0xbc000000
+#define CYGHWR_HAL_MIPS_VRC4372_INTC_POL        (CYGHWR_HAL_MIPS_VRC4372_BASE+0x200)
+#define CYGHWR_HAL_MIPS_VRC4372_INTC_TRIG       (CYGHWR_HAL_MIPS_VRC4372_BASE+0x204)
+#define CYGHWR_HAL_MIPS_VRC4372_INTC_PINS       (CYGHWR_HAL_MIPS_VRC4372_BASE+0x208)
+#define CYGHWR_HAL_MIPS_VRC4372_INTC_MASK0      (CYGHWR_HAL_MIPS_VRC4372_BASE+0x20c)
+#define CYGHWR_HAL_MIPS_VRC4372_INTC_STAT0      (CYGHWR_HAL_MIPS_VRC4372_BASE+0x210)
+#define CYGHWR_HAL_MIPS_VRC4372_INTC_MASK1      (CYGHWR_HAL_MIPS_VRC4372_BASE+0x214)
+#define CYGHWR_HAL_MIPS_VRC4372_INTC_STAT1      (CYGHWR_HAL_MIPS_VRC4372_BASE+0x218)
+#define CYGHWR_HAL_MIPS_VRC4372_INTC_MASK2      (CYGHWR_HAL_MIPS_VRC4372_BASE+0x21c)
+#define CYGHWR_HAL_MIPS_VRC4372_INTC_STAT2      (CYGHWR_HAL_MIPS_VRC4372_BASE+0x220)
 
-#define CYGHWR_HAL_MIPS_VRC4373_INTC_MASK_OFF   8
+#define CYGHWR_HAL_MIPS_VRC4372_INTC_MASK_OFF   8
 
 // Array which stores the configured priority levels for the configured
 // interrupts.
@@ -157,9 +157,9 @@ CYG_MACRO_START                                                                 
     {                                                                           \
         CYG_WORD32 _mask_;                                                      \
         CYG_BYTE _shift_;                                                       \
-        HAL_IO_REGISTER _maskreg_ = CYGHWR_HAL_MIPS_VRC4373_INTC_MASK0 +        \
+        HAL_IO_REGISTER _maskreg_ = CYGHWR_HAL_MIPS_VRC4372_INTC_MASK0 +        \
                                     cyg_hal_interrupt_level[_vector_] *         \
-                                    CYGHWR_HAL_MIPS_VRC4373_INTC_MASK_OFF;      \
+                                    CYGHWR_HAL_MIPS_VRC4372_INTC_MASK_OFF;      \
         HAL_READ_UINT32( _maskreg_, _mask_ );                                   \
         _shift_ = _vector_-CYGNUM_HAL_INTERRUPT_REALTIME_A;                     \
         _mask_ &= ~(1<<_shift_);                                                \
@@ -187,9 +187,9 @@ CYG_MACRO_START                                                                 
     {                                                                           \
         CYG_WORD32 _mask_;                                                      \
         CYG_BYTE _shift_;                                                       \
-        HAL_IO_REGISTER _maskreg_ = CYGHWR_HAL_MIPS_VRC4373_INTC_MASK0 +        \
+        HAL_IO_REGISTER _maskreg_ = CYGHWR_HAL_MIPS_VRC4372_INTC_MASK0 +        \
                                     cyg_hal_interrupt_level[_vector_] *         \
-                                    CYGHWR_HAL_MIPS_VRC4373_INTC_MASK_OFF;      \
+                                    CYGHWR_HAL_MIPS_VRC4372_INTC_MASK_OFF;      \
         HAL_READ_UINT32( _maskreg_, _mask_ );                                   \
         _shift_ = _vector_-CYGNUM_HAL_INTERRUPT_REALTIME_A;                     \
         _mask_ |= 1<<_shift_;                                                   \
@@ -204,9 +204,9 @@ CYG_MACRO_START                                                         \
     {                                                                   \
         CYG_WORD32 _stat_;                                              \
         CYG_BYTE _shift_;                                               \
-        HAL_IO_REGISTER _statreg_ = CYGHWR_HAL_MIPS_VRC4373_INTC_STAT0 +\
+        HAL_IO_REGISTER _statreg_ = CYGHWR_HAL_MIPS_VRC4372_INTC_STAT0 +\
             cyg_hal_interrupt_level[_vector_] *                         \
-            CYGHWR_HAL_MIPS_VRC4373_INTC_MASK_OFF;                      \
+            CYGHWR_HAL_MIPS_VRC4372_INTC_MASK_OFF;                      \
         HAL_READ_UINT32( _statreg_, _stat_ );                           \
         _shift_ = _vector_-CYGNUM_HAL_INTERRUPT_REALTIME_A;             \
         _stat_ &= ~(1<<_shift_);                                        \
@@ -236,8 +236,8 @@ CYG_MACRO_START                                                                 
         CYG_WORD32 mask = 1<<(_vector_-CYGNUM_HAL_INTERRUPT_REALTIME_A);        \
         CYG_WORD32 pol;                                                         \
         CYG_WORD32 trig;                                                        \
-        HAL_READ_UINT32( CYGHWR_HAL_MIPS_VRC4373_INTC_POL, pol );               \
-        HAL_READ_UINT32( CYGHWR_HAL_MIPS_VRC4373_INTC_TRIG, trig );             \
+        HAL_READ_UINT32( CYGHWR_HAL_MIPS_VRC4372_INTC_POL, pol );               \
+        HAL_READ_UINT32( CYGHWR_HAL_MIPS_VRC4372_INTC_TRIG, trig );             \
         if( _level_ )                                                           \
         {                                                                       \
             pol &= ~mask;                                                       \
@@ -250,8 +250,8 @@ CYG_MACRO_START                                                                 
             if( !(_up_) ) trig |= mask;                                         \
             else trig &= ~mask;                                                 \
         }                                                                       \
-        HAL_WRITE_UINT32( CYGHWR_HAL_MIPS_VRC4373_INTC_POL, pol );              \
-        HAL_WRITE_UINT32( CYGHWR_HAL_MIPS_VRC4373_INTC_TRIG, trig );            \
+        HAL_WRITE_UINT32( CYGHWR_HAL_MIPS_VRC4372_INTC_POL, pol );              \
+        HAL_WRITE_UINT32( CYGHWR_HAL_MIPS_VRC4372_INTC_TRIG, trig );            \
     }                                                                           \
 CYG_MACRO_END
 
@@ -283,7 +283,9 @@ externC cyg_uint32 hal_ctrlc_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data);
 //----------------------------------------------------------------------------
 // Reset.
 
-#define HAL_PLATFORM_RESET()             CYG_EMPTY_STATEMENT
+#define HAL_PLATFORM_RESET()            CYG_EMPTY_STATEMENT
+
+#define HAL_PLATFORM_RESET_ENTRY        0xbfc00000
 
 //--------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_PLF_INTR_H

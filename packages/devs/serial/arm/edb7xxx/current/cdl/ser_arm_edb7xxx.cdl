@@ -86,7 +86,7 @@ cdl_component CYGPKG_IO_SERIAL_ARM_EDB7XXX_SERIAL1 {
         display       "Baud rate for the Cirrus Logic EDB7XXX serial port 1 driver"
         flavor        data
         legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400 3600
-                      4800 7200 9600 14400 19200 38400 57600 115200 234000
+                      4800 7200 9600 14400 19200 38400 57600 115200 230400
         }
         default_value 38400
         description   "
@@ -126,7 +126,7 @@ cdl_component CYGPKG_IO_SERIAL_ARM_EDB7XXX_SERIAL2 {
         display       "Baud rate for the Cirrus Logic EDB7XXX serial port 2 driver"
         flavor        data
         legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400 3600
-                      4800 7200 9600 14400 19200 38400 57600 115200 234000
+                      4800 7200 9600 14400 19200 38400 57600 115200 230400
         }
         default_value 38400
         description   "

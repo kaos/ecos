@@ -60,24 +60,6 @@ cdl_option CYGPKG_POSIX_PTHREAD_REQUIREMENTS {
 
 }
 
-cdl_option _POSIX_THREAD_PRIO_INHERIT {
-	display		"POSIX mutex priority inheritance feature test macro"
-	flavor        	bool
-	default_value 	1
-	requires	CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_INHERIT
-	description	"This option defines the POSIX feature test macro
-			for supporting priority inheritance protocol in mutexes."
-}
-
-cdl_option _POSIX_THREAD_PRIO_PROTECT {
-	display		"POSIX mutex priority ceiling feature test macro"
-	flavor        	bool
-	default_value 	1
-	requires	CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_CEILING
-	description	"This option defines the POSIX feature test macro
-			for supporting priority ceiling protocol in mutexes."
-}
-
 # ====================================================================
 
 cdl_component CYGPKG_POSIX_PTHREAD_VALUES {

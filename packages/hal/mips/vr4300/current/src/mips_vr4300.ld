@@ -148,6 +148,7 @@ GROUP(libtarget.a libgcc.a)
     .data _vma_ : _lma_ \
     { __ram_data_start = ABSOLUTE (.); \
     *(.data*) *(.data1) \
+    *( .2ram.*)                                     \
     _GOT1_START_ = ABSOLUTE (.); *(.got1) _GOT1_END_ = ABSOLUTE (.); \
     _GOT2_START_ = ABSOLUTE (.); *(.got2) _GOT2_END_ = ABSOLUTE (.); \
     . = ALIGN (8); \

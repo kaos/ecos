@@ -174,7 +174,7 @@ int sched_get_priority_max (int policy)
         return -1;
     }
     
-    int pri = PTHREAD_POSIX_PRIORITY( CYG_THREAD_MIN_PRIORITY );
+    int pri = PTHREAD_POSIX_PRIORITY( CYG_THREAD_MAX_PRIORITY );
     
     CYG_REPORT_RETVAL( pri );
     return pri;
@@ -196,7 +196,7 @@ int sched_get_priority_min (int policy)
         return -1;
     }
 
-    int pri = PTHREAD_POSIX_PRIORITY( CYG_THREAD_MAX_PRIORITY );
+    int pri = PTHREAD_POSIX_PRIORITY( CYG_THREAD_MIN_PRIORITY );
     
     CYG_REPORT_RETVAL( pri );
     return pri;

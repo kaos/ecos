@@ -1,3 +1,17 @@
+2001-09-10  Nick Garnett  <nickg@redhat.com>
+
+	* src/mips_vr4300.ld: Added .2ram sections to data section needed
+	for FLASH support.
+
+2001-09-07  Nick Garnett  <nickg@redhat.com>
+
+	* include/variant.inc: Added definition of INITIAL_SR_VAR.
+
+	* include/var_arch.h (CYG_HAL_GDB_REG): Returned GDB registers to
+	full 64bit width.
+
+	* cdl/hal_mips_vr4300.cdl: Added endianness configuration.
+	
 2000-09-01  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/var_arch.h (CYG_HAL_GDB_REG): vr4300 GDB stubs now use 

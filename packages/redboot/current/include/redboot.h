@@ -217,7 +217,7 @@ struct option_info {
 #define OPTION_ARG_TYPE_FLG 2    // Flag only
 
 // Command line parsing
-externC struct cmd *parse(char *line, int *argc, char **argv);
+externC struct cmd *parse(char **line, int *argc, char **argv);
 
 externC void init_opts(struct option_info *opts, char flag, bool takes_arg, 
                        int arg_type, void **arg, bool *arg_set, char *name);

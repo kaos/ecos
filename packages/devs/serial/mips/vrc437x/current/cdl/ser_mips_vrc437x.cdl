@@ -1,8 +1,8 @@
 # ====================================================================
 #
-#      ser_mips_vrc4373.cdl
+#      ser_mips_vrc437x.cdl
 #
-#      eCos serial MIPS/VRC4373 configuration data
+#      eCos serial MIPS/VRC437X configuration data
 #
 # ====================================================================
 #####COPYRIGHTBEGIN####
@@ -41,12 +41,12 @@
 # ====================================================================
 
 
-cdl_package CYGPKG_IO_SERIAL_MIPS_VRC4373 {
-    display       "VRC4373 serial device drivers"
+cdl_package CYGPKG_IO_SERIAL_MIPS_VRC437X {
+    display       "VRC437X serial device drivers"
 
     parent        CYGPKG_IO_SERIAL_DEVICES
     active_if     CYGPKG_IO_SERIAL
-    active_if     CYGPKG_HAL_MIPS_VR4300_VRC4373
+    active_if     CYGPKG_HAL_MIPS_VR4300_VRC437X
 
     requires      CYGPKG_ERROR
     include_dir   cyg/io
@@ -56,92 +56,92 @@ cdl_package CYGPKG_IO_SERIAL_MIPS_VRC4373 {
            VRC4373."
     doc           redirect/ecos-device-drivers.html
 
-    compile       -library=libextras.a   vrc4373_serial.c
+    compile       -library=libextras.a   vrc437x_serial.c
 
     define_proc {
         puts $::cdl_system_header "/***** serial driver proc output start *****/"
-        puts $::cdl_system_header "#define CYGDAT_IO_SERIAL_DEVICE_HEADER <pkgconf/io_serial_mips_vrc4373.h>"
+        puts $::cdl_system_header "#define CYGDAT_IO_SERIAL_DEVICE_HEADER <pkgconf/io_serial_mips_vrc437x.h>"
         puts $::cdl_system_header "/*****  serial driver proc output end  *****/"
     }
 
-cdl_component CYGPKG_IO_SERIAL_MIPS_VRC4373_SERIAL0 {
-    display       "VRC4373 serial port 0 driver"
+cdl_component CYGPKG_IO_SERIAL_MIPS_VRC437X_SERIAL0 {
+    display       "VRC437X serial port 0 driver"
     flavor        bool
     default_value 1
     description   "
-        This option includes the serial device driver for the VRC4373 port 0."
+        This option includes the serial device driver for the VRC437X port 0."
 
-    cdl_option CYGDAT_IO_SERIAL_MIPS_VRC4373_SERIAL0_NAME {
-        display       "Device name for the VRC4373 serial port 0 driver"
+    cdl_option CYGDAT_IO_SERIAL_MIPS_VRC437X_SERIAL0_NAME {
+        display       "Device name for the VRC437X serial port 0 driver"
         flavor        data
         default_value {"\"/dev/ser0\""}
         description   "
-            This option sets the name of the serial device for the VRC4373 
+            This option sets the name of the serial device for the VRC437X 
             port 0."
     }
 
-    cdl_option CYGNUM_IO_SERIAL_MIPS_VRC4373_SERIAL0_BAUD {
-        display       "Baud rate for the VRC4373 serial port 0 driver"
+    cdl_option CYGNUM_IO_SERIAL_MIPS_VRC437X_SERIAL0_BAUD {
+        display       "Baud rate for the VRC437X serial port 0 driver"
         flavor        data
         legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400 3600
-                      4800 7200 9600 14400 19200 38400 57600 115200 234000
+                      4800 7200 9600 14400 19200 38400 57600 115200 230400
         }
         default_value 9600
         description   "
             This option specifies the default baud rate (speed) for the
-            VRC4373 port 0."
+            VRC437X port 0."
     }
 
-    cdl_option CYGNUM_IO_SERIAL_MIPS_VRC4373_SERIAL0_BUFSIZE {
-        display       "Buffer size for the VRC4373 serial port 0 driver"
+    cdl_option CYGNUM_IO_SERIAL_MIPS_VRC437X_SERIAL0_BUFSIZE {
+        display       "Buffer size for the VRC437X serial port 0 driver"
         flavor        data
         legal_values  0 to 8192
         default_value 128
         description   "
             This option specifies the size of the internal buffers used
-            for the VRC4373 port 0."
+            for the VRC437X port 0."
     }
 }
-cdl_component CYGPKG_IO_SERIAL_MIPS_VRC4373_SERIAL1 {
-    display       "VRC4373 serial port 1 driver"
+cdl_component CYGPKG_IO_SERIAL_MIPS_VRC437X_SERIAL1 {
+    display       "VRC437X serial port 1 driver"
     flavor        bool
     default_value 1
     description   "
-        This option includes the serial device driver for the VRC4373 port 1."
+        This option includes the serial device driver for the VRC437X port 1."
 
-    cdl_option CYGDAT_IO_SERIAL_MIPS_VRC4373_SERIAL1_NAME {
-        display       "Device name for the VRC4373 serial port 1 driver"
+    cdl_option CYGDAT_IO_SERIAL_MIPS_VRC437X_SERIAL1_NAME {
+        display       "Device name for the VRC437X serial port 1 driver"
         flavor        data
         default_value {"\"/dev/ser1\""}
         description   "
             This option specifies the name of serial device for the
-            VRC4373 port 1."
+            VRC437X port 1."
     }
 
-    cdl_option CYGNUM_IO_SERIAL_MIPS_VRC4373_SERIAL1_BAUD {
-        display       "Baud rate for the VRC4373 serial port 1 driver"
+    cdl_option CYGNUM_IO_SERIAL_MIPS_VRC437X_SERIAL1_BAUD {
+        display       "Baud rate for the VRC437X serial port 1 driver"
         flavor        data
         legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400 3600
-                      4800 7200 9600 14400 19200 38400 57600 115200 234000
+                      4800 7200 9600 14400 19200 38400 57600 115200 230400
         }
         default_value 9600
         description   "
             This option specifies the default baud rate (speed) for the
-            VRC4373 port 1."
+            VRC437X port 1."
     }
 
-    cdl_option CYGNUM_IO_SERIAL_MIPS_VRC4373_SERIAL1_BUFSIZE {
-        display       "Buffer size for the VRC4373 serial port 1 driver"
+    cdl_option CYGNUM_IO_SERIAL_MIPS_VRC437X_SERIAL1_BUFSIZE {
+        display       "Buffer size for the VRC437X serial port 1 driver"
         flavor        data
         legal_values  0 to 8192
         default_value 128
         description   "
             This option specifies the size of the internal buffers used for
-            the VRC4373 port 1."
+            the VRC437X port 1."
     }
 }
 
-    cdl_component CYGPKG_IO_SERIAL_MIPS_VRC4373_OPTIONS {
+    cdl_component CYGPKG_IO_SERIAL_MIPS_VRC437X_OPTIONS {
         display "Serial device driver build options"
         flavor  none
         description   "
@@ -150,7 +150,7 @@ cdl_component CYGPKG_IO_SERIAL_MIPS_VRC4373_SERIAL1 {
 	    and details of which tests are built."
 
 
-        cdl_option CYGPKG_IO_SERIAL_MIPS_VRC4373_CFLAGS_ADD {
+        cdl_option CYGPKG_IO_SERIAL_MIPS_VRC437X_CFLAGS_ADD {
             display "Additional compiler flags"
             flavor  data
             no_define
@@ -161,7 +161,7 @@ cdl_component CYGPKG_IO_SERIAL_MIPS_VRC4373_SERIAL1 {
                 to the set of global flags."
         }
 
-        cdl_option CYGPKG_IO_SERIAL_MIPS_VRC4373_CFLAGS_REMOVE {
+        cdl_option CYGPKG_IO_SERIAL_MIPS_VRC437X_CFLAGS_REMOVE {
             display "Suppressed compiler flags"
             flavor  data
             no_define
@@ -173,23 +173,23 @@ cdl_component CYGPKG_IO_SERIAL_MIPS_VRC4373_SERIAL1 {
         }
     }
 
-    cdl_component CYGPKG_IO_SERIAL_MIPS_VRC4373_TESTING {
+    cdl_component CYGPKG_IO_SERIAL_MIPS_VRC437X_TESTING {
         display    "Testing parameters"
         flavor     bool
         calculated 1
-        active_if  CYGPKG_IO_SERIAL_MIPS_VRC4373_SERIAL0
+        active_if  CYGPKG_IO_SERIAL_MIPS_VRC437X_SERIAL0
 
         cdl_option CYGPRI_SER_TEST_SER_DEV {
             display       "Serial device used for testing"
             flavor        data
-            default_value { CYGDAT_IO_SERIAL_MIPS_VRC4373_SERIAL0_NAME }
+            default_value { CYGDAT_IO_SERIAL_MIPS_VRC437X_SERIAL0_NAME }
         }
 
         define_proc {
-            puts $::cdl_header "#define CYGPRI_SER_TEST_CRASH_ID \"vrc4373\""
+            puts $::cdl_header "#define CYGPRI_SER_TEST_CRASH_ID \"vrc437X\""
             puts $::cdl_header "#define CYGPRI_SER_TEST_TTY_DEV  \"/dev/tty0\""
         }
     }
 }
 
-# EOF ser_mips_vrc4373.cdl
+# EOF ser_mips_vrc437x.cdl

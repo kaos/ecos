@@ -1,3 +1,7 @@
+2001-09-07  Jesper Skov  <jskov@redhat.com>
+
+	* tests/heaptest.c: Added some extra output on failures.
+
 2001-08-01  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/sepmetaimpl.inl: Define check_free_memdq and

@@ -1,3 +1,7 @@
+2001-09-11  Jesper Skov  <jskov@redhat.com>
+
+	* src/diag.cxx (diag_check_string): Also accept \b.
+
 2001-08-25  Gary Thomas  <gthomas@redhat.com>
 
 	* src/diag.cxx (_vprintf): Fix confusion between signed and unsigned

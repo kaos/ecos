@@ -54,9 +54,8 @@
 
 #include <cyg/hal/hal_io.h>
 
-#include <cyg/hal/plf_z8530.h>
+#include <cyg/hal/plf_stub.h>
 
-/*---------------------------------------------------------------------------*/
 
 #if defined(CYGSEM_HAL_USE_ROM_MONITOR_GDB_stubs)
 
@@ -64,119 +63,14 @@
 
 #endif
 
-#if CYGHWR_HAL_MIPS_VR4300_VRC4373_DIAG_PORT == 0
-#define DUART_CHAN      DUART_A
-#else
-#define DUART_CHAN      DUART_B
-#endif
-
-/*---------------------------------------------------------------------------*/
-
-extern int pmon_outbyte(char c);
-extern int pmon_write( int fd, char *buf, int size);
-extern int pmon_open( char *name, int mode, int perms);
-extern int pmon_close( int fd );
-extern int pmon_ioctl( int fd, int op, int *argp );
-int fd;
-
-static unsigned char _diag_init[] = {
-    0x00, /* Register 0 */
-    0x00, /* Register 1 - no interrupts */
-    0x00, /* Register 2 */
-    0xC1, /* Register 3 - Rx enable, 8 data */
-    0x44, /* Register 4 - x16 clock, 1 stop, no parity */
-    0x68, /* Register 5 - Tx enable, 8 data */
-    0x00, /* Register 6 */
-    0x00, /* Register 7 */
-    0x00, /* Register 8 */
-    0x00, /* Register 9 */
-    0x00, /* Register 10 */
-    0x56, /* Register 11 - Rx, Tx clocks from baud rate generator */
-    0x00, /* Register 12 - baud rate LSB */
-    0x00, /* Register 13 - baud rate MSB */
-    0x03, /* Register 14 - enable baud rate generator */
-    0x00  /* Register 15 */
-};
-
-#define BRTC(brate) (( ((unsigned) DUART_CLOCK) / (2*(brate)*SCC_CLKMODE_TC)) - 2)
-#define DUART_CLOCK          4915200         /* Z8530 duart */
-#define SCC_CLKMODE_TC       16              /* Always run x16 clock for async modes */
-
-void hal_duart_init(void)
-{
-    unsigned short brg = BRTC(CYGHWR_HAL_MIPS_VR4300_VRC4373_DIAG_BAUD);
-    int i;
-#ifdef CYGSEM_HAL_USE_ROM_MONITOR_PMON
-    // We close down all of PMON's IO streams. This prevents it
-    // printing out some silly error messages that are caused by
-    // us changing the value of the counter/compare registers. By
-    // default they came out of the debug serial line, disrupting
-    // GDB session. 
-    pmon_close(0);
-    pmon_close(1);
-    pmon_close(2);
-//    fd = pmon_open( "/dev/tty1", 0 , 0);
-//    fd = pmon_open( "/dev/tty1", 0 , 0);
-//    fd = pmon_open( "/dev/tty1", 0 , 0);
-#endif
-    _diag_init[12] = brg & 0xFF;
-    _diag_init[13] = brg >> 8;
-    for (i = 1;  i < 16;  i++) {
-        HAL_DUART_WRITE_CR(DUART_CHAN, i, _diag_init[i]);
-    }
-}
-
-/*---------------------------------------------------------------------------*/
-
-void hal_duart_write_char(char c)
-{
-    cyg_uint8 rr0;
-    do
-    {
-        HAL_DUART_READ_CR(DUART_CHAN, 0, rr0 );
-    } while( (rr0 & 0x04) == 0 );
-
-    HAL_DUART_WRITE_TR( DUART_CHAN, c );
-
-#if defined(CYGDBG_HAL_MIPS_DEBUG_GDB_CTRLC_SUPPORT) && \
-    defined(CYGHWR_HAL_GDB_PORT_VECTOR)
-    // Ensure that this write does not provoke a spurious interrupt.
-    HAL_INTERRUPT_ACKNOWLEDGE( CYGHWR_HAL_GDB_PORT_VECTOR );
-#endif    
-
-}
-
-/*---------------------------------------------------------------------------*/
-
-void hal_duart_read_char(char *c)
-{
-    cyg_uint8 rr0;
-    do
-    {
-        HAL_DUART_READ_CR(DUART_CHAN, 0, rr0 );
-    } while( (rr0 & 0x01) == 0 );
-
-    HAL_DUART_READ_RR( DUART_CHAN, *c );
-
-#if defined(CYGDBG_HAL_MIPS_DEBUG_GDB_CTRLC_SUPPORT) && \
-    defined(CYGHWR_HAL_GDB_PORT_VECTOR)
-    // Ensure that this read does not provoke a spurious interrupt.
-    HAL_INTERRUPT_ACKNOWLEDGE( CYGHWR_HAL_GDB_PORT_VECTOR );
-#endif    
-
-}
-
 /*---------------------------------------------------------------------------*/
 
 void hal_diag_init()
 {
-    hal_duart_init();
+    cyg_hal_plf_comms_init();
 }
 
 /*---------------------------------------------------------------------------*/
-
-extern cyg_bool cyg_hal_is_break(char *buf, int size);
-extern void cyg_hal_user_break(CYG_ADDRWORD *regs);
 
 void hal_diag_write_char(char c)
 {
@@ -206,24 +100,24 @@ void hal_diag_write_char(char c)
             int i;
             char c1;
         
-            hal_duart_write_char('$');
-            hal_duart_write_char('O');
+            cyg_hal_plf_serial_putc(NULL, '$');
+            cyg_hal_plf_serial_putc(NULL, 'O');
             csum += 'O';
             for( i = 0; i < pos; i++ )
             {
                 char ch = line[i];
                 char h = hex[(ch>>4)&0xF];
                 char l = hex[ch&0xF];
-                hal_duart_write_char(h);
-                hal_duart_write_char(l);
+                cyg_hal_plf_serial_putc(NULL, h);
+                cyg_hal_plf_serial_putc(NULL, l);
                 csum += h;
                 csum += l;
             }
-            hal_duart_write_char('#');
-            hal_duart_write_char(hex[(csum>>4)&0xF]);
-            hal_duart_write_char(hex[csum&0xF]);
+            cyg_hal_plf_serial_putc(NULL, '#');
+            cyg_hal_plf_serial_putc(NULL, hex[(csum>>4)&0xF]);
+            cyg_hal_plf_serial_putc(NULL, hex[csum&0xF]);
 
-            hal_duart_read_char( &c1 );
+            c1 = cyg_hal_plf_serial_getc( NULL );
 
             if( c1 == '+' ) break;
 
@@ -240,8 +134,8 @@ void hal_diag_write_char(char c)
 
         // Disabling the interrupts for an extended period of time
         // can provoke a spurious interrupt 0. FIXME - why?
-#ifdef CYGSEM_HAL_MIPS_VR4300_VRC4373_DIAG_ACKS_INT_0 
-        HAL_INTERRUPT_ACKNOWLEDGE( CYGNUM_HAL_INTERRUPT_VRC4373 );
+#ifdef CYGSEM_HAL_MIPS_VR4300_VRC437X_DIAG_ACKS_INT_0
+        HAL_INTERRUPT_ACKNOWLEDGE( CYGNUM_HAL_INTERRUPT_VRC437X );
 #endif
         
         // And re-enable interrupts
@@ -249,7 +143,7 @@ void hal_diag_write_char(char c)
         
     }
 #else
-    hal_duart_write_char(c);
+    cyg_hal_plf_serial_putc(NULL, c);
 #endif    
 }
 
@@ -257,7 +151,7 @@ void hal_diag_write_char(char c)
 
 void hal_diag_read_char(char *c)
 {
-    hal_duart_read_char(c);
+    *c = cyg_hal_plf_serial_getc(NULL);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -81,7 +81,7 @@
 ## CP0 usable
 ## Vectors to RAM
 ## All hw ints disabled
-#define INITIAL_SR	0x10000000	
+#define INITIAL_SR_PLF	0x10000000	
 
 #elif defined(CYGSEM_HAL_USE_ROM_MONITOR_GDB_stubs)
 
@@ -90,7 +90,7 @@
 ## FP registers are 64 bit	
 ## Vectors to RAM
 ## All hw ints disabled
-#define INITIAL_SR	0x34000000	
+#define INITIAL_SR_PLF	0x34000000	
 	
 #else	
 
@@ -98,7 +98,7 @@
 ## CP0 usable
 ## Vectors to RAM
 ## All hw ints disabled
-#define INITIAL_SR	0x10000000	
+#define INITIAL_SR_PLF	0x10000000	
 
 #endif
 
@@ -133,11 +133,11 @@
 	move	$at,ra			# save ra
 	la	\reg,\addr		# get address into register
 	la	ra,x\@			# get linked address of label
-	subiu	\reg,\reg,ra		# subtract it from value
+	subu	\reg,\reg,ra		# subtract it from value
 	bal	x\@			# branch and link to label
 	nop				#  to get current actual address
 x\@:
-	addiu	\reg,\reg,ra		# add actual address
+	addu	\reg,\reg,ra		# add actual address
 	move	ra,$at			# restore ra
 	.set	at
 	.endm
@@ -186,13 +186,13 @@ hal_mmu_setup_return:
 	# Having got the RAM working, we must now relocate the Entire
 	# ROM into it and then continue execution from RAM.
 
-	la	t0,0x80000000		# dest addr
-	la	t1,0xbfc00000		# source addr
+	la	t0,reset_vector		# dest addr
+	lar	t1,reset_vector		# source addr
 	la	t3,__ram_data_end	# end dest addr
 1:	
 	lw	v0,0(t1)		# get word
-	addiu	t1,t1,4
 	sw	v0,0(t0)		# write word
+	addiu	t1,t1,4
 	addiu	t0,t0,4
 	bne	t0,t3,1b
 	nop
@@ -202,7 +202,6 @@ hal_mmu_setup_return:
 	nop
 2:	
 	# We are now executing out of RAM!
-
 #endif
 
 	.endm

@@ -72,7 +72,7 @@
 #  define INITIAL_SR_PLF 0x00000000
 # endif
 
-#if defined(CYG_HAL_STARTUP_RAM)
+#if defined(CYG_HAL_STARTUP_RAM) || defined(CYG_HAL_STARTUP_ROMRAM)
 # if defined(CYGPKG_HAL_MIPS_SIM) || !defined(CYGSEM_HAL_USE_ROM_MONITOR)
 #  define INITIAL_SR_ARCH 	0x1000ff00 /* CP0 usable, Ints enabled, master interrupt disable */
 # else
@@ -190,6 +190,7 @@
 #endif /* CYGPKG_HAL_MIPS_MIPS32 || CYGPKG_HAL_MIPS_MIPS64 */
 	mtc0	zero,cause		# zero cause reg
 	nop
+#if !defined(CYGSEM_HAL_USE_ROM_MONITOR)
 	la	v0,INITIAL_SR 		# initialize status register
 	mtc0	v0,status
 	nop
@@ -200,6 +201,7 @@
 	nop
 	nop
 	nop
+#endif
 	.endm
 
 	# Enable interrupts

@@ -138,6 +138,18 @@ get_register_valid (regnames_t reg)
 void 
 put_register (regnames_t which, target_register_t value)
 {
+#ifdef CYGPKG_HAL_MIPS_VR4300
+    // This is a rather nasty kludge to compensate for the fact that
+    // the VR4300 GDB is rather old and does not support proper 64 bit
+    // registers. The only time this really matters is when setting
+    // the PC after loading an executable. So here we detect this case
+    // and artificially sign extend it. 
+    
+    if( which == PC && (value & 0x0000000080000000ULL ) )
+    {
+        value |= 0xFFFFFFFF00000000ULL;
+    }
+#endif    
     _registers[which] = value;
 }
 

@@ -1,3 +1,7 @@
+2001-09-11  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_sh_sh7750_cq7750.cdl: Default to big endian.
+
 2001-08-08  Jesper Skov  <jskov@redhat.com>
 
 	* misc/redboot_ROM.ecm: Added.

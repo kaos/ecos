@@ -117,7 +117,8 @@ test_pat(unsigned char *buf, int size,
         if (addrpat)
             bpat = ((int)bufptr)&0xFF;
         if ( *bufptr != bpat ) {
-            diag_printf( "Failed to compare at 0x%08x\n", bufptr );
+            diag_printf( "Failed to compare at 0x%08x (saw 0x%08x expected 0x%08x)\n", 
+                         bufptr, *bufptr, bpat );
             if ( errors++ == ERRORTHRESHOLD )
                 CYG_TEST_FAIL_FINISH( testname );
         }
@@ -130,7 +131,8 @@ test_pat(unsigned char *buf, int size,
         if (addrpat)
             pat = (unsigned int)ibufptr;
         if ( *ibufptr != pat ) {
-            diag_printf( "Failed to compare at 0x%08x\n", bufptr );
+            diag_printf( "Failed to compare at 0x%08x (saw 0x%08x expected 0x%08x)\n", 
+                         bufptr, *ibufptr, pat );
             if ( errors++ == ERRORTHRESHOLD )
                 CYG_TEST_FAIL_FINISH( testname );
         }
@@ -142,7 +144,8 @@ test_pat(unsigned char *buf, int size,
         if (addrpat)
             bpat = ((int)bufptr)&0xFF;
         if ( *bufptr != bpat ) {
-            diag_printf( "Failed to compare at 0x%08x\n", bufptr );
+            diag_printf( "Failed to compare at 0x%08x (saw 0x%08x expected 0x%08x)\n", 
+                         bufptr, *bufptr, bpat );
             if ( errors++ == ERRORTHRESHOLD )
                 CYG_TEST_FAIL_FINISH( testname );
         }
@@ -193,8 +196,8 @@ cyg_start(void)
             CYG_TEST_FAIL_FINISH("heaptest");
         }
 
-        diag_printf( "INFO:<Testing memory at 0x%08x of size %d>\n",
-                     buf, info.maxfree );
+        diag_printf( "INFO:<Testing memory at 0x%08x of size %d for %d iterations>\n",
+                     buf, info.maxfree, ITERS );
         for (i=0; i<ITERS; i++) {
             errors += test_pat( buf, info.maxfree, 0, 0, "all zeroes" );
             errors += test_pat( buf, info.maxfree, allonesint, 0,

@@ -59,6 +59,11 @@
 # endif
 #endif
 
+#if CYGINT_ISO_PTHREAD_MUTEX
+# ifdef CYGBLD_ISO_PTHREAD_MUTEX_HEADER
+#  include CYGBLD_ISO_PTHREAD_MUTEX_HEADER
+# endif
+#endif
 
 #endif /* CYGONCE_ISO_PTHREAD_H multiple inclusion protection */
 

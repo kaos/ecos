@@ -1,3 +1,13 @@
+2001-09-07  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/thread.inl (measure_stack_usage): Deal with stack limits.
+
+2001-09-07  Nick Garnett  <nickg@redhat.com>
+
+	* src/common/thread.cxx (set_priority): Change argument to
+	instrumentation call to new_priority rather than current
+	priority. (Suggested by Andrew Lunn).
+
 2001-09-05  Jesper Skov  <jskov@redhat.com>
 
 	* include/mqueue.inl (Cyg_Mqueue): Initialize busy flag of last

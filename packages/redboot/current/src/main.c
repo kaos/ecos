@@ -184,6 +184,7 @@ cyg_start(void)
     int res = 0;
     bool prompt = true;
     static char line[CYGPKG_REDBOOT_MAX_CMD_LINE];
+    char *command;
     struct cmd *cmd;
     int cur;
     struct init_tab_entry *init_entry;
@@ -315,8 +316,9 @@ cyg_start(void)
 #ifdef CYGSEM_REDBOOT_FLASH_ALIASES
                 expand_aliases(line, sizeof(line));
 #endif
-                if (strlen(line) > 0) {                    
-                    if ((cmd = parse(line, &argc, &argv[0])) != (struct cmd *)0) {
+		command = (char *)&line;
+                while (strlen(command) > 0) {                    
+                    if ((cmd = parse(&command, &argc, &argv[0])) != (struct cmd *)0) {
                         (cmd->fun)(argc, argv);
                     } else {
                         diag_printf("** Error: Illegal command: \"%s\"\n", argv[0]);

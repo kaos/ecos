@@ -95,7 +95,7 @@ cdl_component CYGPKG_IO_SERIAL_TX39_JMR3904_SERIAL0 {
         display       "Baud rate for the TX39 JMR3904 serial port 0 driver"
         flavor        data
         legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400 3600
-                      4800 7200 9600 14400 19200 38400 57600 115200 234000
+                      4800 7200 9600 14400 19200 38400 57600 115200 230400
         }
         default_value 38400
         description   "
@@ -133,7 +133,7 @@ cdl_component CYGPKG_IO_SERIAL_TX39_JMR3904_SERIAL1 {
         display       "Baud rate for the TX39 JMR3904 serial port 1 driver"
         flavor        data
         legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400 3600
-                      4800 7200 9600 14400 19200 38400 57600 115200 234000
+                      4800 7200 9600 14400 19200 38400 57600 115200 230400
         }
         default_value 38400
         description   "

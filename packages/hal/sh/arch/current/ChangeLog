@@ -1,3 +1,11 @@
+2001-09-11  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_sh.cdl (CYGHWR_HAL_SH_BIGENDIAN): Set the default
+	from what the platform requests, using the new
+	CYGINT_HAL_SH_PLF_LITTLEENDIAN_DEFAULT CDL interface.
+
+	* src/sh.ld: Support .rel.got input sections.
+
 2001-09-05  Jesper Skov  <jskov@redhat.com>
 
 	* src/sh_stub.c (__single_step): Changed type 2 handling.

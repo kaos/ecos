@@ -1,3 +1,8 @@
+2001-09-10  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_powerpc_quicc.cdl (CYGNUM_HAL_QUICC_DIAG_BAUD):
+	234000->230400 typo.
+
 2001-07-31  Jonathan Larmour  <jlarmour@redhat.com>
 2001-07-31  Christoph Csebits  <christoph.csebits@frequentis.com>
 

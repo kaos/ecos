@@ -1,3 +1,33 @@
+2001-09-07  Nick Garnett  <nickg@redhat.com>
+
+	* cdl/hal_mips_vr4300_vrc4373.cdl: Brought up to date and much of
+	the configury now moved to the VRC437X package. Configury for
+	Redboot and virtual vectors added here.
+
+	* misc/redboot_RAM.ecm:
+	* misc/redboot_ROM.ecm:
+	* misc/redboot_ROMRAM.ecm:
+	These files added to configure redboot for this target.
+	
+	* include/hal_diag.h:
+	* include/platform.inc:
+	* include/plf_cache.h:
+	* include/plf_intr.h:
+	* include/plf_io.h:
+	* include/plf_stub.h:
+	* include/plf_z8530.h:
+	* misc/stubrom.perm:
+	* src/hal_diag.c:
+	* src/platform.S:
+	* src/plf_misc.c:
+	* src/plf_stub.c:
+	* src/pmon.S:
+	Files removed and relocated to VRC437X package. This package is
+	now just a configuration and memory layout package. This ChangeLog
+	is being retained in it original form for archival purposes.
+
+	
+	
 2001-02-26  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/platform.inc: Always do unsigned arithmetic on addresses

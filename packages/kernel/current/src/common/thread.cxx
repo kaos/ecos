@@ -864,7 +864,7 @@ Cyg_Thread::set_priority( cyg_priority new_priority )
 //    CYG_ASSERT( new_priority >=  CYG_THREAD_MAX_PRIORITY, "Priority out of range");
 //    CYG_ASSERT( new_priority <=  CYG_THREAD_MIN_PRIORITY, "Priority out of range");
     
-    CYG_INSTRUMENT_THREAD(PRIORITY,this,priority);
+    CYG_INSTRUMENT_THREAD(PRIORITY,this,new_priority);
         
     // Prevent preemption
     Cyg_Scheduler::lock();

@@ -54,13 +54,13 @@
 
 //----------------------------------------------------------------------------
 // Define serial stuff.
-extern void hal_plf_init_serial( void );
-extern int  hal_plf_get_char( void );
-extern void hal_plf_put_char( int c );
+extern void cyg_hal_plf_comms_init( void );
+extern cyg_uint8 cyg_hal_plf_serial_getc( void *chan );
+extern void cyg_hal_plf_serial_putc( void *chan, cyg_uint8 c );
 
-#define HAL_STUB_PLATFORM_INIT_SERIAL()       hal_plf_init_serial()
-#define HAL_STUB_PLATFORM_GET_CHAR()          hal_plf_get_char()
-#define HAL_STUB_PLATFORM_PUT_CHAR(c)         hal_plf_put_char((c))
+#define HAL_STUB_PLATFORM_INIT_SERIAL()       cyg_hal_plf_comms_init()
+#define HAL_STUB_PLATFORM_GET_CHAR()          cyg_hal_plf_serial_getc(0)
+#define HAL_STUB_PLATFORM_PUT_CHAR(c)         cyg_hal_plf_serial_putc(0,(c))
 #define HAL_STUB_PLATFORM_SET_BAUD_RATE(baud) CYG_UNUSED_PARAM(int, (baud))
 #define HAL_STUB_PLATFORM_INTERRUPTIBLE       0
 #define HAL_STUB_PLATFORM_INIT_BREAK_IRQ()    CYG_EMPTY_STATEMENT

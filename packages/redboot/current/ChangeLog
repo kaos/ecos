@@ -1,3 +1,19 @@
+2001-09-11  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/redboot.cdl (CYGPKG_REDBOOT_FLASH): Be conditional on an
+	actual flash device, not just the generic flash layer.
+
+2001-09-11  Gary Thomas  <gthomas@redhat.com>
+
+	* src/version.c (_CERTIFICATE): Add information about product
+	certification (either Red Hat certified or not).
+
+	* src/flash.c (fis_delete): Deny user deleting "reserved" images.
+
+2001-09-07  Andrew Lunn  <andrew.lunn@ascom.ch>
+	* src/parse.c: A semi colon can be used to separate multiple
+	commands on one line. 
+
 2001-09-06  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/redboot.h: Include string function prototype header.
@@ -7,6 +23,13 @@
 	* src/fs/ide.c (ide_read_sectors): Use diag_(s)printf.
 	* src/fs/disk.c (do_disks): Same.
 
+2001-08-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+	* src/flash.c: Allow the flash blocks used for FIS directory and
+	config information to be user configured. Generalise the fis_init
+	function to deal with the blocks in any order.
+	* cdl/redboot.cdl: Added the configury needed to specify which
+	flash blocks to use.
+	
 2001-08-27  Mark Salter  <msalter@redhat.com>
 
 	* src/syscall.c (HZ): Should be 60 for ARM, also.

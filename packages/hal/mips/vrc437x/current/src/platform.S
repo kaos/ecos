@@ -464,7 +464,8 @@ FUNC_END(map_tlb4000)
 #if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_ROMRAM)
 	
 #define	DELAY_LOOP	1
-#define WRITE16		2	
+#define WRITE16		2
+#define WRITEREAD32	3	
 
 		
 FUNC_START(hal_memc_setup)
@@ -473,6 +474,7 @@ FUNC_START(hal_memc_setup)
 	la	t1,0xbfc00000
 	la	t2,DELAY_LOOP
 	la	t3,WRITE16
+	la	t4,WRITEREAD32
 1:	
 	lw	a0,0(t0)	# next table entry
 	lw	a1,4(t0)	# value to write
@@ -481,12 +483,24 @@ FUNC_START(hal_memc_setup)
 	nop
 	beq	a0,t3,3f	# Check for 16 bit write
 	nop
+	beq	a0,t4,4f	# Check for 32 bit write/read
+	nop
 	beqz	a0,9f		# zero terminates loop
 	nop
+	lw	zero,0(t1)	# uncached read to flush write buffer
 	sw	a1,0(a0)	# write it
 	lw	zero,0(t1)	# uncached read to flush write buffer
 	b	1b
 	nop
+4:
+	lw	a3,0(t0)	# get next word
+	addiu	t0,4		# skip it
+	lw	zero,0(t1)	# uncached read to flush write buffer
+	sw	a3,0(a1)	# write it
+	lw	a3,0(a1)	# and read it back
+	lw	zero,0(t1)	# uncached read to flush write buffer
+	b	1b
+	nop	
 2:
 	lw	zero,0(t1)	# uncached read to flush write buffer	
 	bnez	a1,2b		# count down by value in a1
@@ -543,6 +557,8 @@ FUNC_END(hal_memc_setup)
 /*
 #define N1RESERVED1    (N1_BASE + 0x60)
 */
+
+
 #define N1PCIHEADER    (N1_BASE + 0x100)
 #define N1PCICMD       (N1PCIHEADER + 0x04)
 #define MBOXPCIADDR    (N1PCIHEADER + 0x10)
@@ -556,8 +572,10 @@ FUNC_END(hal_memc_setup)
 ##-----------------------------------------------------------------------------	
 ## Definitions for the VRC4372, also known as the Nile II.	
 
+#if defined(CYGPKG_HAL_MIPS_VR4300_VRC4373)	
 #define PCI_N2_DEV		0x00010000 	/* PCI Device # - Nile 2 */
-
+#endif
+	
 #define N2CLSIZE		( 0x0c)  /* Cache Line Size */
 #define N2IOADD			( 0x14)
 #define N2DSCTIM		( 0x40)
@@ -643,20 +661,29 @@ FUNC_END(hal_memc_setup)
 hal_memc_setup_table:	
 
 	.long	DELAY_LOOP,	0x00010000	# Wait for HW to settle
-	
+
+
 	# Set up SDRAM and SIMM1
+
+#if defined(CYGPKG_HAL_MIPS_VR4300_VRC4373)
+
 	.long	BMCTRL,		0x0000803b	# Base memory setup
 	.long	S1CTRL,		0x0402013f	# SIMM1 
 
-	# Set up power-on memory state
-	.long	N3_POM_INIT,	0x00000002	# Power-on memory init
-	.long	DELAY_LOOP,	0x00000100	# wait a bit
-	.long	N3_POM_INIT,	0x00000004	# Power-on memory init
-	.long	DELAY_LOOP,	0x00000100	# wait a bit
-	.long	N3_POM_INIT,	0x00000001	# Power-on memory init
-	.long	DELAY_LOOP,	0x00000100	# wait a bit
-	.long	REFRESHRATE,	0x00000300	# DRAM refresh rate
+#else
+#error Unsupported board	
+#endif
 
+	# Set up power-on memory state
+	.long			N3_POM_INIT,	0x00000002	# Power-on memory init
+	.long	DELAY_LOOP,	0x00000100			# wait a bit
+	.long	WRITEREAD32,	N3_POM_INIT,	0x00000004	# Power-on memory init
+	.long	DELAY_LOOP,	0x00000100			# wait a bit
+	.long	WRITEREAD32,	N3_POM_INIT,	0x00000001	# Power-on memory init
+	.long	DELAY_LOOP,	0x00000100			# wait a bit
+	.long	REFRESHRATE,	0x00000fff			# DRAM refresh rate
+
+		
 	.long	BOOTROMWPRTCT,	0xffffff3e	# Write protect boot ROM
 
 	# Set up PCI master address window
@@ -670,7 +697,7 @@ hal_memc_setup_table:
 	# Map PCI IO space Phys == Local
 	.long	PCIMSTRIO,	(0x000fd000 | ( PCI_IOSPACE_BASE << 24) | PCI_IOSPACE_BASE)
 
-	# VRC4373 Bridge config space
+	# VRC437X Bridge config space
 
 	.long	N1PCICMD,	0x00000006	# Memory space enable, bus master
 	.long	N1CLSIZE,	0x00003000	# Master latency time
@@ -720,12 +747,15 @@ hal_memc_setup_table:
 	.long	GPDIR,		0x000007c0	# GPIO pins 6-10 output
 	.long	INTPOL,		0x00003fff	# Interrupt polarity
 	.long	INTTRIG,	0x00003fff	# Interrupt trigger
+	.long	INTMASK0,	0x00000000
+	.long	INTMASK1,	0x00000000
+	.long	INTMASK2,	0x00000000
 	.long	INTSTAT0,	0x00000000	# Zero all int status regs
 	.long	INTSTAT1,	0x00000000
 	.long	INTSTAT2,	0x00000000
 
 	.long	DELAY_LOOP,	0x00010000	# Wait for HW to settle
-		
+
 	.long	0,		0
 
 #endif

@@ -82,7 +82,7 @@ GROUP(libtarget.a libgcc.a)
       KEEP(*(SORT(.dtors*))) CYG_LABEL_DEFN(__DTOR_END__) = ABSOLUTE(.); \
     . = ALIGN(8);							 \
       KEEP(*( SORT (.ecos.table.*))) ;					 \
-      *(.got*) *(.rela.got)						 \
+      *(.got*) *(.rela.got) *(.rel.got)					 \
     . = ALIGN(4);                                                        \
     } > _region_							 \
     CYG_LABEL_DEFN(_rom_data_start) = LOADADDR(.data);			 \

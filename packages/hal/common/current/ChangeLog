@@ -1,3 +1,25 @@
+2001-09-10  Nick Garnett  <nickg@redhat.com>
+
+	* include/hal_stub.h (strlen): Changed return type to size_t from
+	int so it matches <string.h>. For some reason the compiler has
+	suddenly started complaining about the type mismatch. Strange.
+
+2001-09-07  Nick Garnett  <nickg@redhat.com>
+
+	* src/hal_stub.c (put_register): Added kludge for VR4300 targets
+	to sign extent the PC when it is being set. This is due to the
+	age of the VR4300 toolchain and the fact that the VR4300 is the
+	only target to do full 64bit register saves/restores.
+
+2001-09-07  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_if.h: Fix typo in below change.
+
+2001-09-07  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/hal_if.h (CYGACC_CALL_IF_DBG_SYSCALL): Define and call
+	with correct arguments.
+
 2001-08-24  Mark Salter  <msalter@redhat.com>
 
 	* src/generic-stub.c (__process_packet): Add support for 'D' packet.

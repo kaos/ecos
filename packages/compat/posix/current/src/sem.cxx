@@ -165,7 +165,7 @@ externC int sem_trywait  (sem_t *sem)
 
     if( !sema->trywait() ) retval = EAGAIN;
     
-    SEMA_RETURN(0);
+    SEMA_RETURN(retval);
 }
 
 // -------------------------------------------------------------------------

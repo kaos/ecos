@@ -56,6 +56,7 @@ cdl_package CYGPKG_HAL_SH_SH7708_CQ7708 {
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
     implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
     implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_NOT_GUARANTEED
+    implements    CYGINT_HAL_SH_PLF_BIGENDIAN_DEFAULT
 
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_sh.h>"
