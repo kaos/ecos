@@ -1,3 +1,9 @@
+2003-04-08  Yoshinori Sato  <qzb04471@nifty.ne.jp>
+2003-04-08  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/debugging.cdl: Allow CRC to be allocated in ROM as well as RAM.
+	* src/generic-stub.c: as above.
+
 2003-04-02  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/generic-stub.c: 
@@ -2144,6 +2150,7 @@ Mon Aug 31 09:16:08 1998  Jesper Skov  <jskov@cygnus.co.uk>
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Jonathan Larmour
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free

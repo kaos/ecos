@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2003 Jonathan Larmour
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -151,3 +152,16 @@ cdl_option CYGNUM_HAL_DEBUG_GDB_PROTOCOL_TIMEOUT {
         If this time elapses, then the packet will be resent, up to some
         maximum number of times (CYGNUM_HAL_DEBUG_GDB_PROTOCOL_RETRIES)."
 }
+
+cdl_option CYGDBG_HAL_CRCTABLE_LOCATION {
+    display       "Location of CRC32 table"
+    flavor        data
+    legal_values  {"ROM" "RAM"}
+    default_value {"RAM"}
+    description   "
+        The stubs use a 1 kilobyte CRC table that can either be pregenerated
+        and placed in ROM, or generated at runtime in RAM. Depending on
+        your memory constraints, one of these options may be better."
+}
+
+# EOF debugging.cdl
