@@ -1,3 +1,7 @@
+2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/ser_mips_upd985xx.cdl: Remove irrelevant doc link.
+
 2002-02-11  Jesper Skov  <jskov@redhat.com>
 
 	* src/upd985xx_serial.c (upd985xx_serial_init): Fix compile error.

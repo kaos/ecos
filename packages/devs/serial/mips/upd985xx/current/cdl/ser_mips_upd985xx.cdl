@@ -62,7 +62,6 @@ cdl_package CYGPKG_IO_SERIAL_MIPS_UPD985XX {
     description   "
            This option enables the serial device drivers for the
            NEC MIPS uPD985xx system-on-chip device."
-    doc           redirect/ecos-device-drivers.html
 
     compile       -library=libextras.a   upd985xx_serial.c
 
