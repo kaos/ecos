@@ -1,3 +1,13 @@
+2003-10-18  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/rbtree.c (rb_erase): Fix bug in red-black tree which caused
+	node corruption - merge from external sources, found by Scott Wilkerson.
+
+2003-10-18  Savin Zlobec <savin@elatec.si>
+
+    * include/linux/rbtree.h: 
+    Fixed 'pointer of type `void *' used in subtraction' compiler warrning.
+
 2003-07-27  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/linux/init.h: 

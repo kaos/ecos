@@ -15,7 +15,7 @@ struct rb_root {
 #define NULL ((void *)0)
 #define RB_ROOT ((struct rb_root){NULL})
 #define rb_entry(p, container, field)		\
-	((container *) ((void *)p - ((void *)&(((container *)0)->field))))
+	((container *) ((char *)p - ((char *)&(((container *)0)->field))))
 
 #define RB_BLACK	0
 #define RB_RED		1

@@ -294,7 +294,7 @@ void rb_erase(struct rb_node *elm, struct rb_root *head)
 			RB_HEAD(head) = child;
 		if (RB_PARENT(elm) == old)
 			parent = elm;
-		(elm) = (old);
+		*(elm) = *(old);
 		if (RB_PARENT(old)) {
 			if (RB_LEFT(RB_PARENT(old)) == old)
 				RB_LEFT(RB_PARENT(old)) = elm;
