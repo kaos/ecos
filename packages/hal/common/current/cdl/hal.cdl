@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2002 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -128,7 +129,7 @@ cdl_package CYGPKG_HAL {
             These options let the default behaviour of the caches 
             be easily configurable."
 
-        cdl_option CYGSEM_HAL_ENABLE_DCACHE_ON_STARTUP {
+        cdl_component CYGSEM_HAL_ENABLE_DCACHE_ON_STARTUP {
             display       "Enable DATA cache on startup"
             default_value 1
             description   "
@@ -137,6 +138,15 @@ cdl_package CYGPKG_HAL {
                 to disable this if the data cache cannot safely be turned on,
                 such as a case where the cache(s) require additional platform
                 specific setup."
+            cdl_option CYGSEM_HAL_DCACHE_STARTUP_MODE {
+                display       "DATA cache mode on startup"
+                flavor        data
+                legal_values  { "COPYBACK" "WRITETHRU" }
+                default_value { "COPYBACK" }
+                description   "
+                    This option controls the mode the cache will be set to
+                when enabled on startup."
+            }
         }
 
         cdl_option CYGSEM_HAL_ENABLE_ICACHE_ON_STARTUP {
