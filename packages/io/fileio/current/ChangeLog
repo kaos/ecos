@@ -1,3 +1,7 @@
+2004-11-17  Jani Monoses <jani@iv.ro>
+
+	* tests/socket.c: Allow building without kernel config.
+	
 2004-11-14  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/fileio1.c: Start the test using cyg_user_start so that

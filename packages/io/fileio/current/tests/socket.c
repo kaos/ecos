@@ -53,6 +53,21 @@
 //
 //==========================================================================
 
+#include <pkgconf/system.h>
+#include <pkgconf/isoinfra.h>
+
+#ifndef CYGINT_ISO_PTHREAD_IMPL
+# define NA_MSG "POSIX threads needed to run test"
+#elif !defined CYGPKG_NET
+# define NA_MSG "NET package needed to run test"
+#elif !defined CYGPKG_POSIX_SIGNALS
+# define NA_MSG "POSIX signals package needed to run test"
+#endif
+
+#include <cyg/infra/testcase.h>
+
+#ifndef NA_MSG
+
 #include <pkgconf/hal.h>
 #include <pkgconf/kernel.h>
 #include <pkgconf/io_fileio.h>
@@ -66,8 +81,6 @@
 
 #include <cyg/infra/testcase.h>
 
-#if defined(CYGPKG_NET) && defined(CYGPKG_POSIX)
-             
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -342,7 +355,7 @@ int main( int argc, char **argv )
 {
     CYG_TEST_INIT();
 
-    CYG_TEST_NA("socket");
+    CYG_TEST_NA(NA_MSG);
 }
 
 #endif
