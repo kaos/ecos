@@ -1,3 +1,7 @@
+2003-06-30  Mark Salter  <msalter@redhat.com>
+
+	* src/vectors.S: Fix CYGOPT_HAL_ARM_PRESERVE_SVC_SPSR handling.
+
 2003-06-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/hal_arch.h: Include plf_arch.h or var_arch.h if platform

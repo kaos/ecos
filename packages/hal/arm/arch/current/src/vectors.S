@@ -644,7 +644,6 @@ call_exception_handler:
 return_from_exception:
 
         ldr     r0,[sp,#armreg_cpsr]
-        msr     spsr,r0
 
         // return to supervisor mode is simple
         and     r1,r0,#CPSR_MODE_BITS
@@ -657,7 +656,17 @@ return_from_exception:
         // we must take care of not corrupting the current (svc)
         // spsr which happens to be also the pre-exception spsr
         bne     1f
-        // we are returning to svc mode thus we must restore the
+        tst     r0, #CPSR_THUMB_ENABLE
+        
+        // when returning to thumb/svc mode, there is no easy way to preserve
+        // spsr. It is possible to do so, but would add a lot of instructions.
+        // The purpose of CYGOPT_HAL_ARM_PRESERVE_SVC_SPSR is to allow stepping
+        // through SWI exception handling code, so not preserving spsr in this
+        // case should be okay.
+        msrne   spsr,r0
+        ldmnefd sp,{r0-r14,pc}^
+        
+        // we are returning to arm/svc mode thus we must restore the
         // pre-exception cpsr before returning to interrupted code
         msr     cpsr, r0
         ldmfd   sp, {r0-r14, pc}
