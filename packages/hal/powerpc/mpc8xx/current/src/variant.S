@@ -10,7 +10,7 @@
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 2003 Bart Veer
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-## Copyright (C) 2002 Gary Thomas
+## Copyright (C) 2002, 2003 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -55,7 +55,10 @@
 #include <cyg/hal/arch.inc>
 #include <cyg/hal/ppc_regs.h>		/* on-chip resource layout, special */
 					/* registers, IMM layout...         */
+
+#ifdef CYGPKG_HAL_QUICC                
 #include <cyg/hal/quicc/ppc8xx.h>       /* more of the same */
+#endif        
         
 #---------------------------------------------------------------------------
 # Interrupt vector tables.
@@ -93,7 +96,8 @@ hal_interrupt_objects:
 
         .text                
         .globl  _mpc8xx_reset
-_mpc8xx_reset:                                                  
+_mpc8xx_reset:
+#ifdef CYGPKG_HAL_QUICC                
 	lwi     r4,CYGARC_REG_IMM_BASE  # base address of control registers
 
         // Enable checkstop reset
@@ -112,8 +116,11 @@ _mpc8xx_reset:
         lwi     r3,_end
 10:     nop
         lwzu    r3,4(r2)        // Force a memory access
-        b       10b        
-                        
+        b       10b
+#else
+10:     nop
+        b       10b
+#endif                        
 
 ##-----------------------------------------------------------------------------
 ## end of variant.S
