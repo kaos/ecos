@@ -66,6 +66,7 @@ cdl_package CYGPKG_NET_FTPCLIENT {
         FTP client support. Provides ftp_put and ftp_get to put a file
         onto a remote FTP server and get a file from a remote server. 
         Only binary more is supported."
+    doc           ref/net-ftpclient.html
 
     compile       ftpclient.c
 

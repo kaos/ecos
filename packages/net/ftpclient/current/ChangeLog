@@ -1,3 +1,7 @@
+2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/ftpclient.cdl: Add doc link.
+
 2002-08-06  Andrew Lunn <andrew.lunn@ascom.ch>
 
 	* src/ftpclient.c: Send "quit" not "quit " to keep some servers
