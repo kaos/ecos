@@ -119,11 +119,15 @@
 
 #else
 
-#define CYG_FILEIO_SIGMASK_SET( __set, __oset ) CYG_EMPTY_STATEMENT
+#define CYG_FILEIO_SIGMASK_SET( __set, __oset ) \
+CYG_MACRO_START \
+CYG_UNUSED_PARAM( const sigset_t*, __set ); \
+CYG_UNUSED_PARAM( const sigset_t*, __oset ); \
+CYG_MACRO_END
 
 #define CYG_FILEIO_SIGPENDING() (0)
 
-#define CYG_FILEIO_DELIVER_SIGNALS( __mask ) CYG_EMPTY_STATEMENT
+#define CYG_FILEIO_DELIVER_SIGNALS( __mask ) CYG_UNUSED_PARAM( const sigset_t*, __mask )
 
 typedef int sigset_t;
 

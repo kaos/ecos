@@ -336,7 +336,7 @@ __externC int rmdir( const char *path )
 //==========================================================================
 // Rename a file
 
-__externC int rename( const char *path1, const char *path2 )
+__externC int rename( const char *path1, const char *path2 ) __THROW
 {
     FILEIO_ENTRY();
     
