@@ -240,7 +240,7 @@ of the watchdog. Initially the watchdog is asleep:
     <informalfigure PgWide=1>
       <mediaobject>
         <imageobject>
-          <imagedata fileref="asleep.gif" format="gif" Scalefit=1 Align="Center">
+          <imagedata fileref="asleep.png" Scalefit=1 Align="Center">
         </imageobject>
       </mediaobject>
     </informalfigure>
@@ -251,7 +251,7 @@ keep an eye on things (or occasionally both eyes).
     <informalfigure PgWide=1>
       <mediaobject>
         <imageobject>
-          <imagedata fileref="awake.gif" format="gif" Scalefit=1 Align="Center">
+          <imagedata fileref="awake.png" Scalefit=1 Align="Center">
         </imageobject>
       </mediaobject>
     </informalfigure>
