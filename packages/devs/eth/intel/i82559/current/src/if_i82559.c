@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -1333,7 +1334,7 @@ i82559_init(struct cyg_netdevtab_entry * ndp)
         // then this is the first time ever:
         if ( ! pci_init_find_82559s() ) {
 #ifdef DEBUG
-            os_printf( "pci_init_find_82559s failed" );
+            os_printf( "pci_init_find_82559s failed\n" );
 #endif
             return 0;
         }
@@ -2931,6 +2932,11 @@ pci_init_find_82559s( void )
 #ifdef DEBUG
                 db_printf(" memory address = 0x%08x\n", dev_info.base_map[0]);
                 db_printf(" I/O address = 0x%08x\n", dev_info.base_map[1]);
+#endif
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_USE_MEMORY
+                // Use the memory address instead of I/O.  Some devices just
+                // don't want to talk using the I/O registers :-(
+                p_i82559->io_address = dev_info.base_map[0];
 #endif
 
                 // Don't use cyg_pci_set_device_info since it clears

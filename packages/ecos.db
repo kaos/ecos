@@ -3878,6 +3878,56 @@ target psim {
             eCos in the PSIM simulator."
 }
 
+##-------------------------------------------------------------------------------------------
+## Cogent CSB281 (PowerPC 8245) packages
+##
+package CYGPKG_HAL_POWERPC_CSB281 {
+	alias		{ "Cogent PowerPC 8245 board" hal_powerpc_csb281 }
+	directory	hal/powerpc/csb281
+	script		hal_powerpc_csb281.cdl
+	hardware
+        description "
+            The CSB281 HAL package provides the support needed to run
+            eCos on a Cogent PowerPC 8245 board."
+}
+
+package CYGPKG_DEVS_FLASH_CSB281 {
+	alias 		{ "FLASH memory support for Cogent PowerPC 8245 board" flash_csb281 }
+	directory	devs/flash/powerpc/csb281
+	script		flash_csb281.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the Cogent CSB281 (PowerPC 8245) board."
+}
+
+package CYGPKG_DEVS_ETH_CSB281 {
+	alias 		{ "Cogent CSB281 (PowerPC 8245) 82559 ethernet driver"
+			   devs_eth_csb281 }
+	hardware
+	directory	devs/eth/powerpc/csb281
+	script		csb281_eth_drivers.cdl
+        description     "Ethernet driver for Cogent CSB281 (PowerPC 8245)
+                         with Intel i82559 ethernet interfaces."
+}
+
+target csb281 {
+	alias		{ "Cogent PowerPC 8245" cogent8245 }
+	packages        { CYGPKG_HAL_POWERPC
+                          CYGPKG_HAL_POWERPC_PPC60x
+                          CYGPKG_HAL_POWERPC_CSB281
+                          CYGPKG_DEVS_FLASH_STRATA
+                          CYGPKG_DEVS_FLASH_CSB281
+                          CYGPKG_IO_PCI
+                          CYGPKG_DEVS_ETH_CSB281
+                          CYGPKG_DEVS_ETH_INTEL_I82559
+        }
+        description "
+            The csb281 target provides the packages needed to run
+            eCos on the Cogent CSB281 (8245) board."
+}
+##-------------------------------------------------------------------------------------------
+
 # --------------------------------------------------------------------------
 # MIPS targets
 

@@ -11,6 +11,12 @@
 	* src/if_i82559.c (i82559_stop): Corrected wrong name of variable
 	in a diag_printf function.
 
+2002-07-24  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/if_i82559.c (pci_init_find_82559s): 
+	Allow platform to define CYGHWR_DEVS_ETH_INTEL_I82559_USE_MEMORY
+	which forces use of memory instead of I/O space for device access.
+
 2002-06-14  Gary Thomas  <gary@chez-thomas.org>
 
 	* src/if_i82559.c: 
