@@ -1,3 +1,8 @@
+2003-02-12  Mark Salter  <msalter@redhat.com>
+
+	* include/iq80321.h: Fix battery defines.
+	* src/diag/battery.c: Fix battery tests to match updated docs.
+
 2003-01-30  Mark Salter  <msalter@redhat.com>
 
 	* include/pkgconf/mlt_*: Adjust RAM size to match max supported.

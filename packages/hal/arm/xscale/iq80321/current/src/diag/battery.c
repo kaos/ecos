@@ -6,7 +6,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -60,19 +60,18 @@ extern void diag_wait(void);
 void
 battery_status(MENU_ARG arg)
 {
-    unsigned char status;
+    unsigned short status;
 
     // read battery status port
-    status = *(unsigned char *)IQ80321_BATTERY_STATUS_ADDR;
+    status = *IQ80321_BATTERY_STATUS;
 
     // examine bit b0 BATT_PRES#
-    if (status & IQ80321_BATTERY_PRESENT)
-	diag_printf("A battery is installed.\n");
-    else {
+    if (status & IQ80321_BATTERY_NOT_PRESENT) {
 	diag_printf("No battery installed.\n");
 	diag_wait();
 	return;
     }
+    diag_printf("A battery is installed.\n");
 
     if (status & IQ80321_BATTERY_CHARGE)			
 	diag_printf("Battery is fully charged.\n");
@@ -83,6 +82,11 @@ battery_status(MENU_ARG arg)
 	diag_printf("Battery is fully discharged.\n");
     else
 	diag_printf("Battery voltage measures within normal operating range.\n");
+
+    if (status & IQ80321_BATTERY_ENABLE)			
+	diag_printf("Battery Backup is enabled.\n");
+    else
+	diag_printf("Battery Backup is disabled.\n");
 
     diag_wait();
 }
@@ -95,6 +99,12 @@ battery_status(MENU_ARG arg)
 static void
 battery_test_write (MENU_ARG arg)
 {
+    *IQ80321_BATTERY_STATUS |= IQ80321_BATTERY_ENABLE;
+    if (*IQ80321_BATTERY_STATUS & IQ80321_BATTERY_ENABLE)
+        diag_printf("The battery backup has now been enabled.\n");
+    else
+        diag_printf("Unable to enable battery backup.\n");
+
     *(volatile unsigned *)SDRAM_BATTERY_TEST_ADDR = TEST_PATTERN;
 
     diag_printf("The value '%p' is now written to DRAM at address %p.\n",
@@ -109,6 +119,12 @@ static void
 battery_test_read (MENU_ARG arg)
 {
     cyg_uint32 value;	
+
+    *IQ80321_BATTERY_STATUS &= ~IQ80321_BATTERY_ENABLE;
+    if (*IQ80321_BATTERY_STATUS & IQ80321_BATTERY_ENABLE)
+        diag_printf("Unable to disable battery backup.\n");
+    else
+        diag_printf("The battery backup has now been disabled.\n");
 
     value = *(volatile unsigned *)SDRAM_BATTERY_TEST_ADDR;
 

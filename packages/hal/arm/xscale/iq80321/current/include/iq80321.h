@@ -11,7 +11,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -96,12 +96,16 @@
 // ------------------------------------------------------------------------
 // Battery Status
 //
-#define IQ80321_BATTERY_DISCHARGE 0x10
-#define IQ80321_BATTERY_CHARGE    0x04
-#define IQ80321_BATTERY_PRESENT   0x02
+#define IQ80321_BATTERY_NOT_PRESENT 0x01
+#define IQ80321_BATTERY_CHARGE      0x02
+#define IQ80321_BATTERY_ENABLE      0x04
+#define IQ80321_BATTERY_DISCHARGE   0x08
+
+#define IQ80321_BATTERY_STATUS ((volatile unsigned short *)IQ80321_BATTERY_STATUS_ADDR)
 
 // Address used for battery backup test
 #define SDRAM_BATTERY_TEST_ADDR  (SDRAM_UNCACHED_BASE + 0x100000)
+
 
 // ------------------------------------------------------------------------
 // 7 Segment Display
