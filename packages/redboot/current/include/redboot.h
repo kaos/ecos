@@ -87,6 +87,7 @@ EXTERN bool gdb_active;
 EXTERN bool have_net, use_bootp;
 EXTERN bootp_header_t my_bootp_info;
 EXTERN int gdb_port;
+EXTERN bool net_debug;
 #endif
 
 #ifdef CYGFUN_REDBOOT_BOOT_SCRIPT
