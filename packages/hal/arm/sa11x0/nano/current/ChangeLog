@@ -1,3 +1,8 @@
+2002-08-12  Mark Salter  <msalter@redhat.com>
+
+	* misc/redboot_POST.ecm: Remove CYGSEM_REDBOOT_ARM_LINUX_BOOT.
+	* misc/redboot_RAM.ecm: Ditto.
+
 2002-05-14  Jesper Skov  <jskov@redhat.com>
 
 	* src/nano_misc.c: Fixed warning.

@@ -1,3 +1,9 @@
+2002-08-12  Mark Salter  <msalter@redhat.com>
+
+	* cdl/hal_arm_iq80310.cdl: Remove CYGSEM_REDBOOT_ARM_LINUX_BOOT ref.
+	* misc/redboot_ROM.ecm: Ditto.
+	* misc/redboot_RAM.ecm: Ditto.
+
 2002-08-06  Gary Thomas  <gary@chez-thomas.org>
 2002-08-06  Motoya Kurotsu <kurotsu@allied-telesis.co.jp>	
 

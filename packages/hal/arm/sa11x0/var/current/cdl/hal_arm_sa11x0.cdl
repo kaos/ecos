@@ -155,7 +155,6 @@ cdl_package CYGPKG_HAL_ARM_SA11X0 {
         active_if     CYGPKG_REDBOOT
 
         # RedBoot details
-        requires { CYGSEM_REDBOOT_ARM_LINUX_BOOT }
         requires { CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS_DEFAULT == 0xc0008000 }
         define_proc {
             puts $::cdl_header "#define CYGHWR_REDBOOT_ARM_TRAMPOLINE_ADDRESS 0x00001f00"

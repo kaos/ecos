@@ -1,5 +1,8 @@
 2002-08-12  Mark Salter  <msalter@redhat.com>
 
+	* misc/redboot_ROM.ecm: Remove CYGSEM_REDBOOT_ARM_LINUX_BOOT.
+	* misc/redboot_RAM.ecm: Ditto.
+
 	* include/hal_platform_setup.h: Do some ATU initialization
 	before scrubbing, so PC BIOS can continue booting during
 	time consuming scrub.

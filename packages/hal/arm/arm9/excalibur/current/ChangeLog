@@ -1,3 +1,8 @@
+2002-08-12  Mark Salter  <msalter@redhat.com>
+
+	* cdl/hal_arm_arm9_excalibur.cdl: Remove CYGSEM_REDBOOT_ARM_LINUX_BOOT
+	requirement.
+
 2002-05-14  Jesper Skov  <jskov@redhat.com>
 
 	* src/excalibur_misc.c: Fixed warning.

@@ -190,7 +190,6 @@ cdl_package CYGPKG_HAL_ARM_IQ80310 {
             configuration."
 
         # RedBoot details
-        requires { CYGSEM_REDBOOT_ARM_LINUX_BOOT }
         requires { CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS_DEFAULT == 0xa0008000 }
         define_proc {
             puts $::cdl_header "#define CYGHWR_REDBOOT_ARM_TRAMPOLINE_ADDRESS 0xA1FF0000"

@@ -1,3 +1,8 @@
+2002-08-12  Mark Salter  <msalter@redhat.com>
+
+	* cdl/hal_arm_sa11x0.cdl: Remove CYGSEM_REDBOOT_ARM_LINUX_BOOT
+	requirement.
+
 2002-05-18  Gary Thomas  <gthomas@redhat.com>
 
 	* src/hal_diag.c (cyg_hal_plf_serial_control): Fix return value
