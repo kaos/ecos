@@ -5,7 +5,7 @@
 #define jiffies 100
 
 #define ERR_PTR(err) ((void*)(err))
-#define PTR_ERR(err) ((cyg_int32)(err))
+#define PTR_ERR(err) ((unsigned long)(err))
 #define IS_ERR(err) ((unsigned long)err > (unsigned long)-1000L)
 
 #define CURRENT_TIME cyg_timestamp()
