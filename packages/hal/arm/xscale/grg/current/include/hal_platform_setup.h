@@ -63,7 +63,7 @@
 #include <cyg/hal/hal_mm.h>             // more MMU definitions
 #include <cyg/hal/grg.h>                // Platform specific hardware definitions
 
-#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_ROMRAM)
+#if defined(CYG_HAL_STARTUP_ROM)
 #define PLATFORM_SETUP1  _platform_setup1
 #define PLATFORM_EXTRAS  <cyg/hal/hal_platform_extras.h>
 #define CYGHWR_HAL_ARM_HAS_MMU
@@ -86,7 +86,7 @@
 // This macro represents the initial startup code for the platform        
 	.macro _platform_setup1
 
-#ifdef CYGINT_HAL_ARM_BIGENDIAN
+#if CYGINT_HAL_ARM_BIGENDIAN
         // set big-endian
 	mrc	p15, 0, r0, c1, c0, 0
         orr	r0, r0, #0x80
@@ -201,16 +201,6 @@
         str	r1, [r0, #IXP425_SDRAM_IR]
 	DELAY   0x10000, r1
 
-#if defined(CYG_HAL_STARTUP_ROMRAM)
-        ldr     r0,=0x00000000
-        ldr     r1,=0x10000000
-        ldr     r2,=__bss_start
-  0:    ldr     r3,[r0],#4
-        str     r3,[r1],#4
-        cmp     r0,r2
-        bne     0b
-#endif
-                
 	// value to load into pc to jump to real runtime address
 	ldr     r0, =1f
 
@@ -236,7 +226,6 @@ icache_boundary:
     0:  b       0b
     1:
 
-#if defined(CYG_HAL_STARTUP_ROM)
 	// Move mmu tables into RAM so page table walks by the cpu
 	// don't interfere with FLASH programming.
 	ldr	r0, =mmu_table
@@ -250,7 +239,6 @@ icache_boundary:
 	str	r3, [r1], #4
 	cmp	r0, r2
 	bne	1b
-#endif
 
         mcr     p15, 0, r0, c7, c10, 4  // drain the write & fill buffers
         CPWAIT  r0

@@ -11,7 +11,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -63,7 +63,7 @@
 #include <cyg/hal/hal_mm.h>             // more MMU definitions
 #include <cyg/hal/ixdp425.h>            // Platform specific hardware definitions
 
-#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_ROMRAM)
+#if defined(CYG_HAL_STARTUP_ROM)
 #define PLATFORM_SETUP1  _platform_setup1
 #define PLATFORM_EXTRAS  <cyg/hal/hal_platform_extras.h>
 #define CYGHWR_HAL_ARM_HAS_MMU
@@ -86,7 +86,7 @@
 // This macro represents the initial startup code for the platform        
 	.macro _platform_setup1
 
-#ifdef CYGINT_HAL_ARM_BIGENDIAN
+#if CYGINT_HAL_ARM_BIGENDIAN
         // set big-endian
 	mrc	p15, 0, r0, c1, c0, 0
         orr	r0, r0, #0x80
@@ -207,16 +207,6 @@
 
 	DISPLAY	0x1003, r7, r8
 
-#if defined(CYG_HAL_STARTUP_ROMRAM)
-        ldr     r0,=0x00000000
-        ldr     r1,=0x10000000
-        ldr     r2,=__bss_start
-  0:    ldr     r3,[r0],#4
-        str     r3,[r1],#4
-        cmp     r0,r2
-        bne     0b
-#endif
-                
 	// value to load into pc to jump to real runtime address
 	ldr     r0, =1f
 
@@ -246,7 +236,6 @@ icache_boundary:
 
 	DISPLAY	0x1004, r7, r8
 
-#if defined(CYG_HAL_STARTUP_ROM)
 	// Move mmu tables into RAM so page table walks by the cpu
 	// don't interfere with FLASH programming.
 	ldr	r0, =mmu_table
@@ -260,7 +249,6 @@ icache_boundary:
 	str	r3, [r1], #4
 	cmp	r0, r2
 	bne	1b
-#endif
 
 	DISPLAY	0x1005, r7, r8
 
