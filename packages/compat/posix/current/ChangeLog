@@ -1,3 +1,7 @@
+2003-03-04  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/pthread.h: Rework prototypes to minimize namespace problems.
+
 2003-03-03  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* tests/signal2.c (cause_illegal_access): PowerPC only generates

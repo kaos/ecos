@@ -83,28 +83,28 @@
 // Thread creation and management.
 
 // Create a thread.
-externC int pthread_create ( pthread_t *thread,
-                             const pthread_attr_t *attr,
-                             void *(*start_routine) (void *),
-                             void *arg);
+__externC int pthread_create (pthread_t *__thread,
+                              const pthread_attr_t *__attr,
+                              void *(*__start_routine) (void *),
+                              void *__arg);
 
 // Get current thread id.
-externC pthread_t pthread_self ( void );
+__externC pthread_t pthread_self (void);
 
 // Compare two thread identifiers.
-externC int pthread_equal (pthread_t thread1, pthread_t thread2);
+__externC int pthread_equal (pthread_t __thread1, pthread_t __thread2);
 
 // Terminate current thread.
-externC void pthread_exit (void *retval) CYGBLD_ATTRIB_NORET;
+__externC void pthread_exit (void *__retval) CYGBLD_ATTRIB_NORET;
 
 // Wait for the thread to terminate. If thread_return is not NULL then
 // the retval from the thread's call to pthread_exit() is stored at
 // *thread_return.
-externC int pthread_join (pthread_t thread, void **thread_return);
+__externC int pthread_join (pthread_t __thread, void **__thread_return);
 
 // Set the detachstate of the thread to "detached". The thread then does not
 // need to be joined and its resources will be freed when it exits.
-externC int pthread_detach (pthread_t thread);
+__externC int pthread_detach (pthread_t __thread);
 
 //-----------------------------------------------------------------------------
 // Thread attribute handling.
@@ -118,83 +118,83 @@ externC int pthread_detach (pthread_t thread);
 // stackaddr            == unset
 // stacksize            == 0
 // 
-externC int pthread_attr_init (pthread_attr_t *attr);
+__externC int pthread_attr_init (pthread_attr_t *__attr);
 
 // Destroy thread attributes object
-externC int pthread_attr_destroy (pthread_attr_t *attr);
+__externC int pthread_attr_destroy (pthread_attr_t *__attr);
 
 
 // Set the detachstate attribute
-externC int pthread_attr_setdetachstate (pthread_attr_t *attr,
-                                         int detachstate);
+__externC int pthread_attr_setdetachstate (pthread_attr_t *__attr,
+                                           int __detachstate);
 
 // Get the detachstate attribute
-externC int pthread_attr_getdetachstate (const pthread_attr_t *attr,
-                                         int *detachstate);
+__externC int pthread_attr_getdetachstate (const pthread_attr_t *__attr,
+                                           int *__detachstate);
 
 
 // Set scheduling contention scope
-externC int pthread_attr_setscope (pthread_attr_t *attr, int scope);
+__externC int pthread_attr_setscope (pthread_attr_t *__attr, int __scope);
 
 // Get scheduling contention scope
-externC int pthread_attr_getscope (const pthread_attr_t *attr, int *scope);
+__externC int pthread_attr_getscope (const pthread_attr_t *__attr, int *__scope);
 
 
 // Set scheduling inheritance attribute
-externC int pthread_attr_setinheritsched (pthread_attr_t *attr, int inherit);
+__externC int pthread_attr_setinheritsched (pthread_attr_t *__attr, int __inherit);
 
 // Get scheduling inheritance attribute
-externC int pthread_attr_getinheritsched (const pthread_attr_t *attr,
-                                          int *inherit);
+__externC int pthread_attr_getinheritsched (const pthread_attr_t *__attr,
+                                            int *__inherit);
 
 
 // Set scheduling policy
-externC int pthread_attr_setschedpolicy (pthread_attr_t *attr, int policy);
+__externC int pthread_attr_setschedpolicy (pthread_attr_t *__attr, int __policy);
 
 // Get scheduling policy
-externC int pthread_attr_getschedpolicy (const pthread_attr_t *attr,
-                                         int *policy);
+__externC int pthread_attr_getschedpolicy (const pthread_attr_t *__attr,
+                                           int *__policy);
 
 
 // Set scheduling parameters
-externC int pthread_attr_setschedparam (pthread_attr_t *attr,
-				        const struct sched_param *param);
+__externC int pthread_attr_setschedparam (pthread_attr_t *__attr,
+                                          const struct sched_param *__param);
 
 // Get scheduling parameters
-externC int pthread_attr_getschedparam (const pthread_attr_t *attr,
-                                        struct sched_param *param);
+__externC int pthread_attr_getschedparam (const pthread_attr_t *__attr,
+                                          struct sched_param *__param);
 
 
 // Set starting address of stack. Whether this is at the start or end of
 // the memory block allocated for the stack depends on whether the stack
 // grows up or down.
-externC int pthread_attr_setstackaddr (pthread_attr_t *attr, void *stackaddr);
+__externC int pthread_attr_setstackaddr (pthread_attr_t *__attr, void *__stackaddr);
 
 // Get any previously set stack address.
-externC int pthread_attr_getstackaddr (const pthread_attr_t *attr,
-                                       void **stackaddr);
+__externC int pthread_attr_getstackaddr (const pthread_attr_t *__attr,
+                                         void **__stackaddr);
 
 
 // Set minimum creation stack size.
-externC int pthread_attr_setstacksize (pthread_attr_t *attr,
-                                       size_t stacksize);
+__externC int pthread_attr_setstacksize (pthread_attr_t *__attr,
+                                         size_t __stacksize);
 
 // Get current minimal stack size.
-externC int pthread_attr_getstacksize (const pthread_attr_t *attr,
-                                       size_t *stacksize);
+__externC int pthread_attr_getstacksize (const pthread_attr_t *__attr,
+                                         size_t *__stacksize);
 
 //-----------------------------------------------------------------------------
 // Thread scheduling controls
 
 // Set scheduling policy and parameters for the thread
-externC int pthread_setschedparam (pthread_t thread,
-                                   int policy,
-                                   const struct sched_param *param);
+__externC int pthread_setschedparam (pthread_t __thread,
+                                     int __policy,
+                                     const struct sched_param *__param);
 
 // Get scheduling policy and parameters for the thread
-externC int pthread_getschedparam (pthread_t thread,
-                                   int *policy,
-                                   struct sched_param *param);
+__externC int pthread_getschedparam (pthread_t __thread,
+                                     int *__policy,
+                                     struct sched_param *__param);
 
 
 
@@ -205,8 +205,8 @@ externC int pthread_getschedparam (pthread_t thread,
 #define PTHREAD_ONCE_INIT       0
 
 // Call init_routine just the once per control variable.
-externC int pthread_once (pthread_once_t *once_control,
-                          void (*init_routine) (void));
+__externC int pthread_once (pthread_once_t *__once_control,
+                            void (*__init_routine) (void));
 
 
 
@@ -217,19 +217,19 @@ externC int pthread_once (pthread_once_t *once_control,
 // Each thread has its own distinct thread-specific data area but all are
 // addressed by the same keys. The destructor function is called whenever a
 // thread exits and the value associated with the key is non-NULL.
-externC int pthread_key_create (pthread_key_t *key,
-                                void (*destructor) (void *));
+__externC int pthread_key_create (pthread_key_t *__key,
+                                  void (*__destructor) (void *));
 
 // Delete key.
-externC int pthread_key_delete (pthread_key_t key);
+__externC int pthread_key_delete (pthread_key_t __key);
 
 // Store the pointer value in the thread-specific data slot addressed
 // by the key.
-externC int pthread_setspecific (pthread_key_t key, const void *pointer);
+__externC int pthread_setspecific (pthread_key_t __key, const void *__pointer);
 
 // Retrieve the pointer value in the thread-specific data slot addressed
 // by the key.
-externC void *pthread_getspecific (pthread_key_t key);
+__externC void *pthread_getspecific (pthread_key_t __key);
 
 
 
@@ -253,7 +253,7 @@ struct pthread_cleanup_buffer
 // location we define we can ensure that it differs from NULL and any
 // other valid pointer (as required by the standard).
 
-externC int pthread_canceled_dummy_var;
+__externC int pthread_canceled_dummy_var;
 
 #define PTHREAD_CANCELED                ((void *)(&pthread_canceled_dummy_var))
 
@@ -271,48 +271,48 @@ externC int pthread_canceled_dummy_var;
 
 // Set cancel state of current thread to ENABLE or DISABLE.
 // Returns old state in *oldstate.
-externC int pthread_setcancelstate (int state, int *oldstate);
+__externC int pthread_setcancelstate (int __state, int *__oldstate);
 
 // Set cancel type of current thread to ASYNCHRONOUS or DEFERRED.
 // Returns old type in *oldtype.
-externC int pthread_setcanceltype (int type, int *oldtype);
+__externC int pthread_setcanceltype (int __type, int *__oldtype);
 
 // Cancel the thread.
-externC int pthread_cancel (pthread_t thread);
+__externC int pthread_cancel (pthread_t __thread);
 
 // Test for a pending cancellation for the current thread and terminate
 // the thread if there is one.
-externC void pthread_testcancel (void);
+__externC void pthread_testcancel (void);
 
 // Install a cleanup routine.
 // Note that pthread_cleanup_push() and pthread_cleanup_pop() are macros that
 // must be used in matching pairs and at the same brace nesting level.
-#define pthread_cleanup_push(routine,arg)                       \
-    {                                                           \
-        struct pthread_cleanup_buffer _buffer_;                 \
-        pthread_cleanup_push_inner (&_buffer_, (routine), (arg));
+#define pthread_cleanup_push(__routine, __arg)                          \
+    {                                                                   \
+        struct pthread_cleanup_buffer _buffer_;                         \
+        pthread_cleanup_push_inner (&_buffer_, (__routine), (__arg));
 
 // Remove a cleanup handler installed by the matching pthread_cleanup_push().
 // If execute is non-zero, the handler function is called.
-#define pthread_cleanup_pop(execute)                            \
-        pthread_cleanup_pop_inner (&_buffer_, (execute));       \
+#define pthread_cleanup_pop(__execute)                          \
+        pthread_cleanup_pop_inner (&_buffer_, (__execute));     \
     }
 
 
 // These two functions actually implement the cleanup push and pop functionality.
-externC void pthread_cleanup_push_inner (struct pthread_cleanup_buffer *buffer,
-                                         void (*routine) (void *),
-                                         void *arg);
+__externC void pthread_cleanup_push_inner (struct pthread_cleanup_buffer *__buffer,
+                                           void (*__routine) (void *),
+                                           void *__arg);
 
-externC void pthread_cleanup_pop_inner (struct pthread_cleanup_buffer *buffer,
-                                        int execute);
+__externC void pthread_cleanup_pop_inner (struct pthread_cleanup_buffer *__buffer,
+                                          int __execute);
 
 
 // -------------------------------------------------------------------------
 // eCos-specific function to measure stack usage of the supplied thread
 
 #ifdef CYGFUN_KERNEL_THREADS_STACK_MEASUREMENT
-externC size_t pthread_measure_stack_usage (pthread_t thread);
+__externC size_t pthread_measure_stack_usage (pthread_t __thread);
 #endif
 
 //-----------------------------------------------------------------------------
