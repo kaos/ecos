@@ -1,3 +1,8 @@
+2004-03-25  Sebastien Couret  <sebastien.couret@elios-informatique.com>
+
+        * src/quicc2_diag.c: Remove the warning from smc_smce which is of
+	type byte.
+	
 2003-12-16  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/quicc2_diag.c: Need to flush/invalidate cache for character

@@ -404,7 +404,7 @@ cyg_hal_plf_smcx_init_channel(struct port_info *info, int cpm_page)
     regs->smc_smcmr = 0x4823;
 
     // Clear events
-    regs->smc_smce = 0xFFFF;
+    regs->smc_smce = 0xFF;
     regs->smc_smcm = SMCE_Rx;
 
     // Init channel
