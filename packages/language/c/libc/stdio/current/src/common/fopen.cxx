@@ -156,6 +156,7 @@ static FILE *fopen_inner( cyg_stdio_handle_t dev,
     if (i == FOPEN_MAX) { // didn't find an empty slot
         errno = EMFILE;
         cyg_stdio_close( dev );
+        Cyg_libc_stdio_files::unlock();
         return NULL;
     } // if
 
@@ -169,6 +170,7 @@ static FILE *fopen_inner( cyg_stdio_handle_t dev,
     curr_stream = (Cyg_StdioStream *)malloc(sizeof(*curr_stream));
     if (curr_stream == NULL) {
         cyg_stdio_close( dev );
+        Cyg_libc_stdio_files::unlock();
         errno = ENOMEM;
         return NULL;
     } // if

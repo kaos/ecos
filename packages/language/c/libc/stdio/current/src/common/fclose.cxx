@@ -80,7 +80,13 @@ fclose( FILE *stream )
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)stream;
     int i;
     Cyg_ErrNo err;
-    
+
+    if (NULL == real_stream)
+    {
+        errno = EBADF;
+        return EOF;
+    }
+
     Cyg_libc_stdio_files::lock();
 
     // find the stream in the table
@@ -92,8 +98,8 @@ fclose( FILE *stream )
 
     if (i == FOPEN_MAX) // didn't find it
     {
+        Cyg_libc_stdio_files::unlock();
         errno = EBADF;
-
         return EOF;
     } // if
 
@@ -101,6 +107,7 @@ fclose( FILE *stream )
 
     if( err != ENOERR )
     {
+        Cyg_libc_stdio_files::unlock();
         errno = err;
         return EOF;
     }
