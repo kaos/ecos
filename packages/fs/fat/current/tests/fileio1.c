@@ -60,6 +60,7 @@
 #include <pkgconf/hal.h>
 #include <pkgconf/kernel.h>
 #include <pkgconf/io_fileio.h>
+#include <pkgconf/fs_fat.h>
 
 #include <cyg/kernel/ktypes.h>         // base kernel types
 #include <cyg/infra/cyg_trac.h>        // tracing macros
@@ -77,6 +78,7 @@
 
 #include <cyg/infra/testcase.h>
 #include <cyg/infra/diag.h>            // HAL polled output
+#include <cyg/fs/fatfs.h>
 
 
 
@@ -287,6 +289,26 @@ static void checkfile( char *name )
     err = close( fd );
     if( err < 0 ) SHOW_RESULT( close, err );
 }
+
+#ifdef CYGCFG_FS_FAT_USE_ATTRIBUTES
+//==========================================================================
+
+static void checkattrib(const char *name, 
+                        const cyg_fs_attrib_t test_attrib )
+{
+    int err;
+    cyg_fs_attrib_t file_attrib;
+
+    diag_printf("<INFO>: check attrib %s\n",name);
+
+    err = cyg_fs_get_attrib(name, &file_attrib);
+    if( err != 0 ) SHOW_RESULT( stat, err );
+
+    if ( (file_attrib & S_FATFS_ATTRIB) != test_attrib )
+        diag_printf("<FAIL>: attrib %s incorrect\n\tExpected %x Was %x\n",
+                    name,test_attrib,(file_attrib & S_FATFS_ATTRIB));
+}
+#endif // CYGCFG_FS_FAT_USE_ATTRIBUTES
 
 //==========================================================================
 
@@ -643,6 +665,70 @@ void fileio1_main( CYG_ADDRESS id )
     if( err < 0 ) SHOW_RESULT( umount, err );    
 #endif
     
+#ifdef CYGCFG_FS_FAT_USE_ATTRIBUTES
+    // Create file
+    diag_printf("<INFO>: create /foo\n");
+    createfile( "/foo", 20257 );
+
+    // Verify it is created with archive bit set
+    checkattrib( "/foo", S_FATFS_ARCHIVE );
+
+    // Make it System
+    diag_printf("<INFO>: attrib -A+S /foo\n");
+    err = cyg_fs_set_attrib( "/foo", S_FATFS_SYSTEM );
+    if( err < 0 ) SHOW_RESULT( chmod system , err );
+
+    // Verify it is now System
+    checkattrib( "/foo", S_FATFS_SYSTEM );
+
+    // Make it Hidden
+    diag_printf("<INFO>: attrib -S+H /foo\n");
+    err = cyg_fs_set_attrib( "/foo", S_FATFS_HIDDEN );
+    if( err < 0 ) SHOW_RESULT( chmod system , err );
+
+    // Verify it is now Hidden
+    checkattrib( "/foo", S_FATFS_HIDDEN );
+
+    // Make it Read-only
+    diag_printf("<INFO>: attrib -H+R /foo\n");
+    err = cyg_fs_set_attrib( "/foo", S_FATFS_RDONLY );
+    if( err < 0 ) SHOW_RESULT( chmod system , err );
+
+    // Verify it is now Read-only
+    checkattrib( "/foo", S_FATFS_RDONLY );
+
+    // Verify we cannot unlink a read-only file
+    diag_printf("<INFO>: unlink /foo\n");
+    err = unlink( "/foo" );
+    if( err != -EPERM ) SHOW_RESULT( unlink, err );
+
+    // Verify we cannot rename a read-only file
+    diag_printf("<INFO>: rename /foo bundy\n");
+    err = rename( "/foo", "bundy" );
+    if( err != -EPERM ) SHOW_RESULT( rename, err );
+
+    // Verify we cannot open read-only file for writing
+    int fd;
+    diag_printf("<INFO>: create file /foo\n");
+    fd = open( "/foo", O_WRONLY );
+    if( err != -EPERM ) SHOW_RESULT( rename, err );
+    if( err > 0 ) close(fd);
+
+    // Make it Normal
+    diag_printf("<INFO>: attrib -H /foo\n");
+    err = cyg_fs_set_attrib( "/foo", 0 );
+    if( err < 0 ) SHOW_RESULT( chmod none , err );
+
+    // Verify it is now nothing
+    checkattrib( "/foo", 0 );
+
+    // Now delete our test file
+    diag_printf("<INFO>: unlink /foo\n");
+    err = unlink( "/foo" );
+    if( err < 0 ) SHOW_RESULT( unlink, err );
+
+#endif // CYGCFG_FS_FAT_USE_ATTRIBUTES
+
     maxfile("file.max");
 
     listdir( "/", true, -1, NULL );    
@@ -650,7 +736,6 @@ void fileio1_main( CYG_ADDRESS id )
     diag_printf("<INFO>: unlink file.max\n");    
     err = unlink( "file.max" );
     if( err < 0 ) SHOW_RESULT( unlink, err );    
-
     diag_printf("<INFO>: umount /\n");    
     err = umount( "/" );
     if( err < 0 ) SHOW_RESULT( umount, err );    

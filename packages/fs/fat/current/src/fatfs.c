@@ -73,6 +73,7 @@
 #include <cyg/fileio/fileio.h>
 #include <cyg/io/io.h>
 #include <blib/blib.h>
+#include <cyg/fs/fatfs.h>
 
 #include "fatfs.h"
 
@@ -629,6 +630,13 @@ fatfs_open(cyg_mtab_entry *mte,
     if (S_ISDIR(node->dentry.mode))
         return EISDIR;
 
+#ifdef CYGCFG_FS_FAT_USE_ATTRIBUTES
+    // if the file is read only and is opened for writing
+    // fail with permission error
+    if (S_FATFS_ISRDONLY(node->dentry.attrib) && (mode & O_WRONLY))
+        return EACCES;
+#endif // CYGCFG_FS_FAT_USE_ATTRIBUTES
+
     // Allocate file object private data and
     // make a reference to this file node
 
@@ -678,6 +686,12 @@ fatfs_unlink(cyg_mtab_entry *mte,
     if (ds.node->refcnt > 0)
         return EBUSY;
     
+#ifdef CYGCFG_FS_FAT_USE_ATTRIBUTES
+    // if the file is read only fail with permission error
+    if (S_FATFS_ISRDONLY(ds.node->dentry.attrib))
+        return EPERM;
+#endif // CYGCFG_FS_FAT_USE_ATTRIBUTES
+
     err = fatfs_delete_file(disk, &ds.node->dentry);
     if (err == ENOERR)
         fatfs_node_free(disk, ds.node);
@@ -788,6 +802,12 @@ fatfs_rename(cyg_mtab_entry *mte,
     err = fatfs_find(&ds1);
     if (err != ENOERR)
         return err;
+
+#ifdef CYGCFG_FS_FAT_USE_ATTRIBUTES
+    // if the file is read only fail with permission error
+    if (S_FATFS_ISRDONLY(ds1.node->dentry.attrib))
+        return EPERM;
+#endif // CYGCFG_FS_FAT_USE_ATTRIBUTES
 
     // Protect the found nodes from being reused 
     // by the search for the ds2 dir/node pair 
@@ -983,6 +1003,10 @@ fatfs_stat(cyg_mtab_entry *mte,
     // Fill in the status
     
     buf->st_mode   = ds.node->dentry.mode;
+#ifdef CYGCFG_FS_FAT_USE_ATTRIBUTES
+    if (!S_FATFS_ISRDONLY(ds.node->dentry.attrib))
+        buf->st_mode |= (S_IWUSR | S_IWGRP | S_IWOTH);
+#endif // CYGCFG_FS_FAT_USE_ATTRIBUTES
     buf->st_ino    = (ino_t) ds.node->dentry.cluster;
     buf->st_dev    = 0;
     buf->st_nlink  = 1;
@@ -996,9 +1020,75 @@ fatfs_stat(cyg_mtab_entry *mte,
     return ENOERR;
 }
 
+#ifdef CYGCFG_FS_FAT_USE_ATTRIBUTES
+// -------------------------------------------------------------------------
+// fatfs_set_attrib()
+// Set FAT file system attributes for specified file
+
+static int
+fatfs_set_attrib(cyg_mtab_entry        *mte,
+                 cyg_dir                dir,
+                 const char            *name,
+                 const cyg_fs_attrib_t  new_attrib)
+{
+    fatfs_disk_t      *disk = (fatfs_disk_t *) mte->data;
+    fatfs_dirsearch_t  ds;
+    int                err;
+
+    CYG_TRACE4(TFS, "chmod mte=%p dir=%p name='%s' buf=%x", 
+                    mte, dir, name, new_attrib);
+
+    // Verify new_mode is valid
+    if ((new_attrib & S_FATFS_ATTRIB) != new_attrib)
+        return EINVAL;
+    
+    init_dirsearch(&ds, disk, (fatfs_node_t *) dir, name);
+
+    err = fatfs_find(&ds);
+    if (err != ENOERR)
+        return err;
+
+    // Change the "changeable" mode bits for the file.
+    ds.node->dentry.attrib = 
+      (ds.node->dentry.attrib & (~S_FATFS_ATTRIB)) | new_attrib;
+
+    return fatfs_write_dir_entry(disk,&ds.node->dentry);
+}
+
+// -------------------------------------------------------------------------
+// fatfs_get_attrib()
+// Set FAT file system attributes for specified file
+
+static int
+fatfs_get_attrib(cyg_mtab_entry  *mte,
+                 cyg_dir          dir,
+                 const char      *name,
+                 cyg_fs_attrib_t * const file_attrib)
+{
+    fatfs_disk_t      *disk = (fatfs_disk_t *) mte->data;
+    fatfs_dirsearch_t  ds;
+    int                err;
+
+    CYG_TRACE4(TFS, "chmod mte=%p dir=%p name='%s' buf=%x", 
+                    mte, dir, name, new_attrib);
+
+    init_dirsearch(&ds, disk, (fatfs_node_t *) dir, name);
+
+    err = fatfs_find(&ds);
+    if (err != ENOERR)
+        return err;
+
+    // Get the attribute field
+    CYG_CHECK_DATA_PTR(file_attrib,"Invalid destination attribute pointer");
+    *file_attrib = ds.node->dentry.attrib;
+
+    return ENOERR;
+}
+#endif // CYGCFG_FS_FAT_USE_ATTRIBUTES
+
 // -------------------------------------------------------------------------
 // fatfs_getinfo()
-// Getinfo. Nothing to support here at present.
+// Getinfo. Support for attrib
 
 static int 
 fatfs_getinfo(cyg_mtab_entry *mte, 
@@ -1008,14 +1098,27 @@ fatfs_getinfo(cyg_mtab_entry *mte,
               void           *buf, 
               int             len)
 {
+    int err = EINVAL;
+
     CYG_TRACE6(TFS, "getinfo mte=%p dir=%p name='%s' key=%d buf=%p len=%d",
                     mte, dir, name, key, buf, len);
-    return EINVAL;
+    switch( key )
+    {
+#ifdef CYGCFG_FS_FAT_USE_ATTRIBUTES
+        case FS_INFO_ATTRIB:
+            err = fatfs_get_attrib(mte, dir, name, (cyg_fs_attrib_t*)buf);
+            break;
+#endif // CYGCFG_FS_FAT_USE_ATTRIBUTES
+        default:
+            err = EINVAL;
+            break;
+    }
+    return err;
 }
 
 // -------------------------------------------------------------------------
 // fatfs_setinfo()
-// Setinfo. Nothing to support here at present.
+// Setinfo. Support for fssync and attrib
 
 static int 
 fatfs_setinfo(cyg_mtab_entry *mte, 
@@ -1025,9 +1128,26 @@ fatfs_setinfo(cyg_mtab_entry *mte,
               void           *buf, 
               int             len)
 {
-    CYG_TRACE6(TFS, "getinfo mte=%p dir=%p name='%s' key=%d buf=%p len=%d",
+    int err = EINVAL;
+
+    CYG_TRACE6(TFS, "setinfo mte=%p dir=%p name='%s' key=%d buf=%p len=%d",
                     mte, dir, name, key, buf, len);
-    return EINVAL;
+
+    switch( key )
+    {
+        case FS_INFO_SYNC:
+            err = cyg_blib_sync(&(((fatfs_disk_t *) mte->data)->blib));
+            break;
+#ifdef CYGCFG_FS_FAT_USE_ATTRIBUTES
+        case FS_INFO_ATTRIB:
+            err = fatfs_set_attrib(mte, dir, name, *(cyg_fs_attrib_t *)buf);
+            break;
+#endif // CYGCFG_FS_FAT_USE_ATTRIBUTES
+        default:
+            err = EINVAL;
+            break;
+    }
+    return err;
 }
 
 //==========================================================================

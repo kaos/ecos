@@ -48,7 +48,7 @@
 
 cdl_package CYGPKG_FS_FAT {
     display         "FAT filesystem"
-    include_dir     cyg/fatfs
+    include_dir     cyg/fs
 
     requires        CYGPKG_IO_FILEIO
 
@@ -57,7 +57,6 @@ cdl_package CYGPKG_FS_FAT {
     requires        CYGINT_ISO_ERRNO_CODES
     requires        CYGPKG_MEMALLOC
     requires        CYGPKG_BLOCK_LIB
-#    requires        CYGFUN_LIBC_STRING_BSD_FUNCS
 
     implements      CYGINT_IO_FILEIO_FS
     
@@ -103,6 +102,14 @@ cdl_package CYGPKG_FS_FAT {
         active_if       CYGPKG_INFRA_DEBUG && CYGDBG_USE_ASSERTS
         description     "This option controls the inclusion of extra
                          sanity checks in node cache code."
+    }
+    
+    cdl_option      CYGCFG_FS_FAT_USE_ATTRIBUTES {
+        display         "Support for FAT FS file attributes"
+        flavor          bool
+        default_value   0
+        description     "This option controls if the FAT filesystem supports
+                         or honors the FAT filesystem file attributes."
     }
     
     # --------------------------------------------------------------------

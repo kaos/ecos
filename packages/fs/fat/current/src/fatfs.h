@@ -124,6 +124,9 @@ typedef struct fatfs_dir_entry_s
     cyg_uint32        cluster;        // First cluster number
     cyg_uint32        parent_cluster; // First cluster of parent dentry
     fatfs_data_pos_t  disk_pos;       // Position of dir entry on disk
+#ifdef CYGCFG_FS_FAT_USE_ATTRIBUTES
+    cyg_fs_attrib_t    attrib;     // Attribute bits for DOS compatability
+#endif //CYGCFG_FS_FAT_USE_ATTRIBUTES
 } fatfs_dir_entry_t;
 
 typedef struct fatfs_node_s

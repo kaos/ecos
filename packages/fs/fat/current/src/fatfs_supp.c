@@ -53,6 +53,7 @@
 #include <cyg/infra/cyg_trac.h>
 #include <cyg/infra/diag.h>
 #include <cyg/io/io.h>
+#include <cyg/fs/fatfs.h>
 #include <blib/blib.h>
 
 #include <sys/types.h>
@@ -64,24 +65,14 @@
 // FAT defines & macros
 
 // -------------------------------------------------------------------------
-// FAT dir entry attributes
-
-#define DENTRY_ATTR_RDONLY  0x01 // Read only
-#define DENTRY_ATTR_HIDDEN  0x02 // Hidden
-#define DENTRY_ATTR_SYSTEM  0x04 // System
-#define DENTRY_ATTR_VOLUME  0x08 // Volume label
-#define DENTRY_ATTR_DIR     0x10 // Subdirectory
-#define DENTRY_ATTR_ARCHIVE 0x20 // Needs archiving
-
-// -------------------------------------------------------------------------
 // FAT dir entry attributes macros
 
-#define DENTRY_IS_RDONLY(_dentry_)  ((_dentry_)->attr & DENTRY_ATTR_RDONLY)
-#define DENTRY_IS_HIDDEN(_dentry_)  ((_dentry_)->attr & DENTRY_ATTR_HIDDEN)
-#define DENTRY_IS_SYSTEM(_dentry_)  ((_dentry_)->attr & DENTRY_ATTR_SYSTEM)
-#define DENTRY_IS_VOLUME(_dentry_)  ((_dentry_)->attr & DENTRY_ATTR_VOLUME)
-#define DENTRY_IS_DIR(_dentry_)     ((_dentry_)->attr & DENTRY_ATTR_DIR)
-#define DENTRY_IS_ARCHIVE(_dentry_) ((_dentry_)->attr & DENTRY_ATTR_ARCHIVE)
+#define DENTRY_IS_RDONLY(_dentry_)  (S_FATFS_ISRDONLY((_dentry_)->attr))
+#define DENTRY_IS_HIDDEN(_dentry_)  (S_FATFS_ISHIDDEN((_dentry_)->attr))
+#define DENTRY_IS_SYSTEM(_dentry_)  (S_FATFS_ISSYSTEM((_dentry_)->attr))
+#define DENTRY_IS_VOLUME(_dentry_)  (S_FATFS_ISVOLUME((_dentry_)->attr))
+#define DENTRY_IS_DIR(_dentry_)     (S_FATFS_ISDIR((_dentry_)->attr))
+#define DENTRY_IS_ARCHIVE(_dentry_) (S_FATFS_ISARCHIVE((_dentry_)->attr))
 
 #define DENTRY_IS_DELETED(_dentry_) \
     (0xE5 == (cyg_uint8)((_dentry_)->name[0]))
@@ -1624,6 +1615,10 @@ raw_to_dentry(fat_raw_dir_entry_t *raw_dentry,
     else
         dentry->mode = __stat_mode_REG;
     
+#ifdef CYGCFG_FS_FAT_USE_ATTRIBUTES
+    dentry->attrib = raw_dentry->attr;
+#endif // CYGCFG_FS_FAT_USE_ATTRIBUTES
+
     date_dos2unix(raw_dentry->crt_time, raw_dentry->crt_date, &dentry->ctime);
     date_dos2unix(0,                    raw_dentry->acc_date, &dentry->atime);
     date_dos2unix(raw_dentry->wrt_time, raw_dentry->wrt_date, &dentry->mtime);
@@ -1644,9 +1639,13 @@ dentry_to_raw(fatfs_dir_entry_t *dentry, fat_raw_dir_entry_t *raw_dentry)
     set_raw_dentry_filename(raw_dentry, dentry->filename, 0);
 
     if (__stat_mode_DIR == dentry->mode)
-        raw_dentry->attr = DENTRY_ATTR_DIR;
+        raw_dentry->attr = S_FATFS_DIR;
     else
-        raw_dentry->attr = DENTRY_ATTR_ARCHIVE;
+        raw_dentry->attr = S_FATFS_ARCHIVE;
+#ifdef CYGCFG_FS_FAT_USE_ATTRIBUTES
+    raw_dentry->attr = dentry->attrib;
+#endif // CYGCFG_FS_FAT_USE_ATTRIBUTES
+
         
     date_unix2dos(dentry->ctime, &raw_dentry->crt_time, &raw_dentry->crt_date);
     date_unix2dos(dentry->atime, NULL,                  &raw_dentry->acc_date);
@@ -1808,6 +1807,14 @@ init_dir_entry(fatfs_dir_entry_t *dentry,
     dentry->filename[namelen] = '\0';
     
     dentry->mode  = mode;
+
+#ifdef CYGCFG_FS_FAT_USE_ATTRIBUTES
+    if (S_ISDIR(dentry->mode))
+        dentry->attrib = S_FATFS_DIR;
+    else
+        dentry->attrib = S_FATFS_ARCHIVE;
+#endif // CYGCFG_FS_FAT_USE_ATTRIBUTES
+
     dentry->ctime = 
     dentry->atime =
     dentry->mtime = cyg_timestamp();
@@ -1939,6 +1946,9 @@ fatfs_get_root_dir_entry(fatfs_disk_t *disk, fatfs_dir_entry_t *dentry)
     CYG_CHECK_DATA_PTRC(dentry);
     
     dentry->mode           = __stat_mode_DIR;
+#ifdef CYGCFG_FS_FAT_USE_ATTRIBUTES
+    dentry->attrib         = S_FATFS_DIR;
+#endif // CYGCFG_FS_FAT_USE_ATTRIBUTES
     dentry->size           = disk->fat_root_dir_size;
     dentry->ctime          = 0;
     dentry->atime          = 0;
@@ -2389,7 +2399,7 @@ fatfs_rename_file(fatfs_disk_t      *disk,
  
     // If we moved a directory, we also have to correct the '..' entry  
 
-    if (__stat_mode_DIR == target->mode)
+    if ( S_ISDIR(target->mode) )
     {
         fat_raw_dir_entry_t raw_cdentry;
         fatfs_data_pos_t    pos;
