@@ -631,7 +631,7 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
         m->m_pkthdr.len = total_len;
     } else {
         sg_list[sg_len].buf = (CYG_ADDRESS)0;
-        sg_list[sg_len].len = min(total_len, MCLBYTES);
+        sg_list[sg_len].len = total_len;
         sg_len++;
         total_len = 0;
     }
@@ -645,8 +645,9 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
                 diag_printf("out of MBUFs [2]");
 #endif
                 sg_list[sg_len].buf = (CYG_ADDRESS)0;
-                sg_list[sg_len].len = 0;
-                sg_len = 1;
+                sg_list[sg_len].len = total_len;
+                sg_len++;
+                top = 0;
                 break;
             }
             mlen = MLEN;
@@ -660,7 +661,7 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
                 diag_printf("warning: eth_recv out of MBUFs\n");
 #endif
                 sg_list[sg_len].buf = (CYG_ADDRESS)0;
-                sg_list[sg_len].len = min(total_len, MCLBYTES);
+                sg_list[sg_len].len = total_len;
                 sg_len++;
                 top = 0;
                 break;

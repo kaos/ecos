@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/24
-// Version:     $Id: mainwin.cpp,v 1.45 2001/06/26 17:26:35 julians Exp $
+// Version:     $Id: mainwin.cpp,v 1.46 2001/06/29 13:48:22 julians Exp $
 // Purpose:
 // Description: Implementation file for the ConfigTool main window
 // Requires:
@@ -281,6 +281,7 @@ ecMainFrame::ecMainFrame(wxDocManager *manager, const wxString& title, const wxP
     // Load file history
     {
         wxConfig config(wxGetApp().GetSettings().GetConfigAppName(), wxT("Red Hat"));
+	config.SetPath(wxT("FileHistory/"));
         wxGetApp().GetDocManager()->FileHistoryLoad(config);
     }
     

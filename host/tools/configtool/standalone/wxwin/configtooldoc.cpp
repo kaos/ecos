@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/10/05
-// Version:     $Id: configtooldoc.cpp,v 1.33 2001/06/28 15:54:25 julians Exp $
+// Version:     $Id: configtooldoc.cpp,v 1.35 2001/07/05 10:42:16 julians Exp $
 // Purpose:
 // Description: Implementation file for the ecConfigToolDoc class
 // Requires:
@@ -657,7 +657,7 @@ bool ecConfigToolDoc::OpenRepository(const wxString& pszRepository /* = wxEmptyS
     {
         UpdateFailingRuleCount();
 
-        wxString strNewRepository;
+        ecFileName strNewRepository;
         while(!m_bRepositoryOpen)
         {
             if(bPromptInitially)
@@ -777,37 +777,52 @@ bool ecConfigToolDoc::OpenRepository(const wxString& pszRepository /* = wxEmptyS
     return m_bRepositoryOpen;
 }
 
-bool ecConfigToolDoc::OpenRepository (const ecFileName& strNewRepository, CdlPackagesDatabase &NewCdlPkgData,CdlInterpreter &NewCdlInterp,CdlConfiguration &NewCdlConfig, wxString &strNewPackagesDir)
+// Find a valid repository given a directory name
+bool ecConfigToolDoc::FindRepository (ecFileName& repositoryIn, ecFileName& repositoryOut) const
+{
+    if (repositoryIn.IsEmpty())
+	return FALSE;
+    
+    if (ecFileName(repositoryIn + wxT("ecos.db")).Exists())
+    {
+	repositoryOut = repositoryIn;
+	repositoryIn = wxPathOnly(repositoryIn);
+	return TRUE;
+    }
+    else if (ecFileName(ecFileName(repositoryIn) + ecFileName(wxT("ecc")) + wxT("ecos.db")).Exists())
+    {
+	repositoryOut = repositoryIn + wxT("ecc");
+	return TRUE;
+    }
+    else if (ecFileName(ecFileName(repositoryIn) + ecFileName(wxT("packages")) + wxT("ecos.db")).Exists())
+    {
+	repositoryOut = repositoryIn + wxT("packages");
+	return TRUE;
+    }
+    else
+    {
+	return FALSE;
+    }
+}
+
+
+bool ecConfigToolDoc::OpenRepository (ecFileName& strNewRepository, CdlPackagesDatabase &NewCdlPkgData,CdlInterpreter &NewCdlInterp,CdlConfiguration &NewCdlConfig, wxString &strNewPackagesDir)
 {
     bool rc=FALSE;
 
-    if(!strNewRepository.IsEmpty())
-    {
-        // Now strNewRepository is guaranteed non-empty, but does it exist?
-        if(!wxDirExists(strNewRepository))
-        {
-            wxString msg;
-            msg.Printf(_("Cannot open repository - the folder %s does not exist"), (const wxChar*) strNewRepository);
-            wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_EXCLAMATION|wxOK);
-        } else
-        {
-            // Ok so it exists, but does it look right?
-            //strNewPackagesDir=strNewRepository+wxString(wxFILE_SEP_PATH)+wxT("ecc");
-            strNewPackagesDir=strNewRepository + wxT("ecc");
-            if(!wxDirExists(strNewPackagesDir))
-            {
-                //strNewPackagesDir=strNewRepository+wxString(wxFILE_SEP_PATH)+wxT("packages");
-                strNewPackagesDir=strNewRepository + wxT("packages");
-            }
+    if (strNewRepository.IsEmpty())
+        return FALSE;
 
-            if(!wxDirExists(strNewPackagesDir))
-            {
-                // Don't mention the ecc\ attempt
-                wxString msg;
-                msg.Printf(_("%s does not seem to be a source repository: the folder %s does not exist"),
-                    (const wxChar*) strNewRepository, (const wxChar*) strNewPackagesDir);
-                wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_EXCLAMATION|wxOK);
-            } else {
+    ecFileName strNewPackagesDir1;
+    if (!FindRepository(strNewRepository, strNewPackagesDir1))
+    {
+        wxString msg;
+        msg.Printf(_("%s does not seem to be a source repository."),
+                    (const wxChar*) strNewRepository);
+        wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_EXCLAMATION|wxOK);
+    } else
+    {
+                strNewPackagesDir = strNewPackagesDir1;
 
                 const wxString strDatabase = strNewPackagesDir + wxString(wxFILE_SEP_PATH) + wxT("ecos.db");
                 if(!wxFileExists(strDatabase))
@@ -815,7 +830,8 @@ bool ecConfigToolDoc::OpenRepository (const ecFileName& strNewRepository, CdlPac
                     wxString msg;
                     msg.Printf(_("%s does not seem to be a source repository: %s does not exist"), (const wxChar*) strNewRepository, (const wxChar*) strDatabase);
                     wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_EXCLAMATION|wxOK);
-                } else {
+                } else
+		{
 
                     // create a CDL repository, interpreter and configuration
                     try {// create a new package database, interpreter and configuration
@@ -882,8 +898,6 @@ bool ecConfigToolDoc::OpenRepository (const ecFileName& strNewRepository, CdlPac
                     }
                     rc=TRUE;
                 }
-            }
-        }
     }
 
     return rc;

@@ -1,3 +1,14 @@
+2001-07-03  Hugo Tyson  <hmt@redhat.com>
+
+	* src/vectors.S (restore_state): When restoring the CPU status
+	register right at the end of interrupt processing, keep the
+	current settings of the IM[7:0] bits within the status register.
+	Depending on platform, these may be used as interrupt masks, so if
+	an ISR or DSR masks interrupts they must be preserved.  If they
+	are not used, then this does no harm.
+	#ifdef'd out for CYG_HAL_MIPS_R3900 anyway 'cos the TX39 does not
+	use these bits at all.
+
 2001-06-27  Mark Salter  <msalter@redhat.com>
 
 	* src/vectors.S (_start): Add code to switch from KSEG1 to KSEG0 if

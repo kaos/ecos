@@ -1,3 +1,7 @@
+2001-07-02  Jesper Skov  <jskov@redhat.com>
+
+	* src/io.c (do_channel): Fox build for !CYGPKG_REDBOOT_ANY_CONSOLE
+
 2001-06-28  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/redboot.cdl: Don't have a configured default IP address by

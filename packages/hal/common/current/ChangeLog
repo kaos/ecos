@@ -1,3 +1,7 @@
+2001-06-29  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal.cdl (CYGPKG_HAL_TESTS): Remove redundant .c extension
+
 2001-06-29  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_misc.h: Moved arbiter helper to

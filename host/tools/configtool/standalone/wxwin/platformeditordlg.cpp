@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/09/06
-// Version:     $Id: platformeditordlg.cpp,v 1.3 2001/03/23 13:38:04 julians Exp $
+// Version:     $Id: platformeditordlg.cpp,v 1.4 2001/07/05 10:42:16 julians Exp $
 // Purpose:
 // Description: Implementation file for the ecPlatformEditorDialog
 // Requires:
@@ -167,11 +167,12 @@ void ecPlatformEditorDialog::CreateControls(wxWindow* parent)
     wxTextCtrl *item11 = new wxTextCtrl( parent, ecID_MODIFY_PLATFORM_PROMPT, _(""), wxDefaultPosition, wxDefaultSize, 0 );
     item1->Add( item11, 0, wxGROW|wxALL, 5 );
 
+#if USE_SS_GDB_CONTROL
     item1->Add( 20, 20, 0, wxALIGN_CENTRE|wxALL, 5 );
 
     wxCheckBox *item12 = new wxCheckBox( parent, ecID_MODIFY_PLATFORM_SS_GDB, _("Server-side GDB"), wxDefaultPosition, wxDefaultSize, 0 );
     item1->Add( item12, 0, wxGROW|wxALL, 5 );
-
+#endif
     item0->Add( item1, 1, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
     wxSizer *item13 = new wxBoxSizer( wxHORIZONTAL );
@@ -190,64 +191,6 @@ void ecPlatformEditorDialog::CreateControls(wxWindow* parent)
 
     item0->Add( item13, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
-#if 0
-    wxSizer *item0 = new wxBoxSizer( wxVERTICAL );
-
-    wxSizer *item1 = new wxFlexGridSizer( 2, 0, 0 );
-
-    wxStaticText *item2 = new wxStaticText( parent, wxID_STATIC, "Platform &name:", wxDefaultPosition, wxDefaultSize, 0 );
-    item1->Add( item2, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
-
-    wxTextCtrl *item3 = new wxTextCtrl( parent, ecID_MODIFY_PLATFORM_NAME, "", wxDefaultPosition, wxSize(200,-1), 0 );
-    item1->Add( item3, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
-
-    wxStaticText *item4 = new wxStaticText( parent, wxID_STATIC, "Command &prefix:", wxDefaultPosition, wxDefaultSize, 0 );
-    item1->Add( item4, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
-
-    wxComboBox *item5 = new wxComboBox( parent, ecID_MODIFY_PLATFORM_PREFIX, "", wxDefaultPosition, wxSize(100,-1), 0, NULL, wxCB_DROPDOWN );
-    item1->Add( item5, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
-
-    wxStaticText *item6 = new wxStaticText( parent, wxID_STATIC, "Arguments for &GDB:", wxDefaultPosition, wxDefaultSize, 0 );
-    item1->Add( item6, 0, wxALL, 5 );
-
-    wxTextCtrl *item7 = new wxTextCtrl( parent, ecID_MODIFY_PLATFORM_ARGS, "", wxDefaultPosition, wxSize(80,140), wxTE_MULTILINE );
-    item1->Add( item7, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
-
-    wxStaticText *item8 = new wxStaticText( parent, wxID_STATIC, "Inferior:", wxDefaultPosition, wxDefaultSize, 0 );
-    item1->Add( item8, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
-
-    wxTextCtrl *item9 = new wxTextCtrl( parent, ecID_MODIFY_PLATFORM_INFERIOR, "", wxDefaultPosition, wxSize(80,-1), 0 );
-    item1->Add( item9, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
-
-    wxStaticText *item10 = new wxStaticText( parent, wxID_STATIC, "Prompt:", wxDefaultPosition, wxDefaultSize, 0 );
-    item1->Add( item10, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
-
-    wxTextCtrl *item11 = new wxTextCtrl( parent, ecID_MODIFY_PLATFORM_PROMPT, "", wxDefaultPosition, wxSize(80,-1), 0 );
-    item1->Add( item11, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
-
-    item1->Add( 20, 20, 0, wxALIGN_CENTRE|wxALL, 5 );
-
-    wxCheckBox *item12 = new wxCheckBox( parent, ecID_MODIFY_PLATFORM_SS_GDB, "Server-side GDB", wxDefaultPosition, wxDefaultSize, 0 );
-    item1->Add( item12, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
-
-    item0->Add( item1, 0, wxALIGN_CENTRE|wxALL, 5 );
-
-    wxSizer *item13 = new wxBoxSizer( wxHORIZONTAL );
-
-    wxButton *item14 = new wxButton( parent, wxID_OK, "&OK", wxDefaultPosition, wxDefaultSize, 0 );
-    item13->Add( item14, 0, wxALIGN_CENTRE|wxALL, 5 );
-
-    wxButton *item15 = new wxButton( parent, wxID_CANCEL, "&Cancel", wxDefaultPosition, wxDefaultSize, 0 );
-    item13->Add( item15, 0, wxALIGN_CENTRE|wxALL, 5 );
-
-#ifdef __WXGTK__
-    wxButton *contextButton = new wxContextHelpButton( parent );
-    item13->Add( contextButton, 0, wxALIGN_CENTRE|wxALL, 5 );
-#endif
-
-    item0->Add( item13, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
-#endif
-
     // Can't do this from wxDesigner :-(
     ((wxFlexGridSizer*)item1)->AddGrowableCol(1);
     ((wxFlexGridSizer*)item1)->AddGrowableRow(2);
@@ -265,9 +208,11 @@ void ecPlatformEditorDialog::CreateControls(wxWindow* parent)
     parent->FindWindow( ecID_MODIFY_PLATFORM_NAME )->SetHelpText(_("Specifies the name of the platform. Platform names are arbitrary strings, but must be unique for a given user."));
     parent->FindWindow( ecID_MODIFY_PLATFORM_PREFIX )->SetHelpText(_("Specifies the prefix to be used when invoking tools (for example, 'arm-elf' is the correct prefix if the appropriate gdb executable is arm-elf-gdb.exe)."));
     parent->FindWindow( ecID_MODIFY_PLATFORM_ARGS )->SetHelpText(_("Specifies any additional arguments to be used when invoking gdb."));
-    parent->FindWindow( ecID_MODIFY_PLATFORM_INFERIOR )->SetHelpText(_("TODO"));
-    parent->FindWindow( ecID_MODIFY_PLATFORM_PROMPT )->SetHelpText(_("TODO"));
+    parent->FindWindow( ecID_MODIFY_PLATFORM_INFERIOR )->SetHelpText(_("The gdb command to run."));
+    parent->FindWindow( ecID_MODIFY_PLATFORM_PROMPT )->SetHelpText(_("The gdb prompt."));
+#if USE_SS_GDB_CONTROL
     parent->FindWindow( ecID_MODIFY_PLATFORM_SS_GDB )->SetHelpText(_("TODO"));
+#endif
     parent->FindWindow( wxID_OK )->SetHelpText(_("Closes the dialog and saves any changes you have made."));
     parent->FindWindow( wxID_CANCEL )->SetHelpText(_("Closes the dialog without saving any changes you have made."));
 
@@ -281,7 +226,9 @@ void ecPlatformEditorDialog::CreateControls(wxWindow* parent)
     parent->FindWindow( ecID_MODIFY_PLATFORM_ARGS )->SetValidator(wxGenericValidator(& m_strGDB));
     parent->FindWindow( ecID_MODIFY_PLATFORM_INFERIOR )->SetValidator(wxGenericValidator(& m_strInferior));
     parent->FindWindow( ecID_MODIFY_PLATFORM_PROMPT )->SetValidator(wxGenericValidator(& m_strPrompt));
+#if USE_SS_GDB_CONTROL
     parent->FindWindow( ecID_MODIFY_PLATFORM_SS_GDB )->SetValidator(wxGenericValidator(& m_bServerSideGdb));
+#endif
 }
 
 void ecPlatformEditorDialog::OnChangeNewPlatformPrefix(wxCommandEvent& event)

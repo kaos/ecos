@@ -135,9 +135,14 @@ void SetBaud(long port, long reqRate)
 
 int CharReady(long port)
 {
+#ifdef __CYGWIN__
+    // Windows doesn't support the below ioctl
+    return 1;
+#else
     int n, res;
     res = ioctl(port, FIONREAD, &n);
     return n;  // Non-zero if characters ready to read
+#endif
 }
 
 void WaitForOutputEmpty(long port)

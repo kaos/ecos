@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/09/29
-// Version:     $Id: runtestsdlg.cpp,v 1.13 2001/06/28 15:54:25 julians Exp $
+// Version:     $Id: runtestsdlg.cpp,v 1.14 2001/06/29 13:48:22 julians Exp $
 // Purpose:
 // Description: Implementation file for ecRunTestsDialog
 // Requires:
@@ -65,6 +65,31 @@
 #include "settingsdlg.h"
 #include "eCosThreadUtils.h"
 #include "eCosTrace.h"
+
+void ecRunTestsTimer::Notify()
+{
+    static bool s_inNotify = FALSE;
+
+    if (s_inNotify)
+        return;
+
+    s_inNotify = TRUE;
+
+    // On Windows, simply having the timer going will ping the message queue
+    // and cause idle processing to happen.
+    // On Unix, this doesn't happen so we have to do the processing explicitly.
+#ifdef __WXMSW__
+    // Nothing to do
+#else
+    if ( ecRunTestsDialog::m_runTestsDialog )
+    {
+	wxIdleEvent event;
+	ecRunTestsDialog::m_runTestsDialog->OnIdle(event);
+    }
+#endif
+
+    s_inNotify = FALSE;
+}
 
 /*
  * Run Tests dialog
@@ -220,10 +245,13 @@ ecRunTestsDialog::ecRunTestsDialog(wxWindow* parent):
     CeCosTrace::SetInteractive(TRUE);
     CeCosTrace::SetOutput(TestOutputCallback, this);
     CeCosTrace::SetError (TestOutputCallback, this);
+
+    m_timer.Start(200);
 }
 
 ecRunTestsDialog::~ecRunTestsDialog()
 {
+    m_timer.Stop();
     CeCosTrace::SetInteractive(FALSE);
     m_runTestsDialog = NULL;
     if (m_pResource)
@@ -304,14 +332,18 @@ void ecRunTestsDialog::OnRun(wxCommandEvent& event)
             }
             else
             {
-                String strPort;
+                wxString strPort;
                 if (wxGetApp().GetSettings().GetRunTestsSettings().m_bSerial)
-                    strPort = (const wxChar*) wxGetApp().GetSettings().GetRunTestsSettings().m_strPort;
+                    strPort = wxGetApp().GetSettings().GetRunTestsSettings().m_strPort;
                 else
-                    strPort = CeCosSocket::HostPort(wxGetApp().GetSettings().GetRunTestsSettings().m_strLocalTCPIPHost,wxGetApp().GetSettings().GetRunTestsSettings().m_nLocalTCPIPPort);
-                if(0==strPort.size()){
+                    strPort = (const wxChar*) CeCosSocket::HostPort(wxGetApp().GetSettings().GetRunTestsSettings().m_strLocalTCPIPHost,wxGetApp().GetSettings().GetRunTestsSettings().m_nLocalTCPIPPort);
+                if(0==strPort.Length()){
                     m_pResource=new CTestResource(_T(""),m_ep.PlatformName());
-                } else {
+                } else
+		{
+                    // Translate from e.g. COM2 to /dev/ttyS1 on Unix.
+                    // Let's assume the Windows notation is the 'standard'.
+		    strPort = TranslatePort(strPort);
                     int nBaud = wxGetApp().GetSettings().GetRunTestsSettings().m_bSerial ? wxGetApp().GetSettings().GetRunTestsSettings().m_nBaud:0;
                     if (RESET_X10 != wxGetApp().GetSettings().GetRunTestsSettings().m_nReset) {
                         m_pResource=new CTestResource(_T(""),m_ep.PlatformName(), strPort, nBaud);
@@ -332,6 +364,25 @@ void ecRunTestsDialog::OnRun(wxCommandEvent& event)
             SubmitTests();
         }
     }    
+}
+
+wxString ecRunTestsDialog::TranslatePort(const wxString& port) const
+{
+#ifdef __WXGTK__
+    wxString name(port.Left(3));
+    if (name.CmpNoCase(wxT("COM")) == 0)
+    {
+	wxString strNum(port.Mid(3));
+	if (strNum.IsEmpty())
+	    return port;
+	int num = atoi(strNum);
+	wxString newPort;
+	newPort.Printf(wxT("/dev/ttyS%d"), num-1);
+	return newPort;
+    }
+    else
+#endif
+        return port;
 }
 
 void ecRunTestsDialog::SubmitTests()

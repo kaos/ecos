@@ -67,7 +67,7 @@ CYG_ADDRWORD cyg_hal_pcmb_memsize_extended;
 /*------------------------------------------------------------------------*/
 // Initializer
 
-void hal_pcmb_init()
+void hal_pcmb_init(void)
 {
     cyg_uint8 lo,hi;
     

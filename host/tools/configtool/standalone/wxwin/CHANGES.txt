@@ -1,10 +1,24 @@
 Release History for eCos Configuration Tool 2
 =============================================
 
-*** Version 2.03, June 28th 2001
+*** Version 2.03, July 2nd 2001
 
 - Corrected a bug introduced in the previous release, where the initial template
   selection was wrong.
+
+- More forgiving when specifying the packages directory for the repository.
+
+- Run Tests dialog now working when using a serial port: Windows and Linux. TCP/IP
+  mode seems to be working on Windows also.
+
+- Now saves file history list in FileHistory instead of top-level in config file/registry.
+
+- Removed Server-side GDB checkbox in platform editor.
+
+- Widened TCP/IP port text control in Run Tests settings dialog.
+
+- Fixed bug where message box with an empty repository name was shown if no repository
+  was found at all.
 
 *** Version 2.02, June 27th 2001
 

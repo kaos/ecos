@@ -1,3 +1,7 @@
+2001-06-29  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/io.c: Support building on cygwin.
+
 2001-06-28  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/hal_arm_edb7xxx.cdl: Clarify platform description.

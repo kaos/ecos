@@ -133,14 +133,15 @@ void
 cyg_hal_plf_serial_putc(void *__ch_data, char c)
 {
     cyg_uint8* base = ((channel_data_t*)__ch_data)->base;
-    cyg_uint32 status;
+    cyg_uint32 status, ch;
     CYGARC_HAL_SAVE_GP();
 
     do {
         HAL_READ_UINT32(base+E7T_UART_STAT, status);
     } while ((status & E7T_UART_STAT_TXE) == 0);
 
-    HAL_WRITE_UINT32(base+E7T_UART_TXBUF, c);
+    ch = (cyg_uint32)c;
+    HAL_WRITE_UINT32(base+E7T_UART_TXBUF, ch);
 
     CYGARC_HAL_RESTORE_GP();
 }
@@ -148,14 +149,19 @@ cyg_hal_plf_serial_putc(void *__ch_data, char c)
 static cyg_bool
 cyg_hal_plf_serial_getc_nonblock(void* __ch_data, cyg_uint8* ch)
 {
-    cyg_uint8* base = ((channel_data_t*)__ch_data)->base;
+    channel_data_t* chan = (channel_data_t*)__ch_data;
+    cyg_uint8* base = chan->base;
     cyg_uint32 stat;
+    cyg_uint32 c;
 
     HAL_READ_UINT32(base+E7T_UART_STAT, stat);
     if ((stat & E7T_UART_STAT_RDR) == 0)
         return false;
 
-    HAL_READ_UINT32(base+E7T_UART_RXBUF, *ch);
+    HAL_READ_UINT32(base+E7T_UART_RXBUF, c);
+    *ch = (cyg_uint8)(c & 0xff);
+
+    HAL_INTERRUPT_ACKNOWLEDGE(chan->isr_vector_rx);
 
     return true;
 }
@@ -228,6 +234,7 @@ cyg_hal_plf_serial_control(void *__ch_data, __comm_control_cmd_t __func, ...)
     switch (__func) {
     case __COMMCTL_IRQ_ENABLE:
         irq_state = 1;
+        HAL_INTERRUPT_ACKNOWLEDGE(chan->isr_vector_rx);
         HAL_INTERRUPT_UNMASK(chan->isr_vector_rx);
         break;
     case __COMMCTL_IRQ_DISABLE:
@@ -262,22 +269,24 @@ cyg_hal_plf_serial_isr(void *__ch_data, int* __ctrlc,
 {
     int res = 0;
     channel_data_t* chan = (channel_data_t*)__ch_data;
-    char c;
+    cyg_uint32 c;
+    cyg_uint8 ch;
     cyg_uint32 stat;
     CYGARC_HAL_SAVE_GP();
-
-    cyg_drv_interrupt_acknowledge(chan->isr_vector_rx);
 
     *__ctrlc = 0;
     HAL_READ_UINT32(chan->base+E7T_UART_STAT, stat);
     if ( (stat & E7T_UART_STAT_RDR) != 0 ) {
 
         HAL_READ_UINT32(chan->base+E7T_UART_RXBUF, c);
-        if( cyg_hal_is_break( &c , 1 ) )
+        ch = (cyg_uint8)(c & 0xff);
+        if( cyg_hal_is_break( &ch , 1 ) )
             *__ctrlc = 1;
 
         res = CYG_ISR_HANDLED;
     }
+
+    HAL_INTERRUPT_ACKNOWLEDGE(chan->isr_vector_rx);
 
     CYGARC_HAL_RESTORE_GP();
     return res;

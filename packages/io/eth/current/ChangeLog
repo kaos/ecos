@@ -1,3 +1,8 @@
+2001-07-03  Gary Thomas  <gthomas@redhat.com>
+
+	* src/net/eth_drv.c (eth_drv_recv): Better cleanup when running
+	out of mbufs - could have lost mbufs before.
+
 2001-06-21  David Woodhouse <dwmw2@redhat.com>
 
 	* src/stand_alone/eth_drv.c: Timeout when waiting for Ethernet

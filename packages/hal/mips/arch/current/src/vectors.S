@@ -720,8 +720,24 @@ restore_state:
         srl	k0,1
     1:
 #endif
-	lva	k0,mipsreg_pc(sp)		# K0 = return PC
+
 	lw	k1,mipsreg_sr(sp)		# K1 = saved SR
+#ifndef CYG_HAL_MIPS_R3900	
+	# Keep the current settings of the IM[7:0] bits within the status
+	# register.  These may be used as interrupt masks, so if an ISR or
+	# DSR masks interrupts they must be preserved.
+	# If they are not used, then this does no harm.
+	ori	k0,zero,0xff00
+	nor	k0,k0,k0			# 0xffff00ff
+	and	k1,k1,k0			# all interrupts disabled
+
+	mfc0	k0,status			# V0 = current SR
+	nop
+	nop
+	andi	k0,k0,0xff00			# preserve interrupt set
+	or	k1,k1,k0			# insert into "saved SR"
+#endif
+	lva	k0,mipsreg_pc(sp)		# K0 = return PC
 	lsp	sp,sp				# load SP
 
 	# Invoke CPU specific mechanism for returning from this

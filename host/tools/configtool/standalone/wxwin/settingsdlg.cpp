@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/09/11
-// Version:     $Id: settingsdlg.cpp,v 1.12 2001/04/24 16:34:55 julians Exp $
+// Version:     $Id: settingsdlg.cpp,v 1.13 2001/07/05 10:42:16 julians Exp $
 // Purpose:
 // Description: Implementation file for ecSettingsDialog
 // Requires:
@@ -1021,7 +1021,7 @@ void ecRunOptionsDialog::CreateControls( wxPanel *parent)
     wxStaticText *item26 = new wxStaticText( parent, wxID_STATIC, _(":"), wxDefaultPosition, wxDefaultSize, 0 );
     item22->Add( item26, 0, wxALIGN_CENTRE, 5 );
 
-    wxTextCtrl *item27 = new wxTextCtrl( parent, ecID_RUN_PROPERTIES_TCPIP_PORT, _(""), wxDefaultPosition, wxSize(30,-1), 0 );
+    wxTextCtrl *item27 = new wxTextCtrl( parent, ecID_RUN_PROPERTIES_TCPIP_PORT, _(""), wxDefaultPosition, wxSize(40,-1), 0 );
     item22->Add( item27, 0, wxALIGN_CENTRE|wxALL, 5 );
 
     item14->Add( item22, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5 );

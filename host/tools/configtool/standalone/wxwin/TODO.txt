@@ -3,15 +3,11 @@ To-Do List for Configuration Tool 2.x
 
 - Implement Memory Layout Tool.
 
-- Debug Run Tests Dialog.
+- Verify Run Tests Dialog works for TCP/IP mode on Linux.
 
 - List templates in alphabetical order under Linux. Unfortunately
   wxComboBox in wxGTK doesn't support wxCB_SORT at this time
   (but wxChoice does).
-
-- User reports that if you set ECOS_REPOSITORY to e.g. /home/julians/eCos/ecc/ecc,
-  configtool will complain about a missing packages directory.
-  (Can't reproduce.)
 
 - Importing more than one package at a time can cause conflicts
   whereas importing one at a time causes no conflicts.

@@ -1,3 +1,14 @@
+2001-07-05  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/pcmb_misc.c (hal_pcmb_init): Silence warning
+	* include/pcmb_intr.h: Revert below change - not relevant in this case	
+	for clobbers
+
+2001-07-04  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/pcmb_intr.h: Be pedantic about register constraint syntax
+	to satisfy newer compilers
+
 2001-05-16  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/pcmb_misc.c (hal_pc_clock_initialize): Use mode 2 (rate generator)

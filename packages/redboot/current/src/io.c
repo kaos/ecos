@@ -99,11 +99,12 @@ do_channel(int argc, char *argv[])
     /* else display */ 
     else {
         printf("Current console channel id: ");
+#ifdef CYGPKG_REDBOOT_ANY_CONSOLE
         if (!console_selected)
             printf("-1\n");
-        else {
+        else
+#endif
             printf("%d\n", cur);
-        }
     }
 }
 

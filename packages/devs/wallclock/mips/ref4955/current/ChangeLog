@@ -1,3 +1,7 @@
+2001-07-03  Jesper Skov  <jskov@redhat.com>
+
+	* src/wallclock_ref4955.cxx: Don't include kernel config.
+
 2000-05-26  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/wallclock_ref4955.cdl:

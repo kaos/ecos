@@ -69,8 +69,8 @@ CYG_MACRO_START                                 \
 {                                               \
     asm volatile ( "xor %%eax,%%eax ;"          \
                    "inb %%dx, %%al"             \
-                   : "=eax" (_value_)           \
-                   :  "edx"(_register_)         \
+                   : "=a" (_value_)           \
+                   :  "d"(_register_)         \
         );                                      \
 }                                               \
 CYG_MACRO_END
@@ -80,7 +80,7 @@ CYG_MACRO_START                                         \
 {                                                       \
     asm volatile ( "outb %%al,%%dx"                     \
                    :                                    \
-                   : "eax" (_value_), "edx"(_register_) \
+                   : "a" (_value_), "d"(_register_) \
         );                                              \
 }                                                       \
 CYG_MACRO_END
@@ -105,8 +105,8 @@ CYG_MACRO_START                                 \
 {                                               \
     asm volatile ( "xor %%eax,%%eax ;"          \
                    "inw %%dx, %%ax"             \
-                   : "=eax" (_value_)           \
-                   :  "edx"(_register_)         \
+                   : "=a" (_value_)           \
+                   :  "d"(_register_)         \
         );                                      \
 }                                               \
 CYG_MACRO_END
@@ -116,7 +116,7 @@ CYG_MACRO_START                                         \
 {                                                       \
     asm volatile ( "outw %%ax,%%dx"                     \
                    :                                    \
-                   : "eax" (_value_), "edx"(_register_) \
+                   : "a" (_value_), "d"(_register_) \
         );                                              \
 }                                                       \
 CYG_MACRO_END
@@ -140,8 +140,8 @@ CYG_MACRO_END
 CYG_MACRO_START                                 \
 {                                               \
     asm volatile ( "inl %%dx, %%eax"            \
-                   : "=eax" (_value_)           \
-                   :  "edx"(_register_)         \
+                   : "=a" (_value_)           \
+                   :  "d"(_register_)         \
         );                                      \
 }                                               \
 CYG_MACRO_END
@@ -151,7 +151,7 @@ CYG_MACRO_START                                         \
 {                                                       \
     asm volatile ( "outl %%eax,%%dx"                    \
                    :                                    \
-                   : "eax" (_value_), "edx"(_register_) \
+                   : "a" (_value_), "d"(_register_) \
         );                                              \
 }                                                       \
 CYG_MACRO_END

@@ -1070,6 +1070,16 @@ package CYGPKG_HAL_ARM_EBSA285 {
         eCos on a Intel EBSA285 StrongARM eval board."
 }
 
+package CYGPKG_HAL_ARM_ARM9 {
+	alias		{ "ARM9 variant" hal_arm_arm9 }
+	directory	hal/arm/arm9/var
+	script		hal_arm_arm9.cdl
+	hardware
+        description "
+        The ARM9 HAL package provides the support needed to run
+        eCos on a ARM9 based systems."
+}
+
 package CYGPKG_HAL_ARM_SA11X0 {
 	alias		{ "Intel SA11X0 Chipset" hal_arm_sa11x0 }
 	directory	hal/arm/sa11x0/var

@@ -398,11 +398,34 @@ ecos_usbeth_probe(struct usb_device* usbdev, unsigned int interface_id)
     int                 res;
     unsigned char       MAC[6];
     unsigned char       dummy[1];
+    int                 tx_endpoint = -1;
+    int                 rx_endpoint = -1;
     
     if ((usbdev->descriptor.idVendor  != ecos_usbeth_implementations[0].vendor) ||
         (usbdev->descriptor.idProduct != ecos_usbeth_implementations[0].vendor)) {
         return (void*) 0;
     }
+    // For now only support USB-ethernet peripherals consisting of a single
+    // configuration, with a single interface, with two bulk endpoints.
+    if ((1 != usbdev->descriptor.bNumConfigurations)  ||
+        (1 != usbdev->config[0].bNumInterfaces) ||
+        (2 != usbdev->config[0].interface[0].altsetting->bNumEndpoints)) {
+        return (void*) 0;
+    }
+    if ((0 == (usbdev->config[0].interface[0].altsetting->endpoint[0].bEndpointAddress & USB_DIR_IN)) &&
+        (0 != (usbdev->config[0].interface[0].altsetting->endpoint[1].bEndpointAddress & USB_DIR_IN))) {
+        tx_endpoint = usbdev->config[0].interface[0].altsetting->endpoint[0].bEndpointAddress;
+        rx_endpoint = usbdev->config[0].interface[0].altsetting->endpoint[1].bEndpointAddress & ~USB_DIR_IN;
+    }
+    if ((0 != (usbdev->config[0].interface[0].altsetting->endpoint[0].bEndpointAddress & USB_DIR_IN)) &&
+        (0 == (usbdev->config[0].interface[0].altsetting->endpoint[1].bEndpointAddress & USB_DIR_IN))) {
+        tx_endpoint = usbdev->config[0].interface[0].altsetting->endpoint[1].bEndpointAddress;
+        rx_endpoint = usbdev->config[0].interface[0].altsetting->endpoint[0].bEndpointAddress & ~USB_DIR_IN;
+    }
+    if (-1 == tx_endpoint) {
+        return (void*) 0;
+    }
+           
     res = usb_set_configuration(usbdev, usbdev->config[0].bConfigurationValue);
     if (0 != res) {
         printk("ecos_usbeth: failed to set configuration, %d\n", res);
@@ -421,6 +444,7 @@ ecos_usbeth_probe(struct usb_device* usbdev, unsigned int interface_id)
         printk("ecos_usbeth: failed to get MAC address, %d\n", res);
         return (void*) 0;
     }
+    
     res = usb_control_msg(usbdev,
                           usb_sndctrlpipe(usbdev, 0),                           // pipe
                           ECOS_USBETH_CONTROL_SET_PROMISCUOUS_MODE,             // request
@@ -450,11 +474,11 @@ ecos_usbeth_probe(struct usb_device* usbdev, unsigned int interface_id)
 
     usbeth->usb_lock    = SPIN_LOCK_UNLOCKED;
     usbeth->usb_dev     = usbdev;
-    FILL_BULK_URB(&(usbeth->tx_urb), usbdev, usb_sndbulkpipe(usbdev, 1),
+    FILL_BULK_URB(&(usbeth->tx_urb), usbdev, usb_sndbulkpipe(usbdev, tx_endpoint),
                   usbeth->tx_buffer, ECOS_USBETH_MAXTU, &ecos_usbeth_tx_callback, (void*) usbeth);
-    FILL_BULK_URB(&(usbeth->rx_urb), usbdev, usb_rcvbulkpipe(usbdev, 2),
+    FILL_BULK_URB(&(usbeth->rx_urb), usbdev, usb_rcvbulkpipe(usbdev, rx_endpoint),
                   usbeth->rx_buffer, ECOS_USBETH_MAXTU, &ecos_usbeth_rx_callback, (void*) usbeth);
-
+    
     usbeth->net_dev             = net;
     usbeth->target_promiscuous  = 0;
     

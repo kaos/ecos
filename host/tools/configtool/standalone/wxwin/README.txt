@@ -47,7 +47,6 @@ What's in this release?
   original tool:
 
   - Memory Layout Tool
-  - Running tests from the tool
   - Administration functionality (initial code present but untested)
   - Gauge indicating time left to build library and tests
 
@@ -238,10 +237,9 @@ A:  The wxWindows web site is at http://www.wxwindows.org.
 Q:  Does the new Configuration Tool make the old one obsolete?
 
 A:  Not yet. The new tool doesn't yet support some features, such
-    as the Memory Layout Tool and the Run Tests dialog. When
-    these have been implemented, and the tool has been subject
-    to the required quality assurance procedure, then we can
-    retire the old tool.
+    as the Memory Layout Tool. When these have been implemented,
+    and the tool has been subject to the required quality assurance
+    procedure, then we can retire the old tool.
 
 
 Q:  How can I help improve the Configuration Tool?

@@ -1,3 +1,15 @@
+2001-07-02  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c (cyg_hal_plf_serial_getc_nonblock): Ack RX
+	interrupt after reading.
+
+	* include/pkgconf/mlt_arm_e7t_ram.mlt: Reserve 64kB for RedBoot.
+	* include/pkgconf/mlt_arm_e7t_ram.ldi: Same.
+
+	* src/hal_diag.c: Make some data type fixes. Try to ack interrupt
+	after reading data. Unable to test though due to some other
+	problem on diag output.
+
 2001-04-17  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_arm_e7t.cdl: Fix compiler flags. In particular, do now

@@ -416,7 +416,7 @@ cdl_package CYGPKG_HAL {
         display "Common HAL tests"
         flavor  data
         no_define
-        calculated { "tests/cache tests/context tests/intr tests/cpp1.c" }
+        calculated { "tests/cache tests/context tests/intr tests/cpp1" }
         description   "
             This option specifies the set of tests for the common HAL."
     }

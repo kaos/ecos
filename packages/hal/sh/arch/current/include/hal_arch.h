@@ -303,9 +303,9 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 
 //--------------------------------------------------------------------------
 // CPU address space translation macros
-#define CYGARC_PHYSICAL_ADDRESS(x)  ((CYG_ADDRWORD)(x) & 0x1fffffff)
-#define CYGARC_CACHED_ADDRESS(x)    (CYGARC_PHYSICAL_ADDRESS(x)|0x80000000)
-#define CYGARC_UNCACHED_ADDRESS(x)  (CYGARC_PHYSICAL_ADDRESS(x)|0xa0000000)
+#define CYGARC_BUS_ADDRESS(x)       ((CYG_ADDRWORD)(x) & 0x1fffffff)
+#define CYGARC_CACHED_ADDRESS(x)    (CYGARC_BUS_ADDRESS(x)|0x80000000)
+#define CYGARC_UNCACHED_ADDRESS(x)  (CYGARC_BUS_ADDRESS(x)|0xa0000000)
 
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_ARCH_H

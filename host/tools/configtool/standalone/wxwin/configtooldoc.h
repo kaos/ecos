@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/10/05
-// Version:     $Id: configtooldoc.h,v 1.13 2001/06/11 14:22:31 julians Exp $
+// Version:     $Id: configtooldoc.h,v 1.14 2001/06/29 13:48:22 julians Exp $
 // Purpose:
 // Description: Header file for ecConfigToolDoc
 // Requires:
@@ -133,8 +133,10 @@ public:
 
 //// Operations
     bool OpenRepository(const wxString& pszRepository = wxEmptyString, bool bPromptInitially=FALSE) ;
-    bool OpenRepository (const ecFileName& strNewRepository, CdlPackagesDatabase &NewCdlPkgData,CdlInterpreter &NewCdlInterp,CdlConfiguration &NewCdlConfig, wxString &strNewPackagesDir);
+    bool OpenRepository (ecFileName& strNewRepository, CdlPackagesDatabase &NewCdlPkgData,CdlInterpreter &NewCdlInterp,CdlConfiguration &NewCdlConfig, wxString &strNewPackagesDir);
     void CloseRepository() ;
+    // Find a valid repository given a directory name
+    bool FindRepository (ecFileName& repositoryIn, ecFileName& repositoryOut) const;
     void EnableCallbacks (bool bEnable=TRUE);
     void AddContents (const CdlContainer container, ecConfigItem *pParent);
     void AddAllItems();
