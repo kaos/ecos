@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -75,10 +75,28 @@
 void
 plf_hardware_init(void)
 {
+    // GPIO(15) used for ENET clock
+    HAL_GPIO_OUTPUT_ENABLE(15);
+    *IXP425_GPCLKR |= GPCLKR_CLK1_ENABLE;
+    *IXP425_GPCLKR |= GPCLKR_CLK1_PCLK2;
+
+    // ENET-0 IRQ line
+    HAL_GPIO_OUTPUT_DISABLE(4);
+    HAL_INTERRUPT_CONFIGURE(CYGNUM_HAL_INTERRUPT_GPIO4, 1, 0);
+
+    // ENET-1 IRQ line
+    HAL_GPIO_OUTPUT_DISABLE(5);
+    HAL_INTERRUPT_CONFIGURE(CYGNUM_HAL_INTERRUPT_GPIO5, 1, 0);
+
 #ifdef CYGPKG_IO_PCI
     extern void hal_plf_pci_init(void);
     hal_plf_pci_init();
 #endif
+
+    *IXP425_EXP_CS4 = (EXP_ADDR_T(3) | EXP_SETUP_T(3) | EXP_STROBE_T(15) | EXP_HOLD_T(3) | \
+		       EXP_RECOVERY_T(15) | EXP_SZ_512 | EXP_WR_EN | EXP_CS_EN);
+    *IXP425_EXP_CS5 = (EXP_ADDR_T(3) | EXP_SETUP_T(3) | EXP_STROBE_T(15) | EXP_HOLD_T(3) | \
+		       EXP_RECOVERY_T(15) | EXP_SZ_512 | EXP_WR_EN | EXP_CS_EN);
 }
 
 // ------------------------------------------------------------------------

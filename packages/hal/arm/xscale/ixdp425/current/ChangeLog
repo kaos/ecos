@@ -1,3 +1,10 @@
+2003-03-26  Mark Salter  <msalter@redhat.com>
+
+	* src/ixdp425_misc.c (plf_hardware_init): Set up NPE PHY chip
+	selects and clocks.
+
+	* include/hal_plf_ints.h: Define interrupts for NPE PHYs.
+
 2003-02-22  Mark Salter  <msalter@redhat.com>
 
 	* misc/redboot_ROM.ecm: Fix linux exec address.
