@@ -77,7 +77,7 @@
 #define CYGNUM_HAL_INTERRUPT_TIM0                1
 #define CYGNUM_HAL_INTERRUPT_2                   2
 #define CYGNUM_HAL_INTERRUPT_3                   3
-#define CYGNUM_HAL_INTERRUPT_RTC                 4
+#define CYGNUM_HAL_INTERRUPT_FPGA_RTC            4
 #define CYGNUM_HAL_INTERRUPT_COREHI              5
 #define CYGNUM_HAL_INTERRUPT_CORELO              6
 #define CYGNUM_HAL_INTERRUPT_7                   7
@@ -106,6 +106,8 @@
 
 #define CYGNUM_HAL_INTERRUPT_DEBUG_UART        CYGNUM_HAL_INTERRUPT_SER
 
+#define CYGNUM_HAL_INTERRUPT_RTC CYGNUM_HAL_INTERRUPT_HW5
+
 #define CYGHWR_HAL_INTERRUPT_VECTORS_DEFINED
 
 #endif
@@ -119,14 +121,78 @@
 // interrupts.
 externC volatile CYG_BYTE hal_interrupt_level[CYGNUM_HAL_ISR_COUNT];
 
-#define HAL_INTERRUPT_MASK( _vector_ )                       \
-    HAL_WRITE_UINT32( HAL_ATLAS_INTRSTEN, (1<<(_vector_)) );
+#define HAL_INTERRUPT_MASK( _vector_ )                                  \
+{                                                                       \
+    cyg_uint32 __vector = _vector_;                                     \
+                                                                        \
+    if( (_vector_) < CYGNUM_HAL_INTERRUPT_HW1 )                         \
+        HAL_WRITE_UINT32( HAL_ATLAS_INTRSTEN, (1<<(_vector_)) );        \
+    else                                                                \
+    {                                                                   \
+        __vector -= (CYGNUM_HAL_INTERRUPT_HW1-1);                       \
+                                                                        \
+        asm volatile (                                                  \
+            "mfc0   $3,$12\n"                                           \
+            "la     $2,0x00000400\n"                                    \
+            "sllv   $2,$2,%0\n"                                         \
+            "nor    $2,$2,$0\n"                                         \
+            "and    $3,$3,$2\n"                                         \
+            "mtc0   $3,$12\n"                                           \
+            "nop; nop; nop\n"                                           \
+            :                                                           \
+            : "r"(__vector)                                             \
+            : "$2", "$3"                                                \
+            );                                                          \
+    }                                                                   \
+}
 
-#define HAL_INTERRUPT_UNMASK( _vector_ )                     \
-    HAL_WRITE_UINT32( HAL_ATLAS_INTSETEN, (1<<(_vector_)) );
+#define HAL_INTERRUPT_UNMASK( _vector_ )                                \
+{                                                                       \
+    cyg_uint32 __vector = _vector_;                                     \
+                                                                        \
+    if( (__vector) < CYGNUM_HAL_INTERRUPT_HW1 )                         \
+    {                                                                   \
+        HAL_WRITE_UINT32( HAL_ATLAS_INTSETEN, (1<<(__vector)) );        \
+        __vector = 0;                                                   \
+    }                                                                   \
+    else                                                                \
+        __vector -= (CYGNUM_HAL_INTERRUPT_HW1-1);                       \
+                                                                        \
+    asm volatile (                                                      \
+        "mfc0   $3,$12\n"                                               \
+        "la     $2,0x00000400\n"                                        \
+        "sllv   $2,$2,%0\n"                                             \
+        "or     $3,$3,$2\n"                                             \
+        "mtc0   $3,$12\n"                                               \
+        "nop; nop; nop\n"                                               \
+        :                                                               \
+        : "r"(__vector)                                                 \
+        : "$2", "$3"                                                    \
+        );                                                              \
+}
 
-#define HAL_INTERRUPT_ACKNOWLEDGE( _vector_ )                \
-{                                                            \
+#define HAL_INTERRUPT_ACKNOWLEDGE( _vector_ )           \
+{                                                       \
+    cyg_uint32 __vector = _vector_;                     \
+                                                        \
+    if( __vector >= CYGNUM_HAL_INTERRUPT_HW1 )          \
+        __vector -= (CYGNUM_HAL_INTERRUPT_HW1-1);       \
+    else                                                \
+        __vector = 0;                                   \
+                                                        \
+    asm volatile (                                      \
+        "mfc0   $3,$13\n"                               \
+        "la     $2,0x00000400\n"                        \
+        "sllv   $2,$2,%0\n"                             \
+        "nor    $2,$2,$0\n"                             \
+        "and    $3,$3,$2\n"                             \
+        "mtc0   $3,$13\n"                               \
+        "nop; nop; nop\n"                               \
+        :                                               \
+        : "r"(__vector)                                 \
+        : "$2", "$3"                                    \
+        );                                              \
+                                                        \
 }
 
 #define HAL_INTERRUPT_CONFIGURE( _vector_, _level_, _up_ )   \
