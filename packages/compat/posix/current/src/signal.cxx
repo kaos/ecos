@@ -131,7 +131,7 @@ Cyg_Mutex signal_mutex CYGBLD_POSIX_INIT;
 
 // Condition variable for all threads in sigsuspend() and sigwait()
 // to wait on.
-Cyg_Condition_Variable signal_sigwait( signal_mutex ) CYGBLD_POSIX_INIT;
+Cyg_Condition_Variable CYGBLD_POSIX_INIT signal_sigwait( signal_mutex ) ;
 
 // Global pending signal set
 sigset_t sig_pending;
@@ -152,7 +152,7 @@ static signal_info *siginfo_next = NULL;
 static void sigalrm_action( Cyg_Alarm *alarm, CYG_ADDRWORD data );
 
 // Kernel alarm object
-static Cyg_Alarm sigalrm_alarm( Cyg_Clock::real_time_clock, sigalrm_action, 0 ) CYGBLD_POSIX_INIT;
+static Cyg_Alarm CYGBLD_POSIX_INIT sigalrm_alarm( Cyg_Clock::real_time_clock, sigalrm_action, 0 ) ;
 
 // Set true when alarm is armed
 volatile cyg_bool sigalrm_armed = false;
