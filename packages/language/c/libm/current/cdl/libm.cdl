@@ -51,7 +51,7 @@
 
 cdl_package CYGPKG_LIBM {
     display       "Math library"
-    doc           redirect/the-iso-standard-c-and-math-libraries.html
+    doc           ref/libc.html
     description   "
         ISO standard floating point mathematical library
         containing many useful functions for mathematical
