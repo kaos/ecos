@@ -54,7 +54,6 @@
 
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_arch.h>
-#include <cyg/hal/hal_cache.h>
 
 //
 // CAUTION!  This code must be copied to RAM before execution.  Therefore,
@@ -69,13 +68,6 @@ flash_query(unsigned char *data)
     volatile unsigned long *lROM;
     volatile unsigned char *cROM;
     int i, cnt;
-    int cache_on;
-
-    HAL_DCACHE_IS_ENABLED(cache_on);
-    if (cache_on) {
-        HAL_DCACHE_SYNC();
-        HAL_DCACHE_DISABLE();
-    }
 
     lROM = (unsigned long *)0x08000000;
     cROM = (unsigned char *)0x08000000;
@@ -86,10 +78,6 @@ flash_query(unsigned char *data)
         *data++ = cROM[i];
     }
     lROM[0] = FLASH_Reset;
-
-    if (cache_on) {
-        HAL_DCACHE_ENABLE();
-    }
 
     return 0;
 }
