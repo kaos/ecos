@@ -1,3 +1,11 @@
+2003-10-21  Eric Doenges <Eric.Doenges@DynaPel.com>
+
+	* src/monitor.c (cyg_monitor_memory): Check if the request
+	contains a 'base' parameter and don't display anything if it does
+	not. This prevents the monitor from attempting to access memory
+	location '0' when the user accesses the memory html page for the
+	first time without any parameters.
+
 2003-09-23  Andrew Lunn  <andrew.lunn@ascom.ch>
 
         * src/httpd.c (cyg_httpd_server): Removed unused variable.
@@ -61,4 +69,3 @@
 #
 # Permission is granted to use, copy, modify and redistribute this
 # file.
-		

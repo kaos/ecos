@@ -551,13 +551,21 @@ static cyg_bool cyg_monitor_memory( FILE * client, char *filename,
     unsigned int datasize = 1;
     int size = 256;
     char *p;
+    bool valid_base = true;
+
     
     cyg_formdata_parse( formdata, formlist, 10 );
 
     p = cyg_formlist_find( formlist, "base" );
 
+    /* If the page is requested without a 'base' parameter, do not attempt
+     * to access any memory locations to prevent illegal memory accesses
+     * on targets where '0' is not a valid address.
+     */
     if( p != NULL )
         sscanf( p, "%x", &base );
+    else
+        valid_base = false;
 
     p = cyg_formlist_find( formlist, "datasize" );
 
@@ -588,6 +596,9 @@ static cyg_bool cyg_monitor_memory( FILE * client, char *filename,
                     "Base Address: 0x<input type=\"text\" name=\"base\" size=\"10\" value=\"%x\">\n",
                     base);
 
+            fprintf(client,
+                    "WARNING: entering an illegal base address can crash the system.\n");
+
             /* A little menu for the element size
              */
             html_para_begin( client, "" );
@@ -615,7 +626,8 @@ static cyg_bool cyg_monitor_memory( FILE * client, char *filename,
             cyg_html_tag_begin( client, "font", "face=\"monospace\"" );
             
             html_table_begin( client, "" );
-            {
+
+            if (valid_base == true) {
                 cyg_addrword_t loc;
                 cyg_addrword_t oloc;
                 
