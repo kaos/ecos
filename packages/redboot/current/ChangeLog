@@ -1,3 +1,10 @@
+2004-02-25  Gratian Crisan <nelu@iv.ro>
+
+	* src/xyzModem.c: Do not read an information header for XModem 
+	in xyzModem_stream_open(). XModem does not have a file information
+	header and this caused in the previous implementation a retransmission
+	of the first data block (it was read and ignored in the open function).
+
 2004-02-24  Gary Thomas  <gary@mlbassoc.com>
 
 	* cdl/redboot.cdl: net_io needs to be in libextras to enable network

@@ -357,6 +357,12 @@ xyzModem_stream_open(connection_info_t *info, int *err)
     
     CYGACC_COMM_IF_PUTC(*xyz.__chan, (xyz.crc_mode ? 'C' : NAK));
 
+    if (xyz.mode == xyzModem_xmodem) {
+	    // X-modem doesn't have an information header - exit here
+            xyz.next_blk = 1;
+            return 0;
+    }
+
     while (retries-- > 0) {
         stat = xyzModem_get_hdr();
         if (stat == 0) {
