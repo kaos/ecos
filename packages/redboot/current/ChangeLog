@@ -1,3 +1,8 @@
+2004-04-19  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/fs/fileio.c: Can't test for CYGPKG_IO_FLASH_BLOCK_DEVICE without
+	first testing for CYGPKG_IO_FLASH and including it's pkgconf file.
+
 2004-04-19  John Dallaway  <jld@ecoscentric.com>
 
 	* doc/makefile, doc/redboot_main.sgml: New files to build the RedBoot

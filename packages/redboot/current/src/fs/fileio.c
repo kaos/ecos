@@ -63,7 +63,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
-#ifdef CYGPKG_IO_FLASH_BLOCK_DEVICE
+#ifdef CYGPKG_IO_FLASH
 #include <cyg/io/io.h>
 #include <cyg/io/flash.h>
 #include <cyg/io/config_keys.h>
