@@ -72,8 +72,6 @@ else
     ifneq (,$(wildcard /usr/lib/sgml/stylesheet/dsssl/docbook/nwalsh/sgml.catalog))
       CATALOG        := /usr/lib/sgml/catalog
       DSSSL_CATALOG  := /usr/lib/sgml/stylesheet/dsssl/docbook/nwalsh/sgml.catalog
-    else
-      Error: unable to locate DocBook tools.
     endif
   endif
 endif
@@ -82,6 +80,14 @@ A4_STYLESHEET  := $(TOPLEVEL)/pkgconf/ssa4.dsl
 LETTER_STYLESHEET  := $(TOPLEVEL)/pkgconf/ssletter.dsl
 HTML_STYLESHEET  := $(TOPLEVEL)/pkgconf/stylesheet.dsl
 FIXHTML          := $(TOPLEVEL)/pkgconf/fixhtml.tcl
+
+ifneq (,$(CATALOG))
+ CATALOG_OPT := -c $(CATALOG)
+endif
+
+ifneq (,$(DSSL_CATALOG))
+ DSSL_CATALOG_OPT := -c $(DSSL_CATALOG)
+endif
 
 # The files that will be generated:
 ifeq (,$(MAIN_HTML))
@@ -120,7 +126,7 @@ default: check
 
 # Validating an sgml document can be achieved with
 check: $(MAIN_SGML) $(OTHER_SGML) $(GIFS) $(EPS)
-	nsgmls -vs -c $(CATALOG) $<
+	nsgmls -vs $(CATALOG_OPT) $<
 
 # Generating HTML from the SGML. In practice multiple .html files may
 # be generated, but for the purposes of dependency analysis the others
@@ -128,14 +134,14 @@ check: $(MAIN_SGML) $(OTHER_SGML) $(GIFS) $(EPS)
 html: copyfiles $(MAIN_HTML)
 
 $(MAIN_HTML): $(MAIN_SGML) $(OTHER_SGML) $(PNGS) $(HTML_STYLESHEET) $(FIXHTML)
-	jade -t sgml -i html -c $(DSSSL_CATALOG) -d $(HTML_STYLESHEET)#html $<
+	jade -t sgml -i html $(DSSSL_CATALOG_OPT) -d $(HTML_STYLESHEET)#html $<
 	tclsh $(FIXHTML)
 
 # PDF files can be generated in a similar fashion.
 pdfa4: copyfiles $(MAIN_PDFA4)
 
 $(MAIN_PDFA4):  $(MAIN_SGML) $(OTHER_SGML) $(PNGS) $(A4_STYLESHEET)
-	jade -o $(subst .pdf,.tex,$(MAIN_PDFA4)) -t tex -V tex-backend -c $(DSSSL_CATALOG) -d $(A4_STYLESHEET)#print $<
+	jade -o $(subst .pdf,.tex,$(MAIN_PDFA4)) -t tex -V tex-backend $(DSSSL_CATALOG_OPT) -d $(A4_STYLESHEET)#print $<
 	pdfjadetex $(subst .pdf,.tex,$(MAIN_PDFA4))
 	pdfjadetex $(subst .pdf,.tex,$(MAIN_PDFA4))
 	pdfjadetex $(subst .pdf,.tex,$(MAIN_PDFA4))
@@ -143,7 +149,7 @@ $(MAIN_PDFA4):  $(MAIN_SGML) $(OTHER_SGML) $(PNGS) $(A4_STYLESHEET)
 pdfletter: copyfiles $(MAIN_PDFLETTER)
 
 $(MAIN_PDFLETTER):  $(MAIN_SGML) $(OTHER_SGML) $(PNGS) $(LETTER_STYLESHEET)
-	jade -o $(subst .pdf,.tex,$(MAIN_PDFLETTER)) -t tex -V tex-backend -c $(DSSSL_CATALOG) -d $(LETTER_STYLESHEET)#print $<
+	jade -o $(subst .pdf,.tex,$(MAIN_PDFLETTER)) -t tex -V tex-backend $(DSSSL_CATALOG_OPT) -d $(LETTER_STYLESHEET)#print $<
 	pdfjadetex $(subst .pdf,.tex,$(MAIN_PDFLETTER))
 	pdfjadetex $(subst .pdf,.tex,$(MAIN_PDFLETTER))
 	pdfjadetex $(subst .pdf,.tex,$(MAIN_PDFLETTER))
