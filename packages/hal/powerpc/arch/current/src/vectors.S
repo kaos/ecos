@@ -379,13 +379,13 @@ _hal_hardware_init_done:
         bl      hal_platform_init
         
         # MMU and cache are controlled by the same option since caching
-        # on the PPC does not make sense without the MMU to mark regions
-        # which should not be cached.
+        # on the PPC [typically] does not make sense without the MMU to mark 
+        # regions which should not be cached.
 #ifdef CYGHWR_HAL_POWERPC_ENABLE_MMU
         # Initialize MMU.
         bl      hal_MMU_init
 
-        # Enable MMU so we can safely enable caches.
+        # Enable MMU (if desired) so we can safely enable caches.
         lwi     r3,CYG_MSR              # interrupts enabled later
         sync
         mtmsr   r3
@@ -474,13 +474,11 @@ cyg_hal_default_exception_vsr:
         stw     r3,CYGARC_PPCREG_WALL_TAIL(sp)
 #endif
 
-#ifdef CYGHWR_HAL_POWERPC_ENABLE_MMU
-        # Enable MMU.
+        # Enable MMU & interrupt/FPU environment (as configured)
         lwi     r3,CYG_MSR
         sync
         mtmsr   r3
         sync
-#endif        
                 
         mfspr   r3,SPRG1                # save original R3
         stw     r3,CYGARC_PPCREG_REGS+3*4(sp)
@@ -623,13 +621,11 @@ cyg_hal_default_interrupt_vsr:
         stw     r3,CYGARC_PPCREG_WALL_TAIL(sp)
 #endif
 
-#ifdef CYGHWR_HAL_POWERPC_ENABLE_MMU
-        # Enable MMU.
+        # Enable MMU & interrupt/FPU environment as configured
         lwi     r3,CYG_MSR
         sync
         mtmsr   r3
         sync
-#endif        
 
         mfspr   r3,SPRG1                # save original R3
         stw     r3,CYGARC_PPCREG_REGS+3*4(sp)
