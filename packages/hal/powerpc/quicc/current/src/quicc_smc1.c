@@ -611,6 +611,7 @@ cyg_hal_sccx_init_channel(struct port_info *info, int port)
 #endif
 #if CYGNUM_HAL_QUICC_SCC3 > 0
     case QUICC_CPM_SCC3:
+#if defined(CYGHWR_HAL_POWERPC_MPC8XX_850)
 #if 0
 // CAUTION!  Enabling these bits made the port get stuck :-(
         /* CTS/RTS/CD on PortC.4/5/13 */
@@ -625,8 +626,15 @@ cyg_hal_sccx_init_channel(struct port_info *info, int port)
         eppc->pip_pbdir |= 0x00C0;
         eppc->pip_pbodr &= ~0x00C0;
 
+#elif defined(CYGHWR_HAL_POWERPC_MPC8XX_852T)
+        eppc->pio_papar |= 0x30;
+        eppc->pio_padir &= ~0x30;
+        eppc->pio_paodr &= ~0x30;
+#else
+#error "Cannot route SCC3 I/O"
+#endif // 850T
         break;
-#endif
+#endif // SCC3
     }
 
     // Set up baud rate generator.  These are allocated from a
@@ -639,7 +647,6 @@ cyg_hal_sccx_init_channel(struct port_info *info, int port)
     /*
      *  Set pointers to buffer descriptors.
      */
-    memset((void *)uart_pram, 0xFF, 0x100);
     uart_pram->rbase = _mpc8xx_allocBd(sizeof(struct cp_bufdesc)*info->Rxnum + info->Rxnum);
     uart_pram->tbase = _mpc8xx_allocBd(sizeof(struct cp_bufdesc)*info->Txnum + info->Txnum);
 

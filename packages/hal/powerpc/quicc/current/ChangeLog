@@ -1,3 +1,8 @@
+2003-03-31  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/quicc_smc1.c (cyg_hal_sccx_init_channel): Proper handling
+	(signal routing) for SCC3 - differs on 850 and 850T!
+
 2003-03-31  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/quicc_smc1.c (cyg_hal_smcx_init_channel): 

@@ -718,9 +718,16 @@ quicc_sxx_serial_init(struct cyg_devtab_entry *tab)
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC3_RxNUM,
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SCC3_RxSIZE,
                                    &quicc_scc3_rxbuf[0],
+#if defined(CYGHWR_HAL_POWERPC_MPC8XX_850)
                                    0x0000, // PortA mask
                                    0x00C0, // PortB mask
                                    0x0000, // PortC mask
+#elif defined(CYGHWR_HAL_POWERPC_MPC8XX_852T)
+                                   0x0030, // PortA mask
+                                   0x0000, // PortB mask
+                                   0x0000, // PortC mask
+#err "Cannot route SCC3"
+#endif
                                    QUICC_CPM_SCC3
             );
     }

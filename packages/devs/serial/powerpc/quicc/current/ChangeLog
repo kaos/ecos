@@ -1,3 +1,8 @@
+2003-03-31  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/quicc_smc_serial.c (quicc_sxx_serial_init): Handle SCC3 on
+	various processors (signal routing differs).
+
 2003-03-28  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/quicc_smc_serial.c: Change how buffers are allocated & aligned
