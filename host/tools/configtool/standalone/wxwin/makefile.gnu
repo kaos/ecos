@@ -4,7 +4,7 @@
 
 # Usage:
 #   cd emptydir
-#   make -f /path/to/this/makefile WXDIR=/path/to/wx/installation INSTALLDIR=/path/to/ecos/tools [ ECOSSRCDIR=/path/to/ecos/tools/src ] [ TCLDIR=/path/to/tcl/installation ] [ OSTYPE=cygwin ] [ DEBUG=1 ]
+#   make -f /path/to/this/makefile WXDIR=/path/to/wx/installation INSTALLDIR=/path/to/ecos/tools [ ECOSSRCDIR=/path/to/ecos/tools/src ] [ TCLDIR=/path/to/tcl/installation ] [ DEBUG=1 ]
 
 INSTALLDIR=INSTALLDIR_not_defined
 WXDIR=WXDIR_not_defined
@@ -24,7 +24,7 @@ EXTRACPPFLAGS=\
   -DecUSE_EXPERIMENTAL_CODE=$(USEEXPERIMENTALCODE)
 EXTRALDFLAGS=-L$(TCLDIR)/lib -L$(INSTALLDIR)/lib -lcdl -lcyginfra -ltcl
 
-ifeq "$(OSTYPE)" "cygwin"
+ifneq (,$(findstring CYGWIN, $(shell uname)))
   PROGRAM=configtool.exe
   CPPFLAGS=`$(WXDIR)/bin/wx-config --cppflags` -D_WIN32 -D__WIN32__ -DSTRICT
   LDFLAGS=`$(WXDIR)/bin/wx-config --libs` -lshlwapi -Wl,--subsystem,windows

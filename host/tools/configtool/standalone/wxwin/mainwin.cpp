@@ -1234,9 +1234,8 @@ void ecMainFrame::OnBuildToolsPath(wxCommandEvent& event)
 
     wxString msg;
     msg.Printf(_("Enter the location of the %s build tools\n"
-          "folder. You can\n"
-          "type in a path or use the Browse button to\n"
-          "navigate to a folder."),
+          "folder. You can type in a path or use the\n"
+          "Browse button to navigate to a folder."),
           (const wxChar*) (strPrefix.IsEmpty() ? wxString(wxT("native")) : strPrefix));
     wxString caption(_("Build Tools Path"));
 
@@ -1319,7 +1318,7 @@ void ecMainFrame::OnUserToolsPath(wxCommandEvent& event)
         msg.Printf(wxT("%s does not appear to contain the user tools - use this folder anyway?"), (const wxChar*) path);
 
         if(strFile.Exists() ||
-            (wxID_YES == wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_QUESTION|wxYES_NO)))
+            (wxYES == wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_QUESTION|wxYES_NO)))
         {
             wxGetApp().GetSettings().m_userToolsDir = path;
         }

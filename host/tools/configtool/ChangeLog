@@ -1,3 +1,10 @@
+2003-04-24  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/mainwin.cpp: Fix behaviour of user tools warning
+	message box.
+
+	* standalone/wxwin/makefile.gnu: Deduce OS type using uname tool.
+
 2003-04-17  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/appsettings.cpp, standalone/wxwin/mainwin.cpp:
