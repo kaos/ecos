@@ -117,14 +117,30 @@ __wait_for_ready(int ctlr)
     } while (status & (IDE_STAT_BSY | IDE_STAT_DRQ));
 }
 
+// Wait while the device is busy with the last command
+static inline int
+__wait_busy(int ctlr)
+{
+    cyg_uint8 status;
+    cyg_ucount32 tries;
+    
+    for (tries=0; tries < 1000000; tries++) {
+         CYGACC_CALL_IF_DELAY_US(10);
+         HAL_IDE_READ_UINT8(ctlr, IDE_REG_STATUS, status);
+         if ((status & IDE_STAT_BSY) == 0)
+              return 1;
+    }
+    return 0;   
+}
+
 static inline int
 __wait_for_drq(int ctlr)
 {
     cyg_uint8 status;
     cyg_ucount32 tries;
 
-    CYGACC_CALL_IF_DELAY_US(10);
     for (tries=0; tries<1000000; tries++) {
+        CYGACC_CALL_IF_DELAY_US(10);
         HAL_IDE_READ_UINT8(ctlr, IDE_REG_STATUS, status);
         if (!(status & IDE_STAT_BSY)) {
             if (status & IDE_STAT_DRQ)
@@ -133,6 +149,7 @@ __wait_for_drq(int ctlr)
                 return 0;
         }
     }
+    return 0;
 }
 
 // Return true if any devices attached to controller
@@ -195,13 +212,18 @@ ide_ident(int ctlr, int dev, cyg_uint16 *buf)
 {
     int i;
 
+    if (!__wait_busy(ctlr)) {
+         return 0;
+    }
+    
     HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_DEVICE, dev << 4);
     HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_COMMAND, 0xEC);
     CYGACC_CALL_IF_DELAY_US((cyg_uint32)50000);
 
-    if (!__wait_for_drq(ctlr))
-        return 0;
-
+    if (!__wait_for_drq(ctlr)) {
+         return 0;
+    }
+    
     for (i = 0; i < (CYGDAT_DEVS_DISK_IDE_SECTOR_SIZE / sizeof(cyg_uint16));
          i++, buf++)
         HAL_IDE_READ_UINT16(ctlr, IDE_REG_DATA, *buf);
@@ -217,6 +239,10 @@ ide_read_sector(int ctlr, int dev, cyg_uint32 start,
     cyg_uint16 p;
     cyg_uint8 * b=buf;
 
+    if(!__wait_busy(ctlr)) {
+         return 0;
+    }
+    
     HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_COUNT, 1);    // count =1
     HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_LBALOW, start & 0xff);
     HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_LBAMID, (start >>  8) & 0xff);
@@ -248,6 +274,10 @@ ide_write_sector(int ctlr, int dev, cyg_uint32 start,
     cyg_uint16 p;
     cyg_uint8 * b=buf;
 
+    if(!__wait_busy(ctlr)) {
+         return 0;
+    }
+    
     HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_COUNT, 1);    // count =1
     HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_LBALOW, start & 0xff);
     HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_LBAMID, (start >>  8) & 0xff);
@@ -332,7 +362,7 @@ ide_disk_init(struct cyg_devtab_entry *tab)
     D("\tC/H/S : %d/%d/%d\n", ident.cylinders_num, 
                               ident.heads_num, ident.sectors_num);
     D("\tKind : %x\n", (ide_idData->general_conf>>8)&0x1f);
-    
+
     if (((ide_idData->general_conf>>8)&0x1f)!=2) {
         diag_printf("IDE device %d:%d is not a hard disk!\n",
                     info->port, info->chan);

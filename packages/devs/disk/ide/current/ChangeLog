@@ -1,3 +1,8 @@
+2005-02-02 Knud Woehler <knud.woehler@microplex.de>
+
+	* src/ide_disk.c: Check the device is not busy before sending a
+	command to the device. 
+	
 2004-10-17 Iztok Zupet <iz@elsis.si>
 
 	* include/ide_disk.h : moved to ->
