@@ -147,7 +147,7 @@ CeCosThreadUtils::THREADFUNC CALLBACK CeCosThreadUtils::SThreadFunc (void *pPara
   THREAD_ID id=GetThreadId();
   ThreadInfo *pInfo=(ThreadInfo*)pParam;
   TRACE(_T("Thread %x [%s] created\n"),id,(LPCTSTR)pInfo->strName);
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(__CYGWIN__)
   __try {
     // Call what we are instructed to (e.g. LocalThreadFunc):
     pInfo->pThreadFunc(pInfo->pThreadParam);
