@@ -43,11 +43,11 @@ OUTPUT_FORMAT("elf32-bigmips", "elf32-bigmips",
               "elf32-littlemips")
 /* The preprocessor defines mips, but we know we're mips :-) */
 #undef mips
-OUTPUT_ARCH(mips:4900)
+OUTPUT_ARCH(mips:4000)
 
 STARTUP(vectors.o)
 ENTRY(reset_vector)
-#if defined(EXTRAS) && defined(CYGPKG_IO)
+#if defined(EXTRAS)
 INPUT(extras.o)
 #endif
 #if (__GNUC__ >= 3)
@@ -86,7 +86,8 @@ GROUP(libtarget.a libgcc.a)
 #define SECTION_rom_vectors(_region_, _vma_, _lma_) \
     .rom_vectors _vma_ : _lma_ \
     { KEEP (*(.reset_vector)) \
-    . = ALIGN(0x100); KEEP (*(.utlb_vector)) \
+    . = ALIGN(0x200); KEEP (*(.utlb_vector)) \
+    . = ALIGN(0x100); . = . + 4; \
     . = ALIGN(0x80); KEEP(*(.other_vector)) \
     . = ALIGN(0x100); KEEP(*(.debug_vector)) } \
     > _region_
@@ -204,6 +205,7 @@ GROUP(libtarget.a libgcc.a)
     {                                                 \
       __ram_data_start = ABSOLUTE (.); _fdata = . ;   \
       *(.data) *(.data.*) *(.gnu.linkonce.d*)         \
+      *(.2ram.*)                                      \
     . = ALIGN (8);                                    \
     SORT(CONSTRUCTORS)                                \
     } > _region_                                      \

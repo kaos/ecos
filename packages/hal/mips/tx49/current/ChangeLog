@@ -1,3 +1,13 @@
+2003-08-06  Andy Dyer <adyer@righthandtech.com>
+
+	* src/mips_tx49.ld:
+	Removed the "& defined(CYGPKG_IO)" which was causing libextras.a
+	not to get built for a redboot configuration.  The offsets for the
+	exception vectors were wrong for a ROM build of redboot.  For
+	R4000 class mips, the utlb vector is at 0xbfc00200, and the
+	general exception vector is at 0xbfc00380 Added *.2ram sections
+	which were missing from the data segment.
+
 2003-04-10  Nick Garnett  <nickg@balti.calivar.com>
 
 	* src/mips_tx49.ld: 
