@@ -100,7 +100,7 @@ cdl_package CYGPKG_HAL_MIPS_MIPS32 {
 
     cdl_option CYGPKG_HAL_MIPS_GDB_REPORT_CP0 {
 	display "Report contents of CP0 to GDB"
-	calculated 1
+	calculated 0
     }
     
     define_proc {

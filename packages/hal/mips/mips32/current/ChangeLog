@@ -1,3 +1,9 @@
+2003-02-27  Nick Garnett  <nickg@calivar.com>
+
+	* cdl/hal_mips_mips32.cdl: Changed CYGPKG_HAL_MIPS_GDB_REPORT_CP0
+	to zero, from one, so that the GDB stubs work with the standard
+	GCC tools.
+
 2003-01-21  Tim Michals  <t.michals@attbi.com>
 
 	* cdl/hal_mips_mips32.cdl: Make endianness configurable.
