@@ -1,3 +1,9 @@
+2003-02-21  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/pci.c (cyg_pci_get_device_info): While scanning active
+	devices, remember the I/O and memory addresses they use.  This
+	allows for new devices to be added which will not conflict.
+
 2003-02-20  Gary Thomas  <gary@mlbassoc.com>
 
 	* tests/pcihdr.h: Update to latest published version.

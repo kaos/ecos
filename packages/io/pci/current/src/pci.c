@@ -66,6 +66,8 @@
 #include <cyg/infra/cyg_ass.h>
 
 static cyg_bool cyg_pci_lib_initialized = false;
+static CYG_PCI_ADDRESS64 cyg_pci_memory_base;
+static CYG_PCI_ADDRESS32 cyg_pci_io_base;
 
 void
 cyg_pci_init( void )
@@ -120,10 +122,18 @@ cyg_pci_get_device_info ( cyg_pci_device_id devid, cyg_pci_device *dev_info )
     else
 	dev_info->num_bars = 6;
 
-    for (i = 0; i < dev_info->num_bars; i++)
+    // Clear out all address info (the code below stops short)
+    for (i = 0; i < CYG_PCI_MAX_BAR; i++) {
+        dev_info->base_map[i] = 0xffffffff;
+        dev_info->base_address[i] = 0;
+        dev_info->base_size[i] = 0;
+    }
+
+    for (i = 0; i < dev_info->num_bars; i++) {
         cyg_pcihw_read_config_uint32(bus, devfn,
                                      CYG_PCI_CFG_BAR_BASE + 4*i,
                                      &dev_info->base_address[i]);
+    }
 
     // If device is disabled, probe BARs for sizes.
     if ((dev_info->command & CYG_PCI_CFG_COMMAND_ACTIVE) == 0) {
@@ -169,19 +179,35 @@ cyg_pci_get_device_info ( cyg_pci_device_id devid, cyg_pci_device *dev_info )
             bar = dev_info->base_address[i];
 
 	    // No reason to scan beyond first inactive BAR.
-	    if (bar == 0) {
+	    if ((i != 0) && (bar == 0)) {
 		dev_info->num_bars = i;
 		break;
 	    }
 
 	    if ((bar & CYG_PCI_CFG_BAR_SPACE_MASK) == CYG_PCI_CFG_BAR_SPACE_IO) {
 		dev_info->base_map[i] = (bar & CYG_PRI_CFG_BAR_IO_MASK) + HAL_PCI_PHYSICAL_IO_BASE;
+		bar &= CYG_PRI_CFG_BAR_IO_MASK;
+                if ((bar < 0xFF000000) && (bar >= cyg_pci_io_base)) {
+                    // Assume that this device owns 512 'registers'
+                    cyg_pci_io_base = bar + 0x200;
+#ifdef CYGPKG_IO_PCI_DEBUG
+                    diag_printf("Update I/O base to %x from bar: %d\n", cyg_pci_io_base, i);
+#endif
+                }
 	    } else {
 		tmp_addr = bar & CYG_PRI_CFG_BAR_MEM_MASK;
 
 		if ((bar & CYG_PRI_CFG_BAR_MEM_TYPE_MASK) == CYG_PRI_CFG_BAR_MEM_TYPE_64)
 		    tmp_addr |= ((CYG_PCI_ADDRESS64)(dev_info->base_address[i+1] & CYG_PRI_CFG_BAR_MEM_MASK)) << 32;
-			
+
+                if ((tmp_addr < 0xFF000000) && (tmp_addr >= cyg_pci_memory_base)) {
+                    // Assume that this device owns 1M
+                    cyg_pci_memory_base = tmp_addr + 0x100000;
+#ifdef CYGPKG_IO_PCI_DEBUG
+                    diag_printf("Update memory base to %llx from bar: %d\n", cyg_pci_memory_base, i);
+#endif
+                }
+
 		tmp_addr += HAL_PCI_PHYSICAL_MEMORY_BASE;
 
 		dev_info->base_map[i] = tmp_addr;
@@ -589,9 +615,6 @@ cyg_pci_find_matching( cyg_pci_match_func *matchp,
 
 //------------------------------------------------------------------------
 // Resource Allocation
-
-static CYG_PCI_ADDRESS64 cyg_pci_memory_base;
-static CYG_PCI_ADDRESS32 cyg_pci_io_base;
 
 void
 cyg_pci_set_memory_base(CYG_PCI_ADDRESS64 base)
