@@ -21,6 +21,7 @@ struct Instrument_Record
 // -------------------------------------------------------------------------
 
 #ifdef CYGDBG_KERNEL_INSTRUMENT_MSGS
+#define CYGDBG_KERNEL_INSTRUMENT_MSGS_DEFINE_TABLE
 #include <cyg/kernel/instrument_desc.h>
 #define NELEM(x) (sizeof(x)/sizeof*(x))
 externC char * cyg_instrument_msg(CYG_WORD16 type) {
@@ -30,7 +31,7 @@ externC char * cyg_instrument_msg(CYG_WORD16 type) {
   CYG_WORD cl, event;
 
   record = instrument_desc;
-  end_record = &instrument_desc[NELEM(instrument_desc)];
+  end_record = &instrument_desc[NELEM(instrument_desc)-1];
   cl = type & 0xff00;
   event = type & 0x00ff;
 

@@ -7,6 +7,7 @@ struct instrument_desc_s {
     CYG_WORD num;                                         
 };                                                        
 
+#ifdef CYGDBG_KERNEL_INSTRUMENT_MSGS_DEFINE_TABLE         
 struct instrument_desc_s instrument_desc[] = {
 {"ALARM",   0x0900},
 {"ALARM_ADD",   1},
@@ -133,6 +134,10 @@ struct instrument_desc_s instrument_desc[] = {
 {"USER_7",   7},
 {"USER_8",   8},
 {"USER_9",   9},
+{ 0, 0 }
 };
+#else /* CYGDBG_KERNEL_INSTRUMENT_MSGS_DEFINE_TABLE */    
+extern struct instrument_desc_s instrument_desc[];        
+#endif /* CYGDBG_KERNEL_INSTRUMENT_MSGS_DEFINE_TABLE */   
 
 /* EOF instrument_desc.h */

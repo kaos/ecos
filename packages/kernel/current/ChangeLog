@@ -1,3 +1,37 @@
+2002-12-12  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/common/kapi.cxx: 
+	* include/kapi.h:
+	Added function cyg_thread_get_next(), cyg_thread_find() and
+	cyg_thread_get_info() to allow the current set of threads to be
+	enumerated, and per-thread information to be retrieved safely.
+
+	* doc/kernel.sgml: Documented new KAPI calls.
+
+	* src/common/thread.cxx: Zero unique_id in thread destructor so
+	that a stale thread pointer can be checked for validity.
+
+	* include/instrmnt.h:
+	Added cyg_instrument_state() to report the current state of an
+	instrumentation flag.
+	Moved ifdef for CYGDBG_KERNEL_INSTRUMENT_MSGS out of within FLAGS
+	ifdef. We can have messages without flags.
+
+	* src/instrmnt/meminst.cxx: 
+	Added cyg_instrument_state() to report the current state of an
+	instrumentation flag.
+	Modified cyg_instrument_msg() in line with header and table
+	changes.
+
+	* host/instr/dump_instr.c:
+	* host/instr/instrument.sh:
+	* include/instrument_desc.h: 
+	Added a final NULL element to the generated table in
+	instrument_desc.h to mark its end. Otherwise code that does not
+	have access to the table definition cannot find its end. Also
+	added ifdefs to allow instrument_desc.h to be used to acquire the
+	structure definition and table pointer.
+
 2002-12-03  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* tests/tm_basic.cxx: Add tests of 'flag' synchronizers.

@@ -1276,6 +1276,9 @@ be achieved when programming in C++ is lost.
       <refname>cyg_thread_get_stack_base</refname>
       <refname>cyg_thread_get_stack_size</refname>
       <refname>cyg_thread_measure_stack_usage</refname>
+      <refname>cyg_thread_get_next</refname>
+      <refname>cyg_thread_get_info</refname>
+      <refname>cyg_thread_find</refname>
       <refpurpose>Get basic thread information</refpurpose>
     </refnamediv>
 
@@ -1303,6 +1306,21 @@ be achieved when programming in C++ is lost.
         <funcprototype>
           <funcdef>cyg_uint32 <function>cyg_thread_measure_stack_usage</function></funcdef>
           <paramdef>cyg_handle_t <parameter>thread</parameter></paramdef>
+        </funcprototype>        
+        <funcprototype>
+          <funcdef>cyg_bool <function>cyg_thread_get_next</function></funcdef>
+          <paramdef>cyg_handle_t *<parameter>thread</parameter></paramdef>
+          <paramdef>cyg_uint16 *<parameter>id</parameter></paramdef>
+        </funcprototype>        
+        <funcprototype>
+          <funcdef>cyg_bool <function>cyg_thread_get_info</function></funcdef>
+          <paramdef>cyg_handle_t <parameter>thread</parameter></paramdef>
+          <paramdef>cyg_uint16 <parameter>id</parameter></paramdef>
+          <paramdef>cyg_thread_info *<parameter>info</parameter></paramdef>
+        </funcprototype>        
+        <funcprototype>
+          <funcdef>cyg_handle_t <function>cyg_thread_find</function></funcdef>
+          <paramdef>cyg_uint16 <parameter>id</parameter></paramdef>
         </funcprototype>        
       </funcsynopsis>
     </refsynopsisdiv>
@@ -1344,6 +1362,31 @@ run the specified thread has not yet been interrupted at the deepest
 point in the function call graph. Never the less the value returned
 can give some useful indication of the thread's stack requirements.
       </para>
+      <para>
+<function>cyg_thread_get_next</function> is used to enumerate all the
+current threads in the system. It should be called intially with the
+locations pointed to by <parameter>thread</parameter> and
+<parameter>id</parameter> set to zero. On return these will be set to
+the handle and ID of the first thread. On subsequent calls, these
+parameters should be left set to the values returned by the previous
+call.  The handle and ID of the next thread in the system will be
+installed each time, until a <literal>false</literal> return value
+indicates the end of the list.
+      </para>
+      <para>
+<function>cyg_thread_get_info</function> fills in the
+<type>cyg_thread_info</type> structure with information about the
+thread described by the <parameter>thread</parameter> and
+<parameter>id</parameter> arguments. The information returned includes
+the thread's handle and id, its state and name, priorities and stack
+parameters. If the thread does not exist the function returns
+<literal>false</literal>.
+    </para>
+    <para>
+<function>cyg_thread_find</function> returns a handle for the thread
+whose ID is <parameter>id</parameter>. If no such thread exists, a
+zero handle is returned.
+    </para>
     </refsect1>
 
     <refsect1 id="kernel-thread-info-context"><title>Valid contexts</title>
@@ -1359,6 +1402,38 @@ stack usage involves looping over at least part of the thread's stack
 so this should normally only be done from thread context.
       </para>
     </refsect1>
+
+    <refsect1 id="kernel-thread-info-examples"><title>Examples</title>
+      <para>
+A simple example of the use of the
+<function>cyg_thread_get_next</function> and
+<function>cyg_thread_get_info</function> follows:      
+      </para>
+      <programlisting width=72>
+
+#include &lt;cyg/kernel/kapi.h&gt;
+#include &lt;stdio.h&gt;
+
+void show_threads(void)
+{
+    cyg_handle_t thread = 0;
+    cyg_uint16 id = 0;
+
+    while( cyg_thread_get_next( &amp;thread, &amp;id ) )
+    {
+        cyg_thread_info info;
+
+        if( !cyg_thread_get_info( thread, id, &amp;info ) )
+            break;
+
+        printf("ID: %04x name: %10s pri: %d\n",
+                info.id, info.name?info.name:"----", info.set_pri );
+    }
+}
+
+      </programlisting>
+    </refsect1>
+
   </refentry>
 
 <!-- }}} -->

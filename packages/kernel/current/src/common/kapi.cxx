@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Nick Garnett
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -307,6 +308,101 @@ externC cyg_uint32 cyg_thread_measure_stack_usage(cyg_handle_t thread)
     return ((Cyg_Thread *)thread)->measure_stack_usage();
 }
 #endif
+
+/*---------------------------------------------------------------------------*/
+/* Thread enumeration and information                                        */
+
+#ifdef CYGVAR_KERNEL_THREADS_LIST
+
+cyg_bool_t cyg_thread_get_next( cyg_handle_t *current, cyg_uint16 *id )
+{
+    cyg_bool_t result = true;
+    
+    Cyg_Scheduler::lock();
+
+    Cyg_Thread *thread = (Cyg_Thread *)*current;
+
+    if( *current == 0 )
+    {
+        thread = Cyg_Thread::get_list_head();
+        *current = (cyg_handle_t)thread;
+        *id = thread->get_unique_id();
+    }
+    else if( (thread->get_unique_id() == *id) &&
+             (thread = thread->get_list_next()) != NULL )
+    {
+        *current = (cyg_handle_t)thread;
+        *id = thread->get_unique_id();
+    }
+    else
+    {
+        *current = 0;
+        *id = 0;
+        result = false;
+    }
+    
+    Cyg_Scheduler::unlock();
+
+    return result;
+}
+
+cyg_handle_t cyg_thread_find( cyg_uint16 id )
+{
+    Cyg_Scheduler::lock();
+
+    Cyg_Thread *thread = Cyg_Thread::get_list_head();
+
+    while( thread != NULL )
+    {
+        if( thread->get_unique_id() == id )
+            break;
+        
+        thread = thread->get_list_next();
+    }
+
+    Cyg_Scheduler::unlock();
+    
+    return (cyg_handle_t)thread;
+}
+
+#endif
+
+cyg_bool_t cyg_thread_get_info( cyg_handle_t threadh,
+                                cyg_uint16 id,
+                                cyg_thread_info *info )
+{
+    cyg_bool_t result = true;
+    Cyg_Thread *thread = (Cyg_Thread *)threadh;
+    
+    Cyg_Scheduler::lock();
+    
+    if( thread->get_unique_id() == id && info != NULL )
+    {
+        info->handle = threadh;
+        info->id = id;
+        info->state = thread->get_state();
+#ifdef CYGVAR_KERNEL_THREADS_NAME
+        info->name = thread->get_name();
+#else
+        info->name = NULL;
+#endif
+        info->set_pri = thread->get_priority();
+        info->cur_pri = thread->get_current_priority();
+        info->stack_base = thread->get_stack_base();
+        info->stack_size = thread->get_stack_size();
+        
+#ifdef CYGFUN_KERNEL_THREADS_STACK_MEASUREMENT
+        info->stack_used = thread->measure_stack_usage();
+#else
+        info->stack_used = 0;
+#endif
+    }
+    else result = false;
+    
+    Cyg_Scheduler::unlock();
+
+    return result;
+}
 
 /*---------------------------------------------------------------------------*/
 /* Per-thread data                                                           */

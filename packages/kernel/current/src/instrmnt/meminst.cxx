@@ -214,11 +214,17 @@ externC void cyg_instrument_disable( cyg_uint32 cl, cyg_uint32 event)
 
 }
 
+externC cyg_bool cyg_instrument_state( cyg_uint32 cl, cyg_uint32 event)
+{
+    return (instrument_flags[cl>>8] & (1<<event)) != 0;
+}
+
 #endif
 
 // -------------------------------------------------------------------------
 
 #ifdef CYGDBG_KERNEL_INSTRUMENT_MSGS
+#define CYGDBG_KERNEL_INSTRUMENT_MSGS_DEFINE_TABLE
 #include <cyg/kernel/instrument_desc.h>
 #define NELEM(x) (sizeof(x)/sizeof*(x))
 externC char * cyg_instrument_msg(CYG_WORD16 type) {
@@ -228,7 +234,7 @@ externC char * cyg_instrument_msg(CYG_WORD16 type) {
   CYG_WORD cl, event;
 
   record = instrument_desc;
-  end_record = &instrument_desc[NELEM(instrument_desc)];
+  end_record = &instrument_desc[NELEM(instrument_desc)-1];
   cl = type & 0xff00;
   event = type & 0x00ff;
 

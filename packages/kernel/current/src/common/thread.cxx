@@ -295,6 +295,9 @@ Cyg_Thread::~Cyg_Thread()
     remove_from_list();
 #endif 
     
+    // Zero the unique_id to render this thread inconsistent.
+    unique_id = 0;
+    
     CYG_REPORT_RETURN();
 }
 

@@ -82,10 +82,13 @@ externC void cyg_instrument_enable( cyg_uint32 cl, cyg_uint32 event );
 
 externC void cyg_instrument_disable( cyg_uint32 cl, cyg_uint32 event );
 
+externC cyg_bool cyg_instrument_state( cyg_uint32 cl, cyg_uint32 event );
+
+#endif
+
 #ifdef CYGDBG_KERNEL_INSTRUMENT_MSGS
 externC char * cyg_instrument_msg(CYG_WORD16 type);
 #endif 
-#endif
 
 // -------------------------------------------------------------------------
 // Instrumentation macros

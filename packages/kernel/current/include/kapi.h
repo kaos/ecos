@@ -12,6 +12,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 2002 Bart Veer
+// Copyright (C) 2002 Nick Garnett
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -206,6 +207,30 @@ cyg_uint32 cyg_thread_get_stack_size(cyg_handle_t thread);
 cyg_uint32 cyg_thread_measure_stack_usage(cyg_handle_t thread);
 #endif
 
+/*---------------------------------------------------------------------------*/
+/* Thread enumeration and information                                        */
+    
+typedef struct
+{
+    cyg_handle_t        handle;
+    cyg_uint16          id;
+    cyg_uint32          state;
+    char                *name;
+    cyg_priority_t      set_pri;
+    cyg_priority_t      cur_pri;
+    cyg_addrword_t      stack_base;
+    cyg_uint32          stack_size;
+    cyg_uint32          stack_used;
+} cyg_thread_info;
+    
+cyg_bool_t cyg_thread_get_next( cyg_handle_t *thread, cyg_uint16 *id );
+
+cyg_bool_t cyg_thread_get_info( cyg_handle_t thread,
+                                cyg_uint16 id,
+                                cyg_thread_info *info );
+
+cyg_handle_t cyg_thread_find( cyg_uint16 id );
+    
 /*---------------------------------------------------------------------------*/
 /* Per-thread Data                                                           */
 
