@@ -1,3 +1,9 @@
+2003-08-19  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/stand_alone/eth_drv.c: 
+	* src/net/eth_drv.c: Improve network speeds by reducing some
+	overhead and also the delay when sending a packet.
+
 2003-07-23  Nick Garnett  <nickg@balti.calivar.com>
 
 	* include/eth_drv.h:

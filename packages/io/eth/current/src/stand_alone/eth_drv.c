@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -311,14 +312,14 @@ eth_drv_write(char *eth_hdr, char *buf, int len)
 
     (sc->funs->send)(sc, sg_list, sg_len, len+14, (CYG_ADDRWORD)&packet_sent);
 
-    wait_time = 500;
+    wait_time = 50000;
     while (1) {
         (sc->funs->poll)(sc);
 
 	if(packet_sent)
 	    break;
 	
-        CYGACC_CALL_IF_DELAY_US(2*1000);
+        CYGACC_CALL_IF_DELAY_US(2*10);
         if (--wait_time <= 0)
             goto reset_and_out;  // Give up on sending packet
     }

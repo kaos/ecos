@@ -1,3 +1,12 @@
+2003-08-19  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/net/udp.c (__udp_recvfrom): Rework loop so delay only happens
+	if no packet is immediately available - improves network throughput.
+
+	* src/ticks.c: 
+	* cdl/redboot.cdl: Add control over granularity of timers used
+	by RedBoot and the network stack.
+
 2003-08-05  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* doc/redboot_installing.sgml: Fix brain fart in last change to

@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -55,12 +56,18 @@
 #include "redboot.h"
 
 static unsigned long ticks = 0;
+static long elapsed = 0;
 
 unsigned long
 do_ms_tick(void)
 {
-    CYGACC_CALL_IF_DELAY_US(1000);   // Wait for 1ms
-    return ++ticks;
+    CYGACC_CALL_IF_DELAY_US(CYGDBG_REDBOOT_TICK_GRANULARITY);
+    elapsed += CYGDBG_REDBOOT_TICK_GRANULARITY;
+    if (elapsed >= 1000) {
+        elapsed = 0;
+        ticks++;
+    }
+    return ticks;
 }
 
 unsigned long

@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2002, 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -255,14 +255,14 @@ __udp_recvfrom(char *data, int len, struct sockaddr_in *server,
     total_ms = (timo->tv_sec * 1000) + (timo->tv_usec / 1000);
     start = MS_TICKS();
     res = -1;
-    while ((MS_TICKS_DELAY() - start) < total_ms) {
+    do {
         __enet_poll();  // Handle the hardware
         if (!recvfrom_buf) {
             // Data have arrived
             res = recvfrom_len;
             break;
         }
-    }
+    } while ((MS_TICKS_DELAY() - start) < total_ms);
     __udp_remove_listener(my_port);
     return res;
 }

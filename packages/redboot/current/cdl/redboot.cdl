@@ -212,6 +212,19 @@ cdl_package CYGPKG_REDBOOT {
                      stripping before being converted to a binary image.
                      This is handled by a rule in the target CDL."
 
+    
+        cdl_option CYGDBG_REDBOOT_TICK_GRANULARITY {
+            display          "Granularity of timer/ticks"
+            flavor           data
+            legal_values     { 50 100 250 500 1000 }	
+            default_value    250
+            description      "
+                This option controls the granularity of the timers.
+                Faster CPUs can afford higher granularity (lower values)
+                which should give higher network performance since the stack
+                is purely polled."
+        }
+
         compile main.c
         compile misc_funs.c io.c parse.c ticks.c syscall.c alias.c
         compile -library=libextras.a load.c

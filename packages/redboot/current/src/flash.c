@@ -1519,7 +1519,7 @@ get_config(unsigned char *dp, char *title, int list_opt, char *newvalue )
 	    int index;
 	    const char *name;
 	    diag_printf("Sorry, Port name must be one of:\n");
-	    for (index = 0; name = net_devname(index); index++)
+	    for (index = 0; (name = net_devname(index)) != NULL; index++)
 		diag_printf("    %s\n", name);
             return CONFIG_BAD;
 	}
