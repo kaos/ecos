@@ -1,3 +1,9 @@
+2003-04-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/hal_var_bank.h (HAL_THREAD_INIT_CONTEXT): Align stack
+	pointer before using it.
+	* include/hal_var_sp.h (HAL_THREAD_INIT_CONTEXT): Ditto.
+
 2003-04-10  Nick Garnett  <nickg@balti.calivar.com>
 
 	* src/sh.ld:

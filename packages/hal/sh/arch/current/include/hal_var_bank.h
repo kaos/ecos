@@ -88,9 +88,13 @@ typedef struct
 
 #define HAL_THREAD_INIT_CONTEXT( _sparg_, _thread_, _entry_, _id_ )           \
     CYG_MACRO_START                                                           \
+    register CYG_WORD _sp_ = (CYG_WORD)_sparg_;                               \
     register HAL_SavedRegisters *_regs_;                                      \
     int _i_;                                                                  \
-    _regs_ = (HAL_SavedRegisters *)((_sparg_) - sizeof(HAL_SavedRegisters));  \
+    _sp_ = _sp_ & ~(CYGARC_ALIGNMENT-1);                                      \
+    /* Note that _regs_ below should be aligned if HAL_SavedRegisters */      \
+    /* stops being aligned to CYGARC_ALIGNMENT                        */      \
+    _regs_ = (HAL_SavedRegisters *)((_sp_) - sizeof(HAL_SavedRegisters));     \
     for( _i_ = 0; _i_ < 16; _i_++ ) (_regs_)->r[_i_] = (_id_)|_i_;            \
     (_regs_)->r[15] = (CYG_WORD)(_regs_);      /* SP = top of stack      */   \
     (_regs_)->r[04] = (CYG_WORD)(_thread_);    /* R4 = arg1 = thread ptr */   \
