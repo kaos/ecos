@@ -1,3 +1,8 @@
+2004-05-25  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/sys/netinet/if_ether.c: Clean up some log messages - remove
+	extraneous ":" which caused incorrect printouts.
+
 2004-04-30  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/ecos/timeout.c (callout_reset): Clarify assert message on

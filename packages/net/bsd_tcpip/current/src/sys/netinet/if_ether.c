@@ -591,7 +591,7 @@ in_arpinput(m)
 	if (isaddr.s_addr == myaddr.s_addr) {
 		log(LOG_ERR,
 		   "arp: %6D is using my IP address %s!\n",
-		   ea->arp_sha, ":", inet_ntoa(isaddr));
+		   ea->arp_sha, inet_ntoa(isaddr));
 		itaddr = myaddr;
 		goto reply;
 	}
@@ -603,7 +603,7 @@ in_arpinput(m)
 			log(LOG_ERR, "arp: %s is on %s%d but got reply from %6D on %s%d\n",
 			    inet_ntoa(isaddr),
 			    rt->rt_ifp->if_name, rt->rt_ifp->if_unit,
-			    ea->arp_sha, ":",
+			    ea->arp_sha, 
 			    ac->ac_if.if_name, ac->ac_if.if_unit);
 		    goto reply;
 		}
@@ -611,13 +611,13 @@ in_arpinput(m)
 		    bcmp((caddr_t)ea->arp_sha, LLADDR(sdl), sdl->sdl_alen)) {
 			if (rt->rt_expire)
 			    log(LOG_INFO, "arp: %s moved from %6D to %6D on %s%d\n",
-				inet_ntoa(isaddr), (u_char *)LLADDR(sdl), ":",
-				ea->arp_sha, ":",
+				inet_ntoa(isaddr), (u_char *)LLADDR(sdl),
+				ea->arp_sha,
 				ac->ac_if.if_name, ac->ac_if.if_unit);
 			else {
 			    log(LOG_ERR,
 				"arp: %6D attempts to modify permanent entry for %s on %s%d\n",
-				ea->arp_sha, ":", inet_ntoa(isaddr),
+				ea->arp_sha, inet_ntoa(isaddr),
 				ac->ac_if.if_name, ac->ac_if.if_unit);
 			    goto reply;
 			}
