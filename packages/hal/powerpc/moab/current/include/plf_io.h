@@ -65,7 +65,7 @@
 // Restrict device [slot] space
 #define CYG_PCI_MAX_BUS                       1  // Only one BUS
 #define CYG_PCI_MIN_DEV                       1  // Slots start at 11
-#define CYG_PCI_MAX_DEV                      21  // ... and end at 31
+#define CYG_PCI_MAX_DEV                      22  // ... and end at 31
 #define _IRQ1 CYGNUM_HAL_INTERRUPT_IRQ1
 #define _IRQ2 CYGNUM_HAL_INTERRUPT_IRQ2
 #define _IRQ3 CYGNUM_HAL_INTERRUPT_IRQ3

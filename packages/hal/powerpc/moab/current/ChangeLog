@@ -1,6 +1,7 @@
 2003-09-30  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/plf_io.h (CYGARC_VIRTUAL_ADDRESS): Added.
+	Scan all possible PCI slots.
 
 2003-09-28  Gary Thomas  <gary@mlbassoc.com>
 
