@@ -54,6 +54,7 @@
 #include <pkgconf/hal.h>
 
 #include <cyg/infra/cyg_type.h>         // base types
+#include <cyg/hal/hal_io.h>
 #include <cyg/hal/var_io.h>             // platform registers
 
 // 

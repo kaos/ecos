@@ -1,3 +1,8 @@
+2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/eb40_misc.c: Include cyg/hal/hal_io.h so we have the
+	HAL_WRITE_UINT32 macro.
+
 2004-09-16  Andrea Michelotti <amichelotti@atmel.com>
 
 	* include/hal_platform_ints.h: When CYGHWR_HAL_ARM_AT91_FIQ is defined 
