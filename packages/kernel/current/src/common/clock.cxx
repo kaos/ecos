@@ -164,7 +164,7 @@ void Cyg_Counter::tick( cyg_uint32 ticks )
         // So we only have a fraction of the alarms to check here.
         
         alarm_list_ptr = &(alarm_list[
-            (counter/increment) % CYGNUM_KERNEL_COUNTERS_MULTI_LIST_SIZE ] );
+                               (counter/increment) % CYGNUM_KERNEL_COUNTERS_MULTI_LIST_SIZE ] );
     
 #else
 #error "No CYGIMP_KERNEL_COUNTERS_x_LIST config"
@@ -211,27 +211,30 @@ void Cyg_Counter::tick( cyg_uint32 ticks )
         } 
 #else
 
-        // With an unsorted list, we must scan the whole list for
-        // candidates. We move the whole list to a temporary location
-        // before doing this so that we are not disturbed by new
-        // alarms being added to the list. As we consider and
-        // eliminate alarms we put them onto the done_list and at the
-        // end we then move it back to where it belongs.
+        // With unsorted lists we must scan the whole list for
+        // candidates. However, we must be careful here since it is
+        // possible for the function of one alarm to add or remove
+        // other alarms to/from this list. Having the list shift under
+        // our feet in this way could be disasterous. We solve this by
+        // detecting when the list has changed and restarting the scan
+        // from the beginning.
         
-        Cyg_Alarm_List done_list;
+        Cyg_DNode_T<Cyg_Alarm> *node = alarm_list_ptr->get_head();
 
-        Cyg_Alarm_List alarm_list;
-
-        alarm_list.merge( *alarm_list_ptr );
-        
-        while( !alarm_list.empty() )
+        while( node != NULL )
         {
-            Cyg_Alarm *alarm = alarm_list.rem_head();
+            Cyg_Alarm *alarm = CYG_CLASSFROMBASE( Cyg_Alarm, Cyg_DNode, node );
+            Cyg_DNode_T<Cyg_Alarm> *next = alarm->get_next();
 
             CYG_ASSERTCLASS(alarm, "Bad alarm in counter list" );
             
             if( alarm->trigger <= counter )
             {
+                Cyg_DNode *next_next, *next_prev;
+                Cyg_Alarm *head;
+                
+                alarm_list_ptr->remove(alarm);
+
                 if( alarm->interval != 0 )
                 {
                     // The alarm has a retrigger interval.
@@ -242,25 +245,44 @@ void Cyg_Counter::tick( cyg_uint32 ticks )
                 }
                 else alarm->enabled = false;
 
+                // Save some details of the list state so we can
+                // detect if it has changed.
+                next_next = next->get_next();
+                next_prev = next->get_prev();
+                head = alarm_list_ptr->get_head();
+                
                 CYG_INSTRUMENT_ALARM( CALL, this, alarm );
                 
-                // call alarm function
+                // Call alarm function
                 alarm->alarm(alarm, alarm->data);
 
-                // all done, loop
+                // If that alarm function has added or removed an
+                // alarm on this list that might affect this scan,
+                // then start again from beginning. The main test here
+                // is whether the link fields of the next node have
+                // changed, implying that it may have been moved. The
+                // test against the list head detects the case where
+                // the next node was the only node in the list, when
+                // moving is would have left the links unchanged.
+                
+                if( next_next != next->get_next()           ||
+                    next_prev != next->get_prev()           ||
+                    head      != alarm_list_ptr->get_head() )
+                {
+                    node = alarm_list_ptr->get_head();
+                    continue;
+                }
             }
-            else
-            {
-                // add unused alarm to done list.
-                done_list.add_tail(alarm);
-            }
-        }
 
-        // Return done list to real list. If any alarms have been
-        // added to the alarm list while we have been scanning then
-        // the done list will be added behind them.
-        
-        alarm_list_ptr->merge( done_list );
+            // If the next node is the head of the list, then we have
+            // looped all the way around. The node == next test
+            // catches the case where we only had one element to start
+            // with.
+            if( next == alarm_list_ptr->get_head() || node == next )
+                node = NULL;
+            else
+                node = next;
+        }
         
 #endif        
         Cyg_Scheduler::unlock();
@@ -278,9 +300,8 @@ void Cyg_Counter::add_alarm( Cyg_Alarm *alarm )
 
     CYG_ASSERTCLASS( this, "Bad counter object" );
     CYG_ASSERTCLASS( alarm, "Bad alarm passed" );
+    CYG_ASSERT( Cyg_Scheduler::get_sched_lock() > 0, "Scheduler not locked");
     
-    Cyg_Scheduler::lock();
-
     // set this now to allow an immediate handler call to manipulate
     // this alarm sensibly.
     alarm->enabled = true;
@@ -314,7 +335,6 @@ void Cyg_Counter::add_alarm( Cyg_Alarm *alarm )
             // The alarm is all done with, disable it
             // unlock and return.
             alarm->enabled = false;
-            Cyg_Scheduler::unlock();
             return;
         }
     }
@@ -382,7 +402,6 @@ void Cyg_Counter::add_alarm( Cyg_Alarm *alarm )
         
 #endif
 
-    Cyg_Scheduler::unlock();            
 }
 
 // -------------------------------------------------------------------------
@@ -394,17 +413,15 @@ void Cyg_Counter::rem_alarm( Cyg_Alarm *alarm )
 
     CYG_ASSERTCLASS( this, "Bad counter object" );
     CYG_ASSERTCLASS( alarm, "Bad alarm passed" );
+    CYG_ASSERT( Cyg_Scheduler::get_sched_lock() > 0, "Scheduler not locked");
     
     Cyg_Alarm_List *alarm_list_ptr;     // pointer to list
 
 #if defined(CYGIMP_KERNEL_COUNTERS_SINGLE_LIST)
 
     alarm_list_ptr = &alarm_list;
-    Cyg_Scheduler::lock();
 
 #elif defined(CYGIMP_KERNEL_COUNTERS_MULTI_LIST)
-
-    Cyg_Scheduler::lock();
 
     alarm_list_ptr = &(alarm_list[
         ((alarm->trigger+increment-1)/increment) %
@@ -423,7 +440,6 @@ void Cyg_Counter::rem_alarm( Cyg_Alarm *alarm )
     
     alarm->enabled = false;
 
-    Cyg_Scheduler::unlock();            
 }
 
 //==========================================================================
@@ -709,6 +725,8 @@ void Cyg_Alarm::initialize(
 {
     CYG_REPORT_FUNCTION();
 
+    Cyg_Scheduler::lock();
+    
     // If already enabled, remove from counter
     
     if( enabled ) counter->rem_alarm(this);
@@ -725,6 +743,8 @@ void Cyg_Alarm::initialize(
     interval = i;
 
     counter->add_alarm(this);
+
+    Cyg_Scheduler::unlock();    
 }
 
 // -------------------------------------------------------------------------
@@ -759,6 +779,8 @@ Cyg_Alarm::synchronize( void )
 
 void Cyg_Alarm::enable()
 {
+    Cyg_Scheduler::lock();
+    
     if( !enabled )
     {
         // ensure the alarm time is in our future:
@@ -766,6 +788,20 @@ void Cyg_Alarm::enable()
         enabled = true;
         counter->add_alarm(this);
     }
+
+    Cyg_Scheduler::unlock();    
+}
+
+// -------------------------------------------------------------------------
+// Ensure alarm disabled
+
+void Cyg_Alarm::disable()
+{
+    Cyg_Scheduler::lock();
+
+    if( enabled ) counter->rem_alarm(this);
+
+    Cyg_Scheduler::unlock();
 }
 
 // -------------------------------------------------------------------------

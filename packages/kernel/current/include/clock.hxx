@@ -91,6 +91,12 @@ class Cyg_Counter
     volatile cyg_tick_count counter;    // counter value
 
     cyg_uint32          increment;      // increment per tick
+
+    // Add an alarm to this counter
+    void add_alarm( Cyg_Alarm *alarm );
+
+    // Remove an alarm from this counter
+    void rem_alarm( Cyg_Alarm *alarm );
     
 public:
 
@@ -115,12 +121,6 @@ public:
         
     // Advance counter by some number of ticks
     void tick( cyg_uint32 ticks = 1);
-
-    // Add an alarm to this counter
-    void add_alarm( Cyg_Alarm *alarm );
-
-    // Remove an alarm from this counter
-    void rem_alarm( Cyg_Alarm *alarm );
 
 };
 

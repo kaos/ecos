@@ -1,3 +1,32 @@
+2003-07-01  Nick Garnett  <nickg@balti.calivar.com>
+
+	* include/clock.hxx: Made Cyg_Counter::add_alarm() and
+	Cyg_Counter::rem_alarm() private functions. They no longer lock
+	the scheduler, so should not be called directly, only via the
+	Cyg_Alarm functions.
+
+	* include/clock.inl: Removed inline version of
+	Cyg_Alarm::disable(). It's no longer a one-liner and is thus
+	better as a proper function.
+
+	* src/common/clock.cxx (Cyg_Counter::tick): Rewrote the unsorted
+	list option. If the function of one alarm adds or removes other
+	alarms, then is was possible for the list to become corrupted. The
+	new implementation attempts to avoid this problem.
+	(Cyg_Alarm::initialize): Added scheduler locking to protect the
+	enabled flag.
+	(Cyg_Alarm::enable): Ditto.
+	(Cyg_Alarm::disable): Ditto. Moved here from clock.inl.
+	(Cyg_Alarm::add_alarm): Removed scheduler locking, it is now
+	always called from functions that have already locked it. Added an
+	assertion to double-check this.
+	(Cyg_Alarm::rem_alarm): Ditto.
+
+	* cdl/kernel.cdl:
+	* tests/kalarm0.c:
+	Added new test to test that alarms can be added and removed in
+	alarm functions safely.
+	
 2003-06-25  Thomas Binder  <Thomas.Binder@frequentis.com>
 
 	* src/common/clock.cxx (Cyg_Counter::rem_alarm): Bugfix: call

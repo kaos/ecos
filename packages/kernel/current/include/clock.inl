@@ -121,16 +121,5 @@ inline cyg_tick_count Cyg_Clock::convert(
 }
 
 // -------------------------------------------------------------------------
-// -------------------------------------------------------------------------
-// Alarm inlines
-
-// Ensure alarm disabled
-inline void Cyg_Alarm::disable()
-{
-    if( enabled ) counter->rem_alarm(this);
-}
-
-
-// -------------------------------------------------------------------------
 #endif // ifndef CYGONCE_KERNEL_CLOCK_INL
 // EOF clock.inl
