@@ -1342,7 +1342,8 @@ read_eeprom_esa(struct i82559 *p_i82559, char *addr)
 		  p_i82559->index);
 #endif
     } else {
-	for (checksum = 0, i = 0, count = 0; count < 64; count++) {
+	for (checksum = 0, i = 0, count = 0; 
+             count < (1 << addr_length); count++) {
 	    cyg_uint16 value;
 	    // read word from eeprom
 	    value = read_eeprom(ioaddr, count, addr_length);

@@ -1,3 +1,7 @@
+2004-01-17  Jeffrey Daly  <jeffrey.daly@intel.com>
+
+	* src/if_i82559.c (read_eeprom_esa): Allow bigger EEPROMs to work.
+
 2004-01-05  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/if_i82559.c: Names of FLASH config types changed.
