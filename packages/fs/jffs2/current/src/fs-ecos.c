@@ -1823,7 +1823,7 @@ cyg_bool jffs2_flash_read(struct jffs2_sb_info * c,
 	err = cyg_io_bread(sb->s_dev, write_buffer, &len, read_buffer_offset);
 
 	*return_size = (size_t) len;
-	return (err != ENOERR);
+	return ((err == ENOERR) ? ENOERR : -EIO);
 }
 
 cyg_bool jffs2_flash_write(struct jffs2_sb_info * c,
@@ -1843,7 +1843,7 @@ cyg_bool jffs2_flash_write(struct jffs2_sb_info * c,
 	err = cyg_io_bwrite(sb->s_dev, read_buffer, &len, write_buffer_offset);
 	*return_size = (size_t) len;
 
-	return (err != ENOERR);
+	return ((err == ENOERR) ? ENOERR : -EIO);
 }
 
 int

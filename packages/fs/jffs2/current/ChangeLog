@@ -1,3 +1,13 @@
+2003-07-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/os-ecos.h: Added new #defines require for the recent jffs2
+	import.
+
+2003-07-27  Michael Checky  <Michael_Checky@ThermoKing.com>
+ 
+ 	* src/fs-ecos.c: Changed the return error code to be negative as
+	expected by jffs2_flash_read() and jffs2_flash_write().
+	
 2003-04-23  Bob Koninckx  <bob.koninckx@mech.kuleuven.ac.be>
 
 	* src/fs-ecos.c: mtab -> cyg_mtab. Ditto cyg_mtab_end. 

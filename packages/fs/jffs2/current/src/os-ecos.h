@@ -18,6 +18,7 @@
 #include <sys/types.h>
 #include <asm/atomic.h>
 #include <linux/stat.h>
+#include <linux/compiler.h>
 #include "jffs2port.h"
 
 #define CONFIG_JFFS2_FS_DEBUG 0
@@ -233,6 +234,9 @@ int jffs2_commit_write (struct inode *d_inode, struct page *pg, unsigned start, 
 #define jffs2_flush_wbuf(c, flag) do { ; } while(0)
 #define jffs2_nand_read_failcnt(c,jeb) do { ; } while(0)
 #define jffs2_write_nand_badblock(c,jeb) do { ; } while(0)
+#define jffs2_nand_flash_setup(c) (0)
+#define jffs2_nand_flash_cleanup(c) do {} while(0)
+#define jffs2_wbuf_dirty(c) (0)
 #define jffs2_flash_writev jffs2_flash_writev
 #define jffs2_wbuf_timeout NULL
 #define jffs2_wbuf_process NULL
