@@ -100,12 +100,18 @@ cdl_package CYGPKG_HAL_QUICC {
           Port SCC3 is available for serial I/O"
     }
 
+    cdl_interface CYGNUM_HAL_QUICC_SCC4 {
+        display    "SCC4 is available for serial I/O"
+        description "
+          Port SCC4 is available for serial I/O"
+    }
+
     compile       quicc_smc1.c cpm.c
 
    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS {
        display      "Number of communication channels on the board"
        flavor       data
-       calculated   CYGNUM_HAL_QUICC_SMC1+CYGNUM_HAL_QUICC_SMC2+CYGNUM_HAL_QUICC_SCC1+CYGNUM_HAL_QUICC_SCC2+CYGNUM_HAL_QUICC_SCC3
+       calculated   CYGNUM_HAL_QUICC_SMC1+CYGNUM_HAL_QUICC_SMC2+CYGNUM_HAL_QUICC_SCC1+CYGNUM_HAL_QUICC_SCC2+CYGNUM_HAL_QUICC_SCC3+CYGNUM_HAL_QUICC_SCC4
    }
 
    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL {

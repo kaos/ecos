@@ -1,3 +1,7 @@
+2003-03-23  Gary Thomas  <gary@mlbassoc.com>
+
+	* cdl/hal_powerpc_ts1000.cdl: New CDL for setting processor type.
+
 2002-12-02  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* include/plf_intr.h: Use MPC8xx variant RESET support.

@@ -1,3 +1,7 @@
+2003-03-23  Gary Thomas  <gary@mlbassoc.com>
+
+	* cdl/hal_powerpc_cogent.cdl: New options for setting processor type.
+
 2003-03-07  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/plf_stub.h: Remove [confusing] platform specific include.

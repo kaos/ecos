@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2002, 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -107,20 +107,25 @@ hal_variant_idle_thread_action( cyg_uint32 count )
 //
 // The MPC8xx CPUs do not have BATs. Fortunately we don't currently
 // use the MMU, so we can simulate BATs by using the TLBs.
+
+#if defined(CYGHWR_HAL_POWERPC_MPC8XX_860) || \
+    defined(CYGHWR_HAL_POWERPC_MPC8XX_860T) || \
+    defined(CYGHWR_HAL_POWERPC_MPC8XX_852T) || \
+    defined(CYGHWR_HAL_POWERPC_MPC8XX_855T) || \
+    defined(CYGHWR_HAL_POWERPC_MPC8XX_862T) || \
+    defined(CYGHWR_HAL_POWERPC_MPC8XX_862P)
+#define NUM_TLBS 32
+#elif defined(CYGHWR_HAL_POWERPC_MPC8XX_823) || defined(CYGHWR_HAL_POWERPC_MPC8XX_850)
+#define NUM_TLBS 8
+#else
+#error Missing TLB information for this platform
+#endif
+
 int
 cyg_hal_map_memory (int id,CYG_ADDRESS virt, CYG_ADDRESS phys, 
                     cyg_int32 size, cyg_uint8 flags)
 {
     cyg_uint32 epn, rpn, twc, ctr = 0;
-    int max_tlbs;
-
-#if defined(CYGPKG_HAL_POWERPC_MPC860)
-    // There are 32 TLBs.
-    max_tlbs = 32;
-#elif defined(CYGPKG_HAL_POWERPC_MPC823) || defined(CYGPKG_HAL_POWERPC_MPC850)
-    // There are 8 TLBs.
-    max_tlbs = 8;
-#endif
 
     epn = (virt & MI_EPN_EPNMASK) | MI_EPN_EV;
     rpn = ((phys & MI_RPN_RPNMASK) 
@@ -133,7 +138,7 @@ cyg_hal_map_memory (int id,CYG_ADDRESS virt, CYG_ADDRESS phys,
         twc |= MI_TWC_G;
 
     // Ignore attempts to use more than max_tlbs.
-    while (id < max_tlbs && size > 0) {
+    while (id < NUM_TLBS && size > 0) {
         ctr = id << MI_CTR_INDX_SHIFT;
         
         // Instruction TLB.
@@ -170,7 +175,6 @@ cyg_hal_map_memory (int id,CYG_ADDRESS virt, CYG_ADDRESS phys,
     return id;
 }
 
-
 // Initialize MMU to a sane (NOP) state.
 //
 // Initialize TLBs with 0, Valid bits unset.
@@ -179,19 +183,10 @@ cyg_hal_clear_MMU (void)
 {
     cyg_uint32 ctr = 0;
     int id;
-    int max_tlbs;
-
-#if defined(CYGPKG_HAL_POWERPC_MPC860)
-    // There are 32 TLBs.
-    max_tlbs = 32;
-#elif defined(CYGPKG_HAL_POWERPC_MPC823) || defined(CYGPKG_HAL_POWERPC_MPC850)
-    // There are 8 TLBs.
-    max_tlbs = 8;
-#endif
 
     CYGARC_MTSPR (M_CASID, 0);
 
-    for (id = 0; id < max_tlbs; id++) {
+    for (id = 0; id < NUM_TLBS; id++) {
         ctr = id << MI_CTR_INDX_SHIFT;
         
         // Instruction TLBs.

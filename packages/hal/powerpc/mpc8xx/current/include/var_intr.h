@@ -11,6 +11,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -43,7 +44,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   nickg
-// Contributors:nickg, jskov, jlarmour, hmt
+// Contributors:nickg, jskov, jlarmour, hmt, gthomas
 // Date:        2000-04-02
 // Purpose:     Variant interrupt support
 // Description: The macros defined here provide the HAL APIs for handling
@@ -96,7 +97,7 @@
 
 #define CYGNUM_HAL_EXCEPTION_RESERVED_0      CYGNUM_HAL_VECTOR_RESERVED_0
 #define CYGNUM_HAL_EXCEPTION_MACHINE_CHECK   CYGNUM_HAL_VECTOR_MACHINE_CHECK
-#ifdef CYGPKG_HAL_POWERPC_MPC860
+#ifdef CYGHWR_HAL_POWERPC_MPC8XX
 // The MPC860 does not generate DSI and ISI: instead it goes to machine
 // check, so that a software VM system can then call into vectors 0x300 or
 // 0x400 if the address is truly invalid rather than merely not in the TLB
@@ -223,7 +224,7 @@
 
 #ifndef CYGHWR_HAL_INTERRUPT_CONTROLLER_ACCESS_DEFINED
 
-#ifdef CYGPKG_HAL_POWERPC_MPC860
+#ifdef CYGHWR_HAL_POWERPC_MPC8XX
 
 static __inline__ void
 cyg_hal_interrupt_mask ( cyg_uint32 vector )
@@ -681,7 +682,7 @@ cyg_hal_interrupt_set_level ( cyg_uint32 vector, cyg_uint32 level )
 //--------------------------------------------------------------------------
 // Interrupt arbiters
 
-#ifdef CYGPKG_HAL_POWERPC_MPC860
+#ifdef CYGHWR_HAL_POWERPC_MPC8XX
 
 externC cyg_uint32 hal_arbitration_isr_tb (CYG_ADDRWORD vector, 
                                            CYG_ADDRWORD data);
@@ -692,7 +693,7 @@ externC cyg_uint32 hal_arbitration_isr_rtc (CYG_ADDRWORD vector,
 externC cyg_uint32 hal_arbitration_isr_cpm (CYG_ADDRWORD vector,
                                             CYG_ADDRWORD data);
 
-#endif // ifdef CYGPKG_HAL_POWERPC_MPC860
+#endif // ifdef CYGHWR_HAL_POWERPC_MPC8XX
 
 //-----------------------------------------------------------------------------
 // Symbols used by assembly code

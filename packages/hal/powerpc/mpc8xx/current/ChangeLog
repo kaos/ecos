@@ -1,3 +1,14 @@
+2003-03-23  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/var_intr.c: 
+	* include/var_intr.h: Clean up for new CDL (processor type) layout.
+
+	* src/var_misc.c: 
+	* include/var_cache.h: Better processor/variant support.
+
+	* cdl/hal_powerpc_mpc8xx.cdl: Rearrange options to handle processor
+	type more flexibly.
+
 2003-03-06  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/var_misc.c: Can only reset CPM if not relying on a ROM monitor.

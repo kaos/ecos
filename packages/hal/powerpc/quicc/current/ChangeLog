@@ -1,3 +1,17 @@
+2003-03-23  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/quicc_smc1.c: Use new baud rate generator allocation functions.
+	Merge SMC and SCC output functions.
+	
+	* src/cpm.c: Add new function to allocate and manage the baud rate
+	generators.  Used by all serial drivers.
+
+	* include/ppc8xx.h: Some common definitions moved here from various
+	QUICC serial files.
+
+	* cdl/hal_powerpc_quicc.cdl: Add interface for SCC4 (not implemented
+	by any platform yet)
+
 2003-03-20  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/cpm.c (_mpc8xx_allocBd): Improve "best guess" for intial DPRAM

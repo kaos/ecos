@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -41,7 +42,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    jskov
-// Contributors: jskov
+// Contributors: jskov, gthomas
 // Date:         2000-02-11
 // Purpose:      PowerPC variant interrupt handlers
 // Description:  This file contains code to handle interrupt related issues
@@ -56,7 +57,6 @@
 #include <cyg/hal/hal_arbiter.h>
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#ifdef CYGPKG_HAL_POWERPC_MPC860
 
 // Since the interrupt sources do not have fixed vectors on the 860
 // SIU, some arbitration is required.
@@ -176,7 +176,6 @@ hal_arbitration_isr_cpm (CYG_ADDRWORD vector, CYG_ADDRWORD data)
 
     return 0;
 }
-#endif // ifdef CYGPKG_HAL_POWERPC_MPC860
 
 externC void
 hal_variant_IRQ_init(void)

@@ -9,7 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-## Copyright (C) 2002 Gary Thomas
+## Copyright (C) 2002, 2003 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -67,11 +67,13 @@ cdl_package CYGPKG_HAL_POWERPC_TS1000 {
     implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
     implements    CYGNUM_HAL_QUICC_SMC1
 
+    requires      { CYGHWR_HAL_POWERPC_MPC8XX == "855T" }
+
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_powerpc_mpc8xx.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_powerpc_ts1000.h>"
 
-    puts $::cdl_header "#define HAL_PLATFORM_CPU    \"PowerPC 855\""
+        puts $::cdl_header "#define HAL_PLATFORM_CPU    \"PowerPC 855T\""
         puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"Allied Telesyn TS1000\""
         puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
     }

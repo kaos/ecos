@@ -1,3 +1,7 @@
+2003-03-23  Gary Thomas  <gary@mlbassoc.com>
+
+	* cdl/hal_powerpc_adder.cdl: New option for setting processor type.
+
 2003-03-20  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/hal_aux.c (hal_platform_init): Fix SCC2/SCC3 routing.

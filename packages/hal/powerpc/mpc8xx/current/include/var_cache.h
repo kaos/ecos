@@ -11,6 +11,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -67,7 +68,23 @@
 //-----------------------------------------------------------------------------
 // Cache dimensions - these vary between the 8xx sub-models
 
-#if defined(CYGPKG_HAL_POWERPC_MPC860)
+#if defined(CYGHWR_HAL_POWERPC_MPC8XX_862P)
+// Data cache
+#define HAL_DCACHE_SIZE                 (8*1024)    // Size of data cache in bytes
+#define HAL_DCACHE_LINE_SIZE            16          // Size of a data cache line
+#define HAL_DCACHE_WAYS                 2           // Associativity of the cache
+
+// Instruction cache
+#define HAL_ICACHE_SIZE                 (16*1024)   // Size of cache in bytes
+#define HAL_ICACHE_LINE_SIZE            16          // Size of a cache line
+#define HAL_ICACHE_WAYS                 2           // Associativity of the cache
+#endif // defined(CYGHWR_HAL_POWERPC_MPC862P)
+
+#if defined(CYGHWR_HAL_POWERPC_MPC8XX_860) || \
+    defined(CYGHWR_HAL_POWERPC_MPC8XX_860T) || \
+    defined(CYGHWR_HAL_POWERPC_MPC8XX_862T) || \
+    defined(CYGHWR_HAL_POWERPC_MPC8XX_855T) || \
+    defined(CYGHWR_HAL_POWERPC_MPC8XX_852T)
 // Data cache
 #define HAL_DCACHE_SIZE                 4096    // Size of data cache in bytes
 #define HAL_DCACHE_LINE_SIZE            16      // Size of a data cache line
@@ -77,9 +94,10 @@
 #define HAL_ICACHE_SIZE                 4096    // Size of cache in bytes
 #define HAL_ICACHE_LINE_SIZE            16      // Size of a cache line
 #define HAL_ICACHE_WAYS                 2       // Associativity of the cache
-#endif // defined(CYGPKG_HAL_POWERPC_MPC860)
+#endif // defined(CYGHWR_HAL_POWERPC_MPC860)
 
-#if defined(CYGPKG_HAL_POWERPC_MPC823) || defined(CYGPKG_HAL_POWERPC_MPC850)
+#if defined(CYGHWR_HAL_POWERPC_MPC8XX_823) || \
+    defined(CYGHWR_HAL_POWERPC_MPC8XX_850)
 // Data cache
 #define HAL_DCACHE_SIZE                 1024    // Size of data cache in bytes
 #define HAL_DCACHE_LINE_SIZE            16      // Size of a data cache line
@@ -89,7 +107,11 @@
 #define HAL_ICACHE_SIZE                 2048    // Size of cache in bytes
 #define HAL_ICACHE_LINE_SIZE            16      // Size of a cache line
 #define HAL_ICACHE_WAYS                 2       // Associativity of the cache
-#endif // defined(CYGPKG_HAL_POWERPC_MPC823) || defined(CYGPKG_HAL_POWERPC_MPC850)
+#endif // defined(CYGHWR_HAL_POWERPC_MPC8XX_823) || defined(CYGHWR_HAL_POWERPC_MPC8XX_850)
+
+#ifndef HAL_ICACHE_SIZE
+#error Missing cache definitions for this processor?
+#endif
 
 #define HAL_DCACHE_SETS (HAL_DCACHE_SIZE/(HAL_DCACHE_LINE_SIZE*HAL_DCACHE_WAYS))
 #define HAL_ICACHE_SETS (HAL_ICACHE_SIZE/(HAL_ICACHE_LINE_SIZE*HAL_ICACHE_WAYS))

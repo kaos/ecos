@@ -9,7 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-## Copyright (C) 2002 Gary Thomas
+## Copyright (C) 2002, 2003 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -102,33 +102,15 @@ cdl_package CYGPKG_HAL_POWERPC_MPC8xx {
         puts $::cdl_header "#define CYGPRI_KERNEL_TESTS_DHRYSTONE_PASSES 250000"
     }
 
-    cdl_component CYGPKG_HAL_POWERPC_MPC823 {
-        display       "PowerPC 823 microprocessor"
+    cdl_component CYGHWR_HAL_POWERPC_MPC8XX {
+        display       "PowerPC 8xx microprocessor family"
+        flavor        data
+	legal_values  { "823" "850" "852T" "855T" "860" "860T" "862T" "862P" }
+        default_value "860"
         implements    CYGINT_HAL_POWERPC_VARIANT
         description "
-            The PowerPC 823 microprocessor. This is an embedded part that in
-            addition to the PowerPC processor core has built in peripherals
-            such as memory controllers, DMA controllers, serial ports and
-            timers/counters."               
-    }
-
-    cdl_component CYGPKG_HAL_POWERPC_MPC850 {
-        display       "PowerPC 850 microprocessor"
-        implements    CYGINT_HAL_POWERPC_VARIANT
-        description "
-            The PowerPC 850 microprocessor. This is an embedded part that in
-            addition to the PowerPC processor core has built in peripherals
-            such as memory controllers, DMA controllers, serial ports and
-            timers/counters."               
-    }
-
-    cdl_component CYGPKG_HAL_POWERPC_MPC860 {
-        display       "PowerPC 860 microprocessor"
-        default_value 1
-        implements    CYGINT_HAL_POWERPC_VARIANT
-        description "
-            The PowerPC 860 microprocessor. This is an embedded part that in
-            addition to the PowerPC processor core has built in peripherals
+            The PowerPC 8xx microprocessor family. These are embedded parts 
+            that in addition to the PowerPC processor core have built in peripherals
             such as memory controllers, DMA controllers, serial ports and
             timers/counters."               
 

@@ -17,6 +17,7 @@ cdl_configuration eCos {
     package -hardware CYGPKG_HAL_QUICC current ;
     package -hardware CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC current ;
     package -hardware CYGPKG_DEVS_ETH_POWERPC_FEC current ;
+    package -hardware CYGPKG_DEVS_ETH_POWERPC_VIPER current ;
     package -hardware CYGPKG_DEVS_FLASH_VIPER current ;
     package -hardware CYGPKG_DEVS_FLASH_AMD_AM29XXXXX current ;
     package -template CYGPKG_HAL current ;
@@ -25,6 +26,7 @@ cdl_configuration eCos {
     package -template CYGPKG_ISOINFRA current ;
     package -template CYGPKG_LIBC_STRING current ;
     package -template CYGPKG_NS_DNS current ;
+    package -template CYGPKG_CRC current ;
     package CYGPKG_IO_FLASH current ;
     package CYGPKG_IO_ETH_DRIVERS current ;
     package CYGPKG_COMPRESS_ZLIB current ;
@@ -53,6 +55,10 @@ cdl_option CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS {
 
 cdl_option CYGSEM_HAL_ROM_MONITOR {
     inferred_value 1
+};
+
+cdl_component CYGHWR_HAL_POWERPC_MPC8XX {
+    inferred_value 860T
 };
 
 cdl_component CYG_HAL_STARTUP {

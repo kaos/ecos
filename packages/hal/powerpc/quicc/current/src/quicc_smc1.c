@@ -61,8 +61,6 @@
 
 #include <cyg/hal/hal_arch.h>
 
-#ifdef CYGPKG_HAL_POWERPC_MPC860
-
 // eCos headers decribing PowerQUICC:
 #include <cyg/hal/quicc/ppc8xx.h>
 
@@ -91,6 +89,7 @@ struct port_info {
     volatile struct cp_bufdesc *next_rxbd;
     int                         irq;     // Interrupt state
     int                         init;    // Has port been initialized?
+    volatile unsigned long     *brg;     // Baud rate generator
 };
 
 static struct port_info ports[] = {
@@ -126,12 +125,6 @@ static struct port_info ports[] = {
 #endif
 };
 
-// SMC Events (interrupts)
-#define QUICC_SMCE_BRK 0x10  // Break received
-#define QUICC_SMCE_BSY 0x04  // Busy - receive buffer overrun
-#define QUICC_SMCE_TX  0x02  // Tx interrupt
-#define QUICC_SMCE_RX  0x01  // Rx interrupt
-
 /*
  *  Initialize SMCX as a uart.
  *
@@ -164,14 +157,6 @@ cyg_hal_smcx_init_channel(struct port_info *info, int port)
         eppc->pip_pbpar |= 0xc0;
         eppc->pip_pbdir &= ~0xc0;
 
-        /* Configure baud rate generator (Section 16.13.2) */
-        eppc->brgc1 = 0x10000 | (UART_BIT_RATE(UART_BAUD_RATE)<<1);
-
-        /*
-         *  NMSI mode, BRG1 to SMC1
-         *  (Section 16.12.5.2)
-         */
-        eppc->si_simode = 0;
         break;
 #endif
 #if CYGNUM_HAL_QUICC_SMC2 > 0
@@ -185,17 +170,16 @@ cyg_hal_smcx_init_channel(struct port_info *info, int port)
         eppc->pio_padir &= ~0xc0;
         eppc->pio_paodr &= ~0xc0;
 
-        /* Configure baud rate generator (Section 16.13.2) */
-        eppc->brgc1 = 0x10000 | (UART_BIT_RATE(UART_BAUD_RATE)<<1);
-
-        /*
-         *  NMSI mode, BRG1 to SMC2
-         *  (Section 16.12.5.2)
-         */
-        eppc->si_simode = 0x00000000;
         break;
 #endif
     }
+
+    // Set up baud rate generator.  These are allocated from a
+    // pool, based on the port number and type.  The allocator
+    // will arrange to have the selected baud rate clock steered
+    // to this device.
+    info->brg = _mpc8xx_allocate_brg(port);
+    *(info->brg) = 0x10000 | (UART_BIT_RATE(UART_BAUD_RATE)<<1);
 
     /*
      *  Set pointers to buffer descriptors.
@@ -288,7 +272,7 @@ extern int enable_diag_uart;
 #endif // CYGDBG_DIAG_BUF
 
 static void 
-cyg_hal_smcx_putc(void* __ch_data, cyg_uint8 ch)
+cyg_hal_sxx_putc(void* __ch_data, cyg_uint8 ch)
 {
     volatile struct cp_bufdesc *bd, *first;
     EPPC *eppc = eppc_base();
@@ -424,13 +408,13 @@ cyg_hal_sxx_getc(void* __ch_data)
 
 
 static void
-cyg_hal_smcx_write(void* __ch_data, const cyg_uint8* __buf, 
+cyg_hal_sxx_write(void* __ch_data, const cyg_uint8* __buf, 
                          cyg_uint32 __len)
 {
     CYGARC_HAL_SAVE_GP();
 
     while(__len-- > 0)
-        cyg_hal_smcx_putc(__ch_data, *__buf++);
+        cyg_hal_sxx_putc(__ch_data, *__buf++);
 
     CYGARC_HAL_RESTORE_GP();
 }
@@ -608,13 +592,6 @@ cyg_hal_sccx_init_channel(struct port_info *info, int port)
         eppc->pip_pbpar |= 0x1000;
         eppc->pip_pbdir |= 0x1000;
 
-        /* Configure baud rate generator (Section 16.13.2) */
-        eppc->brgc2 = 0x10000 | (UART_BIT_RATE(UART_BAUD_RATE)<<1);
-
-        /*
-         *  NMSI mode, BRG2 to SCC1
-         */
-        eppc->si_sicr |= (1<<3)|(1<<0);
         break;
 #endif
 #if CYGNUM_HAL_QUICC_SCC2 > 0
@@ -633,13 +610,6 @@ cyg_hal_sccx_init_channel(struct port_info *info, int port)
         eppc->pip_pbpar |= 0x2000;
         eppc->pip_pbdir |= 0x2000;
 
-        /* Configure baud rate generator (Section 16.13.2) */
-        eppc->brgc2 = 0x10000 | (UART_BIT_RATE(UART_BAUD_RATE)<<1);
-
-        /*
-         *  NMSI mode, BRG2 to SCC2
-         */
-        eppc->si_sicr |= (1<<11)|(1<<8);
         break;
 #endif
 #if CYGNUM_HAL_QUICC_SCC3 > 0
@@ -658,17 +628,16 @@ cyg_hal_sccx_init_channel(struct port_info *info, int port)
         eppc->pip_pbdir |= 0x00C0;
         eppc->pip_pbodr &= ~0x00C0;
 
-        /* Configure baud rate generator (Section 16.13.2) */
-        eppc->brgc4 = 0x10000 | (UART_BIT_RATE(UART_BAUD_RATE)<<1);
-
-        /*
-         *  NMSI mode, BRG4 to SCC3
-         */
-        eppc->si_sicr &= ~(0xFF << 16);
-        eppc->si_sicr |= (3<<19)|(3<<16);
         break;
 #endif
     }
+
+    // Set up baud rate generator.  These are allocated from a
+    // pool, based on the port number and type.  The allocator
+    // will arrange to have the selected baud rate clock steered
+    // to this device.
+    info->brg = _mpc8xx_allocate_brg(port);
+    *(info->brg) = 0x10000 | (UART_BIT_RATE(UART_BAUD_RATE)<<1);
 
     /*
      *  Set pointers to buffer descriptors.
@@ -754,57 +723,6 @@ cyg_hal_sccx_init_channel(struct port_info *info, int port)
     info->irq = 0;
 }
 
-static void 
-cyg_hal_sccx_putc(void* __ch_data, cyg_uint8 ch)
-{
-    volatile struct cp_bufdesc *bd, *first;
-    EPPC *eppc = eppc_base();
-    struct port_info *info = (struct port_info *)__ch_data;
-    volatile struct uart_pram *uart_pram = (volatile struct uart_pram *)((char *)eppc + info->pram);
-    CYGARC_HAL_SAVE_GP();
-
-    /* tx buffer descriptor */
-    bd = (struct cp_bufdesc *)((char *)eppc + uart_pram->tbptr);
-
-    // Scan for a free buffer
-    first = bd;
-    while (bd->ctrl & QUICC_BD_CTL_Ready) {
-        if (bd->ctrl & QUICC_BD_CTL_Wrap) {
-            bd = (struct cp_bufdesc *)((char *)eppc + uart_pram->tbase);
-        } else {
-            bd++;
-        }
-        if (bd == first) break;
-    }
-
-    while (bd->ctrl & QUICC_BD_CTL_Ready) ;  // Wait for buffer free
-    if (bd->ctrl & QUICC_BD_CTL_Int) {
-        // This buffer has just completed interrupt output.  Reset bits
-        bd->ctrl &= ~QUICC_BD_CTL_Int;
-        bd->length = 0;
-    }
-
-    bd->length = 0;
-    bd->buffer[bd->length++] = ch;
-    bd->ctrl      |= QUICC_BD_CTL_Ready;
-
-    while (bd->ctrl & QUICC_BD_CTL_Ready) ;  // Wait until buffer free
-
-    CYGARC_HAL_RESTORE_GP();
-}
-
-static void
-cyg_hal_sccx_write(void* __ch_data, const cyg_uint8* __buf, 
-                         cyg_uint32 __len)
-{
-    CYGARC_HAL_SAVE_GP();
-
-    while(__len-- > 0)
-        cyg_hal_sccx_putc(__ch_data, *__buf++);
-
-    CYGARC_HAL_RESTORE_GP();
-}
-
 static int
 cyg_hal_sccx_isr(void *__ch_data, int* __ctrlc, 
                  CYG_ADDRWORD __vector, CYG_ADDRWORD __data)
@@ -877,9 +795,9 @@ cyg_hal_plf_serial_init(void)
     CYGACC_CALL_IF_SET_CONSOLE_COMM(chan);// Should be configurable!
     comm = CYGACC_CALL_IF_CONSOLE_PROCS();
     CYGACC_COMM_IF_CH_DATA_SET(*comm, &ports[chan]);
-    CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_smcx_write);
+    CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_sxx_write);
     CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_sxx_read);
-    CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_smcx_putc);
+    CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_sxx_putc);
     CYGACC_COMM_IF_GETC_SET(*comm, cyg_hal_sxx_getc);
     CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_sxx_control);
     CYGACC_COMM_IF_DBG_ISR_SET(*comm, cyg_hal_smcx_isr);
@@ -893,9 +811,9 @@ cyg_hal_plf_serial_init(void)
     CYGACC_CALL_IF_SET_CONSOLE_COMM(chan);// Should be configurable!
     comm = CYGACC_CALL_IF_CONSOLE_PROCS();
     CYGACC_COMM_IF_CH_DATA_SET(*comm, &ports[chan]);
-    CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_smcx_write);
+    CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_sxx_write);
     CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_sxx_read);
-    CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_smcx_putc);
+    CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_sxx_putc);
     CYGACC_COMM_IF_GETC_SET(*comm, cyg_hal_sxx_getc);
     CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_sxx_control);
     CYGACC_COMM_IF_DBG_ISR_SET(*comm, cyg_hal_smcx_isr);
@@ -909,9 +827,9 @@ cyg_hal_plf_serial_init(void)
     CYGACC_CALL_IF_SET_CONSOLE_COMM(chan);// Should be configurable!
     comm = CYGACC_CALL_IF_CONSOLE_PROCS();
     CYGACC_COMM_IF_CH_DATA_SET(*comm, &ports[chan]);
-    CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_sccx_write);
+    CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_sxx_write);
     CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_sxx_read);
-    CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_sccx_putc);
+    CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_sxx_putc);
     CYGACC_COMM_IF_GETC_SET(*comm, cyg_hal_sxx_getc);
     CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_sxx_control);
     CYGACC_COMM_IF_DBG_ISR_SET(*comm, cyg_hal_sccx_isr);
@@ -925,9 +843,9 @@ cyg_hal_plf_serial_init(void)
     CYGACC_CALL_IF_SET_CONSOLE_COMM(chan);// Should be configurable!
     comm = CYGACC_CALL_IF_CONSOLE_PROCS();
     CYGACC_COMM_IF_CH_DATA_SET(*comm, &ports[chan]);
-    CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_sccx_write);
+    CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_sxx_write);
     CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_sxx_read);
-    CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_sccx_putc);
+    CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_sxx_putc);
     CYGACC_COMM_IF_GETC_SET(*comm, cyg_hal_sxx_getc);
     CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_sxx_control);
     CYGACC_COMM_IF_DBG_ISR_SET(*comm, cyg_hal_sccx_isr);
@@ -941,9 +859,9 @@ cyg_hal_plf_serial_init(void)
     CYGACC_CALL_IF_SET_CONSOLE_COMM(chan);// Should be configurable!
     comm = CYGACC_CALL_IF_CONSOLE_PROCS();
     CYGACC_COMM_IF_CH_DATA_SET(*comm, &ports[chan]);
-    CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_sccx_write);
+    CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_sxx_write);
     CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_sxx_read);
-    CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_sccx_putc);
+    CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_sxx_putc);
     CYGACC_COMM_IF_GETC_SET(*comm, cyg_hal_sxx_getc);
     CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_sxx_control);
     CYGACC_COMM_IF_DBG_ISR_SET(*comm, cyg_hal_sccx_isr);
@@ -955,5 +873,4 @@ cyg_hal_plf_serial_init(void)
     CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
 }
 
-#endif // CYGPKG_HAL_POWERPC_MPC860
 // EOF quicc_smc1.c
