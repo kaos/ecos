@@ -744,10 +744,20 @@
 #define AT91_SPI_IER           0x14              // Interrupt Enable Register
 #define AT91_SPI_IDR           0x18              // Interrupt Disable Register
 #define AT91_SPI_IMR           0x1C              // Interrupt Mask Register
+// DMA registers are PDC registers
+// can be different from target to target
+#ifndef AT91_SPI_RPR
 #define AT91_SPI_RPR           0x20              // Receive Pointer Register
+#endif
+#ifndef AT91_SPI_RCR
 #define AT91_SPI_RCR           0x24              // Receive Counter Register
+#endif
+#ifndef AT91_SPI_TPR
 #define AT91_SPI_TPR           0x28              // Transmit Pointer Register
+#endif
+#ifndef AT91_SPI_TCR
 #define AT91_SPI_TCR           0x2C              // Transmit Counter Register
+#endif
 #define AT91_SPI_CSR0          0x30              // Chip Select Register 0
 #define AT91_SPI_CSR1          0x34              // Chip Select Register 1
 #define AT91_SPI_CSR2          0x38              // Chip Select Register 2

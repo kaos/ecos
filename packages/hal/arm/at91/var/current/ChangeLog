@@ -1,3 +1,8 @@
+2004-10-06  Andrea Michelotti <amichelotti@atmel.com>
+
+	* include/var_io.h: protected PDC/SPI DMA registers from redefinition.
+	The HAL may of already defined them.
+	
 2004-10-05  Savin Zlobec <savin@elatec.si>
 
 	* include/var_io.h: Added definitions for AT91M55800A SPI and PIO
