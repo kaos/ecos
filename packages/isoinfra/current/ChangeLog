@@ -1,3 +1,8 @@
+2004-03-30  Alex Paulis and Cameron Taylor  <ctaylor@waverider.com>
+
+	* include/sys/select.h: set FD_SETSIZE to CYGNUM_FILEIO_NFD
+	when appropriate.
+
 2004-03-12  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/isoinfra.cdl: Typo: CYGBLD_ISO_STDIO_FILEPOS ->
