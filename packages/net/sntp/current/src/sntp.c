@@ -140,6 +140,7 @@ static int sntp_initialized = 0;
 static struct sockaddr *sntp_servers = NULL;
 static cyg_uint32 sntp_num_servers = 0;
 static cyg_mutex_t sntp_mutex;
+static time_t NextTimeUpdate = 0;
 
 /* SNTP Timeouts
  *
@@ -216,7 +217,6 @@ static void sntp_fn(cyg_addrword_t data)
 #ifdef CYGPKG_NET_SNTP_UNICAST
   int i;
   struct timeval timeout;
-  time_t NextTimeUpdate = 0;
 #endif /* CYGPKG_NET_SNTP_UNICAST */
   struct timeval *ptimeout = NULL;
 
@@ -329,7 +329,8 @@ static void sntp_fn(cyg_addrword_t data)
              * up when it's time to send more
              * requests.
              */
-            timeout.tv_sec = NextTimeUpdate - current_time;
+            timeout.tv_sec = (SNTP_WAITPERIOD > (NextTimeUpdate - current_time)?
+							 (NextTimeUpdate - current_time):SNTP_WAITPERIOD);
         } else {
             /* It's already time for us to update our time */
 			NextTimeUpdate = 0;
@@ -530,8 +531,12 @@ void cyg_sntp_set_servers(struct sockaddr *server_list,
 
 	/* Record the new server list */
 	sntp_num_servers = num_servers;
-	if (num_servers == 0)
+	if (num_servers == 0) {
 		server_list = NULL;
+	} else {
+		/* reset the waiting time to force a new update <= SNTP_WAITPERIOD*/
+		NextTimeUpdate = 0;
+	}
 	sntp_servers = server_list;
 
 	/* Free the mutex */
