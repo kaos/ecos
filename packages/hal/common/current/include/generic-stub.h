@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -290,6 +291,7 @@ extern char *__mem2hex (char *mem, char *dest, int count, int may_fault);
    Otherwise, the value returned is one byte past the last byte written. */
 extern char *__hex2mem (char *buf, char *mem, int count, int may_fault);
 
+#ifdef CYGSEM_ECOS_SUPPORTS_PROGRAM_ARGS
 /* Set the program arguments passed into the user program's main */
 extern void __set_program_args (int argc, char **argv);
 
@@ -297,6 +299,7 @@ extern void __set_program_args (int argc, char **argv);
    packet). argcPtr is a pointer into the user program, which will hold
    the number of arguments; the strings are returned. */
 extern char **__get_program_args (target_register_t argcPtr);
+#endif
 
 /* Encode PACKET as a remote protocol packet and send it to GDB; this takes
    care of sending the initial '$' character, as well as the trailing '#'

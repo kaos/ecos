@@ -160,7 +160,10 @@ static int process_exception (int sigval);
 static void do_nothing (void); /* and do it gracefully */
 static int syscall_do_nothing (int);
 
+#ifdef CYGSEM_ECOS_SUPPORTS_PROGRAM_ARGS
 void __free_program_args (void);
+static char *__add_program_arg (int argnum, uint32 arglen);
+#endif
 
 volatile __PFI __process_exception_vec = process_exception;
 volatile __PFV __process_exit_vec = do_nothing;
@@ -168,8 +171,6 @@ volatile __PFI __process_syscall_vec = syscall_do_nothing;
 volatile __PFI __process_signal_vec = NULL;
 volatile __PFV __init_vec = NULL;
 volatile __PFV __cleanup_vec = NULL;
-
-static char *__add_program_arg (int argnum, uint32 arglen);
 
 static const char hexchars[] = "0123456789abcdef";
 
@@ -1786,6 +1787,7 @@ __kill_program (int sigval)
   __putpacket (__remcomOutBuffer);
 }
 
+#ifdef CYGSEM_ECOS_SUPPORTS_PROGRAM_ARGS
 #define MAX_ARG_COUNT 20
 #define MAX_ARGDATA 128
 
@@ -1869,6 +1871,7 @@ __get_program_args (target_register_t argcPtr)
   __write_mem_safe ((char *) &program_argc, (void *)argcPtr, sizeof (program_argc));
   return program_argv;
 }
+#endif
 
 /* Table used by the crc32 function to calcuate the checksum. */
 static uint32 crc32_table[256];
