@@ -1,3 +1,8 @@
+2003-08-18  Thomas Koeller  <thomas.koeller@baslerweb.com>
+
+        * include/var_io.h:
+        Added bitmask definitions for PIO.
+	
 2003-08-06  Daniel Néri  <daniel.neri@sigicom.se>
 
 	* src/at91_misc.c (hal_clock_reset):

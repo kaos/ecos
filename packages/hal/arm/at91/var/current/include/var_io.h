@@ -147,6 +147,38 @@
 #define AT91_PIO_PER  0x00  // PIO enable
 #define AT91_PIO_PDR  0x04  // PIO disable
 #define AT91_PIO_PSR  0x08  // PIO status
+#define AT91_PIO_PSR_TCLK0    0x00000001 // Timer #0 clock
+#define AT91_PIO_PSR_TIOA0    0x00000002 // Timer #0 signal A
+#define AT91_PIO_PSR_TIOB0    0x00000004 // Timer #0 signal B
+#define AT91_PIO_PSR_TCLK1    0x00000008 // Timer #1 clock
+#define AT91_PIO_PSR_TIOA1    0x00000010 // Timer #1 signal A
+#define AT91_PIO_PSR_TIOB1    0x00000020 // Timer #1 signal B
+#define AT91_PIO_PSR_TCLK2    0x00000040 // Timer #2 clock
+#define AT91_PIO_PSR_TIOA2    0x00000080 // Timer #2 signal A
+#define AT91_PIO_PSR_TIOB2    0x00000100 // Timer #2 signal B
+#define AT91_PIO_PSR_IRQ0     0x00000200 // IRQ #0
+#define AT91_PIO_PSR_IRQ1     0x00000400 // IRQ #1
+#define AT91_PIO_PSR_IRQ2     0x00000800 // IRQ #2
+#define AT91_PIO_PSR_FIQ      0x00001000 // FIQ
+#define AT91_PIO_PSR_SCK0     0x00002000 // Serial port #0 clock
+#define AT91_PIO_PSR_TXD0     0x00004000 // Serial port #0 TxD
+#define AT91_PIO_PSR_RXD0     0x00008000 // Serial port #0 RxD
+#define AT91_PIO_PSR_P16      0x00010000 // PIO port #16
+#define AT91_PIO_PSR_P17      0x00020000 // PIO port #17
+#define AT91_PIO_PSR_P16      0x00040000 // PIO port #18
+#define AT91_PIO_PSR_P16      0x00080000 // PIO port #19
+#define AT91_PIO_PSR_SCK1     0x00100000 // Serial port #1 clock
+#define AT91_PIO_PSR_TXD1     0x00200000 // Serial port #1 TxD
+#define AT91_PIO_PSR_RXD1     0x00400000 // Serial port #1 RxD
+#define AT91_PIO_PSR_P23      0x00800000 // PIO port #23
+#define AT91_PIO_PSR_P24      0x01000000 // PIO port #24
+#define AT91_PIO_PSR_MCKO     0x02000000 // Master clock out
+#define AT91_PIO_PSR_NCS2     0x04000000 // Chip select #2
+#define AT91_PIO_PSR_NCS3     0x08000000 // Chip select #3
+#define AT91_PIO_PSR_CS7_A20  0x10000000 // Chip select #7 or A20
+#define AT91_PIO_PSR_CS6_A21  0x20000000 // Chip select #6 or A21
+#define AT91_PIO_PSR_CS5_A22  0x40000000 // Chip select #5 or A22
+#define AT91_PIO_PSR_CS4_A23  0x80000000 // Chip select #4 or A23
 #define AT91_PIO_OER  0x10  // Output enable
 #define AT91_PIO_ODR  0x14  // Output disable
 #define AT91_PIO_OSR  0x18  // Output status
