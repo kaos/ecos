@@ -71,10 +71,12 @@ cyg_start( void )
     cyg_uint32 flash_block_size, flash_num_blocks;
     CYG_ADDRWORD test_buf1, test_buf2;
     cyg_uint32 *lp1, *lp2;
-    int i, j, len;
+    int i, len;
     cyg_bool passed, ok;
 
 #if 0
+    int j;
+    
     diag_printf("Testing udelay: ");
     for (i = 0;  i < 30;  i++) {
         for (j = 0;  j < 1000;  j++) {
@@ -96,7 +98,7 @@ cyg_start( void )
     flash_end = flash_end - 1;
     flash_get_block_info(&flash_block_size, &flash_num_blocks);
 
-    diag_printf("FLASH: %p - %p, %d blocks of 0x%x bytes each.\n", 
+    diag_printf("FLASH: %p - %x, %d blocks of 0x%x bytes each.\n", 
                 flash_start, flash_end + 1, flash_num_blocks, flash_block_size);
 
     // Verify that the testing limits are within the bounds of the
@@ -135,7 +137,7 @@ cyg_start( void )
     lp1 = (cyg_uint32 *)test_buf1;
     for (i = 0;  i < CYGNUM_IO_FLASH_TEST_LENGTH;  i += sizeof(cyg_uint32)) {
         if (*lp1++ != 0xFFFFFFFF) {
-            diag_printf("FLASH: non-erased data found at offset %p\n", (CYG_ADDRWORD)(lp1-1) - test_buf1);
+            diag_printf("FLASH: non-erased data found at offset %x\n", (CYG_ADDRWORD)(lp1-1) - test_buf1);
             diag_dump_buf((void *)(lp1-1), 32);
             ok = false;
             break;
@@ -192,7 +194,7 @@ cyg_start( void )
     lp2 = (cyg_uint32 *)test_buf2;
     for (i = 0;  i < CYGNUM_IO_FLASH_TEST_LENGTH;  i += sizeof(cyg_uint32)) {
         if (*lp2++ != *lp1++) {
-            diag_printf("FLASH: incorrect data found at offset %p\n", (CYG_ADDRWORD)(lp2-1) - test_buf2);
+            diag_printf("FLASH: incorrect data found at offset %x\n", (CYG_ADDRWORD)(lp2-1) - test_buf2);
             diag_dump_buf((void *)(lp2-1), 32);
             ok = false;
             break;

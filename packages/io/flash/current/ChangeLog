@@ -1,3 +1,7 @@
+2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/flash1.c: Fixed compiler warning with diag_printf.
+
 2004-09-05  Mark Salter  <msalter@redhat.com>
 
 	* doc/flash.sgml: Fix unbalanced <PARA>s.
