@@ -564,7 +564,7 @@ fec_eth_can_send(struct eth_drv_sc *sc)
 
 //
 // This routine is called to send data to the hardware.
-int _fec_eth_tx_count = 0;
+
 static void 
 fec_eth_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len, 
                int total_len, unsigned long key)
@@ -612,7 +612,6 @@ fec_eth_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
         HAL_DCACHE_FLUSH(fec_eth_txring, sizeof(fec_eth_txring));  // Make sure no stale data
     }
 #endif
-    _fec_eth_tx_count++;
     qi->txactive++;
     qi->fec->TxUpdate = 0x01000000;  // Any write tells machine to look for work
     set_led(LED_TxACTIVE);
