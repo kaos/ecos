@@ -53,6 +53,8 @@
 
 #include <pkgconf/system.h>
 #include <pkgconf/devs_eth_arm_ks32c5000.h>
+#include <pkgconf/io_eth_drivers.h>
+
 #if defined(CYGPKG_IO)
 #include <pkgconf/io.h>
 #include <cyg/io/io.h>

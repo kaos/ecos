@@ -150,6 +150,7 @@
 #include <pkgconf/io_eth_drivers.h>
 #endif
 #include <pkgconf/devs_eth_intel_i82544.h>
+
 #include <cyg/infra/cyg_type.h>
 #include <cyg/infra/cyg_ass.h>
 #include <cyg/hal/hal_arch.h>

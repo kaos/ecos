@@ -64,6 +64,8 @@
 
 #include <pkgconf/system.h>
 #include <pkgconf/devs_eth_mips_upd985xx.h>
+#include <pkgconf/io_eth_drivers.h>
+
 #include <cyg/infra/cyg_type.h>
 #include <cyg/infra/cyg_ass.h>
 #include <cyg/hal/hal_arch.h>

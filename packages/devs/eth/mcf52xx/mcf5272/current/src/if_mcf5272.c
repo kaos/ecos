@@ -41,9 +41,12 @@
 
 
 // Ethernet device driver for Fast Ethernet MCF5272_fec
+#include <pkgconf/io_eth_drivers.h>
+
 #include <cyg/hal/drv_api.h>
 #include <cyg/io/eth/netdev.h>
 #include <cyg/io/eth/eth_drv.h>
+
 #include <cyg/devs/eth/nbuf.h>
 #include <cyg/devs/eth/if_mcf5272.h>
 #include <cyg/devs/eth/if_mcf5272_private_data.h>

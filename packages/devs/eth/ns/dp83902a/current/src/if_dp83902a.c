@@ -65,13 +65,14 @@
 //==========================================================================
 
 #include <pkgconf/system.h>
+#include <pkgconf/io_eth_drivers.h>
+
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/hal_arch.h>
 #include <cyg/infra/diag.h>
 #include <cyg/hal/drv_api.h>
 #include <cyg/io/eth/eth_drv.h>
 #include <cyg/io/eth/netdev.h>
-#include <pkgconf/io_eth_drivers.h>
 
 #include <cyg/io/dp83902a.h>
 

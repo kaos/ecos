@@ -55,6 +55,7 @@
 
 #include <pkgconf/system.h>
 #include <pkgconf/devs_eth_powerpc_fec.h>
+#include <pkgconf/io_eth_drivers.h>
 
 #ifdef CYGPKG_NET
 #include <pkgconf/net.h>

@@ -65,6 +65,7 @@
 
 #include <pkgconf/system.h>
 #include <pkgconf/devs_eth_powerpc_quicc.h>
+#include <pkgconf/io_eth_drivers.h>
 
 #ifdef CYGPKG_NET
 #include <pkgconf/net.h>

@@ -62,6 +62,8 @@
 //==========================================================================
 
 #include <pkgconf/system.h>
+#include <pkgconf/io_eth_drivers.h>
+
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/hal_arch.h>
 #include <cyg/infra/diag.h>

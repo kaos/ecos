@@ -63,6 +63,8 @@
 
 #include <pkgconf/system.h>
 #include <pkgconf/devs_eth_arm_flexanet.h>
+#include <pkgconf/io_eth_drivers.h>
+
 #if defined(CYGPKG_REDBOOT)
 #include <pkgconf/redboot.h>
 #endif
