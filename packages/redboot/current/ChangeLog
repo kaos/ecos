@@ -1,3 +1,8 @@
+2004-02-20  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* doc/redboot.sgml: Document lowering security level for TFTP to
+	work on more recent Red Hat Linux.
+
 2004-02-19  Jani Monoses <jani@iv.ro>
 
 	* src/xyzModem.c: Start with sending a 'C', do not wait until the

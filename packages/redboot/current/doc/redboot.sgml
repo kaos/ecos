@@ -557,6 +557,14 @@ xinetd RPM is installed.</para>
  /sbin/service xinetd reload </programlisting>Create the directory /tftpboot
 using the command <programlisting>mkdir /tftpboot</programlisting></para>
 </step>
+<step><para>If you are using Red Hat 8 or newer, you may need to configure
+the built-in firewall to allow through TFTP. Either edit
+<filename>/etc/sysconfig/iptables</filename> or run
+<command>redhat-config-securitylevel</command> on the command line or from
+the menu as System Settings->Security Settings to lower the security level.
+You should only do this with the permission of your systems administrator and
+if you are already behind a separate firewall.</para>
+</step>
 </procedure>
 <note><title>NOTE</title>
 <para>Under Red Hat 7 you must address files by absolute pathnames, for example: <filename>
