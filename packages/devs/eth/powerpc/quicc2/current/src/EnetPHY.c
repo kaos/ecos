@@ -41,6 +41,7 @@
 * Modified for the mpc8260 VADS board
 *--------------------------------------------------------------------*/
 #include "types.h"
+#include <cyg/hal/hal_intr.h> /* HAL_DELAY_US */
 #include "EnetPHY.h"
 
 /* Internal functions */
@@ -69,11 +70,34 @@ VUINT32 * pPortData;
 void 
 EnableResetPHY(volatile t_BCSR *pBCSR)
 {
+#ifdef CYGPKG_HAL_POWERPC_TS6
+#define ETH_RST_MASK 0x20
+  /* The FPGA control register on the TS6 board uses the same memory
+   * location as the BCSR register on the VADS board.
+   */
+  volatile cyg_uint32 *fpga_ctrl = (cyg_uint32 *) pBCSR;
+  volatile cyg_uint32 *fpga_vers;
+  cyg_uint32 value;
+  fpga_vers = fpga_ctrl + 1;
+  value = *fpga_vers;
+  if(value >= 6){ /* version 06 of the FPGA added PHY reset control */
+    value = *fpga_ctrl;
+    /* Set the PHY reset bit */
+    value |= ETH_RST_MASK;
+    *fpga_vers = value;
+
+    /* Give the PHY time to reset */
+    HAL_DELAY_US(10000);
+
+    /* Clear the reset bit */
+    *fpga_vers = value & ~ETH_RST_MASK;
+  }
+#else
   // active low FETHIEN on BSCR1, assert reset low
   pBCSR->bcsr1 &= ~(FETHIEN_ | FETHRST_);  
   // de-assert reset
   pBCSR->bcsr1 |= FETHRST_;  
-  
+#endif
 }
 
 
@@ -173,18 +197,12 @@ EthernetPHYInterruptHandler()
 UINT16 
 LinkTestPHY()
 {
-  UINT32 j, cnt;
-  UINT16 FrameValue;
+  UINT32 j;
+  UINT16 FrameValue = 0;
 
-  //for (j = 0; j < 10; j++) {
-  for (j = 0; j < 5; j++) {
+  for (j = 0; j < 50; j++) {
 
-    for (cnt = 0; cnt < 1000000; cnt ++) {
-    
-      asm("nop");
-      asm("nop");
-      asm("nop");
-    }
+    HAL_DELAY_US(100000);
   
     FrameValue = MdioFrame(READ,0,CHIP_STAT_REG,0);  
   
