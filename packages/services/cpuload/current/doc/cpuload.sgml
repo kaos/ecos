@@ -141,7 +141,7 @@ calibration function was executed. If the CPU clock rate is reduced,
 the idle thread counter will be incremented less and so the CPU load
 measurements will give values too high. If the CPU is halted entirely,
 100% cpu load will be measured.
-<para>
+</para>
 </sect2>
 </SECT1>
 </CHAPTER>
