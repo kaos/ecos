@@ -55,7 +55,7 @@ cdl_package CYGPKG_IO_PCMCIA {
     description   "
         This option enables drivers for basic I/O services on
         pcmcia devices."
-    doc           redirect/ecos-device-drivers.html
+    doc           ref/io.html
 
     compile       pcmcia.c
  
