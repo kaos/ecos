@@ -1,3 +1,8 @@
+2003-04-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* ecos.db: Shorten some long target names to stop them overrunning
+	GUI boundaries.
+
 2003-03-24  Gary Thomas  <gary@mlbassoc.com>
 
 	* ecos.db: New platform - Analogue & Micro AdderII (PPC852T)

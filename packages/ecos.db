@@ -3350,7 +3350,7 @@ Evaluator7T board (aka AEB-2)."
 }
 
 target integrator_arm7 {
-        alias { "ARM development board (INTEGRATOR) with ARM7TDMI" integrator }
+        alias { "ARM INTEGRATOR development board w/ ARM7TDMI" integrator }
         packages { CYGPKG_HAL_ARM 
                    CYGPKG_HAL_ARM_INTEGRATOR 
                    CYGPKG_IO_PCI
@@ -3367,7 +3367,7 @@ target integrator_arm7 {
 }
 
 target integrator_arm9 {
-        alias { "ARM development board (INTEGRATOR) with ARM966" }
+        alias { "ARM INTEGRATOR development board w/ ARM966" }
         packages { CYGPKG_HAL_ARM
 		   CYGPKG_HAL_ARM_ARM9
                    CYGPKG_HAL_ARM_INTEGRATOR 
@@ -4317,7 +4317,7 @@ target vrc4375 {
 }
 
 target refidt334 {
-        alias		{ "MIPS IDT79S334A reference platform with IDT79RC32334 procesor" idt32334 }
+        alias		{ "MIPS IDT79S334A reference platform" idt32334 }
 	packages        { CYGPKG_HAL_MIPS
                           CYGPKG_HAL_MIPS_IDT32334
                           CYGPKG_HAL_MIPS_IDT32334_REFIDT334
