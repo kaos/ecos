@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -59,6 +60,7 @@
 #include <cyg/io/serial.h>
 #include <cyg/infra/diag.h>
 #include <cyg/hal/hal_cache.h>
+#include <cyg/hal/quicc/ppc8xx.h>
 #include CYGBLD_HAL_PLATFORM_H
 
 #ifdef CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC
@@ -390,6 +392,7 @@ quicc_smc_serial_init(struct cyg_devtab_entry *tab)
     int TxBD, RxBD;
     static int first_init = 1;
     int cache_state;
+
     HAL_DCACHE_IS_ENABLED(cache_state);
     HAL_DCACHE_SYNC();
     HAL_DCACHE_DISABLE();
@@ -402,8 +405,8 @@ quicc_smc_serial_init(struct cyg_devtab_entry *tab)
 #ifdef CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC1
         eppc->cp_cr = QUICC_SMC_CMD_Reset | QUICC_SMC_CMD_Go;  // Totally reset CP
         while (eppc->cp_cr & QUICC_SMC_CMD_Reset) ;
-        TxBD = 0x2800;  // Note: this should be configurable
-        RxBD = TxBD + CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_TxNUM*8;
+        TxBD = _mpc8xx_allocBd(sizeof(struct cp_bufdesc)*CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_TxNUM);
+        RxBD = _mpc8xx_allocBd(sizeof(struct cp_bufdesc)*CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_RxNUM);
         quicc_smc_serial_init_info(&quicc_smc_serial_info1,
                                    &eppc->pram[2].scc.pothers.smc_modem.psmc.u, // PRAM
                                    &eppc->smc_regs[0], // Control registers
@@ -419,7 +422,6 @@ quicc_smc_serial_init(struct cyg_devtab_entry *tab)
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_BRG,
                                    12  // SI mask position
             );
-        TxBD = RxBD + CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_RxNUM*8;
 #else
 #ifdef CYGPKG_HAL_POWERPC_MBX
         // Ensure the SMC1 side is initialized first and use shared mem
@@ -435,7 +437,8 @@ quicc_smc_serial_init(struct cyg_devtab_entry *tab)
 #endif        
 #endif
 #ifdef CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC2
-        RxBD = TxBD + CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_TxNUM*8;
+        TxBD = _mpc8xx_allocBd(sizeof(struct cp_bufdesc)*CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_TxNUM);
+        RxBD = _mpc8xx_allocBd(sizeof(struct cp_bufdesc)*CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_RxNUM);
         quicc_smc_serial_init_info(&quicc_smc_serial_info2,
                                    &eppc->pram[3].scc.pothers.smc_modem.psmc.u, // PRAM
                                    &eppc->smc_regs[1], // Control registers
