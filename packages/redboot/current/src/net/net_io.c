@@ -302,7 +302,7 @@ net_io_putc(void* __ch_data, cyg_uint8 c)
         have_hash = true;
         hash_count = 0;
     }
-    if ((++out_buflen == sizeof(out_buf)) || (c == '\n') ||
+    if ((++out_buflen == sizeof(out_buf)) ||
         (have_hash && (++hash_count == 3))) {
         net_io_flush();
         have_dollar = false;
