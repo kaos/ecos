@@ -1,3 +1,7 @@
+2003-01-22  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* doc/dns.sgml: Use correct (and working!) docbook.
+
 2003-01-18  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/dns_impl.inl (setdomainname): define with const name

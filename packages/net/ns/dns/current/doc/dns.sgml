@@ -90,9 +90,20 @@ or user code my override this address by calling
 <PARA>The DNS client understands the concepts of the target being
 in a domain. By default no domain will be used. Host name lookups
 should be for fully qualified names. The domain name can be set
-and retrieved using the functions:<PARA> 
-<PROGRAMLISTING>setdomainname(const char *name, size_t len);
-getdomainname(char *name, size_t len);</PROGRAMLISTING>
+and retrieved using the functions:
+<funcsynopsis>
+  <funcprototype>
+    <funcdef>int <function>getdomainname</function></funcdef>
+    <paramdef>char *<parameter>name</parameter></paramdef>
+    <paramdef>size_t <parameter>len</parameter></paramdef>
+  </funcprototype>
+  <funcprototype>
+    <funcdef>int <function>setdomainname</function></funcdef>
+    <paramdef>const char *<parameter>name</parameter></paramdef>
+    <paramdef>size_t <parameter>len</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+</para>
 
 <PARA>Alternatively, a hard coded domain name can be set using CDL.
 The boolean <literal>CYGPKG_NS_DNS_DOMAINNAME</literal> enables this
