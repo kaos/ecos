@@ -61,6 +61,10 @@
 #include <cyg/hal/hal_cache.h>
 #include CYGHWR_MEMORY_LAYOUT_H
 
+#ifdef CYGPKG_IO_ETH_DRIVERS
+#include <cyg/io/eth/eth_drv.h>            // Logical driver interfaces
+#endif
+
 #include <cyg/hal/hal_tables.h>
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
@@ -420,21 +424,25 @@ return_to_redboot(int status)
 void
 do_go(int argc, char *argv[])
 {
+    int i, cur;
     unsigned long entry;
     unsigned long oldints;
     bool wait_time_set;
     int  wait_time, res;
     bool cache_enabled = false;
-    struct option_info opts[2];
+    bool stop_net = false;
+    struct option_info opts[3];
     char line[8];
-    hal_virtual_comm_table_t *__chan = CYGACC_CALL_IF_CONSOLE_PROCS();
+    hal_virtual_comm_table_t *__chan;
 
     entry = entry_address;  // Default from last 'load' operation
     init_opts(&opts[0], 'w', true, OPTION_ARG_TYPE_NUM, 
               (void **)&wait_time, (bool *)&wait_time_set, "wait timeout");
     init_opts(&opts[1], 'c', false, OPTION_ARG_TYPE_FLG, 
               (void **)&cache_enabled, (bool *)0, "go with caches enabled");
-    if (!scan_opts(argc, argv, 1, opts, 2, (void *)&entry, OPTION_ARG_TYPE_NUM, "starting address"))
+    init_opts(&opts[2], 'n', false, OPTION_ARG_TYPE_FLG, 
+              (void **)&stop_net, (bool *)0, "go with network driver stopped");
+    if (!scan_opts(argc, argv, 1, opts, 3, (void *)&entry, OPTION_ARG_TYPE_NUM, "starting address"))
     {
         return;
     }
@@ -457,8 +465,24 @@ do_go(int argc, char *argv[])
             script_timeout_ms -= CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT;
         }
     }
+
+    // Mask interrupts on all channels
+    cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+    for (i = 0;  i < CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS;  i++) {
+	CYGACC_CALL_IF_SET_CONSOLE_COMM(i);
+	__chan = CYGACC_CALL_IF_CONSOLE_PROCS();
+	CYGACC_COMM_IF_CONTROL( *__chan, __COMMCTL_IRQ_DISABLE );
+    }
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
+
+    __chan = CYGACC_CALL_IF_CONSOLE_PROCS();
     CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_ENABLE_LINE_FLUSH);
 
+#ifdef CYGPKG_IO_ETH_DRIVERS
+    if (stop_net)
+	eth_drv_stop();
+#endif
+	
     HAL_DISABLE_INTERRUPTS(oldints);
     HAL_DCACHE_SYNC();
     if (!cache_enabled) {

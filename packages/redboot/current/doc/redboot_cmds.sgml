@@ -10,7 +10,7 @@
 <!-- ####COPYRIGHTBEGIN####                                          -->
 <!--                                                                 -->
 <!-- =============================================================== -->
-<!-- Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.  -->
+<!-- Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.  -->
 <!-- This material may be distributed only subject to the terms      -->
 <!-- and conditions set forth in the Open Publication License, v1.0  -->
 <!-- or later (the latest version is presently available at          -->
@@ -124,7 +124,7 @@ Manage flash images
 Manage configuration kept in FLASH memory
       fconfig [-i] [-l] [-n] [-f] [-d] | [-d] nickname [value]
 Execute code at a location
-      go [-w &lt;timeout>] [entry]
+      go [-w &lt;timeout>] [-c] [-n] [entry]
 Help about help?
       help [&lt;topic>]
 Set/change IP addresses
@@ -2705,6 +2705,8 @@ or a Linux kernel.</para>
       <cmdsynopsis>
 	<command>go</command>
 	<arg>-w <replaceable> timeout</replaceable></arg>
+	<arg>-c</arg>
+	<arg>-n</arg>
 	<arg><replaceable> start_address</replaceable></arg>
       </cmdsynopsis>
     </refsynopsisdiv>
@@ -2730,6 +2732,18 @@ or a Linux kernel.</para>
 	      <entry>Number</entry>
 	      <entry>How long to wait before starting execution.</entry>	     
 	      <entry>0</entry>	     
+	    </row>
+	    <row>
+	      <entry>-c</entry>	     
+	      <entry>Boolean</entry>
+	      <entry>Go with caches enabled.</entry>	     
+	      <entry>caches off</entry>	     
+	    </row>
+	    <row>
+	      <entry>-n</entry>	     
+	      <entry>Boolean</entry>
+	      <entry>Go with network interface stopped.</entry>	     
+	      <entry>network enabled</entry>	     
 	    </row>
 	    <row>
 	      <entry><replaceable>start_address</replaceable></entry>	     

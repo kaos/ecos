@@ -1,3 +1,9 @@
+2003-04-04  Mark Salter  <msalter@redhat.com>
+
+	* src/main.c (do_go): Add -n switch to optionally stop network
+	device. Mask interrupts on all comm channels.
+	* doc/redboot_cmds.sgml: Update go command info.
+
 2003-04-03  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/load.c: Better handling of default download mode.  Also
