@@ -1,3 +1,11 @@
+2003-04-04  Mark Salter  <msalter@redhat.com>
+
+	* include/hal_plf_ints.h: Add GPIO IRQ defines.
+	* include/ixdp425.h: Add GPIO line definitions.
+	* src/ixdp425_misc.c (plf_hardware_init): Setup GPIO IRQ lines.
+	Add support to read/write serial EEPROM. Add support for
+	getting/setting NPE ethernet addresses from EEPROM.
+
 2003-04-02  Mark Salter  <msalter@redhat.com>
 
 	* misc/redboot_ROM.ecm: Don't set I82559_WRITE_EEPROM.

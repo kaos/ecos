@@ -11,7 +11,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -81,6 +81,16 @@
 #define IXP425_SDRAM_REFRESH_CNT  0x081
 #define IXP425_SDRAM_SET_MODE_CMD SDRAM_IR_MODE_SET_CAS3
 
+// ------------------------------------------------------------------------
+// GPIO lines
+
+#define GPIO_EEPROM_SDA  7
+#define GPIO_EEPROM_SCL  6
+#define GPIO_ENET1_INT_N 5
+#define GPIO_ENET0_INT_N 4
+#define GPIO_HSS0_INT_N  3
+#define GPIO_HSS1_INT_N  2
+#define GPIO_DSL_INT_N   1
 
 // ------------------------------------------------------------------------
 // 4 Digit Hex Display

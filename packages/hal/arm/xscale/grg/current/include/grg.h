@@ -76,6 +76,25 @@
 
 
 // ------------------------------------------------------------------------
+// GPIO lines
+//
+#define GPIO_PWR_FAIL_IRQ_N 0
+#define GPIO_DSL_IRQ_N      1
+#define GPIO_SLIC_A_IRQ_N   2
+#define GPIO_SLIC_B_IRQ_N   3
+#define GPIO_DSP_IRQ_N      4
+#define GPIO_IDE_IRQ_N      5
+
+// GPIO lines used for SPI bus
+#define GPIO_SPI_CS1_N      7
+#define GPIO_SPI_CS0_N      8
+#define GPIO_SPI_SCK        9
+#define GPIO_SPI_SDI       10
+#define GPIO_SPI_SDO       13
+
+#define GPIO_IO_RESET_N    12
+
+// ------------------------------------------------------------------------
 // No Hex Display
 //
 #ifdef __ASSEMBLER__

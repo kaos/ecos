@@ -10,7 +10,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -56,6 +56,14 @@
 
 // start with variant ints
 #include CYGBLD_HAL_VAR_INTS_H
+
+#define CYGNUM_HAL_INTERRUPT_PWR_FAIL CYGNUM_HAL_INTERRUPT_GPIO0
+#define CYGNUM_HAL_INTERRUPT_DSL      CYGNUM_HAL_INTERRUPT_GPIO1
+#define CYGNUM_HAL_INTERRUPT_SLIC_A   CYGNUM_HAL_INTERRUPT_GPIO2
+#define CYGNUM_HAL_INTERRUPT_SLIC_B   CYGNUM_HAL_INTERRUPT_GPIO3
+#define CYGNUM_HAL_INTERRUPT_DSP      CYGNUM_HAL_INTERRUPT_GPIO4
+#define CYGNUM_HAL_INTERRUPT_IDE      CYGNUM_HAL_INTERRUPT_GPIO5
+
 
 // NB: Commented out because of errata on reset function of watchdog timer
 //

@@ -1,3 +1,9 @@
+2003-04-04  Mark Salter  <msalter@redhat.com>
+
+	* include/grg.h: Add GPIO line definitions.
+	* include/hal_plf_ints.h: Add GPIO IRQ definitions.
+	* src/grg_misc.c (plf_hardware_init): Initialize GPIO lines.
+
 2003-04-02  Mark Salter  <msalter@redhat.com>
 
 	* misc/redboot_ROM.ecm: Don't set I82559_WRITE_EEPROM.
