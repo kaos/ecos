@@ -184,6 +184,10 @@ int hal_IRQ_handler(void)
     HAL_READ_UINT32(AT91_AIC+AT91_AIC_IVR, ivr);
 
     HAL_READ_UINT32(AT91_AIC+AT91_AIC_ISR, irq_num);
+
+    // No valid interrrupt source, treat as spurious interrupt    
+    if (irq_num < CYGNUM_HAL_ISR_MIN || irq_num > CYGNUM_HAL_ISR_MAX)
+      irq_num = CYGNUM_HAL_INTERRUPT_NONE;
     
     return irq_num;
 }
@@ -210,9 +214,8 @@ void hal_interrupt_unmask(int vector)
 
 void hal_interrupt_acknowledge(int vector)
 {
-    CYG_ASSERT(vector <= CYGNUM_HAL_ISR_MAX &&
-               vector >= CYGNUM_HAL_ISR_MIN , "Invalid vector");
-
+    // No check for valid vector here! Spurious interrupts
+    // must be acknowledged, too.
     HAL_WRITE_UINT32(AT91_AIC+AT91_AIC_EOI, 0xFFFFFFFF);  
 }
 

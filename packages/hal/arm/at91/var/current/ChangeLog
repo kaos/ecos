@@ -1,3 +1,8 @@
+2003-10-23  Thomas Koeller  <thomas.koeller@baslerweb.com>
+
+	* src/at91_misc.c: Fixed recognition of spurious
+	interrupts.
+	
 2003-08-21  Thomas Koeller  <thomas.koeller@baslerweb.com>
 
         * include/var_io.h:
