@@ -198,6 +198,21 @@ cdl_package CYGPKG_IO_FILEIO {
         }
     }
 
+    cdl_option CYGNUM_FILEIO_IOVEC_MAX {
+	display          "Maximum size of iovec used by readv/writev"
+	flavor           data
+	default_value    16
+	legal_values     1 to 9999999
+	description      "This option controls the maximum size of the iovec
+                          structure that can be used by readv()/writev().  This
+                          limit is required because the iovec structure must be
+                          invariant (to the user), thus a copy needs to be made
+                          by the interface routines.  The limit is merely a 
+                          control over the amount of stack space used by the
+                          readv()/writev() functions."
+
+    }
+
     # ----------------------------------------------------------------
     # Tests
 

@@ -1,3 +1,8 @@
+2002-11-03  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* src/io.cxx: 
+	* cdl/fileio.cdl: Add readv()/writev() support.
+
 2002-08-08  Nick Garnett  <nickg@calivar.demon.co.uk>
 
 	* src/select.cxx (select): Changed mechanism for calculating

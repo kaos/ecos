@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -75,21 +76,34 @@
 #define UNLOCK_FILE( fp ) cyg_file_unlock( fp, fp->f_syncmode )
 
 //==========================================================================
-// Read from or write to a file
-// This is a common routine for doing both read and write
-// operations. The direction argument controls slight the differences
-// between them.
+// Common wrapper for read/write using an iovec descriptor 
+// 'direction' should be O_RDONLY for readv, O_WRONLY for writev
 
-static ssize_t readwrite( int fd, void *buf, size_t len, int direction )
+static ssize_t 
+readwritev( int fd, const cyg_iovec *_iov, int iov_len, int direction )
 {
     FILEIO_ENTRY();
 
     CYG_CANCELLATION_POINT;
     
-    ssize_t cnt;
-    int ret;
+    ssize_t cnt, len;
+    int ret, _idx;
     cyg_file *fp;
+    cyg_iovec iov[CYGNUM_FILEIO_IOVEC_MAX];
     
+    if( iov_len > CYGNUM_FILEIO_IOVEC_MAX )
+        FILEIO_RETURN(EINVAL);
+
+    // Copy 'iovec' structure since it's supposed to be "const"
+    // and some lower level routines might want to change it.
+    // Also accumulate the length of the total I/O request
+    len = 0;
+    for (_idx = 0;  _idx < iov_len;  _idx++) {
+        len += _iov[_idx].iov_len;
+        iov[_idx].iov_base = _iov[_idx].iov_base;
+        iov[_idx].iov_len = _iov[_idx].iov_len;
+    }
+
     if( len > SSIZE_MAX )
         FILEIO_RETURN(EINVAL);
     
@@ -105,13 +119,10 @@ static ssize_t readwrite( int fd, void *buf, size_t len, int direction )
     }
 
     cyg_uio uio;
-    cyg_iovec iov;
     cyg_fileop_readwrite *op;
     
-    iov.iov_base        = buf;
-    iov.iov_len         = len;
-    uio.uio_iov         = &iov;
-    uio.uio_iovcnt      = 1;
+    uio.uio_iov         = iov;
+    uio.uio_iovcnt      = iov_len;
     uio.uio_resid       = len;
     uio.uio_segflg      = UIO_USERSPACE;
 
@@ -121,7 +132,6 @@ static ssize_t readwrite( int fd, void *buf, size_t len, int direction )
         uio.uio_rw = UIO_READ, op = fp->f_ops->fo_read;
     else
         uio.uio_rw = UIO_WRITE, op = fp->f_ops->fo_write;
-
         
     LOCK_FILE( fp );
     
@@ -146,7 +156,11 @@ static ssize_t readwrite( int fd, void *buf, size_t len, int direction )
 
 __externC ssize_t read( int fd, void *buf, size_t len )
 {
-    return readwrite( fd, buf, len, O_RDONLY );
+    cyg_iovec _iov;
+
+    _iov.iov_base = buf;
+    _iov.iov_len = len;
+    return readwritev(fd, &_iov, 1, O_RDONLY);
 }
 
 //==========================================================================
@@ -154,8 +168,27 @@ __externC ssize_t read( int fd, void *buf, size_t len )
 
 __externC ssize_t write( int fd, const void *buf, size_t len )
 {
-    return readwrite( fd, (void *)buf, len, O_WRONLY );
+    cyg_iovec _iov;
+
+    _iov.iov_base = (void *)buf;
+    _iov.iov_len = len;
+    return readwritev(fd, &_iov, 1, O_WRONLY);
 }
+
+//==========================================================================
+// Read via an iovec
+__externC ssize_t readv( int fd, const cyg_iovec *_iov, int iov_len )
+{
+    return readwritev(fd, _iov, iov_len, O_RDONLY);
+}
+
+//==========================================================================
+// Write via an iovec
+__externC ssize_t writev( int fd, const cyg_iovec *_iov, int iov_len )
+{
+    return readwritev(fd, _iov, iov_len, O_WRONLY);
+}
+
 
 //==========================================================================
 // Close a file
