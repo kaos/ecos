@@ -631,8 +631,7 @@ struct	mbuf *m_aux_find2 __P((struct mbuf *, int, int, void *));
 struct	mbuf *m_aux_add __P((struct mbuf *, int, int));
 struct	mbuf *m_aux_find __P((struct mbuf *, int, int));
 void	m_aux_delete __P((struct mbuf *, struct mbuf *));
-extern void *cyg_net_mbuf_alloc(int type, int flags);
-extern void cyg_net_mbuf_free(caddr_t addr, int type);
+extern void *cyg_net_mbuf_alloc(void);
 extern void *cyg_net_cluster_alloc(void );
 #ifdef CYGDBG_NET_SHOW_MBUFS                
 extern void cyg_net_show_mbufs(void);

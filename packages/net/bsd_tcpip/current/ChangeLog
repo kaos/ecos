@@ -1,3 +1,12 @@
+2004-03-30  Horst Kronstorfer  <horst.kronstorfer@frequentis.com>
+ 
+        * src/sys/kern/uipc_mbuf.c
+        * src/ecos/support.c
+        * include/sys/mbuf.h: Avoid blocking alloc from (empty) mbuf pool.
+        Freed mbufs are never returned to the pool, but to the mbuf
+        "free list". This can cause a deadlock situation.
+        Duplicated incrementing of mbuf statistics removed.
+ 
 2004-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/ecos/support.c (_dumpentry): Don't skip routes which don't

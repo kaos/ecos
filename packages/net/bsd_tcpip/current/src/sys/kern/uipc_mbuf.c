@@ -139,7 +139,7 @@ m_mballoc(nmb, how)
 	int i;
 
 	for (i = 0; i < nmb; i++) {
-            p = (struct mbuf *)cyg_net_mbuf_alloc(0, how);
+            p = (struct mbuf *)cyg_net_mbuf_alloc( );
             if (p != (struct mbuf *)0) {
 		((struct mbuf *)p)->m_next = mmbfree;
 		mmbfree = (struct mbuf *)p;

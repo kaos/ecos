@@ -267,19 +267,14 @@ void cyg_net_show_mbufs(void)
 #endif
 
 void *
-cyg_net_mbuf_alloc(int type, int flags)
+cyg_net_mbuf_alloc(void)
 {
     void *res;    
 
     START_STATS();
     log(LOG_MDEBUG, "Alloc mbuf = ");
-    mbstat.m_mbufs++;
-    if (flags & M_NOWAIT) {
-        res = cyg_mempool_fix_try_alloc(net_mbufs);
-    } else {
-        res = cyg_mempool_fix_alloc(net_mbufs);
-    }
-    FINISH_STATS(stats_mbuf_alloc);
+    res = cyg_mempool_fix_try_alloc(net_mbufs);
+FINISH_STATS(stats_mbuf_alloc);
 #ifdef CYGDBG_NET_SHOW_MBUFS    
     {
         int i;
@@ -296,15 +291,6 @@ cyg_net_mbuf_alloc(int type, int flags)
     CYG_ASSERT( dtom((char *)res + MSIZE/2) == res, "dtom failed, mid mbuf" );
     log(LOG_MDEBUG, "%p\n", res);
     return (res);
-}
-
-void 
-cyg_net_mbuf_free(caddr_t addr, int type)
-{
-    START_STATS();
-    mbstat.m_mbufs--;
-    cyg_mempool_fix_free(net_mbufs, addr);
-    FINISH_STATS(stats_mbuf_free);
 }
 
 void *
