@@ -54,7 +54,7 @@ cdl_package CYGPKG_IO_USB_SLAVE {
     parent      CYGPKG_IO_USB
     include_dir "cyg/io/usb"
     active_if   CYGHWR_IO_USB_SLAVE
-    doc         io-usb-slave.html
+    doc         ref/io-usb-slave.html
     
     compile usbs.c
 
@@ -106,7 +106,7 @@ cdl_package CYGPKG_IO_USB_SLAVE {
 
     cdl_option CYGBLD_IO_USB_SLAVE_USBTEST {
 	display         "Build the main USB test program"
-	doc             usbs-testing.html
+	doc             ref/usbs-testing.html
 	description "
 	    The USB slave-side software is supplied with host-side
             and target-side software that allows a variety of testing
