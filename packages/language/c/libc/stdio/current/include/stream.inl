@@ -446,27 +446,32 @@ Cyg_StdioStream::set_position( fpos_t pos, int whence )
     } //endif (whence != SEEK_END)
 
     Cyg_ErrNo err;
-    off_t newpos=pos;
 
-    err = cyg_stdio_lseek( my_device, &newpos, whence );
+    // Flush output if any present.
+    err = flush_output_unlocked();
 
     if( err == ENOERR )
     {
-        // Clean out the buffer. Flush output if any present,
-        // and clear any input out of input buffer and any ungot
-        // chars from unread buffer.
-    
-        err = flush_output_unlocked();
+        off_t newpos=pos;
+ 
+        // Clear any input out of input buffer and any ungot chars
+        // from unread buffer.
         io_buf.drain_buffer();
+    
 #ifdef CYGFUN_LIBC_STDIO_ungetc
         flags.unread_char_buf_in_use = false;
 #endif
 
         // Clear EOF indicator.
         flags.at_eof = false;
-        
-        // update stream pos
-        position = newpos;
+
+        // Seek the file to the correct place
+        err = cyg_stdio_lseek( my_device, &newpos, whence );
+       
+        if ( err == ENOERR) {
+          // update stream pos
+          position = newpos;
+        }
     }
     
     unlock_me();

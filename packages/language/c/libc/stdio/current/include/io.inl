@@ -84,8 +84,11 @@ inline Cyg_ErrNo cyg_stdio_open( const char *filename,
     case Cyg_StdioStream::CYG_STREAM_READ:
         mode = O_RDONLY;
         break;
-    case Cyg_StdioStream::CYG_STREAM_READWRITE:
+    case Cyg_StdioStream::CYG_STREAM_READWRITE_NOCREATE:
         mode = O_RDWR;
+        break;
+    case Cyg_StdioStream::CYG_STREAM_READWRITE_CREATE:
+        mode = O_RDWR|O_CREAT|O_TRUNC;
         break;
     }
 

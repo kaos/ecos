@@ -112,7 +112,10 @@ process_mode( const char *mode, Cyg_StdioStream::OpenMode *rw,
         *binary = true;
         break;
     case '+':
-        *rw = Cyg_StdioStream::CYG_STREAM_READWRITE;
+        if (mode[0] == 'r')
+	    *rw = Cyg_StdioStream::CYG_STREAM_READWRITE_NOCREATE;
+	else
+	    *rw = Cyg_StdioStream::CYG_STREAM_READWRITE_CREATE;
         break;
     default:
         return false;
@@ -123,7 +126,10 @@ process_mode( const char *mode, Cyg_StdioStream::OpenMode *rw,
         *binary = true;
         break;
     case '+':
-        *rw = Cyg_StdioStream::CYG_STREAM_READWRITE;
+	if (mode[0] == 'r')
+            *rw = Cyg_StdioStream::CYG_STREAM_READWRITE_NOCREATE;
+	else
+            *rw = Cyg_StdioStream::CYG_STREAM_READWRITE_CREATE;
         break;
     default:
         return false;

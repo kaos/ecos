@@ -1,3 +1,13 @@
+2004-03-29  Kelvin Lawson <klawson@ad-holdings.co.uk>
+
+	* src/common/fopen.cxx:
+	* src/common/stream.cxx:
+	* include/io.inl:
+	* include/stream.hxx:
+	Split CYGSTREAM_READWRITE into CYGSTREAM_READWRITE_CREATE and
+	CYGSTREAM_READWRITE_NOCREATE. This fixes fopen() with mode 'w+'
+	which previously did not allow file creation.
+
 2004-03-15  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/common/fileops.cxx (tmpnam): Only close if open() succeded.

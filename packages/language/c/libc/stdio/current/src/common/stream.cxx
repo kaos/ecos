@@ -107,7 +107,8 @@ void Cyg_StdioStream::initialize(cyg_stdio_handle_t dev,
     case CYG_STREAM_WRITE:
         flags.opened_for_write = true;
         break;
-    case CYG_STREAM_READWRITE:
+    case CYG_STREAM_READWRITE_NOCREATE:
+    case CYG_STREAM_READWRITE_CREATE:
         flags.opened_for_read = true;
         flags.opened_for_write = true;
         break;

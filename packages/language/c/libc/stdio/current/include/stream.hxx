@@ -157,7 +157,8 @@ public:
     typedef enum {
         CYG_STREAM_READ,
         CYG_STREAM_WRITE,
-        CYG_STREAM_READWRITE
+        CYG_STREAM_READWRITE_NOCREATE,
+        CYG_STREAM_READWRITE_CREATE
     } OpenMode;
 
     // CONSTRUCTORS
@@ -168,8 +169,8 @@ public:
     // dev is a valid Cyg_Device_Table_t, although it does not have to
     // be a member of the device table object itself
     //
-    // open_mode is one of CYG_STREAM_READ, CYG_STREAM_WRITE or
-    // CYG_STREAM_READWRITE
+    // open_mode is one of CYG_STREAM_READ, CYG_STREAM_WRITE,
+    // CYG_STREAM_READWRITE_NOCREATE or CYG_STREAM_READWRITE_CREATE
     //
     // append is true if the file position should be set at EOF on opening
     //
