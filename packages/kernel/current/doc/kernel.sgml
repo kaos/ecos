@@ -3197,10 +3197,17 @@ and the current thread will be suspended in an atomic operation. When
 some other thread performs a signal or broadcast operation the current
 thread will be woken up and automatically reclaim ownership of the mutex
 again, allowing it to examine global state and determine whether or
-not the condition is now satisfied. The kernel supplies a variant of
-this function, <function>cyg_cond_timed_wait</function>, which can be
-used to wait on the condition variable or until some number of clock
-ticks have occurred. The mutex will always be reclaimed before
+not the condition is now satisfied.
+      </para>
+      <para>
+The kernel supplies a variant of this function,
+<function>cyg_cond_timed_wait</function>, which can be used to wait on
+the condition variable or until some number of clock ticks have
+occurred. The number of ticks is specified as an absolute, not
+relative tick count, and so in order to wait for a relative number of
+ticks, the return value of the <function>cyg_current_time()</function>
+function should be added to determine the absolute number of ticks.
+The mutex will always be reclaimed before
 <function>cyg_cond_timed_wait</function> returns, regardless of
 whether it was a result of a signal operation or a timeout.
       </para>
@@ -3380,14 +3387,21 @@ and <function>cyg_semaphore_wait</function> will then return false.
 <function>cyg_semaphore_timed_wait</function> is a variant of
 <function>cyg_semaphore_wait</function>. It can be used to wait until
 either an event has occurred or a number of clock ticks have happened.
-The function returns success if the semaphore wait operation
-succeeded, or false if the operation timed out or was aborted by
-<function>cyg_thread_release</function>. If support for the real-time
+The number of ticks is specified as an absolute, not relative tick
+count, and so in order to wait for a relative number of ticks, the
+return value of the <function>cyg_current_time()</function> function
+should be added to determine the absolute number of ticks. The
+function returns success if the semaphore wait operation succeeded, or
+false if the operation timed out or was aborted by
+<function>cyg_thread_release</function>.
+If support for the real-time
 clock has been removed from the current configuration then this
 function will not be available.
 <function>cyg_semaphore_trywait</function> is another variant which
 will always return immediately rather than block, again returning
-success or failure.
+success or failure. If <function>cyg_semaphore_timedwait</function>
+is given a timeout in the past, it operates like
+<function>cyg_semaphore_trywait</function>.
       </para>
       <para>
 <function>cyg_semaphore_peek</function> can be used to get hold of the
@@ -3549,7 +3563,11 @@ with different priorities.
 There are two variants of <function>cyg_mbox_get</function>. The
 first, <function>cyg_mbox_timed_get</function> will wait until either
 a message is available or until a number of clock ticks have occurred.
-If no message is posted within the timeout then a null pointer will be
+The number of ticks is specified as an absolute, not relative tick
+count, and so in order to wait for a relative number of ticks, the
+return value of the <function>cyg_current_time()</function> function
+should be added to determine the absolute number of ticks.  If no
+message is posted within the timeout then a null pointer will be
 returned. <function>cyg_mbox_tryget</function> is a non-blocking
 operation which will either return a message if one is available or a
 null pointer.
@@ -3566,10 +3584,11 @@ receive the message. If the mail box is currently full then
 get operation and a slot is available. The
 <function>cyg_mbox_timed_put</function> variant imposes a time limit
 on the put operation, returning false if the operation cannot be
-completed within the specified number of clock ticks. The
-<function>cyg_mbox_tryput</function> variant is non-blocking,
-returning false if there are no free slots available and the message
-cannot be posted without blocking.
+completed within the specified number of clock ticks and as for
+<function>cyg_mbox_timed_get</function> this is an absolute tick
+count. The <function>cyg_mbox_tryput</function> variant is
+non-blocking, returning false if there are no free slots available and
+the message cannot be posted without blocking.
       </para>
       <para>
 There are a further four functions available for examining the current
@@ -3773,10 +3792,15 @@ that is currently in a wait operation, the
 <function>cyg_flag_timed_wait</function> is a variant of
 <function>cyg_flag_wait</function> which adds a timeout: the wait
 operation must succeed within the specified number of ticks, or it
-will fail with a return value of 0. <function>cyg_flag_poll</function>
-is a non-blocking variant: if the wait operation can succeed
-immediately it acts like <function>cyg_flag_wait</function>, otherwise
-it returns immediately with a value of 0.
+will fail with a return value of 0. The number of ticks is specified
+as an absolute, not relative tick count, and so in order to wait for a
+relative number of ticks, the return value of the
+<function>cyg_current_time()</function> function should be added to
+determine the absolute number of ticks.
+<function>cyg_flag_poll</function> is a non-blocking variant: if the
+wait operation can succeed immediately it acts like
+<function>cyg_flag_wait</function>, otherwise it returns immediately
+with a value of 0.
       </para>
       <para>
 <function>cyg_flag_setbits</function> is called by a producer thread
