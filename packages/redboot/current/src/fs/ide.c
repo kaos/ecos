@@ -408,18 +408,18 @@ ide_init(void)
     cyg_uint32 buf[SECTOR_SIZE/sizeof(cyg_uint32)], u32;
     cyg_uint16 u16;
     cyg_uint8 u8;
-    int i, j;
+    int i, j, num_controllers;
     disk_t disk;
     struct ide_priv *priv;
 
 #define DEV_INIT_VAL ((j << 4) | 0xA0)
 
-    HAL_IDE_INIT();
+    num_controllers = HAL_IDE_INIT();
 
     CYGACC_CALL_IF_DELAY_US(5);
 
     priv = ide_privs;
-    for (i = 0; i < HAL_IDE_NUM_CONTROLLERS; i++) {
+    for (i = 0; i < num_controllers; i++) {
 
 	// soft reset the devices on this controller
 	if (!ide_reset(i))

@@ -450,7 +450,8 @@ void cyg_hal_plf_pci_cfg_write_byte (cyg_uint32 bus,
 /*------------------------------------------------------------------------*/
 /* IDE support                                                            */
 
-void cyg_hal_plf_ide_init(void)
+int
+cyg_hal_plf_ide_init(void)
 {
     cyg_uint32 v;
 
@@ -460,6 +461,7 @@ void cyg_hal_plf_ide_init(void)
     v |= (CYG_PCI_CFG_PIIX4_IDETIM_IDE << 16) | CYG_PCI_CFG_PIIX4_IDETIM_IDE;
     cyg_hal_plf_pci_cfg_write_dword(0, CYG_PCI_DEV_MAKE_DEVFN(_PIIX4_PCI_ID,_PIIX4_IDE),
                                     CYG_PCI_CFG_PIIX4_IDETIM, v);
+    return HAL_IDE_NUM_CONTROLLERS;
 }
 
 

@@ -1,3 +1,7 @@
+2003-09-20  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/plf_misc.c: IDE init needs to return number of controllers found.
+
 2003-07-18  Nick Garnett  <nickg@balti.calivar.com>
 
 	* cdl/hal_mips_malta.cdl:

@@ -1,3 +1,7 @@
+2003-09-20  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/pcmb_io.h: IDE init needs to return number of controllers found.
+
 2003-07-23  Nick Garnett  <nickg@balti.calivar.com>
 
 	* include/pcmb_serial.h: Fixed bogus test on

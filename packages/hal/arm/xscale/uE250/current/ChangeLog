@@ -1,3 +1,7 @@
+2003-09-20  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/uE250_ide.c: IDE init needs to return number of controllers found.
+
 2003-08-08  Gary Thomas  <gary@mind.be>
 
 	* src/uE250_pci.c: 

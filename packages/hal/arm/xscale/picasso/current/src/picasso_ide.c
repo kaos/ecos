@@ -108,7 +108,7 @@ cyg_hal_plf_ide_write_control(int ctlr, cyg_uint32 reg, cyg_uint8 val)
     pci_io_write_8(ide_ctrl[ctlr].ctl_bar + reg, val);
 }
 
-void 
+int
 cyg_hal_plf_ide_init(void)
 {
     int i;
@@ -129,8 +129,10 @@ cyg_hal_plf_ide_init(void)
             ide_ctrl[i].cmd_bar = ide_info.base_map[(2*i)+0] & 0xFFFFFFFE;
             ide_ctrl[i].ctl_bar = ide_info.base_map[(2*i)+1] & 0xFFFFFFFE;
         }
+        return HAL_IDE_NUM_CONTROLLERS;
     } else {
         diag_printf("Can't find IDE controller!\n");
+        return 0;
     }
 }
 

@@ -218,7 +218,7 @@ CYG_MACRO_END
 #define HAL_IDE_NUM_CONTROLLERS 2
 
 // Initialize the IDE controller(s).
-#define HAL_IDE_INIT()
+#define HAL_IDE_INIT() (HAL_IDE_NUM_CONTROLLERS)
 
 #define __PCMB_IDE_PRI_CMD   0x1f0
 #define __PCMB_IDE_PRI_CTL   0x3f4
