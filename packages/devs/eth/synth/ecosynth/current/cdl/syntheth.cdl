@@ -64,6 +64,7 @@ cdl_package CYGPKG_DEVS_ETH_ECOSYNTH {
     parent      CYGPKG_IO_ETH_DRIVERS
     active_if   CYGPKG_IO_ETH_DRIVERS
     active_if   CYGPKG_HAL_SYNTH
+    implements  CYGINT_IO_ETH_MULTICAST
 
     cdl_option CYGVAR_DEVS_ETH_ECOSYNTH_ETH0 {
 	display         "Provide eth0 device"
