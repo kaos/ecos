@@ -525,7 +525,16 @@ void CALLBACK ecRunTestsDialog::TestOutputCallback(void *pParam,LPCTSTR psz)
     ecRunTestsDialog* pWnd = (ecRunTestsDialog*)pParam;
     if (ecRunTestsDialog::m_runTestsDialog)
     {
+        // FIXME: test output should not contain CR characters on non-Windows
+        // platforms so need to find the root of this problem
+#ifndef __WXMSW__
+        wxString output(psz);
+        output.Replace(wxT("\r"), wxEmptyString); // remove CR characters
+        pWnd->OutputToBuffer(output);
+#else
+        // FIXME ends
         pWnd->OutputToBuffer(psz);
+#endif
     }
 }
 

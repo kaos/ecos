@@ -1,3 +1,8 @@
+2003-03-25  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/runtestsdlg.cpp: Remove CR characters in test
+	output. [ Bugzilla 85163 ]
+
 2003-03-19  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/appsettings.cpp,
