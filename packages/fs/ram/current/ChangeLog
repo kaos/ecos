@@ -1,3 +1,8 @@
+2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/ramfs1.c (SHOW_RESULT): Fixed compiler warning about format
+	not matching type.
+
 2004-12-13  John Dallaway  <jld@ecoscentric.com>
 
 	* tests/fileio1.c: Rename to ramfs1.c. eCos test names should be

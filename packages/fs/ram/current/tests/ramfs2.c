@@ -70,7 +70,7 @@
 //==========================================================================
 
 #define SHOW_RESULT( _fn, _res ) \
-diag_printf("FAIL: " #_fn "() returned %d %s\n", _res, _res<0?strerror(errno):"");
+diag_printf("FAIL: " #_fn "() returned %ld %s\n", (long)_res, _res<0?strerror(errno):"");
 
 //==========================================================================
 
