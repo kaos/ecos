@@ -90,9 +90,6 @@ extern int   cyg_hal_plf_is_stopped_by_hardware(void **paddr);
 
 #endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
-// start-sanitize-xscale
-externC cyg_uint32 cyg_hal_iwmmxt_coprocessor_id(void);
-// end-sanitize-xscale
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_PLF_STUB_H
 // End of plf_stub.h

@@ -70,19 +70,6 @@ hal_xscale_core_init(void)
 		  : "r0" );
 }
 
-// start-sanitize-xscale
-// Read IWMMXT Coprocessor ID register
-#ifdef CYGHWR_HAL_ARM_IWMMXT
-cyg_uint32
-cyg_hal_iwmmxt_coprocessor_id(void)
-{
-    cyg_uint32 val;
-    asm volatile ("tmcr wcid,%0\n" : "=r"(val) : );
-    return val;
-}
-#endif // CYGHWR_HAL_ARM_IWMMXT
-
-// end-sanitize-xscale
 /*------------------------------------------------------------------------*/
 // EOF xscale_misc.c
 
