@@ -1,3 +1,8 @@
+2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/time.h: Added CYGBLD_ATTRIB_STRFTIME_FORMAT where
+	appropriate so the compiler does more checking.
+
 2004-08-08  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/strptime.cxx: fix spelling

@@ -154,7 +154,7 @@ localtime_r( const time_t *__timer, struct tm *__result );
 
 extern char *
 strptime( const char *__s, const char *__format, 
-          struct tm *__timeptr); //__attribute__ ((format (strftime, 2)));
+          struct tm *__timeptr) CYGBLD_ATTRIB_STRFTIME_FORMAT(2,0);
 
 
 #endif // ifdef CYGFUN_LIBC_TIME_POSIX
@@ -258,7 +258,7 @@ localtime( const time_t *__timer );
 
 extern size_t
 strftime( char *__s, size_t __maxsize, const char *__format,
-          const struct tm *__timeptr); //__attribute__ ((format (strftime, 3)));
+          const struct tm *__timeptr) CYGBLD_ATTRIB_STRFTIME_FORMAT(3,0); 
 
 //===========================================================================
 
