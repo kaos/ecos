@@ -109,7 +109,7 @@ Cyg_Counter::~Cyg_Counter()
 
 #ifdef CYGDBG_USE_ASSERTS
 
-bool Cyg_Counter::check_this( cyg_assert_class_zeal zeal) const
+cyg_bool Cyg_Counter::check_this( cyg_assert_class_zeal zeal) const
 {
     // check that we have a non-NULL pointer first
     if( this == NULL ) return false;
@@ -465,7 +465,7 @@ Cyg_Clock::~Cyg_Clock()
 
 #ifdef CYGDBG_USE_ASSERTS
 
-bool Cyg_Clock::check_this( cyg_assert_class_zeal zeal) const
+cyg_bool Cyg_Clock::check_this( cyg_assert_class_zeal zeal) const
 {
     // check that we have a non-NULL pointer first
     if( this == NULL ) return false;
@@ -693,7 +693,7 @@ Cyg_Alarm::~Cyg_Alarm()
 
 #ifdef CYGDBG_USE_ASSERTS
 
-bool Cyg_Alarm::check_this( cyg_assert_class_zeal zeal) const
+cyg_bool Cyg_Alarm::check_this( cyg_assert_class_zeal zeal) const
 {
     // check that we have a non-NULL pointer first
     if( this == NULL ) return false;

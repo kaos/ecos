@@ -50,6 +50,7 @@ cdl_option CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS {
     display       "Include GDB stubs in HAL"
     active_if     CYGINT_HAL_DEBUG_GDB_STUBS
     default_value 0
+    requires      ! CYGSEM_HAL_USE_ROM_MONITOR
     description   "
         This option causes a set of GDB stubs to be included into the
         system. On some target systems the GDB support will be

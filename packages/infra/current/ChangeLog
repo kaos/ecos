@@ -1,8 +1,37 @@
-2000-03-20  John Dallaway  <jld@cygnus.co.uk>
+2000-03-28  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/cyg_trac.h: Also update internal documentation for below
+	const char * changes (2000-03-27)
+
+2000-03-28  John Dallaway  <jld@cygnus.co.uk>
 
 	* cdl/infra.cdl:
 
 	Adjust documentation URLs.
+
+2000-03-27  Gary Thomas  <gthomas@redhat.com>
+
+	* src/tcdiag.cxx: HAL architecture ports may override default
+	behavior for 'cyg_test_exit()'.
+
+	* src/diag.cxx (diag_vprintf): Add support for %llX modifier, which
+	allows for printing of (long long) operands.
+
+2000-03-27  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/cyg_trac.h: Use const qualifier on function and file name
+	strings to be compatible with the C++ standard
+	* src/buffer.cxx: likewise
+	* src/fancy.cxx: likewise
+	* src/null.cxx: likewise
+
+2000-03-27  Jesper Skov  <jskov@redhat.com>
+
+	* include/cyg_type.h: Make cyg_halbool the same for C and C++
+	code.
+
+	* include/cyg_ass.h (CYGDBG_DEFINE_CHECK_THIS): Use cyg_bool
+	instead of bool.
 
 2000-03-07  Jesper Skov  <jskov@redhat.com>
 

@@ -1,3 +1,15 @@
+#!/bin/sh
+# these lines restart using the tcl shell \
+  exec sh -c "if ( echo | tclsh ) 2>/dev/null ; then \
+      exec tclsh \"$0\" ${1+\"$@\"} ; \
+    elif ( echo | cygtclsh80 ) 2>/dev/null ; then \
+      exec cygtclsh80 \"$0\" ${1+\"$@\"} ; \
+    else \
+      echo Could not find TCL interpreter ; \
+      exit 1 ; \
+    fi"
+
+
 # {{{  Banner
 
 #===============================================================================
@@ -51,7 +63,7 @@
 # ----------------------------------------------------------------------------
 # ecosadmin.tcl requires at least version 8.0 of Tcl, since it makes use of
 # namespaces. It is possible that some users still have older versions.
-
+set a b
 if { [info tclversion] < 8.0 } {
 	puts "This script requires Tcl 8.0 or later. You are running Tcl [info patchlevel]."
 	return

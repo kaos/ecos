@@ -340,7 +340,7 @@ hal_diag_write_char(char c)
             cyg_drv_interrupt_acknowledge(CYG_DEVICE_SERIAL_INT);
             if( c1 == 3 ) {
                 // Ctrl-C: breakpoint.
-                cyg_hal_gdb_interrupt (__builtin_return_address(0));
+                cyg_hal_gdb_interrupt ((target_register_t)__builtin_return_address(0));
                 break;
             }
 #endif

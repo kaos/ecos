@@ -32,7 +32,7 @@ CAPTION "About eCos Package Administration Tool"
 FONT 8, "MS Sans Serif"
 BEGIN
     ICON            IDR_PKGADMIN_MAINFRAME,IDC_STATIC,11,11,20,20
-    LTEXT           "eCos Package Administration Tool 1.3.1",IDC_STATIC,40,
+    LTEXT           "eCos Package Administration Tool 1.3.2",IDC_STATIC,40,
                     10,131,8,SS_NOPREFIX
     LTEXT           "Copyright © 1999-2000 Red Hat, Inc.",IDC_STATIC,40,25,
                     139,8

@@ -11,6 +11,7 @@ common_sources = \
 	../common/eCosTest.cpp									\
 	../common/eCosTestSerial.cpp						\
 	../common/eCosTestDownloadFilter.cpp		\
+	../common/eCosTestMonitorFilter.cpp		\
 	../common/eCosTestSerialFilter.cpp
 
 common_objects = $(notdir $(common_sources:.cpp=.o))

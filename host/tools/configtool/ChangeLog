@@ -1,4 +1,18 @@
-2000-03-10 Simon FitzMaurice <sdf@redhat.co.uk>
+2000-03-28  John Dallaway  <jld@cygnus.co.uk>
+
+	* standalone/win32/cdl.sh,
+	  standalone/win32/cdl.dsp:
+
+	Remove obsolete files.
+
+2000-03-28  John Dallaway  <jld@cygnus.co.uk>
+
+	* common/win32/CTCommonDoc.cpp:
+
+	Modify QualifyDocURL() to accommodate absolute HTML
+	file paths returned by libCDL.
+
+2000-03-22 Simon FitzMaurice <sdf@redhat.co.uk>
   * standalone\win32\MainFrm.cpp
 
   Include usr/bin in path.
@@ -11,8 +25,6 @@
 	Modify GetURL() to return the correct default URL where
 	the document has not been specified.
 
-2000-03-20  John Dallaway  <jld@cygnus.co.uk>
-
 	* standalone/win32/Configtool.rc:
 
 	Update IDS_RED_HAT_HOME_URL value.
@@ -23,7 +35,7 @@
 
 2000-03-20  John Dallaway  <jld@cygnus.co.uk>
 
-	* standalone/common/common/build.cxx:
+	* common/common/build.cxx:
 
 	Modify resolve_tokens() to avoid breaking make variables
 	specified in CDL custom rule targets and dependencies.
@@ -34,6 +46,15 @@
 
 	Tweak main frame menu item text for eCos web pages.
 	Tweak 'about' dialog box text for consistency.
+	Update config tool version number to 1.3.2.
+
+	* standalone/common/ecosconfig.cxx:
+
+	Update ecosconfig version number to 1.3.2.
+
+	* standalone/win32/res/Splsh16.bmp:
+
+	Update config tool splash screen to version 1.3.2.
 
 2000-03-13  John Dallaway  <jld@cygnus.co.uk>
 
@@ -181,8 +202,6 @@
 
 2000-02-22 Simon FitzMaurice <sdf@redhat.co.uk>
   * common\win32\CTUtils.*
-    plugin\win32\ConfigTool.cpp
-    plugin\win32\ConfigtoolDoc.cpp
  
   CTUtils has moved to utils folder.
   HTMLHelpLinkFileName and ShowHtmlHelp are now in doc class.
@@ -212,7 +231,7 @@
 
 2000-02-18  Drew Moseley  <dmoseley@cygnus.com>
 
-	* common/win32/ConfigItem.cpp: Support for CodeCoordinates in the plugin
+	* common/win32/ConfigItem.cpp: Support for CodeCoordinates
 
 2000-02-18  John Dallaway  <jld@cygnus.co.uk>
 
@@ -246,7 +265,6 @@
 
 2000-02-16 Simon FitzMaurice <sdf@redhat.co.uk>
   * common\win32\ConfigViewOptionsDialog.cpp
-    plugin\win32\ConfigtoolDoc.cpp
     standalone\win32\CTres.h
     standalone\win32\ConfigToolDoc.cpp
     standalone\win32\Configtool.dsp
@@ -274,8 +292,6 @@
     common\win32\ConfigToolDoc.h
     common\win32\FolderDialog.cpp
     common\win32\NewFolderDialog.cpp
-    plugin\win32\ConfigtoolDoc.cpp
-    plugin\win32\Project.cpp
     standalone\win32\ConfigToolDoc.cpp
     
   Add error checking to the document-saving process.
@@ -387,29 +403,6 @@
     common\win32\stdafx.h
     common\win32\thinsplitter.cpp
     common\win32\thinsplitter.h
-    plugin\win32\CTMain.cpp
-    plugin\win32\CTMain.h
-    plugin\win32\ConfigTool.cpp
-    plugin\win32\ConfigTool.h
-    plugin\win32\ConfigtoolDoc.cpp
-    plugin\win32\MultiDocSECWorksheet.cpp
-    plugin\win32\MultiDocSECWorksheet.h
-    plugin\win32\NullDoc.cpp
-    plugin\win32\NullDoc.h
-    plugin\win32\NullView.cpp
-    plugin\win32\NullView.h
-    plugin\win32\Project.cpp
-    plugin\win32\Project.h
-    plugin\win32\ProjectManager.cpp
-    plugin\win32\ProjectManager.h
-    plugin\win32\RunTest.cpp
-    plugin\win32\RunTest.h
-    plugin\win32\SelectTestsDialog.cpp
-    plugin\win32\SelectTestsDialog.h
-    plugin\win32\eCos.cpp
-    plugin\win32\eCosPlugin.cpp
-    plugin\win32\eCosPlugin.h
-    plugin\win32\eCosres.cpp
     standalone\win32\BCMenu.cpp
     standalone\win32\BCMenu.h
     standalone\win32\BinDirDialog.cpp
@@ -430,14 +423,6 @@
 
   Update copyright headers
 
-2000-02-14 Simon FitzMaurice <sdf@redhat.co.uk>
-  * plugin\win32\CTMain.cpp
-    plugin\win32\ConfigTool.cpp
-    plugin\win32\Project.cpp
-    plugin\win32\ProjectManager.cpp
-
-  More changes from Piet.
-
 2000-02-11  John Dallaway  <jld@redhat.co.uk>
 
   * standalone\common\ecosconfig.cxx:
@@ -451,15 +436,6 @@
 
   Avoid crash in HTMLHelp 1.3 when "What's This?" windows deactivated.
   Provide hook to disable "What's This?" help for dialogs requiring context menus.
-
-2000-02-08 Simon FitzMaurice <sdf@redhat.co.uk>
-  * plugin\win32\Project.cpp
-
-  Use isNull rather than ptr()
-
-2000-02-08  Rupen Patel <rpatel@redhat.com>
-	
-  * plugin\win32\Project.h,.cpp: Some fixes for reference counting.
 
 2000-02-08  John Dallaway  <jld@redhat.co.uk>
 
@@ -477,16 +453,6 @@
     common\win32\ConfigItem.cpp
     common\win32\IdleMessage.cpp
     common\win32\Thermometer.cpp
-    plugin\win32\CTMain.cpp
-    plugin\win32\ConfigTool.cpp
-    plugin\win32\ConfigTool.h
-    plugin\win32\Project.cpp
-    plugin\win32\Project.h
-    plugin\win32\ProjectManager.cpp
-    plugin\win32\ProjectManager.h
-    plugin\win32\RunTest.cpp
-    plugin\win32\RunTest.h
-    plugin\win32\eCosPlugin.cpp
 
   Changes from Piet for new ref counting interface.
 
@@ -533,11 +499,6 @@
 
   Remove unused variables (in particular, timer which was being killed but not created)
 
-2000-02-07 Simon FitzMaurice <sdf@redhat.co.uk>
-  * plugin\win32\ConfigTool.cpp
-
-  Correct reference to CConfigToolApp
-
 2000-02-04 Simon FitzMaurice <sdf@redhat.co.uk>
   * standalone\win32\Configtool.dsp
   
@@ -560,10 +521,8 @@
     common\win32\mltview.cpp
     common\win32\mltview.h
     common\win32\stdafx.h
-    plugin\win32\CTMain.h
     standalone\win32\OutputView.cpp
     standalone\win32\OutputView.h
-    plugin\win32\ConfigTool.cpp
 
   Correct for abnormal behaviour of vsnprintf under NT.
 
@@ -577,7 +536,6 @@
 
 2000-02-04 Simon FitzMaurice <sdf@redhat.co.uk>
   * common\win32\CTCommonres.h
-    plugin\win32\eCosres.h
     standalone\win32\CTres.h
 
   These files cannot have copyright banners.
@@ -592,7 +550,6 @@
 
   * standalone\win32\ConfigToolDoc.cpp
     standalone\win32\MainFrm.cpp
-    plugin\win32\ConfigtoolDoc.cpp
     common\win32\RulesList.cpp
     common\win32\RulesView.cpp
 
@@ -617,11 +574,6 @@
   Ensure when package is unloaded stale tree handles are not accessed.
 
 2000-02-02 Simon FitzMaurice <sdf@redhat.co.uk>
-  * plugin\win32\Project.cpp
-
-  Another change from Rupen.
-
-2000-02-02 Simon FitzMaurice <sdf@redhat.co.uk>
   * common\win32\FailingRulesDialog.cpp
 
   Rework to avoid use of CConfigItems (because fixes may involve packages not yet loaded)
@@ -629,10 +581,6 @@
 2000-02-02 Simon FitzMaurice <sdf@redhat.co.uk>
   * common\win32\SectionGeneralPage.cpp
     common\win32\SectionRelocationPage.cpp
-    plugin\win32\CTMain.cpp
-    plugin\win32\Project.cpp
-    plugin\win32\Project.h
-    plugin\win32\RunTest.cpp
 
   Changes required by IDE API changes.
 
@@ -737,28 +685,6 @@
     common\win32\thinsplitter.cpp 
     common\win32\thinsplitter.h 
     common\win32\treectrltoview.inl 
-    plugin\win32\CTMain.cpp 
-    plugin\win32\CTMain.h 
-    plugin\win32\ConfigTool.cpp 
-    plugin\win32\ConfigTool.h 
-    plugin\win32\ConfigtoolDoc.cpp 
-    plugin\win32\MultiDocSECWorksheet.cpp 
-    plugin\win32\MultiDocSECWorksheet.h 
-    plugin\win32\NullDoc.cpp 
-    plugin\win32\NullDoc.h 
-    plugin\win32\NullView.cpp 
-    plugin\win32\NullView.h 
-    plugin\win32\Project.cpp 
-    plugin\win32\Project.h 
-    plugin\win32\ProjectManager.cpp 
-    plugin\win32\ProjectManager.h 
-    plugin\win32\SelectTestsDialog.cpp 
-    plugin\win32\SelectTestsDialog.h 
-    plugin\win32\eCos.cpp 
-    plugin\win32\eCos.rc 
-    plugin\win32\eCosPlugin.cpp 
-    plugin\win32\eCosres.cpp 
-    plugin\win32\eCosres.h 
     standalone\win32\BCMenu.cpp 
     standalone\win32\BCMenu.h 
     standalone\win32\BinDirDialog.cpp 
@@ -784,17 +710,6 @@
     standalone\win32\splash.cpp:
 
   Normalize copyright headers.
-
-2000-02-01 Simon FitzMaurice <sdf@redhat.co.uk>
-  * plugin\win32\Configtool.dsp
-
-  Share cdl intermediate file location with IDE.
-
-2000-02-01 Simon FitzMaurice <sdf@redhat.co.uk>
-  * plugin\win32\RunTest.cpp
-    plugin\win32\RunTest.h
-
-  Use an event to monitor debugger state changes.  
 
 2000-01-31 Simon FitzMaurice  <sdf@redhat.co.uk>
   * common\win32\CTCommon.rc
@@ -826,7 +741,6 @@
 
   * common\win32\CTUtils.cpp
     common\win32\CTUtils.h
-    plugin\win32\ConfigTool.cpp
     standalone\win32\Configtool.cpp
 
   Provide function to return "link2.htm" full path name; delete this file on app exit.
@@ -894,10 +808,6 @@
 
 2000-01-21 Simon FitzMaurice  <sdf@redhat.co.uk>
   * common\win32\mltview.h
-    plugin\win32\CTMain.cpp
-    plugin\win32\ConfigTool.cpp
-    plugin\win32\ConfigTool.h
-    plugin\win32\ConfigtoolDoc.cpp
     standalone\win32\CTres.h
     standalone\win32\Configtool.h
 
@@ -920,13 +830,6 @@
 
 2000-01-21  John Dallaway  <jld@redhat.co.uk>
 
-	* plugin\win32\Project.cpp:
-
-	Modify MakeMakeFile() to define the LDFLAGS makefile
-	variable.
-
-2000-01-21  John Dallaway  <jld@redhat.co.uk>
-
 	* common\win32\CTCommonDoc.cpp:
 
 	Modify OnFileImport() to accommodate recent libCDL API
@@ -946,10 +849,6 @@
 
     Move help about text to standlone-specific resource and update.
 
-  * plugin\win32\CTMain.cpp
-
-    Ensure repository closed and reopened for pkgadmin dialog
-
 2000-01-19  John Dallaway  <jld@redhat.co.uk>
 
 	* standalone\win32\res\Splsh16.bmp:
@@ -957,16 +856,13 @@
 	Update splash screen for release 1.3.
 
 2000-01-18 Simon FitzMaurice  <sdf@redhat.co.uk>
-  * plugin\win32\eCos.rc
-    standalone\win32\Configtool.rc
+  * standalone\win32\Configtool.rc
 
   Update version info.
 
 2000-01-18 Simon FitzMaurice  <sdf@redhat.co.uk>
   * common\win32\CTCommon.rc
     common\win32\CTCommonDoc.cpp
-    plugin\win32\eCos.rc
-    plugin\win32\eCosres.h
     standalone\win32\CTres.h
     standalone\win32\Configtool.rc
     standalone\win32\MainFrm.cpp
@@ -978,7 +874,6 @@
   * common\win32\CTCommonDoc.cpp
     common\win32\ConfigToolDoc.h
     common\win32\ControlView.cpp
-    plugin\win32\ConfigtoolDoc.cpp
     standalone\win32\ConfigToolDoc.cpp
 
   Move code appropriate to package unloading etc... to common function RegenerateData()
@@ -986,22 +881,6 @@
   * standalone\win32\MainFrm.cpp
 
   Do not display toolbars too early.
-
-2000-01-18 Simon FitzMaurice  <sdf@redhat.co.uk>
-  * plugin\win32\CTMain.cpp
-
-  Improve warning message
-
-  * plugin\win32\Project.cpp
-    plugin\win32\Project.h
-    plugin\win32\ProjectManager.cpp
-
-  Disengage CProject from ref counting to avoid problems in closing projects
-
-  * plugin\win32\RunTest.cpp
-    plugin\win32\RunTest.h
-
-  Tidy
 
 2000-01-17 Simon FitzMaurice  <sdf@redhat.co.uk>
   * common\win32\ConfigToolDoc.h
@@ -1019,11 +898,6 @@
 
   * common\win32\CTCommonDoc.cpp
     common\win32\ConfigToolDoc.h
-    plugin\win32\CTMain.cpp
-    plugin\win32\CTMain.h
-    plugin\win32\ConfigtoolDoc.cpp
-    plugin\win32\ProjectManager.cpp
-    plugin\win32\ProjectManager.h
     standalone\win32\ConfigToolDoc.cpp
     standalone\win32\Configtool.dsp
 
@@ -1031,19 +905,6 @@
   Corrected action on save document if user cancels from resolve conflicts dialog.
 
 2000-01-13 Simon FitzMaurice  <sdf@redhat.co.uk>
-  * common\win32\CTCommonDoc.cpp
-    common\win32\ConfigToolDoc.h
-    plugin\win32\ConfigTool.cpp
-    plugin\win32\Project.cpp
-    plugin\win32\Project.h
-
-  Ensure unwanted items are removed
-
-2000-01-13 Simon FitzMaurice  <sdf@redhat.co.uk>
-  * plugin\win32\Project.cpp
-
-  Partial fix for CR 901975
-
   * standalone\win32\BCMenu.cpp
     standalone\win32\BCMenu.h
 
@@ -1075,26 +936,9 @@
 	logical drives containing the build, install and
 	repository trees if this information is not yet known.
 
-2000-01-12 Simon FitzMaurice  <sdf@redhat.co.uk>
-  * plugin\win32\ConfigtoolDoc.cpp
-    standalone\win32\ConfigToolDoc.cpp
-
-  CR 901997
-
-  * plugin\win32\project.cpp
-
-  Introduce launcher attribute-setting code (as comments)
-
-  * plugin\win32\projectmanager.cpp
-
-  Avoid "only 1 eCos project open" message for test projects
-
 2000-01-11  John Dallaway  <jld@redhat.co.uk>
 
 	* common\win32\ConfigToolDoc.h,
-	  plugin\win32\ConfigtoolDoc.cpp,
-	  plugin\win32\Project.cpp,
-	  plugin\win32\ProjectManager.cpp,
 	  standalone\win32\ConfigToolDoc.cpp:
 
 	Restrict use of short file paths to the generation of
@@ -1122,7 +966,6 @@
     common\win32\PropertiesView.cpp
     common\win32\RulesView.cpp
     common\win32\mltview.cpp
-    plugin\win32\ConfigtoolDoc.cpp
     standalone\win32\ConfigToolDoc.cpp
     standalone\win32\Configtool.rc
     standalone\win32\MainFrm.cpp
@@ -1138,12 +981,10 @@
     common\win32\FailingRulesDialog.cpp
     common\win32\FailingRulesDialog.h
     common\win32\StdAfx.cpp
-    plugin\win32\eCos.rc
 
   Update conflicts dialog to reflect EID.
 
   * standalone\win32\ConfigToolDoc.cpp
-    plugin\win32\ConfigToolDoc.cpp
     common\win32\CellView.cpp
     common\win32\ControlView.cpp
     common\win32\ControlView.h
@@ -1175,24 +1016,13 @@
 
 2000-01-10  John Dallaway  <jld@redhat.co.uk>
 
-	* plugin\win32\ConfigtoolDoc.cpp,
-	  plugin\win32\eCos.rc,
-	  plugin\win32\eCosres.h,
-	  common\win32\CTCommon.rc,
-	  common\win32\CTCommonres.h:
-
+	* common\win32\CTCommon.rc,
+	  common\win32\CTCommonres.h,
+	  
 	Modify the constructor to calculate the default
 	repository location from the plug-in installation
 	location if the per-user registry value is not
 	found.
-
-2000-01-10  John Dallaway  <jld@redhat.co.uk>
-
-	* plugin\win32\CTMain.cpp:
-
-	Modify OnToolsTemplate() to execute user-requested
-	changes to the hardware template selection by calling
-	SelectHardware().
 
 2000-01-10  John Dallaway  <jld@redhat.co.uk>
 
@@ -1201,11 +1031,6 @@
 	  standalone\win32\CdlTemplatesDialog.cpp (remove),
 	  standalone\win32\CdlTemplatesDialog.h (remove),
 	  standalone\win32\Configtool.rc,
-	  plugin\win32\eCosres.h,
-	  plugin\win32\eCosres.cpp,
-	  plugin\win32\CdlTemplatesDialog.cpp (remove),
-	  plugin\win32\CdlTemplatesDialog.h (remove),
-	  plugin\win32\eCos.rc,
 	  common\win32\CTCommon.rc,
 	  common\win32\CTCommonres.cpp,
 	  common\win32\CTCommonres.h,
@@ -1216,10 +1041,6 @@
 	Make the enhanced template selection dialog common
 	between the standalone and plug-in versions of
 	the eCos configuration tool.
-
-	* plugin\win32\CTMain.cpp:
-
-	Change menu item text: "Template..."->"Templates..."
 
 2000-01-10  John Dallaway  <jld@redhat.co.uk>
 
@@ -1233,67 +1054,24 @@
 	the standalone and plug-in versions of the dialog.
 
 2000-01-07 Simon FitzMaurice  <sdf@redhat.co.uk>
-  * plugin\win32\ConfigtoolDoc.cpp
-    standalone\win32\ConfigToolDoc.cpp
+  * standalone\win32\ConfigToolDoc.cpp
 
   Treat the result of ResolveGlobalConflicts correctly
-
-2000-01-07 Simon FitzMaurice  <sdf@redhat.co.uk>
-  * plugin\win32\ProjectManager.cpp
-
-  Allow only one eCos project to be open at any given time.  
 
 2000-01-07 Simon FitzMaurice  <sdf@redhat.co.uk>
   * common\win32\PropertiesList.cpp
 
   CR 901982
 
-2000-01-07 Simon FitzMaurice  <sdf@redhat.co.uk>
-  * plugin\win32\SelectTestsDialog.cpp
-    plugin\win32\SelectTestsDialog.h
-    plugin\win32\eCos.rc
-    plugin\win32\eCosres.cpp
-    plugin\win32\eCosres.h
-
-  Add context-sensitive help for select tests and template dialogs.
-  Add All and None buttons to select tests dialog.
-  Ensure horz scrollbar appears for select tests dialog.
-
-2000-01-07 Simon FitzMaurice  <sdf@redhat.co.uk>
-  * plugin\win32\CTMain.cpp
-
-  Reinstate code to close all projects when administration dialog displayed
-
-2000-01-07  John Dallaway  <jld@redhat.co.uk>
-
-	* plugin\win32\Project.cpp:
-
-	Modify AddFile(), AddCustomRule(), LibraryDir()
-	and MakeMakeFile() to accommodate spaces in file paths.
-
 2000-01-06 Simon FitzMaurice  <sdf@redhat.co.uk>
   *  common\win32\ControlView.cpp
 
   CR 901981
 
-2000-01-06 Simon FitzMaurice  <sdf@redhat.co.uk>
-  * plugin\win32\CTMain.cpp
-    plugin\win32\ConfigtoolDoc.cpp
-    plugin\win32\Project.cpp
-    plugin\win32\ProjectManager.cpp
-
-  Changes required for addRef() code
-
-2000-01-06 Simon FitzMaurice  <sdf@redhat.co.uk>
-  * plugin\win32\ConfigTool.cpp  
-
-  Fix crash if "Choose Repository" dialog is cancelled.
-
 2000-01-05  John Dallaway  <jld@redhat.co.uk>
 
 	* common\win32\CTCommonDoc.cpp,
 	  standalone\win32\ConfigToolDoc.cpp,
-	  plugin\win32\ConfigtoolDoc.cpp,
 	  common\win32\ConfigTool.h:
 
 	Modify SelectTemplate() to accommodate a template
@@ -1307,29 +1085,18 @@
 	Modify OpenRepository() to use the new template version
 	member variable.
 
-	* plugin\win32\CTMain.cpp,
-	  standalone\win32\ConfigToolDoc.cpp:
+	* standalone\win32\ConfigToolDoc.cpp,
 
 	Pass template version parameter in all calls to
 	CConfigToolDoc::SelectTemplate().
 
-	* plugin\win32\CdlTemplatesDialog.cpp,
-	  plugin\win32\CdlTemplatesDialog.h,
-	  plugin\win32\eCos.rc,
-	  plugin\win32\eCosres.h,
-	  standalone\win32\CdlTemplatesDialog.cpp,
+	* standalone\win32\CdlTemplatesDialog.cpp,
 	  standalone\win32\CdlTemplatesDialog.h,
 	  standalone\win32\Configtool.rc,
-	  standalone\win32\CTres.h:
+	  standalone\win32\CTres.h,
 
 	Add new template version combo box to the template selection
 	dialog.
-
-2000-01-05  John Dallaway  <jld@redhat.co.uk>
-
-	* plugin\win32\Project.cpp:
-
-	Apply reference counting patch from Piet Obermeyer.
 
 2000-01-04  John Dallaway  <jld@redhat.co.uk>
 
@@ -1339,7 +1106,6 @@
 
 1999-12-22 Simon FitzMaurice  <sdf@redhat.co.uk>
   * common\win32\CTCommonres.cpp
-    plugin\win32\eCosres.cpp
     standalone\win32\CTres.cpp
     standalone\win32\Configtool.cpp
     standalone\win32\Configtool.dsp
@@ -1359,10 +1125,6 @@
     common\win32\eCosDialog.cpp
     common\win32\eCosDialog.h
     common\win32\stdafx.h
-    plugin\win32\ConfigTool.cpp
-    plugin\win32\ConfigtoolDoc.cpp
-    plugin\win32\eCos.cpp
-    plugin\win32\eCosres.h
     standalone\win32\CTres.h
     standalone\win32\ConfigToolDoc.cpp
     standalone\win32\Configtool.cpp
@@ -1387,8 +1149,6 @@
 
 	* common\win32\CTCommonDoc.cpp
 	  common\win32\ConfigToolDoc.h
-	  plugin\win32\CTMain.cpp
-	  plugin\win32\CTMain.h
 	  standalone\win32\CTres.h
 	  standalone\win32\ConfigToolDoc.cpp
 	  standalone\win32\Configtool.rc
@@ -1396,10 +1156,6 @@
 	Add new menu items for the import and export of
 	minimal eCos configuration save files. Provide
 	an implementation of the export function.
-
-	* plugin\win32\Project.h:
-
-	Remove obsolete #include to fix build error.
 
 1999-12-17 Simon FitzMaurice  <sdf@redhat.co.uk>
   * common\win32\FileName.cpp
@@ -1420,11 +1176,7 @@
 
   Use common code between Dialog and Property page variants of CSH classes.
 
-  * plugin\win32\ConfigTool.cpp
-    plugin\win32\ConfigTool.h
-    plugin\win32\ConfigtoolDoc.cpp
-    plugin\win32\eCos.cpp
-    standalone\win32\ConfigToolDoc.cpp
+  * standalone\win32\ConfigToolDoc.cpp
     standalone\win32\Configtool.cpp
     standalone\win32\Configtool.dsp
     standalone\win32\Configtool.h
@@ -1465,7 +1217,6 @@
 
   * common\win32\CTCommonDoc.cpp
     common\win32\ConfigToolDoc.h
-    plugin\win32\ConfigtoolDoc.cpp
     standalone\win32\ConfigToolDoc.cpp
 
   Ensure minimal work on saving an unmodified doc
@@ -1473,10 +1224,6 @@
   * standalone\win32\MainFrm.cpp
 
   Ensure current dir selected in build tools dialog
-
-  * plugin\win32\CTMain.cpp
-
-  Remove compilation warning
 
 1999-12-17  John Dallaway  <jld@redhat.co.uk>
 
@@ -1496,11 +1243,6 @@
   Ensure standalone config tool view menu checkmarks assume state on app initialisation
 
 1999-12-16 Simon FitzMaurice  <sdf@redhat.co.uk>
-  * plugin\win32\ConfigtoolDoc.cpp
-
-  901455-CR : ensure max map size set
-
-1999-12-16 Simon FitzMaurice  <sdf@redhat.co.uk>
   * common\win32\FailingRulesDialog.cpp
 
   Prevent crash in release build: ASSERT->VERIFY
@@ -1509,17 +1251,11 @@
 
   Prevent crash in release build: test on NULL!=GetFocus()
 
-1999-12-15 Simon FitzMaurice  <sdf@redhat.co.uk>
-  * plugin\win32\Project.cpp : match on tail of target name for shells, to avoid old shell tools in templates
-
 1999-12-14 Simon FitzMaurice  <sdf@redhat.co.uk>
   * common\win32\CTCommonDoc.cpp
     common\win32\ConfigToolDoc.h
     common\win32\FileName.cpp
     common\win32\FileName.h
-    plugin\win32\CTMain.cpp
-    plugin\win32\ConfigtoolDoc.cpp
-    plugin\win32\Project.cpp
     standalone\win32\ConfigToolDoc.cpp
 
   Work around problem w\ spaces in filenames: remove spaces from install tree, build tree and repository
@@ -1547,18 +1283,11 @@
     common\win32\CTCommonres.h
     common\win32\eCosDialog.h
     common\win32\eCosPropertyPage.h
-    plugin\win32\CTMain.cpp
-    plugin\win32\eCos.rc
-    plugin\win32\eCosres.h
     standalone\win32\CTres.h
     standalone\win32\Configtool.rc
 
   Move IDR_MLTBAR and IDB_BITMAP2 to common resources
 
-  * plugin\win32\Project.cpp
-
-  Add -c compilation option to compensate for change in IDE project API semantics
-    
   * standalone\win32\ConfigToolDoc.cpp
 
   Improve handling when tools admin
@@ -1568,7 +1297,6 @@
 	* common\win32\CTCommonDoc.cpp,
 	  common\win32\ConfigItem.cpp,
 	  common\win32\ConfigToolDoc.h,
-	  plugin\win32\CdlTemplatesDialog.cpp,
 	  standalone\win32\CdlTemplatesDialog.cpp:
 
 	Synchronize with recent libCDL API changes.
@@ -1590,39 +1318,26 @@
 1999-12-10  John Dallaway  <jld@redhat.co.uk>
 
 	* common\common\build.cxx.
-	  plugin\win32\Project.cpp:
 
 	Define the make variable OBJCOPY for use by CDL custom
 	rules.
 
 1999-12-09 Simon FitzMaurice  <sdf@redhat.co.uk>
   * common\win32\CTCommonres.h
-    plugin\win32\eCosres.h
     standalone\win32\CTres.h
     
-  Renumber resource IDs (CR 901703)
+  Renumber resource IDs  (CR 901703)
+
 
   * common\win32\CTOptionsDialog.cpp
     common\win32\CTOptionsDialog.h
 
   Disable buttons as appropriate on dialog initialization (CR 901688)
 
-  * plugin\win32\CTMain.cpp
-
-  Add elipses where appropriate (CR 901686)
-
-  * plugin\win32\eCos.rc
-
-  Enable OK button (CR 901687)
-
 1999-12-09 Simon FitzMaurice  <sdf@redhat.co.uk>
   * common\win32\CTCommon.rc
     common\win32\CTCommonDoc.cpp
     common\win32\CTCommonres.h
-    plugin\win32\CTMain.cpp
-    plugin\win32\ConfigtoolDoc.cpp
-    plugin\win32\ProjectManager.cpp
-    plugin\win32\ProjectManager.h
     standalone\win32\ConfigToolDoc.cpp
     standalone\win32\Configtool.dsp
     standalone\win32\MainFrm.cpp
@@ -1632,19 +1347,12 @@
 1999-12-08 Simon FitzMaurice  <sdf@redhat.co.uk>
   * common\win32\CTCommonDoc.cpp
     common\win32\ConfigToolDoc.h
-    plugin\win32\CTMain.cpp
-    plugin\win32\ConfigtoolDoc.cpp
-    plugin\win32\ProjectManager.cpp
-    plugin\win32\ProjectManager.h
-    plugin\win32\eCos.rc
-    plugin\win32\eCosres.h
     standalone\win32\CTres.h
     standalone\win32\ConfigToolDoc.cpp
     standalone\win32\Configtool.rc
     standalone\win32\MainFrm.cpp
     standalone\win32\MainFrm.h
 
-  Provide test selection in plugin.  
   Use IDE debugger as far as possible (not functional yet).
   Call pkgadmin as built-in dialog
 
@@ -1660,10 +1368,6 @@
     
   * common\win32\CTCommonDoc.cpp
     common\win32\ConfigToolDoc.h
-    plugin\win32\ConfigtoolDoc.cpp
-    plugin\win32\CTMain.h
-    plugin\win32\ProjectManager.cpp
-    plugin\win32\ProjectManager.h
     standalone\win32\ConfigToolDoc.cpp
 
     Use function to determine test executable names
@@ -1671,16 +1375,6 @@
   * common\win32\ControlView.cpp
 
     Remove unused variable
-
-  * plugin\win32\eCos.rc
-    standalone\win32\Configtool.rc
-    standalone\win32\MainFrm.cpp
-
-    Remove references to testtool and ecostest
-
-  * plugin\win32\CTMain.cpp
-
-    Launch pkgadmin as appropriate
 
 1999-12-07  John Dallaway  <jld@redhat.co.uk>
 
@@ -1704,16 +1398,6 @@
     standalone\win32\OutputView.h
 
   Overhaul CSubprocess class
-
-  * plugin\win32\CTMain.cpp
-    plugin\win32\CTMain.h
-    plugin\win32\ConfigTool.cpp
-    plugin\win32\ConfigTool.h
-    plugin\win32\ProjectManager.cpp
-    plugin\win32\eCosPlugin.cpp
-
-  Remove includes of subprocess.h
-  Add module state maintaining calls (for if we ever wish to make plugin a regular DLL)
 
 1999-12-06  John Dallaway  <jld@redhat.co.uk>
 
@@ -1756,21 +1440,6 @@
 
   Circumvent 512 character limit in TRACE
 
-  * plugin\win32\Project.cpp
-    plugin\win32\Project.h
-    plugin\win32\ProjectManager.cpp
-
-  Place test executables correctly in install tree
-
-1999-12-02 Simon FitzMaurice  <sdf@redhat.co.uk>
-  * plugin\win32\Project.cpp
-    plugin\win32\Project.h
-    plugin\win32\ProjectManager.cpp
-    plugin\win32\ProjectManager.h
-
-  Use <PACKAGE> and <PREFIX> tokens in custom rules.
-  Expect a sent (not posted) BUILD_STARTED.
-
 1999-12-02  John Dallaway  <jld@redhat.co.uk>
 
 	* common\common\build.cxx:
@@ -1800,11 +1469,6 @@
   
   Place exception handler around get_build_info() call
   
-  * plugin\win32\CTMain.cpp
-    plugin\win32\CTMain.h
-
-  Add global conflict resolution to plugin
-
 1999-12-01 Simon FitzMaurice  <sdf@redhat.co.uk>
   * common\win32\CTCommonDoc.cpp
     common\win32\CTOptionsDialog.cpp
@@ -1812,7 +1476,6 @@
     common\win32\ConfigToolDoc.h
     common\win32\FailingRulesDialog.cpp
     common\win32\FailingRulesDialog.h
-    plugin\win32\ConfigtoolDoc.cpp
     standalone\win32\ConfigToolDoc.cpp
     standalone\win32\MainFrm.cpp
 
@@ -1822,10 +1485,6 @@
     common\win32\FileName.h
 
   Introduce file-finding utility function.
-
-  * plugin\win32\Project.cpp
-
-  Translate <PREFIX> and <REPOSITORY> in custom rule dependencies
 
 1999-12-01  John Dallaway  <jld@redhat.co.uk>
 
@@ -1873,22 +1532,13 @@
   * common\win32\CTCommon.rc
     common\win32\CTCommonres.h
     common\win32\ConfigToolDoc.h
-    plugin\win32\ConfigTool.cpp
-    plugin\win32\eCos.rc
     standalone\win32\CTres.h
     standalone\win32\ConfigToolDoc.cpp
     standalone\win32\Configtool.rc
 
   Moved sourceware references to be standalone-specific
 
-  * plugin\win32\Project.cpp
-    plugin\win32\ProjectManager.cpp
-    plugin\win32\ProjectManager.h
-
-  Use CDL information to calculate test project contents
-
   * common\win32\CTCommonDoc.cpp
-    plugin\win32\ConfigtoolDoc.cpp
 
   Do not complain about failing rules if document already saved
 
@@ -1925,8 +1575,6 @@
 1999-11-26  Simon FitzMaurice  <sdf@redhat.co.uk>
   * common\win32\CTCommonDoc.cpp
     common\win32\ConfigToolDoc.h
-    plugin\win32\CTMain.cpp
-    plugin\win32\CTMain.h
     standalone\win32\MainFrm.cpp
     standalone\win32\MainFrm.h
 
@@ -1941,7 +1589,6 @@
     common\win32\CTOptionsDialog.cpp
     common\win32\CTOptionsDialog.h
     common\win32\ConfigToolDoc.h
-    plugin\win32\ConfigtoolDoc.cpp
     standalone\win32\ConfigToolDoc.cpp
     standalone\win32\Configtool.cpp
     standalone\win32\MainFrm.cpp
@@ -1971,7 +1618,6 @@
   * common\win32\CTUtils.cpp
     common\win32\CTUtils.h
     common\win32\ConfigToolDoc.h
-    plugin\win32\CTMain.h
     standalone\win32\ConfigToolDoc.cpp
     standalone\win32\Configtool.cpp
     standalone\win32\Configtool.h
@@ -1986,17 +1632,10 @@
 1999-11-25  John Dallaway  <jld@redhat.co.uk>
 
 	* standalone\win32\ConfigToolDoc.cpp,
-	  plugin\win32\ConfigToolDoc.cpp:
 
 	Modify SwitchMemoryLayout() to copy default memory
 	layout files only where they do not already exist
 	at the destination location.
-
-	* plugin\win32\ConfigToolDoc.cpp:
-
-	Modify SetPathName() to generate the build and install
-	directory paths by appending "_build" and "_install" respectively
-	to the root name of the config save file.
 
 	* common\win32\ConfigItem.cpp:
 
@@ -2014,7 +1653,6 @@
     common\win32\ConfigItem.cpp
     common\win32\ConfigItem.h
     common\win32\ControlView.cpp
-    plugin\win32\CTMain.h
   Normalize IsActive, IsEnabled functions in CConfigitem.
   Removed unused members from CConfigItem
   Removed m_nIndex from CConfigItem
@@ -2039,7 +1677,6 @@
     common\win32\ControlView.cpp
     common\win32\SplitterWndEx.cpp
     common\win32\SplitterWndEx.h
-    plugin\win32\CTMain.h
     standalone\win32\MainFrm.cpp
     standalone\win32\MainFrm.h
 
@@ -2077,20 +1714,13 @@
 	to the root name of the config save file.
 
 1999-11-25  Simon FitzMaurice  <sdf@redhat.co.uk>
-  * plugin\win32\CTMain.cpp
-    standalone\win32\ConfigToolDoc.cpp
+  * standalone\win32\ConfigToolDoc.cpp
 
   Use "native" in the case of no toolchain prefix.
 
 1999-11-25  Simon FitzMaurice  <sdf@redhat.co.uk>
   * common\win32\CTCommonDoc.cpp
     common\win32\ConfigToolDoc.h
-    plugin\win32\CTMain.cpp
-    plugin\win32\CTMain.h
-    plugin\win32\ConfigTool.cpp
-    plugin\win32\Project.cpp
-    plugin\win32\eCos.rc
-    plugin\win32\eCosres.h
     standalone\win32\CTres.h
     standalone\win32\ConfigToolDoc.cpp
     standalone\win32\Configtool.cpp
@@ -2100,16 +1730,6 @@
     standalone\win32\MainFrm.h
   Complete changes for build paths and remove yet more unused variables.
   Place registry keys in string resources.
-
-1999-11-25  John Dallaway  <jld@redhat.co.uk>
-
-	* plugin\win32\Project.cpp:
-
-	Modify MakeMakeFile() to add build variables to
-	the temporary makefiles which match those of the
-	standalone eCos config tool. This should ensure
-	portability of custom rules between the standalone
-	tool and the plug-in.
 
 1999-11-24  Simon FitzMaurice  <sdf@redhat.co.uk>
   * common\win32\CTCommon.rc
@@ -2130,7 +1750,6 @@
     common\win32\RulesView.cpp
     common\win32\eCosDialog.cpp
     common\win32\mltview.cpp
-    plugin\win32\ConfigtoolDoc.cpp
     standalone\win32\ConfigToolDoc.cpp
     standalone\win32\Configtool.dsp
     standalone\win32\MainFrm.cpp
@@ -2150,11 +1769,6 @@
 	process Cygwin-style directory paths on the ecosconfig
 	command line. Such paths are not understood universally
 	by the Cygwin tcl library.
-
-1999-11-23  Simon FitzMaurice  <sdf@redhat.co.uk>
-  * plugin\win32\ProjectManager.cpp
-
-  Fix crash in release build
 
 1999-11-23  John Dallaway  <jld@redhat.co.uk>
 
@@ -2186,7 +1800,6 @@
     common\win32\ConfigToolDoc.h
     common\win32\ControlView.cpp
     common\win32\ControlView.h
-    plugin\win32\CTMain.cpp
     standalone\win32\CTres.h
     standalone\win32\ConfigToolDoc.cpp
 
@@ -2223,7 +1836,6 @@
     common\win32\eCosDialog.h
     common\win32\eCosPropertyPage.h
     common\win32\mltview.cpp
-    plugin\win32\eCosres.h
     standalone\win32\CTres.h
     standalone\win32\Configtool.cpp
     standalone\win32\Configtool.dsp
@@ -2309,11 +1921,6 @@
     common\win32\cellview.h
     common\win32\mltview.cpp
     common\win32\mltview.h
-    plugin\win32\CTMain.cpp
-    plugin\win32\CTMain.h
-    plugin\win32\ConfigtoolDoc.cpp
-    plugin\win32\eCos.rc
-    plugin\win32\eCosres.h
     standalone\win32\CTres.h
     standalone\win32\ConfigToolDoc.cpp
     standalone\win32\Configtool.dsp
@@ -2392,10 +1999,6 @@
   Remove some obsolete test code, add elipsis to "Unload"
   Correct painting problem on unload
 
-  * plugin\win32\CTMain.cpp
-
-  Correct bug in window restoration code
-
   * common\win32\ConfigToolDoc.h
 
   Remove obsolete FileNameChanged hint
@@ -2413,15 +2016,6 @@
     Incorrect scrolling
     Overpainting of header control
     Empty File property
-
-1999-11-12  John Dallaway  <jld@redhat.co.uk>
-
-  * plugin\win32\Project.cpp:
-
-  Modify AddFile() to add the package version directory
-  of the build tree to the include path for each file.
-  This enables the C pre-processor to find header files
-  generated by custom build rules.
 
 1999-11-12  John Dallaway  <jld@redhat.co.uk>
 
@@ -2445,8 +2039,8 @@
     common\win32\eCosPropertyPage.h
   Make HelpID() const 
 
-  * plugin\win32\ConfigTool.cpp
-    common\win32\CTCommonDoc.cpp
+  * common\win32\CTCommonDoc.cpp
+    
   Prevent control view displaying too early
 
   * common\win32\ControlView.cpp
@@ -2454,10 +2048,6 @@
 
   * common\win32\RulesView.cpp
   Remove Resolve  context menu item
-
-  * plugin\win32\eCos.rc
-    plugin\win32\res\MLTbar.bmp
-  Change to 16 bits (must match other toolbar resources)
 
 1999-11-11  Simon FitzMaurice  <sdf@redhat.co.uk>
   * common\win32\mltview.cpp
@@ -2496,10 +2086,6 @@
     common\win32\eCosPropertyPage.h :
   "What's this?" style help.
 
-1999-11-09  Simon FitzMaurice  <sdf@redhat.co.uk>
-  * plugin\win32\Project.cpp
-  Update laucher interface
-
 1999-11-09  John Dallaway  <jld@redhat.co.uk>
 
   * standalone\common\cdl_exec.hxx,
@@ -2514,10 +2100,6 @@
     standalone\win32\CreditStatic.cpp
     standalone\win32\MainFrm.cpp
   Change various ASSERTs to VERIFYs (caused crash in release build)
-
-  * plugin\win32\Project.cpp
-    plugin\win32\Project.h
-  Adjusted to new debugger interface
 
 1999-11-09  John Dallaway  <jld@redhat.co.uk>
 
@@ -2553,10 +2135,6 @@
   Entered first cut at CSH data
 
 1999-11-08  Simon FitzMaurice  <sdf@redhat.co.uk>
-  * plugin\win32\CdlTemplatesDialog.cpp
-  Correct syntax error
-
-1999-11-08  Simon FitzMaurice  <sdf@redhat.co.uk>
   * common\win32\AddRemoveDialog.cpp
     common\win32\AddRemoveDialog.h
     common\win32\BuildOptionsDialog.cpp
@@ -2578,8 +2156,6 @@
     common\win32\eCosDialog.cpp
     common\win32\eCosDialog.h
     common\win32\eCosHelp.h
-    plugin\win32\CdlTemplatesDialog.cpp
-    plugin\win32\CdlTemplatesDialog.h
     standalone\win32\CTOutputPage.cpp
     standalone\win32\CTOutputPage.h
     standalone\win32\CdlTemplatesDialog.cpp
@@ -2613,19 +2189,14 @@
     common\win32\CTCommonDoc.cpp
     Work around shell crash w\ URL
 
-    plugin\win32\ConfigtoolDoc.cpp
-  Remove stray call to ShowURL
-
     standalone\win32\CTOutputPage.cpp
     standalone\win32\CTOutputPage.h
     common\win32\ConfigViewOptionsDialog.cpp
     common\win32\ConfigViewOptionsDialog.h
     standalone\win32\ViewOptions.cpp
     standalone\win32\ViewOptions.h
-    plugin\win32\ViewOptions.cpp
     common\win32\ControlView.cpp
     common\win32\ControlView.h
-    plugin\win32\ConfigtoolDoc.cpp
     standalone\win32\MainFrm.cpp
     standalone\win32\MainFrm.h
     standalone\win32\ViewOptions.cpp
@@ -2658,7 +2229,6 @@
     common\win32\FailingRulesDialog.h
     common\win32\RulesView.cpp
     common\win32\RulesView.h
-    plugin\win32\ConfigtoolDoc.cpp
     standalone\win32\ConfigToolDoc.cpp
     standalone\win32\Configtool.cpp
     standalone\win32\Configtool.rc
@@ -2718,7 +2288,6 @@
     common\win32\RulesList.h
     common\win32\RulesView.cpp
     common\win32\RulesView.h
-    plugin\win32\ConfigtoolDoc.cpp
     standalone\win32\ConfigToolDoc.cpp
   Refine failing rules dialog
   Prevent removed package items causing crash during (for example) paint operations executed within callback
@@ -2784,11 +2353,6 @@
 
 1999-11-04  Simon FitzMaurice  <sdf@redhat.co.uk>
   * common\win32\PropertiesList.cpp
-    plugin\win32\CTMain.cpp
-    plugin\win32\CTMain.h
-    plugin\win32\ConfigTool.cpp
-    plugin\win32\ConfigTool.h
-    plugin\win32\eCosres.h
     standalone\win32\ConfigToolDoc.cpp
     standalone\win32\Configtool.cpp
     standalone\win32\Configtool.dsp
@@ -2815,7 +2379,6 @@
   Created non-eCos-specific base class CCSHDialog
 
   * standalone\win32\Configtool.rc
-    plugin\win32\eCos.rc
     common\win32\CTCommonres.h
     common\win32\ConfigViewOptionsDialog.cpp
     standalone\win32\CTres.h
@@ -2861,9 +2424,6 @@
     common\win32\PropertiesList.cpp
     common\win32\RulesList.cpp
   Remove unreferenced param warnings
-    plugin\win32\eCos.rc
-  Remove unreferenced resource
-    plugin\win32\eCosres.h
     standalone\win32\CTres.h
   Remove duplication definition if IDAPPLY
     standalone\win32\ConfigToolDoc.cpp
@@ -2897,9 +2457,6 @@
     common\win32\eCosDialog.cpp
     common\win32\eCosDialog.h
     common\win32\notepage.h
-    plugin\win32\ConfigtoolDoc.cpp
-    plugin\win32\eCos.rc
-    plugin\win32\eCosres.h
     standalone\win32\CTOutputPage.cpp
     standalone\win32\CTOutputPage.h
     standalone\win32\CTres.h
@@ -2958,10 +2515,6 @@
   HTML help now used uniformly for CSH
    
 1999-11-02  Simon FitzMaurice  <sdf@redhat.co.uk>
-    common\win32\ConfigItem.cpp
-  Fix compilation error in plugin build
-   
-1999-11-02  Simon FitzMaurice  <sdf@redhat.co.uk>
     common\win32\CTCommonDoc.cpp
     common\win32\ConfigItem.cpp
     common\win32\ConfigItem.h
@@ -2983,7 +2536,6 @@
     common\win32\DoubleEdit.h
     common\win32\IntegerEdit.h
     common\win32\target.h
-    plugin\win32\Project.h
   Remove junk header includes
 
 1999-11-02  John Dallaway  <jld@redhat.co.uk>
@@ -3050,8 +2602,6 @@
     common\win32\eCosDialog.h
     common\win32\notepage.h
     common\win32\stdafx.h
-    plugin\win32\CTMain.h
-    plugin\win32\CdlTemplatesDialog.h
     standalone\win32\BinDirDialog.h
     standalone\win32\CTOutputPage.h
     standalone\win32\CdlTemplatesDialog.h
@@ -3067,12 +2617,6 @@
   Include resources directly.  I suspect including resource headers from PCH might have been responsible for
   resource IDs not being found.
 
-  *  plugin\win32\CTMain.cpp
-
-  Fix persistence of MLT toolbar
-
-  * plugin\win32\eCos.rc
-    common\win32\CTCommon.rc
 
   Restore CDL templates dialog
 
@@ -3109,19 +2653,12 @@
 1999-10-29  Simon FitzMaurice  <sdf@redhat.co.uk>
   * common\win32\CTUtils.cpp
     common\win32\CTUtils.h
-    plugin\win32\CTMain.h
-    plugin\win32\ConfigTool.cpp
     standalone\win32\Configtool.cpp
   Change default arg values of Chop to false (less error-prone)
 
   * common\win32\PropertiesList.cpp
     common\win32\PropertiesList.h
   Remove SizeColumns
-
-  * plugin\win32\Project.cpp
-  
-  Properly format make file vars
-  Do not interpret " and \ in strings
 
   * standalone\win32\MainFrm.cpp
     standalone\win32\MainFrm.h
@@ -3191,15 +2728,6 @@
   Fix id of list control
 
 1999-10-28  Simon FitzMaurice  <sdf@redhat.co.uk>
-  * common\win32\stdafx.h
-    plugin\win32\eCos.rc
-    plugin\win32\eCosres.h
-    standalone\win32\CTres.h
-    standalone\win32\Configtool.dsp
-    standalone\win32\Configtool.mak
-    standalone\win32\Configtool.rc
-  Add common [between plugin and standalone] resource files
-
   * common\win32\BuildOptionsDialog.cpp
     common\win32\BuildOptionsDialog.h
   Experiment with framework for HtmlHelp
@@ -3272,10 +2800,6 @@
     common\win32\ConfigItem.h
     common\win32\ConfigToolDoc.h
     common\win32\ControlView.cpp
-    plugin\win32\CTMain.h
-    plugin\win32\ConfigtoolDoc.cpp
-    plugin\win32\Project.cpp
-    plugin\win32\Project.h
     standalone\win32\ConfigToolDoc.cpp
     standalone\win32\MainFrm.cpp
     standalone\win32\MainFrm.h
@@ -3321,18 +2845,11 @@
 
 1999-10-26  Simon FitzMaurice  <sdf@redhat.co.uk>
   * common\win32\CTCommonDoc.cpp
-    plugin\win32\ProjectManager.cpp
-    plugin\win32\ProjectManager.h
 
   Correct problem whereby some tests were not being correctly located.
 
 1999-10-26  Simon FitzMaurice  <sdf@redhat.co.uk>
   * common\win32\CTCommonDoc.cpp
-    plugin\win32\ConfigTool.cpp
-    plugin\win32\Project.cpp
-    plugin\win32\Project.h
-    plugin\win32\ProjectManager.cpp
-    plugin\win32\ProjectManager.h :
    
   Adapt to changes for make file generation
   Traverse only package directories looking for tests
@@ -3358,13 +2875,6 @@
     common\win32\StringEdit.h
     common\win32\cellview.h
     common\win32\thinsplitter.cpp
-    plugin\win32\CTMain.cpp
-    plugin\win32\CTMain.h
-    plugin\win32\ConfigtoolDoc.cpp
-    plugin\win32\Project.cpp
-    plugin\win32\Project.h
-    plugin\win32\ProjectManager.cpp
-    plugin\win32\eCosres.h
     standalone\win32\CTOutputPage.cpp
     standalone\win32\CTres.h
     standalone\win32\ConfigToolDoc.cpp
@@ -3378,7 +2888,6 @@
   Remove unused resources
   Localize information regarding kind of cell in CCellView and use runtime class information to represent it.
   Remove unused functions from CConfigItem
-  Ensure we use relative paths
   Remove inapplicable items from View\Settings and Tools\Options
 
 1999-10-21  Simon FitzMaurice  <sdf@redhat.co.uk>
@@ -3392,11 +2901,6 @@
     common\win32\SplitterWndEx.h
     common\win32\thinsplitter.cpp
     common\win32\thinsplitter.h
-    plugin\win32\CTMain.cpp
-    plugin\win32\CTMain.h
-    plugin\win32\ConfigtoolDoc.cpp
-    plugin\win32\Project.cpp
-    plugin\win32\eCosres.h
     standalone\win32\BuildOptsPage.cpp
     standalone\win32\BuildOptsPage.h
     standalone\win32\CTres.h
@@ -3424,8 +2928,6 @@
   Remove BuildOptsPage
   Remove CPackage class
   Move SplitterWndEx from standalone to common (CThinSplitter now derives from it)
-  In plugin:
-  Do not remove empty categories (may upset the Project mgr API)
 
 1999-10-20  John Dallaway  <jld@redhat.co.uk>
 
@@ -3444,29 +2946,12 @@
   CdlInterface node has become active or inactive.
 
 1999-10-19  Simon FitzMaurice  <sdf@redhat.co.uk>
-  * plugin\win32\CTMain.cpp,h :
-
-    Implement toolbar hide\show
-  Finally nail window persistence.  Probably.
-
-1999-10-19  Simon FitzMaurice  <sdf@redhat.co.uk>
   * standalone\win32\ConfigToolDoc.cpp
-    plugin\win32\ConfigtoolDoc.cpp
     common\win32\CTCommonDoc.cpp
     common\win32\ConfigToolDoc.h
-    plugin\win32\ConfigTool.cpp
 
   Make build info available in document (member BuildInfo())
   Introduce UpdateeCosProject() member as place to update build info
-
-  * plugin\win32\CTMain.cpp :
-
-  Use commandex mechamism for window persistence.  Almost there.
-
-  * plugin\win32\Project.cpp
-    plugin\win32\ProjectManager.cpp
-
-  get_flags code now in its own file (flags.cxx).  Not yet a class member.
 
   * standalone\win32\ViewOptions.cpp
   Correct typo
@@ -3479,31 +2964,16 @@
   Add flags.cxx,.hxx
   Introduce new build options dialog class
 
-  * plugin\win32\eCos.rc
-    plugin\win32\eCosres.h
-    standalone\win32\CTres.h
+  * standalone\win32\CTres.h
     standalone\win32\Configtool.rc
 
   Introduce new build options dialog class
-
-1999-10-18  John Dallaway  <jld@redhat.co.uk>
-
-  * plugin\win32\Project.cpp:
-
-  Modify list_to_string() to eliminate redundant use of
-  max().
-
-1999-10-18  Simon FitzMaurice  <sdf@redhat.co.uk>
-  * plugin\win32\CTMain.cpp
-   
-  Fix problem of proliferating toolbars and persist toolbar placement
 
 1999-10-18  Simon FitzMaurice  <sdf@redhat.co.uk>
   * common\win32\CTCommonDoc.cpp
     common\win32\CTUtils.cpp
     common\win32\CTUtils.h
     standalone\win32\MainFrm.cpp
-    plugin\win32\CTMain.cpp :
     common\win32\FileName.cpp
 
   [mostly] eliminate changing directory, which is dangerous in a multithreading environment
@@ -3516,16 +2986,6 @@
     common\win32\PropertiesView.cpp
 
   Remove "display" as property and need for count of properties
-
-  * plugin\win32\ConfigTool.cpp
-    plugin\win32\Project.cpp
-    plugin\win32\Project.h
-    plugin\win32\ProjectManager.cpp
-    plugin\win32\ProjectManager.h : 
-
-  use new build options interface
-  search for test projects asynchronously
-  ensure nothing of test projects ends up in source folders
 
   * standalone\win32\Configtool.dsp,
     standalone\win32\Configtool.mak :
@@ -3541,42 +3001,9 @@
   non-default value source.
 
 1999-10-15  Simon FitzMaurice  <sdf@redhat.co.uk>
-  * plugin\win32\Projectmanager.cpp : 
-  
-  Allow e.v. trick to create eCos projects in non-Debug
-
-1999-10-15  Simon FitzMaurice  <sdf@redhat.co.uk>
   * common\win32\CTCommonDoc.cpp : 
   
   Do not mention an empty repository name
-
-1999-10-15  Simon FitzMaurice  <sdf@redhat.co.uk>
-  * plugin\win32\CTMain.cpp : 
-  
-  restore removeMenuEventListener() call
-
-1999-10-15  John Dallaway  <jld@redhat.co.uk>
-
-  * plugin\win32\ConfigtoolDoc.cpp:
-
-  Further modification of OnOpenDocument() to accommodate
-  the recent change to NewMemoryLayout().
-
-1999-10-15  John Dallaway  <jld@redhat.co.uk>
-
-  * plugin\win32\ProjectManager.cpp:
-
-  Modify projectManagerChanged() to supress tracing in
-  release builds and thus avoid build error.
-
-1999-10-13  Simon FitzMaurice  <sdf@redhat.co.uk>
-  * plugin\win32\CTMain.cpp,h : 
-  
-  adapt to new menu manager interface
-  
-  * plugin\win32\project.cpp : 
-  
-  Do not crash (via VERIFY) if CopyFile fails
 
 1999-10-13  John Dallaway  <jld@redhat.co.uk>
 
@@ -3601,15 +3028,6 @@
 
 1999-10-13  John Dallaway  <jld@redhat.co.uk>
 
-  * plugin\win32\ConfigtoolDoc.cpp:
-
-  Modify NewMemoryLayout() take the directory containing
-  the .mlt files as its parameter rather than the prefix
-  to a "pkgconf" directory.
-
-  Modify SwitchMemoryLayout() and OnOpenDocument() to
-  accommodate the above change to NewMemoryLayout().
-
   * common\win32\CTCommonDoc.cpp,
     common\win32\ConfigtoolDoc.h:
 
@@ -3623,15 +3041,9 @@
   files in a directory outside the build and install trees
   by calling MLTDir().
 
-  * plugin\win32\ConfigTool.cpp:
-
-  Modify Open() to force the saving of the current memory layout
-  to ensure that the .ldi and .h files exist in the build and
-  install trees.
-
 1999-10-13  Simon FitzMaurice  <sdf@redhat.co.uk>
     common\win32\ConfigItem.cpp : 
-  Correct calculation of filename (works for plugin case now, but not yet for standalone)
+  Correct calculation of filename
 
 1999-10-13  Simon FitzMaurice  <sdf@redhat.co.uk>
     common\win32\ConfigItem.cpp
@@ -3643,30 +3055,12 @@
 
 1999-10-13  Simon FitzMaurice  <sdf@redhat.co.uk>
     common\win32\CTCommonDoc.cpp
-    plugin\win32\ConfigtoolDoc.cpp : 
   Fix problem of tree not being populated when repository already open
   Migrate m_arstrFiles.RemoveAll() calls to DeleteContents() for standalone
 
   * common\win32\ControlView.cpp : 
     
   some hacky debugging for window persistence
-
-    plugin\win32\CTMain.cpp
-    plugin\win32\CTMain.h
-    plugin\win32\ConfigTool.cpp
-    plugin\win32\ConfigTool.h
-    plugin\win32\MultiDocSECWorksheet.cpp
-    plugin\win32\MultiDocSECWorksheet.h : 
-    
-  Add window placement persistence
-
-    plugin\win32\ProjectManager.cpp : 
-  Use switch statement not array to determine names for project manager events.
-  Remove extra "tests" from test project path
-
-    plugin\win32\Project.cpp : 
-    
-  Remove status bar message - prevents thermometer being visible
 
     standalone\win32\MainFrm.cpp
     standalone\win32\MainFrm.h : 
@@ -3747,17 +3141,10 @@
 
 1999-10-08  Simon FitzMaurice  <sdf@redhat.co.uk>
     common\win32\CTCommonDoc.cpp
-    plugin\win32\CTMain.cpp
-    plugin\win32\CTMain.h
-    plugin\win32\ConfigTool.cpp
     standalone\win32\MainFrm.cpp
     standalone\win32\MainFrm.h : 
     
   Add status pane support
-
-    plugin\win32\ProjectManager.cpp : 
-    
-  hack; save project when build started
 
 1999-10-08  John Dallaway  <jld@redhat.co.uk>
 
@@ -3815,7 +3202,6 @@
   CYGTST_TESTING_IDENTIFIER cdl_option.
 
   * standalone\win32\MainFrm.cpp,
-    plugin\win32\CTMain.cpp:
 
   Modify OnRunSim()\OnRunTests() to use the string value
   of the CYGTST_TESTING_IDENTIFIER cdl_option as the test
@@ -3859,19 +3245,10 @@
   Modify OnSelChangePackageVersion() and UpdateVersionList() to
   work with both package listboxes.
 
-  * plugin\win32\eCos.rc,
-    standalone\win32\Configtool.rc:
+  * standalone\win32\Configtool.rc,
 
   Extend the version combo box to full width in the package
   selection dialog box.
-
-1999-10-01  John Dallaway  <jld@redhat.co.uk>
-
-  * plugin\win32\ConfigtoolDoc.cpp:
-
-  Modify OnOpenDocument() to copy the default memory layout
-  (MLT) files from the repository to the build tree in case
-  the user wishes to switch memory layouts before saving.
 
 1999-10-01  John Dallaway  <jld@redhat.co.uk>
 
@@ -3887,12 +3264,6 @@
 
   Modify DblClk() to restore correct function of double-clicking
   on the documentation URL in the standalone config tool.
-
-1999-10-01  John Dallaway  <jld@redhat.co.uk>
-
-  * plugin\win32\CTMain.cpp:
-
-  Modify OnTest() to avoid calling deprecated functions.
 
 1999-09-30  John Dallaway  <jld@redhat.co.uk>
 
@@ -3915,8 +3286,6 @@
 
   * standalone\win32\CTres.h,
     standalone\win32\Configtool.rc,
-    plugin\win32\eCosres.h,
-    plugin\win32\eCos.rc:
 
   Add a resource string containing the error message for the
   condition described above.
@@ -3945,7 +3314,6 @@
   macro.
 
   * standalone\win32\MainFrm.cpp,
-    plugin\win32\CTMain.cpp:
 
   Modify OnRunSim()\OnRunTests() to derive a test target
   identifier of the form "<template>-<startup>" from the
@@ -3972,8 +3340,6 @@
 
   * standalone\win32\Configtool.rc,
     standalone\win32\CTres.h,
-    plugin\win32\eCos.rc,
-    plugin\win32\eCosres.h:
 
   Add a version selection combo box to the packages dialog.
 
@@ -4075,9 +3441,6 @@
     common\win32\StringEdit.h
     common\win32\cellview.h
     common\win32\stdafx.h
-    plugin\win32\CTMain.cpp
-    plugin\win32\ConfigTool.cpp
-    plugin\win32\ConfigtoolDoc.cpp
     standalone\win32\BinDirDialog.cpp
     standalone\win32\BuildOptsPage.cpp
     standalone\win32\BuildOptsPage.h
@@ -4093,15 +3456,10 @@
   CConfigItem::ItemIntegerType becomes ItemIntegerType and moves to stdafx.h
   CConfigToolDoc::ItemTypeOf moves to (static member of) CConfigTool
 
-    plugin\win32\Project.cpp
-    plugin\win32\Project.h
-    plugin\win32\ProjectManager.cpp
-    plugin\win32\ProjectManager.h : 
   Various functions of projectmanager move to project
   Corrected call of OnSaveDocument() with null argument
 
 
-    plugin\win32\eCos.h
     standalone\win32\dirdocmgr.cpp, h : 
     
   removed
@@ -4190,22 +3548,13 @@
 
 1999-09-21  John Dallaway  <jld@redhat.co.uk>
 
-  * plugin\win32\ConfigtoolDoc.cpp,
-    standalone\win32\ConfigtoolDoc.cpp,
-    common\win32\CTCommonDoc.cpp:
+  * common\win32\CTCommonDoc.cpp,
+    standalone\win32\ConfigtoolDoc.cpp:
 
   Ensure that all calls to libCDL functions which parse input
   files catch and report exceptions of type CdlStringException.
 
 1999-09-21  John Dallaway  <jld@redhat.co.uk>
-
-  * plugin\win32\ConfigtoolDoc.cpp:
-
-  Modify OnOpenDocument() to pass the build tree to NewMemoryLayout() if
-  this is not a new project.
-
-  Modify SetPathName() to calculate the default build and install tree
-  paths based on a CDL save file parameter.
 
   * common\win32\CTCommonDoc.cpp:
 
@@ -4216,12 +3565,6 @@
 
   Promote GetPathName() to a public member function.
 
-  * plugin\win32\ConfigTool.cpp:
-
-  Modify Open() to calculate the CDL save file name and pass it
-  to SetPathName(). Modify the build and install tree paths
-  subsequently as necessary.
-
 1999-09-20  Simon FitzMaurice  <sdf@redhat.co.uk>
     common\win32\CTCommonDoc.cpp
     common\win32\ConfigToolDoc.h : 
@@ -4229,29 +3572,14 @@
   adjust decls for standalone case
 
 1999-09-20  Simon FitzMaurice  <sdf@redhat.co.uk>
-    plugin\win32\ProjectManager.cpp
-    plugin\win32\ProjectManager.h
     common\win32\CTCommonDoc.cpp
     common\win32\ConfigToolDoc.h
-    plugin\win32\ConfigtoolDoc.cpp 
-    plugin\win32\ConfigTool.cpp
-    plugin\win32\Project.cpp
-    plugin\win32\Project.h
     standalone\win32\ConfigToolDoc.cpp :
   Move GenerateHeaders() from ProjectManger to document class
   Call file-saving operations appropriately (generally in OnSaveDocument())
   Responsibility for attaching to eCos project removed from document - now in caller
   Set install and build trees only after document opened
   Implement rule ordering using priority fields
-
-1999-09-20  John Dallaway  <jld@redhat.co.uk>
-
-  * plugin\win32\ConfigToolDoc.cpp:
-
-  Modify OnOpenDocument() and OnSaveDocument() to load and save
-  CDL save files respectively. Note that the CDL save files is
-  only loaded if it exists. On initial project creation, the
-  CDL file will not exist.
 
 1999-09-20  John Dallaway  <jld@redhat.co.uk>
 
@@ -4311,7 +3639,6 @@
     common\win32\CTUtils.cpp
     common\win32\FileName.cpp
     common\win32\subprocess.cpp
-    plugin\win32\ConfigTool.cpp
     standalone\win32\CreditStatic.cpp: 
     
   use of deleteZA
@@ -4331,30 +3658,15 @@
   repository.
 
 1999-09-17  Simon FitzMaurice  <sdf@redhat.co.uk>
-    plugin\win32\ConfigTool.cpp : 
-    
-  save build and install trees in project
-  
-    plugin\win32\ConfigtoolDoc.cpp
     standalone\win32\ConfigToolDoc.cpp : 
     
   Remove unneeded #includes
 
 1999-09-17  Simon FitzMaurice  <sdf@redhat.co.uk>
     common\win32\CTCommonDoc.cpp
-    plugin\win32\ConfigtoolDoc.cpp
     standalone\win32\ConfigtoolDoc.cpp : 
   CurrentLinkerScript() made common.
   Remaining fns in non-common docs reordered to ease diffs.
-
-1999-09-17  Simon FitzMaurice  <sdf@redhat.co.uk>
-    plugin\win32\ConfigtoolDoc.cpp : 
-    
-  Correct calculation of build and install paths
-    
-    plugin\win32\ConfigTool.cpp : 
-    
-    remove creation of console
 
 1999-09-17  John Dallaway  <jld@redhat.co.uk>
 
@@ -4373,7 +3685,6 @@
 
 1999-09-17  Simon FitzMaurice  <sdf@redhat.co.uk>
     common\win32\CTCommonDoc.cpp
-    plugin\win32\ConfigtoolDoc.cpp
     standalone\win32\ConfigToolDoc.cpp : 
     
     AddAllItems() becomes common
@@ -4386,11 +3697,6 @@
     common\win32\memmap.cpp
     common\win32\messagebox.cpp
     common\win32\stdafx.h
-    plugin\win32\CTMain.cpp
-    plugin\win32\ConfigTool.cpp
-    plugin\win32\ConfigtoolDoc.cpp
-    plugin\win32\Project.cpp
-    plugin\win32\ProjectManager.cpp
     standalone\win32\ConfigToolDoc.cpp
     standalone\win32\Configtool.cpp
     standalone\win32\HelpView.cpp
@@ -4398,40 +3704,6 @@
     standalone\win32\splash.cpp : 
     
     Use deleteZ and deleteZA macros; migrate AddItem() to common ConfigToolDoc file
-
-1999-09-16  Simon FitzMaurice  <sdf@redhat.co.uk>
-    common\win32\CTCommonDoc.cpp
-    common\win32\CTUtils.cpp
-    common\win32\CellView.cpp
-    common\win32\ConfigItem.cpp
-    common\win32\ConfigItem.h
-    common\win32\ConfigToolDoc.h
-    common\win32\ControlView.cpp
-    common\win32\PropertiesView.cpp
-    common\win32\RulesView.cpp
-    common\win32\stdafx.h
-    plugin\win32\CTMain.cpp
-    plugin\win32\CTMain.h
-    plugin\win32\ConfigTool.cpp
-    plugin\win32\ConfigTool.h
-    plugin\win32\ConfigtoolDoc.cpp
-    plugin\win32\ConfigtoolDoc.h
-    plugin\win32\Project.cpp
-    plugin\win32\ProjectManager.cpp
-    standalone\win32\CTres.h
-    standalone\win32\ConfigToolDoc.cpp
-    standalone\win32\Configtool.cpp
-    standalone\win32\Configtool.dsp
-    standalone\win32\Configtool.h
-    standalone\win32\Configtool.rc
-    standalone\win32\ConfigtoolDoc.h
-    standalone\win32\HeadersDialog.cpp
-    standalone\win32\MainFrm.cpp
-    standalone\win32\MainFrm.h
-    standalone\win32\dirdocmgr.cpp : 
-  Create common version of CConfigToolDoc header file.
-  Various changes to merge plugin and standalone code so as to 
-  migrate more code to common doc file.
 
 1999-09-16  John Dallaway  <jld@redhat.co.uk>
 
@@ -4445,7 +3717,6 @@
 1999-09-16  John Dallaway  <jld@redhat.co.uk>
 
   * common\win32\CTCommonDoc.cpp,
-    plugin\win32\ConfigtoolDoc.h,
     standalone\win32\ConfigtoolDoc.h:
 
   Rename CdlErrorHandler() to CdlParseErrorHandler() and
@@ -4456,7 +3727,6 @@
   document modified flag.
 
   * standalone\win32\ConfigtoolDoc.cpp,
-    plugin\win32\ConfigtoolDoc.cpp:
 
   Reference renamed CdlParseErrorHandler() function.
 
@@ -4492,7 +3762,6 @@
 
 1999-09-13  Simon FitzMaurice  <sdf@redhat.co.uk>
     common\win32\CTCommonDoc.cpp
-    plugin\win32\ConfigtoolDoc.cpp
     standalone\win32\ConfigToolDoc.cpp : 
     
   more commonality
@@ -4501,7 +3770,6 @@
     common\win32\CTCommonDoc.cpp
     common\win32\ControlView.cpp
     common\win32\ControlView.h
-    plugin\win32\ConfigtoolDoc.cpp
     standalone\win32\ConfigToolDoc.cpp
     standalone\win32\Configtool.dsp
     standalone\win32\Configtool.mak
@@ -4510,68 +3778,19 @@
   Move common sections of configtooldoc to shared file
 
 1999-09-10  Simon FitzMaurice  <sdf@redhat.co.uk>
-    plugin\win32\ConfigTool.cpp
-    plugin\win32\ConfigTool.h
-    plugin\win32\ConfigtoolDoc.cpp
-    plugin\win32\ConfigtoolDoc.h
-    plugin\win32\Project.cpp
-    plugin\win32\Project.h
-    plugin\win32\ProjectManager.cpp
-    plugin\win32\ProjectManager.h : 
-    
-  more plugin interface adjustments
-
     common\win32\FileName.cpp : 
     
   return abs path name if comparison cannot be made (e.g. different drives)
 
-1999-09-09  Simon FitzMaurice  <sdf@redhat.co.uk>
-    plugin\win32\ConfigTool.cpp
-    plugin\win32\ConfigTool.h
-    plugin\win32\ConfigtoolDoc.cpp
-    plugin\win32\ProjectManager.cpp : 
-    
-  more of the same
-
-1999-09-09  Simon FitzMaurice  <sdf@redhat.co.uk>
-    plugin\win32\CTMain.cpp
-    plugin\win32\ConfigTool.cpp
-    plugin\win32\ConfigTool.h
-    plugin\win32\ConfigtoolDoc.cpp
-    plugin\win32\Project.cpp
-    plugin\win32\Project.h
-    plugin\win32\ProjectManager.h
-    plugin\win32\eCosPlugin.cpp
-    plugin\win32\eCosPlugin.h : 
-    
-  updated for new plugin interface
-
-    plugin\win32\eCosPluginImpl.cpp : 
-    
-  removed
-
 1999-09-09  John Dallaway  <jld@redhat.co.uk>
 
-  * plugin\win32\ConfigtoolDoc.cpp,
-    standalone\win32\ConfigtoolDoc.cpp:
+  * standalone\win32\ConfigtoolDoc.cpp,
 
   Modify GetPackageData() to supress obsolete warning messages
   concerning missing include\pkgconf\*.h header files.
 
   Modify NewMemoryLayout() in avoid importing linker-defined
   memory section names if no linker script has been found.
-
-1999-09-07  Simon FitzMaurice  <sdf@redhat.co.uk>
-    plugin\win32\Project.cpp
-    plugin\win32\Project.h
-    plugin\win32\ProjectManager.cpp : 
-    
-  reuse existing project on open
-
-1999-09-07  Simon FitzMaurice  <sdf@redhat.co.uk>
-    plugin\win32\eCosPluginImpl.cpp : 
-    
-  added
 
 1999-09-07  John Dallaway  <jld@redhat.co.uk>
 
@@ -4586,26 +3805,6 @@
     common\win32\cellview.h : 
     
   Add keyboard interface to tab from cell to cell, also '<' and '>' for integer "bumping"
-
-    plugin\win32\ConfigTool.cpp
-    plugin\win32\ConfigTool.h
-    plugin\win32\ConfigtoolDoc.cpp
-    plugin\win32\ConfigtoolDoc.h
-    plugin\win32\Project.cpp
-    plugin\win32\Project.h
-    plugin\win32\ProjectManager.cpp
-    plugin\win32\ProjectManager.h
-    plugin\win32\eCos.h : 
-    
-  Partial changes to [de]activate eCos on opening\closing project of type ECOS
-
-    plugin\win32\ConfigtoolDoc.cpp : 
-    
-  suppress "do you want to use this value anyway?" message when value has not been changed
-
-    standalone\win32\ConfigToolDoc.cpp : 
-    
-  minor edits to reduce difference between standalone and plugin versions
 
     common\win32\DoubleEdit.cpp
     common\win32\IntegerEdit.cpp : 
@@ -4633,29 +3832,6 @@
     common\win32\ControlView.h:
   Eliminate beeping when keyboard used.
 
-1999-08-31  John Dallaway  <jld@redhat.co.uk>
-
-  * plugin\win32\Project.cpp:
-
-  Force cmake.bat to invoke make in Win32 mode using the
-  --win32 switch to avoid problems when MAKE_MODE=unix.
-
-1999-08-18  John Dallaway  <jld@redhat.co.uk>
-
-  * plugin\win32\Project.cpp:
-
-  Revert unintentional change to CProject::AddCustomRule()
-  in last check-in.
-
-1999-08-18  Rupen Patel  <rpatel@redhat.com>
-
-  * plugin\win32\Project.cpp:
-   
-  Added a launcher to the toolset. This will allow
-  the user to add the sim and gdb to eCos projects
-  so they may be executed. I am guessing this file
-  will be incorporated as a template eventually.
-
 1999-08-18  John Dallaway  <jld@redhat.co.uk>
 
   * common\win32\ControlView.cpp,
@@ -4678,8 +3854,7 @@
 
 1999-08-17  John Dallaway  <jld@redhat.co.uk>
 
-  * plugin\win32\ConfigtoolDoc.cpp,
-    standalone\win32\ConfigtoolDoc.cpp:
+  * standalone\win32\ConfigtoolDoc.cpp,
 
   Modify CdlTransactionHandler() to refresh the control
   view when the value source of a config item changes
@@ -4716,7 +3891,6 @@
   with a radio button in this way.
 
   * standalone\win32\ConfigtoolDoc.cpp,
-    plugin\win32\ConfigtoolDoc.cpp:
 
   Restore CheckRadios() and modify to provide a warning if
   the default states of config items with radio buttons
@@ -4807,16 +3981,13 @@
   Remove references to Boolean and Radio config item
   types in other member functions.
 
-  * plugin\win32\CTMain.cpp,
-    standalone\win32\MainFrm.cpp:
+  * standalone\win32\MainFrm.cpp,
 
   Remove references to Boolean and Radio config item
   types in member functions.
 
-  * plugin\win32\ConfigtoolDoc.cpp,
-    plugin\win32\ConfigtoolDoc.h,
-    standalone\win32\ConfigtoolDoc.cpp,
-    standalone\win32\ConfigtoolDoc.h:
+  * standalone\win32\ConfigtoolDoc.cpp,
+    standalone\win32\ConfigtoolDoc.h,
 
   New SetEnabled() member function to set a boolean
   config item.
@@ -4828,12 +3999,6 @@
   Remove references to Boolean and Radio config item
   types in other member functions.
 
-1999-08-13  Simon FitzMaurice  <sdf@redhat.co.uk>
-  * plugin\win32\ctmain.cpp : tidy to use Lookup function
-  * plugin\win32\ConfigTool.cpp : buffer output and deal with DOS\UNIX line endings
-  * plugin\win32\ProjectManager.cpp, plugin\win32\ConfigtoolDoc.cpp : Run custom rule substitutions later
-  * plugin\win32\Project.cpp, plugin\win32\ProjectManager.cpp : Reduce projects to 2
-
 1999-08-13  John Dallaway  <jld@redhat.co.uk>
 
   * common\win32\CTUtils.cpp:
@@ -4842,7 +4007,6 @@
   format doubles.
 
   * standalone\win32\res\bitmap2.bmp,
-    plugin\win32\res\bitmap2.bmp,
     common\win32\ControlView.cpp:
 
   Add new icon for config items of type double and
@@ -4854,16 +4018,13 @@
   TestTool.rc by the resource editor.
 
 1999-08-13  Simon FitzMaurice  <sdf@redhat.co.uk>
-  * plugin\win32\ctmain.cpp : correct compilation error in _DEBUG part
   * common\win32\CTUtils.cpp : no need for UNICODE filtering
   * standalone\win32\Configtool.dsp,.mak : use common version of properties
 
 1999-08-13  John Dallaway  <jld@redhat.co.uk>
 
-  * plugin\win32\ConfigtoolDoc.cpp,
-    plugin\win32\ConfigtoolDoc.h,
-    standalone\win32\ConfigtoolDoc.cpp,
-    standalone\win32\ConfigtoolDoc.h:
+  * standalone\win32\ConfigtoolDoc.cpp,
+    standalone\win32\ConfigtoolDoc.h,
 
   Make CdlTransactionHandler() a class member.
 
@@ -4885,10 +4046,8 @@
 
   Modify AdjustItemImage() to use CConfigItem::IsPackage().
 
-  * plugin\win32\ConfigtoolDoc.cpp,
-    plugin\win32\ConfigtoolDoc.h,
-    standalone\win32\ConfigtoolDoc.cpp,
-    standalone\win32\ConfigtoolDoc.h:
+  * standalone\win32\ConfigtoolDoc.cpp,
+    standalone\win32\ConfigtoolDoc.h,
 
   Implement revised scheme for obtaining memory layout and
   linker script files using CDL options CYGHWR_MEMORY_LAYOUT
@@ -4902,10 +4061,6 @@
   "options" -> "settings" in context menu and introduce separator
 
   * tools\configtool\common\win32\FileName.cpp : do not attempt to create c: etc..
-  * tools\configtool\plugin\win32\CTMain.cpp,h : use ctor for CNDispatch, add Administration entry
-  * tools\configtool\plugin\win32\ConfigtoolDoc.cpp : turn off binary cells as default
-  * tools\configtool\plugin\win32\Project.cpp : use DOS paths
-  * tools\configtool\plugin\win32\eCos.rc : correct settings dialog caption
   * tools\ecostest\common\wcharunix.h : add mkdir compatibility macro
   * tools\testtool\win32\RunTestsSheet.cpp,h : size correctly in modeless case and simulate WM_KICKIDLE
 
@@ -4967,8 +4122,6 @@
 
   Accommodate new CConfigItem::Double config data type.
 
-  * plugin\win32\ConfigtoolDoc.cpp,
-    plugin\win32\ConfigtoolDoc.h,
     standalone\win32\ConfigtoolDoc.cpp,
     standalone\win32\ConfigtoolDoc.h:
 
@@ -4979,9 +4132,6 @@
 
   Modify SetValue (CConfigItem &, const CString, bool) to
   accommodate double values.
-
-1999-08-11  Simon FitzMaurice  <sdf@redhat.co.uk>
-  * TOOLS\configtool\PLUGIN\WIN32\Project.cpp : adapt to project manager interface change
 
 1999-08-09  Simon FitzMaurice  <sdf@redhat.co.uk>
   * tools\ResourceTool\win32\ResourceToolDlg.h
@@ -4995,16 +4145,6 @@
     tools\ecostest\common\eCosTest.cpp
     tools\ecostest\common\eCosTestUtils.cpp,h : Use common properties class
 
-    tools\configtool\plugin\win32\ConfigtoolDoc.cpp
-    tools\configtool\plugin\win32\ConfigtoolDoc.h
-    tools\configtool\plugin\win32\ConfigTool.cpp
-    tools\configtool\plugin\win32\ConfigTool.h : Persist registry location
-
-  * plugin\win32\ConfigTool.cpp,
-    plugin\win32\ConfigTool.h,
-    plugin\win32\ConfigtoolDoc.cpp,
-    plugin\win32\ConfigtoolDoc.h : Persist repository
-
 1999-08-06  Simon FitzMaurice  <sdf@redhat.co.uk>
   * standalone\win32\ConfigTooldoc.h : correct misplaced edit
 
@@ -5014,20 +4154,13 @@
   use level 4
   * tools\configtool\common\win32\PropertiesView.cpp
     tools\configtool\common\win32\RulesView.cpp
-    plugin\win32\CdlTemplatesDialog.cpp
-    plugin\win32\ConfigtoolDoc.cpp
     standalone\win32\CdlTemplatesDialog.h
     common\win32\stdafx.h : move include of STL string from PCH to using files
-  * tools\configtool\plugin\win32\CTMain.cpp,h : implement flyby and MLT toolbar,
-  protect Create and Remove functions correctly from multiple use
-  * plugin\win32\MultiDocSECWorksheet.cpp,h : tooltip text
-  * plugin\win32\Project.cpp,plugin\win32\ProjectManager.cpp : change to reflect project API
   * testtool\win32\RunTestsSheet.cpp : correct dereference of view **
 
 1999-08-06  John Dallaway  <jld@redhat.co.uk>
 
   * standalone\win32\ConfigtoolDoc.cpp,
-    plugin\win32\ConfigtoolDoc.cpp:
 
   Report CdlStringException exceptions raised while
   loading the initial CDL configuration.
@@ -5035,7 +4168,6 @@
 1999-08-06  John Dallaway  <jld@redhat.co.uk>
 
   * standalone\win32\CdlTemplatesDialog.cpp,
-    plugin\win32\CdlTemplatesDialog.cpp:
 
   Modify OnInitDialog() to handle the case where no
   template is selected on dialog initialisation
@@ -5045,14 +4177,12 @@
 1999-08-05  John Dallaway  <jld@redhat.co.uk>
 
   * standalone\win32\ConfigtoolDoc.cpp,
-    plugin\win32\ConfigtoolDoc.cpp:
 
   Catch assertions raised while selecting a new CDL template.
 
 1999-08-05  John Dallaway  <jld@redhat.co.uk>
 
   * standalone\win32\ConfigtoolDoc.cpp,
-    plugin\win32\ConfigtoolDoc.cpp:
 
   Tidy up AddItems() source. No functional change.
 
@@ -5070,8 +4200,6 @@
   * tools\ecostest\common\TestResource.cpp : avoid compilation warning
   * common\win32\ConfigItem.cpp,h : replace state variables by parameter of 
   EvalEnumStrings a parameter to police just-in-time lookup
-  * plugin\win32\CTMain:prepare for persistence, call run tests dialog modelessly.  
-  Set menu flyby text.  Create toolbar (I hope).
   * tools\testtool\win32\RunTestsSheet.cpp,h : allow for modeless as well as modal operation
   * eCos.rc : restore include of TestTool.rc
 
@@ -5131,23 +4259,13 @@
   Remove obsolete references to Min and Max rows of the
   properties view.
 
-  * plugin\win32\ConfigtoolDoc.cpp,
-    plugin\win32\ConfigtoolDoc.h,
-    standalone\win32\ConfigtoolDoc.cpp,
-    standalone\win32\ConfigtoolDoc.h:
+  * standalone\win32\ConfigtoolDoc.cpp,
+    standalone\win32\ConfigtoolDoc.h,
 
   Remove obsolete ReadMacros() function.
 
   Modify AddItem() to no longer read enum values during
   initialisation. They are always read just-in-time now.
-
-1999-08-04  John Dallaway  <jld@redhat.co.uk>
-
-  * plugin\win32\ConfigToolDoc.cpp:
-
-  Modify OpenRepository() to prepare for selecting the
-  CDL hardware template using information from the
-  plugin's host.
 
 1999-08-04  John Dallaway  <jld@redhat.co.uk>
 
@@ -5172,8 +4290,6 @@
 
   * standalone\win32\ConfigtoolDoc.cpp,
     standalone\win32\ConfigtoolDoc.h,
-    plugin\win32\ConfigtoolDoc.cpp,
-    plugin\win32\ConfigtoolDoc.h:
 
   Modify OpenRepository() to catch exceptions generated
   while loading the hardware and package templates.
@@ -5184,14 +4300,6 @@
 
 1999-08-03  John Dallaway  <jld@redhat.co.uk>
 
-  * plugin\win32\Project.cpp:
-
-  Modify CProject constructor to provide architecture parameter
-  to ProjectManager::makeToolset().
-
-1999-08-03  John Dallaway  <jld@redhat.co.uk>
-
-  * plugin\win32\ConfigtoolDoc.cpp,
     standalone\win32\ConfigtoolDoc.cpp:
 
   Modify OpenRepository() to delete any previous CDL
@@ -5202,7 +4310,8 @@
   * common\win32\CTUtils.cpp: Include <string> with STLInclude mechanism
   * common\win32\CellView.cpp,h: Combo in-cell changes now only "committed" when
   cell closed.  Cancel will leave value unchanged.
-  * common\win32\ControlView.cpp,h, plugin\win32\CTMain.h, standalone\win32\HelpView.cpp,
+  * common\win32\ControlView.cpp,h,
+    standalone\win32\HelpView.cpp,
     standalone\win32\MainFrm.cpp, standalone\win32\OutputView.cpp,h:
   Allow only a single find dialog to be active at a given time
   * standalone\win32\MainFrm.cpp: Diable edit menu items when focus not in control view
@@ -5214,11 +4323,9 @@
 1999-08-02  Simon FitzMaurice  <sdf@redhat.co.uk>
   * tools\configtool\common\win32\CTUtils.cpp : Include <string> with IncludeSTL mechanism
   * tools\configtool\common\win32\CellView.*  : ESC now cancels effect of combo
-  * tools\configtool\plugin\win32\CdlTemplatesDialog.cpp : Remove compilation warning
    
 1999-08-02  John Dallaway  <jld@redhat.co.uk>
 
-  * plugin\win32\ConfigtoolDoc.cpp,
     standalone\win32\ConfigtoolDoc.cpp:
 
   Modify CdlErrorHandler() to log parse errors to the
@@ -5234,10 +4341,6 @@
   memory layout. Also trap any parse errors which are
     encountered while loading\unloading packages. These are
   not fatal.
-
-1999-08-02  Simon FitzMaurice  <sdf@redhat.co.uk>
-  * plugin\win32\CTMain.cpp, plugin\win32\configtooldoc.cpp, 
-    plugin\win32\ProjectManager.*: Add progress, idle messages
 
 1999-08-02  Simon FitzMaurice  <sdf@redhat.co.uk>
   * common\win32\StringEdit.* : Add idle message hint for in-cell string editing
@@ -5298,23 +4401,6 @@
   * ControlView.cpp : Context menu now available on items of type NONE
   * CellView.cpp : Removed font change visibility when in-cell starts
   * ConfigTool.dsp : readded changelog
-
-1999-07-27  John Dallaway  <jld@redhat.co.uk>
-
-  * plugin\win32\CTMain.cpp:
-
-  Modify SetMenuItems() to add a menu separator bar if the
-  message map array member has a null string element (str).
-
-  Modify the message map to place a separator between the
-  eCos view menu items and the view settings menu item.
-
-1999-07-27  John Dallaway  <jld@redhat.co.uk>
-
-  * plugin\win32\ConfigtoolDoc.cpp:
-
-  Modify SetValue() to check if the new value of an integer
-  item is legal and report to the user.
 
 1999-07-27  John Dallaway  <jld@redhat.co.uk>
 
@@ -5685,7 +4771,6 @@ Mon Jul 19 17:50:10 1999  Tomy Hudson  <thudson@redhat.com>
   * ConfigTool.*:
   eCosInit gains build tree and bCreate params
   * ConfigToolDoc.*:
-  Use OnOpenDocument, not OnNewDocument
   Introduce BuildTree() and InstallTree() helper fns.
   * Project.cpp:
   Custom rules go in install tree, not build tree
@@ -5793,8 +4878,6 @@ Mon Jul 19 17:50:10 1999  Tomy Hudson  <thudson@redhat.com>
     Prepared document load\save functions to accommodate CDL databse loading\
   saving
   Corrected IntegerEdit to deal correctly with hex and decimal modes
-  Introduced CProject ctor to use an existing project object (not 
-  sure we'll need this - depends on discussions with Atlanta.
   Introduced hacks into CProject to deal with addLibrary not working and
   implicit dependency on target.ld
 

@@ -59,10 +59,9 @@
 
 #include "eCosTestSerialFilter.h"
 #include "eCosTestDownloadFilter.h"
+#include "eCosTestMonitorFilter.h"
 #include "eCosTestUtils.h"
 #include "eCosTrace.h"
-
-#define __USE_DL_FILTER
 
 bool opt_ser_debug = false;
 bool opt_null_filter = false;
@@ -70,6 +69,7 @@ bool opt_console_output = false;
 bool opt_X10_reset = false;
 bool opt_filter_trace = false;
 char opt_X10_port[2];
+bool opt_monitor = false;
 
 void
 no_gdb(const char* pszPort, int nBaud, 
@@ -145,6 +145,9 @@ main(int argc, char** argv)
       case 'S':
         opt_ser_debug = true;
         break;
+      case 'm':
+        opt_monitor = true;
+        break;
       case 'n':
         opt_no_gdb = true;
         // fall through! Output on console when no GDB.
@@ -201,27 +204,62 @@ main(int argc, char** argv)
   }
   
   
+  if (opt_monitor) {
+      fprintf(stdout, "Monitor mode - will not interact with data streams...\n");
+
+      for(;;) {
+      
+          CeCosTestMonitorFilter* host_filter = 
+              new CeCosTestMonitorFilter();
+          CeCosTestMonitorFilter* target_filter = 
+              new CeCosTestMonitorFilter();
+
+          // Set filter directions
+          host_filter->SetOrigin(CeCosTestMonitorFilter::MF_HOST);
+          target_filter->SetOrigin(CeCosTestMonitorFilter::MF_TARGET);
+          
+          // Enable filters
+          host_filter->SetVerbose(true);
+          target_filter->SetVerbose(true);
+
+          // Set filter functions
+          CeCosTestSocket::FilterFunc *host_filter_function = 
+              &SerialMonitorFunction;
+          CeCosTestSocket::FilterFunc *target_filter_function = 
+              &SerialMonitorFunction;
+          
+          try {
+              CeCosTestSocket::ConnectSocketToSerial(nSock, ser_port, 
+                                                     baud_rate, 
+                                                     target_filter_function, 
+                                                     (void*)target_filter, 
+                                                     host_filter_function, 
+                                                     (void*)host_filter,
+                                                     NULL);
+          } 
+          catch (const char* p) {
+              fprintf(stderr, "Caught filter crash: %s\n", p);
+          }
+          
+          delete target_filter;
+          delete host_filter;
+      }
+  }
   
   for(;;) {
     CeCosTestSerialFilter* serial_filter = 
       new CeCosTestSerialFilter();
-#ifdef __USE_DL_FILTER
     CeCosTestDownloadFilter* download_filter = 
       new CeCosTestDownloadFilter();
-#else // UNIX
-    void* download_filter = NULL;
-#endif
-    
+
     // Set filter configuration
     serial_filter->SetFilterTrace(opt_filter_trace);
     serial_filter->SetSerialDebug(opt_ser_debug);
     serial_filter->SetConsoleOutput(opt_console_output);
     
-#ifdef __USE_DL_FILTER
     // Set download filter configuration
     download_filter->SetFilterTrace(opt_filter_trace);
     download_filter->SetSerialDebug(opt_ser_debug);
-#endif
     
     // Set serial side filter
     CeCosTestSocket::FilterFunc *ser_filter_function = 
@@ -229,14 +267,9 @@ main(int argc, char** argv)
     if (opt_null_filter)
       ser_filter_function = NULL;
     
-#ifdef __USE_DL_FILTER
     // Set socket side filter
     CeCosTestSocket::FilterFunc *sock_filter_function =
       &DownloadFilterFunction;
-#else // UNIX
-    CeCosTestSocket::FilterFunc *sock_filter_function = NULL;
-    
-#endif
     
     try {
       if (opt_no_gdb)
@@ -281,6 +314,7 @@ Usage:
   fprintf(stderr, " -f: Enable filter output tracing.\n");
   fprintf(stderr, " -S: Output data read from serial line.\n");
   fprintf(stderr, " -c: Output data on console instead of via GDB.\n");
+  fprintf(stderr, " -m: Work only as a monitor filter. Implies -c.\n");
   fprintf(stderr, " -n: No GDB.\n");
   fprintf(stderr, " -0: Use null filter.\n");
   fprintf(stderr, " -Xab: Reset X-10 Port 'a b' when TCP connection breaks\n");

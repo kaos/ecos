@@ -63,7 +63,7 @@
 // FUNCTIONS
 
 #ifdef CYGDBG_USE_ASSERTS
-inline bool
+inline cyg_bool
 Cyg_StdioStream::check_this( cyg_assert_class_zeal zeal ) const
 {
     // check that it has the magic word set meaning it is valid.

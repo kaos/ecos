@@ -183,31 +183,34 @@ extern volatile int cyg_hal_gdb_running_step;
 
 #if 1 // Can use the address of a label: this is more portable
 
-#define CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION( _old_ )                           \
-do {                                                                            \
-    HAL_DISABLE_INTERRUPTS(_old_);                                              \
-    cyg_hal_gdb_place_break( &&cyg_hal_gdb_break_place );                       \
+// This macro may already have been defined by the architecture HAL
+#ifndef CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION
+#define CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION( _old_ )                        \
+do {                                                                         \
+    HAL_DISABLE_INTERRUPTS(_old_);                                           \
+    cyg_hal_gdb_place_break( (target_register_t)&&cyg_hal_gdb_break_place ); \
 } while ( 0 )
+#endif
 
-#define CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION( _old_ )                           \
-do {                                                                            \
-    cyg_hal_gdb_remove_break( &&cyg_hal_gdb_break_place );                      \
-    HAL_RESTORE_INTERRUPTS(_old_);                                              \
-cyg_hal_gdb_break_place:                                                        \
+#define CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION( _old_ )                         \
+do {                                                                          \
+    cyg_hal_gdb_remove_break( (target_register_t)&&cyg_hal_gdb_break_place ); \
+    HAL_RESTORE_INTERRUPTS(_old_);                                            \
+cyg_hal_gdb_break_place:                                                      \
 } while ( 0 )
 
 #else // use __builtin_return_address instead.
 
-#define CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION( _old_ )                           \
-do {                                                                            \
-    HAL_DISABLE_INTERRUPTS(_old_);                                              \
-    cyg_hal_place_break((target_register_t)__builtin_return_address(0));        \
+#define CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION( _old_ )                        \
+do {                                                                         \
+    HAL_DISABLE_INTERRUPTS(_old_);                                           \
+    cyg_hal_gdb_place_break((target_register_t)__builtin_return_address(0)); \
 } while ( 0 )
 
-#define CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION( _old_ )                           \
-do {                                                                            \
-    cyg_hal_gdb_remove_break((target_register_t)__builtin_return_address(0));   \
-    HAL_RESTORE_INTERRUPTS(_old_);                                              \
+#define CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION( _old_ )                         \
+do {                                                                          \
+    cyg_hal_gdb_remove_break((target_register_t)__builtin_return_address(0)); \
+    HAL_RESTORE_INTERRUPTS(_old_);                                            \
 } while ( 0 )
 
 #endif

@@ -56,6 +56,7 @@
 
 #include <pkgconf/kernel.h>
 #include <pkgconf/libc.h>
+#include CYGHWR_MEMORY_LAYOUT_H
 
 #if defined(CYGFUN_KERNEL_API_C)
 
@@ -91,7 +92,7 @@
 //-----------------------------------------------------------------------
 // Some targets need to define a smaller number of handlers due to
 // memory restrictions.
-#ifdef CYGPKG_HAL_ARM_AEB
+#if defined(CYGMEM_REGION_ram_SIZE) && (CYGMEM_REGION_ram_SIZE < 0x80000)
 #define MAX_HANDLERS 4
 #define N_LISTENERS 1
 #define N_CLIENTS 1

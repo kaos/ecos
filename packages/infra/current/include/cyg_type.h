@@ -114,11 +114,7 @@
 #endif
 
 #ifndef cyg_halbool
-# ifdef __cplusplus
-#  define cyg_halbool bool
-# else
-#  define cyg_halbool int
-# endif
+# define cyg_halbool int
 #endif
 
 #ifndef cyg_halatomic

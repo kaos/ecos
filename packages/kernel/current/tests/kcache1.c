@@ -43,6 +43,7 @@
 
 #include <cyg/infra/testcase.h>
 
+#ifdef HAL_DCACHE_SIZE
 #ifdef CYGVAR_KERNEL_COUNTERS_CLOCK
 #ifdef CYGFUN_KERNEL_API_C
 
@@ -372,6 +373,9 @@ cyg_start( void )
 #else // def CYGVAR_KERNEL_COUNTERS_CLOCK
 #define N_A_MSG "Kernel real-time clock disabled"
 #endif // def CYGVAR_KERNEL_COUNTERS_CLOCK
+#else // def HAL_DCACHE_SIZE
+#define N_A_MSG "No caches defined"
+#endif // def HAL_DCACHE_SIZE
 
 #ifdef N_A_MSG
 externC void

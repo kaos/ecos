@@ -1,9 +1,26 @@
+2000-03-24  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* ecosrelease.tcl: Allow running if cygtclsh80 is the tcl shell, as
+	on cygwin, rather than tclsh.
+	* ecosdistrib.tcl: Likewise
+	* ecosadmin.tcl: Likewise
+
+2000-03-24  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* ecos.db (sparclite_sim): Add CYGPKG_IO_SERIAL to the SPARClite
+	simulator target - thus acquiring conflict-free default template,
+	and getting stdio availability in libc.
+
 2000-03-22  John Dallaway  <jld@cygnus.co.uk>
 
 	* ecosadmin.tcl:
 
 	Don't invoke 'cygpath' on DOS-style paths to workaround erratic
 	behaviour when invoked from the GUI admin tool.
+
+2000-03-16  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Make edk7708 target select the appropriate CPU.
 
 2000-03-10  John Dallaway  <jld@cygnus.co.uk>
 

@@ -385,6 +385,9 @@ target_ins(unsigned long *pc, unsigned long ins)
         }
     case 0x3:  // Coprocessor & SWI
         return (pc+1);
+    default:
+        // Never reached - but fixes compiler warning.
+        return 0;
     }
 }
 
@@ -577,17 +580,26 @@ cyg_hal_gdb_interrupt (target_register_t pc)
     }
 }
 
+// This function is passed thumb/arm information about the PC address
+// in bit 0. This information is passed on to the break_buffer.
 void 
 cyg_hal_gdb_place_break (target_register_t pc)
 {
     // Clear flag that we Continued instead of Stepping
     cyg_hal_gdb_running_step = 0;
-    // Unconditionally place an ARM breakpoint not a THUMB; there is
-    // no saved regset for get_register in this call:
+
     if (0 == break_buffer.targetAddr) {
-        break_buffer.targetAddr = (cyg_uint32)pc;
-        break_buffer.savedInstr.arm_instr = *(cyg_uint32*)pc;
-        *(cyg_uint32*)pc = HAL_BREAKINST_ARM;
+        // Setting a breakpoint in Thumb or ARM code?
+       if (IS_THUMB_ADDR(pc)) {
+            break_buffer.targetAddr = (cyg_uint32)pc;
+            pc = UNMAKE_THUMB_ADDR(pc);
+            break_buffer.savedInstr.thumb_instr = *(cyg_uint16*)pc;
+            *(cyg_uint16*)pc = HAL_BREAKINST_THUMB;
+        } else {
+            break_buffer.targetAddr = (cyg_uint32)pc;
+            break_buffer.savedInstr.arm_instr = *(cyg_uint32*)pc;
+            *(cyg_uint32*)pc = HAL_BREAKINST_ARM;
+        }
         
         __data_cache(CACHE_FLUSH);
         __instruction_cache(CACHE_FLUSH);

@@ -48,7 +48,7 @@
 #include "cdl_exec.hxx"
 #include "ecosconfig.hxx"
 
-#define TOOL_VERSION "1.3.1"
+#define TOOL_VERSION "1.3.2"
 #define TOOL_COPYRIGHT "Copyright (c) 2000 Red Hat, Inc."
 #define DEFAULT_SAVE_FILE "ecos.ecc"
 

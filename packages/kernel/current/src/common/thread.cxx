@@ -282,7 +282,7 @@ Cyg_Thread::~Cyg_Thread()
 
 #ifdef CYGDBG_USE_ASSERTS
 
-bool
+cyg_bool
 Cyg_Thread::check_this( cyg_assert_class_zeal zeal) const
 {
 //    CYG_REPORT_FUNCTION();

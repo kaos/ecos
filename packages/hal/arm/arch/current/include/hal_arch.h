@@ -292,22 +292,22 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 // under "enough rope" sort of disclaimers.
 
 // A minimal, optimized stack frame, rounded up - no autos
-#define CYGNUM_HAL_STACK_FRAME_SIZE (80) // (4 * 20)
+#define CYGNUM_HAL_STACK_FRAME_SIZE (4 * 20)
 
 // Stack needed for a context switch: this is implicit in the estimate for
 // interrupts so not explicitly used below:
-#define CYGNUM_HAL_STACK_CONTEXT_SIZE (80) // (4 * 20)
+#define CYGNUM_HAL_STACK_CONTEXT_SIZE (4 * 20)
 
 // Interrupt + call to ISR, interrupt_end() and the DSR
-#define CYGNUM_HAL_STACK_INTERRUPT_SIZE (240)
-//    ((4 * 20) + 2 * CYGNUM_HAL_STACK_FRAME_SIZE)
+#define CYGNUM_HAL_STACK_INTERRUPT_SIZE \
+    ((4 * 20) + 2 * CYGNUM_HAL_STACK_FRAME_SIZE)
 
 // Space for the maximum number of nested interrupts, plus room to call functions
 #define CYGNUM_HAL_MAX_INTERRUPT_NESTING 4
 
-#define CYGNUM_HAL_STACK_SIZE_MINIMUM (1120)
-//        (CYGNUM_HAL_MAX_INTERRUPT_NESTING * CYGNUM_HAL_STACK_INTERRUPT_SIZE +
-//         2 * CYGNUM_HAL_STACK_FRAME_SIZE)
+#define CYGNUM_HAL_STACK_SIZE_MINIMUM \
+        (CYGNUM_HAL_MAX_INTERRUPT_NESTING * CYGNUM_HAL_STACK_INTERRUPT_SIZE + \
+         2 * CYGNUM_HAL_STACK_FRAME_SIZE)
 
 #define CYGNUM_HAL_STACK_SIZE_TYPICAL \
         (CYGNUM_HAL_STACK_SIZE_MINIMUM + \

@@ -166,15 +166,15 @@ externC void diag_write_hex( cyg_uint32 n)
 /* number, its minimum width and whether it is zero or space filled on  */
 /* the left.                                                            */
 
-externC void diag_write_num(
-    cyg_uint32  n,              /* number to write              */
+externC void diag_write_long_num(
+    cyg_uint64  n,              /* number to write              */
     cyg_ucount8 base,           /* radix to write to            */
     cyg_ucount8 sign,           /* sign, '-' if -ve, '+' if +ve */
     cyg_bool    pfzero,         /* prefix with zero ?           */
     cyg_ucount8 width           /* min width of number          */
     )
 {
-    char buf[16];
+    char buf[32];
     cyg_count8 bpos;
     char bufinit = pfzero?'0':' ';
     char *digits = "0123456789ABCDEF";
@@ -208,6 +208,17 @@ externC void diag_write_num(
     /* Now write it out in correct order. */
     while( bpos >= 0 )
         diag_write_char(buf[bpos--]);
+}
+
+externC void diag_write_num(
+    cyg_uint32  n,              /* number to write              */
+    cyg_ucount8 base,           /* radix to write to            */
+    cyg_ucount8 sign,           /* sign, '-' if -ve, '+' if +ve */
+    cyg_bool    pfzero,         /* prefix with zero ?           */
+    cyg_ucount8 width           /* min width of number          */
+    )
+{
+    diag_write_long_num((long long)n, base, sign, pfzero, width);
 }
 
 /*----------------------------------------------------------------------*/
@@ -276,6 +287,7 @@ externC void diag_vprintf( const char *fmt, CYG_ADDRWORD *args)
             cyg_bool pfzero = false;
             cyg_count8 width = 0;
             char sign = '+';
+            cyg_bool long_op = false;
                         
             c = *++fmt;
                         
@@ -287,22 +299,47 @@ externC void diag_vprintf( const char *fmt, CYG_ADDRWORD *args)
                 c = *++fmt;
             }
 
+            if (c == 'l') {
+                // %lx and %ld are equivalent to %x/%d
+                c = *++fmt;
+                // %llx or %lld used to indicate (long long) operand
+                if (c == 'l') {
+                    long_op = true;
+                    c = *++fmt;
+                }
+            }
+
             switch( c )
             {
             case 'd':
             case 'D':
             {
-                long val = (long)(*args++);
-                if( val < 0 ) val = -val, sign = '-';
-                diag_write_num(val, 10, sign, pfzero, width);
+                if (long_op) {
+                    long long *lp = (long long *)args;
+                    long long val = *lp++;
+                    args = (CYG_ADDRWORD *)lp;
+                    if( val < 0 ) val = -val, sign = '-';
+                    diag_write_long_num(val, 10, sign, pfzero, width);
+                } else {
+                    long val = (long)(*args++);
+                    if( val < 0 ) val = -val, sign = '-';
+                    diag_write_num(val, 10, sign, pfzero, width);
+                }
                 break;
             }
 
             case 'x':
             case 'X':
             {
-                unsigned long val = (long)(*args++);
-                diag_write_num(val, 16, sign, pfzero, width);
+                if (long_op) {
+                    long long *lp = (long long *)args;
+                    long long val = *lp++;
+                    args = (CYG_ADDRWORD *)lp;
+                    diag_write_long_num(val, 16, sign, pfzero, width);
+                } else {
+                    unsigned long val = (long)(*args++);
+                    diag_write_num(val, 16, sign, pfzero, width);
+                }
                 break;
             }
 

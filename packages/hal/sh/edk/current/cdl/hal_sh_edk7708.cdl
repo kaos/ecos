@@ -127,7 +127,7 @@ cdl_package CYGPKG_HAL_SH_EDK7708 {
             display "Global compiler flags"
             flavor  data
             no_define
-            default_value { CYGHWR_HAL_SH_BIGENDIAN ? "-mb -m3 -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" : "-ml -m3 -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
+            default_value { CYGHWR_HAL_SH_BIGENDIAN ? "-mb -m3 -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -ggdb -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" : "-ml -m3 -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -ggdb -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
             description   "
                 This option controls the global compiler flags which
                 are used to compile all packages by
@@ -139,7 +139,7 @@ cdl_package CYGPKG_HAL_SH_EDK7708 {
             display "Global linker flags"
             flavor  data
             no_define
-            default_value { CYGHWR_HAL_SH_BIGENDIAN ? "-mb -m3 -g -nostdlib -Wl,--gc-sections -Wl,-static" : "-ml -m3 -g -nostdlib -Wl,--gc-sections -Wl,-static" }
+            default_value { CYGHWR_HAL_SH_BIGENDIAN ? "-mb -m3 -ggdb -nostdlib -Wl,--gc-sections -Wl,-static" : "-ml -m3 -ggdb -nostdlib -Wl,--gc-sections -Wl,-static" }
             description   "
                 This option controls the global linker flags. Individual
                 packages may define options which override these global flags."
@@ -204,7 +204,6 @@ cdl_package CYGPKG_HAL_SH_EDK7708 {
         default_value { CYG_HAL_STARTUP == "RAM" ? "GDB_stubs" : 0 }
         requires      { CYG_HAL_STARTUP == "RAM" }
         parent        CYGPKG_HAL_ROM_MONITOR
-        requires      !CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
         description   "
             Support can be enabled for boot ROMs or ROM monitors which contain
             GDB stubs. This support changes various eCos semantics such as

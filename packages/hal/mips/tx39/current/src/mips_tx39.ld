@@ -30,6 +30,12 @@
 
 #include <pkgconf/system.h>
 
+OUTPUT_FORMAT("elf32-bigmips", "elf32-bigmips",
+              "elf32-littlemips")
+/* The preprocessor defines mips, but we know we're mips :-) */
+#undef mips
+OUTPUT_ARCH(mips:3000)
+
 STARTUP(vectors.o)
 ENTRY(reset_vector)
 #ifdef EXTRAS
@@ -40,7 +46,6 @@ GROUP(libtarget.a libgcc.a)
 #define ALIGN_LMA 8
 #define FOLLOWING(_section_) AT ((LOADADDR (_section_) + SIZEOF (_section_) + ALIGN_LMA - 1) & ~ (ALIGN_LMA - 1))
 #define LMA_EQ_VMA
-#define FORCE_OUTPUT . = .
 
 #define SECTIONS_BEGIN
 
@@ -51,9 +56,9 @@ GROUP(libtarget.a libgcc.a)
     .rom_vectors _vma_ : _lma_ \
     { KEEP (*(.utlb_vector)) \
     . = ALIGN(0x80); KEEP(*(.other_vector)) \
-	/* debug and reset vector not used in RAM version */ \
+        /* debug and reset vector not used in RAM version */ \
         KEEP(*(.debug_vector)) \
-	KEEP (*(.reset_vector)) } \
+        KEEP (*(.reset_vector)) } \
     > _region_
 
 #elif defined(CYG_HAL_STARTUP_ROM)
@@ -69,116 +74,279 @@ GROUP(libtarget.a libgcc.a)
 
 #endif /* ROM startup version of ROM vectors */
 
-#define SECTION_text(_region_, _vma_, _lma_) \
-    .text _vma_ : _lma_ \
-    { _stext = ABSOLUTE(.); \
-    *(.text*) *(.gnu.warning) *(.gnu.linkonce*) *(.init) } \
-    > _region_ \
-    _etext = .; PROVIDE (etext = .);
+#define SECTION_ROMISC(_region_, _vma_, _lma_)                                 \
+  .interp _vma_  : _lma_ { *(.interp)                            } > _region_  \
+  .hash          : FOLLOWING(.interp)        { *(.hash)          } > _region_  \
+  .dynsym        : FOLLOWING(.hash)          { *(.dynsym)        } > _region_  \
+  .dynstr        : FOLLOWING(.dynsym)        { *(.dynstr)        } > _region_  \
+  .gnu.version   : FOLLOWING(.dynstr)        { *(.gnu.version)   } > _region_  \
+  .gnu.version_d : FOLLOWING(.gnu.version)   { *(.gnu.version_d) } > _region_  \
+  .gnu.version_r : FOLLOWING(.gnu.version_d) { *(.gnu.version_r) } > _region_  \
+  .plt           : FOLLOWING(.gnu.version_r) { *(.plt)           } > _region_
 
-#define SECTION_fini(_region_, _vma_, _lma_) \
-    .fini _vma_ : _lma_ \
-    { FORCE_OUTPUT; *(.fini) } \
-    > _region_
+#define SECTION_RELOCS(_region_, _vma_, _lma_)                              \
+  .rel.text      :                                                          \
+    {                                                                       \
+      *(.rel.text)                                                          \
+      *(.rel.text.*)                                                        \
+      *(.rel.gnu.linkonce.t*)                                               \
+    } > _region_                                                            \
+  .rela.text     :                                                          \
+    {                                                                       \
+      *(.rela.text)                                                         \
+      *(.rela.text.*)                                                       \
+      *(.rela.gnu.linkonce.t*)                                              \
+    } > _region_                                                            \
+  .rel.data      :                                                          \
+    {                                                                       \
+      *(.rel.data)                                                          \
+      *(.rel.data.*)                                                        \
+      *(.rel.gnu.linkonce.d*)                                               \
+    } > _region_                                                            \
+  .rela.data     :                                                          \
+    {                                                                       \
+      *(.rela.data)                                                         \
+      *(.rela.data.*)                                                       \
+      *(.rela.gnu.linkonce.d*)                                              \
+    } > _region_                                                            \
+  .rel.rodata    :                                                          \
+    {                                                                       \
+      *(.rel.rodata)                                                        \
+      *(.rel.rodata.*)                                                      \
+      *(.rel.gnu.linkonce.r*)                                               \
+    } > _region_                                                            \
+  .rela.rodata   :                                                          \
+    {                                                                       \
+      *(.rela.rodata)                                                       \
+      *(.rela.rodata.*)                                                     \
+      *(.rela.gnu.linkonce.r*)                                              \
+    } > _region_                                                            \
+  .rel.got       :   { *(.rel.got)    } > _region_                          \
+  .rela.got      :   { *(.rela.got)   } > _region_                          \
+  .rel.ctors     :   { *(.rel.ctors)  } > _region_                          \
+  .rela.ctors    :   { *(.rela.ctors) } > _region_                          \
+  .rel.dtors     :   { *(.rel.dtors)  } > _region_                          \
+  .rela.dtors    :   { *(.rela.dtors) } > _region_                          \
+  .rel.init      :   { *(.rel.init)   } > _region_                          \
+  .rela.init     :   { *(.rela.init)  } > _region_                          \
+  .rel.fini      :   { *(.rel.fini)   } > _region_                          \
+  .rela.fini     :   { *(.rela.fini)  } > _region_                          \
+  .rel.bss       :   { *(.rel.bss)    } > _region_                          \
+  .rela.bss      :   { *(.rela.bss)   } > _region_                          \
+  .rel.plt       :   { *(.rel.plt)    } > _region_                          \
+  .rela.plt      :   { *(.rela.plt)   } > _region_                          \
+  .rel.dyn       :   { *(.rel.dyn)    } > _region_
 
-#define SECTION_ctors(_region_, _vma_, _lma_)	\
-   .ctors _vma_ : _lma_				\
-   {						\
-     __CTOR_LIST__ = ABSOLUTE (.);		\
-     KEEP(*(.ctors))				\
-     KEEP(*(SORT(.ctors.*)))			\
-     __CTOR_END__ = ABSOLUTE (.);		\
-   } > _region_
+#define SECTION_init(_region_, _vma_, _lma_)   \
+  .init _vma_ : _lma_                          \
+    {                                          \
+      KEEP (*(.init))                          \
+    } > _region_ =0
 
-#define SECTION_dtors(_region_, _vma_, _lma_)	\
-   .dtors _vma_ : _lma_				\
-   {						\
-     __DTOR_LIST__ = ABSOLUTE (.);		\
-     KEEP(*(SORT(.dtors.*)))			\
-     KEEP(*(.dtors))				\
-     __DTOR_END__ = ABSOLUTE (.);		\
-   } > _region_
+#define SECTION_text(_region_, _vma_, _lma_)   \
+  .text _vma_ : _lma_                          \
+    {                                          \
+      _stext = .; _ftext = . ;                 \
+      *(.text)                                 \
+      *(.text.*)                               \
+      *(.stub)                                 \
+      *(.gnu.warning)                          \
+      *(.gnu.linkonce.t*)                      \
+      *(.mips16.fn.*) *(.mips16.call.*)        \
+    } > _region_ =0                            \
+  _etext = .; PROVIDE (etext = .);
 
-#define SECTION_rodata(_region_, _vma_, _lma_) \
-    .rodata _vma_ : _lma_ \
-    { FORCE_OUTPUT; *(.rodata*) } \
-    > _region_
+#define SECTION_fini(_region_, _vma_, _lma_)   \
+  .fini _vma_ : _lma_                          \
+    {                                          \
+      KEEP (*(.fini))                          \
+    } > _region_ =0
 
-#define SECTION_vsr_table(_region_, _vma_, _lma_) \
-    .vsr_table _vma_ : _lma_ \
-    { FORCE_OUTPUT; *(.vsr_table) } \
-    > _region_
+#define SECTION_rodata(_region_, _vma_, _lma_)        \
+  .rodata _vma_ : _lma_                               \
+    {                                                 \
+      *(.rodata*) *(.rodata.*) *(.gnu.linkonce.r*)    \
+    } > _region_
 
-#define SECTION_rodata1(_region_, _vma_, _lma_) \
-    .rodata1 _vma_ : _lma_ \
-    { FORCE_OUTPUT; *(.rodata1) } \
-    > _region_
+#define SECTION_rodata1(_region_, _vma_, _lma_)       \
+  .rodata1 _vma_ : _lma_                              \
+    {                                                 \
+      *(.rodata1) *(.rodata1.*)                       \
+    } > _region_
 
-#define SECTION_fixup(_region_, _vma_, _lma_) \
-    .fixup _vma_ : _lma_ \
-    { FORCE_OUTPUT; *(.fixup) } \
-    > _region_
+#define SECTION_vsr_table(_region_, _vma_, _lma_)     \
+  .vsr_table _vma_ : _lma_                            \
+    {                                                 \
+      *(.vsr_table)                                   \
+    } > _region_
 
-#define SECTION_rel__dyn(_region_, _vma_, _lma_) \
-    .rel.dyn _vma_ : _lma_ \
-    { FORCE_OUTPUT; *(.rel.dyn) } \
-    > _region_
+#define SECTION_data(_region_, _vma_, _lma_)          \
+  .data _vma_ : _lma_                                 \
+    {                                                 \
+      __ram_data_start = ABSOLUTE (.); _fdata = . ;   \
+      *(.data) *(.data.*) *(.gnu.linkonce.d*)         \
+    . = ALIGN (8);                                    \
+    SORT(CONSTRUCTORS)                                \
+    } > _region_
+
+#define SECTION_data1(_region_, _vma_, _lma_)         \
+  .data1 _vma_ : _lma_                                \
+    {                                                 \
+       *(.data1) *(.data1.*)                          \
+    } > _region_
+
+#define SECTION_eh_frame(_region_, _vma_, _lma_)      \
+  .eh_frame _vma_ : _lma_                             \
+    {                                                 \
+       *(.eh_frame)                                   \
+    } > _region_
 
 #define SECTION_gcc_except_table(_region_, _vma_, _lma_) \
-    .gcc_except_table _vma_ : _lma_ \
-    { FORCE_OUTPUT; *(.gcc_except_table) } \
-    > _region_
+  .gcc_except_table _vma_ : _lma_                        \
+    {                                                    \
+      *(.gcc_except_table)                               \
+    } > _region_
 
-/* FIXME: The SORT(CONSTRUCTORS) line below is for backwards compatibility
- * with older (pre-99r1) toolchains
+
+    /* gcc uses crtbegin.o to find the start of
+       the constructors, so we make sure it is
+       first.  Because this is a wildcard, it
+       doesn't matter if the user does not
+       actually link against crtbegin.o; the
+       linker won't look for a file to match a
+       wildcard.  The wildcard also means that it
+       doesn't matter which directory crtbegin.o
+       is in.  */
+
+    /* We don't want to include the .ctors section from
+       the crtend.o file until after the sorted ctors.
+       The .ctor section from the crtend file contains the
+       end of ctors marker and it must be last */
+
+#define SECTION_ctors(_region_, _vma_, _lma_)     \
+  .ctors _vma_ : _lma_                            \
+    {                                             \
+      KEEP (*crtbegin.o(.ctors))                  \
+      PROVIDE (__CTOR_LIST__ = .);                \
+      KEEP (*(EXCLUDE_FILE (*crtend.o) .ctors))   \
+      KEEP (*(SORT(.ctors.*)))                    \
+      KEEP (*(.ctors))                            \
+      PROVIDE (__CTOR_END__ = .);                 \
+    } > _region_
+
+#define SECTION_dtors(_region_, _vma_, _lma_)     \
+  .dtors _vma_ : _lma_                            \
+    {                                             \
+      KEEP (*crtbegin.o(.dtors))                  \
+      PROVIDE (__DTOR_LIST__ = .);                \
+      KEEP (*(EXCLUDE_FILE (*crtend.o) .dtors))   \
+      KEEP (*(SORT(.dtors.*)))                    \
+      KEEP (*(.dtors))                            \
+      PROVIDE (__DTOR_END__ = .);                 \
+    } > _region_
+
+#define SECTION_DEVTAB(_region_, _vma_, _lma_)    \
+  .devtab _vma_ : _lma_                           \
+    {                                             \
+      __DEVTAB__ = .;                             \
+      KEEP (*(SORT(.devtab*)))                    \
+       __DEVTAB_END__ = .;                        \
+      __NETDEVTAB__ = .;                          \
+      KEEP (*(SORT(.netdevtab*)))                 \
+      __NETDEVTAB_END__ = .;                      \
+    } > _region_
+
+#define SECTION_got(_region_, _vma_, _lma_)     \
+  _gp = ALIGN(16) + 0x7ff0;                     \
+  .got _vma_ : _lma_                            \
+    {                                           \
+      *(.got.plt) *(.got)                       \
+    } > _region_
+
+#define SECTION_dynamic(_region_, _vma_, _lma_) \
+  .dynamic _vma_ : _lma_                        \
+    {                                           \
+      *(.dynamic)                               \
+    } > _region_
+
+  /* We want the small data sections together, so single-instruction offsets
+     can access them all, and initialized data all before uninitialized, so
+     we can shorten the on-disk segment size.  */
+
+#define SECTION_sdata(_region_, _vma_, _lma_)   \
+  .sdata _vma_ : _lma_                          \
+    {                                           \
+      *(.sdata) *(.sdata.*) *(.gnulinkonce.s*)  \
+    } > _region_
+
+#define SECTION_lit(_region_, _vma_, _lma_)     \
+  .lit8 _vma_ : _lma_                           \
+    {                                           \
+      *(.lit8)                                  \
+    } > _region_                                \
+  .lit4 : FOLLOWING(.lit8)                      \
+    {                                           \
+      *(.lit4)                                  \
+    } > _region_                                \
+  __ram_data_end = .; _edata = . ;              \
+  PROVIDE (edata = .);
+
+#define SECTION_sbss(_region_, _vma_, _lma_)      \
+  __bss_start = .; _fbss = .;                     \
+  .sbss _vma_ : _lma_                             \
+    {                                             \
+      *(.dynsbss) *(.sbss) *(.sbss.*) *(.scommon) \
+    } > _region_
+
+#define SECTION_bss(_region_, _vma_, _lma_)       \
+  .bss _vma_ : _lma_                              \
+    {                                             \
+      *(.dynbss) *(.bss) *(.bss.*) *(COMMON)      \
+    } > _region_                                  \
+  __bss_end = .;
+
+/* The /DISCARD/ section ensures that the output will not contain a
+ * .mdebug section as it confuses GDB. This is a workaround for CR 100804.
  */
-#define SECTION_data(_region_, _vma_, _lma_) \
-    .data _vma_ : _lma_ \
-    { __ram_data_start = ABSOLUTE (.); \
-    *(.data*) *(.data1) \
-    _GOT1_START_ = ABSOLUTE (.); *(.got1) _GOT1_END_ = ABSOLUTE (.); \
-    _GOT2_START_ = ABSOLUTE (.); *(.got2) _GOT2_END_ = ABSOLUTE (.); \
-    . = ALIGN (8); \
-    SORT (CONSTRUCTORS) \
-    . = ALIGN (8); \
-    __DEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.devtab*))) __DEVTAB_END__ = ABSOLUTE (.); \
-    __NETDEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.netdevtab*))) __NETDEVTAB_END__ = ABSOLUTE (.); \
-    . = ALIGN (8); \
-    _GOT_START = ABSOLUTE (.); _gp = ABSOLUTE (.); __global = _gp; _GLOBAL_OFFSET_TABLE_ = ABSOLUTE (.); _SDA_BASE_ = ABSOLUTE (.); \
-    *(.got.plt) *(.got) _GOT_END_ = ABSOLUTE (.); \
-    *(.dynamic) *(.sdata*) *(.sbss*) *(.lit8) *(.lit4) *(.eh_frame) } \
-    > _region_ \
-    __rom_data_start = LOADADDR (.data); \
-    __ram_data_end = .; PROVIDE (__ram_data_end = .); _edata = .; PROVIDE (edata = .);
-   
-#define SECTION_bss(_region_, _vma_, _lma_) \
-    .bss _vma_ : _lma_ \
-    { __bss_start = ABSOLUTE (.); \
-    *(.scommon) *(.dynbss) *(.bss) *(COMMON) \
-    __bss_end = ABSOLUTE (.); } \
-    > _region_
 
-// The /DISCARD/ section ensures that the output will not contain a
-// .mdebug section as it confuses GDB. This is a workaround for CR 100804.
 #define SECTIONS_END . = ALIGN(4); _end = .; PROVIDE (end = .); \
-    .debug           0 : { *(.debug) } \
-    .line            0 : { *(.line) } \
-    .debug_srcinfo   0 : { *(.debug_srcinfo) } \
-    .debug_sfnames   0 : { *(.debug_sfnames) } \
-    .debug_aranges   0 : { *(.debug_aranges) } \
-    .debug_pubnames  0 : { *(.debug_pubnames) } \
-    .debug_info      0 : { *(.debug_info) } \
-    .debug_abbrev    0 : { *(.debug_abbrev) } \
-    .debug_line      0 : { *(.debug_line) } \
-    .debug_frame     0 : { *(.debug_frame) } \
-    .debug_str       0 : { *(.debug_str) } \
-    .debug_loc       0 : { *(.debug_loc) } \
-    .debug_macinfo   0 : { *(.debug_macinfo) } \
-    .debug_weaknames 0 : { *(.debug_weaknames) } \
-    .debug_funcnames 0 : { *(.debug_funcnames) } \
-    .debug_typenames 0 : { *(.debug_typenames) } \
-    .debug_varnames  0 : { *(.debug_varnames) }  \
-    /DISCARD/        0 : { *(.mdebug) }
+  /* Stabs debugging sections.  */                              \
+  .stab          0 : { *(.stab) }                               \
+  .stabstr       0 : { *(.stabstr) }                            \
+  .stab.excl     0 : { *(.stab.excl) }                          \
+  .stab.exclstr  0 : { *(.stab.exclstr) }                       \
+  .stab.index    0 : { *(.stab.index) }                         \
+  .stab.indexstr 0 : { *(.stab.indexstr) }                      \
+  .comment       0 : { *(.comment) }                            \
+  /* DWARF debug sections.                                      \
+     Symbols in the DWARF debugging sections are relative to    \
+     the beginning of the section so we begin them at 0.  */    \
+  /* DWARF 1 */                                                 \
+  .debug          0 : { *(.debug) }                             \
+  .line           0 : { *(.line) }                              \
+  /* GNU DWARF 1 extensions */                                  \
+  .debug_srcinfo  0 : { *(.debug_srcinfo) }                     \
+  .debug_sfnames  0 : { *(.debug_sfnames) }                     \
+  /* DWARF 1.1 and DWARF 2 */                                   \
+  .debug_aranges  0 : { *(.debug_aranges) }                     \
+  .debug_pubnames 0 : { *(.debug_pubnames) }                    \
+  /* DWARF 2 */                                                 \
+  .debug_info     0 : { *(.debug_info) }                        \
+  .debug_abbrev   0 : { *(.debug_abbrev) }                      \
+  .debug_line     0 : { *(.debug_line) }                        \
+  .debug_frame    0 : { *(.debug_frame) }                       \
+  .debug_str      0 : { *(.debug_str) }                         \
+  .debug_loc      0 : { *(.debug_loc) }                         \
+  .debug_macinfo  0 : { *(.debug_macinfo) }                     \
+  /* SGI/MIPS DWARF 2 extensions */                             \
+  .debug_weaknames 0 : { *(.debug_weaknames) }                  \
+  .debug_funcnames 0 : { *(.debug_funcnames) }                  \
+  .debug_typenames 0 : { *(.debug_typenames) }                  \
+  .debug_varnames  0 : { *(.debug_varnames) }                   \
+  /* These must appear regardless of  .  */                     \
+  .gptab.sdata : { *(.gptab.data) *(.gptab.sdata) }             \
+  .gptab.sbss : { *(.gptab.bss) *(.gptab.sbss) }                \
+  /DISCARD/        0 : { *(.mdebug) }
 
 #include CYGHWR_MEMORY_LAYOUT_LDI
 

@@ -107,6 +107,29 @@ extern void __install_breakpoints (void);
 
 extern void __clear_breakpoints (void);
 
+//------------------------------------------------------------------------
+// Special definition of CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION
+#ifdef __thumb__
+// If this macro is used from Thumb code, we need to pass this information
+// along to the place_break function so it can do the right thing.
+#define CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION( _old_ )                         \
+do {                                                                          \
+    HAL_DISABLE_INTERRUPTS(_old_);                                            \
+    cyg_hal_gdb_place_break((target_register_t)((unsigned long)&&cyg_hal_gdb_break_place + 1));\
+} while ( 0 )
+
+#else
+
+#define CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION( _old_ )                       \
+do {                                                                        \
+    HAL_DISABLE_INTERRUPTS(_old_);                                          \
+    cyg_hal_gdb_place_break((target_register_t)&&cyg_hal_gdb_break_place ); \
+} while ( 0 )
+
+#endif
+
+
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

@@ -48,6 +48,7 @@ cdl_component CYGPKG_IO_SERIAL_ARM_EDB7XXX_SERIAL1 {
         This option includes the serial device driver for the Cirrus Logic EDB7XXX
         port 1."
 
+
     cdl_option CYGDAT_IO_SERIAL_ARM_EDB7XXX_SERIAL1_NAME {
         display       "Device name for the Cirrus Logic EDB7XXX serial port 1 driver"
         flavor        data

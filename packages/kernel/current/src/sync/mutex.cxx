@@ -85,7 +85,7 @@ Cyg_Mutex::~Cyg_Mutex()
 
 #ifdef CYGDBG_USE_ASSERTS
 
-bool
+cyg_bool
 Cyg_Mutex::check_this( cyg_assert_class_zeal zeal) const
 {
 //    CYG_REPORT_FUNCTION();
@@ -381,7 +381,7 @@ Cyg_Condition_Variable::~Cyg_Condition_Variable()
 
 #ifdef CYGDBG_USE_ASSERTS
 
-bool
+cyg_bool
 Cyg_Condition_Variable::check_this( cyg_assert_class_zeal zeal) const
 {
     bool result = true;

@@ -1,11 +1,11 @@
-#ifndef CYGONCE_HAL_BASETYPE_H
-#define CYGONCE_HAL_BASETYPE_H
+#ifndef CYGONCE_HAL_MOD_77xx_H
+#define CYGONCE_HAL_MOD_77xx_H
 
 //=============================================================================
 //
-//      basetype.h
+//      mod_7708.h
 //
-//      Standard types for this architecture.
+//      List modules available on CPU
 //
 //=============================================================================
 //####COPYRIGHTBEGIN####
@@ -34,33 +34,40 @@
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   proven
-// Contributors:proven
-// Date:        1998-10-02
-// Purpose:     Define architecture base types.
-// Usage:       Included by "cyg_type.h", do not use directly
+// Author(s):   jskov
+// Contributors:jskov
+// Date:        2000-03-16
+// Purpose:     Define modules (and versions) available on this CPU.
+// Usage:       Included from <cyg/hal/sh_regs.h>
 //
+//              
 //####DESCRIPTIONEND####
 //
 //=============================================================================
 
 //-----------------------------------------------------------------------------
-// Characterize the architecture
+// Modules provided by the CPU
 
-#define CYG_BYTEORDER           CYG_LSBFIRST    // Little endian
+#define CYGARC_SH_MOD_SCI_V2
 
-//-----------------------------------------------------------------------------
-// I386 does not usually use labels with underscores. Some labels generated
-// by the linker do, so add an underscore where required.
-
-#define CYG_LABEL_NAME(_name_) _##_name_
 
 //-----------------------------------------------------------------------------
-// Define the standard variable sizes
+// Extra details for Cache Module (CAC)
 
-// The ix86 architecture uses the default definitions of the base types,
-// so we do not need to define any here.
+// Cache dimenions - one unified cache
+#define CYGARC_SH_MOD_CAC_SIZE        8192  // Size of cache in bytes
+#define CYGARC_SH_MOD_CAC_LINE_SIZE   16    // Size of a cache line
+#define CYGARC_SH_MOD_CAC_WAYS        4     // Associativity of the cache
 
-//-----------------------------------------------------------------------------
-#endif // CYGONCE_HAL_BASETYPE_H
-// End of basetype.h
+// Cache addressing information
+// way:   bits 12 - 11
+// entry: bits 10 -  4
+#define CYGARC_SH_MOD_CAC_ADDRESS_BASE   0xf0000000
+#define CYGARC_SH_MOD_CAC_ADDRESS_TOP    0xf0002000
+#define CYGARC_SH_MOD_CAC_ADDRESS_STEP   0x00000010
+// U : bit 1
+// V : bit 0
+// Writing zero to both forces a flush of the line if it is dirty.
+#define CYGARC_SH_MOD_CAC_ADDRESS_FLUSH  0x00000000
+
+#endif // CYGONCE_HAL_MOD_77xx_H

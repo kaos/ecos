@@ -101,6 +101,10 @@ SOURCE=..\common\eCosTestDownloadFilter.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\common\eCosTestMonitorFilter.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\common\eCosTestSerial.cpp
 # End Source File
 # Begin Source File
@@ -158,6 +162,10 @@ SOURCE=..\common\eCosTest.h
 # Begin Source File
 
 SOURCE=..\common\eCosTestDownloadFilter.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\eCosTestMonitorFilter.h
 # End Source File
 # Begin Source File
 

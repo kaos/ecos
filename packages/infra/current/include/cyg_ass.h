@@ -78,6 +78,7 @@ cyg_assert_fail( const char* /* psz_func */, const char* /* psz_file */,
                  cyg_uint32 /* linenum */, const char* /* psz_msg */ )
     CYGBLD_ATTRIB_NORET CYGBLD_ATTRIB_WEAK;
 
+
 // -------------------------------------------------------------------------
 
 #ifdef CYGDBG_USE_ASSERTS
@@ -90,8 +91,10 @@ cyg_assert_fail( const char* /* psz_func */, const char* /* psz_file */,
 //      CYG_ASSERTC     - compact version of CYG_ASSERT
 
 # ifdef CYGDBG_INFRA_DEBUG_ASSERT_MESSAGE
-#  define CYG_ASSERT_DOCALL( _msg_ ) \
-        cyg_assert_fail( __PRETTY_FUNCTION__, __FILE__, __LINE__, _msg_ );
+#  define CYG_ASSERT_DOCALL( _msg_ )                                      \
+        CYG_MACRO_START                                                   \
+        cyg_assert_fail( __PRETTY_FUNCTION__, __FILE__, __LINE__, _msg_ );\
+        CYG_MACRO_END
 # else
 #   define CYG_ASSERT_DOCALL( _msg_ )    \
         CYG_MACRO_START                 \
@@ -260,7 +263,7 @@ enum cyg_assert_class_zeal {
     CYG_ASSERT_THIS( "\"this\" pointer is valid" )
     
 #define CYGDBG_DEFINE_CHECK_THIS \
-    bool check_this( cyg_assert_class_zeal zeal ) const;
+    cyg_bool check_this( cyg_assert_class_zeal zeal ) const;
 
 #endif // __cplusplus
 

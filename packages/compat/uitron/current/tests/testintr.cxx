@@ -333,22 +333,27 @@ void task1( unsigned int arg )
         ercd = get_tim( &t1 );
         CYG_TEST_CHECK( E_OK == ercd, "get_tim bad ercd" );
 
-        // Wait for a tick
+        // Wait for a tick. This loop acts as a synchronizer for the loop
+        // below, ensuring that it starts just after a tick.
         for ( loops = 0; loops < 10000000; loops++ ) {
             ercd = get_tim( &t2 );
             CYG_TEST_CHECK( E_OK == ercd, "get_tim bad ercd" );
             if ( t2 != t1 )
                 break;
         }
-        // and a second one
-        for (          ; loops < 10000000; loops++ ) {
+        // Wait for next tick. Reset loops counter so we get the
+        // approximate loop count of one clock tick.
+        for ( loops = 0; loops < 10000000; loops++ ) {
             ercd = get_tim( &t1 );
             CYG_TEST_CHECK( E_OK == ercd, "get_tim bad ercd" );
             if ( t2 != t1 )
                 break;
         }
 
-        intercom = loops * 2; // save how long it took, plus a bit
+        // save how many loops could be executed in one tick. Multiply
+        // with 3 : we run loops in pairs below and add the time of
+        // one extra to avoid small variations to trigger failures.
+        intercom = loops * 3;
 
         ercd = ena_int( clock_interrupt ); // was initialized already
         CYG_TEST_CHECK( E_OK == ercd, "ena_int bad ercd" );

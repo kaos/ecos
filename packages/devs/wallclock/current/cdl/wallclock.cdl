@@ -53,15 +53,37 @@ cdl_package CYGPKG_DEVICES_WALLCLOCK {
         interacting with a suitable clock chip, or it may be
         emulated by using the kernel timers."
 
-    # FIXME: should be editable when there are HW alternatives.
+    cdl_interface CYGINT_WALLCLOCK_IMPLEMENTATIONS {
+        display       "Number of wallclock implementations"
+        requires      { CYGINT_WALLCLOCK_IMPLEMENTATIONS == 1 }
+    }
+
+    cdl_interface CYGINT_WALLCLOCK_HW_IMPLEMENTATIONS {
+        display       "Number of hardware wallclock implementations"
+    }
+
     cdl_option CYGIMP_WALLCLOCK_EMULATE {
         display       "Wallclock emulator"
-        calculated    1
+        default_value { CYGINT_WALLCLOCK_HW_IMPLEMENTATIONS == 0 }
+        implements    CYGINT_WALLCLOCK_IMPLEMENTATIONS
         compile       emulate.cxx
         description   "
             When this option is enabled, a wallclock device will be
             emulated using the kernel real-time clock."
     }
+
+    cdl_option CYGIMP_WALLCLOCK_SH3 {
+        display       "SH3 Wallclock"
+        default_value { CYGPKG_HAL_SH }
+        active_if     CYGPKG_HAL_SH
+        compile       sh3.cxx
+        implements    CYGINT_WALLCLOCK_HW_IMPLEMENTATIONS
+        implements    CYGINT_WALLCLOCK_IMPLEMENTATIONS
+        description   "
+            When this option is enabled, a wallclock driver using the
+            SH3's on-core Realtime Clock module will be built."
+    }
+
 
     cdl_component CYGPKG_DEVICES_WALLCLOCK_OPTIONS {
         display "Wallclock build options"

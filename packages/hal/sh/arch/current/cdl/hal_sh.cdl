@@ -52,6 +52,11 @@ cdl_package CYGPKG_HAL_SH {
         necessary to select a specific target platform HAL
         package."
 
+    cdl_interface CYGINT_HAL_SH_VARIANT {
+        display  "Number of variant implementations in this configuration"
+        requires 1 == CYGINT_HAL_SH_VARIANT
+    }
+
     compile       hal_misc.c context.S sh_stub.c
 
     # The "-o file" is a workaround for CR100958 - without it the
@@ -84,6 +89,21 @@ cdl_package CYGPKG_HAL_SH {
         @echo >> $(notdir $@).deps
         @rm target.tmp
     }
+
+    cdl_option CYGPKG_HAL_SH_7708 {
+        display       "SH 7708 microprocessor"
+        implements    CYGINT_HAL_SH_VARIANT
+        default_value 0
+        description "
+            The SH3 7708 microprocessor. This is an embedded part that in
+            addition to the SH3 processor core has built in peripherals
+            such as memory controllers, serial ports and
+            timers/counters."               
+        define_proc {
+            puts $cdl_system_header "#define CYGBLD_HAL_CPU_MODULES_H <cyg/hal/mod_7708.h>"
+        }
+    }
+
 
     cdl_option CYGHWR_HAL_SH_BIGENDIAN {
         display          "Use big-endian mode"

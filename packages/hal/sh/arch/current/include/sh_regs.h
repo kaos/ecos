@@ -1,6 +1,5 @@
 #ifndef CYGONCE_HAL_SH_REGS_H
 #define CYGONCE_HAL_SH_REGS_H
-
 //=============================================================================
 //
 //      sh_regs.h
@@ -39,13 +38,28 @@
 // Date:        1999-04-24
 // Purpose:     Define CPU memory mapped registers etc.
 // Usage:       #include <cyg/hal/sh_regs.h>
-
+// Notes:
+//   This file describes registers for on-core modules found in all
+//   the SH3 CPUs supported by the HAL. For each CPU is defined a
+//   module specification file (mod_<CPU model number>.h) which lists
+//   modules (and their version if applicable) included in that
+//   particular CPU model.  Note that the versioning is ad hoc;
+//   it doesn't reflect Hitachi internal versioning in any way.
 //              
 //####DESCRIPTIONEND####
 //
 //=============================================================================
 
-//#include <pkgconf/hal.h>
+// Find out which modules are supported by the chosen CPU
+// Note: At them moment only some modules are conditionalized (the ones
+//       not in the 7708). For consistency, all modules should be treated
+//       the same.
+#include <pkgconf/system.h>
+#include CYGBLD_HAL_CPU_MODULES_H
+
+//==========================================================================
+//                             CPU Definitions
+//==========================================================================
 
 //--------------------------------------------------------------------------
 // Status register
@@ -63,28 +77,11 @@
 #define CYGARC_REG_SR_T                 0x00000001
 
 
-//--------------------------------------------------------------------------
-// Cache registers
-#define CYGARC_REG_CCR                  0xffffffec
+//==========================================================================
+//                          Memory Mapped Registers
+//==========================================================================
 
-#define CYGARC_REG_CCR_RA               0x00000020
-#define CYGARC_REG_CCR_CF               0x00000008
-#define CYGARC_REG_CCR_CB               0x00000004
-#define CYGARC_REG_CCR_WT               0x00000002
-#define CYGARC_REG_CCR_CE               0x00000001
-
-#ifdef CYGPKG_HAL_SH_EDK7708
-// way:   bits 12 - 10
-// entry: bits 10 -  4
-#define CYGARC_REG_CACHE_ADDRESS_BASE   0xf0000000
-#define CYGARC_REG_CACHE_ADDRESS_TOP    0xf0002000
-#define CYGARC_REG_CACHE_ADDRESS_STEP   0x00000010
-// U : bit 1
-// V : bit 0
-// Writing zero to both forces a flush of the line if it was dirty.
-#define CYGARC_REG_CACHE_ADDRESS_FLUSH  0x00000000
-
-#endif
+//++++++ Module MMU ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 //--------------------------------------------------------------------------
 // MMU control registers
@@ -95,6 +92,31 @@
 #define CYGARC_REG_MMUCR_TF             0x00000004
 #define CYGARC_REG_MMUCR_IX             0x00000002
 #define CYGARC_REG_MMUCR_AT             0x00000001
+
+//++++++ Module CAC ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+//--------------------------------------------------------------------------
+// Cache registers
+#define CYGARC_REG_CCR                  0xffffffec
+
+#define CYGARC_REG_CCR_RA               0x00000020
+#define CYGARC_REG_CCR_CF               0x00000008
+#define CYGARC_REG_CCR_CB               0x00000004
+#define CYGARC_REG_CCR_WT               0x00000002
+#define CYGARC_REG_CCR_CE               0x00000001
+
+//--------------------------------------------------------------------------
+// Cache registers
+#define CYGARC_REG_CCR                  0xffffffec
+
+#define CYGARC_REG_CCR_RA               0x00000020
+#define CYGARC_REG_CCR_CF               0x00000008
+#define CYGARC_REG_CCR_CB               0x00000004
+#define CYGARC_REG_CCR_WT               0x00000002
+#define CYGARC_REG_CCR_CE               0x00000001
+
+
+//++++++ Module BSC ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 //--------------------------------------------------------------------------
 // Bus State Control
@@ -109,6 +131,11 @@
 #define CYGARC_REG_RTCNT                0xffffff70
 #define CYGARC_REG_RTCOR                0xffffff72
 #define CYGARC_REG_RFCR                 0xffffff74
+
+#ifdef CYGARC_SH_MOD_BCN_V2
+# define CYGARC_REG_BCR3                0xffffff7e
+#endif
+
 #define CYGARC_REG_SDMR_AREA2_BASE      0xffffd000
 #define CYGARC_REG_SDMR_AREA3_BASE      0xffffe000
 
@@ -116,6 +143,9 @@
 #define CYGARC_REG_BCR1_DRAMTP1         0x0008
 #define CYGARC_REG_BCR1_DRAMTP0         0x0004
 
+
+
+//++++++ Module UBC ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 //--------------------------------------------------------------------------
 // User Break Control
@@ -142,6 +172,7 @@
 #define CYGARC_REG_BRCR_SEQ             0x0008 // sequence condition select
 
 
+//++++++ Module CPG ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 //--------------------------------------------------------------------------
 // Oscillator control registers
@@ -166,6 +197,8 @@
 // Based on a 15MHz clock with max delay: 15Mhz/(4096 * 256)
 #define CYGARC_REG_WTCSR_CKSx_SETTING   0x07       // max delay
 #define CYGARC_REG_WTCSR_PERIOD         69905067   // ~69.9 ms
+
+//++++++ Module TMU ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 //--------------------------------------------------------------------------
 // TMU registers
@@ -201,6 +234,9 @@
 #define CYGARC_REG_TCR_ICPE1            0x0080
 #define CYGARC_REG_TCR_ICPF             0x0200
 
+
+//++++++ Module INTC +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 //--------------------------------------------------------------------------
 // Interrupt registers
 #define CYGARC_REG_EXCEVT               0xffffffd4
@@ -209,6 +245,7 @@
 #define CYGARC_REG_ICR                  0xfffffee0
 #define CYGARC_REG_IPRA                 0xfffffee2
 #define CYGARC_REG_IPRB                 0xfffffee4
+
 
 #define CYGARC_REG_IPRA_TMU0_MASK       0xf000
 #define CYGARC_REG_IPRA_TMU0_PRI1       0x1000
@@ -226,8 +263,46 @@
 #define CYGARC_REG_IPRB_SCI_MASK        0x00f0
 #define CYGARC_REG_IPRB_SCI_PRI1        0x0010
 
+//++++++ Module RTC ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+//--------------------------------------------------------------------------
+// RealTime Clock
+
+#define CYGARC_REG_RC64CNT              0xfffffec0
+#define CYGARC_REG_RSECCNT              0xfffffec2
+#define CYGARC_REG_RMINCNT              0xfffffec4
+#define CYGARC_REG_RHRCNT               0xfffffec6
+#define CYGARC_REG_RWKCNT               0xfffffec8
+#define CYGARC_REG_RDAYCNT              0xfffffeca
+#define CYGARC_REG_RMONCNT              0xfffffecc
+#define CYGARC_REG_RYRCNT               0xfffffece
+#define CYGARC_REG_RSECAR               0xfffffed0
+#define CYGARC_REG_RMINAR               0xfffffed2
+#define CYGARC_REG_RHRAR                0xfffffed4
+#define CYGARC_REG_RWKAR                0xfffffed6
+#define CYGARC_REG_RDAYAR               0xfffffed8
+#define CYGARC_REG_RMONAR               0xfffffeda
+#define CYGARC_REG_RCR1                 0xfffffedc
+#define CYGARC_REG_RCR2                 0xfffffede
 
 
+#define CYGARC_REG_RCR1_CF              0x80 // carry flag
+#define CYGARC_REG_RCR1_CIE             0x10 // carry interrupt enable
+#define CYGARC_REG_RCR1_AIE             0x08 // alarm interrupt enable
+#define CYGARC_REG_RCR1_AF              0x01 // alarm flag
+
+#define CYGARC_REG_RCR2_PEF             0x80 // periodic interrupt flag
+#define CYGARC_REG_RCR2_PES2            0x40 // periodic interrupt setting
+#define CYGARC_REG_RCR2_PES1            0x20
+#define CYGARC_REG_RCR2_PES0            0x10
+#define CYGARC_REG_RCR2_RTCEN           0x08 // RTC enable
+#define CYGARC_REG_RCR2_ADJ             0x04 // second adjustment
+#define CYGARC_REG_RCR2_RESET           0x02 // reset
+#define CYGARC_REG_RCR2_START           0x01 // start
+
+
+
+//++++++ Module SCI ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 //--------------------------------------------------------------------------
 // Serial registers. All 8 bit registers.
@@ -237,7 +312,10 @@
 #define CYGARC_REG_SCTDR                0xfffffe86 // transmit data register
 #define CYGARC_REG_SCSSR                0xfffffe88 // serial status register
 #define CYGARC_REG_SCRDR                0xfffffe8a // receive data register
-#define CYGARC_REG_SCSPTR               0xfffffe7c // serial port register
+
+#ifdef CYGARC_SH_MOD_SCI_V2
+# define CYGARC_REG_SCSPTR               0xfffffe7c // serial port register
+#endif
 
 // Serial Mode Register
 #define CYGARC_REG_SCSMR_CA             0x80 // communication mode
@@ -275,7 +353,7 @@
 // to prevent other bits than the one of interest to be cleared.
 #define CYGARC_REG_SCSSR_CLEARMASK      0xf8
 
-
+// FIXME: Let config control this
 // Baud rate values calculated for peripheral clock = 15MHz (Pf = 15). 
 // n is CKS setting (0-3)
 // N = (Pf/(64^(n-1)*B))*10^6-1
@@ -322,5 +400,7 @@
 #define CYGARC_REG_CKSx_115200          0
 #define CYGARC_REG_SCBRR_234000
 #define CYGARC_REG_CKSx_234000
+
+
 
 #endif // ifndef CYGONCE_HAL_SH_REGS_H

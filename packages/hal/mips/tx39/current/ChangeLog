@@ -1,8 +1,3 @@
-2000-03-21  Jonathan Larmour  <jlarmour@redhat.co.uk>
-
-	* src/mips_tx39.ld: Revert previous change, but add .lit8 and .lit4
-	input sections for .data instead
-
 2000-03-16  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* src/mips_tx39.ld: Update from latest "mips-tx39-elf-ld --verbose"

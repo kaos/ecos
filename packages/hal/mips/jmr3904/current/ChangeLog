@@ -1,13 +1,3 @@
-2000-03-21  Jonathan Larmour  <jlarmour@redhat.co.uk>
-
-	* include/pkgconf/mlt_mips_tx39_jmr3904_ram.h,
-	include/pkgconf/mlt_mips_tx39_jmr3904_ram.ldi,
-	include/pkgconf/mlt_mips_tx39_jmr3904_ram.mlt,
-	include/pkgconf/mlt_mips_tx39_jmr3904_rom.h,
-	include/pkgconf/mlt_mips_tx39_jmr3904_rom.ldi,
-	include/pkgconf/mlt_mips_tx39_jmr3904_rom.mlt:
-	Revert previous change
-
 2000-03-16  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* include/pkgconf/mlt_mips_tx39_jmr3904_ram.h,

@@ -241,7 +241,7 @@ void Cyg_Scheduler::start()
 
 #ifdef CYGDBG_USE_ASSERTS
 
-bool Cyg_Scheduler::check_this( cyg_assert_class_zeal zeal) const
+cyg_bool Cyg_Scheduler::check_this( cyg_assert_class_zeal zeal) const
 {
     CYG_REPORT_FUNCTION();
         

@@ -1,6 +1,22 @@
 2000-03-20  Jesper Skov  <jskov@redhat.com>
 
+	* include/sh_regs.h: Add definitions for RTC module.
+
+2000-03-20  Jesper Skov  <jskov@redhat.com>
+
 	* src/hal_mk_defs.c: Added CYGNUM_HAL_VSR_EXCEPTION_COUNT
+
+2000-03-16  Jesper Skov  <jskov@redhat.com>
+
+	* include/mod_7708.h: 
+	* include/sh_regs.h: 
+	Adding new module definitions, conditionally included depending on
+	chosen CPU implementation. Each CPU defines its own set of
+	included modules (and module versions).
+
+	* include/hal_cache.h: Get cache specs from CPU module file.
+
+	* cdl/hal_sh.cdl: Added CPU implementation controls.
 
 2000-03-03  Jonathan Larmour  <jlarmour@redhat.co.uk>
 

@@ -1,7 +1,10 @@
-2000-03-23  Jesper Skov  <jskov@redhat.com>
+2000-03-24  Jesper Skov  <jskov@redhat.com>
 
-	* include/hal_arch.h: workaround for CPP problem
+	* src/arm_stub.c: Make place_break thumb-aware.
 
+	* include/arm_stub.h (CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION): 
+	Thumb-aware definition.
+	
 2000-03-01  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* cdl/hal_arm.cdl: 

@@ -118,7 +118,7 @@ ER      isnd_msg ( ID mbxid, T_MSG *pk_msg );
 } while ( 0 )
 
 // Subsitute a version of ret_int that returns Cyg_Interrupt::CALL_DSR
-#undef ret_int()
+#undef ret_int
 #define ret_int()  do {                         \
     register int retcode;                       \
     CYGPRI_UITRON_SET_RETCODE( retcode );       \

@@ -1,8 +1,17 @@
-2000-03-20  John Dallaway  <jld@cygnus.co.uk>
+2000-03-28  Jesper Skov  <jskov@redhat.com>
+
+	* tests/testintr.cxx: Synchronize with clock before making timer
+	measurement.
+
+2000-03-28  John Dallaway  <jld@cygnus.co.uk>
 
 	* cdl/uitron.cdl:
 
 	Adjust documentation URLs.
+
+2000-03-22  Jesper Skov  <jskov@redhat.com>
+
+	* include/uit_ifnc.h (ret_int): Fix compiler warning.
 
 2000-03-13  Jesper Skov  <jskov@redhat.com>
 

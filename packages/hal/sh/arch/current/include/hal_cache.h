@@ -49,29 +49,36 @@
 //
 //=============================================================================
 
+#include <pkgconf/system.h>
 #include <pkgconf/hal.h>
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/hal_io.h>             // HAL_READ/WRITE macros
+
+#include CYGBLD_HAL_CPU_MODULES_H       // cache module specs
+
 #include <cyg/hal/sh_regs.h>            // CYGARC_REG_ definitions
-
-//=============================================================================
-// SH7708/HD6417708
-
-#ifdef CYGPKG_HAL_SH_EDK7708
 
 //-----------------------------------------------------------------------------
 // Cache dimensions - one unified cache
 
-#define HAL_CACHE_UNIFIED
+#define HAL_UCACHE_SIZE                 CYGARC_SH_MOD_CAC_SIZE
+#define HAL_UCACHE_LINE_SIZE            CYGARC_SH_MOD_CAC_LINE_SIZE
+#define HAL_UCACHE_WAYS                 CYGARC_SH_MOD_CAC_WAYS
 
-#define HAL_UCACHE_SIZE                 8192    // Size of cache in bytes
-#define HAL_UCACHE_LINE_SIZE            16      // Size of a cache line
-#define HAL_UCACHE_WAYS                 4       // Associativity of the cache
+// Cache addressing information
+#define CYGARC_REG_CACHE_ADDRESS_BASE   CYGARC_SH_MOD_CAC_ADDRESS_BASE
+#define CYGARC_REG_CACHE_ADDRESS_TOP    CYGARC_SH_MOD_CAC_ADDRESS_TOP
+#define CYGARC_REG_CACHE_ADDRESS_STEP   CYGARC_SH_MOD_CAC_ADDRESS_STEP
+
+// Writing this to a cache address entry forces a flush of the line if
+// it is dirty.
+#define CYGARC_REG_CACHE_ADDRESS_FLUSH  CYGARC_SH_MOD_CAC_ADDRESS_FLUSH
 
 #define HAL_UCACHE_SETS (HAL_UCACHE_SIZE/(HAL_UCACHE_LINE_SIZE*HAL_UCACHE_WAYS))
 
 //-----------------------------------------------------------------------------
 // Global control of cache
+
 
 // Enable the cache
 #define HAL_UCACHE_ENABLE()                     \
@@ -292,8 +299,6 @@
 
 // Invalidate cache lines in the given range without writing to memory.
 //#define HAL_ICACHE_INVALIDATE( _base_ , _size_ )
-
-#endif
 
 //-----------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_CACHE_H

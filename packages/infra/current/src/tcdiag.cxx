@@ -39,11 +39,13 @@
 // 
 //####DESCRIPTIONEND####
 
+#include <pkgconf/infra.h>
 #include <pkgconf/system.h>
 #include CYGBLD_HAL_TARGET_H           // get initialization for
 #include CYGBLD_HAL_PLATFORM_H         //   cyg_test_is_simulator
 
 #include <cyg/infra/cyg_type.h>        // base types
+#include <cyg/hal/hal_arch.h>          // any architecture specific stuff
 #include <cyg/infra/diag.h>            // HAL polled output
 #include <cyg/infra/testcase.h>        // what we implement
 
@@ -54,6 +56,7 @@ int cyg_test_is_simulator = 1;         // set this anyway
 #else
 int cyg_test_is_simulator = 0;         // infrastructure changes as necessary
 #endif
+
 
 externC void
 cyg_test_init(void)

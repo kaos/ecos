@@ -626,11 +626,12 @@ CMA230 (ARM7TDMI) or CMA222 (ARM710T) board."
 # SH targets
 
 target sh7708 {
-	alias { "Hitachi SH7708 board" edk7708 }
-	packages { CYGPKG_HAL_SH CYGPKG_HAL_SH_EDK7708 CYGPKG_IO_SERIAL }
+	alias       { "Hitachi EDK/SH7708 board" edk7708 }
+	packages    { CYGPKG_HAL_SH CYGPKG_HAL_SH_EDK7708 CYGPKG_IO_SERIAL }
+	enable      { CYGPKG_HAL_SH_7708 }
         description "
            The sh7708 target provides the packages needed to run
-           eCos on a Hitachi SH7708 board."
+           eCos on a Hitachi EDK/SH7708 board."
 }
 
 # --------------------------------------------------------------------------
@@ -666,7 +667,7 @@ target sleb {
 
 target sparclite_sim {
 	alias		{ "SPARClite simulator" sl_sim sparcl_sim }
-	packages        { CYGPKG_HAL_SPARCLITE CYGPKG_HAL_SPARCLITE_SIM }
+	packages        { CYGPKG_HAL_SPARCLITE CYGPKG_HAL_SPARCLITE_SIM CYGPKG_IO_SERIAL }
         description "
     	    The sparclite_sim target provides the packages need to run eCos
             on the SPARClite simulator."

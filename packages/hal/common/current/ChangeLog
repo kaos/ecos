@@ -1,8 +1,21 @@
-2000-03-20  John Dallaway  <jld@cygnus.co.uk>
+2000-03-28  Jesper Skov  <jskov@redhat.com>
+
+	* src/generic-stub.c (__process_packet): Added 'z' packet reply.
+
+2000-03-28  John Dallaway  <jld@cygnus.co.uk>
 
 	* cdl/hal.cdl:
 
 	Adjust documentation URLs.
+
+2000-03-24  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_stub.h: Fixed a bad function name. Made it opssible
+	for archs to define CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION.
+
+2000-03-20  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/debugging.cdl: Preclude USE_MONITOR when including stubs.
 
 2000-03-01  Gary Thomas  <gthomas@cygnus.co.uk>
 

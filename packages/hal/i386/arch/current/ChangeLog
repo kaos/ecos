@@ -1,6 +1,12 @@
-2000-03-24  Jonathan Larmour  <jlarmour@redhat.co.uk>
+2000-03-27  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
-	* include/basetype.h: define cyg_halbool as unsigned char
+	* include/basetype.h: Let cyg_halbool revert to the system default
+	(i.e. a word)
+
+2000-03-24  Jesper Skov  <jskov@redhat.com>
+
+	* include/basetype.h: Define bool type since it's only 8 bits.
+	(cyg_halbool): always unsigned char.
 
 2000-03-02  Jonathan Larmour  <jlarmour@redhat.co.uk>
 

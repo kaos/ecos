@@ -101,8 +101,8 @@ struct Cyg_TraceRecord
 {
     cyg_uint32          what;
     cyg_uint32          tid;
-    char                *function;
-    char                *file;
+    const char          *function;
+    const char          *file;
     char                *message;
     cyg_uint32          line;
     cyg_uint32          narg;
@@ -387,7 +387,7 @@ static void increment_buffer_pos()
 // -------------------------------------------------------------------------
 
 externC void
-cyg_tracenomsg( char *psz_func, char *psz_file, cyg_uint32 linenum )
+cyg_tracenomsg( const char *psz_func, const char *psz_file, cyg_uint32 linenum )
 {
     cyg_uint32 old_ints;
 
@@ -415,7 +415,7 @@ cyg_tracenomsg( char *psz_func, char *psz_file, cyg_uint32 linenum )
 
 externC void
 cyg_tracemsg( cyg_uint32 what, 
-              char *psz_func, char *psz_file, cyg_uint32 linenum,
+              const char *psz_func, const char *psz_file, cyg_uint32 linenum,
               char *psz_msg )
 {
     cyg_uint32 old_ints;
@@ -442,7 +442,7 @@ cyg_tracemsg( cyg_uint32 what,
 
 externC void
 cyg_tracemsg2( cyg_uint32 what, 
-               char *psz_func, char *psz_file, cyg_uint32 linenum,
+               const char *psz_func, const char *psz_file, cyg_uint32 linenum,
                char *psz_msg,
                CYG_ADDRWORD arg0,  CYG_ADDRWORD arg1 )
 {
@@ -472,7 +472,7 @@ cyg_tracemsg2( cyg_uint32 what,
 
 externC void
 cyg_tracemsg4( cyg_uint32 what, 
-               char *psz_func, char *psz_file, cyg_uint32 linenum,
+               const char *psz_func, const char *psz_file, cyg_uint32 linenum,
                char *psz_msg,
                CYG_ADDRWORD arg0,  CYG_ADDRWORD arg1,
                CYG_ADDRWORD arg2,  CYG_ADDRWORD arg3 )
@@ -505,7 +505,7 @@ cyg_tracemsg4( cyg_uint32 what,
 
 externC void
 cyg_tracemsg6( cyg_uint32 what, 
-               char *psz_func, char *psz_file, cyg_uint32 linenum,
+               const char *psz_func, const char *psz_file, cyg_uint32 linenum,
                char *psz_msg,
                CYG_ADDRWORD arg0,  CYG_ADDRWORD arg1,
                CYG_ADDRWORD arg2,  CYG_ADDRWORD arg3,
@@ -541,7 +541,7 @@ cyg_tracemsg6( cyg_uint32 what,
 
 externC void
 cyg_tracemsg8( cyg_uint32 what, 
-               char *psz_func, char *psz_file, cyg_uint32 linenum,
+               const char *psz_func, const char *psz_file, cyg_uint32 linenum,
                char *psz_msg,
                CYG_ADDRWORD arg0,  CYG_ADDRWORD arg1,
                CYG_ADDRWORD arg2,  CYG_ADDRWORD arg3,

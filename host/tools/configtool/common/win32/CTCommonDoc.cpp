@@ -1744,9 +1744,10 @@ void CConfigToolDoc::OnFileImport()
 bool CConfigToolDoc::QualifyDocURL(CString &strURL)
 {
   if(-1==strURL.Find(_T("://"))){
-    // Relative URL - qualify it as a file URL
-    strURL=DocBase()+CFileName(strURL);
     strURL.Replace(_TCHAR('/'),_TCHAR('\\'));
+    if (! CFileName (strURL).IsFile ()) { // if not an absolute filepath
+      strURL = DocBase () + CFileName (strURL); // prepend the doc directory path
+    }
     strURL=_T("file://")+strURL;
   }
 

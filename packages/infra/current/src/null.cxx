@@ -75,33 +75,33 @@ cyg_assert_fail( const char *psz_func, const char *psz_file,
 #ifdef CYGDBG_USE_TRACING
 
 externC void
-cyg_tracenomsg( char *psz_func, char *psz_file, cyg_uint32 linenum )
+cyg_tracenomsg( const char *psz_func, const char *psz_file, cyg_uint32 linenum )
 {}
 
 // provide every other one of these as a space/caller bloat compromise.
 
 externC void
 cyg_tracemsg( cyg_uint32 what, 
-              char *psz_func, char *psz_file, cyg_uint32 linenum,
+              const char *psz_func, const char *psz_file, cyg_uint32 linenum,
               char *psz_msg )
 {}
 
 externC void
 cyg_tracemsg2( cyg_uint32 what, 
-               char *psz_func, char *psz_file, cyg_uint32 linenum,
+               const char *psz_func, const char *psz_file, cyg_uint32 linenum,
                char *psz_msg,
                CYG_ADDRWORD arg0,  CYG_ADDRWORD arg1 )
 {}
 externC void
 cyg_tracemsg4( cyg_uint32 what, 
-               char *psz_func, char *psz_file, cyg_uint32 linenum,
+               const char *psz_func, const char *psz_file, cyg_uint32 linenum,
                char *psz_msg,
                CYG_ADDRWORD arg0,  CYG_ADDRWORD arg1,
                CYG_ADDRWORD arg2,  CYG_ADDRWORD arg3 )
 {}
 externC void
 cyg_tracemsg6( cyg_uint32 what, 
-               char *psz_func, char *psz_file, cyg_uint32 linenum,
+               const char *psz_func, const char *psz_file, cyg_uint32 linenum,
                char *psz_msg,
                CYG_ADDRWORD arg0,  CYG_ADDRWORD arg1,
                CYG_ADDRWORD arg2,  CYG_ADDRWORD arg3,
@@ -109,7 +109,7 @@ cyg_tracemsg6( cyg_uint32 what,
 {}
 externC void
 cyg_tracemsg8( cyg_uint32 what, 
-               char *psz_func, char *psz_file, cyg_uint32 linenum,
+               const char *psz_func, const char *psz_file, cyg_uint32 linenum,
                char *psz_msg,
                CYG_ADDRWORD arg0,  CYG_ADDRWORD arg1,
                CYG_ADDRWORD arg2,  CYG_ADDRWORD arg3,

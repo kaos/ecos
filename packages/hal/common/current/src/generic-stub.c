@@ -973,14 +973,23 @@ __process_packet (char *packet)
         break;
       }
 
-    case 'd':
-      /* toggle debug flag */
 #ifdef __ECOS__
 #if !defined(CYG_HAL_STARTUP_RAM)    // Only for ROM based stubs
+    case 'z':
+        /* report IO buffer sizes so download can achieve optimal
+           download speed */
+    {
+        int i;
+        i = __intToHex (remcomOutBuffer, BUFMAX, 32);
+        remcomOutBuffer[i] = 0;
+        break;
+    }
+    case 'd':
+      /* toggle debug flag */
       strcpy(remcomOutBuffer, "eCos GDB stubs - built " __DATE__ " / " __TIME__);
+      break;
 #endif
 #endif // __ECOS__
-      break;
 
     case 'q':
       /* general query packet */
