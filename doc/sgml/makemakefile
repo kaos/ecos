@@ -5,6 +5,10 @@ touch makefile
 chmod +w ecos-ref.sgml 
 chmod +w makefile
 
+sgmldir="`dirname $0`"
+doclist="${sgmldir}/doclist"
+toplvl="${sgmldir}/../.."
+
 cat > makefile <<EOF
 #=============================================================================
 #
@@ -54,7 +58,7 @@ cat > makefile <<EOF
 #####DESCRIPTIONEND####
 #=============================================================================
 
-TOPLEVEL   := ../../packages
+TOPLEVEL   := ${toplvl}/packages
 EOF
 /bin/echo MAIN_SGML   := ecos-ref.sgml >> makefile
 /bin/echo -n OTHER_SGML   :=  >> makefile
@@ -71,18 +75,18 @@ EOF
 
 PACKAGEVER=${1:-'current'}
 
-for i in `cat doclist`; do
+for i in `cat ${doclist}`; do
   line="`echo $i | sed 's/#.*//;'`"
   if (test ! -z $line); then
-   /bin/echo -n " ../../packages/$i" | sed "s@/current/@/${PACKAGEVER}/@g" >> makefile
+   /bin/echo -n " ${toplvl}/packages/$i" | sed "s@/current/@/${PACKAGEVER}/@g" >> makefile
    entityi="`echo $i | sed 's@/@-@g; s@\.@-@g; s@_@-@g; s@-current-doc@@g; s@-current@@g'`"
-   echo "<!ENTITY $entityi SYSTEM \"../../packages/$i\">" | sed "s@/current/@/${PACKAGEVER}/@g" >> ecos-ref.sgml
+   echo "<!ENTITY $entityi SYSTEM \"${toplvl}/packages/$i\">" | sed "s@/current/@/${PACKAGEVER}/@g" >> ecos-ref.sgml
   fi
 done
 
 # Go through again but find GIFs to copy
-for i in `for j in \`cat doclist\` ; do dirname $j ; done | sort | uniq` ; do
-  diri=`echo ../../packages/$i | sed "s@/current/@/${PACKAGEVER}/@g"`
+for i in `for j in \`cat ${doclist}\` ; do dirname $j ; done | sort | uniq` ; do
+  diri=`echo ${toplvl}/packages/$i | sed "s@/current/@/${PACKAGEVER}/@g"`
   dirigifs=`ls $diri/*.gif 2>/dev/null | tr '\n' ' '`
   if [ x"$dirigifs" != x ]; then
         copyfiles="$copyfiles $dirigifs"
@@ -199,7 +203,7 @@ holder or other party has been advised of the possibility of such damages.
 <toc id="ecos-toc"></toc>
 EOF
 
-for i in `cat doclist`; do
+for i in `cat ${doclist}`; do
   line="`echo $i | sed 's/#.*//;'`"
   if (test ! -z $line); then
    entityi="`echo $i | sed 's@/@-@g; s@\.@-@g; s@_@-@g; s@-current-doc@@g; s@-current@@g'`"

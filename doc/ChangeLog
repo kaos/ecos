@@ -1,3 +1,8 @@
+2003-03-27  Thomas Koeller  <thomas.koeller@baslerweb.com>
+
+        * sgml/makemakefile: Modified to generate makefile that can
+        be used to build docs in arbitrary directory.
+
 2003-02-25  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* sgml/doclist: Added the simple network time protocol client
