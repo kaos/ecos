@@ -376,10 +376,10 @@ hal_delay_us(int us)
 
         ticks = us1 * usticks;
 
-        asm volatile("mfc0 %0,$9;" : "=r"(val1));
+        HAL_CLOCK_READ(&val1);
         while (ticks > 0) {
             do {
-                asm volatile("mfc0 %0,$9;" : "=r"(val2));
+                HAL_CLOCK_READ(&val2);
             } while (val1 == val2);
             diff = val2 - val1;
             if (diff < 0) diff += CYGNUM_HAL_RTC_PERIOD;

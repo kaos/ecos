@@ -1,3 +1,8 @@
+2003-01-09  Tim Michals  <t.michals@attbi.com>
+
+	* src/hal_misc.c (hal_delay_us): Use HAL_CLOCK_READ instead of inline
+	asm, to allow for variant/platform HAL packages overriding.
+
 2002-12-12  Bart Veer  <bartv@ecoscentric.com>
 
 	* include/hal_cache.h: allow for cache flushes etc. where the base
