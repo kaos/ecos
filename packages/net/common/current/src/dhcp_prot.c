@@ -38,6 +38,7 @@
 
 #include <network.h>
 #include <dhcp.h>
+#include <errno.h>
 
 #include <cyg/infra/cyg_ass.h>
 

@@ -36,6 +36,7 @@
 #include <pkgconf/isoinfra.h>
 
 #include <network.h>
+#include <errno.h>
 #ifdef CYGPKG_NET_FREEBSD_STACK  // New layout
 #include <net/if_var.h>
 #include <netinet/in_var.h>

@@ -31,6 +31,7 @@
 
 #include <sys/param.h>
 #include <netdb.h>
+#include <errno.h>
 
 static struct protoent protocols[] = {
     { "ip",         0}, // internet protocol, pseudo protocol number

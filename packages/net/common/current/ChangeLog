@@ -1,3 +1,10 @@
+2002-07-10  Gary Thomas  <gary@chez-thomas.org>
+
+	* src/inet_addr.c: 
+	* src/getproto.c: 
+	* src/dhcp_prot.c: 
+	* src/bootp_support.c: Pedantic - make sure "errno" is defined.
+
 2002-07-04  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/dhcp_prot.c (_dhcp_copy): Remove. Unnecessary as we can never

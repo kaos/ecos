@@ -105,7 +105,7 @@ static char rcsid[] = "$OpenBSD: inet_addr.c,v 1.6 1999/05/03 22:31:14 yanick Ex
 #include <sys/param.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
-#include <sys/errno.h>
+#include <errno.h>
 
 #include <net/if.h>
 #include <netinet/in.h>
