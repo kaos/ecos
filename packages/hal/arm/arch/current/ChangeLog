@@ -1,3 +1,7 @@
+2003-10-23  Thomas Koeller  <thomas.koeller@baslerweb.com>
+
+	* src/vectors.S: Acknowlege spurious interrupts.
+
 2003-10-13  Thomas Koeller  <thomas.koeller@baslerweb.com>
 
 	* src/vectors.S: Fixed broken thumb mode exception handling.

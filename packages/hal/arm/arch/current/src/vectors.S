@@ -80,6 +80,21 @@
         .thumb_func                             ;\
  _l_:
 
+// Call thumb function from ARM mode, return to ARM
+// mode afterwards
+#define THUMB_CALL(_r_, _l_, _f_)                \
+        ldr     _r_,=_f_+1                      ;\
+        mov     lr,pc                           ;\
+        bx      _r_                             ;\
+        .pool                                   ;\
+        .code   16                              ;\
+        .thumb_func                             ;\
+        ldr     _r_,=_l_  ## f                  ;\
+        bx      _r_                             ;\
+        .pool                                   ;\
+        .code   32                              ;\
+ _l_:
+
 // Switch to ARM mode
 #define ARM_MODE(_r_, _l_)                       \
         ldr     _r_,=_l_ ## f                   ;\
@@ -103,6 +118,10 @@ _name_ ## _ARM:
 
 // Switch to thumb mode
 #define THUMB_MODE(_r_, _l_)
+
+// Call ARM function
+#define THUMB_CALL(_r_, _l_, _f_) \
+        bl      _f_
 
 // Switch to ARM mode
 #define ARM_MODE(_r_, _l_)
@@ -872,15 +891,13 @@ handle_IRQ_or_FIQ:
 
         cmp     r0,#CYGNUM_HAL_INTERRUPT_NONE   // spurious interrupt
         bne     10f
-#ifndef CYGIMP_HAL_COMMON_INTERRUPTS_IGNORE_SPURIOUS
+
+#ifdef  CYGIMP_HAL_COMMON_INTERRUPTS_IGNORE_SPURIOUS
+        // Acknowledge the interrupt
+        THUMB_CALL(r1,12,hal_interrupt_acknowledge)
+#else
         mov     r0,v6                   // register frame
-# ifdef __thumb__
-        ldr     r1,=hal_spurious_IRQ
-        mov     lr,pc
-        bx      r1
-# else
-        bl      hal_spurious_IRQ
-# endif
+        THUMB_CALL(r1,12,hal_spurious_IRQ)
 #endif // CYGIMP_HAL_COMMON_INTERRUPTS_IGNORE_SPURIOUS
         b       spurious_IRQ
         
