@@ -432,4 +432,4 @@ disk_error(int err)
 //
 GETC_IO_FUNCS(disk_io, disk_stream_open, disk_stream_close,
               0, disk_stream_read, disk_error);
-RedBoot_load(disk, disk_io, true, true);
+RedBoot_load(disk, disk_io, true, true, 0);

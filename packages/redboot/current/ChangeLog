@@ -1,3 +1,13 @@
+2002-07-18  Gary Thomas  <gary@chez-thomas.org>
+
+	* src/net/tftp_client.c: 
+	* src/net/http_client.c: 
+	* src/fs/disk.c: 
+	* src/xyzModem.c: 
+	* src/load.c: 
+	* include/redboot.h: Rework load/mode information tables so that
+	load I/O methods can detect actual mode (e.g. X-modem vs Y-modem)
+
 2002-07-16  Hendrik Ruijter  <Hendrik.Ruijter@axis.com>
 2002-07-16  Mark Salter  <msalter@redhat.com>
 

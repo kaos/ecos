@@ -387,13 +387,20 @@ load_elf_image(getc_t getc, unsigned long base)
         }
     }
     // Save load base/top and entry
-    load_address = lowest_address;
-    load_address_end = highest_address;
-    entry_address = ehdr.e_entry;
+    if (base) {
+        load_address = base;
+        load_address_end = base + (highest_address - lowest_address);
+        entry_address = base + (ehdr.e_entry - lowest_address);
+    } else {
+        load_address = lowest_address;
+        load_address_end = highest_address;
+        entry_address = ehdr.e_entry;
+    }
 
+    redboot_getc_terminate(false);
     if (addr_offset) diag_printf("Address offset = %p\n", (void *)addr_offset);
     diag_printf("Entry point: %p, address range: %p-%p\n", 
-                (void*)ehdr.e_entry, (void *)lowest_address, (void *)highest_address);
+                (void*)entry_address, (void *)load_address, (void *)load_address_end);
     return 1;
 #else // CYGSEM_REDBOOT_ELF
     diag_printf("Loading ELF images not supported\n");
@@ -521,18 +528,22 @@ load_srec_image(getc_t getc, unsigned long base)
         case '9':
             addr = (unsigned char *)_hex2(getc, ('9'-type+2), &sum);
             offset += ('9'-type+2);
-            // Save entry address
-            entry_address = (unsigned long)addr;
+            // Save load base/top, entry address
+            if (base) {
+                load_address = base;
+                load_address_end = base + (highest_address - lowest_address);
+                entry_address = (unsigned long)(base + (addr - lowest_address));
+            } else {
+                load_address = lowest_address;
+                load_address_end = highest_address;
+                entry_address = (unsigned long)addr;
+            }
             redboot_getc_terminate(false);
             if (addr_offset) diag_printf("Address offset = %p\n", (void *)addr_offset);
             diag_printf("Entry point: %p, address range: %p-%p\n", 
-                   (void*)entry_address, (void *)lowest_address, (void *)highest_address);
+                   (void*)entry_address, (void *)load_address, (void *)load_address_end);
 
-            // Save load base/top
-            load_address = lowest_address;
-            load_address_end = highest_address;
-
-            return highest_address;
+            return load_address_end;
         default:
             redboot_getc_terminate(true);
             diag_printf("Invalid S-record at offset 0x%lx, type: %x\n", 
@@ -640,7 +651,7 @@ do_load(int argc, char *argv[])
         io = (getc_io_funcs_t *)NULL;
         for (io_tab = __RedBoot_LOAD_TAB__; 
              io_tab != &__RedBoot_LOAD_TAB_END__;  io_tab++) {
-            if (strncasecmp(&mode_str[0], io_tab->mode, strlen(&mode_str[0])) == 0) {
+            if (strncasecmp(&mode_str[0], io_tab->name, strlen(&mode_str[0])) == 0) {
                 io = io_tab->funcs;
                 break;
             }
@@ -649,7 +660,7 @@ do_load(int argc, char *argv[])
             diag_printf("Invalid 'mode': %s.  Valid modes are:", mode_str);
             for (io_tab = __RedBoot_LOAD_TAB__; 
                  io_tab != &__RedBoot_LOAD_TAB_END__;  io_tab++) {
-                diag_printf(" %s", io_tab->mode);
+                diag_printf(" %s", io_tab->name);
             }
             diag_printf("\n");
         }
@@ -685,7 +696,7 @@ do_load(int argc, char *argv[])
     }
     info.filename = filename;
     info.chan = chan;
-    info.mode = io_tab;
+    info.mode = io_tab->mode;
 #ifdef CYGPKG_REDBOOT_NETWORKING
     info.server = &host;
 #endif
@@ -741,6 +752,7 @@ do_load(int argc, char *argv[])
                        ((type[1] >= '0') && (type[1] <= '9'))) {
 		end = load_srec_image(redboot_getc, base);
             } else {
+                redboot_getc_terminate(true);
                 diag_printf("Unrecognized image type: 0x%lx\n", *(unsigned long *)type);
             }
         }

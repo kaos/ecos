@@ -255,5 +255,5 @@ tftp_error(int err)
 //
 GETC_IO_FUNCS(tftp_io, tftp_stream_open, tftp_stream_close,
               0, tftp_stream_read, tftp_error);
-RedBoot_load(tftp, tftp_io, true, true);
+RedBoot_load(tftp, tftp_io, true, true, 0);
 

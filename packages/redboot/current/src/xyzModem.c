@@ -145,7 +145,7 @@ zm_flush(void)
 static void
 zm_dump_buf(void *buf, int len)
 {
-    vdump_buf_with_offset(zm_dprintf, buf, len, 0);
+    diag_vdump_buf_with_offset(zm_dprintf, buf, len, 0);
 }
 
 static unsigned char zm_buf[2048];
@@ -584,5 +584,5 @@ xyzModem_error(int err)
 //
 GETC_IO_FUNCS(xyzModem_io, xyzModem_stream_open, xyzModem_stream_close,
               xyzModem_stream_terminate, xyzModem_stream_read, xyzModem_error);
-RedBoot_load(xmodem, xyzModem_io, false, false);
-RedBoot_load(ymodem, xyzModem_io, false, false);
+RedBoot_load(xmodem, xyzModem_io, false, false, xyzModem_xmodem);
+RedBoot_load(ymodem, xyzModem_io, false, false, xyzModem_ymodem);

@@ -155,7 +155,7 @@ externC void expand_aliases(char *line, int len);
 
 typedef struct {
     char *filename;
-    struct load_io_entry *mode;
+    int   mode;
     int   chan;
 #ifdef CYGPKG_REDBOOT_NETWORKING
     struct sockaddr_in *server;
@@ -176,17 +176,18 @@ getc_io_funcs_t _label_ = {                                                     
 };
 
 struct load_io_entry {
-    char            *mode;
+    char            *name;
     getc_io_funcs_t *funcs;    
     bool             can_verbose;
     bool             need_filename;
+    int              mode;
 } CYG_HAL_TABLE_TYPE;
-#define _RedBoot_load(_mode_,_funcs_,_verbose_,_filename_)              \
-struct load_io_entry _load_tab_##_funcs_##_mode_                        \
-   CYG_HAL_TABLE_QUALIFIED_ENTRY(RedBoot_load,_funcs_##_mode) =         \
-     { #_mode_, &_funcs_, _verbose_, _filename_ }; 
-#define RedBoot_load(_mode_,_funcs_,_verbose_,_filename_)               \
-   _RedBoot_load(_mode_,_funcs_,_verbose_,_filename_)
+#define _RedBoot_load(_name_,_funcs_,_verbose_,_filename_,_mode_)       \
+struct load_io_entry _load_tab_##_funcs_##_name_                        \
+   CYG_HAL_TABLE_QUALIFIED_ENTRY(RedBoot_load,_funcs_##_name) =         \
+     { #_name_, &_funcs_, _verbose_, _filename_, _mode_ }; 
+#define RedBoot_load(_name_,_funcs_,_verbose_,_filename_, _mode_)       \
+   _RedBoot_load(_name_,_funcs_,_verbose_,_filename_,_mode_)
  
 #ifdef CYGPKG_COMPRESS_ZLIB
 // Decompression support

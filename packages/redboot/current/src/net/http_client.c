@@ -238,4 +238,4 @@ http_error(int err)
 //
 GETC_IO_FUNCS(http_io, http_stream_open, http_stream_close,
               0, http_stream_read, http_error);
-RedBoot_load(http, http_io, true, true);
+RedBoot_load(http, http_io, true, true, 0);
