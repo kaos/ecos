@@ -71,6 +71,8 @@
        display  "Motorola FADS PowerPC evaluation board"
        type     radio
        parent   CYGPKG_HAL_POWERPC
+       requires CYGPKG_HAL_POWERPC_PPC8xx
+       requires !CYGSEM_HAL_USE_ROM_MONITOR
        platform fads
        description "
            The FADS HAL package provides the support needed to run

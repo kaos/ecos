@@ -117,6 +117,12 @@ cyg_tracemsg8( cyg_uint32 what,
                CYG_ADDRWORD arg6,  CYG_ADDRWORD arg7 )
 {}
 
+// -------------------------------------------------------------------------
+
+externC void
+cyg_trace_dump(void)
+{}
+
 #endif // CYGDBG_USE_TRACING
 
 // -------------------------------------------------------------------------

@@ -1,3 +1,13 @@
+2000-02-08  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/cyg_trac.h: Define and document CYG_TRACE_PRINT() and
+	CYG_TRACE_DUMP() macros for outputting buffered trace output, and
+	kernel state dump respectively
+
+	* src/fancy.cxx (cyg_trace_dump): Add (from buffer.cxx)
+	* src/simple.cxx (cyg_trace_dump): Add (from buffer.cxx)
+	* src/null.cxx (cyg_trace_dump): Add as empty function
+
 1999-11-26  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/cyg_type.h: Add MLT symbols CYGMEM_REGION_ATTR_R/W.

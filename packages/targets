@@ -161,6 +161,7 @@ target powerpc {
         alias		{ "Cogent board" }
 	startup		{ ram rom stubs }
 	packages	{
+	    CYGPKG_HAL_POWERPC_MPC8xx
 	    CYGPKG_HAL_POWERPC_COGENT
 	}
     }
@@ -168,6 +169,7 @@ target powerpc {
         alias		{ "FADS board" }
 	startup		{ ram rom }
 	packages	{
+	    CYGPKG_HAL_POWERPC_MPC8xx
 	    CYGPKG_HAL_POWERPC_FADS
 	}
     }
@@ -176,6 +178,7 @@ target powerpc {
 	startup		{ ram rom }
 	packages	{
 	    CYGPKG_HAL_POWERPC_MBX
+	    CYGPKG_HAL_POWERPC_MPC8xx
 	    CYGPKG_HAL_QUICC
 	}
     }
@@ -183,6 +186,7 @@ target powerpc {
 	alias		{ "Simulator" }
 	startup		{ ram }
 	packages	{
+	    CYGPKG_HAL_POWERPC_PPC60x
 	    CYGPKG_HAL_POWERPC_SIM
 	}
     }
@@ -208,8 +212,8 @@ target i386 {
 	packages	{ 
                 CYGPKG_HAL_I386_LINUX
         }
-
     }
+
 }
 
 target arm {

@@ -91,7 +91,7 @@
        display          "Startup type"
        parent           CYGPKG_HAL_ARM_PID
        type             enum
-       legal_values     ram rom stubs
+       legal_values     ram rom
        startup
        description      "
            When targetting the PID eval board it is possible to build
@@ -99,8 +99,7 @@
            'ram' when building programs to load into RAM using onboard
            debug software such as Angel or eCos GDB stubs.  Select 'rom'
            when building a stand-alone application which will be put
-           into ROM.  Selection of 'stubs' is for the special case of
-           building the eCos GDB stubs themselves."
+           into ROM."
    }
    
    }}CFG_DATA */

@@ -31,7 +31,7 @@
 MEMORY
 {
     rom : ORIGIN = 0xfff00000, LENGTH = 0x40000
-    ram : ORIGIN = 0x00002000, LENGTH = 0x7fe000
+    ram : ORIGIN = 0x00000000, LENGTH = 0x800000
 }
 
 SECTIONS
@@ -44,7 +44,9 @@ SECTIONS
     SECTION_rodata (rom, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_fixup (rom, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_gcc_except_table (rom, ALIGN (0x1), LMA_EQ_VMA)
-    SECTION_data (ram, 0x2000, FOLLOWING (.gcc_except_table))
+    __reserved_vectors = 0; . = __reserved_vectors + 0x3000;
+    __reserved_vsr_table = ALIGN (0x1); . = __reserved_vsr_table + 0x200;
+    SECTION_data (ram, ALIGN (0x10), FOLLOWING (.gcc_except_table))
     SECTION_sbss (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_bss (ram, ALIGN (0x10), LMA_EQ_VMA)
     SECTIONS_END

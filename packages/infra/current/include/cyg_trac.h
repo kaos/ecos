@@ -238,6 +238,13 @@ type information, by file, function and line number, is available.  This
 can greatly reduce the size of an image with tracing disabled, which may be
 crucial in debugging on actual shipped hardware with limited memory.
 
+If configured for buffered tracing then CYG_TRACE_PRINT() can be used to
+output the contents of the trace buffer on demand.
+
+CYG_TRACE_DUMP() outputs a form of "core dump" containing info on the
+scheduler and threads at the time. This information will be invalid if
+the kernel is not running.
+
 C/C++: in C++ the function reporting is implemented using a class object
 with a destructor; this allows reporting of a return which has not been
 explicitly reported, and detection of accidental multiple return reports.
@@ -311,6 +318,12 @@ CYG_REPORT_FUNCARG1XV...                        use "arg=%08x"
 CYG_REPORT_FUNCARG1YV...                        use "arg=%x"
 CYG_REPORT_FUNCARG1DV...                        use "arg=%d"
 
+Other
+-----
+
+CYG_TRACE_DUMP()                                dumps kernel state
+CYG_TRACE_PRINT()                               prints buffered tracing
+
 
 ---------------------------------------------------------------------------
 
@@ -380,14 +393,34 @@ also fits in a byte as number or a bitset.
 // -------------------------------------------------------------------------
 // We define macros and appropriate prototypes for the trace/fail
 // system.  These are:
-//      CYG_TRACE0..8   - trace if boolean
-//      CYG_TRACEPROC   - default no comment proc entry
-//      CYG_TRACEPROCOUT        - default no comment proc exit
+//      CYG_TRACE0..8     - trace if boolean
+//      CYG_TRACEPROC     - default no comment proc entry
+//      CYG_TRACEPROCOUT  - default no comment proc exit
+//      CYG_TRACE_DUMP    - outputs a form of "core dump", including the state
+//                          of the kernel scheduler, threads, etc.
+//      CYG_TRACE_PRINT   - Forces manual output of any trace info that has
+//                          been buffered up.
 
 // these are executed to deal with tracing - breakpoint?
 
 externC void
 cyg_tracenomsg( char *psz_func, char *psz_file, cyg_uint32 linenum );
+
+externC void
+cyg_trace_dump(void);
+
+#define CYG_TRACE_DUMP() cyg_trace_dump()
+
+#ifdef CYGDBG_INFRA_DEBUG_TRACE_ASSERT_BUFFER
+
+externC void
+cyg_trace_print(void);
+
+#define CYG_TRACE_PRINT() cyg_trace_print()
+
+#else
+#define CYG_TRACE_PRINT() CYG_EMPTY_STATEMENT
+#endif
 
 // provide every other one of these as a space/caller bloat compromise.
 
@@ -1066,6 +1099,9 @@ CYG_MACRO_END
 
 #define CYG_REPORT_RETURN()                             CYG_EMPTY_STATEMENT
 #define CYG_REPORT_RETVAL( _value_ )                    CYG_EMPTY_STATEMENT
+
+#define CYG_TRACE_PRINT() CYG_EMPTY_STATEMENT
+#define CYG_TRACE_DUMP()  CYG_EMPTY_STATEMENT
 
 #endif // ! CYGDBG_USE_TRACING
 

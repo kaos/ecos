@@ -1,3 +1,41 @@
+2000-02-11  Jesper Skov  <jskov@redhat.com>
+
+
+	* src/hal_intr.c (hal_IRQ_init): Moved code to MPC8xx variant
+	directory.
+
+	* include/hal_intr.h: Added hal_variant_IRQ_init declaration.
+
+	* tests/PKGconf.mak:
+	* tests/intr0.c:
+	Moved intr0 test to MPC8xx variant directory.
+
+2000-02-10  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_intr.h: Added HAL_VSR_SET_TO_ECOS_HANDLER
+
+	* src/vectors.S: Renamed default VSR handlers.
+
+2000-02-07  Jesper Skov  <jskov@redhat.com>
+
+	* src/vectors.S: Cleaned up vector code a bit. Leave vector
+	initialization to variant code.
+	Add a bit of text explaining why exception code was changed.
+	Get rid of STARTUP_STUBS conditions.
+
+	* src/powerpc.ld: VSR table resides at fixed address.
+
+	* src/hal_misc.c: Fixed compiler warning.
+
+	* include/pkgconf/hal_powerpc.h: Add variant option.
+	Include variant headers.
+	
+	* include/ppc_regs.h: 
+	* include/hal_intr.h:
+	* include/hal_cache.h:
+	Moved variant definitions into new variant header files.
+
+
 2000-02-03  Jesper Skov  <jskov@redhat.com>
 
 	* tests/intr0.c: 

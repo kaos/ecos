@@ -1,3 +1,19 @@
+2000-02-10  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* targets: Fix up some accidental reversions
+
+2000-02-10  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* targets: 
+	* packages: 
+	Added appropriate entries for i386 PC target.
+
+2000-02-07  Jesper Skov  <jskov@redhat.com>
+
+	* targets:
+	* packages:
+	Added PPC variants.
+
 1999-12-02  Mark Salter  <msalter@cygnus.com>
 
 	* targets: Added cma222 platform.

@@ -1,3 +1,24 @@
+2000-02-10  Jesper Skov  <jskov@redhat.com>
+
+	* include/plf_stub.h: 
+	Removed HAL_STUB_PLATFORM_STUBS_INIT.
+
+	* misc/STUBS_config: [added]
+	Removed stubs as a legal startup type.
+
+2000-02-07  Jesper Skov  <jskov@redhat.com>
+
+	* include/pkgconf/mlt_powerpc_mbx_ram.mlt: 
+	* include/pkgconf/mlt_powerpc_mbx_rom.mlt: 
+	Fixed some typos.
+
+	* src/mbx.S: Use CYGHWR_HAL_POWERPC_BOARD_SPEED.
+
+	* include/pkgconf/mlt*.*: Use new exception scheme.	
+	* include/pkgconf/hal_powerpc_mbx.h: Use
+	CYGHWR_HAL_POWERPC_BOARD_SPEED. Use MPC8xx variant code.
+
+
 2000-01-26  Jesper Skov  <jskov@redhat.com>
 
 	* include/plf_cache.h: Added.

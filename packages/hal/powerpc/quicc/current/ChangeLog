@@ -1,3 +1,8 @@
+2000-02-04  Jesper Skov  <jskov@redhat.com>
+
+	* src/quicc_smc1.c (cyg_quicc_smc1_uart_rcvchar): Get frequency
+	from new CYGHWR_HAL_POWERPC_BOARD_SPEED variable.
+
 2000-02-03  Jesper Skov  <jskov@redhat.com>
 
 	* src/quicc_smc1.c: CYG_HAL_POWERPC_x->CYGPKG_...

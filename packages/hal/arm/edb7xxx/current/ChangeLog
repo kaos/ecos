@@ -1,3 +1,18 @@
+2000-02-10  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* tests/dram_test.c: Include proper testing infrastructure to
+	make farm happy.
+
+2000-02-10  Jesper Skov  <jskov@redhat.com>
+
+	* include/plf_stub.h: 
+	HAL_STUB_PLATFORM_STUBS_INIT->HAL_STUB_PLATFORM_INIT
+
+	* misc/STUBS_config: 
+	* src/hal_diag.c: 
+	* include/pkgconf/hal_arm_edb7xxx.h: 
+	Removed stubs as a legal startup type.
+
 2000-02-02  Jesper Skov  <jskov@redhat.com>
 
 	* misc/prog_flash.c (program_flash): Added expected argument.

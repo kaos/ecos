@@ -40,6 +40,7 @@
 #include <pkgconf/kernel.h>   // Configuration header
 #include <cyg/kernel/kapi.h>
 #include <cyg/infra/diag.h>
+#include <cyg/infra/testcase.h>
 
 #include <cyg/hal/hal_arch.h>
 #include CYGHWR_MEMORY_LAYOUT_H  // Memory layout
@@ -54,24 +55,19 @@ static char stack[STACK_SIZE];
 static cyg_thread thread_data;
 static cyg_handle_t thread_handle;
 
-extern char _end;
+extern char __bss_end;
 int total_errors;
 int run_errors;
 int error_count;
+
 #define MAX_ERRORS   5
-#define NUM_RUNS     12
+#define NUM_RUNS     4
 #define REFRESH_TIME 5
 
 int decay_time[] = { 50, 100, 200, 500, 1000 };
 #define NUM_DECAY sizeof(decay_time)/sizeof(decay_time[0])
 
 // FUNCTIONS
-
-static void
-cyg_test_exit(void)
-{
-    while (TRUE) ;
-}
 
 static void
 new_test(void)
@@ -278,8 +274,10 @@ dram_exercise(cyg_addrword_t p)
     cyg_uint32 start_DRAM, end_DRAM;
     int i;
 
+    CYG_TEST_INIT();
+
     end_DRAM = CYGMEM_REGION_ram+CYGMEM_REGION_ram_SIZE;
-    start_DRAM = ((cyg_uint32)&_end + 0x00000FFF) & 0xFFFFF000;
+    start_DRAM = ((cyg_uint32)&__bss_end + 0x00000FFF) & 0xFFFFF000;
     diag_printf("DRAM test - start: 0x%08x, end: 0x%08x\n", start_DRAM, end_DRAM);
 
     for (i = 0;  i < NUM_RUNS;  i++) {
@@ -295,8 +293,7 @@ dram_exercise(cyg_addrword_t p)
         diag_printf("\n*** End run, %d errors, %d total errors\n", run_errors, total_errors);
     }
 
-    diag_printf("All done!\n");
-    cyg_test_exit();
+    CYG_TEST_PASS_FINISH("DRAM testing complete");
 }
 
 externC void

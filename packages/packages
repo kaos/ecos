@@ -250,6 +250,18 @@ package CYGPKG_HAL_QUICC {
         include_dir	cyg/hal/quicc
 	hardware
 }
+package CYGPKG_HAL_POWERPC_MPC8xx {
+	alias		{ "PowerPC MPC8x family support" hal_powerpc_mpc8xx mpc8xx_hal mpc8xx }
+	directory	hal/powerpc/mpc8xx
+        include_dir	cyg/hal
+	hardware
+}
+package CYGPKG_HAL_POWERPC_PPC60x {
+	alias		{ "PowerPC 60x family support" hal_powerpc_ppc60x ppc60x_hal ppc60x }
+	directory	hal/powerpc/ppc60x
+        include_dir	cyg/hal
+	hardware
+}
 package CYGPKG_HAL_POWERPC_SIM {
 	alias		{ "PowerPC simulator support" hal_powerpc_sim powerpc_sim_hal }
 	directory	hal/powerpc/sim

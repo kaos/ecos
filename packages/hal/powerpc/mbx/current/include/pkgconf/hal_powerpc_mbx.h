@@ -52,6 +52,7 @@
        type     radio
        parent   CYGPKG_HAL_POWERPC
        requires CYGPKG_HAL_QUICC
+       requires CYGPKG_HAL_POWERPC_MPC860
        platform mbx
        description "
            The MBX HAL package provides the support needed to run
@@ -117,11 +118,9 @@
 #define CYGNUM_HAL_RTC_NUMERATOR     1000000000
 #define CYGNUM_HAL_RTC_DENOMINATOR   100
 
-# define CYGHWR_HAL_POWERPC_MBX_BOARD_SPEED CYGHWR_HAL_POWERPC_BOARD_SPEED
-
-#if 40 == CYGHWR_HAL_POWERPC_MBX_BOARD_SPEED
+#if 40 == CYGHWR_HAL_POWERPC_BOARD_SPEED
 # define CYGNUM_HAL_RTC_PERIOD        25000
-#elif 50 == CYGHWR_HAL_POWERPC_MBX_BOARD_SPEED
+#elif 50 == CYGHWR_HAL_POWERPC_BOARD_SPEED
 # define CYGNUM_HAL_RTC_PERIOD        31250
 #else
 # error Bad Board speed defined: see CYGBLD_HAL_PLATFORM_H

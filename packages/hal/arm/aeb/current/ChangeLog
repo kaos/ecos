@@ -1,3 +1,12 @@
+2000-02-10  Jesper Skov  <jskov@redhat.com>
+
+	* include/plf_stub.h:
+	HAL_STUB_PLATFORM_STUBS_INIT->HAL_STUB_PLATFORM_INIT
+
+	* misc/STUBS_config: 
+	* include/pkgconf/hal_arm_aeb.h:
+	Removed stubs as a legal startup type.
+
 2000-01-27  John Dallaway  <jld@cygnus.co.uk>
 
 	* include/pkgconf/mlt_arm_aeb_rom.ldi,

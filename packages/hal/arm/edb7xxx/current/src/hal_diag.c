@@ -76,7 +76,7 @@
 // Assumption: all diagnostic output must be GDB packetized unless this is a ROM (i.e.
 // totally stand-alone) system.
 
-#ifdef CYG_HAL_STARTUP_STUBS
+#ifdef CYGSEM_HAL_ROM_MONITOR
 #define CYG_HAL_STARTUP_ROM
 #undef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 #endif

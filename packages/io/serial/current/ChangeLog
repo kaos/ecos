@@ -1,3 +1,15 @@
+2000-02-11  Jesper Skov  <jskov@redhat.com>
+
+	* src/sh/sh_sci_7708.inl (DEVTAB_ENTRY): 
+	* src/sparclite/sleb_sdtr.c: 
+	serial_devio => cyg_io_serial_devio
+
+2000-02-10  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/mn10300/mn10300_serial.c: Ensure all CYG_HAL_MN10300_*
+	preprocessor conditionals use the correct CYGPKG_HAL_MN10300_AM3* form
+	now.	
+
 2000-02-03  Jesper Skov  <jskov@redhat.com>
 
 	* src/powerpc/quicc_smc_serial.c: CYG_HAL_POWERPC_x->CYGPKG_...

@@ -70,7 +70,7 @@
 #endif
 
 // Always use LCD when building a GDB stub ROM.
-#ifdef CYG_HAL_STARTUP_STUBS
+#ifdef CYGSEM_HAL_ROM_MONITOR
 #undef CYG_KERNEL_DIAG_SERIAL
 #undef CYG_KERNEL_DIAG_ROMART
 
@@ -78,9 +78,9 @@
 #endif
 
 // Assumption: all diagnostic output must be GDB packetized unless
-// this is a ROM (i.e.  totally stand-alone) system.
-#ifdef CYG_HAL_STARTUP_ROM
-#define HAL_DIAG_USES_HARDWARE
+// this is a configuration for a stand-alone ROM system.
+#if defined(CYG_HAL_STARTUP_ROM) && !defined(CYGSEM_HAL_ROM_MONITOR)
+# define HAL_DIAG_USES_HARDWARE
 #endif
 
 
@@ -309,7 +309,7 @@ void hal_diag_init()
     lcd_dis( LCD_LINE1, lcd_line[1] );
 
 
-#ifdef CYG_HAL_STARTUP_STUBS
+#ifdef CYGSEM_HAL_ROM_MONITOR
     // It's handy to have the LCD initialized at reset when using it
     // for debugging output.
     {

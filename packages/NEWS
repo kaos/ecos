@@ -90,6 +90,12 @@
 	The eCos idle loop will not load the host system anymore
 	(except in special configurations, see linux_misc.c).
 
+*** PowerPC
+        Major revamp of exception handling - _not_ backwards
+        compatible (see vectors.S for the reasoning behind the
+        change).
+        Introduced variant hierarchies.
+
 *** Sparclite
 
 Where supported by the targetted platform, it is now possible to use

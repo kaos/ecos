@@ -1,3 +1,8 @@
+2000-02-10  Jesper Skov  <jskov@redhat.com>
+
+	* tests/signal/signal2.c (main): 
+	Also reclaim DATA_TLB_MISS vector if available.
+
 1999-10-19  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/stdio/output/vfnprintf.cxx: We can now remove Berkeley

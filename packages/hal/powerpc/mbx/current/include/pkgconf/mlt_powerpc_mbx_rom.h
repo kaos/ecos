@@ -5,8 +5,8 @@
 #include <cyg/infra/cyg_type.h>
 #include <stddef.h>
 
-#define CYGMEM_REGION_ram (0x2000)
-#define CYGMEM_REGION_ram_SIZE (0x3fe000)
+#define CYGMEM_REGION_ram (0x0)
+#define CYGMEM_REGION_ram_SIZE (0x400000)
 #define CYGMEM_REGION_ram_ATTR (CYGMEM_REGION_ATTR_R | CYGMEM_REGION_ATTR_W)
 #define CYGMEM_REGION_rom (0xfe000000)
 #define CYGMEM_REGION_rom_SIZE (0x800000)

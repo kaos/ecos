@@ -84,9 +84,12 @@ externC void hal_cma_stub_init_break_irq( void );
 
 //----------------------------------------------------------------------------
 // Stub initializer.
+#ifdef CYGSEM_HAL_ROM_MONITOR
 extern void diag_init (void);
-#define HAL_STUB_PLATFORM_STUBS_INIT()        diag_init()
-
+# define HAL_STUB_PLATFORM_INIT()              diag_init()
+#else
+# define HAL_STUB_PLATFORM_INIT()              CYG_EMPTY_STATEMENT
+#endif
 
 //----------------------------------------------------------------------------
 // Reset.

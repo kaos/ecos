@@ -44,6 +44,47 @@
 ##
 ##==========================================================================
 
+#===========================================================================
+#
+#       The PowerPC exception handling has changed as of version 1.3.1.
+#       The primary motivation for rewriting the code was to bring it more
+#       in line with the other HALs, in particular to allow a RAM application
+#       to cleanly take over only a subset of vectors from a running ROM
+#	monitor.
+#
+#       GDB stubs (and CygMon, should it be ported to PPC) copies
+#       exception vector entry handler code to address 0. These vector entry
+#       handlers (defined by the exception_vector macro below) compute
+#       a vector index into the hal_vsr_table, fetch the pointer, and
+#       jump to the HAL vector service routine (VSR).
+#
+#       The hal_vsr_table is located immediately after the vector
+#       handlers (at address 0x3000), allowing RAM applications to
+#       change VSRs as necessary, while still keeping desired ROM
+#       monitor functionality available for debugging.
+#
+#       ROM applications can still be configured to leave the vector entry
+#       handlers at 0xff000000, but there is at the moment no
+#       provision for reclaiming the reserved vector space in RAM to
+#       application usage.
+#
+#       RAM applications can also be configured to provide exception
+#       handlers which are copied to address 0 on startup, thus taking
+#       full control of the target.
+#
+#
+#       Default configuration is for RAM applications to rely on an
+#       existing ROM monitor to provide debugging functionality, and
+#       for ROM applications to copy vectors to address 0.
+#
+#
+#       Unfortunately the new exception scheme is not compatible with the
+#       old scheme. Stubs and applications must be compiled using the same
+#       scheme (i.e., old binaries will not run with new stubs, and new
+#       binaries will not run with old stubs).
+#
+#===========================================================================
+
 #include <pkgconf/hal.h>
 
 #ifdef CYGPKG_KERNEL
@@ -53,18 +94,29 @@
 #define CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
 #include "cyg/hal/ppc_regs.h"        
 #include "cyg/hal/ppc.inc"
-
+        
 #===========================================================================
                 
         .file   "vectors.S"
         
-        .extern hal_interrupt_handlers
         .extern hal_interrupt_data
+        .extern hal_interrupt_handlers
         .extern hal_interrupt_objects
+        .extern hal_vsr_table
 
+        .extern cyg_hal_invoke_constructors
         .extern cyg_instrument
-
+        .extern cyg_start
+        .extern hal_IRQ_init
+        .extern hal_MMU_init
+        .extern hal_enable_caches
         .extern hal_hardware_init
+        .extern initialize_stub
+
+        .extern __bss_start
+        .extern __bss_end
+        .extern __sbss_start
+        .extern __sbss_end
 
 #===========================================================================
 # MSR initialization value
@@ -77,16 +129,16 @@
 # RI = recoverable interrupt
 
 #define CYG_MSR_COMMON (MSR_FP | MSR_ME | MSR_IR | MSR_DR | MSR_RI)
-#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_STUBS)
+#if defined(CYG_HAL_STARTUP_ROM)
 # ifdef CYGSEM_HAL_POWERPC_COPY_VECTORS
 #  define CYG_MSR CYG_MSR_COMMON
 # else
 #  define CYG_MSR (CYG_MSR_COMMON | MSR_IP)
 # endif
+#elif defined(CYG_HAL_STARTUP_RAM)
+# define CYG_MSR CYG_MSR_COMMON
 #endif
-#ifdef CYG_HAL_STARTUP_RAM      
-#define CYG_MSR CYG_MSR_COMMON
-#endif
+
 #ifdef CYGPKG_HAL_POWERPC_SIM
 # When building for SIM, don~t enable MMU -- it~s not needed since caches
 # are disabled, and there is a runtime simulation overhead.
@@ -96,52 +148,46 @@
 
 #define CYG_MSR_NO_INTS (CYG_MSR & ~MSR_ME)        
 
+# Include variant macros after MSR definition.        
+#include "cyg/hal/variant.inc"
+
+
 #===========================================================================
 # If the following option is enabled, we only save registers up to R12.
 # The PowerPC ABI defines registers 13..31 as callee saved and thus we do
 # not need to save them when calling C functions.
 
 #ifdef CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT
-
-#define MAX_SAVE_REG    12
-
+# define MAX_SAVE_REG    12
 #else
-
-#define MAX_SAVE_REG    31
-        
+# define MAX_SAVE_REG    31
 #endif                  
         
 #===========================================================================
 # Start by defining the exceptions vectors that must be placed at
-# locations 0xFFF00000 and 0x00000000. The following code will normally
+# locations 0xFFF00000 or 0x00000000. The following code will normally
 # be located at 0xFFF00000 in the ROM. It may optionally be copied out
 # to 0x00000000 if we want to use the RAM vectors. For this reason this code
-# MUST BE POSITION INDEPENDENT. In RAM loaded configurations, this code may
-# be placed at 0x00000000 during loading.
+# MUST BE POSITION INDEPENDENT.
         
         .section ".vectors","ax"
 
 #---------------------------------------------------------------------------
-# Unused first vector. Jump to special handler, trapping null-pointer calls.
+# Macros for generating an exception vector service routine
 
-rom_vectors:
-        .extern hal_null_call
-        b       hal_null_call
-        
-#---------------------------------------------------------------------------
-# Reset vector. 
+# Reset vector macro
 
+        .macro  reset_vector name
         .p2align 8
-        .globl  reset_vector    
-
-reset_vector:
+        .globl  __exception_\name
+__exception_\name:
         lwi     r3,_start
         mtlr    r3
         blr
+        .endm
         
-#---------------------------------------------------------------------------
-# Macro for generating an exception vector service routine
-        
+# Generic vector macro
+                
         .macro  exception_vector name
         .p2align 8
         .globl  __exception_\name
@@ -163,38 +209,17 @@ __exception_\name:
 #---------------------------------------------------------------------------
 # Define the exception vectors.
 
+rom_vectors:
         # These are the architecture defined vectors that
         # are always present.
-                
+        exception_vector        reserved_00000
+        reset_vector            reset
         exception_vector        machine_check
         exception_vector        data_storage
         exception_vector        instruction_storage
         exception_vector        external
         exception_vector        alignment
-#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_STUBS) \
-    || defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
         exception_vector        program
-#else
-        # Provide a crude hook to the GDB exception handler in ROM.
-        # This allows the testing infrastructure to rely on breakpoints
-        # to terminate tests, even when the tests are compiled without
-        # the GDB stub.
-        # It is _not_ a generic solution to the problem; in particular it
-        # is not possible to continue after a breakpoint is hit.
-        # 
-        # Note that for platforms where StubROM vectors are copied into RAM
-        # at 0x00000000, simply skipping the copy of vector 0x700 is a
-        # better solution.  See CYGPRI_STUBROM_HAS_RAM_VECTORS below.
-
-        .p2align 8
-        .globl  __exception_program
-__exception_program:
-        bl      _init_CPU                       # disable caches.
-        lwi     r3,0xfff00700                   # address of trap handler
-        mtlr    r3                              # in ROM.
-        blr                                     # jump to it.
-
-#endif
         exception_vector        floatingpoint_unavailable
         exception_vector        decrementer
         exception_vector        reserved_00a00
@@ -204,31 +229,10 @@ __exception_program:
         exception_vector        floatingpoint_assist
         exception_vector        reserved_00f00
 
-        # There are some additional vectors defined
-        # on various implementations.
+        # Variants may define extra vectors.
+        hal_extra_vectors
 
-#ifdef CYGPKG_HAL_POWERPC_MPC8xx
-        # MPC8xx vectors
-
-        exception_vector        software_emu
-        exception_vector        instruction_tlb_miss
-        exception_vector        data_tlb_miss
-        exception_vector        instruction_tlb_error
-        exception_vector        data_tlb_error
-        exception_vector        reserved_01500
-        exception_vector        reserved_01600
-        exception_vector        reserved_01700
-        exception_vector        reserved_01800
-        exception_vector        reserved_01900
-        exception_vector        reserved_01A00
-        exception_vector        reserved_01B00
-        exception_vector        data_breakpoint
-        exception_vector        instruction_breakpoint
-        exception_vector        peripheral_breakpoint
-        exception_vector        NMI_port
-
-#endif
-rom_vectors_end:        
+rom_vectors_end:   
 
 #===========================================================================
 # Real startup code. We jump here from the various reset vectors to set up
@@ -236,22 +240,10 @@ rom_vectors_end:
         
         .text   
         .globl  _start
-        
 _start:
-        # Initialize CPU
-        bl      _init_CPU
-
-#ifdef CYGPKG_HAL_POWERPC_MPC8xx
-        # Disable special MPC8xx "development support" which
-	# suppresses trace exceptions. The CPU seems to hang, not 
-        # executing from offset 0x1e00(?) as expected.
-
-        lwi	r3,0x00000007
-        mtspr	ICTRL,r3
-
-        li      r3,0
-        mtspr   DER, r3
-#endif
+        # Initialize CPU to a post-reset state, ensuring the ground doesn''t
+        # shift under us while we try to set things up.
+        hal_cpu_init
 
         # Set up global offset table
         lwi     r2,_GLOBAL_OFFSET_TABLE_
@@ -271,7 +263,11 @@ _start:
         lwi     sp,__interrupt_stack
         mtspr   SPRG0,sp        # save in sprg0 for later use
 
-#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_STUBS)
+        # Set up exception handlers and VSR table, taking care not to
+        # step on any ROM monitor''s toes.
+        hal_mon_init
+
+#if defined(CYG_HAL_STARTUP_ROM)
 
         # Copy data from ROM to ram
         lwi     r3,__rom_data_start     # r3 = rom start
@@ -290,56 +286,8 @@ _start:
         blt     1b                      # loop if not yet done
 2:
 #endif
-        
-        
-#ifdef CYGSEM_HAL_POWERPC_COPY_VECTORS // only for StubRom-supported startup
-
-#ifdef CYGPKG_HAL_POWERPC_MBX
-# define CYGPRI_STUBROM_HAS_RAM_VECTORS
-#endif
-
-#ifdef CYGPRI_STUBROM_HAS_RAM_VECTORS
-# ifdef CYG_HAL_STARTUP_RAM
-#  ifndef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-#   define CYGPRI_SKIP_BREAKPOINT_VECTOR
-#  endif  // no stubs
-# endif  // RAM startup
-#endif  // Stubrom vectors are in RAM
-
-        # Copy RAM exception vectors from ROM (or load place) to RAM
-        lwi     r3,rom_vectors          # r3 = rom start
-        lwi     r4,0                    # r4 = ram start
-#ifdef CYGPRI_SKIP_BREAKPOINT_VECTOR
-        lwi     r5,__exception_program	# r5 = end of first leg of copy
-#else
-        lwi     r5,rom_vectors_end      # r5 = rom end
-#endif
-
-        cmplw   r3,r5                   # skip if no vectors
-        beq     2f
-        
-1:
-        lwz     r0,0(r3)                # get word from ROM
-        stw     r0,0(r4)                # store in RAM
-        addi    r3,r3,4                 # increment by 1 word
-        addi    r4,r4,4                 # increment by 1 word
-        cmplw   r3,r5                   # compare
-        blt     1b                      # loop if not yet done
-2:
-#ifdef CYGPRI_SKIP_BREAKPOINT_VECTOR
-	cmplwi	r4,__exception_program@L
-	bne	3f			# is it the breakpoint vector?
-	addi	r4,r4,0x100		# if so, leave it well alone
-	addi	r3,r3,0x100
-	lwi     r5,rom_vectors_end      # r5 = rom end
-	b	1b			# and do the rest of the copy
-3:	
-#endif // Skip copying the breakpoint vector
-#endif
 
         # clear BSS
-        .extern __bss_start
-        .extern __bss_end
         lwi     r3,__bss_start  # r3 = start
         lwi     r4,__bss_end    # r4 = end
         li      r0,0            # r0 = 0
@@ -353,8 +301,6 @@ _start:
 2:
 
         # clear SBSS
-        .extern __sbss_start
-        .extern __sbss_end
         lwi     r3,__sbss_start # r3 = start
         lwi     r4,__sbss_end   # r4 = end
         cmplw   r3,r4           # skip if no sbss
@@ -377,7 +323,6 @@ _start:
         stwu    sp,-ppc_stack_frame_size(sp)    # create new stack frame
 
         # Initialize MMU.
-        .extern hal_MMU_init
         bl      hal_MMU_init
 
         # Enable MMU so we can safely enable caches.
@@ -387,23 +332,18 @@ _start:
         sync
 	
         # Enable caches
-        .extern hal_enable_caches
         bl      hal_enable_caches
 
         # call c++ constructors
-        .extern cyg_hal_invoke_constructors
         bl      cyg_hal_invoke_constructors
 
         # set up platform specific interrupt environment
-        .extern hal_IRQ_init
         bl      hal_IRQ_init
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-        .extern initialize_stub
         bl      initialize_stub
 #endif
 
-        .extern cyg_start
         bl      cyg_start                       # call cyg_start
 9:      
         b       9b              # if we return, loop
@@ -417,8 +357,8 @@ _start:
         
         .text
 
-        .extern __default_exception_vsr
-__default_exception_vsr:
+        .globl cyg_hal_default_exception_vsr
+cyg_hal_default_exception_vsr:
         
         # We come here with all register containing their
         # pre-exception values except:
@@ -520,26 +460,7 @@ __default_exception_vsr:
 
 ## Note: CYG_ISR_TABLE_SIZE must match CYG_ISR_COUNT defined in hal_intr.h.
 
-#ifdef CYGPKG_HAL_POWERPC_MPC8xx 
-
-## First level decoding of MPC8xx SIU interrupt controller.
-
-#define CYG_ISR_TABLE_SIZE    59
-
-        # decode the interrupt
-	.macro  decode_interrupt dreg,state
-        lwz     \dreg,ppcreg_vector(\state)     # retrieve vector number,
-        rlwinm. \dreg,\dreg,22,31,31            # isolate bit 21
-        beq     0f                              # done if decrementer (vec 0)
-        lwi     \dreg,CYGARC_REG_IMM_SIVEC      # if external, get SIU
-        lbz     \dreg,0(\dreg)                  # vector.
-        srwi    \dreg,\dreg,2
-        addi    \dreg,\dreg,1                   # Skip decrementer vector
-0:      stw     \dreg,ppcreg_vector(\state)     # update vector in state frame.
-        slwi    \dreg,\dreg,2                   # convert to byte offset.
-        .endm                              
-
-#else
+#ifndef CYGPKG_HAL_POWERPC_INTC_DEFINED
 
 ## This is the simple version. No interrupt controller, ppcreg_vector 
 ## is updated with the decoded interrupt vector. Isr tables/chaining
@@ -549,20 +470,20 @@ __default_exception_vsr:
 #define CYG_ISR_TABLE_SIZE    2
 
         # decode the interrupt
-	.macro  decode_interrupt dreg,state
+	.macro  hal_intc_decode dreg,state
         lwz     \dreg,ppcreg_vector(\state)     # retrieve vector number,
         rlwinm  \dreg,\dreg,22,31,31            # isolate bit 21 and update
         stw     \dreg,ppcreg_vector(\state)     # vector in state frame.
         slwi    \dreg,\dreg,2                   # convert to word offset.
         .endm                              
 
-#endif
+#endif // CYGPKG_HAL_POWERPC_MPC8xx
 
 #---------------------------------------------------------------------------
 # Common interrupt handling code.
 
-        .extern __default_interrupt_vsr
-__default_interrupt_vsr:
+        .globl cyg_hal_default_interrupt_vsr
+cyg_hal_default_interrupt_vsr:
 
         # We come here with all register containing their
         # pre-exception values except:
@@ -675,7 +596,7 @@ __default_interrupt_vsr:
         
 #endif
 
-        decode_interrupt r15,r14                # get table index
+        hal_intc_decode r15,r14                # get table index
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
         .extern cyg_hal_gdb_isr
@@ -891,112 +812,6 @@ FUNC_START(hal_interrupt_stack_call_pending_DSRs)
         blr
 #endif		
         
-#---------------------------------------------------------------------------
-# Code for putting the CPU in a post-reset state; disabling MMU and caches.
-_init_CPU:
-#ifdef CYGPKG_HAL_POWERPC_MPC8xx
-        lwi     r3,CYGARC_REG_DC_CMD_CD
-        sync
-        mtspr   CYGARC_REG_DC_CST,r3
-        lwi     r3,CYGARC_REG_IC_CMD_CD
-        isync
-        mtspr   CYGARC_REG_IC_CST,r3
-        isync
-#endif
-
-        # Set up MSR (disable MMU for now)
-        lwi     r3,(CYG_MSR & ~(MSR_IR | MSR_DR))
-        sync
-        mtmsr   r3
-        sync
-        blr
-
-#---------------------------------------------------------------------------
-# This table contains a VSR pointer for each defined exception.
-# All of these except 5 and 9 point to the __default_exception_vsr
-# above, 5 and 9 point to the __default_interrupt_vsr. Entries in
-# this table may be changed using Cyg_Interrupt::set_vsr().
-        
-        .data
-
-        .globl  hal_vsr_table
-hal_vsr_table:
-        # Architecture defined vectors
-        .long   __default_exception_vsr         # reserved
-        .long   __default_exception_vsr         # system reset
-        .long   __default_exception_vsr         # machine check
-        .long   __default_exception_vsr         # data storage
-        .long   __default_exception_vsr         # instruction storage
-
-        .long   __default_interrupt_vsr         # external interrupt
-
-        .long   __default_exception_vsr         # alignment
-        .long   __default_exception_vsr         # program
-        .long   __default_exception_vsr         # floating point unavailable
-
-        .long   __default_interrupt_vsr         # decrementer
-
-        .long   __default_exception_vsr         # reserved 0x0a00
-        .long   __default_exception_vsr         # reserved 0x0b00
-        .long   __default_exception_vsr         # system call
-        .long   __default_exception_vsr         # trace
-        .long   __default_exception_vsr         # floating point assist
-        .long   __default_exception_vsr         # reserved 0x0f00
-
-#ifdef CYGPKG_HAL_POWERPC_MPC8xx
-
-        # Implementation defined vectors
-        .long   __default_exception_vsr         # software emulation
-        .long   __default_exception_vsr         # instruction TLB miss
-        .long   __default_exception_vsr         # data TLB miss
-        .long   __default_exception_vsr         # instruction TLB error
-        .long   __default_exception_vsr         # data TLB error
-        .long   __default_exception_vsr         # reserved 0x1500
-        .long   __default_exception_vsr         # reserved 0x1600
-        .long   __default_exception_vsr         # reserved 0x1700
-        .long   __default_exception_vsr         # reserved 0x1800
-        .long   __default_exception_vsr         # reserved 0x1900
-        .long   __default_exception_vsr         # reserved 0x1a00
-        .long   __default_exception_vsr         # reserved 0x1b00
-        .long   __default_exception_vsr         # data breakpoint
-        .long   __default_exception_vsr         # instruction breakpoint
-        .long   __default_exception_vsr         # peripheral breakpoint
-        .long   __default_exception_vsr         # non maskable development port
-#endif
-
-#---------------------------------------------------------------------------
-# Interrupt vector tables.
-# These tables contain the isr, data and object pointers used to deliver
-# interrupts to user code.
-
-#if (CYG_ISR_TABLE_SIZE > 2)
-        .data
-#else
-        .section ".sdata","aw"
-#endif
-
-        .extern hal_default_decrementer_isr
-        .extern hal_default_isr
-
-        .globl  hal_interrupt_handlers
-hal_interrupt_handlers:
-        .long   hal_default_decrementer_isr
-        .rept   CYG_ISR_TABLE_SIZE-1
-        .long   hal_default_isr
-        .endr
-
-        .globl  hal_interrupt_data
-hal_interrupt_data:
-        .rept   CYG_ISR_TABLE_SIZE
-        .long   0
-        .endr
-
-        .globl  hal_interrupt_objects
-hal_interrupt_objects:
-        .rept   CYG_ISR_TABLE_SIZE
-        .long   0
-        .endr
-
 #---------------------------------------------------------------------------
 ## Temporary interrupt stack
         

@@ -115,7 +115,7 @@ static void       mn10300_serial_tx_DSR(cyg_vector_t vector, cyg_ucount32 count,
 #define LCR_RXE         0x4000  // receive enable
 #define LCR_TXE         0x8000  // transmit enable
 
-#if defined(CYG_HAL_MN10300_AM31)
+#if defined(CYGPKG_HAL_MN10300_AM31)
 #define LCR_TWE         0x0100  // interrupt enable (only on serial2/AM31)
 #else
 #define LCR_TWE         0x0000  // Bit does not exist in other variants
@@ -132,7 +132,7 @@ static void       mn10300_serial_tx_DSR(cyg_vector_t vector, cyg_ucount32 count,
 //-------------------------------------------------------------------------
 // Serial and timer base registers:
 
-#if defined(CYG_HAL_MN10300_AM31)
+#if defined(CYGPKG_HAL_MN10300_AM31)
 
 #define SERIAL0_BASE            0x34000800
 #define SERIAL1_BASE            0x34000810
@@ -146,7 +146,7 @@ static void       mn10300_serial_tx_DSR(cyg_vector_t vector, cyg_ucount32 count,
 #define SERIAL1_TIMER_SELECT    0x0004          // timer 1
 #define SERIAL2_TIMER_SELECT    0x0001          // timer 2
 
-#ifdef CYG_HAL_MN10300_AM31_STDEVAL1
+#ifdef CYGPKG_HAL_MN10300_AM31_STDEVAL1
 // The use of PORT3 to provide CTS/CTR is specific to
 // the STDEVAL1 board only.
 #define PORT3_MD                0x36008025
@@ -199,7 +199,7 @@ static unsigned char select_parity[] = {
     LCR_PS,     // Space parity
 };
 
-#if defined(CYG_HAL_MN10300_AM31)
+#if defined(CYGPKG_HAL_MN10300_AM31)
 
 static unsigned short select_baud_01[] = {
     0,          // Unused
@@ -300,7 +300,7 @@ static SERIAL_FUNS(mn10300_serial_funs,
 //-------------------------------------------------------------------------
 // Hardware info for each serial line
 
-#ifndef CYG_HAL_MN10300_STDEVAL1
+#ifndef CYGPKG_HAL_MN10300_AM31_STDEVAL1
 #ifdef CYGPKG_IO_SERIAL_MN10300_SERIAL0
 static mn10300_serial_info mn10300_serial_info0 = {
     SERIAL0_BASE,
@@ -357,7 +357,7 @@ static unsigned char mn10300_serial_in_buf2[CYGNUM_IO_SERIAL_MN10300_SERIAL2_BUF
 #define SIZEOF_BUF(_x_) sizeof(_x_)
 #endif
 
-#ifndef CYG_HAL_MN10300_STDEVAL1
+#ifndef CYGPKG_HAL_MN10300_AM31_STDEVAL1
 #ifdef CYGPKG_IO_SERIAL_MN10300_SERIAL0
 #if CYGNUM_IO_SERIAL_MN10300_SERIAL0_BUFSIZE > 0
 static SERIAL_CHANNEL_USING_INTERRUPTS(mn10300_serial_channel0,
@@ -446,7 +446,7 @@ static SERIAL_CHANNEL(mn10300_serial_channel2,
 //-------------------------------------------------------------------------
 // And finally, the device table entries:
 
-#ifndef CYG_HAL_MN10300_STDEVAL1
+#ifndef CYGPKG_HAL_MN10300_AM31_STDEVAL1
 #ifdef CYGPKG_IO_SERIAL_MN10300_SERIAL0
 // On the standard eval board serial0 is not connected. If enabled, it
 // generates continuous frame error and overrun interrupts. Hence we do
@@ -577,7 +577,7 @@ mn10300_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config, 
 
     cr |= LCR_RXE | LCR_TXE;        // enable Rx and Tx
     
-#ifdef CYG_HAL_MN10300_AM31
+#ifdef CYGPKG_HAL_MN10300_AM31
     if( mn10300_chan->is_serial2 )
     {
         // AM31 has an extra TX interrupt enable bit for serial 2.

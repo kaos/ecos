@@ -51,6 +51,7 @@
        display  "Minimal simulator"
        type     radio
        parent   CYGPKG_HAL_POWERPC
+       requires CYGPKG_HAL_POWERPC_PPC60x
        platform sim
        description "
            The minimal simulator HAL package is provided for use when

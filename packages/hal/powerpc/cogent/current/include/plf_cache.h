@@ -49,9 +49,14 @@
 
 //---------------------------------------------------------------------------
 // Initial cache enabling
-#define CYGPRI_INIT_CACHES 1
-#ifdef CYG_HAL_STARTUP_RAM              // Don't enable caches in ROM
-# define CYGPRI_ENABLE_CACHES 1
+// Cogent board doesn't support burst access to the ROM and on the
+// MPC8xx caches require burst.
+#ifdef CYG_HAL_STARTUP_ROM
+# define CYGPRI_INIT_CACHES
+# undef  CYGPRI_ENABLE_CACHES
+#else
+# define CYGPRI_INIT_CACHES
+# define CYGPRI_ENABLE_CACHES
 #endif
 
 //-----------------------------------------------------------------------------

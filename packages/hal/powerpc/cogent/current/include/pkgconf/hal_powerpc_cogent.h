@@ -51,6 +51,7 @@
        display  "Cogent PowerPC evaluation board"
        type     radio
        parent   CYGPKG_HAL_POWERPC
+       requires CYGPKG_HAL_POWERPC_MPC8xx
        platform cogent
        description "
            The cogent HAL package provides the support needed to run
@@ -62,19 +63,17 @@
        parent           CYGPKG_HAL_POWERPC_COGENT
        #type             count
        type             enum
-       legal_values     ram rom stubs
+       legal_values     ram rom
        startup
        description      "
            When targetting the cogent board it is possible to build
-           the system for either RAM bootstrap, ROM bootstrap, or STUB
-           bootstrap. RAM bootstrap generally requires that the board
+           the system for either RAM bootstrap or ROM bootstrap.
+           RAM bootstrap generally requires that the board
            is equipped with ROMs containing a suitable ROM monitor or
            equivalent software that allows GDB to download the eCos
            application on to the board. The ROM bootstrap typically
            requires that the eCos application be blown into EPROMs or
-           equivalent technology. STUB bootstrap is for configurations
-           of eCos used only as GDB stub ROMs; the use of memory is
-           limited to the top 1MB."
+           equivalent technology."
   }
   
 #### There will be a flood of PRs if the config tool is allowed to fiddle

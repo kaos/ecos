@@ -1,3 +1,8 @@
+2000-02-10  Jesper Skov  <jskov@redhat.com>
+
+	* src/vectors.S (reset_platform):
+	Removed handling of stubs startup type.
+
 2000-02-01  Jesper Skov  <jskov@redhat.com>
 
 	* src/vectors.S: Treat ROM startup+ROM monitor as STUBS startup.

@@ -1,3 +1,22 @@
+2000-02-10  Jesper Skov  <jskov@redhat.com>
+
+	* include/plf_stub.h: 
+	HAL_STUB_PLATFORM_STUBS_INIT->HAL_STUB_PLATFORM_INIT
+
+2000-02-08  Jesper Skov  <jskov@redhat.com>
+
+	* include/pkgconf/mlt_powerpc_fads_ram.ldi: 
+	* include/pkgconf/mlt_powerpc_fads_ram.mlt: 
+	Reserve space for vectors.
+	
+	* include/pkgconf/hal_powerpc_fads.h: 
+	Don't rely on ROM monitor (isn't eCos compatible stub).
+
+2000-02-07  Jesper Skov  <jskov@redhat.com>
+
+	* include/pkgconf/hal_powerpc_fads.h:
+	Use MPC8xx CPU variant.
+
 2000-02-03  Jesper Skov  <jskov@redhat.com>
 
 	* src/fads.S:

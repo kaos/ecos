@@ -481,8 +481,6 @@ hal_enable_caches(void)
 
     // Enable caches.
 #ifdef CYGPRI_ENABLE_CACHES
-    // Cogent board doesn't support burst access to the ROM and on the
-    // MPC8xx caches require burst.
     HAL_ICACHE_ENABLE();
     HAL_DCACHE_ENABLE();
 #endif
@@ -502,7 +500,7 @@ hal_enable_caches(void)
 //---------------------------------------------------------------------------
 //A jump via a null pointer causes the CPU to end up here.
 externC void
-hal_null_call()
+hal_null_call(void)
 {
     
     CYG_FAIL("Call via NULL-pointer!");

@@ -65,7 +65,7 @@
 
 //----------------------------------------------------------------------------
 // Stub initializer.
-#define HAL_STUB_PLATFORM_STUBS_INIT()        CYG_EMPTY_STATEMENT
+#define HAL_STUB_PLATFORM_INIT()              CYG_EMPTY_STATEMENT
 
 //----------------------------------------------------------------------------
 // Reset.

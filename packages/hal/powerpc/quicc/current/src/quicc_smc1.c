@@ -60,7 +60,7 @@
 #include <cyg/hal/hal_intr.h>           // HAL_INTERRUPT_UNMASK(...)
 #endif
 
-#define UART_BIT_RATE(n) (((CYGHWR_HAL_POWERPC_MBX_BOARD_SPEED*1000000)/16)/n)
+#define UART_BIT_RATE(n) (((CYGHWR_HAL_POWERPC_BOARD_SPEED*1000000)/16)/n)
 #define UART_BAUD_RATE 38400
 
 #define Rxbd     0x2800       /* Rx Buffer Descriptor Offset */

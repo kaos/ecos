@@ -55,9 +55,9 @@
 #------------------------------------------------------------------------------
 # this is kept thus for commonality with CygMon code
 
-#if 40 == CYGHWR_HAL_POWERPC_MBX_BOARD_SPEED
+#if 40 == CYGHWR_HAL_POWERPC_BOARD_SPEED
 # define __40MHZ 1
-#elif 50 == CYGHWR_HAL_POWERPC_MBX_BOARD_SPEED
+#elif 50 == CYGHWR_HAL_POWERPC_BOARD_SPEED
 # define __50MHZ 1
 #else
 # error Bad Board speed defined: see CYGBLD_HAL_PLATFORM_H

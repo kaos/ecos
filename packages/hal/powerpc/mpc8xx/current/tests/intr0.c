@@ -53,7 +53,7 @@ extern diag_printf( char *format, ... );
 
 #include <cyg/infra/testcase.h>
 
-#if defined(CYGPKG_HAL_POWERPC_MPC860)
+#ifdef CYGSEM_HAL_POWERPC_MPC860_CPM_ENABLE
 
 #undef CHECK(b)
 #define CHECK(b) CYG_TEST_CHECK(b,#b)
@@ -284,15 +284,15 @@ cyg_start( void )
     intr0_main();
 }
 
-#else  // ifdef CYGPKG_HAL_POWERPC_MPC860
+#else  // ifdef CYGSEM_HAL_POWERPC_MPC860_CPM_ENABLE
 
 externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS_FINISH("N/A: Not a MPC860");
+    CYG_TEST_PASS_FINISH("N/A: CYGSEM_HAL_POWERPC_MPC860_CPM_ENABLE disabled");
 }
 
-#endif // ifdef CYGPKG_HAL_POWERPC_MPC860
+#endif // ifdef CYGSEM_HAL_POWERPC_MPC860_CPM_ENABLE
 
 // EOF intr0.c

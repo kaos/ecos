@@ -49,9 +49,9 @@
 
 //---------------------------------------------------------------------------
 // Initial cache enabling
-#ifndef CYGSEM_HAL_ROM_MONITOR          // unless we are making a stub rom
-# define CYGPRI_INIT_CACHES 1
-# define CYGPRI_ENABLE_CACHES 1
+#ifdef CYGSEM_HAL_ROM_MONITOR
+# define CYGPRI_INIT_CACHES
+# define CYGPRI_ENABLE_CACHES
 #endif
 
 //-----------------------------------------------------------------------------

@@ -54,12 +54,27 @@
        target   powerpc
        description "
            The PowerPC architecture HAL package provides generic
-           support for this processor architecture. It is also
-           necessary to select a specific target platform HAL
+           support for this processor architecture. It is also necessary to
+           select a CPU variant and a specific target platform HAL
            package."
    }
 
+   cdl_component CYGFUN_HAL_POWERPC_VARIANTS {
+       display "PowerPC variants"
+       type dummy
+       parent CYGPKG_HAL_POWERPC
+       description "
+           A number PowerPC variants are supported."
+   }
+
    }}CFG_DATA */
+
+#ifdef CYGPKG_HAL_POWERPC_MPC8xx
+# include <pkgconf/hal_powerpc_mpc8xx.h>
+#endif
+#ifdef CYGPKG_HAL_POWERPC_PPC60x
+# include <pkgconf/hal_powerpc_ppc60x.h>
+#endif
 
 /* -------------------------------------------------------------------*/
 #endif  /* CYGONCE_PKGCONF_HAL_POWERPC_H */

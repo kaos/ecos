@@ -1,3 +1,13 @@
+2000-02-11  Jesper Skov  <jskov@redhat.com>
+
+	* tests/dhrystone.c (PASSES): Reduced for MPC8xx targets.
+
+2000-02-10  Jesper Skov  <jskov@redhat.com>
+
+	* tests/except1.cxx (except0_main): 
+	* tests/kexcept1.c (except0_main):
+	Also reclaim DATA_TLB_MISS vector if available.
+
 2000-02-03  Jesper Skov  <jskov@redhat.com>
 
 	* src/sched/lottery.cxx (schedule): CYG_HAL_POWERPC_x->CYGPKG_...

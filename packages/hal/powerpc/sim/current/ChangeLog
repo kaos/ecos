@@ -1,3 +1,8 @@
+2000-02-07  Jesper Skov  <jskov@redhat.com>
+
+	* include/pkgconf/hal_powerpc_sim.h: 
+	Use 60x variant code.
+	
 2000-01-26  Jesper Skov  <jskov@redhat.com>
 
 	* include/plf_cache.h: Added.

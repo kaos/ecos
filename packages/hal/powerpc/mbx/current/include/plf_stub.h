@@ -74,8 +74,6 @@ externC void hal_mbx_set_led( int val );
 // to distinguish eCos stub ROM ready state from either CygMon or app.
 #endif
 
-#define HAL_STUB_PLATFORM_STUBS_INIT()        CYG_EMPTY_STATEMENT
-
 //----------------------------------------------------------------------------
 #ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
 #define HAL_STUB_PLATFORM_INIT_BREAK_IRQ()    CYG_EMPTY_STATEMENT

@@ -335,12 +335,6 @@ initHardware (void)
         // Get interrupt handler initialized.
         HAL_STUB_PLATFORM_INIT_BREAK_IRQ();
 #endif
-
-#ifdef CYG_HAL_STARTUP_STUBS
-        // There may be extra initialization required when configured
-        // for stubs startup.
-        HAL_STUB_PLATFORM_STUBS_INIT();
-#endif
     }
 }
 

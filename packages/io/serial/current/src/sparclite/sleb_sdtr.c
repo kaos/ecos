@@ -162,7 +162,7 @@ static SERIAL_CHANNEL(sleb_sdtr_channel1,
 DEVTAB_ENTRY(sleb_sdtr_io1, 
              CYGDAT_IO_SERIAL_SPARCLITE_SLEB_CON2_NAME,
              0,                     // Does not depend on a lower level interface
-             &serial_devio, 
+             &cyg_io_serial_devio, 
              sleb_sdtr_init, 
              sleb_sdtr_lookup,     // Serial driver may need initializing
              &sleb_sdtr_channel1

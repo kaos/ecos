@@ -36,7 +36,5 @@ include ../../../../../pkgconf/system.mak
 
 TESTS	      :=
 
-TESTS         += intr0
-
 include $(COMPONENT_REPOSITORY)/pkgconf/makrules.tst
 

@@ -229,7 +229,7 @@ start:
 
 	LED 4
 
-#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_STUBS)
+#if defined(CYG_HAL_STARTUP_ROM)
         // Set up reset vector
         ldr     r2,[r1,#0x00]    // reset vector intstruction
         str     r2,[r0,#0x00]
@@ -324,7 +324,7 @@ _start_hang:
         .global reset_platform
         .type   reset_platform,function
 reset_platform:         
-#if defined(CYG_HAL_STARTUP_STUBS) || defined(CYGSEM_HAL_ROM_MONITOR)
+#ifdef CYGSEM_HAL_ROM_MONITOR
 	// initialize CPSR (machine state register)
 	mov	r0,#(CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE|CPSR_SUPERVISOR_MODE)
 	msr	cpsr,r0

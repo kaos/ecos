@@ -1,3 +1,25 @@
+2000-02-10  Jesper Skov  <jskov@redhat.com>
+
+	* include/plf_stub.h:
+	HAL_STUB_PLATFORM_STUBS_INIT->HAL_STUB_PLATFORM_INIT
+
+	* misc/STUBS_config: 
+	Removed stubs as a legal startup type.
+
+2000-02-07  Jesper Skov  <jskov@redhat.com>
+
+	* include/pkgconf/mlt_powerpc_cogent_ram.mlt: 
+	* include/pkgconf/mlt_powerpc_cogent_rom.mlt:
+	Fixed some typos.
+
+	* src/hal_diag.c: Depend on CYGSEM_HAL_ROM_MONITOR instead of
+	STARTUP_STUBS.
+
+	* include/pkgconf/mlt*.*: Updated to new stubs scheme.
+	* include/pkgconf/hal_powerpc_cogent.h: Removed stubs startup
+	type. Use MPC8xx variant code.
+
+
 2000-02-03  Jesper Skov  <jskov@redhat.com>
 	* src/cma_ser.inl:
 	* src/cogent.S:

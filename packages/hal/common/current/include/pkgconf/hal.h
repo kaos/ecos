@@ -518,6 +518,11 @@
 # define CYGPKG_HAL_POWERPC_MPC603
 #endif
 
+
+
+/* Enable this when configuring as a ROM monitor (i.e., stub) */
+#undef  CYGSEM_HAL_ROM_MONITOR
+
 #include CYGBLD_HAL_TARGET_H
 #include CYGBLD_HAL_PLATFORM_H 
 

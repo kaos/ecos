@@ -469,6 +469,117 @@ cyg_tracemsg8( cyg_uint32 what,
     HAL_RESTORE_INTERRUPTS(old_ints);
 };
 
+// -------------------------------------------------------------------------
+
+externC void
+cyg_trace_dump(void)
+{
+#if defined(CYGPKG_KERNEL) && defined(CYG_DIAG_PRINTF)
+
+    {
+        diag_printf("\nScheduler:\n\n");
+
+        Cyg_Scheduler *sched = &Cyg_Scheduler::scheduler;
+
+        diag_printf("Lock:                %d\n",sched->get_sched_lock() );
+
+# ifdef CYGVAR_KERNEL_THREADS_NAME
+    
+        diag_printf("Current Thread:      %s\n",sched->get_current_thread()->get_name());
+
+# else
+
+        diag_printf("Current Thread:    %d\n",sched->get_current_thread()->get_unique_id());
+    
+# endif
+
+    }
+    
+# ifdef CYGVAR_KERNEL_THREADS_LIST
+
+    {
+        Cyg_Thread *t = Cyg_Thread::get_list_head();
+
+        diag_printf("\nThreads:\n\n");
+    
+        while( NULL != t )
+        {
+            cyg_uint32 state = t->get_state();
+            char tstate[7];
+            char *tstate1 = "SCUKX";
+            static char *(reasons[8]) =
+            {
+                "NONE",                           // No recorded reason
+                "WAIT",                           // Wait with no timeout
+                "DELAY",                          // Simple time delay
+                "TIMEOUT",                        // Wait with timeout/timeout expired
+                "BREAK",                          // forced break out of sleep
+                "DESTRUCT",                       // wait object destroyed[note]
+                "EXIT",                           // forced termination
+                "DONE"                            // Wait/delay complete
+            };
+
+            if( 0 != state )
+            {
+                // Knock out chars that do not correspond to set bits.
+                for( int i = 0; i < 6 ; i++ )
+                    if( 0 == (state & (1<<i)) )
+                        tstate[i] = ' ';
+                    else tstate[i] = tstate1[i];
+                tstate[6] = 0;
+            }
+            else tstate[0] = 'R', tstate[1] = 0;
+
+#   ifdef CYGVAR_KERNEL_THREADS_NAME
+        
+            diag_printf( "%20s pri = %3d state = %6s id = %3d\n",
+                         t->get_name(),
+                         t->get_priority(),
+                         tstate,
+                         t->get_unique_id()
+                );
+#   else
+
+            diag_printf( "Thread %3d        pri = %3d state = %6s\n",
+                         t->get_unique_id(),
+                         t->get_priority(),
+                         tstate
+                );
+
+#   endif        
+            diag_printf( "%20s stack base = %08x ptr = %08x size = %08x\n",
+                         "",
+                         t->get_stack_base(),
+#ifdef CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT
+                         t->get_saved_context(),
+#else
+                         0,
+#endif
+                         t->get_stack_size()
+                );
+
+            diag_printf( "%20s sleep reason %8s wake reason %8s\n",
+                         "",
+                         reasons[t->get_sleep_reason()],
+                         reasons[t->get_wake_reason()]
+                );
+
+            diag_printf( "%20s queue = %08x      wait info = %08x\n",
+                         "",
+                         t->get_current_queue(),
+                         t->get_wait_info()
+                         );
+
+            diag_printf("\n");
+            t = t->get_list_next();
+        }
+
+    }
+# endif // CYGVAR_KERNEL_THREADS_LIST
+    
+#endif // CYG_DIAG_PRINTF
+}
+
 #endif // CYGDBG_USE_TRACING
 
 // -------------------------------------------------------------------------
