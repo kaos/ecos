@@ -61,7 +61,7 @@
 # code. Do not change this without changing that (or vice versa).
 
 	# See SYSV ABI4, i386 supplement (page 37-38)
-        # http://www.sco.com/products/layered/develop/devspecs/abi386-4.pdf
+        # http://www.mit.edu/afs/sipb/contrib/doc/specs/software/sysv-abi/i386-psABI-4.pdf
 
 	# Callee save registers (eax, ecx, and edx are scratch registers)
 
