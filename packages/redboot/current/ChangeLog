@@ -1,3 +1,15 @@
+2003-06-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* doc/redboot_cmds.sgml (IP): Clarify last change a bit and fix typos
+	and markup.
+
+2003-05-20  David Vrabel  <dvrabel@arcom.com>
+2003-05-20  Ian Campbell  <icampbell@arcom.com>
+ 
+	* src/net/net_io.c: Add the ability to specify a netmask length to
+	the ip_address command
+	* doc/redboot_cmds.sgml: Document the above.
+
 2003-06-24  Jeroen Dobbelaere  <jeroen.dobbelaere@acunia.com>
 2003-06-24  Jonathan Larmour  <jifl@eCosCentric.com>
 

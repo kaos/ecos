@@ -781,7 +781,7 @@ net_init(void)
     }
 }
 
-static char usage[] = "[-l <local_ip_address>] [-h <server_address>]";
+static char usage[] = "[-l <local_ip_address>[/<mask_len>]] [-h <server_address>]";
 
 // Exported CLI function
 static void do_ip_addr(int argc, char *argv[]);
@@ -818,6 +818,21 @@ do_ip_addr(int argc, char *argv[])
         return;
     }
     if (ip_addr_set) {
+        char *slash_pos;
+        /* see if the (optional) mask length was given */
+        if( (slash_pos = strchr(ip_addr, '/')) ) {
+            int mask_len;
+            unsigned long mask;
+            *slash_pos = '\0';
+            slash_pos++;
+            if( !parse_num(slash_pos, &mask_len, 0, 0) ||  mask_len <= 0 || mask_len > 32 ) {
+                diag_printf("Invalid mask length: %s\n", slash_pos);
+                return;
+            }
+            mask = htonl((0xffffffff << (32-mask_len))&0xffffffff);
+            memcpy(&__local_ip_mask, &mask, 4);
+        }
+        
         if (!_gethostbyname(ip_addr, (in_addr_t *)&host)) {
             diag_printf("Invalid local IP address: %s\n", ip_addr);
             return;

@@ -128,7 +128,7 @@ Execute code at a location
 Help about help?
       help [&lt;topic>]
 Set/change IP addresses
-      ip_address [-l &lt;local_ip_address>] [-h &lt;server_address>]
+      ip_address [-l &lt;local_ip_address>[/&lt;mask_length>]] [-h &lt;server_address>]
 Load a file
       load [-r] [-v] [-d] [-c &lt;channel>] [-h &lt;host>] [-m {TFTP | HTTP | {x|y}MODEM | disk}]
       [-b &lt;base_address>] &lt;file_name>
@@ -866,7 +866,7 @@ Execute code at a location
 Help about help?
    help [&lt;topic&gt;]
 Set/change IP addresses
-   ip_address [-l &lt;local_ip_address&gt;] [-h &lt;server_address&gt;]
+   ip_address [-l &lt;local_ip_address&gt;[/&lt;mask_length&gt;]] [-h &lt;server_address&gt;]
 Load a file
    load [-r] [-v] [-d] [-h &lt;host&gt;] [-m {TFTP | HTTP | {x|y}MODEM -c &lt;channel_number&gt;}]
         [-b &lt;base_address&gt;] &lt;file_name&gt;
@@ -922,7 +922,8 @@ Write raw data directly to FLASH
     <refsynopsisdiv>
       <cmdsynopsis>
 	<command>ip_address</command>
-	<arg>-l <replaceable> local_IP_address</replaceable></arg>
+	<arg>-l <replaceable> local_IP_address</replaceable>
+	<arg choice=opt>/<replaceable>netmask_length</replaceable></arg> </arg>
 	<arg>-h <replaceable> server_IP_address</replaceable></arg>
 	<arg>-d <replaceable>
 DNS_server_IP_address</replaceable></arg>
@@ -947,9 +948,10 @@ DNS_server_IP_address</replaceable></arg>
 	  <tbody>
 	    <row>
 	      <entry>-l <replaceable>
-local_IP_address</replaceable></entry>	     
+local_IP_address</replaceable><option>[<replaceable>/netmask_length</replaceable>]</option></entry>	     
 	      <entry>Numeric IP or DNS name</entry>
-	      <entry>The IP address RedBoot should use.</entry>	     
+	      <entry>The IP address RedBoot should use, optionally
+with the network mask length.</entry>	     
 	      <entry><emphasis>none</emphasis></entry>	     
 	    </row>
 	    <row>
@@ -981,7 +983,7 @@ if DNS support is enabled.
       </para>
       <para>
 The <option>-l</option> option is used to set the IP address used by
-the target device.
+the target device. The network mask length can also be specified
       </para>
       <para>
 The <option>-h</option> option is used to set the default server
@@ -1014,6 +1016,13 @@ Change the default server address.
 <screen> 
 RedBoot> <userinput>ip_address -h 192.168.1.104</userinput> 
 IP: 192.168.1.31, Default server: 192.168.1.104, DNS server IP: 192.168.1.101
+</screen>
+</para>
+<para>
+Set the IP address to something new, with a 255.255.255.0 netmask
+<screen> 
+RedBoot> <userinput>ip_address -l 192.168.1.32/24</userinput> 
+IP: 192.168.1.32, Default server: 192.168.1.104, DNS server IP: 192.168.1.101
 </screen>
       </para>
     </refsect1>
