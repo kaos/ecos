@@ -86,7 +86,6 @@ int cyg_io_eth_net_debug = CYGDBG_IO_ETH_DRIVERS_DEBUG_VERBOSITY;
 #define DIAG_DUMP_BUF_BDY( a, b )
 #endif
 
-unsigned char      __local_enet_addr[ETHER_ADDR_LEN+2];
 struct eth_drv_sc *__local_enet_sc = NULL;
 
 #ifdef CYGSEM_IO_ETH_DRIVERS_PASS_PACKETS
@@ -227,7 +226,6 @@ eth_drv_init(struct eth_drv_sc *sc, unsigned char *enaddr)
     if (enaddr != 0) {
         // Set up hardware address
         memcpy(&sc->sc_arpcom.esa, enaddr, ETHER_ADDR_LEN);
-        memcpy(__local_enet_addr, enaddr, ETHER_ADDR_LEN);
         __local_enet_sc = sc;
         eth_drv_start(sc);
     }
@@ -280,7 +278,7 @@ eth_drv_write(char *eth_hdr, char *buf, int len)
             old_state = sc->state;
             if (!old_state & ETH_DRV_STATE_ACTIVE) {
                 // This interface not fully initialized, do it now
-                (sc->funs->start)(sc, (unsigned char *)&__local_enet_addr, 0);
+                (sc->funs->start)(sc, (unsigned char *)sc->sc_arpcom.esa, 0);
                 sc->state |= ETH_DRV_STATE_ACTIVE;
             }
         }
@@ -392,7 +390,7 @@ eth_drv_read(char *eth_hdr, char *buf, int len)
             old_state = sc->state;
             if (!old_state & ETH_DRV_STATE_ACTIVE) {
                 // This interface not fully initialized, do it now
-                (sc->funs->start)(sc, (unsigned char *)&__local_enet_addr, 0);
+                (sc->funs->start)(sc, (unsigned char *)sc->sc_arpcom.esa, 0);
                 sc->state |= ETH_DRV_STATE_ACTIVE;
             }
         }
