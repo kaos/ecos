@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -131,6 +131,9 @@ cyg_pci_get_device_info ( cyg_pci_device_id devid, cyg_pci_device *dev_info )
     }
 
     for (i = 0; i < dev_info->num_bars; i++) {
+        if (CYG_PCI_IGNORE_BAR(dev_info, i))
+            continue;
+
         cyg_pcihw_read_config_uint32(bus, devfn,
                                      CYG_PCI_CFG_BAR_BASE + 4*i,
                                      &dev_info->base_address[i]);
@@ -142,6 +145,9 @@ cyg_pci_get_device_info ( cyg_pci_device_id devid, cyg_pci_device *dev_info )
         bar_count = 0;
         for (i = 0; i < dev_info->num_bars; i++){
             cyg_uint32 size;
+
+            if (CYG_PCI_IGNORE_BAR(dev_info, i))
+                continue;
 
             cyg_pcihw_write_config_uint32(bus, devfn, 
                                           CYG_PCI_CFG_BAR_BASE + 4*i,
@@ -864,7 +870,15 @@ cyg_pci_translate_interrupt( cyg_pci_device *dev_info,
     cyg_uint8 bus = CYG_PCI_DEV_GET_BUS(dev_info->devid);
     cyg_uint8 devfn = CYG_PCI_DEV_GET_DEVFN(dev_info->devid);
 
-    return cyg_pcihw_translate_interrupt(bus, devfn, vec);
+    if (cyg_pcihw_translate_interrupt(bus, devfn, vec)) {
+        // Fill in interrupt line info. This only really works for
+        // platforms where assigned PCI irq numbers are less than 255.
+        cyg_pcihw_write_config_uint8(bus, devfn,
+                                     CYG_PCI_CFG_INT_LINE, 
+                                     *vec & 0xff);
+        return true;
+    }
+    return false;
 }
 
 

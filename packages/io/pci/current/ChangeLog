@@ -1,3 +1,12 @@
+2004-08-31  Mark Salter  <msalter@redhat.com>
+
+	* src/pci.c (cyg_pci_translate_interrupt): Write vector number into
+	INT_LINE register.
+	(cyg_pci_get_device_info): Add mechanism for HALs to specify certain
+	BARs to be ignored.
+	* include/pci_hw.h (CYG_PCI_IGNORE_BAR): New macro.
+	* doc/pci.sgml: Add info on HAL_PCI_IGNORE_BAR.
+
 2004-01-14  Nick Garnett  <nickg@calivar.com>
 
 	* src/pci.c (cyg_pci_get_device_info): Added fix for devices that

@@ -10,7 +10,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -85,6 +85,14 @@
             HAL_PCI_IGNORE_DEVICE((__bus), (__dev), (__fn))
 #else
 #define CYG_PCI_IGNORE_DEVICE(__bus, __dev, __fn) 0
+#endif
+
+// Ignore certain BARs at discretion of HAL
+#ifdef HAL_PCI_IGNORE_BAR
+#define CYG_PCI_IGNORE_BAR(__dinfo, __bar) \
+            HAL_PCI_IGNORE_BAR((__dinfo), (__bar))
+#else
+#define CYG_PCI_IGNORE_BAR(__dinfo, __bar) 0
 #endif
 
 
