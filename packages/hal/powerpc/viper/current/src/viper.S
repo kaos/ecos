@@ -361,7 +361,7 @@ FUNC_START( hal_hardware_init )
 	stw	r3,PLPRCR(r4)
 
 	LED(0xE0)
-	lwi	r3,0x10000
+	lwi	r3,0x40000
 	mtctr	r3
 10:	nop
 	bdnz	10b
