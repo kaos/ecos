@@ -50,7 +50,7 @@
 
 cdl_package CYGPKG_IO_PCI {
     display       "PCI configuration library"
-    doc           redirect/ecos-device-drivers.html
+    doc           ref/io-pci.html
     include_dir   cyg/io
     parent        CYGPKG_IO
     description   "
