@@ -1,3 +1,8 @@
+2004-02-25  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/flash_tc58xxx_parts.inl: 
+	* include/flash_tc58xxx.inl: Add support for TC58DVG02 (128MB) part.
+
 2003-09-19  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/flash_tc58xxx_parts.inl: 

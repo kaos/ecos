@@ -12,7 +12,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2003 Jonathan Larmour
-// Copyright (C) 2003 Gary Thomas
+// Copyright (C) 2003, 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -70,6 +70,16 @@
     block_count: 2048,
     device_size: 0x2000000 * CYGNUM_FLASH_INTERLEAVE,
     base_mask  : ~(0x2000000 * CYGNUM_FLASH_INTERLEAVE - 1),
+},
+#endif
+#if defined(CYGHWR_DEVS_FLASH_TOSHIBA_TC58DVG02)
+{  // 1024Mb (128MB)
+    device_id  : FLASHWORD(0x79),
+    block_size : 0x4000 * CYGNUM_FLASH_INTERLEAVE,
+    page_size  : 0x200 * CYGNUM_FLASH_INTERLEAVE,
+    block_count: 8192,
+    device_size: 0x8000000 * CYGNUM_FLASH_INTERLEAVE,
+    base_mask  : ~(0x8000000 * CYGNUM_FLASH_INTERLEAVE - 1),
 },
 #endif
 #endif // ifndef CYGONCE_DEVS_FLASH_TOSHIBA_TC58XXX_PARTS_INL

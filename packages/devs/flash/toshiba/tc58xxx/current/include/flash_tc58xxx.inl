@@ -12,7 +12,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2003 Jonathan Larmour
-// Copyright (C) 2003 Gary Thomas
+// Copyright (C) 2003, 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -265,6 +265,9 @@ flash_erase_block(void* block, unsigned int size)
     CYGHWR_FLASH_TC58XXX_ALE(1);
     put_NAND(ROM, ((unsigned long)b_p & 0x0001FE00) >> 9);     // A9..A16
     put_NAND(ROM, ((unsigned long)b_p & 0x01FE0000) >> 17);  // A17..A24
+    if (flash_dev_info->device_size > 0x02000000) {
+        put_NAND(ROM, ((unsigned long)b_p & 0x06000000) >> 19);  // A26..A27
+    }
     CYGHWR_FLASH_TC58XXX_ALE(0);
     CYGHWR_FLASH_TC58XXX_CLE(1);
     put_NAND(ROM, FLASH_Start_Erase);
@@ -316,6 +319,9 @@ flash_program_buf(void* addr, void* data, int len)
         put_NAND(ROM, ((unsigned long)addr_ptr & 0x000000FF) >> 0);   // A0..A7
         put_NAND(ROM, ((unsigned long)addr_ptr & 0x0001FE00) >> 9);   // A9..A16
         put_NAND(ROM, ((unsigned long)addr_ptr & 0x01FE0000) >> 17);  // A17..A24
+        if (flash_dev_info->device_size > 0x02000000) {
+            put_NAND(ROM, ((unsigned long)addr_ptr & 0x06000000) >> 19);  // A26..A27
+        }
         CYGHWR_FLASH_TC58XXX_ALE(0);
 #if FLASH_DEBUG > 1
         diag_printf(">>\n");
@@ -390,6 +396,9 @@ flash_read_buf(void* addr, void* data, int len)
     put_NAND(ROM, ((unsigned long)addr_ptr & 0x000000FF) >> 0);   // A0..A7
     put_NAND(ROM, ((unsigned long)addr_ptr & 0x0001FE00) >> 9);   // A9..A16
     put_NAND(ROM, ((unsigned long)addr_ptr & 0x01FE0000) >> 17);  // A17..A24
+    if (flash_dev_info->device_size > 0x02000000) {
+        put_NAND(ROM, ((unsigned long)addr_ptr & 0x06000000) >> 19);  // A26..A27
+    }
     CYGHWR_FLASH_TC58XXX_ALE(0);
 #if FLASH_DEBUG > 1
     diag_printf(">>\n");
