@@ -82,7 +82,7 @@ static int errno_trace = CYGNUM_ERROR_ERRNO_TRACE_LEVEL;
 
 // FUNCTIONS
 
-Cyg_ErrNo * const
+Cyg_ErrNo *
 cyg_error_get_errno_p( void )
 {
     Cyg_ErrNo *errno_p;

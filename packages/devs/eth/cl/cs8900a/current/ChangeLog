@@ -1,3 +1,8 @@
+2001-11-29  Jesper Skov  <jskov@redhat.com>
+
+	* src/if_cs8900a.c (cs8900a_init): Changed order of ESA source
+	checking so user can always override at RedBoot runtime.
+
 2001-11-20  Jesper Skov  <jskov@redhat.com>
 
 	* src/if_cs8900a.c: Added some more debug output. Set all 4 LAF

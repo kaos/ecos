@@ -1,3 +1,9 @@
+2001-11-29  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/errno.h: Don't use 'const' type qualifier any more. It
+	gives warnings in new compilers now.
+	* src/errno.cxx (cyg_error_get_errno_p): Ditto.
+
 2000-06-19  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/errno.h (errno): Added extern modifier to non-per-thread

@@ -51,6 +51,7 @@ cdl_package CYGPKG_NET {
     requires      CYGINT_ISO_ERRNO
     requires      CYGINT_ISO_ERRNO_CODES
     requires      CYGINT_ISO_MALLOC
+    requires      CYGINT_ISO_STRING_BSD_FUNCS
     description   "Basic networking support, including TCP/IP."
 
     cdl_interface     CYGPKG_NET_DRIVER_FRAMEWORK {

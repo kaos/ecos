@@ -1,3 +1,14 @@
+2001-11-29  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/pcmb_screen.c: Restore sensible num lock behaviour after the
+	last change.
+	(KBScanTable): Fix scan table size.
+
+2001-11-29 Trenton D. Adams  <tadams@theone.dnsalias.com>
+
+	* src/pcmb_screen.c: Support numeric keypad and ctrl-alt-del for
+	rebooting.
+
 2001-11-23  Nick Garnett  <nickg@redhat.com>
 
 	* include/pcmb_io.h (PC_WRITE_SCREEN): Wrap positions beyond end

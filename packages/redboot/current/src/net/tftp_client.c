@@ -245,6 +245,7 @@ tftp_stream_open(char *filename,
     tftp_stream.actual_len = -1;
     tftp_stream.last_good_block = 0;
     tftp_stream.total_timeouts = 0;
+    tftp_stream.from_addr.sin_port = 0;
 
     // Try and read the first byte [block] since no errors are
     // reported until then.

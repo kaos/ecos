@@ -1,3 +1,25 @@
+2001-11-29  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/net/dns.c: Rename index -> ptdindex to avoid conflict with BSD
+	index() function.
+
+2001-11-29  Jesper Skov  <jskov@redhat.com>
+
+	* src/net/tftp_client.c (tftp_stream_open): Clear from_addr's
+	sin_port so multiple loads are possible.
+
+2001-11-26  Jesper Skov  <jskov@redhat.com>
+
+	* misc/redboot_XXX.ecm: Added. Replaced the _RAM, _ROM, and
+	_ROMRAM variants.
+
+	* misc/redboot_ROM.ecm: Added configuration with all packages
+	relevant for a full RedBoot configuration. Whenever new (optional)
+	RedBoot peer packages are added, they should be added to these
+	files and not the RedBoot template.
+	* misc/redboot_ROMRAM.ecm: Same.
+	* misc/redboot_RAM.ecm: Same.
+
 2001-11-15  Jesper Skov  <jskov@redhat.com>
 
 	* include/redboot.h: Added load_address and load_address_end

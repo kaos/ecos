@@ -1,3 +1,10 @@
+2001-11-29  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/machine/ansi.h: No longer require BSD string function
+	compatibility macros (in fact they confuse things).
+
+	* cdl/net.cdl: Require BSD compatibility functions from <string.h>.
+
 2001-11-19  Hugo Tyson  <hmt@redhat.com>
 
 	* include/bootp.h (BP_STD_TX_MINPKTSZ): New symbol defining the

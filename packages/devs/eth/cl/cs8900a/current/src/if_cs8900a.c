@@ -161,6 +161,7 @@ cs8900a_init(struct cyg_netdevtab_entry *tab)
     cyg_uint16 chip_type, chip_rev, chip_status;
     int i;
     long timeout = 500000;
+    cyg_bool esa_configured = false;
     
     cpd->tab = tab;
 
@@ -229,33 +230,40 @@ cs8900a_init(struct cyg_netdevtab_entry *tab)
 
     // Disable reception whilst finding the ESA
     put_reg(base, PP_LineCTL, 0 );
-    // Find ESA
-    if (!cpd->hardwired_esa) {
-        cyg_bool esa_configured = false;
-        if (NULL != cpd->provide_esa) {
-            esa_configured = cpd->provide_esa(cpd);
+    // Find ESA - check possible sources in sequence and stop when
+    // one provides the ESA:
+    //   RedBoot option (via provide_esa)
+    //   Compile-time configuration
+    //   EEPROM
+    //   <fail configuration of device>
+    if (NULL != cpd->provide_esa) {
+        esa_configured = cpd->provide_esa(cpd);
 # if DEBUG & 8
-            if (esa_configured)
-                diag_printf("Got ESA from RedBoot option\n");
+        if (esa_configured)
+            diag_printf("Got ESA from RedBoot option\n");
 # endif
-        }
-        if (!esa_configured && (chip_status & PP_SelfStat_EEPROM)) {
-            // Get ESA from EEPROM - via the PP_IA registers
-            cyg_uint16 esa_word;
-            for (i = 0;  i < sizeof(cpd->esa);  i += 2) {
-                esa_word = get_reg(base, PP_IA+i);
-                cpd->esa[i] = (esa_word & 0xFF);
-                cpd->esa[i+1] = (esa_word >> 8) & 0xFF;
-            }
-            esa_configured = true;
-        }
-        if (!esa_configured) {
-# if DEBUG & 8
-            diag_printf("CS8900 - no EEPROM, static ESA or RedBoot config option.\n");
-# endif
-            return false;
-        }
     }
+    if (!esa_configured && cpd->hardwired_esa) {
+        // ESA is already set in cpd->esa[]
+        esa_configured = true;
+    }
+    if (!esa_configured && (chip_status & PP_SelfStat_EEPROM)) {
+        // Get ESA from EEPROM - via the PP_IA registers
+        cyg_uint16 esa_word;
+        for (i = 0;  i < sizeof(cpd->esa);  i += 2) {
+            esa_word = get_reg(base, PP_IA+i);
+            cpd->esa[i] = (esa_word & 0xFF);
+            cpd->esa[i+1] = (esa_word >> 8) & 0xFF;
+        }
+        esa_configured = true;
+    }
+    if (!esa_configured) {
+# if DEBUG & 8
+        diag_printf("CS8900 - no EEPROM, static ESA or RedBoot config option.\n");
+# endif
+        return false;
+    }
+
     // Tell the chip what ESA to use
     for (i = 0;  i < sizeof(cpd->esa);  i += 2) {
         put_reg(base, PP_IA+i, cpd->esa[i] | (cpd->esa[i+1] << 8));

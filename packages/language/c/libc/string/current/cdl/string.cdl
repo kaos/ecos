@@ -94,6 +94,22 @@ cdl_package CYGPKG_LIBC_STRING {
             same effect can be produced if the code is
             compiled with the -Os option to the compiler."
     }
+
+    cdl_option CYGFUN_LIBC_STRING_BSD_FUNCS {
+        display       "Provide BSD compatibility functions"
+        flavor        bool
+        default_value 1
+        implements    CYGINT_ISO_STRING_BSD_FUNCS
+        requires      { CYGBLD_ISO_STRING_BSD_FUNCS_HEADER == \
+                        "<cyg/libc/string/bsdstring.h>" }
+        requires      CYGINT_ISO_CTYPE
+        compile       bsdstring.cxx
+        description   "
+            Enabling this option causes various compatibility functions
+            commonly found in the BSD UNIX operating system to be included.
+            These are functions such as bzero, bcmp, bcopy, bzero, strcasecmp,
+            strncasecmp, index, rindex and swab."
+    }
     
     cdl_component CYGPKG_LIBC_STRING_STRTOK {
         display       "strtok"

@@ -1,12 +1,12 @@
-#ifndef CYGONCE_ERROR_ERRNO_H
-#define CYGONCE_ERROR_ERRNO_H
-/*========================================================================
+#ifndef CYGONCE_LIBC_BSDSTRING_H
+#define CYGONCE_LIBC_BSDSTRING_H
+/*===========================================================================
 //
-//      errno.h
+//      bsdstring.h
 //
-//      ISO C errno variable and constants
+//      BSD standard string and memory area manipulation routines
 //
-//========================================================================
+//===========================================================================
 //####COPYRIGHTBEGIN####
 //                                                                          
 // -------------------------------------------                              
@@ -25,65 +25,76 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
 //####COPYRIGHTEND####
-//========================================================================
+//===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     jlarmour
-// Contributors:  jlarmour
-// Date:          2000-04-14
-// Purpose:       This file provides the errno variable (or more strictly
-//                expression) required by ISO C and POSIX 1003.1
-// Description: 
-// Usage:         Do not include this file directly - use #include <errno.h>
+// Contributors:  
+// Date:          2001-11-27
+// Purpose:       This file provides various string functions normally
+//                provided in the BSD UNIX operating system.
+// Description:   
+// Usage:         Do not include this file directly - use #include <string.h>
 //
 //####DESCRIPTIONEND####
 //
-//======================================================================*/
+//=========================================================================*/
 
 /* CONFIGURATION */
 
-#include <pkgconf/error.h>         /* Configuration header */
+#include <pkgconf/libc_string.h>   /* Configuration header */
 
-#ifdef CYGPKG_ERROR_ERRNO
+#ifdef CYGFUN_LIBC_STRING_BSD_FUNCS
 
-/* INCLUDES */
-
-#include <cyg/error/codes.h>       /* for Cyg_ErrNo */
+#define __need_size_t
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/*=========================================================================*/
+
 /* FUNCTION PROTOTYPES */
 
 
-#ifdef CYGSEM_ERROR_PER_THREAD_ERRNO
+extern int
+strcasecmp( const char * /* s1 */, const char * /* s2 */ );
 
-extern Cyg_ErrNo *
-cyg_error_get_errno_p( void ) __attribute__((const));
+extern int
+strncasecmp( const char * /* s1 */, const char * /* s2 */, size_t /* n */ );
 
-#endif /* ifdef CYGSEM_ERROR_PER_THREAD_ERRNO */
+extern int
+bcmp( const void * /* s1 */, const void * /* s2 */, size_t /* n */ );
 
+extern void
+bcopy( const void * /* src */, void * /* dest */, size_t /* n */ );
 
-/* VARIABLES */
+extern void
+bzero( void * /* s */, size_t /* n */ );
 
-#ifdef CYGSEM_ERROR_PER_THREAD_ERRNO
-# define errno (*cyg_error_get_errno_p())  /* Per-thread error status */
-#else
-extern Cyg_ErrNo errno;                /* Global error status */
-#endif /* ifdef CYGSEM_ERROR_PER_THREAD_ERRNO */
+extern char *
+index( const char * /* s */, int /* c */ );
+
+extern char *
+rindex( const char * /* s */, int /* c */ );
+
+extern void
+swab( const void * /* from */, void * /* to */, size_t /* n */ );
+
+/*=========================================================================*/
 
 #ifdef __cplusplus
 }   /* extern "C" */
 #endif
 
-#endif /* ifdef CYGPKG_ERROR_ERRNO */
+#endif /* ifdef CYGFUN_LIBC_STRING_BSD_FUNCS */
 
-#endif /* CYGONCE_ERROR_ERRNO_H multiple inclusion protection */
+#endif /* CYGONCE_LIBC_BSDSTRING_H multiple inclusion protection */
 
-/* EOF errno.h */
+/* EOF bsdstring.h */

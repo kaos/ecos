@@ -1,3 +1,7 @@
+2001-11-29  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/file.cxx (chdir): Don't detach from current dir if unset.
+
 2001-11-02  Felix Wong  <felixwong@i-technologies.cc>
 2001-11-02  Jonathan Larmour  <jlarmour@redhat.com>
 

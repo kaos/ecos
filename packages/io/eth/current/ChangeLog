@@ -1,3 +1,7 @@
+2001-11-28  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* doc/driver_doc: Mention preferences on how the ESA should be set.
+
 2001-10-30  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* doc/driver_doc: Add description of poll, deliver and int_vector

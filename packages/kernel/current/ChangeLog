@@ -1,3 +1,14 @@
+2001-11-29  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/sched/mlqueue.cxx (timeslice_cpu): Reset timeslice_count on
+	a timeslice.
+	Noticed by Tony Kho.
+
+2001-11-23  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* tests/klock.c (entry1): Support running with
+	CYGFUN_KERNEL_THREADS_TIMER disabled.
+
 2001-10-30  Nick Garnett  <nickg@redhat.com>
 
 	* tests/kcache2.c (test_dsync):

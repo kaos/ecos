@@ -1,3 +1,10 @@
+2001-11-27  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/string.cdl (CYGFUN_LIBC_STRING_BSD_FUNCS): New option to indicate
+	provision of BSD-ish string functions.
+	* include/bsdstring.h: New header to export BSD string func prototypes.
+	* src/bsdstring.cxx: New file.
+
 2001-08-21  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/string.cdl (CYGSEM_LIBC_STRING_PER_THREAD_STRTOK): Improve

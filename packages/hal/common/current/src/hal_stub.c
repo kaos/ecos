@@ -93,7 +93,15 @@ target_register_t orig_registers[HAL_STUB_REGISTERS_SIZE];  // Registers to get 
 #if defined(HAL_STUB_HW_WATCHPOINT) || defined(HAL_STUB_HW_BREAKPOINT)
 static int  _hw_stop_reason;   // Reason we were stopped by hw.
 
+//#define HAL_STUB_HW_SEND_STOP_REASON_TEXT
+#ifdef CYGINT_HAL_ARM_ARCH_XSCALE
+#define HAL_STUB_HW_SEND_STOP_REASON_TEXT
+#endif
+
+#ifdef HAL_STUB_HW_SEND_STOP_REASON_TEXT
 // strings indexed by hw stop reasons defined in hal_stub.h
+
+// Not all GDBs understand this.
 static const char * const _hw_stop_str[] = {
     "",
     "hbreak",
@@ -101,9 +109,10 @@ static const char * const _hw_stop_str[] = {
     "rwatch",
     "awatch"
 };
+#endif // HAL_STUB_HW_SEND_STOP_REASON_TEXT
 
 static void *_watch_data_addr; // The data address if stopped by watchpoint
-#endif
+#endif // defined(HAL_STUB_HW_WATCHPOINT) || defined(HAL_STUB_HW_BREAKPOINT)
 
 // Register validity checking
 #ifdef CYGHWR_REGISTER_VALIDITY_CHECKING
@@ -586,8 +595,11 @@ __build_t_packet (int sigval, char *buf)
       case HAL_STUB_HW_STOP_WATCH:
       case HAL_STUB_HW_STOP_RWATCH:
       case HAL_STUB_HW_STOP_AWATCH:
+#ifdef HAL_STUB_HW_SEND_STOP_REASON_TEXT
+        // Not all GDBs understand this.
 	strcpy(ptr, _hw_stop_str[_hw_stop_reason]);
 	ptr += strlen(_hw_stop_str[_hw_stop_reason]);
+#endif
 	*ptr++ = ':';
 	// Send address MSB first
 	ptr += __intToHex(ptr, (target_register_t)_watch_data_addr,

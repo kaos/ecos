@@ -1,3 +1,15 @@
+2001-11-29  Hugo Tyson  <hmt@redhat.com>
+
+	* src/hal_stub.c: Enable HAL_STUB_HW_SEND_STOP_REASON_TEXT for
+	XScale architectures per Mark's request; XScale GDB needs to know
+	what's happening with watchpoints (= work around previous change)
+
+2001-11-29  Hugo Tyson  <hmt@redhat.com>
+
+	* src/hal_stub.c: Condition out sending the reason for hardware
+	watchpoint stop in the stop packet as $T05watch:01234568;... most
+	GDBs do not understand it and in fact object to it.
+
 2001-11-23  Nick Garnett  <nickg@redhat.com>
 
 	* src/generic-stub.c (__process_packet): Fixed bogosity in

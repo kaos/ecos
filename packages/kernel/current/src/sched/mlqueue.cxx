@@ -551,7 +551,7 @@ Cyg_Scheduler_Implementation::timeslice_cpu(void)
             if( queue->get_head() != thread )
                 sched->set_need_reschedule();
 
-//            timeslice_count[cpu_this] = CYGNUM_KERNEL_SCHED_TIMESLICE_TICKS;
+            timeslice_count[cpu_this] = CYGNUM_KERNEL_SCHED_TIMESLICE_TICKS;
         }
     }
 

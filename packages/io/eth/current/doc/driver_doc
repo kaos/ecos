@@ -132,6 +132,13 @@ unit.  Note: the ethernet station address is supposed to be a
 world-unique, 48 bit address for this particular ethernet interface.
 Typically it is provided by the board/hardware manufacturer in ROM.
 
+In many packages it is possible for the ESA to be set from RedBoot,
+(perhaps from 'fconfig' data), hard-coded from CDL, or from an EPROM.
+A driver should choose a run-time specified ESA (e.g. from RedBoot)
+preferentially, otherwise (in order) it should use a CDL specified
+ESA if one has been set, otherwise an EPROM set ESA, or otherwise
+fail. See the cl/cs8900a eth driver for an example.
+
 static void
 HRDWR_start(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
 ====================================================================

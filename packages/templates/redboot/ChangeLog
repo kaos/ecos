@@ -1,3 +1,14 @@
+2001-11-27  Jonathan Larmour  <jlarmour@redhat.com>
+
+	 current.ect: Provide default for CYGBLD_ISO_STRING_BSD_FUNCS_HEADER
+
+2001-11-26  Jesper Skov  <jskov@redhat.com>
+
+	* current.ect: Added ZLIB package.
+	And removed again. Instead added
+	redboot/current/misc/redboot_XXX.ecm files with maximal
+	configurations.
+	
 2001-09-12  Gary Thomas  <gthomas@redhat.com>
 
 	* current.ect: Large stack no longer necessary as 'fconfig' data

@@ -1,3 +1,7 @@
+2001-11-27  Jonathan Larmour  <jlarmour@redhat.com>
+
+	 current.ect: Provide default for CYGBLD_ISO_STRING_BSD_FUNCS_HEADER
+
 2001-08-21  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* current.ect: Pre-infer CYGBLD_ISO_PMUTEXTYPES_HEADER.

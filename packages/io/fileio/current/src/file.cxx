@@ -433,7 +433,7 @@ __externC int chdir( const char *path )
     update_cwd( mte, dir, name );
 #endif
     
-    if( cdir_mtab_entry != NULL )
+    if( cdir_mtab_entry != NULL && cdir_dir != CYG_DIR_NULL )
     {
         // Now detach from current cdir. We call the current directory's
         // chdir routine with a NULL dir_out pointer.

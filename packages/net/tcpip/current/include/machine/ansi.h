@@ -58,11 +58,7 @@
 // Mappings of BSD-style functions used in networking code to those provided
 // by the eCos environment.
 
-externC void net_memcpy(void *d, void *s, int n);
-externC void net_memset(void *s, int v, int n);
-
-#define bcopy(s,d,n) net_memcpy(d,s,n)
-#define bzero(s,n)   net_memset(s,0,n)
+// Nothing to do here any more.
 
 #endif // _MACHINE_ANSI_H_
 

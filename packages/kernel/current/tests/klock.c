@@ -203,8 +203,12 @@ static void entry1( cyg_addrword_t data )
     while( thread0_state < 6 ) cyg_thread_yield();
     thread1_state = 6;
     
+#ifdef CYGFUN_KERNEL_THREADS_TIMER
     res = cyg_semaphore_timed_wait( &sem, cyg_current_time()+10 );
-    CYG_TEST_CHECK( res , "FALSE result from cyg_semaphore_timed_wait()" );    
+#else
+    res = cyg_semaphore_wait( &sem );
+#endif
+    CYG_TEST_CHECK( res , "FALSE result from cyg_semaphore[_timed]_wait()" );
     thread1_state = 7;
 
     // --------------------------------------------------
@@ -213,8 +217,12 @@ static void entry1( cyg_addrword_t data )
     cyg_flag_setbits( &fl, 1 );
     thread1_state = 8;
 
+#ifdef CYGFUN_KERNEL_THREADS_TIMER
     cyg_flag_timed_wait( &fl, 2, CYG_FLAG_WAITMODE_OR|CYG_FLAG_WAITMODE_CLR,
                          cyg_current_time()+10 );
+#else
+    cyg_flag_wait( &fl, 2, CYG_FLAG_WAITMODE_OR|CYG_FLAG_WAITMODE_CLR );
+#endif
     thread1_state = 9;
     
     // --------------------------------------------------
@@ -222,11 +230,19 @@ static void entry1( cyg_addrword_t data )
 #ifdef  CYGMFN_KERNEL_SYNCH_MBOXT_PUT_CAN_WAIT
     {
       void *mbret;
+#ifdef CYGFUN_KERNEL_THREADS_TIMER
       cyg_mbox_timed_put( mbh, (void *)0xAAAAAAAA, cyg_current_time()+10 );
+#else
+      cyg_mbox_put( mbh, (void *)0xAAAAAAAA );
+#endif
       thread1_state = 10;
 
+#ifdef CYGFUN_KERNEL_THREADS_TIMER
       mbret = cyg_mbox_timed_get( mbh, cyg_current_time()+10);
-      CYG_TEST_CHECK( mbret == (void *)0xBBBBBBBB , "bad result from cyg_mbox_timed_get()");
+#else
+      mbret = cyg_mbox_get( mbh );
+#endif
+      CYG_TEST_CHECK( mbret == (void *)0xBBBBBBBB , "bad result from cyg_mbox[_timed]_get()");
       thread1_state = 9;
     }
 #endif    

@@ -196,7 +196,7 @@ cyg_uint32
 hal_msbit_index(cyg_uint32 mask)
 {
     int i;
-    for (i = 32;  i >= 0;  i++) {
+    for (i = 31;  i >= 0;  i--) {
       if (mask & (1<<i)) return ((cyg_uint32)i);
     }
     return ((cyg_uint32)-1);
