@@ -50,6 +50,8 @@
 //
 //=============================================================================
 
+#include <cyg/infra/cyg_type.h>
+
 /* Call this function to start the SNTP Client */
 __externC void 
 cyg_sntp_start(void);
