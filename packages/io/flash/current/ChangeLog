@@ -1,3 +1,7 @@
+2003-04-14  Jani Monoses  <jani@iv.ro>
+
+	* include/flash_dev.h: Include <cyg/infra/cyg_type.h> 
+
 2003-03-19  Thomas Koeller <thomas.koeller@baslerweb.com>
 
 	* src/flashiodev.c: Fixed trivial error.
