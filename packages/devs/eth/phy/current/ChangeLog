@@ -1,3 +1,13 @@
+2003-08-26  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/DP83847.c: 
+	* src/AM79C874.c: New file(s) - driver(s) for PHY devices.
+
+	* src/eth_phy.c: 
+	* include/eth_phy_dev.h: 
+	* include/eth_phy.h: 
+	* cdl/phy_eth_drivers.cdl: Add device/chip specific drivers.
+
 2003-08-19  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/eth_phy.c: 

@@ -1,10 +1,8 @@
-#ifndef CYGONCE_DEVS_ETH_PHY_H_
-#define CYGONCE_DEVS_ETH_PHY_H_
 //==========================================================================
 //
-//      eth_phy.h
+//      dev/AM79C874.c
 //
-//      User API for ethernet transciever (PHY) support
+//      Ethernet transciever (PHY) support 
 //
 //==========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
@@ -43,59 +41,61 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas
+// Contributors: 
 // Date:         2003-08-01
 // Purpose:      
-// Description:  
+// Description:  Support for ethernet NS AM79C874 PHY
 //              
+//
 //####DESCRIPTIONEND####
 //
 //==========================================================================
 
-#define PHY_BIT_LEVEL_ACCESS_TYPE 0
-#define PHY_REG_LEVEL_ACCESS_TYPE 1
+#include <pkgconf/system.h>
+#include <cyg/infra/cyg_type.h>
+#include <cyg/infra/diag.h>
 
-// Physical device access - defined by hardware instance
-typedef struct {
-    int ops_type;  // 0 => bit level, 1 => register level
-    bool init_done;
-    void (*init)(void);
-    void (*reset)(void);
-    union {
-        struct {
-            void (*set_data)(int);
-            int  (*get_data)(void);
-            void (*set_clock)(int);
-            void (*set_dir)(int);
-        } bit_level_ops;
-        struct {
-            void (*put_reg)(int reg, int unit, unsigned short data);
-            bool (*get_reg)(int reg, int unit, unsigned short *data);
-        } reg_level_ops;
-    } ops;
-    int phy_addr;
-    struct _eth_phy_dev_entry *dev;  // Chip access functions
-} eth_phy_access_t;
+#include <cyg/hal/hal_arch.h>
+#include <cyg/hal/drv_api.h>
+#include <cyg/hal/hal_if.h>
+#include <cyg/hal/hal_tables.h>
 
-#define ETH_PHY_BIT_LEVEL_ACCESS_FUNS(_l,_init,_reset,_set_data,_get_data,_set_clock,_set_dir) \
-static eth_phy_access_t _l = {PHY_BIT_LEVEL_ACCESS_TYPE, false, _init, _reset, \
-                              {.bit_level_ops = {_set_data, _get_data, _set_clock, _set_dir}}}
+#include <cyg/io/eth_phy.h>
+#include <cyg/io/eth_phy_dev.h>
 
-#define ETH_PHY_REG_LEVEL_ACCESS_FUNS(_l,_init,_reset,_put_reg,_get_reg) \
-static eth_phy_access_t _l = {PHY_REG_LEVEL_ACCESS_TYPE, false, _init, _reset, \
-                              {.reg_level_ops = {_put_reg, _get_reg}}}
+static bool am79c874_stat(eth_phy_access_t *f, int *state)
+{
+    unsigned short phy_state;
+    int tries;
 
-#define ETH_PHY_STAT_LINK  0x0001   // Link up/down
-#define ETH_PHY_STAT_100MB 0x0002   // Connection is 100Mb
-#define ETH_PHY_STAT_FDX   0x0004   // Connection is full duplex
+    // Read negotiated state
+    if (_eth_phy_read(f, 0x1, f->phy_addr, &phy_state)) {
+        if ((phy_state & 0x20) == 0) {
+            diag_printf("... waiting for auto-negotiation");
+            for (tries = 0;  tries < 15;  tries++) {
+                if (_eth_phy_read(f, 0x1, f->phy_addr, &phy_state)) {
+                    if ((phy_state & 0x20) != 0) {
+                        break;
+                    }
+                }
+                CYGACC_CALL_IF_DELAY_US(1000000);   // 1 second
+                diag_printf(".");
+            }
+            diag_printf("\n");
+        }
+        if ((phy_state & 0x20) != 0) {
+            *state = 0;
+            if ((phy_state & 0x0004) != 0) *state |= ETH_PHY_STAT_LINK;
+            if (_eth_phy_read(f, 0x5, f->phy_addr, &phy_state)) {
+                // Partner negotiated parameters
+                if ((phy_state & 0x0100) != 0) *state |= ETH_PHY_STAT_100MB | ETH_PHY_STAT_FDX;
+                if ((phy_state & 0x0080) != 0) *state |= ETH_PHY_STAT_100MB;
+                if ((phy_state & 0x0040) != 0) *state |= ETH_PHY_STAT_FDX;
+                return true;
+            }
+        }
+    }
+    return false;
+}
 
-externC bool _eth_phy_init(eth_phy_access_t *f);
-externC void _eth_phy_reset(eth_phy_access_t *f);
-externC int  _eth_phy_state(eth_phy_access_t *f);
-externC int  _eth_phy_cfg(eth_phy_access_t *f, int mode);
-// Internal routines
-externC void _eth_phy_write(eth_phy_access_t *f, int reg, int unit, unsigned short data);
-externC bool _eth_phy_read(eth_phy_access_t *f, int reg, int unit, unsigned short *val);
-
-#endif  // CYGONCE_DEVS_ETH_PHY_H_
-// ------------------------------------------------------------------------
+_eth_phy_dev("AMD AM79C874", 0x0022561B, am79c874_stat)
