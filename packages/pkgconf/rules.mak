@@ -80,7 +80,7 @@ ACTUAL_CFLAGS := $(subst -frtti,,$(ACTUAL_CFLAGS))
 ACTUAL_CFLAGS := $(subst -Woverloaded-virtual,,$(ACTUAL_CFLAGS))
 ACTUAL_CFLAGS := $(subst -fvtable-gc,,$(ACTUAL_CFLAGS))
 
-ACTUAL_CXXFLAGS = $(CFLAGS)
+ACTUAL_CXXFLAGS = $(subst -Wstrict-prototypes,,$(CFLAGS))
 
 # pattern matching rules to generate a library object from source code
 # object filenames are prefixed to avoid name clashes

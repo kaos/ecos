@@ -1,3 +1,9 @@
+2005-0303   Jay Foster <jay@systech.cam>
+
+	* pkgconf/rules.mak: Added removal of -Wstrict-prototypes compiler
+	  option from the C++ flags (ACTUAL_CXXFLAGS).  This silences a
+	  warning from GCC 3.4.3.
+
 2005-02-23  Kurt Stremerch <kurt.stremerch@exys.be>
 
         * ecos.db: Added support for Exys XSEngine (PXA255) based system.
