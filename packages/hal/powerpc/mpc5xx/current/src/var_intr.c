@@ -324,7 +324,7 @@ hal_mpc5xx_remove_arbitration_isr(cyg_uint32 apriority)
 #ifdef CYGSEM_HAL_POWERPC_MPC5XX_IMB3_ARBITER  
     // Prevent anything from coming through while manipulating the list
     HAL_INTERRUPT_MASK(CYGNUM_HAL_INTERRUPT_SIU_LVL7);
-	result = mc5xx_remove(imb3_data_head, apriority);
+	result = mpc5xx_remove(imb3_data_head, apriority);
 	
 	// If something was removed, update the list.
 	if(result) imb3_data_head = result->reserved;
