@@ -1,3 +1,8 @@
+2004-05-10  Robert Chenault <robertchenault@yahoo.com>
+
+	* src/quicc_smc_serial.h: Added two casts of (int) on
+	calculations involving CYGHWR_HAL_POWERPC_BOARD_SPEED.
+
 2004-01-24  Philip Soeberg <ecos@soeberg.net>
 
 	* src/quicc_smc_serial.c(quicc_sxx_serial_init): SCC3 support 
