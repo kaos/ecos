@@ -54,8 +54,9 @@
 //==========================================================================
 
 #include <redboot.h>
-#include <cyg/io/flash.h>
+#ifdef CYGOPT_REDBOOT_FIS
 #include <fis.h>
+#endif
 
 #ifdef CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG
 // Note horrid intertwining of functions, to save precious FLASH
