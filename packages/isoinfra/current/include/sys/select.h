@@ -57,7 +57,13 @@
 
 /* CONFIGURATION */
 
+#include <pkgconf/system.h>          
 #include <pkgconf/isoinfra.h>          /* Configuration header */
+
+#ifdef CYGPKG_IO_FILEIO
+    #include <pkgconf/io_fileio.h>          
+    #define	FD_SETSIZE CYGNUM_FILEIO_NFD	
+#endif
 
 /* ------------------------------------------------------------------- */
 
