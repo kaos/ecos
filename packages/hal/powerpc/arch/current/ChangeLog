@@ -1,3 +1,8 @@
+2003-01-03  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/hal_mem.h (CYGARC_MEMDESC_NOCACHE_PA): New macro which
+	allows defining non-cached space with non 1-1 mapping.
+
 2002-12-24  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/vectors.S: 

@@ -12,6 +12,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -92,6 +93,9 @@ externC cyg_memdesc_t cyg_hal_mem_map[];
 
 #define CYGARC_MEMDESC_NOCACHE( _va_, _sz_ ) \
         { (_va_), (_va_), (_sz_), CYGARC_MEMDESC_CI }
+
+#define CYGARC_MEMDESC_NOCACHE_PA( _va_, _pa_, _sz_ ) \
+        { (_va_), (_pa_), (_sz_), CYGARC_MEMDESC_CI }
 
 #define CYGARC_MEMDESC_CACHEGUARD( _va_, _sz_ ) \
         { (_va_), (_va_), (_sz_), CYGARC_MEMDESC_GUARDED }
