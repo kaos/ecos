@@ -410,7 +410,9 @@ dp83816_poll(struct eth_drv_sc *sc)
         }
         DP_IN(dp->base, DP_CR, cr_stat);
         if ((stat & (_ISR_HIBERR|_ISR_TXURN|_ISR_RXORN)) != 0) {            
+#if 0
             diag_printf("DP83816 - major error: %x, cmd_stat: %x\n", stat, cr_stat);
+#endif
             // Try to reset the device
             dp83816_warm_reset(sc);
         }
