@@ -1,3 +1,11 @@
+2002-06-20  Gary Thomas  <gary@chez-thomas.org>
+
+	* include/flash_am29xxxxx.inl: Add cache disable/enable code
+	since this is required on most platforms.
+
+	* include/flash_am29xxxxx_parts.inl: 
+	* cdl/flash_amd_am29xxxxx.cdl: Add support for AM29LV320D{T|B}
+
 2002-04-24  Bob Koninckx <bob.koninckx@mech.kuleuven.ac.be>
 
 	* cdl/flash_amd_am29xxxxx.cdl: Support AM29LV200 and ST M29W200B.

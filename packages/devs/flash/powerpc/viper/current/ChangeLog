@@ -1,3 +1,13 @@
+2002-06-20  Gary Thomas  <gary@chez-thomas.org>
+
+	* src/flash_query.c: 
+	* src/flash_program_buf.c: 
+	* src/flash_erase_block.c: 
+	* src/flash.h: Removed file(s).
+
+	* src/viper_flash.c: 
+	* cdl/flash_viper.cdl: Update to use generic AMD FLASH drivers.
+
 2001-06-11  Gary Thomas  <gthomas@redhat.com>
 
 	* src/viper_flash.c: Remove dependency on printf() via user functions.
