@@ -724,6 +724,31 @@ SDRAM_DRIVE_2_BANK_X8:
 	ldr	r9, =SDRAM_BATTERY_TEST_BASE
 	ldr	r10, [r9]
 
+	// Setup vendor/device ID for 80312
+	ldr	r0, =ASVIR_ADDR
+	ldr	r1, =0x113C
+	strh	r1, [r0]
+	ldr	r0, =ASIR_ADDR
+	ldr	r1, =0x0700
+	strh	r1, [r0]
+	// Make all secondary bus devices private
+	ldr	r0, =SISR_ADDR
+	ldr	r1, =0x03FF
+	strh	r1, [r0]
+	// Setup primary inbound window into SDRAM
+	ldr	r0, =PIATVR_ADDR
+	ldr	r1, =RAM_BASE
+	str	r1, [r0]
+	ldr	r0, =PIALR_ADDR
+	sub	r1, r4, #1    // dram_size - 1
+	mvn	r1, r1        // 1s complement
+	str	r1, [r0]
+#ifdef CYGSEM_HAL_ARM_IQ80310_CLEAR_PCI_RETRY
+	ldr	r0, =EBCR_ADDR
+	mov	r1, #0x0008
+	strh	r1, [r0]
+#endif	
+	
 	// scrub/init SDRAM if enabled/present
 	ldr	r11, =RAM_BASE	// base address of SDRAM
 	mov	r12, r4		// size of memory to scrub

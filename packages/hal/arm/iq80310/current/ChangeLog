@@ -1,3 +1,14 @@
+2002-10-07  Mark Salter  <msalter@redhat.com>
+
+	* include/hal_platform_setup.h: Release PCI retry bit before ECC scrub
+	to prevent some BIOSes from timing out.
+	* src/iq80310_pci.c (cyg_hal_plf_pci_init): Reorder PCI initializations
+	to deal with PCI retry being released earlier.
+	* src/iq80310_misc.c: Include hal_xscale.h
+
+	* src/diag/*: General cleanup to get rid of warnings and to eliminate
+	functionality provided by the HAL. 
+
 2002-09-19  Mark Salter  <msalter@redhat.com>
 
 	* src/iq80310_misc.c (hal_hardware_init): Call hal_xscale_core_init.

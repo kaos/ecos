@@ -135,8 +135,8 @@ int eeprom_read (unsigned long pci_base,/* PCI Base address */
 		 int nwords		/* number of 16bit words to read */
 		 )
 {
-    int status;			/* result code */
-    int i;				/* loop variable */
+    int status;		/* result code */
+    int i;		/* loop variable */
 
     /*
      * Make sure caller isn't requesting a read beyond the end of the 
@@ -147,18 +147,17 @@ int eeprom_read (unsigned long pci_base,/* PCI Base address */
 
 
     /* Read in desired number of words */
-    for (i = 0; i < nwords; i++, eeprom_addr++)
-    {
+    for (i = 0; i < nwords; i++, eeprom_addr++) {
      	/* Select the serial EEPROM */
     	SELECT_557_EEP(pci_base);
 
-		/* Wait CS setup time */
-		eeprom_delay (SELECT_SETUP_TIME);
+	/* Wait CS setup time */
+	eeprom_delay (SELECT_SETUP_TIME);
 
     	/* Send start/read command to begin the read */
     	if (((status = eeprom_send_start (pci_base, EEPROM_READ)) != OK) ||
     	/* Send address */
-	 ((status = eeprom_send_addr (pci_base, eeprom_addr)) != OK))
+	    ((status = eeprom_send_addr (pci_base, eeprom_addr)) != OK))
 	    return (status);
 
 	if ((status = eeprom_get_word (pci_base, p_data++)) != OK)
@@ -170,7 +169,6 @@ int eeprom_read (unsigned long pci_base,/* PCI Base address */
 	/* wait the required de-select time between commands */
 	eeprom_delay (DESELECT_TIME);
     }
-
 
     return (OK);
 }
@@ -189,9 +187,9 @@ int eeprom_write (unsigned long pci_base,/* PCI Base address */
 		 int nwords		/* number of 16bit words to read */
 		 )
 {
-    int status;				/* result code */
-    int i;					/* loop variable */
-	int check_cntr;
+    int status;			/* result code */
+    int i;			/* loop variable */
+    int check_cntr;
     unsigned short data;
 
     /*
@@ -206,60 +204,56 @@ int eeprom_write (unsigned long pci_base,/* PCI Base address */
 	return(status);
 
     /* Read in desired number of words */
-    for (i = 0; i < nwords; i++, eeprom_addr++)
-    {
+    for (i = 0; i < nwords; i++, eeprom_addr++) {
      	/* Select the serial EEPROM */
     	SELECT_557_EEP(pci_base);
 
-		/* Wait CS setup time */
-		eeprom_delay (SELECT_SETUP_TIME);
+	/* Wait CS setup time */
+	eeprom_delay (SELECT_SETUP_TIME);
 
     	/* Send start/write command to begin the read */
     	if (((status = eeprom_send_start (pci_base, EEPROM_WRITE)) != OK) ||
     	/* Send address */
-			((status = eeprom_send_addr (pci_base, eeprom_addr)) != OK))
-			return (status);
+	    ((status = eeprom_send_addr (pci_base, eeprom_addr)) != OK))
+	    return (status);
 
-		data = *p_data++;
-		if ((status = eeprom_put_word (pci_base, data)) != OK)
-			return (status);
+	data = *p_data++;
+	if ((status = eeprom_put_word (pci_base, data)) != OK)
+	    return (status);
 
     	/* De-Select the serial EEPROM */
     	DESELECT_557_EEP(pci_base);
 
-		/* wait the required de-select time between commands */
-		eeprom_delay (DESELECT_TIME);
+	/* wait the required de-select time between commands */
+	eeprom_delay (DESELECT_TIME);
 
-		/* Re-Select the serial EEPROM */
+	/* Re-Select the serial EEPROM */
     	SELECT_557_EEP(pci_base);
 
-		/* now that the write command/data have been clocked into the EEPROM
-		   we must wait for the BUSY indicator (DO driven low) to indicate
-		   READY (DO driven high) */
-		check_cntr = 0;
+	/* now that the write command/data have been clocked into the EEPROM
+	   we must wait for the BUSY indicator (DO driven low) to indicate
+	   READY (DO driven high) */
+	check_cntr = 0;
 
-		while (1)
-		{
-			check_cntr++;
+	while (1) {
+	    check_cntr++;
 
-			if (get_sda_line (pci_base) == HIGH) break;		/* programming complete */
+	    if (get_sda_line (pci_base) == HIGH) break;		/* programming complete */
 
-			if (check_cntr > 100000)						/* timeout */
-			{
-				/* De-Select the serial EEPROM */
-    			DESELECT_557_EEP(pci_base);
-				/* wait the required de-select time between commands */
-				eeprom_delay (DESELECT_TIME);
-
-				return (EEPROM_ERROR);
-			}
-		}
-
+	    if (check_cntr > 100000) {						/* timeout */
 		/* De-Select the serial EEPROM */
-    	DESELECT_557_EEP(pci_base);
-
+		DESELECT_557_EEP(pci_base);
 		/* wait the required de-select time between commands */
 		eeprom_delay (DESELECT_TIME);
+		return (EEPROM_ERROR);
+	    }
+	}
+
+	/* De-Select the serial EEPROM */
+    	DESELECT_557_EEP(pci_base);
+
+	/* wait the required de-select time between commands */
+	eeprom_delay (DESELECT_TIME);
     }
 
     /* disable eeprom writes */
@@ -284,14 +278,14 @@ int eeprom_write_enable (unsigned long pci_base)
     /* Select the serial EEPROM */
     SELECT_557_EEP(pci_base);
 
-	/* Wait CS setup time */
-	eeprom_delay (SELECT_SETUP_TIME);
+    /* Wait CS setup time */
+    eeprom_delay (SELECT_SETUP_TIME);
 
     /* Send start/write enable command */
     if (((status = eeprom_send_start (pci_base, EEPROM_EWEN)) != OK) ||
-  	  /* Send address */
-   	  ((status = eeprom_send_addr (pci_base, EEPROM_EWEN_OP)) != OK))
-	    	return (status);
+	/* Send address */
+	((status = eeprom_send_addr (pci_base, EEPROM_EWEN_OP)) != OK))
+	return (status);
 
     /* De-Select the serial EEPROM */
     DESELECT_557_EEP(pci_base);
@@ -317,14 +311,14 @@ int eeprom_write_disable (unsigned long pci_base)
     /* Select the serial EEPROM */
     SELECT_557_EEP(pci_base);
 
-	/* Wait CS setup time */
-	eeprom_delay (SELECT_SETUP_TIME);
+    /* Wait CS setup time */
+    eeprom_delay (SELECT_SETUP_TIME);
 
     /* Send start/write enable command */
     if (((status = eeprom_send_start (pci_base, EEPROM_EWDS)) != OK) ||
     	/* Send address */
 	 ((status = eeprom_send_addr (pci_base, EEPROM_EWDS_OP)) != OK))
-	    	return (status);
+	return (status);
 
     /* De-Select the serial EEPROM */
     DESELECT_557_EEP(pci_base);
@@ -345,10 +339,10 @@ int eeprom_write_disable (unsigned long pci_base)
 */
 void eeprom_delay (int nsec)
 {
-	extern void polled_delay (int usec);
+    extern void polled_delay (int usec);
 
-	/* generously delay 1 usec. for each nsec. */
-	polled_delay (nsec);
+    /* generously delay 1 usec. for each nsec. */
+    polled_delay (nsec);
 }
 
 /******************************************************************************
@@ -361,31 +355,30 @@ static int eeprom_send_start (unsigned long pci_base, int command)
 {
     int op_code[2];
 
-    switch (command)
-    {
-	case EEPROM_WRITE:
-		op_code[0] = LOW;
-		op_code[1] = HIGH;
-		break;
+    switch (command) {
+    case EEPROM_WRITE:
+	op_code[0] = LOW;
+	op_code[1] = HIGH;
+	break;
 
-	case EEPROM_READ:
-		op_code[0] = HIGH;
-		op_code[1] = LOW;
-		break;
+    case EEPROM_READ:
+	op_code[0] = HIGH;
+	op_code[1] = LOW;
+	break;
 
-	case EEPROM_ERASE:
-		op_code[0] = HIGH;
-		op_code[1] = HIGH;
-		break;
+    case EEPROM_ERASE:
+	op_code[0] = HIGH;
+	op_code[1] = HIGH;
+	break;
 
-	case EEPROM_EWEN:
-	case EEPROM_EWDS:
-		op_code[0] = LOW;
-		op_code[1] = LOW;
-		break;
+    case EEPROM_EWEN:
+    case EEPROM_EWDS:
+	op_code[0] = LOW;
+	op_code[1] = LOW;
+	break;
 
-	default:
-		return(EEPROM_INVALID_CMD);
+    default:
+	return(EEPROM_INVALID_CMD);
     }
 
     set_scl_line (pci_base, LOW);
@@ -426,8 +419,7 @@ static int eeprom_send_addr (unsigned long pci_base,
     /* Do each address bit, MSB => LSB - after each address bit is
        sent, read the EEDO bit on the '557 to check for the "dummy 0 bit"
        which when set to 0, indicates that the address field is complete */
-    for (i = 5; i >= 0; i--)
-    {
+    for (i = 5; i >= 0; i--) {
         /* If this bit is a 1, set SDA high.  If 0, set it low */
         if (eeprom_addr & (1 << i))
             set_sda_line (pci_base, HIGH);
@@ -461,17 +453,16 @@ static int eeprom_get_word (unsigned long pci_base,
     register int i;
  
     /* Do each data bit, MSB => LSB */
-    for (i = 15; i >= 0; i--)
-    {
-		set_scl_line (pci_base, HIGH);
+    for (i = 15; i >= 0; i--) {
+	set_scl_line (pci_base, HIGH);
         eeprom_delay (SK_HIGH_PERIOD);
 
-		if (get_sda_line (pci_base) == HIGH)
-			*word_addr |=  (1 << i);			/* store bit as a '1' */
-		else
-			*word_addr &= ~(1 << i);			/* store bit as a '0' */
+	if (get_sda_line (pci_base) == HIGH)
+	    *word_addr |=  (1 << i);			/* store bit as a '1' */
+	else
+	    *word_addr &= ~(1 << i);			/* store bit as a '0' */
 
-		set_scl_line (pci_base, LOW);
+	set_scl_line (pci_base, LOW);
         eeprom_delay (SK_LOW_PERIOD);
     }
     return (OK);
@@ -490,17 +481,16 @@ static int eeprom_put_word (unsigned long pci_base,
     register int i;
  
     /* Do each data bit, MSB => LSB */
-    for (i = 15; i >= 0; i--)
-    {
-		if (data & (1 << i))
-			set_sda_line(pci_base, HIGH);
-		else
-			set_sda_line(pci_base, LOW);
+    for (i = 15; i >= 0; i--) {
+	if (data & (1 << i))
+	    set_sda_line(pci_base, HIGH);
+	else
+	    set_sda_line(pci_base, LOW);
 
-		eeprom_delay (DATA_IN_SETUP_TIME);
-		set_scl_line (pci_base, HIGH);
+	eeprom_delay (DATA_IN_SETUP_TIME);
+	set_scl_line (pci_base, HIGH);
         eeprom_delay (SK_HIGH_PERIOD);
-		set_scl_line (pci_base, LOW);
+	set_scl_line (pci_base, LOW);
         eeprom_delay (SK_LOW_PERIOD);
     }
     return (OK);
@@ -535,9 +525,9 @@ static void set_sda_line (unsigned long pci_base, /* PCI address */
 			  int state)		  /* HIGH or LOW */
 {
     if (state == HIGH)
-		EEDI_HIGH_557_EEP (pci_base);
+	EEDI_HIGH_557_EEP (pci_base);
     else if (state == LOW)
-		EEDI_LOW_557_EEP (pci_base);
+	EEDI_LOW_557_EEP (pci_base);
 }
 
 /*-------------------------------------------------------------
@@ -552,9 +542,9 @@ static int get_sda_line (unsigned long pci_base) /* PCI address */
     int ret_val;				/* result code */
 
     if (EEDO_557_EEP (pci_base))
-		ret_val = HIGH;
+	ret_val = HIGH;
     else
-		ret_val = LOW;
+	ret_val = LOW;
 
     return (ret_val);
 }

@@ -66,6 +66,7 @@
 #include <cyg/hal/hal_diag.h>
 #include <cyg/hal/hal_intr.h>           // Interrupt names
 #include <cyg/hal/hal_cache.h>
+#include <cyg/hal/hal_xscale.h>
 #include <cyg/hal/hal_iq80310.h>        // Hardware definitions
 #include <cyg/infra/diag.h>             // diag_printf
 #include <cyg/hal/drv_api.h>            // CYG_ISR_HANDLED
