@@ -77,7 +77,7 @@
 // the innovator is that, if you press and hold the reset button for
 // 2 seconds it triggers a power-on-reset.  The contents of the internal
 // SRAM are maintained across such a reset.  Thus, we can write our
-// new test version of RedBoot to SRAM (configured with DCSPRI_HAL_ROM_MLT
+// new test version of RedBoot to SRAM (configured with CYGPRI_HAL_ROM_MLT
 // set to SRAM) (more on that later), press and hold the reset button,
 // and see if the new startup code works.
 //
@@ -103,7 +103,7 @@
 //    work when I placed it in FLASH.  But other things could have been
 //    going on.
 
-#ifdef DCSPRI_HAL_ROM_MLT_SRAM
+#ifdef CYGPRI_HAL_ROM_MLT_SRAM
 #define PLATFORM_PREAMBLE _platform_preamble
         .macro  _platform_preamble
         .long   0x12345678
@@ -112,7 +112,7 @@
 #endif
 
 
-#if defined(DEBUG) && !defined(DCSPRI_HAL_ROM_MLT_SRAM)
+#if defined(DEBUG) && !defined(CYGPRI_HAL_ROM_MLT_SRAM)
 // Don't enable these macro when we are executing from SRAM because
 // they overwrite SRAM.
 

@@ -91,7 +91,7 @@ cdl_package CYGPKG_HAL_ARM_ARM9_INNOVATOR {
            which will be put into ROM, or for the special cases of
            building the eCos GDB stubs or RedBoot."
 
-        cdl_option DCSPRI_HAL_ROM_MLT {
+        cdl_option CYGPRI_HAL_ROM_MLT {
             display       "Memory Layout for ROM Startup"
             flavor        data
             legal_values  {"FLASH" "SRAM"}
@@ -345,7 +345,7 @@ cdl_package CYGPKG_HAL_ARM_ARM9_INNOVATOR {
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_LDI
             calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_arm_arm9_innovator_ram.ldi>" : \
-                         DCSPRI_HAL_ROM_MLT == "FLASH" ? "<pkgconf/mlt_arm_arm9_innovator_rom.ldi>" : \
+                         CYGPRI_HAL_ROM_MLT == "FLASH" ? "<pkgconf/mlt_arm_arm9_innovator_rom.ldi>" : \
                                                          "<pkgconf/mlt_arm_arm9_innovator_sram.ldi>" }
         }
 
@@ -355,7 +355,7 @@ cdl_package CYGPKG_HAL_ARM_ARM9_INNOVATOR {
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_H
             calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_arm_arm9_innovator_ram.h>" : \
-                         DCSPRI_HAL_ROM_MLT == "FLASH" ? "<pkgconf/mlt_arm_arm9_innovator_rom.h>" : \
+                         CYGPRI_HAL_ROM_MLT == "FLASH" ? "<pkgconf/mlt_arm_arm9_innovator_rom.h>" : \
                                                          "<pkgconf/mlt_arm_arm9_innovator_sram.h>" }
         }
     }
