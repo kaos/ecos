@@ -301,6 +301,9 @@ struct smsc_lan91cxx_stats {
 };
 #endif
 
+struct lan91cxx_priv_data;
+typedef cyg_bool (*provide_esa_t)(struct lan91cxx_priv_data* cpd);
+
 typedef struct lan91cxx_priv_data {
     int txbusy;                         // A packet has been sent
     unsigned long txkey;                // Used to ack when packet sent
@@ -313,8 +316,14 @@ typedef struct lan91cxx_priv_data {
     int interrupt;                      // Interrupt vector used by controller
     unsigned char enaddr[6];            // Controller ESA
     // Function to configure the ESA - may fetch ESA from EPROM or 
-    // RedBoot config option.
+    // RedBoot config option.  Use of the 'config_enaddr()' function
+    // is depreciated in favor of the 'provide_esa()' function and
+    // 'hardwired_esa' boolean
     void (*config_enaddr)(struct lan91cxx_priv_data* cpd);
+    // New function to fetch the ESA from flash via RedBoot
+    // (see devs_eth_innovator.inl)
+    provide_esa_t provide_esa;
+    bool hardwired_esa;
     int txpacket;
     int rxpacket;
     int within_send;

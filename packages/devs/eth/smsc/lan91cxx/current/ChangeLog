@@ -1,3 +1,13 @@
+2003-03-03  Patrick Doyle  <wpd@delcomsys.com>
+
+	* src/smsc_lan91cxx.h
+	* src/if_lan91cxx.c (smsc_lan91cxx_init): Reworked to support
+	flash, CDL, and eeprom ESA assignment, in that priority.
+
+	* cdl/smsc_lan91cxx_eth_drivers.cdl: Added comment indicating that
+	use of the CYGINT_DEVS_ETH_SMSC_LAN91CXX_STATIC_ESA interface is
+	deprecated.
+
 2003-02-26  Yoshinori Sato <ysato@users.sourceforge.jp>
 
 	* src/smsc_lan91cxx.h: Support big endian arch.	

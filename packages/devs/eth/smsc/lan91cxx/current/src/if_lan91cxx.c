@@ -194,6 +194,7 @@ smsc_lan91cxx_init(struct cyg_netdevtab_entry *tab)
 #if CYGINT_DEVS_ETH_SMSC_LAN91CXX_PCMCIA_MODE
     unsigned char ecor, ecsr;
 #endif
+    cyg_bool esa_configured = false;
 
     DEBUG_FUNCTION();
 
@@ -302,16 +303,46 @@ smsc_lan91cxx_init(struct cyg_netdevtab_entry *tab)
         put_reg(sc, LAN91CXX_IA01+i/2,
                 cpd->enaddr[i] | (cpd->enaddr[i+1] << 8));
 #else // not CYGINT_DEVS_ETH_SMSC_LAN91CXX_STATIC_ESA
-    // Use the address from the serial EEPROM
+    // Find ESA - check possible sources in sequence and stop when
+    // one provides the ESA:
+    //   RedBoot option (via provide_esa)
+    //   Compile-time configuration
+    //   EEPROM
 
-    // Read out hardware address
-    for (i = 0;  i < sizeof(cpd->enaddr);  i += 2) {
-        unsigned short z = get_reg(sc, LAN91CXX_IA01+i/2 );
-        cpd->enaddr[i] =   (unsigned char)(0xff & z);
-        cpd->enaddr[i+1] = (unsigned char)(0xff & (z >> 8));
+    if (NULL != cpd->provide_esa) {
+        esa_configured = cpd->provide_esa(cpd);
+# if DEBUG & 8
+        if (esa_configured)
+            diag_printf("Got ESA from RedBoot option\n");
+# endif
+    }
+    if (!esa_configured && cpd->hardwired_esa) {
+        // ESA is already set in cpd->esa[]
+        esa_configured = true;
+# if DEBUG & 8
+        diag_printf("Got ESA from cpd\n");
+# endif
+    }
+    if (esa_configured) {
+        // Set up hardware address
+        for (i = 0;  i < sizeof(cpd->enaddr);  i += 2)
+            put_reg(sc, LAN91CXX_IA01+i/2,
+                    cpd->enaddr[i] | (cpd->enaddr[i+1] << 8));
+    } else {
+        // Use the address from the serial EEPROM
+        // Read out hardware address
+        for (i = 0;  i < sizeof(cpd->enaddr);  i += 2) {
+            unsigned short z = get_reg(sc, LAN91CXX_IA01+i/2 );
+            cpd->enaddr[i] =   (unsigned char)(0xff & z);
+            cpd->enaddr[i+1] = (unsigned char)(0xff & (z >> 8));
+        }
+        esa_configured = true;
+# if DEBUG & 8
+        diag_printf("Got ESA from eeprom\n");
+# endif
     }
 #if DEBUG & 9
-    diag_printf("LAN91CXX - eeprom ESA: %02x:%02x:%02x:%02x:%02x:%02x\n",
+    diag_printf("LAN91CXX - ESA: %02x:%02x:%02x:%02x:%02x:%02x\n",
                 cpd->enaddr[0],
                 cpd->enaddr[1],
                 cpd->enaddr[2],

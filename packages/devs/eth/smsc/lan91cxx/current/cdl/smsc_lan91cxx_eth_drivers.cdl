@@ -83,7 +83,11 @@ cdl_package CYGPKG_DEVS_ETH_SMSC_LAN91CXX {
 	description "
 	    If this is nonzero, then the ESA (MAC address) is statically
             configured in the platform-specific package which instantiates
-	    this driver with all its details."
+	    this driver with all its details.
+
+	    Note that use of this option is deprecated in favor of a
+	    CYGSEM_DEVS_ETH_..._SET_ESA option in the platform specific
+	    driver."
     }
 
     cdl_interface CYGINT_DEVS_ETH_SMSC_LAN91CXX_PCMCIA_MODE {
