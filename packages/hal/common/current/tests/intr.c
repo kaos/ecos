@@ -74,6 +74,7 @@
 // -------------------------------------------------------------------------
 
 volatile cyg_count32 ticks = 0;
+volatile cyg_count32 dsr_ticks = 0;
 static cyg_interrupt intr;
 static cyg_handle_t  intr_handle;
 
@@ -91,18 +92,26 @@ cyg_uint32 isr( cyg_uint32 vector, CYG_ADDRWORD data )
     
     ticks++;
 
-    return CYG_ISR_HANDLED;
+    return CYG_ISR_CALL_DSR;
 }
 
 // -------------------------------------------------------------------------
 
+void dsr( cyg_uint32 vector, cyg_ucount32 count, CYG_ADDRWORD data )
+{
+    CYG_TEST_CHECK( ISR_DATA == data , "Bad data passed to DSR");
+    CYG_TEST_CHECK( CYGNUM_HAL_INTERRUPT_RTC == vector ,
+                    "Bad vector passed to DSR");
+
+    dsr_ticks += count;
+}
 
 void intr_main( void )
 {
     CYG_INTERRUPT_STATE oldints;
 
     cyg_drv_interrupt_create(CYGNUM_HAL_INTERRUPT_RTC, 1,
-                             ISR_DATA, isr, NULL, &intr_handle, &intr);
+                             ISR_DATA, isr, dsr, &intr_handle, &intr);
     cyg_drv_interrupt_attach(intr_handle);
     HAL_CLOCK_INITIALIZE( CYGNUM_HAL_RTC_PERIOD );
     cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_RTC);
@@ -114,6 +123,9 @@ void intr_main( void )
         
     }
 
+
+    CYG_TEST_CHECK( dsr_ticks == 10, "DSR not called sufficient times");
+    
     HAL_DISABLE_INTERRUPTS(oldints);
 
     CYG_TEST_PASS_FINISH("HAL interrupt test");
