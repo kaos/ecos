@@ -219,6 +219,7 @@ flash_erase(void *addr, int len, void **err_addr)
     FLASH_Enable(block, end_addr);
     while (block < end_addr) {
         // Supply the blocksize for a gross check for erase success
+        unsigned short *tmp_block;
 #if !defined(CYGSEM_IO_FLASH_READ_INDIRECT)
         int i;
         unsigned char *dp;
@@ -234,7 +235,6 @@ flash_erase(void *addr, int len, void **err_addr)
 #else
         bool erased = false;
 #endif
-        unsigned short *tmp_block;
 
         if (!erased) {
             stat = (*_flash_erase_block)(block, flash_info.block_size);

@@ -1,3 +1,8 @@
+2003-10-08  Roland Cassebohm  <roland.cassebohm@visionsystems.de>
+
+	* src/flash.c: Fix parse error if CYGSEM_IO_FLASH_READ_INDIRECT 
+	is not defined.
+
 2003-09-19  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/flash.c: 
