@@ -1,0 +1,278 @@
+1998-10-23  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 17959
+
+	* targets: Add wallclock and watchdog devices to SIM and powerpc
+	default configurations.
+
+1998-10-21  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* targets: Define _SOFT_FLOAT for PPC. Workaround for PR 17809.
+
+1998-10-16  Bart Veer  <bartv@cygnus.co.uk>
+
+	* pkgconf.tcl:
+	Add a check for versions of Tcl older than 8.0, and produce
+	a sensible error message in those cases.
+
+Thu Oct 15 08:55:00 1998  John Dallaway  <jld@cygnus.co.uk>
+
+	* customers:
+	Fix typo in prebuilts for `public' customer.
+
+Wed Oct 14 15:50:34 1998  Tim Goodwin  <tgoodwin@cygnus.co.uk>
+
+	* customers:
+	Add prebuilts for `public' customer.
+
+Tue Oct 13 17:10:46 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* targets: 
+	Add -Wl,-static to link flags, since the up-and-coming
+	toolchains after 1.1 will require it. In particular anyone
+	using the latest devo compilers needs it.
+
+Tue Oct 13 14:52:50 1998  Tim Goodwin  <tgoodwin@cygnus.co.uk>
+
+	* pkgconf.tcl:
+	Fix missing package name that causes bogus error message.
+
+1998-10-12  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* targets: added -ffunction-sections and -fdata-sections for
+	powerpc.
+
+Mon Oct 12 18:52:35 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* targets: 
+	Add -Winline back into ERRFLAGS for tx39
+	For PR 17319
+
+1998-10-08  Gary Thomas  <gthomas@penang.cygnus.co.uk>
+
+	* packages: 
+	* targets: 
+	Add support for new architecture.
+
+1998-10-06  John Dallaway  <jld@cygnus.co.uk>
+
+      * customers:
+      Make the PowerPC architecture part of the public release.
+
+1998-09-25  Bart Veer  <bartv@cygnus.co.uk>
+
+	* pkgconf.tcl:
+	PR 17485: as a temporary workaround header files in the install
+	tree are now always deleted. This is a sub-optimal solution since
+	it may cause unnecessary rebuilds of the system and of application
+	code, but it is safe. A correct solution would require much more
+	work. 
+
+1998-09-18  Bart Veer  <bartv@cygnus.co.uk>
+
+	* pkgconf.tcl: The argument parsing code no longer tries to be
+	clever when parsing pathnames. Any string is accepted, and if the
+	filename happens to be illegal then this should result in a
+	reasonable error message when generating the build tree.
+
+Thu Sep 17 17:33:44 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* targets: TX39 doesn't support GDB_DEVICE.
+
+Tue Sep 15 19:38:55 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* targets: 
+	Removed -Winline for tx39 target since this toolchain produces
+	warnings specific to it about not being able to inline functions
+	that return something more than 32 bits.	
+
+Tue Sep 15 19:11:20 1998  David Moore  <dsm@keema.cygnus.co.uk>
+
+	* pkgconf.tcl: Cleaned up comments.
+
+Tue Sep 15 13:49:06 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* targets: Cleaned up powerpc lines.
+
+1998-09-14  Bart Veer  <bartv@cygnus.co.uk>
+
+	* pkgconf.tcl:
+	Fixes for PR 17286. After the earlier fixes for PR 17195 pkgconf
+	had started deleting the makefile.deps files even when it was
+	not always appropriate to do so. Now makefile.deps files only
+	get deleted if there has been a change to the configuration's
+	set of packages. Whenever there is such a change the file
+	pkgconf/pkgconf.mak gets updated, which should cause everything
+	to be rebuilt and new makefile.deps files to be generated.
+
+1998-09-11  Bart Veer  <bartv@cygnus.co.uk>
+
+	* packages:
+	Added more useful aliases for the watchdog and wallclock devices.
+
+	* pkgconf.tcl:
+	Fixes for PR 17195.
+	When it becomes necessary to clean out the build tree,
+	the generated makefile.deps files are now removed as well.
+	It was possible for these files to reference headers that
+	are no longer in the configuration.
+	When a package was disabled and then re-enabled, the
+	generated makefiles for the include directories would believe
+	incorrectly that the install/include directory was up to date
+	because of .stamp files. These generated makefiles no longer
+	rely on .stamp files for correct operation to avoid any
+	such problems.
+
+	* targets:
+	All individual device drivers are now disabled when using
+	the simulator HAL packages.
+
+1998-09-08  Bart Veer  <bartv@cygnus.co.uk>
+
+	* pkgconf.tcl (pkgconf::produce_misc_files): 
+	* pkgconf/makrules.prv: 
+	* pkgconf/makrules.tst: 
+	* pkgconf/makrules.src:
+	Allow per-package make rules, for use by configuration tool.
+
+Tue Sep  8 14:40:57 1998  Tim Goodwin  <tgoodwin@cygnus.co.uk>
+
+        * targets:
+        Turn on selective linking for TX39.  Remove `-fno-builtin'.
+
+Mon Sep  7 18:24:07 1998  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* targets: 
+	Add -finit-priority to mn10300 and tx39 for it is no longer the
+	default, with our latest lovely tools.
+
+1998-09-04  Bart Veer  <bartv@cygnus.co.uk>
+
+	* pkgconf.tcl: pkgconf::get_current_packages { }
+	Hardware packages which were inappropriate for the current target
+	but still explicitly enabled by the user were being ignored. In
+	such cases the user should be able to override the settings.
+
+	<pkgconf/system.h> now contains #undef's for packages that are not
+	present. 
+
+1998-09-03  Bart Veer  <bartv@cygnus.co.uk>
+
+	* targets:
+	The tx39 simulator platform should not have the serial device
+	enabled. 
+
+	* pkgconf.tcl:
+	Changed the output of --pkgdata to match the needs of the
+	configuration tool.
+
+Thu Sep  3 15:13:42 1998  Tim Goodwin  <tgoodiwn@cygnus.co.uk>
+
+	* packages:
+
+	s/panx/mn10300/g
+
+1998-09-03  Bart Veer  <bartv@cygnus.co.uk>
+
+	* pkgrelease.tcl:
+	Updated to cope with the HAL packages no longer being special.
+	Also tidied up some of the Tcl code and removed a few references
+	to ecc.
+
+1998-09-02  Bart Veer  <bartv@cygnus.co.uk>
+
+	* packages:
+	Changed a few aliases, to improve consistency.
+
+	* pkgconf.tcl: 
+	Added Windows-specific support for pathnames with spaces.
+	
+	* pkgconf.tcl: 
+	* targets: 
+	* packages:
+	Changed the way HAL packages are handled. At the same time,
+	improved the handling of device driver packages.
+
+Wed Sep  2 11:38:58 1998  Tim Goodwin  <tgoodwin@cygnus.co.uk
+
+	* everything: global change to update copyright notice, etc.
+
+
+Mon Aug 31 11:24:25 1998  Jesper Skov  <jskov@lassi.cygnus.co.uk>
+
+	* targets: Added -finit-priority to PowerPC CXX flags.
+
+Mon Aug 31 11:21:10 1998  Jesper Skov  <jskov@lassi.cygnus.co.uk>
+
+	* targets: Added -finit-priority to PowerPC CXX flags.
+
+1998-08-27  Bart Veer  <bartv@cygnus.co.uk>
+
+	* pkgconf.tcl: Fix read_save_file() to report the filename
+	correctly. 
+
+1998-08-25  Bart Veer  <bartv@cygnus.co.uk>
+
+	* pkgconf.tcl: Fix definitions of array variables to work with Tcl
+	8.1 
+
+Mon Aug 24 17:44:26 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* packages: 
+	Change capitalisation of error package alias
+
+1998-08-18  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* packages: Added "HAL Common" package.
+
+Mon Aug 17 22:31:58 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* pkgconf/makrules.tst, pkgconf/makrules.prv: 
+	Remove all -ltarget and -lgcc as we now specify them in the HAL
+	linker scripts
+
+Thu Aug 13 15:35:16 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* pkgconf/makrules.prv, pkgconf/makrules.tst: 
+	Add extra -ltarget as libgcc needs to have symbols resolved from
+	the C library
+
+1998-07-31  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* packages: Added watchdog device.
+
+Mon Jul 27 19:36:53 BST 1998  Chris Provenzano  <proven@cygnus.com>
+
+	* packages: Added gdb pseudo device.
+
+1998-07-23  Bart Veer  <bartv@cygnus.co.uk>
+
+	* pkgconf.tcl: added new argument --pkgdata for internal use only.
+	This results in a program-friendly listing of the available
+	packages. 
+
+	* Start of consistent usage of ChangeLog files throughout the
+	project 
+
+//===========================================================================
+//####COPYRIGHTBEGIN####
+//
+// -------------------------------------------
+// The contents of this file are subject to the Cygnus eCos Public License
+// Version 1.0 (the "License"); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://sourceware.cygnus.com/ecos
+// 
+// Software distributed under the License is distributed on an "AS IS"
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the
+// License for the specific language governing rights and limitations under
+// the License.
+// 
+// The Original Code is eCos - Embedded Cygnus Operating System, released
+// September 30, 1998.
+// 
+// The Initial Developer of the Original Code is Cygnus.  Portions created
+// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// -------------------------------------------
+//
+//####COPYRIGHTEND####
+//===========================================================================

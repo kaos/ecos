@@ -1,0 +1,242 @@
+#=============================================================================
+#
+#    packages
+#
+#    This file lists the available packages.
+#
+#=============================================================================
+#####COPYRIGHTBEGIN####
+#
+# -------------------------------------------
+# The contents of this file are subject to the Cygnus eCos Public License
+# Version 1.0 (the "License"); you may not use this file except in
+# compliance with the License.  You may obtain a copy of the License at
+# http://sourceware.cygnus.com/ecos
+# 
+# Software distributed under the License is distributed on an "AS IS"
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the
+# License for the specific language governing rights and limitations under
+# the License.
+# 
+# The Original Code is eCos - Embedded Cygnus Operating System, released
+# September 30, 1998.
+# 
+# The Initial Developer of the Original Code is Cygnus.  Portions created
+# by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+# -------------------------------------------
+#
+#####COPYRIGHTEND####
+#=============================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):	bartv
+# Contributors:	bartv
+# Date:		1998-04-11
+#
+# Purpose:      To provide the interim build system with information
+#               about the various packages.
+#
+# Description:  This file defines details of the available packages.
+#		HAL packages are not contained within this file.
+#		They are handled by the targets file instead.
+#
+# Usage:
+#
+#####DESCRIPTIONEND####
+#===============================================================================
+#
+
+#
+# Format of this file:
+#
+# Each package is defined by a statement of the form:
+#	package <name> <body>
+#
+# The name of the package should correspond to the formal name of the package
+# as per CDL, for example CYGPKG_KERNEL. Most of the time aliases will be
+# uses instead.
+#
+# The body can contain the following commands:
+#
+# 1) alias		one or more aliases for this target. The first alias will
+#			be used for output purposes. All aliases will be accepted
+#			as input, and the input matching is not case-sensitive.
+#
+# 2) directory		the package's location within the component repository.
+#
+# 3) default_value	whether or not this package should be enabled by default.
+#			Currently the main packages such as the kernel are enabled,
+#			but support packages such as the Common Device Code are
+#			enabled only if there is a device driver that uses them.
+#
+# 4) include_dir	the location in the install tree where the header files
+#			should go.
+#
+# 5) hardware	        a flag indicating that this package is normally associated
+#                       with specific hardware, and hence should only be enabled
+#                       for appropriate hardware.
+
+package CYGPKG_HAL {
+        alias		{ "eCos common HAL" hal hal_common }
+	directory	hal/common
+	default_value	1
+	include_dir	cyg/hal
+}
+
+package CYGPKG_INFRA {
+	alias 		{ Infrastructure infra }
+	directory	infra
+	default_value	1
+	include_dir	cyg/infra
+}
+
+package CYGPKG_KERNEL {
+	alias		{ "eCos kernel" kernel }
+	directory	kernel
+	default_value	1
+	include_dir	cyg/kernel
+}
+
+package CYGPKG_UITRON {
+	alias		{ "uITRON compatibility" uitron }
+	directory	compat/uitron
+	default_value	1
+	include_dir	cyg/compat/uitron
+}
+
+package CYGPKG_LIBC {
+	alias		{ "C Library" libc clib clibrary }
+	directory	language/c/libc
+	default_value	1
+}
+
+package CYGPKG_LIBM {
+	alias		{ "Math Library" libm mathlib mathlibrary }
+	directory	language/c/libm
+	default_value	1
+}
+
+package CYGPKG_ERROR {
+	alias 		{ "Common error code support" error errors }
+	directory	error
+	default_value	1
+	include_dir	cyg/error
+}
+
+package CYGPKG_DEVICES	{
+	alias		{ "Common Device Code" devices devices_common }
+	directory	devs/common
+	default_value	1
+	include_dir	cyg/devs/common
+}
+
+package CYGPKG_HAL_MN10300 {
+	alias		{ "MN10300 common HAL" hal_mn10300 mn10300_hal mn10300_arch_hal }
+	directory	hal/mn10300/arch
+	include_dir	cyg/hal
+	hardware
+}
+
+package CYGPKG_HAL_MN10300_STDEVAL1 {
+	alias		{ "MN10300 stdeval1 support" hal_mn10300_stdeval1 mn10300_stdeval1_hal }
+	directory	hal/mn10300/stdeval1
+	include_dir	cyg/hal
+	hardware
+}
+
+package CYGPKG_HAL_MN10300_SIM {
+	alias		{ "MN10300 simulator support" hal_mn10300_sim mn10300_sim_hal }
+	directory	hal/mn10300/sim
+        include_dir	cyg/hal
+	hardware
+}
+
+package CYGPKG_HAL_TX39 {
+	alias		{ "TX39 common HAL" hal_tx39 tx39_hal tx39_arch_hal }
+	directory	hal/mips/arch/
+        include_dir	cyg/hal
+	hardware
+}
+
+package CYGPKG_HAL_TX39_JMR3904 {
+	alias		{ "TX39 jmr3904 support" hal_tx39_jmr3904 tx39_jmr3904_hal }
+	directory	hal/mips/jmr3904
+        include_dir	cyg/hal
+	hardware
+}
+
+package CYGPKG_HAL_TX39_SIM {
+	alias		{ "TX39 simulator support" hal_tx39_sim tx39_sim_hal }
+	directory	hal/mips/sim
+        include_dir	cyg/hal
+	hardware
+}
+
+package CYGPKG_HAL_POWERPC {
+	alias		{ "PowerPC common HAL" hal_powerpc powerpc_hal powerpc_arch_hal }
+	directory	hal/powerpc/arch
+        include_dir	cyg/hal
+	hardware
+}
+
+package CYGPKG_HAL_POWERPC_COGENT {
+	alias		{ "PowerPC Cogent board support" hal_powerpc_cogent powerpc_cogent_hal }
+	directory	hal/powerpc/cogent
+        include_dir	cyg/hal
+	hardware
+}
+
+package CYGPKG_HAL_POWERPC_SIM {
+	alias		{ "PowerPC simulator support" hal_powerpc_sim powerpc_sim_hal }
+	directory	hal/powerpc/sim
+        include_dir	cyg/hal
+	hardware
+}
+
+
+package CYGPKG_DEVICES_GDB {
+	alias		{ "GDB Pseudo Device" devices_gdb device_gdb }
+	directory	devs/gdb
+	default_value	1
+	include_dir	cyg/devs/gdb
+	hardware
+}
+
+package CYGPKG_DEVICES_SERIAL_RS232_COMMON {
+	alias		{ "Common Serial Device Code" devices_serial_rs232_common }
+	directory	devs/serial/rs232/common
+	include_dir	cyg/devs/serial/rs232/common
+	hardware
+}
+
+package CYGPKG_DEVICES_WALLCLOCK {
+	alias		{ "Wallclock Device Code" wallclock devices_wallclock device_wallclock }
+	directory	devs/wallclock
+	include_dir	cyg/devs
+	hardware
+}
+
+package CYGPKG_DEVICES_WATCHDOG {
+	alias		{ "Watchdog Device Code" watchdog devices_watchdog device_watchdog }
+	directory	devs/watchdog
+	include_dir	cyg/devs
+	hardware
+}
+
+package CYGPKG_DEVICES_SERIAL_RS232_TX39 {
+	alias		{ "TX39 Serial Device Code" devices_serial_rs232_tx39 }
+	directory	devs/serial/rs232/tx39
+	include_dir	cyg/devs/serial/rs232/tx39
+	hardware
+}
+
+package CYGPKG_DEVICES_SERIAL_RS232_MN10300 {
+	alias		{ "MN10300 Serial Device Code" devices_serial_rs232_mn10300 }
+	directory	devs/serial/rs232/mn10300
+	include_dir	cyg/devs/serial/rs232/mn10300
+	hardware
+}
+
+
+
+

@@ -1,0 +1,88 @@
+1998-10-23  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal_mn10300_sim.h: Allow wallclock and watchdog
+	devices to be configured.
+
+1998-10-19  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal_mn10300_sim.h: Undid 1998-10-16 change.
+
+1998-10-16  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal_mn10300_sim.h: Changed
+	CYGPKG_HAL_MN10300_SIM to CYG_HAL_MN10300_SIM.
+
+1998-09-22  Bart Veer  <bartv@cygnus.co.uk>
+
+	* include/pkgconf/hal_mn10300_sim.h: 
+	Preclude the gdb pseudo device as well as all the other devices.
+	This allows the configuration tool to do a better job when
+	switching from hardware to simulator.
+	
+1998-09-11  Bart Veer  <bartv@cygnus.co.uk>
+
+	* include/pkgconf/hal_mn10300_sim.h:
+	Updated configuration information with a description and
+	some requires.
+
+Thu Sep  3 15:15:57 1998  Tim Goodwin  <tgoodwin@cygnus.co.uk>
+
+	* hal/mn10300/sim/current/src/PKGconf.mak
+	* hal/mn10300/sim/current/src/makefile
+	* hal/mn10300/sim/current/tests/PKGconf.mak
+
+	s/panx/mn10300/g
+
+1998-09-02  Bart Veer  <bartv@cygnus.co.uk>
+
+	* include/pkgconf/hal_mn10300_sim.h:
+	New header file for platform-specific configuration options
+
+	* tests/PKGconf.mak: 
+	* src/PKGconf.mak: 
+	Sort out package naming conventions.
+
+Wed Aug 19 18:45:44 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/hal_diag.c (hal_diag_init): 
+	Put void into function prototype argument list to silence warning
+
+1998-08-18  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/hal_diag.h: 
+	* src/hal_diag.c: 
+	* src/sim.ld:
+	Now uses hal.h rather than kernel.h.
+
+Tue Aug 18 11:45:25 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/sim.ld: Reorder GROUP line
+
+Mon Aug 17 22:21:34 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/sim.ld: 
+	Add GROUP(libgcc.a libtarget.a) to prevent need for explicit linking
+
+//===========================================================================
+//####COPYRIGHTBEGIN####
+//
+// -------------------------------------------
+// The contents of this file are subject to the Cygnus eCos Public License
+// Version 1.0 (the "License"); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://sourceware.cygnus.com/ecos
+// 
+// Software distributed under the License is distributed on an "AS IS"
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the
+// License for the specific language governing rights and limitations under
+// the License.
+// 
+// The Original Code is eCos - Embedded Cygnus Operating System, released
+// September 30, 1998.
+// 
+// The Initial Developer of the Original Code is Cygnus.  Portions created
+// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// -------------------------------------------
+//
+//####COPYRIGHTEND####
+//===========================================================================

@@ -1,0 +1,104 @@
+1998-10-23  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/watchdog.cxx (cyg_start): Reduce test time on TX39 SIM.
+
+	* include/pkgconf/watchdog.h: Use emulatation code for MN10300
+	SIM.
+
+Tue Oct 20 15:52:46 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/mn10300.cxx: 
+	Include <pkgconf/watchdog.h> so that we get CYGIMP_WATCHDOG_EMULATE
+	defined appropriately
+
+	* src/PKGconf.mak:
+	Remove unnecessary override of PKGCONF_CXXFLAGS
+
+1998-09-26  Bart Veer  <bartv@cygnus.co.uk>
+
+	* include/pkgconf/watchdog.h:
+	PR17501: When using the emulation there is a requirement on the
+	kernel clock. This has been added to the configuration data. The
+	mn10300 hardware implementation does not have this requirement,
+	but there is no easy way to express this at present.
+
+1998-09-12  Bart Veer  <bartv@cygnus.co.uk>
+
+	* include/pkgconf/watchdog.h:
+	Added missing descriptions (PR 17184)
+
+1998-09-02  Bart Veer  <bartv@cygnus.co.uk>
+
+	* include/pkgconf/watchdog.h:
+	Added minimal configuration data.
+
+1998-09-01  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/mn10300.cxx:
+	Added include for <cyg/kernel/sched.inl>, for scheduler lock and
+	unlock functions.
+
+	* src/PKGconf.mak:
+	Added mn10300.cxx to COMPILE for mn10300.
+
+	* include/pkgconf/watchdog.h:
+	Default to using real hardware on MN10300.
+
+Fri Aug 28 09:42:26 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* tests/watchdog.cxx:
+	Rename int main(argc, argv) to void cyg_start( void ) under the
+        new entry point system. Therefore also remove return code.
+
+Tue Aug 18 16:51:24 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* tests/watchdog.cxx: 
+	Move inclusion of thread.inl to before sched.hxx to prevent inline
+	warnings
+
+1998-08-14  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/emulate.cxx:
+	Added include for cyg/kernel/sched.inl.
+
+1998-07-31  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/PKGconf.mak:
+	Added mn10300.cxx to COMPILE list.
+
+	* src/mn10300.cxx:
+	Completed implementation using MN10300 watchdog timer.
+
+	* include/watchdog.hxx:
+	Renamed 'register' functions to 'install'. Added install() and
+	uninstall() to Cyg_Watchdog_Action class.
+
+	* include/pkgconf/watchdog.h:
+	Added this file to contain watchdog config options.
+
+1998-07-29  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/watchdog.hxx, src/emulate.cxx: 
+	Created initial versions of watchdog device.
+
+//####COPYRIGHTBEGIN####
+//
+// -------------------------------------------
+// The contents of this file are subject to the Cygnus eCos Public License
+// Version 1.0 (the "License"); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://sourceware.cygnus.com/ecos
+// 
+// Software distributed under the License is distributed on an "AS IS"
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the
+// License for the specific language governing rights and limitations under
+// the License.
+// 
+// The Original Code is eCos - Embedded Cygnus Operating System, released
+// September 30, 1998.
+// 
+// The Initial Developer of the Original Code is Cygnus.  Portions created
+// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// -------------------------------------------
+//
+//####COPYRIGHTEND####

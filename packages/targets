@@ -1,0 +1,189 @@
+#===============================================================================
+#
+#    targets
+#
+#    This file lists the supported target architectures.
+#
+#===============================================================================
+#####COPYRIGHTBEGIN####
+#
+# -------------------------------------------
+# The contents of this file are subject to the Cygnus eCos Public License
+# Version 1.0 (the "License"); you may not use this file except in
+# compliance with the License.  You may obtain a copy of the License at
+# http://sourceware.cygnus.com/ecos
+# 
+# Software distributed under the License is distributed on an "AS IS"
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the
+# License for the specific language governing rights and limitations under
+# the License.
+# 
+# The Original Code is eCos - Embedded Cygnus Operating System, released
+# September 30, 1998.
+# 
+# The Initial Developer of the Original Code is Cygnus.  Portions created
+# by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+# -------------------------------------------
+#
+#####COPYRIGHTEND####
+#===============================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):	bartv
+# Contributors:	bartv
+# Date:		1998-04-11
+#
+# Purpose:      To provide the interim build system with information
+#               about the supported targets.
+#
+# Description:  This file defines details of the supported target architectures.
+# Usage:
+#
+#####DESCRIPTIONEND####
+#===============================================================================
+#
+
+#
+# Format of this file:
+#
+# Each target architecture is defined by a statement of the form:
+#     target <arch> <body>
+#
+# The name of the architecture and acts as the default alias string.
+# 
+# The body can contain the following commands:
+#
+# 1) alias		one or more aliases for this target. The first alias will
+#	                be used for output purposes. All aliases will be accepted
+#			as input, and the input matching is not case-sensitive.
+# 2) command_prefix	what goes before gcc/ld/whatever, e.g. powerpc-eabi
+# 3) flags		compiler flags that should be used. 
+# 4) packages		the names of one or more packages that should be
+#			loaded automatically for this target.
+# 5) platform		definition of a specific platform for this architecture.
+#			Each platform definition is similar to a target definition,
+#			consisting of a name and a body. The name can be used in a
+#			--platform argument to pkgconf. The body can contain the
+#			following commands:
+#
+# 5a) alias		an alias for this platform, used for output.
+# 5b) packages		the names of one or more packages that should be loaded
+#			automatically for this platform.
+# 5c) cflags		replacement compiler flags needed on this platform
+# 5d) startup		a list of the legal start-ups, typically either just ram
+#			or both ram and rom. This corresponds to the --startup
+#			argument to pkgconf.
+#
+
+target mn10300 {
+    alias		{ MN10300 mn10300-elf am30 am30-elf am32 am32-elf }
+    command_prefix	mn10300-elf
+    packages		CYGPKG_HAL_MN10300
+
+    cflags {
+        ERRFLAGS        "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef"
+        CXXERRFLAGS     "-Woverloaded-virtual"
+        DBGFLAGS        "-g -O2"
+        LANGFLAGS       "-ffunction-sections -fdata-sections"
+        CXXLANGFLAGS    "-fno-rtti -fno-exceptions -fvtable-gc -finit-priority"
+        LDLANGFLAGS     "-Wl,--gc-sections -Wl,-static"
+    }
+
+    platform	stdeval1 {
+        alias		{ "Evaluation board" }
+	startup		{ ram rom }
+	packages	{
+            CYGPKG_HAL_MN10300_STDEVAL1
+            CYGPKG_DEVICES_GDB
+            CYGPKG_DEVICES_SERIAL_RS232_COMMON
+            CYGPKG_DEVICES_SERIAL_RS232_MN10300
+            CYGPKG_DEVICES_WALLCLOCK
+            CYGPKG_DEVICES_WATCHDOG
+        }
+			
+    }
+    platform sim {
+        alias		{ "Simulator" }
+	startup		{ ram }
+	packages	{
+            CYGPKG_HAL_MN10300_SIM
+            CYGPKG_DEVICES_WALLCLOCK
+            CYGPKG_DEVICES_WATCHDOG
+        }
+    }
+}
+
+
+target tx39 {
+    alias		{ TX39 mips-tx39 mips-tx39-elf }
+    command_prefix	mips-tx39-elf
+    packages		CYGPKG_HAL_TX39
+
+    cflags {
+        ERRFLAGS        "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef"
+        CXXERRFLAGS     "-Woverloaded-virtual"
+        LANGFLAGS       "-ffunction-sections -fdata-sections"
+        DBGFLAGS        "-g -O2"
+        CXXLANGFLAGS    "-fno-rtti -fno-exceptions -fvtable-gc -finit-priority"
+        LDLANGFLAGS     "-Wl,--gc-sections -Wl,-static"
+    }
+
+    platform	jmr3904 {
+        alias		{ "JMR-TX3904 evaluation board" jmr3904 }
+	hal		hal/mips/jmr3904
+	startup		{ ram rom }
+	packages	{
+	    CYGPKG_HAL_TX39_JMR3904
+	    CYGPKG_DEVICES_SERIAL_RS232_COMMON
+	    CYGPKG_DEVICES_SERIAL_RS232_TX39
+	    CYGPKG_DEVICES_WALLCLOCK
+	    CYGPKG_DEVICES_WATCHDOG
+        }
+    }
+    platform	sim {
+        alias		{ "Simulator" }
+	startup		{ ram }
+        packages	{
+	    CYGPKG_HAL_TX39_SIM
+            CYGPKG_DEVICES_WALLCLOCK
+            CYGPKG_DEVICES_WATCHDOG
+        }
+    }
+}
+
+target powerpc {
+    alias	        { PowerPC powerpc-eabi }
+    command_prefix	powerpc-eabi
+    packages		{ CYGPKG_HAL_POWERPC }
+
+    cflags {
+	ARCHFLAGS	"-mcpu=860 -D_SOFT_FLOAT"
+	ERRFLAGS	"-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef"
+        CXXERRFLAGS     "-Woverloaded-virtual"
+        LANGFLAGS       "-ffunction-sections -fdata-sections"
+	DBGFLAGS	"-g -O2"
+	CXXLANGFLAGS	"-fno-rtti -fno-exceptions -fvtable-gc -finit-priority"
+	LDLANGFLAGS	"-Wl,--gc-sections -Wl,-static"
+    }
+    hal			hal/powerpc/arch
+
+    platform cogent {
+        alias		{ "Cogent board" }
+	startup		{ ram rom }
+	packages	{
+	    CYGPKG_HAL_POWERPC_COGENT
+            CYGPKG_DEVICES_WALLCLOCK
+            CYGPKG_DEVICES_WATCHDOG
+	}
+    }
+    platform sim {
+	alias		{ "Simulator" }
+	startup		{ ram }
+	packages	{
+	    CYGPKG_HAL_POWERPC_SIM
+            CYGPKG_DEVICES_WALLCLOCK
+            CYGPKG_DEVICES_WATCHDOG
+	}
+    }
+}
+

@@ -1,0 +1,196 @@
+1998-10-24  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/pkgconf/serial_tx39.h: 
+	Only define anything if we have the correct hardware platform and
+	NOT a simulator target for that platform, as well as the device
+	package itself being defined.
+
+1998-10-23  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/tx39_serial_test.cxx: 
+	Move include of testing header above the check for "can we test".
+
+Thu Oct 22 12:55:04 BST 1998  Chris Provenzano  <proven@cygnus.com>
+
+	* PKGconf.mak: added new API test and delete all the old tests
+
+	* tests/README, tests/get_baud_rate.cxx, tests/serial1.cxx
+	* tests/serial2.cxx, tests/serial3.cxx, tests/serial4.cxx
+	* tests/serial5.cxx, tests/set_baud_rate.cxx
+	Removed old tests.
+
+	* tx39_serial_test.cxx: New test that test just the API and not much 
+        of the functionality. These tests meet or exceed the previous 
+        existence/spelling tests of the API and therefore replace all the 
+        serial[x].cxx tests which were removed.
+
+Tue Oct 20 15:56:00 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/PKGconf.mak: 
+	Remove unnecessary override of PKGCONF_CXXFLAGS
+
+1998-10-19  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/serial_tx39.h: Undid 1998-10-16 change.
+
+1998-10-16  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/serial_tx39.h: Changed CYGPKG_HAL_TX39_JMR3904
+	to CYG_HAL_TX39_JMR3904.
+
+Thu Oct 15 17:00:00 1998  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/serial_tx39.h: Disable dependence on HAL
+      in CDL.
+
+Tue Sep 29 09:16:53 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/get_baud_rate.cxx (entry0): Removed loop that made the
+ 	test timeout on sim.
+
+Sun Sep 27 15:17:34 1998  Jesper Skov  <jskov@lassi.cygnus.co.uk>
+
+	* tests/set_baud_rate.cxx: Do not change the baud rate to
+	0. Undefined behavior in the current drivers.
+
+Sun Sep 27 13:50:01 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+ 	* tests/README: Added copyright blurb.
+
+Fri Sep 25 20:59:10 1998  Jesper Skov  <jskov@lassi.cygnus.co.uk>
+
+	* tests/README: Added.
+
+Fri Sep 25 20:30:12 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/set_baud_rate.cxx (entry0): Set baud_rate to 38400, not
+	19200.
+
+Fri Sep 25 11:59:31 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/serial3.cxx:
+	* tests/serial5.cxx:
+	Added some diag info to help identify as input tests.
+
+	* tests/PKGconf.mak: Reintroduced input tests.
+
+Wed Sep 23 16:53:57 1998  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 17315
+	
+	* tests/set_baud_rate.cxx: 
+	* tests/serial5.cxx: 
+	* tests/serial4.cxx: 
+	* tests/serial3.cxx: 
+	* tests/serial2.cxx: 
+	* tests/serial1.cxx: 
+	* tests/get_baud_rate.cxx: 
+	Changed device name.
+
+	* tests/PKGconf.mak: 
+	Include tests that do not require human intervention.
+
+Wed Sep 23 14:36:53 1998  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 17424
+	
+	* src/serial_tx39.cxx (io_write, io_read): Also do callbacks in
+ 	poll-mode, if the pointer is non-NULL.
+ 
+Thu Sep 17 19:21:35 1998  Frank Ch. Eigler  <fche@cygnus.com>
+
+	* tests/serial2.cxx (entry0): 
+	Reorder foo flag use to avoid race condition.
+
+Thu Sep 17 12:53:33 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/serial_tx39.h: Put requires in CDL.
+ 	Protect CYG_DEVICE_SERIAL_RS232_MUTEX
+	with CYGPKG_KERNEL.
+ 	Protect CYG_DEVICE_SERIAL_RS232_TX39_KMODE_INTERRUPT with
+	CYGIMP_KERNEL_INTERRUPTS_DSRS.
+
+Thu Sep 17 09:45:00 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/get_baud_rate.cxx tests/serial1.cxx tests/serial2.cxx
+	  tests/serial3.cxx tests/serial4.cxx tests/serial5.cxx
+	  tests/set_baud_rate.cxx
+	Remove all tests. They are not mentioned in the makefile.
+
+Tue Sep 15 02:23:06 BST 1998  Chris Provenzano  <proven@cygnus.com>
+
+        * include/serial_tx39.hxx, src/serial_tx39.cxx:
+        Use positive macros instead of negative changing all
+        ...DO_NOT_DECLARE macros to ...DECLARE 
+
+1998-09-12  Bart Veer  <bartv@cygnus.co.uk>
+
+	* include/pkgconf/serial_tx39.h:
+	Added missing descriptions (PR 17184)
+
+Fri Sep 11 11:13:18 1998  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 17228
+
+	* src/serial_tx39.cxx (io_read): Made to compile when
+ 	KMODE_INTERRUPT undefined.
+	(io_write): Same.
+	(write_isr): Same.
+	(both_isr): Only compile when KMODE_INTERRUPT defined.
+	(set_kmode): Added dummy function for use when only one kmode is
+ 	configured
+	* include/serial_tx39.hxx: Removed conditionals around
+        set_kmode.
+
+1998-09-04  Bart Veer  <bartv@cygnus.co.uk>
+
+	* include/pkgconf/serial_tx39.h:
+	Sorting out naming conventions within the devs/serial hierarchy.
+
+Thu Sep  3 16:00:45 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/pkgconf/serial_tx39.h: 
+	Moved here from devs/common/current/include/pkgconf/
+
+Fri Aug 28 09:50:36 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* tests/get_baud_rate.cxx, tests/serial1.cxx, tests/serial2.cxx,
+	  tests/serial3.cxx, tests/serial4.cxx, tests/serial5.cxx,
+	  tests/set_baud_rate.cxx:
+        Change use of main() as the entry point to cyg_start() under the
+        new entry point scheme. Remove return codes as cyg_start() returns
+        void, not int.
+
+Tue Jul 28 13:58:25 BST 1998  Chris Provenzano  <proven@cygnus.com>
+
+	* include/serial_tx39.hxx: Declare TX39 device using the
+	configured name.
+
+	* tests/PKGconf.mak: Don't compile tests right now.
+	All tests need to be reworked.
+
+Mon Jul 27 17:33:59 BST 1998  Chris Provenzano  <proven@cygnus.com>
+
+        * Changelog: Initial ChangeLog entry.
+
+
+//===========================================================================
+//####COPYRIGHTBEGIN####
+//
+// -------------------------------------------
+// The contents of this file are subject to the Cygnus eCos Public License
+// Version 1.0 (the "License"); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://sourceware.cygnus.com/ecos
+// 
+// Software distributed under the License is distributed on an "AS IS"
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the
+// License for the specific language governing rights and limitations under
+// the License.
+// 
+// The Original Code is eCos - Embedded Cygnus Operating System, released
+// September 30, 1998.
+// 
+// The Initial Developer of the Original Code is Cygnus.  Portions created
+// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// -------------------------------------------
+//
+//####COPYRIGHTEND####
+//===========================================================================

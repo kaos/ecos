@@ -1,0 +1,306 @@
+1998-10-24  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/pkgconf/serial_mn10300.h: 
+	Only define anything if we have the correct hardware platform and
+	NOT a simulator target for that platform, as well as the device
+	package itself being defined.
+
+1998-10-23  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/mn10300_1_serial_test.cxx: 
+	Move include of testing header above the check for "can we test".
+
+	* tests/mn10300_2_serial_test.cxx: 
+	Move include of testing header above the check for "can we test".
+	Assign dummy to unused baud_rate to prevent warning; this keeps
+	this test as similar as possible to the others.
+	
+Thu Oct 22 13:15:06 BST 1998  Chris Provenzano  <proven@cygnus.com>
+
+	* include/serial_mn10300_1.hxx, include/serial_mn10300_2.hxx
+	* src/serial_mn10300_1.cxx, src/serial_mn10300_2.cxx
+	Fix PR17883. 0 byte writes hang driver.
+
+	* mn10300_1_serial_test.cxx, mn10300_2_serial_test.cxx
+	Fix up some coding standard problems.
+
+Wed Oct 21 17:50:04 BST 1998  Chris Provenzano  <proven@cygnus.com>
+
+	* mn10300_2_serial_out_blocking.cxx: Removed. It is no longer 
+        pertinent.  All functionality is in mn10300_2_serial_write_blocking.cxx
+        which is an internal test not to be sent out this release.
+
+	* PKGconf.mak: Added two new API tests to build. 
+
+	* mn10300_1_serial_test.cxx, mn10300_2_serial_test.cxx: Two new tests 
+        that test just the API and not much of the functionality. These tests 
+        meet or exceed the previous existence/spelling tests of the API and 
+        therefore replace all the serial[x].cxx tests which were removed.
+
+Tue Oct 20 15:54:43 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/PKGconf.mak: 
+	Remove unnecessary override of PKGCONF_CXXFLAGS
+
+Tue Oct 20 11:15:30 BST 1998  Chris Provenzano  <proven@cygnus.com>
+
+	* tests/PKGconf.mak: The defaul build should only build tests that
+        can be run with the automated test infrastructure. I.E. None.
+
+        * tests/README, tests/serial3.cxx, tests/serial4.cxx tests/serial5.cxx
+        * tests/serial7.cxx, tests/set_baud_rate.cxx: Removed trash tests.
+        Much better tests along with testing infrastructure are on the way.
+
+1998-10-19  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/serial_mn10300.h: Undid 1998-10-16 change.
+
+1998-10-16  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/serial_mn10300.h: Changed
+	CYGPKG_HAL_MN10300_STDEVAL1 to CYG_HAL_MN10300_STDEVAL1.
+
+Thu Oct 15 17:00:00 1998  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/serial_mn10300.h: Disable dependence on HAL in CDL.
+
+Sun Sep 27 13:50:23 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/README: Added copyright blurb.
+
+Sun Sep 27 10:30:53 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+        PR 17505
+	
+	* src/serial_mn10300_1.cxx (get_baud_rate): Remove seemingly
+	spurious mutex.unlock.
+
+Fri Sep 25 20:59:46 1998  Jesper Skov  <jskov@lassi.cygnus.co.uk>
+
+	* tests/README: Added.
+
+Fri Sep 25 19:58:38 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/serial_mn10300_2.hxx: Use same serial divisors for 9600,
+	19200 and 38400 baud as CygMon.
+
+Fri Sep 25 11:17:31 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/mn10300_2_get_baud_rate.cxx (entry0): Use a signed
+ 	variable to hold return value (baud_rate).
+
+	* tests/serial6.cxx (entry1): Reduced delay.
+	Added some diag info.
+	Changed test numbers to match file.
+
+	* tests/PKGconf.mak: Reintroduced input tests.
+
+	* tests/serial3.c: 
+	* tests/serial5.c: 
+	Added some diag info to help identify these as input tests.
+
+	* tests/serial3.c: 
+	* tests/serial4.c: 
+	* tests/serial5.c: 
+	* tests/serial6.c: 
+	Changed NULL-test condition to match default serial port
+	configuration.
+	
+Wed Sep 23 14:34:22 1998  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 17424
+	
+	* src/serial_mn10300_1.cxx:
+	* src/serial_mn10300_2.cxx:
+	(io_write, io_read) Also do callbacks in poll-mode, if the pointer
+ 	is non-NULL.
+
+Tue Sep 22 14:26:35 1998  Jesper Skov  <jskov@lassi.cygnus.co.uk>
+
+	* include/serial_mn10300_2.hxx: Extended driver class name with
+ 	_2.
+
+Thu Sep 17 13:01:21 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/serial_mn10300_1.h:
+	* include/pkgconf/serial_mn10300_2.h:
+	Protect CYG_DEVICE_SERIAL_RS232_MN10300_x_KMODE_INTERRUPT with
+	CYGIMP_KERNEL_INTERRUPTS_DSRS.
+	Protect CYG_DEVICE_SERIAL_RS232_MUTEX with CYGPKG_KERNEL.
+	
+	* include/pkgconf/serial_mn10300.h: Put some requires in CDL.
+
+Thu Sep 17 09:46:03 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/PKGconf.mak: Removed TESTS_IN and TESTS_OTHER since they
+	fail.
+
+Tue Sep 15 02:23:06 BST 1998  Chris Provenzano  <proven@cygnus.com>
+
+	* include/serial_mn10300_1.hxx, include/serial_mn10300_1.hxx,
+	* src/serial_mn10300_1.cxx, src/serial_mn10300_2.cxx:
+	Use positive macros instead of negative changing all
+	...DO_NOT_DECLARE macros to ...DECLARE
+
+1998-09-12  Bart Veer  <bartv@cygnus.co.uk>
+
+	* include/pkgconf/serial_mn10300.h:
+	Added missing descriptions (PR 17184)
+
+Fri Sep 11 10:25:20 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/serial_mn10300_1.cxx (set_kmode): 
+	* src/serial_mn10300_2.cxx (set_kmode): 
+	Fixed Assertion.
+
+	* include/serial_mn10300_2.hxx: 
+	* include/serial_mn10300_1.hxx: 
+	Use interrupt vectors defined by hal_intr.h.
+
+Thu Sep 10 11:20:08 1998  Jesper Skov  <jskov@cygnus.co.uk>
+        PR#17176
+
+	* include/serial_mn10300_1.hxx: Removed conditionals around
+	set_kmode.
+	* src/serial_mn10300_1.cxx (io_read_cancel): Made to compile
+	without KMODE_INTERRUPT.
+	(set_kmode): Added dummy function for use when only one kmode is
+	configured.
+
+	* include/serial_mn10300_2.hxx: Removed conditionals around
+	set_kmode.
+	* src/serial_mn10300_2.cxx (io_read_cancel): Made to compile
+	without KMODE_INTERRUPT.
+	(set_kmode): Added dummy function for use when only one kmode is
+	configured.
+
+1998-09-04  Bart Veer  <bartv@cygnus.co.uk>
+
+	* include/pkgconf/serial_mn10300.h:
+	Fixed the parent definition for the package.
+
+1998-09-03  Bart Veer  <bartv@cygnus.co.uk>
+
+	* src/serial_mn10300_2.cxx: 
+	* src/serial_mn10300_1.cxx: 
+	* include/pkgconf/serial_mn10300.h:
+	Provide minimal support for configuration data.
+
+Thu Sep  3 15:58:13 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/pkgconf/serial_mn10300.h,
+	  include/pkgconf/serial_mn10300_2.h: 
+	Move these files here from devs/common/current/include/pkgconf/
+	renaming serial_mn10300_1.h to serial_mn10300.h
+
+Thu Sep  3 10:09:52 1998  Tim Goodwin  <tgoodwin@cygnus.co.uk>
+
+	* tests/serial7.cxx:
+	Comments claim this is test 2 and test 5!
+
+Wed Sep  2 22:11:03 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/serial_mn10300.hxx, include/serial_mn10300_2.hxx:
+	Rename serial_mn10300.hxx to serial_mn10300_2.hxx
+
+	* include/serial_mn10300_2.hxx, src/serial_mn10300_2.cxx:
+	Change all mentions of serial_mn10300.hxx to serial_mn10300_2.hxx
+	including things in comments
+
+Fri Aug 28 09:48:38 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* tests/mn10300_2_get_baud_rate.cxx,
+	  tests/mn10300_2_serial_out_asynchronous.cxx,
+	  tests/mn10300_2_serial_out_blocking.cxx, tests/serial3.cxx, 
+	  tests/serial4.cxx, tests/serial5.cxx, tests/serial6.cxx,
+	  tests/serial7.cxx, tests/set_baud_rate.cxx:
+        Change use of main() as the entry point to cyg_start() under the
+        new entry point scheme. Remove return codes as cyg_start() returns
+        void, not int.
+
+Wed Jul 29 17:48:58 BST 1998  Chris Provenzano  <proven@cygnus.com>
+
+	* include/serial_mn10300.hxx, src/serial_mn10300_2.cxx: 
+	Support baudrates up to 460800
+
+	* tests/PKGconf.mak, 
+	* tests/get_baud_rate.cxx, tests/mn10300_2_get_baud_rate.cxx:
+	Rename get_baud_rate.cxx to mn10300_2_get_baud_rate.cxx
+
+Wed Jul 29 16:12:29 BST 1998  Chris Provenzano  <proven@cygnus.com>
+
+	* serial/rs232/mn10300/current/tests/PKGconf.mak:
+	Add more tests.
+
+	* tests/mn10300_2_serial_out_blocking.cxx: Use correct
+	device macro for identifying declared device.
+
+	* tests/mn10300_2_serial_out_asynchronous.cxx: Replaces
+	old serial2.cxx test. Does a lot more testing too.
+
+	* tests/serial1.cxx, tests/serial2.cxx: Remove old tests.
+	
+Wed Jul 29 13:38:27 BST 1998  Chris Provenzano  <proven@cygnus.com>
+
+	* serial/rs232/mn10300/current/tests/PKGconf.mak:
+	Add more tests.
+	
+	* src/serial_mn10300_2.cxx: If interrupt mode is configured
+	then make that the default mode. This is required to let
+	devices work with the ROM monitor as the read isr needs to
+	catch ^C when the kernel is running.
+
+	* src/serial_mn10300_2.cxx: Fix interrupt mode to DTRT
+	when a 0 buffer_length IORB is passed to io_write().
+
+	* tests/mn10300_2_serial_out_blocking.cxx: Replaces old
+	serial1.cxx test. Does a lot more testing too.
+
+Tue Jul 28 21:19:17 BST 1998  Chris Provenzano  <proven@cygnus.com>
+
+	* tests/PKGconf.mak: Sort tests by device testing guidelines
+
+	* tests/serial1.cxx: Update test to use CYGVAR_DEVICE_TEST_NAME
+	Added small stress test and also test for setting of 
+	xferred_length in returned IORB buffer.
+
+	* tests/set_baud_rate.cxx: Some fixes to let it compile.
+
+Mon Jul 27 23:39:57 BST 1998  Chris Provenzano  <proven@cygnus.com>
+
+	* include/serial_mn10300.hxx:
+	Remove CYG_DEVICE_..._KMODE_ASSERT configuration option.
+        Selective linking will DTRT for this option.
+
+	* tests/get_baud_rate.cxx, tests/serial2.cxx, tests/serial4.cxx,
+	* tests/serial6.cxx, tests/serial7.cxx:
+	Use macro device names instead of hardcoded names.
+
+Mon Jul 27 17:33:59 BST 1998  Chris Provenzano  <proven@cygnus.com>
+
+        * Changelog: Initial ChangeLog entry.
+
+
+//===========================================================================
+//####COPYRIGHTBEGIN####
+//
+// -------------------------------------------
+// The contents of this file are subject to the Cygnus eCos Public License
+// Version 1.0 (the "License"); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://sourceware.cygnus.com/ecos
+// 
+// Software distributed under the License is distributed on an "AS IS"
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the
+// License for the specific language governing rights and limitations under
+// the License.
+// 
+// The Original Code is eCos - Embedded Cygnus Operating System, released
+// September 30, 1998.
+// 
+// The Initial Developer of the Original Code is Cygnus.  Portions created
+// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// -------------------------------------------
+//
+//####COPYRIGHTEND####
+//===========================================================================
+

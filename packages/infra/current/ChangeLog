@@ -1,0 +1,283 @@
+Mon Oct 26 19:40:48 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/memset.c, src/memcpy.c:
+	Conditionalise out all tracing for now
+	Fix for PR 17996
+
+Fri Oct 23 05:42:36 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/cyg_ass.h (CYGASSERT_docall): 
+	Make a dummy reference to _msg_ argument when
+	CYGDBG_INFRA_DEBUG_ASSERT_MESSAGE is disabled, otherwise we may get
+	"unused variable" warnings
+	Fix for PR 17889
+
+1998-10-22  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/buffer.cxx (increment_buffer_pos): 
+	Use the correctly named print_trace_buffer() rather than some
+	typo/globaleditto.
+	(cyg_trace_dump): only refer to thread->get_saved_context() if
+	CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT is defined.
+
+1998-10-22  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/buffer.cxx (write_thread_id): 
+	Make get_tid() be there when used.
+
+	* include/pkgconf/infra.h: 
+	Only enable all the buffered tracing stuff if USE_TRACING is
+	selected; otherwise link errors ensue if only USE_ASSERTS is
+	enabled.
+
+1998-10-22  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 17914
+
+	* src/simple.cxx (CYG_NO_THREADID): Set if there is no Kernel
+	support.
+
+1998-10-20  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/null.cxx:
+	Removed fix for PR 17471 since the required macros have been moved
+	to cyg_type.h.
+
+	* include/diag.h (diag_printf):
+	* src/diag.c (diag_printf):
+	Made use of variadic arguments optional in this function.
+
+	* include/pkgconf/infra.h:
+	Added configury to support buffered tracing.
+
+	* src/fancy.cxx (trim_func):
+	Fixed fencepost bug.
+
+	* src/PKGconf.mak:
+	* src/buffer.cxx:
+	Added buffer.cxx to implement buffered trace log.
+
+Thu Oct 15 21:27:23 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/delete.cxx, src/memcpy.c, src/memset.c:
+	Moved here from ecc/kernel/current/src/common, as they should
+	be present even if the kernel is disabled
+
+	* include/pkgconf/infra.h:
+	Add new config options CYGIMP_INFRA_PREFER_SMALL_TO_FAST_MEMCPY
+	and CYGIMP_INFRA_PREFER_SMALL_TO_FAST_MEMSET to support the
+	functionality available in memcpy.c and memset.c
+
+	* src/PKGconf.mak:
+	build above new files
+
+	Above changes are required for PR 17229
+
+1998-10-14  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/cyg_type.h:
+	Moved CYG_LABEL_NAME() macro here from ktypes.h.
+
+Wed Oct 14 17:10:12 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/diag.c: 
+	Change warning message from previous change to match compiler
+	output exactly
+
+Tue Oct 13 17:23:37 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+	
+	* src/diag.c: 
+	Output another warning so that people know that diag.c produces
+	a warning
+	Reformat to 76 columns
+	Change args of diag_printf to be ANSI-style, not K&R to
+	silence warning
+
+1998-09-25  Bart Veer  <bartv@cygnus.co.uk>
+
+	* src/null.cxx:
+	PR 17471: null.cxx relies on the macro CYG_LABEL_NAME(), which on
+	the mn10300 is defined only if <cyg/kernel/ktypes.h> is included.
+	As a temporary fix this header file is now always included. In the
+	medium term there will have to be proper fixes to ktypes.h and to
+	cyg_type.h 
+
+Wed Sep 16 03:42:16 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/startup.cxx, src/dummyxxmain.cxx: 
+	Move __main() to a separate dummyxxmain.cxx source file to resolve
+	linking bogosities on some targets
+	Fix for PR 17279 - kudos to Tim Goodwin really
+
+	* src/PKGconf.mak:
+	Build src/dummyxxmain.cxx
+
+Tue Sep 15 19:14:33 1998  David Moore  <dsm@keema.cygnus.co.uk>
+
+	* include/pkgconf/infra.h: Cleaned up comments.
+
+Tue Sep 15 14:34:34 1998  David Moore  <dsm@cygnus.co.uk>
+
+	* src/startup.cxx: 
+	* include/cyg_type.h: 
+	CYGBLD_ATTRIB_WEAK moved from src/startup.cxx to
+ 	include/cyg_type.h
+
+Tue Sep 15 12:26:36 1998  Jonathan Larmour  <jlarmour@peshwari.cygnus.co.uk>
+
+	* src/null.cxx, src/simple.cxx, src/fancy.cxx:
+ 	Change cyg_check_data_ptr() to not compare with _end symbol from
+	linker scripts as this is a bogus thing to do when starting in
+	ROM. Some better magic can be done later with the memory layout
+	tool.
+
+	* src/simple.cxx (cyg_assert_fail),
+	  src/fancy.cxx (cyg_assert_fail): 
+	If an assert is thrown, loop forever no matter what the platform
+	rather than resetting the jmr board.
+
+Fri Sep 11 12:52:59 1998  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/tcdiag.cxx: 
+	* src/diag.c: 
+	Remove dependencies on the kernel:
+	 o types are available from here, infra.
+	 o Diag and its mates are here and the HAL.
+	
+Thu Sep 10 21:59:09 1998  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/fancy.cxx: 
+	* src/simple.cxx: 
+	* src/null.cxx: 
+	Remove dependencies on the kernel:
+ 	 o interrupt stuff is available	from the HAL.
+	 o types are available from here, infra.
+	 o Diag and its mates are here and the HAL.
+	 o Only consider printing thread information if there is a kernel.
+	
+Thu Sep 10 21:29:55 1998  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/pkgconf/infra.h: 
+	Fix CDL descriptions (mainly) resulting from review of
+	configury here.
+
+Thu Sep 10 17:38:00 1998  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/null.cxx: 
+	Add an empty cyg_assert_fail() if not CYGDBG_USE_ASSERTS, so that
+ 	clib's assert() can use it, in common with but regardless of the
+	internal assert setup.  Of course if internal asserts are used,
+	the same routine is used.
+
+Thu Sep  3 19:05:29 1998  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/startup.cxx (__main): 
+	...and its mates.  Correct the bad usage of the tracing macros - a
+	type was implied when the type was void, so an assert fires.
+
+	* include/diag.h (diag_printf): 
+	Remove 'useful' prototype; this function deliberately has a K&R
+	prototype to avoid having to use varargs, or pad arglists or
+	anything grody like that.  Comment to that effect added too.
+	
+	* src/fancy.cxx: 
+	Condition out routines which are only used by tracing system;
+	prevent warnings.  Also changed the default widths setup to
+	something more suitable to our long function names; viewing on
+	about a 200 column screen recommended - or use 'simple' instead.
+
+Tue Sep  1 19:09:39 1998  Hugo Tyson  <hmt@masala.cygnus.co.uk>
+
+	* include/pkgconf/infra.h: 
+	Fancy tracing by default, as I've been requested.
+	Move definition (or not) of CYGDBG_INFRA_DIAG_USE_DEVICE from the
+	kernel, correcting the symbol construction as we go.
+
+	* include/cyg_type.h: 
+	Correct multiple-inclusion protection, remove
+	<dollar>Version<Dollar> nonsense, correct Usage: field, put in
+	definition of CYGBLD_NORET.
+
+	* include/cyg_ass.h: 
+	Correct Usage: field, remove definition of CYGDBG_NORET, correct
+ 	definition of cyg_assert_fail to use CYGBLD_NORET as intended.
+
+	* include/cyg_trac.h: 
+	Tidy up comments.
+
+	* src/PKGconf.mak (COMPILE): 
+	Added all the new units below.
+
+	* src/fancy.cxx: 
+	* src/simple.cxx: 
+	* src/null.cxx: 
+	Moved here from the kernel; comments changed accordingly.
+
+	* src/tcdiag.cxx: 
+	* include/diag.h: 
+	* src/diag.c: 
+	Moved here from the kernel; comments changed accordingly.
+	Also use config symbol CYGDBG_INFRA_DIAG_USE_DEVICE rather than
+	(badly named) CYG_DIAG_USE_DEVICE.
+
+Fri Aug 28 15:22:16 1998  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/pkgconf/infra.h: 
+	Add lots of lovely cdl comments and new, correct, names for the
+	config options themselves.
+	* include/cyg_trac.h: 
+	* include/cyg_ass.h: 
+	Use the newly named options.
+
+	[KERNEL] see also changes to src/trace/{fancy,null,simple}.cxx
+	which should soon move into this package instead.
+
+Fri Aug 28 09:57:21 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/pkgconf/infra.h:
+	Add CYGSEM_START_ISO_C_COMPATIBILITY and
+	CYGSEM_START_UITRON_COMPATIBILITY options, along with some comment.
+
+	* src/PKGconf.mak, src/startup.cxx:
+	Add these two files for the new file startup.cxx that provides the
+	generic startup mechanism, using new cyg_start() functions. This
+	is to remove the dependency on main(), which is defined in ISO and
+	POSIX as having certain properties we wouldn't be able to give it
+	otherwise.
+
+Tue Aug 25 11:47:58 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/startup.cxx: 
+	Add this to provide new startup method
+
+1998-08-20  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/cyg_type.h:
+	Moved constructor priority ordering stuff here from
+	kernel/ktypes.h.
+
+//===========================================================================
+//####COPYRIGHTBEGIN####
+//
+// -------------------------------------------
+// The contents of this file are subject to the Cygnus eCos Public License
+// Version 1.0 (the "License"); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://sourceware.cygnus.com/ecos
+// 
+// Software distributed under the License is distributed on an "AS IS"
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the
+// License for the specific language governing rights and limitations under
+// the License.
+// 
+// The Original Code is eCos - Embedded Cygnus Operating System, released
+// September 30, 1998.
+// 
+// The Initial Developer of the Original Code is Cygnus.  Portions created
+// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// -------------------------------------------
+//
+//####COPYRIGHTEND####
+//===========================================================================
+	
+	
+

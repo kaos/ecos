@@ -1,0 +1,225 @@
+1998-10-21  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/hal_intr.h (HAL_CLOCK_READ):
+	Fixed this macro to return correct value.
+
+1998-10-16  Bart Veer  <bartv@cygnus.co.uk>
+
+	* src/vectors.S (__interrupt_stack):
+	Made the interrupt stack size configurable.
+
+1998-10-16  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/hal_misc.c:
+	Enabled caches by default.
+
+1998-10-13  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/hal_misc.c:
+	Altered ifdefs to allow builds without kernel.
+
+Thu Sep 24 18:14:19 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_intr.h: Read the interrupt control registers back
+	after writing to them to ensure that the value is not sitting in
+	the store buffer.
+	Also put _ around variable names in HAL_INTERRUPT_CONFIGURE for
+	consistency.
+	
+1998-09-24  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/hal_intr.h:
+	Inverted mask for level in HAL_INTERRUPT_SET_LEVEL().
+
+	* src/vectors.S:
+	Added correct implementations of decode_interrupt macro for
+	chained interrupt processing.
+	Modified call to cyg_instrument() to pass table offset as well as
+	vector number.
+	Include <pkgconf/kernel.h> to allow call to cyg_instrument() to be
+	enabled.
+
+1998-09-14  Bart Veer  <bartv@cygnus.co.uk>
+
+	* src/PKGconf.mak:
+	Made vectors.o dependent on the various files that can contain
+	makefile variables or rules. This is needed after changes to
+	pkgconf.tcl for PRs 17195 and 17286.
+
+Mon Sep 14 11:08:40 1998  Jesper Skov  <jskov@lassi.cygnus.co.uk>
+        PR 17230
+	
+	* include/hal_intr.h: 
+	* src/vectors.S: 
+	Replaced CYGIMP_KERNEL_INTERRUPTS_CHAIN with new
+	CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN.
+
+1998-09-12  Bart Veer  <bartv@cygnus.co.uk>
+
+	* include/pkgconf/hal_mn10300.h:
+	Added missing descriptions (PR 17184)
+
+	* src/hal_misc.c (exception_handler): 
+	Sort out exception handling options (PR 16953)
+
+Thu Sep 10 20:24:02 1998  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/vectors.S (__default_interrupt_vsr): 
+	Fix a bug.  Wrong offset when restoring the PSW tends to screw
+	things up rather.
+
+Thu Sep 10 15:12:21 1998  Jesper Skov  <jskov@lassi.cygnus.co.uk>
+        PR 17153
+
+	* src/vectors.S (__default_interrupt_vsr): Pass correct vector
+	value to isr.
+
+1998-09-09  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/hal_arch.h:
+	Removed distinction between interrupt and thread switch contexts
+	in HAL_SavedRegisters. Modified appropriate macros to reflect this.
+
+	* src/hal_misc.c (cyg_hal_invoke_constructors):
+	Added call to patch_dbg_syscalls() for Cygmon hosted builds.
+
+	* src/context.S (_hal_thread_switch_context):
+	Adjust thread context so that it has the same structure as the
+	state saved by interrupt and exception handlers. This makes
+	supporting thread-aware debugging easier.
+
+	* src/vectors.S:
+	Moved nmi and trap vectors to correct slots in vsr table.
+	Now place arg3 of interrupt_end() in correct stack slot.
+
+1998-09-04  Bart Veer  <bartv@cygnus.co.uk>
+
+	* src/vectors.S (__default_interrupt_vsr):
+	Fixed type in configuration option name.
+
+Thu Sep  3 15:15:57 1998  Tim Goodwin  <tgoodwin@cygnus.co.uk>
+
+	* hal/mn10300/arch/current/src/PKGconf.mak
+	* hal/mn10300/arch/current/src/makefile
+	* hal/mn10300/arch/current/tests/PKGconf.mak
+
+	s/panx/mn10300/g
+
+1998-09-03  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/vectors.S:
+	Fixed offset bug in __trap.
+	Changed conditionals on runtime initialisation of VSR table to not
+	do it in simulated targets.
+
+1998-09-02  Bart Veer  <bartv@cygnus.co.uk>
+
+	* include/pkgconf/hal_mn10300.h:
+	New header file for architecture-specific configuration options
+
+	* tests/PKGconf.mak: 
+	* src/PKGconf.mak: 
+	Sort out package naming conventions.
+
+1998-09-02  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/vectors.S:
+	Moved NMI and TRAP VSRs down 1 word to match cygmon's use of the
+	vector table. This may need to change back in the future.
+
+1998-09-01  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/hal_intr.h:
+	Added CYG_VSR_COUNT, CYG_EXCEPTION_COUNT and CYG_ISR_COUNT.
+	Modified HAL_TRANSLATE_VECTOR() for mn103002 to provide slots
+	for the NMI vectors at start of hal_interrupt_* tables.
+
+	* src/hal_misc.c (exception_handler):
+	Added support for decoding NMI vectors and for calling watchdog
+	ISR if present.
+
+	* src/vectors.S:
+	Modified behaviour of __default_nmi_vsr to support watchdog timer
+	properly.
+	Fixed indirection bug in __nmi and __trap.
+	Modified offsets in hal_interrupt_* tables to provide slots for
+	NMI vectors at start in mn103002.
+
+1998-08-28  Bart Veer  <bartv@cygnus.co.uk>
+
+	* src/vectors.S, src/context.S, src/hal_misc.c, include/hal_intr.h: 
+	Updated for new kernel configuration option symbol names
+	
+Fri Aug 28 10:09:03 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/hal_misc.c: 
+	rename __main() to cyg_hal_invoke_constructors() and remove
+	initialised test
+
+	* src/vectors.S (_start): 
+	Change call of __main() to cyg_hal_invoke_constructors(), and call
+	of main() to cyg_start()
+
+1998-08-25  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/vectors.S:
+	Now pass pointer to saved registers as third argument to
+	interrupt_end().
+
+	* include/hal_arch.h:
+	Added macros to support GDB.
+
+1998-08-21  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/hal_cache.h: 
+	Now includes cyg_type.h rather than ktypes.h.
+	
+	* src/hal_misc.c:
+	Added calls to turn the caches on. But disabled them
+	since they interact poorly with Cygmon (Cygmon does not
+	flush the caches when setting/clearing breakpoints).
+
+Wed Aug 19 18:19:32 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/hal_misc.c (__main): 
+	Add void to function prototypes to silence warnings
+
+1998-08-18  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/hal_arch.h: 
+	* include/hal_intr.h:
+	Now includes cyg_type.h rather than ktypes.h.
+
+	* src/context.S: 
+	* src/vectors.S: 
+	* src/hal_misc.c:
+	Now uses hal.h rather than kernel.h.
+
+1998-08-17  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/vectors.S:
+	Reorgnized ifdefs to better support kernel porting.
+
+//===========================================================================
+//####COPYRIGHTBEGIN####
+//
+// -------------------------------------------
+// The contents of this file are subject to the Cygnus eCos Public License
+// Version 1.0 (the "License"); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://sourceware.cygnus.com/ecos
+// 
+// Software distributed under the License is distributed on an "AS IS"
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the
+// License for the specific language governing rights and limitations under
+// the License.
+// 
+// The Original Code is eCos - Embedded Cygnus Operating System, released
+// September 30, 1998.
+// 
+// The Initial Developer of the Original Code is Cygnus.  Portions created
+// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// -------------------------------------------
+//
+//####COPYRIGHTEND####
+//===========================================================================

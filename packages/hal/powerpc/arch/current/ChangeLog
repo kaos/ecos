@@ -1,0 +1,423 @@
+1998-10-27  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S: Also save registers 13-15 in minimum context for
+	convenience.
+
+1998-10-25  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S: Removed pkgconf/kernel.h include fix-me.
+
+1998-10-23  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/ppc_stub.h: Include generic-stub.h from hal.
+
+Fri Oct 23 04:47:11 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/hal_cache.h: 
+	Include HAL configuration file to be sure we get all the right
+	defines. This is a potential problem, that I had thought may be
+	the cause of PR 17839, but that turned out to be a config tool
+	problem
+	
+1998-10-16  Bart Veer  <bartv@cygnus.co.uk>
+
+	* src/vectors.S (__interrupt_stack):
+	Made the interrupt stack size configurable.
+
+1998-10-15  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/ppc_stub.c (__computeSignal): Use SIGSYS for 'sc'
+	exceptions.
+
+1998-10-15  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 17808
+
+	* include/hal_arch.h (HAL_JMP_BUF_SIZE): Increased to 23.
+
+	* src/context.S (hal_setjmp, hal_longjmp): Also save CR[2-4].
+
+1998-10-15  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S: CYGDBG_KERNEL_DEBUG_GDB_INCLUDE_STUBS changed to
+	CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS.
+
+1998-10-15  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/ppc_stub.c: Replaced include <signal.h> with SIGxxx
+	definitions.
+
+1998-10-15  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/ppc_stub.c: Graceful error if attempted compiled for
+	simulator. 
+	Also do proper include of dbg-threads-api.h.
+
+	* src/vectors.S: Changed CYG_HAL_GDB_BREAK to
+	CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT.
+
+1998-10-15  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/ppc_stub.c (single_step, clear_single_step): Disable
+	interrupts when doing a single-step.
+
+1998-10-14  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/hal_io.h: 
+	* src/ppc_stub.c: 
+	* src/hal_misc.c:
+	Minor modifications to permit building without kernel.
+
+1998-10-14  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_intr.h (HAL_QUERY_INTERRUPTS): Fixed to do the right
+	thing.
+
+1998-10-13  Jesper Skov  <jskov@lassi.cygnus.co.uk>
+
+	* src/ppc_stub.c: 
+	* src/hal_misc.c: 
+	Added thread support. Primarily a change in the way registers are
+	accessed.
+
+ 	* include/hal_arch.h (HAL_GET_GDB_REGISTERS,
+	HAL_SET_GDB_REGISTERS): Added a few more registers.
+
+1998-10-12  Jesper Skov  <jskov@lassi.cygnus.co.uk>
+
+	* Reverted below to avoid problems with test farm. Waiting for
+	approval of other diffs.
+
+1998-10-12  Jesper Skov  <jskov@lassi.cygnus.co.uk>
+
+	* src/ppc_stub.c: 
+	* src/hal_misc.c: 
+	Added thread support. Primarily a change in the way registers are
+	accessed.
+
+ 	* include/hal_arch.h (HAL_GET_GDB_REGISTERS,
+	HAL_SET_GDB_REGISTERS): Added a few more registers.
+
+1998-10-12  Jesper Skov  <jskov@lassi.cygnus.co.uk>
+
+	* include/ppc_stub.h: Added CYGONCE protection.
+	Fixed warning.
+
+1998-10-09  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_intr.h: Added HAL_TRANSLATE_VECTOR.
+
+1998-10-08  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S: Protect kernel.h inclusion by CYGPKG_KERNEL.
+
+1998-10-08  Jesper Skov  <jskov@lassi.cygnus.co.uk>
+
+	* include/hal_arch.h
+	* include/ppc_regs.h
+	* src/hal_misc.c
+	Changed /**/ comments to //.
+
+1998-10-08  Jesper Skov  <jskov@lassi.cygnus.co.uk>
+
+	* src/makefile: Removed.
+
+1998-10-08  Jesper Skov  <jskov@lassi.cygnus.co.uk>
+
+	* include/basetype.h:
+	* include/hal_arch.h:
+	* include/hal_cache.h:
+	* include/hal_intr.h:
+	* include/hal_io.h:
+	* include/ppc_regs.h:
+	* include/pkgconf/hal_powerpc.h:
+	* src/context.S:
+	* src/hal_misc.c:
+	* src/vectors.S:
+	Expanded TABs.
+
+1998-10-08  Jesper Skov  <jskov@lassi.cygnus.co.uk>
+
+	* src/vectors.S: Added GDB interrupt support.
+	Call GDB stub init at startup.
+
+1998-10-08  Jesper Skov  <jskov@lassi.cygnus.co.uk>
+
+	* include/ppc_regs.h: Added defines for Internal Memory Map. Added
+	CYGONCE protection.
+
+1998-10-07  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_io.h: Enforce in-order IO.
+
+1998-10-01  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S (_start): Comment change.
+
+	* include/hal_intr.h: Added empty HAL_INTERRUPT_SET_LEVEL macro.
+
+Thu Sep 17 17:40:01 1998  Jesper Skov  <jskov@lassi.cygnus.co.uk>
+
+	* src/vectors.S: Simulator does not support DER register.
+
+1998-09-14  Bart Veer  <bartv@cygnus.co.uk>
+
+	* src/PKGconf.mak: 
+	Made vectors.o dependent on the various files that can contain
+	makefile variables or rules. This is needed after changes to
+	pkgconf.tcl for PRs 17195 and 17286.
+
+1998-09-12  Bart Veer  <bartv@cygnus.co.uk>
+
+	* include/pkgconf/hal_powerpc.h:
+	Added missing descriptions (PR 17184)
+
+	* src/hal_misc.c (exception_handler): 
+	Sort out exception handling options (PR 16953)
+
+Fri Sep  4 12:03:54 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/context.S: Always save/restore CR as the compiler may only
+	do a partial restore.
+
+Thu Sep  3 10:12:46 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_cache.h: Replaced CACHE macros with dummies. The
+	errata for the revision A.2 MPC860 is pretty grim wrt cache side
+	effects.
+	
+	* include/hal_cache.h: 
+	* include/hal_io.h: 
+	* include/hal_arch.h: 
+	* include/hal_intr.h:
+ 	Wrapped multi-line macros with CYG_MACRO_START/END.
+
+1998-09-02  Bart Veer  <bartv@cygnus.co.uk>
+
+	* include/pkgconf/hal_powerpc.h:
+	New header file for architecture-specific configuration options
+
+	* tests/PKGconf.mak: 
+	* src/PKGconf.mak: 
+	Sort out package naming conventions.
+
+1998-09-01  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/hal_intr.h:
+	Added CYG_VSR_COUNT, CYG_EXCEPTION_COUNT and CYG_ISR_COUNT.
+
+Tue Sep  1 14:43:48 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_cache.h (HAL_DCACHE_SYNC): Write data in the cache
+	back to memory.
+	(HAL_ICACHE_SYNC): Do nothing.
+
+Tue Sep  1 10:26:10 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_misc.c: Define empty __eabi to override compiler
+	generated version of the same.
+
+Mon Aug 31 16:32:34 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_misc.c (cyg_hal_invoke_constructors): Renamed from
+	__eabi.
+
+Mon Aug 31 16:31:18 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S (_start): Call C++ constructors.
+
+Mon Aug 31 15:32:22 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S (__default_interrupt_vsr): Added config options:
+	CYGFUN_HAL_COMMON_KERNEL_SUPPORT and
+	CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK.
+	(restore_state): Moved from bottom of __default_exception_vsr to
+	bottom of __default_interrupt_vsr.
+
+Mon Aug 31 13:33:04 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/ppc_stub.c (__computeSignal): Added handling of MC860
+	specific exceptions.
+	Made VECTOR_PROGRAM decode actual exception type.
+
+	* include/hal_intr.h: Defined MC860 specific vectors.
+
+Mon Aug 31 10:12:44 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_misc.c: 
+	* src/vectors.S:
+	Added ha_default_isr.
+
+	* include/hal_cache.h:
+	* include/ppc_regs.h:
+	Defined HAL_DCACHE_x macros.
+
+	* include/hal_arch.h:
+	* src/hal_misc:
+	Added hal_idle_thread_action.
+
+1998-08-28  Bart Veer  <bartv@cygnus.co.uk>
+
+	* src/vectors.S, src/context.S, src/hal_misc.c, src/ppc_stub.c,
+	include/hal_intr.h : 
+	Updated for new kernel configuration option symbol names
+
+Fri Aug 28 17:55:46 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S: Added some more comments.
+ 	(_start): Disable 860 "Development Support" as it breaks PowerPC
+	standard single-stepping exceptions.
+
+	* src/ppc_stub.c: Handle single-step exceptions properly. Also
+	enable exception-after-branch.
+
+Fri Aug 28 17:41:34 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/ppc_regs.h: Added some more definitions.
+
+	* include/hal_cache.h: Defined HAL_ICACHE_x macros.
+
+	* include/hal_arch.h (HAL_BREAKINST): Use same opcode as GDB.
+
+Fri Aug 28 10:11:06 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/vectors.S (_start): 
+	Change call of main() to cyg_start(), and change comments
+	accordingly. Definitely never call exit().
+
+Thu Aug 27 15:30:27 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/ppc_stub.h (REGSIZE): Floats are 64 bit.
+
+Thu Aug 27 13:58:16 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_misc.c: Removed GDB C-C stuff again.
+
+Wed Aug 26 16:05:53 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_misc.c (hal_ctrlc_isr, hal_init_ctrlc_intr):
+	Added GDB C-C support (temporary location).
+
+Wed Aug 26 15:12:31 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_misc.c (__eabi): Changed to match the constructor table
+	generated by the linker script.
+
+Wed Aug 26 09:38:07 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_arch.h (HAL_GET_GDB_REGISTERS): Fixed typo.
+	(HAL_SET_GDB_REGISTERS): Same.
+
+1998-08-25  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/vectors.S:
+	Now pass pointer to saved registers as third argument to
+	interrupt_end().
+
+	* include/hal_arch.h:
+	Added macros to support GDB.
+
+Tue Aug 25 16:57:27 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/ppc_stub.c: Comment changes.
+
+Tue Aug 25 11:11:49 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_intr.h (HAL_INTERRUPT_ATTACH): Added cast to avoid
+	compiler warning.
+
+Tue Aug 25 11:08:00 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_arch.h (HAL_REORDER_BARRIER): Added side effect to
+ 	"memory".
+
+Mon Aug 24 13:15:07 1998  Jesper Skov  <jskov@lassi.cygnus.co.uk>
+
+	* include/ppc_stub.h: Corrected NUMREGS.
+
+Mon Aug 24 11:14:08 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S (__default_exception_vsr): Don't access register
+	hid0.
+
+Mon Aug 24 10:37:04 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S (_start): Removed non-functional OCD control.
+
+1998-08-21  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/hal_cache.h:
+	Now includes cyg_type.h rather than ktypes.h.	
+
+Thu Aug 20 17:43:50 1998  Jesper Skov  <jskov@lassi.cygnus.co.uk>
+
+	* src/vectors.S: Disable OCD control to allow debugging of gdb
+	 	stub.
+		
+	* src/vectors.S: Temporary stack definition.
+
+Thu Aug 20 17:37:10 1998  Jesper Skov  <jskov@lassi.cygnus.co.uk>
+
+	* src/hal_misc.c: Added GDB stub support.
+
+	* include/ppc.inc: Added some 860 register definitions.
+
+	* include/hal_arch.h: Added breakpoint stuff.
+
+Thu Aug 20 16:07:03 1998  Jesper Skov  <jskov@lassi.cygnus.co.uk>
+
+	* src/PKGconf.mak: Include GDB support files.
+
+Thu Aug 20 16:00:21 1998  Jesper Skov  <jskov@lassi.cygnus.co.uk>
+
+	* include/ppc_stub.h:
+	* include/ppc_regs.h:
+	* src/ppc_stub.c:
+	Added for GDB support.
+
+Tue Aug 18 18:44:00 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_intr.h: 
+	* include/hal_arch.h:
+	Use cyg_type.h rather than ktypes.h.
+
+Tue Aug 18 18:38:43 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/basetype.h: Fixed typo.
+
+1998-08-18  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/context.S: 
+	* src/hal_misc.c: 
+	* include/hal_intr.h: 
+	* src/vectors.S:
+	Now uses hal.h rather than kernel.h.
+
+Mon Aug 17 16:23:46 1998  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_intr.h (HAL_DISABLE_INTERRUPTS): Fix MACRO line
+	continuation.
+	(HAL_RESTORE_INTERRUPTS): Same.
+
+//===========================================================================
+//####COPYRIGHTBEGIN####
+//
+// -------------------------------------------
+// The contents of this file are subject to the Cygnus eCos Public License
+// Version 1.0 (the "License"); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://sourceware.cygnus.com/ecos
+// 
+// Software distributed under the License is distributed on an "AS IS"
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the
+// License for the specific language governing rights and limitations under
+// the License.
+// 
+// The Original Code is eCos - Embedded Cygnus Operating System, released
+// September 30, 1998.
+// 
+// The Initial Developer of the Original Code is Cygnus.  Portions created
+// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// -------------------------------------------
+//
+//####COPYRIGHTEND####
+//===========================================================================
