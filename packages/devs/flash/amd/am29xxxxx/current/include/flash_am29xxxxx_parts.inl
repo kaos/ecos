@@ -524,7 +524,15 @@
         device_size: 0x400000 * CYGNUM_FLASH_INTERLEAVE,
         base_mask  : ~(0x400000 * CYGNUM_FLASH_INTERLEAVE - 1),
         bootblock  : false,
-        banked     : false,
+        // Although this device is not a true banked device, we
+        // treat the device as having two banks to get the 
+        // Sector Protect Verify to work for the upper half of
+        // the device.  Reference Note 9 for Table 9 in the
+        // AMD data sheet.
+        banked     : true,
+        banks      : { 0x200000 * CYGNUM_FLASH_INTERLEAVE,
+                       0
+                     },
         bufsiz     : 1
     },
 #endif
