@@ -1,3 +1,11 @@
+2003-01-31  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/net.cdl (CYGPKG_NET_BUILD_HW_TESTS): Requires eth hardware
+	devices.
+	(CYGPKG_NET_TESTS): Remove from under CYGPKG_NET_BUILD_TESTS (which
+	became CYGPKG_NET_BUILD_HW_TESTS) so the loopback tests are always
+	built.
+
 2003-01-20  Gary Thomas  <gary@mlbassoc.com>
 
 	* tests/nc_test_slave.c: Improve handling of UDP buffer space - try

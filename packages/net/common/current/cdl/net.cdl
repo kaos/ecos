@@ -317,20 +317,31 @@ cdl_package CYGPKG_NET {
     }
 
     cdl_component CYGPKG_NET_BUILD_TESTS {
-        display "Build networking tests (demo programs)"
-        flavor  bool
+        display "Testing options"
+        flavor  none
         no_define
-        default_value 0
-        description   "
-        This option enables the building of additional network tests
-        which at this time are just demos; otherwise only loopback
-        interface tests will be built."
+        description "
+                This component contains options related to testing the network
+                stack."
+
+        cdl_option CYGPKG_NET_BUILD_HW_TESTS {
+            display "Build hardware networking tests (demo programs)"
+            flavor  bool
+            no_define
+            requires { CYGHWR_NET_DRIVER_ETH0_SETUP || CYGHWR_NET_DRIVER_ETH1_SETUP }
+            default_value 0
+            description   "
+             This option enables the building of additional network tests
+             that use real ethernet devices. At this time these are just
+             demos. With this option disabled, only loopback
+             interface tests will be built."
+        }
 
         cdl_option CYGPKG_NET_TESTS {
             display "Networking tests"
             flavor  data
             no_define
-            calculated { CYGPKG_NET_BUILD_TESTS ? \
+            calculated { CYGPKG_NET_BUILD_HW_TESTS ? \
                     "tests/mbuf_test \
                     tests/socket_test \
                     tests/ftp_test \
@@ -356,10 +367,10 @@ cdl_package CYGPKG_NET {
                     tests/udp_lo_test \
                     tests/multi_lo_select \
                     tests/tcp_lo_select"
-        }
+            }
             description   "
-            This option specifies the set of tests
-            for the networking package."
+             This option specifies the set of tests
+             for the networking package."
         }
         
         cdl_option CYGPKG_NET_TESTS_USE_RT_TEST_HARNESS {
