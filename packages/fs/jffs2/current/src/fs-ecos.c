@@ -991,6 +991,7 @@ static int jffs2_ops_link(cyg_mtab_entry * mte, cyg_dir dir1, const char *name1,
 
 	// Allow through links to non-existing terminal objects
 	if (ds2.last && err == ENOENT) {
+		jffs2_iput(ds2.node);
 		ds2.node = NULL;
 		err = ENOERR;
 	}

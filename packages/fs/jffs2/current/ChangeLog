@@ -1,12 +1,20 @@
-2004-01-09  Thomas Koeller  <thomas.koeller@baslerweb.com>
+2004-02-17  David Woodhouse  <dwmw2@redhat.com>
 
-	* src/fs-ecos.c: Fixed inode reference counting in jffs2_ops_link().
+	* src/fs-ecos.c:
+	Don't re-initialise the already-locked f->sem. It makes eCos unhappy. 
 
-2004-01-05  Thomas Koeller  <thomas.koeller@baslerweb.com>
+2004-01-27  David Woodhouse  <dwmw2@redhat.com>
 
-        * cdl/jffs2.cdl: Re-added CYGPKG_FS_JFFS2_CFLAGS_REMOVE that had been
+	* src/write.c: 
+	Fix bug noted by Howard Gray; dirents belong to, and should dirty, 
+	the _parent_inode, not the child (which may be zero in the case 
+	of an unlink).
+
+004-01-05  Thomas Koeller  <thomas.koeller@baslerweb.com>
+
+	* cdl/jffs2.cdl: Re-added CYGPKG_FS_JFFS2_CFLAGS_REMOVE that had been
 	removed by previous change.
-
+	
 2003-11-26  David Woodhouse  <dwmw2@redhat.com>
 
 	JFFS2 cleanup and import of newer code. Remove last vestiges of
