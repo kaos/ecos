@@ -89,4 +89,23 @@ cdl_package CYGPKG_DEVS_ETH_I386_PC_RLTK8139 {
                 RealTek 8139 ethernet port 0."
         }
     }
+
+    cdl_component CYGPKG_DEVS_ETH_I386_PC_RLTK8139_ETH1 {
+        display       "Ethernet port 1 driver"
+        flavor        bool
+        default_value 0
+
+        implements CYGHWR_NET_DRIVERS
+        implements CYGHWR_NET_DRIVER_ETH1
+        implements CYGINT_DEVS_ETH_RLTK_8139_REQUIRED
+
+        cdl_option CYGDAT_DEVS_ETH_I386_PC_RLTK8139_ETH1_NAME {
+            display       "Device name for the ETH1 ethernet port 1 driver"
+            flavor        data
+            default_value {"\"eth1\""}
+            description   "
+                This option sets the name of the ethernet device for the
+                RealTek 8139 ethernet port 1."
+        }
+    }
 }

@@ -1,3 +1,8 @@
+2005-03-03  Bob Koninckx <bob.koninckx@fmtc.be>
+
+	* include/devs_eth_i386_pc_rltk8139.inl: 
+	Added support for a second rltl8139 interface
+
 2003-07-09  Eric Doenges <Eric.Doenges@DynaPel.com>
 
 	* include/devs_eth_i386_pc_rltk8139.inl: 

@@ -87,4 +87,35 @@ NETDEVTAB_ENTRY(rltk8139_netdev0,
 
 #endif // CYGPKG_DEVS_ETH_I386_PC_RLTK8139_ETH0
 
+#ifdef CYGPKG_DEVS_ETH_I386_PC_RLTK8139_ETH1
+
+static cyg_uint8 rltk8139_eth1_rx_ring[RX_BUF_TOT_LEN] CACHE_ALIGNED;
+static cyg_uint8
+rltk8139_eth1_tx_buffer[(TX_BUF_TOT_LEN + HAL_DCACHE_LINE_SIZE - 1)
+                        & ~(HAL_DCACHE_LINE_SIZE - 1)] CACHE_ALIGNED;
+static Rltk8139_t rltk8139_eth1_priv_data = {
+  1, rltk8139_eth1_rx_ring, rltk8139_eth1_tx_buffer
+};
+
+ETH_DRV_SC(rltk8139_sc1,
+           &rltk8139_eth1_priv_data,
+           CYGDAT_DEVS_ETH_I386_PC_RLTK8139_ETH1_NAME,
+           rltk8139_start,
+           rltk8139_stop,
+           rltk8139_control,
+           rltk8139_can_send,
+           rltk8139_send,
+           rltk8139_recv,
+           rltk8139_deliver,
+           rltk8139_poll,
+           rltk8139_int_vector
+           );
+
+NETDEVTAB_ENTRY(rltk8139_netdev1,
+                "rltk8139_" CYGDAT_DEVS_ETH_I386_PC_RLTK8139_ETH1_NAME,
+                rltk8139_init,
+                &rltk8139_sc1);
+
+#endif // CYGPKG_DEVS_ETH_I386_PC_RLTK8139_ETH1
+
 // EOF devs_eth_i386_pc_rltk8139.inl
