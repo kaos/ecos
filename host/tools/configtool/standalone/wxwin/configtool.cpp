@@ -161,9 +161,6 @@ bool ecApp::OnInit()
 {
     wxLog::SetTimestamp(NULL);
 
-    CeCosSocket::Init();
-    CeCosTestPlatform::Load();
-
     wxHelpProvider::Set(new wxSimpleHelpProvider);
     //wxHelpProvider::Set(new wxHelpControllerHelpProvider(& m_helpController));
 
@@ -192,6 +189,32 @@ bool ecApp::OnInit()
         )
         m_appDir = wxPathOnly(m_appDir);
 #endif
+
+// Install default platform definitions if no platforms defined
+#ifdef __WXMSW__
+    wxConfig config (wxGetApp().GetSettings().GetConfigAppName());
+    if (! config.Exists (wxT("Platforms")))
+    {
+        wxFileName platforms (m_appDir, wxT("platforms.reg"));
+        platforms.Normalize();
+        if (platforms.FileExists())
+            wxExecute (wxT("regedit /s \"") + platforms.GetFullPath() + wxT("\""), wxEXEC_SYNC);
+    }
+#endif
+#ifdef __WXGTK__
+    wxFileName config (wxFileName::GetHomeDir(), wxEmptyString);
+    config.AppendDir(wxT(".eCosPlatforms"));
+    if (! config.DirExists())
+    {
+        wxFileName platforms (m_appDir, wxT("platforms.tar"));
+        platforms.Normalize();
+        if (platforms.FileExists())
+            wxExecute (wxT("tar -C ") + wxFileName::GetHomeDir() + wxT(" -xf ") + platforms.GetFullPath());
+    }
+#endif
+
+    CeCosSocket::Init();
+    CeCosTestPlatform::Load();
 
     // Load resources from binary resources archive, or failing that, from
     // Windows resources or plain files
@@ -1248,7 +1271,7 @@ void ecApp::CygMount(wxChar c)
         wxString strCmd;
         String strOutput;
         
-        strCmd.Printf(wxT("mount %c: /ecos-%c"),c,c);
+        strCmd.Printf(wxT("mount -t -u %c: /ecos-%c"),c,c);
         CSubprocess sub;
         sub.Run(strOutput,strCmd);
     }

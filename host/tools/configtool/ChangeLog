@@ -1,3 +1,9 @@
+2003-04-16  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/configtool.cpp: Install default platform definitions
+	on initial invocation. Generate Cygwin text-mode mounts explicitly since
+	text-mode is no longer the default mount type.
+
 2003-04-11  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/ecutils.cpp, standalone/wxwin/ecutils.h: Create
