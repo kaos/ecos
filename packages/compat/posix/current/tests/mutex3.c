@@ -61,6 +61,7 @@
 # include <pthread.h>
 # include <semaphore.h>
 # include <time.h>
+# include <unistd.h>
 #endif
 
 #if !defined(CYGPKG_POSIX_PTHREAD)
