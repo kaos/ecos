@@ -30,13 +30,18 @@ SECTIONS
     SECTION_rodata (rom, ALIGN (0x1), LMA_EQ_VMA)
     SECTION_rodata1 (rom, ALIGN (0x1), LMA_EQ_VMA)
     SECTION_fixup (rom, ALIGN (0x1), LMA_EQ_VMA)
+#if !defined(CYGSEM_HAL_H8300_VECTOR_HOOK)
+    SECTION_int_hook_table (rom, ALIGN (0x2), LMA_EQ_VMA)
+#endif
     SECTION_gcc_except_table (rom, ALIGN (0x1), LMA_EQ_VMA)
     SECTION_data (ram, WORK,FOLLOWING (.gcc_except_table))
     SECTION_bss (ram, ALIGN (0x4),LMA_EQ_VMA)
+#if defined(CYGSEM_HAL_H8300_VECTOR_HOOK)
 #if !defined(CYGPKG_IO_ETH_DRIVERS)
-    SECTION_int_hook_table (ram, CYGHWR_HAL_H8300_VECTOR_ADDRESS, FOLLOWING(.data))
+    SECTION_int_hook_table (ram, CYGHWR_HAL_H8300_VECTOR_ADDRESS, LMA_EQ_VMA)
 #else
-    SECTION_int_hook_table (iram, CYGHWR_HAL_H8300_VECTOR_ADDRESS, FOLLOWING(.data))
+    SECTION_int_hook_table (iram, CYGHWR_HAL_H8300_VECTOR_ADDRESS, LMA_EQ_VMA)
+#endif
 #endif
     SECTIONS_END
 }

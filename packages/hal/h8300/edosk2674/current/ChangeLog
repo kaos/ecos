@@ -1,3 +1,30 @@
+2004-03-18  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* include/hal_diag.h
+	fix warning.
+	
+2004-03-02  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* include/platform.inc
+	add h8300_save_vectors macro.
+
+2004-02-24  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* cdl/hal_h8300_h8s_edosk2674.cdl
+	add Linker flags "-mrelax"
+	move CYGSEM_HAL_H8300_VECTOR_HOOK to hal_h8300.cdl
+
+2003-12-04  Uwe Kindler <ukindler@htwm.de>,Yoshinori Sato <ysato@users.sourceforge.jp>
+
+	* include/platform.inc
+	fix ISCR setup.
+
+2003-11-29  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* include/plf_intr.h
+	target name fix
+
+
 2003-02-21  Yoshinori Sato  <qzb04471@nifty.ne.jp>
 
 	* New package.

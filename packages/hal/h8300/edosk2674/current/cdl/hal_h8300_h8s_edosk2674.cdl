@@ -2,7 +2,7 @@
 #
 #      hal_h8300_h8s_edosk2674.cdl
 #
-#      EDOSK-2674R HAL package configuration data
+#      EDOSK-2674 HAL package configuration data
 #
 # ====================================================================
 #####ECOSGPLCOPYRIGHTBEGIN####
@@ -72,7 +72,7 @@ cdl_package CYGPKG_HAL_H8300_H8S_EDOSK2674 {
 	puts $::cdl_header "#define CYGNUM_HAL_H8300_SCI_PORTS 2"
 	puts $::cdl_header "#define CYGHWR_HAL_VECTOR_TABLE 0xffbd00"
         puts $::cdl_header "#define HAL_PLATFORM_CPU    \"H8S\""
-        puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"EDOSK-2674R\""
+        puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"EDOSK-2674\""
         puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
     }
 
@@ -191,7 +191,7 @@ cdl_package CYGPKG_HAL_H8300_H8S_EDOSK2674 {
             display "Global linker flags"
             flavor  data
             no_define
-            default_value { "-g -nostdlib -Wl,--gc-sections -Wl,-static -ms -mint32" }
+            default_value { "-g -nostdlib -Wl,--gc-sections -Wl,-static -mrelax -ms -mint32" }
             description   "
                 This option controls the global linker flags. Individual
                 packages may define options which override these global flags."
@@ -257,20 +257,12 @@ cdl_package CYGPKG_HAL_H8300_H8S_EDOSK2674 {
             application. This enables features such as utilizing a separate
             interrupt stack when exceptions are generated."
     }
-    cdl_option CYGSEM_HAL_H8300_VECTOR_HOOK {
-        display       "Interrupt Vector Hook"
-        flavor        bool
-        default_value 1
-        parent        CYGPKG_HAL_ROM_MONITOR
-        description   "
-            Interrupt Vector Table Hooking Support"
-    }
     cdl_option CYGHWR_HAL_H8300_VECTOR_ADDRESS {
         display       "Hook Vector Address"
         flavor        data
         default_value 0xffbe00
+	active_if CYGSEM_HAL_H8300_VECTOR_HOOK
         parent        CYGPKG_HAL_ROM_MONITOR
-        requires      { CYGSEM_HAL_H8300_VECTOR_HOOK == 1 }
         description   "
             Hooking Vector Table Address"
     }
@@ -280,5 +272,20 @@ cdl_package CYGPKG_HAL_H8300_H8S_EDOSK2674 {
 	default_value 0xffff88
         description   "
             Used SCI Channel base address."
+    }
+    cdl_option CYGDAT_REDBOOT_H8300_LINUX_COMMAND_START {
+        display        "Default kernel command line start address"
+        flavor         data
+        default_value  0xbffe00
+        description    "
+           This option uClinux kernel command line start address of default."
+    }
+
+    cdl_option CYGDAT_REDBOOT_H8300_LINUX_BOOT_COMMAND_LINE {
+        display        "Default command line"
+        flavor         data
+        default_value  { "console=/dev/ttySC2" }
+        description    "
+           This option uClinux kernel startup command line of default."
     }
 }

@@ -5,7 +5,7 @@
 //
 //      plf_intr.h
 //
-//      EDOSK-2674R interrupt and clock support
+//      EDOSK-2674 interrupt and clock support
 //
 //==========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####

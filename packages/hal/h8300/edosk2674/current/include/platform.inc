@@ -4,7 +4,7 @@
 ##
 ##	platform.inc
 ##
-##	EDOSK-2764R "board" assembler header file
+##	EDOSK-2764 "board" assembler header file
 ##
 ##=============================================================================
 #####ECOSGPLCOPYRIGHTBEGIN####
@@ -45,7 +45,7 @@
 ## Author(s): 	 yoshinori sato
 ## Contributors: yoshinori sato
 ## Date:	 2003-02-23
-## Purpose:	 EDOSK-2674R "board" definitions.
+## Purpose:	 EDOSK-2674 "board" definitions.
 ## Description:	 This file contains various definitions and macros that are
 ##               required for writing assembly code for the am31 simulator.
 ##               Currently there are none
@@ -63,6 +63,7 @@
 #include <cyg/hal/mod_regs_bsc.h>
 #include <cyg/hal/mod_regs_pio.h>
 #include <cyg/hal/mod_regs_intc.h>
+#include <cyg/hal/mod_regs_sys.h>
 
 ##-----------------------------------------------------------------------------
 
@@ -83,7 +84,7 @@
 	.word	((REGS) & 0xffff),DATA
 
 init_regs:
-INIT_REGS_DATA(CYGARC_ASTCR,0xff)
+INIT_REGS_DATA(CYGARC_ASTCR,0xfb)
 INIT_REGS_DATA(CYGARC_RDNCR,0x00)
 INIT_REGS_DATA(CYGARC_ABWCR,0x80)
 INIT_REGS_DATA(CYGARC_WTCRAH,0x27)
@@ -102,16 +103,20 @@ INIT_REGS_DATA(CYGARC_PGDDR,0x0f)
 INIT_REGS_DATA(CYGARC_PHDDR,0x0f)
 INIT_REGS_DATA(CYGARC_PFCR0,0xff)
 INIT_REGS_DATA(CYGARC_PFCR2,0x0d)
-INIT_REGS_DATA(CYGARC_ITSR, 0x00)
+INIT_REGS_DATA(CYGARC_INTCR,0x28)
+INIT_REGS_DATA(CYGARC_ITSR, 0xff)
 INIT_REGS_DATA(CYGARC_ITSR+1,0x3f)
+INIT_REGS_DATA(CYGARC_ISCRL, 0x55)
+INIT_REGS_DATA(CYGARC_ISCRL+1,0x55)
+INIT_REGS_DATA(CYGARC_MSTPCRL,0xf7)
 
 	.word	0
 2:
 ;SDRAM setup
 #define SDRAM_SMR 0x400040
 
-	mov.b	#0,r0l
-	mov.b	r0l,@CYGARC_DRACCR:16
+	mov.w	#0,r0
+	mov.w	r0,@CYGARC_DRACCR:16
 	mov.w	#0x188,r0
 	mov.w	r0,@CYGARC_REFCR:16
 	mov.w	#0x85b4,r0
@@ -124,6 +129,13 @@ INIT_REGS_DATA(CYGARC_ITSR+1,0x3f)
 ;special thanks to Arizona Cooperative Power
 #endif
 	.endm
+
+#if defined(CYGPKG_IO_ETH_DRIVERS)
+#define CYGPKG_HAL_H8300_SAVED_VECTORS
+	.macro	h8300_save_vectors
+	.byte	16
+	.endm
+#endif
 
 #------------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_PLATFORM_INC
