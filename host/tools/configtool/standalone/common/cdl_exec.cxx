@@ -1,8 +1,9 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2005 Bart Veer
 // Copyright (C) 2003 John Dallaway
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
 // This program is part of the eCos host tools.
 //
@@ -371,8 +372,26 @@ cdl_exec::cmd_remove (const std::vector<std::string> cdl_packages)
     try {
         init(true);
         for (n = 0; n < cdl_packages.size (); n++) {
-            if (! config->lookup (resolve_package_alias (cdl_packages [n]))) {
+            CdlNode     base = config->lookup(resolve_package_alias (cdl_packages [n]));
+            if (0 == base ) {
                 throw CdlStringException ("Unknown package " + cdl_packages [n]);
+            }
+            CdlPackage pkg = dynamic_cast<CdlPackage>(base);
+            if (0 == pkg) {
+                CdlLoadable     owner       = base->get_owner();
+                std::string     owner_name  = owner ? owner->get_name() : "<unknown>";
+                CdlOption       option      = dynamic_cast<CdlOption>(base);
+                CdlComponent    component   = dynamic_cast<CdlComponent>(base);
+                CdlInterface    interface   = dynamic_cast<CdlInterface>(base);
+                if (0 != option) {
+                    throw CdlStringException (cdl_packages [n] + " is an option within " + owner_name + ", not a loadable package");
+                } else if (0 != component) {
+                    throw CdlStringException (cdl_packages [n] + " is a component of " + owner_name + ", not a loadable package");
+                } else if (0 != interface) {
+                    throw CdlStringException (cdl_packages [n] + " is an interface within " + owner_name + ", not a loadable package");
+                } else {
+                    throw CdlStringException (cdl_packages [n] + " is not a loadable package");
+                }
             }
         }
         for (n = 0; n < cdl_packages.size (); n++) {
