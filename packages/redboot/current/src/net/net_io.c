@@ -535,7 +535,7 @@ net_init(void)
 
     // Set defaults as appropriate
 #ifdef CYGSEM_REDBOOT_DEFAULT_NO_BOOTP
-    use_bootp = CYGSEM_REDBOOT_DEFAULT_NO_BOOTP;
+    use_bootp = false;
 #else
     use_bootp = true;
 #endif
