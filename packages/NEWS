@@ -1,3 +1,4 @@
+* Support for Spanning Tree Protocol in the old OpenBSD stack
 * Add support for GPS-4020 (embedded ARM7 GPS receiver/controller)
 * Basic IPSEC and libipsec support. 
 * Flash driver for SST 39VFXXX devices
