@@ -1,3 +1,12 @@
+2004-09-16  Andrea Michelotti <amichelotti@atmel.com>
+
+	* cdl/hal_arm_at91.cdl:
+	* src/at91_misc.c:
+	* include/var_io.h: Support FIQ as a high priority interrupt using the normal
+	mechanism. This is controlled by the CDL option CYGHWR_HAL_ARM_AT91_FIQ and uses the
+	interrupt number CYGHWR_HAL_ARM_AT91_FIQ which is common to all platforms using
+	this HAL variant. 
+		
 2004-08-30  Thomas Koeller <thomas.koeller@baslerweb.com>
 
 	* cdl/hal_arm_at91.cdl: Reversed change of 2004-02-12 that move

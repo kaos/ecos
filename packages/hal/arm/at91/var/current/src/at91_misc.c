@@ -180,13 +180,24 @@ int hal_IRQ_handler(void)
 {
     cyg_uint32 irq_num;
     cyg_uint32 ivr;
-    
+#ifdef CYGHWR_HAL_ARM_AT91_FIQ
+    // handle fiq interrupts as irq 
+    cyg_uint32 ipr,imr;
+
+    HAL_READ_UINT32(AT91_AIC+AT91_AIC_IPR, ipr);
+    HAL_READ_UINT32(AT91_AIC+AT91_AIC_IMR, imr);
+
+    if (imr & ipr & (1 << CYGNUM_HAL_INTERRUPT_FIQ)) {
+      HAL_WRITE_UINT32(AT91_AIC+AT91_AIC_ICCR, (1 << CYGNUM_HAL_INTERRUPT_FIQ));
+      return CYGNUM_HAL_INTERRUPT_FIQ;
+    }
+#endif
     // Calculate active interrupt (updates ISR)
     HAL_READ_UINT32(AT91_AIC+AT91_AIC_IVR, ivr);
 
     HAL_READ_UINT32(AT91_AIC+AT91_AIC_ISR, irq_num);
 
-    // No valid interrrupt source, treat as spurious interrupt    
+    // An invalid interrrupt source is treated as a spurious interrupt    
     if (irq_num < CYGNUM_HAL_ISR_MIN || irq_num > CYGNUM_HAL_ISR_MAX)
       irq_num = CYGNUM_HAL_INTERRUPT_NONE;
     

@@ -85,4 +85,14 @@ cdl_package CYGPKG_HAL_ARM_AT91 {
                         platform HALs to select the specific microcontroller
                         being used."
     }
+
+    cdl_option CYGHWR_HAL_ARM_AT91_FIQ {
+        display       "handle FIQ as an IRQ"
+        flavor        bool
+        default_value 0
+        description   "
+            Enable this option if you need to handle FIQ interrupts in the
+            normal way, i.e. a FIQ interrupt will be treated as a normal IRQ 
+            using the highest priority"
+    }
 }

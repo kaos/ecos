@@ -640,6 +640,10 @@
 #define AT91_WD_SR_WDOVF    0x00000001
 
 
+//=============================================================================
+// FIQ interrupt vector which is shared by all HAL varients.
+
+#define CYGNUM_HAL_INTERRUPT_FIQ 0
 //-----------------------------------------------------------------------------
 // end of var_io.h
 #endif // CYGONCE_HAL_VAR_IO_H
