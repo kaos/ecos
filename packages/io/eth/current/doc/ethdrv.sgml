@@ -36,7 +36,7 @@
 <sect1 id="io-eth-drv-api">
 <title>Generic Ethernet API</title>
 <para>
-This file provides a simple description of how to write a low-level,
+This section provides a simple description of how to write a low-level,
 hardware dependent ethernet driver.
 </para>
 <para>
