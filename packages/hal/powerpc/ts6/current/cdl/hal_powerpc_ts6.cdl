@@ -67,6 +67,9 @@ cdl_package CYGPKG_HAL_POWERPC_TS6 {
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
     implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
 
+    requires { CYGSEM_HAL_ENABLE_DCACHE_ON_STARTUP == 0 }
+    requires { CYGSEM_HAL_ENABLE_ICACHE_ON_STARTUP == 0 }
+
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_powerpc_mpc8260.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_powerpc_ts6.h>"

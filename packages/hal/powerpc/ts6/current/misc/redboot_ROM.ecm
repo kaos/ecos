@@ -60,7 +60,7 @@ cdl_component CYGBLD_BUILD_REDBOOT {
 };
 
 cdl_option CYGDAT_REDBOOT_CUSTOM_VERSION {
-    user_value 1 "DCS Version 1.17"
+    user_value 1 "DCS Version 1.16"
 };
 
 cdl_option CYGBLD_REDBOOT_MIN_IMAGE_SIZE {
@@ -73,10 +73,6 @@ cdl_option CYGBLD_REDBOOT_FLASH_BOOT_OFFSET {
 
 cdl_option CYGNUM_REDBOOT_FLASH_RESERVED_BASE {
     user_value 0x40000
-};
-
-cdl_option CYGOPT_REDBOOT_FIS_REDBOOT_BACKUP {
-    user_value 1
 };
 
 cdl_option CYGBLD_ISO_STRTOK_R_HEADER {

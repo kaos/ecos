@@ -124,7 +124,7 @@ cdl_package CYGPKG_HAL_POWERPC_VADS {
     cdl_option CYGHWR_HAL_POWERPC_DISABLE_MMU {
         display       "DISABLE MMU"
         flavor        bool
-        default_value 0
+        default_value 1
 	#        calculated    1
         description   "
             This option will disable the MMU enabled."

@@ -184,15 +184,23 @@ fec_eth_init(struct cyg_netdevtab_entry *tab)
     volatile t_PQ2IMM    *IMM = (volatile t_PQ2IMM *) QUICC2_VADS_IMM_BASE;
     volatile t_Fcc_Pram  *fcc =  (volatile t_Fcc_Pram *) (QUICC2_VADS_IMM_BASE + FEC_PRAM_OFFSET);
     volatile t_EnetFcc_Pram *E_fcc = &(fcc->SpecificProtocol.e);
-#if defined(CYGPKG_HAL_POWERPC_VADS) || defined(CYGPKG_HAL_POWERPC_TS6)
+#ifdef CYGPKG_HAL_POWERPC_VADS
     volatile t_BCSR *CSR   = (t_BCSR *) 0x04500000;
 #endif
 
+    int cache_state;
     int i;
     bool esa_ok;
     bool fec_100;
     unsigned char *c_ptr;
     UINT16 link_speed;
+
+    // Ensure consistent state between cache and what the FEC sees
+    HAL_DCACHE_IS_ENABLED(cache_state);
+    if (cache_state) {
+      HAL_DCACHE_DISABLE();
+      HAL_DCACHE_INVALIDATE_ALL();
+    }
 
     // Link the memory to the driver control memory
     qi->fcc_reg = & (IMM->fcc_regs[FCC2]);
@@ -201,7 +209,7 @@ fec_eth_init(struct cyg_netdevtab_entry *tab)
     qi->fcc_reg->fcc_gfmr &= ~(FEC_GFMR_EN_Rx | FEC_GFMR_EN_Tx);
     
     // Via BCSR, (re)start LXT970
-#if defined(CYGPKG_HAL_POWERPC_VADS) || defined(CYGPKG_HAL_POWERPC_TS6)
+#ifdef CYGPKG_HAL_POWERPC_VADS 
     EnableResetPHY(CSR);
 #endif
 
@@ -400,6 +408,9 @@ fec_eth_init(struct cyg_netdevtab_entry *tab)
       CPCR_FLG;              /* ISSUE COMMAND */
     
     while ((IMM->cpm_cpcr & CPCR_FLG) != CPCR_READY_TO_RX_CMD); 
+
+    if (cache_state)
+      HAL_DCACHE_ENABLE();
 
     // Initialize upper level driver for ecos
     (sc->funs->eth_drv->init)(sc, (unsigned char *)&enaddr);

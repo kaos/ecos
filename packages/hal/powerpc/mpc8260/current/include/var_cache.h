@@ -137,15 +137,35 @@
 
 
 // Synchronize the contents of the cache with memory.
-// Use the macro defined in the PPC60x HAL as of January 2003.
+// Use a brute force method until something better appears in my head
+// By loading memory from 0x0 to HAL_DCACHE_SIZE, incremented by
+// HAL_DCACHE_LINE_SIZE, it will ensure that the contents of the data
+// cache is known.  Then, I will traverse the loop again, this time
+// flushing the address, not loading it.
+#if 1
 #define HAL_DCACHE_SYNC()                                       \
     CYG_MACRO_START                                             \
-    cyg_int32 i;                                                \
-    cyg_uint32 *__base = (cyg_uint32 *) (0);                    \
-    for(i=0;i< (HAL_DCACHE_SIZE/HAL_DCACHE_LINE_SIZE);i++,__base += HAL_DCACHE_LINE_SIZE/4){                                                    \
-        asm volatile ("lwz %%r0,0(%0);"::"r"(__base):"r0");     \
-    }                                                           \
+    volatile cyg_uint32 tmp1,tmp2;          \
+    for (tmp1 = 0; tmp1 < HAL_DCACHE_SIZE; tmp1 += HAL_DCACHE_LINE_SIZE) \
+        tmp2 = *((cyg_uint32 *) tmp1);      \
+    HAL_DCACHE_FLUSH(0x0, HAL_DCACHE_SIZE); \
     CYG_MACRO_END
+#else
+#define HAL_DCACHE_SYNC()                                       \
+    CYG_MACRO_START                                             \
+    cyg_uint32 __base = 0x0, _tmp;                              \
+    cyg_int32 __size = HAL_DCACHE_SIZE;                         \
+    while (__size > 0) {                                        \
+        asm volatile (                                          \
+                      "lwz %0,0(%1);"                           \
+                      :"=r" (_tmp) : "r" (__base)               \
+                     );                                         \
+        __base += HAL_DCACHE_LINE_SIZE;                         \
+        __size -= HAL_DCACHE_LINE_SIZE;                         \
+    }                                                           \
+    HAL_DCACHE_FLUSH( 0x0 , HAL_DCACHE_SIZE );                  \
+    CYG_MACRO_END
+#endif
 
 // Query the state of the data cache
 #define HAL_DCACHE_IS_ENABLED(_state_)                          \
@@ -287,13 +307,10 @@
     asm volatile ("sync;"                             \
                   "mfspr %0, %2;"                     \
                   "ori   %1, %0, 0x8000;"             \
-                  "mtspr %2, %1;"                     \
                   "isync;"                            \
-                  "sync;"                             \
-                  "ori   %1, %1, 0x0800;"             \
                   "mtspr %2, %1;"                     \
-                  "isync;"                            \
-                  "sync;"                             \
+                  "ori   %1, %0, 0x0800;"             \
+                  "mtspr %2, %1;"                     \
                   "mtspr %2, %0;"                     \
                   "isync;"                            \
                   "sync;"                             \

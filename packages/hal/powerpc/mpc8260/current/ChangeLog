@@ -1,9 +1,3 @@
-2003-03-04  Paul Fine <pfine@delcomsys.com>
-	
-	* include/var_cache.h: Modify the HAL_DCACHE_SYNC macro to look
-	like the MACRO defined in the PPC60x HAL.
-	
-
 2002-12-12  Gary Thomas  <gthomas@ecoscentric.com>
 2002-12-12  Patrick Doyle <wpd@delcomsys.com>
 
