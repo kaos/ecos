@@ -60,6 +60,7 @@
 
 #include <cyg/hal/drv_api.h>            // CYG_ISR_HANDLED
 #include <cyg/hal/hal_intr.h>
+#include <cyg/hal/hal_cache.h>
 #include <cyg/hal/mpc8xxx.h>            // Needed for IMMR structure
 
 #define PORT_IS_SMC 1
@@ -420,7 +421,7 @@ cyg_hal_plf_serial_putc(void* __ch_data, cyg_uint8 ch)
     volatile struct cp_bufdesc *bd;
     struct port_info *info = (struct port_info *)__ch_data;
     volatile t_Scc_Pram *uart_pram = (volatile t_Scc_Pram *)((char *)IMM + info->pram);
-//    int cache_state;
+    int cache_state;
 
     /* tx buffer descriptor */
     bd = (struct cp_bufdesc *)((char *)IMM + uart_pram->tbptr);
@@ -431,15 +432,15 @@ cyg_hal_plf_serial_putc(void* __ch_data, cyg_uint8 ch)
     }
     bd->length = 1;
     bd->buffer[0] = ch;
-    bd->ctrl      |= _BD_CTL_Ready;
-#if 0 //??
+
     // Flush cache if necessary - buffer may be in cacheable memory
     HAL_DCACHE_IS_ENABLED(cache_state);
     if (cache_state) {
       HAL_DCACHE_FLUSH(bd->buffer, 1);
     }
-#endif
 
+    bd->ctrl      |= _BD_CTL_Ready;
+    while (bd->ctrl & _BD_CTL_Ready) ;  // Wait for buffer free
 }
 
 static cyg_bool
@@ -448,7 +449,7 @@ cyg_hal_plf_serial_getc_nonblock(void* __ch_data, cyg_uint8* ch)
     volatile struct cp_bufdesc *bd;
     struct port_info *info = (struct port_info *)__ch_data;
     volatile t_Scc_Pram *uart_pram = (volatile t_Scc_Pram *)((char *)IMM + info->pram);
-//    int cache_state;
+    int cache_state;
 
     /* rx buffer descriptor */
     bd = info->next_rxbd;
@@ -468,13 +469,12 @@ cyg_hal_plf_serial_getc_nonblock(void* __ch_data, cyg_uint8* ch)
     }
     info->next_rxbd = bd;
 
-#if 0
-    // Note: the MBX860 does not seem to snoop/invalidate the data cache properly!
+    // Note: the MPC8xxx does not seem to snoop/invalidate the data cache properly!
     HAL_DCACHE_IS_ENABLED(cache_state);
     if (cache_state) {
         HAL_DCACHE_INVALIDATE(bd->buffer, uart_pram->mrblr);  // Make sure no stale data
     }
-#endif
+
     return true;
 }
 

@@ -1,3 +1,8 @@
+2003-12-16  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/quicc2_diag.c: Need to flush/invalidate cache for character
+	buffers (since they may be cacheable if the serial driver is running)
+
 2003-11-19  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/mpc8xxx.h: Add definitions for CPM timers.
