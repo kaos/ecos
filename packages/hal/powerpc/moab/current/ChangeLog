@@ -1,3 +1,8 @@
+2004-02-25  Gary Thomas  <gary@mlbassoc.com>
+
+	* misc/redboot_RAM+FLASH.ecm: Remove FIS - can't be supported in
+	this configuration.
+
 2003-12-08  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/moab.S: Fix cycle time on NAND FLASH.

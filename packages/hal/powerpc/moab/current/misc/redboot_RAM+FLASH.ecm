@@ -45,6 +45,10 @@ cdl_option CYGHWR_DEVS_ETH_PHY_DP83847 {
     inferred_value 1
 };
 
+cdl_option CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK {
+    inferred_value 0
+};
+
 cdl_option CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE {
     user_value 4096
 };
@@ -88,6 +92,10 @@ cdl_option CYGBLD_REDBOOT_MAX_MEM_SEGMENTS {
 
 cdl_option CYGSEM_REDBOOT_PLF_ESA_VALIDATE {
     inferred_value 1
+};
+
+cdl_option CYGOPT_REDBOOT_FIS {
+    user_value 0
 };
 
 cdl_option CYGBLD_REDBOOT_MIN_IMAGE_SIZE {
