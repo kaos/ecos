@@ -189,7 +189,9 @@ hal_extended_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
     
     HAL_READ_UINT32 (INTR_STATUS_PTR, pendingIsr);
 
-    for (isrNum=0; isrNum <=31; isrNum++)
+    // Although we could check 32-bits of the register, according
+    // to the IDT32334 docs, only bits 1 to 14 are actually used.
+    for (isrNum=1; isrNum <=14; isrNum++)
         if ( (1 << isrNum) & pendingIsr)
             break;
 

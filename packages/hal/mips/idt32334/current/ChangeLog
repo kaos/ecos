@@ -1,3 +1,8 @@
+2004-07-31  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/var_intr.c (hal_extended_isr): Only need to check bits 1 to 14.
+	Fix for bug #1000106.
+
 2004-04-22  Jani Monoses <jani@iv.ro>
 
 	 * cdl/hal_mips_idt32334.cdl :
