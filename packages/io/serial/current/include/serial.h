@@ -60,6 +60,7 @@
 #include <cyg/infra/cyg_type.h>
 #include <cyg/io/io.h>
 #include <cyg/io/serialio.h>
+#include <cyg/io/devtab.h>
 #include <cyg/hal/drv_api.h>
 
 #ifdef CYGPKG_IO_SERIAL_SELECT_SUPPORT

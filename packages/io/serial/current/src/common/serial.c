@@ -292,8 +292,6 @@ serial_init(serial_channel *chan)
 }
 
 // ---------------------------------------------------------------------------
-// FIXME:@@@ Throughout this file there are uses of cyg_drv_cond_signal and
-// cyg_drv_cond_broadcast. Does it matter which? -Jifl
 
 static Cyg_ErrNo 
 serial_write(cyg_io_handle_t handle, const void *_buf, cyg_uint32 *len)
@@ -613,7 +611,7 @@ serial_get_config(cyg_io_handle_t handle, cyg_uint32 key, void *xbuf,
         cyg_drv_dsr_lock();
         if (in_cbuf->waiting) {
             in_cbuf->abort = true;
-            cyg_drv_cond_signal(&in_cbuf->wait);
+            cyg_drv_cond_broadcast(&in_cbuf->wait);
             in_cbuf->waiting = false;
         }
         in_cbuf->get = in_cbuf->put = in_cbuf->nb = 0;  // Flush buffered input
@@ -637,11 +635,11 @@ serial_get_config(cyg_io_handle_t handle, cyg_uint32 key, void *xbuf,
         // Caution - assumed to be called from 'timeout' (i.e. DSR) code
         if (in_cbuf->len != 0) {
             in_cbuf->abort = true;
-            cyg_drv_cond_signal(&in_cbuf->wait);
+            cyg_drv_cond_broadcast(&in_cbuf->wait);
         }
         if (out_cbuf->len != 0) {
             out_cbuf->abort = true;
-            cyg_drv_cond_signal(&out_cbuf->wait);
+            cyg_drv_cond_broadcast(&out_cbuf->wait);
         }
         break;
 
@@ -660,7 +658,7 @@ serial_get_config(cyg_io_handle_t handle, cyg_uint32 key, void *xbuf,
                            NULL, NULL);
         if (out_cbuf->waiting) {
             out_cbuf->abort = true;
-            cyg_drv_cond_signal(&out_cbuf->wait);
+            cyg_drv_cond_broadcast(&out_cbuf->wait);
             out_cbuf->waiting = false;
         }
         cyg_drv_dsr_unlock();
@@ -888,7 +886,7 @@ serial_xmt_char(serial_channel *chan)
     // before (e.g. because of flow control)
     if (cbuf->waiting) {
         cbuf->waiting = false;
-        cyg_drv_cond_signal(&cbuf->wait);
+        cyg_drv_cond_broadcast(&cbuf->wait);
     }
 #ifdef CYGPKG_IO_SERIAL_SELECT_SUPPORT
     cyg_selwakeup( &cbuf->selinfo );
@@ -962,7 +960,7 @@ serial_rcv_char(serial_channel *chan, unsigned char c)
             enable_diag_uart = _enable;
 #endif // CYGDBG_DIAG_BUF
         cbuf->waiting = false;
-        cyg_drv_cond_signal(&cbuf->wait);
+        cyg_drv_cond_broadcast(&cbuf->wait);
     }
 }
 
@@ -1076,7 +1074,7 @@ serial_data_rcv_done(serial_channel *chan, int chars_rcvd)
 
     if (cbuf->waiting) {
         cbuf->waiting = false;
-        cyg_drv_cond_signal(&cbuf->wait);
+        cyg_drv_cond_broadcast(&cbuf->wait);
     }
 #ifdef CYGPKG_IO_SERIAL_FLOW_CONTROL
     // If we've hit the high water mark, tell the other side to stop

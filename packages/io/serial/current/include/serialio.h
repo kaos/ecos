@@ -54,6 +54,8 @@
 
 // This file contains the user-level visible I/O interfaces
 
+#include <pkgconf/system.h>
+#include <pkgconf/io_serial.h>
 #include <pkgconf/hal.h>
 #include <cyg/infra/cyg_type.h>
 #include <cyg/io/config_keys.h>

@@ -1,3 +1,15 @@
+2003-06-09  Nick Garnett  <nickg@balti.calivar.com>
+
+	* src/common/serial.c: Changed all calls to cyg_drv_cond_signal()
+	to cyg_drv_cond_broadcast(). Removed comment asking whether this
+	matters: it does.
+
+	* include/serialio.h: Added includes of pkgconf files so that the
+	ifdefs in this file work properly.
+	
+	* include/serial.h: Added include of devtab.h to fix compile
+	error.
+
 2003-05-21  Gary Thomas  <gary@mlbassoc.com> 	
 
 	* src/common/serial.c (serial_get_config): Restart receiver 
