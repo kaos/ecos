@@ -53,7 +53,7 @@ cdl_package CYGPKG_DEVS_USB_SA11X0 {
     include_dir "cyg/io/usb"
     parent      CYGPKG_USB
     implements  CYGHWR_IO_USB_SLAVE
-    doc         devs-usb-sa11x0.html
+    doc         ref/devs-usb-sa11x0.html
 
     # Make sure that we are running on the right hardware.
     requires CYGPKG_HAL_ARM

@@ -1,4 +1,4 @@
-<!DOCTYPE refentry  PUBLIC "-//OASIS//DTD DocBook V3.1//EN">
+<!-- DOCTYPE refentry  PUBLIC "-//OASIS//DTD DocBook V3.1//EN" -->
 
 <!-- {{{ Banner                         -->
 
@@ -35,6 +35,9 @@
 <!-- =============================================================== -->
 
 <!-- }}} -->
+
+<reference id="devs-usb-sa11x0-ref">
+  <title>SA11X0 USB Device Driver</title>
 
 <refentry id="devs-usb-sa11x0">
 <refmeta>
@@ -228,3 +231,4 @@ will be raised and performance will suffer accordingly.
 </refsect1>
 
 </refentry>
+</reference>
