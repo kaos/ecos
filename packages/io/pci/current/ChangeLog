@@ -1,3 +1,9 @@
+2004-10-12  Mark Salter  <msalter@redhat.com>
+
+	* cdl/io_pci.cdl (CYGPKG_IO_PCI_CONFIGURE_INTLINE): New option.
+	* src/pci.c (cyg_pci_translate_interrupt): Don't write INT LINE
+	register unless CYGPKG_IO_PCI_CONFIGURE_INTLINE defined.
+
 2004-08-31  Mark Salter  <msalter@redhat.com>
 
 	* src/pci.c (cyg_pci_translate_interrupt): Write vector number into

@@ -871,11 +871,13 @@ cyg_pci_translate_interrupt( cyg_pci_device *dev_info,
     cyg_uint8 devfn = CYG_PCI_DEV_GET_DEVFN(dev_info->devid);
 
     if (cyg_pcihw_translate_interrupt(bus, devfn, vec)) {
+#ifdef CYGPKG_IO_PCI_CONFIGURE_INTLINE
         // Fill in interrupt line info. This only really works for
         // platforms where assigned PCI irq numbers are less than 255.
         cyg_pcihw_write_config_uint8(bus, devfn,
                                      CYG_PCI_CFG_INT_LINE, 
                                      *vec & 0xff);
+#endif
         return true;
     }
     return false;

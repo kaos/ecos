@@ -109,5 +109,17 @@ cdl_package CYGPKG_IO_PCI {
             description   "
                 This option specifies the set of tests for the PCI configuration library."
         }
+
+        cdl_option CYGPKG_IO_PCI_CONFIGURE_INTLINE {
+            display "Writeback Interrupt Line register."
+            flavor  bool
+            default_value 0
+            description   "
+                This option causes a PCI device interrupt vector to be
+                written to the Interrupt Line register in config space.
+                This is traditionally done by a BIOS so that device
+                drivers can read the interrupt vector directly from
+                device configuration space."
+        }
     }
 }
