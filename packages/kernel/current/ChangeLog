@@ -1,3 +1,9 @@
+2003-02-19  Nick Garnett  <nickg@calivar.com>
+
+	* tests/fptest.c: Changed to run for a constant time rather than a
+	constant number of iterations, with a shorter run time for
+	simulated targets.
+
 2003-02-10  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/thread.inl: Add more debug info to thread stack checking.
