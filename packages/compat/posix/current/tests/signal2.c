@@ -71,6 +71,8 @@ static jmp_buf jbuf;
 
 //--------------------------------------------------------------------------
 
+#ifdef CYGNUM_HAL_EXCEPTION_DATA_UNALIGNED_ACCESS
+
 static void
 cause_unaligned_access(void)
 {
@@ -81,7 +83,11 @@ cause_unaligned_access(void)
 
 } // cause_unaligned_access()
 
+#endif
+
 //--------------------------------------------------------------------------
+
+#ifdef CYGNUM_HAL_EXCEPTION_DATA_ACCESS
 
 static void
 cause_illegal_access(void)
@@ -97,7 +103,11 @@ cause_illegal_access(void)
 
 } // cause_unaligned_access()
 
+#endif
+
 //--------------------------------------------------------------------------
+
+#ifdef CYGNUM_HAL_EXCEPTION_FPU_DIV_BY_ZERO
 
 // num must always be 0 - do it this way in case the optimizer tries to
 // get smart
@@ -116,6 +126,8 @@ cause_fpe(int num)
                                         // the architecture supports it.
                                         // (integer division by zero).
 } // cause_fpe()
+
+#endif
 
 //--------------------------------------------------------------------------
 // Signal handler functions
@@ -214,7 +226,7 @@ int main(int argc, char **argv)
 
 #else
 
-    CYG_TEST_NA("Test 1 - provoke unaligned access - not supported");
+    CYG_TEST_INFO("Test 1 - provoke unaligned access - not supported");
 
 #endif    
 
@@ -231,7 +243,7 @@ int main(int argc, char **argv)
 
 #else
 
-    CYG_TEST_NA("Test 1 - provoke illegal access - not supported");
+    CYG_TEST_INFO("Test 1 - provoke illegal access - not supported");
 
 #endif    
     
@@ -248,11 +260,11 @@ int main(int argc, char **argv)
 
 #else
 
-    CYG_TEST_NA("Test 3 - provoke FP error - not supported");    
+    CYG_TEST_INFO("Test 3 - provoke FP error - not supported");    
     
 #endif    
-    
-    CYG_TEST_FINISH( "signal2" );
+
+    CYG_TEST_PASS_FINISH( "signal2" );
 }
 
 #endif // ifndef NA_MSG

@@ -1,3 +1,9 @@
+2000-09-28  Jesper Skov  <jskov@redhat.com>
+
+	* common/eCosTestSerialFilter.cpp (CMD_TestBinary): Reset counter
+	for each test so the failure data is the same from two different
+	runs of the test.
+
 2000-09-15  Jesper Skov  <jskov@redhat.com>
 
 	* common/ser_filter.cpp (main): Don't require ResourceServer.

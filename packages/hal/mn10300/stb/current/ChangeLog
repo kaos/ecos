@@ -1,3 +1,15 @@
+2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/pkgconf/mlt_mn10300_am33_stb_ram.mlt:
+	* include/pkgconf/mlt_mn10300_am33_stb_rom.mlt:
+	Add heap1 section
+
+	* include/pkgconf/mlt_mn10300_am33_stb_ram.h:
+	* include/pkgconf/mlt_mn10300_am33_stb_rom.h:
+	* include/pkgconf/mlt_mn10300_am33_stb_ram.ldi:
+	* include/pkgconf/mlt_mn10300_am33_stb_rom.ldi:
+	Regenerated
+
 2000-03-20  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* src/plf_stub.c (cyg_hal_gdb_isr): Use serial 0 interrupt macros

@@ -1,3 +1,14 @@
+2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* tests/dlmalloc1.cxx:
+	* tests/dlmalloc2.cxx:
+	* tests/malloc4.cxx:
+	* tests/memfix1.cxx:
+	* tests/memfix2.cxx:
+	* tests/memvar1.cxx:
+	* tests/memvar2.cxx:
+	Make sure default priority constructors have been invoked.
+
 2000-09-14  Jesper Skov  <jskov@redhat.com>
 
 	* tests/realloc.c (main): fix warning.

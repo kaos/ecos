@@ -392,6 +392,9 @@ externC void cyg_hal_default_exception_vsr( void );
     CYG_MACRO_END
 #endif
 
+extern void hal_delay_us(int);
+#define HAL_DELAY_US(n) hal_delay_us(n)
+
 //--------------------------------------------------------------------------
 // Variant functions
 externC void hal_variant_IRQ_init(void);

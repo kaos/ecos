@@ -301,7 +301,7 @@ int main(int argc, char **argv)
     CYG_TEST_INFO( "Main: calling timer_delete(timer2)");    
     ret = timer_delete( timer2 );
 
-    CYG_TEST_CHECK( ret == 0 , "timer_delete(timer2) returned error");    
+    CYG_TEST_CHECK( ret == 0 , "timer_delete(timer2) returned error");
 
     
     CYG_TEST_CHECK( retval == (void *)0x12345672, "Thread 2 retval wrong");
@@ -309,12 +309,7 @@ int main(int argc, char **argv)
     CYG_TEST_CHECK( sigusr1_called == 1, "SIGUSR1 signal handler not called once" );
     CYG_TEST_CHECK( sigusr2_called == 6, "SIGUSR2 signal handler not called six times" );
 
-    // check retval
-    
-    if( (long)retval == 0 )
-        CYG_TEST_PASS_FINISH( "timer1" );
-    else
-        CYG_TEST_FAIL_FINISH( "timer1" );
+    CYG_TEST_PASS_FINISH( "timer1" );
 }
 
 //--------------------------------------------------------------------------

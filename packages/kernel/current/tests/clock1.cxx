@@ -103,6 +103,9 @@ void clock1_main( void )
 externC void
 cyg_start( void )
 {
+#ifdef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
+    cyg_hal_invoke_constructors();
+#endif
     clock1_main();
 }
 

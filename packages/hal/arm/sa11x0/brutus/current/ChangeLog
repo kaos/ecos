@@ -1,3 +1,15 @@
+2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/pkgconf/mlt_arm_sa11x0_brutus_ram.mlt:
+	* include/pkgconf/mlt_arm_sa11x0_brutus_rom.mlt:
+	Add heap1 section
+
+	* include/pkgconf/mlt_arm_sa11x0_brutus_ram.h:
+	* include/pkgconf/mlt_arm_sa11x0_brutus_rom.h:
+	* include/pkgconf/mlt_arm_sa11x0_brutus_ram.ldi:
+	* include/pkgconf/mlt_arm_sa11x0_brutus_rom.ldi:
+	Regenerate
+
 2000-09-17  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/hal_arm_sa11x0_brutus.cdl: Add platform/cpu identification strings.

@@ -172,6 +172,24 @@ cdl_component CYGPKG_IO_SERIAL_MIPS_VRC4373_SERIAL1 {
                 the set of global flags if present."
         }
     }
+
+    cdl_component CYGPKG_IO_SERIAL_MIPS_VRC4373_TESTING {
+        display    "Testing parameters"
+        flavor     bool
+        calculated 1
+        active_if  CYGPKG_IO_SERIAL_MIPS_VRC4373_SERIAL0
+
+        cdl_option CYGPRI_SER_TEST_SER_DEV {
+            display       "Serial device used for testing"
+            flavor        data
+            default_value { CYGDAT_IO_SERIAL_MIPS_VRC4373_SERIAL0_NAME }
+        }
+
+        define_proc {
+            puts $::cdl_header "#define CYGPRI_SER_TEST_CRASH_ID \"vrc4373\""
+            puts $::cdl_header "#define CYGPRI_SER_TEST_TTY_DEV  \"/dev/tty0\""
+        }
+    }
 }
 
 # EOF ser_mips_vrc4373.cdl

@@ -1,3 +1,50 @@
+2000-10-23  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/redboot.cdl: 
+	* src/main.c (cyg_start): 
+	* src/flash.c: Script timeout now has a configurable resolution.
+
+2000-10-21  Gary Thomas  <gthomas@redhat.com>
+
+	* src/net/eth_drv.c: Removed obsolete file - now provided by
+	standard IO/ETH package.
+
+2000-10-20  Gary Thomas  <gthomas@redhat.com>
+
+	* src/net/pktbuf.c: Diagnostc - add buffer [list] dumper.
+
+	* src/net/enet.c: Diagnostic - dump when run out of buffers.
+
+	* src/flash.c: Make sure RedBoot flash image size meets
+	certain minimums - currently at least 128K.
+
+2000-10-19  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/redboot.cdl: Add dependency on 'vectors.o'.
+
+	* include/redboot.h: 
+	* src/misc_funs.c (strcpy, memcmp): 
+	Make function signature [prototype] conform to standards.
+	(memmove, memset): Remove.
+
+2000-10-18  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/redboot.cdl: Improve dependency checking in make rules.
+
+2000-10-17  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c (fis_create): Add new "-s" option to support padded
+	images (data size not the same as image size in FLASH).
+
+	* include/fis.h: New file - make structure available for export.
+
+	* src/parse.c: New file.
+
+	* include/redboot.h: 
+	* src/main.c: 
+	* cdl/redboot.cdl: Split command line parsing functions to separate 
+	file.
+
 2000-10-05  Gary Thomas  <gthomas@redhat.com>
 
 	* src/net/net_io.c (net_io_revert_console): 

@@ -1,3 +1,10 @@
+2000-10-17  Hugo Tyson  <hmt@redhat.com>
+2000-10-10  Andrew Lunn <Andrew.Lunn@ascom.ch>
+	* cdl/eth_drivers.cdl: Add configury to disable the warnings about
+	out of mbufs for receives.
+
+	* src/net/eth_drv.c: The changes required for the above.
+
 2000-09-28  Hugo Tyson  <hmt@redhat.com>
 
 	* src/net/eth_drv.c (eth_drv_run_deliveries): Remove race

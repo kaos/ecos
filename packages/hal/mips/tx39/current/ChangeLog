@@ -1,3 +1,8 @@
+2000-10-20  Jesper Skov  <jskov@redhat.com>
+
+	* include/var_cache.h (HAL_DCACHE_INVALIDATE_ALL): Move volatile
+	keyword before type.
+
 2000-08-03  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* src/mips_tx39.ld: Revert below change. It was correct before.

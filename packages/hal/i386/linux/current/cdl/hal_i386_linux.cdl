@@ -156,7 +156,7 @@ cdl_package CYGPKG_HAL_I386_LINUX {
         display "Memory layout"
         flavor data
         no_define
-        calculated { "mlt_i386_linux_ram" }
+        calculated { "i386_linux_ram" }
 
         cdl_option CYGHWR_MEMORY_LAYOUT_LDI {
             display "Memory layout linker script fragment"

@@ -1,3 +1,25 @@
+2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/pkgconf/mlt_sh_edk7708_ram.h:
+	* include/pkgconf/mlt_sh_edk7708_rom.h:
+	* include/pkgconf/mlt_sh_edk7708_romram.h:
+	* include/pkgconf/mlt_sh_edk7708_ram.ldi:
+	* include/pkgconf/mlt_sh_edk7708_rom.ldi:
+	* include/pkgconf/mlt_sh_edk7708_romram.ldi:
+	Regenerated with updated host tools
+
+2000-10-17  Jesper Skov  <jskov@redhat.com>
+
+	* include/pkgconf/mlt_sh_edk7708_ram.h: Adding heap1.
+	* include/pkgconf/mlt_sh_edk7708_ram.mlt: Ditto.
+	* include/pkgconf/mlt_sh_edk7708_ram.ldi: Ditto.
+	* include/pkgconf/mlt_sh_edk7708_rom.h: Ditto.
+	* include/pkgconf/mlt_sh_edk7708_rom.mlt: Ditto.
+	* include/pkgconf/mlt_sh_edk7708_rom.ldi: Ditto.
+	* include/pkgconf/mlt_sh_edk7708_romram.h: Ditto.
+	* include/pkgconf/mlt_sh_edk7708_romram.mlt: Ditto.
+	* include/pkgconf/mlt_sh_edk7708_romram.ldi: Ditto.
+
 2000-10-10  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_sh_edk7708.cdl: Fix legal OCC ranges.

@@ -37,6 +37,7 @@
 // Description:   Tests mutex priority inheritance
 //####DESCRIPTIONEND####
 
+#include <pkgconf/hal.h>
 #include <pkgconf/kernel.h>
 
 #include <cyg/kernel/sched.hxx>        // Cyg_Scheduler::start()
@@ -50,6 +51,11 @@
 #include <cyg/kernel/thread.inl>
 
 #include <cyg/infra/diag.h>             // diag_printf
+
+#ifdef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
+externC void
+cyg_hal_invoke_constructors();
+#endif
 
 // ------------------------------------------------------------------------
 //
@@ -406,6 +412,9 @@ static void control_thread( CYG_ADDRWORD data )
 externC void
 cyg_user_start( void )
 { 
+#ifdef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
+    cyg_hal_invoke_constructors();
+#endif
     new_thread( control_thread, 0, 2, 1 );
 }
 

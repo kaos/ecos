@@ -1,3 +1,12 @@
+2000-10-20  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_misc.c: Update __mem_fault_handler declaration.
+
+2000-10-16  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/hal_arch.h (CYGARC_JMP_BUF_SIZE): Define hal_jmp_buf in
+	terms of this.
+
 2000-10-09  Gary Thomas  <gthomas@redhat.com>
 
 	* src/vectors.S (start): Need to handle ^C for all applications.

@@ -1,3 +1,18 @@
+2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/pkgconf/mlt_mips_vr4300_vrc4373_ram.mlt:
+	* include/pkgconf/mlt_mips_vr4300_vrc4373_rom.mlt:
+	* include/pkgconf/mlt_mips_vr4300_vrc4373_romram.mlt:
+	Add heap1 section
+
+	* include/pkgconf/mlt_mips_vr4300_vrc4373_ram.h:
+	* include/pkgconf/mlt_mips_vr4300_vrc4373_rom.h:
+	* include/pkgconf/mlt_mips_vr4300_vrc4373_romram.h:
+	* include/pkgconf/mlt_mips_vr4300_vrc4373_ram.ldi:
+	* include/pkgconf/mlt_mips_vr4300_vrc4373_rom.ldi:
+	* include/pkgconf/mlt_mips_vr4300_vrc4373_romram.ldi:
+	Regenerated
+
 2000-09-15  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/platform.inc: Added some extra ifdefs and code to try

@@ -1,19 +1,17 @@
-// eCos memory layout - Tue Feb 29 14:33:50 2000
+// eCos memory layout - Fri Oct 20 05:46:39 2000
 
 // This is a generated file - do not edit
 
+#ifndef __ASSEMBLER__
 #include <cyg/infra/cyg_type.h>
 #include <stddef.h>
 
+#endif
 #define CYGMEM_REGION_ram (0)
 #define CYGMEM_REGION_ram_SIZE (0x48000)
 #define CYGMEM_REGION_ram_ATTR (CYGMEM_REGION_ATTR_R | CYGMEM_REGION_ATTR_W)
-extern char CYG_LABEL_NAME (_reserved_vectors) [];
-#define CYGMEM_SECTION_reserved_vectors (CYG_LABEL_NAME (_reserved_vectors))
-#define CYGMEM_SECTION_reserved_vectors_SIZE (0x1000)
-extern char CYG_LABEL_NAME (_reserved_not_mapped) [];
-#define CYGMEM_SECTION_reserved_not_mapped (CYG_LABEL_NAME (_reserved_not_mapped))
-#define CYGMEM_SECTION_reserved_not_mapped_SIZE (0x7000)
-extern char CYG_LABEL_NAME (_reserved_rom_usage) [];
-#define CYGMEM_SECTION_reserved_rom_usage (CYG_LABEL_NAME (_reserved_rom_usage))
-#define CYGMEM_SECTION_reserved_rom_usage_SIZE (0x4000)
+#ifndef __ASSEMBLER__
+extern char CYG_LABEL_NAME (__heap1) [];
+#endif
+#define CYGMEM_SECTION_heap1 (CYG_LABEL_NAME (__heap1))
+#define CYGMEM_SECTION_heap1_SIZE (0x48000 - (size_t) CYG_LABEL_NAME (__heap1))

@@ -52,6 +52,7 @@
 #include <cyg/hal/hal_intr.h>
 #include <cyg/io/devtab.h>
 #include <cyg/infra/diag.h>
+#include <cyg/infra/cyg_ass.h>
 #include <cyg/io/serial.h>
 
 #include <cyg/hal/sh_regs.h>
@@ -134,6 +135,16 @@ typedef struct sh3_scif_info {
 
     volatile bool     tx_enabled;       // expect tx _serial_ interrupts
 
+#if (CYGINT_IO_SERIAL_SH_SCIF_DMA > 0)
+    cyg_bool          dma_enable;       // Set if DMA mode
+    cyg_uint32        dma_xmt_cr_flags; // CR flags for DMA mode
+    CYG_WORD          dma_xmt_int_num;  // DMA xmt completion interrupt
+    CYG_ADDRWORD      dma_xmt_base;     // Base address of DMA channel
+    int               dma_xmt_len;      // length transferred by DMA
+    cyg_interrupt     dma_xmt_interrupt;
+    cyg_handle_t      dma_xmt_interrupt_handle;
+    volatile cyg_bool dma_xmt_running;  // expect tx _dma_ interrupts
+#endif
 } sh3_scif_info;
 
 static bool sh3_scif_init(struct cyg_devtab_entry *tab);
@@ -156,6 +167,12 @@ static void       sh3_scif_rx_DSR(cyg_vector_t vector, cyg_ucount32 count,
 static cyg_uint32 sh3_scif_er_ISR(cyg_vector_t vector, cyg_addrword_t data);
 static void       sh3_scif_er_DSR(cyg_vector_t vector, cyg_ucount32 count, 
                                    cyg_addrword_t data);
+
+#if (CYGINT_IO_SERIAL_SH_SCIF_DMA > 0)
+static cyg_uint32 sh3_dma_xmt_ISR(cyg_vector_t vector, cyg_addrword_t data);
+static void       sh3_dma_xmt_DSR(cyg_vector_t vector, cyg_ucount32 count, 
+                                  cyg_addrword_t data);
+#endif
 
 static SERIAL_FUNS(sh3_scif_funs, 
                    sh3_scif_putc, 
@@ -282,6 +299,32 @@ sh3_scif_init(struct cyg_devtab_entry *tab)
         // This unmasks both interrupt sources.
         cyg_drv_interrupt_unmask(sh_chan->rx_int_num);
     }
+
+#if (CYGINT_IO_SERIAL_SH_SCIF_DMA > 0)
+    // Assign DMA channel and interrupt if requested
+    if (sh_chan->dma_enable) {
+        // FIXME: Need a cleaner way to assign DMA channels
+        static int dma_channel = 0;
+        sh_chan->dma_xmt_int_num = dma_channel+CYGNUM_HAL_INTERRUPT_DMAC_DEI0;
+        sh_chan->dma_xmt_base = (dma_channel*0x10)+CYGARC_REG_SAR0;
+        dma_channel++;
+
+        // Enable the DMA engines.
+        HAL_WRITE_UINT16(CYGARC_REG_DMAOR, CYGARC_REG_DMAOR_DME);
+
+        cyg_drv_interrupt_create(sh_chan->dma_xmt_int_num,
+                                 3,
+                                 (cyg_addrword_t)chan, // Data item passed to interrupt handler
+                                 sh3_dma_xmt_ISR,
+                                 sh3_dma_xmt_DSR,
+                                 &sh_chan->dma_xmt_interrupt_handle,
+                                 &sh_chan->dma_xmt_interrupt);
+        cyg_drv_interrupt_attach(sh_chan->dma_xmt_interrupt_handle);
+        cyg_drv_interrupt_unmask(sh_chan->dma_xmt_int_num);
+    }
+    sh_chan->dma_xmt_running = false;
+#endif // CYGINT_IO_SERIAL_SH_SCIF_DMA
+
     sh3_scif_config_port(chan, &chan->config, true);
     return true;
 }
@@ -365,33 +408,49 @@ sh3_scif_set_config(serial_channel *chan, cyg_uint32 key,
 #ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_HW
     case CYG_IO_SET_CONFIG_SERIAL_HW_RX_FLOW_THROTTLE:
       {
-          cyg_uint8 _scfcr;
+          // Control RX flow control by disabling/enabling RX interrupt.
+          // When disabled, FIFO will fill up and clear RTS.
+          cyg_uint8 _scscr, mask = 0;
           sh3_scif_info *ser_chan = (sh3_scif_info *)chan->dev_priv;
           cyg_addrword_t base = ser_chan->ctrl_base;
           cyg_uint8 *f = (cyg_uint8 *)xbuf;
-          unsigned char mask=0;
           if ( *len < *f )
               return -EINVAL;
           
           if ( chan->config.flags & CYGNUM_SERIAL_FLOW_RTSCTS_RX )
-              mask |= CYGARC_REG_SCFCR1_MCE;
-          HAL_READ_UINT8(base+SCIF_SCFCR, _scfcr);
+              mask |= CYGARC_REG_SCSCR2_RIE;
+          HAL_READ_UINT8(base+SCIF_SCSCR, _scscr);
           if (*f) // we should throttle
-              _scfcr &= ~mask;
+              _scscr &= ~mask;
           else // we should no longer throttle
-              _scfcr |= mask;
-          HAL_WRITE_UINT8(base+SCIF_SCFCR, _scfcr);
+              _scscr |= mask;
+          HAL_WRITE_UINT8(base+SCIF_SCSCR, _scscr);
       }
       break;
     case CYG_IO_SET_CONFIG_SERIAL_HW_FLOW_CONFIG:
       {
-        // Clear DSR/DTR flag as it's not supported.
-        if (chan->config.flags &
-            (CYGNUM_SERIAL_FLOW_DSRDTR_RX|CYGNUM_SERIAL_FLOW_DSRDTR_TX)) {
-            chan->config.flags &= ~(CYGNUM_SERIAL_FLOW_DSRDTR_RX|
-                                    CYGNUM_SERIAL_FLOW_DSRDTR_TX);
-            return -EINVAL;
-        }
+          // Handle CTS/RTS flag
+          if ( chan->config.flags & 
+               (CYGNUM_SERIAL_FLOW_RTSCTS_RX | CYGNUM_SERIAL_FLOW_RTSCTS_TX )){
+              cyg_uint8 _scfcr;
+              sh3_scif_info *ser_chan = (sh3_scif_info *)chan->dev_priv;
+              cyg_addrword_t base = ser_chan->ctrl_base;
+              cyg_uint8 *f = (cyg_uint8 *)xbuf;
+
+              HAL_READ_UINT8(base+SCIF_SCFCR, _scfcr);
+              if (*f) // enable RTS/CTS flow control
+                  _scfcr |= CYGARC_REG_SCFCR1_MCE;
+              else // disable RTS/CTS flow control
+                  _scfcr &= ~CYGARC_REG_SCFCR1_MCE;
+              HAL_WRITE_UINT8(base+SCIF_SCFCR, _scfcr);
+          }
+          // Clear DSR/DTR flag as it's not supported.
+          if (chan->config.flags &
+              (CYGNUM_SERIAL_FLOW_DSRDTR_RX|CYGNUM_SERIAL_FLOW_DSRDTR_TX)) {
+              chan->config.flags &= ~(CYGNUM_SERIAL_FLOW_DSRDTR_RX|
+                                      CYGNUM_SERIAL_FLOW_DSRDTR_TX);
+              return -EINVAL;
+          }
       }
       break;
 #endif
@@ -401,6 +460,130 @@ sh3_scif_set_config(serial_channel *chan, cyg_uint32 key,
     return ENOERR;
 }
 
+
+#if (CYGINT_IO_SERIAL_SH_SCIF_DMA > 0)
+
+// Must be called with serial interrupts disabled
+static xmt_req_reply_t
+sh3_scif_start_dma_xmt(serial_channel *chan)
+{
+    int chars_avail;
+    unsigned char* chars;
+    xmt_req_reply_t res;
+
+    // We can transfer the full buffer - ask how much to transfer
+    res = (chan->callbacks->data_xmt_req)(chan, chan->out_cbuf.len, 
+                                          &chars_avail, &chars);
+    if (CYG_XMT_OK == res) {
+        sh3_scif_info *sh_chan = (sh3_scif_info *)chan->dev_priv;
+        cyg_uint32 dma_base = sh_chan->dma_xmt_base;
+        cyg_uint32 scr;
+
+        // Save the length so it can be used in the DMA DSR
+        sh_chan->dma_xmt_len = chars_avail;
+
+        // Flush cache for the area
+        HAL_DCACHE_FLUSH((cyg_haladdress)chars, chars_avail);
+
+        // Program DMA
+        HAL_WRITE_UINT32(dma_base+CYGARC_REG_CHCR, 0); // disable and clear
+        HAL_WRITE_UINT32(dma_base+CYGARC_REG_SAR, (cyg_uint32)chars);
+        HAL_WRITE_UINT32(dma_base+CYGARC_REG_DAR, 
+                         (sh_chan->ctrl_base+SCIF_SCFTDR) & 0x0fffffff);
+        HAL_WRITE_UINT32(dma_base+CYGARC_REG_DMATCR, chars_avail);
+        // Source increments, dest static, byte transfer, enable
+        // interrupt on completion.
+        HAL_WRITE_UINT32(dma_base+CYGARC_REG_CHCR,
+                         sh_chan->dma_xmt_cr_flags | CYGARC_REG_CHCR_SM0 \
+                         | CYGARC_REG_CHCR_IE | CYGARC_REG_CHCR_DE);
+
+        // Enable serial interrupts
+        HAL_READ_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, scr);
+        scr |= CYGARC_REG_SCSCR2_TIE;
+        HAL_WRITE_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, scr);
+    }
+
+    return res;
+}
+
+// must be called with serial interrupts masked
+static void
+sh3_scif_stop_dma_xmt(serial_channel *chan)
+{
+    sh3_scif_info *sh_chan = (sh3_scif_info *)chan->dev_priv;
+    cyg_uint32 dma_base = sh_chan->dma_xmt_base;
+    cyg_uint32 cr;
+
+    // Disable DMA engine and interrupt enable flag.  Should be safe
+    // to do since it's triggered by the serial interrupt which has
+    // already been disabled.
+    HAL_READ_UINT32(dma_base+CYGARC_REG_CHCR, cr);
+    cr &= ~(CYGARC_REG_CHCR_IE | CYGARC_REG_CHCR_DE);
+    HAL_WRITE_UINT32(dma_base+CYGARC_REG_CHCR, cr);
+
+    // Did transfer complete?
+    HAL_READ_UINT32(dma_base+CYGARC_REG_CHCR, cr);
+    if (0 == (cr & CYGARC_REG_CHCR_TE)) {
+        // Transfer incomplete. Report actually transferred amount of data
+        // back to the serial driver.
+        int chars_left;
+        HAL_READ_UINT32(dma_base+CYGARC_REG_DMATCR, chars_left);
+        CYG_ASSERT(chars_left > 0, "DMA incomplete, but no data left");
+        CYG_ASSERT(chars_left <= sh_chan->dma_xmt_len,
+                   "More data remaining than was attempted transferred");
+
+        (chan->callbacks->data_xmt_done)(chan, 
+                                         sh_chan->dma_xmt_len - chars_left);
+    }
+
+#ifdef CYGDBG_USE_ASSERTS
+    {
+        cyg_uint32 dmaor;
+        HAL_READ_UINT32(CYGARC_REG_DMAOR, dmaor);
+        CYG_ASSERT(0== (dmaor & (CYGARC_REG_DMAOR_AE | CYGARC_REG_DMAOR_NMIF)),
+                   "DMA error");
+    }
+#endif
+    
+    // The DMA engine is free again.
+    sh_chan->dma_xmt_running = false;
+}
+
+// Serial xmt DMA completion interrupt handler (ISR)
+static cyg_uint32 
+sh3_dma_xmt_ISR(cyg_vector_t vector, cyg_addrword_t data)
+{
+    serial_channel *chan = (serial_channel *)data;
+    sh3_scif_info *sh_chan = (sh3_scif_info *)chan->dev_priv;
+    cyg_uint32 _cr;
+
+    // mask serial interrupt
+    HAL_READ_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, _cr);
+    _cr &= ~CYGARC_REG_SCSCR2_TIE;      // Disable xmit interrupt
+    HAL_WRITE_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, _cr);
+
+    // mask DMA interrupt and disable engine
+    HAL_READ_UINT32(sh_chan->dma_xmt_base+CYGARC_REG_CHCR, _cr);
+    _cr &= ~(CYGARC_REG_CHCR_IE | CYGARC_REG_CHCR_DE);
+    HAL_WRITE_UINT32(sh_chan->dma_xmt_base+CYGARC_REG_CHCR, _cr);
+
+    return CYG_ISR_CALL_DSR;  // Cause DSR to be run
+}
+
+// Serial xmt DMA completion interrupt handler (DSR)
+static void       
+sh3_dma_xmt_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
+{
+    serial_channel *chan = (serial_channel *)data;
+    sh3_scif_info *sh_chan = (sh3_scif_info *)chan->dev_priv;
+
+    (chan->callbacks->data_xmt_done)(chan, sh_chan->dma_xmt_len);
+
+    // Try to load the engine again.
+    sh_chan->dma_xmt_running = 
+        (CYG_XMT_OK == sh3_scif_start_dma_xmt(chan)) ? true : false;
+}
+#endif // CYGINT_IO_SERIAL_SH_SCIF_DMA
 
 
 // Enable the transmitter on the device
@@ -413,6 +596,24 @@ sh3_scif_start_xmit(serial_channel *chan)
 
     if (sh_chan->tx_enabled)
         return;
+
+#if (CYGINT_IO_SERIAL_SH_SCIF_DMA > 0)
+    // Check if the engine is already running. If so, return. Note
+    // that there will never be a race on this flag - the caller of
+    // this function is respecting a per-channel lock.
+    if (sh_chan->dma_xmt_running)
+        return;
+    // If the channel uses DMA, try to start a DMA job for this -
+    // but handle the case where the job doesn't start by falling
+    // back to the FIFO/interrupt based code.
+    if (sh_chan->dma_enable) {
+        _block_status = sh3_scif_start_dma_xmt(chan);
+        CYG_ASSERT(_block_status != CYG_XMT_EMPTY, 
+                   "start_xmit called with empty buffers!");
+        sh_chan->dma_xmt_running = 
+            (CYG_XMT_OK == _block_status) ? true : false;
+    }
+#endif // CYGINT_IO_SERIAL_SH_SCIF_DMA
 
     if (CYG_XMT_DISABLED == _block_status) {
         // Mask interrupts while changing the CR since a rx
@@ -447,6 +648,12 @@ sh3_scif_stop_xmit(serial_channel *chan)
     }
     cyg_drv_isr_unlock();
 
+#if (CYGINT_IO_SERIAL_SH_SCIF_DMA > 0)
+    // If the channel uses DMA, stop the DMA engine.
+    if (sh_chan->dma_xmt_running)
+        sh3_scif_stop_dma_xmt(chan);
+    else // dangling else!
+#endif // CYGINT_IO_SERIAL_SH_SCIF_DMA
         sh_chan->tx_enabled = false;
 }
 

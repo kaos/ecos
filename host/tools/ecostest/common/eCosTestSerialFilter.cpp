@@ -736,8 +736,8 @@ CeCosTestSerialFilter::CMD_TestBinary(CeCosSerial &pSer, char* args)
         fprintf(stderr, "Could not allocate %d byte buffer for data!\n", size);
         throw "data_in malloc failed";
     }
+    int count = 0;
     for (i = 0; i < size; i++) {
-        static int count = 0;
         // Output 255 chars, not 256 so that we aren't a multiple/factor of the
         // likely buffer sizes in the system, this can mask problems as I've
         // found to my cost!

@@ -130,7 +130,7 @@ void Cyg_Scheduler::unlock_inner( cyg_ucount32 new_lock )
         // Call any pending DSRs. Do this here to ensure that any
         // threads that get awakened are properly scheduled.
 
-        if( Cyg_Interrupt::DSRs_pending() )
+        if( new_lock == 0 && Cyg_Interrupt::DSRs_pending() )
             Cyg_Interrupt::call_pending_DSRs();
 #endif
 

@@ -152,7 +152,7 @@ cdl_component CYGPKG_IO_SERIAL_TX39_JMR3904_SERIAL1 {
     }
 }
 
-    cdl_component CYGPKG_IO_SERIAL_MIPS_JMR3904_OPTIONS {
+    cdl_component CYGPKG_IO_SERIAL_TX39_JMR3904_OPTIONS {
         display "Serial device driver build options"
         flavor  none
         description   "
@@ -161,7 +161,7 @@ cdl_component CYGPKG_IO_SERIAL_TX39_JMR3904_SERIAL1 {
 	    and details of which tests are built."
 
 
-        cdl_option CYGPKG_IO_SERIAL_MIPS_JMR3904_CFLAGS_ADD {
+        cdl_option CYGPKG_IO_SERIAL_TX39_JMR3904_CFLAGS_ADD {
             display "Additional compiler flags"
             flavor  data
             no_define
@@ -172,7 +172,7 @@ cdl_component CYGPKG_IO_SERIAL_TX39_JMR3904_SERIAL1 {
                 to the set of global flags."
         }
 
-        cdl_option CYGPKG_IO_SERIAL_MIPS_JMR3904_CFLAGS_REMOVE {
+        cdl_option CYGPKG_IO_SERIAL_TX39_JMR3904_CFLAGS_REMOVE {
             display "Suppressed compiler flags"
             flavor  data
             no_define
@@ -181,6 +181,30 @@ cdl_component CYGPKG_IO_SERIAL_TX39_JMR3904_SERIAL1 {
                 This option modifies the set of compiler flags for
                 building these serial device drivers. These flags are removed from
                 the set of global flags if present."
+        }
+    }
+
+    cdl_component CYGPKG_IO_SERIAL_TX39_JMR3904_TESTING {
+        display    "Testing parameters"
+        flavor     bool
+        calculated 1
+        active_if  CYGPKG_IO_SERIAL_TX39_JMR3904_SERIAL0
+
+        implements CYGINT_IO_SERIAL_TEST_SKIP_9600
+        implements CYGINT_IO_SERIAL_TEST_SKIP_57600
+        implements CYGINT_IO_SERIAL_TEST_SKIP_115200
+        implements CYGINT_IO_SERIAL_TEST_SKIP_PARITY_EVEN
+        implements CYGINT_IO_SERIAL_TEST_SKIP_STOP_2
+
+        cdl_option CYGPRI_SER_TEST_SER_DEV {
+            display       "Serial device used for testing"
+            flavor        data
+            default_value { CYGDAT_IO_SERIAL_TX39_JMR3904_SERIAL0_NAME }
+        }
+
+        define_proc {
+            puts $::cdl_header "#define CYGPRI_SER_TEST_CRASH_ID \"tx39jmr\""
+            puts $::cdl_header "#define CYGPRI_SER_TEST_TTY_DEV  \"/dev/tty0\""
         }
     }
 }

@@ -58,6 +58,10 @@
 
 //--------------------------------------------------------------------------
 
+#ifndef CYGNUM_HAL_SH_SH3_SCI_DEFAULT_BAUD_RATE
+# define CYGNUM_HAL_SH_SH3_SCI_DEFAULT_BAUD_RATE 38400
+#endif
+
 void
 cyg_hal_plf_sci_init_channel(const channel_data_t* chan)
 {
@@ -71,12 +75,12 @@ cyg_hal_plf_sci_init_channel(const channel_data_t* chan)
     // 8-1-no parity.
     HAL_WRITE_UINT8(base+_REG_SCSMR, 0);
 
-    // Set speed to 38400
+    // Set speed to CYGNUM_HAL_SH_SH3_SCI_DEFAULT_BAUD_RATE
     HAL_READ_UINT8(base+_REG_SCSMR, tmp);
     tmp &= ~CYGARC_REG_SCSMR_CKSx_MASK;
-    tmp |= CYGARC_SCBRR_CKSx(38400);
+    tmp |= CYGARC_SCBRR_CKSx(CYGNUM_HAL_SH_SH3_SCI_DEFAULT_BAUD_RATE);
     HAL_WRITE_UINT8(base+_REG_SCSMR, tmp);
-    HAL_WRITE_UINT8(base+_REG_SCBRR, CYGARC_SCBRR_N(38400));
+    HAL_WRITE_UINT8(base+_REG_SCBRR, CYGARC_SCBRR_N(CYGNUM_HAL_SH_SH3_SCI_DEFAULT_BAUD_RATE));
 }
 
 static cyg_bool

@@ -173,6 +173,30 @@ cdl_component CYGPKG_IO_SERIAL_SPARCLITE_SLEB_CON2 {
                 the set of global flags if present."
         }
     }
+
+    cdl_component CYGPKG_IO_SERIAL_SPARCLITE_SLEB_TESTING {
+        display    "Testing parameters"
+        flavor     bool
+        calculated 1
+        active_if  CYGPKG_IO_SERIAL_SPARCLITE_SLEB_CON1
+
+        implements CYGINT_IO_SERIAL_TEST_SKIP_38400
+        implements CYGINT_IO_SERIAL_TEST_SKIP_57600
+        implements CYGINT_IO_SERIAL_TEST_SKIP_115200
+
+        cdl_option CYGPRI_SER_TEST_SER_DEV {
+            display       "Serial device used for testing"
+            flavor        data
+            default_value { CYGDAT_IO_SERIAL_SPARCLITE_SLEB_CON1_NAME }
+        }
+
+        define_proc {
+            puts $::cdl_header "#define CYGPRI_SER_TEST_CRASH_ID \"sparcl\""
+            puts $::cdl_header "#define CYGPRI_SER_TEST_TTY_DEV  \"/dev/tty0\""
+            puts $::cdl_header "#define CYGPRI_SER_TEST_OVERRIDE_INT_1 CYGNUM_HAL_INTERRUPT_9"
+            puts $::cdl_header "#define CYGPRI_SER_TEST_OVERRIDE_INT_2 CYGNUM_HAL_INTERRUPT_10"
+        }
+    }
 }
 
 # EOF ser_sparclite_sleb.cdl

@@ -740,6 +740,44 @@ __reset_platform:
         mov     #13,r13
         mov     #14,r14
 #endif
+
+         bra    hal_hw_init
+          nop
+
+$nCYG_WTCSR:
+	.word	0xa500		! clear all CSR bits
+
+	.align	2
+
+$nCYG_SR:
+        .long   CYG_SR
+$CYGARC_REG_TSTR:
+        .long   CYGARC_REG_TSTR
+$CYGARC_REG_IPRA:
+        .long   CYGARC_REG_IPRA
+$CYGARC_REG_IPRB:
+        .long   CYGARC_REG_IPRB
+#ifdef CYGARC_SH_MOD_INTC_V2
+$CYGARC_REG_IPRC:
+        .long   CYGARC_REG_IPRC
+$CYGARC_REG_IPRD:
+        .long   CYGARC_REG_IPRD
+$CYGARC_REG_IPRE:
+        .long   CYGARC_REG_IPRE
+$CYGARC_REG_ICR1:
+        .long   CYGARC_REG_ICR1
+#endif
+#ifdef CYGARC_SH_MOD_INTC_V2
+$CYGARC_REG_IPRF:
+        .long   CYGARC_REG_IPRF
+$nCYG_ICR1_INIT:
+	.word	CYGARC_REG_ICR1_INIT
+	.align	2
+#endif
+$__reset:
+        .long   __reset
+	
+hal_hw_init:
         
         # Call platform specific hardware initialization
         # This may include memory controller initialization. It is not
@@ -748,7 +786,7 @@ __reset_platform:
 
         # Now copy necessary bits to RAM and jump to the VMA base
 
-#ifdef CYG_HAL_STARTUP_ROM
+#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_SUBSETROMRAM)
 
         # Copy data from ROM to ram
         mov.l   $__rom_data_start,r3    ! r3 = rom start
@@ -764,6 +802,7 @@ __reset_platform:
         bf      1b                      ! loop if not yet done
 2:
 
+
         # Jump to the proper VMA base of the code.
         mov.l   $_complete_setup,r0
         jmp     @r0
@@ -773,13 +812,14 @@ __reset_platform:
         .extern __rom_data_start
         .extern __ram_data_start
         .extern __ram_data_end
-
 $__rom_data_start:
         .long   __rom_data_start
 $__ram_data_start:
         .long   __ram_data_start
 $__ram_data_end:
         .long   __ram_data_end
+
+
 $_complete_setup:
         .long _complete_setup
 
@@ -817,39 +857,6 @@ $_complete_setup:
          nop
                 
 #endif
-
-$nCYG_WTCSR:
-	.word	0xa500		! clear all CSR bits
-
-	.align	2
-
-$nCYG_SR:
-        .long   CYG_SR
-$CYGARC_REG_TSTR:
-        .long   CYGARC_REG_TSTR
-$CYGARC_REG_IPRA:
-        .long   CYGARC_REG_IPRA
-$CYGARC_REG_IPRB:
-        .long   CYGARC_REG_IPRB
-#ifdef CYGARC_SH_MOD_INTC_V2
-$CYGARC_REG_IPRC:
-        .long   CYGARC_REG_IPRC
-$CYGARC_REG_IPRD:
-        .long   CYGARC_REG_IPRD
-$CYGARC_REG_IPRE:
-        .long   CYGARC_REG_IPRE
-$CYGARC_REG_ICR1:
-        .long   CYGARC_REG_ICR1
-#endif
-#ifdef CYGARC_SH_MOD_INTC_V2
-$CYGARC_REG_IPRF:
-        .long   CYGARC_REG_IPRF
-$nCYG_ICR1_INIT:
-	.word	CYGARC_REG_ICR1_INIT
-	.align	2
-#endif
-$__reset:
-        .long   __reset
 
 #-----------------------------------------------------------------------------
 # Complete target initialization and setup.

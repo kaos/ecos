@@ -1,3 +1,15 @@
+2000-10-18  Gary Thomas  <gthomas@redhat.com>
+
+	* src/redboot_cmds.c: New file: only built in redboot, for a
+	platform specific command to exec code with no MMU intervention.
+	This is used to execute standard Linux kernels with as little
+	change/perturbation as possible.
+
+	* include/hal_ebsa285.h (EBSA285_RAM_BANK0_BASE): New symbol for
+	redboot_cmds.c
+
+	* cdl/hal_arm_ebsa285.cdl: Add build redboot_cmds.c -> libextras.
+
 2000-09-17  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/hal_arm_ebsa285.cdl: Add platform/cpu identification strings.

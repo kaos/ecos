@@ -55,6 +55,7 @@
 #include "pprivate.h"                   // POSIX private header
 
 #include <signal.h>                     // our header
+#include <setjmp.h>
 
 #include <cyg/kernel/clock.hxx>
 
@@ -1046,6 +1047,34 @@ externC int raise(int sig)
     return kill( 0, sig );
 }
 
+// -------------------------------------------------------------------------
+// siglongjmp()
+// Restores signal mask and longjumps.
+
+__externC void siglongjmp( sigjmp_buf env, int val )
+{
+    CYG_REPORT_FUNCNAME( "siglongjmp" );
+    CYG_REPORT_FUNCARG2( "&env=%08x, val=%d", &env, val );
+
+    // ISO C says that if we are passed val == 0, then we change it to 1
+    if( val == 0 )
+        val = 1;
+
+    if( *(int *)&env[sizeof(hal_jmp_buf)] )
+        pthread_sigmask( SIG_SETMASK, (sigset_t *)&(env)[sizeof(hal_jmp_buf)+sizeof(int)], NULL );
+    
+    HAL_REORDER_BARRIER(); // prevent any chance of optimisation re-ordering
+    hal_longjmp( (hal_jmp_buf)env, val );
+    HAL_REORDER_BARRIER(); // prevent any chance of optimisation re-ordering
+
+#ifdef CYGDBG_USE_ASSERTS
+    CYG_ASSERT( 0, "siglongjmp should not have reached this point!" );
+#else
+    for (;;)
+        CYG_EMPTY_STATEMENT;
+#endif
+    
+}
 
 // -------------------------------------------------------------------------
 // EOF signal.cxx

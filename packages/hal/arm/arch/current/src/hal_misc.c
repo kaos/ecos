@@ -66,7 +66,7 @@ externC void diag_printf(const char *fmt, ...);
 externC void __handle_exception (void);
 
 externC HAL_SavedRegisters *_hal_registers;
-extern void *__mem_fault_handler;
+externC void* volatile __mem_fault_handler;
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 /* Force exception handling into the GDB stubs.  This is done by taking over

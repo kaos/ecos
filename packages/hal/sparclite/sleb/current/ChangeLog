@@ -1,3 +1,20 @@
+2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* tests/slebtime.cxx: Ensure default priority constructors
+	are called.
+
+2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/pkgconf/mlt_sparclite_sleb_ram.mlt:
+	* include/pkgconf/mlt_sparclite_sleb_rom.mlt:
+	Add heap1 section
+
+	* include/pkgconf/mlt_sparclite_sleb_ram.h:
+	* include/pkgconf/mlt_sparclite_sleb_rom.h:
+	* include/pkgconf/mlt_sparclite_sleb_ram.ldi:
+	* include/pkgconf/mlt_sparclite_sleb_rom.ldi:
+	Regenerated
+
 2000-02-16  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_sparclite_sleb.cdl: removed fix me

@@ -91,6 +91,18 @@ cdl_package CYGPKG_HAL_SH {
         @rm target.tmp
     }
 
+    cdl_interface CYGINT_HAL_SH_DMA_CHANNELS {
+        display       "Number of DMA channels"
+    }
+
+    cdl_interface CYGINT_HAL_SH_DMA_CHANNELS_USED {
+        display       "Number of requested DMA channels"
+        requires      CYGINT_HAL_SH_DMA_CHANNELS_USED <= CYGINT_HAL_SH_DMA_CHANNELS
+        description   "
+            Various drivers may request use of a DMA channel, but only
+            so many are available. These interfaces make sure the
+            DMA resources are not overcommitted."
+    }
 
     cdl_component CYGPKG_HAL_SH_CPU {
         display          "CPU type and endian mode controls"

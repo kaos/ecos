@@ -208,6 +208,7 @@
 #define CYGARC_REG_WCR1_A0I_MASK        0x0003
 #define CYGARC_REG_WCR1_A0I_SHIFT       0
 
+#define CYGARC_REG_WCR1_0WS         0
 #define CYGARC_REG_WCR1_1WS         1
 #define CYGARC_REG_WCR1_2WS         2
 #define CYGARC_REG_WCR1_3WS         3
@@ -227,6 +228,7 @@
 #define CYGARC_REG_WCR2_A0_MASK         0x0007 // Wait states + burst pitch
 #define CYGARC_REG_WCR2_A0_SHIFT        0
 
+#define CYGARC_REG_WCR2_0WS             0
 #define CYGARC_REG_WCR2_1WS             1
 #define CYGARC_REG_WCR2_2WS             2
 #define CYGARC_REG_WCR2_3WS             3

@@ -132,23 +132,25 @@ dnl ])
 dnl --------------------------------------------------------------------
 
 dnl Add any other directories that are autoconfiscated and present
-if test -f ${srcdir}/tools/Utils/common/configure; then
-  ECOS_DIRS="${ECOS_DIRS} tools/Utils/common"
-  AC_OUTPUT_COMMANDS([
-	test -d tools 			     || mkdir tools
-	test -d tools/Utils 		     || mkdir tools/Utils
-	test -d tools/Utils/common 	     || mkdir tools/Utils/common
-  ])
-fi
 
-if test -f ${srcdir}/tools/ecostest/common/configure; then
-  ECOS_DIRS="${ECOS_DIRS} tools/ecostest/common"
-  AC_OUTPUT_COMMANDS([
-    test -d tools 			     || mkdir tools
-    test -d tools/ecostest 		     || mkdir tools/ecostest
-    test -d tools/ecostest/common 	     || mkdir tools/ecostest/common
-  ])
-fi
+dnl  ---- Delete the dnl column below to configure ser_filter on Linux ----
+dnl if test -f ${srcdir}/tools/Utils/common/configure; then
+dnl   ECOS_DIRS="${ECOS_DIRS} tools/Utils/common"
+dnl   AC_OUTPUT_COMMANDS([
+dnl 	    test -d tools 			     || mkdir tools
+dnl 	    test -d tools/Utils 		     || mkdir tools/Utils
+dnl 	    test -d tools/Utils/common 	     || mkdir tools/Utils/common
+dnl   ])
+dnl fi
+dnl 
+dnl if test -f ${srcdir}/tools/ecostest/common/configure; then
+dnl   ECOS_DIRS="${ECOS_DIRS} tools/ecostest/common"
+dnl   AC_OUTPUT_COMMANDS([
+dnl 	test -d tools 			     || mkdir tools
+dnl 	test -d tools/ecostest 		     || mkdir tools/ecostest
+dnl 	test -d tools/ecostest/common 	     || mkdir tools/ecostest/common
+dnl   ])
+dnl fi
 
 if test -d ${srcdir}/tools/configtool/standalone/common; then
   ECOS_DIRS="${ECOS_DIRS} tools/configtool/standalone/common"

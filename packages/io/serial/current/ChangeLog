@@ -1,3 +1,15 @@
+2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/common/serial.c: Include cyg/infra/cyg_ass.h for assertion
+	support since we have assertions here!
+
+2000-10-12  Jesper Skov  <jskov@redhat.com>
+
+	* tests/ser_test_protocol.inl: Moved most testing parameters into
+	device driver CDL.
+
+	* cdl/io_serial.cdl: Added comment.
+
 2000-10-06  Jesper Skov  <jskov@redhat.com>
 
 	* src/common/serial.c (serial_rcv_char): Register overruns.

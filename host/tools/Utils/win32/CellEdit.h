@@ -71,6 +71,7 @@ protected:
 	//{{AFX_MSG(CCellEdit)
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
+    afx_msg void OnKillFocus(CWnd* pNewWnd);
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

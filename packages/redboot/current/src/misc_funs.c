@@ -64,14 +64,16 @@ strcmp(const char *s1, const char *s2)
     return ((unsigned char)c1 - (unsigned char)c2);
 }
 
-void
+char *
 strcpy(char *s1, const char *s2)
 {
     char c;
+    char *_s1 = s1;
 
     while ((c = *s2++) != '\0')
         *s1++ = c;
     *s1 = '\0';
+    return _s1;
 }
 
 int
@@ -116,27 +118,15 @@ strncmpci(const char *s1, const char *s2, int len)
     return 0;
 }
 
-void
-memmove(unsigned char *dst, unsigned char *src, int len)
-{
-    while (len-- > 0) *dst++ = *src++;
-}
-
 int
-memcmp(const unsigned char *dst, const unsigned char *src, int len)
+memcmp(const void *_dst, const void *_src, size_t len)
 {
+    unsigned char *dst = (unsigned char *)_dst;
+    unsigned char *src = (unsigned char *)_src;
     while (len-- > 0) {
         if (*dst++ != *src++) {
             return (*--dst - *--src);
         }
     }
     return 0;
-}
-
-void
-memset(unsigned char *dst, unsigned char val, int len)
-{
-    while (--len >= 0) {
-        *dst++ = val;
-    }
 }

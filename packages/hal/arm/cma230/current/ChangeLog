@@ -1,3 +1,21 @@
+2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/pkgconf/mlt_arm_cma222_ram.mlt:
+	* include/pkgconf/mlt_arm_cma222_rom.mlt:
+	* include/pkgconf/mlt_arm_cma230_ram.mlt:
+	* include/pkgconf/mlt_arm_cma230_rom.mlt:
+	Add heap1 section
+
+	* include/pkgconf/mlt_arm_cma222_ram.h:
+	* include/pkgconf/mlt_arm_cma222_rom.h:
+	* include/pkgconf/mlt_arm_cma230_ram.h:
+	* include/pkgconf/mlt_arm_cma230_rom.h:
+	* include/pkgconf/mlt_arm_cma222_ram.ldi:
+	* include/pkgconf/mlt_arm_cma222_rom.ldi:
+	* include/pkgconf/mlt_arm_cma230_ram.ldi:
+	* include/pkgconf/mlt_arm_cma230_rom.ldi:
+	Regenerate
+
 2000-07-05  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_arm_cma230.cdl:

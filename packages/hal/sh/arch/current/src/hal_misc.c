@@ -51,10 +51,7 @@
 
 #include <cyg/hal/hal_arch.h>           // HAL header
 #include <cyg/hal/hal_cache.h>          // HAL cache
-#if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS) || \
-    defined(CYGPKG_HAL_EXCEPTIONS)
-# include <cyg/hal/hal_intr.h>           // HAL interrupts/exceptions
-#endif
+#include <cyg/hal/hal_intr.h>           // HAL interrupts/exceptions
 
 //---------------------------------------------------------------------------
 // Functions used during initialization.
@@ -96,7 +93,7 @@ externC void __handle_exception (void);
 
 externC HAL_SavedRegisters *_hal_registers;
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-externC volatile void *__mem_fault_handler;
+externC void* volatile __mem_fault_handler;
 #endif
 
 void

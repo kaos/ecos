@@ -1,3 +1,16 @@
+2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/pkgconf/mlt_i386_linux_ram.mlt:
+	Add heap1 section
+
+	* include/pkgconf/mlt_i386_linux_ram.h:
+	* include/pkgconf/mlt_i386_linux_ram.ldi:
+	Regenerated
+
+2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_i386_linux.cdl: Correct memory layout file name
+
 2000-03-03  John Dallaway  <jld@cygnus.co.uk>
 
 	* cdl/hal_i386_linux.cdl (CYGBLD_GLOBAL_COMMAND_PREFIX):

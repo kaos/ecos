@@ -66,9 +66,12 @@
 #define UNLOCK_FILE( fp ) cyg_file_unlock( fp, fp->f_syncmode )
 
 //==========================================================================
-// Read from a file
+// Read from or write to a file
+// This is a common routine for doing both read and write
+// operations. The direction argument controls slight the differences
+// between them.
 
-__externC ssize_t read( int fd, void *buf, size_t len )
+static ssize_t readwrite( int fd, void *buf, size_t len, int direction )
 {
     FILEIO_ENTRY();
 
@@ -86,7 +89,7 @@ __externC ssize_t read( int fd, void *buf, size_t len )
     if( fp == NULL )
         FILEIO_RETURN(EBADF);
 
-    if( (fp->f_flag & CYG_FREAD) == 0 )
+    if( (fp->f_flag & direction) == 0 )
     {
         cyg_fp_free( fp );
         FILEIO_RETURN(EBADF);        
@@ -94,21 +97,27 @@ __externC ssize_t read( int fd, void *buf, size_t len )
 
     cyg_uio uio;
     cyg_iovec iov;
-
+    cyg_fileop_readwrite *op;
+    
     iov.iov_base        = buf;
     iov.iov_len         = len;
     uio.uio_iov         = &iov;
     uio.uio_iovcnt      = 1;
     uio.uio_resid       = len;
-    uio.uio_rw          = UIO_READ;
     uio.uio_segflg      = UIO_USERSPACE;
 
     cnt = len;
 
+    if( direction == O_RDONLY )
+        uio.uio_rw = UIO_READ, op = fp->f_ops->fo_read;
+    else
+        uio.uio_rw = UIO_WRITE, op = fp->f_ops->fo_write;
+
+        
     LOCK_FILE( fp );
     
-    ret = fp->f_ops->fo_read( fp, &uio );
-
+    ret = op( fp, &uio );
+    
     UNLOCK_FILE( fp );
     
     cnt -= uio.uio_resid;
@@ -122,58 +131,19 @@ __externC ssize_t read( int fd, void *buf, size_t len )
 }
 
 //==========================================================================
+// Read from file
+
+__externC ssize_t read( int fd, void *buf, size_t len )
+{
+    return readwrite( fd, buf, len, O_RDONLY );
+}
+
+//==========================================================================
 // Write to a file
 
 __externC ssize_t write( int fd, const void *buf, size_t len )
 {
-    FILEIO_ENTRY();
-
-    CYG_CANCELLATION_POINT;
-    
-    ssize_t cnt;
-    int ret;
-    cyg_file *fp;
-    
-    if( len > SSIZE_MAX )
-        FILEIO_RETURN(EINVAL);
-    
-    fp = cyg_fp_get( fd );
-
-    if( fp == NULL )
-        FILEIO_RETURN(EBADF);
-
-    if(  (fp->f_flag & CYG_FWRITE) == 0)
-    {
-        cyg_fp_free( fp );
-        FILEIO_RETURN(EBADF);
-    }
-    cyg_uio uio;
-    cyg_iovec iov;
-
-    iov.iov_base        = (void *)buf;
-    iov.iov_len         = len;
-    uio.uio_iov         = &iov;
-    uio.uio_iovcnt      = 1;
-    uio.uio_resid       = len;
-    uio.uio_rw          = UIO_WRITE;
-    uio.uio_segflg      = UIO_USERSPACE;
-
-    cnt = len;
-    
-    LOCK_FILE( fp );
-    
-    ret = fp->f_ops->fo_write( fp, &uio );
-
-    UNLOCK_FILE( fp );
-    
-    cnt -= uio.uio_resid;
-
-    cyg_fp_free( fp );
-
-    CYG_CANCELLATION_POINT;
-    
-    CYG_REPORT_RETVAL(cnt);
-    return cnt;
+    return readwrite( fd, (void *)buf, len, O_WRONLY );
 }
 
 //==========================================================================

@@ -27,6 +27,8 @@
 
 #include "stdafx.h"
 #include "ComboEdit.h"
+#include "cellview.h"
+#include "Configtool.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -51,6 +53,7 @@ CComboEdit::~CComboEdit()
 BEGIN_MESSAGE_MAP(CComboEdit, CCell)
 	//{{AFX_MSG_MAP(CComboEdit)
 	ON_WM_CREATE()
+	ON_WM_KILLFOCUS()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -79,3 +82,9 @@ int CComboEdit::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	
 	return 0;
 }
+
+void CComboEdit::OnKillFocus(CWnd*)
+{
+    CConfigTool::GetCellView()->CancelCellEdit();
+}
+

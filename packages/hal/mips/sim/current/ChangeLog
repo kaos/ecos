@@ -1,3 +1,15 @@
+2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/pkgconf/mlt_mips_tx39_sim_ram.mlt:
+	* include/pkgconf/mlt_mips_vr4300_sim_ram.mlt:
+	Add heap1 section
+
+	* include/pkgconf/mlt_mips_tx39_sim_ram.h:
+	* include/pkgconf/mlt_mips_vr4300_sim_ram.h:
+	* include/pkgconf/mlt_mips_tx39_sim_ram.ldi:
+	* include/pkgconf/mlt_mips_vr4300_sim_ram.ldi:
+	Regenerated
+
 2000-05-22  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_mips_sim.cdl: Doesn't support CTRLC.

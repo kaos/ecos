@@ -69,7 +69,7 @@ static Cyg_ErrNo cma230_serial_lookup(struct cyg_devtab_entry **tab,
                                    const char *name);
 static unsigned char cma230_serial_getc(serial_channel *chan);
 static Cyg_ErrNo cma230_serial_set_config(serial_channel *chan, cyg_uint32 key,
-                                          const void *xbuf; cyg_uint32 *len);
+                                          const void *xbuf, cyg_uint32 *len);
 static void cma230_serial_start_xmit(serial_channel *chan);
 static void cma230_serial_stop_xmit(serial_channel *chan);
 

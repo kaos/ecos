@@ -1,6 +1,8 @@
-// eCos memory layout - Mon Apr 03 21:03:12 2000
+// eCos memory layout - Fri Oct 20 06:19:41 2000
 
 // This is a generated file - do not edit
+
+#include <cyg/infra/cyg_type.inc>
 
 MEMORY
 {
@@ -32,5 +34,6 @@ SECTIONS
     SECTION_lit4 (ram, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_sbss (ram, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_bss (ram, ALIGN (0x8), LMA_EQ_VMA)
+    CYG_LABEL_DEFN(__heap1) = ALIGN (0x8);
     SECTIONS_END
 }

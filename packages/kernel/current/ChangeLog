@@ -1,3 +1,57 @@
+2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* tests/bin_sem0.cxx:
+	* tests/bin_sem1.cxx:
+	* tests/bin_sem2.cxx:
+	* tests/clock0.cxx:
+	* tests/clock1.cxx:
+	* tests/clockcnv.cxx:
+	* tests/cnt_sem0.cxx:
+	* tests/cnt_sem1.cxx:
+	* tests/except1.cxx:
+	* tests/flag0.cxx:
+	* tests/flag1.cxx:
+	* tests/intr0.cxx:
+	* tests/kill.cxx:
+	* tests/mbox1.cxx:
+	* tests/mqueue1.cxx:
+	* tests/mutex0.cxx:
+	* tests/mutex1.cxx:
+	* tests/mutex2.cxx:
+	* tests/mutex3.cxx:
+	* tests/philo.cxx:
+	* tests/release.cxx:
+	* tests/sched1.cxx:
+	* tests/sync2.cxx:
+	* tests/sync3.cxx:
+	* tests/testaux.hxx:
+	* tests/thread0.cxx:
+	* tests/thread1.cxx:
+	* tests/thread2.cxx:
+	* tests/tm_basic.cxx:
+	Make sure default priority constructors have been invoked.
+
+	* include/intr.hxx (class Cyg_Interrupt): Make dsr_count volatile
+	to prevent a potential race condition with overzealous C
+	compilers.
+
+2000-10-13  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/sched/sched.cxx (unlock_inner): Added condition to test for
+	DSRs to only call DSRs when the scheduler lock is making a 0->1
+	transition. Otherwise there is the danger of calling DSRs when the
+	scheduler lock is > 1. This violates our original assumptions
+	about how the scheduler lock worked with respect to DSR. 
+
+	* src/intr/intr.cxx (call_pending_DSRs): Added assert to check
+	that DSRs are only called when the scheduler lock is exactly 1.
+
+2000-10-13  Jesper Skov  <jskov@redhat.com>
+
+	* include/intr.hxx: Fixing syntax mistake; volatile keyword must
+	appear after the type for it to affect the pointer variable.
+	* src/intr/intr.cxx: Same. Remove volatile from local block.
+
 2000-10-05  Jesper Skov  <jskov@redhat.co.uk>
 
 	* src/intr/intr.cxx: Made dsr_table_tail volatile as well.

@@ -2,7 +2,7 @@ File System Support Infrastructure
 ==================================
 
 Nick Garnett
-v0.1
+v0.2
 
 
 This document describes the filesystem infrastructure provided in
@@ -30,12 +30,6 @@ document. Object accessed through these interfaces could equally be
 network protocol sockets, device drivers, fifos, message queues or any
 other object that can present a file-like interface.
 
-    [Note: Additional notes and comments appear in square brackets,
-    just like this. They do not form part of the text of this
-    document.]
-
-    [Note: Words and phrases that should be emphasized in some way are
-    surrounded by underscores, like _this_.]
     
 File System Table
 -----------------
@@ -44,10 +38,6 @@ The filesystem table is an array of entries that describe each
 filesystem implementation that is part of the system image. Each
 resident filesystem should export an entry to this table using the
 FSTAB_ENTRY() macro.
-
-    [Note: at present we do not support dynamic addition or removal of
-    table entries. If dynamic code loading is ever implemented, this
-    may need to change.]
 
 The table entries are described by the following structure:
 
@@ -239,7 +229,7 @@ responsibility of the file operation functions to keep this field up
 to date.
 
 The _f_data_ field contains private data placed here by the underlying
-filesystem. Normally this will be a pointer or handle on the
+filesystem. Normally this will be a pointer to or handle on the
 filesystem object that implements this file.
 
 The _f_xops_ field contains a pointer to any extra type specific
@@ -342,6 +332,21 @@ Most of these considerations are invisible to clients of a filesystem
 since they will access directories via the POSIX
 opendir()/readdir()/closedir() functions.
 
+Support for the _getcwd()_ function is provided by three mechanisms.
+The first is to use the _FS_INFO_GETCWD_ getinfo key on the filesystem
+to use any internal support that it has for this. If that fails it
+falls back on one of the two other mechanisms. If
+_CYGPKG_IO_FILEIO_TRACK_CWD_ is set then the current directory is
+tracked textually in chdir() and the result of that is reported in
+getcwd(). Otherwise an attempt is made to traverse the directory tree
+to its root using ".." entries.
+
+This last option is complicated and expensive, and relies on the
+filesystem supporting "." and ".."  entries. This is not always the
+case, particularly if the filesystem has been ported from a
+non-UNIX-compatible source. Tracking the pathname textually will
+usually work, but might not produce optimum results when symbolic
+links are being used.
 
 
 Synchronization
@@ -449,15 +454,6 @@ _umount_ operation is called and if successful, the mount table entry
 is invalidated by setting its _valid_ field false and the _name_ field
 to NULL.
 
-    [Note: The umount() function could also match on the _devname_
-    field when searching. This would be compatible with various
-    flavors of Unix.]
-
-    [Note: These calls fall outside the scope of any standard. The
-    mount() function given above is most similar to the Linux
-    function, with the omission of the rwflag and data arguments. It
-    remains to be seen whether these need to be introduced.]
-
 Sockets
 -------
 
@@ -483,28 +479,18 @@ struct cyg_nstab_entry
 		       int protocol, cyg_file *file );
 };
 
-This table is analogous to the filesystem and mount tables combined.
+This table is analogous to a combination of the filesystem and mount
+tables.
 
 The _valid_ field is set true if the stack's _init_ function returned
 successfully and the _syncmode_ field contains the CYG_SYNCMODE_SOCK_*
 bits described above.
 
-    [Note: Currently there are no plans to support the dynamic loading
-    of network protocol stacks.]
-
 The _name_ field contains the name of the protocol stack.
-
-    [Note: This field is currently unused, but may be used in the
-    future to allow direct access to a specific stack via an as-yet
-    unspecified API.]
 
 The _devname_ field names the device that the stack is using. This may
 reference a device under "/dev", or may be a name that is only
 meaningful to the stack itself.
-
-    [Note: Many network protocol stacks may have several concurrent
-    devices, and have their own mechanisms for attaching to them, so
-    it is not clear that this field is actually very useful.]
 
 The _init_ function is called during system initialization to start
 the protocol stack running. If it returns non-zero the _valid_ field
@@ -557,7 +543,7 @@ The main part of the mechanism is the select() API call. This
 processes its arguments and calls the _fo_select_ function on all file
 objects referenced by the file descriptor sets passed to it. If the
 same descriptor appears in more than one descriptor set, the
-_fo_select_ function will be called for each appearance.
+_fo_select_ function will be called separately for each appearance.
 
 The _which_ argument of the _fo_select_ function will either be
 CYG_FREAD to test for read conditions, CYG_FWRITE to test for write
@@ -583,7 +569,16 @@ cause a select condition to become true - either via interrupts or the
 activities of other threads. Whenever a selectable condition is
 satisfied, the object should call cyg_selwakeup() with a pointer to
 the appropriate cyg_selinfo structure. If the thread is still waiting,
-this will cause it to wake up and return from the select() function.
+this will cause it to wake up and repeat its poll of the file
+descriptors. This time around, the object that caused the wakeup
+should indicate that the select condition is satisfied, and the
+_select()_ API call will return.
+
+Note that _select()_ does not exhibit real time behaviour: the
+iterative poll of the descriptors, and the wakeup mechanism mitigate
+against this. If real time response to device or socket I/O is
+required then separate threads should be devoted to each device of
+interest.
 
 
 Devices

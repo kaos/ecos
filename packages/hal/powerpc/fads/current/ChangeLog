@@ -1,3 +1,18 @@
+2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/pkgconf/mlt_powerpc_fads_ram.mlt:
+	Repair RAM layout
+
+	* include/pkgconf/mlt_powerpc_fads_ram.mlt:
+	* include/pkgconf/mlt_powerpc_fads_rom.mlt:
+	Add heap1 section
+
+	* include/pkgconf/mlt_powerpc_fads_ram.h:
+	* include/pkgconf/mlt_powerpc_fads_rom.h:
+	* include/pkgconf/mlt_powerpc_fads_ram.ldi:
+	* include/pkgconf/mlt_powerpc_fads_rom.ldi:
+	Regenerated
+
 2000-07-17  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_aux.c (hal_platform_init): Don't call hal_if_init just

@@ -105,7 +105,7 @@ externC void __handle_exception (void);
 
 externC HAL_SavedRegisters *_hal_registers;
 
-externC void *__mem_fault_handler;
+externC void* volatile __mem_fault_handler;
 
 void
 cyg_hal_exception_handler(HAL_SavedRegisters *regs)

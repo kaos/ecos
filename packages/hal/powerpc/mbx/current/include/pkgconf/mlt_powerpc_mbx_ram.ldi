@@ -1,6 +1,8 @@
-// eCos memory layout - Thu Jun 15 15:44:21 2000
+// eCos memory layout - Fri Oct 20 10:35:23 2000
 
 // This is a generated file - do not edit
+
+#include <cyg/infra/cyg_type.inc>
 
 MEMORY
 {
@@ -10,10 +12,10 @@ MEMORY
 SECTIONS
 {
     SECTIONS_BEGIN
-    __reserved_vectors = 0; . = __reserved_vectors + 0x3000;
-    __reserved_vsr_table = ALIGN (0x10); . = __reserved_vsr_table + 0x200;
-    __reserved_virtual_table = ALIGN (0x10); . = __reserved_virtual_table + 0x100;
-    __reserved_for_rom = ALIGN (0x10); . = __reserved_for_rom + 0xcd00;
+    CYG_LABEL_DEFN(__reserved_vectors) = 0; . = CYG_LABEL_DEFN(__reserved_vectors) + 0x3000;
+    CYG_LABEL_DEFN(__reserved_vsr_table) = ALIGN (0x10); . = CYG_LABEL_DEFN(__reserved_vsr_table) + 0x200;
+    CYG_LABEL_DEFN(__reserved_virtual_table) = ALIGN (0x10); . = CYG_LABEL_DEFN(__reserved_virtual_table) + 0x100;
+    CYG_LABEL_DEFN(__reserved_for_rom) = ALIGN (0x10); . = CYG_LABEL_DEFN(__reserved_for_rom) + 0x1cd00;
     SECTION_vectors (ram, ALIGN (0x10), LMA_EQ_VMA)
     SECTION_text (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_fini (ram, ALIGN (0x4), LMA_EQ_VMA)
@@ -24,5 +26,6 @@ SECTIONS
     SECTION_data (ram, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_sbss (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_bss (ram, ALIGN (0x10), LMA_EQ_VMA)
+    CYG_LABEL_DEFN(__heap1) = ALIGN (0x8);
     SECTIONS_END
 }

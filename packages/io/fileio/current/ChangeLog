@@ -1,3 +1,14 @@
+2000-10-13  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/io.cxx (readwrite): Merged both read() and write() functions
+	into this single common routine.  
+
+	* include/fileio.h: Introduced a common typedef for both read and
+	write operations.
+
+	* doc/fileio.txt: Added some text about getcwd() and tidied up
+	some other parts.
+
 2000-10-05  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/file.cxx: Added support for getcwd(). There are three

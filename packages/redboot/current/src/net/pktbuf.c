@@ -84,6 +84,21 @@ __pktbuf_init(void)
     }
 }
 
+void
+__pktbuf_dump(void)
+{
+    int i;
+    for (i = 0; i < MAX_PKTBUF; i++) {
+        printf("Buf[%d]/%p: buf: %p, len: %d/%d, next: %p\n", 
+               i,
+               &pktbuf_list[i],
+               pktbuf_list[i].buf,
+               pktbuf_list[i].bufsize,
+               pktbuf_list[i].pkt_bytes,
+               pktbuf_list[i].next);
+    }
+    printf("Free list = %p\n", free_list);
+}
 
 /*
  * simple pktbuf allocation

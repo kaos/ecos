@@ -1,3 +1,9 @@
+2000-10-12  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/ser_sparclite_sleb.cdl: Moved testing parameters here.
+
+	* src/sleb_sdtr.c: Removed obsolete sleb_sdtr_set_config function.
+
 2000-08-01  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* src/sleb_sdtr.c (sleb_sdtr_set_config): Now use keys to make

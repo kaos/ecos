@@ -10,4 +10,5 @@ section gcc_except_table 0 1 0 1 0 1 0 1 rel.got rel.got !
 section rel.got 0 1 0 1 0 1 0 1 data data !
 section data 0 8 0 1 0 1 0 1 sbss sbss !
 section sbss 0 4 0 1 0 1 0 1 bss bss !
-section bss 0 10 0 1 0 0 0 0 !
+section bss 0 10 0 1 0 1 0 1 heap1 heap1 !
+section heap1 0 8 0 0 0 0 0 0 !

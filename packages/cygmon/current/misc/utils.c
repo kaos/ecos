@@ -69,7 +69,14 @@ volatile int switch_to_stub_flag = 0;
 int
 input_char (void)
 {
-  int i = xgetchar ();
+  int i;
+
+  /* We have to drop the '+' characters on the floor
+     because gdb will send a '+' as the first character
+     when connecting to the target. If we waste time
+     echoing that, slow hw might get a uart overrun. */
+  while ((i = xgetchar ()) == '+');
+
   if (i == '$')
     {
       xungetchar ('$');
@@ -264,7 +271,7 @@ int2str (target_register_t number, int base, int numdigs)
 
 #if HAVE_DOUBLE_REGS
 static char *
-doudble2str(double d)
+double2str(double d)
 {
   switch(sizeof(double))
     {

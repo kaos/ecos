@@ -45,17 +45,7 @@
 
 #include <redboot.h>
 #include <cyg/io/flash.h>
-
-struct image_desc {
-    unsigned char name[16];      // Null terminated name
-    unsigned long flash_base;    // Address within FLASH of image
-    unsigned long mem_base;      // Address in memory where it executes
-    unsigned long size;          // Length of image
-    unsigned long entry_point;   // Execution entry point
-    unsigned char _pad[256-40];
-    unsigned long desc_cksum;    // Checksum over image descriptor
-    unsigned long file_cksum;    // Checksum over image data
-};
+#include <fis.h>
 
 // Exported CLI functions
 RedBoot_cmd("fis", 
@@ -124,7 +114,7 @@ local_cmd_entry("load",
     );
 local_cmd_entry("create",
                 "Create an image",
-                "-b <mem_base> -l <length> [-f <flash_addr>] [-e <entry_point>] [-r <ram_addr>] <name>",
+                "-b <mem_base> -l <image_length> [-s <data_length>] [-f <flash_addr>] [-e <entry_point>] [-r <ram_addr>] <name>",
                 fis_create,
                 FIS_cmds
     );
@@ -151,13 +141,14 @@ static void
 fis_init(int argc, char *argv[])
 {
     int stat, img_count = 0;
-    struct image_desc *img;
+    struct fis_image_desc *img;
     void *fis_base, *err_addr;
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
     void *cfg_base;
 #endif
     bool full_init = false;
     struct option_info opts[1];
+    unsigned long redboot_image_size;
 
     init_opts(&opts[0], 'f', false, OPTION_ARG_TYPE_FLG, 
               (void **)&full_init, (bool *)0, "full initialization, erases all of flash");
@@ -180,19 +171,21 @@ fis_init(int argc, char *argv[])
         printf("    Warning: device contents not erased, some blocks may not be usable\n");
     }
     // Create a pseudo image for RedBoot
-    img = (struct image_desc *)fis_work_block;
+#define MIN_REDBOOT_IMAGE_SIZE 0x20000
+    redboot_image_size = block_size > MIN_REDBOOT_IMAGE_SIZE ? block_size : MIN_REDBOOT_IMAGE_SIZE;
+    img = (struct fis_image_desc *)fis_work_block;
     memset(img, 0, sizeof(*img));
     strcpy(img->name, "RedBoot");
     img->flash_base = (unsigned long)flash_start;
     img->mem_base = (unsigned long)flash_start;
-    img->size = block_size;
+    img->size = redboot_image_size;
     img++;  img_count++;
     // And a backup image
     memset(img, 0, sizeof(*img));
     strcpy(img->name, "RedBoot[backup]");
-    img->flash_base = (unsigned long)flash_start+block_size;
-    img->mem_base = (unsigned long)flash_start+block_size;
-    img->size = block_size;
+    img->flash_base = (unsigned long)flash_start+redboot_image_size;
+    img->mem_base = (unsigned long)flash_start+redboot_image_size;
+    img->size = redboot_image_size;
     img++;  img_count++;
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
     // And a descriptor for the configuration data
@@ -226,10 +219,10 @@ fis_init(int argc, char *argv[])
 static void
 fis_list(int argc, char *argv[])
 {
-    struct image_desc *img;
+    struct fis_image_desc *img;
     int i;
 
-    img = (struct image_desc *)((unsigned long)flash_end - block_size);    
+    img = (struct fis_image_desc *)((unsigned long)flash_end - block_size);    
     printf("Name              FLASH addr   Mem addr    Length    Entry point\n");
     for (i = 0;  i < block_size/sizeof(*img);  i++, img++) {
         if (img->name[0] != (unsigned char)0xFF) {
@@ -320,17 +313,18 @@ static void
 fis_create(int argc, char *argv[])
 {
     int i, stat;
-    unsigned long mem_addr, exec_addr, flash_addr, entry_addr, length;
+    unsigned long mem_addr, exec_addr, flash_addr, entry_addr, length, img_size;
     char *name;
     bool mem_addr_set = false;
     bool exec_addr_set = false;
     bool entry_addr_set = false;
     bool flash_addr_set = false;
     bool length_set = false;
+    bool img_size_set = false;
     void *fis_addr, *err_addr;
-    struct image_desc *img;
+    struct fis_image_desc *img;
     bool slot_found;
-    struct option_info opts[5];
+    struct option_info opts[6];
     bool prog_ok;
 
     init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
@@ -342,8 +336,10 @@ fis_create(int argc, char *argv[])
     init_opts(&opts[3], 'f', true, OPTION_ARG_TYPE_NUM, 
               (void **)&flash_addr, (bool *)&flash_addr_set, "FLASH memory base address");
     init_opts(&opts[4], 'l', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&length, (bool *)&length_set, "length");
-    if (!scan_opts(argc, argv, 2, opts, 5, (void *)&name, OPTION_ARG_TYPE_STR, "file name"))
+              (void **)&length, (bool *)&length_set, "image length [in FLASH]");
+    init_opts(&opts[5], 's', true, OPTION_ARG_TYPE_NUM, 
+              (void **)&img_size, (bool *)&img_size_set, "image size [actual data]");
+    if (!scan_opts(argc, argv, 2, opts, 6, (void *)&name, OPTION_ARG_TYPE_STR, "file name"))
     {
         fis_usage("invalid arguments");
         return;
@@ -353,15 +349,25 @@ fis_create(int argc, char *argv[])
         fis_usage("required parameter missing");
         return;
     }
+    if (!img_size_set) {
+        img_size = length;
+    }
+    // 'length' is size of FLASH image, 'img_size' is actual data size
+    // Round up length to FLASH block size
+    length = ((length + block_size - 1) / block_size) * block_size;
+    if (length < img_size) {
+        printf("Invalid FLASH image size/length combination");
+        return;
+    }
     if (flash_addr_set &&
         ((stat = flash_verify_addr((void *)flash_addr)) ||
-         (stat = flash_verify_addr((void *)(flash_addr+length-1))))) {
+         (stat = flash_verify_addr((void *)(flash_addr+img_size-1))))) {
         printf("Invalid FLASH address: %p (%s)\n", (void *)flash_addr, flash_errmsg(stat));
         printf("   valid range is %p-%p\n", (void *)flash_start, (void *)flash_end);
         return;
     }
     if ((mem_addr < (unsigned long)ram_start) ||
-        ((mem_addr+length) >= (unsigned long)ram_end)) {
+        ((mem_addr+img_size) >= (unsigned long)ram_end)) {
         printf("** WARNING: RAM address: %p may be invalid\n", (void *)mem_addr);
         printf("   valid range is %p-%p\n", (void *)ram_start, (void *)ram_end);
     }
@@ -378,7 +384,7 @@ fis_create(int argc, char *argv[])
     slot_found = false;
     fis_addr = (void *)((unsigned long)flash_end - block_size);
     memcpy(fis_work_block, fis_addr, block_size);
-    img = (struct image_desc *)fis_work_block;
+    img = (struct fis_image_desc *)fis_work_block;
     for (i = 0;  i < block_size/sizeof(*img);  i++, img++) {
         if ((img->name[0] != (unsigned char)0xFF) && (strcmp(name, img->name) == 0)) {
             if (flash_addr_set && (img->flash_base != flash_addr)) {
@@ -399,7 +405,7 @@ fis_create(int argc, char *argv[])
     }
     // If not found, try and find an empty slot
     if (!slot_found) {
-        img = (struct image_desc *)fis_work_block;
+        img = (struct fis_image_desc *)fis_work_block;
         for (i = 0;  i < block_size/sizeof(*img);  i++, img++) {
             if (img->name[0] == (unsigned char)0xFF) {
                 slot_found = true;
@@ -408,7 +414,7 @@ fis_create(int argc, char *argv[])
         }
     }
     // Safety check - make sure the address range is not within the code we're running
-    if (flash_code_overlaps((void *)flash_addr, (void *)(flash_addr+length-1))) {
+    if (flash_code_overlaps((void *)flash_addr, (void *)(flash_addr+img_size-1))) {
         printf("Can't program this region - contains code in use!\n");
         return;
     }
@@ -422,7 +428,7 @@ fis_create(int argc, char *argv[])
     }
     if (prog_ok) {
         // Now program it
-        if ((stat = flash_program((void *)flash_addr, (void *)mem_addr, length, (void **)&err_addr)) != 0) {
+        if ((stat = flash_program((void *)flash_addr, (void *)mem_addr, img_size, (void **)&err_addr)) != 0) {
             printf("Can't program region at %p: %x(%s)\n", err_addr, stat, flash_errmsg(stat));
             prog_ok = false;
         }
@@ -567,7 +573,7 @@ fis_delete(int argc, char *argv[])
     char *name;
     int i, stat;
     void *fis_addr, *err_addr;
-    struct image_desc *img;
+    struct fis_image_desc *img;
     bool slot_found;
 
     if (!scan_opts(argc, argv, 2, 0, 0, (void **)&name, OPTION_ARG_TYPE_STR, "image name"))
@@ -579,7 +585,7 @@ fis_delete(int argc, char *argv[])
     slot_found = false;
     fis_addr = (void *)((unsigned long)flash_end - block_size);
     memcpy(fis_work_block, fis_addr, block_size);
-    img = (struct image_desc *)fis_work_block;
+    img = (struct fis_image_desc *)fis_work_block;
     img += 2;  // Skip reserved files
     for (i = 2;  i < block_size/sizeof(*img);  i++, img++) {
         if ((img->name[0] != (unsigned char)0xFF) && (strcmp(name, img->name) == 0)) {
@@ -618,7 +624,7 @@ fis_load(int argc, char *argv[])
     char *name;
     int i;
     void *fis_addr;
-    struct image_desc *img;
+    struct fis_image_desc *img;
     bool slot_found;
 
     if (!scan_opts(argc, argv, 2, 0, 0, (void **)&name, OPTION_ARG_TYPE_STR, "image name"))
@@ -630,7 +636,7 @@ fis_load(int argc, char *argv[])
     slot_found = false;
     fis_addr = (void *)((unsigned long)flash_end - block_size);
     memcpy(fis_work_block, fis_addr, block_size);
-    img = (struct image_desc *)fis_work_block;
+    img = (struct fis_image_desc *)fis_work_block;
     for (i = 0;  i < block_size/sizeof(*img);  i++, img++) {
         if ((img->name[0] != (unsigned char)0xFF) && (strcmp(name, img->name) == 0)) {
             slot_found = true;
@@ -728,11 +734,18 @@ RedBoot_config_option("Boot script",
                       "boot_script", true,
                       CONFIG_SCRIPT
     );
-RedBoot_config_option("Boot script timeout",
+// Some preprocessor magic for building the [constant] prompt string
+#define __cat(s1,c2,s3) s1 ## #c2 ## s3
+#define _cat(s1,c2,s3) __cat(s1,c2,s3)
+RedBoot_config_option(_cat("Boot script timeout (",
+                           CYGNUM_REDBOOT_FLASH_SCRIPT_TIMEOUT_RESOLUTION,
+                           "ms resolution)"),
                       boot_script_timeout,
                       "boot_script", true,
                       CONFIG_INT
     );
+#undef __cat
+#undef _cat
 
 CYG_HAL_TABLE_BEGIN( __CONFIG_options_TAB__, RedBoot_config_options);
 CYG_HAL_TABLE_END( __CONFIG_options_TAB_END__, RedBoot_config_options);

@@ -1,3 +1,7 @@
+2000-10-12  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/ser_arm_aeb.cdl: Moved testing parameters here.
+
 2000-09-06  Gary Thomas  <gthomas@redhat.com>
 
 	* src/aeb_serial.h: Define baud rates for 57600 & 115200.  

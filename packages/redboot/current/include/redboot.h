@@ -98,6 +98,7 @@ int  strcmp(const char *s1, const char *s2);
 int  strncmp(const char *s1, const char *s2, int len);
 int  strcmpci(const char *s1, const char *s2);
 int  strncmpci(const char *s1, const char *s2, int len);
+char *strcpy(char *s1, const char *s2);
 
 void mon_write_char(char c);
 int  gets(char *line, int len, int timeout);
@@ -158,6 +159,9 @@ struct option_info {
 #define OPTION_ARG_TYPE_NUM 0    // Numeric data
 #define OPTION_ARG_TYPE_STR 1    // Generic string
 #define OPTION_ARG_TYPE_FLG 2    // Flag only
+
+// Command line parsing
+struct cmd *parse(char *line, int *argc, char **argv);
 
 extern void init_opts(struct option_info *opts, char flag, bool takes_arg, 
                       int arg_type, void **arg, bool *arg_set, char *name);

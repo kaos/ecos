@@ -253,8 +253,9 @@ struct CYG_UIO_TAG
 //=============================================================================
 // Description of open file
 
-typedef int cyg_fileop_read    (struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio);
-typedef int cyg_fileop_write   (struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio);
+typedef int cyg_fileop_readwrite (struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio);
+typedef cyg_fileop_readwrite cyg_fileop_read;
+typedef cyg_fileop_readwrite cyg_fileop_write;
 typedef int cyg_fileop_lseek   (struct CYG_FILE_TAG *fp, off_t *pos, int whence );
 typedef int cyg_fileop_ioctl   (struct CYG_FILE_TAG *fp, CYG_ADDRWORD com,
                                 CYG_ADDRWORD data);

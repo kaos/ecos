@@ -163,9 +163,17 @@ static Cyg_Thread thread2     CYG_INIT_PRIORITY( APPLICATION )
 
 // -------------------------------------------------------------------------
 
+#ifdef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
+externC void
+cyg_hal_invoke_constructors();
+#endif
+
 externC void
 cyg_user_start( void )
 {
+#ifdef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
+    cyg_hal_invoke_constructors();
+#endif
     CYG_TEST_INIT();
     CYG_TEST_INFO( "cyg_user_start()" );
     thread1.resume();

@@ -1,3 +1,7 @@
+2000-10-20  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_misc.c: Update __mem_fault_handler declaration.
+
 2000-09-05  Andrew Lunn <andrew.lunn@ascom.ch>
 
 	* include/basetype.h: Override the alignment macros for the ARM

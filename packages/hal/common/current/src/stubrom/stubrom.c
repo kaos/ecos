@@ -46,8 +46,6 @@
 
 void cyg_start (void)
 {
-    initialize_stub();
-
     for(;;) breakpoint();
 }
 

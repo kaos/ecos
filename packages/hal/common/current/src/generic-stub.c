@@ -1019,7 +1019,11 @@ __process_packet (char *packet)
     }
     case 'd':
       /* toggle debug flag */
-      strcpy(remcomOutBuffer, "eCos GDB stubs - built " __DATE__ " / " __TIME__);
+      strcpy(remcomOutBuffer, "eCos GDB stubs" 
+#ifdef CYGPKG_REDBOOT
+             " [with RedBoot]"
+#endif
+             " - built " __DATE__ " / " __TIME__);
       break;
 #endif
 #endif // __ECOS__

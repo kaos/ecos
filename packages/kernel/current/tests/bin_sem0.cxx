@@ -72,6 +72,9 @@ void bin_sem0_main( void )
 externC void
 cyg_start( void )
 {
+#ifdef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
+    cyg_hal_invoke_constructors();
+#endif
     bin_sem0_main();
 }   
 // EOF bin_sem0.cxx

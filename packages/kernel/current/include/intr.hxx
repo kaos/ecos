@@ -163,11 +163,11 @@ class Cyg_Interrupt
 #endif
 #ifdef CYGIMP_KERNEL_INTERRUPTS_DSRS_LIST
 
-    cyg_ucount32 dsr_count;	      // Number of DSR posts made
+    volatile cyg_ucount32 dsr_count;	      // Number of DSR posts made
 
-    volatile Cyg_Interrupt *next_dsr; // next DSR in list
+    Cyg_Interrupt* volatile next_dsr; // next DSR in list
     
-    static volatile Cyg_Interrupt *dsr_list; // static list of pending DSRs
+    static Cyg_Interrupt* volatile dsr_list; // static list of pending DSRs
     
 #endif
 

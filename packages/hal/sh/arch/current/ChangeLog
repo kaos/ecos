@@ -1,3 +1,29 @@
+2000-10-23  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_misc.c: Always include hal_intr.h
+
+	* src/sh3_sci.c: Use specified value for default baud rate.
+	* src/sh3_scif.c: Same.
+
+2000-10-20  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_misc.c: Update __mem_fault_handler declaration.
+
+2000-10-19  Jesper Skov  <jskov@redhat.com>
+
+	* include/sh_regs.h (CYGARC_REG_WCR1_0WS, CYGARC_REG_WCR2_0WS):
+	Added for consistent init code.
+	
+2000-10-17  Jesper Skov  <jskov@redhat.com>
+
+	* src/vectors.S (__reset_platform): Rearrange constants used in
+	early init code.
+
+2000-10-16  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/hal_arch.h (CYGARC_JMP_BUF_SIZE): Define hal_jmp_buf in
+	terms of this.
+
 2000-10-11  Jesper Skov  <jskov@redhat.com>
 
 	* src/vectors.S (__reset_platform): Clear watchdog control flags.

@@ -70,6 +70,15 @@ cdl_package CYGPKG_IO_SERIAL_SH_SCIF {
         puts $::cdl_header "#include CYGDAT_IO_SERIAL_SH_SCIF_CFG";
     }
 
+    cdl_interface CYGINT_IO_SERIAL_SH_SCIF_DMA {
+        display       "Enable SCIF serial driver DMA support"
+        implements    CYGINT_IO_SERIAL_BLOCK_TRANSFER
+        description   "
+            The serial driver can use DMA to move data from the
+            transmit buffer to the serial controller if the CPU
+            supports it."
+    }
+
     cdl_component CYGPKG_IO_SERIAL_SH_SCIF_OPTIONS {
         display "SCIF serial device driver build options"
         flavor  none

@@ -22,4 +22,5 @@ section sdata 0 8 0 1 0 1 0 1 lit8 lit8 !
 section lit8 0 8 0 1 0 1 0 1 lit4 lit4 !
 section lit4 0 8 0 1 0 1 0 1 sbss sbss !
 section sbss 0 8 0 1 0 1 0 1 bss bss !
-section bss 0 8 0 1 0 0 0 0 !
+section bss 0 8 0 1 0 1 0 1 heap1 heap1 !
+section heap1 0 8 0 0 0 0 0 0 !

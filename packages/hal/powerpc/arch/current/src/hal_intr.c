@@ -52,6 +52,31 @@ hal_IRQ_init(void)
     // No architecture general initialization, but the variant may have
     // provided some.
     hal_variant_IRQ_init();
+
+    // Initialize real-time clock (for delays, etc, even if kernel doesn't use it)
+    HAL_CLOCK_INITIALIZE(CYGNUM_HAL_RTC_PERIOD);
+}
+
+// Delay for some number of useconds.
+externC void 
+hal_delay_us(int us)
+{
+    cyg_uint32 old_dec, new_dec;
+    long ticks;
+    // Note: the system constant CYGNUM_HAL_RTC_PERIOD corresponds to 10,000us
+    // Scale the desired number of microseconds to be a number of decrementer ticks
+    if (CYGNUM_HAL_RTC_PERIOD > 10000) {
+        ticks = us * (CYGNUM_HAL_RTC_PERIOD * 100) / 1000000;
+    } else {
+        ticks = us / (CYGNUM_HAL_RTC_PERIOD * 100) / 1000000;
+    }
+    asm volatile("mfdec  %0;" : "=r"(old_dec) : );
+    while (ticks-- > 0) {
+        do {
+            asm volatile("mfdec  %0;" : "=r"(new_dec) : );        
+        } while (old_dec == new_dec);
+        old_dec = new_dec;
+    }
 }
 
 // -------------------------------------------------------------------------

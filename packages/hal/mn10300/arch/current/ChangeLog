@@ -1,3 +1,7 @@
+2000-10-20  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_misc.c: Update __mem_fault_handler declaration.
+
 2000-09-04  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/basetype.h (CYGARC_ALIGNMENT): mn10300 has 4 byte alignment

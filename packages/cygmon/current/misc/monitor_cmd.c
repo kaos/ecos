@@ -806,6 +806,10 @@ poke (void)
 	    {
 	      xprintf ("Memory write failed\n");
 	    }
+#ifdef HAVE_BSP
+	  bsp_flush_dcache((void *)addr.addr, size);
+	  bsp_flush_icache((void *)addr.addr, size);
+#endif
 	}
       else
 	{
@@ -1136,6 +1140,10 @@ load_srec(srec_input_func_t inp_func)
 
   MAKE_STD_ADDR (address, &memaddr);
   write_memory (&memaddr, 1, dcount, data_buf);
+#ifdef HAVE_BSP
+  bsp_flush_dcache((void *)memaddr.addr, dcount);
+  bsp_flush_icache((void *)memaddr.addr, dcount);
+#endif
 
   return 0;
 }
@@ -2095,6 +2103,10 @@ Copies 0x300 bytes of memory from 0x10000 to 0x20000.");
           xprintf ("Memory write failed\n");
           break;
         }
+#ifdef HAVE_BSP
+      bsp_flush_dcache((void *)dst.addr, msize);
+      bsp_flush_icache((void *)dst.addr, msize);
+#endif
       ADD_OFFSET (&src, &src, msize);
       ADD_OFFSET (&dst, &dst, msize);
       size -= msize;
@@ -2458,7 +2470,7 @@ int
 monitor_loop (void)
 {
   int state = 1, return_value = 0;
-  
+
   while (state == 1)
     {
       /* Get a line of input, putting it in the input buffer */
@@ -2466,7 +2478,12 @@ monitor_loop (void)
       xprintf ("\n");
 
       if (switch_to_stub_flag)
-	return transfer_to_stub ();
+        {
+#ifndef HAVE_BSP
+	  switch_to_stub_flag = 0;
+#endif
+          return transfer_to_stub ();
+        }
 
       /* Separate off the command from any other stuff on the line */
       

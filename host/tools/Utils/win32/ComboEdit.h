@@ -62,6 +62,7 @@ protected:
 	CStringArray m_arValues;
   //{{AFX_MSG(CComboEdit)
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg void OnKillFocus(CWnd* pNewWnd);
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

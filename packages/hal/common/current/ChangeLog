@@ -1,3 +1,32 @@
+2000-10-23  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_stub.c: Made __mem_fault_handler pointer volatile.
+
+2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/drv_api.h (cyg_interrupt): Make dsr_count volatile to
+	prevent compilers optimizing accesses in the wrong place.
+
+2000-10-20  Jesper Skov  <jskov@redhat.com>
+
+	* include/drv_api.h: Correct location of volatile keyword.
+	* src/drv_api.c: Same.
+
+2000-10-19  Gary Thomas  <gthomas@redhat.com>
+
+	* src/generic-stub.c (__process_packet): Add RedBoot identifier
+	in maintenance 'd' packet reply.
+
+2000-10-18  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_if.h (CYGPRI_HAL_IMPLEMENTS_IF_SERVICES): Set for
+	all non-RAM startup types.
+
+2000-10-13  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/stubrom/stubrom.c (cyg_start): Remove unnecessary call to
+	initialize_stub()
+
 2000-09-11  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/hal_tables.h (CYG_HAL_TABLE_EXTRA): Use new definition of

@@ -1,3 +1,21 @@
+2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/pkgconf/mlt_arm_aebC_ram.mlt:
+	* include/pkgconf/mlt_arm_aebC_rom.mlt:
+	* include/pkgconf/mlt_arm_aeb_ram.mlt:
+	* include/pkgconf/mlt_arm_aeb_rom.mlt:
+	Add heap1 section
+
+	* include/pkgconf/mlt_arm_aebC_ram.h:
+	* include/pkgconf/mlt_arm_aebC_rom.h:
+	* include/pkgconf/mlt_arm_aeb_ram.h:
+	* include/pkgconf/mlt_arm_aeb_rom.h:
+	* include/pkgconf/mlt_arm_aebC_ram.ldi:
+	* include/pkgconf/mlt_arm_aebC_rom.ldi:
+	* include/pkgconf/mlt_arm_aeb_ram.ldi:
+	* include/pkgconf/mlt_arm_aeb_rom.ldi:
+	Regenerate
+
 2000-07-03  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_diag.c: 

@@ -74,6 +74,7 @@ __enet_poll(void)
          */
         if ((pkt = __pktbuf_alloc(ETH_MAX_PKTLEN)) == NULL) {
             printf("__enet_poll: no more buffers\n");
+            __pktbuf_dump();
             while (1) ;
             return;
         }

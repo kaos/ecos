@@ -1,6 +1,8 @@
-// eCos memory layout - Tue Apr 11 12:43:47 2000
+// eCos memory layout - Fri Oct 20 09:45:54 2000
 
 // This is a generated file - do not edit
+
+#include <cyg/infra/cyg_type.inc>
 
 MEMORY
 {
@@ -19,5 +21,6 @@ SECTIONS
     SECTION_gcc_except_table (ram, ALIGN (0x1), LMA_EQ_VMA)
     SECTION_data (ram, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_bss (ram, ALIGN (0x10), LMA_EQ_VMA)
+    CYG_LABEL_DEFN(__heap1) = ALIGN (0x8);
     SECTIONS_END
 }

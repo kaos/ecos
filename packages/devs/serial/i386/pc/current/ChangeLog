@@ -1,3 +1,7 @@
+2000-10-12  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/ser_i386_pc.cdl: Moved testing parameters here.
+
 2000-08-01  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* src/pc_serial.c (pc_serial_set_config): Now use keys to make

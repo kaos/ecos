@@ -1,3 +1,7 @@
+2000-10-20  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_misc.c: Update __mem_fault_handler declaration.
+
 2000-09-15  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_intr.h (HAL_DEFAULT_ISR): Fix warning.

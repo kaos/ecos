@@ -73,7 +73,7 @@ externC void __handle_exception (void);
 
 externC HAL_SavedRegisters *_hal_registers;
 
-externC void *__mem_fault_handler;
+externC void* volatile __mem_fault_handler;
 
 externC cyg_uint8 cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs );
 

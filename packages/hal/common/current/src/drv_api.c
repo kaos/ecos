@@ -64,7 +64,7 @@ static volatile cyg_int32 isr_disable_counter;  // ISR disable counter
 
 volatile cyg_int32 dsr_disable_counter asm("cyg_scheduler_sched_lock");  // DSR disable counter
 
-static volatile cyg_interrupt *dsr_list;        // List of pending DSRs
+static cyg_interrupt* volatile dsr_list;        // List of pending DSRs
 
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
 
@@ -85,7 +85,7 @@ static void post_dsr( cyg_interrupt *intr )
 
     HAL_DISABLE_INTERRUPTS(old_intr);
 
-        if( intr->dsr_count++ == 0 )
+    if( intr->dsr_count++ == 0 )
     {
         intr->next_dsr = dsr_list;
         dsr_list = intr;
@@ -102,7 +102,7 @@ static void call_dsrs(void)
     
     while( dsr_list != NULL )
     {
-        volatile cyg_interrupt *intr;
+        cyg_interrupt *intr;
         cyg_int32 count;
         CYG_INTERRUPT_STATE old_intr;
 

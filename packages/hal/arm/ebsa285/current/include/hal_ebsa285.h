@@ -95,6 +95,11 @@
 
 #endif /* __ASSEMBLER__ */
 
+//
+// Memory Layout
+//
+#define EBSA285_RAM_BANK0_BASE 0xC0000000
+
 /*
  * SA-110 Cache and MMU Control Registers
  *

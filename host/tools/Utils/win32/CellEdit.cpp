@@ -27,6 +27,8 @@
 
 #include "stdafx.h"
 #include "CellEdit.h"
+#include "cellview.h"
+#include "Configtool.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -51,6 +53,7 @@ BEGIN_MESSAGE_MAP(CCellEdit, CCell)
 	//{{AFX_MSG_MAP(CCellEdit)
 	ON_WM_CREATE()
 	ON_WM_CHAR()
+	ON_WM_KILLFOCUS()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -70,6 +73,11 @@ int CCellEdit::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	SendMessage(WM_SETFONT,(WPARAM)(HFONT)GetStockObject(DEFAULT_GUI_FONT),0);
   SendMessage(WM_SETTEXT,0,(LPARAM)(LPCTSTR)m_strInitialValue);
 	return 0;
+}
+
+void CCellEdit::OnKillFocus(CWnd*)
+{
+    CConfigTool::GetCellView()->CancelCellEdit();
 }
 
 void CCellEdit::OnEditCopy   ()

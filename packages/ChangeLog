@@ -1,3 +1,7 @@
+2000-10-20  Gary Thomas  <gthomas@redhat.com>
+
+	* ecos.db: Add FLASH drivers for PowerPC/MBX.
+
 2000-09-15  Jesper Skov  <jskov@redhat.com>
 
 	* ecos.db: Made PID use generic 16x5x driver.

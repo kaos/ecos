@@ -1,3 +1,20 @@
+2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/pkgconf/mlt_i386_pc_floppy.mlt:
+	Add heap1 section
+
+	* include/pkgconf/mlt_i386_pc_floppy.h:
+	* include/pkgconf/mlt_i386_pc_ram.h:
+	* include/pkgconf/mlt_i386_pc_floppy.ldi:
+	* include/pkgconf/mlt_i386_pc_ram.ldi:
+	Regenerated
+
+2000-10-19  Jesper Skov  <jskov@redhat.com>
+
+	* include/pkgconf/mlt_i386_pc_ram.h: Added heap1 label.
+	* include/pkgconf/mlt_i386_pc_ram.mlt: Same.
+	* include/pkgconf/mlt_i386_pc_ram.ldi: Same.
+
 2000-08-18  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/platform.inc:

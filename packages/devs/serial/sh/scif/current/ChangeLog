@@ -1,3 +1,12 @@
+2000-10-23  Jesper Skov  <jskov@redhat.com>
+
+	* src/sh_scif_serial.c: Include cyg_ass.h
+
+2000-10-12  Jesper Skov  <jskov@redhat.com>
+
+	* src/sh_scif_serial.c (sh3_scif_set_config): Changes to the flow
+	control handling. Renamed DMA variables.
+
 2000-10-12  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/sh_scif_serial.c: return -EINVAL when unsupported flow control
@@ -12,6 +21,8 @@
 
 	* src/sh_scif_serial.c: Fixed receive FIFO problem. Added Line
 	Status handling. Don't enable TX interrupts in initialization.
+	* src/sh_scif_serial.c: Added DMA support. Added RTS/CTS control.
+	* cdl/ser_sh_scif.cdl: Added DMA interface.
 
 2000-09-26  Jesper Skov  <jskov@redhat.com>
 

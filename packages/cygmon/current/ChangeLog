@@ -1,3 +1,12 @@
+2000-10-17  Drew Moseley  <dmoseley@redhat.com>
+
+	* misc/utils.c: Fix a typo.  Also make sure we are ignoring the
+	'+' characters from gdb.
+
+	* misc/monitor_cmd.c: Add a few cache flushes.
+
+	* misc/monitor.h: Use the debug port for xvprintf.
+
 2000-08-14  Drew Moseley  <dmoseley@redhat.com>
 
 	* misc/ecos_bsp.c: Added some include files to fix some build

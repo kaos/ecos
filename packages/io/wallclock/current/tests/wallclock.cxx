@@ -40,6 +40,7 @@
 //####DESCRIPTIONEND####
 // -------------------------------------------------------------------------
 
+#include <pkgconf/hal.h>
 #include <pkgconf/kernel.h>
 
 #include <cyg/kernel/thread.hxx>
@@ -169,9 +170,17 @@ void wallclock_thread( CYG_ADDRWORD id )
 // -------------------------------------------------------------------------
 
 
+#ifdef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
+externC void
+cyg_hal_invoke_constructors();
+#endif
+
 externC void
 cyg_start( void )
 {
+#ifdef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
+    cyg_hal_invoke_constructors();
+#endif
     CYG_TEST_INIT();
 
     CYG_TEST_INFO("Starting wallclock test");
@@ -203,7 +212,7 @@ externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS_FINISH("N/A: Kernel real-time clock/threads timer disabled");
+    CYG_TEST_NA("Kernel real-time clock/threads timer disabled");
 }
 
 #endif // if defined(CYGFUN_KERNEL_THREADS_TIMER) etc...

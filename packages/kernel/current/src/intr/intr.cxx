@@ -125,7 +125,7 @@ volatile cyg_ucount32 Cyg_Interrupt::dsr_table_tail = 0;
 
 #ifdef CYGIMP_KERNEL_INTERRUPTS_DSRS_LIST
 
-volatile Cyg_Interrupt *Cyg_Interrupt::dsr_list = NULL;
+Cyg_Interrupt* volatile Cyg_Interrupt::dsr_list = NULL;
 
 #endif
 
@@ -160,7 +160,7 @@ Cyg_Interrupt::call_pending_DSRs_inner(void)
 
     while( dsr_list != NULL )
     {
-        volatile Cyg_Interrupt *intr;
+        Cyg_Interrupt* intr;
         cyg_uint32 old_intr;
         cyg_count32 count;
         
@@ -198,6 +198,9 @@ cyg_interrupt_call_pending_DSRs(void)
 void
 Cyg_Interrupt::call_pending_DSRs(void)
 {
+    CYG_ASSERT( Cyg_Scheduler::get_sched_lock() == 1,
+                "DSRs being called with sched_lock not equal to 1");
+    
     HAL_INTERRUPT_STACK_CALL_PENDING_DSRS();
 }
 

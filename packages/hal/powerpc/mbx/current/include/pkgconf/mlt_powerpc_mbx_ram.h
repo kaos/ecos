@@ -1,22 +1,37 @@
-// eCos memory layout - Thu Jun 15 15:44:21 2000
+// eCos memory layout - Fri Oct 20 10:35:23 2000
 
 // This is a generated file - do not edit
 
+#ifndef __ASSEMBLER__
 #include <cyg/infra/cyg_type.h>
 #include <stddef.h>
 
+#endif
 #define CYGMEM_REGION_ram (0)
 #define CYGMEM_REGION_ram_SIZE (0x400000)
 #define CYGMEM_REGION_ram_ATTR (CYGMEM_REGION_ATTR_R | CYGMEM_REGION_ATTR_W)
-extern char CYG_LABEL_NAME (_reserved_vectors) [];
-#define CYGMEM_SECTION_reserved_vectors (CYG_LABEL_NAME (_reserved_vectors))
+#ifndef __ASSEMBLER__
+extern char CYG_LABEL_NAME (__reserved_vectors) [];
+#endif
+#define CYGMEM_SECTION_reserved_vectors (CYG_LABEL_NAME (__reserved_vectors))
 #define CYGMEM_SECTION_reserved_vectors_SIZE (0x3000)
-extern char CYG_LABEL_NAME (_reserved_vsr_table) [];
-#define CYGMEM_SECTION_reserved_vsr_table (CYG_LABEL_NAME (_reserved_vsr_table))
+#ifndef __ASSEMBLER__
+extern char CYG_LABEL_NAME (__reserved_vsr_table) [];
+#endif
+#define CYGMEM_SECTION_reserved_vsr_table (CYG_LABEL_NAME (__reserved_vsr_table))
 #define CYGMEM_SECTION_reserved_vsr_table_SIZE (0x200)
-extern char CYG_LABEL_NAME (_reserved_virtual_table) [];
-#define CYGMEM_SECTION_reserved_virtual_table (CYG_LABEL_NAME (_reserved_virtual_table))
+#ifndef __ASSEMBLER__
+extern char CYG_LABEL_NAME (__reserved_virtual_table) [];
+#endif
+#define CYGMEM_SECTION_reserved_virtual_table (CYG_LABEL_NAME (__reserved_virtual_table))
 #define CYGMEM_SECTION_reserved_virtual_table_SIZE (0x100)
-extern char CYG_LABEL_NAME (_reserved_for_rom) [];
-#define CYGMEM_SECTION_reserved_for_rom (CYG_LABEL_NAME (_reserved_for_rom))
-#define CYGMEM_SECTION_reserved_for_rom_SIZE (0xcd00)
+#ifndef __ASSEMBLER__
+extern char CYG_LABEL_NAME (__reserved_for_rom) [];
+#endif
+#define CYGMEM_SECTION_reserved_for_rom (CYG_LABEL_NAME (__reserved_for_rom))
+#define CYGMEM_SECTION_reserved_for_rom_SIZE (0x1cd00)
+#ifndef __ASSEMBLER__
+extern char CYG_LABEL_NAME (__heap1) [];
+#endif
+#define CYGMEM_SECTION_heap1 (CYG_LABEL_NAME (__heap1))
+#define CYGMEM_SECTION_heap1_SIZE (0x400000 - (size_t) CYG_LABEL_NAME (__heap1))

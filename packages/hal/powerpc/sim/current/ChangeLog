@@ -1,3 +1,15 @@
+2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/pkgconf/mlt_powerpc_sim_ram.h:
+	* include/pkgconf/mlt_powerpc_sim_ram.ldi:
+	Regenerated with updated host tools
+
+2000-10-19  Jesper Skov  <jskov@redhat.com>
+
+	* include/pkgconf/mlt_powerpc_sim_ram.h: Added heap1 label.
+	* include/pkgconf/mlt_powerpc_sim_ram.mlt: Same.
+	* include/pkgconf/mlt_powerpc_sim_ram.ldi: Same.
+
 2000-06-27  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_aux.c (hal_platform_init): Added.

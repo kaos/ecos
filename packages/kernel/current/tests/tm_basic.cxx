@@ -1708,9 +1708,17 @@ void tm_basic_main( void )
 
 }
 
+#ifdef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
+externC void
+cyg_hal_invoke_constructors();
+#endif
+
 externC void
 cyg_start( void )
 {
+#ifdef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
+    cyg_hal_invoke_constructors();
+#endif
     tm_basic_main();
 }   
 

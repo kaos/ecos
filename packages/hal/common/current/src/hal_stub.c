@@ -769,7 +769,14 @@ __data_cache (cache_control_t request)
 //-----------------------------------------------------------------------------
 // Memory accessor functions.
 
-volatile void *__mem_fault_handler = (void *)0;
+// The __mem_fault_handler pointer is volatile since it is only
+// set/cleared by the function below - which does not rely on any
+// other functions, so the compiler may decide to not bother updating
+// the pointer at all. If any of the memory accesses cause an
+// exception, the pointer must be set to ensure the exception handler
+// can make use of it.
+
+void* volatile __mem_fault_handler = (void *)0;
 
 /* These are the "arguments" to __do_read_mem and __do_write_mem, 
    which are passed as globals to avoid squeezing them thru

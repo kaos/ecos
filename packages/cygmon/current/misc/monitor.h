@@ -64,7 +64,7 @@
 #ifdef HAVE_BSP
 #define xprintf    bsp_dprintf
 #define xsprintf   bsp_sprintf
-#define xvprintf   bsp_vprintf
+#define xvprintf   bsp_dvprintf
 #define xputchar   bsp_debug_putc
 #define xgetchar   bsp_debug_getc
 #define xungetchar bsp_debug_ungetc

@@ -1,3 +1,15 @@
+2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/pkgconf/mlt_v85x_v850_ceb_ram.mlt:
+	* include/pkgconf/mlt_v85x_v850_ceb_rom.mlt:
+	Add heap1 section
+
+	* include/pkgconf/mlt_v85x_v850_ceb_ram.h:
+	* include/pkgconf/mlt_v85x_v850_ceb_rom.h:
+	* include/pkgconf/mlt_v85x_v850_ceb_ram.ldi:
+	* include/pkgconf/mlt_v85x_v850_ceb_rom.ldi:
+	Regenerated
+
 2000-06-30  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_diag.c: calling i/f macro changes.

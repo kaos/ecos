@@ -1,3 +1,37 @@
+2000-10-17  Hugo Tyson  <hmt@redhat.com>
+2000-10-10  Andrew Lunn <Andrew.Lunn@ascom.ch>
+
+	* src/ecos/support.c (setsoftnet,cyg_panic): Less chatter,
+	particularly not when we're out of MBUFs.
+
+2000-10-17  Hugo Tyson  <hmt@redhat.com>
+2000-10-10  Andrew Lunn <Andrew.Lunn@ascom.ch>
+
+	* src/sys/net/if_bridge.c: Intergrated a more up to date version
+	from the OpenBSD sources. This fixes a few bugs.
+
+2000-10-17  Hugo Tyson  <hmt@redhat.com>
+
+	* src/ecos/support.c (cyg_ktime_init): Start time at 1 Second so
+	that all visible time values are valid; offset time by 1 Second
+	subsequently, for ever.
+
+	* src/sys/netinet/if_ether.c (arpresolve): Undo the change below;
+	instead make "kernel time" be valid ie. more than 1 second into
+	its life.  Dumb stack assumes it takes UNIX-like time to start.
+
+2000-10-16  Hugo Tyson  <hmt@redhat.com>
+
+	* src/sys/netinet/if_ether.c (arpresolve): Deal with the initial
+	case when the route timeout is zero (as initialized).  Otherwise
+	it never actually sent out the initial ARP request packet.  This
+	caused connect() not to work, and thus ftp_test, for example.
+
+	* src/lib/dhcp_support.c (dhcp_start_dhcp_mgt_thread): Also
+	initialize the dhcp semaphore here.  The other place it is init'd
+	[correctly] didn't fire if we use the standard support.  Fixed
+	some absent return value warnings.
+
 2000-10-10  Hugo Tyson  <hmt@redhat.com>
 
 	* src/lib/tftp_server.c (tftpd_server): Modify the server to

@@ -55,9 +55,6 @@
 // GDB interfaces
 extern void breakpoint(void);
 
-// Internal functions
-static struct cmd *parse(char *line, int *argc, char **argv);
-
 // CLI command processing (defined in this file)
 RedBoot_cmd("help", 
             "Help about help?", 
@@ -71,7 +68,7 @@ RedBoot_cmd("go",
     );
 RedBoot_cmd("dump", 
             "Display (hex dump) a range of memory", 
-            "<location> [<length>]",
+            "-b <location> [-l <length>]",
             do_dump 
     );
 RedBoot_cmd("cache", 
@@ -81,13 +78,12 @@ RedBoot_cmd("cache",
     );
 
 // Define table boundaries
-CYG_HAL_TABLE_BEGIN( __RedBoot_CMD_TAB__, RedBoot_commands );
-CYG_HAL_TABLE_END( __RedBoot_CMD_TAB_END__, RedBoot_commands );
-extern struct cmd __RedBoot_CMD_TAB__[], __RedBoot_CMD_TAB_END__;
-
 CYG_HAL_TABLE_BEGIN( __RedBoot_INIT_TAB__, RedBoot_inits );
 CYG_HAL_TABLE_END( __RedBoot_INIT_TAB_END__, RedBoot_inits );
 extern struct init_tab_entry __RedBoot_INIT_TAB__[], __RedBoot_INIT_TAB_END__;
+CYG_HAL_TABLE_BEGIN( __RedBoot_CMD_TAB__, RedBoot_commands );
+CYG_HAL_TABLE_END( __RedBoot_CMD_TAB_END__, RedBoot_commands );
+extern struct cmd __RedBoot_CMD_TAB__[], __RedBoot_CMD_TAB_END__;
 
 //
 // This is the main entry point for RedBoot
@@ -129,9 +125,11 @@ cyg_start(void)
     // Give the guy a chance to abort any boot script
     if (script) {
         unsigned char *hold_script = script;
-        printf("== Executing boot script in %d seconds - enter ^C to abort\n", script_timeout);
+        int script_timeout_ms = script_timeout * CYGNUM_REDBOOT_FLASH_SCRIPT_TIMEOUT_RESOLUTION;
+        printf("== Executing boot script in %d.%03d seconds - enter ^C to abort\n", 
+               script_timeout_ms/1000, script_timeout_ms%1000);
         script = (unsigned char *)0;
-        res = gets(line, sizeof(line), script_timeout*1000);
+        res = gets(line, sizeof(line), script_timeout_ms);
         if (res == -2) {
             script = (unsigned char *)0;  // Disable script
         } else {
@@ -164,7 +162,7 @@ cyg_start(void)
                     if ((cmd = parse(line, &argc, &argv[0])) != (struct cmd *)0) {
                         (cmd->fun)(argc, argv);
                     } else {
-                        printf("Illegal command: %s\n", line);
+                        printf("** Error: Illegal command: %s\n", line);
                     }
                 }
                 prompt = true;
@@ -172,285 +170,6 @@ cyg_start(void)
         }
     }
 }
-
-//
-// Scan through an input line and break it into "arguments".  These
-// are space delimited strings.  Return a structure which points to
-// the strings, similar to a Unix program.
-// Note: original input is destroyed by replacing the delimiters with 
-// null ('\0') characters for ease of use.
-//
-struct cmd *
-parse(char *line, int *argc, char **argv)
-{
-    char *cp = line;
-    int indx = 0;
-
-    while (*cp) {
-        // Skip leading spaces
-        while (*cp && *cp == ' ') cp++;
-        if (!*cp) {
-            break;  // Line ended with a string of spaces
-        }
-        argv[indx++] = cp;
-        while (*cp) {
-            if (*cp == ' ') {
-                *cp++ = '\0';
-                break;
-            } else if (*cp == '"') {
-                // Swallow quote, scan till following one
-                if (argv[indx-1] == cp) {
-                    argv[indx-1] = ++cp;
-                }
-                while (*cp && *cp != '"') cp++;
-                if (!*cp) {
-                    printf("Unbalanced string!\n");
-                } else {
-                    *cp++ = '\0';
-                    break;
-                }
-            } else {
-                cp++;
-            }
-        }
-    }
-    *argc = indx;
-    return cmd_search(__RedBoot_CMD_TAB__, &__RedBoot_CMD_TAB_END__, argv[0]);
-}
-
-//
-// Search through a list of commands
-//
-struct cmd *
-cmd_search(struct cmd *tab, struct cmd *tabend, char *arg)
-{
-    int cmd_len;
-    struct cmd *cmd, *cmd2;
-    // Search command table
-    cmd_len = strlen(arg);
-    cmd = tab;
-    while (cmd != tabend) {
-        if (strncmpci(arg, cmd->str, cmd_len) == 0) {
-            if (strlen(cmd->str) > cmd_len) {
-                // Check for ambiguous commands here
-                // Note: If there are commands which are not length-unique
-                // then this check will be invalid.  E.g. "du" and "dump"
-                bool first = true;
-                cmd2 = tab;
-                while (cmd2 != tabend) {
-                    if ((cmd != cmd2) && 
-                        (strncmpci(arg, cmd2->str, cmd_len) == 0)) {
-                        if (first) {
-                            printf("Ambiguous command '%s', choices are: %s", arg, cmd->str);
-                            first = false;
-                        }
-                        printf(" %s", cmd2->str);
-                    }
-                    cmd2++;
-                }
-                if (!first) {
-                    // At least one ambiguity found - fail the lookup
-                    printf("\n");
-                    return (struct cmd *)0;
-                }
-            }
-            return cmd;
-        }
-        cmd++;
-    }
-    return (struct cmd *)0;
-}
-
-void
-cmd_usage(struct cmd *tab, struct cmd *tabend, char *prefix)
-{
-    struct cmd *cmd;
-    printf("Usage:\n"); for (cmd = tab;  cmd != tabend;  cmd++) {
-        printf("  %s%s %s\n", prefix, cmd->str, cmd->usage);
-    }
-}
-
-// Option processing
-
-// Initialize option table entry (required because these entries
-// may have dynamic contents, thus cannot be statically initialized)
-//
-void
-init_opts(struct option_info *opts, char flag, bool takes_arg, 
-          int arg_type, void **arg, bool *arg_set, char *name)
-{
-    opts->flag = flag;
-    opts->takes_arg = takes_arg;
-    opts->arg_type = arg_type,
-    opts->arg = arg;
-    opts->arg_set = arg_set;
-    opts->name = name;
-}
-
-//
-// Scan command line arguments (argc/argv), processing options, etc.
-//
-bool
-scan_opts(int argc, char *argv[], int first, 
-          struct option_info *opts, int num_opts, 
-          void **def_arg, int def_arg_type, char *def_descr)
-{
-    bool ret = true;
-    bool flag_ok;
-    bool def_arg_set = false;
-    int i, j;
-    char c, *s;
-    struct option_info *opt;
-
-    if (def_arg && (def_arg_type == OPTION_ARG_TYPE_STR)) {
-        *def_arg = (char *)0;
-    }
-    opt = opts;
-    for (j = 0;  j < num_opts;  j++, opt++) {
-        if (opt->arg_set) {
-            *opt->arg_set = false;
-        }
-        if (!opt->takes_arg) {
-            switch (opt->arg_type) {
-            case OPTION_ARG_TYPE_NUM:
-                *(int *)opt->arg = 0;
-                break;
-            case OPTION_ARG_TYPE_FLG:
-                *(bool *)opt->arg = false;
-                break;
-            }
-        }
-    }
-    for (i = first;  i < argc;  i++) {
-        if (argv[i][0] == '-') {
-            c = argv[i][1];
-            flag_ok = false;
-            opt = opts;
-            for (j = 0;  j < num_opts;  j++, opt++) {
-                if (c == opt->flag) {
-                    if (opt->arg_set && *opt->arg_set) {
-                        printf("%s alread set\n", opt->name);
-                        ret = false;
-                    }
-                    if (opt->takes_arg) {
-                        if (argv[i][2] == '=') {
-                            s = &argv[i][3];
-                        } else {
-                            s = argv[i+1];
-                            i++;
-                        }
-                        switch (opt->arg_type) {
-                        case OPTION_ARG_TYPE_NUM:
-                            if (!parse_num(s, (unsigned long *)opt->arg, 0, 0)) {
-                                printf("invalid number '%s' for %s\n", s, opt->name);
-                                ret = false;
-                            }
-                            break;
-                        case OPTION_ARG_TYPE_STR:
-                            *opt->arg = s;
-                            break;
-                        }
-                        *opt->arg_set = true;
-                    } else {
-                        switch (opt->arg_type) {
-                        case OPTION_ARG_TYPE_NUM:
-                            *(int *)opt->arg = *(int *)opt->arg + 1;
-                            break;
-                        case OPTION_ARG_TYPE_FLG:
-                            *(bool *)opt->arg = true;
-                            break;
-                        }
-                    }
-                    flag_ok = true;
-                    break;
-                }
-            }
-            if (!flag_ok) {
-                printf("invalid flag '%c'\n", c);
-                ret = false;
-            }
-        } else {
-            if (def_arg) {
-                if (def_arg_set) {
-                    printf("%s already set\n", def_descr);
-                    ret = false;
-                }
-                switch (def_arg_type) {
-                case OPTION_ARG_TYPE_NUM:
-                    if (!parse_num(argv[i], (unsigned long *)def_arg, 0, 0)) {
-                        printf("invalid number '%s' for %s\n", argv[i], def_descr);
-                        ret = false;
-                    }
-                    break;
-                case OPTION_ARG_TYPE_STR:
-                    *def_arg = argv[i];
-                    break;
-                }
-                def_arg_set = true;
-            } else {
-                printf("no default/non-flag arguments supported\n");
-                ret = false;
-            }
-        }
-    }
-    return ret;
-}
-
-//
-// Parse (scan) a number
-//
-bool
-parse_num(char *s, unsigned long *val, char **es, char *delim)
-{
-    bool first = true;
-    int radix = 10;
-    char c;
-    unsigned long result = 0;
-    int digit;
-
-    while (*s == ' ') s++;
-    while (*s) {
-        if (first && (s[0] == '0') && (tolower(s[1]) == 'x')) {
-            radix = 16;
-            s += 2;
-        }
-        first = false;
-        c = *s++;
-        if (_is_hex(c) && ((digit = _from_hex(c)) < radix)) {
-            // Valid digit
-            result = (result * radix) + digit;
-        } else {
-            if (delim != (char *)0) {
-                // See if this character is one of the delimiters
-                char *dp = delim;
-                while (*dp && (c != *dp)) dp++;
-                if (*dp) break;  // Found a good delimiter
-            }
-            return false;  // Malformatted number
-        }
-    }
-    *val = result;
-    if (es != (char **)0) {
-        *es = s;
-    }
-    return true;
-}
-
-bool
-parse_bool(char *s, bool *val)
-{
-    while (*s == ' ') s++;
-    if ((*s == 't') || (*s == 'T')) {
-        *val = true;
-    } else 
-    if ((*s == 'f') || (*s == 'F')) {
-        *val = false;
-    } else {
-        return false;
-    }
-    return true;
-}
-
 
 void
 do_caches(int argc, char *argv[])
@@ -496,22 +215,23 @@ do_help(int argc, char *argv[])
 void
 do_dump(int argc, char *argv[])
 {
+    struct option_info opts[2];
     unsigned long base, len;
+    bool base_set, len_set;
 
-    if (argc < 2) {
+    init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
+              (void **)&base, (bool *)&base_set, "base address");
+    init_opts(&opts[1], 'l', true, OPTION_ARG_TYPE_NUM, 
+              (void **)&len, (bool *)&len_set, "length");
+    if (!scan_opts(argc, argv, 1, opts, 2, 0, 0, ""))
+    {
+        return;
+    }
+    if (!base_set) {
         printf("Dump what [location]?\n");
         return;
     }
-    if (!parse_num(argv[1], &base, 0, 0)) {
-        printf("Invalid start address: %s\n", argv[1]);
-        return;
-    }
-    if (argc > 2) {
-        if (!parse_num(argv[2], &len, 0, 0)) {
-            printf("Invalid length/end address: %s\n", argv[2]);
-            return;
-        }
-    } else {
+    if (!len_set) {
         len = 32;
     }
     dump_buf((void *)base, len);

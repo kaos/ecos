@@ -1,3 +1,10 @@
+2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* tests/wallclock2.cxx: Play better with main() startup configury
+
+	* tests/wallclock.cxx: Ensure default priority constructors
+	are called.
+
 2000-07-24  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* tests/wallclock2.cxx: Depend on CYGPKG_LIBC_TIME not CYGPKG_LIBC

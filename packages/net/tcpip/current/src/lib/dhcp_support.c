@@ -90,7 +90,7 @@ int dhcp_bind( void )
 #endif
 
     // If there are no interfaces at all, init it every time, doesn't
-    // matter.
+    // matter.  In case we are called from elsewhere...
     if ( 1
 #ifdef CYGHWR_NET_DRIVER_ETH0
          && eth0_dhcpstate == 0
@@ -165,6 +165,7 @@ int dhcp_halt( void )
     }
     eth1_up = false;
 #endif
+    return 1;
 }
 
 
@@ -180,6 +181,7 @@ int dhcp_release( void )
     if (eth1_up)
         do_dhcp_release(eth1_name, &eth1_bootp_data, &eth1_dhcpstate, &eth1_lease);
 #endif
+    return 1;
 }
 
 
@@ -212,6 +214,7 @@ static cyg_uint8 dhcp_mgt_stack[ STACK_SIZE ];
 void dhcp_start_dhcp_mgt_thread( void )
 {
     if ( ! dhcp_mgt_thread_h ) {
+        cyg_semaphore_init( &dhcp_needs_attention, 0 );
         cyg_thread_create(
             CYGPKG_NET_DHCP_THREAD_PRIORITY, /* scheduling info (eg pri) */
             dhcp_mgt_entry,             /* entry point function */

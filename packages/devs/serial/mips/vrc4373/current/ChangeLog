@@ -1,7 +1,11 @@
+2000-10-12  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/ser_mips_vrc4373.cdl: Moved testing parameters here.
+
 2000-08-01  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
-	* src/vrc4373_serial.c (vrc4373_serial_set_config): Now use keys to make
-	more flexible.
+	* src/vrc4373_serial.c (vrc4373_serial_set_config): Now use keys
+	to make more flexible.
 
 2000-07-22  Jonathan Larmour  <jlarmour@redhat.co.uk>
 

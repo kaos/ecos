@@ -321,11 +321,6 @@ sleb_sdtr_set_config(serial_channel *chan, cyg_uint32 key,
     }
     return ENOERR;
 }
-static bool 
-sleb_sdtr_set_config(serial_channel *chan, cyg_serial_info_t *config)
-{
-    return sleb_sdtr_config_port(chan, config, false);
-}
 
 // Enable the transmitter on the device
 static void

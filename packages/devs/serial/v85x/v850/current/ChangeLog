@@ -1,6 +1,11 @@
+2000-10-12  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/ser_v85x_v850.cdl: Moved testing parameters here.
+
 2000-10-09  Gary Thomas  <gthomas@redhat.com>
 
-	* src/v85x_v850_serial.c (v850_serial_config_port): Fix baud clock setup.
+	* src/v85x_v850_serial.c (v850_serial_config_port): Fix baud clock
+	setup.
 
 2000-10-04  Gary Thomas  <gthomas@redhat.com>
 

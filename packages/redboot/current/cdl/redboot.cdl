@@ -77,13 +77,13 @@ cdl_package CYGPKG_REDBOOT {
                      stripping before being converted to a binary image.
                      This is handled by a rule in the target CDL."
 
-	compile printf.c misc_funs.c io.c ticks.c
+	compile printf.c misc_funs.c io.c parse.c ticks.c
         compile -library=libextras.a load.c
 
         make -priority 320 {
-            <PREFIX>/bin/redboot.elf : $(PREFIX)/lib/libtarget.a main.o
+            <PREFIX>/bin/redboot.elf : $(PREFIX)/lib/target.ld $(PREFIX)/lib/vectors.o $(PREFIX)/lib/libtarget.a $(PREFIX)/lib/libextras.a main.o
                     @sh -c "mkdir -p $(dir $@)"
-	            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ $^
+	            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ main.o
         }
 	make -priority 319 {
            main.o: $(REPOSITORY)/$(PACKAGE)/src/main.c $(PREFIX)/lib/libtarget.a
@@ -159,6 +159,27 @@ cdl_package CYGPKG_REDBOOT {
               When this option is enabled, RedBoot will keep configuration
               data in a separate block of FLASH memory.  This data will
               include such items as the node IP address or startup scripts."
+        }
+
+        cdl_option CYGNUM_REDBOOT_FLASH_SCRIPT_TIMEOUT_RESOLUTION {
+            display       "Resolution (in ms) for script timeout value."
+            flavor        data
+            default_value 1000
+            active_if     CYGSEM_REDBOOT_FLASH_CONFIG
+            description "
+              This option controls the resolution of the script timeout.
+              The value is specified in milliseconds (ms), thus to have the
+              script timeout be defined in terms of tenths of seconds, use 100."
+        }
+
+        cdl_option CYGNUM_REDBOOT_FLASH_SCRIPT_DEFAULT_TIMEOUT {
+            display       "Default script timeout value"
+            flavor        data
+            default_value 10
+            active_if     CYGSEM_REDBOOT_FLASH_CONFIG
+            description "
+              This option is used to set the default timeout for startup
+              scripts, when they are enabled."
         }
     }
 }

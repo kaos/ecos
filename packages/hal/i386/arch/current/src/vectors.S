@@ -109,13 +109,13 @@ _start:
 	.extern hal_platform_init
 	call	hal_platform_init
 
-	.extern cyg_hal_invoke_constructors
-	call	cyg_hal_invoke_constructors
-
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 	.extern initialize_stub
 	call	initialize_stub
 #endif /* CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS */
+
+	.extern cyg_hal_invoke_constructors
+	call	cyg_hal_invoke_constructors
 
 # Unused IRQ vector 15 points to our 'struct'...
 	popl	%eax

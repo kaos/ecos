@@ -241,11 +241,11 @@ CYG_MACRO_END
 //---------------------------------------------------------------------------
 // HAL setjmp
 
-#define HAL_JMP_BUF_SIZE 32 // (words)
+#define CYGARC_JMP_BUF_SIZE 32 // (words)
 
 // this too must be doubleword aligned (64 bit)
 
-typedef cyg_uint64 hal_jmp_buf[ HAL_JMP_BUF_SIZE / 2 ];
+typedef cyg_uint64 hal_jmp_buf[ CYGARC_JMP_BUF_SIZE / 2 ];
 
 externC int hal_setjmp(hal_jmp_buf env);
 externC void hal_longjmp(hal_jmp_buf env, int val);

@@ -40,6 +40,8 @@
 //
 //========================================================================*/
 
+#include <pkgconf/system.h>
+
 STARTUP(vectors.o)
 ENTRY(__reset)
 #ifdef EXTRAS
@@ -53,66 +55,69 @@ GROUP(libtarget.a libgcc.a)
 #define FORCE_OUTPUT . = .
 
 
-#define SECTIONS_BEGIN
+# define SECTIONS_BEGIN
 
-#define SECTION_vectors(_region_, _vma_, _lma_)        \
-  .vectors _vma_ : _lma_                                              \
-  { FORCE_OUTPUT; KEEP(*(.vectors)) }         \
-  > _region_                                   \
+# define SECTION_vectors(_region_, _vma_, _lma_)		\
+  .vectors _vma_ : _lma_					\
+  { FORCE_OUTPUT; KEEP(*(.vectors))				\
+  }								\
+  > _region_							\
   __vector_code_lma = LOADADDR(.vectors);
 
-#define SECTION_text(_region_, _vma_, _lma_)           \
-  .text _vma_ : _lma_                                                 \
-  { __stext = .;       \
-    *(.text*) *(.gnu.warning) *(.gnu.linkonce*) *(.init) }      \
-  > _region_                                                    \
+# define SECTION_text(_region_, _vma_, _lma_)			\
+  .text _vma_ : _lma_						\
+  { __stext = .;						\
+    *(.text*) *(.gnu.warning) *(.gnu.linkonce*) *(.init) }	\
+  > _region_							\
   __etext = .;  PROVIDE (__etext = .);
 
-#define SECTION_fini(_region_, _vma_, _lma_)   \
-    .fini _vma_ : _lma_                                       \
-    { FORCE_OUTPUT; *(.fini) }        \
-    > _region_
-
-#define SECTION_rodata1(_region_, _vma_, _lma_)        \
-    .rodata1 _vma_ : _lma_                                            \
-    { FORCE_OUTPUT; *(.rodata1) }             \
-    > _region_
-
-#define SECTION_rodata(_region_, _vma_, _lma_) \
-    .rodata _vma_ : _lma_                                     \
-    { FORCE_OUTPUT; *(.rodata*) }     \
-    > _region_
-
-#define SECTION_fixup(_region_, _vma_, _lma_)                      \
-    .fixup _vma_ : _lma_                                                          \
-    { __FIXUP_START__ = ABSOLUTE(.); *(.fixup) __FIXUP_END__ = ABSOLUTE(.);}\
-    > _region_
-
-#define SECTION_gcc_except_table(_region_, _vma_, _lma_)       \
-    .gcc_except_table _vma_ : _lma_                                           \
-    { __EXCEPT_START__ = ABSOLUTE(.); *(.gcc_except_table)              \
-      __EXCEPT_END__ = ABSOLUTE(.);}                                    \
-    > _region_
-
-#define SECTION_data(_region_, _vma_, _lma_)                                  \
-    .data _vma_ : _lma_                                                       \
-    { __ram_data_start = ABSOLUTE(.); *(.data*)                               \
-     . = ALIGN(8); ___CTOR_LIST__ = ABSOLUTE(.);                              \
-      KEEP(*(SORT(.ctors*))) ___CTOR_END__ = ABSOLUTE(.);                     \
-    ___DTOR_LIST__ = ABSOLUTE(.);                                             \
-      KEEP(*(SORT(.dtors*))) ___DTOR_END__ = ABSOLUTE(.);                     \
-    . = ALIGN(8);                                                             \
-      KEEP(*( SORT (.ecos.table.*))) ;                                        \
-    } > _region_                                                              \
-    __rom_data_start = LOADADDR(.data);                                       \
-    __ram_data_end = .; PROVIDE(__ram_data_end = .);                          \
+# define SECTION_data(_region_, _vma_, _lma_)			\
+    .data _vma_ : _lma_						\
+    { __ram_data_start = ABSOLUTE(.); *(.data*)			\
+     . = ALIGN(8); ___CTOR_LIST__ = ABSOLUTE(.);		\
+      KEEP(*(SORT(.ctors*))) ___CTOR_END__ = ABSOLUTE(.);	\
+    ___DTOR_LIST__ = ABSOLUTE(.);				\
+      KEEP(*(SORT(.dtors*))) ___DTOR_END__ = ABSOLUTE(.);	\
+    . = ALIGN(8);						\
+      KEEP(*( SORT (.ecos.table.*))) ;				\
+    } > _region_						\
+    __rom_data_start = LOADADDR(.data);				\
+    __ram_data_end = .; PROVIDE(__ram_data_end = .);		\
     _edata = .; PROVIDE (edata = .);
 
-#define SECTION_bss(_region_, _vma_, _lma_)                      \
-    .bss _vma_ : _lma_                                                          \
-    { __bss_start = ABSOLUTE (.);                       \
-      FORCE_OUTPUT; *(.dynbss) *(.bss) *(COMMON)        \
-      __bss_end = ABSOLUTE (.); }                       \
+
+
+#define SECTION_fini(_region_, _vma_, _lma_)	\
+    .fini _vma_ : _lma_				\
+    { FORCE_OUTPUT; *(.fini) }			\
+    > _region_
+
+#define SECTION_rodata1(_region_, _vma_, _lma_)	\
+    .rodata1 _vma_ : _lma_			\
+    { FORCE_OUTPUT; *(.rodata1) }		\
+    > _region_
+
+#define SECTION_rodata(_region_, _vma_, _lma_)	\
+    .rodata _vma_ : _lma_			\
+    { FORCE_OUTPUT; *(.rodata*) }		\
+    > _region_
+
+#define SECTION_fixup(_region_, _vma_, _lma_)				     \
+    .fixup _vma_ : _lma_						     \
+    { __FIXUP_START__ = ABSOLUTE(.); *(.fixup) __FIXUP_END__ = ABSOLUTE(.);} \
+    > _region_
+
+#define SECTION_gcc_except_table(_region_, _vma_, _lma_)	\
+    .gcc_except_table _vma_ : _lma_				\
+    { __EXCEPT_START__ = ABSOLUTE(.); *(.gcc_except_table)	\
+      __EXCEPT_END__ = ABSOLUTE(.);}				\
+    > _region_
+
+#define SECTION_bss(_region_, _vma_, _lma_)		\
+    .bss _vma_ : _lma_					\
+    { __bss_start = ABSOLUTE (.);			\
+      FORCE_OUTPUT; *(.dynbss) *(.bss) *(COMMON)	\
+      __bss_end = ABSOLUTE (.); }			\
     > _region_
 
 #define SECTIONS_END . = ALIGN(4); _end = .; PROVIDE (end = .);

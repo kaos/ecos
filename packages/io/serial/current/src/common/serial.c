@@ -47,7 +47,8 @@
 #include <cyg/io/io.h>
 #include <cyg/io/devtab.h>
 #include <cyg/io/serial.h>
-#include <cyg/infra/diag.h>
+#include <cyg/infra/cyg_ass.h>      // assertion support
+#include <cyg/infra/diag.h>         // diagnostic output
 
 static Cyg_ErrNo serial_write(cyg_io_handle_t handle, const void *buf, cyg_uint32 *len);
 static Cyg_ErrNo serial_read(cyg_io_handle_t handle, void *buf, cyg_uint32 *len);

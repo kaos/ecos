@@ -117,15 +117,15 @@
 // otherwise. Hence we read bytes from the ROM space since this is
 // most likely to be code, and will not get out of sync even if it is not.
 #define HAL_DCACHE_INVALIDATE_ALL_DEFINED
-#define HAL_DCACHE_INVALIDATE_ALL()                                             \
-{                                                                               \
-    CYG_BYTE volatile *addr = (CYG_BYTE *)(0x9fc00000);                         \
-    CYG_BYTE volatile tmp = 0;                                                  \
-    int i;                                                                      \
-    for( i = 0; i < (HAL_DCACHE_SIZE*2); i += HAL_DCACHE_LINE_SIZE )            \
-    {                                                                           \
-        tmp = addr[i];                                                          \
-    }                                                                           \
+#define HAL_DCACHE_INVALIDATE_ALL()                                     \
+{                                                                       \
+    volatile CYG_BYTE *addr = (CYG_BYTE *)(0x9fc00000);                 \
+    volatile CYG_BYTE tmp = 0;                                          \
+    int i;                                                              \
+    for( i = 0; i < (HAL_DCACHE_SIZE*2); i += HAL_DCACHE_LINE_SIZE )    \
+    {                                                                   \
+        tmp = addr[i];                                                  \
+    }                                                                   \
 }
 
 // Synchronize the contents of the cache with memory.

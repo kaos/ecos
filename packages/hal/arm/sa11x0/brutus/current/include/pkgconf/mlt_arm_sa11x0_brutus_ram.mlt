@@ -1,5 +1,5 @@
 version 0
-region ram 0 BFFFFF 0 !
+region ram 0 bfffff 0 !
 section fixed_vectors 0 1 0 1 1 0 1 0 20 20 !
 section rom_vectors 0 1 0 1 1 1 1 1 10000 10000 text text !
 section text 0 4 0 1 0 1 0 1 fini fini !
@@ -9,4 +9,5 @@ section rodata1 0 4 0 1 0 1 0 1 fixup fixup !
 section fixup 0 4 0 1 0 1 0 1 gcc_except_table gcc_except_table !
 section gcc_except_table 0 4 0 1 0 1 0 1 data data !
 section data 0 4 0 1 0 1 0 1 bss bss !
-section bss 0 4 0 1 0 0 0 0 !
+section bss 0 4 0 1 0 1 0 1 heap1 heap1 !
+section heap1 0 8 0 0 0 0 0 0 !

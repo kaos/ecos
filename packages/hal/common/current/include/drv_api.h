@@ -151,8 +151,8 @@ typedef struct cyg_interrupt
     cyg_DSR_t           *dsr;
     CYG_ADDRWORD        data;
 
-    volatile struct cyg_interrupt *next_dsr;
-    cyg_int32           dsr_count;
+    struct cyg_interrupt* volatile next_dsr;
+    volatile cyg_int32             dsr_count;
     
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
     struct cyg_interrupt *next;

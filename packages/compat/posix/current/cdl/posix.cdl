@@ -56,12 +56,15 @@ cdl_package CYGPKG_POSIX {
     implements     CYGINT_ISO_SIGNAL_NUMBERS
     implements     CYGINT_ISO_SIGNAL_IMPL
     implements     CYGINT_ISO_POSIX_LIMITS
+    implements     CYGINT_ISO_SIGSETJMP
     requires       { CYGBLD_ISO_SIGNAL_NUMBERS_HEADER == \
                          "<cyg/posix/signal.h>" }
     requires       { CYGBLD_ISO_SIGNAL_IMPL_HEADER == \
                          "<cyg/posix/signal.h>" }
     requires       { CYGBLD_ISO_POSIX_LIMITS_HEADER == \
                          "<cyg/posix/limits.h>" }
+    requires       { CYGBLD_ISO_SIGSETJMP_HEADER == \
+                         "<cyg/posix/sigsetjmp.h>" }
     
     compile        pthread.cxx mqueue.cxx sem.cxx time.cxx signal.cxx \
                    sched.cxx except.cxx misc.cxx
@@ -231,7 +234,7 @@ cdl_package CYGPKG_POSIX {
             display "POSIX tests"
             flavor  data
             no_define
-            calculated { "tests/pthread1 tests/pthread2 tests/pthread3 tests/mutex3 tests/signal1 tests/timer1 tests/tm_basic tests/signal2 tests/mqueue1 tests/mqueue2" }
+            calculated { "tests/pthread1 tests/pthread2 tests/pthread3 tests/mutex3 tests/signal1 tests/timer1 tests/tm_basic tests/signal2 tests/mqueue1 tests/mqueue2 tests/sigsetjmp" }
             description   "
                 This option specifies the set of tests for the POSIX package."
         }

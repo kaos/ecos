@@ -176,6 +176,26 @@ cdl_component CYGPKG_IO_SERIAL_ARM_EDB7XXX_SERIAL2 {
                 the set of global flags if present."
         }
     }
+
+    cdl_component CYGPKG_IO_SERIAL_ARM_EDB7XXX_TESTING {
+        display    "Testing parameters"
+        flavor     bool
+        calculated 1
+        active_if  CYGPKG_IO_SERIAL_ARM_EDB7XXX_SERIAL1
+
+        implements CYGINT_IO_SERIAL_TEST_SKIP_115200
+        
+        cdl_option CYGPRI_SER_TEST_SER_DEV {
+            display       "Serial device used for testing"
+            flavor        data
+            default_value { CYGDAT_IO_SERIAL_ARM_EDB7XXX_SERIAL1_NAME }
+        }
+
+        define_proc {
+            puts $::cdl_header "#define CYGPRI_SER_TEST_CRASH_ID \"armedb7xxx\""
+            puts $::cdl_header "#define CYGPRI_SER_TEST_TTY_DEV  \"/dev/tty1\""
+        }
+    }
 }
 
 # EOF ser_arm_edb7xxx.cdl

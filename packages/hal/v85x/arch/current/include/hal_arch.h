@@ -196,7 +196,9 @@ typedef struct {
     cyg_uint32 lp;
 } hal_jmp_buf_t;
 
-typedef cyg_uint32 hal_jmp_buf[sizeof(hal_jmp_buf_t) / sizeof(cyg_uint32)];
+#define CYGARC_JMP_BUF_SIZE      (sizeof(hal_jmp_buf_t) / sizeof(cyg_uint32))
+
+typedef cyg_uint32 hal_jmp_buf[ CYGARC_JMP_BUF_SIZE ];
 
 externC int hal_setjmp(hal_jmp_buf env);
 externC void hal_longjmp(hal_jmp_buf env, int val);

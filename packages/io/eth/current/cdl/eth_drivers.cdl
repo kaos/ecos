@@ -54,6 +54,20 @@ cdl_package CYGPKG_IO_ETH_DRIVERS {
         default_value 1
         compile       net/eth_drv.c
 
+    	cdl_option CYGPKG_IO_ETH_DRIVERS_WARN_NO_MBUFS {
+	    display	"Warn when there are no more mbufs"
+	    flavor	bool
+	    default_value 1
+	    description "
+	        Warnings about running out of mbufs are printed to the
+	        diagnostic output channel via diag_printf() if this option
+	        is enabled.  Mbufs are the network stack's basic dynamic
+	        memory objects that hold all packets in transit; running
+	        out is bad for performance but not fatal, not a crash.
+                You might want to turn off the warnings to preserve realtime
+                properties of the system even in extremis."
+	}
+
 	cdl_component CYGPKG_IO_ETH_DRIVERS_SIMULATED_FAILURES {
 	    display		"Simulate network failures for testing"
 	    flavor		bool

@@ -1,3 +1,11 @@
+2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/pkgconf/mlt_mn10300_am31_stdeval1_ram.h:
+	* include/pkgconf/mlt_mn10300_am31_stdeval1_rom.h:
+	* include/pkgconf/mlt_mn10300_am31_stdeval1_ram.ldi:
+	* include/pkgconf/mlt_mn10300_am31_stdeval1_rom.ldi:
+	Regenerated
+
 2000-07-25  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* include/pkgconf/mlt_mn10300_am31_stdeval1_ram.mlt: Add user-defined

@@ -1,3 +1,43 @@
+2000-10-20  Gary Thomas  <gthomas@redhat.com>
+
+	* include/pkgconf/mlt_powerpc_mbx_ram.mlt: 
+	* include/pkgconf/mlt_powerpc_mbx_ram.ldi: 
+	* include/pkgconf/mlt_powerpc_mbx_ram.h: 
+	Increase reserved memory - required by RedBoot.
+
+	* misc/redboot_ROM.cfg: 
+	* misc/redboot_RAM.cfg: 
+	* images/redboot_ROM.srec: 
+	* images/redboot_ROM.img: 
+	* images/redboot_ROM.bin: 
+	* images/redboot_RAM.bin: 
+	* images/redboot_RAM.img: 
+	* images/redboot_RAM.srec: New file(s).
+
+	* cdl/hal_powerpc_mbx.cdl: Add RedBoot configuration rules.
+
+2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* tests/mbxtime.cxx: Ensure default priority constructors
+	are called.
+
+2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/pkgconf/mlt_powerpc_mbx_ram.h:
+	* include/pkgconf/mlt_powerpc_mbx_rom.h:
+	* include/pkgconf/mlt_powerpc_mbx_ram.ldi:
+	* include/pkgconf/mlt_powerpc_mbx_rom.ldi:
+	Regenerated with updated host tools
+
+2000-10-19  Jesper Skov  <jskov@redhat.com>
+
+	* include/pkgconf/mlt_powerpc_mbx_ram.h: Added heap1 label.
+	* include/pkgconf/mlt_powerpc_mbx_ram.mlt: Same.
+	* include/pkgconf/mlt_powerpc_mbx_ram.ldi: Same.
+	* include/pkgconf/mlt_powerpc_mbx_rom.h: Same.
+	* include/pkgconf/mlt_powerpc_mbx_rom.mlt: Same.
+	* include/pkgconf/mlt_powerpc_mbx_rom.ldi: Same.
+
 2000-09-17  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/hal_powerpc_mbx.cdl: Add platform/cpu identification strings.

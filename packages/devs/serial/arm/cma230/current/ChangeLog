@@ -1,3 +1,9 @@
+2000-10-12  Jesper Skov  <jskov@redhat.com>
+
+	* src/cma230_serial.c: Fix typo.
+
+	* cdl/ser_arm_cma230.cdl: Testing parameters moved here.
+
 2000-08-01  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* src/cma230_serial.c (cma230_serial_set_config): Now use keys to make

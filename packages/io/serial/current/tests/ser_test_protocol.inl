@@ -58,10 +58,6 @@
 
 #include <cyg/hal/hal_intr.h>           // for reclaiming interrup vector
 
-#ifdef CYG_HAL_SPARCLITE_SLEB
-#include <pkgconf/hal_sparclite_sleb.h> // CYG_KERNEL_DIAG_GDB_SERIAL_DIRECT
-#endif
-
 //----------------------------------------------------------------------------
 // Definition of which device to run tests on on various platforms.
 
@@ -76,15 +72,10 @@
 # define TEST_TTY_DEV  CYGPRI_SER_TEST_TTY_DEV
 #endif
 
-#if defined(CYGPKG_HAL_POWERPC_COGENT)                          \
-    && defined(CYGPKG_IO_SERIAL_POWERPC_COGENT)                 \
-    && defined(CYGPKG_IO_SERIAL_POWERPC_COGENT_SERIAL_B)
-# define TEST_CRASH_ID "ppccog"
-# define TEST_SER_DEV CYGDAT_IO_SERIAL_POWERPC_COGENT_SERIAL_B_NAME
-# if defined(CYGPKG_IO_SERIAL_TTY_TTY2)
-#  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY2_DEV
-# endif
-#endif
+// Note that CYGPRI_SER_TEST_OVERRIDE_INT_1 and CYGPRI_SER_TEST_OVERRIDE_INT_2
+// may also be exported. These identify interrupts that should be reclaimed
+// from the ROM monitor before the test is started.
+
 #if defined(CYGPKG_HAL_POWERPC_MBX)                          \
     && defined(CYGPKG_HAL_QUICC)                 \
     && defined(CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC)                 \
@@ -93,69 +84,6 @@
 # define TEST_SER_DEV CYGDAT_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_NAME
 # if defined(CYGPKG_IO_SERIAL_TTY_TTY1)
 #  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
-# endif
-#endif
-#if defined(CYGPKG_HAL_ARM_AEB)                                 \
-    && defined(CYGPKG_IO_SERIAL_ARM_AEB)                        \
-    && defined(CYGPKG_IO_SERIAL_ARM_AEB_SERIAL1)
-# define TEST_CRASH_ID "armaeb"
-# define TEST_SER_DEV CYGDAT_IO_SERIAL_ARM_AEB_SERIAL1_NAME
-# if defined(CYGPKG_IO_SERIAL_TTY_TTY1)
-#  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
-# endif
-#endif
-#if defined(CYGPKG_HAL_ARM_EDB7XXX)                         \
-    && defined(CYGPKG_IO_SERIAL_ARM_EDB7XXX)                \
-    && defined(CYGPKG_IO_SERIAL_ARM_EDB7XXX_SERIAL1)
-# define TEST_CRASH_ID "armedb7xxx"
-# define TEST_SER_DEV CYGDAT_IO_SERIAL_ARM_EDB7XXX_SERIAL1_NAME
-# if defined(CYGPKG_IO_SERIAL_TTY_TTY1)
-#  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
-# endif
-#endif
-#if defined(CYGPKG_HAL_ARM_CMA230)                         \
-    && defined(CYGPKG_IO_SERIAL_ARM_CMA230)                \
-    && defined(CYGPKG_IO_SERIAL_ARM_CMA230_SERIAL_A)
-# define TEST_CRASH_ID "armcma"
-# define TEST_SER_DEV CYGDAT_IO_SERIAL_ARM_CMA230_SERIAL_A_NAME
-# if defined(CYGPKG_IO_SERIAL_TTY_TTY1)
-#  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
-# endif
-#endif
-#if defined(CYGPKG_HAL_ARM_EBSA285) \
-    && defined(CYGPKG_IO_SERIAL_ARM_EBSA285) \
-    && defined(CYGPKG_IO_SERIAL_ARM_EBSA285_SERIAL)
-# define TEST_CRASH_ID "arm285"
-# define TEST_SER_DEV CYGDAT_IO_SERIAL_ARM_EBSA285_SERIAL_NAME
-# if defined(CYGPKG_IO_SERIAL_TTY_TTY1)
-#  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
-# endif
-#endif
-#if defined(CYGPKG_HAL_ARM_SA11X0_ASSABET)                    \
-    && defined(CYGPKG_IO_SERIAL_ARM_SA11X0)                \
-    && defined(CYGPKG_IO_SERIAL_ARM_SA11X0_SERIAL1)
-# define TEST_CRASH_ID "assabet"
-# define TEST_SER_DEV CYGDAT_IO_SERIAL_ARM_SA11X0_SERIAL1_NAME
-# if defined(CYGPKG_IO_SERIAL_TTY_TTY1)
-#  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
-# endif
-#endif
-#if defined(CYGPKG_HAL_MIPS_TX39_JMR3904)               \
-    && defined(CYGPKG_IO_SERIAL_TX39_JMR3904)           \
-    && defined(CYGPKG_IO_SERIAL_TX39_JMR3904_SERIAL0)
-# define TEST_CRASH_ID "tx3jmr"
-# define TEST_SER_DEV CYGDAT_IO_SERIAL_TX39_JMR3904_SERIAL0_NAME
-# if defined(CYGPKG_IO_SERIAL_TTY_TTY0)
-#  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY0_DEV
-# endif
-#endif
-#if defined(CYGPKG_HAL_MIPS_VR4300_VRC4373)               \
-    && defined(CYGPKG_IO_SERIAL_MIPS_VRC4373)           \
-    && defined(CYGPKG_IO_SERIAL_MIPS_VRC4373_SERIAL0)
-# define TEST_CRASH_ID "vrc4373"
-# define TEST_SER_DEV CYGDAT_IO_SERIAL_MIPS_VRC4373_SERIAL0_NAME
-# if defined(CYGPKG_IO_SERIAL_TTY_TTY0)
-#  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY0_DEV
 # endif
 #endif
 #if defined(CYGPKG_HAL_MN10300_AM31_STDEVAL1)           \
@@ -172,52 +100,6 @@
     && defined(CYGPKG_IO_SERIAL_MN10300_SERIAL0)
 # define TEST_CRASH_ID "am33st"
 # define TEST_SER_DEV CYGDAT_IO_SERIAL_MN10300_SERIAL0_NAME
-# if defined(CYGPKG_IO_SERIAL_TTY_TTY0)
-#  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY0_DEV
-# endif
-#endif
-#if defined(CYGPKG_HAL_SPARCLITE_SLEB)                    \
-    && defined(CYGPKG_IO_SERIAL_SPARCLITE_SLEB)           \
-    && defined(CYGPKG_IO_SERIAL_SPARCLITE_SLEB_CON1)
-# undef NA_MSG
-# define NA_MSG "CYG_KERNEL_DIAG_GDB_SERIAL_DIRECT is unset"
-# if !defined(CYG_HAL_STARTUP_RAM) \
-     || defined(CYG_KERNEL_DIAG_GDB_SERIAL_DIRECT)
-#  define TEST_CRASH_ID "sparcl"
-#  define TEST_SER_DEV CYGDAT_IO_SERIAL_SPARCLITE_SLEB_CON1_NAME
-// The interrupt vectors are normally in CygMon's control. Steal them back,
-// but beware that this results in GDB acknowledge characters showing up in
-// the serial driver if CygMon is used for hal_diag output.
-// Set CYG_KERNEL_DIAG_GDB_SERIAL_DIRECT in hal_sparclite_sleb as a workaround.
-#  define SER_OVERRIDE_INT_1 CYGNUM_HAL_INTERRUPT_9
-#  define SER_OVERRIDE_INT_2 CYGNUM_HAL_INTERRUPT_10
-#  if defined(CYGPKG_IO_SERIAL_TTY_TTY0)
-#   define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY0_DEV
-#  endif
-# endif
-#endif
-#if defined(CYGPKG_HAL_I386_PC)                         \
-    && defined(CYGPKG_IO_SERIAL_I386_PC)                \
-    && defined(CYGPKG_IO_SERIAL_I386_PC_SERIAL0)
-# define TEST_CRASH_ID "i386pc"
-# define TEST_SER_DEV CYGDAT_IO_SERIAL_I386_PC_SERIAL0_NAME
-# if defined(CYGPKG_IO_SERIAL_TTY_TTY0)
-#  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY0_DEV
-# endif
-#endif
-#if defined(CYGPKG_HAL_V85X_V850)                       \
-    && defined(CYGPKG_IO_SERIAL_V85X_V850)              \
-    && defined(CYGPKG_IO_SERIAL_V85X_V850_SERIAL0)
-# define TEST_CRASH_ID "v85x/v850"
-# define TEST_SER_DEV CYGDAT_IO_SERIAL_V85X_V850_SERIAL0_NAME
-# if defined(CYGPKG_IO_SERIAL_TTY_TTY0)
-#  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY0_DEV
-# endif
-#endif
-#if defined(CYGPKG_IO_SERIAL_LOOP)                   \
-    && defined(CYGPKG_IO_SERIAL_LOOP_SERIAL0)
-# define TEST_CRASH_ID "loop"
-# define TEST_SER_DEV CYGDAT_IO_SERIAL_LOOP_SERIAL0_NAME
 # if defined(CYGPKG_IO_SERIAL_TTY_TTY0)
 #  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY0_DEV
 # endif
@@ -368,11 +250,9 @@ typedef enum {
 // given target until change_config is behaving correctly.
 cyg_ser_cfg_t test_configs[] = {
 #if (0 == CYGINT_IO_SERIAL_TEST_SKIP_9600)
-#if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904)
     { CYGNUM_SERIAL_BAUD_9600, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE,
       CYGNUM_SERIAL_FLOW_NONE },
-#endif
 #endif
 
 #if (0 == CYGINT_IO_SERIAL_TEST_SKIP_14400)
@@ -389,19 +269,13 @@ cyg_ser_cfg_t test_configs[] = {
       CYGNUM_SERIAL_FLOW_NONE },
 
 #if (0 == CYGINT_IO_SERIAL_TEST_SKIP_38400)
-#if !defined(CYGPKG_HAL_SPARCLITE_SLEB) &&      \
-    !defined(CYGPKG_HAL_ARM_AEB)
     { CYGNUM_SERIAL_BAUD_38400, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE,
       CYGNUM_SERIAL_FLOW_NONE },
 #endif
-#endif
 
 #if (0 == CYGINT_IO_SERIAL_TEST_SKIP_57600)
-#if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904) &&   \
-    !defined(CYGPKG_HAL_ARM_AEB) &&             \
-    !defined(CYGPKG_HAL_SPARCLITE_SLEB) &&      \
-    !defined(CYGPKG_HAL_MN10300_AM33)
+#if !defined(CYGPKG_HAL_MN10300_AM33)
     { CYGNUM_SERIAL_BAUD_57600, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE,
       CYGNUM_SERIAL_FLOW_NONE },
@@ -409,12 +283,7 @@ cyg_ser_cfg_t test_configs[] = {
 #endif
 
 #if (0 == CYGINT_IO_SERIAL_TEST_SKIP_115200)
-#if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904) &&   \
-    !defined(CYGPKG_HAL_ARM_AEB) &&             \
-    !defined(CYGPKG_HAL_MN10300_STDEVAL1) &&    \
-    !defined(CYGPKG_HAL_ARM_CMA230) &&          \
-    !defined(CYGPKG_HAL_ARM_EDB7XXX) &&         \
-    !defined(CYGPKG_HAL_SPARCLITE_SLEB)
+#if !defined(CYGPKG_HAL_MN10300_STDEVAL1)
     { CYGNUM_SERIAL_BAUD_115200, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE,
       CYGNUM_SERIAL_FLOW_NONE },
@@ -422,34 +291,26 @@ cyg_ser_cfg_t test_configs[] = {
 #endif
 
 #if (0 == CYGINT_IO_SERIAL_TEST_SKIP_PARITY_EVEN)
-#if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904) &&   \
-    !defined(CYGPKG_HAL_ARM_AEB)
     // One stop bit, even parity
     { CYGNUM_SERIAL_BAUD_19200, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_EVEN,
       CYGNUM_SERIAL_FLOW_NONE },
 #endif
-#endif
 
 #if (0 == CYGINT_IO_SERIAL_TEST_SKIP_PARITY_EVEN)
 #if (0 == CYGINT_IO_SERIAL_TEST_SKIP_STOP_2)
-#if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904) &&   \
-    !defined(CYGPKG_HAL_ARM_AEB)
     // Two stop bits, even parity
     { CYGNUM_SERIAL_BAUD_19200, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_2, CYGNUM_SERIAL_PARITY_EVEN,
       CYGNUM_SERIAL_FLOW_NONE },
 #endif
 #endif
-#endif
 
 #if (0 == CYGINT_IO_SERIAL_TEST_SKIP_STOP_2)
-#if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904)
     // Two stop bits, no parity
     { CYGNUM_SERIAL_BAUD_19200, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_2, CYGNUM_SERIAL_PARITY_NONE,
       CYGNUM_SERIAL_FLOW_NONE },
-#endif
 #endif
 };
 
@@ -1153,11 +1014,11 @@ test_open_ser( cyg_io_handle_t* handle )
         CYG_TEST_NA("Cannot run from simulator");
 
 #if defined(HAL_VSR_SET_TO_ECOS_HANDLER)
-# if defined(SER_OVERRIDE_INT_1)
-    HAL_VSR_SET_TO_ECOS_HANDLER(SER_OVERRIDE_INT_1, NULL);
+# if defined(CYGPRI_SER_TEST_OVERRIDE_INT_1)
+    HAL_VSR_SET_TO_ECOS_HANDLER(CYGPRI_SER_TEST_OVERRIDE_INT_1, NULL);
 # endif
-# if defined(SER_OVERRIDE_INT_2)
-    HAL_VSR_SET_TO_ECOS_HANDLER(SER_OVERRIDE_INT_2, NULL);
+# if defined(CYGPRI_SER_TEST_OVERRIDE_INT_2)
+    HAL_VSR_SET_TO_ECOS_HANDLER(CYGPRI_SER_TEST_OVERRIDE_INT_2, NULL);
 # endif
 #endif
 
@@ -1180,11 +1041,11 @@ test_open_tty( cyg_io_handle_t* handle )
         CYG_TEST_NA("Cannot run from simulator");
 
 #if defined(HAL_VSR_SET_TO_ECOS_HANDLER)
-# if defined(SER_OVERRIDE_INT_1)
-    HAL_VSR_SET_TO_ECOS_HANDLER(SER_OVERRIDE_INT_1, NULL);
+# if defined(CYGPRI_SER_TEST_OVERRIDE_INT_1)
+    HAL_VSR_SET_TO_ECOS_HANDLER(CYGPRI_SER_TEST_OVERRIDE_INT_1, NULL);
 # endif
-# if defined(SER_OVERRIDE_INT_2)
-    HAL_VSR_SET_TO_ECOS_HANDLER(SER_OVERRIDE_INT_2, NULL);
+# if defined(CYGPRI_SER_TEST_OVERRIDE_INT_2)
+    HAL_VSR_SET_TO_ECOS_HANDLER(CYGPRI_SER_TEST_OVERRIDE_INT_2, NULL);
 # endif
 #endif
 

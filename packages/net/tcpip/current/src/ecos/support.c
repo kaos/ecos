@@ -110,6 +110,7 @@ void
 cyg_panic(const char *msg, ...)
 {
     cyg_uint32 old_ints;
+    CYG_FAIL( msg );
     HAL_DISABLE_INTERRUPTS(old_ints);
     diag_printf("PANIC: %s\n", msg);
     cyg_test_exit();  // FIXME
@@ -473,7 +474,11 @@ cyg_netint(cyg_addrword_t param)
 void
 setsoftnet(void)
 {
-    diag_printf("setsoftnet\n");
+    // This is called if we are out of MBUFs - it doesn't do anything, and
+    // that situation is handled OK, so don't bother with the diagnostic:
+
+    // diag_printf("setsoftnet\n");
+
     // No need to do this because it is ignored anyway:
     // schednetisr(NETISR_SOFTNET);
 }
@@ -483,37 +488,44 @@ setsoftnet(void)
 static void 
 cyg_ktime_func(cyg_handle_t alarm,cyg_addrword_t data)
 {
-  cyg_tick_count_t now = cyg_current_time();
+    cyg_tick_count_t now = cyg_current_time();
 
-  ktime.tv_usec = (now % hz) * tick;
-  ktime.tv_sec = now / hz;
+    ktime.tv_usec = (now % hz) * tick;
+    ktime.tv_sec = 1 + now / hz;
 }
 
 static void
 cyg_ktime_init(void)
 {
-  static cyg_handle_t ktime_alarm_handle;
-  static cyg_alarm ktime_alarm;
-  cyg_handle_t counter;
+    cyg_handle_t ktime_alarm_handle;
+    static cyg_alarm ktime_alarm;
+    cyg_handle_t counter;
   
-  cyg_clock_to_counter(cyg_real_time_clock(),&counter);
-  cyg_alarm_create(counter,
-		   cyg_ktime_func,
-		   0,
-		   &ktime_alarm_handle,
-		   &ktime_alarm);
+    // Do not start at 0 - net stack thinks 0 an invalid time;
+    // Have a valid time available from right now:
+    ktime.tv_usec = 0;
+    ktime.tv_sec = 1;
 
-  /* We want one alarm every 10ms. */
-  cyg_alarm_initialize(ktime_alarm_handle,cyg_current_time()+1,1);
-  cyg_alarm_enable(ktime_alarm_handle);
+    cyg_clock_to_counter(cyg_real_time_clock(),&counter);
+    cyg_alarm_create(counter,
+                     cyg_ktime_func,
+                     0,
+                     &ktime_alarm_handle,
+                     &ktime_alarm);
+
+    /* We want one alarm every 10ms. */
+    cyg_alarm_initialize(ktime_alarm_handle,cyg_current_time()+1,1);
+    cyg_alarm_enable(ktime_alarm_handle);
 }
 
 //
 // Network initialization
 //   This function is called during system initialization to setup the whole
 // networking environment.
-//
-extern void cyg_do_net_init(void);  // Linker magic to execute this function as 'init'
+
+// Linker magic to execute this function as 'init'
+extern void cyg_do_net_init(void);
+
 extern void ifinit(void);
 extern void loopattach(int);
 extern void bridgeattach(int);
@@ -530,7 +542,7 @@ cyg_net_init(void)
 
     if (_init) return;
 
-    cyg_do_net_init();  // Just forces the linking in of the initializer/constructor
+    cyg_do_net_init();  // Just forces linking in the initializer/constructor
     // Initialize interrupt "flags"
     cyg_flag_init(&netint_flags);
     // Initialize timeouts and net service thread (pseudo-DSRs)
@@ -564,7 +576,7 @@ cyg_net_init(void)
             t->status = 0;  // Device not [currently] available
         }
     }
-    // And attack the loopback interface
+    // And attach the loopback interface
 #ifdef CYGPKG_NET_NLOOP
 #if 0 < CYGPKG_NET_NLOOP
     loopattach(0);

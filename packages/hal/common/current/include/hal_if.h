@@ -396,7 +396,7 @@ externC void hal_if_init(void);
 // Configuration control for the interface services.
 // When this is set, code should initialize the vector table wherever
 // appropriate.
-#if	defined(CYG_HAL_STARTUP_ROM) ||			\
+#if	!defined(CYG_HAL_STARTUP_RAM) ||		\
 	(	defined(CYG_HAL_STARTUP_RAM) &&		\
 		!defined(CYGSEM_HAL_USE_ROM_MONITOR))
 # define CYGPRI_HAL_IMPLEMENTS_IF_SERVICES

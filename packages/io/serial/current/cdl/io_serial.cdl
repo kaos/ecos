@@ -304,7 +304,9 @@ cdl_package CYGPKG_IO_SERIAL {
 	    serial devices."
     }
 
-
+    # These could be regular define_proc outputs, but keeping them as
+    # CDL interfaces allow us to possibly skip building/running some
+    # tests.
     cdl_component CYGPKG_IO_SERIAL_TEST_SPECS {
         display "Serial testing specification"
         flavor     bool

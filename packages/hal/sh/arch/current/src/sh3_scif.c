@@ -64,6 +64,10 @@
 
 //--------------------------------------------------------------------------
 
+#ifndef CYGNUM_HAL_SH_SH3_SCIF_DEFAULT_BAUD_RATE
+# define CYGNUM_HAL_SH_SH3_SCIF_DEFAULT_BAUD_RATE 38400
+#endif
+
 void
 cyg_hal_plf_scif_init_channel(const channel_data_t* chan)
 {
@@ -81,18 +85,20 @@ cyg_hal_plf_scif_init_channel(const channel_data_t* chan)
     // 8-1-no parity.
     HAL_WRITE_UINT8(base+_REG_SCSMR, 0);
 
-    // Set speed to 38400
+    // Set speed to CYGNUM_HAL_SH_SH3_SCIF_DEFAULT_BAUD_RATE
     HAL_READ_UINT8(base+_REG_SCSMR, tmp);
     tmp &= ~CYGARC_REG_SCSMR2_CKSx_MASK;
-    tmp |= CYGARC_SCBRR_CKSx(38400);
+    tmp |= CYGARC_SCBRR_CKSx(CYGNUM_HAL_SH_SH3_SCIF_DEFAULT_BAUD_RATE);
     HAL_WRITE_UINT8(base+_REG_SCSMR, tmp);
-    HAL_WRITE_UINT8(base+_REG_SCBRR, CYGARC_SCBRR_N(38400));
+    HAL_WRITE_UINT8(base+_REG_SCBRR, CYGARC_SCBRR_N(CYGNUM_HAL_SH_SH3_SCIF_DEFAULT_BAUD_RATE));
 
     // Let things settle: Here we should should wait the equivalent of
-    // one bit interval, i.e. 1/38400 second, but until we have
-    // something like the Linux delay loop, it's hard to do reliably. So
-    // just move on and hope for the best (this is unlikely to cause
-    // problems since the CPU has just come out of reset anyway).
+    // one bit interval,
+    // i.e. 1/CYGNUM_HAL_SH_SH3_SCIF_DEFAULT_BAUD_RATE second, but
+    // until we have something like the Linux delay loop, it's hard to
+    // do reliably. So just move on and hope for the best (this is
+    // unlikely to cause problems since the CPU has just come out of
+    // reset anyway).
 
     // Clear status register (read back first).
     HAL_READ_UINT16(base+_REG_SCSSR, sr);

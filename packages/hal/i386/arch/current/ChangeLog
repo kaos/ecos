@@ -1,3 +1,9 @@
+2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/vectors.S (_start): call constructors after initializing
+	stub so that they can be debugged. Reported to work okay
+	by Fabrice Gautier.
+
 2000-09-05  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/basetype.h: Use 32-byte alignment

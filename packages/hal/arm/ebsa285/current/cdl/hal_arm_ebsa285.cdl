@@ -367,6 +367,8 @@ cdl_package CYGPKG_HAL_ARM_EBSA285 {
             description "This option enables the conversion of the Redboot ELF
                          image to a binary image suitable for ROM programming."
     
+            compile -library=libextras.a redboot_cmds.c
+
             make -priority 325 {
                 <PREFIX>/bin/redboot.bin : <PREFIX>/bin/redboot.elf
                 $(OBJCOPY) --strip-debug $< $(@:.bin=.img) 

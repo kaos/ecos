@@ -207,6 +207,9 @@ void bin_sem2_main( void )
 externC void
 cyg_start( void )
 { 
+#ifdef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
+    cyg_hal_invoke_constructors();
+#endif
     bin_sem2_main();
 }
 // EOF bin_sem2.cxx

@@ -1,7 +1,11 @@
+2000-10-12  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/ser_arm_ebsa285.cdl: Testing parameters moved here.
+
 2000-08-01  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
-	* src/ebsa285_serial.c (ebsa285_serial_set_config): Now use keys to make
-	more flexible.
+	* src/ebsa285_serial.c (ebsa285_serial_set_config): Now use keys
+	to make more flexible.
 
 2000-06-22  Hugo Tyson  <hmt@cygnus.co.uk>
 

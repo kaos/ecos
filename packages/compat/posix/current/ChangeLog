@@ -1,3 +1,36 @@
+2000-10-16  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/sigsetjmp.h (sigsetjmp): Various fixes to make portable
+	across all HALs (by avoiding CYGARC_JMP_BUF_SIZE) and remove warnings.
+	* src/signal.cxx (siglongjmp): Likewise
+
+2000-10-12  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/sigsetjmp.h: Added this header to define
+	sigjmp_buf,sigsetjmp() and siglongjmp().
+
+	* cdl/posix.cdl:
+	Added support for providing sigsetjmp implementation and header.
+	Added sigsetjmp test.
+
+	* src/signal.cxx: Added siglongjmp().
+
+	* tests/sigsetjmp.c: Added this test for sigsetjmp(), siglongjmp()
+	functionality. This is also a test for longjmping out of signal
+	handlers.
+
+	* tests/signal2.c:
+	Ifdeffed around cause_* functions to avoid compiler warnings when
+	they are not needed.
+	Changed CYG_TEST_NA() calls to CYG_TEST_INFO() and changed
+	CYG_TEST_FINISH() to CYG_TEST_PASS_FINISH(). With the _NA's there,
+	the first unsupported exception just terminates the program, and
+	does not give any subsequent supported ones a chance to run.
+
+2000-10-12  Jesper Skov  <jskov@redhat.com>
+
+	* tests/timer1.c (main): Fix exit check.
+
 2000-10-11  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/pthread.cxx: Fixed cyg_posix_pthread_release_thread() to

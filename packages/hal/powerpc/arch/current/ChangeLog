@@ -1,3 +1,17 @@
+2000-10-20  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_misc.c: Update __mem_fault_handler declaration.
+
+2000-10-20  Gary Thomas  <gthomas@redhat.com>
+
+	* src/hal_intr.c (hal_delay_us): 
+	* include/hal_intr.h (HAL_DELAY_US): New function.
+
+2000-10-16  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/hal_arch.h (CYGARC_JMP_BUF_SIZE): Define hal_jmp_buf
+	in terms of this.
+
 2000-08-15  Gary Thomas  <gthomas@redhat.com>
 
 	* src/hal_mk_defs.c: Export memory layout for use by assembly code.

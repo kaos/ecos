@@ -1,3 +1,20 @@
+2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/pkgconf/mlt_arm_sa11x0_assabet_ram.mlt:
+	* include/pkgconf/mlt_arm_sa11x0_assabet_rom.mlt:
+	Add heap1 section
+
+	* include/pkgconf/mlt_arm_sa11x0_assabet_ram.h:
+	* include/pkgconf/mlt_arm_sa11x0_assabet_rom.h:
+	* include/pkgconf/mlt_arm_sa11x0_assabet_ram.ldi:
+	* include/pkgconf/mlt_arm_sa11x0_assabet_rom.ldi:
+	Regenerate
+
+2000-10-17  Gary Thomas  <gthomas@redhat.com>
+
+	* include/hal_platform_setup.h: Don't initialize "static" control
+	registers - power up value works and the values used kill latest boards.
+
 2000-10-09  Gary Thomas  <gthomas@redhat.com>
 
 	* src/lcd_support.c: Fix compile error if no kernel present.
