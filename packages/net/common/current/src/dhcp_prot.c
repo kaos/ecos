@@ -71,6 +71,8 @@
 #include <netinet6/in6_var.h>
 #endif
 
+extern int  cyg_arc4random(void);
+
 // ------------------------------------------------------------------------
 // Returns a pointer to the end of dhcp message (or NULL if invalid)
 // meaning the address of the byte *after* the TAG_END token in the vendor

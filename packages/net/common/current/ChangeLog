@@ -1,3 +1,8 @@
+2003-07-24  Nick Garnett  <nickg@balti.calivar.com>
+
+	* src/dhcp_prot.c: Added a declaration for cyg_arc4random() to
+	eliminate a compiler warning.
+
 2003-07-15  Nick Garnett  <nickg@balti.calivar.com>
 
 	* include/net/netdb.h: Added include for <sys/param.h>. the in.h
