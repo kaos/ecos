@@ -3,6 +3,15 @@
 
 	* src/main.c (return_to_redboot): Add CYGARC_HAL_RESTORE_GP.
 
+2003-01-31  Mark Salter  <msalter@redhat.com>
+
+	* src/main.c: Add support to allow programs started by go to
+	return to RedBoot.
+
+	* src/syscall.c (__do_syscall): Return to monitor on program exit
+	if gdb not active.
+	(sys_timer_isr): Return CYG_ISR_HANDLED.
+
 2003-01-10  Patrick Doyle  <wpd@delcomsys.com>
 
 	* src/load.c (do_load): Don't abort and complain about overwriting
