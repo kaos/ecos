@@ -59,6 +59,7 @@ cdl_package CYGPKG_DEVS_ETH_ECOSYNTH {
         through the I/O auxiliary. Up to four ethernet devices are
         supported, and the host-side target definition file controls how
         each device will perform its I/O."
+    doc         ref/devs-eth-synth-ecosynth.html
     
     parent      CYGPKG_IO_ETH_DRIVERS
     active_if   CYGPKG_IO_ETH_DRIVERS
