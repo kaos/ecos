@@ -111,7 +111,7 @@ __timer_poll(void)
     prev = NULL;
     t = tmr_list;
     while (t) {
-	if ((MS_TICKS() - t->start) >= t->delay) {
+	if ((MS_TICKS_DELAY() - t->start) >= t->delay) {
 
 	    /* remove it before calling handler */
 	    if (prev)

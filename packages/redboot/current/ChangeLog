@@ -1,5 +1,9 @@
 2003-09-19  Gary Thomas  <gary@mlbassoc.com>
 
+	* src/net/timers.c (__timer_poll): Need to call MS_TICKS_DELAY() or
+	else time will never progress.  This can cause a missed TCP packet
+	to cause the stack to freeze.  BUG #23006
+
 	* src/net/tftp_client.c: Make timeout on very first transaction really
 	long - again since some servers are just slow/ill mannered.
 
