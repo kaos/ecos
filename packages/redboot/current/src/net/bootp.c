@@ -70,7 +70,7 @@ static bootp_header_t *bp_info;
 #ifdef CYGSEM_REDBOOT_NETWORKING_USE_GATEWAY
 static const unsigned char dhcpCookie[] = {99,130,83,99};
 static const unsigned char dhcpEndOption[] = {255};
-static const unsigned char dhcpRequestOption[] = {52,1,3};
+static const unsigned char dhcpRequestOption[] = {53,1,3};
 #endif
 
 static void
