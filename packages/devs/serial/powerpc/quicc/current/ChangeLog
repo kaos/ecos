@@ -1,3 +1,8 @@
+2003-10-13  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/quicc_smc_serial.c: Add some I/O barriers to make sure that
+	operations happen in the correct order.  Fixes BUG #90391
+
 2003-10-08  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/quicc_smc_serial.c: Fix compile error for Adder-II (852T)

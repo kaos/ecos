@@ -343,17 +343,20 @@ quicc_smc_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config
     if (baud_divisor == 0) return false;
     // Disable channel during setup
     ctl->smc_smcmr = QUICC_SMCMR_UART;  // Disabled, UART mode
+    HAL_IO_BARRIER();  // Inforce I/O ordering
     // Disable port interrupts while changing hardware
     _lcr = smc_select_word_length[new_config->word_length - CYGNUM_SERIAL_WORD_LENGTH_5] | 
         smc_select_stop_bits[new_config->stop] |
         smc_select_parity[new_config->parity];
     // Stop transmitter while changing baud rate
     eppc->cp_cr = smc_chan->channel | QUICC_SMC_CMD_Go | QUICC_SMC_CMD_StopTx;
+    HAL_IO_BARRIER();  // Inforce I/O ordering
     // Set baud rate generator
     *smc_chan->brg = 0x10000 | (UART_BITRATE(baud_divisor)<<1);
 
     // Enable channel with new configuration
     ctl->smc_smcmr = QUICC_SMCMR_UART|QUICC_SMCMR_TEN|QUICC_SMCMR_REN|_lcr;
+    HAL_IO_BARRIER();  // Inforce I/O ordering
     eppc->cp_cr = smc_chan->channel | QUICC_SMC_CMD_Go | QUICC_SMC_CMD_RestartTx;
     if (new_config != &chan->config) {
         chan->config = *new_config;
@@ -376,14 +379,15 @@ quicc_smc_serial_init_info(quicc_sxx_serial_info *smc_chan,
     EPPC *eppc = eppc_base();
     struct cp_bufdesc *txbd, *rxbd;
     int i;
-
-    // Disable channel during setup
-    ctl->smc_smcmr = QUICC_SMCMR_UART;  // Disabled, UART mode
+    
     smc_chan->pram = (void *)uart_pram;
     smc_chan->ctl = (void *)ctl;
 
     // Set up baud rate generator
     smc_chan->brg = _mpc8xx_allocate_brg(port);
+
+    // Disable channel during setup
+    ctl->smc_smcmr = QUICC_SMCMR_UART;  // Disabled, UART mode
 
     /*
      *  Set up the PortB pins for UART operation.
@@ -449,7 +453,9 @@ quicc_smc_serial_init_info(quicc_sxx_serial_info *smc_chan,
     /*
      *  Reset Rx & Tx params
      */
+    HAL_IO_BARRIER();  // Inforce I/O ordering
     eppc->cp_cr = smc_chan->channel | QUICC_SMC_CMD_Go | QUICC_SMC_CMD_InitTxRx;
+    HAL_IO_BARRIER();  // Inforce I/O ordering
     /*
      *  Clear any previous events. Enable interrupts.
      *  (Section 16.15.7.14 and 16.15.7.15)
@@ -471,6 +477,7 @@ quicc_scc_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config
     // Set baud rate generator
     *scc_chan->brg = 0x10000 | (UART_BITRATE(baud_divisor)<<1);
     // Disable channel during setup
+    HAL_IO_BARRIER();  // Inforce I/O ordering
     regs->scc_gsmr_l = 0;
     regs->scc_psmr = QUICC_SCC_PSMR_ASYNC | 
         scc_select_word_length[new_config->word_length - CYGNUM_SERIAL_WORD_LENGTH_5] | 
@@ -484,8 +491,10 @@ quicc_scc_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config
     /*
      *  Init Rx & Tx params for SCCX
      */
+    HAL_IO_BARRIER();  // Inforce I/O ordering
     eppc->cp_cr = QUICC_CPM_CR_INIT_TXRX | scc_chan->channel | QUICC_CPM_CR_BUSY;
 
+    HAL_IO_BARRIER();  // Inforce I/O ordering
     regs->scc_gsmr_l |= (QUICC_SCC_GSMR_L_Tx | QUICC_SCC_GSMR_L_Rx);  // Enable Rx, Tx
     if (new_config != &chan->config) {
         chan->config = *new_config;
@@ -594,11 +603,13 @@ quicc_scc_serial_init_info(quicc_sxx_serial_info *scc_chan,
     /*
      *  Reset Rx & Tx params
      */
+    HAL_IO_BARRIER();  // Inforce I/O ordering
     eppc->cp_cr = scc_chan->channel | QUICC_SMC_CMD_Go | QUICC_SMC_CMD_InitTxRx;
     /*
      *  Clear any previous events. Enable interrupts.
      *  (Section 16.15.7.14 and 16.15.7.15)
      */
+    HAL_IO_BARRIER();  // Inforce I/O ordering
     ctl->scc_scce = 0xFFFF;
     ctl->scc_sccm = (QUICC_SCCE_BSY | QUICC_SCCE_TX | QUICC_SCCE_RX);
 }
