@@ -88,7 +88,7 @@ __externC void cyg_hal_plf_serial_init(void);
 #if CYGINT_HAL_I386_PCMB_SCREEN_SUPPORT > 0
 
 __externC void cyg_hal_plf_screen_init(void);
-
+__externC void cyg_hal_plf_screen_position(int *x, int *y);
 #endif
 
 //---------------------------------------------------------------------------

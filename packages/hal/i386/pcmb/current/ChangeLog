@@ -1,6 +1,13 @@
+2005-01-22  Ian Campbell  <icampbell@arcom.com>
+
+	* include/pcmb_serial.h, 
+	* src/pcmb_screen.c: define cyg_hal_plf_screen_position() which can 
+	be used to get the current cursor location.
+
 2003-09-20  Gary Thomas  <gary@mlbassoc.com>
 
-	* include/pcmb_io.h: IDE init needs to return number of controllers found.
+	* include/pcmb_io.h: IDE init needs to return number of controllers 
+	found.
 
 2003-07-23  Nick Garnett  <nickg@balti.calivar.com>
 

@@ -848,6 +848,13 @@ void cyg_hal_plf_screen_init(void)
        // || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
 
 
+// Return the position of the cursor. 
+void cyg_hal_plf_screen_position(int *x, int *y)
+{
+    *x = XPos;
+    *y = YPos;
+}
+
 //-----------------------------------------------------------------------------
 
 #endif // CYGINT_HAL_I386_PCMB_SCREEN_SUPPORT
