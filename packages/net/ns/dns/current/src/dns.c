@@ -588,7 +588,7 @@ cyg_dns_getaddrinfo(const char * hostname,
     
     /* Has the socket to the DNS server been opened? */
     if (s < 0) {
-        CYG_REPORT_RETVAL( -EIA_FAIL );
+        CYG_REPORT_RETVAL( -EAI_FAIL );
         return -EAI_FAIL;
     }
     

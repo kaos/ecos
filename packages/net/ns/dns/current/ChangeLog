@@ -1,3 +1,7 @@
+2004-07-13  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/dns.c (cyg_dns_getaddrinfo): Typo spotted by Andy Jackson.
+
 2003-09-04  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/dns.cdl: CDL control of what DNS server to use for the tests
