@@ -1,3 +1,9 @@
+2003-11-21  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/if_8139.c: Use cyg_drv_isr_lock/unlock functions for ISR
+	critical sections - much better than calling cyg_interrupt_enable
+	directly.
+
 2003-07-09  Eric Doenges <Eric.Doenges@DynaPel.com>
 
 	* src/if_8139.h: 

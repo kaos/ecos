@@ -870,7 +870,6 @@ rltk8139_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
   struct eth_drv_sg *last_sg;
   int desc;
 
-
   rltk8139_info = (Rltk8139_t *)(sc->driver_private);
 
 #ifdef DEBUG_RLTK8139_DRIVER
@@ -890,18 +889,14 @@ rltk8139_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
    * _really_ mean it, i.e. you _must_ use descriptor #1 after descriptor
    * #0 even if transmission of descriptor #0 has already completed.
    */
-#ifndef CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
-  cyg_interrupt_disable();
-#endif
+  cyg_drv_isr_lock();
 
   /*
    * Sanity check to see if '_send' was called even though there is no free
    * descriptor. This is probably unnecessary.
    */
   if (rltk8139_info->tx_num_free_desc == 0) {
-#ifndef CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
-    cyg_interrupt_enable();
-#endif
+      cyg_drv_isr_unlock();
 #ifdef DEBUG_RLTK8139_DRIVER
     diag_printf("rltk8139_send(%s): no free descriptor available\n",
                 sc->dev_name);
@@ -920,10 +915,8 @@ rltk8139_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
   /* Decrement the number of free descriptors */
   rltk8139_info->tx_num_free_desc -= 1;
 
-#ifndef CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
   /* Reenable interrupts at this point */
-  cyg_interrupt_enable();
-#endif
+  cyg_drv_isr_unlock();
 
   /*
    * Determine the buffer memory to use and tell the hardware about it.
@@ -1064,24 +1057,19 @@ rltk8139_deliver(struct eth_drv_sc *sc)
      * want to be interrupted at this point.
      */
     while (1) {
-#ifndef CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
-      cyg_interrupt_disable();
-#endif
+      cyg_drv_isr_lock();
 
       /* Check if all descriptors are ready, in which case we are done. */
       if (rltk8139_info->tx_num_free_desc >= NUM_TX_DESC) {
-#ifndef CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
-        cyg_interrupt_enable();
-#endif
+          cyg_drv_isr_unlock();
         break;
       }
 
       desc = (rltk8139_info->tx_free_desc
               - (NUM_TX_DESC - rltk8139_info->tx_num_free_desc))
         & (NUM_TX_DESC - 1);
-#ifndef CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
-      cyg_interrupt_enable();
-#endif
+      cyg_drv_isr_unlock();
+
       /* Get the current status of the descriptor */
       tsd = INL(rltk8139_info->base_address + TSD0 + (desc<<2));
 
@@ -1130,13 +1118,9 @@ rltk8139_deliver(struct eth_drv_sc *sc)
        * Increment the free descriptor count and go through the loop again
        * to see if more descriptors are ready.
        */
-#ifndef CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
-      cyg_interrupt_disable();
-#endif
+      cyg_drv_isr_lock();
       rltk8139_info->tx_num_free_desc += 1;
-#ifndef CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
-      cyg_interrupt_enable();
-#endif
+      cyg_drv_isr_unlock();
     }
   }
 
