@@ -51,18 +51,18 @@
 void
 hal_plf_stub_init(void)
 {
-#if defined(CYGSEM_HAL_ROM_MONITOR) && defined(CYGSEM_HAL_VIRTUAL_VECTOR)
+#if defined(CYGSEM_HAL_ROM_MONITOR)
     // Put stub build date on the LCD.
     hal_virtual_comm_table_t* comm;
-    int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM()(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+    int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
 
-    CYGACC_CALL_IF_SET_CONSOLE_COMM()(2);
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(2);
 
     comm = CYGACC_CALL_IF_CONSOLE_PROCS();
-    CYGACC_COMM_IF_WRITE(*comm)(CYGACC_COMM_IF_CH_DATA(*comm), L1, strlen(L1));
-    CYGACC_COMM_IF_WRITE(*comm)(CYGACC_COMM_IF_CH_DATA(*comm), L2, strlen(L2));
+    CYGACC_COMM_IF_WRITE(*comm, L1, strlen(L1));
+    CYGACC_COMM_IF_WRITE(*comm, L2, strlen(L2));
 
-    CYGACC_CALL_IF_SET_CONSOLE_COMM()(cur);
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
 #endif
 }
 

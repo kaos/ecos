@@ -106,8 +106,13 @@ __reset:
 
 # Note: this is the unmapped, shadow address of the start of code
 # Sadly, it is too far to just branch to.                        
+        .align   2
 $__reset_platform:      
+#ifdef CYG_HAL_STARTUP_RAM
+        .long   __reset_platform
+#else
         .long   __reset_platform-__reset+0xA0000000
+#endif
                 
 #---------------------------------------------------------------------------
 # Exception entry
@@ -885,6 +890,12 @@ _complete_setup:
         jsr      @r1
          nop
 #endif
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
+    || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
+        mov.l    $_hal_ctrlc_isr_init,r1
+        jsr      @r1
+         nop
+#endif
 
         mov.l    $_cyg_start,r1
         jsr      @r1
@@ -924,7 +935,12 @@ $_cyg_start:
 $_initialize_stub:
         .long   _initialize_stub
 #endif
-                        
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
+    || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
+        .extern _hal_ctrlc_isr_init
+$_hal_ctrlc_isr_init:
+        .long   _hal_ctrlc_isr_init
+#endif
 
 #---------------------------------------------------------------------------
 # Cache operations

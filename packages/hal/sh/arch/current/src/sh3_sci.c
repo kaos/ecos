@@ -176,7 +176,7 @@ cyg_hal_plf_sci_getc_timeout(void* __ch_data, cyg_uint8* ch)
         if (res || 0 == delay_count--)
             break;
         
-        CYGACC_CALL_IF_DELAY_US()(100);
+        CYGACC_CALL_IF_DELAY_US(100);
     }
 
     CYGARC_HAL_RESTORE_GP();
@@ -263,7 +263,7 @@ cyg_hal_plf_sci_init(int sci_index, int comm_index,
 {
     channel_data_t* chan = &channels[sci_index];
     hal_virtual_comm_table_t* comm;
-    int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM()(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+    int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
 
     // Initialize channel table
     chan->base = base;
@@ -280,7 +280,7 @@ cyg_hal_plf_sci_init(int sci_index, int comm_index,
     // Setup procs in the vector table
 
     // Initialize channel procs
-    CYGACC_CALL_IF_SET_CONSOLE_COMM()(comm_index);
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(comm_index);
     comm = CYGACC_CALL_IF_CONSOLE_PROCS();
     CYGACC_COMM_IF_CH_DATA_SET(*comm, chan);
     CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_plf_sci_write);
@@ -292,7 +292,7 @@ cyg_hal_plf_sci_init(int sci_index, int comm_index,
     CYGACC_COMM_IF_GETC_TIMEOUT_SET(*comm, cyg_hal_plf_sci_getc_timeout);
 
     // Restore original console
-    CYGACC_CALL_IF_SET_CONSOLE_COMM()(cur);
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
 }
 
 #endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG || CYGPRI_HAL_IMPLEMENTS_IF_SERVICES

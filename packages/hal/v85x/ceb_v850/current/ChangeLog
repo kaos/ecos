@@ -1,3 +1,7 @@
+2000-06-30  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c: calling i/f macro changes.
+
 2000-06-27  Jesper Skov  <jskov@redhat.com>
 
 	* src/plf_misc.c: Fix compiler warnings.

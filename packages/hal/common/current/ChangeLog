@@ -1,3 +1,14 @@
+2000-06-30  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_if.h: Make CYGACC macros call functions. May have to
+	add some _GET macros at some time if anyone needs to access the
+	function pointers.
+
+	* src/hal_stub.c: 
+	* src/hal_misc.c:
+	* src/hal_if.c:
+	Matching changes of CYGACC clients.
+	
 2000-06-29  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_stub.c (cyg_hal_gdb_diag_putc): Check console interrupt

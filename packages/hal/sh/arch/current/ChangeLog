@@ -1,3 +1,14 @@
+2000-06-30  Jesper Skov  <jskov@redhat.com>
+
+	* src/vectors.S (__reset): Jump to VMA for RAM startup.
+	(_complete_setup): Fix merge bug.
+
+	* src/sh3_scif.c:
+	* src/sh3_sci.c:
+	calling i/f macro changes.
+
+	* src/vectors.S (__reset): Fix alignment problem.
+
 2000-06-29  Gary Thomas  <gthomas@redhat.com>
 
 	* src/vectors.S: Reorg initialization (reset) code to be all

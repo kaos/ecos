@@ -366,7 +366,7 @@ cyg_hal_plf_serial_getc_timeout(void* __ch_data, cyg_uint8* ch)
         if (res || 0 == delay_count--)
             break;
         
-        CYGACC_CALL_IF_DELAY_US()(100);
+        CYGACC_CALL_IF_DELAY_US(100);
     }
 
     CYGARC_HAL_RESTORE_GP();
@@ -458,7 +458,7 @@ void
 cyg_hal_plf_serial_init(void)
 {
     hal_virtual_comm_table_t* comm;
-    int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM()(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+    int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
     volatile EPPC *eppc = eppc_base();
     int i;
 
@@ -477,7 +477,7 @@ cyg_hal_plf_serial_init(void)
     // Setup procs in the vector table
 
     // Set channel 0
-    CYGACC_CALL_IF_SET_CONSOLE_COMM()(0);// Should be configurable!
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(0);// Should be configurable!
     comm = CYGACC_CALL_IF_CONSOLE_PROCS();
     CYGACC_COMM_IF_CH_DATA_SET(*comm, eppc_base());
     CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_plf_serial_write);
@@ -489,7 +489,7 @@ cyg_hal_plf_serial_init(void)
     CYGACC_COMM_IF_GETC_TIMEOUT_SET(*comm, cyg_hal_plf_serial_getc_timeout);
 
     // Restore original console
-    CYGACC_CALL_IF_SET_CONSOLE_COMM()(cur);
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
 }
 
 #endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG || CYGPRI_HAL_IMPLEMENTS_IF_SERVICES

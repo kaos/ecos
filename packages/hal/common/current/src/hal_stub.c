@@ -109,7 +109,7 @@ putDebugChar (int c)
 {
 #ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
     __call_if_debug_procs_t __debug_procs = CYGACC_CALL_IF_DEBUG_PROCS();
-    CYGACC_COMM_IF_PUTC(*__debug_procs)(CYGACC_COMM_IF_CH_DATA(*__debug_procs), c);
+    CYGACC_COMM_IF_PUTC(*__debug_procs, c);
 #elif defined(CYGPKG_CYGMON)
     ecos_bsp_console_putc(c);
 #else
@@ -123,7 +123,7 @@ getDebugChar (void)
 {
 #ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
     __call_if_debug_procs_t __debug_procs = CYGACC_CALL_IF_DEBUG_PROCS();
-    return CYGACC_COMM_IF_GETC(*__debug_procs)(CYGACC_COMM_IF_CH_DATA(*__debug_procs));
+    return CYGACC_COMM_IF_GETC(*__debug_procs);
 #elif defined(CYGPKG_CYGMON)
     return ecos_bsp_console_getc();
 #else
@@ -137,7 +137,7 @@ __set_baud_rate (int baud)
 {
 #ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
     __call_if_debug_procs_t __debug_procs = CYGACC_CALL_IF_DEBUG_PROCS();
-    CYGACC_COMM_IF_CONTROL(*__debug_procs)(CYGACC_COMM_IF_CH_DATA(*__debug_procs), __COMMCTL_SETBAUD, baud);
+    CYGACC_COMM_IF_CONTROL(*__debug_procs, __COMMCTL_SETBAUD, baud);
 #elif defined(CYGPKG_CYGMON)
     // FIXME!
 #else
@@ -250,7 +250,7 @@ interruptible(int state)
             {
                 hal_virtual_comm_table_t* __chan;
                 __chan = CYGACC_CALL_IF_DEBUG_PROCS();
-                CYGACC_COMM_IF_CONTROL(*__chan)(CYGACC_COMM_IF_CH_DATA(*__chan), __COMMCTL_IRQ_ENABLE);
+                CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_IRQ_ENABLE);
             }
 #else                
             if (__interruptible_control)
@@ -264,7 +264,7 @@ interruptible(int state)
             {
                 hal_virtual_comm_table_t* __chan;
                 __chan = CYGACC_CALL_IF_DEBUG_PROCS();
-                CYGACC_COMM_IF_CONTROL(*__chan)(CYGACC_COMM_IF_CH_DATA(*__chan), __COMMCTL_IRQ_DISABLE);
+                CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_IRQ_DISABLE);
             }
 #else                
             if (__interruptible_control)
@@ -288,7 +288,7 @@ cyg_hal_gdb_diag_getc(void* __ch_data)
     hal_virtual_comm_table_t* __chan = CYGACC_CALL_IF_DEBUG_PROCS();
     CYGARC_HAL_SAVE_GP();
 
-    __ch = CYGACC_COMM_IF_GETC(*__chan)(CYGACC_COMM_IF_CH_DATA(*__chan));
+    __ch = CYGACC_COMM_IF_GETC(*__chan);
 
     CYGARC_HAL_RESTORE_GP();
 
@@ -329,24 +329,24 @@ cyg_hal_gdb_diag_putc(void* __ch_data, cyg_uint8 c)
             cyg_uint8 csum = 0, c1;
             int i;
         
-            CYGACC_COMM_IF_PUTC(*__chan)(CYGACC_COMM_IF_CH_DATA(*__chan), '$');
-            CYGACC_COMM_IF_PUTC(*__chan)(CYGACC_COMM_IF_CH_DATA(*__chan), 'O');
+            CYGACC_COMM_IF_PUTC(*__chan, '$');
+            CYGACC_COMM_IF_PUTC(*__chan, 'O');
             csum += 'O';
             for( i = 0; i < pos; i++ )
             {
                 char ch = line[i];
                 char h = hex[(ch>>4)&0xF];
                 char l = hex[ch&0xF];
-                CYGACC_COMM_IF_PUTC(*__chan)(CYGACC_COMM_IF_CH_DATA(*__chan), h);
-                CYGACC_COMM_IF_PUTC(*__chan)(CYGACC_COMM_IF_CH_DATA(*__chan), l);
+                CYGACC_COMM_IF_PUTC(*__chan, h);
+                CYGACC_COMM_IF_PUTC(*__chan, l);
                 csum += h;
                 csum += l;
             }
-            CYGACC_COMM_IF_PUTC(*__chan)(CYGACC_COMM_IF_CH_DATA(*__chan), '#');
-            CYGACC_COMM_IF_PUTC(*__chan)(CYGACC_COMM_IF_CH_DATA(*__chan), hex[(csum>>4)&0xF]);
-            CYGACC_COMM_IF_PUTC(*__chan)(CYGACC_COMM_IF_CH_DATA(*__chan), hex[csum&0xF]);
+            CYGACC_COMM_IF_PUTC(*__chan, '#');
+            CYGACC_COMM_IF_PUTC(*__chan, hex[(csum>>4)&0xF]);
+            CYGACC_COMM_IF_PUTC(*__chan, hex[csum&0xF]);
 
-            c1 = CYGACC_COMM_IF_GETC(*__chan)(CYGACC_COMM_IF_CH_DATA(*__chan));
+            c1 = CYGACC_COMM_IF_GETC(*__chan);
             if( c1 == '+' ) break;
 
             if( cyg_hal_is_break( &c1 , 1 ) ) {
@@ -508,10 +508,10 @@ initHardware (void)
 #ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
     {
         hal_virtual_comm_table_t* comm;
-        int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM()(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+        int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
 
         // Initialize mangler procs
-        CYGACC_CALL_IF_SET_CONSOLE_COMM()(CYGNUM_CALL_IF_SET_COMM_ID_MANGLER);
+        CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_MANGLER);
         comm = CYGACC_CALL_IF_CONSOLE_PROCS();
         CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_gdb_diag_write);
         CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_gdb_diag_read);
@@ -525,10 +525,10 @@ initHardware (void)
         // previous channel matches the used for GDB communication.
         if (CYGNUM_CALL_IF_SET_COMM_ID_EMPTY != cur
             && CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL != cur)
-            CYGACC_CALL_IF_SET_CONSOLE_COMM()(cur);
+            CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
 
         // Set the debug channel.
-        CYGACC_CALL_IF_SET_DEBUG_COMM()(CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL);
+        CYGACC_CALL_IF_SET_DEBUG_COMM(CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL);
     }
 
 #ifdef HAL_STUB_PLATFORM_INIT
@@ -553,7 +553,7 @@ __reset (void)
 {
 #if !defined(CYGPKG_CYGMON)
 #ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
-    __call_if_reset_t __rom_reset = CYGACC_CALL_IF_RESET();
+    __call_if_reset_t __rom_reset = CYGACC_CALL_IF_RESET_GET();
     if (__rom_reset)
         __rom_reset();
 #else

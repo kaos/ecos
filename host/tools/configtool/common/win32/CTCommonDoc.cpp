@@ -944,8 +944,10 @@ void CConfigToolDoc::SelectPackages ()
         bChanged|=pItem->Unload();
       } else if (bNowLoaded) {// if the package should be loaded
         const CString strVersion(dlg.GetVersion (strPackageName));
-        if (bPreviouslyLoaded) { // if the package is not already loaded
+        if (bPreviouslyLoaded) { // if the package is already loaded
+          CdlTransactionCallback::set_callback_fn (NULL); // avoid value refresh attempts during load/unload
           bChanged|=pItem->ChangeVersion(strVersion);
+          CdlTransactionCallback::set_callback_fn (CdlTransactionHandler); // restore value refresh
         } else {
           // the package was not loaded but should now be loaded
           TRACE (_T("Loading package %s\n"), strMacroName);

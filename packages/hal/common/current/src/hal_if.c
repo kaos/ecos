@@ -201,7 +201,7 @@ set_debug_comm(int __comm_id)
         // Find the interrupt state of the channel.
         __chan = CYGACC_CALL_IF_DEBUG_PROCS();
         if (__chan)
-            interrupt_state = CYGACC_COMM_IF_CONTROL(*__chan)(CYGACC_COMM_IF_CH_DATA(*__chan), __COMMCTL_IRQ_DISABLE);
+            interrupt_state = CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_IRQ_DISABLE);
 
         __selected_id = __comm_id;
         CYGACC_CALL_IF_DEBUG_PROCS_SET(comm_channels[__comm_id]);
@@ -209,9 +209,9 @@ set_debug_comm(int __comm_id)
         // Set interrupt state on the new channel.
         __chan = CYGACC_CALL_IF_DEBUG_PROCS();
         if (interrupt_state)
-            CYGACC_COMM_IF_CONTROL(*__chan)(CYGACC_COMM_IF_CH_DATA(*__chan), __COMMCTL_IRQ_ENABLE);
+            CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_IRQ_ENABLE);
         else
-            CYGACC_COMM_IF_CONTROL(*__chan)(CYGACC_COMM_IF_CH_DATA(*__chan), __COMMCTL_IRQ_DISABLE);
+            CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_IRQ_DISABLE);
     }
 
     CYGARC_HAL_RESTORE_GP();
@@ -313,10 +313,10 @@ hal_if_diag_init(void)
     // Set console channel. This should only be done when the console channel
     // differs from the debug channel to prevent removing the debug agent's
     // mangler procs.
-    if (CYGACC_CALL_IF_SET_DEBUG_COMM()(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT)
+    if (CYGACC_CALL_IF_SET_DEBUG_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT)
         != CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL)
 
-        CYGACC_CALL_IF_SET_CONSOLE_COMM()(CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL);
+        CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL);
 }
 
 void 
@@ -325,10 +325,10 @@ hal_if_diag_write_char(char c)
     hal_virtual_comm_table_t* __chan = CYGACC_CALL_IF_CONSOLE_PROCS();
     
     if (__chan)
-        CYGACC_COMM_IF_PUTC(*__chan)(CYGACC_COMM_IF_CH_DATA(*__chan), c);
+        CYGACC_COMM_IF_PUTC(*__chan, c);
     else {
         __chan = CYGACC_CALL_IF_DEBUG_PROCS();
-        CYGACC_COMM_IF_PUTC(*__chan)(CYGACC_COMM_IF_CH_DATA(*__chan), c);
+        CYGACC_COMM_IF_PUTC(*__chan, c);
     }
 
     // Check interrupt flag
@@ -344,10 +344,10 @@ hal_if_diag_read_char(char *c)
     hal_virtual_comm_table_t* __chan = CYGACC_CALL_IF_CONSOLE_PROCS();
     
     if (__chan)
-        *c = CYGACC_COMM_IF_GETC(*__chan)(CYGACC_COMM_IF_CH_DATA(*__chan));
+        *c = CYGACC_COMM_IF_GETC(*__chan);
     else {
         __chan = CYGACC_CALL_IF_DEBUG_PROCS();
-        *c = CYGACC_COMM_IF_GETC(*__chan)(CYGACC_COMM_IF_CH_DATA(*__chan));
+        *c = CYGACC_COMM_IF_GETC(*__chan);
     }
 }
 #endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG
@@ -371,8 +371,7 @@ hal_ctrlc_isr_init(void)
         return;
 #endif
 
-    CYGACC_COMM_IF_CONTROL(*__chan)(CYGACC_COMM_IF_CH_DATA(*__chan), 
-                                    __COMMCTL_IRQ_ENABLE);
+    CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_IRQ_ENABLE);
 }
 
 cyg_uint32
@@ -381,8 +380,7 @@ hal_ctrlc_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
     hal_virtual_comm_table_t* __chan = CYGACC_CALL_IF_DEBUG_PROCS();
     int isr_ret, ctrlc = 0;
 
-    isr_ret = CYGACC_COMM_IF_DBG_ISR(*__chan)(CYGACC_COMM_IF_CH_DATA(*__chan),
-                                              &ctrlc, vector, data);
+    isr_ret = CYGACC_COMM_IF_DBG_ISR(*__chan, &ctrlc, vector, data);
     if (ctrlc)
         cyg_hal_user_break( (CYG_ADDRWORD *)hal_saved_interrupt_state );
     return isr_ret;

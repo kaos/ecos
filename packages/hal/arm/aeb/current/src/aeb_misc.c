@@ -52,6 +52,8 @@
 #include <cyg/hal/hal_diag.h>
 #include <cyg/hal/hal_intr.h>           // necessary?
 #include <cyg/hal/hal_cache.h>
+#include <cyg/hal/hal_if.h>             // calling interface
+#include <cyg/hal/hal_misc.h>           // helper functions
 #ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
 #include <cyg/hal/drv_api.h>            // HAL ISR support
 #endif
@@ -196,7 +198,7 @@ static cyg_handle_t  abort_interrupt_handle;
 static int
 aeb_abort_isr(cyg_vector_t vector, cyg_addrword_t data, HAL_SavedRegisters *regs)
 {
-    cyg_hal_gdb_interrupt (regs->pc);
+    cyg_hal_user_break((CYG_ADDRWORD*)regs);
     cyg_drv_interrupt_acknowledge(CYGNUM_HAL_INTERRUPT_EXT0);
     return 0;  // No need to run DSR
 }
@@ -283,6 +285,9 @@ void hal_hardware_init(void)
     // Clear and initialize cache
     HAL_UCACHE_INVALIDATE_ALL();
     HAL_UCACHE_ENABLE();
+
+    // Set up eCos/ROM interfaces
+    hal_if_init();
 }
 
 //
@@ -410,6 +415,45 @@ aeb_setup_timer1(cyg_uint32 period)
     cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_TIMER1);
 }
 #endif
+
+//-----------------------------------------------------------------------------
+// Reset board (definitions from watchdog file aeb1.cxx)
+
+// Register definitions
+#define CYGARC_REG_WATCHDOG_BASE        0xFFFFAC00
+#define CYGARC_REG_WATCHDOG_WDCTLR      (CYGARC_REG_WATCHDOG_BASE+0x30)
+#define CYGARC_REG_WATCHDOG_WDCNTR      (CYGARC_REG_WATCHDOG_BASE+0x34)
+
+// Control register bits
+#define CYGARC_REG_WATCHDOG_WDCTLR_EN        0x01 // enable
+#define CYGARC_REG_WATCHDOG_WDCTLR_RSP_NMF   0x00 // non-maskable fiq
+#define CYGARC_REG_WATCHDOG_WDCTLR_RSP_ER    0x04 // external reset
+#define CYGARC_REG_WATCHDOG_WDCTLR_RSP_SR    0x06 // system reset
+#define CYGARC_REG_WATCHDOG_WDCTLR_FRZ       0x08 // lock enable bit
+#define CYGARC_REG_WATCHDOG_WDCTLR_TOP_MASK  0x70 // time out period
+
+#define CYGARC_REG_WATCHDOG_WDCTLR_TOP_17    0x00 // 2^17
+#define CYGARC_REG_WATCHDOG_WDCTLR_TOP_17_P  5242880 // = 5.2ms
+
+#define CYGARC_REG_WATCHDOG_WDCTLR_TOP_25    0x40 // 2^25
+#define CYGARC_REG_WATCHDOG_WDCTLR_TOP_25_P  1342177300 // = 1.3421773s
+
+void
+hal_aeb_reset(void)
+{
+    // Clear the watchdog counter.
+    HAL_WRITE_UINT32(CYGARC_REG_WATCHDOG_WDCNTR, 0);
+
+    // Enable the watchdog with the smallest timeout.
+    HAL_WRITE_UINT8(CYGARC_REG_WATCHDOG_WDCTLR, 
+                    (CYGARC_REG_WATCHDOG_WDCTLR_TOP_17
+                     | CYGARC_REG_WATCHDOG_WDCTLR_FRZ
+                     | CYGARC_REG_WATCHDOG_WDCTLR_RSP_SR
+                     | CYGARC_REG_WATCHDOG_WDCTLR_EN));
+
+    // Wait for it...
+    for(;;);
+}
 
 /*------------------------------------------------------------------------*/
 // EOF hal_misc.c

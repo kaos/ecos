@@ -1,3 +1,11 @@
+2000-06-30  Jesper Skov  <jskov@redhat.com>
+
+	* src/plf_stub.c (hal_plf_stub_init): calling i/f macro
+	changes. Always write to LCD for ROM monitor configs.
+
+	* src/hal_diag.c: Use per-channel struct instead of code
+	cruft. calling i/f macro changes.
+
 2000-06-28  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_diag.c: Cleanup.

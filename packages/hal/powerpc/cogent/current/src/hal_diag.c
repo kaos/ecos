@@ -156,9 +156,19 @@ cyg_hal_plf_comms_init(void)
 #define SIO_FCR_FCR1   0x02             // clear RCVR FIFO
 #define SIO_FCR_FCR2   0x04             // clear XMIT FIFO
 
+
+//-----------------------------------------------------------------------------
+typedef struct {
+    cyg_uint8* base;
+    cyg_int32 msec_timeout;
+    int isr_vector;
+} channel_data_t;
+
+//-----------------------------------------------------------------------------
 static void
-init_serial_channel( cyg_uint8* base )
+init_serial_channel(const channel_data_t* __ch_data)
 {
+    cyg_uint8* base = __ch_data->base;
     cyg_uint8 lcr;
 
     HAL_WRITE_UINT8(base+CYG_DEV_SERIAL_IER, 0);
@@ -205,7 +215,7 @@ init_serial_channel( cyg_uint8* base )
 static cyg_bool
 cyg_hal_plf_serial_getc_nonblock(void* __ch_data, cyg_uint8* ch)
 {
-    cyg_uint8* base = (cyg_uint8*)__ch_data;
+    cyg_uint8* base = ((channel_data_t*)__ch_data)->base;
     cyg_uint8 lsr;
 
     HAL_READ_UINT8(base+CYG_DEV_SERIAL_LSR, lsr);
@@ -233,7 +243,7 @@ cyg_hal_plf_serial_getc(void* __ch_data)
 void
 cyg_hal_plf_serial_putc(void* __ch_data, cyg_uint8 c)
 {
-    cyg_uint8* base = (cyg_uint8*)__ch_data;
+    cyg_uint8* base = ((channel_data_t*)__ch_data)->base;
     cyg_uint8 lsr;
     CYGARC_HAL_SAVE_GP();
 
@@ -253,6 +263,11 @@ cyg_hal_plf_serial_putc(void* __ch_data, cyg_uint8 c)
 
 #if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) \
     || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
+
+static const channel_data_t channels[2] = {
+    { (cyg_uint8*)CYG_DEV_SERIAL_BASE_A, 1000, CYGNUM_HAL_INTERRUPT_SIU_IRQ1},
+    { (cyg_uint8*)CYG_DEV_SERIAL_BASE_B, 1000, CYGNUM_HAL_INTERRUPT_SIU_IRQ1}
+};
 
 static void
 cyg_hal_plf_serial_write(void* __ch_data, const cyg_uint8* __buf, 
@@ -277,23 +292,21 @@ cyg_hal_plf_serial_read(void* __ch_data, cyg_uint8* __buf, cyg_uint32 __len)
     CYGARC_HAL_RESTORE_GP();
 }
 
-static cyg_int32 msec_timeout[2] = { 1000, 1000 };
-
 cyg_bool
 cyg_hal_plf_serial_getc_timeout(void* __ch_data, cyg_uint8* ch)
 {
     int delay_count;
+    channel_data_t* chan = (channel_data_t*)__ch_data;
     cyg_bool res;
     CYGARC_HAL_SAVE_GP();
 
-    // delay in .1 ms steps
-    delay_count = msec_timeout[__ch_data == (void*)CYG_DEV_SERIAL_BASE_A ? 0 : 1] * 10;
+    delay_count = chan->msec_timeout * 10; // delay in .1 ms steps
     for(;;) {
         res = cyg_hal_plf_serial_getc_nonblock(__ch_data, ch);
         if (res || 0 == delay_count--)
             break;
         
-        CYGACC_CALL_IF_DELAY_US()(100);
+        CYGACC_CALL_IF_DELAY_US(100);
     }
 
     CYGARC_HAL_RESTORE_GP();
@@ -304,30 +317,30 @@ static int
 cyg_hal_plf_serial_control(void *__ch_data, __comm_control_cmd_t __func, ...)
 {
     static int irq_state = 0;
-    cyg_uint8* base = (cyg_uint8*)__ch_data;
+    channel_data_t* chan = (channel_data_t*)__ch_data;
     cyg_uint8 ier;
     int ret = 0;
     CYGARC_HAL_SAVE_GP();
 
     switch (__func) {
     case __COMMCTL_IRQ_ENABLE:
-        HAL_INTERRUPT_UNMASK(CYGNUM_HAL_INTERRUPT_SIU_IRQ1);
-        HAL_INTERRUPT_SET_LEVEL(CYGNUM_HAL_INTERRUPT_SIU_IRQ1, 1);
-        HAL_READ_UINT8(base+CYG_DEV_SERIAL_IER, ier);
+        HAL_INTERRUPT_UNMASK(chan->isr_vector);
+        HAL_INTERRUPT_SET_LEVEL(chan->isr_vector, 1);
+        HAL_READ_UINT8(chan->base+CYG_DEV_SERIAL_IER, ier);
         ier |= SIO_IER_ERDAI;
-        HAL_WRITE_UINT8(base+CYG_DEV_SERIAL_IER, ier);
+        HAL_WRITE_UINT8(chan->base+CYG_DEV_SERIAL_IER, ier);
         irq_state = 1;
         break;
     case __COMMCTL_IRQ_DISABLE:
         ret = irq_state;
         irq_state = 0;
-        HAL_INTERRUPT_MASK(CYGNUM_HAL_INTERRUPT_SIU_IRQ1);
-        HAL_READ_UINT8(base+CYG_DEV_SERIAL_IER, ier);
+        HAL_INTERRUPT_MASK(chan->isr_vector);
+        HAL_READ_UINT8(chan->base+CYG_DEV_SERIAL_IER, ier);
         ier &= ~SIO_IER_ERDAI;
-        HAL_WRITE_UINT8(base+CYG_DEV_SERIAL_IER, ier);
+        HAL_WRITE_UINT8(chan->base+CYG_DEV_SERIAL_IER, ier);
         break;
     case __COMMCTL_DBG_ISR_VECTOR:
-        ret = CYGNUM_HAL_INTERRUPT_SIU_IRQ1;
+        ret = chan->isr_vector;
         break;
     case __COMMCTL_SET_TIMEOUT:
     {
@@ -335,9 +348,8 @@ cyg_hal_plf_serial_control(void *__ch_data, __comm_control_cmd_t __func, ...)
 
         va_start(ap, __func);
 
-        ret = msec_timeout[__ch_data == (void*)CYG_DEV_SERIAL_BASE_A ? 0 : 1];
-        msec_timeout[__ch_data == (void*)CYG_DEV_SERIAL_BASE_A ? 0 : 1] 
-            = va_arg(ap, cyg_uint32);
+        ret = chan->msec_timeout;
+        chan->msec_timeout = va_arg(ap, cyg_uint32);
 
         va_end(ap);
     }        
@@ -352,28 +364,28 @@ static int
 cyg_hal_plf_serial_isr(void *__ch_data, int* __ctrlc, 
                        CYG_ADDRWORD __vector, CYG_ADDRWORD __data)
 {
-    cyg_uint8* base = (cyg_uint8*)__ch_data;
+    channel_data_t* chan = (channel_data_t*)__ch_data;
     cyg_uint8 _iir;
     int res = 0;
     CYGARC_HAL_SAVE_GP();
 
-    HAL_READ_UINT8(base+CYG_DEV_SERIAL_IIR, _iir);
+    HAL_READ_UINT8(chan->base+CYG_DEV_SERIAL_IIR, _iir);
     _iir &= SIO_IIR_ID_MASK;
 
     *__ctrlc = 0;
     if ( ISR_Rx == _iir ) {
         cyg_uint8 c, lsr;
-        HAL_READ_UINT8(base+CYG_DEV_SERIAL_LSR, lsr);
+        HAL_READ_UINT8(chan->base+CYG_DEV_SERIAL_LSR, lsr);
         if (lsr & SIO_LSR_DR) {
 
-            HAL_READ_UINT8(base+CYG_DEV_SERIAL_RBR, c);
+            HAL_READ_UINT8(chan->base+CYG_DEV_SERIAL_RBR, c);
 
             if( cyg_hal_is_break( &c , 1 ) )
                 *__ctrlc = 1;
         }
 
         // Acknowledge the interrupt
-        HAL_INTERRUPT_ACKNOWLEDGE(CYGNUM_HAL_INTERRUPT_SIU_IRQ1);
+        HAL_INTERRUPT_ACKNOWLEDGE(chan->isr_vector);
         res = CYG_ISR_HANDLED;
     }
 
@@ -385,21 +397,22 @@ static void
 cyg_hal_plf_serial_init(void)
 {
     hal_virtual_comm_table_t* comm;
-    int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM()(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+    int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
 
     // Disable interrupts.
-    HAL_INTERRUPT_MASK(CYGNUM_HAL_INTERRUPT_SIU_IRQ1);
+    HAL_INTERRUPT_MASK(channels[0].isr_vector);
+    HAL_INTERRUPT_MASK(channels[1].isr_vector);
 
     // Init channels
-    init_serial_channel((cyg_uint8*)CYG_DEV_SERIAL_BASE_A);
-    init_serial_channel((cyg_uint8*)CYG_DEV_SERIAL_BASE_B);
+    init_serial_channel(&channels[0]);
+    init_serial_channel(&channels[1]);
 
     // Setup procs in the vector table
 
     // Set channel 0
-    CYGACC_CALL_IF_SET_CONSOLE_COMM()(0);
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(0);
     comm = CYGACC_CALL_IF_CONSOLE_PROCS();
-    CYGACC_COMM_IF_CH_DATA_SET(*comm, CYG_DEV_SERIAL_BASE_A);
+    CYGACC_COMM_IF_CH_DATA_SET(*comm, &channels[0]);
     CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_plf_serial_write);
     CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_plf_serial_read);
     CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_plf_serial_putc);
@@ -409,9 +422,9 @@ cyg_hal_plf_serial_init(void)
     CYGACC_COMM_IF_GETC_TIMEOUT_SET(*comm, cyg_hal_plf_serial_getc_timeout);
 
     // Set channel 1
-    CYGACC_CALL_IF_SET_CONSOLE_COMM()(1);
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(1);
     comm = CYGACC_CALL_IF_CONSOLE_PROCS();
-    CYGACC_COMM_IF_CH_DATA_SET(*comm, CYG_DEV_SERIAL_BASE_B);
+    CYGACC_COMM_IF_CH_DATA_SET(*comm, &channels[1]);
     CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_plf_serial_write);
     CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_plf_serial_read);
     CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_plf_serial_putc);
@@ -421,7 +434,7 @@ cyg_hal_plf_serial_init(void)
     CYGACC_COMM_IF_GETC_TIMEOUT_SET(*comm, cyg_hal_plf_serial_getc_timeout);
     
     // Restore original console
-    CYGACC_CALL_IF_SET_CONSOLE_COMM()(cur);
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
 }
 
 #endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG || CYGPRI_HAL_IMPLEMENTS_IF_SERVICES
@@ -626,7 +639,7 @@ static void
 cyg_hal_plf_lcd_init(void)
 {
     hal_virtual_comm_table_t* comm;
-    int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM()(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+    int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
 
     // Init channel
     init_lcd_channel((cyg_uint8*)LCD_BASE);
@@ -634,7 +647,7 @@ cyg_hal_plf_lcd_init(void)
     // Setup procs in the vector table
 
     // Set channel 2
-    CYGACC_CALL_IF_SET_CONSOLE_COMM()(2);
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(2);
     comm = CYGACC_CALL_IF_CONSOLE_PROCS();
     CYGACC_COMM_IF_CH_DATA_SET(*comm, LCD_BASE);
     CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_plf_lcd_write);
@@ -644,7 +657,7 @@ cyg_hal_plf_lcd_init(void)
     CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_plf_lcd_control);
 
     // Restore original console
-    CYGACC_CALL_IF_SET_CONSOLE_COMM()(cur);
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
 }
 #endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG || CYGPRI_HAL_IMPLEMENTS_IF_SERVICES
 
@@ -673,21 +686,23 @@ cyg_hal_plf_lcd_init(void)
 # error "Cannot use LCD"
 #endif
 
+static channel_data_t channel = { __BASE, 0, 0};
+
 #ifdef HAL_DIAG_USES_HARDWARE
 
 void hal_diag_init(void)
 {
-    init_serial_channel(__BASE);
+    init_serial_channel(&channel);
 }
 
 void hal_diag_write_char(char __c)
 {
-    cyg_hal_plf_serial_putc(__BASE, __c);
+    cyg_hal_plf_serial_putc(&channel, __c);
 }
 
 void hal_diag_read_char(char *c)
 {
-    *c = cyg_hal_plf_serial_getc(__BASE);
+    *c = cyg_hal_plf_serial_getc(&channel);
 }
 
 #else  // ifdef HAL_DIAG_USES_HARDWARE
@@ -697,7 +712,7 @@ void
 hal_diag_init(void)
 {
     // Init devices
-    init_serial_channel(__BASE);
+    init_serial_channel(&channel);
 }
 
 void 
@@ -705,14 +720,14 @@ hal_diag_write_char_serial( char c )
 {
     unsigned long __state;
     HAL_DISABLE_INTERRUPTS(__state);
-    cyg_hal_plf_serial_putc(__BASE, c);
+    cyg_hal_plf_serial_putc(&channel, c);
     HAL_RESTORE_INTERRUPTS(__state);
 }
 
 void
 hal_diag_read_char(char *c)
 {
-    *c = cyg_hal_plf_serial_getc(__BASE);
+    *c = cyg_hal_plf_serial_getc(&channel);
 }
 
 void 
@@ -797,8 +812,6 @@ hal_diag_write_char(char c)
 }
 
 #endif  // ifdef HAL_DIAG_USES_HARDWARE
-
-#undef __BASE
 
 #endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG
 

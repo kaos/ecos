@@ -538,7 +538,14 @@ serial_data_rcv_req(serial_channel *chan, int avail,
         gap = cbuf->get - cbuf->put - 1;
         if (gap < 0) {
             // If failed, the gap is between put and the end of buffer
-            gap = cbuf->len - cbuf->put - 1;
+            gap = cbuf->len - cbuf->put;
+
+            // If get is at the beginning of the buffer, we cannot
+            // fill the last character, since that would make put==get
+            // implying empty. In this case we must offer last chunk-1 only.
+            //  GxxxxxP.......
+            if (cbuf->get == 0)
+                gap--;
         }
     }
 

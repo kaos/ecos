@@ -132,54 +132,54 @@ typedef volatile CYG_ADDRWORD hal_virtual_comm_table_t[CYGNUM_COMM_IF_TABLE_SIZE
 
 typedef void* __comm_if_ch_data_t;
 #define CYGACC_COMM_IF_CH_DATA(_t_) \
- ((__comm_if_ch_data_t)(((_t_))[CYGNUM_COMM_IF_CH_DATA]))
+ ((__comm_if_ch_data_t)((_t_)[CYGNUM_COMM_IF_CH_DATA]))
 #define CYGACC_COMM_IF_CH_DATA_SET(_t_, _x_) \
  (_t_)[CYGNUM_COMM_IF_CH_DATA]=(CYG_ADDRWORD)(_x_)
 
 typedef void (*__comm_if_write_t)(void* __ch_data, const cyg_uint8* __buf,
                                   cyg_uint32 __len);
-#define CYGACC_COMM_IF_WRITE(_t_) \
- ((__comm_if_write_t)(((_t_))[CYGNUM_COMM_IF_WRITE]))
+#define CYGACC_COMM_IF_WRITE(_t_, _b_, _l_) \
+ ((__comm_if_write_t)(((_t_))[CYGNUM_COMM_IF_WRITE]))(CYGACC_COMM_IF_CH_DATA(_t_), (_b_), (_l_))
 #define CYGACC_COMM_IF_WRITE_SET(_t_, _x_) \
  (_t_)[CYGNUM_COMM_IF_WRITE]=(CYG_ADDRWORD)(_x_)
 
 typedef int (*__comm_if_read_t)(void* __ch_data, cyg_uint8* __buf,
                                 cyg_uint32 __len);
-#define CYGACC_COMM_IF_READ(_t_) \
- ((__comm_if_read_t)(((_t_))[CYGNUM_COMM_IF_READ]))
+#define CYGACC_COMM_IF_READ(_t_, _b_, _l_) \
+ ((__comm_if_read_t)(((_t_))[CYGNUM_COMM_IF_READ]))(CYGACC_COMM_IF_CH_DATA(_t_), (_b_), (_l_))
 #define CYGACC_COMM_IF_READ_SET(_t_, _x_) \
  (_t_)[CYGNUM_COMM_IF_READ]=(CYG_ADDRWORD)(_x_)
 
 typedef void (*__comm_if_putc_t)(void* __ch_data, cyg_uint8 __ch);
-#define CYGACC_COMM_IF_PUTC(_t_) \
- ((__comm_if_putc_t)(((_t_))[CYGNUM_COMM_IF_PUTC]))
+#define CYGACC_COMM_IF_PUTC(_t_, _c_) \
+ ((__comm_if_putc_t)(((_t_))[CYGNUM_COMM_IF_PUTC]))(CYGACC_COMM_IF_CH_DATA(_t_), (_c_))
 #define CYGACC_COMM_IF_PUTC_SET(_t_, _x_) \
  (_t_)[CYGNUM_COMM_IF_PUTC]=(CYG_ADDRWORD)(_x_)
 
 typedef cyg_uint8 (*__comm_if_getc_t)(void* __ch_data);
 #define CYGACC_COMM_IF_GETC(_t_) \
- ((__comm_if_getc_t)(((_t_))[CYGNUM_COMM_IF_GETC]))
+ ((__comm_if_getc_t)((_t_)[CYGNUM_COMM_IF_GETC]))(CYGACC_COMM_IF_CH_DATA(_t_))
 #define CYGACC_COMM_IF_GETC_SET(_t_, _x_) \
  (_t_)[CYGNUM_COMM_IF_GETC]=(CYG_ADDRWORD)(_x_)
 
 typedef int (*__comm_if_control_t)(void *__ch_data, 
                                    __comm_control_cmd_t __func, ...);
-#define CYGACC_COMM_IF_CONTROL(_t_) \
- ((__comm_if_control_t)(((_t_))[CYGNUM_COMM_IF_CONTROL]))
+#define CYGACC_COMM_IF_CONTROL(_t_, args...) \
+ ((__comm_if_control_t)(((_t_))[CYGNUM_COMM_IF_CONTROL]))(CYGACC_COMM_IF_CH_DATA(_t_), ## args)
 #define CYGACC_COMM_IF_CONTROL_SET(_t_, _x_) \
  (_t_)[CYGNUM_COMM_IF_CONTROL]=(CYG_ADDRWORD)(_x_)
 
 typedef int (*__comm_if_dbg_isr_t)(void *__ch_data, 
                                int* __ctrlc, CYG_ADDRWORD __vector,
                                CYG_ADDRWORD __data);
-#define CYGACC_COMM_IF_DBG_ISR(_t_) \
- ((__comm_if_dbg_isr_t)(((_t_))[CYGNUM_COMM_IF_DBG_ISR]))
+#define CYGACC_COMM_IF_DBG_ISR(_t_, _c_, _v_, _d_) \
+ ((__comm_if_dbg_isr_t)(((_t_))[CYGNUM_COMM_IF_DBG_ISR]))(CYGACC_COMM_IF_CH_DATA(_t_), (_c_), (_v_), (_d_))
 #define CYGACC_COMM_IF_DBG_ISR_SET(_t_, _x_) \
  (_t_)[CYGNUM_COMM_IF_DBG_ISR]=(CYG_ADDRWORD)(_x_)
 
 typedef cyg_bool (*__comm_if_getc_timeout_t)(void* __ch_data, cyg_uint8* __ch);
-#define CYGACC_COMM_IF_GETC_TIMEOUT(_t_) \
- ((__comm_if_getc_timeout_t)(((_t_))[CYGNUM_COMM_IF_GETC_TIMEOUT]))
+#define CYGACC_COMM_IF_GETC_TIMEOUT(_t_, _c_) \
+ ((__comm_if_getc_timeout_t)(((_t_))[CYGNUM_COMM_IF_GETC_TIMEOUT]))(CYGACC_COMM_IF_CH_DATA(_t_), (_c_))
 #define CYGACC_COMM_IF_GETC_TIMEOUT_SET(_t_, _x_) \
  (_t_)[CYGNUM_COMM_IF_GETC_TIMEOUT]=(CYG_ADDRWORD)(_x_)
 
@@ -282,14 +282,14 @@ typedef hal_virtual_comm_table_t *__call_if_debug_procs_t;
  hal_virtual_vector_table[CYGNUM_CALL_IF_DEBUG_PROCS]=(CYG_ADDRWORD)(_x_)
 
 typedef void (*__call_if_flush_dcache_t)(void *__p, int __nbytes);
-#define CYGACC_CALL_IF_FLUSH_DCACHE() \
- ((__call_if_flush_dcache_t)hal_virtual_vector_table[CYGNUM_CALL_IF_FLUSH_DCACHE])
+#define CYGACC_CALL_IF_FLUSH_DCACHE(_p_, _n_) \
+ ((__call_if_flush_dcache_t)hal_virtual_vector_table[CYGNUM_CALL_IF_FLUSH_DCACHE])((_p_), (_n_))
 #define CYGACC_CALL_IF_FLUSH_DCACHE_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_FLUSH_DCACHE]=(CYG_ADDRWORD)(_x_)
 
 typedef void (*__call_if_flush_icache_t)(void *__p, int __nbytes);
-#define CYGACC_CALL_IF_FLUSH_ICACHE() \
- ((__call_if_flush_icache_t)hal_virtual_vector_table[CYGNUM_CALL_IF_FLUSH_ICACHE])
+#define CYGACC_CALL_IF_FLUSH_ICACHE(_p_, _n_) \
+ ((__call_if_flush_icache_t)hal_virtual_vector_table[CYGNUM_CALL_IF_FLUSH_ICACHE])((_p_), (_n_))
 #define CYGACC_CALL_IF_FLUSH_ICACHE_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_FLUSH_ICACHE]=(CYG_ADDRWORD)(_x_)
 
@@ -307,26 +307,26 @@ typedef void* __call_if_board_data_t;
 
 typedef int (*__call_if_sysinfo_t)(int __id, void* __ap);
 //typedef int (*__call_if_sysinfo_t)(enum bsp_info_id __id, va_list __ap);
-#define CYGACC_CALL_IF_SYSINFO() \
- ((__call_if_sysinfo_t)hal_virtual_vector_table[CYGNUM_CALL_IF_SYSINFO])
+#define CYGACC_CALL_IF_SYSINFO(_i_, _a_) \
+ ((__call_if_sysinfo_t)hal_virtual_vector_table[CYGNUM_CALL_IF_SYSINFO])((_i_), (_a_))
 #define CYGACC_CALL_IF_SYSINFO_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_SYSINFO]=(CYG_ADDRWORD)(_x_)
 
 typedef int (*__call_if_set_debug_comm_t)(int __comm_id);
-#define CYGACC_CALL_IF_SET_DEBUG_COMM() \
- ((__call_if_set_debug_comm_t)hal_virtual_vector_table[CYGNUM_CALL_IF_SET_DEBUG_COMM])
+#define CYGACC_CALL_IF_SET_DEBUG_COMM(_i_) \
+ ((__call_if_set_debug_comm_t)hal_virtual_vector_table[CYGNUM_CALL_IF_SET_DEBUG_COMM])((_i_))
 #define CYGACC_CALL_IF_SET_DEBUG_COMM_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_SET_DEBUG_COMM]=(CYG_ADDRWORD)(_x_)
 
 typedef int (*__call_if_set_console_comm_t)(int __comm_id);
-#define CYGACC_CALL_IF_SET_CONSOLE_COMM() \
- ((__call_if_set_console_comm_t)hal_virtual_vector_table[CYGNUM_CALL_IF_SET_CONSOLE_COMM])
+#define CYGACC_CALL_IF_SET_CONSOLE_COMM(_i_) \
+ ((__call_if_set_console_comm_t)hal_virtual_vector_table[CYGNUM_CALL_IF_SET_CONSOLE_COMM])((_i_))
 #define CYGACC_CALL_IF_SET_CONSOLE_COMM_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_SET_CONSOLE_COMM]=(CYG_ADDRWORD)(_x_)
 
 typedef int (*__call_if_set_serial_baud_t)(int __comm_id, int __baud);
-#define CYGACC_CALL_IF_SET_SERIAL_BAUD() \
- ((__call_if_set_serial_baud_t)hal_virtual_vector_table[CYGNUM_CALL_IF_SET_SERIAL_BAUD])
+#define CYGACC_CALL_IF_SET_SERIAL_BAUD(_i_, _b_) \
+ ((__call_if_set_serial_baud_t)hal_virtual_vector_table[CYGNUM_CALL_IF_SET_SERIAL_BAUD])((_i_), (_b_))
 #define CYGACC_CALL_IF_SET_SERIAL_BAUD_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_SET_SERIAL_BAUD]=(CYG_ADDRWORD)(_x_)
 
@@ -345,9 +345,11 @@ typedef int (*__call_if_dbg_syscall_t) (enum dbg_syscall_ids id,
 
 typedef void (*__call_if_reset_t)(void);
 #define CYGACC_CALL_IF_RESET() \
- ((__call_if_reset_t)hal_virtual_vector_table[CYGNUM_CALL_IF_RESET])
+ ((__call_if_reset_t)hal_virtual_vector_table[CYGNUM_CALL_IF_RESET])()
 #define CYGACC_CALL_IF_RESET_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_RESET]=(CYG_ADDRWORD)(_x_)
+#define CYGACC_CALL_IF_RESET_GET() \
+ ((__call_if_reset_t)hal_virtual_vector_table[CYGNUM_CALL_IF_RESET])
 
 typedef int __call_if_console_interrupt_flag_t;
 #define CYGACC_CALL_IF_CONSOLE_INTERRUPT_FLAG() \
@@ -356,14 +358,14 @@ typedef int __call_if_console_interrupt_flag_t;
  hal_virtual_vector_table[CYGNUM_CALL_IF_CONSOLE_INTERRUPT_FLAG]=(CYG_ADDRWORD)(_x_)
 
 typedef void (*__call_if_delay_us_t)(cyg_int32 usecs);
-#define CYGACC_CALL_IF_DELAY_US() \
- ((__call_if_delay_us_t)hal_virtual_vector_table[CYGNUM_CALL_IF_DELAY_US])
+#define CYGACC_CALL_IF_DELAY_US(_u_) \
+ ((__call_if_delay_us_t)hal_virtual_vector_table[CYGNUM_CALL_IF_DELAY_US])((_u_))
 #define CYGACC_CALL_IF_DELAY_US_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_DELAY_US]=(CYG_ADDRWORD)(_x_)
 
 typedef void (*__call_if_install_bpt_fn_t)(void *__epc);
-#define CYGACC_CALL_IF_INSTALL_BPT_FN() \
- ((__call_if_install_bpt_fn_t)hal_virtual_vector_table[CYGNUM_CALL_IF_INSTALL_BPT_FN])
+#define CYGACC_CALL_IF_INSTALL_BPT_FN(_e_) \
+ ((__call_if_install_bpt_fn_t)hal_virtual_vector_table[CYGNUM_CALL_IF_INSTALL_BPT_FN])((_e_))
 #define CYGACC_CALL_IF_INSTALL_BPT_FN_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_INSTALL_BPT_FN]=(CYG_ADDRWORD)(_x_)
 

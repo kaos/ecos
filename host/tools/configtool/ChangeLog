@@ -1,3 +1,10 @@
+2000-07-03  John Dallaway  <jld@redhat.com>
+
+	* common/win32/CTCommonDoc.cpp:
+
+	Modify SelectPackages() to inhibit option value refresh
+	while changing the version of an eCos package.
+
 2000-06-27  John Dallaway  <jld@redhat.com>
 
 	* standalone/win32/Configtool.rc:

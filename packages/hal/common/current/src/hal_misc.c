@@ -97,7 +97,7 @@ cyg_hal_user_break( CYG_ADDRWORD *regs )
     if( regs == NULL ) __pc = __ra;
     else __pc = sreg->pc;
 
-    CYGACC_CALL_IF_INSTALL_BPT_FN()((void *)__pc);
+    CYGACC_CALL_IF_INSTALL_BPT_FN((void *)__pc);
 
     CYGARC_HAL_GET_RETURN_ADDRESS_BACKUP();
     
@@ -133,9 +133,7 @@ hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
     // interrupts. It is a bit messy, but required in a transition period.
     if (CYGNUM_CALL_IF_TABLE_VERSION == CYGACC_CALL_IF_VERSION()) {
         hal_virtual_comm_table_t* comm = CYGACC_CALL_IF_DEBUG_PROCS();
-        gdb_vector 
-            = CYGACC_COMM_IF_CONTROL(*comm)(CYGACC_COMM_IF_CH_DATA(*comm),
-                                            __COMMCTL_DBG_ISR_VECTOR);
+        gdb_vector = CYGACC_COMM_IF_CONTROL(*comm, __COMMCTL_DBG_ISR_VECTOR);
     }
     if( vector == gdb_vector )
 #else
