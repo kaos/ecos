@@ -4478,3 +4478,50 @@ target ts1000 {
             eCos on a Allied Telesyn TS1000 (PPC855T) board."
 }
 
+# --------------------------------------------------------------------------
+
+package CYGPKG_DEVS_FLASH_UE250 {
+	alias 		{ "FLASH memory support for uE250" flash_uE250 }
+	directory	devs/flash/arm/uE250
+	script		flash_uE250.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the uE250 platform."
+}
+
+package CYGPKG_DEVS_ETH_ARM_XSCALE_UE250 {
+	alias 		{ "NMI uE250 PCI ethernet driver" devs_eth_arm_ue250 }
+	hardware
+	directory	devs/eth/arm/uE250
+	script		uE250_eth_drivers.cdl
+        description     "Ethernet driver for NMI uE250 via PCI card."
+}
+
+package CYGPKG_HAL_ARM_XSCALE_UE250 {
+	alias		{ "NMI uEngine uE250" hal_arm_xscale_uE250 }
+	directory	hal/arm/xscale/uE250
+	script		hal_arm_xscale_uE250.cdl
+	hardware
+        description "
+        The UE250 HAL package provides the support needed to run
+        eCos on an NMI uEngine u250 board."
+}
+
+target uE250 {
+	alias { "NMI uEngine uE250 Board" uE250 ue250 }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_XSCALE_CORE
+                   CYGPKG_HAL_ARM_XSCALE_PXA2X0
+                   CYGPKG_HAL_ARM_XSCALE_UE250
+                   CYGPKG_IO_PCI
+                   CYGPKG_IO_SERIAL_GENERIC_16X5X
+                   CYGPKG_DEVS_FLASH_STRATA
+                   CYGPKG_DEVS_FLASH_UE250
+                   CYGPKG_DEVS_ETH_NS_DP83902A
+                   CYGPKG_DEVS_ETH_ARM_XSCALE_UE250
+        }
+        description "
+        The uE250 target provides the packages needed to run
+        eCos on an NMI uEngine uE250 board."
+}

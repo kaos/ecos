@@ -1,3 +1,7 @@
+2003-02-20  Gary Thomas  <gary@mind.be>
+
+	* ecos.db: New platform - NMI uE250 (ARM Xscale PXA250)
+
 2003-02-14  Tim Michals  <t.michals@attbi.com>
 2003-02-14  Jonathan Larmour  <jifl@eCosCentric.com>
 
