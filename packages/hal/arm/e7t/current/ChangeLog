@@ -1,3 +1,8 @@
+2002-10-19  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/hal_platform_setup.h (PLATFORM_SETUP1): Only define if
+	ROM or ROMRAM, not if STUBS which can be RAM.
+
 2002-04-15  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_platform_setup.h (PLATFORM_SETUP1): Changed ldm/stm

@@ -67,7 +67,7 @@
 #define CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE 2048
 #endif
 
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_ROMRAM)
 #define PLATFORM_SETUP1                                                 ;\
         ldr     r1,=E7T_IOPMOD                                          ;\
         ldr     r2,=0x0001fcf0 /* set led + seg to output */            ;\
