@@ -171,15 +171,21 @@ externC void hal_thread_load_context( CYG_ADDRESS to )
 // HAL_BREAKINST is the value of the breakpoint instruction and 
 // HAL_BREAKINST_SIZE is its size in bytes.
 
-#define HAL_BREAKPOINT(_label_)                \
-asm volatile (" .globl  " #_label_ ";"         \
-              #_label_":"                      \
-              " .word 0xE7FFDEFE"              \
+#define _stringify1(__arg) #__arg
+#define _stringify(__arg) _stringify1(__arg)
+
+#define HAL_BREAKINST_ARM          0xE7FFDEFE
+#define HAL_BREAKINST_ARM_SIZE     4
+
+#define HAL_BREAKPOINT(_label_)                   \
+asm volatile (" .globl  " #_label_ ";"            \
+              #_label_":"                         \
+              " .word " _stringify(HAL_BREAKINST_ARM) \
     );
 
 //#define HAL_BREAKINST           {0xFE, 0xDE, 0xFF, 0xE7}
-#define HAL_BREAKINST           0xE7FFDEFE
-#define HAL_BREAKINST_SIZE      4
+#define HAL_BREAKINST            HAL_BREAKINST_ARM
+#define HAL_BREAKINST_SIZE       HAL_BREAKINST_ARM_SIZE
 
 //--------------------------------------------------------------------------
 // Thread register state manipulation for GDB support.

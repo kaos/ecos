@@ -1,9 +1,9 @@
-#ifndef CYGONCE_HAL_CL7211_H
-#define CYGONCE_HAL_CL7211_H
+#ifndef CYGONCE_HAL_CMA230_H
+#define CYGONCE_HAL_CMA230_H
 
 /*=============================================================================
 //
-//      hal_cl7211.h
+//      hal_cma230.h
 //
 //      HAL Support for Kernel Diagnostic Routines
 //

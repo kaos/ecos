@@ -295,6 +295,18 @@
 	lb	\vnum,0(v0)		# pick up vector number
 	.endm
 
+#ifndef CYGPKG_HAL_MIPS_INTC_TRANSLATE_DEFINED
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
+	.macro	hal_intc_translate inum,vnum
+	move	\vnum,zero			# Just vector zero is supported
+	.endm
+#else			
+	.macro	hal_intc_translate inum,vnum
+	move	\vnum,\inum			# Vector == interrupt number
+	.endm
+#endif
+#endif
+
 	.macro	hal_intc_decode_data
 hal_intc_translation_table:	
 	.byte	0, 0, 1, 0

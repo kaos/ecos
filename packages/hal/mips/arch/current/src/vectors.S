@@ -500,13 +500,13 @@ FUNC_START(__default_interrupt_vsr)
 	# Decode external interrupt via interrupt controller
 
 	hal_intc_decode	s2
-	
-#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
-	move	s1,zero				# Just vector zero is supported
-#else			
-	move	s1,s2				# Vector == interrupt number
-#endif
 
+	# Here, s2 contains the number of the interrupt being serviced,
+	# we need to derive from that the vector number to call in the ISR
+	# table.
+	
+	hal_intc_translate s2,s1
+	
 	# Here s1 is the number of the vector to be called and s2 is
 	# the number of the interrupt being serviced. 
 
@@ -519,7 +519,7 @@ FUNC_START(__default_interrupt_vsr)
 	li	a0,0x0301			# a0 = type = INTR,RAISE
 	move	a1,s1				# a1 = vector number
 	jal	cyg_instrument			# call instrument function
-	xor	a2,a2,a2			# arg2 = 0 (delay slot)
+	 move	a2,s2				# a2 = interrupt number
 #endif
 
 #if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)

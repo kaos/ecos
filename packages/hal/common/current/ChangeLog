@@ -1,3 +1,32 @@
+1999-10-22  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/hal_stub.h (CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION):
+	(CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION): new macros to be invoked
+	in hal_diag routines to make atomic the code that outputs a
+	complete GDB $O packet.  This is required so that watching
+	variables (which is implemented by stepping) and stepping itself
+	does not try to ss through that $O output code.  CASE 102327.
+
+	* src/hal_stub.c (cyg_hal_gdb_break_is_set): new routine to query
+	whether a break is set: used by step in the stubs to decide to
+	continue instead, because we are in a critical region.
+	(cyg_hal_gdb_running_step): communication between generic stub and
+	here: if set, a step has been converted into a continue, so we do
+	NOT obey cyg_hal_gdb_remove_break until it is cleared, in
+	handle_exception_cleanup().
+
+	* src/generic-stub.c (__process_packet): If there is a break set
+	by the hal_stub.c, convert a step to continue, and set
+	cyg_hal_gdb_running_step to say we did so.
+
+1999-10-22  Jesper Skov  <jskov@cygnus.co.uk>
+        Case 102379
+	* src/generic-stub.c (__handle_exception): Flush and clear caches
+	after cleaning up after single-stepping.
+
+	(memcpy, memset): Added to prevent stub hanging if user puts
+	breakpoints in either function.
+
 1999-10-10  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/thread-packets.c (stub_pkt_currthread): Fix typo in comment.

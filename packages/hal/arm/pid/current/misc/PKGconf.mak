@@ -51,5 +51,3 @@ gdb_module.img: gdb_module.stamp
 	$(RM) -f gdb_module.img.XX
 endif
 
-
-

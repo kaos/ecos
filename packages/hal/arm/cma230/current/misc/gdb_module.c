@@ -2,7 +2,7 @@
 //
 //        gdb_module.c
 //
-//        Cirrus CL7211 eval board GDB stubs (module wrapper)
+//        Cogent CMA230 board GDB stubs (module wrapper)
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -32,7 +32,7 @@
 // Author(s):     gthomas
 // Contributors:  gthomas
 // Date:          1999-05-11
-// Description:   Cirrus CL7211 FLASH module for eCos GDB stubs
+// Description:   Cirrus CMA230 module for eCos GDB stubs
 //####DESCRIPTIONEND####
 
 //

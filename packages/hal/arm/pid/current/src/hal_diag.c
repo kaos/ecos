@@ -346,4 +346,17 @@ hal_diag_write_char(char c)
 #endif
 
 /*---------------------------------------------------------------------------*/
+
+// Control the LEDs PP0-PP3. this requires the jumpers on pins 1-8 to
+// be set on LK11, thus preventing the use of the parallel port.
+
+#define CYG_DEVICE_PARALLEL_DATA 0x0d800040
+
+void
+hal_diag_led(int n)
+{
+    HAL_WRITE_UINT8(CYG_DEVICE_PARALLEL_DATA, (n & 0xf) << 4);
+}
+
+/*---------------------------------------------------------------------------*/
 /* End of hal_diag.c */

@@ -1,3 +1,11 @@
+1999-10-22  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/hal_diag.c (hal_diag_write_char): Call new hal_stub.h macro
+	CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION() instead of simply disabling
+	interrupts, ditto for enable.  This provides atomicity wrt single
+	stepping and watching variables when this code to output a whole
+	GDB $O packet is entered.
+
 1999-09-20  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* include/pkgconf/hal_powerpc_mbx.h:

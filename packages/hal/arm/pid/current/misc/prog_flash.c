@@ -62,6 +62,8 @@ void write_sector(int, char *);
 char *flash_buffer = (char *)0x60000;
 char *flash_buffer_end = (char *)0x64000;
 
+#define BUF(x) buf[x]
+
 // FUNCTIONS
 
 externC void
@@ -89,6 +91,7 @@ main( int argc, char *argv[] )
     cyg_thread_delay(5*100);
     diag_printf("\n");
     diag_printf("...Programming FLASH\n");
+
     i = 0;
     while (flash_buffer < flash_buffer_end) {
         write_sector(i++, flash_buffer);
@@ -171,7 +174,7 @@ void
 write_sector(int num, char *buf)
 {
     int i, cnt;
-    volatile char *wrt = (volatile int *)&FLASH[num*sector_size];
+    volatile char *wrt = (volatile char *)&FLASH[num*sector_size];
 
 //    diag_printf("Writing to %08x\n", wrt);
     // Enter Program Mode
@@ -181,26 +184,25 @@ write_sector(int num, char *buf)
 
     // Note: write bytes as longs regardless of bus width
     for (i = 0;  i < sector_size;  i++) {
-        wrt[i] = buf[i];
+        wrt[i] = BUF(i);
     }
 
     // Wait for sector to program
     cnt = 0;
     i = sector_size - 1;
-    while (wrt[i] != buf[i]) {
+    while (wrt[i] != BUF(i)) {
         if (cnt++ > 0x01000000) break;
     }
-//    diag_printf("Out - i: %d, wrt[i] = %08X.%08X, buf[i] = %08X, count = %x\n", i, &wrt[i], wrt[i], buf[i], cnt);
+//    diag_printf("Out - i: %d, wrt[i] = %08X.%08X, BUF(i) = %08X, count = %x\n", i, &wrt[i], wrt[i], BUF(i), cnt);
 
     // Verify
     for (i = 0;  i < sector_size;  i++) {
         for (cnt = 0;  cnt < 10;  cnt++) {
-            if (*wrt == *buf) break;
+            if (wrt[i] == BUF(i)) break;
             cyg_thread_delay(1);
         }
         if (cnt == 10) {
-            diag_printf("Can't program at 0x%08X: %02X not %02X\n", wrt, *wrt, *buf);
+            diag_printf("Can't program at 0x%08X: %02X not %02X\n", wrt, *wrt, BUF(0));
         }
-        wrt++;  buf++;
     }
 }

@@ -1,3 +1,14 @@
+1999-10-25  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/arm/pid_serial.h (ISR_RxTO): Define - character received but
+	not handled "promptly".
+
+	* src/arm/pid_serial_with_ints.c (pid_serial_DSR): Handle rcv interrupts
+	properly (can't ignore them even with TO bit set).
+
+	* src/arm/cl7211_serial.c (cl7211_serial_rx_DSR): Need to handle all
+	input (empty input FIFO) otherwise characters get dropped.
+
 1999-10-15  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* tests/ser_test_protocol.inl: Removed AEB rev C change. Was bogus.

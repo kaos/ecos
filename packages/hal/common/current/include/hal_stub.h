@@ -60,6 +60,9 @@ typedef cyg_uint32 uint32;
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} // to make below format correctly.
+#endif
 
 //-----------------------------------------------------------------------------
 // Definitions for generic-stub.c
@@ -150,6 +153,40 @@ extern unsigned long __break_opcode (void);
 #ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
 extern void cyg_hal_gdb_interrupt    (target_register_t pc);
 extern int  cyg_hal_gdb_remove_break (target_register_t pc);
+extern int  cyg_hal_gdb_break_is_set (void);
+
+/* This is used so that the generic stub can tell
+ * cyg_hal_gdb_remove_break() not to bother when we are avoiding stepping
+ * through a critical region ie. hal_diag_write_char() usually - that
+ * shares the GDB IO device.
+ */
+extern volatile int cyg_hal_gdb_running_step;
+
+// Use these in hal_diag.c when about to write a whole $O packet to GDB.
+// NB they require __builtin_return_address() to work: if your platform
+// does not support this, use HAL_DISABLE_INTERRUPTS &c instead.
+
+#define CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION( _old_ )                           \
+do {                                                                            \
+    HAL_DISABLE_INTERRUPTS(_old_);                                              \
+    cyg_hal_gdb_interrupt((target_register_t)__builtin_return_address(0));      \
+} while ( 0 )
+
+#define CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION( _old_ )                           \
+do {                                                                            \
+    cyg_hal_gdb_remove_break((target_register_t)__builtin_return_address(0));   \
+    HAL_RESTORE_INTERRUPTS(_old_);                                              \
+} while ( 0 )
+
+#else // NO debug_gdb_break_support
+
+// so define these just to do interrupts:
+#define CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION( _old_ )   \
+    HAL_DISABLE_INTERRUPTS(_old_)
+
+#define CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION( _old_ )   \
+    HAL_RESTORE_INTERRUPTS(_old_)
+
 #endif
 
 //----------------------------------------------------------------------------

@@ -1,3 +1,14 @@
+1999-10-22  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/arm_stub.c (cyg_hal_gdb_running_step):
+	(cyg_hal_gdb_break_is_set): Provide dummies for these two for now.
+	See changelog for hal/common/ hal_stub and generic_stub for info.
+
+1999-10-21  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/hal_arch.h: Tidy a bit so the breakpoint instruction is only
+	defined in one place
+
 1999-10-14  Jesper Skov  <jskov@cygnus.co.uk>
         From James Ingham <jingham@cygnus.com>:
 	* src/PKGconf.mak: Make sed invocation Solaris safe.

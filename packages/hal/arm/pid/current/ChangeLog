@@ -1,3 +1,10 @@
+1999-10-25  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* misc/STUBS_config: Updated.
+	* src/hal_diag.c (hal_diag_led): Added LED diag.
+	* misc/prog_flash.c: Fixed compiler warning.
+
+	
 1999-10-19  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* include/pkgconf/hal_arm_pid.h: Added ARM9 options.

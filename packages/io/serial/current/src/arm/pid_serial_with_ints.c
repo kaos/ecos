@@ -305,6 +305,8 @@ pid_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     isr = port->isr & 0x0E;
     if (isr == ISR_Tx) {
         (chan->callbacks->xmt_char)(chan);
+    } else if (isr == ISR_RxTO) {
+        (chan->callbacks->rcv_char)(chan, port->rhr);
     } else if (isr == ISR_Rx) {
         (chan->callbacks->rcv_char)(chan, port->rhr);
     }

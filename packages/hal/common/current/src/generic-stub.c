@@ -103,7 +103,35 @@ static uint32 crc32 (unsigned char *ptr, int len, uint32 crc);
  *
  ****************************************************************************/
 
-#ifndef __ECOS__
+#ifdef __ECOS__
+
+// We cannot share memcpy and memset with the rest of the system since
+// the user may want to step through it.
+static inline void*
+memcpy(void* dest, void* src, int size)
+{
+    unsigned char* __d = (unsigned char*) dest;
+    unsigned char* __s = (unsigned char*) src;
+    
+    while(size--)
+        *__d++ = *__s++;
+
+    return dest;
+}
+
+static inline void*
+memset(void* s, int c, int size)
+{
+    unsigned char* __s = (unsigned char*) s;
+    unsigned char __c = (unsigned char) c;
+    
+    while(size--)
+        *__s++ = __c;
+
+    return s;
+}
+
+#else
 #include <string.h>
 #include <signal.h>
 #endif // __ECOS__
@@ -776,6 +804,15 @@ __handle_exception (void)
   unlock_thread_scheduler ();
   __clear_single_step ();
 
+#ifdef __ECOS__
+      /* Need to flush the data and instruction cache here, as we may have
+         removed a breakpoint in __single_step - and we may be sharing
+         some code with the application! */
+
+        __data_cache (CACHE_FLUSH) ;
+        __instruction_cache (CACHE_FLUSH) ;
+#endif
+
 #ifdef SIGSYSCALL
   if (sigval == SIGSYSCALL)
     {
@@ -1130,6 +1167,17 @@ __process_packet (char *packet)
             __kill_program (sigval);
             return 0;
           }
+
+#ifdef __ECOS__
+        // CASE 102327 - watchpoints fight with output, so do not step
+        // through $O packet output routines.
+#ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+        if ( cyg_hal_gdb_break_is_set() ) {
+            packet[0] = 'c'; // Force it to be a "continue" instead of step.
+            cyg_hal_gdb_running_step = 1; // And tell the hal_stub...
+        }
+#endif
+#endif
 
         /* Set machine state to force a single step.  */
         if (packet[0] == 's' || packet[0] == 'S')

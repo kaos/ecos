@@ -356,7 +356,7 @@ cl7211_serial_rx_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t dat
     cl7211_serial_info *cl7211_chan = (cl7211_serial_info *)chan->dev_priv;
     volatile cyg_uint32 *datreg = (volatile cyg_uint32 *)cl7211_chan->data;
     volatile cyg_uint32 *stat = (volatile cyg_uint32 *)cl7211_chan->stat;
-    if (!(*stat & SYSFLG1_URXFE1))
+    while (!(*stat & SYSFLG1_URXFE1))
         (chan->callbacks->rcv_char)(chan, *datreg);
     cyg_drv_interrupt_unmask(cl7211_chan->rx_int_num);
 }

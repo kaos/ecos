@@ -317,4 +317,3 @@ package CYGPKG_DEVICES_WATCHDOG {
 	default_value	1
 	include_dir	cyg/devs
 }
-

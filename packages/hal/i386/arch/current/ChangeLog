@@ -1,3 +1,8 @@
+1999-10-25  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/i386.ld: Add asterisks to input section names to make them more
+	tolerant of subtle differences
+
 1999-10-05  Jesper Skov  <jskov@cygnus.co.uk>
         From Andrew Lunn (lunn@ma.tech.ascom.ch)
 	* include/hal_arch.h (HAL_IDLE_THREAD_ACTION): Defined.

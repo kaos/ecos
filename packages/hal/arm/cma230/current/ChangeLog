@@ -1,3 +1,11 @@
+
+1999-10-19  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/hal_cma230.h: Fix ifdefs and comments to be for
+	the cma230, not any other board
+	* misc/gdb_module.c: Likewise
+	* src/PKGconf.mak: Likewise
+
 1999-10-14  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* misc/STUBS_config: Updated.

@@ -136,9 +136,14 @@ typedef struct
 
 static instrBuffer break_buffer;
 
+volatile int cyg_hal_gdb_running_step = 0;
+
 void 
 cyg_hal_gdb_interrupt (target_register_t pc)
 {
+    // Clear this regardless
+    cyg_hal_gdb_running_step = 0;
+    // so that a call to set a BP because of a ^C will take effect
     if (NULL == break_buffer.targetAddr) {
         break_buffer.targetAddr = (t_inst*) pc;
         break_buffer.savedInstr = *(t_inst*)pc;
@@ -152,12 +157,24 @@ cyg_hal_gdb_interrupt (target_register_t pc)
 int 
 cyg_hal_gdb_remove_break (target_register_t pc)
 {
+    if ( cyg_hal_gdb_running_step )
+        return 0;
+
     if ((t_inst*)pc == break_buffer.targetAddr) {
         *(t_inst*)pc = break_buffer.savedInstr;
         break_buffer.targetAddr = NULL;
 
         __data_cache(CACHE_FLUSH);
         __instruction_cache(CACHE_FLUSH);
+        return 1;
+    }
+    return 0;
+}
+
+int 
+cyg_hal_gdb_break_is_set (void)
+{
+    if (NULL != break_buffer.targetAddr) {
         return 1;
     }
     return 0;
@@ -222,6 +239,14 @@ handle_exception_cleanup( void )
 #endif
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+    // If we continued instead of stepping, when there was a break set
+    // ie. we were stepping within a critical region, clear the break, and
+    // that flag.  If we stopped for some other reason, this has no effect.
+    if ( cyg_hal_gdb_running_step ) {
+        cyg_hal_gdb_running_step = 0;
+        cyg_hal_gdb_remove_break(get_register (PC));
+    }
+
     // FIXME: (there may be a better way to do this)
     // If we hit a breakpoint set by the gdb interrupt stub, make it
     // seem like an interrupt rather than having hit a breakpoint.

@@ -1,3 +1,12 @@
+1999-10-22  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/vectors.S: Replaced ifdef with call to hal_intc_translate
+	macro so the behaviour here may be customized by variant or
+	platform HALs.
+
+	* include/arch.inc: Added default implementations of
+	hal_intc_translate macro.
+
 1999-10-05  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/basetype.h: Made definition of CYG_BYTEORDER dependent
