@@ -422,12 +422,14 @@ fis_init(int argc, char *argv[])
         }
         erase_start += (erase_size + flash_block_size);          
 #endif
-        // Lastly, anything at the end
-        erase_size = ((CYG_ADDRESS)flash_end - erase_start) + 1;
-        if ((stat = flash_erase((void *)erase_start, erase_size,
-                                (void **)&err_addr)) != 0) {
-            diag_printf("   initialization failed at %p: %s\n",
-                        err_addr, flash_errmsg(stat));
+        // Lastly, anything at the end, if there is any
+        if ( erase_start < (((CYG_ADDRESS)flash_end)+1) ) {
+            erase_size = ((CYG_ADDRESS)flash_end - erase_start) + 1;
+            if ((stat = flash_erase((void *)erase_start, erase_size,
+                                    (void **)&err_addr)) != 0) {
+                diag_printf("   initialization failed at %p: %s\n",
+                            err_addr, flash_errmsg(stat));
+            }
         }
 #ifndef CYGDAT_REDBOOT_FIS_MAX_FREE_CHUNKS
     // In this case, 'fis free' works by scanning for erased blocks.  Since the

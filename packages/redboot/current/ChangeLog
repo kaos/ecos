@@ -1,3 +1,8 @@
+2004-08-31  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/flash.c (fis_init): Avoid potentially unnecessary erase
+	attempt at end of flash.
+
 2004-08-27  Peter Korsgaard <jacmet@sunsite.dk>  
 
 	* doc/redboot_cmds.sgml: Fixed a minor typo with fis list
