@@ -1,3 +1,10 @@
+2003-04-08  Michael Checky  <Michael_Checky@Thermoking.com>
+
+	* cdl/ks32c5000_eth.cdl: CYGINT_DEVS_ETH_ARM_KS32C5000_PHY can now
+	be zero or one to allow for no PHY station management control.
+	* src/ks5000_ether.c: Changed '#if HavePHY' to
+	'#if CYGINT_DEVS_ETH_ARM_KS32C5000_PHY'
+
 2003-03-27  Jay Foster   <jay@systech.com>
 
 	* src/ics1890.c: Added configurable PHY MII address.

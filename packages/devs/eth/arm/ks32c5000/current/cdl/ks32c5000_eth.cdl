@@ -60,7 +60,7 @@ cdl_package CYGPKG_DEVS_ETH_ARM_KS32C5000 {
     implements    CYGHWR_NET_DRIVERS
     implements    CYGHWR_NET_DRIVER_ETH0
     requires      (CYGPKG_CRC || (!(CYG_HAL_CPUTYPE == \"KS32C5000A\" )))
-    requires      (CYGINT_DEVS_ETH_ARM_KS32C5000_PHY == 1)
+    requires      (CYGINT_DEVS_ETH_ARM_KS32C5000_PHY <= 1)
 
     include_dir   net
     description   "Ethernet driver for Samsung KS32C5000"
@@ -74,7 +74,7 @@ cdl_package CYGPKG_DEVS_ETH_ARM_KS32C5000 {
         no_define
 
         cdl_interface CYGINT_DEVS_ETH_ARM_KS32C5000_PHY {
-            display     "PHY support"
+            display     "PHY Station Management support"
         }
         
         cdl_option CYGPKG_DEVS_ETH_ARM_KS32C5000_DEBUG_LEVEL {

@@ -89,14 +89,13 @@
 #define cyg_drv_dsr_unlock()        /* noop */
 #endif
 
-#define HavePHY 1
 #define HavePHYinterrupt 0
 
 #include "std.h"
 #include "ks5000_regs.h"
 #include "ks5000_ether.h"
 
-#if HavePHY
+#if CYGINT_DEVS_ETH_ARM_KS32C5000_PHY
 #include "phy.h"
 #endif
 
@@ -124,7 +123,7 @@
 #define SoftwareCRC 0
 #endif
 
-#if HavePHY
+#if CYGINT_DEVS_ETH_ARM_KS32C5000_PHY
 // functions to read/write Phy chip registers via MII interface
 // on 32c5000.  These need to be non-static since they're used
 // by PHY-specific routines in a different file.
@@ -642,7 +641,7 @@ static int EthInit(U08* mac_address)
   else
     debug2_printf("EthInit(NULL)\n");
 
-#if HavePHY  
+#if CYGINT_DEVS_ETH_ARM_KS32C5000_PHY
   PhyReset();
 #endif
   
@@ -760,7 +759,7 @@ static void Init_RxFrameDescriptorArray(void)
   return;
 }
 
-#if HavePHY
+#if CYGINT_DEVS_ETH_ARM_KS32C5000_PHY
 
 #if HavePHYinterrupt
 static unsigned linkStatus;
