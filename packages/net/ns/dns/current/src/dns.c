@@ -252,8 +252,12 @@ send_recv(char * msg, int len, int msglen)
 
 /* (re)Start the DNS client. This opens a socket to the DNS server
    who's address is passed in. This address can be either an IPv4 or
-   IPv6 address. This function can be called multiple times. Each
-   invocation will close any previous connection and make a new
+   IPv6 address. This function can be called multiple times.  If we
+   are being called a second time we have to be careful to allow any
+   ongoing lookups to finish before we close the socket and connect to
+   a different DNS server. The danger here is that we may have to wait
+   for up to 32 seconds if the DNS server is down.
+   Each invocation will close any previous connection and make a new
    connection to the new server. Note the address of the server must
    be in numeric form since its not possible to do a DNS lookup! */
 
@@ -311,13 +315,13 @@ int cyg_dns_res_start(char * dns_server) {
 }
 
 /* This is the old interface to start the resolver. It is only IPv4
-   capable and so is now depricated in favor of cyg_dns_res_start().
+   capable and so is now deprecated in favor of cyg_dns_res_start().
    Initialise the resolver. Open a socket and bind it to the
    address of the server.  return -1 if something goes wrong,
    otherwise 0. If we are being called a second time we have to be
    careful to allow any ongoing lookups to finish before we close the
    socket and connect to a different DNS server. The danger here is
-   that we may have to wait for upto 32 seconds if the DNS server is
+   that we may have to wait for up to 32 seconds if the DNS server is
    down.  */
 int  
 cyg_dns_res_init(struct in_addr *dns_server)

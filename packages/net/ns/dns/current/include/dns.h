@@ -57,14 +57,14 @@
 #ifndef _POSIX_SOURCE
 /* Initialise the DNS client with the address of the server. The
    address should be a IPv4 or IPv6 numeric address */
-externC int cyg_dns_res_start(char * server);
+__externC int cyg_dns_res_start(char * server);
 
-/* Old interface which  is depricated */
-externC int cyg_dns_res_init(struct in_addr *dns_server);
+/* Old interface which  is deprecated */
+__externC int cyg_dns_res_init(struct in_addr *dns_server);
 
 /* Functions to manipulate the domainname */
-externC int getdomainname(char *name, size_t len);
-externC int setdomainname(const char *name, size_t len);
+__externC int getdomainname(char *name, size_t len);
+__externC int setdomainname(const char *name, size_t len);
 #endif
 
 // Host name / IP mapping
@@ -77,12 +77,12 @@ struct hostent {
 };
 #define h_addr  h_addr_list[0]  /* for backward compatibility */
 
-externC struct hostent *gethostbyname(const char *host);
-externC struct hostent *gethostbyaddr(const char *addr, int len, int type);
+__externC struct hostent *gethostbyname(const char *host);
+__externC struct hostent *gethostbyaddr(const char *addr, int len, int type);
 
 // Error reporting
-externC int h_errno;
-externC const char* hstrerror(int err);
+__externC int h_errno;
+__externC const char* hstrerror(int err);
 
 #define DNS_SUCCESS  0
 #define HOST_NOT_FOUND 1
@@ -91,12 +91,12 @@ externC const char* hstrerror(int err);
 #define NO_DATA        4
 
 // Interface between the DNS client and getaddrinfo
-externC int 
+__externC int 
 cyg_dns_getaddrinfo(const char * hostname, 
                     struct sockaddr addrs[], int num,
                     int family, char **canon);
 // Interface between the DNS client and getnameinfo
-externC int
+__externC int
 cyg_dns_getnameinfo(const struct sockaddr * sa, char * host, size_t hostlen);
 
 //-----------------------------------------------------------------------------
