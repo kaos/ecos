@@ -1,3 +1,8 @@
+2004-03-11  Oyvind Harboe <oyvind.harboe@zylin.com>
+	
+	* src/fs-ecos.c:
+	  Fixed umount memory leak. root->jffs2_i.dents where not freed.
+	
 2004-02-20  Vincent Catros  <Vincent.Catros@elios-informatique.fr>
 
 	* src/fs-ecos.c :

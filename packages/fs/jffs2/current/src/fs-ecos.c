@@ -592,6 +592,7 @@ static int jffs2_umount(cyg_mtab_entry * mte)
 	struct _inode *root = (struct _inode *) mte->root;
 	struct super_block *jffs2_sb = root->i_sb;
 	struct jffs2_sb_info *c = JFFS2_SB_INFO(jffs2_sb);
+        struct jffs2_full_dirent *fd, *next;
 
 	D2(printf("jffs2_umount\n"));
 
@@ -635,6 +636,13 @@ static int jffs2_umount(cyg_mtab_entry * mte)
 		jffs2_stop_garbage_collect_thread(c);
 #endif
 		jffs2_iput(root);	// Time to free the root inode
+
+		// free directory entries
+		for (fd = root->jffs2_i.dents; fd; fd = next) {
+		  next=fd->next;
+		  free(fd);
+		}
+
 		free(root);
 		//Clear root inode
 		//root_i = NULL;
