@@ -1,3 +1,8 @@
+2004-09-21  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* doc/io.sgml: Rename incorrect cyg_drv_mutex to cyg_drv_mutex_t.
+	Ditto cyg_drv_cond and cyg_drv_cond_t.
+
 2004-04-16  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/iosys.c (cyg_io_lookup): Use union to avoid aliasing problems

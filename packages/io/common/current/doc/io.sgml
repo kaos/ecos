@@ -2809,7 +2809,7 @@ void cyg_drv_spinlock_clear_intsave( cyg_spinlock_t *lock,
   <VARLISTENTRY>
     <TERM>Function: 	</TERM>
     <LISTITEM>
-      <programlisting>void cyg_drv_mutex_init(cyg_drv_mutex *mutex)</programlisting>
+      <programlisting>void cyg_drv_mutex_init(cyg_drv_mutex_t *mutex)</programlisting>
     </LISTITEM>
   </VARLISTENTRY>
   <VARLISTENTRY>
@@ -2851,7 +2851,7 @@ void cyg_drv_spinlock_clear_intsave( cyg_spinlock_t *lock,
   <VARLISTENTRY>
     <TERM>Function: 	</TERM>
     <LISTITEM>
-      <programlisting>void cyg_drv_mutex_destroy( cyg_drv_mutex *mutex )</programlisting>
+      <programlisting>void cyg_drv_mutex_destroy( cyg_drv_mutex_t *mutex )</programlisting>
     </LISTITEM>
   </VARLISTENTRY>
   <VARLISTENTRY>
@@ -2895,7 +2895,7 @@ void cyg_drv_spinlock_clear_intsave( cyg_spinlock_t *lock,
   <VARLISTENTRY>
     <TERM>Function: 	</TERM>
     <LISTITEM>
-      <programlisting>cyg_bool cyg_drv_mutex_lock( cyg_drv_mutex *mutex )</programlisting>
+      <programlisting>cyg_bool cyg_drv_mutex_lock( cyg_drv_mutex_t *mutex )</programlisting>
     </LISTITEM>
   </VARLISTENTRY>
   <VARLISTENTRY>
@@ -2943,7 +2943,7 @@ void cyg_drv_spinlock_clear_intsave( cyg_spinlock_t *lock,
   <VARLISTENTRY>
     <TERM>Function:</TERM>
     <LISTITEM>
-      <PARA><programlisting>cyg_bool cyg_drv_mutex_trylock( cyg_drv_mutex *mutex )</programlisting></PARA>
+      <PARA><programlisting>cyg_bool cyg_drv_mutex_trylock( cyg_drv_mutex_t *mutex )</programlisting></PARA>
     </LISTITEM>
   </VARLISTENTRY>
   <VARLISTENTRY>
@@ -2990,7 +2990,7 @@ void cyg_drv_spinlock_clear_intsave( cyg_spinlock_t *lock,
   <VARLISTENTRY>
     <TERM>Function: 	</TERM>
     <LISTITEM>
-      <programlisting>void cyg_drv_mutex_unlock( cyg_drv_mutex *mutex )</programlisting>
+      <programlisting>void cyg_drv_mutex_unlock( cyg_drv_mutex_t *mutex )</programlisting>
     </LISTITEM>
   </VARLISTENTRY>
   <VARLISTENTRY>
@@ -3034,7 +3034,7 @@ void cyg_drv_spinlock_clear_intsave( cyg_spinlock_t *lock,
   <VARLISTENTRY>
     <TERM>Function: 	</TERM>
     <LISTITEM>
-      <programlisting>void cyg_drv_mutex_release( cyg_drv_mutex *mutex )</programlisting>
+      <programlisting>void cyg_drv_mutex_release( cyg_drv_mutex_t *mutex )</programlisting>
     </LISTITEM>
   </VARLISTENTRY>
   <VARLISTENTRY>
@@ -3080,7 +3080,7 @@ void cyg_drv_spinlock_clear_intsave( cyg_spinlock_t *lock,
   <VARLISTENTRY>
     <TERM>Function: 	</TERM>
     <LISTITEM>
-      <programlisting> void cyg_drv_cond_init( cyg_drv_cond *cond, cyg_drv_mutex *mutex )
+      <programlisting> void cyg_drv_cond_init( cyg_drv_cond_t *cond, cyg_drv_mutex_t *mutex )
 	      </programlisting>
     </LISTITEM>
   </VARLISTENTRY>
@@ -3130,7 +3130,7 @@ void cyg_drv_spinlock_clear_intsave( cyg_spinlock_t *lock,
   <VARLISTENTRY>
     <TERM>Function: 	</TERM>
     <LISTITEM>
-      <programlisting> void cyg_drv_cond_destroy( cyg_drv_cond *cond )</programlisting>
+      <programlisting> void cyg_drv_cond_destroy( cyg_drv_cond_t *cond )</programlisting>
     </LISTITEM>
   </VARLISTENTRY>
   <VARLISTENTRY>
@@ -3172,7 +3172,7 @@ void cyg_drv_spinlock_clear_intsave( cyg_spinlock_t *lock,
   <VARLISTENTRY>
     <TERM>Function: 	</TERM>
     <LISTITEM>
-      <programlisting>void cyg_drv_cond_wait( cyg_drv_cond *cond )</programlisting>
+      <programlisting>void cyg_drv_cond_wait( cyg_drv_cond_t *cond )</programlisting>
     </LISTITEM>
   </VARLISTENTRY>
   <VARLISTENTRY>
@@ -3226,7 +3226,7 @@ void cyg_drv_spinlock_clear_intsave( cyg_spinlock_t *lock,
   <VARLISTENTRY>
     <TERM>Function: 	</TERM>
     <LISTITEM>
-      <programlisting>void cyg_drv_cond_signal( cyg_drv_cond *cond )</programlisting>
+      <programlisting>void cyg_drv_cond_signal( cyg_drv_cond_t *cond )</programlisting>
     </LISTITEM>
   </VARLISTENTRY>
   <VARLISTENTRY>
@@ -3272,7 +3272,7 @@ void cyg_drv_spinlock_clear_intsave( cyg_spinlock_t *lock,
   <VARLISTENTRY>
     <TERM>Function: 	</TERM>
     <LISTITEM>
-      <programlisting>void cyg_drv_cond_broadcast( cyg_drv_cond *cond )</programlisting>
+      <programlisting>void cyg_drv_cond_broadcast( cyg_drv_cond_t *cond )</programlisting>
     </LISTITEM>
   </VARLISTENTRY>
   <VARLISTENTRY>
