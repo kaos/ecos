@@ -32,6 +32,7 @@
 #ifndef _TFTP_SUPPORT_H_
 #define _TFTP_SUPPORT_H_
 
+#include <fcntl.h> // O_RDONLY
 /*
  * File transfer modes
  */
@@ -67,12 +68,6 @@ struct tftpd_fileops {
     int (*write)(int, const void *, int);
     int (*read)(int, void *, int);
 };
-
-// Flags - passed to "open"
-#ifndef O_RDONLY
-#define O_RDONLY 1
-#define O_WRONLY 2
-#endif
 
 __externC int tftpd_start(int, struct tftpd_fileops *);
 __externC int tftpd_stop(int);

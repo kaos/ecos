@@ -1,3 +1,8 @@
+2004-10-04  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/tftp_support.h: Use the definitions of O_RDONLY and
+	O_WRONLY from fcntl.h instead of defining them ourselves. 
+
 2004-06-17  Oyvind Harboe  <oyvind.harboe@zylin.com>
 
 	* src/tftp_server.c:
