@@ -1,3 +1,8 @@
+2003-02-12  Bart Veer  <bartv@ecoscentric.com>
+
+	* Makefile.in, configure, testsuite/Makefile.in:
+	Regenerate after acinclude.m4 update
+
 2003-02-11  Bart Veer  <bartv@ecoscentric.com>
 
 	* build.cxx (compare_and_copy):

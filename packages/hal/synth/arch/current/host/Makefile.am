@@ -11,7 +11,7 @@
 ######COPYRIGHTBEGIN####
 #                                                                          
 # ----------------------------------------------------------------------------
-# Copyright (C) 2002 Bart Veer
+# Copyright (C) 2002, 2003 Bart Veer
 #
 # This file is part of the eCos synthetic target support.
 #
@@ -60,7 +60,7 @@ AM_CFLAGS       = @ecos_CFLAGS@ -DECOSYNTH_VERSION=\"@VERSION@\" \
  -DPACKAGE_VERSION=\"@PACKAGE_VERSION@\" \
  -DPACKAGE_INSTALL=\"@PACKAGE_INSTALL@\"
 AM_CXXFLAGS     = @ecos_CXXFLAGS@
-INCLUDES        = @ecos_INCLUDES@
+INCLUDES        = @ecos_INCLUDES@ @ecos_tk_includes@
 LIBS            = @ecos_LIBS@ @ecos_LDADD@
 
 ## The synthetic target support consists of a single program ecosynth,

@@ -107,6 +107,7 @@ ecos_infra_incdir = @ecos_infra_incdir@
 ecos_infra_libdir = @ecos_infra_libdir@
 ecos_libcdl_incdir = @ecos_libcdl_incdir@
 ecos_libcdl_libdir = @ecos_libcdl_libdir@
+ecos_tk_includes = @ecos_tk_includes@
 ecos_tk_libs = @ecos_tk_libs@
 
 AUTOMAKE_OPTIONS = 1.3 cygnus

@@ -1407,6 +1407,7 @@ echo "configure:1406: checking "for Visual C++"" >&5
     if test "${CC}" = "cl" ; then
        MSVC="yes"
        CXX="cl"
+       MSVC_SRCDIR=${srcdir}
        
     
     
@@ -1415,7 +1416,7 @@ echo "configure:1406: checking "for Visual C++"" >&5
     fi
 
        
-       ecos_INCLUDES="${ecos_INCLUDES} \"-I${msvc_srcdir}\""
+       ecos_INCLUDES="${ecos_INCLUDES} \"-I${MSVC_SRCDIR}\""
        ecos_LDADD="-link"
        ecos_LIBS="advapi32.lib"
     fi
@@ -1441,7 +1442,7 @@ fi
     
 
     echo $ac_n "checking "the default compiler flags"""... $ac_c" 1>&6
-echo "configure:1445: checking "the default compiler flags"" >&5
+echo "configure:1446: checking "the default compiler flags"" >&5
 
             ecosflags_enable_debug="no"
     # Check whether --enable-debug or --disable-debug was given.
@@ -1536,7 +1537,7 @@ fi
 
 
             echo $ac_n "checking how to run the C preprocessor""... $ac_c" 1>&6
-echo "configure:1540: checking how to run the C preprocessor" >&5
+echo "configure:1541: checking how to run the C preprocessor" >&5
 # On Suns, sometimes $CPP names a directory.
 if test -n "$CPP" && test -d "$CPP"; then
   CPP=
@@ -1551,13 +1552,13 @@ else
   # On the NeXT, cc -E runs the code through the compiler's parser,
   # not just through cpp.
   cat > conftest.$ac_ext <<EOF
-#line 1555 "configure"
+#line 1556 "configure"
 #include "confdefs.h"
 #include <assert.h>
 Syntax Error
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1561: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1562: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   :
@@ -1568,13 +1569,13 @@ else
   rm -rf conftest*
   CPP="${CC-cc} -E -traditional-cpp"
   cat > conftest.$ac_ext <<EOF
-#line 1572 "configure"
+#line 1573 "configure"
 #include "confdefs.h"
 #include <assert.h>
 Syntax Error
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1578: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1579: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   :
@@ -1585,13 +1586,13 @@ else
   rm -rf conftest*
   CPP="${CC-cc} -nologo -E"
   cat > conftest.$ac_ext <<EOF
-#line 1589 "configure"
+#line 1590 "configure"
 #include "confdefs.h"
 #include <assert.h>
 Syntax Error
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1595: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1596: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   :
@@ -1619,17 +1620,17 @@ for ac_hdr in "linux/if_tun.h"
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
-echo "configure:1623: checking for $ac_hdr" >&5
+echo "configure:1624: checking for $ac_hdr" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1628 "configure"
+#line 1629 "configure"
 #include "confdefs.h"
 #include <$ac_hdr>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1633: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1634: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*

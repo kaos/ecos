@@ -10,7 +10,7 @@ dnl
 dnl ====================================================================
 dnl ####ECOSHOSTGPLCOPYRIGHTBEGIN####
 dnl ----------------------------------------------------------------------------
-dnl Copyright (C) 2002 Bart Veer
+dnl Copyright (C) 2002, 2003 Bart Veer
 dnl Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 dnl
 dnl This file is part of the eCos host tools.
@@ -126,9 +126,10 @@ AC_DEFUN(ECOS_PROG_MSVC,[
     if test "${CC}" = "cl" ; then
        MSVC="yes"
        CXX="cl"
+       MSVC_SRCDIR=${srcdir}
        ECOS_MSVC_PATH(MSVC_SRCDIR)
        AC_SUBST(MSVC_SRCDIR)
-       ecos_INCLUDES="${ecos_INCLUDES} \"-I${msvc_srcdir}\""
+       ecos_INCLUDES="${ecos_INCLUDES} \"-I${MSVC_SRCDIR}\""
        ecos_LDADD="-link"
        ecos_LIBS="advapi32.lib"
     fi
@@ -365,6 +366,29 @@ AC_DEFUN(AC_FIND_DIR,[
 
 dnl ====================================================================
 dnl Work out details of the Tcl/tk installation that should be used.
+dnl In theory this is simple: when Tcl is installed in <tcl_prefix>
+dnl (usually /usr) there should be a file <tcl_prefix>/lib/tclConfig.sh
+dnl which defines exactly how to build Tcl-based applications. Of course
+dnl Tcl may be installed anywhere, not just in /usr, so it is necessary
+dnl to do some searching. There is a command-line argument
+dnl --with-tcl=<path> to specify the Tcl installation, so the macro
+dnl can search for <with_tcl>/lib/tclConfig.sh, <prefix>/lib/tclConfig.sh
+dnl and /usr/lib/tclConfig.sh
+dnl
+dnl Unfortunately not all systems use this convention. For example,
+dnl at the time of writing Debian installs tclConfig.sh in a versioned
+dnl subdirectory /usr/lib/tcl8.3/tclConfig.sh. Hence there is an
+dnl additional argument --with-tcl-version=<vsn> which is used to
+dnl extend the search path.
+dnl
+dnl For VC++ builds the situation is different again. Tcl may be
+dnl installed anywhere, so the data in tclConfig.sh is not useful
+dnl (and that file may not be provided at all). Instead --with-tcl
+dnl must be used to specify the path. Alternatively separate paths
+dnl for headers and libraries can be specified using --with-tcl-header
+dnl and --with-tcl-lib. Usually it will also be necessary to specify
+dnl the library version number using --with-tcl-version.
+
 dnl This adds two main command-line options, --with-tcl=<prefix> to
 dnl specify the Tcl install directory, and --with-tcl-version=<vsn>
 dnl to control which version of Tcl should be used. For finer-grained
@@ -401,37 +425,13 @@ AC_DEFUN(ECOS_PATH_TCL, [
     AC_REQUIRE([ECOS_PROG_MSVC])
     AC_REQUIRE([AC_CYGWIN])
 
-    ecos_tcl_version=""
-    ecos_tcl_incdir=""
-    ecos_tcl_libdir=""
     ecos_tk_libs=""
     ecos_tk_libdir=""
 
-    dnl Look for the version of Tcl. If none is specified, default to
-    dnl 8.0 under VC++ and cygwin, nothing under Unix. A version has to be
-    dnl specified under NT because there is no symbolic link from libtcl.a
-    dnl to whatever happens to be the most recent installed version.
-
-    AC_MSG_CHECKING([for Tcl version])
-    AC_ARG_WITH(tcl-version,[ --with-tcl-version=<vsn> version of Tcl to be used],[
-        ecos_tcl_version=${with_tcl_version}
-    ],[
-        if test "${MSVC}" = "yes" ; then
-           ecos_tcl_version=80
-        elif test "${ac_cv_cygwin}" = "yes" ; then
-           ecos_tcl_version=80
-        else
-           ecos_tcl_version=""
-        fi
-    ])
-    AC_MSG_RESULT([${ecos_tcl_version}])
-
-    dnl Where is the Tcl installation?
+    dnl Where is the Tcl installation, and what version should be used?
     AC_MSG_CHECKING(for Tcl installation)
-
-    AC_ARG_WITH(tcl-header,[ --with-tcl-header=<path> location of Tcl header])
-    AC_ARG_WITH(tcl-lib,[ --with-tcl-lib=<path>    location of Tcl libraries])
     AC_ARG_WITH(tcl,[ --with-tcl=<path>        location of Tcl header and libraries])
+    AC_ARG_WITH(tcl-version,[ --with-tcl-version=<vsn> version of Tcl to be used])
 
     dnl If using VC++ then there are no sensible default directories
     dnl to search for a Tcl installation. Instead the user must
@@ -441,9 +441,14 @@ AC_DEFUN(ECOS_PATH_TCL, [
     dnl Also when using VC++ there is no tclConfig.sh file to
     dnl consult about which libraries are needed. Instead that
     dnl information is hard-wired here.
-
     if test "${MSVC}" = "yes" ; then
-
+        AC_ARG_WITH(tcl-header,[ --with-tcl-header=<path> location of Tcl header])
+        AC_ARG_WITH(tcl-lib,[ --with-tcl-lib=<path>    location of Tcl libraries])
+        ecos_tcl_incdir=""
+	ecos_tcl_libdir=""
+        if test "${with_tcl_version+set}" != set ; then
+            AC_MSG_ERROR(You must specify a Tcl version using --with-tcl-version=<vsn>)
+        fi
         if test "${with_tcl_header+set}" = set ; then
             ecos_tcl_incdir=${with_tcl_header}
         elif test "${with_tcl+set}" = set ; then
@@ -451,16 +456,6 @@ AC_DEFUN(ECOS_PATH_TCL, [
         else
             AC_MSG_ERROR(You must specify a Tcl installation with either --with-tcl=<path> or --with-tcl-header=<path>)
         fi
-  
-        dnl Sanity check, make sure that there is a tcl.h header file.
-        dnl If not then there is no point in proceeding.
-        if test \! -r "${ecos_tcl_incdir}/tcl.h" ; then
-            AC_MSG_ERROR([unable to locate Tcl header file tcl.h])
-        fi
-        ecos_msvc_tcl_incdir="${ecos_tcl_incdir}"
-        ECOS_MSVC_PATH(ecos_msvc_tcl_incdir)
-        ecos_INCLUDES="${ecos_INCLUDES} \"-I${ecos_msvc_tcl_incdir}\""
-
         if test "${with_tcl_lib+set}" = set; then
             ecos_tcl_libdir=${with_tcl_lib}
         elif test "${with_tcl+set}" = set; then
@@ -468,8 +463,17 @@ AC_DEFUN(ECOS_PATH_TCL, [
         else
             AC_MSG_ERROR(You must specify a Tcl installation with either --with-tcl=<path> or --with-tcl-lib=<path>)
         fi
+  
+        dnl Sanity check, make sure that there is a tcl.h header file.
+        dnl If not then there is no point in proceeding.
+        if test \! -r "${ecos_tcl_incdir}/tcl.h" ; then
+            AC_MSG_ERROR([unable to locate Tcl header file tcl.h])
+        fi
+
+        ECOS_MSVC_PATH(ecos_tcl_incdir)
         ECOS_MSVC_PATH(ecos_tcl_libdir)
-        ecos_LIBS="${ecos_LIBS} tcl${ecos_tcl_version}.lib"
+        ecos_INCLUDES="${ecos_INCLUDES} \"-I${ecos_tcl_incdir}\""
+        ecos_LIBS="${ecos_LIBS} tcl${with_tcl_version}.lib"
         ecos_LDADD="${ecos_LDADD} \"-libpath=${ecos_tcl_libdir}\""
 
         dnl FIXME: what libraries are needed for a tk application under VC++?
@@ -477,64 +481,110 @@ AC_DEFUN(ECOS_PATH_TCL, [
         ecos_tk_libs=""
 
     else
-        dnl Depending on the installation there are a number of reasonable locations for tcl.h
-        dnl so this code performs a search.
-        possibles="${with_tcl_header} ${with_tcl}/include ${prefix}/include /usr/include/tcl${ecos_tcl_version} /usr/include"
-        AC_FIND_FILE("tcl.h", ${possibles}, ecos_tcl_incdir)
-        if test \! -r "${ecos_tcl_incdir}/tcl.h" ; then
-            AC_MSG_ERROR(unable to locate Tcl header file tcl.h)
-        else
-            dnl On Unix systems -I/usr/include is unnecessary, and can cause problems on hosts
-            dnl where gcc is not the platform's default compiler because of the use of
-            dnl unfixed headers. Hence it is explicitly removed here. Similarly
-            dnl -I/usr/lib serves no purpose, although it should be harmless.
-            dnl Under cygwin this check may be wrong, should the mount table
-            dnl be set up such that /usr/include points at the main cygwin
-            dnl headers. That assumes that gcc under cygwin does not have
-            dnl /usr/include in its default path, an untested assumption.
-            if test "${ecos_tcl_incdir}" != "/usr/include" ; then
-                ecos_INCLUDES="${ecos_INCLUDES} -I${ecos_tcl_incdir}"
-            fi
+	dnl Try to find tclConfig.sh
+	possibles=""
+	if test "${with_tcl+set}" = set ; then
+	    possibles="${with_tcl}/lib"
+            if test "${with_tcl_version+set}" = set ; then
+		possibles="${possibles} ${with_tcl}/lib/tcl${with_tcl_version}"
+	    fi
         fi
-        possibles="${with_tcl_lib} ${with_tcl}/lib ${libdir} ${prefix}/lib /usr/lib/tcl${ecos_tcl_version} /usr/lib"
-        AC_FIND_FILE("tclConfig.sh", ${possibles}, ecos_tcl_libdir)
-        if test \! -r "${ecos_tcl_libdir}/tclConfig.sh" ; then
-            AC_MSG_ERROR(unable to locate Tcl config file tclConfig.sh)
-        else
-            . ${ecos_tcl_libdir}/tclConfig.sh
-            dnl Arguably if ecos_tcl_version is not set then it should be
-            dnl here using TCL_VERSION, tying executables to a specific
-            dnl release. That avoids problems if the system has multiple
-            dnl Tcl installations, e.g. the system install plus a more
-            dnl recent private install. However it would introduce a
-            dnl problem if the system install gets upgraded, executables
-            dnl would still try to use the old version and would need
-            dnl to be rebuilt.
-            dnl
-            dnl For now, do not set ecos_tcl_version automatically. The
-            dnl user can override this.
-            ecos_LIBS="${ecos_LIBS} -ltcl${ecos_tcl_version} ${TCL_LIBS}"
-            ecos_LDADD="${ecos_LDADD} -L${ecos_tcl_libdir}"
-        fi
+	possibles="${possibles} ${prefix}/lib"
+	if test "${with_tcl_version+set}" = set ; then
+	    possibles="${possibles} ${prefix}/lib/tcl${with_tcl_version}"
+	fi
+	possibles="${possibles} /usr/lib"
+	if test "${with_tcl_version+set}" = set ; then
+	    possibles="${possibles} /usr/lib/tcl${with_tcl_version}"
+	fi
+	AC_FIND_FILE("tclConfig.sh", ${possibles}, tclconfig)
+	if test \! -r "${tclconfig}/tclConfig.sh" ; then
+	    AC_MSG_ERROR(unable to locate Tcl configuration file tclConfig.sh)
+	else
+	    . ${tclconfig}/tclConfig.sh
 
-        possible_tk_libdir=`echo ${ecos_tcl_libdir} | sed -e 's,tcl,tk,'`
-        possibles="${ecos_tcl_libdir} ${possible_tk_libdir}"
-        AC_FIND_FILE("tkConfig.sh", ${possibles}, ecos_tk_libdir)
-        if test \! -r "${ecos_tk_libdir}/tkConfig.sh" ; then
-            AC_MSG_ERROR(unable to locate Tk config file tkConfig.sh)
-        else
-            . ${ecos_tk_libdir}/tkConfig.sh
-            ecos_tk_libs="-L${ecos_tk_libdir} -ltk${ecos_tcl_version} ${TK_LIBS}"
-            dnl Remove any library duplicates. It is not quite clear why,
-            dnl but they seem to cause problems.
-            for lib in ${TCL_LIBS} ; do
-                ecos_tk_libs=`echo ${ecos_tk_libs} | sed -e "s!${lib}!!"`
-            done
-        fi
+	    dnl Now we need to figure out where to find the Tcl header files.
+	    dnl tclConfig.sh may define a variable TCL_INC_DIR, otherwise
+	    dnl use TCL_PREFIX/include
+	    if test -z "${TCL_INC_DIR}" ; then
+		ecos_tcl_incdir="${TCL_PREFIX}/include"
+	    else
+		ecos_tcl_incdir="${TCL_INC_DIR}"
+	    fi
+            if test \! -r "${ecos_tcl_incdir}/tcl.h" ; then
+	        AC_MSG_ERROR(unable to locate Tcl header file tcl.h)
+	    else
+		dnl On Unix systems -I/usr/include is unnecessary, and can
+        	dnl cause problems on hosts where gcc is not the platform's
+		dnl default compiler because of the use of unfixed headers.
+		dnl Hence it is explicitly removed here.
+		if test "${ecos_tcl_incdir}" != "/usr/include" ; then
+		    ecos_INCLUDES="${ecos_INCLUDES} -I${ecos_tcl_incdir}"
+		fi
+	    fi
+
+	    dnl There should be a variable TCL_LIB_SPEC which defines
+	    dnl exactly how to link with Tcl. Unfortunately this is not
+	    dnl 100% guaranteed, so a backup solution is still needed.
+	    dnl NOTE: there is also TCL_LIBS defining additional libraries
+	    dnl such as -ldl. That may have to be added to ecos_LIBS.
+	    if test -z "${TCL_LIB_SPEC}" -a "${with_tcl_version+set}" = set ; then
+		AC_FIND_FILE("libtcl${with_tcl_version}.a", ${possibles}, libtcl)
+		if test -r "${libtcl}/libtcl${with_tcl_version}.a" ; then
+		    TCL_LIB_SPEC="-L${libtcl} -ltcl${with_tcl_version}"
+		fi
+	    fi
+	    if test -z "${TCL_LIB_SPEC}" ; then
+		AC_FIND_FILE("libtcl.a", ${possibles}, libtcl)
+		if test -r "${libtcl}/libtcl.a" ; then
+		    TCL_LIB_SPEC="-L${libtcl} -ltcl"
+		fi
+	    fi
+	    if test -z "${TCL_LIB_SPEC}" ; then
+		AC_MSG_ERROR(${tclconfig}/tclConfig.sh does not define TCL_LIB_SPEC, and unable to find libtcl.a)
+	    fi
+	    ecos_LIBS="${ecos_LIBS} ${TCL_LIB_SPEC}"
+
+	    dnl Next, look for tkConfig.sh
+	    possibles=`echo ${possibles} | sed -e 's,tcl,tk,g'`
+	    AC_FIND_FILE("tkConfig.sh", ${possibles}, tkconfig)
+	    if test \! -r "${tkconfig}/tkConfig.sh" ; then
+		AC_MSG_ERROR(unable to locate Tk config file tkConfig.sh)
+	    else
+		. ${tkconfig}/tkConfig.sh
+		if test -z "${TK_INC_DIR}" ; then
+		    if test "${TK_PREFIX}" = "/usr" ; then
+			ecos_tk_includes="${TK_XINCLUDES}"
+		    else
+			ecos_tk_includes="-I${TK_PREFIX}/include ${TK_XINCLUDES}"
+		    fi
+		else
+		    ecos_tk_includes="-I${TK_INC_DIR} ${TK_XINCLUDES}"
+		fi
+
+		dnl As with TCL_LIB_SPEC, TK_LIB_SPEC may be empty
+		if test -z "${TK_LIB_SPEC}" -a "${with_tcl_version+set}" = set ; then
+		    AC_FIND_FILE("libtk${with_tcl_version}.a", ${possibles}, libtk)
+		    if test -r "${libtk}/libtk${with_tcl_version}.a" ; then
+			TK_LIB_SPEC="-L${libtk} -ltk${with_tcl_version}"
+		    fi
+		fi
+		if test -z "${TK_LIB_SPEC}" ; then
+		    AC_FIND_FILE("libtk.a", ${possibles}, libtk)
+		    if test -r "${libtk}/libtk.a" ; then
+			TK_LIB_SPEC="-L${libtk} -ltk"
+		    fi
+		fi
+		if test -z "${TK_LIB_SPEC}" ; then
+		    AC_MSG_ERROR(${tkconfig}/tkConfig.sh does not define TK_LIB_SPEC, and unable to find libtk.a)
+		fi
+		ecos_tk_libs="${TK_LIB_SPEC} ${TK_LIBS}"
+	    fi
+	fi
     fi
 
-    AC_MSG_RESULT([-I${ecos_tcl_incdir} -L${ecos_tcl_libdir}])
-
+    AC_MSG_RESULT([-I${ecos_tcl_incdir} ${TCL_LIB_SPEC}])
+    AC_SUBST(ecos_tk_includes)
     AC_SUBST(ecos_tk_libs)
 ])
 
@@ -585,7 +635,7 @@ AC_DEFUN(ECOS_PATH_INFRA, [
         AC_MSG_ERROR([infrastructure headers not found])
     fi
     if test "${MSVC}" = "yes" ; then
-        ecos_msvc_infra_incdir = ${ecos_infra_incdir}
+        ecos_msvc_infra_incdir=${ecos_infra_incdir}
         ECOS_MSVC_PATH(ecos_msvc_infra_incdir)
         ecos_INCLUDES="${ecos_INCLUDES} \"-I${ecos_msvc_infra_incdir}\""
     else
@@ -668,7 +718,7 @@ AC_DEFUN(ECOS_PATH_LIBCDL, [
         AC_MSG_ERROR([libcdl headers not found])
     fi
     if test "${MSVC}" = "yes" ; then
-        ecos_msvc_libcdl_incdir = "${ecos_libcdl_incdir}"
+        ecos_msvc_libcdl_incdir="${ecos_libcdl_incdir}"
         ECOS_MSVC_PATH(ecos_msvc_libcdl_incdir)
         ecos_INCLUDES="${ecos_INCLUDES} \"-I${ecos_msvc_libcdl_incdir}\""
     else

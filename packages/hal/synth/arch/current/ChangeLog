@@ -1,3 +1,8 @@
+2003-02-12  Bart Veer  <bartv@ecoscentric.com>
+
+	* host/Makefile.am, host/Makefile.in, configure:
+	Regenerate after acinclude.m4 update
+
 2002-12-03  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/synth_entry.c:

@@ -78,8 +78,8 @@ of sources, and where a package does have host-side software the
 package documentation should be consulted for further information.
 
 
-Installing on Linux and Other Unix Systems
-------------------------------------------
+Installing on Linux, Other Unix Systems, and Cygwin
+---------------------------------------------------
 
 Both generic host-side software (infra, libcdl and ecosconfig) and
 package-specific software can be built with the conventional
@@ -185,48 +185,81 @@ A list of all the command-line options can be obtained by running
    --disable-fntracing      disable function entry/exit tracing
 
 3) --with-tcl=<path>
-   --with-tcl-header=<path>
-   --with-tcl-lib=<path>
    --with-tcl-version=<number>
 
    The host-side tools have a dependency on Tcl, which is not supplied
    with the sources because many people will already have a suitable
    installation. Specifically it is necessary to have the header file
    tcl.h and appropriate libraries such that -ltcl will work - this
-   can involve either static or shared libraries.
+   can involve either static or shared libraries. Some tools may require
+   Tk as well as Tcl.
 
-   By default the configure script will assume that there is a
-   suitable Tcl installation in the install location, so if there is
-   no --prefix argument then it will look for /usr/local/include/tcl.h
-   and it will add -L/usr/local/lib to the library search path. If
-   Tcl is installed elsewhere then this can be specified with a
-   --with-tcl option. For example, if the default installation in
-   /usr should be used then the following configure option is
-   appropriate:
+   Unfortunately there is considerable variation in Tcl installations.
+   In theory all Tcl installations have a file tclConfig.sh which
+   defines exactly how to compile and link code that uses Tcl, and Tk
+   has a similar file tkConfig.sh. The eCos configure scripts look for
+   these files, first in $(prefix)/lib, then in /usr/lib. If the system
+   already has a Tcl installation in /usr then the configure script will
+   automatically find /usr/lib/tclConfig.sh and it is not necessary
+   to pass additional options when configuring the eCos host-side
+   software. Alternatively, if for example you have installed a more
+   recent version of Tcl/Tk in the same place that you want to install the
+   eCos software, e.g. /usr/local, then $(prefix)/lib/tclConfig.sh
+   will be read in.
 
-   $ <path>/configure --with-tcl=/usr <args>
+   It is also possible that a more recent version of Tcl has been installed
+   in a different location. For example, you may wish to install the eCos host
+   tools in /opt/ecos but use a version of Tcl installed in /usr/local. The
+   eCos configure scripts need to be told explicitly where to look for
+   the Tcl:
 
-   If the Tcl libraries and Tcl headers are installed in different
-   locations, such as when a separate --prefix and --exec-prefix are
-   used, the --with-tcl-header and --with-tcl-lib options can be used
-   to specify both location. The configure script will expect to find
-   <tcl-header-dir>/include/tcl.h and <tcl-lib-dir>/lib/tclConfig.sh.
-   The --with-tcl option has precedence and if used will override the
-   --with-tcl-header and --with-tcl-lib options.
+   $ <path>/configure --with-tcl=/usr/local ...
 
-   It is possible to have multiple versions of Tcl installed, for
-   example libtcl8.0.a, libtcl8.1.a, and so on. Typically linking with
-   -ltcl will result in the latest version being used. It is possible
-   to specify a different version using --with-tcl-version, e.g.:
+   Some systems, for example Debian Linux 3.0, do not install tclConfig.sh
+   in /usr/lib because that makes it more difficult to have several different
+   versions of Tcl installed at the same time. Instead tclConfig.sh is found
+   in a versioned directory such as /usr/lib/tcl8.3. Since several versions
+   may be installed the desired one must be specified explicitly.
 
-   $ <path>configure --with-tcl=/usr/local/scriptics --with-tcl-version=8.1 <args>
+   $ <path>/configure --with-tcl-version=8.3
 
-   It may be necessary to specify --with-tcl-version if there are
-   multiple installs in different locations. For example the
-   system may have a default install in /usr and a more up to date
-   install in /usr/local/tcl8.4. To use the latter it will usually
-   be necessary to specify both --with-tcl=/usr/local/tcl8.4 and
-   --with-tcl-version=8.4.
+   The --with-tcl and --with-tcl-version options are combined to give a search path:
+
+      <with>/lib/tclConfig.sh
+      <with>/lib/tcl<vsn>/tclConfig.sh
+      <prefix>/lib/tclConfig.sh
+      <prefix>/lib/tcl<vsn>/tclConfig.sh
+      /usr/lib/tclConfig.sh
+      /usr/lib/tcl<vsn>/tclConfig.sh
+
+   If tclConfig.sh cannot be found in any of these places then it is assumed
+   that Tcl has not been properly installed and the eCos configure script will
+   fail. The --with-tcl and --with-tcl-version are also used to give a search
+   path for tkConfig.sh
+
+      <with>/lib/tkConfig.sh
+      <with>/lib/tk<vsn>/tkConfig.sh
+      <prefix>/lib/tkConfig.sh
+      <prefix>/lib/tk<vsn>/tkConfig.sh
+      /usr/lib/tkConfig.sh
+      /usr/lib/tk<vsn>/tkConfig.sh
+
+   Again, the configure scripts must be able to find tkConfig.sh
+
+   Once tclConfig.sh and tkConfig.sh have been found and read in, the eCos
+   configure scripts should have all the information needed to compile and
+   link code that uses Tcl. First the location of key headers such as
+   <tcl.h> is needed. A tclConfig.sh file may define TCL_INC_DIR to give
+   a specific location, otherwise the header files should be in
+   $(TCL_PREFIX)/include. If <tcl.h> cannot be found then the eCos configure
+   scripts will fail.
+
+   Next it is necessary to work out how to link applications with Tcl. This
+   information should be provided by a tclConfig.sh variable TCL_LIB_SPEC.
+   Unfortunately not all Tcl installations set this, for example the cygwin
+   Tcl 8.4 release. If TCL_LIB_SPEC is not defined then instead the
+   configure script will look for a library libtcl<vsn>.a, where <vsn> is
+   specified using --with-tcl-version, then for a library libtcl.a
 
 Following the configure step the build tree should be set up
 correctly. All that remains is the actual build and install:
@@ -240,28 +273,6 @@ location, for example /usr/local/, then "make install" will normally
 require root privileges. Also some of the package-specific software
 has special installation requirements, for example programs that need
 to be installed suid root, and this will also need root privileges.
-
-
-Installing under Cygwin
------------------------
-
-Installing under cygwin requires essentially the same steps as
-under Linux. It is more likely that a suitable --prefix option will
-have to be used, and that the location of the Tcl installation needs
-to be specified with --with-tcl. However appropriate use of cygwin
-mount points may avoid some of these problems. If the full path to
-the configure script contains spaces, then the short form of the path
-should be used when invoking configure.
-
-One issue to be aware of is the naming convention for the Tcl library.
-On a Unix system this will typically be called libtcl8.3.a (adjusted
-according to the version number), with a symbolic link from libtcl.a
-to the most recent version. Under cygwin the equivalent library is
-called libtcl80.a, and symbolic links are not used. For a standard
-cygwin installation the configure script knows how to pick up the
-appropriate library, but if a more recent version of Tcl has been
-installed then due care has to be taken with the --with-tcl-version
-option.
 
 
 Installing with Visual C++

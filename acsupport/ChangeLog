@@ -1,3 +1,8 @@
+2003-02-12  Bart Veer  <bartv@ecoscentric.com>
+
+	* acinclude.m4: Another attempt at the Tcl macro, to cope with
+	cygwin tcl 8.3 and 8.4. Also fix some problems with VC++ builds.
+
 2002-10-27  Bart Veer  <bartv@ecoscentric.com>
 
 	* acinclude.m4 (ECOS_PATH_TCL): fix typo that prevented a build
@@ -23,7 +28,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 2002 Bart Veer
+// Copyright (C) 2002, 2003 Bart Veer
 //
 // This file is part of the eCos autoconf support.
 //

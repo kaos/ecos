@@ -1,3 +1,8 @@
+2003-02-12  Bart Veer  <bartv@ecoscentric.com>
+
+	* host/Makefile.in, host/configure:
+	Regenerate after toplevel acinclude.m4 update
+
 2002-09-23  Bart Veer  <bartv@ecoscentric.com>
 
 	* host/configure.in:

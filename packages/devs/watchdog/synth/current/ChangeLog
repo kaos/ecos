@@ -1,3 +1,8 @@
+2003-02-12  Bart Veer  <bartv@ecoscentric.com>
+
+	* host/Makefile.in:
+	Regenerate after toplevel acinclude.m4 update
+
 2002-09-16  Bart Veer  <bartv@ecoscentric.com>
 
 	* cdl/synth_watchdog.cdl:
@@ -12,7 +17,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 2002 Bart Veer
+// Copyright (C) 2002, 2003 Bart Veer
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free

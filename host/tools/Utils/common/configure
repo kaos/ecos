@@ -1449,6 +1449,7 @@ echo "configure:1448: checking "for Visual C++"" >&5
     if test "${CC}" = "cl" ; then
        MSVC="yes"
        CXX="cl"
+       MSVC_SRCDIR=${srcdir}
        
     
     
@@ -1457,7 +1458,7 @@ echo "configure:1448: checking "for Visual C++"" >&5
     fi
 
        
-       ecos_INCLUDES="${ecos_INCLUDES} \"-I${msvc_srcdir}\""
+       ecos_INCLUDES="${ecos_INCLUDES} \"-I${MSVC_SRCDIR}\""
        ecos_LDADD="-link"
        ecos_LIBS="advapi32.lib"
     fi
@@ -1483,7 +1484,7 @@ fi
     
 
     echo $ac_n "checking "the default compiler flags"""... $ac_c" 1>&6
-echo "configure:1487: checking "the default compiler flags"" >&5
+echo "configure:1488: checking "the default compiler flags"" >&5
 
             ecosflags_enable_debug="no"
     # Check whether --enable-debug or --disable-debug was given.

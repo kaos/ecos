@@ -19,13 +19,13 @@ ac_help="$ac_help
 ac_help="$ac_help
  --enable-ansi            do an ANSI rather than a unicode build"
 ac_help="$ac_help
+ --with-tcl=<path>        location of Tcl header and libraries"
+ac_help="$ac_help
  --with-tcl-version=<vsn> version of Tcl to be used"
 ac_help="$ac_help
  --with-tcl-header=<path> location of Tcl header"
 ac_help="$ac_help
  --with-tcl-lib=<path>    location of Tcl libraries"
-ac_help="$ac_help
- --with-tcl=<path>        location of Tcl header and libraries"
 
 # Initialize some variables set by options.
 # The variables have the same names as the options, with
@@ -1412,6 +1412,7 @@ echo "configure:1411: checking "for Visual C++"" >&5
     if test "${CC}" = "cl" ; then
        MSVC="yes"
        CXX="cl"
+       MSVC_SRCDIR=${srcdir}
        
     
     
@@ -1420,7 +1421,7 @@ echo "configure:1411: checking "for Visual C++"" >&5
     fi
 
        
-       ecos_INCLUDES="${ecos_INCLUDES} \"-I${msvc_srcdir}\""
+       ecos_INCLUDES="${ecos_INCLUDES} \"-I${MSVC_SRCDIR}\""
        ecos_LDADD="-link"
        ecos_LIBS="advapi32.lib"
     fi
@@ -1446,7 +1447,7 @@ fi
     
 
     echo $ac_n "checking "the default compiler flags"""... $ac_c" 1>&6
-echo "configure:1450: checking "the default compiler flags"" >&5
+echo "configure:1451: checking "the default compiler flags"" >&5
 
             ecosflags_enable_debug="no"
     # Check whether --enable-debug or --disable-debug was given.
@@ -1511,60 +1512,42 @@ fi
     
     
 
-    ecos_tcl_version=""
-    ecos_tcl_incdir=""
-    ecos_tcl_libdir=""
     ecos_tk_libs=""
     ecos_tk_libdir=""
 
-                
-    echo $ac_n "checking for Tcl version""... $ac_c" 1>&6
-echo "configure:1523: checking for Tcl version" >&5
-    # Check whether --with-tcl-version or --without-tcl-version was given.
-if test "${with_tcl_version+set}" = set; then
-  withval="$with_tcl_version"
-  
-        ecos_tcl_version=${with_tcl_version}
-    
-else
-  
-        if test "${MSVC}" = "yes" ; then
-           ecos_tcl_version=80
-        elif test "${ac_cv_cygwin}" = "yes" ; then
-           ecos_tcl_version=80
-        else
-           ecos_tcl_version=""
-        fi
-    
-fi
-
-    echo "$ac_t""${ecos_tcl_version}" 1>&6
-
         echo $ac_n "checking for Tcl installation""... $ac_c" 1>&6
-echo "configure:1545: checking for Tcl installation" >&5
-
-    # Check whether --with-tcl-header or --without-tcl-header was given.
-if test "${with_tcl_header+set}" = set; then
-  withval="$with_tcl_header"
-  :
-fi
-
-    # Check whether --with-tcl-lib or --without-tcl-lib was given.
-if test "${with_tcl_lib+set}" = set; then
-  withval="$with_tcl_lib"
-  :
-fi
-
+echo "configure:1520: checking for Tcl installation" >&5
     # Check whether --with-tcl or --without-tcl was given.
 if test "${with_tcl+set}" = set; then
   withval="$with_tcl"
   :
 fi
 
+    # Check whether --with-tcl-version or --without-tcl-version was given.
+if test "${with_tcl_version+set}" = set; then
+  withval="$with_tcl_version"
+  :
+fi
 
-                                
-    if test "${MSVC}" = "yes" ; then
 
+                                    if test "${MSVC}" = "yes" ; then
+        # Check whether --with-tcl-header or --without-tcl-header was given.
+if test "${with_tcl_header+set}" = set; then
+  withval="$with_tcl_header"
+  :
+fi
+
+        # Check whether --with-tcl-lib or --without-tcl-lib was given.
+if test "${with_tcl_lib+set}" = set; then
+  withval="$with_tcl_lib"
+  :
+fi
+
+        ecos_tcl_incdir=""
+	ecos_tcl_libdir=""
+        if test "${with_tcl_version+set}" != set ; then
+            { echo "configure: error: You must specify a Tcl version using --with-tcl-version=<vsn>" 1>&2; exit 1; }
+        fi
         if test "${with_tcl_header+set}" = set ; then
             ecos_tcl_incdir=${with_tcl_header}
         elif test "${with_tcl+set}" = set ; then
@@ -1572,20 +1555,6 @@ fi
         else
             { echo "configure: error: You must specify a Tcl installation with either --with-tcl=<path> or --with-tcl-header=<path>" 1>&2; exit 1; }
         fi
-  
-                        if test \! -r "${ecos_tcl_incdir}/tcl.h" ; then
-            { echo "configure: error: unable to locate Tcl header file tcl.h" 1>&2; exit 1; }
-        fi
-        ecos_msvc_tcl_incdir="${ecos_tcl_incdir}"
-        
-    
-    
-    if test "${MSVC}" = "yes" ; then
-      ecos_msvc_tcl_incdir=`cygpath -w ${ecos_msvc_tcl_incdir} | tr \\\\\\\\ /`
-    fi
-
-        ecos_INCLUDES="${ecos_INCLUDES} \"-I${ecos_msvc_tcl_incdir}\""
-
         if test "${with_tcl_lib+set}" = set; then
             ecos_tcl_libdir=${with_tcl_lib}
         elif test "${with_tcl+set}" = set; then
@@ -1593,6 +1562,18 @@ fi
         else
             { echo "configure: error: You must specify a Tcl installation with either --with-tcl=<path> or --with-tcl-lib=<path>" 1>&2; exit 1; }
         fi
+  
+                        if test \! -r "${ecos_tcl_incdir}/tcl.h" ; then
+            { echo "configure: error: unable to locate Tcl header file tcl.h" 1>&2; exit 1; }
+        fi
+
+        
+    
+    
+    if test "${MSVC}" = "yes" ; then
+      ecos_tcl_incdir=`cygpath -w ${ecos_tcl_incdir} | tr \\\\\\\\ /`
+    fi
+
         
     
     
@@ -1600,71 +1581,150 @@ fi
       ecos_tcl_libdir=`cygpath -w ${ecos_tcl_libdir} | tr \\\\\\\\ /`
     fi
 
-        ecos_LIBS="${ecos_LIBS} tcl${ecos_tcl_version}.lib"
+        ecos_INCLUDES="${ecos_INCLUDES} \"-I${ecos_tcl_incdir}\""
+        ecos_LIBS="${ecos_LIBS} tcl${with_tcl_version}.lib"
         ecos_LDADD="${ecos_LDADD} \"-libpath=${ecos_tcl_libdir}\""
 
                         ecos_tk_libs=""
 
     else
-                        possibles="${with_tcl_header} ${with_tcl}/include ${prefix}/include /usr/include/tcl${ecos_tcl_version} /usr/include"
-        
-    ecos_tcl_incdir=""
-    for i in ${possibles}; do
-        if test -r "$i/"tcl.h""; then
-            ecos_tcl_incdir=$i
-            break
+		possibles=""
+	if test "${with_tcl+set}" = set ; then
+	    possibles="${with_tcl}/lib"
+            if test "${with_tcl_version+set}" = set ; then
+		possibles="${possibles} ${with_tcl}/lib/tcl${with_tcl_version}"
+	    fi
         fi
-    done
-
-        if test \! -r "${ecos_tcl_incdir}/tcl.h" ; then
-            { echo "configure: error: unable to locate Tcl header file tcl.h" 1>&2; exit 1; }
-        else
-                                                                                                            if test "${ecos_tcl_incdir}" != "/usr/include" ; then
-                ecos_INCLUDES="${ecos_INCLUDES} -I${ecos_tcl_incdir}"
-            fi
-        fi
-        possibles="${with_tcl_lib} ${with_tcl}/lib ${libdir} ${prefix}/lib /usr/lib/tcl${ecos_tcl_version} /usr/lib"
-        
-    ecos_tcl_libdir=""
+	possibles="${possibles} ${prefix}/lib"
+	if test "${with_tcl_version+set}" = set ; then
+	    possibles="${possibles} ${prefix}/lib/tcl${with_tcl_version}"
+	fi
+	possibles="${possibles} /usr/lib"
+	if test "${with_tcl_version+set}" = set ; then
+	    possibles="${possibles} /usr/lib/tcl${with_tcl_version}"
+	fi
+	
+    tclconfig=""
     for i in ${possibles}; do
         if test -r "$i/"tclConfig.sh""; then
-            ecos_tcl_libdir=$i
+            tclconfig=$i
             break
         fi
     done
 
-        if test \! -r "${ecos_tcl_libdir}/tclConfig.sh" ; then
-            { echo "configure: error: unable to locate Tcl config file tclConfig.sh" 1>&2; exit 1; }
-        else
-            . ${ecos_tcl_libdir}/tclConfig.sh
-                                                                                                                                                ecos_LIBS="${ecos_LIBS} -ltcl${ecos_tcl_version} ${TCL_LIBS}"
-            ecos_LDADD="${ecos_LDADD} -L${ecos_tcl_libdir}"
-        fi
+	if test \! -r "${tclconfig}/tclConfig.sh" ; then
+	    { echo "configure: error: unable to locate Tcl configuration file tclConfig.sh" 1>&2; exit 1; }
+	else
+	    . ${tclconfig}/tclConfig.sh
 
-        possible_tk_libdir=`echo ${ecos_tcl_libdir} | sed -e 's,tcl,tk,'`
-        possibles="${ecos_tcl_libdir} ${possible_tk_libdir}"
-        
-    ecos_tk_libdir=""
+	    	    	    	    if test -z "${TCL_INC_DIR}" ; then
+		ecos_tcl_incdir="${TCL_PREFIX}/include"
+	    else
+		ecos_tcl_incdir="${TCL_INC_DIR}"
+	    fi
+            if test \! -r "${ecos_tcl_incdir}/tcl.h" ; then
+	        { echo "configure: error: unable to locate Tcl header file tcl.h" 1>&2; exit 1; }
+	    else
+		        							if test "${ecos_tcl_incdir}" != "/usr/include" ; then
+		    ecos_INCLUDES="${ecos_INCLUDES} -I${ecos_tcl_incdir}"
+		fi
+	    fi
+
+	    	    	    	    	    	    if test -z "${TCL_LIB_SPEC}" -a "${with_tcl_version+set}" = set ; then
+		
+    libtcl=""
+    for i in ${possibles}; do
+        if test -r "$i/"libtcl${with_tcl_version}.a""; then
+            libtcl=$i
+            break
+        fi
+    done
+
+		if test -r "${libtcl}/libtcl${with_tcl_version}.a" ; then
+		    TCL_LIB_SPEC="-L${libtcl} -ltcl${with_tcl_version}"
+		fi
+	    fi
+	    if test -z "${TCL_LIB_SPEC}" ; then
+		
+    libtcl=""
+    for i in ${possibles}; do
+        if test -r "$i/"libtcl.a""; then
+            libtcl=$i
+            break
+        fi
+    done
+
+		if test -r "${libtcl}/libtcl.a" ; then
+		    TCL_LIB_SPEC="-L${libtcl} -ltcl"
+		fi
+	    fi
+	    if test -z "${TCL_LIB_SPEC}" ; then
+		{ echo "configure: error: ${tclconfig}/tclConfig.sh does not define TCL_LIB_SPEC" 1>&2; exit 1; }
+	    fi
+	    ecos_LIBS="${ecos_LIBS} ${TCL_LIB_SPEC}"
+
+	    	    possibles=`echo ${possibles} | sed -e 's,tcl,tk,g'`
+	    
+    tkconfig=""
     for i in ${possibles}; do
         if test -r "$i/"tkConfig.sh""; then
-            ecos_tk_libdir=$i
+            tkconfig=$i
             break
         fi
     done
 
-        if test \! -r "${ecos_tk_libdir}/tkConfig.sh" ; then
-            { echo "configure: error: unable to locate Tk config file tkConfig.sh" 1>&2; exit 1; }
-        else
-            . ${ecos_tk_libdir}/tkConfig.sh
-            ecos_tk_libs="-L${ecos_tk_libdir} -ltk${ecos_tcl_version} ${TK_LIBS}"
-                                    for lib in ${TCL_LIBS} ; do
-                ecos_tk_libs=`echo ${ecos_tk_libs} | sed -e "s!${lib}!!"`
-            done
+	    if test \! -r "${tkconfig}/tkConfig.sh" ; then
+		{ echo "configure: error: unable to locate Tk config file tkConfig.sh" 1>&2; exit 1; }
+	    else
+		. ${tkconfig}/tkConfig.sh
+		if test -z "${TK_INC_DIR}" ; then
+		    if test "${TK_PREFIX}" = "/usr" ; then
+			ecos_tk_includes="${TK_XINCLUDES}"
+		    else
+			ecos_tk_includes="-I${TK_PREFIX}/include ${TK_XINCLUDES}"
+		    fi
+		else
+		    ecos_tk_includes="-I${TK_INC_DIR} ${TK_XINCLUDES}"
+		fi
+
+				if test -z "${TK_LIB_SPEC}" -a "${with_tcl_version+set}" = set ; then
+		    
+    libtk=""
+    for i in ${possibles}; do
+        if test -r "$i/"libtk${with_tcl_version}.a""; then
+            libtk=$i
+            break
         fi
+    done
+
+		    if test -r "${libtk}/libtk${with_tcl_version}.a" ; then
+			TK_LIB_SPEC="-L${libtk} -ltk${with_tcl_version}"
+		    fi
+		fi
+		if test -z "${TK_LIB_SPEC}" ; then
+		    
+    libtk=""
+    for i in ${possibles}; do
+        if test -r "$i/"libtk.a""; then
+            libtk=$i
+            break
+        fi
+    done
+
+		    if test -r "${libtk}/libtk.a" ; then
+			TK_LIB_SPEC="-L${libtk} -ltk"
+		    fi
+		fi
+		if test -z "${TK_LIB_SPEC}" ; then
+		    { echo "configure: error: ${tkconfig}/tkConfig.sh does not define TK_LIB_SPEC" 1>&2; exit 1; }
+		fi
+		ecos_tk_libs="${TK_LIB_SPEC} ${TK_LIBS}"
+	    fi
+	fi
     fi
 
-    echo "$ac_t""-I${ecos_tcl_incdir} -L${ecos_tcl_libdir}" 1>&6
-
+    echo "$ac_t""-I${ecos_tcl_incdir} ${TCL_LIB_SPEC}" 1>&6
+    
     
 
                     if test "${TK_MAJOR_VERSION}" = "8" ; then
@@ -1897,6 +1957,7 @@ s%@ecos_LIBS@%$ecos_LIBS%g
 s%@MSVC_SRCDIR@%$MSVC_SRCDIR%g
 s%@MSVC_TRUE@%$MSVC_TRUE%g
 s%@MSVC_FALSE@%$MSVC_FALSE%g
+s%@ecos_tk_includes@%$ecos_tk_includes%g
 s%@ecos_tk_libs@%$ecos_tk_libs%g
 s%@ECOS_REPOSITORY@%$ECOS_REPOSITORY%g
 s%@PACKAGE_DIR@%$PACKAGE_DIR%g

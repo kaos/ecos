@@ -13,7 +13,7 @@
 ######COPYRIGHTBEGIN####
 #                                                                          
 # ----------------------------------------------------------------------------
-# Copyright (C) 2002 Bart Veer
+# Copyright (C) 2002, 2003 Bart Veer
 #
 # This file is part of the eCos synthetic target support.
 #
@@ -108,6 +108,7 @@ ecos_infra_incdir = @ecos_infra_incdir@
 ecos_infra_libdir = @ecos_infra_libdir@
 ecos_libcdl_incdir = @ecos_libcdl_incdir@
 ecos_libcdl_libdir = @ecos_libcdl_libdir@
+ecos_tk_includes = @ecos_tk_includes@
 ecos_tk_libs = @ecos_tk_libs@
 
 AUTOMAKE_OPTIONS = 1.3 foreign
@@ -119,7 +120,7 @@ AUTOMAKE_OPTIONS = 1.3 foreign
 @SUPPORTED_TRUE@ -DPACKAGE_VERSION=\"@PACKAGE_VERSION@\" \
 @SUPPORTED_TRUE@ -DPACKAGE_INSTALL=\"@PACKAGE_INSTALL@\"
 @SUPPORTED_TRUE@AM_CXXFLAGS = @SUPPORTED_TRUE@@ecos_CXXFLAGS@
-@SUPPORTED_TRUE@INCLUDES = @SUPPORTED_TRUE@@ecos_INCLUDES@
+@SUPPORTED_TRUE@INCLUDES = @SUPPORTED_TRUE@@ecos_INCLUDES@ @ecos_tk_includes@
 @SUPPORTED_TRUE@LIBS = @SUPPORTED_TRUE@@ecos_LIBS@ @ecos_LDADD@
 
 @SUPPORTED_TRUE@synthdir = @SUPPORTED_TRUE@$(libexecdir)/ecos/@PACKAGE_INSTALL@
