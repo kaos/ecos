@@ -1,3 +1,50 @@
+2004-04-19  Bob Koninckx <bob.koninckx@o-3s.com>
+	* src/ec555.S: Corrected typo in initialisation of SYPCR to make sure
+    watchdog no longer ticks when FREEZE is asserted. Changed initialisation
+    of TBSCR to make sure timebase continues ticking when FREEZE is asserted.
+	* src/ec555.S: Removed definition of memory segments. We do not need them
+	afterall.
+	* include/pkgconf/mlt_powerpc_ec555_f02_s01_ram.h:
+	* include/pkgconf/mlt_powerpc_ec555_f02_s01_ram.ldi:
+	* include/pkgconf/mlt_powerpc_ec555_f02_s01_rom.ldi:
+	* include/pkgconf/mlt_powerpc_ec555_f04_s02_ram.h:
+	* include/pkgconf/mlt_powerpc_ec555_f04_s02_ram.ldi:
+	* include/pkgconf/mlt_powerpc_ec555_f04_s02_rom.ldi:
+	* include/pkgconf/mlt_powerpc_ec555_f08_s04_ram.h:
+	* include/pkgconf/mlt_powerpc_ec555_f08_s04_ram.ldi:
+	* include/pkgconf/mlt_powerpc_ec555_f08_s04_rom.ldi:
+	* include/pkgconf/mlt_powerpc_ec555_f08_s08_ram.h:
+	* include/pkgconf/mlt_powerpc_ec555_f08_s08_ram.ldi:
+	* include/pkgconf/mlt_powerpc_ec555_f08_s08_rom.ldi: Reserved a block of
+	64K at the beginning of external ram for use by RedBoot. Only really
+	necessary if network support is wanted.
+	* include/pkgconf/mlt_powerpc_ec555_ram.h:
+	* include/pkgconf/mlt_powerpc_ec555_ram.ldi:
+	* include/pkgconf/mlt_powerpc_ec555_rom.h:
+	* include/pkgconf/mlt_powerpc_ec555_rom.ldi: Permanently removed
+
+2004-04-08  Bob Koninckx <bob.koninckx@o-3s.com>
+	* include/pkgconf/mlt_powerpc_ec555_f02_s01_ram.h: New file
+	* include/pkgconf/mlt_powerpc_ec555_f04_s02_ram.h: New file
+	* include/pkgconf/mlt_powerpc_ec555_f08_s04_ram.h: New file
+	* include/pkgconf/mlt_powerpc_ec555_f08_s08_ram.h: New file
+	* include/pkgconf/mlt_powerpc_ec555_f02_s01_ram.ldi: New file
+	* include/pkgconf/mlt_powerpc_ec555_f04_s02_ram.ldi: New file
+	* include/pkgconf/mlt_powerpc_ec555_f08_s04_ram.ldi: New file
+	* include/pkgconf/mlt_powerpc_ec555_f08_s08_ram.ldi: New file
+	* include/pkgconf/mlt_powerpc_ec555_f02_s01_rom.h: New file
+	* include/pkgconf/mlt_powerpc_ec555_f04_s02_rom.h: New file
+	* include/pkgconf/mlt_powerpc_ec555_f08_s04_rom.h: New file
+	* include/pkgconf/mlt_powerpc_ec555_f08_s08_rom.h: New file
+	* include/pkgconf/mlt_powerpc_ec555_f02_s01_rom.ldi: New file
+	* include/pkgconf/mlt_powerpc_ec555_f04_s02_rom.ldi: New file
+	* include/pkgconf/mlt_powerpc_ec555_f08_s04_rom.ldi: New file
+	* include/pkgconf/mlt_powerpc_ec555_f08_s08_rom.ldi: New file
+	* cdl/hal_powerpc_ec555.cdl, src/ec555.S, plf_misc.c: Added support
+    for all four different variants of the ec555 board. Notice that we
+    had to change the memory map. 16 MB flashes simply did not fit in
+    the one we defined previously.
+
 2003-12-16  Gary Thomas  <gary@mlbassoc.com>
 
 	* misc/redboot_ROM.ecm: 

@@ -89,6 +89,17 @@ cdl_package CYGPKG_HAL_POWERPC_EC555 {
            equivalent technology."
     }
 
+	cdl_option CYGHWR_HAL_EC555_BOARD_VARIANT {
+	    display       "Board type"
+		flavor        data
+		legal_values  {"F02_S01" "F04_S02" "F08_S04" "F08_S08"}
+		default_value {"F02_S01"}
+		description   "
+		   The ec555 board comes in four different flavours, 2MB flash-1MB RAM,
+		   4MB flash-2MB RAM, 8MB flash-4MB RAM and 8MB flash-8MB RAM. This option
+		   selects the board variant."
+    }
+
     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS {
         display      "Number of communication channels on the board"
         flavor       data
@@ -253,8 +264,16 @@ cdl_package CYGPKG_HAL_POWERPC_EC555 {
             flavor data
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_LDI
-            calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_powerpc_ec555_ram.ldi>" : \
-                                                    "<pkgconf/mlt_powerpc_ec555_rom.ldi>" }
+			calculated { CYG_HAL_STARTUP == "RAM" ? \
+                           CYGHWR_HAL_EC555_BOARD_VARIANT == "F02_S01" ? "<pkgconf/mlt_powerpc_ec555_f02_s01_ram.ldi>" : \
+                           CYGHWR_HAL_EC555_BOARD_VARIANT == "F04_S02" ? "<pkgconf/mlt_powerpc_ec555_f04_s02_ram.ldi>" : \
+                           CYGHWR_HAL_EC555_BOARD_VARIANT == "F08_S04" ? "<pkgconf/mlt_powerpc_ec555_f08_s04_ram.ldi>" : \
+						                                                 "<pkgconf/mlt_powerpc_ec555_f08_s08_ram.ldi>" : \
+                           CYGHWR_HAL_EC555_BOARD_VARIANT == "F02_S01" ? "<pkgconf/mlt_powerpc_ec555_f02_s01_rom.ldi>" : \
+                           CYGHWR_HAL_EC555_BOARD_VARIANT == "F04_S02" ? "<pkgconf/mlt_powerpc_ec555_f04_s02_rom.ldi>" : \
+                           CYGHWR_HAL_EC555_BOARD_VARIANT == "F08_S04" ? "<pkgconf/mlt_powerpc_ec555_f08_s04_rom.ldi>" : \
+                                                                         "<pkgconf/mlt_powerpc_ec555_f08_s08_rom.ldi>"
+            }
         }
 
         cdl_option CYGHWR_MEMORY_LAYOUT_H {
@@ -262,8 +281,16 @@ cdl_package CYGPKG_HAL_POWERPC_EC555 {
             flavor data
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_H
-            calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_powerpc_ec555_ram.h>" : \
-                                                    "<pkgconf/mlt_powerpc_ec555_rom.h>" }
+			calculated { CYG_HAL_STARTUP == "RAM" ? \
+			               CYGHWR_HAL_EC555_BOARD_VARIANT == "F02_S01" ? "<pkgconf/mlt_powerpc_ec555_f02_s01_ram.h>" : \
+	                       CYGHWR_HAL_EC555_BOARD_VARIANT == "F04_S02" ? "<pkgconf/mlt_powerpc_ec555_f04_s02_ram.h>" : \
+                           CYGHWR_HAL_EC555_BOARD_VARIANT == "F08_S04" ? "<pkgconf/mlt_powerpc_ec555_f08_s04_ram.h>" : \
+                                                                         "<pkgconf/mlt_powerpc_ec555_f08_s08_ram.h>" : \
+                           CYGHWR_HAL_EC555_BOARD_VARIANT == "F02_S01" ? "<pkgconf/mlt_powerpc_ec555_f02_s01_rom.h>" : \
+	                       CYGHWR_HAL_EC555_BOARD_VARIANT == "F04_S02" ? "<pkgconf/mlt_powerpc_ec555_f04_s02_rom.h>" : \
+	                       CYGHWR_HAL_EC555_BOARD_VARIANT == "F08_S04" ? "<pkgconf/mlt_powerpc_ec555_f08_s04_rom.h>" : \
+                                                                         "<pkgconf/mlt_powerpc_ec555_f08_s08_rom.h>"
+            }
         }
     }
 

@@ -65,10 +65,40 @@
 ## The following probably belongs in the variant hal rather than the board specifics ... 
 #ifdef CYGPKG_DEVICES_WATCHDOG_MPC5xx
 #include <pkgconf/devices_watchdog_mpc5xx.h>
-#define CYG_SYPCR 0x0000ff8d | (CYGNUM_DEVICES_WATCHDOG_POWERPC_MPC5XX_RELOAD << 16) | CYGDAT_DEVICES_WATCHDOG_POWERPC_MPC5XX_PRESCALE
+#define CYG_SYPCR 0x0000ff8e | (CYGNUM_DEVICES_WATCHDOG_POWERPC_MPC5XX_RELOAD << 16) | CYGDAT_DEVICES_WATCHDOG_POWERPC_MPC5XX_PRESCALE
 #else
 #define CYG_SYPCR 0x0000ff88
 #endif
+
+#define ADDRESS_MASK_1MB         0xfff00000
+#define ADDRESS_MASK_2MB         0xffe00000
+#define ADDRESS_MASK_4MB         0xffc00000
+#define ADDRESS_MASK_8MB         0xff800000
+#define ADDRESS_MASK_16MB        0xff000000
+
+#define EC555_RAM_BASE_ADDRESS   0x01000000
+#define EC555_FLASH_BASE_ADDRESS 0x02000000
+#define EC555_CS2_BASE_ADDRESS   0x04000000
+#define EC555_CS3_BASE_ADDRESS   0x08000000
+
+#if defined(CYGHWR_HAL_EC555_BOARD_VARIANT_F02_S01)
+#define EC555_RAM_ADDRESS_MASK   ADDRESS_MASK_1MB
+#define EC555_FLASH_ADDRESS_MASK ADDRESS_MASK_2MB
+#elif defined(CYGHWR_HAL_EC555_BOARD_VARIANT_F04_S02)
+#define EC555_RAM_ADDRESS_MASK   ADDRESS_MASK_2MB
+#define EC555_FLASH_ADDRESS_MASK ADDRESS_MASK_4MB
+#elif defined(CYGHWR_HAL_EC555_BOARD_VARIANT_F08_S04)
+#define EC555_RAM_ADDRESS_MASK   ADDRESS_MASK_4MB
+#define EC555_FLASH_ADDRESS_MASK ADDRESS_MASK_8MB
+#elif defined(CYGHWR_HAL_EC555_BOARD_VARIANT_F08_S08)
+#define EC555_RAM_ADDRESS_MASK   ADDRESS_MASK_8MB
+#define EC555_FLASH_ADDRESS_MASK ADDRESS_MASK_16MB
+#else
+#error "EC555 Board variant unspecified"
+#endif
+
+#define EC555_CS2_ADDRESS_MASK   0xffff8000
+#define EC555_CS3_ADDRESS_MASK   0xffff8000
 
 #------------------------------------------------------------------------------
                 
@@ -118,43 +148,53 @@ hal_hardware_init:
         // Set up the memory map
         // Do NOT write protect the flash memory, flash drivers won't work 
         // if we do
-        lwi     r4, 0x00800003
+
+        // flash banks
+        lwi     r4, (EC555_FLASH_BASE_ADDRESS | 0x00000003)
         stw     r4, (CYGARC_REG_IMM_BR0-CYGARC_REG_IMM_BASE)(r3)
-        lwi     r4, 0xffc00530
+        lwi     r4, (EC555_FLASH_ADDRESS_MASK | 0x00000530)
         stw     r4, (CYGARC_REG_IMM_OR0-CYGARC_REG_IMM_BASE)(r3)
-        lwi     r4, 0x00400011
+
+        // ram banks
+        lwi     r4, (EC555_RAM_BASE_ADDRESS | 0x00000011)
         stw     r4, (CYGARC_REG_IMM_BR1-CYGARC_REG_IMM_BASE)(r3)
-        lwi     r4, 0xfff00000
+        lwi     r4, (EC555_RAM_ADDRESS_MASK | 0x00000000)
         stw     r4, (CYGARC_REG_IMM_OR1-CYGARC_REG_IMM_BASE)(r3)
 #endif
 
 #ifdef CYGPKG_DEVS_ETH_POWERPC_EC555
-
-        lwi     r4, (CYGNUM_DEVS_ETH_POWERPC_EC555_ETH0_BASE & 0xffff0000) | 0x00000803
 #if   (CYGNUM_DEVS_ETH_POWERPC_EC555_ETH0_CS == 2)
+        lwi     r4, (EC555_CS2_BASE_ADDRESS | 0x00000803)
         stw     r4, (CYGARC_REG_IMM_BR2-CYGARC_REG_IMM_BASE)(r3)
         lwi     r4, 0xffff8e60
         stw     r4, (CYGARC_REG_IMM_OR2-CYGARC_REG_IMM_BASE)(r3)
-        lwi     r4, 0
+
+        lwi     r4, EC555_CS3_BASE_ADDRESS
         stw     r4, (CYGARC_REG_IMM_BR3-CYGARC_REG_IMM_BASE)(r3)
+        lwi     r4, EC555_CS3_ADDRESS_MASK
+        stw     r4, (CYGARC_REG_IMM_OR3-CYGARC_REG_IMM_BASE)(r3)
 #elif (CYGNUM_DEVS_ETH_POWERPC_EC555_ETH0_CS == 3)
+        lwi     r4, EC555_CS2_BASE_ADDRESS
+        stw     r4, (CYGARC_REG_IMM_BR2-CYGARC_REG_IMM_BASE)(r3)
+        lwi     r4, EC555_CS2_ADDRESS_MASK
+        stw     r4, (CYGARC_REG_IMM_OR2-CYGARC_REG_IMM_BASE)(r3)
+
+        lwi     r4, (EC555_CS3_BASE_ADDRESS | 0x00000803)
         stw     r4, (CYGARC_REG_IMM_BR3-CYGARC_REG_IMM_BASE)(r3)
         lwi     r4, 0xffff8e60
         stw     r4, (CYGARC_REG_IMM_OR3-CYGARC_REG_IMM_BASE)(r3)
-        lwi     r4, 0
-        stw     r4, (CYGARC_REG_IMM_BR2-CYGARC_REG_IMM_BASE)(r3)
 #else
 #error "Invalid chip select for ethernet card specified"
 #endif
-
 #else
-        lwi     r4, 0x00c00000
+        lwi     r4, EC555_CS2_BASE_ADDRESS
         stw     r4, (CYGARC_REG_IMM_BR2-CYGARC_REG_IMM_BASE)(r3)
-        lwi     r4, 0xffff8000
+        lwi     r4, EC555_CS2_ADDRESS_MASK
         stw     r4, (CYGARC_REG_IMM_OR2-CYGARC_REG_IMM_BASE)(r3)
-        lwi     r4, 0x00e00000
+
+        lwi     r4, EC555_CS3_BASE_ADDRESS
         stw     r4, (CYGARC_REG_IMM_BR3-CYGARC_REG_IMM_BASE)(r3)
-        lwi     r4, 0xffff8000
+        lwi     r4, EC555_CS3_ADDRESS_MASK
         stw     r4, (CYGARC_REG_IMM_OR3-CYGARC_REG_IMM_BASE)(r3)
 #endif
 
@@ -167,8 +207,8 @@ hal_hardware_init:
         lwi     r4, 0
         stw     r4, (CYGARC_REG_IMM_DMOR-CYGARC_REG_IMM_BASE)(r3)
 
-        // Enable the time base and set the freeze flag
-        lwi     r4, 0xc3
+        // Enable the time base, but do _not_ set the freeze flag
+        lwi     r4, 0xc1
         sth     r4, (CYGARC_REG_IMM_TBSCR-CYGARC_REG_IMM_BASE)(r3)
 
         // RTC is clocked by 4MHz crystal, set the freeze flag
