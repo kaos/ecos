@@ -478,12 +478,12 @@ tcp_usrreq(so, req, m, nam, control)
 		tp = tcp_drop(tp, ECONNABORTED);
 		break;
 
-#ifndef __ECOS
 	case PRU_SENSE:
+#ifndef __ECOS
 		((struct stat *) m)->st_blksize = so->so_snd.sb_hiwat;
+#endif
 		(void) splx(s);
 		return (0);
-#endif
 
 	case PRU_RCVOOB:
 		if ((so->so_oobmark == 0 &&

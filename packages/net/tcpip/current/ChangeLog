@@ -1,3 +1,9 @@
+2002-12-14  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/sys/netinet/tcp_usrreq.c (tcp_usrreq): Rearranged ifndef on
+	PRU_SENSE case to keep the case in the switch and let it return a
+	sensible result. Otherwise a stat() on a socket causes a panic().
+
 2002-12-03  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* src/ecos/support.c (show_network_tables): New function used
