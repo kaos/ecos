@@ -8,6 +8,12 @@
 	CYGSTREAM_READWRITE_NOCREATE. This fixes fopen() with mode 'w+'
 	which previously did not allow file creation.
 
+2004-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/stream.inl (set_position): Flush the output buffer
+	before seeking the underlying file otherwise the writes ends up in
+	the wrong location in the file.
+	
 2004-03-15  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/common/fileops.cxx (tmpnam): Only close if open() succeded.
