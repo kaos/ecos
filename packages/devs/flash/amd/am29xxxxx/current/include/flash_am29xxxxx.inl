@@ -92,12 +92,16 @@
 # define FLASH_Setup_Addr2              (0x2AA)
 # define FLASH_VendorID_Addr            (0)
 # define FLASH_DeviceID_Addr            (1)
+# define FLASH_DeviceID_Addr2           (0x0e)
+# define FLASH_DeviceID_Addr3           (0x0f)
 # define FLASH_WP_Addr                  (2)
 #else
 # define FLASH_Setup_Addr1              (0xAAA)
 # define FLASH_Setup_Addr2              (0x555)
 # define FLASH_VendorID_Addr            (0)
 # define FLASH_DeviceID_Addr            (2)
+# define FLASH_DeviceID_Addr2           (0x1c)
+# define FLASH_DeviceID_Addr3           (0x1e)
 # define FLASH_WP_Addr                  (4)
 #endif
 #define FLASH_Setup_Code1               FLASHWORD( 0xAA )
@@ -127,7 +131,10 @@
 //----------------------------------------------------------------------------
 // Information about supported devices
 typedef struct flash_dev_info {
+    cyg_bool     long_device_id;
     flash_data_t device_id;
+    flash_data_t device_id2;
+    flash_data_t device_id3;
     cyg_uint32   block_size;
     cyg_int32    block_count;
     cyg_uint32   base_mask;
@@ -135,7 +142,7 @@ typedef struct flash_dev_info {
     cyg_bool     bootblock;
     cyg_uint32   bootblocks[12];         // 0 is bootblock offset, 1-11 sub-sector sizes (or 0)
     cyg_bool     banked;
-    cyg_uint32   banks[2];               // bank offets, highest to lowest (lowest should be 0)
+    cyg_uint32   banks[5];               // bank offets, highest to lowest (lowest should be 0)
                                          // (only one entry for now, increase to support devices
                                          // with more banks).
 } flash_dev_info_t;
@@ -194,6 +201,9 @@ _flash_query(void* data)
     id[0] = *(FLASH_P2V(ROM+FLASH_VendorID_Addr));
     // Part number
     id[1] = *(FLASH_P2V(ROM+FLASH_DeviceID_Addr));
+    id[2] = *(FLASH_P2V(ROM+FLASH_DeviceID_Addr2));
+    id[3] = *(FLASH_P2V(ROM+FLASH_DeviceID_Addr3));
+
 
     *(FLASH_P2V(ROM)) = FLASH_Reset;
 
@@ -222,7 +232,7 @@ flash_query(void* data)
 int
 flash_hwr_init(void)
 {
-    flash_data_t id[2];
+    flash_data_t id[4];
     int i;
 
     CYGHWR_FLASH_AM29XXXXX_PLF_INIT();
@@ -232,7 +242,11 @@ flash_hwr_init(void)
     // Look through table for device data
     flash_dev_info = supported_devices;
     for (i = 0; i < NUM_DEVICES; i++) {
-        if (flash_dev_info->device_id == id[1])
+        if (!flash_dev_info->long_device_id && flash_dev_info->device_id == id[1])
+            break;
+        else if ( flash_dev_info->long_device_id && flash_dev_info->device_id == id[1] 
+                  && flash_dev_info->device_id2 == id[2] 
+                  && flash_dev_info->device_id3 == id[3] )
             break;
         flash_dev_info++;
     }

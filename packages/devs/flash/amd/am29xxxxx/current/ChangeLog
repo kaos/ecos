@@ -1,3 +1,13 @@
+2002-09-26  Ian Campbell  <icampbell@arcomcontrols.com>
+	
+	* include/flash_am29xxxxx_parts.inl:
+	* cdl/flash_amd_am29xxxxx.cdl: Add support for AM29DL640D.
+
+	* include/flash_am29xxxxx.inl: Add support for triple byte part id
+	numbers, such as those used by the AM29DL640D. Allow for parts
+	with up to 5 banks, rather than two -- also to support AM29DL640D
+	parts.
+
 2002-07-29  Gary Thomas  <gary@chez-thomas.org>
 2002-07-29  Motoya Kurotsu <kurotsu@allied-telesis.co.jp>
 
