@@ -1,3 +1,8 @@
+2004-05-24  Gratian Crisan <nelu@iv.ro>
+
+	* include/var_io.h: Added waveform mode definitions for 
+	timer/counter.
+
 2004-02-19  Daniel Néri  <daniel.neri@sigicom.se>
  
         * cdl/hal_arm_at91.cdl (CYGBLD_GLOBAL_CFLAGS): Honour CYGHWR_THUMB

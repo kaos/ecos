@@ -295,9 +295,9 @@
 #define AT91_TC_CCR_CLKEN  0x01
 #define AT91_TC_CCR_CLKDIS 0x02
 #define AT91_TC_CCR_TRIG   0x04
-#define AT91_TC_CMR     0x04
-// Capture mode definitions
-#define AT91_TC_CMR_CLKS   0
+// Channel Mode Register
+#define AT91_TC_CMR		   0x04
+#define AT91_TC_CMR_CLKS	   0
 #define AT91_TC_CMR_CLKS_MCK2      (0<<0)
 #define AT91_TC_CMR_CLKS_MCK8      (1<<0)
 #define AT91_TC_CMR_CLKS_MCK32     (2<<0)
@@ -311,6 +311,7 @@
 #define AT91_TC_CMR_BURST_XC0      (1<<4)
 #define AT91_TC_CMR_BURST_XC1      (2<<4)
 #define AT91_TC_CMR_BURST_XC2      (3<<4)
+// Capture mode definitions
 #define AT91_TC_CMR_LDBSTOP        (1<<6)
 #define AT91_TC_CMR_LDBDIS         (1<<7)
 #define AT91_TC_CMR_TRIG_NONE      (0<<8)
@@ -328,7 +329,53 @@
 #define AT91_TC_CMR_LDRB_TIOA_NEG  (1<<16)
 #define AT91_TC_CMR_LDRB_TIOA_POS  (2<<16)
 #define AT91_TC_CMR_LDRB_TIOA_BOTH (3<<16)
-// Waveform mode definitions [missing]
+// Waveform mode definitions
+#define AT91_TC_CMR_CPCSTOP        (1<<6)
+#define AT91_TC_CMR_CPCDIS	   (1<<7)
+#define AT91_TC_CMR_EEVTEDG_NONE   (0<<8)
+#define AT91_TC_CMR_EEVTEDG_NEG    (1<<8)
+#define AT91_TC_CMR_EEVTEDG_POS    (2<<8)
+#define AT91_TC_CMR_EEVTEDG_BOTH   (3<<8)
+#define AT91_TC_CMR_EEVT_TIOB	   (0<<10)
+#define AT91_TC_CMR_EEVT_XC0       (1<<10)
+#define AT91_TC_CMR_EEVT_XC1       (2<<10)
+#define AT91_TC_CMR_EEVT_XC2       (3<<10)
+#define AT91_TC_CMR_ENETRG	   (1<<12)
+#define AT91_TC_CMR_CPCTRG	   (1<<14)
+#define AT91_TC_CMR_WAVE	   (1<<15)
+#define AT91_TC_CMR_ACPA_NONE	   (0<<16)
+#define AT91_TC_CMR_ACPA_SET	   (1<<16)
+#define AT91_TC_CMR_ACPA_CLEAR	   (2<<16)
+#define AT91_TC_CMR_ACPA_TOGGLE	   (3<<16)
+#define AT91_TC_CMR_ACPC_NONE	   (0<<18)
+#define AT91_TC_CMR_ACPC_SET	   (1<<18)
+#define AT91_TC_CMR_ACPC_CLEAR	   (2<<18)
+#define AT91_TC_CMR_ACPC_TOGGLE	   (3<<18)
+#define AT91_TC_CMR_AEEVT_NONE	   (0<<20)
+#define AT91_TC_CMR_AEEVT_SET	   (1<<20)
+#define AT91_TC_CMR_AEEVT_CLEAR	   (2<<20)
+#define AT91_TC_CMR_AEEVT_TOGGLE   (3<<20)
+#define AT91_TC_CMR_ASWTRG_NONE	   (0<<22)
+#define AT91_TC_CMR_ASWTRG_SET	   (1<<22)
+#define AT91_TC_CMR_ASWTRG_CLEAR   (2<<22)
+#define AT91_TC_CMR_ASWTRG_TOGGLE  (3<<22)
+#define AT91_TC_CMR_BCPB_NONE	   (0<<24)
+#define AT91_TC_CMR_BCPB_SET	   (1<<24)
+#define AT91_TC_CMR_BCPB_CLEAR	   (2<<24)
+#define AT91_TC_CMR_BCPB_TOGGLE	   (3<<24)
+#define AT91_TC_CMR_BCPC_NONE	   (0<<26)
+#define AT91_TC_CMR_BCPC_SET	   (1<<26)
+#define AT91_TC_CMR_BCPC_CLEAR	   (2<<26)
+#define AT91_TC_CMR_BCPC_TOGGLE	   (3<<26)
+#define AT91_TC_CMR_BEEVT_NONE	   (0<<28)
+#define AT91_TC_CMR_BEEVT_SET	   (1<<28)
+#define AT91_TC_CMR_BEEVT_CLEAR	   (2<<28)
+#define AT91_TC_CMR_BEEVT_TOGGLE   (3<<28)
+#define AT91_TC_CMR_BSWTRG_NONE	   (0<<30)
+#define AT91_TC_CMR_BSWTRG_SET	   (1<<30)
+#define AT91_TC_CMR_BSWTRG_CLEAR   (2<<30)
+#define AT91_TC_CMR_BSWTRG_TOGGLE  (3<<30)
+
 #define AT91_TC_CV      0x10
 #define AT91_TC_RA      0x14
 #define AT91_TC_RB      0x18
