@@ -57,7 +57,7 @@
 
 RedBoot_cmd("date", 
             "Show/Set the time of day", 
-            "[HH:MM:SS MM/DD/YY]",
+            "[YYYY/MM/DD HH:MM:SS]",
             do_time_date
     );
 
@@ -82,30 +82,30 @@ do_time_date(int argc, char *argv[])
     if (argc == 1) {
         // Just show the current time/date
         _simple_mkdate(now, &year, &month, &mday, &hour, &minute, &second);
-        diag_printf("%02d:%02d:%02d %d/%02d/%d\n", 
-                    hour, minute, second, month, mday, year);
+        diag_printf("%04d/%02d/%02d %02d:%02d:%02d\n", 
+                    year, month, mday, hour, minute, second);
     } else if (argc == 3) {
         sp = argv[1];
+        if (!parse_num(sp, (unsigned long *)&year, &sp, "/") ||
+            !parse_num(sp, (unsigned long *)&month, &sp, "/") ||
+            !parse_num(sp, (unsigned long *)&mday, &sp, "/")) {
+            ok = false;
+        }
+        sp = argv[2];
         if (!parse_num(sp, (unsigned long *)&hour, &sp, ":") ||
             !parse_num(sp, (unsigned long *)&minute, &sp, ":") ||
             !parse_num(sp, (unsigned long *)&second, &sp, ":")) {
             ok = false;
         }
-        sp = argv[2];
-        if (!parse_num(sp, (unsigned long *)&month, &sp, "/") ||
-            !parse_num(sp, (unsigned long *)&mday, &sp, "/") ||
-            !parse_num(sp, (unsigned long *)&year, &sp, "/")) {
-            ok = false;
-        }
         if (ok) {
             // Verify values make some sense, then set the hardware
+            if (year < 100) year += 2000;
+            ok = ok && verify(year, 1970, 2034, "year");
+            ok = ok && verify(month, 1, 12, "month");
+            ok = ok && verify(mday, 1, 31, "day");
             ok = ok && verify(hour, 0, 23, "hour");
             ok = ok && verify(minute, 0, 59, "minute");
             ok = ok && verify(second, 0, 59, "second");
-            ok = ok && verify(month, 1, 12, "month");
-            ok = ok && verify(mday, 1, 31, "day");
-            if (year < 100) year += 2000;
-            ok = ok && verify(year, 2000, 2034, "year");
             if (ok) {
                 now = _simple_mktime(year, month, mday, hour, minute, second);
                 Cyg_WallClock::wallclock->set_current_time(now);
@@ -115,7 +115,7 @@ do_time_date(int argc, char *argv[])
         ok = false;
     }
     if (!ok) {
-        diag_printf("usage: date [HH:MM:SS MM/DD/YY]\n");
+        diag_printf("usage: date [YYYY/MM/DD HH:MM:SS]\n");
     }
 
 }
