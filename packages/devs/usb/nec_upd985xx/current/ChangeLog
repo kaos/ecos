@@ -1,3 +1,9 @@
+2002-10-26  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/usbs_upd985xx.c (ep0_rx_dsr):
+	Fix typo in expression, reported by Andrew Lunn. The system's
+	behaviour should not be affected.
+
 2001-09-20  Bart Veer  <bartv@redhat.com>
 
 	* src/usbs_upd985xx.c (ep0_init):

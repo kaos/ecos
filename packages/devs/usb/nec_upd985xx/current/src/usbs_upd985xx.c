@@ -1243,7 +1243,7 @@ ep0_rx_dsr(void)
     // If we have received a control packet then any reset signals really
     // will have come from the host and must be processed normally.
     // Make sure that reset interrupts are no longer masked off.
-    if (0 == (*USBS_IMR2 * IBUS_SWAP32(USBS_GSR2_URST))) {
+    if (0 == (*USBS_IMR2 & IBUS_SWAP32(USBS_GSR2_URST))) {
         *USBS_IMR2              |= IBUS_SWAP32(USBS_GSR2_URST); FLUSH_IBUS();
         usbs_upd985xx_gsr2_mask |= USBS_GSR2_URST;
     }
