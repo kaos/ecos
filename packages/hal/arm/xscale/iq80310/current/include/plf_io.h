@@ -62,7 +62,7 @@
     cyg_uint32 __dev = CYG_PCI_DEV_GET_DEV(__devfn);                          \
     cyg_uint32 __fn = CYG_PCI_DEV_GET_FN(__devfn);                            \
     __valid = false;                                                          \
-    if (__bus == (*SBNR_REG) + 1) && __dev == 0 && __fn == 0) {		      \
+    if (__bus == (*SBNR_REG + 1) && __dev == 0 && __fn == 0) {		      \
         __vec = CYGNUM_HAL_INTERRUPT_ETHERNET;                                \
         __valid = true;                                                       \
     } else {                                                                  \

@@ -5,6 +5,7 @@
 	* src/diag/iq80310.h: Remove cmd_stat declaration.
 	* src/diag/flash.c: Declare cmd_stat.
 	* include/plf_io.h: Remove unused duplicate code.
+	(HAL_PCI_TRANSLATE_INTERRUPT): Fix typo.
 
 2002-11-13  Mark Salter  <msalter@redhat.com>
 
