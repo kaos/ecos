@@ -99,7 +99,7 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_IXDP425 {
             display "Global command prefix"
             flavor  data
             no_define
-            default_value { "xscale-elf" }
+            default_value { "arm-elf" }
             description "
                 This option specifies the command prefix used when
                 invoking the build tools."
