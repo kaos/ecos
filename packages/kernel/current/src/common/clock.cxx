@@ -831,7 +831,9 @@ Cyg_RealTimeClock Cyg_RealTimeClock::rtc CYG_INIT_PRIORITY( CLOCK );
 
 Cyg_RealTimeClock::Cyg_RealTimeClock()
     : Cyg_Clock(rtc_resolution),
-      interrupt(CYGNUM_HAL_INTERRUPT_RTC, 1, (CYG_ADDRWORD)this, isr, dsr)
+      interrupt(CYGNUM_HAL_INTERRUPT_RTC,
+                CYGNUM_KERNEL_COUNTERS_CLOCK_ISR_PRIORITY,
+                (CYG_ADDRWORD)this, isr, dsr)
 {
     CYG_REPORT_FUNCTION();
 

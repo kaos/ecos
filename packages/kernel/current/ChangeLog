@@ -1,3 +1,10 @@
+2004-08-08  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/counters.cdl: add new option for the clock interrupt
+	priority.
+
+	* src/common/clock.cxx (Cyg_RealTimeClock): use this option.
+
 2004-04-15  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* tests/fptest.c (do_test): Silence aliasing warning when breaking

@@ -64,6 +64,24 @@ cdl_option CYGVAR_KERNEL_COUNTERS_CLOCK {
         completely."
 }
 
+cdl_option CYGNUM_KERNEL_COUNTERS_CLOCK_ISR_PRIORITY {
+    display		"Interrupt priority for the real-time clock"
+    active_if		CYGVAR_KERNEL_COUNTERS_CLOCK
+    flavor		data
+    default_value	{ is_loaded(CYGNUM_HAL_KERNEL_COUNTERS_CLOCK_ISR_DEFAULT_PRIORITY) ?
+ 	                      CYGNUM_HAL_KERNEL_COUNTERS_CLOCK_ISR_DEFAULT_PRIORITY : 1 }
+    description "
+        The implementation of the kernel's real-time clock typically
+        involves installing an interrupt handler on a suitable hardware
+        timer. This option controls the priority level used for that
+        interrupt. On most platforms the value is not important because 
+        the clock ISR leaves most of the work to be done by the DSR. 
+        However some processors have interrupt controllers with special
+        requirements for the interrupt priorities, in which case
+        application developers must be able to manipulate the clock's
+        priority."
+}
+
 cdl_interface CYGINT_KERNEL_COUNTERS {
     requires 1 == CYGINT_KERNEL_COUNTERS
     no_define
