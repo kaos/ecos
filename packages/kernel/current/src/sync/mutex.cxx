@@ -146,7 +146,7 @@ Cyg_Mutex::lock(void)
 #ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE
 
         owner->inherit_priority(self);
-    
+
 #endif
 
         CYG_INSTRUMENT_MUTEX(WAIT, this, 0);

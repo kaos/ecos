@@ -1,3 +1,8 @@
+1999-08-08  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* misc/Notes: 
+	* misc/STUBS_config: Update patch for new hal.h.
+
 1999-05-25  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* misc/gdb_module.c: Fix up symbols for new ABI.

@@ -1,3 +1,16 @@
+1999-07-29  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/sync/mutex.cxx (lock): Removed assertion again. Not possible
+	to determine if a violation wil cause a deadlock.
+
+1999-07-27  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/sync/mutex.cxx (lock): Added simple assertion check for
+	deadlocks.
+
+	* tests/stress_threads.c: Only allow printf from main thread to
+	prevent deadlocks.
+
 1999-07-14  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* tests/kcache1.c (entry0): Also perform timing tests with

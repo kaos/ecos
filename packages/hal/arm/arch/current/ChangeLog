@@ -1,3 +1,30 @@
+1999-08-06  Jesper Skov  <jskov@cygnus.co.uk>
+        CR 101032
+        * src/vectors.S (handle_IRQ_or_FIQ): Moved setup of register_frame
+        argument to just before the interrupt_end call.
+
+1999-07-28  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/vectors.S (_eCos_id): Remove bogus version string.
+
+1999-07-26  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/hal_misc.c (hal_default_isr): Call the special platform HAL
+	routine to see whether there is a ^C lurking in the serial device
+	through a macro, if it's defined.  Problem is that
+	CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT *is* defined for platforms that
+	do not support it.
+
+1999-07-23  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/hal_misc.c (hal_default_isr): If we are including
+	CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT, then poll a special platform
+	HAL routine to see whether there is a ^C lurking in the serial
+	device.  This has to be done from the default ISR so that others
+	(which must know about ^Cs is they are still to be handled) can
+	install over the top.  Not all platforms support this, so enabling
+	CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT will not necessarily work.
+
 1999-07-21  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/vectors.S (vectors): Re-organize startup a little to support

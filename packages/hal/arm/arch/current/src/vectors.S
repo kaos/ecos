@@ -568,7 +568,6 @@ handle_IRQ_or_FIQ:
 	ldr	r1,[r1,v1,lsl #2]	// handler data
 	ldr	r2,.hal_interrupt_handlers
 	ldr	v3,[r2,v1,lsl #2]	// handler (indexed by vector #)
-	mov	r2,v6			// register frame
 
 	mov	lr,pc			// invoke handler (call indirect
 	mov	pc,v3                   // thru v3)
@@ -590,6 +589,7 @@ handle_IRQ_or_FIQ:
 
 	ldr	r1,.hal_interrupt_objects
 	ldr	r1,[r1,v1,lsl #2]
+	mov	r2,v6		// register frame
 	bl	interrupt_end   // post any bottom layer handler
                                 // threads and call scheduler
 #endif
@@ -706,7 +706,7 @@ PTR(__interrupt_stack)
 //
 // Identification - useful to find out when a system was configured
 _eCos_id:
-	.asciz	"eCos v1.2.1: " __DATE__
+	.asciz	"eCos : " __DATE__
 
 
 // -------------------------------------------------------------------------

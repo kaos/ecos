@@ -193,6 +193,7 @@ rebuild them if you should ever need to.
 
    you can use the following patch:
 
+patch -p0 <<END_OF_PATCH
 --- pkgconf/hal.h~      Wed Mar 10 13:08:58 1999
 +++ pkgconf/hal.h       Thu Mar 11 15:53:16 1999
 @@ -356,9 +356,9 @@
@@ -207,6 +208,8 @@ rebuild them if you should ever need to.
  
  /*
   * NOTE:
+
+END_OF_PATCH
 
 
 3. make misc

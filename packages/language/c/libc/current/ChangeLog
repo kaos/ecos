@@ -1,3 +1,9 @@
+1999-08-06  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* tests/stdio/sprintf2.c (test): Don't rely on 2.345 being exactly
+	representable in binary as a difference of 1 ulp will make it round
+	the wrong way.
+
 1999-07-16  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/stdio/input/fgetc.cxx: 

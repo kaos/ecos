@@ -292,8 +292,6 @@ void main_program(cyg_addrword_t data)
     setup_death_alarm(0, &deathH, &death_alarm, &is_dead);
 #endif /* DEATH_TIME_LIMIT */
 
-    printf("# Starting main\n");
-
     for (;;) {
         int handler_id = -1;
         int handler_pri = 0;
@@ -353,8 +351,6 @@ void client_program(cyg_addrword_t data)
 {
     int delay;
 
-    printf("# Starting client-%d\n", (int) data);
-
     system_clockH = cyg_real_time_clock();
     cyg_clock_to_counter(system_clockH, &counterH);
 
@@ -364,11 +360,9 @@ void client_program(cyg_addrword_t data)
         /* now send a request to the server */
         cyg_mutex_lock(&client_request_lock); {
             ++client_makes_request;
-/*        printf("client_makes_request        %d\n", client_makes_request); */
         } cyg_mutex_unlock(&client_request_lock);
 
         cyg_thread_delay(10+delay);
-/*      cyg_thread_delay(0); */
     }
 }
 
@@ -378,8 +372,6 @@ void listener_program(cyg_addrword_t data)
 {
 /*   int message = (int) data; */
     int handler_slot;
-
-    printf("# Beginning execution; thread data is %d\n", (int) data);
 
     for (;;) {
         int make_request = 0;
@@ -393,8 +385,6 @@ void listener_program(cyg_addrword_t data)
         if (make_request) {
             int prio;
             char* name;
-            /* printf("just got a request from a client (count = %d)\n", */
-            /*        client_makes_request); */
 
             handler_slot = get_handler_slot(listenerH[(int) data]);
             prio = P_BASE_HANDLER+handler_slot;
@@ -424,7 +414,6 @@ void handler_program(cyg_addrword_t data)
     perform_stressful_tasks();
 
     cyg_thread_delay(4 + (int) (0.5*log(1.0 + fabs((rand() % 1000000)))));
-/*    cyg_thread_delay(0); */
 
     ++statistics.thread_exits;
     {
@@ -603,8 +592,6 @@ void sc_thread_create(
     cyg_thread          *thread                /* put thread here           */
     )
 {
-/*printf("Creating a thread -- priority is %lu\n", (unsigned long) sched_info);*/
-/*    fflush(stdout); */
     ++statistics.thread_creations;
     cyg_thread_create(sched_info, entry, entry_data, name,
                       stack_base, stack_size, handle, thread);

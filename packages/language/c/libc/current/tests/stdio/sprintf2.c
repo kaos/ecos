@@ -159,8 +159,8 @@ test( CYG_ADDRWORD data )
 
     // Check 3
     ret = sprintf(y, "|%5f|%10s|%03d|%c|%+-5.2G|%010.3G|",
-                  2.0, "times", 6, '=', 12.0, -2.345e-6 );
-    my_strcpy(z, "|2.000000|     times|006|=|+12  |-02.34E-06|");
+                  2.0, "times", 6, '=', 12.0, -2.3451e-6 );
+    my_strcpy(z, "|2.000000|     times|006|=|+12  |-02.35E-06|");
 
     CYG_TEST_PASS_FAIL(my_strcmp(y,z) == 0,
                        "|%5f|%10s|%03d|%c|%+-5.2G|%010.3G| test");

@@ -175,6 +175,18 @@ externC cyg_uint32
 hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 {
     CYG_TRACE1(true, "Interrupt: %d", vector);
+
+#ifndef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+#ifdef CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT
+#ifdef CYGDBG_HAL_CTRLC_ISR
+    // then see if it is an incoming character interrupt and break
+    // into the stub ROM if the char is a ^C.
+    if ( CYGDBG_HAL_CTRLC_ISR( vector, data ) )
+        return 1; // interrupt handled
+#endif
+#endif
+#endif
+
     diag_printf("Spurious Interrupt!!! - vector: %d, data: %x\n", vector, 
                 data);
     CYG_FAIL("Spurious Interrupt!!!");

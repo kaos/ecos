@@ -1086,6 +1086,14 @@ __process_packet (char *packet)
             lock_thread_scheduler (1);  /* 1 == continue */
           }
 
+#ifdef __ECOS__
+      /* Need to flush the data and instruction cache here, as we may have
+         deposited a breakpoint in __single_step. */
+
+        __data_cache (CACHE_FLUSH) ;
+        __instruction_cache (CACHE_FLUSH) ;
+#endif
+
         return -1;
       }
 
