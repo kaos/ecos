@@ -1,3 +1,8 @@
+2004-08-06  Jani Monoses <jani@iv.ro>
+
+	* src/stand_alone/eth_drv.c: Add parantheses to fix operator
+	precedence bugs even though they were harmless in practice.
+
 2004-01-09  Jani Monoses <jani@iv.ro>
 
 	* include/eth_drv.h:

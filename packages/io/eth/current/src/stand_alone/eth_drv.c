@@ -276,7 +276,7 @@ eth_drv_write(char *eth_hdr, char *buf, int len)
             sc->funs->eth_drv_old = sc->funs->eth_drv;        
             sc->funs->eth_drv = &eth_drv_funs;    // Substitute stand-alone driver
             old_state = sc->state;
-            if (!old_state & ETH_DRV_STATE_ACTIVE) {
+            if (!(old_state & ETH_DRV_STATE_ACTIVE)) {
                 // This interface not fully initialized, do it now
                 (sc->funs->start)(sc, (unsigned char *)sc->sc_arpcom.esa, 0);
                 sc->state |= ETH_DRV_STATE_ACTIVE;
@@ -323,7 +323,7 @@ eth_drv_write(char *eth_hdr, char *buf, int len)
     }
  reset_and_out:   
     if (dbg) {
-//        if (!old_state & ETH_DRV_STATE_ACTIVE) {
+//        if (!(old_state & ETH_DRV_STATE_ACTIVE)) {
 //            // This interface was not fully initialized, shut it back down
 //            (sc->funs->stop)(sc);
 //        }
@@ -388,7 +388,7 @@ eth_drv_read(char *eth_hdr, char *buf, int len)
             sc->funs->eth_drv_old = sc->funs->eth_drv;
             sc->funs->eth_drv = &eth_drv_funs;    // Substitute stand-alone driver
             old_state = sc->state;
-            if (!old_state & ETH_DRV_STATE_ACTIVE) {
+            if (!(old_state & ETH_DRV_STATE_ACTIVE)) {
                 // This interface not fully initialized, do it now
                 (sc->funs->start)(sc, (unsigned char *)sc->sc_arpcom.esa, 0);
                 sc->state |= ETH_DRV_STATE_ACTIVE;
