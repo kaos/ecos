@@ -1,3 +1,7 @@
+2004-04-08  Bob Koninckx <bob.koninckx@o-3s.com>
+	* include/flash_am29xxxxx_parts.inl: Added support for AM29PL160 top
+	boot block devices and corrected typo.
+
 2004-04-06  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/flash_am29xxxxx.inl (flash_program_buf): Buffered program
