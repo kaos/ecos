@@ -1,3 +1,11 @@
+2003-05-02  Jani Monoses <jani@iv.ro>
+
+	* src/strata.c: Switch to using generic flash_query_dev.
+	The previous cache related changes broke flash_query for
+	Strata because in the query case the generic flash driver was not
+	called to handle the caches but the internal handling was removed
+	nevertheless.
+	
 2003-04-04  Jani Monoses <jani@iv.ro>
 	
 	* src/strata.h:
