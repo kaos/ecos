@@ -62,7 +62,7 @@
 
 static Cyg_ErrNo serial_write(cyg_io_handle_t handle, const void *buf, cyg_uint32 *len);
 static Cyg_ErrNo serial_read(cyg_io_handle_t handle, void *buf, cyg_uint32 *len);
-static Cyg_ErrNo serial_select(cyg_io_handle_t handle, cyg_uint32 which, CYG_ADDRWORD info);
+static cyg_bool serial_select(cyg_io_handle_t handle, cyg_uint32 which, CYG_ADDRWORD info);
 static Cyg_ErrNo serial_get_config(cyg_io_handle_t handle, cyg_uint32 key, void *buf, cyg_uint32 *len);
 static Cyg_ErrNo serial_set_config(cyg_io_handle_t handle, cyg_uint32 key, const void *buf, cyg_uint32 *len);
 

@@ -1,3 +1,8 @@
+2003-09-02  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/common/serial.c: Make serial_select prototype match
+	implementation.
+
 2003-06-09  Nick Garnett  <nickg@balti.calivar.com>
 
 	* src/common/serial.c: Changed all calls to cyg_drv_cond_signal()
