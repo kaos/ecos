@@ -1,3 +1,7 @@
+2003-03-07  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/mainthread.cxx: Align stack to relevant architecture alignment.
+
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/startup.cdl: Fix doc link.
