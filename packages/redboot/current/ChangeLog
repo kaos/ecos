@@ -1,3 +1,8 @@
+2003-05-13  Nick Garnett  <nickg@balti.calivar.com>
+
+	* doc/redboot_installing.sgml: Added installation instructions for
+	Atmel EB40A, EB42 and EB55 boards.
+
 2003-05-06  Mark Salter  <msalter@redhat.com>
 
 	* src/main.c (cyg_start): Clear gdb_active when returning from stub.
