@@ -1,3 +1,9 @@
+2000-06-13  Jesper Skov  <jskov@redhat.com>
+
+	* src/quicc_smc1.c:
+	* include/quicc_smc1.h:
+	Added ctrlc handling for use via virtual vector table.
+
 2000-03-03  Gary Thomas  <gthomas@redhat.com>
 
 	* src/quicc_smc1.c: Use common CPM defines (now in ppc8xx.h).

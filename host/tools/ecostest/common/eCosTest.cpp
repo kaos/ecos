@@ -97,10 +97,22 @@ CeCosTest::CeCosTest(const ExecutionParameters &e, LPCTSTR pszExecutable,LPCTSTR
 
   // By recording the path now, we ensure processes are always run in the context in which the test instance
   // is created (important for the ConfigTool to be able to call PrepareEnvironment).
+
+#ifdef _WIN32
+  // for some reason _tgetenv() doesn't return the PATH set
+  // by PrepareEnvironment() so use GetEnvironmentVariable() instead
+  // JLD - 2000-06-09
+  String strPath;
+  int nSize=GetEnvironmentVariable(_T("PATH"), NULL, 0);
+  GetEnvironmentVariable(_T("PATH"), strPath.GetBuffer(nSize), nSize);
+  strPath.ReleaseBuffer();
+  m_strPath=strPath;
+#else
   LPCTSTR pszPath=_tgetenv(_T("PATH"));
   if(pszPath){
     m_strPath=pszPath;
   }
+#endif
   
   ENTERCRITICAL;
   InstanceCount++;

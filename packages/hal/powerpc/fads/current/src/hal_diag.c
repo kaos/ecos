@@ -64,6 +64,8 @@
 
 #include <pkgconf/hal.h>
 
+#ifndef CYGSEM_HAL_VIRTUAL_VECTOR_DIAG
+
 #include <cyg/infra/cyg_type.h>         // base types
 #include <cyg/infra/cyg_trac.h>         // tracing macros
 #include <cyg/infra/cyg_ass.h>          // assertion macros
@@ -120,4 +122,4 @@ void hal_diag_read_char(char *c)
 }
 #endif
 
-
+#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG

@@ -63,12 +63,12 @@
 // Static data used by HAL
 
 // ISR tables
-externC volatile CYG_ADDRESS    hal_interrupt_handlers[CYGNUM_HAL_ISR_COUNT];
-externC volatile CYG_ADDRWORD   hal_interrupt_data[CYGNUM_HAL_ISR_COUNT];
-externC volatile CYG_ADDRESS    hal_interrupt_objects[CYGNUM_HAL_ISR_COUNT];
+externC CYG_ADDRESS    hal_interrupt_handlers[CYGNUM_HAL_ISR_COUNT];
+externC CYG_ADDRWORD   hal_interrupt_data[CYGNUM_HAL_ISR_COUNT];
+externC CYG_ADDRESS    hal_interrupt_objects[CYGNUM_HAL_ISR_COUNT];
 
 // VSR table
-externC volatile CYG_ADDRESS    hal_vsr_table[CYGNUM_HAL_VSR_COUNT];
+externC CYG_ADDRESS    hal_vsr_table[CYGNUM_HAL_VSR_COUNT];
 
 //--------------------------------------------------------------------------
 // Default ISR
@@ -146,6 +146,19 @@ externC void hal_interrupt_stack_call_pending_DSRs(void);
 // For chained interrupts we only have a single vector though which all
 // are passed. For unchained interrupts we have a vector per interrupt.
 // Note: this hardware does not have/support chained interrupts.
+
+//--------------------------------------------------------------------------
+// Vector translation.
+// For chained interrupts we only have a single vector though which all
+// are passed. For unchained interrupts we have a vector per interrupt.
+
+#ifndef HAL_TRANSLATE_VECTOR
+#if defined(CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN)
+#define HAL_TRANSLATE_VECTOR(_vector_,_index_) (_index_) = 0
+#else
+#define HAL_TRANSLATE_VECTOR(_vector_,_index_) (_index_) = (_vector_-CYGNUM_HAL_ISR_MIN)
+#endif
+#endif
 
 #ifndef HAL_TRANSLATE_VECTOR
 #define HAL_TRANSLATE_VECTOR(_vector_,_index_) (_index_) = (_vector_-CYGNUM_HAL_ISR_MIN)

@@ -49,4 +49,17 @@ extern void cyg_quicc_smc1_uart_putchar(char ch);
 extern int  cyg_quicc_smc1_uart_rcvchar(void);
 extern void cyg_quicc_init_smc1(void);
 
+//--------------------------------------------------------------------------
+// Control-C support.
+
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
+    || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
+
+#define CYGHWR_HAL_GDB_PORT_VECTOR CYGNUM_HAL_INTERRUPT_CPM_SMC1
+externC cyg_uint32 hal_ctrlc_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data);
+
+# define HAL_CTRLC_ISR hal_ctrlc_isr
+
+#endif
+
 #endif /* CYGONCE_HAL_PPC_QUICC_SMC1_H */

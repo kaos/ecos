@@ -328,6 +328,15 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
         (CYGNUM_HAL_STACK_SIZE_MINIMUM +             \
          30 * (CYGNUM_HAL_STACK_FRAME_SIZE+(16*4)))
 
+//--------------------------------------------------------------------------
+// Macros for switching context between two eCos instances (jump from
+// code in ROM to code in RAM or vice versa).
+
+// Should be defined like for MIPS, saving/restoring R2 - but is it
+// actually used? I've never seen app code use R2. Something to investigate.
+#define CYGARC_HAL_SAVE_GP()
+#define CYGARC_HAL_RESTORE_GP()
+
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_ARCH_H
 // End of hal_arch.h

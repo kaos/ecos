@@ -46,6 +46,7 @@
 #include <pkgconf/hal_powerpc_quicc.h>
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/quicc/ppc8xx.h>
+#include <cyg/hal/hal_if.h>             // hal_if_init
 
 // The memory map is weakly defined, allowing the application to redefine
 // it if necessary. The regions defined below are the minimum requirements.
@@ -298,6 +299,14 @@ _mbx_fetch_VPD(int code, unsigned char *buf, int size)
         if (*vp == VPD_EOD) break;
     }
     return 0;
+}
+
+//--------------------------------------------------------------------------
+// Platform init code.
+void
+hal_platform_init(void)
+{
+    hal_if_init();
 }
 
 // EOF hal_aux.c

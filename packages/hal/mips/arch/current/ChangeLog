@@ -1,3 +1,15 @@
+2000-06-08  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_misc.c (hal_arch_default_isr): Removed what's now a
+	generic C-c check in the common HAL.
+
+	* include/hal_arch.h (CYGARC_HAL_GET_RETURN_ADDRESS): Defined.
+
+2000-06-08  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_arch.h (CYGARC_HAL_SAVE_GP, CYGARC_HAL_RESTORE_GP):
+	Added.
+
 2000-05-25  Jesper Skov  <jskov@redhat.com>
 
 	* include/basetype.h: 

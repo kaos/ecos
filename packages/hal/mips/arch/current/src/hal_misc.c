@@ -126,6 +126,7 @@ externC cyg_uint32 cyg_hal_exception_handler(HAL_SavedRegisters *regs)
 /*------------------------------------------------------------------------*/
 /* default ISR                                                            */
 
+#ifndef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
 externC cyg_uint32 hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 {
 #if defined(CYGDBG_HAL_MIPS_DEBUG_GDB_CTRLC_SUPPORT) &&      \
@@ -157,6 +158,32 @@ externC cyg_uint32 hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
     CYG_FAIL("Spurious Interrupt!!!");
     return 0;
 }
+
+#else // CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
+
+externC cyg_uint32 hal_arch_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
+{
+#if defined(CYGDBG_HAL_MIPS_DEBUG_GDB_CTRLC_SUPPORT) &&      \
+    defined(CYGHWR_HAL_GDB_PORT_VECTOR) &&              \
+    defined(HAL_CTRLC_ISR)
+
+#if defined(CYGSEM_HAL_USE_ROM_MONITOR_CygMon)
+#if defined(HAL_DIAG_IRQ_CHECK)
+    {
+        cyg_uint32 ret;
+        /* let ROM monitor handle unexpected interrupts */
+        HAL_DIAG_IRQ_CHECK(vector, ret);
+        if (ret<=0)
+            return ret;
+    }
+#endif // def HAL_DIAG_IRQ_CHECK
+#endif // def CYGSEM_HAL_USE_ROM_MONITOR_CygMon
+#endif
+
+    return 0;
+}
+
+#endif // CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
 
 /*------------------------------------------------------------------------*/
 /* data copy and bss zero functions                                       */

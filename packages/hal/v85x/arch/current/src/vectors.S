@@ -172,7 +172,14 @@ start:
         bne     10b        
 #endif        
         jarl    _initialize_stub,r31
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // this _check_ should go away
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
+    || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
+        .extern hal_ctrlc_isr_init
+        jarl    _hal_ctrlc_isr_init,r31
 #endif
+#endif
+#endif // CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
         
         // Run through static constructors
         jarl    _cyg_hal_invoke_constructors,r31
@@ -344,9 +351,26 @@ do_interrupt:
         jarl    _cyg_instrument,r31
 #endif
 
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // this _check_ should go away
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
+    || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
+	// If we are supporting Ctrl-C interrupts from GDB, we must squirrel
+	// away a pointer to the save interrupt state here so that we can
+	// plant a breakpoint at some later time.
+	
+	.extern	_hal_saved_interrupt_state
+	lea     _hal_saved_interrupt_state,r8
+        st.w    ep,0[r8]
+#endif
+#endif        
+
+#ifdef CYGIMP_KERNEL_INTERRUPTS_CHAIN
+        mov     r0,r8                           // vector # (overloaded by kernel)
+#else	
         ld.w    CYGARC_REG_VECTOR[ep],r6        // vector #
         addi    -CYGNUM_HAL_ISR_MIN,r6,r8
         shl     2,r8
+#endif        
         lea     _hal_interrupt_objects,r1
         add     r8,r1
         ld.w    0[r1],r29                       // save object handle
@@ -357,6 +381,9 @@ do_interrupt:
         add     r8,r1
         mov     ep,r8                           // pointer to saved registers
         ld.w    0[r1],r1                        // handler routine
+#ifdef CYGIMP_KERNEL_INTERRUPTS_CHAIN
+        ld.w    CYGARC_REG_VECTOR[ep],r6        // vector #
+#endif        
         jarl    call_via_r1,r31
         
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
@@ -465,6 +492,14 @@ _hal_vsr_table:
         .rept   CYGNUM_HAL_ISR_COUNT
         .word   do_interrupt
         .endr
+
+#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT)
+        .balign 64
+_hal_virtual_vector_table:      
+        .rept   CYGNUM_CALL_IF_TABLE_SIZE
+        .word   0
+        .endr
+#endif        
 #endif
 
 // Initial stack        

@@ -1,3 +1,12 @@
+2000-06-14  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_powerpc_mpc8xx.cdl: Proper ROM_MONITOR hack.
+
+2000-06-13  Jesper Skov  <jskov@redhat.com>
+
+	* include/var_intr.h: Include quicc definitions for ctrlc
+	support.
+
 2000-04-14  Jesper Skov  <jskov@redhat.com>
 
 	* src/var_misc.c (hal_variant_init): Moved serialization disable

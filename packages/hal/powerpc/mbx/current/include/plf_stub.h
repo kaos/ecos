@@ -53,8 +53,6 @@
 
 #include <cyg/hal/ppc_stub.h>           // architecture stub support
 
-#include <cyg/hal/quicc/quicc_smc1.h>   // QUICC serial IO support
-
 //----------------------------------------------------------------------------
 // Define serial stuff. All comes from the quicc_smc1.c file.
 
@@ -65,7 +63,8 @@
 #define HAL_STUB_PLATFORM_PUT_CHAR(c)       cyg_quicc_smc1_uart_putchar((c))
 
 #define HAL_STUB_PLATFORM_SET_BAUD_RATE(baud) CYG_UNUSED_PARAM(int, (baud))
-
+#define HAL_STUB_PLATFORM_INIT_BREAK_IRQ()    CYG_EMPTY_STATEMENT
+#define HAL_STUB_PLATFORM_INTERRUPTIBLE       0
 //----------------------------------------------------------------------------
 // Stub initializer.
 externC void hal_mbx_set_led( int val );
@@ -74,25 +73,16 @@ externC void hal_mbx_set_led( int val );
 // to distinguish eCos stub ROM ready state from either CygMon or app.
 #endif
 
-//----------------------------------------------------------------------------
-#ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
-#define HAL_STUB_PLATFORM_INIT_BREAK_IRQ()    CYG_EMPTY_STATEMENT
-#endif
+#endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
 //----------------------------------------------------------------------------
 // Reset.
-#ifdef CYGSEM_HAL_ROM_MONITOR
-// Just call the ROM's entry point. Not as safe as a reset, but the MBX
-// doesn't have a watchdog, so this'll have to do.
-externC void _start(void);
-#define HAL_STUB_PLATFORM_RESET() _start()
-#else
+
+// The MBX does not have a watchdog (not one we can easily use for this
+// purpose anyway).
 #define HAL_STUB_PLATFORM_RESET() CYG_EMPTY_STATEMENT
-#endif
 
-#define HAL_STUB_PLATFORM_INTERRUPTIBLE  0
-
-#endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+#define HAL_STUB_PLATFORM_RESET_ENTRY 0xfe000100
 
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_PLF_STUB_H

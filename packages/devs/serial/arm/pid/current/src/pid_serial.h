@@ -47,35 +47,35 @@
 // Description of serial ports on ARM PID7T
 
 struct serial_port {
-    unsigned char _byte[32];
+    volatile unsigned char _byte[32];
 };
 
 // Little-endian version
 #if (CYG_BYTEORDER == CYG_LSBFIRST)
 
-#define reg(n) _byte[n*4]
+#define REG(n) _byte[n*4]
 
 #else // Big-endian version
 
-#define reg(n) _byte[(n*4)^3]
+#define REG(n) _byte[(n*4)^3]
 
 #endif
 
-// Receive control registers
-#define rhr reg(0)    // Receive holding register
-#define isr reg(2)    // Interrupt status register
-#define lsr reg(5)    // Line status register
-#define msr reg(6)    // Modem status register
-#define scr reg(7)    // Scratch register
+// Receive control Registers
+#define REG_rhr REG(0)    // Receive holding register
+#define REG_isr REG(2)    // Interrupt status register
+#define REG_lsr REG(5)    // Line status register
+#define REG_msr REG(6)    // Modem status register
+#define REG_scr REG(7)    // Scratch register
 
-// Transmit control registers
-#define thr reg(0)    // Transmit holding register
-#define ier reg(1)    // Interrupt enable register
-#define fcr reg(2)    // FIFO control register
-#define lcr reg(3)    // Line control register
-#define mcr reg(4)    // Modem control register
-#define ldl reg(0)    // LSB of baud rate
-#define mdl reg(1)    // MSB of baud rate
+// Transmit control Registers
+#define REG_thr REG(0)    // Transmit holding register
+#define REG_ier REG(1)    // Interrupt enable register
+#define REG_fcr REG(2)    // FIFO control register
+#define REG_lcr REG(3)    // Line control register
+#define REG_mcr REG(4)    // Modem control register
+#define REG_ldl REG(0)    // LSB of baud rate
+#define REG_mdl REG(1)    // MSB of baud rate
 
 // Interrupt Enable Register
 #define IER_RCV 0x01
@@ -107,7 +107,7 @@ struct serial_port {
 #define MCR_RTS 0x02
 #define MCR_INT 0x08   // Enable interrupts
 
-// Interrupt status register
+// Interrupt status Register
 #define ISR_Tx  0x02
 #define ISR_Rx  0x04
 #define ISR_RxTO  0x0C

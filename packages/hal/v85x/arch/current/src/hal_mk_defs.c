@@ -51,6 +51,9 @@
 # include <pkgconf/kernel.h>
 # include <cyg/kernel/instrmnt.h>
 #endif
+#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT)
+#include <cyg/hal/hal_if.h>
+#endif
 
 /*
  * This program is used to generate definitions needed by
@@ -152,6 +155,10 @@ main(void)
 
 #ifdef CYGPKG_KERNEL
     DEFINE(RAISE_INTR, CYG_INSTRUMENT_CLASS_INTR|CYG_INSTRUMENT_EVENT_INTR_RAISE);
+#endif
+
+#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT)
+    DEFINE(CYGNUM_CALL_IF_TABLE_SIZE, CYGNUM_CALL_IF_TABLE_SIZE);
 #endif
 
     // Variant definitions - want these to be included instead.

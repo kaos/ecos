@@ -106,7 +106,7 @@ ER      isnd_msg ( ID mbxid, T_MSG *pk_msg );
 #define CYGPRI_UITRON_SET_RETCODE( _z_ ) do {                                   \
     extern volatile int cyg_uit_dsr_actions_head;                               \
     extern volatile int cyg_uit_dsr_actions_tail;                               \
-    (_z_) = (cyg_uit_dsr_actions_head == cyg_uit_dsr_actions_tail) ? 0 : 3;     \
+    (_z_) = (cyg_uit_dsr_actions_head == cyg_uit_dsr_actions_tail) ? 1 : 3;     \
 } while ( 0 )
 
 //void    ret_wup ( ID tskid );

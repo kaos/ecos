@@ -1,3 +1,27 @@
+2000-06-14  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/ebsa285_eth_drivers.cdl: Add option to control statistics
+	keeping.
+
+	* include/ebsa285_info.h: Act on it.
+
+2000-06-13  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/ebsa285_eth_drivers.cdl: Properly include the new header
+	file and define symbols to allow client code to get at it without
+	knowing the particular device driver name.
+
+	* include/ebsa285_info.h: New file: export various statistics
+	information about the driver for use by monitoring and
+	network-management systems.  This requires exposing the
+	(otherwise) internal structures of the driver.
+
+	* src/if_ebsa285.c: remove a lot of structure definitions &c that
+	are now necessarily in the new header; add a couple of new
+	routines which provide status and update statistics from the
+	device into memory; tidy up control of whether stats-keeping is
+	enabled.
+
 2000-06-06  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* cdl/ebsa285_eth_drivers.cdl (define_proc): Add #define of

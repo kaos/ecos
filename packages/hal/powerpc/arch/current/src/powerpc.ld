@@ -140,6 +140,7 @@ GROUP(libtarget.a libgcc.a)
 #include <pkgconf/system.h>
 #include CYGHWR_MEMORY_LAYOUT_LDI
 
-// Define VSR table to reside at fixed address.
+// Define VSR and virtual tables to reside at fixed addresses.
 #include CYGBLD_HAL_TARGET_H
 hal_vsr_table = CYGHWR_HAL_VSR_TABLE;
+hal_virtual_vector_table = CYGHWR_HAL_VIRTUAL_VECTOR_TABLE;

@@ -1,3 +1,22 @@
+2000-06-15  John Dallaway  <jld@redhat.com>
+
+	* win32/RunTestsSheet.cpp:
+
+	Modify the CRunTestsSheet constructor to set the download
+	timeout type to TIMEOUT_SPECIFIED and server side GDB
+	flag to FALSE by default.
+
+	Modify OnRun() to specify a default timeout of 900 seconds.
+
+	* win32/RunTestsSheet.h:
+
+	Add SetResetNone() inline function.
+
+	* win32/TestTool.rc:
+
+	Modify the IDD_TT_PLATFORM dialog to accept CR chars in
+	the GDB commands edit box and to correct the tab order.
+
 2000-04-11 Simon FitzMaurice <sdf@redhat.co.uk>
   * win32\ExecutionPage.cpp
     win32\ExecutionPage.h

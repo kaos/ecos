@@ -137,6 +137,18 @@ cyg_hal_invoke_constructors (void)
 /*------------------------------------------------------------------------*/
 /* default ISR                                                            */
 
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
+externC cyg_uint32
+hal_arch_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
+{
+    CYG_TRACE1(true, "Interrupt: %d", vector);
+
+    diag_printf("Spurious Interrupt!!! - vector: %d, data: %x\n", vector, 
+                data);
+    CYG_FAIL("Spurious Interrupt!!!");
+    return 0;
+}
+#else
 externC cyg_uint32
 hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 {
@@ -158,6 +170,7 @@ hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
     CYG_FAIL("Spurious Interrupt!!!");
     return 0;
 }
+#endif
 
 /*------------------------------------------------------------------------*/
 /* Idle thread action                                                     */

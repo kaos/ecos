@@ -293,6 +293,12 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
         (CYGNUM_HAL_STACK_SIZE_MINIMUM +             \
          30 * (CYGNUM_HAL_STACK_FRAME_SIZE+(16*4)))
 
+//--------------------------------------------------------------------------
+// Macros for switching context between two eCos instances (jump from
+// code in ROM to code in RAM or vice versa).
+#define CYGARC_HAL_SAVE_GP()
+#define CYGARC_HAL_RESTORE_GP()
+
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_ARCH_H
 // End of hal_arch.h

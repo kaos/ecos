@@ -46,12 +46,9 @@
 
 void cyg_start (void)
 {
-
     initialize_stub();
 
     for(;;) breakpoint();
-    
-    
 }
 
 // End of stubrom.c

@@ -33,6 +33,7 @@
 
 /////////////////////////////////////////////////////////////////////////////
 // CRunTestsSheet
+#include "stdafx.h"
 #include "ExecutionPage.h"
 #include "OutputPage.h"
 #include "SummaryPage.h"
@@ -76,6 +77,7 @@ protected:
 // Operations
 public:
     void SetTarget(LPCTSTR pszTarget);
+    void SetResetNone() { m_nReset = RESET_NONE; };
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CRunTestsSheet)

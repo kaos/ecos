@@ -369,5 +369,28 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 #endif
 
 //--------------------------------------------------------------------------
+// Macros for switching context between two eCos instances (jump from
+// code in ROM to code in RAM or vice versa).
+#define CYGARC_HAL_SAVE_GP()                    \
+    CYG_MACRO_START                             \
+    register CYG_ADDRWORD __gp_save;            \
+    asm volatile ( "move   %0,$28;"             \
+                   ".extern _gp;"               \
+                   "la     $gp,_gp;"            \
+                     : "=r"(__gp_save))
+
+#define CYGARC_HAL_RESTORE_GP()                                 \
+    asm volatile ( "move   $gp,%0;" :: "r"(__gp_save) );        \
+    CYG_MACRO_END
+
+
+//--------------------------------------------------------------------------
+// Macro for finding return address. 
+#define CYGARC_HAL_GET_RETURN_ADDRESS(_x_) \
+  asm volatile ( "move %0,$31;" : "=r" (_x_) )
+
+#define CYGARC_HAL_GET_RETURN_ADDRESS_BACKUP()
+
+//--------------------------------------------------------------------------
 #endif // CYGONCE_HAL_HAL_ARCH_H
 // End of hal_arch.h

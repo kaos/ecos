@@ -132,6 +132,51 @@ cdl_package CYGPKG_HAL {
             platform-dependent."
 
 
+
+        cdl_interface CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT {
+            display "Target has virtual vector support"
+            no_define
+        }
+
+
+        cdl_interface CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_GUARANTEED {
+            display "The platform port was written with vector support"
+            no_define
+            description    "
+                Many platform HALs have adopted the virtual vector support
+                after its introduction. On those platforms, old ROM
+                monitors will not provide the necessary services - and
+                so the use of these services should be disabled per default.
+                Newer ports, however, guarantee to provide the necessary
+                services in all ROM monitors, and so default to use the
+                services."
+        }                
+
+        cdl_component CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT {
+            display     "Enable use of virtual vector calling interface"
+            active_if   CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
+            calculated  1
+            description "
+                Virtual vector support allows the HAL to let the ROM
+                monitor handle certain operations. The virtual vector table
+                defines a calling interface between applications running in
+                RAM and the ROM monitor."
+            compile     hal_if.c hal_misc.c
+            
+            cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_DIAG {
+                display       "Do diagnostic IO via virtual vector table"
+                default_value { CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_GUARANTEED }
+                description   "
+                    The virtual vector table provides functions for
+                    diagnostic IO. Using these both reduce the application
+                    size a bit, and allow the ROM monitor to control which
+                    communication intererface to use. Careful when enabling
+                    this option as it may cause output to disappear (if
+                    the ROM monitor does not provide the necessary
+                    services)."
+            }
+        }
+
         cdl_option CYGBLD_BUILD_COMMON_GDB_STUBS {
             display "Build common GDB stub ROM image"
             default_value 0

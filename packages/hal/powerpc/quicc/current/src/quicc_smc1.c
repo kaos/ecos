@@ -56,9 +56,13 @@
 
 #include <cyg/hal/quicc/quicc_smc1.h>
 
-#ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+#if defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT) \
+    || defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
 #include <cyg/hal/hal_stub.h>           // target_register_t
 #include <cyg/hal/hal_intr.h>           // HAL_INTERRUPT_UNMASK(...)
+#include <cyg/hal/hal_if.h>             // Calling interface definitions
+#include <cyg/hal/hal_misc.h>           // Helper functions
+#include <cyg/hal/drv_api.h>            // CYG_ISR_HANDLED
 #endif
 
 #define UART_BIT_RATE(n) (((int)(CYGHWR_HAL_POWERPC_BOARD_SPEED*1000000)/16)/n)
@@ -181,8 +185,10 @@ init_smc1_uart(void)
     eppc->smc_regs[0].smc_smcmr = 0x4820;
     eppc->smc_regs[0].smc_smcmr = 0x4823;
 
+#ifndef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // remove below
 #ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
     HAL_INTERRUPT_UNMASK( CYGNUM_HAL_INTERRUPT_CPM_SMC1 );
+#endif
 #endif
 }
 
@@ -320,6 +326,9 @@ cyg_quicc_init_smc1(void)
     init_smc1_uart();
 }
 
+#ifndef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // the below should be removed
+
+
 #ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
 // This ISR is called from the interrupt handler. This should only
 // happen when there is no real serial driver, so the code shouldn't
@@ -361,6 +370,56 @@ int cyg_hal_gdb_isr( target_register_t pc )
     return 1;
 }
 #endif // CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+
+
+#else // the below stays
+
+#if defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT) \
+    || defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
+
+struct Hal_SavedRegisters *hal_saved_interrupt_state;
+
+void
+hal_ctrlc_isr_init(void)
+{
+    HAL_INTERRUPT_UNMASK(CYGHWR_HAL_GDB_PORT_VECTOR);
+}
+
+cyg_uint32
+hal_ctrlc_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
+{
+    EPPC *eppc = eppc_base();
+    struct cp_bufdesc *bd;
+    char ch;
+
+    eppc->smc_regs[0].smc_smce = 0xff;
+
+    /* rx buffer descriptors */
+    bd = (struct cp_bufdesc *)((char *)eppc_base() + Rxbd);
+
+    if ((bd->ctrl & QUICC_BD_CTL_Ready) == 0) {
+
+        // then there be a character waiting
+        ch = bd->buffer[0];
+        bd->length = 1;
+        bd->ctrl   = QUICC_BD_CTL_Ready | QUICC_BD_CTL_Wrap | QUICC_BD_CTL_Int;
+
+        if( cyg_hal_is_break( &ch , 1 ) )
+            cyg_hal_user_break( (CYG_ADDRWORD *)hal_saved_interrupt_state );
+
+        // Interrupt handled. Acknowledge it.
+        eppc->cpmi_cisr = 0x10;
+        return CYG_ISR_HANDLED;
+    }
+
+    eppc->cpmi_cisr = 0x10; // acknowledge the Rx event anyway
+                            // in case it was left over from polled reception
+
+    // Not a serial interrupt
+    return 0;
+}
+#endif
+#endif // CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
 
 #endif // CYGPKG_HAL_POWERPC_MPC860
 // EOF quicc_smc1.c

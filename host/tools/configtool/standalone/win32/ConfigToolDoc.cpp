@@ -554,6 +554,11 @@ void CConfigToolDoc::RunTests()
   int nTests=GetTestExeNames(ar,arTestsMissing);
   CRunTestsSheet sheet(_T("Run Tests"), NULL, 0, 0);
   sheet.SetTarget(strTarget);
+  const CeCosTestPlatform * etPlatform = CeCosTestPlatform::Get(strTarget);
+  ASSERT (NULL != etPlatform);
+  if (-1 != CString (etPlatform->GdbCmds ()).Find (_T("cyg_test_is_simulator"))) { // if a simulator target
+    sheet.SetResetNone(); // disable 'reset hardware' message box
+  }
   sheet.HideRemoteControls();
   if(arTestsMissing.GetSize()){
     if(IDYES==CUtils::MessageBoxFT(MB_YESNO,_T("Not all tests are built.  Do you wish to build them now?"))){

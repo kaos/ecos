@@ -347,6 +347,11 @@ _start:
         # Variant HALs may need to do something special before we continue
         bl      hal_variant_init
 
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // this _check_ should go away
+        # Platform initialization
+        bl      hal_platform_init
+#endif
+        
         # MMU and cache are controlled by the same option since caching
         # on the PPC does not make sense without the MMU to mark regions
         # which should not be cached.
@@ -373,7 +378,14 @@ _start:
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
         bl      initialize_stub
 #endif
-
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // this _check_ should go away
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
+    || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
+        .extern hal_ctrlc_isr_init
+        bl     hal_ctrlc_isr_init
+#endif
+#endif
+        
         bl      cyg_start                       # call cyg_start
 9:      
         b       9b              # if we return, loop
@@ -645,6 +657,7 @@ cyg_hal_default_interrupt_vsr:
 
         hal_intc_decode r15,r14                # get table index
 
+#ifndef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT  // this should go away
 #ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
         .extern cyg_hal_gdb_isr
         lwz     r3,CYGARC_PPCREG_PC(r14)        # for serial receive irq.
@@ -654,6 +667,21 @@ cyg_hal_default_interrupt_vsr:
                                                 #  to avoid DSR call)
 1:
 #endif
+
+#else // the below should remain        
+
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
+    || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
+	# If we are supporting Ctrl-C interrupts from GDB, we must squirrel
+	# away a pointer to the save interrupt state here so that we can
+	# plant a breakpoint at some later time.
+	
+	.extern	hal_saved_interrupt_state
+	lwi	r3,hal_saved_interrupt_state
+	stw	r14,0(r3)
+	
+#endif
+#endif // CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
 
 #ifdef CYGSEM_HAL_COMMON_INTERRUPTS_ALLOW_NESTING
 
@@ -679,10 +707,12 @@ cyg_hal_default_interrupt_vsr:
 
         bctrl                                   # branch to ctr reg and link
 
+#ifndef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT  // this should go away
 #ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
         # If interrupt was caused by GDB, the ISR call above
         # is skipped by jumping here.
 2:
+#endif
 #endif
         
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK

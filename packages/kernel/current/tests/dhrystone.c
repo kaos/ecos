@@ -66,6 +66,8 @@ dtime(void)
 #define PASSES 1000000
 #elif defined(CYGPKG_HAL_ARM_CMA230)
 #define PASSES 100000
+#elif defined(CYGPKG_HAL_V85X_V850_CEB)
+#define PASSES 20000
 #elif defined(CYGPKG_HAL_POWERPC_MPC8xx)
 #define PASSES 250000
 #else

@@ -225,8 +225,12 @@ externC volatile CYG_ADDRESS    hal_vsr_table[CYGNUM_HAL_VSR_COUNT];
 
 //--------------------------------------------------------------------------
 // Default ISR
+// The #define is used to test whether this routine exists, and to allow
+// us to call it.
 
 externC cyg_uint32 hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data);
+
+#define HAL_DEFAULT_ISR hal_default_isr
 
 //--------------------------------------------------------------------------
 // Interrupt state storage

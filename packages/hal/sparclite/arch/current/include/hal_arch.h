@@ -344,6 +344,12 @@ CYG_MACRO_END
 #define CYGNUM_HAL_STACK_SIZE_TYPICAL \
         (CYGNUM_HAL_STACK_SIZE_MINIMUM + 8 * CYGNUM_HAL_STACK_FRAME_SIZE)
 
+//--------------------------------------------------------------------------
+// Macros for switching context between two eCos instances (jump from
+// code in ROM to code in RAM or vice versa).
+#define CYGARC_HAL_SAVE_GP()
+#define CYGARC_HAL_RESTORE_GP()
+
 //-----------------------------------------------------------------------------
 
 #endif // CYGONCE_HAL_ARCH_H

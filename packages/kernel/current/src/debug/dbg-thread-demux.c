@@ -41,6 +41,7 @@
 //
 //========================================================================*/
 
+#include <cyg/hal/hal_arch.h>
 
 /* This file implements system calls out from the ROM debug stub into
    the operating environment.
@@ -84,77 +85,52 @@ static int dbg_thread_syscall_rmt(
                        union dbg_thread_syscall_parms * p
                        )
 {
-  switch (id)
+    int ret;
+    CYGARC_HAL_SAVE_GP();
+    switch (id)
     {
-    case dbg_null_func : return 1 ;  /* test the syscall apparatus */
+    case dbg_null_func : 
+        ret = 1 ;  /* test the syscall apparatus */
+        break;
 
 #ifdef CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT
     case dbg_capabilities_func :
-      return dbg_thread_capabilities(p->cap_parms.abilities) ;
-      break ;
+        ret = dbg_thread_capabilities(p->cap_parms.abilities) ;
+        break ;
     case dbg_currthread_func :
-      return dbg_currthread(p->currthread_parms.ref) ;
-      break ;
+        ret = dbg_currthread(p->currthread_parms.ref) ;
+        break ;
     case dbg_threadlist_func :
-      return dbg_threadlist(p->threadlist_parms.startflag,
-                            p->threadlist_parms.lastid,
-                            p->threadlist_parms.nextthreadid) ;
-      break ;
+        ret = dbg_threadlist(p->threadlist_parms.startflag,
+                             p->threadlist_parms.lastid,
+                             p->threadlist_parms.nextthreadid) ;
+        break ;
     case dbg_threadinfo_func :
-      return dbg_threadinfo(p->info_parms.ref,
-                            p->info_parms.info
-                            ) ;
-      break ;
+        ret = dbg_threadinfo(p->info_parms.ref,
+                             p->info_parms.info ) ;
+        break ;
     case dbg_getthreadreg_func :
-      return dbg_getthreadreg(p->reg_parms.thread,
-                              p->reg_parms.regcount,
-                              p->reg_parms.registers) ;
-      break ;
+        ret = dbg_getthreadreg(p->reg_parms.thread,
+                               p->reg_parms.regcount,
+                               p->reg_parms.registers) ;
+        break ;
     case dbg_setthreadreg_func :
-      return dbg_setthreadreg(p->reg_parms.thread,
-                              p->reg_parms.regcount,
-                              p->reg_parms.registers) ;
-      break ;
+        ret = dbg_setthreadreg(p->reg_parms.thread,
+                               p->reg_parms.regcount,
+                               p->reg_parms.registers) ;
+        break ;
     case dbg_scheduler_func :
-      return dbg_scheduler(p->scheduler_parms.thread,
-                           p->scheduler_parms.lock,
-                           p->scheduler_parms.mode) ;
-      break ;
+        ret = dbg_scheduler(p->scheduler_parms.thread,
+                            p->scheduler_parms.lock,
+                            p->scheduler_parms.mode) ;
+        break ;
 #endif /* CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT */      
     default :
-      return 0 ;  /* failure due to non-implementation */
+        ret = 0 ;  /* failure due to non-implementation */
     }
+    CYGARC_HAL_RESTORE_GP();
+    return ret;
 }
-
-// -------------------------------------------------------------------------
-// When Cygmon calls us on the MIPS It has its own value in GP. We need to
-// save that and set our own before proceeding.
-
-#ifdef CYGPKG_HAL_MIPS
-static int dbg_thread_syscall_rmt_1(
-                       enum dbg_syscall_ids id,
-                       union dbg_thread_syscall_parms * p
-                       )
-{
-
-  register long gp_save;
-  int r;
-  asm volatile ( "move   %0,$28;"
-                 ".extern _gp;"
-                 "la     $gp,_gp;"
-                 : "=r"(gp_save)
-                 );
-
-  r = dbg_thread_syscall_rmt( id, p );
-  
-  asm volatile ( "move   $gp,%0;" :: "r"(gp_save) );
-
-  return r;
-  
-}
-#endif  
-
-// -------------------------------------------------------------------------
 
 #define DBG_SYSCALL_THREAD_VEC_NUM 15
 
@@ -179,11 +155,7 @@ void patch_dbg_syscalls(void * vector)
 
 #ifdef CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT
 
-#ifdef CYGPKG_HAL_MIPS
-   f[DBG_SYSCALL_THREAD_VEC_NUM] = dbg_thread_syscall_rmt_1 ;
-#else   
    f[DBG_SYSCALL_THREAD_VEC_NUM] = dbg_thread_syscall_rmt ;
-#endif
 
 #endif
 

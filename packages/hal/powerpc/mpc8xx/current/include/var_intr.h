@@ -49,6 +49,8 @@
 
 #include <pkgconf/hal.h>
 
+#include <cyg/hal/plf_intr.h>
+
 #include <cyg/infra/cyg_type.h>         // types
 
 #include <cyg/hal/ppc_regs.h>           // register definitions

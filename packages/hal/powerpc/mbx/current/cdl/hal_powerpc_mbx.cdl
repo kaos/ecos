@@ -54,6 +54,7 @@ cdl_package CYGPKG_HAL_POWERPC_MBX {
 
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
+    implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
 
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_powerpc_mpc8xx.h>"
@@ -97,6 +98,49 @@ cdl_package CYGPKG_HAL_POWERPC_MBX {
            does apply to RAM start eCos applications as well as ROM start
            or stub ROMs."
    }
+
+   cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS {
+       display      "Number of communication channels on the board"
+       flavor       data
+       calculated   1
+   }
+
+   cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL {
+       display          "Debug serial port"
+       flavor data
+       legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
+       default_value    0
+       description      "
+           The MBX board has only one serial port. This option
+           chooses which port will be used to connect to a host
+           running GDB."
+    }
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL {
+        display          "Diagnostic serial port"
+        flavor data
+        legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
+        default_value    0
+        description      "
+           The MBX board has only one serial port.  This option
+           chooses which port will be used for diagnostic output."
+    }
+
+    # This option is only used when USE_ROM_MONITOR is enabled - but
+    # it cannot be a sub-option to that option, since the code uses the
+    # definition in a preprocessor comparison.
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_ROM_DEBUG_CHANNEL {
+        display          "Debug serial port used by ROM monitor"
+        flavor data
+        legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
+        default_value    0
+        description      "
+            The MBX board has only one serial port.  This
+            option tells the code which port is in use by the ROM
+            monitor. It should only be necessary to change this
+            option if a non-standard configurated eCos GDB stub is
+            used."
+    }
 
     # Real-time clock/counter specifics
     cdl_component CYGNUM_HAL_RTC_CONSTANTS {
@@ -171,8 +215,8 @@ cdl_package CYGPKG_HAL_POWERPC_MBX {
             requires CYGSEM_HAL_ROM_MONITOR
             requires CYGBLD_BUILD_COMMON_GDB_STUBS
             requires CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-            requires ! CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
-            requires ! CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
+            requires CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+            requires CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
             requires ! CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT
             requires ! CYGDBG_HAL_COMMON_CONTEXT_SAVE_MINIMUM
             no_define

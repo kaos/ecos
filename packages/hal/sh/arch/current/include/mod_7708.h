@@ -70,4 +70,8 @@
 // Writing zero to both forces a flush of the line if it is dirty.
 #define CYGARC_SH_MOD_CAC_ADDRESS_FLUSH  0x00000000
 
+//-----------------------------------------------------------------------------
+// Extra details for interrupt handling
+#define CYGARC_SH_SOFTWARE_IP_UPDATE
+
 #endif // CYGONCE_HAL_MOD_77xx_H

@@ -1,3 +1,8 @@
+2000-06-08  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/netinet/ip_var.h: Export ipforwarding as well as
+	ip_defttl for monitoring applications.
+
 2000-05-31  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/lib/network_support.c (init_all_network_interfaces): Make

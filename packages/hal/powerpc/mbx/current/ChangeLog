@@ -1,3 +1,47 @@
+2000-06-15  Jesper Skov  <jskov@redhat.com>
+
+	* include/pkgconf/mlt_powerpc_mbx_rom.h: 
+	* include/pkgconf/mlt_powerpc_mbx_ram.h: 
+	* include/pkgconf/mlt_powerpc_mbx_ram.ldi: 
+	* include/pkgconf/mlt_powerpc_mbx_ram.mlt: 
+	Updated.
+
+	* src/hal_aux.c: Fix warning.
+
+	* include/hal_diag.h: Fix typo. Moved diag-inclusion decision
+	expression to common HAL.
+	Only define HAL_PLF_DIAG routines when necessary.
+
+	* cdl/hal_powerpc_mbx.cdl: Last CDL tweaks.
+
+2000-06-14  Jesper Skov  <jskov@redhat.com>
+
+	* include/plf_stub.h: Move reset stuff out of INCLUDE_STUBS
+	config. It really should live in the platform equivalent of
+	hal_arch.h...
+
+	* include/hal_diag.h: 
+	* src/hal_diag.c: 
+	Changes to use the common virtual vector code for diagnostics.
+
+2000-06-13  Jesper Skov  <jskov@redhat.com>
+
+	* include/plf_stub.h (HAL_STUB_PLATFORM_RESET_ENTRY): Use an
+	absolute address.
+
+	* src/hal_aux.c (hal_platform_init): Added.
+
+	* include/plf_stub.h: Cleaned up reset definitions.
+
+	* include/pkgconf/mlt_powerpc_mbx_rom.ldi: 
+	* include/pkgconf/mlt_powerpc_mbx_rom.mlt: 
+	* include/pkgconf/mlt_powerpc_mbx_ram.ldi: 
+	* include/pkgconf/mlt_powerpc_mbx_ram.mlt:
+	Reserve space for virtual table.
+	
+	* cdl/hal_powerpc_mbx.cdl: Added support for virtual
+	vectors. Change stub requirements accordingly.
+
 2000-03-13  Jesper Skov  <jskov@redhat.com>
 
 	* include/plf_stub.h (HAL_STUB_PLATFORM_RESET): Jump to stub

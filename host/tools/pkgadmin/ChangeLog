@@ -1,3 +1,12 @@
+2000-06-15  John Dallaway  <jld@redhat.com>
+
+	* win32/PkgAdmin.dsp:
+
+	Link debug builds against tcl82d.lib rather than
+	tcl82.lib.
+
+	Look for libCDL in v:\cdl rather than v:\ide.
+
 2000-03-29  John Dallaway  <jld@cygnus.co.uk>
 
 	* win32/PkgAdmin.rc:

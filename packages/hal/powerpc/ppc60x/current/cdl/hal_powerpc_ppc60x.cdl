@@ -53,6 +53,7 @@ cdl_package CYGPKG_HAL_POWERPC_PPC60x {
     # Note: This should be sub-variant specific to reduce memory use.
     define_proc {
         puts $cdl_header "#define CYGHWR_HAL_VSR_TABLE (CYGHWR_HAL_POWERPC_VECTOR_BASE + 0x3000)"
+        puts $cdl_header "#define CYGHWR_HAL_VIRTUAL_VECTOR_TABLE (CYGHWR_HAL_VSR_TABLE + 0x200)"
     }
 
     cdl_component CYGPKG_HAL_POWERPC_PPC603 {

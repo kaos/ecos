@@ -168,26 +168,26 @@ pid_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config, bool
     unsigned short baud_divisor = select_baud[new_config->baud];
     unsigned char _lcr, _ier;
     if (baud_divisor == 0) return false;  // Invalid configuration
-    _ier = port->ier;
-    port->ier = 0;  // Disable port interrupts while changing hardware
+    _ier = port->REG_ier;
+    port->REG_ier = 0;  // Disable port interrupts while changing hardware
     _lcr = select_word_length[new_config->word_length - CYGNUM_SERIAL_WORD_LENGTH_5] | 
         select_stop_bits[new_config->stop] |
         select_parity[new_config->parity];
-    port->lcr = _lcr;
-    port->lcr |= LCR_DL;
-    port->mdl = baud_divisor >> 8;
-    port->ldl = baud_divisor & 0xFF;
-    port->lcr &= ~LCR_DL;
+    port->REG_lcr = _lcr;
+    port->REG_lcr |= LCR_DL;
+    port->REG_mdl = baud_divisor >> 8;
+    port->REG_ldl = baud_divisor & 0xFF;
+    port->REG_lcr &= ~LCR_DL;
     if (init) {
-        port->fcr = 0x07;  // Enable and clear FIFO
+        port->REG_fcr = 0x07;  // Enable and clear FIFO
         if (chan->out_cbuf.len != 0) {
-            port->ier = IER_RCV;
+            port->REG_ier = IER_RCV;
         } else {
-            port->ier = 0;
+            port->REG_ier = 0;
         }
-        port->mcr = MCR_INT|MCR_DTR|MCR_RTS;  // Master interrupt enable
+        port->REG_mcr = MCR_INT|MCR_DTR|MCR_RTS;  // Master interrupt enable
     } else {
-        port->ier = _ier;
+        port->REG_ier = _ier;
     }
     if (new_config != &chan->config) {
         chan->config = *new_config;
@@ -238,9 +238,9 @@ pid_serial_putc(serial_channel *chan, unsigned char c)
 {
     pid_serial_info *pid_chan = (pid_serial_info *)chan->dev_priv;
     volatile struct serial_port *port = (volatile struct serial_port *)pid_chan->base;
-    if (port->lsr & LSR_THE) {
+    if (port->REG_lsr & LSR_THE) {
 // Transmit buffer is empty
-        port->thr = c;
+        port->REG_thr = c;
         return true;
     } else {
 // No space
@@ -255,8 +255,8 @@ pid_serial_getc(serial_channel *chan)
     unsigned char c;
     pid_serial_info *pid_chan = (pid_serial_info *)chan->dev_priv;
     volatile struct serial_port *port = (volatile struct serial_port *)pid_chan->base;
-    while ((port->lsr & LSR_RSR) == 0) ;   // Wait for char
-    c = port->rhr;
+    while ((port->REG_lsr & LSR_RSR) == 0) ;   // Wait for char
+    c = port->REG_rhr;
     return c;
 }
 
@@ -273,7 +273,7 @@ pid_serial_start_xmit(serial_channel *chan)
 {
     pid_serial_info *pid_chan = (pid_serial_info *)chan->dev_priv;
     volatile struct serial_port *port = (volatile struct serial_port *)pid_chan->base;
-    port->ier |= IER_XMT;  // Enable xmit interrupt
+    port->REG_ier |= IER_XMT;  // Enable xmit interrupt
 }
 
 // Disable the transmitter on the device
@@ -282,7 +282,7 @@ pid_serial_stop_xmit(serial_channel *chan)
 {
     pid_serial_info *pid_chan = (pid_serial_info *)chan->dev_priv;
     volatile struct serial_port *port = (volatile struct serial_port *)pid_chan->base;
-    port->ier &= ~IER_XMT;  // Disable xmit interrupt
+    port->REG_ier &= ~IER_XMT;  // Disable xmit interrupt
 }
 
 // Serial I/O - low level interrupt handler (ISR)
@@ -304,13 +304,12 @@ pid_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     pid_serial_info *pid_chan = (pid_serial_info *)chan->dev_priv;
     volatile struct serial_port *port = (volatile struct serial_port *)pid_chan->base;
     unsigned char isr;
-    while ((isr = port->isr & 0x0E) != 0) {
+    while ((isr = port->REG_isr & 0x0E) != 0) {
         if (isr == ISR_Tx) {
             (chan->callbacks->xmt_char)(chan);
-        } else if (isr == ISR_RxTO) {
-            (chan->callbacks->rcv_char)(chan, port->rhr);
-        } else if (isr == ISR_Rx) {
-            (chan->callbacks->rcv_char)(chan, port->rhr);
+        } else if (isr == ISR_RxTO || isr == ISR_Rx) {
+            while(port->REG_lsr & LSR_RSR)
+                (chan->callbacks->rcv_char)(chan, port->REG_rhr);
         }
     }
     cyg_drv_interrupt_unmask(pid_chan->int_num);

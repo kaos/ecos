@@ -1,3 +1,24 @@
+2000-06-15  John Dallaway  <jld@redhat.com>
+
+	* standalone/win32/ConfigToolDoc.cpp:
+
+	Modify RunTests() to check for simulator platforms and
+	inhibit prompting for hardware reset as appropriate.
+
+
+	* standalone/win32/Configtool.dsp,
+	  standalone/win32/ecosconfig.dsp:
+
+	Link debug builds against tcl82d.lib rather than
+	tcl82.lib.
+
+	Look for libCDL in v:\cdl rather than v:\ide.
+
+	* standalone/win32/Configtool.rc:
+
+	Point to the eCos Product web page rather than the
+	obsolete eCos Services web page.
+
 2000-04-17  John Dallaway  <jld@cygnus.co.uk>
 
 	* standalone/common/cdl_exec.cxx:

@@ -1,8 +1,13 @@
-//===========================================================================
+#ifndef CYGONCE_HAL_HAL_MISC_H
+#define CYGONCE_HAL_HAL_MISC_H
+
+//=============================================================================
 //
-// ROM startup linker control script
+//      hal_misc.h
 //
-//===========================================================================
+//      HAL header for miscellaneous helper routines
+//
+//=============================================================================
 //####COPYRIGHTBEGIN####
 //                                                                          
 // -------------------------------------------                              
@@ -26,29 +31,24 @@
 // -------------------------------------------                              
 //                                                                          
 //####COPYRIGHTEND####
-//===========================================================================
+//=============================================================================
+//#####DESCRIPTIONBEGIN####
+//
+// Author(s):   jskov
+// Contributors:jskov
+// Date:        2000-06-08
+// Purpose:     Miscellaneous routines shared between HALs
+// Usage:       #include <cyg/hal/hal_misc.h>
+//                           
+//####DESCRIPTIONEND####
+//
+//=============================================================================
 
-MEMORY
-{
-    rom : ORIGIN = 0xfe000000, LENGTH = 0x800000
-    ram : ORIGIN = 0x00000000, LENGTH = 0x400000
-}
+#include <cyg/infra/cyg_type.h>         // types & externC
 
-SECTIONS
-{
-    SECTIONS_BEGIN
-    SECTION_vectors (rom, 0xfe000000, LMA_EQ_VMA)
-    SECTION_text (rom, ALIGN (0x4), LMA_EQ_VMA)
-    SECTION_fini (rom, ALIGN (0x4), LMA_EQ_VMA)
-    SECTION_rodata1 (rom, ALIGN (0x8), LMA_EQ_VMA)
-    SECTION_rodata (rom, ALIGN (0x8), LMA_EQ_VMA)
-    SECTION_fixup (rom, ALIGN (0x4), LMA_EQ_VMA)
-    SECTION_gcc_except_table (rom, ALIGN (0x1), LMA_EQ_VMA)
-    __reserved_vectors = 0; . = __reserved_vectors + 0x3000;
-    __reserved_vsr_table = ALIGN (0x1); . = __reserved_vsr_table + 0x200;
-    __reserved_virtual_table = ALIGN (0x1); . = __reserved_virtual_table + 0x100;
-    SECTION_data (ram, ALIGN (0x10), FOLLOWING (.gcc_except_table))
-    SECTION_sbss (ram, ALIGN (0x4), LMA_EQ_VMA)
-    SECTION_bss (ram, ALIGN (0x10), LMA_EQ_VMA)
-    SECTIONS_END
-}
+externC cyg_bool cyg_hal_is_break(char *buf, int size);
+externC void cyg_hal_user_break( CYG_ADDRWORD *regs );
+
+//-----------------------------------------------------------------------------
+#endif // CYGONCE_HAL_HAL_MISC_H
+// End of hal_misc.h

@@ -1,3 +1,65 @@
+2000-06-15  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_if.h: Added console-include decision logic.
+
+2000-06-14  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_stub.c: Added O-packetizer used by GDB stubs for virtual
+	vector table configs.
+
+	* src/hal_misc.c (hal_default_isr): Check Ctrlc for both CTRLC
+	or BREAK options.
+
+	* src/hal_if.c:
+	* include/hal_if.h: 
+	Define console wrappers when necessary. Platform HALs can use
+	these by providing raw IO functions and some config data.
+
+2000-06-09  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_if.c: Implemented most of the remaining services. Some
+	just don't have an eCos equivalent at the moment.
+
+	* cdl/hal.cdl: Allow virtual_vector options to have sensible
+	default values depending on when the platform HAL port was
+	written.
+
+	* src/hal_misc.c (cyg_hal_user_break): Also expect CygMon to
+	provide the breakpoint service.
+
+	* src/stubrom/stubrom.c (cyg_start): Reverted change. Now handled
+	by hal_if_init.
+
+	* cdl/hal.cdl: Added option for controlling use of diag services
+	in the virtual vector table.
+
+2000-06-08  Jesper Skov  <jskov@redhat.com>
+
+	* src/stubrom/stubrom.c: Call hal_diag_init to ensure IF table
+	entries related to diag IO get initialized.
+
+	* src/hal_stub.c (cyg_hal_gdb_interrupt): save/restore GP so it
+	can be used by MIPS platforms.
+	Use reset function in ROM if available.
+
+	* src/hal_misc.c: 
+	* include/hal_misc.h: Functions shared between HALs. More
+	functions are likely to be moved here if appropriate.
+
+	* src/hal_if.c: Interfacing related functions: table init code and
+	function wrappers.
+
+	* include/hal_if.h: ROM/RAM calling interface table
+	definitions. The layout is a combination of libbsp and vectors
+	already in use by some eCos platforms.
+	
+
+	* cdl/hal.cdl: Added CYGxxx_HAL_VIRTUAL_VECTOR_SUPPORT
+	options. These are used to control whether a platform uses the new
+	ROM/RAM calling interface. All platforms will be converted to use
+	this, but piecemeal over a period of time, thus the requirement
+	for selecting behavior.
+
 2000-06-04  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/hal.cdl: Support variant 'pkgconf' headers.  This will allow

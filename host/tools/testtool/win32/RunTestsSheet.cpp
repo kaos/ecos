@@ -69,7 +69,8 @@ CRunTestsSheet::CRunTestsSheet(LPCTSTR pszCaption, CWnd* pParentWnd, UINT iSelec
   m_nTimeout(900),
   m_nDownloadTimeout(120),
   m_nTimeoutType(TIMEOUT_AUTOMATIC),
-  m_nDownloadTimeoutType(TIMEOUT_AUTOMATIC),
+  m_nDownloadTimeoutType(TIMEOUT_SPECIFIED),
+  m_bRemote(false),
   m_bSerial(true),
   m_strPort(_T("COM1")),
   m_nBaud(38400),
@@ -288,7 +289,7 @@ void CRunTestsSheet::OnRun()
       m_ep=CeCosTest::ExecutionParameters(
         CeCosTest::ExecutionParameters::RUN,
         m_strTarget,
-        TIMEOUT_NONE==m_nTimeoutType?0x7fffffff:TIMEOUT_AUTOMATIC==m_nTimeoutType?0:1000*m_nTimeout,
+        TIMEOUT_NONE==m_nTimeoutType?0x7fffffff:TIMEOUT_AUTOMATIC==m_nTimeoutType?900000:1000*m_nTimeout,
         TIMEOUT_NONE==m_nDownloadTimeoutType?0x7fffffff:TIMEOUT_AUTOMATIC==m_nDownloadTimeoutType?0:1000*m_nDownloadTimeout);
       if(m_bRemote){
         CTestResource::SetResourceServer(CeCosSocket::HostPort(m_strResourceHost,m_nResourcePort));

@@ -1,3 +1,24 @@
+2000-06-15  Gary Thomas  <gthomas@redhat.com>
+
+	* src/hal_mk_defs.c: 
+	* src/vectors.S: 
+	* src/hal_misc.c (hal_default_isr): Update for new debug
+	vector support.
+
+	* include/hal_intr.h: 
+	* src/vectors.S (do_interrupt): Proper handling of chained
+	interrupts.
+
+2000-06-12  Gary Thomas  <gthomas@redhat.com>
+
+	* src/vectors.S (return_from_exception_or_interrupt): Revert 
+	reorg change (05-26) which broke GDB breakpoints.
+
+2000-06-08  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_arch.h (CYGARC_HAL_SAVE_GP, CYGARC_HAL_RESTORE_GP):
+	Added.
+
 2000-05-26  Gary Thomas  <gthomas@redhat.com>
 
 	* src/vectors.S: Slight reorg of trap vectors (more readable).

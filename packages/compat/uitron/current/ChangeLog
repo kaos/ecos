@@ -1,3 +1,8 @@
+2000-06-15  Gary Thomas  <gthomas@redhat.com>
+
+	* include/uit_ifnc.h (CYGPRI_UITRON_SET_RETCODE): Always return
+	'HANDLED'.  This fixes some confusion when interrupt chaining.
+
 2000-05-15  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* include/uit_ifnc.h (cyg_uitron_dsr): make this be extern "C"

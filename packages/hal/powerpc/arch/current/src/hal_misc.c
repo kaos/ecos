@@ -203,6 +203,7 @@ cyg_hal_exception_handler(HAL_SavedRegisters *regs)
 //---------------------------------------------------------------------------
 // Default ISRs
 
+#ifndef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
 externC cyg_uint32
 hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 {
@@ -211,6 +212,12 @@ hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
     CYG_FAIL("Spurious Interrupt!!!");
     return 0;
 }
+#else
+externC cyg_uint32
+hal_arch_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
+{
+}
+#endif
 
 // The decrementer default ISR has to do nothing. The reason is that
 // decrementer interrupts cannot be disabled - if a kernel configuration

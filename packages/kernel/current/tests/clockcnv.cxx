@@ -167,6 +167,9 @@ static void entry0( CYG_ADDRWORD data )
                 j += 30;                // test fewer values
                                    /* tr.b..m..k.. */
 
+#ifdef CYGPKG_HAL_V85X_V850_CEB
+            j += 30;                    // test fewer values
+#endif
 
             for ( delay = j; delay < 1000000000000ll; delay *= 10 ) {
                 // get the converted result

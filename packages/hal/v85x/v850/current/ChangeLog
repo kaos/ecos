@@ -1,3 +1,13 @@
+2000-06-12  Gary Thomas  <gthomas@redhat.com>
+
+	* src/v850_misc.c (hal_interrupt_unmask): Remove [extra]
+	debug message.
+
+2000-06-09  Gary Thomas  <gthomas@redhat.com>
+
+	* src/v850_misc.c: Make interrupt handling routines safe.
+	Also add asserts to verify.
+
 2000-05-25  Gary Thomas  <gthomas@redhat.com>
 
 	* src/v85x_v850.ld: Add platform specifics.  In particular the

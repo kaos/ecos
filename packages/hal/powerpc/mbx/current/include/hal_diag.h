@@ -69,6 +69,22 @@
 
 #include <cyg/infra/cyg_type.h>
 
+#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG)
+
+#include <cyg/hal/hal_if.h>
+
+#define HAL_DIAG_INIT() hal_if_diag_init()
+#define HAL_DIAG_WRITE_CHAR(_c_) hal_if_diag_write_char(_c_)
+#define HAL_DIAG_READ_CHAR(_c_) hal_if_diag_read_char(&_c_)
+
+#ifndef CYGPRI_CONSOLE_PROCS_HANDLED
+# define HAL_PLF_DIAG_RAW_INIT() cyg_quicc_init_smc1()
+# define HAL_PLF_DIAG_RAW_WRITE_CHAR(_c_) cyg_quicc_smc1_uart_putchar(_c_)
+# define HAL_PLF_DIAG_RAW_READ_CHAR(_c_) (_c_) = cyg_quicc_smc1_uart_rcvchar()
+#endif
+
+#else // everything by steam
+
 //-----------------------------------------------------------------------------
 // functions implemented in hal_diag.c
 
@@ -85,6 +101,8 @@ externC void hal_diag_read_char(char *c);
 #define HAL_DIAG_WRITE_CHAR(_c_) hal_diag_write_char(_c_)
 
 #define HAL_DIAG_READ_CHAR(_c_) hal_diag_read_char(&_c_)
+
+#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG
 
 //-----------------------------------------------------------------------------
 // end of hal_diag.h

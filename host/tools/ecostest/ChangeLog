@@ -1,3 +1,15 @@
+2000-06-15  John Dallaway  <jld@redhat.com>
+
+	* common/eCosTest.cpp:
+
+	Modify CeCosTest construvtor to use GetEnvironmentVariable()
+	rather than _tgetenv() under Win32. For some unknown reason,
+	_tgetenv() is not returning the correct version of PATH.
+
+	* common/eCosTestPlatform.cpp:
+
+	Modify SaveToRegistry() to save all test platform attributes.
+
 2000-05-03  Bart Veer  <bartv@redhat.com>
 
 	* common/permtest.cxx (find_ptest):

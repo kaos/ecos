@@ -38,8 +38,8 @@ MTL=midl.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "V:\ide\Release\cdl"
-# PROP Intermediate_Dir "V:\ide\Release\cdl\build"
+# PROP Output_Dir "V:\cdl\Release"
+# PROP Intermediate_Dir "V:\cdl\Release\build"
 # PROP Target_Dir ""
 
 !ELSEIF  "$(CFG)" == "cdl - Win32 Debug"
@@ -51,8 +51,8 @@ MTL=midl.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "V:\ide\Debug\cdl"
-# PROP Intermediate_Dir "V:\ide\Debug\cdl\build"
+# PROP Output_Dir "V:\cdl\Debug"
+# PROP Intermediate_Dir "V:\cdl\Debug\build"
 # PROP Target_Dir ""
 
 !ELSEIF  "$(CFG)" == "cdl - Win32 ANSI Debug"
@@ -64,8 +64,8 @@ MTL=midl.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "V:\ide\Debug\cdl"
-# PROP Intermediate_Dir "V:\ide\Debug\cdl\build"
+# PROP Output_Dir "V:\cdl\Debug"
+# PROP Intermediate_Dir "V:\cdl\Debug\build"
 # PROP Target_Dir ""
 
 !ELSEIF  "$(CFG)" == "cdl - Win32 ANSI Release"
@@ -77,8 +77,8 @@ MTL=midl.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "V:\ide\Release\cdl"
-# PROP Intermediate_Dir "V:\ide\Release\cdl\build"
+# PROP Output_Dir "V:\cdl\Release"
+# PROP Intermediate_Dir "V:\cdl\Release\build"
 # PROP Target_Dir ""
 
 !ENDIF 
@@ -116,8 +116,8 @@ SOURCE=.\ChangeLog
 !IF  "$(CFG)" == "cdl - Win32 Release"
 
 # Begin Custom Build - Performing Custom Build Step for libCDL
-IntDir=V:\ide\Release\cdl\build
-OutDir=V:\ide\Release\cdl
+IntDir=V:\cdl\Release\build
+OutDir=V:\cdl\Release
 InputPath=.\ChangeLog
 
 BuildCmds= \
@@ -137,12 +137,12 @@ BuildCmds= \
 !ELSEIF  "$(CFG)" == "cdl - Win32 Debug"
 
 # Begin Custom Build - Performing Custom Build Step for libCDL
-IntDir=V:\ide\Debug\cdl\build
-OutDir=V:\ide\Debug\cdl
+IntDir=V:\cdl\Debug\build
+OutDir=V:\cdl\Debug
 InputPath=.\ChangeLog
 
 BuildCmds= \
-	if not exist $(IntDir)\tools\configtool\standalone\common\Makefile sh -c "ECOSHOST=`echo ""puts [ file attributes [ pwd ] -shortname ]"" | cygtclsh80`/.. ; echo ""ECOSHOST=$ECOSHOST"" ; echo ""TCLHOME=$TCLHOME"" ; mkdir -p `cygpath -u ""$(IntDir)""` ; cd `cygpath -u ""$(IntDir)""` && CC=cl CXX=cl `cygpath -u ""$ECOSHOST""`/configure --prefix=`cygpath -u ""$(OutDir)""` --with-tcl=`cygpath -u ""$TCLHOME""` --with-tcl_version=82 --enable-debug --enable-maintainer-mode" \
+	if not exist $(IntDir)\tools\configtool\standalone\common\Makefile sh -c "ECOSHOST=`echo ""puts [ file attributes [ pwd ] -shortname ]"" | cygtclsh80`/.. ; echo ""ECOSHOST=$ECOSHOST"" ; echo ""TCLHOME=$TCLHOME"" ; mkdir -p `cygpath -u ""$(IntDir)""` ; cd `cygpath -u ""$(IntDir)""` && CC=cl CXX=cl `cygpath -u ""$ECOSHOST""`/configure --prefix=`cygpath -u ""$(OutDir)""` --with-tcl=`cygpath -u ""$TCLHOME""` --with-tcl_version=82d --enable-debug --enable-maintainer-mode" \
 	cd $(IntDir) \
 	v: \
 	make --unix install \
@@ -158,12 +158,12 @@ BuildCmds= \
 !ELSEIF  "$(CFG)" == "cdl - Win32 ANSI Debug"
 
 # Begin Custom Build - Performing Custom Build Step for libCDL
-IntDir=V:\ide\Debug\cdl\build
-OutDir=V:\ide\Debug\cdl
+IntDir=V:\cdl\Debug\build
+OutDir=V:\cdl\Debug
 InputPath=.\ChangeLog
 
 BuildCmds= \
-	if not exist $(IntDir)\tools\configtool\standalone\common\Makefile sh -c "ECOSHOST=`echo ""puts [ file attributes [ pwd ] -shortname ]"" | cygtclsh80`/.. ; echo ""ECOSHOST=$ECOSHOST"" ; echo ""TCLHOME=$TCLHOME"" ; mkdir -p `cygpath -u ""$(IntDir)""` ; cd `cygpath -u ""$(IntDir)""` && CC=cl CXX=cl `cygpath -u ""$ECOSHOST""`/configure --prefix=`cygpath -u ""$(OutDir)""` --with-tcl=`cygpath -u ""$TCLHOME""` --with-tcl_version=82 --enable-debug --enable-maintainer-mode" \
+	if not exist $(IntDir)\tools\configtool\standalone\common\Makefile sh -c "ECOSHOST=`echo ""puts [ file attributes [ pwd ] -shortname ]"" | cygtclsh80`/.. ; echo ""ECOSHOST=$ECOSHOST"" ; echo ""TCLHOME=$TCLHOME"" ; mkdir -p `cygpath -u ""$(IntDir)""` ; cd `cygpath -u ""$(IntDir)""` && CC=cl CXX=cl `cygpath -u ""$ECOSHOST""`/configure --prefix=`cygpath -u ""$(OutDir)""` --with-tcl=`cygpath -u ""$TCLHOME""` --with-tcl_version=82d --enable-debug --enable-maintainer-mode" \
 	cd $(IntDir) \
 	v: \
 	make --unix install \
@@ -179,8 +179,8 @@ BuildCmds= \
 !ELSEIF  "$(CFG)" == "cdl - Win32 ANSI Release"
 
 # Begin Custom Build - Performing Custom Build Step for libCDL
-IntDir=V:\ide\Release\cdl\build
-OutDir=V:\ide\Release\cdl
+IntDir=V:\cdl\Release\build
+OutDir=V:\cdl\Release
 InputPath=.\ChangeLog
 
 BuildCmds= \

@@ -43,6 +43,7 @@
 
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_mem.h>            // HAL memory definitions
+#include <cyg/hal/hal_if.h>             // hal_if_init
 
 // The memory map is weakly defined, allowing the application to redefine
 // it if necessary. The regions defined below are the minimum requirements.
@@ -56,5 +57,10 @@ CYGARC_MEMDESC_TABLE CYGBLD_ATTRIB_WEAK = {
     CYGARC_MEMDESC_TABLE_END
 };
 
+void
+hal_platform_init(void)
+{
+    hal_if_init();
+}
 
 // EOF hal_aux.c

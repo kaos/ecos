@@ -45,7 +45,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W4 /GR /GX /Zi /O2 /I "V:\ide\Release\cdl\include" /I "..\..\common\win32" /I "..\..\standalone\win32" /I "..\..\..\ecostest\common" /I "..\..\..\testtool\win32" /I "..\..\..\Utils\common" /I "..\..\common\common" /I "..\..\..\..\..\doc\htmlhelp" /I "..\..\..\pkgadmin\win32" /I "..\..\..\utils\win32" /D "NDEBUG" /D "MLTVIEW" /D "ECOS_CT" /D "WIN32" /D "_WINDOWS" /D "_AFXDLL" /D _WIN32_IE=0x0400 /FR /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W4 /GR /GX /Zi /O2 /I "V:\cdl\Release\include" /I "..\..\common\win32" /I "..\..\standalone\win32" /I "..\..\..\ecostest\common" /I "..\..\..\testtool\win32" /I "..\..\..\Utils\common" /I "..\..\common\common" /I "..\..\..\..\..\doc\htmlhelp" /I "..\..\..\pkgadmin\win32" /I "..\..\..\utils\win32" /D "NDEBUG" /D "MLTVIEW" /D "ECOS_CT" /D "WIN32" /D "_WINDOWS" /D "_AFXDLL" /D _WIN32_IE=0x0400 /FR /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x809 /d "NDEBUG"
@@ -55,7 +55,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /machine:I386
-# ADD LINK32 wsock32.lib wininet.lib cyginfra.lib tcl82.lib cdl.lib shlwapi.lib htmlhelp.lib /nologo /version:1.2 /subsystem:windows /incremental:yes /debug /machine:I386 /libpath:"V:\ide\Release\cdl\lib"
+# ADD LINK32 wsock32.lib wininet.lib cyginfra.lib tcl82.lib cdl.lib shlwapi.lib htmlhelp.lib /nologo /version:1.3 /subsystem:windows /incremental:yes /debug /machine:I386 /libpath:"V:\cdl\Release\lib"
 # SUBTRACT LINK32 /map
 
 !ELSEIF  "$(CFG)" == "Configtool - Win32 ANSI Debug"
@@ -72,7 +72,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MDd /W4 /Gm /GR /GX /ZI /Od /I "V:\ide\Debug\cdl\include" /I "..\..\common\win32" /I "..\..\standalone\win32" /I "..\..\..\ecostest\common" /I "..\..\..\testtool\win32" /I "..\..\..\Utils\common" /I "..\..\common\common" /I "..\..\..\..\..\doc\htmlhelp" /I "..\..\..\pkgadmin\win32" /I "..\..\..\utils\win32" /D "_DEBUG" /D "_THERMOMETER" /D "MLTVIEW" /D "ECOS_CT" /D "WIN32" /D "_WINDOWS" /D "_AFXDLL" /D _WIN32_IE=0x0400 /FR /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MDd /W4 /Gm /GR /GX /ZI /Od /I "V:\cdl\Debug\include" /I "..\..\common\win32" /I "..\..\standalone\win32" /I "..\..\..\ecostest\common" /I "..\..\..\testtool\win32" /I "..\..\..\Utils\common" /I "..\..\common\common" /I "..\..\..\..\..\doc\htmlhelp" /I "..\..\..\pkgadmin\win32" /I "..\..\..\utils\win32" /D "_DEBUG" /D "_THERMOMETER" /D "MLTVIEW" /D "ECOS_CT" /D "WIN32" /D "_WINDOWS" /D "_AFXDLL" /D _WIN32_IE=0x0400 /FR /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x809 /d "_DEBUG"
@@ -82,7 +82,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 wsock32.lib wininet.lib cyginfra.lib tcl82.lib cdl.lib shlwapi.lib htmlhelp.lib /nologo /version:1.2 /subsystem:windows /debug /machine:I386 /pdbtype:sept /libpath:"V:\ide\Debug\cdl\lib"
+# ADD LINK32 wsock32.lib wininet.lib cyginfra.lib tcl82d.lib cdl.lib shlwapi.lib htmlhelp.lib /nologo /version:1.3 /subsystem:windows /debug /machine:I386 /pdbtype:sept /libpath:"V:\cdl\Debug\lib"
 # SUBTRACT LINK32 /incremental:no /map /nodefaultlib
 
 !ELSEIF  "$(CFG)" == "Configtool - Win32 Debug"
@@ -100,7 +100,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W4 /Gm /GX /ZI /Od /I "V:\ide\Debug\cdl\include" /I "." /I "..\src-mlt" /I "..\..\..\libnotcdl" /I "..\..\..\..\..\..\..\..\devo\ide\src\tools\ecostest" /I "..\..\..\..\..\..\..\..\devo\ide\src\tools\ecostest\win32" /I "..\..\..\..\..\..\..\..\devo\ide\src\tools\ecostest\win32\testtool" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_THERMOMETER" /FR /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MDd /W4 /Gm /GR /GX /ZI /Od /I "V:\ide\Debug\cdl\include" /I "..\..\common\win32" /I "..\..\standalone\win32" /I "..\..\..\ecostest\common" /I "..\..\..\testtool\win32" /I "..\..\..\Utils\common" /I "..\..\common\common" /I "..\..\..\..\..\doc\htmlhelp" /I "..\..\..\pkgadmin\win32" /I "..\..\..\utils\win32" /D "_DEBUG" /D "_UNICODE" /D "ECOS_CT" /D "WIN32" /D "_WINDOWS" /D "_AFXDLL" /D _WIN32_IE=0x0400 /FR /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MDd /W4 /Gm /GR /GX /ZI /Od /I "V:\cdl\Debug\include" /I "..\..\common\win32" /I "..\..\standalone\win32" /I "..\..\..\ecostest\common" /I "..\..\..\testtool\win32" /I "..\..\..\Utils\common" /I "..\..\common\common" /I "..\..\..\..\..\doc\htmlhelp" /I "..\..\..\pkgadmin\win32" /I "..\..\..\utils\win32" /D "_DEBUG" /D "_UNICODE" /D "ECOS_CT" /D "WIN32" /D "_WINDOWS" /D "_AFXDLL" /D _WIN32_IE=0x0400 /FR /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x809 /d "_DEBUG" /d "_AFXDLL"
@@ -111,7 +111,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 wsock32.lib wininet.lib cyginfra.lib tcl81.lib /nologo /version:1.2 /subsystem:windows /debug /machine:I386 /pdbtype:sept /libpath:"V:\ide\Debug\cdl\lib"
 # SUBTRACT BASE LINK32 /nodefaultlib
-# ADD LINK32 wsock32.lib wininet.lib cyginfra.lib tcl82.lib cdl.lib shlwapi.lib htmlhelp.lib /nologo /version:1.2 /entry:"wWinMainCRTStartup" /subsystem:windows /debug /machine:I386 /pdbtype:sept /libpath:"V:\ide\Debug\cdl\lib"
+# ADD LINK32 wsock32.lib wininet.lib cyginfra.lib tcl82d.lib cdl.lib shlwapi.lib htmlhelp.lib /nologo /version:1.3 /entry:"wWinMainCRTStartup" /subsystem:windows /debug /machine:I386 /pdbtype:sept /libpath:"V:\cdl\Debug\lib"
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "Configtool - Win32 Release"
@@ -129,7 +129,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W4 /GX /Zi /O2 /I "V:\ide\Release\cdl\include" /I "." /I "..\src-mlt" /I "..\..\..\libnotcdl" /I "..\..\..\..\..\..\..\..\devo\ide\src\tools\ecostest" /I "..\..\..\..\..\..\..\..\devo\ide\src\tools\ecostest\win32" /I "..\..\..\..\..\..\..\..\devo\ide\src\tools\ecostest\win32\testtool" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /FR /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W4 /GR /GX /Zi /O2 /I "V:\ide\Release\cdl\include" /I "..\..\common\win32" /I "..\..\standalone\win32" /I "..\..\..\ecostest\common" /I "..\..\..\testtool\win32" /I "..\..\..\Utils\common" /I "..\..\common\common" /I "..\..\..\..\..\doc\htmlhelp" /I "..\..\..\pkgadmin\win32" /I "..\..\..\utils\win32" /D "NDEBUG" /D "_UNICODE" /D "MLTVIEW" /D "ECOS_CT" /D "WIN32" /D "_WINDOWS" /D "_AFXDLL" /D _WIN32_IE=0x0400 /FR /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W4 /GR /GX /Zi /O2 /I "V:\cdl\Release\include" /I "..\..\common\win32" /I "..\..\standalone\win32" /I "..\..\..\ecostest\common" /I "..\..\..\testtool\win32" /I "..\..\..\Utils\common" /I "..\..\common\common" /I "..\..\..\..\..\doc\htmlhelp" /I "..\..\..\pkgadmin\win32" /I "..\..\..\utils\win32" /D "NDEBUG" /D "_UNICODE" /D "MLTVIEW" /D "ECOS_CT" /D "WIN32" /D "_WINDOWS" /D "_AFXDLL" /D _WIN32_IE=0x0400 /FR /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x809 /d "NDEBUG" /d "_AFXDLL"
@@ -139,7 +139,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 wsock32.lib wininet.lib cyginfra.lib tcl81.lib /nologo /version:1.2 /subsystem:windows /map /debug /machine:I386 /libpath:"V:\ide\Release\cdl\lib"
-# ADD LINK32 wsock32.lib wininet.lib cyginfra.lib tcl82.lib cdl.lib shlwapi.lib htmlhelp.lib /nologo /version:1.2 /entry:"wWinMainCRTStartup" /subsystem:windows /incremental:yes /debug /machine:I386 /libpath:"V:\ide\Release\cdl\lib"
+# ADD LINK32 wsock32.lib wininet.lib cyginfra.lib tcl82.lib cdl.lib shlwapi.lib htmlhelp.lib /nologo /version:1.3 /entry:"wWinMainCRTStartup" /subsystem:windows /incremental:yes /debug /machine:I386 /libpath:"V:\cdl\Release\lib"
 # SUBTRACT LINK32 /pdb:none
 
 !ENDIF 
@@ -1096,7 +1096,7 @@ SOURCE=..\..\..\..\..\doc\eCos.hhp
 !IF  "$(CFG)" == "Configtool - Win32 ANSI Release"
 
 # Begin Custom Build
-InputDir=\e\cvs\devo\ecos\doc
+InputDir=\CVSroot\devo\ecos\doc
 OutDir=v:\ConfigTool\ANSIRelease
 InputPath=..\..\..\..\..\doc\eCos.hhp
 
@@ -1119,7 +1119,7 @@ InputPath=..\..\..\..\..\doc\eCos.hhp
 !ELSEIF  "$(CFG)" == "Configtool - Win32 ANSI Debug"
 
 # Begin Custom Build
-InputDir=\e\cvs\devo\ecos\doc
+InputDir=\CVSroot\devo\ecos\doc
 OutDir=v:\ConfigTool\ANSIDebug
 InputPath=..\..\..\..\..\doc\eCos.hhp
 
@@ -1142,7 +1142,7 @@ InputPath=..\..\..\..\..\doc\eCos.hhp
 !ELSEIF  "$(CFG)" == "Configtool - Win32 Debug"
 
 # Begin Custom Build
-InputDir=\e\cvs\devo\ecos\doc
+InputDir=\CVSroot\devo\ecos\doc
 OutDir=v:\configtool\debug
 InputPath=..\..\..\..\..\doc\eCos.hhp
 
@@ -1165,7 +1165,7 @@ InputPath=..\..\..\..\..\doc\eCos.hhp
 !ELSEIF  "$(CFG)" == "Configtool - Win32 Release"
 
 # Begin Custom Build
-InputDir=\e\cvs\devo\ecos\doc
+InputDir=\CVSroot\devo\ecos\doc
 OutDir=v:\ConfigTool\release
 InputPath=..\..\..\..\..\doc\eCos.hhp
 

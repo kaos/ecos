@@ -58,6 +58,8 @@
 #include <cyg/hal/ppc_regs.h>
 #include <cyg/hal/quicc/quicc_smc1.h>
 
+#if !defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG)
+
 //-----------------------------------------------------------------------------
 // Select default diag channel to use
 
@@ -238,5 +240,7 @@ void hal_diag_read_char(char *c)
 }
 
 #endif // CYG_KERNEL_DIAG_SERIAL
+
+#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG
 
 // EOF hal_diag.c

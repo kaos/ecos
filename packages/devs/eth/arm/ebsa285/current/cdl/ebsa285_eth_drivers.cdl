@@ -55,16 +55,18 @@ cdl_package CYGPKG_DEVS_ETH_ARM_EBSA285 {
     implements    CYGHWR_NET_DRIVERS
     include_dir   cyg/devs/eth
 
-    # none exported about the *device* but this one is used by other tests:
-    include_files tests/test_net_realtime.h
+    # SNMP demands to know stuff; this sadly makes us break the neat
+    # abstraction of the device having nothing exported.
+    # The other one is used by other tests:
+    include_files tests/test_net_realtime.h include/ebsa285_info.h
     # and tell them that it is available
     define_proc {
         puts $::cdl_header \
        "#define CYGTST_DEVS_ETH_TEST_NET_REALTIME <cyg/devs/eth/tests/test_net_realtime.h>"
-        puts $::cdl_header \
-       "#define CYGDAT_DEVS_ETH_DESCRIPTION \"Intel EtherPro 10/100+ for EBSA285 (i82559/PCI)\""
 	puts $::cdl_system_header \
        "#define CYGBLD_DEVS_ETH_DEVICE_H <pkgconf/devs_eth_arm_ebsa285.h>"
+	puts $::cdl_header \
+       "#define CYGBLD_DEVS_ETH_INFO_H <cyg/devs/eth/ebsa285_info.h>"
     }
 
     description   "Ethernet driver for Intel EBSA285 with PRO/100+ boards."
@@ -79,6 +81,17 @@ cdl_package CYGPKG_DEVS_ETH_ARM_EBSA285 {
 	    the MAC address from EEPROM correctly, and so on, and also
 	    displays the mode (10/100MHz, half/full duplex) of the
 	    connection."
+    }
+
+    cdl_option CYGDBG_DEVS_ETH_ARM_EBSA285_KEEP_STATISTICS {
+	display "Keep Ethernet statistics"
+	default_value 1
+	description   "
+	    The ethernet device can maintain statistics about the network,
+	    specifically a great variety of error rates which are useful
+	    for network management.  SNMP for example uses this
+	    information.  There is some performance cost in maintaining
+	    this information; disable this option to recoup that."
     }
 
     cdl_component CYGPKG_DEVS_ETH_ARM_EBSA285_WRITE_EEPROM {

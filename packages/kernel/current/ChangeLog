@@ -1,3 +1,8 @@
+2000-06-08  Jesper Skov  <jskov@redhat.com>
+
+	* src/debug/dbg-thread-demux.c: Use generic HAL feature to allow
+	ROM/RAM intercalling.
+
 2000-05-30  Gary Thomas  <gthomas@redhat.com>
 
 	* tests/dhrystone.c: Increase number of test loops for faster
@@ -25,10 +30,22 @@
 
 	* tests/kcache1.c: Also to flush testing with unified caches.
 
+2000-04-26  Jesper Skov  <jskov@redhat.com>
+
+	* tests/clockcnv.cxx: 
+	* tests/dhrystone.c: 
+	Renamed 850 HAL package.
+	
 2000-04-25  Jesper Skov  <jskov@redhat.com>
 
 	* tests/kcache1.c: Fixed cache check to also look for unified
 	caches.
+
+2000-04-19  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/clockcnv.cxx:
+	* tests/dhrystone.c:
+	Only a few laps around the block on the v850...
 
 2000-04-12  Gary Thomas  <gthomas@redhat.com>
 

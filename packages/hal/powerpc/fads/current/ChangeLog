@@ -1,3 +1,19 @@
+2000-06-15  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c: 
+	* src/hal_aux.c: 
+	* include/pkgconf/mlt_powerpc_fads_ram.ldi: 
+	* include/pkgconf/mlt_powerpc_fads_ram.mlt: 
+	* include/plf_stub.h:
+	* include/hal_diag.h:
+	* cdl/hal_powerpc_fads.cdl: 
+	Some changes towards virtual vector table support. Still needs
+	ctrlc support before it can be enabled.
+
+2000-06-13  Jesper Skov  <jskov@redhat.com>
+
+	* include/plf_intr.h: Added.
+
 2000-03-06  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_diag.c (hal_diag_write_char): fix typo.

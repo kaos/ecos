@@ -74,8 +74,13 @@ void
 hal_interrupt_mask(int vector)
 {
     volatile unsigned char *ctl;
+    CYG_ASSERT(vector >= CYGNUM_HAL_ISR_MIN, "invalid interrupt vector [< MIN]");
+    CYG_ASSERT(vector <= CYGNUM_HAL_ISR_MAX, "invalid interrupt vector [> MAX]");
     ctl = interrupt_control_registers[vector-CYGNUM_HAL_ISR_MIN];
-    *ctl |= INT_CONTROL_DISABLE;
+    CYG_ASSERT((void *)ctl != 0, "invalid interrupt vector [not defined]");
+    if (ctl ) {
+        *ctl |= INT_CONTROL_DISABLE;
+    }
 }
 
 //
@@ -85,8 +90,13 @@ void
 hal_interrupt_unmask(int vector)
 {
     volatile unsigned char *ctl;
+    CYG_ASSERT(vector >= CYGNUM_HAL_ISR_MIN, "invalid interrupt vector [< MIN]");
+    CYG_ASSERT(vector <= CYGNUM_HAL_ISR_MAX, "invalid interrupt vector [> MAX]");
     ctl = interrupt_control_registers[vector-CYGNUM_HAL_ISR_MIN];
-    *ctl &= ~INT_CONTROL_DISABLE;
+    CYG_ASSERT((void *)ctl != 0, "invalid interrupt vector [not defined]");
+    if (ctl ) {
+        *ctl &= ~INT_CONTROL_DISABLE;
+    }
 }
 
 //
@@ -96,8 +106,13 @@ void
 hal_interrupt_acknowledge(int vector)
 {
     volatile unsigned char *ctl;
+    CYG_ASSERT(vector >= CYGNUM_HAL_ISR_MIN, "invalid interrupt vector [< MIN]");
+    CYG_ASSERT(vector <= CYGNUM_HAL_ISR_MAX, "invalid interrupt vector [> MAX]");
     ctl = interrupt_control_registers[vector-CYGNUM_HAL_ISR_MIN];
-    *ctl &= ~INT_CONTROL_PENDING;
+    CYG_ASSERT((void *)ctl != 0, "invalid interrupt vector [not defined]");
+    if (ctl ) {
+        *ctl &= ~INT_CONTROL_PENDING;
+    }
 }
 
 static void
@@ -107,7 +122,9 @@ init_interrupts(void)
     volatile unsigned char *ctl;
     for (i = CYGNUM_HAL_ISR_MIN;  i <= CYGNUM_HAL_ISR_MAX;  i++) {
         ctl = interrupt_control_registers[i-CYGNUM_HAL_ISR_MIN];
-        *ctl = INT_CONTROL_DEFAULT;
+        if (ctl) {
+            *ctl = INT_CONTROL_DEFAULT;
+        }
     }
 }
 

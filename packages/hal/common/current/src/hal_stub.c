@@ -56,10 +56,12 @@
 #include <cyg/hal/hal_cache.h>          // HAL_xCACHE_x
 #include <cyg/hal/hal_intr.h>           // interrupt disable/restore
 
+#include <cyg/hal/hal_if.h>             // ROM calling interface
+#include <cyg/hal/hal_misc.h>           // Helper functions
+
 #ifdef CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
 #include <cyg/hal/dbg-threads-api.h>    // dbg_currthread_id
 #endif
-
 
 //-----------------------------------------------------------------------------
 // Extra eCos data.
@@ -103,7 +105,10 @@ extern char ecos_bsp_console_getc(void);
 void 
 putDebugChar (int c)
 {
-#ifdef CYGPKG_CYGMON
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
+    __call_if_debug_procs_t __debug_procs = CYGACC_CALL_IF_DEBUG_PROCS();
+    CYGACC_COMM_IF_PUTC(*__debug_procs)(__debug_procs, c);
+#elif defined(CYGPKG_CYGMON)
     ecos_bsp_console_putc(c);
 #else
     HAL_STUB_PLATFORM_PUT_CHAR(c);
@@ -114,7 +119,10 @@ putDebugChar (int c)
 int 
 getDebugChar (void)
 {
-#ifdef CYGPKG_CYGMON
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
+    __call_if_debug_procs_t __debug_procs = CYGACC_CALL_IF_DEBUG_PROCS();
+    return CYGACC_COMM_IF_GETC(*__debug_procs)(__debug_procs);
+#elif defined(CYGPKG_CYGMON)
     return ecos_bsp_console_getc();
 #else
     return HAL_STUB_PLATFORM_GET_CHAR();
@@ -125,7 +133,10 @@ getDebugChar (void)
 void 
 __set_baud_rate (int baud) 
 {
-#ifdef CYGPKG_CYGMON
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
+    __call_if_debug_procs_t __debug_procs = CYGACC_CALL_IF_DEBUG_PROCS();
+    CYGACC_COMM_IF_CONTROL(*__debug_procs)(__debug_procs, __COMMCTL_SETBAUD, baud);
+#elif defined(CYGPKG_CYGMON)
     // FIXME!
 #else
     HAL_STUB_PLATFORM_SET_BAUD_RATE(baud);
@@ -168,6 +179,8 @@ cyg_hal_gdb_place_break (target_register_t pc)
 void 
 cyg_hal_gdb_interrupt (target_register_t pc)
 {
+    CYGARC_HAL_SAVE_GP();
+
     // Clear flag that we Continued instead of Stepping
     cyg_hal_gdb_running_step = 0;
     // and override existing break? So that a ^C takes effect...
@@ -182,6 +195,8 @@ cyg_hal_gdb_interrupt (target_register_t pc)
         __data_cache(CACHE_FLUSH);
         __instruction_cache(CACHE_FLUSH);
     }
+
+    CYGARC_HAL_RESTORE_GP();
 }
 
 int 
@@ -240,6 +255,135 @@ interruptible(int state)
     }
 }
 
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
+//-----------------------------------------------------------------------------
+// GDB O-packetizer function.
+
+// This gets called via the virtual vector debug comms entry and
+// handles O-packetization. The debug comms entries are used for the
+// actual device IO.
+
+static cyg_uint8
+cyg_hal_gdb_diag_getc(void* __ch_data)
+{
+    cyg_uint8 __ch;
+    hal_virtual_comm_table_t* __chan = CYGACC_CALL_IF_DEBUG_PROCS();
+    CYGARC_HAL_SAVE_GP();
+
+    __ch = CYGACC_COMM_IF_GETC(*__chan)(*__chan);
+
+    CYGARC_HAL_RESTORE_GP();
+
+    return __ch;
+}
+
+
+static void
+cyg_hal_gdb_diag_putc(void* __ch_data, cyg_uint8 c)
+{
+    static char line[100];
+    static int pos = 0;
+    CYGARC_HAL_SAVE_GP();
+
+    // No need to send CRs
+    if( c == '\r' ) return;
+
+    line[pos++] = c;
+
+    if( c == '\n' || pos == sizeof(line) )
+    {
+        CYG_INTERRUPT_STATE old;
+        hal_virtual_comm_table_t* __chan = CYGACC_CALL_IF_DEBUG_PROCS();
+
+        // Disable interrupts. This prevents GDB trying to interrupt us
+        // while we are in the middle of sending a packet. The serial
+        // receive interrupt will be seen when we re-enable interrupts
+        // later.
+        CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION(old);
+        
+        while(1)
+        {
+            static const char hex[] = "0123456789ABCDEF";
+            cyg_uint8 csum = 0, c1;
+            int i;
+        
+            CYGACC_COMM_IF_PUTC(*__chan)(*__chan, '$');
+            CYGACC_COMM_IF_PUTC(*__chan)(*__chan, 'O');
+            csum += 'O';
+            for( i = 0; i < pos; i++ )
+            {
+                char ch = line[i];
+                char h = hex[(ch>>4)&0xF];
+                char l = hex[ch&0xF];
+                CYGACC_COMM_IF_PUTC(*__chan)(*__chan, h);
+                CYGACC_COMM_IF_PUTC(*__chan)(*__chan, l);
+                csum += h;
+                csum += l;
+            }
+            CYGACC_COMM_IF_PUTC(*__chan)(*__chan, '#');
+            CYGACC_COMM_IF_PUTC(*__chan)(*__chan, hex[(csum>>4)&0xF]);
+            CYGACC_COMM_IF_PUTC(*__chan)(*__chan, hex[csum&0xF]);
+
+            c1 = CYGACC_COMM_IF_GETC(*__chan)(*__chan);
+            if( c1 == '+' ) break;
+
+            if( cyg_hal_is_break( &c1 , 1 ) ) {
+                // Caller's responsibility to react on this.
+                CYGACC_CALL_IF_CONSOLE_INTERRUPT_FLAG_SET(1);
+                break;
+            }
+        }
+
+        pos = 0;
+        // And re-enable interrupts
+        CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION(old);
+    }
+
+    CYGARC_HAL_RESTORE_GP();
+}
+
+static void
+cyg_hal_gdb_diag_write(void* __ch_data, const cyg_uint8* __buf, 
+                       cyg_uint32 __len)
+{
+    CYGARC_HAL_SAVE_GP();
+
+    while(__len-- > 0)
+        cyg_hal_gdb_diag_putc(__ch_data, *__buf++);
+
+    CYGARC_HAL_RESTORE_GP();
+}
+
+static void
+cyg_hal_gdb_diag_read(void* __ch_data, cyg_uint8* __buf, cyg_uint32 __len)
+{
+    hal_virtual_comm_table_t* __chan = CYGACC_CALL_IF_DEBUG_PROCS();
+    CYGARC_HAL_SAVE_GP();
+
+    while(__len-- > 0)
+        *__buf++ = CYGACC_COMM_IF_GETC(*__chan)(*__chan);
+
+    CYGARC_HAL_RESTORE_GP();
+}
+
+static int
+cyg_hal_gdb_diag_control(void *__ch_data, __comm_control_cmd_t __func, ...)
+{
+    // Do nothing (yet).
+    return 0;
+}
+
+hal_virtual_comm_table_t cyg_hal_gdb_console_procs = {
+    0,
+    (CYG_ADDRWORD) &cyg_hal_gdb_diag_write,
+    (CYG_ADDRWORD) &cyg_hal_gdb_diag_read,
+    (CYG_ADDRWORD) &cyg_hal_gdb_diag_putc,
+    (CYG_ADDRWORD) &cyg_hal_gdb_diag_getc,
+    (CYG_ADDRWORD) &cyg_hal_gdb_diag_control};
+
+#endif
+
+
 //-----------------------------------------------------------------------------
 // eCos stub entry and exit magic.
 
@@ -281,10 +425,7 @@ handle_exception_cleanup( void )
     // FIXME: (there may be a better way to do this)
     // If we hit a breakpoint set by the gdb interrupt stub, make it
     // seem like an interrupt rather than having hit a breakpoint.
-    if (cyg_hal_gdb_remove_break(get_register (PC)))
-        cyg_hal_gdb_break = 1;
-    else
-        cyg_hal_gdb_break = 0;
+    cyg_hal_gdb_break = cyg_hal_gdb_remove_break(get_register (PC));
 #endif
 }
 
@@ -338,24 +479,36 @@ initHardware (void)
 {
     static int initialized = 0;
 
-    if (!initialized) {
-        initialized = 1;
+    if (initialized++)
+        return;
 
 #if !defined(CYGPKG_CYGMON)
 #ifdef HAL_STUB_PLATFORM_INIT
-        // If the platform defines any initialization code, call it here.
-        HAL_STUB_PLATFORM_INIT();
+    // If the platform defines any initialization code, call it here.
+    HAL_STUB_PLATFORM_INIT();
 #endif        
                 
-        // Get serial port initialized.
-        HAL_STUB_PLATFORM_INIT_SERIAL();
+    // Get serial port initialized.
+    HAL_STUB_PLATFORM_INIT_SERIAL();
 
-#ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
-        // Get interrupt handler initialized.
-        HAL_STUB_PLATFORM_INIT_BREAK_IRQ();
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
+    // This should really be done during handle_exception_init (at
+    // stub exit), but that makes it impossible a stub to be included
+    // in the application without breaking things. So do it here
+    // instead - stub initialization happens after
+    // constructors/hal_diag_init anyway.
+    if (NULL == CYGACC_CALL_IF_CONSOLE_PROCS())
+        CYGACC_CALL_IF_CONSOLE_PROCS_SET(cyg_hal_gdb_console_procs);
 #endif
+
+#ifndef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
+#ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+    // Get interrupt handler initialized.
+    HAL_STUB_PLATFORM_INIT_BREAK_IRQ();
+#endif
+#endif // CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
 #endif // CYGPKG_CYGMON
-    }
+
 }
 
 // Reset the board.
@@ -363,7 +516,13 @@ void
 __reset (void)
 {
 #if !defined(CYGPKG_CYGMON)
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
+    __call_if_reset_t __rom_reset = CYGACC_CALL_IF_RESET();
+    if (__rom_reset)
+        __rom_reset();
+#else
     HAL_STUB_PLATFORM_RESET();
+#endif
 #endif
 }
 

@@ -1,8 +1,13 @@
-//===========================================================================
+#ifndef CYGONCE_HAL_PLF_INTR_H
+#define CYGONCE_HAL_PLF_INTR_H
+
+//==========================================================================
 //
-// ROM startup linker control script
+//      plf_intr.h
 //
-//===========================================================================
+//      MBX platform specific interrupt definitions
+//
+//==========================================================================
 //####COPYRIGHTBEGIN####
 //                                                                          
 // -------------------------------------------                              
@@ -26,29 +31,33 @@
 // -------------------------------------------                              
 //                                                                          
 //####COPYRIGHTEND####
-//===========================================================================
+//==========================================================================
+//#####DESCRIPTIONBEGIN####
+//
+// Author(s):    jskov
+// Contributors: jskov
+// Date:         2000-06-13
+// Purpose:      Define platform specific interrupt support
+//              
+// Usage:
+//              #include <cyg/hal/plf_intr.h>
+//              ...
+//              
+//
+//####DESCRIPTIONEND####
+//
+//==========================================================================
 
-MEMORY
-{
-    rom : ORIGIN = 0xfe000000, LENGTH = 0x800000
-    ram : ORIGIN = 0x00000000, LENGTH = 0x400000
-}
+#include <pkgconf/hal.h>
 
-SECTIONS
-{
-    SECTIONS_BEGIN
-    SECTION_vectors (rom, 0xfe000000, LMA_EQ_VMA)
-    SECTION_text (rom, ALIGN (0x4), LMA_EQ_VMA)
-    SECTION_fini (rom, ALIGN (0x4), LMA_EQ_VMA)
-    SECTION_rodata1 (rom, ALIGN (0x8), LMA_EQ_VMA)
-    SECTION_rodata (rom, ALIGN (0x8), LMA_EQ_VMA)
-    SECTION_fixup (rom, ALIGN (0x4), LMA_EQ_VMA)
-    SECTION_gcc_except_table (rom, ALIGN (0x1), LMA_EQ_VMA)
-    __reserved_vectors = 0; . = __reserved_vectors + 0x3000;
-    __reserved_vsr_table = ALIGN (0x1); . = __reserved_vsr_table + 0x200;
-    __reserved_virtual_table = ALIGN (0x1); . = __reserved_virtual_table + 0x100;
-    SECTION_data (ram, ALIGN (0x10), FOLLOWING (.gcc_except_table))
-    SECTION_sbss (ram, ALIGN (0x4), LMA_EQ_VMA)
-    SECTION_bss (ram, ALIGN (0x10), LMA_EQ_VMA)
-    SECTIONS_END
-}
+#include <cyg/infra/cyg_type.h>
+
+//--------------------------------------------------------------------------
+// Control-C support.
+
+// Defined by the quicc driver
+#include <cyg/hal/quicc/quicc_smc1.h>
+
+//--------------------------------------------------------------------------
+#endif // ifndef CYGONCE_HAL_PLF_INTR_H
+// End of plf_intr.h

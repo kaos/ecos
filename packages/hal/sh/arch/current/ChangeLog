@@ -1,3 +1,24 @@
+2000-06-15  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_intr.h: Added HAL_DEFAULT_ISR.
+
+2000-06-08  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_arch.h (CYGARC_HAL_SAVE_GP, CYGARC_HAL_RESTORE_GP):
+	Added.
+
+	* include/mod_7708.h: 
+	* include/mod_7709a.h: 
+	* src/vectors.S:
+	Minor config change to get rid of growing list of variant checks.
+
+2000-06-08  Jesper Skov  <jskov@redhat.com>
+
+	* include/mod_7707a.h: 
+	* src/vectors.S:
+	* cdl/hal_sh.cdl: 
+	Added first level of support for 7707A variant.
+
 2000-06-06  Jesper Skov  <jskov@redhat.com>
 
 	* src/vectors.S: INTEVT2 is not defined on all variants. Protect

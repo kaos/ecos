@@ -219,7 +219,8 @@ struct	ipstat {
 
 struct	  ipstat ipstat;
 LIST_HEAD(ipqhead, ipq)	ipq;		/* ip reass. queue */
-int	  ip_defttl;			/* default IP ttl */
+extern int ip_defttl;			/* default IP ttl */
+extern int ipforwarding;                /* IPforwarding state */
 
 int	 ip_ctloutput __P((int, struct socket *, int, int, struct mbuf **));
 int	 ip_dooptions __P((struct mbuf *));

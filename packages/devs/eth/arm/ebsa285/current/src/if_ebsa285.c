@@ -70,6 +70,8 @@
 #error "Need PCI package here"
 #endif
 
+#include CYGBLD_DEVS_ETH_INFO_H // some state we must export
+
 // ------------------------------------------------------------------------
 
 #ifdef CYGDBG_DEVS_ETH_ARM_EBSA285_CHATTER
@@ -78,9 +80,6 @@
 #define DEBUG_EE       // Some EEPROM specific retries &c
 #endif
 
-#define nKEEP_STATISTICS
-#define nDISPLAY_STATISTICS
-#define nDISPLAY_82559_STATISTICS
 
 
 #define os_printf diag_printf
@@ -162,16 +161,6 @@ static inline cyg_uint32 bus_to_virt(cyg_uint32 p_memory)
 #define I82559_DUMP             0x00000003
 #define I82559_DUMP_WAKEUP      0x00000007
 
-
-
-// ------------------------------------------------------------------------
-//
-//                   82559 GENERAL STATUS REGISTER
-//
-// ------------------------------------------------------------------------
-#define GEN_STATUS_FDX          0x04    // 1 = full duplex, 0 = half
-#define GEN_STATUS_100MBPS      0x02    // 1 = 100 Mbps, 0 = 10 Mbps
-#define GEN_STATUS_LINK         0x01    // 1 = link up, 0 = link down
 
 
 // ------------------------------------------------------------------------
@@ -282,7 +271,7 @@ typedef struct rfd {
 #define RFD_RX_TCO          0x00000001  // TCO indication
 
 
-typedef struct {
+typedef struct rbd {
     volatile cyg_uint32 count:14,       // bytes used in buffer
         f:1,                            // buffer has been used (filled)
         eof:1;                          // last receive buffer in frame
@@ -298,7 +287,7 @@ typedef struct {
 //               TRANSMIT FRAME DESCRIPTORS
 //
 // ------------------------------------------------------------------------
-typedef struct {
+typedef struct txcb {
     volatile cyg_uint32 status:16,      // result of transmit operation
         command:16;                     // transmit command
     volatile cyg_uint32 link;           // offset from RU base to next RFD
@@ -349,106 +338,18 @@ typedef struct {
 //
 // ------------------------------------------------------------------------
 #ifdef KEEP_STATISTICS
-typedef struct {
-    cyg_uint32 tx_good;
-    cyg_uint32 tx_max_collisions;
-    cyg_uint32 tx_late_collisions;
-    cyg_uint32 tx_underrun;
-    cyg_uint32 tx_carrier_loss;
-    cyg_uint32 tx_deferred;
-    cyg_uint32 tx_single_collisions;
-    cyg_uint32 tx_mult_collisions;
-    cyg_uint32 tx_total_collisions;
-    cyg_uint32 rx_good;
-    cyg_uint32 rx_crc_errors;
-    cyg_uint32 rx_align_errors;
-    cyg_uint32 rx_resource_errors;
-    cyg_uint32 rx_overrun_errors;
-    cyg_uint32 rx_collisions;
-    cyg_uint32 rx_short_frames;
-    cyg_uint32 done;
-} I82559_COUNTERS;
-
-
-typedef struct {
-    cyg_uint32 interrupts;
-    cyg_uint32 rx_count;
-    cyg_uint32 rx_deliver;
-    cyg_uint32 rx_resource;
-    cyg_uint32 rx_restart;
-    cyg_uint32 tx_count;
-    cyg_uint32 tx_complete;
-    cyg_uint32 tx_dropped;
-} STATISTICS;
-
-
 STATISTICS statistics[2];
 I82559_COUNTERS i82559_counters[2];
-
 #endif // KEEP_STATISTICS
 
+// ------------------------------------------------------------------------
+//
+//                      DEVICES AND PACKET QUEUES
+//
 // ------------------------------------------------------------------------
 
 #define MAX_RX_PACKET_SIZE  1536        // maximum Rx packet size
 #define MAX_TX_PACKET_SIZE  1536        // maximum Tx packet size
-
-// The system seems to work OK with as few as 8 of RX and TX descriptors.
-// It limps very painfully with only 4.
-// Performance is better with more than 8.
-// But the size of non-cached (so useless for anything else)
-// memory window is 1Mb, so we might as well use it all.
-//
-// 128 for these uses the whole 1Mb, near enough.
-
-#ifndef MAX_RX_DESCRIPTORS
-#define MAX_RX_DESCRIPTORS	128     // number of Rx descriptors
-#endif
-#ifndef MAX_TX_DESCRIPTORS
-#define MAX_TX_DESCRIPTORS	128     // number of Tx descriptors
-#endif
-
-
-
-typedef struct i82559 {
-    cyg_uint8                           // (split up for atomic byte access)
-        found:1,                        // was hardware discovered?
-        mac_addr_ok:1,                  // can we bring up?
-        active:1,                       // has this if been brung up?
-        spare1:5; 
-    cyg_uint8
-        spare2:8; 
-    cyg_uint8
-        tx_in_progress:1,               // transmit in progress flag
-        tx_queue_full:1,                // all Tx descriptors used flag
-        spare3:6; 
-    cyg_uint8  index;                   // 0 or 1 or whatever
-    cyg_uint32 devid;                   // PCI device id
-    cyg_uint32 memory_address;          // PCI memory address
-    cyg_uint32 io_address;              // memory mapped I/O address
-    cyg_uint8  mac_address[6];          // mac (hardware) address
-    void *ndp;                          // Network Device Pointer
-
-    int next_rx_descriptor;             // descriptor index for RFDs
-    RFD *rx_ring[MAX_RX_DESCRIPTORS];   // location of Rx descriptors
-
-    int tx_descriptor_add;              // descriptor index for additions
-    int tx_descriptor_active;           // descriptor index for active tx
-    int tx_descriptor_remove;           // descriptor index for remove
-
-    TxCB *tx_ring[MAX_TX_DESCRIPTORS];  // location of Tx descriptors
-    unsigned long tx_keys[MAX_TX_DESCRIPTORS];
-                                        // keys for tx q management
-
-    // Interrupt handling stuff
-    cyg_vector_t    vector;             // interrupt vector
-    cyg_handle_t    interrupt_handle;   // handle for int.handler
-    cyg_interrupt   interrupt_object;
-
-#ifdef KEEP_STATISTICS
-    void *p_statistics;                 // pointer to statistical counters
-#endif
-
-} I82559;
 
 
 // This is encapsulated here so that a change to > 2 interfaces can
@@ -552,6 +453,7 @@ static int eth_set_promiscuous_mode(struct i82559* p_i82559);
 // debugging/logging only:
 void dump_txcb(TxCB *p_txcb);
 void DisplayStatistics(void);
+void update_statistics(struct i82559* p_i82559);
 void dump_rfd(RFD *p_rfd, int anyway );
 void dump_all_rfds( int intf );
 void dump_packet(cyg_uint8 *p_buffer, int length);
@@ -1002,9 +904,7 @@ static void i82559_start( struct eth_drv_sc *sc,
     struct i82559 *p_i82559;
     cyg_uint32 ioaddr;
 #ifdef KEEP_STATISTICS
-#ifdef DISPLAY_82559_STATISTICS
     void *p_statistics;
-#endif
 #endif
 
     p_i82559 = (struct i82559 *)sc->driver_private;
@@ -1031,7 +931,6 @@ static void i82559_start( struct eth_drv_sc *sc,
     ioaddr = p_i82559->io_address; // get 82559's I/O address
 
 #ifdef KEEP_STATISTICS
-#ifdef DISPLAY_82559_STATISTICS
     p_i82559->p_statistics =
         p_statistics = pciwindow_mem_alloc(sizeof(I82559_COUNTERS));
     memset(p_statistics, 0xFFFFFFFF, sizeof(I82559_COUNTERS));
@@ -1042,7 +941,6 @@ static void i82559_start( struct eth_drv_sc *sc,
 
     wait_for_cmd_done(ioaddr); // make sure no command operating
     OUTW(SCB_M | CU_DUMPSTATS, ioaddr + SCBCmd); // start register dump
-#endif
 #endif
 
     // Set the base address
@@ -1064,8 +962,7 @@ static void i82559_start( struct eth_drv_sc *sc,
     }
 #ifdef DEBUG
     {
-        int status;
-        status = INB(ioaddr + SCBGenStatus);
+        int status = i82559_status( sc );
         os_printf("i82559_start %d flg %x Link = %s, %s Mbps, %s Duplex\n",
                   p_i82559->index,
                   *(int *)p_i82559,
@@ -1074,6 +971,32 @@ static void i82559_start( struct eth_drv_sc *sc,
                   status & GEN_STATUS_FDX ? "Full" : "Half");
     }
 #endif
+}
+
+// ------------------------------------------------------------------------
+//
+//  Function : i82559_status
+//
+// ------------------------------------------------------------------------
+int i82559_status( struct eth_drv_sc *sc )
+{
+    int status;
+    struct i82559 *p_i82559;
+    cyg_uint32 ioaddr;
+    p_i82559 = (struct i82559 *)sc->driver_private;
+    
+    IF_BAD_82559( p_i82559 ) {
+#ifdef DEBUG
+        os_printf( "i82559_status: Bad device pointer %x\n", p_i82559 );
+#endif
+        return 0;
+    }
+
+    ioaddr = p_i82559->io_address; // get 82559's I/O address
+
+    status = INB(ioaddr + SCBGenStatus);
+
+    return status;
 }
 
 // ------------------------------------------------------------------------
@@ -2016,18 +1939,18 @@ static int eth_set_promiscuous_mode(struct i82559* p_i82559)
     ccs->config_bytes[3]=0x0;
     ccs->config_bytes[4]=0x0;
     ccs->config_bytes[5]=0x0;
-    ccs->config_bytes[6]=0xb2;
-    ccs->config_bytes[7]=0x0;
-    ccs->config_bytes[8]=0x0;
+    ccs->config_bytes[6]=0xb2; // (promisc ? 0x80 : 0) | 0x32 for small stats,
+    ccs->config_bytes[7]=0x0;  // \      ditto         | 0x12 for stats with PAUSE stats
+    ccs->config_bytes[8]=0x0;  //  \     ditto         | 0x16 for PAUSE + TCO stats
     ccs->config_bytes[9]=0x0;
     ccs->config_bytes[10]=0x28;
     ccs->config_bytes[11]=0x0;
     ccs->config_bytes[12]=0x60;
-    ccs->config_bytes[13]=0x0;            // arp
-    ccs->config_bytes[14]=0x0;            // arp
+    ccs->config_bytes[13]=0x0;          // arp
+    ccs->config_bytes[14]=0x0;          // arp
     
-    ccs->config_bytes[15]=0x81;           // promiscuous mode set
-    
+    ccs->config_bytes[15]=0x81;         // promiscuous mode set
+                                        // \ or 0x80 for normal mode.
     ccs->config_bytes[16]=0x0;
     ccs->config_bytes[17]=0x40;
     ccs->config_bytes[18]=0x70;
@@ -2373,6 +2296,46 @@ static int i82559_ioctl(struct eth_drv_sc *sc, unsigned long key,
     }
     return -1;
 }
+
+// ------------------------------------------------------------------------
+//
+// Statistics update...
+//
+// ------------------------------------------------------------------------
+
+#ifdef KEEP_STATISTICS
+void update_statistics(struct i82559* p_i82559)
+{
+    I82559_COUNTERS *p_statistics;
+    cyg_uint32 *p_counter;
+    cyg_uint32 *p_register;
+    int reg_count;
+    
+    Mask82559Interrupt(p_i82559);
+
+    // This points to the sthared memory stats area/command block
+    p_statistics = (I82559_COUNTERS *)(p_i82559->p_statistics);
+
+    if ( (p_statistics->done & 0xFFFF) == 0xA007 ) {
+        p_counter = (cyg_uint32 *)&i82559_counters[ p_i82559->index ];
+        p_register = (cyg_uint32 *)p_statistics;
+        for ( reg_count = 0;
+              reg_count < sizeof( I82559_COUNTERS ) / sizeof( cyg_uint32 ) - 1;
+              reg_count++ ) {
+            *p_counter += *p_register;
+            p_counter++;
+            p_register++;
+        }
+        p_statistics->done = 0;
+        // make sure no command operating
+        wait_for_cmd_done(p_i82559->io_address);
+        // start register dump
+        OUTW(CU_DUMPSTATS, p_i82559->io_address + SCBCmd);
+    }
+    Acknowledge82559Interrupt(p_i82559);
+    UnMask82559Interrupt(p_i82559);
+}
+#endif // KEEP_STATISTICS
 
 // ------------------------------------------------------------------------
 //

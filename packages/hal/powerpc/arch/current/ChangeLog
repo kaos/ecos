@@ -1,3 +1,21 @@
+2000-06-15  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_intr.h: Added HAL_DEFAULT_ISR.
+
+2000-06-13  Jesper Skov  <jskov@redhat.com>
+
+	* src/powerpc.ld (hal_virtual_vector_table): Added.
+
+	* src/hal_misc.c (hal_arch_default_isr): Added, replacing
+	hal_default_isr which was moved to common HAL.
+
+	* src/vectors.S: Changes to support ctrlC via virtual vector table.
+
+2000-06-08  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_arch.h (CYGARC_HAL_SAVE_GP, CYGARC_HAL_RESTORE_GP):
+	Added.
+
 2000-04-14  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_misc.c (hal_idle_thread_action): Moved some of the code

@@ -38,7 +38,8 @@ SECTIONS
     SECTIONS_BEGIN
     __reserved_vectors = 0; . = __reserved_vectors + 0x3000;
     __reserved_vsr_table = ALIGN (0x1); . = __reserved_vsr_table + 0x200;
-    __reserved_for_rom = ALIGN (0x1); . = __reserved_for_rom + 0xce00;
+    __reserved_virtual_table = ALIGN (0x1); . = __reserved_virtual_table + 0x100;
+    __reserved_for_rom = ALIGN (0x1); . = __reserved_for_rom + 0xcd00;
     SECTION_vectors (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_text (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_fini (ram, ALIGN (0x4), LMA_EQ_VMA)
