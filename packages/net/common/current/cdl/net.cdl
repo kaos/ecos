@@ -287,6 +287,16 @@ cdl_package CYGPKG_NET {
                 etc take to perform."
     }
 
+    cdl_option CYGDBG_NET_SHOW_MBUFS {
+        display       "Network MBUF diagnostics"
+        default_value 0
+        description   "
+                This option controls whether diagnostic 
+                information about the state of all mbufs is collected.
+                This information will be displayed whenever the network
+                stack runs out of mbufs."
+    }
+
     cdl_component CYGPKG_NET_OPTIONS {
         display "Networking support build options"
         flavor  none
@@ -355,7 +365,6 @@ cdl_package CYGPKG_NET {
                     tests/flood \
                     tests/ping_test \
                     tests/dhcp_test \
-                    tests/dhcp_test2 \
                     tests/ping_lo_test \
                     tests/tcp_lo_test \
                     tests/udp_lo_test \

@@ -1,3 +1,8 @@
+2003-03-14  Nick Garnett  <nickg@balti.calivar.com>
+
+	* cdl/net.cdl: Added CYGDBG_NET_SHOW_MBUFS option to turn on
+	accumulation and display of mbuf state information. 
+
 2003-03-06  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/getaddrinfo.c: Need to clear any addresses - malloc() can
