@@ -1,3 +1,14 @@
+2003-08-28  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/redboot_linux_exec.c: Obsolete file - removed.
+
+	* src/plf_redboot_linux_exec.c: New file - platform specifics
+	for booting Linux kernel from RedBoot.
+
+	* cdl/hal_powerpc_adder.cdl: Linux booting from RedBoot is 
+	now supported at the architecture level.  Changes to support 
+	architecture/platform layering.
+
 2003-07-18  Nick Garnett  <nickg@balti.calivar.com>
 
 	* cdl/hal_powerpc_adder.cdl:

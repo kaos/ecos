@@ -1,3 +1,12 @@
+2003-08-28  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/redboot_linux_exec.c: New file - architecture level
+	support for booting Linux kernel from RedBoot.
+
+	* cdl/hal_powerpc.cdl: Linux booting from RedBoot is 
+	now supported at the architecture level.  Changes to support 
+	architecture/platform layering.
+
 2003-08-19  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/hal_intr.c (hal_IRQ_init): Precalculate clock tick per

@@ -168,6 +168,17 @@ cdl_package CYGPKG_HAL_POWERPC {
             debugging."
     }
 
+    cdl_option CYGSEM_REDBOOT_HAL_LINUX_BOOT {
+        active_if      { CYGSEM_REDBOOT_PLF_LINUX_BOOT == 1 }
+        display        "Support booting Linux via RedBoot"
+        flavor         bool
+        default_value  1
+        description    "
+           This option enables RedBoot to support booting of a Linux kernel."
+
+        compile -library=libextras.a redboot_linux_exec.c
+    }
+
     cdl_component CYGPKG_HAL_POWERPC_OPTIONS {
         display "PowerPC build options"
         flavor  none

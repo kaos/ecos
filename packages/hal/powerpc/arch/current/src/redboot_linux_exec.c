@@ -40,7 +40,7 @@
 //####ECOSGPLCOPYRIGHTEND####
 //####OTHERCOPYRIGHTBEGIN####
 //
-//  The structure definitions below are taken from arch/ppc/platforms/rattler8260.h in
+//  The structure definitions below are taken from include/asm-/redboot.h in
 //  the Linux kernel, Copyright (c) 2002, 2003 Gary Thomas, Copyright (c) 1997 Dan Malek. 
 //  Their presence here is for the express purpose of communication with the Linux 
 //  kernel being booted and is considered 'fair use' by the original author and
@@ -77,9 +77,9 @@
 #include <cyg/io/eth/eth_drv.h>            // Logical driver interfaces
 #endif
 
-#ifdef CYGSEM_REDBOOT_HAL_LINUX_BOOT
-
 #include CYGHWR_MEMORY_LAYOUT_H
+
+#include <cyg/hal/redboot_linux_exec.h>
 
 //=========================================================================
 
@@ -91,34 +91,6 @@ RedBoot_cmd("exec",
             "        [-c \"kernel command line\"] [<entry_point>]",
             do_exec
     );
-
-//=========================================================================
-// Imported from Linux kernel arch/ppc/platforms/rattler8260.h
-//   Copyright (c) 2002, 2003 Gary Thomas (<gary@mlbassoc.com>
-//   Copyright (c) 1997 Dan Malek (dmalek@jlc.net)
-//   Used with permission of author(s).
-
-
-/* A Board Information structure that is given to a program when
- * RedBoot starts it up.
- */
-typedef struct bd_info {
-	unsigned int	bi_tag;		/* Should be 0x42444944 "BDID" */
-	unsigned int	bi_size;	/* Size of this structure */
-	unsigned int	bi_revision;	/* revision of this structure */
-	unsigned int	bi_bdate;	/* EPPCbug date, i.e. 0x11061997 */
-	unsigned int	bi_memstart;	/* Memory start address */
-	unsigned int	bi_memsize;	/* Memory (end) size in bytes */
-	unsigned int	bi_intfreq;	/* Internal Freq, in Hz */
-	unsigned int	bi_busfreq;	/* Bus Freq, in Hz */
-	unsigned int	bi_cpmfreq;	/* CPM Freq, in Hz */
-	unsigned int	bi_brgfreq;	/* BRG Freq, in Hz */
-	unsigned int	bi_vco;		/* VCO Out from PLL */
-	unsigned int	bi_baudrate;	/* Default console baud rate */
-	unsigned int	bi_immr;	/* IMMR when called from boot rom */
-	unsigned char	bi_enetaddr[6];
-        unsigned char   *bi_cmdline;    /*  Pointer to command line */
-} bd_t;
 
 //
 // Execute a Linux kernel - this is a RedBoot CLI command
@@ -194,21 +166,19 @@ do_exec(int argc, char *argv[])
     board_info->bi_bdate	= 0x06012002;
     board_info->bi_memstart	= CYGMEM_REGION_ram;
     board_info->bi_memsize	= CYGMEM_REGION_ram_SIZE;
-    board_info->bi_intfreq	= CYGHWR_HAL_POWERPC_CPU_SPEED*1000000;
-    board_info->bi_busfreq	= CYGHWR_HAL_POWERPC_BUS_SPEED*1000000;
-    board_info->bi_cpmfreq	= CYGHWR_HAL_POWERPC_CPM_SPEED*1000000;
-    board_info->bi_brgfreq      = ((CYGHWR_HAL_POWERPC_CPM_SPEED*2)*1000000)/16;
     board_info->bi_baudrate     = baud_rate;
     board_info->bi_cmdline      = cline;
 #ifdef CYGPKG_REDBOOT_NETWORKING
     memcpy(board_info->bi_enetaddr, __local_enet_addr, sizeof(enet_addr_t));
 #endif
+    // Call platform specific code to fill in the platform/architecture specific details
+    plf_redboot_linux_exec(board_info);
 
-    // adjust SP to 64 bit boundary, and leave a little space
+    // adjust SP to 64 byte boundary, and leave a little space
     // between it and the commandline for PowerPC calling
     // conventions.
 	
-    sp = (sp-32)&~7;
+    sp = (sp-64)&~63;
 
     if (wait_time_set) {
         int script_timeout_ms = wait_time * 1000;
@@ -275,8 +245,6 @@ do_exec(int argc, char *argv[])
 	             
 	             );
 }
-
-#endif // CYGSEM_REDBOOT_HAL_LINUX_BOOT
 
 //=========================================================================
 // EOF redboot_linux_exec.c

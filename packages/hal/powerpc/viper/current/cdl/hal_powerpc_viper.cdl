@@ -326,7 +326,7 @@ cdl_package CYGPKG_HAL_POWERPC_VIPER {
             This option lists the target's requirements for a valid Redboot
             configuration."
 
-        cdl_option CYGSEM_REDBOOT_HAL_LINUX_BOOT {
+        cdl_option CYGSEM_REDBOOT_PLF_LINUX_BOOT {
             active_if      CYGBLD_BUILD_REDBOOT_WITH_EXEC
             display        "Support booting Linux via RedBoot"
             flavor         bool
@@ -334,7 +334,7 @@ cdl_package CYGPKG_HAL_POWERPC_VIPER {
             description    "
                This option enables RedBoot to support booting of a Linux kernel."
 
-            compile -library=libextras.a redboot_linux_exec.c
+            compile plf_redboot_linux_exec.c
         }
 
         cdl_option CYGBLD_BUILD_REDBOOT_BIN {
