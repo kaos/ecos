@@ -1,3 +1,17 @@
+2003-05-21  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/getaddrinfo.c (getaddrinfo): Corrected a bad patch merge
+	from earlier which failed to delete some code. This fixed the dns1
+	tests for IPv6 lookups.
+
+2003-05-19  Michael Checky  <Michael_Checky@ThermoKing.com>
+            Andrew Lunn     <andrew.lunn@ascom.ch>
+	
+	* src/getaddrinfo.c: Changed '#ifdef CYGPKG_NS_DNS' to
+	'#ifdef CYGPKG_NS_DNS_BUILD', so it would compile if this CDL
+	option is not selected.  Changed the call to 'numeric_node_addr'
+	so it uses the correct number of arguments.
+
 2003-05-14  Bob Holmberg  <bob_holmberg@yahoo.com>
 
 	* src/tftp_server.c (tftpd_read_file): Open the file for reading,

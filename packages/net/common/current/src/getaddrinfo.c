@@ -41,7 +41,9 @@
 #include <pkgconf/system.h>
 #ifdef CYGPKG_NS_DNS
 #include <pkgconf/ns_dns.h>
+#ifdef CYGPKG_NS_DNS_BUILD
 #include <cyg/ns/dns/dns.h>
+#endif
 #endif
 
 extern int  sprintf(char *, const char *, ...);
@@ -219,7 +221,7 @@ static int
 with_node_addr(struct addrinfo *ai, const char *node, 
                const struct addrinfo *hints, int port) {
     
-#ifdef CYGPKG_NS_DNS
+#ifdef CYGPKG_NS_DNS_BUILD
     struct sockaddr addrs[CYGNUM_NS_DNS_GETADDRINFO_ADDRESSES];
     int nresults;
     int i;
@@ -262,7 +264,7 @@ with_node_addr(struct addrinfo *ai, const char *node,
     }
     return EAI_NONE;
 #else
-    return (numeric_node_addr(ai, node, hints, hints->ai_family, port));
+    return (numeric_node_addr(ai, node, hints, port));
 #endif
 }
 
@@ -277,7 +279,6 @@ getaddrinfo(const char *nodename, const char *servname,
     char *endptr;
     int port = 0;
     int err;
-    int used;
 
     if (hints == (struct addrinfo *)NULL) {
         dflt_hints.ai_flags = 0;  // No special flags
@@ -376,11 +377,7 @@ getaddrinfo(const char *nodename, const char *servname,
         freeaddrinfo(ai);
         return err;
     }
-    if (err == EAI_NONE) {
-        ai->ai_family = AF_INET;
-        used = 1;
-    }
-    
+
     if ((hints->ai_flags & AI_CANONNAME) && !nodename) {
         ai->ai_canonname = malloc(strlen("localhost")+1);
         if (ai->ai_canonname) {
@@ -479,7 +476,7 @@ getnameinfo (const struct sockaddr *sa, socklen_t salen,
         if (host != (char *)NULL) {
             if ( !numeric) {
                 error = EAI_NONAME;
-#ifdef CYGPKG_NS_DNS
+#ifdef CYGPKG_NS_DNS_BUILD
                 error = -cyg_dns_getnameinfo(sa, host,hostlen);
 #endif
                 if ((error == EAI_NONAME) && (flags & NI_NAMEREQD)) {
