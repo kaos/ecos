@@ -1164,7 +1164,7 @@ latencies.
 <!-- {{{ Input and Output -->
 
 <SECTION id="hal-input-and-output">
-<TITLE></TITLE>
+<TITLE>HAL I/O</TITLE>
 
 <PARA>
 This section contains definitions for supporting access
