@@ -1,3 +1,7 @@
+1999-12-16  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/arm.ld: Include all SRAM (*.sram*) sections.
+
 1999-12-08  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/arm.ld: Add ".sram" section support (used by platforms

@@ -37,18 +37,24 @@ $TCL $1/pkgconf.tcl                                         \
    --disable CYGPKG_DEVICES_WATCHDOG
 
 patch <<END_OF_PATCH -p0
---- pkgconf/hal.h.orig  Fri Oct 22 09:32:14 1999
-+++ pkgconf/hal.h       Mon Oct 25 09:15:33 1999
-@@ -110,7 +110,7 @@
+--- pkgconf/hal.h       1999/11/21 14:48:03     1.66
++++ pkgconf/hal.h       1999/12/15 21:48:53
+@@ -118,11 +118,11 @@
+          diagnostic I/O because of the environment.  This option
+          allows for an explicit override in these cases."
   }
  
   }}CFG_DATA */
 -#define CYGFUN_HAL_COMMON_KERNEL_SUPPORT
 +#undef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
+ #undef  CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL
  
- /* {{CFG_DATA
-    
-@@ -382,10 +382,10 @@
+ #ifdef CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL
+ #if !defined(CYGPKG_HAL_ARM)
+ #err GDB protocol cannot be explicitly disabled for this platform.
+@@ -424,14 +424,14 @@
+          to support multi-threaded source level debugging."
+  }
  
     }}CFG_DATA */
  
@@ -62,6 +68,8 @@ patch <<END_OF_PATCH -p0
  
  /*
   * NOTE:
+  *
+  * Right now there is no easy way to express the ROM monitor options
 END_OF_PATCH
 
 make

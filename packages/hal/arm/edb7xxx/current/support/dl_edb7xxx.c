@@ -1,7 +1,7 @@
 //****************************************************************************
 //
 // DOWNLOAD.C - Automates the download of code into the flash on the
-//              CL-PS7111-DK-D2 board.
+//              Cirrus Logic EDB7XXX boards.
 //
 // Copyright (c) 1999 Cirrus Logic, Inc.
 //
@@ -97,14 +97,19 @@ main(int argc, char *argv[])
     if(argc > 3)
     {
         lPort = OpenPort(argv[3]);
+        if (lPort < 0)
+        {
+            fprintf(stderr, "Can't open port: %s\n", argv[3]);
+            return;
+        }
     } else 
     {
         lPort = OpenPort(DEFAULT_PORT);
-    }
-    if (lPort < 0) 
-    {
-        fprintf(stderr, "Can't open port: %s\n", argv[3]);
-        return;
+        if (lPort < 0)
+        {
+            fprintf(stderr, "Can't open port: %s\n", DEFAULT_PORT);
+            return;
+        }
     }
 
     //

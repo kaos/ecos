@@ -121,7 +121,7 @@ OUTPUT_FORMAT(elf32-bigarm)
 
 #define SECTION_sram(_region_, _vma_, _lma_) \
     .sram _vma_ : _lma_ \
-    { FORCE_OUTPUT; *(.sram) } \
+    { FORCE_OUTPUT; *(.sram*) } \
     > _region_
 
 #define SECTION_data(_region_,  _vma_, _lma_) \

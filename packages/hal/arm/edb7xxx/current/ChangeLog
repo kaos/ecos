@@ -1,3 +1,11 @@
+1999-12-14  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* support/Makefile: Update filenames from earlier source file change,
+	and make other names generic
+
+	* support/dl_edb7xxx.c (main): Give the correct device name if
+	using the default.
+
 1999-11-29  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/hal_diag.c: Fix typoe: CYGDGB_HAL_DIAG_DISABLE_GDB_PROTOCOL

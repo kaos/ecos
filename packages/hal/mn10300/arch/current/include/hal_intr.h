@@ -129,6 +129,7 @@ externC void hal_interrupt_stack_call_pending_DSRs(void);
 #define HAL_RESTORE_INTERRUPTS(_old_)   \
         asm volatile (                  \
             "mov        psw,d1;"        \
+            "and        0xF7FF,d1;"     \
             "or         %0,d1;"         \
             "mov        d1,psw;"        \
             :                           \

@@ -1,3 +1,7 @@
+1999-12-15  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* misc/STUBS_config: updated patch due to hal.h changes
+
 1999-12-06  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/pkgconf/hal_arm_pid.h (HAL_PLATFORM_BOARD):

@@ -1,13 +1,13 @@
 #
-# eCos support tools for EP7211
+# eCos support tools for Cirrus Logic EDB7xxx eval boards
 #
 
-DL_FILES = dl_7211.o io.o
-ALL := dl_7211
+DL_FILES = dl_edb7xxx.o io.o
+ALL := dl_edb7xxx
 
 
 all: $(ALL)
 
-dl_7211: $(DL_FILES)
+dl_edb7xxx: $(DL_FILES)
 	$(CC) -o $@ $(DL_FILES)
 

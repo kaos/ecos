@@ -1,3 +1,9 @@
+1999-11-09  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/hal_intr.h (HAL_RESTORE_INTERRUPTS): Ensure we restore the
+	old state exactly, including "restoring" by disabling interrupts
+	Requested by Matsushita in case 102544
+
 1999-09-10  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* include/hal_cache.h: Change CYG_HAL_MN10300_SIM to

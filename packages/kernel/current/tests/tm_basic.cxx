@@ -1150,12 +1150,34 @@ alarm_cb2(cyg_handle_t alarm, cyg_addrword_t indx)
     }
 }
 
+static void
+alarm_cb3(cyg_handle_t alarm, cyg_addrword_t indx)
+{
+    if (alarm_cnt == nscheds) {
+        cyg_semaphore_post(&synchro);
+    } else {
+        sched_ft[alarm_cnt].start = 0;
+        cyg_thread_resume((cyg_handle_t)indx);
+    }
+}
+
 // Null thread, used to keep scheduler busy
 void
 alarm_test(cyg_uint32 id)
 {
     while (true) {
         cyg_thread_yield();
+    }
+}
+
+// Thread that suspends itself at the first opportunity
+void
+alarm_test2(cyg_uint32 id)
+{
+    cyg_handle_t me = cyg_thread_self();
+    while (true) {
+        HAL_CLOCK_READ(&sched_ft[alarm_cnt++].end);
+        cyg_thread_suspend(me);
     }
 }
 
@@ -1360,6 +1382,33 @@ run_alarm_tests(void)
         cyg_thread_suspend(threads[i]);
         cyg_thread_delete(threads[i]);
     }
+
+    // Set my priority higher than any I plan to create
+    cyg_thread_set_priority(cyg_thread_self(), 2);
+    cyg_thread_create(10,              // Priority - just a number
+                      alarm_test2,     // entry
+                      i,               // index
+                      thread_name("thread", 0),     // Name
+                      &stacks[0][0],   // Stack
+                      STACK_SIZE,      // Size
+                      &threads[0],     // Handle
+                      &test_threads[0] // Thread data structure
+        );
+    wait_for_tick(); // Wait until the next clock tick to minimize aberations
+    cyg_clock_to_counter(cyg_real_time_clock(), &rtc_handle);
+    cyg_alarm_create(rtc_handle, alarm_cb3, threads[0], &alarms[0],
+                     &test_alarms[0]);
+    init_val = 5;  step_val = 5;  alarm_cnt = 0;
+    cyg_alarm_initialize(alarms[0], init_val, step_val);
+    cyg_semaphore_init(&synchro, 0);
+    cyg_alarm_enable(alarms[0]);
+    cyg_semaphore_wait(&synchro);
+    cyg_alarm_disable(alarms[0]);
+    cyg_alarm_delete(alarms[0]);
+    show_times(sched_ft, nscheds, "Alarm -> thread resume latency");
+    cyg_thread_suspend(threads[0]);
+    cyg_thread_delete(threads[0]);
+    
     end_of_test_group();
 }
 

@@ -1,3 +1,9 @@
+1999-12-15  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/hal_intr.h (CYGNUM_HAL_EXCEPTION_COUNT): Ensure you can
+	handle FPU exceptions if present
+	Reported in case 102817
+
 1999-11-04  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/vectors.S: Added code in reset vector to reset the config0

@@ -122,8 +122,8 @@
 
 // Min/Max exception numbers and how many there are
 #define CYGNUM_HAL_EXCEPTION_MIN                1
-#define CYGNUM_HAL_EXCEPTION_MAX               13
-#define CYGNUM_HAL_EXCEPTION_COUNT             13
+#define CYGNUM_HAL_EXCEPTION_MAX                CYGNUM_HAL_VSR_MAX
+#define CYGNUM_HAL_EXCEPTION_COUNT              CYGNUM_HAL_VSR_MAX
 
 
 #ifndef CYGHWR_HAL_INTERRUPT_VECTORS_DEFINED

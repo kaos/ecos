@@ -1,3 +1,8 @@
+1999-12-13  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* tests/tm_basic.cxx (run_alarm_tests): Add new measurement of
+	latency between alarm firing and thread resume
+
 1999-11-30  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/common/kapi.cxx (cyg_scheduler_lock, cyg_scheduler_unlock):
