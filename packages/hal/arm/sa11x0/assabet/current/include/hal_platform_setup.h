@@ -215,6 +215,17 @@ dram_table:
         .word   0, 0
 19:
 
+        // Wakeup from deep sleep mode
+        ldr     r1,=SA11X0_RESET_STATUS
+        ldr     r2,[r1]
+        cmp     r2,#SA11X0_SLEEP_MODE_RESET
+        bne     45f
+        ldr     r1,=SA11X0_PWR_MGR_SCRATCHPAD
+        ldr     r1,[r1]
+        mov     pc,r1
+        nop
+45:     nop
+
         // Release peripheral hold (set by RESET)
         ldr     r1,=SA11X0_PWR_MGR_SLEEP_STATUS
         ldr     r2,=SA11X0_PERIPHERAL_CONTROL_HOLD

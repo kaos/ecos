@@ -1,3 +1,10 @@
+2001-10-23  Hugo Tyson  <hmt@redhat.com>
+
+	* cdl/flash_strata.cdl: Provide an option so that RedBoot .ecm
+	files can turn off the functionality of copying flash driver code
+	to separate RAM for execution; it's not needed for RAM and ROMRAM
+	startup, and for some platforms it is required to *not* copy thus.
+
 2001-08-25  Gary Thomas  <gthomas@redhat.com>
 
 	* src/flash_program_buf.c (flash_program_buf): Allow configuration
@@ -13,7 +20,6 @@
 
 	* src/flash_program_buf.c (flash_program_buf): Fix of conversion of
 	write buffer length (in bytes) to the length in 'flash_t' words.
-	
 
 2001-06-22  Hugo Tyson  <hmt@redhat.com>
 

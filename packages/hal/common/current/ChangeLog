@@ -1,3 +1,15 @@
+2001-10-25  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal.cdl: 
+	* cdl/debugging.cdl: Reorg CDL a little so that GDB stub routines
+	are only compiled when needed (instead of being compiled "empty").
+
+2001-10-24  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal.cdl: Add 'basic' test.
+
+	* tests/basic.c: New test of some minimal HAL functionality.
+
 2001-10-18  Gary Thomas  <gthomas@redhat.com>
 
 	* src/hal_if.c (cyg_hal_diag_mangler_gdb_putc): 

@@ -285,10 +285,28 @@ getc_script(char *cp)
 int
 _rb_gets(char *buf, int buflen, int timeout)
 {
-    char *ptr = buf;
+    char *ip = buf;   // Insertion point
+    char *eol = buf;  // End of line
     char c;
     bool res = false;
     static char last_ch = '\0';
+#if CYGNUM_REDBOOT_CMD_LINE_EDITING != 0
+//
+// Command line history support
+//    ^P - Select previous line from history
+//    ^N - Select next line from history
+//    ^A - Move insertion [cursor] to start of line
+//    ^E - Move cursor to end of line
+//    ^B - Move cursor back [previous character]
+//    ^F - Move cursor forward [next character]
+//
+#define _CL_NUM_LINES CYGNUM_REDBOOT_CMD_LINE_EDITING       // Number of lines to keep
+    static char _cl_lines[_CL_NUM_LINES][CYGPKG_REDBOOT_MAX_CMD_LINE];
+    static int  _cl_index = -1;      // Last known command line
+    static int  _cl_max_index = -1;  // Last command in buffers
+    int _index = _cl_index;  // Last saved line
+    char *xp;
+#endif
 
     while (true) {
 #ifdef CYGFUN_REDBOOT_BOOT_SCRIPT
@@ -296,7 +314,7 @@ _rb_gets(char *buf, int buflen, int timeout)
             do_idle(false);
         else
 #endif
-        if ((timeout > 0) && (ptr == buf)) {
+        if ((timeout > 0) && (eol == buf)) {
 #define MIN_TIMEOUT 50
             mon_set_read_char_timeout(timeout > MIN_TIMEOUT ? MIN_TIMEOUT : timeout);
             while (timeout > 0) {
@@ -315,14 +333,103 @@ _rb_gets(char *buf, int buflen, int timeout)
         } else {
             mon_read_char(&c);
         }
-        *ptr = '\0';
+        *eol = '\0';
         switch (c) {
-        case 0x03: // ^C
-            if (ptr == buf) {
+#define CTRL(c) ((c)&0x1F)
+#if CYGNUM_REDBOOT_CMD_LINE_EDITING != 0
+        case CTRL('P'):
+            // Fetch the previous line into the buffer
+            if (_index >= 0) {
+                // Erase the previous line [crude]
+                while (ip != buf) {
+                    mon_write_char('\b');
+                    mon_write_char(' ');
+                    mon_write_char('\b');
+                    ip--;
+                }
+                strcpy(buf, _cl_lines[_index]);
+                while (*ip) {
+                    mon_write_char(*ip++);
+                }
+                eol = ip;
+                // Move to previous line
+                _index--;
+                if (_index < 0) {
+                    _index = _cl_max_index;
+                }
+            } else {
+                mon_write_char(0x07);  // Audible bell on most devices
+            }
+            break;
+        case CTRL('N'):
+            // Fetch the next line into the buffer
+            if (_index >= 0) {
+                if (++_index > _cl_max_index) _index = 0;
+                // Erase the previous line [crude]
+                while (ip != buf) {
+                    mon_write_char('\b');
+                    mon_write_char(' ');
+                    mon_write_char('\b');
+                    ip--;
+                }
+                strcpy(buf, _cl_lines[_index]);
+                while (*ip) {
+                    mon_write_char(*ip++);
+                }
+                eol = ip;
+            } else {
+                mon_write_char(0x07);  // Audible bell on most devices
+            }
+            break;
+        case CTRL('B'): 
+            // Move insertion point backwards
+            if (ip != buf) {
+                mon_write_char('\b');
+                ip--;
+            }
+            break;
+        case CTRL('F'):
+            // Move insertion point forwards
+            if (ip != eol) {
+                mon_write_char(*ip++);
+            }
+            break;
+        case CTRL('E'):
+            // Move insertion point to end of line
+            while (ip != eol) {
+                mon_write_char(*ip++);
+            }
+            break;
+        case CTRL('A'):
+            // Move insertion point to beginning of line
+            if (ip != buf) {
+                xp = eol;
+                while (xp-- != buf) {
+                    mon_write_char('\b');
+                }
+            }
+            ip = buf;
+            break;
+        case CTRL('K'):
+            // Kill to the end of line
+            if (ip != eol) {
+                xp = ip;
+                while (xp++ != eol) {
+                    mon_write_char(' ');
+                }
+                while (--xp != ip) {
+                    mon_write_char('\b');
+                }
+                eol = ip;
+            }
+            break;
+#endif // CYGNUM_REDBOOT_CMD_LINE_EDITING
+        case CTRL('C'): // ^C
+            if (ip == buf) {
                 diag_printf("^C\n");
                 return _GETS_CTRLC;
             }
-            *ptr++ = c;
+            *ip++ = c;
             break;
         case '\n':
         case '\r':
@@ -338,40 +445,111 @@ _rb_gets(char *buf, int buflen, int timeout)
                 mon_write_char('\n');
 	    }
             last_ch = c;
+#if CYGNUM_REDBOOT_CMD_LINE_EDITING != 0
+            // Save current line
+            if (++_cl_index == _CL_NUM_LINES) _cl_index = 0;
+            if (_cl_index > _cl_max_index) _cl_max_index = _cl_index;
+            strcpy(_cl_lines[_cl_index], buf);
+#endif
             return _GETS_OK;
         case '\b':
         case 0x7F:  // DEL
-            if (ptr != buf) {
+            if (ip != buf) {
+#if CYGNUM_REDBOOT_CMD_LINE_EDITING != 0
+                if (ip != eol) {
+                    ip--;
+                    mon_write_char('\b');
+                    xp = ip;
+                    while (xp != (eol-1)) {
+                        *xp = *(xp+1);
+                        mon_write_char(*xp++);
+                    }
+                    mon_write_char(' ');  // Erases last character
+                    mon_write_char('\b');
+                    while (xp-- != ip) {
+                        mon_write_char('\b');
+                    }
+                } else {
+                    if (console_echo) {
+                        mon_write_char('\b');
+                        mon_write_char(' ');
+                        mon_write_char('\b');
+                    }
+                    ip--;
+                }
+                eol--;
+#else
                 if (console_echo) {
                     mon_write_char('\b');
                     mon_write_char(' ');
                     mon_write_char('\b');
                 }
-                ptr--;
+                ip--;
+                eol--;
+#endif
             }
             break;
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
         case '+': // fall through
         case '$':
-            if (ptr == buf || last_ch != '\\')
+            if (ip == buf || last_ch != '\\')
             {
                 // Give up and try GDB protocol
                 ungetDebugChar(c);  // Push back character so stubs will see it
                 return _GETS_GDB;
             }
             if (last_ch == '\\') {
-                ptr--;  // Save \$ as $
+#if CYGNUM_REDBOOT_CMD_LINE_EDITING != 0
+                if (ip == eol) {
+                    // Just save \$ as $
+                    eol = --ip;
+                } else {
+                    mon_write_char('\b');
+                    *--ip = c;
+                    mon_write_char(c);
+                    break;
+                }
+#else
+                ip--;  // Save \$ as $
+#endif
             }
             // else fall through
 #endif
         default:
+#if CYGNUM_REDBOOT_CMD_LINE_EDITING != 0
+            // If the insertion point is not at the end of line, make space for it
+            if (ip != eol) {
+                xp = eol;
+                *++eol = '\0';
+                while (xp != ip) {
+                    *xp = *(xp-1);
+                    xp--;
+                }
+            }
+#endif
             if (console_echo) {
                 mon_write_char(c);
             }
-            *ptr++ = c;
+            if (ip == eol) {
+                // Advance both pointers
+                *ip++ = c;
+                eol = ip;
+#if CYGNUM_REDBOOT_CMD_LINE_EDITING != 0
+            } else {
+                // Just insert the character
+                *ip++ = c;
+                xp = ip;
+                while (xp != eol) {
+                    mon_write_char(*xp++);
+                }
+                while (xp-- != ip) {
+                    mon_write_char('\b');
+                }
+#endif
+            }
         }
         last_ch = c;
-        if (ptr == buf + buflen) // Buffer full
+        if (ip == buf + buflen) // Buffer full
             return buflen;
     }
 }

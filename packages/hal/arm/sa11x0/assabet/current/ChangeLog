@@ -1,3 +1,7 @@
+2001-10-20  Nicolar Pitre <nico@cam.org>
+
+	* include/hal_platform_setup.h:	Wake up from deep sleep mode.
+
 2001-07-28  Stefan Eletzhofer <schuehle@t-online.de>
 
 	* include/hal_platform_setup.h: 

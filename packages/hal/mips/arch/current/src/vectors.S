@@ -167,7 +167,7 @@ FUNC_START(_start)
 	hal_intc_init
 	hal_cache_init
 	hal_timer_init
-		
+			
 #ifdef CYGARC_START_FUNC_UNCACHED
 	# switch to cached execution address if necessary
 	# assumption is that hal_cache_init makes this safe
@@ -324,11 +324,6 @@ FUNC_START(__default_exception_vsr)
 
 	move	k1,sp			# K1 = original SP
 	
-#ifdef CYGSEM_HAL_ROM_MONITOR
-	# Switch to interrupt stack to handle exception
-	la	sp,__interrupt_stack
-#endif
-
 	addi	sp,sp,-mips_exception_decrement
 				# space for registers + safety margin
 
@@ -406,21 +401,51 @@ FUNC_START(__default_exception_vsr)
 	
 	move	s0,sp				# save pointer to saved state
 
+#if defined(CYGSEM_HAL_ROM_MONITOR) && \
+    defined(CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK)
+
+	la	a0,__interrupt_stack		# a0 = stack top
+	la	a1,__interrupt_stack_base	# a1 = stack base
+	sub	a3,sp,a1			# a3 = sp - base
+	bltz	a3,1f				# not on istack if < 0 
+	nop					# delay slot
+	sub	t0,a0,sp			# t0 = top - sp
+	bgtz	t0,8f				# already on istack if > 0 
+	nop					# delay slot
+1:	
+	move	sp,a0				# switch to istack
+8:
+	addi	sp,sp,-8			# space for old SP 
+						# (8 to keep dword alignment!)
+	sw	s0,0(sp)			# save old SP on stack
+	
+#endif		
 	addi	sp,sp,-mips_stack_frame_size	# make a null frame	
 
 	# Need to set up back pointers etc. ???
 
-	la	ra,restore_state		# load return address
-
 	hal_cpu_except_enable			# reenable exceptions
-		
-	.extern	cyg_hal_exception_handler
-	j	cyg_hal_exception_handler	# call C code
-	move	a0,s0				# arg0 = register dump (delay slot)
 
-	# When the exception handler returns, it will
-	# go back to restore_state, below.
-			
+	.extern	cyg_hal_exception_handler
+	jal	cyg_hal_exception_handler	# call C code
+	move	a0,s0				# arg0 = register dump (delay slot)
+		
+#if defined(CYGSEM_HAL_ROM_MONITOR) && \
+    defined(CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK)
+
+	# If we are returning from the last nested exception, move back
+	# to the thread stack.
+	# Since we have arranged for the top of stack location to
+	# contain the sp we need to go back to here, just pop it off
+	# and put it in SP.
+
+	lw	sp,mips_stack_frame_size(sp)	# sp = *sp
+	subu	sp,sp,mips_stack_frame_size	# make a null frame		
+#endif
+	
+	j	restore_state
+	nop
+				
 FUNC_END(__default_exception_vsr)
 
 ##------------------------------------------------------------------------------
@@ -647,7 +672,7 @@ restore_state:
 	hal_diag_restore
 
 	hal_fpu_load sp
-	
+
 	lw	t0,mipsreg_cachectrl(sp)
 	lhi	t1,sp
 	llo	t2,sp
@@ -891,7 +916,7 @@ cyg_interrupt_stack:
 __interrupt_stack:
 
 	.long	0,0,0,0,0,0,0,0	
-	
+
 ##-----------------------------------------------------------------------------
 ## VSR table.
 ## The main interrupt code indirects through here to find the VSR

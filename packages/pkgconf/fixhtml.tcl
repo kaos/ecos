@@ -98,6 +98,7 @@ foreach file $files {
 	    # Take care of some character entities that Netscape does not understand
 	    regsub -all "&mgr;"    $data "\\&#03BC;" data
 	    regsub -all "&mdash;"  $data "\\&#8212;" data
+            regsub -all "&ndash;"  $data "\\&#8211;" data
 	    regsub -all "&hellip;" $data "\\&#8230;" data
 	    regsub -all "&ldquo;"  $data "\\&#8220;" data
 	    regsub -all "&rdquo;"  $data "\\&#8221;" data
@@ -112,6 +113,8 @@ foreach file $files {
 	    regsub -all "&lowbar;" $data "\\&#0095;" data
 	    regsub -all "&sol;"    $data "\\&#0047;" data
 	    regsub -all "&equals;" $data "\\&#0061;" data
+            regsub -all "&num;"    $data "\\&#0035;" data
+            regsub -all "&plus;"   $data "\\&#0043;" data
 
 	    # Now write the data back to the file. Do not bother to
 	    # keep an old version lying around, the html files can be

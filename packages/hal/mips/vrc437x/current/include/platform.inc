@@ -341,6 +341,7 @@ hal_mmu_setup_return:
 1:
 	lw	v0,0(a0)
 	sw	v0,0(t0)
+	sw	v0,0x80(t0)
 	addiu	a0,a0,4
 	bne	a0,a1,1b
 	addiu	t0,t0,4

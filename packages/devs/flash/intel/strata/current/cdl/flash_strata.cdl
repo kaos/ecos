@@ -47,7 +47,22 @@ cdl_package CYGPKG_DEVS_FLASH_STRATA {
     active_if	  CYGPKG_IO_FLASH
 
     implements    CYGHWR_IO_FLASH_DEVICE
-    implements    CYGHWR_IO_FLASH_DEVICE_NOT_IN_RAM
+
+#    implements    CYGHWR_IO_FLASH_DEVICE_NOT_IN_RAM
+    cdl_option CYGOPT_DEVS_FLASH_STRATA_NOT_IN_RAM {
+	display   "Control Flash driver code copy to RAM"
+	flavor    bool
+	no_define
+	default_value 1
+	implements    CYGHWR_IO_FLASH_DEVICE_NOT_IN_RAM
+	description "
+	Rarely, it is useful to disable the request that flash driver code
+	be copied to separate RAM for execution.  This option lets you do that.
+	It should only be controlled by redboot_XXX.ecm config files, for
+	building different varieties of RedBoot.
+	NEVER disable this option for ROM startup code, which executes in place
+	from Flash: the build will not work."
+    }
 
     active_if     CYGINT_DEVS_FLASH_STRATA_REQUIRED
 

@@ -252,7 +252,7 @@ int
 hal_msbindex(int mask)
 {
     int i;
-    for (i = 32;  i >= 0;  i++) {
+    for (i = 31;  i >= 0;  i--) {
       if (mask & (1<<i)) return (i);
     }
     return (-1);

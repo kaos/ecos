@@ -54,7 +54,7 @@ cdl_package CYGPKG_HAL {
         options that are common to all HAL packages."
     doc           redirect/the-ecos-hardware-abstraction-layer-hal.html
 
-    compile       generic-stub.c thread-packets.c hal_stub.c drv_api.c bplist-dynamic.c
+    compile       drv_api.c
     compile       -library=libextras.a dummy.c
 
     make -priority 250 {
@@ -427,8 +427,9 @@ cdl_package CYGPKG_HAL {
         display "Common HAL tests"
         flavor  data
         no_define
-        calculated { (!CYGPKG_HAL_BUILD_COMPILER_TESTS) ? "tests/cache tests/context tests/intr" :
-                     "tests/cache tests/context tests/intr tests/cpp1 tests/vaargs" }
+        calculated { (!CYGPKG_HAL_BUILD_COMPILER_TESTS) ? 
+                      "tests/cache tests/context tests/intr tests/basic" :
+                      "tests/cache tests/context tests/intr tests/basic tests/cpp1 tests/vaargs" }
         description   "
             This option specifies the set of tests for the common HAL."
     }

@@ -1,3 +1,8 @@
+2001-10-25  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/flash_dev.h: Fix test of 4x16-bit flash parts.
+	Spotted by Jose Pascual <josepascual@almudi.com>
+
 2001-10-16  Jesper Skov  <jskov@redhat.com>
 
 	* src/flash.c: Include string.h

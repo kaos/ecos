@@ -62,6 +62,8 @@ cdl_option CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS {
         the necessary support has to go into the target library
         itself. When GDB stubs are include in a configuration, HAL
         serial drivers must also be included."
+
+    compile       generic-stub.c thread-packets.c hal_stub.c drv_api.c bplist-dynamic.c
 }
 
 cdl_interface CYGINT_HAL_DEBUG_GDB_STUBS_BREAK {

@@ -1,3 +1,19 @@
+2001-10-26  Gary Thomas  <gthomas@redhat.com>
+
+	* src/io.c (_rb_gets): Fix ^A editing - was timing out, thus erasing
+	buffer [silently].
+
+2001-10-25  Gary Thomas  <gthomas@redhat.com>
+
+	* src/io.c:
+	* cdl/redboot.cdl: Add command line history and edit functions.
+	Controlled by CYGNUM_REDBOOT_CMD_LINE_EDITING option which defines
+	the depth of the history buffer.
+
+2001-10-22  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/redboot.h: Declare net_debug here.
+
 2001-10-18  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/net/net_io.c (net_init): Set cyg_io_eth_net_debug from net_debug.

@@ -1,3 +1,13 @@
+2001-10-24  Nick Garnett  <nickg@redhat.com>
+
+	* include/hal_diag.h: Fixed problem with support for virtual
+	vector diagnostics.
+
+	* include/platform.inc:
+	Modify the ROM and ROMRAM version of hal_mon_copy_trampoline to
+	copy the utlb trampoline to 0xa0000080 as well as 0xa0000000. This
+	is necessary on 64 bit machines to catch 64 bit TLB exceptions.
+
 2001-09-17  Nick Garnett  <nickg@redhat.com>
 
 	* src/plf_misc.c:

@@ -75,6 +75,12 @@
 // Disable the data cache
 #define HAL_DCACHE_DISABLE()
 
+// Query the state of the data cache
+#define HAL_DCACHE_IS_ENABLED(_state_) \
+CYG_MACRO_START                        \
+_state_ = 1;	                       \
+CYG_MACRO_END
+
 // Invalidate the entire cache
 #define HAL_DCACHE_INVALIDATE_ALL()
 
@@ -136,6 +142,12 @@
 
 // Disable the instruction cache
 #define HAL_ICACHE_DISABLE()
+
+// Query the state of the instruction cache
+#define HAL_ICACHE_IS_ENABLED(_state_) \
+CYG_MACRO_START                        \
+_state_ = 1;                           \
+CYG_MACRO_END
 
 // Invalidate the entire cache
 #define HAL_ICACHE_INVALIDATE_ALL()

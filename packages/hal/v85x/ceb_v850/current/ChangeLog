@@ -1,3 +1,8 @@
+2001-10-25  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_v85x_ceb_v850.cdl (CYGBLD_GLOBAL_CFLAGS): Always use
+	-mv850 just in case we're using tools that don't do that by default.
+
 2001-06-18  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/hal_v85x_ceb_v850.cdl (CYGHWR_MEMORY_LAYOUT_H): Fix name for

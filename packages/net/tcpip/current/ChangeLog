@@ -1,3 +1,11 @@
+2001-10-25  Hugo Tyson  <hmt@redhat.com>
+
+	* src/sys/net/if_bridge.c (bridge_broadcast): Count if_obytes in
+	destination interfaces as well as the bridge interface; normally
+	this is done in if_ethersubr.c but here we talk directly to the
+	interface, bypassing that layer.  Thanks to Andrew Lunn for
+	noticing that.
+
 2001-10-18  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/sys/netinet/in.c (in_lifaddr_ioctl): Silence warnings about

@@ -894,6 +894,9 @@ bridge_output(ifp, m, sa, rt)
 
 			sc->sc_if.if_opackets++;
 			sc->sc_if.if_obytes += m->m_pkthdr.len;
+                        // Also count the bytes in the outgoing interface; normally
+                        // done in if_ethersubr.c but here we bypass that route.
+                        p->ifp->if_obytes += m->m_pkthdr.len;
 			IF_ENQUEUE(&p->ifp->if_snd, mc);
 			if ((p->ifp->if_flags & IFF_OACTIVE) == 0)
 				(*p->ifp->if_start)(p->ifp);
@@ -918,6 +921,9 @@ sendunicast:
 	}
 	sc->sc_if.if_opackets++;
 	sc->sc_if.if_obytes += m->m_pkthdr.len;
+        // Also count the bytes in the outgoing interface; normally
+        // done in if_ethersubr.c but here we bypass that route.
+        dst_if->if_obytes += m->m_pkthdr.len;
 	IF_ENQUEUE(&dst_if->if_snd, m);
 	if ((dst_if->if_flags & IFF_OACTIVE) == 0)
 		(*dst_if->if_start)(dst_if);
@@ -1114,6 +1120,9 @@ bridgeintr_frame(sc, m)
 	}
 	sc->sc_if.if_opackets++;
 	sc->sc_if.if_obytes += m->m_pkthdr.len;
+        // Also count the bytes in the outgoing interface; normally
+        // done in if_ethersubr.c but here we bypass that route.
+        dst_if->if_obytes += m->m_pkthdr.len;
 	IF_ENQUEUE(&dst_if->if_snd, m);
 	if ((dst_if->if_flags & IFF_OACTIVE) == 0)
 		(*dst_if->if_start)(dst_if);
@@ -1273,7 +1282,9 @@ bridge_broadcast(sc, ifp, eh, m)
 		sc->sc_if.if_obytes += mc->m_pkthdr.len;
 		if (ifp && ((eh->ether_shost[0] & 1) == 0) )
 			ifp->if_omcasts++;
-
+                // Also count the bytes in the outgoing interface; normally
+                // done in if_ethersubr.c but here we bypass that route.
+                p->ifp->if_obytes += m->m_pkthdr.len;
 		IF_ENQUEUE(&p->ifp->if_snd, mc);
 		if ((p->ifp->if_flags & IFF_OACTIVE) == 0)
 			(*p->ifp->if_start)(p->ifp);

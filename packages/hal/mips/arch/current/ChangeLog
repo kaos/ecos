@@ -1,3 +1,16 @@
+2001-10-24  Nick Garnett  <nickg@redhat.com>
+
+	* src/vectors.S:
+	Change behaviour of __default_exception_vsr to only switch to
+	interrupt stack if we are not already on it. This is now similar
+	to the way the interrupt VSR operates. This is necessary since it
+	is possible to take exceptions (such as TLB miss or address error)
+	while running in the GDB stubs.
+
+	* src/hal_misc.c (cyg_hal_exception_handler): Ensure that PC
+	planted when catching stub exceptions gets sign extended where
+	necessary in 64 bit platforms.
+
 2001-10-05  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_arch.h: Provide CYGARC_CACHED_ADDRESS() and friends

@@ -1,3 +1,9 @@
+2001-10-25  Julian Smart  <julians@redhat.com>
+
+	* cdl_exec.cxx: added calls to mount -f /ecos-x under Cygwin,
+    in tree command. This, along with use of /ecos-x paths in the
+    makefiles, ensures that compilation is done in text mode.
+
 2001-06-20  Bart Veer  <bartv@redhat.com>
 
 	* cdl_exec.cxx (set_verbose_mode):

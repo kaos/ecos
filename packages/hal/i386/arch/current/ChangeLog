@@ -1,3 +1,8 @@
+2001-10-19  Ian Campbell  <icampbell@arcom.co.uk>
+
+	* include/hal_cache.h: Provide HAL_DCACHE_IS_ENABLED and
+	HAL_ICACHE_IS_ENABLED macros.
+
 2001-10-15  Mark Salter  <msalter@redhat.com>
 
 	* src/i386_stub.c (hal_get_gdb_registers): Save idt/gdt in GDB regs.

@@ -1,3 +1,8 @@
+2001-10-25  I-Jui Sung <ijsung@csie.nctu.edu.tw>
+
+	* src/mqueue.cxx (do_mq_unlink): Nullify table entries' mq as this
+	is used by mq_open to see if the entry is used.
+
 2001-10-11  Jesper Skov  <jskov@redhat.com>
 
 	* tests/mutex3.c: Fixed warning. 

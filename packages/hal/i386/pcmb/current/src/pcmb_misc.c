@@ -70,6 +70,12 @@ CYG_ADDRWORD cyg_hal_pcmb_memsize_extended;
 
 void hal_pcmb_init(void)
 {
+#ifdef CYGPKG_HAL_I386_PCMB_MEMSIZE_HARDCODE
+    cyg_hal_pcmb_memsize_base = CYGNUM_HAL_I386_PCMB_MEMSIZE_BASE;
+    cyg_hal_pcmb_memsize_extended = CYGNUM_HAL_I386_PCMB_MEMSIZE_EXTENDED;
+#endif
+
+#ifdef CYGPKG_HAL_I386_PCMB_HAL_MEMSIZE_BIOS
     cyg_uint8 lo,hi;
     
     HAL_READ_CMOS( 0x15, lo );
@@ -89,7 +95,7 @@ void hal_pcmb_init(void)
 #endif
 
     cyg_hal_pcmb_memsize_extended = ((hi<<8)+lo)*1024;
-
+#endif
 }
 
 /*------------------------------------------------------------------------*/

@@ -1,3 +1,8 @@
+2001-10-25  Julian Smart <julians@redhat.com>
+
+    * common/common/build.cxx: now generates /ecos-x names under Windows
+    both compiling with Cygwin and VC++.
+
 2001-09-13  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* common/common/build.cxx: Test for active properly in below change.

@@ -141,7 +141,8 @@ do_mq_unlink( struct mqtabent *tabent )
     tabent->name[0] = '\0'; // won't match anything the user sends now
     tabent->mq->~Cyg_Mqueue();
     free( tabent->mq );
-    
+    tabent->mq=NULL;
+
     CYG_REPORT_RETURN();
 }
 

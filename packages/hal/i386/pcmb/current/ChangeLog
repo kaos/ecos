@@ -1,3 +1,12 @@
+2001-10-19  Ian Campbell  <icampbell@arcom.co.uk>
+
+	* cdl/hal_i386_pcmb.cdl: Add cdl_options for
+	CYGPKG_HAL_I386_PCMB_MEMSIZE to allow configuration of how memory
+	is detected. Change CYGNUM_HAL_RTC_PERIOD to use default_value
+	rather than calculated (so it can be overridden in the platform).
+	* src/pcmb_misc.c: Implement CYGPKG_HAL_I386_PCMB_MEMSIZE
+	configuration options.
+	
 2001-10-16  Mark Salter  <msalter@redhat.com>
 
 	* src/pcmb_serial.c (cyg_hal_plf_serial_init): Use CDL to determine

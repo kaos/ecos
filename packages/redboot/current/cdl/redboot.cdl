@@ -104,6 +104,16 @@ cdl_package CYGPKG_REDBOOT {
               information about the RedBoot configuration."
         }
 
+        cdl_option CYGNUM_REDBOOT_CMD_LINE_EDITING {
+            display          "Enable command line editing"
+            flavor           data
+            default_value    16
+            description      "
+               If this option is non-zero, RedBoot will remember the last N command
+               lines.  These lines may be reused.  Enabling this history will also
+               enable rudimentary editting of the lines themselves."
+        }
+
         no_define
         description "This option enables the building of the Redboot ELF image.
                      The image may require further relocation or symbol
@@ -167,7 +177,6 @@ cdl_package CYGPKG_REDBOOT {
                      configuration stored in flash."
             }
         }
-
 
         cdl_option CYGNUM_REDBOOT_NETWORKING_TCP_PORT {
             display          "TCP port to listen for incoming connections"

@@ -158,7 +158,9 @@ std::string cygpath (const std::string input) {
 	std::string output;
 
 	// convert the DOS filepath to Cygwin notation - using Cygwin if available
-#ifdef __CYGWIN__
+    // 2001-10-15: should now do the same thing under Cygwin as under VC++, namely
+    // use the /ecos-x form.
+#if 0 // def __CYGWIN__
 	char buffer [MAX_PATH + 1];
 	cygwin_conv_to_posix_path (path.c_str (), buffer);
 	output = buffer;

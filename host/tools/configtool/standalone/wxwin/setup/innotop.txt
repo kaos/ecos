@@ -29,7 +29,7 @@
     AlwaysCreateUninstallIcon=1
     Uninstallable=1
     DefaultDirName=c:\Program Files\Red Hat\eCos Configuration Tool
-    DefaultGroupName=eCos Configuration Tool
+    DefaultGroupName=Red Hat eCos Configuration Tool
     LicenseFile=v:\deliver\configtool\license.txt
     InfoBeforeFile=v:\deliver\configtool\readme.txt
     MessagesFile=compiler:default.isl

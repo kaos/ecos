@@ -101,6 +101,11 @@
 #define MMU_Control_X  0x2000   // Set interrupt vectors at 0xFFFF0000
 #define MMU_Control_Init (MMU_Control_P|MMU_Control_D|MMU_Control_L)
 
+// Extras for some newer versions eg. ARM920 with architecture version 4.
+#define MMU_Control_F  0x400    // IMPLEMENTATION DEFINED
+#define MMU_Control_Z  0x800    // Enable branch predicion
+#define MMU_Control_RR 0x4000   // Select non-random cache replacement
+
 //-----------------------------------------------------------------------------
 
 #endif // CYGONCE_HAL_MMU_H

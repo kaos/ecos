@@ -408,6 +408,37 @@ cdl_exec::cmd_tree ()
 #endif
             config->generate_config_headers (install_prefix.empty () ? "install/include/pkgconf" : install_prefix + "/include/pkgconf");
             status = true;
+#ifdef __CYGWIN__
+            char buf[100];
+            strcpy(buf, "mount.exe -f x: /ecos-x");
+            //printf("Cwd_win32: %s\n", cwd_win32);
+
+            if ( cwd_win32[1] == ':' )
+            {
+                buf[13] = cwd_win32[0];
+                buf[22] = cwd_win32[0];
+                system(buf);
+            }
+
+            //printf("Repository: %s\n", repository.c_str());
+
+            if ( repository[1] == ':' )
+            {
+                buf[13] = repository[0];
+                buf[22] = repository[0];
+                system(buf);
+            }
+            if ( !install_prefix.empty() )
+            {
+                //printf("Install prefix: %s\n", install_prefix.c_str());
+                if ( install_prefix[1] == ':' )
+                {
+                    buf[13] = install_prefix[0];
+                    buf[22] = install_prefix[0];
+                    system(buf);
+                }
+            }
+#endif
         } else {
             printf("\nUnable to generate build tree, this configuration still contains conflicts.\n");
             printf("Either resolve the conflicts or use --ignore-errors\n");

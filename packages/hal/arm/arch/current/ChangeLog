@@ -1,3 +1,12 @@
+2001-10-24  Gary Thomas  <gthomas@redhat.com>
+
+	* src/hal_misc.c (hal_msbindex): Fix calculation.
+
+2001-10-23  Hugo Tyson  <hmt@redhat.com>
+
+	* include/hal_mmu.h (MMU_Control_Z,F,RR): Some extra defines for
+	newer ARM architectures.
+
 2001-10-11  Fabrice Gautier  <Fabrice_Gautier@sdesigns.com>
 
 	* include/hal_io.h: Add _STRING variants of I/O macros to allow

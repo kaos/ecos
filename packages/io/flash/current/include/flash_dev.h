@@ -34,7 +34,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    hmt
-// Contributors: hmt, jskov
+// Contributors: hmt, jskov, Jose Pascual <josepascual@almudi.com>
 // Date:         2001-02-22
 // Purpose:      Define common flash device driver definitions
 // Description:  The flash_data_t type is used for accessing
@@ -114,7 +114,7 @@ typedef cyg_uint16 flash_data_t;
 // 2 devices to make 32-bit
 #  define FLASHWORD( k ) ((k)+((k)<<16))
 typedef cyg_uint32 flash_data_t;
-# elif 2 == CYGNUM_FLASH_INTERLEAVE
+# elif 4 == CYGNUM_FLASH_INTERLEAVE
 // 4 devices to make 64-bit - intermediate requires explicit widening
 #  define FLASHWORD32( k ) ((flash_data_t)((k)+((k)<<16)))
 #  define FLASHWORD( k ) (FLASHWORD32( k ) + (FLASHWORD32( k ) << 32));

@@ -137,7 +137,7 @@ externC cyg_uint32 cyg_hal_exception_handler(HAL_SavedRegisters *regs)
     // If we caught an exception inside the stubs, see if we were expecting it
     // and if so jump to the saved address
     if (__mem_fault_handler) {
-        regs->pc = (CYG_ADDRWORD)__mem_fault_handler;
+        regs->pc = (CYG_HAL_MIPS_REG)(signed long)__mem_fault_handler;
         return 0; // Caught an exception inside stubs        
     }
 
