@@ -63,8 +63,6 @@ cdl_package CYGPKG_IO_SERIAL_SH_SE77X9 {
         This option enables the serial device drivers for the
         Hitachi SH3 SE77X9 board, based on the generic SH SCI driver."
 
-    doc           redirect/ecos-device-drivers.html
-
 
     # FIXME: This really belongs in the SH_SCIF package
     cdl_interface CYGINT_IO_SERIAL_SH_SCIF_REQUIRED {
