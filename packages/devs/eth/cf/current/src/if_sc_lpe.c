@@ -154,7 +154,9 @@ sc_lpe_card_handler(cyg_addrword_t param)
         cyg_drv_dsr_unlock();   // Give DSRs a chance to run (card insertion)
         cyg_drv_dsr_lock();
         if (slot->state == CF_SLOT_STATE_Inserted) {
-            cf_change_state(slot, CF_SLOT_STATE_Ready);
+            if (slot->state != CF_SLOT_STATE_Ready) {
+                cf_change_state(slot, CF_SLOT_STATE_Ready);
+            }
             if (slot->state != CF_SLOT_STATE_Ready) {
                 diag_printf("CF card won't go ready!\n");
                 continue;
@@ -512,10 +514,12 @@ sc_lpe_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
     regs->w.page0.cr = DP8390_CR_RDMA | DP8390_CR_START;
     for (i = 0;  i < sg_len;  i++) {
         data = (unsigned char *)sg_list[i].buf;
-        mlen = sg_list[i].len;
-        while (mlen >= sizeof(*data)) {
-            *data++ = regs->r.page0.data;
-            mlen -= sizeof(*data);
+        if (data) {
+            mlen = sg_list[i].len;
+            while (mlen >= sizeof(*data)) {
+                *data++ = regs->r.page0.data;
+                mlen -= sizeof(*data);
+            }
         }
     }
 }
@@ -573,7 +577,7 @@ sc_lpe_int(struct eth_drv_sc *sc)
     regs->w.page0.cr = DP8390_CR_NODMA | DP8390_CR_PAGE0 | DP8390_CR_START;
     while ((isr = regs->r.page0.isr) != 0) {
         regs->w.page0.isr = isr;  // Clear set bits
-        if (!dp->running) return;  // Is this necessary?
+        if (!dp->running) break;  // Is this necessary?
         if (isr & (DP8390_ISR_TxP|DP8390_ISR_TxE)) {
             sc_lpe_TxEvent(sc, isr);
         }

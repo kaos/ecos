@@ -71,7 +71,7 @@
 
 # define assert( __bool )                                                 \
     do {                                                                  \
-        if (0 != (__bool)) {                                              \
+        if (0 == (__bool)) {                                              \
             fprintf( stderr, "User assertion failed: \"%s\", at %s:%d\n", \
                          #__bool, __FILE__, __LINE__);                    \
             abort();                                                      \
@@ -95,7 +95,7 @@
 
 # define assert( __bool )                                                 \
     do {                                                                  \
-        if (0 != (__bool)) {                                              \
+        if (0 == (__bool)) {                                              \
             diag_printf( "User assertion failed: \"%s\", at %s:%d\n",     \
                          #__bool, __FILE__, __LINE__);                    \
         for (;;);                                                         \

@@ -41,6 +41,9 @@
 //
 //==========================================================================
 
+#include <pkgconf/system.h>
+#include <pkgconf/io_flash.h>
+
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_intr.h>
 #include <cyg/hal/hal_cache.h>
@@ -185,6 +188,91 @@ flash_program(void *_addr, void *_data, int len, void **err_addr)
     printf("\n");
     return (stat);
 }
+
+#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
+
+int
+flash_lock(void *addr, int len, void **err_addr)
+{
+    unsigned short *block, *end_addr;
+    int stat = 0;
+    extern char flash_lock_block, flash_lock_block_end;
+    int code_len;
+    typedef int code_fun(unsigned short *);
+    code_fun *_flash_lock_block;
+
+    if (!flash_info.init) {
+        return FLASH_ERR_NOT_INIT;
+    }
+
+    // Copy 'lock' code to RAM for execution
+    code_len = (unsigned long)&flash_lock_block_end - (unsigned long)&flash_lock_block;
+    _flash_lock_block = (code_fun *)flash_info.work_space;
+    memcpy(_flash_lock_block, &flash_lock_block, code_len);
+    HAL_DCACHE_SYNC();  // Should guarantee this code will run
+    HAL_ICACHE_DISABLE(); // is also required to avoid old contents
+
+    block = (unsigned short *)((unsigned long)addr & flash_info.block_mask);
+    end_addr = (unsigned short *)((unsigned long)addr+len);
+
+    printf("... Lock from %p-%p: ", block, end_addr);
+
+    while (block < end_addr) {
+        stat = (*_flash_lock_block)(block);
+        stat = flash_hwr_map_error(stat);
+        if (stat) {
+            *err_addr = (void *)block;
+            break;
+        }
+        block += flash_info.block_size / sizeof(*block);
+        printf(".");
+    }
+    HAL_ICACHE_ENABLE();
+    printf("\n");
+    return (stat);
+}
+
+int
+flash_unlock(void *addr, int len, void **err_addr)
+{
+    unsigned short *block, *end_addr;
+    int stat = 0;
+    extern char flash_unlock_block, flash_unlock_block_end;
+    int code_len;
+    typedef int code_fun(unsigned short *, int, int);
+    code_fun *_flash_unlock_block;
+
+    if (!flash_info.init) {
+        return FLASH_ERR_NOT_INIT;
+    }
+
+    // Copy 'lock' code to RAM for execution
+    code_len = (unsigned long)&flash_unlock_block_end - (unsigned long)&flash_unlock_block;
+    _flash_unlock_block = (code_fun *)flash_info.work_space;
+    memcpy(_flash_unlock_block, &flash_unlock_block, code_len);
+    HAL_DCACHE_SYNC();  // Should guarantee this code will run
+    HAL_ICACHE_DISABLE(); // is also required to avoid old contents
+
+    block = (unsigned short *)((unsigned long)addr & flash_info.block_mask);
+    end_addr = (unsigned short *)((unsigned long)addr+len);
+
+    printf("... Unlock from %p-%p: ", block, end_addr);
+
+    while (block < end_addr) {
+        stat = (*_flash_unlock_block)(block, flash_info.block_size, flash_info.blocks);
+        stat = flash_hwr_map_error(stat);
+        if (stat) {
+            *err_addr = (void *)block;
+            break;
+        }
+        block += flash_info.block_size / sizeof(*block);
+        printf(".");
+    }
+    HAL_ICACHE_ENABLE();
+    printf("\n");
+    return (stat);
+}
+#endif
 
 char *
 flash_errmsg(int err)

@@ -223,6 +223,7 @@ select(int nfd, fd_set *in, fd_set *out, fd_set *ex, struct timeval *tv)
                     if( Cyg_Clock::real_time_clock->current_value() >= ticks )
                     {
                         select_mutex.unlock();
+                        Cyg_Scheduler::unlock();
                         FILEIO_RETURN_VALUE(0);
                     }
                     else error = EINTR;

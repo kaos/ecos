@@ -63,4 +63,11 @@ cdl_package CYGPKG_IO_FLASH {
             This option enables the hardware device drivers
 	    for the current platform."
     }
+
+    cdl_interface CYGHWR_IO_FLASH_BLOCK_LOCKING {
+        display       "Hardware can support block locking"
+        description   "
+            This option will be enabled by devices which can support
+            locking (write-protection) of individual blocks."
+    }
 }

@@ -62,6 +62,37 @@ cdl_package CYGPKG_IO_ETH_DRIVERS {
         default_value 1
         no_define
         compile       stand_alone/eth_drv.c
+
+        cdl_option CYGNUM_IO_ETH_DRIVERS_NUM_PKT {
+            display          "Number of \[network\] buffers"
+            flavor           data
+            default_value    16
+            legal_values     2 to 32
+            description      "
+               This option is used to allocate space to buffer incoming network
+               packets.  These buffers are used to hold data until they can be
+               logically processed by higher layers."
+        }
+
+        cdl_option CYGSEM_IO_ETH_DRIVERS_WARN {
+            display          "Show driver warnings"
+            flavor           bool
+            default_value    0
+            description      "
+               Selecting this option will allows the stand-alone ethernet driver
+               to display warnings on the system console when incoming network
+               packets are being discarded due to lack of buffer space."
+        }
+
+        cdl_option CYGSEM_IO_ETH_DRIVERS_DEBUG {
+            display          "Print driver debug information"
+            flavor           bool
+            default_value    0
+            description      "
+               Selecting this option will enable the stand-alone driver to print
+               lots of information.  Useful only when getting a low-level hardware
+               driver to work."
+        }
     }
 
     cdl_component CYGPKG_IO_ETH_DRIVERS_OPTIONS {

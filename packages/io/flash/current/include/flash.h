@@ -44,11 +44,17 @@
 #ifndef _IO_FLASH_H_
 #define _IO_FLASH_H_
 
+#include <pkgconf/io_flash.h>
+
 #define FLASH_MIN_WORKSPACE 0x10000  // Space used by FLASH code
 
 extern int flash_init(void *work_space, int work_space_length);
 extern int flash_erase(void *base, int len, void **err_address);
 extern int flash_program(void *flash_base, void *ram_base, int len, void **err_address);
+#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
+extern int flash_lock(void *base, int len, void **err_address);
+extern int flash_unlock(void *base, int len, void **err_address);
+#endif
 extern int flash_verify_addr(void *base);
 extern int flash_get_limits(void *base, void **start, void **end);
 extern int flash_get_block_info(int *block_size, int *blocks);

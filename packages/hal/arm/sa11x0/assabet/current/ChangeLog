@@ -1,3 +1,13 @@
+2000-08-28  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_arm_sa11x0_assabet.cdl: Define default console [even
+	though there is no real choice].  This is required to support
+	network debug connections.
+
+2000-08-25  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* misc/cf_test.c: Delete. Not needed any more.
+
 2000-08-24  Gary Thomas  <gthomas@redhat.com>
 
 	* include/pkgconf/mlt_arm_sa11x0_assabet_ram.mlt:

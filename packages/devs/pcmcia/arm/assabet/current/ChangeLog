@@ -1,3 +1,10 @@
+2000-08-28  Gary Thomas  <gthomas@redhat.com>
+
+	* src/assabet_pcmcia.c (cf_irq_dsr): Support [shared] network
+	debug situation where "IF" functions need to see device interrupts.
+	This is used to detect ^C over the connection.  This also requires
+	additional care when setting up the bus initially.
+
 2000-08-24  Gary Thomas  <gthomas@redhat.com>
 
 	* src/assabet_pcmcia.c: Add hardware function to clear interrupts.

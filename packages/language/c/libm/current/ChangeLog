@@ -1,3 +1,9 @@
+2000-08-31  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/math.h: Declare cyg_libm_infinity as an array type for correct
+	relocations
+	* src/misc/infconst.c: Define it likewise
+
 2000-05-30  Jesper Skov  <jskov@redhat.com>
 
 	* include/sys/ieeefp.h: Undo below change.

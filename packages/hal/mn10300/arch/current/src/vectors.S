@@ -515,7 +515,7 @@ __default_nmi_vsr:
 	# This should probably be done as the first thing in the exception
 	# handler to guard against the possibility of having a bad SP to
 	# begin with.  ie if the user sets the SP to a bad location, we
-	# won't run properly.  Ideally we should switch to monitor mode
+	# will not run properly.  Ideally we should switch to monitor mode
 	# on entry to any exception.  However, a lot of other code
 	# assumes things work this way.
 	mov	__interrupt_stack-4,a0

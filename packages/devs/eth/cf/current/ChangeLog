@@ -1,3 +1,13 @@
+2000-08-29  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_sc_lpe.c (sc_lpe_recv): Better handling if upper layer
+	had no buffers [this routine called anyway].
+
+2000-08-28  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_sc_lpe.c: Better handling of "hot" cards (i.e. one
+	initialized by a debug environment).
+
 2000-08-23  Gary Thomas  <gthomas@redhat.com>
 
 	* src/if_sc_lpe.c: Add new function to return interrupt vector

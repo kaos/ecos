@@ -1,3 +1,17 @@
+2000-08-29  Gary Thomas  <gthomas@redhat.com>
+
+	* src/stand_alone/eth_drv.c: Use null buffer, (char *)0,
+	instead of wasting memory - low level drivers must be designed
+	to handle this case.
+
+2000-08-28  Gary Thomas  <gthomas@redhat.com>
+
+	* src/stand_alone/eth_drv.c: Use new configuration parameters.
+
+	* cdl/eth_drivers.cdl: Add new configury to control number of
+	internal buffers used by this layer.  Also exposed some of the
+	debug flags here.
+
 2000-08-25  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* include/eth_drv_stats.h (ether_drv_stats): A little further

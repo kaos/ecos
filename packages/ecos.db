@@ -1375,6 +1375,7 @@ target vrc4373 {
                           CYGPKG_HAL_MIPS_VR4300
                           CYGPKG_HAL_MIPS_VR4300_VRC4373
 	                  CYGPKG_IO_SERIAL_MIPS_VRC4373
+                          CYGPKG_IO_PCI
         }
         description "
            The vrc4373 target provides the packages needed to run

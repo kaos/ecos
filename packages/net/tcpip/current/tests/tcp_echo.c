@@ -120,8 +120,8 @@ static cyg_handle_t thread_handle;
 // Background load stuff
 #define NUM_LOAD_THREADS         20 // Get 5% granularity
 #define IDLE_THREAD_PRIORITY     CYGPKG_NET_THREAD_PRIORITY+3
-#define LOAD_THREAD_PRIORITY     CYGPKG_NET_THREAD_PRIORITY-1
-#define MAIN_THREAD_PRIORITY     CYGPKG_NET_THREAD_PRIORITY-2
+#define LOAD_THREAD_PRIORITY     CYGPKG_NET_THREAD_PRIORITY-3
+#define MAIN_THREAD_PRIORITY     CYGPKG_NET_THREAD_PRIORITY-4
 #define DESIRED_BACKGROUND_LOAD  50 // should be accurate enough over range
 
 // starting points for load calculation

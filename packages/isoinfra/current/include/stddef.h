@@ -1,5 +1,4 @@
-#ifndef CYGONCE_ISO_STDDEF_H
-#define CYGONCE_ISO_STDDEF_H
+// Do not define CYGONCE_ISO_STDDEF_H. It is not appropriate for this file
 /*========================================================================
 //
 //      stddef.h
@@ -54,7 +53,5 @@
 */
 
 #include_next <stddef.h>
-
-#endif /* CYGONCE_ISO_STDDEF_H multiple inclusion protection */
 
 /* EOF stddef.h */

@@ -381,8 +381,10 @@ externC void hal_if_diag_read_char(char *c);
 //--------------------------------------------------------------------------
 // Ctrl-c support.
 externC cyg_uint32 hal_ctrlc_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data);
+externC cyg_bool   hal_ctrlc_check(CYG_ADDRWORD vector, CYG_ADDRWORD data);
 
 #define HAL_CTRLC_ISR hal_ctrlc_isr
+#define HAL_CTRLC_CHECK hal_ctrlc_check
 
 #endif // CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
 

@@ -44,6 +44,8 @@
 //==========================================================================
 
 #include <pkgconf/system.h>
+#include <pkgconf/io_eth_drivers.h>
+
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/hal_arch.h>
 #include <cyg/infra/diag.h>
@@ -104,7 +106,7 @@ extern char __local_ip_addr[4];
 //
 
 #define MAX_ETH_MSG 1540
-#define NUM_ETH_MSG   16
+#define NUM_ETH_MSG CYGNUM_IO_ETH_DRIVERS_NUM_PKT
 
 struct eth_msg {
     struct eth_msg *next, *prev;
@@ -118,9 +120,6 @@ struct eth_msg_hdr {
 
 static struct eth_msg_hdr eth_msg_free, eth_msg_full;
 static struct eth_msg eth_msgs[NUM_ETH_MSG];
-
-// Used to "empty" hardware, even if there are no free buffers
-static unsigned char no_pkt[MAX_ETH_MSG];
 
 // Prototypes for functions used in this module
 static void eth_drv_start(struct eth_drv_sc *sc);
@@ -284,7 +283,7 @@ eth_drv_tx_done(struct eth_drv_sc *sc, CYG_ADDRWORD key, int status)
     } else {
         // It's possible that this acknowledgement is for a different
         // [logical] driver.  Try and pass it on.
-#ifdef DEBUG
+#ifdef CYGSEM_IO_ETH_DRIVERS_DEBUG
         int old_console;
         old_console = start_console();
         printf("tx_done for other key: %x\n", key);
@@ -378,11 +377,13 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
     if (msg) {
         buf = msg->data;
     } else {
+#ifdef CYGSEM_IO_ETH_DRIVERS_WARN
         int old_console;
         old_console = start_console();
         printf("%s: packet of %d bytes dropped\n", __FUNCTION__, total_len);
         end_console(old_console);
-        buf = &no_pkt[0];
+#endif
+        buf = (char *)0;  // Drivers know this means "the bit bucket"
     }
     sg_list[0].buf = (CYG_ADDRESS)buf;
     sg_list[0].len = total_len;

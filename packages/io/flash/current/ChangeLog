@@ -1,3 +1,9 @@
+2000-08-28  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c: 
+	* include/flash.h: 
+	* cdl/io_flash.cdl: Support block locking (optional by hardware).
+
 2000-08-22  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/flash.c (flash_program): Add HAL_ICACHE_DISABLE/ENABLE pairs

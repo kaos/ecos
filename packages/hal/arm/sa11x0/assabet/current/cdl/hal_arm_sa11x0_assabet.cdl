@@ -127,6 +127,13 @@ cdl_package CYGPKG_HAL_ARM_SA11X0_ASSABET {
             The assabet board has only one serial port.  This option
             chooses which port will be used for diagnostic output."
      }
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_DEFAULT {
+        display      "Default console channel."
+        flavor       data
+        legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
+        calculated   0
+    }
  
     cdl_component CYGBLD_GLOBAL_OPTIONS {
         display "Global build options"

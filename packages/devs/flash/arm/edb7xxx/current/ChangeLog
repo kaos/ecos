@@ -1,3 +1,7 @@
+2000-08-29  Gary Thomas  <gthomas@redhat.com>
+
+	* src/edb7xxx_flash.c: Improve error decoding.
+
 2000-08-15  Gary Thomas  <gthomas@redhat.com>
 
 	* src/edb7xxx_flash.c (flash_code_overlaps): 

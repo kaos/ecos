@@ -103,8 +103,16 @@ static void
 cf_irq_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
 {
     struct cf_slot *slot = (struct cf_slot *)data;
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
+    cyg_bool was_ctrlc_int;
+#endif
+
     // Clear interrupt [edge indication]
     cyg_drv_interrupt_acknowledge(SA1110_CF_IRQ);
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
+    was_ctrlc_int = HAL_CTRLC_CHECK(vector, data);
+    if (!was_ctrlc_int) // Fall through and run normal code
+#endif
     // Process interrupt
     (slot->irq_handler.handler)(slot->irq_handler.param);
     // Allow interrupts to happen again
@@ -143,10 +151,10 @@ cf_hwr_init(struct cf_slot *slot)
                                  &cf_irq_interrupt_handle,
                                  &cf_irq_interrupt);
         cyg_drv_interrupt_attach(cf_irq_interrupt_handle);
-        cyg_drv_interrupt_acknowledge(SA1110_CF_IRQ);
         cyg_drv_interrupt_unmask(SA1110_CF_IRQ);
 #endif
         cyg_drv_interrupt_configure(SA1110_CF_IRQ, false, false);  // Falling edge
+        cyg_drv_interrupt_acknowledge(SA1110_CF_IRQ);
     }
     slot->attr = (unsigned char *)0x38000000;
     slot->attr_length = 0x200;
@@ -155,6 +163,7 @@ cf_hwr_init(struct cf_slot *slot)
     slot->mem = (unsigned char *)0x3C000000;
     slot->mem_length = 0x04000000;
     slot->int_num = SA1110_CF_IRQ;
+#ifdef CYG_HAL_STARTUP_ROM
     // Disable CF bus & power (idle/off)
     assabet_BCR(SA1110_BCR_CF_POWER |
                 SA1110_BCR_CF_RESET |
@@ -162,8 +171,14 @@ cf_hwr_init(struct cf_slot *slot)
                 SA1110_BCR_CF_POWER_OFF |
                 SA1110_BCR_CF_RESET_DISABLE |
                 SA1110_BCR_CF_BUS_OFF);
+#endif
     if ((new_state & SA1110_GPIO_CF_DETECT) == SA1110_GPIO_CF_PRESENT) {
-        slot->state = CF_SLOT_STATE_Inserted;
+        if ((_assabet_BCR & SA1110_BCR_CF_POWER) == SA1110_BCR_CF_POWER_ON) {
+            // Assume that the ROM environment has turned the bus on
+            slot->state = CF_SLOT_STATE_Ready;
+        } else {
+            slot->state = CF_SLOT_STATE_Inserted;
+        }
     } else {
         slot->state = CF_SLOT_STATE_Empty;
     }

@@ -96,6 +96,20 @@ local_cmd_entry("erase",
                 fis_erase,
                 FIS_cmds
     );
+#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
+local_cmd_entry("lock",
+                "LOCK FLASH contents",
+                "-f <flash_addr> -l <length>",
+                fis_lock,
+                FIS_cmds
+    );
+local_cmd_entry("unlock",
+                "UNLOCK FLASH contents",
+                "-f <flash_addr> -l <length>",
+                fis_unlock,
+                FIS_cmds
+    );
+#endif
 local_cmd_entry("delete",
                 "Display an image from FLASH Image System [FIS]",
                 "name",
@@ -469,6 +483,81 @@ fis_erase(int argc, char *argv[])
     }
 }
 
+#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
+
+static void
+fis_lock(int argc, char *argv[])
+{
+    int stat;
+    unsigned long flash_addr, length;
+    bool flash_addr_set = false;
+    bool length_set = false;
+    void *err_addr;
+    struct option_info opts[2];
+
+    init_opts(&opts[0], 'f', true, OPTION_ARG_TYPE_NUM, 
+              (void **)&flash_addr, (bool *)&flash_addr_set, "FLASH memory base address");
+    init_opts(&opts[1], 'l', true, OPTION_ARG_TYPE_NUM, 
+              (void **)&length, (bool *)&length_set, "length");
+    if (!scan_opts(argc, argv, 2, opts, 2, (void **)0, 0, ""))
+    {
+        fis_usage("invalid arguments");
+        return;
+    }
+
+    if (!flash_addr_set || !length_set) {
+        fis_usage("missing argument");
+        return;
+    }
+    if (flash_addr_set &&
+        ((stat = flash_verify_addr((void *)flash_addr)) ||
+         (stat = flash_verify_addr((void *)(flash_addr+length-1))))) {
+        printf("Invalid FLASH address: %p (%s)\n", (void *)flash_addr, flash_errmsg(stat));
+        printf("   valid range is %p-%p\n", (void *)flash_start, (void *)flash_end);
+        return;
+    }
+    if ((stat = flash_lock((void *)flash_addr, length, (void **)&err_addr)) != 0) {
+        printf("Error locking at %p: %x(%s)\n", err_addr, stat, flash_errmsg(stat));
+    }
+}
+
+static void
+fis_unlock(int argc, char *argv[])
+{
+    int stat;
+    unsigned long flash_addr, length;
+    bool flash_addr_set = false;
+    bool length_set = false;
+    void *err_addr;
+    struct option_info opts[2];
+
+    init_opts(&opts[0], 'f', true, OPTION_ARG_TYPE_NUM, 
+              (void **)&flash_addr, (bool *)&flash_addr_set, "FLASH memory base address");
+    init_opts(&opts[1], 'l', true, OPTION_ARG_TYPE_NUM, 
+              (void **)&length, (bool *)&length_set, "length");
+    if (!scan_opts(argc, argv, 2, opts, 2, (void **)0, 0, ""))
+    {
+        fis_usage("invalid arguments");
+        return;
+    }
+
+    if (!flash_addr_set || !length_set) {
+        fis_usage("missing argument");
+        return;
+    }
+    if (flash_addr_set &&
+        ((stat = flash_verify_addr((void *)flash_addr)) ||
+         (stat = flash_verify_addr((void *)(flash_addr+length-1))))) {
+        printf("Invalid FLASH address: %p (%s)\n", (void *)flash_addr, flash_errmsg(stat));
+        printf("   valid range is %p-%p\n", (void *)flash_start, (void *)flash_end);
+        return;
+    }
+    if ((stat = flash_unlock((void *)flash_addr, length, (void **)&err_addr)) != 0) {
+        printf("Error unlocking at %p: %x(%s)\n", err_addr, stat, flash_errmsg(stat));
+    }
+}
+#endif
+
 static void
 fis_delete(int argc, char *argv[])
 {
@@ -503,7 +592,7 @@ fis_delete(int argc, char *argv[])
         printf("No image '%s' found\n", name);
         return;
     }
-    // Erase data blocks (free space)
+    // Erase Data blocks (free space)
     if ((stat = flash_erase((void *)img->flash_base, img->size, (void **)&err_addr)) != 0) {
         printf("Error erasing at %p: %x(%s)\n", err_addr, stat, flash_errmsg(stat));
     }

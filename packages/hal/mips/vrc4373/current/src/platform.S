@@ -189,6 +189,7 @@ hal_bus_error_vsr:
 FUNC_START(hal_pci_config_read)
 
 hal_pci_config_read_load:
+        .set noreorder
 	lw	v0,0(a0)	# Read the value. If this bus-errors the
 				# handler will skip this instruction and
 				# put 0xFFFFFFFF into v0.

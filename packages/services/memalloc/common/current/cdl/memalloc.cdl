@@ -84,7 +84,10 @@ cdl_package CYGPKG_MEMALLOC {
             no_define
             description   "
                 This component contains configuration options related to the 
-                simple variable block memory allocator."
+                simple variable block memory allocator. This allocator is not
+                very fast, and in particular does not scale well with large
+                numbers of allocations. It is however very compact in terms of
+                code size and does not have very much overhead per allocation."
 
             cdl_option CYGSEM_MEMALLOC_ALLOCATOR_VARIABLE_THREADAWARE {
                 display        "Make thread safe"
@@ -116,7 +119,10 @@ cdl_package CYGPKG_MEMALLOC {
             description   "
                 This component contains configuration options related to the 
                 port of Doug Lea's memory allocator, normally known as
-                dlmalloc."
+                dlmalloc. dlmalloc has a reputation for being both fast
+                and space-conserving, as well as resisting fragmentation well.
+                It is a common choice for a general purpose allocator and
+                has been used in both newlib and Linux glibc."
 
             cdl_option CYGDBG_MEMALLOC_ALLOCATOR_DLMALLOC_DEBUG {
                 display       "Debug build"
@@ -244,14 +250,14 @@ cdl_package CYGPKG_MEMALLOC {
                 to do this is set in this option. It is only intended to
                 be set by the implementation, not the user."
             # default corresponds to the default allocator
-            default_value {"<cyg/memalloc/memvar.hxx>"}
+            default_value {"<cyg/memalloc/dlmalloc.hxx>"}
         }
 
         cdl_option CYGIMP_MEMALLOC_MALLOC_VARIABLE_SIMPLE {
             display       "Simple variable block implementation"
             description   "This causes malloc() to use the simple
                            variable block allocator."
-            default_value 1
+            default_value 0
             implements    CYGINT_MEMALLOC_MALLOC_ALLOCATORS
             requires      { CYGBLD_MEMALLOC_MALLOC_IMPLEMENTATION_HEADER == \
                             "<cyg/memalloc/memvar.hxx>" }
@@ -262,7 +268,7 @@ cdl_package CYGPKG_MEMALLOC {
             display       "Doug Lea's malloc implementation"
             description   "This causes malloc() to use a version of Doug Lea's
                            malloc (dlmalloc) as the underlying implementation."
-            default_value 0
+            default_value 1
             implements    CYGINT_MEMALLOC_MALLOC_ALLOCATORS
             requires      { CYGBLD_MEMALLOC_MALLOC_IMPLEMENTATION_HEADER == \
                             "<cyg/memalloc/dlmalloc.hxx>" }

@@ -1,3 +1,8 @@
+2000-08-28  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_powerpc_mbx.cdl: Fix startup type description - was
+	totally bogus stuff copied from a different HAL.
+
 2000-08-15  Gary Thomas  <gthomas@redhat.com>
 
 	* src/mbx.S: Use actual ROM layout instead of magic numbers.

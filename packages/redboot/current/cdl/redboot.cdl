@@ -101,7 +101,7 @@ cdl_package CYGPKG_REDBOOT {
 
         cdl_option CYGNUM_REDBOOT_NETWORKING_TCP_PORT {
             display          "TCP port to listen for incoming connections"
-            flavor data
+            flavor           data
             default_value    9000
             description      "
                RedBoot will 'listen' on this port for incoming TCP connections.
@@ -111,7 +111,7 @@ cdl_package CYGPKG_REDBOOT {
 
         cdl_option CYGNUM_REDBOOT_NETWORKING_MAX_PKTBUF {
             display          "Number of \[network\] packet buffers"
-            flavor data
+            flavor           data
             default_value    4
             legal_values     2 to 8
             description      "

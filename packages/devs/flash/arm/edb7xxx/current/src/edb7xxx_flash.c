@@ -121,7 +121,7 @@ flash_hwr_map_error(int err)
         if (err & 0x00200020) {
             return FLASH_ERR_ERASE;
         } else 
-        return FLASH_ERR_ERASE;  // FIXME
+        return FLASH_ERR_HWR;  // FIXME
     } else {
         return FLASH_ERR_OK;
     }

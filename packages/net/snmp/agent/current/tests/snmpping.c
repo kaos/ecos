@@ -138,7 +138,34 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include <network.h>
 
+#include <pkgconf/system.h>
+#include <pkgconf/net.h>
+
 #include <cyg/infra/testcase.h>
+
+#ifdef CYGBLD_DEVS_ETH_DEVICE_H    // Get the device config if it exists
+#include CYGBLD_DEVS_ETH_DEVICE_H  // May provide CYGTST_DEVS_ETH_TEST_NET_REALTIME
+#endif
+
+#ifdef CYGPKG_NET_TESTS_USE_RT_TEST_HARNESS // do we use the rt test?
+# ifdef CYGTST_DEVS_ETH_TEST_NET_REALTIME // Get the test ancilla if it exists
+#  include CYGTST_DEVS_ETH_TEST_NET_REALTIME
+# endif
+#endif
+
+// Fill in the blanks if necessary
+#ifndef TNR_OFF
+# define TNR_OFF()
+#endif
+#ifndef TNR_ON
+# define TNR_ON()
+#endif
+#ifndef TNR_INIT
+# define TNR_INIT()
+#endif
+#ifndef TNR_PRINT_ACTIVITY
+# define TNR_PRINT_ACTIVITY()
+#endif
 
 #define STACK_SIZE (CYGNUM_HAL_STACK_SIZE_TYPICAL + 0x1000)
 static char stack[STACK_SIZE];
@@ -232,8 +259,10 @@ ping_host(int s, struct sockaddr_in *host)
 
     ok_recv = 0;
     bogus_recv = 0;
+    TNR_OFF();
     diag_printf("PING server %s\n", inet_ntoa(host->sin_addr));
     for (seq = 0;  seq < NUM_PINGS;  seq++) {
+        TNR_ON();
         // Build ICMP packet
         icmp->icmp_type = ICMP_ECHO;
         icmp->icmp_code = 0;
@@ -251,12 +280,14 @@ ping_host(int s, struct sockaddr_in *host)
         icmp->icmp_cksum = inet_cksum( (u_short *)icmp, icmp_len+8);
         // Send it off
         if (sendto(s, icmp, icmp_len+8, 0, (struct sockaddr *)host, sizeof(*host)) < 0) {
+            TNR_OFF();
             perror("sendto");
             continue;
         }
         // Wait for a response
         fromlen = sizeof(from);
         len = recvfrom(s, pkt2, sizeof(pkt2), 0, (struct sockaddr *)&from, &fromlen);
+        TNR_OFF();
         if (len < 0) {
             perror("recvfrom");
         } else {
@@ -267,6 +298,7 @@ ping_host(int s, struct sockaddr_in *host)
             }
         }
     }
+    TNR_OFF();
     diag_printf("Sent %d packets, received %d OK, %d bad\n", NUM_PINGS, ok_recv, bogus_recv);
 }
 
@@ -338,6 +370,7 @@ net_test(cyg_addrword_t p)
     int i = 0;
     int j;
     diag_printf("Start PING test\n");
+    TNR_INIT();
     init_all_network_interfaces();
 #ifdef CYGPKG_SNMPAGENT
     {
@@ -346,6 +379,7 @@ net_test(cyg_addrword_t p)
     }
 #endif
     do {
+        TNR_ON();
 #ifdef CYGHWR_NET_DRIVER_ETH0
         if (eth0_up) {
             ping_test(&eth0_bootp_data);
@@ -364,6 +398,8 @@ net_test(cyg_addrword_t p)
             cyg_thread_delay(500);
         }
 #endif
+        TNR_OFF();
+        TNR_PRINT_ACTIVITY();
     } while ( i-- > 0 );
     CYG_TEST_PASS_FINISH( "Done pinging while SNMP looks on" );
 }

@@ -67,7 +67,7 @@
 // HUGE_VAL is a positive double (not necessarily representable as a float)
 // representing infinity as specified in ANSI 7.5. cyg_libm_infinity is
 // defined further down
-#define HUGE_VAL        (cyg_libm_infinity.value)
+#define HUGE_VAL        (cyg_libm_infinity[0].value)
 
 
 #ifndef CYGSYM_LIBM_NO_XOPEN_SVID_NAMESPACE_POLLUTION
@@ -103,7 +103,7 @@ struct exception {
 
 // GLOBALS
 
-externC const Cyg_libm_ieee_double_shape_type cyg_libm_infinity;
+externC const Cyg_libm_ieee_double_shape_type cyg_libm_infinity[];
 
 //===========================================================================
 // FUNCTION PROTOTYPES

@@ -69,8 +69,10 @@ cdl_package CYGPKG_HAL_POWERPC_MBX {
 	no_define
 	define -file system.h CYG_HAL_STARTUP
         description   "
-           When targetting the FADS board for RAM bootstrap it is expected 
-           that the image will be downloaded via the Motorola MPC8BUG tool."
+           This option is used to control where the application program will
+           run, either from RAM or ROM (flash) memory.  ROM based applications
+           must be self contained, while RAM applications will typically assume
+           the existence of a debug environment, such as GDB stubs."
     }
 
     cdl_option CYGHWR_HAL_POWERPC_BOARD_SPEED {
