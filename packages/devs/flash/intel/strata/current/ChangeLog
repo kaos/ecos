@@ -1,4 +1,12 @@
-2002-04-03  Jani Monoses <jani@iv.ro>
+2003-04-04  Jani Monoses <jani@iv.ro>
+	
+	* src/starta.h:
+	Use generic flash_dev.h for providing the FLASHWORD macro for
+	different widths and device numbers.No reason to duplicate that
+	here.This implicitely fixes the case when CYGNUM_FLASH_WIDTH is 16
+	and CYGNUM_FLASH_DEVICES is 4.
+
+2003-04-03  Jani Monoses <jani@iv.ro>
 
 	* src/flash_lock_block.c (flash_lock_block): 
 	* src/flash_unlock_block.c (flash_unlock_block): 

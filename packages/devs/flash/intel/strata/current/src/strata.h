@@ -92,21 +92,11 @@
 // In that case, CYGNUM_FLASH_DEVICES = 1 and CYGNUM_FLASH_WIDTH = 16, and
 // the device is managed using only 16bit bus operations.
 
+#define CYGNUM_FLASH_INTERLEAVE CYGNUM_FLASH_DEVICES
+#define _FLASH_PRIVATE_
+#include <cyg/io/flash_dev.h>
 
-// ------------------------------------------------------------------------
-//
-// No mapping on this target - but these casts would be needed if some
-// manipulation did occur.  An example of this might be:
-// // First 4K page of flash at physical address zero is
-// // virtually mapped at address 0xa0000000.
-// #define FLASH_P2V(x) ((volatile flash_t *)(((unsigned)(x) < 0x1000) ?
-//                            ((unsigned)(x) | 0xa0000000) :
-//                            (unsigned)(x)))
-
-#ifndef FLASH_P2V
-#define FLASH_P2V( _a_ ) ((volatile flash_t *)((unsigned int)(_a_)))
-#endif
-
+#define flash_t flash_data_t
 // ------------------------------------------------------------------------
 //
 // This generic code is intended to deal with all shapes and orientations
@@ -124,74 +114,6 @@
 // An exception is the test for succesfully erased data.
 //
 // ------------------------------------------------------------------------
-
-#if 8 == CYGNUM_FLASH_WIDTH
-
-# if 1 == CYGNUM_FLASH_DEVICES
-#  define FLASHWORD( k ) ((flash_t)(k)) // To narrow a 16-bit constant
-typedef unsigned char flash_t;
-# elif 2 == CYGNUM_FLASH_DEVICES
-// 2 devices to make 16-bit
-#  define FLASHWORD( k ) ((k)+((k)<<8))
-typedef unsigned short flash_t;
-# elif 4 == CYGNUM_FLASH_DEVICES
-// 4 devices to make 32-bit
-#  define FLASHWORD( k ) ((k)+((k)<<8)+((k)<<16)+((k)<<24))
-typedef unsigned long flash_t;
-# elif 8 == CYGNUM_FLASH_DEVICES
-// 8 devices to make 64-bit - intermediate requires explicit widening
-#  define FLASHWORD32( k ) ((flash_t)((k)+((k)<<8)+((k)<<16)+((k)<<24)))
-#  define FLASHWORD( k ) (FLASHWORD32( k ) + (FLASHWORD32( k ) << 32));
-typedef unsigned long long flash_t;
-# else
-#  error How many 8-bit flash devices?
-# endif
-
-#elif 16 == CYGNUM_FLASH_WIDTH
-
-# if 1 == CYGNUM_FLASH_DEVICES
-#  define FLASHWORD( k ) (k)
-typedef unsigned short flash_t;
-# elif 2 == CYGNUM_FLASH_DEVICES
-// 2 devices to make 32-bit
-#  define FLASHWORD( k ) ((k)+((k)<<16))
-typedef unsigned long flash_t;
-# elif 2 == CYGNUM_FLASH_DEVICES
-// 4 devices to make 64-bit - intermediate requires explicit widening
-#  define FLASHWORD32( k ) ((flash_t)((k)+((k)<<16)))
-#  define FLASHWORD( k ) (FLASHWORD32( k ) + (FLASHWORD32( k ) << 32));
-typedef unsigned long long flash_t;
-# else
-#  error How many 16-bit flash devices?
-# endif
-
-#elif 32 == CYGNUM_FLASH_WIDTH
-
-# if 1 == CYGNUM_FLASH_DEVICES
-#  define FLASHWORD( k ) (k)
-typedef unsigned long flash_t;
-# elif 2 == CYGNUM_FLASH_DEVICES
-// 2 devices to make 64-bit - intermediate requires explicit widening
-#  define FLASHWORD32( k ) ((flash_t)(k))
-#  define FLASHWORD( k ) (FLASHWORD32( k ) + (FLASHWORD32( k ) << 32));
-typedef unsigned long long flash_t;
-# else
-#  error How many 32-bit flash devices?
-# endif
-
-#else
-# error What flash width?
-#endif
-
-// Data (not) that we read back:
-#if 0 == CYGNUM_FLASH_BLANK
-# define FLASH_BlankValue ((flash_t)0)
-#elif 1 == CYGNUM_FLASH_BLANK
-# define FLASH_BlankValue ((flash_t)(-1ll))
-#else
-# error What blank value?
-#endif
-
 // ------------------------------------------------------------------------
 
 #define FLASH_Read_ID      		FLASHWORD( 0x90 )
