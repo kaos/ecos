@@ -1,3 +1,7 @@
+2003-02-14  Bob Koninckx  <bob.koninckx@mech.kuleuven.ac.be>
+
+	* include/httpd.h (html_end): fix typo.
+
 2002-12-06  Nick Garnett  <nickg@ecoscentric.com>
 
 	* include/httpd.h: 

@@ -134,7 +134,7 @@ __externC void cyg_http_finish( FILE *client );
 
 #define html_end( __client )                    \
         html_tag_end( __client, "html" );       \
-        cyg_http_finish( client )
+        cyg_http_finish( __client )
 
 /* ----------------------------------------------------------------- */
 /*
