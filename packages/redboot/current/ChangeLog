@@ -1,3 +1,8 @@
+2003-03-05  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/main.c (do_version): Test for CYGPKG_REDBOOT_FLASH as
+	CYGPKG_IO_FLASH can be loaded with no underlying hardware drivers!
+
 2003-03-03  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/main.c (set_console_baud_rate): Avoid "unused" warning.

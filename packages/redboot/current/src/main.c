@@ -132,7 +132,7 @@ extern void HAL_ARCH_PROGRAM_NEW_STACK(void *fun);
 void
 do_version(int argc, char *argv[])
 {
-#ifdef CYGPKG_IO_FLASH
+#ifdef CYGPKG_REDBOOT_FLASH
     externC void _flash_info(void);
 #endif
     char *version = CYGACC_CALL_IF_MONITOR_VERSION();
@@ -145,7 +145,7 @@ do_version(int argc, char *argv[])
     diag_printf("RAM: %p-%p, %p-%p available\n", 
                 (void*)ram_start, (void*)ram_end,
                 (void*)user_ram_start, (void *)user_ram_end);
-#ifdef CYGPKG_IO_FLASH
+#ifdef CYGPKG_REDBOOT_FLASH
     _flash_info();
 #endif
 }
