@@ -64,79 +64,6 @@ cdl_option CYGVAR_KERNEL_COUNTERS_CLOCK {
         completely."
 }
 
-cdl_component CYGPKG_KERNEL_COUNTERS_CLOCK_OVERRIDE {
-    display       "Override default clock settings"
-    requires      CYGVAR_KERNEL_COUNTERS_CLOCK
-    default_value 0
-    description   "
-        The kernel has default settings for the clock interrupt
-        frequency. These settings will vary from platform to
-        platform, but typically there will be a 100 clock interrupts
-        every second. It is possible to change this frequency, but
-        it requires some knowledge of the target hardware."
-
-    cdl_option CYGNUM_KERNEL_COUNTERS_CLOCK_OVERRIDE_PERIOD {
-        display       "Clock hardware initialization value"
-        flavor        data
-        legal_values  1 to 0x7fffffff
-        default_value 9999
-        description   "
-            During system initialization this value is used to initialize
-            the clock hardware. The exact meaning of the value and the
-            range of legal values therefore depends on the target hardware,
-            and the hardware documentation should be consulted for further
-            details. In addition the clock resolution numerator and
-            denominator values should be updated. Typical values for
-            this option would be 150000 on the MN10300 stdeval1 board,
-            15625 on the tx39 jmr3904 board, and 20833 on the powerpc
-            cogent board."
-    }
-
-    cdl_option CYGNUM_KERNEL_COUNTERS_CLOCK_OVERRIDE_NUMERATOR {
-        display       "Clock resolution numerator"
-        flavor        data
-        legal_values  1 to 0x7fffffff
-        default_value 1000000000
-        description   "
-            If a non-default clock interrupt frequency is used then it
-            is necessary to specify the clock resolution explicitly.
-            This resolution involves two separate values, the numerator
-            and the denominator. The result of dividing the numerator by
-            the denominator should correspond to the number of
-            nanoseconds between clock interrupts. For example a
-            numerator of 1000000000 and a denominator of 100 means that
-            there are 10000000 nanoseconds (or 10 milliseconds) between
-            clock interrupts. Expressing the resolution as a fraction
-            should minimize clock drift even for frequencies that cannot
-            be expressed as a simple integer. For example a frequency of
-            60Hz corresponds to a clock resolution of 16666666.66...
-            nanoseconds. This can be expressed accurately as 1000000000
-            over 60."
-    }
-
-    cdl_option CYGNUM_KERNEL_COUNTERS_CLOCK_OVERRIDE_DENOMINATOR {
-        display       "Clock resolution denominator"
-        flavor        data
-        legal_values  1 to 0x7fffffff
-        default_value 100
-        description   "
-            If a non-default clock interrupt frequency is used then it
-            is necessary to specify the clock resolution explicitly.
-            This resolution involves two separate values, the numerator
-            and the denominator. The result of dividing the numerator by
-            the denominator should correspond to the number of
-            nanoseconds between clock interrupts. For example a
-            numerator of 1000000000 and a denominator of 100 means that
-            there are 10000000 nanoseconds (or 10 milliseconds) between
-            clock interrupts. Expressing the resolution as a fraction
-            should minimize clock drift even for frequencies that cannot
-            be expressed as a simple integer. For example a frequency of
-            60Hz corresponds to a clock resolution of 16666666.66...
-            nanoseconds. This can be expressed accurately as 1000000000
-            over 60."
-    }
-}  
-
 cdl_interface CYGINT_KERNEL_COUNTERS {
     requires 1 == CYGINT_KERNEL_COUNTERS
     no_define
@@ -223,29 +150,23 @@ cdl_option CYGVAR_KERNEL_COUNTERS_CLOCK_DSR_LATENCY {
 cdl_option CYGNUM_KERNEL_COUNTERS_RTC_RESOLUTION {
     display       "RTC resolution"
     flavor        data
-    calculated    { CYGPKG_KERNEL_COUNTERS_CLOCK_OVERRIDE ?                \
-                     "{CYGNUM_KERNEL_COUNTERS_CLOCK_OVERRIDE_NUMERATOR,    \
-                      CYGNUM_KERNEL_COUNTERS_CLOCK_OVERRIDE_DENOMINATOR}"  \
-                    : "{CYGNUM_HAL_RTC_NUMERATOR, CYGNUM_HAL_RTC_DENOMINATOR}"}
+    calculated    {"{CYGNUM_HAL_RTC_NUMERATOR, CYGNUM_HAL_RTC_DENOMINATOR}"}
     description   "
 	This option automatically defines the tuple which is used to
 	initialize the RTC resolution, consisting of a numerator and
-	denominator.  For more information, see the option to 
-        override default clock settings
-	(CYGPKG_KERNEL_COUNTERS_CLOCK_OVERRIDE) and associated options."
+	denominator. The values of the numerator and denominator are
+        defined by the HAL."
 }
 
 cdl_option CYGNUM_KERNEL_COUNTERS_RTC_PERIOD {
     display       "RTC period"
     flavor        data
-    calculated    { CYGPKG_KERNEL_COUNTERS_CLOCK_OVERRIDE ?                \
-                     "CYGNUM_KERNEL_COUNTERS_CLOCK_OVERRIDE_PERIOD"        \
-                    : "CYGNUM_HAL_RTC_PERIOD"}
+    calculated    {"CYGNUM_HAL_RTC_PERIOD"}
     description   "
-	This option automatically defines the RTC period to be used in
-	setting the system clock hardware.  For more information, see the
-	option to override default clock settings
-	(CYGPKG_KERNEL_COUNTERS_CLOCK_OVERRIDE) and associated options."
+	This option defines the RTC period to be used in
+	setting the system clock hardware. It is essentially
+        an alias for CYGNUM_HAL_RTC_PERIOD, which is defined
+        in the HAL."
 }
 
 # EOF counters.cdl

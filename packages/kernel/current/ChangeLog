@@ -1,3 +1,9 @@
+2003-07-18  Nick Garnett  <nickg@balti.calivar.com>
+
+	* cdl/counters.cdl: Removed the counters override CDL
+	options. These are no longer very useful, since too much
+	non-kernel code now uses the HAL options to get these values.
+
 2003-07-10  Nick Garnett  <nickg@balti.calivar.com>
 
 	* src/common/clock.cxx (Cyg_Counter::tick): In unsorted list case:
