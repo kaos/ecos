@@ -1502,6 +1502,8 @@ ep0_rx_dsr(void)
             // These stalls will be cleared automaticaly by the next
             // setup packet.
             *EP0_CR     |= (EP0_CR_ISS | EP0_CR_OSS); FLUSH_IBUS();
+            // Start a receive for the next control message
+            ep0_start_rx(8);
         } else {
             // The control request has been handled. Is there any more
             // data to be transferred?
