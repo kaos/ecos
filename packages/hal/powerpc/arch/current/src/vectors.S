@@ -778,12 +778,7 @@ cyg_hal_default_interrupt_vsr:
                                                 # where C code can save LR
 #endif  
 
-#ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
-
-        # We only need to call _interrupt_end() when there is a kernel
-        # present to do any tidying up.
-        
-        # on return r3 bit 1 will indicate whether a DSR is
+        # On return r3 bit 1 will indicate whether a DSR is
         # to be posted. Pass this together with a pointer to
         # the interrupt object we have just used to the
         # interrupt tidy up routine.
@@ -798,7 +793,6 @@ cyg_hal_default_interrupt_vsr:
 
         .extern interrupt_end
         bl      interrupt_end                   # call into C to finish off 
-#endif
 
 restore_state:  
         # All done, restore CPU state and continue

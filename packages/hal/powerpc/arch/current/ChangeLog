@@ -1,3 +1,8 @@
+2003-08-06  Bob Koninckx <bob.koninckx@mech.kuleuven.ac.be>
+
+	* src/vectors.S (cyg_hal_default_interrupt_vsr): Removed ifdef on
+	CYGFUN_HAL_COMMON_KERNEL_SUPPORT around call to	interrupt_end().
+
 2003-04-10  Nick Garnett  <nickg@balti.calivar.com>
 
 	* src/powerpc.ld: 
