@@ -148,10 +148,24 @@
 //#define HAL_DCACHE_BURST_SIZE(_size_)
 
 // Set the data cache write mode
-//#define HAL_DCACHE_WRITE_MODE( _mode_ )
+#define HAL_DCACHE_WRITE_MODE( _mode_ )                 \
+    CYG_MACRO_START                                     \
+    if (_mode_ == HAL_DCACHE_WRITETHRU_MODE) {          \
+        asm volatile ("sync;"                           \
+                  "mtspr %0, %1;"                       \
+                  : : "I" (CYGARC_REG_DC_CST),          \
+                      "r" (CYGARC_REG_DC_CMD_SW));      \
+    }                                                   \
+    if (_mode_ == HAL_DCACHE_WRITEBACK_MODE) {          \
+        asm volatile ("sync;"                           \
+                  "mtspr %0, %1;"                       \
+                  : : "I" (CYGARC_REG_DC_CST),          \
+                      "r" (CYGARC_REG_DC_CMD_CW));      \
+    }                                                   \
+    CYG_MACRO_END
 
-//#define HAL_DCACHE_WRITETHRU_MODE       0
-//#define HAL_DCACHE_WRITEBACK_MODE       1
+#define HAL_DCACHE_WRITETHRU_MODE       0
+#define HAL_DCACHE_WRITEBACK_MODE       1
 
 
 // Load the contents of the given address range into the data cache 
