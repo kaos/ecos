@@ -161,6 +161,15 @@ extern int dhcp_release( void );
 //
 // ------------------------------------------------------------------------
 
+// Set hostname to be used with the DHCP TAG_HOST_NAME option.
+// Call this before calling init_all_network_interfaces() to
+// set the hostname value.
+#ifdef CYGOPT_NET_DHCP_OPTION_HOST_NAME
+extern void dhcp_set_hostname(char *hostname);
+#else
+#define dhcp_set_hostname(hostname)        CYG_EMPTY_STATEMENT
+#endif
+
 #ifdef CYGOPT_NET_DHCP_DHCP_THREAD
 // Then we provide such a thread...
 

@@ -73,6 +73,19 @@
 
 extern int  cyg_arc4random(void);
 
+#ifdef CYGOPT_NET_DHCP_OPTION_HOST_NAME
+static char dhcp_hostname[CYGNUM_NET_DHCP_OPTION_HOST_NAME_LEN+1];
+
+// Set the hostname used by the DHCP TAG_HOST_NAME option.  We
+// copy the callers name into a private buffer, since we don't
+// know the context in which the callers hostname was allocated.
+void dhcp_set_hostname(char *hostname)
+{
+    CYG_ASSERT( (strlen(hostname)<=CYGNUM_NET_DHCP_OPTION_HOST_NAME_LEN), "dhcp hostname too long" );
+    strncpy(dhcp_hostname, hostname, CYGNUM_NET_DHCP_OPTION_HOST_NAME_LEN);
+}
+#endif
+
 // ------------------------------------------------------------------------
 // Returns a pointer to the end of dhcp message (or NULL if invalid)
 // meaning the address of the byte *after* the TAG_END token in the vendor
@@ -539,6 +552,25 @@ static void set_default_dhcp_tags( struct bootp *xmit )
     if ( req_list[0] ) // So that one may easily turn it all off by configury
         set_variable_tag( xmit, TAG_DHCP_PARM_REQ_LIST,
                           &req_list[0], sizeof( req_list ) );
+
+#ifdef CYGOPT_NET_DHCP_OPTION_HOST_NAME
+{
+    int nlen = strlen(dhcp_hostname);
+
+    if (nlen > 0)
+    	set_variable_tag( xmit, TAG_HOST_NAME, dhcp_hostname, nlen + 1);
+}
+#endif
+#ifdef CYGOPT_NET_DHCP_OPTION_DHCP_CLIENTID_MAC
+{
+	cyg_uint8 id[16+1];	/* sizeof bp_chaddr[] + 1 */
+
+	id[0] = 1;  /* 1-byte hardware type: 1=ethernet. */
+    CYG_ASSERT( xmit->bp_hlen<=(sizeof(id)-1), "HW address invalid" );
+    memcpy(&id[1], &xmit->bp_chaddr, xmit->bp_hlen);
+    set_variable_tag( xmit, TAG_DHCP_CLIENTID, id, xmit->bp_hlen+1);
+}
+#endif
 
     // Explicitly specify our max message size.
     set_fixed_tag( xmit, TAG_DHCP_MAX_MSGSZ, BP_MINPKTSZ, 2 );

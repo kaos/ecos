@@ -268,6 +268,37 @@ cdl_package CYGPKG_NET {
                 requested options in the DHCP/BOOTP request list.
                 These are a comma separated list of TAG_xxx values."
         }
+
+        cdl_component CYGOPT_NET_DHCP_OPTION_HOST_NAME {
+            display "DHCP host name option"
+            flavor  bool
+            default_value 0
+            active_if CYGOPT_NET_DHCP_DHCP_THREAD
+            description "
+                This option adds the TAG_HOST_NAME option to the DHCP/BOOTP
+                requests.  The host name is defined by calling the function
+                dhcp_set_hostname(), prior to calling init_all_network_interfaces()."
+
+            cdl_option CYGNUM_NET_DHCP_OPTION_HOST_NAME_LEN {
+                display "DHCP host name maximum length"
+                flavor  data
+                default_value 60
+                active_if CYGOPT_NET_DHCP_OPTION_HOST_NAME
+                description "
+                    This option defines the maximum length allowed for the 
+                    host name set by dhcp_set_hostname()."
+            }
+        }
+
+        cdl_option CYGOPT_NET_DHCP_OPTION_DHCP_CLIENTID_MAC {
+            display "DHCP client ID option"
+            flavor  bool
+            default_value 0
+            active_if CYGOPT_NET_DHCP_DHCP_THREAD
+            description "
+                This option adds the TAG_DHCP_CLIENTID option to the DHCP/BOOTP
+                requests.  It uses the interface MAC address for the identifier."
+        }
     }
 
     cdl_component CYGPKG_NET_IPV6_ROUTING {
