@@ -246,8 +246,6 @@
         &nbsp;/* rectangle width on display */</font></font> <br>
         <font face="Courier New, Courier, mono"><font size="-1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;20, 
         &nbsp;/* rectangle heigth on display */</font></font> <br>
-        <font face="Courier New, Courier, mono"><font size="-1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;20, 
-        &nbsp;/* rectangle heigth on display */</font></font> <br>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font face="Courier New, Courier, mono"><font size="-1">(void 
         *)my_buffer, /* Address of buffer */<br>
         </font><font face="Courier New, Courier, mono"><font size="-1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;50, 
@@ -268,7 +266,8 @@
       </td>
   </tr>
 </table>
-<p>&nbsp;</p><table width="91%" border="1" cellspacing="0" cellpadding="0" bgcolor="#FFFFCC">
+<p>&nbsp; </p>
+<table width="91%" border="1" cellspacing="0" cellpadding="0" bgcolor="#FFFFCC">
   <tr> 
     <td> 
       <p><font face="Courier New, Courier, mono"><font face="Courier New, Courier, mono"></font><b>void 
@@ -323,6 +322,37 @@
         100% to store the rectangle from the display. <font face="Courier New, Courier, mono"><font size="-1"> 
         </font></font></p>
       </td>
+  </tr>
+</table>
+<p>&nbsp;</p><table width="91%" border="1" cellspacing="0" cellpadding="0" bgcolor="#FFFFCC">
+  <tr> 
+    <td> 
+      <p><font face="Courier New, Courier, mono"><font face="Courier New, Courier, mono"></font><b>void 
+        VncCopyBuffer2RectMask(void *buffer,<br>
+        &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+        cyg_uint16 buff_w,<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+        cyg_uint16 buff_h, <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+        cyg_uint16 x_off,<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+        cyg_uint16 y_off,<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+        cyg_uint16 x, <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+        cyg_uint16 y,<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+        cyg_uint16 width,<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+        cyg_uint16 height,<br>
+        <font face="Courier New, Courier, mono">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vnc_colour_t 
+        mask_colour</font> )</b></font></p>
+      <p>The VNC copy buffer to rectangle with mask function works exactly like 
+        VncCopyRect2Buffer(), except that a mask colour is also specified. Any 
+        pixels in the buffer that have the value mask_colour, will not be copied 
+        to the frame buffer - leaving the original pixels untouched.<font face="Courier New, Courier, mono"><font size="-1"> 
+        </font></font></p>
+    </td>
   </tr>
 </table>
 <p>&nbsp;</p>
@@ -590,7 +620,7 @@
   </tr>
 </table>
 <p>The cyg_io_read() function is a non-blocking function and each keystroke event 
-  generates 4bytes of data:</p>
+  generates 4 bytes of data:</p>
 <p>Byte 0: Padding - always zero<br>
   Byte 1: Key pressed/released (1 when key pressed)<br>
   Byte 2: Keysym value for key MSB<br>

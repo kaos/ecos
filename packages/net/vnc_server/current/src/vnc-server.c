@@ -1535,8 +1535,50 @@ void VncCopyBuffer2Rect( void *buffer, cyg_uint16 buff_w, cyg_uint16 buff_h ,cyg
         src_buffer += x_off;  /* Allow for an x offset into supplied buffer */
         for (j = x; j < x + width; j++)
         {
-            /* Copy each pixel in the rectangle to the supplied buffer */
+            /* Copy each pixel in the supplied buffer to the frame buffer */
             frame_buffer[i][j] = *src_buffer;
+            src_buffer++;
+        }
+
+        src_buffer += eol_padding;  /* Allow for unused space at the end of each line */
+    }
+
+    /* Mark the required tiles for update */
+    for (i = y/TILE_SIZE; i <= (y + height - 1) /TILE_SIZE; i++)
+    {
+        for (j = x/TILE_SIZE; j <= (x + width - 1)/TILE_SIZE; j++)
+        {
+            tile_updated[i][j] = 1;
+        }
+    }
+}
+
+
+/* Function to copy data from a supplied buffer to a rectangle in the frame buffer with mask */
+void VncCopyBuffer2RectMask( void *buffer, cyg_uint16 buff_w, cyg_uint16 buff_h ,cyg_uint16 x_off, cyg_uint16 y_off,
+                             cyg_uint16 x, cyg_uint16 y, cyg_uint16 width, cyg_uint16 height, vnc_colour_t col)
+{
+    int i, j;
+    cyg_uint16 eol_padding = buff_w - width - x_off;
+
+#if (BITS_PER_PIXEL == 8)
+    cyg_uint8 *src_buffer = (cyg_uint8 *)buffer;
+#else
+    cyg_uint16 *src_buffer = (cyg_uint16 *)buffer;
+#endif
+
+    src_buffer += ((x_off + width) * y_off);  /* Allow for a y offset into supplied buffer */
+    for (i = y; i < y + height; i++)
+    {
+        src_buffer += x_off;  /* Allow for an x offset into supplied buffer */
+        for (j = x; j < x + width; j++)
+        {
+            /* Copy each non-mask pixel in the supplied buffer to the frame buffer */
+            if (*src_buffer != col)
+            {
+                frame_buffer[i][j] = *src_buffer;
+            }
+
             src_buffer++;
         }
 
@@ -1646,14 +1688,13 @@ vnc_printf_return_t VncPrintf(MWCFONT* font, int do_print, vnc_colour_t colour, 
 
         y_max = y_pos;
 
+        if (do_print)
+        {
         /* Draw the character in the frame buffer */
         for (i = char_offset; i < (char_offset + sel_font->height); i++)
         {
             if ((y_pos + i - char_offset) < CYGNUM_VNC_SERVER_FRAME_HEIGHT)
             {
-                if (do_print)
-                {
-                    /* Actually print the text */
                     /* This has not gone off the bottom of the frame */
                     for (j = 0; j < char_width; j++)
                     {

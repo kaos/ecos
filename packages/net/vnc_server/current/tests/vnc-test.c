@@ -29,6 +29,12 @@
 #include <unistd.h>           /* read() */
 #include <stdlib.h>           /* rand() */
 
+void DrawCursor(void);
+void HideCursor(void);
+
+int cursor_x, cursor_y;  /* Cursor position */
+vnc_frame_format_t *display_info;  /* Display Info */
+
 int main()
 {
     int mouse_handle = -1;
@@ -46,8 +52,6 @@ int main()
 
     fd_set  sock_desc;  /* Set of descriptors for select */
     int max_handle;
-
-    vnc_frame_format_t *display_info;
 
     int bell_text_state = 0;
     char bell_message[] = "***** Click on a yellow pixel to sound the bell *****";
@@ -196,6 +200,11 @@ int main()
     /* Write the text on the background */
     VncPrintf(0, 1, VNC_YELLOW, bell_text_x_pos, bell_text_y_pos, "%s", bell_message);
 
+    /* Initialise the cursor */
+    cursor_x = display_info->frame_width / 2;
+    cursor_y = display_info->frame_height / 2;
+    DrawCursor();
+
     /* Initialse the max handle variable */
     max_handle = -1;
     if (kbd_handle > max_handle)
@@ -266,6 +275,10 @@ int main()
 
                 if (mouse_len == 8)
                 {
+                    HideCursor();  /* Hide the old cursor */
+                    cursor_x = mouse_data[2]*256 + mouse_data[3];
+                    cursor_y = mouse_data[4]*256 + mouse_data[5];
+
                     if (mouse_data[1] && !last_mouse_button)
                     {
                         /* Ring bell and change colours of bell message text if the */
@@ -304,6 +317,7 @@ int main()
                     }
 
                     last_mouse_button = mouse_data[1];  /* Save mouse button data */
+                    DrawCursor();  /* Draw the new cursor */
                 }
             }
 
@@ -311,4 +325,117 @@ int main()
     }
 
     return 1;
+}
+
+
+vnc_colour_t under_cursor[16][16];  /* Buffer to hold display area under cursor */
+
+    /* Buffer holding cursor data */
+#define BLK VNC_BLACK
+#define TRN VNC_BLUE
+#define WHT VNC_WHITE
+#define GRY VNC_LTGRAY
+vnc_colour_t cursor[16][16] = {{BLK, BLK, BLK, TRN, TRN, TRN, TRN, TRN, TRN, TRN, TRN, TRN, TRN, TRN, TRN, TRN},
+                               {BLK, GRY, GRY, BLK, BLK, TRN, TRN, TRN, TRN, TRN, TRN, TRN, TRN, TRN, TRN, TRN},
+                               {BLK, WHT, GRY, GRY, GRY, BLK, BLK, TRN, TRN, TRN, TRN, TRN, TRN, TRN, TRN, TRN},
+                               {TRN, BLK, WHT, GRY, GRY, GRY, GRY, BLK, BLK, TRN, TRN, TRN, TRN, TRN, TRN, TRN},
+                               {TRN, BLK, WHT, WHT, GRY, GRY, GRY, GRY, GRY, BLK, BLK, TRN, TRN, TRN, TRN, TRN},
+                               {TRN, TRN, BLK, WHT, WHT, GRY, GRY, GRY, GRY, GRY, GRY, BLK, BLK, TRN, TRN, TRN},
+                               {TRN, TRN, BLK, WHT, WHT, WHT, GRY, GRY, GRY, GRY, GRY, GRY, GRY, BLK, TRN, TRN},
+                               {TRN, TRN, TRN, BLK, WHT, WHT, WHT, GRY, GRY, BLK, BLK, BLK, BLK, BLK, TRN, TRN},
+                               {TRN, TRN, TRN, BLK, WHT, WHT, WHT, WHT, GRY, GRY, BLK, TRN, TRN, TRN, TRN, TRN},
+                               {TRN, TRN, TRN, TRN, BLK, WHT, WHT, BLK, WHT, GRY, GRY, BLK, TRN, TRN, TRN, TRN},
+                               {TRN, TRN, TRN, TRN, BLK, WHT, WHT, BLK, BLK, WHT, GRY, GRY, BLK, TRN, TRN, TRN},
+                               {TRN, TRN, TRN, TRN, TRN, BLK, WHT, BLK, TRN, BLK, WHT, GRY, GRY, BLK, TRN, TRN},
+                               {TRN, TRN, TRN, TRN, TRN, BLK, WHT, BLK, TRN, TRN, BLK, WHT, GRY, GRY, BLK, TRN},
+                               {TRN, TRN, TRN, TRN, TRN, TRN, BLK, TRN, TRN, TRN, TRN, BLK, WHT, GRY, GRY, BLK},
+                               {TRN, TRN, TRN, TRN, TRN, TRN, TRN, TRN, TRN, TRN, TRN, TRN, BLK, WHT, BLK, TRN},
+                               {TRN, TRN, TRN, TRN, TRN, TRN, TRN, TRN, TRN, TRN, TRN, TRN, TRN, BLK, TRN, TRN}};
+#undef BLK
+#undef TRN
+#undef WHT
+#undef GRY
+
+void DrawCursor(void)
+{
+    int rect_width, rect_height;
+
+    if (cursor_x >= display_info->frame_width)
+    {
+        /* Cursor is off the screen */
+        return;
+    }
+    else if ((cursor_x + 16) >= display_info->frame_width)
+    {
+        /* Cursor is partially off the screen */
+        rect_width = display_info->frame_width - cursor_x;
+    }
+    else
+    {
+        /* Cursor is fully on the screen */
+        rect_width = 16;
+    }
+
+    if (cursor_y >= display_info->frame_height)
+    {
+        /* Cursor is off the screen */
+        return;
+    }
+    else if ((cursor_y + 16) >= display_info->frame_height)
+    {
+        /* Cursor is partially off the screen */
+        rect_height = display_info->frame_height - cursor_y;
+    }
+    else
+    {
+        /* Cursor is fully on the screen */
+        rect_height = 16;
+    }
+
+    /* Save the area under the cursor */
+    VncCopyRect2Buffer(cursor_x, cursor_y, rect_width, rect_height, under_cursor, 16, 16, 0, 0);
+
+    /* Draw the new cursor */
+    VncCopyBuffer2RectMask(cursor, 16, 16, 0, 0, cursor_x, cursor_y, rect_width, rect_height, VNC_BLUE);
+}
+
+
+void HideCursor(void)
+{
+    int rect_width, rect_height;
+
+    if (cursor_x >= display_info->frame_width)
+    {
+        /* Cursor is off the screen */
+        return;
+    }
+    else if ((cursor_x + 16) >= display_info->frame_width)
+    {
+        /* Cursor is partially off the screen */
+        rect_width = display_info->frame_width - cursor_x;
+    }
+    else
+    {
+        /* Cursor is fully on the screen */
+        rect_width = 16;
+    }
+
+    if (cursor_y >= display_info->frame_height)
+    {
+        /* Cursor is off the screen */
+        return;
+    }
+    else if ((cursor_y + 16) >= display_info->frame_height)
+    {
+        /* Cursor is partially off the screen */
+        rect_height = display_info->frame_height - cursor_y;
+    }
+    else
+    {
+        /* Cursor is fully on the screen */
+        rect_height = 16;
+    }
+
+    /* Restore the saved area under the cursor */
+    VncCopyBuffer2Rect(under_cursor, 16, 16, 0, 0, cursor_x, cursor_y, rect_width, rect_height);
 }

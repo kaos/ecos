@@ -119,6 +119,8 @@ void VncCopyRect2Buffer(cyg_uint16 x, cyg_uint16 y, cyg_uint16 width, cyg_uint16
                         void *buffer, cyg_uint16 buff_w, cyg_uint16 buff_h, cyg_uint16 x_off, cyg_uint16 y_off);
 void VncCopyBuffer2Rect(void *buffer, cyg_uint16 buff_w, cyg_uint16 buff_h, cyg_uint16 x_off, cyg_uint16 y_off,
                          cyg_uint16 x, cyg_uint16 y, cyg_uint16 width, cyg_uint16 height);
+void VncCopyBuffer2RectMask( void *buffer, cyg_uint16 buff_w, cyg_uint16 buff_h ,cyg_uint16 x_off, cyg_uint16 y_off,
+                             cyg_uint16 x, cyg_uint16 y, cyg_uint16 width, cyg_uint16 height, vnc_colour_t col);
 void VncSoundBell(void);
 #ifdef CYGNUM_VNC_SERVER_INCLUDE_VNC_PRINTF
 vnc_printf_return_t VncPrintf(MWCFONT* font, int do_print, vnc_colour_t colour, int x, int y, const char *fmt, ... );
