@@ -1,3 +1,8 @@
+2003-03-03  John Dallaway  <jld@ecoscentric.com>
+
+	* programming-concepts-techniques.sgml:
+	PKG_INSTALL_DIR -> INSTALL_DIR
+
 2003-02-12  Nick Garnett  <nickg@calivar.com>
 
 	* user-guide.sgml: 
@@ -10,7 +15,7 @@
 	* introduction.sgml: 
 	* installation.sgml: 
 	* programming.sgml: 	
-	* programming-concepts-techniques.sgml: 
+	* programming-concepts-techniques.sgml:
 	* target-setup.sgml: 
 	* real-time-characterization.sgml: 
 	New files containing both fresh text and text merged in from the

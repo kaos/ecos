@@ -900,7 +900,7 @@ int main(void)
 <PARA>Here is how you could compile and run this program in the <filename>examples</filename> directory,
 using (for example) the MN10300 simulator target: </PARA>
 <SCREEN>
-$ make XCC=mn10300-elf-gcc PKG_INSTALL_DIR=/tmp/ecos-work-mn10300/install instrument-test
+$ make XCC=mn10300-elf-gcc INSTALL_DIR=/tmp/ecos-work-mn10300/install instrument-test
 mn10300-elf-gcc -c -o instrument-test.o -g -Wall -I/tmp/ecos-work-mn10300/install/include \
         -ffunction-sections -fdata-sections instrument-test.c
 mn10300-elf-gcc -nostartfiles -L/tmp/ecos-work-mn10300/install/lib -W1,--gc-sections -o \
