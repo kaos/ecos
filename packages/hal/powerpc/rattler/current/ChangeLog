@@ -1,3 +1,7 @@
+2003-10-22  Gary Thomas  <gary@mlbassoc.com>
+
+	* cdl/hal_powerpc_rattler.cdl: Add CDL to identify board model.
+
 2003-09-21  Gary Thomas  <gary@mlbassoc.com>
 
 	* misc/redboot_RAM.ecm: 

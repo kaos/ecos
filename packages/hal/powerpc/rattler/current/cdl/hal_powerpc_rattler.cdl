@@ -140,6 +140,10 @@ cdl_package CYGPKG_HAL_POWERPC_RATTLER {
         description      "
 	   The Rattler comes in two variants - one with PCI
            and another without."
+        define_proc {
+            puts $::cdl_header "#undef  HAL_PLATFORM_BOARD"
+            puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"Rattler-PCI\""
+        }
     }
 
     # Real-time clock/counter specifics
