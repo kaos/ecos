@@ -201,8 +201,9 @@ __externC char *tmpnam( char *s ) __THROW
         // s now points to a name candidate
 #ifdef CYGPKG_LIBC_STDIO_FILEIO
         int fd = open( s, O_RDONLY );
-        close(fd);
-        if (fd < 0 && ENOENT == errno) // we have a winner
+        if (fd >= 0)
+            close(fd);
+        else if ( ENOENT == errno ) // we have a winner
             break;
 #else
         break; // no real filesystem, so just go with what we've come up with
