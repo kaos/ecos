@@ -141,14 +141,6 @@ void Cyg_Scheduler::unlock_inner( cyg_ucount32 new_lock )
     CYG_REPORT_FUNCTION();
 #endif    
 
-    // This assert must be outside the loop because running DSRs can make
-    // it fail if the current thread that was about to sleep is awoken by
-    // the DSR!  Going round the loop to run new DSRs does the same.
-    CYG_ASSERT( (new_lock == 0) ||
-                (get_current_thread()->state != Cyg_Thread::RUNNING ||
-                 get_need_reschedule()) ,
-                "Unnecessary call to unlock_inner()" );
-        
     do {
 
         CYG_PRECONDITION( new_lock==0 ? get_sched_lock() == 1 :

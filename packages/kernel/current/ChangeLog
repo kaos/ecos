@@ -1,3 +1,10 @@
+2002-08-08  Nick Garnett  <nickg@calivar.demon.co.uk>
+
+	* src/sched/sched.cxx (unlock_inner): Removed initial
+	assertion. This has served its purpose and with the introduction
+	of routines such as unlock_reschedule() is prone to firing in
+	otherwise benign circumstances.
+
 2002-08-05  Bart Veer  <bartv@tymora.demon.co.uk>
 
 	* cdl/kernel.cdl, include/kapidata.h, include/kapi.h:
