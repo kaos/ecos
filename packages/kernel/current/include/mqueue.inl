@@ -324,7 +324,7 @@ Cyg_Mqueue::put( const char *buf, size_t len, unsigned int prio, bool block
         qent     = freelist;
         freelist = freelist->next;
     } else {
-        for ( qtmp=freelist; !qtmp->next->busy; qtmp=qtmp->next )
+        for ( qtmp=freelist; qtmp->next->busy; qtmp=qtmp->next )
             CYG_EMPTY_STATEMENT; // skip through
         qent       = qtmp->next;
         qtmp->next = qent->next;
@@ -446,7 +446,7 @@ Cyg_Mqueue::get( char *buf, size_t *len, unsigned int *prio, bool block
     } else {
         struct qentry *qtmp;
 
-        for ( qtmp=q; !qtmp->next->busy; qtmp=qtmp->next )
+        for ( qtmp=q; qtmp->next->busy; qtmp=qtmp->next )
             CYG_EMPTY_STATEMENT; // skip through
 
         qent = qtmp->next;
