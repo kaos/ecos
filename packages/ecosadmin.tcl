@@ -18,6 +18,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2003 John Dallaway
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -122,6 +123,7 @@ namespace eval ecosadmin {
 	variable extract_license_arg 0;     # --extract_license
 	variable add_package        "";     # add FILE
 	variable remove_package     "";     # remove PACKAGE
+	variable merge_repository   "";     # merge REPOSITORY
 	variable version_arg        "";     # --version VER
 	
 	# Details of all known packages, targets and templates
@@ -133,6 +135,9 @@ namespace eval ecosadmin {
 	array set target_data {};
 	array set template_data {};
 
+	# List of packages merged from another repository
+	variable merge_packages ""
+	
 	# What routines should be invoked for outputting fatal errors and
 	# for warning messages ?
 	variable fatal_error_handler ecosadmin::cli_fatal_error
@@ -428,6 +433,20 @@ proc ecosadmin::parse_arguments { argv0 argv } {
 				continue
 			}
 		
+			# check for the merge command
+			if { [regexp -- {^-?-?merge=?(.*)$} $args($i) dummy match1] == 1 } {
+				if { $match1 != "" } {
+					set ecosadmin::merge_repository $match1
+				} else {
+					if { $i == $argc } {
+						fatal_error "missing argument after merge"
+					} else {
+						set ecosadmin::merge_repository $args([incr i])
+					}
+				}
+				continue
+			}
+		
 			# check for the remove command
 			if { [regexp -- {^-?-?remove=?(.*)$} $args($i) dummy match1] == 1 } {
 				if { $match1 != "" } {
@@ -464,6 +483,7 @@ proc ecosadmin::parse_arguments { argv0 argv } {
 	# Convert user-specified UNIX-style Cygwin pathnames to Windows Tcl-style as necessary
 	set ecosadmin::component_repository [get_pathname_for_tcl $ecosadmin::component_repository]
 	set ecosadmin::add_package [get_pathname_for_tcl $ecosadmin::add_package]
+	set ecosadmin::merge_repository [get_pathname_for_tcl $ecosadmin::merge_repository]
 }
 
 #
@@ -483,7 +503,7 @@ proc ecosadmin::argument_help { } {
 # }}}
 # {{{  Packages file
 
-proc ecosadmin::read_data { } {
+proc ecosadmin::read_data { silentflag } {
 
 	ASSERT { $ecosadmin::component_repository != "" }
 
@@ -613,20 +633,20 @@ proc ecosadmin::read_data { } {
 	# check that all of these packages are present and correct, and incidentally
 	# figure out which versions are present.
 	foreach pkg $ecosadmin::known_packages {
-	
+
 		set pkgdir [file join $ecosadmin::component_repository $ecosadmin::package_data($pkg,dir)]
 		if { ![file exists $pkgdir] || ![file isdir $pkgdir] } {
-			warning "package $pkg at $pkgdir missing"
+			if { "" == $silentflag } {
+				warning "package $pkg at $pkgdir missing"
+			}
 		} else {
-
-                        # Each subdirectory should correspond to a release. A utility routine
-                        # is available for this.
-                        set ecosadmin::package_data($pkg,versions) [locate_subdirs $pkgdir]
-                        if { $ecosadmin::package_data($pkg,versions) == "" } {
-                            fatal_error "package $pkg has no version directories"
-                        }
+			# Each subdirectory should correspond to a release. A utility routine
+			# is available for this.
+			set ecosadmin::package_data($pkg,versions) [locate_subdirs $pkgdir]
+			if { $ecosadmin::package_data($pkg,versions) == "" } {
+				fatal_error "package $pkg has no version directories"
+			}
 		}
-
 		# Sort all the versions using a version-aware comparison version
 		set ecosadmin::package_data($pkg,versions) [
 			lsort -command ecosadmin::cdl_compare_version $ecosadmin::package_data($pkg,versions)
@@ -903,15 +923,23 @@ proc ecosadmin::merge_new_packages { datafile } {
 	set ecosfile [ file join $ecosadmin::component_repository "ecos.db" ]
 	variable outfile [ open $ecosfile a+ ]
 
+	# initialize the list of merged packages
+	set ecosadmin::merge_packages ""
+
 	# this procedure is called when the interpreter encounters a
 	# package command in the datafile
 	proc merge { command name body } {
-		ecosadmin::report "adding $command $name"
+		ecosadmin::report "processing $command $name"
 		# append the new package/target/template only if it is not already known
 		if { ( ( $command == "package" ) && ( [ lsearch -exact $ecosadmin::known_packages $name ] == -1 ) ) ||
 			( ( $command == "target" ) && ( [ lsearch -exact $ecosadmin::known_targets $name ] == -1 ) ) ||
 			( ( $command == "template" ) && ( [ lsearch -exact $ecosadmin::known_templates $name ] == -1 ) ) } {
 			puts $ecosadmin::outfile "$command $name {$body}\n"
+		}
+		
+		# add new packages to the list of merged packages
+		if { ( "package" == $command ) } {
+			lappend ecosadmin::merge_packages $name
 		}
 	}
 
@@ -936,9 +964,8 @@ proc ecosadmin::merge_new_packages { datafile } {
 	# The parser is ready to evaluate the script. To avoid having to give the
 	# safe interpreter file I/O capabilities, the file is actually read in
 	# here and then evaluated.
-	set filename [ file join $ecosadmin::component_repository $datafile ]
 	set status [ catch {
-		set fd [ open $filename r ]
+		set fd [ open $datafile r ]
 		set script [ read $fd ]
 		close $fd
 		$parser eval $script
@@ -953,7 +980,7 @@ proc ecosadmin::merge_new_packages { datafile } {
 
 	# report errors
 	if { $status != 0 } {
-		ecosadmin::fatal_error "parsing $filename:\n$message"
+		ecosadmin::fatal_error "parsing $datafile:\n$message"
 	}
 }
 
@@ -1140,7 +1167,7 @@ proc ecosadmin::process_add_package { } {
 	}
 
 	# merge the new package information into the eCos database file as necessary
-	ecosadmin::merge_new_packages $datafile
+	ecosadmin::merge_new_packages [ file join $ecosadmin::component_repository $datafile ]
 
 	# delete the database and license files
 	file delete $datafile
@@ -1148,7 +1175,7 @@ proc ecosadmin::process_add_package { } {
 
 	# read the revised database back in and remove any
 	# targets and templates with missing packages
-	read_data
+	read_data ""
 	filter_old_packages ""
 }
 
@@ -1177,6 +1204,61 @@ proc ecosadmin::process_remove_package { } {
 	
 	# filter out the old package from the eCos database file
 	filter_old_packages $package_name
+}
+
+# ----------------------------------------------------------------------------
+# Process_merge_repository. This routine is responsible for merging packages
+# from another repository into the eCos repository
+#
+
+proc ecosadmin::process_merge_repository { } {
+	ASSERT { $ecosadmin::merge_repository != "" }
+	ASSERT { $ecosadmin::component_repository != "" }
+
+	# merge new package and target information into the eCos database file as necessary
+	# names of packages to be merged are placed in $ecosadmin::merge_packages
+	ecosadmin::merge_new_packages [ file join $ecosadmin::merge_repository "ecos.db" ]
+	
+	# read the revised database back in to pick up new package paths, but ignore missing package directories
+	read_data "silent"
+	
+	# copy package directories into the repository as necessary
+	# existing packages are never replaced but a another version may be added
+	foreach pkg $ecosadmin::merge_packages {
+		set newpkgdir [file join $ecosadmin::merge_repository $ecosadmin::package_data($pkg,dir)]
+		foreach newpkgver [locate_subdirs $newpkgdir] {
+			if { [lsearch $ecosadmin::package_data($pkg,versions) $newpkgver] == -1 } {
+				ecosadmin::report "copying $pkg $newpkgver"
+				file mkdir [ file join $ecosadmin::component_repository $ecosadmin::package_data($pkg,dir) ]
+				file copy [ file join $newpkgdir $newpkgver ] [ file join $ecosadmin::component_repository $ecosadmin::package_data($pkg,dir) $newpkgver ]
+			}
+		}
+	}
+
+	# read the revised database again to deliver warnings of missing package directories if necessary
+	read_data ""
+
+	# copy new files from the pkgconf and templates directory hierarchies into the repository as necessary
+	foreach topdir { pkgconf templates } {
+		set repository_files [ ecosadmin::locate_all_files [ file join $ecosadmin::component_repository $topdir ] ]
+		set merge_files [ ecosadmin::locate_all_files [ file join $ecosadmin::merge_repository $topdir ] ]
+		foreach filename $merge_files {
+			if { [lsearch $repository_files $filename] == -1 } {
+				ecosadmin::report "copying $topdir file $filename"
+				file mkdir [ file join $ecosadmin::component_repository $topdir [ file dirname $filename ] ]
+				file copy [ file join $ecosadmin::merge_repository $topdir $filename ] [ file join $ecosadmin::component_repository $topdir $filename ]
+			}
+		}
+	}
+
+	# copy files from the top level packages directory into the repository as necessary
+	foreach filename [ glob -nocomplain -directory $ecosadmin::merge_repository -type f * ] {
+		set destination [ file join $ecosadmin::component_repository [ file tail $filename ] ]
+		if { 0 == [ file exists $destination ] } {
+			ecosadmin::report "copying file [file tail $filename]"
+			file copy $filename $destination
+		}
+	}
 }
 
 # ----------------------------------------------------------------------------
@@ -1244,7 +1326,7 @@ if { ! [info exists ecosadmin_not_standalone] } {
 		ecosadmin::parse_arguments $argv0 $argv
 
 		# Read in the eCos repository database.
-		ecosadmin::read_data
+		ecosadmin::read_data ""
 	
 		# Process the ecosadmin command
 		if { $ecosadmin::list_packages_arg != 0 } {
@@ -1255,6 +1337,8 @@ if { ! [info exists ecosadmin_not_standalone] } {
 			ecosadmin::process_add_package
 		} elseif { $ecosadmin::remove_package != "" } {
 			ecosadmin::process_remove_package
+		} elseif { $ecosadmin::merge_repository != "" } {
+			ecosadmin::process_merge_repository
 		}
 
 	} error_message ] != 0 } { 

@@ -1,3 +1,8 @@
+2003-06-12  John Dallaway  <jld@ecoscentric.com>
+
+	* ecosadmin.tcl: Add repository merge capability (undocumented and
+	unsupported at present).
+
 2003-05-21  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* pkgconf/stylesheet.dsl: No callout graphics.
