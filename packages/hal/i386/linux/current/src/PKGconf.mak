@@ -34,7 +34,7 @@ include ../../../../../pkgconf/pkgconf.mak
 
 LIBRARY       := libtarget.a
 COMPILE       := hal_diag.c hal_startup.c syscall-i386-linux-1.0.S entry.c \
-                 linux.S
+                 linux.S linux_misc.c
 OTHER_OBJS    :=
 OTHER_TARGETS :=
 OTHER_CLEAN   :=

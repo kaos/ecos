@@ -60,18 +60,18 @@
        display          "Use Linux real-time timer"
        parent           CYGPKG_HAL_I386_LINUX
        description      "
-           By default the eCos timer will driven by a virtual timer,
-           meaning that it will only tick when the Linux task is
-           executing. This prevents (to some degree) time skew in
-           the eCos kernel due to heavy load on Linux. By checking
-           this option, the eCos timer can be driven by the Linux
-           real-time timer instead."
+           Using the real-time timer to drive the eCos RTC allows the
+           eCos idle loop to call select(2) and thus not put any load
+           on the host machine.
+           Deselecting this option means the virtual timer will be used
+           instead. This may prevent (to some degree) time skew in the
+           eCos kernel, especially if the host machine has a high load."
    }
 
    }}CFG_DATA */
 
 #define CYGHWR_HAL_I386_LINUX_STARTUP       ram
-#undef  CYGSEM_HAL_I386_LINUX_REAL_TIME
+#define CYGSEM_HAL_I386_LINUX_REAL_TIME
 
 // Real-time clock/counter specifics
 

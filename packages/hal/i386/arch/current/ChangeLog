@@ -1,3 +1,7 @@
+1999-10-05  Jesper Skov  <jskov@cygnus.co.uk>
+        From Andrew Lunn (lunn@ma.tech.ascom.ch)
+	* include/hal_arch.h (HAL_IDLE_THREAD_ACTION): Defined.
+
 1999-05-14  Jesper Skov  <jskov@cygnus.co.uk>
         PR 18956
 	* src/i386.ld: Fixed problem with rel_got.

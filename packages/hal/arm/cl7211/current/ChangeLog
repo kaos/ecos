@@ -1,3 +1,7 @@
+1999-10-04  Gary Thomas  <gthomas@cygnus.co.uk>
+	* include/hal_platform_setup.h: Allow ROM applications to be linked
+	at "ram" addresses and be automatically relocated at startup time.
+
 1999-09-15  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* misc/nand_test.c (nand_exercise): Check "read ID" function.

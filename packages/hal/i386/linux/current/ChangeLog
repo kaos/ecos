@@ -1,3 +1,14 @@
+1999-10-05  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal_i386_linux.h: Changed to use REAL TIME as
+	default.
+
+        From Andrew Lunn (lunn@ma.tech.ascom.ch)
+	* src/PKGconf.mak: 
+	* src/linux_misc.c:  [added]
+	* src/syscall-i386-linux-1.0.S: 
+	Added idle thread action, reducing host load when eCos is idle.
+
 1999-08-16  John Dallaway  <jld@cygnus.co.uk>
 
 	* include/pkgconf/hal_i386_linux.h:

@@ -466,7 +466,6 @@
             type         boolean
             parent       CYGPKG_LIBC
             requires     CYGPKG_IO
-            requires     CYGPKG_IO_SERIAL_HALDIAG
         }
 
         cdl_option CYGIMP_LIBC_STDIO_INLINES {
@@ -619,7 +618,7 @@
                              the name of a device. The name of the device
                              depends on the device drivers you have
                              configured in your system. For example,
-                             /dev/haldiag could be the HAL diagnostic output
+                             /dev/ttydiag could be the HAL diagnostic output
                              pseudo-device, or /dev/tty0 could be your
                              first serial driver, depending on your
                              configuration."
@@ -739,7 +738,7 @@
 //
 // So what is the name of the device that is the default console device
 
-#define CYGDAT_LIBC_STDIO_DEFAULT_CONSOLE        "/dev/haldiag"
+#define CYGDAT_LIBC_STDIO_DEFAULT_CONSOLE        "/dev/ttydiag"
 
 #define CYGSEM_LIBC_STDIO_PRINTF_FLOATING_POINT
 

@@ -185,9 +185,9 @@ externC void hal_longjmp(hal_jmp_buf env, int val);
 // chance to insert code. Typical idle thread behaviour might be to halt the
 // processor.
 
-//externC void hal_idle_thread_action(cyg_uint32 loop_count);
+externC void hal_idle_thread_action(cyg_uint32 loop_count);
 
-#define HAL_IDLE_THREAD_ACTION(_count_)
+#define HAL_IDLE_THREAD_ACTION(_count_) hal_idle_thread_action(_count_)
 
 //-----------------------------------------------------------------------------
 // Minimal and sensible stack sizes: the intention is that applications

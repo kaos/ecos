@@ -1,3 +1,10 @@
+1999-10-01  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/pkgconf/libc.h (CYGDAT_LIBC_STDIO_DEFAULT_CONSOLE): Change
+	default to /dev/ttydiag to get correct console-like behaviour
+	Also don't preclude use if haldiag package isn't included
+	(case 102065)
+
 1999-09-15  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* tests/signal/signal2.c (cause_fpe): Try both float and integer

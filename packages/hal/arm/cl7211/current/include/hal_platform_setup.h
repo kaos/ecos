@@ -242,22 +242,26 @@
 	nop	                                                                        ;\
 10:
 #else // EP7211, 720T processor
-#define MMU_INITIALIZE                                                                   \
-	ldr	r1,=MMU_Control_Init                                                    ;\
-	mcr	MMU_CP,0,r1,MMU_Control,c0	/* MMU off */                           ;\
-	ldr	r1,=MMU_BASE                                                            ;\
-	mcr	MMU_CP,0,r1,MMU_Base,c0                                                 ;\
-	mcr	MMU_CP,0,r1,MMU_TLB,c7,0	/*  Invalidate TLB - 720 style */       ;\
-	mcr	MMU_CP,0,r1,MMU_FlushIDC,c0,0	/* Invalidate Caches */                 ;\
-	ldr	r1,=0xFFFFFFFF                                                          ;\
-	mcr	MMU_CP,0,r1,MMU_DomainAccess,c0	                                        ;\
-	ldr	r2,=10f                 	                                        ;\
-	ldr	r1,=MMU_Control_Init|MMU_Control_M                                      ;\
-	mcr	MMU_CP,0,r1,MMU_Control,c0	                                        ;\
-	mov	pc,r2    /* Change address spaces */                                    ;\
-	nop	                                                                        ;\
-	nop	                                                                        ;\
-	nop	                                                                        ;\
+#define MMU_INITIALIZE                                                                   ;\
+	ldr	r1,=MMU_Control_Init                                                     ;\
+        mcr	MMU_CP,0,r1,MMU_Control,c0	/* MMU off */                            ;\
+	ldr	r1,=MMU_BASE                                                             ;\
+	mcr	MMU_CP,0,r1,MMU_Base,c0                                                  ;\
+	mcr	MMU_CP,0,r1,MMU_TLB,c7,0	/*  Invalidate TLB - 720 style */        ;\
+	mcr	MMU_CP,0,r1,MMU_FlushIDC,c0,0	/* Invalidate Caches */                  ;\
+	ldr	r1,=0xFFFFFFFF                                                           ;\
+	mcr	MMU_CP,0,r1,MMU_DomainAccess,c0	                                         ;\
+	ldr	r2,=10f                 	                                         ;\
+        ldr     r3,=__exception_handlers                                                              ;\
+        sub     r2,r2,r3                                                                 ;\
+        ldr     r3,=ROM0_LA_START                                                        ;\
+        add     r2,r2,r3                                                                 ;\
+	ldr	r1,=MMU_Control_Init|MMU_Control_M                                       ;\
+	mcr	MMU_CP,0,r1,MMU_Control,c0	                                         ;\
+	mov	pc,r2    /* Change address spaces */                                     ;\
+	nop	                                                                         ;\
+	nop	                                                                         ;\
+	nop	                                                                         ;\
 10:
 #endif
 
@@ -392,7 +396,18 @@
 	cmp	r3,r4                                                                   ;\
 	bne	10b                                                                     ;\
 /* Now initialize the MMU to use this new page table */                                 ;\
-        MMU_INITIALIZE                                                                  
+        MMU_INITIALIZE                                                                   ;\
+        ldr     r2,=__exception_handlers                                                              ;\
+        ldr     r3,=ROM0_LA_START                                                        ;\
+        cmp     r2,r3                                                                    ;\
+        beq     20f                                                                      ;\
+        ldr     r4,=__rom_data_end                                                       ;\
+15:                                                                                      ;\
+        ldr     r0,[r3],#4                                                               ;\
+        str     r0,[r2],#4                                                               ;\
+        cmp     r2,r4                                                                    ;\
+        bne     15b                                                                      ;\
+20:
 
 #else
 

@@ -344,9 +344,9 @@ NAME(x):                                        \
 //=========================================================================
 //              exit             1              select           82
 //              fork             2              socketcall      102
-//              read             3              readv           145
-//              write            4              writev          146
-//              open             5
+//              read             3              newselect       142
+//              write            4              readv           145
+//              open             5              writev          146
 //              creat            8
 //              link             9
 //              unlink          10
@@ -356,7 +356,7 @@ NAME(x):                                        \
 //              chown           16
 //              lseek           19
 //              rename          38
-//              dup                     41
+//              dup             41
 //              pipe            42
 //              ioctl           54
 //              fcntl           55
@@ -575,3 +575,6 @@ SYSCALL3(readv)
 SYSCALL3(writev)
 #endif
 
+//==========================================================================
+// machdep_sys_newselect()
+SYSCALL5(_newselect)
