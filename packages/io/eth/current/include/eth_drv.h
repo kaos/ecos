@@ -85,6 +85,9 @@
 #else // !CYGPKG_NET
 #include <cyg/hal/drv_api.h>
 #endif
+#ifdef CYGPKG_NET_LWIP
+#include "lwip/netif.h"
+#endif
 
 struct eth_drv_sg {
     CYG_ADDRESS  buf;
@@ -143,9 +146,15 @@ struct eth_hwr_funs {
     struct eth_drv_funs *eth_drv, *eth_drv_old;
 };
 
-#ifndef CYGPKG_NET
+#ifdef CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
 struct arpcom {
     unsigned char esa[6];
+};
+#endif
+
+#ifdef CYGPKG_NET_LWIP
+struct arpcom {
+    struct netif ac_if;
 };
 #endif
 

@@ -1,3 +1,9 @@
+2004-01-09  Jani Monoses <jani@iv.ro>
+
+	* include/eth_drv.h:
+	* src/lwip/eth_drv.c: Update to support more than one device and
+	be in sync with current lwip code.
+	
 2004-01-05  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/net/eth_drv.c: Names of FLASH config types changed.
