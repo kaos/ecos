@@ -34,6 +34,8 @@ cdl_configuration template_all {
     package     CYGPKG_IO_FILEIO current ;
     package     CYGPKG_NET current ;
     package     CYGPKG_NET_OPENBSD_STACK current ;
+    package     CYGPKG_SNMPAGENT current ;
+    package     CYGPKG_SNMPLIB current ;
     package     CYGPKG_NS_DNS current ;
     package     CYGPKG_IO_ETH_DRIVERS current ;
     package     CYGPKG_CRC current ;
@@ -191,4 +193,44 @@ cdl_option CYGBLD_ISO_PMUTEXTYPES_HEADER {
 
 cdl_option CYGBLD_ISO_STRING_BSD_FUNCS_HEADER {
     inferred_value 1 <cyg/libc/string/bsdstring.h>
+};
+
+cdl_component CYGPKG_KERNEL_THREADS_DESTRUCTORS {
+    inferred_value 1
+};
+
+cdl_option CYGBLD_ISO_POSIX_CLOCK_TYPES_HEADER {
+    inferred_value 1 <cyg/posix/time.h>
+};
+
+cdl_option CYGBLD_ISO_POSIX_CLOCKS_HEADER {
+    inferred_value 1 <cyg/posix/time.h>
+};
+
+cdl_option CYGBLD_ISO_BSDTYPES_HEADER {
+    inferred_value 1 <sys/bsdtypes.h>
+};
+
+cdl_option CYGBLD_ISO_DIRENT_HEADER {
+    inferred_value 1 <cyg/fileio/dirent.h>
+};
+
+cdl_option CYGBLD_ISO_PTHREAD_MUTEX_HEADER {
+    inferred_value 1 <cyg/posix/mutex.h>
+};
+
+cdl_option CYGBLD_ISO_NETDB_PROTO_HEADER {
+    inferred_value 1 <net/netdb.h>
+};
+
+cdl_option CYGBLD_ISO_NETDB_SERV_HEADER {
+    inferred_value 1 <net/netdb.h>
+};
+
+cdl_option CYGBLD_ISO_OPEN_MAX_HEADER {
+    inferred_value 1 <cyg/fileio/limits.h>
+};
+
+cdl_option CYGBLD_ISO_NAME_MAX_HEADER {
+    inferred_value 1 <cyg/fileio/limits.h>
 };

@@ -1,3 +1,7 @@
+2003-02-14  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* current.ect: Update inferred values.
+
 2002-03-13  Jesper Skov  <jskov@redhat.com>
 
 	* current.ect: Fix _GDB_STUBS option name.
