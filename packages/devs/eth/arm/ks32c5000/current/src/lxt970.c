@@ -2,7 +2,7 @@
 //
 //      lxt970.c
 //
-//      
+//      Driver for LXT970 PHY
 //
 //==========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
@@ -153,3 +153,5 @@ void PhyInterruptAck(void)
   MiiStationRead(1,LX970_ADDR);
   MiiStationRead(18,LX970_ADDR);
 }
+
+// EOF lxt970.c
