@@ -56,20 +56,18 @@
 #include <cyg/hal/hal_arch.h>
 #include CYGHWR_MEMORY_LAYOUT_H
 
-//
-// CAUTION!  This code must be copied to RAM before execution.  Therefore,
-// it must not contain any code which might be position dependent!
-//
 
 #define CNT 200*1000*10  // Approx 20ms
 
+int
+flash_query(unsigned char *data)  __attribute__ ((section (".2ram.flash_query")));
 int
 flash_query(unsigned char *data)
 {
     volatile unsigned short *ROM;
     int i, cnt;
 
-    ROM = FLASH_P2V(0);
+    ROM = (unsigned short *) FLASH_P2V(0);
     ROM[0] = FLASH_Read_Query;
     for (cnt = CNT;  cnt > 0;  cnt--) ;
     for (i = 0;  i < sizeof(struct FLASH_query);  i++) {

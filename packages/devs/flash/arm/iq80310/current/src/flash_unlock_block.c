@@ -53,10 +53,6 @@
 #include "flash.h"
 
 
-//
-// CAUTION!  This code must be copied to RAM before execution.  Therefore,
-// it must not contain any code which might be position dependent!
-//
 
 //
 // The difficulty with this operation is that the hardware does not support
@@ -70,6 +66,9 @@
 
 int
 flash_unlock_block(volatile unsigned char *block, int block_size, int blocks)
+	__attribute__ ((section (".2ram.flash_unlock_block")));
+int
+flash_unlock_block(volatile unsigned char *block, int block_size, int blocks)
 {
     volatile unsigned short *ROM, *bp;
     unsigned short stat;
@@ -77,7 +76,7 @@ flash_unlock_block(volatile unsigned char *block, int block_size, int blocks)
     unsigned short is_locked[MAX_FLASH_BLOCKS];
     int i;
 
-    ROM = FLASH_P2V((unsigned long)block & 0xFF800000);
+    ROM = (unsigned short *) FLASH_P2V((unsigned long)block & 0xFF800000);
 
     // Clear any error conditions
     ROM[0] = FLASH_Clear_Status;
@@ -86,7 +85,7 @@ flash_unlock_block(volatile unsigned char *block, int block_size, int blocks)
     // the device so currently locked blocks can be re-locked.
     bp = (unsigned short *)((unsigned long)block & 0xFF800000);
     for (i = 0;  i < blocks;  i++) {
-        if (bp == block) {
+        if (bp == (unsigned short *) block) {
             is_locked[i] = 0;
         } else {
 	    *(volatile unsigned short *)FLASH_P2V(bp) = FLASH_Read_Query;
@@ -104,7 +103,7 @@ flash_unlock_block(volatile unsigned char *block, int block_size, int blocks)
     }
 
     // Restore the lock state
-    bp = (unsigned char *)((unsigned long)block & 0xFF800000);
+    bp = (unsigned short *)((unsigned long)block & 0xFF800000);
     for (i = 0;  i < blocks;  i++) {
         if (is_locked[i]) {
             *FLASH_P2V(bp) = FLASH_Set_Lock;

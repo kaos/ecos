@@ -52,7 +52,7 @@
 
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_arch.h>
-#include <cyg/hal/hal_cache.h>
+#include <cyg/infra/diag.h>
 
 #define  _FLASH_PRIVATE_
 #include <cyg/io/flash.h>
@@ -61,28 +61,15 @@
 
 #define _si(p) ((p[1]<<8)|p[0])
 
+extern int strncmp(const char *s1, const char *s2, size_t len);
 int
 flash_hwr_init(void)
 {
     struct FLASH_query data, *qp;
-    extern char flash_query, flash_query_end;
-    typedef int code_fun(unsigned char *);
-    code_fun *_flash_query;
-    int code_len, stat, num_regions, region_size, icache_isenabled;
+    int num_regions, region_size;
 
-    // Copy 'program' code to RAM for execution
-    code_len = (unsigned long)&flash_query_end - (unsigned long)&flash_query;
-    _flash_query = (code_fun *)flash_info.work_space;
-    memcpy(_flash_query, &flash_query, code_len);
-    HAL_ICACHE_IS_ENABLED(icache_isenabled);
-    HAL_DCACHE_SYNC();  // Should guarantee this code will run
-    HAL_ICACHE_DISABLE(); // is also required to avoid old contents
-
-    memset(&data,0,sizeof(data));
-    stat = (*_flash_query)((void*)&data);
-    if (icache_isenabled)
-        HAL_ICACHE_ENABLE();
-
+    flash_dev_query((void*)&data);
+    
     qp = &data;
     if (/*(qp->manuf_code == FLASH_Intel_code) && */
         (strncmp(qp->id, "QRY", 3) == 0)) {
@@ -96,7 +83,7 @@ flash_hwr_init(void)
         return FLASH_ERR_OK;
     } else {
 	(*flash_info.pf)("Can't identify FLASH sorry\n");
-        diag_dump_buf(data, sizeof(data));
+        diag_dump_buf((void*)&data, sizeof(data));
         return FLASH_ERR_HWR;
     }
 }
