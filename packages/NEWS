@@ -1,3 +1,4 @@
+* Simple Network Time Protocol (SNTP) client contributed by Andrew Lunn.
 * Added port for NMI uE250 (ARM Xscale PXA250) platform, contributed 
   by Mind, NV.
 * Port added for IDT MIPS IDT79RC32334 reference platform, including Flash,

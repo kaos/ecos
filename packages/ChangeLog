@@ -1,3 +1,7 @@
+2003-02-25  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* ecos.db: Added the Simple Network Time Protocol (SNTP) client.
+
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* pkgconf/rules.doc: Allow support for copying files directly from

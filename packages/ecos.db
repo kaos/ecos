@@ -1145,6 +1145,17 @@ package CYGPKG_NS_DNS {
 	script		dns.cdl
         description     "DNS client support."
 }
+
+package CYGPKG_NET_SNTP {
+        alias           { "SNTP support" sntp }
+        directory       net/sntp
+        script          sntp.cdl
+        description "
+This package provides a SNTP client which can recieve broadcast time 
+information and set the system clock."
+}  
+
+
 package CYGPKG_DEVS_ETH_ARM_EDB7XXX {
 	alias 		{ "Cirrus Logic ethernet driver for EP7xxx boards" edb7xxx_eth_driver }
 	hardware
