@@ -123,10 +123,11 @@ static synth_disk_info_t synth_disk_info##_number_ = {                     \
     filefd:        -1,                                                     \
     filename:      CYGDAT_IO_DISK_ECOSYNTH_DISK##_number_##_FILENAME       \
 };                                                                         \
-static DISK_CHANNEL(synth_disk_channel##_number_,                          \
-                    synth_disk_funs,                                       \
-                    synth_disk_info##_number_,                             \
-                    _mbr_supp_                                             \
+DISK_CHANNEL(synth_disk_channel##_number_,                                 \
+             synth_disk_funs,                                              \
+             synth_disk_info##_number_,                                    \
+             _mbr_supp_,                                                   \
+             4                                                             \
 );                                                                         \
 BLOCK_DEVTAB_ENTRY(synth_disk_io##_number_,                                \
              CYGDAT_IO_DISK_ECOSYNTH_DISK##_number_##_NAME,                \
