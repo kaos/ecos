@@ -1,3 +1,8 @@
+2003-10-15  Roland Cassebohm  <roland.cassebohm@visionsystems.de>
+
+	* src/sys/net/if.c (ifinit): Change printf(...) to log(LOG_INIT,...) to
+        make it possible to disable output while initialization.
+ 
 2003-09-17  Reinhard Jessich  <Reinhard.Jessich@frequentis.com>
 
 	* src/sys/kern/uipc_mbuf.c: Now using flags (how) argument in call to

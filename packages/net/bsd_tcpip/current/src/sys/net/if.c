@@ -122,14 +122,16 @@ void
 ifinit(dummy)
 	void *dummy;
 {
+#ifdef DEBUG_IFINIT
 	struct ifnet *ifp;
 	int s;
 
 	s = splimp();
 	for (ifp = ifnet.tqh_first; ifp; ifp = ifp->if_link.tqe_next) {
-            printf("IFP: %p, next: %p\n", ifp, ifp->if_link.tqe_next);
+            log(LOG_INIT, "IFP: %p, next: %p\n", ifp, ifp->if_link.tqe_next);
         }
 	splx(s);
+#endif
 	if_slowtimo(0);
 }
 
