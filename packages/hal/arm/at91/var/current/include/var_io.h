@@ -162,6 +162,59 @@
 #define AT91_PIO_PER  0x00  // PIO enable
 #define AT91_PIO_PDR  0x04  // PIO disable
 #define AT91_PIO_PSR  0x08  // PIO status
+
+#if defined(CYGHWR_HAL_ARM_AT91_M55800A)
+
+// PIOA
+#define AT91_PIO_PSR_TCLK3   0x00000001 // Timer 3 Clock signal
+#define AT91_PIO_PSR_TIOA3   0x00000002 // Timer 3 Signal A
+#define AT91_PIO_PSR_TIOB3   0x00000004 // Timer 3 Signal B
+#define AT91_PIO_PSR_TCLK4   0x00000008 // Timer 4 Clock signal
+#define AT91_PIO_PSR_TIOA4   0x00000010 // Timer 4 Signal A
+#define AT91_PIO_PSR_TIOB4   0x00000020 // Timer 4 Signal B
+#define AT91_PIO_PSR_TCLK5   0x00000040 // Timer 5 Clock signal
+#define AT91_PIO_PSR_TIOA5   0x00000080 // Timer 5 Signal A
+#define AT91_PIO_PSR_TIOB5   0x00000100 // Timer 5 Signal B
+#define AT91_PIO_PSR_IRQ0    0x00000200 // External Interrupt 0
+#define AT91_PIO_PSR_IRQ1    0x00000400 // External Interrupt 1
+#define AT91_PIO_PSR_IRQ2    0x00000800 // External Interrupt 2
+#define AT91_PIO_PSR_IRQ3    0x00001000 // External Interrupt 3
+#define AT91_PIO_PSR_FIQ     0x00002000 // Fast Interrupt
+#define AT91_PIO_PSR_SCK0    0x00004000 // USART 0 Clock signal
+#define AT91_PIO_PSR_TXD0    0x00008000 // USART 0 transmit data
+#define AT91_PIO_PSR_RXD0    0x00010000 // USART 0 receive data
+#define AT91_PIO_PSR_SCK1    0x00020000 // USART 1 Clock signal
+#define AT91_PIO_PSR_TXD1    0x00040000 // USART 1 transmit data
+#define AT91_PIO_PSR_RXD1    0x00080000 // USART 1 receive data
+#define AT91_PIO_PSR_SCK2    0x00100000 // USART 2 Clock signal
+#define AT91_PIO_PSR_TXD2    0x00200000 // USART 2 transmit data
+#define AT91_PIO_PSR_RXD2    0x00400000 // USART 2 receive data
+#define AT91_PIO_PSR_SPCK    0x00800000 // SPI Clock signal 
+#define AT91_PIO_PSR_MISO    0x01000000 // SPI Master In Slave Out 
+#define AT91_PIO_PSR_MOIS    0x02000000 // SPI Master Out Slave In 
+#define AT91_PIO_PSR_NPCS0   0x04000000 // SPI Peripheral Chip Select 0
+#define AT91_PIO_PSR_NPCS1   0x08000000 // SPI Peripheral Chip Select 1
+#define AT91_PIO_PSR_NPCS2   0x10000000 // SPI Peripheral Chip Select 2
+#define AT91_PIO_PSR_NPCS3   0x20000000 // SPI Peripheral Chip Select 3
+
+// PIOB
+#define AT91_PIO_PSR_IRQ4    0x00000008 // External Interrupt 4
+#define AT91_PIO_PSR_IRQ5    0x00000010 // External Interrupt 5
+#define AT91_PIO_PSR_AD0TRIG 0x00000040 // ADC0 External Trigger
+#define AT91_PIO_PSR_AD1TRIG 0x00000080 // ADC1 External Trigger
+#define AT91_PIO_PSR_BMS     0x00040000 // Boot Mode Select
+#define AT91_PIO_PSR_TCLK0   0x00080000 // Timer 0 Clock signal
+#define AT91_PIO_PSR_TIOA0   0x00100000 // Timer 0 Signal A
+#define AT91_PIO_PSR_TIOB0   0x00200000 // Timer 0 Signal B
+#define AT91_PIO_PSR_TCLK1   0x00400000 // Timer 1 Clock signal
+#define AT91_PIO_PSR_TIOA1   0x00800000 // Timer 1 Signal A
+#define AT91_PIO_PSR_TIOB1   0x01000000 // Timer 1 Signal B
+#define AT91_PIO_PSR_TCLK2   0x02000000 // Timer 2 Clock signal
+#define AT91_PIO_PSR_TIOA2   0x04000000 // Timer 2 Signal A
+#define AT91_PIO_PSR_TIOB2   0x08000000 // Timer 2 Signal B
+
+#else
+
 #define AT91_PIO_PSR_TCLK0    0x00000001 // Timer #0 clock
 #define AT91_PIO_PSR_TIOA0    0x00000002 // Timer #0 signal A
 #define AT91_PIO_PSR_TIOB0    0x00000004 // Timer #0 signal B
@@ -194,6 +247,9 @@
 #define AT91_PIO_PSR_CS6_A21  0x20000000 // Chip select #6 or A21
 #define AT91_PIO_PSR_CS5_A22  0x40000000 // Chip select #5 or A22
 #define AT91_PIO_PSR_CS4_A23  0x80000000 // Chip select #4 or A23
+
+#endif
+
 #define AT91_PIO_OER  0x10  // Output enable
 #define AT91_PIO_ODR  0x14  // Output disable
 #define AT91_PIO_OSR  0x18  // Output status
@@ -656,6 +712,67 @@
 #define AT91_WD_SR          0x0C
 #define AT91_WD_SR_WDOVF    0x00000001
 
+//=============================================================================
+// SPI 
+
+#ifndef AT91_SPI
+#define AT91_SPI               0xFFFBC000
+#endif
+
+#define AT91_SPI_CR            0x00              // Control Register 
+#define AT91_SPI_CR_SPIEN      0x00000001        // SPI Enable
+#define AT91_SPI_CR_SPIDIS     0x00000002        // SPI Disable
+#define AT91_SPI_CR_SWRST      0x00000080        // SPI Software reset
+#define AT91_SPI_MR            0x04              // Mode Register
+#define AT91_SPI_MR_MSTR       0x00000001        // Master/Slave Mode 
+#define AT91_SPI_MR_PS         0x00000002        // Peripheral Select
+#define AT91_SPI_MR_PCSDEC     0x00000004        // Chip Select Decode
+#define AT91_SPI_MR_DIV32      0x00000008        // Clock Selection 
+#define AT91_SPI_MR_LLB        0x00000080        // Local Loopback Enable
+#define AT91_SPI_MR_PCS(x)     (((x)&0x0F)<<16)  // Peripheral Chip Select
+#define AT91_SPI_MR_DLYBCS(x)  (((x)&0xFF)<<24)  // Delay Between Chip Selects
+#define AT91_SPI_RDR           0x08              // Receive Data Register
+#define AT91_SPI_TDR           0x0C              // Transmit Data Register
+#define AT91_SPI_SR            0x10              // Status Register
+#define AT91_SPI_SR_RDRF       0x00000001        // Receive Data Register Full
+#define AT91_SPI_SR_TDRE       0x00000002        // Transmit Data Register Empty
+#define AT91_SPI_SR_MODF       0x00000004        // Mode Fault Error
+#define AT91_SPI_SR_OVRES      0x00000008        // Overrun Error Status
+#define AT91_SPI_SR_ENDRX      0x00000010        // End of Receiver Transfer
+#define AT91_SPI_SR_ENDTX      0x00000020        // End of Transmitter Transfer
+#define AT91_SPI_SR_SPIENS     0x00010000        // SPI Enable Status
+#define AT91_SPI_IER           0x14              // Interrupt Enable Register
+#define AT91_SPI_IDR           0x18              // Interrupt Disable Register
+#define AT91_SPI_IMR           0x1C              // Interrupt Mask Register
+#define AT91_SPI_RPR           0x20              // Receive Pointer Register
+#define AT91_SPI_RCR           0x24              // Receive Counter Register
+#define AT91_SPI_TPR           0x28              // Transmit Pointer Register
+#define AT91_SPI_TCR           0x2C              // Transmit Counter Register
+#define AT91_SPI_CSR0          0x30              // Chip Select Register 0
+#define AT91_SPI_CSR1          0x34              // Chip Select Register 1
+#define AT91_SPI_CSR2          0x38              // Chip Select Register 2
+#define AT91_SPI_CSR3          0x3C              // Chip Select Register 3
+#define AT91_SPI_CSR_CPOL      0x00000001        // Clock Polarity
+#define AT91_SPI_CSR_NCPHA     0x00000002        // Clock Phase
+#define AT91_SPI_CSR_BITS(x)   (((x)&0x0F)<<4)   // Bits Per Transfer
+#define AT91_SPI_CSR_BITS8     AT91_SPI_CSR_BITS(0)
+#define AT91_SPI_CSR_BITS9     AT91_SPI_CSR_BITS(1)
+#define AT91_SPI_CSR_BITS10    AT91_SPI_CSR_BITS(2)
+#define AT91_SPI_CSR_BITS11    AT91_SPI_CSR_BITS(3)
+#define AT91_SPI_CSR_BITS12    AT91_SPI_CSR_BITS(4)
+#define AT91_SPI_CSR_BITS13    AT91_SPI_CSR_BITS(5)
+#define AT91_SPI_CSR_BITS14    AT91_SPI_CSR_BITS(6)
+#define AT91_SPI_CSR_BITS15    AT91_SPI_CSR_BITS(7)
+#define AT91_SPI_CSR_BITS16    AT91_SPI_CSR_BITS(8)
+#define AT91_SPI_CSR_SCBR(x)   (((x)&0xFF)<<8)   // Serial Clock Baud Rate 
+#define AT91_SPI_CSR_DLYBS(x)  (((x)&0xFF)<<16)  // Delay Before SPCK
+#define AT91_SPI_CSR_DLYBCT(x) (((x)&0xFF)<<24)  // Delay Between two transfers
+ 
+#if defined(CYGHWR_HAL_ARM_AT91_M55800A)
+ 
+#define AT91_SPI_PIO         AT91_PIOA
+#define AT91_SPI_PIO_NPCS(x) (((x)&0x0F)<<26)
+#endif
 
 //=============================================================================
 // FIQ interrupt vector which is shared by all HAL varients.

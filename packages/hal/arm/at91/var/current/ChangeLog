@@ -1,3 +1,8 @@
+2004-10-05  Savin Zlobec <savin@elatec.si>
+
+	* include/var_io.h: Added definitions for AT91M55800A SPI and PIO
+	pins.
+
 2004-09-17  Andrea Michelotti <amichelotti@atmel.com>
 
 	* cdl/hal_arm_at91.cdl: 
