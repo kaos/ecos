@@ -186,7 +186,7 @@ real_handle_rx(void)
     size = recv(ether_fd, rx_buffer + 4, MTU, MSG_TRUNC);
     
 #if (DEBUG > 0)
-    fprintf(stderr, "rawether dbg: rx returned %d, errno %s (%d)\n", size, (errno < sys_nerr) ? sys_errlist[errno] : "<unknown>", errno);
+    fprintf(stderr, "rawether dbg: rx returned %d, errno %s (%d)\n", size, strerror(errno), errno);
 #endif
     
     if (size < 0) {
@@ -332,14 +332,14 @@ real_init(char* devname)
     ether_fd = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
     if (ether_fd < 0) {
         snprintf(msg, MSG_SIZE, "Unable to create a raw socket for accessing network device\n"
-                 "    Error %s (errno %d)\n", (errno < sys_nerr) ? sys_errlist[errno] : "unknown", errno);
+                 "    Error %s (errno %d)\n", strerror(errno), errno);
         report_error(msg);
     }
     
     strncpy(request.ifr_name, real_devname, IFNAMSIZ);
     if (ioctl(ether_fd, SIOCGIFINDEX, &request) < 0) {
         snprintf(msg, MSG_SIZE, "Device %s does not correspond to a valid interface.\n"
-                 "    Error %s (errno %d)\n", real_devname, (errno < sys_nerr) ? sys_errlist[errno] : "unknown", errno);
+                 "    Error %s (errno %d)\n", real_devname, strerror(errno), errno);
         report_error(msg);
     }
     real_ifindex = request.ifr_ifindex;
@@ -348,7 +348,7 @@ real_init(char* devname)
     strncpy(request.ifr_name, real_devname, IFNAMSIZ);
     if (ioctl(ether_fd, SIOCGIFFLAGS, &request) < 0) {
         snprintf(msg, MSG_SIZE, "Failed to get current interface flags for %s\n"
-                 "    Error %s (errno %d)\n", real_devname, (errno < sys_nerr) ? sys_errlist[errno] : "unknown", errno);
+                 "    Error %s (errno %d)\n", real_devname, strerror(errno), errno);
         report_error(msg);
     }
 
@@ -374,7 +374,7 @@ real_init(char* devname)
     strncpy(request.ifr_name, real_devname, IFNAMSIZ);
     if (ioctl(ether_fd, SIOCGIFHWADDR, &request) < 0) {
         snprintf(msg, MSG_SIZE, "Failed to get hardware address for %s\n"
-                 "    Error %s (errno %d)\n", real_devname, (errno < sys_nerr) ? sys_errlist[errno] : "unknown", errno);
+                 "    Error %s (errno %d)\n", real_devname, strerror(errno), errno);
         report_error(msg);
     }
     if (ARPHRD_ETHER != request.ifr_hwaddr.sa_family) {
@@ -389,7 +389,7 @@ real_init(char* devname)
     addr.sll_ifindex    = real_ifindex;
     if (bind(ether_fd, (struct sockaddr*) &addr, sizeof(addr)) < 0) {
         snprintf(msg, MSG_SIZE, "Failed to bind socket for direct hardware address to %s\n"
-                 "    Error %s (errno %d)\n", real_devname, (errno < sys_nerr) ? sys_errlist[errno] : "unknown", errno);
+                 "    Error %s (errno %d)\n", real_devname, strerror(errno), errno);
         report_error(msg);
     }
 
@@ -459,7 +459,7 @@ tap_handle_rx(void)
     // select() has succeeded so this read() should never block.
     size = read(ether_fd, rx_buffer + 4, MTU);
 #if (DEBUG > 0)
-    fprintf(stderr, "rawether dbg: rx returned %d, errno %s (%d)\n", size, (errno < sys_nerr) ? sys_errlist[errno] : "<unknown>", errno);
+    fprintf(stderr, "rawether dbg: rx returned %d, errno %s (%d)\n", size, strerror(errno), errno);
 #endif
     
     if (size < 0) {
@@ -586,7 +586,7 @@ tap_init(int argc, char** argv)
     
     ether_fd = open("/dev/net/tun", O_RDWR);
     if (ether_fd < 0) {
-        snprintf(msg, MSG_SIZE, "Failed to open /dev/net/tun, errno %s (%d)\n", (errno < sys_nerr) ? sys_errlist[errno] : "<unknown>", errno);
+        snprintf(msg, MSG_SIZE, "Failed to open /dev/net/tun, errno %s (%d)\n", strerror(errno), errno);
         report_error(msg);
     }
 
@@ -596,7 +596,7 @@ tap_init(int argc, char** argv)
         strncpy(ifr.ifr_name, devname, IFNAMSIZ - 1);
     }
     if (ioctl(ether_fd, TUNSETIFF, (void*)&ifr) < 0) {
-        snprintf(msg, MSG_SIZE, "Failed to initialize /dev/net/tun, errno %s (%d)\n", (errno < sys_nerr) ? sys_errlist[errno] : "<unknown>", errno);
+        snprintf(msg, MSG_SIZE, "Failed to initialize /dev/net/tun, errno %s (%d)\n", strerror(errno), errno);
         report_error(msg);
     }
 
@@ -606,8 +606,7 @@ tap_init(int argc, char** argv)
     if (persistent) {
       if (ioctl(ether_fd, TUNSETPERSIST, 1) < 0) {
 	snprintf(msg, MSG_SIZE, "Failed to set persistent flag, errno %s (%d)\n",
-		 ( errno < sys_nerr) ? 
-		 sys_errlist[errno] : "<unknown>", errno);
+		 strerror(errno), errno);
 	report_error(msg);
       }
     }
@@ -655,9 +654,7 @@ handle_ecosynth_request(void)
             return;
         } else {
             fprintf(stderr, "rawether: unexpected error reading request from ecosynth\n");
-            if (errno < sys_nerr) {
-                fprintf(stderr, "    %s\n", sys_errlist[errno]);
-            }
+            fprintf(stderr, "    %s\n", strerror(errno));
             exit(1);
         }
     }
