@@ -620,26 +620,26 @@ cyg_hal_sccx_init_channel(struct port_info *info, int port)
 #if CYGNUM_HAL_QUICC_SCC2 > 0
     case QUICC_CPM_SCC2:
 #error FIXME
-        eppc->pio_papar |= 0x03;
-        eppc->pio_padir &= ~0x03;
-        eppc->pio_paodr &= ~0x03;
+        eppc->pio_papar |= 0x0C;
+        eppc->pio_padir &= ~0x0C;
+        eppc->pio_paodr &= ~0x0C;
 
         /* CTS on PortC.11 */
-        eppc->pio_pcdir &= 0x800;
-        eppc->pio_pcpar &= 0x800;
-        eppc->pio_pcso  |= 0x800;
+        eppc->pio_pcdir &= 0xC00;
+        eppc->pio_pcpar &= 0xC00;
+        eppc->pio_pcso  |= 0xC00;
 
         /* RTS on PortB.19 */
-        eppc->pip_pbpar |= 0x1000;
-        eppc->pip_pbdir |= 0x1000;
+        eppc->pip_pbpar |= 0x2000;
+        eppc->pip_pbdir |= 0x2000;
 
         /* Configure baud rate generator (Section 16.13.2) */
         eppc->brgc2 = 0x10000 | (UART_BIT_RATE(UART_BAUD_RATE)<<1);
 
         /*
-         *  NMSI mode, BRG2 to SCC1
+         *  NMSI mode, BRG2 to SCC2
          */
-        eppc->si_sicr |= (1<<3)|(1<<0);
+        eppc->si_sicr |= (1<<11)|(1<<8);
         break;
 #endif
 #if CYGNUM_HAL_QUICC_SCC3 > 0

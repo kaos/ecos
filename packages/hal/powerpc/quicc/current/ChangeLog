@@ -1,3 +1,8 @@
+2003-03-18  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/quicc_smc1.c (cyg_hal_sccx_init_channel): Update initialization
+	for SCC2 - *CAUTION* not tested on actual hardware.
+
 2003-03-06  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/cpm.c: Handle case where DPRAM allocation is unknown.
