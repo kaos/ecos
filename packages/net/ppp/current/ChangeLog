@@ -1,3 +1,9 @@
+2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/ppp_up.c: Change the prototype of pr_func to match 
+	diag_printf().
+	* src/ppp_io.c (ppplogchar): Added missing parameter to diag_printf().
+
 2005-01-16  Matt Jerdonek <maj1224@yahoo.com>
             Andrew Lunn  <andrew.lunn@ascom.ch>
 	

@@ -69,7 +69,7 @@
 
 //==========================================================================
 
-typedef void pr_fun(char *fmt, ...);
+typedef int pr_fun(const char *fmt, ...);
 
 externC void show_network_tables(pr_fun *pr);
 

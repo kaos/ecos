@@ -1139,7 +1139,7 @@ ppplogchar(sc, c)
 	sc->sc_rawin[sc->sc_rawin_count++] = c;
     if (sc->sc_rawin_count >= sizeof(sc->sc_rawin)
 	|| (c < 0 && sc->sc_rawin_count > 0)) {
-        diag_printf("ppp%d input:\n");
+        diag_printf("ppp%d input:\n",sc->sc_if.if_unit);
         diag_vdump_buf_with_offset( diag_printf, sc->sc_rawin, sc->sc_rawin_count, sc->sc_rawin );
 	sc->sc_rawin_count = 0;
     }
