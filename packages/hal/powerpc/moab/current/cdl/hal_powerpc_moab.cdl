@@ -74,6 +74,7 @@ cdl_package CYGPKG_HAL_POWERPC_MOAB {
 # having the MMU enabled just seems to cause no end of problems
     requires      { !CYGHWR_HAL_POWERPC_ENABLE_MMU }
 #
+    requires      { CYGSEM_REDBOOT_FLASH_CONFIG == 1 }
     requires      { !CYGSEM_REDBOOT_FLASH_CONFIG || 
                     ((CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA == "EEPROM") &&
                      (CYGNUM_REDBOOT_FLASH_CONFIG_SIZE == CYGNUM_HAL_EEPROM_SIZE) &&

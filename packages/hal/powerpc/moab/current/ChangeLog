@@ -1,3 +1,8 @@
+2003-09-22  Gary Thomas  <gary@mlbassoc.com>
+
+	* cdl/hal_powerpc_moab.cdl: Need to force 'fconfig' since that is now
+	optional in RedBoot.
+
 2003-09-21  Gary Thomas  <gary@mlbassoc.com>
 
 	* misc/redboot_BOOT.ecm: 
