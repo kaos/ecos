@@ -1,3 +1,10 @@
+2003-03-26  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/makefile.gnu: Tidy up.
+
+	* standalone/wxwin/splittree.cpp: Fix wxRemotelyScrolledTreeCtrl for
+	wxWindows 2.4.0 on Linux/GTK. Patch contributed by Julian Smart.
+
 2003-03-25  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/symbols.h,

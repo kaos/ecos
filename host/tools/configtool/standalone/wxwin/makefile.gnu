@@ -4,16 +4,15 @@
 
 # Usage:
 #   cd emptydir
-#   make -f /path/to/this/makefile WXDIR=/path/to/wx/installation ECOSSRCDIR=/path/to/ecos/tools/src OSTYPE=$OSTYPE
+#   make -f /path/to/this/makefile WXDIR=/path/to/wx/installation INSTALLDIR=/path/to/ecos/tools [ ECOSSRCDIR=/path/to/ecos/tools/src ] [ TCLDIR=/path/to/tcl/installation ] [ OSTYPE=cygwin ] [ DEBUG=1 ]
 
-TCLDIR=TCLDIR_not_defined
+INSTALLDIR=INSTALLDIR_not_defined
 WXDIR=WXDIR_not_defined
-ECOSSRCDIR=ECOSSRCDIR_not_defined
 
 CTBUILDDIR=$(shell pwd)
+ECOSSRCDIR=$(INSTALLDIR)/src
 CTDIR=$(ECOSSRCDIR)/tools/configtool/standalone/wxwin
-INSTALLDIR=$(ECOSSRCDIR)/..
-LEVEL=release
+TCLDIR=TCLDIR_use_system
 USEEXPERIMENTALCODE=1
 
 EXTRACPPFLAGS=\
@@ -37,10 +36,10 @@ else
   EXTRAOBJECTS=
 endif
 
-ifneq "$(LEVEL)" "debug"
+ifeq "$(DEBUG)" ""
   CPPDEBUGOPTIONS=-O2
 else
-  CPPDEBUGOPTIONS=-D__WXDEBUG__ -ggdb
+  CPPDEBUGOPTIONS=-ggdb
 endif
 
 OBJECTS = \

@@ -78,9 +78,9 @@ END_EVENT_TABLE()
 wxRemotelyScrolledTreeCtrl::wxRemotelyScrolledTreeCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pt,
                                                        const wxSize& sz, long style):
     wxTreeCtrl(parent, id, pt, sz, style
-#if wxVERSON_NUMBER > 2301
+#if wxVERSION_NUMBER > 2301
 	       & ~wxTR_ROW_LINES
-#endif	       
+#endif
 	       )
 {
     m_companionWindow = NULL;
@@ -115,7 +115,10 @@ void wxRemotelyScrolledTreeCtrl::SetScrollbars(int pixelsPerUnitX, int pixelsPer
     if (IsKindOf(CLASSINFO(wxGenericTreeCtrl)))
     {
         wxGenericTreeCtrl* win = (wxGenericTreeCtrl*) this;
-        win->wxGenericTreeCtrl::SetScrollbars(pixelsPerUnitX, 0, noUnitsX, 0, xPos, 0, noRefresh);
+        // Pass TRUE for noRefresh so that it doesn't
+        // draw part of the tree as if the scroll view is
+        // at zero vertically.
+        win->wxGenericTreeCtrl::SetScrollbars(pixelsPerUnitX, pixelsPerUnitY, noUnitsX, 0, xPos, 0, /* noRefresh */ TRUE);
         
         ecScrolledWindow* scrolledWindow = GetScrolledWindow();
         if (scrolledWindow)
