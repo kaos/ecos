@@ -495,6 +495,11 @@ CYG_MACRO_START                                         \
 CYG_MACRO_END
 #endif
 
+
+//--------------------------------------------------------------------------
+// Microsecond delay function provided in hal_misc.c
+#define HAL_DELAY_US(n)          hal_delay_us(n)
+
 //--------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_HAL_INTR_H
 // End of hal_intr.h

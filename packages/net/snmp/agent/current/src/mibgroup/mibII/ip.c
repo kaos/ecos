@@ -99,6 +99,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <netinet/ip_var.h>
 
 extern struct in_ifaddrhead in_ifaddr;
+extern struct ifnet_head ifnet;
 
 #include <eth_drv.h>
 
@@ -400,7 +401,10 @@ var_ipAddrTable(struct variable *vp,
 
     register struct in_ifaddr *ia;
     register struct in_ifaddr *low_ia = NULL;
-    
+
+    register struct ifnet *ifp;
+    int interface_count = 1;
+
     /* fill in object part of name for current (less sizeof instance part) */
     memcpy( (char *)current,(char *)vp->name, (int)vp->namelen * sizeof(oid));
 
@@ -454,7 +458,15 @@ var_ipAddrTable(struct variable *vp,
         return (unsigned char *) string;
 
     case IPADENTIFINDEX:
-        long_ret = low_ia->ia_ifa.ifa_ifp->if_index;
+        ifp =  ifnet.tqh_first;
+        while (ifp && ifp->if_index != low_ia->ia_ifa.ifa_ifp->if_index) {
+            interface_count++;
+            ifp = ifp->if_list.tqe_next;
+        }
+        if (!ifp) {
+            return NULL;
+        }
+        long_ret = interface_count;
         return (unsigned char *) &long_ret;
 
     case IPADENTNETMASK:

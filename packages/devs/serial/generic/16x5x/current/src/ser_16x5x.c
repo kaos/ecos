@@ -118,7 +118,7 @@
 #define ISR_MS  0x00
 #define ISR_nIP 0x01
 #define ISR_Tx  0x02
-#define ISR_LS  0x03
+#define ISR_LS  0x06
 #define ISR_Rx  0x04
 #define ISR_RxTO  0x0C
 

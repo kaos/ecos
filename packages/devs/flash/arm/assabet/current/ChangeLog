@@ -1,3 +1,9 @@
+2000-12-05  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/assabet_flash.c (flash_code_overlaps): Define stext/etext
+	as array types so no assumptions can be made by the compiler about
+	location.
+
 2000-10-24  Gary Thomas  <gthomas@redhat.com>
 
 	* src/flash_unlock_block.c (flash_unlock_block): 

@@ -111,7 +111,7 @@ flash_hwr_map_error(int err)
 bool
 flash_code_overlaps(void *start, void *end)
 {
-    extern char _stext, _etext;
+    extern char _stext[], _etext[];
 
     return ((((unsigned long)&_stext >= (unsigned long)start) &&
              ((unsigned long)&_stext < (unsigned long)end)) ||

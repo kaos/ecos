@@ -1,3 +1,16 @@
+2000-12-06  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_if.c (delay_us): Ensure proper _GP save/restore.
+	Reduce number of loops in fall-back code.
+
+2000-12-05  Drew Moseley  <dmoseley@redhat.com>
+
+	* src/hal_stub.c (__build_t_packet): Handle
+	CYGARC_REGSIZE_DIFFERS_FROM_TARGET_REGISTER_T with Little Endian
+	target.
+
+	* include/hal_misc.h: Added BIT and SZ_ defines.
+
 2000-11-22  Mark Salter  <msalter@redhat.com>
 
 	* src/hal_misc.c (hal_default_isr): Version check only when

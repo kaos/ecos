@@ -44,6 +44,7 @@
 #include <pkgconf/libc_time.h>   // Configuration header
 #include <pkgconf/system.h>
 #include <pkgconf/isoinfra.h>
+#include <pkgconf/infra.h>
 
 #include <cyg/infra/testcase.h>
 
@@ -54,6 +55,8 @@
 # define NA_MSG "Cannot run on synthetic target"
 #elif !defined(CYGINT_ISO_MAIN_STARTUP)
 # define NA_MSG "Requires main() startup"
+#elif defined(CYGDBG_USE_TRACING)
+# define NA_MSG "Cannot give an accurate test when tracing is enabled"
 #endif
 
 #ifdef NA_MSG
@@ -78,10 +81,10 @@ cyg_start(void)
 
 // This defines how many loops before we decide that
 // the clock doesnt work
-#define MAX_TIMEOUT 1000000
+#define MAX_TIMEOUT 100000
 
 // Percentage error before we declare fail: range 0 - 100
-#define TOLERANCE 25
+#define TOLERANCE 40
 
 // Number of samples to take
 #define SAMPLES 30
@@ -96,7 +99,8 @@ cyg_start(void)
 // that the other samples. Probably due to cache/timing effect after the
 // previous loop.
 // Finally, ctrs[3] is skipped because it's also very fast on ARM targets.
-#define SKIPPED_SAMPLES 4
+
+#define SKIPPED_SAMPLES 6
 
 
 // FUNCTIONS
@@ -144,7 +148,7 @@ static clock_t clocks[SAMPLES];
 int
 main(int argc, char *argv[])
 {
-    unsigned long mean=0, sum=0;
+    unsigned long mean=0, sum=0, maxerr=0;
     int i;
 
     CYG_TEST_INIT();
@@ -153,8 +157,7 @@ main(int argc, char *argv[])
                   "clock() function");
 
     // First disable the caches - they may affect the timing loops
-    // below - especially if tracing or assertions are enabled, causing
-    // the elapsed time during the clock() call to vary.
+    // below - causing the elapsed time during the clock() call to vary.
     {
         register CYG_INTERRUPT_STATE oldints;
 
@@ -214,8 +217,11 @@ main(int argc, char *argv[])
                         err);
             CYG_TEST_FAIL_FINISH("clock() within tolerance");
         }
+        if (err > maxerr)
+            maxerr=err;
     }
 
+    diag_printf("mean=%d, maxerr=%d\n", mean, maxerr);
     CYG_TEST_PASS_FINISH("clock() stable");
 
 } // main()

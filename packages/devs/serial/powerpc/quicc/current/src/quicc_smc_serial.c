@@ -97,7 +97,6 @@ typedef struct quicc_smc_serial_info {
     int                   txsize, rxsize;            // Length of individual buffers
     cyg_interrupt         serial_interrupt;
     cyg_handle_t          serial_interrupt_handle;
-    bool                  tx_enabled;
 } quicc_smc_serial_info;
 
 static bool quicc_smc_serial_init(struct cyg_devtab_entry *tab);
@@ -452,8 +451,7 @@ quicc_smc_serial_init(struct cyg_devtab_entry *tab)
                                  &smc_chan->serial_interrupt_handle,
                                  &smc_chan->serial_interrupt);
         cyg_drv_interrupt_attach(smc_chan->serial_interrupt_handle);
-        cyg_drv_interrupt_mask(smc_chan->int_num);
-        smc_chan->tx_enabled = false;
+        cyg_drv_interrupt_unmask(smc_chan->int_num);
     }
     quicc_smc_serial_config_port(chan, &chan->config, true);
     if (cache_state)
@@ -577,18 +575,16 @@ static void
 quicc_smc_serial_start_xmit(serial_channel *chan)
 {
     quicc_smc_serial_info *smc_chan = (quicc_smc_serial_info *)chan->dev_priv;
+    cyg_drv_dsr_lock();
     if (smc_chan->txbd->length == 0) {
         // See if there is anything to put in this buffer, just to get it going
-        cyg_drv_dsr_lock();
         (chan->callbacks->xmt_char)(chan);
-        cyg_drv_dsr_unlock();
     }
     if (smc_chan->txbd->length != 0) {
         // Make sure it gets started
         quicc_smc_serial_flush(smc_chan);
     }
-    smc_chan->tx_enabled = true;
-    cyg_drv_interrupt_unmask(smc_chan->int_num);
+    cyg_drv_dsr_unlock();
 }
 
 // Disable the transmitter on the device
@@ -599,11 +595,7 @@ quicc_smc_serial_stop_xmit(serial_channel *chan)
     // If anything is in the last buffer, need to get it started
     if (smc_chan->txbd->length != 0) {
         quicc_smc_serial_flush(smc_chan);
-        // Note: interrupt will get masked after this buffer finishes
-    } else {
-        cyg_drv_interrupt_mask(smc_chan->int_num);
     }
-    smc_chan->tx_enabled = false;
 }
 
 // Serial I/O - low level interrupt handler (ISR)

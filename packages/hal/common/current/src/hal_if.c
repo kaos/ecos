@@ -73,37 +73,37 @@ externC void init_thread_syscall(void * vector);
 static void
 delay_us(cyg_int32 usecs)
 {
-#ifdef CYGPKG_KERNEL
-    cyg_int32 start, elapsed;
-    cyg_int32 usec_ticks, slice;
     CYGARC_HAL_SAVE_GP();
+#ifdef CYGPKG_KERNEL
+    {
+        cyg_int32 start, elapsed;
+        cyg_int32 usec_ticks, slice;
 
-    // How many ticks total we should wait for.
-    usec_ticks = usecs*CYGNUM_KERNEL_COUNTERS_RTC_PERIOD;
-    usec_ticks /= CYGNUM_HAL_RTC_NUMERATOR/CYGNUM_HAL_RTC_DENOMINATOR/1000;
+        // How many ticks total we should wait for.
+        usec_ticks = usecs*CYGNUM_KERNEL_COUNTERS_RTC_PERIOD;
+        usec_ticks /= CYGNUM_HAL_RTC_NUMERATOR/CYGNUM_HAL_RTC_DENOMINATOR/1000;
 
-    do {
-        // Spin in slices of 1/2 the RTC period. Allows interrupts
-        // time to run without messing up the algorithm. If we spun
-        // for 1 period (or more) of the RTC, there'd be also problems
-        // figuring out when the timer wrapped.  We may lose a tick or
-        // two for each cycle but it shouldn't matter much.
-        slice = usec_ticks % (CYGNUM_KERNEL_COUNTERS_RTC_PERIOD / 2);
-    
-        HAL_CLOCK_READ(&start);
         do {
-            HAL_CLOCK_READ(&elapsed);
-            elapsed = (elapsed - start); // counts up!
-            if (elapsed < 0)
-                elapsed += CYGNUM_KERNEL_COUNTERS_RTC_PERIOD;
-        } while (elapsed < slice);
-
-        // Adjust by elapsed, not slice, since an interrupt may have
-        // been stalling us for some time.
-        usec_ticks -= elapsed;
-    } while (usec_ticks > 0);
-
-    CYGARC_HAL_RESTORE_GP();
+            // Spin in slices of 1/2 the RTC period. Allows interrupts
+            // time to run without messing up the algorithm. If we spun
+            // for 1 period (or more) of the RTC, there'd be also problems
+            // figuring out when the timer wrapped.  We may lose a tick or
+            // two for each cycle but it shouldn't matter much.
+            slice = usec_ticks % (CYGNUM_KERNEL_COUNTERS_RTC_PERIOD / 2);
+    
+            HAL_CLOCK_READ(&start);
+            do {
+                HAL_CLOCK_READ(&elapsed);
+                elapsed = (elapsed - start); // counts up!
+                if (elapsed < 0)
+                    elapsed += CYGNUM_KERNEL_COUNTERS_RTC_PERIOD;
+            } while (elapsed < slice);
+            
+            // Adjust by elapsed, not slice, since an interrupt may have
+            // been stalling us for some time.
+            usec_ticks -= elapsed;
+        } while (usec_ticks > 0);
+    }
 #else
 #ifdef HAL_DELAY_US
     // Use a HAL feature if defined
@@ -111,16 +111,17 @@ delay_us(cyg_int32 usecs)
 #else
     // If no accurate delay mechanism, just spin for a while. Having
     // an inaccurate delay is much better than no delay at all. The
-    // count of 100 should mean the loop takes something resembling
+    // count of 10 should mean the loop takes something resembling
     // 1us on most CPUs running between 30-100MHz [depends on how many
     // instructions this compiles to, how many dispatch units can be
     // used for the simple loop, actual CPU frequency, etc]
     while (usecs-- > 0) {
         int i;
-        for (i = 0; i < 100; i++);
+        for (i = 0; i < 10; i++);
     }
 #endif
 #endif
+    CYGARC_HAL_RESTORE_GP();
 }
 
 static void

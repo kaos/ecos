@@ -1,3 +1,22 @@
+2000-12-04  Hugo Tyson  <hmt@redhat.com>
+
+	* include/hal_cache.h: Consistently ensure that ARM registers used
+	in MCR ops to cache-control coprocessors, where the data doesn't
+	matter, all actually have data zero ("SBZ") as in the Jaggar book.
+	This may well not be necessary, but for the sake of making sure...
+
+2000-12-01  Hugo Tyson  <hmt@redhat.com>
+
+	* include/hal_cache.h: Define addressable cache line operations
+	HAL_DCACHE_STORE(), HAL_DCACHE_INVALIDATE(), HAL_DCACHE_FLUSH()
+	now that I have understood how come the test (kcache2) was
+	failing.  See kernel ChangeLog for details.  Also tidied up a
+	couple of other minor details.
+
+2000-11-27  Gary Thomas  <gthomas@redhat.com>
+
+	* src/hal_diag.c (init_channel): UART setup required on Brutus as well.
+
 2000-11-21  Gary Thomas  <gthomas@redhat.com>
 
 	* src/hal_diag.c (init_channel): Disable broken uart setups on platforms

@@ -193,6 +193,7 @@ tftp_stream_open(char *filename,
     struct tftphdr *hdr = (struct tftphdr *)tftp_stream.data;
     char *cp, *fp;
     static int get_port = 7700;
+    char test_buf;
 
     if (tftp_stream.open) {
         *err = TFTP_INVALID;  // Already open
@@ -239,7 +240,17 @@ tftp_stream_open(char *filename,
     tftp_stream.last_good_block = 0;
     tftp_stream.total_timeouts = 0;
 
-    return 0;
+    // Try and read the first byte [block] since no errors are
+    // reported until then.
+    if (tftp_stream_read(&test_buf, 1, err) == 1) {
+        // Back up [rewind] over this datum
+        tftp_stream.bufp--;
+        tftp_stream.avail++;
+        return 0;  // Open and first read successful
+    } else {
+        tftp_stream.open = false;
+        return -1; // Couldn't read
+    }
 }
 
 int

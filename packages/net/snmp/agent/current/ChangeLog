@@ -1,3 +1,15 @@
+2000-11-29  Hugo Tyson  <hmt@redhat.com>
+2000-11-29  Andrew Lunn <Andrew.Lunn@ascom.ch>
+	* src/mibgroup/mibII/dot3.c (var_dot3StatsTable): 
+	* src/mibgroup/mibII/interfaces.c (var_ifTable): 
+	Undo Hugo's fix; it fails if there are holes in the if_index space
+	(not something I expected).  Use this fix instead, from Andrew.
+	[CASE 104939]
+	
+	* src/mibgroups/mibII/ip.c: IPADENTIFINDEX should return the
+	interface index as seen in the interface group.  This is not the
+	if_index but merely acquired by counting.
+
 2000-11-17  Hugo Tyson  <hmt@redhat.com>
 
 	* src/mibgroup/mibII/dot3.c (var_dot3StatsTable): 

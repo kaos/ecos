@@ -46,6 +46,7 @@
 //=============================================================================
 
 #include <pkgconf/hal.h>
+#include <pkgconf/io_pci.h>
 #include <cyg/io/pci_hw.h>
 
 // CYG_PCI_PRESENT only gets defined for targets that provide PCI HAL support.
@@ -412,8 +413,8 @@ cyg_pci_find_next( cyg_pci_device_id cur_devid,
     cyg_uint8 dev = CYG_PCI_DEV_GET_DEV(devfn);
     cyg_uint8 fn = CYG_PCI_DEV_GET_FN(devfn);
 
-#ifdef DEBUG_PCI
-    printf("cyg_pci_find_next: start[%x] ...",(unsigned)cur_devid);
+#ifdef CYGPKG_IO_PCI_DEBUG
+    printf("cyg_pci_find_next: start[%x] ...\n",(unsigned)cur_devid);
 #endif
 
     // If this is the initializer, start with 0/0/0
@@ -450,8 +451,10 @@ cyg_pci_find_next( cyg_pci_device_id cur_devid,
                 devfn = CYG_PCI_DEV_MAKE_DEVFN(dev, fn);
                 cyg_pcihw_read_config_uint16(bus, devfn,
                                              CYG_PCI_CFG_VENDOR, &vendor);
-
                 if (CYG_PCI_VENDOR_UNDEFINED != vendor) {
+#ifdef CYGPKG_IO_PCI_DEBUG
+                printf("   Bus: %d, Dev: %d, Fn: %d, Vendor: %x\n", bus, dev, fn, vendor);
+#endif
                     *next_devid = CYG_PCI_DEV_MAKE_ID(bus, devfn);
                     return true;
                 }
@@ -459,7 +462,7 @@ cyg_pci_find_next( cyg_pci_device_id cur_devid,
         }
     }
 
-#ifdef DEBUG_PCI
+#ifdef CYGPKG_IO_PCI_DEBUG
     printf("nothing.\n");
 #endif
 
@@ -476,6 +479,9 @@ cyg_pci_find_device( cyg_uint16 vendor, cyg_uint16 device,
 {
     cyg_pci_device_id new_devid = *devid;
 
+#ifdef CYGPKG_IO_PCI_DEBUG
+    printf("cyg_pci_find_device - vendor: %x, device: %x\n", vendor, device);
+#endif
     // Scan entire bus, check for matches on valid devices.
     while (cyg_pci_find_next(new_devid, &new_devid)) {
         cyg_uint8 bus = CYG_PCI_DEV_GET_BUS(new_devid);
@@ -485,11 +491,14 @@ cyg_pci_find_device( cyg_uint16 vendor, cyg_uint16 device,
         // Check that vendor matches.
         cyg_pcihw_read_config_uint16(bus, devfn,
                                      CYG_PCI_CFG_VENDOR, &v);
+        cyg_pcihw_read_config_uint16(bus, devfn,
+                                     CYG_PCI_CFG_DEVICE, &d);
+#ifdef CYGPKG_IO_PCI_DEBUG
+        printf("... PCI vendor = %x, device = %x\n", v, d);
+#endif
         if (v != vendor) continue;
 
         // Check that device matches.
-        cyg_pcihw_read_config_uint16(bus, devfn,
-                                     CYG_PCI_CFG_DEVICE, &d);
         if (d == device) {
             *devid = new_devid;
             return true;
@@ -765,7 +774,7 @@ cyg_pci_configure_bus( cyg_uint8 bus,
     // Scan only this bus for valid devices.
     devid = CYG_PCI_DEV_MAKE_ID(bus, 0) | CYG_PCI_NULL_DEVFN;
 
-#ifdef DEBUG_PCI
+#ifdef CYGPKG_IO_PCI_DEBUG
     printf("Configuring bus %d.\n", bus);
 #endif
 
@@ -776,7 +785,7 @@ cyg_pci_configure_bus( cyg_uint8 bus,
 	// Get the device info
 	cyg_pci_get_device_info(devid, &dev_info);
 
-#ifdef DEBUG_PCI
+#ifdef CYGPKG_IO_PCI_DEBUG
 	printf("\n");
 	printf("Configuring PCI Bus   : %d\n", bus);
 	printf("            PCI Device: %d\n", CYG_PCI_DEV_GET_DEV(devfn));
@@ -958,7 +967,7 @@ cyg_pci_configure_bus( cyg_uint8 bus,
 					  dev_info.header.bridge.control);
 	}
     }
-#ifdef DEBUG_PCI
+#ifdef CYGPKG_IO_PCI_DEBUG
     printf("Finished configuring bus %d.\n", bus);
 #endif
 

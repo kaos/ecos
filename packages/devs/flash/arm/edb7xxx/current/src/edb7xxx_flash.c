@@ -73,8 +73,22 @@ flash_hwr_init(void)
     volatile int *cp = 0xE0000000;
     // See if the data cache is working
     *cp = 0x12345678;
+    printf("ROM cache:\n");
+    printf("cache test = %x\n", *cp);
+    HAL_DCACHE_INVALIDATE_ALL();
+    HAL_DCACHE_DISABLE();
+    printf("cache test = %x\n", *cp);
+    *cp = 0xDEADDEAD;
+    printf("cache test = %x\n", *cp);
+    HAL_DCACHE_ENABLE();
+    printf("cache test = %x\n", *cp);
+    cp = 0x00100000;
+    // See if the data cache is working
+    *cp = 0x12345678;
+    printf("RAM cache:\n");
     printf("cache test = %x\n", *cp);
     HAL_DCACHE_DISABLE();
+    printf("cache test = %x\n", *cp);
     *cp = 0xDEADDEAD;
     printf("cache test = %x\n", *cp);
     HAL_DCACHE_ENABLE();
@@ -86,6 +100,24 @@ flash_hwr_init(void)
 #if 0
     printf("stat = %x\n", stat);
     dump_buf(data, sizeof(data));
+#endif
+
+#if 0
+    {
+    volatile int cache_test;
+    volatile int *cp = 0xE0000000;
+    // See if the data cache is working
+    printf("cache test = %x\n", *cp);
+    *cp = 0x56781234;
+    printf("cache test = %x\n", *cp);
+    HAL_DCACHE_INVALIDATE_ALL();
+    HAL_DCACHE_DISABLE();
+    printf("cache test = %x\n", *cp);
+    *cp = 0xDEADDEAD;
+    printf("cache test = %x\n", *cp);
+    HAL_DCACHE_ENABLE();
+    printf("cache test = %x\n", *cp);
+    }
 #endif
 
     if (data[0] != FLASH_Intel_code) {
@@ -131,7 +163,7 @@ flash_hwr_map_error(int err)
 bool
 flash_code_overlaps(void *start, void *end)
 {
-    extern char _stext, _etext;
+    extern char _stext[], _etext[];
 
     return ((((unsigned long)&_stext >= (unsigned long)start) &&
              ((unsigned long)&_stext < (unsigned long)end)) ||

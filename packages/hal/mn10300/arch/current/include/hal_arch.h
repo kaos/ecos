@@ -165,6 +165,33 @@ asm volatile (" .globl  _" #_label_ ";"         \
 
 // Copy a set of registers from a HAL_SavedRegisters structure into a
 // GDB ordered array.    
+//
+// The CYGMON version should differ by also handling SP and PSW
+// since we will be using a different stack.
+#ifdef CYGPKG_CYGMON
+#define HAL_GET_GDB_REGISTERS( _aregval_ , _regs_ )             \
+{                                                               \
+    CYG_ADDRWORD *_regval_ = (CYG_ADDRWORD *)(_aregval_);       \
+                                                                \
+    _regval_[0]         = (_regs_)->d0;                         \
+    _regval_[1]         = (_regs_)->d1;                         \
+    _regval_[2]         = (_regs_)->d2;                         \
+    _regval_[3]         = (_regs_)->d3;                         \
+    _regval_[4]         = (_regs_)->a0;                         \
+    _regval_[5]         = (_regs_)->a1;                         \
+    _regval_[6]         = (_regs_)->a2;                         \
+    _regval_[7]         = (_regs_)->a3;                         \
+                                                                \
+    _regval_[8]         = (_regs_)->sp;                         \
+    _regval_[9]         = (_regs_)->pc;                         \
+    _regval_[10]        = (_regs_)->mdr;                        \
+    _regval_[11]        = (_regs_)->psw;                        \
+                                                                \
+    _regval_[12]        = (_regs_)->lar;                        \
+    _regval_[13]        = (_regs_)->lir;                        \
+    HAL_GET_GDB_EXTRA_REGISTERS( _regval_, _regs_ );            \
+}
+#else
 #define HAL_GET_GDB_REGISTERS( _aregval_ , _regs_ )             \
 {                                                               \
     CYG_ADDRWORD *_regval_ = (CYG_ADDRWORD *)(_aregval_);       \
@@ -188,6 +215,7 @@ asm volatile (" .globl  _" #_label_ ";"         \
     _regval_[13]        = (_regs_)->lir;                        \
     HAL_GET_GDB_EXTRA_REGISTERS( _regval_, _regs_ );            \
 }
+#endif
 
 // Copy a GDB ordered array into a HAL_SavedRegisters structure.
 //

@@ -64,6 +64,7 @@ struct cmd *
 parse(char *line, int *argc, char **argv)
 {
     char *cp = line;
+    char *pp;
     int indx = 0;
 
     while (*cp) {
@@ -82,10 +83,19 @@ parse(char *line, int *argc, char **argv)
                 if (argv[indx-1] == cp) {
                     argv[indx-1] = ++cp;
                 }
-                while (*cp && *cp != '"') cp++;
+                pp = cp;
+                while (*cp && *cp != '"') {
+                    if (*cp == '\\') {
+                        // Skip over escape - allows for escaped '"'
+                        cp++;
+                    }
+                    // Move string to swallow escapes
+                    *pp++ = *cp++;
+                }
                 if (!*cp) {
                     printf("Unbalanced string!\n");
                 } else {
+                    if (pp != cp) *pp = '\0';
                     *cp++ = '\0';
                     break;
                 }
@@ -298,7 +308,17 @@ parse_num(char *s, unsigned long *val, char **es, char *delim)
         c = *s++;
         if (_is_hex(c) && ((digit = _from_hex(c)) < radix)) {
             // Valid digit
+#ifdef CYGPKG_HAL_MIPS
+            // FIXME: tx49 compiler generates 0x2539018 for MUL which
+            // isn't any good.
+            if (16 == radix)
+                result = result << 4;
+            else
+                result = 10 * result;
+            result += digit;
+#else
             result = (result * radix) + digit;
+#endif
         } else {
             if (delim != (char *)0) {
                 // See if this character is one of the delimiters

@@ -288,10 +288,10 @@ var_ifTable(struct variable *vp,
          == MATCH_FAILED )
         return NULL;
     
-    interface_count = name[ (*length)-1 ];
-    for ( ifp = ifnet.tqh_first; ifp ; ifp = ifp->if_list.tqe_next )
-        if ( interface_count == ifp->if_index )
-            break;
+    for ( interface_count = name[ (*length)-1 ], ifp = ifnet.tqh_first;
+          interface_count > 1 && ifp != 0;
+          interface_count-- )
+        ifp = ifp->if_list.tqe_next;
 
     if ( ! ifp )
         return NULL;

@@ -49,7 +49,8 @@ int
 strlen(const char *s)
 {
     int len = 0;
-    while (*s++) len++;
+    if (s)
+        while (*s++) len++;
     return len;
 }
 

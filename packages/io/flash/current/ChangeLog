@@ -1,3 +1,12 @@
+2000-12-06  Jesper Skov  <jskov@redhat.com>
+
+	* src/flash.c (flash_dev_query): Added. Allows reloc/cache magic
+	to be removed from device drivers (eventually). Also fixed some
+	warnings, and made function references use char[] instead of just
+	char to prevent MIPS compiler from messing up.
+
+	* include/flash.h: Added FLASH_ERR_DRV_VERIFY and flash_dev_query.
+
 2000-11-27  Jesper Skov  <jskov@redhat.com>
 
 	* src/flash.c: Do all flash access inside properly

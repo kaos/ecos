@@ -57,6 +57,7 @@
 
 #include <signal.h>                     // our header
 #include <setjmp.h>
+#include <unistd.h>                     // _exit
 
 #include <cyg/kernel/clock.hxx>
 

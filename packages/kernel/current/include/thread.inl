@@ -56,8 +56,54 @@
 
 #include <cyg/kernel/clock.inl>
 
+#ifndef CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE
+#define CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE (0)
+#endif
+
 //==========================================================================
 // Inlines for Cyg_HardwareThread
+
+// -------------------------------------------------------------------------
+// get the size/base of this thread's stack
+
+inline CYG_ADDRESS
+Cyg_HardwareThread::get_stack_base()
+{
+    return stack_base - CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE;
+}
+
+inline cyg_uint32
+Cyg_HardwareThread::get_stack_size()
+{
+    return stack_size + 2 * CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE;
+}
+
+// -------------------------------------------------------------------------
+// Check the stack bounds of this thread:
+#ifdef CYGFUN_KERNEL_THREADS_STACK_CHECKING
+inline void Cyg_HardwareThread::check_stack(void)
+{
+    cyg_uint32 sig = (cyg_uint32)this;
+    cyg_uint32 *base = (cyg_uint32 *)get_stack_base();
+    cyg_uint32 *top =  (cyg_uint32 *)(stack_base + stack_size);
+    unsigned int i;
+
+    CYG_ASSERT( 0 == (3 & (cyg_uint32)base), "stack base not word aligned" );
+    CYG_ASSERT( 0 == (3 & (cyg_uint32)top),  "stack  top not word aligned" );
+
+    CYG_ASSERT( (cyg_uint32)stack_ptr > (cyg_uint32)stack_base,
+                "Stack_ptr below base" );
+    CYG_ASSERT( (cyg_uint32)stack_ptr <= ((cyg_uint32)stack_base + stack_size),
+                "Stack_ptr above top" );
+
+    for ( i = 0;
+          i < CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE/sizeof(cyg_uint32);
+          i++ ) {
+        CYG_ASSERT( (sig ^ (i * 0x01010101)) == base[i], "Stack base corrupt" );
+        CYG_ASSERT( (sig ^ (i * 0x10101010)) ==  top[i], "Stack top corrupt"  );
+    }            
+}
+#endif
 
 // -------------------------------------------------------------------------
 // Attach a stack to this thread. If there is a HAL defined macro to
@@ -68,6 +114,38 @@ inline void Cyg_HardwareThread::attach_stack(CYG_ADDRESS s_base, cyg_uint32 s_si
     CYG_ASSERT( s_size >= CYGNUM_HAL_STACK_SIZE_MINIMUM,
                 "Stack size too small");
 #endif
+
+#ifdef CYGFUN_KERNEL_THREADS_STACK_CHECKING
+    {
+        cyg_uint32 sig = (cyg_uint32)this;
+        cyg_uint32 *base = (cyg_uint32 *)s_base;
+        cyg_uint32 *top =  (cyg_uint32 *)(s_base + s_size -
+            CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE);
+
+        unsigned int i;
+
+        CYG_ASSERT( 0 == (3 & (cyg_uint32)base), "stack base alignment" );
+        CYG_ASSERT( 0 == (3 & (cyg_uint32)top),  "stack  top alignment" );
+
+        for ( i = 0;
+              i < CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE/sizeof(cyg_uint32);
+              i++ ) {
+            base[i] = (sig ^ (i * 0x01010101));
+             top[i] = (sig ^ (i * 0x10101010));
+        }            
+        // This check for overlap of the two signature areas also detects
+        // wrap round zero of the size in the unsigned subtraction below.
+        CYG_ASSERT( &base[i] < &top[0], "Stack is so small size wrapped" );
+        // Use this 'i' expression to round correctly to whole words.
+        s_base += i * sizeof(cyg_uint32);
+        s_size -= i * sizeof(cyg_uint32) * 2;
+        // This is a complete guess, the 256; the point is to assert early that
+        // this might go badly wrong.  It would not detect wrap of unsigned size.
+        CYG_ASSERT( s_size >= 256,
+                    "Stack size too small after allocating checking buffer");
+    }
+#endif
+
     stack_base = s_base;
     stack_size = s_size;
 #ifdef CYGFUN_KERNEL_THREADS_STACK_LIMIT
@@ -82,6 +160,10 @@ inline void Cyg_HardwareThread::attach_stack(CYG_ADDRESS s_base, cyg_uint32 s_si
 
     stack_ptr = stack_base + stack_size;
 
+#endif
+
+#ifdef CYGFUN_KERNEL_THREADS_STACK_CHECKING
+    check_stack();
 #endif
 }
 
@@ -102,21 +184,6 @@ inline Cyg_HardwareThread::Cyg_HardwareThread(
     
     attach_stack( s_base, s_size );
 };
-
-// -------------------------------------------------------------------------
-// get the size/base of this thread's stack
-
-inline CYG_ADDRESS
-Cyg_HardwareThread::get_stack_base()
-{
-    return stack_base;
-}
-
-inline cyg_uint32
-Cyg_HardwareThread::get_stack_size()
-{
-    return stack_size;
-}
 
 // -------------------------------------------------------------------------
 

@@ -153,7 +153,7 @@ load_srec_image(int (*getc)(void), unsigned long base)
                 lowest_address = (unsigned long)(addr - addr_offset);
             }
             if ((addr < ram_start) || (addr > ram_end)) {
-                printf("Attempt to load S-record data to address: %p [not in RAM]\n", addr);
+                printf("Attempt to load S-record data to address: %p [not in RAM]\n", (void*)addr);
                 return;
             }
             count -= ((type-'1'+2)+1);
@@ -182,7 +182,8 @@ load_srec_image(int (*getc)(void), unsigned long base)
             offset += ('9'-type+2);
             entry_address = (unsigned long *)addr;
             printf("Entry point: %p, address range: %p-%p\n", 
-                   entry_address, (void *)lowest_address, (void *)highest_address);
+                   (void*)entry_address, (void *)lowest_address, (void *)highest_address);
+            while ((c = (*getc)()) > 0) ;  // Swallow rest of data
             return;
         default:
             printf("Invalid S-record at offset 0x%lx, type: %x\n", 
@@ -337,6 +338,10 @@ do_load(int argc, char *argv[])
         printf("usage: load %s\n", usage);
         return;
     }
+    if (base_addr_set && ((base < ram_start) || (base > ram_end))) {
+        printf("Specified address (%p) is not in RAM.\n", (void*)base);
+        return;
+    }
 #ifdef CYGPKG_REDBOOT_NETWORKING
     if (mode == MODE_TFTP) {
         res = tftp_stream_open(filename, &host, TFTP_OCTET, &err);    
@@ -353,7 +358,8 @@ do_load(int argc, char *argv[])
             printf("Can't load '%s': %s\n", filename, xyzModem_error(err));
             return;
         }
-        redboot_getc_init(xyzModem_stream_read, verbose);
+        // Suppress verbosity when using xyz modem download
+        redboot_getc_init(xyzModem_stream_read, 0 && verbose);
     }
     // Read initial header - to determine file [image] type
     for (i = 0;  i < sizeof(type);  i++) {
@@ -392,5 +398,8 @@ do_load(int argc, char *argv[])
         tftp_stream_close(&err);
     }
 #endif
+    if (mode != MODE_TFTP) {
+        xyzModem_stream_close(&err);
+    }
     return;
 }

@@ -101,9 +101,17 @@ int  strncmpci(const char *s1, const char *s2, int len);
 char *strcpy(char *s1, const char *s2);
 
 void mon_write_char(char c);
-int  gets(char *line, int len, int timeout);
 bool verify_action(char *fmt, ...);
 void dump_buf(void *, CYG_ADDRWORD);
+void dump_buf_with_offset(void *, CYG_ADDRWORD, void *);
+
+// Read a single line of input from the console, possibly with timeout
+int  gets(char *line, int len, int timeout);
+// Result codes from 'gets()'
+#define _GETS_TIMEOUT -1
+#define _GETS_CTRLC   -2
+#define _GETS_GDB      0
+#define _GETS_OK       1
 
 // "console" selection
 int  start_console(void);

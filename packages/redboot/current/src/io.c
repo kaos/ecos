@@ -191,7 +191,7 @@ gets(char *buf, int buflen, int timeout)
                 timeout -= 50;
             }
             if (res == false) {
-                return -1;  // Input timed out
+                return _GETS_TIMEOUT;  // Input timed out
             }
         } else {
             mon_read_char(&c);
@@ -201,7 +201,7 @@ gets(char *buf, int buflen, int timeout)
         case 0x03: // ^C
             if (ptr == buf) {
                 printf("^C\n");
-                return -2;
+                return _GETS_CTRLC;
             }
             *ptr++ = c;
             break;
@@ -219,7 +219,7 @@ gets(char *buf, int buflen, int timeout)
                 mon_write_char('\n');
 	    }
             last_ch = c;
-            return 1;
+            return _GETS_OK;
         case '\b':
         case 0x7F:  // DEL
             if (ptr != buf) {
@@ -236,7 +236,7 @@ gets(char *buf, int buflen, int timeout)
             if (ptr == buf) {
                 // Give up and try GDB protocol
                 ungetDebugChar(c);  // Push back character so stubs will see it
-                return 0;
+                return _GETS_GDB;
             }
             // Fall through - accept '$' at other than start of line
         default:
@@ -250,11 +250,12 @@ gets(char *buf, int buflen, int timeout)
 }
 
 void
-dump_buf_with_offset(cyg_uint8     *p, 
-                     CYG_ADDRWORD   s, 
-                     cyg_uint8     *base)
+dump_buf_with_offset(void *_p, CYG_ADDRWORD s, void *_base)
 {
     int i, c;
+    cyg_uint8 *p = (cyg_uint8 *)_p;
+    cyg_uint8 *base = (cyg_uint8 *)_base;
+
     if ((CYG_ADDRWORD)s > (CYG_ADDRWORD)p) {
         s = (CYG_ADDRWORD)s - (CYG_ADDRWORD)p;
     }

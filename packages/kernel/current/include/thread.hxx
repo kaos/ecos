@@ -156,6 +156,12 @@ public:
     
     CYG_ADDRESS get_stack_limit();
 #endif    
+
+#ifdef CYGFUN_KERNEL_THREADS_STACK_CHECKING
+
+    inline void check_stack(void);
+
+#endif
 };
 
 // -------------------------------------------------------------------------

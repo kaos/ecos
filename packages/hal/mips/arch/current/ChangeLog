@@ -1,3 +1,19 @@
+2000-12-06  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_intr.h (HAL_DELAY_US): Added.
+	* src/hal_misc.c (hal_delay_us): Added. And fixed to work with an
+	incrementer that ticks at the pipeline clock rate.
+
+2000-12-05  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/hal_cache.h: IWAY->_IWAY, DWAY->_DWAY for namespace 
+	cleanliness
+
+2000-12-05  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_cache.h: Use variant specific method to select cache
+	WAY.
+
 2000-10-20  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_misc.c: Update __mem_fault_handler declaration.

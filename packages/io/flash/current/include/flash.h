@@ -52,6 +52,7 @@
 externC int flash_init(void *work_space, int work_space_length);
 externC int flash_erase(void *base, int len, void **err_address);
 externC int flash_program(void *flash_base, void *ram_base, int len, void **err_address);
+externC void flash_dev_query(void *data);
 #if 0 < CYGHWR_IO_FLASH_BLOCK_LOCKING // This is an *interface*
 externC int flash_lock(void *base, int len, void **err_address);
 externC int flash_unlock(void *base, int len, void **err_address);
@@ -75,6 +76,7 @@ externC int printf(char* fmt, ...);
 #define FLASH_ERR_HWR             0x08  // Hardware (configuration?) problem
 #define FLASH_ERR_ERASE_SUSPEND   0x09  // Device is in erase suspend mode
 #define FLASH_ERR_PROGRAM_SUSPEND 0x0a  // Device is in in program suspend mode
+#define FLASH_ERR_DRV_VERIFY      0x0b  // Driver failed to verify data
 
 #ifdef _FLASH_PRIVATE_
 

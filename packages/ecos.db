@@ -124,6 +124,7 @@ package CYGPKG_DEVS_FLASH_INTEL_BOOTBLOCK {
 
 
 
+
 package CYGPKG_DEVS_FLASH_EBSA285 {
 	alias 		{ "FLASH memory support for StrongARM EBSA-285" flash_ebsa285 }
 	directory	devs/flash/arm/ebsa285
@@ -278,6 +279,7 @@ package CYGPKG_IO_SERIAL_MIPS_REF4955 {
     script	      ser_mips_ref4955.cdl	
     description       "TX49 REF4955 serial device drivers"
 }
+
 
 package CYGPKG_IO_SERIAL_MIPS_VRC4373 {
     alias             { "VRC4373 serial device drivers"
@@ -1151,6 +1153,7 @@ package CYGPKG_HAL_MIPS_TX49_REF4955 {
            The REF4955 HAL package should be used when targetting the
            actual hardware."
 }
+
 
 
 package CYGPKG_HAL_MIPS_VR4300 {

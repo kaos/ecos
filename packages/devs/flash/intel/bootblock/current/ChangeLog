@@ -1,3 +1,9 @@
+2000-12-05  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/bootblock_flash.c (flash_code_overlaps): Define stext/etext
+	as array types so no assumptions can be made by the compiler about
+	location.
+
 2000-11-22  Jesper Skov  <jskov@redhat.com>
 
 	* src/bootblock_flash.c (flash_hwr_init): Invalidate icache

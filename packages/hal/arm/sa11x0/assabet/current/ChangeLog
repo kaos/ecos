@@ -1,3 +1,18 @@
+2000-11-30  Gary Thomas  <gthomas@redhat.com>
+
+	* src/redboot_cmds.c (do_exec): Use new _GETS_xxx return codes.
+
+2000-11-28  Drew Moseley  <dmoseley@redhat.com>
+
+	* misc/redboot_RAM.cfg: Implement CYGSEM_REDBOOT_BSP_SYSCALLS.
+	* misc/redboot_ROM.cfg: Ditto.
+
+	* src/assabet_misc.c (assabet_program_new_stack): New function
+	for switching to an application stack when running a program under
+	a ROM monitor.
+
+	* cdl/hal_arm_sa11x0_assabet.cdl: Define HAL_ARCH_PROGRAM_NEW_STACK.
+
 2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/pkgconf/mlt_arm_sa11x0_assabet_ram.mlt:

@@ -91,24 +91,39 @@
 #endif
 
 //-----------------------------------------------------------------------------
-// Cache instruction uses LSB to specify which WAY to affect. This macro
-// defines the necessary cache instructions to affect all ways.
+// Cache instruction uses LSBs or MSBs (depending on the
+// implementation) of the virtual address to specify which WAY to
+// affect. The _ALL_WAYS macro defines the necessary cache instructions
+// to affect all ways.
+
+#ifdef HAL_MIPS_CACHE_INSN_USES_LSB
+# define _IWAY(_n_) ((_n_)*HAL_ICACHE_SIZE/HAL_ICACHE_WAYS+(_n_))
+# define _DWAY(_n_) ((_n_)*HAL_DCACHE_SIZE/HAL_DCACHE_WAYS+(_n_))
+#else
+# define _IWAY(_n_) ((_n_)*HAL_ICACHE_SIZE/HAL_ICACHE_WAYS)
+# define _DWAY(_n_) ((_n_)*HAL_DCACHE_SIZE/HAL_DCACHE_WAYS)
+#endif
+
 #if (HAL_DCACHE_WAYS == 1)
 #define _HAL_ASM_DCACHE_ALL_WAYS( _cmd_ , _addr_ )       \
     asm volatile ("cache %0,0(%1);"                      \
                     : : "I" ((_cmd_) | 1), "r"(_addr_) )
 #elif (HAL_DCACHE_WAYS == 2)
-#define _HAL_ASM_DCACHE_ALL_WAYS( _cmd_ , _addr_ )       \
-    asm volatile ("cache %0,0(%1);"                      \
-                  "cache %0,1(%1);"                      \
-                    : : "I" ((_cmd_) | 1), "r"(_addr_) )
+#define _HAL_ASM_DCACHE_ALL_WAYS( _cmd_ , _addr_ )      \
+    asm volatile ("cache %0,0(%1);"                     \
+                  "cache %0,%2(%1);"                    \
+                    : : "I" ((_cmd_) | 1), "r"(_addr_), \
+                        "I" (_DWAY(1)))
 #elif (HAL_DCACHE_WAYS == 4)
-#define _HAL_ASM_DCACHE_ALL_WAYS( _cmd_ , _addr_ )       \
-    asm volatile ("cache %0,0(%1);"                      \
-                  "cache %0,1(%1);"                      \
-                  "cache %0,2(%1);"                      \
-                  "cache %0,3(%1);"                      \
-                    : : "I" ((_cmd_) | 1), "r"(_addr_) )
+#define _HAL_ASM_DCACHE_ALL_WAYS( _cmd_ , _addr_ )      \
+    asm volatile ("cache %0,0(%1);"                     \
+                  "cache %0,%2(%1);"                    \
+                  "cache %0,%3(%1);"                    \
+                  "cache %0,%4(%1);"                    \
+                    : : "I" ((_cmd_) | 1), "r"(_addr_), \
+                        "I" (_DWAY(1)),                  \
+                        "I" (_DWAY(2)),                  \
+                        "I" (_DWAY(3)))
 #else
 # error "Unsupported number of ways"
 #endif
@@ -118,17 +133,21 @@
     asm volatile ("cache %0,0(%1);"                      \
                     : : "I" (_cmd_), "r"(_addr_) )
 #elif (HAL_ICACHE_WAYS == 2)
-#define _HAL_ASM_ICACHE_ALL_WAYS( _cmd_ , _addr_ )       \
-    asm volatile ("cache %0,0(%1);"                      \
-                  "cache %0,1(%1);"                      \
-                    : : "I" (_cmd_), "r"(_addr_) )
+#define _HAL_ASM_ICACHE_ALL_WAYS( _cmd_ , _addr_ )      \
+    asm volatile ("cache %0,0(%1);"                     \
+                  "cache %0,%2(%1);"                    \
+                    : : "I" (_cmd_), "r"(_addr_),       \
+                        "I" (_IWAY(1)))
 #elif (HAL_ICACHE_WAYS == 4)
-#define _HAL_ASM_ICACHE_ALL_WAYS( _cmd_ , _addr_ )       \
-    asm volatile ("cache %0,0(%1);"                      \
-                  "cache %0,1(%1);"                      \
-                  "cache %0,2(%1);"                      \
-                  "cache %0,3(%1);"                      \
-                    : : "I" (_cmd_), "r"(_addr_) )
+#define _HAL_ASM_ICACHE_ALL_WAYS( _cmd_ , _addr_ )      \
+    asm volatile ("cache %0,0(%1);"                     \
+                  "cache %0,%2(%1);"                    \
+                  "cache %0,%3(%1);"                    \
+                  "cache %0,%4(%1);"                    \
+                    : : "I" (_cmd_), "r"(_addr_),       \
+                        "I" (_IWAY(1)),                  \
+                        "I" (_IWAY(2)),                  \
+                        "I" (_IWAY(3)))
 #else
 # error "Unsupported number of ways"
 #endif

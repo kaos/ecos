@@ -1,3 +1,11 @@
+2000-11-30  Drew Moseley  <dmoseley@redhat.com>
+
+	* include/hal_arch.h: Handle Cygmon interrupt stack.  ie For
+	Cygmon we must switch to a new stack immediately on exception to
+	make sure that we don't modify the application stack at all since
+	GDB may be using it.
+	* src/vectors.S: Ditto.
+
 2000-10-20  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_misc.c: Update __mem_fault_handler declaration.

@@ -611,10 +611,10 @@ __tcp_listen(tcp_socket_t *s, word port)
 void
 __tcp_drain(tcp_socket_t *s)
 {
-    BSPLOG(bsp_log("__tcp_drain.\n"));
+//    BSPLOG(bsp_log("__tcp_drain.\n"));
     while (s->state != _CLOSED && s->data_bytes)
 	__tcp_poll();
-    BSPLOG(bsp_log("__tcp_drain done.\n"));
+//    BSPLOG(bsp_log("__tcp_drain done.\n"));
 }
 
 

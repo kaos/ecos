@@ -579,7 +579,7 @@ extern char *inet_ntoa(in_addr_t *);
 #define NET_SUPPORT_TCP  1
 
 #ifdef BSP_LOG
-#define BSPLOG(x) { start_console(); x; end_console(); }
+#define BSPLOG(x) { int old_console = start_console(); x; end_console(old_console); }
 #define bsp_log printf
 #else
 #define BSPLOG(x)

@@ -114,7 +114,8 @@ local_cmd_entry("load",
     );
 local_cmd_entry("create",
                 "Create an image",
-                "-b <mem_base> -l <image_length> [-s <data_length>] [-f <flash_addr>] [-e <entry_point>] [-r <ram_addr>] <name>",
+                "-b <mem_base> -l <image_length> [-s <data_length>] 
+                [-f <flash_addr>] [-e <entry_point>] [-r <ram_addr>] [-n] <name>",
                 fis_create,
                 FIS_cmds
     );
@@ -197,7 +198,7 @@ fis_init(int argc, char *argv[])
     if (full_init) {
         if ((stat = flash_erase((void *)((unsigned long)flash_start+(2*block_size)), 
                                 (blocks-4)*block_size, (void **)&err_addr)) != 0) {
-            printf("   initialization failed %p: %x(%s)\n", err_addr, stat, flash_errmsg(stat));
+            printf("   initialization failed %p: 0x%x(%s)\n", err_addr, stat, flash_errmsg(stat));
         }
     } else {
         printf("    Warning: device contents not erased, some blocks may not be usable\n");
@@ -242,11 +243,11 @@ fis_init(int argc, char *argv[])
     flash_unlock((void *)fis_base, block_size, (void **)&err_addr);
 #endif
     if ((stat = flash_erase(fis_base, block_size, (void **)&err_addr)) != 0) {
-            printf("   initialization failed %p: %x(%s)\n", err_addr, stat, flash_errmsg(stat));
+            printf("   initialization failed %p: 0x%x(%s)\n", err_addr, stat, flash_errmsg(stat));
     } else {
         if ((stat = flash_program(fis_base, fis_work_block, 
                                   img_count*sizeof(*img), (void **)&err_addr)) != 0) {
-            printf("Error writing image descriptors at %p: %x(%s)\n", 
+            printf("Error writing image descriptors at %p: 0x%x(%s)\n", 
                    err_addr, stat, flash_errmsg(stat));
         }
     }
@@ -373,10 +374,11 @@ fis_create(int argc, char *argv[])
     bool flash_addr_set = false;
     bool length_set = false;
     bool img_size_set = false;
+    bool no_copy = false;
     void *fis_addr, *err_addr;
     struct fis_image_desc *img;
     bool slot_found;
-    struct option_info opts[6];
+    struct option_info opts[7];
     bool prog_ok;
 
     init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
@@ -391,13 +393,16 @@ fis_create(int argc, char *argv[])
               (void **)&length, (bool *)&length_set, "image length [in FLASH]");
     init_opts(&opts[5], 's', true, OPTION_ARG_TYPE_NUM, 
               (void **)&img_size, (bool *)&img_size_set, "image size [actual data]");
-    if (!scan_opts(argc, argv, 2, opts, 6, (void *)&name, OPTION_ARG_TYPE_STR, "file name"))
+    init_opts(&opts[6], 'n', false, OPTION_ARG_TYPE_FLG, 
+              (void **)&no_copy, (bool *)0, "don't copy from RAM to FLASH, just update directory");
+    if (!scan_opts(argc, argv, 2, opts, 7, (void *)&name, OPTION_ARG_TYPE_STR, "file name"))
     {
         fis_usage("invalid arguments");
         return;
     }
 
-    if (!mem_addr_set || !length_set || !name) {
+    if ((!no_copy && !mem_addr_set) || (no_copy && !flash_addr_set) ||
+        !length_set || !name) {
         fis_usage("required parameter missing");
         return;
     }
@@ -406,11 +411,13 @@ fis_create(int argc, char *argv[])
     }
     // 'length' is size of FLASH image, 'img_size' is actual data size
     // Round up length to FLASH block size
+#ifndef CYGPKG_HAL_MIPS // FIXME: compiler is b0rken
     length = ((length + block_size - 1) / block_size) * block_size;
     if (length < img_size) {
-        printf("Invalid FLASH image size/length combination");
+        printf("Invalid FLASH image size/length combination\n");
         return;
     }
+#endif
     if (flash_addr_set &&
         ((stat = flash_verify_addr((void *)flash_addr)) ||
          (stat = flash_verify_addr((void *)(flash_addr+img_size-1))))) {
@@ -418,18 +425,20 @@ fis_create(int argc, char *argv[])
         printf("   valid range is %p-%p\n", (void *)flash_start, (void *)flash_end);
         return;
     }
-    if ((mem_addr < (unsigned long)ram_start) ||
-        ((mem_addr+img_size) >= (unsigned long)ram_end)) {
-        printf("** WARNING: RAM address: %p may be invalid\n", (void *)mem_addr);
-        printf("   valid range is %p-%p\n", (void *)ram_start, (void *)ram_end);
-    }
     if (strlen(name) >= sizeof(img->name)) {
         printf("Name is too long, must be less than %d chars\n", (int)sizeof(img->name));
         return;
     }
-    if (!flash_addr_set && !fis_find_free(&flash_addr, length)) {
-        printf("Can't locate %ld bytes free in FLASH\n", length);
-        return;
+    if (!no_copy) {
+        if ((mem_addr < (unsigned long)ram_start) ||
+            ((mem_addr+img_size) >= (unsigned long)ram_end)) {
+            printf("** WARNING: RAM address: %p may be invalid\n", (void *)mem_addr);
+            printf("   valid range is %p-%p\n", (void *)ram_start, (void *)ram_end);
+        }
+        if (!flash_addr_set && !fis_find_free(&flash_addr, length)) {
+            printf("Can't locate %ld bytes free in FLASH\n", length);
+            return;
+        }
     }
     // Find a slot in the directory for this entry
     // First, see if an image by this name is already present
@@ -444,7 +453,7 @@ fis_create(int argc, char *argv[])
                 return;
             }
             if (img->size != length) {
-                printf("Image found, but LENGTH is incorrect (0x%x != 0x%x)\n", img->size, length);
+                printf("Image found, but LENGTH is incorrect (0x%lx != 0x%lx)\n", img->size, length);
                 return;
             }
             if (!verify_action("An image named '%s' exists", name)) {
@@ -465,24 +474,26 @@ fis_create(int argc, char *argv[])
             }
         }
     }
-    // Safety check - make sure the address range is not within the code we're running
-    if (flash_code_overlaps((void *)flash_addr, (void *)(flash_addr+img_size-1))) {
-        printf("Can't program this region - contains code in use!\n");
-        return;
-    }
-    prog_ok = true;
-    if (prog_ok) {
-        // Erase area to be programmed
-        if ((stat = flash_erase((void *)flash_addr, length, (void **)&err_addr)) != 0) {
-            printf("Can't erase region at %p: %x(%s)\n", err_addr, stat, flash_errmsg(stat));
-            prog_ok = false;
+    if (!no_copy) {
+        // Safety check - make sure the address range is not within the code we're running
+        if (flash_code_overlaps((void *)flash_addr, (void *)(flash_addr+img_size-1))) {
+            printf("Can't program this region - contains code in use!\n");
+            return;
         }
-    }
-    if (prog_ok) {
-        // Now program it
-        if ((stat = flash_program((void *)flash_addr, (void *)mem_addr, img_size, (void **)&err_addr)) != 0) {
-            printf("Can't program region at %p: %x(%s)\n", err_addr, stat, flash_errmsg(stat));
-            prog_ok = false;
+        prog_ok = true;
+        if (prog_ok) {
+            // Erase area to be programmed
+            if ((stat = flash_erase((void *)flash_addr, length, (void **)&err_addr)) != 0) {
+                printf("Can't erase region at %p: 0x%x(%s)\n", err_addr, stat, flash_errmsg(stat));
+                prog_ok = false;
+            }
+        }
+        if (prog_ok) {
+            // Now program it
+            if ((stat = flash_program((void *)flash_addr, (void *)mem_addr, img_size, (void **)&err_addr)) != 0) {
+                printf("Can't program region at %p: 0x%x(%s)\n", err_addr, stat, flash_errmsg(stat));
+                prog_ok = false;
+            }
         }
     }
     // Update directory
@@ -493,18 +504,18 @@ fis_create(int argc, char *argv[])
     img->entry_point = entry_addr_set ? entry_addr : (unsigned long)entry_address;  // Hope it's been set
     img->size = length;
     img->data_length = img_size;
-    img->file_cksum = _cksum((unsigned long *)mem_addr, img_size);
+    img->file_cksum = _cksum((unsigned long *)flash_addr, img_size);
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
     // Insure [quietly] that the directory is unlocked before trying to update
     flash_unlock((void *)fis_addr, block_size, (void **)&err_addr);
 #endif
     if ((stat = flash_erase((void *)fis_addr, block_size, (void **)&err_addr)) != 0) {
-        printf("Error erasing at %p: %x(%s)\n", err_addr, stat, flash_errmsg(stat));
+        printf("Error erasing at %p: 0x%x(%s)\n", err_addr, stat, flash_errmsg(stat));
         // Don't try to program if the erase failed
     } else {
         // Now program it
         if ((stat = flash_program((void *)fis_addr, (void *)fis_work_block, block_size, (void **)&err_addr)) != 0) {
-            printf("Error programming at %p: %x(%s)\n", err_addr, stat, flash_errmsg(stat));
+            printf("Error programming at %p: 0x%x(%s)\n", err_addr, stat, flash_errmsg(stat));
         }
     }
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
@@ -550,7 +561,7 @@ fis_erase(int argc, char *argv[])
         return;
     }
     if ((stat = flash_erase((void *)flash_addr, length, (void **)&err_addr)) != 0) {
-        printf("Error erasing at %p: %x(%s)\n", err_addr, stat, flash_errmsg(stat));
+        printf("Error erasing at %p: 0x%x(%s)\n", err_addr, stat, flash_errmsg(stat));
     }
 }
 
@@ -588,7 +599,7 @@ fis_lock(int argc, char *argv[])
         return;
     }
     if ((stat = flash_lock((void *)flash_addr, length, (void **)&err_addr)) != 0) {
-        printf("Error locking at %p: %x(%s)\n", err_addr, stat, flash_errmsg(stat));
+        printf("Error locking at %p: 0x%x(%s)\n", err_addr, stat, flash_errmsg(stat));
     }
 }
 
@@ -624,7 +635,7 @@ fis_unlock(int argc, char *argv[])
         return;
     }
     if ((stat = flash_unlock((void *)flash_addr, length, (void **)&err_addr)) != 0) {
-        printf("Error unlocking at %p: %x(%s)\n", err_addr, stat, flash_errmsg(stat));
+        printf("Error unlocking at %p: 0x%x(%s)\n", err_addr, stat, flash_errmsg(stat));
     }
 }
 #endif
@@ -665,7 +676,7 @@ fis_delete(int argc, char *argv[])
     }
     // Erase Data blocks (free space)
     if ((stat = flash_erase((void *)img->flash_base, img->size, (void **)&err_addr)) != 0) {
-        printf("Error erasing at %p: %x(%s)\n", err_addr, stat, flash_errmsg(stat));
+        printf("Error erasing at %p: 0x%x(%s)\n", err_addr, stat, flash_errmsg(stat));
     }
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
     // Insure [quietly] that the directory is unlocked before trying to update
@@ -674,12 +685,12 @@ fis_delete(int argc, char *argv[])
     // Update directory
     memset(img, 0xFF, sizeof(*img));
     if ((stat = flash_erase((void *)fis_addr, block_size, (void **)&err_addr)) != 0) {
-        printf("Error erasing at %p: %x(%s)\n", err_addr, stat, flash_errmsg(stat));
+        printf("Error erasing at %p: 0x%x(%s)\n", err_addr, stat, flash_errmsg(stat));
         // Don't try to program if the erase failed
     } else {
         // Now program it
         if ((stat = flash_program((void *)fis_addr, (void *)fis_work_block, block_size, (void **)&err_addr)) != 0) {
-            printf("Error programming at %p: %x(%s)\n", err_addr, stat, flash_errmsg(stat));
+            printf("Error programming at %p: 0x%x(%s)\n", err_addr, stat, flash_errmsg(stat));
         }
     }
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
@@ -697,6 +708,7 @@ fis_load(int argc, char *argv[])
     bool mem_addr_set = false;
     bool show_cksum = false;
     struct option_info opts[2];
+    unsigned long cksum;
 
     init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
               (void **)&mem_addr, (bool *)&mem_addr_set, "memory [load] base address");
@@ -722,14 +734,14 @@ fis_load(int argc, char *argv[])
     }
     memcpy((void *)mem_addr, (void *)img->flash_base, img->size);
     entry_address = (unsigned long *)img->entry_point;
+    cksum = _cksum((unsigned long *)mem_addr, img->data_length);
+    if (show_cksum) {
+        printf("Checksum: 0x%08lx\n", cksum);
+    }
     if (img->file_cksum) {
-        unsigned long cksum = _cksum((unsigned long *)mem_addr, img->data_length);
         if (cksum != img->file_cksum) {
-            printf("** Warning - checksum failure.  stored: %08lx, computed: %08lx\n",
+            printf("** Warning - checksum failure.  stored: 0x%08lx, computed: 0x%08lx\n",
                    img->file_cksum, cksum);
-        }
-        if (show_cksum) {
-            printf("Checksum: %08lx\n", cksum);
         }
     }
 }
@@ -744,7 +756,7 @@ do_flash_init(void)
         init = 1;
         if ((stat = flash_init((void *)(ram_end-FLASH_MIN_WORKSPACE), 
                                FLASH_MIN_WORKSPACE)) != 0) {
-            printf("FLASH: driver init failed!, status: %x\n", stat);
+            printf("FLASH: driver init failed!, status: 0x%x\n", stat);
             return false;
         }
         flash_get_limits((void *)0, (void **)&flash_start, (void **)&flash_end);
@@ -1078,11 +1090,11 @@ do_flash_config(int argc, char *argv[])
         flash_unlock((void *)cfg_base, block_size, (void **)&err_addr);
 #endif
         if ((stat = flash_erase(cfg_base, block_size, (void **)&err_addr)) != 0) {
-            printf("   initialization failed %p: %x(%s)\n", err_addr, stat, flash_errmsg(stat));
+            printf("   initialization failed %p: 0x%x(%s)\n", err_addr, stat, flash_errmsg(stat));
         } else {
             if ((stat = flash_program(cfg_base, (void *)&config, 
                                       sizeof(config), (void **)&err_addr)) != 0) {
-                printf("Error writing config data at %p: %x(%s)\n", 
+                printf("Error writing config data at %p: 0x%x(%s)\n", 
                        err_addr, stat, flash_errmsg(stat));
             }
         }

@@ -132,6 +132,12 @@ static int dbg_thread_syscall_rmt(
     return ret;
 }
 
+
+// Note: This constant is the same as the one defined in hal_if.h:
+// #define CYGNUM_CALL_IF_DBG_SYSCALL                15
+// But we don't have the hal_if on all the platforms we support this
+// intercalling on. Maintaining backwards compatibility is so much fun!
+
 #define DBG_SYSCALL_THREAD_VEC_NUM 15
 
 #ifdef CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT

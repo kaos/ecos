@@ -1,3 +1,38 @@
+2000-12-04  Hugo Tyson  <hmt@redhat.com>
+
+	* include/hal_cache.h: Consistently ensure that ARM registers used
+	in MCR ops to cache-control coprocessors, where the data doesn't
+	matter, all actually have data zero ("SBZ") as in the Jaggar book.
+	This may well not be necessary, but for the sake of making sure...
+
+2000-12-01  Gary Thomas  <gthomas@redhat.com>
+
+	* src/redboot_cmds.c: Add prototype to remove warning.
+
+2000-11-30  Gary Thomas  <gthomas@redhat.com>
+
+	* src/redboot_cmds.c (do_exec): Complete support for loading
+	Linux, including use of an initial ramdisk image.
+
+2000-12-01  Hugo Tyson  <hmt@redhat.com>
+
+	* include/hal_cache.h: Define addressable cache line operations
+	HAL_DCACHE_STORE(), HAL_DCACHE_INVALIDATE(), HAL_DCACHE_FLUSH()
+	now that I have understood how come the test (kcache2) was
+	failing.  See kernel ChangeLog for details.  Also tidied up a
+	couple of other minor details.
+
+2000-11-28  Drew Moseley  <dmoseley@redhat.com>
+
+	* misc/redboot_RAM.cfg: Implement CYGSEM_REDBOOT_BSP_SYSCALLS.
+	* misc/redboot_ROM.cfg: Ditto.
+
+	* src/ebsa285_misc.c (ebsa285_program_new_stack): New function
+	for switching to an application stack when running a program under
+	a ROM monitor.
+
+	* cdl/hal_arm_sa11x0_ebsa285.cdl: Define HAL_ARCH_PROGRAM_NEW_STACK.
+
 2000-11-19  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/hal_arm_ebsa285.cdl: Define CYGBLD_HAL_PLATFORM_IO_H.

@@ -82,6 +82,44 @@ cdl_option CYGFUN_KERNEL_THREADS_STACK_LIMIT {
         does not imply any form of run-time stack overflow checking."
 }
 
+cdl_component CYGFUN_KERNEL_THREADS_STACK_CHECKING {
+    display       "Check thread stacks for overflows"
+    active_if     CYGPKG_INFRA_DEBUG
+    active_if     CYGDBG_USE_ASSERTS
+    default_value 1
+    description   "
+        This option enables a variety of checks for stack overflow
+        including signatures at the top and base of thread stacks,
+        which are asserted for correctness whenever a thread switches."
+
+    cdl_option CYGFUN_KERNEL_ALL_THREADS_STACK_CHECKING {
+	display   "Check all threads whenever possible"
+	active_if  CYGVAR_KERNEL_THREADS_LIST
+	default_value 0
+	description "
+	This option enables more active checking of all threads for
+	wrongdoing.  In theory, checking threads other than the old and new
+	executing threads in a thread-switch is pointless, because no other
+	thread has run, so no other stack can be exceeded.  But errors such
+	as memory scribbling, dangling pointers, overlapping use of store
+	or errors accessing objects adjacent to a stack which can be very
+	hard to find can be detected this way, saving debug time."
+    }
+
+    cdl_option CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE {
+	display   "Signature size in bytes, at stack top and bottom"
+	flavor data
+	default_value 32
+	legal_values 8 to 512
+	description "
+	This is the size of the area reserved for a signature at the top
+	and bottom of all stacks.  It also provides a buffer zone for
+	detecting overflow before external objects are corrupted, hence the
+	ability to vary it here.  But if you are short of stack, increasing
+	this value will make the overflow more, not less likely, of course."
+    }
+}
+
 cdl_component CYGVAR_KERNEL_THREADS_DATA {
     display            "Support for per-thread data"
     requires           CYGFUN_KERNEL_THREADS_STACK_LIMIT
@@ -223,3 +261,4 @@ cdl_option CYGIMP_IDLE_THREAD_YIELD {
         If the scheduler configuration only has a single priority
         level, then the idle thread must yield each time around its loop."
 }
+

@@ -1,3 +1,9 @@
+2000-12-05  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/sa1100mm_flash.c (flash_code_overlaps): Define stext/etext
+	as array types so no assumptions can be made by the compiler about
+	location.
+
 2000-10-25  Drew Moseley  <dmoseley@redhat.com>
 
 	* src/sa1100mm_flash.c: New file.  Support for SA1100 Multimedia

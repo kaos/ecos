@@ -1,3 +1,74 @@
+2000-12-07  Gary Thomas  <gthomas@redhat.com>
+
+	* src/main.c (cyg_start): Make CLI command buffer static.
+	(do_reset): New command - reset platform from CLI.
+
+	* src/io.c (dump_buf_with_offset): Change signature for 
+	more generic export.
+
+	* include/redboot.h: Export 'dump_buf_with_offset' function.
+
+	* cdl/redboot.cdl: Define CLI command buffer - static with
+	user specified length - to accomodate some environments which
+	may want excrutiatingly long commands.
+
+2000-12-07  Jesper Skov  <jskov@redhat.com>
+
+	* src/misc_funs.c (strlen): NULL ptr string has length 0.
+
+	* src/load.c (load_srec_image): Refuse to load data to a location
+	not in RAM.
+
+	* src/flash.c (fis_create): Hack around another MIPS compiler bug.
+
+2000-12-06  Jesper Skov  <jskov@redhat.com>
+
+	* src/load.c: Suppress verbosity when using xyz modem download.
+	
+	* src/main.c: Fix warnings.
+	* src/load.c: Fix warnings.
+
+	* src/parse.c (parse_num): Hack around MIPS compiler bug.
+
+2000-12-01  Gary Thomas  <gthomas@redhat.com>
+
+	* src/xyzModem.h: 
+	* src/xyzModem.c (xyzModem_stream_close): New function - tidy up
+	and print some statistics about the download.  Better handling
+	of CAN (cancel) function.
+
+	* src/load.c (load_srec_image): Consume all data, not just to
+	final record.  This makes Ymodem happier.  Also, call xyzModem_close().
+
+2000-11-30  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c (fis_create): Add new option '-n' which suppresses
+	the copy from RAM to FLASH.  Used to simply update the FIS directory.
+	Also misc printf() changes - add 0x everywhere hex is used.
+
+	* src/net/net_io.c (_net_io_getc_nonblock): Abstract function.
+	(net_io_getc_nonblock): Add minimal handling of telnet escape
+	sequences - required to properly handle ^C.
+
+	* src/main.c (cyg_start): Support network connection during
+	boot/startup script.  Use new codes from 'gets()'.
+
+	* src/flash.c (fis_create): Cleanup to remove warnings.
+
+	* include/net/net.h (BSPLOG): Update for new start/end_console().
+
+	* src/io.c (gets): 
+	* include/redboot.h (_GETS_xxx): Define result codes from 
+	'gets()' function.
+
+2000-11-28  Gary Thomas  <gthomas@redhat.com>
+
+	* src/parse.c (parse): Support escaped quote marks inside of
+	quoted string.  "ab\"c\"" is 'ab"c"'.
+
+	* src/net/tftp_client.c (tftp_stream_open): Read first datum from
+	file during open to ensure that errors are reported.
+
 2000-11-27  Drew Moseley  <dmoseley@redhat.com>
 
 	* src/main.c: Switch to an application stack before running a

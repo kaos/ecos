@@ -59,6 +59,67 @@
 	
 	.file	"vectors.S"
 
+#ifdef CYGPKG_CYGMON
+##-----------------------------------------------------------------------------
+## Macros for Stack handling when running Cygmon
+        		
+.macro hal_cygmon_switch_app_stack
+	#
+	# Switch to interrupt stack to handle exception
+	#
+
+	# First, save some scratch registers
+	mov	a2(a2_save)
+	mov	a3,(a3_save)
+
+	# Copy the exception frame
+	mov	__cygmon_interrupt_stack-8,a2
+	mov	(sp),a3				// Copy over the saved EPSW
+	mov	a3,(a2)
+	mov	(4,sp),a3			// Copy over the saved PC
+	mov	a3,(4,a2)
+
+	# Save the pre-exception sp in the register image	 
+	add	-4,a2				# space for SP
+	mov	sp,a3
+	add	8,a3				# adjust for exception frame
+	mov	a3,(a2)
+
+	# Actually switch the stack
+	mov	a2,sp
+
+	# Now, restore the scratch registers
+	mov	(a2_save),a2
+	mov	(a3_save),a3
+.endm
+
+.macro hal_cygmon_restore_app_stack
+	// For cygmon we are switching stacks immediately on exception.
+	// We must wait until the very end before restoring the original stack.
+
+	# Save some scratch registers
+	mov	a2,(a2_save)
+	mov	a3,(a3_save)
+
+	# We need to restore the application stack pointer, but we also
+	# need to restore the exception frame.
+	mov	(sp),a2
+	add	4,sp				// remove saved sp
+	add	-8,a2				// adjust for exception frame
+	
+	mov	(sp),a3				// Copy the saved EPSW
+	mov	a3,(a2)
+	mov	(4,sp),a3			// Copy the saved PC
+	mov	a3,(4,a2)
+	mov	a2,sp				// Restore the frame-adjusted SP
+
+	# Restore the scratch registers
+	mov	(a2_save),a2
+	mov	(a3_save),a3
+.endm
+
+#endif // CYGPKG_CYGMON
+
 ##-----------------------------------------------------------------------------
 		
 	.section ".vectors","ax"
@@ -96,7 +157,11 @@ reset_vector:
 
 	.globl __nmi
 __nmi:
+#ifdef CYGPKG_CYGMON
+	hal_cygmon_switch_app_stack
+#else
 	add	-4,sp				# space for SP
+#endif
 	hal_cpu_save_all			# push all registers
 	mov	(_hal_vsr_table+28),a0 
 	jmp	(a0)
@@ -106,7 +171,12 @@ __nmi:
 
 	.globl __trap
 __trap:
+#ifdef CYGPKG_CYGMON
+	add	-4,sp				# space for PSW
+	hal_cygmon_switch_app_stack
+#else
 	add	-8,sp				# space for SP and PSW
+#endif
 	hal_cpu_save_all			# push all registers
 	mov	(_hal_vsr_table+32),a0
 	jmp	(a0)
@@ -117,7 +187,11 @@ __trap:
 	.macro	hardware_vector name
 	.globl	__hardware_vector_\name
 __hardware_vector_\name:
+#ifdef CYGPKG_CYGMON
+	hal_cygmon_switch_app_stack
+#else
 	add	-4,sp				# space for SP
+#endif
 	hal_cpu_save_all
 	mov	\name,d0			# d0 = vector id
 	mov	d0,(0,sp)			# save in dummy stack loc
@@ -272,7 +346,10 @@ __default_interrupt_vsr:
 	
 	increment_sched_lock
 	
-#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+#if defined(CYGPKG_CYGMON)
+        // For Cygmon, we saved this back when we originally switched stacks.
+	mov	(sp),a2				# A2 = saved thread state
+#elif defined(CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK)
 	# Increment interrupt nesting counter
 	mov	__interrupt_stack,a0		# A0 = interrupt stack top
 	mov	sp,a2				# A2 = SP
@@ -375,7 +452,7 @@ __default_interrupt_vsr:
 2:
 #endif
 
-#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+#if defined(CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK) && !defined(CYGPKG_CYGMON)
 
 	# If we are returning from the last nested interrupt, move back
 	# to the thread stack. interrupt_end() must be called on the
@@ -415,7 +492,11 @@ __default_interrupt_vsr:
 	hal_diag_restore
 	
 	hal_cpu_load_all
+#ifdef CYGPKG_CYGMON
+	hal_cygmon_restore_app_stack
+#else
 	add	4,sp
+#endif
 	rti					# and return
 
 ##-----------------------------------------------------------------------------
@@ -510,20 +591,6 @@ __default_nmi_vsr:
         
 	mov	sp,a1				# a1 = saved state
 
-#ifdef CYGPKG_CYGMON
-	# Switch to interrupt stack to handle exception
-	# This should probably be done as the first thing in the exception
-	# handler to guard against the possibility of having a bad SP to
-	# begin with.  ie if the user sets the SP to a bad location, we
-	# will not run properly.  Ideally we should switch to monitor mode
-	# on entry to any exception.  However, a lot of other code
-	# assumes things work this way.
-	mov	__interrupt_stack-4,a0
-        mov	a0, sp
-	mov	a1,(sp)
-	add	-4,sp
-#endif
-
 	mov	a1,d0				# d0 = arg1 = saved state
 
 	add	-16,sp				# return link + args
@@ -533,48 +600,10 @@ __default_nmi_vsr:
 
 	add	16,sp				# pop args
 
-#ifdef CYGPKG_CYGMON
-	add	4,sp				# Restore the old stack
-	mov	(sp),a1
-	mov	a1,sp
-#endif
-
 	hal_cpu_load_all
 
 #ifdef CYGPKG_CYGMON
-	mov	d3,(d3_save)
-	mov	a2,(a2_save)
-	mov	a3,(a3_save)
-
-	# Pop the potentially-new stack pointer into a2
-	mov	(sp),a2
-	add	4,sp
-
-	# Check to see if sp has been modified.
-	# The exception processing pushes 8 bytes onto the stack.
-	# If sp+8 = (sp) then the stack has not been modified.
-	mov	sp,a3
-	add	8, a3
-	cmp	a2,a3
-	beq	8f
-
-	# The stack has been modified.  We need to setup for a proper rti
-	# so the stack is in the correct place.  We just hope that the user
-	# put the stack somewhere we can write to.
-	#
-	# Copy 8 bytes from the old stack to the new stack (ie the exception frame)
-	mov	(-4,a3), d3
-	mov	d3, (-4,a2)
-	mov	(-8,a3), d3
-	mov	d3, (-8,a2)
-
-	# Set the sp register to the new exception frame.
-	add	-8, a2
-	mov	a2, sp
-
-8:	mov	(d3_save),d3
-	mov	(a2_save),a2
-	mov	(a3_save),a3
+	hal_cygmon_restore_app_stack
 #else
 	add	4,sp
 #endif
@@ -590,11 +619,23 @@ hal_lsbit_table:
 	
 #ifdef CYGPKG_CYGMON
         .section ".bss"
+d0_save:
+	.long	0
+d1_save:
+	.long	0
+d2_save:
+	.long	0
 d3_save:
+	.long	0
+a0_save:
+	.long	0
+a1_save:
 	.long	0
 a2_save:
 	.long	0
 a3_save:
+	.long	0
+sp_save:
 	.long	0
 #endif
 
@@ -614,7 +655,11 @@ __default_trap_vsr:
 	calls	_cyg_hal_exception_handler	# call C code
 	add	8,sp				# pop args
 	hal_cpu_load_all
+#ifdef CYGPKG_CYGMON
+	hal_cygmon_restore_app_stack
+#else
 	add	4,sp
+#endif
 	rets
 
 ##-----------------------------------------------------------------------------
@@ -702,6 +747,18 @@ __interrupt_stack_base:
 _cyg_interrupt_stack:
 __interrupt_stack:
 	
+#ifdef CYGPKG_CYGMON
+	.balign 16
+	.global __cygmon_interrupt_stack_base
+__cygmon_interrupt_stack_base:
+	.rept CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE
+	.byte 0
+	.endr
+	.balign 16
+	.global __cygmon_interrupt_stack
+__cygmon_interrupt_stack:
+#endif
+
 	.long	0,0,0,0,0,0,0,0	
 
 ##-----------------------------------------------------------------------------

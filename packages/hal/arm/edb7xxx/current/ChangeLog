@@ -1,3 +1,18 @@
+2000-12-04  Hugo Tyson  <hmt@redhat.com>
+
+	* include/hal_cache.h: Consistently ensure that ARM registers used
+	in MCR ops to cache-control coprocessors, where the data doesn't
+	matter, all actually have data zero ("SBZ") as in the Jaggar book.
+	This may well not be necessary, but for the sake of making sure...
+
+2000-12-04  Gary Thomas  <gthomas@redhat.com>
+
+	* include/hal_platform_setup.h: Reenable caching on FLASH/ROM.
+
+	* include/hal_cache.h: Update cache macros to follow ARM
+	and Cirrus Logic manuals more closely.  These changes seem
+	to allow for cacheable FLASH segments.
+
 2000-11-06  Jesper Skov  <jskov@redhat.com>
 
 	* tests/dram_test.c: Add kernel check.

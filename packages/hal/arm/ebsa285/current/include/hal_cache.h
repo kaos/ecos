@@ -90,8 +90,8 @@ CYG_MACRO_START                                                         \
         "mrc  p15,0,r1,c1,c0,0;"                                        \
         "bic  r1,r1,#0x000C;" /* but leave MM alone */                  \
         "mcr  p15,0,r1,c1,c0,0;"                                        \
-        "mov    r1, #0;"                                                \
-        "mcr    p15,0,r1,c7,c6,0" /* clear data cache */                \
+        "mov    r1,#0;"                                                 \
+        "mcr  p15,0,r1,c7,c6,0" /* clear data cache */                  \
         :                                                               \
         :                                                               \
         : "r1" /* Clobber list */                                       \
@@ -103,12 +103,12 @@ CYG_MACRO_END
 CYG_MACRO_START                                                         \
     /* this macro can discard dirty cache lines. */                     \
     asm volatile (                                                      \
-        "mov    r1, #0;"                                                \
+        "mov    r1,#0;"                                                 \
         "mcr    p15,0,r1,c7,c6,0;"  /* clear data cache */              \
         "mcr    p15,0,r1,c8,c7,0;"  /* flush I+D TLBs */                \
         :                                                               \
         :                                                               \
-        : "r1" /* Clobber list */                                       \
+        : "r1","memory" /* Clobber list */                              \
         );                                                              \
 CYG_MACRO_END
      
@@ -126,15 +126,9 @@ CYG_MACRO_START                                                         \
         "ldr    r2, [r0], #32;"                                         \
         "teq    r1, r0;"                                                \
         "bne    667b;"                                                  \
-        "mov    r0, #0;"                                                \
+        "mov    r0,#0;"                                                 \
         "mcr    p15,0,r0,c7,c6,0;"  /* clear data cache */              \
         "mcr    p15,0,r0,c7,c10,4;" /* and drain the write buffer */    \
-        "nop;"  /* wait for the writethrough to occur... */             \
-        "nop;"                                                          \
-        "nop;"                                                          \
-        "nop;"                                                          \
-        "nop;"                                                          \
-        "nop"                                                           \
         :                                                               \
         :                                                               \
         : "r0","r1","r2" /* Clobber list */                             \
@@ -187,50 +181,53 @@ CYG_MACRO_END
 
 // Write dirty cache lines to memory and invalidate the cache entries
 // for the given address range.
-// ---- this seems not to work despite the documentation ---
-//#define HAL_DCACHE_FLUSH( _base_ , _size_ )
-//CYG_MACRO_START
-//    HAL_DCACHE_STORE( _base_ , _size_ );
-//    HAL_DCACHE_INVALIDATE( _base_ , _size_ );
-//CYG_MACRO_END
+#define HAL_DCACHE_FLUSH( _base_ , _size_ )     \
+CYG_MACRO_START                                 \
+    HAL_DCACHE_STORE( _base_ , _size_ );        \
+    HAL_DCACHE_INVALIDATE( _base_ , _size_ );   \
+CYG_MACRO_END
 
 // Invalidate cache lines in the given range without writing to memory.
-// ---- this seems not to work despite the documentation ---
-//#define HAL_DCACHE_INVALIDATE( _base_ , _size_ )
-//CYG_MACRO_START
-//    register int addr, enda;
-//    for ( addr = (~(HAL_DCACHE_LINE_SIZE - 1)) & (int)(_base_),
-//              enda = (int)(_base_) + (_size_);
-//          addr < enda ;
-//          addr += HAL_DCACHE_LINE_SIZE )
-//    {
-//        asm volatile (
-//                      "mcr  p15,0,%0,c7,c6,1;" /* flush entry away */
-//                      :
-//                      : "r"(addr)
-//                      : "memory"
-//            );
-//    }
-//CYG_MACRO_END
+#define HAL_DCACHE_INVALIDATE( _base_ , _size_ )                        \
+CYG_MACRO_START                                                         \
+    register int addr, enda;                                            \
+    for ( addr = (~(HAL_DCACHE_LINE_SIZE - 1)) & (int)(_base_),         \
+              enda = (int)(_base_) + (_size_);                          \
+          addr < enda ;                                                 \
+          addr += HAL_DCACHE_LINE_SIZE )                                \
+    {                                                                   \
+        asm volatile (                                                  \
+                      "mcr  p15,0,%0,c7,c6,1;" /* flush entry away */   \
+                      :                                                 \
+                      : "r"(addr)                                       \
+                      : "memory"                                        \
+            );                                                          \
+    }                                                                   \
+CYG_MACRO_END
                           
 // Write dirty cache lines to memory for the given address range.
-// ---- this seems not to work despite the documentation ---
-//#define HAL_DCACHE_STORE( _base_ , _size_ )
-//CYG_MACRO_START
-//    register int addr, enda;
-//    for ( addr = (~(HAL_DCACHE_LINE_SIZE - 1)) & (int)(_base_),
-//              enda = (int)(_base_) + (_size_);
-//          addr < enda ;
-//          addr += HAL_DCACHE_LINE_SIZE )
-//    {
-//        asm volatile ("mcr  p15,0,%0,c7,c10,1" /* push entry to RAM */
-//                      :
-//                      : "r"(addr)
-//                      : "memory"
-//            );
-//    }
-//CYG_MACRO_END
-
+#define HAL_DCACHE_STORE( _base_ , _size_ )                             \
+CYG_MACRO_START                                                         \
+    register int addr, enda;                                            \
+    for ( addr = (~(HAL_DCACHE_LINE_SIZE - 1)) & (int)(_base_),         \
+              enda = (int)(_base_) + (_size_);                          \
+          addr < enda ;                                                 \
+          addr += HAL_DCACHE_LINE_SIZE )                                \
+    {                                                                   \
+        asm volatile ("mcr  p15,0,%0,c7,c10,1;" /* push entry to RAM */ \
+                      :                                                 \
+                      : "r"(addr)                                       \
+                      : "memory"                                        \
+            );                                                          \
+    }                                                                   \
+    /* and also drain the write buffer */                               \
+    asm volatile (                                                      \
+        "mov    r1,#0;"                                                 \
+        "mcr    p15,0,r1,c7,c10,4;"                                     \
+        :                                                               \
+        :                                                               \
+        : "r1", "memory" );                                             \
+CYG_MACRO_END
 
 // Preread the given range into the cache with the intention of reading
 // from it later.

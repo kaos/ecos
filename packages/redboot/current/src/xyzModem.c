@@ -62,12 +62,13 @@ static struct {
     unsigned char pkt[1024], *bufp;
     unsigned char blk,cblk,crc1,crc2;
     unsigned char next_blk;  // Expected block
-    int len, mode;
+    int len, mode, total_retries;
+    int total_SOH, total_STX, total_CAN;
     bool crc_mode, at_eof;
 } xyz;
 
-#define xyzModem_CHAR_TIMEOUT 1000  // 1 second
-#define xyzModem_MAX_RETRIES    20
+#define xyzModem_CHAR_TIMEOUT            2000  // 2 seconds
+#define xyzModem_MAX_RETRIES             20
 #define xyzModem_MAX_RETRIES_WITH_CRC    10
 
 // Table of CRC constants - implements x^16+x^12+x^5+1
@@ -193,10 +194,13 @@ xyzModem_get_hdr(void)
         if (res) {
             switch (c) {
             case SOH:
+                xyz.total_SOH++;
             case STX:
+                if (c == STX) xyz.total_STX++;
                 hdr_found = true;
                 break;
             case CAN:
+                xyz.total_CAN++;
                 ZM_DEBUG(zm_dump(__LINE__));
                 return xyzModem_cancel;
             case EOT:
@@ -300,6 +304,10 @@ xyzModem_stream_open(char *filename, int mode, int *err)
     xyz.crc_mode = true;
     xyz.at_eof = false;
     xyz.mode = mode;
+    xyz.total_retries = 0;
+    xyz.total_SOH = 0;
+    xyz.total_STX = 0;
+    xyz.total_CAN = 0;
 
     while (retries-- > 0) {
         stat = xyzModem_get_hdr();
@@ -316,7 +324,11 @@ xyzModem_stream_open(char *filename, int mode, int *err)
             if (--crc_retries <= 0) xyz.crc_mode = false;
             CYGACC_CALL_IF_DELAY_US(5*100000);   // Extra delay for startup
             CYGACC_COMM_IF_PUTC(*xyz.__chan, (xyz.crc_mode ? 'C' : NAK));
+            xyz.total_retries++;
             ZM_DEBUG(zm_dprintf("NAK (%d)\n", __LINE__));
+        }
+        if (stat == xyzModem_cancel) {
+            break;
         }
     }
     *err = stat;
@@ -350,11 +362,15 @@ xyzModem_stream_read(char *buf, int size, int *err)
                         stat = xyzModem_sequence;
                     }
                 }
+                if (stat == xyzModem_cancel) {
+                    break;
+                }
                 if (stat == xyzModem_eof) {
                     CYGACC_COMM_IF_PUTC(*xyz.__chan, ACK);
                     ZM_DEBUG(zm_dprintf("ACK (%d)\n", __LINE__));
                     if (xyz.mode == xyzModem_ymodem) {
                         CYGACC_COMM_IF_PUTC(*xyz.__chan, (xyz.crc_mode ? 'C' : NAK));
+                        xyz.total_retries++;
                         stat = xyzModem_get_hdr();                        
                         CYGACC_COMM_IF_PUTC(*xyz.__chan, ACK);
                         ZM_DEBUG(zm_dprintf("ACK (%d)\n", __LINE__));
@@ -363,6 +379,7 @@ xyzModem_stream_read(char *buf, int size, int *err)
                     break;
                 }
                 CYGACC_COMM_IF_PUTC(*xyz.__chan, (xyz.crc_mode ? 'C' : NAK));
+                xyz.total_retries++;
                 ZM_DEBUG(zm_dprintf("NAK (%d)\n", __LINE__));
             }
             if (stat < 0) {
@@ -381,6 +398,15 @@ xyzModem_stream_read(char *buf, int size, int *err)
         xyz.bufp += len;
     }
     return total;
+}
+
+void
+xyzModem_stream_close(int *err)
+{
+    printf("xyzModem - %s mode, %d(SOH)/%d(STX)/%d(CAN) packets, %d retries\n", 
+           xyz.crc_mode ? "CRC" : "Cksum",
+           xyz.total_SOH, xyz.total_STX, xyz.total_CAN,
+           xyz.total_retries);
 }
 
 char *

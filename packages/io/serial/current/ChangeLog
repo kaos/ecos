@@ -1,3 +1,9 @@
+2000-12-08  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/common/serial.c: Fix CYGOPT_IO_SERIAL_FLOW_CONTROL_HW ->
+	CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS typo when declaring callbacks
+	Thanks to Brian Danilko for reporting.
+
 2000-11-22  Jesper Skov  <jskov@redhat.com>
 
 	* src/common/serial.c: Changed #ifdef to #if used on an interface

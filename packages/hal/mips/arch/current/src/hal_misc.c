@@ -339,6 +339,30 @@ cyg_uint32 hal_msbit_index(cyg_uint32 mask)
 }
 
 /*------------------------------------------------------------------------*/
+/* Delay for some number of useconds.                                     */
+void 
+hal_delay_us(int us)
+{
+    cyg_uint32 val1, val2;
+    int diff;
+    long ticks;
+    // Scale the desired number of microseconds to be a number of
+    // incrementer ticks
+    ticks = us * (CYGNUM_HAL_RTC_PERIOD * CYGNUM_HAL_RTC_DENOMINATOR) / 1000000;
+
+    asm volatile("mfc0 %0,$9;" : "=r"(val1));
+    while (ticks > 0) {
+        do {
+            asm volatile("mfc0 %0,$9;" : "=r"(val2));
+        } while (val1 == val2);
+        diff = val2 - val1;
+        if (diff < 0) diff += CYGNUM_HAL_RTC_PERIOD;
+        ticks -= diff;
+        val1 = val2;
+    }
+}
+
+/*------------------------------------------------------------------------*/
 /* Idle thread action                                                     */
 
 #include <cyg/infra/diag.h>

@@ -1,3 +1,8 @@
+2000-12-02  Gary Thomas  <gthomas@redhat.com>
+
+	* src/stand_alone/eth_drv.c (eth_drv_write): Debug: dump packet
+	before calling hardware routine for improved usability.
+
 2000-10-30  Gary Thomas  <gthomas@redhat.com>
 
 	* include/eth_drv.h: Fix compile error in stand-alone mode.

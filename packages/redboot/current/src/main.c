@@ -51,6 +51,7 @@
 #include CYGHWR_MEMORY_LAYOUT_H
 
 #include <cyg/hal/hal_tables.h>
+#include <cyg/hal/plf_stub.h>
 
 // Builtin Self Test (BIST)
 externC void bist(void);
@@ -84,6 +85,13 @@ RedBoot_cmd("cache",
             "[ON | OFF]",
             do_caches 
     );
+#ifdef HAL_STUB_PLATFORM_RESET
+RedBoot_cmd("reset", 
+            "Reset the system", 
+            "",
+            do_reset 
+    );
+#endif
 
 // Define table boundaries
 CYG_HAL_TABLE_BEGIN( __RedBoot_INIT_TAB__, RedBoot_inits );
@@ -105,7 +113,7 @@ do_version(int argc, char *argv[])
     printf("Platform: %s (%s) %s\n", HAL_PLATFORM_BOARD, HAL_PLATFORM_CPU, HAL_PLATFORM_EXTRA);
 #endif
     printf("Copyright (C) 2000, Red Hat, Inc.\n\n");
-    printf("RAM: %p-%p\n", ram_start, ram_end);
+    printf("RAM: %p-%p\n", (void*)ram_start, (void*)ram_end);
 }
 
 //
@@ -114,9 +122,9 @@ do_version(int argc, char *argv[])
 void
 cyg_start(void)
 {
-    int res;
+    int res = 0;
     bool prompt = true;
-    char line[256];
+    static char line[CYGPKG_REDBOOT_MAX_CMD_LINE];
     struct cmd *cmd;
     int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
     struct init_tab_entry *init_entry;
@@ -149,8 +157,23 @@ cyg_start(void)
         printf("== Executing boot script in %d.%03d seconds - enter ^C to abort\n", 
                script_timeout_ms/1000, script_timeout_ms%1000);
         script = (unsigned char *)0;
-        res = gets(line, sizeof(line), script_timeout_ms);
-        if (res == -2) {
+        while (script_timeout_ms >= 10) {
+            res = gets(line, sizeof(line), 10);
+            if (res == _GETS_OK) {
+                printf("== Executing boot script in %d.%03d seconds - enter ^C to abort\n", 
+                       script_timeout_ms/1000, script_timeout_ms%1000);
+                continue;  // Ignore anything but ^C
+            }
+            if (res != _GETS_TIMEOUT) break;
+#ifdef CYGPKG_REDBOOT_NETWORKING
+            if (have_net) {
+                // Check for incoming TCP debug connection
+                net_io_test();
+            }
+#endif
+            script_timeout_ms -= 10;
+        }
+        if (res == _GETS_CTRLC) {
             script = (unsigned char *)0;  // Disable script
         } else {
             script = hold_script;  // Re-enable script
@@ -164,7 +187,7 @@ cyg_start(void)
             prompt = false;
         }
         res = gets(line, sizeof(line), 250);
-        if (res < 0) {
+        if (res == _GETS_TIMEOUT) {
             // No input arrived
 #ifdef CYGPKG_REDBOOT_NETWORKING
             if (have_net) {
@@ -173,7 +196,7 @@ cyg_start(void)
             }
 #endif
         } else {
-            if (res == 0) {
+            if (res == _GETS_GDB) {
                 // Special case of '$' - need to start GDB protocol
                 CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
 #ifdef HAL_ARCH_PROGRAM_NEW_STACK
@@ -186,7 +209,7 @@ cyg_start(void)
                     if ((cmd = parse(line, &argc, &argv[0])) != (struct cmd *)0) {
                         (cmd->fun)(argc, argv);
                     } else {
-                        printf("** Error: Illegal command: %s\n", line);
+                        printf("** Error: Illegal command: \"%s\"\n", argv[0]);
                     }
                 }
                 prompt = true;
@@ -284,7 +307,7 @@ do_go(int argc, char *argv[])
         printf("About to start execution at %p - abort with ^C within %d seconds\n",
                (void *)entry, wait_time);
         res = gets(line, sizeof(line), wait_time*1000);
-        if (res == -2) {
+        if (res == _GETS_CTRLC) {
             return;
         }
     }
@@ -302,6 +325,19 @@ do_go(int argc, char *argv[])
     (*fun)();
 #endif
 }
+
+#ifdef HAL_STUB_PLATFORM_RESET
+void
+do_reset(int argc, char *argv[])
+{
+    printf("... Resetting.");
+    CYGACC_CALL_IF_DELAY_US(2*100000);
+    printf("\n");
+    CYGACC_CALL_IF_DELAY_US(50000);
+    HAL_STUB_PLATFORM_RESET();
+    printf("!! oops, RESET not working on this platform\n");
+}
+#endif
 
 // 
 // [Null] Builtin [Power On] Self Test

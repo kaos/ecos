@@ -1,3 +1,10 @@
+2000-12-04  Hugo Tyson  <hmt@redhat.com>
+
+	* include/hal_cache.h: Consistently ensure that ARM registers used
+	in MCR ops to cache-control coprocessors, where the data doesn't
+	matter, all actually have data zero ("SBZ") as in the Jaggar book.
+	This may well not be necessary, but for the sake of making sure...
+
 2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/pkgconf/mlt_arm_cma222_ram.mlt:

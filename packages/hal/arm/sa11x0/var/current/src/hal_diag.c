@@ -94,8 +94,8 @@ init_channel(channel_data_t* __ch_data)
     base->utsr0 = SA11X0_UART_RX_IDLE | SA11X0_UART_RX_BEGIN_OF_BREAK |
                   SA11X0_UART_RX_END_OF_BREAK;
 
-#ifdef CYGPKG_HAL_ARM_SA11X0_SA1100MM
-   // This code has problems on other SA11x0 platforms.
+#if defined(CYGPKG_HAL_ARM_SA11X0_SA1100MM) || defined(CYGPKG_HAL_ARM_SA11X0_BRUTUS)
+   // This setup is specific to only a few boards.
    if (SA11X0_UART1_BASE == (volatile unsigned long *)base) {
         cyg_uint32 pdr, afr, par;
 

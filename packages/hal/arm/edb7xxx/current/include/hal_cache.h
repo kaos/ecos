@@ -100,25 +100,25 @@
 #define HAL_UCACHE_ENABLE()                     \
 {                                               \
     asm volatile ("mov  r1,#0x7D;"              \
-                  "mcr  p15,0,r1,c1,c0,0;"        \
+                  "mcr  p15,0,r1,c1,c0,0;"      \
                   :                             \
                   :                             \
                   : "r1" /* Clobber list */     \
         );                                      \
-                                                \
 }
 
 // Disable the data cache
-#define HAL_UCACHE_DISABLE()                    \
-{                                               \
-    asm volatile ("mov  r1,#0x71;"              \
-                  "mcr  p15,0,r1,c1,c0,0;"        \
-                  "mcr  p15,0,r1,c8,c7,0;"  /* flush I+D TLBs */                \
-                  :                             \
-                  :                             \
-                  : "r1" /* Clobber list */     \
-        );                                      \
-                                                \
+#define HAL_UCACHE_DISABLE()                                            \
+{                                                                       \
+    asm volatile ("mov  r1,#0x71;"                                      \
+                  "mcr  p15,0,r1,c1,c0,0;"                              \
+                  "mov  r1,#0;"                                         \
+                  "mcr  p15,0,r1,c8,c7,0;"  /* flush I+D TLBs */        \
+                  "nop; nop; nop; nop; nop;"                            \
+                  :                                                     \
+                  :                                                     \
+                  : "r1" /* Clobber list */                             \
+        );                                                              \
 }
 #endif
 
@@ -127,21 +127,27 @@
 
 // Invalidate the entire cache
 //    mcr  MMU_CP,0,r1,MMU_InvalidateCache,c0
-#define HAL_UCACHE_INVALIDATE_ALL()                             \
-{                                                               \
-    asm volatile ("mcr p15,0,r1,c7,c7,0;" );                      \
-                                                                \
+#define HAL_UCACHE_INVALIDATE_ALL()             \
+{                                               \
+    asm volatile (                              \
+        "mov    r1,#0;"                         \
+	"mcr p15,0,r1,c7,c7,0;"                 \
+	:                                       \
+        :                                       \
+        : "r1","memory" /* Clobber list */      \
+    );                                          \
+                                                \
 }
 
 // Synchronize the contents of the cache with memory.
 #define HAL_UCACHE_SYNC()                                               \
 {                                                                       \
-    cyg_uint32 *ROM = (cyg_uint32 *)0xE0000000;                         \
+    cyg_uint32 *RAM = (cyg_uint32 *)0x00000000;                         \
     int i;                                                              \
     volatile cyg_uint32 val;                                            \
     for (i = 0;  i < HAL_UCACHE_SETS;  i++) {                           \
-        val = *ROM;                                                     \
-        ROM += HAL_UCACHE_LINE_SIZE;                                    \
+        val = *RAM;                                                     \
+        RAM += HAL_UCACHE_LINE_SIZE;                                    \
     }                                                                   \
 }
 

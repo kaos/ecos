@@ -107,6 +107,10 @@ void hal_pc_fpe_dsr(CYG_ADDRWORD vector, cyg_ucount32 count, CYG_ADDRWORD data)
         if (hal_pc_fpe_owner)
         {	/* Then save his state at the bottom of his stack. */
             stack = cyg_thread_get_stack_base(hal_pc_fpe_owner) ;
+#ifdef CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE
+            // It might well be zero anyway
+            stack += CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE;
+#endif
             p = (cyg_uint32*) stack ;
             stack = (cyg_addrword_t) &(p[1]);
             asm("movl %0, %%eax
@@ -118,6 +122,9 @@ fsave (%%eax)"
         }
         hal_pc_fpe_owner = me ;
         stack = cyg_thread_get_stack_base(hal_pc_fpe_owner) ;
+#ifdef CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE
+        stack += CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE;
+#endif
         p = (cyg_uint32*) stack ;
         if (p[0] == 0xCAFEBABE)
         {

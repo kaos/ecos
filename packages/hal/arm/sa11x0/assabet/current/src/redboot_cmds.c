@@ -83,7 +83,7 @@ do_exec(int argc, char *argv[])
         printf("About to start execution at %p - abort with ^C within %d seconds\n",
                (void *)entry, wait_time);
         res = gets(line, sizeof(line), wait_time*1000);
-        if (res == -2) {
+        if (res == _GETS_CTRLC) {
             return;
         }
     }

@@ -1,3 +1,8 @@
+2000-12-05  Jesper Skov  <jskov@redhat.com>
+
+	* include/var_cache.h (HAL_MIPS_CACHE_INSN_USES_LSB): The TX49
+	uses LSB in the cache macro.
+
 2000-09-12  Jesper Skov  <jskov@redhat.com>
 
 	* include/variant.inc: Enable div-by-zero FPU exceptions.

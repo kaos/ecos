@@ -82,6 +82,16 @@ cdl_package CYGPKG_IO_PCI {
                 the set of global flags if present."
         }
 
+        cdl_option CYGPKG_IO_PCI_DEBUG {
+            display "Enable debugging."
+            flavor  bool
+            default_value 0
+            description   "
+                This option enables minimal debugging of the PCI library.
+                In particular, it will print information about devices as the
+                PCI bus is being scanned/searched."
+        }
+
         cdl_option CYGPKG_IO_PCI_TESTS {
             display "PCI tests"
             flavor  data

@@ -1,3 +1,14 @@
+2000-12-05  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/edb7xxx_flash.c (flash_code_overlaps): Define stext/etext
+	as array types so no assumptions can be made by the compiler about
+	location.
+
+2000-12-04  Gary Thomas  <gthomas@redhat.com>
+
+	* src/edb7xxx_flash.c (flash_hwr_init): Additional debugging
+	printf statments - in case this stuff fails in the future.
+
 2000-11-21  Gary Thomas  <gthomas@redhat.com>
 
 	* src/flash_query.c: Increase startup timing - didn't always work.

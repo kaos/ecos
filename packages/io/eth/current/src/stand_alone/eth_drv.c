@@ -248,7 +248,6 @@ eth_drv_write(char *eth_hdr, char *buf, int len)
     sg_list[1].buf = (CYG_ADDRESS)buf;
     sg_list[1].len = len;
     packet_sent = 0;
-    (sc->funs->send)(sc, sg_list, sg_len, len+14, (CYG_ADDRWORD)&packet_sent);
     if (net_debug) {
         int old_console;
         old_console = start_console();
@@ -257,6 +256,7 @@ eth_drv_write(char *eth_hdr, char *buf, int len)
         dump_buf((CYG_ADDRWORD)buf, len);
         end_console(old_console);
     }
+    (sc->funs->send)(sc, sg_list, sg_len, len+14, (CYG_ADDRWORD)&packet_sent);
 
     while (!packet_sent) {
         (sc->funs->poll)(sc);

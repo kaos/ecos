@@ -1,3 +1,14 @@
+2000-11-28  Drew Moseley  <dmoseley@redhat.com>
+
+	* misc/redboot_RAM.cfg: Implement CYGSEM_REDBOOT_BSP_SYSCALLS.
+	* misc/redboot_ROM.cfg: Ditto.
+
+	* src/brutus_misc.c (brutus_program_new_stack): New function
+	for switching to an application stack when running a program under
+	a ROM monitor.
+
+	* cdl/hal_arm_sa11x0_brutus.cdl: Define HAL_ARCH_PROGRAM_NEW_STACK.
+
 2000-11-25  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* misc/redboot_RAM.cfg: Added new import file for redboot

@@ -427,7 +427,7 @@
 	ldr	r3,=ROM0_LA_START                                            ;\
 	ldr	r4,=ROM0_LA_END                                              ;\
 	ldr	r5,=ROM0_PA                                                  ;\
-	ldr	r6,=MMU_L1_TYPE_Section|MMU_AP_Any/*|MMU_Cacheable*/             ;\
+	ldr	r6,=MMU_L1_TYPE_Section|MMU_AP_Any|MMU_Cacheable             ;\
 	ldr	r7,=MMU_SECTION_SIZE                                         ;\
 10:	orr	r0,r5,r6                                                     ;\
 	str	r0,[r1],#4                                                   ;\

@@ -49,11 +49,13 @@
 #include <cyg/hal/hal_intr.h>
 #include <cyg/hal/hal_cache.h>
 
-
 // Exported CLI function(s)
+static void do_exec(int argc, char *argv[]);
 RedBoot_cmd("exec", 
             "Execute an image - with MMU off", 
-            "[-w timeout] [<entry_point>]",
+            "[-w timeout] [-b <load addr> [-l <length>]] 
+             [-r <ramdisk addr> [-s <ramdisk length>]] 
+             [-c \"kernel command line\"] [<entry_point>]",
             do_exec
     );
 
@@ -67,11 +69,20 @@ do_exec(int argc, char *argv[])
     code_fun *fun, *prg;
     bool wait_time_set;
     int  wait_time, res, i;
-    bool base_addr_set, length_set;
+    bool base_addr_set, length_set, cmd_line_set;
+    bool ramdisk_addr_set, ramdisk_size_set;
     unsigned long base_addr, length;
-    struct option_info opts[3];
+    unsigned long ramdisk_addr, ramdisk_size;
+    struct option_info opts[6];
     char line[8];
     unsigned long *_prg, *ip;
+    char *cmd_line;
+    struct param_struct {
+        unsigned long key;
+        unsigned long rd_start;
+        unsigned long rd_size;
+        unsigned char cmdline[256];
+    } *params = (struct param_struct *)0x100;
 
     entry = (unsigned long)entry_address;  // Default from last 'load' operation
     base_addr = 0x8000;
@@ -81,15 +92,36 @@ do_exec(int argc, char *argv[])
               (void **)&base_addr, (bool *)&base_addr_set, "base address");
     init_opts(&opts[2], 'l', true, OPTION_ARG_TYPE_NUM, 
               (void **)&length, (bool *)&length_set, "length");
-    if (!scan_opts(argc, argv, 1, opts, 3, (void *)&entry, OPTION_ARG_TYPE_NUM, "starting address"))
+    init_opts(&opts[3], 'c', true, OPTION_ARG_TYPE_STR, 
+              (void **)&cmd_line, (bool *)&cmd_line_set, "kernel command line");
+    init_opts(&opts[4], 'r', true, OPTION_ARG_TYPE_NUM, 
+              (void **)&ramdisk_addr, (bool *)&ramdisk_addr_set, "ramdisk_addr");
+    init_opts(&opts[5], 's', true, OPTION_ARG_TYPE_NUM, 
+              (void **)&ramdisk_size, (bool *)&ramdisk_size_set, "ramdisk_size");
+    if (!scan_opts(argc, argv, 1, opts, 6, (void *)&entry, OPTION_ARG_TYPE_NUM, "starting address"))
     {
         return;
+    }
+    if (cmd_line_set || ramdisk_addr_set) {
+        params->key = 0xDEADF00D;;
+        params->rd_size = 0;
+    }
+    if (cmd_line_set) {
+        strcpy(params->cmdline, cmd_line);
+    }
+    if (ramdisk_addr_set) {
+        params->rd_start = ramdisk_addr;
+        if (ramdisk_size_set) {
+            params->rd_size = ramdisk_size;
+        } else {
+            params->rd_size = 4096*1024;
+        }
     }
     if (wait_time_set) {
         printf("About to start execution at %p - abort with ^C within %d seconds\n",
                (void *)entry, wait_time);
         res = gets(line, sizeof(line), wait_time*1000);
-        if (res == -2) {
+        if (res == _GETS_CTRLC) {
             return;
         }
     }

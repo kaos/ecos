@@ -137,6 +137,16 @@ cdl_package CYGPKG_REDBOOT {
           that port."
     }
 
+    cdl_option CYGPKG_REDBOOT_MAX_CMD_LINE {
+        display       "Maximum command line length"
+        flavor        data
+        default_value 256
+        description   "
+          This option allows control over how long the CLI command line
+          should be.  As such, it allows control over how much stack space 
+          is required by RedBoot during command processing."
+    }
+
     cdl_component CYGPKG_REDBOOT_FLASH {
         display       "Allow RedBoot to support FLASH programming"
         flavor        bool

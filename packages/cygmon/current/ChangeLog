@@ -1,3 +1,8 @@
+2000-12-04  Drew Moseley  <dmoseley@redhat.com>
+
+	* misc/monitor_cmd.c (breakpoint_cmd): Fix typo in printf
+	formatting for error message.
+
 2000-11-20  Drew Moseley  <dmoseley@redhat.com>
 
 	* cdl/cygmon.cdl: Make sure we don't specify vectors.o and target.ld twice.

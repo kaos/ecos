@@ -80,7 +80,7 @@ static xmt_req_reply_t serial_data_xmt_req(serial_channel *chan, int space,
                                            int* chars_avail, 
                                            unsigned char** chars);
 static void serial_data_xmt_done(serial_channel *chan, int chars_sent);
-# ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_HW
+# ifdef CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS
 SERIAL_CALLBACKS(cyg_io_serial_callbacks, 
                  serial_init, 
                  serial_xmt_char, 

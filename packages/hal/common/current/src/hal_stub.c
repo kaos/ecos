@@ -647,6 +647,7 @@ __build_t_packet (int sigval, char *buf)
 {
     target_register_t addr;
     char *ptr = buf;
+    target_register_t extend_val = 0;
 
     *ptr++ = 'T';
     *ptr++ = __tohex (sigval >> 4);
@@ -713,7 +714,6 @@ __build_t_packet (int sigval, char *buf)
         // GDB is expecting REGSIZE(PC) number of bytes.
         // We only have sizeof(addr) number.  Let's fill
         // the appropriate number of bytes intelligently.
-        target_register_t extend_val = 0;
 #ifdef CYGARC_SIGN_EXTEND_REGISTERS
         {
             unsigned long bits_in_addr = (sizeof(addr) << 3);  // ie Size in bytes * 8
@@ -722,9 +722,14 @@ __build_t_packet (int sigval, char *buf)
                 extend_val = ~0;
         }
 #endif
-        ptr = __mem2hex((char *)&extend_val, ptr, REGSIZE(PC) - sizeof(addr), 0);
     }
+#if (CYG_BYTEORDER == CYG_MSBFIRST)
+    ptr = __mem2hex((char *)&extend_val, ptr, REGSIZE(PC) - sizeof(addr), 0);
+#endif
     ptr = __mem2hex((char *)&addr, ptr, sizeof(addr), 0);
+#if (CYG_BYTEORDER == CYG_LSBFIRST)
+    ptr = __mem2hex((char *)&extend_val, ptr, REGSIZE(PC) - sizeof(addr), 0);
+#endif
     *ptr++ = ';';
 
     *ptr++ = __tohex (SP >> 4);

@@ -52,7 +52,9 @@
 #include <cyg/io/flash.h>
 
 
-// When this flag is set, 
+// When this flag is set, do not actually jump to the relocated code.
+// This can be used for running the function in place (RAM startup only),
+// allowing calls to diag_printf() and similar.
 #undef RAM_FLASH_DEV_DEBUG
 #if !defined(CYG_HAL_STARTUP_RAM) && defined(RAM_FLASH_DEV_DEBUG)
 # warning "Can only enable the flash debugging when configured for RAM startup"
@@ -75,6 +77,32 @@ flash_init(void *work_space, int work_space_size)
     flash_info.block_mask = ~(flash_info.block_size-1);
     flash_info.init = 1;
     return FLASH_ERR_OK;
+}
+
+// FIXME: Want to change all drivers to use this function. But it may
+// make sense to wait till device structure pointer arguments get
+// added as well.
+void
+flash_dev_query(void* data)
+{
+    extern char flash_query[], flash_query_end[];
+    typedef void code_fun(void*);
+    int code_len;
+    code_fun *_flash_query;
+    int d_cache, i_cache;
+    void* flash_id;
+
+    // Query the device driver - copy 'query' code to RAM for execution
+    code_len = (unsigned long)&flash_query_end - (unsigned long)&flash_query;
+    _flash_query = (code_fun *)flash_info.work_space;
+    memcpy(_flash_query, &flash_query, code_len);
+
+    HAL_FLASH_CACHES_OFF(d_cache, i_cache);
+#ifdef RAM_FLASH_DEV_DEBUG
+    _flash_query = &flash_query;
+#endif
+    (*_flash_query)(data);
+    HAL_FLASH_CACHES_ON(d_cache, i_cache);
 }
 
 int
@@ -117,7 +145,7 @@ flash_erase(void *addr, int len, void **err_addr)
 {
     unsigned short *block, *end_addr;
     int stat = 0;
-    extern char flash_erase_block, flash_erase_block_end;
+    extern char flash_erase_block[], flash_erase_block_end[];
     int code_len;
     typedef int code_fun(unsigned short *);
     code_fun *_flash_erase_block;
@@ -136,7 +164,7 @@ flash_erase(void *addr, int len, void **err_addr)
     block = (unsigned short *)((unsigned long)addr & flash_info.block_mask);
     end_addr = (unsigned short *)((unsigned long)addr+len);
 
-    printf("... Erase from %p-%p: ", block, end_addr);
+    printf("... Erase from %p-%p: ", (void*)block, (void*)end_addr);
 
     while (block < end_addr) {
 #ifdef RAM_FLASH_DEV_DEBUG
@@ -161,7 +189,7 @@ flash_program(void *_addr, void *_data, int len, void **err_addr)
 {
     int stat = 0;
     int code_len, size;
-    extern char flash_program_buf, flash_program_buf_end;
+    extern char flash_program_buf[], flash_program_buf_end[];
     typedef int code_fun(unsigned short *, unsigned short *, int);
     code_fun *_flash_program_buf;
     unsigned short *addr = (unsigned short *)_addr;
@@ -178,7 +206,7 @@ flash_program(void *_addr, void *_data, int len, void **err_addr)
     memcpy(_flash_program_buf, &flash_program_buf, code_len);
     HAL_FLASH_CACHES_OFF(d_cache, i_cache);
 
-    printf("... Program from %p-%p at %p: ", data, (void*)(((unsigned long)data)+len), addr);
+    printf("... Program from %p-%p at %p: ", (void*)data, (void*)(((unsigned long)data)+len), (void*)addr);
 
     while (len > 0) {
         size = len;
@@ -209,7 +237,7 @@ flash_lock(void *addr, int len, void **err_addr)
 {
     unsigned short *block, *end_addr;
     int stat = 0;
-    extern char flash_lock_block, flash_lock_block_end;
+    extern char flash_lock_block[], flash_lock_block_end[];
     int code_len;
     typedef int code_fun(unsigned short *);
     code_fun *_flash_lock_block;
@@ -253,7 +281,7 @@ flash_unlock(void *addr, int len, void **err_addr)
 {
     unsigned short *block, *end_addr;
     int stat = 0;
-    extern char flash_unlock_block, flash_unlock_block_end;
+    extern char flash_unlock_block[], flash_unlock_block_end[];
     int code_len;
     typedef int code_fun(unsigned short *, int, int);
     code_fun *_flash_unlock_block;
@@ -317,6 +345,8 @@ flash_errmsg(int err)
         return "Device/region is write-protected";
     case FLASH_ERR_NOT_INIT:
         return "FLASH sub-system not initialized";
+    case FLASH_ERR_DRV_VERIFY:
+        return "Data verify failed after operation";
     default:
         return "Unknown error";
     }

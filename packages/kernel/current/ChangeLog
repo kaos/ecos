@@ -1,3 +1,57 @@
+2000-12-07  Jesper Skov  <jskov@redhat.com>
+
+	* src/debug/dbg-thread-demux.c: Add comment about the use of
+	DBG_SYSCALL_THREAD_VEC_NUM vs CYGNUM_CALL_IF_DBG_SYSCALL.
+
+2000-12-06  Hugo Tyson  <hmt@redhat.com>
+
+	* include/thread.inl (attach_stack): Additional assert check for
+	unsigned wrap of the stack size in subtracting the signature
+	areas' size.  Also round to whole words better.
+
+2000-12-05  Hugo Tyson  <hmt@redhat.com>
+
+	* cdl/thread.cdl (CYGFUN_KERNEL_THREADS_STACK_CHECKING): New
+	option, to control new stack check features.  Enabled by default,
+	but only active if CYGPKG_INFRA_DEBUG and CYGDBG_USE_ASSERTS
+	anyway, plus checking *all* threads is possible, but default off,
+	iff CYGVAR_KERNEL_THREADS_LIST.
+
+	* include/thread.hxx (class Cyg_HardwareThread): Define
+	check_stack() function.
+
+	* include/thread.inl (attach_stack): Add initialization of a
+	signature in the top and base of the stack, if so configured.
+	(check_stack): New function to check that signature for
+	correctness; minor re-ordering to permit more inlining.
+
+	* src/sched/sched.cxx (unlock_inner): Check departing and incoming
+	thread stacks if CYGFUN_KERNEL_THREADS_STACK_CHECKING.  Also, if
+	CYGFUN_KERNEL_ALL_THREADS_STACK_CHECKING, check all registered
+	thread stacks.  This is placed here to get executed every
+	clocktick and other interrupts that call DSRs, rather than messing
+	with interrupt_end() or the idle thread.
+
+2000-12-04  Hugo Tyson  <hmt@redhat.com>
+
+	* tests/kcache2.c (entry0): Make this more robust against a
+	complete absence of useful caches.  Previous change was not
+	careful enough.
+
+2000-12-01  Hugo Tyson  <hmt@redhat.com>
+
+	* cdl/kernel.cdl: Build the kcache tests for SA11x0 family; they
+	were being omitted by default as part of ARM family.  They work on
+	SA1110, so this should be OK.  They're OK on EBSAs too.  See
+	associated fix to cache macros in SA11x0 and EBSSA HALs.
+
+	* tests/kcache2.c (entry0): Fix the test; the problem was it
+	assumed that a write to a previously unseen location would end up
+	in the cache.  It ain't so on StrongARMs.  Also make tests safe
+	wrt interrupts possibly perturbing the cache, add explicit tests
+	for HAL_DCACHE_INVALIDATE_ALL(), ...DISABLE() and ...SYNC(), and
+	improve the tests for cache line invalidate and store.
+
 2000-10-30  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/synch.cdl: Replaced CYGINT_KERNEL_SCHEDULER_CAN_YIELD with

@@ -1621,7 +1621,7 @@ Sets a breakpoint at address 4ff5.");
       str2addr (argvect[1], &location);
       if (add_mon_breakpoint (location))
       {
-          xprintf("Unable to set breakpoint at 0x08lx\n", location.addr);
+          xprintf("Unable to set breakpoint at 0x%08lx\n", location.addr);
       }
     }
   return 0;

@@ -1,13 +1,16 @@
 #!/bin/sh
 # these lines restart using the tcl shell \
     exec sh -c "if ( echo | cygtclsh80 ) 2>/dev/null ; then \
-      exec cygtclsh80 \"${0}\" \"\`echo \\\"\\\`cygpath -ws \\\"${1}\\\" \\\`\\\" |sed 's#\\\\\\\\#/#g'\`\" \"\`echo \\\"\\\`cygpath -ws \\\"${2}\\\" \\\`\\\" |sed 's#\\\\\\\\#/#g'\`\" ; \
+      exec cygtclsh80 \"${0}\" \"\`echo \\\"\\\`cygpath -w \\\"${1}\\\" \\\`\\\" |sed 's#\\\\\\\\#/#g'\`\" \"\`echo \\\"\\\`cygpath -w \\\"${2}\\\" \\\`\\\" |sed 's#\\\\\\\\#/#g'\`\" ; \
     elif ( echo | tclsh ) 2>/dev/null ; then \
       exec tclsh \"${0}\" ${1+${*}} ; \
     else \
       echo Could not find TCL interpreter ; \
       exit 1 ; \
     fi"
+
+#FIXMEFIXMEFIXME the above should use cygpath -ws, not cygpath -w but we
+#can't rely on everyone having up-to-date cygwin tools (1.1.5+)
 
 #===============================================================================
 #

@@ -77,6 +77,8 @@
 #define HAL_DCACHE_SETS (HAL_DCACHE_SIZE/(HAL_DCACHE_LINE_SIZE*HAL_DCACHE_WAYS))
 #define HAL_ICACHE_SETS (HAL_ICACHE_SIZE/(HAL_ICACHE_LINE_SIZE*HAL_ICACHE_WAYS))
 
+#define HAL_MIPS_CACHE_INSN_USES_LSB
+
 //-----------------------------------------------------------------------------
 // Cache controls
 

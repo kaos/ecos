@@ -1,6 +1,12 @@
+2000-12-05  Hugo Tyson  <hmt@redhat.com>
+
+	* src/plf_misc.c (hal_pc_fpe_dsr): Raise the base stack address by
+	CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE if that is defined;
+	otherwise a stack overflow would immediately be reported.
+
 2000-11-02  Fabrice Gautier <Fabrice_Gautier@sdesigns.com>
 
-        * src/platform.inc (hal_cpu_init): Load image from floppy one
+	* src/platform.inc (hal_cpu_init): Load image from floppy one
         sector at a time to avoid "DMA access across 64k boundary" error.
 
 2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>

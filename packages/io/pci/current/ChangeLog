@@ -1,3 +1,13 @@
+2000-12-02  Gary Thomas  <gthomas@redhat.com>
+
+	* src/pci.c: 
+	* cdl/io_pci.cdl: Add CDL to control debug prints.
+
+2000-11-30  Gary Thomas  <gthomas@redhat.com>
+
+	* src/pci.c (cyg_pci_find_next): Improve debug prints when
+	scanning the bus, showing vendor and device code for each slot.
+
 2000-11-19  Gary Thomas  <gthomas@redhat.com>
 
 	* src/pci.c (cyg_pci_find_device): Don't update 'devid' if no

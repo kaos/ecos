@@ -126,10 +126,15 @@
 
 // Invalidate the entire cache
 //    mcr  MMU_CP,0,r1,MMU_InvalidateCache,c0
-#define HAL_UCACHE_INVALIDATE_ALL()                             \
-{                                                               \
-    asm volatile ("mcr p15,0,r1,c7,c0,0;" );                      \
-                                                                \
+#define HAL_UCACHE_INVALIDATE_ALL()             \
+{                                               \
+    asm volatile (                              \
+        "mov    r1,#0;"                         \
+	"mcr p15,0,r1,c7,c0,0;"                 \
+        :                                       \
+        :                                       \
+        : "r1","memory" /* Clobber list */      \
+    );                                          \
 }
 
 // Synchronize the contents of the cache with memory.

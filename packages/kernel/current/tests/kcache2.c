@@ -234,8 +234,10 @@ static void test_dread_hint(void)
 #endif
 
 // -------------------------------------------------------------------------
-// Test of data cache line store.
-// Just check that the macro compiles.
+// Test of data cache line store
+//  o No semantic requirement.
+//  o Check that flushed data is written to memory.
+//  o Simple invocation check of macro.
 #ifdef HAL_DCACHE_STORE
 static void test_dstore(void)
 {
@@ -260,11 +262,84 @@ static void test_dstore(void)
         (((unsigned long) &m[HAL_DCACHE_LINE_SIZE*2]) 
          & ~(HAL_DCACHE_LINE_SIZE-1));
 
-    aligned_p[0] = 42;
+    HAL_DISABLE_INTERRUPTS(oldints);
+
+    aligned_p[0] = 42 + aligned_p[1]; // Load causes cache to be used!
 
     HAL_DCACHE_STORE(aligned_p, HAL_DCACHE_LINE_SIZE);
+
+    HAL_RESTORE_INTERRUPTS(oldints);
+
+    CYG_TEST_CHECK(42 == aligned_p[0],
+                   "memory didn't contain flushed data");
+
+    HAL_DCACHE_INVALIDATE_ALL(); // Discard...
+
+    CYG_TEST_CHECK(42 == aligned_p[0],
+                   "memory didn't contain flushed data after invalidate all");
 }
 #endif
+
+// -------------------------------------------------------------------------
+// Test of data cache total flush (sync).
+//  o No semantic requirement.
+//  o Check that flushed data is written to memory.
+//  o Simple invocation check of macro.
+#ifdef HAL_DCACHE_LINE_SIZE // So we can find our way around memory
+static void test_dsync(void)
+{
+    volatile cyg_uint8* aligned_p;
+    cyg_int32 i;
+    register CYG_INTERRUPT_STATE oldints;
+
+    CYG_TEST_INFO("Data cache sync all");
+
+    for (i = 0; i < HAL_DCACHE_LINE_SIZE*16; i++)
+        m[i] = 0;
+    
+    HAL_DISABLE_INTERRUPTS(oldints);
+    HAL_DCACHE_SYNC();
+    HAL_DCACHE_DISABLE();
+    HAL_DCACHE_SYNC();
+    HAL_DCACHE_INVALIDATE_ALL();
+    HAL_DCACHE_ENABLE();
+    HAL_RESTORE_INTERRUPTS(oldints);
+
+    aligned_p =  (volatile cyg_uint8*) 
+        (((unsigned long) &m[HAL_DCACHE_LINE_SIZE*2]) 
+         & ~(HAL_DCACHE_LINE_SIZE-1));
+
+    HAL_DISABLE_INTERRUPTS(oldints);
+
+    aligned_p[0] = 42 + aligned_p[1]; // Load causes cache to be used!
+    aligned_p[HAL_DCACHE_LINE_SIZE] = 43 + aligned_p[HAL_DCACHE_LINE_SIZE + 1];
+
+    HAL_DCACHE_SYNC();
+
+    HAL_RESTORE_INTERRUPTS(oldints);
+
+    CYG_TEST_CHECK(42 == aligned_p[0],
+                   "memory didn't contain flushed data");
+    CYG_TEST_CHECK(43 == aligned_p[HAL_DCACHE_LINE_SIZE], 
+                   "memory didn't contain flushed data next block");
+
+    HAL_DCACHE_INVALIDATE_ALL();
+
+    CYG_TEST_CHECK(42 == aligned_p[0],
+                   "memory didn't contain flushed data after invalidate");
+    CYG_TEST_CHECK(43 == aligned_p[HAL_DCACHE_LINE_SIZE], 
+                   "memory didn't contain flushed data next block after invalidate");
+
+    HAL_DCACHE_DISABLE();
+
+    CYG_TEST_CHECK(42 == aligned_p[0],
+                   "memory didn't contain flushed data after disable");
+    CYG_TEST_CHECK(43 == aligned_p[HAL_DCACHE_LINE_SIZE], 
+                   "memory didn't contain flushed data next block after disable");
+
+    HAL_DCACHE_ENABLE();
+}
+#endif // HAL_DCACHE_LINE_SIZE
 
 // -------------------------------------------------------------------------
 // Test of data cache line flush.
@@ -295,12 +370,16 @@ static void test_dflush(void)
         (((unsigned long) &m[HAL_DCACHE_LINE_SIZE*2]) 
          & ~(HAL_DCACHE_LINE_SIZE-1));
 
-    aligned_p[0] = 42;
-    aligned_p[HAL_DCACHE_LINE_SIZE] = 43;
+    HAL_DISABLE_INTERRUPTS(oldints);
+
+    aligned_p[0] = 42 + aligned_p[1]; // Load causes cache to be used!
+    aligned_p[HAL_DCACHE_LINE_SIZE] = 43 + aligned_p[HAL_DCACHE_LINE_SIZE + 1];
 
     HAL_DCACHE_FLUSH(aligned_p, HAL_DCACHE_LINE_SIZE);
 
     HAL_DCACHE_DISABLE();
+
+    HAL_RESTORE_INTERRUPTS(oldints);
 
     CYG_TEST_CHECK(42 == aligned_p[0],
                    "memory didn't contain flushed data");
@@ -308,9 +387,110 @@ static void test_dflush(void)
                    "flushed beyond region");
 
     HAL_DCACHE_ENABLE();
-
 }
 #endif
+
+// -------------------------------------------------------------------------
+// Test of data cache disable (which does NOT force contents out to RAM)
+//  o Requires write-back cache [so NOT invoked unconditionally]
+//  o Check that dirty data is not written to memory and is invalidated
+//    in the cache.
+//  o Simple invocation check of macro.
+#ifdef HAL_DCACHE_QUERY_WRITE_MODE // only if we know this, can we test:
+static void test_ddisable(void)
+{
+    volatile cyg_uint8* aligned_p;
+    cyg_int32 i;
+    register CYG_INTERRUPT_STATE oldints;
+
+    CYG_TEST_INFO("Data cache gross disable");
+
+    for (i = 0; i < HAL_DCACHE_LINE_SIZE*16; i++)
+        m[i] = 0;
+    
+    HAL_DISABLE_INTERRUPTS(oldints);
+    HAL_DCACHE_SYNC();
+    HAL_DCACHE_DISABLE();
+    HAL_DCACHE_SYNC();
+    HAL_DCACHE_INVALIDATE_ALL();
+    HAL_DCACHE_ENABLE();
+    HAL_RESTORE_INTERRUPTS(oldints);
+
+    aligned_p =  (volatile cyg_uint8*) 
+        (((unsigned long) &m[HAL_DCACHE_LINE_SIZE*2]) 
+         & ~(HAL_DCACHE_LINE_SIZE-1));
+
+    HAL_DISABLE_INTERRUPTS(oldints);
+
+    aligned_p[0] = 43 + aligned_p[1]; // Load causes cache to be used!
+    aligned_p[HAL_DCACHE_LINE_SIZE-1] = 43;
+
+    aligned_p[HAL_DCACHE_LINE_SIZE] = 42 + aligned_p[HAL_DCACHE_LINE_SIZE + 1];
+
+    HAL_DCACHE_DISABLE();
+
+    HAL_RESTORE_INTERRUPTS(oldints);
+
+    CYG_TEST_CHECK(0 == aligned_p[0] &&
+                   0 == aligned_p[HAL_DCACHE_LINE_SIZE-1],
+                   "cache/memory contained invalidated data");
+    CYG_TEST_CHECK(0 == aligned_p[HAL_DCACHE_LINE_SIZE],
+                   "next block contained invalidated data");
+
+    HAL_DCACHE_ENABLE();
+}
+#endif // def HAL_DCACHE_QUERY_WRITE_MODE
+
+// -------------------------------------------------------------------------
+// Test of data cache total invalidate.
+//  o Requires write-back cache.
+//  o Check that invalidated data is not written to memory and is invalidated
+//    in the cache.
+//  o Simple invocation check of macro.
+#ifdef HAL_DCACHE_QUERY_WRITE_MODE // only if we know this, can we test:
+#ifdef HAL_DCACHE_INVALIDATE_ALL
+static void test_dinvalidate_all(void)
+{
+    volatile cyg_uint8* aligned_p;
+    cyg_int32 i;
+    register CYG_INTERRUPT_STATE oldints;
+
+    CYG_TEST_INFO("Data cache invalidate all");
+
+    for (i = 0; i < HAL_DCACHE_LINE_SIZE*16; i++)
+        m[i] = 0;
+    
+    HAL_DISABLE_INTERRUPTS(oldints);
+    HAL_DCACHE_SYNC();
+    HAL_DCACHE_DISABLE();
+    HAL_DCACHE_SYNC();
+    HAL_DCACHE_INVALIDATE_ALL();
+    HAL_DCACHE_ENABLE();
+    HAL_RESTORE_INTERRUPTS(oldints);
+
+    aligned_p =  (volatile cyg_uint8*) 
+        (((unsigned long) &m[HAL_DCACHE_LINE_SIZE*2]) 
+         & ~(HAL_DCACHE_LINE_SIZE-1));
+
+    HAL_DISABLE_INTERRUPTS(oldints);
+
+    aligned_p[0] = 43 + aligned_p[1]; // Load causes cache to be used!
+    aligned_p[HAL_DCACHE_LINE_SIZE-1] = 43;
+
+    aligned_p[HAL_DCACHE_LINE_SIZE] = 42 + aligned_p[HAL_DCACHE_LINE_SIZE + 1];
+
+    HAL_DCACHE_INVALIDATE_ALL();
+
+    HAL_RESTORE_INTERRUPTS(oldints);
+
+    CYG_TEST_CHECK(0 == aligned_p[0] &&
+                   0 == aligned_p[HAL_DCACHE_LINE_SIZE-1],
+                   "cache/memory contained invalidated data");
+    CYG_TEST_CHECK(0 == aligned_p[HAL_DCACHE_LINE_SIZE],
+                   "next block contained invalidated data");
+}
+#endif
+#endif // def HAL_DCACHE_QUERY_WRITE_MODE
 
 // -------------------------------------------------------------------------
 // Test of data cache line invalidate.
@@ -318,6 +498,7 @@ static void test_dflush(void)
 //  o Check that invalidated data is not written to memory and is invalidated
 //    in the cache.
 //  o Simple range check of macro.
+#ifdef HAL_DCACHE_QUERY_WRITE_MODE // only if we know this, can we test:
 #ifdef HAL_DCACHE_INVALIDATE
 static void test_dinvalidate(void)
 {
@@ -342,20 +523,36 @@ static void test_dinvalidate(void)
         (((unsigned long) &m[HAL_DCACHE_LINE_SIZE*2]) 
          & ~(HAL_DCACHE_LINE_SIZE-1));
 
-    aligned_p[0] = 43;
+    HAL_DISABLE_INTERRUPTS(oldints);
+
+    aligned_p[0] = 43 + aligned_p[1]; // Load causes cache to be used!
     aligned_p[HAL_DCACHE_LINE_SIZE-1] = 43;
 
-    aligned_p[HAL_DCACHE_LINE_SIZE] = 42;
+    aligned_p[HAL_DCACHE_LINE_SIZE] = 42 + aligned_p[HAL_DCACHE_LINE_SIZE + 1];
 
     HAL_DCACHE_INVALIDATE(aligned_p, HAL_DCACHE_LINE_SIZE);
+
+    HAL_RESTORE_INTERRUPTS(oldints);
 
     CYG_TEST_CHECK(0 == aligned_p[0] &&
                    0 == aligned_p[HAL_DCACHE_LINE_SIZE-1],
                    "cache/memory contained invalidated data");
     CYG_TEST_CHECK(42 == aligned_p[HAL_DCACHE_LINE_SIZE],
                    "invalidated beyond range");
+
+    HAL_DCACHE_SYNC();
+    HAL_DCACHE_DISABLE();
+
+    CYG_TEST_CHECK(0 == aligned_p[0] &&
+                   0 == aligned_p[HAL_DCACHE_LINE_SIZE-1],
+                   "cache/memory contained invalidated data after SYNC/DIS");
+    CYG_TEST_CHECK(42 == aligned_p[HAL_DCACHE_LINE_SIZE],
+                   "invalidated beyond range after SYNC/DIS");
+
+    HAL_DCACHE_ENABLE();
 }
 #endif
+#endif // def HAL_DCACHE_QUERY_WRITE_MODE
 
 // -------------------------------------------------------------------------
 // Test of instruction cache locking.
@@ -541,26 +738,30 @@ static void time_dlock(void)
 // -------------------------------------------------------------------------
 static void entry0( cyg_addrword_t data )
 {
+    int numtests = 0;
 #ifdef HAL_DCACHE_QUERY_WRITE_MODE
     int wmode;
 #endif
 #ifdef HAL_DCACHE_LOCK
-    time_dlock();
+    time_dlock(); numtests++;
 #endif
 #ifdef HAL_ICACHE_LOCK
-    time_ilock();
+    time_ilock(); numtests++;
+#endif
+#ifdef HAL_DCACHE_LINE_SIZE // So we can find our way around memory
+    test_dsync(); numtests++;
 #endif
 #ifdef HAL_DCACHE_STORE
-    test_dstore();
+    test_dstore(); numtests++;
 #endif
 #ifdef HAL_DCACHE_READ_HINT
-    test_dread_hint();
+    test_dread_hint(); numtests++;
 #endif
 #ifdef HAL_DCACHE_WRITE_HINT
-    test_dwrite_hint();
+    test_dwrite_hint(); numtests++;
 #endif
 #ifdef HAL_DCACHE_ZERO
-    test_dzero();
+    test_dzero(); numtests++;
 #endif
 
     // The below tests only work on a copy-back cache.
@@ -568,16 +769,24 @@ static void entry0( cyg_addrword_t data )
     HAL_DCACHE_QUERY_WRITE_MODE( wmode );
  
     if ( HAL_DCACHE_WRITEBACK_MODE == wmode ) {
+        test_ddisable(); numtests++;
+#ifdef HAL_DCACHE_INVALIDATE
+        test_dinvalidate_all(); numtests++;
+#endif
 #ifdef HAL_DCACHE_FLUSH
-        test_dflush();
+        test_dflush(); numtests++;
 #endif
 #ifdef HAL_DCACHE_INVALIDATE
-        test_dinvalidate();
+        test_dinvalidate(); numtests++;
 #endif
     }
 #endif // def HAL_DCACHE_QUERY_WRITE_MODE
-
-    CYG_TEST_PASS_FINISH("End of test");
+    if ( numtests ) {
+        CYG_TEST_PASS_FINISH("End of test");
+    }
+    else {
+        CYG_TEST_NA( "No applicable cache tests" );
+    }
 }
 
 // -------------------------------------------------------------------------

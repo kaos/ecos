@@ -1,3 +1,10 @@
+2000-12-06  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/quicc_smc_serial.c: Remove unread tx_enabled variable from
+	quicc_smc_serial_info
+	Ensure quicc serial interrupt is unmasked in general so that rx works!
+	(quicc_smc_serial_start_xmit): Protect better from DSR interruption
+
 2000-10-24  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/quicc_smc_serial.c (quicc_smc_serial_ISR): Return with

@@ -109,9 +109,17 @@ static unsigned char *out_bufp;
 // Functions in this module
 static void net_io_flush(void);
 static void net_io_revert_console(void);
+static void net_io_putc(void*, cyg_uint8);
+
+// Special characters used by Telnet - must be interpretted here
+#define TELNET_IAC    0xFF // Interpret as command (escape)
+#define TELNET_IP     0xF4 // Interrupt process
+#define TELNET_WONT   0xFC // I Won't do it
+#define TELNET_DO     0xFD // Will you XXX
+#define TELNET_TM     0x06 // Time marker (special DO/WONT after IP)
 
 static cyg_bool
-net_io_getc_nonblock(void* __ch_data, cyg_uint8* ch)
+_net_io_getc_nonblock(void* __ch_data, cyg_uint8* ch)
 {
     if (in_buflen == 0) {
         __tcp_poll();
@@ -144,6 +152,39 @@ net_io_getc_nonblock(void* __ch_data, cyg_uint8* ch)
         *ch = *in_bufp++;
         in_buflen--;
         return true;
+    } else {
+        return false;
+    }
+}
+
+static cyg_bool
+net_io_getc_nonblock(void* __ch_data, cyg_uint8* ch)
+{
+    if (_net_io_getc_nonblock(__ch_data, ch)) {
+        if (*ch == TELNET_IAC) {
+            cyg_uint8 esc;
+            // Telnet escape - need to read/handle more
+            while (!_net_io_getc_nonblock(__ch_data, &esc)) ;
+            if (esc == TELNET_IP) {
+                // Special case for ^C == Interrupt Process
+                *ch = 0x03;  
+                // Just in case the other end needs synchronizing
+                net_io_putc(__ch_data, TELNET_IAC);
+                net_io_putc(__ch_data, TELNET_WONT);
+                net_io_putc(__ch_data, TELNET_TM);
+                net_io_flush();
+                return true;
+            }
+            if (esc == TELNET_DO) {
+                // Telnet DO option
+                while (!_net_io_getc_nonblock(__ch_data, &esc)) ;                
+                // Respond with WONT option
+                net_io_putc(__ch_data, TELNET_IAC);
+                net_io_putc(__ch_data, TELNET_WONT);
+                net_io_putc(__ch_data, esc);
+                return false;  // Ignore this whole thing!
+            }
+        }
     } else {
         return false;
     }

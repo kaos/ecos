@@ -138,6 +138,20 @@ void Cyg_Scheduler::unlock_inner( cyg_ucount32 new_lock )
 
         CYG_ASSERTCLASS( current, "Bad current thread" );
 
+#ifdef CYGFUN_KERNEL_ALL_THREADS_STACK_CHECKING
+        // should have  CYGVAR_KERNEL_THREADS_LIST
+        current = Cyg_Thread::get_list_head();
+        while ( current ) {
+            current->check_stack();
+            current = current->get_list_next();
+        }
+        current = current_thread;
+#endif
+
+#ifdef CYGFUN_KERNEL_THREADS_STACK_CHECKING
+        current->check_stack();
+#endif
+
         // If the current thread is going to sleep, or someone
         // wants a reschedule, choose another thread to run
 
@@ -159,6 +173,9 @@ void Cyg_Scheduler::unlock_inner( cyg_ucount32 new_lock )
                 // Count this thread switch
                 thread_switches++;
                 
+#ifdef CYGFUN_KERNEL_THREADS_STACK_CHECKING
+                next->check_stack(); // before running it
+#endif
                 // Switch contexts
                 HAL_THREAD_SWITCH_CONTEXT( &current->stack_ptr,
                                            &next->stack_ptr );
