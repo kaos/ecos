@@ -1,3 +1,7 @@
+2004-01-08  Jani Monoses <jani@iv.ro>
+
+	* src/diag.cxx (diag_check_string): Allow '\t' in format strings.
+	
 2004-01-05  Gary Thomas  <gary@mlbassoc.com>
 
 	* tests/fc_test.c: 
