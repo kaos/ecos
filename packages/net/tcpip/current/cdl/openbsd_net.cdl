@@ -29,7 +29,7 @@
 cdl_package CYGPKG_NET_OPENBSD_STACK {
     display       "OpenBSD TCP/IP Stack"
     parent        CYGPKG_NET
-    doc           doc/index.html
+    doc           ref/tcpip-openbsd.html
     include_dir   .
     requires      CYGPKG_IO
     requires      CYGPKG_ISOINFRA
