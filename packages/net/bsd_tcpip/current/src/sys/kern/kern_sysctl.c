@@ -963,6 +963,7 @@ sysctl(int *name, u_int namelen, void *old, size_t *oldlenp, void *new, size_t n
 
         if (!mutex_init) {
           cyg_mutex_init(&mutex);
+          mutex_init = 1;
         }
 
 	bzero(&req, sizeof req);

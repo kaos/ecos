@@ -1,3 +1,8 @@
+2004-12-24  Motoya Kurotsu  <kurotsu@allied-telesis.co.jp>
+
+	* src/sys/kern/kern_sysctl.c: set mutex_init to one to prevent
+	mutex being initialized multiple times.
+	
 2004-08-18  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/ecos/support.c (show_net_times): Removed stats_in_cksum.
