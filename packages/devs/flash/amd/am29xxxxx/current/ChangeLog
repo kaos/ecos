@@ -1,3 +1,8 @@
+2003-02-11  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/flash_am29xxxxx_parts.inl:
+	Fix identifier code for AM29LV320DT.
+
 2002-12-23  Patrick Doyle  <wpd@delcomsys.com>
 
 	* include/flash_am29xxxxx_parts.inl (CYGHWR_DEVS_FLASH_AMD_AM29DL640D): 
