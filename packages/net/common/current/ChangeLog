@@ -1,3 +1,8 @@
+2004-06-17  Oyvind Harboe  <oyvind.harboe@zylin.com>
+
+	* src/tftp_server.c:
+	* cdl/net.cdl: Made tftp server stack size configurable via cdl.
+
 2004-06-17  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/ifaddrs.c (getifaddrs): Return destination address for P2P

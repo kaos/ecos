@@ -96,7 +96,7 @@ struct tftpd_sem {
 static struct tftpd_sem tftpd_sems[CYGNUM_NET_TFTPD_MULTITHREADED_PORTS];
 #endif //CYGSEM_NET_TFTPD_MULTITHREADED
 
-#define STACK_SIZE (((CYGNUM_HAL_STACK_SIZE_TYPICAL+(3*(SEGSIZE+sizeof(struct tftphdr)))) + CYGARC_ALIGNMENT-1) & ~(CYGARC_ALIGNMENT-1))
+#define STACK_SIZE (((CYGPKG_NET_TFTPD_THREAD_STACK_SIZE) + CYGARC_ALIGNMENT-1) & ~(CYGARC_ALIGNMENT-1))
 static char *TFTP_tag = "TFTPD";
 #define CYGNUM_NET_MAX_INET_PROTOS 2
 struct tftp_server {
