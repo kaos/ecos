@@ -167,6 +167,12 @@
 	mov.b	r0h,ccr
 	.endm
 
+	.macro	h8300_trap_adjust_pc
+	mov.l	@(36:16,sp),er0
+	subs	#2,er0
+	mov.l	er0,@(36:16,sp)
+	.endm
+
 ##-----------------------------------------------------------------------------
 # Default interrupt decoding macros.
 

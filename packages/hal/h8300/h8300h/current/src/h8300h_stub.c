@@ -60,38 +60,11 @@
 #include <cyg/hal/hal_stub.h>
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_intr.h>
+#include <cyg/hal/hal_diag.h>
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
 #include <cyg/hal/dbg-threads-api.h>    // dbg_currthread_id
 #endif
-
-/*----------------------------------------------------------------------
- * Asynchronous interrupt support
- */
-
-typedef unsigned short t_inst;
-
-static struct
-{
-  t_inst *targetAddr;
-  t_inst savedInstr;
-} asyncBuffer;
-
-/* Called to asynchronously interrupt a running program.
-   Must be passed address of instruction interrupted.
-   This is typically called in response to a debug port
-   receive interrupt.
-*/
-
-void
-install_async_breakpoint(void *pc)
-{
-  asyncBuffer.targetAddr = pc;
-  asyncBuffer.savedInstr = *(t_inst *)pc;
-  *(t_inst *)pc = (t_inst)HAL_BREAKINST;
-  __instruction_cache(CACHE_FLUSH);
-  __data_cache(CACHE_FLUSH);
-}
 
 /*--------------------------------------------------------------------*/
 /* Given a trap value TRAP, return the corresponding signal. */
@@ -99,7 +72,7 @@ install_async_breakpoint(void *pc)
 int __computeSignal (unsigned int trap_number)
 {
     switch (trap_number) {
-    case 11:
+    case CYGNUM_HAL_VECTOR_TRAP3:
         return SIGTRAP;
     default:
         return SIGINT;
@@ -128,126 +101,199 @@ void set_pc (target_register_t pc)
 
 
 /*----------------------------------------------------------------------
- * Single-step support. Lifted from CygMon.
+ * Single-step support. 
  */
 
-#define NUM_SS_BPTS 2
-static target_register_t break_mem [NUM_SS_BPTS] = {0, 0};
-static unsigned short break_mem_data [NUM_SS_BPTS];
+typedef struct {
+    unsigned short *addr;
+    unsigned short inst;
+} breakinfo;
 
-/* Set a single-step breakpoint at ADDR.  Up to two such breakpoints
-   can be set; WHICH specifies which one to set (0 or 1).  */
-
-static void
-set_single_bp (int which, unsigned char *addr)
-{
-    if (break_mem[which] == 0) {
-        break_mem[which] = (target_register_t) addr;
-        break_mem_data[which] = *(unsigned short *)addr;
-        *(unsigned short *)addr = HAL_BREAKINST;
-    }
-}
+static breakinfo InstBuffer = {(unsigned short *)-1,0};
 
 /* Clear any single-step breakpoint(s) that may have been set.  */
 
 void __clear_single_step (void)
 {
-  int x;
-  for (x = 0; x < NUM_SS_BPTS; x++)
-    {
-        unsigned short* addr = (unsigned short *)break_mem[x];
-        if (addr) {
-            *addr = break_mem_data[x];
-            break_mem[x] = 0;
-        }
+    if ((long)InstBuffer.addr != -1L) {
+	*InstBuffer.addr = InstBuffer.inst;
+	InstBuffer.addr = (unsigned short *)-1;
     }
+}
+
+/* calculate next pc */
+
+enum jump_type{none,aabs,aind,ret,reg,relb,relw};
+
+/* opcode decode table define
+   ptn: opcode pattern
+   msk: opcode bitmask
+   len: instruction length (<0 next table index)
+   jmp: jump operation mode */
+
+struct optable {
+    unsigned char pattern;
+    unsigned char mask;
+    signed   char length;
+    char          type;
+} __attribute__((aligned(1),packed));
+
+#define OPTABLE(ptn,msk,len,jmp) {ptn,msk,len,jmp}
+
+const static struct optable optable_0[] = {
+    OPTABLE(0x00,0xff, 1,none), /* 0x00 */
+    OPTABLE(0x01,0xff,-1,none), /* 0x01 */
+    OPTABLE(0x02,0xfe, 1,none), /* 0x02-0x03 */
+    OPTABLE(0x04,0xee, 1,none), /* 0x04-0x05/0x14-0x15 */
+    OPTABLE(0x06,0xfe, 1,none), /* 0x06-0x07 */
+    OPTABLE(0x08,0xea, 1,none), /* 0x08-0x09/0x0c-0x0d/0x18-0x19/0x1c-0x1d */
+    OPTABLE(0x0a,0xee, 1,none), /* 0x0a-0x0b/0x1a-0x1b */
+    OPTABLE(0x0e,0xee, 1,none), /* 0x0e-0x0f/0x1e-0x1f */
+    OPTABLE(0x10,0xfc, 1,none), /* 0x10-0x13 */
+    OPTABLE(0x16,0xfe, 1,none), /* 0x16-0x17 */
+    OPTABLE(0x20,0xe0, 1,none), /* 0x20-0x3f */
+    OPTABLE(0x40,0xf0, 1,relb), /* 0x40-0x4f */
+    OPTABLE(0x50,0xfc, 1,none), /* 0x50-0x53 */
+    OPTABLE(0x54,0xfd, 1,ret ), /* 0x54/0x56 */
+    OPTABLE(0x55,0xff, 1,relb), /* 0x55 */
+    OPTABLE(0x57,0xff, 1,none), /* 0x57 */
+    OPTABLE(0x58,0xfb, 2,relw), /* 0x58/0x5c */
+    OPTABLE(0x59,0xfb, 1,reg ), /* 0x59/0x5b */
+    OPTABLE(0x5a,0xfb, 2,aabs), /* 0x5a/0x5e */
+    OPTABLE(0x5b,0xfb, 2,aind), /* 0x5b/0x5f */
+    OPTABLE(0x60,0xe8, 1,none), /* 0x60-0x67/0x70-0x77 */
+    OPTABLE(0x68,0xfa, 1,none), /* 0x68-0x69/0x6c-0x6d */
+    OPTABLE(0x6a,0xfe,-2,none), /* 0x6a-0x6b */
+    OPTABLE(0x6e,0xfe, 2,none), /* 0x6e-0x6f */
+    OPTABLE(0x78,0xff, 4,none), /* 0x78 */
+    OPTABLE(0x79,0xff, 2,none), /* 0x79 */
+    OPTABLE(0x7a,0xff, 3,none), /* 0x7a */
+    OPTABLE(0x7b,0xff, 2,none), /* 0x7b */
+    OPTABLE(0x7c,0xfc, 2,none), /* 0x7c-0x7f */
+    OPTABLE(0x80,0x80, 1,none), /* 0x80-0xff */
+};
+
+const static struct optable optable_1[] = {
+    OPTABLE(0x00,0xff,-3,none), /* 0x0100 */
+    OPTABLE(0x40,0xf0,-3,none), /* 0x0140-0x14f */
+    OPTABLE(0x80,0xf0, 1,none), /* 0x0180-0x018f */
+    OPTABLE(0xc0,0xc0, 2,none), /* 0x01c0-0x01ff */
+};
+
+const static struct optable optable_2[] = {
+    OPTABLE(0x00,0x20, 2,none), /* 0x6a0?/0x6a8?/0x6b0?/0x6b8? */
+    OPTABLE(0x20,0x20, 3,none), /* 0x6a2?/0x6aa?/0x6b2?/0x6ba? */
+};
+
+const static struct optable optable_3[] = {
+    OPTABLE(0x69,0xfb, 2,none), /* 0x010069/0x01006d/014069/0x01406d */
+    OPTABLE(0x6b,0xff,-4,none), /* 0x01006b/0x01406b */
+    OPTABLE(0x6f,0xff, 3,none), /* 0x01006f/0x01406f */
+    OPTABLE(0x78,0xff, 5,none), /* 0x010078/0x014078 */
+};
+
+const static struct optable optable_4[] = {
+    OPTABLE(0x00,0x78, 3,none), /* 0x0100690?/0x01006d0?/0140690/0x01406d0?/0x0100698?/0x01006d8?/0140698?/0x01406d8? */
+    OPTABLE(0x20,0x78, 4,none), /* 0x0100692?/0x01006d2?/0140692/0x01406d2?/0x010069a?/0x01006da?/014069a?/0x01406da? */
+};
+
+const static struct {
+    const struct optable *op;
+    int length;
+} optables[] = {
+    {optable_0,sizeof(optable_0)/sizeof(struct optable)},
+    {optable_1,sizeof(optable_1)/sizeof(struct optable)},
+    {optable_2,sizeof(optable_2)/sizeof(struct optable)},
+    {optable_3,sizeof(optable_3)/sizeof(struct optable)},
+    {optable_4,sizeof(optable_4)/sizeof(struct optable)},
+};
+
+const static unsigned char condmask[] = {
+    0x00,0x40,0x01,0x04,0x02,0x08,0x10,0x20
+};
+
+static int isbranch(int reson)
+{
+    unsigned char cond = get_register(CCR);
+    /* encode complex conditions */
+    /* B4: N^V
+       B5: Z|(N^V)
+       B6: C|Z */
+    __asm__("bld #3,%w0\n\t"
+	    "bxor #1,%w0\n\t"
+	    "bst #4,%w0\n\t"
+	    "bor #2,%w0\n\t"
+	    "bst #5,%w0\n\t"
+	    "bld #2,%w0\n\t"
+	    "bor #0,%w0\n\t"
+	    "bst #6,%w0\n\t"
+	    :"=&r"(cond):"g"(cond):"cc");
+    cond &= condmask[reson >> 1];
+    if (!(reson & 1))
+	return cond == 0;
+    else
+	return cond != 0;
+}
+
+static unsigned short *getnextpc(unsigned short *pc)
+{
+    const struct optable *op;
+    unsigned char *fetch_p;
+    unsigned char inst;
+    unsigned long addr;
+    unsigned long *sp;
+    int op_len;
+    op = optables[0].op;
+    op_len = optables[0].length;
+    fetch_p = (unsigned char *)pc;
+    inst = *fetch_p++;
+    do {
+	if ((inst & op->mask) == op->pattern) {
+	    if (op->length < 0) {
+		op = optables[-op->length].op;
+		op_len = optables[-op->length].length + 1;
+		inst = *fetch_p++;
+	    } else {
+		switch (op->type) {
+		case none:
+		    return pc + op->length;
+		case aabs:
+		    addr = *(unsigned long *)pc;
+		    return (unsigned short *)(addr & 0x00ffffff);
+		case aind:
+		    addr = *pc & 0xff;
+		    return (unsigned short *)(*(unsigned long *)addr);
+		case ret:
+		    sp = (unsigned long *)get_register(SP);
+		    return (unsigned short *)(*(sp+3) & 0x00ffffff);
+		case reg:
+		    addr = get_register((*pc >> 4) & 0x07);
+		    return (unsigned short *)addr;
+		case relb:
+		    if ((inst = 0x55) || isbranch(inst & 0x0f))
+			(unsigned char *)pc += (signed char)(*fetch_p);
+		    return pc+1; /* skip myself */
+		case relw:
+		    if ((inst = 0x5c) || isbranch((*fetch_p & 0xf0) >> 4))
+			(unsigned char *)pc += (signed short)(*(pc+1));
+		    return pc+2; /* skip myself */
+		}
+	    }
+	} else
+	    op++;
+    } while(--op_len > 0);
+    return NULL;
 }
 
 /* Set breakpoint(s) to simulate a single step from the current PC.  */
 
-const static unsigned char opcode_length0[]={
-  0x04,0x02,0x04,0x02,0x04,0x02,0x04,0x02,  /* 0x58 */
-  0x02,0x02,0x02,0x02,0x02,0x02,0x02,0x02,  /* 0x60 */
-  0x02,0x02,0x11,0x11,0x02,0x02,0x04,0x04,  /* 0x68 */
-  0x02,0x02,0x02,0x02,0x02,0x02,0x02,0x02,  /* 0x70 */
-  0x08,0x04,0x06,0x04,0x04,0x04,0x04,0x04   /* 0x78 */
-};
-
-const static unsigned char opcode_length1[]={
-  0x10,0x00,0x00,0x00,0x11,0x00,0x00,0x00,
-  0x02,0x00,0x00,0x00,0x04,0x04,0x00,0x04
-};
-
-static int insn_length(unsigned char *pc)
-{
-  if (*pc != 0x01 && (*pc < 0x58 || *pc>=0x80)) 
-    return 2;
-  else
-    switch (*pc) {
-      case 0x01:
-	switch (*(pc+1) & 0xf0) {
-	case 0x00:
-	  if (*(pc+2)== 0x78) {
-	    return 10;
-	  } else if (*(pc+2)== 0x6b) {
-	    return (*(pc+3) & 0x20)?8:6;
-	  } else {
-	    return (*(pc+2) & 0x02)?6:4;
-	  }
-	case 0x40:
-	  return (*(pc+2) & 0x02)?8:6;
-	default:
-	  return opcode_length1[*(pc+1)>>4];
-	}
-      case 0x6a:
-      case 0x6b:
-	return (*(pc+1) & 0x20)?6:4;
-      default:
-	return opcode_length0[*pc-0x58];
-    }
-}
-
 void __single_step (void)
 {
-  unsigned int pc = get_register (PC);
-  unsigned int next;
-  unsigned int opcode;
-
-  opcode = *(unsigned short *)pc;
-  next = pc + insn_length((unsigned char *)pc);
-  if (opcode == 0x5470) {
-    /* rts */ 
-    unsigned long *sp;
-    sp = (unsigned long *)get_register(SP);
-    next = *(sp+2) & 0x00ffffff;
-  } else if (((opcode & 0xf000) == 0x4000) || ((opcode & 0xff00) == 0x5500)) { 
-    /* b**:8 */
-    char dsp;
-    dsp = (opcode & 0xff);
-    set_single_bp(1,(unsigned char *)(pc+2+dsp));
-  } else if (((opcode & 0xff00) == 0x5800) || ((opcode & 0xff00) == 0x5c00)) { 
-    /* b**:16 */
-    short dsp;
-    dsp = *(short *)(pc+2);
-    set_single_bp(1,(unsigned char *)(pc+4+dsp));
-  } else if ((opcode & 0xfb00) != 0x5800) {
-    /* jmp / jsr */
-    int regs;
-    const short reg_tbl[]={ER0,ER1,ER2,ER3,ER4,ER5,ER6,SP};
-    switch(opcode & 0xfb00) {
-    case 0x5900:
-      regs = (opcode & 0x0070) >> 8;
-      next = get_register(reg_tbl[regs]);
-      break;
-    case 0x5a00:
-      next = *(unsigned long *)(pc) & 0x00ffffff;
-      break;
-    case 0x5b00:
-      next = *(unsigned long *)(opcode & 0xff);
-      break;
-    }
-  }
-  set_single_bp(0,(unsigned char *)next);
+    unsigned short *nextpc;
+    nextpc = getnextpc((unsigned short *)get_register(PC));
+    InstBuffer.addr = nextpc;
+    InstBuffer.inst = *nextpc;
+    *nextpc = HAL_BREAKINST;
 }
 
 void __install_breakpoints (void)
@@ -274,13 +320,11 @@ __is_breakpoint_function ()
 
 
 /* Skip the current instruction. */
+/* only TRAPA instruction */
 
 void __skipinst (void)
 {
-    unsigned long pc = get_register (PC);
-
-    pc+=insn_length((unsigned char *)pc);
-    put_register (PC, (target_register_t) pc);
+    put_register (PC, get_register(PC) + 2);
 }
 
 #endif // CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS

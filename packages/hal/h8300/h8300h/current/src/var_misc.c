@@ -145,7 +145,7 @@ hal_interrupt_mask(int vector)
 	ier &= ~0x20;
 	HAL_WRITE_UINT16(CYGARC_TCSR,0xa500 | ier);
     } else {
-        if ((vector > 12) && regs->ier) {
+        if ((vector >= CYGNUM_HAL_INTERRUPT_EXTERNAL_0) && regs->ier) {
             HAL_READ_UINT8(regs->ier,ier);
 	    ier &= ~(regs->mask);
             HAL_WRITE_UINT8(regs->ier,ier);
@@ -168,7 +168,7 @@ hal_interrupt_unmask(int vector)
 	ier |= 0x20;
 	HAL_WRITE_UINT16(CYGARC_TCSR,0xa500 | ier);
     } else {
-        if ((vector > 12) && regs->ier) {
+        if ((vector >= CYGNUM_HAL_INTERRUPT_EXTERNAL_0) && regs->ier) {
             HAL_READ_UINT8(regs->ier,ier);
 	    ier |= regs->mask;
             HAL_WRITE_UINT8(regs->ier,ier);
@@ -194,7 +194,7 @@ hal_interrupt_acknowledge(int vector)
 	isr &= ~0x80;
 	HAL_WRITE_UINT16(CYGARC_TCSR,0xa500 | isr);
     } else {
-        if ((vector > 12) && regs->isr) {
+        if ((vector >= CYGNUM_HAL_INTERRUPT_EXTERNAL_0) && regs->isr) {
             HAL_READ_UINT8(regs->isr,isr);
 	    isr &= ~(regs->status);
             HAL_WRITE_UINT8(regs->isr,isr);
