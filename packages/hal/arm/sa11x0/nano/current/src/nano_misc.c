@@ -76,7 +76,7 @@
 cyg_uint32 cyg_pci_window_real_base = 0;
 #endif
 
-externC void* memset(void *, int, size_t);
+#include <string.h> // memset
 
 void
 hal_mmu_init(void)

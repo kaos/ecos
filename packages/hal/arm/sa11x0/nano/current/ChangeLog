@@ -1,3 +1,7 @@
+2003-02-13  Patrick Doyle  <wpd@delcomsys.com>
+	* src/nano_misc.c: Replaced explicit prototype of memset with
+	#include <string.h>.
+
 2002-08-12  Mark Salter  <msalter@redhat.com>
 
 	* misc/redboot_POST.ecm: Remove CYGSEM_REDBOOT_ARM_LINUX_BOOT.
