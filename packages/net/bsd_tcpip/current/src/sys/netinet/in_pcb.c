@@ -581,7 +581,7 @@ in_setpeeraddr(so, nam)
 }
 
 void
-in_pcbnotifyall(head, faddr, errno, notify)
+in_pcbnotifyall(head, faddr, _errno, notify)
 	struct inpcbhead *head;
 	struct in_addr faddr;
 	void (*notify) __P((struct inpcb *, int));
@@ -599,7 +599,7 @@ in_pcbnotifyall(head, faddr, errno, notify)
 		if (inp->inp_faddr.s_addr != faddr.s_addr ||
 		    inp->inp_socket == NULL)
 				continue;
-		(*notify)(inp, errno);
+		(*notify)(inp, _errno);
 	}
 	splx(s);
 }
@@ -680,9 +680,9 @@ in_losing(inp)
  * and allocate a (hopefully) better one.
  */
 void
-in_rtchange(inp, errno)
+in_rtchange(inp, _errno)
 	register struct inpcb *inp;
-	int errno;
+	int _errno;
 {
 	if (inp->inp_route.ro_rt) {
 		rtfree(inp->inp_route.ro_rt);

@@ -514,11 +514,11 @@ udp_append(last, ip, n, off)
  * just wake up so that he can collect error status.
  */
 void
-udp_notify(inp, errno)
+udp_notify(inp, _errno)
 	register struct inpcb *inp;
-	int errno;
+	int _errno;
 {
-	inp->inp_socket->so_error = errno;
+	inp->inp_socket->so_error = _errno;
 	sorwakeup(inp->inp_socket);
 	sowwakeup(inp->inp_socket);
 }

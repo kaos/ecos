@@ -1,3 +1,10 @@
+2002-07-10  Gary Thomas  <gary@chez-thomas.org>
+
+	* src/sys/netinet/udp_usrreq.c: 
+	* src/sys/netinet/tcp_subr.c: 
+	* src/sys/netinet/in_pcb.c: Rename 'errno' function parameter
+	since some compilers have problems with this.
+
 2002-07-08  Gary Thomas  <gary@chez-thomas.org>
 
 	* include/sys/param.h: Need <errno.h> which may or may not be

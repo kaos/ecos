@@ -533,9 +533,9 @@ tcp_newtcpcb(inp)
  * then send a RST to peer.
  */
 struct tcpcb *
-tcp_drop(tp, errno)
+tcp_drop(tp, _errno)
 	register struct tcpcb *tp;
-	int errno;
+	int _errno;
 {
 	struct socket *so = tp->t_inpcb->inp_socket;
 
@@ -545,9 +545,9 @@ tcp_drop(tp, errno)
 		tcpstat.tcps_drops++;
 	} else
 		tcpstat.tcps_conndrops++;
-	if (errno == ETIMEDOUT && tp->t_softerror)
-		errno = tp->t_softerror;
-	so->so_error = errno;
+	if (_errno == ETIMEDOUT && tp->t_softerror)
+		_errno = tp->t_softerror;
+	so->so_error = _errno;
 	return (tcp_close(tp));
 }
 
@@ -1002,9 +1002,9 @@ tcp_new_isn(tp)
  * to one segment.  We will gradually open it again as we proceed.
  */
 void
-tcp_quench(inp, errno)
+tcp_quench(inp, _errno)
 	struct inpcb *inp;
-	int errno;
+	int _errno;
 {
 	struct tcpcb *tp = intotcpcb(inp);
 
@@ -1018,14 +1018,14 @@ tcp_quench(inp, errno)
  * is controlled by the icmp_may_rst sysctl.
  */
 void
-tcp_drop_syn_sent(inp, errno)
+tcp_drop_syn_sent(inp, _errno)
 	struct inpcb *inp;
-	int errno;
+	int _errno;
 {
 	struct tcpcb *tp = intotcpcb(inp);
 
 	if (tp && tp->t_state == TCPS_SYN_SENT)
-		tcp_drop(tp, errno);
+		tcp_drop(tp, _errno);
 }
 
 /*
@@ -1035,9 +1035,9 @@ tcp_drop_syn_sent(inp, errno)
  * This duplicates some code in the tcp_mss() function in tcp_input.c.
  */
 void
-tcp_mtudisc(inp, errno)
+tcp_mtudisc(inp, _errno)
 	struct inpcb *inp;
-	int errno;
+	int _errno;
 {
 	struct tcpcb *tp = intotcpcb(inp);
 	struct rtentry *rt;
