@@ -1,3 +1,21 @@
+2000-02-02  Jesper Skov  <jskov@redhat.com>
+
+	* tests/testintr.cxx: Don't output DELAYLOCKSCHED quite so often
+	on synthetic target.
+
+2000-01-31  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/testintr.cxx (CHECK_TID): Test that get_tid() returns 0 in
+	ISR context ie. non-task portion.
+
+	* include/uit_func.inl (get_tid): Check the sched lock for
+	non-task portions, ie. ISR/DSR will have the scheduler locked.
+
+2000-01-28  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* tests/testintr.cxx (DELAYLOCKSCHED): When in long testing loops,
+	occasionally output a message to show the test is still alive
+
 2000-01-26  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* include/pkgconf/uitron.h: Add new option
@@ -635,11 +653,11 @@ Fri Jul 24 13:02:46 1998  Hugo Tyson  <hmt@cygnus.co.uk>
 //                                                                          
 // -------------------------------------------                              
 // The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.0 (the "License"); you may not use this file except in         
+// Version 1.1 (the "License"); you may not use this file except in         
 // compliance with the License.  You may obtain a copy of the License at    
-// http://sourceware.cygnus.com/ecos                                        
+// http://www.redhat.com/                                                   
 //                                                                          
-// Software distributed under the License is distributed on an       
+// Software distributed under the License is distributed on an "AS IS"      
 // basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
 // License for the specific language governing rights and limitations under 
 // the License.                                                             

@@ -1,6 +1,6 @@
 version 0
-region ram 4000 7c000 0 !
-section rom_vectors 0 1 0 1 1 1 1 1 4000 4000 text text !
+region ram 8000 78000 0 !
+section rom_vectors 0 1 0 1 1 1 1 1 8000 8000 text text !
 section text 0 1 0 1 0 1 0 1 fini fini !
 section fini 0 1 0 1 0 1 0 1 rodata rodata !
 section rodata 0 1 0 1 0 1 0 1 rodata1 rodata1 !

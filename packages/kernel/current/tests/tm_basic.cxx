@@ -9,11 +9,11 @@
 //                                                                          
 // -------------------------------------------                              
 // The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.0 (the "License"); you may not use this file except in         
+// Version 1.1 (the "License"); you may not use this file except in         
 // compliance with the License.  You may obtain a copy of the License at    
-// http://sourceware.cygnus.com/ecos                                        
+// http://www.redhat.com/                                                   
 //                                                                          
-// Software distributed under the License is distributed on an       
+// Software distributed under the License is distributed on an "AS IS"      
 // basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
 // License for the specific language governing rights and limitations under 
 // the License.                                                             
@@ -78,15 +78,15 @@ typedef struct fun_times {
 
 #ifdef CYGMEM_REGION_ram_SIZE
 #define CYG_THREAD_OVERHEAD  (STACK_SIZE+sizeof(cyg_thread)+(sizeof(fun_times)*2))
-#define NTEST_THREADS        ((CYGMEM_REGION_ram_SIZE/8)/CYG_THREAD_OVERHEAD)
+#define NTEST_THREADS        ((CYGMEM_REGION_ram_SIZE/16)/CYG_THREAD_OVERHEAD)
 #define CYG_MUTEX_OVERHEAD   (sizeof(cyg_mutex_t)+sizeof(fun_times))
 #define NMUTEXES             ((CYGMEM_REGION_ram_SIZE/16)/CYG_MUTEX_OVERHEAD)
 #define CYG_MBOX_OVERHEAD    (sizeof(cyg_mbox)+sizeof(fun_times))
-#define NMBOXES              ((CYGMEM_REGION_ram_SIZE/16)/CYG_MBOX_OVERHEAD)
+#define NMBOXES              ((CYGMEM_REGION_ram_SIZE/24)/CYG_MBOX_OVERHEAD)
 #define CYG_SEMAPHORE_OVERHEAD (sizeof(cyg_sem_t)+sizeof(fun_times))
 #define NSEMAPHORES          ((CYGMEM_REGION_ram_SIZE/16)/CYG_SEMAPHORE_OVERHEAD)
 #define CYG_COUNTER_OVERHEAD (sizeof(cyg_counter)+sizeof(fun_times))
-#define NCOUNTERS            ((CYGMEM_REGION_ram_SIZE/16)/CYG_COUNTER_OVERHEAD)
+#define NCOUNTERS            ((CYGMEM_REGION_ram_SIZE/24)/CYG_COUNTER_OVERHEAD)
 #define CYG_ALARM_OVERHEAD   (sizeof(cyg_alarm)+sizeof(fun_times))
 #define NALARMS              ((CYGMEM_REGION_ram_SIZE/16)/CYG_ALARM_OVERHEAD)
 #else
@@ -1719,12 +1719,12 @@ externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS_FINISH("Timing tests require:\n"
-                         "CYGFUN_KERNEL_API_C && \n"
-                         "CYGSEM_KERNEL_SCHED_MLQUEUE &&\n"
-                         "CYGVAR_KERNEL_COUNTERS_CLOCK &&\n"
-                         "!CYGPKG_HAL_I386_LINUX &&\n"
-                         "(CYGNUM_KERNEL_SCHED_PRIORITIES > 12)\n");
+    CYG_TEST_NA("Timing tests require:\n"
+                "CYGFUN_KERNEL_API_C && \n"
+                "CYGSEM_KERNEL_SCHED_MLQUEUE &&\n"
+                "CYGVAR_KERNEL_COUNTERS_CLOCK &&\n"
+                "!CYGPKG_HAL_I386_LINUX &&\n"
+                "(CYGNUM_KERNEL_SCHED_PRIORITIES > 12)\n");
 }
 #endif // CYGFUN_KERNEL_API_C, etc.
 

@@ -12,11 +12,11 @@
 //                                                                          
 // -------------------------------------------                              
 // The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.0 (the "License"); you may not use this file except in         
+// Version 1.1 (the "License"); you may not use this file except in         
 // compliance with the License.  You may obtain a copy of the License at    
-// http://sourceware.cygnus.com/ecos                                        
+// http://www.redhat.com/                                                   
 //                                                                          
-// Software distributed under the License is distributed on an       
+// Software distributed under the License is distributed on an "AS IS"      
 // basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
 // License for the specific language governing rights and limitations under 
 // the License.                                                             
@@ -50,23 +50,23 @@ struct serial_port {
     unsigned char _byte[32];
 };
 
-#define reg(n) _byte[n*4]
+#define REG(n) _byte[n*4]
 
 // Receive control registers
-#define rhr reg(0)    // Receive holding register
-#define isr reg(2)    // Interrupt status register
-#define lsr reg(5)    // Line status register
-#define msr reg(6)    // Modem status register
-#define scr reg(7)    // Scratch register
+#define REG_RHR REG(0)    // Receive holding register
+#define REG_ISR REG(2)    // Interrupt status register
+#define REG_LSR REG(5)    // Line status register
+#define REG_MSR REG(6)    // Modem status register
+#define REG_SCR REG(7)    // Scratch register
 
 // Transmit control registers
-#define thr reg(0)    // Transmit holding register
-#define ier reg(1)    // Interrupt enable register
-#define fcr reg(2)    // FIFO control register
-#define lcr reg(3)    // Line control register
-#define mcr reg(4)    // Modem control register
-#define ldl reg(0)    // LSB of baud rate
-#define mdl reg(1)    // MSB of baud rate
+#define REG_THR REG(0)    // Transmit holding register
+#define REG_IER REG(1)    // Interrupt enable register
+#define REG_FCR REG(2)    // FIFO control register
+#define REG_LCR REG(3)    // Line control register
+#define REG_MCR REG(4)    // Modem control register
+#define REG_LDL REG(0)    // LSB of baud rate
+#define REG_MDL REG(1)    // MSB of baud rate
 
 // Interrupt Enable Register
 #define IER_RCV 0x01

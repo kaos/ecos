@@ -8,11 +8,11 @@
 //                                                                          
 // -------------------------------------------                              
 // The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.0 (the "License"); you may not use this file except in         
+// Version 1.1 (the "License"); you may not use this file except in         
 // compliance with the License.  You may obtain a copy of the License at    
-// http://sourceware.cygnus.com/ecos                                        
+// http://www.redhat.com/                                                   
 //                                                                          
-// Software distributed under the License is distributed on an       
+// Software distributed under the License is distributed on an "AS IS"      
 // basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
 // License for the specific language governing rights and limitations under 
 // the License.                                                             
@@ -30,6 +30,7 @@
 //=============================================================================
 
 #include <pkgconf/system.h>
+
 STARTUP(vectors.o)
 ENTRY(reset_vector)
 #ifdef EXTRAS
@@ -41,8 +42,8 @@ GROUP(libtarget.a libgcc.a)
 OUTPUT_FORMAT(elf32-bigarm)
 #endif
 
-#if defined(CYG_HAL_STARTUP_STUBS) \
-    && defined(CYGPKG_HAL_ARM_PID) \
+#if defined(CYG_HAL_STARTUP_ROM)    \
+    && defined(CYGPKG_HAL_ARM_PID)  \
     && defined(__ARMEB__)
 // Note: This is only needed when the PID board is used in BE mode without
 //       the proper ROM controller part.
@@ -53,12 +54,12 @@ OUTPUT_FORMAT(elf32-bigarm)
 // This does not happen on ROM access (unless the proper ROM controller
 // is used).
 //
-// This is matched in the PID stubs.ldi file which does not use the
-// RODATA macros.
 #define MERGE_IN_RODATA *(.rodata*)
+#define CYGPRI_PID_BE_WORKAROUND
 #else
 // Keep RODATA in separate sections.
 #define MERGE_IN_RODATA
+#undef  CYGPRI_PID_BE_WORKAROUND
 #endif
 
 #define ALIGN_LMA 4
@@ -96,6 +97,10 @@ OUTPUT_FORMAT(elf32-bigarm)
     { FORCE_OUTPUT; *(.fini) } \
     > _region_
 
+#if defined(CYGPRI_PID_BE_WORKAROUND)
+#define SECTION_rodata(_region_, _vma_, _lma_)
+#define SECTION_rodata1(_region_, _vma_, _lma_)
+#else
 #define SECTION_rodata(_region_, _vma_, _lma_) \
     .rodata _vma_ : _lma_ \
     { FORCE_OUTPUT; *(.rodata*) } \
@@ -105,6 +110,7 @@ OUTPUT_FORMAT(elf32-bigarm)
     .rodata1 _vma_ : _lma_ \
     { FORCE_OUTPUT; *(.rodata1) } \
     > _region_
+#endif // CYGPRI_PID_BE_WORKAROUND
 
 #define SECTION_fixup(_region_, _vma_, _lma_) \
     .fixup _vma_ : _lma_ \

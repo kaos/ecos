@@ -9,11 +9,11 @@
 //                                                                          
 // -------------------------------------------                              
 // The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.0 (the "License"); you may not use this file except in         
+// Version 1.1 (the "License"); you may not use this file except in         
 // compliance with the License.  You may obtain a copy of the License at    
-// http://sourceware.cygnus.com/ecos                                        
+// http://www.redhat.com/                                                   
 //                                                                          
-// Software distributed under the License is distributed on an       
+// Software distributed under the License is distributed on an "AS IS"      
 // basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
 // License for the specific language governing rights and limitations under 
 // the License.                                                             
@@ -838,7 +838,7 @@ bool measure_clock_latency = false;
 cyg_tick_count total_clock_dsr_latency, total_clock_dsr_calls;
 cyg_int32 min_clock_dsr_latency = 0x7FFFFFFF;
 cyg_int32 max_clock_dsr_latency = 0;
-cyg_int32 clock_dsr_start = 0;
+cyg_uint32 clock_dsr_start = 0;
 #endif
 
 // -------------------------------------------------------------------------
@@ -882,7 +882,7 @@ void Cyg_RealTimeClock::dsr(cyg_vector vector, cyg_ucount32 count, CYG_ADDRWORD 
 
 #if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_DSR_LATENCY)
     if (measure_clock_latency) {
-        cyg_int32 delta;
+        cyg_uint32 delta;
         HAL_CLOCK_READ(&delta);
         delta -= clock_dsr_start;
         // Note: Ignore a latency of <= 0 when finding min_clock_latency.

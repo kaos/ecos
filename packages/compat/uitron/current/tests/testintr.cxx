@@ -9,11 +9,11 @@
 //                                                                          
 // -------------------------------------------                              
 // The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.0 (the "License"); you may not use this file except in         
+// Version 1.1 (the "License"); you may not use this file except in         
 // compliance with the License.  You may obtain a copy of the License at    
-// http://sourceware.cygnus.com/ecos                                        
+// http://www.redhat.com/                                                   
 //                                                                          
-// Software distributed under the License is distributed on an       
+// Software distributed under the License is distributed on an "AS IS"      
 // basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
 // License for the specific language governing rights and limitations under 
 // the License.                                                             
@@ -140,12 +140,22 @@ enum {
     HAL_INTERRUPT_ACKNOWLEDGE( CYGNUM_HAL_INTERRUPT_RTC );      \
 CYG_MACRO_END
 
+#define CHECK_TID() CYG_MACRO_START                     \
+    int my_tid;                                         \
+    ER ercd;                                            \
+    ercd = get_tid( &my_tid );                          \
+    CYG_TEST_CHECK( E_OK == ercd, "get_tid bad ercd" ); \
+    CYG_TEST_CHECK( 0 == my_tid, "tid not 0 in ISR" );  \
+CYG_MACRO_END
+
+
 unsigned int
 isr_wup_tsk( unsigned int vector, unsigned int data )
 {
     // Hit TASKS in range 2..4
     static int wtid = 2;
     ACK_CLOCK();
+    CHECK_TID();
     iwup_tsk( wtid );
     wtid++;
     if ( 5 == wtid ) wtid = 2;
@@ -158,6 +168,7 @@ isr_ret_wup( unsigned int vector, unsigned int data )
     // Hit TASKS in range 2..4
     static int rwid = 2;
     ACK_CLOCK();
+    CHECK_TID();
     rwid++;
     if ( 6 == rwid ) rwid = 3;
     ret_wup( rwid - 1 );
@@ -169,6 +180,7 @@ isr_sig_sem( unsigned int vector, unsigned int data )
     // Hit SEMAS in range 1..3
     static int ssid = 1;
     ACK_CLOCK();
+    CHECK_TID();
     isig_sem( ssid );
     ssid++;
     if ( ssid == 4 ) ssid = 1;
@@ -182,6 +194,7 @@ isr_set_flg( unsigned int vector, unsigned int data )
     static int sfid = 1;
     static int sfdata = 0xff;
     ACK_CLOCK();
+    CHECK_TID();
     iset_flg( sfid, sfdata );
     sfid++;
     if ( sfid == 5 ) sfid = 1;
@@ -196,6 +209,7 @@ isr_snd_msg( unsigned int vector, unsigned int data )
     // Hit MBOXES in range 1..4
     static int smid = 1;
     ACK_CLOCK();
+    CHECK_TID();
     isnd_msg( smid, (T_MSG *)&smid );
     smid++;
     if ( smid == 5 ) smid = 1;
@@ -253,19 +267,20 @@ static int events     = EVENTSHW;
 } while ( 0 )
 
 
-#define DELAYLOCKSCHED()                                \
-do {                                                    \
-    count = 0;                                          \
-    int i;                                              \
-    do {                                                \
-        lock_sched();                                   \
-        for ( i = 0; i < SMALLDELAY; i++ ) {            \
-            count++;                                    \
-            if ( wakeups[ 4 ] >= prewups[ 4 ] + EVENTS )\
-                break;                                  \
-        }                                               \
-        unlock_sched();                                 \
-    } while ( wakeups[ 4 ] < prewups[ 4 ] + EVENTS );   \
+#define DELAYLOCKSCHED()                                              \
+do {                                                                  \
+    count = 0;                                                        \
+    int i;                                                            \
+    do {                                                              \
+        lock_sched();                                                 \
+        for ( i = 0; i < SMALLDELAY; i++ ) {                          \
+            count++;                                                  \
+            if ( wakeups[ 4 ] >= prewups[ 4 ] + EVENTS )              \
+                break;                                                \
+        }                                                             \
+        unlock_sched();                                               \
+        CYG_TEST_INFO("  [Still iterating, please wait....]  ");      \
+    } while ( wakeups[ 4 ] < prewups[ 4 ] + EVENTS );                 \
 } while ( 0 )
 
 #define DELAY()                                 \
@@ -288,8 +303,12 @@ void task1( unsigned int arg )
 
     if ( cyg_test_is_simulator ) {
         // take less time
-        smalldelay = SMALLDELAYSIM;
         events     = EVENTSSIM;
+// Don't output messages more frequently on synthetic target. It's
+// much faster than sims and will cause massive amounts of output.
+#ifndef CYGPKG_HAL_I386_LINUX
+        smalldelay = SMALLDELAYSIM;
+#endif
     }
 
     intercom = 0;
@@ -565,7 +584,7 @@ void task2( unsigned int arg )
     CYG_TEST_INFO( "Task 2 running" );
     ercd = get_tid( &scratch );
     CYG_TEST_CHECK( E_OK == ercd, "get_tid bad ercd" );
-    CYG_TEST_CHECK( 2 == scratch, "tid not 3" );
+    CYG_TEST_CHECK( 2 == scratch, "tid not 2" );
     if ( 222 != arg )
         CYG_TEST_FAIL( "Task 2 arg not 222" );
     body(2);

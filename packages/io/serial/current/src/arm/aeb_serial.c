@@ -9,11 +9,11 @@
 //                                                                          
 // -------------------------------------------                              
 // The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.0 (the "License"); you may not use this file except in         
+// Version 1.1 (the "License"); you may not use this file except in         
 // compliance with the License.  You may obtain a copy of the License at    
-// http://sourceware.cygnus.com/ecos                                        
+// http://www.redhat.com/                                                   
 //                                                                          
-// Software distributed under the License is distributed on an       
+// Software distributed under the License is distributed on an "AS IS"      
 // basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
 // License for the specific language governing rights and limitations under 
 // the License.                                                             
@@ -171,26 +171,26 @@ aeb_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config, bool
     unsigned short baud_divisor = select_baud[new_config->baud];
     unsigned char _lcr, _ier;
     if (baud_divisor == 0) return false;
-    _ier = port->ier;
-    port->ier = 0;  // Disable port interrupts while changing hardware
+    _ier = port->REG_IER;
+    port->REG_IER = 0;  // Disable port interrupts while changing hardware
     _lcr = select_word_length[new_config->word_length - CYGNUM_SERIAL_WORD_LENGTH_5] | 
         select_stop_bits[new_config->stop] |
         select_parity[new_config->parity];
-    port->lcr = _lcr;
-    port->lcr |= LCR_DL;
-    port->mdl = baud_divisor >> 8;
-    port->ldl = baud_divisor & 0xFF;
-    port->lcr &= ~LCR_DL;
+    port->REG_LCR = _lcr;
+    port->REG_LCR |= LCR_DL;
+    port->REG_MDL = baud_divisor >> 8;
+    port->REG_LDL = baud_divisor & 0xFF;
+    port->REG_LCR &= ~LCR_DL;
     if (init) {
-        port->fcr = 0x07;  // Enable and clear FIFO
+        port->REG_FCR = 0x07;  // Enable and clear FIFO
         if (chan->out_cbuf.len != 0) {
-            port->ier = IER_RCV;
+            port->REG_IER = IER_RCV;
         } else {
-            port->ier = 0;
+            port->REG_IER = 0;
         }
-        port->mcr = MCR_INT|MCR_DTR|MCR_RTS;  // Master interrupt enable
+        port->REG_MCR = MCR_INT|MCR_DTR|MCR_RTS;  // Master interrupt enable
     } else {
-        port->ier = _ier;
+        port->REG_IER = _ier;
     }
     if (new_config != &chan->config) {
         chan->config = *new_config;
@@ -241,9 +241,9 @@ aeb_serial_putc(serial_channel *chan, unsigned char c)
 {
     aeb_serial_info *aeb_chan = (aeb_serial_info *)chan->dev_priv;
     volatile struct serial_port *port = (volatile struct serial_port *)aeb_chan->base;
-    if (port->lsr & LSR_THE) {
+    if (port->REG_LSR & LSR_THE) {
 // Transmit buffer is empty
-        port->thr = c;
+        port->REG_THR = c;
         return true;
     } else {
 // No space
@@ -258,8 +258,8 @@ aeb_serial_getc(serial_channel *chan)
     unsigned char c;
     aeb_serial_info *aeb_chan = (aeb_serial_info *)chan->dev_priv;
     volatile struct serial_port *port = (volatile struct serial_port *)aeb_chan->base;
-    while ((port->lsr & LSR_RSR) == 0) ;   // Wait for char
-    c = port->rhr;
+    while ((port->REG_LSR & LSR_RSR) == 0) ;   // Wait for char
+    c = port->REG_RHR;
     return c;
 }
 
@@ -276,7 +276,7 @@ aeb_serial_start_xmit(serial_channel *chan)
 {
     aeb_serial_info *aeb_chan = (aeb_serial_info *)chan->dev_priv;
     volatile struct serial_port *port = (volatile struct serial_port *)aeb_chan->base;
-    port->ier |= IER_XMT;  // Enable xmit interrupt
+    port->REG_IER |= IER_XMT;  // Enable xmit interrupt
 }
 
 // Disable the transmitter on the device
@@ -285,7 +285,7 @@ aeb_serial_stop_xmit(serial_channel *chan)
 {
     aeb_serial_info *aeb_chan = (aeb_serial_info *)chan->dev_priv;
     volatile struct serial_port *port = (volatile struct serial_port *)aeb_chan->base;
-    port->ier &= ~IER_XMT;  // Disable xmit interrupt
+    port->REG_IER &= ~IER_XMT;  // Disable xmit interrupt
 }
 
 // Serial I/O - low level interrupt handler (ISR)
@@ -307,11 +307,11 @@ aeb_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     aeb_serial_info *aeb_chan = (aeb_serial_info *)chan->dev_priv;
     volatile struct serial_port *port = (volatile struct serial_port *)aeb_chan->base;
     unsigned char isr;
-    isr = port->isr & 0x0E;
+    isr = port->REG_ISR & 0x0E;
     if (isr == ISR_Tx) {
         (chan->callbacks->xmt_char)(chan);
     } else if (isr == ISR_Rx) {
-        (chan->callbacks->rcv_char)(chan, port->rhr);
+        (chan->callbacks->rcv_char)(chan, port->REG_RHR);
     }
     cyg_drv_interrupt_unmask(aeb_chan->int_num);
 }

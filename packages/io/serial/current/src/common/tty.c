@@ -9,11 +9,11 @@
 //                                                                          
 // -------------------------------------------                              
 // The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.0 (the "License"); you may not use this file except in         
+// Version 1.1 (the "License"); you may not use this file except in         
 // compliance with the License.  You may obtain a copy of the License at    
-// http://sourceware.cygnus.com/ecos                                        
+// http://www.redhat.com/                                                   
 //                                                                          
-// Software distributed under the License is distributed on an       
+// Software distributed under the License is distributed on an "AS IS"      
 // basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
 // License for the specific language governing rights and limitations under 
 // the License.                                                             
@@ -193,7 +193,8 @@ tty_read(cyg_io_handle_t handle, void *_buf, cyg_uint32 *len)
     cyg_devtab_entry_t *t = (cyg_devtab_entry_t *)handle;
     struct tty_private_info *priv = (struct tty_private_info *)t->priv;
     cyg_io_handle_t chan = (cyg_io_handle_t)priv->dev_handle;
-    cyg_uint32 size, clen;
+    cyg_uint32 clen;
+    cyg_int32 size;
     Cyg_ErrNo res;
     cyg_uint8 c;
     cyg_uint8 *buf = (cyg_uint8 *)_buf;
