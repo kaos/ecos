@@ -53,6 +53,7 @@
 cdl_package CYGPKG_NS_DNS {
     display       "DNS client"
     include_dir   cyg/ns/dns
+    doc           ref/net-ns-dns.html
 
     cdl_option CYGPKG_NS_DNS_BUILD {
         display       "Build DNS NS client package"
