@@ -314,9 +314,7 @@ fcc_eth_init(struct cyg_netdevtab_entry *dtp)
         return false;
     }
 #ifdef CYGSEM_DEVS_ETH_POWERPC_FCC_RESET_PHY
-    if (!_eth_phy_reset(qi->phy)) {
-        return false;
-    }
+    _eth_phy_reset(qi->phy);
 #endif
     phy_state = _eth_phy_state(qi->phy);
     os_printf("FCC ETH: ");

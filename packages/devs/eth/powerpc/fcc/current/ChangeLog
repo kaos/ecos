@@ -1,3 +1,7 @@
+2003-08-30  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/if_fcc.c: Fix compile error.
+
 2003-08-26  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/if_fcc.c: Use new PHY support.
