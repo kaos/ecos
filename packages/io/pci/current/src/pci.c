@@ -91,6 +91,7 @@ void
 cyg_pci_get_device_info ( cyg_pci_device_id devid, cyg_pci_device *dev_info )
 {
     int i;
+    unsigned char bar_count;
     cyg_uint8 bus = CYG_PCI_DEV_GET_BUS(devid);
     cyg_uint8 devfn = CYG_PCI_DEV_GET_DEVFN(devid);
     cyg_uint8 header_type;
@@ -138,6 +139,7 @@ cyg_pci_get_device_info ( cyg_pci_device_id devid, cyg_pci_device *dev_info )
     // If device is disabled, probe BARs for sizes.
     if ((dev_info->command & CYG_PCI_CFG_COMMAND_ACTIVE) == 0) {
 
+        bar_count = 0;
         for (i = 0; i < dev_info->num_bars; i++){
             cyg_uint32 size;
 
@@ -150,6 +152,12 @@ cyg_pci_get_device_info ( cyg_pci_device_id devid, cyg_pci_device *dev_info )
             dev_info->base_size[i] = size;
             dev_info->base_map[i] = 0xffffffff;
 
+	    // Increment BAR count only if it has valid entry. BARs may not
+            // be in contiguous locations. 
+	    if (size != 0) {
+                ++bar_count;
+	    }
+
             // Check for a 64bit memory region.
             if (CYG_PCI_CFG_BAR_SPACE_MEM == 
                 (size & CYG_PCI_CFG_BAR_SPACE_MASK)) {
@@ -161,16 +169,24 @@ cyg_pci_get_device_info ( cyg_pci_device_id devid, cyg_pci_device *dev_info )
                 }
             }
         }
+        dev_info->num_bars = bar_count;
     } else {
 	// If the device is already configured. Fill in the base_map.
 	CYG_PCI_ADDRESS64 tmp_addr;
 	cyg_uint32 bar;
 
+        bar_count = 0;
         for (i = 0; i < dev_info->num_bars; i++){
 
 	    dev_info->base_size[i] = 0;
 
             bar = dev_info->base_address[i];
+
+	    // Increment BAR count only if it has valid entry. BARs may not
+            // be in contiguous locations. 
+	    if (bar != 0) {
+                ++bar_count;
+	    }
 
 	    if ((bar & CYG_PCI_CFG_BAR_SPACE_MASK) == CYG_PCI_CFG_BAR_SPACE_IO) {
 		dev_info->base_map[i] = (bar & CYG_PRI_CFG_BAR_IO_MASK) + HAL_PCI_PHYSICAL_IO_BASE;
@@ -203,6 +219,7 @@ cyg_pci_get_device_info ( cyg_pci_device_id devid, cyg_pci_device *dev_info )
 		    dev_info->base_map[++i] = tmp_addr >> 32;
 	    }
         }
+        dev_info->num_bars = bar_count;
     }
             
 
@@ -296,9 +313,13 @@ cyg_pci_set_device_info ( cyg_pci_device_id devid, cyg_pci_device *dev_info )
     cyg_pcihw_write_config_uint8(bus, devfn, CYG_PCI_CFG_BIST,
                                  dev_info->bist);
 
-    for (i = 0; i < dev_info->num_bars; i++) {
-	cyg_pcihw_write_config_uint32(bus, devfn, CYG_PCI_CFG_BAR_BASE+4*i,
-				      dev_info->base_address[i]);
+    // Check for all possible BARs because they may be non-contiguous
+    for (i = 0; i < CYG_PCI_MAX_BAR; i++) {
+        if (dev_info->base_address[i]) {
+	    cyg_pcihw_write_config_uint32 (bus, devfn, 
+                                           CYG_PCI_CFG_BAR_BASE+4*i,
+				           dev_info->base_address[i]);
+        }
     }
 
     switch (dev_info->header_type & CYG_PCI_CFG_HEADER_TYPE_MASK) {
@@ -630,7 +651,10 @@ cyg_pci_configure_device( cyg_pci_device *dev_info )
 	return true;
 
     if (dev_info->num_bars > 0) {
-	for (bar = 0; bar < dev_info->num_bars; bar++) {
+        for (bar = 0; bar < CYG_PCI_MAX_BAR; bar++) {
+            if (!dev_info->base_address[bar]) {
+                continue;
+            }
 	    flags = dev_info->base_size[bar];
 
 	    ret = false;

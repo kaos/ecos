@@ -1,3 +1,9 @@
+2003-11-18  Manu Sharma  <manu.sharma@ascom.com>
+
+        * src/pci.c : Additional changes in cyg_pci_get_device_info, 
+        cyg_pci_set_device_info and cyg_pci_configure_device to be able
+        to support non-contiguous BARs.
+
 2003-09-29  Nick Garnett  <nickg@balti.calivar.com>
 
 	* src/pci.c (cyg_pci_get_device_info): Removed check for inactive
