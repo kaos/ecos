@@ -129,22 +129,5 @@ _mn10300_interrupt_vectors = 0xC0000000;
 
 #include CYGBLD_HAL_TARGET_H
 
-#if CYGHWR_HAL_MN10300_AM33_REVISION == 1
-
-#ifndef CYG_HAL_PLATFORM_HAL_VSR_TABLE_DEFINED
-_hal_vsr_table = 0x50000100;
-_hal_virtual_vector_table = 0x50000200;
-#endif
-
-#elif CYGHWR_HAL_MN10300_AM33_REVISION == 2
-
-#ifndef CYG_HAL_PLATFORM_HAL_VSR_TABLE_DEFINED
-_hal_vsr_table = 0x90000000;
-_hal_virtual_vector_table = 0x90000100;
-#endif
-
-#else
-
-#error Unknown AM33 Revision
-
-#endif
+_hal_vsr_table = CYGHWR_HAL_MN10300_VSR_TABLE_BASE;
+_hal_virtual_vector_table = CYGHWR_HAL_MN10300_VV_TABLE_BASE;

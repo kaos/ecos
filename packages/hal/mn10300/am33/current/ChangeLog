@@ -1,3 +1,9 @@
+2002-11-15  Mark Salter  <msalter@redhat.com>
+
+	* cdl/hal_mn10300_am33.cdl: Add options to control placement of
+	VSR and virtual vector tables. Platforms may override.
+	* src/mn10300_am33.ld: Use new cdl option values.
+
 2002-11-14  Mark Salter  <msalter@redhat.com>
 
 	* include/var_intr.h (HAL_CLOCK_INITIALIZE): Save _period_ for

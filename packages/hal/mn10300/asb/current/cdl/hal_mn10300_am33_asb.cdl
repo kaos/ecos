@@ -107,6 +107,14 @@ cdl_package CYGPKG_HAL_MN10300_AM33_ASB {
         flavor        data
     }
 
+    cdl_option CYGHWR_HAL_MN10300_PLATFORM_VSR_TABLE_BASE {
+        display       "ASB2303 VSR table base address"
+        flavor        data
+        default_value 0x8C000000
+        description   "
+            Base address of the VSR table on ASB2303 board."
+    }
+
     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_DEFAULT {
         display      "Default console channel."
         flavor       data

@@ -143,6 +143,26 @@ cdl_package CYGPKG_HAL_MN10300_AM33 {
         }
     }
 
+    cdl_option CYGHWR_HAL_MN10300_VSR_TABLE_BASE {
+        display       "AM33 VSR table base address"
+        flavor        data
+        calculated    { CYGHWR_HAL_MN10300_PLATFORM_VSR_TABLE_BASE ?
+                        CYGHWR_HAL_MN10300_PLATFORM_VSR_TABLE_BASE : \
+		        (CYGHWR_HAL_MN10300_AM33_REVISION > 1) ? 0x90000000 : 0x50000100 }
+        description   "
+            Base address of the VSR table."
+    }
+
+    cdl_option CYGHWR_HAL_MN10300_VV_TABLE_BASE {
+        display       "AM33 Virtual Vectors table base address"
+        flavor        data
+        calculated    { CYGHWR_HAL_MN10300_PLATFORM_VV_TABLE_BASE ?
+                        CYGHWR_HAL_MN10300_PLATFORM_VV_TABLE_BASE : \
+		        CYGHWR_HAL_MN10300_PLATFORM_VSR_TABLE_BASE + 0x100 }
+        description   "
+            Base address of the virtual vectors table."
+    }
+
     make {
         <PREFIX>/lib/target.ld: <PACKAGE>/src/mn10300_am33.ld
         $(CC) -E -P -Wp,-MD,target.tmp -DEXTRAS=1 -xc $(INCLUDE_PATH) $(CFLAGS) -o $@ $<

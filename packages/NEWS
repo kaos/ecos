@@ -1,3 +1,4 @@
+* Update MN10300 ASB2303 HAL to support RedBoot
 * New package for application level profiling (histogram only)
 * Support for NPWR Linux Engine (Xscale IOP310) from Team ASA
 * Support for Allied Telesyn TS1000 (PowerPC 855T based design)

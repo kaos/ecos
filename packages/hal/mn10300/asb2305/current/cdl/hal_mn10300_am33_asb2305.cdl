@@ -101,48 +101,19 @@ cdl_package CYGPKG_HAL_MN10300_AM33_ASB2305 {
             from."
     }
 
-    cdl_option CYGHWR_HAL_MN10300_AM33_ASB_DIAG_PORT {
-        display          "Diagnostic Serial Port"
-        flavor data
-        legal_values     0 1
-        default_value    0
-        description      "
-           The ASB2305 board has two serial ports. This option
-           chooses which of these ports will be used for diagnostic output.
-           At present only port 0 is supported."
-   }
+    cdl_option CYGHWR_HAL_MN10300_PROCESSOR_OSC_DEFAULT {
+        display       "Processor clock rate"
+        calculated    33333333
+        flavor        data
+    }
 
-   cdl_option CYGHWR_HAL_MN10300_AM33_ASB_DIAG_BAUD {
-       display          "Diagnostic Serial Port Baud Rate"
-       flavor data
-       legal_values     9600 19200 38400 115200
-       default_value    38400
-       description      "
-           This option selects the baud rate used for the diagnostic port.
-           Note: this should match the value chosen for the GDB port if the
-           diagnostic and GDB port are the same."
-   }
-
-   cdl_option CYGHWR_HAL_MN10300_AM33_ASB_GDB_PORT {
-       display          "GDB Serial Port"
-       flavor data
-       legal_values     0 1
-       default_value    0
-       description      "
-           The ASB2305 board has two separate serial ports.  This option
-           chooses which of these ports will be used to connect to a host
-           running GDB.
-           At present only port 0 is supported."
-   }
-
-   cdl_option CYGHWR_HAL_MN10300_AM33_ASB_GDB_BAUD {
-       display          "GDB Serial Port Baud Rate"
-       flavor data
-       legal_values     9600 19200 38400 115200
-       default_value    38400
-       description      "
-           This option controls the baud rate used for the GDB connection."
-   }
+    cdl_option CYGHWR_HAL_MN10300_PLATFORM_VSR_TABLE_BASE {
+        display       "ASB2305 VSR table base address"
+        flavor        data
+        default_value 0x8C000000
+        description   "
+            Base address of the VSR table on ASB2305 board."
+    }
 
     cdl_component CYGBLD_GLOBAL_OPTIONS {
         display "Global build options"

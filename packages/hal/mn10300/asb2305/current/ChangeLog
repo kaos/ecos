@@ -1,3 +1,12 @@
+2002-11-15  Mark Salter  <msalter@redhat.com>
+
+	* cdl/hal_mn10300_am33_asb2305.cdl: Override default VSR placement.
+	Removed unused options. Set correct clock speed.
+	* include/pkgconf/mlt_mn10300_am33_asb2305_ram.ldi: Remove unneeded
+	defines.
+	* include/pkgconf/mlt_mn10300_am33_asb2305_flash.ldi: Ditto.
+	* include/pkgconf/mlt_mn10300_am33_asb2305_rom.ldi: Ditto.
+
 2002-11-14  Mark Salter  <msalter@redhat.com>
 
 	* cdl/hal_mn10300_am33_asb2305.cdl: Remove RedBoot exec option. Now

@@ -25,8 +25,3 @@ SECTIONS
     CYG_LABEL_DEFN(__heap1) = ALIGN (0x8);
     SECTIONS_END
 }
-
-#define CYG_HAL_PLATFORM_HAL_VSR_TABLE_DEFINED
-
-_hal_vsr_table = 0x8C000000;
-_hal_virtual_vector_table = 0x8C000100;

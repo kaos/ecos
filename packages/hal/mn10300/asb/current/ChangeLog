@@ -1,3 +1,10 @@
+2002-11-15  Mark Salter  <msalter@redhat.com>
+
+	* cdl/hal_mn10300_am33_asb.cdl: Override default VSR placement.
+	* include/pkgconf/mlt_mn10300_am33_asb_ram.ldi: Remove unneeded defines.
+	* include/pkgconf/mlt_mn10300_am33_asb_flash.ldi: Ditto.
+	* include/pkgconf/mlt_mn10300_am33_asb_rom.ldi: Ditto.
+
 2002-11-14  Mark Salter  <msalter@redhat.com>
 
 	* src/plf_misc.c: Don't mess with TBR.
