@@ -86,7 +86,7 @@ FUNC_START(hal_thread_switch_context)
 FUNC_START(hal_thread_load_context)
 	ldr	fp,[r0]			// get context to restore
 	mrs	r0,cpsr			// disable IRQ's
-	orr	r0,r0,#CPSR_IRQ_DISABLE
+	orr	r0,r0,#CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE
 	msr	cpsr,r0
 	ldr	r0,[fp,#armreg_cpsr]
 	msr	spsr,r0

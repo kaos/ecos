@@ -97,9 +97,24 @@
 // external exception handler using cyg_hal_deliver_exception()
 
 #define CYGNUM_HAL_EXCEPTION_RESERVED_0      CYGNUM_HAL_VECTOR_RESERVED_0
+
+#ifdef CYG_HAL_POWERPC_MPC860
+// The MPC860 does not generate DSI and ISI: instead it goes to machine
+// check, so that a software VM system can then call into vectors 0x300 or
+// 0x400 if the address is truly invalid rather than merely not in the TLB
+// right now.  Shades of IBM wanting to port OS/MVS here!
+// See pp 7-9/10 in "PowerQUICC - MPC860 User's Manual"
+#define CYGNUM_HAL_EXCEPTION_DATA_ACCESS     CYGNUM_HAL_VECTOR_MACHINE_CHECK
+// do not define catchers for DSI and ISI - should never happen.
+#else
+// Sensible PowerPCs that do what the architecture suggests.  See 6-25...29
+// in "PowerPC Microprocessor Family: the Programming Environments"
+// (Note: eCos libc does not catch CYGNUM_HAL_EXCEPTION_MACHINE_CHECK)
 #define CYGNUM_HAL_EXCEPTION_MACHINE_CHECK   CYGNUM_HAL_VECTOR_MACHINE_CHECK
 #define CYGNUM_HAL_EXCEPTION_DATA_ACCESS     CYGNUM_HAL_VECTOR_DSI
 #define CYGNUM_HAL_EXCEPTION_CODE_ACCESS     CYGNUM_HAL_VECTOR_ISI
+#endif // !CYG_HAL_POWERPC_MPC860 : DSI and ISI exceptions generated
+
 #define CYGNUM_HAL_EXCEPTION_DATA_UNALIGNED_ACCESS  \
            CYGNUM_HAL_VECTOR_ALIGNMENT
 #define CYGNUM_HAL_EXCEPTION_FPU_NOT_AVAIL   CYGNUM_HAL_VECTOR_FP_UNAVAILABLE
@@ -480,11 +495,11 @@ cyg_hal_interrupt_mask ( cyg_uint32 vector )
     case CYGNUM_HAL_INTERRUPT_SIU_CPM:
     {
         // Communications Processor Module
-        cyg_uint16 cicr;
+        cyg_uint32 cicr;
 
-        HAL_READ_UINT16 (CYGARC_REG_IMM_CICR, cicr);
+        HAL_READ_UINT32 (CYGARC_REG_IMM_CICR, cicr);
         cicr &= ~(CYGARC_REG_IMM_CICR_IEN);
-        HAL_WRITE_UINT16 (CYGARC_REG_IMM_CICR, cicr);
+        HAL_WRITE_UINT32 (CYGARC_REG_IMM_CICR, cicr);
         break;
     }
     case CYGNUM_HAL_INTERRUPT_CPM_FIRST ... CYGNUM_HAL_INTERRUPT_CPM_LAST:
@@ -576,11 +591,11 @@ cyg_hal_interrupt_unmask ( cyg_uint32 vector )
     case CYGNUM_HAL_INTERRUPT_SIU_CPM:
     {
         // Communications Processor Module
-        cyg_uint16 cicr;
+        cyg_uint32 cicr;
 
-        HAL_READ_UINT16 (CYGARC_REG_IMM_CICR, cicr);
+        HAL_READ_UINT32 (CYGARC_REG_IMM_CICR, cicr);
         cicr |= CYGARC_REG_IMM_CICR_IEN;
-        HAL_WRITE_UINT16 (CYGARC_REG_IMM_CICR, cicr);
+        HAL_WRITE_UINT32 (CYGARC_REG_IMM_CICR, cicr);
         break;
     }
     case CYGNUM_HAL_INTERRUPT_CPM_FIRST ... CYGNUM_HAL_INTERRUPT_CPM_LAST:
@@ -806,12 +821,12 @@ cyg_hal_interrupt_set_level ( cyg_uint32 vector, cyg_uint32 level )
     case CYGNUM_HAL_INTERRUPT_SIU_CPM:
     {
         // Communications Processor Module
-        cyg_uint16 cicr;
+        cyg_uint32 cicr;
 
-        HAL_READ_UINT16 (CYGARC_REG_IMM_CICR, cicr);
+        HAL_READ_UINT32 (CYGARC_REG_IMM_CICR, cicr);
         cicr &= ~(CYGARC_REG_IMM_CICR_IRQMASK);
         cicr |= level << CYGARC_REG_IMM_CICR_IRQ_SHIFT;
-        HAL_WRITE_UINT16 (CYGARC_REG_IMM_CICR, cicr);
+        HAL_WRITE_UINT32 (CYGARC_REG_IMM_CICR, cicr);
         break;
     }
     case CYGNUM_HAL_INTERRUPT_CPM_FIRST ... CYGNUM_HAL_INTERRUPT_CPM_LAST:

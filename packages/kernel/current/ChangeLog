@@ -1,3 +1,8 @@
+1999-06-30  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/dhrystone.c: Also NA-quit if CYGPKG_INFRA_DEBUG or
+	CYGPKG_KERNEL_INSTRUMENT are enabled.
+
 1999-06-23  Jesper Skov  <jskov@cygnus.co.uk>
         PR 20209
 	* tests/dhrystone.c: Use fewer loops on ARM targets - they don't

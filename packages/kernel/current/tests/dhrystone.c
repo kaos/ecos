@@ -35,12 +35,15 @@
 #if defined(CYGPKG_KERNEL) && defined(CYGPKG_LIBC)
 
 #include <pkgconf/kernel.h>
+#include <pkgconf/infra.h>
 #include <pkgconf/libc.h>
 
 #if defined(CYGFUN_KERNEL_API_C) \
     && defined(CYGSEM_LIBC_STDIO_PRINTF_FLOATING_POINT)
 
-#ifdef __OPTIMIZE__
+#if defined(__OPTIMIZE__) \
+    && !defined(CYGPKG_INFRA_DEBUG) \
+    && !defined(CYGPKG_KERNEL_INSTRUMENT)
 
 #include <cyg/hal/hal_cache.h>
 #include <cyg/kernel/kapi.h>
@@ -1150,8 +1153,8 @@ Enumeration Enum_Par_Val;
 } /* Func_3 */
 
 #else
-#define NA_MSG "Only makes sense to run with optimized code"
-#endif // __OPTIMIZE__
+#define NA_MSG "Only runs with optimized code, no tracing and no asserts"
+#endif // __OPTIMIZE__ && !CYGPKG_INFRA_DEBUG && !CYGPKG_KERNEL_INSTRUMENT
 
 #else
 #define NA_MSG "Requires CYGFUN_KERNEL_API_C && CYGSEM_LIBC_STDIO_PRINTF_FLOATING_POINT"

@@ -103,8 +103,8 @@ serial_write(cyg_io_handle_t handle, const void *_buf, cyg_uint32 *len)
     int next;
     cbuf_t *cbuf = &chan->out_cbuf;
     Cyg_ErrNo res = ENOERR;
-    cbuf->abort = false;
 
+    cbuf->abort = false;
     cyg_drv_mutex_lock(&cbuf->lock);
     if (cbuf->len == 0) {
         // Non interrupt driven (i.e. polled) operation
@@ -154,8 +154,14 @@ serial_read(cyg_io_handle_t handle, void *_buf, cyg_uint32 *len)
     cyg_int32 size = 0;
     cbuf_t *cbuf = &chan->in_cbuf;
     Cyg_ErrNo res = ENOERR;
-    cbuf->abort = false;
+#ifdef XX_CYGDBG_DIAG_BUF
+            extern int enable_diag_uart;
+            int _enable = enable_diag_uart;
+            int _time, _stime;
+            externC cyg_tick_count_t cyg_current_time(void);
+#endif // CYGDBG_DIAG_BUF
 
+    cbuf->abort = false;
     cyg_drv_mutex_lock(&cbuf->lock);
     if (cbuf->len == 0) {
         // Non interrupt driven (i.e. polled) operation
@@ -171,7 +177,21 @@ serial_read(cyg_io_handle_t handle, void *_buf, cyg_uint32 *len)
                 size++;
             } else {
                 cbuf->waiting = true;
+#ifdef XX_CYGDBG_DIAG_BUF
+            enable_diag_uart = 0;
+            HAL_CLOCK_READ(&_time);
+            _stime = (int)cyg_current_time();
+            diag_printf("READ wait - get: %d, put: %d, time: %x.%x\n", cbuf->get, cbuf->put, _stime, _time);
+            enable_diag_uart = _enable;
+#endif // CYGDBG_DIAG_BUF
                 cyg_drv_cond_wait(&cbuf->wait);
+#ifdef XX_CYGDBG_DIAG_BUF
+            enable_diag_uart = 0;
+            HAL_CLOCK_READ(&_time);
+            _stime = (int)cyg_current_time();
+            diag_printf("READ continue - get: %d, put: %d, time: %x.%x\n", cbuf->get, cbuf->put, _stime, _time);
+            enable_diag_uart = _enable;
+#endif // CYGDBG_DIAG_BUF
                 if (cbuf->abort) {
                     // Give up!
                     cbuf->abort = false;
@@ -183,6 +203,15 @@ serial_read(cyg_io_handle_t handle, void *_buf, cyg_uint32 *len)
         }
         cyg_drv_dsr_unlock();
     }
+    cyg_drv_isr_lock();
+#ifdef XX_CYGDBG_DIAG_BUF
+            enable_diag_uart = 0;
+            HAL_CLOCK_READ(&_time);
+            _stime = (int)cyg_current_time();
+            diag_printf("READ done - size: %d, len: %d, time: %x.%x\n", size, *len, _stime, _time);
+            enable_diag_uart = _enable;
+#endif // CYGDBG_DIAG_BUF
+    cyg_drv_isr_unlock();
     cyg_drv_mutex_unlock(&cbuf->lock);
     return res;
 }
@@ -335,6 +364,17 @@ serial_rcv_char(serial_channel *chan, unsigned char c)
     cbuf->data[cbuf->put++] = c;
     if (cbuf->put == cbuf->len) cbuf->put = 0;
     if (cbuf->waiting) {
+#ifdef XX_CYGDBG_DIAG_BUF
+            extern int enable_diag_uart;
+            int _enable = enable_diag_uart;
+            int _time, _stime;
+            externC cyg_tick_count_t cyg_current_time(void);
+            enable_diag_uart = 0;
+            HAL_CLOCK_READ(&_time);
+            _stime = (int)cyg_current_time();
+            diag_printf("Signal reader - time: %x.%x\n", _stime, _time);
+            enable_diag_uart = _enable;
+#endif // CYGDBG_DIAG_BUF
         cbuf->waiting = false;
         cyg_drv_cond_signal(&cbuf->wait);
     }

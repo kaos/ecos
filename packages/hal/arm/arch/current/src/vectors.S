@@ -209,7 +209,7 @@ start:
 	ldr	sp,.__exception_stack
 	mov	r0,#(CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE|CPSR_FIQ_MODE)
 	msr	cpsr,r0
-	ldr	sp,.__exception_stack
+	ldr	sp,.__FIQ_exception_stack
 	mov	r0,#(CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE|CPSR_UNDEF_MODE)
 	msr	cpsr,r0
 	ldr	sp,.__exception_stack
@@ -297,7 +297,7 @@ undefined_instruction:
 	str	fp,[sp,#armreg_sp]	// SP at time of interrupt
 #ifdef  CYGHWR_HAL_ARM_DUMP_EXCEPTIONS
 	mov	r0,sp
-	bl	undefined_instruction
+	bl	cyg_hal_report_undefined_instruction
 #endif
 	mov	v1,#CYGNUM_HAL_EXCEPTION_ILLEGAL_INSTRUCTION
 	b	call_exception_handler
@@ -329,7 +329,7 @@ software_interrupt:
 	str	r0,[sp,#armreg_sp]	// SP at time of interrupt
 #ifdef  CYGHWR_HAL_ARM_DUMP_EXCEPTIONS
 	mov	r0,sp
-	bl	software_interrupt
+	bl	cyg_hal_report_software_interrupt
 #endif
 	mov	v1,#CYGNUM_HAL_EXCEPTION_INTERRUPT
 	b	call_exception_handler
@@ -372,7 +372,7 @@ abort_prefetch:
 	str	fp,[sp,#armreg_sp]	// SP at time of interrupt
 #ifdef  CYGHWR_HAL_ARM_DUMP_EXCEPTIONS
 	mov	r0,sp
-	bl	abort_prefetch
+	bl	cyg_hal_report_abort_prefetch
 #endif
 	mov	v1,#CYGNUM_HAL_EXCEPTION_CODE_ACCESS
 	b	call_exception_handler
@@ -415,43 +415,12 @@ abort_data:
 	str	fp,[sp,#armreg_sp]	// SP at time of interrupt
 #ifdef  CYGHWR_HAL_ARM_DUMP_EXCEPTIONS
 	mov	r0,sp
-	bl	abort_data
+	bl	cyg_hal_report_abort_data
 #endif
 	mov	v1,#CYGNUM_HAL_EXCEPTION_DATA_ACCESS
 	b	call_exception_handler
 
-	.code	32
-FIQ:
-	ldr	sp,.__startup_stack	// get good stack
-	sub	lr,lr,#4		// PC at time of interrupt
-	stmfd	sp!,{r0,ip,lr}		
-	mrs	r0,spsr
-	stmfd	sp!,{r0}
-	mov	ip,sp			// save SP which will vanish with
-                                        //    mode switch
-	mrs	r0,cpsr			// switch to Supervisor Mode
-	bic	r0,r0,#CPSR_MODE_BITS
-	orr	r0,r0,#CPSR_SUPERVISOR_MODE
-	msr	cpsr,r0			// sp,lr are now old values
-	mov	ip,sp
-	ldr	sp,.__startup_stack	// get good stack
-	sub	sp,sp,#ARMREG_SIZE+16	// make space for frame
-	stmea	sp,{r0-r10,fp}		// save immediately visible registers
-	ldmfd	ip,{r0-r3}		// saved registers
-	str	r0,[sp,#armreg_cpsr]	// CPSR at time of interrupt
-	str	r1,[sp,#armreg_r0]	// saved R0
-	str	r2,[sp,#armreg_ip]	// saved IP
-	str	r3,[sp,#armreg_pc]	// PC at time of interrupt
-	str	lr,[sp,#armreg_lr]	// LR at time of interrupt
-	add	r0,ip,#ARMREG_SIZE
-	str	r0,[sp,#armreg_sp]	// SP at time of interrupt
-#ifdef  CYGHWR_HAL_ARM_DUMP_EXCEPTIONS
-	mov	r0,sp
-	bl	FIQ
-#endif
-	mov	v1,#CYGNUM_HAL_EXCEPTION_FIQ
-	b	call_exception_handler
-
+        
 //
 // Dispatch an exception handler.
 
@@ -462,7 +431,7 @@ call_exception_handler:
 	bl	exception_handler
 #ifdef  CYGHWR_HAL_ARM_DUMP_EXCEPTIONS
 	mov	r0,sp
-	bl	exception_handler_returned
+	bl	cyg_hal_report_exception_handler_returned
 #endif
 
 // Restore [interrupted] context
@@ -490,6 +459,16 @@ call_exception_handler:
 // it needs to interface with the kernel (if present).
 
 	.code	32
+FIQ:
+	// Note: I use this exception stack while saving the context because
+	// the current SP does not seem to be always valid in this CPU mode.
+	ldr	sp,.__FIQ_exception_stack	// get good stack
+	sub	lr,lr,#4		// PC at time of interrupt
+	stmfd	sp!,{r0,fp,ip,lr}		
+	mrs	r0,spsr
+	stmfd	sp!,{r0}
+        b       handle_IRQ_or_FIQ
+
 IRQ:
 	// Note: I use this exception stack while saving the context because
 	// the current SP does not seem to be always valid in this CPU mode.
@@ -498,11 +477,13 @@ IRQ:
 	stmfd	sp!,{r0,fp,ip,lr}		
 	mrs	r0,spsr
 	stmfd	sp!,{r0}
+
+handle_IRQ_or_FIQ:              
 	mov	ip,sp			// save SP which will vanish with
                                         //   mode switch
 	mrs	r0,cpsr			// switch to Supervisor Mode
 	bic	r0,r0,#CPSR_MODE_BITS
-	orr	r0,r0,#CPSR_SUPERVISOR_MODE
+	orr	r0,r0,#CPSR_SUPERVISOR_MODE|CPSR_FIQ_DISABLE|CPSR_IRQ_DISABLE
 	msr	cpsr,r0			// sp,lr are now old values
 	mov	fp,sp			// save old SP
 	sub	sp,sp,#ARMREG_SIZE	// make space for frame
@@ -619,8 +600,8 @@ hal_interrupt_stack_call_pending_DSRs:
         stmfd	sp!,{r4,r5,lr}
 	// Disable interrupts
 	mrs	r4,cpsr			// disable IRQ's
-	orr	r2,r4,#CPSR_IRQ_DISABLE
-	bic	r5,r4,#CPSR_IRQ_DISABLE
+	orr	r2,r4,#CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE
+	bic	r5,r4,#CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE
 	msr	cpsr,r2
 	// Switch to interrupt stack
 	mov	r3,sp			// save old stack pointer
@@ -636,7 +617,7 @@ hal_interrupt_stack_call_pending_DSRs:
 
 	// Disable interrupts
 	mrs	r1,cpsr			// disable IRQ's
-	orr	r2,r1,#CPSR_IRQ_DISABLE
+	orr	r2,r1,#CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE
 	msr	cpsr,r2
 
 	// Move back to the thread stack.
@@ -676,6 +657,7 @@ PTR(__GDB_stack_base)
 PTR(__GDB_stack)
 #endif
 PTR(__startup_stack)
+PTR(__FIQ_exception_stack)
 PTR(__exception_stack)
 PTR(__undef_exception_stack)
 PTR(__bss_start)
@@ -746,6 +728,10 @@ hal_interrupt_objects:
 
 // Small stacks, only used for saving information between CPU modes
 __exception_stack_base: 
+        .rept   32
+        .long   0
+        .endr
+__FIQ_exception_stack:
         .rept   32
         .long   0
         .endr

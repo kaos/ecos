@@ -1,3 +1,13 @@
+1999-07-02  Jesper Skov  <jskov@cygnus.co.uk>
+        PR20157
+	* tests/cache.c: Print stride values, preventing timeout on slow
+	targets.
+
+1999-06-28  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal.h (CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT):
+	Fixed parent.
+
 1999-06-24  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* include/pkgconf/hal.h: Clarify descriptions of

@@ -1,3 +1,10 @@
+1999-06-22  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/vectors.S: Fix names of 'report' functions (debug dumps
+	for various exceptions).  These needed changes for two reasons:
+	name pollution and naming clashes after new ABI adopted.
+	Improve support for FIQ interrupts.
+
 1999-06-15  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/vectors.S (vectors): Some boards have an MMU, but the

@@ -81,9 +81,6 @@
 #define CYGARC_REG_SPRG3   275
 #define CYGARC_REG_PVR     287
 
-#define CYGARC_REG_TBL_W   284
-#define CYGARC_REG_TBU_W   285
-
 #ifdef CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
 #define DSISR      CYGARC_REG_DSISR
 #define DAR        CYGARC_REG_DAR
@@ -95,9 +92,6 @@
 #define SPRG2      CYGARC_REG_SPRG2
 #define SPRG3      CYGARC_REG_SPRG3
 #define PVR        CYGARC_REG_PVR
-
-#define TBL_W      CYGARC_REG_TBL_W
-#define TBU_W      CYGARC_REG_TBU_W
 #endif
 
 //--------------------------------------------------------------------------
@@ -122,9 +116,17 @@
 
 //--------------------------------------------------------------------------
 // Time Base Registers
+// READ and WRITE are different addresses!
+#define CYGARC_REG_TBL_W   284
+#define CYGARC_REG_TBU_W   285
+#define CYGARC_REG_TBL_R   268
+#define CYGARC_REG_TBU_R   269
+
 #ifdef CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
-#define TBL_R           268
-#define TBU_R           269
+#define TBL_W      CYGARC_REG_TBL_W
+#define TBU_W      CYGARC_REG_TBU_W
+#define TBL_R      CYGARC_REG_TBL_R
+#define TBU_R      CYGARC_REG_TBU_R
 #endif // ifdef CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
 
 //--------------------------------------------------------------------------

@@ -322,7 +322,7 @@ show_frame_out(HAL_SavedRegisters *frame)
 
 #ifdef  CYGHWR_HAL_ARM_DUMP_EXCEPTIONS
 // Debug routines
-void undefined_instruction(HAL_SavedRegisters *frame)
+void cyg_hal_report_undefined_instruction(HAL_SavedRegisters *frame)
 {
     int old;
     HAL_DISABLE_INTERRUPTS(old);
@@ -331,7 +331,7 @@ void undefined_instruction(HAL_SavedRegisters *frame)
     HAL_RESTORE_INTERRUPTS(old);
 }
 
-void software_interrupt(HAL_SavedRegisters *frame)
+void cyg_hal_report_software_interrupt(HAL_SavedRegisters *frame)
 {
     int old;
     HAL_DISABLE_INTERRUPTS(old);
@@ -340,7 +340,7 @@ void software_interrupt(HAL_SavedRegisters *frame)
     HAL_RESTORE_INTERRUPTS(old);
 }
 
-void abort_prefetch(HAL_SavedRegisters *frame)
+void cyg_hal_report_abort_prefetch(HAL_SavedRegisters *frame)
 {
     int old;
     HAL_DISABLE_INTERRUPTS(old);
@@ -349,7 +349,7 @@ void abort_prefetch(HAL_SavedRegisters *frame)
     HAL_RESTORE_INTERRUPTS(old);
 }
 
-void abort_data(HAL_SavedRegisters *frame)
+void cyg_hal_report_abort_data(HAL_SavedRegisters *frame)
 {
     int old;
     HAL_DISABLE_INTERRUPTS(old);
@@ -358,16 +358,7 @@ void abort_data(HAL_SavedRegisters *frame)
     HAL_RESTORE_INTERRUPTS(old);
 }
 
-void FIQ(HAL_SavedRegisters *frame)
-{
-    int old;
-    HAL_DISABLE_INTERRUPTS(old);
-    diag_printf("[FIQ] Frame:\n");
-    dump_frame((unsigned char *)frame);
-    HAL_RESTORE_INTERRUPTS(old);
-}
-
-void exception_handler_returned(HAL_SavedRegisters *frame)
+void cyg_hal_report_exception_handler_returned(HAL_SavedRegisters *frame)
 {    
     int old;
     HAL_DISABLE_INTERRUPTS(old);

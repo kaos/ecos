@@ -219,6 +219,24 @@ hal_arbitration_isr_cpm (CYG_ADDRWORD vector, CYG_ADDRWORD data)
     return 0;
 }
 
+externC void
+hal_IRQ_init(void)
+{
+#define ID_CPM 0xDEAD
+    HAL_INTERRUPT_ATTACH (CYGNUM_HAL_INTERRUPT_SIU_LVL7, 
+                          &hal_arbitration_isr_cpm, ID_CPM, 0);
+    HAL_INTERRUPT_UNMASK (CYGNUM_HAL_INTERRUPT_SIU_LVL7);
+    HAL_INTERRUPT_SET_LEVEL (CYGNUM_HAL_INTERRUPT_SIU_CPM, 7);
+    HAL_INTERRUPT_UNMASK (CYGNUM_HAL_INTERRUPT_SIU_CPM);
+}
+#else // ifdef CYG_HAL_POWERPC_MPC860
+
+externC void
+hal_IRQ_init(void)
+{
+    // Nothing special
+}
+
 #endif // ifdef CYG_HAL_POWERPC_MPC860
 
 // -------------------------------------------------------------------------

@@ -37,6 +37,11 @@
 // Options:
 //####DESCRIPTIONEND####
 
+//#define DEBUG_PRINTFS
+#ifdef DEBUG_PRINTFS
+extern diag_printf( char *format, ... );
+#endif
+
 #include <pkgconf/hal.h>
 
 #define CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
@@ -58,6 +63,7 @@
 // Period must be longer than the time required for setting up all the
 // interrupt handlers.
 #define PIT_PERIOD 5000
+
 #define TB_PERIOD (PIT_PERIOD*32)       // assuming 512/16 divisors
 
 #define ID_RTC_SEC   12345
@@ -76,6 +82,10 @@ volatile cyg_uint32 count = 0;
 static cyg_uint32 count_verify_table[] = {1, 4, 5, 41, 42};
 static int pit_count = 0;
 
+// These are useful for debugging:
+static cyg_uint32 count_actual_table[] = { -1, -1, -1, -1, -1};
+static cyg_uint32 tbr_actual_table[] = { -1, -1, -1, -1, -1};
+
 // Periodic timer ISR. Should be executing 5 times.
 static cyg_uint32 isr_pit(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 {
@@ -90,6 +100,13 @@ static cyg_uint32 isr_pit(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 
     count++;
 
+    count_actual_table[pit_count] = count;
+    {
+        cyg_uint32 tbl;
+        CYGARC_MFTB (TBL_R, tbl);
+        tbr_actual_table[pit_count] = tbl;
+    }
+
     verify_value = count_verify_table[pit_count++];
 
     CYG_ASSERT (count == verify_value, "Count wrong!");
@@ -100,6 +117,20 @@ static cyg_uint32 isr_pit(CYG_ADDRWORD vector, CYG_ADDRWORD data)
         HAL_INTERRUPT_MASK (CYGNUM_HAL_INTERRUPT_SIU_TB_A);
         HAL_INTERRUPT_MASK (CYGNUM_HAL_INTERRUPT_SIU_TB_B);
 
+#ifdef DEBUG_PRINTFS
+        diag_printf( "INFO: Actual counts: %d %d %d %d %d\n",
+                     count_actual_table[0],
+                     count_actual_table[1],
+                     count_actual_table[2],
+                     count_actual_table[3],
+                     count_actual_table[4] );
+        diag_printf( "INFO: Actuals tbrs: %d %d %d %d %d\n",
+                     tbr_actual_table[0],
+                     tbr_actual_table[1],
+                     tbr_actual_table[2],
+                     tbr_actual_table[3],
+                     tbr_actual_table[4] );
+#endif
         if (42 == count && 5 == pit_count)
             CYG_TEST_PASS_FINISH("Intr 0 OK");
         else
@@ -174,6 +205,9 @@ void intr0_main( void )
         HAL_WRITE_UINT32 (CYGARC_REG_IMM_PITC, 
                           (2*PIT_PERIOD) << CYGARC_REG_IMM_PITC_COUNT_SHIFT);
 
+#ifdef DEBUG_PRINTFS
+        diag_printf( "PIT set to %d\n", 2*PIT_PERIOD );
+#endif
         // Enable.
         HAL_READ_UINT16 (CYGARC_REG_IMM_PISCR, piscr);
         piscr |= CYGARC_REG_IMM_PISCR_PTE;
@@ -206,6 +240,12 @@ void intr0_main( void )
         tbl += TB_PERIOD*4;
         HAL_WRITE_UINT32 (CYGARC_REG_IMM_TBREF1, tbl);
 
+#ifdef DEBUG_PRINTFS
+        diag_printf( "TB initial %d, !1 %d !2 %d\n",
+                     tbl - 7*TB_PERIOD,
+                     tbl - 4*TB_PERIOD,
+                     tbl - 0*TB_PERIOD );
+#endif
         // Enable.
         HAL_READ_UINT16 (CYGARC_REG_IMM_TBSCR, tbscr);
         tbscr |= (CYGARC_REG_IMM_TBSCR_REFA | CYGARC_REG_IMM_TBSCR_REFB |

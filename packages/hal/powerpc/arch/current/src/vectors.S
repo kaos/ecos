@@ -393,6 +393,10 @@ _start:
         .extern cyg_hal_invoke_constructors
         bl      cyg_hal_invoke_constructors
 
+        # set up platform specific interrupt environment
+        .extern hal_IRQ_init
+        bl      hal_IRQ_init
+
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
         .extern initialize_stub
         bl      initialize_stub

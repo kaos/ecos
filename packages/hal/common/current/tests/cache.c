@@ -41,6 +41,7 @@
 
 #include <cyg/hal/hal_cache.h>
 #include <cyg/hal/hal_intr.h>
+#include <cyg/infra/diag.h>
 
 // -------------------------------------------------------------------------
 // If the HAL does not supply this, we supply our own version
@@ -81,11 +82,10 @@ volatile char m[MAXSIZE];
 static void time0(register cyg_uint32 stride)
 {
     register cyg_uint32 j,k;
-//    cyg_tick_count_t count0, count1;
-//    cyg_ucount32 t;
     register char c;
 
-//    count0 = current_time();
+    diag_printf("stride=%d\n", stride);
+
     k = 0;
     if ( cyg_test_is_simulator )
         k = 3960;
@@ -95,10 +95,6 @@ static void time0(register cyg_uint32 stride)
             c=m[stride*j];
         }
     }
-
-//    count1 = current_time();
-//    t = count1 - count0;
-//    diag_printf("stride=%d, time=%d\n", stride, t);
 }
 
 // -------------------------------------------------------------------------

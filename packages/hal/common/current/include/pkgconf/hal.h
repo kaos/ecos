@@ -327,7 +327,7 @@
 
  cdl_option CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT {
      display    "Include GDB external break support for stubs"
-     parent     CYGDBG_HAL_DEBUG
+     parent     CYGPKG_HAL_DEBUG
      requires   CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
      requires   !CYGPKG_HAL_MIPS_TX39_JMR3904
      requires   !CYGPKG_HAL_POWERPC_FADS

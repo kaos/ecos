@@ -473,6 +473,7 @@ change_config(cyg_io_handle_t handle, cyg_ser_cfg_t* cfg)
 
     res = cyg_io_set_config(handle, CYG_IO_SET_CONFIG_SERIAL_INFO, 
                             &new_cfg, &len);
+    cyg_thread_delay(10);  // Some chips don't like changes to happen to fast...
 
     // Driver didn't like it. It will not have changed anything, so it's
     // safe to return now.
@@ -489,6 +490,7 @@ change_config(cyg_io_handle_t handle, cyg_ser_cfg_t* cfg)
     // with the host.
     res = cyg_io_set_config(handle, CYG_IO_SET_CONFIG_SERIAL_INFO, 
                             &old_cfg, &len);
+    cyg_thread_delay(10);  // Some chips don't like changes to happen to fast...
     if (ENOERR != res) {
         diag_printf("change_config: set_config failed/1 (%d)\n", res);
         hang();
@@ -521,6 +523,7 @@ change_config(cyg_io_handle_t handle, cyg_ser_cfg_t* cfg)
     len = sizeof(new_cfg);
     res = cyg_io_set_config(handle, CYG_IO_SET_CONFIG_SERIAL_INFO, 
                             &new_cfg, &len);
+    cyg_thread_delay(10);  // Some chips don't like changes to happen to fast...
     if (ENOERR != res) {
         diag_printf("change_config: set_config failed/2 (%d)\n", res);
         hang();
@@ -614,6 +617,7 @@ change_config(cyg_io_handle_t handle, cyg_ser_cfg_t* cfg)
         len = sizeof(old_cfg);
         res = cyg_io_set_config(handle, CYG_IO_SET_CONFIG_SERIAL_INFO, 
                                 &old_cfg, &len);
+        cyg_thread_delay(10);  // Some chips don't like changes to happen to fast...
         if (res != ENOERR) {
             diag_printf("change_config: set_config failed/3 (%d)\n", res);
             hang();

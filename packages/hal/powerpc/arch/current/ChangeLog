@@ -1,3 +1,29 @@
+1999-06-29  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/hal_intr.h (CYGNUM_HAL_EXCEPTION_DATA_ACCESS): Define
+	this for handling MACHINE_CHECK if an MPC860 - it never generates
+	ISI nor DSI exceptions, only machine check.  This allows libc to
+	catch SEGVs from this unexpected quarter.
+
+1999-06-28  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/ppc_regs.h: Add proper definitions of timebase regs.
+
+	* tests/intr0.c: Add some useful debugging printouts and recording
+	of state, and make more platform-portable; the rate of PTA is not
+	always 1:32 wrt the timebase.
+
+1999-06-27  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/vectors.S (_start): Call platform dependent IRQ setup (see
+	next note).
+
+	* src/hal_intr.c (hal_IRQ_init): New platform dependent function
+	used to setup whatever is necessary to handle interrupts.
+
+	* include/hal_intr.h: Fix CPM interrupt macros - control register
+	is 32 bits, not 16.
+
 1999-06-24  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* misc/CPUMask8xx.c: Added.
