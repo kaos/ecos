@@ -1374,8 +1374,8 @@ do_dhcp_down_net(const char *intf, struct bootp *res,
 	if (ioctl(s6, SIOCDLIFADDR, &ifr)) { /* delete IF addr */
 	  perror("SIOCDIFADDR_IN61");
 	}
-	close(s6);
       }
+      close(s6);
     }
 #endif /* IP6 */
 

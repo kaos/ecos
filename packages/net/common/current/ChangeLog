@@ -1,3 +1,8 @@
+2004-04-13  Jay Foster <jay.foster@systech.com>
+
+	* src/bootp_support.c (do_bootp): Return false when we should.
+	* src/dhcp_prot.c (do_dhcp_down_net): correctly close the IPv6 socket.
+
 2004-04-11  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/bootp_support.c: 

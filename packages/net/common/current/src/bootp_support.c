@@ -242,6 +242,7 @@ do_bootp(const char *intf, struct bootp *recv)
     ifr.ifr_flags &= ~(IFF_UP | IFF_RUNNING);
     if (ioctl(s, SIOCSIFFLAGS, &ifr)) {
         perror("SIOCSIFFLAGS");
+        retcode = false;
     }
 
  out:
