@@ -1,3 +1,18 @@
+2000-03-01  Jesper Skov  <jskov@redhat.com>
+
+	* include/variant.inc: Forgot conditionals on vector copy code in
+	last checkin.
+
+2000-02-28  Jesper Skov  <jskov@redhat.com>
+
+	* include/variant.inc: Only copy vectors when required.
+
+2000-02-21  Jesper Skov  <jskov@redhat.com>
+
+	* src/variant.S:
+	* include/variant.inc:
+	Use auto-generated symbols.
+	
 2000-02-11  Jesper Skov  <jskov@redhat.com>
 
 	* src/var_intr.c: include cyg_type header.
@@ -5,7 +20,14 @@
 	* src/var_misc.c (hal_clear_MMU): Moved MMU functions here.
 
 	* src/PKGconf.mak (COMPILE):
+	* cdl/hal_powerpc_ppc60x.cdl: Fix description.
 	Added var_intr.c
+
+2000-02-11  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_powerpc_ppc60x.cdl:
+
+	Tidy display strings.
 
 2000-02-10  Jesper Skov  <jskov@redhat.com>
 

@@ -221,7 +221,7 @@ hal_arbitration_isr_cpm (CYG_ADDRWORD vector, CYG_ADDRWORD data)
 externC void
 hal_variant_IRQ_init(void)
 {
-#ifdef CYGHWR_HAL_POWERPC_MPC860_CPM_ENABLE
+#ifdef CYGSEM_HAL_POWERPC_MPC860_CPM_ENABLE
     // Attach first-level CPM arbiter to the configured SIU level and
     // enable CPM interrupts.
 #define ID_CPM 0xDEAD

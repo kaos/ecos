@@ -306,9 +306,12 @@ static void entry0( cyg_addrword_t data )
     // testing infrastructure is prepared to wait. The simplest way to get
     // these tests to run quickly is to make them think they are running
     // under a simulator.
-    
+    // If the target actually is a simulator, skip the below - it's very
+    // slow on the simulator, even with reduced loop counts.
+    if (cyg_test_is_simulator)
+        CYG_TEST_PASS_FINISH("End of test");
+ 
     cyg_test_is_simulator = 1;
-    
 #endif
     
 #ifdef HAL_ICACHE_INVALIDATE_ALL

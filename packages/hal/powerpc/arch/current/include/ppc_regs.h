@@ -101,22 +101,38 @@
 
 //--------------------------------------------------------------------------
 // MSR bits
+#define CYGARC_REG_MSR_LE       0x00000001   // little-endian mode enable
+#define CYGARC_REG_MSR_RI       0x00000002   // recoverable exception
+#define CYGARC_REG_MSR_DR       0x00000010   // data address translation
+#define CYGARC_REG_MSR_IR       0x00000020   // instruction address translation
+#define CYGARC_REG_MSR_IP       0x00000040   // exception prefix
+#define CYGARC_REG_MSR_FE1      0x00000100   // floating-point exception mode 1
+#define CYGARC_REG_MSR_BE       0x00000200   // branch trace enable
+#define CYGARC_REG_MSR_SE       0x00000400   // single-step trace enable
+#define CYGARC_REG_MSR_FE0      0x00000800   // floating-point exception mode 0
+#define CYGARC_REG_MSR_ME       0x00001000   // machine check enable
+#define CYGARC_REG_MSR_FP       0x00002000   // floating-point available
+#define CYGARC_REG_MSR_PR       0x00004000   // privilege level
+#define CYGARC_REG_MSR_EE       0x00008000   // external interrupt enable
+#define CYGARC_REG_MSR_ILE      0x00010000   // exception little-endian mode
+#define CYGARC_REG_MSR_POW      0x00040000   // power management enable
+
 #ifdef CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
-#define MSR_LE          0x00000001      // little-endian mode enable
-#define MSR_RI          0x00000002      // recoverable exception
-#define MSR_DR          0x00000010      // data address translation
-#define MSR_IR          0x00000020      // instruction address translation
-#define MSR_IP          0x00000040      // exception prefix
-#define MSR_FE1         0x00000100      // floating-point exception mode 1
-#define MSR_BE          0x00000200      // branch trace enable
-#define MSR_SE          0x00000400      // single-step trace enable
-#define MSR_FE0         0x00000800      // floating-point exception mode 0
-#define MSR_ME          0x00001000      // machine check enable
-#define MSR_FP          0x00002000      // floating-point available
-#define MSR_PR          0x00004000      // privilege level
-#define MSR_EE          0x00008000      // external interrupt enable
-#define MSR_ILE         0x00010000      // exception little-endian mode
-#define MSR_POW         0x00040000      // power management enable
+#define MSR_LE          CYGARC_REG_MSR_LE 
+#define MSR_RI          CYGARC_REG_MSR_RI 
+#define MSR_DR          CYGARC_REG_MSR_DR 
+#define MSR_IR          CYGARC_REG_MSR_IR 
+#define MSR_IP          CYGARC_REG_MSR_IP 
+#define MSR_FE1         CYGARC_REG_MSR_FE1
+#define MSR_BE          CYGARC_REG_MSR_BE 
+#define MSR_SE          CYGARC_REG_MSR_SE 
+#define MSR_FE0         CYGARC_REG_MSR_FE0
+#define MSR_ME          CYGARC_REG_MSR_ME 
+#define MSR_FP          CYGARC_REG_MSR_FP 
+#define MSR_PR          CYGARC_REG_MSR_PR 
+#define MSR_EE          CYGARC_REG_MSR_EE 
+#define MSR_ILE         CYGARC_REG_MSR_ILE
+#define MSR_POW         CYGARC_REG_MSR_POW
 #endif // ifdef CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
 
 //--------------------------------------------------------------------------

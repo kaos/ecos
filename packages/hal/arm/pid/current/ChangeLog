@@ -1,3 +1,23 @@
+2000-02-29  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+        * include/pkgconf/mlt_arm_pid_ram.h:
+        * include/pkgconf/mlt_arm_pid_ram.ldi:
+        * include/pkgconf/mlt_arm_pid_ram.mlt:
+        * include/pkgconf/mlt_arm_pid_rom.h:
+        * include/pkgconf/mlt_arm_pid_rom.ldi:
+        * include/pkgconf/mlt_arm_pid_rom.mlt:
+	Align all sections on word boundaries
+
+2000-02-18  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/hal_arm_pid.cdl (CYGBLD_BUILD_GDB_STUBS): When
+	building stubs, define every dependency required here rather than
+	in the template
+
+2000-02-15  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_pid.cdl: Remove stubs startup type.
+
 2000-02-10  Jesper Skov  <jskov@redhat.com>
 
 	* include/plf_stub.h:
@@ -7,11 +27,26 @@
 	* include/pkgconf/hal_arm_pid.h: 
 	Removed stubs as a legal startup type.
 
+2000-02-09  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_pid.cdl: Added remaining build dependencies.
+
+2000-02-07  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_pid.cdl: Use cpu option when linking.
+
+2000-02-03  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_pid.cdl: Implements stubs.
+
 2000-02-01  Jesper Skov  <jskov@redhat.com>
 
 	* include/plf_stub.h: Changes due to STUBS startup removal.
 
 2000-01-28  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_pid.cdl: Moved files from misc to src dir. Use
+	common stub code. Got rid of stubs startup type.
 
 	* include/pkgconf/mlt_arm_pid9_ram.h:
 	* include/pkgconf/mlt_arm_pid9_ram.ldi:
@@ -31,6 +66,18 @@
 	* include/pkgconf/mlt_arm_pidBE_stubs.h:
 	* include/pkgconf/mlt_arm_pidBE_stubs.ldi:
 	* include/pkgconf/mlt_arm_pidBE_stubs.mlt:
+	* include/pkgconf/mlt_arm_pidTBE_ram.h:
+	* include/pkgconf/mlt_arm_pidTBE_ram.ldi:
+	* include/pkgconf/mlt_arm_pidTBE_ram.mlt:
+	* include/pkgconf/mlt_arm_pidTBE_rom.h:
+	* include/pkgconf/mlt_arm_pidTBE_rom.ldi:
+	* include/pkgconf/mlt_arm_pidTBE_rom.mlt:
+	* include/pkgconf/mlt_arm_pidT_ram.h:
+	* include/pkgconf/mlt_arm_pidT_ram.ldi:
+	* include/pkgconf/mlt_arm_pidT_ram.mlt:
+	* include/pkgconf/mlt_arm_pidT_rom.h:
+	* include/pkgconf/mlt_arm_pidT_rom.ldi:
+	* include/pkgconf/mlt_arm_pidT_rom.mlt:
 	* include/pkgconf/mlt_arm_pid_ram.h:
 	* include/pkgconf/mlt_arm_pid_ram.ldi:
 	* include/pkgconf/mlt_arm_pid_ram.mlt:
@@ -42,9 +89,95 @@
 	* include/pkgconf/mlt_arm_pid_stubs.mlt:
 	Increase memory reserved for stub to 32kB.
 	
+2000-01-28  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_pid.cdl: Corrected build runes. Changed description.
+
+2000-01-27  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_pid.cdl (CYGBLD_CYGMON_TARGET_REQUIREMENTS):
+	Improved serial expression.
+	Moved options into a CygMon HAL component.
+	
+2000-01-26  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/hal_arm_pid.cdl (CYGBLD_CYGMON_TARGET_REQUIREMENTS): Only 
+	activate when CYGPKG_CYGMON enabled
+
+2000-01-26  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal_arm_pid.cdl: Added rule for flash tool BE.
+	Fix display string.
+	Added CygMon options.
+	
+2000-01-24  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal_arm_pid.cdl: Add stubs build rule.
+
+2000-01-24  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/*.cdl:
+
+	Remove obsolete option CYGTST_TESTING_IDENTIFIER.
+
+2000-01-19  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/*.cdl: Add descriptions to a number of options &c which were
+	lacking same, also tidied up other typos as noticed en passant.
+
+1999-12-22  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_pid.cdl:
+
+	Add the -mbig-endian and -mthumb-interwork ARCHFLAGS to
+	the LDFLAGS as appropriate.
+
+1999-12-20  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* cdl/hal_arm_pid.cdl: Add -Wl for linker options
+
+1999-12-16  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* cdl/hal_arm_pid.cdl: Add support for pidT and pidTBE targets
+
 1999-12-15  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* misc/STUBS_config: updated patch due to hal.h changes
+
+1999-12-14  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_pid.cdl:
+
+	Relocate the GDB stubs elf image file.
+
+1999-12-13  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_pid.cdl:
+
+	Install both the elf and raw binary versions of the
+	GDB stubs image.
+
+1999-12-10  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_pid.cdl:
+
+	Add custom rules to build GDB stubs and the flash
+	programming tool.
+
+1999-12-09  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_pid.cdl:
+
+	Modify testing parameters according to
+	CYGHWR_HAL_ARM_BIGENDIAN.
+
+1999-12-07  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* cdl/hal_arm_pid.cdl: Add descriptive strings used by CygMon.
+
+1999-12-07  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal_arm_pid.cdl: Adjust CFLAGS according to CPU family.
 
 1999-12-06  Gary Thomas  <gthomas@cygnus.co.uk>
 
@@ -57,8 +190,14 @@
 
 1999-11-25  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
+	* include/pkgconf/mlt_arm_pidTBE_stubs.h,
+	include/pkfconf/mlt_arm_pidT_stubs.h:
+	Delete - we don't have stubs startup for thumb mode
+
 	* include/pkgconf/hal_arm_pid.h:
 	Allow selection of big-endian mode
+	Allow selection of thumb mode
+	Allow selection of thumb big-endian mode
 
 	* src/hal_diag.c: Conditionalize def of diag_buffer for only when it's
 	explicitly wanted and someone hacks the code
@@ -66,11 +205,17 @@
 
 1999-11-25  Gary Thomas  <gthomas@cygnus.co.uk>
 
+	* include/pkgconf/mlt_arm_pidT_rom.h: 
+	* include/pkgconf/mlt_arm_pidT_ram.h: 
+	* include/pkgconf/mlt_arm_pidTBE_rom.h: 
+	* include/pkgconf/mlt_arm_pidTBE_ram.h: 
 	* include/pkgconf/mlt_arm_pid_ram.h: 
 	* include/pkgconf/mlt_arm_pid_rom.h: 
 	* include/pkgconf/mlt_arm_pidBE_rom.h: 
 	* include/pkgconf/mlt_arm_pidBE_ram.h: Update 'do not edit' strings.
 
+	* include/pkgconf/mlt_arm_pidTBE_stubs.h: 
+	* include/pkgconf/mlt_arm_pidT_stubs.h: 
 	* include/pkgconf/mlt_arm_pid_stubs.h: 
 	* include/pkgconf/mlt_arm_pidBE_stubs.h: 
 	* include/pkgconf/mlt_arm_pid9_stubs.h: 
@@ -81,6 +226,10 @@
 
 	* include/pkgconf/mlt_arm_pidBE_ram.h: 
 	* include/pkgconf/mlt_arm_pidBE_rom.h: 
+	* include/pkgconf/mlt_arm_pidTBE_ram.h: 
+	* include/pkgconf/mlt_arm_pidTBE_rom.h: 
+	* include/pkgconf/mlt_arm_pidT_ram.h: 
+	* include/pkgconf/mlt_arm_pidT_rom.h: 
 	* include/pkgconf/mlt_arm_pid_ram.h: 
 	* include/pkgconf/mlt_arm_pid_rom.h: New file(s).
 
@@ -88,12 +237,24 @@
 	* include/pkgconf/mlt_arm_pidBE_ram.mlt: 
 	* include/pkgconf/mlt_arm_pidBE_rom.ldi: 
 	* include/pkgconf/mlt_arm_pidBE_rom.mlt: 
+	* include/pkgconf/mlt_arm_pidTBE_ram.ldi: 
+	* include/pkgconf/mlt_arm_pidTBE_ram.mlt: 
+	* include/pkgconf/mlt_arm_pidTBE_rom.ldi: 
+	* include/pkgconf/mlt_arm_pidTBE_rom.mlt: 
+	* include/pkgconf/mlt_arm_pidT_ram.ldi: 
+	* include/pkgconf/mlt_arm_pidT_ram.mlt: 
+	* include/pkgconf/mlt_arm_pidT_rom.ldi: 
+	* include/pkgconf/mlt_arm_pidT_rom.mlt: 
 	* include/pkgconf/mlt_arm_pid_ram.ldi: 
 	* include/pkgconf/mlt_arm_pid_ram.mlt: 
 	* include/pkgconf/mlt_arm_pid_rom.ldi: 
 	* include/pkgconf/mlt_arm_pid_rom.mlt: Update with correct memory layout.
 
 	* src/hal_diag.c: Honor GDB_DISABLE option.
+
+1999-11-01  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal_arm_pid.cdl: Remove define_proc comments.
 
 1999-10-29  Jesper Skov  <jskov@cygnus.co.uk>
 
@@ -128,12 +289,24 @@
 
 1999-10-26  Jesper Skov  <jskov@cygnus.co.uk>
 	* include/hal_platform_setup.h (CYGHWR_LED_MACRO): define.
+	* cdl/hal_arm_pid.cdl:
 	* include/pkgconf/hal_arm_pid.h: 
 	* src/hal_diag.c: 
 	* include/hal_diag.h: 
 	Added CDL for CYGHWR_HAL_ARM_PID_DIAG_LEDS.
 	
+1999-10-26  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_pid.cdl:
+
+	Rename CYGBLD_GLOBAL_PREFIX to
+	CYGBLD_GLOBAL_COMMAND_PREFIX
+
 1999-10-26  Jesper Skov  <jskov@cygnus.co.uk>
+	* include/pkgconf/mlt_arm_pidTBE_ram.ldi: 
+	* include/pkgconf/mlt_arm_pidTBE_ram.mlt: 
+	* include/pkgconf/mlt_arm_pidTBE_rom.ldi: 
+	* include/pkgconf/mlt_arm_pidTBE_rom.mlt: 
 	* include/pkgconf/mlt_arm_pidBE_ram.ldi: 
 	* include/pkgconf/mlt_arm_pidBE_ram.mlt: 
 	* include/pkgconf/mlt_arm_pidBE_rom.ldi: 
@@ -156,20 +329,79 @@
 	* misc/PKGconf.mak: 
 	Add support for programming BE images on LE system.
 	
+1999-10-20  Simon FitzMaurice <sdf@cygnus.co.uk>
+	* cdl/hal_arm_aeb.cdl:
+
+	Remove -Wl options from compiler flags
+
+1999-10-19  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_pid.cdl:
+
+	Define cdl_options for the memory layout linker script
+	fragment and the memory layout header file.
+
 1999-10-19  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* include/pkgconf/hal_arm_pid.h: Added ARM9 options.
+
+1999-10-18  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_pid.cdl:
+
+	Define CYGTST_TESTING_IDENTIFIER as a functions of
+	CYGHWR_THUMB.
+
+1999-10-18  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_pid.cdl:
+
+	Define CYGBLD_GLOBAL_PREFIX and CYGBLD_GLOBAL_CFLAGS as
+        functions of CYGHWR_THUMB.
+
+1999-10-18  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_pid.cdl:
+	Update CYGBLD_GLOBAL_CFLAGS. Define CYG_HAL_ARM_PID.
+	Reparent global build flags.
+
+1999-10-15  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_pid.cdl:
+	Define CYGBLD_GLOBAL_CFLAGS and CYGBLD_GLOBAL_LDFLAGS.
 
 1999-10-15  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/hal_diag.c: Force diag channel to be "raw" if it is
 	not the same as the GDB port (RAM based applications only).
 
+1999-10-06  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_pid.cdl:
+	Define CYGTST_TESTING_IDENTIFIER.
+
+1999-09-16  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal_arm_pid.h: 
+	Removed arm/thumb options [defined by platform template].
+
+	Added ldi/mdi files for pidT.
+
+1999-09-09  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal_arm_pid.h: 
+	Added thumb option.
+
 1999-08-16  John Dallaway  <jld@cygnus.co.uk>
 
 	* include/pkgconf/hal_arm_pid.h:
 
 	Proper case various display strings.
+
+1999-08-12  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_pid.cdl:
+	Define CYG_HAL_STARTUP and CYGHWR_MEMORY_LAYOUT.
 
 1999-05-24  Gary Thomas  <gthomas@cygnus.co.uk>
 

@@ -45,7 +45,7 @@
 #include <pkgconf/hal.h>
         
 #include <cyg/hal/ppc_regs.h>
-#include <cyg/hal/ppc.inc>
+#include <cyg/hal/arch.inc>
 
 #------------------------------------------------------------------------------
                 

@@ -44,6 +44,10 @@
 //
 //========================================================================
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #define NUMREGS    (16+8+2)  // 16 GPR, 8 FPR (unused), 2 PS
 
@@ -102,5 +106,9 @@ extern void __skipinst (void);
 extern void __install_breakpoints (void);
 
 extern void __clear_breakpoints (void);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif // ifndef CYGONCE_HAL_ARM_STUB_H

@@ -69,12 +69,14 @@
 #endif
 
 // -------------------------------------------------------------------------
-// this is executed to deal with failure - breakpoint it first!
+// This is executed to deal with failure - breakpoint it first!
+// It is declared as a weak symbol to allow user code to override the
+// definition.
 
 externC void
 cyg_assert_fail( const char* /* psz_func */, const char* /* psz_file */,
                  cyg_uint32 /* linenum */, const char* /* psz_msg */ )
-    CYGBLD_ATTRIB_NORET;
+    CYGBLD_ATTRIB_NORET CYGBLD_ATTRIB_WEAK;
 
 // -------------------------------------------------------------------------
 

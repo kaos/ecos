@@ -1,7 +1,83 @@
+2000-03-20  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/libm.cdl:
+
+	Adjust documentation URLs.
+
+2000-03-16  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/libm.cdl (CYGPKG_LIBM_CFLAGS_ADD): Add -ffloat-store for i386
+	targets. The math library implementation relies on accurate IEEE FP.
+
+2000-01-31 Simon FitzMaurice  <sdf@cygnus.co.uk>
+  * cdl/*.cdl:
+
+  Adjust help URLs in line with new doc layout.
+  
+2000-01-28 Simon FitzMaurice  <sdf@cygnus.co.uk>
+  * cdl/*.cdl:
+
+  Adjust help URLs in line with new doc layout.
+  
+2000-01-28  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/libm.cdl: Don't need to compile with -O1 any more
+
+2000-01-19  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/*.cdl: Add descriptions to a number of options &c which were
+	lacking same, also tidied up other typos as noticed en passant.
+
 1999-11-23  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* include/pkgconf/libm.h: Cooperate with permtest combo10 setting
 	an intermediate variable CYGNUM_LIBM_COMPAT_DEFAULT directly.
+
+1999-11-03  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/libm.cdl: Define tests.
+
+1999-10-18  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/libm.cdl:
+	Parent CYGPKG_LIBM_CFLAGS_ADD and CYGPKG_LIBM_CFLAGS_REMOVE
+        under a CDL component.
+
+1999-10-15  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/libm.cdl:
+	Define CYGPKG_LIBM_CFLAGS_ADD and CYGPKG_LIBM_CFLAGS_REMOVE.
+
+1999-10-07  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/compat.cdl: Specify radio buttons using CDL interfaces.
+
+1999-08-24  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/PKGconf.mak: Optimize by default everywhere, except when compiling
+	e_pow.c, in which case use -fno-schedule-insns
+
+1999-08-17  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/compat.cdl:
+
+	Implement radio buttons using "FIXME radio" hack in
+	description field for now.
+
+1999-08-14  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/compat.cdl:
+	Change CYGNUM_LIBM_COMPATIBILITY flavor to 'booldata'.
+
+1999-08-12  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/libm.cdl, cdl/compat.cdl:
+	Take advantage of MACRONAME_ENUMVAL macros output by CDL.
+
+1999-06-17  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/PKGconf.mak: Disable optimization completely until CR 100802 is
+	fixed
 
 1999-06-07  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
@@ -30,6 +106,10 @@
 
 	* src/PKGconf.mak (SPECIAL_FLAGS): Add workaround flags for new
 	toolchains for all targets
+
+1999-05-24  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/PKGconf.mak: Same workaround for sh.
 
 1999-05-19  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 

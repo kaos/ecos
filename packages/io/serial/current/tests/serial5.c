@@ -75,6 +75,7 @@ serial_test( void )
 
 #if defined(CYGPKG_HAL_MN10300)         \
     || defined(CYGPKG_HAL_ARM_AEB)      \
+    || defined(__thumb__)               \
     || 0
     {
         // Some boards are too slow to run the driver in interrupt mode

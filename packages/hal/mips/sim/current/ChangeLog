@@ -1,7 +1,59 @@
+2000-03-21  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* sim/current/include/pkgconf/mlt_mips_tx39_sim_ram.h,
+	sim/current/include/pkgconf/mlt_mips_tx39_sim_ram.ldi,
+	sim/current/include/pkgconf/mlt_mips_tx39_sim_ram.mlt:
+	Revert previous change
+
+2000-03-16  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* sim/current/include/pkgconf/mlt_mips_tx39_sim_ram.h,
+	sim/current/include/pkgconf/mlt_mips_tx39_sim_ram.ldi,
+	sim/current/include/pkgconf/mlt_mips_tx39_sim_ram.mlt:
+	Update new sections according to new mips_tx39.ld from variant HAL
+	
+2000-02-16  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_mips_sim.cdl: removed some fix mes.
+	Use correct memory files for target.
+	
+2000-02-07  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_mips_sim.cdl: use cpu options when linking.
+
+2000-01-24  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/*.cdl:
+
+	Remove obsolete option CYGTST_TESTING_IDENTIFIER.
+
+2000-01-19  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/*.cdl: Add descriptions to a number of options &c which were
+	lacking same, also tidied up other typos as noticed en passant.
+
+1999-12-20  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* cdl/hal_mips_sim.cdl: Add -Wl to linker options.
+
+1999-11-29  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/mlt_mips_vr4300_sim_ram.h:
+
+	New memory layout header file.
+
 1999-11-25  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* include/pkgconf/mlt_mips_tx39_sim_ram.h:
 	Add
+
+1999-11-03  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal_mips_sim.cdl: Fixed various problems.
+
+1999-11-02  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal_mips_sim.cdl: Added.
 
 1999-08-19  Nick Garnett  <nickg@cygnus.co.uk>
 
@@ -39,6 +91,8 @@
 1999-05-14  John Dallaway  <jld@cygnus.co.uk>
 
 	* include/pkgconf/hal_mips_tx39_sim.h: New file to include
+	the common MIPS simulator configuration header file.
+	* include/pkgconf/hal_mips_vr4300_sim.h: New file to include
 	the common MIPS simulator configuration header file.
 
 1999-04-08  John Dallaway  <jld@cygnus.co.uk>

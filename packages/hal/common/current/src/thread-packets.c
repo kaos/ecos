@@ -672,7 +672,7 @@ void stub_pkt_getthreadlist(char * inbuf,
   while ((outbuf < limit) && (count < batchsize))
     {
       result = dbg_threadlist(start_flag,&lastthread,&nextthread) ;
-      start_flag = 0 ; /* redundent but effective */
+      start_flag = 0 ; /* redundant but effective */
       if (!result)
         { *done_ptr = '1' ;   /* pack the done flag */
           break ;

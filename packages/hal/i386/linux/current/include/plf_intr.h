@@ -53,15 +53,8 @@
 #include <pkgconf/hal.h>
 #include <pkgconf/hal_i386.h>
 #include <cyg/infra/cyg_type.h>
-//#include <cyg/hal/plf_intr.h>
 
 #include <pkgconf/hal_i386_linux.h>
-#ifdef CYGPKG_KERNEL
-#include <pkgconf/kernel.h>
-#include <cyg/kernel/ktypes.h>
-#include <cyg/kernel/kapi.h>
-#endif /* CYGPKG_KERNEL */
-
 
 //--------------------------------------------------------------------------
 // Interrupt vectors.

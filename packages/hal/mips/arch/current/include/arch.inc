@@ -58,7 +58,7 @@
 #ifndef INITIAL_SR
 
 #if defined(CYG_HAL_STARTUP_RAM)
-# if defined(CYG_HAL_MIPS_SIM) || !defined(CYGSEM_HAL_USE_ROM_MONITOR)
+# if defined(CYGPKG_HAL_MIPS_SIM) || !defined(CYGSEM_HAL_USE_ROM_MONITOR)
 #  define INITIAL_SR	0x1000ff00	/* CP0 usable, Ints enabled	*/
 # else
 #  define INITIAL_SR	0x1040ff00	/* as above + ROM vectors used	*/
@@ -406,6 +406,16 @@ hal_intc_translation_table:
 	.endm
 
 #endif
+
+# PC is always 32-bit for us
+
+	.macro lpc reg,ptr
+	lw	\reg,(mipsreg_pc)(\ptr)
+	.endm
+
+	.macro spc reg,ptr
+	sw	\reg,(mipsreg_pc)(\ptr)
+	.endm
 
 #------------------------------------------------------------------------------
 # FPU macros.

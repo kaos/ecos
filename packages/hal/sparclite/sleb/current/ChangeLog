@@ -1,8 +1,46 @@
+2000-02-16  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_sparclite_sleb.cdl: removed fix me
+
+2000-02-07  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_sparclite_sleb.cdl: use cpu options when linking.
+
+2000-02-04  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/hal_sparclite_sleb.cdl (define_proc): Add output of a
+	#define for CYGHWR_HAL_SPARCLITE_HAS_ASR17 - because a Fujitsu
+	SPARClite does.
+
+2000-01-24  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/*.cdl:
+
+	Remove obsolete option CYGTST_TESTING_IDENTIFIER.
+
+2000-01-19  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/*.cdl: Add descriptions to a number of options &c which were
+	lacking same, also tidied up other typos as noticed en passant.
+
+1999-12-20  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* cdl/hal_sparclite_sleb.cdl: Add -Wl for linker options.
+
 1999-11-25  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/pkgconf/mlt_sparclite_sleb_rom.h: 
 	* include/pkgconf/mlt_sparclite_sleb_ram.h: New file(s).
 
+1999-11-03  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_sparclite_sleb.cdl: Define build options.
+
+1999-11-01  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal_sparclite_sleb.cdl: Added.
+	 Use define_proc for const header defs.
+	
 1999-10-14  John Dallaway  <jld@cygnus.co.uk>
 
 	* include/pkgconf/mlt_sparclite_sleb_ram.mlt,

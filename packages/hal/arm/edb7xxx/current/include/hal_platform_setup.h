@@ -166,6 +166,17 @@
         bne     15b                             ;\
 20:
 
+#ifdef CYGPKG_HAL_ARM_EDB7209
+// No DRAM controller
+#define INIT_MEMORY_CONFIG                       \
+/* Initialize memory configuration */           ;\
+	ldr	r1,=MEMCFG1                     ;\
+	ldr	r2,=0x8200A080                  ;\
+	str	r2,[r1]                         ;\
+	ldr	r1,=MEMCFG2                     ;\
+	ldr	r2,=0xFEFC0000                  ;\
+	str	r2,[r1]
+#else
 #define INIT_MEMORY_CONFIG                                       \
 /* Initialize memory configuration */                           ;\
 	ldr	r1,=MEMCFG1                                     ;\
@@ -177,6 +188,7 @@
 	ldr	r1,=DRFPR                                       ;\
 	ldr	r2,=0x81	/* DRAM refresh = 64KHz */      ;\
 	strb	r2,[r1]
+#endif
 
 #if defined(CYGSEM_HAL_STATIC_MMU_TABLES)
 #define PLATFORM_SETUP1                          \

@@ -98,7 +98,6 @@
 #define CYGNUM_HAL_INTERRUPT_DECREMENTER     0
 #define CYGNUM_HAL_INTERRUPT_EXTERNAL        1
 
-// CYGNUM_HAL_ISR_COUNT must match CYG_ISR_TABLE_SIZE defined in vectors.S.
 #define CYGNUM_HAL_ISR_MIN                   CYGNUM_HAL_INTERRUPT_DECREMENTER
 #ifndef CYGNUM_HAL_ISR_MAX
 # define CYGNUM_HAL_ISR_MAX                  CYGNUM_HAL_INTERRUPT_EXTERNAL
@@ -172,57 +171,50 @@ typedef cyg_uint32 CYG_INTERRUPT_STATE;
 //--------------------------------------------------------------------------
 // Interrupt control macros
 
-#define HAL_DISABLE_INTERRUPTS(_old_)   \
-    asm volatile (                      \
-        "mfmsr  %0;"                    \
-        "lis    4,0;"                   \
-        "ori    4,4,0x8000 ;"           \
-        "not    5,4;"                   \
-        "and    5,%0,5;"                \
-        "mtmsr  5;"                     \
-        "and    %0,%0,4"                \
-        : "=r"(_old_)                   \
-        :                               \
-        : "r4", "r5"                    \
-        );
+#define HAL_DISABLE_INTERRUPTS(_old_)                   \
+    CYG_MACRO_START                                     \
+    cyg_uint32 tmp1, tmp2;                              \
+    asm volatile (                                      \
+        "mfmsr  %0;"                                    \
+        "mr     %2,%0;"                                 \
+        "li     %1,0;"                                  \
+        "rlwimi %2,%1,0,16,16;"                         \
+        "mtmsr  %2;"                                    \
+        : "=r"(_old_), "=r" (tmp1), "=r" (tmp2));       \
+    CYG_MACRO_END
 
 #define HAL_ENABLE_INTERRUPTS()         \
-    asm volatile (                      \
-        "mfmsr  3;"                     \
-        "lis    4,0;"                   \
-        "ori    4,4,0x8000 ;"           \
-        "or     3,3,4;"                 \
-        "mtmsr  3;"                     \
-        :                               \
-        :                               \
-        : "r3", "r4"                    \
-        );
-
-#define HAL_RESTORE_INTERRUPTS(_old_)   \
-    asm volatile (                      \
-        "mfmsr  3;"                     \
-        "lis    4,0;"                   \
-        "ori    4,4,0x8000 ;"           \
-        "and    4,%0,4;"                \
-        "or     4,3,4;"                 \
-        "mtmsr  4;"                     \
-        :                               \
-        : "r"(_old_)                    \
-        : "r3", "r4"                    \
-        );
-
-// FIXME: using andi with side-effect on cc would be better but causes
-// compiler problem.
-#define HAL_QUERY_INTERRUPTS(_old_)     \
+    CYG_MACRO_START                     \
+    cyg_uint32 tmp1, tmp2;              \
     asm volatile (                      \
         "mfmsr  %0;"                    \
-        "lis    4,0;"                   \
-        "ori    4,4,0x8000;"            \
-        "and    %0,%0,4;"               \
-        : "=r"(_old_)                   \
-        :                               \
-        : "r4"                          \
-        );
+        "ori    %1,%1,0x8000;"          \
+        "rlwimi %0,%1,0,16,16;"         \
+        "mtmsr  %0;"                    \
+        : "=r" (tmp1), "=r" (tmp2));    \
+    CYG_MACRO_END
+
+#define HAL_RESTORE_INTERRUPTS(_old_)   \
+    CYG_MACRO_START                     \
+    cyg_uint32 tmp;                     \
+    asm volatile (                      \
+        "mfmsr  %0;"                    \
+        "rlwimi %0,%1,0,16,16;"         \
+        "mtmsr  %0;"                    \
+        : "=&r" (tmp)                   \
+        : "r" (_old_));                 \
+    CYG_MACRO_END
+
+#define HAL_QUERY_INTERRUPTS(_old_)     \
+    CYG_MACRO_START                     \
+    cyg_uint32 tmp;                     \
+    asm volatile (                      \
+        "mfmsr  %0;"                    \
+        "lis    %1,0;"                  \
+        "ori    %1,%1,0x8000;"          \
+        "and    %0,%0,%1;"              \
+        : "=&r"(_old_), "=r" (tmp));     \
+    CYG_MACRO_END
 
 //--------------------------------------------------------------------------
 // Vector translation.
@@ -345,18 +337,28 @@ externC void cyg_hal_default_exception_vsr( void );
 // Clock control
 
 #define HAL_CLOCK_INITIALIZE( _period_ )        \
+    CYG_MACRO_START                             \
     asm volatile (                              \
         "mtdec %0;"                             \
         :                                       \
         : "r"(_period_)                         \
-        );
+        );                                      \
+    CYG_MACRO_END
 
 #define HAL_CLOCK_RESET( _vector_, _period_ )   \
+    CYG_MACRO_START                             \
+    cyg_uint32 tmp;                             \
     asm volatile (                              \
-        "mtdec %0;"                             \
-        :                                       \
+        "mfdec  %0;"                            \
+        "add.   %0,%0,%1;"                      \
+        "bgt    1f;"                            \
+        "mr     %0,%1;"                         \
+        "1: mtdec %0;"                          \
+        : "&=r" (tmp)                           \
         : "r"(_period_)                         \
-        );
+        : "cc"                                  \
+        );                                      \
+    CYG_MACRO_END
 
 #define HAL_CLOCK_READ( _pvalue_ )                              \
     CYG_MACRO_START                                             \

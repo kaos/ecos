@@ -128,6 +128,8 @@ void hal_clock_reset(cyg_uint32 vector, cyg_uint32 period)
         *tc2d = period;
         _period = period;
     }
+#ifndef CYGPKG_HAL_ARM_EDB7209
+// EP7209 has no DRAM/controller, thus no problem
     enable_FIQ();  // Should be safe here
 #ifdef CYGHWR_HAL_ARM_EDB7XXX_SOFTWARE_DRAM_REFRESH
     do_DRAM_refresh();
@@ -138,6 +140,7 @@ void hal_clock_reset(cyg_uint32 vector, cyg_uint32 period)
         for (i = 0;  i < (CYGHWR_HAL_ARM_EDB7XXX_PROCESSOR_CLOCK*2)/24;  i++) ;  // approx 300 us
     }
 #endif 
+#endif
 }
 
 // Read the current value of the clock, returning the number of hardware "ticks"
@@ -180,6 +183,9 @@ static cyg_uint32 hal_interrupt_bitmap[] = {
 #if defined(__EDB7211)
     INTSR3_MCPINT   // CYGNUM_HAL_INTERRUPT_MCPINT     22
 #endif
+#if defined(__EDB7209)
+    INTSR3_I2SINT   // CYGNUM_HAL_INTERRUPT_I2SINT     22
+#endif
 };
 
 static cyg_uint32 hal_interrupt_mask_regmap[] = {
@@ -207,6 +213,9 @@ static cyg_uint32 hal_interrupt_mask_regmap[] = {
     INTMR2, // CYGNUM_HAL_INTERRUPT_URXINT2    21
 #if defined(__EDB7211)
     INTMR3, // CYGNUM_HAL_INTERRUPT_MCPINT     22
+#endif
+#if defined(__EDB7209)
+    INTMR3, // CYGNUM_HAL_INTERRUPT_I2SINT     22
 #endif
 };
 
@@ -236,6 +245,9 @@ static cyg_uint32 hal_interrupt_clear_map[] = {
 #if defined(__EDB7211)
     0,      // CYGNUM_HAL_INTERRUPT_MCPINT     22
 #endif
+#if defined(__EDB7209)
+    0,      // CYGNUM_HAL_INTERRUPT_I2SINT     22
+#endif
 };
 
 static struct regmap {
@@ -246,6 +258,9 @@ static struct regmap {
     { CYGNUM_HAL_INTERRUPT_KBDINT, CYGNUM_HAL_INTERRUPT_URXINT2, INTSR2, INTMR2},
 #if defined(__EDB7211)
     { CYGNUM_HAL_INTERRUPT_MCPINT, CYGNUM_HAL_INTERRUPT_MCPINT,  INTSR3, INTMR3},
+#endif
+#if defined(__EDB7209)
+    { CYGNUM_HAL_INTERRUPT_I2SINT, CYGNUM_HAL_INTERRUPT_I2SINT,  INTSR3, INTMR3},
 #endif
     { 0, 0, 0}
 };
@@ -290,6 +305,64 @@ void hal_hardware_init(void)
                 *(volatile cyg_uint32 *)MEMCFG1,
                 *(volatile cyg_uint32 *)MEMCFG2,
                 *(volatile cyg_uint8 *)DRFPR);
+#endif
+#define MEMCFG_BUS_WIDTH(n)   (n<<0)
+#define MEMCFG_BUS_WIDTH_32   (0<<0)
+#define MEMCFG_BUS_WIDTH_16   (1<<0)
+#define MEMCFG_BUS_WIDTH_8    (2<<0)
+#define MEMCFG_WAIT_STATES(n) (n<<2)     // 0 is max, 15 min
+#define MEMCFG_SQAEN          (1<<6)
+#define MEMCFG_CLKENB         (1<<7)
+
+// These need to be checked/improved
+#define CS0_CONFIG MEMCFG_BUS_WIDTH_32 | MEMCFG_WAIT_STATES(3) | MEMCFG_SQAEN
+#define CS1_CONFIG MEMCFG_BUS_WIDTH_32 | MEMCFG_WAIT_STATES(4)
+#define CS2_CONFIG MEMCFG_BUS_WIDTH_32 | MEMCFG_WAIT_STATES(0)
+#define CS3_CONFIG MEMCFG_BUS_WIDTH_32 | MEMCFG_WAIT_STATES(0)
+#define CS4_CONFIG MEMCFG_BUS_WIDTH_32 | MEMCFG_WAIT_STATES(0)
+#define CS5_CONFIG MEMCFG_BUS_WIDTH_32 | MEMCFG_WAIT_STATES(0)
+#define CS6_CONFIG MEMCFG_BUS_WIDTH_32 | MEMCFG_WAIT_STATES(0)
+#define CS7_CONFIG MEMCFG_BUS_WIDTH_32 | MEMCFG_WAIT_STATES(0)
+
+#if defined(__EDB7209)
+    *(volatile cyg_uint32 *)MEMCFG1 = 
+        (CS0_CONFIG << 0) |       // FLASH rom
+        (CS1_CONFIG << 8) |       // NAND flash
+        (CS2_CONFIG << 16) |      // Ethernet
+        (CS3_CONFIG << 24);       // Parallel printer, keyboard, touch panel
+    *(volatile cyg_uint32 *)MEMCFG2 = 
+        (CS4_CONFIG << 0) |       // USB
+        (CS5_CONFIG << 8) |       // Expansion
+        (CS6_CONFIG << 16) |      // Local SRAM
+        (CS7_CONFIG << 24);       // Boot ROM
+    // This value came from Cirrus, but doesn't match the recommendations above?
+    *(volatile cyg_uint32 *)MEMCFG1 = 0x3C001814;
+    // Set up GPIO lines
+    *(volatile cyg_uint8 *)PADDR   = 0x00;  // Keyboard data 0-7 input
+    *(volatile cyg_uint8 *)PBDDR   = 0xFA;  // 0 - I/O on J22
+                                            // 1 - RTS on UART1
+                                            // 2 - Ring on UART1
+                                            // 3 - SSI header, Pin 13
+                                            // 4 - NAND Command Latch Enable
+                                            // 5 - NAND Address Latch Enable
+                                            // 6 - On-board NAND Select (active low)
+                                            // 7 - SmartMedia Card Enable (active low)
+    *(volatile cyg_uint8 *)PBDR    = 0xC0;  // Everything off
+    *(volatile cyg_uint8 *)PDDDR   = 0x40;  // 0 - Diagnostic LED control
+                                            // 1 - Enable DC-DC converter for LCD
+                                            // 2 - Enable LCD
+                                            // 3 - ENable LCD Backlight
+                                            // 4 - CS4342 I2C Data
+                                            // 5 - CS4342 I2C Clock
+                                            // 6 - SmartMedia Presence indicator
+                                            // 7 - I/O on J22
+    *(volatile cyg_uint8 *)PDDR    = 0x00;  // Everything off
+    *(volatile cyg_uint8 *)PEDDR   = 0x05;  // 0 - Codec or ADC/DAC
+                                            // 1 - I/O on JP38 (0 when inserted)
+                                            // 2 - Enable touch panel
+    *(volatile cyg_uint8 *)PEDR    = 0x01;  // Enable audio (not CODEC)
+    // Initialize system control
+    *(volatile cyg_uint32 *)SYSCON2 = SYSCON2_KBWEN;
 #endif
     // Reset all interrupt masks (disable all interrupt sources)
     for (vector = CYGNUM_HAL_ISR_MIN;  vector < CYGNUM_HAL_ISR_COUNT;  vector++) {

@@ -1,3 +1,22 @@
+2000-01-31 Simon FitzMaurice  <sdf@cygnus.co.uk>
+  * cdl/wallclock.cdl:
+
+  Adjust help URLs in line with new doc layout.
+
+2000-01-28 Simon FitzMaurice  <sdf@cygnus.co.uk>
+  * cdl/wallclock.cdl:
+
+  Adjust help URLs in line with new doc layout.
+
+2000-01-19  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/*.cdl: Add descriptions to a number of options &c which were
+	lacking same, also tidied up other typos as noticed en passant.
+
+1999-11-03  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/wallclock.cdl: Define build options.
+
 1999-07-14  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* src/emulate.cxx: Include pkgconf/kernel.h.

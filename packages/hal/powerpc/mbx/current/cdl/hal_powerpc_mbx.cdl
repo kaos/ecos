@@ -1,0 +1,274 @@
+# ====================================================================
+#
+#      hal_powerpc_mbx.cdl
+#
+#      PowerPC/MBX board HAL package configuration data
+#
+# ====================================================================
+#####COPYRIGHTBEGIN####
+#                                                                          
+# -------------------------------------------                              
+# The contents of this file are subject to the Red Hat eCos Public License 
+# Version 1.1 (the "License"); you may not use this file except in         
+# compliance with the License.  You may obtain a copy of the License at    
+# http://www.redhat.com/                                                   
+#                                                                          
+# Software distributed under the License is distributed on an "AS IS"      
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+# License for the specific language governing rights and limitations under 
+# the License.                                                             
+#                                                                          
+# The Original Code is eCos - Embedded Configurable Operating System,      
+# released September 30, 1998.                                             
+#                                                                          
+# The Initial Developer of the Original Code is Red Hat.                   
+# Portions created by Red Hat are                                          
+# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# All Rights Reserved.                                                     
+# -------------------------------------------                              
+#                                                                          
+#####COPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      jskov
+# Original data:  hmt
+# Contributors:
+# Date:           1999-11-02
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_HAL_POWERPC_MBX {
+    display       "Motorola MBX PowerPC evaluation board"
+    parent        CYGPKG_HAL_POWERPC
+    requires      CYGPKG_HAL_POWERPC_MPC8xx
+    define_header hal_powerpc_mbx.h
+    include_dir   cyg/hal
+    description   "
+        The MBX HAL package provides the support needed to run
+        eCos on a Motorola MBX board equipped with a PowerPC processor."
+
+    compile       hal_diag.c hal_aux.c mbx.S
+
+    implements    CYGINT_HAL_DEBUG_GDB_STUBS
+    implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
+
+    define_proc {
+        puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_powerpc_mpc8xx.h>"
+        puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_powerpc_mbx.h>"
+    }
+
+    cdl_component CYG_HAL_STARTUP {
+        display       "Startup type"
+        flavor        data
+        legal_values  {"RAM" "ROM"}
+        default_value {"RAM"}
+	no_define
+	define -file system.h CYG_HAL_STARTUP
+        description   "
+           When targetting the FADS board for RAM bootstrap it is expected 
+           that the image will be downloaded via the Motorola MPC8BUG tool."
+    }
+
+    cdl_option CYGHWR_HAL_POWERPC_BOARD_SPEED {
+        display          "Development board clock speed (MHz)"
+        flavor           data
+        legal_values     40 50
+        default_value    50
+        description      "
+           MBX Development Boards have various system clock speeds
+           depending on the processor fitted.  Select the clock speed
+           appropriate for your board so that the system can set the serial
+           baud rate correctly, amongst other things."
+   }
+
+   cdl_option CYGHWR_HAL_POWERPC_MBX_BOOT_32BIT_FLASH {
+       display          "Boot ROM is 32-bit Flash device"
+       default_value    0
+       description      "
+           MBX Development Boards have a socketed 8-bit ROM (AM27F040,
+           AM29F040 or similar) and a permanently soldered 32-bit flash
+           device.  Which is used for booting is link selectable (refer to
+           the MBX Series documentation from Motorola).  Enable this option
+           when booting from the 32-bit flash so that the correct memory
+           timing and access method is initialized.  This consideration
+           does apply to RAM start eCos applications as well as ROM start
+           or stub ROMs."
+   }
+
+    # Real-time clock/counter specifics
+    cdl_component CYGNUM_HAL_RTC_CONSTANTS {
+        display       "Real-time clock constants."
+        description   "
+            Period is busclock/16/100."
+        flavor        none
+    
+        cdl_option CYGNUM_HAL_RTC_NUMERATOR {
+            display       "Real-time clock numerator"
+            flavor        data
+            calculated    1000000000
+        }
+        cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
+            display       "Real-time clock denominator"
+            flavor        data
+            calculated    100
+        }
+        cdl_option CYGNUM_HAL_RTC_PERIOD {
+            display       "Real-time clock period"
+            flavor        data
+            calculated    { (((CYGHWR_HAL_POWERPC_BOARD_SPEED*1000000)/16)/100) }
+        }
+    }
+    
+    cdl_component CYGBLD_GLOBAL_OPTIONS {
+        display "Global build options"
+        flavor  none
+        description   "
+	    Global build options including control over
+	    compiler flags, linker flags and choice of toolchain."
+
+
+        parent  CYGPKG_NONE
+
+        cdl_option CYGBLD_GLOBAL_COMMAND_PREFIX {
+            display "Global command prefix"
+            flavor  data
+            no_define
+            default_value { "powerpc-eabi" }
+            description "
+                This option specifies the command prefix used when
+                invoking the build tools."
+        }
+
+        cdl_option CYGBLD_GLOBAL_CFLAGS {
+            display "Global compiler flags"
+            flavor  data
+            no_define
+            default_value { "-msoft-float -mcpu=860 -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
+            description   "
+                This option controls the global compiler flags which
+                are used to compile all packages by
+                default. Individual packages may define
+                options which override these global flags."
+        }
+
+        cdl_option CYGBLD_GLOBAL_LDFLAGS {
+            display "Global linker flags"
+            flavor  data
+            no_define
+            default_value { "-msoft-float -mcpu=860 -g -nostdlib -Wl,--gc-sections -Wl,-static" }
+            description   "
+                This option controls the global linker flags. Individual
+                packages may define options which override these global flags."
+        }
+
+        cdl_option CYGBLD_BUILD_GDB_STUBS {
+            display "Build GDB stub ROM image"
+            default_value 0
+            requires { CYG_HAL_STARTUP == "ROM" }
+            requires CYGSEM_HAL_ROM_MONITOR
+            requires CYGBLD_BUILD_COMMON_GDB_STUBS
+            requires CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+            requires ! CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+            requires ! CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
+            requires ! CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT
+            requires ! CYGDBG_HAL_COMMON_CONTEXT_SAVE_MINIMUM
+            no_define
+            description "
+                This option enables the building of the GDB stubs for the
+                board. The common HAL controls takes care of most of the
+                build process, but the platform CDL takes care of creating
+                an S-Record data file suitable for programming using
+                the board's EPPC-Bug firmware monitor."
+
+            make -priority 320 {
+                <PREFIX>/bin/gdb_module.bin : <PREFIX>/bin/gdb_module.img
+                $(OBJCOPY) -O srec --change-address=0x02040000 $< $(@:.bin=.srec)
+                $(OBJCOPY) -O binary $< $@
+            }
+        }
+    }
+
+    cdl_component CYGPKG_HAL_POWERPC_MBX_OPTIONS {
+        display "MBX build options"
+        flavor  none
+        description   "
+	    Package specific build options including control over
+	    compiler flags used only in building this package,
+	    and details of which tests are built."
+
+
+        cdl_option CYGPKG_HAL_POWERPC_MBX_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the MBX HAL. These flags are used in addition
+                to the set of global flags."
+        }
+
+        cdl_option CYGPKG_HAL_POWERPC_MBX_CFLAGS_REMOVE {
+            display "Supressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the MBX HAL. These flags are removed from
+                the set of global flags if present."
+        }
+
+        cdl_option CYGPKG_HAL_POWERPC_MBX_TESTS {
+            display "MBX tests"
+            flavor  data
+            no_define
+            calculated { "tests/mbxtime" }
+            description   "
+                This option specifies the set of tests for the MBX HAL."
+        }
+    }
+
+    cdl_component CYGHWR_MEMORY_LAYOUT {
+        display "Memory layout"
+        flavor data
+        no_define
+        calculated { CYG_HAL_STARTUP == "RAM" ? "powerpc_mbx_ram" : \
+                                                "powerpc_mbx_rom" }
+
+        cdl_option CYGHWR_MEMORY_LAYOUT_LDI {
+            display "Memory layout linker script fragment"
+            flavor data
+            no_define
+            define -file system.h CYGHWR_MEMORY_LAYOUT_LDI
+            calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_powerpc_mbx_ram.ldi>" : \
+                                                    "<pkgconf/mlt_powerpc_mbx_rom.ldi>" }
+        }
+
+        cdl_option CYGHWR_MEMORY_LAYOUT_H {
+            display "Memory layout header file"
+            flavor data
+            no_define
+            define -file system.h CYGHWR_MEMORY_LAYOUT_H
+            calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_powerpc_mbx_ram.h>" : \
+                                                    "<pkgconf/mlt_powerpc_mbx_rom.h>" }
+        }
+    }
+
+    cdl_option CYGSEM_HAL_ROM_MONITOR {
+        display       "Behave as a ROM monitor"
+        flavor        bool
+        default_value 0
+        parent        CYGPKG_HAL_ROM_MONITOR
+        requires      { CYG_HAL_STARTUP == "ROM" }
+        description   "
+            Enable this option if this program is to be used as a ROM monitor,
+            i.e. applications will be loaded into RAM on the board, and this
+            ROM monitor may process exceptions or interrupts generated from the
+            application. This enables features such as utilizing a separate
+            interrupt stack when exceptions are generated."
+    }
+}

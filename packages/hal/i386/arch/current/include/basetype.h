@@ -58,8 +58,10 @@
 //-----------------------------------------------------------------------------
 // Define the standard variable sizes
 
-// The I386 architecture uses the default definitions of the base types,
-// so we do not need to define any here.
+#define cyg_halbool unsigned char
+
+// Other than this, the I386 architecture uses the default definitions of
+// the base types, so we do not need to define any here.
 
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_BASETYPE_H

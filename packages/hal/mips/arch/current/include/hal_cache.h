@@ -58,7 +58,9 @@
 // which are MIPS ISA 3. This is useful if someone is compiling
 // with -mips2, but the architecture is really MIPS ISA 3.
 
-#define _HAL_ASM_SET_MIPS_ISA( _isal_ ) asm volatile ( ".set mips" ## #_isal_ )
+#define _hal_asm_mips_cpp_stringize( _x_ ) #_x_
+#define _HAL_ASM_SET_MIPS_ISA( _isal_ ) asm volatile ( \
+      ".set mips" ## _hal_asm_mips_cpp_stringize(_isal_) )
 
 
 //=============================================================================

@@ -1,6 +1,65 @@
+2000-03-21  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/pkgconf/mlt_mips_tx39_jmr3904_ram.h,
+	include/pkgconf/mlt_mips_tx39_jmr3904_ram.ldi,
+	include/pkgconf/mlt_mips_tx39_jmr3904_ram.mlt,
+	include/pkgconf/mlt_mips_tx39_jmr3904_rom.h,
+	include/pkgconf/mlt_mips_tx39_jmr3904_rom.ldi,
+	include/pkgconf/mlt_mips_tx39_jmr3904_rom.mlt:
+	Revert previous change
+
+2000-03-16  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/pkgconf/mlt_mips_tx39_jmr3904_ram.h,
+	include/pkgconf/mlt_mips_tx39_jmr3904_ram.ldi,
+	include/pkgconf/mlt_mips_tx39_jmr3904_ram.mlt,
+	include/pkgconf/mlt_mips_tx39_jmr3904_rom.h,
+	include/pkgconf/mlt_mips_tx39_jmr3904_rom.ldi,
+	include/pkgconf/mlt_mips_tx39_jmr3904_rom.mlt:
+	Update new sections according to new mips_tx39.ld from variant HAL
+	
+2000-02-23  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/plf_stub.c (hal_jmr_get_char):
+	CYG_HAL_MIPS_SIM -> CYGPKG_HAL_MIPS_SIM
+
+	* include/platform.inc: CYG_HAL_MIPS_SIM -> CYGPKG_HAL_MIPS_SIM
+	CYG_HAL_MIPS_TX3904 -> CYGPKG_HAL_MIPS_TX3904
+
+2000-02-18  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/hal_mips_tx39_jmr3904.cdl (CYGBLD_BUILD_GDB_STUBS): When building
+	stubs, define every dependency required here rather than in the
+	template
+
+2000-02-03  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_mips_tx39_jmr3904.cdl: Implements stubs.
+
+2000-01-27  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_mips_tx39_jmr3904.cdl: Moved part of stubs build rule to
+	common HAL.
+
+2000-01-26  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_mips_tx39_jmr3904.cdl: Fix display string.
+
 2000-01-24  Jesper Skov  <jskov@cygnus.co.uk>
 
+	* cdl/hal_mips_tx39_jmr3904.cdl: Add stubs build rule.
 	* include/plf_stub.h: Include correct hal/platform header.
+
+2000-01-24  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/*.cdl:
+
+	Remove obsolete option CYGTST_TESTING_IDENTIFIER.
+
+2000-01-19  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/*.cdl: Add descriptions to a number of options &c which were
+	lacking same, also tidied up other typos as noticed en passant.
 
 1999-12-21  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
@@ -11,10 +70,22 @@
 	* include/platform.inc: Rename CYG_HAL_USE_ROM_MONITOR ->
 	CYGSEM_HAL_USE_ROM_MONITOR
 
+	* cdl/hal_mips_tx39_jmr3904.cdl: Add new platform-specific
+	CYGSEM_HAL_USE_ROM_MONITOR and CYGSEM_HAL_ROM_MONITOR options to
+	control ROM monitor support
+
+1999-12-20  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* cdl/hal_mips_tx39_jmr3904.cdl: Add -Wl for linker options.
+
 1999-11-25  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/pkgconf/mlt_mips_tx39_jmr3904_rom.h: 
 	* include/pkgconf/mlt_mips_tx39_jmr3904_ram.h: New file(s).
+
+1999-11-02  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal_mips_tx39_jmr3904.cdl: Added.
 
 1999-10-29  Nick Garnett  <nickg@cygnus.co.uk>
 

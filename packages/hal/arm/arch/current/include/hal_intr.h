@@ -123,6 +123,7 @@ typedef cyg_uint32 CYG_INTERRUPT_STATE;
 //--------------------------------------------------------------------------
 // Interrupt control macros
 
+#ifndef __thumb__
 // Note: This disables both FIQ and IRQ interrupts!
 #define HAL_DISABLE_INTERRUPTS(_old_)           \
     asm volatile (                              \
@@ -166,6 +167,106 @@ typedef cyg_uint32 CYG_INTERRUPT_STATE;
         :                                       \
         : "r4"                                  \
         );
+#else // __thumb__
+
+// Thumb mode does not have access to the PSR registers;  
+
+#if 0 // These don't seem to always work
+#define HAL_DISABLE_INTERRUPTS(_old_)                   \
+    asm volatile (                                      \
+        "ldr r4,=10f;"                                  \
+        "bx r4;"                                        \
+        ".code 32;"                                     \
+        "10:;"                                          \
+        "mrs %0,cpsr;"                                  \
+        "mrs r4,cpsr;"                                  \
+        "orr r4,r4,#0xC0;"                              \
+        "msr cpsr,r4;"                                  \
+        "ldr r4,=10f+1;"                                \
+        "bx  r4;"                                       \
+        ".code 16;"                                     \
+        "10:;"                                          \
+        : "=r"(_old_)                                   \
+        :                                               \
+        : "r4"                                          \
+        );
+
+#define HAL_ENABLE_INTERRUPTS()                         \
+    asm volatile (                                      \
+        "ldr r3,=10f;"                                  \
+        "bx r3;"                                        \
+        ".code 32;"                                     \
+        "10:;"                                          \
+        "mrs r3,cpsr;"                                  \
+        "bic r3,r3,#0xC0;"                              \
+        "msr cpsr,r3;"                                  \
+        "ldr r3,=10f+1;"                                \
+        "bx  r3;"                                       \
+        ".code 16;"                                     \
+        "10:;"                                          \
+        :                                               \
+        :                                               \
+        : "r3"                                          \
+        );
+
+#define HAL_RESTORE_INTERRUPTS(_old_)                   \
+    asm volatile (                                      \
+        "ldr r3,=10f;"                                  \
+        "bx r3;"                                        \
+        ".code 32;"                                     \
+        "10:;"                                          \
+        "mrs r3,cpsr;"                                  \
+        "and r4,%0,#0xC0;"                              \
+        "bic r3,r3,#0xC0;"                              \
+        "orr r3,r3,r4;"                                 \
+        "msr cpsr,r3;"                                  \
+        "ldr r3,=10f+1;"                                \
+        "bx  r3;"                                       \
+        ".code 16;"                                     \
+        "10:;"                                          \
+        :                                               \
+        : "r"(_old_)                                    \
+        : "r3", "r4"                                    \
+        );
+
+#define HAL_QUERY_INTERRUPTS(_old_)                     \
+    asm volatile (                                      \
+        "ldr r4,=10f;"                                  \
+        "bx r4;"                                        \
+        ".code 32;"                                     \
+        "10:;"                                          \
+        "mrs r4,cpsr;"                                  \
+        "and r4,r4,#0xC0;"                              \
+        "eor %0,r4,#0xC0;"                              \
+        "ldr r4,=10f+1;"                                \
+        "bx  r4;"                                       \
+        ".code 16;"                                     \
+        "10:;"                                          \
+        : "=r"(_old_)                                   \
+        :                                               \
+        : "r4"                                          \
+        );
+#else
+
+externC cyg_uint32 hal_disable_interrupts(void);
+externC void       hal_enable_interrupts(void);
+externC void       hal_restore_interrupts(cyg_uint32);
+externC cyg_uint32 hal_query_interrupts(void);
+
+#define HAL_DISABLE_INTERRUPTS(_old_)                   \
+    _old_ = hal_disable_interrupts();
+
+#define HAL_ENABLE_INTERRUPTS()                         \
+    hal_enable_interrupts();
+
+#define HAL_RESTORE_INTERRUPTS(_old_)                   \
+    hal_restore_interrupts(_old_);
+
+#define HAL_QUERY_INTERRUPTS(_old_)                     \
+    _old_ = hal_query_interrupts();
+#endif
+
+#endif // __thumb__
 
 //--------------------------------------------------------------------------
 // Routine to execute DSRs using separate interrupt stack

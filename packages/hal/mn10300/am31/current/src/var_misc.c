@@ -63,6 +63,7 @@ void hal_variant_init(void)
 #if !defined(CYG_HAL_MN10300_AM31_SIM)
 void cyg_hal_dcache_store(CYG_ADDRWORD base, int size)
 {
+#if 0    
     volatile register CYG_BYTE *way0 = HAL_DCACHE_PURGE_WAY0;
     volatile register CYG_BYTE *way1 = HAL_DCACHE_PURGE_WAY1;
     register int i;
@@ -83,6 +84,87 @@ void cyg_hal_dcache_store(CYG_ADDRWORD base, int size)
     }
     if (state)
         HAL_DCACHE_ENABLE();
+#else
+
+    // Despite several people trying to understand it, the above code
+    // still does not work correctly. Whether this is a result of the
+    // AM31 hardware being faulty, or simply a problem with register
+    // pressure causing the values of some variables to be lost as a
+    // result of the purge we are not sure. Similar code on the AM33
+    // works perfectly, but that processor has more registers to play
+    // with.  The following code, taken from CygMon, works correctly,
+    // and does not appear to exhibit the problems of the code above.
+    // It's only drawback is that it purges the entire cache. However,
+    // this is permitted under the definition of the cache macros, so
+    // this is not a major concern at present.
+    
+    __asm__ (
+              ".equ CHCTR,        0x20000070;"
+              ".equ CHCTR_ICEN,   0x0001;"
+              ".equ CHCTR_DCEN,   0x0002;"
+              ".equ CHCTR_ICBUSY, 0x0004;"
+              ".equ CHCTR_DCBUSY, 0x0008;"
+              ".equ CHCTR_ICINV,  0x0010;"
+              ".equ CHCTR_DCINV,  0x0020;"
+              ".equ DCACHE_PURGE_WAY0_START, 0x28400000;"
+              ".equ DCACHE_PURGE_WAY0_END,   0x28400800;"
+              ".equ DCACHE_PURGE_WAY1_START, 0x28401000;"
+              ".equ DCACHE_PURGE_WAY1_END,   0x28401800;"
+
+              "mov CHCTR,a0;"
+
+              /* DCACHE */
+
+              /* first check if dcache enabled */
+              "mov (a0),d0;"
+              "btst CHCTR_DCEN,d0;"
+              /* if not, jump to end */
+              "beq 2f;"
+
+              /* if so, we have to disable the cache */
+              "and 0xfffffffd,d0;"
+              "mov d0,(a0);"
+
+              /* wait for it to stop being busy */
+              "setlb;"
+              "nop;"
+              "mov (a0),d0;"
+              "btst CHCTR_DCBUSY,d0;"
+              "lne;"
+
+              /* now purge the dcache */
+              "mov DCACHE_PURGE_WAY0_START,a1;"
+              "1:"
+              "mov (0,a1),d0;"
+              "add 0x10,a1;"
+              "cmp DCACHE_PURGE_WAY0_END,a1;"
+              "bne 1b;"
+              "mov DCACHE_PURGE_WAY1_START,a1;"
+              "1:"
+              "mov (0,a1),d0;"
+              "add 0x10,a1;"
+              "cmp DCACHE_PURGE_WAY1_END,a1;"
+              "bne 1b;"
+
+              /* wait for it to stop being busy */
+              "setlb;"
+              "nop;"
+              "mov (a0),d0;"
+              "btst CHCTR_DCBUSY,d0;"
+              "lne;"
+
+              /* and re-enable */
+              "or CHCTR_DCEN,d0;"
+              "mov d0,(a0);"
+
+              "2:"
+
+              :
+              :
+              : "a0", "a1", "d0"
+        );
+    
+#endif    
 }
 #endif
 

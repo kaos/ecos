@@ -176,6 +176,8 @@ write_whattracepost( cyg_uint32 what )
 
 // -------------------------------------------------------------------------
 
+#if defined(CYGDBG_USE_TRACING) || defined(CYGDBG_USE_ASSERTS)
+
 static const char *trim_file(const char *file)
 {
 #if CYG_FILENAME
@@ -250,7 +252,11 @@ static void write_lnum( cyg_uint32 lnum)
 #endif
 }
 
+#endif // defined(CYGDBG_USE_TRACING) || defined(CYGDBG_USE_ASSERTS)
+
 // -------------------------------------------------------------------------
+
+#if defined(CYGDBG_USE_TRACING) || defined(CYGDBG_USE_ASSERTS)
 
 #if CYG_THREADID
 static cyg_uint32 get_tid(void)
@@ -266,6 +272,8 @@ static cyg_uint32 get_tid(void)
 #else
 # define get_tid() (0xFFFF)
 #endif
+
+#endif // defined(CYGDBG_USE_TRACING) || defined(CYGDBG_USE_ASSERTS)
 
 #ifdef CYGDBG_USE_ASSERTS
 static void write_thread_id()

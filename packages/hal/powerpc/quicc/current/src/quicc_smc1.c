@@ -45,6 +45,7 @@
 //==========================================================================
 
 #include <pkgconf/hal.h>
+#include <pkgconf/hal_powerpc_quicc.h>
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/hal_cache.h>
 
@@ -60,8 +61,8 @@
 #include <cyg/hal/hal_intr.h>           // HAL_INTERRUPT_UNMASK(...)
 #endif
 
-#define UART_BIT_RATE(n) (((CYGHWR_HAL_POWERPC_BOARD_SPEED*1000000)/16)/n)
-#define UART_BAUD_RATE 38400
+#define UART_BIT_RATE(n) (((int)(CYGHWR_HAL_POWERPC_BOARD_SPEED*1000000)/16)/n)
+#define UART_BAUD_RATE CYGNUM_HAL_QUICC_DIAG_BAUD
 
 #define Rxbd     0x2800       /* Rx Buffer Descriptor Offset */
 #define Txbd     0x2808       /* Tx Buffer Descriptor Offset */
@@ -191,10 +192,6 @@ init_smc1_uart(void)
 //static bsp_queue_t uart_queue;
 //static char uart_buffer[UART_BUFSIZE];
 
-#define QUICC_BD_CTL_Busy 0x8000  // Descriptor/buffer busy
-#define QUICC_BD_CTL_Wrap 0x2000  // Last buffer in ring
-#define QUICC_BD_CTL_Int  0x1000  // Interrupt enable
-#define QUICC_BD_CTL_MASK 0xB000  // User settable bits
 #define QUICC_SMCE_TX     0x02    // Tx interrupt
 #define QUICC_SMCE_RX     0x01    // Rx interrupt
 #define QUICC_SMCMR_TEN       (1<<1)        // Enable transmitter
@@ -217,7 +214,7 @@ cyg_quicc_smc1_uart_putchar(char ch)
 
     // Scan for a free buffer
     first = bd;
-    while (bd->ctrl & QUICC_BD_CTL_Busy) {
+    while (bd->ctrl & QUICC_BD_CTL_Ready) {
         if (bd->ctrl & QUICC_BD_CTL_Wrap) {
             bd = (struct cp_bufdesc *)((char *)eppc + uart_pram->tbase);
         } else {
@@ -226,7 +223,7 @@ cyg_quicc_smc1_uart_putchar(char ch)
         if (bd == first) break;
     }
 
-    while (bd->ctrl & QUICC_BD_CTL_Busy) ;  // Wait for buffer free
+    while (bd->ctrl & QUICC_BD_CTL_Ready) ;  // Wait for buffer free
     if (bd->ctrl & QUICC_BD_CTL_Int) {
         // This buffer has just completed interrupt output.  Reset bits
         bd->ctrl &= ~QUICC_BD_CTL_Int;
@@ -234,13 +231,13 @@ cyg_quicc_smc1_uart_putchar(char ch)
     }
 
     bd->buffer[bd->length++] = ch;
-    bd->ctrl      |= QUICC_BD_CTL_Busy;
+    bd->ctrl      |= QUICC_BD_CTL_Ready;
 
 #ifdef CYGDBG_DIAG_BUF
         enable_diag_uart = 0;
 #endif // CYGDBG_DIAG_BUF
     timeout = 0;
-    while (bd->ctrl & QUICC_BD_CTL_Busy) {
+    while (bd->ctrl & QUICC_BD_CTL_Ready) {
 // Wait until buffer free
         if (++timeout == 0x7FFFF) {
             // A really long time!
@@ -248,9 +245,9 @@ cyg_quicc_smc1_uart_putchar(char ch)
             diag_printf("bd fail? bd: %x, ctrl: %x, tx state: %x\n", bd, bd->ctrl, uart_pram->tstate);
 #endif // CYGDBG_DIAG_BUF
             eppc->smc_regs[0].smc_smcmr &= ~QUICC_SMCMR_TEN;  // Disable transmitter
-            bd->ctrl &= ~QUICC_BD_CTL_Busy;
+            bd->ctrl &= ~QUICC_BD_CTL_Ready;
             eppc->smc_regs[0].smc_smcmr |= QUICC_SMCMR_TEN;   // Enable transmitter
-            bd->ctrl |= QUICC_BD_CTL_Busy;
+            bd->ctrl |= QUICC_BD_CTL_Ready;
             timeout = 0;
 #ifdef CYGDBG_DIAG_BUF
             diag_printf("bd retry? bd: %x, ctrl: %x, tx state: %x\n", bd, bd->ctrl, uart_pram->tstate);
@@ -263,7 +260,7 @@ cyg_quicc_smc1_uart_putchar(char ch)
 #endif // CYGDBG_DIAG_BUF
         }
     }
-    while (bd->ctrl & QUICC_BD_CTL_Busy) ;  // Wait until buffer free
+    while (bd->ctrl & QUICC_BD_CTL_Ready) ;  // Wait until buffer free
     bd->length = 0;
 #ifdef CYGDBG_DIAG_BUF
         enable_diag_uart = 1;
@@ -283,13 +280,13 @@ cyg_quicc_smc1_uart_rcvchar(void)
     /* rx buffer descriptor */
     bd = (struct cp_bufdesc *)((char *)eppc + uart_pram->rbptr);
 
-    while (bd->ctrl & QUICC_BD_CTL_Busy) ;
+    while (bd->ctrl & QUICC_BD_CTL_Ready) ;
 
     ch = bd->buffer[0];
 
     bd->length = 0;
     bd->buffer[0] = '\0';
-    bd->ctrl |= QUICC_BD_CTL_Busy;
+    bd->ctrl |= QUICC_BD_CTL_Ready;
     // Note: the MBX860 does not seem to snoop/invalidate the data cache properly!
     HAL_DCACHE_IS_ENABLED(cache_state);
     if (cache_state) {
@@ -307,7 +304,7 @@ cyg_quicc_smc1_uart_rcvchar(void)
 void
 cyg_quicc_init_smc1(void)
 {
-    EPPC *eppc = eppc_base();
+    volatile EPPC *eppc = eppc_base();
     int i;
 
     static int init = 0;  // It's wrong to do this more than once
@@ -317,7 +314,7 @@ cyg_quicc_init_smc1(void)
     /*
      *  Reset communications processor
      */
-    eppc->cp_cr = 0x8001;
+    eppc->cp_cr = QUICC_CPM_CR_RESET | QUICC_CPM_CR_BUSY;
     for (i = 0; i < 100000; i++);
 
     init_smc1_uart();
@@ -338,11 +335,11 @@ int cyg_hal_gdb_isr( target_register_t pc )
     /* rx buffer descriptors */
     bd = (struct cp_bufdesc *)((char *)eppc_base() + Rxbd);
 
-    if ((bd->ctrl & 0x8000) == 0) {
+    if ((bd->ctrl & QUICC_BD_CTL_Ready) == 0) {
         // then there be a character waiting
         ch = bd->buffer[0];
         bd->length = 1;
-        bd->ctrl   = 0xb000;
+        bd->ctrl   = QUICC_BD_CTL_Ready | QUICC_BD_CTL_Wrap | QUICC_BD_CTL_Int;
 
         if ( 3 == ch ) {
             // Ctrl-C: set a breakpoint at PC so GDB will display the

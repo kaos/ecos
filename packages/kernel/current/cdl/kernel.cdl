@@ -1,0 +1,340 @@
+# ====================================================================
+#
+#      kernel.cdl
+#
+#      eCos kernel configuration data
+#
+# ====================================================================
+#####COPYRIGHTBEGIN####
+#                                                                          
+# -------------------------------------------                              
+# The contents of this file are subject to the Red Hat eCos Public License 
+# Version 1.1 (the "License"); you may not use this file except in         
+# compliance with the License.  You may obtain a copy of the License at    
+# http://www.redhat.com/                                                   
+#                                                                          
+# Software distributed under the License is distributed on an "AS IS"      
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+# License for the specific language governing rights and limitations under 
+# the License.                                                             
+#                                                                          
+# The Original Code is eCos - Embedded Configurable Operating System,      
+# released September 30, 1998.                                             
+#                                                                          
+# The Initial Developer of the Original Code is Red Hat.                   
+# Portions created by Red Hat are                                          
+# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# All Rights Reserved.                                                     
+# -------------------------------------------                              
+#                                                                          
+#####COPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      bartv
+# Original data:  nickg
+# Contributors:
+# Date:           1999-06-13
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_KERNEL {
+    display       "eCos kernel"
+    doc           redirect/ecos-kernel-overview.html
+    include_dir   cyg/kernel
+    description   "
+        This package contains the core functionality of the eCos
+        kernel. It relies on functionality provided by various HAL
+        packages and by the eCos infrastructure. In turn the eCos
+        kernel provides support for other packages such as the device
+        drivers and the uITRON compatibility layer."
+    # FIXME: The compile statement should be split up and integrated as
+    #        part of the components - so files only get comiled when they
+    #        will actually be used.
+    compile       common/clock.cxx     common/timer.cxx  common/kapi.cxx   \
+                  common/thread.cxx    common/except.cxx                   \
+                  instrmnt/meminst.cxx instrmnt/nullinst.cxx               \
+                  intr/intr.cxx                                            \
+                  mem/memfixed.cxx     mem/memvar.cxx                      \
+                  sched/bitmap.cxx     sched/lottery.cxx sched/mlqueue.cxx \
+                  sched/sched.cxx                                          \
+                  sync/bin_sem.cxx     sync/cnt_sem.cxx  sync/flag.cxx     \
+                  sync/cnt_sem2.cxx    sync/mbox.cxx     sync/mutex.cxx    \
+                  debug/dbg-thread-demux.c debug/dbg_gdb.cxx
+
+    # ---------------------------------------------------------------------
+    # The first component within the kernel is related to interrupt
+    # handling.
+    cdl_component CYGPKG_KERNEL_INTERRUPTS {
+        display       "Kernel interrupt handling"
+        flavor        none
+        doc           redirect/interrupts.html
+        description   "
+            The majority of configuration options related to interrupt
+            handling are in the HAL packages, since usually the code has
+            to be platform-specific. There are a number of options
+            provided within the kernel related to slightly higher-level
+            concepts, for example Delayed Service Routines."
+
+        script        interrupts.cdl
+    }
+
+    # ---------------------------------------------------------------------
+    # Exceptions. Currently there are only two options. The first
+    # determines whether or not exceptions are enabled at all. The
+    # second controls whether they apply globally or on a per-thread
+    # basis. There should probably be more options, but the boundary
+    # between the HAL and kernel becomes blurred.
+    cdl_component CYGPKG_KERNEL_EXCEPTIONS {
+        display       "Exception handling"
+        requires      CYGPKG_HAL_EXCEPTIONS
+        default_value 1
+        doc           redirect/exceptions.html
+        description   "
+            In the context of the eCos kernel exceptions are unexpected
+            events detected by the hardware, for example an attempt to
+            execute an illegal instruction. There is no relation with
+            other forms of exception, for example the catch and throw
+            facilities of languages like C++. It is possible to disable
+            all support for exceptions and thus save some memory."
+
+        cdl_option CYGSEM_KERNEL_EXCEPTIONS_DECODE {
+            display       "Decode exception types in kernel"
+            default_value 0
+            description   "
+                On targets where several different types of exception are
+                possible, for example executing an illegal instruction and
+                division by zero, it is possible for the kernel to do some
+                decoding of the exception type and deliver the different
+                types of exception to different handlers in the application
+                code. Alternatively the kernel can simply pass all
+                exceptions directly to application code, leaving the
+                decoding to be done by the application"
+        }
+
+        cdl_option CYGSEM_KERNEL_EXCEPTIONS_GLOBAL {
+            display       "Use global exception handlers"
+            default_value 1
+            description   "
+                In the context of the eCos kernel exceptions are
+                unexpected events detected by the hardware, for
+                example an attempt to execute an illegal
+                instruction. If the kernel is configured
+                to support exceptions then two implementations are
+                possible. The default implementation involves a single set
+                of exception handlers that are in use for the entire
+                system. The alternative implementation allows different
+                exception handlers to be specified for each thread."
+        }
+    }
+
+    # ---------------------------------------------------------------------
+    cdl_component CYGPKG_KERNEL_SCHED {
+        display       "Kernel schedulers"
+        flavor        none
+        doc           redirect/the-scheduler.html
+        description   "
+            The eCos kernel provides a choice of schedulers. In addition
+            there are a number of configuration options to control the
+            detailed behaviour of these schedulers."
+
+        script        scheduler.cdl
+    }
+
+    # ---------------------------------------------------------------------
+    cdl_component CYGPKG_KERNEL_COUNTERS {
+        display       "Counters and clocks"
+        flavor        none
+        doc           redirect/counters-clocks-and-alarms.html
+        description   "
+            The counter objects provided by the kernel provide an
+            abstraction of the clock facility that is generally provided.
+            Application code can associate alarms with counters, where an
+            alarm is identified by the number of ticks until it triggers,
+            the action to be taken on triggering, and whether or not the
+            alarm should be repeated."
+
+        script        counters.cdl
+    }
+
+    # ---------------------------------------------------------------------
+    cdl_component CYGPKG_KERNEL_THREADS {
+        display       "Thread-related options"
+        flavor        none
+        doc           redirect/thread-operations.html
+        description   "
+            There are a number of configuration options related to the
+            implementation of threads, for example whether or not the
+            eCos kernel supports per-thread data."
+
+        script        thread.cdl
+    }
+
+    # ---------------------------------------------------------------------
+    cdl_component CYGPKG_KERNEL_SYNCH {
+        display       "Synchronization primitives"
+        flavor        none
+        doc           redirect/thread-synchronization.html
+        description   "
+            The eCos kernel supports a number of different
+            synchronization primitives such as mutexes, semaphores,
+            condition variables, and message boxes. There are
+            configuration options to control the exact behaviour of some
+            of these synchronization primitives."
+
+        script        synch.cdl
+    }
+
+    # ---------------------------------------------------------------------
+    cdl_component CYGPKG_KERNEL_INSTRUMENT {
+        display       "Kernel instrumentation"
+        flavor        bool
+        default_value 0
+        description   "
+            The current release of the kernel contains an initial version
+            of instrumentation support. The various parts of the kernel
+            will invoke instrumentation routines whenever appropriate
+            events occur, and these will be stored in a circular buffer
+            for later reference."
+
+        script        instrument.cdl
+    }
+
+    # ---------------------------------------------------------------------
+    # There appears to be somewhat of a lack of configuration options here.
+    cdl_component CYGPKG_KERNEL_MEMORY {
+        display       "Memory allocators"
+        flavor        none
+        description   "
+            Configuration options related to the kernel memory allocation
+            support."
+
+        cdl_option CYGSEM_KERNEL_MEMORY_COALESCE {
+            display       "Coalesce memory in the variable-block allocator"
+            default_value 1
+            description   "
+                The variable-block memory allocator can perform coalescing
+                of memory whenever the application code releases memory back
+                to the pool. This coalescing reduces the possibility of
+                memory fragmentation problems, but involves extra code and
+                processor cycles."
+        }
+    }
+
+    #===================================================================
+    # Options related to source-level debugging and diagnostics.
+    cdl_component CYGPKG_KERNEL_DEBUG {
+        display       "Source-level debugging support"
+        flavor        none
+        description   "
+            If the source level debugger gdb is to be used for debugging
+            application code then it may be necessary to configure in support
+            for this in the kernel."
+
+        # NOTE: does this require any other support ?
+        cdl_option CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT {
+            display       "Include GDB multi-threading debug support"
+            requires      CYGVAR_KERNEL_THREADS_LIST
+            requires      CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
+            default_value 1
+            description "
+            This option enables some extra kernel code which is needed
+            to support multi-threaded source level debugging."
+        }
+    }
+
+    # ---------------------------------------------------------------------
+    # Kernel API's. The C++ one is the default. A C API is optional.
+    # Support for other languages is possible.
+    cdl_component CYGPKG_KERNEL_API {
+        display       "Kernel APIs"
+        flavor        none
+        doc           redirect/kernel-apis.html
+        description   "
+            The eCos kernel is implemented in C++, so a C++ interface
+            to the kernel is always available. There is also an optional
+            C API. Additional API's may be provided in future versions."
+
+        cdl_option CYGFUN_KERNEL_API_C {
+            display       "Provide C API"
+            default_value 1
+            description   "
+                The eCos kernel is implemented in C++, but there is an
+                optional C API for use by application code. This C API can be
+                disabled if the application code does not invoke the kernel
+                directly, but instead uses higher level code such as the
+                uITRON compatibility layer."
+        }
+    }
+
+    define_proc {
+        puts $::cdl_header "/***** proc output start *****/"
+
+        # Clients of pkgconf/kernel.h expects system.h to be included.
+        puts $::cdl_header "#include <pkgconf/system.h>"
+        # FIXME: Some clients may rely on hal.h and infra.h being included.
+        #        This should go away when any such client has been fixed.
+        puts $::cdl_header "#include <pkgconf/hal.h>"
+        puts $::cdl_header "#include <pkgconf/infra.h>"
+
+        # Include HAL/Platform specifics
+        puts $::cdl_header "#include CYGBLD_HAL_PLATFORM_H"
+        # Fallback defaults (in case HAL didn't define these)
+        puts $::cdl_header "#ifndef CYGNUM_HAL_RTC_NUMERATOR"
+        puts $::cdl_header "# define CYGNUM_HAL_RTC_NUMERATOR     1000000000"
+        puts $::cdl_header "# define CYGNUM_HAL_RTC_DENOMINATOR   100"
+        puts $::cdl_header "# define CYGNUM_HAL_RTC_PERIOD        9999"
+        puts $::cdl_header "#endif"
+
+        puts $::cdl_header "/*****  proc output end  *****/"
+    }
+
+    cdl_component CYGPKG_KERNEL_OPTIONS {
+        display "Kernel build options"
+        flavor  none
+        description   "
+	    Package specific build options including control over
+	    compiler flags used only in building this package,
+	    and details of which tests are built."
+
+
+        cdl_option CYGPKG_KERNEL_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the eCos kernel. These flags are used in addition
+                to the set of global flags."
+        }
+
+        cdl_option CYGPKG_KERNEL_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the eCos kernel. These flags are removed from
+                the set of global flags if present."
+        }
+
+        cdl_option CYGPKG_KERNEL_TESTS {
+            display "Kernel tests"
+            flavor  data
+            no_define
+            calculated { 
+                CYGPKG_HAL_ARM_AEB ? "tests/bin_sem0 tests/bin_sem1 tests/bin_sem2 tests/clock0 tests/clock1 tests/clockcnv tests/cnt_sem0 tests/cnt_sem1 tests/except1 tests/flag0 tests/flag1 tests/intr0 tests/kclock0 tests/kclock1 tests/kexcept1 tests/kintr0 tests/kmbox1 tests/kmemfix1 tests/kmemvar1 tests/kmutex0 tests/kmutex1 tests/ksched1 tests/ksem0 tests/ksem1 tests/kflag0 tests/kflag1 tests/kthread0 tests/kthread1 tests/mbox1 tests/memfix1 tests/memfix2 tests/memvar1 tests/memvar2 tests/mutex0 tests/mutex1 tests/mutex2 tests/mutex3 tests/sched1 tests/sync2 tests/sync3 tests/thread0 tests/thread1 tests/thread2 tests/release tests/kill tests/thread_gdb tests/tm_basic tests/dhrystone" : \
+                CYGPKG_HAL_ARM_EBSA285 ? "tests/bin_sem0 tests/bin_sem1 tests/bin_sem2 tests/clock0 tests/clock1 tests/clockcnv tests/cnt_sem0 tests/cnt_sem1 tests/except1 tests/flag0 tests/flag1 tests/intr0 tests/kclock0 tests/kclock1 tests/kexcept1 tests/kintr0 tests/kmbox1 tests/kmemfix1 tests/kmemvar1 tests/kmutex0 tests/kmutex1 tests/ksched1 tests/ksem0 tests/ksem1 tests/kflag0 tests/kflag1 tests/kthread0 tests/kthread1 tests/mbox1 tests/memfix1 tests/memfix2 tests/memvar1 tests/memvar2 tests/mutex0 tests/mutex1 tests/mutex2 tests/mutex3 tests/sched1 tests/sync2 tests/sync3 tests/thread0 tests/thread1 tests/thread2 tests/release tests/kill tests/thread_gdb tests/tm_basic tests/dhrystone tests/stress_threads tests/kcache1 tests/kcache2" : \
+                CYGPKG_HAL_ARM_EDB7XXX ? "tests/bin_sem0 tests/bin_sem1 tests/bin_sem2 tests/clock0 tests/clock1 tests/clockcnv tests/cnt_sem0 tests/cnt_sem1 tests/except1 tests/flag0 tests/flag1 tests/intr0 tests/kclock0 tests/kclock1 tests/kexcept1 tests/kintr0 tests/kmbox1 tests/kmemfix1 tests/kmemvar1 tests/kmutex0 tests/kmutex1 tests/ksched1 tests/ksem0 tests/ksem1 tests/kflag0 tests/kflag1 tests/kthread0 tests/kthread1 tests/mbox1 tests/memfix1 tests/memfix2 tests/memvar1 tests/memvar2 tests/mutex0 tests/mutex1 tests/mutex2 tests/mutex3 tests/sched1 tests/sync2 tests/sync3 tests/thread0 tests/thread1 tests/thread2 tests/release tests/kill tests/thread_gdb tests/tm_basic tests/dhrystone tests/stress_threads tests/kcache1 tests/kcache2" : \
+                CYGPKG_HAL_ARM ? "tests/bin_sem0 tests/bin_sem1 tests/bin_sem2 tests/clock0 tests/clock1 tests/clockcnv tests/cnt_sem0 tests/cnt_sem1 tests/except1 tests/flag0 tests/flag1 tests/intr0 tests/kclock0 tests/kclock1 tests/kexcept1 tests/kintr0 tests/kmbox1 tests/kmemfix1 tests/kmemvar1 tests/kmutex0 tests/kmutex1 tests/ksched1 tests/ksem0 tests/ksem1 tests/kflag0 tests/kflag1 tests/kthread0 tests/kthread1 tests/mbox1 tests/memfix1 tests/memfix2 tests/memvar1 tests/memvar2 tests/mutex0 tests/mutex1 tests/mutex2 tests/mutex3 tests/sched1 tests/sync2 tests/sync3 tests/thread0 tests/thread1 tests/thread2 tests/release tests/kill tests/thread_gdb tests/tm_basic tests/dhrystone" : \
+                "tests/bin_sem0 tests/bin_sem1 tests/bin_sem2 tests/clock0 tests/clock1 tests/clockcnv tests/cnt_sem0 tests/cnt_sem1 tests/except1 tests/flag0 tests/flag1 tests/intr0 tests/kclock0 tests/kclock1 tests/kexcept1 tests/kintr0 tests/kmbox1 tests/kmemfix1 tests/kmemvar1 tests/kmutex0 tests/kmutex1 tests/ksched1 tests/ksem0 tests/ksem1 tests/kflag0 tests/kflag1 tests/kthread0 tests/kthread1 tests/mbox1 tests/memfix1 tests/memfix2 tests/memvar1 tests/memvar2 tests/mutex0 tests/mutex1 tests/mutex2 tests/mutex3 tests/sched1 tests/sync2 tests/sync3 tests/thread0 tests/thread1 tests/thread2 tests/release tests/kill tests/thread_gdb tests/tm_basic tests/dhrystone tests/stress_threads tests/kcache1 tests/kcache2" 
+            }
+            description   "
+                This option specifies the set of tests for the eCos kernel."
+        }
+    }
+}

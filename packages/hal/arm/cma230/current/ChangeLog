@@ -1,3 +1,25 @@
+2000-02-29  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+        * include/pkgconf/mlt_arm_cma222_ram.h:
+        * include/pkgconf/mlt_arm_cma222_ram.ldi:
+        * include/pkgconf/mlt_arm_cma222_ram.mlt:
+        * include/pkgconf/mlt_arm_cma222_rom.h:
+        * include/pkgconf/mlt_arm_cma222_rom.ldi:
+        * include/pkgconf/mlt_arm_cma222_rom.mlt:
+        * include/pkgconf/mlt_arm_cma230_ram.h:
+        * include/pkgconf/mlt_arm_cma230_ram.ldi:
+        * include/pkgconf/mlt_arm_cma230_ram.mlt:
+        * include/pkgconf/mlt_arm_cma230_rom.h:
+        * include/pkgconf/mlt_arm_cma230_rom.ldi:
+        * include/pkgconf/mlt_arm_cma230_rom.mlt:
+	Align all sections on word boundaries
+	
+2000-02-18  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/hal_arm_cma230.cdl (CYGBLD_BUILD_GDB_STUBS): When
+	building stubs, define every dependency required here rather than
+	in the template
+
 2000-02-10  Jesper Skov  <jskov@redhat.com>
 
 	* include/plf_stub.h:
@@ -7,6 +29,53 @@
 	* include/pkgconf/hal_arm_cma230.h: 
 	Removed stubs as a legal startup type.
 
+2000-02-07  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_cma230.cdl: Use cpu options when linking.
+
+2000-02-03  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_cma230.cdl: Implements stubs.
+
+2000-02-02  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_cma230.cdl: Use common stub code and build rule.
+
+2000-01-28  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_cma230.cdl:  Changed description.
+
+2000-01-26  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_cma230.cdl: Fix CDL display.
+
+2000-01-24  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal_arm_cma230.cdl: Add stubs build rule.
+
+2000-01-24  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/*.cdl:
+
+	Remove obsolete option CYGTST_TESTING_IDENTIFIER.
+
+2000-01-19  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/*.cdl: Add descriptions to a number of options &c which were
+	lacking same, also tidied up other typos as noticed en passant.
+
+1999-12-20  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* cdl/hal_arm_cma230.cdl: Add -Wl for linker options.
+
+1999-12-16  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* cdl/hal_arm_cma230.cdl: Add support for cma230T
+
+1999-12-08  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* cdl/hal_arm_cma230.cdl: Update for CMA222 support.
+
 1999-12-02  Mark Salter  <msalter@cygnus.com>
 
 	* include/hal_platform_setup.h: Add support for CMA222 (ARM710T).
@@ -15,6 +84,10 @@
 
 1999-11-25  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
+	* include/pkgconf/mlt_arm_cma230T_stubs.ldi,
+	include/pkgconf/mlt_arm_cma230T_stubs.mlt:
+	Delete - we don't have stubs startup for thumb mode
+
 	* src/hal_diag.c: Conditionalize def of diag_buffer for only when it's
 	explicitly wanted and someone hacks the code
 	(hal_diag_write_char): Likewise
@@ -22,14 +95,21 @@
 1999-11-25  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/pkgconf/mlt_arm_cma230_stubs.h: New file.
+
+	* include/pkgconf/mlt_arm_cma230T_rom.h: 
+	* include/pkgconf/mlt_arm_cma230T_ram.h:
 	* include/pkgconf/mlt_arm_cma230_rom.h: 
 	* include/pkgconf/mlt_arm_cma230_ram.h:  Update "do not edit" strings.
 
 1999-11-09  Gary Thomas  <gthomas@cygnus.co.uk>
 
+	* include/pkgconf/mlt_arm_cma230T_ram.h:
+	* include/pkgconf/mlt_arm_cma230T_rom.h:
 	* include/pkgconf/mlt_arm_cma230_ram.h:
 	* include/pkgconf/mlt_arm_cma230_rom.h: New files.
 
+	* include/pkgconf/mlt_arm_cma230T_ram.ldi: 
+	* include/pkgconf/mlt_arm_cma230T_ram.ldi: 
 	* include/pkgconf/mlt_arm_cma230_rom.ldi: 
 	* include/pkgconf/mlt_arm_cma230_rom.mlt: Update with correct memory layout.
 
@@ -42,6 +122,10 @@
 1999-11-09  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/hal_diag.c: Honor GDB_DISABLE option.
+
+1999-11-01  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal_arm_cma230.cdl: Remove define_proc comments.
 
 1999-10-28  Jesper Skov  <jskov@cygnus.co.uk>
 
@@ -57,6 +141,23 @@
 	CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION and its mate to control
 	stepping through gdb $O packet output.
 
+1999-10-26  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_cma230.cdl:
+
+	Rename CYGBLD_GLOBAL_PREFIX to
+	CYGBLD_GLOBAL_COMMAND_PREFIX
+
+1999-10-20  Simon FitzMaurice <sdf@cygnus.co.uk>
+	* cdl/hal_arm_aeb.cdl:
+
+	Remove -Wl options from compiler flags
+
+1999-10-20  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_cma230.cdl:
+	Define memory layout-related CDL options.
+
 
 1999-10-19  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
@@ -65,15 +166,40 @@
 	* misc/gdb_module.c: Likewise
 	* src/PKGconf.mak: Likewise
 
+1999-10-18  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_cma230.cdl:
+
+	Define CYGTST_TESTING_IDENTIFIER and
+	CYGBLD_GLOBAL_PREFIX as a functions of CYGHWR_THUMB.
+
+	Define CYGBLD_GLOBAL_CFLAGS and CYGBLD_GLOBAL_LDFLAGS.
+
 1999-10-14  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* misc/STUBS_config: Updated.
 
+1999-10-06  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_cma230.cdl:
+	Define CYGTST_TESTING_IDENTIFIER.
+
+1999-09-16  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal_arm_cma230.h: 
+	* cdl/hal_arm_cma230.cdl: 
+	Removed arm/thumb options [defined by platform template].
+	
 1999-08-16  John Dallaway  <jld@cygnus.co.uk>
 
 	* include/pkgconf/hal_arm_cma230.h:
 
 	Proper case various display strings.
+
+1999-08-12  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_cma230.cdl:
+	Define CYG_HAL_STARTUP and CYGHWR_MEMORY_LAYOUT.
 
 1999-06-09  John Dallaway  <jld@cygnus.co.uk>
 
@@ -96,6 +222,8 @@
 	enabled.  Second, the interrupt mask register does not read
 	back properly, so a memory shadow is necessary.
 
+	* include/pkgconf/hal_arm_cma230.h: Add 'cma230T' (Thumb mode)
+	as a platform.
 
 //===========================================================================
 //####COPYRIGHTBEGIN####

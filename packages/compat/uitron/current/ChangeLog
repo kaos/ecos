@@ -1,3 +1,30 @@
+2000-03-20  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/uitron.cdl:
+
+	Adjust documentation URLs.
+
+2000-03-13  Jesper Skov  <jskov@redhat.com>
+
+	* tests/testintr.cxx: Don't try to disable clock on PowerPC.
+
+2000-03-03  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/testintr.cxx (task1): Only test ena_int() and dis_int()
+	for E_PAR if CYGSEM_UITRON_BAD_PARAMS_RETURN_ERRORS.
+
+2000-02-28  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/uit_func.h: add ena_int() and dis_int().
+
+	* include/uit_func.inl (dis_int): New function added.
+	(ena_int): New function added.
+
+	* tests/testintr.cxx (task1): Add a test of ena_int() and
+	dis_int(); easiest done here because we have an interrupt number -
+	for the clock - in our hands here already for the rest of the
+	test.
+
 2000-02-02  Jesper Skov  <jskov@redhat.com>
 
 	* tests/testintr.cxx: Don't output DELAYLOCKSCHED quite so often
@@ -10,6 +37,16 @@
 
 	* include/uit_func.inl (get_tid): Check the sched lock for
 	non-task portions, ie. ISR/DSR will have the scheduler locked.
+
+2000-01-31 Simon FitzMaurice  <sdf@cygnus.co.uk>
+  * compat/uitron/current/cdl/uitron.cdl
+
+  Adjust help URLs in line with new doc layout.
+
+2000-01-28 Simon FitzMaurice  <sdf@cygnus.co.uk>
+  * compat/uitron/current/cdl/uitron.cdl
+
+  Adjust help URLs in line with new doc layout.
 
 2000-01-28  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
@@ -28,14 +65,41 @@
 	* src/uit_func.cxx: Initialize Cyg_Clock::converter type objects
 	if the time unit is set to milliSeconds.
 
+	* cdl/uitron.cdl: Add new option
+	CYGSEM_UITRON_TIME_IS_MILLISECONDS to control just what it says.
+
+	Add an include of the kernel config file to the generated
+	pkgconf/uitron.h: tests at the very least need it!  This is a
+	correct thing to do because the kernel config defines a lot of the
+	semantics of the uITRON layer, as well as being needed for
+	backward compatibility.
+
+	Also add uit_ifnc.cxx to the files that need compiling.  Due to
+	the previous screwup, no testing has been applied to the uITRON
+	system under CDL, because it thought the kernel was absent, so
+	this had not been detected.  Doh.
+
 2000-01-25  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* tests/testintr.cxx (cyg_start): externC addded.
+
+2000-01-19  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/*.cdl: Add descriptions to a number of options &c which were
+	lacking same, also tidied up other typos as noticed en passant.
 
 1999-11-09  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/uit_objs.cxx: Make the stack size failsafe be tested against
 	the minimum stack size, not the typical one.
+
+1999-11-03  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/uitron.cdl: Define tests.
+
+1999-10-07  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/uitron.cdl: Specify radio buttons using CDL interfaces.
 
 1999-09-06  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
@@ -56,9 +120,16 @@
 	tx39 ;-( oh well.  Made the whole test simulator-friendly ie. much
 	shorter, made the output more friendly to me.
 
+1999-08-26  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/uitron.cdl (CYGNUM_UITRON_ISR_ACTION_QUEUESIZE): add a
+	"default_value 32" - ooops.
 
 1999-08-26  Hugo Tyson  <hmt@cygnus.co.uk>
 
+	* cdl/uitron.cdl: Add configury for lovely new interrupt-safe
+	functions: just "try immediate execution" [is the sched lock one?]
+	and queue size.
 
 	* include/pkgconf/uitron.h: Add configury for lovely new
 	interrupt-safe functions: just "try immediate execution" [ie. if
@@ -93,6 +164,15 @@
 
 	* tests/PKGconf.mak (TESTS): Add new testcase testintr.cxx
 	* src/PKGconf.mak (COMPILE): Add new source file uit_ifnc.cxx
+
+1999-08-17  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/uitron.cdl: Implement radio buttons using
+	"FIXME radio" hack in description field for now.
+
+1999-07-30  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/uitron.cdl: Tidy display string capitalisation.
 
 1999-05-26  Jesper Skov  <jskov@cygnus.co.uk>
 

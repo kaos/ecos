@@ -1,10 +1,10 @@
-// eCos memory layout - Wed Oct 27 13:28:21 1999
+// eCos memory layout - Tue Feb 29 14:48:14 2000
 
 // This is a generated file - do not edit
 
 MEMORY
 {
-    ram : ORIGIN = 0, LENGTH = 0x00FD7000
+    ram : ORIGIN = 0, LENGTH = 0xfd9000
 }
 
 SECTIONS
@@ -12,13 +12,13 @@ SECTIONS
     SECTIONS_BEGIN
     __reserved = 0;
     SECTION_rom_vectors (ram, 0x8000, LMA_EQ_VMA)
-    SECTION_text (ram, ALIGN (0x1), LMA_EQ_VMA)
-    SECTION_fini (ram, ALIGN (0x1), LMA_EQ_VMA)
-    SECTION_rodata (ram, ALIGN (0x1), LMA_EQ_VMA)
-    SECTION_rodata1 (ram, ALIGN (0x1), LMA_EQ_VMA)
-    SECTION_fixup (ram, ALIGN (0x1), LMA_EQ_VMA)
-    SECTION_gcc_except_table (ram, ALIGN (0x1), LMA_EQ_VMA)
-    SECTION_data (ram, ALIGN (0x1), LMA_EQ_VMA)
+    SECTION_text (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_fini (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_rodata (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_rodata1 (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_fixup (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_gcc_except_table (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_data (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_bss (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTIONS_END
 }

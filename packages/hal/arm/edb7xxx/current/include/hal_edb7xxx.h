@@ -105,6 +105,9 @@
 #define SYSCON3 0x80002200 // System control #3
 #define SYSCON3_ADCCON    (1<<0) // ADC enable
 #define SYSCON3_CLKCTL(n) (n<<1) // Processor block speed ((n+1)*18.432)MHz
+#if defined(__EDB7209)
+#define SYSCON3_I2SSEL    (1<<3) // Enable i2s instead of ssi#2
+#endif
 
 #define SYSFLG1 0x80000140 // System flags #1
 #define SYSFLG1_MCDR     (1<<0) // Media changed - direct read
@@ -162,6 +165,9 @@
 #define INTSR3  0x80002240 // Interrupt status #3
 #if defined(__EDB7211)
 #define INTSR3_MCPINT (1<<0) // MCP interrupt
+#endif
+#if defined(__EDB7209)
+#define INTSR3_I2SINT (1<<0) // I2S interface interrupt
 #endif
 #define INTMR3  0x80002280 // Interrupt mask #3
 
@@ -249,6 +255,38 @@
 #define MCSR    0x80002100 // MCP status register
 #endif
 
+#if defined(__EDB7209)
+#define I2S_CTL         0x80002000 // I2S (Audio interface) control
+#define I2S_CTL_FLAG    0x0404     // Magic
+#define I2S_CTL_EN      (1<<16)    // Enable interface
+#define I2S_CTL_ECS     (1<<17)    // External clock select
+#define I2S_CTL_LCTM    (1<<19)    // Left channel transmit interrupt
+#define I2S_CTL_LCRM    (1<<20)    // Left channel receive interrupt
+#define I2S_CTL_RCTM    (1<<21)    // Right channel transmit interrupt
+#define I2S_CTL_RCRM    (1<<22)    // Right channel receive interrupt
+#define I2S_CTL_LBM     (1<<23)    // Loop-back mode
+#define I2S_RIGHT_FIFO  0x80002040 // Right channel FIFO access
+#define I2S_LEFT_FIFO   0x80002080 // Left channel FIFO access
+#define I2S_FIFO_CTL    0x800020C0 // FIFO control
+#define I2S_FIFO_CTL_RIGHT_ENABLE  0x00118000
+#define I2S_FIFO_CTL_RIGHT_DISABLE 0x00110000
+#define I2S_FIFO_CTL_LEFT_ENABLE   0x000D8000
+#define I2S_FIFO_CTL_LEFT_DISABLE  0x000D0000
+#define I2S_STAT        0x80002100 // I2S interface status
+#define I2S_STAT_RCTSR  (1<<0)     // Right channel transmit service request
+#define I2S_STAT_RCRSR  (1<<1)     // Right channel receive service request
+#define I2S_STAT_LCTSR  (1<<2)     // Left channel transmit service request
+#define I2S_STAT_LCRSR  (1<<3)     // Left channel receive service request
+#define I2S_STAT_RCTUR  (1<<4)     // Right channel transmit FIFO underrun
+#define I2S_STAT_RCROR  (1<<5)     // Right channel receive FIFO overrun
+#define I2S_STAT_LCTUR  (1<<6)     // Left channel transmit FIFO underrun
+#define I2S_STAT_LCROR  (1<<7)     // Left channel receive FIFO overrun
+#define I2S_STAT_RCTNF  (1<<8)     // Right channel transmit FIFO not full
+#define I2S_STAT_RCRNE  (1<<9)     // Right channel receive FIFO not empty
+#define I2S_STAT_LCTNF  (1<<10)    // Left channel transmit FIFO not full
+#define I2S_STAT_LCRNE  (1<<11)    // Left channel receive FIFO not empty
+#define I2S_STAT_FIFO   (1<<12)    // A FIFO operation has completed
+#endif
 
 #define LEDFLSH 0x800022C0 // LED flash control
 #define LEDFLSH_ENABLE      (1<<6)      // LED enabled

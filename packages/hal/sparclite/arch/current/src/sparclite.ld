@@ -94,6 +94,7 @@ GROUP(libtarget.a libgcc.a)
     _GOT2_START_ = ABSOLUTE (.); *(.got2) _GOT2_END_ = ABSOLUTE (.); \
     . = ALIGN (4); \
     __DEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.devtab*))) __DEVTAB_END__ = ABSOLUTE (.); \
+    __NETDEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.netdevtab*))) __NETDEVTAB_END__ = ABSOLUTE (.); \
     __CTOR_LIST__ = ABSOLUTE (.); \
     KEEP(*(SORT(.ctors*))) \
     __CTOR_END__ = ABSOLUTE (.); \

@@ -50,7 +50,7 @@
 
 #include <pkgconf/hal.h>
 	
-#include <cyg/hal/ppc.inc>
+#include <cyg/hal/arch.inc>
 
 ##-----------------------------------------------------------------------------
 ## PPC60x defined vectors
@@ -75,26 +75,17 @@
 ##-----------------------------------------------------------------------------
 ## PPC60x monitor initialization
 
-# FIXME: Need to generate these C/asm shared variables automatically
-#define CYGNUM_HAL_VECTOR_INTERRUPT          5
-#define CYGNUM_HAL_VECTOR_DECREMENTER        9
-#define CYGNUM_HAL_VECTOR_NMI                31
-#define CYGNUM_HAL_VSR_MAX                   CYGNUM_HAL_VECTOR_NMI
-#define CYGNUM_HAL_VSR_COUNT                 ( CYGNUM_HAL_VSR_MAX + 1 )
-
-
 #ifndef CYGPKG_HAL_PPC_MON_DEFINED
 
 #if     defined(CYG_HAL_STARTUP_ROM) ||                 \
         (       defined(CYG_HAL_STARTUP_RAM) &&         \
                 !defined(CYGSEM_HAL_USE_ROM_MONITOR))
 
-        # If we are starting up from ROM, or we are starting in
-        # RAM and NOT using a ROM monitor, copy exception handler
-	# code to 0 and initialize the VSR table.
-
         .macro  hal_mon_init
-        # First copy exception vectors to RAM
+#ifdef CYGSEM_HAL_POWERPC_COPY_VECTORS
+        # If we are starting up from ROM and want vectors in RAM
+        # or we are starting in RAM and NOT using a ROM monitor,
+        # copy exception handler code to 0.
         lwi     r3,rom_vectors          # r3 = rom start
         lwi     r4,0                    # r4 = ram start
         lwi     r5,rom_vectors_end      # r5 = rom end
@@ -110,8 +101,11 @@
         cmplw   r3,r5                   # compare
         blt     1b                      # loop if not yet done
 2:
+#endif
 
-        # Initialize VSR table
+        # Next initialize the VSR table. This happens whether the
+        # vectors were copied to RAM or not.
+
         # First fill with exception handlers
         lwi     r3,cyg_hal_default_exception_vsr
         lwi     r4,hal_vsr_table
@@ -127,7 +121,7 @@
         lwi     r4,hal_vsr_table
         stw     r3,CYGNUM_HAL_VECTOR_INTERRUPT*4(r4)
         stw     r3,CYGNUM_HAL_VECTOR_DECREMENTER*4(r4)
-	.endm
+        .endm
 
 #elif defined(CYG_HAL_STARTUP_RAM) && defined(CYGSEM_HAL_USE_ROM_MONITOR)
 
@@ -156,12 +150,18 @@
 
 #endif // CYGPKG_HAL_PPC_MON_DEFINED
 
+##-----------------------------------------------------------------------------
+## PPC60x exception state handling
+        .macro	hal_variant_save regs
+        .endm
+
+        .macro	hal_variant_load regs
+        .endm
 
 ##-----------------------------------------------------------------------------
 ## Indicate that the ISR tables are defined in variant.S
 
-## Note: CYG_ISR_TABLE_SIZE must match CYG_ISR_COUNT defined in hal_intr.h.
-#define CYG_ISR_TABLE_SIZE    2
+#define CYG_HAL_PPC_ISR_TABLES_DEFINED
 
 #------------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_VARIANT_INC

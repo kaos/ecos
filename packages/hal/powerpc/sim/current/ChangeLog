@@ -1,15 +1,75 @@
+2000-03-06  Jesper Skov  <jskov@redhat.com>
+
+	* include/pkgconf/mlt_powerpc_sim_ram.mlt: 
+	* include/pkgconf/mlt_powerpc_sim_ram.h: 
+	* include/pkgconf/mlt_powerpc_sim_ram.ldi: 
+	Reserve space for VSR table.
+	
+2000-03-02  Jesper Skov  <jskov@redhat.com>
+
+	* include/pkgconf/mlt_powerpc_sim_ram.mlt: 
+	* include/pkgconf/mlt_powerpc_sim_ram.ldi:
+	Let text section follow vectors without a hardcoded gap.
+
+	* include/hal_diag.h (HAL_DIAG_WRITE_CHAR): Fix typo.
+
+2000-02-28  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_powerpc_sim.cdl: Remove hardcoded copy_vectors
+	definition.
+
+2000-02-21  Jesper Skov  <jskov@redhat.com>
+
+	* src/sim.S:  use arch.inc instead of ppc.inc
+
+2000-02-14  Jesper Skov  <jskov@redhat.com>
+	902064-CR
+	* cdl/hal_powerpc_sim.cdl: 603 CPU, but enable soft-float. Same
+	options in linker flags.
+
 2000-02-11  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_aux.c: Cleaned up includes.
 
 2000-02-07  Jesper Skov  <jskov@redhat.com>
 
+	* cdl/hal_powerpc_sim.cdl:
 	* include/pkgconf/hal_powerpc_sim.h: 
 	Use 60x variant code.
 	
+2000-02-03  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_powerpc_sim.cdl: CYG_HAL_POWERPC_x->CYGPKG_...
+
 2000-01-26  Jesper Skov  <jskov@redhat.com>
 
 	* include/plf_cache.h: Added.
+
+2000-01-24  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/*.cdl:
+
+	Remove obsolete option CYGTST_TESTING_IDENTIFIER.
+
+2000-01-19  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/*.cdl: Add descriptions to a number of options &c which were
+	lacking same, also tidied up other typos as noticed en passant.
+
+2000-01-05  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_powerpc_sim.cdl:
+
+	Define CYG_HAL_POWERPC_SIM to allow kernel test
+	'kcache1' to build.
+
+1999-12-21  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* cdl/hal_powerpc_sim.cdl: Ensure we "puts" to appropriate CDL header
+
+1999-12-20  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* cdl/hal_powerpc_sim.cdl: Add -Wl for linker options.
 
 1999-11-25  Gary Thomas  <gthomas@cygnus.co.uk>
 

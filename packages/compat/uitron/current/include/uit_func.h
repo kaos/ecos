@@ -312,9 +312,11 @@ void    ret_int ( void );
 #define ret_int() return
 ER      loc_cpu ( void );
 ER      unl_cpu ( void );
-#if 0 // NOT SUPPORTED
+
 ER      dis_int ( UINT eintno );
 ER      ena_int ( UINT eintno );
+
+#if 0 // NOT SUPPORTED
 ER      chg_iXX ( UINT iXXXX );
 ER      ref_iXX ( UINT *p_iXXXX );
 #endif

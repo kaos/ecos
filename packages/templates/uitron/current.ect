@@ -1,0 +1,26 @@
+cdl_savefile_version 1;
+cdl_savefile_command cdl_savefile_version {};
+cdl_savefile_command cdl_savefile_command {};
+cdl_savefile_command cdl_configuration { description hardware template package };
+cdl_savefile_command cdl_package { value_source user_value wizard_value inferred_value };
+cdl_savefile_command cdl_component { value_source user_value wizard_value inferred_value };
+cdl_savefile_command cdl_option { value_source user_value wizard_value inferred_value };
+cdl_savefile_command cdl_interface { value_source user_value wizard_value inferred_value };
+
+cdl_configuration template_uitron {
+    description "
+This configuration provides full level S (standard) compliance with
+version 3.02 of the uITRON standard, plus many level E (extended)
+features." ;
+    package     CYGPKG_HAL current ;
+    package     CYGPKG_IO current ;
+    package     CYGPKG_INFRA current ;
+    package     CYGPKG_KERNEL current ;
+    package     CYGPKG_UITRON current ;
+    package     CYGPKG_LIBC current ;
+    package     CYGPKG_LIBM current ;
+    package     CYGPKG_DEVICES_WALLCLOCK current ;
+    package     CYGPKG_ERROR current ;
+};
+
+

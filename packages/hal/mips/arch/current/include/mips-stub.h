@@ -47,9 +47,16 @@
 
 #include <pkgconf/system.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define NUMREGS    90
 
 #if defined(__mips64)
+  #define REGSIZE(X) 8
+  typedef unsigned long long target_register_t;
+#elif defined(CYGPKG_HAL_MIPS_VR4300)
   #define REGSIZE(X) 8
   typedef unsigned long long target_register_t;
 #else
@@ -102,5 +109,9 @@ extern void __skipinst (void);
 extern void __install_breakpoints (void);
 
 extern void __clear_breakpoints (void);
+
+#ifdef __cplusplus
+}      /* extern "C" */
+#endif
 
 #endif // ifndef CYGONCE_HAL_MIPS_STUB_H

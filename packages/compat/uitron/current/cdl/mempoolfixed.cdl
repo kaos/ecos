@@ -1,0 +1,129 @@
+# ====================================================================
+#
+#      mempoolfixed.cdl
+#
+#      uITRON fixed memory pool related configuration data
+#
+# ====================================================================
+#####COPYRIGHTBEGIN####
+#                                                                          
+# -------------------------------------------                              
+# The contents of this file are subject to the Red Hat eCos Public License 
+# Version 1.1 (the "License"); you may not use this file except in         
+# compliance with the License.  You may obtain a copy of the License at    
+# http://www.redhat.com/                                                   
+#                                                                          
+# Software distributed under the License is distributed on an "AS IS"      
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+# License for the specific language governing rights and limitations under 
+# the License.                                                             
+#                                                                          
+# The Original Code is eCos - Embedded Configurable Operating System,      
+# released September 30, 1998.                                             
+#                                                                          
+# The Initial Developer of the Original Code is Red Hat.                   
+# Portions created by Red Hat are                                          
+# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# All Rights Reserved.                                                     
+# -------------------------------------------                              
+#                                                                          
+#####COPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      jskov
+# Original data:  hmt
+# Contributors:
+# Date:           1999-07-07
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_option CYGNUM_UITRON_MEMPOOLFIXED {
+    display       "Number of fixed-size memorypools"
+    flavor        data
+    legal_values  1 to 65535
+    default_value 3
+    description   "
+        The number of uITRON Fixed-Size
+        Memorypools present in the system.
+        Valid Fixed-Size Memorypool IDs will range
+        from 1 to this value."
+}
+cdl_component CYGPKG_UITRON_MEMPOOLFIXED_CREATE_DELETE {
+    display       "Support create and delete"
+    flavor        bool
+    default_value 1
+    active_if     (0 < CYGNUM_UITRON_MEMPOOLFIXED)
+    description   "
+        Support fixed-size memory pool
+        create and delete operations
+        (cre_mpf, del_mpf).
+        Otherwise all fixed mempools are created,
+        up to the number specified above."
+
+    cdl_option CYGNUM_UITRON_MEMPOOLFIXED_INITIALLY {
+        display       "Number of fixed mempools created initially"
+        flavor        data
+        legal_values  0 to 65535
+        default_value 3
+        description   "
+            The number of fixed mempools initially created.
+            This number should not be more than the number
+            of fixed mempools in the system, though setting
+            it to a large value to mean 'all' is acceptable.
+            Initially, only fixed mempools numbered from
+            1 to this number exist;
+            higher numbered ones must be created before use.
+            Whilst all mempools must be initialized to tell
+            the system what memory to use for each pool,
+            it is only useful to initialize the blocksize of
+            fixed mempools up to this number;
+            the blocksize for higher numbered ones
+            will be defined when they are created."
+    }
+}
+cdl_option CYGDAT_UITRON_MEMPOOLFIXED_EXTERNS {
+    display       "Externs for initialization"
+    flavor        data
+    default_value {"static char fpool1[ 2000 ], \\\n\
+                                fpool2[ 2000 ], \\\n\
+                                fpool3[ 2000 ];"}
+    description   "
+        Fixed mempool initializers may refer to external
+        objects such as memory for the pool to manage.
+        Use this option to define or declare any external
+        objects needed by the pool's static initializer below.
+        Example: create some memory for a mempool using
+        'static char fpool1\[2000\];'
+        to set up a chunk of memory of 2000 bytes.
+        Note: this option is invoked in the 'outermost' context
+        of C++ source, where global/static objects are created;
+        it should contain valid, self-contained, C++ source."
+}
+cdl_option CYGDAT_UITRON_MEMPOOLFIXED_INITIALIZERS {
+    display       "Static initializers"
+    flavor        data
+    default_value {"CYG_UIT_MEMPOOLFIXED( fpool1, 2000,  20 ), \\\n\
+                    CYG_UIT_MEMPOOLFIXED( fpool2, 2000, 100 ), \\\n\
+                    CYG_UIT_MEMPOOLFIXED( fpool3, 2000, 500 ),"}
+    description   "
+        Fixed block memory pools should be statically
+        initialized: enter a list of initializers
+        separated by commas, one per line.
+        An initializer is
+        'CYG_UIT_MEMPOOLFIXED(ADDR,SIZE,BLOCK)'
+        where addr is the address of memory to manage,
+        size is the total size of that memory, and
+        block is the block size for allocation by the pool.
+        If create and delete operations are supported,
+        initializers of the form
+        'CYG_UIT_MEMPOOLFIXED_NOEXS(ADDR,SIZE)' should be
+        used for pools which are not initially created, to tell
+        the system what memory to use for each pool.
+        Note: this option is invoked in the context of a
+        C++ array initializer, between curly brackets.
+        Ensure that the number of initializers here exactly
+        matches the total number of fixed pools specified."
+}

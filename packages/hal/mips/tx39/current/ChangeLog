@@ -1,3 +1,21 @@
+2000-03-21  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/mips_tx39.ld: Revert previous change, but add .lit8 and .lit4
+	input sections for .data instead
+
+2000-03-16  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/mips_tx39.ld: Update from latest "mips-tx39-elf-ld --verbose"
+	output so that it properly reflects what the tools expect
+
+2000-02-23  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/var_intr.h: CYG_HAL_MIPS_SIM -> CYGPKG_HAL_MIPS_SIM
+
+2000-02-16  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_mips_tx39.cdl: removed fix me.
+
 1999-12-21  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* include/var_arch.h: Rename CYG_HAL_USE_ROM_MONITOR_CYGMON ->
@@ -7,6 +25,36 @@
 	CYGSEM_HAL_USE_ROM_MONITOR throughout
 
 	* include/pkgconf/hal_mips_tx39.h: Fix typo
+
+	* cdl/hal_mips_tx39.cdl: Some cosmetic layout changes and fixed typos
+	Ensure we "puts" to correct CDL header
+	Add CYGHWR_HAL_MIPS_TX3904_TRR_REQUIRES_SYNC which for some reason
+	wasn't brought over from ~CDL
+
+1999-12-02  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_mips_tx39.cdl:
+
+	Use the <PACKAGE> token in custom rules.
+
+1999-12-01  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_mips_tx39.cdl:
+
+	Use the <PREFIX> token in custom rules.
+
+1999-11-04  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_mips_tx39.cdl:
+
+	Output custom rule dependency information to .deps files in
+	the current directory.
+
+	Dispense with the need to create a 'src' sub-directory.
+
+1999-11-02  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal_mips_tx39.cdl: Added.
 
 1999-10-26  Nick Garnett  <nickg@cygnus.co.uk>
 

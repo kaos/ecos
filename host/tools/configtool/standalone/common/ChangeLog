@@ -1,0 +1,30 @@
+2000-03-08  Bart Veer  <bartv@redhat.com>
+
+	* configure.in (cyg_ac_infra_libdir):
+	Fix typo detected by Solaris build
+
+2000-01-20  Bart Veer  <bartv@redhat.com>
+
+	* cdl_exec.cxx:
+	Allow for libcdl interface change to CdlConfigurationBody::add()
+
+1999-11-11  Bart Veer  <bartv@redhat.co.uk>
+
+	* configure.in
+	* configure
+	* Makefile.am
+	* Makefile
+	Fixed VC++ build problems
+
+1999-11-10  Bart Veer  <bartv@redhat.co.uk>
+
+	* acinclude.m4
+	* configure.in
+	* Makefile.am
+	* aclocal.m4
+	* configure
+	* Makefile.in
+	Created
+
+	* ChangeLog
+	Created

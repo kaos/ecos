@@ -110,6 +110,7 @@ GROUP(libtarget.a libgcc.a)
       KEEP(*(SORT(.dtors*))) __DTOR_END__ = ABSOLUTE(.);                    \
     . = ALIGN(8);                                                           \
     __DEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.devtab*))) __DEVTAB_END__ = ABSOLUTE (.); \
+    __NETDEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.netdevtab*))) __NETDEVTAB_END__ = ABSOLUTE (.); \
     _GOT2_START_ = ABSOLUTE(.); *(.got2) _GOT2_END_ = ABSOLUTE(.);          \
     _GOT_START_ = ABSOLUTE(.); _GLOBAL_OFFSET_TABLE_ = ABSOLUTE(. + 32768); \
     _SDA_BASE_ = ABSOLUTE(.); *(.got.plt) *(.got)                           \

@@ -48,13 +48,17 @@
 #include <pkgconf/hal.h>
 #include <cyg/infra/cyg_type.h>
 
+#include <cyg/hal/ppc_regs.h>           // CYGARC_REG_MSR_EE
+
 //-----------------------------------------------------------------------------
 // Processor saved states:
-// The layout of this structure is also defined in "ppc.inc", for assembly
-// code. Do not change this without changing that (or vice versa).
 
 typedef struct 
 {
+#ifdef CYGDBG_HAL_POWERPC_FRAME_WALLS
+    cyg_uint32   wall_head;
+#endif
+
     // These are common to all saved states
     cyg_uint32   d[32];                 // Data regs
     cyg_uint32   cr;                    // Condition Reg
@@ -67,17 +71,17 @@ typedef struct
     cyg_uint32   msr;                   // Machine State Reg
     cyg_uint32   pc;                    // Program Counter
 
+    // This marks the limit of state saved during a context switch and
+    // is used to calculate necessary stack allocation for context switches.
+    // It would probably be better to have a union instead...
+    cyg_uint32   context_size[0];
+
     // These are only saved for exceptions and interrupts
     cyg_uint32   vector;                // Vector number
 
-    // These are only saved for exceptions, and are not restored
-    // when continued.
-    cyg_uint32   hid0;                  // Hw Implementation Dependent
-    cyg_uint32   dar;                   // Data Address Reg
-    cyg_uint32   dsisr;                 // DSISR
-    cyg_uint32   pvr;                   // Processor Version
-
-    // Eventually add BATs, SRs and FP registers too.
+#ifdef CYGDBG_HAL_POWERPC_FRAME_WALLS
+    cyg_uint32   wall_tail;
+#endif
 } HAL_SavedRegisters;
 
 //-----------------------------------------------------------------------------
@@ -133,6 +137,7 @@ externC void cyg_hal_deliver_exception( CYG_WORD code, CYG_ADDRWORD data );
     (_regs_)->lr = (CYG_WORD)(_entry_);        /* LR = entry point       */   \
     (_regs_)->pc = (CYG_WORD)(_entry_);        /* set PC for thread dbg  */   \
     (_regs_)->ctr = 0;                         /* CTR = 0                */   \
+    (_regs_)->msr = CYGARC_REG_MSR_EE;         /* MSR = enable irqs      */   \
     _sparg_ = (CYG_ADDRESS)_regs_;                                            \
     CYG_MACRO_END
 
@@ -222,36 +227,34 @@ asm volatile (" .globl  " #_label_ ";"          \
 
 //-----------------------------------------------------------------------------
 // HAL setjmp
-// Note: These definitions are repeated in context.S. If changes are required
-// remember to update both sets.
 
-#define CYGARC_JMP_BUF_SP        0
-#define CYGARC_JMP_BUF_R2        1
-#define CYGARC_JMP_BUF_R13       2
-#define CYGARC_JMP_BUF_R14       3
-#define CYGARC_JMP_BUF_R15       4
-#define CYGARC_JMP_BUF_R16       5
-#define CYGARC_JMP_BUF_R17       6
-#define CYGARC_JMP_BUF_R18       7
-#define CYGARC_JMP_BUF_R19       8
-#define CYGARC_JMP_BUF_R20       9
-#define CYGARC_JMP_BUF_R21      10
-#define CYGARC_JMP_BUF_R22      11
-#define CYGARC_JMP_BUF_R23      12
-#define CYGARC_JMP_BUF_R24      13
-#define CYGARC_JMP_BUF_R25      14
-#define CYGARC_JMP_BUF_R26      15
-#define CYGARC_JMP_BUF_R27      16
-#define CYGARC_JMP_BUF_R28      17
-#define CYGARC_JMP_BUF_R29      18
-#define CYGARC_JMP_BUF_R30      19
-#define CYGARC_JMP_BUF_R31      20
-#define CYGARC_JMP_BUF_LR       21
-#define CYGARC_JMP_BUF_CR       22
+typedef struct {
+    cyg_uint32 sp;
+    cyg_uint32 r2;
+    cyg_uint32 r13;
+    cyg_uint32 r14;
+    cyg_uint32 r15;
+    cyg_uint32 r16;
+    cyg_uint32 r17;
+    cyg_uint32 r18;
+    cyg_uint32 r19;
+    cyg_uint32 r20;
+    cyg_uint32 r21;
+    cyg_uint32 r22;
+    cyg_uint32 r23;
+    cyg_uint32 r24;
+    cyg_uint32 r25;
+    cyg_uint32 r26;
+    cyg_uint32 r27;
+    cyg_uint32 r28;
+    cyg_uint32 r29;
+    cyg_uint32 r30;
+    cyg_uint32 r31;
+    cyg_uint32 lr;
+    cyg_uint32 cr;
+} hal_jmp_buf_t;
 
-#define CYGARC_JMP_BUF_SIZE     23
-
-typedef cyg_uint32 hal_jmp_buf[CYGARC_JMP_BUF_SIZE];
+typedef cyg_uint32 hal_jmp_buf[sizeof(hal_jmp_buf_t) / sizeof(cyg_uint32)];
 
 externC int hal_setjmp(hal_jmp_buf env);
 externC void hal_longjmp(hal_jmp_buf env, int val);
@@ -284,8 +287,9 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 // So that makes r0..r12 + cr, xer, lr, ctr:
 #define CYGNUM_HAL_STACK_FRAME_SIZE (4 * 17)
 
-// Stack needed for a context switch (ppcref_context_size from ppc.inc) 
-#define CYGNUM_HAL_STACK_CONTEXT_SIZE (4 * 38)
+// Stack needed for a context switch
+#define CYGNUM_HAL_STACK_CONTEXT_SIZE \
+    (38*4 /* offsetof(HAL_SavedRegisters, context_size) */)
 
 // Interrupt + call to ISR, interrupt_end() and the DSR
 #define CYGNUM_HAL_STACK_INTERRUPT_SIZE \

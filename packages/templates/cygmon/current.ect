@@ -1,0 +1,109 @@
+cdl_savefile_version 1;
+cdl_savefile_command cdl_savefile_version {};
+cdl_savefile_command cdl_savefile_command {};
+cdl_savefile_command cdl_configuration { description hardware template package };
+cdl_savefile_command cdl_package { value_source user_value wizard_value inferred_value };
+cdl_savefile_command cdl_component { value_source user_value wizard_value inferred_value };
+cdl_savefile_command cdl_option { value_source user_value wizard_value inferred_value };
+cdl_savefile_command cdl_interface { value_source user_value wizard_value inferred_value };
+
+cdl_configuration template_stubs {
+    description "
+This is the eCos CygMon configuration. It is used when building CygMon." ;
+    package     CYGPKG_HAL current ;
+    package     CYGPKG_INFRA current ;
+    package     CYGPKG_IO current ;
+    package     CYGPKG_ERROR current ;
+    package     CYGPKG_CYGMON current ;
+    package     CYGPKG_KERNEL current ;
+    package     CYGPKG_LIBC current ;
+};
+
+cdl_option CYGBLD_BUILD_CYGMON {
+    user_value 1 ;
+};
+
+cdl_option CYGPKG_LIBC_STDIO {
+    user_value 0 ;
+}
+
+cdl_option CYGPKG_LIBC_ENVIRONMENT {
+    user_value 0 ;
+}
+
+cdl_option CYGFUN_LIBC_strtod {
+    user_value 0 ;
+}
+
+cdl_option CYGFUN_LIBC_ATEXIT {
+    user_value 0 ;
+}
+
+cdl_option CYGSEM_LIBC_EXIT_CALLS_FFLUSH {
+    user_value 0 ;
+}
+
+cdl_option CYGSEM_LIBC_PER_THREAD_ERRNO {
+    user_value 0 ;
+}
+
+cdl_option CYGSEM_LIBC_TIME_TIME_WORKING {
+    user_value 0 ;
+}
+
+cdl_option CYGSEM_LIBC_TIME_SETTIME_WORKING {
+    user_value 0 ;
+}
+
+
+cdl_option CYGSEM_LIBC_SIGNALS_THREAD_SAFE {
+    user_value 0 ;
+}
+
+cdl_option CYGSEM_LIBC_SIGNALS_RAISE_SETS_ERRNO {
+    user_value 0 ;
+}
+
+cdl_option CYGSEM_LIBC_SIGNALS_SIGNAL_SETS_ERRNO {
+    user_value 0 ;
+}
+
+cdl_option CYGIMP_LIBC_SIGNALS_RAISE_INLINE {
+    user_value 0 ;
+}
+
+cdl_option CYGIMP_LIBC_SIGNALS_SIGNAL_INLINE {
+    user_value 0 ;
+}
+
+cdl_option CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT {
+    user_value 0 ;
+};
+
+cdl_option CYGDBG_HAL_COMMON_CONTEXT_SAVE_MINIMUM {
+    user_value 0 ;
+};
+
+cdl_option CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS {
+    user_value 1 ;
+};
+
+cdl_option CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT {
+    user_value 0 ;
+};
+
+cdl_option CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT {
+    user_value 0 ;
+};
+
+cdl_option CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT {
+    user_value 0 ;
+};
+
+cdl_option CYGSEM_HAL_ROM_MONITOR {
+    user_value 1 ;
+};
+
+cdl_component CYG_HAL_STARTUP {
+    user_value ROM ;
+};

@@ -384,9 +384,11 @@ void hal_diag_read_char_serial2(char *c)
 
     *c = *tty_rx;
 
+#if !defined(CYGSEM_HAL_USE_ROM_MONITOR_CygMon)    
     // We must ack the interrupt caused by that read to avoid
-    // confusing cygmon.
+    // confusing the stubs.
     HAL_INTERRUPT_ACKNOWLEDGE( CYGNUM_HAL_INTERRUPT_SERIAL_2_RX );
+#endif
 }
 
 #if defined(CYG_KERNEL_DIAG_SERIAL2)
@@ -461,7 +463,7 @@ void hal_diag_write_char(char c)
             hal_diag_write_char_serial(hex[(csum>>4)&0xF]);
             hal_diag_write_char_serial(hex[csum&0xF]);
 
-
+#if !defined(CYGSEM_HAL_USE_ROM_MONITOR_CygMon)
             {
                 char c1;
 
@@ -473,6 +475,11 @@ void hal_diag_write_char(char c)
                     cyg_hal_user_break( NULL );
 
             }
+#else
+            // When using Cygmon, the ack character is absorbed by cygmon's
+            // serial interrupt handler that is looking for Ctrl-Cs.
+            break;
+#endif
         }
         
         pos = 0;

@@ -1,5 +1,42 @@
+2000-02-29  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+        * include/pkgconf/mlt_arm_cl7111_ram.h:
+        * include/pkgconf/mlt_arm_cl7111_ram.ldi:
+        * include/pkgconf/mlt_arm_cl7111_ram.mlt:
+        * include/pkgconf/mlt_arm_cl7111_rom.h:
+        * include/pkgconf/mlt_arm_cl7111_rom.ldi:
+        * include/pkgconf/mlt_arm_cl7111_rom.mlt:
+        * include/pkgconf/mlt_arm_edb7209_rom.h:
+        * include/pkgconf/mlt_arm_edb7209_rom.ldi:
+        * include/pkgconf/mlt_arm_edb7211_ram.h:
+        * include/pkgconf/mlt_arm_edb7211_ram.ldi:
+        * include/pkgconf/mlt_arm_edb7211_ram.mlt:
+        * include/pkgconf/mlt_arm_edb7211_rom.h:
+        * include/pkgconf/mlt_arm_edb7211_rom.ldi:
+        * include/pkgconf/mlt_arm_edb7211_rom.mlt:
+        * include/pkgconf/mlt_arm_edb7212_ram.h:
+        * include/pkgconf/mlt_arm_edb7212_ram.ldi:
+        * include/pkgconf/mlt_arm_edb7212_ram.mlt:
+        * include/pkgconf/mlt_arm_edb7212_rom.h:
+        * include/pkgconf/mlt_arm_edb7212_rom.ldi:
+        * include/pkgconf/mlt_arm_edb7212_rom.mlt:
+	Align all sections on word boundaries
+
+2000-02-28  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* misc/kbd_support.c: Fix typo (in comment).
+
+	* misc/kbd_test.c: Remove unused LCD include.
+
+2000-02-18  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/hal_arm_edb7xxx.cdl (CYGBLD_BUILD_GDB_STUBS): When
+	building stubs, define every dependency required here rather than
+	in the template
+
 2000-02-16  Jesper Skov  <jskov@redhat.com>
 
+	* src/edb7xxx_misc.c:
 	* include/hal_platform_setup.h:
 	CYG_HAL_ARM -> CYGPKG_HAL_ARM
 
@@ -18,9 +55,29 @@
 	* include/pkgconf/hal_arm_edb7xxx.h: 
 	Removed stubs as a legal startup type.
 
+2000-02-09  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_edb7xxx.cdl: Added remaining build dependencies.
+
+2000-02-07  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_edb7xxx.cdl: Use cpu option when linking.
+	Fixed typo.
+	
+2000-02-03  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_edb7xxx.cdl: Implements stubs.
+
 2000-02-02  Jesper Skov  <jskov@redhat.com>
 
+	* cdl/hal_arm_edb7xxx.cdl: Added build rule for flash program.
+
 	* misc/prog_flash.c (program_flash): Added expected argument.
+
+2000-02-02  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_edb7xxx.cdl: Use common stubs code and build
+	rules. Removed stubs startup type.
 
 2000-01-31  Gary Thomas  <gthomas@cygnus.co.uk>
 
@@ -29,6 +86,47 @@
 
 	* src/edb7xxx_misc.c (hal_clock_reset): Increase DRAM 'idle' time
 	to give marginal hardware a chance.
+
+2000-01-28  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_edb7xxx.cdl:
+
+	Fix parenting of CYGDAT_CYGMON_CONSOLE_DEV and
+	CYGBLD_BUILD_CYGMON_BIN.
+
+2000-01-28  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_edb7xxx.cdl: Corrected build runes.
+
+2000-01-27  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_edb7xxx.cdl (CYGBLD_CYGMON_TARGET_REQUIREMENTS):
+	Improved serial expression.
+	Moved options into a CygMon HAL component.
+
+2000-01-26  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/hal_arm_edb7xxx.cdl (CYGBLD_CYGMON_TARGET_REQUIREMENTS): Only 
+	activate when CYGPKG_CYGMON enabled
+
+2000-01-26  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_edb7xxx.cdl: Fix display string. Add CygMon options.
+
+2000-01-24  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal_arm_edb7xxx.cdl: Add stubs build rule.
+
+2000-01-24  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/*.cdl:
+
+	Remove obsolete option CYGTST_TESTING_IDENTIFIER.
+
+2000-01-19  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/*.cdl: Add descriptions to a number of options &c which were
+	lacking same, also tidied up other typos as noticed en passant.
 
 2000-01-03  Gary Thomas  <gthomas@cygnus.co.uk>
 
@@ -48,6 +146,18 @@
 	* support/dl_edb7xxx.c (main): Give the correct device name if
 	using the default.
 
+1999-12-08  Gary Thomas  <gthomas@cygnus.co.uk>
+	* include/pkgconf/mlt_arm_edb7212_ram.ldi:
+	* include/pkgconf/mlt_arm_edb7212_ram.mlt:
+	* include/pkgconf/mlt_arm_edb7212_rom.h:
+	* include/pkgconf/mlt_arm_edb7212_rom.ldi:
+	* include/pkgconf/mlt_arm_edb7212_rom.mlt:
+	* include/pkgconf/mlt_arm_edb7212_ram.h: Update with .sram section.
+
+1999-12-07  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* cdl/hal_arm_edb7xxx.cdl: Add descriptive strings used by CygMon.
+
 1999-11-29  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/hal_diag.c: Fix typoe: CYGDGB_HAL_DIAG_DISABLE_GDB_PROTOCOL
@@ -56,6 +166,10 @@
 1999-11-27  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* include/pkgconf/hal_arm_edb7xxx.h (HAL_PLATFORM_BOARD): Add missing endif
+
+1999-11-26  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* misc/STUBS_config: Mention edb7212 in usage
 
 1999-11-26  Gary Thomas  <gthomas@cygnus.co.uk>
 
@@ -77,9 +191,13 @@
 
 1999-11-25  Gary Thomas  <gthomas@cygnus.co.uk>
 
+	* include/pkgconf/mlt_arm_edb7212_stubs.h: 
 	* include/pkgconf/mlt_arm_edb7211_stubs.h: 
 	* include/pkgconf/mlt_arm_cl7111_stubs.h: New file.
 
+	* include/pkgconf/mlt_arm_edb7209_rom.h: 
+	* include/pkgconf/mlt_arm_edb7212_ram.h: 
+	* include/pkgconf/mlt_arm_edb7212_rom.h: 
 	* include/pkgconf/mlt_arm_edb7211_ram.h: 
 	* include/pkgconf/mlt_arm_edb7211_rom.h: 
 	* include/pkgconf/mlt_arm_cl7111_rom.h: 
@@ -89,7 +207,23 @@
 
 	* src/edb7xxx_misc.c (hal_clock_reset): Fix DRAM "idle" time > 200us.
 
+1999-11-23  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/edb7xxx_misc.c (hal_clock_reset): EP7209 has no DRAM, thus
+	no DRAM starvation problem.
+
 1999-11-22  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/mlt_arm_edb7212_stubs.h: New file.
+	
+	* include/pkgconf/mlt_arm_edb7209_rom.h: 
+	* include/pkgconf/mlt_arm_edb7209_rom.mlt: 
+	* include/pkgconf/mlt_arm_edb7209_rom.ldi: 
+	* include/pkgconf/mlt_arm_edb7212_rom.h: 
+	* include/pkgconf/mlt_arm_edb7212_rom.mlt: 
+	* include/pkgconf/mlt_arm_edb7212_rom.ldi: 
+	* include/pkgconf/mlt_arm_edb7212_stubs.mlt: 
+	* include/pkgconf/mlt_arm_edb7212_stubs.ldi: Add MMU tables section.
 
 	* include/pkgconf/mlt_arm_edb7211_stubs.h: New file.
 	
@@ -112,13 +246,35 @@
 
 1999-11-18  Gary Thomas  <gthomas@cygnus.co.uk>
 
+	* include/pkgconf/mlt_arm_edb7209_ram.mlt:
+	* include/pkgconf/mlt_arm_edb7209_ram.ldi:
+	* include/pkgconf/mlt_arm_edb7209_stubs.mlt:
+	* include/pkgconf/mlt_arm_edb7209_stubs.ldi: Removed
+	
+	* include/pkgconf/mlt_arm_edb7209_rom.mlt:
+	* include/pkgconf/mlt_arm_edb7209_rom.ldi:
 	* include/pkgconf/mlt_arm_cl7111_rom.mlt:
 	* include/pkgconf/mlt_arm_cl7111_rom.ldi:
 	* include/pkgconf/mlt_arm_cl7111_ram.mlt:
 	* include/pkgconf/mlt_arm_cl7111_ram.ldi: New [more complete] layout.
 
+	* include/pkgconf/mlt_arm_edb7209_rom.h: 
 	* include/pkgconf/mlt_arm_cl7111_rom.h: 
 	* include/pkgconf/mlt_arm_cl7111_ram.h: New file(s).
+
+1999-11-18  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/hal_arm_edb7xxx.h: EDB7209 has only ROM startup.
+
+	* cdl/hal_arm_edb7xxx.cdl: EDB7209 has only ROM startup.
+1999-11-16  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_edb7xxx.cdl: Tidy display string.
+
+1999-11-16  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* cdl/hal_arm_edb7xxx.cdl: Fix typo.
+	Flushing out support options for various platforms.
 
 1999-11-15  Gary Thomas  <gthomas@cygnus.co.uk>
 
@@ -148,6 +304,13 @@
 
 	* src/hal_diag.c: Fix stupid CPP error.
 
+	* include/pkgconf/mlt_arm_eb7212_rom.h:
+	* include/pkgconf/mlt_arm_eb7212_ram.h: New files.
+
+	* include/pkgconf/mlt_arm_eb7212_ram.ldi:
+	* include/pkgconf/mlt_arm_eb7212_ram.mlt:
+	* include/pkgconf/mlt_arm_eb7212_rom.ldi:
+	* include/pkgconf/mlt_arm_eb7212_ram.mlt:
 	* include/pkgconf/mlt_arm_eb7211_ram.ldi:
 	* include/pkgconf/mlt_arm_eb7211_ram.mlt:
 	* include/pkgconf/mlt_arm_eb7211_rom.ldi:
@@ -160,9 +323,18 @@
 
 1999-11-03  Gary Thomas  <gthomas@cygnus.co.uk>
 
+	* cdl/hal_arm_cl7211.cdl: 
 	* include/pkgconf/hal_arm_cl7211.h: Change default clock speed
 	to 36MHz with no software DRAM refresh (hardware is stable with
 	this combo).
+
+1999-11-03  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_cl7211.cdl: Define build options.
+
+1999-11-01  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal_arm_cl7211.cdl: Remove define_proc comments.
 
 1999-10-27  Gary Thomas  <gthomas@cygnus.co.uk>
 
@@ -200,11 +372,67 @@
 	* include/hal_platform_setup.h: Fix DRAM mapping (was slightly
 	incorrect at end of first DRAM chip).
 
+1999-10-26  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_cl7211.cdl:
+
+	Rename CYGBLD_GLOBAL_PREFIX to
+	CYGBLD_GLOBAL_COMMAND_PREFIX
+
+1999-10-20  Simon FitzMaurice <sdf@cygnus.co.uk>
+	* cdl/hal_arm_aeb.cdl:
+
+	Remove -Wl options from compiler flags
+
+1999-10-20  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_cl7211.cdl:
+
+	Specify "-mpu=arm710c" for CL-PS7111.
+
+1999-10-19  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_cl7211.cdl:
+
+	Substitute "cl7211"->"eb7211" in MLT-related options.
+
+1999-10-19  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_cl7211.cdl:
+
+	Define cdl_options for the memory layout linker script
+	fragment and the memory layout header file.
+
+	Define cdl_options for build flags and command prefix.
+
+1999-10-06  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_cl7211.cdl:
+	Define CYGTST_TESTING_IDENTIFIER.
+
 1999-10-04  Gary Thomas  <gthomas@cygnus.co.uk>
 	* src/cl7211_misc.c (hal_hardware_init): Update hardware timings.
 
 	* include/hal_platform_setup.h: Allow ROM applications to be linked
 	at "ram" addresses and be automatically relocated at startup time.
+
+1999-09-23  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/plf_stub.c: 
+	* src/hal_diag.c: Revert [forced] baud rate changes.
+
+1999-09-21  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* misc/lcd_panel_support.c (lcd_panel_server): Take out some prints.
+
+1999-09-18  Gary Thomas  <gthomas@cygnus.co.uk>
+	* misc/lcd_support.c (lcd_vprintf): 
+	* misc/kbd_support.c (kbd_getc): 
+	* misc/kbd_test.c (kbd_exercise): Clean up warnings.
+
+1999-09-16  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* misc/lcd_support.c (lcd_putc): Add cursor support.  Fix '\b'.
 
 1999-09-15  Gary Thomas  <gthomas@cygnus.co.uk>
 
@@ -219,8 +447,23 @@
 
 1999-09-13  Gary Thomas  <gthomas@cygnus.co.uk>
 
+	* include/pkgconf/mlt_arm_eb7212_ram.ldi: 
+	* include/pkgconf/mlt_arm_eb7212_ram.mlt: Fix DRAM limits.
+
 	* include/pkgconf/mlt_arm_eb7211_ram.ldi: 
 	* include/pkgconf/mlt_arm_eb7211_ram.mlt: Fix DRAM limits.
+
+1999-09-13  Gary Thomas  <gthomas@cygnus.co.uk>
+	* images/gdb_module.bin: Rebuild with date/time stamp.  Notice
+	that default baud rate is now 115200.
+
+	* misc/lcd_panel_support.c (lcd_panel_init): Make initialization
+	of LCD panel as stand-alone as possible.
+
+	* misc/lcd_panel_support.c: New file - support split out.
+
+	* misc/panel_test.c (panel_exercise): Reorg test with separate
+	support file.
 
 1999-09-12  Gary Thomas  <gthomas@cygnus.co.uk>
 
@@ -230,10 +473,22 @@
 	* misc/kbd_test.c: Move keyboard support routines to separate
 	file.
 
+1999-09-11  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/cl7211_misc.c (hal_hardware_init): Set up platform registers.
+
 1999-09-10  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/hal_platform_setup.h: Fix spelling error.
 
+1999-09-09  Gary Thomas  <gthomas@cygnus.co.uk>
+	* misc/i2s_audio.c: New test for AUDIO interface.
+		
+	* include/hal_cl7211.h: Add I2S definitions for EB7209.
+
+	* misc/kbd_test.c: Major rework.  Now uses a separate thread
+	to manage the keyboard, debounce, etc.  Result is a series of
+	events placed into a kernel 'mbox'.
 1999-09-08  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* misc/panel_test.c: Trick for these interrupts is that they
@@ -245,6 +500,13 @@
 	* include/pkgconf/mlt_arm_eb7211_rom.mlt: 
 	* include/pkgconf/mlt_arm_eb7211_rom.ldi: Change RAM layout.
 
+	* include/pkgconf/mlt_arm_eb7209_rom.mlt: 
+	* include/pkgconf/mlt_arm_eb7209_rom.ldi: 
+	* include/pkgconf/mlt_arm_eb7212_rom.mlt: 
+	* include/pkgconf/mlt_arm_eb7212_rom.ldi: Change RAM layout.
+
+	* src/cl7211_misc.c (hal_hardware_init): Set up various hardware
+	segments (not totally complete).
 	* include/hal_platform_setup.h: Made ROM segment #1 non-cacheable.
 
 	* misc/kbd_test.c: New test for ASCII keyboard.  Interrupts
@@ -301,6 +563,11 @@
 	* include/pkgconf/hal_arm_cl7211.h:
 
 	Proper case various display strings.
+
+1999-08-12  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_cl7211.cdl:
+	Define CYG_HAL_STARTUP and CYGHWR_MEMORY_LAYOUT.
 
 1999-07-28  Gary Thomas  <gthomas@cygnus.co.uk>
 

@@ -205,7 +205,7 @@ externC volatile CYG_BYTE hal_interrupt_level[CYGNUM_HAL_ISR_COUNT];
 }
 
 #if defined(CYGHWR_HAL_MIPS_TX3904_TRR_REQUIRES_SYNC) && \
-    !defined(CYG_HAL_MIPS_SIM)
+    !defined(CYGPKG_HAL_MIPS_SIM)
 
 // We need to sync and check the coprocessor 0 condition - this
 // indicates whether data is present in the write buffer. We need to

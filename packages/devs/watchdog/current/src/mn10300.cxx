@@ -80,6 +80,20 @@
 
 #define WATCHDOG_RESOLUTION     1016801000      // cycle time in nanoseconds
 
+#elif defined(CYGPKG_HAL_MN10300_AM33)
+
+#define WATCHDOG_BASE           0xC0001000
+#define WATCHDOG_COUNTER        (WATCHDOG_BASE)
+#define WATCHDOG_CONTROL        (WATCHDOG_BASE+2)
+#define WATCHDOG_RESET          (WATCHDOG_BASE+4)
+
+#define WATCHDOG_WDCK0          0x07
+#define WATCHDOG_WDCK0_DEFAULT  0x04    // 621.387ms cycle
+#define WATCHDOG_WDRST          0x40
+#define WATCHDOG_WDCNE          0x80
+
+#define WATCHDOG_RESOLUTION     621387000       // cycle time in nanoseconds
+
 #else
 
 #error Unsupported MN10300 variant

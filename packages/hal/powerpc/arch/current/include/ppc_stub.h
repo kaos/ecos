@@ -44,6 +44,9 @@
 //
 //========================================================================
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define NUMREGS    71
 
@@ -102,5 +105,9 @@ extern void __skipinst (void);
 extern void __install_breakpoints (void);
 
 extern void __clear_breakpoints (void);
+
+#ifdef __cplusplus
+}   /* extern "C" */
+#endif
 
 #endif // ifndef CYGONCE_HAL_PPC_STUB_H

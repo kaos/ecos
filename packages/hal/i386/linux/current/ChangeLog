@@ -1,3 +1,19 @@
+2000-03-03  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_i386_linux.cdl (CYGBLD_GLOBAL_COMMAND_PREFIX):
+
+	Revert most recent change for now to avoid breaking the
+	release system.
+
+2000-03-02  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/hal_i386_linux.cdl (CYGBLD_GLOBAL_COMMAND_PREFIX): Use native
+	toolchain by default, and describe versions to be used
+
+2000-02-29  Jesper Skov  <jskov@redhat.com>
+
+	* include/plf_intr.h: Don't include kernel headers.
+
 2000-02-16  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_diag.c (hal_diag_write_char): Check that write call is
@@ -16,6 +32,12 @@
 	version. They also contains some code moved out of the
 	architecture HAL.
 	
+2000-01-24  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/*.cdl:
+
+	Remove obsolete option CYGTST_TESTING_IDENTIFIER.
+
 2000-01-21  Jesper Skov  <jskov@cygnus.co.uk>
         CR 902062-CR
 	* src/hal_diag.c:
@@ -24,10 +46,23 @@
 	
 	* src/hal_startup.c: Make signals NODEFER.
 
+2000-01-19  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/*.cdl: Add descriptions to a number of options &c which were
+	lacking same, also tidied up other typos as noticed en passant.
+
+1999-12-20  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* cdl/hal_i386_linux.cdl: Add -Wl for linker options.
+
 1999-11-25  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/pkgconf/mlt_i386_linux_ram.h: New file(s).
 
+1999-11-01  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal_i386_linux.cdl: Added.
+	Use define_proc for const header defs.
 1999-10-05  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/linux_misc.c: Fix some really minor spelling typos

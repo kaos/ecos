@@ -122,7 +122,7 @@ static int dbg_thread_syscall_rmt(
       break ;
 #endif /* CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT */      
     default :
-      return 0 ;  /* failure tue to non-implementation */
+      return 0 ;  /* failure due to non-implementation */
     }
 }
 
@@ -160,7 +160,7 @@ static int dbg_thread_syscall_rmt_1(
 
 #ifdef CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT
 
-#ifdef CYG_HAL_SPARCLITE_SLEB
+#ifdef CYGPKG_HAL_SPARCLITE_SLEB
 # include <cyg/hal/hal_cygm.h>
 # ifdef CYG_HAL_USE_ROM_MONITOR_CYGMON
 // then we support talking to CygMon...

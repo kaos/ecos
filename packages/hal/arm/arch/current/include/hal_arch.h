@@ -54,6 +54,7 @@
 
 #define CPSR_IRQ_DISABLE	0x80	// IRQ disabled when =1
 #define CPSR_FIQ_DISABLE	0x40	// FIQ disabled when =1
+#define CPSR_THUMB_ENABLE	0x20	// Thumb mode when =1
 #define CPSR_FIQ_MODE		0x11
 #define CPSR_IRQ_MODE		0x12
 #define CPSR_SUPERVISOR_MODE	0x13
@@ -178,6 +179,21 @@ externC void hal_thread_load_context( CYG_ADDRESS to )
 
 #define HAL_BREAKINST_ARM          0xE7FFDEFE
 #define HAL_BREAKINST_ARM_SIZE     4
+#define HAL_BREAKINST_THUMB        0xbebe  // illegal instruction currently
+#define HAL_BREAKINST_THUMB_SIZE   2
+
+#ifdef __thumb__
+
+# define HAL_BREAKPOINT(_label_)                         \
+asm volatile (" .code 16;"                               \
+              " .globl  " #_label_ ";"                   \
+              #_label_":"                                \
+              " .short " _stringify(HAL_BREAKINST_THUMB) \
+    );
+
+# define HAL_BREAKINST           HAL_BREAKINST_THUMB
+# define HAL_BREAKINST_SIZE      HAL_BREAKINST_THUMB_SIZE
+#else
 
 #define HAL_BREAKPOINT(_label_)                   \
 asm volatile (" .globl  " #_label_ ";"            \
@@ -188,6 +204,7 @@ asm volatile (" .globl  " #_label_ ";"            \
 //#define HAL_BREAKINST           {0xFE, 0xDE, 0xFF, 0xE7}
 #define HAL_BREAKINST            HAL_BREAKINST_ARM
 #define HAL_BREAKINST_SIZE       HAL_BREAKINST_ARM_SIZE
+#endif // __thumb__
 
 //--------------------------------------------------------------------------
 // Thread register state manipulation for GDB support.
@@ -275,22 +292,22 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 // under "enough rope" sort of disclaimers.
 
 // A minimal, optimized stack frame, rounded up - no autos
-#define CYGNUM_HAL_STACK_FRAME_SIZE (4 * 20)
+#define CYGNUM_HAL_STACK_FRAME_SIZE (80) // (4 * 20)
 
 // Stack needed for a context switch: this is implicit in the estimate for
 // interrupts so not explicitly used below:
-#define CYGNUM_HAL_STACK_CONTEXT_SIZE (4 * 20)
+#define CYGNUM_HAL_STACK_CONTEXT_SIZE (80) // (4 * 20)
 
 // Interrupt + call to ISR, interrupt_end() and the DSR
-#define CYGNUM_HAL_STACK_INTERRUPT_SIZE \
-    ((4 * 20) + 2 * CYGNUM_HAL_STACK_FRAME_SIZE)
+#define CYGNUM_HAL_STACK_INTERRUPT_SIZE (240)
+//    ((4 * 20) + 2 * CYGNUM_HAL_STACK_FRAME_SIZE)
 
 // Space for the maximum number of nested interrupts, plus room to call functions
 #define CYGNUM_HAL_MAX_INTERRUPT_NESTING 4
 
-#define CYGNUM_HAL_STACK_SIZE_MINIMUM \
-        (CYGNUM_HAL_MAX_INTERRUPT_NESTING * CYGNUM_HAL_STACK_INTERRUPT_SIZE + \
-         2 * CYGNUM_HAL_STACK_FRAME_SIZE)
+#define CYGNUM_HAL_STACK_SIZE_MINIMUM (1120)
+//        (CYGNUM_HAL_MAX_INTERRUPT_NESTING * CYGNUM_HAL_STACK_INTERRUPT_SIZE +
+//         2 * CYGNUM_HAL_STACK_FRAME_SIZE)
 
 #define CYGNUM_HAL_STACK_SIZE_TYPICAL \
         (CYGNUM_HAL_STACK_SIZE_MINIMUM + \

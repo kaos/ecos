@@ -81,6 +81,9 @@
 	mov	\reg,psw
 	.endm
 
+# Location of PC in saved register context (HAL_SavedRegisters)
+#define SAVED_CONTEXT_PC_OFFSET          56
+
 ##-----------------------------------------------------------------------------
 # It appears that there is an undocumented extra bit
 # in the PSW that masks the delivery of NMIs. It is in
@@ -88,6 +91,8 @@
 # directly. So, to clear it, we must set up a fake interrupt
 # state and do an RTI to load the PSW. We need to do this if
 # we are going to be able to set breakpoints in NMI handlers.
+# Note that the AM33 has a documented NMID at bit 17 of the
+# extended PSW (along with instructions to access it).
 
 	.macro	hal_cpu_clear_nmid
 	mov	PSW,d3				# D3 = PSW

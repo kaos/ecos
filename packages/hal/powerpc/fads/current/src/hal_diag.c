@@ -106,7 +106,7 @@ void hal_diag_write_char(char c)
 {
 #if !defined(CYGDBG_KERNEL_DEBUG_GDB_INCLUDE_STUBS)
     unsigned long __state;
-    HAL_DISABLE_INTERRUPTS(__state)
+    HAL_DISABLE_INTERRUPTS(__state);
     cyg_smc2_putchar(c);
     HAL_RESTORE_INTERRUPTS(__state);
 #else

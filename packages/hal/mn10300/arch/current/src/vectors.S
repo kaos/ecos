@@ -296,7 +296,7 @@ __default_interrupt_vsr:
         .extern _cyg_hal_gdb_isr
         add     -16,sp                          # make space for return link + args
         mov     (0,a2),d0                       # d0 = vector
-        mov     (56,a2),d1                      # d1 = pc
+        mov     (SAVED_CONTEXT_PC_OFFSET,a2),d1 # d1 = pc
         calls   _cyg_hal_gdb_isr                # call GDB isr function
         cmp     0x00,d0                         # Call ISR proper?
         beq     2f                              # (d0 is 0 when skipping

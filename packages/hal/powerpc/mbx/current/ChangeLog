@@ -1,6 +1,45 @@
+2000-03-13  Jesper Skov  <jskov@redhat.com>
+
+	* include/plf_stub.h (HAL_STUB_PLATFORM_RESET): Jump to stub
+	entry-point on GDB kill.
+
+2000-03-04  Gary Thomas  <gthomas@redhat.com>
+
+	* src/hal_aux.c (_mbx_init_i2c): I2C now working from eCos/GDB.
+
+2000-03-03  Gary Thomas  <gthomas@redhat.com>
+
+	* src/hal_aux.c (_mbx_fetch_VPD): New function - reads EEPROM and
+	builds a queryable database.
+
+2000-03-02  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c: Fix typo.
+
+2000-02-29  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/hal_diag.c: Support option to suppress GDB protocol on
+	the diag/serial device.
+
+2000-02-28  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_powerpc_mbx.cdl: Remove hardcoded copy_vectors
+	definition.
+
+2000-02-21  Jesper Skov  <jskov@redhat.com>
+
+	* src/mbx.S: use arch.inc instead of ppc.inc
+
+2000-02-18  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/hal_powerpc_mbx.cdl (CYGBLD_BUILD_GDB_STUBS): When building
+	stubs, define every dependency required here rather than in the
+	template
+
 2000-02-17  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* include/pkgconf/hal_powerpc_mbx.h: Fix MPC860 -> MPC8xx typo
+	* cdl/hal_powerpc_mbx.cdl: likewise
 	
 2000-02-11  Jesper Skov  <jskov@redhat.com>
 
@@ -27,18 +66,64 @@
 	CYGHWR_HAL_POWERPC_BOARD_SPEED. Use MPC8xx variant code.
 
 
+	* cdl/hal_powerpc_mbx.cdl: Use MPC8xx variant code. Fix some CDL
+	bugs. Use CYGHWR_HAL_POWERPC_BOARD_SPEED
+	Specify CPU options in linker flags.
+
+2000-02-03  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_powerpc_mbx.cdl: CYG_HAL_POWERPC_x->CYGPKG_...
+
+2000-02-03  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_powerpc_mbx.cdl: Generate S-record version of stub.
+	Implements stubs.
+	
+2000-01-27  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_powerpc_mbx.cdl: Moved part of stubs build rule to
+	common HAL.  Changed description.
+
 2000-01-26  Jesper Skov  <jskov@redhat.com>
 
 	* include/plf_cache.h: Added.
 
+2000-01-26  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_powerpc_mbx.cdl: Fix display string.
+
 2000-01-24  Jesper Skov  <jskov@cygnus.co.uk>
+	* cdl/hal_powerpc_mbx.cdl: Add stubs build rule.
 	* src/mbx.S: Depend on CYGSEM_HAL_ROM_MONITOR instead of
 	CYG_HAL_ROM_MONITOR.
+
+2000-01-24  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/*.cdl:
+
+	Remove obsolete option CYGTST_TESTING_IDENTIFIER.
+
+2000-01-19  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/*.cdl: Add descriptions to a number of options &c which were
+	lacking same, also tidied up other typos as noticed en passant.
+
+1999-12-21  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* cdl/hal_powerpc_mbx.cdl: Ensure we "puts" to appropriate CDL header
+
+1999-12-20  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* cdl/hal_powerpc_mbx.cdl: Add -Wl for linker options.
 
 1999-11-25  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/pkgconf/mlt_powerpc_mbx_rom.h: 
 	* include/pkgconf/mlt_powerpc_mbx_ram.h: New file(s).
+
+1999-11-03  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_powerpc_mbx.cdl: Define build options.
 
 1999-10-22  Hugo Tyson  <hmt@cygnus.co.uk>
 

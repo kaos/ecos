@@ -1,0 +1,775 @@
+#=============================================================================
+#
+#    ecos.db
+#
+#    This file is a temporary database for eCos package information.
+#    It replaces the old packages and targets files, and will in turn
+#    be subsumed by another file containing more inormation.
+#
+#=============================================================================
+#####COPYRIGHTBEGIN####
+#                                                                          
+# -------------------------------------------                              
+# The contents of this file are subject to the Red Hat eCos Public License 
+# Version 1.1 (the "License"); you may not use this file except in         
+# compliance with the License.  You may obtain a copy of the License at    
+# http://www.redhat.com/                                                   
+#                                                                          
+# Software distributed under the License is distributed on an "AS IS"      
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+# License for the specific language governing rights and limitations under 
+# the License.                                                             
+#                                                                          
+# The Original Code is eCos - Embedded Configurable Operating System,      
+# released September 30, 1998.                                             
+#                                                                          
+# The Initial Developer of the Original Code is Red Hat.                   
+# Portions created by Red Hat are                                          
+# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# All Rights Reserved.                                                     
+# -------------------------------------------                              
+#                                                                          
+#####COPYRIGHTEND####
+#=============================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):	bartv
+# Date:		1999-06-13
+#
+# This file contains three lots of information. It details the packages
+# in the component repository, the target boards supported by those
+# packages, and a set of templates that can be used to instantiate
+# configuration.
+# 
+#####DESCRIPTIONEND####
+#===============================================================================
+
+package CYGPKG_HAL {
+        alias		{ "eCos common HAL" hal hal_common }
+	directory	hal/common
+	script		hal.cdl
+	description "
+The eCos HAL package provide a porting layer for higher-level parts of
+the system such as the kernel and the C library. Each installation
+should have HAL packages for one or more architectures, and for each
+architecture there may be one or more supported platforms. It is
+necessary to select one target architecture and one platform for that
+architecture. There are also a number of configuration options that
+are common to all HAL packages."
+}
+
+package CYGPKG_INFRA {
+	alias 		{ Infrastructure infra }
+	directory	infra
+	script		infra.cdl
+        description "
+Common types and useful macros.
+Tracing and assertion facilities.
+Package startup options." 
+}
+
+package CYGPKG_IO {
+	alias 		{ "I/O sub-system" io }
+	directory	io/common
+	script		io.cdl
+        description "
+           The eCos system is supplied with a number of different
+           device drivers.  This package contains the basic I/O system
+           support which is the basis for all drivers."
+}
+
+package CYGPKG_IO_SERIAL {
+	alias 		{ "Serial device drivers" serial io_serial }
+	directory	io/serial
+	script		io_serial.cdl
+	hardware
+        description "
+           This package contains drivers for basic I/O services on
+           serial devices."
+}
+
+package CYGPKG_IO_PCI	{
+	alias		{ "PCI configuration library" io_pci }
+	directory	io/pci
+	script		io_pci.cdl
+	hardware
+        description "
+           This package contains the PCI configuration library."
+}
+
+package CYGPKG_DEVICES_WALLCLOCK {
+	alias		{ "Wallclock device code" wallclock devices_wallclock device_wallclock }
+	directory	devs/wallclock
+	script          wallclock.cdl
+        description "
+           This package provides a wallclock device."
+}
+
+package CYGPKG_DEVICES_WATCHDOG {
+	alias		{ "Watchdog device code" watchdog devices_watchdog device_watchdog }
+	directory	devs/watchdog
+        script          watchdog.cdl
+        description "
+           This package provides a watchdog device."
+}
+
+package CYGPKG_KERNEL {
+	alias		{ "eCos kernel" kernel }
+	directory	kernel
+	script		kernel.cdl
+     	description "
+This package contains the core functionality of the eCos kernel. It
+relies on functionality provided by various HAL packages and by the
+eCos infrastructure. In turn the eCos kernel provides support for
+other packages such as the device drivers and the uITRON compatibility
+layer."
+}
+
+package CYGPKG_UITRON {
+	alias		{ "uITRON compatibility" uitron }
+	directory	compat/uitron
+	script		uitron.cdl
+	description "
+eCos supports a uITRON Compatibility Layer, providing full Level S
+(Standard) compliance with Version 3.02 of the uITRON Standard, plus
+many Level E (Extended) features. uITRON is the premier Japanese
+embedded RTOS standard."
+}
+
+package CYGPKG_LIBC {
+	alias		{ "C library" libc clib clibrary }
+	directory	language/c/libc
+	script		libc.cdl
+        description  "
+This package enables compatibility with the ISO C standard - ISO/IEC
+9899:1990. This allows the user application to use well known standard
+C library functions, and in eCos starts a thread to invoke the user
+function main()"
+}
+
+package CYGPKG_LIBM {
+	alias		{ "Math library" libm mathlib mathlibrary }
+	directory	language/c/libm
+	script		libm.cdl
+        description  "
+ISO standard floating point mathematical library containing many
+useful functions for mathematical calculations."
+}
+
+package CYGPKG_ERROR {
+	alias 		{ "Common error code support" error errors }
+	directory	error
+	script		error.cdl
+        description  "
+This package contains the common list of error and status codes. It is
+held centrally to allow packages to interchange error codes and status
+codes in a common way, rather than each package having its own
+conventions for error/status reporting. The error codes are modelled
+on the POSIX style naming e.g. EINVAL etc. This package also provides
+the standard strerror() function to convert error codes to textual
+representation."
+}
+
+package CYGPKG_CYGMON {
+    alias           { "CygMon support via eCos" cygmon }
+    directory       cygmon
+    script          cygmon.cdl
+    description     "
+        This package supports the CygMon \[stand-alone debug monitor\]
+        using eCos as the underlying board support mechanism."
+}
+
+# --------------------------------------------------------------------------
+# ARM packages
+package CYGPKG_HAL_ARM {
+	alias		{ "ARM common HAL" hal_arm arm_hal arm_arch_hal }
+	directory	hal/arm/arch
+	script		hal_arm.cdl
+	hardware
+	description "
+The ARM architecture HAL package provides generic support for this
+processor architecture. It is also necessary to select a specific
+target platform HAL package."
+}
+
+package CYGPKG_HAL_ARM_PID {
+	alias		{ "ARM development board (PID)" hal_arm_pid arm_pid_hal }
+	directory	hal/arm/pid
+	script		hal_arm_pid.cdl
+	hardware
+        description "
+The pid HAL package provides the support needed to run eCos on a ARM
+PID eval board."
+}
+
+package CYGPKG_HAL_ARM_AEB {
+	alias		{ "ARM evaluation board (AEB-1)" hal_arm_aeb arm_aeb_hal }
+	directory	hal/arm/aeb
+	script		hal_arm_aeb.cdl
+	hardware
+        description "
+The aeb HAL package provides the support needed to run eCos on a ARM
+AEB-1 eval board."
+}
+
+package CYGPKG_HAL_ARM_EBSA285 {
+	alias		{ "Intel EBSA285 StrongARM board" hal_arm_ebsa285 arm_ebsa285_hal }
+	directory	hal/arm/ebsa285
+	script		hal_arm_ebsa285.cdl
+	hardware
+        description "
+        The EBSA285 HAL package provides the support needed to run
+        eCos on a Intel EBSA285 StrongARM eval board."
+}
+
+package CYGPKG_HAL_ARM_EDB7XXX {
+	alias		{ "Cirrus Logic development board" hal_arm_edb7xxx arm_edb7xxx_hal }
+	directory	hal/arm/edb7xxx
+	script		hal_arm_edb7xxx.cdl
+	hardware
+        description "
+The EDB7XXX HAL package provides the support needed to run eCos on Cirrus Logic development boards."
+}
+
+package CYGPKG_HAL_ARM_CMA230 {
+	alias		{ "Cogent CMA230/222 board" hal_arm_cma230 arm_cma230_hal }
+	directory	hal/arm/cma230
+	script		hal_arm_cma230.cdl
+	hardware
+        description "
+The cma230 HAL package provides the support needed to run eCos on a Cogent 
+CMA230 (ARM7TDMI) or CMA222 (ARM710T) eval board."
+}
+
+# --------------------------------------------------------------------------
+# SH packages
+package CYGPKG_HAL_SH {
+	alias		{ "SH common HAL" hal_sh sh_hal sh_arch_hal }
+	directory	hal/sh/arch
+	script		hal_sh.cdl
+	hardware
+	description "
+           The SH (SuperH) architecture HAL package provides generic
+           support for this processor architecture. It is also
+           necessary to select a specific target platform HAL
+           package."
+}
+
+package CYGPKG_HAL_SH_EDK7708 {
+	alias		{ "Hitachi SH7708 board" hal_sh_edk sh_edk_hal }
+	directory	hal/sh/edk
+	script		hal_sh_edk7708.cdl
+	hardware
+        description "
+           The edk HAL package provides the support needed to run
+           eCos on a Hitachi SH3 EDK7708 board."
+}
+
+# --------------------------------------------------------------------------
+# i386 packages
+package CYGPKG_HAL_I386 {
+	alias		{ "i386 common HAL" hal_i386 i386_hal i386_arch_hal }
+	directory	hal/i386/arch
+	script		hal_i386.cdl
+	hardware
+	description "
+    	    The i386 architecture HAL package provides generic
+    	    support for this processor architecture. It is also
+    	    necessary to select a specific target platform HAL
+    	    package."
+}
+
+package CYGPKG_HAL_I386_LINUX {
+	alias		{ "Linux synthetic target" hal_i386_linux }
+	directory	hal/i386/linux
+	script		hal_i386_linux.cdl
+	hardware
+        description "
+    	    The Linux/i386 Synthetic Target HAL package provides the 
+    	    support needed to run eCos binaries on top of the i386
+    	    Linux kernel."
+}
+
+package CYGPKG_HAL_I386_PC {
+	alias		{ "i386 PC target" hal_i386_pc }
+	directory	hal/i386/pc
+	script		hal_i386_pc.cdl
+	hardware
+        description "
+    	    The i386 PC Target HAL package provides the 
+    	    support needed to run eCos binaries on a standard i386
+    	    PC motherboard."
+}
+
+# --------------------------------------------------------------------------
+# SPARClite packages
+package CYGPKG_HAL_SPARCLITE {
+	alias		{ "SPARClite common HAL" hal_sparclite sparclite_hal sparclite_arch_hal }
+	directory	hal/sparclite/arch
+	script		hal_sparclite.cdl
+	hardware
+	description "
+    	    The SPARClite architecture HAL package provides generic support
+    	    for this processor architecture. It is also necessary to select
+    	    a specific target platform HAL package."
+}
+
+package CYGPKG_HAL_SPARCLITE_SLEB {
+	alias		{ "Fujitsu MB86800-MA01 board" hal_sparclite_sleb sparclite_sleb_hal }
+	directory	hal/sparclite/sleb
+	script		hal_sparclite_sleb.cdl
+	hardware
+        description "
+    	    The SPARClite evaluation board HAL package is provided for use
+    	    with the Fujitsu MB8683x boards."
+}
+
+package CYGPKG_HAL_SPARCLITE_SIM {
+	alias		{ "SPARClite simulator" hal_sparclite_sim sparclite_sim_hal }
+	directory	hal/sparclite/sim
+	script		hal_sparclite_sim.cdl
+	hardware
+        description "
+    	    The SPARClite simulator HAL package is provided for use
+    	    with the SPARClite simulator."
+}
+
+# --------------------------------------------------------------------------
+# PowerPC packages
+package CYGPKG_HAL_POWERPC {
+	alias		{ "PowerPC common HAL" hal_powerpc powerpc_hal powerpc_arch_hal }
+	directory	hal/powerpc/arch
+	script		hal_powerpc.cdl
+	hardware
+	description "
+ 	    The PowerPC architecture HAL package provides generic
+ 	    support for this processor architecture. It is also necessary to
+    	    select a CPU variant and a specific target platform HAL
+    	    package."
+}
+
+package CYGPKG_HAL_POWERPC_MPC8xx {
+	alias		{ "PowerPC 8xx variant HAL" hal_mpc8xx mpc8xx_hal mpc8xx_arch_hal }
+	directory	hal/powerpc/mpc8xx/
+	script		hal_powerpc_mpc8xx.cdl
+	hardware
+        description "
+           The PowerPC 8xx variant HAL package provides generic support
+           for this processor variant. It is also necessary to
+           select a specific target platform HAL package."
+}
+
+package CYGPKG_HAL_POWERPC_PPC60x {
+	alias		{ "PowerPC 60x variant HAL" hal_ppc60x ppc60x_hal ppc60x_arch_hal }
+	directory	hal/powerpc/ppc60x/
+	script		hal_powerpc_ppc60x.cdl
+	hardware
+        description "
+           The PowerPC 60x variant HAL package provides generic support
+           for this processor variant. It is also necessary to
+           select a specific target platform HAL package."
+}
+
+package CYGPKG_HAL_POWERPC_COGENT {
+	alias		{ "Cogent CMA286/287 board" hal_powerpc_cogent powerpc_cogent_hal }
+	directory	hal/powerpc/cogent
+	script		hal_powerpc_cogent.cdl
+	hardware
+        description "
+            The cogent HAL package provides the support needed to run
+            eCos on a Cogent board equipped with a PowerPC processor."
+}
+
+package CYGPKG_HAL_POWERPC_FADS {
+	alias		{ "Motorola MPC8xxFADS board" hal_powerpc_fads powerpc_fads_hal }
+	directory	hal/powerpc/fads
+	script		hal_powerpc_fads.cdl
+	hardware
+        description "
+            The FADS HAL package provides the support needed to run
+            eCos on a Motorola FADS board equipped with a PowerPC processor."
+}
+
+package CYGPKG_HAL_POWERPC_MBX {
+	alias		{ "Motorola MBX860/821 board" hal_powerpc_mbx powerpc_mbx_hal }
+	directory	hal/powerpc/mbx
+	script		hal_powerpc_mbx.cdl
+	hardware
+        description "
+            The MBX HAL package provides the support needed to run
+            eCos on a Motorola MBX board equipped with a PowerPC processor."
+}
+
+package CYGPKG_HAL_QUICC {
+	alias		{ "Motorola MBX860/821 QUICC support" hal_quicc quicc_hal quicc }
+	directory	hal/powerpc/quicc
+	script		hal_powerpc_quicc.cdl
+	hardware
+        description "
+            The QUICC package provides some of the support needed
+            to run eCos on a Motorola MBX board, using the QUICC
+            feature of the MPC860 and MPC821 CPUs.
+            Currently only serial IO via SMC1 is provided by
+            this package."
+}
+
+package CYGPKG_HAL_POWERPC_SIM {
+	alias		{ "PowerPC simulator" hal_powerpc_sim powerpc_sim_hal }
+	directory	hal/powerpc/sim
+	script		hal_powerpc_sim.cdl
+	hardware
+        description "
+            The minimal simulator HAL package is provided for use when
+            only a simple simulation of the processor architecture is
+            desired, as opposed to detailed simulation of any specific
+            board. In particular it is not possible to simulate any of
+            the I/O devices, so device drivers cannot be used."
+}
+
+# --------------------------------------------------------------------------
+# MIPS packages
+
+package CYGPKG_HAL_MIPS {
+	alias		{ "MIPS common HAL" hal_mips mips_hal mips_arch_hal }
+	directory	hal/mips/arch/
+	script		hal_mips.cdl
+	hardware
+	description "
+    	    The MIPS architecture HAL package provides generic support
+    	    for this processor architecture. It is also necessary to
+    	    select a CPU variant and a specific target platform HAL
+    	    package."
+}
+
+package CYGPKG_HAL_MIPS_SIM {
+	alias		{ "MIPS simulator" hal_mips_sim mips_sim_hal }
+	directory	hal/mips/sim
+	script		hal_mips_sim.cdl
+	hardware
+	description "
+           The minimal simulator HAL package is provided for when only
+           a simple simulation of the processor architecture is
+           desired, as opposed to detailed simulation of any specific
+           board. To use this minimal simulator the command
+           `target sim --board=jmr3904pal' should be used from inside
+           gdb. It is not possible to use any of the eCos device
+           drivers when the simulator is running in this mode"
+}
+
+package CYGPKG_HAL_MIPS_TX39 {
+	alias		{ "TX39 chip HAL" hal_tx39 tx39_hal tx39_arch_hal }
+	directory	hal/mips/tx39/
+	script		hal_mips_tx39.cdl
+	hardware
+        description "
+           The TX39 architecture HAL package provides generic support
+           for this processor architecture. It is also necessary to
+           select a specific target platform HAL package."
+}
+
+package CYGPKG_HAL_MIPS_TX39_JMR3904 {
+	alias		{ "Toshiba JMR-TX3904 board" hal_tx39_jmr3904 tx39_jmr3904_hal }
+	directory	hal/mips/jmr3904
+	script		hal_mips_tx39_jmr3904.cdl
+	hardware
+	description "
+           The JMR3904 HAL package should be used when targetting the
+           actual hardware. The same package can also be used when
+           running on the full simulator, since this provides an
+           accurate simulation of the hardware including I/O devices.
+           To use the simulator in this mode the command
+           `target sim --board=jmr3904' should be used from inside gdb."
+}
+
+package CYGPKG_HAL_MIPS_VR4300 {
+	alias		{ "VR4300 chip HAL" hal_vr4300 vr4300_hal vr4300_arch_hal }
+	directory	hal/mips/vr4300/
+	script		hal_mips_vr4300.cdl
+	hardware
+        description "
+           The VR4300 variant HAL package provides generic support
+           for this processor architecture. It is also necessary to
+           select a specific target platform HAL package."
+}
+
+package CYGPKG_HAL_MIPS_VR4300_VRC4373 {
+	alias		{ "NEC VRC4373 board" hal_vrc4373 vrc4373_hal }
+	directory	hal/mips/vrc4373
+	script		hal_mips_vr4300_vrc4373.cdl
+	hardware
+	description "
+           The VRC4373 HAL package should be used when targetting the
+           actual hardware."
+}
+
+# --------------------------------------------------------------------------
+# MN10300 packages
+
+package CYGPKG_HAL_MN10300 {
+	alias		{ "MN10300 common HAL" hal_mn10300 mn10300_hal mn10300_arch_hal }
+	directory	hal/mn10300/arch
+	script		hal_mn10300.cdl
+	hardware
+	description "
+           The MN10300 architecture HAL package provides generic
+           support for this processor architecture. It is also
+           necessary to select a specific target platform HAL
+           package."
+}
+
+package CYGPKG_HAL_MN10300_AM31 {
+	alias		{ "MN10300 AM31 variant HAL" hal_mn10300_am31 mn10300_am31_hal }
+	directory	hal/mn10300/am31
+	script		hal_mn10300_am31.cdl
+	hardware
+        description "
+           The MN10300 AM31 variant HAL package provides generic
+           support for this processor architecture. It is also
+           necessary to select a specific target platform HAL
+           package."
+}
+
+package CYGPKG_HAL_MN10300_AM31_SIM {
+	alias		{ "MN10300 simulator" hal_mn10300_sim mn10300_sim_hal }
+	directory	hal/mn10300/sim
+	script		hal_mn10300_am31_sim.cdl
+	hardware
+        description "
+           The minimal simulator HAL package is provided for use when
+           only a simple simulation of the processor architecture is
+           desired, as opposed to detailed simulation of any specific
+           board. In particular it is not possible to simulate any of
+           the I/O devices, so device drivers cannot be used."
+}
+
+package CYGPKG_HAL_MN10300_AM31_STDEVAL1 {
+	alias		{ "Matsushita stdeval1 board" hal_mn10300_stdeval1 mn10300_stdeval1_hal }
+	directory	hal/mn10300/stdeval1
+	script		hal_mn10300_am31_stdeval1.cdl
+	hardware
+        description "
+           The stdeval1 HAL package should be used when targetting the
+           actual hardware. The same package can also be used when
+           running on the full MN10300 simulator, since this provides
+           an accurate simulation of the full hardware including I/O
+           devices."
+}
+
+package CYGPKG_HAL_MN10300_AM33 {
+	alias		{ "MN10300 AM33 variant HAL" hal_mn10300_am33 mn10300_am33_hal }
+	directory	hal/mn10300/am33
+	script		hal_mn10300_am33.cdl
+	hardware
+        description "
+           The MN10300 AM33 variant HAL package provides generic
+           support for this processor architecture. It is also
+           necessary to select a specific target platform HAL
+           package."
+}
+
+package CYGPKG_HAL_MN10300_AM33_STB {
+	alias		{ "Matsushita STB board" hal_mn10300_am33_stb mn10300_am33_stb_hal }
+	directory	hal/mn10300/stb
+	script		hal_mn10300_am33_stb.cdl
+	hardware
+        description "
+           The STB HAL package should be used when targetting the
+           actual hardware for the AM33 STB evaluation board."
+}
+
+# ==========================================================================
+
+# --------------------------------------------------------------------------
+# ARM targets
+
+target pid {
+	alias { "ARM development board (PID)" PID }
+	packages { CYGPKG_HAL_ARM CYGPKG_HAL_ARM_PID CYGPKG_IO_SERIAL }
+        description "
+The pid target provides the packages needed to run eCos on an ARM
+development board (formerly known as PID)."
+}
+
+target aeb {
+	alias { "ARM evaluation board (AEB-1)" aeb1 }
+	packages { CYGPKG_HAL_ARM CYGPKG_HAL_ARM_AEB CYGPKG_IO_SERIAL }
+        description "
+The aeb target provides the packages needed to run eCos on an ARM
+evaluation board (AEB-1)."
+}
+
+target ebsa285 {
+	alias { "Intel EBSA285 StrongARM board" ebsa }
+	packages { CYGPKG_HAL_ARM CYGPKG_HAL_ARM_EBSA285 CYGPKG_IO_SERIAL CYGPKG_IO_PCI }
+        description "
+        The ebsa285 target provides the packages needed to run
+        eCos on an Intel EBSA285 StrongARM board."
+}
+
+target edb7xxx {
+        alias		{ "Cirrus Logic development board" edb7211 eb7xxx eb7211 }
+	packages	{ CYGPKG_HAL_ARM CYGPKG_HAL_ARM_EDB7XXX
+                          CYGPKG_IO_SERIAL }
+        description "
+The edb7xxx target provides the packages needed to run eCos on Cirrus Logic development boards."
+    }
+
+target cma230 {
+        alias		{ "Cogent CMA230/222 board" cma222 }
+	packages	{ CYGPKG_HAL_ARM CYGPKG_HAL_ARM_CMA230 CYGPKG_IO_SERIAL }
+        description "
+The cma230 target provides the packages needed to run eCos on a Cogent 
+CMA230 (ARM7TDMI) or CMA222 (ARM710T) board."
+    }
+
+# --------------------------------------------------------------------------
+# SH targets
+
+target sh7708 {
+	alias { "Hitachi SH7708 board" edk7708 }
+	packages { CYGPKG_HAL_SH CYGPKG_HAL_SH_EDK7708 CYGPKG_IO_SERIAL }
+        description "
+           The sh7708 target provides the packages needed to run
+           eCos on a Hitachi SH7708 board."
+}
+
+# --------------------------------------------------------------------------
+# i386 targets
+target linux {
+        alias		{ "Linux synthetic target" }
+	packages        { CYGPKG_HAL_I386 CYGPKG_HAL_I386_LINUX CYGPKG_IO_SERIAL }
+        description "
+    	    The linux target provides the 
+    	    packages needed to run eCos binaries on top of the i386
+    	    Linux kernel."
+}
+
+target pc {
+        alias		{ "i386 PC target" }
+	packages        { CYGPKG_HAL_I386 CYGPKG_HAL_I386_PC CYGPKG_IO_SERIAL }
+        description "
+    	    The pc target provides the 
+    	    packages needed to run eCos binaries on a standard i386
+    	    PC motherboard."
+}
+
+# --------------------------------------------------------------------------
+# SPARClite targets
+
+target sleb {
+	alias		{ "Fujitsu MB86800-MA01 board" }
+	packages        { CYGPKG_HAL_SPARCLITE CYGPKG_HAL_SPARCLITE_SLEB CYGPKG_IO_SERIAL }
+        description "
+    	    The sleb target provides the packages need to run eCos
+            on a Fujitsu MB86800-MA01 board."
+}
+
+target sparclite_sim {
+	alias		{ "SPARClite simulator" sl_sim sparcl_sim }
+	packages        { CYGPKG_HAL_SPARCLITE CYGPKG_HAL_SPARCLITE_SIM }
+        description "
+    	    The sparclite_sim target provides the packages need to run eCos
+            on the SPARClite simulator."
+}
+
+# --------------------------------------------------------------------------
+# PowerPC targets
+
+target cma28x {
+        alias		{ "Cogent CMA286/287 board" cma286 cma287 }
+	packages        { CYGPKG_HAL_POWERPC CYGPKG_HAL_POWERPC_MPC8xx CYGPKG_HAL_POWERPC_COGENT CYGPKG_IO_SERIAL }
+        description "
+            The cma28x target provides the packages needed to run
+            eCos on a Cogent CMA286 or CMA287 board."
+}
+
+target fads {
+        alias		{ "Motorola MPC8xxFADS board" }
+	packages        { CYGPKG_HAL_POWERPC CYGPKG_HAL_POWERPC_MPC8xx CYGPKG_HAL_POWERPC_FADS CYGPKG_IO_SERIAL }
+        description "
+            The fads target provides the packages needed to run
+            eCos on a Motorola MPC8xxFADS board."
+}
+
+target mbx {
+        alias		{ "Motorola MBX860/821 board" mbx860 mbx821 }
+	packages        { CYGPKG_HAL_POWERPC CYGPKG_HAL_POWERPC_MPC8xx CYGPKG_HAL_POWERPC_MBX CYGPKG_HAL_QUICC CYGPKG_IO_SERIAL }
+        description "
+            The mbx target provides the packages needed to run
+            eCos on a Motorola MBX860 or MBX821 board."
+}
+
+target psim {
+	alias		{ "PowerPC simulator" ppc_sim powerpc_sim }
+	packages        { CYGPKG_HAL_POWERPC CYGPKG_HAL_POWERPC_PPC60x CYGPKG_HAL_POWERPC_SIM CYGPKG_IO_SERIAL }
+        description "
+            The psim target provides the packages needed to run
+            eCos in the PSIM simulator."
+}
+
+# --------------------------------------------------------------------------
+# MIPS targets
+
+target jmr3904 {
+        alias		{ "Toshiba JMR-TX3904 board" jmr tx39 }
+	packages        { CYGPKG_HAL_MIPS CYGPKG_HAL_MIPS_TX39 CYGPKG_HAL_MIPS_TX39_JMR3904 CYGPKG_IO_SERIAL }
+        description "
+           The jmr3904 target provides the packages needed to run
+           eCos on a Toshiba JMR-TX3904 board. This target can also
+           be used when running in the full simulator, since the simulator provides an
+           accurate simulation of the hardware including I/O devices.
+           To use the simulator in this mode the command
+           `target sim --board=jmr3904' should be used from inside gdb."
+}
+
+target tx39_sim {
+        alias		{ "TX39 minimal simulator" }
+	packages        { CYGPKG_HAL_MIPS CYGPKG_HAL_MIPS_TX39 CYGPKG_HAL_MIPS_SIM }
+        description "
+           The tx39_sim target provides the packages needed to run
+           eCos in the TX39 minimal simulator. To use this minimal
+           simulator the command `target sim --board=jmr3904pal'
+           should be used from inside gdb. It is not possible to
+           use any of the eCos device drivers when the simulator
+           is running in this mode."
+}
+
+target vrc4373 {
+        alias		{ "NEC VRC4373 board" }
+	packages        { CYGPKG_HAL_MIPS CYGPKG_HAL_MIPS_VR4300 CYGPKG_HAL_MIPS_VR4300_VRC4373 CYGPKG_IO_SERIAL CYGPKG_IO_PCI }
+        description "
+           The vrc4373 target provides the packages needed to run
+eCos on an NEC VRC4373 board."
+}
+
+# --------------------------------------------------------------------------
+# MN10300 targets
+
+target am31_sim {
+        alias		{ "MN10300 AM31 minimal simulator" }
+	packages        { CYGPKG_HAL_MN10300 CYGPKG_HAL_MN10300_AM31 CYGPKG_HAL_MN10300_AM31_SIM }
+        description "
+           The am31_sim target provides the packages need to run
+           eCos in the MN10300 minimal simulator. It is not possible to
+           use any of the eCos device drivers when the simulator
+           is running in this mode."
+}
+
+target stdeval1 {
+        alias		{ "Matsushita stdeval1 board" }
+	packages        { CYGPKG_HAL_MN10300 CYGPKG_HAL_MN10300_AM31_STDEVAL1 CYGPKG_HAL_MN10300_AM31 CYGPKG_IO_SERIAL }
+        description "
+           The stdeval1 target provides the packages needed to run
+           eCos on a Matsushita stdeval1 board. This target can also
+           be used when running in the full simulator, since the simulator provides an
+           accurate simulation of the hardware including I/O devices."
+}
+
+target stb {
+        alias		{ "Matsushita STB board" }
+	packages        { CYGPKG_HAL_MN10300 CYGPKG_HAL_MN10300_AM33_STB CYGPKG_HAL_MN10300_AM33 CYGPKG_IO_SERIAL }
+        description "
+           The stb target provides the packages needed to run
+           eCos on a Matsushita STB board."
+}
+

@@ -250,59 +250,13 @@ hal_msbindex(int mask)
     return (-1);
 }
 
-void
-dump_buf_with_offset(unsigned char *p, 
-                     int s, 
-                     unsigned char *base)
-{
-    int i, c;
-    if ((unsigned int)s > (unsigned int)p) {
-        s = (unsigned int)s - (unsigned int)p;
-    }
-    while (s > 0) {
-        if (base) {
-            diag_printf("%08X: ", (int)p - (int)base);
-        } else {
-            diag_printf("%08X: ", p);
-        }
-        for (i = 0;  i < 16;  i++) {
-            if (i < s) {
-                diag_printf("%02X", p[i] & 0xFF);
-            } else {
-                diag_printf("  ");
-            }
-            if ((i % 2) == 1) diag_printf(" ");
-            if ((i % 8) == 7) diag_printf(" ");
-        }
-        diag_printf(" |");
-        for (i = 0;  i < 16;  i++) {
-            if (i < s) {
-                c = p[i] & 0xFF;
-                if ((c < 0x20) || (c >= 0x7F)) c = '.';
-            } else {
-                c = ' ';
-            }
-            diag_printf("%c", c);
-        }
-        diag_printf("|\n");
-        s -= 16;
-        p += 16;
-    }
-}
-
-void
-dump_buf(unsigned char *p, int s)
-{
-   dump_buf_with_offset(p, s, 0);
-}
-
 #ifdef  CYGHWR_HAL_ARM_DUMP_EXCEPTIONS
 void
 dump_frame(unsigned char *frame)
 {
     HAL_SavedRegisters *rp = (HAL_SavedRegisters *)frame;
     int i;
-    dump_buf(frame, 128);
+    diag_dump_buf(frame, 128);
     diag_printf("Registers:\n");
     for (i = 0;  i <= 10;  i++) {
         if ((i == 0) || (i == 6)) diag_printf("R%d: ", i);

@@ -2,13 +2,13 @@ version 0
 region ram 0 48000 0 !
 region rom 4018000 8000 1 !
 section reserved_vectors 1000 1 0 0 1 1 1 1 0 0 reserved_not_mapped reserved_not_mapped !
-section data 0 1 1 1 0 1 0 0 bss !
+section data 0 4 1 1 0 1 0 0 bss !
 section bss 0 4 0 1 0 0 0 0 !
-section reserved_not_mapped 7000 1 0 0 0 1 0 0 data !
+section reserved_not_mapped 7000 4 0 0 0 1 0 0 data !
 section rom_vectors 0 1 0 1 1 1 1 1 4018000 4018000 text text !
-section text 0 1 0 1 0 1 0 1 fini fini !
-section fini 0 1 0 1 0 1 0 1 rodata rodata !
-section rodata 0 1 0 1 0 1 0 1 rodata1 rodata1 !
-section rodata1 0 1 0 1 0 1 0 1 fixup fixup !
-section fixup 0 1 0 1 0 1 0 1 gcc_except_table gcc_except_table !
-section gcc_except_table 0 1 0 1 0 0 0 1 data !
+section text 0 4 0 1 0 1 0 1 fini fini !
+section fini 0 4 0 1 0 1 0 1 rodata rodata !
+section rodata 0 4 0 1 0 1 0 1 rodata1 rodata1 !
+section rodata1 0 4 0 1 0 1 0 1 fixup fixup !
+section fixup 0 4 0 1 0 1 0 1 gcc_except_table gcc_except_table !
+section gcc_except_table 0 4 0 1 0 0 0 1 data !

@@ -64,6 +64,13 @@
 #define TRUE  1
 #endif
 
+// Use bit 0 as a thumb-mode flag for next address to be executed.
+// Alternative would be to keep track of it using a C variable, but
+// since bit 0 is used by the BX instruction, we might as well do the
+// same thing and thus avoid checking two different flags.
+#define IS_THUMB_ADDR(addr)     ((addr) & 1)
+#define MAKE_THUMB_ADDR(addr) ((addr) | 1)
+#define UNMAKE_THUMB_ADDR(addr) ((addr) & ~1)
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
 #include <cyg/hal/dbg-threads-api.h>    // dbg_currthread_id
@@ -97,8 +104,7 @@ int __get_trap_number (void)
     return _hal_registers->vector;
 }
 
-/* Set the currently-saved pc register value to PC. This also updates NPC
-   as needed. */
+/* Set the currently-saved pc register value to PC. */
 
 void set_pc (target_register_t pc)
 {
@@ -116,6 +122,7 @@ void set_pc (target_register_t pc)
 
 static unsigned long  ss_saved_pc = 0;
 static unsigned long  ss_saved_instr;
+static unsigned short ss_saved_thumb_instr;
 
 #define FIXME() {diag_printf("FIXME - %s\n", __FUNCTION__); }
 
@@ -225,6 +232,11 @@ target_ins(unsigned long *pc, unsigned long ins)
     int i, reg_count, c;
     switch ((ins & 0x0C000000) >> 26) {
     case 0x0:
+        // BX
+        if ((ins & 0x0FFFFFF0) == 0x012FFF10) {
+            new_pc = (unsigned long)get_register(ins & 0x0000000F);
+            return ((unsigned long *)new_pc);
+        }
         // Data processing
         new_pc = (unsigned long)(pc+1);
         if ((ins & 0x0000F000) == 0x0000F000) {
@@ -376,10 +388,67 @@ target_ins(unsigned long *pc, unsigned long ins)
     }
 }
 
+// FIXME: target_ins also needs to check for CPSR/THUMB being set and
+//        set the thumb bit accordingly.
+
+static unsigned long
+target_thumb_ins(unsigned long pc, unsigned short ins)
+{
+    unsigned long new_pc = MAKE_THUMB_ADDR(pc+2); // default is fall-through 
+                                        // to next thumb instruction
+    unsigned long offset, arm_ins;
+
+    switch ((ins & 0xf000) >> 12) {
+    case 0x4:
+        // Check for BX
+        if ((ins & 0xff87) == 0x4700)
+            new_pc = (unsigned long)get_register((ins & 0x00078) >> 3);
+        break;
+    case 0xd:
+        // Bcc
+        // Use ARM function to check condition
+        arm_ins = ((unsigned long)(ins & 0x0f00)) << 20;
+        if (ins_will_execute(arm_ins)) {
+            offset = (ins & 0x00FF) << 1;
+            if (ins & 0x0080) offset |= 0xFFFFFE00;  // sign extend
+            new_pc = MAKE_THUMB_ADDR((unsigned long)(pc+4) + offset);
+        }
+        break;
+    case 0xe:
+        // check for B
+        if ((ins & 0x0800) == 0) {
+            offset = (ins & 0x07FF) << 1;
+            if (ins & 0x0400) offset |= 0xFFFFF800;  // sign extend
+            new_pc = MAKE_THUMB_ADDR((unsigned long)(pc+4) + offset);
+        }
+        break;
+    case 0xf:
+        // BL (4byte instruction!)
+        // First instruction (bit 11 == 0) holds top-part of offset
+        offset = (ins & 0x07FF) << 12;
+        if (ins & 0x0400) offset |= 0xFF800000;  // sign extend
+        // Get second instruction
+        // Second instruction (bit 11 == 1) holds bottom-part of offset
+        ins = *(unsigned short*)(pc+2);
+        offset |= (ins & 0x07ff) << 1;
+        new_pc = MAKE_THUMB_ADDR((unsigned long)(pc+4) + offset);
+        break;
+    }
+
+    return new_pc;
+}
 
 void __single_step (void)
 {
     unsigned long pc = get_register(PC);
+    unsigned long cpsr = get_register(PS);
+
+    // Calculate address of next instruction to be executed
+    if (cpsr & CPSR_THUMB_ENABLE) {
+        // thumb
+        ss_saved_pc = target_thumb_ins(pc, *(unsigned short*)pc);
+    } else {
+        // ARM
         unsigned long curins = *(unsigned long*)pc;
         if (ins_will_execute(curins)) {
             // Decode instruction to decide what the next PC will be
@@ -390,8 +459,19 @@ void __single_step (void)
             // don't hold)
             ss_saved_pc = pc+4;
         }
+    }
+
+    // Set breakpoint according to type
+    if (IS_THUMB_ADDR(ss_saved_pc)) {
+        // Thumb instruction
+        unsigned long t_pc = UNMAKE_THUMB_ADDR(ss_saved_pc);
+        ss_saved_thumb_instr = *(unsigned short*)t_pc;
+        *(unsigned short*)t_pc = HAL_BREAKINST_THUMB;
+    } else {
+        // ARM instruction
         ss_saved_instr = *(unsigned long*)ss_saved_pc;
         *(unsigned long*)ss_saved_pc = HAL_BREAKINST_ARM;
+    }
 }
 
 /* Clear the single-step state. */
@@ -399,12 +479,20 @@ void __single_step (void)
 void __clear_single_step (void)
 {
     if (ss_saved_pc != 0) {
+        // Restore instruction according to type
+        if (IS_THUMB_ADDR(ss_saved_pc)) {
+            // Thumb instruction
+            unsigned long t_pc = UNMAKE_THUMB_ADDR(ss_saved_pc);
+            *(unsigned short*)t_pc = ss_saved_thumb_instr;
+        } else {
             // ARM instruction
             *(unsigned long*)ss_saved_pc = ss_saved_instr;
+        }
         ss_saved_pc = 0;
     }
 }
 
+#if !defined(CYGPKG_CYGMON)
 void __install_breakpoints (void)
 {
 //    FIXME();
@@ -414,6 +502,7 @@ void __clear_breakpoints (void)
 {
 //    FIXME();
 }
+#endif // !CYGPKG_CYGMON
 
 /* If the breakpoint we hit is in the breakpoint() instruction, return a
    non-zero value. */
@@ -432,9 +521,107 @@ __is_breakpoint_function ()
 void __skipinst (void)
 {
     unsigned long pc = get_register(PC);
+    unsigned long cpsr = get_register(PS);
+
+    if (cpsr & CPSR_THUMB_ENABLE)
+        pc += 2;
+    else
         pc += 4;
 
     put_register(PC, pc);
+}
+
+//-----------------------------------------------------------------------
+// Thumb-aware GDB interrupt handler.
+// This is a brute-force replacement of the ones in hal_stub.c. Need to
+// find a better way of handling it... Maybe... Probably only ARM/thumb
+// that is this weird.
+
+typedef struct
+{
+    cyg_uint32 targetAddr;
+    union {
+        cyg_uint32 arm_instr;
+        cyg_uint16 thumb_instr;
+    } savedInstr;
+} instrBuffer;
+
+static instrBuffer break_buffer;
+
+volatile int cyg_hal_gdb_running_step = 0;
+
+void 
+cyg_hal_gdb_interrupt (target_register_t pc)
+{
+    // Clear flag that we Continued instead of Stepping
+    cyg_hal_gdb_running_step = 0;
+    // and override existing break? So that a ^C takes effect...
+    if (0 != break_buffer.targetAddr)
+        cyg_hal_gdb_remove_break( break_buffer.targetAddr );
+
+    if (0 == break_buffer.targetAddr) {
+        cyg_uint32 cpsr = get_register(PS);
+
+        if (cpsr & CPSR_THUMB_ENABLE) {
+            break_buffer.targetAddr = MAKE_THUMB_ADDR((cyg_uint32)pc);
+            break_buffer.savedInstr.thumb_instr = *(cyg_uint16*)pc;
+            *(cyg_uint16*)pc = HAL_BREAKINST_THUMB;
+        } else {
+            break_buffer.targetAddr = (cyg_uint32)pc;
+            break_buffer.savedInstr.arm_instr = *(cyg_uint32*)pc;
+            *(cyg_uint32*)pc = HAL_BREAKINST_ARM;
+        }
+
+        __data_cache(CACHE_FLUSH);
+        __instruction_cache(CACHE_FLUSH);
+    }
+}
+
+void 
+cyg_hal_gdb_place_break (target_register_t pc)
+{
+    // Clear flag that we Continued instead of Stepping
+    cyg_hal_gdb_running_step = 0;
+    // Unconditionally place an ARM breakpoint not a THUMB; there is
+    // no saved regset for get_register in this call:
+    if (0 == break_buffer.targetAddr) {
+        break_buffer.targetAddr = (cyg_uint32)pc;
+        break_buffer.savedInstr.arm_instr = *(cyg_uint32*)pc;
+        *(cyg_uint32*)pc = HAL_BREAKINST_ARM;
+        
+        __data_cache(CACHE_FLUSH);
+        __instruction_cache(CACHE_FLUSH);
+    }
+}
+
+int 
+cyg_hal_gdb_remove_break (target_register_t pc)
+{
+    if ( cyg_hal_gdb_running_step )
+        return 0; // Do not remove the break: we must hit it!
+
+    if (pc == UNMAKE_THUMB_ADDR(break_buffer.targetAddr)) {
+        if (IS_THUMB_ADDR(break_buffer.targetAddr)) {
+            *(cyg_uint16*)pc = break_buffer.savedInstr.thumb_instr;
+        } else {
+            *(cyg_uint32*)pc = break_buffer.savedInstr.arm_instr;
+        }
+        break_buffer.targetAddr = 0;
+
+        __data_cache(CACHE_FLUSH);
+        __instruction_cache(CACHE_FLUSH);
+        return 1;
+    }
+    return 0;
+}
+
+int
+cyg_hal_gdb_break_is_set (void)
+{
+    if (0 != break_buffer.targetAddr) {
+        return 1;
+    }
+    return 0;
 }
 
 

@@ -2,7 +2,7 @@
 // #
 // #	context.S
 // #
-// #	PowerPC context switch code
+// #	ARM context switch code
 // #
 // #=============================================================================
 // ####COPYRIGHTBEGIN####
@@ -67,13 +67,26 @@ name:
 // Note: this is a little wasteful since r0..r3 don't need to be saved.
 // They are saved here though so that the information can match the HAL_SavedRegisters
 	
+#ifdef __thumb__
+	.code	16	
+	.thumb_func
+#endif
 FUNC_START(hal_thread_switch_context)
+#ifdef __thumb__
+	ldr	r2,=hal_thread_switch_context_ARM
+	bx	r2
+	.code	32
+FUNC_START(hal_thread_switch_context_ARM)
+#endif
 	mov	ip,sp			// saved stack pointer
         stmfd   sp!,{fp,ip,lr,pc}       // filler
 	stmfd	sp!,{r0-r10,fp,ip,lr,pc}
 	mrs	r2,cpsr
 	str	r2,[sp,#armreg_cpsr]
 	str	sp,[r1]			// return new stack pointer
+#ifdef __thumb__
+	b	hal_thread_load_context_ARM	// skip mode switch stuff
+#endif
 
 	# Now load the destination thread by dropping through
 	# to hal_thread_load_context
@@ -85,7 +98,17 @@ FUNC_START(hal_thread_switch_context)
 //  Note that this function is also the second half of hal_thread_switch_context
 //  and is simply dropped into from it.
 	
+#ifdef __thumb__
+	.code	16	
+	.thumb_func
+#endif
 FUNC_START(hal_thread_load_context)
+#ifdef __thumb__
+	ldr	r2,=hal_thread_load_context_ARM
+	bx	r2
+	.code	32
+FUNC_START(hal_thread_load_context_ARM)
+#endif
 	ldr	fp,[r0]			// get context to restore
 	mrs	r0,cpsr			// disable IRQ's
 	orr	r0,r0,#CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE
@@ -93,24 +116,59 @@ FUNC_START(hal_thread_load_context)
 	ldr	r0,[fp,#armreg_cpsr]
 	msr	spsr,r0
 	ldmfd	fp,{r0-r10,fp,sp,lr}
+#ifdef __thumb__
+	mrs	r1,spsr			// r1 is scratch 
+                                        // [r0 holds initial thread arg]
+	msr	cpsr,r1			// hopefully no mode switch here!
+	bx	lr
+#else
 	movs	pc,lr	                // also restores saved PSR
+#endif
 
 // ------------------------------------------------------------------------------
 //  HAL longjmp, setjmp implementations
 //  hal_setjmp saves only to callee save registers 4-14
 //  and lr into buffer supplied in r0[arg0]
 
+#ifdef __thumb__
+	.code	16	
+	.thumb_func
+#endif
 FUNC_START(hal_setjmp)
+#ifdef __thumb__
+	ldr	r2,=hal_setjmp_ARM
+	bx	r2
+	.code	32
+FUNC_START(hal_setjmp_ARM)
+#endif
 	stmea	r0,{r4-r14}
 	mov	r0,#0
+#ifdef __thumb__
+	bx	lr
+#else
 	mov	pc,lr;		# return
+#endif
 
 //  hal_longjmp loads state from r0[arg0] and returns
 	
+#ifdef __thumb__
+	.code	16	
+	.thumb_func
+#endif
 FUNC_START(hal_longjmp)
+#ifdef __thumb__
+	ldr	r2,=hal_longjmp_ARM
+	bx	r2
+	.code	32
+FUNC_START(hal_longjmp_ARM)
+#endif
 	ldmfd	r0,{r4-r14}
 	mov	r0,r1;		# return [arg1]
+#ifdef __thumb__
+	bx	lr
+#else
 	mov	pc,lr
+#endif
 
 // ------------------------------------------------------------------------------
 //  end of context.S

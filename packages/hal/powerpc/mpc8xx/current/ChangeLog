@@ -1,3 +1,52 @@
+2000-03-02  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_powerpc_mpc8xx.cdl: Further restrictions on
+	CYGSEM_HAL_USE_ROM_MONITOR.
+
+	* cdl/hal_powerpc_mpc8xx.cdl: 
+	* include/pkgconf/hal_powerpc_mpc8xx.h: 
+	Add config options for MPC823 and MPC850.
+
+2000-03-01  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/hal_powerpc_mpc8xx.cdl (CYGSEM_HAL_USE_ROM_MONITOR): Default to
+	0 if CYGSEM_HAL_POWERPC_COPY_VECTORS enabled
+
+2000-03-01  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* cdl/hal_powerpc_mpc8xx.cdl: 
+	Implement CYGINT_HAL_DIAG_DISABLE_GDB_PROTOCOL_SUPPORTED
+
+2000-03-01  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_powerpc_mpc8xx.cdl: CYGSEM_HAL_POWERPC_COPY_VECTORS
+	precludes CYGSEM_HAL_USE_ROM_MONITOR.
+
+	* include/variant.inc: Forgot conditionals on vector copy in last
+	checkin.
+
+2000-02-29  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/var_intr.c (hal_variant_IRQ_init): Fix spelling of option
+	which controls CPM initialization.
+
+2000-02-28  Jesper Skov  <jskov@redhat.com>
+
+	* include/variant.inc: Only copy vectors when required.
+
+2000-02-24  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_powerpc_mpc8xx.cdl: 
+	* src/mpc8xxrev.c: 
+	Added revnum dump tool.
+
+2000-02-21  Jesper Skov  <jskov@redhat.com>
+
+	* src/variant.S: 
+	* include/variant.inc: use arch.inc instead of ppc.inc
+	Added empty variant save macros. Rely on mk_defs to provide
+	definitions.
+
 2000-02-18  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* include/pkgconf/hal_powerpc_mpc8xx.h: Fix nesting of
@@ -5,11 +54,17 @@
 	paernt -> parent
 	CYGSEM_HAL_POWERPC_MPC860_CPM_LVL -> CYGHWR_HAL_POWERPC_MPC860_CPM_LVL
 	which also doesn't need to be a component, only an option
+	* cdl/hal_powerpc_mpc8xx.cdl: Similarly treat
+	CYGSEM_HAL_POWERPC_MPC860_CPM_LVL here
 
 2000-02-14  Jesper Skov  <jskov@redhat.com>
 
 	* include/pkgconf/hal_powerpc_mpc8xx.h: Added simple config for
 	1st level arbiter.
+
+2000-02-14  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_powerpc_mpc8xx.cdl: legal range uses 'to' not '-'
 
 2000-02-11  Jesper Skov  <jskov@redhat.com>
 
@@ -20,10 +75,18 @@
 
 	* tests/intr0.c: Moved here from arch.
 
+	* cdl/hal_powerpc_mpc8xx.cdl: Added simple config for 1st level
+	arbiter. Fix description.
 	* src/var_intr.c: 
 	* src/PKGconf.mak:
 	Move 860 arbiters to variant sources.
 	
+2000-02-11  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_powerpc_mpc8xx.cdl:
+
+	Tidy display strings.
+
 2000-02-10  Jesper Skov  <jskov@redhat.com>
 
 	* include/var_intr.h: Bad undef/define order fixed.

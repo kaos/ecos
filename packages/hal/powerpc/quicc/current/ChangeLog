@@ -1,3 +1,24 @@
+2000-03-03  Gary Thomas  <gthomas@redhat.com>
+
+	* src/quicc_smc1.c: Use common CPM defines (now in ppc8xx.h).
+
+	* include/ppc8xx.h: Add some generic defines for CPM.  Also
+	refine ucode area for easier use (someday).
+
+start-serialize-newcdl
+2000-02-29  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/quicc_smc1.c (UART_BAUD_RATE): Use CDL option for baud rate.
+
+	* cdl/hal_powerpc_quicc.cdl: Add option to control diag serial
+	baud rate, rather than being fixed at 38400.
+
+end-serialize-newcdl
+2000-02-21  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/quicc_smc1.c (UART_BIT_RATE): Handle system clock speeds
+	which are not integer multiples of MHz, e.g. 33.33 MHz.
+
 2000-02-04  Jesper Skov  <jskov@redhat.com>
 
 	* src/quicc_smc1.c (cyg_quicc_smc1_uart_rcvchar): Get frequency

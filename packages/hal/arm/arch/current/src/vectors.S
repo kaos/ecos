@@ -157,7 +157,9 @@ warm_reset:
 
 	mov	r0,#0		// move vectors
 	// We cannot perform a store until after PLATFORM_SETUP1
+#ifndef CYGPKG_HAL_ARM_EBSA285  // EBSA285 sets the DRAM size above
 	str	r0, [r0,#0x40]  // DRAM size to zero => unknown
+#endif
 
         ldr	r1,=__exception_handlers
 #ifndef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
@@ -283,6 +285,15 @@ start:
 	bne	1b
 2:
 
+#ifdef __thumb__
+// Run kernel + application in THUMB mode
+	ldr	r1,=10f+1
+	bx	r1
+        .pool
+	.code	16
+	.thumb_func
+10:
+#endif
 
 	LED 3
 	
@@ -368,7 +379,14 @@ undefined_instruction:
 	sub	sp,sp,#ARMREG_SIZE	// make space for frame
 	stmea	sp,{r0-r10,fp}		// save immediately visible registers
 	ldmfd	ip,{r0-r4}		// saved registers
+#if 1
+        // Adjust PC according to CPU mode
+	tst	r0,#CPSR_THUMB_ENABLE
+	subeq	r4,r4,#4		// PC at time of interrupt (ARM)
+	subne	r4,r4,#2		// PC at time of interrupt (thumb)
+#else
 	sub	r4,r4,#4		// PC at time of interrupt
+#endif
 	str	r0,[sp,#armreg_cpsr]	// CPSR at time of interrupt
 	str	r1,[sp,#armreg_r0]	// saved R0
 	str	r2,[sp,#armreg_fp]	// saved FP
@@ -389,7 +407,14 @@ software_interrupt:
 	sub	sp,sp,#ARMREG_SIZE+16	// make space for frame
 	stmea	sp,{r0-r10,fp}		// save immediately visible registers
 	mrs	r0,spsr
+#if 1
+        // Adjust PC according to CPU mode
+	tst	r0,#CPSR_THUMB_ENABLE
+	subeq	r3,lr,#4		// PC at time of interrupt (ARM)
+	subne	r3,lr,#2		// PC at time of interrupt (thumb)
+#else
 	sub	r3,lr,#4		// PC at time of interrupt
+#endif
 	str	r0,[sp,#armreg_cpsr]	// CPSR at time of interrupt
 	str	ip,[sp,#armreg_ip]	// saved IP
 	str	r3,[sp,#armreg_pc]	// PC at time of interrupt
@@ -497,10 +522,28 @@ abort_data:
 call_exception_handler:
 	str	v1,[sp,#armreg_vector]
 	mov	r0,sp
+#ifdef __thumb__
+// Switch to thumb mode
+	ldr	r9,=10f+1
+	bx	r9
+        .pool
+	.code	16
+	.thumb_func
+10:
+#endif
 	bl	exception_handler
 #ifdef  CYGHWR_HAL_ARM_DUMP_EXCEPTIONS
 	mov	r0,sp
 	bl	cyg_hal_report_exception_handler_returned
+#endif
+#ifdef __thumb__
+// Switch back to ARM mode
+	ldr	r1,=10f
+	bx	r1
+        .pool
+	.code	32
+	.thumb_func
+10:
 #endif
 
 // Restore [interrupted] context
@@ -599,6 +642,15 @@ handle_IRQ_or_FIQ:
 	str	r4,[r3]
 #endif
 
+#ifdef __thumb__
+// Switch to thumb mode
+	ldr	r3,=10f+1
+	bx	r3
+        .pool
+	.code	16
+	.thumb_func
+10:
+#endif
 	mov	r0,v6
 	bl	hal_IRQ_handler		// determine interrupt source
 	mov	v1,r0			// returned vector #
@@ -611,6 +663,14 @@ handle_IRQ_or_FIQ:
 	bl	cyg_instrument		// call instrument function
 #endif
 
+#ifdef __thumb__
+// Switch to ARM mode
+	ldr	r0,=10f
+	bx	r0
+        .pool
+	.code	32
+10:
+#endif
 	mov	r0,v1			// vector #
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_IGNORE_SPURIOUS	
         cmp     r0,#0                   // ignore spurious interrupts
@@ -623,8 +683,23 @@ handle_IRQ_or_FIQ:
 	mov	r2,v6			// register frame (this is necessary
 					// for the ISR too, for ^C detection)
 
+#ifdef __thumb__
+	ldr	lr,=10f
+	bx	v3			// invoke handler (thumb mode)
+        .pool
+	.code	16
+	.thumb_func
+IRQ_10T:
+10:	ldr	r2,=15f
+	bx	r2			// switch back to ARM mode
+        .pool
+	.code	32
+15:
+IRQ_15A:
+#else
 	mov	lr,pc			// invoke handler (call indirect
 	mov	pc,v3                   // thru v3)
+#endif
 
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_IGNORE_SPURIOUS	
 spurious_IRQ:           
@@ -648,10 +723,29 @@ spurious_IRQ:
 	ldr	r1,.hal_interrupt_objects
 	ldr	r1,[r1,v1,lsl #2]
 	mov	r2,v6		// register frame
+#ifdef __thumb__
+// Switch to thumb mode
+	ldr	r3,=10f+1
+	bx	r3
+        .pool
+	.code	16
+	.thumb_func
+10:
+IRQ_20T:
+#endif
 	bl	interrupt_end   // post any bottom layer handler
                                 // threads and call scheduler
 #endif
 
+#ifdef __thumb__
+// Switch to ARM mode
+	ldr	r1,=10f
+	bx	r1
+        .pool
+	.code	32
+10:
+IRQ_20A:
+#endif
 
 //	mov	r0,sp
 //	bl	show_frame_out
@@ -683,7 +777,19 @@ spurious_IRQ:
 // Execute pending DSRs the interrupt stack
 // Note: this can only be called from code running on a thread stack
 	.global	hal_interrupt_stack_call_pending_DSRs
+#ifdef __thumb__
+	.code	16
+	.thumb_func
+#endif
 hal_interrupt_stack_call_pending_DSRs:
+#ifdef __thumb__
+	ldr	r1,=10f
+	bx	r1
+        .pool
+	.code	32
+10:
+hal_interrupt_stack_call_pending_DSRs_ARM:
+#endif
         stmfd	sp!,{r4,r5,lr}
 	// Disable interrupts
 	mrs	r4,cpsr			// disable IRQ's
@@ -700,7 +806,22 @@ hal_interrupt_stack_call_pending_DSRs:
 	str	r3,[r2]
 	msr	cpsr,r5			// enable interrupts
 
+#ifdef __thumb__
+	ldr	r1,=20f+1
+	bx	r1
+        .pool
+	.code	16
+	.thumb_func
+20:
+#endif
 	bl	cyg_interrupt_call_pending_DSRs
+#ifdef __thumb__
+	ldr	r1,=22f
+	bx	r1
+        .pool
+	.code	32
+22:
+#endif
 
 	// Disable interrupts
 	mrs	r1,cpsr			// disable IRQ's
@@ -715,9 +836,73 @@ hal_interrupt_stack_call_pending_DSRs:
 	ldr	sp,[sp]			// This should be the saved stack pointer
 	msr	cpsr,r4			// restore interrupts to original state
 
+#ifdef __thumb__
+	ldmfd	sp!,{r4,r5,lr}		// return
+	bx	lr
+#else
 	ldmfd	sp!,{r4,r5,pc}		// return
+#endif // __thumb__
 #endif // CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
         
+// Thumb-only support functions
+#ifdef __thumb__
+        .global hal_disable_interrupts
+        .code   16
+        .thumb_func
+hal_disable_interrupts: 
+        ldr     r1,=hal_disable_interrupts_ARM
+        bx      r1                      // switch to 32 bit mode
+        .pool
+        .code   32
+hal_disable_interrupts_ARM:             
+        mrs     r0,cpsr                 // current state
+        orr     r1,r0,#0xC0             // mask both FIQ and IRQ
+        msr     cpsr,r1
+        bx      lr                      // exit, _old_ in r0        
+
+        .global hal_enable_interrupts
+        .code   16
+        .thumb_func
+hal_enable_interrupts: 
+        ldr     r1,=hal_enable_interrupts_ARM
+        bx      r1                      // switch to 32 bit mode
+        .pool
+        .code   32
+hal_enable_interrupts_ARM:               
+        mrs     r0,cpsr                 // current state
+        bic     r1,r0,#0xC0             // mask both FIQ and IRQ
+        msr     cpsr,r1
+        bx      lr                      // exit
+        
+        .global hal_restore_interrupts
+        .code   16
+        .thumb_func
+hal_restore_interrupts: 
+        ldr     r1,=hal_restore_interrupts_ARM
+        bx      r1                      // switch to 32 bit mode
+        .pool
+        .code   32
+hal_restore_interrupts_ARM:             
+        mrs     r1,cpsr                 // current state
+        bic     r1,r1,#0xC0             // mask out FIQ/IRQ bits
+        and     r0,r0,#0xC0             // keep only FIQ/IRQ
+        orr     r1,r1,r0                // mask both FIQ and IRQ
+        msr     cpsr,r1
+        bx      lr                      // exit        
+
+        .global hal_query_interrupts
+        .code   16
+        .thumb_func
+hal_query_interrupts: 
+        ldr     r1,=hal_query_interrupts_ARM
+        bx      r1                      // switch to 32 bit mode
+        .pool
+        .code   32
+hal_query_interrupts_ARM:               
+        mrs     r0,cpsr                 // current state
+        bx      lr                      // exit, state in r0
+
+#endif // __thumb__
 
 // Dummy/support functions
 
@@ -725,6 +910,29 @@ hal_interrupt_stack_call_pending_DSRs:
 	.global	_psr
 	.global	_sp
 
+#ifdef __thumb__
+        .code   16
+        .thumb_func
+__gccmain:
+	bx      lr
+
+        .code   16
+        .thumb_func
+_psr:
+        ldr     r1,=_psr_ARM
+        bx      r1
+        .pool
+        .code   32
+_psr_ARM:               
+	mrs	r0,cpsr
+        bx      lr
+
+        .code   16
+        .thumb_func
+_sp:
+	mov	r0,sp
+	bx      lr
+#else
 __gccmain:
 	mov	pc,lr	
 
@@ -735,6 +943,7 @@ _psr:
 _sp:
 	mov	r0,sp
 	mov	pc,lr
+#endif                
 
 
 //

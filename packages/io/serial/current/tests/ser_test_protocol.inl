@@ -122,11 +122,27 @@
 #  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
 # endif
 #endif
+#if defined(CYGPKG_HAL_ARM_EBSA285) && defined(CYGPKG_IO_SERIAL_ARM_EBSA285)
+# define TEST_CRASH_ID "arm285"
+# define TEST_SER_DEV CYGDAT_IO_SERIAL_ARM_EBSA285_SERIAL_NAME
+# if defined(CYGPKG_IO_SERIAL_TTY_TTY1)
+#  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
+# endif
+#endif
 #if defined(CYGPKG_HAL_MIPS_TX39_JMR3904)               \
     && defined(CYGPKG_IO_SERIAL_TX39_JMR3904)           \
     && defined(CYGPKG_IO_SERIAL_TX39_JMR3904_SERIAL0)
 # define TEST_CRASH_ID "tx3jmr"
 # define TEST_SER_DEV CYGDAT_IO_SERIAL_TX39_JMR3904_SERIAL0_NAME
+# if defined(CYGPKG_IO_SERIAL_TTY_TTY0)
+#  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY0_DEV
+# endif
+#endif
+#if defined(CYGPKG_HAL_MIPS_VR4300_VRC4373)               \
+    && defined(CYGPKG_IO_SERIAL_MIPS_VRC4373)           \
+    && defined(CYGPKG_IO_SERIAL_MIPS_VRC4373_SERIAL0)
+# define TEST_CRASH_ID "vrc4373"
+# define TEST_SER_DEV CYGDAT_IO_SERIAL_MIPS_VRC4373_SERIAL0_NAME
 # if defined(CYGPKG_IO_SERIAL_TTY_TTY0)
 #  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY0_DEV
 # endif
@@ -138,6 +154,15 @@
 # define TEST_SER_DEV CYGDAT_IO_SERIAL_MN10300_SERIAL2_NAME
 # if defined(CYGPKG_IO_SERIAL_TTY_TTY2)
 #  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
+# endif
+#endif
+#if defined(CYGPKG_HAL_MN10300_AM33_STB)                \
+    && defined(CYGPKG_IO_SERIAL_MN10300)                \
+    && defined(CYGPKG_IO_SERIAL_MN10300_SERIAL0)
+# define TEST_CRASH_ID "am33st"
+# define TEST_SER_DEV CYGDAT_IO_SERIAL_MN10300_SERIAL0_NAME
+# if defined(CYGPKG_IO_SERIAL_TTY_TTY0)
+#  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY0_DEV
 # endif
 #endif
 #if defined(CYGPKG_HAL_SPARCLITE_SLEB)                    \
@@ -158,6 +183,15 @@
 #  if defined(CYGPKG_IO_SERIAL_TTY_TTY0)
 #   define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY0_DEV
 #  endif
+# endif
+#endif
+#if defined(CYGPKG_HAL_SH)                      \
+    && defined(CYGPKG_IO_SERIAL_SH_EDK7708)     \
+    && defined(CYGPKG_IO_SERIAL_SH_EDK7708_SCI)
+# define TEST_CRASH_ID "sh7708"
+# define TEST_SER_DEV CYGDAT_IO_SERIAL_SH_EDK7708_SCI_NAME
+# if defined(CYGPKG_IO_SERIAL_TTY_TTY2)
+#  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
 # endif
 #endif
 #if defined(CYGPKG_HAL_I386_PC)                         \
@@ -317,6 +351,7 @@ cyg_ser_cfg_t test_configs[] = {
 #endif
 
 #if !defined(CYGPKG_HAL_MN10300_AM31) &&    \
+    !defined(CYGPKG_HAL_MN10300_AM33) &&    \
     1
     { CYGNUM_SERIAL_BAUD_14400, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },
@@ -334,6 +369,7 @@ cyg_ser_cfg_t test_configs[] = {
 #if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904) &&   \
     !defined(CYGPKG_HAL_ARM_AEB) &&             \
     !defined(CYGPKG_HAL_SPARCLITE_SLEB) &&      \
+    !defined(CYGPKG_HAL_MN10300_AM33) &&        \
     1
     { CYGNUM_SERIAL_BAUD_57600, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },
@@ -344,7 +380,7 @@ cyg_ser_cfg_t test_configs[] = {
     !defined(CYGPKG_HAL_ARM_AEB) &&             \
     !defined(CYGPKG_HAL_MN10300_STDEVAL1) &&    \
     !defined(CYGPKG_HAL_ARM_CMA230) &&          \
-    !defined(CYGPKG_HAL_ARM_EDB7XXX) &&          \
+    !defined(CYGPKG_HAL_ARM_EDB7XXX) &&         \
     !defined(CYGPKG_HAL_SPARCLITE_SLEB)
     { CYGNUM_SERIAL_BAUD_115200, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },

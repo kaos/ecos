@@ -93,7 +93,7 @@ hal_thread_switch_context:
 #	sgpr	29,sp	# == SP
 	sgpr	30,sp	# == FP
 	sgpr	31,sp	# == RA
-	sgpr	31,sp	# == PC (to help with debugging)
+	spc     $31,sp	# == PC (to help with debugging)
 	.set	at
 	
 #ifndef CYGDBG_HAL_COMMON_CONTEXT_SAVE_MINIMUM
@@ -221,21 +221,28 @@ hal_thread_load_context:
 
 #define CYGARC_JMP_BUF_SIZE     12
 
+// FIXME: The follwing restricts us to using only 32 bit registers
+// in jump buffers. If/when we move to a full 64 bit architecture,
+// this will need to change, as will the instructions that we use to
+// save and restore them.
+
+#define jmpbuf_regsize 4
+	
 	.globl	hal_setjmp
 	.ent	hal_setjmp
 hal_setjmp:
-	sw	$31,CYGARC_JMP_BUF_R31*mips_regsize(a0)	# ra (link)
-	sw	$30,CYGARC_JMP_BUF_R30*mips_regsize(a0)
-	sw	$28,CYGARC_JMP_BUF_R28*mips_regsize(a0)	# gp, optimize out?
-	sw	$23,CYGARC_JMP_BUF_R23*mips_regsize(a0)
-	sw	$22,CYGARC_JMP_BUF_R22*mips_regsize(a0)
-	sw	$21,CYGARC_JMP_BUF_R21*mips_regsize(a0)
-	sw	$20,CYGARC_JMP_BUF_R20*mips_regsize(a0)
-	sw	$19,CYGARC_JMP_BUF_R19*mips_regsize(a0)
-	sw	$18,CYGARC_JMP_BUF_R18*mips_regsize(a0)
-	sw	$17,CYGARC_JMP_BUF_R17*mips_regsize(a0)
-	sw	$16,CYGARC_JMP_BUF_R16*mips_regsize(a0)
-	sw	sp,CYGARC_JMP_BUF_SP*mips_regsize(a0)	# $29
+	sw	$31,CYGARC_JMP_BUF_R31*jmpbuf_regsize(a0)	# ra (link)
+	sw	$30,CYGARC_JMP_BUF_R30*jmpbuf_regsize(a0)
+	sw	$28,CYGARC_JMP_BUF_R28*jmpbuf_regsize(a0)	# gp, optimize out?
+	sw	$23,CYGARC_JMP_BUF_R23*jmpbuf_regsize(a0)
+	sw	$22,CYGARC_JMP_BUF_R22*jmpbuf_regsize(a0)
+	sw	$21,CYGARC_JMP_BUF_R21*jmpbuf_regsize(a0)
+	sw	$20,CYGARC_JMP_BUF_R20*jmpbuf_regsize(a0)
+	sw	$19,CYGARC_JMP_BUF_R19*jmpbuf_regsize(a0)
+	sw	$18,CYGARC_JMP_BUF_R18*jmpbuf_regsize(a0)
+	sw	$17,CYGARC_JMP_BUF_R17*jmpbuf_regsize(a0)
+	sw	$16,CYGARC_JMP_BUF_R16*jmpbuf_regsize(a0)
+	sw	sp,CYGARC_JMP_BUF_SP*jmpbuf_regsize(a0)	# $29
 	li	v0,0
 	jr	ra
 	nop			# delay slot
@@ -244,18 +251,18 @@ hal_setjmp:
 	.globl	hal_longjmp
 	.ent	hal_longjmp
 hal_longjmp:	
-	lw	$31,CYGARC_JMP_BUF_R31*mips_regsize(a0)	# ra (link)
-	lw	$30,CYGARC_JMP_BUF_R30*mips_regsize(a0)
-	lw	$28,CYGARC_JMP_BUF_R28*mips_regsize(a0)	# gp, optimize out?
-	lw	$23,CYGARC_JMP_BUF_R23*mips_regsize(a0)
-	lw	$22,CYGARC_JMP_BUF_R22*mips_regsize(a0)
-	lw	$21,CYGARC_JMP_BUF_R21*mips_regsize(a0)
-	lw	$20,CYGARC_JMP_BUF_R20*mips_regsize(a0)
-	lw	$19,CYGARC_JMP_BUF_R19*mips_regsize(a0)
-	lw	$18,CYGARC_JMP_BUF_R18*mips_regsize(a0)
-	lw	$17,CYGARC_JMP_BUF_R17*mips_regsize(a0)
-	lw	$16,CYGARC_JMP_BUF_R16*mips_regsize(a0)
-	lw	sp,CYGARC_JMP_BUF_SP*mips_regsize(a0)	# $29
+	lw	$31,CYGARC_JMP_BUF_R31*jmpbuf_regsize(a0)	# ra (link)
+	lw	$30,CYGARC_JMP_BUF_R30*jmpbuf_regsize(a0)
+	lw	$28,CYGARC_JMP_BUF_R28*jmpbuf_regsize(a0)	# gp, optimize out?
+	lw	$23,CYGARC_JMP_BUF_R23*jmpbuf_regsize(a0)
+	lw	$22,CYGARC_JMP_BUF_R22*jmpbuf_regsize(a0)
+	lw	$21,CYGARC_JMP_BUF_R21*jmpbuf_regsize(a0)
+	lw	$20,CYGARC_JMP_BUF_R20*jmpbuf_regsize(a0)
+	lw	$19,CYGARC_JMP_BUF_R19*jmpbuf_regsize(a0)
+	lw	$18,CYGARC_JMP_BUF_R18*jmpbuf_regsize(a0)
+	lw	$17,CYGARC_JMP_BUF_R17*jmpbuf_regsize(a0)
+	lw	$16,CYGARC_JMP_BUF_R16*jmpbuf_regsize(a0)
+	lw	sp,CYGARC_JMP_BUF_SP*jmpbuf_regsize(a0)	# $29
 	move	v0,a1
 	jr	ra
 	nop			# delay slot

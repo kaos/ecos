@@ -668,7 +668,7 @@ quicc_smc_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t dat
             if ((rxbd->ctrl & QUICC_BD_CTL_Ready) == 0) {
 #ifdef CYGDBG_DIAG_BUF
                 diag_printf("rxbuf: %x, flags: %x, length: %d\n", rxbd, rxbd->ctrl, rxbd->length);
-                dump_buf(rxbd->buffer, rxbd->length);
+                diag_dump_buf(rxbd->buffer, rxbd->length);
 #endif // CYGDBG_DIAG_BUF
                 for (i = 0;  i < rxbd->length;  i++) {
                     (chan->callbacks->rcv_char)(chan, rxbd->buffer[i]);
@@ -736,52 +736,6 @@ show_rxbd(int dump_all)
     enable_diag_uart = _enable;
     if (dump_all) dump_diag_buf();
 #endif // CYGDBG_DIAG_BUF
-}
-
-void
-dump_buf_with_offset(unsigned char *p, 
-                     int s, 
-                     unsigned char *base)
-{
-    int i, c;
-    if ((unsigned int)s > (unsigned int)p) {
-        s = (unsigned int)s - (unsigned int)p;
-    }
-    while (s > 0) {
-        if (base) {
-            diag_printf("%08X: ", (int)p - (int)base);
-        } else {
-            diag_printf("%08X: ", p);
-        }
-        for (i = 0;  i < 16;  i++) {
-            if (i < s) {
-                diag_printf("%02X", p[i] & 0xFF);
-            } else {
-                diag_printf("  ");
-            }
-            if ((i % 2) == 1) diag_printf(" ");
-            if ((i % 8) == 7) diag_printf(" ");
-        }
-        diag_printf(" |");
-        for (i = 0;  i < 16;  i++) {
-            if (i < s) {
-                c = p[i] & 0xFF;
-                if ((c < 0x20) || (c >= 0x7F)) c = '.';
-            } else {
-                c = ' ';
-            }
-            diag_printf("%c", c);
-        }
-        diag_printf("|\n");
-        s -= 16;
-        p += 16;
-    }
-}
-
-void
-dump_buf(unsigned char *p, int s)
-{
-   dump_buf_with_offset(p, s, 0);
 }
 #endif // CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC
 

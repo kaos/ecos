@@ -69,6 +69,7 @@ externC void diag_write_dec( cyg_int32 n);    /* Write decimal value       */
 
 externC void diag_write_hex( cyg_uint32 n);   /* Write hexadecimal value   */
 
+externC void diag_dump_buf(void *buf, CYG_ADDRWORD len);
 
 #ifdef CYGDBG_INFRA_DIAG_PRINTF_USE_VARARG
 

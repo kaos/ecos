@@ -1,0 +1,262 @@
+# ====================================================================
+#
+#      hal_i386_pc.cdl
+#
+#      PC/i386 target HAL package configuration data
+#
+# ====================================================================
+#####COPYRIGHTBEGIN####
+#                                                                          
+# -------------------------------------------                              
+# The contents of this file are subject to the Red Hat eCos Public License 
+# Version 1.1 (the "License"); you may not use this file except in         
+# compliance with the License.  You may obtain a copy of the License at    
+# http://www.redhat.com/                                                   
+#                                                                          
+# Software distributed under the License is distributed on an "AS IS"      
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+# License for the specific language governing rights and limitations under 
+# the License.                                                             
+#                                                                          
+# The Original Code is eCos - Embedded Configurable Operating System,      
+# released September 30, 1998.                                             
+#                                                                          
+# The Initial Developer of the Original Code is Red Hat.                   
+# Portions created by Red Hat are                                          
+# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# All Rights Reserved.                                                     
+# -------------------------------------------                              
+#                                                                          
+#####COPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      jskov
+# Original data:  jskov
+# Contributors:
+# Date:           1999-11-01
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_HAL_I386_PC {
+    display  "i386 PC target"
+    parent        CYGPKG_HAL_I386
+    define_header hal_i386_pc.h
+    include_dir   cyg/hal
+    description   "
+           The i386 PC Target HAL package provides the 
+           support needed to run eCos binaries on an i386 PC."
+
+    compile       hal_diag.c hal_startup.c hal_intr.c var_misc.c plf_misc.c plf_stub.c
+
+    implements    CYGINT_HAL_DEBUG_GDB_STUBS
+    implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
+
+    define_proc {
+        puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_i386.h>"
+        puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_i386_pc.h>"
+    }
+
+    cdl_component CYG_HAL_STARTUP {
+        display       "Startup type"
+        flavor        data
+        legal_values  {"RAM" "FLOPPY"}
+        default_value {"RAM"}
+	no_define
+	define -file system.h CYG_HAL_STARTUP
+        description   "
+            At the moment only RAM startup is supported. This should
+            be extended to include ROM startup which would be used to
+            test early initialization code copying data/code to \"RAM\"."
+    }
+
+
+    # Real-time clock/counter specifics
+    cdl_component CYGNUM_HAL_RTC_CONSTANTS {
+        display       "Real-time clock constants."
+        description   "The RTC period is based
+	on the clock input to the 8254, which is 1193180 Hz.  CYGNUM_HAL_RTC_PERIOD
+	is set for 100 ticks per second."
+        flavor        none
+    
+        cdl_option CYGNUM_HAL_RTC_NUMERATOR {
+            display       "Real-time clock numerator"
+            flavor        data
+            calculated    1000000000
+        }
+        cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
+            display       "Real-time clock denominator"
+            flavor        data
+            calculated    100
+        }
+        cdl_option CYGNUM_HAL_RTC_PERIOD {
+            display       "Real-time clock period"
+            flavor        data
+           calculated     11932
+        }
+    }
+
+    cdl_component CYGBLD_GLOBAL_OPTIONS {
+        display "Global build options"
+        flavor  none
+        parent  CYGPKG_NONE
+        description   "
+	    Global build options including control over
+	    compiler flags, linker flags and choice of toolchain."
+
+
+        cdl_option CYGBLD_GLOBAL_COMMAND_PREFIX {
+            display "Global command prefix"
+            flavor  data
+            no_define
+            default_value { "i386-elf" }
+            description "
+                This option specifies the command prefix used when
+                invoking the build tools. If your host operating system
+                is Linux you can set this to empty to use your native tools.
+                If so, your native gcc must be gcc-2.95.2 or later, and
+                \"ld -v\" must report a version more recent than 2.9.1."
+        }
+
+        cdl_option CYGBLD_GLOBAL_CFLAGS {
+            display "Global compiler flags"
+            flavor  data
+            no_define
+            default_value { "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
+            description   "
+                This option controls the global compiler flags which
+                are used to compile all packages by
+                default. Individual packages may define
+                options which override these global flags."
+        }
+
+        cdl_option CYGBLD_GLOBAL_LDFLAGS {
+            display "Global linker flags"
+            flavor  data
+            no_define
+            default_value { "-g -nostdlib -Wl,--gc-sections -Wl,-static" }
+            description   "
+                This option controls the global linker flags. Individual
+                packages may define options which override these global flags."
+        }
+
+        cdl_option CYGBLD_BUILD_GDB_STUBS {
+            display "Build GDB stub loader image"
+            default_value 0
+            requires { CYG_HAL_STARTUP == "FLOPPY" }
+            requires CYGSEM_HAL_ROM_MONITOR
+            requires CYGBLD_BUILD_COMMON_GDB_STUBS
+            requires CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+            requires ! CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+            requires ! CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT
+            requires ! CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
+            requires ! CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT
+            requires ! CYGDBG_HAL_COMMON_CONTEXT_SAVE_MINIMUM
+            no_define
+            description "
+                This option enables the building of the GDB stubs for the
+                board. The common HAL controls takes care of most of the
+                build process, but the final conversion from ELF image to
+                binary data is handled by the platform CDL, allowing
+                relocation of the data if necessary."
+
+            make -priority 320 {
+                <PREFIX>/bin/gdb_module.bin : <PREFIX>/bin/gdb_module.img
+                $(OBJCOPY) -O binary $< $@
+            }
+        }
+    }
+
+    cdl_component CYGHWR_MEMORY_LAYOUT {
+        display "Memory layout"
+        flavor data
+        no_define
+        calculated { CYG_HAL_STARTUP == "RAM" ? "i386_pc_ram" : \
+	                                        "i386_pc_floppy" }
+
+        cdl_option CYGHWR_MEMORY_LAYOUT_LDI {
+            display "Memory layout linker script fragment"
+            flavor data
+            no_define
+            define -file system.h CYGHWR_MEMORY_LAYOUT_LDI
+            calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_i386_pc_ram.ldi>" : \
+                                                    "<pkgconf/mlt_i386_pc_floppy.ldi>" }
+        }
+
+        cdl_option CYGHWR_MEMORY_LAYOUT_H {
+            display "Memory layout header file"
+            flavor data
+            no_define
+            define -file system.h CYGHWR_MEMORY_LAYOUT_H
+            calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_i386_pc_ram.h>" : \
+                                                    "<pkgconf/mlt_i386_pc_floppy.h>" }
+        }
+    }
+
+
+    cdl_option CYGSEM_HAL_I386_PC_STARTUP_RAM {
+	display       "Configure for downloaded RAM configuration"
+	flavor bool
+	no_define
+	calculated { CYG_HAL_STARTUP == "RAM" }
+	requires !CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+	requires CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+	requires CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
+	requires CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+    }
+
+
+    cdl_option CYGSEM_HAL_ROM_MONITOR {
+        display       "Behave as a ROM monitor"
+        flavor        bool
+        default_value 0
+        parent        CYGPKG_HAL_ROM_MONITOR
+        requires      { CYG_HAL_STARTUP == "FLOPPY" }
+	requires      !CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
+	requires      !CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+	requires      !CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT
+        description   "
+            Enable this option if this program is to be used as a ROM monitor,
+            i.e. applications will be loaded into RAM on the board, and this
+            ROM monitor may process exceptions or interrupts generated from the
+            application. This enables features such as utilizing a separate
+            interrupt stack when exceptions are generated."
+    }
+
+    cdl_component CYGSEM_HAL_I386_PC_DIAG {
+	display "Diagnostic output options"
+	flavor  none
+
+	cdl_option CYGSEM_HAL_I386_PC_DIAG_SCREEN {
+	    display "Output to PC screen"
+	    flavor  bool
+	    default_value 0
+	    requires !CYGSEM_HAL_I386_PC_DIAG_SERIAL1
+	    requires !CYGSEM_HAL_I386_PC_DIAG_SERIAL2
+	    description "This option causes any diagnostic output to
+	        be sent to the PC monitor screen."
+	}
+
+	cdl_option CYGSEM_HAL_I386_PC_DIAG_SERIAL1 {
+	    display "Output to serial line 1"
+	    flavor  bool
+	    default_value 1
+	    requires !CYGSEM_HAL_I386_PC_DIAG_SCREEN
+	    requires !CYGSEM_HAL_I386_PC_DIAG_SERIAL2
+	    description "This option causes any diagnostic output to
+	        be sent to serial line 1."
+	}
+
+	cdl_option CYGSEM_HAL_I386_PC_DIAG_SERIAL2 {
+	    display "Output to serial line 1"
+	    flavor  bool
+	    default_value 0
+	    requires !CYGSEM_HAL_I386_PC_DIAG_SCREEN
+	    requires !CYGSEM_HAL_I386_PC_DIAG_SERIAL1
+	    description "This option causes any diagnostic output to
+	        be sent to serial line 2."
+	}
+    }
+}

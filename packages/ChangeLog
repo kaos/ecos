@@ -1,33 +1,385 @@
+2000-03-22  John Dallaway  <jld@cygnus.co.uk>
+
+	* ecosadmin.tcl:
+
+	Don't invoke 'cygpath' on DOS-style paths to workaround erratic
+	behaviour when invoked from the GUI admin tool.
+
+2000-03-10  John Dallaway  <jld@cygnus.co.uk>
+
+	* ecosadmin.tcl:
+
+	Use 'cygpath' to process Cygwin-style command line arguments.
+
+2000-03-03  Bart Veer  <bartv@redhat.com>
+
+	* pkgconf/makevars (CP):
+	Use install -c rather than plain install, to avoid problems under
+	FreeBSD 
+
+2000-02-29  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* ecos.db: Add driver package for PowerPC QUICC (MBX) ethernet.
+
+2000-02-28  John Dallaway  <jld@cygnus.co.uk>
+
+	* ecos.db:
+
+	Eliminate superfluous ebsa285 target alias.
+
+2000-02-18  John Dallaway  <jld@cygnus.co.uk>
+
+	* ecos.db:
+
+	Tidy display strings.
+
+2000-02-11  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: PPC descriptions fixed.
+
+2000-02-11  John Dallaway  <jld@cygnus.co.uk>
+
+	* ecos.db:
+
+	Tidy PowerPC-related display strings.
+
 2000-02-10  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* targets: Fix up some accidental reversions
+	* ecos.db: Add some extra aliases for existing targets
+
+2000-02-10  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* targets: 
+	* packages: 
+	* ecos.db:
+	Added appropriate entries for i386 PC target.
+
+2000-02-10  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added SPARClite target.
 
 2000-02-07  Jesper Skov  <jskov@redhat.com>
 
+	* ecos.db:
 	* targets:
 	* packages:
 	Added PPC variants.
+
+2000-01-20 John Dallaway  <jld@cygnus.co.uk>
+
+	* ecos.db:
+
+	Add an alias for the 'cma222' target.
+
+2000-01-20  Jesper Skov  <jskov@cygnus.co.uk>
+	CR 901835-CR
+	* ecos.db: Added io_serial alias to CYGPKG_IO_SERIAL.
+
+2000-01-18  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* ecos.db: Include serial for i386 (to get IO_SERIAL_HALDIAG
+	requirement satisfied).
+
+1999-12-21 John Dallaway  <jld@cygnus.co.uk>
+
+	* ecos.db:
+
+	Fix target descriptions for consistency.
+
+1999-12-20 John Dallaway  <jld@cygnus.co.uk>
+
+	* ecos.db:
+
+	Add new internal CDL targets for the test farm:
+
+		edb7209, edb7212, cl7111
+
+	* ecosadmin.tcl:
+
+	Accommodate the new 'set_value' command in the package
+	database parsing code.
+
+1999-12-17 John Dallaway  <jld@cygnus.co.uk>
+
+	* ecos.db:
+
+	Eliminate template entries. Templates are now specified
+	as files in the 'templates' directory hierarchy.
+
+	* ecosadmin.tcl:
+
+	Remove obsolete 'template' proc from the package
+	database parsing code.
+
+1999-12-16  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* ecos.db: Add support for big-endian ARM PID target
+	Add support for ARM PID thumb target (pidT)
+	Add support for big-endian ARM PID thumb target (pidTBE)
+	Add support for ARM CMA230 thumb target (cma230T)
+	Fix a few teeny typos
+
+1999-12-08  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* ecos.db: Update for Cogent CMA222 (associated with CMA230).
+
+1999-12-08  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgconf/rules.mak:
+
+	Force the MLT files in the install tree to be
+	writable.
 
 1999-12-02  Mark Salter  <msalter@cygnus.com>
 
 	* targets: Added cma222 platform.
 
+1999-12-03 John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgconf/rules.mak:
+
+	Modify the 'clean' rule to avoid leaving the output of
+	custom rules in the build tree.
+
+1999-12-02 John Dallaway  <jld@cygnus.co.uk>
+
+	* ecosrelease.tcl:
+
+	Eliminate creation of version directory under
+	'prebuilt' directory.
+
+1999-11-30 John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgconf/rules.mak:
+
+	Add 'mlt_headers' rule.
+
+1999-11-29 John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgconf/rules.mak:
+
+	Accommodate 'make -n' by using wildcards for the
+	dependencies of test executables.
+
+1999-11-29 John Dallaway  <jld@cygnus.co.uk>
+
+	* ecosrelease.tcl:
+
+	Eliminate version directory under 'prebuilt'
+	directory.
+
+1999-11-25  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* targets:
+	Don't support stubs startup for PIDT platform
+	nor CMA230T platform
+	The reason is that you're meant to build the stub
+	in normal mode, not thumb mode.
+
+1999-11-25 John Dallaway  <jld@cygnus.co.uk>
+
+	* *.cdl:
+
+	Fix description strings for CDL options
+	CYGPKG_LIBM_CFLAGS_ADD and CYGPKG_LIBM_CFLAGS_REMOVE.
+
+1999-11-24 John Dallaway  <jld@cygnus.co.uk>
+
+	* ecos.db:
+
+	Eliminate command_prefix and cflags attributes for
+	each target. This information is no longer required
+	by libCDL.
+
+	* ecosadmin.tcl:
+
+	Remove obsolete command_prefix and cflags procs from
+	the package database parsing code.
+
+1999-11-19  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* targets:
+	Remove -mno-sched-prolog for thumb builds
+
+1999-11-19 John Dallaway  <jld@cygnus.co.uk>
+
+	* ecosadmin.tcl:
+
+	Observe the ECOS_REPOSITORY environment variable rather
+	than PKGCONF_COMPONENT_REPOSITORY.
+
+1999-11-18  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* targets: EDB7209 only has "ROM" startup.
+
+1999-11-17 John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgconf/rules.mak:
+
+	Ignore errors during test linking if the IGNORE_LINK_ERRORS
+	environment variable is set.
+
+1999-11-16 John Dallaway  <jld@cygnus.co.uk>
+
+	* ecos.db:
+
+	Tidy Cirrus Logic display strings.
+
 1999-11-16  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* targets: Add aliases for Cirrus Logic platforms.
+
+1999-11-10  Bart Veer  <bartv@cygnus.co.uk>
+
+	* ecos.db
+	Try to sort out template and target packages	
+
+1999-11-09 John Dallaway  <jld@cygnus.co.uk>
+
+	* ecos.db:
+
+	Tidy up target and template strings.
+
+1999-11-09 John Dallaway  <jld@cygnus.co.uk>
+
+	* ecos.db:
+
+	Tidy up HAL alias strings.
+
+1999-11-08 John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgconf/rules.mak:
+
+	Use .d files are targets for the compilation of tests.
+
+	Explcitly specify a .d file as a dependency of each
+	test execuatable to avoid deletion of .d file as an
+	'intermediate' file.
+
+1999-11-04  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgadmin.tcl:
+
+	Rename to ecosadmin.tcl and perform a global
+	substitution "pkgadmin"->"ecosadmin" throughout the
+	script.
+
+1999-11-04  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgconf/rules.mak:
+
+	Make all tests dependent on the eCos library and object
+	files.
+
+1999-11-03  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgconf/rules.mak:
+
+	Remove .tmp files during 'make clean'.
+
+1999-11-03  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgconf/rules.mak:
+
+	Eliminate the use of .stamp files for individual object
+	files. Use the dependency files (*.d) as stamp files.
+
+1999-11-03  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* ecos.db: Adding MN10300 platforms.
+          Added CYGMON package.
+	
+1999-11-02  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgconf/rules.mak:
+
+	Generate *.d dependency files during compilation.
+
+	Generate a .deps dependency file for the tests.
+
+	Include any .deps files which may exist.
+
+1999-11-02  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* ecos.db: Added PowerPC platforms.
+	* ecos.db: Added some MIPS platforms. Added remaining MIPS platforms.
+	
+1999-11-01  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* ecos.db: Added i386/linux target.
+	* ecos.db: Added sparclite/sleb target.
+
+1999-10-29  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* ecos.db: Added SH/EDK target.
+
+1999-10-29  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgconf/rules.mak:
+
+	Specify '.PHONY' rule.
+
+1999-10-28  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgconf/rules.mak:
+
+	Rationalise the naming of timestamp files.
 
 1999-10-27  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* targets: Reenabled stubs startup for pid9.
 
+1999-10-26  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* packages: Disable CygMon by default
+
+1999-10-26  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgconf/rules.mak:
+
+	New file providing default rules for makefiles generated
+	from CDL data.
+
 1999-10-26  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* targets: Removed stubs startup for pid9.
 	* targets: Added pidBE platform.
+	* targets: Added pidTBE platform.
+	
+1999-10-20  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* packages: Add Cygmon package.
+
+1999-10-20  John Dallaway  <jld@cygnus.co.uk>
+
+	* ecos.db:
+
+	Rationalize hardware template names and descriptions.
+
+	Remove thumb variant hardware templates as thumb support
+	is now controlled by a CDL option.
+
+1999-10-19  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* targets: Removed romram startup from brother platform.
 	
 1999-10-19  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* targets: Added pid9 target.
+
+1999-10-18  John Dallaway  <jld@cygnus.co.uk>
+
+	* ecos.db:
+
+	Enable CYGHWR_THUMB for Thumb targets.
+
+1999-10-15  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgadmin.tcl:
+
+	Accommodate and ignore new tcl commands 'enable' and
+	'disable' in the package database file (ecos.db).
 
 1999-10-14  Bart Veer  <bartv@cygnus.co.uk>
 
@@ -38,15 +390,65 @@
 	attempts variable substitution. Appropriate backslashes have been
 	added. 
 
+1999-10-13  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* packages:
+	* targets: 
+	Added Brother platform/package to VR4300 target.
+
+1999-10-07  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* ecos.db: Removed AEB rev C again. Handled with option now.
+
 1999-10-06  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* targets: Added AEB rev C target.
+	* ecos.db: Same.
 
+1999-10-05  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* targets: Switched VR4300 over to big endian.
+	
 1999-10-06  Bart Veer  <bartv@cygnus.co.uk>
 
 	* pkgconf.tcl:
 	Allow an empty command prefix string, useful for the synthetic
 	target. 
+
+1999-09-16  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* targets: Added thumb-interwork.
+
+1999-09-16  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* ecos.db: Added pidT target.
+
+1999-09-14  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgadmin.tcl:
+
+	No longer explicitly check for the presence of the
+	'tar' tool on the path. This problem is now reported
+	adequately during invocation.
+
+1999-09-14  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgadmin.tcl:
+
+	Redirect the standard output of all subprocesses invoked
+	using 'exec' to avoid problems with the script freezing
+	when invoked via Tcl_EvalFile() under Windows.
+
+1999-09-13  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgadmin.tcl:
+
+	Test for presence of the 'tar' tool on the path.
+
+	Raise an exception when a fatal error occurs. Catch
+	error messages at the top level and return as the
+	result of the script if the 'gui_mode' variable is
+	set.
 
 1999-09-10  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
@@ -60,6 +462,18 @@
 
 	* packages: Rename CYGPKG_HAL_MN10300_SIM to CYGPKG_HAL_MN10300_AM31_SIM
 
+1999-09-09  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgadmin.tcl:
+
+	Add new '--extract_license' switch to extract the
+	license file from a package distribution file for
+	use by the eCos admin tool GUI.
+
+1999-09-09  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* targets: Added pidT - PID running in Thumb mode.
+
 1999-09-08  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* targets: Missing base platform for EB7211 ==> CL7211
@@ -68,9 +482,23 @@
 
 	* NEWS: Added drivers/watchdog
 
+1999-09-07  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgadmin.tcl:
+
+	Use 'return' rather than 'exit' in case	we are running in
+	the process of the caller.
+
+	Add new '--accept_license' switch avoid prompting for
+	license confirmation when invoked non-interactively.
+
 1999-09-06  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* targets: Rename Cirrus Logic platforms to match actual boards.
+
+1999-09-06  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* targets: Remove am33-sim platform
 
 1999-08-16  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
@@ -78,9 +506,78 @@
 	* targets:
 	Rename all mentions of am32 to am31
 
+1999-08-12  Nick Garnett  <nickg@cygnus.co.uk>	
+
+	Merged from AM33 branch:
+	
+    1999-07-29  Jonathan Larmour <jlarmour@cygnus.co.uk>
+
+	* packages:
+	Put am33 platform sim after platform stb to look more correct
+	in Configuration tool   
+
+    1999-06-30  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* targets: Corrected command prefix and added architecture
+	selection flags. 
+
+    1999-06-29  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* targets:
+	* packages:
+	reorganized MN10300 HAL into arch+variants+platforms model
+	pioneered by MIPS HAL.
+
 1999-08-12  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* packages: Added entry for PCI package.
+
+1999-08-12  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* ecos.db: Added PCI and ebsa entries.
+
+1999-08-06  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgadmin.tcl: Remove any new targets or templates
+	which have missing packages.
+
+1999-08-05  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgadmin.tcl: Handle binary files by adding a ".bin"
+	suffix to the filename in the distribution archive. The
+	suffix is removed during file extraction.
+
+1999-07-29  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* targets: enabled SH3 code generation.
+
+1999-07-27  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgadmin.tcl: Transfer development of the eCos
+	admin tool from the ecos-bartv-19990405-cdl-branch
+	to the repository trunk.
+
+1999-07-22  Hugo Tyson  <hmt@masala.cygnus.co.uk>
+
+	* targets: Change compiler for StrongARM EBSA-285 from
+	"strongarm-elf-xxx" to "arm-elf-xxx -mcpu=strongarm" now that we
+	have verified an OK toolchain for that.
+
+1999-07-14  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* packages: Add StrongARM EBSA-285 eval board support.
+	Package is CYGPKG_HAL_ARM_EBSA285.
+
+	* targets: Add StrongARM EBSA-285 eval board support.
+	Target is ebsa285.
+	
+1999-06-23  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* targets: Undid last change - introduced run time problems.
+
+1999-06-22  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* targets: Select SH3 code generation.
 
 1999-06-10  Hugo Tyson  <hmt@cygnus.co.uk>
 
@@ -103,6 +600,10 @@
 	* pkgconf.tcl (command_prefix): Allow command_prefix to be overridden
 	on a per-platform basis.
 
+1999-06-04  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* targets: Add cma230T - CMA230 running in THUMB mode.
+
 1999-06-03  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* targets: Add 'base_platform' for CL7111, based on CL7211.
@@ -110,9 +611,34 @@
 	* pkgconf.tcl: Support 'base_platform' in target specification.  This
 	performs the inverse of what the "platform" entry in CDL options does.
 
+1999-05-28  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* targets:
+	* packages:
+	Renamed SH platform package to edk7708.
+
+1999-05-28  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* targets: Removed stubs startup option from vrc4373
+	platform. This is now handled by a permutation file.
+
 1999-05-26  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* NEWS: Added Kernel/Debugging entry.
+
+1999-05-21  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* targets: Need -ggdb instead of -g.
+
+1999-05-21  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* targets: Added romram and stubs startup options to vrc4373
+	platform for vr4300.
+	
+1999-05-20  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* packages:
+	* targets: Add new architecture sh, platform edk.
 
 1999-05-20  Gary Thomas  <gthomas@cygnus.co.uk>
 
@@ -133,6 +659,16 @@
 	The following changes were made in a branch and imported to the
 	main trunk at a later date:
 
+    1999-04-26  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[VR4300 branch]	
+	* targets: Added -EL to ARCHFLAGS and removed "el" from
+	command_prefix.
+
+    1999-04-22  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[VR4300 branch]
+	* targets: Tidied up DBGFLAGS for vr4300 target.
 	
     1999-04-20  Gary Thomas  <gthomas@cygnus.co.uk>
 

@@ -168,6 +168,26 @@ CYG_MACRO_START                                         \
         cr &= ~LCR_TXE;                                 \
 CYG_MACRO_END
 
+#elif defined(CYGPKG_HAL_MN10300_AM33)
+
+#define SERIAL0_BASE            0xd4002000
+#define SERIAL1_BASE            0xd4002010
+#define SERIAL2_BASE            0xd4002020
+
+#define TIMER0_BASE             0xd4003002
+#define TIMER1_BASE             0xd4003001
+#define TIMER2_BASE             0xd4003003
+
+#define SERIAL0_TIMER_SELECT    0x0005          // timer 2
+#define SERIAL1_TIMER_SELECT    0x0004          // timer 1
+#define SERIAL2_TIMER_SELECT    0x0003          // timer 3
+
+#define HW_TIMER0               0xd4003000
+
+#define ENABLE_TRANSMIT_INTERRUPT(mn10300_chan)
+
+#define DISABLE_TRANSMIT_INTERRUPT(mn10300_chan)
+
 #else
 
 #error Unsupported MN10300 variant
@@ -257,6 +277,75 @@ static struct
     {  88,   2 },       // 57600
     {  64,   1 },       // 115200
     {  62,   0 },       // 230400
+};
+
+#elif defined(CYGPKG_HAL_MN10300_AM33)
+
+// The AM33 runs at a different clock rate and therefore has a
+// different set of dividers for the baud rate.
+
+static unsigned short select_baud_01[] = {
+    0,          // Unused
+    0,          // 50
+    0,          // 75
+    0,          // 110
+    0,          // 134.5
+    0,          // 150
+    0,          // 200
+    0,          // 300
+    0,          // 600
+    3168,       // 1200
+    0,          // 1800
+    1584,       // 2400
+    0,          // 3600
+    792,        // 4800
+    0,          // 7200
+    396,        // 9600
+    0,          // 14400
+    198,        // 19200
+    99,         // 38400
+     0,         // 57600
+    33,         // 115200
+    16,         // 230400
+};
+
+// Serial 2 has its own timer register in addition to using timer 2 to
+// supply the baud rate generator. Both of these must be proframmed to
+// get the right baud rate. The following values come from Matsushita
+// with some modifications from Cygmon.
+
+// The values in the following table differ significantly from those
+// given in the Matsushita documentation. These have been determined
+// by (somewhat exhaustive) experiment, the values in the documentation
+// do not appear to work at all.
+
+static struct
+{
+    cyg_uint8   serial2_val;
+    cyg_uint8   timer2_val;
+} select_baud_2[] = {
+    {   0,   0 },       // Unused
+    {   0,   0 },       // 50
+    {   0,   0 },       // 75
+    {   0,   0 },       // 110
+    {   0,   0 },       // 134.5
+    {   0,   0 },       // 150
+    {   0,   0 },       // 200
+    {   0,   0 },       // 300
+    {   0,   0 },       // 600
+    {   0,   0 },       // 1200
+    {   0,   0 },       // 1800
+    {   0,   0 },       // 2400
+    {   0,   0 },       // 3600
+    { 110,  56 },       // 4800
+    {   0,   0 },       // 7200
+    { 110,  28 },       // 9600
+    {   0,   0 },       // 14400
+    {  71,  21 },       // 19200
+    { 102,   7 },       // 38400
+    {   0,   0 },       // 57600
+    {   9,  26 },       // 115200
+    {   0,   0 },       // 230400
 };
 
 #else
@@ -557,6 +646,26 @@ mn10300_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config, 
         if (baud_divisor == 0)
             return false; // Invalid baud rate selected
 
+#if defined(CYGPKG_HAL_MN10300_AM33)        
+        if( baud_divisor > 255 )
+        {
+            // The AM33 runs at a higher clock rate than the AM31 and
+            // needs a bigger divisor for low baud rates. We do this by
+            // using timer 0 as a prescaler. We set it to 198 so we can then
+            // use it to prescale for both serial0 and serial1 if they need
+            // it.
+            static int timer0_initialized = 0;
+            baud_divisor /= 198;
+            baud_divisor--;
+            timer_mode = 0x84;
+            if( !timer0_initialized )
+            {
+                timer0_initialized = 1;
+                HAL_WRITE_UINT8(HW_TIMER0+TIMER_BR, 198 );
+                HAL_WRITE_UINT8(HW_TIMER0+TIMER_MD, 0x80 );
+            }
+        }
+#endif
 
         HAL_WRITE_UINT8(mn10300_chan->timer_base+TIMER_BR, baud_divisor);
 

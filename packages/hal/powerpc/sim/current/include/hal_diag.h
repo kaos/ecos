@@ -77,7 +77,7 @@ CYG_MACRO_START                                         \
         (unsigned char*)(OEA_DEV + PAL_WRITE_STATUS);   \
     unsigned long __state;                              \
                                                         \
-    HAL_DISABLE_INTERRUPTS(__state)                     \
+    HAL_DISABLE_INTERRUPTS(__state);                    \
     if( _c_ != '\r' )                                   \
     {                                                   \
         while( *tty_status == 0 ) continue;             \

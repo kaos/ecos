@@ -28,6 +28,10 @@
 //####COPYRIGHTEND####
 //===========================================================================
 
+// eCos memory layout - Mon Mar 06 11:00:56 2000
+
+// This is a generated file - do not edit
+
 MEMORY
 {
     ram : ORIGIN = 0, LENGTH = 0x100000
@@ -36,8 +40,9 @@ MEMORY
 SECTIONS
 {
     SECTIONS_BEGIN
-    SECTION_vectors (ram, 0x0, LMA_EQ_VMA)
-    SECTION_text (ram, 0x4000, LMA_EQ_VMA)
+    SECTION_vectors (ram, 0, LMA_EQ_VMA)
+    __reserved_vsr_table = 0x3000; . = __reserved_vsr_table + 0x200;
+    SECTION_text (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_fini (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_rodata1 (ram, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_rodata (ram, ALIGN (0x8), LMA_EQ_VMA)

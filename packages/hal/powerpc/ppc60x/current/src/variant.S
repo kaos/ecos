@@ -41,9 +41,6 @@
 ##
 ##=============================================================================
 
-#include <pkgconf/system.h>	
-#include <pkgconf/hal.h>
-
 #include <cyg/hal/variant.inc>
 
 #---------------------------------------------------------------------------
@@ -51,11 +48,7 @@
 # These tables contain the isr, data and object pointers used to deliver
 # interrupts to user code.
 
-#if (CYG_ISR_TABLE_SIZE > 2)
         .data
-#else
-        .section ".sdata","aw"
-#endif
 
         .extern hal_default_decrementer_isr
         .extern hal_default_isr
@@ -63,19 +56,19 @@
         .globl  hal_interrupt_handlers
 hal_interrupt_handlers:
         .long   hal_default_decrementer_isr
-        .rept   CYG_ISR_TABLE_SIZE-1
+        .rept   CYGNUM_HAL_ISR_COUNT-1
         .long   hal_default_isr
         .endr
 
         .globl  hal_interrupt_data
 hal_interrupt_data:
-        .rept   CYG_ISR_TABLE_SIZE
+        .rept   CYGNUM_HAL_ISR_COUNT
         .long   0
         .endr
 
         .globl  hal_interrupt_objects
 hal_interrupt_objects:
-        .rept   CYG_ISR_TABLE_SIZE
+        .rept   CYGNUM_HAL_ISR_COUNT
         .long   0
         .endr
 

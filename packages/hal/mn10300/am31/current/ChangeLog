@@ -1,8 +1,54 @@
+2000-03-20  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/variant.inc (SAVED_CONTEXT_PC_OFFSET): New macro to give
+	variant-specific offset of PC within saved register context
+
+	* include/var_arch.h (HAL_SavedRegisters): Move here from architecture
+	HAL
+
+2000-03-09  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/var_misc.c (cyg_hal_dcache_store):
+	Substituted an assembly code version of this function to try and
+	deal with the problems with kcache2. See the embedded comment for
+	details.
+
+2000-02-16  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_mn10300_am31.cdl: removed fix me.
+
 1999-12-21  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* include/variant.inc: Rename CYG_HAL_USE_ROM_MONITOR_CYGMON ->
 	CYGSEM_HAL_USE_ROM_MONITOR_CygMon
 	Rename CYG_HAL_USE_ROM_MONITOR -> CYGSEM_HAL_USE_ROM_MONITOR
+
+	* cdl/hal_mn10300_am31.cdl: Ensure we "puts" to appropriate CDL header
+
+1999-12-02  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_mn10300_am31.cdl:
+
+	Use the <PACKAGE> token in custom rules.
+
+1999-12-01  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_mn10300_am31.cdl:
+
+	Use the <PREFIX> token in custom rules.
+
+1999-11-04  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_mn10300_am31.cdl:
+
+	Output custom rule dependency information to .deps files in
+	the current directory.
+
+	Dispense with the need to create a 'src' sub-directory.
+
+1999-11-03  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal_mn10300_am31.cdl: Added.
 
 1999-10-06  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 

@@ -72,6 +72,9 @@
 #if defined(__EDB7211)
 #define CYGNUM_HAL_INTERRUPT_MCPINT     22
 #endif
+#if defined(__EDB7209)
+#define CYGNUM_HAL_INTERRUPT_I2SINT     22
+#endif
 
 #define CYGNUM_HAL_ISR_MIN              0
 #if defined(__CL7111)

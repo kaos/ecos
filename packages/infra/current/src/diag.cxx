@@ -443,5 +443,51 @@ externC void diag_printf(const char *fmt, CYG_ADDRWORD a1, CYG_ADDRWORD a2,
 
 #endif
 
+static void
+diag_dump_buf_with_offset(cyg_uint8     *p, 
+                          CYG_ADDRWORD   s, 
+                          cyg_uint8     *base)
+{
+    int i, c;
+    if ((CYG_ADDRWORD)s > (CYG_ADDRWORD)p) {
+        s = (CYG_ADDRWORD)s - (CYG_ADDRWORD)p;
+    }
+    while ((int)s > 0) {
+        if (base) {
+            diag_printf("%08X: ", (CYG_ADDRWORD)p - (CYG_ADDRWORD)base);
+        } else {
+            diag_printf("%08X: ", p);
+        }
+        for (i = 0;  i < 16;  i++) {
+            if (i < (int)s) {
+                diag_printf("%02X", p[i] & 0xFF);
+            } else {
+                diag_printf("  ");
+            }
+            if ((i % 2) == 1) diag_printf(" ");
+            if ((i % 8) == 7) diag_printf(" ");
+        }
+        diag_printf(" |");
+        for (i = 0;  i < 16;  i++) {
+            if (i < (int)s) {
+                c = p[i] & 0xFF;
+                if ((c < 0x20) || (c >= 0x7F)) c = '.';
+            } else {
+                c = ' ';
+            }
+            diag_printf("%c", c);
+        }
+        diag_printf("|\n");
+        s -= 16;
+        p += 16;
+    }
+}
+
+externC void
+diag_dump_buf(void *p, CYG_ADDRWORD s)
+{
+   diag_dump_buf_with_offset((cyg_uint8 *)p, s, 0);
+}
+
 /*-----------------------------------------------------------------------*/
-/* EOF trace/diag.c */
+/* EOF infra/diag.c */

@@ -1,3 +1,24 @@
+2000-03-20  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal.cdl:
+
+	Adjust documentation URLs.
+
+2000-03-01  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* cdl/common.cdl: 
+	Define CYGINT_HAL_DIAG_DISABLE_GDB_PROTOCOL_SUPPORTED as an
+	'interface' so implementations can be properly specified.
+
+2000-02-29  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* cdl/common.cdl: Option to disable GDB protocol now supported
+	by QUICC based PowerPC systems.
+
+2000-02-29  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/generic-stub.h: Make header C++ safe
+
 2000-02-16  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_stub.h: fixed endian definitions.
@@ -9,9 +30,66 @@
 	CYGSEM_HAL_ROM_MONITOR.
 	Removed HAL_STUB_PLATFORM_STUBS_INIT.
 
+2000-02-09  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal.cdl: Added remaining build dependencies.
+
+2000-02-04  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal.cdl: Fix test list display.
+
 2000-02-03  Jesper Skov  <jskov@redhat.com>
 
 	* include/pkgconf/hal.h: CYG_HAL_POWERPC_x->CYGPKG_...
+
+2000-02-03  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/debugging.cdl: Use interfaces for stub capabilities instead
+	of exclude list.
+	* cdl/hal.cdl: Add extra dependencies to common stub build rule.
+	
+2000-02-02  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal.cdl: Added HAL tests.
+
+2000-01-31 Simon FitzMaurice  <sdf@cygnus.co.uk>
+  * cdl/hal.cdl:
+
+  Adjust help URLs in line with new doc layout.
+
+2000-01-28 Simon FitzMaurice  <sdf@cygnus.co.uk>
+  * cdl/hal.cdl:
+
+  Adjust help URLs in line with new doc layout.
+
+2000-01-27  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal.cdl: Added simple build rules for common stub.
+
+2000-01-26  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/hal_stub.c (__reset): Replace CYGDAT_CYGMON_ENABLE
+	dependency with just CYGPKG_CYGMON
+	(initHardware): Likewise
+	(__set_baud_rate): Likewise
+	(putDebugChar): Likewise
+
+2000-01-17  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/common.cdl,
+	  cdl/debugging.cdl:
+
+	Modify the default_value attribute for
+	CYGFUN_HAL_COMMON_KERNEL_SUPPORT, CYGPKG_HAL_EXCEPTIONS
+	and CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT to do the right
+	thing in the absence of the eCos kernel package.
+
+1999-12-22  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal.cdl:
+
+	Add CFLAGS to the custom rule for extras.o to accommodate
+	arm big-endian targets.
 
 1999-12-21  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
@@ -20,8 +98,37 @@
 	Rename all CYG_HAL_USE_ROM_MONITOR_CYGMON -> 
 	CYGSEM_HAL_USE_ROM_MONITOR_CygMon
 	Rename all CYG_HAL_USE_ROM_MONITOR -> CYGSEM_HAL_USE_ROM_MONITOR
+	Don't need to define CYG_HAL_SH_SH7708 any more
+
+	* cdl/hal.cdl: Add CYGPKG_HAL_ROM_MONITOR container package for
+	platforms to put ROM-monitor related options into
+	Move all ROM-monitor related options into individual platform CDL
+
+1999-12-02  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal.cdl:
+
+	Use '$<' to reference custom rule dependency.
+
+1999-12-01  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal.cdl:
+
+	Use the <PREFIX> token in custom rules.
+
+1999-11-29  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal.cdl:
+
+	Use wildcard in the custom rule for extras.o to
+	accommodate 'make -n'.
+
+1999-11-23  Simon Fitzmaurice <sdf@cygnus.co.uk>
+	* cdl\common.cdl: Correct example of illiteracy
 
 1999-11-20  Gary Thomas  <gthomas@cygnus.co.uk>
+	
+	* cdl/common.cdl: Add MMU tables options.
 
 	* include/pkgconf/hal.h (CYGSEM_HAL_INSTALL_MMU_TABLES): 
 	(CYGSEM_HAL_STATIC_MMU_TABLES): New options to control MMU table
@@ -34,10 +141,20 @@
 	not be included by user programs
 
 1999-11-09  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* cdl/common.cdl: Add CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL.
 	
 	* include/pkgconf/hal.h (CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL): 
 	New option which [explicitly] controls use of GDB protocol
 	for diagnostic I/O.
+
+1999-11-03  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal.cdl: More crud out + mn10300 fixes.
+
+1999-11-02  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal.cdl: Cleaned out some of the CPU config entries.
 
 1999-10-29  Gary Thomas  <gthomas@cygnus.co.uk>
 
@@ -53,6 +170,15 @@
 1999-10-28  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* tests/cache.c: Fix array size.
+
+1999-10-27  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/hal_stub.c: Fix typo (CYGDAT_CYGMON_ENABLE).  Also need
+	to include <pkgconf/cygmon.h>
+
+1999-10-27  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/hal_stub.c: Add explicit enable for CygMon package.
 
 1999-10-27  Hugo Tyson  <hmt@cygnus.co.uk>
 
@@ -75,6 +201,18 @@
 	same as cyg_hal_gdb_interrupt(), except on some platforms where
 	you must do different things to set a bp from a non-interrupt
 	context.
+
+1999-10-25  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/hal_stub.c (putDebugChar, getDebugChar): When building with
+	CygMon, these functions are defined by CygMon.
+
+1999-10-26  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal.cdl:
+
+	Modify custom make rule to specify file paths relative
+	to the package version directory.
 
 1999-10-22  Hugo Tyson  <hmt@cygnus.co.uk>
 
@@ -105,15 +243,37 @@
 	(memcpy, memset): Added to prevent stub hanging if user puts
 	breakpoints in either function.
 
+1999-10-19  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/pkgconf/hal.h: Added monitor configury for Brother
+	board.
+	
 1999-10-10  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/thread-packets.c (stub_pkt_currthread): Fix typo in comment.
 
 	* src/generic-stub.c: Reorg to expose register get/set functions.
 
+1999-10-08  Simon Fitzmaurice <sdf@cygnus.co.uk>
+	* cdl\interrupts.cdl: Quoted '[' and ']' (significant in TCL and thus CDL)
+
+1999-10-08  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/interrupts.cdl: Added
+	CYGIMP_HAL_COMMON_INTERRUPTS_IGNORE_SPURIOUS.
+
+1999-09-22  Simon FitzMaurice <sdf@cygnus.co.uk>
+
+	* cdl\hal.cdl : add priority field to "extras.o" rule
+
 1999-09-21  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/thread-packets.c: Fix some typos in comments.
+
+1999-09-15  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_stub.c: Override generic GDB interrupt functions for
+	ARM. Need them to be thumb aware. 
 
 1999-09-13  Gary Thomas  <gthomas@cygnus.co.uk>
 
@@ -200,6 +360,25 @@
 
 	* src/hal_stub.c: Removed superfluous trace() extern.
 
+1999-08-12  Nick Garnett  <nickg@cygnus.co.uk>	
+
+	Imported following changes from AM33 branch:
+	
+    1999-07-27  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/hal_stub.c: Added support for 1 byte breakpoints.
+	Removed	invalidates for cache flushes - I am not entirely sure why
+	we have these here, since HAL_DCACHE_SYNC() should do what we
+	need, and these invalidates are causing a problem on the MIPS and
+	MN10300 targets.
+
+	* include/pkgconf/hal.h: Added Monitor selection for AM33.
+
+    1999-06-29  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/pkgconf/hal.h: Modified to match new MN10300 HAL
+	organization.
+
 1999-08-06  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* src/generic-stub.c (__process_packet): FLush and clear caches
@@ -240,9 +419,17 @@
 
 	* src/hal_stub.c: Need to init register pointer.
 
+1999-06-08  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal.h: Added CYG_HAL_ROM_MONITOR for EDK7708.
+
 1999-05-31  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* src/hal_stub.c: Respect HAL_BREAKINST_SIZE setting.
+
+1999-05-28  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal.h: Renamed SH platform package to edk7708.
 
 1999-05-28  Nick Garnett  <nickg@cygnus.co.uk>
 
@@ -267,10 +454,18 @@
 
 	* tests/cache.c: Use HAL_DCACHE_SYNC if available
 
+1999-05-24  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal.h: Added CPU specifier for EDK board.
+
 1999-05-21  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* src/hal_stub.c (__install_traps): Set exit vector to __reset.
 
+1999-05-21  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/pkgconf/hal.h: Switched VR4300 over to using GDB STUBS
+	monitor from PMON.
 	
 1999-05-21  Jesper Skov  <jskov@cygnus.co.uk>
 
@@ -313,6 +508,12 @@
 	* src/drv_api.c: Added cyg_interrupt_call_pending_DSRs() to keep
 	HAL happy in non-kernel configurations.
 
+    1999-04-21  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/pkgconf/hal.h:
+	Added VR4300 configury for ROM monitor use and inclusion of
+	variant-specific configuration header. This needs some further
+	tidying up.
 	
 1999-04-28  Bart Veer  <bartv@cygnus.co.uk>
 

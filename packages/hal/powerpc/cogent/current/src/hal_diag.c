@@ -353,7 +353,7 @@ void hal_diag_write_char(char c)
     // ignore CR
     if( c == '\r' ) return;
     
-    HAL_DISABLE_INTERRUPTS(__state)
+    HAL_DISABLE_INTERRUPTS(__state);
     if( c == '\n' )
     {
         lcd_dis( LCD_LINE0, &lcd_line[lcd_curline^1][0] );
@@ -436,7 +436,7 @@ static void ai_write_char(cyg_uint8 data)
     int i;
     unsigned long __state;
     
-    HAL_DISABLE_INTERRUPTS(__state)
+    HAL_DISABLE_INTERRUPTS(__state);
 
     // Wait for tda == 0
     while( (AI->status & PROMICE_STATUS_TDA) == PROMICE_STATUS_TDA )

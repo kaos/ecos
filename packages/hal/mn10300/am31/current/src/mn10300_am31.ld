@@ -87,6 +87,7 @@ GROUP(libtarget.a libgcc.a)
     { __ram_data_start = ABSOLUTE (.); *(.data*) *(.data1) \
     . = ALIGN(4); \
     ___DEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.devtab*))) ___DEVTAB_END__ = ABSOLUTE (.); \
+    __NETDEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.netdevtab*))) __NETDEVTAB_END__ = ABSOLUTE (.); \
     _GOT1_START_ = ABSOLUTE (.); *(.got1) _GOT1_END_ = ABSOLUTE (.); \
     _GOT2_START_ = ABSOLUTE (.); *(.got2) _GOT2_END_ = ABSOLUTE (.); \
     . = ALIGN (4); \

@@ -277,7 +277,7 @@ cyg_uint32 hal_msbit_index(cyg_uint32 mask)
 
 void hal_idle_thread_action( cyg_uint32 count )
 {
-#if 0 //def CYG_HAL_MIPS_SIM
+#if 0 //def CYGPKG_HAL_MIPS_SIM
     if( (count % 1000) == 0 )
     {
         // This code causes a fake interrupt.
@@ -295,7 +295,7 @@ void hal_idle_thread_action( cyg_uint32 count )
             );
     }
 #endif
-#if 0 //def CYG_HAL_MIPS_JMR3904
+#if 0 //def CYGPKG_HAL_MIPS_TX39_JMR3904
 
     if( (count % 100000 ) == 0 )
     {
@@ -396,6 +396,62 @@ void hal_idle_thread_action( cyg_uint32 count )
 //            for(;;);
     }
 #endif
+#if 0
+    {
+        static CYG_WORD32 istat[3] = { 0xffffffff,0xffffffff,0xffffffff };
+        int i;
+        for( i = 0; i < 3; i++ )
+        {
+            CYG_WORD32 reg, sr;
+            HAL_READ_UINT32( CYGHWR_HAL_MIPS_VRC4373_INTC_STAT0 + i * CYGHWR_HAL_MIPS_VRC4373_INTC_MASK_OFF, reg );
+            if( reg != istat[i] )
+            {
+                hal_diag_ai_write_char('~');
+                hal_diag_ai_write_char('0'+i);
+                hal_diag_ai_write_hex8( reg );
+                istat[i] = reg;
+                HAL_READ_UINT32( CYGHWR_HAL_MIPS_VRC4373_INTC_MASK0 + i * CYGHWR_HAL_MIPS_VRC4373_INTC_MASK_OFF, reg );
+                hal_diag_ai_write_char('.');                
+                hal_diag_ai_write_hex8( reg );
+#if 0                
+                asm volatile (
+                    "mfc0  %0,$12;"
+                    "nop; nop; nop;"
+                    : "=r"(sr)
+                    );
+                hal_diag_ai_write_char('.');                
+                hal_diag_ai_write_hex8( sr );
+#endif
+            }
+        }
+    }
+    {
+        static CYG_WORD32 old_pins = 0;
+        CYG_WORD32 reg;        
+        HAL_READ_UINT32( CYGHWR_HAL_MIPS_VRC4373_INTC_PINS, reg );
+        if( reg != old_pins )
+        {
+            hal_diag_ai_write_char('%');                
+            hal_diag_ai_write_hex8( reg );
+            old_pins = reg;
+        }
+    }
+#endif
+#if 0 //def CYGPKG_HAL_MIPS_VR4300_VRC4373
+
+    // Wiggle one of the leds to show we are running
+    
+    if( (count % 50000 ) == 0 )
+    {
+        cyg_uint8 lr;
+        { int i; for( i = 0; i < 200; i++ ); }
+        HAL_READ_UINT8( 0xc2000008, lr );
+        lr ^= 2;
+        { int i; for( i = 0; i < 200; i++ ); }
+        HAL_WRITE_UINT8( 0xc2000008, lr );
+
+    }
+#endif    
 }
 
 /*------------------------------------------------------------------------*/

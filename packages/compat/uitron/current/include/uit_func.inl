@@ -1364,9 +1364,31 @@ unl_cpu ( void )
     return E_OK;
 }
 
+CYG_UIT_FUNC_INLINE
+ER
+dis_int ( UINT eintno )
+{
+#if 0 < CYGNUM_HAL_ISR_MIN
+    CYG_UIT_PARAMCHECK( CYGNUM_HAL_ISR_MIN <= eintno, E_PAR );
+#endif
+    CYG_UIT_PARAMCHECK( CYGNUM_HAL_ISR_MAX >= eintno, E_PAR );
+    HAL_INTERRUPT_MASK( eintno );
+    return E_OK;
+}
+
+CYG_UIT_FUNC_INLINE
+ER
+ena_int ( UINT eintno )
+{
+#if 0 < CYGNUM_HAL_ISR_MIN
+    CYG_UIT_PARAMCHECK( CYGNUM_HAL_ISR_MIN <= eintno, E_PAR );
+#endif
+    CYG_UIT_PARAMCHECK( CYGNUM_HAL_ISR_MAX >= eintno, E_PAR );
+    HAL_INTERRUPT_UNMASK( eintno );
+    return E_OK;
+}
+
 #if 0 // NOT SUPPORTED
-ER      dis_int ( UINT eintno );
-ER      ena_int ( UINT eintno );
 ER      chg_iXX ( UINT iXXXX );
 ER      ref_iXX ( UINT *p_iXXXX );
 #endif

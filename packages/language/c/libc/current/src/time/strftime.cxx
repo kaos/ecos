@@ -145,8 +145,8 @@ do_format(cyg_uint8 fmtchar, cyg_ucount32 sizeleft, char *buf,
     case 'm':
         if (sizeleft < 2)
             return -1;
-        buf[0] = (timeptr->tm_mon / 10) + '0';
-        buf[1] = (timeptr->tm_mon % 10) + '0';
+        buf[0] = ((timeptr->tm_mon+1) / 10) + '0';
+        buf[1] = ((timeptr->tm_mon+1) % 10) + '0';
         return 2;
     case 'M':
         if (sizeleft < 2)

@@ -89,6 +89,7 @@ OUTPUT_FORMAT(elf32-bigarm)
     { stext = ABSOLUTE(.); \
     PROVIDE (__stext = ABSOLUTE(.)); \
     *(.text*) *(.gnu.warning) *(.gnu.linkonce*) *(.init) \
+    *(.glue_7) *(.glue_7t)  \
     } > _region_ \
     etext = .; PROVIDE (__etext = .);
 
@@ -139,6 +140,7 @@ OUTPUT_FORMAT(elf32-bigarm)
     _GOT2_START_ = ABSOLUTE (.); *(.got2) _GOT2_END_ = ABSOLUTE (.); \
     . = ALIGN (4); \
     __DEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.devtab*))) __DEVTAB_END__ = ABSOLUTE (.); \
+    __NETDEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.netdevtab*))) __NETDEVTAB_END__ = ABSOLUTE (.); \
     __CTOR_LIST__ = ABSOLUTE (.); KEEP (*(SORT (.ctors*))) __CTOR_END__ = ABSOLUTE (.); \
     __DTOR_LIST__ = ABSOLUTE (.); KEEP (*(SORT (.dtors*))) __DTOR_END__ = ABSOLUTE (.); \
     *(.dynamic) *(.sdata*) *(.sbss*) } \

@@ -333,6 +333,8 @@ static void control_thread( CYG_ADDRWORD data )
 
         int d = xx[j] | (xx[k]<<1) | (xx[l]<<2) ;
 
+        if ( cyg_test_is_simulator && (0 != i && 13 != i && 26 != i) )
+            continue;    // 13 is 111 base 3, 26 is 222 base 3
 
 #ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE
         // If the simple scheme plus relay enhancement, or any other

@@ -39,13 +39,21 @@
 // 
 //####DESCRIPTIONEND####
 
+#include <pkgconf/system.h>
+#include CYGBLD_HAL_TARGET_H           // get initialization for
+#include CYGBLD_HAL_PLATFORM_H         //   cyg_test_is_simulator
+
 #include <cyg/infra/cyg_type.h>        // base types
 #include <cyg/infra/diag.h>            // HAL polled output
 #include <cyg/infra/testcase.h>        // what we implement
 
 #include <cyg/hal/hal_intr.h>          // exit macro, if defined
 
+#ifdef CYGHWR_TARGET_SIMULATOR_NO_GDB_WORKING
+int cyg_test_is_simulator = 1;         // set this anyway
+#else
 int cyg_test_is_simulator = 0;         // infrastructure changes as necessary
+#endif
 
 externC void
 cyg_test_init(void)

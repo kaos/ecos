@@ -1,6 +1,19 @@
+2000-03-24  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/basetype.h: define cyg_halbool as unsigned char
+
+2000-03-02  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/hal_misc.c (cyg_hal_exception_handler): Comment out since
+	it's unimplemented
+
 2000-02-16  Jesper Skov  <jskov@redhat.com>
 
 	* src/i386_stub.c: CYG_HAL_I386 -> CYGPKG_HAL_I386
+
+2000-02-16  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_i386.cdl: remove fix mes.
 
 2000-02-10  Nick Garnett  <nickg@cygnus.co.uk>
 
@@ -14,6 +27,8 @@
 	protected.
 
 	* src/PKGconf.mak: Added i386_stub.c to COMPILE list.
+
+	* cdl/hal_i386.cdl: Added i386_stub.c to compile list.
 
 	* src/i386_stub.c:
 	* include/arch.inc: Files added.
@@ -31,6 +46,31 @@
 	(HAL_CLOCK_RESET): 
 	Let acknowledge clear pending flag, but leave unblocking to
 	clients of the interrupt (i.e., RTC).
+
+1999-12-02  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_i386.cdl:
+
+	Use the <PACKAGE> token in custom rules.
+
+1999-12-01  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_i386.cdl:
+
+	Use the <PREFIX> token in custom rules.
+
+1999-11-04  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_i386.cdl:
+
+	Output custom rule dependency information to .deps files in
+	the current directory.
+
+	Dispense with the need to create a 'src' sub-directory.
+
+1999-11-01  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal_i386.cdl: Added.
 
 1999-10-25  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 

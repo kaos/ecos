@@ -1,3 +1,7 @@
+2000-02-10  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_sparclite_sim.cdl: Added.
+
 1999-11-25  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/pkgconf/mlt_sparclite_sim_ram.h: New file.

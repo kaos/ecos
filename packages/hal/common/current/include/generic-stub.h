@@ -49,6 +49,10 @@
 #ifndef GENERIC_STUB_H
 #define GENERIC_STUB_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Three typedefs must be provided before including this file.
    target_register_t should correspond to the largest register value on
    this target processor.
@@ -293,5 +297,9 @@ extern void __putDebugStr (char *str);
 #endif
 
 #endif /* ASM */
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif /* GENERIC_STUB_H */

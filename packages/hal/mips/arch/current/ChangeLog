@@ -1,3 +1,40 @@
+2000-03-20  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/mips-stub.h: Make C++ safe
+
+	* include/hal_cache.h (_hal_asm_mips_cpp_stringize): Add as a separate
+	macro because the compiler has got more picky
+
+2000-03-16  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/vectors.S (_start): Set return address to 0 and unconditionally
+	jump to cyg_start, so that GDB doesn't get confused with backtraces
+
+2000-03-13  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/context.S :
+	Added jmpbuf_regsize to insulate jumb buffer from changes in
+	mips_regsize. This will need extra work if we go to a full 64 bit
+	variant, but for now is the simplest solution to this problem.
+
+2000-02-25  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/arch.inc: Add lpc and spc macros to save and restore PC
+	* src/context.S (hal_thread_switch_context): Restore RA into PC
+	location in context so that thread debugging works
+
+2000-02-23  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/hal_misc.c (hal_idle_thread_action):
+	CYG_HAL_MIPS_SIM -> CYGPKG_HAL_MIPS_SIM
+	CYG_HAL_MIPS_JMR3904 -> CYGPKG_HAL_MIPS_TX39_JMR3904
+
+	* include/arch.inc: CYG_HAL_MIPS_SIM -> CYGPKG_HAL_MIPS_SIM
+
+2000-02-16  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_mips.cdl: removed fix me.
+
 2000-01-14  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/hal_arch.h: 
@@ -23,6 +60,12 @@
 	* include/arch.inc: Rename CYG_HAL_USE_ROM_MONITOR ->
 	CYGSEM_HAL_USE_ROM_MONITOR
 
+1999-12-20  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_mips.cdl:
+
+	Fix syntax error.
+
 1999-12-17  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/mipsfp.c (flt2reg): New inline function to convert between
@@ -37,6 +80,7 @@
 	unimplemented operation FPU exceptions to be configurable
 	* include/pkgconf/hal_mips.h: Provide
 	CYGSEM_HAL_MIPS_EMULATE_UNIMPLEMENTED_FPU_OPS to do this
+	* cdl/hal_mips.cdl: Likewise
 
 	All the above required for cases 102817 and 102820
 
@@ -46,6 +90,27 @@
 	handle FPU exceptions if present
 	Reported in case 102817
 
+1999-12-02  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_mips.cdl:
+
+	Use the <PACKAGE> token in custom rules.
+
+1999-12-01  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_mips.cdl:
+
+	Use the <PREFIX> token in custom rules.
+
+1999-11-04  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_mips.cdl:
+
+	Output custom rule dependency information to .deps files in
+	the current directory.
+
+	Dispense with the need to create a 'src' sub-directory.
+
 1999-11-04  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/vectors.S: Added code in reset vector to reset the config0
@@ -53,6 +118,10 @@
 	the K0 field comes up in an undefined state.
 	[Later] Moved this code to just work in the case of a cold boot.
 	NMIs and warm boots should leave it as it was.
+
+1999-11-02  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal_mips.cdl: Added.
 
 1999-10-29  Nick Garnett  <nickg@cygnus.co.uk>
 
@@ -350,6 +419,9 @@
 
 	* include/mips.inc: Extended list of CP0 register aliases.
 
+	* include/mips-stub.h: The stubs must behave as if we are on a 64
+	bit processor when debugging the VR4300, since that is what GDB
+	expects.
 	
 	* include/arch.inc: Added generic version of hal_cache_init to
 	disable kseg0 caching in config0 register.

@@ -100,6 +100,8 @@ struct file {
 // File states
 #define FREAD      0x01
 #define FWRITE     0x02
+#define FNONBLOCK  0x10
+#define FASYNC     0x20
 #define FALLOC     0x80         // File is "busy", i.e. allocated
 
 // Type of "file"
@@ -108,5 +110,7 @@ struct file {
 #define	DTYPE_PIPE	3	/* pipe */
 
 externC cyg_bool getfp(int fdes, struct file **fp);
+externC int falloc(struct file **fp, int *fd);
+externC void ffree(struct file *fp);
 
 #endif // _CYG_IO_FILE_H_

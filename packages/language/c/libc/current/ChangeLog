@@ -1,7 +1,60 @@
+2000-03-20  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/string.cdl,
+	  cdl/stdlib.cdl,
+	  cdl/stdio.cdl,
+	  cdl/libc.cdl:
+
+	Adjust documentation URLs.
+
+2000-03-06  Jesper Skov  <jskov@redhat.com>
+
+	* tests/time/strftime.c (test): Adjust test to match below change.
+
+2000-03-02  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/time/strftime.cxx (do_format): Make sure %m counts from
+	1..12 rather than 0..11. Fix for case 103300
+
+2000-02-29  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/stdio/output/vfnprintf.cxx: Correctly use 'n' parameter to
+	restrict length. Credit due to Andrew Lunn here as well.
+	Resolves 103057-CR-1
+
+	* tests/stdio/sprintf2.c (test): 
+	Add snprintf tests to verify the correct behaviour of restricting
+	output length
+
 2000-02-10  Jesper Skov  <jskov@redhat.com>
 
 	* tests/signal/signal2.c (main): 
 	Also reclaim DATA_TLB_MISS vector if available.
+
+2000-01-31 Simon FitzMaurice  <sdf@cygnus.co.uk>
+  * cdl/*.cdl:
+
+  Adjust help URLs in line with new doc layout.
+  
+2000-01-28 Simon FitzMaurice  <sdf@cygnus.co.uk>
+  * cdl/*.cdl:
+
+  Adjust help URLs in line with new doc layout.
+  
+2000-01-19  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/*.cdl: Add descriptions to a number of options &c which were
+	lacking same, also tidied up other typos as noticed en passant.
+
+1999-11-11  Bart Veer  <bartv@cygnus.co.uk>
+
+	* cdl/string.cdl:
+	Switch to a single boolean configuration option for code size vs.
+	speed optimization.
+
+1999-11-03  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/libc.cdl: Define tests.
 
 1999-10-19  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
@@ -13,10 +66,30 @@
 	* src/stdlib/strtoul.cxx: ditto
 	* src/string/strtok.cxx: ditto
 
+1999-10-19  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/libc.cdl:
+
+	Define CDL options for package-specific CFLAGS.
+
 1999-10-08  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* include/pkgconf/libc.h (CYGNUM_LIBC_MAIN_THREAD_PRIORITY): Change
 	default to 10 to keep test farm happy
+	* cdl/startup.cdl: Likewise
+
+1999-10-07  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/stdlib.cdl, cdl/string.cdl:
+
+	Specify radio buttons using CDL interfaces.
+
+1999-10-06  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* cdl/stdio.cdl: Change default to /dev/ttydiag as per 1999-10-01
+	change below
+	* cdl/startup.cdl: Add new form CDL for the startup changes as
+	per 1999-10-05
 
 1999-10-05  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
@@ -66,6 +139,18 @@
 	buffering
 	Fix for case 101868
 
+1999-08-17  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/stdlib.cdl, cdl/string.cdl:
+
+	Implement radio buttons using "FIXME radio" hack in
+	description field for now.
+
+1999-08-12  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/stdlib.cdl:
+	Take advantage of MACRONAME_ENUMVAL macros output by CDL.
+
 1999-08-06  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* tests/stdio/sprintf2.c (test): Don't rely on 2.345 being exactly
@@ -93,6 +178,10 @@
 	Don't bother with getc()/putc() macros any more, just call
 	them as functions
 	Include protos for getc(), putc(), getchar() and putchar() functions
+
+1999-06-21  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/signal/signal2.c: Disabled test 3 for SH EDK7708.
 
 1999-06-11  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 

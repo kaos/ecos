@@ -178,6 +178,9 @@
 
 #define CYGARC_REG_IMM_BASE        0xff000000 // the internal memory map base
 
+// CP Microcode Revision Number
+#define CYGARC_REG_REV_NUM         (CYGARC_REG_IMM_BASE + 0x3cb0)
+
 // system protection control
 #define CYGARC_REG_IMM_SYPCR       (CYGARC_REG_IMM_BASE + 0x004)
 #define CYGARC_REG_IMM_SYPCR_SWTC_MASK 0xffff0000

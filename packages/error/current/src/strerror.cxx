@@ -188,6 +188,172 @@ _strerror( int errnum )
         break;
 #endif
 
+// Additional errors used by networking
+#ifdef ENXIO
+    case ENXIO:
+        s =  "Device not configured";
+        break;
+#endif
+#ifdef EACCES
+    case EACCES:
+        s =  "Permission denied";
+        break;
+#endif
+#ifdef EEXIST
+    case EEXIST:
+        s =  "File exists";
+        break;
+#endif
+#ifdef ENOTTY
+    case ENOTTY:
+        s =  "Inappropriate ioctl for device";
+        break;
+#endif
+#ifdef EPIPE
+    case EPIPE:
+        s =  "Broken pipe";
+        break;
+#endif
+#ifdef EINPROGRESS
+    case EINPROGRESS:
+        s =  "Operation now in progress";
+        break;
+#endif
+#ifdef EALREADY
+    case EALREADY:
+        s =  "Operation already in progress";
+        break;
+#endif
+#ifdef ENOTSOCK
+    case ENOTSOCK:
+        s =  "Socket operation on non-socket";
+        break;
+#endif
+#ifdef EDESTADDRREQ
+    case EDESTADDRREQ:
+        s =  "Destination address required";
+        break;
+#endif
+#ifdef EMSGSIZE
+    case EMSGSIZE:
+        s =  "Message too long";
+        break;
+#endif
+#ifdef EPROTOTYPE
+    case EPROTOTYPE:
+        s =  "Protocol wrong type for socket";
+        break;
+#endif
+#ifdef ENOPROTOOPT
+    case ENOPROTOOPT:
+        s =  "Protocol not available";
+        break;
+#endif
+#ifdef EPROTONOSUPPORT
+    case EPROTONOSUPPORT:
+        s =  "Protocol not supported";
+        break;
+#endif
+#ifdef ESOCKTNOSUPPORT
+    case ESOCKTNOSUPPORT:
+        s =  "Socket type not supported";
+        break;
+#endif
+#ifdef EOPNOTSUPP
+    case EOPNOTSUPP:
+        s =  "Operation not supported";
+        break;
+#endif
+#ifdef EPFNOSUPPORT
+    case EPFNOSUPPORT:
+        s =  "Protocol family not supported";
+        break;
+#endif
+#ifdef EAFNOSUPPORT
+    case EAFNOSUPPORT:
+        s =  "Address family not supported by protocol family";
+        break;
+#endif
+#ifdef EADDRINUSE
+    case EADDRINUSE:
+        s =  "Address already in use";
+        break;
+#endif
+#ifdef EADDRNOTAVAIL
+    case EADDRNOTAVAIL:
+        s =  "Can't assign requested address";
+        break;
+#endif
+#ifdef ENETDOWN
+    case ENETDOWN:
+        s =  "Network is down";
+        break;
+#endif
+#ifdef ENETUNREACH
+    case ENETUNREACH:
+        s =  "Network is unreachable";
+        break;
+#endif
+#ifdef ENETRESET
+    case ENETRESET:
+        s =  "Network dropped connection on reset";
+        break;
+#endif
+#ifdef ECONNABORTED
+    case ECONNABORTED:
+        s =  "Software caused connection abort";
+        break;
+#endif
+#ifdef ECONNRESET
+    case ECONNRESET:
+        s =  "Connection reset by peer";
+        break;
+#endif
+#ifdef ENOBUFS
+    case ENOBUFS:
+        s =  "No buffer space available";
+        break;
+#endif
+#ifdef EISCONN
+    case EISCONN:
+        s =  "Socket is already connected";
+        break;
+#endif
+#ifdef ENOTCONN
+    case ENOTCONN:
+        s =  "Socket is not connected";
+        break;
+#endif
+#ifdef ESHUTDOWN
+    case ESHUTDOWN:
+        s =  "Can't send after socket shutdown";
+        break;
+#endif
+#ifdef ETOOMANYREFS
+    case ETOOMANYREFS:
+        s =  "Too many references: can't splice";
+        break;
+#endif
+#ifdef ETIMEDOUT
+    case ETIMEDOUT:
+        s =  "Operation timed out";
+        break;
+#endif
+#ifdef ECONNREFUSED
+    case ECONNREFUSED:
+        s =  "Connection refused";
+        break;
+#endif
+#ifdef EHOSTDOWN
+    case EHOSTDOWN:
+        s =  "Host is down";
+        break;
+#endif
+#ifdef EHOSTUNREACH
+    case EHOSTUNREACH:
+        s =  "No route to host";
+        break;
+#endif
 
     default:
         s = "Unknown error";

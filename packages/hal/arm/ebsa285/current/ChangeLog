@@ -1,0 +1,496 @@
+2000-02-29  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+        * include/pkgconf/mlt_arm_ebsa285_ram.h:
+        * include/pkgconf/mlt_arm_ebsa285_ram.ldi:
+        * include/pkgconf/mlt_arm_ebsa285_ram.mlt:
+        * include/pkgconf/mlt_arm_ebsa285_rom.h:
+        * include/pkgconf/mlt_arm_ebsa285_rom.ldi:
+        * include/pkgconf/mlt_arm_ebsa285_rom.mlt:
+	Align all sections on word boundaries
+
+2000-02-24  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/mem285.S (__mem285_init): Re-do the SDRAM initialization
+	until a consistent answer is acquired twice in a row.  We have
+	been seeing test failures with the SDRAM initialization in the
+	board with 32Mb - the SDRAM setup is screwey; hope this fixes it.
+
+2000-02-18  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/hal_arm_ebsa285.cdl (CYGBLD_BUILD_GDB_STUBS): When
+	building stubs, define every dependency required here rather than
+	in the template
+
+2000-02-10  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/hal_cache.h (HAL_ICACHE_INVALIDATE_ALL):
+	(HAL_DCACHE_INVALIDATE_ALL): Also invalidate TLBs in case the
+	reason for the cache invalidate is a MM table rewrite.
+
+2000-02-10  Jesper Skov  <jskov@redhat.com>
+
+	* include/plf_stub.h:
+	HAL_STUB_PLATFORM_STUBS_INIT->HAL_STUB_PLATFORM_INIT
+	
+	* src/hal_diag.c: 
+	* misc/stubrom.perm:  [removed]
+	* misc/STUBS_config:  [added]
+	* include/pkgconf/hal_arm_ebsa285.h: 
+	Removed stubs as a legal startup type.
+
+2000-02-09  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/hal_arm_ebsa285.cdl (CYGBLD_GLOBAL_CFLAGS): Permanently set
+	the -mstructure-size-boundary=8 compilation option, as required by
+	software under development.
+
+2000-02-07  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_ebsa285.cdl: Use cpu option when linking.
+
+2000-02-04  Hugo Tyson  <hmt@cygnus.co.uk>
+
+       * include/hal_platform_setup.h (INIT_XBUS_ACCESS): 
+       (CYGHWR_LED_MACRO): Fix a typo - "and" alone doesn't set
+       conditions, so branch depending on "PCI arbiter enabled" was taken
+       randomly.
+
+2000-02-03  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_ebsa285.cdl: Implements stubs.
+
+2000-01-31  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/hal_ebsa285.h: Correct misleading comment.
+
+2000-01-27  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_ebsa285.cdl: Moved part of stubs build rule to
+	common HAL. Changed description.
+
+2000-01-26  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal_arm_ebsa285.cdl: Removed below. Target does not have
+	CygMon support.
+
+2000-01-25  Jesper Skov  <jskov@cygnus.co.uk>
+
+       * cdl/hal_arm_ebsa285.cdl: Added cygmon console device
+       config. Added make rule for binary conversion of cygmon image.
+
+2000-01-24  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal_arm_ebsa285.cdl: Add stubs build rule.
+
+2000-01-24  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/*.cdl:
+
+	Remove obsolete option CYGTST_TESTING_IDENTIFIER.
+
+2000-01-19  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/*.cdl: Add descriptions to a number of options &c which were
+	lacking same, also tidied up other typos as noticed en passant.
+
+2000-01-10  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/ebsa285_misc.c (hal_IRQ_handler): Conditionally remove
+	debugging check for FIQ sources being active at customer's
+	request; they are now using FIQ via VSR so the warning message is
+	unwanted.
+
+1999-11-25  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/hal_diag.c: Conditionalize def of diag_buffer for only when it's
+	explicitly wanted and someone hacks the code
+	(hal_diag_write_char): Likewise
+
+1999-11-25  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/mlt_arm_ebsa285_rom.h: 
+	* include/pkgconf/mlt_arm_ebsa285_ram.h: Update 'do not edit' strings.
+
+1999-11-16  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/sdram0.cxx: New file to test SDRAM initialization.  It is
+	somewhat EBSA specific in that it sanity checks the control reg
+	setup as well as testing memory per se.
+
+	* cdl/hal_arm_ebsa285.cdl: build the new test.
+
+	* tests/PKGconf.mak: New file: build the new test.
+
+1999-11-16  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/mem285.S: Rewrite, essentially: it was the only way to get a
+	good enough handle on what this nasty, trick stuff does.  I'm very
+	happy with it now.  It's also callable for RAM startup too, to
+	happily count up the RAMs as initialized: no guessing ever again!
+
+	* include/hal_platform_setup.h: Delete some code!  Now that mem285
+	initialization is sorted out, it's cool to do exactly the same
+	thing for ROM and RAM startup; the mem init code differs, mind, to
+	just add up the memory sizes in RAM start.
+
+1999-11-10  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/hal_platform_setup.h (PLATFORM_FLUSH_DISABLE_CACHES):
+	Also flush TLBs - this is vital when changing cachability &c
+	during startup.  Also do that same flush in ROM start, for when we
+	build to run in flash block #1 following POST executing, when
+	"stuff" might be in an odd state.
+
+1999-11-09  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/mlt_arm_ebsa285_ram.h: 
+	* include/pkgconf/mlt_arm_ebsa285_rom.h: New files.
+
+	* include/pkgconf/mlt_arm_ebsa285_ram.ldi: 
+	* include/pkgconf/mlt_arm_ebsa285_ram.mlt: 
+	* include/pkgconf/mlt_arm_ebsa285_rom.ldi: 
+	* include/pkgconf/mlt_arm_ebsa285_rom.mlt: Update with correct memory layout.
+
+	* src/hal_diag.c: Honor GDB_DISABLE option.
+
+1999-11-09  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal_arm_ebsa285.cdl: 
+	* include/pkgconf/hal_arm_ebsa285.h:
+	* src/ebsa285_misc.c: 
+	Remap PCI accessible memory as non-cachable. Changed default
+	PCI mapped memory to the top 1MB of a 16MB system.
+
+1999-11-01  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal_arm_ebsa285.cdl: Remove define_proc comments.
+
+1999-10-29  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/mlt_arm_ebsa285_ram.ldi: 
+	* include/pkgconf/mlt_arm_ebsa285_rom.ldi: 
+	* include/pkgconf/mlt_arm_ebsa285_ram.mlt: 
+	* include/pkgconf/mlt_arm_ebsa285_rom.mlt: 
+	Increased memory size to 16MB.
+	
+1999-10-27  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_diag.c: Fixed conditional include.
+
+1999-10-26  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/hal_diag.c (hal_diag_write_char): Use new macro
+	CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION and its mate to control
+	stepping through gdb $O packet output.
+
+1999-10-26  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_platform_setup.h (CYGHWR_LED_MACRO): Define.
+
+1999-10-26  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_ebsa285.cdl:
+
+	Rename CYGBLD_GLOBAL_PREFIX to
+	CYGBLD_GLOBAL_COMMAND_PREFIX
+
+1999-10-20  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_ebsa285.cdl:
+	Define build-related and memory layout-related CDL options.
+
+1999-10-11  Jesper Skov  <jskov@cygnus.co.uk>
+	* cdl/hal_arm_ebsa285.cdl: 
+	* include/plf_io.h:
+	* include/pkgconf/hal_arm_ebsa285.h: 
+	Added configurability of EBSA memory accessible from PCI space.
+
+	* src/ebsa285_misc.c (hal_bsp_mmu_init): Folded XBus into 21285 regs.
+	* include/hal_platform_setup.h (PLATFORM_SETUP1): Disable cache first.
+
+1999-10-06  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_ebsa285.cdl:
+	Define CYGTST_TESTING_IDENTIFIER.
+
+1999-10-05  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* support/linux/safl_util/sa_flash.c: Add a lot of extra
+	diagnostics and some new options; did this in the course of
+	finding out whether a board really was dead or not, so may as well
+	commit it.
+
+1999-09-24  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/plf_io.h (HAL_PCI_INIT): Fix rookie code bug.
+
+	* include/hal_ebsa285.h (SA110_XBUS_XCS2): Fix typo.
+
+1999-09-01  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/hal_ebsa285.h (ARM_MMU_SECTION): Move these macros and
+	memory-layout structure definitions here from ebsa285_misc.c so
+	that others can use them.
+
+	* src/ebsa285_misc.c (hal_IRQ_handler): Scan FIQ sources also and
+	print a warning if any are active.
+	(hal_hardware_init): Clear the FIQ enable mask at startup too;
+	this was assumed to be cleared at reset, but just in case...
+	(ARM_MMU_SECTION): Move these macros and memory-layout structure
+	definitions from here to include/hal_ebsa285.h so that others can
+	use them.
+	
+	* src/hal_diag.c (hal_diag_write_char): Do not unconditionally
+	poke the XBUS LED location - XBUS may not be available if internal
+	21285 arbiter is in use.
+	(hal_diag_write_char): Fix warnings for proto of
+	cyg_hal_gdb_interrupt().
+	
+1999-09-01  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/plf_io.h (HAL_PCI_CONFIG_ADDRESS): Use alternate config
+	space 0 addressing so all 32 devices can be scanned.
+
+1999-08-27  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_ebsa285.h: Added some timer bits.
+
+1999-08-24  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_ebsa285.h (SA110_XBUS_CYCLE_ARBITER_ENABLED): Added.
+
+	* include/hal_platform_setup.h (INIT_XBUS_ACCESS): Check jumper
+	settings and behave accordingly.
+
+	* include/plf_io.h (HAL_PCI_TRANSLATE_INTERRUPT): Fixed interrupt
+	vector table to match observed behavior.
+
+1999-08-19  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 20326
+	* include/hal_cache.h: Set MMU/align flag as well.
+
+1999-08-19  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_platform_setup.h (BASIC_PCI_SETUP): [+untabified]
+	* include/plf_io.h (HAL_PCI_INIT): 
+	Changed PCI enable comment to match actual behavior.
+
+1999-08-17  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/plf_io.h: Rename HAL_PCI_CONFIG_INTERRUPT to
+	HAL_PCI_TRANSLATE_INTERRUPT.
+	Read _PIN instead of _LINE.
+
+1999-08-16  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/plf_io.h (HAL_PCI_CONFIG_INTERRUPT): Added.
+
+1999-08-13  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/plf_io.h: Renamed macros and added resource information.
+	Renaming again.
+	
+1999-08-12  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_ebsa285.cdl:
+	Define CYG_HAL_STARTUP and CYGHWR_MEMORY_LAYOUT.
+
+1999-08-12  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/plf_io.h: Added PCI macros.
+
+1999-08-12  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl: Added CDL for ebsa.
+
+1999-08-12  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_platform_setup.h: 
+	* include/hal_ebsa285.h: 
+	Renamed some PCI registers and moved out generic PCI stuff.
+
+1999-08-10  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_ebsa285.h: Added more definitions.
+
+	* include/plf_stub.h (HAL_STUB_PLATFORM_RESET): Defined.
+
+1999-08-04  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/ebsa285_misc.c (ARM_ACCESS_TYPE_x): each domain has two bits.
+
+1999-07-26  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/mlt_arm_ebsa285_rom.mlt: 
+	* include/pkgconf/mlt_arm_ebsa285_ram.mlt: 
+
+	Fix memory section alignments to match those of the pre-built
+	linker script fragments.
+
+1999-07-26  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/pkgconf/mlt_arm_ebsa285_rom.mlt: 
+	* include/pkgconf/mlt_arm_ebsa285_ram.mlt: 
+	Make these match the .ldi files that do the linking proper, so
+	that the process is reversible and the .ldi files recreatable.
+
+1999-07-26  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/hal_platform_ints.h (CYGDBG_HAL_CTRLC_ISR): Define this
+	if needed so that the arch HAL can conditionally call our poll
+	routine.  Problem is that CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT *is*
+	defined for platforms that do not support it.
+
+1999-07-23  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/hal_diag.c (hal_ctrlc_isr): Define this function, which is
+	called from the default ISR, if CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT
+	is defined.  It looks for a ^C in the serial input and bangs out
+	with a breakpoint if one arrives.  Note that you cannot do much at
+	all after this bp, except examine the stack and see where the
+	program had got to.
+	(hal_diag_write_char): Do not eat response characters from GDB:
+	leave them for the ISR mentioned above to test for ^C.
+
+	* src/ebsa285_misc.c (hal_hardware_init): Unmask the interrupt for
+	serial reception, so that we can scan for incoming ^C, if the
+	option CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT is defined.
+
+1999-07-23  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/hal_platform_ints.h (CYG_GDB_DEV_INT, CYG_DIAG_DEV_INT):
+	define these so that interrupting using ^C and so on will work.
+
+1999-07-22  Hugo Tyson  <hmt@masala.cygnus.co.uk>
+
+	* support/README: New file.
+	* support/linux/README: New file.
+	* support/linux/safl_util/README: New file.
+	* support/linux/safl_util/Makefile: New file.
+	* support/linux/safl_util/sa_flash.c: New file.
+	* support/linux/safl_util/safl.c: New file.
+	Keep the devo safl_utils for programming ebsa-285 FLASH in the
+	eCos tree too, so that it gets into our releases.
+
+1999-07-21  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/hal_platform_setup.h (PLATFORM_SETUP1): Get ROM startup
+	to work OK; tidy up RAM start in consequence.  Do not set
+	CYGHWR_HAL_ARM_HAS_MMU so that we jump straight into high ROM.
+	Remove consequently unused macros.
+
+	* src/ebsa285_misc.c: Pass DRAM size as detected at startup around
+	correctly; worry less about alignment of MMU page table thingy.
+
+	* src/hal_diag.c: Make ROM startup systems output in clear.
+
+	* src/mem285.S: Get rid of all that IMM() nonsense.
+
+	* misc/stubrom.perm: NEW FILE: Add instructions for making a STUBROM.
+
+	* include/pkgconf/mlt_arm_ebsa285_rom.ldi: Get the numbers right
+	for ROM startup.
+
+1999-07-19  Hugo Tyson  <hmt@masala.cygnus.co.uk>
+
+	* src/mem285.S: New file: offers routine __mem285_init, for DRAM
+	sizing before the MMU is set up.  Code borrowed from CygMon/BSP of
+	course.
+
+	* src/ebsa285_misc.c: Add the meat of the 'C' initialization here;
+	MMU initialization is the main addition.  Code borrowed from
+	CygMon/BSP.
+
+	* src/PKGconf.mak (COMPILE): Add mem285.S, which contains tricky
+	DRAM sizing and init code - which of course can only be run from
+	ROM, since it is damaging to the contents of DRAM.
+
+	* include/hal_platform_setup.h (PLATFORM_SETUP1): Add required
+	startup code in various macros to make constructing one phrase for
+	ROM vs RAM startup easier, and for debug.  Code borrowed from
+	CygMon/BSP.
+
+	* src/hal_diag.c (hal_diag_init): Initialize the hardware, by
+	setting the baud rate.
+
+	* include/hal_ebsa285.h (ARM_FIRST_LEVEL_PAGE_TABLE_SIZE): Add
+	this and a few other symbols for the DRAM sizing and MMU init
+	code.
+
+1999-07-16  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/pkgconf/hal_arm_ebsa285.h: Typo in tidy up of config
+	info.  Doh!
+
+1999-07-16  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/pkgconf/hal_arm_ebsa285.h: Tidy up config info.
+
+1999-07-15  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/ebsa285_misc.c (hal_hardware_init): Enable the caches in
+	here; they are now disabled during startup.
+
+	* include/hal_platform_setup.h (PLATFORM_SETUP1): Added code to
+	disable caches [if RAM start] and switch to the ROM address
+	[regardless, since it's the RAM addr if RAM start so harmless]
+
+	* include/pkgconf/mlt_arm_ebsa285_rom.ldi: Set up some of the
+	values here while they are in my head; see above.
+
+1999-07-15  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/hal_cache.h: Tidy up cache macros and make semantics
+	better match what the GDB stubs require.
+
+1999-07-15  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/sa-110.h: removed, it was added in error.  Its contents
+	live in include/hal_ebsa285.h
+
+1999-07-14  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	New component: StrongARM EBSA-285 development board support.
+	New files:
+	* include/hal_cache.h
+	* include/hal_diag.h
+	* include/hal_ebsa285.h
+	* include/hal_platform_ints.h
+	* include/hal_platform_setup.h
+	* include/plf_stub.h
+	* include/sa-110.h
+	* include/pkgconf/hal_arm_ebsa285.h
+	* include/pkgconf/mlt_arm_ebsa285_ram.ldi
+	* include/pkgconf/mlt_arm_ebsa285_ram.mlt
+	* include/pkgconf/mlt_arm_ebsa285_rom.ldi
+	* include/pkgconf/mlt_arm_ebsa285_rom.mlt
+	* src/PKGconf.mak
+	* src/ebsa285_misc.c
+	* src/hal_diag.c
+	* src/plf_stub.c
+
+//===========================================================================
+//####COPYRIGHTBEGIN####
+//                                                                          
+// -------------------------------------------                              
+// The contents of this file are subject to the Red Hat eCos Public License 
+// Version 1.1 (the "License"); you may not use this file except in         
+// compliance with the License.  You may obtain a copy of the License at    
+// http://www.redhat.com/                                                   
+//                                                                          
+// Software distributed under the License is distributed on an "AS IS"      
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+// License for the specific language governing rights and limitations under 
+// the License.                                                             
+//                                                                          
+// The Original Code is eCos - Embedded Configurable Operating System,      
+// released September 30, 1998.                                             
+//                                                                          
+// The Initial Developer of the Original Code is Red Hat.                   
+// Portions created by Red Hat are                                          
+// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// All Rights Reserved.                                                     
+// -------------------------------------------                              
+//                                                                          
+//####COPYRIGHTEND####
+//===========================================================================

@@ -1,0 +1,131 @@
+# ====================================================================
+#
+#      interrupts.cdl
+#
+#      HAL interrupt configuration data
+#
+# ====================================================================
+#####COPYRIGHTBEGIN####
+#                                                                          
+# -------------------------------------------                              
+# The contents of this file are subject to the Red Hat eCos Public License 
+# Version 1.1 (the "License"); you may not use this file except in         
+# compliance with the License.  You may obtain a copy of the License at    
+# http://www.redhat.com/                                                   
+#                                                                          
+# Software distributed under the License is distributed on an "AS IS"      
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+# License for the specific language governing rights and limitations under 
+# the License.                                                             
+#                                                                          
+# The Original Code is eCos - Embedded Configurable Operating System,      
+# released September 30, 1998.                                             
+#                                                                          
+# The Initial Developer of the Original Code is Red Hat.                   
+# Portions created by Red Hat are                                          
+# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# All Rights Reserved.                                                     
+# -------------------------------------------                              
+#                                                                          
+#####COPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      jskov
+# Original data:  nickg,jskov,jlarmour
+# Contributors:
+# Date:           1999-07-02
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_option CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK {
+    display       "Use separate stack for interrupts"
+    default_value 1
+    description   "
+        When an interrupt occurs this interrupt can be handled either
+        on the current stack or on a separate stack maintained by the
+        HAL. Using a separate stack requires a small number of extra
+        instructions in the interrupt handling code, but it has the
+        advantage that it is no longer necessary to allow extra space
+        in every thread stack for the interrupt handlers. The amount
+        of extra space required depends on the interrupt handlers
+        that are being used."
+}
+
+# NOTE: various parts of the system such as device drivers should
+# impose lower bounds on this. The actual lower bound depends on a
+# platform-specific value for startup overheads, and the minimum
+# sizes specified by the various device drivers. If interrupts are
+# not handled on a separate stack then only the startup overheads
+# are significant. If nested interrupts are disabled then the
+# lower bound is the maximum of the individual sizes, otherwise
+# it is the sum of these sizes. It is not currently possible to
+# express a relationship like this.
+cdl_option CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE {
+    display       "Interrupt stack size"
+    flavor        data
+    default_value 4096
+    legal_values  1024 to 1048576
+    description   "
+        This configuration option specifies the stack size in bytes
+        for the interrupt stack. Typically this should be a multiple
+        of 16, but the exact requirements will vary from architecture
+        to architecture. The interrupt stack serves two separate
+        purposes. It is used as the stack during system
+        initialization. In addition, if the interrupt system is
+        configured to use a separate stack then all interrupts will
+        be processed on this stack. The exact memory requirements
+        will vary from application to application, and will depend
+        heavily on whether or not other interrupt-related options,
+        for example nested interrupts, are enabled."
+}
+
+cdl_option CYGSEM_HAL_COMMON_INTERRUPTS_ALLOW_NESTING {
+    display       "Allow nested interrupts"
+    default_value 0
+    description   "
+        When an interrupt occurs the HAL interrupt handling code can
+        either leave interrupts disabled for the duration of the
+        interrupt handling code, or by doing some extra work it can
+        reenable interrupts before invoking the interrupt handler and
+        thus allow nested interrupts to happen. If all the interrupt
+        handlers being used are small and do not involve any loops
+        then it is usually better to disallow nested interrupts.
+        However if any of the interrupt handlers are more complicated
+        than nested interrupts will usually be required."
+}
+
+cdl_option CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT {
+    display       "Save minimum context on interrupt"
+    default_value 1
+    description   "
+        The HAL interrupt handling code can exploit the calling conventions
+        defined for a given architecture to reduce the amount of state
+        that has to be saved. Generally this improves performance and
+        reduces code size. However it can make source-level debugging
+        more difficult."
+}
+
+cdl_option CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN {
+    display       "Chain all interrupts together"
+    default_value 0
+    description   "
+        Interrupts can be attached to vectors either singly, or be
+        chained together. The latter is necessary if there is no way
+        of discovering which device has interrupted without
+        inspecting the device itself. It can also reduce the amount
+        of RAM needed for interrupt decoding tables and code."
+}
+
+cdl_option CYGIMP_HAL_COMMON_INTERRUPTS_IGNORE_SPURIOUS {
+    display       "Ignore spurious \[fleeting\] interrupts"
+    default_value 0
+    description   "
+        On some hardware, interrupt sources may not be de-bounced or
+        de-glitched.  Rather than try to handle these interrupts (no
+        handling may be possible), this option allows the HAL to simply
+        ignore them.  In most cases, if the interrupt is real it will
+        reoccur in a detectable form."
+}

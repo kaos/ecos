@@ -113,21 +113,23 @@ void hal_diag_init(void)
     init++;
     // init the actual serial port
     cyg_quicc_init_smc1();
+#ifndef CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL
 #ifndef CYG_HAL_STARTUP_ROM
     // We are talking to GDB; ack the "go" packet!
     cyg_quicc_smc1_uart_putchar('+');
+#endif
 #endif
 }
 
 void hal_diag_write_char_serial( char c )
 {
     unsigned long __state;
-    HAL_DISABLE_INTERRUPTS(__state)
+    HAL_DISABLE_INTERRUPTS(__state);
     cyg_quicc_smc1_uart_putchar(c);
     HAL_RESTORE_INTERRUPTS(__state);
 }
 
-#ifdef CYG_HAL_STARTUP_ROM
+#if defined(CYG_HAL_STARTUP_ROM) || defined(CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL)
 void hal_diag_write_char(char c)
 {
 #ifdef CYGDBG_DIAG_BUF

@@ -556,7 +556,9 @@ struct i2c_pram {
     unsigned long	tptr;		/* Tx internal data pointer */
     unsigned short	tbptr;		/* Tx BD pointer */
     unsigned short	tcount;		/* Tx byte count */
-    unsigned long	ttemp;		/* Tx temp */
+    unsigned long	ttemp[2];	/* Tx temp */
+    unsigned short	rpbase;		/* Relocated param block pointer */
+    unsigned short	res;		/* unused */
 };
 
 /*
@@ -700,7 +702,8 @@ typedef struct eppc {
     volatile unsigned char	i2c_i2cer;	/* i2c event */
     unsigned char		RSRVD63[3];
     volatile unsigned char	i2c_i2cmr;	/* i2c mask */
-    volatile unsigned char	RSRVD10[0x8b];
+    volatile unsigned char	RSRVD10[0x0b];
+    volatile unsigned char	i2c_spare_pram[0x80];  /* Used by patched ucode */
 
     /* DMA */
     volatile unsigned char	RSRVD11[0x4];
@@ -857,11 +860,11 @@ typedef struct eppc {
     volatile unsigned char	RSRVD48[0x1000]; 
 
     /* BASE + 0x2000: user data memory */
-    volatile unsigned char	udata_bd_ucode[0x400];	/*user data bd's Ucode*/
-    volatile unsigned char	udata_bd[0x200];	/*user data Ucode*/
-    volatile unsigned char	ucode_ext[0x100];	/*Ucode Extention ram*/
-    volatile unsigned char	RSRVD49[0x1500];	
-
+    volatile unsigned char	udata_ucode[0x800];	/* user data bd's Ucode*/
+    volatile unsigned char      bd[0x700];              /* buffer descriptors, data */
+    volatile unsigned char      udata_ext[0x100];       /* extension area for downloaded ucode */
+    volatile unsigned char	RSRVD49[0x0C00];	
+    
     /* BASE + 0x3c00: PARAMETER RAM */
     union {
 	struct scc_pram {
@@ -931,5 +934,32 @@ static inline EPPC *eppc_base(void)
 #define PTP_DIV32	0x0200
 #define PTP_DIV64	0x0100
 
+// Command Processor Module (CPM) 
+
+// Buffer descriptor control bits
+#define QUICC_BD_CTL_Ready          0x8000  // Buffer contains data (tx) or is empty (rx)
+#define QUICC_BD_CTL_Wrap           0x2000  // Last buffer in list
+#define QUICC_BD_CTL_Int            0x1000  // Generate interrupt when empty (tx) or full (rx)
+#define QUICC_BD_CTL_Last           0x0800  // Last buffer in a sequence
+#define QUICC_BD_CTL_MASK           0xB000  // User settable bits
+
+// Command register
+#define QUICC_CPM_CR_INIT_TXRX      0x0000  // Initialize both Tx and Rx chains
+#define QUICC_CPM_CR_INIT_RX        0x0100  // Initialize Rx chains
+#define QUICC_CPM_CR_INIT_TX        0x0200  // Initialize Tx chains
+#define QUICC_CPM_CR_HUNT_MODE      0x0300  // Start "hunt" mode
+#define QUICC_CPM_CR_STOP_TX        0x0400  // Stop transmitter
+#define QUICC_CPM_CR_RESTART_TX     0x0600  // Restart transmitter
+#define QUICC_CPM_CR_RESET          0x8000  // Reset CPM
+#define QUICC_CPM_CR_BUSY           0x0001  // Kick CPM - busy indicator
+
+// CPM channels
+#define QUICC_CPM_SCC1              0x0000
+#define QUICC_CPM_I2C               0x0010
+#define QUICC_CPM_SCC2              0x0040
+#define QUICC_CPM_SCC3              0x0080
+#define QUICC_CPM_SMC1              0x0090
+#define QUICC_CPM_SCC4              0x00C0
+#define QUICC_CPM_SMC2              0x00D0
 
 #endif // ifndef CYGONCE_HAL_PPC_QUICC_PPC8XX_H

@@ -150,6 +150,8 @@ hal_msbit_index(cyg_uint32 mask)
 //---------------------------------------------------------------------------
 // First level C exception handler.
 
+#if 0 // FIXME - exceptions aren't supported
+
 void
 cyg_hal_exception_handler(HAL_SavedRegisters *regs)
 {
@@ -157,15 +159,20 @@ cyg_hal_exception_handler(HAL_SavedRegisters *regs)
     // value as the second argument. For now we simply pass a
     // pointer to the saved registers. We should also divert
     // breakpoint and other debug vectors into the debug stubs.
-
-#ifdef CYGIMP_EXCEPTIONS
+    
+#if defined(CYGFUN_HAL_COMMON_KERNEL_SUPPORT) && defined(CYGPKG_HAL_EXCEPTIONS)
 
     cyg_hal_deliver_exception( regs->vector>>8, (CYG_ADDRWORD)regs );
 
-#endif
+#else
+    
+    CYG_FAIL("Exception!!!");
+    
+#endif    
     
     return;
 }
 
+#endif
 //---------------------------------------------------------------------------
 // End of hal_misc.c

@@ -1,0 +1,171 @@
+# ====================================================================
+#
+#      infra.cdl
+#
+#      Infrastructure configuration data
+#
+# ====================================================================
+#####COPYRIGHTBEGIN####
+#                                                                          
+# -------------------------------------------                              
+# The contents of this file are subject to the Red Hat eCos Public License 
+# Version 1.1 (the "License"); you may not use this file except in         
+# compliance with the License.  You may obtain a copy of the License at    
+# http://www.redhat.com/                                                   
+#                                                                          
+# Software distributed under the License is distributed on an "AS IS"      
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+# License for the specific language governing rights and limitations under 
+# the License.                                                             
+#                                                                          
+# The Original Code is eCos - Embedded Configurable Operating System,      
+# released September 30, 1998.                                             
+#                                                                          
+# The Initial Developer of the Original Code is Red Hat.                   
+# Portions created by Red Hat are                                          
+# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# All Rights Reserved.                                                     
+# -------------------------------------------                              
+#                                                                          
+#####COPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      bartv
+# Original data:  bartv,hmt
+# Contributors:
+# Date:           1999-06-13
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_INFRA {
+    display       "Infrastructure"
+    include_dir   cyg/infra
+    description   "
+        Common types and useful macros.
+        Tracing and assertion facilities.
+        Package startup options." 
+
+    compile startup.cxx prestart.cxx pkgstart.cxx userstart.cxx      \
+            dummyxxmain.cxx null.cxx simple.cxx fancy.cxx buffer.cxx \
+            diag.cxx tcdiag.cxx memcpy.c memset.c delete.cxx
+
+
+    # ====================================================================
+#    cdl_component CYGPKG_INFRA_TYPES {
+#        display       "Common Types"
+#        flavor        none
+#        active_if     0               ;# Not yet configurable.
+#        description   "
+#            These types are used throughout the eCos source code.
+#            Currently there are no configuration options associated
+#            with the Common Types component; they are automatically
+#            set up according to the selected HAL."
+#    }
+
+    cdl_option CYGDBG_INFRA_DIAG_PRINTF_USE_VARARG {
+        display       "Use varargs in diag_printf()"
+        default_value 1 
+        description   "
+            The diagnostic routine diag_printf() can be defined
+            using either variadic arguments or a K&R style definition.
+            The former will work in most circumstances, but if variable
+            argument handling is broken or missing then the K&R variant
+            may be used. This will also generate warnings about the
+            declaration of diag_printf() not being a prototype.
+            These may safely be ignored."
+    }
+
+    # ====================================================================
+    cdl_component CYGPKG_INFRA_DEBUG {
+        display       "Asserts & Tracing"
+        default_value 0
+        description   "
+            The eCos source code contains a significant amount of
+            internal debugging support, in the form of assertions and
+            tracing.
+            Assertions check at runtime that various conditions are as
+            expected; if not, execution is halted.
+            Tracing takes the form of text messages that are output
+            whenever certain events occur, or whenever functions are
+            called or return.
+            The most important property of these checks and messages is
+            that they are not required for the program to run.
+            It is prudent to develop software with assertions enabled,
+            but disable them when making a product release, thus
+            removing the overhead of that checking.
+            It is possible to enable assertions and tracing
+            independently.
+            There are also options controlling the exact behaviour of
+            the assertion and tracing facilities, thus giving users
+            finer control over the code and data size requirements."
+
+        script        debug.cdl
+    }
+
+    # ====================================================================
+    cdl_component CYGPKG_INFRA_STARTUP {
+        display       "Startup options"
+        flavor        none
+        description   "
+            Some packages require a startup routine to be called.
+            This can be carried out by application code, by supplying
+            a routine called cyg_package_start() which calls the
+            appropriate package startup routine(s).
+            Alternatively, this routine can be constructed automatically
+            and configured to call the startup routines of your choice."
+
+        script        startup.cdl
+    }
+
+    # ========================================================================
+    # memcpy()/memset() configuration
+    cdl_option CYGIMP_INFRA_PREFER_SMALL_TO_FAST_MEMCPY {
+        display       "Smaller slower memcpy()"
+        default_value 0
+        description   "
+            Enabling this option causes the implementation of
+            the standard memcpy() routine to reduce code
+            size at the expense of execution speed. This
+            option is automatically enabled with the use of
+            the -Os option to the compiler. Also note that
+            the compiler will try to use its own builtin
+            version of memcpy() if possible, ignoring the
+            implementation in this package, unless given
+            the -fno-builtin compiler option."
+    }
+
+    cdl_option CYGIMP_INFRA_PREFER_SMALL_TO_FAST_MEMSET {
+        display       "Smaller slower memset()"
+        default_value 0
+        description   "
+            Enabling this option causes the implementation of
+            the standard memset() routine to reduce code
+            size at the expense of execution speed. This
+            option is automatically enabled with the use of
+            the -Os option to the compiler. Also note that
+            the compiler will try to use its own builtin
+            version of memset() if possible, ignoring the
+            implementation in this package, unless given
+            the -fno-builtin compiler option."
+    }
+
+    # ========================================================================
+    # Debugging-related miscellania.
+    #
+    # NOTE: this is not yet fully supported, by CDL nor by having a proper
+    # symbol name.
+    #
+    # Define how diag data is directed off of the board. If using an actual
+    # device then a device must be configured to support diag.
+    #
+    #undef CYGDBG_INFRA_DIAG_USE_DEVICE
+
+    define_proc {
+        puts $::cdl_header "/***** proc output start *****/"
+        puts $::cdl_header "#include <pkgconf/system.h>"
+        puts $::cdl_header "/*****  proc output end  *****/"
+    }
+}

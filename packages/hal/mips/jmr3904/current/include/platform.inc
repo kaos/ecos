@@ -115,9 +115,9 @@
 # Decide whether the VSR table is defined externally, or is to be defined
 # here.
 
-#if defined(CYG_HAL_MIPS_SIM) ||	\
-    ( defined(CYG_HAL_MIPS_TX3904) &&	\
-      defined(CYG_HAL_STARTUP_RAM) &&	\
+#if defined(CYGPKG_HAL_MIPS_SIM) ||        \
+    ( defined(CYGPKG_HAL_MIPS_TX3904) &&   \
+      defined(CYG_HAL_STARTUP_RAM) &&      \
       !defined(CYGSEM_HAL_USE_ROM_MONITOR) \
     )
 

@@ -1,0 +1,215 @@
+2000-02-23  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/var_cache.h: Don't need to conditionalize on vr4300
+
+2000-02-16  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_mips_vr4300.cdl: removed fix me
+
+2000-01-14  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/pkgconf/hal_mips_vr4300.h:
+	Added define for CYGHWR_HAL_MIPS_64BIT so that all vr4300 targets
+	save and restore 64 bit register values.
+
+	* cdl/hal_mips_vr4300.cdl:
+	Added option for CYGHWR_HAL_MIPS_64BIT so that all vr4300 targets
+	save and restore 64 bit register values.
+
+1999-12-21  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* cdl/hal_mips_vr4300.cdl: Some cosmetic layout changes and fixed typos
+	Ensure we "puts" to correct CDL header
+
+1999-12-02  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_mips_vr4300.cdl:
+
+	Use the <PACKAGE> token in custom rules.
+
+1999-12-01  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_mips_vr4300.cdl:
+
+	Use the <PREFIX> token in custom rules.
+
+1999-11-04  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_mips_vr4300.cdl:
+
+	Output custom rule dependency information to .deps files in
+	the current directory.
+
+	Dispense with the need to create a 'src' sub-directory.
+
+1999-11-02  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal_mips_vr4300.cdl: Added.
+
+1999-10-25  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/var_cache.h: The single nop added on 10-21 seems to
+	cause exceptions on the vrc4373 board but not on others. Extended
+	this to three nops, which seem to work on all boards.
+
+1999-10-22  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/var_intr.h: Removed superfluous placeholder ifdef.
+
+1999-10-21  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/var_cache.h: Added an extra nop after reading the
+	config0 register. In some boards we get an exception when reloading
+	it if we don't have this here. Something to do with coprocessor
+	hazards.
+
+1999-10-06  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/PKGconf.mak: Don't create extras.o here any more
+
+1999-10-05  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/PKGconf.mak: Switched link command for libextras over to big
+	endian.
+
+	* include/pkgconf/hal_mips_vr4300.h: Added definition of
+	CYGPKG_HAL_MIPS_MSBFIRST.
+
+	* include/variant.inc: Set BE bit in config0 register depending on
+	definitions of CYGPKG_HAL_MIPS_[L|M]SBFIRST.
+
+1999-09-09  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/mips_vr4300.ld:
+	Extended size of .rom_vectors section to 0x800 bytes for ROMRAM
+	startup so that when it is copied down into RAM, the VSR and
+	vector tables are zeroed automatically.
+
+	* include/variant.inc:
+	Moved cache macros here so that code to initialize the caches is
+	variant specific.
+
+1999-09-08  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/mips_vr4300.ld: Discard debug vector - it doesn't exist on the
+	vr4300
+
+1999-08-05  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/variant.inc: VR4300 is a mips 3 processor, so always allow
+	mips3 instructions
+
+1999-07-15  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/variant.inc: Rename CYG_HAL_MIPS_FSR_INIT to
+	CYG_HAL_MIPS_FCSR_INIT since that's closer to its documented name
+
+1999-07-09  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/var_cache.h: Define HAL_ICACHE_IS_ENABLED() to be the same
+	as HAL_DCACHE_IS_ENABLED()
+
+1999-06-25  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/variant.inc:
+	Added initializer for FPU FSR register.
+
+1999-06-17  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/var_cache.h: Added defines to disable generic code for
+	cache lock support in hal_cache.h. The vr4300 does not have cache
+	locking.
+
+1999-06-17  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/mips_vr4300.ld: Removed below workaround.
+
+1999-06-16  Jesper Skov  <jskov@cygnus.co.uk>
+        CR 100804 workaround
+	* src/mips_vr4300.ld:  Suppress .mdebug in the final output.
+
+1999-05-28  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/mips_vr4300.ld:
+	Removed references to CYG_HAL_STARTUP_STUBS
+
+1999-05-27  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/var_cache.h (HAL_DCACHE_IS_ENABLED): Added an
+	implementation of this macro.
+
+1999-05-21  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/var_misc.c (hal_variant_init): Added enables for caches.
+
+	* src/mips_vr4300.ld: Added definition of SECTION_rom_vectors()
+	for ROMRAM and STUBS startups.
+
+	* include/variant.inc: Added an initial value for config0.
+
+	* include/var_cache.h: Added enable and disable macros for data
+	and instruction caches.
+
+1999-05-13  Nick Garnett  <nickg@cygnus.co.uk>
+
+	Imported whole directory tree into main trunk of repository.
+
+1999-05-11  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[VR4300 branch]	
+	* include/imp_arch.h: 
+	* include/imp_intr.h: 
+	* include/imp_cache.h:
+	* include/impl.inc:
+	* src/imp_misc.c:
+	* include/var_arch.h: 
+	* include/var_intr.h: 
+	* include/var_cache.h:
+	* include/variant.inc:
+	* src/var_misc.c:
+	* src/PKGconf.mak:
+	"Imp" and "Impl" files renamed to "var" and "variant" equivalents.
+
+	* include/pkgconf/hal_vr4300.h
+	* include/pkgconf/hal_mips_vr4300.h
+	Config file hal_vr4300.h renamed to hal_mips_vr4300.h so that it
+	matches the name synthesized by pkgconf.tcl.
+
+	* src/mips_vr4300.ld:
+	Moved VSR table and vector table to 0x800XXXXX.
+	
+1999-05-11  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	[VR4300 branch]	
+	* src/mips_vr4300.ld: Change CTOR sort order - fixes problems
+	with uItron initialization.
+
+1999-04-29  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[VR4300 branch]
+	* src/mips_vr4300.ld: Added definitions of hal_vsr_table and
+	hal_virtual_vector_table. These are currently at 0x806XXXXX but
+	will be moved to 0x800XXXXX when we can make proper ROMs.
+
+1999-04-27  John Dallaway  <jld@cygnus.co.uk>
+
+	[VR4300 branch]
+	* src/PKGconf.mak: Force generation of little-endian extras.o
+
+1999-04-23  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[VR4300 branch]
+	* include/pkgconf/hal_vr4300.h: Added some CPU characterization
+	definitions for the benefit of the generic mips HAL.
+
+	* include/imp_arch.h: Added this file. It contains configuration
+	and redefinitions for stuff in hal_arch.h.
+
+1999-04-21  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[VR4300 branch]
+	* src/imp_misc.c: Added this file to contain
+	hal_implementation_init().
+	
+	* src/PKGconf.mak (COMPILE): Added imp_misc.c.
+

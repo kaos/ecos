@@ -155,11 +155,25 @@ test( CYG_ADDRWORD data )
     CYG_TEST_PASS_FAIL(ret == my_strlen(z),
                        "|%5d|%10s|%03d|%c|%o| test return code" );
 
+    // Check 3
+    ret = snprintf(y, 19, "print up to here >< and not this bit" );
+    my_strcpy(z, "print up to here >");
+    CYG_TEST_PASS_FAIL(my_strcmp(y,z) == 0, "simple snprintf test #1");
+    CYG_TEST_PASS_FAIL(ret == my_strlen(z),
+                       "simple snprintf test #1 return code" );
+    
+    // Check 4
+    ret = snprintf(y, 31, "print a bit of this number: %05d nyer", 1234);
+    my_strcpy(z, "print a bit of this number: 01");
+    CYG_TEST_PASS_FAIL(my_strcmp(y,z) == 0, "simple snprintf test #2");
+    CYG_TEST_PASS_FAIL(ret == my_strlen(z),
+                       "simple snprintf test #2 return code" );
+    
 #ifdef CYGSEM_LIBC_STDIO_PRINTF_FLOATING_POINT
 
     CYG_TEST_INFO("Starting floating point specific tests");
 
-    // Check 3
+    // Check 5
     ret = sprintf(y, "|%5f|%10s|%03d|%c|%+-5.2G|%010.3G|",
                   2.0, "times", 6, '=', 12.0, -2.3451e-6 );
     my_strcpy(z, "|2.000000|     times|006|=|+12  |-02.35E-06|");
@@ -170,6 +184,15 @@ test( CYG_ADDRWORD data )
     CYG_TEST_PASS_FAIL(ret == my_strlen(z),
                        "|%5f|%10s|%03d|%c|%+-5.2G|%010.3G| test "
                        "return code" );
+
+    // Check 6
+    ret = snprintf(y, 20, "bit of this: %g double", 6.431e8);
+    my_strcpy(z, "bit of this: 6.431e");
+    CYG_TEST_PASS_FAIL(my_strcmp(y,z) == 0,
+                       "snprintf double test #1");
+
+    CYG_TEST_PASS_FAIL(ret == my_strlen(z),
+                       "snprintf double test #1 return code");
 
 #endif // ifdef CYGSEM_LIBC_STDIO_PRINTF_FLOATING_POINT
 

@@ -45,6 +45,8 @@
     && !defined(CYGPKG_INFRA_DEBUG) \
     && !defined(CYGPKG_KERNEL_INSTRUMENT)
 
+#if !defined(CYGDBG_INFRA_DIAG_USE_DEVICE)
+
 #include <cyg/hal/hal_cache.h>
 #include <cyg/kernel/kapi.h>
 #include <stdlib.h>
@@ -1155,6 +1157,10 @@ Enumeration Enum_Par_Val;
   else /* not executed */
     return (false);
 } /* Func_3 */
+
+#else
+#define NA_MSG "Must use HAL diag output to avoid background DSR activity"
+#endif // CYGDBG_INFRA_DIAG_USE_DEVICE
 
 #else
 #define NA_MSG "Only runs with optimized code, no tracing and no asserts"

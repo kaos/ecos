@@ -1,3 +1,43 @@
+2000-03-21  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/kernel.cdl:
+
+	Fix thread operations URL.
+
+2000-03-20  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/counters.cdl,
+	  cdl/interrupts.cdl,
+	  cdl/kernel.cdl,
+	  cdl/scheduler.cdl,
+	  cdl/synch.cdl,
+	  cdl/thread.cdl:
+
+	Adjust documentation URLs.
+
+2000-03-07  Jesper Skov  <jskov@redhat.com>
+
+	* tests/mutex3.cxx: Minor tweak from Hugo to allow reduced runtime
+	on sims.
+
+2000-02-29  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/debug/dbg-thread-demux.c:
+	CYG_HAL_SPARCLITE_SLEB -> CYGPKG_HAL_SPARCLITE_SLEB
+	Also fix a comment typo
+
+2000-02-29  Jesper Skov  <jskov@redhat.com>
+
+	* tests/kcache1.c: Don't run last part of test on MIPS sim - it's
+	very slow.
+
+2000-02-25  Jesper Skov  <jskov@redhat.com>
+
+	* tests/dhrystone.c: 
+	* tests/tm_basic.cxx: 
+	Don't allow use of devices for diag output when running performace
+	tests.
+
 2000-02-17  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* include/pkgconf/kernel.h: Make
@@ -38,11 +78,25 @@
 	* src/common/clock.cxx (isr): Use HAL_CLOCK_LATENCY, not HAL_CLOCK_READ
 	(dsr): Likewise
 	
+	* cdl/counters.cdl (CYGVAR_KERNEL_COUNTERS_CLOCK_DSR_LATENCY): 
+	Copy configury for this option here from include/pkgconf/kernel.h - it
+	was left behind by accident
+
+2000-01-31 Simon FitzMaurice  <sdf@cygnus.co.uk>
+  * cdl/*.cdl:
+
+  Adjust help URLs in line with new doc layout.
+  
 2000-01-31  Jesper Skov  <jskov@redhat.com>
 
 	* tests/tm_basic.cxx: Use CYG_TEST_NA insetad of PASS when not
 	applicable.
 
+2000-01-28 Simon FitzMaurice  <sdf@cygnus.co.uk>
+  * cdl/*.cdl:
+
+  Adjust help URLs in line with new doc layout.
+  
 2000-01-26  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* include/clock.hxx (class Cyg_Clock): Add members to convert to
@@ -61,6 +115,21 @@
 
 	* tests/PKGconf.mak (TESTS): Add clockcnv to the tests.
 
+	* cdl/kernel.cdl: Add clockcnv to the tests.
+
+2000-01-20  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/synch.cdl
+	(CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE_RELAY):
+	Change this to an active_if on simple prio-inh.  Was broken.
+
+2000-01-19  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/*.cdl: Add descriptions to a number of options &c which were
+	lacking same, also tidied up other typos as noticed en passant.
+	Also reorganized calculated opts about per-thread-data in
+	thread.cdl; these are really for info only.
+
 2000-01-19  Jesper Skov  <jskov@cygnus.co.uk>
 	CR 902054
 	* tests/stress_threads.c: Don't assert requested priority =
@@ -73,6 +142,9 @@
 
 2000-01-11  Hugo Tyson  <hmt@cygnus.co.uk>
 
+	* cdl/kernel.cdl: Add new kernel test mutex3, put in to test
+	RELAY prio inheritance extension.
+
 	* tests/mutex3.cxx: New test case.  It tests mutex prio
 	inheritance - or not - in a multiple thread manner, depending only
 	on delays and the clock, so it tests that scheduling does the
@@ -82,6 +154,9 @@
 	RELAY prio inheritance extension.
 
 2000-01-11  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/synch.cdl: New config option added,
+	(CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE_RELAY).
 
 	* include/pkgconf/kernel.h: New config option added,
 	(CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE_RELAY).
@@ -121,6 +196,18 @@
 	* tests/tm_basic.cxx (run_alarm_tests): Add new measurement of
 	latency between alarm firing and thread resume
 
+1999-12-13  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* cdl/kernel.cdl: Fix some minor mistakes in the lists of tests to
+	build conditionally
+
+1999-12-08  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/kernel.cdl:
+
+	Conditionally build the tests 'stress_threads', 'kcache1' and
+	'kcache2'.
+
 1999-11-30  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/common/kapi.cxx (cyg_scheduler_lock, cyg_scheduler_unlock):
@@ -138,9 +225,33 @@
 	* src/sched/bitmap.cxx (Cyg_Scheduler_Implementation::add_thread):
 	Fixed typo in assertion, and moved it to a more useful place.
 
+1999-11-03  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/kernel.cdl: Define all tests.
+
 1999-10-29  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* tests/PKGconf.mak: Enable cache tests for Cirrus Logic boards.
+
+1999-10-27  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/kernel.cdl:
+
+	Specify CYGPKG_KERNEL_TESTS in terms of testing
+	source files.
+
+1999-10-26  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/kernel.cdl:
+
+	Define initial version of CYGPKG_KERNEL_TESTS for
+	verification purposes.
+
+1999-10-19  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/kernel.cdl:
+
+	Define CDL options for package-specific CFLAGS.
 
 1999-10-08  Jesper Skov  <jskov@cygnus.co.uk>
 
@@ -150,6 +261,18 @@
 	* src/sched/mlqueue.cxx (add_thread): 
 	Check for valid thread priority.
 
+1999-10-07  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/counters.cdl,
+	  cdl/interrupts.cdl,
+	  cdl/scheduler.cdl:
+
+	Specify radio buttons using CDL interfaces.
+
+1999-10-06  Bart Veer  <bartv@cygnus.co.uk>
+
+	* cdl/scheduler.cdl:
+	Make the schedulers mutually exclusive via a cdl_interface
 
 1999-10-05  Jesper Skov  <jskov@cygnus.co.uk>
 
@@ -216,6 +339,13 @@
 	primarily dependent on CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY since
 	whether HAL_CLOCK_LATENCY is defined is not sufficient.
 
+1999-08-17  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/counters.cdl, cdl/interrupts.cdl, cdl/scheduler.cdl:
+
+	Implement radio buttons using "FIXME radio" hack in
+	description field for now.
+
 1999-08-16  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/sload/sload.c: Rename AM32 to AM31
@@ -250,6 +380,10 @@
 	couldn't actually get those parts of the test to work on the
 	platform I'm currently working on.
 
+	* tests/PKGconf.mak (TESTS): Do build kcache1 and kcache2 for the
+	ARM_EBSA285; it seems kosher.  kcache2 does absolutely nothing, of
+	course.
+	
 1999-07-09  Jesper Skov  <jskov@cygnus.co.uk>
         PR 20210, 20142
 	* tests/stress_threads.c: Shifted thread priorities to make room
@@ -426,6 +560,8 @@
 
 	* include/pkgconf/kernel.h:
 	Added CYGDBG_KERNEL_INSTRUMENT_BUFFER_WRAP option.
+	Changed CYGNUM_KERNEL_COUNTERS_RTC_PERIOD to the correct value for
+	VR4300.
 
 	* include/instrmnt.h: Added CYG_INSTRUMENT_EVENT_THREAD_ENTER
 	event.

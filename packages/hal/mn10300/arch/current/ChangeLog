@@ -1,8 +1,48 @@
+2000-03-20  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/vectors.S (__default_interrupt_vsr): Pass variant-specific PC
+	offset from register context into cyg_hal_gdb_isr()
+
+	* include/hal_arch.h: Move HAL_SavedRegisters into variant HALs
+
+2000-03-19  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/mn10300_stub.h: Make C++ safe
+
+2000-02-16  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_mn10300.cdl: remove fix me.
+
 1999-11-09  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* include/hal_intr.h (HAL_RESTORE_INTERRUPTS): Ensure we restore the
 	old state exactly, including "restoring" by disabling interrupts
 	Requested by Matsushita in case 102544
+
+1999-12-02  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_mn10300.cdl:
+
+	Use the <PACKAGE> token in custom rules.
+
+1999-12-01  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_mn10300.cdl:
+
+	Use the <PREFIX> token in custom rules.
+
+1999-11-04  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_mn10300.cdl:
+
+	Output custom rule dependency information to .deps files in
+	the current directory.
+
+	Dispense with the need to create a 'src' sub-directory.
+
+1999-11-03  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal_mn10300.cdl: Added.
 
 1999-09-10  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
@@ -26,6 +66,14 @@
 	* include/arch.inc: rename CYGPKG_HAL_MN10300_AM32_STDEVAL1 to
 	CYGPKG_HAL_MN10300_AM31_STDEVAL1
 
+1999-08-13  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/arch.inc: Moved AM33 trace address to uncached memory
+	window.
+
+	* src/vectors.S (_start): Tidied away some superfluous trace
+	code.
+	
 1999-08-12  Nick Garnett  <nickg@cygnus.co.uk>
 
 	Imported following changed from development branch.
@@ -74,6 +122,10 @@
 	Note: some trace/debug code has been left in place temporarily,
 	this will be removed eventually.
 
+	* include/mn10300_stub.h: Added extra regnames for AM33.
+
+	* include/hal_arch.h:
+	Added macros to get and set extra registers for AM33.
 	* include/arch.inc:
 	Changed all *_MIPS_* to *_MN10300_*.
 	Added some temporary trace/debug macros.
@@ -128,6 +180,7 @@
     1999-06-29  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/hal_arch.h:
+	Added code in preparation for AM33 port.
 	Added include of variant header.
 
 	* include/hal_cache.h: 

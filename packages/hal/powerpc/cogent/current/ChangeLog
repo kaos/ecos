@@ -1,3 +1,26 @@
+2000-03-02  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c (ai_write_char): fix typos.
+
+2000-02-21  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* cdl/hal_powerpc_cogent.cdl: Add CYGHWR_HAL_POWERPC_BOARD_SPEED.
+
+2000-02-28  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_powerpc_cogent.cdl: Remove hardcoded copy_vectors
+	definition.
+
+2000-02-21  Jesper Skov  <jskov@redhat.com>
+
+	* src/cogent.S: use arch.inc instead of ppc.inc
+
+2000-02-18  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/hal_powerpc_cogent.cdl (CYGBLD_BUILD_GDB_STUBS): When building
+	stubs, define every dependency required here rather than in the
+	template
+
 2000-02-11  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_aux.c: Cleaned up includes.
@@ -24,15 +47,57 @@
 	type. Use MPC8xx variant code.
 
 
+	* cdl/hal_powerpc_cogent.cdl:  Removed stubs startup type. Use
+	MPC8xx variant code.
+	Specify CPU options in linker flags.
+
 2000-02-03  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_powerpc_cogent.cdl:
 	* src/cma_ser.inl:
 	* src/cogent.S:
 	* src/hal_diag.c:
 	CYG_HAL_POWERPC_x->CYGPKG_...
 
+2000-02-03  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_powerpc_cogent.cdl: Implements stubs.
+
+2000-01-27  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_powerpc_cogent.cdl: Moved part of stubs build rule to
+	common HAL. Changed description.
+
 2000-01-26  Jesper Skov  <jskov@redhat.com>
 
 	* include/plf_cache.h: Added.
+
+2000-01-26  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_powerpc_cogent.cdl: Fix display string.
+
+2000-01-24  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal_powerpc_cogent.cdl: Add stubs build rule.
+
+2000-01-24  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/*.cdl:
+
+	Remove obsolete option CYGTST_TESTING_IDENTIFIER.
+
+2000-01-19  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/*.cdl: Add descriptions to a number of options &c which were
+	lacking same, also tidied up other typos as noticed en passant.
+
+1999-12-21  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* cdl/hal_powerpc_cogent.cdl: Ensure we "puts" to appropriate CDL header
+
+1999-12-20  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* cdl/hal_powerpc_cogent.cdl: Add -Wl for linker options.
 
 1999-11-25  Gary Thomas  <gthomas@cygnus.co.uk>
 

@@ -1,0 +1,115 @@
+# ====================================================================
+#
+#      watchdog.cdl
+#
+#      eCos watchdog configuration data
+#
+# ====================================================================
+#####COPYRIGHTBEGIN####
+#                                                                          
+# -------------------------------------------                              
+# The contents of this file are subject to the Red Hat eCos Public License 
+# Version 1.1 (the "License"); you may not use this file except in         
+# compliance with the License.  You may obtain a copy of the License at    
+# http://www.redhat.com/                                                   
+#                                                                          
+# Software distributed under the License is distributed on an "AS IS"      
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+# License for the specific language governing rights and limitations under 
+# the License.                                                             
+#                                                                          
+# The Original Code is eCos - Embedded Configurable Operating System,      
+# released September 30, 1998.                                             
+#                                                                          
+# The Initial Developer of the Original Code is Red Hat.                   
+# Portions created by Red Hat are                                          
+# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# All Rights Reserved.                                                     
+# -------------------------------------------                              
+#                                                                          
+#####COPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      jskov
+# Original data:  nickg
+# Contributors:
+# Date:           1999-07-13
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_DEVICES_WATCHDOG {
+    display       "Watchdog device"
+    requires      CYGVAR_KERNEL_COUNTERS_CLOCK
+    define_header watchdog.h
+    include_dir   cyg/devs
+    description   "
+	The watchdog device allows applications to make use of a
+	timer facility. First the application should register an
+	action routine with the watchdog device, and start the
+	watchdog running. After this the application must call a
+	watchdog reset function at regular intervals, or else the
+	device will cause the installed action routine to be
+	invoked. The assumption is that the watchdog timer should
+	never trigger unless there has been a serious fault in
+	either the hardware or the software, and the application's
+	action routine should perform an appropriate reset
+	operation."
+
+    compile       emulate.cxx
+    compile       mn10300.cxx 
+    compile       ebsa285.cxx
+    compile       sh.cxx
+
+    # FIXME: should only be editable when there are HW alternatives.
+    cdl_option CYGIMP_WATCHDOG_EMULATE {
+	display       "Watchdog emulator"
+        default_value 1
+	description   "
+	    When this option is enabled, a watchdog will be emulated using
+	    the kernel real-time clock."
+    }
+
+    cdl_component CYGPKG_DEVICES_WATCHDOG_OPTIONS {
+        display "Watchdog build options"
+        flavor  none
+        description   "
+	    Package specific build options including control over
+	    compiler flags used only in building this package,
+	    and details of which tests are built."
+
+
+        cdl_option CYGPKG_DEVICES_WATCHDOG_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the watchdog device. These flags are used in addition
+                to the set of global flags."
+        }
+
+        cdl_option CYGPKG_DEVICES_WATCHDOG_CFLAGS_REMOVE {
+            display "Supressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the watchdog device. These flags are removed from
+                the set of global flags if present."
+        }
+
+        cdl_option CYGPKG_DEVICES_WATCHDOG_TESTS {
+            display "Watchdog tests"
+            flavor  data
+            no_define
+            calculated { "tests/watchdog" }
+            description   "
+                This option specifies the set of tests for the watchdog device."
+        }
+    }
+}

@@ -126,7 +126,7 @@ test( CYG_ADDRWORD data )
                        "strftime test #9");
 
     size = strftime(s, 1000, "%m", &tm1);
-    CYG_TEST_PASS_FAIL((size==2) && !my_strcmp(s, "01"),
+    CYG_TEST_PASS_FAIL((size==2) && !my_strcmp(s, "02"),
                        "strftime test #10");
 
     size = strftime(s, 1000, "%M", &tm1);

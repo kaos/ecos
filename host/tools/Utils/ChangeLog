@@ -1,0 +1,131 @@
+2000-03-13 Simon FitzMaurice <sdf@redhat.co.uk>
+  * common\Collections.cpp
+    common\Properties.cpp
+    common\eCosStd.cpp
+    common\eCosStd.h
+    common\eCosThreadUtils.cpp
+    common\eCosThreadUtils.h
+    common\eCosTrace.cpp
+
+	Mark UNIX sections of code as such.
+	Correct bug in GetBuffer() - always allow enough space for allocation of *old* string.
+
+2000-03-10 Simon FitzMaurice <sdf@redhat.co.uk>
+  * common\eCosStd.cpp
+    common\eCosStd.h
+    common\eCosThreadUtils.cpp
+
+	Move CeCosTrace class to its own file
+
+  * win32\IntegerEdit.cpp
+
+  Eliminate compilation warning
+    
+	*	win32\SubProcess.cpp
+
+	Start on UNIX implementation
+
+2000-03-08 Simon FitzMaurice <sdf@redhat.co.uk>
+  * common\eCosThreadUtils.cpp
+
+  Correct compilation problem on UNIX.
+	
+2000-03-08 Simon FitzMaurice <sdf@redhat.co.uk>
+  * common\eCosThreadUtils.cpp
+    common\eCosThreadUtils.h
+
+  Add name argument to RunThread calls for debugging.
+
+2000-03-08 Simon FitzMaurice <sdf@redhat.co.uk>
+  * common\eCosStd.cpp
+    common\eCosStd.h
+    common\eCosThreadUtils.cpp
+    common\eCosThreadUtils.h
+
+	Avoid potential race condition in RunThread.
+
+2000-03-07 Simon FitzMaurice <sdf@redhat.co.uk>
+  * common\Collections.cpp
+    common\Collections.h
+    common\Properties.cpp
+    common\eCosStd.cpp
+    common\eCosStd.h
+    common\eCosThreadUtils.cpp
+    win32\SubProcess.cpp
+    win32\SubProcess.h
+
+	Use std::vector directly instead of StringArray, PtrArray
+	Introduce common command-line processing to CeCosTestUtils
+	Tidy output and trace functions and move to CeCosTrace
+	CSubprocess Run functions now return thread id and pass instead of this pointer to message callbacks.
+
+2000-03-03 Simon FitzMaurice <sdf@redhat.co.uk>
+  * common\Collections.cpp
+    common\Collections.h
+    common\Properties.cpp
+    common\Properties.h
+  
+  Thread-related eCosTest code extracted to new class CeCosThreadUtils  
+
+2000-03-02 Simon FitzMaurice <sdf@redhat.co.uk>
+  * common\Properties.cpp
+    common\Properties.h
+    win32\SubProcess.cpp
+    win32\SubProcess.h
+
+  Migrate more classes to Utils from eCosTest.
+  Use common CSubprocess class implementation.
+
+2000-02-29 Simon FitzMaurice <sdf@redhat.co.uk>
+  * common\Properties.h : CeCosTestUtils::String->String
+
+  * win32\CSHDialog.cpp
+    win32\CSHPropertyPage.cpp
+    win32\CSHPropertySheet.cpp : guard against unexpected rclick position
+
+  * win32\FileName.cpp : eliminate compilation warnings
+
+2000-02-25 Simon FitzMaurice <sdf@redhat.co.uk>
+  * common\Properties.cpp
+    common\Properties.h
+
+ Allow prefix to be supplied to support serialization chaining.
+
+2000-02-22 Simon FitzMaurice <sdf@redhat.co.uk>
+  * win32\IntegerEdit.cpp
+    win32\IntegerEdit.h
+
+  Keep spin control sized according to parent.
+
+2000-02-21 Simon FitzMaurice <sdf@redhat.co.uk>
+  * win32/MultiLineEditDialog.cpp
+
+  Add WS_TABSTOP to controls.
+
+2000-02-21 Simon FitzMaurice <sdf@redhat.co.uk>
+  * win32/IntegerEdit.cpp
+
+  Do not allow thousands in spin ctrl.
+
+2000-02-18 Simon FitzMaurice <sdf@redhat.co.uk>
+  * common\Properties.h
+
+  CreateKey should be Win32-only
+
+2000-02-16 Simon FitzMaurice <sdf@redhat.co.uk>
+  * common\Properties.cpp
+    common\Properties.h
+
+  Add support for defining platforms.
+
+2000-02-15 Simon FitzMaurice <sdf@redhat.co.uk>
+  * win32\CSHPropertyPage.cpp
+    win32\CSHPropertySheet.cpp
+
+  Prevent recursion via OnWndMsg
+
+  * win32\FileName.cpp
+    win32\FileName.h
+
+  Add bFailIfAlreadyExists parameter to CreateDirectory()
+

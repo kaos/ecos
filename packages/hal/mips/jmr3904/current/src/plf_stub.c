@@ -112,7 +112,7 @@ void hal_jmr_put_char( int c )
 // Read one character from the current serial port.
 int hal_jmr_get_char( void )
 {
-#ifdef CYG_HAL_MIPS_SIM
+#ifdef CYGPKG_HAL_MIPS_SIM
     // FIXME: ask nickg if this can go to /dev/null
     static char input[] = "+$s#73";
     static int i = 0;

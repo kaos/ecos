@@ -298,7 +298,9 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 # define CYGBLD_ATTRIB_NORET
     // This intentionally gives an error only if we actually try to
     // use it.  #error would give an error if we simple can't.
-# define CYGBLD_ATTRIB_WEAK !!!-- Attribute weak not defined --!!!
+// FIXME: Had to disarm the bomb - the CYGBLD_ATTRIB_WEAK macro is now
+//        (indirectly) used in host tools.
+# define CYGBLD_ATTRIB_WEAK /* !!!-- Attribute weak not defined --!!! */
 
 # define CYGBLD_ATTRIB_ALIAS(__x__) !!!-- Attribute alias not defined --!!!
 

@@ -1,0 +1,230 @@
+# ====================================================================
+#
+#      stdlib.cdl
+#
+#      C library stdlib related configuration data
+#
+# ====================================================================
+#####COPYRIGHTBEGIN####
+#                                                                          
+# -------------------------------------------                              
+# The contents of this file are subject to the Red Hat eCos Public License 
+# Version 1.1 (the "License"); you may not use this file except in         
+# compliance with the License.  You may obtain a copy of the License at    
+# http://www.redhat.com/                                                   
+#                                                                          
+# Software distributed under the License is distributed on an "AS IS"      
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+# License for the specific language governing rights and limitations under 
+# the License.                                                             
+#                                                                          
+# The Original Code is eCos - Embedded Configurable Operating System,      
+# released September 30, 1998.                                             
+#                                                                          
+# The Initial Developer of the Original Code is Red Hat.                   
+# Portions created by Red Hat are                                          
+# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# All Rights Reserved.                                                     
+# -------------------------------------------                              
+#                                                                          
+#####COPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      jskov
+# Original data:  jlarmour
+# Contributors:
+# Date:           1999-07-06
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_option CYGIMP_LIBC_STDLIB_INLINES {
+    display       "Inline versions of <stdlib.h> functions"
+    default_value 1
+    description   "
+        This option chooses whether some of the
+        particularly simple standard utility functions
+        from <stdlib.h> are available as inline
+        functions. This may improve performance, and as
+        the functions are small, may even improve code
+        size."
+}
+
+cdl_component CYGPKG_LIBC_RAND {
+    display       "Random number generation"
+    flavor        none
+    description   "
+        These options control the behaviour of the
+        functions rand(), srand() and rand_r()"
+
+    cdl_option CYGSEM_LIBC_PER_THREAD_RAND {
+        display       "Per-thread random seed"
+        requires      CYGVAR_KERNEL_THREADS_DATA
+        default_value 0
+        description   "
+            This option controls whether the pseudo-random
+            number generation functions rand() and srand()
+            have their state recorded on a per-thread
+            basis rather than global. If this option is
+            disabled, some per-thread space can be saved.
+            Note there is also a POSIX-standard rand_r()
+            function to achieve a similar effect with user
+            support. Enabling this option will use one slot
+            of kernel per-thread data. You should ensure you
+            have enough slots configured for all your
+            per-thread data."
+    }
+
+    cdl_option CYGNUM_LIBC_RAND_SEED {
+        display       "Random number seed"
+        flavor        data
+        legal_values  0 to 0x7fffffff
+        default_value 1
+        description   "
+            This selects the initial random number seed for
+            rand()'s pseudo-random number generator. For
+            strict ISO standard compliance, this should be 1,
+            as per section 7.10.2.2 of the standard."
+    }
+
+    cdl_option CYGNUM_LIBC_RAND_TRACE_LEVEL {
+        display       "Tracing level"
+        flavor        data
+        legal_values  0 to 1
+        default_value 0
+        description   "
+            Trace verbosity level for debugging the rand(),
+            srand() and rand_r() functions. Increase this
+            value to get additional trace output."
+    }
+
+    cdl_interface CYGINT_LIBC_RAND {
+        requires 1 == CYGINT_LIBC_RAND
+    }
+
+    cdl_option CYGIMP_LIBC_RAND_SIMPLEST {
+        display "Simplest implementation"
+        flavor bool
+        default_value 0
+		implements CYGINT_LIBC_RAND
+        description "
+            This provides a very simple implementation of rand()
+                          that does not perform well with randomness in the
+                          lower significant bits. However it is exceptionally
+                          fast. It uses the sample algorithm from the ISO C
+                          standard itself."
+    }
+
+    cdl_option CYGIMP_LIBC_RAND_SIMPLE1 {
+        display "Simple implementation #1"
+        flavor bool
+        default_value 1
+		implements CYGINT_LIBC_RAND
+        description "
+            This provides a very simple implementation of rand()
+                          based on the simplest implementation above. However
+                          it does try to work around the lack of randomness
+                          in the lower significant bits, at the expense of a
+                          little speed."
+    }
+
+    cdl_option CYGIMP_LIBC_RAND_KNUTH1 {
+        display "Knuth implementation #1"
+        flavor bool
+        default_value 0
+		implements CYGINT_LIBC_RAND
+        description "
+            This implements a slightly more complex algorithm
+                          published in Donald E. Knuth's Art of Computer
+                          Programming Vol.2 section 3.6 (p.185 in the 3rd ed.).
+                          This produces better random numbers than the
+                          simplest approach but is slower."
+    }
+}
+
+cdl_component CYGPKG_LIBC_MALLOC {
+    display      "Support for dynamic memory allocation"
+    flavor        bool
+    requires      CYGPKG_KERNEL
+    default_value 1
+    description   "
+        This enables support for dynamic memory
+        allocation as supplied by the functions malloc(),
+        free(), calloc() and realloc(). As these
+        functions are often used, but can have quite an
+        overhead, disabling them here can ensure they
+        cannot even be used accidentally when static
+        allocation is preferred."
+    
+
+    cdl_option CYGNUM_LIBC_MALLOC_MEMPOOL_SIZE {
+        display       "Size of the dynamic memory pool in bytes"
+        flavor        data
+        legal_values  32 to 0x7fffffff
+        default_value 16384
+        description   "
+            At this stage, dynamic memory allocation by
+            malloc() and calloc() must be from a fixed-size,
+            contiguous memory pool (note here that it is the
+            pool that is of a fixed size, but malloc() is still
+            able to allocate variable sized chunks of memory
+            from it). This option is the size
+            of that pool, in bytes. Note that not all of
+            this is available for programs to
+            use - some is needed for internal information
+            about memory regions, and some may be lost to
+            ensure that memory allocation only returns
+            memory aligned on word (or double word)
+            boundaries - a very common architecture
+            constraint."
+    }
+
+    cdl_option CYGIMP_LIBC_MALLOC_CXX_DELETE_CALLS_FREE {
+        display       "Support for C++ delete operator"
+        default_value 0
+        description   "
+            C++ new and delete operators can call
+            the C library's malloc() and free() implicitly.
+            If this is what is required, enable this option.
+            However, if enabled, the dynamic memory allocation 
+            code is always linked in to the application,
+            even if it is not explicitly called and new/delete
+            are not used.
+            This increases code and data size needlessly."
+    }
+}
+cdl_option CYGFUN_LIBC_strtod {
+    display       "Provides strtod() and atof()"
+    requires      CYGPKG_LIBM
+    default_value 1
+    description   "
+        This option allows use of the utility function
+        strtod() (and consequently atof()) to convert
+        from string to double precision floating point
+        numbers. Disabling this option removes the
+        dependency on the math library package."
+}
+
+cdl_option CYGNUM_LIBC_BSEARCH_TRACE_LEVEL {
+    display       "bsearch() tracing level"
+    flavor        data
+    legal_values  0 to 1
+    default_value 0
+    description   "
+        Trace verbosity level for debugging the <stdlib.h>
+        binary search function bsearch(). Increase this
+        value to get additional trace output."
+}
+
+cdl_option CYGNUM_LIBC_QSORT_TRACE_LEVEL {
+    display       "qsort() tracing level"
+    flavor        data
+    legal_values  0 to 1
+    default_value 0
+    description   "
+        Trace verbosity level for debugging the <stdlib.h>
+        quicksort function qsort(). Increase this value
+        to get additional trace output."
+}

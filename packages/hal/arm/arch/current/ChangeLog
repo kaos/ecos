@@ -1,3 +1,21 @@
+2000-03-23  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_arch.h: workaround for CPP problem
+
+2000-03-01  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* cdl/hal_arm.cdl: 
+	Implement CYGINT_HAL_DIAG_DISABLE_GDB_PROTOCOL_SUPPORTED.
+	
+2000-02-29  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/arm_stub.h: Make header C++ safe
+
+2000-02-28  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/hal_misc.c: Use standard 'diag_dump_buf()' instead of
+	private version.
+
 2000-02-16  Jesper Skov  <jskov@redhat.com>
 
 	* src/arm_stub.c: CYG_HAL_ARM -> CYGPKG_HAL_ARM
@@ -7,6 +25,15 @@
 	* src/vectors.S (reset_platform):
 	Removed handling of stubs startup type.
 
+2000-02-09  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm.cdl: Removed some fix mes.
+
+2000-02-01  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/hal_arm.cdl: Add missing CYGIMP_HAL_PROCESS_ALL_EXCEPTIONS
+	options from include/pkgconf/hal_arm.h
+
 2000-02-01  Jesper Skov  <jskov@redhat.com>
 
 	* src/vectors.S: Treat ROM startup+ROM monitor as STUBS startup.
@@ -14,20 +41,46 @@
 	* src/arm.ld: Changed PID BE workaround to work with ROM startup.
 	Not just when building stubs.
 	
+2000-01-26  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/hal_misc.c (exception_handler): Replace CYGDAT_CYGMON_ENABLE
+	dependency with just CYGPKG_CYGMON
+	* src/arm_stub.c (__clear_breakpoints): Likewise
+
 1999-12-16  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/arm.ld: Include all SRAM (*.sram*) sections.
+
+1999-12-09  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm.cdl: Add big-endian option.
 
 1999-12-08  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/arm.ld: Add ".sram" section support (used by platforms
 	that have separate SRAM and DRAM).
 
+1999-12-07  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* cdl/hal_arm.cdl: Added ARM7/ARM9 family option.
+
 1999-12-06  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/vectors.S (software_interrupt): Context save was incorrect
 	for this mode.  Note that when entering from supervisor mode, the
 	link register (LR) is destroyed.
+
+1999-12-02  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm.cdl:
+
+	Use the <PACKAGE> token in custom rules.
+
+1999-12-01  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm.cdl:
+
+	Use the <PREFIX> token in custom rules.
 
 1999-11-22  Gary Thomas  <gthomas@cygnus.co.uk>
 
@@ -49,17 +102,91 @@
 	* src/vectors.S (reset_platform): New function used to reset board
 	in the absense of real hardware reset (not possible on all boards).
 
+1999-11-11  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm.cdl:
+
+	Generate 'arm.inc' in the build tree.
+
+1999-11-05  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm.cdl:
+
+	Add complete dependency analysis to the custom
+	rule for 'arm.inc'.
+
+1999-11-04  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm.cdl:
+
+	Tidy up custom rules.
+
+1999-11-04  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm.cdl:
+
+	Output custom rule dependency information to .deps files in
+	the current directory.
+
+	Dispense with the need to create a 'src' sub-directory.
+
 1999-11-01  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/hal_misc.c (exception_handler): Check for CYGDAT_CYGMON_ENABLE
 	rather than just CYGPKG_CYGMON
 	Include <pkgconf/cygmon.h> to get this define
 
+1999-10-29 Simon FitzMaurice <sdf@cygnus.co.uk>
+
+	* cdl/hal_arm.cdl:
+
+	Use fgrep instead of grep in custom rules.  The latter seems
+	to behave weirdly under win32.
+
+1999-10-27  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/arm_stub.c: Fix typo (CYGDAT_CYGMON_ENABLE).  Also need
+	to include <pkgconf/cygmon.h>
+
+1999-10-27  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/arm_stub.c: Add explicit enable for CygMon package.
+
+1999-10-27  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/arm_stub.c (cyg_hal_gdb_interrupt): Bugfix to previous: ^Cs
+	were being ignored when received by the diag output code, because
+	there was already a break in place.  Solution is to let
+	cyg_hal_gdb_interrupt() override any previous break, and tidy up
+	state of course.
+
+1999-10-26  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/arm_stub.c (cyg_hal_gdb_place_break): Add this to the
+	ARM-specific GDB stub code.  See hal/common/.../hal_stub for
+	details.
+
+1999-10-26  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm.cdl:
+
+	Invoke 'sh' version of 'mkdir' explicitly in custom rules.
+
 1999-10-26  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* src/vectors.S: Cleaned up LED code a bit.
 
 1999-10-25  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/hal_misc.c (exception_handler): If building for CygMon, defer
+	exception processing to it, not here.
+
+	* src/arm_stub.c (__install_breakpoints, __clear_breakpoints): 
+	Leave out these [dummy] functions if building CygMon.
+
+	* include/pkgconf/hal_arm.h: Add new configuration option to let
+	programs which do not include GDB stubs still process "illegal
+	instruction" exceptions.
 
 	* src/vectors.S: Reorder context restore so stack changes are
 	protected (interrupts off).
@@ -71,6 +198,13 @@
 	
 	* src/vectors.S (LED): Added definition for PID board.
 
+1999-10-26  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm.cdl:
+
+	Modify custom make rules to specify file paths relative
+	to the package version directory.
+
 1999-10-22  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/arm_stub.c (cyg_hal_gdb_running_step):
@@ -81,6 +215,13 @@
 
 	* include/hal_arch.h: Tidy a bit so the breakpoint instruction is only
 	defined in one place
+	Change thumb breakpoint instruction to 0xbebe
+
+1999-10-18  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm.cdl:
+
+	Add cdl_option CYGHWR_THUMB.
 
 1999-10-14  Jesper Skov  <jskov@cygnus.co.uk>
         From James Ingham <jingham@cygnus.com>:
@@ -94,6 +235,22 @@
 
 	* src/arm.ld (SECTION_bss): Make *(.bss*) rather than just .bss, to
 	cater for nickc's BSS gc improvements.
+
+1999-10-06  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/basetype.h: Set endian to BE if required.
+
+1999-10-05  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/arm.ld: Force output format to BE if required.
+
+1999-09-30  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S: Add thumb_func before thumb code where switching
+	so GDB/objdump knows how to disassemble it.
+	* include/hal_arch.h: Change thumb breakpoint to undefined
+	instruction.
+	* src/arm_stub.c (target_thumb_ins): Corrected branch offsets.
 
 1999-09-23  Gary Thomas  <gthomas@cygnus.co.uk>
 
@@ -116,6 +273,39 @@
 	memory exceptions.  This allows proper handling when an application
 	has it's own IRQ/FIQ VSR.
 
+1999-09-16  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/arm.ld: Handle thumb glue sections.
+
+1999-09-16  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S: Always include thumb exception support.
+
+1999-09-15  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/context.S: Don't trash r0 which holds the thread's initial
+	argument.
+
+	* include/hal_arch.h: 
+	* src/arm_stub.c: 
+	Added thumb-aware GDB interrupt functions.
+	
+1999-09-14  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S (undefined_instruction): Adjusted wrong register.
+	* src/arm_stub.c (target_thumb_ins): Set thumb flag when required.
+	(target_ins): Added BX handling.
+
+	* src/vectors.S:
+	* include/hal_arch.h: 
+	* src/hal_mk_defs.c:
+	* src/arm_stub.c (__single_step): 
+	Determine thumb mode by looking at T bit.
+
+1999-09-10  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/arm_stub.c (target_thumb_ins): BL is a double instruction.
+
 1999-09-13  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/vectors.S (handle_IRQ_or_FIQ): Allow spurious interrupts
@@ -134,6 +324,17 @@
 	* src/vectors.S (start): Moved stub vector changeover to after
 	stub init.
 
+1999-09-09  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_arch.h (HAL_BREAKPOINT):
+	* src/arm_stub.c:
+	* src/vectors.S:
+	Added thumb stub support (except C-c support).
+	
+1999-08-24  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/vectors.S: Fix misc THUMB procedures.
+
 1999-08-24  Hugo Tyson  <hmt@masala.cygnus.co.uk>
 
 	* src/vectors.S (handle_IRQ_or_FIQ): Set up the pointer-to-regset
@@ -142,11 +343,24 @@
 	incoming that way - the ISR needs a regset to know where to plant
 	a breakpoint to stop the system in the interrupted context.
 
+1999-08-24  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S (LED): Check XBUS setting jumper and behave
+	accordingly.
+
 1999-08-23  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* src/arm_stub.c 
 	(target_ins): Check whether branches execute.
 	(ins_will_execute): Fixed HI and LS.
+
+1999-08-13  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm.cdl: Add path to CYGBLD_LINKER_SCRIPT value.
+
+1999-08-12  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm.cdl: Define CYGBLD_LINKER_SCRIPT.
 
 1999-08-12  Jesper Skov  <jskov@cygnus.co.uk>
 
@@ -203,10 +417,22 @@
 	Renumber VSR symbols to match.  Do not use the external
 	"hal_vsr_table" symbol.
 
+1999-07-15  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/vectors.S (reset_vector): Invalidate and disable caches for
+	EBSA-285 startup is now in PLATFORM_SETUP1 as intended.  Cache
+	enabling is in hal_hardware_init; so, same results as before, but
+	tidier.
+
 1999-07-14  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/vectors.S: Add some startup debug via a LED macro - which
 	has different content depending on platform, of course.
+	For the EBSA-285, flush caches when writing vectors and the like,
+	since RAM startup occurs with caches enabled, otherwise you get
+	mysterious traps as CygMon is entered regardless at the first
+	clock tick, for example.  This may be taken out again as ROM
+	startup is dealt with via PLATFORM_SETUP1, but for now...
 
 1999-06-22  Gary Thomas  <gthomas@cygnus.co.uk>
 
@@ -214,6 +440,12 @@
 	for various exceptions).  These needed changes for two reasons:
 	name pollution and naming clashes after new ABI adopted.
 	Improve support for FIQ interrupts.
+
+1999-06-16  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/vectors.S: Add ".pool" directives which cause assembler 
+	to dump it's literal pool early.  This is necessary because
+	of the limited addressing available in THUMB mode.
 
 1999-06-15  Gary Thomas  <gthomas@cygnus.co.uk>
 
@@ -228,6 +460,13 @@
 
 	* src/vectors.S (_eCos_id): Add version string.  Useful for
 	tracking when a system was configured (especially ROMs).
+	Add initial pure-thumb support - only for kernel+application
+	in thumb mode.
+	
+	* include/hal_intr.h: Update interrupt support macros for
+	thumb mode system.
+
+	* src/context.S: Add initial pure-thumb mode support.
 
 1999-05-21  Hugo Tyson  <hmt@cygnus.co.uk>
 
@@ -242,6 +481,11 @@
 1999-05-19  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/arm.ld: Change symbols to match new no-underscore ABI.
+
+1999-05-19  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/hal_intr.h: Define interrupt support functions for 
+	Thumb mode.
 
 1999-05-16  Gary Thomas  <gthomas@cygnus.co.uk>
 

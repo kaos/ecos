@@ -44,6 +44,9 @@
 //
 //========================================================================
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define NUMREGS    32
 
@@ -54,6 +57,11 @@ typedef unsigned long target_register_t;
 enum regnames {
   D0, D1, D2, D3, A0, A1, A2, A3,
   SP, PC, MDR, PSW, LIR, LAR
+#ifdef CYGPKG_HAL_MN10300_AM33
+  , XXX, /* unused offset */
+  R0, R1, R2, R3, R4, R5, R6, R7,
+  SSP, MSP, USP, MCRH, MCRL, MCVF
+#endif  
 };
 
 typedef enum regnames regnames_t;
@@ -92,5 +100,9 @@ extern void __skipinst (void);
 extern void __install_breakpoints (void);
 
 extern void __clear_breakpoints (void);
+
+#ifdef __cplusplus
+}   /* extern "C" */
+#endif
 
 #endif // ifndef CYGONCE_HAL_MN10300_STUB_H

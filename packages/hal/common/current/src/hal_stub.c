@@ -94,26 +94,42 @@ put_register (regnames_t which, target_register_t value)
 
 //-----------------------------------------------------------------------------
 // Serial stuff
+#ifdef CYGPKG_CYGMON
+extern void ecos_bsp_console_putc(char);
+extern char ecos_bsp_console_getc(void);
+#endif
 
 // Write C to the current serial port.
 void 
 putDebugChar (int c)
 {
+#ifdef CYGPKG_CYGMON
+    ecos_bsp_console_putc(c);
+#else
     HAL_STUB_PLATFORM_PUT_CHAR(c);
+#endif
 }
 
 // Read one character from the current serial port.
 int 
 getDebugChar (void)
 {
+#ifdef CYGPKG_CYGMON
+    return ecos_bsp_console_getc();
+#else
     return HAL_STUB_PLATFORM_GET_CHAR();
+#endif
 }
 
 // Set the baud rate for the current serial port.
 void 
 __set_baud_rate (int baud) 
 {
+#ifdef CYGPKG_CYGMON
+    // FIXME!
+#else
     HAL_STUB_PLATFORM_SET_BAUD_RATE(baud);
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -121,6 +137,7 @@ __set_baud_rate (int baud)
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
 
+#ifndef CYGPKG_HAL_ARM
 
 #if (HAL_BREAKINST_SIZE == 1)
 typedef cyg_uint8 t_inst;
@@ -193,6 +210,7 @@ cyg_hal_gdb_break_is_set (void)
     return 0;
 }
 
+#endif // CYGPKG_HAL_ARM
 
 #endif // CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
 
@@ -323,6 +341,7 @@ initHardware (void)
     if (!initialized) {
         initialized = 1;
 
+#if !defined(CYGPKG_CYGMON)
 #ifdef HAL_STUB_PLATFORM_INIT
         // If the platform defines any initialization code, call it here.
         HAL_STUB_PLATFORM_INIT();
@@ -335,6 +354,7 @@ initHardware (void)
         // Get interrupt handler initialized.
         HAL_STUB_PLATFORM_INIT_BREAK_IRQ();
 #endif
+#endif // CYGPKG_CYGMON
     }
 }
 
@@ -342,7 +362,9 @@ initHardware (void)
 void 
 __reset (void)
 {
+#if !defined(CYGPKG_CYGMON)
     HAL_STUB_PLATFORM_RESET();
+#endif
 }
 
 //-----------------------------------------------------------------------------

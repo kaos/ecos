@@ -81,7 +81,14 @@ externC void hal_mbx_set_led( int val );
 
 //----------------------------------------------------------------------------
 // Reset.
-#define HAL_STUB_PLATFORM_RESET()             CYG_EMPTY_STATEMENT
+#ifdef CYGSEM_HAL_ROM_MONITOR
+// Just call the ROM's entry point. Not as safe as a reset, but the MBX
+// doesn't have a watchdog, so this'll have to do.
+externC void _start(void);
+#define HAL_STUB_PLATFORM_RESET() _start()
+#else
+#define HAL_STUB_PLATFORM_RESET() CYG_EMPTY_STATEMENT
+#endif
 
 #define HAL_STUB_PLATFORM_INTERRUPTIBLE  0
 

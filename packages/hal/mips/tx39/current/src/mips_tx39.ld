@@ -142,10 +142,11 @@ GROUP(libtarget.a libgcc.a)
     SORT (CONSTRUCTORS) \
     . = ALIGN (8); \
     __DEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.devtab*))) __DEVTAB_END__ = ABSOLUTE (.); \
+    __NETDEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.netdevtab*))) __NETDEVTAB_END__ = ABSOLUTE (.); \
     . = ALIGN (8); \
     _GOT_START = ABSOLUTE (.); _gp = ABSOLUTE (.); __global = _gp; _GLOBAL_OFFSET_TABLE_ = ABSOLUTE (.); _SDA_BASE_ = ABSOLUTE (.); \
     *(.got.plt) *(.got) _GOT_END_ = ABSOLUTE (.); \
-    *(.dynamic) *(.sdata*) *(.sbss*) *(.eh_frame) } \
+    *(.dynamic) *(.sdata*) *(.sbss*) *(.lit8) *(.lit4) *(.eh_frame) } \
     > _region_ \
     __rom_data_start = LOADADDR (.data); \
     __ram_data_end = .; PROVIDE (__ram_data_end = .); _edata = .; PROVIDE (edata = .);

@@ -80,11 +80,16 @@
 #include <cyg/compat/uitron/uit_func.h> // uITRON
 #include <cyg/compat/uitron/uit_ifnc.h> // uITRON interrupt funcs
 
+void set_interrupt_number( void );
+
+unsigned int clock_interrupt = 0;
+
 externC void
 cyg_package_start( void )
 {
     CYG_TEST_INIT();
     CYG_TEST_INFO( "Calling cyg_uitron_start()" );
+    set_interrupt_number();
     cyg_uitron_start();
 }
 
@@ -309,6 +314,109 @@ void task1( unsigned int arg )
 #ifndef CYGPKG_HAL_I386_LINUX
         smalldelay = SMALLDELAYSIM;
 #endif
+    }
+
+    // First test that dis_int() and ena_int() work for the clock interrupt
+#ifdef CYGSEM_UITRON_BAD_PARAMS_RETURN_ERRORS
+    ercd = ena_int( 123456789 ); // Hope this is large enough to error
+    CYG_TEST_CHECK( E_PAR == ercd, "ena_int bad ercd !E_PAR" );
+    ercd = dis_int( 123456789 );
+    CYG_TEST_CHECK( E_PAR == ercd, "dis_int bad ercd !E_PAR" );
+#endif
+
+    // This may take too long on a sim...
+    if ( ! cyg_test_is_simulator ) {
+        SYSTIME t1, t2;
+
+        CYG_TEST_INFO( "Testing masking of clock interrupt" );
+
+        ercd = get_tim( &t1 );
+        CYG_TEST_CHECK( E_OK == ercd, "get_tim bad ercd" );
+
+        // Wait for a tick
+        for ( loops = 0; loops < 10000000; loops++ ) {
+            ercd = get_tim( &t2 );
+            CYG_TEST_CHECK( E_OK == ercd, "get_tim bad ercd" );
+            if ( t2 != t1 )
+                break;
+        }
+        // and a second one
+        for (          ; loops < 10000000; loops++ ) {
+            ercd = get_tim( &t1 );
+            CYG_TEST_CHECK( E_OK == ercd, "get_tim bad ercd" );
+            if ( t2 != t1 )
+                break;
+        }
+
+        intercom = loops * 2; // save how long it took, plus a bit
+
+        ercd = ena_int( clock_interrupt ); // was initialized already
+        CYG_TEST_CHECK( E_OK == ercd, "ena_int bad ercd" );
+
+        ercd = get_tim( &t1 );
+        CYG_TEST_CHECK( E_OK == ercd, "get_tim bad ercd" );
+
+        // Wait for a tick
+        for ( loops = intercom; loops > 0; loops-- ) {
+            ercd = get_tim( &t2 );
+            CYG_TEST_CHECK( E_OK == ercd, "get_tim bad ercd" );
+            if ( t2 != t1 )
+                break;
+        }
+        CYG_TEST_CHECK( 0 < loops, "No first tick" );
+        // and a second one
+        for (                 ; loops > 0; loops-- ) {
+            ercd = get_tim( &t1 );
+            CYG_TEST_CHECK( E_OK == ercd, "get_tim bad ercd" );
+            if ( t2 != t1 )
+                break;
+        }
+        CYG_TEST_CHECK( 0 < loops, "No second tick" );
+        
+        // The PowerPC cannot disable the timer interrupt (separately).
+#ifndef CYGPKG_HAL_POWERPC
+        ercd = dis_int( clock_interrupt ); // was initialized already
+        CYG_TEST_CHECK( E_OK == ercd, "dis_int bad ercd" );
+
+        ercd = get_tim( &t1 );
+        CYG_TEST_CHECK( E_OK == ercd, "get_tim bad ercd" );
+
+        // Wait for a tick (should not happen)
+        for ( loops = intercom; loops > 0; loops-- ) {
+            ercd = get_tim( &t2 );
+            CYG_TEST_CHECK( E_OK == ercd, "get_tim bad ercd" );
+            if ( t2 != t1 )
+                break;
+        }
+        CYG_TEST_CHECK( 0 == loops, "A tick occured - should be masked" );
+        CYG_TEST_CHECK( t1 == t2, "Times are different" );
+
+        // Now enable it again and ensure all is well:
+        ercd = ena_int( clock_interrupt );
+        CYG_TEST_CHECK( E_OK == ercd, "ena_int bad ercd" );
+#endif
+
+        ercd = get_tim( &t1 );
+        CYG_TEST_CHECK( E_OK == ercd, "get_tim bad ercd" );
+
+        // Wait for a tick
+        for ( loops = intercom; loops > 0; loops-- ) {
+            ercd = get_tim( &t2 );
+            CYG_TEST_CHECK( E_OK == ercd, "get_tim bad ercd" );
+            if ( t2 != t1 )
+                break;
+        }
+        CYG_TEST_CHECK( 0 < loops, "No first tick" );
+        // and a second one
+        for (                 ; loops > 0; loops-- ) {
+            ercd = get_tim( &t1 );
+            CYG_TEST_CHECK( E_OK == ercd, "get_tim bad ercd" );
+            if ( t2 != t1 )
+                break;
+        }
+        CYG_TEST_CHECK( 0 < loops, "No second tick" );
+
+        CYG_TEST_PASS( "dis_int(), ena_int() OK" );
     }
 
     intercom = 0;
@@ -633,6 +741,10 @@ void task4( unsigned int arg )
 #include <cyg/kernel/sched.hxx>
 #include <cyg/kernel/sched.inl>
 
+void set_interrupt_number( void )
+{
+    clock_interrupt = CYGNUM_HAL_INTERRUPT_RTC;
+}
 
 // This snippet stolen from kernel/.../clock.cxx to be able to detach
 // the RTC from its interrupt source.

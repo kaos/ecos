@@ -82,7 +82,7 @@
 #include <pkgconf/libc.h>   // Configuration header
 
 // Include the C library? And do we want the stdio stuff?
-#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_STDIO)
+#if defined(CYGPKG_LIBC_STDIO)
 
 // INCLUDES
 
@@ -91,7 +91,6 @@
 #include <stdio.h>                // Standard header for all stdio files
 #include "clibincl/stringsupp.hxx"// _memchr() and _strlen() functions
 #include "clibincl/stream.hxx"    // C library streams
-
 
 // EXPORTED SYMBOLS
 
@@ -161,7 +160,6 @@ __mbtowc(char *pwc, const char *s, size_t n)
         return (*s != '\0');
 }
 
-
 externC int 
 _vfnprintf ( FILE *stream, size_t n, const char *format, va_list arg)
 {
@@ -206,26 +204,40 @@ _vfnprintf ( FILE *stream, size_t n, const char *format, va_list arg)
         static char zeroes[PADSIZE] =
          {'0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'};
 
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+
         /*
          * BEWARE, these `goto error' on error, and PAD uses `n'.
          */
-#define PRINT(ptr, len) { cyg_ucount32 length = len; \
-             if (((Cyg_StdioStream *)stream)->write( (const cyg_uint8 *)ptr, \
-                                               (cyg_ucount32) len, &length )) \
-                goto error; }
+#define PRINT(ptr, len)                                                      \
+CYG_MACRO_START                                                              \
+    cyg_ucount32 length = MIN( (cyg_ucount32) len, n - ret - 1);             \
+    if (((Cyg_StdioStream *)stream)->write( (const cyg_uint8 *)ptr,          \
+                                            length, &length ))               \
+        goto error;                                                          \
+    if (length < (cyg_ucount32)len) {                                        \
+        ret += length;                                                       \
+        goto done;                                                           \
+    }                                                                        \
+CYG_MACRO_END
 
 
-#define PAD(howmany, with) { \
-        if ((x = (howmany)) > 0) { \
-                while (x > PADSIZE) { \
-                        PRINT(with, PADSIZE); \
-                        x -= PADSIZE; \
-                } \
-                PRINT(with, x); \
-        } \
-}
-#define FLUSH() { if (((Cyg_StdioStream *)stream)->flush_output()) \
-                     goto error; }
+#define PAD(howmany, with)                                                   \
+CYG_MACRO_START                                                              \
+    if ((x = (howmany)) > 0) {                                               \
+        while (x > PADSIZE) {                                                \
+            PRINT(with, PADSIZE);                                            \
+            x -= PADSIZE;                                                    \
+        }                                                                    \
+        PRINT(with, x);                                                      \
+    }                                                                        \
+CYG_MACRO_END
+
+#define FLUSH()                                                              \
+CYG_MACRO_START                                                              \
+    if (((Cyg_StdioStream *)stream)->flush_output())                         \
+                     goto error;                                             \
+CYG_MACRO_END
 
         /*
          * To extend shorts properly, we need both signed and unsigned
@@ -599,39 +611,55 @@ number:                 if ((dprec = prec) >= 0)
                 realsz = dprec > fieldsz ? dprec : fieldsz;
 
                 /* right-adjusting blank padding */
-                if ((flags & (LADJUST|ZEROPAD)) == 0)
+                if ((flags & (LADJUST|ZEROPAD)) == 0) {
+                    if (width - realsz > 0) {
                         PAD(width - realsz, blanks);
+                        ret += width - realsz;
+                    }
+                }
 
                 /* prefix */
                 if (sign) {
                         PRINT(&sign, 1);
+                        ret++;
                 } else if (flags & HEXPREFIX) {
                         ox[0] = '0';
                         ox[1] = ch;
                         PRINT(ox, 2);
+                        ret += 2;
                 }
 
                 /* right-adjusting zero padding */
-                if ((flags & (LADJUST|ZEROPAD)) == ZEROPAD)
+                if ((flags & (LADJUST|ZEROPAD)) == ZEROPAD) {
+                    if (width - realsz > 0) {
                         PAD(width - realsz, zeroes);
+                        ret += width - realsz;
+                    }
+                }
 
-                /* leading zeroes from decimal precision */
-                PAD(dprec - fieldsz, zeroes);
+                if (dprec - fieldsz > 0) {
+                    /* leading zeroes from decimal precision */
+                    PAD(dprec - fieldsz, zeroes);
+                    ret += dprec - fieldsz;
+                }
 
                 /* the string or number proper */
                 PRINT(cp, size);
+                ret += size;
 
 #ifdef CYGSEM_LIBC_STDIO_PRINTF_FLOATING_POINT
                 /* trailing f.p. zeroes */
                 PAD(fpprec, zeroes);
+                ret += fpprec;
 #endif
 
                 /* left-adjusting padding (always blank) */
-                if (flags & LADJUST)
+                if (flags & LADJUST) {
+                    if (width - realsz > 0) {
                         PAD(width - realsz, blanks);
-
-                /* finally, adjust ret */
-                ret += width > realsz ? width : realsz;
+                        ret += width - realsz;
+                    }
+                }
 
                 FLUSH();        /* copy out the I/O vectors */
         }

@@ -201,11 +201,8 @@ FUNC_START(_start)
 	# Call cyg_start	
 	
 	.extern	cyg_start
-	jal	cyg_start
-	nop
-
-9:	b	9b		# Loop if we return
-	nop			# (delay slot)
+	j	cyg_start
+        lui     ra,0
 	
 FUNC_END(_start	)
 
