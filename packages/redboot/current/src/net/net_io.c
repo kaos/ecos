@@ -577,6 +577,7 @@ show_addrs(void)
     diag_printf("\n");
 }
 
+#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
 static void
 flash_get_IP(char *id, ip_addr_t *val)
 {
@@ -591,6 +592,7 @@ flash_get_IP(char *id, ip_addr_t *val)
             (*val)[i] = my_ip[i];
     }        
 }
+#endif
 
 void
 net_init(void)
