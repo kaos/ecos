@@ -53,7 +53,7 @@ cdl_package CYGPKG_LIBC_STRING {
     description   "
         This package provides string functions specified by the
         ISO C standard - ISO/IEC 9899:1990."
-    doc           redirect/the-iso-standard-c-and-math-libraries.html
+    doc           ref/libc.html
     include_dir   cyg/libc/string  
     parent        CYGPKG_LIBC
     implements    CYGINT_ISO_STRTOK_R

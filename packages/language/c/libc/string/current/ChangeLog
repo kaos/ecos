@@ -1,3 +1,7 @@
+2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/string.cdl: Fix doc link.
+
 2001-11-27  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/string.cdl (CYGFUN_LIBC_STRING_BSD_FUNCS): New option to indicate
