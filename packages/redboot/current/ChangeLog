@@ -1,4 +1,10 @@
 2003-06-24  Jeroen Dobbelaere  <jeroen.dobbelaere@acunia.com>
+2003-06-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/net/tftp_client.c: Define tftp_stream.last_good_block to
+	permit downloads > 32MB.
+	(tftp_ack): Allow last_good_block to wrap.
+	(tftp_stream_read): Ditto.
 
 	* src/net/bootp.c: Use correct DHCP message type for DHCPREQUEST.
 

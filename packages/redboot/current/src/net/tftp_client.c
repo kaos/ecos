@@ -66,7 +66,7 @@ static int get_port = 7700;
 static struct {
     bool open;
     int  total_timeouts, packets_received;
-    unsigned short last_good_block;
+    unsigned long last_good_block;
     int  avail, actual_len;
     struct sockaddr_in local_addr, from_addr;
     char data[SEGSIZE+sizeof(struct tftphdr)];
@@ -145,7 +145,7 @@ tftp_ack(int *err)
     // ACK last packet so server can shut down
     if (tftp_stream.packets_received > 0) {
         hdr->th_opcode = htons(ACK);
-        hdr->th_block = htons(tftp_stream.last_good_block);
+        hdr->th_block = htons((cyg_uint16)tftp_stream.last_good_block & 0xFFFF);
         if (__udp_sendto(tftp_stream.data, 4 /* FIXME */, 
                          &tftp_stream.from_addr, &tftp_stream.local_addr) < 0) {
             // Problem sending ACK
@@ -210,7 +210,7 @@ tftp_stream_read(char *buf,
             } else {
                 tftp_stream.packets_received++;
                 if (ntohs(hdr->th_opcode) == DATA) {
-                    if (ntohs(hdr->th_block) == (tftp_stream.last_good_block+1)) {
+                    if (ntohs(hdr->th_block) == (cyg_uint16)((tftp_stream.last_good_block+1) & 0xFFFF)) {
                         // Consume this data
                         data_len -= 4;  /* Sizeof TFTP header */
                         tftp_stream.avail = tftp_stream.actual_len = data_len;
