@@ -60,8 +60,8 @@
 #define SHOULD_BE_RANDOM  0x12345555
 
 /* How many milliseconds to wait before retrying the request */
-#define RETRY_TIME   500
-#define MAX_RETRIES   30
+#define RETRY_TIME  2000
+#define MAX_RETRIES    8
 
 static bootp_header_t *bp_info;
   
@@ -73,6 +73,7 @@ static const unsigned char dhcpOffer[] = {53,1,2};
 static const unsigned char dhcpRequest[] = {53,1,3};
 static const unsigned char dhcpRequestIP[] = {50,4};
 static const unsigned char dhcpAck[] = {53,1,5};
+static const unsigned char dhcpNak[] = {53,1,6};
 static const unsigned char dhcpParamRequestList[] = {55,3,1,3,6};
 static enum {
     DHCP_NONE = 0,
@@ -136,13 +137,16 @@ bootp_handler(udp_socket_t *skt, char *buf, int len,
     case DHCP_NONE:
     case DHCP_OFFER:
     case DHCP_ACK:
-        diag_printf("Invalid DHCP reply state: %d\n", dhcpState);
-        dhcpState = DHCP_NONE;  // Reset state machine
+        // Quitely ignore these - they indicate repeated message from server
+        return;
+    }
+    // See if we've been NAK'd - if so, give up and try again
+    if (memcmp(p, dhcpNak, sizeof(dhcpNak)) == 0) {
+        dhcpState = DHCP_NONE;
         return;
     }
     diag_printf("DHCP reply: %d/%d/%d, not %d/%d/%d\n",
                 p[0], p[1], p[2], expected[0], expected[1], expected[2]);
-    dhcpState = DHCP_NONE;  // Reset state machine
     return;
 #else
     // Simple BOOTP - this is all there is!
@@ -167,6 +171,7 @@ __bootp_find_local_ip(bootp_header_t *info)
     ip_addr_t saved_ip_addr;
 #ifdef CYGSEM_REDBOOT_NETWORKING_DHCP
     unsigned char *p;
+    int oldState;
 #endif
     int txSize;
     bool abort = false;
@@ -223,6 +228,7 @@ __bootp_find_local_ip(bootp_header_t *info)
         case DHCP_OFFER:
             retry = MAX_RETRIES;
         case DHCP_REQUEST:
+            b.bp_xid = bp_info->bp_xid;  // Match what server sent
             AddOption(p,dhcpCookie);
             AddOption(p,dhcpRequest);
             AddOption(p,dhcpRequestIP);
@@ -232,17 +238,15 @@ __bootp_find_local_ip(bootp_header_t *info)
             dhcpState = DHCP_REQUEST;
             memset(&b.bp_yiaddr, 0xFF, 4);
             memset(&b.bp_siaddr, 0xFF, 4);
+            memset(&b.bp_yiaddr, 0x00, 4);
+            memset(&b.bp_siaddr, 0x00, 4);
             break;
-        case DHCP_ACK:
-            // These states should never occur here!
-            diag_printf("Invalid DHCP state: %d\n", dhcpState);
-            abort = true;
         }
-        if (abort) break;  // From while loop
      
         // Some servers insist on a minimum amount of "vendor" data
         if (p < &b.bp_vend[BP_MIN_VEND_SIZE]) p = &b.bp_vend[BP_MIN_VEND_SIZE];
         txSize = p - (unsigned char*)&b;
+        oldState = dhcpState;
 #else
         txSize = sizeof(b);
 #endif
@@ -252,42 +256,46 @@ __bootp_find_local_ip(bootp_header_t *info)
 	do {
 	    __enet_poll();
 #ifdef CYGSEM_REDBOOT_NETWORKING_DHCP
-            if (dhcpState == DHCP_ACK) {
-                unsigned char *end;
-                int optlen;
-                // Address information has now arrived!
-                memcpy(__local_ip_addr, &bp_info->bp_yiaddr, 4);
+            if (dhcpState != oldState) {
+                if (dhcpState == DHCP_ACK) {
+                    unsigned char *end;
+                    int optlen;
+                    // Address information has now arrived!
+                    memcpy(__local_ip_addr, &bp_info->bp_yiaddr, 4);
 #ifdef CYGSEM_REDBOOT_NETWORKING_USE_GATEWAY
-                memcpy(__local_ip_gate, &bp_info->bp_giaddr, 4);
+                    memcpy(__local_ip_gate, &bp_info->bp_giaddr, 4);
 #endif
-                p = bp_info->bp_vend+4;
-                end = (unsigned char *)bp_info+sizeof(*bp_info);
-                while (p < end) {
-                    unsigned char tag = *p;
-                    if (tag == TAG_END)
-                        break;
-                    if (tag == TAG_PAD)
-                        optlen = 1;
-                    else {
-                        optlen = p[1];
-                        p += 2;
-                        switch (tag) {
-                        case TAG_SUBNET_MASK:  // subnet mask
-                            memcpy(__local_ip_mask,p,4); 
+                    p = bp_info->bp_vend+4;
+                    end = (unsigned char *)bp_info+sizeof(*bp_info);
+                    while (p < end) {
+                        unsigned char tag = *p;
+                        if (tag == TAG_END)
                             break;
+                        if (tag == TAG_PAD)
+                            optlen = 1;
+                        else {
+                            optlen = p[1];
+                            p += 2;
+                            switch (tag) {
+                            case TAG_SUBNET_MASK:  // subnet mask
+                                memcpy(__local_ip_mask,p,4); 
+                                break;
 #ifdef CYGSEM_REDBOOT_NETWORKING_USE_GATEWAY
-                        case TAG_GATEWAY:  // router
-                            memcpy(__local_ip_gate,p,4); 
-                            break;
+                            case TAG_GATEWAY:  // router
+                                memcpy(__local_ip_gate,p,4); 
+                                break;
 #endif
-                        default:
-                            break;
+                            default:
+                                break;
+                            }
                         }
+                        p += optlen;
                     }
-                    p += optlen;
+                    __udp_remove_listener(IPPORT_BOOTPC);
+                    return 0;
+                } else {
+                    break;  // State changed, handle it
                 }
-		__udp_remove_listener(IPPORT_BOOTPC);
-                return 0;
             }
 #else
             // All done, if address response has arrived

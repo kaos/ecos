@@ -1,3 +1,8 @@
+2003-09-25  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/net/bootp.c: Rework DHCP process to handle really stubborn
+	servers.
+
 2003-09-24  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/net/bootp.c (__bootp_find_local_ip): Forgot to unregister
