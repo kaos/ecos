@@ -1,3 +1,9 @@
+2003-01-20  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/plf_regs.h: 
+	* include/plf_intr.h: 
+	* include/platform.inc: New file(s) - empty, but used by latest HAL.
+
 2002-04-11  Gary Thomas  <gthomas@redhat.com>
 
 	* include/plf_cache.h: Cache control is in hal/common CDL.
