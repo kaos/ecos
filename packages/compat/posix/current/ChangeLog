@@ -1,3 +1,7 @@
+2003-12-02  Sandeep  <sandeep@codito.com>
+
+	* src/mqueue.cxx (new): define a placement new instead of using <new>
+
 2003-11-19  Rickard Westman <rickard.westman@27m.se>
 	
 	* src/mqueue.cxx: Fix problem with mq_timedsend() and

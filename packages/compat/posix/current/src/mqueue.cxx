@@ -79,7 +79,6 @@
 #include <stdarg.h>                  // varargs
 #include <pthread.h>                 // mutexes
 #include <string.h>                  // strncpy
-#include <new>                       // C++ new
 #ifdef CYGFUN_POSIX_MQUEUE_NOTIFY
 # include <signal.h>
 # include "pprivate.h"               // cyg_sigqueue()
@@ -132,6 +131,13 @@ static pthread_mutex_t mqtab_mut = PTHREAD_MUTEX_INITIALIZER;
 /* LOCAL FUNCTIONS */
 
 //------------------------------------------------------------------------
+
+// placement new definition
+inline void *operator new(size_t size, void *ptr) 
+{ 
+    CYG_CHECK_DATA_PTR( ptr, "Bad pointer" ); 
+    return ptr; 
+} 
 
 // Deallocation callback from Cyg_Mqueue
 static void
