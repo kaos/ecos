@@ -570,7 +570,13 @@ static void
 show_addrs(void)
 {
     diag_printf("IP: %s", inet_ntoa((in_addr_t *)&__local_ip_addr));
-    diag_printf(", Default server: %s", inet_ntoa(&my_bootp_info.bp_siaddr));
+#ifdef CYGSEM_REDBOOT_NETWORKING_USE_GATEWAY
+    diag_printf("/%s", inet_ntoa((in_addr_t *)&__local_ip_mask));
+    diag_printf(", Gateway: %s\n", inet_ntoa((in_addr_t *)&__local_ip_gate));
+#else
+    diag_printf(", ");
+#endif
+    diag_printf("Default server: %s", inet_ntoa(&my_bootp_info.bp_siaddr));
 #ifdef CYGPKG_REDBOOT_NETWORKING_DNS
     show_dns();
 #endif
@@ -583,14 +589,15 @@ flash_get_IP(char *id, ip_addr_t *val)
 {
     ip_addr_t my_ip;
     int i;
-    
-    flash_get_config(id, &my_ip, CONFIG_IP);
-    if (my_ip[0] != 0 || my_ip[1] != 0 ||
-        my_ip[2] != 0 || my_ip[3] != 0) {
-        // 'id' is set to something so let it override any static IP
-        for (i=0; i<4; i++)
-            (*val)[i] = my_ip[i];
-    }        
+
+    if (flash_get_config(id, &my_ip, CONFIG_IP)) {
+        if (my_ip[0] != 0 || my_ip[1] != 0 ||
+            my_ip[2] != 0 || my_ip[3] != 0) {
+            // 'id' is set to something so let it override any static IP
+            for (i=0; i<4; i++)
+                (*val)[i] = my_ip[i];
+        }        
+    }
 }
 #endif
 
