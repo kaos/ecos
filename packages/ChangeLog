@@ -1,5 +1,9 @@
 2003-11-04  Andrew Lunn  <andrew.lunn@ascom.ch>
 
+        * ecos.db: Modified the e7t to use the new 39VFXXX flash driver
+	
+2003-11-04  Andrew Lunn  <andrew.lunn@ascom.ch>
+
 	* ecos.db: Replaced the 39VF4XX flash driver with a 39VFXXX driver.
 
 2003-10-24  Jonathan Larmour  <jifl@eCosCentric.com>

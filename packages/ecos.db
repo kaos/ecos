@@ -3642,9 +3642,9 @@ target e7t {
 	alias { "ARM Evaluator7T board (AEB-2)" aeb2 }
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_E7T
-               CYGPKG_DEVS_FLASH_ARM_E7T
-               CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
-               CYGPKG_DEVS_FLASH_SST_39VF400
+                   CYGPKG_DEVS_FLASH_ARM_E7T
+                   CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
+                   CYGPKG_DEVS_FLASH_SST_39VFXXX
 	           CYGPKG_IO_SERIAL_ARM_E7T
         }
         description "
