@@ -1,3 +1,9 @@
+2003-02-21  John Dallaway  <jld@ecoscentric.com>
+
+	* common/eCosTestPlatform.cpp (CeCosTestPlatform::Load): Allow an
+	extra character for string termination when retrieving registry
+	key names.
+
 2003-02-13  John Dallaway  <jld@ecoscentric.com>
 
 	* common/eCosTestPlatform.cpp:

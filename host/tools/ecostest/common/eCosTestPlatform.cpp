@@ -171,14 +171,14 @@ bool CeCosTestPlatform::Load()
     DWORD dwMaxSubKeyLen;
     if(ERROR_SUCCESS==RegQueryInfoKey(hKey,NULL,NULL,NULL,&dwSubKeys,&dwMaxSubKeyLen,NULL,NULL,NULL,NULL,NULL,NULL)){
       TCHAR *szName=new TCHAR[1+dwMaxSubKeyLen];
-      DWORD dwSizeName=dwMaxSubKeyLen;
+      DWORD dwSizeName=sizeof(TCHAR)*(1+dwMaxSubKeyLen);
       for(DWORD dwIndex=0;ERROR_SUCCESS==RegEnumKeyEx(hKey, dwIndex, szName, &dwSizeName, NULL, NULL, NULL, &ftLastWriteTime); dwIndex++){
         CeCosTestPlatform t;
         if(t.LoadFromRegistry(hKey,szName)){
           t.m_strName=szName;
           CeCosTestPlatform::Add(t);
         }
-        dwSizeName=dwMaxSubKeyLen;
+        dwSizeName=sizeof(TCHAR)*(1+dwMaxSubKeyLen);
       }
       delete [] szName;
     }
