@@ -55,6 +55,7 @@ cdl_package CYGPKG_PROFILE_GPROF {
     requires      CYGPKG_NET_TFTP
     requires      CYGPKG_MEMALLOC   
     requires      { CYGINT_PROFILE_HAL_TIMER != 0 }
+    doc           ref/services-profile-gprof.html
 
     include_dir   cyg/profile
     
