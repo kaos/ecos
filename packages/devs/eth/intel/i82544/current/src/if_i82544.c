@@ -259,6 +259,10 @@ static inline cyg_uint32 INL(cyg_uint32 io_address)
 static inline cyg_uint32 virt_to_bus(cyg_uint32 p_memory)
 { return CYGARC_PHYSICAL_ADDRESS(p_memory);    }
 
+#define BUS_TO_VIRT( _x_ ) bus_to_virt((cyg_uint32)(_x_))
+static inline cyg_uint32 bus_to_virt(cyg_uint32 p_bus)
+{ return CYGARC_UNCACHED_ADDRESS(p_bus);    }
+
 #endif // not defined CYGHWR_INTEL_I82544_PCI_VIRT_TO_BUS
 
 // ------------------------------------------------------------------------
