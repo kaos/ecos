@@ -8,6 +8,7 @@
 //####ECOSPDCOPYRIGHTBEGIN####
 //
 // Copyright (C) 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 // All Rights Reserved.
 //
 // Permission is granted to use, copy, modify and redistribute this
@@ -54,6 +55,7 @@ _getaddr(struct addrinfo *ai, const char *node,
     {
         struct sockaddr_in *sa;
         sa = (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in));
+        memset(sa, 0, sizeof(*sa));
         ai->ai_addr = (struct sockaddr *)sa;
         ai->ai_addrlen = sizeof(*sa);
         if (ai->ai_addr == (struct sockaddr *)NULL) {
@@ -86,6 +88,7 @@ _getaddr(struct addrinfo *ai, const char *node,
     {
         struct sockaddr_in6 *sa;
         sa = (struct sockaddr_in6 *)malloc(sizeof(struct sockaddr_in6));
+        memset(sa, 0, sizeof(*sa));
         ai->ai_addr = (struct sockaddr *)sa;
         ai->ai_addrlen = sizeof(*sa);
         if (ai->ai_addr == (struct sockaddr *)NULL) {

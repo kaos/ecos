@@ -1,3 +1,8 @@
+2003-03-06  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/getaddrinfo.c: Need to clear any addresses - malloc() can
+	return garbage which the stack desn't like.
+
 2003-03-05  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/getaddrinfo.c: Allow getaddrinfo() to use DNS gethostbyXXX()
