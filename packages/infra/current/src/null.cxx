@@ -155,7 +155,7 @@ unsigned long stext_addr = (unsigned long)&_stext;
 unsigned long etext_addr = (unsigned long)&_etext;
 };
 
-externC cyg_bool cyg_check_data_ptr(void *ptr)
+externC cyg_bool cyg_check_data_ptr(const void *ptr)
 {
     unsigned long p = (unsigned long)ptr;
     
@@ -166,7 +166,7 @@ externC cyg_bool cyg_check_data_ptr(void *ptr)
     return true;
 }
 
-externC cyg_bool cyg_check_func_ptr(void (*ptr)(void))
+externC cyg_bool cyg_check_func_ptr(const void (*ptr)(void))
 {
     unsigned long p = (unsigned long)ptr;
     

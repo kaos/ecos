@@ -156,32 +156,32 @@ cyg_assert_msg( const char *psz_func, const char *psz_file,
 // with different formats, and so we can check them against different memory
 // regions.
 
-externC cyg_bool cyg_check_data_ptr(void *ptr);
-externC cyg_bool cyg_check_func_ptr(void (*ptr)(void));
+externC cyg_bool cyg_check_data_ptr(const void *ptr);
+externC cyg_bool cyg_check_func_ptr(const void (*ptr)(void));
 
 #ifdef CYGDBG_USE_ASSERTS
 
 # define CYG_CHECK_DATA_PTR( _ptr_, _msg_ )             \
         CYG_MACRO_START                                 \
-        if( !cyg_check_data_ptr((void *)(_ptr_)))       \
+        if( !cyg_check_data_ptr((const void *)(_ptr_)))       \
            CYG_ASSERT_DOCALL( _msg_ );                   \
         CYG_MACRO_END
 
 # define CYG_CHECK_FUNC_PTR( _ptr_, _msg_ )             \
         CYG_MACRO_START                                 \
-        if( !cyg_check_func_ptr((void (*)(void))(_ptr_))) \
+        if( !cyg_check_func_ptr((const void (*)(void))(_ptr_))) \
            CYG_ASSERT_DOCALL( _msg_ );                   \
         CYG_MACRO_END
         
 # define CYG_CHECK_DATA_PTRC( _ptr_ )                   \
          CYG_MACRO_START                                \
-         if ( !cyg_check_data_ptr((void *)(_ptr_)))     \
+         if ( !cyg_check_data_ptr((const void *)(_ptr_)))     \
              CYG_ASSERT_DOCALL("data pointer (" #_ptr_ ") is valid");\
          CYG_MACRO_END
 
 # define CYG_CHECK_FUNC_PTRC( _ptr_ )                       \
          CYG_MACRO_START                                    \
-         if ( !cyg_check_func_ptr((void (*)(void))(_ptr_))) \
+         if ( !cyg_check_func_ptr((const void (*)(void))(_ptr_))) \
              CYG_ASSERT_DOCALL("function pointer (" #_ptr_ ") is valid"); \
          CYG_MACRO_END
 
