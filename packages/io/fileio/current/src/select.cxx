@@ -97,7 +97,7 @@ static Cyg_Mutex select_mutex CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_IO_FS);
 // operation. Whenever any selectable event occurs, all selecting threads
 // will be resumed. They must then rescan their selectees and resuspend if
 // necessary.
-static Cyg_Condition_Variable selwait( select_mutex ) CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_IO_FS);
+static Cyg_Condition_Variable CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_IO_FS) selwait( select_mutex ) ;
 
 static volatile cyg_uint32 selwake_count = 0;
 
