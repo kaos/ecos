@@ -71,6 +71,7 @@ static bootp_header_t *bp_info;
 static const unsigned char dhcpCookie[] = {99,130,83,99};
 static const unsigned char dhcpEndOption[] = {255};
 static const unsigned char dhcpDiscoverOption[] = {53,1,1};
+static const unsigned char dhcpParamRequestList[] = {55,3,1,3,6};
 #endif
 
 static void
@@ -171,6 +172,7 @@ __bootp_find_local_ip(bootp_header_t *info)
      
     AddOption(p,dhcpCookie);
     AddOption(p,dhcpDiscoverOption);
+    AddOption(p,dhcpParamRequestList);
     AddOption(p,dhcpEndOption);
 
     // Some servers insist on a minimum amount of "vendor" data

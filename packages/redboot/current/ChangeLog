@@ -3,6 +3,12 @@
 	* src/flash.c (flash_config_insert_value): Default value was
 	wrong for ESA type.
 
+2003-09-08  David Vrabel  <dvrabel@arcom.com>
+
+	* src/net/bootp.c (__bootp_find_local_ip): Adds Option 55 Parameter
+	Request List) to the DHCP request (requests: Subnet Mask; Router;
+	Domain Name server).
+
 2003-08-19  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/net/udp.c (__udp_recvfrom): Rework loop so delay only happens
