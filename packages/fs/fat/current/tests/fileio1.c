@@ -71,6 +71,7 @@
 #include <errno.h>
 #include <string.h>
 #include <dirent.h>
+#include <stdio.h>
 
 #include <cyg/fileio/fileio.h>
 
