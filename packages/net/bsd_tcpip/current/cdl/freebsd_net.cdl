@@ -197,6 +197,18 @@ cdl_package CYGPKG_NET_FREEBSD_STACK {
             "
     }
 
+    cdl_option CYGPKG_NET_FORCE_SERIAL_CONSOLE {
+        display "Force use of serial console during initialization"
+        flavor  bool
+        default_value 0
+        description   "
+            Trying to print initialization messages can fail if the
+            console channel is a network connection (via RedBoot).
+            Use of this option forces the stack to use a serial
+            port during this phase for safety.  It can be used 
+            if the network drivers are unstable at this point."
+    }
+
     cdl_option CYGPKG_NET_MEM_USAGE {
         display "Memory designated for networking buffers."
         flavor  data

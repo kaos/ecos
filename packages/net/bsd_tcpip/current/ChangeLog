@@ -1,3 +1,11 @@
+2003-05-04  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/ecos/support.c: 
+	* cdl/freebsd_net.cdl: Add option to force initialization [debug]
+	messages to go to a serial console.  This seems to be necessary
+	on some hardware as the init sequence can totally foul up a
+	network [debug] connection.
+
 2003-04-11  Michael Checky  <Michael_Checky@Thermoking.com>
 
 	* cdl/freebsd_net.cdl: Deleted the 'CYGPKG_NET_FREEBSD_STACK_BUILD_TESTS'

@@ -14,7 +14,7 @@
 // Portions created by Red Hat are
 // Copyright (C) 2002 Red Hat, Inc. All Rights Reserved.
 //
-// Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2002, 2003 Gary Thomas
 // Copyright (C) 2003 Andrew Lunn
 // -------------------------------------------
 //
@@ -69,7 +69,7 @@
 #include <cyg/infra/diag.h>
 #include <cyg/hal/hal_intr.h>
 #include <cyg/kernel/kapi.h>
-
+#include <cyg/hal/hal_if.h>
 #include <cyg/infra/cyg_ass.h>
 
 #if !CYGPKG_NET_DRIVER_FRAMEWORK   // Interface
@@ -832,8 +832,19 @@ cyg_net_init(void)
 {
     static int _init = false;
     struct init_tab_entry *init_entry;
+#ifdef CYGPKG_NET_FORCE_SERIAL_CONSOLE
+    int orig_console =
+        CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+#endif
 
     if (_init) return;
+
+#ifdef CYGPKG_NET_FORCE_SERIAL_CONSOLE
+    // Force default serial console during system initialization
+    // This avoids problems with debug messages occurring while the
+    // networking subsystem is being setup.
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(0);
+#endif
 
     cyg_do_net_init();  // Just forces linking in the initializer/constructor
     // Initialize interrupt "flags"
@@ -867,6 +878,11 @@ cyg_net_init(void)
 
     // Done
     _init = true;
+
+#ifdef CYGPKG_NET_FORCE_SERIAL_CONSOLE
+    // Revert to the original console, which might be a network connection
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(orig_console);
+#endif
 }
 
 
