@@ -1956,7 +1956,8 @@ externC void pthread_testcancel (void)
     // number of tests in the common case - when no cancellations are
     // pending.
 
-    if( self->cancelpending &&
+    if( self != NULL &&
+        self->cancelpending &&
         self->cancelstate == PTHREAD_CANCEL_ENABLE )
         
     {

@@ -26,7 +26,7 @@
 //
 // The Initial Developer of the Original Code is Red Hat.
 // Portions created by Red Hat are
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.
 // -------------------------------------------
 //
@@ -356,6 +356,18 @@ CYG_MACRO_END
 // Allocate and zero the cache lines associated with the given range.
 //#define HAL_DCACHE_ZERO( _base_ , _size_ )
 // This feature is not available on the SA11X0.
+
+//-----------------------------------------------------------------------------
+// Now include the details of the platform's Memory Map setup:
+
+#include <cyg/hal/plf_mmap.h>
+
+// and define the (considerably less efficient) routines that are available
+// for testing the actual memory map in force.
+
+externC cyg_uint32 hal_virt_to_phys_address( cyg_uint32 vaddr );
+externC cyg_uint32 hal_phys_to_virt_address( cyg_uint32 paddr );
+externC cyg_uint32 hal_virt_to_uncached_address( cyg_uint32 vaddr );
 
 //-----------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_CACHE_H

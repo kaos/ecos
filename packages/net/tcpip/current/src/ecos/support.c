@@ -81,6 +81,9 @@
 
 #include <cyg/infra/cyg_ass.h>
 
+#if !CYGPKG_NET_DRIVER_FRAMEWORK   // Interface
+#error At least one network driver framework must be defined!
+#else
 #include <netdev.h>
 
 // Define table boundaries
@@ -617,5 +620,7 @@ cyg_net_init(void)
     // Done
     _init = true;
 }
+
+#endif // CYGPKG_NET_DRIVER_FRAMEWORK
 
 // EOF support.c

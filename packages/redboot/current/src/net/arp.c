@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -110,6 +110,12 @@ __arp_request(ip_addr_t *ip_addr, enet_addr_t *eth_addr)
     unsigned long retry_start;
     enet_addr_t   bcast_addr;
     int           retry;
+
+    // Special case request for self
+    if (!memcmp(ip_addr, __local_ip_addr, 4)) {
+        memcpy(eth_addr, __local_enet_addr, sizeof(enet_addr_t));
+        return 0;
+    }
 
     /* just fail if can't get a buffer */
     if ((pkt = __pktbuf_alloc(ARP_PKT_SIZE)) == NULL)

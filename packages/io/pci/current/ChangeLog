@@ -1,3 +1,10 @@
+2001-01-10  Jesper Skov  <jskov@redhat.com>
+
+	* src/pci.c (cyg_pci_get_device_info): Do correct casting of
+	header_type. Do not make assumptions about structure layout.
+
+	* tests/pcihdr.h: Updated.
+
 2001-01-02  Hugo Tyson  <hmt@redhat.com>
 
 	* include/pci.h: Define new API to perform more generalized matching

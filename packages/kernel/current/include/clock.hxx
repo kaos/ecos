@@ -50,11 +50,16 @@
 #include <cyg/kernel/ktypes.h>
 #include <cyg/infra/cyg_ass.h>            // assertion macros
 
+#include <cyg/infra/clist.hxx>
+
 // -------------------------------------------------------------------------
+// Forward definitions and typedefs.
 
 class Cyg_Alarm;
 
 typedef void cyg_alarm_fn(Cyg_Alarm *alarm, CYG_ADDRWORD data);
+
+typedef Cyg_CList_T<Cyg_Alarm> Cyg_Alarm_List;
 
 // -------------------------------------------------------------------------
 // Counter object.
@@ -66,11 +71,11 @@ class Cyg_Counter
 
 #if defined(CYGIMP_KERNEL_COUNTERS_SINGLE_LIST)
 
-    Cyg_Alarm           *alarm_list;    // Linear list of Alarms
+    Cyg_Alarm_List      alarm_list;     // Linear list of Alarms
 
 #elif defined(CYGIMP_KERNEL_COUNTERS_MULTI_LIST)
 
-    Cyg_Alarm           *alarm_list[CYGNUM_KERNEL_COUNTERS_MULTI_LIST_SIZE];
+    Cyg_Alarm_List      alarm_list[CYGNUM_KERNEL_COUNTERS_MULTI_LIST_SIZE];
     
 #endif
 
@@ -189,15 +194,12 @@ public:
 // called when the trigger value is reached.
 
 class Cyg_Alarm
+#if defined(CYGIMP_KERNEL_COUNTERS_SINGLE_LIST) || defined(CYGIMP_KERNEL_COUNTERS_MULTI_LIST)
+    : public Cyg_DNode_T<Cyg_Alarm>
+#endif
 {
     friend class Cyg_Counter;
     
-#if defined(CYGIMP_KERNEL_COUNTERS_SINGLE_LIST) || defined(CYGIMP_KERNEL_COUNTERS_MULTI_LIST)
-
-    Cyg_Alarm           *next;          // next alarm in list
-    
-#endif
-
 protected:
     Cyg_Counter         *counter;       // Attached to this counter/clock
 

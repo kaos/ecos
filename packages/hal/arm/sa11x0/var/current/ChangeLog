@@ -1,3 +1,24 @@
+2001-01-05  Hugo Tyson  <hmt@redhat.com>
+
+	* include/hal_mm.h: Change bitfields within memmap entry to
+	unsigned, so that we can compare values successfully - otherwise
+	"0x02" sign-extends and is never equal after promotion!
+
+	* include/hal_cache.h: Include the platform memory map
+	interrogation definitions from <cyg/hal/plf_mmap.h> and header for
+	the new functions below.
+
+	* src/sa11x0_misc.c (hal_virt_to_phys_address): 
+	(hal_phys_to_virt_address): 
+	(hal_virt_to_uncached_address): New functions which inspect the
+	real memory map in force to verify the static translations defined
+	in the efficient macro versions.
+
+	* tests/mmap_test.c (endif): New file: testcase for memory map
+	interrogation macros and verification functions.
+
+	* cdl/hal_arm_sa11x0.cdl: Build the testcase.
+
 2000-12-13  Hugo Tyson  <hmt@redhat.com>
 
 	* cdl/hal_arm_sa11x0.cdl: Define a symbol CYGBLD_HAL_VAR_INTS_H so
@@ -166,7 +187,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

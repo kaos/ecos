@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -186,7 +186,11 @@ hal_vsr_table:
 
         .globl  hal_dram_size
 hal_dram_size:  
-        .long   0        
+        .long   0
+	// what, if anything, hal_dram_type means is up to the platform
+        .globl  hal_dram_type
+hal_dram_type:  
+        .long   0
 
         .balign 16
 #ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT

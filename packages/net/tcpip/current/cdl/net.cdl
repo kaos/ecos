@@ -51,6 +51,13 @@ cdl_package CYGPKG_NET {
     requires      CYGPKG_MEMALLOC
     description   "Basic networking support, including TCP/IP."
 
+    cdl_interface     CYGPKG_NET_DRIVER_FRAMEWORK {
+        display   "Suitable driver framework interface, used by network package"
+        description "
+          In order to decouple the network stack from driver specifics, the
+          driver framework must be defined in a separate package."
+    }
+
     # Export our types to <sys/types.h>
     implements    CYGINT_ISO_BSDTYPES
     requires      { CYGBLD_ISO_BSDTYPES_HEADER == "<sys/bsdtypes.h>" }

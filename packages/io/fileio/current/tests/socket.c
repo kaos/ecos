@@ -269,6 +269,8 @@ int main( int argc, char **argv )
     
     CYG_TEST_INIT();
 
+    init_all_network_interfaces();
+    
     // Test inet_ntoa() and inet_aton()
 
     inet_aton(addr1, &ina);

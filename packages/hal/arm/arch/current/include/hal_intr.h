@@ -26,7 +26,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -115,6 +115,8 @@ externC CYG_ADDRESS    hal_vsr_table[CYGNUM_HAL_VSR_COUNT];
 
 // Platform setup memory size (0 if unknown by hardware)
 externC CYG_ADDRWORD   hal_dram_size;
+// what, if anything, this means, is platform dependent:
+externC CYG_ADDRWORD   hal_dram_type; 
 
 #if CYGINT_HAL_ARM_MEM_REAL_REGION_TOP
 

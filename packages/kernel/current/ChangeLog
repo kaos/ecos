@@ -1,3 +1,21 @@
+2001-01-09  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/mlqueue.hxx:
+	* src/sched/mlqueue.cxx: 
+	Converted to use clist.hxx list implementation. The main effect of
+	this is to clean up the code and class definitions since much of
+	what was part of the thread queue and thread classes now moves to
+	the DNode and CList classes.
+
+	* include/clock.hxx:
+	* src/common/clock.cxx: 
+	Converted to use clist.hxx list implementation. This removes all
+	the explicit list manipulation code from the counter and alarm
+	classes, resulting in cleaner, easier to understand code.
+
+	* include/kapidata.h: Adjusted cyg_alarm struct to match Cyg_Alarm
+	using Cyg_DNode.
+	
 2000-12-22  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/thread.inl (check_stack): check word alignment with CYG_WORD

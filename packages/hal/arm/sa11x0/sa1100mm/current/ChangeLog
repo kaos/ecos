@@ -1,3 +1,16 @@
+2001-01-05  Hugo Tyson  <hmt@redhat.com>
+
+	* include/plf_mmap.h: New file.  Statically defined macros for
+	translation from virtual to physical and back, and to get an
+	uncached address for a normally-cached object.  HAL_MM_PAGESIZE()
+	HAL_VIRT_TO_PHYS_ADDRESS() HAL_PHYS_TO_VIRT_ADDRESS()
+	HAL_VIRT_TO_UNCACHED_ADDRESS().  This included by the variant
+	hal's hal_cache.h for convenience and proximity to other memory
+	and cache features.
+
+	* src/sa1100mm_misc.c (hal_mmu_init): Add double mapping for
+	uncached access to SDRAM area, at its physical address.
+
 2000-12-13  Hugo Tyson  <hmt@redhat.com>
 
 	* src/sa1100mm_misc.c: Use <cyg/hal/hal_mm.h> from the variant HAL
@@ -64,7 +77,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

@@ -23,7 +23,7 @@
 //
 // The Initial Developer of the Original Code is Red Hat.
 // Portions created by Red Hat are
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.
 // -------------------------------------------
 //
@@ -50,12 +50,14 @@
 #include <cyg/infra/cyg_trac.h>         // tracing macros
 #include <cyg/infra/cyg_ass.h>          // assertion macros
 
+#include <cyg/hal/hal_misc.h>           // Size constants
 #include <cyg/hal/hal_io.h>             // IO macros
 #include <cyg/hal/hal_arch.h>           // Register state info
 #include <cyg/hal/hal_diag.h>
 #include <cyg/hal/hal_intr.h>           // Interrupt names
-#include <cyg/hal/hal_cache.h>
+#include <cyg/hal/hal_cache.h>          // Cache control
 #include <cyg/hal/hal_sa11x0.h>         // Hardware definitions
+#include <cyg/hal/hal_mm.h>             // MMap table definitions
 
 #include <cyg/infra/diag.h>             // diag_printf
 
@@ -324,4 +326,133 @@ void hal_interrupt_set_level(int vector, int level)
 }
 
 /*------------------------------------------------------------------------*/
+// These routines are for testing the equivalent efficient macros of the
+// same names.  They actually inspect the MMap installed and tell the
+// truth - including about the validity of the address at all.
+
+cyg_uint32 hal_virt_to_phys_address( cyg_uint32 vaddr )
+{
+    register cyg_uint32 *ttb_base;
+    cyg_uint32 noise;
+    register union ARM_MMU_FIRST_LEVEL_DESCRIPTOR desc;
+
+    // Get the TTB register
+    asm volatile ("mrc  p15,0,%0,c2,c0,0;"
+                  "mov  %0, %0, lsr #14;" // Lower 14 bits are undefined
+                  "mov  %0, %0, asl #14;" // ...so clear them
+                  : "=r"(ttb_base)
+                  :
+                  /*:*/);
+
+    noise = vaddr & (SZ_1M - 1);
+    vaddr /= SZ_1M; // Page size/Entry size is Mb.
+
+    desc.word = *ARM_MMU_FIRST_LEVEL_DESCRIPTOR_ADDRESS( ttb_base, vaddr );
+
+    // Is this a valid entry that we understand?
+    if ( ARM_MMU_FIRST_LEVEL_SECTION_ID == desc.section.id )
+        return noise + desc.section.base_address * SZ_1M;
+
+    return 0; // Not available.
+}
+
+cyg_uint32 hal_phys_to_virt_address( cyg_uint32 paddr )
+{
+    cyg_uint32 *ttb_base;
+    cyg_uint32 i, noise;
+    register union ARM_MMU_FIRST_LEVEL_DESCRIPTOR desc;
+    cyg_bool identity_found = false;
+
+    // Get the TTB register
+    asm volatile ("mrc  p15,0,%0,c2,c0,0;"
+                  "mov  %0, %0, lsr #14;" // Lower 14 bits are undefined
+                  "mov  %0, %0, asl #14;" // ...so clear them
+                  : "=r"(ttb_base)
+                  :
+                  /*:*/);
+
+
+    noise = paddr & (SZ_1M - 1);
+    paddr /= SZ_1M; // Page size/Entry size is Mb.
+
+    for ( i = 0; i <= 0xfff; i++ ) {
+        desc.word = *ARM_MMU_FIRST_LEVEL_DESCRIPTOR_ADDRESS( ttb_base, i );
+
+        // Is this a valid entry that we understand?
+        if ( ARM_MMU_FIRST_LEVEL_SECTION_ID == desc.section.id ) {
+            if ( paddr == desc.section.base_address ) {
+                // Then the virtual address is i (in Mb).
+                if ( i == paddr ) {
+                    // We found a direct map first.  Do not report that
+                    // immediately because it may be double mapped to a
+                    // distinct virtual address, which we should return in
+                    // preference.  But remember that we saw it.
+                    identity_found = true;
+                    continue;
+                }
+                // Otherwise report that we found it:
+                return noise + i * SZ_1M;
+            }
+        }
+    }
+    // No non-identity matches were found.
+    if ( identity_found )
+        return noise + paddr * SZ_1M;
+
+    return 0; // Not available.
+}
+
+cyg_uint32 hal_virt_to_uncached_address( cyg_uint32 vaddr )
+{
+    cyg_uint32 *ttb_base;
+    cyg_uint32 noise, paddr, i;
+    register union ARM_MMU_FIRST_LEVEL_DESCRIPTOR desc;
+
+    // Get the TTB register
+    asm volatile ("mrc  p15,0,%0,c2,c0,0;"
+                  "mov  %0, %0, lsr #14;" // Lower 14 bits are undefined
+                  "mov  %0, %0, asl #14;" // ...so clear them
+                  : "=r"(ttb_base)
+                  :
+                  /*:*/);
+
+
+    noise = vaddr & (SZ_1M - 1);
+    vaddr /= SZ_1M; // Page size/Entry size is Mb.
+
+    desc.word = *ARM_MMU_FIRST_LEVEL_DESCRIPTOR_ADDRESS( ttb_base, vaddr );
+
+    // Is this a valid entry that we understand?
+    if ( ARM_MMU_FIRST_LEVEL_SECTION_ID != desc.section.id )
+        return 0; // Not available.
+
+    // Is this very address uncacheable already?
+    if ( ARM_UNCACHEABLE == desc.section.c )
+        return noise + vaddr * SZ_1M;
+
+    paddr = desc.section.base_address;
+
+    // We could look straight at a direct mapped slot for the physical
+    // address as per convention...
+
+    // Now scan through for a virtual address that maps to the same
+    // physical memory, but uncached.
+    for ( i = 0; i <= 0xfff; i++ ) {
+        desc.word = *ARM_MMU_FIRST_LEVEL_DESCRIPTOR_ADDRESS( ttb_base, i );
+
+        // Is this a valid entry that we understand?
+        if ( ARM_MMU_FIRST_LEVEL_SECTION_ID == desc.section.id )
+            if ( paddr == desc.section.base_address )
+                // Then the virtual address is i (in Mb).
+                if ( ARM_UNCACHEABLE == desc.section.c )
+                    // Then this one is not cacheable.
+                    return noise + i * SZ_1M;
+    }
+
+    return 0; // Not available.
+}
+
+
+/*------------------------------------------------------------------------*/
 // EOF sa11x0_misc.c
+

@@ -1,3 +1,13 @@
+2001-01-11  Hugo Tyson  <hmt@redhat.com>
+
+	* src/vectors.S (hal_dram_size): Create hal_dram_type in memory at
+	0x44, right after hal_dram_size.
+
+	* include/hal_intr.h: Add an extern for the word at 0x44, named
+	hal_dram_type (as in hal_dram_size).  This can be used for
+	platform HALs to know how to decode VIRT_TO_PHYS addresses and
+	vice versa.
+
 2000-12-13  Hugo Tyson  <hmt@redhat.com>
 
 	* include/hal_intr.h: Handle variant-, and possible overriding
@@ -1098,7 +1108,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

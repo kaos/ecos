@@ -1,3 +1,11 @@
+2001-01-07  Gary Thomas  <gthomas@redhat.com>
+
+	* src/ecos/support.c: 
+	* cdl/net.cdl: 	Add interface 'CYGPKG_NET_DRIVER_FRAMEWORK'
+	to describe interdependencies between network stack and driver
+	framework packages.
+
+
 2001-01-03  Hugo Tyson  <hmt@redhat.com>
 
 	* tests/linux_echo.c: New file to test for network bandwidth

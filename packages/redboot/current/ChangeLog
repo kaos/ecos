@@ -1,3 +1,7 @@
+2001-01-08  Gary Thomas  <gthomas@redhat.com>
+
+	* src/net/arp.c: Add special case handling for ARP(self).
+
 2001-01-03  Gary Thomas  <gthomas@redhat.com>
 
 	* src/main.c (do_version): Update copyright for 2001.

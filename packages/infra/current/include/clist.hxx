@@ -81,6 +81,8 @@
 
 class Cyg_DNode
 {
+    friend class Cyg_CList;
+    
     Cyg_DNode   *next;
     Cyg_DNode   *prev;
 
@@ -92,19 +94,14 @@ public:
         next = prev = this;
     };
 
-    ~Cyg_DNode()
-    {
-        // If this node is still linked, unlink it.
-        if( next != this )
-            unlink();
-    };
-
     // Accessor and test functions
     Cyg_DNode *get_next() { return next; };
     Cyg_DNode *get_prev() { return prev; };
     cyg_bool  in_list() { return next != this; };
     
-    // Insert a node into the list before this one.
+    // Insert a node into the list before this one,
+    // so that it becomes this nodes predecessor in
+    // the list.
     void insert( Cyg_DNode *node )
     {
         node->next = this;
@@ -113,7 +110,8 @@ public:
         prev = node;
     };
 
-    // Append a node after this one
+    // Append a node after this one so that it become
+    // this nodes sucessor in the list.
     void append( Cyg_DNode *node )
     {
         node->prev = this;
@@ -130,6 +128,14 @@ public:
         prev->next = next;
         next = prev = this;
     };
+    
+    ~Cyg_DNode()
+    {
+        // If this node is still linked, unlink it.
+        if( next != this )
+            unlink();
+    };
+    
 };
 
 // -------------------------------------------------------------------------
@@ -150,15 +156,9 @@ public:
         head = NULL;
     };
 
-    ~Cyg_CList()
-    {
-        while( head != NULL )
-            rem_head();
-    };
-
     // Accessor and test functions
     Cyg_DNode *get_head() { return head; };
-    Cyg_DNode *get_tail() { return head?head->get_prev():NULL; };
+    Cyg_DNode *get_tail() { return head?head->prev:NULL; };
     cyg_bool empty() { return head == NULL; };
     
     // Add a node at the head of the list
@@ -168,7 +168,7 @@ public:
             head = node;
         else
         {
-            head->append( node );
+            head->insert( node );
             head = node;
         }
     };
@@ -180,7 +180,7 @@ public:
         if( node != NULL )
         {
             // There is a node available
-            Cyg_DNode *next = node->get_next();
+            Cyg_DNode *next = node->next;
             if( next == node )
             {
                 // Only node on list
@@ -203,7 +203,7 @@ public:
         if( head == NULL )
             head = node;
         else
-            head->append( node );
+            head->insert( node );
     };
 
     // Remove the node at the tail of the list
@@ -212,7 +212,7 @@ public:
         if( head == NULL )
             return NULL;
 
-        Cyg_DNode *node = head->get_prev();
+        Cyg_DNode *node = head->prev;
 
         if( node == head )
             head = NULL;
@@ -221,6 +221,30 @@ public:
         return node;
     };
 
+    // Merge the supplied list into this one, at the tail.
+    void merge( Cyg_CList& list )
+    {
+        if( list.head == NULL )
+            return;                     // Nothing to do
+        else if( head == NULL )
+            head = list.head;           // this is empty, just move it
+        else
+        {
+            // We have a real merge to do. Adjust the pointers
+            // on the two lists so that they become one.
+
+            Cyg_DNode *lh = list.head;
+            Cyg_DNode *lt = lh->prev;
+            Cyg_DNode *tail = head->prev;
+
+            head->prev = lt;
+            lt->next = head;
+            tail->next = lh;
+            lh->prev = tail;
+        }
+        list.head = NULL;
+    };
+    
     // General removal. Deals with what happend if this is only
     // object on list, or is the head.
     void remove( Cyg_DNode *node )
@@ -229,6 +253,39 @@ public:
             rem_head();
         else node->unlink();
     };
+
+    // Rotation - move the head to the next node in the list.
+    void rotate()
+    {
+        if( head )
+            head = head->next;
+    };
+
+    // Move a node to the head of the list. Assumes that the
+    // node is in this list.
+    void to_head( Cyg_DNode *node )
+    {
+        head = node;
+    };
+
+    // Insert a node before one in this list, and deal with what
+    // happens if the node happens to be at the head of the list.
+    void insert( Cyg_DNode *list_node, Cyg_DNode *node )
+    {
+        if( list_node == head )
+        {
+            head->insert( node );
+            head = node;
+        }
+        else list_node->insert( node );
+    };
+    
+    ~Cyg_CList()
+    {
+        while( head != NULL )
+            rem_head();
+    };
+
 };
 
 // -------------------------------------------------------------------------
@@ -244,19 +301,31 @@ public:
     Cyg_CList_T<T>() {};
     ~Cyg_CList_T<T>() {};
 
-    T *get_head() { return CYG_CLASSFROMBASE( T, Cyg_DNode, Cyg_CList::get_head() ); };
-    T *get_tail() { return CYG_CLASSFROMBASE( T, Cyg_DNode, Cyg_CList::get_tail() ); };
+    T *get_head()
+    {
+        Cyg_DNode *node = Cyg_CList::get_head();
+        if( node ) return CYG_CLASSFROMBASE( T, Cyg_DNode, node );
+        return NULL;
+    };
+    T *get_tail()
+    {
+        Cyg_DNode *node = Cyg_CList::get_tail();
+        if( node ) return CYG_CLASSFROMBASE( T, Cyg_DNode, node );
+        return NULL;
+    };
     
     T *rem_head()
     {
         Cyg_DNode *node = Cyg_CList::rem_head();
-        return CYG_CLASSFROMBASE( T, Cyg_DNode, node );
+        if( node ) return CYG_CLASSFROMBASE( T, Cyg_DNode, node );
+        return NULL;
     };
 
     T *rem_tail()
     {
         Cyg_DNode *node = Cyg_CList::rem_tail();
-        return CYG_CLASSFROMBASE( T, Cyg_DNode, node );
+        if( node ) return CYG_CLASSFROMBASE( T, Cyg_DNode, node );
+        return NULL;
     };
 
     // The rest just default to the Cyg_CList class operations.

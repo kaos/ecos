@@ -78,6 +78,7 @@ cyg_pci_get_device_info ( cyg_pci_device_id devid, cyg_pci_device *dev_info )
     int i;
     cyg_uint8 bus = CYG_PCI_DEV_GET_BUS(devid);
     cyg_uint8 devfn = CYG_PCI_DEV_GET_DEVFN(devid);
+    cyg_uint8 header_type;
 
     dev_info->devid = devid;
 
@@ -96,7 +97,8 @@ cyg_pci_get_device_info ( cyg_pci_device_id devid, cyg_pci_device *dev_info )
     cyg_pcihw_read_config_uint8(bus, devfn, CYG_PCI_CFG_LATENCY_TIMER,
                                 &dev_info->latency_timer);
     cyg_pcihw_read_config_uint8(bus, devfn, CYG_PCI_CFG_HEADER_TYPE,
-                                (cyg_uint8*)&dev_info->header_type);
+                                &header_type);
+    dev_info->header_type = (cyg_pci_header_type) header_type;
     cyg_pcihw_read_config_uint8(bus, devfn, CYG_PCI_CFG_BIST,
                                 &dev_info->bist);
 

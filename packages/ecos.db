@@ -1342,6 +1342,7 @@ target assabet {
         eCos on an Intel StrongARM SA1110 evaluation board."
 }
 
+
 target brutus {
 	alias { "Intel StrongARM SA1100 board" brutus }
 	packages { CYGPKG_HAL_ARM

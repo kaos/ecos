@@ -23,7 +23,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -101,6 +101,15 @@ cdl_package CYGPKG_HAL_ARM_SA11X0 {
             flavor        data
             calculated    (3686400/CYGNUM_HAL_RTC_DENOMINATOR)        ;# Clock for OS Timer is 3.6864MHz
         }
+    }
+
+    cdl_option CYGPKG_HAL_ARM_SA11X0_TESTS {
+	display "SA11x0 HAL tests"
+	flavor  data
+	no_define
+	calculated { "tests/mmap_test" }
+	description   "
+	This option specifies the set of tests for the SA11x0 HAL."
     }
 
 }

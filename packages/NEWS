@@ -1,3 +1,13 @@
+* Added cyg_pci_find_matching() to PCI library API to allow more generalized
+  matching on device properties.
+* ARM EBSA285 now configured to use virtual vectors all the time. Users with
+  old GDB stub ROM images should upgrade to newer GDB stub ROM images, or
+  better still to RedBoot.
+* Stack usage measurement has been added, with the functions
+  pthread_measure_stack_usage() in the POSIX thread API and
+  cyg_thread_measure_stack_usage() in the kernel C API.
+* Thread stack checking support added. See CYGFUN_KERNEL_THREADS_STACK_CHECKING
+  in the kernel CDL for information.
 * Add syscall support to RedBoot for compatibility with newlib-based BSPs
 * Bridge support added to the PCI library. Use cyg_pci_configure_bus() to
   configure all busses.

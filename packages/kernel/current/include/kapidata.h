@@ -42,6 +42,9 @@
 //              sizes of these structures are dependent on the system
 //              configuration and must be kept in step with their real
 //              counterparts in the C++ headers.
+//              IMPORTANT: It is NOT guaranteed that the fields of these
+//              structures correspond to the equivalent fields in the
+//              C++ classes they shadow.
 // Usage:       included by kapi.h
 //
 //####DESCRIPTIONEND####
@@ -149,6 +152,7 @@ struct cyg_alarm
 {
 #if defined(CYGIMP_KERNEL_COUNTERS_SINGLE_LIST) || defined(CYGIMP_KERNEL_COUNTERS_MULTI_LIST)
     cyg_alarm           *next;    
+    cyg_alarm           *prev;    
 #endif
     cyg_counter         *counter;
     cyg_alarm_t         *alarm;

@@ -52,6 +52,8 @@
 
 #include <cyg/kernel/ktypes.h>
 
+#include <cyg/infra/clist.hxx>                  // List implementation
+
 // -------------------------------------------------------------------------
 // The macro CYGNUM_KERNEL_SCHED_PRIORITIES contains the number of priorities
 // supported by the scheduler.
@@ -95,6 +97,7 @@ typedef cyg_ucount32 cyg_sched_bitmap;
 // thread queue class.
 
 class Cyg_ThreadQueue_Implementation
+    : public Cyg_CList_T<Cyg_Thread>
 {
     friend class Cyg_Scheduler_Implementation;
     friend class Cyg_SchedThread_Implementation;
@@ -103,13 +106,11 @@ class Cyg_ThreadQueue_Implementation
     void                set_thread_queue(Cyg_Thread *thread,
                                          Cyg_ThreadQueue *tq );
 
-    Cyg_Thread *queue;
-
 protected:
 
     // API used by Cyg_ThreadQueue
 
-    Cyg_ThreadQueue_Implementation();   // Constructor
+    Cyg_ThreadQueue_Implementation() {};   // Constructor
     
                                         // Add thread to queue
     void                enqueue(Cyg_Thread *thread);
@@ -120,22 +121,7 @@ protected:
                                         // remove first thread on queue    
     Cyg_Thread          *dequeue();
 
-                                        // remove specified thread from queue
-    void                remove(Cyg_Thread *thread);
-
-                                        // test if queue is empty
-    cyg_bool            empty();
-
-    void                rotate();       // Rotate the queue
-
-    void                to_head(Cyg_Thread *thread);
-
 };
-
-inline cyg_bool Cyg_ThreadQueue_Implementation::empty()
-{
-    return queue == NULL;
-}
 
 // thread queue used exclusively by the scheduler, with simpler enqueueing
 
@@ -232,18 +218,12 @@ inline void Cyg_Scheduler_Implementation::reset_timeslice_count()
 // of each thread.
 
 class Cyg_SchedThread_Implementation
+    : public Cyg_DNode_T<Cyg_Thread>
 {
     friend class Cyg_Scheduler_Implementation;
     friend class Cyg_ThreadQueue_Implementation;
     friend class Cyg_SchedulerThreadQueue_Implementation;
 
-    Cyg_Thread *next;                   // next thread in queue
-    Cyg_Thread *prev;                   // previous thread in queue
-        
-    void insert( Cyg_Thread *thread );  // Insert thread in front of this
-
-    void remove();                      // remove this from queue
-    
 protected:
 
     cyg_priority        priority;       // current thread priority

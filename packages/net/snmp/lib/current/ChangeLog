@@ -1,3 +1,7 @@
+2001-01-10  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/snmplib.cdl: Clarify ISO C requirements
+
 2000-11-07  Hugo Tyson  <hmt@redhat.com>
 2000-11-07  Andrew Lunn <Andrew.Lunn@ascom.ch>
 

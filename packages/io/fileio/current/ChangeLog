@@ -1,3 +1,8 @@
+2001-01-05  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* tests/socket.c (main):
+	Added call to init_all_network_interfaces().
+
 2000-12-15  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/misc.cxx: Fixed some bugs in initialization of timestamp
@@ -39,7 +44,7 @@
 	complicated and expensive, so the other two mechanisms are to be
 	preferred if possible.
 
-	* include/fileio.h: Added FS_INFO_GETCWD gtinfo option and a
+	* include/fileio.h: Added FS_INFO_GETCWD getinfo option and a
 	matching struct cyg_getcwd_info. These are used to access getcwd()
 	support in a filesystem.
 

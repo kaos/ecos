@@ -46,6 +46,8 @@ cdl_package CYGPKG_IO_ETH_DRIVERS {
     parent        CYGPKG_IO
     description   "Platform independent ethernet drivers"
 
+    implements    CYGPKG_NET_DRIVER_FRAMEWORK
+
     cdl_component CYGPKG_IO_ETH_DRIVERS_NET {
         display       "Support for standard eCos TCP/IP stack."
         flavor        bool

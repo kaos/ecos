@@ -1,3 +1,7 @@
+2001-01-10  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/snmpagent.cdl: Clarify ISO C requirements
+
 2000-11-29  Hugo Tyson  <hmt@redhat.com>
 2000-11-29  Andrew Lunn <Andrew.Lunn@ascom.ch>
 	* src/mibgroup/mibII/dot3.c (var_dot3StatsTable): 

@@ -1,3 +1,8 @@
+2001-01-05  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/clist.hxx: Many changes to make these classes usable in
+	the MLQ scheduler and alarm objects.
+
 2000-12-15  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/clist.hxx: Added this implementation of simple circular

@@ -46,8 +46,13 @@ cdl_package CYGPKG_SNMPAGENT {
 #    doc           doc/index.html
     include_dir   ucd-snmp
     requires      CYGPKG_IO
-    requires      CYGPKG_LIBC
-    requires      CYGPKG_ERROR
+    requires      { 0 != CYGINT_ISO_STRING_STRFUNCS }
+    requires      { 0 != CYGINT_ISO_STDLIB_STRCONV }
+    requires      { 0 != CYGINT_ISO_STDIO_FORMATTED_IO }
+    requires      { 0 != CYGINT_ISO_STRING_STRFUNCS }
+    requires      { 0 != CYGINT_ISO_MALLOC }
+    requires      { 0 != CYGINT_ISO_ERRNO }
+    requires      { 0 != CYGINT_ISO_ERRNO_CODES }
     requires      CYGPKG_NET
     requires      CYGPKG_SNMPLIB
     description   "SNMP agent based on the UCD-SNMP project."

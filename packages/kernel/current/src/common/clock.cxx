@@ -78,19 +78,6 @@ Cyg_Counter::Cyg_Counter(
 
     counter = 0;
     increment = incr;
-#if defined(CYGIMP_KERNEL_COUNTERS_SINGLE_LIST)
-
-    alarm_list = NULL;    // Linear list of Alarms
-
-#elif defined(CYGIMP_KERNEL_COUNTERS_MULTI_LIST)
-
-    for(cyg_ucount32 i=0; i < CYGNUM_KERNEL_COUNTERS_MULTI_LIST_SIZE; i++) {
-        alarm_list[i] = NULL;
-    }
-
-#else
-#error "No CYGIMP_KERNEL_COUNTERS_x_LIST config"
-#endif
 
 }
 
@@ -154,7 +141,7 @@ void Cyg_Counter::tick( cyg_uint32 ticks )
 
         // now check for any expired alarms
 
-        Cyg_Alarm **alarm_list_ptr;     // pointer to list
+        Cyg_Alarm_List *alarm_list_ptr;     // pointer to list
 
 #if defined(CYGIMP_KERNEL_COUNTERS_SINGLE_LIST)
 
@@ -180,17 +167,17 @@ void Cyg_Counter::tick( cyg_uint32 ticks )
 
         // With a sorted alarm list, we can simply pick alarms off the
         // front of the list until we find one that is in the future.
-        
-        while( *alarm_list_ptr != NULL )
-        {
-            Cyg_Alarm *alarm = *alarm_list_ptr;
 
+        while( !alarm_list_ptr->empty() )
+        {
+            Cyg_Alarm *alarm = alarm_list_ptr->get_head();
+        
             CYG_ASSERTCLASS(alarm, "Bad alarm in counter list" );
             
             if( alarm->trigger <= counter )
             {
                 // remove alarm from list
-                *alarm_list_ptr = alarm->next;
+                alarm_list_ptr->rem_head();
 
                 if( alarm->interval != 0 )
                 {
@@ -210,7 +197,8 @@ void Cyg_Counter::tick( cyg_uint32 ticks )
                 // all done, loop
             }
             else break;
-        }
+            
+        } 
 #else
 
         // With an unsorted list, we must scan the whole list for
@@ -220,20 +208,18 @@ void Cyg_Counter::tick( cyg_uint32 ticks )
         // eliminate alarms we put them onto the done_list and at the
         // end we then move it back to where it belongs.
         
-        Cyg_Alarm *done_list = NULL;
+        Cyg_Alarm_List done_list;
 
-        Cyg_Alarm *alarm_list = *alarm_list_ptr;
-        *alarm_list_ptr = NULL;
+        Cyg_Alarm_List alarm_list;
+
+        alarm_list.merge( *alarm_list_ptr );
         
-        while( alarm_list != NULL )
+        while( !alarm_list.empty() )
         {
-            Cyg_Alarm *alarm = alarm_list;
+            Cyg_Alarm *alarm = alarm_list.rem_head();
 
             CYG_ASSERTCLASS(alarm, "Bad alarm in counter list" );
             
-            // remove alarm from list
-            alarm_list = alarm->next;
-
             if( alarm->trigger <= counter )
             {
                 if( alarm->interval != 0 )
@@ -256,27 +242,18 @@ void Cyg_Counter::tick( cyg_uint32 ticks )
             else
             {
                 // add unused alarm to done list.
-                alarm->next = done_list;
-                done_list = alarm;
+                done_list.add_tail(alarm);
             }
         }
 
-        // Transfer any alarms that might have been added to the
-        // alarm list by alarm callbacks to the done list. This
-        // happens very rarely.
-        while( *alarm_list_ptr != NULL )
-        {
-            Cyg_Alarm *alarm = *alarm_list_ptr;            
-            *alarm_list_ptr = alarm->next;
-            alarm->next = done_list;
-            done_list = alarm;
-        }
+        // Return done list to real list. If any alarms have been
+        // added to the alarm list while we have been scanning then
+        // the done list will be added behind them.
         
-        // return done list to real list
-        *alarm_list_ptr = done_list;
+        alarm_list_ptr->merge( done_list );
         
 #endif        
-        Cyg_Scheduler::unlock();    
+        Cyg_Scheduler::unlock();
 
     }
     
@@ -334,25 +311,24 @@ void Cyg_Counter::add_alarm( Cyg_Alarm *alarm )
     
     CYG_INSTRUMENT_ALARM( ADD, this, alarm );
  
-    {
-        // Find the pointer to the relevant list _after_ a retrigger
-        // alarm has been given its new trigger time.
+    // Find the pointer to the relevant list _after_ a retrigger
+    // alarm has been given its new trigger time.
 
-        Cyg_Alarm **alarm_list_ptr;     // pointer to list
+    Cyg_Alarm_List *alarm_list_ptr;     // pointer to list
 
 #if defined(CYGIMP_KERNEL_COUNTERS_SINGLE_LIST)
 
-        alarm_list_ptr = &alarm_list;
+    alarm_list_ptr = &alarm_list;
 
 #elif defined(CYGIMP_KERNEL_COUNTERS_MULTI_LIST)
 
-        // Each alarm must go into the list that covers the tick that is
-        // going to happen _after_ the trigger time (or at it if trigger
-        // happens to fall on a tick.
+    // Each alarm must go into the list that covers the tick that is
+    // going to happen _after_ the trigger time (or at it if trigger
+    // happens to fall on a tick.
     
-        alarm_list_ptr = &(alarm_list[
-            ((alarm->trigger+increment-1)/increment) %
-                                CYGNUM_KERNEL_COUNTERS_MULTI_LIST_SIZE ] );
+    alarm_list_ptr = &(alarm_list[
+        ((alarm->trigger+increment-1)/increment) %
+        CYGNUM_KERNEL_COUNTERS_MULTI_LIST_SIZE ] );
     
 #else
 #error "No CYGIMP_KERNEL_COUNTERS_x_LIST config"
@@ -360,30 +336,40 @@ void Cyg_Counter::add_alarm( Cyg_Alarm *alarm )
 
 #ifdef CYGIMP_KERNEL_COUNTERS_SORT_LIST
         
-        // Now that we have the list pointer, we can use common code for
-        // both list oragnizations.
+    // Now that we have the list pointer, we can use common code for
+    // both list oragnizations.
 
-        while( *alarm_list_ptr != NULL )
+    Cyg_Alarm *list_alarm = alarm_list_ptr->get_head();
+
+    if( list_alarm != NULL )
+        do
         {
-            Cyg_Alarm *list_alarm = *alarm_list_ptr;
-        
             CYG_ASSERTCLASS(list_alarm, "Bad alarm in counter list" );
 
             // The alarms are in ascending trigger order. When we
             // find an alarm that is later than us, we go in front of
             // it.
         
-            if( list_alarm->trigger > alarm->trigger ) break;
-            else alarm_list_ptr = &list_alarm->next;
-        }
-#endif
-        // Insert the new alarm at *alarm_list_ptr
+            if( list_alarm->trigger > alarm->trigger )
+            {
+                alarm_list_ptr->insert( list_alarm, alarm );
+                break;
+            }
 
-        alarm->next = *alarm_list_ptr;
-        *alarm_list_ptr = alarm;
+            list_alarm = list_alarm->get_next();
+            
+        } while( list_alarm != alarm_list_ptr->get_head() );
+
+    else
+        alarm_list_ptr->add_tail( alarm );
+
+#else    
     
-        Cyg_Scheduler::unlock();            
-    }
+    alarm_list_ptr->add_tail( alarm );
+        
+#endif
+
+    Cyg_Scheduler::unlock();            
 }
 
 // -------------------------------------------------------------------------
@@ -396,7 +382,7 @@ void Cyg_Counter::rem_alarm( Cyg_Alarm *alarm )
     CYG_ASSERTCLASS( this, "Bad counter object" );
     CYG_ASSERTCLASS( alarm, "Bad alarm passed" );
     
-    Cyg_Alarm **alarm_list_ptr;     // pointer to list
+    Cyg_Alarm_List *alarm_list_ptr;     // pointer to list
 
 #if defined(CYGIMP_KERNEL_COUNTERS_SINGLE_LIST)
 
@@ -418,24 +404,9 @@ void Cyg_Counter::rem_alarm( Cyg_Alarm *alarm )
     Cyg_Scheduler::lock();
 
     CYG_INSTRUMENT_ALARM( REM, this, alarm );
+
+    alarm_list_ptr->remove( alarm );
     
-    while( *alarm_list_ptr != NULL )
-    {
-        Cyg_Alarm *list_alarm = *alarm_list_ptr;
-
-        CYG_ASSERTCLASS(list_alarm, "Bad alarm in counter list" );
-
-        if( list_alarm == alarm ) break;
-        else alarm_list_ptr = &list_alarm->next;
-    }
-
-    // If the alarm was found, remove it from the list.
-    if( *alarm_list_ptr != NULL )
-    {
-        *alarm_list_ptr = alarm->next;
-        alarm->enabled = false;
-    }
-
     Cyg_Scheduler::unlock();            
 }
 
@@ -670,10 +641,6 @@ Cyg_Alarm::Cyg_Alarm(
     interval    = 0;
     enabled     = false;
 
-#if defined(CYGIMP_KERNEL_COUNTERS_SINGLE_LIST) || defined(CYGIMP_KERNEL_COUNTERS_MULTI_LIST)
-    next        = NULL;
-#endif
-    
 }
 
 Cyg_Alarm::Cyg_Alarm(){}

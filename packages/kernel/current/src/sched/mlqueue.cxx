@@ -327,46 +327,6 @@ Cyg_SchedThread_Implementation::Cyg_SchedThread_Implementation
     timeslice_enabled = true;
 #endif
     
-    // point the next and prev field at this thread.
-    
-    next = prev = CYG_CLASSFROMBASE(Cyg_Thread,
-                                    Cyg_SchedThread_Implementation,
-                                    this);
-    CYG_REPORT_RETURN();
-}
-
-// -------------------------------------------------------------------------
-// Insert thread in front of this
-
-void
-Cyg_SchedThread_Implementation::insert( Cyg_Thread *thread)
-{
-    CYG_REPORT_FUNCTION();
-    CYG_REPORT_FUNCARG1("thread=%08x", thread);
-        
-    thread->next        = CYG_CLASSFROMBASE(Cyg_Thread,
-                                            Cyg_SchedThread_Implementation,
-                                            this);
-    thread->prev        = prev;
-    prev->next          = thread;
-    prev                = thread;    
-
-    CYG_REPORT_RETURN();
-}
-
-// -------------------------------------------------------------------------
-// remove this from queue
-
-void
-Cyg_SchedThread_Implementation::remove(void)
-{
-    CYG_REPORT_FUNCTION();
-        
-    next->prev          = prev;
-    prev->next          = next;
-    next = prev         = CYG_CLASSFROMBASE(Cyg_Thread,
-                                            Cyg_SchedThread_Implementation,
-                                            this);
     CYG_REPORT_RETURN();
 }
 
@@ -487,16 +447,7 @@ Cyg_SchedThread_Implementation::to_queue_head( void )
 //==========================================================================
 // Cyg_ThreadQueue_Implementation class members
 
-Cyg_ThreadQueue_Implementation::Cyg_ThreadQueue_Implementation()
-{
-    CYG_REPORT_FUNCTION();
-        
-    queue = NULL;                       // empty queue
-
-    CYG_REPORT_RETURN();
-}
-
-        
+// -------------------------------------------------------------------------        
 
 void
 Cyg_ThreadQueue_Implementation::enqueue(Cyg_Thread *thread)
@@ -504,76 +455,74 @@ Cyg_ThreadQueue_Implementation::enqueue(Cyg_Thread *thread)
     CYG_REPORT_FUNCTION();
     CYG_REPORT_FUNCARG1("thread=%08x", thread);
 
-    if( queue == NULL ) queue = thread;
-    else {
 #ifdef CYGIMP_KERNEL_SCHED_SORTED_QUEUES
 
-        // Insert the thread into the queue in priority order.
-        
-        if( queue == queue->next )
+    // Insert the thread into the queue in priority order.
+
+    Cyg_Thread *qhead = get_head();
+
+    if( qhead == NULL ) add_tail( thread );
+    else if( qhead == qhead->get_next() )
+    {
+        // There is currently only one thread in the queue, join it
+        // and adjust the queue pointer to point to the highest
+        // priority of the two. If they are the same priority,
+        // leave the pointer pointing to the oldest.
+
+        qhead->insert( thread );
+
+        if( thread->priority < qhead->priority )
+            to_head(thread);
+    }
+    else
+    {
+        // There is more than one thread in the queue. First check
+        // whether we are of higher priority than the head and if
+        // so just jump in at the front. Also check whether we are
+        // lower priority than the tail and jump onto the end.
+        // Otherwise we really have to search the queue to find
+        // our place.
+
+        if( thread->priority < qhead->priority )
         {
-            // There is only one other thread in the queue, join it
-            // and adjust the queue pointer to point to the highest
-            // priority of the two. If they are the same priority,
-            // leave the pointer pointing to the oldest.
+            qhead->insert( thread );
+            to_head(thread);
+        }
+        else if( thread->priority > get_tail()->priority )
+        {
+            // We are lower priority than any thread in the queue,
+            // go in at the end.
 
-            queue->insert( thread );
-
-            if( thread->priority < queue->priority )
-                queue = thread;
+            add_tail( thread );
         }
         else
         {
-            // There is more than one thread in the queue. First check
-            // whether we are of higher priority than the head and if
-            // so just jump in at the front. Also check whether we are
-            // lower priority than the tail and jump onto the end.
-            // Otherwise we really have to search the queue to find
-            // our place.
+            // Search the queue. We do this backwards so that we
+            // always add new threads after any that have the same
+            // priority.
 
-            if( thread->priority < queue->priority )
-            {
-                queue->insert( thread );
-                queue = thread;
-            }
-            else if( thread->priority > queue->prev->priority )
-            {
-                // We are lower priority than any thread in the queue,
-                // go in at the end.
-
-                queue->prev->insert( thread );
-            }
-            else
-            {
-                // Search the queue. We do this backwards so that we
-                // always add new threads after any that have the same
-                // priority.
-
-                // Because of the previous tests we know that this
-                // search will terminate before we hit the head of the
-                // queue, hence we do not need to check for that
-                // condition.
+            // Because of the previous tests we know that this
+            // search will terminate before we hit the head of the
+            // queue, hence we do not need to check for that
+            // condition.
                 
-                Cyg_Thread *qtmp = queue->prev;
+            Cyg_Thread *qtmp = get_tail();
 
-                // Scan the queue until we find a higher or equal
-                // priority thread.
+            // Scan the queue until we find a higher or equal
+            // priority thread.
 
-                while( thread->priority > qtmp->priority )
-                    qtmp = qtmp->prev;
+            while( thread->priority > qtmp->priority )
+                qtmp = qtmp->get_prev();
 
-                // Insert ourself after the node pointed to by qtmp.
-                // We do this by inserting before the next node since
-                // that is the operation we have.
+            // Append ourself after the node pointed to by qtmp.
                 
-                qtmp->next->insert( thread );
-            }
-
+            qtmp->append( thread );
         }
-#else
-        queue->prev->insert(thread);
-#endif
     }
+#else
+    // Just add the thread to the tail of the list
+    add_tail( thread );
+#endif
     
     thread->queue = CYG_CLASSFROMBASE(Cyg_ThreadQueue,
                                       Cyg_ThreadQueue_Implementation,
@@ -588,26 +537,10 @@ Cyg_ThreadQueue_Implementation::dequeue(void)
 {
     CYG_REPORT_FUNCTYPE("returning thread %08x");
         
-    if( queue == NULL ) {
-        CYG_REPORT_RETVAL(NULL);
-        return NULL;
-    }
+    Cyg_Thread *thread = rem_head();
     
-    Cyg_Thread *thread = queue;
-    
-    if( thread->next == thread )
-    {
-        // sole thread on list, NULL out ptr
-        queue = NULL;
-    }
-    else
-    {
-        // advance to next and remove thread
-        queue = thread->next;
-        thread->remove();
-    }
-
-    thread->queue = NULL;
+    if( thread != NULL )
+        thread->queue = NULL;
 
     CYG_REPORT_RETVAL(thread);
     return thread;
@@ -620,67 +553,7 @@ Cyg_ThreadQueue_Implementation::highpri(void)
 {
     CYG_REPORT_FUNCTYPE("returning thread %08x");
     CYG_REPORT_RETVAL(queue);
-    return queue;
-}
-
-// -------------------------------------------------------------------------
-
-void
-Cyg_ThreadQueue_Implementation::remove(Cyg_Thread *thread)
-{
-    CYG_REPORT_FUNCTION();
-    CYG_REPORT_FUNCARG1("thread=%08x", thread);
-        
-    // If the thread we want is the at the head
-    // of the list, and is on its own, clear the
-    // list and return. Otherwise advance to the
-    // next thread and remove ours. If the thread
-    // is not at the head of the list, just dequeue
-    // it.
-
-    thread->queue = NULL;
-    
-    if( queue == thread )
-    {
-        if( thread->next == thread )
-        {
-            queue = NULL;
-            return;
-        }
-        else queue = thread->next;
-    }
-
-    thread->Cyg_SchedThread_Implementation::remove();
-
-    CYG_REPORT_RETURN();
-}
-
-// -------------------------------------------------------------------------
-// Rotate the front thread on the queue to the back.
-
-void
-Cyg_ThreadQueue_Implementation::rotate(void)
-{
-    CYG_REPORT_FUNCTION();
-
-    CYG_ASSERT(queue != 0, "Rotating an empty queue");
-    
-    queue = queue->next;
-
-    CYG_REPORT_RETURN();
-}
-
-// -------------------------------------------------------------------------
-// Rotate or move the thread quoted to the front.
-
-void
-Cyg_ThreadQueue_Implementation::to_head(Cyg_Thread *thread)
-{
-    CYG_REPORT_FUNCTION();
-        
-    queue = thread;
-
-    CYG_REPORT_RETURN();
+    return get_head();
 }
 
 // -------------------------------------------------------------------------
@@ -701,8 +574,7 @@ Cyg_SchedulerThreadQueue_Implementation::enqueue(Cyg_Thread *thread)
     CYG_REPORT_FUNCTION();
     CYG_REPORT_FUNCARG1("thread=%08x", thread);
 
-    if( queue == NULL ) queue = thread;
-    else queue->prev->insert(thread);
+    add_tail( thread );
     
     set_thread_queue( thread, CYG_CLASSFROMBASE(Cyg_ThreadQueue,
                                       Cyg_SchedulerThreadQueue_Implementation,
