@@ -1,3 +1,10 @@
+2003-03-25  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/common/serial.c (serial_get_config): For both INPUT_FLUSH
+	and OUTPUT_FLUSH keys, pass down to the hardware driver as well
+	to allow it to flush FIFOs.
+	Based on patch from Roland Cassebohm.
+
 2003-03-20  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/common/serial.c: Only return -EAGAIN if no data moved.

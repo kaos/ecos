@@ -617,6 +617,11 @@ serial_get_config(cyg_io_handle_t handle, cyg_uint32 key, void *xbuf,
             in_cbuf->waiting = false;
         }
         in_cbuf->get = in_cbuf->put = in_cbuf->nb = 0;  // Flush buffered input
+
+        // Pass to the hardware driver in case it wants to flush FIFOs etc.
+        (funs->set_config)(chan,
+                           CYG_IO_SET_CONFIG_SERIAL_INPUT_FLUSH,
+                           NULL, NULL);
         cyg_drv_dsr_unlock();
         cyg_drv_mutex_unlock(&in_cbuf->lock);
         break;
@@ -643,6 +648,10 @@ serial_get_config(cyg_io_handle_t handle, cyg_uint32 key, void *xbuf,
             out_cbuf->get = out_cbuf->put = out_cbuf->nb = 0;  // Empties queue!
             (funs->stop_xmit)(chan);  // Done with transmit
         }
+        // Pass to the hardware driver in case it wants to flush FIFOs etc.
+        (funs->set_config)(chan,
+                           CYG_IO_SET_CONFIG_SERIAL_OUTPUT_FLUSH,
+                           NULL, NULL);
         if (out_cbuf->waiting) {
             out_cbuf->abort = true;
             cyg_drv_cond_signal(&out_cbuf->wait);
