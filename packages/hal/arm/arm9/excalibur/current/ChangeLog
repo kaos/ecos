@@ -1,3 +1,7 @@
+2003-02-13  Patrick Doyle  <wpd@delcomsys.com>
+	* src/excalibur_misc.c: Replaced explicit prototype of memset with
+	#include <string.h>.
+
 2002-08-12  Mark Salter  <msalter@redhat.com>
 
 	* cdl/hal_arm_arm9_excalibur.cdl: Remove CYGSEM_REDBOOT_ARM_LINUX_BOOT
