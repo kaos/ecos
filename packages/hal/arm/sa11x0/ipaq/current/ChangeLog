@@ -1,5 +1,8 @@
 2002-09-20  Gary Thomas  <gthomas@ecoscentric.com>
 
+	* src/lcd_support.c (lcd_comm_control): Need to ingore BAUD commands
+	since they may confuse RedBoot.
+
 	* include/ipaq.h: Define "LinkUP Systems" PCMCIA controller.  Used
 	on Compaq dual PCMCIA sleeve.
 

@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -1157,6 +1158,8 @@ lcd_comm_control(void *__ch_data, __comm_control_cmd_t __func, ...)
 	break;
     }
     case __COMMCTL_FLUSH_OUTPUT:
+    case __COMMCTL_GETBAUD:
+    case __COMMCTL_SETBAUD:
         ret = 0;
 	break;
     default:
