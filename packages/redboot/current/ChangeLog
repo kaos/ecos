@@ -1,3 +1,9 @@
+2003-10-17  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/load.c: Only examine loadable segments when scanning to determine
+	lowest loadable address (only used when -b XXX option used).  Otherwise,
+	an offset into space could be chosen.
+
 2003-10-16  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* doc/redboot_installing.sgml: Fix eb40 flash install instructions.
