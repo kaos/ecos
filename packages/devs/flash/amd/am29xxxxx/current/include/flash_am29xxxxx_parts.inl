@@ -249,6 +249,54 @@
                      }
     },
 #endif
+#ifdef CYGHWR_DEVS_FLASH_AMD_AM29DL323D
+    {   // AM29DL323D-T
+        device_id  : FLASHWORD(0x50),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 64,
+        device_size: 0x400000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x400000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : true,
+        bootblocks : { 0x3f0000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       _LAST_BOOTBLOCK
+                     },
+        banked     : true,
+        banks      : { 0x300000 * CYGNUM_FLASH_INTERLEAVE,
+                       0
+                     }
+    },
+    {   // AM29DL323D-B
+        device_id  : FLASHWORD(0x53),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 64,
+        device_size: 0x400000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x400000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : true,
+        bootblocks : { 0x000000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       _LAST_BOOTBLOCK
+                     },
+        banked     : true,
+        banks      : { 0x100000 * CYGNUM_FLASH_INTERLEAVE,
+                       0
+                     }
+    },
+#endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29DL324D
     {   // AM29DL324D-T
         device_id  : FLASHWORD(0x5c),
@@ -567,6 +615,102 @@
                        _LAST_BOOTBLOCK
                      },
         banked     : false
+    },
+#endif
+#ifdef CYGHWR_DEVS_FLASH_AMD_AM29DL322D
+    {   // AM29DL322D-T
+        device_id  : FLASHWORD(0x2255),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 64,
+        device_size: 0x400000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x400000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : true,
+        bootblocks : { 0x3f0000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       _LAST_BOOTBLOCK
+                     },
+        banked     : true,
+        banks      : { 0x380000 * CYGNUM_FLASH_INTERLEAVE,
+                       0
+                     }
+    },
+    {   // AM29DL322D-B
+        device_id  : FLASHWORD(0x2256),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 64,
+        device_size: 0x400000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x400000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : true,
+        bootblocks : { 0x000000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       _LAST_BOOTBLOCK
+                     },
+        banked     : true,
+        banks      : { 0x80000 * CYGNUM_FLASH_INTERLEAVE,
+                       0
+                     }
+    },
+#endif
+#ifdef CYGHWR_DEVS_FLASH_AMD_AM29DL323D
+    {   // AM29DL323D-T
+        device_id  : FLASHWORD(0x2250),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 64,
+        device_size: 0x400000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x400000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : true,
+        bootblocks : { 0x3f0000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       _LAST_BOOTBLOCK
+                     },
+        banked     : true,
+        banks      : { 0x300000 * CYGNUM_FLASH_INTERLEAVE,
+                       0
+                     }
+    },
+    {   // AM29DL323D-B
+        device_id  : FLASHWORD(0x2253),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 64,  
+        device_size: 0x400000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x400000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : true,
+        bootblocks : { 0x000000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       _LAST_BOOTBLOCK
+                     },
+        banked     : true,
+        banks      : { 0x100000 * CYGNUM_FLASH_INTERLEAVE,
+                       0
+                     }
     },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29DL324D
