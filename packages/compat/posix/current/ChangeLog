@@ -1,3 +1,9 @@
+2002-12-10  Wade Jensen  <waj4news@cox.net>
+2002-12-10  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/mutex.cxx (pthread_cond_timedwait): Initialize clock converters
+	only once ever.
+
 2002-11-26  Nick Garnett  <nickg@ecoscentric.com>
 
 	* src/signal.cxx: Changed the three routines added in the last

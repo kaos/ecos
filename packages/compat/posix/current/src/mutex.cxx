@@ -41,7 +41,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):           nickg
-// Contributors:        nickg, jlarmour
+// Contributors:        nickg, jlarmour, Wade Jensen
 // Date:                2000-03-27
 // Purpose:             POSIX pthread implementation
 // Description:         This file contains the implementation of the POSIX pthread
@@ -500,12 +500,37 @@ externC int pthread_cond_timedwait (pthread_cond_t *cond,
     PTHREAD_CHECK( mutex );    
     PTHREAD_CHECK( abstime );    
 
-    cyg_tick_count ticks;
-    struct Cyg_Clock::converter ns_converter, sec_converter;
-    
-    Cyg_Clock::real_time_clock->get_other_to_clock_converter( 1, &ns_converter );
-    Cyg_Clock::real_time_clock->get_other_to_clock_converter( 1000000000, &sec_converter );
+    // Only initialize the converters once or they will consume a huge
+    // amount or runtime.
 
+    static struct Cyg_Clock::converter ns_converter;
+    static struct Cyg_Clock::converter sec_converter;
+    static volatile cyg_atomic conv_init;
+    if (!conv_init)
+    {
+
+        // Try to avoid unnecessarily locking the scheduler when we are not
+        // initializing the converters.  Check the conv_init flag again to
+        // avoid race conditions.
+
+        struct Cyg_Clock::converter temp_ns_converter, temp_sec_converter;
+    
+        Cyg_Clock::real_time_clock
+            ->get_other_to_clock_converter( 1, &temp_ns_converter );
+        Cyg_Clock::real_time_clock
+            ->get_other_to_clock_converter( 1000000000, &temp_sec_converter );
+
+        Cyg_Scheduler::lock();
+        if (!conv_init)
+        {
+            ns_converter = temp_ns_converter;
+            sec_converter = temp_sec_converter;
+            conv_init=1;
+        }
+        Cyg_Scheduler::unlock();
+    }
+
+    cyg_tick_count ticks;
     ticks = Cyg_Clock::convert( abstime->tv_sec, &sec_converter );
     ticks += Cyg_Clock::convert( abstime->tv_nsec, &ns_converter );
     
