@@ -12,7 +12,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2002, 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -201,10 +201,10 @@
 #endif
 
 // CP Microcode Revision Number
-#define CYGARC_REG_REV_NUM         (CYGARC_REG_IMM_BASE + 0x3cb0)
+#define CYGARC_REG_REV_NUM         ((CYGARC_REG_IMM_BASE)+0x3cb0)
 
 // system protection control
-#define CYGARC_REG_IMM_SYPCR       (CYGARC_REG_IMM_BASE + 0x004)
+#define CYGARC_REG_IMM_SYPCR       ((CYGARC_REG_IMM_BASE)+0x004)
 #define CYGARC_REG_IMM_SYPCR_SWTC_MASK 0xffff0000
 #define CYGARC_REG_IMM_SYPCR_BMT_MASK  0x0000ff00
 #define CYGARC_REG_IMM_SYPCR_BME       0x00000080
@@ -214,37 +214,37 @@
 #define CYGARC_REG_IMM_SYPCR_SWP       0x00000001
 
 // interrupt pend register
-#define CYGARC_REG_IMM_SIPEND      (CYGARC_REG_IMM_BASE + 0x010)
+#define CYGARC_REG_IMM_SIPEND      ((CYGARC_REG_IMM_BASE)+0x010)
 #define CYGARC_REG_IMM_SIPEND_IRQ0 0x80000000 // irq0 is bit 0...
 
 // interrupt mask
-#define CYGARC_REG_IMM_SIMASK      (CYGARC_REG_IMM_BASE + 0x014)
+#define CYGARC_REG_IMM_SIMASK      ((CYGARC_REG_IMM_BASE)+0x014)
 #define CYGARC_REG_IMM_SIMASK_IRQ0 0x80000000 // ... irq n is bit n*2
 
 // interrupt edge level mask
-#define CYGARC_REG_IMM_SIEL        (CYGARC_REG_IMM_BASE + 0x018)
+#define CYGARC_REG_IMM_SIEL        ((CYGARC_REG_IMM_BASE)+0x018)
 #define CYGARC_REG_IMM_SIEL_IRQ0   0x80000000
 
 // interrupt vector
-#define CYGARC_REG_IMM_SIVEC       (CYGARC_REG_IMM_BASE + 0x01c)
+#define CYGARC_REG_IMM_SIVEC       ((CYGARC_REG_IMM_BASE)+0x01c)
 
 // memory controller
-#define CYGARC_REG_IMM_BR0         (CYGARC_REG_IMM_BASE + 0x100)
-#define CYGARC_REG_IMM_OR0         (CYGARC_REG_IMM_BASE + 0x104)
-#define CYGARC_REG_IMM_BR1         (CYGARC_REG_IMM_BASE + 0x108)
-#define CYGARC_REG_IMM_OR1         (CYGARC_REG_IMM_BASE + 0x10c)
-#define CYGARC_REG_IMM_BR2         (CYGARC_REG_IMM_BASE + 0x110)
-#define CYGARC_REG_IMM_OR2         (CYGARC_REG_IMM_BASE + 0x114)
-#define CYGARC_REG_IMM_BR3         (CYGARC_REG_IMM_BASE + 0x118)
-#define CYGARC_REG_IMM_OR3         (CYGARC_REG_IMM_BASE + 0x11c)
-#define CYGARC_REG_IMM_BR4         (CYGARC_REG_IMM_BASE + 0x120)
-#define CYGARC_REG_IMM_OR4         (CYGARC_REG_IMM_BASE + 0x124)
-#define CYGARC_REG_IMM_BR5         (CYGARC_REG_IMM_BASE + 0x128)
-#define CYGARC_REG_IMM_OR5         (CYGARC_REG_IMM_BASE + 0x12c)
-#define CYGARC_REG_IMM_BR6         (CYGARC_REG_IMM_BASE + 0x130)
-#define CYGARC_REG_IMM_OR6         (CYGARC_REG_IMM_BASE + 0x134)
-#define CYGARC_REG_IMM_BR7         (CYGARC_REG_IMM_BASE + 0x138)
-#define CYGARC_REG_IMM_OR7         (CYGARC_REG_IMM_BASE + 0x13c)
+#define CYGARC_REG_IMM_BR0         ((CYGARC_REG_IMM_BASE)+0x100)
+#define CYGARC_REG_IMM_OR0         ((CYGARC_REG_IMM_BASE)+0x104)
+#define CYGARC_REG_IMM_BR1         ((CYGARC_REG_IMM_BASE)+0x108)
+#define CYGARC_REG_IMM_OR1         ((CYGARC_REG_IMM_BASE)+0x10c)
+#define CYGARC_REG_IMM_BR2         ((CYGARC_REG_IMM_BASE)+0x110)
+#define CYGARC_REG_IMM_OR2         ((CYGARC_REG_IMM_BASE)+0x114)
+#define CYGARC_REG_IMM_BR3         ((CYGARC_REG_IMM_BASE)+0x118)
+#define CYGARC_REG_IMM_OR3         ((CYGARC_REG_IMM_BASE)+0x11c)
+#define CYGARC_REG_IMM_BR4         ((CYGARC_REG_IMM_BASE)+0x120)
+#define CYGARC_REG_IMM_OR4         ((CYGARC_REG_IMM_BASE)+0x124)
+#define CYGARC_REG_IMM_BR5         ((CYGARC_REG_IMM_BASE)+0x128)
+#define CYGARC_REG_IMM_OR5         ((CYGARC_REG_IMM_BASE)+0x12c)
+#define CYGARC_REG_IMM_BR6         ((CYGARC_REG_IMM_BASE)+0x130)
+#define CYGARC_REG_IMM_OR6         ((CYGARC_REG_IMM_BASE)+0x134)
+#define CYGARC_REG_IMM_BR7         ((CYGARC_REG_IMM_BASE)+0x138)
+#define CYGARC_REG_IMM_OR7         ((CYGARC_REG_IMM_BASE)+0x13c)
 
 #define CYGARC_REG_IMM_BR_BA_MASK  0xffff8000 // base address
 #define CYGARC_REG_IMM_BR_AT_MASK  0x00007000 // address type
@@ -275,7 +275,7 @@
 #define CYGARC_REG_IMM_OR_EHTR     0x00000002 // extended hold time on read
 
 // timebase status and control
-#define CYGARC_REG_IMM_TBSCR       (CYGARC_REG_IMM_BASE + 0x200) 
+#define CYGARC_REG_IMM_TBSCR       ((CYGARC_REG_IMM_BASE)+0x200) 
 #define CYGARC_REG_IMM_TBSCR_REFA  0x0080 // reference interrupt status A
 #define CYGARC_REG_IMM_TBSCR_REFB  0x0040 // reference interrupt status B
 #define CYGARC_REG_IMM_TBSCR_REFAE 0x0008 // reference interrupt enable A
@@ -286,12 +286,12 @@
 #define CYGARC_REG_IMM_TBSCR_IRQMASK 0xff00 // irq priority mask
 
 // timebase reference register 0
-#define CYGARC_REG_IMM_TBREF0      (CYGARC_REG_IMM_BASE + 0x204)
+#define CYGARC_REG_IMM_TBREF0      ((CYGARC_REG_IMM_BASE)+0x204)
 // timebase reference register 1
-#define CYGARC_REG_IMM_TBREF1      (CYGARC_REG_IMM_BASE + 0x208)
+#define CYGARC_REG_IMM_TBREF1      ((CYGARC_REG_IMM_BASE)+0x208)
 
 // real time clock
-#define CYGARC_REG_IMM_RTCSC       (CYGARC_REG_IMM_BASE + 0x220)
+#define CYGARC_REG_IMM_RTCSC       ((CYGARC_REG_IMM_BASE)+0x220)
 #define CYGARC_REG_IMM_RTCSC_SEC   0x0080 // once per second interrupt
 #define CYGARC_REG_IMM_RTCSC_ALR   0x0040 // alarm interrupt
 #define CYGARC_REG_IMM_RTCSC_38K   0x0010 // source select
@@ -303,7 +303,7 @@
 #define CYGARC_REG_IMM_RTCSC_IRQMASK 0xff00 // irq priority mask
 
 // periodic interrupt status & ctrl
-#define CYGARC_REG_IMM_PISCR       (CYGARC_REG_IMM_BASE + 0x240)
+#define CYGARC_REG_IMM_PISCR       ((CYGARC_REG_IMM_BASE)+0x240)
 #define CYGARC_REG_IMM_PISCR_PS    0x0080 // periodic interrupt status
 #define CYGARC_REG_IMM_PISCR_PIE   0x0004 // periodic interrupt enable
 #define CYGARC_REG_IMM_PISCR_PITF  0x0002 // periodic interrupt timer freeze
@@ -312,32 +312,32 @@
 #define CYGARC_REG_IMM_PISCR_IRQMASK 0xff00 // irq priority mask
 
 // periodic interrupt timer count
-#define CYGARC_REG_IMM_PITC        (CYGARC_REG_IMM_BASE + 0x244)
+#define CYGARC_REG_IMM_PITC        ((CYGARC_REG_IMM_BASE)+0x244)
 #define CYGARC_REG_IMM_PITC_COUNT_SHIFT 16 // count is stored in bits 0-15
 
 // system clock control
-#define CYGARC_REG_IMM_SCCR        (CYGARC_REG_IMM_BASE + 0x280)
+#define CYGARC_REG_IMM_SCCR        ((CYGARC_REG_IMM_BASE)+0x280)
 #define CYGARC_REG_IMM_SCCR_TBS    0x02000000 // timebase source
 #define CYGARC_REG_IMM_SCCR_RTDIV  0x01000000 // rtc clock divide
 #define CYGARC_REG_IMM_SCCR_RTSEL  0x00800000 // rtc clock select
 
 // CPM interrupt vector register
-#define CYGARC_REG_IMM_CIVR        (CYGARC_REG_IMM_BASE + 0x930)
+#define CYGARC_REG_IMM_CIVR        ((CYGARC_REG_IMM_BASE)+0x930)
 #define CYGARC_REG_IMM_CIVR_IACK   0x0001 // set this to update register
 #define CYGARC_REG_IMM_CIVR_VECTOR_SHIFT 11 // vector is at bits 0-4
 
 // CPM interrupt configuration reg
-#define CYGARC_REG_IMM_CICR        (CYGARC_REG_IMM_BASE + 0x940)
+#define CYGARC_REG_IMM_CICR        ((CYGARC_REG_IMM_BASE)+0x940)
 #define CYGARC_REG_IMM_CICR_IEN    0x00000080      // interrupt enable
 #define CYGARC_REG_IMM_CICR_IRQMASK 0x0000e000     // irq priority mask
 #define CYGARC_REG_IMM_CICR_IRQ_SHIFT 13
 
 // CPM interrupt in-pending register
-#define CYGARC_REG_IMM_CIPR        (CYGARC_REG_IMM_BASE + 0x944)
+#define CYGARC_REG_IMM_CIPR        ((CYGARC_REG_IMM_BASE)+0x944)
 // CPM interrupt mask register
-#define CYGARC_REG_IMM_CIMR        (CYGARC_REG_IMM_BASE + 0x948)
+#define CYGARC_REG_IMM_CIMR        ((CYGARC_REG_IMM_BASE)+0x948)
 // CPM interrupt in-service register
-#define CYGARC_REG_IMM_CISR        (CYGARC_REG_IMM_BASE + 0x94C)
+#define CYGARC_REG_IMM_CISR        ((CYGARC_REG_IMM_BASE)+0x94C)
 
 
 #define CYGARC_SIU_PRIORITY_LOW    7 // the lowest irq priority

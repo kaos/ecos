@@ -1,3 +1,7 @@
+2003-10-15  Gary Thomas  <gary@mlbassoc.com>
+
+	* cdl/hal_powerpc_moab.cdl: Remove [unused] tests so "make tests" works.
+
 2003-10-09  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/plf.inc: Define vector 0, to make ROMRAM mode program startup

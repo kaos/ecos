@@ -175,11 +175,11 @@
 #define DCR_OCM0_DSCNTL      0x1B     // Data side control
 
 // I2C controller
-#define IIC0_MDBUF           (_PPC405GP_IIC0+0x00)  // Master data buffer
-#define IIC0_SDBUF           (_PPC405GP_IIC0+0x02)  // Slave data buffer
-#define IIC0_LMADR           (_PPC405GP_IIC0+0x04)  // Master address (low)
-#define IIC0_HMADR           (_PPC405GP_IIC0+0x05)  // Master address (high)
-#define IIC0_CNTL            (_PPC405GP_IIC0+0x06)  // Control
+#define IIC0_MDBUF           ((_PPC405GP_IIC0)+0x00)  // Master data buffer
+#define IIC0_SDBUF           ((_PPC405GP_IIC0)+0x02)  // Slave data buffer
+#define IIC0_LMADR           ((_PPC405GP_IIC0)+0x04)  // Master address (low)
+#define IIC0_HMADR           ((_PPC405GP_IIC0)+0x05)  // Master address (high)
+#define IIC0_CNTL            ((_PPC405GP_IIC0)+0x06)  // Control
 #define IIC0_CNTL_HMT           0x80   // Halt master transfer
 #define IIC0_CNTL_AMD           0x40   // Address mode (0=7 bit, 1=10 bit)
 #define IIC0_CNTL_TCT           0x30   // Transfer size (1-4 bytes)
@@ -194,7 +194,7 @@
 #define IIC0_CNTL_RW_READ           0x02
 #define IIC0_CNTL_RW_WRITE          0x00
 #define IIC0_CNTL_PT            0x01   // Pending transfer
-#define IIC0_MDCNTL          (_PPC405GP_IIC0+0x07)  // Mode control
+#define IIC0_MDCNTL          ((_PPC405GP_IIC0)+0x07)  // Mode control
 #define IIC0_MDCNTL_FSDB        0x80   // Flush slave data buffer
 #define IIC0_MDCNTL_FMDB        0x40   // Flush master data buffer
 #define IIC0_MDCNTL_FSM         0x10   // Fast/standard mode (1=fast)
@@ -202,7 +202,7 @@
 #define IIC0_MDCNTL_EINT        0x04   // Enable interrupt
 #define IIC0_MDCNTL_EUBS        0x02   // Exit unknown bus state
 #define IIC0_MDCNTL_HSCL        0x01   // Hold serial clock low (slave only)
-#define IIC0_STS             (_PPC405GP_IIC0+0x08)  // Status
+#define IIC0_STS             ((_PPC405GP_IIC0)+0x08)  // Status
 #define IIC0_STS_SSS            0x80   // Slave operation in progress
 #define IIC0_STS_SLPR           0x40   // Sleep request
 #define IIC0_STS_MDBS           0x20   // Master data buffer status (0=empty)
@@ -211,7 +211,7 @@
 #define IIC0_STS_ERR            0x04   // Error
 #define IIC0_STS_IRQA           0x02   // Interrupt active
 #define IIC0_STS_PT             0x01   // Transfer pending
-#define IIC0_EXTSTS          (_PPC405GP_IIC0+0x09)  // Extended status
+#define IIC0_EXTSTS          ((_PPC405GP_IIC0)+0x09)  // Extended status
 #define IIC0_EXTSTS_IRQP        0x80   // Interrupt pending
 #define IIC0_EXTSTS_BCS         0x70   // Bus status
 #define IIC0_EXTSTS_BCS_ss          0x10   // Slave selected
@@ -223,54 +223,54 @@
 #define IIC0_EXTSTS_LA          0x04   // Lost arbitration
 #define IIC0_EXTSTS_ICT         0x02   // Incomplete transfer
 #define IIC0_EXTSTS_XFRA        0x01   // Transfer aborted
-#define IIC0_LSADR           (_PPC405GP_IIC0+0x0A)  // Slave address (low)
-#define IIC0_HSADR           (_PPC405GP_IIC0+0x0B)  // Slave address (high)
-#define IIC0_CLKDIV          (_PPC405GP_IIC0+0x0C)  // Clock divide
-#define IIC0_INTRMSK         (_PPC405GP_IIC0+0x0D)  // Interrupt mask
-#define IIC0_XFRCNT          (_PPC405GP_IIC0+0x0E)  // Transfer count
+#define IIC0_LSADR           ((_PPC405GP_IIC0)+0x0A)  // Slave address (low)
+#define IIC0_HSADR           ((_PPC405GP_IIC0)+0x0B)  // Slave address (high)
+#define IIC0_CLKDIV          ((_PPC405GP_IIC0)+0x0C)  // Clock divide
+#define IIC0_INTRMSK         ((_PPC405GP_IIC0)+0x0D)  // Interrupt mask
+#define IIC0_XFRCNT          ((_PPC405GP_IIC0)+0x0E)  // Transfer count
 #define IIC0_XFRCNT_STC         0x70   // Slave transfer count
 #define IIC0_XFRCNT_STC_SHIFT   4
 #define IIC0_XFRCNT_MTC         0x07   // Master transfer count
 #define IIC0_XFRCNT_MTC_SHIFT   0         
-#define IIC0_XTCNTLSS        (_PPC405GP_IIC0+0x0F)  // Extended control & slave status
-#define IIC0_DIRECT          (_PPC405GP_IIC0+0x10)  // Direct control over I/O lines
+#define IIC0_XTCNTLSS        ((_PPC405GP_IIC0)+0x0F)  // Extended control & slave status
+#define IIC0_DIRECT          ((_PPC405GP_IIC0)+0x10)  // Direct control over I/O lines
 
 // GPIO (General Purpose I/O)
-#define GPIO_OR              (_PPC405GP_GPIO+0x00)  // Output register
-#define GPIO_TCR             (_PPC405GP_GPIO+0x04)  // Tri-state control
-#define GPIO_OSRH            (_PPC405GP_GPIO+0x08)  // Output select (high)
-#define GPIO_OSRL            (_PPC405GP_GPIO+0x0C)  // Output select (low)
-#define GPIO_TSRH            (_PPC405GP_GPIO+0x10)  // Tri-state select (high)
-#define GPIO_TSRL            (_PPC405GP_GPIO+0x14)  // Tri-state select (low)
-#define GPIO_ODR             (_PPC405GP_GPIO+0x18)  // Open drain
-#define GPIO_IR              (_PPC405GP_GPIO+0x1C)  // Input register
-#define GPIO_RR              (_PPC405GP_GPIO+0x20)  // Receive register
-#define GPIO_ISRH            (_PPC405GP_GPIO+0x30)  // Input select (high)
-#define GPIO_ISRL            (_PPC405GP_GPIO+0x34)  // Input select (low)
+#define GPIO_OR              ((_PPC405GP_GPIO)+0x00)  // Output register
+#define GPIO_TCR             ((_PPC405GP_GPIO)+0x04)  // Tri-state control
+#define GPIO_OSRH            ((_PPC405GP_GPIO)+0x08)  // Output select (high)
+#define GPIO_OSRL            ((_PPC405GP_GPIO)+0x0C)  // Output select (low)
+#define GPIO_TSRH            ((_PPC405GP_GPIO)+0x10)  // Tri-state select (high)
+#define GPIO_TSRL            ((_PPC405GP_GPIO)+0x14)  // Tri-state select (low)
+#define GPIO_ODR             ((_PPC405GP_GPIO)+0x18)  // Open drain
+#define GPIO_IR              ((_PPC405GP_GPIO)+0x1C)  // Input register
+#define GPIO_RR              ((_PPC405GP_GPIO)+0x20)  // Receive register
+#define GPIO_ISRH            ((_PPC405GP_GPIO)+0x30)  // Input select (high)
+#define GPIO_ISRL            ((_PPC405GP_GPIO)+0x34)  // Input select (low)
 
 // PCI
 
 // PCI Bridge
-#define PCIL0_PMM0LA         (_PPC405GP_PCI_BRIDGE+0x00)     // PMM 0 Local address
-#define PCIL0_PMM0MA         (_PPC405GP_PCI_BRIDGE+0x04)     // PMM 0 Mask/Attributes
-#define PCIL0_PMM0PCILA      (_PPC405GP_PCI_BRIDGE+0x08)     // PMM 0 PCI Low Address
-#define PCIL0_PMM0PCIHA      (_PPC405GP_PCI_BRIDGE+0x0C)     // PMM 0 PCI High Address
-#define PCIL0_PMM1LA         (_PPC405GP_PCI_BRIDGE+0x10)     // PMM 1 Local address
-#define PCIL0_PMM1MA         (_PPC405GP_PCI_BRIDGE+0x14)     // PMM 1 Mask/Attributes
-#define PCIL0_PMM1PCILA      (_PPC405GP_PCI_BRIDGE+0x18)     // PMM 1 PCI Low Address
-#define PCIL0_PMM1PDIHA      (_PPC405GP_PCI_BRIDGE+0x1C)     // PMM 1 PCI High Address
-#define PCIL0_PMM2LA         (_PPC405GP_PCI_BRIDGE+0x20)     // PMM 2 Local address
-#define PCIL0_PMM2MA         (_PPC405GP_PCI_BRIDGE+0x24)     // PMM 2 Mask/Attributes
-#define PCIL0_PMM2PCILA      (_PPC405GP_PCI_BRIDGE+0x28)     // PMM 2 PCI Low Address
-#define PCIL0_PMM2PCIHA      (_PPC405GP_PCI_BRIDGE+0x2C)     // PMM 2 PCI High Address
-#define PCIL0_PTM1MS         (_PPC405GP_PCI_BRIDGE+0x30)     // PTM 1 Memory Size/Attribute
-#define PCIL0_PTM1LA         (_PPC405GP_PCI_BRIDGE+0x34)     // PTM 1 Local address
-#define PCIL0_PTM2MS         (_PPC405GP_PCI_BRIDGE+0x38)     // PTM 2 Memory Size/Attribute
-#define PCIL0_PTM2LA         (_PPC405GP_PCI_BRIDGE+0x3C)     // PTM 2 Local address
+#define PCIL0_PMM0LA         ((_PPC405GP_PCI_BRIDGE)+0x00)     // PMM 0 Local address
+#define PCIL0_PMM0MA         ((_PPC405GP_PCI_BRIDGE)+0x04)     // PMM 0 Mask/Attributes
+#define PCIL0_PMM0PCILA      ((_PPC405GP_PCI_BRIDGE)+0x08)     // PMM 0 PCI Low Address
+#define PCIL0_PMM0PCIHA      ((_PPC405GP_PCI_BRIDGE)+0x0C)     // PMM 0 PCI High Address
+#define PCIL0_PMM1LA         ((_PPC405GP_PCI_BRIDGE)+0x10)     // PMM 1 Local address
+#define PCIL0_PMM1MA         ((_PPC405GP_PCI_BRIDGE)+0x14)     // PMM 1 Mask/Attributes
+#define PCIL0_PMM1PCILA      ((_PPC405GP_PCI_BRIDGE)+0x18)     // PMM 1 PCI Low Address
+#define PCIL0_PMM1PDIHA      ((_PPC405GP_PCI_BRIDGE)+0x1C)     // PMM 1 PCI High Address
+#define PCIL0_PMM2LA         ((_PPC405GP_PCI_BRIDGE)+0x20)     // PMM 2 Local address
+#define PCIL0_PMM2MA         ((_PPC405GP_PCI_BRIDGE)+0x24)     // PMM 2 Mask/Attributes
+#define PCIL0_PMM2PCILA      ((_PPC405GP_PCI_BRIDGE)+0x28)     // PMM 2 PCI Low Address
+#define PCIL0_PMM2PCIHA      ((_PPC405GP_PCI_BRIDGE)+0x2C)     // PMM 2 PCI High Address
+#define PCIL0_PTM1MS         ((_PPC405GP_PCI_BRIDGE)+0x30)     // PTM 1 Memory Size/Attribute
+#define PCIL0_PTM1LA         ((_PPC405GP_PCI_BRIDGE)+0x34)     // PTM 1 Local address
+#define PCIL0_PTM2MS         ((_PPC405GP_PCI_BRIDGE)+0x38)     // PTM 2 Memory Size/Attribute
+#define PCIL0_PTM2LA         ((_PPC405GP_PCI_BRIDGE)+0x3C)     // PTM 2 Local address
 
 // Access to local/bridge PCI configuration registers
-#define PCIC0_CFGADDR        (_PPC405GP_PCI_IO+0x00C00000)   // Indirect address pointer
-#define PCIC0_CFGDATA        (_PPC405GP_PCI_IO+0x00C00004)   // Indirect data
+#define PCIC0_CFGADDR        ((_PPC405GP_PCI_IO)+0x00C00000)   // Indirect address pointer
+#define PCIC0_CFGDATA        ((_PPC405GP_PCI_IO)+0x00C00004)   // Indirect data
 
 // Debug control registers (SPR)
 #define SPR_DBCR0       0x3F2

@@ -253,7 +253,7 @@ cdl_package CYGPKG_HAL_POWERPC_MOAB {
             display "MOAB tests"
             flavor  data
             no_define
-            calculated { "tests/moabtime" }
+            calculated { "" }
             description   "
                 This option specifies the set of tests for the MOAB HAL."
         }

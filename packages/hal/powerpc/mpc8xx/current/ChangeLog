@@ -1,3 +1,8 @@
+2003-10-15  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/var_regs.h: Changes to allow building with GCC-3.3.x
+	since the newest GAS doesn't like spaces in expressions :-(
+
 2003-08-19  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/var_misc.c: 
