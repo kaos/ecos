@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 // Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -70,6 +70,10 @@
 
 #ifdef CYGPKG_REDBOOT_NETWORKING
 #include <net/net.h>
+#endif
+
+#ifdef CYGPKG_IO_ETH_DRIVERS
+#include <cyg/io/eth/eth_drv.h>            // Logical driver interfaces
 #endif
 
 #ifdef CYGSEM_REDBOOT_HAL_LINUX_BOOT
@@ -224,6 +228,10 @@ do_exec(int argc, char *argv[])
             script_timeout_ms -= CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT;
         }
     }
+
+#ifdef CYGPKG_IO_ETH_DRIVERS
+    eth_drv_stop();
+#endif
 
     // Disable interrupts
     HAL_DISABLE_INTERRUPTS(oldints);

@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -55,6 +55,10 @@
 #include <cyg/hal/hal_intr.h>
 #include <cyg/hal/hal_cache.h>
 #include <cyg/hal/hal_if.h>
+
+#ifdef CYGPKG_IO_ETH_DRIVERS
+#include <cyg/io/eth/eth_drv.h>            // Logical driver interfaces
+#endif
 
 #define xstr(s) str(s)
 #define str(s...) #s
@@ -130,6 +134,10 @@ do_exec(int argc, char *argv[])
     }
     
     HAL_DISABLE_INTERRUPTS(oldints);
+
+#ifdef CYGPKG_IO_ETH_DRIVERS
+    eth_drv_stop();
+#endif
 
     pb = (struct parmblock *)base_addr;
     pcmd = pb->text;

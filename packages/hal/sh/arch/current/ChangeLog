@@ -1,3 +1,7 @@
+2003-03-11  Mark Salter  <msalter@redhat.com>
+
+	* src/redboot_linux_exec.c (do_exec): Call eth_drv_stop as necessary.
+
 2003-01-31  Mark Salter  <msalter@redhat.com>
 
 	* src/hal_syscall.c (hal_syscall_handler): Let generic syscall code

@@ -1,3 +1,7 @@
+2003-03-11  Mark Salter  <msalter@redhat.com>
+
+	* src/redboot_linux_exec.c (do_exec): Call eth_drv_stop as necessary.
+
 2003-02-26  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/lcd_support.c (lcd_on): Enable/disable is still not stable.
