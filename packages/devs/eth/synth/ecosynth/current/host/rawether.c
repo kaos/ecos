@@ -63,7 +63,9 @@
 #include <netinet/if_ether.h>
 #include <linux/if_packet.h>
 #include <linux/if_ether.h>
-#include <linux/if_tun.h>
+#ifdef HAVE_LINUX_IF_TUN_H
+# include <linux/if_tun.h>
+#endif
 
 // The protocol between host and target is defined by a private
 // target-side header.
@@ -97,6 +99,14 @@ static int up = 0;
 #define MTU 1514
 static unsigned char tx_buffer[MTU];
 static unsigned char rx_buffer[MTU+4];
+
+// Indirect to get to the actual implementation functions.
+static void (*tx_fn)(unsigned char*, int);
+static void (*rx_fn)(void);
+static void (*start_fn)(int);
+static void (*stop_fn)(void);
+static void (*multicast_fn)(int);
+
 
 // ----------------------------------------------------------------------------
 // A utility buffer for messages.
@@ -304,6 +314,12 @@ real_init(char* devname)
 {
     struct sockaddr_ll  addr;
     struct ifreq        request;
+
+    tx_fn           = &real_handle_tx;
+    rx_fn           = &real_handle_rx;
+    start_fn        = &real_handle_start;
+    stop_fn         = &real_handle_stop;
+    multicast_fn    = &real_handle_multiall;
     
     if (strlen(devname) >= IFNAMSIZ) {
         snprintf(msg, MSG_SIZE, "Invalid real network device name \"%s\", too long.\n", devname);
@@ -402,6 +418,10 @@ real_init(char* devname)
 // The Linux kernel will invent a MAC address for its interface. An
 // additional one is needed for eCos. This is either invented or
 // specified in the target definition file.
+//
+// Old Linux kernels may not have the required support. This is detected
+// by an autoconf test for <linux/if_tun.h>
+#ifdef HAVE_LINUX_IF_TUN_H
 
 static void
 tap_handle_tx(unsigned char* buffer, int size)
@@ -500,11 +520,18 @@ tap_handle_multiall(int on)
 {
 }
 
-static void tap_init(int argc, char** argv)
+static void
+tap_init(int argc, char** argv)
 {
     char* devname   = NULL;
     struct ifreq    ifr;
 
+    tx_fn           = &tap_handle_tx;
+    rx_fn           = &tap_handle_rx;
+    start_fn        = &tap_handle_start;
+    stop_fn         = &tap_handle_stop;
+    multicast_fn    = &tap_handle_multiall;
+    
     // Which device? By default let the system pick one, but the user
     // can override this.
     if (0 != argc) {
@@ -561,6 +588,14 @@ static void tap_init(int argc, char** argv)
     
     // All done.
 }
+#else
+static void
+tap_init(int argc, char** argv)
+{
+    snprintf(msg, MSG_SIZE, "Ethertap support was not available when the host-side support was built\n");
+    report_error(msg);
+}
+#endif  // HAVE_LINUX_IF_TUN_H
 
 // ----------------------------------------------------------------------------
 // Receive a single request from ecosynth. This consists of a four-byte
@@ -640,40 +675,24 @@ handle_ecosynth_request(void)
                 exit(1);
             }
 
-            if (real_ether) {
-                real_handle_tx(tx_buffer, size);
-            } else if (ethertap) {
-                tap_handle_tx(tx_buffer, size);
-            }
+            (*tx_fn)(tx_buffer, size);
             break;
         }
       case SYNTH_ETH_START:
         {
-            if (real_ether) {
-                real_handle_start(arg);
-            } else if (ethertap) {
-                tap_handle_start(arg);
-            }
+            (*start_fn)(arg);
             break;
         }
 
       case SYNTH_ETH_STOP:
         {
-            if (real_ether) {
-                real_handle_stop();
-            } else if (ethertap) {
-                tap_handle_stop();
-            }
+            (*stop_fn)();
             break;
         }
 
       case SYNTH_ETH_MULTIALL:
         {
-            if (real_ether) {
-                real_handle_multiall(arg);
-            } else if (ethertap) {
-                tap_handle_multiall(arg);
-            }
+            (*multicast_fn)(arg);
             break;
         }
 
@@ -713,11 +732,7 @@ mainloop(void)
         if (FD_ISSET(0, &read_set)) {
             handle_ecosynth_request();
         } else if (FD_ISSET(ether_fd, &read_set)) {
-            if (real_ether) {
-                real_handle_rx();
-            } else {
-                tap_handle_rx();
-            }
+            (*rx_fn)();
         }
     }
 }

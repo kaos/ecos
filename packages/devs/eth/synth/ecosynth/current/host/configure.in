@@ -62,6 +62,9 @@ case "${host}" in
     i[[34567]]86-*-linux-gnu* ) SUPPORTED="yes";;
     * ) SUPPORTED="no"
 esac
+if test "${SUPPORTED}" = "no" ; then
+    AC_MSG_WARN([Synthetic target ethernet support is only available on x86 Linux hosts])
+fi   
 
 if test "${SUPPORTED}" = "yes" ; then
     AC_PROG_CC
@@ -71,6 +74,17 @@ if test "${SUPPORTED}" = "yes" ; then
     ECOS_PROG_MSVC
     ECOS_PROG_STANDARD_COMPILER_FLAGS
     ECOS_PACKAGE_DIRS
+
+    dnl Old kernels may not have tun/tap support. rawether can
+    dnl still operate via a spare ethernet interface.
+    AC_CHECK_HEADERS("linux/if_tun.h",TAP_SUPPORTED="yes",TAP_SUPPORTED="no")
+    if test "${TAP_SUPPORTED}" = "no" ; then
+        AC_MSG_WARN([No <linux/if_tun.h> header, ethertap support disabled.])
+    fi
+fi
+
+if test "${SUPPORTED}" = "no" ; then
+    AC_MSG_WARN([The synthetic ethernet support cannot be built on this platform.])
 fi
 
 AM_CONDITIONAL(SUPPORTED, test "${SUPPORTED}" = "yes")

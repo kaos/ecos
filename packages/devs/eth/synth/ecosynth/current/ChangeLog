@@ -1,3 +1,8 @@
+2002-09-25  Bart Veer  <bartv@ecoscentric.com>
+
+	* host/configure.in, host/rawether.c, doc/syntheth.sgml: 
+	Only support the tap device if running a recent Linux kernel
+
 2002-09-22  Bart Veer  <bartv@ecoscentric.com>
 
 	* host/configure.in:

@@ -237,6 +237,14 @@ your system does not have a device <filename>/dev/net/tun</filename>
 or a module <filename>tun.o</filename> then the appropriate kernel
 documentation should be consulted, for example
 <filename>/usr/src/linux-2.4/Documentation/networking/tuntap.txt</filename>.
+If you are using an old Linux kernel then the ethertap functionality
+may be missing completely. When the <command>rawether</command>
+program is configured and built, the <command>configure</command>
+script will check for a file <filename
+class="headerfile">/usr/include/linux/if_tun.h</filename>. If that
+file is missing then <command>rawether</command> will be built without
+ethertap functionality, and only real ethernet interfaces will be
+supported.
     </para>
     <para>
 The target definition file is used to map eCos network devices on to
