@@ -696,7 +696,7 @@ do_load(int argc, char *argv[])
     }
     info.filename = filename;
     info.chan = chan;
-    info.mode = io_tab->mode;
+    info.mode = io_tab ? io_tab->mode : 0;
 #ifdef CYGPKG_REDBOOT_NETWORKING
     info.server = &host;
 #endif
