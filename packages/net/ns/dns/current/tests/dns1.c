@@ -70,7 +70,8 @@ static cyg_handle_t thread_handle;
 #define NELEM(x) (sizeof(x) / sizeof(x[0]))
 
 struct test_info_s {
-    char * dns_server;
+    char * dns_server_v4;
+    char * dns_server_v6;
     char * domain_name;
     char * hostname_v4;
     char * cname_v4;
@@ -87,6 +88,7 @@ struct test_info_s {
 struct test_info_s test_info[] = {
     {
         "192.168.10.1",
+        "fe80::2ff:8eff:fe04:a18d",
         "lunn.org.",
         "hostnamev4",
         "cnamev4",
@@ -134,7 +136,7 @@ void dns_test(struct test_info_s *info) {
 #endif
     int error;
     
-    if (inet_pton(AF_INET, info->dns_server, (void *)&addr) < 0) {
+    if (inet_pton(AF_INET, info->dns_server_v4, (void *)&addr) < 0) {
       CYG_TEST_FAIL_FINISH("Error with DNS server address");
     }
     cyg_dns_res_init(&addr);
@@ -814,6 +816,64 @@ void dns_test(struct test_info_s *info) {
         diag_sprintf(buffer,"IPv4 & IPv6 FQDN cname: error %s", 
                      gai_strerror(error));
         CYG_TEST_FAIL(buffer);
+    }
+    
+    if (info->dns_server_v6) {
+        cyg_dns_res_start(info->dns_server_v6);
+        // Lookup the IPv4 and IPv6 FQDN cname 
+        error = getaddrinfo(cname, NULL, &hints, &res);
+        
+        if (error == EAI_NONE) {
+#ifdef CYGOPT_NS_DNS_FIRST_FAMILY_AF_INET6
+            ai6 = res;
+            ai4 = res->ai_next;
+            CYG_TEST_PASS_FAIL((NULL != ai6->ai_next),
+                               "[IPv6] IPv6 FQDN hostname not one result");
+            CYG_TEST_PASS_FAIL((NULL == ai4->ai_next),
+                               "[IPv6] IPv4 & IPv6 FQDN hostname two results");
+#else
+            ai4 = res;
+            ai6 = res->ai_next;
+            CYG_TEST_PASS_FAIL((NULL != ai4->ai_next),
+                               "[IPv6] IPv6 FQDN hostname not one result");
+            CYG_TEST_PASS_FAIL((NULL == ai6->ai_next),
+                               "[IPv6] IPv4 & IPv6 FQDN hostname two results");
+#endif
+            getnameinfo(ai4->ai_addr, ai4->ai_addrlen, 
+                        buff, sizeof(buff),
+                        NULL,0,NI_NUMERICHOST);
+            diag_sprintf(buffer,"[IPv6] Lookup %s: Result <%s is %s %s>", 
+                         cname,
+                         ai4->ai_canonname, 
+                         familytoa(ai4->ai_family),
+                         buff);
+            CYG_TEST_INFO(buffer);
+            CYG_TEST_PASS_FAIL((0 == memcmp((void *)&sa4, 
+                                            (void*)ai4->ai_addr,
+                                            sizeof(sa4))) &&
+                               (ai4->ai_family == AF_INET),
+                               "[IPv6] IPv4 & IPv6 FQDN cname address IPv4");
+            CYG_TEST_PASS_FAIL((0 == strcmp(name, ai4->ai_canonname)), 
+                               "[IPv6] IPv4 & IPv6 FQDN cname name");
+            getnameinfo(ai6->ai_addr, ai6->ai_addrlen, 
+                        buff, sizeof(buff),
+                        NULL,0,NI_NUMERICHOST);
+            diag_sprintf(buffer,"[IPv6] Lookup %s: Result <%s %s>", 
+                         cname,
+                         familytoa(ai6->ai_family),
+                         buff);
+            CYG_TEST_INFO(buffer);
+            CYG_TEST_PASS_FAIL((0 == memcmp((void *)&sa6, 
+                                            (void*)ai6->ai_addr,
+                                            sizeof(sa6))) &&
+                               (ai6->ai_family == AF_INET6),
+                               "[IPv6] IPv4 & IPv6 FQDN cname address IPv6");
+            freeaddrinfo(res);
+        } else {
+            diag_sprintf(buffer,"[IPv6] IPv4 & IPv6 FQDN cname: error %s", 
+                         gai_strerror(error));
+            CYG_TEST_FAIL(buffer);
+        }
     }
 #endif
 }

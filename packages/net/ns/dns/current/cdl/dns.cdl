@@ -77,8 +77,8 @@ cdl_package CYGPKG_NS_DNS {
         default_value 0
         description   "     
             This option controls the use of a default, hard coded DNS 
-            server. When this is enabled, the IP address in the CDL 
-            option CYGDAT_NS_DNS_DEFAULT_SERVER is used in
+            server. When this is enabled, the IPv4 or IPv6 address in 
+            the CDL option CYGDAT_NS_DNS_DEFAULT_SERVER is used in
             init_all_network_interfaces() to start the resolver using 
             the specified server. The DHCP client or user code may 
             override this by restarting the resolver."

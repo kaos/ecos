@@ -1,3 +1,15 @@
+2003-05-22  Andrew Lunn  <andrew.lunn@ascom.cd>
+
+        * src/dns.c: (cyg_dns_res_start) New: Allow IPv6 to be used to
+	transport queries to the DNS server. This requires a new API
+	function to start the client which if protocol family
+	independent.
+	* tests/dns1.c: Added a test which uses IPv6 as the transport to
+	the DNS server.
+	* doc/dns.sgml: Documentation of new API function for IPv6.
+	* cdl/dns.cdl: Comment that the default DNS server can be an IPv6
+	address.
+
 2003-05-14  Mark Salter  <msalter@redhat.com>
 
 	* include/dns_impl.inl: Use strrchr instead of rindex.

@@ -67,11 +67,10 @@ is not safe is one thread using both
  and 
 <FUNCTION>gethostbyaddr()</FUNCTION>.
 A call to one will destroy the results from the previous call
-to the other function. <FUNCTION>getaddrinfo()</FUNCTION> is thread
-safe and so is the preferred interface.</PARA>
-</LISTITEM>
-<LISTITEM>
-<PARA>The client only uses IPv4 to access the DNS server.</PARA>
+to the other function. <FUNCTION>getaddrinfo()</FUNCTION> and
+<FUNCTION>getnameinfo()</FUNCTION> are thread
+safe and so these are the preferred interfaces. They are also address
+family independent so making it easier to port code to IPv6.</PARA>
 </LISTITEM>
 <LISTITEM><PARA>The DNS client will only return IPv4 addresses to
 RedBoot. At the moment this is not really a limitation,
@@ -81,9 +80,21 @@ since RedBoot only supports IPv4 and not IPv6.</PARA>
 <PARA>To initialise the DNS client the following function must be
 called:</PARA>
 <PROGRAMLISTING>#include &lt;network.h&gt;
+int cyg_dns_res_start(char * dns_server)</PROGRAMLISTING>
+
+<PARA>Where dns_server is the address of the DNS server. The address
+must be in numeric form and can be either an IPv4 or an IPv6 address.
+</PARA>
+<PARA>There also exists a deprecated function to start the DNS
+client:</PARA>
+<PROGRAMLISTING>
 int cyg_dns_res_init(struct in_addr *dns_server)</PROGRAMLISTING>
 <PARA>where dns_server is the address of the DNS server
-the client should query. On Error this function returns -1, otherwise
+the client should query. The address should be in network order and
+can only be an IPv4 address.
+</PARA>
+
+<PARA> On error both this function returns -1, otherwise
 0 for success. If lookups are attemped before this function has
 been called, they will fail and return NULL, unless numeric host addresses
 are passed. In this cause, the address will be converted and returned
@@ -189,7 +200,8 @@ and the domain name is taken from
         information:</PARA>
       <PROGRAMLISTING>
         struct test_info_s {
-            char * dns_server;
+            char * dns_server_v4;
+            char * dns_server_v6;
             char * domain_name;
             char * hostname_v4;
             char * cname_v4;

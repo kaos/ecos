@@ -11,6 +11,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Andrew Lunn
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -54,8 +55,14 @@
 #include <netinet/in.h>
 
 #ifndef _POSIX_SOURCE
-/* Initialise the DNS client with the address of the server */
+/* Initialise the DNS client with the address of the server. The
+   address should be a IPv4 or IPv6 numeric address */
+externC int cyg_dns_res_start(char * server);
+
+/* Old interface which  is depricated */
 externC int cyg_dns_res_init(struct in_addr *dns_server);
+
+/* Functions to manipulate the domainname */
 externC int getdomainname(char *name, size_t len);
 externC int setdomainname(const char *name, size_t len);
 #endif

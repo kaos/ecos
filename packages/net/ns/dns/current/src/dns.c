@@ -250,22 +250,21 @@ send_recv(char * msg, int len, int msglen)
 /* Include the DNS client implementation code */
 #include <cyg/ns/dns/dns_impl.inl>
 
-/* Initialise the resolver. Open a socket and bind it to the address
-   of the server.  return -1 if something goes wrong, otherwise 0. If
-   we are being called a second time we have to be careful to allow
-   any ongoing lookups to finish before we close the socket and
-   connect to a different DNS server. The danger here is that we may
-   have to wait for upto 32 seconds if the DNS server is down.
- */
-int  
-cyg_dns_res_init(struct in_addr *dns_server)
-{
-    struct sockaddr_in server;
-    struct servent *sent;
-    static int init =0;
+/* (re)Start the DNS client. This opens a socket to the DNS server
+   who's address is passed in. This address can be either an IPv4 or
+   IPv6 address. This function can be called multiple times. Each
+   invocation will close any previous connection and make a new
+   connection to the new server. Note the address of the server must
+   be in numeric form since its not possible to do a DNS lookup! */
 
-    CYG_REPORT_FUNCNAMETYPE( "cyg_dns_res_init", "returning %d" );
-    CYG_REPORT_FUNCARG1( "dns_server=%08x", dns_server );
+int cyg_dns_res_start(char * dns_server) {
+
+    static int init =0;
+    struct addrinfo * res;
+    int err;
+
+    CYG_REPORT_FUNCNAMETYPE( "cyg_dns_res_start", "returning %d" );
+    CYG_REPORT_FUNCARG1( "dns_server=%s", dns_server );
 
     CYG_CHECK_DATA_PTR( dns_server, "dns_server is not a valid pointer!" );
 
@@ -281,39 +280,61 @@ cyg_dns_res_init(struct in_addr *dns_server)
       cyg_drv_mutex_lock(&dns_mutex);
     }
     
-
-    s = socket(PF_INET, SOCK_DGRAM, 0);
-    if (s < 0) {
+    err = getaddrinfo(dns_server,"domain", NULL, &res);
+    if (err != 0) {
         cyg_drv_mutex_unlock(&dns_mutex);
         CYG_REPORT_RETVAL( -1 );
         return -1;
     }
   
-    sent = getservbyname("domain", "udp");
-    if (sent == (struct servent *)0) {
-        s = -1;
+    s = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+    if (s == -1) {
         cyg_drv_mutex_unlock(&dns_mutex);
+        freeaddrinfo(res);
         CYG_REPORT_RETVAL( -1 );
         return -1;
     }
-  
-    memcpy((char *)&server.sin_addr, dns_server, sizeof(server.sin_addr));
-    server.sin_port = sent->s_port;
-    server.sin_family = AF_INET;
-    server.sin_len = sizeof(server);
 
-    if (connect(s, (struct sockaddr *)&server, sizeof(server)) < 0) {
+    if (connect(s, res->ai_addr, res->ai_addrlen) < 0) {
         s = -1;
         cyg_drv_mutex_unlock(&dns_mutex);
+        freeaddrinfo(res);
         CYG_REPORT_RETVAL( -1 );
         return -1;
     }
     ptdindex = cyg_thread_new_data_index();  
   
     cyg_drv_mutex_unlock(&dns_mutex);
-  
+    freeaddrinfo(res);
     CYG_REPORT_RETVAL( 0 );
     return 0;
+}
+
+/* This is the old interface to start the resolver. It is only IPv4
+   capable and so is now depricated in favor of cyg_dns_res_start().
+   Initialise the resolver. Open a socket and bind it to the
+   address of the server.  return -1 if something goes wrong,
+   otherwise 0. If we are being called a second time we have to be
+   careful to allow any ongoing lookups to finish before we close the
+   socket and connect to a different DNS server. The danger here is
+   that we may have to wait for upto 32 seconds if the DNS server is
+   down.  */
+int  
+cyg_dns_res_init(struct in_addr *dns_server)
+{
+  char name[20];
+  unsigned char *bytes = (unsigned char *)dns_server;
+  int ret;
+
+  CYG_REPORT_FUNCNAMETYPE( "cyg_dns_res_init", "returning %d" );
+  CYG_REPORT_FUNCARG1( "dns_server=%08x", dns_server );
+
+  diag_sprintf(name, "%d.%d.%d.%d", bytes[0], bytes[1], bytes[2], bytes[3]);
+  
+  ret = cyg_dns_res_start(name);
+  
+  CYG_REPORT_RETVAL( ret );
+  return ret;
 }
 
 /* add_answer checks to see if we already have this answer and if not,
