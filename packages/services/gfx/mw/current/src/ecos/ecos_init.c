@@ -5,6 +5,7 @@
 #include <pkgconf/system.h>
 #include <pkgconf/kernel.h>
 #include <pkgconf/hal.h>
+#include <pkgconf/microwindows.h>
 #include <cyg/kernel/kapi.h>
 #include <cyg/infra/diag.h>
 
@@ -126,7 +127,7 @@ ecos_nx_init(CYG_ADDRWORD data)
         exit(1);
     }
 
-#ifdef CYGPKG_HAL_ARM_SA11X0_IPAQ
+#if (defined CYGPKG_HAL_ARM_SA11X0_IPAQ) && (!defined CYGBLD_MICROWINDOWS_VNC_DRIVERS)
     GrSetPortraitMode(MWPORTRAIT_RIGHT);
 #endif
     
@@ -157,7 +158,7 @@ ecos_nx_init(CYG_ADDRWORD data)
     }
 #endif
 
-#ifdef CYGPKG_HAL_ARM
+#if (defined CYGPKG_HAL_ARM) && (!defined CYGBLD_MICROWINDOWS_VNC_DRIVERS)
     // Touch sensitive screen calibration, only relevant on some
     // platforms.
     GrSetGCFont(gct, GrCreateFont(GR_FONT_GUI_VAR, 0, NULL));

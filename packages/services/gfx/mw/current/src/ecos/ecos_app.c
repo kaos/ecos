@@ -24,6 +24,7 @@
 #define USE_JFFS2
 #undef  USE_ROMDISK
 #endif
+#include <pkgconf/microwindows.h>
 
 #ifndef CYGFUN_KERNEL_API_C
 # error Kernel API must be enabled to build this application
@@ -103,7 +104,7 @@ startup(CYG_ADDRESS data)
         int res;
 
         printf("Mount ROM file system\n");
-#ifdef CYGPKG_HAL_ARM_SA11X0_IPAQ
+#if (defined CYGPKG_HAL_ARM_SA11X0_IPAQ) && (!defined CYGBLD_MICROWINDOWS_VNC_DRIVERS)
         // Work around hardware anomaly which causes major screen flicker
         {
             char *hold_rom_fs;

@@ -1,3 +1,10 @@
+2003-09-01  Chris Garry <cgarry@sweeneydesign.co.uk>
+
+    * src/ecos/ecos_app.c:
+    * src/ecos/ecos_init.c:
+    Do not use ARM display hardware setup routines when VNC server
+    drivers are used.
+
 2003-09-01  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/nanox/client.c: 
