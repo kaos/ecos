@@ -70,7 +70,7 @@ cdl_package CYGPKG_DEVS_ETH_POWERPC_FCC {
     cdl_option CYGNUM_DEVS_ETH_POWERPC_FCC_BUFSIZE {
         display       "Buffer size"
         flavor        data
-        default_value 1540
+        default_value 1536
         description   "
             This option specifies the size of the internal buffers used
             for the PowerPC FCC/ethernet device."
