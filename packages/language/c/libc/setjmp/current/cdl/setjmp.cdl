@@ -54,7 +54,7 @@ cdl_package CYGPKG_LIBC_SETJMP {
         This package provides non-local jumps based on setjmp() and
         longjmp() in <setjmp.h> as specified by the ISO C
         standard - ISO/IEC 9899:1990."
-    doc           redirect/the-iso-standard-c-and-math-libraries.html
+    doc           ref/libc.html
     include_dir   cyg/libc/setjmp
     parent        CYGPKG_LIBC
     requires      CYGPKG_ISOINFRA
