@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -54,6 +54,7 @@
 #define CYGONCE_HAL_ARM_XSCALE_HAL_XSCALE_H
 
 #include <pkgconf/system.h>
+#include <pkgconf/hal_arm_xscale_core.h>
 
 #ifdef __ASSEMBLER__
 	// Useful CPU macros
@@ -75,7 +76,11 @@
 	// Enable the BTB
 	.macro BTB_INIT reg
 	mrc	p15, 0, \reg, c1, c0, 0
+#ifdef CYGSEM_HAL_ARM_XSCALE_BTB
 	orr	\reg, \reg, #MMU_Control_BTB
+#else
+	bic	\reg, \reg, #MMU_Control_BTB
+#endif
 	mcr	p15, 0, \reg, c1, c0, 0
 	CPWAIT  \reg
 	.endm

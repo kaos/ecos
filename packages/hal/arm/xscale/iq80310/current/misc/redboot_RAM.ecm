@@ -133,3 +133,7 @@ cdl_option CYGSEM_IO_FLASH_VERIFY_PROGRAM {
 cdl_option CYGPKG_HAL_GDB_FILEIO {
     user_value 1
 };
+
+cdl_option CYGSEM_HAL_ARM_XSCALE_BTB {
+    user_value 0
+};

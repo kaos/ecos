@@ -1,3 +1,13 @@
+2003-01-31  Mark Salter  <msalter@redhat.com>
+
+	* include/hal_platform_setup.h: Disabling of write buffer
+	is not necessary.
+
+	* misc/redboot_RAM.ecm: Don't enable BTB for RedBoot.
+	* misc/redboot_RAMA.ecm: Ditto.
+	* misc/redboot_ROM.ecm: Ditto.
+	* misc/redboot_ROMA.ecm: Ditto.
+
 2003-01-30  Mark Salter  <msalter@redhat.com>
 
 	* include/pkgconf/mlt_*: Adjust RAM size to match max supported.

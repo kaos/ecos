@@ -646,7 +646,7 @@ extern unsigned int _80312_EMISR;  // Only valid for PEC ISR
         sub     \reg1, \reg_dram_size, #1  // dram_size - 1
         mvn     \reg1, \reg1               // 1s complement
         str     \reg1, [\reg0]
-#ifdef CYGSEM_HAL_ARM_IQ80310_CLEAR_PCI_RETRY
+#ifdef CYGSEM_HAL_ARM_IOP310_CLEAR_PCI_RETRY
         ldr     \reg0, =EBCR_ADDR
         mov     \reg1, #0x0008
         strh    \reg1, [\reg0]

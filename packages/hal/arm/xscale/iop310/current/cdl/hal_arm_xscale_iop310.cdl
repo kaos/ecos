@@ -294,19 +294,6 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_IOP310 {
 	    compiler flags used only in building this package,
 	    and details of which tests are built."
 
-	cdl_option CYGSEM_HAL_ARM_IOP310_BTB {
-            display       "Enable Branch Target Buffer"
-            flavor        bool
-            default_value 0
-            description   "
-                Enable this option to turn on the IQ80200 Branch Target Buffer
-                which is used for branch prediction. This is turned off by
-                default because of CPU errata which may cause thumb branches
-                to execute improperly on A-step CPUs. Normal ARM programs are
-                not affected by this errata, so enabling this option for
-                ARM-only applications may improve program performance."
-        }
-
 	cdl_option CYGSEM_HAL_ARM_IOP310_CLEAR_PCI_RETRY {
             display       "Have RedBoot clear PCI Retry bit"
             flavor        bool

@@ -62,4 +62,18 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_CORE {
     implements    CYGINT_HAL_ARM_ARCH_XSCALE
 
     compile       xscale_misc.c xscale_stub.c
+
+    cdl_option CYGSEM_HAL_ARM_XSCALE_BTB {
+    	display       "Enable Branch Target Buffer"
+        flavor        bool
+        default_value 1
+        description   "
+            This option controls whether or not the Branch Target
+            Buffer is enabled. The BTB is used for branch prediction
+            and can have significant performance benefits. Control
+            is provided because there is an errata for A-step 80200
+            CPUS which will lead to problems with thumb branches
+            if the BTB is on. Normal ARM programs are not affected
+            by this errata."
+    }
 }

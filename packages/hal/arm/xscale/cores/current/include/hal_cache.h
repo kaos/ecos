@@ -11,7 +11,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -246,9 +246,12 @@ CYG_MACRO_START    /* this macro can discard dirty cache lines. */      \
         );                                                              \
 CYG_MACRO_END
 
+// DCACHE_FLUSH_AREA is defined if writeback caching is used. Otherwise
+// write-through is assumed.
+#ifdef DCACHE_FLUSH_AREA
 
-// Synchronize the contents of the cache with memory.
-#define HAL_DCACHE_SYNC()                                               \
+// Evict dirty lines from write-back caches
+#define HAL_DCACHE_EVICT()                                              \
 CYG_MACRO_START                                                         \
     /* The best way to evict a dirty line is by using the          */   \
     /* line allocate operation on non-existent memory.             */   \
@@ -260,6 +263,20 @@ CYG_MACRO_START                                                         \
         "add    r0, r0, #32;"       /* 32 bytes/line      */            \
         "teq    r1, r0;"                                                \
         "bne    667b;"                                                  \
+        :                                                               \
+        : "i" (DCACHE_FLUSH_AREA)                                       \
+        : "r0","r1"      /* Clobber list */                             \
+        );                                                              \
+CYG_MACRO_END
+#else
+#define HAL_DCACHE_EVICT()
+#endif
+
+// Synchronize the contents of the cache with memory.
+#define HAL_DCACHE_SYNC()                                               \
+CYG_MACRO_START                                                         \
+    HAL_DCACHE_EVICT();                                                 \
+    asm volatile (                                                      \
         "mcr    p15,0,r0,c7,c6,0;"  /* invalidate data cache */         \
         /* cpuwait */                                                   \
         "mrc    p15,0,r1,c2,c0,0;"  /* arbitrary read   */              \
@@ -272,7 +289,7 @@ CYG_MACRO_START                                                         \
         "sub    pc,pc,#4;"                                              \
         "nop"                                                           \
         :                                                               \
-        : "i" (DCACHE_FLUSH_AREA)                                          \
+        :                                                               \
         : "r0","r1"      /* Clobber list */                             \
         );                                                              \
 CYG_MACRO_END
@@ -289,9 +306,15 @@ CYG_MACRO_END
 #define HAL_DCACHE_WRITEBACK_MODE       1
 
 // Get the current writeback mode - or only writeback mode if fixed
+#ifdef DCACHE_FLUSH_AREA
 #define HAL_DCACHE_QUERY_WRITE_MODE( _mode_ ) CYG_MACRO_START           \
     _mode_ = HAL_DCACHE_WRITEBACK_MODE;                                 \
 CYG_MACRO_END
+#else
+#define HAL_DCACHE_QUERY_WRITE_MODE( _mode_ ) CYG_MACRO_START           \
+    _mode_ = HAL_DCACHE_WRITETHRU_MODE;                                 \
+CYG_MACRO_END
+#endif
 
 // Load the contents of the given address range into the data cache
 // and then lock the cache so that it stays there.
