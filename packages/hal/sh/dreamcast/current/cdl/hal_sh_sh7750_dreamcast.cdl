@@ -64,6 +64,7 @@ cdl_package CYGPKG_HAL_SH_SH7750_DREAMCAST {
     requires      { CYGDAT_REDBOOT_SH_LINUX_BOOT_COMMAND_LINE == "mem=16M" }
 
     compile       hal_diag.c plf_misc.c dreamcast_pci.c fb_support.c
+    compile       -library=libextras.a boot.S
 
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
@@ -82,8 +83,8 @@ cdl_package CYGPKG_HAL_SH_SH7750_DREAMCAST {
     cdl_component CYG_HAL_STARTUP {
         display       "Startup type"
         flavor        data
-        legal_values  "RAM"
-        default_value "RAM"
+        legal_values  {"RAM"}
+        default_value {"RAM"}
         no_define
         define -file system.h CYG_HAL_STARTUP
         description   "

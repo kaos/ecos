@@ -117,6 +117,8 @@ externC void cyg_hal_plf_pci_init(void);
 #define HAL_PCI_PHYSICAL_MEMORY_BASE    0x00000000
 #define HAL_PCI_PHYSICAL_IO_BASE        0x00000000
 
+#define CYGARC_PCI_DMA_ADDRESS(_x_) ((_x_) & 0x1fffffff)
+
 //-----------------------------------------------------------------------------
 #endif // ifndef CYGONCE_PLF_IO_H
 // End of plf_io.h

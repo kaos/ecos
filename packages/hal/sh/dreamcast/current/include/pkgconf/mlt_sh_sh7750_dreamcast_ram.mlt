@@ -1,5 +1,6 @@
 version 0
 region ram 8c000000 1000000 0 !
+section entry 0 1 0 1 1 1 1 1 8c010000 8c010000 text text !
 section vectors 0 1 0 1 1 1 1 1 8c010200 8c010200 text text !
 section text 0 4 0 1 0 1 0 1 fini fini !
 section fini 0 4 0 1 0 1 0 1 rodata1 rodata1 !
