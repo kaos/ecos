@@ -69,12 +69,24 @@ cdl_package CYGPKG_DEVS_FLASH_STRATA {
         puts $::cdl_header "#include CYGDAT_DEVS_FLASH_STRATA_CFG";
     }
 
-
     cdl_component  CYGPKG_DEVS_FLASH_STRATA_LOCKING {
 	display "Flash device implements locking"
 	active_if 0 < CYGHWR_IO_FLASH_BLOCK_LOCKING
 	calculated 1
 	compile flash_lock_block.c flash_unlock_block.c
+
+        cdl_option CYGNUM_DEVS_FLASH_STRATA_MAX_BLOCKS {
+             display       "Maximum number of blocks the driver supports" 
+             flavor        data
+             default_value 128
+             description   "
+                 The strata devices do not support unlocking an 
+                 individual block. Instead it is necassary to unlock
+                 all the blocks in one operation and then lock all those
+                 blocks that should be blocked. To do this we need an array
+                 containing the current status of the blocks. This controls the 
+                 size of that array."
+        }
     }
 }
 

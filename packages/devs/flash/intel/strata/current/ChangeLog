@@ -1,3 +1,10 @@
+2004-08-21  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/flash_unlock_block.c (flash_unlock_block): 
+	* cdl/flash_strata.cdl: CDL to control the maximum number of
+	blocks the driver supports. Some of the newer strata device has more
+	than the default maximum of 128. Problem pointed out by Kevin Zhang.
+
 2005-01-26  Scott Wilkinson <scott@alliantnetworks.com>
 	* src/strata.h:
 	* src/strata.c:
