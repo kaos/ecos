@@ -1,3 +1,9 @@
+2003-11-19  Jani Monoses  <jani@iv.ro>
+	
+	* src/cerfpda_misc.c: Map DRAM as cacheable, it increases performance.
+	* include/plf_mmap.h: Delete duplicate HAL_PHYS_TO_VIRT_ADDRESS
+	definition.
+	
 2003-02-13  Patrick Doyle  <wpd@delcomsys.com>
 	* src/cerfpda_misc.c: Replaced explicit prototype of memset with
 	#include <string.h>.

@@ -75,7 +75,6 @@
 #define HAL_MM_PAGESIZE( vaddr, pagesize ) CYG_MACRO_START      \
     (pagesize) = SZ_1M;                                         \
 CYG_MACRO_END
-
 // Get the physical address from a virtual address:
 
 // Only RAM and ROM are mapped; we just pass through all other values,
@@ -120,23 +119,6 @@ CYG_MACRO_END
     (vaddr) = _p_ ;                                                        \
 CYG_MACRO_END
 
-// Get the virtual address for a physical address:
-
-// Only RAM and ROM are mapped; we just pass through all other values,
-// rather than detecting nonexistent areas here.
-
-#define HAL_PHYS_TO_VIRT_ADDRESS( paddr, vaddr ) CYG_MACRO_START           \
-    cyg_uint32 _p_ = (cyg_uint32)(paddr);                                  \
-    if ( 32 * SZ_1M > _p_ )         /* 32Mb Boot ROM mapped to 0x500Mb */  \
-        _p_ += 0x500u * SZ_1M;                                             \
-    else if ( 0xc00u * SZ_1M > _p_ ) /* Space between ROM and SDRAM */     \
-        /* no change */ ;                                                  \
-    else if ( 0xc20u * SZ_1M > _p_ ) /* Raw RAM size 32Mb */               \
-        _p_ -= 0xc00u * SZ_1M;                                             \
-    else                            /* Rest of it */                       \
-        /* no change */ ;                                                  \
-    (vaddr) = _p_ ;                                                        \
-CYG_MACRO_END
 
 // Get a non-cacheable address for accessing the same store as a virtual
 // (assumed cachable) address:
@@ -152,7 +134,6 @@ CYG_MACRO_END
         /* no change */ ;                                                  \
     (uaddr) = _v_ ;                                                        \
 CYG_MACRO_END
-
 //---------------------------------------------------------------------------
 #endif // CYGONCE_HAL_SA11X0_PLATFORM_PLF_MMAP_H
 // EOF plf_mmap.h
