@@ -259,6 +259,7 @@ cdl_package CYGPKG_NET {
 
         cdl_component CYGOPT_NET_IPV6_ROUTING_THREAD {
             display       "Thread for IPv6 routing"
+            requires      CYGPKG_POSIX
             flavor        bool
             default_value 1
             description "

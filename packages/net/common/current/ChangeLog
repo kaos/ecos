@@ -6,6 +6,11 @@
         knows the interface it still up and can later bring it down when 
         cleaning up.
 
+2003-07-25  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/ipv6_routing_thread.c: Fix compiler warnings
+	* cd/net.cdl: The routing thread needs the posix package.
+
 2003-07-24  Nick Garnett  <nickg@balti.calivar.com>
 
 	* src/dhcp_prot.c: Added a declaration for cyg_arc4random() to
@@ -16,7 +21,7 @@
 	* include/net/netdb.h: Added include for <sys/param.h>. the in.h
 	file included later needs this.
 
- 2003-05-23  Andrew Lunn  <andrew.lunn@ascom.ch>
+2003-05-23  Andrew Lunn  <andrew.lunn@ascom.ch>
  
  	* src/network_support.c (init_all_network_interfaces): Allow IPv4
  	or IPv6 addresses to be used when configuring a default DNS
