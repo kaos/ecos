@@ -1,3 +1,19 @@
+2002-12-06  Mark Salter  <msalter@redhat.com>
+
+	* cdl/hal_mn10300_am33_asb.cdl (CYG_HAL_FULL_RAM): New option to
+	indicate if RAM startup should use all RAM. This allows a special
+	RAM startup to be built which may be loaded onto a bare board by
+	the MEI tools. This can be used to build an initial RedBoot which
+	is used to program the flash with the ROM startup RedBoot image.
+	Implements CYGINT_HAL_MN10300_MEM_REAL_REGION_TOP.
+	
+	* misc/redboot_FULLRAM.ecm:
+	* include/pkgconf/mlt_mn10300_am33_asb_fullram.h:
+	* include/pkgconf/mlt_mn10300_am33_asb_fullram.ldi:
+	* include/pkgconf/mlt_mn10300_am33_asb_fullram.mlt: New files.
+
+	* include/platform.inc: Add runtime determination of SDRAM config.
+
 2002-11-19  Mark Salter  <msalter@redhat.com>
 
 	* cdl/hal_mn10300_am33_asb.cdl: Remove virtual vector comm support.

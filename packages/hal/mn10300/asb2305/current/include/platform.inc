@@ -258,11 +258,23 @@ x\@:
 #define SBCTRL72_INIT				0x0000000F
 
 #define SDBASE0			0xDA000008
-#define SDBASE0_INIT				0x9000FE01
 #define SDBASE1			0xDA00000C
-#define SDBASE1_INIT				0x9200FE01
 #define SDRAMBUS		0xDA000000
-#define SDRAMBUS_INIT				0xA8990654
+
+// 16MB SDRAM
+#define SDBASE0_8M_INIT         0x9000FF81
+#define SDBASE1_8M_INIT         0x9080FF81
+#define SDRAMBUS_8M_INIT        0xA8990654
+
+// 32MB SDRAM
+#define SDBASE0_16M_INIT        0x9000FF01
+#define SDBASE1_16M_INIT        0x9100FF01
+#define SDRAMBUS_16M_INIT       0xA89a0654
+
+// 64MB SDRAM
+#define SDBASE0_32M_INIT        0x9000fe01
+#define SDBASE1_32M_INIT        0x9200fe01
+#define SDRAMBUS_32M_INIT       0xa89b0654
 
 	.macro	hal_memc_init
 	mov	BCCR,a0
@@ -349,18 +361,74 @@ x\@:
 	mov	d0,(SBCTRL72)
 #endif
 
-	# SDRAM
-	mov	SDBASE0,a0
-	mov	SDBASE0_INIT,d0
-	mov	d0,(a0)
+#ifndef CYG_HAL_STARTUP_RAM
 
-	mov	SDBASE1,a0
-	mov	SDBASE1_INIT,d0
-	mov	d0,(a0)
+        // Setup for 64MB initially and determine final mem config below.
+        mov     SDRAMBUS,a0
+        mov     (a0),d0
+        and     0xfffffffb,d0  // disable refresh
+        mov     d0,(a0)
 
-	mov	SDRAMBUS,a0
-	mov	SDRAMBUS_INIT,d0
-	mov	d0,(a0)
+        mov     SDBASE0,a0
+        mov     SDBASE0_32M_INIT,d0
+        mov     d0,(a0)
+        mov     SDBASE1,a0
+        mov     SDBASE1_32M_INIT,d0
+        mov     d0,(a0)
+        mov     SDRAMBUS,a0
+        mov     SDRAMBUS_32M_INIT,d0
+        mov     d0,(a0)
+
+        mov     0x1000,d0
+0:
+        sub     1,d0
+        bne     0b
+
+        // Check for 16MB and 32MB shadowing to determine actual amount of
+        // memory installed. This assumes 8M, 16M, or 32M configs.
+        mov     0,d0
+        mov     d0,(0x91000000)
+        mov     d0,(0x92000000)
+        mov     0xaaaaaaaa,d0
+        mov     d0,(0x90000000)
+        mov     (0x91000000),d1
+        cmp     d0,d1
+        bne     1f
+
+        // 16MB installed
+        mov     SDRAMBUS,a0
+        mov     (a0),d0
+        and     0xfffffffb,d0  // disable refresh
+        mov     d0,(a0)
+        mov     SDBASE0,a1
+        mov     SDBASE0_8M_INIT,d1
+        mov     d1,(a1)
+        mov     SDBASE1,a1
+        mov     SDBASE1_8M_INIT,d1
+        mov     d1,(a1)
+        mov     SDRAMBUS_8M_INIT,d0
+        mov     d0,(a0)
+        jmp     2f
+1:
+        mov     (0x92000000),d1
+        cmp     d0,d1
+        bne     2f
+
+        // 32MB installed
+        mov     SDRAMBUS,a0
+        mov     (a0),d0
+        and     0xfffffffb,d0  // disable refresh
+        mov     d0,(a0)
+        mov     SDBASE0,a1
+        mov     SDBASE0_16M_INIT,d1
+        mov     d1,(a1)
+        mov     SDBASE1,a1
+        mov     SDBASE1_16M_INIT,d1
+        mov     d1,(a1)
+        mov     SDRAMBUS_16M_INIT,d0
+        mov     d0,(a0)
+2:
+#endif // ! CYG_HAL_STARTUP_RAM
 
 	// now the ROMs need putting into the right place
 	// - this is tricky because when we're booting from the system flash,

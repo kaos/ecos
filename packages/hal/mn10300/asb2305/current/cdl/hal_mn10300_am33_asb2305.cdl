@@ -65,6 +65,7 @@ cdl_package CYGPKG_HAL_MN10300_AM33_ASB2305 {
 
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
+    implements    CYGINT_HAL_MN10300_MEM_REAL_REGION_TOP
 
     requires CYGSEM_HAL_UNCACHED_FLASH_ACCESS == 1;
 
@@ -98,6 +99,16 @@ cdl_package CYGPKG_HAL_MN10300_AM33_ASB2305 {
         description   "
             This specifies which ROM slot the program resides in (and is booted
             from."
+    }
+
+    cdl_option CYG_HAL_FULL_RAM {
+        display       "Use all of RAM for RAM startup"
+        flavor        bool
+        default_value 0
+        description   "
+            This specifies whether or not RAM startup configurations use all of
+            RAM. This should be true when using the MEI debugger to load the RAM
+            startup program when no monitor is installed on the board."
     }
 
     cdl_option CYGHWR_HAL_MN10300_PROCESSOR_OSC_DEFAULT {
@@ -207,7 +218,9 @@ cdl_package CYGPKG_HAL_MN10300_AM33_ASB2305 {
         display "Memory layout"
         flavor data
         no_define
-        calculated { CYG_HAL_STARTUP  == "RAM"      ? "mn10300_am33_asb2305_ram" : \
+        calculated { CYG_HAL_STARTUP  == "RAM"      ? \
+		         CYG_HAL_FULL_RAM ? "mn10300_am33_asb2305_fullram" : \
+                                            "mn10300_am33_asb2305_ram" : \
                      CYG_HAL_ROM_SLOT == "BootPROM" ? "mn10300_am33_asb2305_rom" : \
                                                       "mn10300_am33_asb2305_flash" }
 
@@ -216,7 +229,9 @@ cdl_package CYGPKG_HAL_MN10300_AM33_ASB2305 {
             flavor data
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_LDI
-            calculated { CYG_HAL_STARTUP == "RAM"       ? "<pkgconf/mlt_mn10300_am33_asb2305_ram.ldi>" : \
+            calculated { CYG_HAL_STARTUP == "RAM"       ? \
+                             CYG_HAL_FULL_RAM ? "<pkgconf/mlt_mn10300_am33_asb2305_fullram.ldi>" :  \
+                                                "<pkgconf/mlt_mn10300_am33_asb2305_ram.ldi>" : \
                          CYG_HAL_ROM_SLOT == "BootPROM" ? "<pkgconf/mlt_mn10300_am33_asb2305_rom.ldi>" : \
                                                           "<pkgconf/mlt_mn10300_am33_asb2305_flash.ldi>" }
         }
@@ -226,7 +241,9 @@ cdl_package CYGPKG_HAL_MN10300_AM33_ASB2305 {
             flavor data
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_H
-            calculated { CYG_HAL_STARTUP == "RAM"       ? "<pkgconf/mlt_mn10300_am33_asb2305_ram.h>" : \
+            calculated { CYG_HAL_STARTUP == "RAM"       ? \
+			     CYG_HAL_FULL_RAM ? "<pkgconf/mlt_mn10300_am33_asb2305_fullram.h>" : \
+                                                "<pkgconf/mlt_mn10300_am33_asb2305_ram.h>" : \
                          CYG_HAL_ROM_SLOT == "BootPROM" ? "<pkgconf/mlt_mn10300_am33_asb2305_rom.h>" : \
                                                           "<pkgconf/mlt_mn10300_am33_asb2305_flash.h>" }
         }

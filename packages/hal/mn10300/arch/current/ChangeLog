@@ -1,3 +1,8 @@
+2002-12-06  Mark Salter  <msalter@redhat.com>
+
+	* cdl/hal_mn10300.cdl: Add CYGINT_HAL_MN10300_MEM_REAL_REGION_TOP.
+	* include/hal_intr.h: Support CYGINT_HAL_MN10300_MEM_REAL_REGION_TOP.
+
 2002-04-29  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/vectors.S:

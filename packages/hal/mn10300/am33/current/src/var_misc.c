@@ -60,6 +60,7 @@
 #include <cyg/hal/hal_cache.h>
 
 #include <cyg/hal/hal_intr.h>           // HAL_CLOCK_READ
+#include CYGHWR_MEMORY_LAYOUT_H
 
 /*------------------------------------------------------------------------*/
 /* Variant specific initialization routine.                               */
@@ -140,6 +141,37 @@ hal_delay_us(cyg_int32 delay)
 }
 
 
+/*------------------------------------------------------------------------*/
+/* Memory top support                                                     */
+
+#define SDBASE0       ((volatile unsigned *)0xDA000008)
+#define SDBASE1       ((volatile unsigned *)0xDA00000C)
+#define SDRAMBUS      ((volatile unsigned *)0xDA000000)
+
+#if CYGINT_HAL_MN10300_MEM_REAL_REGION_TOP
+externC cyg_uint8 *
+hal_mn10300_mem_real_region_top( cyg_uint8 *regionend )
+{
+    unsigned dram_size, dram_base;
+
+    // Figure out actual DRAM size from memory controller config.
+    dram_size = 0x400000 << ((*SDRAMBUS >> 16) & 0x3);
+    if (*SDBASE1 & 1)
+	dram_size *= 2;
+    dram_base = (*SDBASE0 & ((*SDBASE0 & 0xfff0) << 16));
+
+    CYG_ASSERT( dram_size >= 8<<20, "Less than 8MB SDRAM reported!" );
+    CYG_ASSERT( dram_size <=  256<<20, "More than 256MB SDRAM reported!" );
+
+    // is it the "normal" end of the DRAM region? If so, it should be
+    // replaced by the real size
+    if ( regionend ==
+         ((cyg_uint8 *)CYGMEM_REGION_ram + CYGMEM_REGION_ram_SIZE) ) {
+        regionend = (cyg_uint8 *)dram_base + dram_size;
+    }
+    return regionend;
+}
+#endif
 
 
 #ifdef CYGPKG_CYGMON

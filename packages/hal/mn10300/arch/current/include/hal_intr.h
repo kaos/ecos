@@ -330,5 +330,17 @@ CYG_MACRO_END
 #endif
 
 //--------------------------------------------------------------------------
+// Memory region top
+//
+#if CYGINT_HAL_MN10300_MEM_REAL_REGION_TOP
+
+externC cyg_uint8 *hal_mn10300_mem_real_region_top( cyg_uint8 *_regionend_ );
+                                                
+# define HAL_MEM_REAL_REGION_TOP( _regionend_ ) \
+    hal_mn10300_mem_real_region_top( _regionend_ )
+#endif
+
+
+//--------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_HAL_INTR_H
 // EOF hal_intr.h

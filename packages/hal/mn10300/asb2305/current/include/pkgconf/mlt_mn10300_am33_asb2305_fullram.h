@@ -7,8 +7,8 @@
 #include <stddef.h>
 
 #endif
-#define CYGMEM_REGION_ram	(0x90020000)
-#define CYGMEM_REGION_ram_SIZE	(0x03fe0000)
+#define CYGMEM_REGION_ram	(0x90000000)
+#define CYGMEM_REGION_ram_SIZE	(0x04000000)
 #define CYGMEM_REGION_ram_ATTR	(CYGMEM_REGION_ATTR_R | CYGMEM_REGION_ATTR_W)
 #ifndef __ASSEMBLER__
 extern char CYG_LABEL_NAME (__heap1) [];

@@ -66,6 +66,10 @@ cdl_package CYGPKG_HAL_MN10300 {
         requires 1 == CYGINT_HAL_MN10300_VARIANT
     }
 
+    cdl_interface CYGINT_HAL_MN10300_MEM_REAL_REGION_TOP {
+        display  "Implementations of hal_mn10300_mem_real_region_top()"
+    }
+
     cdl_option CYGDBG_HAL_MN10300_DEBUG_GDB_CTRLC_SUPPORT {
         display "Architecture GDB CTRLC support"
         calculated { CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT || CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT }

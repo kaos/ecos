@@ -63,6 +63,8 @@
 
 #include <cyg/hal/platform.inc>
 
+#include CYGHWR_MEMORY_LAYOUT_H
+
 #------------------------------------------------------------------------------
 # Register definitions
 
@@ -116,8 +118,14 @@
 #endif
 	mov	d0,epsw
 #ifndef CYGSEM_HAL_USE_ROM_MONITOR
+// Don't change TBR for RAM startup if RAM base is not aligned for TBR.
+// In that case, the only option is to rely on ROM startup TBR and patch
+// into vectors through the hal_vsr_table.
+//
+#if !(defined(CYG_HAL_STARTUP_RAM) && (CYGMEM_REGION_ram & 0xffffff))
 	mov	reset_vector,a0		# set TBR to vector table
 	mov	a0,(TBR)
+#endif
 #endif
 
 	# stop as many internal interrupt sources as possible
