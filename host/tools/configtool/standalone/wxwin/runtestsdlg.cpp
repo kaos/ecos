@@ -121,7 +121,6 @@ ecRunTestsDialog::ecRunTestsDialog(wxWindow* parent):
     m_runStatus(ecStopped),
     m_nNextToSubmit(-1),
     m_pResource(NULL),
-    m_nTestsToComplete(0),
     m_testsAreComplete(FALSE)
 {
     m_runTestsDialog = this;
@@ -360,10 +359,10 @@ void ecRunTestsDialog::OnRun(wxCommandEvent& event)
             
             m_nNextToSubmit=0;
             m_output->AddLogMsg(_("Run started"));
-            
+
             SubmitTests();
         }
-    }    
+    }
 }
 
 wxString ecRunTestsDialog::TranslatePort(const wxString& port) const
@@ -387,15 +386,23 @@ wxString ecRunTestsDialog::TranslatePort(const wxString& port) const
 
 void ecRunTestsDialog::SubmitTests()
 {
+    int iTest;
     int nResources=wxGetApp().GetSettings().GetRunTestsSettings().m_bRemote ? wxMax(1,CTestResource::GetMatchCount (m_ep)):1;
     if(nResources>CeCosTest::InstanceCount){
-        if(m_nNextToSubmit >= m_executables->SelectedTestCount()){
+        if (m_nNextToSubmit >= m_executables->SelectedTestCount()){
+            m_runStatus = ecStopped;
+
+            wxButton* runButton = (wxButton*) FindWindow(ecID_RUN_TESTS_RUN);
+            runButton->SetLabel(_("&Run"));
+            m_output->AddLogMsg(_("Run complete"));
+
+            delete m_pResource;
+            m_pResource=0;
             return;
         }
         ecRunTestsInfo *pInfo=new ecRunTestsInfo;
         pInfo->pTest=new CeCosTest(m_ep, m_executables->SelectedTest(m_nNextToSubmit++));
         pInfo->pSheet=this;
-        m_nTestsToComplete++;
         if(wxGetApp().GetSettings().GetRunTestsSettings().m_bRemote){
             CeCosThreadUtils::RunThread(RunRemoteFunc,pInfo, (CeCosThreadUtils::CallbackProc*) RunCallback,_T("RunRemoteFunc"));
         } else {
@@ -431,6 +438,8 @@ void ecRunTestsDialog::SubmitTests()
                 }
             }
             if(bRun){
+                if (1 < m_nNextToSubmit)
+                      m_output->AddLogMsg(_("Run continuing"));
                 CeCosThreadUtils::RunThread(RunLocalFunc, pInfo, (CeCosThreadUtils::CallbackProc*) RunCallback,_T("RunLocalFunc"));
             }
         }
@@ -482,25 +491,17 @@ void ecRunTestsDialog::RunCallback(void *pParam)
     ecRunTestsInfo *pInfo=(ecRunTestsInfo *)pParam;
     ecRunTestsDialog *pSheet=pInfo->pSheet;
     if (m_runTestsDialog) // Will be NULL if dialog has been closed & deleted
-    { 
+    {
         CeCosTest *pTest=pInfo->pTest;
 
         pInfo->pSheet->m_CS.Enter();
-        
+
         pSheet->m_summary->AddResult(pTest);
         delete pTest;
-        
-        pSheet->m_nTestsToComplete--;
-        pSheet->SubmitTests();   
-        
-        if(0==pSheet->m_nTestsToComplete)
-        {
-            delete pSheet->m_pResource;
-            pSheet->m_pResource=0;
 
-            // OnIdle will check this variable and reset the status and button label
-            pSheet->m_testsAreComplete = TRUE;
-        }
+        // OnIdle will check this variable and reset the status and button label
+        pSheet->m_testsAreComplete = TRUE;
+
         pInfo->pSheet->m_CS.Leave();
     }
     delete pInfo;
@@ -513,13 +514,7 @@ void ecRunTestsDialog::OnIdle(wxIdleEvent& event)
     if (m_testsAreComplete)
     {
         m_testsAreComplete = FALSE;
-
-        m_runStatus = ecStopped;
-
-        wxButton* runButton = (wxButton*) FindWindow(ecID_RUN_TESTS_RUN);
-        runButton->SetLabel(_("&Run"));
-        
-        m_output->AddLogMsg(_("Run complete"));
+        SubmitTests();
     }
 
     event.Skip();

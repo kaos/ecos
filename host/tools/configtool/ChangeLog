@@ -1,3 +1,10 @@
+2003-02-10  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/runtestsdlg.cpp,
+	  standalone/wxwin/runtestsdlg.h:
+	Call the "Reset Board" message box in the primary thread rather than
+	the worker thread for correct operation under Linux.
+
 2003-02-05  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/configtooldoc.cpp,

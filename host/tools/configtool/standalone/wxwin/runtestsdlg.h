@@ -138,7 +138,6 @@ protected:
 	int                                     m_nNextToSubmit;
     CTestResource*                          m_pResource;
     CProperties                             m_prop;
-	int                                     m_nTestsToComplete;
     wxCriticalSection                       m_CS;
     static ecRunTestsDialog*                m_runTestsDialog;
     bool                                    m_testsAreComplete;
