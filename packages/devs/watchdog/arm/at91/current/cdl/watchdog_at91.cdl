@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2003 Nick Garnett <nickg@calivar.com>
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -41,7 +42,7 @@
 ######DESCRIPTIONBEGIN####
 #
 # Author(s):      tkoeller
-# Contributors:   tkoeller
+# Contributors:   tkoeller, nickg
 # Date:           2000-05-05
 #
 #####DESCRIPTIONEND####
@@ -61,9 +62,13 @@ cdl_package CYGPKG_DEVICES_WATCHDOG_ARM_AT91 {
     active_if     CYGIMP_WATCHDOG_HARDWARE
     description   "
       This package uses the watchdog device integrated
-      in the ARM CPU to execute a predefined action if the
+      in the AT91 to execute a predefined action if the
       application fails to call the reset function for
-      longer than a given timeout interval."
+      longer than a given timeout interval. This package
+      currently only supports the AT91x408xx and AT91M55800A
+      devices found on the Atmel EB40, EB40A and EB55 evaluation
+      boards. The AT91M42800 found on the EB42 is not supported
+      since it uses a totally different watchdog device."
 
     cdl_option CYGIMP_WATCHDOG_HARDWARE {
         parent	      CYGPKG_IO_WATCHDOG_IMPLEMENTATION
@@ -72,7 +77,7 @@ cdl_package CYGPKG_DEVICES_WATCHDOG_ARM_AT91 {
         implements    CYGINT_WATCHDOG_IMPLEMENTATIONS
     }
     
-    cdl_option CYGNUM_DEVS_WATCHDOG_ARM_AT91_DESIRED_TMEOUT_MS {
+    cdl_option CYGNUM_DEVS_WATCHDOG_ARM_AT91_DESIRED_TIMEOUT_MS {
       	display       	"Desired timeout value"
 	flavor        	data
 	legal_values  	1 to 2047

@@ -1,3 +1,9 @@
+2003-05-12  Nick Garnett  <nickg@balti.calivar.com>
+
+	* src/watchdog_at91.cxx: 
+	* cdl/watchdog_at91.cdl: Modified driver to work for EB40, EB40A
+	and EB55 boards. Generally tidied up a little.
+
 2002-08-06  Thomas Koeller  <thomas@koeller.dyndns.org>
 
 	* Added watchdog driver for ARM AT91 board.
@@ -6,6 +12,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Nick Garnett <nickg@calivar.com>
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
