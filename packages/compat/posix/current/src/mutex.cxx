@@ -63,9 +63,11 @@
 #include <cyg/kernel/thread.hxx>       // thread definitions
 #include <cyg/kernel/mutex.hxx>        // mutex definitions
 #include <cyg/kernel/clock.hxx>        // clock definitions
+#include <cyg/kernel/sched.hxx>        // scheduler primitives
 #include <pthread.h>
 
 #include <cyg/kernel/thread.inl>       // thread inlines
+#include <cyg/kernel/sched.inl>        // scheduler inlines
 
 //-----------------------------------------------------------------------------
 // new operator to allow us to construct mutex objects
