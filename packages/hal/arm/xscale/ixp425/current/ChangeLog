@@ -1,3 +1,8 @@
+2004-11-05  David Vrabel  <dvrabel@arcom.com>
+
+	* src/ixp425_redboot.c: Put #ifdef CYGPKG_IO_FLASH around flash
+	functions so a RedBoot without flash support can be built.
+
 2004-09-27  Mark Salter  <msalter@redhat.com>
 
 	* src/ixp425_pci.c (pci_config): Fix offset handling.

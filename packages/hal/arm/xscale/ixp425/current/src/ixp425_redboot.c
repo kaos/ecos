@@ -51,7 +51,9 @@
 //========================================================================*/
 
 #include <redboot.h>
+#ifdef CYGPKG_IO_FLASH
 #include <cyg/io/flash.h>
+#endif
 
 #ifdef CYGOPT_REDBOOT_FIS
 extern void *fis_addr;
@@ -60,6 +62,8 @@ extern void *fis_addr;
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
 extern void *cfg_base;
 #endif
+
+#ifdef CYGPKG_IO_FLASH
 
 //
 // Little endian mode requires some trickery due to the way the IXP4xx
@@ -138,6 +142,8 @@ hal_flash_program(void *addr, void *data, int len, void **err)
 
     return retval;
 }
+
+#endif // CYGPKG_IO_FLASH
 
 
 /*------------------------------------------------------------------------*/
