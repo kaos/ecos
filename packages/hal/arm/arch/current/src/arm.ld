@@ -87,7 +87,8 @@ OUTPUT_FORMAT(elf32-bigarm)
   .debug_frame    0 : { *(.debug_frame) }       \
   .debug_str      0 : { *(.debug_str) }         \
   .debug_loc      0 : { *(.debug_loc) }         \
-  .debug_macinfo  0 : { *(.debug_macinfo) }
+  .debug_macinfo  0 : { *(.debug_macinfo) }     \
+  .note.arm.ident 0 : { KEEP (*(.note.arm.ident)) }
 
 #define SECTION_fixed_vectors(_region_, _vma_, _lma_) \
     .fixed_vectors _vma_ : _lma_ \
