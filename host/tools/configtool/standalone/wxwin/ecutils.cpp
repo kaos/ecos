@@ -1223,7 +1223,7 @@ int wxNewKill(long pid, wxSignal sig, ecKillError *krc = NULL)
 
 int ecKill(long pid, wxSignal sig)
 {
-#ifdef __UNIX__
+#if defined(__UNIX__) && !defined(__CYGWIN__)
     return wxKill(pid, sig);
 #elif defined(__WXMSW__)
     return wxNewKill(pid, sig);

@@ -40,8 +40,8 @@
 #include "filename.h"
 
 #ifdef __WXMSW__
-#include <direct.h>
-#include <dos.h>
+//#include <direct.h>
+//#include <dos.h>
 
 #include <windows.h>
 #include <shlwapi.h>
@@ -446,9 +446,9 @@ ecFileName ecFileName::Relative(const wxChar* compare,const wxChar* current)
 {
 #ifdef __WXMSW__
     wxString rc;
-    bool b=(TRUE==PathRelativePathTo(rc.GetWriteBuf(1+MAX_PATH),current,FILE_ATTRIBUTE_DIRECTORY,compare,0));
+    bool b=(TRUE==PathRelativePathTo(rc.GetWriteBuf(1+MAX_PATH),current,FILE_ATTRIBUTE_DIRECTORY,(const WCHAR*)compare,0));
     rc.UngetWriteBuf();
-    return b?rc:compare;
+    return b?(ecFileName)rc:(ecFileName)compare;
 #else
     wxFAIL_MSG("ecFileName::Relative not implemented on this platform.");
     return ecFileName();
@@ -529,9 +529,9 @@ ecFileName ecFileName::GetTempPath()
     ecFileName f;
 #ifdef __WXMSW__
 #ifdef _UNICODE
-    ::GetTempPathW(1+_MAX_PATH,f.GetWriteBuf(1+_MAX_PATH));
+    ::GetTempPathW(1+MAX_PATH,f.GetWriteBuf(1+MAX_PATH));
 #else
-    ::GetTempPathA(1+_MAX_PATH,f.GetWriteBuf(1+_MAX_PATH));
+    ::GetTempPathA(1+MAX_PATH,f.GetWriteBuf(1+MAX_PATH));
 #endif
   f.UngetWriteBuf();
 #elif defined(__WXGTK__)
@@ -579,12 +579,12 @@ bool ecFileName::CreateDirectory(bool bParentsToo,bool bFailIfAlreadyExists) con
 
 #ifdef __WXMSW__
         // If the path is a network path, ignore the first part of the path
-        if (len > 2 && (rest[0] == wxT('\\') || rest[0] == wxT('/')) && (rest[1] == wxT('\\') || rest[1] == wxT('/')))
+        if (len > 2 && (rest.GetChar(0) == wxT('\\') || rest.GetChar(0) == wxT('/')) && (rest.GetChar(1) == wxT('\\') || rest.GetChar(1) == wxT('/')))
         {
-            rest[(size_t) 0] = wxT('_'); rest[(size_t) 1] = wxT('_');
+            rest.SetChar(0,wxT('_')); rest.SetChar(1,wxT('_'));
             lastPos = rest.Find(cSep);
             if (lastPos != -1 && lastPos >= 0)
-                rest[lastPos] = wxT('_');
+                rest.SetChar(lastPos,wxT('_'));
         }
 #endif
         

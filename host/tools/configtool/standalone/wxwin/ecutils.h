@@ -251,7 +251,7 @@ protected:
     struct wxPInfo {
         wxPInfo *pParent;
 #ifdef _WIN32
-        __int64 tCreation;
+        wxLongLong_t tCreation;
 #endif
         long tCpu;
         int PID;

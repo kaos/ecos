@@ -1195,7 +1195,7 @@ wxString ecConfigToolDoc::GetDefaultHardware ()
     bool bMore = config.GetFirstGroup(key, index);
     while (bMore)
     {
-        if (wxIsdigit(key[0]) && versionKey.CompareTo(key) < 0)
+        if (wxIsdigit(key.GetChar(0)) && versionKey.CompareTo(key) < 0)
             versionKey = key;
 
         bMore = config.GetNextGroup(key, index);
