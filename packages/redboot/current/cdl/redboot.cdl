@@ -264,8 +264,8 @@ cdl_package CYGPKG_REDBOOT {
         }
 
 	cdl_option CYGBLD_BUILD_REDBOOT_WITH_IOMEM {
-	    display       "Include I/O Memory commands 'in' and 'out'"
-	    default_value CYGPKG_HAL_I386
+	    display       "Include I/O Memory commands 'iopeek' and 'iopoke'"
+	    default_value 0
 	    compile -library=libextras.a iomem.c
 	}
 

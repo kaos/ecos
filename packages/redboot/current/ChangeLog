@@ -1,7 +1,12 @@
+2004-11-09  Ian Campbell  <icampbell@arcom.com>
+
+	* cdl/redboot.cdl, doc/redboot_cmds.sgml, src/iomem.c: Add support
+	for iopeek and iopoke commands to allow access to the I/O regions.
+
 2004-11-09  David Vrabel  <dvrabel@arcom.com>
 
 	* cdl/redboot.cdl (CYGBLD_REDBOOT_MIN_IMAGE_SIZE): Correct the
-        description to match what the option is actually used for.
+	description to match what the option is actually used for.
 
 	* src/flash.c (find_free, fis_free, fis_find_free): Don't ignore
         an extra CYGBLD_REDBOOT_MIN_IMAGE_SIZE amount from the start.

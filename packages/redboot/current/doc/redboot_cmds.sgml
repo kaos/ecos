@@ -865,6 +865,10 @@ Execute code at a location
    go [-w &lt;timeout&gt;] [entry]
 Help about help?
    help [&lt;topic&gt;]
+Read I/O location
+   iopeek [-b &lt;location&gt;] [-1|2|4]
+Write I/O location
+   iopoke [-b &lt;location&gt;] [-1|2|4] -v &lt;value&gt;
 Set/change IP addresses
    ip_address [-l &lt;local_ip_address&gt;[/&lt;mask_length&gt;]] [-h &lt;server_address&gt;]
 Load a file
@@ -873,7 +877,8 @@ Load a file
 Compare two blocks of memory
    mcmp -s &lt;location&gt; -d &lt;location&gt; -l &lt;length&gt; [-1|-2|-4]
 Fill a block of memory with a pattern
-   mfill -b &lt;location&gt; -l &lt;length&gt; -p &lt;pattern&gt; [-1|-2|-4]
+   mfill -b &lt;location&gt; -l &lt;length&gt; -p &lt;pattern&gt;
+  [-1|-2|-4]
 Network connectivity test
    ping [-v] [-n &lt;count&gt;] [-l &lt;length&gt;] [-t &lt;timeout&gt;] [-r &lt;rate&gt;]
         [-i &lt;IP_addr&gt;] -h &lt;IP_addr&gt;
@@ -910,6 +915,171 @@ Write raw data directly to FLASH
   fis write -f &lt;flash_addr&gt; -b &lt;mem_base&gt; -l &lt;image_length&gt;
 </screen> 
       </para>
+    </refsect1>
+  </refentry>
+
+<!-- ******** iopeek *************************************************** -->
+  <refentry id="iopeek-command">
+  <refnamediv>
+    <refname>iopeek</refname>
+    <refpurpose>Read I/O location</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>iopeek</command>
+      <arg>-b <replaceable> location</replaceable></arg>
+      <group>
+        <arg>-1</arg>
+        <arg>-2</arg>
+        <arg>-4</arg>
+      </group>
+    </cmdsynopsis>
+  </refsynopsisdiv>      
+  <refsect1>
+    <title>Arguments</title>
+    <informaltable frame="all">
+      <tgroup cols="4" colsep="1" rowsep="1" align="left">
+        <colspec colname="c1">
+        <colspec colname="c2">
+        <colspec colname="c3">
+        <colspec colname="c4">
+        <thead>
+          <row>
+            <entry>Name</entry>
+            <entry>Type</entry>
+            <entry>Description</entry>
+            <entry>Default</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>-b <replaceable>location</replaceable></entry>             
+            <entry>I/O address</entry>
+            <entry>I/O Location.</entry>             
+            <entry><emphasis>none</emphasis></entry>             
+          </row>
+          <row>
+            <entry>-1</entry>             
+            <entry></entry>
+            <entry>Access a one byte (8 bit) I/O location.</entry>             
+            <entry>-1</entry>             
+          </row>
+          <row>
+            <entry>-2</entry>             
+            <entry></entry>
+            <entry>Access a two byte (16 bit) I/O location.</entry>             
+            <entry>-1</entry>             
+          </row>
+          <row>
+            <entry>-4</entry>             
+            <entry></entry>
+            <entry>Access a one word (32 bit) I/O location.</entry>             
+            <entry>-1</entry>             
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </refsect1>
+  <refsect1>
+    <title>Description</title>
+      <para>Reads a value from the I/O address space.</para>
+  </refsect1>
+  <refsect1>
+    <title>Examples</title>
+    <para>
+Examine 8 bit value at I/O location 0x3F8.
+<screen> 
+RedBoot> <userinput>iopeek -b 0x3f8</userinput>
+0x03f8 = 0x30
+</screen> 
+</para>
+     <para>
+Examine 32 bit value at I/O location 0x3f8.
+<screen> 
+RedBoot> <userinput>iopeek -b 0x3f8 -4</userinput>
+0x03f8 = 0x03c10065
+</screen>
+</para>
+    </refsect1>
+  </refentry>
+
+<!-- ******** iopoke *************************************************** -->
+  <refentry id="iopoke-command">
+  <refnamediv>
+    <refname>iopoke</refname>
+    <refpurpose>Write I/O location</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>iopoke</command>
+      <arg>-b <replaceable> location</replaceable></arg>
+      <group>
+        <arg>-1</arg>
+        <arg>-2</arg>
+        <arg>-4</arg>
+      </group>
+      <arg>-v <replaceable> value</replaceable></arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>      
+  <refsect1>
+    <title>Arguments</title>
+    <informaltable frame="all">
+      <tgroup cols="4" colsep="1" rowsep="1" align="left">
+        <colspec colname="c1">
+        <colspec colname="c2">
+        <colspec colname="c3">
+        <colspec colname="c4">
+        <thead>
+          <row>
+            <entry>Name</entry>
+            <entry>Type</entry>
+            <entry>Description</entry>
+            <entry>Default</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>-b <replaceable>location</replaceable></entry>             
+            <entry>I/O address</entry>
+            <entry>I/O Location.</entry>             
+            <entry><emphasis>none</emphasis></entry>             
+          </row>
+          <row>
+            <entry>-1</entry>             
+            <entry></entry>
+            <entry>Access a one byte (8 bit) I/O location. 
+Only the 8 least significant bits of value will be used</entry>             
+            <entry>-1</entry>             
+          </row>
+          <row>
+            <entry>-2</entry>             
+            <entry></entry>
+            <entry>Access a two byte (16 bit) I/O location.
+Only the 16 least significant bits of value will be used</entry>             
+            <entry>-1</entry>             
+          </row>
+          <row>
+            <entry>-4</entry>             
+            <entry></entry>
+            <entry>Access a one word (32 bit) I/O location.</entry>             
+            <entry>-1</entry>             
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </refsect1>
+  <refsect1>
+    <title>Description</title>
+      <para>Writes a value to the I/O address space.</para>
+  </refsect1>
+  <refsect1>
+    <title>Examples</title>
+    <para>
+Write 0x0123 to 16 bit I/O location 0x200.
+<screen> 
+RedBoot> <userinput>iopoke -b 0x200 -v 0x123 -2</userinput>
+</screen> 
+</para>
     </refsect1>
   </refentry>
 
