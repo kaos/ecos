@@ -1,3 +1,11 @@
+2003-08-19  Gary Thomas  <gary@mlbassoc.com>
+
+	* ecos.db: New packages:
+	CYGPKG_DEVS_ETH_PHY - generic API for handling ethernet PHY devices
+	CYGPKG_DEVS_ETH_POWERPC_FCC - fast ethernet controller on MPC8xxx
+	CYGPKG_HAL_POWERPC_MPC8XXX - improved variant support for Motorola 8xxx
+	CYGPKG_HAL_POWERPC_RATTLER - Analogue & Micro Rattler (Motorola 8250)
+
 2003-08-13  Thomas Koeller  <thomas.koeller@baslerweb.com>
 
 	* ecos.db: Changed alias names for AT91 flash driver to avoid
