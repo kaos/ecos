@@ -59,6 +59,7 @@
 /* CONFIGURATION */
 
 #include <pkgconf/isoinfra.h>          /* Configuration header */
+#include <pkgconf/kernel.h>            /* CYGFUN_KERNEL_THREADS_TIMER */
 
 /* INCLUDES */
 
@@ -117,6 +118,22 @@ mq_setattr( mqd_t /* mqdes */, const struct mq_attr * /* mqstat */,
 
 extern int
 mq_getattr( mqd_t /* mqdes */, struct mq_attr * /* mqstat */ );
+
+# ifdef CYGFUN_KERNEL_THREADS_TIMER
+/* POSIX 1003.1d Draft functions - FIXME: should be conditionalized */
+
+struct timespec; /* forward declaration */
+
+extern int 
+mq_timedsend( mqd_t /* mqdes */, const char * /* msg_ptr */, 
+              size_t /* msg_len */, unsigned int /* msg_prio */,
+              const struct timespec * /* abs_timeout */ );
+
+extern ssize_t 
+mq_timedreceive( mqd_t /* mqdes */, char * /* msg_ptr */, 
+                 size_t /* msg_len */, unsigned int * /* msg_prio */,
+                 const struct timespec * /* abs_timeout */ );
+# endif
 
 #ifdef __cplusplus
 }   /* extern "C" */
