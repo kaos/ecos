@@ -1,3 +1,9 @@
+2003-02-27  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/kapidata.h: Revert change of 2001-08-23 and instead make
+	it conditional on the GCC version. Also add comments explaining why
+	this file has been apparently obfuscated.
+
 2003-02-25  Nick Garnett  <nickg@calivar.com>
 
 	* tests/fptest.c (alarm_fn): Added CYG_TEST_PASS() call to keep

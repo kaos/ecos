@@ -55,6 +55,24 @@
 //              IMPORTANT: It is NOT guaranteed that the fields of these
 //              structures correspond to the equivalent fields in the
 //              C++ classes they shadow.
+//
+//              One oddity with this file is that the way many of the "mirror"
+//              classes are defined with macros. The resulting structures
+//              then have a "flat" layout, rather than just declaring a
+//              member structure directly in the structure. The reason for
+//              this is that as of GCC 3.x, the C++ compiler will optimise
+//              classes by removing padding and reusing it for subsequent
+//              members defined in a derived class. This affects some targets
+//              (including PowerPC and MIPS at least) when a C++ base class
+//              includes a long long. By instead arranging for the C structure
+//              to just list all the members directly, the compiler will then
+//              behave the same for the C structures as the C++ classes.
+//
+//              This means that care has to be taken to follow the same
+//              methodology if new stuff is added to this file. Even if
+//              it doesn't contain long longs for your target, it may for
+//              others, depending on HAL definitions.
+//
 // Usage:       included by kapi.h
 //
 //####DESCRIPTIONEND####
@@ -339,9 +357,19 @@ typedef struct
     CYG_SCHEDTHREAD_MEMBERS
 } cyg_schedthread;
 
+/* This compiler version test is required because the C++ ABI changed in
+   GCC v3.x and GCC could now reuse "spare" space from base classes in derived
+   classes, and in C++ land, cyg_alarm is a base class of cyg_threadtimer.
+*/
+#if defined(__GNUC__) && (__GNUC__ < 3)
 #define CYG_THREADTIMER_MEMBERS \
     cyg_alarm           alarm;  \
     cyg_thread          *thread;
+#else
+#define CYG_THREADTIMER_MEMBERS \
+    CYG_ALARM_MEMBERS           \
+    cyg_thread          *thread;
+#endif
 
 /*---------------------------------------------------------------------------*/
 /* Thread structure                                                          */
