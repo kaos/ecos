@@ -1,3 +1,7 @@
+2004-05-22  Andrew Dyer  <adyer@righthandtech.com>
+
+	* src/if_lan91cxx.c: Fail initialization if no device found.
+
 2004-01-07  Uwe Kindler <ukindler@htwm.de>
 
 	* src/if_lan91cxx.c: Fail initialization if no link found.

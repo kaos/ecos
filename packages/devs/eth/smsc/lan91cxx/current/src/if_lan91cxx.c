@@ -308,7 +308,12 @@ smsc_lan91cxx_init(struct cyg_netdevtab_entry *tab)
     db_printf("LAN91CXX - supposed BankReg @ %x = %04x\n",
                 cpd->base+LAN91CXX_BS, val );
 #endif
-    CYG_ASSERT( 0x3300 == (0xff00 & val), "No 91Cxx signature" );
+
+    if ((0xff00 & val) !=  0x3300) {
+        CYG_FAIL("No 91Cxx signature" );
+        diag_printf("smsc_lan91cxx_init: No 91Cxx signature found\n");
+        return false;
+    }
 
     val = get_reg(sc, LAN91CXX_REVISION);
 
