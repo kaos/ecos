@@ -190,8 +190,8 @@ getifaddrs(struct ifaddrs **pif)
         data += SA_RLEN(sa);
 
         if ((sa->sa_family == AF_INET) || (sa->sa_family == AF_INET6)) {
-          struct sockaddr *sa_netmask;
-          struct sockaddr *sa_broadcast;
+          struct sockaddr *sa_netmask = NULL;
+          struct sockaddr *sa_broadcast = NULL;
 
           memset(&ifrq,0,sizeof(ifrq));
           strcpy(ifrq.ifr_name,ifr->ifr_name);
