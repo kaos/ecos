@@ -76,7 +76,7 @@
 #include <cyg/hal/drv_api.h>            // CYG_ISR_HANDLED
 
 #define UART_BIT_RATE(n) (((int)(CYGHWR_HAL_POWERPC_BOARD_SPEED*1000000)/16)/n)
-#define UART_BAUD_RATE CYGNUM_HAL_QUICC_DIAG_BAUD
+#define UART_BAUD_RATE CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD
 
 #define Txbd     0x2800       /* Tx Buffer Descriptor Offset */
 #define Txbuf    ((volatile char *)eppc + 0x2808)

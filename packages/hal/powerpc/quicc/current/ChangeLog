@@ -1,3 +1,9 @@
+2002-06-25  Gary Thomas  <gary@chez-thomas.org>
+
+	* src/quicc_smc1.c: 
+	* cdl/hal_powerpc_quicc.cdl: Use more common CDL name for baudrate
+	CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD.
+
 2002-05-30  Jesper Skov  <jskov@redhat.com>
 
 	* src/quicc_smc1.c: Fix warning.

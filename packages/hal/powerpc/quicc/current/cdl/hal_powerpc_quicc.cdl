@@ -63,7 +63,7 @@ cdl_package CYGPKG_HAL_QUICC {
 
     compile       quicc_smc1.c
 
-    cdl_option CYGNUM_HAL_QUICC_DIAG_BAUD {
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD {
         display       "Baud rate for the HAL diagnostic port"
         flavor        data
         legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400 3600
@@ -74,4 +74,5 @@ cdl_package CYGPKG_HAL_QUICC {
             This option specifies the default baud rate (speed) for the 
             HAL diagnostic port."
     }
+
 }
