@@ -104,7 +104,8 @@ getifaddrs(struct ifaddrs **pif)
     int icnt = 1;  // Interface count
     int dcnt = 0;  // Data [length] count
     int ncnt = 0;  // Length of interface names
-    char buf[1024];
+    char *buf;
+#define	IF_WORK_SPACE_SZ	1024
     int i, sock;
 #ifdef CYGPKG_NET_INET6
     int sock6;
@@ -116,15 +117,22 @@ getifaddrs(struct ifaddrs **pif)
     char *data, *names;
     struct ifaddrs *ifa, *ift;
 
+    buf = malloc(IF_WORK_SPACE_SZ);
+    if (buf == NULL)
+        return (-1);
     ifc.ifc_buf = buf;
-    ifc.ifc_len = sizeof(buf);
+    ifc.ifc_len = IF_WORK_SPACE_SZ;
 
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    {
+        free(buf);
         return (-1);
+    }
     i =  ioctl(sock, SIOCGIFCONF, (char *)&ifc);
 
     if (i < 0) {
         close(sock); 
+        free(buf);
         return (-1);
     }
 
@@ -167,10 +175,11 @@ getifaddrs(struct ifaddrs **pif)
     ift = ifa;
 
     ifr = ifc.ifc_req;
-    lifr = (struct ifreq *)&ifc.ifc_buf[ifc.ifc_len];
 
 #ifdef CYGPKG_NET_INET6
     if ((sock6 = socket(AF_INET6, SOCK_STREAM, 0)) < 0) {
+      free(buf);
+      free(data);
       close(sock);
       return (-1);
     }
@@ -234,6 +243,7 @@ getifaddrs(struct ifaddrs **pif)
             ifr = (struct ifreq *)(((char *)sa) + SA_LEN(sa));
         ift = (ift->ifa_next = ift + 1);
     }
+    free(buf);
 
     if (--ift >= ifa) {
         ift->ifa_next = NULL;

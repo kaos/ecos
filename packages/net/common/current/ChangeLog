@@ -1,3 +1,8 @@
+2003-09-16  Jay Foster  <jay@systech.com>
+ 
+ 	* src/ifaddrs.c (getifaddrs): Fix up allocation and freeing of
+    work buffers and data buffers.
+ 
 2003-07-29  Motoya Kurotsu  <kurotsu@allied-telesis.co.jp>
 
         * src/dhcp_prot.c (do_dhcp): (re)Initialize the lease when
