@@ -86,7 +86,9 @@ static int rand_trace = CYGNUM_LIBC_RAND_TRACE_LEVEL;
 // STATICS
 
 #ifdef CYGSEM_LIBC_PER_THREAD_RAND
-static cyg_ucount32 rand_data_index=CYGNUM_KERNEL_THREADS_DATA_MAX;
+static Cyg_Thread::cyg_data_index
+rand_data_index=CYGNUM_KERNEL_THREADS_DATA_MAX;
+
 static Cyg_Mutex rand_data_mutex CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_LIBC);
 #else
 static unsigned int cyg_libc_rand_seed = CYGNUM_LIBC_RAND_SEED;
@@ -113,10 +115,10 @@ rand( void )
         rand_data_mutex.lock();
         if (CYGNUM_KERNEL_THREADS_DATA_MAX==rand_data_index) {
 
-            // the kernel just throws an assert if this doesn't work
             // FIXME: Should use real CDL to pre-allocate a slot at compile
             // time to ensure there are enough slots
             rand_data_index = self->new_data_index();
+            CYG_ASSERT(rand_data_index >= 0, "failed to allocate data index" );
             
             // Initialize seed
             self->set_data(rand_data_index, CYGNUM_LIBC_RAND_SEED);
@@ -228,11 +230,10 @@ srand( unsigned int seed )
         rand_data_mutex.lock();
         if (CYGNUM_KERNEL_THREADS_DATA_MAX==rand_data_index) {
 
-            // the kernel just throws an assert if this doesn't work
             // FIXME: Should use real CDL to pre-allocate a slot at compile
             // time to ensure there are enough slots
             rand_data_index = self->new_data_index();
-
+            CYG_ASSERT(rand_data_index >= 0, "failed to allocate data index" );
         }
         rand_data_mutex.unlock();
     } // if
