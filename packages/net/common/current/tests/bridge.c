@@ -67,7 +67,7 @@
 #include <network.h>
 #include <sys/types.h>
 #include <stdlib.h>
-#ifdef CYGPKG_NET_BRIDGE
+#ifdef CYGPKG_NET_BRIDGE_HANDLER
 #include <net/if.h>
 #include <net/if_dl.h>
 #include <netinet/in.h>
@@ -984,7 +984,7 @@ cyg_user_start(void) {
   printf("cyg_user_start done\n");
 }
 
-#else // CYGPKG_NET_BRIDGE
+#else // CYGPKG_NET_BRIDGE_HANDLER
 
 void
 cyg_user_start(void) {
