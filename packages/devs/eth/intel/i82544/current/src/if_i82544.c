@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -2442,7 +2442,8 @@ find_82544s_match_func( cyg_uint16 v, cyg_uint16 d, cyg_uint32 c, void *p )
     return ((0x8086 == v) &&
             ((0x1004 == d) ||   // 82543
              (0x100d == d) ||   // 82543
-             (0x1008 == d)      // 82544
+             (0x1008 == d) ||   // 82544
+             (0x1010 == d)      // 82546
             )
            );
 }
