@@ -147,7 +147,6 @@ int nmbclusters = (NET_CLUSTERS_SIZE/MCLBYTES);
 static struct net_stats  stats_malloc, stats_free, 
     stats_memcpy, stats_memset,
     stats_mbuf_alloc, stats_mbuf_free, stats_cluster_alloc;
-extern struct net_stats stats_in_cksum;
 
 // Display a number of ticks as microseconds
 // Note: for improved calculation significance, values are kept in ticks*1000
@@ -193,7 +192,6 @@ show_net_times(void)
     show_net_stats(&stats_mbuf_alloc,    "Mbuf alloc");
     show_net_stats(&stats_mbuf_free,     "Mbuf free");
     show_net_stats(&stats_cluster_alloc, "Cluster alloc");
-    show_net_stats(&stats_in_cksum,      "Checksum");
     show_net_stats(&stats_memcpy,        "Net memcpy");
     show_net_stats(&stats_memset,        "Net memset");
 }

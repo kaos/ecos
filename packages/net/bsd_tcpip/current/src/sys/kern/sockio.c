@@ -246,8 +246,9 @@ static int
 bsd_bind(cyg_file *fp, const sockaddr *sa, socklen_t len)
 {
     int error;
-
-    error = sobind((struct socket *)fp->f_data, (sockaddr *)sa, 0);
+    sockaddr sa1=*sa;
+    
+    error = sobind((struct socket *)fp->f_data, (sockaddr *)&sa1, 0);
     return error;
 }
 
