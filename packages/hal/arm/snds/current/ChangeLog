@@ -1,3 +1,7 @@
+2002-10-03  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/pkgconf/mlt_arm_snds_ram.ldi: Add definition of heap1.
+
 2002-05-07  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/hal_arm_snds.cdl: 
