@@ -79,17 +79,7 @@ cdl_package CYGPKG_HAL_ARM_SA11X0_BRUTUS {
            building the eCos GDB stubs themselves."
     }
 
-    cdl_option CYGHWR_HAL_ARM_SA11X0_DIAG_PORT {
-        display       "Diagnostic serial port"
-        flavor        data
-        legal_values  0 1
-        default_value 1
-        description   "
-            The Brutus evaluation boards have two separate serial ports.  This option
-            chooses which of these ports will be used."
-    }
-
-    cdl_option CYGHWR_HAL_ARM_SA11X0_DIAG_BAUD {
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD {
         display       "Diagnostic serial port baud rate"
         flavor        data
         legal_values  9600 19200 38400 115200
@@ -100,17 +90,7 @@ cdl_package CYGPKG_HAL_ARM_SA11X0_BRUTUS {
             diagnostic and GDB port are the same."
     }
 
-    cdl_option CYGHWR_HAL_ARM_SA11X0_GDB_PORT {
-        display       "GDB serial port"
-        flavor        data
-        legal_values  0 1
-        default_value 1
-        description   "
-            The Brutus evaluation boards have two separate serial ports.  This option
-            chooses which of these ports will be used."
-    }
-
-    cdl_option CYGHWR_HAL_ARM_SA11X0_GDB_BAUD {
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL_BAUD {
         display       "GDB serial port baud rate"
         flavor        data
         legal_values  9600 19200 38400 115200
@@ -131,7 +111,7 @@ cdl_package CYGPKG_HAL_ARM_SA11X0_BRUTUS {
         display          "Debug serial port"
         flavor data
         legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
-        default_value    CYGHWR_HAL_ARM_SA11X0_GDB_PORT
+        default_value    1
         description      "
             The brutus board has two serial ports. This option
             chooses which port will be used to connect to a host
@@ -142,7 +122,7 @@ cdl_package CYGPKG_HAL_ARM_SA11X0_BRUTUS {
          display          "Diagnostic serial port"
          flavor data
          legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
-         default_value    CYGHWR_HAL_ARM_SA11X0_DIAG_PORT
+         default_value    1
          description      "
             The brutus board has two serial ports.  This option
             chooses which port will be used for diagnostic output."

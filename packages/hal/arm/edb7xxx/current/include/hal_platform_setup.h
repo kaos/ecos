@@ -113,7 +113,7 @@
 // Define startup code [macros]
 #if defined(CYGSEM_HAL_INSTALL_MMU_TABLES) && !defined(CYG_HAL_STARTUP_RAM)
 
-#ifdef CYGPKG_HAL_ARM_CL7111 // CL7111, 710 processor
+#ifdef CYGHWR_HAL_ARM_EDB7XXX_VARIANT_CL_PS7111 // CL7111, 710 processor
 #define MMU_INITIALIZE                                                   \
 	ldr	r2,=MMU_Control_Init                                    ;\
 	mcr	MMU_CP,0,r2,MMU_Control,c0	/* MMU off */           ;\
@@ -315,7 +315,7 @@
         b       10b             /* Next section */                           ;\
 20:
 #else
-#err Invalid DRAM size select
+#error Invalid DRAM size select
 #endif
 
 #define PLATFORM_SETUP1                                                       \

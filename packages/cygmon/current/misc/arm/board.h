@@ -1,10 +1,10 @@
-#ifndef _NETDEV_H_
-#define _NETDEV_H_
+#ifndef __CYGMON_ARM_BOARD_H__
+#define __CYGMON_ARM_BOARD_H__
 //==========================================================================
 //
-//      include/netdev.h
+//      board.h
 //
-//      Network device description
+//      Cygmon board/platform configuration file
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -30,49 +30,43 @@
 // -------------------------------------------                              
 //                                                                          
 //####COPYRIGHTEND####
-//####BSDCOPYRIGHTBEGIN####
-//
-// -------------------------------------------
-//
-// Portions of this software may have been derived from OpenBSD or other sources,
-// and are covered by the appropriate copyright disclaimers included herein.
-//
-// -------------------------------------------
-//
-//####BSDCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
 // Contributors: gthomas
-// Date:         2000-01-10
+// Date:         1999-10-20
 // Purpose:      
 // Description:  
-//              
+//               
 //
 //####DESCRIPTIONEND####
 //
-//==========================================================================
+//=========================================================================
+// Hardware/platform/configuration specifics
 
-// Network device support
+#include <pkgconf/hal.h>
+#include <pkgconf/cygmon.h>
 
-typedef struct cyg_netdevtab_entry {
-    const char        *name;
-    bool             (*init)(struct cyg_netdevtab_entry *tab);
-    void              *device_instance;  // Local data, instance specific
-    unsigned long     status;
-} cyg_netdevtab_entry_t;
+#define HAVE_FLOAT_REGS         0
+#define HAVE_DOUBLE_REGS        0
+#define HAVE_CACHE              0 // FIXME
+#define HAVE_USAGE              0 // FIXME
+#define USE_CYGMON_PROTOTYPES   1
+#define NOMAIN                  1
+#define CYGMON_SYSTEM_SERVICES  0 // Not used, fall back to BSP support
+#ifdef CYGDAT_CYGMON_USE_HELP
+#define USE_HELP                1
+#endif
 
-#define CYG_NETDEVTAB_STATUS_AVAIL   0x0001
+// For breakpoint support
+#define NO_MALLOC               1
+#define MAX_BP_NUM              8
+#include "cpu_info.h"
+#define TRAP_SIZE               4
+#define __set_breakpoint        set_breakpoint
+#define __remove_breakpoint     clear_breakpoint
+#define __write_mem_safe        memcpy
+#define _breakinst              bsp_breakinsn
 
-extern cyg_netdevtab_entry_t __NETDEVTAB__[], __NETDEVTAB_END__;
-
-#define NETDEVTAB_ENTRY(_l,_name,_init,_instance)  \
-static bool _init(struct cyg_netdevtab_entry *tab);                  \
-cyg_netdevtab_entry_t _l __attribute__ ((section(".netdevtab"))) = { \
-   _name,                                                            \
-   _init,                                                            \
-   _instance                                                         \
-};
-
-#endif // _NETDEV_H_
+#endif //  __CYGMON_ARM_BOARD_H__

@@ -76,6 +76,12 @@
 #include <network.h>
 #include <arpa/inet.h>
 
+#include <eth_drv.h>
+
+#ifdef CYGPKG_NET_DHCP
+#include <dhcp.h>
+#endif
+
 #ifdef CYGHWR_NET_DRIVER_ETH0
 struct bootp eth0_bootp_data;
 cyg_bool_t   eth0_up = false;
@@ -181,8 +187,6 @@ cyg_bool_t init_loopback_interface(int lo)
 #endif
 
 
-#if defined(CYGHWR_NET_DRIVER_ETH0_ADDRS_IP) \
- || defined(CYGHWR_NET_DRIVER_ETH1_ADDRS_IP)
 //
 // Internal function which builds up a fake BOOTP database for
 // an interface.
@@ -204,7 +208,7 @@ add_tag(unsigned char *vp,
     return vp;
 }
 
-static void
+void
 build_bootp_record(struct bootp *bp,
                    const char *addrs_ip,
                    const char *addrs_netmask,
@@ -235,9 +239,11 @@ build_bootp_record(struct bootp *bp,
     vp = add_tag(vp, TAG_SUBNET_MASK, &addr, sizeof(in_addr_t));
     addr = inet_addr(addrs_broadcast);
     vp = add_tag(vp, TAG_IP_BROADCAST, &addr, sizeof(in_addr_t));
+    addr = inet_addr(addrs_gateway);
+    vp = add_tag(vp, TAG_GATEWAY, &addr, sizeof(in_addr_t));
     *vp = TAG_END;
 }
-#endif
+
 
 //
 // Initialize network interface[s] using BOOTP/DHCP
@@ -262,12 +268,22 @@ init_all_network_interfaces(void)
 #ifdef CYGHWR_NET_DRIVER_ETH0_BOOTP
         // Perform a complete initialization, using BOOTP/DHCP
         eth0_up = true;
-        if (do_bootp(eth0_name, &eth0_bootp_data)) {
+#ifdef CYGHWR_NET_DRIVER_ETH0_DHCP
+        eth0_dhcpstate = 0; // Says that initialization is external to dhcp
+        if (do_dhcp(eth0_name, &eth0_bootp_data, &eth0_dhcpstate, &eth0_lease)) 
+#else
+#ifdef CYGPKG_NET_DHCP
+        eth0_dhcpstate = DHCPSTATE_BOOTP_FALLBACK;
+        // so the dhcp machine does no harm if called
+#endif
+        if (do_bootp(eth0_name, &eth0_bootp_data)) 
+#endif
+        {
 #ifdef CYGHWR_NET_DRIVER_ETH0_BOOTP_SHOW
             show_bootp(eth0_name, &eth0_bootp_data);
 #endif
         } else {
-            diag_printf("BOOTP failed on eth0\n");
+            diag_printf("BOOTP/DHCP failed on eth0\n");
             eth0_up = false;
         }
 #elif defined(CYGHWR_NET_DRIVER_ETH0_ADDRS_IP)
@@ -287,12 +303,22 @@ init_all_network_interfaces(void)
 #ifdef CYGHWR_NET_DRIVER_ETH1_BOOTP
         // Perform a complete initialization, using BOOTP/DHCP
         eth1_up = true;
-        if (do_bootp(eth1_name, &eth1_bootp_data)) {
+#ifdef CYGHWR_NET_DRIVER_ETH1_DHCP
+        eth1_dhcpstate = 0; // Says that initialization is external to dhcp
+        if (do_dhcp(eth1_name, &eth1_bootp_data, &eth1_dhcpstate, &eth1_lease)) 
+#else
+#ifdef CYGPKG_NET_DHCP
+        eth1_dhcpstate = DHCPSTATE_BOOTP_FALLBACK;
+        // so the dhcp machine does no harm if called
+#endif
+        if (do_bootp(eth1_name, &eth1_bootp_data))
+#endif
+        {
 #ifdef CYGHWR_NET_DRIVER_ETH1_BOOTP_SHOW
             show_bootp(eth1_name, &eth1_bootp_data);
 #endif
         } else {
-            diag_printf("BOOTP failed on eth1\n");
+            diag_printf("BOOTP/DHCP failed on eth1\n");
             eth1_up = false;
         }
 #elif defined(CYGHWR_NET_DRIVER_ETH1_ADDRS_IP)
@@ -340,6 +366,13 @@ init_all_network_interfaces(void)
 #endif
 #endif
 
+#ifdef CYGOPT_NET_DHCP_DHCP_THREAD
+    dhcp_start_dhcp_mgt_thread();
+#endif
+
     // Open the monitor to other threads.
     in_init_all_network_interfaces = 0;
+
 }
+
+// EOF network_support.c

@@ -91,21 +91,6 @@ cdl_package CYGPKG_HAL_SH {
         @rm target.tmp
     }
 
-    cdl_option CYGPKG_HAL_SH_7707A {
-        display       "SH 7707A microprocessor"
-        implements    CYGINT_HAL_SH_VARIANT
-        default_value 0
-        no_define
-        define        -file=system.h CYGPKG_HAL_SH_7707A
-        description "
-            The SH3 7707A microprocessor. This is an embedded part that in
-            addition to the SH3 processor core has built in peripherals
-            such as memory controllers, serial ports, LCD controller and
-            timers/counters."               
-        define_proc {
-            puts $cdl_system_header "#define CYGBLD_HAL_CPU_MODULES_H <cyg/hal/mod_7707a.h>"
-        }
-    }
 
     cdl_option CYGPKG_HAL_SH_7708 {
         display       "SH 7708 microprocessor"

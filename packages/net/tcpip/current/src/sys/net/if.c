@@ -311,6 +311,10 @@ void
 if_attach(ifp)
 	struct ifnet *ifp;
 {
+// Initialize queue - moved here to support "late" attaches
+    if (ifp->if_snd.ifq_maxlen == 0)
+        ifp->if_snd.ifq_maxlen = ifqmaxlen;
+//
 	if (if_index == 0)
 		TAILQ_INIT(&ifnet);
 	TAILQ_INIT(&ifp->if_addrlist);

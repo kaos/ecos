@@ -45,9 +45,6 @@
 #include <stddef.h>
 
 #include <pkgconf/hal.h>
-#ifdef CYGPKG_CYGMON
-#include <pkgconf/cygmon.h>
-#endif
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
@@ -495,7 +492,6 @@ void __clear_single_step (void)
     }
 }
 
-#if !defined(CYGPKG_CYGMON)
 void __install_breakpoints (void)
 {
 //    FIXME();
@@ -505,7 +501,6 @@ void __clear_breakpoints (void)
 {
 //    FIXME();
 }
-#endif // !CYGPKG_CYGMON
 
 /* If the breakpoint we hit is in the breakpoint() instruction, return a
    non-zero value. */

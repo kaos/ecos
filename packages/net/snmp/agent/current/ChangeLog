@@ -1,3 +1,8 @@
+2000-07-13  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/snmpping.c: Up the stack size to cope with full DHCP
+	initialization in init_all_network_interfaces().
+
 2000-06-27  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/mibgroup/mibII/dot3.c (var_dot3StatsTable): Forgot the

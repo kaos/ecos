@@ -108,7 +108,7 @@ struct test_status {
     long ok;
 };
 
-#define STACK_SIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
+#define STACK_SIZE (CYGNUM_HAL_STACK_SIZE_TYPICAL + 0x1000)
 static char stack[STACK_SIZE];
 static cyg_thread thread_data;
 static cyg_handle_t thread_handle;

@@ -1,3 +1,8 @@
+2000-07-07  Bart Veer  <bartv@redhat.com>
+
+	* cdl_exec.cxx (transaction_callback):
+	Output the correct value irrespective of the option flavor.
+
 2000-06-28  Bart Veer  <bartv@redhat.com>
 
 	* cdl_exec.cxx, cdl_exec.hxx, ecosconfig.cxx:

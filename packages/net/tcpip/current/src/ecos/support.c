@@ -102,143 +102,177 @@ cyg_panic(const char *msg, ...)
     cyg_test_exit();  // FIXME
 }
 
+//---------------------------- splx() emulation ------------------------------
+//
+// This variable (and the associated bit patterns) is used to keep track
+// of the "splx()" level.  This is an artifact of the original stack, based
+// on the BSD interrupt world (interrupts and processing could be masked
+// based on a level value, supported by hardware).  This is not very real-time,
+// so the emulation uses proper eCos tools and techniques to accomplish the
+// same result.  The key here is in the analysis of the various "levels", why
+// they are used, etc.  
+//
+static cyg_uint32 spl_state;
+#define SPL_STATE_IMP     0x01
+#define SPL_STATE_NET     0x02
+#define SPL_STATE_CLOCK   0x04
+#define SPL_STATE_SOFTNET 0x08
 
-// ------------------------------------------------------------------------
-#define SPLSOFTNET_IS_A_MUTEX 1
-// ------------------------------------------------------------------------
-#ifdef SPLSOFTNET_IS_A_MUTEX
-
-#define MUTEX 0x50F750F7
-#define HOLD  MUTEX+1
-
-static cyg_mutex_t mutex;
-static volatile cyg_handle_t owner;
+static cyg_mutex_t softnet_mutex;
+static volatile cyg_handle_t softnet_thread;
 
 #define SPLINIT() CYG_MACRO_START               \
-    cyg_mutex_init( &mutex );                   \
-    owner = 0;                                  \
+    cyg_mutex_init( &softnet_mutex );           \
+    softnet_thread = 0;                         \
 CYG_MACRO_END
 
-// use the scheduler lock for SPLX() and a mutex for softnet
-
-static inline cyg_uint32
-cyg_splin_softnet(void)
-{
-    if ( 0 == cyg_scheduler_read_lock() ) {
-        cyg_handle_t self = cyg_thread_self();
-        if ( self != owner ) {
-            cyg_mutex_lock( &mutex ); // Perfectly OK for this to wait
-            owner = self;
-            return MUTEX; // release when restoring here
-        }
-        return HOLD; // do not release when restoring to this value
-    }
-    cyg_scheduler_lock();
-    return cyg_scheduler_read_lock() - 1;
-}
-
-static inline cyg_uint32
-cyg_splin(void)
-{
-    cyg_scheduler_lock();
-    return cyg_scheduler_read_lock() - 1;
-}
-
-static inline void
-cyg_splout(cyg_uint32 orig)
-{
-    if ( MUTEX == orig ) {
-        CYG_ASSERT( cyg_thread_self() == owner, "Not owner release!" );
-        cyg_scheduler_lock();
-        owner = 0;
-        cyg_mutex_unlock( &mutex );
-        cyg_scheduler_unlock();
-        return;
-    }
-    if ( HOLD == orig ) {
-        CYG_ASSERT( cyg_thread_self() == owner, "Not owner hold!" );
-        return;
-    }
-    CYG_ASSERT( 0 == (0xffff0000 & orig), "Scary splx value" );
-    while ( cyg_scheduler_read_lock() > orig )
-        cyg_scheduler_unlock();
-}
-
-#define SPL_ENTER(x)    (x) = cyg_splin()
-#define SPL_SOFTNET(x)  (x) = cyg_splin_softnet()
-#define SPL_EXIT(x)     cyg_splout((x))
-
-#else
-#if 1
-
-// use the scheduler lock for SPLX()
-static inline cyg_uint32
-cyg_splin(void)
-{
-    cyg_scheduler_lock();
-    return cyg_scheduler_read_lock() - 1;
-}
-
-static inline void
-cyg_splout(cyg_uint32 orig)
-{
-    CYG_ASSERT( 0 == (0xffff0000 & orig), "Scary splx value" );
-    while ( cyg_scheduler_read_lock() > orig )
-        cyg_scheduler_unlock();
-}
-
-#define SPL_ENTER(x)    (x) = cyg_splin()
-#define SPL_SOFTNET(x)  (x) = cyg_splin()
-#define SPL_EXIT(x)     cyg_splout((x))
-
-#else
-
-// Old interrupt based version
-#define SPL_ENTER(x)    HAL_DISABLE_INTERRUPTS((x))
-#define SPL_SOFTNET(x)  HAL_DISABLE_INTERRUPTS((x))
-#define SPL_EXIT(x)     HAL_RESTORE_INTERRUPTS((x))
-
-#endif
-#endif
-// ------------------------------------------------------------------------
-
+//
+// This function is called in order to protect internal data structures
+// short-term, primarily so that interrupt processing does not interfere
+// with them.
+//
+// Simply protecting against interrupts (DSRs) should suffice.
+//
 cyg_uint32
+#ifdef CYGIMPL_TRACE_SPLX   
+cyg_splimp(const char *file, const int line)
+#else
 cyg_splimp(void)
+#endif
 {
     cyg_uint32 old_ints;
-    SPL_ENTER(old_ints);
+    cyg_scheduler_lock();
+#ifdef CYGIMPL_TRACE_SPLX   
+    do_sched_event(__FUNCTION__, file, line, cyg_scheduler_read_lock());
+#endif
+    old_ints = spl_state;
+    spl_state |= SPL_STATE_IMP;
+    if (old_ints & SPL_STATE_IMP) {
+        // Already at this state/level, no need to retake scheduler lock
+        cyg_scheduler_unlock();
+    }
     return old_ints;
 }
 
+//
+// This function is called in order to ensure that a timestamp is valid
+// i.e. no time passes while the stamp is being taken (since it is a 
+// potentially non-idempotent data structure).
+//
+// Simply protecting against interrupts (DSRs) should suffice.
+//
 cyg_uint32
-cyg_splnet(void)
-{
-    cyg_uint32 old_ints;
-    SPL_ENTER(old_ints);
-    return old_ints;
-}
-
-cyg_uint32
+#ifdef CYGIMPL_TRACE_SPLX   
+cyg_splclock(const char *file, const int line)
+#else
 cyg_splclock(void)
+#endif
 {
     cyg_uint32 old_ints;
-    SPL_ENTER(old_ints);
+    cyg_scheduler_lock();
+#ifdef CYGIMPL_TRACE_SPLX   
+    do_sched_event(__FUNCTION__, file, line, cyg_scheduler_read_lock());
+#endif
+    old_ints = spl_state;
+    spl_state |= SPL_STATE_CLOCK;
+    if (old_ints & SPL_STATE_CLOCK) {
+        // Already at this state/level, no need to retake scheduler lock
+        cyg_scheduler_unlock();
+    }
     return old_ints;
 }
 
 cyg_uint32
-cyg_splsoftnet(void)
+#ifdef CYGIMPL_TRACE_SPLX   
+cyg_splnet(const char *file, const int line)
+#else
+cyg_splnet(void)
+#endif
 {
     cyg_uint32 old_ints;
-    SPL_SOFTNET(old_ints);
+    cyg_scheduler_lock();
+#ifdef CYGIMPL_TRACE_SPLX   
+    do_sched_event(__FUNCTION__, file, line, cyg_scheduler_read_lock());
+#endif
+    old_ints = spl_state;
+    spl_state |= SPL_STATE_NET;
+    if (old_ints & SPL_STATE_NET) {
+        // Already at this state/level, no need to retake scheduler lock
+        cyg_scheduler_unlock();
+    }
     return old_ints;
 }
 
-void
-cyg_splx(cyg_uint32 old_lev)
+//
+// Prevent all other stack processing, including interrupts (DSRs), etc.
+//
+cyg_uint32
+#ifdef CYGIMPL_TRACE_SPLX   
+cyg_splsoftnet(const char *file, const int line)
+#else
+cyg_splsoftnet(void)
+#endif
 {
-    SPL_EXIT(old_lev);
+    cyg_uint32 old_ints;
+    cyg_scheduler_lock();
+#ifdef CYGIMPL_TRACE_SPLX   
+    do_sched_event(__FUNCTION__, file, line, cyg_scheduler_read_lock());
+#endif
+    if (spl_state & SPL_STATE_SOFTNET) {
+        if (softnet_thread == cyg_thread_self()) {
+            // Do nothing
+            old_ints = spl_state;
+            spl_state |= SPL_STATE_SOFTNET;
+            cyg_scheduler_unlock();
+            return old_ints;
+        }
+    }
+    cyg_scheduler_unlock();
+    cyg_mutex_lock(&softnet_mutex);
+    cyg_scheduler_lock();
+    softnet_thread = cyg_thread_self();
+    old_ints = spl_state;
+    spl_state |= SPL_STATE_SOFTNET;
+    return old_ints;
 }
+
+//
+// Return to a previous interrupt state/level.
+//
+void
+#ifdef CYGIMPL_TRACE_SPLX   
+cyg_splx(cyg_uint32 old_state, const char *file, const int line)
+#else
+cyg_splx(cyg_uint32 old_state)
+#endif
+{
+    cyg_uint32 new_state = spl_state;
+    cyg_scheduler_lock();  // Extra security while messing about
+#ifdef CYGIMPL_TRACE_SPLX   
+    do_sched_event(__FUNCTION__, file, line, cyg_scheduler_read_lock());
+#endif
+    if ((spl_state & SPL_STATE_SOFTNET) && !(old_state & SPL_STATE_SOFTNET)) {
+        new_state &= ~SPL_STATE_SOFTNET;
+        softnet_thread = 0;
+        cyg_mutex_unlock(&softnet_mutex);
+        cyg_scheduler_unlock();
+    }
+    if ((spl_state & SPL_STATE_NET) && !(old_state & SPL_STATE_NET)) {
+        new_state &= ~SPL_STATE_NET;
+        cyg_scheduler_unlock();
+    }
+    if ((spl_state & SPL_STATE_CLOCK) && !(old_state & SPL_STATE_CLOCK)) {
+        new_state &= ~SPL_STATE_CLOCK;
+        cyg_scheduler_unlock();
+    }
+    if ((spl_state & SPL_STATE_IMP) && !(old_state & SPL_STATE_IMP)) {
+        new_state &= ~SPL_STATE_IMP;
+        cyg_scheduler_unlock();
+    }
+    spl_state = new_state;
+    cyg_scheduler_unlock();
+}
+//---------------------------- splx() emulation ------------------------------
 
 void
 setsoftnet(void)
@@ -405,7 +439,6 @@ cyg_kmem_init(void)
     mclrefcnt = net_clusters_refcnt;
 }
 
-
 void cyg_kmem_print_stats( void )
 {
     cyg_mempool_info info;
@@ -557,6 +590,7 @@ ovbcopy(const void *s, void *d, size_t len)
     memcpy(d, s, len);
 }
 
+//------------------ tsleep() and wakeup() emulation ---------------------------
 //
 // Structure used to keep track of 'tsleep' style events
 //
@@ -600,15 +634,13 @@ cyg_tsleep(void *chan, int pri, char *wmesg, int timo)
     int i, res = 0;
     struct wakeup_event *ev;    
     cyg_tick_count_t sleep_time;
-#ifdef SPLSOFTNET_IS_A_MUTEX
-    int olock; // this does the same as safe_lock() but keeping the old state
+    int olock; // current state of scheduler lock - so it can be replaced
+    cyg_handle_t self = cyg_thread_self();
+
     cyg_scheduler_lock(); // ...around.
     olock = cyg_scheduler_read_lock();
     if ( olock > 1 )
         cyg_scheduler_unlock();
-#else
-    cyg_scheduler_safe_lock();  // Ensure safe scan
-#endif
 
     for (i = 0, ev = wakeup_list;  i < CYGPKG_NET_NUM_WAKEUP_EVENTS;  i++, ev++) {
         if (ev->chan == 0) {
@@ -619,40 +651,40 @@ cyg_tsleep(void *chan, int pri, char *wmesg, int timo)
     if (i == CYGPKG_NET_NUM_WAKEUP_EVENTS) {
         panic("no sleep slots");
     }
-    CYG_ASSERT( 1 == cyg_scheduler_read_lock(), "Sleep won't!" );
-
-#ifdef SPLSOFTNET_IS_A_MUTEX
-    {   // Then we must release the mutex when we wait - if we have it
-        cyg_handle_t self = cyg_thread_self();
-        if ( self == owner ) {
-            owner = 0;
-            cyg_mutex_unlock( &mutex );
-        } else {
-            self = 0; // Flag no need to reclaim
-        }
-#endif
-
-        // This part actually does the wait:
-        cyg_scheduler_unlock();
-        if (timo) {
-            sleep_time = cyg_current_time() + timo;
-            if (!cyg_semaphore_timed_wait(&ev->sem, sleep_time)) {
-                res = ETIMEDOUT;
-                ev->chan = 0;  // Free slot
-            }
-        } else {
-            cyg_semaphore_wait(&ev->sem);
-        }
-
-#ifdef SPLSOFTNET_IS_A_MUTEX
-        if ( self ) { // return to previous state
-            cyg_mutex_lock( &mutex ); // this might wait
-            owner = self; // got it now...
-        }
-        if ( olock > 1 )
-            cyg_scheduler_lock();
+    if ( 1 != cyg_scheduler_read_lock()) {
+        panic("Tsleep - called with scheduler locked\n");
     }
-#endif
+
+    // Then we must release the 'softnet' mutex when we wait - if we have it
+    if ( self == softnet_thread ) {
+        softnet_thread = 0;
+        spl_state &= ~SPL_STATE_SOFTNET;
+        cyg_mutex_unlock( &softnet_mutex );
+    } else {
+        self = 0; // Flag no need to reclaim
+    }
+
+    // This part actually does the wait:
+    cyg_scheduler_unlock();
+    if (timo) {
+        sleep_time = cyg_current_time() + timo;
+        if (!cyg_semaphore_timed_wait(&ev->sem, sleep_time)) {
+            res = ETIMEDOUT;
+            ev->chan = 0;  // Free slot
+        }
+    } else {
+        cyg_semaphore_wait(&ev->sem);
+    }
+
+    if ( self ) { // return to previous state
+        cyg_mutex_lock( &softnet_mutex ); // this might wait
+        cyg_scheduler_lock();
+        softnet_thread = self; // got it now...
+        spl_state |= SPL_STATE_SOFTNET;
+        cyg_scheduler_unlock();
+    }
+    if ( olock > 1 )
+        cyg_scheduler_lock();
 
     return res;
 }
@@ -669,6 +701,7 @@ cyg_timeout_init(void)
         cyg_semaphore_init(&ev->sem, 0);
     }
 }
+//------------------ tsleep() and wakeup() emulation ---------------------------
 
 //
 // Network software interrupt handler
@@ -680,10 +713,11 @@ static void
 cyg_netint(cyg_addrword_t param)
 {
     cyg_flag_value_t curisr;
+    int s;
     while (true) {
         curisr = cyg_flag_wait(&netint_flags, NETISR_ANY, 
                                CYG_FLAG_WAITMODE_OR|CYG_FLAG_WAITMODE_CLR);
-        cyg_scheduler_lock();  // This code should not be preempted
+        s = splsoftnet();      // Prevent any overlapping "stack" processing
 #ifdef INET
         if (curisr & (1 << NETISR_ARP)) {
             // Pending ARP requests
@@ -700,7 +734,7 @@ cyg_netint(cyg_addrword_t param)
             ip6intr();
         }
 #endif
-        cyg_scheduler_unlock();
+        splx(s);
     }
 }
 
@@ -719,6 +753,9 @@ cyg_net_init(void)
     static int _init = false;
     cyg_netdevtab_entry_t *t;
 
+#ifdef CYGIMPL_TRACE_SPLX   
+    show_sched_events();
+#endif
     if (_init) return;
     cyg_do_net_init();  // Just forces the linking in of the initializer/constructor
     // Initialize interrupt "flags"
@@ -765,3 +802,71 @@ cyg_net_init(void)
     // Done
     _init = true;
 }
+
+#ifdef CYGIMPL_TRACE_SPLX   
+#undef cyg_scheduler_lock
+#undef cyg_scheduler_safe_lock
+#undef cyg_scheduler_unlock
+
+#define MAX_SCHED_EVENTS 256
+static struct _sched_event {
+    char *fun, *file;
+    int line, lock;
+} sched_event[MAX_SCHED_EVENTS];
+static int next_sched_event = 0;
+static int total_sched_events = 0;
+
+static void
+do_sched_event(char *fun, char *file, int line, int lock)
+{
+    struct _sched_event *se = &sched_event[next_sched_event];
+    if (++next_sched_event == MAX_SCHED_EVENTS) {
+        next_sched_event = 0;
+    }
+    se->fun = fun;
+    se->file = file;
+    se->line = line;
+    se->lock = lock;
+    total_sched_events++;
+}
+
+static void
+show_sched_events(void)
+{
+    int i;
+    struct _sched_event *se;
+    if (total_sched_events < MAX_SCHED_EVENTS) {
+        i = 0;
+    } else {
+        i = next_sched_event + 1;
+        if (i == MAX_SCHED_EVENTS) i = 0;
+    }
+    diag_printf("%d total scheduler events\n", total_sched_events);
+    while (i != next_sched_event) {
+        se = &sched_event[i];
+        diag_printf("%s - lock: %d, called from %s.%d\n", se->fun, se->lock, se->file, se->line);
+        if (++i == MAX_SCHED_EVENTS) i = 0;
+    }
+}
+
+void
+_cyg_scheduler_lock(char *file, int line)
+{
+    cyg_scheduler_lock();
+    do_sched_event(__FUNCTION__, file, line, cyg_scheduler_read_lock());
+}
+
+void
+_cyg_scheduler_safe_lock(char *file, int line)
+{
+    cyg_scheduler_safe_lock();
+    do_sched_event(__FUNCTION__, file, line, cyg_scheduler_read_lock());
+}
+
+void
+_cyg_scheduler_unlock(char *file, int line)
+{
+    cyg_scheduler_unlock();
+    do_sched_event(__FUNCTION__, file, line, cyg_scheduler_read_lock());
+}
+#endif // CYGIMPL_TRACE_SPLX

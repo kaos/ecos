@@ -1,3 +1,102 @@
+2000-07-14  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/bootp.h: export init_loopback_interface();
+
+2000-07-14  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/net.cdl: Add option controlling whether to have a separate
+	DHCP lease management thread, and what its parameter is to be -
+	which controls whether it loops or quits if a lease fails.
+
+	* src/lib/dhcp_support.c (dhcp_start_dhcp_mgt_thread): Provide the
+	DHCP management thread function and code to instantiate and start
+	the thread if so configured.
+
+	* src/lib/network_support.c (init_all_network_interfaces): Call
+	the function that starts the DHCP management thread function.
+
+	* include/dhcp.h: Declare the DHCP management thread function &c
+	if so configured.
+
+	* tests/dhcp_test.c (net_test): Only poll for need to rebind DHCP
+	leases if there is no service thread to do the same.
+
+2000-07-14  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/bootp.h (build_bootp_record): Export this, no harm in
+	it, and some folk want to use this rather than configured
+	initialization or bootp/dhcp.
+	Also commented the other APIs somewhat better.
+
+	* src/lib/network_support.c (build_bootp_record): Unconditionally
+	provide this; selective linking will look after it if unused.
+
+2000-07-14  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/lib/network_support.c (build_bootp_record): [Static
+	configuration of interface parameters] Add the gateway into the
+	options section with TAG_GATEWAY so that init_net() will pick it
+	up and set up a route accordingly.
+
+2000-07-13  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/dhcp_test.c:
+	* tests/flood.c:
+	* tests/ftp_test.c:
+	* tests/nc_test_master.c:
+	* tests/nc_test_slave.c:
+	* tests/ping_lo_test.c:
+	* tests/ping_test.c:
+	* tests/server_test.c:
+	* tests/set_mac_address.c:
+	* tests/tcp_echo.c:
+	* tests/tftp_client_test.c:
+	* tests/tftp_server_test.c:
+	Up the stack size to cope with full DHCP initialization in
+	init_all_network_interfaces().
+	
+2000-07-13  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/net.cdl: Add DHCP enable and interface-specific controls.
+
+	* include/dhcp.h: New file: describe the DHCP APIs and behaviour,
+	as well as some internal APIs that are also available.
+
+	* src/lib/dhcp_support.c: New file: the surrounding management
+	routines, a bit like network_support.c, which know about multiple
+	interfaces and so on.
+
+	* src/lib/dhcp_prot.c: New file: the interface-independent DHCP
+	protocol machine, which is called from dhcp_support.c routines and
+	init_all_network_interfaces() in network_support.c
+
+	* include/bootp.h (struct bootp): Make the packet bigger if DHCP
+	so that a mininal DHCP packet will fit.
+
+	* src/lib/bootp_support.c (do_bootp): If no reply, fail gracefully
+	and tidy up so that other interfaces can be upbrung.
+	(show_bootp): Tell us a lot more about DHCP-specific info in the
+	packet structure.
+	(get_bootp_option): be aware of DHCP extensions to re-use file and
+	sname fields for options.
+
+	* src/lib/network_support.c (init_all_network_interfaces): Call
+	do_dhcp() rather than do_bootp() if so configured, and initialize
+	the per-interface DHCP state variables accordingly.
+
+	* tests/dhcp_test.c (net_test): New test file that diddles the
+	DHCP machine while doing a ping test.
+
+2000-07-11  Gary Thomas  <gthomas@redhat.com>
+
+	* include/netdev.h: Add single-inclusion fences.
+
+	* include/sys/param.h: Add traced versions of splx() routines,
+	selectable by a configuration option.
+
+	* src/ecos/support.c: Rework splx() emulation routines to
+	be more robust and realtime friendly.
+
 2000-07-04  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* include/bootp.h: Fix namespace pollution from "#define int32

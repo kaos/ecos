@@ -1,3 +1,8 @@
+2000-07-07  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Removed 'enable' statements from SH targets. Moved to
+	individual HAL CDL files.
+
 2000-06-23  Jesper Skov  <jskov@redhat.com>
 
 	* ecos.db: Added CqREEK serial package.

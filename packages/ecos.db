@@ -289,7 +289,6 @@ package CYGPKG_DEVS_ETH_POWERPC_QUICC {
 	script		quicc_eth_drivers.cdl
         description     "Ethernet driver for PowerPC QUICC (MPC8xx) based boards."
 }
-
 package CYGPKG_IO_PCI	{
 	alias		{ "PCI configuration library" io_pci }
 	directory	io/pci
@@ -999,7 +998,6 @@ target sh7708 {
 	              CYGPKG_IO_SERIAL_SH_EDK7708
                       CYGPKG_DEVICES_WATCHDOG_SH_SH3
         }
-	enable      { CYGPKG_HAL_SH_7708 }
         description "
            The sh7708 target provides the packages needed to run
            eCos on a Hitachi EDK/SH7708 board."
@@ -1011,7 +1009,6 @@ target cq7708 {
                    CYGPKG_HAL_SH_SH7708_CQ7708
 	           CYGPKG_IO_SERIAL_SH_CQ7708
         }
-        enable      { CYGPKG_HAL_SH_7708 }
         description "
            The cq7708 target provides the packages needed to run
            eCos on a CqREEK SH7708 board."

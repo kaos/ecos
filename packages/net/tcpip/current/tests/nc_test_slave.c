@@ -58,7 +58,7 @@
 #include <math.h>
 
 #ifdef __ECOS
-#define STACK_SIZE               CYGNUM_HAL_STACK_SIZE_TYPICAL
+#define STACK_SIZE               (CYGNUM_HAL_STACK_SIZE_TYPICAL + 0x1000)
 #define MAX_LOAD_THREAD_LEVEL    20
 #define MIN_LOAD_THREAD_LEVEL    0
 #define NUM_LOAD_THREADS         10

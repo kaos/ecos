@@ -501,7 +501,6 @@ initHardware (void)
         return;
     initialized = 1;
 
-#if !defined(CYGPKG_CYGMON)
     // Get serial port initialized.
     HAL_STUB_PLATFORM_INIT_SERIAL();
 
@@ -530,35 +529,31 @@ initHardware (void)
         // Set the debug channel.
         CYGACC_CALL_IF_SET_DEBUG_COMM(CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL);
     }
+#endif // CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
 
 #ifdef HAL_STUB_PLATFORM_INIT
     // If the platform defines any initialization code, call it here.
     HAL_STUB_PLATFORM_INIT();
 #endif        
-#endif
 
-#ifndef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
+#ifndef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // this should go away
 #ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
     // Get interrupt handler initialized.
     HAL_STUB_PLATFORM_INIT_BREAK_IRQ();
 #endif
-#endif // CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
-#endif // CYGPKG_CYGMON
-
+#endif // !CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
 }
 
 // Reset the board.
 void 
 __reset (void)
 {
-#if !defined(CYGPKG_CYGMON)
 #ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
     __call_if_reset_t __rom_reset = CYGACC_CALL_IF_RESET_GET();
     if (__rom_reset)
         __rom_reset();
 #else
     HAL_STUB_PLATFORM_RESET();
-#endif
 #endif
 }
 

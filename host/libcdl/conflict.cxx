@@ -909,7 +909,7 @@ CdlConflict_RequiresBody::get_explanation() const
     CYG_ASSERTC(0 != gexpr);
     
     std::string result = "";
-    result += "Requires constraint not satisfied: " + gexpr->get_original_string();
+    result += "\"requires\" constraint not satisfied: " + gexpr->get_original_string();
 
     CYG_REPORT_RETURN();
     return result;

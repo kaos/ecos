@@ -86,6 +86,10 @@ SOFTWARE.
  */
 
 #ifdef __ECOS
+
+#include <pkgconf/system.h>
+#include <pkgconf/net.h>
+
 #include <machine/types.h>
 #else
 #include "bptypes.h"	/* for int32, u_int32 */
@@ -94,8 +98,15 @@ SOFTWARE.
 #define BP_CHADDR_LEN	 16
 #define BP_SNAME_LEN	 64
 #define BP_FILE_LEN	128
+
+#ifdef CYGPKG_NET_DHCP
+// The standard requires only 312 bytes here
+#define BP_VEND_LEN	(312 + 32)
+#define BP_MINPKTSZ	576
+#else
 #define BP_VEND_LEN	 64
 #define BP_MINPKTSZ	300	/* to check sizeof(struct bootp) */
+#endif
 
 struct bootp {
     unsigned char    bp_op;			/* packet opcode type */
@@ -331,11 +342,45 @@ extern struct bootp eth1_bootp_data;
 extern cyg_bool_t   eth1_up;
 extern const char  *eth1_name;
 #endif
-cyg_bool_t do_bootp(const char *interface, struct bootp *res);
-cyg_bool_t init_net(const char *interface, struct bootp *res);
-void show_bootp(const char *interface, struct bootp *res);
-cyg_bool_t get_bootp_option(struct bootp *bp, unsigned char tag, void *res);
-void init_all_network_interfaces(void);
+
+// ------------------------------------------------------------------------
+// Initialize your own bootp record however you like, as far as is needed
+// to bring up an interface.
+extern void
+build_bootp_record(struct bootp *bp,
+                   const char *addrs_ip,
+                   const char *addrs_netmask,
+                   const char *addrs_broadcast,
+                   const char *addrs_gateway,
+                   const char *addrs_server);
+
+// Do bootp to fill in the bootp record from the net (other interfaces must
+// be down for this to work, because of the "half-up" state of the
+// interface in use)
+extern cyg_bool_t do_bootp(const char *interface, struct bootp *res);
+
+// Initialize an interface (which is down) according to a bootp structure
+extern cyg_bool_t init_net(const char *interface, struct bootp *res);
+
+// Dump contents to diag_printf
+extern void show_bootp(const char *interface, struct bootp *res);
+
+// Interrogate a bootp record for a particular option
+extern cyg_bool_t get_bootp_option(struct bootp *bp, unsigned char tag, void *res);
+
+// ------------------------------------------------------------------------
+// This isn't exactly the right place for this since bootp is not involved
+// BUT you will only be using this API if you are using bootp-style
+// initialization of the other interfaces; it fits here in a documentation
+// sense.
+extern cyg_bool_t init_loopback_interface(int lo);
+
+// ------------------------------------------------------------------------
+// Do all the above automatically according to the configuration.  Do not
+// mix using this and making the above calls yourself.
+// (this is also declared in the much simpler API in network.h)
+extern void init_all_network_interfaces(void);
+
 #endif
 
 #endif // _BOOTP_H_

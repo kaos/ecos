@@ -58,13 +58,6 @@
 	* src/vectors.S:
 	Minor config change to get rid of growing list of variant checks.
 
-2000-06-08  Jesper Skov  <jskov@redhat.com>
-
-	* include/mod_7707a.h: 
-	* src/vectors.S:
-	* cdl/hal_sh.cdl: 
-	Added first level of support for 7707A variant.
-
 2000-06-06  Jesper Skov  <jskov@redhat.com>
 
 	* src/vectors.S: INTEVT2 is not defined on all variants. Protect

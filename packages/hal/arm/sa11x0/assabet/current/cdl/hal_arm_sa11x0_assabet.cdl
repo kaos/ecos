@@ -79,19 +79,7 @@ cdl_package CYGPKG_HAL_ARM_SA11X0_ASSABET {
            building the eCos GDB stubs themselves."
     }
 
-    # Assabet board has only 1 serial port useable for diagnostic/GDB
-##    define CYGHWR_HAL_ARM_SA11X0_DIAG_PORT 1
-# FIXME - make this fixed.
-    cdl_option CYGHWR_HAL_ARM_SA11X0_DIAG_PORT {
-        display       "Diagnostic serial port"
-        flavor        data
-        legal_values  0 0
-        default_value 0
-        description   "
-            The Assabet evaluation boards has only one serial port."
-    }
-
-    cdl_option CYGHWR_HAL_ARM_SA11X0_DIAG_BAUD {
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD {
         display       "Diagnostic serial port baud rate"
         flavor        data
         legal_values  9600 19200 38400 115200
@@ -102,16 +90,7 @@ cdl_package CYGPKG_HAL_ARM_SA11X0_ASSABET {
             diagnostic and GDB port are the same."
     }
 
-    cdl_option CYGHWR_HAL_ARM_SA11X0_GDB_PORT {
-        display       "GDB serial port"
-        flavor        data
-        legal_values  0 0
-        default_value 0
-        description   "
-            The Assabet evaluation boards has only one serial port."
-    }
-
-    cdl_option CYGHWR_HAL_ARM_SA11X0_GDB_BAUD {
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL_BAUD {
         display       "GDB serial port baud rate"
         flavor        data
         legal_values  9600 19200 38400 115200

@@ -104,6 +104,11 @@ delay_us(cyg_int32 usecs)
     } while (usec_ticks > 0);
 
     CYGARC_HAL_RESTORE_GP();
+#else
+    // Use a HAL feature if defined
+#ifdef HAL_DELAY_US
+    HAL_DELAY_US(usecs);
+#endif
 #endif
 }
 
@@ -364,14 +369,26 @@ struct Hal_SavedRegisters *hal_saved_interrupt_state;
 void
 hal_ctrlc_isr_init(void)
 {
+    // A ROM monitor never enables the interrupt itself. This is left
+    // to the (RAM) application.
+#ifndef CYGSEM_HAL_ROM_MONITOR
     hal_virtual_comm_table_t* __chan = CYGACC_CALL_IF_DEBUG_PROCS();
 
 #if 1 // Prevents crash on older stubs
     if (CYGNUM_CALL_IF_TABLE_VERSION != CYGACC_CALL_IF_VERSION())
         return;
+
+    // Now trash that value - otherwise downloading an image with
+    // builtin stubs on a board with older stubs may cause all
+    // subsequent runs to (wrongly) fall through to the below code.
+    // If there is a new stub on the board, it will reinitialize the
+    // version field on reset.
+    // Yes, this is a gross hack!
+    CYGACC_CALL_IF_VERSION_SET(CYGNUM_CALL_IF_TABLE_VERSION+1);
 #endif
 
     CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_IRQ_ENABLE);
+#endif
 }
 
 cyg_uint32

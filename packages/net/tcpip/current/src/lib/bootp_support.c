@@ -52,7 +52,10 @@
 //
 //==========================================================================
 
-// BOOTP support
+// BOOTP support (and a little DHCP support also)
+
+#include <pkgconf/system.h>
+#include <pkgconf/net.h>
 
 #include <network.h>
 
@@ -71,6 +74,7 @@ do_bootp(const char *intf, struct bootp *recv)
     struct bootp bootp_xmit;
     unsigned char mincookie[] = {99,130,83,99,255} ;
     struct timeval tv;
+    cyg_bool_t retcode = true;
 
     // Ensure clean slate
     route_reinit();  // Force any existing routes to be forgotten
@@ -196,11 +200,13 @@ do_bootp(const char *intf, struct bootp *recv)
     addrlen = sizeof(bootp_server_addr);
     if (recvfrom(s, recv, sizeof(struct bootp), 0,
                  (struct sockaddr *)&bootp_server_addr, &addrlen) < 0) {
-        perror("recvfrom error");
-        return false;
+        // This is an "acceptable" error, it means there is no server for
+        // us: do not initialize the interface.
+        retcode = false;
     }
 
-
+    // Shut things down regardless of success of rx, otherwise other
+    // interfaces cannot be initialised!
     memset(addrp, 0, sizeof(*addrp));
     addrp->sin_family = AF_INET;
     addrp->sin_len = sizeof(*addrp);
@@ -221,22 +227,30 @@ do_bootp(const char *intf, struct bootp *recv)
 
     // All done with socket
     close(s);
-    return true;
+    return retcode;
 }
 
 static char *_bootp_op[] = {"", "REQUEST", "REPLY"};
 static char *_bootp_hw_type[] = {"", "Ethernet", "Exp Ethernet", "AX25",
                                      "Pronet", "Chaos", "IEEE802", "Arcnet"};
 
+static char *_dhcpmsgs[] = {"","DISCOVER", "OFFER", "REQUEST", "DECLINE",
+                           "ACK", "NAK", "RELEASE" };
+
 void
 show_bootp(const char *intf, struct bootp *bp)
 {
     int i, len;
-    unsigned char *op, *ap = 0;
+    unsigned char *op, *ap = 0, optover;
     unsigned char name[128];
     struct in_addr addr[32];
     diag_printf("BOOTP[%s] op: %s\n", intf, _bootp_op[bp->bp_op]);
-    diag_printf("       hw_type: %s\n", _bootp_hw_type[bp->bp_htype]);
+    diag_printf("       htype: %s\n", _bootp_hw_type[bp->bp_htype]);
+    diag_printf("        hlen: %d\n", bp->bp_hlen );
+    diag_printf("        hops: %d\n", bp->bp_hops );
+    diag_printf("         xid: 0x%x\n", bp->bp_xid );
+    diag_printf("        secs: %d\n", bp->bp_secs );
+    diag_printf("       flags: 0x%x\n", bp->bp_flags );
     diag_printf("       hw_addr: ");
     for (i = 0;  i < bp->bp_hlen;  i++) {
         diag_printf("%02x", bp->bp_chaddr[i]);
@@ -247,12 +261,13 @@ show_bootp(const char *intf, struct bootp *bp)
     diag_printf("         my IP: %s\n", inet_ntoa(bp->bp_yiaddr));
     diag_printf("     server IP: %s\n", inet_ntoa(bp->bp_siaddr));
     diag_printf("    gateway IP: %s\n", inet_ntoa(bp->bp_giaddr));
-    if (bp->bp_sname[0]) {
+
+    optover = 0; // See whether sname and file are overridden for options
+    (void)get_bootp_option( bp, TAG_DHCP_OPTOVER, &optover );
+    if ( !(1 & optover) && bp->bp_sname[0] )
         diag_printf("        server: %s\n", bp->bp_sname);
-    }
-    if (bp->bp_file[0]) {
+    if ( ! (2 & optover) && bp->bp_file[0] )
         diag_printf("          file: %s\n", bp->bp_file);
-    }
     if (bp->bp_vend[0]) {
         diag_printf("  options:\n");
         op = &bp->bp_vend[4];
@@ -291,8 +306,51 @@ show_bootp(const char *intf, struct bootp *bp)
                 if (*op == TAG_HOST_NAME)   ap =  "   host name";
                 diag_printf("       %s: %s\n", ap, name);
                 break;
+            case TAG_DHCP_MESS_TYPE:
+                diag_printf("        DHCP message: %d %s\n",
+                            op[2], _dhcpmsgs[op[2]] );
+                break;
+            case TAG_DHCP_REQ_IP:
+                diag_printf("        DHCP requested ip: %d.%d.%d.%d\n",
+                            op[2], op[3], op[4], op[5] );  
+                break;
+            case TAG_DHCP_LEASE_TIME   :
+            case TAG_DHCP_RENEWAL_TIME :
+            case TAG_DHCP_REBIND_TIME  :
+                diag_printf("        DHCP time %d: %d\n",
+                            *op, ((((((op[2]<<8)+op[3])<<8)+op[4])<<8)+op[5]) );
+
+                break;
+            case TAG_DHCP_SERVER_ID    :
+                diag_printf("        DHCP server id: %d.%d.%d.%d\n",
+                            op[2], op[3], op[4], op[5] );  
+                break;
+
+            case TAG_DHCP_OPTOVER      :
+            case TAG_DHCP_PARM_REQ_LIST:
+            case TAG_DHCP_TEXT_MESSAGE :
+            case TAG_DHCP_MAX_MSGSZ    :
+            case TAG_DHCP_CLASSID      :
+            case TAG_DHCP_CLIENTID     :
+                diag_printf("        DHCP option: %x/%d.%d:", *op, *op, *(op+1));
+                if ( 1 == op[1] )
+                    diag_printf( " %d", op[2] );
+                else if ( 2 == op[1] )
+                    diag_printf( " %d", (op[2]<<8)+op[3] );
+                else if ( 4 == op[1] )
+                    diag_printf( " %d", ((((((op[2]<<8)+op[3])<<8)+op[4])<<8)+op[5]) );
+                else
+                    for ( i = 2; i < 2 + op[1]; i++ )
+                        diag_printf(" %d",op[i]);
+                diag_printf("\n");
+                break;
+
             default:
-                diag_printf("Unknown option: %x.%d\n", *op, *(op+1));
+                diag_printf("Unknown option: %x/%d.%d:", *op, *op, *(op+1));
+                for ( i = 2; i < 2 + op[1]; i++ )
+                    diag_printf(" %d",op[i]);
+                diag_printf("\n");
+                break;
             }                
             op += *(op+1)+2;
         }
@@ -302,19 +360,38 @@ show_bootp(const char *intf, struct bootp *bp)
 cyg_bool_t
 get_bootp_option(struct bootp *bp, unsigned char tag, void *opt)
 {
-    unsigned char *op;
     unsigned char *val = (unsigned char *)opt;
     int i;
-    op = &bp->bp_vend[4];
-    while (*op != TAG_END) {
-        if (*op == tag) {
-            for (i = 0;  i < *(op+1);  i++) {
-                *val++ = *(op+i+2);
-            }
-            return true;
-        }
-        op += *(op+1)+2;
-    }
+    cyg_uint8 optover;
+
+#define SCANTAG( ptr ) CYG_MACRO_START          \
+    unsigned char *op = (ptr);                  \
+    while (*op != TAG_END) {                    \
+        if (*op == tag) {                       \
+            for (i = 0;  i < *(op+1);  i++) {   \
+                *val++ = *(op+i+2);             \
+            }                                   \
+            return true;                        \
+        }                                       \
+        op += *(op+1)+2;                        \
+    }                                           \
+CYG_MACRO_END
+
+    SCANTAG( &bp->bp_vend[4] );
+
+    if ( TAG_DHCP_OPTOVER == tag ) // prevent recursion > once
+        return false;
+    // else, look for that tag to see if there's more...
+    optover = 0;
+    if ( ! get_bootp_option( bp, TAG_DHCP_OPTOVER, &optover ) )
+        return false;
+
+    if ( 1 & optover ) // then the file field also holds options
+        SCANTAG( &bp->bp_file[0] );
+
+    if ( 2 & optover ) // then the sname field also holds options
+        SCANTAG( &bp->bp_sname[0] );
+
     return false;
 }
 

@@ -50,6 +50,7 @@
 #include <cyg/infra/cyg_ass.h>          // assertion macros
 
 #include <cyg/hal/hal_io.h>             // IO macros
+#include <cyg/hal/hal_if.h>             // calling interface API
 #include <cyg/hal/hal_arch.h>           // Register state info
 #include <cyg/hal/hal_diag.h>
 #include <cyg/hal/hal_intr.h>           // Interrupt names
@@ -112,15 +113,8 @@ void hal_hardware_init(void)
     HAL_DCACHE_ENABLE();
     HAL_ICACHE_ENABLE();
 
-#ifndef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-#ifdef CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT
-    // then enable the interrupt for incoming characters and break
-    // into the stub ROM if the char is a ^C.
-    HAL_INTERRUPT_UNMASK( CYG_DIAG_DEV_INT );
-    // hal_diag.c: hal_ctrlc_isr( CYG_ADDRWORD vector, CYG_ADDRWORD data)
-    // is polled from the default ISR so it's OK just to enable this.   
-#endif
-#endif
+    // Set up eCos/ROM interfaces
+    hal_if_init();
 }
 
 // -------------------------------------------------------------------------

@@ -341,6 +341,7 @@
 # define CYGARC_REG_IPRE                0xa400001a
 //#endif
 
+
 #define CYGARC_REG_IPRA_TMU0_MASK       0xf000
 #define CYGARC_REG_IPRA_TMU0_PRI1       0x1000
 #define CYGARC_REG_IPRA_TMU1_MASK       0x0f00

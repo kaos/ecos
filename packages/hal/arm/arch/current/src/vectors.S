@@ -189,8 +189,8 @@ hal_dram_size:
         .long   0        
 
         .balign 16
-#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // this _check_ should go away
-        // Vectors used to communicate between eCos and ROM environments
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
+	// Vectors used to communicate between eCos and ROM environments
         .globl  hal_virtual_vector_table
 hal_virtual_vector_table:
         .rept   CYGNUM_CALL_IF_TABLE_SIZE
@@ -388,12 +388,10 @@ start:
         str     r2,[r0,#0x24]
 #endif
         
-#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // this _check_ should go away
 #if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
     || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
         .extern hal_ctrlc_isr_init
         bl      hal_ctrlc_isr_init
-#endif
 #endif
 
         LED 2
@@ -716,7 +714,6 @@ handle_IRQ_or_FIQ:
 
         mov     r0,v1                   // vector #
 
-#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // this _check_ should go away
 #if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
     || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
         // If we are supporting Ctrl-C interrupts from GDB, we must squirrel
@@ -727,7 +724,6 @@ handle_IRQ_or_FIQ:
         ldr     r2,=hal_saved_interrupt_state
         str     v6,[r2]
 #endif
-#endif        
 
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_IGNORE_SPURIOUS     
         cmp     r0,#0                   // ignore spurious interrupts

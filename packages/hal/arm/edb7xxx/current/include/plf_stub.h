@@ -54,23 +54,23 @@
 #include <cyg/hal/arm_stub.h>           // architecture stub support
 
 //----------------------------------------------------------------------------
-// Define serial stuff.
+// Define some platform specific communication details. This is mostly
+// handled by hal_if now, but we need to make sure the comms tables are
+// properly initialized.
 
-extern void hal_edb7xxx_init_serial(void);
-extern int  hal_edb7xxx_get_char(void);
-extern void hal_edb7xxx_put_char(int c);
-extern int  hal_edb7xxx_interruptible(int);
+externC void cyg_hal_plf_comms_init(void);
 
-#define HAL_STUB_PLATFORM_INIT_SERIAL()       hal_edb7xxx_init_serial()
-#define HAL_STUB_PLATFORM_GET_CHAR()          hal_edb7xxx_get_char()
-#define HAL_STUB_PLATFORM_PUT_CHAR(c)         hal_edb7xxx_put_char((c))
+#define HAL_STUB_PLATFORM_INIT_SERIAL()       cyg_hal_plf_comms_init()
+
 #define HAL_STUB_PLATFORM_SET_BAUD_RATE(baud) CYG_UNUSED_PARAM(int, (baud))
-#define HAL_STUB_PLATFORM_INTERRUPTIBLE       (&hal_edb7xxx_interruptible)
+#define HAL_STUB_PLATFORM_INTERRUPTIBLE       0
 #define HAL_STUB_PLATFORM_INIT_BREAK_IRQ()    CYG_EMPTY_STATEMENT
 
 //----------------------------------------------------------------------------
 // Stub initializer.
 #define HAL_STUB_PLATFORM_INIT()              CYG_EMPTY_STATEMENT
+
+#endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
 //----------------------------------------------------------------------------
 // Reset.
@@ -80,7 +80,7 @@ extern int  hal_edb7xxx_interruptible(int);
 externC void reset_platform(void);
 #define HAL_STUB_PLATFORM_RESET() reset_platform()
 
-#endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+#define HAL_STUB_PLATFORM_RESET_ENTRY 0xe0000000
 
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_PLF_STUB_H

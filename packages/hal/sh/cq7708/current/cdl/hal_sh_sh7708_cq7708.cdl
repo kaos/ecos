@@ -43,6 +43,7 @@
 cdl_package CYGPKG_HAL_SH_SH7708_CQ7708 {
     display       "CqREEK SH7708 board"
     parent        CYGPKG_HAL_SH
+    requires      CYGPKG_HAL_SH_7708
     define_header hal_sh_sh7708_cq7708.h
     include_dir   cyg/hal
     description   "

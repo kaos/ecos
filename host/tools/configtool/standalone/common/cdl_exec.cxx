@@ -662,8 +662,11 @@ cdl_exec::transaction_callback(const CdlTransactionCallback& callback_data)
     for (i = 0; i < callback_data.value_changes.size(); i++) {
         CdlValuable valuable = callback_data.value_changes[i];
         if (CdlValueSource_Inferred == valuable->get_source()) {
+            CdlEvalContext context(0, valuable, 0);
+            CdlSimpleValue simple_val;
+            CdlSimpleValue::eval_valuable(context, valuable, simple_val);
             std::string msg = std::string("U ") + valuable->get_name() + ", new inferred value ";
-            std::string value = valuable->get_value();
+            std::string value = simple_val.get_value();
             if ("" == value) {
                 msg += "\"\"";
             } else {

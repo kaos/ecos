@@ -1,3 +1,7 @@
+2000-07-07  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_sh_edk7708.cdl: Require sub-variant package.
+
 2000-06-29  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_diag.c: serial driver API changes.

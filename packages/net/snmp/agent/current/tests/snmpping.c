@@ -138,7 +138,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include <network.h>
 
-#define STACK_SIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
+#define STACK_SIZE (CYGNUM_HAL_STACK_SIZE_TYPICAL + 0x1000)
 static char stack[STACK_SIZE];
 static cyg_thread thread_data;
 static cyg_handle_t thread_handle;
@@ -354,3 +354,5 @@ cyg_start(void)
     cyg_thread_resume(thread_handle);  // Start it
     cyg_scheduler_start();
 }
+
+// EOF snmpping.c

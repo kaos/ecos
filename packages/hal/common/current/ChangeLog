@@ -1,3 +1,25 @@
+2000-07-14  Gary Thomas  <gthomas@redhat.com>
+
+	* src/hal_if.c (delay_us): Use HAL_DELAY_US() if defined.
+
+2000-07-07  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_stub.c (initHardware): Fix #endif location.
+
+	* src/hal_if.c (hal_ctrlc_isr_init): Added hack to work around a
+	silly but critical problem.
+
+	* src/hal_stub.c: Removed some CygMon conditional exclusions.
+
+	* src/hal_if.c (hal_ctrlc_isr_init): Don't enable interrupts when
+	configured as ROM monitor.
+
+2000-07-05  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/debugging.cdl: Only allow CTRLC support if there's stubs or
+	a ROM monitor to handle it. (Haruki Kashiwaya (kashiwaya at redhat
+	dot com)).
+
 2000-06-30  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_if.h: Make CYGACC macros call functions. May have to
@@ -826,7 +848,6 @@
 
 	* include/pkgconf/hal.h: Added simple MPC8xx configuration.
 
-
 1999-01-26  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* tests/cache.c (time0): Waste much less time if running in a
@@ -864,7 +885,6 @@
 
 	* include/pkgconf/hal.h: 
 	Add CYG_KERNEL_USE_INIT_PRIORITY for SPARCLITE.
-
 
 1999-01-18  Jesper Skov  <jskov@cygnus.co.uk>
         PR 18823
@@ -911,7 +931,6 @@ Wed Dec  9 14:07:30 GMT 1998  Chris Provenzano  <proven@cygnus.com>
 
 	* include/pkgconf/hal.h: Compile the i386 linux target with
 	CYG_KERNEL_USE_INIT_PRIORITY defined.
-
 
 1999-01-04  Jesper Skov  <jskov@cygnus.co.uk>
 

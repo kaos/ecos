@@ -47,6 +47,7 @@
 #include <cyg/infra/cyg_trac.h>         // tracing macros
 #include <cyg/infra/cyg_ass.h>          // assertion macros
 
+#include <cyg/hal/hal_if.h>             // calling interface API
 #include <cyg/hal/hal_io.h>             // IO macros
 #include <cyg/hal/hal_arch.h>           // Register state info
 #include <cyg/hal/hal_diag.h>
@@ -110,6 +111,9 @@ void hal_hardware_init(void)
     // Reset all interrupt masks (disable all interrupt sources)
     *(volatile cyg_uint8 *)CMA230_IMRw = 0;
     *(volatile cyg_uint8 *)CMA230_CLR = 0xFF;  // Clear all current interrupts
+
+    // Set up eCos/ROM interfaces
+    hal_if_init();
 }
 
 //

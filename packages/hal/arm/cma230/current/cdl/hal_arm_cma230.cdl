@@ -50,10 +50,11 @@ cdl_package CYGPKG_HAL_ARM_CMA230 {
         The cma230 HAL package provides the support needed to run
         eCos on Cogent Computer Systems CMA2xx (CMA230, CMA222) boards."
 
-    compile       hal_diag.c plf_stub.c cma230_misc.c
+    compile       hal_diag.c cma230_misc.c
 
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
+    implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
 
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_arm.h>"
@@ -85,17 +86,7 @@ cdl_package CYGPKG_HAL_ARM_CMA230 {
             into ROM."
     }
 
-    cdl_option CYGHWR_HAL_ARM_CMA230_DIAG_PORT {
-        display       "Diagnostic serial port"
-        flavor        data
-        legal_values  0 1
-        default_value 0
-        description   "
-            The CMA230 board has two separate serial ports.  This option
-            chooses which of these ports will be used."
-    }
-    
-    cdl_option CYGHWR_HAL_ARM_CMA230_DIAG_BAUD {
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD {
         display       "Diagnostic serial port baud rate"
         flavor        data
         legal_values  9600 19200 38400 115200
@@ -106,18 +97,7 @@ cdl_package CYGPKG_HAL_ARM_CMA230 {
             diagnostic and GDB port are the same."
     }
     
-    cdl_option CYGHWR_HAL_ARM_CMA230_GDB_PORT {
-        display       "GDB serial port"
-        flavor        data
-        legal_values  0 1
-        default_value 0
-        description   "
-            The CMA230 board has two separate serial ports.  This option
-            chooses which of these ports will be used to connect to a host
-            running GDB."
-    }
-
-    cdl_option CYGHWR_HAL_ARM_CMA230_GDB_BAUD {
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL_BAUD {
         display       "GDB serial port baud rate"
         flavor        data
         legal_values  9600 19200 38400 115200
@@ -125,6 +105,33 @@ cdl_package CYGPKG_HAL_ARM_CMA230 {
         description   "
             This option controls the baud rate used for the GDB connection."
     }
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS {
+        display      "Number of communication channels on the board"
+        flavor       data
+        calculated   2
+    }
+ 
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL {
+        display          "Debug serial port"
+        flavor data
+        legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
+        default_value    0
+        description      "
+            The CMA230 board has two serial ports. This option
+            chooses which port will be used to connect to a host
+            running GDB."
+     }
+ 
+     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL {
+         display          "Diagnostic serial port"
+         flavor data
+         legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
+         default_value    0
+         description      "
+            The CMA230 board has two serial ports.  This option
+            chooses which port will be used for diagnostic output."
+     }
 
     # Real-time clock/counter specifics
     cdl_component CYGNUM_HAL_RTC_CONSTANTS {
@@ -219,8 +226,8 @@ cdl_package CYGPKG_HAL_ARM_CMA230 {
             requires { CYG_HAL_STARTUP == "ROM" }
             requires CYGSEM_HAL_ROM_MONITOR
             requires CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-            requires ! CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
-            requires ! CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
+            requires CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+            requires CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
             requires ! CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT
             requires ! CYGDBG_HAL_COMMON_CONTEXT_SAVE_MINIMUM
             no_define
@@ -285,4 +292,25 @@ cdl_package CYGPKG_HAL_ARM_CMA230 {
             application. This enables features such as utilizing a separate
             interrupt stack when exceptions are generated."
     }
+
+    cdl_option CYGSEM_HAL_USE_ROM_MONITOR {
+         display       "Work with a ROM monitor"
+         flavor        booldata
+         legal_values  { "Generic" "GDB_stubs" }
+         default_value { CYG_HAL_STARTUP == "RAM" ? "GDB_stubs" : 0 }
+         parent        CYGPKG_HAL_ROM_MONITOR
+         requires      { CYG_HAL_STARTUP == "RAM" }
+         description   "
+             Support can be enabled for different varieties of ROM monitor.
+             This support changes various eCos semantics such as the encoding
+             of diagnostic output, or the overriding of hardware interrupt
+             vectors.
+             Firstly there is \"Generic\" support which prevents the HAL
+             from overriding the hardware vectors that it does not use, to
+             instead allow an installed ROM monitor to handle them. This is
+             the most basic support which is likely to be common to most
+             implementations of ROM monitor.
+             \"GDB_stubs\" provides support when GDB stubs are included in
+             the ROM monitor or boot ROM."
+     }
 }

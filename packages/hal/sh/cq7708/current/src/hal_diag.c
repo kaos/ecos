@@ -47,6 +47,7 @@
 
 #include <cyg/infra/cyg_type.h>         // base types, externC
 #include <cyg/hal/hal_io.h>             // IO macros
+#include <cyg/hal/hal_if.h>             // calling interface API
 #include <cyg/hal/hal_intr.h>           // Interrupt macros
 #include <cyg/hal/sh3_sci.h>            // driver API
 #include <cyg/hal/hal_misc.h>           // Helper functions

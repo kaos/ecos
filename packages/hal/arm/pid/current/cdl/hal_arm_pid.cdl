@@ -84,17 +84,7 @@ cdl_package CYGPKG_HAL_ARM_PID {
 
     }
 
-    cdl_option CYGHWR_HAL_ARM_PID_DIAG_PORT {
-        display       "Diagnostic serial port"
-        flavor        data
-        legal_values  0 1
-        default_value 0
-        description   "
-            The PID board has two separate serial ports.  This option
-            chooses which of these ports will be used."
-    }
-
-    cdl_option CYGHWR_HAL_ARM_PID_DIAG_BAUD {
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD {
         display       "Diagnostic serial port baud rate"
         flavor        data
         legal_values  9600 19200 38400 115200
@@ -105,18 +95,7 @@ cdl_package CYGPKG_HAL_ARM_PID {
             diagnostic and GDB port are the same."
     }
 
-    cdl_option CYGHWR_HAL_ARM_PID_GDB_PORT {
-        display       "GDB serial port"
-        flavor        data
-        legal_values  0 1
-        default_value 0
-        description   "
-            The PID board has two separate serial ports.  This option
-            chooses which of these ports will be used to connect to a host
-            running GDB."
-    }
-
-    cdl_option CYGHWR_HAL_ARM_PID_GDB_BAUD {
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL_BAUD {
         display       "GDB serial port baud rate"
         flavor        data
         legal_values  9600 19200 38400 115200
@@ -153,7 +132,7 @@ cdl_package CYGPKG_HAL_ARM_PID {
         display          "Debug serial port"
         flavor data
         legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
-        default_value    CYGHWR_HAL_ARM_PID_GDB_PORT
+        default_value    0
         description      "
             The PID board has only one serial port. This option
             chooses which port will be used to connect to a host
@@ -164,7 +143,7 @@ cdl_package CYGPKG_HAL_ARM_PID {
          display          "Diagnostic serial port"
          flavor data
          legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
-         default_value    CYGHWR_HAL_ARM_PID_DIAG_PORT
+         default_value    0
          description      "
             The PID board has only one serial port.  This option
             chooses which port will be used for diagnostic output."
@@ -272,7 +251,7 @@ cdl_package CYGPKG_HAL_ARM_PID {
             display "Build flash programming tool"
             default_value 0
             requires { CYG_HAL_STARTUP == "RAM" }
-            requires CYGHWR_HAL_ARM_PID_DIAG_PORT == 1
+            requires CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL == 1
             requires CYGPKG_LIBC
             requires CYGPKG_KERNEL
             no_define
@@ -294,7 +273,7 @@ cdl_package CYGPKG_HAL_ARM_PID {
             display "Build flash programming tool for BE images on LE boards"
             default_value 0
             requires { CYG_HAL_STARTUP == "RAM" }
-            requires CYGHWR_HAL_ARM_PID_DIAG_PORT == 1
+            requires CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL == 1
             requires CYGPKG_LIBC
             requires CYGPKG_KERNEL
             no_define
@@ -364,27 +343,10 @@ cdl_package CYGPKG_HAL_ARM_PID {
         no_define
         parent        CYGPKG_CYGMON
         active_if     CYGPKG_CYGMON
-        requires      CYGPKG_IO_SERIAL_ARM_PID
-        requires      {(CYGDAT_CYGMON_CONSOLE_DEV != "\"/dev/ser0\"") || \
-                       (CYGPKG_IO_SERIAL_ARM_PID_SERIAL0 &&              \
-                       (CYGNUM_IO_SERIAL_ARM_PID_SERIAL0_BUFSIZE == 512))}
-        requires      {(CYGDAT_CYGMON_CONSOLE_DEV != "\"/dev/ser1\"") || \
-                       (CYGPKG_IO_SERIAL_ARM_PID_SERIAL1 &&              \
-                       (CYGNUM_IO_SERIAL_ARM_PID_SERIAL1_BUFSIZE == 512))}
         description   "
             This option also lists the target's requirements for a valid CygMon
             configuration."
 
-
-        cdl_option CYGDAT_CYGMON_CONSOLE_DEV {
-            display       "Serial port for default console"
-            flavor data
-            default_value { "\"/dev/ser0\"" }
-            description   "
-                This option selects the physical device to use as the default
-                console device for CygMon."
-
-        }
 
         cdl_option CYGBLD_BUILD_CYGMON_BIN {
             display       "Build CygMon ROM binary image"

@@ -71,13 +71,20 @@ struct sa11x0_serial {
   volatile cyg_uint32 utsr1;
 };
 
+//-----------------------------------------------------------------------------
+typedef struct {
+    volatile struct sa11x0_serial* base;
+    cyg_int32 msec_timeout;
+    int isr_vector;
+} channel_data_t;
+
 /*---------------------------------------------------------------------------*/
 // SA11x0 Serial Port (UARTx) for Debug
 
 static void
-init_channel(void* __ch_data)
+init_channel(channel_data_t* __ch_data)
 {
-    volatile struct sa11x0_serial* base = (struct sa11x0_serial*)__ch_data;
+    volatile struct sa11x0_serial* base = __ch_data->base;
     cyg_uint32 brd;
 
     // Disable Receiver and Transmitter (clears FIFOs)
@@ -106,7 +113,7 @@ init_channel(void* __ch_data)
                   SA11X0_UART_DATA_BITS_8;
 
     // Set the desired baud rate.
-    brd = SA11X0_UART_BAUD_RATE_DIVISOR(CYGHWR_HAL_ARM_SA11X0_DIAG_BAUD);
+    brd = SA11X0_UART_BAUD_RATE_DIVISOR(CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD);
     base->utcr1 = (brd >> 8) & SA11X0_UART_H_BAUD_RATE_DIVISOR_MASK;
     base->utcr2 = brd & SA11X0_UART_L_BAUD_RATE_DIVISOR_MASK;
 
@@ -119,7 +126,7 @@ init_channel(void* __ch_data)
 void
 cyg_hal_plf_serial_putc(void *__ch_data, char c)
 {
-    volatile struct sa11x0_serial* base = (struct sa11x0_serial*)__ch_data;
+    volatile struct sa11x0_serial* base = ((channel_data_t*)__ch_data)->base;
     CYGARC_HAL_SAVE_GP();
 
     // Wait for Tx FIFO not full
@@ -137,7 +144,7 @@ cyg_hal_plf_serial_putc(void *__ch_data, char c)
 static cyg_bool
 cyg_hal_plf_serial_getc_nonblock(void* __ch_data, cyg_uint8* ch)
 {
-    volatile struct sa11x0_serial* base = (struct sa11x0_serial*)__ch_data;
+    volatile struct sa11x0_serial* base = ((channel_data_t*)__ch_data)->base;
 
     // If receive fifo is empty, return false
     if ((base->utsr1 & SA11X0_UART_RX_FIFO_NOT_EMPTY) == 0)
@@ -167,6 +174,11 @@ cyg_hal_plf_serial_getc(void* __ch_data)
 #if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) \
     || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
 
+static channel_data_t ser_channels[2] = {
+    { (volatile struct sa11x0_serial*)SA11X0_UART1_BASE, 1000, CYGNUM_HAL_INTERRUPT_UART1 },
+    { (volatile struct sa11x0_serial*)SA11X0_UART3_BASE, 1000, CYGNUM_HAL_INTERRUPT_UART3 }
+};
+
 static void
 cyg_hal_plf_serial_write(void* __ch_data, const cyg_uint8* __buf, 
                          cyg_uint32 __len)
@@ -190,22 +202,15 @@ cyg_hal_plf_serial_read(void* __ch_data, cyg_uint8* __buf, cyg_uint32 __len)
     CYGARC_HAL_RESTORE_GP();
 }
 
-cyg_int32 msec_timeout[2] = { 1000, 1000 };
-
 cyg_bool
 cyg_hal_plf_serial_getc_timeout(void* __ch_data, cyg_uint8* ch)
 {
     int delay_count;
-    int index;
+    channel_data_t* chan = (channel_data_t*)__ch_data;
     cyg_bool res;
     CYGARC_HAL_SAVE_GP();
 
-    if (SA11X0_UART1_BASE == __ch_data)
-        index = 0;
-    else
-        index = 1;
-
-    delay_count = msec_timeout[index] * 10; // delay in .1 ms steps
+    delay_count = chan->msec_timeout * 10; // delay in .1 ms steps
 
     for(;;) {
         res = cyg_hal_plf_serial_getc_nonblock(__ch_data, ch);
@@ -219,41 +224,32 @@ cyg_hal_plf_serial_getc_timeout(void* __ch_data, cyg_uint8* ch)
     return res;
 }
 
-static int isr_vectors[2] = {CYGNUM_HAL_INTERRUPT_UART1,
-                             CYGNUM_HAL_INTERRUPT_UART3};
-
 static int
 cyg_hal_plf_serial_control(void *__ch_data, __comm_control_cmd_t __func, ...)
 {
     static int irq_state = 0;
-    volatile struct sa11x0_serial* base = (struct sa11x0_serial*)__ch_data;
+    channel_data_t* chan = (channel_data_t*)__ch_data;
     int ret = 0;
-    int index;
     CYGARC_HAL_SAVE_GP();
-
-    if (SA11X0_UART1_BASE == __ch_data)
-        index = 0;
-    else
-        index = 1;
 
     switch (__func) {
     case __COMMCTL_IRQ_ENABLE:
         irq_state = 1;
 
-        base->utcr3 |= SA11X0_UART_RX_FIFO_INT_ENABLED;
+        chan->base->utcr3 |= SA11X0_UART_RX_FIFO_INT_ENABLED;
 
-        HAL_INTERRUPT_UNMASK(isr_vectors[index]);
+        HAL_INTERRUPT_UNMASK(chan->isr_vector);
         break;
     case __COMMCTL_IRQ_DISABLE:
         ret = irq_state;
         irq_state = 0;
 
-        base->utcr3 &= ~SA11X0_UART_RX_FIFO_INT_ENABLED;
+        chan->base->utcr3 &= ~SA11X0_UART_RX_FIFO_INT_ENABLED;
 
-        HAL_INTERRUPT_MASK(isr_vectors[index]);
+        HAL_INTERRUPT_MASK(chan->isr_vector);
         break;
     case __COMMCTL_DBG_ISR_VECTOR:
-        ret = isr_vectors[index];
+        ret = chan->isr_vector;
         break;
     case __COMMCTL_SET_TIMEOUT:
     {
@@ -261,8 +257,8 @@ cyg_hal_plf_serial_control(void *__ch_data, __comm_control_cmd_t __func, ...)
 
         va_start(ap, __func);
 
-        ret = msec_timeout[index];
-        msec_timeout[index] = va_arg(ap, cyg_uint32);
+        ret = chan->msec_timeout;
+        chan->msec_timeout = va_arg(ap, cyg_uint32);
 
         va_end(ap);
     }        
@@ -277,28 +273,23 @@ static int
 cyg_hal_plf_serial_isr(void *__ch_data, int* __ctrlc, 
                        CYG_ADDRWORD __vector, CYG_ADDRWORD __data)
 {
-    int index, res = 0;
-    volatile struct sa11x0_serial* base = (struct sa11x0_serial*)__ch_data;
+    int res = 0;
+    channel_data_t* chan = (channel_data_t*)__ch_data;
     char c;
     int reg;
     CYGARC_HAL_SAVE_GP();
 
-    if (SA11X0_UART1_BASE == __ch_data)
-        index = 0;
-    else
-        index = 1;
-
-    reg = base->utsr1;
+    reg = chan->base->utsr1;
 
     // read it anyway just in case - no harm done and we might prevent an
     // interrupt loop
-    c = (char)base->utdr;
+    c = (char)chan->base->utdr;
 
     //Clear receiver idle status bit, to allow another interrupt to
     //occur in the case where the receive fifo is almost empty.
-    base->utsr0 = SA11X0_UART_RX_IDLE;
+    chan->base->utsr0 = SA11X0_UART_RX_IDLE;
 
-    cyg_drv_interrupt_acknowledge(isr_vectors[index]);
+    cyg_drv_interrupt_acknowledge(chan->isr_vector);
 
     *__ctrlc = 0;
     if ( (reg & SA11X0_UART_RX_FIFO_NOT_EMPTY) != 0 ) {
@@ -319,9 +310,9 @@ cyg_hal_plf_serial_init(void)
     int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
 
     // Init channels
-    init_channel((void*)SA11X0_UART1_BASE);
+    init_channel(&ser_channels[0]);
 #if (CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS == 2)
-    init_channel((void*)SA11X0_UART3_BASE);
+    init_channel(&ser_channels[1]);
 #endif
 
     // Setup procs in the vector table
@@ -329,7 +320,7 @@ cyg_hal_plf_serial_init(void)
     // Set channel 0
     CYGACC_CALL_IF_SET_CONSOLE_COMM(0);
     comm = CYGACC_CALL_IF_CONSOLE_PROCS();
-    CYGACC_COMM_IF_CH_DATA_SET(*comm, SA11X0_UART1_BASE);
+    CYGACC_COMM_IF_CH_DATA_SET(*comm, &ser_channels[0]);
     CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_plf_serial_write);
     CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_plf_serial_read);
     CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_plf_serial_putc);
@@ -342,7 +333,7 @@ cyg_hal_plf_serial_init(void)
     // Set channel 1
     CYGACC_CALL_IF_SET_CONSOLE_COMM(1);
     comm = CYGACC_CALL_IF_CONSOLE_PROCS();
-    CYGACC_COMM_IF_CH_DATA_SET(*comm, SA11X0_UART3_BASE);
+    CYGACC_COMM_IF_CH_DATA_SET(*comm, &ser_channels[1]);
     CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_plf_serial_write);
     CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_plf_serial_read);
     CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_plf_serial_putc);
@@ -379,10 +370,12 @@ cyg_hal_plf_comms_init(void)
 
 #include <cyg/hal/hal_stub.h>           // cyg_hal_gdb_interrupt
 
-#if (CYGHWR_HAL_ARM_SA11X0_DIAG_PORT == 0)
+#if (CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL == 0)
 # define __BASE ((void*)SA11X0_UART1_BASE)
+# define CYGHWR_HAL_GDB_PORT_VECTOR CYGNUM_HAL_INTERRUPT_UART1
 #else
 # define __BASE ((void*)SA11X0_UART3_BASE)
+# define CYGHWR_HAL_GDB_PORT_VECTOR CYGNUM_HAL_INTERRUPT_UART3
 #endif
 
 #ifdef CYGSEM_HAL_ROM_MONITOR
@@ -394,15 +387,19 @@ cyg_hal_plf_comms_init(void)
 #define HAL_DIAG_USES_HARDWARE
 #elif defined(CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL)
 #define HAL_DIAG_USES_HARDWARE
-#elif CYGHWR_HAL_ARM_SA11X0_DIAG_PORT != CYGHWR_HAL_ARM_SA11X0_GDB_PORT
+#elif CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL != CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL
 #define HAL_DIAG_USES_HARDWARE
 #endif
+
+static channel_data_t ser_channel = {
+    (volatile struct sa11x0_serial*)__BASE, 0, CYGHWR_HAL_GDB_PORT_VECTOR
+};
 
 void 
 hal_diag_init(void)
 {
     // Init serial device
-    init_channel(__BASE);
+    init_channel(&ser_channel);
 }
 
 #ifdef HAL_DIAG_USES_HARDWARE
@@ -417,7 +414,7 @@ static int diag_bp = 0;
 
 void hal_diag_read_char(char *c)
 {
-    *c = cyg_hal_plf_serial_getc(__BASE);
+    *c = cyg_hal_plf_serial_getc(&ser_channel);
 }
 
 void hal_diag_write_char(char c)
@@ -428,7 +425,7 @@ void hal_diag_write_char(char c)
     if (diag_bp == sizeof(diag_buffer)) diag_bp = 0;
 #endif
 #endif
-    cyg_hal_plf_serial_putc(__BASE, c);
+    cyg_hal_plf_serial_putc(&ser_channel, c);
 }
 
 #else // not HAL_DIAG_USES_HARDWARE - it uses GDB protocol
@@ -436,7 +433,7 @@ void hal_diag_write_char(char c)
 void 
 hal_diag_read_char(char *c)
 {
-    *c = cyg_hal_plf_serial_getc(__BASE);
+    *c = cyg_hal_plf_serial_getc(&ser_channel);
 }
 
 void 
@@ -476,22 +473,22 @@ hal_diag_write_char(char c)
 #ifndef CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT
             char c1;
 #endif        
-            cyg_hal_plf_serial_putc(__BASE, '$');
-            cyg_hal_plf_serial_putc(__BASE, 'O');
+            cyg_hal_plf_serial_putc(&ser_channel, '$');
+            cyg_hal_plf_serial_putc(&ser_channel, 'O');
             csum += 'O';
             for( i = 0; i < pos; i++ )
             {
                 char ch = line[i];
                 char h = hex[(ch>>4)&0xF];
                 char l = hex[ch&0xF];
-                cyg_hal_plf_serial_putc(__BASE, h);
-                cyg_hal_plf_serial_putc(__BASE, l);
+                cyg_hal_plf_serial_putc(&ser_channel, h);
+                cyg_hal_plf_serial_putc(&ser_channel, l);
                 csum += h;
                 csum += l;
             }
-            cyg_hal_plf_serial_putc(__BASE, '#');
-            cyg_hal_plf_serial_putc(__BASE, hex[(csum>>4)&0xF]);
-            cyg_hal_plf_serial_putc(__BASE, hex[csum&0xF]);
+            cyg_hal_plf_serial_putc(&ser_channel, '#');
+            cyg_hal_plf_serial_putc(&ser_channel, hex[(csum>>4)&0xF]);
+            cyg_hal_plf_serial_putc(&ser_channel, hex[csum&0xF]);
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT
 
@@ -502,7 +499,7 @@ hal_diag_write_char(char c)
             // Wait for the ACK character '+' from GDB here and handle
             // receiving a ^C instead.  This is the reason for this clause
             // being a loop.
-            c1 = cyg_hal_plf_serial_getc(__BASE);
+            c1 = cyg_hal_plf_serial_getc(&ser_channel);
 
             if( c1 == '+' )
                 break;              // a good acknowledge

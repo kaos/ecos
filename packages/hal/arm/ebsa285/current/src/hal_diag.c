@@ -52,12 +52,273 @@
 #include <cyg/hal/hal_arch.h>           // basic machine info
 #include <cyg/hal/hal_intr.h>           // interrupt macros
 #include <cyg/hal/hal_io.h>             // IO macros
+#include <cyg/hal/hal_if.h>             // calling interface API
+#include <cyg/hal/hal_misc.h>           // helper functions
 #include <cyg/hal/hal_diag.h>
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+#include <cyg/hal/hal_ebsa285.h>        // Hardware definitions
 #include <cyg/hal/drv_api.h>            // cyg_drv_interrupt_acknowledge
+
+/*---------------------------------------------------------------------------*/
+
+struct ebsa_serial {
+  volatile cyg_uint32 data_register;
+  volatile cyg_uint32 rxstat;
+  volatile cyg_uint32 h_baud_control;
+  volatile cyg_uint32 m_baud_control;
+  volatile cyg_uint32 l_baud_control;
+  volatile cyg_uint32 control_register;
+  volatile cyg_uint32 flag_register;
+};
+
+/*---------------------------------------------------------------------------*/
+
+static void
+init_channel(void* __ch_data)
+{
+    volatile struct ebsa_serial* base = (struct ebsa_serial*)__ch_data;
+
+    int dummy;
+    /*
+     * Make sure everything is off
+     */
+    base->control_register = SA110_UART_DISABLED | SA110_SIR_DISABLED;
+    
+    /*
+     * Read the RXStat to drain the fifo
+     */
+    dummy = base->rxstat;
+
+    /*
+     * Set the baud rate - this also turns the uart on.
+     *
+     * Note that the ordering of these writes is critical,
+     * and the writes to the H_BAUD_CONTROL and CONTROL_REGISTER
+     * are necessary to force the UART to update its register
+     * contents.
+     */
+    base->l_baud_control   = 0x13; // bp->divisor_low;
+    base->m_baud_control   = 0x00; // bp->divisor_high;
+    base->h_baud_control = SA110_UART_BREAK_DISABLED    |
+        SA110_UART_PARITY_DISABLED   |
+        SA110_UART_STOP_BITS_ONE     |
+        SA110_UART_FIFO_ENABLED      |
+        SA110_UART_DATA_LENGTH_8_BITS;
+    base->control_register = SA110_UART_ENABLED | SA110_SIR_DISABLED;
+    // All done
+}
+
+void
+cyg_hal_plf_serial_putc(void *__ch_data, char c)
+{
+    volatile struct ebsa_serial* base = (struct ebsa_serial*)__ch_data;
+    CYGARC_HAL_SAVE_GP();
+
+    // Wait for Tx FIFO not full
+    while ((base->flag_register & SA110_TX_FIFO_STATUS_MASK) == SA110_TX_FIFO_BUSY)
+        ;
+    base->data_register = c;
+
+    CYGARC_HAL_RESTORE_GP();
+}
+
+
+static cyg_bool
+cyg_hal_plf_serial_getc_nonblock(void* __ch_data, cyg_uint8* ch)
+{
+    volatile struct ebsa_serial* base = (struct ebsa_serial*)__ch_data;
+
+
+    if ((base->flag_register & SA110_RX_FIFO_STATUS_MASK) == SA110_RX_FIFO_EMPTY)
+        return false;
+
+    *ch = (char)(base->data_register & 0xFF);
+
+    return true;
+}
+
+
+cyg_uint8
+cyg_hal_plf_serial_getc(void* __ch_data)
+{
+    cyg_uint8 ch;
+    CYGARC_HAL_SAVE_GP();
+
+    while(!cyg_hal_plf_serial_getc_nonblock(__ch_data, &ch));
+
+    CYGARC_HAL_RESTORE_GP();
+    return ch;
+}
+
+#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) \
+    || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
+
+static cyg_int32 msec_timeout;
+
+static void
+cyg_hal_plf_serial_write(void* __ch_data, const cyg_uint8* __buf, 
+                         cyg_uint32 __len)
+{
+    CYGARC_HAL_SAVE_GP();
+
+    while(__len-- > 0)
+        cyg_hal_plf_serial_putc(__ch_data, *__buf++);
+
+    CYGARC_HAL_RESTORE_GP();
+}
+
+static void
+cyg_hal_plf_serial_read(void* __ch_data, cyg_uint8* __buf, cyg_uint32 __len)
+{
+    CYGARC_HAL_SAVE_GP();
+
+    while(__len-- > 0)
+        *__buf++ = cyg_hal_plf_serial_getc(__ch_data);
+
+    CYGARC_HAL_RESTORE_GP();
+}
+
+cyg_bool
+cyg_hal_plf_serial_getc_timeout(void* __ch_data, cyg_uint8* ch)
+{
+    int delay_count;
+    cyg_bool res;
+    CYGARC_HAL_SAVE_GP();
+
+    delay_count = msec_timeout * 10; // delay in .1 ms steps
+
+    for(;;) {
+        res = cyg_hal_plf_serial_getc_nonblock(__ch_data, ch);
+        if (res || 0 == delay_count--)
+            break;
+        
+        CYGACC_CALL_IF_DELAY_US(100);
+    }
+
+    CYGARC_HAL_RESTORE_GP();
+    return res;
+}
+
+static int
+cyg_hal_plf_serial_control(void *__ch_data, __comm_control_cmd_t __func, ...)
+{
+    static int irq_state = 0;
+    int ret = 0;
+    CYGARC_HAL_SAVE_GP();
+
+    switch (__func) {
+    case __COMMCTL_IRQ_ENABLE:
+        irq_state = 1;
+
+        HAL_INTERRUPT_UNMASK(CYGNUM_HAL_INTERRUPT_SERIAL_RX);
+        break;
+    case __COMMCTL_IRQ_DISABLE:
+        ret = irq_state;
+        irq_state = 0;
+
+        HAL_INTERRUPT_MASK(CYGNUM_HAL_INTERRUPT_SERIAL_RX);
+        break;
+    case __COMMCTL_DBG_ISR_VECTOR:
+        ret = CYGNUM_HAL_INTERRUPT_SERIAL_RX;
+        break;
+    case __COMMCTL_SET_TIMEOUT:
+    {
+        va_list ap;
+
+        va_start(ap, __func);
+
+        ret = msec_timeout;
+        msec_timeout = va_arg(ap, cyg_uint32);
+
+        va_end(ap);
+    }        
+    default:
+        break;
+    }
+    CYGARC_HAL_RESTORE_GP();
+    return ret;
+}
+
+static int
+cyg_hal_plf_serial_isr(void *__ch_data, int* __ctrlc, 
+                       CYG_ADDRWORD __vector, CYG_ADDRWORD __data)
+{
+    int reg, res = 0;
+    volatile struct ebsa_serial* base = (struct ebsa_serial*)__ch_data;
+    char c;
+    CYGARC_HAL_SAVE_GP();
+
+    if ( CYGNUM_HAL_INTERRUPT_SERIAL_RX == __vector ) {
+      reg = base->flag_register;
+      // read it anyway just in case - no harm done and we might
+      // prevent an interrup loop
+      c = (char)(base->data_register & 0xFF);
+
+      cyg_drv_interrupt_acknowledge(CYGNUM_HAL_INTERRUPT_SERIAL_RX);
+      *__ctrlc = 0;
+      if ( (reg & SA110_RX_FIFO_STATUS_MASK) != SA110_RX_FIFO_EMPTY ) {
+        if( cyg_hal_is_break( &c , 1 ) )
+          *__ctrlc = 1;
+
+        res = CYG_ISR_HANDLED;
+      }
+    }
+
+    CYGARC_HAL_RESTORE_GP();
+    return res;
+}
+
+static void
+cyg_hal_plf_serial_init(void)
+{
+    hal_virtual_comm_table_t* comm;
+    int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+
+    // Init channels
+    init_channel((void*)UART_BASE_0);
+
+    // Setup procs in the vector table
+
+    // Set channel 0
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(0);
+    comm = CYGACC_CALL_IF_CONSOLE_PROCS();
+    CYGACC_COMM_IF_CH_DATA_SET(*comm, UART_BASE_0);
+    CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_plf_serial_write);
+    CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_plf_serial_read);
+    CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_plf_serial_putc);
+    CYGACC_COMM_IF_GETC_SET(*comm, cyg_hal_plf_serial_getc);
+    CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_plf_serial_control);
+    CYGACC_COMM_IF_DBG_ISR_SET(*comm, cyg_hal_plf_serial_isr);
+    CYGACC_COMM_IF_GETC_TIMEOUT_SET(*comm, cyg_hal_plf_serial_getc_timeout);
+
+    // Restore original console
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
+}
+
+void
+cyg_hal_plf_comms_init(void)
+{
+    static int initialized = 0;
+
+    if (initialized)
+        return;
+
+    initialized = 1;
+
+    cyg_hal_plf_serial_init();
+}
+#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG || CYGPRI_HAL_IMPLEMENTS_IF_SERVICES
+
+
+
+//=============================================================================
+// Compatibility with older stubs
+//=============================================================================
+
+#ifndef CYGSEM_HAL_VIRTUAL_VECTOR_DIAG
+
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 #include <cyg/hal/hal_stub.h>           // cyg_hal_gdb_interrupt
 #endif
-#include <cyg/hal/hal_ebsa285.h>        // Hardware definitions
 
 #ifdef CYGSEM_HAL_ROM_MONITOR
 #define CYG_HAL_STARTUP_ROM
@@ -71,24 +332,26 @@
 /*---------------------------------------------------------------------------*/
 // EBSA285 Serial Port (UARTx) for Debug
 
+void hal_diag_init(void)
+{
+  init_channel((void*)UART_BASE_0);
+}
+
+
 // Actually send character down the wire
 static void
 hal_diag_write_char_serial(char c)
 {
-    // Wait for Tx FIFO not full
-    while ((*SA110_UART_FLAG_REGISTER & SA110_TX_FIFO_STATUS_MASK) == SA110_TX_FIFO_BUSY)
-        ;
-    *SA110_UART_DATA_REGISTER = c;
+    cyg_hal_plf_serial_putc((void*)UART_BASE_0, c);
 }
 
 static bool
 hal_diag_read_serial(char *c)
 {
     long timeout = 1000000000;  // A long time...
-    while ((*SA110_UART_FLAG_REGISTER & SA110_RX_FIFO_STATUS_MASK) == SA110_RX_FIFO_EMPTY)
-        if ( --timeout == 0 )
-            return false;
-    *c = (char)(*SA110_UART_DATA_REGISTER & 0xFF);
+    while (! cyg_hal_plf_serial_getc_nonblock((void*)UART_BASE_0, c) )
+        if ( --timeout == 0 ) return false;
+
     return true;
 }
 
@@ -123,39 +386,6 @@ const static struct _baud bauds[] = {
 #endif
 };
 #endif
-
-void hal_diag_init(void)
-{
-    int dummy;
-    /*
-     * Make sure everything is off
-     */
-    *SA110_UART_CONTROL_REGISTER = SA110_UART_DISABLED | SA110_SIR_DISABLED;
-    
-    /*
-     * Read the RXStat to drain the fifo
-     */
-    dummy = *SA110_UART_RXSTAT;
-
-    /*
-     * Set the baud rate - this also turns the uart on.
-     *
-     * Note that the ordering of these writes is critical,
-     * and the writes to the H_BAUD_CONTROL and CONTROL_REGISTER
-     * are necessary to force the UART to update its register
-     * contents.
-     */
-    *SA110_UART_L_BAUD_CONTROL   = 0x13; // bp->divisor_low;
-    *SA110_UART_M_BAUD_CONTROL   = 0x00; // bp->divisor_high;
-    *SA110_UART_H_BAUD_CONTROL = SA110_UART_BREAK_DISABLED    |
-        SA110_UART_PARITY_DISABLED   |
-        SA110_UART_STOP_BITS_ONE     |
-        SA110_UART_FIFO_ENABLED      |
-        SA110_UART_DATA_LENGTH_8_BITS;
-    *SA110_UART_CONTROL_REGISTER = SA110_UART_ENABLED | 
-        SA110_SIR_DISABLED;
-    // All done
-}
 
 #ifdef HAL_DIAG_USES_HARDWARE
 
@@ -270,7 +500,7 @@ hal_diag_write_char(char c)
                 break;              // a good acknowledge
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
-            cyg_drv_interrupt_acknowledge(CYG_DIAG_DEV_INT);
+            cyg_drv_interrupt_acknowledge(CYGNUM_HAL_INTERRUPT_SERIAL_RX);
             if( c1 == 3 ) {
                 // Ctrl-C: breakpoint.
                 cyg_hal_gdb_interrupt(
@@ -297,31 +527,7 @@ hal_diag_write_char(char c)
 }
 #endif
 
-/*---------------------------------------------------------------------------*/
-#ifndef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-#ifdef CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT
-// This routine is polled from the default ISR - the assumption is that any
-// other ISR installed knows what it's going and can handle a ^C correctly.
-int hal_ctrlc_isr( CYG_ADDRWORD vector, CYG_ADDRWORD data)
-{
-    char c;
-    int reg;
-    if ( CYG_DIAG_DEV_INT != vector )
-        return 0; // not for us
-
-    reg = *SA110_UART_FLAG_REGISTER;
-    // read it anyway just in case - no harm done and we might prevent an
-    // interrup loop
-    c = (char)(*SA110_UART_DATA_REGISTER & 0xFF);
-    if ( (reg & SA110_RX_FIFO_STATUS_MASK) != SA110_RX_FIFO_EMPTY ) {
-        if ( 3 == c ) {
-            HAL_BREAKPOINT( hal_ctrlc_isr_breakinst );
-        }
-    }
-    return 1;
-}
-#endif
-#endif
+#endif // !CYGSEM_HAL_VIRTUAL_VECTOR_DIAG
 
 /*---------------------------------------------------------------------------*/
 /* End of hal_diag.c */

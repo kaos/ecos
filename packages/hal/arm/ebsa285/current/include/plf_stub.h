@@ -51,29 +51,32 @@
 
 #include <cyg/infra/cyg_type.h>         // CYG_UNUSED_PARAM
 
-#include <cyg/hal/hal_ebsa285.h>        // registers
-#include <cyg/hal/hal_io.h>             // IO macros
 #include <cyg/hal/arm_stub.h>           // architecture stub support
 
 //----------------------------------------------------------------------------
-// Define serial stuff.
+// Define some platform specific communication details. This is mostly
+// handled by hal_if now, but we need to make sure the comms tables are
+// properly initialized.
 
-extern void hal_ebsa285_init_serial(void);
-extern int  hal_ebsa285_get_char(void);
-extern void hal_ebsa285_put_char(int c);
-extern int  hal_ebsa285_interruptible(int);
+externC void cyg_hal_plf_comms_init(void);
 
-#define HAL_STUB_PLATFORM_INIT_SERIAL()       hal_ebsa285_init_serial()
-#define HAL_STUB_PLATFORM_GET_CHAR()          hal_ebsa285_get_char()
-#define HAL_STUB_PLATFORM_PUT_CHAR(c)         hal_ebsa285_put_char((c))
+#define HAL_STUB_PLATFORM_INIT_SERIAL()       cyg_hal_plf_comms_init()
+
 #define HAL_STUB_PLATFORM_SET_BAUD_RATE(baud) CYG_UNUSED_PARAM(int, (baud))
+#define HAL_STUB_PLATFORM_INTERRUPTIBLE       0
+#define HAL_STUB_PLATFORM_INIT_BREAK_IRQ()    CYG_EMPTY_STATEMENT
 
 //----------------------------------------------------------------------------
 // Stub initializer.
 #define HAL_STUB_PLATFORM_INIT()              CYG_EMPTY_STATEMENT
 
+#endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+
 //----------------------------------------------------------------------------
 // Reset.
+#include <cyg/hal/hal_ebsa285.h>        // registers
+#include <cyg/hal/hal_io.h>             // IO macros
+
 #define HAL_STUB_PLATFORM_RESET()                                          \
     CYG_MACRO_START                                                        \
     cyg_uint32 ctrl;                                                       \
@@ -95,14 +98,7 @@ extern int  hal_ebsa285_interruptible(int);
     for(;;); /* wait for it */                                             \
     CYG_MACRO_END
 
-#ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
-#define HAL_STUB_PLATFORM_INIT_BREAK_IRQ()    CYG_EMPTY_STATEMENT
-#define HAL_STUB_PLATFORM_INTERRUPTIBLE       (&hal_ebsa285_interruptible)
-#else
-#define HAL_STUB_PLATFORM_INTERRUPTIBLE       0
-#endif
-
-#endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+#define HAL_STUB_PLATFORM_RESET_ENTRY 0x41000000
 
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_PLF_STUB_H

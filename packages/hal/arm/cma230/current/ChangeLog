@@ -1,3 +1,13 @@
+2000-07-05  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_cma230.cdl:
+	* include/hal_diag.h:
+	* include/plf_stub.h:
+	* src/cma230_misc.c:
+	* src/hal_diag.c:
+	* src/plf_stub.c: [deleted]
+	Changed to support virtual vectors.
+
 2000-06-18  Gary Thomas  <gthomas@redhat.com>
 
 	* include/pkgconf/mlt_arm_cma222_ram.ldi: 

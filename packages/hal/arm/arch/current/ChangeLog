@@ -1,3 +1,16 @@
+2000-07-07  Jesper Skov  <jskov@redhat.com>
+
+	* src/arm_stub.c: Changes to support CygMon changes.
+
+	* src/hal_misc.c: Fix warnings.
+
+2000-07-05  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_misc.c: 
+	* src/vectors.S:
+	All platforms now has VECTOR_SUPPORT (or provide alternative
+	implementations). Removed checks for the option.
+
 2000-06-28  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_mk_defs.c:

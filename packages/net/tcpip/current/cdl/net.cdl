@@ -88,6 +88,8 @@ cdl_package CYGPKG_NET {
 	sys/netinet/tcp_timer.c \
 	lib/inet_addr.c \
 	lib/bootp_support.c \
+	lib/dhcp_support.c \
+	lib/dhcp_prot.c \
 	lib/network_support.c \
 	lib/getproto.c \
 	lib/getserv.c \
@@ -176,6 +178,52 @@ cdl_package CYGPKG_NET {
             description   "
               Minimal in-memory file I/O support for TFTP server."
         }
+    }
+
+    cdl_component CYGPKG_NET_DHCP {
+	display "Use full DHCP instead of BOOTP"
+	active_if (CYGHWR_NET_DRIVERS > 0)
+	flavor bool
+	default_value 1
+	description "
+	    Provide DHCP for initializing the IP address
+	    of network interfaces.  The DHCP client is capable of falling
+	    back to BOOTP usage if the server does not support DHCP, so it
+	    should never be necessary to disable this option.  However,
+	    depending on other configuration the DHCP client may provide or
+	    require a kernel thread of its own; this consumes quite a lot
+	    of resource which a BOOTP solution does not require."
+
+	cdl_option CYGOPT_NET_DHCP_DHCP_THREAD {
+	    display "DHCP management thread"
+	    flavor bool
+	    default_value 1
+	    description "
+	        Provide a separate thread to renew DHCP leases; otherwise
+	        the application MUST periodically examine the semaphore
+	        dhcp_needs_attention and call dhcp_bind() if it is
+	        signalled.  If enabled, this thread does all that for you.
+	        Independent of this option, initialization of the
+	        interfaces still occurs in init_all_network_interfaces()
+	        and your startup code must call that.  It will start the
+	        DHCP management thread if necessary.  If a lease fails to
+	        be renewed, the management thread will shut down all
+	        interfaces and attempt to initialize all the interfaces
+	        again from scratch.  This may cause application problems,
+	        in which case managing the DHCP state in an application
+	        aware thread is recommended.  See comments in dhcp.h"
+	}
+
+	cdl_option CYGOPT_NET_DHCP_DHCP_THREAD_PARAM {
+	    display "DHCP management thread loops forever"
+	    flavor  data
+	    default_value 0
+	    active_if CYGOPT_NET_DHCP_DHCP_THREAD
+	    description "
+	        If the parameter is nonzero, it loops forever; if zero,
+	        the thread exits if a lease expires, and the application
+	        must detect this and tidy up or reboot the whole machine."
+	}
     }
 
     cdl_option CYGPKG_NET_SYSCTL {
@@ -316,6 +364,7 @@ cdl_package CYGPKG_NET {
 		    tests/set_mac_address \
 		    tests/flood \
 		    tests/ping_test \
+		    tests/dhcp_test \
 		    tests/ping_lo_test \
 		    tests/tcp_lo_test \
 		    tests/udp_lo_test \
@@ -380,6 +429,13 @@ cdl_package CYGPKG_NET {
             display "Use BOOTP/DHCP to initialize 'eth0'?"
             default_value 1
             implements CYGHWR_NET_DRIVER_ETH0_SETUP	
+
+            cdl_option CYGHWR_NET_DRIVER_ETH0_DHCP {
+                display "Use DHCP rather than BOOTP for 'eth0'?"
+                flavor  bool
+                default_value 1
+		active_if CYGPKG_NET_DHCP
+            }
 
             cdl_option CYGHWR_NET_DRIVER_ETH0_BOOTP_SHOW {
                 display "Show BOOTP/DHCP initialization values?"
@@ -451,6 +507,13 @@ cdl_package CYGPKG_NET {
             display "Use BOOTP/DHCP to initialize 'eth1'?"
             default_value 1
             implements CYGHWR_NET_DRIVER_ETH1_SETUP	
+
+            cdl_option CYGHWR_NET_DRIVER_ETH1_DHCP {
+                display "Use DHCP rather than BOOTP for 'eth1'?"
+                flavor  bool
+                default_value 1
+		active_if CYGPKG_NET_DHCP
+            }
 
             cdl_option CYGHWR_NET_DRIVER_ETH1_BOOTP_SHOW {
                 display "Show BOOTP/DHCP initialization values?"

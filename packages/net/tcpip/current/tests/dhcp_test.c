@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//      tests/ping_test.c
+//      tests/dhcp_test.c
 //
-//      Simple test of PING (ICMP) and networking support
+//      Simple test of DHCP (ICMP) and networking support
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -52,12 +52,14 @@
 //
 //==========================================================================
 
-// PING test code
+// DHCP test code
 
 #include <network.h>
 
 #include <pkgconf/system.h>
 #include <pkgconf/net.h>
+
+#include <dhcp.h>
 
 #include <cyg/infra/testcase.h>
 
@@ -221,6 +223,7 @@ ping_host(int s, struct sockaddr_in *host)
         TNR_OFF();
         if (len < 0) {
             perror("recvfrom");
+            seq+=4;
         } else {
             if (show_icmp(pkt2, len, &from, host)) {
                 ok_recv++;
@@ -230,7 +233,6 @@ ping_host(int s, struct sockaddr_in *host)
         }
     }
     TNR_OFF();
-    diag_printf("Sent %d packets, received %d OK, %d bad\n", NUM_PINGS, ok_recv, bogus_recv);
 }
 
 static void
@@ -261,26 +263,64 @@ ping_test(struct bootp *bp)
     // Now try a bogus host
     host.sin_addr.s_addr = htonl(ntohl(host.sin_addr.s_addr) + 32);
     ping_host(s, &host);
+    close(s);
 }
 
 void
 net_test(cyg_addrword_t p)
 {
-    diag_printf("Start PING test\n");
+#ifndef CYGPKG_NET_DHCP
+    CYG_TEST_NA_FINISH( "DHCP is not enabled" );
+#else
+    int i;
+    diag_printf("Start DHCP test\n");
     TNR_INIT();
     init_all_network_interfaces();
+
+    for ( i = 10; i > 0; i-- ) {
 #ifdef CYGHWR_NET_DRIVER_ETH0
-    if (eth0_up) {
-        ping_test(&eth0_bootp_data);
-    }
+        if (eth0_up) {
+            ping_test(&eth0_bootp_data);
+        }
 #endif
+        // Now do the DHCP renewal ritual...
+        if ( cyg_semaphore_trywait( &dhcp_needs_attention )) {
+            if ( ! dhcp_bind() ) {
+                // All done
+                dhcp_halt();
+                CYG_TEST_FAIL_FINISH( "Rebind after lease failed");
+                break;
+            }
+        }
 #ifdef CYGHWR_NET_DRIVER_ETH1
-    if (eth1_up) {
-        ping_test(&eth1_bootp_data);
-    }
+        if (eth1_up) {
+            ping_test(&eth1_bootp_data);
+        }
 #endif
+
+#ifndef CYGOPT_NET_DHCP_DHCP_THREAD
+        // Now do the DHCP renewal ritual...
+        if ( cyg_semaphore_trywait( &dhcp_needs_attention )) {
+            if ( ! dhcp_bind() ) {
+                // All done
+                dhcp_halt();
+                CYG_TEST_FAIL_FINISH( "Rebind after lease failed");
+                break;
+            }
+        }
+#endif // not CYGOPT_NET_DHCP_DHCP_THREAD 
+
+        if ( 1 == (i & 3) ) {
+            dhcp_release();             // relinquish leases
+            dhcp_halt();
+            init_all_network_interfaces();
+        }
+    }
+    dhcp_release();
+
     TNR_PRINT_ACTIVITY();
-    CYG_TEST_PASS_FINISH("Ping test OK");
+    CYG_TEST_PASS_FINISH("Dhcp test OK");
+#endif
 }
 
 void

@@ -91,6 +91,7 @@ cdl_interface CYGINT_HAL_DEBUG_GDB_CTRLC_UNSUPPORTED {
 cdl_option CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT {
     display       "Include GDB external break support when no stubs"
     requires      !CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+    active_if     { CYGSEM_HAL_USE_ROM_MONITOR || CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS }
     active_if     { CYGINT_HAL_DEBUG_GDB_CTRLC_UNSUPPORTED == 0 }
     default_value 1
     description   "

@@ -66,7 +66,7 @@
 #include <netinet/if_ether.h>
 
 #define NUMTHREADS 1
-#define STACK_SIZE (CYGNUM_HAL_STACK_SIZE_TYPICAL)
+#define STACK_SIZE (CYGNUM_HAL_STACK_SIZE_TYPICAL + 0x1000)
 static char thread_stack[NUMTHREADS][STACK_SIZE];
 static cyg_thread thread_data[NUMTHREADS];
 static cyg_handle_t thread_handle[NUMTHREADS];

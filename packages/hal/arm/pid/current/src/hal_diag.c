@@ -58,19 +58,19 @@
 
 /*---------------------------------------------------------------------------*/
 /* From serial_16550.h */
-#if CYGHWR_HAL_ARM_PID_DIAG_BAUD==9600
+#if CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD==9600
 #define CYG_DEVICE_SERIAL_BAUD_MSB        0x00
 #define CYG_DEVICE_SERIAL_BAUD_LSB        0x0C
 #endif
-#if CYGHWR_HAL_ARM_PID_DIAG_BAUD==19200
+#if CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD==19200
 #define CYG_DEVICE_SERIAL_BAUD_MSB        0x00
 #define CYG_DEVICE_SERIAL_BAUD_LSB        0x06
 #endif
-#if CYGHWR_HAL_ARM_PID_DIAG_BAUD==38400
+#if CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD==38400
 #define CYG_DEVICE_SERIAL_BAUD_MSB        0x00
 #define CYG_DEVICE_SERIAL_BAUD_LSB        0x03
 #endif
-#if CYGHWR_HAL_ARM_PID_DIAG_BAUD==115200
+#if CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD==115200
 #define CYG_DEVICE_SERIAL_BAUD_MSB        0x00
 #define CYG_DEVICE_SERIAL_BAUD_LSB        0x01
 #endif
@@ -414,7 +414,7 @@ hal_diag_led(int n)
 #include <cyg/hal/hal_stub.h>           // cyg_hal_gdb_interrupt
 #endif
 
-#if CYGHWR_HAL_ARM_PID_DIAG_PORT==0
+#if CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL==0
 // This is the base address of the A-channel
 #define CYG_DEV_SERIAL_BASE      0x0D800000
 #define CYG_DEVICE_SERIAL_INT    CYGNUM_HAL_INTERRUPT_SERIALA
@@ -436,7 +436,7 @@ static channel_data_t pid_ser_channel = {
 #endif
 
 #ifndef HAL_DIAG_USES_HARDWARE
-#if (CYGHWR_HAL_ARM_PID_DIAG_PORT != CYGHWR_HAL_ARM_PID_GDB_PORT)
+#if (CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL != CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL)
 #define HAL_DIAG_USES_HARDWARE
 #endif
 #endif

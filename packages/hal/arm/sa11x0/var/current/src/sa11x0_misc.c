@@ -85,6 +85,10 @@ void hal_hardware_init(void)
     // Perform any platform specific initializations
     plf_hardware_init();
 
+    // Let the "OS" counter run
+    *SA11X0_OSCR = 0;
+    *SA11X0_OSMR0 = 0;
+
     // Set up eCos/ROM interfaces
     hal_if_init();
 
@@ -157,6 +161,30 @@ void hal_clock_read(cyg_uint32 *pvalue)
     cyg_uint32 ctr = *SA11X0_OSCR;
     if (ctr > clock_period) ctr -= clock_period;
     *pvalue = ctr;
+}
+
+//
+// Delay for some number of micro-seconds
+//
+void hal_delay_us(cyg_int32 usecs)
+{
+    int diff, diff2;
+    cyg_uint32 val1, val2;
+    while (usecs-- > 0) {
+        diff = 0;
+        while (diff < 3) {
+            val1 = *SA11X0_OSCR;
+            while ((val2 = *SA11X0_OSCR) == val1) ;
+            if (*SA11X0_OSMR0) {
+                // A kernel is running, the counter may get reset as we watch
+                diff2 = val2 - val1;
+                if (diff2 < 0) diff2 += *SA11X0_OSMR0;
+                diff += diff2;
+            } else {
+                diff += val2 - val1;
+            }
+        }
+    }
 }
 
 // -------------------------------------------------------------------------

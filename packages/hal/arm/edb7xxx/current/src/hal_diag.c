@@ -52,25 +52,277 @@
 #include <cyg/hal/hal_arch.h>           // basic machine info
 #include <cyg/hal/hal_intr.h>           // interrupt macros
 #include <cyg/hal/hal_io.h>             // IO macros
+#include <cyg/hal/hal_if.h>             // calling interface API
+#include <cyg/hal/hal_misc.h>           // helper functions
 #include <cyg/hal/hal_diag.h>
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 #include <cyg/hal/drv_api.h>
-#include <cyg/hal/hal_stub.h>           // cyg_hal_gdb_interrupt
-#endif
 #include <cyg/hal/hal_edb7xxx.h>         // Hardware definitions
 
-#if CYGHWR_HAL_ARM_EDB7XXX_DIAG_PORT == 0
-#define CYG_DIAG_DEV_DATA UARTDR1
-#define CYG_DIAG_DEV_BLCR UBLCR1
-#define CYG_DIAG_DEV_STAT SYSFLG1
-#define CYG_DIAG_DEV_CTRL SYSCON1
-#define CYG_DIAG_DEV_INT  CYGNUM_HAL_INTERRUPT_URXINT1
-#else
-#define CYG_DIAG_DEV_DATA UARTDR2
-#define CYG_DIAG_DEV_STAT SYSFLG2
-#define CYG_DIAG_DEV_CTRL SYSCON2
-#define CYG_DIAG_DEV_BLCR UBLCR2
-#define CYG_DIAG_DEV_INT  CYGNUM_HAL_INTERRUPT_URXINT2
+//-----------------------------------------------------------------------------
+
+struct edb_serial {
+    volatile cyg_uint32 ctrl;
+    cyg_uint32 pad004_040[16-1];
+    volatile cyg_uint32 stat;
+    cyg_uint32 pad044_37c[208-1];
+    union {
+        volatile cyg_uint8 write;
+        volatile cyg_uint32 read;    // Need to read 32 bits
+    } data;
+    cyg_uint32 pad384_3BC[16-1];
+    volatile cyg_uint32 blcr;
+};
+
+//-----------------------------------------------------------------------------
+typedef struct {
+    volatile struct edb_serial* base;
+    cyg_int32 msec_timeout;
+    int isr_vector;
+} channel_data_t;
+
+//-----------------------------------------------------------------------------
+
+static void
+cyg_hal_plf_serial_init_channel(channel_data_t* __ch_data)
+{
+    channel_data_t* chan = (channel_data_t*)__ch_data;
+
+    // Enable port
+    chan->base->ctrl |= SYSCON1_UART1EN;
+    // Configure
+    chan->base->blcr = UART_BITRATE(CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD) |
+                       UBLCR_FIFOEN | UBLCR_WRDLEN8;
+}
+
+
+// Call this delay function when polling for serial access - otherwise
+// the CPU will keep the memory bus busy and thus prevent DRAM refresh
+// (and the resulting memory corruption).
+externC void dram_delay_loop(void);
+
+void
+cyg_hal_plf_serial_putc(void *__ch_data, char c)
+{
+    channel_data_t* chan = (channel_data_t*)__ch_data;
+    CYGARC_HAL_SAVE_GP();
+
+    // Wait for Tx FIFO not full
+    while ((chan->base->stat & SYSFLG1_UTXFF1) != 0) 
+        dram_delay_loop();
+
+    chan->base->data.write = c;
+
+    CYGARC_HAL_RESTORE_GP();
+}
+
+static cyg_bool
+cyg_hal_plf_serial_getc_nonblock(void* __ch_data, cyg_uint8* ch)
+{
+    channel_data_t* chan = (channel_data_t*)__ch_data;
+
+    if ((chan->base->stat & SYSFLG1_URXFE1) != 0)
+        return false;
+
+    *ch = (cyg_uint8)(chan->base->data.read & 0xFF);
+
+    return true;
+}
+
+cyg_uint8
+cyg_hal_plf_serial_getc(void* __ch_data)
+{
+    cyg_uint8 ch;
+    CYGARC_HAL_SAVE_GP();
+
+    while(!cyg_hal_plf_serial_getc_nonblock(__ch_data, &ch))
+        dram_delay_loop();
+
+    CYGARC_HAL_RESTORE_GP();
+    return ch;
+}
+
+#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) \
+    || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
+
+static channel_data_t edb_ser_channels[2] = {
+    {(volatile struct edb_serial*)SYSCON1, 1000, CYGNUM_HAL_INTERRUPT_URXINT1},
+    {(volatile struct edb_serial*)SYSCON2, 1000, CYGNUM_HAL_INTERRUPT_URXINT2}
+};
+
+static void
+cyg_hal_plf_serial_write(void* __ch_data, const cyg_uint8* __buf, 
+                         cyg_uint32 __len)
+{
+    CYGARC_HAL_SAVE_GP();
+
+    while(__len-- > 0)
+        cyg_hal_plf_serial_putc(__ch_data, *__buf++);
+
+    CYGARC_HAL_RESTORE_GP();
+}
+
+static void
+cyg_hal_plf_serial_read(void* __ch_data, cyg_uint8* __buf, cyg_uint32 __len)
+{
+    CYGARC_HAL_SAVE_GP();
+
+    while(__len-- > 0)
+        *__buf++ = cyg_hal_plf_serial_getc(__ch_data);
+
+    CYGARC_HAL_RESTORE_GP();
+}
+
+cyg_bool
+cyg_hal_plf_serial_getc_timeout(void* __ch_data, cyg_uint8* ch)
+{
+    int delay_count;
+    channel_data_t* chan = (channel_data_t*)__ch_data;
+    cyg_bool res;
+    CYGARC_HAL_SAVE_GP();
+
+    delay_count = chan->msec_timeout * 10; // delay in .1 ms steps
+
+    for(;;) {
+        res = cyg_hal_plf_serial_getc_nonblock(__ch_data, ch);
+        if (res || 0 == delay_count--)
+            break;
+        
+        CYGACC_CALL_IF_DELAY_US(100);
+    }
+
+    CYGARC_HAL_RESTORE_GP();
+    return res;
+}
+
+static int
+cyg_hal_plf_serial_control(void *__ch_data, __comm_control_cmd_t __func, ...)
+{
+    static int irq_state = 0;
+    channel_data_t* chan = (channel_data_t*)__ch_data;
+    int ret = 0;
+    CYGARC_HAL_SAVE_GP();
+
+    switch (__func) {
+    case __COMMCTL_IRQ_ENABLE:
+        irq_state = 1;
+        HAL_INTERRUPT_UNMASK(chan->isr_vector);
+        break;
+    case __COMMCTL_IRQ_DISABLE:
+        ret = irq_state;
+        irq_state = 0;
+        HAL_INTERRUPT_MASK(chan->isr_vector);
+        break;
+    case __COMMCTL_DBG_ISR_VECTOR:
+        ret = chan->isr_vector;
+        break;
+    case __COMMCTL_SET_TIMEOUT:
+    {
+        va_list ap;
+
+        va_start(ap, __func);
+
+        ret = chan->msec_timeout;
+        chan->msec_timeout = va_arg(ap, cyg_uint32);
+
+        va_end(ap);
+    }        
+    default:
+        break;
+    }
+    CYGARC_HAL_RESTORE_GP();
+    return ret;
+}
+
+static int
+cyg_hal_plf_serial_isr(void *__ch_data, int* __ctrlc, 
+                       CYG_ADDRWORD __vector, CYG_ADDRWORD __data)
+{
+    int res = 0;
+    channel_data_t* chan = (channel_data_t*)__ch_data;
+    char c;
+    CYGARC_HAL_SAVE_GP();
+
+    cyg_drv_interrupt_acknowledge(chan->isr_vector);
+
+    *__ctrlc = 0;
+    if ((chan->base->stat & SYSFLG1_URXFE1) == 0) {
+        c = (cyg_uint8)(chan->base->data.read & 0xFF);
+        if( cyg_hal_is_break( &c , 1 ) )
+            *__ctrlc = 1;
+
+        res = CYG_ISR_HANDLED;
+    }
+
+    CYGARC_HAL_RESTORE_GP();
+    return res;
+}
+
+static void
+cyg_hal_plf_serial_init(void)
+{
+    hal_virtual_comm_table_t* comm;
+    int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+
+    // Disable interrupts.
+    HAL_INTERRUPT_MASK(edb_ser_channels[0].isr_vector);
+    HAL_INTERRUPT_MASK(edb_ser_channels[1].isr_vector);
+
+    // Init channels
+    cyg_hal_plf_serial_init_channel(&edb_ser_channels[0]);
+    cyg_hal_plf_serial_init_channel(&edb_ser_channels[1]);
+
+    // Setup procs in the vector table
+
+    // Set channel 0
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(0);
+    comm = CYGACC_CALL_IF_CONSOLE_PROCS();
+    CYGACC_COMM_IF_CH_DATA_SET(*comm, &edb_ser_channels[0]);
+    CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_plf_serial_write);
+    CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_plf_serial_read);
+    CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_plf_serial_putc);
+    CYGACC_COMM_IF_GETC_SET(*comm, cyg_hal_plf_serial_getc);
+    CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_plf_serial_control);
+    CYGACC_COMM_IF_DBG_ISR_SET(*comm, cyg_hal_plf_serial_isr);
+    CYGACC_COMM_IF_GETC_TIMEOUT_SET(*comm, cyg_hal_plf_serial_getc_timeout);
+
+    // Set channel 1
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(1);
+    comm = CYGACC_CALL_IF_CONSOLE_PROCS();
+    CYGACC_COMM_IF_CH_DATA_SET(*comm, &edb_ser_channels[1]);
+    CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_plf_serial_write);
+    CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_plf_serial_read);
+    CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_plf_serial_putc);
+    CYGACC_COMM_IF_GETC_SET(*comm, cyg_hal_plf_serial_getc);
+    CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_plf_serial_control);
+    CYGACC_COMM_IF_DBG_ISR_SET(*comm, cyg_hal_plf_serial_isr);
+    CYGACC_COMM_IF_GETC_TIMEOUT_SET(*comm, cyg_hal_plf_serial_getc_timeout);
+
+    // Restore original console
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
+}
+
+void
+cyg_hal_plf_comms_init(void)
+{
+    static int initialized = 0;
+
+    if (initialized)
+        return;
+
+    initialized = 1;
+
+    cyg_hal_plf_serial_init();
+}
+#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG || CYGPRI_HAL_IMPLEMENTS_IF_SERVICES
+
+//=============================================================================
+// Compatibility with older stubs
+//=============================================================================
+
+#ifndef CYGSEM_HAL_VIRTUAL_VECTOR_DIAG
+
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+#include <cyg/hal/hal_stub.h>           // cyg_hal_gdb_interrupt
 #endif
 
 // Assumption: all diagnostic output must be GDB packetized unless this is a ROM (i.e.
@@ -86,10 +338,22 @@
 #else
 #if defined(CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL)
 #define HAL_DIAG_USES_HARDWARE
-#elif CYGHWR_HAL_ARM_EDB7XXX_DIAG_PORT != CYGHWR_HAL_ARM_EDB7XXX_GDB_PORT
+#elif CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL != CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL
 #define HAL_DIAG_USES_HARDWARE
 #endif
 #endif
+
+#if CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL == 0
+# define __BASE ((volatile struct edb_serial*)SYSCON1)
+# define __IRQ  CYGNUM_HAL_INTERRUPT_URXINT1
+#else
+# define __BASE ((volatile struct edb_serial*)SYSCON2)
+# define __IRQ  CYGNUM_HAL_INTERRUPT_URXINT2
+#endif
+
+static channel_data_t edb_ser_channel = {
+    __BASE, 0, 0
+};
 
 /*---------------------------------------------------------------------------*/
 // EDB7XXX Serial Port (UARTx) for Debug
@@ -98,27 +362,17 @@
 static void
 hal_diag_write_char_serial(char c)
 {
-    cyg_uint32 stat;
-    // Wait for Tx FIFO not full
-    do {
-        stat = *(volatile cyg_uint32 *)CYG_DIAG_DEV_STAT;
-    } while ((stat & SYSFLG1_UTXFF1) != 0) ;
-    *(volatile cyg_uint8 *)CYG_DIAG_DEV_DATA = c;
+    cyg_hal_plf_serial_putc(&edb_ser_channel, c);
 }
 
 static bool
 hal_diag_read_serial(char *c)
 {
     long timeout = 1000000000;  // A long time...
-    cyg_uint32 stat, val;
 
-    do {
-        stat = *(volatile cyg_uint32 *)CYG_DIAG_DEV_STAT;
+    while (! cyg_hal_plf_serial_getc_nonblock(&edb_ser_channel, c) )
         if (--timeout == 0) return false;
-    } while ((stat & SYSFLG1_URXFE1) != 0);
-    // Need to read 32 bits
-    val = *(volatile cyg_uint32 *)CYG_DIAG_DEV_DATA & 0xFF;
-    *c = val;
+
     return true;
 }
 
@@ -132,12 +386,8 @@ void hal_diag_init(void)
 #endif
     if (init++) return;
 
-    // Enable port
-    *(volatile cyg_uint32 *)CYG_DIAG_DEV_CTRL |= SYSCON1_UART1EN;
-    // Configure
-    *(volatile cyg_uint32 *)CYG_DIAG_DEV_BLCR = 
-        UART_BITRATE(CYGHWR_HAL_ARM_EDB7XXX_DIAG_BAUD) |
-        UBLCR_FIFOEN | UBLCR_WRDLEN8;
+    cyg_hal_plf_serial_init_channel(&edb_ser_channel);
+
 #ifndef CYG_HAL_STARTUP_ROM
     while (*msg) hal_diag_write_char(*msg++);
 #endif
@@ -173,14 +423,8 @@ void hal_diag_read_char(char *c)
 // Initialize diag port
 void hal_diag_init(void)
 {
-#if 0  // Assume port is already setup
-    // Enable port
-    *(volatile cyg_uint32 *)CYG_DIAG_DEV_CTRL |= SYSCON1_UART1EN;
-    // Configure
-    *(volatile cyg_uint32 *)CYG_DIAG_DEV_BLCR = 
-        UART_BITRATE(CYGHWR_HAL_ARM_EDB7XXX_DIAG_BAUD) |
-        UBLCR_FIFOEN | UBLCR_WRDLEN8;
-#endif
+    // Assume port is already setup
+    if (0) cyg_hal_plf_serial_init_channel(&edb_ser_channel);
 }
 
 void 
@@ -250,7 +494,7 @@ hal_diag_write_char(char c)
                 break;              // a good acknowledge
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
-            cyg_drv_interrupt_acknowledge(CYG_DIAG_DEV_INT);
+            cyg_drv_interrupt_acknowledge(__IRQ);
             if( c1 == 3 ) {
                 // Ctrl-C: breakpoint.
                 cyg_hal_gdb_interrupt (__builtin_return_address(0));
@@ -273,6 +517,8 @@ hal_diag_write_char(char c)
     }
 }
 #endif
+
+#endif // !CYGSEM_HAL_VIRTUAL_VECTOR_DIAG
 
 /*---------------------------------------------------------------------------*/
 /* End of hal_diag.c */

@@ -88,7 +88,7 @@
 #define MAX_PACKET 4096
 
 #define NUMTHREADS 3
-#define STACK_SIZE (CYGNUM_HAL_STACK_SIZE_TYPICAL + MAX_PACKET + MAX_PACKET)
+#define STACK_SIZE (CYGNUM_HAL_STACK_SIZE_TYPICAL + MAX_PACKET + MAX_PACKET + 0x1000)
 static char thread_stack[NUMTHREADS][STACK_SIZE];
 static cyg_thread thread_data[NUMTHREADS];
 static cyg_handle_t thread_handle[NUMTHREADS];

@@ -1,3 +1,27 @@
+2000-07-07  Jesper Skov  <jskov@redhat.com>
+
+	* src/edb7xxx_misc.c (dram_delay_loop): 
+	* src/hal_diag.c (cyg_hal_plf_serial_getc,
+	(cyg_hal_plf_serial_putc): Added delay loop.
+
+2000-07-05  Jesper Skov  <jskov@redhat.com>
+
+	* include/plf_stub.h (HAL_STUB_PLATFORM_RESET_ENTRY): Not comitted.
+
+	* src/hal_diag.c: 
+	* cdl/hal_arm_edb7xxx.cdl: 
+	Clean up channel options.
+	
+	* src/plf_stub.c: [deleted]
+	* src/hal_diag.c:
+	* src/edb7xxx_misc.c: 
+	* include/plf_stub.h:
+	* include/hal_diag.h: 
+	* cdl/hal_arm_edb7xxx.cdl: 
+	Changed to use virtual vectors.
+
+	* include/hal_platform_setup.h: #error instead of #err.
+
 2000-06-18  Gary Thomas  <gthomas@redhat.com>
 
 	* include/pkgconf/mlt_arm_cl7111_ram.ldi: 

@@ -88,15 +88,4 @@
 // The vector used by the Real time clock
 #define CYGNUM_HAL_INTERRUPT_RTC        CYGNUM_HAL_INTERRUPT_TIMER_3
 
-// The vector used by hal_diag (for reception)
-#define CYG_DIAG_DEV_INT                CYGNUM_HAL_INTERRUPT_SERIAL_RX
-// The vector used by gdb stubs (for reception)
-#define CYG_GDB_DEV_INT                 CYGNUM_HAL_INTERRUPT_SERIAL_RX
-
-// Do we want to poll in the default ISR for ^C interrupt chars?
-#ifdef CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT
-extern int hal_ctrlc_isr( CYG_ADDRWORD vector, CYG_ADDRWORD data);
-#define CYGDBG_HAL_CTRLC_ISR( _V_, _D_ ) hal_ctrlc_isr( _V_, _D_ )
-#endif
-
 #endif // CYGONCE_HAL_PLATFORM_INTS_H

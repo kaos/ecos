@@ -330,6 +330,21 @@ extern void cyg_wakeup(void *);
 #define tsleep(e,p,w,t) cyg_tsleep(e,0,w,t)
 #define wakeup(e)       cyg_wakeup(e)
 
+#ifdef CYGIMPL_TRACE_SPLX   
+extern cyg_uint32  cyg_splimp(const char *file, const int line);
+extern cyg_uint32  cyg_splnet(const char *file, const int line);
+extern cyg_uint32  cyg_splclock(const char *file, const int line);
+extern cyg_uint32  cyg_splsoftnet(const char *file, const int line);
+extern void        cyg_splx(cyg_uint32, const char *file, const int line);
+#define splimp()   cyg_splimp(__FUNCTION__, __LINE__)
+#define splnet()   cyg_splnet(__FUNCTION__, __LINE__)
+#define splclock() cyg_splclock(__FUNCTION__, __LINE__)
+#define splsoftnet() cyg_splsoftnet(__FUNCTION__, __LINE__)
+#define splx(x)    cyg_splx(x, __FUNCTION__, __LINE__)
+#define cyg_scheduler_lock() _cyg_scheduler_lock(__FUNCTION__, __LINE__)
+#define cyg_scheduler_safe_lock() _cyg_scheduler_safe_lock(__FUNCTION__, __LINE__)
+#define cyg_scheduler_unlock() _cyg_scheduler_unlock(__FUNCTION__, __LINE__)
+#else
 extern cyg_uint32  cyg_splimp(void);
 extern cyg_uint32  cyg_splnet(void);
 extern cyg_uint32  cyg_splclock(void);
@@ -340,6 +355,7 @@ extern void        cyg_splx(cyg_uint32);
 #define splclock   cyg_splclock
 #define splsoftnet cyg_splsoftnet
 #define splx       cyg_splx
+#endif
 
 extern void cyg_panic(const char *msg, ...);
 #define panic cyg_panic

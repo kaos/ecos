@@ -130,6 +130,9 @@
 
 #define CYGNUM_HAL_ISR_MAX                   CYGNUM_HAL_INTERRUPT_REF_ROVI
 
+//----------------------------------------------------------------------------
+// Additional vectors provided by INTC V2
+
 //#ifdef CYGARC_SH_MOD_INTC_V2 // FIXME
 #define CYGNUM_HAL_INTERRUPT_RESERVED_5C0    32
 #define CYGNUM_HAL_INTERRUPT_HUDI_HUDI       33
@@ -169,6 +172,7 @@
 #define CYGNUM_HAL_ISR_MAX                   CYGNUM_HAL_INTERRUPT_ADC_ADI
 
 #endif // CYGARC_SH_MOD_INTC_V2
+
 
 // CYGNUM_HAL_ISR_COUNT must match CYG_ISR_TABLE_SIZE defined in vectors.S.
 #define CYGNUM_HAL_ISR_MIN                   CYGNUM_HAL_INTERRUPT_NMI

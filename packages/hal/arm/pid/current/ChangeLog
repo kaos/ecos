@@ -1,3 +1,13 @@
+2000-07-07  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_pid.cdl: CygMon changed to use virtual vectors.
+
+2000-07-05  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c:
+	* cdl/hal_arm_pid.cdl:
+	Clean up channel options.
+
 2000-07-04  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_arm_pid.cdl:

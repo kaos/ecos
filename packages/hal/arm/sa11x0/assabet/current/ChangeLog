@@ -1,3 +1,7 @@
+2000-07-05  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_sa11x0_assabet.cdl: Cleanup channel options.
+
 2000-06-27  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_arm_sa11x0_assabet.cdl: Changed PORT values.

@@ -53,85 +53,96 @@
 #include <cyg/hal/hal_io.h>             // IO macros
 #include <cyg/hal/hal_diag.h>
 #include <cyg/hal/hal_cma230.h>         // Hardware definitions
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-#include <cyg/hal/drv_api.h>
-#include <cyg/hal/hal_stub.h>           // cyg_hal_gdb_interrupt
-#endif
+#include <cyg/hal/hal_if.h>             // Calling-if API
+#include <cyg/hal/drv_api.h>            // driver API
+#include <cyg/hal/hal_misc.h>           // Helper functions
 
-// Assumption: all diagnostic output must be GDB packetized unless this is a ROM (i.e.
-// totally stand-alone) system.
+#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) \
+    || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
 
-#if defined(CYG_HAL_STARTUP_ROM) || defined(CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL)
-#define HAL_DIAG_USES_HARDWARE
-#endif
+static void cyg_hal_plf_serial_init(void);
 
-/*---------------------------------------------------------------------------*/
-#if CYGHWR_HAL_ARM_CMA230_DIAG_PORT==0
-// This is the base address of the A-channel
-#define CYG_DEVICE_SERIAL_RS232_16550_BASE      CMA101_DUARTA
-#define CYG_DEVICE_SERIAL_INT                   CYGNUM_HAL_INTERRUPT_SERIAL_A
-#else
-// This is the base address of the B-channel
-#define CYG_DEVICE_SERIAL_RS232_16550_BASE      CMA101_DUARTB
-#define CYG_DEVICE_SERIAL_INT                   CYGNUM_HAL_INTERRUPT_SERIAL_B
-#endif
+// FIXME: Copy LCD driver from powerpc/cogent
+//static void cyg_hal_plf_lcd_init(void);
 
+void
+cyg_hal_plf_comms_init(void)
+{
+    static int initialized = 0;
+
+    if (initialized)
+        return;
+
+    initialized = 1;
+
+    cyg_hal_plf_serial_init();
+//    cyg_hal_plf_lcd_init();
+}
+#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG || CYGPRI_HAL_IMPLEMENTS_IF_SERVICES
+
+//=============================================================================
+// Serial driver
+//=============================================================================
+
+//-----------------------------------------------------------------------------
+// There are two serial ports.
+#define CYG_DEV_SERIAL_BASE_A    0xe900047 // port A
+#define CYG_DEV_SERIAL_BASE_B    0xe900007 // port B
+
+//-----------------------------------------------------------------------------
+// Default baud rate is 38400
 // Based on 3.6864 MHz xtal
-#if CYGHWR_HAL_ARM_CMA230_DIAG_BAUD==9600
-#define CYG_DEVICE_SERIAL_RS232_BAUD_MSB        0x00
-#define CYG_DEVICE_SERIAL_RS232_BAUD_LSB        0x18
+#if CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD==9600
+#define CYG_DEV_SERIAL_BAUD_MSB        0x00
+#define CYG_DEV_SERIAL_BAUD_LSB        0x18
 #endif
-#if CYGHWR_HAL_ARM_CMA230_DIAG_BAUD==19200
-#define CYG_DEVICE_SERIAL_RS232_BAUD_MSB        0x00
-#define CYG_DEVICE_SERIAL_RS232_BAUD_LSB        0x0C
+#if CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD==19200
+#define CYG_DEV_SERIAL_BAUD_MSB        0x00
+#define CYG_DEV_SERIAL_BAUD_LSB        0x0C
 #endif
-#if CYGHWR_HAL_ARM_CMA230_DIAG_BAUD==38400
-#define CYG_DEVICE_SERIAL_RS232_BAUD_MSB        0x00
-#define CYG_DEVICE_SERIAL_RS232_BAUD_LSB        0x06
+#if CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD==38400
+#define CYG_DEV_SERIAL_BAUD_MSB        0x00
+#define CYG_DEV_SERIAL_BAUD_LSB        0x06
 #endif
-#if CYGHWR_HAL_ARM_CMA230_DIAG_BAUD==115200
-#define CYG_DEVICE_SERIAL_RS232_BAUD_MSB        0x00
-#define CYG_DEVICE_SERIAL_RS232_BAUD_LSB        0x02
+#if CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD==115200
+#define CYG_DEV_SERIAL_BAUD_MSB        0x00
+#define CYG_DEV_SERIAL_BAUD_LSB        0x02
 #endif
 
-#ifndef CYG_DEVICE_SERIAL_RS232_BAUD_MSB
+#ifndef CYG_DEV_SERIAL_BAUD_MSB
 #error Missing/incorrect serial baud rate defined - CDL error?
 #endif
 
-// Define the serial registers.
-#define CYG_DEVICE_SERIAL_RS232_16550_RBR \
-    ((volatile cyg_uint8 *) CYG_DEVICE_SERIAL_RS232_16550_BASE + 0x00)
-    // receiver buffer register, read, dlab = 0
-#define CYG_DEVICE_SERIAL_RS232_16550_THR \
-    ((volatile cyg_uint8 *) CYG_DEVICE_SERIAL_RS232_16550_BASE + 0x00)
-    // transmitter holding register, write, dlab = 0
-#define CYG_DEVICE_SERIAL_RS232_16550_DLL \
-    ((volatile cyg_uint8 *) CYG_DEVICE_SERIAL_RS232_16550_BASE + 0x00)
-    // divisor latch (LS), read/write, dlab = 1
-#define CYG_DEVICE_SERIAL_RS232_16550_IER \
-    ((volatile cyg_uint8 *) CYG_DEVICE_SERIAL_RS232_16550_BASE + 0x08)
-    // interrupt enable register, read/write, dlab = 0
-#define CYG_DEVICE_SERIAL_RS232_16550_DLM \
-    ((volatile cyg_uint8 *) CYG_DEVICE_SERIAL_RS232_16550_BASE + 0x08)
-    // divisor latch (MS), read/write, dlab = 1
-#define CYG_DEVICE_SERIAL_RS232_16550_IIR \
-    ((volatile cyg_uint8 *) CYG_DEVICE_SERIAL_RS232_16550_BASE + 0x10)
-    // interrupt identification register, read, dlab = 0
-#define CYG_DEVICE_SERIAL_RS232_16550_FCR \
-    ((volatile cyg_uint8 *) CYG_DEVICE_SERIAL_RS232_16550_BASE + 0x10)
-    // fifo control register, write, dlab = 0
-#define CYG_DEVICE_SERIAL_RS232_16550_LCR \
-    ((volatile cyg_uint8 *) CYG_DEVICE_SERIAL_RS232_16550_BASE + 0x18)
-    // line control register, read/write
-#define CYG_DEVICE_SERIAL_RS232_16550_MCR \
-    ((volatile cyg_uint8 *) CYG_DEVICE_SERIAL_RS232_16550_BASE + 0x20)
-    // modem control register, read/write
-#define CYG_DEVICE_SERIAL_RS232_16550_LSR \
-    ((volatile cyg_uint8 *) CYG_DEVICE_SERIAL_RS232_16550_BASE + 0x28)
-    // line status register, read
-#define CYG_DEVICE_SERIAL_RS232_16550_MSR \
-    ((volatile cyg_uint8 *) CYG_DEVICE_SERIAL_RS232_16550_BASE + 0x30)
-    // modem status register, read
+//-----------------------------------------------------------------------------
+// Define the serial registers. The Cogent board is equipped with a 16552
+// serial chip.
+#define CYG_DEV_SERIAL_RBR   0x00  // receiver buffer register, read, dlab = 0
+#define CYG_DEV_SERIAL_THR   0x00 // transmitter holding register, write, dlab = 0
+#define CYG_DEV_SERIAL_DLL   0x00 // divisor latch (LS), read/write, dlab = 1
+#define CYG_DEV_SERIAL_IER   0x08 // interrupt enable register, read/write, dlab = 0
+#define CYG_DEV_SERIAL_DLM   0x08 // divisor latch (MS), read/write, dlab = 1
+#define CYG_DEV_SERIAL_IIR   0x10 // interrupt identification register, read, dlab = 0
+#define CYG_DEV_SERIAL_FCR   0x10 // fifo control register, write, dlab = 0
+#define CYG_DEV_SERIAL_AFR   0x10 // alternate function register, read/write, dlab = 1
+#define CYG_DEV_SERIAL_LCR   0x18 // line control register, read/write
+#define CYG_DEV_SERIAL_MCR   0x20
+#define CYG_DEV_SERIAL_MCR_A 0x20
+#define CYG_DEV_SERIAL_MCR_B 0x20
+#define CYG_DEV_SERIAL_LSR   0x28 // line status register, read
+#define CYG_DEV_SERIAL_MSR   0x30 // modem status register, read
+#define CYG_DEV_SERIAL_SCR   0x38 // scratch pad register
+
+// The interrupt enable register bits.
+#define SIO_IER_ERDAI   0x01            // enable received data available irq
+#define SIO_IER_ETHREI  0x02            // enable THR empty interrupt
+#define SIO_IER_ELSI    0x04            // enable receiver line status irq
+#define SIO_IER_EMSI    0x08            // enable modem status interrupt
+
+// The interrupt identification register bits.
+#define SIO_IIR_IP      0x01            // 0 if interrupt pending
+#define SIO_IIR_ID_MASK 0x0e            // mask for interrupt ID bits
+#define ISR_Tx  0x02
+#define ISR_Rx  0x04
 
 // The line status register bits.
 #define SIO_LSR_DR      0x01            // data ready
@@ -163,6 +174,299 @@
 #define SIO_LCR_SB     0x40             // set break
 #define SIO_LCR_DLAB   0x80             // divisor latch access bit
 
+// The FIFO control register
+#define SIO_FCR_FCR0   0x01             // enable xmit and rcvr fifos
+#define SIO_FCR_FCR1   0x02             // clear RCVR FIFO
+#define SIO_FCR_FCR2   0x04             // clear XMIT FIFO
+
+
+//-----------------------------------------------------------------------------
+typedef struct {
+    cyg_uint8* base;
+    cyg_int32 msec_timeout;
+    int isr_vector;
+} channel_data_t;
+
+//-----------------------------------------------------------------------------
+static void
+init_serial_channel(const channel_data_t* __ch_data)
+{
+    cyg_uint8* base = __ch_data->base;
+    cyg_uint8 lcr;
+
+    // 8-1-no parity.
+    HAL_WRITE_UINT8(base+CYG_DEV_SERIAL_LCR,
+                     SIO_LCR_WLS0 | SIO_LCR_WLS1);
+
+    HAL_READ_UINT8(base+CYG_DEV_SERIAL_LCR, lcr);
+    lcr |= SIO_LCR_DLAB;
+    HAL_WRITE_UINT8(base+CYG_DEV_SERIAL_LCR, lcr);
+    HAL_WRITE_UINT8(base+CYG_DEV_SERIAL_DLL, CYG_DEV_SERIAL_BAUD_LSB);
+    HAL_WRITE_UINT8(base+CYG_DEV_SERIAL_DLM, CYG_DEV_SERIAL_BAUD_MSB);
+    lcr &= ~SIO_LCR_DLAB;
+    HAL_WRITE_UINT8(base+CYG_DEV_SERIAL_LCR, lcr);
+    HAL_WRITE_UINT8(base+CYG_DEV_SERIAL_FCR, 0x07);  // Enable & clear FIFO
+}
+
+static cyg_bool
+cyg_hal_plf_serial_getc_nonblock(void* __ch_data, cyg_uint8* ch)
+{
+    cyg_uint8* base = ((channel_data_t*)__ch_data)->base;
+    cyg_uint8 lsr;
+
+    HAL_READ_UINT8(base+CYG_DEV_SERIAL_LSR, lsr);
+    if ((lsr & SIO_LSR_DR) == 0)
+        return false;
+
+    HAL_READ_UINT8(base+CYG_DEV_SERIAL_RBR, *ch);
+
+    return true;
+}
+
+
+cyg_uint8
+cyg_hal_plf_serial_getc(void* __ch_data)
+{
+    cyg_uint8 ch;
+    CYGARC_HAL_SAVE_GP();
+
+    while(!cyg_hal_plf_serial_getc_nonblock(__ch_data, &ch));
+
+    CYGARC_HAL_RESTORE_GP();
+    return ch;
+}
+
+void
+cyg_hal_plf_serial_putc(void* __ch_data, cyg_uint8 c)
+{
+    cyg_uint8* base = ((channel_data_t*)__ch_data)->base;
+    cyg_uint8 lsr;
+    CYGARC_HAL_SAVE_GP();
+
+    do {
+        HAL_READ_UINT8(base+CYG_DEV_SERIAL_LSR, lsr);
+    } while ((lsr & SIO_LSR_THRE) == 0);
+
+    HAL_WRITE_UINT8(base+CYG_DEV_SERIAL_THR, c);
+
+    // Hang around until the character has been safely sent.
+    do {
+        HAL_READ_UINT8(base+CYG_DEV_SERIAL_LSR, lsr);
+    } while ((lsr & SIO_LSR_THRE) == 0);
+
+    CYGARC_HAL_RESTORE_GP();
+}
+
+#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) \
+    || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
+
+static const channel_data_t channels[2] = {
+    { (cyg_uint8*)CMA101_DUARTA, 1000, CYGNUM_HAL_INTERRUPT_SERIAL_A},
+    { (cyg_uint8*)CMA101_DUARTB, 1000, CYGNUM_HAL_INTERRUPT_SERIAL_B}
+};
+
+static void
+cyg_hal_plf_serial_write(void* __ch_data, const cyg_uint8* __buf, 
+                         cyg_uint32 __len)
+{
+    CYGARC_HAL_SAVE_GP();
+
+    while(__len-- > 0)
+        cyg_hal_plf_serial_putc(__ch_data, *__buf++);
+
+    CYGARC_HAL_RESTORE_GP();
+}
+
+static void
+cyg_hal_plf_serial_read(void* __ch_data, cyg_uint8* __buf, cyg_uint32 __len)
+{
+    CYGARC_HAL_SAVE_GP();
+
+    while(__len-- > 0)
+        *__buf++ = cyg_hal_plf_serial_getc(__ch_data);
+
+    CYGARC_HAL_RESTORE_GP();
+}
+
+cyg_bool
+cyg_hal_plf_serial_getc_timeout(void* __ch_data, cyg_uint8* ch)
+{
+    int delay_count;
+    channel_data_t* chan = (channel_data_t*)__ch_data;
+    cyg_bool res;
+    CYGARC_HAL_SAVE_GP();
+
+    delay_count = chan->msec_timeout * 10; // delay in .1 ms steps
+    for(;;) {
+        res = cyg_hal_plf_serial_getc_nonblock(__ch_data, ch);
+        if (res || 0 == delay_count--)
+            break;
+        
+        CYGACC_CALL_IF_DELAY_US(100);
+    }
+
+    CYGARC_HAL_RESTORE_GP();
+    return res;
+}
+
+static int
+cyg_hal_plf_serial_control(void *__ch_data, __comm_control_cmd_t __func, ...)
+{
+    static int irq_state = 0;
+    channel_data_t* chan = (channel_data_t*)__ch_data;
+    cyg_uint8 ier;
+    int ret = 0;
+    CYGARC_HAL_SAVE_GP();
+
+    switch (__func) {
+    case __COMMCTL_IRQ_ENABLE:
+        HAL_INTERRUPT_UNMASK(chan->isr_vector);
+        HAL_INTERRUPT_SET_LEVEL(chan->isr_vector, 1);
+        HAL_READ_UINT8(chan->base+CYG_DEV_SERIAL_IER, ier);
+        ier |= SIO_IER_ERDAI;
+        HAL_WRITE_UINT8(chan->base+CYG_DEV_SERIAL_IER, ier);
+        irq_state = 1;
+        break;
+    case __COMMCTL_IRQ_DISABLE:
+        ret = irq_state;
+        irq_state = 0;
+        HAL_INTERRUPT_MASK(chan->isr_vector);
+        HAL_READ_UINT8(chan->base+CYG_DEV_SERIAL_IER, ier);
+        ier &= ~SIO_IER_ERDAI;
+        HAL_WRITE_UINT8(chan->base+CYG_DEV_SERIAL_IER, ier);
+        break;
+    case __COMMCTL_DBG_ISR_VECTOR:
+        ret = chan->isr_vector;
+        break;
+    case __COMMCTL_SET_TIMEOUT:
+    {
+        va_list ap;
+
+        va_start(ap, __func);
+
+        ret = chan->msec_timeout;
+        chan->msec_timeout = va_arg(ap, cyg_uint32);
+
+        va_end(ap);
+    }        
+    default:
+        break;
+    }
+    CYGARC_HAL_RESTORE_GP();
+    return ret;
+}
+
+static int
+cyg_hal_plf_serial_isr(void *__ch_data, int* __ctrlc, 
+                       CYG_ADDRWORD __vector, CYG_ADDRWORD __data)
+{
+    channel_data_t* chan = (channel_data_t*)__ch_data;
+    cyg_uint8 _iir;
+    int res = 0;
+    CYGARC_HAL_SAVE_GP();
+
+    HAL_READ_UINT8(chan->base+CYG_DEV_SERIAL_IIR, _iir);
+    _iir &= SIO_IIR_ID_MASK;
+
+    *__ctrlc = 0;
+    if ( ISR_Rx == _iir ) {
+        cyg_uint8 c, lsr;
+        HAL_READ_UINT8(chan->base+CYG_DEV_SERIAL_LSR, lsr);
+        if (lsr & SIO_LSR_DR) {
+
+            HAL_READ_UINT8(chan->base+CYG_DEV_SERIAL_RBR, c);
+
+            if( cyg_hal_is_break( &c , 1 ) )
+                *__ctrlc = 1;
+        }
+
+        // Acknowledge the interrupt
+        HAL_INTERRUPT_ACKNOWLEDGE(chan->isr_vector);
+        res = CYG_ISR_HANDLED;
+    }
+
+    CYGARC_HAL_RESTORE_GP();
+    return res;
+}
+
+static void
+cyg_hal_plf_serial_init(void)
+{
+    hal_virtual_comm_table_t* comm;
+    int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+
+    // Disable interrupts.
+    HAL_INTERRUPT_MASK(channels[0].isr_vector);
+    HAL_INTERRUPT_MASK(channels[1].isr_vector);
+
+    // Init channels
+    init_serial_channel(&channels[0]);
+    init_serial_channel(&channels[1]);
+
+    // Setup procs in the vector table
+
+    // Set channel 0
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(0);
+    comm = CYGACC_CALL_IF_CONSOLE_PROCS();
+    CYGACC_COMM_IF_CH_DATA_SET(*comm, &channels[0]);
+    CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_plf_serial_write);
+    CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_plf_serial_read);
+    CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_plf_serial_putc);
+    CYGACC_COMM_IF_GETC_SET(*comm, cyg_hal_plf_serial_getc);
+    CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_plf_serial_control);
+    CYGACC_COMM_IF_DBG_ISR_SET(*comm, cyg_hal_plf_serial_isr);
+    CYGACC_COMM_IF_GETC_TIMEOUT_SET(*comm, cyg_hal_plf_serial_getc_timeout);
+
+    // Set channel 1
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(1);
+    comm = CYGACC_CALL_IF_CONSOLE_PROCS();
+    CYGACC_COMM_IF_CH_DATA_SET(*comm, &channels[1]);
+    CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_plf_serial_write);
+    CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_plf_serial_read);
+    CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_plf_serial_putc);
+    CYGACC_COMM_IF_GETC_SET(*comm, cyg_hal_plf_serial_getc);
+    CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_plf_serial_control);
+    CYGACC_COMM_IF_DBG_ISR_SET(*comm, cyg_hal_plf_serial_isr);
+    CYGACC_COMM_IF_GETC_TIMEOUT_SET(*comm, cyg_hal_plf_serial_getc_timeout);
+    
+    // Restore original console
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
+}
+
+#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG || CYGPRI_HAL_IMPLEMENTS_IF_SERVICES
+
+
+//=============================================================================
+// Compatibility with older stubs
+//=============================================================================
+
+#ifndef CYGSEM_HAL_VIRTUAL_VECTOR_DIAG
+
+
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+#include <cyg/hal/drv_api.h>
+#include <cyg/hal/hal_stub.h>           // cyg_hal_gdb_interrupt
+#endif
+
+// Assumption: all diagnostic output must be GDB packetized unless this is a ROM (i.e.
+// totally stand-alone) system.
+
+#if defined(CYG_HAL_STARTUP_ROM) || defined(CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL)
+#define HAL_DIAG_USES_HARDWARE
+#endif
+
+/*---------------------------------------------------------------------------*/
+#if CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL==0
+// This is the base address of the A-channel
+#define CYG_DEV_SERIAL_BASE      CMA101_DUARTA
+#define CYG_DEV_SERIAL_INT       CYGNUM_HAL_INTERRUPT_SERIAL_A
+#else
+// This is the base address of the B-channel
+#define CYG_DEV_SERIAL_BASE      CMA101_DUARTB
+#define CYG_DEV_SERIAL_INT       CYGNUM_HAL_INTERRUPT_SERIAL_B
+#endif
+
+static channel_data_t ser_channel = { (cyg_uint8*)CYG_DEV_SERIAL_BASE, 0, 0};
 
 #ifdef HAL_DIAG_USES_HARDWARE
 
@@ -173,20 +477,9 @@ void hal_diag_init(void)
     cyg_uint8 lcr;
 
     if (init++) return;
-    // 8-1-no parity.
-    HAL_WRITE_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_LCR,
-                     SIO_LCR_WLS0 | SIO_LCR_WLS1);
 
-    HAL_READ_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_LCR, lcr);
-    lcr |= SIO_LCR_DLAB;
-    HAL_WRITE_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_LCR, lcr);
-    HAL_WRITE_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_DLL,
-                     CYG_DEVICE_SERIAL_RS232_BAUD_LSB);
-    HAL_WRITE_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_DLM,
-                     CYG_DEVICE_SERIAL_RS232_BAUD_MSB);
-    lcr &= ~SIO_LCR_DLAB;
-    HAL_WRITE_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_LCR, lcr);
-    HAL_WRITE_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_FCR, 0x07);  // Enable & clear FIFO
+    init_serial_channel(&ser_channel);
+
     while (*msg) hal_diag_write_char(*msg++);
 }
 
@@ -205,11 +498,9 @@ void hal_diag_write_char(char c)
     cyg_uint8 lsr;
 
     hal_diag_init();
-    do {
-        HAL_READ_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_LSR, lsr);
-    } while ((lsr & SIO_LSR_THRE) == 0);
 
-    HAL_WRITE_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_THR, c);
+    cyg_hal_plf_serial_putc(&ser_channel, c)
+
 #ifdef DEBUG_DIAG
     diag_buffer[diag_bp++] = c;
     if (diag_bp == DIAG_BUFSIZE) {
@@ -221,13 +512,7 @@ void hal_diag_write_char(char c)
 
 void hal_diag_read_char(char *c)
 {
-    cyg_uint8 lsr;
-
-    do {
-        HAL_READ_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_LSR, lsr);
-    } while ((lsr & SIO_LSR_DR) == 0);
-
-    HAL_READ_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_RBR, *c);
+    *c = cyg_hal_plf_serial_getc(&ser_channel);
 }
 
 #else // HAL_DIAG relies on GDB
@@ -235,37 +520,23 @@ void hal_diag_read_char(char *c)
 // Initialize diag port - assume GDB channel is already set up
 void hal_diag_init(void)
 {
+    if (0) init_serial_channel(&ser_channel); // avoid warning
 }
 
 // Actually send character down the wire
 static void
 hal_diag_write_char_serial(char c)
 {
-    cyg_uint8 lsr;
-
-    hal_diag_init();
-    do {
-        HAL_READ_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_LSR, lsr);
-    } while ((lsr & SIO_LSR_THRE) == 0);
-
-    HAL_WRITE_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_THR, c);
-    HAL_IO_BARRIER ();
+    cyg_hal_plf_serial_putc(&ser_channel, c);
 }
 
 static bool
 hal_diag_read_serial(char *c)
 {
     long timeout = 1000000000;  // A long time...
-    cyg_uint8 lsr;
+    while (!cyg_hal_plf_serial_getc_nonblock(&ser_channel, c))
+        if (0 == --timeout) return false;
 
-    do {
-        HAL_READ_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_LSR, lsr);
-        if (--timeout == 0) return false;
-    } while ((lsr & SIO_LSR_DR) == 0);
-    HAL_IO_BARRIER ();                  // Prevent RBR preload.
-
-    HAL_READ_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_RBR, *c);
-    HAL_IO_BARRIER ();
     return true;
 }
 
@@ -335,7 +606,7 @@ hal_diag_write_char(char c)
                 break;              // a good acknowledge
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
-            cyg_drv_interrupt_acknowledge(CYG_DEVICE_SERIAL_INT);
+            cyg_drv_interrupt_acknowledge(CYG_DEV_SERIAL_INT);
             if( c1 == 3 ) {
                 // Ctrl-C: breakpoint.
                 cyg_hal_gdb_interrupt (__builtin_return_address(0));
@@ -357,6 +628,8 @@ hal_diag_write_char(char c)
     }
 }
 #endif
+
+#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG
 
 /*---------------------------------------------------------------------------*/
 /* End of hal_diag.c */

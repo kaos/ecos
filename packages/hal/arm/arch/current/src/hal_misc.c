@@ -81,9 +81,10 @@ extern void *__mem_fault_handler;
 
 #define ARM_VECTORS 8
 extern unsigned long vectors[];  // exception vectors as defined by the stubs
+
+#if !defined(CYGPKG_CYGMON)
 static unsigned long *hardware_vectors = (unsigned long *)0x20;
 static unsigned long hold_vectors[ARM_VECTORS];
-
 static int exception_level;
 
 static void
@@ -101,6 +102,7 @@ __restore_debug_traps(void)
     hardware_vectors[CYGNUM_HAL_VECTOR_ABORT_PREFETCH] = hold_vectors[CYGNUM_HAL_VECTOR_ABORT_PREFETCH];
     hardware_vectors[CYGNUM_HAL_VECTOR_ABORT_DATA] = hold_vectors[CYGNUM_HAL_VECTOR_ABORT_DATA];
 }
+#endif // !CYGPKG_CYGMON
 #endif
 
 void
@@ -173,9 +175,8 @@ cyg_hal_invoke_constructors (void)
 }
 
 /*------------------------------------------------------------------------*/
-/* default ISR                                                            */
+/* Architecture default ISR                                               */
 
-#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
 externC cyg_uint32
 hal_arch_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 {
@@ -186,29 +187,6 @@ hal_arch_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
     CYG_FAIL("Spurious Interrupt!!!");
     return 0;
 }
-#else
-externC cyg_uint32
-hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
-{
-    CYG_TRACE1(true, "Interrupt: %d", vector);
-
-#ifndef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-#ifdef CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT
-#ifdef CYGDBG_HAL_CTRLC_ISR
-    // then see if it is an incoming character interrupt and break
-    // into the stub ROM if the char is a ^C.
-    if ( CYGDBG_HAL_CTRLC_ISR( vector, data ) )
-        return 1; // interrupt handled
-#endif
-#endif
-#endif
-
-    diag_printf("Spurious Interrupt!!! - vector: %d, data: %x\n", vector, 
-                data);
-    CYG_FAIL("Spurious Interrupt!!!");
-    return 0;
-}
-#endif // CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
 
 /*------------------------------------------------------------------------*/
 /* Idle thread action                                                     */
