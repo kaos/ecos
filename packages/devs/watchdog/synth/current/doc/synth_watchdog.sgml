@@ -1,4 +1,4 @@
-<!DOCTYPE refentry  PUBLIC "-//OASIS//DTD DocBook V3.1//EN">
+<!-- DOCTYPE refentry  PUBLIC "-//OASIS//DTD DocBook V3.1//EN" -->
 
 <!-- {{{ Banner                         -->
 
@@ -32,6 +32,9 @@
 <!-- =============================================================== -->
 
 <!-- }}} -->
+
+<reference id="devs-watchdog-synth-ref">
+  <title>Synthetic Target Watchdog Device</title>
 
 <refentry id="devs-watchdog-synth">
   <refmeta>
@@ -334,3 +337,4 @@ variables for use by other scripts.
   </refsect1>
 
 </refentry>
+</reference>

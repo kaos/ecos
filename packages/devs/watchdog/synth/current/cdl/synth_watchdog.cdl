@@ -56,6 +56,7 @@ cdl_package CYGPKG_DEVS_WATCHDOG_SYNTH {
         the watchdog and fails to reset it regularly then the host-side
         support will detect this and kill the eCos application with a
         SIGPWR signal."
+    doc         ref/devs-watchdog-synth.html
     
     parent      CYGPKG_IO_WATCHDOG
     active_if   CYGPKG_IO_WATCHDOG

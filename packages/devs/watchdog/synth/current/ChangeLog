@@ -1,3 +1,12 @@
+2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/synth_watchdog.cdl: Add doc link.
+
+	* doc/synth_watchdog.sgml: Comment out DOCTYPE for now to allow
+	building with standard doc build.
+	Add an enclosing <reference> so it's structured better with standard
+	doc build.
+
 2003-02-12  Bart Veer  <bartv@ecoscentric.com>
 
 	* host/Makefile.in:
