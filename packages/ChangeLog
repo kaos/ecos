@@ -1,3 +1,7 @@
+2004-08-24  Bart Veer  <bartv@ecoscentric.com>
+
+	* ecos.db: add SPI package
+
 2004-08-06  Jani Monoses <jani@iv.ro>
 
 	* ecos.db: Remove two obsolete flash drivers: INTEL_BOOTBLOCK
