@@ -103,6 +103,8 @@ e2fs_get_gdesc(e2fs_desc_t *e2fs, cyg_uint32 group_nr, e2fs_group_t *gdesc)
 	if (!PARTITION_READ(e2fs->part, sec_nr, (cyg_uint32 *)e2fs->gdesc_cache,
 			    sizeof(e2fs->gdesc_cache)/SECTOR_SIZE))
 	    return 0;
+
+	e2fs->gdesc_first = (group_nr / E2FS_GDESC_CACHE_SIZE) * E2FS_GDESC_CACHE_SIZE;
     }
     *gdesc = e2fs->gdesc_cache[group_nr - e2fs->gdesc_first];
 
