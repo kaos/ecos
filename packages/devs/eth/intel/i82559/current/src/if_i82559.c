@@ -161,6 +161,8 @@
 #include <cyg/io/eth/netdev.h>
 #include <cyg/io/eth/eth_drv.h>
 
+#include <string.h>
+
 #ifdef CYGPKG_NET
 #include <pkgconf/net.h>
 #include <net/if.h>  /* Needed for struct ifnet */
