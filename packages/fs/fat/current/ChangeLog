@@ -1,3 +1,8 @@
+2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/fatfs1.c: Fixed various compiler warnings about types passed to
+	diag_printf().
+
 2005-01-18  Savin Zlobec  <savin@elatec.si>
 
 	* src/fatfs_supp.c:

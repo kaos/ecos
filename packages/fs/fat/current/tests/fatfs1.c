@@ -153,8 +153,8 @@ static void listdir( char *name, int statp, int numexpected, int *numgot )
             }
             else
             {
-                diag_printf(" [mode %08x ino %08x nlink %d size %d]",
-                            sbuf.st_mode,sbuf.st_ino,sbuf.st_nlink,sbuf.st_size);
+                diag_printf(" [mode %08x ino %08x nlink %d size %ld]",
+                            sbuf.st_mode,sbuf.st_ino,sbuf.st_nlink,(long)sbuf.st_size);
             }
         }
 
@@ -195,7 +195,7 @@ static void createfile( char *name, size_t size )
         if ( len > IOSIZE ) len = IOSIZE;
         
         wrote = write( fd, buf, len );
-        if( wrote != len ) SHOW_RESULT( write, wrote );        
+        if( wrote != len ) SHOW_RESULT( write, (int)wrote );        
 
         size -= wrote;
     }
@@ -271,14 +271,14 @@ static void checkfile( char *name )
     for(;;)
     {
         done = read( fd, buf, IOSIZE );
-        if( done < 0 ) SHOW_RESULT( read, done );
+        if( done < 0 ) SHOW_RESULT( read, (int)done );
 
         if( done == 0 ) break;
 
         for( i = 0; i < done; i++ )
             if( buf[i] != i%256 )
             {
-                diag_printf("buf[%d+%d](%02x) != %02x\n",pos,i,buf[i],i%256);
+                diag_printf("buf[%ld+%d](%02x) != %02x\n",pos,i,buf[i],i%256);
                 CYG_TEST_FAIL("Data read not equal to data written\n");
             }
         
@@ -336,12 +336,12 @@ static void copyfile( char *name2, char *name1 )
     for(;;)
     {
         done = read( fd2, buf, IOSIZE );
-        if( done < 0 ) SHOW_RESULT( read, done );
+        if( done < 0 ) SHOW_RESULT( read, (int)done );
 
         if( done == 0 ) break;
 
         wrote = write( fd1, buf, done );
-        if( wrote != done ) SHOW_RESULT( write, wrote );
+        if( wrote != done ) SHOW_RESULT( write, (int) wrote );
 
         if( wrote != done ) break;
     }
@@ -382,10 +382,10 @@ static void comparefiles( char *name2, char *name1 )
     for(;;)
     {
         done1 = read( fd1, buf1, IOSIZE );
-        if( done1 < 0 ) SHOW_RESULT( read, done1 );
+        if( done1 < 0 ) SHOW_RESULT( read, (int)done1 );
 
         done2 = read( fd2, buf2, IOSIZE );
-        if( done2 < 0 ) SHOW_RESULT( read, done2 );
+        if( done2 < 0 ) SHOW_RESULT( read, (int)done2 );
 
         if( done1 != done2 )
             diag_printf("Files different sizes\n");
@@ -416,7 +416,7 @@ void checkcwd( const char *cwd )
     char *ret;
 
     ret = getcwd( cwdbuf, sizeof(cwdbuf));
-    if( ret == NULL ) SHOW_RESULT( getcwd, ret );    
+    if( ret == NULL ) SHOW_RESULT( getcwd, (int)ret );    
 
     if( strcmp( cwdbuf, cwd ) != 0 )
     {
