@@ -62,6 +62,8 @@ cdl_option CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS {
     active_if     CYGINT_HAL_DEBUG_GDB_STUBS
     default_value 0
     requires      ! CYGSEM_HAL_USE_ROM_MONITOR
+    requires      ! CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT
+    requires      ! CYGDBG_HAL_COMMON_CONTEXT_SAVE_MINIMUM
     requires      { !CYGSEM_HAL_VIRTUAL_VECTOR_DIAG \
                     || CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_COMMS }
     description   "

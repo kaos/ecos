@@ -1,3 +1,9 @@
+2004-02-23  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/debugging.cdl (CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS): Included
+	stubs should always mean saving full context both on interrupts
+	and context swaps, so make it explicit.
+
 2004-01-05  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/hal_if.h: Minor fixup - new 'fconfig' functions broke 
