@@ -1,3 +1,9 @@
+2002-06-03  Gary Thomas  <gary@chez-thomas.org> (on behalf of)
+2002-06-03  Roland Caﬂebohm <roland.cassebohm@visionsystems.de>
+
+	* src/agent_trap.c (send_enterprise_trap_vars): 
+	* src/snmp_agent.c (handle_snmp_packet): Fix memory leaks.
+
 2002-03-19  Hugo Tyson  <hmt@redhat.com>
 
 	* doc/snmp.sgml: Fix the URLs for "where is SNMP now".
