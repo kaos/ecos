@@ -172,15 +172,15 @@ puts $cfile ""
 foreach heap $heaps {
     puts $cfile "#ifdef HAL_MEM_REAL_REGION_TOP\n"
 
-    puts $cfile [ format "%s cygmem_pool_%s ( (cyg_uint8 *)CYGMEM_SECTION_%s ," \
+    puts $cfile [ format "%s CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_MEMALLOC) cygmem_pool_%s ( (cyg_uint8 *)CYGMEM_SECTION_%s ," \
             $malloc_impl_class $heap $heap ]
     puts $cfile [ format "    HAL_MEM_REAL_REGION_TOP( (cyg_uint8 *)CYGMEM_SECTION_%s + CYGMEM_SECTION_%s_SIZE ) - (cyg_uint8 *)CYGMEM_SECTION_%s ) " \
             $heap $heap $heap ]
-    puts $cfile "        CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_MEMALLOC);\n"
+    puts $cfile "        ;\n"
 
     puts $cfile "#else\n"
 
-    puts $cfile [ format "%s cygmem_pool_%s ( (cyg_uint8 *)CYGMEM_SECTION_%s , CYGMEM_SECTION_%s_SIZE ) CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_MEMALLOC);\n" \
+    puts $cfile [ format "%s CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_MEMALLOC) cygmem_pool_%s ( (cyg_uint8 *)CYGMEM_SECTION_%s , CYGMEM_SECTION_%s_SIZE ) ;\n" \
             $malloc_impl_class $heap $heap $heap ]
 
     puts $cfile "#endif"

@@ -1,3 +1,8 @@
+2004-10-01  Oyvind Harboe  <oyvind.harboe@zylin.com>
+
+	* heapgen.tcl: place the CYGBLD_ATTRIB_INIT_PRI such that it
+	compiles for gcc 3.4.2 which is more picky about its placement.
+
 2004-06-24  Oyvind Harboe  <oyvind.harboe@zylin.com>
 
 	* Added cyg_memalloc_alloc_fail() fn which is invoked before 
