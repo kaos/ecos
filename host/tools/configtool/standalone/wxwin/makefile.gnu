@@ -27,8 +27,8 @@ EXTRALDFLAGS=-L$(TCLDIR)/lib -L$(INSTALLDIR)/lib -lcdl -lcyginfra -ltcl
 
 ifeq "$(OSTYPE)" "cygwin"
   PROGRAM=configtool.exe
-  CPPFLAGS=-I$(WXDIR)/include -I$(WXDIR)/lib/wx/include -DSTRICT -DWINVER=0x0400 -D_WIN32 -D__GNUWIN32__ -D__WIN95__ -D__WIN32__ -D_X86_=1 -DWIN32
-  LDFLAGS=-L$(WXDIR)/lib -lwx -lstdc++ -lwinspool -lwinmm -lshell32 -lcomctl32 -lctl3d32 -ladvapi32 -lwsock32 -lglu32 -lgdi32 -lcomdlg32 -lole32 -luuid -lshlwapi -lpng -lzlib
+  CPPFLAGS=`$(WXDIR)/bin/wx-config --cppflags` -D_WIN32 -D__WIN32__ -DSTRICT
+  LDFLAGS=`$(WXDIR)/bin/wx-config --libs` -lshlwapi
   EXTRAOBJECTS=$(CTBUILDDIR)/configtoolres.o
 else
   PROGRAM=configtool
@@ -118,7 +118,7 @@ install: $(CTBUILDDIR)/$(PROGRAM)
 	$(CC) $(CPPDEBUGOPTIONS) -c $(EXTRACPPFLAGS) $(CPPFLAGS) -o $@ $<
 
 $(CTBUILDDIR)/configtoolres.o: $(CTDIR)/configtool.rc
-	$(RESCOMP) -i $< -o $@ --preprocessor "$(CC) -c -E -xc-header -DRC_INVOKED" --include-dir $(WXDIR)/include --include-dir $(CTDIR) --define __WIN32__ --define __WIN95__ --define __GNUWIN32__
+	$(RESCOMP) -i $< -o $@ --preprocessor "$(CC) -c -E -xc-header -DRC_INVOKED" --include-dir $(WXDIR)/include --include-dir $(CTDIR) --define __GNUWIN32__
 
 clean:
 	rm -f $(CTBUILDDIR)/$(PROGRAM) $(CTBUILDDIR)/*.o

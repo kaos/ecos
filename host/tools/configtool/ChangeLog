@@ -1,3 +1,13 @@
+2003-03-19  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/appsettings.cpp,
+	  standalone/wxwin/configtooldoc.cpp,
+	  standalone/wxwin/ecpch.h,
+	  standalone/wxwin/filename.cpp,
+	  standalone/wxwin/configtool.rc,
+	  standalone/wxwin/makefile.gnu: Allow configtool to build against
+	wxWindows 2.4.0 using Cygwin GCC.
+
 2003-03-18  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/appsettings.cpp,

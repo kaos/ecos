@@ -48,7 +48,6 @@
 #include <shlwapi.h>
 
 #include "wx/msw/winundef.h"
-#ifndef __CYGWIN__
 #ifdef CreateDirectory
 #undef CreateDirectory
 #endif
@@ -63,7 +62,6 @@
 #endif
 #ifdef GetTempPath
 #undef GetTempPath
-#endif
 #endif
 
 #else

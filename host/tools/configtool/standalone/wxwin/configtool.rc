@@ -44,4 +44,4 @@ text                    ICON  "bitmaps/text.ico"
 text_dis                ICON  "bitmaps/text_dis.ico"
 
 #include "wx/msw/wx.rc"
-//#include "wx/html/msw/wxhtml.rc"
+
