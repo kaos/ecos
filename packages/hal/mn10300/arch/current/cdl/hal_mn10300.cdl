@@ -33,7 +33,7 @@
 #
 # Author(s):      jskov
 # Original data:  bartv, nickg
-# Contributors:
+# Contributors:   dmoseley
 # Date:           1999-11-02
 #
 #####DESCRIPTIONEND####
@@ -55,6 +55,16 @@ cdl_package CYGPKG_HAL_MN10300 {
     cdl_interface CYGINT_HAL_MN10300_VARIANT {
         display  "Number of variant implementations in this configuration"
         requires 1 == CYGINT_HAL_MN10300_VARIANT
+    }
+
+    cdl_option CYGDBG_HAL_MN10300_DEBUG_GDB_CTRLC_SUPPORT {
+        display "Architecture GDB CTRLC support"
+        calculated { CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT || CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT }
+        active_if { CYGINT_HAL_DEBUG_GDB_CTRLC_UNSUPPORTED == 0 }
+        description "
+            If either the CTRLC or BREAK support options in hal.h are set
+            then set our own option to turn on shared generic support for
+            control C handling."
     }
 
     compile       hal_misc.c context.S mn10300_stub.c

@@ -55,13 +55,33 @@
 // Ethernet device driver for Cirrus Logic EDB7xxx
 // Based on CS8900A
 
+#include <pkgconf/system.h>
+#include <pkgconf/devs_eth_arm_edb7xxx.h>
+#ifdef CYGPKG_NET
 #include <pkgconf/net.h>
+#endif
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/hal_arch.h>
+#include <cyg/hal/hal_intr.h>
 #include <cyg/infra/diag.h>
 #include <cyg/hal/drv_api.h>
 #include <netdev.h>
 #include <eth_drv.h>
+
+#ifndef CYGSEM_ARM_EDB7XXX_SET_ESA
+#ifdef CYGPKG_REDBOOT
+#include <pkgconf/redboot.h>
+#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
+#include <redboot.h>
+#include <flash_config.h>
+RedBoot_config_option("Network hardware address [MAC]",
+                      edb7xxx_esa,
+                      ALWAYS_ENABLED, true,
+                      CONFIG_ESA
+    );
+#endif
+#endif
+#endif
 
 #define INTS_DONT_WORK
 #undef  INTS_DONT_WORK
@@ -93,15 +113,19 @@ ETH_DRV_SC(edb7xxx_sc,
            cs8900_control,
            cs8900_can_send,
            cs8900_send,
-           cs8900_recv);
+           cs8900_recv,
+           cs8900_int);
 
 NETDEVTAB_ENTRY(edb7xxx_netdev, 
                 "edb7xxx", 
                 edb7xxx_cs8900_init, 
                 &edb7xxx_sc);
 
-// FIXME
-static unsigned char enaddr[] = { 0x08, 0x88, 0x12, 0x34, 0x56, 0x78};
+#ifdef CYGSEM_ARM_EDB7XXX_SET_ESA
+static unsigned char enaddr[] = CYGDAT_ARM_EDB7XXX_ESA;
+#else
+static unsigned char enaddr[ETHER_ADDR_LEN];
+#endif
 
 static void cs8900_int(struct eth_drv_sc *sc);
 static cyg_interrupt cs8900_interrupt;
@@ -132,8 +156,6 @@ edb7xxx_cs8900_init(struct cyg_netdevtab_entry *tab)
     unsigned short chip_type, chip_rev, chip_status;
     int i;
 
-    diag_printf("cs8900 init\n");
-
     // Initialize environment, setup interrupt handler
     cyg_drv_interrupt_create(CYGNUM_HAL_INTERRUPT_EINT3,
                              99, // Priority - what goes here?
@@ -162,23 +184,40 @@ edb7xxx_cs8900_init(struct cyg_netdevtab_entry *tab)
     chip_type = get_reg(PP_ChipID);
     chip_rev = get_reg(PP_ChipRev);
 
+#if 0
     diag_printf("CS8900 - type: %x, rev: %x\n", chip_type, chip_rev);
+#endif
+
+    // Fetch hardware address
+#if defined(CYGPKG_REDBOOT) && \
+    defined(CYGSEM_REDBOOT_FLASH_CONFIG) && \
+    !defined(CYGSEM_ARM_EDB7XXX_SET_ESA)
+    flash_get_config("edb7xxx_esa", enaddr, CONFIG_ESA);
+#else
+    for (i = 0;  i < ETHER_ADDR_LEN;  i += 2) {
+        unsigned short esa_reg = get_reg(PP_IA+i);
+        enaddr[i] = esa_reg & 0xFF;
+        enaddr[i+1] = esa_reg >> 8;
+    }
+#endif
 
     put_reg(PP_SelfCtl, PP_SelfCtl_Reset);  // Reset chip
     while ((get_reg(PP_SelfStat) & PP_SelfStat_InitD) == 0) ;  
 
     chip_status = get_reg(PP_SelfStat);
+#if 0
     diag_printf("CS8900 - status: %x (%sEEPROM present)\n", chip_status,
                 chip_status&PP_SelfStat_EEPROM ? "" : "no ");
+#endif
 
-    // Set up hardware address - FIXME
+    // Set up hardware address
     for (i = 0;  i < ETHER_ADDR_LEN;  i += 2) {
         put_reg(PP_LAF+i, 0xFFFF);
         put_reg(PP_IA+i, enaddr[i] | (enaddr[i+1] << 8));
     }
 
     // Initialize upper level driver
-    eth_drv_init(sc, enaddr);
+    (sc->funs->eth_drv->init)(sc, enaddr);
 
     return true;
 }
@@ -243,6 +282,11 @@ static int
 cs8900_can_send(struct eth_drv_sc *sc)
 {
     struct cs8900_priv_data *cpd = (struct cs8900_priv_data *)sc->driver_private;
+    unsigned short stat;
+    stat = get_reg(PP_LineStat);
+    if ((stat & PP_LineStat_LinkOK) == 0) {
+        return false;  // Link not connected
+    }
     return (cpd->txbusy == 0);
 }
 
@@ -318,7 +362,7 @@ cs8900_RxEvent(struct eth_drv_sc *sc)
     if (net_debug) {
         diag_printf("RxEvent - stat: %x, len: %d\n", stat, len);
     }
-    eth_drv_recv(sc, len);
+    (sc->funs->eth_drv->recv)(sc, len);
 }
 
 //
@@ -348,7 +392,7 @@ cs8900_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
         if (mlen) {
             // Fetch last odd byte
             cval = CS8900_RTDATA & 0xFF;
-            if (cp = (unsigned char *)data) {
+            if ((cp = (unsigned char *)data) != 0) {
                 *cp = cval;
             }
         }
@@ -364,7 +408,7 @@ cs8900_TxEvent(struct eth_drv_sc *sc, int stat)
         diag_printf("Tx event: %x\n", stat);
     }
     cpd->txbusy = 0;
-    eth_drv_tx_done(sc, cpd->txkey, 0);
+    (sc->funs->eth_drv->tx_done)(sc, cpd->txkey, 0);
 }
 
 static void

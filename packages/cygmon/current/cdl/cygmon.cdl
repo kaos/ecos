@@ -33,7 +33,7 @@
 #
 # Author(s):      jskov
 # Original data:  gthomas
-# Contributors:
+# Contributors:   dmoseley
 # Date:           1999-11-03
 #
 #####DESCRIPTIONEND####
@@ -41,9 +41,7 @@
 # ====================================================================
 cdl_package CYGPKG_CYGMON {
     display  "CygMon ROM monitor"
-    requires CYGPKG_KERNEL
-    requires CYGPKG_LIBC
-    requires CYGPKG_IO_SERIAL
+    requires CYGPKG_LIBC_STRING
     include_dir   cyg/cygmon
     define_header cygmon.h
     description   "
@@ -75,7 +73,7 @@ cdl_package CYGPKG_CYGMON {
         requires ! CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
         requires ! CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT
         requires ! CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
-        requires CYGPKG_LIBC
+        requires CYGPKG_LIBC_STRING
         requires ! CYGFUN_LIBC_strtod
         requires ! CYGPKG_LIBC_STDIO
         requires ! CYGSEM_LIBC_SIGNALS_THREAD_SAFE
@@ -89,7 +87,7 @@ cdl_package CYGPKG_CYGMON {
         requires ! CYGSEM_LIBC_PER_THREAD_ERRNO
         requires ! CYGSEM_LIBC_TIME_TIME_WORKING
         requires ! CYGSEM_LIBC_TIME_SETTIME_WORKING
-        requires CYGPKG_HAL_ARM
+        requires { CYGPKG_HAL_ARM || CYGPKG_HAL_MIPS || CYGPKG_HAL_MN10300 }
 
         no_define
         description "This option enables the building of the CygMon ELF image.

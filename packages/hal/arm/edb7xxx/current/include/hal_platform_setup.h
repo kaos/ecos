@@ -104,7 +104,11 @@
 #define PCMCIA1_LA_START 0x50000000
 #define PCMCIA1_PA       0x50000000
 #define SRAM_LA_START    0x60000000
+#ifdef CYGHWR_HAL_ARM_EDB7XXX_VARIANT_CL_PS7111 // 4K SRAM
 #define SRAM_LA_END      0x60001000
+#else  // 72xx - 37.5K SRAM
+#define SRAM_LA_END      0x6000A000
+#endif
 #define SRAM_PA          0x60000000
 #define IO_LA_START      0x80000000
 #define IO_LA_END        0x80003000
@@ -354,13 +358,16 @@
 	ldr	r4,=MMU_L1_TYPE_Page|MMU_DOMAIN(0)                           ;\
 	orr	r4,r4,r2                                                     ;\
 	str	r4,[r1],#4                                                   ;\
-	ldr	r4,=MMU_L2_TYPE_Small|MMU_AP_Any|MMU_Bufferable|MMU_Cacheable;\
+	ldr	r7,=MMU_PAGE_SIZE                                            ;\
+        ldr     r5,=SRAM_LA_END                                              ;\
+05:	ldr	r4,=MMU_L2_TYPE_Small|MMU_AP_Any|MMU_Bufferable|MMU_Cacheable;\
 	orr	r4,r3,r4                                                     ;\
 	str	r4,[r2],#4                                                   ;\
-	ldr	r3,=SRAM_LA_START+MMU_PAGE_SIZE                              ;\
+        add     r3,r3,r7                                                     ;\
+        cmp     r3,r5                                                        ;\
+        bne     05b                                                          ;\
 	ldr	r4,=SRAM_LA_START+MMU_SECTION_SIZE                           ;\
 	ldr	r5,=MMU_L2_TYPE_Fault                                        ;\
-	ldr	r7,=MMU_PAGE_SIZE                                            ;\
 10:	str	r5,[r2],#4                                                   ;\
 	add	r3,r3,r7                                                     ;\
 	cmp	r3,r4                                                        ;\
@@ -407,7 +414,7 @@
 	ldr	r3,=LCD_LA_START                                             ;\
 	ldr	r4,=ROM0_LA_START                                            ;\
 	ldr	r5,=LCD_PA                                                   ;\
-	ldr	r6,=MMU_L1_TYPE_Section|MMU_AP_Any                           \
+	ldr	r6,=MMU_L1_TYPE_Section|MMU_AP_Any                            \
                    |MMU_Bufferable|MMU_Cacheable                             ;\
 	ldr	r7,=MMU_SECTION_SIZE                                         ;\
 10:	orr	r0,r5,r6                                                     ;\
@@ -420,7 +427,7 @@
 	ldr	r3,=ROM0_LA_START                                            ;\
 	ldr	r4,=ROM0_LA_END                                              ;\
 	ldr	r5,=ROM0_PA                                                  ;\
-	ldr	r6,=MMU_L1_TYPE_Section|MMU_AP_Any|MMU_Cacheable             ;\
+	ldr	r6,=MMU_L1_TYPE_Section|MMU_AP_Any/*|MMU_Cacheable*/             ;\
 	ldr	r7,=MMU_SECTION_SIZE                                         ;\
 10:	orr	r0,r5,r6                                                     ;\
 	str	r0,[r1],#4                                                   ;\

@@ -46,7 +46,7 @@
 //===========================================================================*/
 
 // Note: these defintions match the documentation, thus no attempt is made
-// to sanitize (mangle) the names.  Also, care should be taken to keep this
+// to sanitise (mangle) the names.  Also, care should be taken to keep this
 // clean for use in assembly code (no "C" constructs).
 
 #define PADR    0x80000000 // Port A data register

@@ -122,8 +122,25 @@ cdl_component CYGNUM_KERNEL_SCHED_PRIORITIES {
 		This option automatically defines the size of bitmap
 		used to track occupied priority levels."
     }
+
+        
+    cdl_option CYGIMP_KERNEL_SCHED_SORTED_QUEUES {
+        display       "Dequeue oldest threads first"
+        flavor        bool
+        default_value 0
+        description   "
+            With this option enabled, threads queued in a thread queue
+            will be dequeued in priority order, rather than last in,
+            first out (LIFO). Threads of equal priority are dequeued
+            oldest first. The only exception is the scheduler run 
+            queues where order is less important as each is already
+            sorted by priority. Note that this makes the thread queueing
+            less deterministic."
+    }
 }
 
+# ---------------------------------------------------------------------
+# Timeslice options
 
 # NOTE: this option only makes sense for some of the schedulers.
 # Timeslicing is irrelevant for bitmap schedulers.
@@ -155,4 +172,53 @@ cdl_component CYGSEM_KERNEL_SCHED_TIMESLICE {
             takes place, so increasing the value reduces the frequency
             of timeslices."
     }
+
+    cdl_option CYGSEM_KERNEL_SCHED_TIMESLICE_ENABLE {
+        display       "Support runtime enable of timeslice per-thread"
+        flavor        bool
+        default_value false
+        description "This option makes timslicing a per-thread runtime
+                     option. When enabled, threads may have timeslicing
+		     turned on or off dynamically. This is generally used
+                     by higher level APIs (such as POSIX) to implement
+		     differing scheduling policies."
+
+    }
 }
+
+# ---------------------------------------------------------------------
+# ASR support options
+
+cdl_component CYGSEM_KERNEL_SCHED_ASR_SUPPORT {
+    display       "Enable ASR support"
+    flavor        bool
+    default_value false
+    description   "
+         This component controls support for Asynchronous Service
+         Routines (ASRs). This is a function that may be called
+         from the scheduler when it has just exited the scheduler
+         lock. This is primarily for use by API compatibility layers."
+
+    cdl_option CYGSEM_KERNEL_SCHED_ASR_GLOBAL {
+	display       "Make ASR function global"
+	flavor        bool
+	default_value true
+	description "
+	     This option controls whether the ASR function is shared by
+	     all threads, or whether each thread may have its own ASR
+	     function."
+    }
+
+    cdl_option CYGSEM_KERNEL_SCHED_ASR_DATA_GLOBAL {
+	display       "Make ASR data global"
+	flavor        bool
+	default_value true
+	description "
+	     This option controls whether the ASR data is shared by
+	     all threads, or whether each thread may have its own ASR
+	     data. This is independent of the previous option because
+	     it may be useful to pass per-thread data to a shared ASR
+	     function."
+    }
+}
+

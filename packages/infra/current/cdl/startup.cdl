@@ -46,12 +46,6 @@
 # process. These can affect the environment in which the program
 # runs.
 #
-# CYGSEM_START_ISO_C_COMPATIBILITY enables compatibility with ISO C,
-# in particular in eCos it creates a thread that invokes the function
-# main() which the user must supply. It does this by invoking the function
-# cyg_iso_c_start(). For more information, refer to the C library
-# documentation.
-#
 # CYGSEM_START_UITRON_COMPATIBILITY enables compatibility with uItron.
 # You must configure uItron with the correct tasks, and then enabling this
 # option starts the uItron subsystem. It does this by invoking the function
@@ -61,22 +55,6 @@
 # cyg_package_start(), or cyg_prestart(). Refer to the documentation on
 # how and when to do this.
 
-cdl_option CYGSEM_START_ISO_C_COMPATIBILITY {
-    display       "Start ISO C library"
-    default_value 1
-    requires      CYGPKG_LIBC
-    active_if     CYGPKG_LIBC
-    description   "
-        Generate a call to initialize the ISO C library
-        (libc) within the system version of cyg_package_start().
-        This enables compatibility with ISO C, in particular in
-        eCos it creates a thread that invokes the function main()
-        which the user must supply.
-        It does this by invoking the function cyg_iso_c_start().
-        If this is disabled, and you want to use the C library, you
-        call cyg_iso_c_start() from your own cyg_package_start()
-        or cyg_userstart()."
-}
 cdl_option CYGSEM_START_UITRON_COMPATIBILITY {
     display       "Start uITRON subsystem"
     default_value 0
@@ -93,4 +71,3 @@ cdl_option CYGSEM_START_UITRON_COMPATIBILITY {
         you must call cyg_uitron_start() from your own
         cyg_package_start() or cyg_userstart()."
 }
-

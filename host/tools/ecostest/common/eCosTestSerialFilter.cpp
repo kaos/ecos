@@ -66,6 +66,8 @@ CeCosTestSerialFilter::CeCosTestSerialFilter():
   m_xUnreadBuffer(NULL),
   m_nUnreadBufferIndex(0), 
   m_nUnreadBufferSize(0), 
+  m_xStoredTraceBuffer(NULL),
+  m_nStoredTraceBufferSize(0),
   m_bNullFilter(false), 
   m_nCmdIndex(0), 
   m_bCmdFlag(false), 
@@ -214,7 +216,7 @@ CeCosTestSerialFilter::PrintHex(const unsigned char* d1, int len, data_origin_t 
         p += sprintf(p, "'");
         for (i = 0; i < count; i++) {
             int c = d1[i];
-            if (' ' >= c || 'z' <= c)
+            if (' ' > c || 'z' < c)
                 c = '.';
             p += sprintf(p, "%c", c);
         }
@@ -289,7 +291,6 @@ CeCosTestSerialFilter::TargetRead(CeCosSerial &pSer,
         }
 
         __total_read += __read;
-
         unsigned int i;
         for (i = 0; i < __read; i++) {
             if ('$' == buffer[i]) {
@@ -363,16 +364,24 @@ CeCosTestSerialFilter::SetConfig(CeCosSerial &pSer,
                                  const ser_cfg_t* new_cfg, 
                                  ser_cfg_t* old_cfg)
 {
+    // Note that for flow control, we assume that *both* receive and transmit
+    // flow control are set or not set
     if (old_cfg) {
         old_cfg->baud_rate = pSer.GetBaud();
         old_cfg->parity = (0 != pSer.GetParity()) ? true : false;
         old_cfg->data_bits = pSer.GetDataBits();
         old_cfg->stop_bits = pSer.GetStopBits();
+        old_cfg->flags = pSer.GetXONXOFFFlowControl() ? FLOW_XONXOFF_RX : 0;
+        old_cfg->flags |= pSer.GetRTSCTSFlowControl() ? FLOW_RTSCTS_RX : 0;
+        old_cfg->flags |= pSer.GetDSRDTRFlowControl() ? FLOW_DSRDTR_RX : 0;
     }
 
     pSer.SetBaud(new_cfg->baud_rate, false);
     pSer.SetParity(new_cfg->parity, false);
     pSer.SetDataBits(new_cfg->data_bits, false);
+    pSer.SetXONXOFFFlowControl((new_cfg->flags&FLOW_XONXOFF_RX) != 0, false);
+    pSer.SetRTSCTSFlowControl((new_cfg->flags&FLOW_RTSCTS_RX) != 0, false);
+    pSer.SetDSRDTRFlowControl((new_cfg->flags&FLOW_DSRDTR_RX) != 0, false);
     return pSer.SetStopBits(new_cfg->stop_bits, true); // apply settings
 }
 
@@ -533,7 +542,8 @@ CeCosTestSerialFilter::CMD_DefaultConfig(CeCosSerial &pSer)
 void
 CeCosTestSerialFilter::ParseConfig(char* args, ser_cfg_t* new_cfg)
 {
-    int ecos_parity, ecos_stop_bits, ecos_baud_rate;
+    int ecos_parity, ecos_stop_bits, ecos_baud_rate, ecos_flags;
+
     CeCosSerial::StopBitsType t2h_stop_bits[3] = {
         CeCosSerial::ONE_STOP_BIT, 
         CeCosSerial::ONE_POINT_FIVE_STOP_BITS,
@@ -544,9 +554,16 @@ CeCosTestSerialFilter::ParseConfig(char* args, ser_cfg_t* new_cfg)
     SET_VALUE(int, new_cfg->data_bits);
     SET_VALUE(int, ecos_stop_bits);
     SET_VALUE(int, ecos_parity);
+    SET_VALUE(int, ecos_flags);
 
     new_cfg->parity = (ecos_parity != 0) ? true : false;
     new_cfg->stop_bits = t2h_stop_bits[ecos_stop_bits - 1];
+
+    // flags is an optional field
+    if ( -1 == ecos_flags )
+        new_cfg->flags = FLOW_NONE;
+    else
+        new_cfg->flags = ecos_flags;
 
     // eCos->human translation of serial baud rate. This table must
     // match the one in io/serial/current/include/serialio.h
@@ -585,6 +602,14 @@ CeCosTestSerialFilter::ParseConfig(char* args, ser_cfg_t* new_cfg)
     Trace("Parsed Config baud=%d, bParity=%d, stopbits=%d, databits=%d\n",
           new_cfg->baud_rate, (int) new_cfg->parity, new_cfg->stop_bits,
           new_cfg->data_bits);
+    Trace("Parsed Config xonxoff_rx=%d,tx=%d, rtscts_rx=%d,tx=%d, "
+          "dsrdtr_rx=%d,tx=%d\n",
+          (new_cfg->flags & FLOW_XONXOFF_RX) != 0,
+          (new_cfg->flags & FLOW_XONXOFF_TX) != 0,
+          (new_cfg->flags & FLOW_RTSCTS_RX) != 0,
+          (new_cfg->flags & FLOW_RTSCTS_TX) != 0,
+          (new_cfg->flags & FLOW_DSRDTR_RX) != 0,
+          (new_cfg->flags & FLOW_DSRDTR_TX) != 0);
 }
 
 // Always make sure CRC fits in 31 bits. Bit of a hack, but we want
@@ -713,9 +738,13 @@ CeCosTestSerialFilter::CMD_TestBinary(CeCosSerial &pSer, char* args)
     }
     for (i = 0; i < size; i++) {
         static int count = 0;
-        unsigned char c = (unsigned char) (count++ & 0xff);
-        // don't allow $s and @s in the data, nor 0x03 (GDB C-c)
-        if ('$' == c || '@' == c || 0x03 == c)
+        // Output 255 chars, not 256 so that we aren't a multiple/factor of the
+        // likely buffer sizes in the system, this can mask problems as I've
+        // found to my cost!
+        unsigned char c = (unsigned char) (count++ % 255);
+        // don't allow $s and @s in the data, nor 0x03 (GDB C-c), nor flow
+        // control chars
+        if ('$' == c || '@' == c || 0x03 == c || 0x11 == c || 0x13 == c)
             c = (unsigned char) '*';
         data_out[i] = c;
     }
@@ -725,6 +754,9 @@ CeCosTestSerialFilter::CMD_TestBinary(CeCosSerial &pSer, char* args)
 
     // Send checksum to target.
     SendChecksum(pSer, crc);
+
+    // Give the target 1/10th of a sec to digest it
+    CeCosThreadUtils::Sleep(100);
 
     switch (mode) {
     case MODE_NO_ECHO:
@@ -739,6 +771,7 @@ CeCosTestSerialFilter::CMD_TestBinary(CeCosSerial &pSer, char* args)
         int in_crc;
 
         TargetWrite(pSer, data_out, size);
+        Trace("Finished write, waiting for target echo.\n");
 
         // Expect target to echo the data
         TargetRead(pSer, data_in, size);
@@ -957,17 +990,47 @@ CeCosTestSerialFilter::FilterFunctionProper(void*& pBuf,
     // Allows trace to be called without a reference to the socket...
     m_cGDBSocket = &socket;
 
-    // Output the serial data if option enabled - but only if dumping
-    // state to the console or after the first command has been seen
-    // from the filter. GDB gets confused by O-packets if they appear
-    // when it's trying to connect.
-    if (m_bOptSerDebug && (m_bOptConsoleOutput || m_bFirstCommandSeen))
-        PrintHex((unsigned char*) buffer, nRead);
+    // Put in trace buffer in case we have to leave it because the packet
+    // is incomplete
+    m_xStoredTraceBuffer = (unsigned char *)
+        realloc( m_xStoredTraceBuffer, m_nStoredTraceBufferSize + nRead );
+    if ( NULL == m_xStoredTraceBuffer ) 
+        throw "Could not allocate stored trace buffer";
+    memcpy( m_xStoredTraceBuffer + m_nStoredTraceBufferSize, buffer, nRead );
+    m_nStoredTraceBufferSize += nRead;
+
+    // Now search for distinct packets, delimited by '@' (filter commands)
+    // and '$' (GDB packets)
+    unsigned int i, newStart=0;
+    for (i=0; i<m_nStoredTraceBufferSize; i++) {
+        if ( m_xStoredTraceBuffer[i] == '@' ||
+             m_xStoredTraceBuffer[i] == '$' ) {
+            if (m_bOptSerDebug &&
+                (m_bOptConsoleOutput || m_bFirstCommandSeen)) {
+
+                // Output the serial data if option enabled - but only if
+                // dumping state to the console or after the first command
+                // has been seen from the filter. GDB gets confused by
+                // O-packets if they appear when it's trying to connect.
+
+                PrintHex(&m_xStoredTraceBuffer[newStart], i - newStart);
+            }
+            newStart = i;
+        }
+    }
+
+    // If we managed to print output, rejig the buffer size, and shunt
+    // the new start of the data to the front of the trace buffer
+    m_nStoredTraceBufferSize -= newStart;
+    
+    memmove( m_xStoredTraceBuffer, &m_xStoredTraceBuffer[newStart],
+             m_nStoredTraceBufferSize );
+        
 
     // Command handling.
     // If we are not presently reading a command, look for the
     // start marker.
-    unsigned int i = 0;
+    i = 0;
     if (!m_bCmdFlag)
         for (; i < nRead; i++) {
             if ('@' == buffer[i]) {

@@ -1,3 +1,16 @@
+2000-08-03  Gary Thomas  <gthomas@redhat.com>
+
+	* current.ect: Ethernet drivers have moved.
+
+2000-07-04  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* current.ect: Add memalloc package
+
+2000-06-07  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* current.ect: Modified to work with ISOINFRA package, divided
+	LIBC and fileio package.
+
 2000-05-31  Jesper Skov  <jskov@redhat.com>
 
 	* current.ect: renamed watchdog package.

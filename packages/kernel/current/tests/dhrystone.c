@@ -29,28 +29,38 @@
 //=============================================================================
 
 #include <pkgconf/system.h>
+#include <pkgconf/infra.h>
+#include <pkgconf/kernel.h>
 #include <cyg/infra/cyg_type.h>
 #include <cyg/infra/testcase.h>
 
-#if defined(CYGPKG_KERNEL) && defined(CYGPKG_LIBC)
+#if !defined(CYGPKG_ISOINFRA)
+# define NA_MSG "Requires CYGPKG_ISOINFRA"
+#else
+# include <pkgconf/isoinfra.h>
 
-#include <pkgconf/kernel.h>
-#include <pkgconf/infra.h>
-#include <pkgconf/libc.h>
+# if !defined(CYGFUN_KERNEL_API_C) \
+    || CYGINT_ISO_STDIO_FORMATTED_IO == 0 \
+    || CYGINT_ISO_MALLOC == 0 \
+    || CYGINT_ISO_STRING_STRFUNCS == 0
 
-#if defined(CYGFUN_KERNEL_API_C) \
-    && defined(CYGSEM_LIBC_STDIO_PRINTF_FLOATING_POINT) \
-    && defined(CYGPKG_LIBC_MALLOC)
+#  define NA_MSG "Requires CYGFUN_KERNEL_API_C && CYGINT_ISO_STDIO_FORMATTED_IO && CYGINT_ISO_MALLOC && CYGINT_ISO_STRING_STRFUNCS"
 
-#if defined(__OPTIMIZE__) \
-    && !defined(CYGPKG_INFRA_DEBUG) \
-    && !defined(CYGPKG_KERNEL_INSTRUMENT)
+# elif !defined(__OPTIMIZE__) \
+    || defined(CYGPKG_INFRA_DEBUG) \
+    || defined(CYGPKG_KERNEL_INSTRUMENT)
+#  define NA_MSG "Only runs with optimized code, no tracing and no asserts"
+# elif defined(CYGDBG_INFRA_DIAG_USE_DEVICE)
+#  define NA_MSG "Must use HAL diag output to avoid background DSR activity"
+# endif
+#endif
 
-#if !defined(CYGDBG_INFRA_DIAG_USE_DEVICE)
+#ifndef NA_MSG
 
 #include <cyg/hal/hal_cache.h>
 #include <cyg/kernel/kapi.h>
 #include <stdlib.h>
+#include <string.h>
 
 // Time in seconds.
 double
@@ -1165,23 +1175,8 @@ Enumeration Enum_Par_Val;
     return (false);
 } /* Func_3 */
 
-#else
-#define NA_MSG "Must use HAL diag output to avoid background DSR activity"
-#endif // CYGDBG_INFRA_DIAG_USE_DEVICE
+#else /* ifndef NA_MSG */
 
-#else
-#define NA_MSG "Only runs with optimized code, no tracing and no asserts"
-#endif // __OPTIMIZE__ && !CYGPKG_INFRA_DEBUG && !CYGPKG_KERNEL_INSTRUMENT
-
-#else
-#define NA_MSG "Requires CYGFUN_KERNEL_API_C && CYGSEM_LIBC_STDIO_PRINTF_FLOATING_POINT && CYGPKG_LIBC_MALLOC"
-#endif // CYGFUN_KERNEL_API_C && CYGSEM_LIBC_STDIO_PRINTF_FLOATING_POINT
-       // CYGPKG_LIBC_MALLOC
-#else
-#define NA_MSG "Requires CYGPKG_KERNEL && CYGPKG_LIBC"
-#endif // CYGPKG_KERNEL && CYGPKG_LIBC
-
-#ifdef NA_MSG
 externC void
 cyg_start( void )
 {

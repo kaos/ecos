@@ -95,6 +95,14 @@
 #define _SYS_TIME_H_
 
 #include <sys/types.h>
+#include <time.h>
+
+#if 0 //ndef __time_t_defined
+typedef int time_t;
+# define __time_t_defined
+#endif
+
+#if 0
 
 /*
  * Structure returned by gettimeofday(2) system call,
@@ -105,6 +113,9 @@ struct timeval {
 	long	tv_usec;	/* and microseconds */
 };
 
+#endif
+
+#if 0
 /*
  * Structure defined by POSIX.1b to be like a timeval.
  */
@@ -112,6 +123,7 @@ struct timespec {
 	time_t	tv_sec;		/* seconds */
 	long	tv_nsec;	/* and nanoseconds */
 };
+#endif
 
 #define	TIMEVAL_TO_TIMESPEC(tv, ts) {					\
 	(ts)->tv_sec = (tv)->tv_sec;					\
@@ -215,7 +227,9 @@ struct clockinfo {
 #define CLOCK_PROF	2
 
 #define TIMER_RELTIME	0x0	/* relative timer */
+#ifndef TIMER_ABSTIME
 #define TIMER_ABSTIME	0x1	/* absolute timer */
+#endif
 
 #if defined(_KERNEL) || defined(_STANDALONE)
 int	itimerfix __P((struct timeval *tv));
@@ -228,7 +242,7 @@ void	settime __P((struct timeval *tv));
 #include <time.h>
 #endif
 
-#ifndef _POSIX_SOURCE
+#if 0 //ndef _POSIX_SOURCE
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS

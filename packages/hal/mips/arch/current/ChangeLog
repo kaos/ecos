@@ -1,3 +1,8 @@
+2000-07-21  Drew Moseley  <dmoseley@redhat.com>
+
+	* src/vectors.S: Only jump uncached to _start if CYGARC_START_FUNC_UNCACHED
+	is defined.
+
 2000-07-14  Drew Moseley  <dmoseley@redhat.com>
 
 	* src/vectors.S: Added hal_reset_vector_first_code and
@@ -15,6 +20,13 @@
 
 	* include/mips-stub.h: Renamed some enums to work around namespace
 	corruption.  Added breakpoint support in the HAL.
+
+2000-06-21  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/mips-stub.c: Removed use of CYG_LABEL_NAME() and added
+	underscore to _breakinst.
+
+	* include/basetype.h: Removed definition of CYG_LABEL_NAME().
 
 2000-06-08  Jesper Skov  <jskov@redhat.com>
 

@@ -1,3 +1,22 @@
+2000-08-16  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/snmpd.c (snmpd): Remove call to
+	init_all_network_interfaces(); it's a bad idea for the situations
+	when initialization has been done externally to our helper
+	functions.  This adds the constraint that you must initialize the
+	network interfaces first, by whatever means.  Starting snmpd
+	before the network is up may cause confusion.
+	[CASE 104330]
+
+	Also tidied some warnings.
+
+2000-07-25  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/snmpping.c (net_test): Make it ping the loopback
+	interfaces so as to do some valid testing in the absence of any
+	real interfaces on the platform.  Also make it run less time or no
+	doubt the farm will report many non-failures.
+
 2000-07-13  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* tests/snmpping.c: Up the stack size to cope with full DHCP

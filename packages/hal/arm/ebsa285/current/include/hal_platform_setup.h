@@ -63,7 +63,7 @@
         ldr     r0,[r0]                                                   ;\
         tsts    r0,#0x00800000 /* SA110_XBUS_CYCLE_ARBITER_ENABLED */     ;\
         bne     667f              /* Don't touch if PCI arbiter enabled */;\
-        ldr     r0,=0x40012000    /* SA110_XBUS_XCS2 */                   ;\
+        ldr     r0,=0x40012800    /* SA110_XBUS_XCS2 */                   ;\
         mov     r1,#7&(~(\x))                                             ;\
         str     r1,[r0]                                                   ;\
 667:
@@ -73,13 +73,17 @@
 // divided into further macros to make it easier to manage what's enabled
 // when.
 
+#ifdef CYG_HAL_STARTUP_ROM
 // Dependence on ROM/RAM start removed when meminit code fixed up.
 #define PLATFORM_SETUP1                         \
         PLATFORM_FLUSH_DISABLE_CACHES           \
         INIT_XBUS_ACCESS                        \
         ALLOW_CLOCK_SWITCHING                   \
         CALL_MEMINIT_CODE                       \
-        BASIC_PCI_SETUP                         \
+        BASIC_PCI_SETUP                         
+#else
+#define PLATFORM_SETUP1
+#endif
 
 
 // Discard and disable all caches: we are about to be writing vectors...

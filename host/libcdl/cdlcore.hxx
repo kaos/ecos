@@ -1137,7 +1137,7 @@ class CdlInterpreterBody
     static std::string extend_comment(const std::string&, int, int = 0);
     
     // Write some data to a savefile, throwing an exception on error
-    void write_data(Tcl_Channel, std::string) throw(CdlInputOutputException);
+    void write_data(Tcl_Channel, std::string);
 
     // File-related utilities.
     void locate_subdirs(std::string, std::vector<std::string>&);
@@ -2191,8 +2191,7 @@ class CdlExpressionBody {
     // parse operation there should be no further data. The result
     // will either be a new expression object or a parsing exception
     // to be caught by higher level code.
-    static CdlExpression        parse(std::string)
-        throw(CdlParseException,std::bad_alloc);
+    static CdlExpression        parse(std::string);
 
     // This is used when parsing list expressions, which involve a
     // sequence of ordinary expressions and possibly range operators.
@@ -2201,8 +2200,7 @@ class CdlExpressionBody {
     // parsing should begin. It is also useful to return details of
     // the token that caused parsing to terminate (EOD, Range, or
     // the start of something else).
-    static CdlExpression        parse(std::string, int&, CdlExprOp&, int&)
-        throw(CdlParseException, std::bad_alloc);
+    static CdlExpression        parse(std::string, int&, CdlExprOp&, int&);
 
     // A goal expression is derived from an ordinary expression but
     // has somewhat different rules for evaluating. Parsing a goal
@@ -2213,8 +2211,7 @@ class CdlExpressionBody {
     //
     // NOTE: possibly this should should be a protected member, since
     // its main use is in parsing goal expressions. 
-    static void continue_parse(CdlExpression, std::string, int&, CdlExprOp&, int&)
-        throw(CdlParseException, std::bad_alloc);
+    static void continue_parse(CdlExpression, std::string, int&, CdlExprOp&, int&);
 
     // Evaluating expressions. Note that this may fail at run-time
     // because of errors that cannot be caught sensibly when the
@@ -2226,10 +2223,8 @@ class CdlExpressionBody {
     // eval() is the public interface, and manages
     // CdlConflict_EvalException objects. eval_internal() is for use
     // by list and goal expressions.
-    void eval(CdlEvalContext&, CdlSimpleValue&)
-        throw(CdlEvalException, std::bad_alloc);
-    void eval_internal(CdlEvalContext&, CdlSimpleValue&)
-        throw(CdlEvalException, std::bad_alloc);
+    void eval(CdlEvalContext&, CdlSimpleValue&);
+    void eval_internal(CdlEvalContext&, CdlSimpleValue&);
     
     // The full original expression is useful for diagnostics purposes
     std::string get_original_string() const;
@@ -2290,24 +2285,18 @@ class CdlListExpressionBody {
 
     // Parsing. This involves taking a single string, typically from
     // a CDL script, and parsing one or more ordinary expressions.
-    static CdlListExpression parse(std::string)
-        throw(CdlParseException, std::bad_alloc);
+    static CdlListExpression parse(std::string);
     
     // Evaluation support. A list expression evaluates to a list value.
-    void eval(CdlEvalContext&, CdlListValue&)
-        throw(CdlEvalException, std::bad_alloc);
+    void eval(CdlEvalContext&, CdlListValue&);
 
     // More commonly client code is going to be interested in whether
     // or not a particular value is a legal member. The result
     // cache ensures that it is possible to 
-    bool is_member(CdlEvalContext&, CdlSimpleValue&)
-        throw(CdlEvalException, std::bad_alloc);
-    bool is_member(CdlEvalContext&, std::string)
-        throw(CdlEvalException, std::bad_alloc);
-    bool is_member(CdlEvalContext&, cdl_int)
-        throw(CdlEvalException, std::bad_alloc);
-    bool is_member(CdlEvalContext&, double)
-        throw(CdlEvalException, std::bad_alloc);
+    bool is_member(CdlEvalContext&, CdlSimpleValue&);
+    bool is_member(CdlEvalContext&, std::string);
+    bool is_member(CdlEvalContext&, cdl_int);
+    bool is_member(CdlEvalContext&, double);
 
     // The full original expression is useful for diagnostics purposes
     std::string get_original_string() const;
@@ -2324,8 +2313,7 @@ class CdlListExpressionBody {
     CdlListExpressionBody();
     CdlListExpressionBody& operator=(const CdlListExpressionBody&);
 
-    void eval_internal(CdlEvalContext&, CdlListValue&) throw(CdlEvalException, std::bad_alloc);
-
+    void eval_internal(CdlEvalContext&, CdlListValue&);
     std::string         expression_string;
     
     enum {
@@ -2353,16 +2341,13 @@ class CdlGoalExpressionBody : private CdlExpressionBody {
   public:
     virtual ~CdlGoalExpressionBody();
 
-    static CdlGoalExpression parse(std::string)
-        throw(CdlParseException, std::bad_alloc);
+    static CdlGoalExpression parse(std::string);
 
     // A few variants of the eval() member, with a choice of returning
     // by value or by reference. The latter provide consistency with the
     // other expression classes.
-    bool eval(CdlEvalContext&)
-        throw(CdlEvalException, std::bad_alloc);
-    void eval(CdlEvalContext&, bool&)
-        throw(CdlEvalException, std::bad_alloc);
+    bool eval(CdlEvalContext&);
+    void eval(CdlEvalContext&, bool&);
 
     // Provide public access to the underlying expression object,
     // useful for the inference engine
@@ -2382,7 +2367,7 @@ class CdlGoalExpressionBody : private CdlExpressionBody {
 
     CdlGoalExpressionBody();
     CdlGoalExpressionBody& operator=(const CdlGoalExpressionBody&);
-    void eval_internal(CdlEvalContext&, bool&) throw(CdlEvalException, std::bad_alloc);
+    void eval_internal(CdlEvalContext&, bool&);
     
     std::string expression_string;
     
@@ -3240,8 +3225,7 @@ class CdlParse {
     static std::string  construct_diagnostic(CdlInterpreter, std::string /* classification */,
                                              std::string /* sub-identifier */, std::string /* message */);
                                        
-    static void         report_error(CdlInterpreter, std::string /* sub-identifier */, std::string /* message */)
-        throw(CdlParseException, std::bad_alloc);
+    static void         report_error(CdlInterpreter, std::string /* sub-identifier */, std::string /* message */);
     static void         report_warning(CdlInterpreter, std::string /* sub-identifier */, std::string /* message */);
     static void         clear_error_count(CdlInterpreter);
     static int          get_error_count(CdlInterpreter);
@@ -3251,10 +3235,8 @@ class CdlParse {
     static int          unknown_command(CdlInterpreter, int, char**);
     
     // Property-related utilities
-    static void         report_property_parse_error(CdlInterpreter, std::string, std::string)
-        throw(CdlParseException, std::bad_alloc);
-    static void         report_property_parse_error(CdlInterpreter, CdlProperty, std::string)
-        throw(CdlParseException, std::bad_alloc);
+    static void         report_property_parse_error(CdlInterpreter, std::string, std::string);
+    static void         report_property_parse_error(CdlInterpreter, CdlProperty, std::string);
     static void         report_property_parse_warning(CdlInterpreter, std::string, std::string);
     static void         report_property_parse_warning(CdlInterpreter, CdlProperty, std::string);
     
@@ -3375,7 +3357,7 @@ class CdlNodeBody {
     // Configuration save files are Tcl scripts, so it seems
     // appropriate to handle the I/O via the Tcl library and
     // to have a TCL interpreter available.
-    virtual void save(CdlInterpreter, Tcl_Channel, int, bool) throw(CdlInputOutputException, std::bad_alloc);
+    virtual void save(CdlInterpreter, Tcl_Channel, int, bool);
     bool has_additional_savefile_information() const;
     
     // Mainly for diagnostics code, what is the actual name for this
@@ -3484,7 +3466,7 @@ class CdlContainerBody : virtual public CdlNodeBody {
     virtual void update(CdlTransaction, CdlUpdate);
     
     // Persistence support.
-    virtual void save(CdlInterpreter, Tcl_Channel, int, bool) throw(CdlInputOutputException, std::bad_alloc);
+    virtual void save(CdlInterpreter, Tcl_Channel, int, bool);
     
     virtual std::string get_class_name() const;
     bool                check_this(cyg_assert_class_zeal = cyg_quick) const;
@@ -3715,11 +3697,9 @@ class CdlToplevelBody : virtual public CdlContainerBody {
     // even if they are not always applicable
     void                get_build_info(CdlBuildInfo&);
     void                get_all_build_info(CdlBuildInfo&);
-    void                generate_config_headers(std::string)
-        throw(CdlInputOutputException, std::bad_alloc);
+    void                generate_config_headers(std::string);
     void                get_config_headers(std::vector<std::string>&);
-    void                generate_build_tree(std::string, std::string = "")
-        throw(CdlInputOutputException, std::bad_alloc);
+    void                generate_build_tree(std::string, std::string = "");
     
     // Values can be stored in limbo. This is useful when unloading 
     // and reloading packages, e.g. when changing a version the
@@ -3737,19 +3717,16 @@ class CdlToplevelBody : virtual public CdlContainerBody {
            void         add_savefile_subcommand(std::string, std::string, CdlSaveCallback, CdlInterpreterCommand);
            void         get_savefile_commands(std::vector<CdlInterpreterCommandEntry>&);
            void         get_savefile_subcommands(std::string, std::vector<CdlInterpreterCommandEntry>&);
-           void         save_command_details(CdlInterpreter, Tcl_Channel, int, bool)
-               throw(CdlInputOutputException, std::bad_alloc);
+    void         save_command_details(CdlInterpreter, Tcl_Channel, int, bool);
     static int          savefile_handle_command(CdlInterpreter, int, char**);
     static int          savefile_handle_unsupported(CdlInterpreter, int, char**);
     static int          savefile_handle_unknown(CdlInterpreter, int, char**);
-           void         save_unsupported_commands(CdlInterpreter, Tcl_Channel, int, bool)
-               throw(CdlInputOutputException, std::bad_alloc);
+    void         save_unsupported_commands(CdlInterpreter, Tcl_Channel, int, bool);
     static cdl_int      get_library_savefile_version();
     static int          savefile_handle_version(CdlInterpreter, int, char**);
     static cdl_int      get_savefile_version(CdlInterpreter);
-           void         save_conflicts(CdlInterpreter, Tcl_Channel, int, bool) throw(CdlInputOutputException, std::bad_alloc);
-    static void         save_separator(CdlInterpreter, Tcl_Channel, std::string, bool)
-        throw(CdlInputOutputException, std::bad_alloc);
+           void         save_conflicts(CdlInterpreter, Tcl_Channel, int, bool);
+    static void         save_separator(CdlInterpreter, Tcl_Channel, std::string, bool);
         
     virtual std::string get_class_name() const;
     bool                check_this(cyg_assert_class_zeal = cyg_quick) const;
@@ -3831,7 +3808,7 @@ class CdlUserVisibleBody : virtual public CdlNodeBody {
 
     // Persistence support. The save code simply outputs some comments
     // corresponding to the display, doc and description properties.
-    virtual void save(CdlInterpreter, Tcl_Channel, int, bool) throw(CdlInputOutputException, std::bad_alloc);
+    virtual void save(CdlInterpreter, Tcl_Channel, int, bool);
     
     virtual std::string get_class_name() const;
     bool                check_this(cyg_assert_class_zeal = cyg_quick) const;
@@ -4193,8 +4170,7 @@ class CdlValuableBody : virtual public CdlNodeBody {
     static void         wizard_update_handler(CdlTransaction, CdlNode, CdlProperty, CdlNode, CdlUpdate);
 
     // Persistence suppot
-    void save(CdlInterpreter, Tcl_Channel, int, bool /* modifiable */, bool /* minimal */)
-        throw(CdlInputOutputException, std::bad_alloc);
+    void save(CdlInterpreter, Tcl_Channel, int, bool /* modifiable */, bool /* minimal */);
     bool value_savefile_entry_needed() const;
     static void initialize_savefile_support(CdlToplevel, std::string);
     static int  savefile_value_source_command(CdlInterpreter, int, char**);
@@ -5107,7 +5083,6 @@ class CdlLocalTransaction {
 // There is another library call for step (4):
 //
 //    config->generate_config_headers(std::string directory)
-//      throw(CdlInputOutputException, std::bad_alloc);
 //
 // This will create or update the header files appropriate to
 // the current configuration. Temporary files will be generated,
@@ -5422,8 +5397,7 @@ class CdlDefineLoadableBody : virtual public CdlLoadableBody
     // Update the header file for this loadable. The first argument
     // is a channel to the loadable-specific header file. The second
     // argument is a channel to the global header file.
-    void        generate_config_header(Tcl_Channel, Tcl_Channel) const
-        throw(CdlInputOutputException, std::bad_alloc);
+    void        generate_config_header(Tcl_Channel, Tcl_Channel) const;
 
     // What header file should be generated for this loadable?
     virtual std::string get_config_header() const;
@@ -5470,8 +5444,7 @@ class CdlDefinableBody : virtual public CdlValuableBody
     // Update the header file for this definable. The loadable's Tcl
     // interpreter will already have channels cdl_header and
     // cdl_system_header set up appropriately.
-    void        generate_config_header( Tcl_Channel, Tcl_Channel) const
-        throw(CdlInputOutputException, std::bad_alloc);
+    void        generate_config_header( Tcl_Channel, Tcl_Channel) const;
 
     // Add property parsers and validation code.
     static void add_property_parsers(std::vector<CdlInterpreterCommandEntry>& parsers);
@@ -5541,7 +5514,7 @@ class CdlDialogBody :
     
     // Persistence support. Dialogs should just be ignored when it
     // comes to saving and restoring files.
-    virtual void        save(CdlInterpreter, Tcl_Channel, int, bool) throw(CdlInputOutputException, std::bad_alloc);
+    virtual void        save(CdlInterpreter, Tcl_Channel, int, bool);
                                                 
     virtual std::string get_class_name() const;
     bool                check_this(cyg_assert_class_zeal = cyg_quick) const;
@@ -5600,7 +5573,7 @@ class CdlWizardBody :
     
     // Persistence support. Wizards should just be ignored when it
     // comes to saving and restoring files.
-    virtual void        save(CdlInterpreter, Tcl_Channel, int, bool) throw(CdlInputOutputException, std::bad_alloc);
+    virtual void        save(CdlInterpreter, Tcl_Channel, int, bool);
     
     virtual std::string get_class_name() const;
     bool                check_this(cyg_assert_class_zeal = cyg_quick) const;
@@ -5649,7 +5622,7 @@ class CdlInterfaceBody : public virtual CdlNodeBody,
     // by users, it is all calculated. However it is useful to have the
     // interface data present in the saved file so that users can examine
     // dependencies etc.
-    virtual void        save(CdlInterpreter, Tcl_Channel, int, bool) throw(CdlInputOutputException, std::bad_alloc);
+    virtual void        save(CdlInterpreter, Tcl_Channel, int, bool);
     static void         initialize_savefile_support(CdlToplevel);
     static int          savefile_interface_command(CdlInterpreter, int, char**);
 

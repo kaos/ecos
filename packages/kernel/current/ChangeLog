@@ -1,9 +1,81 @@
+2000-08-17  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/sched/sched.cxx (unlock_inner): Move an assert to some place
+	where it's true *all* the time!  There was a narrow margin where a
+	DSR could confuse unlock_inner() by reanimating the current thread
+	before it had a chance to sleep - hence the call appears to be
+	pointless.  Putting the assert before the DSR calls makes sense.
+
+	* include/mboxt.inl:
+	* src/sync/bin_sem.cxx:
+	* src/sync/cnt_sem.cxx:
+	* src/sync/flag.cxx:
+	* src/sync/mutex.cxx:
+	All of these now use Cyg_Scheduler::reschedule() rather than an
+	unlock/lock pair to yield in their functions which can sleep.
+	They therefore can be called safely and atomically with the
+	scheduler already locked.  This is a Good Thing[tm].  Since the
+	network stack synch primitives now use this feature, the asserts
+	that the scheduler was not locked must disappear: this change.
+
+
+2000-08-07  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/mutex.hxx (class Cyg_Mutex): Add comment explaining
+	presence of locked.
+
+2000-08-04  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* tests/stress_threads.c (STACK_SIZE_HANDLER): Increase stack sizes
+	otherwise it crashes!
+
+2000-07-31  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/mempolt2.hxx: As per change of 2000-07-04, also delete - left
+	behind accidentally
+
+2000-07-20  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/mutex.hxx (class Cyg_Mutex): Added get_ceiling()
+	accessor function.
+
+	* src/sched/mlqueue.cxx: Fixed bug in sorted queue code that
+	resulted in an infinite loop if the thread being inserted is of
+	lower priority than all threads in the queue. This case is now
+	detected early.
+
 2000-07-17  Gary Thomas  <gthomas@redhat.com>
 
 	* tests/kflag1.c (FIRST_THREAD_WAIT_TIME): Parameterize thread 
 	synchronization wait times (for understanding) and adjust for
 	incredibly slow platforms.  [Previous value allowed for the test
 	to get out of sync because the code ran so slowly]
+
+2000-07-04  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/kernel.cdl: Remove all configury related to memory allocators,
+	including tests. Make CYGFUN_KERNEL_API_C require CYGFUN_MEMALLOC_KAPI
+
+	* include/memfixed.hxx, include/mempolt2.inl, include/mempoolt.hxx,
+	  include/mempoolt.inl, include/memvar.hxx, include/mfiximpl.hxx,
+	  include/mfiximpl.inl, include/mvarimpl.hxx, include/mvarimpl.inl, 
+	  src/mem/memfixed.cxx, src/mem/memvar.cxx, tests/kmemfix1.c,
+	  tests/kmemvar1.c, tests/memfix1.cxx, tests/memfix2.cxx,
+	  tests/memvar1.cxx, tests/memvar2.cxx:
+	Move to separate memory allocator package CYGPKG_MEMALLOC
+	
+	* include/kapi.h, include/kapidata.h, src/common/kapi.cxx:
+	Remove memory allocator functionality - now implemented in
+	CYGPKG_MEMALLOC
+
+	* tests/dhrystone.c:
+	Update configuration dependencies for new isoinfra design
+	* tests/stress_threads.c:
+	Likewise.
+	Also fix early termination after DEATH_TIME_LIMIT so that 
+	allocated resources are freed, and so more appropriate
+	statistics are reported
+	Also update to use mallinfo() interface to memory allocator
 
 2000-06-23  Hugo Tyson  <hmt@cygnus.co.uk>
 
@@ -12,6 +84,17 @@
 	in the network stack.
 
 	* src/common/kapi.cxx (cyg_scheduler_read_lock): New function.
+
+2000-06-20  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/sched/mlqueue.cxx (Cyg_ThreadQueue_Implementation::enqueue):
+	Rewrote code to insert threads into priority sorted queue. The
+	original code could not cope with a queue all of whose members
+	were lower priority than the new thread - it looped for ever. Also
+	provided fast paths for common and easily detected cases such as
+	adding to a single element queue and adding at the front. By
+	taking these cases out early, we can also simplify the code to
+	search the queue.
 
 2000-06-16  Gary Thomas  <gthomas@redhat.com>
 
@@ -23,6 +106,35 @@
 	* src/intr/intr.cxx (chain_isr): Only call default_isr if no isrs
 	in the chain reacted to the interrupt.
 
+2000-06-15  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/mutex.hxx (class Cyg_Condition_Variable): Added an
+	inline function, get_queue(), to return a pointer to the
+	underlying thread queue. To be used mainly for comparing with a
+	thread's current queue to decide whether it is waiting for a
+	condition variable.
+
+	* include/kapi.h:
+	* src/common/kapi.cxx: 
+	Changed return type of cyg_semaphore_wait() to match existing
+	behaviour of Cyg_Counting_Semaphore::wait().
+	Changed return type of cyg_cond_wait() to match new behaviour of
+	Cyg_Condition_Variable::wait().
+
+2000-06-09  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/mutex.hxx:
+	* src/sync/mutex.cxx:
+	Modified non-timeout condition variable wait() API to return
+	cyg_bool. A true result indicates that the wait() terminated
+	normally. A false result indicates that the wait() was terminated
+	as a result of a release() or destroy operation. For most uses
+	this distinction is irrelevant, but in some situations it is a
+	useful bit of information to have.
+	Also modified timeout condition variable wait to reacquire the
+	mutex under all circumstances. This is the correct and consistent
+	thing to do.
+
 2000-06-08  Jesper Skov  <jskov@redhat.com>
 
 	* src/debug/dbg-thread-demux.c: Use generic HAL feature to allow
@@ -32,6 +144,45 @@
 
 	* tests/dhrystone.c: Increase number of test loops for faster
 	StrongARM platforms.
+
+2000-05-22  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/scheduler.cdl (CYGIMP_KERNEL_SCHED_SORTED_QUEUES): Disable by
+	default
+
+	* src/sched/mlqueue.cxx (enqueue): Add to end of thread queue even
+	when not priority ordered
+
+2000-05-20  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/mqueue.hxx, include/mqueue.inl:
+	Add POSIX-style message queue implementation
+	
+	* cdl/kernel.cdl: Add mqueue1 test
+	* cdl/scheduler.cdl: Add new CYGIMP_KERNEL_SCHED_SORTED_QUEUES option
+
+	* include/sema.hxx: Need thread.inl header, not just thread.hxx
+	Make Cyg_Counting_Semaphore::peek() const since it is
+
+	* src/sync/cnt_sem.cxx, src/sync/cnt_sem2.cxx, include/sema2.hxx:
+	Make Cyg_Counting_Semaphore{2}::peek() const since it is
+
+	* include/thread.hxx: don't want Cyg_Thread_queue::empty() to be marked
+	inline in the class def, otherwise we get warnings elsewhere
+
+	* include/mlqueue.hxx (Cyg_ThreadQueue_Implementation):
+	Add set_thread_queue private method
+	Add derived class Cyg_SchedulerThreadQueue_Implementation, and
+	make scheduler implementation use it instead of
+	Cyg_ThreadQueue_Implementation
+	
+	* src/mlqueue.cxx: Fix typo
+	Support  CYGIMP_KERNEL_SCHED_SORTED_QUEUES, i.e. allow insertion
+	into thread queue in order of thread priority, with oldest at the
+	front
+	(Cyg_ThreadQueue_Implementation::set_thread_queue): Add
+	(Cyg_SchedulerThreadQueue_Implementation::enqueue): Add, like old
+	one, except make it FIFO instead of LIFO by inserting at end of queue
 
 2000-05-15  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
@@ -50,6 +201,53 @@
 	* tests/kintr0.c:
 	* tests/intr0.cxx: Correct test for cases when VSR_MIN or
 	ISR_MIN are not zero (bad assumption).
+
+2000-05-02  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/thread.cdl (CYGNUM_KERNEL_THREADS_DATA_LIBC): Don't need libc
+	slot. Replace with CYGNUM_KERNEL_THREADS_DATA_ERRNO slot instead.	
+
+2000-04-28  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/sched/sched.cxx (unlock_inner):
+	A significant change to the behaviour of this function.  The
+	new_lock argument contains the value that the scheduler lock
+	should have after this function has completed. If it is zero then
+	the lock is being released and some extra work (running ASRs,
+	checking for DSRs) is done before returning. If it is non-zero
+	then it must equal the current value of the lock, and is used to
+	indicate that we want to reacquire the scheduler lock before
+	returning. This latter option only makes any sense if the current
+	thread is no longer runnable, otherwise this function will do
+	nothing.
+
+	The result of this is that where we used to "blip" the scheduler
+	lock to force a sleep, we now call reschedule(), which calls
+	unlock_inner() with the current sched_lock value. The important
+	difference is that there is not now the brief window between the
+	calls where the lock is unclaimed. It also prevents ASRs being run
+	at inopportune moments. In future this will also allow us to force
+	threads to sleep even when they are deeply nested in the scheduler
+	lock.
+
+	* include/mutex.hxx:
+	Added Cyg_Mutex::get_owner() to return pointer to owning thread.
+	
+	* include/sched.hxx:
+	* include/sched.inl:	
+	Added new_lock argument to unlock_inner(), added reschedule().
+	Made set_asr_inhibit() and clear_asr_inhibit() available even when
+	ASRs are disabled.
+
+	* include/mboxt.inl:
+	* src/sync/bin_sem.cxx: 
+	* src/sync/cnt_sem.cxx:
+	* src/sync/flag.cxx: 
+	* src/sync/mutex.cxx: 
+	Converted instances of "blipping" the scheduler lock into calls to
+	Cyg_Scheduler::reschedule(), which is better behaved. Some calls
+	to set_asr_inhibit() and clear_asr_inhibit() also added in various
+	places.
 
 2000-04-26  Jesper Skov  <jskov@redhat.com>
 
@@ -72,6 +270,32 @@
 	* tests/dhrystone.c:
 	Only a few laps around the block on the v850...
 
+2000-04-13  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/clock.hxx:
+	* src/common/clock.cxx:
+	Added Cyg_Alarm::get_times() member function to allow reading of
+	trigger and interval values from an alarm.
+
+2000-04-12  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/sched.hxx:
+	* src/sched/sched.cxx:
+	Added ASR support.
+
+	* include/thread.hxx:
+	Made Cyg_ThreadQueue::empty() an inline in class definition.
+
+	* src/common/thread.cxx:
+	Added CYG_REPORT_FUNCTION() to Cyg_Thread::exit().
+
+	* include/kapidata.h:
+	Brought thread structures up to date with kernel objects.
+
+	* cdl/thread.cdl: 
+	* cdl/scheduler.cdl:
+	Added ASR configuration, minor tidies.
+
 2000-04-12  Gary Thomas  <gthomas@redhat.com>
 
 	* src/common/kapi.cxx (cyg_scheduler_safe_lock): 
@@ -83,6 +307,37 @@
 	* cdl/scheduler.cdl: 
 	* cdl/counters.cdl: 
 	Don't let interfaces define anything.
+	
+2000-04-07  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/sched.hxx:
+	* include/thread.inl: 
+	* src/sync/mutex.cxx: 
+	* src/sched/sched.cxx: 
+	* src/common/thread.cxx: 
+	General reorganization of priority inversion protocol support,
+	addition of priority ceiling protocol.
+
+	* include/mlqueue.hxx:
+	* src/sched/mlqueue.cxx: 
+	Added timeslicing enable support.
+
+	* cdl/thread.cdl: 
+	* cdl/synch.cdl:
+	Reorganized priority inversion protocol configuration to permit
+	different protocols and dynamic choice.  Added configuration for
+	condition variables to use a user-specified mutex.
+
+	* cdl/scheduler.cdl:
+	Added dynamic timeslicing enable option.
+
+	* include/kapidata.h:
+	Adjusted to match changes in other header files.
+
+	* tests/mutex3.cxx: 
+	* tests/sync3.cxx: 
+	Modified these tests to match new priority inversion protocols
+	configuration options.
 	
 2000-03-28  John Dallaway  <jld@cygnus.co.uk>
 

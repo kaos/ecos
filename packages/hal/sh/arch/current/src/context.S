@@ -47,7 +47,7 @@
 
 #include <cyg/hal/arch.inc>
 #include <cyg/hal/sh_offsets.inc>
-#include <cyg/hal/basetype.h>           // CYG_LABEL_NAME
+#include <cyg/hal/basetype.h>           // CYG_LABEL_DEFN
                 
 #------------------------------------------------------------------------------
 # Register allocation for the Hitachi calling convention:
@@ -75,9 +75,9 @@
 # function declaration macro
                 
 #define FUNC_START(name) \
-        .type CYG_LABEL_NAME(name),@function; \
-        .globl CYG_LABEL_NAME(name); \
-CYG_LABEL_NAME(name):   
+        .type CYG_LABEL_DEFN(name),@function; \
+        .globl CYG_LABEL_DEFN(name); \
+CYG_LABEL_DEFN(name):   
 
 #------------------------------------------------------------------------------
 # hal_thread_switch_context

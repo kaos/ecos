@@ -100,7 +100,7 @@
 #define HAL_UCACHE_ENABLE()                     \
 {                                               \
     asm volatile ("mov  r1,#0x7D;"              \
-                  "mcr  p15,0,r1,c1,c0;"        \
+                  "mcr  p15,0,r1,c1,c0,0;"        \
                   :                             \
                   :                             \
                   : "r1" /* Clobber list */     \
@@ -112,7 +112,8 @@
 #define HAL_UCACHE_DISABLE()                    \
 {                                               \
     asm volatile ("mov  r1,#0x71;"              \
-                  "mcr  p15,0,r1,c1,c0;"        \
+                  "mcr  p15,0,r1,c1,c0,0;"        \
+                  "mcr  p15,0,r1,c8,c7,0;"  /* flush I+D TLBs */                \
                   :                             \
                   :                             \
                   : "r1" /* Clobber list */     \
@@ -128,7 +129,7 @@
 //    mcr  MMU_CP,0,r1,MMU_InvalidateCache,c0
 #define HAL_UCACHE_INVALIDATE_ALL()                             \
 {                                                               \
-    asm volatile ("mcr p15,0,r1,c7,c0,0;" );                      \
+    asm volatile ("mcr p15,0,r1,c7,c7,0;" );                      \
                                                                 \
 }
 

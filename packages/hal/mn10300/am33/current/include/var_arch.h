@@ -35,7 +35,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    nickg
-// Contributors: nickg
+// Contributors: nickg, dmoseley
 // Date:         1999-02-17
 // Purpose:      Define architecture abstractions
 // Description:  This file contains any extra or modified definitions for
@@ -48,6 +48,12 @@
 
 #include <pkgconf/hal.h>
 #include <cyg/infra/cyg_type.h>
+
+//--------------------------------------------------------------------------
+// Processor Status word bitmasks
+
+#define HAL_ARCH_AM33_PSW_nSL           (1L << 16)
+#define HAL_ARCH_AM33_PSW_ML            (1L << 19)
 
 //--------------------------------------------------------------------------
 // Processor saved states:
@@ -113,7 +119,12 @@ CYG_MACRO_END
 //--------------------------------------------------------------------------
 // The following macros copy the extra AM33 registers between a
 // HAL_SavedRegisters structure and a GDB register dump.
+// The CYGMON version should handle the SSP and USP and MDRQ registers.
 
+#ifdef CYGPKG_CYGMON
+#define HAL_GET_GDB_EXTRA_REGISTERS( _regval_, _regs_ ) am33_get_gdb_extra_registers( _regval_, _regs_ )
+extern void am33_get_gdb_extra_registers(CYG_ADDRWORD *registers, HAL_SavedRegisters *regs);
+#else // CYGPKG_CYGMON
 #define HAL_GET_GDB_EXTRA_REGISTERS( _regval_, _regs_ ) \
 CYG_MACRO_START                                         \
     (_regval_)[15] = (_regs_)->e0;                      \
@@ -133,7 +144,12 @@ CYG_MACRO_START                                         \
     (_regval_)[27] = (_regs_)->mcrl;                    \
     (_regval_)[28] = (_regs_)->mcvf;                    \
 CYG_MACRO_END
+#endif // CYGPKG_CYGMON
 
+#ifdef CYGPKG_CYGMON
+#define HAL_SET_GDB_EXTRA_REGISTERS( _regval_, _regs_ ) am33_set_gdb_extra_registers( _regs_, _regval_ )
+extern void am33_set_gdb_extra_registers(CYG_ADDRWORD *registers, HAL_SavedRegisters *regs);
+#else // CYGPKG_CYGMON
 #define HAL_SET_GDB_EXTRA_REGISTERS( _regs_, _regval_ ) \
 CYG_MACRO_START                                         \
     (_regs_)->e0 = (_regval_)[15];                      \
@@ -153,6 +169,7 @@ CYG_MACRO_START                                         \
     (_regs_)->mcrl = (_regval_)[27];                    \
     (_regs_)->mcvf = (_regval_)[28];                    \
 CYG_MACRO_END
+#endif // CYGPKG_CYGMON
 
 //--------------------------------------------------------------------------
 #endif // CYGONCE_HAL_VAR_ARCH_H

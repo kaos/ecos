@@ -1,0 +1,409 @@
+RedBoot for the EBSA285
+=======================
+
+Target
+------
+
+This document describes using RedBoot with the Intel StrongARM EBSA-285
+development system and equivalents.
+
+Background
+----------
+
+RedBoot is the new debug/bootstrap environment from RedHat.  It is designed
+to replace the existing debug/boot tools CygMon and GDB stubs.  It provides
+a complete bootstrap environment, including network downloading and
+debugging.  Also provided is a simple flash file system for boot images.
+
+Some host services may be necessary in order to run RedBoot, especially the
+first time.  In particular:
+  * TFTP - RedBoot uses TFTP for downloading images.  Most systems come
+    with this disabled, so it may be necessary to enable a TFTP server.
+    Also note that the files mentioned below are assumed to be in the TFTP
+    directory, normally "/tftpboot".
+  * BOOTP/DHCP - RedBoot will use BOOTP to get its network address
+    parameters unless setup otherwise.  For the initial setup, BOOTP will
+    be required.
+
+Since RedBoot is still quite new, there are some limitations (which we expect
+to remove very soon):
+  * The only format supported for image download is Motorola S-records.
+    Thus files to be downloaded would have to be converted using the
+    "objcopy" utility for the platform in question; for EBSA this is
+    arm-elf-objcopy.  S-record versions of the boot images are produced as
+    part of the normal RedBoot build process (see below).
+  * Serial downloads are not supported; TFTP only in this version.
+  * RedBoot "chatters" somewhat about network packets that it discards;
+    this is to help with our debugging.
+  * Asynchronous interrupt (^C) of the board is not yet supported in
+    RedBoot.
+
+Notes:
+  * Only one network interface is used by RedBoot.  This will be the first
+    interface found, which on the EBSA is the board in the highest numbered
+    PCI slot.
+  * In order to use GDB, each network interface needs to have two IP
+    addresses.  One will be used for RedBoot/GDB and the other for eCos
+    applications.  After RedBoot is installed in the flash, we use the
+    RedBoot configuration to force the IP address for the board's RedBoot
+    persona, and then BOOTP for the eCos application's IP address.
+  * In case of difficulties with RedBoot, it is possible to go back to the
+    "old way" of doing things, with built-in debug stubs and serial-only
+    debug and so on; that way the eCos application and its built-in GDB
+    stubs "takes over" the whole machine.  Installing RedBoot is not a
+    one-way street; it can be used just as CygMon or an eCos stub ROM was.
+
+Building Test Cases to run with RedBoot
+---------------------------------------
+
+The default configuration for EBSA-285 at present always sends diagnostic
+output to the serial line; to use RedBoot to channel diagnostic output to
+GDB whether connected by net or serial, enable the configuration option
+
+        CYGSEM_HAL_VIRTUAL_VECTOR_DIAG
+        "Do diagnostic IO via virtual vector table"
+
+located here in the common HAL configuration tree:
+        "eCos HAL"
+            "ROM monitor support"
+                "Enable use of virtual vector calling interface"
+                    "Do diagnostic IO via virtual vector table"
+
+Other than that, no special configuration is required to use RedBoot.
+
+If you have been using built-in stubs to acquire support for thread-aware
+debugging, you can still do that, but you must only use the serial device
+for GDB connection and you must not enable the option mentioned above.
+However, it is no longer necessary to do that to get thread-awareness;
+RedBoot is thread aware.
+
+Installation on the Target Board
+--------------------------------
+
+Here's how to install RedBoot, using the redboot images you should find in
+        loaders/arm-ebsa285/
+in your installation directory:
+        431497 Aug  9 15:28 redboot-ram.elf
+        184802 Aug  9 15:28 redboot-ram.srec
+        433104 Aug  9 15:29 redboot-rom.elf        (this one is not used)
+        194732 Aug  9 15:29 redboot-rom.srec
+
+Copy the two '.srec' files to /tftpboot or where-ever they have to be for
+your TFTP server.
+
+Briefly, we use whatever boot flash image you have in place already (CygMon
+or an eCos stub ROM) along with GDB, to execute a RAM based version of
+RedBoot.  That is used, in its command-line mode, to fetch a ROM-based boot
+image of RedBoot and write it into the flash memory.  "Fetching" the image
+means TFTP from a server; the image must be in S-Record format.  We then
+reset the target, thus running the newly-installed boot image of RedBoot.
+That in turn is used, in its command-line mode, to fetch a RAM-based boot
+image of RedBoot and write it into a different area of the flash memory, in
+order to make it easier to do the first part (running a RAM-based RedBoot
+in order to update the boot block) again in future.
+
+Alternatively you can make a plain binary from the redboot-rom.elf and
+"blow" that into the boot flash using the means of your choice, as with
+previous systems.
+
+
+1. Load a RedBoot, built for RAM startup, into RAM using existing GDB
+   stubs.  Note: do not run it yet!
+
+   % arm-elf-gdb -nw loaders/arm-ebsa285/redboot-ram.elf 
+
+   GNU gdb 4.18-ecos-99r1-991015
+   Copyright 1998 Free Software Foundation, Inc.
+   GDB is free software, covered by the GNU General Public License, and you are
+   welcome to change it and/or distribute copies of it under certain conditions.
+   Type "show copying" to see the conditions.  This version of GDB is supported
+   for customers of Cygnus Solutions.  Type "show warranty" for details.
+   This GDB was configured as "--host=i686-pc-linux-gnu
+   --target=arm-elf"...(no debugging symbols found)...
+   (gdb) set remotebaud 38400
+   (gdb) tar rem /dev/ttyS0
+   Remote debugging using /dev/ttyS0
+   0x41000838 in ?? ()
+   (gdb) load
+   Loading section .rom_vectors, size 0x44 lma 0x20000
+   Loading section .text, size 0xf06c lma 0x20044
+   Loading section .rodata, size 0x19a8 lma 0x2f0b0
+   Loading section .data, size 0x474 lma 0x30a58
+   Start address 0x20044 , load size 69324
+   Transfer rate: 25208 bits/sec.
+   (gdb) detach
+   Ending remote debugging.
+   (gdb) q
+
+2. Execute RedBoot from RAM, and initialize the flash filing system.
+       Notes: the key here is the "-o" option which keeps minicom from
+       sending junk.
+       The magic phrase "$c#63" is important: you must type it in exactly
+       thus.  It is the packet which a "continue" command in GDB would send
+       to the target.  If you get no response, try "+$c#63" instead.
+       The IP and server info comes from BOOTP, which is how this RedBoot
+       will start up if the flash does not contain good config info.
+
+   % minicom -o ttyS0
+
+   $c#63
+   RedBoot(tm) debug environment - built 07:45:57, Aug  7 2000
+   Copyright (C) 2000, Red Hat, Inc.
+
+   RAM: 0x00000000-0x01000000
+   FLASH: 0x41000000 - 0x41400000, 16 blocks of 0x00040000 bytes ea.
+   IP: 192.168.1.25, Default server: 192.168.1.101
+   show tcp = 0x00030d48
+   RedBoot> fi init
+   About to initialize [format] FLASH image system - are you sure (y/n)? y
+   *** Initialize FLASH Image System
+       Warning: device contents not erased, some blocks may not be usable
+   ... Erase from 0x413c0000-0x41400000: .
+   ... Program from 0x00fb0000-0x00fb0400 at 0x413c0000: .
+
+
+3. Program RedBoot image into FLASH:
+       This expects the file redboot-rom.srec to exist in the TFTP server
+       space on the server that answered the BOOTP request.  
+
+   RedBoot> lo -v redboot-rom.srec -b 0x00100000
+   Address offset = bf100000
+   Entry point: 0x41000044, address range: 0x41000000-0x41011384
+   RedBoot> fi cr RedBoot -f 0x41000000 -b 0x00100000 -l 0x20000
+   An image named 'RedBoot' exists - are you sure (y/n)? y
+   ... Erase from 0x41000000-0x41020000: .
+   ... Program from 0x00100000-0x00120000 at 0x41000000: .
+   ... Erase from 0x413c0000-0x41400000: .
+   ... Program from 0x00fb0000-0x00ff0000 at 0x413c0000: .
+   RedBoot> 
+
+****reset the board here, leaving your terminal program connected****
+
+   RedBoot(tm) debug environment - built 07:47:35, Aug  7 2000
+   Copyright (C) 2000, Red Hat, Inc.
+   
+   RAM: 0x00000000-0x01000000
+   FLASH: 0x41000000 - 0x41400000, 16 blocks of 0x00040000 bytes ea.
+   IP: 192.168.1.25, Default server: 192.168.1.101
+   show tcp = 0x000082f0
+   RedBoot> 
+
+
+4. Install RAM based RedBoot for backup/update:
+       Similar considerations apply: redboot-ram.srec must be an S-record
+       version of RedBoot built for RAM startup.
+
+   RedBoot> lo -v redboot-ram.srec
+   Entry point: 0x00020044, address range: 0x00020000-0x00030ecc
+   RedBoot> fi cr RedBoot[backup] -f 0x41040000 -b 0x20000 -r 0x20000 -l 0x20000
+   An image named 'RedBoot[backup]' exists - are you sure (y/n)? y
+   ... Erase from 0x41040000-0x41060000: .
+   ... Program from 0x00020000-0x00040000 at 0x41040000: .
+   ... Erase from 0x413c0000-0x41400000: .
+   ... Program from 0x00fb0000-0x00ff0000 at 0x413c0000: .
+   RedBoot> 
+
+        You have now updated your board completely.  Phew!
+
+
+
+5. To update RedBoot with a new version of RedBoot, it is necessary to run
+   a RAM-based version of RedBoot which itself re-writes the ROM-based one,
+   because you can't re-write the code that is executing at the time.
+
+   RedBoot> fi lo RedBoot[backup]
+   RedBoot> g
+   +
+   RedBoot(tm) debug environment - built 07:45:57, Aug  7 2000
+   Copyright (C) 2000, Red Hat, Inc.
+   
+   RAM: 0x00000000-0x01000000
+   FLASH: 0x41000000 - 0x41400000, 16 blocks of 0x00040000 bytes ea.
+   IP: 192.168.1.25, Default server: 192.168.1.101
+   show tcp = 0x00030d48
+   RedBoot> 
+   
+     .. continue with step 3, using whatever your new boot image is called
+        in the TFTP-place, in .srec format.
+
+
+You probably also want to set up then environment with your own IP
+addresses and so on.  Recall that this IP address is the one you use for
+GDB to talk to the board, not the IP address which the eCos application
+will take on (by BOOTP/DHCP or whatever means according to configury as
+usual).
+
+   RedBoot> fconfig
+   Network debug at boot time: false 
+   Use BOOTP for network configuration: false 
+   Local IP address: 192.168.1.25 
+   Default server IP address: 192.168.1.101 
+   GDB connection port: 1000 
+   Run script at boot: false 
+   RedBoot> 
+
+
+Building RedBoot
+----------------
+
+To rebuild RedBoot from source, first cut out the attached configuration
+export file "redboot.RAM" and save it somewhere, say /tmp/redboot.RAM
+
+  mkdir redboot
+  cd redboot
+  ecosconfig new ebsa redboot
+  ecosconfig import /tmp/redboot.RAM
+  ecosconfig tree
+  make
+
+To build the ROM version, in a different build/config directory, just
+change the startup mode (at the end of the export file) and add an enable
+of CYGSEM_HAL_ROM_MONITOR, or use the attached config export redboot.ROM.
+
+The resulting files will be, in each of the ROM and RAM startup build
+places:
+   70456     ..../install/bin/redboot.bin
+  433104     ..../install/bin/redboot.elf
+   91407     ..../install/bin/redboot.img
+  194732     ..../install/bin/redboot.srec
+
+The .elf and .srec files have the obvious relationship to those supplied in
+the "loaders/arm-ebsa285" directory in the install.
+
+Here are the redboot.RAM and .ROM configuration exports:
+
+=========================== redboot.RAM =====================================
+cdl_savefile_version 1;
+cdl_savefile_command cdl_savefile_version {};
+cdl_savefile_command cdl_savefile_command {};
+cdl_savefile_command cdl_configuration { description hardware template package };
+cdl_savefile_command cdl_package { value_source user_value wizard_value inferred_value };
+cdl_savefile_command cdl_component { value_source user_value wizard_value inferred_value };
+cdl_savefile_command cdl_option { value_source user_value wizard_value inferred_value };
+cdl_savefile_command cdl_interface { value_source user_value wizard_value inferred_value };
+
+cdl_configuration eCos {
+    description "" ;
+    hardware    ebsa285 ;
+    template    redboot ;
+    package -hardware CYGPKG_HAL_ARM current ;
+    package -hardware CYGPKG_HAL_ARM_EBSA285 current ;
+    package -hardware CYGPKG_IO_PCI current ;
+    package -hardware CYGPKG_DEVS_ETH_ARM_EBSA285 current ;
+    package -hardware CYGPKG_IO_SERIAL_ARM_EBSA285 current ;
+    package -hardware CYGPKG_DEVICES_WATCHDOG_ARM_EBSA285 current ;
+    package -template CYGPKG_HAL current ;
+    package -template CYGPKG_INFRA current ;
+    package -template CYGPKG_REDBOOT current ;
+    package CYGPKG_IO_FLASH current ;
+    package CYGPKG_IO_ETH_DRIVERS current ;
+    package CYGPKG_DEVS_FLASH_EBSA285 current ;
+};
+
+cdl_option CYGBLD_BUILD_GDB_STUBS {
+    user_value 0
+};
+
+cdl_option CYGDBG_DEVS_ETH_ARM_EBSA285_CHATTER {
+    user_value 0
+};
+
+cdl_option CYGNUM_DEVS_ETH_ARM_EBSA285_DEV_COUNT {
+    user_value 1
+};
+
+cdl_option CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS {
+    inferred_value 1
+};
+
+cdl_option CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT {
+    inferred_value 0
+};
+
+cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_DIAG {
+    user_value 1
+};
+
+cdl_option CYGSEM_HAL_USE_ROM_MONITOR {
+    inferred_value 0 0
+};
+
+cdl_option CYGBLD_BUILD_REDBOOT {
+    user_value 1
+};
+
+cdl_component CYG_HAL_STARTUP {
+    user_value RAM
+};
+=========================== redboot.RAM =====================================
+=========================== redboot.ROM =====================================
+cdl_savefile_version 1;
+cdl_savefile_command cdl_savefile_version {};
+cdl_savefile_command cdl_savefile_command {};
+cdl_savefile_command cdl_configuration { description hardware template package };
+cdl_savefile_command cdl_package { value_source user_value wizard_value inferred_value };
+cdl_savefile_command cdl_component { value_source user_value wizard_value inferred_value };
+cdl_savefile_command cdl_option { value_source user_value wizard_value inferred_value };
+cdl_savefile_command cdl_interface { value_source user_value wizard_value inferred_value };
+
+cdl_configuration eCos {
+    description "" ;
+    hardware    ebsa285 ;
+    template    redboot ;
+    package -hardware CYGPKG_HAL_ARM current ;
+    package -hardware CYGPKG_HAL_ARM_EBSA285 current ;
+    package -hardware CYGPKG_IO_PCI current ;
+    package -hardware CYGPKG_DEVS_ETH_ARM_EBSA285 current ;
+    package -hardware CYGPKG_IO_SERIAL_ARM_EBSA285 current ;
+    package -hardware CYGPKG_DEVICES_WATCHDOG_ARM_EBSA285 current ;
+    package -template CYGPKG_HAL current ;
+    package -template CYGPKG_INFRA current ;
+    package -template CYGPKG_REDBOOT current ;
+    package CYGPKG_IO_FLASH current ;
+    package CYGPKG_IO_ETH_DRIVERS current ;
+    package CYGPKG_DEVS_FLASH_EBSA285 current ;
+};
+
+cdl_option CYGBLD_BUILD_GDB_STUBS {
+    user_value 0
+};
+
+cdl_option CYGDBG_DEVS_ETH_ARM_EBSA285_CHATTER {
+    user_value 0
+};
+
+cdl_option CYGNUM_DEVS_ETH_ARM_EBSA285_DEV_COUNT {
+    user_value 1
+};
+
+cdl_option CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS {
+    inferred_value 1
+};
+
+cdl_option CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT {
+    inferred_value 0
+};
+
+cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_DIAG {
+    user_value 1
+};
+
+cdl_option CYGSEM_HAL_USE_ROM_MONITOR {
+    inferred_value 0 0
+};
+
+cdl_option CYGBLD_BUILD_REDBOOT {
+    user_value 1
+};
+
+cdl_component CYG_HAL_STARTUP {
+    user_value ROM
+};
+
+cdl_option CYGSEM_HAL_ROM_MONITOR {
+    user_value 1
+};
+
+=========================== redboot.ROM =====================================
+
+[end]

@@ -1,3 +1,11 @@
+2000-08-18  Bart Veer  <bartv@redhat.com>
+
+	* configure.in:
+	Allow cross-compilation
+
+	* Makefile.in, configure:
+	Regenerate
+
 2000-03-13  John Dallway  <jld@cygnus.co.uk>
 
 	* README:

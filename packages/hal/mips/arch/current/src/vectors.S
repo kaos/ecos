@@ -102,7 +102,10 @@ FUNC_START(reset_vector)
 	mtc0	k0,config0		# to disable cache
 #endif	
 	lar	v0,_start		# jump to start
+#ifdef CYGARC_START_FUNC_UNCACHED
 	CYGARC_ADDRESS_REG_UNCACHED(v0)
+#endif
+
 	jr	v0
 	nop				# (delay slot)
 

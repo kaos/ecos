@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    nickg
-// Contributors: nickg, jlarmour
+// Contributors: jlarmour
 // Date:         1999-02-17
 // Purpose:      Multilevel queue scheduler class implementation
 // Description:  This file contains the implementations of
@@ -261,8 +261,12 @@ Cyg_Scheduler_Implementation::timeslice(void)
 #endif
     CYG_ASSERT( queue_map != 0, "Run queue empty");
     CYG_ASSERT( queue_map & (1<<CYG_THREAD_MIN_PRIORITY), "Idle thread vanished!!!");
-    
+
+#ifdef CYGSEM_KERNEL_SCHED_TIMESLICE_ENABLE
+    if( current_thread->timeslice_enabled && --timeslice_count == 0 )
+#else    
     if( --timeslice_count == 0 )
+#endif
     {
         CYG_INSTRUMENT_SCHED(TIMESLICE,0,0);
 #ifdef CYGDBG_KERNEL_TRACE_TIMESLICE
@@ -272,6 +276,7 @@ Cyg_Scheduler_Implementation::timeslice(void)
         current_thread->yield();
     }
 
+    
     CYG_ASSERT( queue_map & (1<<CYG_THREAD_MIN_PRIORITY), "Idle thread vanished!!!");
     CYG_ASSERT( !run_queue[CYG_THREAD_MIN_PRIORITY].empty(), "Idle thread vanished!!!");
 #ifdef CYGDBG_KERNEL_TRACE_TIMESLICE
@@ -282,7 +287,7 @@ Cyg_Scheduler_Implementation::timeslice(void)
 #endif
 
 //==========================================================================
-// Cyg_Cyg_SchedThread_Implementation class members
+// Cyg_SchedThread_Implementation class members
 
 Cyg_SchedThread_Implementation::Cyg_SchedThread_Implementation
 (
@@ -292,9 +297,14 @@ Cyg_SchedThread_Implementation::Cyg_SchedThread_Implementation
     CYG_REPORT_FUNCTION();
     CYG_REPORT_FUNCARG1("sched_info=%08x", sched_info);
         
-    // Create all threads at maximum priority
+    // Set priority to the supplied value.
     priority = (cyg_priority)sched_info;
 
+#ifdef CYGSEM_KERNEL_SCHED_TIMESLICE_ENABLE
+    // If timeslice_enabled exists, set it true by default
+    timeslice_enabled = true;
+#endif
+    
     // point the next and prev field at this thread.
     
     next = prev = CYG_CLASSFROMBASE(Cyg_Thread,
@@ -465,7 +475,75 @@ Cyg_ThreadQueue_Implementation::enqueue(Cyg_Thread *thread)
     CYG_REPORT_FUNCARG1("thread=%08x", thread);
 
     if( queue == NULL ) queue = thread;
-    else queue->insert(thread);
+    else {
+#ifdef CYGIMP_KERNEL_SCHED_SORTED_QUEUES
+
+        // Insert the thread into the queue in priority order.
+        
+        if( queue == queue->next )
+        {
+            // There is only one other thread in the queue, join it
+            // and adjust the queue pointer to point to the highest
+            // priority of the two. If they are the same priority,
+            // leave the pointer pointing to the oldest.
+
+            queue->insert( thread );
+
+            if( thread->priority < queue->priority )
+                queue = thread;
+        }
+        else
+        {
+            // There is more than one thread in the queue. First check
+            // whether we are of higher priority than the head and if
+            // so just jump in at the front. Also check whether we are
+            // lower priority than the tail and jump onto the end.
+            // Otherwise we really have to search the queue to find
+            // our place.
+
+            if( thread->priority < queue->priority )
+            {
+                queue->insert( thread );
+                queue = thread;
+            }
+            else if( thread->priority > queue->prev->priority )
+            {
+                // We are lower priority than any thread in the queue,
+                // go in at the end.
+
+                queue->prev->insert( thread );
+            }
+            else
+            {
+                // Search the queue. We do this backwards so that we
+                // always add new threads after any that have the same
+                // priority.
+
+                // Because of the previous tests we know that this
+                // search will terminate before we hit the head of the
+                // queue, hence we do not need to check for that
+                // condition.
+                
+                Cyg_Thread *qtmp = queue->prev;
+
+                // Scan the queue until we find a higher or equal
+                // priority thread.
+
+                while( thread->priority > qtmp->priority )
+                    qtmp = qtmp->prev;
+
+                // Insert ourself after the node pointed to by qtmp.
+                // We do this by inserting before the next node since
+                // that is the operation we have.
+                
+                qtmp->next->insert( thread );
+            }
+
+        }
+#else
+        queue->prev->insert(thread);
+#endif
+    }
     
     thread->queue = CYG_CLASSFROMBASE(Cyg_ThreadQueue,
                                       Cyg_ThreadQueue_Implementation,
@@ -523,7 +601,7 @@ Cyg_ThreadQueue_Implementation::remove(Cyg_Thread *thread)
     CYG_REPORT_FUNCTION();
     CYG_REPORT_FUNCARG1("thread=%08x", thread);
         
-    // If the thread we want it the at the head
+    // If the thread we want is the at the head
     // of the list, and is on its own, clear the
     // list and return. Otherwise advance to the
     // next thread and remove ours. If the thread
@@ -570,6 +648,33 @@ Cyg_ThreadQueue_Implementation::to_head(Cyg_Thread *thread)
         
     queue = thread;
 
+    CYG_REPORT_RETURN();
+}
+
+// -------------------------------------------------------------------------
+
+inline void
+Cyg_ThreadQueue_Implementation::set_thread_queue(Cyg_Thread *thread,
+                                                 Cyg_ThreadQueue *tq )
+
+{
+    thread->queue = tq;
+}
+
+// -------------------------------------------------------------------------
+
+void
+Cyg_SchedulerThreadQueue_Implementation::enqueue(Cyg_Thread *thread)
+{
+    CYG_REPORT_FUNCTION();
+    CYG_REPORT_FUNCARG1("thread=%08x", thread);
+
+    if( queue == NULL ) queue = thread;
+    else queue->prev->insert(thread);
+    
+    set_thread_queue( thread, CYG_CLASSFROMBASE(Cyg_ThreadQueue,
+                                      Cyg_SchedulerThreadQueue_Implementation,
+                                                this));
     CYG_REPORT_RETURN();
 }
 

@@ -104,11 +104,11 @@ void
 cyg_hal_plf_serial_putc(void *__ch_data, char c)
 {
     channel_data_t* chan = (channel_data_t*)__ch_data;
+
     CYGARC_HAL_SAVE_GP();
 
     // Wait for Tx FIFO not full
-    while ((chan->base->stat & SYSFLG1_UTXFF1) != 0) 
-        dram_delay_loop();
+    while ((chan->base->stat & SYSFLG1_UTXFF1) != 0) ;
 
     chan->base->data.write = c;
 
@@ -132,10 +132,18 @@ cyg_uint8
 cyg_hal_plf_serial_getc(void* __ch_data)
 {
     cyg_uint8 ch;
+    int delay_timer = 0;
+
     CYGARC_HAL_SAVE_GP();
 
-    while(!cyg_hal_plf_serial_getc_nonblock(__ch_data, &ch))
-        dram_delay_loop();
+    while(!cyg_hal_plf_serial_getc_nonblock(__ch_data, &ch)) {
+        CYGACC_CALL_IF_DELAY_US(50);  // A reasonable time
+        // Only delay every 10ms or so
+        if (++delay_timer == 10*20) {
+            dram_delay_loop();
+            delay_timer = 0;
+        }
+    }
 
     CYGARC_HAL_RESTORE_GP();
     return ch;

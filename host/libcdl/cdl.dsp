@@ -64,8 +64,8 @@ MTL=midl.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "V:\cdl\Debug"
-# PROP Intermediate_Dir "V:\cdl\Debug\build"
+# PROP Output_Dir "v:\cdl\Debug"
+# PROP Intermediate_Dir "v:\cdl\Debug\build"
 # PROP Target_Dir ""
 
 !ELSEIF  "$(CFG)" == "cdl - Win32 ANSI Release"
@@ -158,8 +158,8 @@ BuildCmds= \
 !ELSEIF  "$(CFG)" == "cdl - Win32 ANSI Debug"
 
 # Begin Custom Build - Performing Custom Build Step for libCDL
-IntDir=V:\cdl\Debug\build
-OutDir=V:\cdl\Debug
+IntDir=v:\cdl\Debug\build
+OutDir=v:\cdl\Debug
 InputPath=.\ChangeLog
 
 BuildCmds= \

@@ -1,3 +1,10 @@
+2000-08-18  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/platform.inc:
+	* include/var_intr.h:
+	Fixed code to acknowledge interrupts to always ack on the master
+	controller and ack the slave controller when it is INT8 or higher.
+
 2000-06-20  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/var_intr.h: Added cast to _data_ argument in

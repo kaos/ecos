@@ -69,6 +69,9 @@ public:
     bool SetParity(bool bParityOn,bool bApplySettingsNow=true);
     bool SetDataBits(int n,bool bApplySettingsNow=true);
     bool SetStopBits(StopBitsType n,bool bApplySettingsNow=true);
+    bool SetXONXOFFFlowControl(bool b,bool bApplySettingsNow=true);
+    bool SetRTSCTSFlowControl(bool b,bool bApplySettingsNow=true);
+    bool SetDSRDTRFlowControl(bool b,bool bApplySettingsNow=true);
     bool SetReadTimeOuts(int nTotal,int nBetweenChars,bool bApplySettingsNow=true);  // Times are in mSec
     bool SetWriteTimeOuts(int nTotal,int nBetweenChars,bool bApplySettingsNow=true); // Times are in mSec
 
@@ -78,6 +81,9 @@ public:
     int  GetParity() const { return m_bParity; }
     int  GetDataBits() const { return m_nDataBits; }
     StopBitsType GetStopBits() const { return m_nStopBits; }
+    bool GetXONXOFFFlowControl() const { return m_bXONXOFFFlowControl; }
+    bool GetRTSCTSFlowControl() const { return m_bRTSCTSFlowControl; }
+    bool GetDSRDTRFlowControl() const { return m_bDSRDTRFlowControl; }
     unsigned int GetBaud() const { return m_nBaud; }
     bool GetReadTimeOuts(int &nTotal,int &nBetweenChars) const {nTotal=m_nTotalReadTimeout; nBetweenChars=m_nInterCharReadTimeout; return true; }// mSec
     bool GetWriteTimeOuts(int &nTotal,int &nBetweenChars) const {nTotal=m_nTotalWriteTimeout; nBetweenChars=m_nInterCharWriteTimeout; return true; }// mSec
@@ -123,6 +129,9 @@ protected:
     void *m_pHandle;
     int m_nDataBits;
     StopBitsType m_nStopBits;
+    bool m_bXONXOFFFlowControl;
+    bool m_bRTSCTSFlowControl;
+    bool m_bDSRDTRFlowControl;
     bool m_bParity;
     unsigned int m_nBaud;
     int m_nTotalReadTimeout,m_nTotalWriteTimeout;

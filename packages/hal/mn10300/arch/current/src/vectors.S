@@ -32,7 +32,7 @@
 #######DESCRIPTIONBEGIN####
 ##
 ## Author(s): 	nickg
-## Contributors:	nickg
+## Contributors:	nickg, dmoseley
 ## Date:	1997-10-16
 ## Purpose:	MN10300 exception vectors
 ## Description:	This file defines the code placed into the exception
@@ -78,6 +78,18 @@ reset_vector:
 	
 	# Trap vector
 	jmp	__trap
+
+#ifdef CYGPKG_CYGMON
+#ifdef CYGPKG_HAL_MN10300_AM33
+	// We need to put the syscall handler at 0x300
+	// For cygmon, we will use the am33 "syscall 0" as the syscall trap.
+	.p2align 8
+	.rept 0x200
+	nop
+	.endr
+	jmp	__nmi
+#endif
+#endif
 
 ##-----------------------------------------------------------------------------
 ## NMI vector
@@ -135,6 +147,9 @@ __hardware_vector_\name:
 	.globl	_start
 _start:
 
+#ifdef HAL_EARLY_INIT
+	HAL_EARLY_INIT
+#endif
 	# set up stack
 
 	mov	__interrupt_stack,a0
@@ -203,6 +218,11 @@ _start:
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
         .extern _initialize_stub
         call    _initialize_stub,[],0
+#endif
+
+#ifdef CYGDBG_HAL_MIPS_DEBUG_GDB_CTRLC_SUPPORT
+	.extern hal_ctrlc_isr_init
+	call    hal_ctrlc_isr_init,[],0
 #endif
 
        	# Call cyg_start
@@ -470,22 +490,95 @@ __default_nmi_vsr:
 
 	add	9,d1				# offset into exception number space
 	
+#ifdef CYGPKG_CYGMON
+	# Check to see if this was a syscall.
+	# If so, set d1 appropriately
+#define TBR 0xC0000024
+	mov	(TBR), d0
+	and	0x00FFFFFF, d0
+	cmp	0x300, d0
+	bne	0f
+
+	# This was apparently a syscall.
+	mov     SIGSYSCALL, d1
+
+0:	
+#endif
 	hal_cpu_clear_nmid
 
+	mov	d1,(sp)				# save initial vector in spare save slot
+        
 	mov	sp,a1				# a1 = saved state
+
+#ifdef CYGPKG_CYGMON
+	# Switch to interrupt stack to handle exception
+	# This should probably be done as the first thing in the exception
+	# handler to guard against the possibility of having a bad SP to
+	# begin with.  ie if the user sets the SP to a bad location, we
+	# won't run properly.  Ideally we should switch to monitor mode
+	# on entry to any exception.  However, a lot of other code
+	# assumes things work this way.
+	mov	__interrupt_stack-4,a0
+        mov	a0, sp
+	mov	a1,(sp)
+	add	-4,sp
+#endif
+
 	mov	a1,d0				# d0 = arg1 = saved state
 
 	add	-16,sp				# return link + args
-	mov	d1,(16,sp)			# save initial vector in spare save slot
 	mov	d3,d1				# d1 = arg2 = ISR value
 
 	calls	_cyg_hal_exception_handler	# call C code
 
 	add	16,sp				# pop args
 
+#ifdef CYGPKG_CYGMON
+	add	4,sp				# Restore the old stack
+	mov	(sp),a1
+	mov	a1,sp
+#endif
+
 	hal_cpu_load_all
 
+#ifdef CYGPKG_CYGMON
+	mov	d3,(d3_save)
+	mov	a2,(a2_save)
+	mov	a3,(a3_save)
+
+	# Pop the potentially-new stack pointer into a2
+	mov	(sp),a2
 	add	4,sp
+
+	# Check to see if sp has been modified.
+	# The exception processing pushes 8 bytes onto the stack.
+	# If sp+8 = (sp) then the stack has not been modified.
+	mov	sp,a3
+	add	8, a3
+	cmp	a2,a3
+	beq	8f
+
+	# The stack has been modified.  We need to setup for a proper rti
+	# so the stack is in the correct place.  We just hope that the user
+	# put the stack somewhere we can write to.
+	#
+	# Copy 8 bytes from the old stack to the new stack (ie the exception frame)
+	mov	(-4,a3), d3
+	mov	d3, (-4,a2)
+	mov	(-8,a3), d3
+	mov	d3, (-8,a2)
+
+	# Set the sp register to the new exception frame.
+	add	-8, a2
+	mov	a2, sp
+
+8:	mov	(d3_save),d3
+	mov	(a2_save),a2
+	mov	(a3_save),a3
+#else
+	add	4,sp
+#endif
+
 	rti
 
 	.globl hal_lsbit_table
@@ -495,6 +588,16 @@ hal_lsbit_table:
 	.byte	3, 0, 1, 0
 	.byte	2, 0, 1, 0
 	
+#ifdef CYGPKG_CYGMON
+        .section ".bss"
+d3_save:
+	.long	0
+a2_save:
+	.long	0
+a3_save:
+	.long	0
+#endif
+
 ##-----------------------------------------------------------------------------
 ## Default TRAP VSR
 

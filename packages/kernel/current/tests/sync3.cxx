@@ -48,8 +48,8 @@
 //     
 // Options:
 //     CYGIMP_THREAD_PRIORITY
-//     CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE
-//     CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE
+//     CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_INHERIT
+//     CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_SIMPLE
 //####DESCRIPTIONEND####
 
 #include <pkgconf/kernel.h>
@@ -67,6 +67,31 @@
 #ifndef CYGIMP_THREAD_PRIORITY
 #error "Thread priorities disabled"
 #endif
+
+// ------------------------------------------------------------------------
+// Manufacture a simpler feature test macro for priority inheritance than
+// the configuration gives us. We have priority inheritance if it is configured
+// as the only protocol, or if it is the default protocol for dynamic protocol
+// choice.
+// FIXME: If we have dynamic protocol choice, we can also set priority inheritance
+// as the protocol to be used on the mutexes we are interested in. At present we
+// do not do this.
+
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_INHERIT
+# ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DYNAMIC
+#  ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DEFAULT_INHERIT
+#   define PRIORITY_INHERITANCE
+#  else
+#   undef PRIORITY_INHERITANCE
+#  endif
+# else
+#  define PRIORITY_INHERITANCE
+# endif
+#else
+# undef PRIORITY_INHERITANCE
+#endif
+
+// ------------------------------------------------------------------------
 
 #define NTHREADS 3
 
@@ -88,7 +113,7 @@ static void check_priorities_inherited()
 {
     CHECK( 5 == thread[0]->get_priority());
     CHECK( 6 == thread[1]->get_priority());
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE
+#ifdef PRIORITY_INHERITANCE
     CHECK( 5 == thread[2]->get_current_priority());
 #endif
     CHECK( 7 == thread[2]->get_priority());
@@ -105,7 +130,7 @@ static void entry0( CYG_ADDRWORD data )
         m0d = 0;
     } m0.unlock();
     check_priorities_normal();
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE
+#ifdef PRIORITY_INHERITANCE
     CYG_TEST_PASS_FINISH("Sync 3 OK -- priority inheritance worked");
 #else
     CYG_TEST_FAIL_FINISH("Sync 3: thread not starved");
@@ -122,7 +147,7 @@ static void entry1( CYG_ADDRWORD data )
     for ( volatile cyg_ucount32 i=0; i < 100000; i++ )
         ; // math is hard
 
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE
+#ifdef PRIORITY_INHERITANCE
     // thread0 should have stopped by this point
     CYG_TEST_FAIL_FINISH("Sync 3: priority inheritance mechanism failed");
 #else

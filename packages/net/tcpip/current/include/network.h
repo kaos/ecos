@@ -57,6 +57,7 @@
 
 #define NO_LIBKERN_INLINE  // Avoid kernel inline functions
 
+#include <pkgconf/system.h>
 #include <pkgconf/net.h>
 #undef _KERNEL
 #include <sys/param.h>
@@ -89,12 +90,12 @@ extern const char  *eth1_name;
 
 extern void init_all_network_interfaces(void);
 
-extern void  route_reinit(void);
-extern void  perror(const char *);
-extern int   close(int);
-extern int   read(int, void *, int);
-extern int   write(int, void *, int);
-extern char *inet_ntoa(struct in_addr);
-extern int   select(int, fd_set *, fd_set *, fd_set *, struct timeval *tv);
+extern void     route_reinit(void);
+extern void     perror(const char *);
+extern int      close(int);
+extern ssize_t  read(int, void *, size_t);
+extern ssize_t  write(int, const void *, size_t);
+extern char     *inet_ntoa(struct in_addr);
+extern int      select(int, fd_set *, fd_set *, fd_set *, struct timeval *tv);
 
 #endif // _NETWORK_H_

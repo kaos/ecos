@@ -84,7 +84,8 @@ ETH_DRV_SC(quicc_eth0_sc,
            quicc_eth_control,
            quicc_eth_can_send,
            quicc_eth_send,
-           quicc_eth_recv);
+           quicc_eth_recv,
+           quicc_eth_int);
 
 NETDEVTAB_ENTRY(quicc_netdev, 
                 "quicc_eth", 
@@ -310,7 +311,7 @@ quicc_eth_init(struct cyg_netdevtab_entry *tab)
         HAL_DCACHE_ENABLE();
 
     // Initialize upper level driver
-    eth_drv_init(sc, (unsigned char *)&enaddr);
+    (sc->funs->eth_drv->init)(sc, (unsigned char *)&enaddr);
 
     return true;
 }
@@ -435,7 +436,7 @@ quicc_eth_RxEvent(struct eth_drv_sc *sc)
     rxbd = qi->rnext;
     while ((rxbd->ctrl & (QUICC_BD_CTL_Ready | QUICC_BD_CTL_Int)) == QUICC_BD_CTL_Int) {
         qi->rxbd = rxbd;  // Save for callback
-        eth_drv_recv(sc, rxbd->length);
+        (sc->funs->eth_drv->recv)(sc, rxbd->length);
         rxbd->ctrl |= QUICC_BD_CTL_Ready;
         if (rxbd->ctrl & QUICC_BD_CTL_Wrap) {
             rxbd = qi->rbase;
@@ -484,7 +485,7 @@ quicc_eth_TxEvent(struct eth_drv_sc *sc, int stat)
     while ((txbd->ctrl & (QUICC_BD_CTL_Ready | QUICC_BD_CTL_Int)) == QUICC_BD_CTL_Int) {
         txindex = ((unsigned long)txbd - (unsigned long)qi->tbase) / sizeof(*txbd);
         txbd->ctrl &= ~QUICC_BD_CTL_Int;  // Reset int pending bit
-        eth_drv_tx_done(sc, qi->txkey[txindex], 0);
+        (sc->funs->eth_drv->tx_done)(sc, qi->txkey[txindex], 0);
         if (txbd->ctrl & QUICC_BD_CTL_Wrap) {
             txbd = qi->tbase;
         } else {

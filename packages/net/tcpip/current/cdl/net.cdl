@@ -45,21 +45,24 @@ cdl_package CYGPKG_NET {
     doc           doc/index.html
     include_dir   .
     requires      CYGPKG_IO
-    requires      CYGPKG_LIBC
+    requires      CYGPKG_ISOINFRA
+    requires      CYGPKG_LIBC_TIME
     requires      CYGPKG_ERROR
+    requires      CYGPKG_MEMALLOC
     description   "Basic networking support, including TCP/IP."
 
+    # Export our types to <sys/types.h>
+    implements    CYGINT_ISO_BSDTYPES
+    requires      { CYGBLD_ISO_BSDTYPES_HEADER == "<sys/bsdtypes.h>" }
+    
     compile ecos/support.c \
 	ecos/timeout.c \
         ecos/init.cxx \
         sys/kern/uipc_mbuf.c \
-        sys/kern/uipc_socket.c \
-        sys/kern/uipc_socket2.c \
 	sys/kern/uipc_domain.c \
-	sys/kern/uipc_syscalls.c \
+	sys/kern/uipc_socket.c \
+	sys/kern/uipc_socket2.c \
 	sys/kern/kern_subr.c \
-        sys/kern/sys_socket.c \
-        sys/kern/sys_generic.c \
 	sys/net/if.c \
 	sys/net/rtsock.c \
 	sys/net/raw_cb.c \
@@ -94,7 +97,18 @@ cdl_package CYGPKG_NET {
 	lib/network_support.c \
 	lib/getproto.c \
 	lib/getserv.c \
-	lib/gethost.c \
+	lib/gethost.c
+
+
+    cdl_option CYGPKG_NET_API_LOCAL {
+	display "Implement the socket API locally"
+	flavor bool
+	active_if !CYGPKG_IO_FILEIO
+	default_value 1
+	
+	compile sys/kern/uipc_syscalls.c \
+        sys/kern/sys_socket.c \
+        sys/kern/sys_generic.c \
 	lib/socket.c \
 	lib/close.c \
 	lib/read.c \
@@ -112,6 +126,22 @@ cdl_package CYGPKG_NET {
 	lib/setsockopt.c \
 	lib/ioctl.c \
 	lib/select.c
+
+	description "
+	    This option controls support for the network-stack supplied
+	    API."
+    }
+
+    cdl_option CYGPKG_NET_API_FILEIO {
+	display "Implement the socket API via Fileio package"
+	active_if CYGPKG_IO_FILEIO
+	default_value 1
+
+	compile -library=libextras.a sys/kern/sockio.c
+
+	description "
+	    This option controls support for the fileio subsystem supplied API."
+    }
 
     cdl_component CYGPKG_NET_INET {
         display "INET support"
@@ -286,8 +316,12 @@ cdl_package CYGPKG_NET {
         display "Number of loopback interfaces"
         flavor  data
         default_value 1
+	requires { (CYGPKG_NET_NLOOP > 1) ? CYGPKG_LIBC_STDIO : 1  }
         description   "
-            This option controls the number of loopback, i.e. local, interfaces."
+            This option controls the number of loopback, i.e. local, interfaces.
+            There is seldom need for this value to be anything other than one.
+            If a different value is required, then the C library STDIO package
+            is required for sprintf()."
         define_proc {
             puts $::cdl_header "#define NLOOP CYGPKG_NET_NLOOP"
         }

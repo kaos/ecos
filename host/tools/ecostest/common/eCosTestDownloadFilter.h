@@ -50,7 +50,20 @@
 
 #define INIT_VALUE(__args)                      unsigned int v; char *__ptr1, *__ptr2 = (__args)
 
-#define SET_VALUE(__type, __slot)               {    __ptr1 = strchr(__ptr2, (int) ':'); if (__ptr1) *__ptr1 = 0; v = atoi(__ptr2); __ptr2 = __ptr1+1; (__slot) = (__type) v; }
+#define SET_VALUE(__type, __slot) {          \
+    __ptr1 = strchr(__ptr2, (int) ':');      \
+    if (*__ptr2 == '\0')                     \
+           (__slot) = (__type)-1;            \
+    else {                                   \
+        if (__ptr1)                          \
+            *__ptr1 = 0;                     \
+        else                                 \
+            __ptr1 = strchr( __ptr2, 0) - 1; \
+        v = atoi(__ptr2);                    \
+        __ptr2 = __ptr1+1;                   \
+        (__slot) = (__type) v;               \
+    }                                        \
+}
 
 #define SET_STRING(__slot)               {    __ptr1 = strchr(__ptr2, (int) ':'); if (__ptr1) *__ptr1 = 0; __slot = __ptr2; __ptr2 = __ptr1+1; }
 

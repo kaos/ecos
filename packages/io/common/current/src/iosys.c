@@ -46,6 +46,10 @@
 #include <cyg/io/devtab.h>
 #include <cyg/infra/diag.h>
 
+// Define table boundaries
+CYG_HAL_TABLE_BEGIN( __DEVTAB__, devtab );
+CYG_HAL_TABLE_END( __DEVTAB_END__, devtab );
+
 //extern void cyg_io_init(void) CYGBLD_ATTRIB_CONSTRUCTOR
 //  CYG_INIT_PRIORITY(CYG_INIT_BEFORE(LIBC));
 
@@ -95,10 +99,11 @@ cyg_io_init(void)
         diag_printf("Init device '%s'\n", t->name);
 #endif
         if (t->init(t)) {
-            t->status = CYG_DEVTAB_STATUS_AVAIL;
+            t->status |= CYG_DEVTAB_STATUS_AVAIL;
         } else {
             // What to do if device init fails?
-            t->status = 0;  // Device not [currently] available
+            // Device not [currently] available
+            t->status &= ~CYG_DEVTAB_STATUS_AVAIL;  
         }
     }
     _init = true;
@@ -184,6 +189,58 @@ cyg_io_read(cyg_io_handle_t handle, void *buf, cyg_uint32 *len)
     return t->handlers->read(handle, buf, len);
 }
 
+Cyg_ErrNo 
+cyg_io_bwrite(cyg_io_handle_t handle, const void *buf, cyg_uint32 *len, cyg_uint32 pos)
+{
+    cyg_devtab_entry_t *t = (cyg_devtab_entry_t *)handle;
+    // Validate request
+    if (!t->handlers->bwrite) {
+        return -EDEVNOSUPP;
+    }
+    // Special check.  If length is zero, this just verifies that the 
+    // 'bwrite' method exists for the given device.
+    if (NULL != len && 0 == *len) {
+        return ENOERR;
+    }
+    return t->handlers->bwrite(handle, buf, len, pos);
+}
+
+//
+// 'read' data from a device.
+//
+
+Cyg_ErrNo 
+cyg_io_bread(cyg_io_handle_t handle, void *buf, cyg_uint32 *len, cyg_uint32 pos)
+{
+    cyg_devtab_entry_t *t = (cyg_devtab_entry_t *)handle;
+    // Validate request
+    if (!t->handlers->bread) {
+        return -EDEVNOSUPP;
+    }
+    // Special check.  If length is zero, this just verifies that the 
+    // 'bread' method exists for the given device.
+    if (NULL != len && 0 == *len) {
+        return ENOERR;
+    }
+    return t->handlers->bread(handle, buf, len, pos);
+}
+
+//
+// Check device for available input or space for output
+//
+
+cyg_bool
+cyg_io_select(cyg_io_handle_t handle, cyg_uint32 which, CYG_ADDRWORD info)
+{
+    cyg_devtab_entry_t *t = (cyg_devtab_entry_t *)handle;
+    // Validate request
+    if (!t->handlers->select) {
+        return -EDEVNOSUPP;
+    }
+
+    return t->handlers->select( handle, which, info );
+}
+
 //
 // Get the configuration of a device.
 //
@@ -223,6 +280,32 @@ cyg_io_set_config(cyg_io_handle_t handle, cyg_uint32 key, const void *buf, cyg_u
     }
     return t->handlers->set_config(handle, key, buf, len);
 }
+
+/*---------------------------------------------------------------------------*/
+// Default functions for devio tables
+
+Cyg_ErrNo cyg_devio_cwrite(cyg_io_handle_t handle, const void *buf, cyg_uint32 *len)
+{
+    return -EDEVNOSUPP;
+}
+
+Cyg_ErrNo cyg_devio_cread(cyg_io_handle_t handle, void *buf, cyg_uint32 *len)
+{
+    return -EDEVNOSUPP;
+}
+
+Cyg_ErrNo cyg_devio_bwrite(cyg_io_handle_t handle, const void *buf,
+                        cyg_uint32 *len, cyg_uint32 pos)
+{
+    return -EDEVNOSUPP;
+}
+
+Cyg_ErrNo cyg_devio_bread(cyg_io_handle_t handle, void *buf,
+                       cyg_uint32 *len, cyg_uint32 pos)
+{
+    return -EDEVNOSUPP;
+}
+
 
 /*---------------------------------------------------------------------------*/
 /* End of io/iosys.c */

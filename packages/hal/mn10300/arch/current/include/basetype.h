@@ -50,11 +50,10 @@
 #define CYG_BYTEORDER           CYG_LSBFIRST    // Little endian
 
 //-----------------------------------------------------------------------------
-// MN10300 usually uses labels with underscores. Some labels generated
-// by the linker also have underscores, so there's no need to add one
-// when accessing those labels from C code.
+// MN10300 usually uses labels with underscores. So when defining a label
+// in asm or linker scripts, we need to add one.
 
-#define CYG_LABEL_NAME(_name_) _name_
+#define CYG_LABEL_DEFN(_name_) _##_name_
 
 //-----------------------------------------------------------------------------
 // Define the standard variable sizes

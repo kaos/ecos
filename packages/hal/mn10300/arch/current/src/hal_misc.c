@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    nickg
-// Contributors: nickg, jlarmour
+// Contributors: nickg, jlarmour, dmoseley
 // Date:         1999-02-18
 // Purpose:      HAL miscellaneous functions
 // Description:  This file contains miscellaneous functions provided by the
@@ -156,7 +156,9 @@ externC void __handle_exception (void);
 
 externC HAL_SavedRegisters *_hal_registers;
 
-void
+externC void *__mem_fault_handler;
+
+externC cyg_uint32
 cyg_hal_exception_handler(HAL_SavedRegisters *regs, CYG_WORD32 isr)
 {
     CYG_WORD vector = regs->vector;
@@ -173,6 +175,13 @@ cyg_hal_exception_handler(HAL_SavedRegisters *regs, CYG_WORD32 isr)
 #endif
     
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+
+    // If we caught an exception inside the stubs, see if we were expecting it
+    // and if so jump to the saved address
+    if (__mem_fault_handler) {
+        regs->pc = (CYG_ADDRWORD)__mem_fault_handler;
+        return 0; // Caught an exception inside stubs        
+    }
 
     // Set the pointer to the registers of the current exception
     // context. At entry the GDB stub will expand the
@@ -202,7 +211,7 @@ cyg_hal_exception_handler(HAL_SavedRegisters *regs, CYG_WORD32 isr)
             isr(CYGNUM_HAL_INTERRUPT_WATCHDOG,
                 hal_interrupt_data[CYGNUM_HAL_INTERRUPT_WATCHDOG]
                 );
-            return;
+            return 0;
         }
     }
 
@@ -219,12 +228,13 @@ cyg_hal_exception_handler(HAL_SavedRegisters *regs, CYG_WORD32 isr)
 
 #endif
     
-    return;
+    return 0;
 }
 
 /*------------------------------------------------------------------------*/
 /* default ISR                                                            */
 
+#ifndef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
 externC cyg_uint32 hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 {
 #if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) &&      \
@@ -245,6 +255,32 @@ externC cyg_uint32 hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
     CYG_FAIL("Spurious Interrupt!!!");
     return 0;
 }
+
+#else // CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
+
+#include <cyg/hal/plf_io.h>
+externC cyg_uint32 hal_arch_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
+{
+#if defined(CYGDBG_HAL_MN10300_DEBUG_GDB_CTRLC_SUPPORT) &&      \
+    defined(CYGHWR_HAL_GDB_PORT_VECTOR) &&              \
+    defined(HAL_CTRLC_ISR)
+
+#if defined(CYGSEM_HAL_USE_ROM_MONITOR_CygMon)
+#if defined(HAL_DIAG_IRQ_CHECK)
+    {
+        cyg_uint32 ret;
+        /* let ROM monitor handle unexpected interrupts */
+        HAL_DIAG_IRQ_CHECK(vector, ret);
+        if (ret<=0)
+            return ret;
+    }
+#endif // def HAL_DIAG_IRQ_CHECK
+#endif // def CYGSEM_HAL_USE_ROM_MONITOR_CygMon
+#endif
+
+    return 0;
+}
+#endif
 
 /*------------------------------------------------------------------------*/
 /* Idle thread activity.                                                  */

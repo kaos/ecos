@@ -55,11 +55,9 @@
 #define CYG_DOUBLE_BYTEORDER    CYG_MSBFIRST    // Big? endian
 
 //-----------------------------------------------------------------------------
-// ARM does not usually use labels with underscores. Some labels generated
-// by the linker do, so add an underscore where required.
+// ARM does not usually use labels with underscores.
 
-//#define CYG_LABEL_NAME(_name_) _##_name_
-#define CYG_LABEL_NAME(_name_) _name_
+//#define CYG_LABEL_NAME(_name_) _name_
 
 //-----------------------------------------------------------------------------
 // Define the standard variable sizes

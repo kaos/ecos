@@ -1,3 +1,7 @@
+2000-07-20  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* current.ect: Added ISOINFRA package.
+
 2000-04-07  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* ecos.db: Re-organize device packages.  This is a massive change

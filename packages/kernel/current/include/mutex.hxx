@@ -59,11 +59,36 @@ class Cyg_Mutex
 {
     friend class Cyg_Condition_Variable;
     
-    cyg_atomic          locked;         // true if locked
+    cyg_atomic          locked;         // true if locked. This may seem
+                                        // redundant due to "owner" below,
+                                        // but is intentionally present for
+                                        // future SMP support.
 
     Cyg_Thread          *owner;         // Current locking thread
 
     Cyg_ThreadQueue     queue;          // Queue of waiting threads
+
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DYNAMIC
+
+public:    
+    enum cyg_protcol
+    {
+        NONE = 0,                       // no inversion protocol
+        INHERIT,                        // priority inheritance protocol
+        CEILING                         // priority ceiling protocol
+    };
+
+private:    
+    cyg_protcol protocol;               // this mutex's protocol
+    
+#endif    
+    
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_CEILING
+
+private:    
+    cyg_priority        ceiling;        // mutex priority ceiling
+    
+#endif
     
 public:
 
@@ -71,6 +96,12 @@ public:
     
     Cyg_Mutex();                        // Create in unlocked state
 
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DYNAMIC
+    
+    Cyg_Mutex( cyg_protcol protocol );  // Create with defined protocol
+
+#endif
+    
     ~Cyg_Mutex();                       // Destructor
         
     cyg_bool    lock();                 // lock and/or wait
@@ -80,6 +111,18 @@ public:
     void        unlock();               // unlock
 
     void        release();              // release all waiting threads
+
+    // Get the current owning thread
+    inline Cyg_Thread *get_owner() { return owner; }
+    
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_CEILING
+
+    // set ceiling priority for priority ceiling protocol
+    void        set_ceiling( cyg_priority priority );
+
+    cyg_priority get_ceiling(void) { return ceiling; };
+    
+#endif
     
 };
 
@@ -91,10 +134,22 @@ class Cyg_Condition_Variable
     Cyg_Mutex           *mutex;         // Associated mutex
 
     Cyg_ThreadQueue     queue;          // Queue of waiting threads
+
+    // Private internal implementation function for wait operations
+    cyg_bool wait_inner( Cyg_Mutex *mutex );
+
+#ifdef CYGMFN_KERNEL_SYNCH_CONDVAR_TIMED_WAIT
+
+    // Private internal implementation function for timed wait operations
+    cyg_bool wait_inner( Cyg_Mutex *mutex, cyg_tick_count timeout );
+
+#endif
     
 public:
 
     CYGDBG_DEFINE_CHECK_THIS
+
+    Cyg_Condition_Variable();           // simple constructor
     
     Cyg_Condition_Variable(
         Cyg_Mutex &mutex                // linked mutex
@@ -102,18 +157,41 @@ public:
 
     ~Cyg_Condition_Variable();          // Destructor
         
-    void     wait();                    // Wait for condition to be true
 
     void     signal();                  // Set cond true, wake one thread
 
     void     broadcast();               // Set cond true, wake all threads
 
+    // Wait for condition to be true
+    inline cyg_bool wait() { return wait_inner( mutex ); }
+    
 #ifdef CYGMFN_KERNEL_SYNCH_CONDVAR_TIMED_WAIT
 
     // Wait until a signal or timeout expiry
-    cyg_bool wait( cyg_tick_count timeout );
+    inline cyg_bool wait( cyg_tick_count timeout )
+    { return wait_inner( mutex, timeout ); }
 
 #endif
+
+#ifdef CYGMFN_KERNEL_SYNCH_CONDVAR_WAIT_MUTEX
+
+    // Wait for condition to be true using the supplied mutex    
+    inline cyg_bool wait( Cyg_Mutex &mx ) { return wait_inner( &mx ); }
+    
+
+#ifdef CYGMFN_KERNEL_SYNCH_CONDVAR_TIMED_WAIT
+
+    // Wait until a signal or timeout expiry, using the supplied mutex
+    inline cyg_bool wait( Cyg_Mutex &mx, cyg_tick_count timeout )
+    { return wait_inner( &mx, timeout ); }        
+    
+#endif    
+#endif    
+
+    // Return a pointer to this variables thread queue. Used mainly
+    // for testing whether a thread is on the queue for a particular
+    // cv.
+    inline Cyg_ThreadQueue *get_queue() { return &queue; };
     
 };
 

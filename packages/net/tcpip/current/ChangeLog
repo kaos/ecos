@@ -1,3 +1,103 @@
+2000-08-17  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/ecos/timeout.c (timeout): Rework the timeout system to
+	record last-time-we-set-the-alarm and whence values, so that new
+	timeouts being added can be set up relative to the correct
+	absolute time.  Otherwise adding a new timeout sets them *all*
+	into the future by the expired portion of the previous minimum
+	pending timeout.  Also deal better with recursion ie. timeout
+	handlers themselves setting new timeouts as is only natural.
+	Lots of asserts too.
+
+	* src/ecos/support.c (cyg_splsoftnet): Use the new kernel facility
+	to lock mutex &c atomically, with the scheduler locked already.
+	(cyg_tsleep): Similarly, and reclaim the mutex likewise.
+	Also added lots of asserts to both calls the better to document
+	what's going on.
+
+2000-08-17  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/lib/tftp_server.c: Fix contributors field.
+
+2000-08-16  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/lib/tftp_server.c: Improvements to server wrt better error
+	messages and detection of filesystem errors eg. on close-file.
+	Contrib from ASCOM.  I tidied up some comments and indent to
+	minimize the diff.  [CASE 104354]
+
+2000-08-15  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* doc/bridge.html: New file...
+	* doc/bridge.doc: New file...
+	provided by ASCOM from the OpenBSD version.
+
+2000-08-15  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/sys/net/if_bridge.c (bridge_ioctl): SIOCBRDGSTO takes
+	argument in seconds not in ticks.  So move around some mul/div by
+	hz ops to get this right.
+
+2000-08-14  Gary Thomas  <gthomas@redhat.com>
+
+	* src/ecos/support.c: Use new table definition mechanism.
+
+2000-07-27  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/lib/dhcp_prot.c (do_dhcp): Use xmit->bp_htype =
+	HTYPE_ETHERNET rather than ifr.ifr_hwaddr.sa_family; sa_family is
+	in a different namespace, despite appearances.
+
+	* src/lib/bootp_support.c (do_bootp): Use bp_htype =
+	HTYPE_ETHERNET rather than ifr.ifr_hwaddr.sa_family; sa_family is
+	in a different namespace, despite appearances.
+
+2000-07-27  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* cdl/net.cdl: Require the C library STDIO package to be present
+	if there is more than one loopback interface. This is because it
+	needs sprintf() to form the interface names.
+
+	* src/sys/net/if_loop.c (loopattach): 
+	Only use sprintf() to form the loopback interface names when there
+	is more than one. The CDL ensures that this will work.
+
+	* src/lib/network_support.c:
+	Added diag_printf() version of perror() for when STDIO package is
+	absent.
+	Only use sprintf() to form the loopback interface names when there
+	is more than one. The CDL ensures that this will work.
+
+	* tests/multi_lo_select.c:
+	* tests/ping_lo_test.c:
+	* tests/tcp_lo_test.c:
+	Removed dependence on C library by adding a substitute perror()
+	based on diag_printf() that is enabled when the STDIO package is
+	absent.
+	
+2000-07-26  Hugo Tyson  <hmt@cygnus.co.uk>
+ 
+	* src/lib/dhcp_prot.c (do_dhcp): Set the broadcast flag where
+	necessary, and the client address too.  This makes it talk to a
+	greater range of servers OK.
+ 
+2000-07-25  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* tests/multi_lo_select.c: Changed definition of NLISTENERS to
+	work correctly with FILEIO package.
+
+	* src/sys/net/if_loop.c (loopattach): Changed initialization of
+	if_xname to "lo0".
+
+	* src/ecos/support.c (cyg_net_init): Removed redundant code to
+	initialize loop-back interface.
+
+2000-07-25  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/lib/getserv.c: Add a list terminator record with NULLs in it
+	so that the search finishes (without throwing asserts about bad
+	strings).
+
 2000-07-21  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/sys/net/if_bridge.c: Move the include of stdio.h lower,
@@ -207,10 +307,17 @@
 	* src/ecos/support.c: Rework splx() emulation routines to
 	be more robust and realtime friendly.
 
+	* src/lib/network_support.c (init_all_network_interfaces): 
+	Add minimal support for PCMCIA based devices.
+
 2000-07-04  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* include/bootp.h: Fix namespace pollution from "#define int32
 	int" - it fights against application code too much.
+
+2000-07-04  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/net.cdl: Package requires CYGPKG_MEMALLOC
 
 2000-06-26  Hugo Tyson  <hmt@cygnus.co.uk>
 
@@ -271,6 +378,12 @@
 	built loopback device test.  Will run on platforms with no network
 	interfaces.
 
+2000-06-19  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/ecos/support.c:
+	* include/netdev.h:
+	Converted to use of new table construction mechanism.
+
 2000-06-16  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* include/bootp.h: Remove RCS id tag
@@ -282,10 +395,95 @@
 	* include/netinet/ip_proxy.h: Ditto
 	* include/netinet/ip_state.h: Ditto
 
+2000-06-15  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/sys/kern/sockio.c: Added cyg_selinit() calls to bad_socket()
+	and bsd_accept() functions.
+
+	* src/ecos/support.c (cyg_tsleep): Changed tests on wakeup from
+	semaphore waits to enable return of EINTR results.
+
+2000-06-09  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/sys/net/if_loop.c: Substituted sprintf() for a straight
+	strcpy() when initalizing if name. This currently only works for
+	one loopback interface. However, there seems little need to have
+	more than one.
+
+	* src/sys/kern/sockio.c (bsd_select): Added select support.
+
+	* include/sys/time.h: Moved timeval structure definition to
+	isoinfra time.h header since it is needed by the select() API.
+
+	* include/sys/select.h: Added option to use fileio select
+	mechanism if it is present.
+
+	* src/ecos/support.c (cyg_net_init):
+	Added code to bring up the loopback interface. This is to help
+	with testing on platforms without network hardware.
+
 2000-06-08  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* include/netinet/ip_var.h: Export ipforwarding as well as
 	ip_defttl for monitoring applications.
+
+2000-06-07  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* tests/tcp_echo.c: 
+	* tests/socket_test.c: 
+	* tests/server_test.c: 
+	* tests/ping_test.c: 
+	* tests/nc_test_master.c: 
+	* tests/nc_test_slave.c: 
+	* tests/ftp_test.c:
+	Removed dependence of these programs on STDIO. For most this
+	simply required the use of a diag_printf() based perror() clone is
+	CYGPKG_LIBC_STDIO is not defined. For server_test is also required
+	the substitution of sprintf() with some more primitive string
+	functions.
+
+	* src/sys/netinet/ip_input.c: Rewrote inet_ntoa() to not use
+	sprintf(). This was the only place in the TCP/IP stack that was
+	dependent on a STDIO function. We really should avoid building
+	this kind of casual dependency into the code.
+
+	* src/sys/kern/sockio.c: This new file contain code to support the
+	fileio package. So far only a few of these functions have actually
+	been tested.
+
+	* include/sys/kernel.h (time): The time variable clashes with the
+	C library time() function. To prevent this it is renamed ktime,
+	and a #define allows "kernel" code to continue accessing it as
+	time.
+
+	* src/ecos/support.c: Added definition for ktime variable, as
+	described above. I could not find any definition for struct
+	timeval time. I have a nasty suspicion that it was using the
+	time() function - let's hope that no code that actually uses this
+	has been run.
+
+	* src/lib/bootp_support.c: Another substitution of a diag_printf()
+	based perror() clone when STDIO is absent.
+	
+	* include/sys/bsdtypes.h: This is the original
+	include/sys/types.h. Renamed to avoid clashing with <sys/types.h>
+	defined by the isoinfra package.
+
+	* include/sys/types.h: Renamed to bsdtypes.h.
+	
+	* include/machine/limits.h:
+	Various changes to make these headers play nicely with those
+	defined in isoinfra package.
+
+	* include/network.h: Added include of <pkgconf/system.h>. Fixed
+	prototypes of functions here to match POSIX specifications.
+
+	* cdl/net.cdl:
+	Split list of files to compile into the common set plus those
+	needed when the fileio package is present and those that are
+	needed when it is absent.
+	Added CDL to export our definitions to <sys/types.h>.
+	
 
 2000-05-31  Hugo Tyson  <hmt@cygnus.co.uk>
 

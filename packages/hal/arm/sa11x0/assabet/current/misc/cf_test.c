@@ -37,6 +37,8 @@
 // Description:   Tool used to test CF stuff
 //####DESCRIPTIONEND####
 
+#include <pkgconf/system.h>
+#ifdef CYGPKG_IO_PCMCIA
 #include <pkgconf/kernel.h>   // Configuration header
 #include <cyg/kernel/kapi.h>
 #include <cyg/infra/diag.h>
@@ -44,6 +46,8 @@
 #include <cyg/hal/hal_io.h>             // IO macros
 #include <cyg/hal/hal_arch.h>           // Register state info
 #include <cyg/hal/hal_intr.h>           // HAL interrupt macros
+
+#include <cyg/io/pcmcia.h>
 
 #include <cyg/hal/hal_sa11x0.h>  // Board definitions
 #include <cyg/hal/assabet.h>
@@ -58,9 +62,6 @@ static char stack[STACK_SIZE];
 static cyg_thread thread_data;
 static cyg_handle_t thread_handle;
 
-static cyg_interrupt cf_interrupt;
-static cyg_handle_t  cf_interrupt_handle;
-
 // FUNCTIONS
 
 static void
@@ -69,41 +70,61 @@ cyg_test_exit(void)
     while (TRUE) ;
 }
 
-// This ISR is called when a CompactFlash board is inserted
-static int
-cf_detect_isr(cyg_vector_t vector, cyg_addrword_t data, HAL_SavedRegisters *regs)
-{
-    cyg_interrupt_mask(SA1110_CF_DETECT);
-    return (CYG_ISR_HANDLED|CYG_ISR_CALL_DSR);  // Run the DSR
-}
-
-// This DSR handles the board insertion
-static void
-cf_detect_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
-{
-    unsigned long new_state = *SA11X0_GPIO_PIN_LEVEL;
-    diag_printf("CF card inserted, state: %x\n", new_state);
-    cyg_interrupt_acknowledge(SA1110_CF_DETECT);
-    cyg_interrupt_unmask(SA1110_CF_DETECT);
-}
-
 static void
 cf_test(cyg_addrword_t p)
 {
-    unsigned long cf_state;
+    int len, ptr;
+    unsigned char buf[256];
+    unsigned char *en0;
+    unsigned long cor = 0, regs;
+    struct cf_cftable cftable;
+    struct cf_config config;
+    struct cf_slot *slot;
+
     diag_printf("CF test here\n");
-    // Disable CF bus & power (idle/off)
-    assabet_BCR(SA1110_BCR_CF_POWER |
-                SA1110_BCR_CF_RESET |
-                SA1110_BCR_CF_BUS,
-                SA1110_BCR_CF_POWER_OFF |
-                SA1110_BCR_CF_RESET_DISABLE |
-                SA1110_BCR_CF_BUS_OFF);
+    cf_init();
+    slot = cf_get_slot(0);
+    en0 = slot->io;
     while (1) {
-        cf_state = *SA11X0_GPIO_PIN_LEVEL;
-        if ((cf_state & SA1110_GPIO_CF_DETECT) == SA1110_GPIO_CF_PRESENT) {
+        if (slot->state == CF_SLOT_STATE_Inserted) {
             diag_printf("Compact Flash card inserted!\n");
-            diag_dump_buf(0x30000000, 0x100);
+            cf_change_state(slot, CF_SLOT_STATE_Ready);
+            diag_dump_buf(slot->attr, slot->attr_length);
+            len = sizeof(buf);
+            ptr = 0;
+            if (cf_get_CIS(slot, CF_CISTPL_MANFID, buf, &len, &ptr)) {
+                diag_printf("CIS 0x20:\n");
+                diag_dump_buf(buf, len);
+            }
+            ptr = 0;
+            if (cf_get_CIS(slot, CF_CISTPL_VERS_1, buf, &len, &ptr)) {
+                diag_printf("CIS 0x15:\n");
+                diag_dump_buf(buf, len);
+            }
+            ptr = 0;
+            if (cf_get_CIS(slot, CF_CISTPL_CONFIG, buf, &len, &ptr)) {
+                diag_printf("CIS 0x1A:\n");
+                diag_dump_buf(buf, len);
+            }
+            if (cf_parse_config(buf, len, &config)) {
+                cor = config.base;
+                diag_printf("COR = %x\n", cor);
+            }
+            ptr = 0;
+            while (cf_get_CIS(slot, CF_CISTPL_CFTABLE_ENTRY, buf, &len, &ptr)) {
+                diag_printf("CIS 0x1B:\n");
+                diag_dump_buf(buf, len);
+                if (cf_parse_cftable(buf, len, &cftable)) {
+                    regs = cftable.io_space.base[0];
+                    cf_set_COR(slot, cor, cftable.cor);
+                    en0[regs+0x00] = 0x21;
+                    en0[regs+0x0E] = 0x49;
+                    en0[regs+0x00] = 0x61;
+                    diag_dump_buf(en0+regs, 0x10);
+                    en0[regs+0x00] = 0x21;
+                    diag_dump_buf(en0+regs, 0x10);
+                }
+            }
             break;
         }
     }
@@ -113,18 +134,6 @@ cf_test(cyg_addrword_t p)
 externC void
 cyg_start( void )
 {
-    // Set up interrupts
-    cyg_interrupt_create(SA1110_CF_DETECT,
-                         99,                     // Priority - what goes here?
-                         0,                      //  Data item passed to interrupt handler
-                         (cyg_ISR_t *)cf_detect_isr,
-                         (cyg_DSR_t *)cf_detect_dsr,
-                         &cf_interrupt_handle,
-                         &cf_interrupt);
-    cyg_interrupt_attach(cf_interrupt_handle);
-    cyg_interrupt_configure(SA1110_CF_DETECT, true, true);  // Detect either edge
-    cyg_interrupt_acknowledge(SA1110_CF_DETECT);
-    cyg_interrupt_unmask(SA1110_CF_DETECT);
     // Create a main thread, so we can run the scheduler and have time 'pass'
     cyg_thread_create(10,                // Priority - just a number
                       cf_test,           // entry
@@ -138,3 +147,4 @@ cyg_start( void )
     cyg_thread_resume(thread_handle);  // Start it
     cyg_scheduler_start();
 } // cyg_package_start()
+#endif

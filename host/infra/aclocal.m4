@@ -67,6 +67,12 @@ dnl
 dnl A better implementation would check whether or not AC_PROG_CC and
 dnl AC_PROG_CXX have been invoked and only test the appropriate
 dnl compiler.
+dnl
+dnl When cross-compiling, default to long long on the assumption that
+dnl gcc/g++ must be used and long long is likely to be the 64 bit data
+dnl type. This is not guaranteed, but sufficiently likely to meet
+dnl the requirements for the time being. The CHECK_SIZEOF() macro
+dnl might be another way to get the desired information.
 
 AC_DEFUN(CYG_AC_TYPE_64bit, [
     AC_REQUIRE([AC_PROG_CC])
@@ -80,13 +86,13 @@ AC_DEFUN(CYG_AC_TYPE_64bit, [
                 main() {
                     return 8 != sizeof($type);
                 }
-	    ],ctype_64bit=$type,ctype_64bit="unknown",ctype_64bit="unknown")
+	    ],ctype_64bit=$type,ctype_64bit="unknown",ctype_64bit="long long")
 	    AC_LANG_CPLUSPLUS
             AC_TRY_RUN([
                 int main(int argc, char ** argv) {
                     return 8 != sizeof($type);
                 }
-	    ],cxxtype_64bit=$type,cxxtype_64bit="unknown",cxxtype_64bit="unknown")
+	    ],cxxtype_64bit=$type,cxxtype_64bit="unknown",cxxtype_64bit="long long")
 	    AC_LANG_RESTORE
             if test "${ctype_64bit}" = "${type}" -a "${cxxtype_64bit}" = "${type}"; then
                 cyg_ac_cv_type_64bit="${type}"

@@ -1,3 +1,23 @@
+2000-07-25  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/pkgconf/mlt_mn10300_am31_stdeval1_ram.mlt: Add user-defined
+	heap1 section
+	* include/pkgconf/mlt_mn10300_am31_stdeval1_ram.h: regenerate
+	* include/pkgconf/mlt_mn10300_am31_stdeval1_ram.ldi: regenerate
+	* include/pkgconf/mlt_mn10300_am31_stdeval1_rom.mlt: Regenerate
+	due to updated MLT
+	* include/pkgconf/mlt_mn10300_am31_stdeval1_rom.h: Regenerate
+	due to updated MLT
+	* include/pkgconf/mlt_mn10300_am31_stdeval1_rom.ldi: Regenerate
+	due to updated MLT
+
+2000-07-04  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/pkgconf/mlt_mn10300_am31_stdeval1_rom.mlt: Add user-defined
+	heap1 section
+	* include/pkgconf/mlt_mn10300_am31_stdeval1_rom.h: regenerate
+	* include/pkgconf/mlt_mn10300_am31_stdeval1_rom.ldi: regenerate
+
 2000-03-03  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/hal_diag.c: Removed code to absorb ack character when

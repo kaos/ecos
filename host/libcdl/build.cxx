@@ -1532,7 +1532,6 @@ CdlDefinableBody::parse_if_define(CdlInterpreter interp, int argc, char** argv)
 
 void
 CdlDefinableBody::generate_config_header(Tcl_Channel this_hdr, Tcl_Channel system_h) const
-    throw(CdlInputOutputException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlDefinable::generate_config_header");
     CYG_REPORT_FUNCARG1XV(this);
@@ -1821,7 +1820,6 @@ CdlDefineLoadableBody::parse_define_header(CdlInterpreter interp, int argc, char
 // ----------------------------------------------------------------------------
 void
 CdlDefineLoadableBody::generate_config_header(Tcl_Channel this_hdr, Tcl_Channel system_h) const
-    throw(CdlInputOutputException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlDefineLoadable::generate_config_header");
     CYG_REPORT_FUNCARG1XV(this);
@@ -2020,7 +2018,6 @@ if {$data1 == $data2} {                                                         
 
 void
 CdlToplevelBody::generate_config_headers(std::string directory)
-    throw(CdlInputOutputException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlToplevel::generate_config_headers");
     CYG_REPORT_FUNCARG1XV(this);
@@ -2229,7 +2226,6 @@ CdlToplevelBody::get_config_headers(std::vector<std::string>& headers)
 
 void
 CdlToplevelBody::generate_build_tree(std::string build_tree, std::string install_tree)
-    throw(CdlInputOutputException, std::bad_alloc)
 {
 }
 

@@ -208,7 +208,7 @@ hal_idle_thread_action( cyg_uint32 count )
 void
 breakpoint(void)
 {
-    HAL_BREAKPOINT(breakinst);
+    HAL_BREAKPOINT(_breakinst);
 }
 
 

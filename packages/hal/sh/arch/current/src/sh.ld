@@ -94,17 +94,16 @@ GROUP(libtarget.a libgcc.a)
       __EXCEPT_END__ = ABSOLUTE(.);}                                    \
     > _region_
 
-#define SECTION_data(_region_, _vma_, _lma_)                         \
-    .data _vma_ : _lma_                                                             \
-    { __ram_data_start = ABSOLUTE(.); *(.data*)                                 \
+#define SECTION_data(_region_, _vma_, _lma_)                                  \
+    .data _vma_ : _lma_                                                       \
+    { __ram_data_start = ABSOLUTE(.); *(.data*)                               \
      . = ALIGN(8); ___CTOR_LIST__ = ABSOLUTE(.);                              \
       KEEP(*(SORT(.ctors*))) ___CTOR_END__ = ABSOLUTE(.);                     \
     ___DTOR_LIST__ = ABSOLUTE(.);                                             \
       KEEP(*(SORT(.dtors*))) ___DTOR_END__ = ABSOLUTE(.);                     \
     . = ALIGN(8);                                                             \
-    ___DEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.devtab*))) ___DEVTAB_END__ = ABSOLUTE (.); \
-    ___NETDEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.netdevtab*))) ___NETDEVTAB_END__ = ABSOLUTE (.); \
-    } > _region_                                                                \
+      KEEP(*( SORT (.ecos.table.*))) ;                                        \
+    } > _region_                                                              \
     __rom_data_start = LOADADDR(.data);                                       \
     __ram_data_end = .; PROVIDE(__ram_data_end = .);                          \
     _edata = .; PROVIDE (edata = .);

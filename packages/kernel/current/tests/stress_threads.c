@@ -52,17 +52,17 @@
 
 #include <cyg/hal/hal_arch.h>
 
-#if defined(CYGPKG_KERNEL) && defined(CYGPKG_IO) && defined(CYGPKG_LIBC)
+#if defined(CYGPKG_KERNEL) && defined(CYGPKG_IO) && defined(CYGPKG_ISOINFRA)
 
 #include <pkgconf/kernel.h>
-#include <pkgconf/libc.h>
+#include <pkgconf/isoinfra.h>
 #include CYGHWR_MEMORY_LAYOUT_H
 
 #if defined(CYGFUN_KERNEL_API_C)
 
 #include <cyg/kernel/kapi.h>
 
-#ifdef CYGPKG_LIBC_STDIO
+#if CYGINT_ISO_STDIO_FORMATTED_IO
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -75,7 +75,7 @@
 #include <cyg/kernel/test/stackmon.h>
 
 #if defined(CYGFUN_KERNEL_THREADS_TIMER)
-#if defined(CYGPKG_LIBC_MALLOC)
+#if CYGINT_ISO_MALLOC
 
 /* if TIME_LIMIT is defined, it represents the number of seconds this
    test should last; if it is undefined the test will go forever */
@@ -85,7 +85,7 @@
 // STACK_SIZE is typical +2kB for printf family calls which use big
 // auto variables. Add more for handler which calls perform_stressful_tasks()
 #define STACK_SIZE (2*1024 + CYGNUM_HAL_STACK_SIZE_TYPICAL)
-#define STACK_SIZE_HANDLER (4*1024 + CYGNUM_HAL_STACK_SIZE_TYPICAL)
+#define STACK_SIZE_HANDLER (STACK_SIZE + 30*CYGNUM_HAL_STACK_FRAME_SIZE)
 
 #define N_MAIN 1
 
@@ -100,7 +100,7 @@
 #undef STACK_SIZE
 #undef STACK_SIZE_HANDLER
 #define STACK_SIZE (1024 + CYGNUM_HAL_STACK_SIZE_TYPICAL)
-#define STACK_SIZE_HANDLER (1024 + CYGNUM_HAL_STACK_SIZE_TYPICAL)
+#define STACK_SIZE_HANDLER (STACK_SIZE + 10*CYGNUM_HAL_STACK_FRAME_SIZE)
 #endif
 
 //-----------------------------------------------------------------------
@@ -388,11 +388,20 @@ void main_program(cyg_addrword_t data)
         }
 
 #ifdef DEATH_TIME_LIMIT
-        // Stop test if time. We don't care about resource state here
-        // since we've only run for a limited time anyway.
+        // Stop test if time.
         if (is_dead) {
-            print_statistics(1);
-            CYG_TEST_PASS_FINISH("Kernel thread stress test OK");
+            // Pause clients
+            cyg_mutex_lock(&client_request_lock); {
+                clients_paused = 1;
+            } cyg_mutex_unlock(&client_request_lock);
+
+            // When all handlers have stopped, we can print statistics
+            // knowing that all (handler allocated) resources should have
+            // been freed. That is, we should be able to determine leaks.
+            if (0 == handler_thread_in_use_count) {
+                print_statistics(1);
+                CYG_TEST_PASS_FINISH("Kernel thread stress test OK");
+            }
         }
 #endif /* DEATH_TIME_LIMIT */
 
@@ -693,7 +702,6 @@ cyg_addrword_t sc_thread_create(
 
 #define MINS_HOUR (60)
 #define MINS_DAY  (60*24)
-externC void *cyg_libc_get_malloc_pool( void );
 
 void print_statistics(int print_full)
 {
@@ -760,16 +768,18 @@ void print_statistics(int print_full)
         }
     } cyg_mutex_unlock(&statistics_print_lock);
 
+#if CYGINT_ISO_MALLINFO
     //--------------------------------
     // System information
     {
-        cyg_mempool_info mem_info;
-
-        cyg_mempool_var_get_info((cyg_handle_t) cyg_libc_get_malloc_pool(), 
-                                 &mem_info);
+        struct mallinfo mem_info;
+       
+        mem_info = mallinfo();
+        
         printf(" Memory system: Total=0x%08x Free=0x%08x Max=0x%08x\n", 
-               mem_info.totalmem, mem_info.freemem, mem_info.maxfree);
+               mem_info.arena, mem_info.fordblks, mem_info.maxfree);
     }
+#endif
 
     // Dump stack status
     printf(" Stack usage:\n");
@@ -798,9 +808,9 @@ void print_statistics(int print_full)
 #endif /* (CYGNUM_KERNEL_SCHED_PRIORITIES >=    */
 /* (N_MAIN+N_CLIENTS+N_LISTENERS+MAX_HANDLERS)) */
 
-#else /* CYGSEM_LIBC_MALLOC */
+#else /* CYGINT_ISO_MALLOC */
 # define N_A_MSG "this test needs malloc"
-#endif /* CYGSEM_LIBC_MALLOC */
+#endif /* CYGINT_ISO_MALLOC */
 
 #else /* CYGFUN_KERNEL_THREADS_TIMER */
 # define N_A_MSG "this test needs kernel threads timer"
@@ -810,16 +820,16 @@ void print_statistics(int print_full)
 # define N_A_MSG "this test needs libm"
 #endif /* CYGPKG_LIBM */
 
-#else /* CYGSEM_LIBC_STDIO */
-# define N_A_MSG "this test needs stdio"
-#endif /* CYGSEM_LIBC_STDIO */
+#else /* CYGINT_ISO_STDIO_FORMATTED_IO */
+# define N_A_MSG "this test needs stdio formatted I/O"
+#endif /* CYGINT_ISO_STDIO_FORMATTED_IO */
 
 #else // def CYGFUN_KERNEL_API_C
 # define N_A_MSG "this test needs Kernel C API"
 #endif
 
-#else // def CYGPKG_KERNEL && CYGPKG_IO && CYGPKG_LIBC
-# define N_A_MSG "this tests needs Kernel, libc and IO"
+#else // def CYGPKG_KERNEL && CYGPKG_IO && CYGPKG_ISOINFRA
+# define N_A_MSG "this tests needs Kernel, isoinfra and IO"
 #endif
 
 #ifdef N_A_MSG

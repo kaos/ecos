@@ -82,7 +82,8 @@ serial_test( void )
         // at the default 38400 baud when doing this test.
         cyg_ser_cfg_t cfg = { 
             CYGNUM_SERIAL_BAUD_9600, CYGNUM_SERIAL_WORD_LENGTH_8, 
-            CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE };
+            CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE,
+            CYGNUM_SERIAL_FLOW_NONE };
 
         change_config(ser_handle, &cfg);
     }

@@ -340,6 +340,11 @@
 # define CYGARC_REG_IPRD                0xa4000018
 # define CYGARC_REG_IPRE                0xa400001a
 //#endif
+//#ifdef CYGARC_SH_MOD_INTC_V3 // FIXME: HAL_INTERRUPT_SET_LEVEL needs these
+# define CYGARC_REG_IRR3                0xa400000a
+# define CYGARC_REG_IRR4                0xa400000c
+# define CYGARC_REG_IPRF                0xa400001c
+//#endif
 
 
 #define CYGARC_REG_IPRA_TMU0_MASK       0xf000
@@ -407,6 +412,16 @@
 #define CYGARC_REG_IRR0_IRQ2              0x04
 #define CYGARC_REG_IRR0_IRQ1              0x02
 #define CYGARC_REG_IRR0_IRQ0              0x01
+
+//#endif
+
+//#ifdef CYGARC_SH_MOD_INTC_V3 // FIXME: HAL_INTERRUPT_SET_LEVEL needs these
+#define CYGARC_REG_IPRF_LCDI_MASK         0x0f00
+#define CYGARC_REG_IPRF_LCDI_PRI1         0x0100
+#define CYGARC_REG_IPRF_PCC0_MASK         0x00f0
+#define CYGARC_REG_IPRF_PCC0_PRI1         0x0010
+#define CYGARC_REG_IPRF_PCC1_MASK         0x000f
+#define CYGARC_REG_IPRF_PCC1_PRI1         0x0001
 
 //#endif
 

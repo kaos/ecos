@@ -147,7 +147,9 @@ static Cyg_ErrNo ebsa285_serial_lookup(struct cyg_devtab_entry **tab,
                                    struct cyg_devtab_entry *sub_tab,
                                    const char *name);
 static unsigned char ebsa285_serial_getc(serial_channel *chan);
-static bool ebsa285_serial_set_config(serial_channel *chan, cyg_serial_info_t *config);
+static Cyg_ErrNo ebsa285_serial_set_config(serial_channel *chan, cyg_uint32 key,
+                                           const void *xbuf, cyg_uint32 *len);
+                                           
 static void ebsa285_serial_start_xmit(serial_channel *chan);
 static void ebsa285_serial_stop_xmit(serial_channel *chan);
 
@@ -346,10 +348,26 @@ ebsa285_serial_getc(serial_channel *chan)
 }
 
 // Set up the device characteristics; baud rate, etc.
-static bool 
-ebsa285_serial_set_config(serial_channel *chan, cyg_serial_info_t *config)
+static Cyg_ErrNo
+ebsa285_serial_set_config(serial_channel *chan, cyg_uint32 key,
+                          const void *xbuf, cyg_uint32 *len)
 {
-    return ebsa285_serial_config_port(chan, config, false);
+    switch (key) {
+    case CYG_IO_SET_CONFIG_SERIAL_INFO:
+      {
+        cyg_serial_info_t *config = (cyg_serial_info_t *)xbuf;
+        if ( *len < sizeof(cyg_serial_info_t) ) {
+            return -EINVAL;
+        }
+        *len = sizeof(cyg_serial_info_t);
+        if ( true != ebsa285_serial_config_port(chan, config, false) )
+            return -EINVAL;
+      }
+      break;
+    default:
+        return -EINVAL;
+    }
+    return ENOERR;
 }
 
 // Enable the transmitter on the device (nope, already in use by hal_diag)

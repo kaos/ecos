@@ -1,0 +1,66 @@
+2000-08-07  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/invokemain.cxx: Declare cyg_hal_stop_constructors
+
+2000-07-31  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/cstartup.cxx: Fix typo
+
+2000-07-19  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/startup.cdl:
+	Make a "radio button" choice between how main() gets invoked (eCos
+	thread vs. cyg_user_start vs. someone else doing it)
+
+	* src/mainthread.cxx: Move cyg_libc_dummy_constructor_class to
+	src/invokemain.cxx
+
+	* src/invokemain.cxx: Invoke pthread_exit() instead of exit() if
+	relevant
+
+	* src/cstartup.cxx:
+	Only fiddle with cyg_user_start() if
+	CYGSEM_LIBC_STARTUP_MAIN_INITCONTEXT defined
+
+2000-07-04  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/abort.cxx: Fix configuration dependency on CYGINT_ISO_SIGNAL_IMPL
+
+2000-05-20  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/startup.cdl (CYGSEM_LIBC_EXIT_STOPS_SYSTEM): 
+	default to 0 always
+
+2000-05-02  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* New package
+	Separated original libc out into separate packages on functional
+	boundaries.
+	Header files are now managed by isoinfra package
+	Plenty of cleanups done, but no major functionality changes
+
+//===========================================================================
+//####COPYRIGHTBEGIN####
+//                                                                          
+// -------------------------------------------                              
+// The contents of this file are subject to the Red Hat eCos Public License 
+// Version 1.1 (the "License"); you may not use this file except in         
+// compliance with the License.  You may obtain a copy of the License at    
+// http://www.redhat.com/                                                   
+//                                                                          
+// Software distributed under the License is distributed on an "AS IS"      
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+// License for the specific language governing rights and limitations under 
+// the License.                                                             
+//                                                                          
+// The Original Code is eCos - Embedded Configurable Operating System,      
+// released September 30, 1998.                                             
+//                                                                          
+// The Initial Developer of the Original Code is Red Hat.                   
+// Portions created by Red Hat are                                          
+// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// All Rights Reserved.                                                     
+// -------------------------------------------                              
+//                                                                          
+//####COPYRIGHTEND####
+//===========================================================================

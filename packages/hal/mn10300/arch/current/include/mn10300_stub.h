@@ -34,7 +34,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     Red Hat, jskov
-// Contributors:  Red Hat, jskov
+// Contributors:  Red Hat, jskov, dmoseley
 // Date:          1998-11-06
 // Purpose:       
 // Description:   MN10300-specific definitions for generic stub
@@ -58,7 +58,7 @@ enum regnames {
   D0, D1, D2, D3, A0, A1, A2, A3,
   SP, PC, MDR, PSW, LIR, LAR
 #ifdef CYGPKG_HAL_MN10300_AM33
-  , XXX, /* unused offset */
+  , MDRQ,
   R0, R1, R2, R3, R4, R5, R6, R7,
   SSP, MSP, USP, MCRH, MCRL, MCVF
 #endif  
@@ -80,19 +80,26 @@ extern void put_register (regnames_t which, target_register_t value);
 
 /* Set the currently-saved pc register value to PC. This also updates NPC
    as needed. */
+#if !defined(SET_PC_PROTOTYPE_EXISTS) && !defined(set_pc)
+#define SET_PC_PROTOTYPE_EXISTS
 extern void set_pc (target_register_t pc);
+#endif
 
 /* Set things up so that the next user resume will execute one instruction.
    This may be done by setting breakpoints or setting a single step flag
    in the saved user registers, for example. */
+#ifndef __single_step
 void __single_step (void);
+#endif
 
 /* Clear the single-step state. */
 void __clear_single_step (void);
 
 /* If the breakpoint we hit is in the breakpoint() instruction, return a
    non-zero value. */
+#ifndef __is_breakpoint_function
 extern int __is_breakpoint_function (void);
+#endif
 
 /* Skip the current instruction. */
 extern void __skipinst (void);
@@ -100,6 +107,10 @@ extern void __skipinst (void);
 extern void __install_breakpoints (void);
 
 extern void __clear_breakpoints (void);
+
+extern void __install_breakpoint_list (void);
+
+extern void __clear_breakpoint_list (void);
 
 #ifdef __cplusplus
 }   /* extern "C" */

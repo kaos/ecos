@@ -109,7 +109,8 @@ extern int domainnamelen;
 extern volatile struct timeval mono_time;
 extern struct timeval boottime;
 extern struct timeval runtime;
-extern volatile struct timeval time;
+extern volatile struct timeval ktime;
+#define time ktime
 extern struct timezone tz;			/* XXX */
 
 extern int tick;		/* usec per tick (1000000 / hz) */

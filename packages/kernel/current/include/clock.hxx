@@ -238,7 +238,10 @@ public:
 
     void disable();                     // Ensure alarm disabled
     
-    
+    void get_times(
+        cyg_tick_count  *trigger,       // Next trigger time
+        cyg_tick_count  *interval       // Current interval
+        );
 };
 
 // -------------------------------------------------------------------------

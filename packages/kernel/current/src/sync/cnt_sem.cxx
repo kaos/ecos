@@ -97,10 +97,8 @@ cyg_bool Cyg_Counting_Semaphore::wait()
 
         CYG_INSTRUMENT_CNTSEM( WAIT, this, 0 );
 
-        CYG_ASSERT( Cyg_Scheduler::get_sched_lock() == 1, "Called with non-zero scheduler lock");
-        
-        Cyg_Scheduler::unlock();
-        Cyg_Scheduler::lock();
+        // Allow other threads to run
+        Cyg_Scheduler::reschedule();
 
         CYG_INSTRUMENT_CNTSEM( WOKE, this, count );
 
@@ -166,11 +164,8 @@ Cyg_Counting_Semaphore::wait( cyg_tick_count timeout )
 
         CYG_INSTRUMENT_CNTSEM( WAIT, this, 0 );
 
-        CYG_ASSERT( Cyg_Scheduler::get_sched_lock() == 1,
-                    "Called with non-zero scheduler lock");
-        
-        Cyg_Scheduler::unlock();
-        Cyg_Scheduler::lock();
+        // Allow other threads to run
+        Cyg_Scheduler::reschedule();
 
         CYG_INSTRUMENT_CNTSEM( WOKE, this, count );
 
@@ -264,7 +259,7 @@ void Cyg_Counting_Semaphore::post()
 // -------------------------------------------------------------------------
 // Get current count value
 
-cyg_count32 Cyg_Counting_Semaphore::peek()
+cyg_count32 Cyg_Counting_Semaphore::peek() const
 {
     // This is a single read of the value of count.
     // This is already atomic, hence there is no need

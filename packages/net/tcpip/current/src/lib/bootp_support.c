@@ -59,6 +59,10 @@
 
 #include <network.h>
 
+#ifndef CYGPKG_LIBC_STDIO
+#define perror(s) diag_printf(#s ": %s\n", strerror(errno))
+#endif
+
 // This function sets up the interface it the simplest configuration.
 // Just enough to broadcast a BOOTP request and get a response.
 // It returns 'true' if a response was obtained.
@@ -178,7 +182,7 @@ do_bootp(const char *intf, struct bootp *recv)
         perror("SIOCGIFHWADDR");
         return false;
     }
-    bootp_xmit.bp_htype = ifr.ifr_hwaddr.sa_family;
+    bootp_xmit.bp_htype = HTYPE_ETHERNET;
     bootp_xmit.bp_hlen = IFHWADDRLEN;
     bcopy(ifr.ifr_hwaddr.sa_data, &bootp_xmit.bp_chaddr, bootp_xmit.bp_hlen);
 

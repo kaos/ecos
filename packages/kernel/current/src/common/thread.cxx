@@ -716,6 +716,8 @@ Cyg_Thread::release()
 void
 Cyg_Thread::exit()
 {
+    CYG_REPORT_FUNCTION();
+    
     // The thread should never return from this function.
 
     Cyg_Thread *self = Cyg_Thread::self();
@@ -855,7 +857,7 @@ Cyg_Thread::set_priority( cyg_priority new_priority )
 
 #else // !CYG_SCHED_UNIQUE_PRIORITIES
 
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_SIMPLE
 
     // When we have priority inheritance, we must update the original
     // priority and not the inherited one.  If the new priority is

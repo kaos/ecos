@@ -41,8 +41,8 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    gthomas
-// Contributors: gthomas
+// Author(s):    gthomas, hmt
+// Contributors: gthomas, hmt
 // Date:         2000-01-10
 // Purpose:      
 // Description:  
@@ -61,7 +61,15 @@
 #include <sys/kernel.h>
 #include <sys/domain.h>
 #include <sys/protosw.h>
+#include <sys/sockio.h>
+#include <sys/socket.h>
+#include <sys/socketvar.h>
+#include <net/if.h>
+#include <net/route.h>
 #include <net/netisr.h>
+#include <netinet/in.h>
+#include <netinet/in_var.h>
+#include <arpa/inet.h>
 
 #include <machine/cpu.h>
 
@@ -75,11 +83,16 @@
 
 #include <netdev.h>
 
+// Define table boundaries
+CYG_HAL_TABLE_BEGIN( __NETDEVTAB__, netdev );
+CYG_HAL_TABLE_END( __NETDEVTAB_END__, netdev );
+
 // Used for system-wide "ticks per second"
 int hz = 100;
 int tick = 10000;  // usec per "tick"
 
 volatile struct timeval mono_time;
+volatile struct timeval ktime;
 
 // Low-level network debugging
 int net_debug = 0;
@@ -221,6 +234,18 @@ cyg_splhigh(void)
 //
 // Prevent all other stack processing, including interrupts (DSRs), etc.
 //
+// NB a thread in this state can tsleep(); see below.  Tsleep releases and
+// reclaims the locks and so on.  This necessary because of the possible
+// conflict where
+//     I splsoft
+//     I tsleep
+//     He runs, he is lower priority
+//     He splsofts
+//     He or something else awakens me
+//     I want to run, but he has splsoft, so I wait
+//     He runs and releases splsoft
+//     I awaken and go.
+
 cyg_uint32
 #ifdef CYGIMPL_TRACE_SPLX   
 cyg_splsoftnet(const char *file, const int line)
@@ -237,17 +262,20 @@ cyg_splsoftnet(void)
         if (softnet_thread == cyg_thread_self()) {
             // Do nothing
             old_ints = spl_state;
-            spl_state |= SPL_STATE_SOFTNET;
             cyg_scheduler_unlock();
             return old_ints;
         }
     }
-    cyg_scheduler_unlock();
+    // As of the new kernel, we can do this without unlocking the scheduler
     cyg_mutex_lock(&softnet_mutex);
-    cyg_scheduler_lock();
+
+    CYG_ASSERT( 0 == softnet_thread, "Softnet thread still set" );
+    CYG_ASSERT( 0 == (spl_state & SPL_STATE_SOFTNET), "Softnet bit set" );
+
     softnet_thread = cyg_thread_self();
     old_ints = spl_state;
     spl_state |= SPL_STATE_SOFTNET;
+    // NB we keep the sched locked here.
     return old_ints;
 }
 
@@ -642,6 +670,7 @@ cyg_wakeup(void *chan)
 //   returns:
 //     0         - event was "signalled"
 //     ETIMEDOUT - timeout occurred
+//     EINTR     - thread broken out of sleep
 //
 int       
 cyg_tsleep(void *chan, int pri, char *wmesg, int timo)
@@ -672,6 +701,10 @@ cyg_tsleep(void *chan, int pri, char *wmesg, int timo)
 
     // Then we must release the 'softnet' mutex when we wait - if we have it
     if ( self == softnet_thread ) {
+        CYG_ASSERT( spl_state & SPL_STATE_SOFTNET, "Softnet bit not set" );
+        // Also want to assert that the mutex is locked...
+        CYG_ASSERT( softnet_mutex.locked, "Softnet mutex not locked" );
+        CYG_ASSERT( (cyg_handle_t)softnet_mutex.owner == self, "Softnet mutex not mine" );
         softnet_thread = 0;
         spl_state &= ~SPL_STATE_SOFTNET;
         cyg_mutex_unlock( &softnet_mutex );
@@ -680,26 +713,36 @@ cyg_tsleep(void *chan, int pri, char *wmesg, int timo)
     }
 
     // This part actually does the wait:
-    cyg_scheduler_unlock();
+    // As of the new kernel, we can do this without unlocking the scheduler
     if (timo) {
         sleep_time = cyg_current_time() + timo;
         if (!cyg_semaphore_timed_wait(&ev->sem, sleep_time)) {
-            res = ETIMEDOUT;
-            ev->chan = 0;  // Free slot
+            if( cyg_current_time() >= sleep_time )
+                res = ETIMEDOUT;
+            else
+                res = EINTR;
+            ev->chan = 0;  // Free slot (no signaller to free it)
         }
     } else {
-        cyg_semaphore_wait(&ev->sem);
+        if (!cyg_semaphore_wait(&ev->sem) ) {
+            res = EINTR;
+            ev->chan = 0;  // Free slot (ditto)
+        }
     }
-
+    
     if ( self ) { // return to previous state
+        // As of the new kernel, we can do this with the scheduler locked
         cyg_mutex_lock( &softnet_mutex ); // this might wait
-        cyg_scheduler_lock();
+        CYG_ASSERT( 0 == softnet_thread, "Softnet thread set in tsleep" );
+        CYG_ASSERT( 0 == (spl_state & SPL_STATE_SOFTNET), "Softnet bit set in tsleep" );
         softnet_thread = self; // got it now...
         spl_state |= SPL_STATE_SOFTNET;
-        cyg_scheduler_unlock();
+        // and leave the scheduler locked.
+        CYG_ASSERT( olock > 1, "Sched was not locked" );
     }
-    if ( olock > 1 )
-        cyg_scheduler_lock();
+    else if ( olock == 1 )
+        cyg_scheduler_unlock();
+    // otherwise leave it locked, as it was on entry.
 
     return res;
 }
@@ -795,7 +838,7 @@ cyg_net_init(void)
                       STACK_SIZE,               // Size
                       &netint_thread_handle,    // Handle
                       &netint_thread_data       // Thread data structure
-            );
+        );
     cyg_thread_resume(netint_thread_handle);    // Start it
     // Initialize timeout support
     cyg_timeout_init();
@@ -824,6 +867,7 @@ cyg_net_init(void)
     // Start up the network processing
     ifinit();
     domaininit();
+
     // Done
     _init = true;
 }
@@ -895,3 +939,5 @@ _cyg_scheduler_unlock(char *file, int line)
     do_sched_event(__FUNCTION__, file, line, cyg_scheduler_read_lock());
 }
 #endif // CYGIMPL_TRACE_SPLX
+
+// EOF support.c

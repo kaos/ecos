@@ -173,6 +173,21 @@
 
 #endif // CYGARC_SH_MOD_INTC_V2
 
+//----------------------------------------------------------------------------
+// Additional vectors provided by INTC V3
+
+//#ifdef CYGARC_SH_MOD_INTC_V3 // FIXME
+#define CYGNUM_HAL_INTERRUPT_LCDC_LCDI       63
+#define CYGNUM_HAL_INTERRUPT_PCC_PCC0        64
+#define CYGNUM_HAL_INTERRUPT_PCC_PCC1        65
+
+#ifdef CYGARC_SH_MOD_INTC_V3 // FIXME
+
+#undef  CYGNUM_HAL_ISR_MAX
+#define CYGNUM_HAL_ISR_MAX                   CYGNUM_HAL_INTERRUPT_PCC_PCC1
+
+#endif // CYGARC_SH_MOD_INTC_V3
+
 
 // CYGNUM_HAL_ISR_COUNT must match CYG_ISR_TABLE_SIZE defined in vectors.S.
 #define CYGNUM_HAL_ISR_MIN                   CYGNUM_HAL_INTERRUPT_NMI
@@ -573,6 +588,26 @@ externC cyg_uint8 cyg_hal_ILVL_table[];
         iprX &= ~CYGARC_REG_IPRE_ADC_MASK;                               \
         iprX |= (_level_)*CYGARC_REG_IPRE_ADC_PRI1;                      \
         HAL_WRITE_UINT16(CYGARC_REG_IPRE, iprX);                         \
+        break;                                                           \
+                                                                         \
+    /* IPRF */                                                           \
+    case CYGNUM_HAL_INTERRUPT_LCDC_LCDI:                                 \
+        HAL_READ_UINT16(CYGARC_REG_IPRF, iprX);                          \
+        iprX &= ~CYGARC_REG_IPRF_LCDI_MASK;                              \
+        iprX |= (_level_)*CYGARC_REG_IPRF_LCDI_PRI1;                     \
+        HAL_WRITE_UINT16(CYGARC_REG_IPRF, iprX);                         \
+        break;                                                           \
+    case CYGNUM_HAL_INTERRUPT_PCC_PCC0:                                  \
+        HAL_READ_UINT16(CYGARC_REG_IPRF, iprX);                          \
+        iprX &= ~CYGARC_REG_IPRF_PCC0_MASK;                              \
+        iprX |= (_level_)*CYGARC_REG_IPRF_PCC0_PRI1;                     \
+        HAL_WRITE_UINT16(CYGARC_REG_IPRF, iprX);                         \
+        break;                                                           \
+    case CYGNUM_HAL_INTERRUPT_PCC_PCC1:                                  \
+        HAL_READ_UINT16(CYGARC_REG_IPRF, iprX);                          \
+        iprX &= ~CYGARC_REG_IPRF_PCC1_MASK;                              \
+        iprX |= (_level_)*CYGARC_REG_IPRF_PCC1_PRI1;                     \
+        HAL_WRITE_UINT16(CYGARC_REG_IPRF, iprX);                         \
         break;                                                           \
                                                                          \
     case CYGNUM_HAL_INTERRUPT_RESERVED_1E0:                              \

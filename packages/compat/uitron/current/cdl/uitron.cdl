@@ -215,6 +215,7 @@ cdl_package CYGPKG_UITRON {
         display       "Fixed-size memorypools"
         flavor        bool
         default_value 1
+        requires      CYGPKG_MEMALLOC
         description   "
             uITRON supports memory pools for dynamic, task-safe
             memory allocation.
@@ -233,6 +234,7 @@ cdl_package CYGPKG_UITRON {
         display       "Variable-size memorypools"
         flavor        bool
         default_value 1
+        requires      CYGPKG_MEMALLOC
         description   "
             uITRON supports memory pools for dynamic, task-safe
             memory allocation.

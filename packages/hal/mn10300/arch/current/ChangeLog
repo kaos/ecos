@@ -1,3 +1,57 @@
+2000-08-15  Drew Moseley  <dmoseley@redhat.com>
+
+	* src/mn10300_stub.c (__is_breakpoint_function): Prepend an _ to
+	breakinst.  Apparently the symbol generation has changed requiring
+	this.
+
+2000-08-14  Drew Moseley  <dmoseley@redhat.com>
+
+	* src/vectors.S: Use some generic MN10300 code rather than AM33-specific.
+
+	* src/mn10300_stub.c (__computeSignal): Make sure SIGSYSCALL is
+	defined before returning it.
+
+2000-08-12  Drew Moseley  <dmoseley@redhat.com>
+
+	* include/mn10300_stub.h: More rearranging of GDB regnames.
+
+2000-08-11  Drew Moseley  <dmoseley@redhat.com>
+
+	* include/mn10300_stub.h: Rearranged regnames to correspond to
+	what GDB is expecting.
+
+	* include/arch.inc: Fixed error in declaration of hal_intc_decode.
+
+2000-08-10  Drew Moseley  <dmoseley@redhat.com>
+
+	* src/vectors.S: Added syscall handling.
+	Added HAL_EARLY_INIT.
+	Added CTRLC_SUPPORT.
+	Added CYGMON support.
+
+	* src/mn10300_stub.c: Added breakpoint list handling.
+	Added syscall handling.
+
+	* src/hal_misc.c (cyg_hal_exception_handler): Added support for
+	exceptions caused by the stubs which are passed transparently
+	back.
+	Also added VIRTUAL_VECTOR support.
+
+	* include/hal_arch.h: Added HAL_BREAKINST_TYPE.
+	Added Cygmon support.
+
+	* cdl/hal_mn10300.cdl: Added option for CTRLC_SUPPORT.
+	* include/pkgconf/hal_mn10300.h: Ditto.
+
+2000-06-21  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/hal_arch.h: Added underscores to label in
+	HAL_BREAKINST().
+
+	* include/basetype.h:
+	Removed definition of CYG_LABEL_NAME() and added one for
+	CYG_LABEL_DEFN().
+
 2000-06-08  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_arch.h (CYGARC_HAL_SAVE_GP, CYGARC_HAL_RESTORE_GP):

@@ -15,6 +15,18 @@ cdl_configuration template_kernel {
     package     CYGPKG_INFRA current ;
     package     CYGPKG_KERNEL current ;
     package     CYGPKG_ERROR current ;
+    package     CYGPKG_MEMALLOC current ;
+    package     CYGPKG_ISOINFRA current ;
 };
 
+cdl_option CYGBLD_ISO_ERRNO_CODES_HEADER {
+    inferred_value 1 <cyg/error/codes.h>
+};
 
+cdl_option CYGBLD_ISO_ERRNO_HEADER {
+    inferred_value 1 <cyg/error/errno.h>
+};
+
+cdl_option CYGBLD_ISO_STRERROR_HEADER {
+    inferred_value 1 <cyg/error/strerror.h>
+};

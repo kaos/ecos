@@ -316,6 +316,7 @@ flush_dcache(void *__p, int __nbytes)
 // routines for that channel. The platform HAL also has the necessary
 // information to determine if the channel is already initialized by
 // a debug agent (either builtin or in ROM).
+externC void cyg_hal_plf_comms_init(void);
 void
 hal_if_diag_init(void)
 {
@@ -323,6 +324,12 @@ hal_if_diag_init(void)
     cyg_hal_plf_comms_init();
 #endif
 
+#ifdef  CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_DEFAULT
+#define _DEFAULT CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_DEFAULT
+#else
+#define _DEFAULT (CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL+1)
+#endif
+#if CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL != _DEFAULT
     // Set console channel. This should only be done when the console channel
     // differs from the debug channel to prevent removing the debug agent's
     // mangler procs.
@@ -330,6 +337,8 @@ hal_if_diag_init(void)
         != CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL)
 
         CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL);
+#endif
+#undef _DEFAULT
 }
 
 void 

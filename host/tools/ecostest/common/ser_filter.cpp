@@ -298,7 +298,7 @@ main(int argc, char** argv)
     delete download_filter;
   }
   
-  return 0;
+//  return 0;
   
 Usage:
   const char *pszMe="ser_filter";

@@ -61,6 +61,29 @@
     (CYGNUM_KERNEL_SCHED_PRIORITIES > 20)
 
 // ------------------------------------------------------------------------
+// Manufacture a simpler feature test macro for priority inheritance than
+// the configuration gives us. We have priority inheritance if it is configured
+// as the only protocol, or if it is the default protocol for dynamic protocol
+// choice.
+// FIXME: If we have dynamic protocol choice, we can also set priority inheritance
+// as the protocol to be used on the mutexes we are interested in. At present we
+// do not do this.
+
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_INHERIT
+# ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DYNAMIC
+#  ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DEFAULT_INHERIT
+#   define PRIORITY_INHERITANCE
+#  else
+#   undef PRIORITY_INHERITANCE
+#  endif
+# else
+#  define PRIORITY_INHERITANCE
+# endif
+#else
+# undef PRIORITY_INHERITANCE
+#endif
+
+// ------------------------------------------------------------------------
 // Management functions
 //
 // Stolen from testaux.hxx and copied in here because I want to be able to
@@ -250,12 +273,12 @@ static void t2( CYG_ADDRWORD data )
         // Wait longer than the delay in t3 waiting on go_flag
     } while ( now < (then + 3) );
 
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE
-    CYG_TEST_INFO( "Checking for MUTEX_PRIORITY_INHERITANCE" );
+#ifdef PRIORITY_INHERITANCE
+    CYG_TEST_INFO( "Checking for mutex priority inheritance" );
     CYG_TEST_CHECK( 1 == t3ran, "Thread 3 did not run" );
     CYG_TEST_CHECK( 1 == got_it, "Thread 1 did not get the mutex" );
 #else
-    CYG_TEST_INFO( "Checking for NO mutex_priority_inheritance" );
+    CYG_TEST_INFO( "Checking for NO mutex priority inheritance" );
     CYG_TEST_CHECK( 0 == t3ran, "Thread 3 DID run" );
     CYG_TEST_CHECK( 0 == got_it, "Thread 1 DID get the mutex" );
 #endif
@@ -336,18 +359,10 @@ static void control_thread( CYG_ADDRWORD data )
         if ( cyg_test_is_simulator && (0 != i && 13 != i && 26 != i) )
             continue;    // 13 is 111 base 3, 26 is 222 base 3
 
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE
+#ifdef PRIORITY_INHERITANCE
         // If the simple scheme plus relay enhancement, or any other
         // *complete* scheme, we can run all three ancillary threads no
         // problem, so no special action here.
-
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE
-#ifndef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE_RELAY
-        // If the simple scheme but no relay enhancement:
-        if ( k )                        // Cannot run thread 2a nor 3a
-            break;                      //     if no priority relay.
-#endif
-#endif
 
 #else
         // If no priority inheritance at all, running threads 1a and 2a is

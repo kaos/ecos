@@ -785,6 +785,24 @@ void Cyg_Alarm::enable()
     }
 }
 
+// -------------------------------------------------------------------------
+// Get the current time values from the alarm
+
+void Cyg_Alarm::get_times(
+        cyg_tick_count  *t,      // Next trigger time
+        cyg_tick_count  *i       // Current interval
+        )
+{
+    // Lock the scheduler while we do this to avoid
+    // race conditions.
+    Cyg_Scheduler::lock();
+
+    if( t != NULL ) *t = trigger;
+    if( i != NULL ) *i = interval;
+    
+    Cyg_Scheduler::unlock();
+}
+
 //==========================================================================
 // System clock object
 

@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas, grante
+// Contributors: gthomas, grante, jlarmour, jskov
 // Date:         1999-02-04
 // Purpose:      Top level serial driver
 // Description: 
@@ -51,12 +51,14 @@
 
 static Cyg_ErrNo serial_write(cyg_io_handle_t handle, const void *buf, cyg_uint32 *len);
 static Cyg_ErrNo serial_read(cyg_io_handle_t handle, void *buf, cyg_uint32 *len);
+static Cyg_ErrNo serial_select(cyg_io_handle_t handle, cyg_uint32 which, CYG_ADDRWORD info);
 static Cyg_ErrNo serial_get_config(cyg_io_handle_t handle, cyg_uint32 key, void *buf, cyg_uint32 *len);
 static Cyg_ErrNo serial_set_config(cyg_io_handle_t handle, cyg_uint32 key, const void *buf, cyg_uint32 *len);
 
 DEVIO_TABLE(cyg_io_serial_devio,
             serial_write,
             serial_read,
+            serial_select,
             serial_get_config,
             serial_set_config
     );
@@ -64,13 +66,29 @@ DEVIO_TABLE(cyg_io_serial_devio,
 static void serial_init(serial_channel *chan);
 static void serial_xmt_char(serial_channel *chan);
 static void serial_rcv_char(serial_channel *chan, unsigned char c);
-#ifdef CYGINT_IO_SERIAL_BLOCK_TRANSFER
+#ifdef CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS
+static void serial_indicate_status(serial_channel *chan,
+                                   cyg_serial_line_status_t *s);
+#endif
+#if CYGINT_IO_SERIAL_BLOCK_TRANSFER
 static bool serial_data_rcv_req(serial_channel *chan, int avail, 
                                 int* space_avail, unsigned char** space);
 static void serial_data_rcv_done(serial_channel *chan);
 static bool serial_data_xmt_req(serial_channel *chan, int space,
                                 int* chars_avail, unsigned char** chars);
 static void serial_data_xmt_done(serial_channel *chan);
+# ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_HW
+SERIAL_CALLBACKS(cyg_io_serial_callbacks, 
+                 serial_init, 
+                 serial_xmt_char, 
+                 serial_rcv_char,
+                 serial_data_rcv_req,
+                 serial_data_rcv_done,
+                 serial_data_xmt_req,
+                 serial_data_xmt_done,
+                 serial_indicate_status);
+
+# else
 SERIAL_CALLBACKS(cyg_io_serial_callbacks, 
                  serial_init, 
                  serial_xmt_char, 
@@ -79,13 +97,116 @@ SERIAL_CALLBACKS(cyg_io_serial_callbacks,
                  serial_data_rcv_done,
                  serial_data_xmt_req,
                  serial_data_xmt_done);
+# endif
 #else
+# ifdef CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS
+SERIAL_CALLBACKS(cyg_io_serial_callbacks, 
+                 serial_init, 
+                 serial_xmt_char, 
+                 serial_rcv_char,
+                 serial_indicate_status);
+# else
 SERIAL_CALLBACKS(cyg_io_serial_callbacks, 
                  serial_init, 
                  serial_xmt_char, 
                  serial_rcv_char);
+# endif
 #endif
 
+// ---------------------------------------------------------------------------
+
+#ifdef CYGPKG_IO_SERIAL_FLOW_CONTROL
+
+static __inline__ void
+throttle_tx( serial_channel *chan )
+{
+    chan->flow_desc.flags |= CYG_SERIAL_FLOW_OUT_THROTTLED;
+    // the throttling itself occurs in the serial_xmt_char() callback
+}
+
+static __inline__ void
+restart_tx( serial_channel *chan )
+{
+    serial_funs *funs = chan->funs;
+
+    chan->flow_desc.flags &= ~CYG_SERIAL_FLOW_OUT_THROTTLED;
+
+#ifdef CYGPKG_IO_SERIAL_SELECT_SUPPORT
+    // See if there is now enough room to say it is available
+    // for writing
+    {
+        cbuf_t *cbuf = &chan->out_cbuf;
+        int space;
+        
+        space = cbuf->len - cbuf->nb;
+        if (space >= cbuf->low_water)
+            cyg_selwakeup( &cbuf->selinfo );
+    }
+#endif
+    if ( chan->out_cbuf.nb > 0 )
+        (funs->start_xmit)(chan);
+}
+
+static __inline__ void
+throttle_rx( serial_channel *chan, cyg_bool force )
+{
+    serial_funs *funs = chan->funs;
+
+    chan->flow_desc.flags |= CYG_SERIAL_FLOW_IN_THROTTLED;
+#ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_SOFTWARE
+    // send an xoff
+    if ( force || chan->config.flags & CYGNUM_SERIAL_FLOW_XONXOFF_RX ) {
+        chan->flow_desc.xchar = CYGDAT_IO_SERIAL_FLOW_CONTROL_XOFF_CHAR;
+        // Make sure xmit is running so we can send it
+        (funs->start_xmit)(chan); 
+    }
+#endif
+#ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_HW
+    {
+        cyg_uint32 i=1;
+        cyg_uint32 len = sizeof(i);
+        
+        // set hardware flow control - don't care if it fails
+        if ( force || (chan->config.flags & CYGNUM_SERIAL_FLOW_RTSCTS_RX) ||
+             (chan->config.flags & CYGNUM_SERIAL_FLOW_DSRDTR_RX) )
+            (funs->set_config)(chan,
+                               CYG_IO_SET_CONFIG_SERIAL_HW_RX_FLOW_THROTTLE,
+                               &i, &len);
+    }
+#endif
+}
+
+static __inline__ void
+restart_rx( serial_channel *chan, cyg_bool force )
+{
+    serial_funs *funs = chan->funs;
+
+    chan->flow_desc.flags &= ~CYG_SERIAL_FLOW_IN_THROTTLED;
+#ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_SOFTWARE
+    // send an xon
+    if ( force || chan->config.flags & CYGNUM_SERIAL_FLOW_XONXOFF_RX ) {
+        chan->flow_desc.xchar = CYGDAT_IO_SERIAL_FLOW_CONTROL_XON_CHAR;
+        (funs->start_xmit)(chan);  // Make sure xmit is running so we can send it
+    }
+#endif
+#ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_HW
+    {
+        cyg_uint32 i=0;
+        cyg_uint32 len = sizeof(i);
+        
+        // set hardware flow control - don't care if it fails
+        if ( force || (chan->config.flags & CYGNUM_SERIAL_FLOW_RTSCTS_RX) ||
+             (chan->config.flags & CYGNUM_SERIAL_FLOW_DSRDTR_RX) )
+            (funs->set_config)(chan,
+                               CYG_IO_SET_CONFIG_SERIAL_HW_RX_FLOW_THROTTLE,
+                               &i, &len);
+    }
+#endif
+}
+
+#endif
+
+// ---------------------------------------------------------------------------
 
 static void
 serial_init(serial_channel *chan)
@@ -104,21 +225,56 @@ serial_init(serial_channel *chan)
         cyg_drv_mutex_init(&chan->out_cbuf.lock);
         cyg_drv_cond_init(&chan->out_cbuf.wait, &chan->out_cbuf.lock);
         chan->out_cbuf.low_water = chan->out_cbuf.len / 4;
+#ifdef CYGPKG_IO_SERIAL_SELECT_SUPPORT
+        cyg_selinit( &chan->out_cbuf.selinfo );
+#endif        
     }
     if (chan->in_cbuf.len != 0) {
+        cbuf_t *cbuf = &chan->in_cbuf;
+
 #ifdef CYGDBG_IO_INIT
-        diag_printf("Set input buffer - buf: %x len: %d\n", chan->in_cbuf.data, chan->in_cbuf.len);
+        diag_printf("Set input buffer - buf: %x len: %d\n", cbuf->data, cbuf->len);
 #endif
-        chan->in_cbuf.waiting = false;
-        chan->in_cbuf.abort = false;
+        cbuf->waiting = false;
+        cbuf->abort = false;
 #ifdef CYGOPT_IO_SERIAL_SUPPORT_NONBLOCKING
-        chan->in_cbuf.blocking = true;
+        cbuf->blocking = true;
 #endif
-        cyg_drv_mutex_init(&chan->in_cbuf.lock);
-        cyg_drv_cond_init(&chan->in_cbuf.wait, &chan->in_cbuf.lock);
+#ifdef CYGPKG_IO_SERIAL_SELECT_SUPPORT
+        cyg_selinit( &cbuf->selinfo );
+#endif
+#ifdef CYGPKG_IO_SERIAL_FLOW_CONTROL
+        cbuf->low_water =
+            (CYGNUM_IO_SERIAL_FLOW_CONTROL_LOW_WATER_PERCENT * cbuf->len) / 100;
+        cbuf->high_water =
+            (CYGNUM_IO_SERIAL_FLOW_CONTROL_HIGH_WATER_PERCENT * cbuf->len) / 100;
+# ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_SOFTWARE
+        // But make sure it is at least 35 below buffer size, to allow
+        // for 16 byte fifos, twice, plus some latency before s/w flow
+        // control can kick in. This doesn't apply to h/w flow control
+        // as it is near-instaneous
+        if ( (cbuf->len - cbuf->high_water) < 35 )
+            cbuf->high_water = cbuf->len - 35;
+        // and just in case...
+        if ( cbuf->high_water <= 0 )
+            cbuf->high_water = 1;
+        if ( cbuf->low_water > cbuf->high_water )
+            cbuf->low_water = cbuf->high_water;
+# endif
+#endif
+        cyg_drv_mutex_init(&cbuf->lock);
+        cyg_drv_cond_init(&cbuf->wait, &cbuf->lock);
     }
+#ifdef CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS
+    chan->status_callback = NULL;
+#endif
+
     chan->init = true;
 }
+
+// ---------------------------------------------------------------------------
+// FIXME:@@@ Throughout this file there are uses of cyg_drv_cond_signal and
+// cyg_drv_cond_broadcast. Does it matter which? -Jifl
 
 static Cyg_ErrNo 
 serial_write(cyg_io_handle_t handle, const void *_buf, cyg_uint32 *len)
@@ -132,13 +288,19 @@ serial_write(cyg_io_handle_t handle, const void *_buf, cyg_uint32 *len)
     cbuf_t *cbuf = &chan->out_cbuf;
     Cyg_ErrNo res = ENOERR;
 
-    cbuf->abort = false;
     cyg_drv_mutex_lock(&cbuf->lock);
+    cbuf->abort = false;
 
     if (cbuf->len == 0) {
         // Non interrupt driven (i.e. polled) operation
         while (size-- > 0) {
+#ifdef CYGPKG_IO_SERIAL_FLOW_CONTROL
+            while ( ( 0 == (chan->flow_desc.flags & CYG_SERIAL_FLOW_OUT_THROTTLED) ) &&
+                    ((funs->putc)(chan, *buf) == false) ) 
+                ;  // Ignore full, keep trying
+#else
             while ((funs->putc)(chan, *buf) == false) ;  // Ignore full, keep trying
+#endif
             buf++;
         }
     } else {
@@ -146,10 +308,14 @@ serial_write(cyg_io_handle_t handle, const void *_buf, cyg_uint32 *len)
         while (size > 0) {       
             next = cbuf->put + 1;
             if (next == cbuf->len) next = 0;
-            if (next == cbuf->get) {                
+            if (cbuf->nb == cbuf->len) {
                 cbuf->waiting = true;
                 // Buffer full - wait for space
-                (funs->start_xmit)(chan);  // Make sure xmit is running
+#ifdef CYGPKG_IO_SERIAL_FLOW_CONTROL
+                if ( 0 == (chan->flow_desc.flags & CYG_SERIAL_FLOW_OUT_THROTTLED) )
+#endif
+                    (funs->start_xmit)(chan);  // Make sure xmit is running
+
                 // Check flag: 'start_xmit' may have obviated the need to wait :-)
                 if (cbuf->waiting) {
 #ifdef CYGOPT_IO_SERIAL_SUPPORT_NONBLOCKING
@@ -162,7 +328,8 @@ serial_write(cyg_io_handle_t handle, const void *_buf, cyg_uint32 *len)
                     }
 #endif // CYGOPT_IO_SERIAL_SUPPORT_NONBLOCKING
                     cbuf->pending += size;  // Have this much more to send [eventually]
-                    cyg_drv_cond_wait(&cbuf->wait);
+                    if( !cyg_drv_cond_wait(&cbuf->wait) )
+                        cbuf->abort = true;
                     cbuf->pending -= size;
                 }
                 if (cbuf->abort) {
@@ -176,15 +343,22 @@ serial_write(cyg_io_handle_t handle, const void *_buf, cyg_uint32 *len)
             } else {
                 cbuf->data[cbuf->put++] = *buf++;
                 cbuf->put = next;
+                cbuf->nb++;
                 size--;  // Only count if actually sent!
             }
         }
-        (funs->start_xmit)(chan);  // Start output as necessary
+#ifdef CYGPKG_IO_SERIAL_FLOW_CONTROL
+        if ( 0 == (chan->flow_desc.flags & CYG_SERIAL_FLOW_OUT_THROTTLED) )
+#endif
+            (funs->start_xmit)(chan);  // Start output as necessary
         cyg_drv_dsr_unlock();
     }
     cyg_drv_mutex_unlock(&cbuf->lock);
     return res;
 }
+
+
+// ---------------------------------------------------------------------------
 
 static Cyg_ErrNo 
 serial_read(cyg_io_handle_t handle, void *_buf, cyg_uint32 *len)
@@ -203,20 +377,44 @@ serial_read(cyg_io_handle_t handle, void *_buf, cyg_uint32 *len)
             externC cyg_tick_count_t cyg_current_time(void);
 #endif // CYGDBG_DIAG_BUF
 
-    cbuf->abort = false;
     cyg_drv_mutex_lock(&cbuf->lock);
+    cbuf->abort = false;
 
     if (cbuf->len == 0) {
         // Non interrupt driven (i.e. polled) operation
         while (size++ < *len) {
-            *buf++ = (funs->getc)(chan);
+            cyg_uint8 c = (funs->getc)(chan);
+#ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_SOFTWARE
+            // for software flow control, if the driver returns one of the
+            // characters we act on it and then drop it (the app must not
+            // see it)
+            if ( chan->config.flags & CYGNUM_SERIAL_FLOW_XONXOFF_TX ) {
+                if ( c == CYGDAT_IO_SERIAL_FLOW_CONTROL_XOFF_CHAR ) {
+                    throttle_tx( chan );
+                } else if ( c == CYGDAT_IO_SERIAL_FLOW_CONTROL_XON_CHAR ) {
+                    restart_tx( chan );
+                }
+                else
+                    *buf++ = c;
+            }
+            else
+                *buf++ = c;
+#else
+            *buf++ = c;
+#endif    
         }
     } else {
         cyg_drv_dsr_lock();  // Avoid races
         while (size < *len) {
-            if (cbuf->get != cbuf->put) {
+            if (cbuf->nb > 0) {
+#ifdef CYGPKG_IO_SERIAL_FLOW_CONTROL
+                if ( (cbuf->nb <= cbuf->low_water) && 
+                     (chan->flow_desc.flags & CYG_SERIAL_FLOW_IN_THROTTLED) )
+                    restart_rx( chan, false );
+#endif
                 *buf++ = cbuf->data[cbuf->get];
                 if (++cbuf->get == cbuf->len) cbuf->get = 0;
+                cbuf->nb--;
                 size++;
             } else {
 #ifdef CYGOPT_IO_SERIAL_SUPPORT_NONBLOCKING
@@ -228,19 +426,20 @@ serial_read(cyg_io_handle_t handle, void *_buf, cyg_uint32 *len)
 #endif // CYGOPT_IO_SERIAL_SUPPORT_NONBLOCKING
                 cbuf->waiting = true;
 #ifdef XX_CYGDBG_DIAG_BUF
-            enable_diag_uart = 0;
-            HAL_CLOCK_READ(&_time);
-            _stime = (int)cyg_current_time();
-            diag_printf("READ wait - get: %d, put: %d, time: %x.%x\n", cbuf->get, cbuf->put, _stime, _time);
-            enable_diag_uart = _enable;
+                enable_diag_uart = 0;
+                HAL_CLOCK_READ(&_time);
+                _stime = (int)cyg_current_time();
+                diag_printf("READ wait - get: %d, put: %d, time: %x.%x\n", cbuf->get, cbuf->put, _stime, _time);
+                enable_diag_uart = _enable;
 #endif // CYGDBG_DIAG_BUF
-                cyg_drv_cond_wait(&cbuf->wait);
+                if( !cyg_drv_cond_wait(&cbuf->wait) )
+                    cbuf->abort = true;
 #ifdef XX_CYGDBG_DIAG_BUF
-            enable_diag_uart = 0;
-            HAL_CLOCK_READ(&_time);
-            _stime = (int)cyg_current_time();
-            diag_printf("READ continue - get: %d, put: %d, time: %x.%x\n", cbuf->get, cbuf->put, _stime, _time);
-            enable_diag_uart = _enable;
+                enable_diag_uart = 0;
+                HAL_CLOCK_READ(&_time);
+                _stime = (int)cyg_current_time();
+                diag_printf("READ continue - get: %d, put: %d, time: %x.%x\n", cbuf->get, cbuf->put, _stime, _time);
+                enable_diag_uart = _enable;
 #endif // CYGDBG_DIAG_BUF
                 if (cbuf->abort) {
                     // Give up!
@@ -266,6 +465,66 @@ serial_read(cyg_io_handle_t handle, void *_buf, cyg_uint32 *len)
     cyg_drv_mutex_unlock(&cbuf->lock);
     return res;
 }
+
+
+// ---------------------------------------------------------------------------
+
+static cyg_bool
+serial_select(cyg_io_handle_t handle, cyg_uint32 which, CYG_ADDRWORD info)
+{
+#ifdef CYGPKG_IO_SERIAL_SELECT_SUPPORT
+
+    cyg_devtab_entry_t *t = (cyg_devtab_entry_t *)handle;
+    serial_channel *chan = (serial_channel *)t->priv;
+
+    
+    switch( which )
+    {
+    case CYG_FREAD:
+        {
+            cbuf_t *cbuf = &chan->in_cbuf;
+
+            // Check for data in the input buffer. If there is none,
+            // register the select operation, otherwise return true.
+
+            if( cbuf->nb == 0 )
+                cyg_selrecord( info, &cbuf->selinfo );
+            else return true;
+        }
+        break;
+        
+    case CYG_FWRITE:
+        {
+            // Check for space in the output buffer. If there is none,
+            // register the select operation, otherwise return true.
+
+            cbuf_t *cbuf = &chan->out_cbuf;
+            int space = cbuf->len - cbuf->nb;
+#ifdef CYGPKG_IO_SERIAL_FLOW_CONTROL
+            if ( (space < cbuf->low_water) ||
+                 (chan->flow_desc.flags & CYG_SERIAL_FLOW_OUT_THROTTLED) )
+                cyg_selrecord( info, &cbuf->selinfo );
+#else
+            if (space < cbuf->low_water)
+                cyg_selrecord( info, &cbuf->selinfo );
+#endif
+            else return true;
+        }
+        break;
+
+    case 0: // exceptions - none supported
+        break;
+    }
+    return false;
+#else
+
+    // With no select support, we simply return true.
+    return true;
+#endif    
+}
+
+
+// ---------------------------------------------------------------------------
 
 static Cyg_ErrNo 
 serial_get_config(cyg_io_handle_t handle, cyg_uint32 key, void *xbuf, cyg_uint32 *len)
@@ -298,20 +557,14 @@ serial_get_config(cyg_io_handle_t handle, cyg_uint32 key, void *xbuf, cyg_uint32
             p = (cyg_serial_buf_info_t *)xbuf;
             
             p->rx_bufsize = in_cbuf->len;
-            if (p->rx_bufsize) {
-                p->rx_count = in_cbuf->put - in_cbuf->get;
-                if (p->rx_count < 0) 
-                    p->rx_count += p->rx_bufsize;
-            }
+            if (p->rx_bufsize)
+                p->rx_count = in_cbuf->nb;
             else
                 p->rx_count = 0;
             
             p->tx_bufsize = out_cbuf->len;
-            if (p->tx_bufsize) {
-                p->tx_count = out_cbuf->put - out_cbuf->get;
-                if (p->tx_count < 0) 
-                    p->tx_count += p->tx_bufsize;
-            }
+            if (p->tx_bufsize)
+                p->tx_count = out_cbuf->nb;
             else
                 p->tx_count = 0;
         }
@@ -322,9 +575,10 @@ serial_get_config(cyg_io_handle_t handle, cyg_uint32 key, void *xbuf, cyg_uint32
         if (out_cbuf->len == 0) break;  // Nothing to do if not buffered
         cyg_drv_mutex_lock(&out_cbuf->lock);  // Stop any further output processing
         cyg_drv_dsr_lock();
-        while (out_cbuf->pending || (out_cbuf->get != out_cbuf->put)) {
+        while (out_cbuf->pending || (out_cbuf->nb > 0)) {
             out_cbuf->waiting = true;
-            cyg_drv_cond_wait(&out_cbuf->wait);
+            if(!cyg_drv_cond_wait(&out_cbuf->wait) )
+                res = -EINTR;
         }
         cyg_drv_dsr_unlock();
         cyg_drv_mutex_unlock(&out_cbuf->lock);
@@ -340,7 +594,7 @@ serial_get_config(cyg_io_handle_t handle, cyg_uint32 key, void *xbuf, cyg_uint32
             cyg_drv_cond_signal(&in_cbuf->wait);
             in_cbuf->waiting = false;
         }
-        in_cbuf->get = in_cbuf->put;  // Flush buffered input
+        in_cbuf->get = in_cbuf->put = in_cbuf->nb = 0;  // Flush buffered input
         cyg_drv_dsr_unlock();
         cyg_drv_mutex_unlock(&in_cbuf->lock);
         break;
@@ -363,8 +617,8 @@ serial_get_config(cyg_io_handle_t handle, cyg_uint32 key, void *xbuf, cyg_uint32
         if (out_cbuf->len == 0) break;  // Nothing to do if not buffered
         cyg_drv_mutex_lock(&out_cbuf->lock);  // Stop any further output processing
         cyg_drv_dsr_lock();
-        if (out_cbuf->get != out_cbuf->put) {
-            out_cbuf->get = out_cbuf->put;  // Empties queue!
+        if (out_cbuf->nb > 0) {
+            out_cbuf->get = out_cbuf->put = out_cbuf->nb = 0;  // Empties queue!
             (funs->stop_xmit)(chan);  // Done with transmit
         }
         if (out_cbuf->waiting) {
@@ -377,14 +631,14 @@ serial_get_config(cyg_io_handle_t handle, cyg_uint32 key, void *xbuf, cyg_uint32
         break;
 
 #ifdef CYGOPT_IO_SERIAL_SUPPORT_NONBLOCKING
-    case CYG_IO_GET_CONFIG_SERIAL_READ_BLOCKING:
+    case CYG_IO_GET_CONFIG_READ_BLOCKING:
         if (*len < sizeof(cyg_uint32)) {
             return -EINVAL;
         }
         *(cyg_uint32*)xbuf = (in_cbuf->blocking) ? 1 : 0;
         break;
 
-    case CYG_IO_GET_CONFIG_SERIAL_WRITE_BLOCKING:
+    case CYG_IO_GET_CONFIG_WRITE_BLOCKING:
         if (*len < sizeof(cyg_uint32)) {
             return -EINVAL;
         }
@@ -398,6 +652,9 @@ serial_get_config(cyg_io_handle_t handle, cyg_uint32 key, void *xbuf, cyg_uint32
     return res;
 }
 
+
+// ---------------------------------------------------------------------------
+
 static Cyg_ErrNo 
 serial_set_config(cyg_io_handle_t handle, cyg_uint32 key, const void *xbuf, cyg_uint32 *len)
 {
@@ -409,37 +666,126 @@ serial_set_config(cyg_io_handle_t handle, cyg_uint32 key, const void *xbuf, cyg_
     cbuf_t *in_cbuf = &chan->in_cbuf;
 #endif
     serial_funs *funs = chan->funs;
-    cyg_serial_info_t *buf = (cyg_serial_info_t *)xbuf;
 
     switch (key) {
-    case CYG_IO_SET_CONFIG_SERIAL_INFO:
-        if (*len != sizeof(cyg_serial_info_t)) {
-            return -EINVAL;
-        }
-        if ((funs->set_config)(chan, buf) != true) {
-            // Device is not happy with paramters or they cannot be set
-            res = -EINVAL;
-        }
-        break;
 #ifdef CYGOPT_IO_SERIAL_SUPPORT_NONBLOCKING
-    case CYG_IO_SET_CONFIG_SERIAL_READ_BLOCKING:
+    case CYG_IO_SET_CONFIG_READ_BLOCKING:
         if (*len < sizeof(cyg_uint32) || 0 == in_cbuf->len) {
             return -EINVAL;
         }
         in_cbuf->blocking = (1 == *(cyg_uint32*)xbuf) ? true : false;
         break;
-    case CYG_IO_SET_CONFIG_SERIAL_WRITE_BLOCKING:
+    case CYG_IO_SET_CONFIG_WRITE_BLOCKING:
         if (*len < sizeof(cyg_uint32) || 0 == out_cbuf->len) {
             return -EINVAL;
         }
         out_cbuf->blocking = (1 == *(cyg_uint32*)xbuf) ? true : false;
         break;
 #endif // CYGOPT_IO_SERIAL_SUPPORT_NONBLOCKING
+
+#ifdef CYGPKG_IO_SERIAL_FLOW_CONTROL
+    case CYG_IO_SET_CONFIG_SERIAL_FLOW_CONTROL_METHOD:
+        {
+            cyg_uint32 *f = (cyg_uint32 *)xbuf;
+
+            if (*len < sizeof(*f))
+                return -EINVAL;
+
+            cyg_drv_dsr_lock();
+
+            chan->config.flags &= ~(CYGNUM_SERIAL_FLOW_XONXOFF_RX|
+                                    CYGNUM_SERIAL_FLOW_XONXOFF_TX|
+                                    CYGNUM_SERIAL_FLOW_RTSCTS_RX|
+                                    CYGNUM_SERIAL_FLOW_RTSCTS_TX|
+                                    CYGNUM_SERIAL_FLOW_DSRDTR_RX|
+                                    CYGNUM_SERIAL_FLOW_DSRDTR_TX);
+            chan->config.flags |= (*f & (
+#ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_SOFTWARE
+                CYGNUM_SERIAL_FLOW_XONXOFF_RX|
+                CYGNUM_SERIAL_FLOW_XONXOFF_TX|
+#endif
+#ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_HW
+                CYGNUM_SERIAL_FLOW_RTSCTS_RX|
+                CYGNUM_SERIAL_FLOW_RTSCTS_TX|
+                CYGNUM_SERIAL_FLOW_DSRDTR_RX|
+                CYGNUM_SERIAL_FLOW_DSRDTR_TX|
+#endif
+                0));
+#ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_HW
+            // up to hardware driver to clear flags if rejected
+            res = (funs->set_config)(chan,
+                                     CYG_IO_SET_CONFIG_SERIAL_HW_FLOW_CONFIG,
+                                     NULL, NULL);
+#endif
+            cyg_drv_dsr_unlock();
+        }
+        break;
+
+    case CYG_IO_SET_CONFIG_SERIAL_FLOW_CONTROL_FORCE:
+        {
+            cyg_uint32 *f = (cyg_uint32 *)xbuf;
+
+            if (*len < sizeof(*f))
+                return -EINVAL;
+            
+            cyg_drv_dsr_lock();
+            switch (*f) {
+            case CYGNUM_SERIAL_FLOW_THROTTLE_RX:
+                throttle_rx( chan, true );
+                break;
+            case CYGNUM_SERIAL_FLOW_RESTART_RX:
+                restart_rx( chan, true );
+                break;
+            case CYGNUM_SERIAL_FLOW_THROTTLE_TX:
+                throttle_tx( chan );
+                break;
+            case CYGNUM_SERIAL_FLOW_RESTART_TX:
+                restart_tx( chan );
+                break;
+            default:
+                res = -EINVAL;
+                break;
+            }
+            cyg_drv_dsr_unlock();
+        }
+        break;
+#endif // CYGPKG_IO_SERIAL_FLOW_CONTROL
+
+#ifdef CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS
+    case CYG_IO_SET_CONFIG_SERIAL_STATUS_CALLBACK:
+        {
+            cyg_serial_line_status_callback_fn_t newfn;
+            CYG_ADDRWORD newpriv;
+            cyg_serial_line_status_callback_t *tmp = 
+                (cyg_serial_line_status_callback_t *)xbuf;
+            
+            if ( *len < sizeof(*tmp) )
+                return -EINVAL;
+
+            newfn = tmp->fn;
+            newpriv = tmp->priv;
+
+            // prevent callbacks while we do this
+            cyg_drv_dsr_lock();
+            // store old callbacks in same structure
+            tmp->fn = chan->status_callback;
+            tmp->priv = chan->status_callback_priv;
+            chan->status_callback = newfn;
+            chan->status_callback_priv = newpriv;
+            cyg_drv_dsr_unlock();
+            *len = sizeof(*tmp);
+        }  
+        break;
+#endif
+
     default:
-        res = -EINVAL;
+        // pass down to lower layers
+        return (funs->set_config)(chan, key, xbuf, len);
     }
     return res;
 }
+
+// ---------------------------------------------------------------------------
 
 static void
 serial_xmt_char(serial_channel *chan)
@@ -449,47 +795,105 @@ serial_xmt_char(serial_channel *chan)
     unsigned char c;
     int space;
 
-    while (cbuf->get != cbuf->put) {
+#ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_SOFTWARE
+    // if we are required to send an XON/XOFF char, send it before anything else
+    // FIXME: what if XON gets corrupted in transit to the other end?
+    // Should we resend XON even though the other end may not be wanting
+    // to send us stuff at this point?
+    if ( chan->config.flags & CYGNUM_SERIAL_FLOW_XONXOFF_RX ) {
+        if ( chan->flow_desc.xchar ) {
+            if ( (funs->putc)(chan, chan->flow_desc.xchar) ) {
+                chan->flow_desc.xchar = '\0';
+            } else {  // otherwise there's no space and we have to wait
+                return;
+            }
+        }
+    }
+#endif
+#ifdef CYGPKG_IO_SERIAL_FLOW_CONTROL
+    // if we're meant to be throttled, just stop and leave
+    if ( chan->flow_desc.flags & CYG_SERIAL_FLOW_OUT_THROTTLED ) {
+        (funs->stop_xmit)(chan);  // Stop transmitting for now
+        return;
+    }
+#endif
+    while (cbuf->nb > 0) {
         c = cbuf->data[cbuf->get];
         if ((funs->putc)(chan, c)) {
             cbuf->get++;
             if (cbuf->get == cbuf->len) cbuf->get = 0;
-            if (cbuf->waiting) {
-                // See if there is now enough room to restart writer
-                space = (cbuf->len + cbuf->get) - cbuf->put;
-                if (space > cbuf->len) space -= cbuf->len;
-                if (space >= cbuf->low_water) {
+            cbuf->nb--;
+        } else {
+            // See if there is now enough room to restart writer
+            space = cbuf->len - cbuf->nb;
+            if (space >= cbuf->low_water) {
+                if (cbuf->waiting) {
                     cbuf->waiting = false;
                     cyg_drv_cond_broadcast(&cbuf->wait);
                 }
+#ifdef CYGPKG_IO_SERIAL_SELECT_SUPPORT
+                cyg_selwakeup( &cbuf->selinfo );
+#endif                    
             }
-        } else {
             return;  // Need to wait for more space
         }
     }
     (funs->stop_xmit)(chan);  // Done with transmit
+
+    // must signal waiters, and wake up selecters for the case when
+    // this was the last char to be sent and they hadn't been signalled
+    // before (e.g. because of flow control)
     if (cbuf->waiting) {
         cbuf->waiting = false;
         cyg_drv_cond_signal(&cbuf->wait);
     }
+#ifdef CYGPKG_IO_SERIAL_SELECT_SUPPORT
+    cyg_selwakeup( &cbuf->selinfo );
+#endif                    
 }
+
+// ---------------------------------------------------------------------------
 
 static void
 serial_rcv_char(serial_channel *chan, unsigned char c)
 {
     cbuf_t *cbuf = &chan->in_cbuf;
 
-#if 0
-    // FIXME: add error handling
-    int space;
-    // Check for overflow
-    space = (cbuf->len + cbuf->put - cbuf->get) % cbuf->len;
-    if (space == (cbuf->len - 1))
-        ;                               // full since put==get means empty
+#ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_SOFTWARE
+    // for software flow control, if the driver returns one of the characters
+    // we act on it and then drop it (the app must not see it)
+    if ( chan->config.flags & CYGNUM_SERIAL_FLOW_XONXOFF_TX ) {
+        if ( c == CYGDAT_IO_SERIAL_FLOW_CONTROL_XOFF_CHAR ) {
+            throttle_tx( chan );
+            return; // it wasn't a "real" character
+        } else if ( c == CYGDAT_IO_SERIAL_FLOW_CONTROL_XON_CHAR ) {
+            restart_tx( chan );
+            return; // it wasn't a "real" character
+        }
+    }
+#endif    
+#ifdef CYGPKG_IO_SERIAL_FLOW_CONTROL
+    // If we've hit the high water mark, tell the other side to stop
+    if ( cbuf->nb >= cbuf->high_water ) {
+        throttle_rx( chan, false );
+    }
+#endif
+#ifdef CYGPKG_IO_SERIAL_SELECT_SUPPORT
+    // Wake up any pending selectors if we are about to
+    // put some data into a previously empty buffer.
+    if( cbuf->nb == 0 )
+        cyg_selwakeup( &cbuf->selinfo );
 #endif
 
-    cbuf->data[cbuf->put++] = c;
-    if (cbuf->put == cbuf->len) cbuf->put = 0;
+    // If the flow control is not enabled/sufficient and the buffer is
+    // already full, just throw new characters away.
+
+    if( cbuf->nb < cbuf->len )
+    {
+        cbuf->data[cbuf->put++] = c;
+        if (cbuf->put == cbuf->len) cbuf->put = 0;
+        cbuf->nb++;
+    }
     if (cbuf->waiting) {
 #ifdef XX_CYGDBG_DIAG_BUF
             extern int enable_diag_uart;
@@ -508,8 +912,28 @@ serial_rcv_char(serial_channel *chan, unsigned char c)
 }
 
 //----------------------------------------------------------------------------
+// Flow control indication callback
+
+#ifdef CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS
+static void
+serial_indicate_status(serial_channel *chan, cyg_serial_line_status_t *s )
+{
+#ifdef CYGPKG_IO_SERIAL_FLOW_CONTROL
+    if ( CYGNUM_SERIAL_STATUS_FLOW == s->which ) {
+        if ( s->value )
+            restart_tx( chan );
+        else
+            throttle_tx( chan );
+    }
+#endif
+    if ( chan->status_callback )
+        (*chan->status_callback)(s, chan->status_callback_priv);
+}
+#endif // ifdef CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS
+
+//----------------------------------------------------------------------------
 // Block transfer functions. Not all drivers require these.
-#ifdef CYGINT_IO_SERIAL_BLOCK_TRANSFER
+#if CYGINT_IO_SERIAL_BLOCK_TRANSFER
 
 static bool
 serial_data_rcv_req(serial_channel *chan, int avail, 
@@ -519,33 +943,26 @@ serial_data_rcv_req(serial_channel *chan, int avail,
     int gap;
 
     // Check for space
-    gap = (cbuf->len + cbuf->put - cbuf->get) % cbuf->len;
-    if (gap == (cbuf->len - 1))
-        return false;                   // full since put==get means empty
+    gap = cbuf->nb;
+    if (gap == cbuf->len)
+        return false;                   // full
 
     if (0 == gap) {
         // Buffer is empty. Reset put/get indexes to get max transfer in
         // one chunk.
         cbuf->get = 0;
         cbuf->put = 0;
-        gap = cbuf->len - 1;
+        gap = cbuf->len;
     } else {
         // Free space (G = get, P = put, x = data, . = empty)
         //  positive: xxxxP.....Gxxx
         //  negative: ..GxxxxxP.....        [offer last chunk only]
 
         // First try for a gap between put and get locations
-        gap = cbuf->get - cbuf->put - 1;
+        gap = cbuf->get - cbuf->put;
         if (gap < 0) {
             // If failed, the gap is between put and the end of buffer
             gap = cbuf->len - cbuf->put;
-
-            // If get is at the beginning of the buffer, we cannot
-            // fill the last character, since that would make put==get
-            // implying empty. In this case we must offer last chunk-1 only.
-            //  GxxxxxP.......
-            if (cbuf->get == 0)
-                gap--;
         }
     }
 
@@ -554,6 +971,7 @@ serial_data_rcv_req(serial_channel *chan, int avail,
     *space_avail = gap;
     *space = &cbuf->data[cbuf->put];
     cbuf->put += gap;
+    cbuf->nb += gap;
 
     if (cbuf->put == cbuf->len) cbuf->put = 0;
 
@@ -568,6 +986,11 @@ serial_data_rcv_done(serial_channel *chan)
         cbuf->waiting = false;
         cyg_drv_cond_signal(&cbuf->wait);
     }
+#ifdef CYGPKG_IO_SERIAL_SELECT_SUPPORT
+    // Wake up any pending selectors if we have
+    // put some data into a previously empty buffer.
+    cyg_selwakeup( &cbuf->selinfo );
+#endif
 }
 
 static bool
@@ -581,11 +1004,12 @@ serial_data_xmt_req(serial_channel *chan, int space,
     //  0:        no data
     //  negative: xxxxP.....Gxxx        [offer last chunk only]
     //  positive: ..GxxxxxP.....
-    avail = cbuf->put - cbuf->get;
-    if (0 == avail)
+    if (0 == cbuf->nb)
         return false;
-    if (avail < 0) {
+    if (cbuf->get >= cbuf->put) {
         avail = cbuf->len - cbuf->get;
+    } else {
+        avail = cbuf->put - cbuf->get;
     }
 
     if (avail > space) avail = space;   // bound by space in hardware
@@ -593,6 +1017,7 @@ serial_data_xmt_req(serial_channel *chan, int space,
     *chars_avail = avail;
     *chars = &cbuf->data[cbuf->get];
     cbuf->get += avail;
+    cbuf->nb -= avail;
 
     if (cbuf->get == cbuf->len) cbuf->get = 0;
 
@@ -608,15 +1033,21 @@ serial_data_xmt_done(serial_channel *chan)
 
     (funs->stop_xmit)(chan);  // Done with transmit
 
-    if (cbuf->waiting) {
-        // See if there is now enough room to restart writer
-        space = (cbuf->len + cbuf->get) - cbuf->put;
-        if (space > cbuf->len) space -= cbuf->len;
-        if (space >= cbuf->low_water) {
+    // See if there is now enough room to restart writer
+    space = cbuf->len - cbuf->nb;
+    if (space >= cbuf->low_water) {
+        if (cbuf->waiting) {
             cbuf->waiting = false;
             cyg_drv_cond_broadcast(&cbuf->wait);
         }
+#ifdef CYGPKG_IO_SERIAL_SELECT_SUPPORT
+        cyg_selwakeup( &cbuf->selinfo );
+#endif                    
     }
 }
 
 #endif // CYGINT_IO_SERIAL_BLOCK_TRANSFER
+
+// ---------------------------------------------------------------------------
+
+// EOF serial.c

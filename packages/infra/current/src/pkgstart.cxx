@@ -43,7 +43,7 @@
 //                cyg_package_start() is used to call into individual
 //                packages' startup code. Alternatively leave it be and
 //                use the configuration options to set the appropriate
-//                compatibility environment e.g. uItron, ISO C, etc.
+//                compatibility environment e.g. uItron, etc.
 //                This may be automatically generated in the future.
 //
 //####DESCRIPTIONEND####
@@ -59,14 +59,9 @@
 #include <cyg/infra/cyg_type.h>    // Common type definitions and support
 #include <cyg/infra/cyg_trac.h>    // Default tracing support
 
-#ifdef CYGSEM_START_ISO_C_COMPATIBILITY
-# include <sys/cstartup.h>
-#endif
-
 #ifdef CYGSEM_START_UITRON_COMPATIBILITY
 # include <cyg/compat/uitron/uit_func.h>
 #endif
-
 
 // FUNCTION PROTOTYPES
 
@@ -85,13 +80,6 @@ cyg_package_start( void )
 
 #ifdef CYGSEM_START_UITRON_COMPATIBILITY
     cyg_uitron_start();
-#endif
-
-    
-#ifdef CYGSEM_START_ISO_C_COMPATIBILITY
-    // This works even if the kernel is there, but if not, then it
-    // calls the user main() and doesn't return until it does!
-    cyg_iso_c_start();
 #endif
 
     CYG_EMPTY_STATEMENT; // don't let it complain about doing nothing

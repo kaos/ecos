@@ -1,3 +1,29 @@
+2000-08-12  Drew Moseley  <dmoseley@redhat.com>
+
+	* src/var_misc.c: More rearranging of GDB regnames.
+
+2000-08-11  Drew Moseley  <dmoseley@redhat.com>
+
+	* src/var_misc.c: Rearranged regnames to correspond to what GDB is
+	expecting.
+
+2000-08-10  Drew Moseley  <dmoseley@redhat.com>
+
+	* src/var_misc.c: Added Cygmon support.
+
+	* include/var_intr.h: Added Cygmon support.
+
+	* include/var_arch.h: Added some PSW bitmasks.
+	Added Cygmon support.
+
+	* cdl/hal_mn10300_am33.cdl: Added option for AM33_REVISION
+
+2000-06-21  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/mn10300_am33.ld:
+	Added extra underscore to _stext and _etext.
+	Switched to new table definition mechanism.	
+
 2000-03-20  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* include/variant.inc (SAVED_CONTEXT_PC_OFFSET): New macro to give

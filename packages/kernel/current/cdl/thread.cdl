@@ -139,15 +139,13 @@ cdl_component CYGVAR_KERNEL_THREADS_DATA {
 		the uITRON compatibility layer
 		for private use."
 	}
-	cdl_option CYGNUM_KERNEL_THREADS_DATA_LIBC {
-	    display       "Slot 2 preallocated for libc"
+	cdl_option CYGNUM_KERNEL_THREADS_DATA_ERRNO {
+	    display       "Slot 2 preallocated for errno"
 	    flavor        data
 	    calculated    2
 	    description	"
 		This option defines the index of a per-thread data
-		slot which is reserved by
-		the C library (libc)
-		for private use."
+		slot which is reserved for use by an errno variable."
 	}
 	cdl_option CYGNUM_KERNEL_THREADS_DATA_POSIX {
 	    display       "Slot 3 preallocated for POSIX"
@@ -182,6 +180,7 @@ cdl_option CYGNUM_KERNEL_THREADS_IDLE_STACK_SIZE {
 
 # ---------------------------------------------------------------------
 # Thread-related miscellania.
+
 cdl_option CYGNUM_KERNEL_MAX_SUSPEND_COUNT_ASSERT {
     display       "Maximal suspend count"
     flavor        data
@@ -223,16 +222,4 @@ cdl_option CYGIMP_IDLE_THREAD_YIELD {
     description   "
         If the scheduler configuration only has a single priority
         level, then the idle thread must yield each time around its loop."
-}
-
-
-# ---------------------------------------------------------------------
-# Synchronization primitives miscellania.
-cdl_option CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE {
-    display       "Priority inheritance"
-    calculated    1
-    active_if     CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE
-    description   "
-    This option is automatically enabled when any implementation
-    of priority inheritance is selected."
 }

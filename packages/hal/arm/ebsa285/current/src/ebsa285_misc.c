@@ -44,6 +44,7 @@
 #include <pkgconf/hal.h>
 #include <pkgconf/system.h>
 #include CYGBLD_HAL_PLATFORM_H
+#include CYGHWR_MEMORY_LAYOUT_H
 
 #include <cyg/infra/cyg_type.h>         // base types
 #include <cyg/infra/cyg_trac.h>         // tracing macros
@@ -105,6 +106,9 @@ void hal_hardware_init(void)
     *SA110_TIMER2_CLEAR = 0;            // (Data: don't care)
     *SA110_TIMER3_CLEAR = 0;
     *SA110_TIMER4_CLEAR = 0;
+
+    // Let the timer run at a default rate (for delays)
+    hal_clock_initialize(CYGNUM_HAL_RTC_PERIOD);
 
     // Set up MMU so that we can use caches
     hal_bsp_mmu_init( hal_dram_size );
@@ -304,6 +308,30 @@ hal_bsp_mmu_init(int sdram_size)
 
 }
 
+/*------------------------------------------------------------------------*/
+
+//
+// Memory layout
+//
+
+externC cyg_uint8 *
+hal_arm_mem_real_region_top( cyg_uint8 *regionend )
+{
+    CYG_ASSERT( hal_dram_size > 0, "Didn't detect DRAM size!" );
+    CYG_ASSERT( hal_dram_size <=  256<<20,
+                "More than 256MB reported - that can't be right" );
+
+    // is it the "normal" end of the DRAM region? If so, it should be
+    // replaced by the real size
+    if ( regionend ==
+         ((cyg_uint8 *)CYGMEM_REGION_ram + CYGMEM_REGION_ram_SIZE) ) {
+        regionend = (cyg_uint8 *)CYGMEM_REGION_ram + hal_dram_size;
+    }
+    return regionend;
+} // hal_arm_mem_real_region_top()
+
+
+
 // -------------------------------------------------------------------------
 static cyg_uint32 _period;
 
@@ -340,6 +368,30 @@ void hal_clock_reset(cyg_uint32 vector, cyg_uint32 period)
 void hal_clock_read(cyg_uint32 *pvalue)
 {
     *pvalue = (cyg_uint32)(_period) - *SA110_TIMER3_VALUE;
+}
+
+//
+// Delay for some number of micro-seconds
+//
+void hal_delay_us(cyg_int32 usecs)
+{
+    int diff, diff2;
+    cyg_uint32 val1, val2;
+    while (usecs-- > 0) {
+        diff = 0;
+        while (diff < 3) {
+            val1 = *SA110_TIMER3_VALUE;
+            while ((val2 = *SA110_TIMER3_VALUE) == val1) ;
+            if (*SA110_TIMER3_LOAD) {
+                // A kernel is running, the counter may get reset as we watch
+                diff2 = val2 - val1;
+                if (diff2 < 0) diff2 += *SA110_TIMER3_LOAD;
+                diff += diff2;
+            } else {
+                diff += val2 - val1;
+            }
+        }
+    }
 }
 
 // -------------------------------------------------------------------------

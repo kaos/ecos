@@ -1,0 +1,292 @@
+The standard RedBoot command set is structured around the bootstrap
+environment.  These commands are designed to be simple to use and
+remember, while still providing sufficient power and flexibility to
+be useful.  No attempt has been made to make RedBoot be the end-all
+product.  As such, things such as the debug environment are left
+to other modules such as GDB stubs which are typically included in
+RedBoot.
+
+Also, the command set may be extended on a platform basis.
+
+Common commands:
+
+The general format of commands is:
+  <command> <options, paramters>
+Elements are separated by the space character.  Other control characters,
+such as TAB or editting keys (Insert) are not currently supported.
+
+Numbers, such as a memory location, may be specified in either
+decimal or hexadecimal (requires a 0x prefix).
+
+Use the 'help' command to get limited help on command syntax.
+
+    =======================================================================
+    RedBoot> help
+    Display (hex dump) a range of memory
+       dump <location> [<length>]
+    Manage FLASH images
+       fis {cmds}
+    Manage configuration kept in FLASH memory
+       fconfig 
+    Execute code at a location
+       go [-w <timeout>] [entry]
+    Help about help?
+       help <topic>
+    Load a file
+       load [-raw] [-b <mem_addr>]]
+    RedBoot> 
+    =======================================================================
+
+Commands may be abbreviated to any unique string.  E.g. 'lo' is equivalent
+to 'loa' and 'load'.
+
+- Download process
+
+Currently, download is only supported using TFTP over a network.
+Files to be downloaded may be executable images or raw data.
+The format of the command is:
+  RedBoot> load <file> [-v] [-b <location>] [-r]
+where:
+  <file> - The name of the file on the TFTP server.  Details of how
+           this is specified are host specific.
+  -v     - Display a small spinner (indicator) while download in 
+           progress.  Just for feedback, especially during long loads.
+  -b     - Specify the location in memory to load the file.  Executable
+           images normally load at the location the file was linked for.
+           This option allows the file to be loaded to a specific memory
+           location, possibly overriding any assumed location.
+  -r     - Download raw data.  Normally, the load command is used to 
+           load executable images into memory.  This option allows for
+           raw data to be loaded.  If this option is given, "-b" will
+           be required as well.
+
+    =======================================================================
+    RedBoot> lo redboot.ROM -b 0x8c400000   
+    Address offset = 0x0c400000
+    Entry point: 0x80000000, address range: 0x80000000-0x8000fe80
+    =======================================================================
+
+- Flash Image System (FIS)
+
+If the platform has flash memory, RedBoot can use this for image storage.
+Executable images, as well as data, can be stored in flash in a simple
+file store.  The 'fis' command is used to manipulate and maintain flash images.
+
+The available 'fis' commands are:
+
+  fis init [-f]
+
+This command is used to initialize the Flash Image System (FIS).  It should
+only be executed once, when RedBoot is first installed on the hardware.  
+Subsequent executions will cause loss of data in the flash (previously saved
+images will no longer be accessible).
+
+If the "-f" option is specified, all blocks of flash memory will be erased
+as part of this process.
+
+    =======================================================================
+    RedBoot> fis init -f
+    About to initialize [format] FLASH image system - are you sure (y/n)? n
+    =======================================================================
+
+  fis list 
+
+This command lists the images currently available in the FIS.  Certain images
+are used by RedBoot and have fixed names.  Other images can be manipulated by
+the user.
+
+    =======================================================================
+    RedBoot> fis list
+    Name              FLASH addr   Mem addr    Length    Entry point
+    RedBoot           0xA0000000   0xA0000000  0x020000  0x80000000
+    RedBoot[backup]   0xA0020000   0x8C010000  0x010000  0x8C010000
+    RedBoot config    0xA0FC0000   0xA0FC0000  0x020000  0x00000000
+    FIS directory     0xA0FE0000   0xA0FE0000  0x020000  0x00000000
+    =======================================================================
+
+  fis free 
+
+This command shows which areas of the flash memory are currently not in use.
+In use means that the block contains non-erased contents.  Since it is possible
+to force an image to be loaded at a particular flash location, this command
+can be used to check whether that location is in use by any other image.
+
+Note: there currently is no cross-checking between actual flash contents and
+the image directory.  i.e. there could be a segment of flash which is not erased
+that does not correspond to a named image, or vice-versa.
+
+    =======================================================================
+    RedBoot> fis free
+      0xA0040000 .. 0xA07C0000
+      0xA0840000 .. 0xA0FC0000
+    =======================================================================
+
+  fis create -b <mem_base> -l <length> [-f <flash_addr>] [-e <entry_point>] [-r <ram_addr>] <name>
+
+This command creates an image in the FIS directory.  The data for the image must
+exist in RAM memory before the copy.  Typically, one would use the RedBoot 'load'
+command to load an image into RAM and then the 'fis create' command to write it
+to flash. 
+
+Options:
+  <name> - The name of the file, as shown in the FIS directory.
+  -b     - The location in RAM used to obtain the image *required*
+  -l     - The length of the location *required*
+  -f     - The location in flash for the image.  If not provided, the first free
+           block which is large enough will be used.  See 'fis free'.
+  -e     - The execution entry address.  Used if the starting address for an image
+           is not known, or needs to be overridden.
+  -r     - The location in RAM when the image is loaded via 'fis load'.  This only
+           needs to be specified for images which will eventually loaded via 'fis load'.
+           Fixed images, such as RedBoot itself, will not need this.
+
+    =======================================================================
+    RedBoot> fis create RedBoot -f 0xa0000000 -b 0x8c400000 -l 0x20000
+    An image named 'RedBoot' exists - are you sure (y/n)? n
+    RedBoot> fis create junk -b 0x8c400000 -l 0x20000
+    ... Erase from 0xa0040000-0xa0060000: .
+    ... Program from 0x8c400000-0x8c420000 at 0xa0040000: .
+    ... Erase from 0xa0fe0000-0xa1000000: .
+    ... Program from 0x8c7d0000-0x8c7f0000 at 0xa0fe0000: .
+    =======================================================================
+
+  fis load name
+
+This command is used to transfer an image from flash memory to RAM.  Once loaded,
+it may be executed using the 'go' command.
+
+    =======================================================================
+    RedBoot> fis load RedBoot[backup]
+    RedBoot> go
+    =======================================================================
+
+  fis delete name
+
+This command removes an image from the FIS.  The flash memory will be erased
+as part of the execution of this command, as well as removal of the name from
+the FIS directory.
+
+    =======================================================================
+    RedBoot> fis list
+    Name              FLASH addr   Mem addr    Length    Entry point
+    RedBoot           0xA0000000   0xA0000000  0x020000  0x80000000
+    RedBoot[backup]   0xA0020000   0x8C010000  0x020000  0x8C010000
+    RedBoot config    0xA0FC0000   0xA0FC0000  0x020000  0x00000000
+    FIS directory     0xA0FE0000   0xA0FE0000  0x020000  0x00000000
+    junk              0xA0040000   0x8C400000  0x020000  0x80000000
+    RedBoot> fis delete junk
+    Delete image 'junk' - are you sure (y/n)? y
+    ... Erase from 0xa0040000-0xa0060000: .
+    ... Erase from 0xa0fe0000-0xa1000000: .
+    ... Program from 0x8c7d0000-0x8c7f0000 at 0xa0fe0000: .
+    =======================================================================
+
+  fis erase -f <flash_addr> -l <length>
+
+This command is used to forceably erase a portion of flash memory.  There is
+no cross-checking to ensure that the area being erased does not correspond to
+a loaded image.
+
+    =======================================================================
+    RedBoot> fis erase -f 0xa0040000 -l 0x20000
+    ... Erase from 0xa0040000-0xa0060000: .
+    =======================================================================
+
+- Persistent state [flash-based configuration] control
+
+Additionally, if the platform has flash memory, certain control and configuration
+information used by RedBoot can be stored in flash.  The details of what information
+is maintained in flash differs based on the platform and the configuration.
+
+However, the basic operation used to maintain this information is the same.
+Using the 'fconfig' command, the information may be displayed and/or changed.
+
+Usage:
+  RedBoot> fconfig [-l]
+If the optional flag "-l" is specified, the configuration data is simply listed.
+Otherwise, each configuration parameter will be displayed and the user given
+a chance to change it.  The entire value must be typed.  Typing just carriage
+return will leave a value unchanged.  Boolean values may be entered by just the
+first letter ('t' for true, 'f' for false).  At any time the editting process
+may be stopped by entering just a '.' (period) on the line.  Entry of the character
+'^' will move the editting back to the previous item.
+
+If any changes are made in the configuration, then the updated data will be
+written back to flash.
+
+One item which is always present in the configuration data is the ability to
+execute a script at boot/startup time.  A sequence of RedBoot commands can
+be entered which will be executed when the system starts up.  Optionally,
+a time out period can be provided which allows the user to abort the
+startup script and proceed with normal command processing from the console.
+
+    =======================================================================
+    RedBoot> fconfig -l
+    Run script at boot: false 
+    Use BOOTP for network configuration: false 
+    Local IP address: 192.168.1.29 
+    Default server IP address: 192.168.1.101 
+    GDB connection port: 9000 
+    Network debug at boot time: false 
+    =======================================================================
+
+The following example sets a boot script and then shows it running.
+    =======================================================================
+    RedBoot> fconfig
+             ^^^^^^^
+    Run script at boot: false t
+                              ^
+    Boot script: 
+    Enter script, terminate with empty line
+    >> fi li
+       ^^^^^
+    >> 
+       ^
+    Boot script timeout: 0 10
+                           ^^
+    Use BOOTP for network configuration: false .
+                                               ^
+    Update RedBoot non-volatile configuration - are you sure (y/n)? y
+                                                                    ^
+    ... Erase from 0xa0fc0000-0xa0fe0000: .
+    ... Program from 0x8c021f60-0x8c022360 at 0xa0fc0000: .
+    RedBoot> 
+    RedBoot(tm) debug environment - built 08:22:24, Aug 23 2000
+    Copyright (C) 2000, Red Hat, Inc.
+    
+    RAM: 0x8c000000-0x8c800000
+    FLASH: 0xa0000000 - 0xa1000000, 128 blocks of 0x00020000 bytes ea.
+    Socket Communications, Inc: Low Power Ethernet CF Revision C 5V/3.3V 08/27/98
+    IP: 192.168.1.29, Default server: 192.168.1.101
+    == Executing boot script in 10 seconds - enter ^C to abort
+    RedBoot> fi li
+    Name              FLASH addr   Mem addr    Length    Entry point
+    RedBoot           0xA0000000   0xA0000000  0x020000  0x80000000
+    RedBoot[backup]   0xA0020000   0x8C010000  0x020000  0x8C010000
+    RedBoot config    0xA0FC0000   0xA0FC0000  0x020000  0x00000000
+    FIS directory     0xA0FE0000   0xA0FE0000  0x020000  0x00000000
+    RedBoot>
+             ^
+    =======================================================================
+
+Note: the '^' characters above indicate where something was entered on the
+console.  As you can see, the 'fi li' command at the end came from the script,
+not the console.  Once the script was executed, command processing reverted
+to the console.
+
+- Program execution
+
+Once an image has been loaded into memory, either via the 'load' command
+or the 'fis load' command, execution may be transfered to that image.
+Note: the image is assumed to be a stand-alone entity, as RedBoot gives
+the entire platform over to it.  Typical examples would be an eCos application
+or a Linux kernel.
+
+The format of the 'go' command is:
+  RedBoot> go [-w <time>] [<location>]
+Execution will begin at <location> if specified.  Otherwise, the "entry 
+point" of the last image loaded will be used.
+
+The "-w" option gives the user <time> seconds before execution begins.
+The execution may be aborted by typing ^C on the console.  This mode
+would typically be used in startup scripts.

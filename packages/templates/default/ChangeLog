@@ -1,3 +1,15 @@
+2000-08-02  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* current.ect: Update inferred values for current CDL
+
+2000-07-04  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* current.ect: Add memalloc package
+
+2000-05-02  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* current.ect: Update template to reflect splitting up of libc
+
 2000-04-07  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* ecos.db: Re-organize device packages.  This is a massive change

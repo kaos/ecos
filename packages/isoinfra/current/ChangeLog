@@ -1,0 +1,196 @@
+2000-08-08  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/limits.h: Add SSIZE_MAX
+
+2000-08-03  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/sys/types.h: Make fd_mask unsigned int, not cyg_uint32 so
+	as to avoid including cyg_type.h
+
+2000-08-01  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/isoinfra.cdl: Support termios
+	* include/termios.h: Added
+
+2000-07-21  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/isoinfra.cdl: CYGNUM_ISO_MQUEUE_OPEN_MAX and
+	CYGNUM_ISO_MQUEUE_PRIO_MAX should only be active if CYGINT_ISO_MQUEUE
+	rather than them requiring it
+
+2000-07-20  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* cdl/isoinfra.cdl: Added configury for sys/utsname.h.
+
+	* include/unistd.h: Added _POSIX_VERSION constant.
+	Changed return type of sysconf() to long.
+
+	* include/sys/utsname.h: Added this file.
+
+2000-07-13  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/unistd.h: Added fsync() prototype.
+
+2000-07-13  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/isoinfra.cdl: Add CYGINT_ISO_MALLINFO and 
+	CYGBLD_ISO_MALLINFO_HEADER to support mallinfo()
+
+	* include/stdlib.h: Support mallinfo()
+
+2000-06-28  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/sys/stat.h: Added prototypes for stat(), fstat() and
+	mkdir().
+
+	* include/dirent.h: Added this file to provide directory reading
+	support.
+
+	* cdl/isoinfra.cdl: Added dirent support.
+
+2000-06-21  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/isoinfra.cdl: Put in below requires line, but change to allow
+	0 or 1 implementations
+
+2000-06-19  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* cdl/isoinfra.cdl: Commented out requires line in
+	CYGINT_POSIX_REALTIME_SIGNALS interface. This causes configuration
+	errors when the POSIX package is absent.
+
+	* include/sys/types.h: Reimplemented FD_COPY() and FD_ZERO() as
+	inline copy loops rather than calls to memcpy() and memset(). 
+
+2000-06-09  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/time.h: Following the below change, simply define struct
+	timeval, while allowing it to be overridden if necessary
+	* cdl/isoinfra.cdl (CYGBLD_ISO_STRUCTTIMEVAL_HEADER): define for this
+	purpose
+
+2000-06-09  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/time.h: Added definition of struct timeval. This is a
+	temporary home for this while we work out where definitions like
+	this should really live. Like the fd_set stuff in sys/types.h,
+	this is needed by two packages, both of which can operate
+	independently but which also need to co-operate when they are both
+	present.
+
+2000-06-07  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/sys/types.h: Added definitions for file descriptor sets
+	and inclusion of BSD specific types.
+
+	* include/stdlib.h: Added extern for environ variable in non-POSIX
+	builds.
+
+	* include/fcntl.h (O_WRONLY): Moved this to bit 1, leaving bit 2
+	for future expansion.
+
+	* cdl/isoinfra.cdl: Added CYGPKG_ISO_EXTRA_TYPES to control
+	inclusion of types into <sys/types.h> that are not specified by
+	POSIX. Mostly needed by the socket and BSD code.
+
+2000-06-02  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/unistd.h: Added this initial version of this file. Jifl
+	will probably want to rewrite it at some point.
+
+	* include/fcntl.h: Changed O_RDWR to (O_RDONLY|O_WRONLY).
+
+2000-05-31  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/fcntl.h: Fixed ifdefs around extern declaration of
+	fcntl().
+
+2000-05-20  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/fcntl.h: new file
+	* include/mqueue.h: new file
+	* include/sys/stat.h: new file
+
+	* cdl/isoinfra.cdl: No need for memcpy and memset interfaces - they're
+	always present
+	(CYGINT_ISO_POSIX_TIMERS): define _POSIX_TIMERS if enabled
+	(CYGINT_POSIX_REALTIME_SIGNALS): add
+	(CYGPKG_ISO_POSIX_FCNTL): Add a number of hooks for things that need
+	to control fcntl.h
+	(CYGPKG_ISO_MQUEUE): Add a number of hooks for things that need
+	to control mqueue.h
+	(CYGBLD_ISO_STAT_DEFS_HEADER): Add to override default sys/stat.h
+	contents
+	
+	Fix some typos throughout, and a few other minor tidies
+	
+	* include/limits.h: Move _POSIX_* macros here from POSIX package since
+	they are implementation independent
+
+	* include/time.h: Keep CLOCKS_PER_SEC at 1000000
+
+	* include/sys/types.h: Bring some of the types more in line with Linux
+
+	* include/ctype.h, include/errno.h, include/limits.h, include/locale.h,
+	include/pthread.h, include/sched.h, include/semaphore.h,
+	include/setjmp.h, include/signal.h, include/stdio.h, include/stdlib.h,
+	include/string.h, include/time.h, include/sys/types.h:
+	Don't need to explicitly check interface values > 0
+
+2000-05-02  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/time.h: Provide default definitions of time_t, clock_t and
+	CLOCKS_PER_SEC
+
+	* cdl/isoinfra.cdl: Remove CYGINT_ISO_TIME_T and CYGINT_ISO_CLOCK_T -
+	not really needed with a default definition
+
+	* New package isoinfra with the following files:
+	include/errno.h
+	include/sys/types.h
+	include/assert.h
+	include/stddef.h
+	include/string.h
+	include/setjmp.h
+	include/ctype.h
+	include/float.h
+	include/sched.h
+	include/stdarg.h
+	include/semaphore.h
+	include/time.h
+	include/signal.h
+	include/locale.h
+	include/pthread.h
+	include/stdio.h
+	include/stdlib.h
+	include/limits.h
+	cdl/isoinfra.cdl
+
+	This package manages the ISO standard (C and POSIX) top-level header
+	files
+
+//===========================================================================
+//####COPYRIGHTBEGIN####
+//                                                                          
+// -------------------------------------------                              
+// The contents of this file are subject to the Red Hat eCos Public License 
+// Version 1.1 (the "License"); you may not use this file except in         
+// compliance with the License.  You may obtain a copy of the License at    
+// http://www.redhat.com/                                                   
+//                                                                          
+// Software distributed under the License is distributed on an "AS IS"      
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+// License for the specific language governing rights and limitations under 
+// the License.                                                             
+//                                                                          
+// The Original Code is eCos - Embedded Configurable Operating System,      
+// released September 30, 1998.                                             
+//                                                                          
+// The Initial Developer of the Original Code is Red Hat.                   
+// Portions created by Red Hat are                                          
+// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// All Rights Reserved.                                                     
+// -------------------------------------------                              
+//                                                                          
+//####COPYRIGHTEND####
+//===========================================================================

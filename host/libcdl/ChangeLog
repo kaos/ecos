@@ -1,3 +1,18 @@
+2000-08-18  Bart Veer  <bartv@redhat.com>
+
+	* configure.in:
+	Allow cross-compilation.
+
+	* configure, Makefile.in, testsuite/Makefile.in:
+	Regenerate.
+
+	* base.cxx, build.cxx, cdl.hxx, cdlcore.hxx, component.cxx,
+	config.cxx, database.cxx, dialog.cxx, expr.cxx, interface.cxx,
+	interp.cxx, option.cxx, package.cxx, parse.cxx, value.cxx,
+	wizard.cxx
+	Remove C++ exception specifications, because they cause problems
+	with some versions of the tools.
+
 2000-07-06  Bart Veer  <bartv@redhat.com>
 
 	* conflict.cxx (get_explanation):

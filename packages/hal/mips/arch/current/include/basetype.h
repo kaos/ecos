@@ -65,10 +65,9 @@
 #endif
 
 //-----------------------------------------------------------------------------
-// MIPS does not usually use labels with undersores. Some labels generated
-// by the linker do, so add an underscore where required.
+// MIPS does not usually use labels with undersores.
 
-#define CYG_LABEL_NAME(_name_) _##_name_
+//#define CYG_LABEL_NAME(_name_) _name_
 
 //-----------------------------------------------------------------------------
 // Define the standard variable sizes

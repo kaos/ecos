@@ -1,3 +1,8 @@
+2000-08-01  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/pc_serial.c (pc_serial_set_config): Now use keys to make
+	more flexible.
+
 2000-06-22  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* cdl/<yournamehere>.cdl: Remove the comment on the empty

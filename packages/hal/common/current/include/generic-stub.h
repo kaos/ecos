@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     Red Hat, nickg
-// Contributors:  Red Hat, nickg
+// Contributors:  Red Hat, nickg, dmoseley
 // Date:          1998-06-08
 // Purpose:       
 // Description:   Definitions for the generic GDB remote stub
@@ -88,6 +88,11 @@ struct gdb_packet
 
 /* Return the currently-saved value corresponding to register REG. */
 extern target_register_t get_register (regnames_t reg);
+
+#ifdef CYGHWR_REGISTER_VALIDITY_CHECKING
+// Return the validity of register REG.
+extern int get_register_valid (regnames_t reg);
+#endif
 
 /* Store VALUE in the register corresponding to WHICH. */
 extern void put_register (regnames_t which, target_register_t value);

@@ -53,7 +53,8 @@
 static bool haldiag_init(struct cyg_devtab_entry *tab);
 static bool haldiag_putc(serial_channel *chan, unsigned char c);
 static unsigned char haldiag_getc(serial_channel *chan);
-static bool haldiag_set_config(serial_channel *chan, cyg_serial_info_t *config);
+static Cyg_ErrNo haldiag_set_config(serial_channel *chan, cyg_uint32 key,
+                                    const void *xbuf, cyg_uint32 *len);
 
 static SERIAL_FUNS(haldiag_funs, 
                    haldiag_putc, 
@@ -113,10 +114,16 @@ haldiag_getc(serial_channel *chan)
     return c;
 }
 
-static bool 
-haldiag_set_config(serial_channel *chan, cyg_serial_info_t *config)
+static Cyg_ErrNo
+haldiag_set_config(serial_channel *chan, cyg_uint32 key, const void *xbuf,
+                   cyg_uint32 *len)
 {
-    diag_printf("%s\n", __FUNCTION__);
-    return true;
+    switch (key) {
+    case CYG_IO_SET_CONFIG_SERIAL_INFO:
+        diag_printf("%s\n", __FUNCTION__);
+        return ENOERR;
+    default:
+        return -EINVAL;
+    }
 }
 #endif // CYGPKG_IO_SERIAL_HALDIAG

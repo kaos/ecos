@@ -1,3 +1,43 @@
+2000-08-15  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/if_ebsa285.c (PacketRxReady): Put back the check for very
+	small packets into the driver; the layer above checks for that
+	(defensive programming) but only *after* asserting that the size
+	is large enough, to help detect that scenario from other drivers.
+	I believe we only have struct ether_header available if CYGPKG_NET
+	but I could be wrong.
+	[CASE 104353]
+
+2000-08-08  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/if_ebsa285.c (eth_set_promiscuous_mode):
+	- ccs->config_bytes[18]=0x70;
+	+ ccs->config_bytes[18]=0x72; // Keep the Padding Enable bit
+	...otherwise short frame sends don't work in promisc mode.
+	[CASE 104289]
+
+2000-08-07  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_ebsa285.c (pciwindow_mem_alloc): Take out very noisy debug.
+
+2000-08-03  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_ebsa285.c: Changes for stand-alone mode.
+
+	* cdl/ebsa285_eth_drivers.cdl: Ethernet driver package hierarchy changed.
+	Add option to control number of interfaces.
+
+2000-07-28  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/if_ebsa285.c (PacketRxReady): Do not attempt to forward
+	short packets; eth_drv.c assumes there is at least a header there.
+	(i82559_recv): Also be more careful and ASSERTive about -ve buffer
+	sizes; be more defensive about sglists.  [CASE 104206]
+
+2000-07-26  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_ebsa285.c: Update for new eth_drv interfaces.
+
 2000-07-18  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/if_ebsa285.c (i82559_poll): Fill in the flesh of this, it

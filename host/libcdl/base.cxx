@@ -549,7 +549,6 @@ CdlNodeBody::update(CdlTransaction transaction, CdlUpdate change)
 
 void
 CdlNodeBody::save(CdlInterpreter interp, Tcl_Channel chan, int indentation, bool minimal)
-    throw(CdlInputOutputException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlNode::save");
     CYG_REPORT_FUNCARG5XV(this, interp, chan, indentation, minimal);
@@ -934,7 +933,6 @@ CdlContainerBody::update(CdlTransaction transaction, CdlUpdate change)
 
 void
 CdlContainerBody::save(CdlInterpreter interp, Tcl_Channel chan, int indentation, bool minimal)
-    throw(CdlInputOutputException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlContainer::save");
     CYG_REPORT_FUNCARG4XV(this, interp, chan, indentation);
@@ -2582,7 +2580,6 @@ CdlToplevelBody::add_savefile_subcommand(std::string cmd, std::string subcommand
 
 void
 CdlToplevelBody::save_command_details(CdlInterpreter interp, Tcl_Channel chan, int indentation, bool minimal)
-    throw(CdlInputOutputException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlToplevel::save_command_details");
     CYG_REPORT_FUNCARG4XV(this, interp, chan, indentation);
@@ -2903,7 +2900,6 @@ CdlToplevelBody::savefile_handle_unsupported(CdlInterpreter interp, int argc, ch
 // file that was not recognised.
 void
 CdlToplevelBody::save_unsupported_commands(CdlInterpreter interp, Tcl_Channel chan, int indentation, bool minimal)
-    throw(CdlInputOutputException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlToplevelBody::save_unsupported_commands");
     CYG_REPORT_FUNCARG3XV(this, interp, chan);
@@ -3018,7 +3014,6 @@ CdlToplevelBody::get_savefile_version(CdlInterpreter interp)
 // ----------------------------------------------------------------------------
 void
 CdlToplevelBody::save_conflicts(CdlInterpreter interp, Tcl_Channel chan, int indentation, bool minimal)
-    throw(CdlInputOutputException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlToplevel::save_conflicts");
     CYG_REPORT_FUNCARG4XV(this, interp, chan, indentation);
@@ -3064,7 +3059,6 @@ CdlToplevelBody::save_conflicts(CdlInterpreter interp, Tcl_Channel chan, int ind
 // ----------------------------------------------------------------------------
 void
 CdlToplevelBody::save_separator(CdlInterpreter interp, Tcl_Channel chan, std::string msg, bool minimal)
-    throw(CdlInputOutputException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlToplevel::save_separator");
     CYG_REPORT_FUNCARG1XV(interp);
@@ -3386,7 +3380,6 @@ CdlUserVisibleBody::parse_doc(CdlInterpreter interp, int argc, char** argv)
 
 void
 CdlUserVisibleBody::save(CdlInterpreter interp, Tcl_Channel chan, int indentation, bool minimal)
-    throw(CdlInputOutputException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlUserVisible::save");
     CYG_REPORT_FUNCARG5XV(this, interp, chan, indentation, minimal);

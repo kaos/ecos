@@ -43,11 +43,15 @@
 //
 //=========================================================================
 
+#include <pkgconf/system.h>
+#include CYGBLD_HAL_PLATFORM_H
+
+#if defined(CYGNUM_HAL_BREAKPOINT_LIST_SIZE) && (CYGNUM_HAL_BREAKPOINT_LIST_SIZE > 0) && defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
+
+#define CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
 #include <cyg/hal/hal_stub.h>
-
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-
-#if defined(CYGNUM_HAL_BREAKPOINT_LIST_SIZE) && (CYGNUM_HAL_BREAKPOINT_LIST_SIZE > 0)
+#include <cyg/hal/hal_arch.h>
+#include <cyg/hal/hal_cache.h>
 
 /*
  * A simple target breakpoint list without using malloc.
@@ -165,11 +169,11 @@ __install_breakpoint_list (void)
 	}
       l = l->next;
     }
-  flush_i_cache ();
+  HAL_ICACHE_SYNC();
 }
 
 void
-__clear_breakpoint_list ()
+__clear_breakpoint_list (void)
 {
   struct breakpoint_list *l = breakpoint_list;
 
@@ -185,7 +189,7 @@ __clear_breakpoint_list ()
 	}
       l = l->next;
     }
-  flush_i_cache ();
+  HAL_ICACHE_INVALIDATE_ALL();
 }
 
 int
@@ -205,6 +209,15 @@ __display_breakpoint_list (void (*print_func)(target_register_t))
 #else  // (CYGNUM_HAL_BREAKPOINT_LIST_SIZE == 0) or UNDEFINED
 
 #include <cyg/hal/hal_stub.h>           // Our header
+
+#ifndef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+// We don't know that type target_register_t is yet.
+// Let's just pick a type so we can compile.  Since
+// these versions of the functions don't actually do
+// anything with the parameters, the actualy types
+// don't matter.
+typedef unsigned long target_register_t;
+#endif
 
 int
 __set_breakpoint (target_register_t addr)
@@ -234,6 +247,4 @@ __display_breakpoint_list (void (*print_func)(target_register_t))
     return 0;
 }
 #endif // (CYGNUM_HAL_BREAKPOINT_LIST_SIZE > 0)
-
-#endif // CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 

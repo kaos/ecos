@@ -142,4 +142,8 @@ cdl_package CYGPKG_HAL_ARM {
 	no_define
         calculated  { "src/arm.ld" }
     }
+
+    cdl_interface CYGINT_HAL_ARM_MEM_REAL_REGION_TOP {
+        display  "Implementations of hal_arm_mem_real_region_top()"
+    }
 }

@@ -205,7 +205,7 @@ didn't get a copy, you may request one from <license@ipv6.nrl.navy.mil>.
 #define	LOMTU	(32768 +  MHLEN + MLEN)
 #endif
 
-#ifdef __ECOS
+#ifndef __ECOS
 #include <stdio.h>    // for 'sprintf()'
 #endif
   
@@ -220,7 +220,11 @@ loopattach(n)
 
 	for (i = NLOOP; i--; ) {
 		ifp = &loif[i];
+#if !defined(__ECOS) || (CYGPKG_NET_NLOOP > 1)
 		sprintf(ifp->if_xname, "lo%d", i);
+#else
+                strcpy(ifp->if_xname, "lo0");
+#endif                
 		ifp->if_softc = NULL;
 		ifp->if_mtu = LOMTU;
 		ifp->if_flags = IFF_LOOPBACK | IFF_MULTICAST;

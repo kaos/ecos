@@ -83,10 +83,20 @@ AUTOMAKE_OPTIONS = 1.3 cygnus
 SUBDIRS = testsuite
 
 noinst_LIBRARIES = libcyginfra.a
-libcyginfra_a_SOURCES = assert.cxx                            trace.cxx                             checkdata.cxx                         testcase.cxx
+libcyginfra_a_SOURCES = assert.cxx    \
+                        trace.cxx     \
+                        checkdata.cxx \
+                        testcase.cxx
 
 
-copies = cyg/infra/cyg_type.h          cyg/infra/cyg_ass.h           cyg/infra/cyg_trac.h          cyg/infra/testcase.h          cyg/hal/basetype.h            pkgconf/infra.h               pkgconf/hostinfra.h           hosttest.exp
+copies = cyg/infra/cyg_type.h \
+         cyg/infra/cyg_ass.h  \
+         cyg/infra/cyg_trac.h \
+         cyg/infra/testcase.h \
+         cyg/hal/basetype.h   \
+         pkgconf/infra.h      \
+         pkgconf/hostinfra.h  \
+         hosttest.exp
 
 
 noinst_HEADERS = $(copies)
@@ -367,7 +377,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  if test -f $$file; then d=.; else d=$(srcdir); fi; \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \

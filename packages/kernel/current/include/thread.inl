@@ -254,7 +254,7 @@ Cyg_Thread::to_queue_head( void )
 
 inline cyg_priority Cyg_Thread::get_priority()
 {
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_SIMPLE
 
     // If we have an inherited priority, return our original
     // priority rather than the current one.

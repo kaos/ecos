@@ -213,12 +213,9 @@ Cyg_Mboxt<T,QUEUE_SIZE>::get( T &ritem )
         get_threadq.enqueue( self );
 
         CYG_INSTRUMENT_MBOXT(WAIT, this, count);
-        CYG_ASSERT( 1 == Cyg_Scheduler::get_sched_lock(),
-                    "Called with non-zero scheduler lock");
         
-        // Unlock scheduler and allow other threads to run
-        Cyg_Scheduler::unlock();
-        Cyg_Scheduler::lock();
+        // Allow other threads to run
+        Cyg_Scheduler::reschedule();
 
         CYG_ASSERTCLASS( this, "Bad this pointer");        
 
@@ -303,12 +300,9 @@ Cyg_Mboxt<T,QUEUE_SIZE>::get( T &ritem, cyg_tick_count abs_timeout )
         get_threadq.enqueue( self );
 
         CYG_INSTRUMENT_MBOXT(WAIT, this, count);
-        CYG_ASSERT( 1 == Cyg_Scheduler::get_sched_lock(),
-                    "Called with non-zero scheduler lock");
         
-        // Unlock scheduler and allow other threads to run
-        Cyg_Scheduler::unlock();
-        Cyg_Scheduler::lock();
+        // Allow other threads to run
+        Cyg_Scheduler::reschedule();
 
         CYG_ASSERTCLASS( this, "Bad this pointer");        
 
@@ -448,11 +442,9 @@ Cyg_Mboxt<T,QUEUE_SIZE>::put( const T item )
         put_threadq.enqueue( self );
 
         CYG_INSTRUMENT_MBOXT(WAIT, this, count);
-        CYG_ASSERT( 1 == Cyg_Scheduler::get_sched_lock(),
-                    "Called with non-zero scheduler lock");
-        
-        Cyg_Scheduler::unlock();        // unlock, maybe switch threads
-        Cyg_Scheduler::lock();
+
+        // Allow other threads to run
+        Cyg_Scheduler::reschedule();
 
         CYG_ASSERTCLASS( this, "Bad this pointer");        
 
@@ -534,12 +526,9 @@ Cyg_Mboxt<T,QUEUE_SIZE>::put( const T item, cyg_tick_count abs_timeout )
         put_threadq.enqueue( self );
 
         CYG_INSTRUMENT_MBOXT(WAIT, this, count);
-        CYG_ASSERT( 1 == Cyg_Scheduler::get_sched_lock(),
-                    "Called with non-zero scheduler lock");
 
-        // Unlock scheduler and allow other threads to run
-        Cyg_Scheduler::unlock();
-        Cyg_Scheduler::lock();
+        // Allow other threads to run
+        Cyg_Scheduler::reschedule();
 
         CYG_ASSERTCLASS( this, "Bad this pointer");        
 

@@ -300,7 +300,6 @@ CdlDialogBody::parse_update_proc(CdlInterpreter interp, int argc, char** argv)
 
 void
 CdlDialogBody::save(CdlInterpreter interp, Tcl_Channel chan, int indentation, bool minimal)
-    throw(CdlInputOutputException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlDialog::save");
     CYG_REPORT_FUNCARG5XV(this, interp, chan, indentation, minimal);

@@ -1,3 +1,8 @@
+2000-08-01  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/v85x_v850_serial.c (v850_serial_set_config): Now use keys to make
+	more flexible.
+
 2000-07-19  Gary Thomas  <gthomas@redhat.com>
 
 	* src/v85x_v850_serial.h: Base baud rate calculations on CPU frequency.

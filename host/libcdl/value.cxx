@@ -3695,7 +3695,6 @@ follow_expr_references(CdlProperty property, CdlExpression expr)
 
 void
 CdlValuableBody::save(CdlInterpreter interp, Tcl_Channel chan, int indentation, bool modifiable, bool minimal)
-    throw(CdlInputOutputException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlValuable::save");
     CYG_REPORT_FUNCARG5XV(this, interp, chan, indentation, minimal);

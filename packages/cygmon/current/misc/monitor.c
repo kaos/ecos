@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    
-// Contributors: gthomas
+// Contributors: gthomas, dmoseley
 // Date:         1999-10-20
 // Purpose:      Monitor shell and main routines for CygMON the Wonder Monitor
 // Description:  
@@ -98,7 +98,7 @@ static int mon_kill_handler(int exc_nr, void *regs);
  * This global flag is used by generic-stub.c to communicate to us that we
  * are processing the breakpoint function within Cygmon itself.
  */
-int processing_breakpoint_function = 0;
+extern int processing_breakpoint_function;
 #endif
 
 /* Global pointer to current set of saved registers. */
@@ -257,6 +257,11 @@ monitor_take_control (void)
   // Flush the unget state.  This is because the ecos stub and Cygmon track this
   // stuff separately.
   bsp_debug_ungetc('\0');
+
+#ifdef INITIALIZE_MON_EACH_TIME
+  // Call the per-stop initialization routine if it is defined.
+  INITIALIZE_MON_EACH_TIME();
+#endif
 
 #if defined(HAVE_BSP) && !defined(USE_ECOS_HAL_EXCEPTIONS)
   /* replace original BSP debug trap handler with ours */

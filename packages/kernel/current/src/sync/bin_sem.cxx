@@ -92,10 +92,8 @@ cyg_bool Cyg_Binary_Semaphore::wait()
 
         CYG_INSTRUMENT_BINSEM( WAIT, this, 0 );
 
-        CYG_ASSERT( Cyg_Scheduler::get_sched_lock() == 1, "Called with non-zero scheduler lock");
-        
-        Cyg_Scheduler::unlock();
-        Cyg_Scheduler::lock();
+        // Allow other threads to run
+        Cyg_Scheduler::reschedule();
 
         CYG_INSTRUMENT_BINSEM( WOKE, this, state );
 

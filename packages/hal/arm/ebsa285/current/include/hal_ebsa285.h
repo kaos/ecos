@@ -47,7 +47,7 @@
 //===========================================================================*/
 
 // Note: these defintions match the documentation, thus no attempt is made
-// to mangle the names against namespace pollution.  Also, care should be
+// to santise (mangle) the names against namespace pollution.  Also, care should be
 // taken to keep this clean for use in assembly code (no "C" constructs).
 
 

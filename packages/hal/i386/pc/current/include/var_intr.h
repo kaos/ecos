@@ -176,7 +176,7 @@ CYG_MACRO_START                                         \
             :	"eax"                                   \
             );                                          \
     }                                                   \
-    if ((x >= 0) && (x < 8))                            \
+    if ((x >= 0) && (x < 16))                           \
     {                                                   \
         asm(                                            \
             "movb $0x20, %%al;"                         \

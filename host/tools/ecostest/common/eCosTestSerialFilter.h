@@ -48,9 +48,24 @@
 // Macros to help extract values from the argument string.
 // Note: This is probably not an ideal solution, but it was easy to make :)
 
-#define INIT_VALUE(__args)                      unsigned int v; char *__ptr1, *__ptr2 = (__args)
+#define INIT_VALUE(__args)                \
+    unsigned int v;                       \
+    char *__ptr1, *__ptr2 = (__args)      \
 
-#define SET_VALUE(__type, __slot)               {    __ptr1 = strchr(__ptr2, (int) ':'); if (__ptr1) *__ptr1 = 0; v = atoi(__ptr2); __ptr2 = __ptr1+1; (__slot) = (__type) v; }
+#define SET_VALUE(__type, __slot) {          \
+    __ptr1 = strchr(__ptr2, (int) ':');      \
+    if (*__ptr2 == '\0')                     \
+           (__slot) = (__type)-1;            \
+    else {                                   \
+        if (__ptr1)                          \
+            *__ptr1 = 0;                     \
+        else                                 \
+            __ptr1 = strchr( __ptr2, 0) - 1; \
+        v = atoi(__ptr2);                    \
+        __ptr2 = __ptr1+1;                   \
+        (__slot) = (__type) v;               \
+    }                                        \
+}
 
 
 //----------------------------------------------------------------------------
@@ -65,11 +80,23 @@ struct filter_abort_t {
         {}
 };
 
+typedef enum {
+    FLOW_NONE=0,
+    FLOW_XONXOFF_RX=1,
+    FLOW_XONXOFF_TX=2,
+    FLOW_RTSCTS_RX=4,
+    FLOW_RTSCTS_TX=8,
+    FLOW_DSRDTR_RX=16,
+    FLOW_DSRDTR_TX=32
+} flow_cfg_t;
+
 typedef struct ser_cfg {
     int baud_rate;
     int data_bits;
     CeCosSerial::StopBitsType stop_bits;
     bool parity;
+    
+    unsigned int flags;
     // etc...
 } ser_cfg_t;
 
@@ -154,6 +181,13 @@ private:
     unsigned char* m_xUnreadBuffer;     // unread_buffer;
     int m_nUnreadBufferIndex;           // unread_buffer_ix;
     int m_nUnreadBufferSize;            // unread_buffer_size = 0;
+
+    unsigned char* m_xStoredTraceBuffer;// We need this to avoid outputting
+                                        // serial tracing when the target
+                                        // last sent an incomplete packet, so
+                                        // we store it here temporarily until
+                                        // the entire packet arrives
+    unsigned int m_nStoredTraceBufferSize; // size of above
 
     // Filter state
     bool m_bNullFilter;

@@ -1,7 +1,21 @@
+2000-08-15  Gary Thomas  <gthomas@redhat.com>
+
+	* src/hal_mk_defs.c: Export memory layout for use by assembly code.
+
 2000-06-27  Jesper Skov  <jskov@redhat.com>
 
 	* src/vectors.S: Removed unnecessary
 	CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT checks.
+
+2000-06-21  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/ppc_stub.c (__is_breakpoint_function): Removed use of
+	CYG_LABEL_NAME() and added underscore to _breakinst.
+
+	* src/powerpc.ld:
+	Switched to new table definition mechanism.
+
+	* include/basetype.h: Removed definition of CYG_LABEL_NAME().
 
 2000-06-15  Jesper Skov  <jskov@redhat.com>
 

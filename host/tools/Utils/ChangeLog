@@ -1,3 +1,10 @@
+2000-08-01  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* common/eCosSerial.h: 
+	* common/eCosSerial.cpp:
+	Add support for setting RTSCTS, DSRDTR and XONXOFF flow control
+	for both win32 and unix
+
 2000-04-14 Simon FitzMaurice <sdf@redhat.co.uk>
   * common\Subprocess.cpp
     common\Subprocess.h

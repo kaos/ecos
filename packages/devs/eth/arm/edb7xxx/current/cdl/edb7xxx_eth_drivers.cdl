@@ -44,8 +44,8 @@
 cdl_package CYGPKG_DEVS_ETH_ARM_EDB7XXX {
     display       "Cirrus Logic ethernet driver"
 
-    parent        CYGPKG_NET_ETH_DRIVERS
-    active_if	  CYGPKG_NET_ETH_DRIVERS
+    parent        CYGPKG_IO_ETH_DRIVERS
+    active_if	  CYGPKG_IO_ETH_DRIVERS
     active_if	  CYGPKG_HAL_ARM_EDB7XXX
 
     implements    CYGHWR_NET_DRIVERS
@@ -54,6 +54,23 @@ cdl_package CYGPKG_DEVS_ETH_ARM_EDB7XXX {
     include_files ; # none _exported_ whatsoever
     description   "Ethernet driver for Cirrus Logic EDB7xxx boards."
     compile       -library=libextras.a if_edb7xxx.c
+
+    cdl_component CYGSEM_ARM_EDB7XXX_SET_ESA {
+        display       "Set the ethernet station address"
+        flavor        bool
+        default_value 0
+        description   "Enabling this option will allow the ethernet
+          station address to be forced to the value set by the
+          configuration.  This may be required if the hardware does
+          not include a serial EEPROM for the ESA."
+
+        cdl_option CYGDAT_ARM_EDB7XXX_ESA {
+          display       "The ethernet station address"
+          flavor        data
+          default_value {"{0x08, 0x88, 0x12, 0x34, 0x56, 0x78}"}
+          description   "The ethernet station address"
+        }
+    }
 
     cdl_component CYGPKG_DEVS_ETH_ARM_EDB7XXX_OPTIONS {
         display "Cirrus Logic ethernet driver build options"

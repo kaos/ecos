@@ -1,3 +1,20 @@
+2000-08-03  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/uit_func.inl (ref_mpf): Compute used blocks from
+	bytes used / blocks size rather than now obsolete blockcount member
+
+2000-07-04  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/uit_func.inl: Update all memory pool related functions to
+	reflect the new interface to memory pools, and that they come from
+	the new CYGPKG_MEMALLOC package
+
+	* cdl/uitron.cdl: CYGPKG_UITRON_MEMPOOLFIXED and
+	CYGPKG_UITRON_MEMPOOLVAR require the CYGPKG_MEMALLOC package
+
+	* include/uit_objs.hxx: Update includes - memory pool implementations
+	are now in CYGPKG_MEMALLOC
+
 2000-06-15  Gary Thomas  <gthomas@redhat.com>
 
 	* include/uit_ifnc.h (CYGPRI_UITRON_SET_RETCODE): Always return

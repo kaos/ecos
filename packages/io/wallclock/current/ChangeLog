@@ -1,3 +1,7 @@
+2000-07-24  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* tests/wallclock2.cxx: Depend on CYGPKG_LIBC_TIME not CYGPKG_LIBC
+
 2000-05-30  Jesper Skov  <jskov@redhat.com>
 
 	* include/wallclock/wallclock.inl (_simple_mktime): Replaced

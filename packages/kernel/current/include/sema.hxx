@@ -49,7 +49,7 @@
 
 #include <cyg/kernel/ktypes.h>
 #include <cyg/infra/cyg_ass.h>         // assertion macros
-#include <cyg/kernel/thread.hxx>
+#include <cyg/kernel/thread.inl>       // thread inlines
 
 // -------------------------------------------------------------------------
 // Binary semaphore. This has only two states: posted and not-posted.
@@ -109,7 +109,7 @@ public:
         
     void        post();                 // Increment count
 
-    cyg_count32 peek();                 // Get current count value
+    cyg_count32 peek() const;           // Get current count value
     
     inline
     cyg_bool    waiting()               // Is anyone waiting?

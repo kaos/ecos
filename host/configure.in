@@ -56,13 +56,6 @@ AC_OBJEXT
 AC_EXEEXT
 CYG_AC_PROG_MSVC
 
-dnl The eCos host-side only supports native builds, not cross-compilation.
-dnl Cross-compilation should not be impossible, but various macros
-dnl including testing for 64-bit require the ability to run code.
-if test "${cross_compiling}" = "yes"; then
-  AC_MSG_ERROR(cross-compilation of this package is not supported)
-fi
-
 dnl Allow the usual assertion and trace related options.
 CYG_AC_ARG_INFRASTRUCTURE
 

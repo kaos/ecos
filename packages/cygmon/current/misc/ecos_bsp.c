@@ -32,37 +32,50 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     gthomas
-// Contributors:  gthomas
+// Contributors:  gthomas, dmoseley
 // Date:          1999-10-11
 // Description:   Wrapper functions which provide BSP environment for Cygmon
 //####DESCRIPTIONEND####
 
+#ifdef CYGPKG_KERNEL
 #include <pkgconf/kernel.h>   // Configuration headers
+#endif
 #include <pkgconf/hal.h>
 #include <pkgconf/cygmon.h>
 
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_cache.h>
+#ifdef CYGPKG_KERNEL
 #include <cyg/kernel/kapi.h>
+#else
+#include <cyg/hal/drv_api.h>
+#include <cyg/hal/hal_intr.h>
+#endif
 #include <cyg/infra/diag.h>
 #include "bsp/common/bsp_if.h"
 #include <cyg/hal/hal_if.h>
 #include <signal.h>
 #include CYGHWR_MEMORY_LAYOUT_H
  
+#include <pkgconf/system.h>
 #ifdef CYGPKG_IO
 #include <cyg/io/io.h>
+#include <cyg/io/serialio.h>
 #endif
 
 #define STACK_SIZE CYGNUM_HAL_STACK_SIZE_MINIMUM
 static char stack[STACK_SIZE];
+#ifdef CYGPKG_KERNEL
 static cyg_thread thread_data;
 static cyg_handle_t thread_handle;
+#endif
 
 char *build_date = __DATE__;
 
 extern void monitor_main(int, char *);
 extern int  stub_is_active;
+
+void ecos_bsp_set_memsize(unsigned long size);
 
 void
 cygmon_main(void)
@@ -71,9 +84,16 @@ cygmon_main(void)
     monitor_main(0, 0);  // Null argument list
 }
 
+extern unsigned long cygmon_memsize;
+
 externC void
 cyg_start( void )
 {
+    // Fill in the BSP memory info
+    if (cygmon_memsize != 0)
+        ecos_bsp_set_memsize(cygmon_memsize);
+
+#ifdef CYGPKG_KERNEL
     // Create a main thread, so we can run the scheduler and have time 'pass'
     cyg_thread_create(10,                // Priority - just a number
                       (cyg_thread_entry_t*)cygmon_main,       // entry
@@ -86,6 +106,13 @@ cyg_start( void )
             );
     cyg_thread_resume(thread_handle);  // Start it
     cyg_scheduler_start();
+#else
+#ifdef HAL_ARCH_FUNCALL_NEW_STACK
+    HAL_ARCH_FUNCALL_NEW_STACK(cygmon_main, &stack[0], STACK_SIZE);
+#else
+    #error Need to define HAL_ARCH_FUNCALL_NEW_STACK
+#endif
+#endif
 } // cyg_package_start()
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
@@ -130,13 +157,14 @@ unhandled_exception(int num, void *args)
 void
 _bsp_cpu_init(void)
 {
-    cyg_exception_handler_t _bsp_breakpoint_handler;
+#ifdef CYGPKG_KERNEL
     int d0;
     cyg_exception_set_handler(CYGNUM_HAL_EXCEPTION_ILLEGAL_INSTRUCTION,
                               _bsp_handle_exception,
                               (cyg_addrword_t)&d0,
                               0,
                               0);
+#endif
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
     bsp_install_dbg_handler((bsp_handler_t)__handle_exception);
     __install_traps();

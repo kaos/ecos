@@ -33,7 +33,7 @@
 #
 # Author(s):      jskov
 # Original data:  nickg
-# Contributors:
+# Contributors:   dmoseley
 # Date:           1999-11-02
 #
 #####DESCRIPTIONEND####
@@ -52,6 +52,14 @@ cdl_package CYGPKG_HAL_MN10300_AM33 {
            support for this processor architecture. It is also
            necessary to select a specific target platform HAL
            package."
+
+    cdl_option CYGHWR_HAL_MN10300_AM33_REVISION {
+        display       "AM33 architecture revision"
+        flavor        data
+        calculated {1}
+        description   "
+            The AM33 architecture revision."
+    }
 
     define_proc {
         puts $::cdl_header "#include <pkgconf/hal_mn10300.h>"

@@ -108,6 +108,10 @@ struct test_status {
     long ok;
 };
 
+#ifndef CYGPKG_LIBC_STDIO
+#define perror(s) diag_printf(#s ": %s\n", strerror(errno))
+#endif
+
 #define STACK_SIZE (CYGNUM_HAL_STACK_SIZE_TYPICAL + 0x1000)
 static char stack[STACK_SIZE];
 static cyg_thread thread_data;

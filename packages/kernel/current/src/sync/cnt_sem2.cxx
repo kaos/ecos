@@ -278,7 +278,7 @@ void Cyg_Counting_Semaphore2::post()
 // -------------------------------------------------------------------------
 // Get current count value
 
-cyg_count32 Cyg_Counting_Semaphore2::peek()
+cyg_count32 Cyg_Counting_Semaphore2::peek() const
 {
     // This is a single read of the value of count.
     // This is already atomic, hence there is no need

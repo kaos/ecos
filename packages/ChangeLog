@@ -1,3 +1,62 @@
+2000-08-18  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* ecos.db: Added CYGPKG_FS_RAM package.
+
+2000-08-14  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* ecos.db: Minor changes...
+	Arrange for hardware flash drivers to be "hardware" and
+	referenced in their associated targets, and for the common flash
+	code to be not-hardware and not in any target.
+	Arrange for hardware PCMCIA drivers to be "hardware" and
+	referenced in their associated targets, and for the common PCMCIA
+	code to be not-hardware and not in any target.
+	Not sure what to do about the "PCMCIA (Compact Flash) ethernet
+	drivers" CYGPKG_DEVS_ETH_CF - arguably this should be "hardware"
+	and mentioned in all targets that can use PCMCIA, right?  But it
+	is not hardware specific, and you might want to use PCMCIA without
+	using the net at all.  So I left it a plain package.
+
+2000-08-14  Gary Thomas  <gthomas@redhat.com>
+
+	* ecos.db: Add flash driver for EDB7xxx.
+
+2000-08-10  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* ecos.db (CYGPKG_IO_ETH_DRIVERS): Since this package is now
+	included in all releases, re-organize it so that it is exported
+	in ecos.db always.  (Same package as change 2000-08-03)
+
+2000-08-03  Gary Thomas  <gthomas@redhat.com>
+
+	* ecos.db: Ethernet [logical] drivers package moved to "io".
+
+2000-08-01  Gary Thomas  <gthomas@redhat.com>
+
+       * ecos.db: 
+       Reorg FLASH packages to have architecture layer.
+
+2000-08-01  Gary Thomas  <gthomas@redhat.com>
+
+       * ecos.db: 
+       Reorg PCMCIA packages to have architecture layer.
+
+2000-07-26  Gary Thomas  <gthomas@redhat.com>
+
+	* ecos.db: Adding FLASH package - FLASH memory support.
+
+2000-07-14  Gary Thomas  <gthomas@redhat.com>
+
+	* ecos.db: Add RedBoot package.
+
+2000-07-07  Gary Thomas  <gthomas@redhat.com>
+
+	* ecos.db: Add PCMCIA (Compact Flash) ethernet driver.
+
+2000-07-06  Gary Thomas  <gthomas@redhat.com>
+
+	* ecos.db: Add initial PCMCIA (Compact Flash) package(s).
+
 2000-07-07  Jesper Skov  <jskov@redhat.com>
 
 	* ecos.db: Removed 'enable' statements from SH targets. Moved to
@@ -37,9 +96,17 @@
 
 	* ecos.db: Added dallas 1742 wallclock driver package.
 
+2000-05-26  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* ecos.db: Added CYGPKG_IO_FILEIO package.
+
 2000-05-25  John Dallaway  <jld@redhat.com>
 
 	* ecos.db: Tidy V850-related display strings.
+
+2000-05-16  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* ecos.db: Fixed naming bug in CYGPKG_LIBC_SETJMP entry.
 
 2000-04-26  Jesper Skov  <jskov@redhat.com>
 
@@ -101,6 +168,10 @@
 
 	* ecos.db: Wallclock moved.
 
+2000-03-31  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* ecos.db: Added POSIX package.
+	
 2000-03-24  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* ecosrelease.tcl: Allow running if cygtclsh80 is the tcl shell, as

@@ -34,7 +34,7 @@
 #######DESCRIPTIONBEGIN####
 ##
 ## Author(s): 	nickg
-## Contributors:	nickg
+## Contributors:	nickg, dmoseley
 ## Date:	1999-04-06
 ## Purpose:	AM33 definitions.
 ## Description:	This file contains various definitions and macros that are
@@ -140,6 +140,12 @@
 	.macro	hal_intc_init
 	.endm
 
+#define CYGPKG_HAL_MN10300_INTC_DEFINED
+
+#endif
+
+#ifndef CYGPKG_HAL_MN10300_INTC_DECODE_DEFINED
+
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
 
 #define CYG_ISR_TABLE_SIZE	10
@@ -167,7 +173,7 @@
 		
 #endif
 
-#define CYGPKG_HAL_MN10300_INTC_DEFINED
+#define CYGPKG_HAL_MN10300_INTC_DECODE_DEFINED
 
 #endif
 

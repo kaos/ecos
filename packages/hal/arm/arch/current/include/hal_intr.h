@@ -104,6 +104,14 @@ externC CYG_ADDRESS    hal_vsr_table[CYGNUM_HAL_VSR_COUNT];
 // Platform setup memory size (0 if unknown by hardware)
 externC CYG_ADDRWORD   hal_dram_size;
 
+#if CYGINT_HAL_ARM_MEM_REAL_REGION_TOP
+
+externC cyg_uint8 *hal_arm_mem_real_region_top( cyg_uint8 *_regionend_ );
+                                                
+# define HAL_MEM_REAL_REGION_TOP( _regionend_ ) \
+    hal_arm_mem_real_region_top( _regionend_ )
+#endif
+
 //--------------------------------------------------------------------------
 // Default ISR
 // The #define is used to test whether this routine exists, and to allow

@@ -34,17 +34,17 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   nickg
-// Contributors:        nickg
-// Date:        1997-09-10
-// Purpose:     Define multilevel queue scheduler implementation
-// Description: The classes defined here are used as base classes
-//              by the common classes that define schedulers and thread
-//              things. The MLQ scheduler in various configurations
-//              provides standard FIFO, round-robin and single priority
-//              schedulers.
-// Usage:       Included according to configuration by
-//              <cyg/kernel/sched.hxx>
+// Author(s):    nickg
+// Contributors: jlarmour
+// Date:         1997-09-10
+// Purpose:      Define multilevel queue scheduler implementation
+// Description:  The classes defined here are used as base classes
+//               by the common classes that define schedulers and thread
+//               things. The MLQ scheduler in various configurations
+//               provides standard FIFO, round-robin and single priority
+//               schedulers.
+// Usage:        Included according to configuration by
+//               <cyg/kernel/sched.hxx>
 //
 //####DESCRIPTIONEND####
 //
@@ -99,7 +99,11 @@ class Cyg_ThreadQueue_Implementation
 {
     friend class Cyg_Scheduler_Implementation;
     friend class Cyg_SchedThread_Implementation;
-    
+    friend class Cyg_SchedulerThreadQueue_Implementation;
+
+    void                set_thread_queue(Cyg_Thread *thread,
+                                         Cyg_ThreadQueue *tq );
+
     Cyg_Thread *queue;
 
 protected:
@@ -117,7 +121,7 @@ protected:
                                         // remove first thread on queue    
     Cyg_Thread          *dequeue();
 
-                                        // remove specified thread from queue    
+                                        // remove specified thread from queue
     void                remove(Cyg_Thread *thread);
 
                                         // test if queue is empty
@@ -133,6 +137,14 @@ inline cyg_bool Cyg_ThreadQueue_Implementation::empty()
 {
     return queue == NULL;
 }
+
+// thread queue used exclusively by the scheduler, with simpler enqueueing
+
+class Cyg_SchedulerThreadQueue_Implementation
+    : public Cyg_ThreadQueue_Implementation
+{
+    void                enqueue(Cyg_Thread *thread);  // Add thread to queue
+};
 
 // -------------------------------------------------------------------------
 // This class contains the implementation details of the scheduler, and
@@ -150,7 +162,7 @@ class Cyg_Scheduler_Implementation
 
     // Each run queue is a double linked circular list of threads.
     // These pointers point to the head element of each list.
-    Cyg_ThreadQueue_Implementation     run_queue[CYGNUM_KERNEL_SCHED_PRIORITIES];
+    Cyg_SchedulerThreadQueue_Implementation run_queue[CYGNUM_KERNEL_SCHED_PRIORITIES];
 
 protected:
     
@@ -163,9 +175,9 @@ protected:
     static cyg_ucount32                 timeslice_count;
 
     static void reset_timeslice_count();
-    
+
 #endif
-    
+
     Cyg_Scheduler_Implementation();     // Constructor
     
     // The following functions provide the scheduler implementation
@@ -197,7 +209,7 @@ protected:
     // called from the RTC DSR.
 public:    
     void timeslice();
-    
+
 #endif
 
 };
@@ -223,6 +235,7 @@ class Cyg_SchedThread_Implementation
 {
     friend class Cyg_Scheduler_Implementation;
     friend class Cyg_ThreadQueue_Implementation;
+    friend class Cyg_SchedulerThreadQueue_Implementation;
 
     Cyg_Thread *next;                   // next thread in queue
     Cyg_Thread *prev;                   // previous thread in queue
@@ -245,7 +258,41 @@ protected:
     void to_queue_head( void );         // Move this thread to the head
                                         // of its queue (not necessarily
                                         // a scheduler queue)
+
+#ifdef CYGSEM_KERNEL_SCHED_TIMESLICE_ENABLE
+
+    // This defines whether this thread is subject to timeslicing.
+    // If false, timeslice expiry has no effect on the thread.
+    
+    cyg_bool            timeslice_enabled;
+
+public:
+    
+    void timeslice_enable();
+
+    void timeslice_disable();
+    
+#endif    
+       
 };
+
+// -------------------------------------------------------------------------
+// Cyg_SchedThread_Implementation inlines.
+
+#ifdef CYGSEM_KERNEL_SCHED_TIMESLICE_ENABLE
+
+inline void Cyg_SchedThread_Implementation::timeslice_enable()
+{
+    timeslice_enabled = true;
+}
+
+inline void Cyg_SchedThread_Implementation::timeslice_disable()
+{
+    timeslice_enabled = false;
+}
+
+#endif
+
 
 // -------------------------------------------------------------------------
 #endif // ifndef CYGONCE_KERNEL_MLQUEUE_HXX

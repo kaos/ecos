@@ -1,3 +1,19 @@
+2000-07-25  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/pkgconf/mlt_arm_pid_ram.h: 
+	* include/pkgconf/mlt_arm_pid_ram.ldi: 
+	* include/pkgconf/mlt_arm_pid_ram.mlt: 
+	* include/pkgconf/mlt_arm_pid_rom.h: 
+	* include/pkgconf/mlt_arm_pid_rom.ldi: 
+	* include/pkgconf/mlt_arm_pid_rom.mlt: 
+	Add heap1 section to allow malloc to use it
+
+2000-07-22  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/hal_arm_pid.cdl: Fix comments about number of ports in 
+	CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL and
+	CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL
+
 2000-07-17  Jesper Skov  <jskov@redhat.com>
 
 	* src/pid_misc.c (hal_hardware_init): Hack to allow thumb tests to

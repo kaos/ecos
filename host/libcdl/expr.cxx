@@ -459,7 +459,6 @@ token_to_string()
 // allowing for backslash escapes.
 static void
 process_string()
-    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("process_string");
     CYG_ASSERTC('"' == current_char);
@@ -584,7 +583,6 @@ process_string()
 // which checks number completion and throws an exception if
 // necessary.
 static void check_number_termination()
-    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("check_number_termination");
 
@@ -609,7 +607,6 @@ static void check_number_termination()
 
 static void
 process_number()
-    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("process_number");
 
@@ -738,7 +735,6 @@ process_number()
 // valid as far as the preprocessor is concerned.
 static void
 process_reference()
-    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("process_reference");
 
@@ -764,7 +760,6 @@ process_reference()
 // strings, integers, doubles, and references.
 static void
 next_token()
-    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAMETYPE("next_token", "token %d");
 
@@ -1025,7 +1020,7 @@ initialise_tokenisation(std::string data, int index)
 // There are separate functions for each of these terms.
 
 // A forward declaration, needed for bracketed subexpressions.
-static void parse_expression(CdlExpression) throw(CdlParseException, std::bad_alloc);
+static void parse_expression(CdlExpression);
 
 // A utility to add a reference to the current expression, returning
 // the index.
@@ -1070,7 +1065,6 @@ current_subexpression(CdlExpression expr)
 
 static void
 parse_unary(CdlExpression expr)
-    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("parse_operand");
     CYG_REPORT_FUNCARG1XV(expr);
@@ -1225,7 +1219,6 @@ parse_unary(CdlExpression expr)
 
 static void
 parse_multiply(CdlExpression expr)
-    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("parse_multiply");
     
@@ -1250,7 +1243,6 @@ parse_multiply(CdlExpression expr)
 
 static void
 parse_add(CdlExpression expr)
-    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("parse_add");
     
@@ -1273,7 +1265,6 @@ parse_add(CdlExpression expr)
 
 static void
 parse_shift(CdlExpression expr)
-    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("parse_shift");
     
@@ -1296,7 +1287,6 @@ parse_shift(CdlExpression expr)
 
 static void
 parse_comparison(CdlExpression expr)
-    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("parse_comparison");
     
@@ -1323,7 +1313,6 @@ parse_comparison(CdlExpression expr)
 
 static void
 parse_equals(CdlExpression expr)
-    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("parse_equals");
     
@@ -1346,7 +1335,6 @@ parse_equals(CdlExpression expr)
 
 static void
 parse_bitand(CdlExpression expr)
-    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("parse_bitand");
     
@@ -1369,7 +1357,6 @@ parse_bitand(CdlExpression expr)
 
 static void
 parse_bitxor(CdlExpression expr)
-    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("parse_bitxor");
     
@@ -1392,7 +1379,6 @@ parse_bitxor(CdlExpression expr)
 
 static void
 parse_bitor(CdlExpression expr)
-    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("parse_bitor");
     
@@ -1415,7 +1401,6 @@ parse_bitor(CdlExpression expr)
 
 static void
 parse_and(CdlExpression expr)
-    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("parse_and");
     parse_bitor(expr);
@@ -1437,7 +1422,6 @@ parse_and(CdlExpression expr)
 
 static void
 parse_or(CdlExpression expr)
-    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("parse_or");
 
@@ -1460,7 +1444,6 @@ parse_or(CdlExpression expr)
 
 static void
 parse_conditional(CdlExpression expr)
-    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("parse_conditional");
 
@@ -1490,7 +1473,6 @@ parse_conditional(CdlExpression expr)
 
 static void
 parse_expression(CdlExpression expr)
-    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("parse_expression");
 
@@ -1503,7 +1485,6 @@ parse_expression(CdlExpression expr)
 // The entry point.
 void
 CdlExpressionBody::continue_parse(CdlExpression expr, std::string data, int& index, CdlExprOp& token, int& token_end)
-    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlExpression::continue_parse");
     CYG_REPORT_FUNCARG1XV(expr);
@@ -1540,7 +1521,6 @@ CdlExpressionBody::continue_parse(CdlExpression expr, std::string data, int& ind
 
 static void
 evaluate_subexpr(CdlEvalContext& context, CdlExpression expr, int subexpr_index, CdlSimpleValue& result)
-    throw(CdlEvalException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("evaluate_subexpr");
     CYG_REPORT_FUNCARG2XV(expr, subexpr_index);
@@ -2076,7 +2056,6 @@ evaluate_subexpr(CdlEvalContext& context, CdlExpression expr, int subexpr_index,
 // ----------------------------------------------------------------------------
 void
 CdlExpressionBody::eval_internal(CdlEvalContext& context, CdlSimpleValue& result)
-    throw(CdlEvalException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlExpression::eval_internal)");
     CYG_REPORT_FUNCARG3XV(this, &context, &result);
@@ -2233,7 +2212,6 @@ CdlExpressionBody::~CdlExpressionBody()
 
 CdlExpression
 CdlExpressionBody::parse(std::string data)
-    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAMETYPE("CdlExpression::parse", "result %p");
 
@@ -2260,7 +2238,6 @@ CdlExpressionBody::parse(std::string data)
 
 CdlExpression
 CdlExpressionBody::parse(std::string data, int& index, CdlExprOp& next_token, int& token_end)
-    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAMETYPE("CdlExpression::parse", "result %d");
 
@@ -2401,7 +2378,6 @@ CdlExpressionBody::update(CdlTransaction transaction, CdlNode source, CdlPropert
 
 void
 CdlExpressionBody::eval(CdlEvalContext& context, CdlSimpleValue& result)
-    throw(CdlEvalException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlExpression::eval");
 
@@ -2596,7 +2572,6 @@ CdlListExpressionBody::check_this(cyg_assert_class_zeal zeal) const
 
 CdlListExpression
 CdlListExpressionBody::parse(std::string data)
-    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAMETYPE("CdlListExpression::parse", "result %p");
 
@@ -2729,7 +2704,6 @@ CdlListExpressionBody::update(CdlTransaction transact, CdlNode source, CdlProper
 
 void
 CdlListExpressionBody::eval(CdlEvalContext& context, CdlListValue& result)
-    throw(CdlEvalException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlListExpression::eval");
     CYG_REPORT_FUNCARG3XV(this, &context, &result);
@@ -2748,7 +2722,6 @@ CdlListExpressionBody::eval(CdlEvalContext& context, CdlListValue& result)
 
 void
 CdlListExpressionBody::eval_internal(CdlEvalContext& context, CdlListValue& result)
-    throw(CdlEvalException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlListExpression::eval_internal");
     CYG_REPORT_FUNCARG2XV(this, &context);
@@ -2834,7 +2807,6 @@ CdlListExpressionBody::eval_internal(CdlEvalContext& context, CdlListValue& resu
 
 bool
 CdlListExpressionBody::is_member(CdlEvalContext& context, CdlSimpleValue& val)
-    throw(CdlEvalException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAMETYPE("CdlListExpression::is_member (value)", "result %d");
     CYG_REPORT_FUNCARG3XV(this, &context, &val);
@@ -2852,7 +2824,6 @@ CdlListExpressionBody::is_member(CdlEvalContext& context, CdlSimpleValue& val)
 
 bool
 CdlListExpressionBody::is_member(CdlEvalContext& context, std::string val)
-    throw(CdlEvalException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAMETYPE("CdlListExpression::is_member (string)", "result %d");
     CYG_REPORT_FUNCARG2XV(this, &context);
@@ -2870,7 +2841,6 @@ CdlListExpressionBody::is_member(CdlEvalContext& context, std::string val)
 
 bool
 CdlListExpressionBody::is_member(CdlEvalContext& context, cdl_int val)
-    throw(CdlEvalException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAMETYPE("CdlListExpression::is_member (int)", "result %d");
     CYG_REPORT_FUNCARG3XV(this, &context, (int) val);
@@ -2888,7 +2858,6 @@ CdlListExpressionBody::is_member(CdlEvalContext& context, cdl_int val)
 
 bool
 CdlListExpressionBody::is_member(CdlEvalContext& context, double val)
-    throw(CdlEvalException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAMETYPE("CdlListExpression::is_member (double)", "result %d");
     CYG_REPORT_FUNCARG2XV(this, &context);
@@ -2980,7 +2949,6 @@ CdlGoalExpressionBody::~CdlGoalExpressionBody()
 
 CdlGoalExpression
 CdlGoalExpressionBody::parse(std::string data)
-    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAMETYPE("CdlGoalExpression::parse", "result %p");
 
@@ -3018,7 +2986,6 @@ CdlGoalExpressionBody::parse(std::string data)
 // ----------------------------------------------------------------------------
 void
 CdlGoalExpressionBody::eval(CdlEvalContext& context, bool& result)
-    throw(CdlEvalException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlGoalExpression::eval");
     CYG_REPORT_FUNCARG2XV(this, &context);
@@ -3032,7 +2999,6 @@ CdlGoalExpressionBody::eval(CdlEvalContext& context, bool& result)
 
 bool
 CdlGoalExpressionBody::eval(CdlEvalContext& context)
-    throw(CdlEvalException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAMETYPE("CdlGoalExpression::eval", "result %d");
     CYG_REPORT_FUNCARG2XV(this, &context);
@@ -3095,7 +3061,6 @@ CdlGoalExpressionBody::get_original_string() const
 
 void
 CdlGoalExpressionBody::eval_internal(CdlEvalContext& context, bool& result)
-    throw(CdlEvalException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlGoalExpression::eval_internal");
     CYG_REPORT_FUNCARG2XV(this, &context);

@@ -70,11 +70,6 @@ AC_EXEEXT
 CYG_AC_PROG_MSVC
 CYG_AC_PROG_STANDARD_COMPILER_FLAGS
 
-dnl This package cannot be cross-compiled yet.
-if test ${cross_compiling} = yes; then
-  AC_MSG_ERROR(cross-compilation of this package is not supported)
-fi
-
 dnl Work out the endianness. The standard macro for this is used
 dnl even though it will give warnings at autoconf time.
 AC_C_BIGENDIAN

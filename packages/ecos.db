@@ -86,6 +86,54 @@ package CYGPKG_IO_SERIAL {
            This package contains drivers for basic I/O services on
            serial devices."
 }
+package CYGPKG_IO_PCMCIA {
+	alias 		{ "PCMCIA & Compact Flash support" pcmcia io_pcmcia cf }
+	directory	io/pcmcia
+	script		io_pcmcia.cdl
+        description "
+           This package contains basic card services support for PCMCIA
+           and Compact Flash devices."
+}
+
+package CYGPKG_DEVS_PCMCIA_ASSABET {
+	alias 		{ "SA11x0/Assabet PCMCIA & Compact Flash support" pcmcia_assabet assabet_pcmcia assabet_cf io_assabet_pcmcia}
+	directory	devs/pcmcia/arm/assabet
+	script		pcmcia_assabet.cdl
+	hardware
+        description "
+           This package contains hardware support for PCMCIA
+           and Compact Flash devices on the SA11x0/Assabet board."
+}
+
+package CYGPKG_IO_FLASH {
+	alias 		{ "Generic FLASH memory support" flash }
+	directory	io/flash
+	script		io_flash.cdl
+        description "
+           This package contains generic support for FLASH memory."
+}
+
+
+package CYGPKG_DEVS_FLASH_EBSA285 {
+	alias 		{ "FLASH memory support for StrongARM EBSA-285" flash_ebsa285 }
+	directory	devs/flash/arm/ebsa285
+	script		flash_ebsa285.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the StrongARM EBSA-285 platform."
+}
+
+package CYGPKG_DEVS_FLASH_EDB7XXX {
+	alias 		{ "FLASH memory support for Cirrus Logic EDB7xxx" flash_edb7xxx }
+	directory	devs/flash/arm/edb7xxx
+	script		flash_edb7xxx.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the Cirrus Logic EDB7xxx platform(s)."
+}
+
 package CYGPKG_IO_SERIAL_ARM_EBSA285 {
     alias 	      { "Intel EBSA285 serial driver"
                         devs_serial_arm_ebsa285 ebsa285_serial_driver }
@@ -239,18 +287,43 @@ package CYGPKG_IO_SERIAL_V85X_V850 {
                        SA1 (70F3017) or SB1 (70F3033) processors."
 }
 
+package CYGPKG_IO_SERIAL_LOOP {
+    alias             { "Loop serial device drivers"
+                        devs_serial_loop loop_serial_driver }
+    directory	      devs/serial/loop
+    script	      ser_loop.cdl	
+    description       "Loopback serial device driver."
+}
+
+package CYGPKG_IO_FILEIO {
+	alias 		{ "File IO" fileio io_file }
+	directory	io/fileio
+	script		fileio.cdl
+        description "
+	   This package contains the infrastructure for doing POSIX compliant
+	   file IO."
+}
+
+package CYGPKG_FS_RAM {
+	alias 		{ "RAM Filesystem" ramfs ram_fs fs_ram }
+	directory	fs/ram
+	script		ramfs.cdl
+        description "
+	   This package contains a RAM resident filesystem."
+}
+
+package CYGPKG_IO_ETH_DRIVERS {
+	alias 		{ "Common ethernet support" net_drivers }
+	directory	io/eth
+	script		eth_drivers.cdl
+        description     "Platform independent ethernet support."
+}
+
 package CYGPKG_NET {
 	alias 		{ "Networking" net }
 	directory	net/tcpip
 	script		net.cdl
         description     "Generic networking support, including TCP/IP."
-}
-
-package CYGPKG_NET_ETH_DRIVERS {
-	alias 		{ "Common ethernet support" net_drivers }
-	directory	net/drivers/eth/common
-	script		eth_drivers.cdl
-        description     "Platform independent ethernet support."
 }
 
 package CYGPKG_SNMPLIB {
@@ -289,6 +362,15 @@ package CYGPKG_DEVS_ETH_POWERPC_QUICC {
 	directory	devs/eth/powerpc/quicc
 	script		quicc_eth_drivers.cdl
         description     "Ethernet driver for PowerPC QUICC (MPC8xx) based boards."
+}
+
+# Not sure whether this should be "hardware"; if so, it should be mentioned
+# in all targets that can use it.
+package CYGPKG_DEVS_ETH_CF {
+	alias 		{ "PCMCIA (Compact Flash) ethernet drivers" cf_eth_drivers }
+	directory	devs/eth/cf
+	script		cf_eth_drivers.cdl
+        description     "Ethernet drivers for PCMCIA (Compact Flash) cardss."
 }
 package CYGPKG_IO_PCI	{
 	alias		{ "PCI configuration library" io_pci }
@@ -390,6 +472,16 @@ other packages such as the device drivers and the uITRON compatibility
 layer."
 }
 
+package CYGPKG_MEMALLOC {
+        alias           { "Dynamic memory allocation" memalloc malloc }
+        directory       services/memalloc/common
+        script          memalloc.cdl
+        description "
+This package provides memory allocator infrastructure required for
+dynamic memory allocators, including the ISO standard malloc
+interface. It also contains some sample implementations."
+}
+
 package CYGPKG_UITRON {
 	alias		{ "uITRON compatibility" uitron }
 	directory	compat/uitron
@@ -400,15 +492,121 @@ eCos supports a uITRON Compatibility Layer, providing full Level S
 many Level E (Extended) features. uITRON is the premier Japanese
 embedded RTOS standard."
 }
+
+package CYGPKG_ISOINFRA {
+        alias           { "ISO C and POSIX infrastructure" isoinfra }
+        directory       isoinfra
+        script          isoinfra.cdl
+        description "
+eCos supports implementations of ISO C libraries and POSIX implementations.
+This package provides infrastructure used by all such implementations."
+}
+
+package CYGPKG_POSIX {
+	alias		{ "POSIX compatibility" posix }
+	directory	compat/posix
+	script		posix.cdl
+	description "
+This package enables compatibility with the ISO/IEEE 1003.1 POSIX
+standard.  This allows the user application to use a well known
+standard API, and starts a thread to invoke the user function
+main()"
+}
+
 package CYGPKG_LIBC {
 	alias		{ "C library" libc clib clibrary }
-	directory	language/c/libc
+	directory	language/c/libc/common
 	script		libc.cdl
         description  "
-This package enables compatibility with the ISO C standard - ISO/IEC
-9899:1990. This allows the user application to use well known standard
-C library functions, and in eCos starts a thread to invoke the user
-function main()"
+The packages under this package enable compatibility with the ISO C
+standard - ISO/IEC 9899:1990. This allows the user application to use
+well known standard C library functions, and in eCos starts a thread
+to invoke the user function main(). This package is a top-level placeholder
+to contain the implementations."
+}
+
+package CYGPKG_LIBC_I18N {
+	alias		{ "ISO C library internationalization" libc_i18n }
+	directory	language/c/libc/i18n
+	script		i18n.cdl
+        description  "
+This package provides internationalization functions specified by the
+ISO C standard - ISO/IEC 9899:1990."
+}
+
+package CYGPKG_LIBC_SETJMP {
+	alias		{ "ISO C library non-local jumps" libc_setjmp }
+	directory	language/c/libc/setjmp
+	script		setjmp.cdl
+        description  "
+This package provides non-local jump functionality specified by the
+ISO C standard - ISO/IEC 9899:1990."
+}
+
+package CYGPKG_LIBC_SIGNALS {
+	alias		{ "ISO C library signals" libc_signals }
+	directory	language/c/libc/signals
+	script		signals.cdl
+        description   "
+This component controls signal functionality, as implemented in
+ISO/IEC 9899:1990 chapter 7.7 with the signal() and raise() functions.
+As well as allowing a program to send itself signals, it is also
+possible to cause hardware exceptions to be signalled to the program
+in a similar way."
+}
+
+package CYGPKG_LIBC_STARTUP {
+	alias		{ "ISO environment startup/termination" libc_startup }
+	directory	language/c/libc/startup
+	script		startup.cdl
+        description   "
+            This package manages the control of the
+            environment (in the general sense) that an
+            application would require for full ISO C / POSIX
+            compatibility, including a main() entry point
+            supplied with arguments and an environment
+            (as retrievable by the getenv() function).
+            It also includes at the other end of things,
+            what happens when main() returns or exit() is
+            called."
+}
+
+package CYGPKG_LIBC_STDIO {
+	alias		{ "ISO C library standard input/output functions" libc_stdio }
+	directory	language/c/libc/stdio
+	script		stdio.cdl
+        description  "
+This package provides standard input/output functions associated
+with the header file <stdio.h> as specified by the
+ISO C standard - ISO/IEC 9899:1990."
+}
+
+package CYGPKG_LIBC_STDLIB {
+	alias		{ "ISO C library general utility functions" libc_stdlib }
+	directory	language/c/libc/stdlib
+	script		stdlib.cdl
+        description  "
+This package provides general utility functions associated
+with the header file <stdlib.h> as specified by the
+ISO C standard - ISO/IEC 9899:1990."
+}
+
+package CYGPKG_LIBC_STRING {
+	alias		{ "ISO C library string functions" libc_string }
+	directory	language/c/libc/string
+	script		string.cdl
+        description  "
+This package provides string functions specified by the ISO C standard
+- ISO/IEC 9899:1990."
+}
+
+package CYGPKG_LIBC_TIME {
+	alias		{ "ISO C library date/time functions" libc_time }
+	directory	language/c/libc/time
+	script		time.cdl
+        description  "
+This package provides date and time manipulation functionality specified
+by the ISO C standard - ISO/IEC 9899:1990."
 }
 
 package CYGPKG_LIBM {
@@ -431,7 +629,7 @@ codes in a common way, rather than each package having its own
 conventions for error/status reporting. The error codes are modelled
 on the POSIX style naming e.g. EINVAL etc. This package also provides
 the standard strerror() function to convert error codes to textual
-representation."
+representation, as well as an implementation of the errno idiom."
 }
 package CYGPKG_CYGMON {
     alias           { "CygMon support via eCos" cygmon }
@@ -439,6 +637,15 @@ package CYGPKG_CYGMON {
     script          cygmon.cdl
     description     "
         This package supports the CygMon \[stand-alone debug monitor\]
+        using eCos as the underlying board support mechanism."
+}
+
+package CYGPKG_REDBOOT {
+    alias           { "RedBoot, the Red Hat bootstrap" cygmon }
+    directory       redboot
+    script          redboot.cdl
+    description     "
+        This package creates the RedBoot \[stand-alone bootstrap & debug monitor\]
         using eCos as the underlying board support mechanism."
 }
 
@@ -940,6 +1147,7 @@ target ebsa285 {
 		   CYGPKG_DEVS_ETH_ARM_EBSA285
 		   CYGPKG_IO_SERIAL_ARM_EBSA285
                    CYGPKG_DEVICES_WATCHDOG_ARM_EBSA285
+		   CYGPKG_DEVS_FLASH_EBSA285
         }
         description "
         The ebsa285 target provides the packages needed to run
@@ -952,6 +1160,7 @@ target assabet {
                    CYGPKG_HAL_ARM_SA11X0
                    CYGPKG_HAL_ARM_SA11X0_ASSABET
 		   CYGPKG_IO_SERIAL_ARM_SA11X0
+		   CYGPKG_DEVS_PCMCIA_ASSABET
         }
         description "
         The assabet target provides the packages needed to run
@@ -975,6 +1184,7 @@ target edb7xxx {
                           CYGPKG_HAL_ARM_EDB7XXX
 			  CYGPKG_DEVS_ETH_ARM_EDB7XXX
 	                  CYGPKG_IO_SERIAL_ARM_EDB7XXX
+			  CYGPKG_DEVS_FLASH_EDB7XXX
         }
         description "
 The edb7xxx target provides the packages needed to run eCos on Cirrus Logic development boards."

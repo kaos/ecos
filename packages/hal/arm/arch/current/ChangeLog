@@ -1,3 +1,20 @@
+2000-08-15  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/arm.ld (SECTION_text): Change it back so that
+	infra/... range checking can see them.  _stext and _etext as seen
+	from C are the eventual destination, so this is a step in the
+	right direction.  You must hack if building redboot, for now.
+
+2000-08-14  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/arm.ld (SECTION_text): Change to stext and etext unadorned
+	with underlines so that RedBoot can see them.
+
+2000-08-14  Gary Thomas  <gthomas@redhat.com>
+
+	* include/hal_arch.h: 
+	* src/arm.ld: Changes to support new [anonymous] tables.
+
 2000-07-17  Jesper Skov  <jskov@redhat.com>
 
 	* src/vectors.S (start): Hack to allow thumb tests to run in farm
@@ -16,11 +33,40 @@
 	All platforms now has VECTOR_SUPPORT (or provide alternative
 	implementations). Removed checks for the option.
 
+2000-07-04  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/hal_arm.cdl: Add CYGINT_HAL_ARM_MEM_REAL_REGION_TOP
+	interface
+
+	* include/hal_intr.h: If the platform implements the
+	CYGINT_HAL_ARM_MEM_REAL_REGION_TOP interface, define a new
+	HAL_MEM_REAL_REGION_TOP macro appropriately
+
 2000-06-28  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_mk_defs.c:
 	* src/arm_stub.c: 
 	Fix compiler warnings.
+
+2000-06-21  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/hal_arch.h:
+	Added local variants of CYG_HAL_TABLE_BEGIN() and
+	CYG_HAL_TABLE_END() since the ARM assembler implements some of
+	this code with a slightly different syntax to all the other
+	targets.
+
+	* include/basetype.h:
+	Removed definition of CYG_LABEL_NAME(). Now dealt with by default
+	definition in cyg_type.h.
+	
+	* src/hal_misc.c: 
+	* src/arm_stub.c:
+	Removed use of CYG_LABEL_NAME(), added underscore to _breakinst.
+
+	* src/arm.ld:
+	Added extra underscores to _stext and _etext.
+	Switched over to new table creation mechanism.	
 
 2000-06-19  Gary Thomas  <gthomas@redhat.com>
 

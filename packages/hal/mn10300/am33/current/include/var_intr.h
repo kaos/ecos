@@ -36,7 +36,7 @@
 //
 // Author(s):    nickg
 // Contributors: nickg, jskov,
-//               gthomas, jlarmour
+//               gthomas, jlarmour, dmoseley
 // Date:         1999-02-16
 // Purpose:      VR4300 Interrupt support
 // Description:  The macros defined here provide the HAL APIs for handling
@@ -147,6 +147,9 @@
 #define CYGNUM_HAL_EXCEPTION_MIN               CYGNUM_HAL_VSR_MIN
 #define CYGNUM_HAL_EXCEPTION_MAX               CYGNUM_HAL_VSR_MAX
 #define CYGNUM_HAL_EXCEPTION_COUNT             CYGNUM_HAL_VSR_COUNT
+
+#define CYGNUM_HAL_EXCEPTION_INTERRUPT         CYGNUM_HAL_EXCEPTION_SYSTEM_ERROR
+#define CYGNUM_HAL_VECTOR_BREAKPOINT           CYGNUM_HAL_EXCEPTION_SYSTEM_ERROR
 
 // Canonical names for various exceptions. These are used
 // by generic exception handling code to make sense of

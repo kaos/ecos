@@ -50,8 +50,7 @@ cdl_package CYGPKG_IO_SERIAL {
         serial devices."
     doc           redirect/ecos-device-drivers.html
 
-    compile       -library=libextras.a common/serial.c common/tty.c \
-                  common/haldiag.c
+    compile       -library=libextras.a common/serial.c
  
     define_proc {
 	puts $::cdl_header "/***** proc output start *****/"
@@ -79,16 +78,146 @@ cdl_package CYGPKG_IO_SERIAL {
             rely on a hardware FIFO of some sort."
     }
 
+    cdl_interface CYGINT_IO_SERIAL_LINE_STATUS_HW {
+        display "Serial driver supports line status"
+    }
+
+    cdl_option CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS {
+        display       "Support line status callbacks"
+        requires      { CYGINT_IO_SERIAL_LINE_STATUS_HW > 0 }
+        default_value { 0 != CYGINT_IO_SERIAL_LINE_STATUS_HW }
+        description "
+            This option indicates that if the serial driver supports it,
+            serial line status and modem status information should be
+            propagated to higher layers via callbacks."
+    }
+
+    cdl_component CYGPKG_IO_SERIAL_FLOW_CONTROL {
+        display           "Flow control"
+        description       "
+                This component contains options related to flow control."
+        flavor            bool
+        requires          (CYGOPT_IO_SERIAL_FLOW_CONTROL_SOFTWARE || \
+                           CYGOPT_IO_SERIAL_FLOW_CONTROL_HW)
+        default_value     0
+
+        cdl_component CYGOPT_IO_SERIAL_FLOW_CONTROL_SOFTWARE {
+                display       "Software flow control"
+                default_value 1
+                description   "
+                        This component enables support of software flow control."
+
+                cdl_option CYGDAT_IO_SERIAL_FLOW_CONTROL_XON_CHAR {
+                    display       "Start character"
+                    flavor        data
+                    default_value 17
+                    legal_values  0 to 255
+                    description   "
+                        This option specifies the ascii character used to
+                        indicate that transmission should start."
+                }
+
+                cdl_option CYGDAT_IO_SERIAL_FLOW_CONTROL_XOFF_CHAR {
+                    display       "Stop character"
+                    flavor        data
+                    default_value 19
+                    legal_values  0 to 255
+                    description   "
+                        This option specifies the ascii character used to
+                        indicate that transmission should stop."
+                }
+        }
+
+        cdl_option CYGOPT_IO_SERIAL_FLOW_CONTROL_HW {
+                display       "Hardware flow control"
+                active_if     { CYGINT_IO_SERIAL_FLOW_CONTROL_HW > 0 }
+                requires      { CYGINT_IO_SERIAL_FLOW_CONTROL_HW > 0 }
+                requires      CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS
+                default_value { CYGINT_IO_SERIAL_FLOW_CONTROL_HW > 0 ? \
+                                CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS : 0 }
+                description   "
+                        If the hardware supports it, this option allows hardware
+                        flow control to be enabled. This may be in the form of
+                        either or both of RTS/CTS, or DSR/DTR flow control."
+        }
+
+        cdl_interface CYGINT_IO_SERIAL_FLOW_CONTROL_HW {
+                display "Serial h/w supports hardware flow control"
+        }
+
+        cdl_option CYGDAT_IO_SERIAL_FLOW_CONTROL_DEFAULT {
+                display       "Default flow control method"
+                flavor        data
+                legal_values  { "NONE" "XONXOFF" "RTSCTS" "DSRDTR" }
+                default_value { "NONE" }
+                description   "This option allows a default flow control method
+                               to be defined. Combinations of flow control methods
+                               may also be set, but this is only possible by
+                               using the cyg_io_set_config() API in source code."
+        }
+
+        cdl_option CYGNUM_IO_SERIAL_FLOW_CONTROL_LOW_WATER_PERCENT {
+                display       "Rx flow control low water mark"
+                flavor        data
+                legal_values  1 to 100
+                default_value 33
+                description   "This sets the water mark used for determining
+                               when to disable flow control, expressed
+                               as a percentage of the buffer size. When the
+                               receive buffer size is lower than this percentage,
+                               if the transmitter had previously been throttled, it
+                               will now be informed it can restart."
+        }
+
+        cdl_option CYGNUM_IO_SERIAL_FLOW_CONTROL_HIGH_WATER_PERCENT {
+                display       "Rx flow control high water mark"
+                flavor        data
+                legal_values  1 to 100
+                default_value 66
+                requires      { CYGNUM_IO_SERIAL_FLOW_CONTROL_HIGH_WATER_PERCENT >= \
+                                CYGNUM_IO_SERIAL_FLOW_CONTROL_LOW_WATER_PERCENT }
+                description   "This sets the water mark used for determining
+                               when to enable flow control, expressed
+                               as a percentage of the buffer size. When the
+                               receive buffer size exceeds this percentage,
+                               signals are sent to the transmitter to tell it
+                               to throttle tranmission."
+        }
+
+    }
+
     cdl_component CYGPKG_IO_SERIAL_TTY {
         display       "TTY-mode serial device drivers"
         flavor        bool
         default_value 1
         description   "
-            This option enables the terminal-like device driver 
-            used for serial devices that interact with humans,
+            This option enables a simple terminal-like device driver 
+            that can be used for serial devices that interact with humans,
             such as a system console."
         
         script        tty.cdl
+        compile       -library=libextras.a common/tty.c
+    }
+
+    cdl_component CYGPKG_IO_SERIAL_TERMIOS {
+        display       "Termios compatible TTY drivers"
+        flavor        bool
+        requires      CYGPKG_ISOINFRA
+        requires      CYGPKG_IO_FILEIO
+        requires      CYGINT_ISO_ERRNO_CODES
+        requires      CYGINT_ISO_ERRNO
+        requires      CYGINT_ISO_MALLOC
+        default_value { 0 != CYGPKG_ISOINFRA && 0 != CYGPKG_IO_FILEIO && \
+                        0 != CYGINT_ISO_ERRNO_CODES && \
+                        0 != CYGINT_ISO_ERRNO }
+        implements    CYGINT_ISO_TERMIOS
+        description   "
+            This option enables terminal drivers compatible with
+            POSIX termios."
+        
+        script        termios.cdl
+        compile       -library=libextras.a common/termiostty.c
+        compile       common/termios.c
     }
 
     cdl_component CYGPKG_IO_SERIAL_DEVICES {
@@ -158,9 +287,23 @@ cdl_package CYGPKG_IO_SERIAL {
             display "Serial device driver tests"
             flavor  data
             no_define
-            calculated { CYGPKG_IO_SERIAL_DEVICES ? "tests/serial1 tests/serial2 tests/serial3 tests/serial4 tests/serial5 tests/tty1 tests/tty2" : "" }
+            calculated { CYGPKG_IO_SERIAL_DEVICES ? "tests/serial1 tests/serial2 tests/serial3 tests/serial4 tests/serial5 tests/tty1 tests/tty2 tests/flow1 tests/flow2" : "" }
             description   "
                 This option specifies the set of tests for the serial device drivers."
         }
     }
+
+    cdl_option CYGPKG_IO_SERIAL_SELECT_SUPPORT {
+	display "Enable serial device select support"
+	flavor bool
+	active_if CYGPKG_IO_FILEIO
+	requires  CYGPKG_IO_FILEIO
+	default_value 1
+	description "
+	    This option enables support for the select() API function on all
+	    serial devices."
+    }
+
 }
+
+# EOF io_serial.cdl

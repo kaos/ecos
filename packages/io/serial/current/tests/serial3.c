@@ -79,13 +79,14 @@ serial_test( void )
         // at the default 38400 baud when doing this test.
         cyg_ser_cfg_t arm_aeb_cfg = { 
             CYGNUM_SERIAL_BAUD_14400, CYGNUM_SERIAL_WORD_LENGTH_8, 
-            CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE };
+            CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE,
+            CYGNUM_SERIAL_FLOW_NONE };
 
         change_config(ser_handle, &arm_aeb_cfg);
     }
 #endif
 
-    // Start slowly, the go for max size.
+    // Start slowly, then go for max size.
     {
         test_binary(ser_handle,             16, MODE_EOP_ECHO);
         test_binary(ser_handle,            128, MODE_EOP_ECHO);

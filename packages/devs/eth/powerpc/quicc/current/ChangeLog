@@ -1,3 +1,11 @@
+2000-08-03  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/quicc_eth_drivers.cdl: Ethernet driver package hierarchy changed.
+
+2000-07-26  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_quicc.c: Update for new eth_drv interfaces.
+
 2000-06-22  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* cdl/<yournamehere>.cdl: Remove the comment on the empty

@@ -55,6 +55,16 @@
 #ifndef _SYS_SELECT_H_
 #define	_SYS_SELECT_H_
 
+#include <pkgconf/system.h>
+
+#ifdef CYGPKG_IO_FILEIO
+
+#include <cyg/io/file.h>
+
+void	selwakeup __P((struct selinfo *));
+
+#else
+
 /*
  * Used to maintain information about processes that wish to be
  * notified when I/O becomes possible.
@@ -65,5 +75,7 @@ struct selinfo {
 
 void	selrecord __P((void *selector, struct selinfo *));
 void	selwakeup __P((struct selinfo *));
+
+#endif
 
 #endif /* !_SYS_SELECT_H_ */

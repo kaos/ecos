@@ -272,13 +272,13 @@ int smux_listen_sd;
  */
 int snmp_read_packet (int);
 int snmp_input (int, struct snmp_session *, int, struct snmp_pdu *, void *);
-static void usage (char *);
 int main (int, char **);
 static void SnmpTrapNodeDown (void);
 static int receive(void);
 int snmp_check_packet(struct snmp_session*, snmp_ipaddr);
 int snmp_check_parse(struct snmp_session*, struct snmp_pdu*, int);
 
+#if !defined(__ECOS)
 static void usage(char *prog)
 {
 	printf("\nUsage:  %s [-h] [-v] [-f] [-a] [-d] [-V] [-P PIDFILE] [-q] [-D] [-p NUM] [-L] [-l LOGFILE] [-r]",prog);
@@ -322,6 +322,7 @@ static void usage(char *prog)
 	printf("\n");
 	exit(1);
 }
+#endif // !defined(__ECOS)
 
 	RETSIGTYPE
 SnmpdShutDown(int a)
@@ -616,15 +617,10 @@ main(int argc, char *argv[])
 
 #else /* __ECOS environment: */
 void snmpd( void )    {
-    int             arg, i;
     int             ret;
     u_short         dest_port = SNMP_PORT;
 #define stderr_log 1
 #endif
-
-    extern void init_all_network_interfaces(void);
-
-    init_all_network_interfaces();
 
     SOCK_STARTUP;
     init_agent("snmpd");		/* do what we need to do first. */
@@ -693,7 +689,6 @@ void snmpd( void )    {
 	SnmpTrapNodeDown();
 	DEBUGMSGTL(("snmpd", "Bye...\n"));
 	snmp_shutdown("snmpd");
-	return 0;
 
 }  /* End main() -- snmpd */
 

@@ -96,6 +96,9 @@ const char  *eth1_name = "eth1";
 #define _string(s) #s
 #define string(s) _string(s)
 
+#ifndef CYGPKG_LIBC_STDIO
+#define perror(s) diag_printf(#s ": %s\n", strerror(errno))
+#endif
 
 #ifdef CYGPKG_NET_NLOOP
 #if 0 < CYGPKG_NET_NLOOP
@@ -131,8 +134,12 @@ cyg_bool_t init_loopback_interface(int lo)
     // (There is normally only 1, so it's the standard 127.0.0.1)
     addrp->sin_addr.s_addr = htonl((0x100 * lo) + INADDR_LOOPBACK) ; 
 
+#if CYGPKG_NET_NLOOP > 1
     // Init the one we were told to
     sprintf(ifr.ifr_name, "lo%d", lo);
+#else
+    strcpy(ifr.ifr_name, "lo0");
+#endif    
 
     if (ioctl(s, SIOCSIFADDR, &ifr)) {
         perror("SIOCIFADDR");
@@ -252,6 +259,9 @@ void
 init_all_network_interfaces(void)
 {
     static volatile int in_init_all_network_interfaces = 0;
+#ifdef CYGPKG_IO_PCMCIA
+    cyg_netdevtab_entry_t *t;
+#endif // CYGPKG_IO_PCMCIA
 
     cyg_scheduler_lock();
     while ( in_init_all_network_interfaces ) {
@@ -265,6 +275,14 @@ init_all_network_interfaces(void)
 
 #ifdef CYGHWR_NET_DRIVER_ETH0
     if ( ! eth0_up ) { // Make this call idempotent
+#ifdef CYGPKG_IO_PCMCIA
+        if ((t = eth_drv_netdev("eth0")) != (cyg_netdevtab_entry_t *)NULL) {
+            while (t->status != CYG_NETDEVTAB_STATUS_AVAIL) {
+                diag_printf("... Waiting for PCMCIA device 'eth0'\n");
+                cyg_thread_delay(100);
+            }
+        }
+#endif // CYGPKG_IO_PCMCIA
 #ifdef CYGHWR_NET_DRIVER_ETH0_BOOTP
         // Perform a complete initialization, using BOOTP/DHCP
         eth0_up = true;
@@ -300,6 +318,14 @@ init_all_network_interfaces(void)
 #endif // CYGHWR_NET_DRIVER_ETH0
 #ifdef CYGHWR_NET_DRIVER_ETH1
     if ( ! eth1_up ) { // Make this call idempotent
+#ifdef CYGPKG_IO_PCMCIA
+        if ((t = eth_drv_netdev("eth1")) != (cyg_netdevtab_entry_t *)NULL) {
+            while (t->status != CYG_NETDEVTAB_STATUS_AVAIL) {
+                diag_printf("... Waiting for PCMCIA device 'eth1'\n");
+                cyg_thread_delay(100);
+            }
+        }
+#endif // CYGPKG_IO_PCMCIA
 #ifdef CYGHWR_NET_DRIVER_ETH1_BOOTP
         // Perform a complete initialization, using BOOTP/DHCP
         eth1_up = true;

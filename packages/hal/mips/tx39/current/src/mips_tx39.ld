@@ -267,12 +267,7 @@ GROUP(libtarget.a libgcc.a)
   .devtab _vma_ : _lma_                           \
     {                                             \
       FORCE_OUTPUT;                               \
-      __DEVTAB__ = .;                             \
-      KEEP (*(SORT(.devtab*)))                    \
-       __DEVTAB_END__ = .;                        \
-      __NETDEVTAB__ = .;                          \
-      KEEP (*(SORT(.netdevtab*)))                 \
-      __NETDEVTAB_END__ = .;                      \
+      KEEP(*( SORT (.ecos.table.*))) ;            \
     } > _region_
 
 #define SECTION_got(_region_, _vma_, _lma_)     \

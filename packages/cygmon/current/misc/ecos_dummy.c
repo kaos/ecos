@@ -32,13 +32,15 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     gthomas
-// Contributors:  gthomas
+// Contributors:  gthomas, dmoseley
 // Date:          1999-10-11
 // Description:   Wrapper functions which provide BSP environment for Cygmon
 //####DESCRIPTIONEND####
 
+#ifdef CYGPKG_KERNEL
 #include <pkgconf/kernel.h>   // Configuration header
 #include <cyg/kernel/kapi.h>
+#endif
 #include <cyg/infra/diag.h>
 #include <cyg/hal/plf_stub.h>
 

@@ -68,6 +68,8 @@ cdl_component CYGPKG_IO_SERIAL_ARM_PID_SERIAL0 {
     display       "ARM PID serial port 0 driver"
     flavor        bool
     default_value 1
+    implements    CYGINT_IO_SERIAL_FLOW_CONTROL_HW
+    implements    CYGINT_IO_SERIAL_LINE_STATUS_HW
     description   "
         This option includes the serial device driver for the ARM PID 
         port 0."
@@ -108,6 +110,8 @@ cdl_component CYGPKG_IO_SERIAL_ARM_PID_SERIAL1 {
     display       "ARM PID serial port 1 driver"
     flavor        bool
     default_value 1
+    implements    CYGINT_IO_SERIAL_FLOW_CONTROL_HW
+    implements    CYGINT_IO_SERIAL_LINE_STATUS_HW
     description   "
         This option includes the serial device driver for the ARM PID 
         port 1."

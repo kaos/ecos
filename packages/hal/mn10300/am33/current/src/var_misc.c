@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    nickg
-// Contributors: nickg, jlarmour
+// Contributors: nickg, jlarmour, dmoseley
 // Date:         1999-01-21
 // Purpose:      HAL miscellaneous functions
 // Description:  This file contains miscellaneous functions provided by the
@@ -94,6 +94,149 @@ void cyg_hal_dcache_store(CYG_ADDRWORD base, int size)
 }
 #endif
 
+#ifdef CYGPKG_CYGMON
+/*------------------------------------------------------------------------*/
+/* GDB Register functions.                                                */
+#include <cyg/hal/var_arch.h>
+#include <cyg/hal/hal_stub.h>
+
+
+int msp_read = 0;
+
+extern int *_registers_valid;
+
+void am33_get_gdb_extra_registers(CYG_ADDRWORD *registers, HAL_SavedRegisters *regs)
+{
+  register CYG_ADDRWORD epsw;
+  asm volatile ("  mov epsw, %0 " : "=r" (epsw) : );
+
+  registers[15] = regs->e0;
+  registers[16] = regs->e1;
+  registers[17] = regs->e2;
+  registers[18] = regs->e3;
+  registers[19] = regs->e4;
+  registers[20] = regs->e5;
+  registers[21] = regs->e6;
+  registers[22] = regs->e7;
+
+  registers[26] = regs->mcrh;
+  registers[27] = regs->mcrl;
+  registers[28] = regs->mcvf;
+
+  registers[14] = regs->mdrq;
+
+  {
+    register CYG_ADDRWORD ssp, usp, msp;
+    asm volatile (" mov usp,  %0 " : "=a" (usp) : );
+    asm volatile (" mov ssp,  %0 " : "=a" (ssp) : );
+    if ((epsw & HAL_ARCH_AM33_PSW_ML) == HAL_ARCH_AM33_PSW_ML)
+      {
+        // We are running in Monitor mode.  Go ahead and read the MSP.
+        asm volatile (" mov msp, %0 " : "=a" (msp) : );
+        msp_read = 1;
+      } else {
+        msp = 0;
+        msp_read = 0;
+      }
+
+    // Now we need to determine which sp was in effect when we hit this exception,
+    // since we want the register image to reflect the state at the time of the
+    // exception.
+    if ((regs->psw & HAL_ARCH_AM33_PSW_ML) == HAL_ARCH_AM33_PSW_ML)
+      {
+        msp = regs->sp;
+      }
+    else if ((regs->psw & HAL_ARCH_AM33_PSW_nSL) == 0)
+      {
+        ssp = regs->sp;
+      }
+    else
+      {
+        usp = regs->sp;
+      }
+
+    registers[23] = ssp;
+    registers[24] = msp;
+    registers[25] = usp;
+  }
+
+
+#ifdef CYGHWR_REGISTER_VALIDITY_CHECKING
+  {
+    int i;
+
+    // Initially set all registers to valid
+    for (i = 0; i < NUMREGS; i++)
+      _registers_valid[i] = 1;
+
+    if (msp_read == 0)
+      _registers_valid[MSP] = 0;
+
+    if (fpu_regs_read == 0)
+      {
+        for (i = FP_START; i <= FP_END; i++)
+          _registers_valid[i] = 0;
+      }
+  }
+#endif
+}
+
+void am33_set_gdb_extra_registers(CYG_ADDRWORD *registers, HAL_SavedRegisters *regs)
+{
+  regs->e0 = registers[15];
+  regs->e1 = registers[16];
+  regs->e2 = registers[17];
+  regs->e3 = registers[18];
+  regs->e4 = registers[19];
+  regs->e5 = registers[20];
+  regs->e6 = registers[21];
+  regs->e7 = registers[22];
+
+  regs->mcrh = registers[26];
+  regs->mcrl = registers[27];
+  regs->mcvf = registers[28];
+
+  regs->mdrq = registers[14];
+
+  {
+    register CYG_ADDRWORD ssp, usp, msp;
+    ssp = registers[23];
+    msp = registers[24];
+    usp = registers[25];
+    if ((registers[11] & HAL_ARCH_AM33_PSW_ML) == HAL_ARCH_AM33_PSW_ML)
+      {
+        // We were running in monitor mode.
+        // Go ahead and manually restore ssp and usp.
+        // msp will be restored by the rti.
+        asm volatile (" mov %0, usp " : : "a" (usp));
+        asm volatile (" mov %0, ssp " : : "a" (ssp));
+      }
+    else if ((registers[11] & HAL_ARCH_AM33_PSW_nSL) == 0)
+      {
+        // We were running in system mode.
+        // Go ahead and manually restore msp and usp.
+        // ssp will be restored by the rti.
+        asm volatile (" mov %0, usp " : : "a" (usp));
+        if (msp_read)
+          {
+          asm volatile (" mov %0, msp " : : "a" (msp));
+          }
+      }
+    else
+      {
+        // We were running in user mode.
+        // Go ahead and manually restore msp and ssp.
+        // usp will be restored by the rti.
+        asm volatile (" mov %0, ssp " : : "a" (ssp));
+        if (msp_read)
+          {
+          asm volatile (" mov %0, msp " : : "a" (msp));
+          }
+      }
+  }
+
+}
+#endif // CYGPKG_CYGMON
 
 /*------------------------------------------------------------------------*/
 /* End of var_misc.c                                                      */

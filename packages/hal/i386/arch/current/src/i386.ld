@@ -109,8 +109,7 @@ GROUP(libtarget.a libgcc.a)
     __DTOR_LIST__ = ABSOLUTE(.);                                            \
       KEEP(*(SORT(.dtors*))) __DTOR_END__ = ABSOLUTE(.);                    \
     . = ALIGN(8);                                                           \
-    __DEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.devtab*))) __DEVTAB_END__ = ABSOLUTE (.); \
-    __NETDEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.netdevtab*))) __NETDEVTAB_END__ = ABSOLUTE (.); \
+    KEEP(*( SORT (.ecos.table.*)));                                         \
     _GOT2_START_ = ABSOLUTE(.); *(.got2) _GOT2_END_ = ABSOLUTE(.);          \
     _GOT_START_ = ABSOLUTE(.); _GLOBAL_OFFSET_TABLE_ = ABSOLUTE(. + 32768); \
     _SDA_BASE_ = ABSOLUTE(.); *(.got.plt) *(.got)                           \
@@ -134,7 +133,8 @@ GROUP(libtarget.a libgcc.a)
 #define SECTION_bss(_region_, _vma_, _lma_)                      \
     .bss _vma_ : _lma_                                                          \
     { FORCE_OUTPUT; *(.dynbss*) *(.bss*) *(COMMON) }      \
-    > _region_
+    > _region_	\
+    __bss_end = .;
 
 #define SECTIONS_END . = ALIGN(4); _end = .; PROVIDE (end = .);
 

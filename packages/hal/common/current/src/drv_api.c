@@ -403,7 +403,7 @@ externC void cyg_drv_cond_destroy( cyg_drv_cond_t  *cond )
 // wakeup only happens if there is a thread actually waiting on the CV
 // when the signal is sent.
 
-externC void cyg_drv_cond_wait( cyg_drv_cond_t *cond )
+externC cyg_bool cyg_drv_cond_wait( cyg_drv_cond_t *cond )
 {
     CYG_REPORT_FUNCTION();
 
@@ -427,7 +427,9 @@ externC void cyg_drv_cond_wait( cyg_drv_cond_t *cond )
 
     cyg_drv_dsr_unlock();
     
-    CYG_REPORT_RETURN();    
+    CYG_REPORT_RETURN();
+
+    return true;
 }
 
 //--------------------------------------------------------------------------

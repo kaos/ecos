@@ -7,6 +7,12 @@
 	* include/sys/ieeefp.h: Support FPU double-LE layout in BE mode.
 	Fix paste bug.
 
+2000-05-02  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* tests/vectors/vector_support.h:
+	Update startup configury to reflect changes in libc startup. 
+	Use default stacksize of CYGNUM_HAL_STACK_SIZE_TYPICAL rather than 32K
+
 2000-03-28  John Dallaway  <jld@cygnus.co.uk>
 
 	* cdl/libm.cdl:

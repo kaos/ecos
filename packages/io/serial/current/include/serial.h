@@ -53,6 +53,10 @@
 #include <cyg/io/serialio.h>
 #include <cyg/hal/drv_api.h>
 
+#ifdef CYGPKG_IO_SERIAL_SELECT_SUPPORT
+#include <cyg/fileio/fileio.h>
+#endif
+
 typedef struct serial_channel serial_channel;
 typedef struct serial_funs serial_funs;
 
@@ -64,8 +68,7 @@ typedef struct {
     void (*xmt_char)(serial_channel *chan);
     // Consume an input character
     void (*rcv_char)(serial_channel *chan, unsigned char c);
-
-#ifdef CYGINT_IO_SERIAL_BLOCK_TRANSFER
+#if CYGINT_IO_SERIAL_BLOCK_TRANSFER
     // Request space for input characters
     bool (*data_rcv_req)(serial_channel *chan, int avail, 
                          int* space_avail, unsigned char** space);
@@ -76,11 +79,27 @@ typedef struct {
                          int* chars_avail, unsigned char** chars);
     // Transmit operation completed
     void (*data_xmt_done)(serial_channel *chan);
-#endif // CYGINT_IO_SERIAL_BLOCK_TRANSFER
+#endif
+#if defined(CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS)
+    void (*indicate_status)(serial_channel *chan, cyg_serial_line_status_t *s );
+#endif
 } serial_callbacks_t;
 
-#ifdef CYGINT_IO_SERIAL_BLOCK_TRANSFER
-#define SERIAL_CALLBACKS(_l,_init,_xmt_char,_rcv_char, _data_rcv_req, _data_rcv_done, _data_xmt_req, _data_xmt_done)  \
+#if CYGINT_IO_SERIAL_BLOCK_TRANSFER
+# ifdef CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS
+#  define SERIAL_CALLBACKS(_l,_init,_xmt_char,_rcv_char, _data_rcv_req, _data_rcv_done, _data_xmt_req, _data_xmt_done, _indicate_status)  \
+serial_callbacks_t _l = {                               \
+    _init,                                              \
+    _xmt_char,                                          \
+    _rcv_char,                                          \
+    _data_rcv_req,                                      \
+    _data_rcv_done,                                     \
+    _data_xmt_req,                                      \
+    _data_xmt_done                                      \
+    _indicate_status                                    \
+};
+# else
+#  define SERIAL_CALLBACKS(_l,_init,_xmt_char,_rcv_char, _data_rcv_req, _data_rcv_done, _data_xmt_req, _data_xmt_done)  \
 serial_callbacks_t _l = {                               \
     _init,                                              \
     _xmt_char,                                          \
@@ -90,13 +109,24 @@ serial_callbacks_t _l = {                               \
     _data_xmt_req,                                      \
     _data_xmt_done                                      \
 };
-#else 
-#define SERIAL_CALLBACKS(_l,_init,_xmt_char,_rcv_char)  \
+# endif
+#else
+# ifdef CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS
+#  define SERIAL_CALLBACKS(_l,_init,_xmt_char,_rcv_char,_indicate_status)  \
+serial_callbacks_t _l = {                               \
+    _init,                                              \
+    _xmt_char,                                          \
+    _rcv_char,                                          \
+    _indicate_status                                    \
+};
+# else
+#  define SERIAL_CALLBACKS(_l,_init,_xmt_char,_rcv_char)  \
 serial_callbacks_t _l = {                               \
     _init,                                              \
     _xmt_char,                                          \
     _rcv_char                                           \
 };
+# endif
 #endif
 
 extern serial_callbacks_t cyg_io_serial_callbacks;
@@ -106,7 +136,13 @@ typedef struct {
     volatile int             put;
     volatile int             get;
     int                      len;
-    int                      low_water;   // Min space in buffer before restart
+    int                      nb;          // count of bytes currently in buffer
+    int                      low_water;   // For tx: min space in buffer before restart
+                                          // For rx: max buffer used before flow unthrottled
+#ifdef CYGPKG_IO_SERIAL_FLOW_CONTROL
+    int                      high_water;  // For tx: unused
+                                          // For rx: min buffer used before throttle
+#endif
     cyg_drv_cond_t           wait;
     cyg_drv_mutex_t          lock;
     bool                     waiting;
@@ -115,10 +151,22 @@ typedef struct {
 #endif
     volatile bool            abort;       // Set by an outsider to kill processing
     volatile cyg_int32       pending;     // This many bytes waiting to be sent
+#ifdef CYGPKG_IO_SERIAL_SELECT_SUPPORT    
+    struct CYG_SELINFO_TAG   selinfo;     // select info
+#endif
 } cbuf_t;
 
 #define CBUF_INIT(_data, _len) \
    {_data, 0, 0, _len}
+
+#ifdef CYGPKG_IO_SERIAL_FLOW_CONTROL
+typedef struct {
+    cyg_uint32 flags;
+#ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_SOFTWARE
+    cyg_uint8  xchar;
+#endif
+} flow_desc_t;
+#endif
 
 // Private data which describes this channel
 struct serial_channel {
@@ -129,7 +177,18 @@ struct serial_channel {
     bool                init;
     cbuf_t              out_cbuf;
     cbuf_t              in_cbuf;
+#ifdef CYGPKG_IO_SERIAL_FLOW_CONTROL
+    flow_desc_t         flow_desc;
+#endif
+#ifdef CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS
+    cyg_serial_line_status_callback_fn_t status_callback;
+    CYG_ADDRWORD             status_callback_priv;
+#endif
 };
+
+// Flow descriptor flag values
+#define CYG_SERIAL_FLOW_OUT_THROTTLED     (1<<0)
+#define CYG_SERIAL_FLOW_IN_THROTTLED      (1<<1)
 
 // Initialization macro for serial channel
 #define SERIAL_CHANNEL(_l,                                              \
@@ -166,7 +225,8 @@ struct serial_funs {
     // Fetch one character from the device
     unsigned char (*getc)(serial_channel *priv);    
     // Change hardware configuration (baud rate, etc)
-    bool (*set_config)(serial_channel *priv, cyg_serial_info_t *config);
+    Cyg_ErrNo (*set_config)(serial_channel *priv, cyg_uint32 key, const void *xbuf,
+                            cyg_uint32 *len);
     // Enable the transmit channel and turn on transmit interrupts
     void (*start_xmit)(serial_channel *priv);
     // Disable the transmit channel and turn transmit interrupts off

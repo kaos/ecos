@@ -1,0 +1,461 @@
+2000-08-08  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/limits.h: Don't define SSIZE_MAX here, leave it to the
+	isoinfra default.
+
+2000-07-27  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* tests/signal2.c: NA if no setjmp/longjmp
+
+2000-07-26  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/pthread.h:
+	* src/pthread.cxx (pthread_testcancel): Reversed addition of cyg_
+	to this symbol.
+
+2000-07-25  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/pthread.cxx: Define main_stack and main_thread as static
+	Rename pthread_canceled -> cyg_pthread_canceled - pthread_ may be
+	a reserved name space but this makes explicit it is implementation-
+	and not standard-defined
+	(PTHREAD_ENTRY_VOID): Define for funcs that take no args
+	(pthread_testcancel): Call PTHREAD_ENTRY_VOID()
+
+	* include/pthread.h: Rename pthread_canceled -> cyg_pthread_canceled
+
+2000-07-20  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/pthread.cxx: Use isoinfra to determine presence of malloc()
+	Define pthread_malloc() and pthread_free() as inlines
+
+	* cdl/posix.cdl: Shouldn't define _POSIX_MESSAGE_PASSING at all - that
+	happens in isoinfra.
+
+2000-07-20  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* cdl/posix.cdl: Added misc.cxx to compile list. Added option to
+	define _POSIX_MESSAGE_PASSING. Added configury for utsname
+	structure.
+
+	* include/utsname.h: Added this file to define struct utsname and
+	uname() function prototype.
+
+	* include/mqueue.h: Moved definition of _POSIX_MESSAGE_PASSING to
+	CDL.
+
+	* include/limits.h: Added NGROUPS_MAX definition.
+
+	* src/pthread.cxx:
+	Added support for malloced() thread stacks.
+	Added implementations of pthread_mutex_setprioceiling() and
+	pthread_mutex_getprioceiling().
+	Changed implementations of pthread_mutex_destroy(),
+	pthread_mutex_lock() and pthread_mutex_trylock() to conform more
+	closely to the standard.
+	Changed pthread_key_create() to assign NULL to all valid thread
+	slots that correspond to a newly allocated key.
+
+	* src/pprivate.h: Added freestack and stackmem members to manage
+	malloced thread stacks.
+
+	* src/misc.cxx: Added this file to contain functions that do not
+	belong in any other files. Currently contains uname() and
+	sysconf().
+
+2000-07-19  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/startup.cxx: Remove unnecessary includes
+	Use dummy object constructor to do initialization
+
+	* cdl/posix.cdl: 
+	Don't need main.cxx any more
+	Build startup.cxx into extras.o (via libextras.a)
+
+	* cdl/pthread.cdl (CYGPKG_POSIX_MAIN_THREAD):
+	Integrate with CYGPKG_LIBC_STARTUP - tell CYGPKG_LIBC_STARTUP to
+	let pthreads set up main thread
+
+	* src/pthread.cxx: Integrate with CYGPKG_LIBC_STARTUP rather than
+	calling main() directly.
+	Track number of threads waiting to be joined, so we can tell in
+	pthread_exit() if this is the last thread, and therefore whether
+	to call exit()
+
+	* src/main.cxx: obsolete, removed
+
+2000-07-13  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/signal.cxx: Added ISO C compatibility functions signal() and
+	raise().
+
+2000-06-21  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/pthread.cxx: Added for(;;) loop to end of pthread_exit().
+	pthread_exit() is marked with the noreturn attribute, and without
+	this some compilers generate a call to abort() here in case
+	Cyg_Thread::exit() returns. The loop avoids this.
+
+2000-06-06  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/mqueue.cxx (mq_receive): Fix non-portable treatment of mode flags
+	(mq_send):  Ditto
+	* tests/mqueue2.c (main): Ditto
+
+2000-05-24  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* tests/pthread2.c: Added this program to test per-thread data
+	handling.
+
+	* tests/pthread3.c: Added this program to test execution of
+	cancellation handler.
+
+	* src/pthread.cxx: Fixed some bugs revealed by new test programs.
+
+	* cdl/posix.cdl: Added two new pthread tests.
+
+2000-05-22  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/posix.cdl (CYGPKG_POSIX): Require
+	CYGIMP_KERNEL_SCHED_SORTED_QUEUES
+
+2000-05-20  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* tests/mqueue1.c (cyg_user_start): Define correctly
+	* tests/mqueue2.c (cyg_user_start): Likewise
+
+	* src/pprivate.h (cyg_sigqueue): Make struct sigevent * arg const since
+	it is, and it prevents warnings elsewhere
+	* src/signal.cxx (cyg_sigqueue): ditto
+
+	* tests/signal2.c: Use CYG_TEST_NA, not CYG_TEST_INFO (otherwise
+	the test farm may fail the tests because there are no PASSes or NAs)
+
+	* cdl/posix.cdl (CYGPKG_POSIX): We need errno and error codes, so
+	require them
+	Move some of the package implements into the components
+	Add message queue configuration, build mqueue.cxx and the mqueue1 and
+	mqueue2 tests
+	Move some calculated options into isoinfra, implemented as interfaces
+	so that unistd.h and limits.h can get the values
+
+	* include/limits.h: Move _POSIX_* macros into isoinfra limits.h
+	since they are implementation independent
+
+	* src/mqueue.cxx: Add POSIX message queue implementation
+	* tests/mqueue1.c, tests/mqueue2.c: and tests
+
+2000-05-18  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/pprivate.h:
+	* src/pthread.cxx:
+	* src/signal.cxx:
+	* src/time.cxx:
+	Added prioritization of static kernel objects.
+
+2000-05-17  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/pthread.cxx:
+	To reduce the static memory required by this code, the
+	pthread_info structure for a pthread is now allocated in the stack
+	memory for that thread, and not in a static table. The table is
+	now just an array of pointers. The per-thread data array is now
+	also allocated onto the stack only when first required.
+
+	* include/pthread.h: Removed some redundant code.
+
+	* include/limits.h: Added PTHREAD_STACK_OVERHEAD to record
+	management overhead imposed on POSIX threads stacks. This is added
+	to the HAL minimum requirement to generate PTHREAD_STACK_MIN.
+
+	* src/pprivate.h (pthread_info):
+	* include/types.h (pthread_attr_t): Converted a number of integer
+	state and boolean fields to bitfields.
+
+	* cdl/pthread.cdl:
+	Added requirement for CYGFUN_KERNEL_THREADS_STACK_LIMIT.
+
+2000-05-16  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/types.h: Added stacksize_valid to pthread_attr_t
+	structure.
+
+	* include/signal.h:
+	Added SI_EXCEPT to mark any signals that were caused by an
+	exception. Removed conditions around SIGBUS.
+
+	* src/startup.cxx (cyg_posix_start):
+	Added call to cyg_posix_exception_start(). 
+
+	* src/signal.cxx:
+	Rearranged cyg_deliver_signals() so that it is possible to
+	longjmp() out of a signal handler without leaving signal handling
+	code in an inconsistent state.
+	Added handling of SIG_IGN in sigaction().
+
+	* src/pthread.cxx: Added setting and checking of stacksize_valid.
+
+	* src/pprivate.h: Added cyg_deliver_signals() as an export of
+	signal system. Added exports from except.cxx.
+
+	* src/except.cxx: Added this file to handle delivery of exceptions
+	into the POSIX signal mechanism.
+
+	* cdl/posix.cdl: Added except.cxx to compile list, added signal2
+	to tests. Added requirement on kernel exception processing.
+
+	* tests/tm_basic.cxx: Tidied up a compilation warning.
+
+	* tests/signal2.c: Added this test for exception signal generation.
+
+	* tests/mutex3.c: Fixed stupid bug.
+	
+2000-05-10  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/pprivate.h: Added cyg_posix_clock_start() prototype.
+
+	* src/startup.cxx: Added call to cyg_posix_clock_start().
+
+	* src/time.cxx: Added startup routine to initialize
+	converters. Fixed error result bug in timer_delete().
+
+	* include/signal.h: Removed some configuration tests which are now
+	done in CDL.
+
+	* cdl/posix.cdl: Added configury for the signals component. Added
+	tm_basic to tests.
+
+	* tests/tm_basic.cxx:
+	Added this POSIXized version of the tm_basic test. Note that this
+	has not been entirely converted. While the code being tested is
+	POSIX, the timing infrastructure remains a mish-mash of kernel,
+	KAPI and HAL code.
+
+2000-05-04  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/time.cxx:
+	Many changes to implement the delivery of signals on timer expiry.
+	Also added timer_delete().
+
+	* src/signal.cxx:
+	cyg_sigqueue() and cyg_deliver_signals() may now only be called
+	from within the context of a POSIX thread, either from an API call
+	or an ASR.
+	cyg_deliver_signals() can now cope with a signal that has
+	SA_SIGINFO set but no signals queued. It also determines
+	dynamically whether to lock the signal_mutex.
+	cyg_deliver_signals() is no longer called implicitly from
+	cyg_sigqueue() - so a number of expicit calls have been added.
+	
+	* src/sched.cxx:
+	Added this file to implement scheduling API.
+
+	* src/pthread.cxx:
+	Moved priority translation macros to pprivate.h.
+	Removed errno handling, now done in isoinfra package.
+	Added iterative calls to per-thread data destructors.
+
+	* src/pprivate.h:
+	Removed error field from pthread_info structure.
+	Moved priority translation macros here.
+	Removed prototype for cyg_deliver_signals().
+	Added prototype for cyg_posix_timer_asr().
+
+	* include/time.h: Added timer_delete() which was mysteriously
+	omitted.
+
+	* cdl/posix.cdl: Added sched.cxx to compile list and timer1.c to
+	tests.
+
+	* tests/signal1.c: 
+	* tests/pthread1.c:
+	Fixed bug in use of stack sizes.
+
+	* tests/timer1.c: 
+	Added test for use of timers.
+		
+2000-05-02  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/sched.h: No longer needed - just use the default definition
+	in isoinfra
+
+	* include/errno.h: No longer needed - errno provision now comes from
+	CYGPKG_ERROR
+	
+	* include/sys/types.h: Moved to include/types.h
+	
+	* cdl/posix.cdl, cdl/pthread.cdl: Put include files in cyg/posix, and
+	configure CYGPKG_ISOINFRA to include the appropriate headers
+	
+	* include/semaphore.h: Don't need to check kernel - including
+	pkgconf/kernel.h would already fail
+	Give SEM_FAILED a type so casting behaves in C++
+	
+	* include/signal.h: This uses pid_t etc., so include <sys/types.h>
+	Add signal() and raise() prototypes (to allow libc compilation, even
+	though they aren't implemented yet)
+	
+	* include/time.h: Remove unnecessary includes. Move clockid_t and
+	timer_t definitions here from sys/types.h since this is where the
+	standard says they must live. 
+	
+	* src/pprivate.h: Include signal.h and limits.h since their contents
+	are used later in the file.	
+
+2000-04-28  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/signal.cxx:
+	Added implementations of alarm(), pause() and sleep().
+	Modified cyg_sigqueue() so that it could be called from an ASR.
+	Added cyg_posix_signal_asr() to do signal processing in ASRs.
+	Miscellaneous bug fixes.
+
+	* src/pthread.cxx:
+	Added pthread_count to count number of threads created.
+	Added call to signal ASR function in main ASR.
+	Added cyg_posix_pthread_release_thread() to seek out and kick a
+	thread to which a given set of signals may be delivered.
+
+	* src/pprivate.h:
+	Added some more functions that are shared between POSIX
+	subsystems.
+
+	* include/signal.h:
+	Added alarm(), pause() and sleep() prototypes. 
+
+	* tests/signal1.c: Added this test for various aspects of signal
+	handling.
+
+	* cdl/posix.cdl: Added signal1 test.
+
+2000-04-20  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/signal.cxx: Added this file to contain signal handling code.
+
+	* src/time.cxx: Made tick<->timespec converters exported to
+	rest of POSIX subsystem. Enabled interface to signal mechanism for
+	notifying timer expiration.
+
+	* src/pthread.cxx:
+	Made pthread_mutex exported to rest of POSIX subsystem.
+	Exported pthread_info_id().
+	Added thread init and destroy functions for signal subsystem.
+
+	* src/startup.cxx: Added call to cyg_posix_signal_start().
+
+	* src/pprivate.h: Added signal handling fields support to
+	pthread_info structure. Added extra internal interfaces to support
+	signal handling code.
+
+	* include/signal.h: Added _how_ argument values for the sigmask
+	functions.
+
+	* cdl/posix.cdl: Added signal.cxx to compile list.
+
+2000-04-13  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/time.h: 
+	* src/time.cxx:
+	Added implementation of clock and timer functions. These are
+	currently untested since they need working signals.
+
+2000-04-12  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/pprivate.h: Added cancellation support fields to
+	pthread_info structure. Made pthread_self_info() exported.
+
+	* include/semaphore.h: Added SEM_FAILED plus misc. tidies.
+
+	* include/pthread.h: Added PTHREAD_CANCELED.
+
+	* include/errno.h: Fixed cyg_pthread_errno_p() return type.
+
+	* src/pthread.cxx:
+	Added pthread_reap() to clean up exited threads.
+	Added support for cancellation.
+	Added cyg_posix_errno_p().
+
+	* src/time.cxx:
+	Added this file to implement time functionality. At present only
+	nanosleep() is actually implemented.
+
+	* src/sem.cxx:
+	Added this file to implement semaphore functionality.
+
+	* cdl/pthread.cdl:
+	Added some extra configuration requirements.
+
+	* cdl/posix.cdl:
+	Added some more files to compile.
+	Added semaphore configuration.
+
+	* tests/mutex3.c:
+	Added this test program. This is actually a POSIXized version of
+	Hugo's splendid kernel test of the same name. It exercises quite a
+	lot of the pthread infrastructure and is thus a good test to run.
+
+	* tests/pthread1.c:
+	Added proper comment headers and added full testing stuff.
+	
+2000-04-10  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/pprivate.h: 
+	* src/pthread.cxx:
+	Added per-thread data support.
+
+2000-04-06  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/pthread.cxx:
+	Filled in implementations of lots of functions.
+
+	* src/main.cxx:
+	Added this file to contain a default main. This is currenly just a
+	duplicate of the same file from the C library. Work is needed to
+	combine these.
+
+	* include/sys/types.h:
+	Modified pthread_mutex_t to conform to kernel structure.
+
+	* cdl/pthread.cdl:
+	Added support for main thread.
+
+	* cdl/posix.cdl:
+	Added main.cxx to compile list.
+
+2000-03-31  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* cdl/pthread.cdl: 
+	* cdl/posix.cdl:
+	Added CDL files to configure POSIX subsystem.
+
+	* src/pprivate.h: 
+	* src/pthread.cxx: 
+	* src/startup.cxx: 
+	Added these files to begin implementation of POSIX package.
+	
+	* include/pthread.h: 
+	* include/sched.h: 
+	* include/signal.h: 
+	* include/time.h: 
+	* include/sys/types.h: 
+	Many changes needed by implementation work.
+	
+	* include/limits.h: 
+	* include/errno.h: 
+	Added these header files.
+	
+2000-03-24  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/sys/types.h: 
+	* include/time.h: 
+	* include/sched.h: 
+	* include/pthread.h: 
+	* include/signal.h:
+	* include/semaphore.h: 
+	* include/mqueue.h: 
+	Roughed out (most of) the set of POSIX headers for the
+	functionality we are currently going to support. These files are
+	currently neither fully standard conformant nor implementation
+	ready. Much work is still needed to make them so. Watch this
+	space.
+

@@ -700,7 +700,6 @@ CdlDbParser::target_set_value(CdlInterpreter interp, int argc, char** argv)
 
 CdlPackagesDatabase
 CdlPackagesDatabaseBody::make(std::string repo, CdlDiagnosticFnPtr error_fn, CdlDiagnosticFnPtr warn_fn)
-    throw(CdlInputOutputException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAMETYPE("CdlPackagesDatabase::make", "database %p");
 
@@ -732,7 +731,6 @@ CdlPackagesDatabaseBody::make(std::string repo, CdlDiagnosticFnPtr error_fn, Cdl
 // ----------------------------------------------------------------------------
 
 CdlPackagesDatabaseBody::CdlPackagesDatabaseBody(std::string repo, CdlDiagnosticFnPtr error_fn, CdlDiagnosticFnPtr warn_fn)
-    throw(CdlInputOutputException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlPackagesDatabase:: constructor");
     CYG_PRECONDITIONC("" != repo);

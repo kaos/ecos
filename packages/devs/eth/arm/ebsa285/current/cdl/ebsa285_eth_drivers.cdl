@@ -44,8 +44,8 @@
 cdl_package CYGPKG_DEVS_ETH_ARM_EBSA285 {
     display       "Intel EBSA285 with PRO/100+ ethernet driver"
 
-    parent        CYGPKG_NET_ETH_DRIVERS
-    active_if     CYGPKG_NET_ETH_DRIVERS
+    parent        CYGPKG_IO_ETH_DRIVERS
+    active_if     CYGPKG_IO_ETH_DRIVERS
     active_if     CYGPKG_HAL_ARM_EBSA285
 
     implements    CYGHWR_NET_DRIVER_ETH0
@@ -81,6 +81,16 @@ cdl_package CYGPKG_DEVS_ETH_ARM_EBSA285 {
 	    the MAC address from EEPROM correctly, and so on, and also
 	    displays the mode (10/100MHz, half/full duplex) of the
 	    connection."
+    }
+
+    cdl_option CYGNUM_DEVS_ETH_ARM_EBSA285_DEV_COUNT {
+	display "Number of supported interfaces."
+        legal_values  1 2
+	default_value 2
+        flavor        data
+	description   "
+	    This option selects the number of PCI ethernet interfaces to
+            be supported by the driver."
     }
 
     cdl_component CYGDBG_DEVS_ETH_ARM_EBSA285_KEEP_STATISTICS {

@@ -583,7 +583,6 @@ CdlParse::get_error_count(CdlInterpreter interp)
 
 void
 CdlParse::report_error(CdlInterpreter interp, std::string sub_id, std::string message)
-    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlParse::report_error");
     CYG_REPORT_FUNCARG1("interp %p", interp);
@@ -658,7 +657,6 @@ CdlParse::unknown_command(CdlInterpreter interp, int argc, char** argv)
 // A variant of report_parse_error() which also adds the property prefix.
 void
 CdlParse::report_property_parse_error(CdlInterpreter interp, std::string argv0, std::string msg)
-    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlPase::report_property_parse_error");
 
@@ -681,7 +679,6 @@ CdlParse::report_property_parse_error(CdlInterpreter interp, std::string argv0, 
 
 void
 CdlParse::report_property_parse_error(CdlInterpreter interp, CdlProperty prop, std::string msg)
-    throw(CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlParse::report_property_parse_error");
     report_property_parse_error(interp, (prop->get_argv())[0], msg);

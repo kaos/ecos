@@ -52,6 +52,10 @@
 
 #include <cyg/infra/testcase.h>
 
+#ifndef CYGPKG_LIBC_STDIO
+#define perror(s) diag_printf(#s ": %s\n", strerror(errno))
+#endif
+
 #define SOURCE_PORT1 9990
 #define SOURCE_PORT2   9991
 

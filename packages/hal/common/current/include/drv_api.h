@@ -105,6 +105,7 @@ typedef cyg_addrword_t cyg_handle_t;        /* Object handle              */
 typedef cyg_uint32   cyg_priority_t;        /* type for priorities        */
 typedef cyg_uint32   cyg_vector_t;          /* Interrupt vector id        */
 typedef int cyg_bool_t;
+typedef cyg_int32      cyg_code_t;          /* type for various codes        */       
 
 typedef cyg_uint32 cyg_ISR_t( cyg_vector_t vector, cyg_addrword_t data);
 typedef void cyg_DSR_t(cyg_vector_t vector,
@@ -138,7 +139,7 @@ typedef struct
 
 externC void cyg_drv_cond_init( cyg_drv_cond_t  *cond, cyg_drv_mutex_t *mutex );
 externC void cyg_drv_cond_destroy( cyg_drv_cond_t  *cond );
-externC void cyg_drv_cond_wait( cyg_drv_cond_t *cond );
+externC cyg_bool_t cyg_drv_cond_wait( cyg_drv_cond_t *cond );
 externC void cyg_drv_cond_signal( cyg_drv_cond_t *cond );
 externC void cyg_drv_cond_broadcast( cyg_drv_cond_t *cond );
 

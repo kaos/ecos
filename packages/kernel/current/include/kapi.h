@@ -98,12 +98,6 @@ typedef struct cyg_alarm cyg_alarm;
 struct cyg_mbox;
 typedef struct cyg_mbox cyg_mbox;
 
-struct cyg_mempool_var;
-typedef struct cyg_mempool_var cyg_mempool_var;
-
-struct cyg_mempool_fix;
-typedef struct cyg_mempool_fix cyg_mempool_fix;
-
 struct cyg_sem_t;
 typedef struct cyg_sem_t cyg_sem_t;
 
@@ -428,96 +422,10 @@ cyg_bool_t cyg_mbox_waiting_to_put(cyg_handle_t mbox);
 /*-----------------------------------------------------------------------*/
 /* Memory pools                                                          */
 
-/* There are two sorts of memory pools.  A variable size memory pool
-   is for allocating blocks of any size.  A fixed size memory pool, has
-   the block size specified when the pool is created, and only provides
-   blocks of that size.  */
+/* These definitions are found in the "memalloc" package as this is      */
+/* where the implementation lives.                                       */
 
-/* Create a variable size memory pool */
-void cyg_mempool_var_create(
-    void            *base,              /* base of memory to use for pool */
-    cyg_int32       size,               /* size of memory in bytes        */
-    cyg_handle_t    *handle,            /* returned handle of memory pool */
-    cyg_mempool_var *var                /* space to put pool structure in */
-    );
-
-/* Delete variable size memory pool */
-void cyg_mempool_var_delete(cyg_handle_t varpool);
-
-/* Allocates a block of length size.  This waits if the memory is not
-   currently available.  */
-void *cyg_mempool_var_alloc(cyg_handle_t varpool, cyg_int32 size);
-
-/* Allocates a block of length size.  This waits until abstime,
-   if the memory is not already available.  NULL is returned if
-   no memory is available. */
-void *cyg_mempool_var_timed_alloc(
-    cyg_handle_t     varpool,
-    cyg_int32        size,
-    cyg_tick_count_t abstime);
-
-/* Allocates a block of length size.  NULL is returned if no memory is
-   available. */
-void *cyg_mempool_var_try_alloc(
-    cyg_handle_t varpool,
-    cyg_int32    size);
-
-/* Frees memory back into variable size pool. */
-void cyg_mempool_var_free(cyg_handle_t varpool, void *p);
-
-/* Returns true if there are any threads waiting for memory in the
-   given memory pool. */
-cyg_bool_t cyg_mempool_var_waiting(cyg_handle_t varpool);
-
-typedef struct {
-    cyg_int32 totalmem;
-    cyg_int32 freemem;
-    void      *base;
-    cyg_int32 size;
-    cyg_int32 blocksize;
-    cyg_int32 maxfree;                  // The largest free block
-} cyg_mempool_info;
-
-/* Puts information about a variable memory pool into the structure
-   provided. */
-void cyg_mempool_var_get_info(cyg_handle_t varpool, cyg_mempool_info *info);
-
-/* Create a fixed size memory pool */
-void cyg_mempool_fix_create(
-    void            *base,              // base of memory to use for pool
-    cyg_int32       size,               // size of memory in byte
-    cyg_int32       blocksize,          // size of allocation in bytes
-    cyg_handle_t    *handle,            // handle of memory pool
-    cyg_mempool_fix *fix                // space to put pool structure in
-    );
-
-/* Delete fixed size memory pool */
-void cyg_mempool_fix_delete(cyg_handle_t fixpool);
-
-/* Allocates a block.  This waits if the memory is not
-   currently available.  */
-void *cyg_mempool_fix_alloc(cyg_handle_t fixpool);
-
-/* Allocates a block.  This waits until abstime, if the memory
-   is not already available.  NULL is returned if no memory is
-   available. */
-void *cyg_mempool_fix_timed_alloc(
-    cyg_handle_t     fixpool,
-    cyg_tick_count_t abstime);
-
-/* Allocates a block.  NULL is returned if no memory is available. */
-void *cyg_mempool_fix_try_alloc(cyg_handle_t fixpool);
-
-/* Frees memory back into fixed size pool. */
-void cyg_mempool_fix_free(cyg_handle_t fixpool, void *p);
-
-/* Returns true if there are any threads waiting for memory in the
-   given memory pool. */
-cyg_bool_t cyg_mempool_fix_waiting(cyg_handle_t fixpool);
-
-/* Puts information about a variable memory pool into the structure
-   provided. */
-void cyg_mempool_fix_get_info(cyg_handle_t fixpool, cyg_mempool_info *info);
+#include <cyg/memalloc/kapi.h>
 
 /*---------------------------------------------------------------------------*/
 /* Semaphores                                                                */
@@ -529,7 +437,7 @@ void      cyg_semaphore_init(
 
 void cyg_semaphore_destroy( cyg_sem_t *sem );
 
-void cyg_semaphore_wait( cyg_sem_t *sem );
+cyg_bool_t cyg_semaphore_wait( cyg_sem_t *sem );
 
 #ifdef CYGFUN_KERNEL_THREADS_TIMER
 cyg_bool_t cyg_semaphore_timed_wait(
@@ -619,7 +527,7 @@ void cyg_cond_init(
 
 void cyg_cond_destroy( cyg_cond_t *cond );
 
-void cyg_cond_wait( cyg_cond_t *cond );
+cyg_bool_t cyg_cond_wait( cyg_cond_t *cond );
 
 void cyg_cond_signal( cyg_cond_t *cond );
 

@@ -89,10 +89,22 @@ inline void Cyg_Scheduler::unlock()
     
     cyg_ucount32 __lock = sched_lock - 1;
     
-    if( __lock == 0 ) unlock_inner();
+    if( __lock == 0 ) unlock_inner(0);
     else sched_lock = __lock;
 
     HAL_REORDER_BARRIER();
+}
+
+inline void Cyg_Scheduler::reschedule()
+{
+    // This function performs the equivalent of calling unlock() and
+    // lock() is succession. Unlike that pair, however, it does not
+    // leave a brief window between the calls when the lock is unclaimed
+    // by the current thread.
+    
+    CYG_INSTRUMENT_SCHED(RESCHEDULE,sched_lock,0);
+    
+    unlock_inner( sched_lock );
 }
 
 inline void Cyg_Scheduler::unlock_simple()

@@ -46,6 +46,40 @@
 #ifndef _CYG_IO_FILE_H_
 #define _CYG_IO_FILE_H_
 
+#include <pkgconf/system.h>
+
+//==========================================================================
+// If the fileio package is loaded, we need to go through that to do all
+// basic IO operations. This code redefines the tags on the structures so
+// that they have the names expected by BSD based code.
+
+#ifdef CYGPKG_IO_FILEIO
+
+#include <pkgconf/io_fileio.h>
+
+#define CYG_IOVEC_TAG iovec
+#define CYG_UIO_TAG uio
+#define CYG_FILEOPS_TAG fileops
+#define CYG_FILE_TAG file
+#define CYG_SELINFO_TAG selinfo
+
+#include <cyg/fileio/fileio.h>
+
+// File states
+#define FREAD      CYG_FREAD
+#define FWRITE     CYG_FWRITE
+#define FNONBLOCK  CYG_FNONBLOCK
+#define FASYNC     CYG_FASYNC
+
+// Type of "file"
+#define	DTYPE_VNODE	CYG_FILE_TYPE_FILE	/* file */
+#define	DTYPE_SOCKET	CYG_FILE_TYPE_SOCKET	/* communications endpoint */
+
+//==========================================================================
+// Otherwise define all the structs here...
+
+#else // CYGPKG_IO_FILEIO
+
 // High-level file I/O interfaces
 // Derived [in part] from OpenBSD <sys/file.h>, <sys/uio.h>, <sys/fcntl.h>
 
@@ -113,4 +147,9 @@ externC cyg_bool getfp(int fdes, struct file **fp);
 externC int falloc(struct file **fp, int *fd);
 externC void ffree(struct file *fp);
 
+//==========================================================================
+
+#endif // CYGPKG_IO_FILEIO
+
+//==========================================================================
 #endif // _CYG_IO_FILE_H_

@@ -1,0 +1,158 @@
+# ====================================================================
+#
+#      redboot.cdl
+#
+#      Redboot package configuration data
+#
+# ====================================================================
+#####COPYRIGHTBEGIN####
+#                                                                          
+# -------------------------------------------                              
+# The contents of this file are subject to the Red Hat eCos Public License 
+# Version 1.1 (the "License"); you may not use this file except in         
+# compliance with the License.  You may obtain a copy of the License at    
+# http://www.redhat.com/                                                   
+#                                                                          
+# Software distributed under the License is distributed on an "AS IS"      
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+# License for the specific language governing rights and limitations under 
+# the License.                                                             
+#                                                                          
+# The Original Code is eCos - Embedded Configurable Operating System,      
+# released September 30, 1998.                                             
+#                                                                          
+# The Initial Developer of the Original Code is Red Hat.                   
+# Portions created by Red Hat are                                          
+# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# All Rights Reserved.                                                     
+# -------------------------------------------                              
+#                                                                          
+#####COPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      jskov
+# Original data:  gthomas
+# Contributors:
+# Date:           1999-11-03
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+cdl_package CYGPKG_REDBOOT {
+    display  "Redboot ROM monitor"
+#    include_dir   cyg/redboot
+    define_header redboot.h
+    description   "
+           This package supports the Redboot \[stand-alone debug monitor\]
+           using eCos as the underlying board support mechanism."
+
+
+    # Since the CYGDAT_REDBOOT_CONSOLE_DEV setting ends up in the platform
+    # HAL header, we need to include that here (via hal.h).
+    define_proc {
+        puts $::cdl_header "#include <pkgconf/hal.h>"
+    }
+
+    cdl_option CYGBLD_BUILD_REDBOOT {
+        display "Build Redboot ROM ELF image"
+        default_value 0
+#        requires { CYG_HAL_STARTUP == "ROM" }
+        requires CYGPKG_INFRA
+        requires CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+        requires ! CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+        requires ! CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT
+#        requires ! CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
+
+        no_define
+        description "This option enables the building of the Redboot ELF image.
+                     The image may require further relocation or symbol
+                     stripping before being converted to a binary image.
+                     This is handled by a rule in the target CDL."
+
+	compile printf.c misc_funs.c io.c ticks.c
+        compile -library=libextras.a load.c
+
+        make -priority 320 {
+            <PREFIX>/bin/redboot.elf : $(PREFIX)/lib/libtarget.a main.o
+                    @sh -c "mkdir -p $(dir $@)"
+	            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ $^
+        }
+	make -priority 319 {
+           main.o: $(REPOSITORY)/$(PACKAGE)/src/main.c $(PREFIX)/lib/libtarget.a
+             $(CC) -c $(INCLUDE_PATH) $(CFLAGS) -o main.o $(REPOSITORY)/$(PACKAGE)/src/main.c
+	}
+    }
+
+    cdl_component CYGPKG_REDBOOT_NETWORKING {
+        display       "Build Redboot ROM binary image"
+        flavor        bool
+        active_if     CYGBLD_BUILD_REDBOOT
+        default_value 1
+	compile net/bootp.c net/udp.c net/ip.c net/pktbuf.c net/cksum.c
+	compile net/enet.c net/icmp.c net/tcp.c net/timers.c net/arp.c
+	compile net/tftp_client.c net/net_io.c net/inet_addr.c
+        description "This option includes networking support in RedBoot."
+        define_proc {
+            puts $::cdl_system_header "#define CYGNUM_HAL_VIRTUAL_VECTOR_AUX_CHANNELS 1"
+        }
+
+        cdl_option CYGNUM_REDBOOT_NETWORKING_TCP_PORT {
+            display          "TCP port to listen for incoming connections"
+            flavor data
+            default_value    9000
+            description      "
+               RedBoot will 'listen' on this port for incoming TCP connections.
+               This allows outside connections to be made to the platform, either
+               for GDB or RedBoot commands."
+        }
+
+        cdl_option CYGNUM_REDBOOT_NETWORKING_MAX_PKTBUF {
+            display          "Number of \[network\] packet buffers"
+            flavor data
+            default_value    4
+            legal_values     2 to 8
+            description      "
+               RedBoot may need to buffer network data to support various connections.
+               This option allows control over the number of such buffered packets,
+               and in turn, controls the amount of memory used by RedBoot (which
+               is not available to user applications).  Each packet buffer takes up
+               about 1514 bytes.  Note: there is little need to make this larger
+               than the default."
+        }
+    }
+
+    cdl_option CYGPKG_REDBOOT_ANY_CONSOLE {
+        display       "Allow RedBoot to use any I/O channel for it's console."
+        flavor        bool
+        default_value 1
+        description   "
+          If this option is enabled then RedBoot will attempt to use all
+          defined serial I/O channels for it's console device.  Once input
+          arrives at one of these channels then the console will use only
+          that port."
+    }
+
+    cdl_component CYGPKG_REDBOOT_FLASH {
+        display       "Allow RedBoot to support FLASH programming"
+        flavor        bool
+        default_value 1
+        active_if     CYGPKG_IO_FLASH
+        description   "
+          If this option is enabled then RedBoot will provide commands
+          to manage images in FLASH memory.  These images can be loaded
+          into memory for execution or executed in place."
+        compile -library=libextras.a flash.c
+
+        cdl_option CYGSEM_REDBOOT_FLASH_CONFIG {
+            display       "Keep RedBoot configuration data in FLASH"
+            flavor        bool
+            default_value 1
+            description "
+              When this option is enabled, RedBoot will keep configuration
+              data in a separate block of FLASH memory.  This data will
+              include such items as the node IP address or startup scripts."
+        }
+    }
+}
+

@@ -58,9 +58,6 @@
 #include <cyg/kernel/intr.hxx>
 #include <cyg/kernel/clock.hxx>
 
-#include <cyg/kernel/memfixed.hxx>
-#include <cyg/kernel/memvar.hxx>
-
 #include <cyg/kernel/sema.hxx>
 #include <cyg/kernel/flag.hxx>
 #include <cyg/kernel/mutex.hxx>
@@ -706,188 +703,6 @@ externC cyg_bool_t cyg_mbox_waiting_to_put(cyg_handle_t mbox)
 }
 
 
-/*-----------------------------------------------------------------------*/
-/* Memory pools                                                          */
-
-/* Create a variable size memory pool */
-externC void cyg_mempool_var_create(
-    void            *base,              /* base of memory to use for pool */
-    cyg_int32       size,               /* size of memory in bytes        */
-    cyg_handle_t    *handle,            /* returned handle of memory pool */
-    cyg_mempool_var *var                /* space to put pool structure in */
-    )
-{
-    CYG_ASSERT_SIZES( cyg_mempool_var, Cyg_Mempool_Variable );
-
-    Cyg_Mempool_Variable *t = new((void *)var) Cyg_Mempool_Variable (
-        (cyg_uint8 *)base,
-        size
-    );
-    t=t;
-
-    CYG_CHECK_DATA_PTR( handle, "Bad handle pointer" );
-    *handle = (cyg_handle_t)var;
-}
-
-/* Delete variable size memory pool */
-externC void cyg_mempool_var_delete(cyg_handle_t varpool)
-{
-    ((Cyg_Mempool_Variable *)varpool)->~Cyg_Mempool_Variable();
-}
-
-/* Allocates a block of length size.  This waits if the memory is not
-   currently available.  */
-externC void *cyg_mempool_var_alloc(cyg_handle_t varpool, cyg_int32 size)
-{
-    return ((Cyg_Mempool_Variable *)varpool)->alloc(size);
-}
-
-#ifdef CYGFUN_KERNEL_THREADS_TIMER
-
-/* Allocates a block of length size.  This waits for up to delay
-   ticks, if the memory is not already available.  NULL is returned if
-   no memory is available. */
-externC void *cyg_mempool_var_timed_alloc(
-    cyg_handle_t     varpool,
-    cyg_int32        size,
-    cyg_tick_count_t abstime)
-{
-    return ((Cyg_Mempool_Variable *)varpool)->alloc(size, abstime);
-}
-
-#endif
-
-/* Allocates a block of length size.  NULL is returned if no memory is
-   available. */
-externC void *cyg_mempool_var_try_alloc(
-    cyg_handle_t varpool,
-    cyg_int32    size)
-{
-    return ((Cyg_Mempool_Variable *)varpool)->try_alloc(size);
-}
-
-/* Frees memory back into variable size pool. */
-externC void cyg_mempool_var_free(cyg_handle_t varpool, void *p)
-{
-    cyg_bool b;
-    b = ((Cyg_Mempool_Variable *)varpool)->free((cyg_uint8 *)p, 0);
-    CYG_ASSERT( b, "Bad free");
-}
-
-
-/* Returns true if there are any threads waiting for memory in the
-   given memory pool. */
-externC cyg_bool_t cyg_mempool_var_waiting(cyg_handle_t varpool)
-{
-    return ((Cyg_Mempool_Variable *)varpool)->waiting();
-}
-
-/* Puts information about a variable memory pool into the structure
-   provided. */
-externC void cyg_mempool_var_get_info(
-    cyg_handle_t varpool,
-    cyg_mempool_info *info)
-{
-    Cyg_Mempool_Variable *v = (Cyg_Mempool_Variable *)varpool;
-    cyg_uint8 *base;
-    CYG_ADDRWORD maxfree;
-    
-    info->totalmem = v->get_totalmem();
-    info->freemem  = v->get_freemem();
-    v->get_arena(base, info->size, maxfree);
-    info->base = (void *)base;
-    info->blocksize  = -1;
-    info->maxfree = maxfree;
-}
-
-
-/* Create a fixed size memory pool */
-externC void cyg_mempool_fix_create(
-    void            *base,              // base of memory to use for pool
-    cyg_int32       size,               // size of memory in byte
-    cyg_int32       blocksize,          // size of allocation in bytes
-    cyg_handle_t    *handle,            // handle of memory pool
-    cyg_mempool_fix *fix                // space to put pool structure in
-    )
-{
-    CYG_ASSERT_SIZES( cyg_mempool_fix, Cyg_Mempool_Fixed );
-
-    Cyg_Mempool_Fixed *t = new((void *)fix) Cyg_Mempool_Fixed (
-        (cyg_uint8 *)base,
-        size,
-        blocksize
-    );
-    t=t;
-
-    CYG_CHECK_DATA_PTR( handle, "Bad handle pointer" );
-    *handle = (cyg_handle_t)fix;
-}
-
-/* Delete fixed size memory pool */
-externC void cyg_mempool_fix_delete(cyg_handle_t fixpool)
-{
-    ((Cyg_Mempool_Fixed *)fixpool)->~Cyg_Mempool_Fixed();
-}
-
-/* Allocates a block.  This waits if the memory is not
-   currently available.  */
-externC void *cyg_mempool_fix_alloc(cyg_handle_t fixpool)
-{
-    return ((Cyg_Mempool_Fixed *)fixpool)->alloc();
-}
-
-#ifdef CYGFUN_KERNEL_THREADS_TIMER
-
-/* Allocates a block.  This waits for up to delay ticks, if the memory
-   is not already available.  NULL is returned if no memory is
-   available. */
-externC void *cyg_mempool_fix_timed_alloc(
-    cyg_handle_t     fixpool,
-    cyg_tick_count_t abstime)
-{
-    return ((Cyg_Mempool_Fixed *)fixpool)->alloc(abstime);
-}
-
-#endif
-
-/* Allocates a block.  NULL is returned if no memory is available. */
-externC void *cyg_mempool_fix_try_alloc(cyg_handle_t fixpool)
-{
-    return ((Cyg_Mempool_Fixed *)fixpool)->try_alloc();
-}
-
-/* Frees memory back into fixed size pool. */
-externC void cyg_mempool_fix_free(cyg_handle_t fixpool, void *p)
-{
-    cyg_bool b;
-    b = ((Cyg_Mempool_Fixed *)fixpool)->free((cyg_uint8 *)p);
-    CYG_ASSERT( b, "Bad free");
-}
-
-/* Returns true if there are any threads waiting for memory in the
-   given memory pool. */
-externC cyg_bool_t cyg_mempool_fix_waiting(cyg_handle_t fixpool)
-{
-    return ((Cyg_Mempool_Fixed *)fixpool)->waiting();
-}
-
-/* Puts information about a variable memory pool into the structure
-   provided. */
-externC void cyg_mempool_fix_get_info(
-    cyg_handle_t fixpool,
-    cyg_mempool_info *info)
-{
-    Cyg_Mempool_Fixed *f = (Cyg_Mempool_Fixed *)fixpool;
-    cyg_uint8 *base;
-    cyg_addrword_t blocksize;
-    
-    info->totalmem = f->get_totalmem();
-    info->freemem  = f->get_freemem();
-    f->get_arena(base, info->size, blocksize);
-    info->base = (void *)base;
-    info->maxfree = info->blocksize = (cyg_int32)blocksize;
-}
-
 /*---------------------------------------------------------------------------*/
 /* Semaphores                                                                */
 
@@ -907,9 +722,9 @@ externC void cyg_semaphore_destroy( cyg_sem_t *sem )
     ((Cyg_Counting_Semaphore *)sem)->~Cyg_Counting_Semaphore();
 }
 
-externC void cyg_semaphore_wait( cyg_sem_t *sem )
+externC cyg_bool_t cyg_semaphore_wait( cyg_sem_t *sem )
 {
-    ((Cyg_Counting_Semaphore *)sem)->wait();
+    return ((Cyg_Counting_Semaphore *)sem)->wait();
 }
 
 #ifdef CYGFUN_KERNEL_THREADS_TIMER
@@ -1076,9 +891,9 @@ externC void cyg_cond_destroy( cyg_cond_t *cond )
     ((Cyg_Condition_Variable *)cond)->~Cyg_Condition_Variable();
 }
 
-externC void cyg_cond_wait( cyg_cond_t *cond )
+externC cyg_bool_t cyg_cond_wait( cyg_cond_t *cond )
 {
-    ((Cyg_Condition_Variable *)cond)->wait();
+    return ((Cyg_Condition_Variable *)cond)->wait();
 }
 
 externC void cyg_cond_signal( cyg_cond_t *cond )
@@ -1140,8 +955,6 @@ Cyg_Check_Structure_Sizes::Cyg_Check_Structure_Sizes(int x)
     CYG_CHECK_SIZES( cyg_clock, Cyg_Clock );
     CYG_CHECK_SIZES( cyg_alarm, Cyg_Alarm );
     CYG_CHECK_SIZES( cyg_mbox, Cyg_Mbox );
-    CYG_CHECK_SIZES( cyg_mempool_var, Cyg_Mempool_Variable );
-    CYG_CHECK_SIZES( cyg_mempool_fix, Cyg_Mempool_Fixed );
     CYG_CHECK_SIZES( cyg_sem_t, Cyg_Counting_Semaphore );
     CYG_CHECK_SIZES( cyg_flag_t, Cyg_Flag );
     CYG_CHECK_SIZES( cyg_mutex_t, Cyg_Mutex );
@@ -1150,7 +963,7 @@ Cyg_Check_Structure_Sizes::Cyg_Check_Structure_Sizes(int x)
     CYG_ASSERT( !fail, "Size checks failed");
 }
 
-Cyg_Check_Structure_Sizes check_structure_sizes(1);
+static Cyg_Check_Structure_Sizes cyg_kapi_check_structure_sizes(1);
 
 #endif
 

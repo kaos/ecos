@@ -701,6 +701,10 @@ __reset_platform:
         mov.w   r0,@r1
         mov.l   $CYGARC_REG_IPRE,r1
         mov.w   r0,@r1
+#ifdef CYGARC_SH_MOD_INTC_V3
+        mov.l   $CYGARC_REG_IPRF,r1
+        mov.w   r0,@r1
+#endif
         mov.l   $CYGARC_REG_ICR1,r1     ! Set interrupt controller to IRQ mode
         mov.w   r0,@r1
 #endif
@@ -827,6 +831,10 @@ $CYGARC_REG_IPRE:
         .long   CYGARC_REG_IPRE
 $CYGARC_REG_ICR1:
         .long   CYGARC_REG_ICR1
+#endif
+#ifdef CYGARC_SH_MOD_INTC_V2
+$CYGARC_REG_IPRF:
+        .long   CYGARC_REG_IPRF
 #endif
 
 $__reset:

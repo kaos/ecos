@@ -51,15 +51,16 @@
 // -------------------------------------------------------------------------
 // Some useful macros. These are defined here by default.
 
-// externC is used in mixed C/C++ headers to force C linkage on an external
+// __externC is used in mixed C/C++ headers to force C linkage on an external
 // definition. It avoids having to put all sorts of ifdefs in.
 
 #ifdef __cplusplus
-# define externC extern "C"
+# define __externC extern "C"
 #else
-# define externC extern
+# define __externC extern
 #endif
-
+// Also define externC for now - but it is deprecated
+#define externC __externC
 
 // -------------------------------------------------------------------------
 // The header <basetype.h> defines the base types used here. It is
@@ -287,6 +288,9 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 // note this can't be used if there are pointer args
 # define CYGBLD_ATTRIB_CONST __attribute__((const))
 
+// Assign a defined variable to a specific section
+# define CYGBLD_ATTRIB_SECTION(__sect__) __attribute__((section (#__sect__)))
+
 #else // non-GNU
 
 # define CYGBLD_ATTRIB_CONSTRUCTOR
@@ -313,14 +317,24 @@ typedef cyg_haladdrword CYG_ADDRWORD;
         CYGBLD_ATTRIB_WEAK CYGBLD_ATTRIB_ALIAS(__symbol__)
 
 // -------------------------------------------------------------------------
-// Label name macro. Some toolsets generate labels with initial
-// underscores and others don't. This macro should be used on labels
-// that are defined in assembly code or linker scripts so that we can
-// do the right thing.
+// Label name macros. Some toolsets generate labels with initial
+// underscores and others don't. CYG_LABEL_NAME should be used on
+// labels in C/C++ code that are defined in assembly code or linker
+// scripts. CYG_LABEL_DEFN is for use in assembly code and linker
+// scripts where we need to manufacture labels that can be used from
+// C/C++.
+// These are default implementations that should work for most targets.
+// They may be overridden in basetype.h if necessary.
 
 #ifndef CYG_LABEL_NAME
 
 #define CYG_LABEL_NAME(_name_) _name_
+
+#endif
+
+#ifndef CYG_LABEL_DEFN
+
+#define CYG_LABEL_DEFN(_label) _label
 
 #endif
 

@@ -1300,7 +1300,6 @@ CdlInterpreterBody::locate_all_files(std::string directory, std::vector<std::str
 
 void
 CdlInterpreterBody::write_data(Tcl_Channel chan, std::string data)
-    throw(CdlInputOutputException)
 {
     CYG_REPORT_FUNCNAME("CdlInterpreter::write_data");
     CYG_REPORT_FUNCARG2XV(this, chan);

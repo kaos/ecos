@@ -1,3 +1,38 @@
+2000-08-18  Gary Thomas  <gthomas@redhat.com>
+
+	* src/hal_diag.c (cyg_hal_plf_serial_getc): Only call dram refresh
+	[workaround] every 10ms or so, not all the time.  This fixes GDB
+	serial overrun problems.
+
+2000-08-16  Gary Thomas  <gthomas@redhat.com>
+
+	* include/hal_cache.h (HAL_UCACHE_INVALIDATE_ALL): Fix - wrong code.
+
+	* include/hal_platform_setup.h: Map all of SRAM (was only mapping
+	4K which is all that the CL7111 had).
+ 
+2000-08-15  Gary Thomas  <gthomas@redhat.com>
+
+	* include/hal_platform_setup.h: Make ROM segment not cached (since 
+	the data cache seems to stick on).
+
+	* include/pkgconf/mlt_arm_edb7211_ram.h: 
+	* include/pkgconf/mlt_arm_edb7211_ram.ldi: 
+	* include/pkgconf/mlt_arm_edb7211_ram.mlt: Expand reserved area.
+
+2000-08-14  Gary Thomas  <gthomas@redhat.com>
+	
+	* cdl/hal_arm_edb7xxx.cdl: Add support for RedBoot.
+
+	* include/hal_cache.h: Trying to get cache working properly.
+
+	* include/pkgconf/mlt_arm_edb7212_ram.h: 
+	* include/pkgconf/mlt_arm_edb7212_ram.ldi: 
+	* include/pkgconf/mlt_arm_edb7212_ram.mlt: Expand reserved area.
+
+	* include/hal_diag.h: 
+	* src/edb7xxx_misc.c: Add support for HAL_DELAY_US().
+
 2000-07-07  Jesper Skov  <jskov@redhat.com>
 
 	* src/edb7xxx_misc.c (dram_delay_loop): 

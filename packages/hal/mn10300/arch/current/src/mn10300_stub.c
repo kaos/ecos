@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     Red Hat, jskov
-// Contributors:  Red Hat, jskov
+// Contributors:  Red Hat, jskov, dmoseley
 // Date:          1998-11-06
 // Purpose:       
 // Description:   Helper functions for mn10300 stub
@@ -98,6 +98,14 @@ int __computeSignal (unsigned int trap_number)
         asyncBuffer.targetAddr = NULL;
         return SIGINT;
     }
+#ifdef SIGSYSCALL
+    switch (trap_number)
+      {
+      case SIGSYSCALL:
+        /* System call */
+        return SIGSYSCALL;
+      }
+#endif
     return SIGTRAP;
 }
 
@@ -404,9 +412,15 @@ void __install_breakpoints (void)
 {
     /* NOP since single-step HW exceptions are used instead of
        breakpoints. */
+
+  /* Install the breakpoints in the breakpoint list */
+  __install_breakpoint_list();
 }
 
-void __clear_breakpoints (void) {}
+void __clear_breakpoints (void)
+{
+  __clear_breakpoint_list();
+}
 
 
 /* If the breakpoint we hit is in the breakpoint() instruction, return a
@@ -415,7 +429,7 @@ void __clear_breakpoints (void) {}
 int
 __is_breakpoint_function ()
 {
-    return get_register (PC) == (target_register_t)&CYG_LABEL_NAME(breakinst);
+    return get_register (PC) == (target_register_t)&CYG_LABEL_NAME(_breakinst);
 }
 
 

@@ -49,6 +49,7 @@
 #include <pkgconf/system.h>
 #include <cyg/io/io.h>
 #include <cyg/hal/drv_api.h>
+#include <cyg/hal/hal_tables.h>
 
 // Set of functions which handle top level I/O functions
 typedef struct {
@@ -58,6 +59,17 @@ typedef struct {
     Cyg_ErrNo (*read)(cyg_io_handle_t handle, 
                       void *buf, 
                       cyg_uint32 *len);
+    Cyg_ErrNo (*bwrite)(cyg_io_handle_t handle, 
+                       const void *buf, 
+                       cyg_uint32 *len,
+                       cyg_uint32 pos);
+    Cyg_ErrNo (*bread)(cyg_io_handle_t handle, 
+                      void *buf, 
+                      cyg_uint32 *len,
+                      cyg_uint32 pos);
+    cyg_bool  (*select)(cyg_io_handle_t handle,
+                        cyg_uint32 which,
+                        CYG_ADDRWORD info);
     Cyg_ErrNo (*get_config)(cyg_io_handle_t handle, 
                             cyg_uint32 key, 
                             void *buf, 
@@ -68,13 +80,47 @@ typedef struct {
                             cyg_uint32 *len);
 } cyg_devio_table_t;
 
-#define DEVIO_TABLE(_l,_write,_read,_get_config,_set_config)    \
+
+// Default functions
+
+__externC Cyg_ErrNo cyg_devio_cwrite(cyg_io_handle_t handle, 
+                                     const void *buf, cyg_uint32 *len);
+__externC Cyg_ErrNo cyg_devio_cread(cyg_io_handle_t handle, 
+                                    void *buf, cyg_uint32 *len);
+__externC Cyg_ErrNo cyg_devio_bwrite(cyg_io_handle_t handle, 
+                                     const void *buf, cyg_uint32 *len,
+                                     cyg_uint32 pos);
+__externC Cyg_ErrNo cyg_devio_bread(cyg_io_handle_t handle, 
+                                    void *buf, cyg_uint32 *len,
+                                    cyg_uint32 pos);
+
+
+// Initialization macros
+
+#define CHAR_DEVIO_TABLE(_l,_write,_read,_select,_get_config,_set_config)    \
 cyg_devio_table_t _l = {                                        \
     _write,                                                     \
     _read,                                                      \
+    cyg_devio_bwrite,                                           \
+    cyg_devio_bread,                                            \
+    _select,                                                    \
     _get_config,                                                \
     _set_config,                                                \
 };
+
+#define BLOCK_DEVIO_TABLE(_l,_bwrite,_bread,_select,_get_config,_set_config)    \
+cyg_devio_table_t _l = {                                        \
+    cyg_devio_cwrite,                                           \
+    cyg_devio_cread,                                            \
+    _bwrite,                                                    \
+    _bread,                                                     \
+    _select,                                                    \
+    _get_config,                                                \
+    _set_config,                                                \
+};
+
+#define DEVIO_TABLE(_l,_write,_read,_select,_get_config,_set_config) \
+        CHAR_DEVIO_TABLE(_l,_write,_read,_select,_get_config,_set_config)
 
 typedef struct cyg_devtab_entry {
     const char        *name;
@@ -89,18 +135,36 @@ typedef struct cyg_devtab_entry {
 } cyg_devtab_entry_t;
 
 #define CYG_DEVTAB_STATUS_AVAIL   0x0001
+#define CYG_DEVTAB_STATUS_CHAR    0x1000
+#define CYG_DEVTAB_STATUS_BLOCK   0x2000
 
 extern cyg_devtab_entry_t __DEVTAB__[], __DEVTAB_END__;
 
-#define DEVTAB_ENTRY(_l,_name,_dep_name,_handlers,_init,_lookup,_priv)  \
-cyg_devtab_entry_t _l __attribute__ ((section(".devtab"))) = {          \
+#define CHAR_DEVTAB_ENTRY(_l,_name,_dep_name,_handlers,_init,_lookup,_priv)  \
+cyg_devtab_entry_t _l CYG_HAL_TABLE_ENTRY(devtab) = {                   \
    _name,                                                               \
    _dep_name,                                                           \
    _handlers,                                                           \
    _init,                                                               \
    _lookup,                                                             \
-   _priv                                                                \
+   _priv,                                                               \
+   CYG_DEVTAB_STATUS_CHAR                                               \
 };
+
+#define BLOCK_DEVTAB_ENTRY(_l,_name,_dep_name,_handlers,_init,_lookup,_priv)  \
+cyg_devtab_entry_t _l CYG_HAL_TABLE_ENTRY(devtab) = {                   \
+   _name,                                                               \
+   _dep_name,                                                           \
+   _handlers,                                                           \
+   _init,                                                               \
+   _lookup,                                                             \
+   _priv,                                                               \
+   CYG_DEVTAB_STATUS_BLOCK                                              \
+};
+
+#define DEVTAB_ENTRY(_l,_name,_dep_name,_handlers,_init,_lookup,_priv) \
+        CHAR_DEVTAB_ENTRY(_l,_name,_dep_name,_handlers,_init,_lookup,_priv)
+
 
 #define DEVTAB_ENTRY_NO_INIT(_l,_name,_dep_name,_handlers,_init,_lookup,_priv)  \
 cyg_devtab_entry_t _l = {                                                       \
@@ -109,7 +173,8 @@ cyg_devtab_entry_t _l = {                                                       
    _handlers,                                                                   \
    _init,                                                                       \
    _lookup,                                                                     \
-   _priv                                                                        \
+   _priv,                                                                       \
+   CYG_DEVTAB_STATUS_CHAR                                                       \
 };
 
 #endif // CYGONCE_IO_DEVTAB_H

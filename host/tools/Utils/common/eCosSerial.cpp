@@ -50,6 +50,9 @@ CeCosSerial::CeCosSerial():
   m_pHandle(0),
   m_nDataBits(8),
   m_nStopBits(ONE_STOP_BIT),
+  m_bXONXOFFFlowControl(0),
+  m_bRTSCTSFlowControl(0),
+  m_bDSRDTRFlowControl(0),
   m_bParity(false),
   m_nBaud(0),
   m_nTotalReadTimeout(10*1000),
@@ -70,6 +73,9 @@ CeCosSerial::CeCosSerial(LPCTSTR pszPort,int nBaud):
   m_pHandle(0),
   m_nDataBits(8),
   m_nStopBits(ONE_STOP_BIT),
+  m_bXONXOFFFlowControl(0),
+  m_bRTSCTSFlowControl(0),
+  m_bDSRDTRFlowControl(0),
   m_bParity(false),
   m_nTotalReadTimeout(10*1000),
   m_nTotalWriteTimeout(10*1000),
@@ -107,6 +113,24 @@ bool CeCosSerial:: SetDataBits(int n,bool bApplySettingsNow/*=true*/)
 bool CeCosSerial:: SetStopBits(StopBitsType n,bool bApplySettingsNow/*=true*/)
 {
   m_nStopBits=n;
+  return 0==m_pHandle || !bApplySettingsNow || ApplySettings();
+}
+
+bool CeCosSerial:: SetXONXOFFFlowControl(bool b,bool bApplySettingsNow/*=true*/)
+{
+  m_bXONXOFFFlowControl=b;
+  return 0==m_pHandle || !bApplySettingsNow || ApplySettings();
+}
+
+bool CeCosSerial:: SetRTSCTSFlowControl(bool b,bool bApplySettingsNow/*=true*/)
+{
+  m_bRTSCTSFlowControl=b;
+  return 0==m_pHandle || !bApplySettingsNow || ApplySettings();
+}
+
+bool CeCosSerial:: SetDSRDTRFlowControl(bool b,bool bApplySettingsNow/*=true*/)
+{
+  m_bDSRDTRFlowControl=b;
   return 0==m_pHandle || !bApplySettingsNow || ApplySettings();
 }
 
@@ -185,15 +209,37 @@ bool CeCosSerial::ApplySettings()
       arpszStopbits[dcb.StopBits],
       dcb.ByteSize);
     
-    // No control over the following yet
-    dcb.fDtrControl=DTR_CONTROL_ENABLE;
+    if (m_bDSRDTRFlowControl) {
+        dcb.fDtrControl = DTR_CONTROL_HANDSHAKE;
+        dcb.fOutxDsrFlow = 1;
+    } else {
+        dcb.fDtrControl = DTR_CONTROL_ENABLE;
+        dcb.fOutxDsrFlow = 0;
+    }
+    
+    if (m_bRTSCTSFlowControl) {
+        dcb.fRtsControl = RTS_CONTROL_HANDSHAKE;
+        dcb.fOutxCtsFlow = 1;
+    } else {
+        dcb.fRtsControl = RTS_CONTROL_ENABLE;
+        dcb.fOutxCtsFlow = 0;
+    }
+
     dcb.fTXContinueOnXoff=1;
-    dcb.fRtsControl=RTS_CONTROL_ENABLE;
-    dcb.fAbortOnError=1;
-    dcb.XonLim=2048;
-    dcb.XoffLim=512;
     dcb.XonChar=17;
     dcb.XoffChar=19;
+    if (m_bXONXOFFFlowControl) {
+        dcb.XonLim=512;
+        dcb.XoffLim=512;
+        dcb.fOutX=1;
+        dcb.fInX=1;
+    } else {
+        dcb.XonLim=2048;
+        dcb.XoffLim=512;
+        dcb.fOutX=0;
+        dcb.fInX=0;
+    }
+    dcb.fAbortOnError=1;
     
     HANDLE hCom=(HANDLE)m_pHandle;
     if (!SetCommState(hCom, &dcb)) { 
@@ -422,6 +468,33 @@ bool CeCosSerial::ApplySettings()
     if (m_bParity)                  // even parity.
       buf.c_cflag |= PARENB;
   }
+
+  // Set flow control
+  {
+      buf.c_iflag &= ~(IXON|IXOFF);
+#ifdef CRTSCTS
+      buf.c_cflag &= ~CRTSCTS;
+#endif
+      if ( m_bXONXOFFFlowControl ) {
+          buf.c_iflag |= (IXON|IXOFF);
+      }
+      if ( m_bRTSCTSFlowControl ) {
+#ifdef CRTSCTS
+          buf.c_cflag |= CRTSCTS;
+#else
+          return false;
+#endif
+      }
+      if ( m_bDSRDTRFlowControl ) {
+#ifdef CDSRDTR
+          buf.c_cflag |= CDSRDTR;
+#else
+          return false;
+#endif
+      }
+      
+      
+  }
   
   // Set the new settings
   if (tcsetattr((int) m_pHandle, TCSADRAIN, &buf)) {
@@ -468,6 +541,15 @@ bool CeCosSerial::Read (void *pBuf,unsigned int nSize,unsigned int &nRead)
       return false;
     }
     nRead = n;
+#if 0
+    if (n>0) {
+        unsigned int i;
+        fprintf(stderr, "%d:", nRead);
+        for (i = 0; i < nRead; i++)
+            fprintf(stderr, "%02x!", ((unsigned char *)pBuf)[i]);
+        fprintf(stderr, "\n");
+    }
+#endif
     return true;
   }
   
@@ -497,9 +579,18 @@ bool CeCosSerial::Read (void *pBuf,unsigned int nSize,unsigned int &nRead)
           ERROR(_T("Read failed: %d\n"), errno);
           return false;           // FAILED
         }
-        nRead += n;
-        pData += n;
-        nSize -= n;
+        else if (n > 0) {
+#if 0
+            unsigned int i;
+            fprintf(stderr, "%d:", nRead);
+            for (i = 0; i < nRead; i++)
+                fprintf(stderr, "%02x!", ((unsigned char *)pBuf)[i]);
+            fprintf(stderr, "\n");
+#endif
+            nRead += n;
+            pData += n;
+            nSize -= n;
+        }
         
         // Now use inter-char timeout.
         tv.tv_sec = m_nInterCharReadTimeout / 1000;

@@ -1,3 +1,42 @@
+2000-08-16  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/hal_platform_setup.h (CYGHWR_LED_MACRO): Use an address
+	that works for a customer's own not-quite-exactly-like an EBSA
+	board.  It works fine on a real EBSA too of course.
+	[CASE 104355]
+
+2000-08-15  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/pkgconf/mlt_arm_ebsa285_ram.h (CYGMEM_REGION_ram_SIZE):
+	* include/pkgconf/mlt_arm_ebsa285_rom.h (CYGMEM_REGION_ram_SIZE):
+	Do not "helpfully" consume all of memory for the heap, including
+	PCI space, unconditionally; leave the PCI window alone.
+
+2000-08-07  Gary Thomas  <gthomas@redhat.com>
+
+	* include/plf_io.h (HAL_PCI_INIT): Force PCI reset, just for
+	good measure.
+
+2000-08-03  Gary Thomas  <gthomas@redhat.com>
+
+	* src/ebsa285_misc.c (hal_delay_us): New routine, used for 
+	hardware delays when no kernel timers are available.
+
+	* include/hal_platform_setup.h (PLATFORM_SETUP1): Don't re-init
+	hardware for RAM startup.  Doing so keeps network debugging from
+	working (PCI gets shutdown, etc).
+
+2000-07-25  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/pkgconf/mlt_arm_ebsa285_ram.mlt: Add heap1 section for malloc
+	* include/pkgconf/mlt_arm_ebsa285_ram.ldi: Regenerate
+	* include/pkgconf/mlt_arm_ebsa285_ram.h: Regenerate
+	* include/pkgconf/mlt_arm_ebsa285_rom.mlt: Add heap1 section for malloc
+	* include/pkgconf/mlt_arm_ebsa285_rom.ldi: Regenerate
+	* include/pkgconf/mlt_arm_ebsa285_rom.h: Regenerate
+
+	* src/ebsa285_misc.c (hal_arm_mem_real_region_top): Remove warnings
+
 2000-07-17  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_diag.c (cyg_hal_plf_serial_isr): Return value was not
@@ -13,6 +52,15 @@
 	* include/hal_diag.h: 
 	* cdl/hal_arm_ebsa285.cdl: 
 	Changed to use virtual vector table.
+
+2000-07-04  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/hal_arm_ebsa285.cdl: This platform implements
+	CYGINT_HAL_ARM_MEM_REAL_REGION_TOP
+
+	* src/ebsa285_misc.c (hal_arm_mem_real_region_top): Add to allow
+	true memory sizes to be reported, for the benefit of dynamic memory
+	systems
 
 2000-06-19  Gary Thomas  <gthomas@redhat.com>
 

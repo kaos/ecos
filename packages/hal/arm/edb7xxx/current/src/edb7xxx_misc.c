@@ -78,6 +78,7 @@ static cyg_handle_t  batlow_interrupt_handle;
 #endif
 
 static cyg_uint32 _period;
+void dram_delay_loop(void);
 
 // Use Timer/Counter #2 for system clock
 
@@ -135,11 +136,7 @@ void hal_clock_reset(cyg_uint32 vector, cyg_uint32 period)
 #ifdef CYGHWR_HAL_ARM_EDB7XXX_SOFTWARE_DRAM_REFRESH
     do_DRAM_refresh();
 #else
-    // Temporary fix for DRAM starvation problem
-    if (CYGHWR_HAL_ARM_EDB7XXX_PROCESSOR_CLOCK > 37000) {
-        int i;
-        for (i = 0;  i < (CYGHWR_HAL_ARM_EDB7XXX_PROCESSOR_CLOCK*2)/24;  i++) ;  // approx 300 us
-    }
+    dram_delay_loop();
 #endif 
 #endif
 }
@@ -154,6 +151,29 @@ void hal_clock_read(cyg_uint32 *pvalue)
     clock_val = *tc2d & 0x0000FFFF;                 // Register has only 16 bits
     if (clock_val & 0x00008000) clock_val |= 0xFFFF8000;  // Extend sign bit
     *pvalue = (cyg_uint32)(_period - clock_val);    // 'clock_val' counts down and wraps
+}
+
+// Delay for some number of useconds.  Assume that the system clock
+// has been set up to run at 512KHz (default).
+void hal_delay_us(int us)
+{
+    volatile cyg_int32 *tc2d = (volatile cyg_int32 *)TC2D;
+    cyg_int32 val, prev;
+    while (us >= 2) {
+        prev = *tc2d & 0x0000FFFF;                 // Register has only 16 bits
+        if (prev & 0x00008000) prev |= 0xFFFF8000;  // Extend sign bit
+        while (true) {
+            val = *tc2d & 0x0000FFFF;                 // Register has only 16 bits
+            if (val & 0x00008000) {
+                val |= 0xFFFF8000;  // Extend sign bit
+                *tc2d = _period;  // Need to reset counter
+            }
+            if (val != prev) {
+                break;  // At least 2us have passed
+            }            
+        }
+        us -= 2;
+    }
 }
 
 void
@@ -393,6 +413,9 @@ void hal_hardware_init(void)
     cyg_drv_interrupt_attach(batlow_interrupt_handle);
     cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_BLINT);
 #endif
+
+    // Initialize real-time clock (for delays, etc, even if kernel doesn't use it)
+    hal_clock_initialize(CYGNUM_HAL_RTC_PERIOD);
 
     // Set up eCos/ROM interfaces
     hal_if_init();

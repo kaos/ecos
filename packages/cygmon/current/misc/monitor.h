@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    
-// Contributors: gthomas
+// Contributors: gthomas, dmoseley
 // Date:         1999-10-20
 // Purpose:      Main definitions for the CygMON ROM monitor
 // Description:  
@@ -121,6 +121,9 @@ struct regstruct
 #if defined(CYGPKG_HAL_ARM) || !defined(__ECOS__)
   int  registertype;
 #endif // defined(CYGPKG_HAL_ARM) || !defined(__ECOS__)
+#endif
+#ifdef REG_VALID_FIELD_IN_REGSTRUCT
+  int registervalid;
 #endif
 };
 
@@ -250,7 +253,7 @@ extern char *int2str (target_register_t number, int base, int numdigs);
 extern char *strdup(const char *str);
 #endif
 extern target_register_t get_pc(void);
-extern char *get_register_str (regnames_t which, int detail);
+extern char *get_register_str (regnames_t which, int detail, int valid);
 extern void store_register (regnames_t which, char *string);
 
 #ifndef USE_ECOS_HAL_BREAKPOINTS

@@ -47,6 +47,7 @@ cdl_component CYGPKG_IO_SERIAL_HALDIAG {
     description   "
         This option enables the use of the HAL diagnostic channel
         via the standard I/O drivers."
+    compile       -library=libextras.a common/haldiag.c
 }
 
 cdl_option CYGDAT_IO_SERIAL_TTY_CONSOLE {

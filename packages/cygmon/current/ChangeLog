@@ -1,14 +1,59 @@
-2000-07-14  Drew Moseley  <dmoseley@redhat.com>
+2000-08-14  Drew Moseley  <dmoseley@redhat.com>
 
-	* misc/bsp/mips/gdb-cpu.c: New files. Mips based Cygmon now running on top of eCos HAL.
-	* misc/bsp/mips/gdb-cpu.h: Ditto.
-	* misc/bsp/mips/gdb.h: Ditto.
-	* misc/bsp/mips/insn.h: Ditto.
-	* misc/bsp/mips/singlestep.c: Ditto.
-	* misc/mips/board.h: Ditto.
-	* misc/mips/cpu.h: Ditto.
-	* misc/mips/cpu_info.h: Ditto.
-	* misc/mips/mips-mon.c: Ditto.
+	* misc/ecos_bsp.c: Added some include files to fix some build
+	failures on partially unsupported systems. (ie non-cygmon, etc).
+
+2000-08-12  Drew Moseley  <dmoseley@redhat.com>
+
+	* misc/bsp/common/debug-io.c (bsp_debug_write): Use
+	output_gdb_string when stub_is_active.
+
+2000-08-10  Drew Moseley  <dmoseley@redhat.com>
+
+	* misc/utils.c: Removed some unused functions.  Also handle
+	printing invalid registers.
+
+	* misc/monitor_cmd.c: Handle some unprintable characters better.
+	Also handle displaying of invalid memory locations better.
+	Add handling for register validity checking.
+
+	* misc/monitor.h: Add a conditional field "reg_valid" to struct
+	regstruct.
+
+	* misc/monitor.c: Added a call to a conditionally defined routine
+	INITIALIZE_MON_EACH_TIME().  This is called everytime the monitor
+	is invoked.  For instance, this is used to determine which
+	registers have actually been read.
+
+	* misc/generic_mem.c: Allow Cygmon to use the Safe memory routines
+	in the HAL.
+
+	* misc/board.h: Added MN10300 basic support.
+	* misc/cpu-mon.c: Ditto.
+	* misc/cpu_info.h: Ditto.
+	* misc/bsp/cpu.h: Ditto.
+	* misc/bsp/mn10300/gdb-cpu.c: Ditto. New file.
+	* misc/bsp/mn10300/gdb-cpu.h: Ditto. New file.
+	* misc/bsp/mn10300/gdb.h: Ditto. New file.
+	* misc/bsp/mn10300/insn.h: Ditto. New file.
+	* misc/bsp/mn10300/singlestep.c: Ditto. New file.
+	* misc/mn10300/board.h: Ditto. New file.
+	* misc/mn10300/cpu.h: Ditto. New file.
+	* misc/mn10300/cpu_info.h: Ditto. New file.
+	* misc/mn10300/mn10300-mon.c: Ditto. New file.
+
+	* cdl/cygmon.cdl: Removed dependency on the kernel and Serial I/O.
+	* misc/ecos_bsp.c: Ditto.
+	* misc/ecos_dummy.c: Ditto.
+
+2000-07-21  Drew Moseley  <dmoseley@redhat.com>
+
+	* misc/ecos_bsp.c: Rearrange the linkage between Cygmon and HAL so
+	that Cygmon needs HAL but not vice-versa.  ie HAL no longer calls
+	any Cygmon functions.
+	* misc/monitor.c: Ditto.
+
+2000-07-14  Drew Moseley  <dmoseley@redhat.com>
 
 	* misc/bsp/common/syscall.c: Added SYS_meminfo call to find out
 	how much RAM we have.

@@ -1,3 +1,9 @@
+2000-07-24  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/basetype.h: Removed definition of CYG_LABEL_NAME().
+
+	* src/v85x.ld: 	Switched to new table definition mechanism.
+
 2000-07-21  Gary Thomas  <gthomas@redhat.com>
 
 	* src/vectors.S (_hal_plf_reset_board): Needs to be defined in all

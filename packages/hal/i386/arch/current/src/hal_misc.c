@@ -49,7 +49,7 @@
 #include <cyg/hal/hal_arch.h>
 
 void hal_zero_bss(void)
-{	extern char _end ;
+{	extern char __bss_end ;
 	extern char __bss_start ;
 
 	asm(
@@ -62,7 +62,7 @@ void hal_zero_bss(void)
 		"rep
 		stosl"                      /* Fill the region. */
 	:	/* No outputs. */
-	:	"g" (&_end), "g" (&__bss_start)
+	:	"g" (&__bss_end), "g" (&__bss_start)
 	:	"ecx", "edi", "eax"
 	);
 }

@@ -70,6 +70,11 @@
     CYG_MACRO_START                                                      \
     cyg_uint32 __tmp, __tmp2;                                            \
                                                                          \
+    /* Assert PCI_reset                                               */ \
+    HAL_READ_UINT32(SA110_CONTROL, __tmp);                               \
+    __tmp &= ~SA110_CONTROL_RST_I;                                       \
+    HAL_WRITE_UINT32(SA110_CONTROL, __tmp);                              \
+                                                                         \
     /* Disable PCI Outbound interrupts                                */ \
     /* (according to 7-14 SA110_OUT_INT_MASK is not accessible        */ \
     /* by SA-100)                                                     */ \

@@ -53,7 +53,12 @@
 //==========================================================================
 // Network server test code
 #include <stdio.h>
+#include <stdlib.h>
 #include <network.h>
+
+#ifndef CYGPKG_LIBC_STDIO
+#define perror(s) diag_printf(#s ": %s\n", strerror(errno))
+#endif
 
 #define STACK_SIZE (CYGNUM_HAL_STACK_SIZE_TYPICAL + 0x1000)
 static char stack[STACK_SIZE];
@@ -108,7 +113,17 @@ server_test(struct bootp *bp)
         client_len = sizeof(client_addr);
         getpeername(client, (struct sockaddr *)&client_addr, &client_len);
         diag_printf("connection from %s:%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
+
+#ifdef CYGPKG_LIBC_STDIO        
         sprintf(buf, "Hello %s:%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
+#else        
+        strcpy(buf, "Hello ");
+        strcat(buf, inet_ntoa(client_addr.sin_addr));
+        strcat(buf,":");
+        strcat(buf, atoi(ntohs(client_addr.sin_port)));
+        strcat(buf,"\n");
+#endif
+        
         write(client, buf, strlen(buf));
         tv.tv_sec = 5;
         tv.tv_usec = 0;

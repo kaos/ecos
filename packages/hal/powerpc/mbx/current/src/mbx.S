@@ -404,7 +404,7 @@ FUNC_START( hal_hardware_init )
 	# move return address to where the ROM is
 	mflr	r3
 	andi.	r3,r3,0xffff
-	oris	r3,r3,0xfe00
+	oris	r3,r3,CYGMEM_REGION_rom>>16
 	mtlr	r3
 #endif
 

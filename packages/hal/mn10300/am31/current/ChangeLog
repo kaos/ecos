@@ -1,3 +1,20 @@
+2000-06-21  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/mn10300_am31.ld:
+	Added extra underscore to _stext and _etext.
+	Switched to new table definition mechanism.
+
+2000-06-07  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/mn10300_am31.ld: Added extra underscore to ___NETDEVTAB__.
+
+2000-06-02  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/mn10300_am31.ld:
+	Added support for FSTAB, MTAB and NSTAB analogous to the DEVTAB
+	and NETDEVTAB support already present. Perhaps we should have a
+	macro to make this kind of thing tidier.
+
 2000-03-20  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* include/variant.inc (SAVED_CONTEXT_PC_OFFSET): New macro to give

@@ -1,3 +1,16 @@
+2000-08-01  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/pid_serial_with_ints.c: Throughout, add support for line status
+	and modem status callbacks, hardware RTS/CTS and DSR/DTR flow control
+	(pid_serial_set_config): Now use keys to make
+	more flexible.
+
+	* src/pid_serial.h: Add more line status, interrupt status and modem
+	status register definitions
+
+	* cdl/ser_arm_pid.cdl: Implements flow control and line status
+	interfaces
+
 2000-06-22  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* cdl/<yournamehere>.cdl: Remove the comment on the empty

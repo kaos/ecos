@@ -83,6 +83,10 @@
 
 #include <cyg/infra/testcase.h>
 
+#ifndef CYGPKG_LIBC_STDIO
+#define perror(s) diag_printf(#s ": %s\n", strerror(errno))
+#endif
+
 #define SOURCE_PORT1 9900
 #define SOURCE_PORT2 9800 // for those who listen to multiple ports
 #define SOURCE_PORT3 9700 // for the dummy consumers of events
@@ -98,11 +102,20 @@
 #define PRIO_MASTERHIGH   3
 #define PRIO_MASTERLOW   25
 
+#ifndef CYGPKG_IO_FILEIO
 #if CYGPKG_IO_NFILE > 30
 #define NLISTENERS 10
 #else
 // fewer threads if not many sockets available
 #define NLISTENERS (CYGPKG_IO_NFILE/3)
+#endif
+#else
+#if CYGNUM_FILEIO_NFD > 30
+#define NLISTENERS 10
+#else
+// fewer threads if not many sockets available
+#define NLISTENERS (CYGNUM_FILEIO_NFD/3)
+#endif
 #endif
 
 #define NDUMMIES   10

@@ -1,3 +1,39 @@
+2000-08-16  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* common/ser_filter.cpp (main): Clean up warning
+
+2000-08-08  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* common/eCosTestSerialFilter.h: Update flow_cfg_t values for correct
+	target settings
+
+2000-08-01  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* common/eCosTestSerialFilter.cpp (PrintHex): Print out more printable
+	chars
+	(SetConfig): Support flow control
+	(ParseConfig): Support target setting of flow control
+	(CMD_TestBinary): Don't output XON/XOFF. Output 255 chars not 256
+	to make buffer problems more obvious.
+
+	* common/eCosTestDownloadFilter.h: Allow SET_VALUE to set optional args
+	* common/eCosTestSerialFilter.h: Allow SET_VALUE to set optional args
+	Also add flow_cfg_t type and flags member in ser_cfg_t for flow control
+
+2000-07-24  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* common/eCosTestSerialFilter.cpp (FilterFunctionProper): 
+	Store output for tracing up so it is output a packet at a time.
+	As well as clarifying the output, it is required when sending to
+	GDB to prevent the trace 'O' packets in the middle of target packets.
+	(CMD_TestBinary): Delay to allow target to read in checksum. This
+	prevents overruns before finishing reading the checksum masking
+	the real cause of the problem.
+	(CeCosTestSerialFilter): Initialise stored trace buffer members
+
+	* common/eCosTestSerialFilter.h: Add trace buffer members for above
+	to CeCosTestSerialFilter
+
 2000-06-19  John Dallaway  <jld@redhat.com>
 
 	* unix/Makefile:

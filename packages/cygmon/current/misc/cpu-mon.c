@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     gthomas
-// Contributors:  gthomas
+// Contributors:  gthomas, dmoseley
 // Date:          1999-10-11
 // Description:   Architecture support for Cygmon
 //####DESCRIPTIONEND####
@@ -45,4 +45,8 @@
 
 #ifdef CYGPKG_HAL_MIPS
 #include "mips/mips-mon.c"
+#endif
+
+#ifdef CYGPKG_HAL_MN10300
+#include "mn10300/mn10300-mon.c"
 #endif

@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas
+// Contributors: gthomas, jlarmour
 // Date:         1999-02-04
 // Purpose:      PID Serial I/O module (interrupt driven version)
 // Description: 
@@ -66,7 +66,8 @@ static Cyg_ErrNo pid_serial_lookup(struct cyg_devtab_entry **tab,
                                    struct cyg_devtab_entry *sub_tab,
                                    const char *name);
 static unsigned char pid_serial_getc(serial_channel *chan);
-static bool pid_serial_set_config(serial_channel *chan, cyg_serial_info_t *config);
+static Cyg_ErrNo pid_serial_set_config(serial_channel *chan, cyg_uint32 key,
+                                       const void *xbuf, cyg_uint32 *len);
 static void pid_serial_start_xmit(serial_channel *chan);
 static void pid_serial_stop_xmit(serial_channel *chan);
 
@@ -181,14 +182,16 @@ pid_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config, bool
     if (init) {
         port->REG_fcr = 0x07;  // Enable and clear FIFO
         if (chan->out_cbuf.len != 0) {
-            port->REG_ier = IER_RCV;
+            _ier = IER_RCV;
         } else {
-            port->REG_ier = 0;
+            _ier = 0;
         }
         port->REG_mcr = MCR_INT|MCR_DTR|MCR_RTS;  // Master interrupt enable
-    } else {
-        port->REG_ier = _ier;
     }
+#ifdef CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS
+    _ier |= (IER_LS|IER_MS);
+#endif
+    port->REG_ier = _ier;
     if (new_config != &chan->config) {
         chan->config = *new_config;
     }
@@ -261,10 +264,54 @@ pid_serial_getc(serial_channel *chan)
 }
 
 // Set up the device characteristics; baud rate, etc.
-static bool 
-pid_serial_set_config(serial_channel *chan, cyg_serial_info_t *config)
+static Cyg_ErrNo
+pid_serial_set_config(serial_channel *chan, cyg_uint32 key, const void *xbuf,
+                      cyg_uint32 *len)
 {
-    return pid_serial_config_port(chan, config, false);
+    pid_serial_info *pid_chan = (pid_serial_info *)chan->dev_priv;
+
+    switch (key) {
+    case CYG_IO_SET_CONFIG_SERIAL_INFO:
+      {
+        cyg_serial_info_t *config = (cyg_serial_info_t *)xbuf;
+        if ( *len < sizeof(cyg_serial_info_t) ) {
+            return -EINVAL;
+        }
+        *len = sizeof(cyg_serial_info_t);
+        if ( true != pid_serial_config_port(chan, config, false) )
+            return -EINVAL;
+      }
+      break;
+#ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_HW
+    case CYG_IO_SET_CONFIG_SERIAL_HW_RX_FLOW_THROTTLE:
+      {
+          volatile struct serial_port *port = (volatile struct serial_port *)pid_chan->base;
+          cyg_uint8 *f = (cyg_uint8 *)xbuf;
+          unsigned char mask=0;
+          if ( *len < *f )
+              return -EINVAL;
+          
+          if ( chan->config.flags & CYGNUM_SERIAL_FLOW_RTSCTS_RX )
+              mask = MCR_RTS;
+          if ( chan->config.flags & CYGNUM_SERIAL_FLOW_DSRDTR_RX )
+              mask |= MCR_DTR;
+          if (*f) // we should throttle
+              port->REG_mcr &= ~mask;
+          else // we should no longer throttle
+              port->REG_mcr |= mask;
+      }
+      break;
+    case CYG_IO_SET_CONFIG_SERIAL_HW_FLOW_CONFIG:
+        // Nothing to do because we do support both RTSCTS and DSRDTR flow
+        // control.
+        // Other targets would clear any unsupported flags here.
+        // We just return ENOERR.
+      break;
+#endif
+    default:
+        return -EINVAL;
+    }
+    return ENOERR;
 }
 
 // Enable the transmitter on the device
@@ -304,14 +351,90 @@ pid_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     pid_serial_info *pid_chan = (pid_serial_info *)chan->dev_priv;
     volatile struct serial_port *port = (volatile struct serial_port *)pid_chan->base;
     unsigned char isr;
-    while ((isr = port->REG_isr & 0x0E) != 0) {
-        if (isr == ISR_Tx) {
-            (chan->callbacks->xmt_char)(chan);
-        } else if (isr == ISR_RxTO || isr == ISR_Rx) {
+
+    // Check if we have an interrupt pending - note that the interrupt
+    // is pending of the low bit of the isr is *0*, not 1.
+    while (((isr = port->REG_isr) & ISR_nIP) == 0) {
+        switch (isr&0x6) {
+        case ISR_Rx:
             while(port->REG_lsr & LSR_RSR)
                 (chan->callbacks->rcv_char)(chan, port->REG_rhr);
+            break;
+        case ISR_Tx:
+            (chan->callbacks->xmt_char)(chan);
+            break;
+
+#ifdef CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS
+        case ISR_LS:
+            {
+                cyg_serial_line_status_t stat;
+                unsigned char lsr=port->REG_lsr;
+                // this might look expensive, but it is rarely the case that
+                // more than one of these is set
+                stat.value = 1;
+                if ( lsr & LSR_OE ) {
+                    stat.which = CYGNUM_SERIAL_STATUS_OVERRUNERR;
+                    (chan->callbacks->indicate_status)(chan, &stat );
+                }
+                if ( lsr & LSR_PE ) {
+                    stat.which = CYGNUM_SERIAL_STATUS_PARITYERR;
+                    (chan->callbacks->indicate_status)(chan, &stat );
+                }
+                if ( lsr & LSR_FE ) {
+                    stat.which = CYGNUM_SERIAL_STATUS_FRAMEERR;
+                    (chan->callbacks->indicate_status)(chan, &stat );
+                }
+                if ( lsr & LSR_BI ) {
+                    stat.which = CYGNUM_SERIAL_STATUS_BREAK;
+                    (chan->callbacks->indicate_status)(chan, &stat );
+                }
+                if ( lsr & LSR_OE ) {
+                    stat.which = CYGNUM_SERIAL_STATUS_OVERRUNERR;
+                    (chan->callbacks->indicate_status)(chan, &stat );
+                }
+            }
+            break;
+
+        case ISR_MS:
+            {
+                cyg_serial_line_status_t stat;
+                unsigned char msr=port->REG_msr;
+#ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_HW
+                if ( msr & MSR_DDSR )
+                    if ( chan->config.flags & CYGNUM_SERIAL_FLOW_DSRDTR_TX ) {
+                        stat.which = CYGNUM_SERIAL_STATUS_FLOW;
+                        stat.value = (0 != (msr & MSR_DSR));
+                        (chan->callbacks->indicate_status)(chan, &stat );
+                    }
+                if ( msr & MSR_DCTS )
+                    if ( chan->config.flags & CYGNUM_SERIAL_FLOW_RTSCTS_TX ) {
+                        stat.which = CYGNUM_SERIAL_STATUS_FLOW;
+                        stat.value = (0 != (msr & MSR_CTS));
+                        (chan->callbacks->indicate_status)(chan, &stat );
+                    }
+#endif
+                if ( msr & MSR_DDCD ) {
+                    stat.which = CYGNUM_SERIAL_STATUS_CARRIERDETECT;
+                    stat.value = (0 != (msr & MSR_CD));
+                    (chan->callbacks->indicate_status)(chan, &stat );
+                }
+                if ( msr & MSR_RI ) {
+                    stat.which = CYGNUM_SERIAL_STATUS_RINGINDICATOR;
+                    stat.value = 1;
+                    (chan->callbacks->indicate_status)(chan, &stat );
+                }
+                if ( msr & MSR_TERI ) {
+                    stat.which = CYGNUM_SERIAL_STATUS_RINGINDICATOR;
+                    stat.value = 0;
+                    (chan->callbacks->indicate_status)(chan, &stat );
+                }
+            }
+            break;
+#endif
         }
     }
     cyg_drv_interrupt_unmask(pid_chan->int_num);
 }
 #endif
+
+// EOF pid_serial_with_ints.c

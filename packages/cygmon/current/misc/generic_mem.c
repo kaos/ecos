@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    
-// Contributors: gthomas
+// Contributors: gthomas, dmoseley
 // Date:         1999-10-20
 // Purpose:      
 // Description:  It may be appropriate to relay directly into the stubs
@@ -65,24 +65,24 @@
 int
 read_memory (mem_addr_t *src, int size, int amt, char *dst)
 {
-#ifdef HAVE_BSP
+#if defined(HAVE_BSP) && !defined(USE_ECOS_HAL_SAFE_MEMORY)
     return (bsp_memory_read((unsigned char *)src->addr, MEM_ADDR_ASI(src),
 			    size << 3, amt, dst) != amt);
 #else
   int totamt = size * amt;
-  return (totamt != __read_mem_safe (dst, src->addr, totamt));
+  return (totamt != __read_mem_safe (dst, (void*)src->addr, totamt));
 #endif
 }
 
 int
 write_memory (mem_addr_t *dst, int size, int amt, char *src)
 {
-#ifdef HAVE_BSP
+#if defined(HAVE_BSP) && !defined(USE_ECOS_HAL_SAFE_MEMORY)
     return (bsp_memory_write((unsigned char *)dst->addr, MEM_ADDR_ASI(dst),
 			     size << 3, amt, src) != amt);
 #else
   int totamt = size * amt;
-  return (totamt != __write_mem_safe (src, dst->addr, totamt));
+  return (totamt != __write_mem_safe (src, (void*)dst->addr, totamt));
 #endif
 }
 

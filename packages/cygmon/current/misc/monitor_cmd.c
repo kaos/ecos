@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    
-// Contributors: gthomas
+// Contributors: gthomas, dmoseley
 // Date:         1999-10-20
 // Purpose:      Monitor commands for the CygMON ROM monitor
 // Description:  
@@ -721,8 +721,16 @@ display_memory (char *value, int size, int littleEndian)
   int end = littleEndian ? -1 : size;
   int incr = littleEndian ? -1 : 1;
 
-  for (x = start; x != end; x += incr)
-    xprintf ("%02x", value[x] & 0xff);
+  if (value)
+    {
+      for (x = start; x != end; x += incr)
+        xprintf ("%02x", value[x] & 0xff);
+    }
+  else
+    {
+      for (x = start; x != end; x += incr)
+        xprintf ("..");
+    }
 }
 
 
@@ -929,15 +937,23 @@ Displays 16 bytes starting with 44f0 and ending with 44ff.");
 		  addr2str (&addr, buf);
                   xprintf("%s: ", buf);
 		}
-	      read_memory (&addr, size, 1, value);
-	      display_memory (value, size, get_memory_display_mode ());
-	      xprintf (" ");
-	      for (i = 0; i < size; i++)
-		{
-		  chardumps[offset + i] = value[i] & 0x7f;
-		  if (chardumps[offset + i] < 32)
-		    chardumps[offset + i] = '.';
-		}
+              if (read_memory (&addr, size, 1, value))
+                {
+                  display_memory (0, size, get_memory_display_mode ());
+                  for (i = 0; i < size; i++)
+                    {
+                      value[i] = 0;
+                    }
+                } else {
+                  display_memory (value, size, get_memory_display_mode ());
+                }
+              xprintf (" ");
+              for (i = 0; i < size; i++)
+                {
+                  chardumps[offset + i] = value[i] & 0x7f;
+                  if (chardumps[offset + i] < 32)
+                    chardumps[offset + i] = '.';
+                }
 	    }
 	  xprintf (" ");
 	  for(i = 0; i < offset; i++)
@@ -1259,9 +1275,15 @@ display_group (int which_group)
       else 
 	if (!skipping_group)
 	  {
+#ifdef REG_VALID_FIELD_IN_REGSTRUCT
+#define REGVALID_VAL regtab[i].registervalid
+#else
+#define REGVALID_VAL 1
+#endif
 	    xsprintf(buf, "%4s: %s",
 		     regtab[i].registername,
-		     get_register_str (regtab[i].registernumber, 0));
+		     get_register_str (regtab[i].registernumber, 0 , REGVALID_VAL));
+#undef REGVALID_VAL
 	    buflen = strlen (buf);
 	    if ((buflen + len + 3) >= 80)
 	      {
@@ -1314,8 +1336,14 @@ getregister (void)
 	    }
 	  else
 	    {
+#ifdef REG_VALID_FIELD_IN_REGSTRUCT
+#define REGVALID_VAL regtab[i].registervalid
+#else
+#define REGVALID_VAL 1
+#endif
 	      xprintf("%s: %s\n", argvect[1], 
-		      get_register_str (regtab[i].registernumber, 1));
+		      get_register_str (regtab[i].registernumber, 1, REGVALID_VAL));
+#undef REGVALID_VAL
 	    }
 	}
     }
@@ -2057,8 +2085,16 @@ Copies 0x300 bytes of memory from 0x10000 to 0x20000.");
       char buf[128];
 
       int msize = (size > 128) ? 128 : size;
-      read_memory (&src, 1, msize, buf);
-      write_memory (&dst, 1, msize, buf);
+      if (read_memory (&src, 1, msize, buf))
+        {
+          xprintf ("Memory read failed\n");
+          break;
+        }
+      if (write_memory (&dst, 1, msize, buf))
+        {
+          xprintf ("Memory write failed\n");
+          break;
+        }
       ADD_OFFSET (&src, &src, msize);
       ADD_OFFSET (&dst, &dst, msize);
       size -= msize;

@@ -106,7 +106,9 @@ static Cyg_ErrNo quicc_smc_serial_lookup(struct cyg_devtab_entry **tab,
                                    struct cyg_devtab_entry *sub_tab,
                                    const char *name);
 static unsigned char quicc_smc_serial_getc(serial_channel *chan);
-static bool quicc_smc_serial_set_config(serial_channel *chan, cyg_serial_info_t *config);
+static Cyg_ErrNo quicc_smc_serial_set_config(serial_channel *chan,
+                                             cyg_uint32 key, const void *xbuf,
+                                             cyg_uint32 *len);
 static void quicc_smc_serial_start_xmit(serial_channel *chan);
 static void quicc_smc_serial_stop_xmit(serial_channel *chan);
 
@@ -546,13 +548,28 @@ quicc_smc_serial_getc(serial_channel *chan)
 }
 
 // Set up the device characteristics; baud rate, etc.
-static bool 
-quicc_smc_serial_set_config(serial_channel *chan, cyg_serial_info_t *config)
+static Cyg_ErrNo
+quicc_smc_serial_set_config(serial_channel *chan, cyg_uint32 key,
+                            const void *xbuf, cyg_uint32 *len)
 {
-    bool res = quicc_smc_serial_config_port(chan, config, false);
-    // FIXME - The documentation says that you can't change the baud rate
-    // again until at least two BRG input clocks have occurred.
-    return res;
+    switch (key) {
+    case CYG_IO_SET_CONFIG_SERIAL_INFO:
+      {
+          // FIXME - The documentation says that you can't change the baud rate
+          // again until at least two BRG input clocks have occurred.
+        cyg_serial_info_t *config = (cyg_serial_info_t *)xbuf;
+        if ( *len < sizeof(cyg_serial_info_t) ) {
+            return -EINVAL;
+        }
+        *len = sizeof(cyg_serial_info_t);
+        if ( true != quicc_smc_serial_config_port(chan, config, false) )
+            return -EINVAL;
+      }
+      break;
+    default:
+        return -EINVAL;
+    }
+    return ENOERR;
 }
 
 // Enable the transmitter (interrupt) on the device

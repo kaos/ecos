@@ -34,7 +34,7 @@
 #######DESCRIPTIONBEGIN####
 ##
 ## Author(s): 	nickg
-## Contributors:	nickg
+## Contributors:	nickg, dmoseley
 ## Date:	1997-10-16
 ## Purpose:	Architecture definitions.
 ## Description:	This file contains various definitions and macros that are
@@ -108,7 +108,10 @@
 	.endm
 #endif
 
-	.macro	hal_intc_decode vnum
+#endif
+
+#ifndef CYGPKG_HAL_MN10300_INTC_DECODE_DEFINED
+	.macro	hal_intc_decode dreg,areg,dreg1
 	.endm
 
 #endif

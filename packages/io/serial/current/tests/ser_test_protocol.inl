@@ -232,6 +232,14 @@
 #  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY0_DEV
 # endif
 #endif
+#if defined(CYGPKG_IO_SERIAL_LOOP)                   \
+    && defined(CYGPKG_IO_SERIAL_LOOP_SERIAL0)
+# define TEST_CRASH_ID "loop"
+# define TEST_SER_DEV CYGDAT_IO_SERIAL_LOOP_SERIAL0_NAME
+# if defined(CYGPKG_IO_SERIAL_TTY_TTY0)
+#  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY0_DEV
+# endif
+#endif
 
 // We can't rely on haldiag for ser_filter detection - it may not define
 // a working character reading function.
@@ -303,7 +311,9 @@
 
 //----------------------------------------------------------------------------
 // The data in buffer and the cmd buffer
-#define IN_BUFFER_SIZE 1024
+#ifndef IN_BUFFER_SIZE
+# define IN_BUFFER_SIZE 1024
+#endif
 cyg_uint8 in_buffer[IN_BUFFER_SIZE];
 
 cyg_int8 cmd_buffer[128];
@@ -322,10 +332,11 @@ typedef enum {
 } cyg_test_return_t;
 
 typedef struct ser_cfg {
-    cyg_serial_baud_rate_t   baud_rate;
-    cyg_serial_word_length_t data_bits;
-    cyg_serial_stop_bits_t   stop_bits;
-    cyg_serial_parity_t      parity;
+    cyg_serial_baud_rate_t    baud_rate;
+    cyg_serial_word_length_t  data_bits;
+    cyg_serial_stop_bits_t    stop_bits;
+    cyg_serial_parity_t       parity;
+    cyg_uint32                flags;
     // etc...
 } cyg_ser_cfg_t;
 
@@ -376,32 +387,35 @@ typedef enum {
 cyg_ser_cfg_t test_configs[] = {
 #if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904) && !defined(CYGPKG_HAL_ARM_PID)
     { CYGNUM_SERIAL_BAUD_9600, CYGNUM_SERIAL_WORD_LENGTH_8, 
-      CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },
+      CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE,
+      CYGNUM_SERIAL_FLOW_NONE },
 #endif
 
 #if !defined(CYGPKG_HAL_MN10300_AM31) &&    \
-    !defined(CYGPKG_HAL_MN10300_AM33) &&    \
-    1
+    !defined(CYGPKG_HAL_MN10300_AM33)
     { CYGNUM_SERIAL_BAUD_14400, CYGNUM_SERIAL_WORD_LENGTH_8, 
-      CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },
+      CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE,
+      CYGNUM_SERIAL_FLOW_NONE },
 #endif
 
     { CYGNUM_SERIAL_BAUD_19200, CYGNUM_SERIAL_WORD_LENGTH_8, 
-      CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },
+      CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE,
+      CYGNUM_SERIAL_FLOW_NONE },
 
 #if !defined(CYGPKG_HAL_SPARCLITE_SLEB) &&      \
     !defined(CYGPKG_HAL_ARM_AEB)
     { CYGNUM_SERIAL_BAUD_38400, CYGNUM_SERIAL_WORD_LENGTH_8, 
-      CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },
+      CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE,
+      CYGNUM_SERIAL_FLOW_NONE },
 #endif
 
 #if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904) &&   \
     !defined(CYGPKG_HAL_ARM_AEB) &&             \
     !defined(CYGPKG_HAL_SPARCLITE_SLEB) &&      \
-    !defined(CYGPKG_HAL_MN10300_AM33) &&        \
-    1
+    !defined(CYGPKG_HAL_MN10300_AM33)
     { CYGNUM_SERIAL_BAUD_57600, CYGNUM_SERIAL_WORD_LENGTH_8, 
-      CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },
+      CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE,
+      CYGNUM_SERIAL_FLOW_NONE },
 #endif
 
 #if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904) &&   \
@@ -412,7 +426,8 @@ cyg_ser_cfg_t test_configs[] = {
     !defined(CYGPKG_HAL_ARM_EDB7XXX) &&         \
     !defined(CYGPKG_HAL_SPARCLITE_SLEB)
     { CYGNUM_SERIAL_BAUD_115200, CYGNUM_SERIAL_WORD_LENGTH_8, 
-      CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },
+      CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE,
+      CYGNUM_SERIAL_FLOW_NONE },
 #endif
 
 #if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904) &&   \
@@ -420,7 +435,8 @@ cyg_ser_cfg_t test_configs[] = {
     !defined(CYGPKG_HAL_ARM_PID)
     // One stop bit, even parity
     { CYGNUM_SERIAL_BAUD_19200, CYGNUM_SERIAL_WORD_LENGTH_8, 
-      CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_EVEN },
+      CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_EVEN,
+      CYGNUM_SERIAL_FLOW_NONE },
 #endif
 
 #if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904) &&   \
@@ -428,13 +444,15 @@ cyg_ser_cfg_t test_configs[] = {
     !defined(CYGPKG_HAL_ARM_PID)
     // Two stop bits, even parity
     { CYGNUM_SERIAL_BAUD_19200, CYGNUM_SERIAL_WORD_LENGTH_8, 
-      CYGNUM_SERIAL_STOP_2, CYGNUM_SERIAL_PARITY_EVEN },
+      CYGNUM_SERIAL_STOP_2, CYGNUM_SERIAL_PARITY_EVEN,
+      CYGNUM_SERIAL_FLOW_NONE },
 #endif
 
 #if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904)
     // Two stop bits, no parity
     { CYGNUM_SERIAL_BAUD_19200, CYGNUM_SERIAL_WORD_LENGTH_8, 
-      CYGNUM_SERIAL_STOP_2, CYGNUM_SERIAL_PARITY_NONE },
+      CYGNUM_SERIAL_STOP_2, CYGNUM_SERIAL_PARITY_NONE,
+      CYGNUM_SERIAL_FLOW_NONE },
 #endif
 };
 
@@ -588,7 +606,7 @@ hang(void)
 //
 // Then query the host for its capability to use the config:
 // Format out:
-//  "@CONFIG:<baud rate code>:<#data bits>:<#stop bits>:<parity on/off>!"
+//  "@CONFIG:<baud rate code>:<#data bits>:<#stop bits>:<parity on/off>:<flow control code>!"
 // Format in:
 //  OK/ER
 //
@@ -634,6 +652,8 @@ change_config(cyg_io_handle_t handle, cyg_ser_cfg_t* cfg)
     p1 = itoa(p1, cfg->stop_bits);
     *p1++ = ':';
     p1 = itoa(p1, cfg->parity);
+    *p1++ = ':';
+    p1 = itoa(p1, cfg->flags);
     *p1++ = '!';
     *p1 = 0;                            // note: we may append to this later
 
@@ -656,6 +676,7 @@ change_config(cyg_io_handle_t handle, cyg_ser_cfg_t* cfg)
     new_cfg.word_length = cfg->data_bits;
     new_cfg.stop = cfg->stop_bits;
     new_cfg.parity = cfg->parity;
+    new_cfg.flags = cfg->flags;
 
     res = cyg_io_set_config(handle, CYG_IO_SET_CONFIG_SERIAL_INFO, 
                             &new_cfg, &len);
@@ -851,6 +872,7 @@ read_host_crc(cyg_io_handle_t handle)
 //     The current implementation is simple and may not stress the
 //     driver enough. Also, it's command packet format doesn't match
 //     that of the other modes.
+
 cyg_test_return_t
 test_binary(cyg_io_handle_t handle, int size, cyg_mode_t mode)
 {
@@ -921,7 +943,7 @@ test_binary(cyg_io_handle_t handle, int size, cyg_mode_t mode)
         for (i = 0; i < tx_len; i++) {
             ADD_CRC_BYTE(xcrc, in_buffer[i]);
         }
-        
+
         // Echo data back.
         chunk_len = size;
         Tcyg_io_write(handle, &in_buffer[0], &chunk_len);

@@ -102,9 +102,8 @@ GROUP(libtarget.a libgcc.a)
       KEEP(*(SORT(.ctors*))) __CTOR_END__ = ABSOLUTE(.);                      \
     __DTOR_LIST__ = ABSOLUTE(.);                                              \
       KEEP(*(SORT(.dtors*))) __DTOR_END__ = ABSOLUTE(.);                      \
-    . = ALIGN(8);                                                             \
-    __DEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.devtab*))) __DEVTAB_END__ = ABSOLUTE (.); \
-    __NETDEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.netdevtab*))) __NETDEVTAB_END__ = ABSOLUTE (.); \
+      . = ALIGN(8);                                                           \
+      KEEP(*( SORT (.ecos.table.*))) ;                                        \
     __GOT2_START__ = ABSOLUTE(.); *(.got2) __GOT2_END__ = ABSOLUTE(.);        \
     __GOT_START = ABSOLUTE(.); _GLOBAL_OFFSET_TABLE_ = ABSOLUTE(. + 32768);   \
     _SDA_BASE_ = ABSOLUTE(.); *(.got.plt) *(.got)                             \

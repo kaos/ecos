@@ -758,7 +758,7 @@ unlock_thread_scheduler ()
 }
 
 #ifdef CYGPKG_CYGMON
-extern int processing_breakpoint_function;
+int processing_breakpoint_function = 0;
 #endif
 
 void
@@ -891,8 +891,12 @@ stub_format_registers(char *ptr)
             if (_get_trace_register_hook)
                 reg_valid = _get_trace_register_hook (regnum, &addr);
             else
+            {
                 addr = get_register (regnum);
-
+#ifdef CYGHWR_REGISTER_VALIDITY_CHECKING
+                reg_valid = get_register_valid (regnum);
+#endif
+            }
             vptr = ((char *) &addr);
             if (sizeof (addr) > REGSIZE(regnum)) {
                 /* May need to cope with endian-ness */

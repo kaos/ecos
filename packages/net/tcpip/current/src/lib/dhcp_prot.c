@@ -469,10 +469,11 @@ do_dhcp(const char *intf, struct bootp *res,
             // Fill in the BOOTP request - DHCPDISCOVER packet
             bzero(xmit, sizeof(*xmit));
             xmit->bp_op = BOOTREQUEST;
-            xmit->bp_htype = ifr.ifr_hwaddr.sa_family;
+            xmit->bp_htype = HTYPE_ETHERNET;
             xmit->bp_hlen = IFHWADDRLEN;
             xmit->bp_xid = xid;
             xmit->bp_secs = 0;
+            xmit->bp_flags = htons(0x8000); // BROADCAST FLAG
             bcopy(ifr.ifr_hwaddr.sa_data, &xmit->bp_chaddr, xmit->bp_hlen);
             bcopy(mincookie, xmit->bp_vend, sizeof(mincookie));
 
@@ -566,6 +567,7 @@ do_dhcp(const char *intf, struct bootp *res,
 
             // Fill in the BOOTP request - DHCPREQUEST packet
             xmit->bp_op = BOOTREQUEST;
+            xmit->bp_flags = htons(0x8000); // BROADCAST FLAG
 
             set_fixed_tag( xmit, TAG_DHCP_MESS_TYPE, DHCPREQUEST, 1 );
             set_fixed_tag( xmit, TAG_DHCP_MAX_MSGSZ, BP_MINPKTSZ, 2 );
@@ -680,6 +682,9 @@ do_dhcp(const char *intf, struct bootp *res,
 
             // Fill in the BOOTP request - DHCPREQUEST packet
             xmit->bp_op = BOOTREQUEST;
+            xmit->bp_flags = htons(0); // No BROADCAST FLAG
+            // Use the *client* address here:
+            xmit->bp_ciaddr.s_addr = xmit->bp_yiaddr.s_addr;
 
             set_fixed_tag( xmit, TAG_DHCP_MESS_TYPE, DHCPREQUEST, 1 );
             set_fixed_tag( xmit, TAG_DHCP_MAX_MSGSZ, BP_MINPKTSZ, 2 );
@@ -776,6 +781,9 @@ do_dhcp(const char *intf, struct bootp *res,
 
             // Fill in the BOOTP request - DHCPREQUEST packet
             xmit->bp_op = BOOTREQUEST;
+            xmit->bp_flags = htons(0); // no BROADCAST FLAG
+            // Use the *client* address here:
+            xmit->bp_ciaddr.s_addr = xmit->bp_yiaddr.s_addr;
 
             set_fixed_tag( xmit, TAG_DHCP_MESS_TYPE, DHCPREQUEST, 1 );
             set_fixed_tag( xmit, TAG_DHCP_MAX_MSGSZ, BP_MINPKTSZ, 2 );
@@ -905,6 +913,10 @@ do_dhcp(const char *intf, struct bootp *res,
             // NOTBOUND state.
 
             xmit->bp_op = BOOTREQUEST;
+            xmit->bp_flags = htons(0); // no BROADCAST FLAG
+            // Use the *client* address here:
+            xmit->bp_ciaddr.s_addr = xmit->bp_yiaddr.s_addr;
+
             set_fixed_tag( xmit, TAG_DHCP_MESS_TYPE, DHCPRELEASE, 1 );
 
             // Set unicast address to *server*

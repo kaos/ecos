@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   jskov (based on powerpc/cogent hal_stub.c)
-// Contributors:jskov
+// Contributors:jskov, dmoseley
 // Date:        1999-02-12
 // Purpose:     Helper functions for stub, specific to eCos HAL
 // Description: Parts of the GDB stub requirements are provided by
@@ -64,8 +64,12 @@
 #endif
 
 #ifdef USE_LONG_NAMES_FOR_ENUM_REGNAMES
+#ifndef PC
 #define PC REG_PC
+#endif
+#ifndef SP
 #define SP REG_SP
+#endif
 #endif
 
 //-----------------------------------------------------------------------------
@@ -76,6 +80,12 @@ HAL_SavedRegisters *_hal_registers;
 target_register_t registers[NUMREGS];
 target_register_t alt_registers[NUMREGS] ;  // Thread or saved process state
 target_register_t * _registers = registers; // Pointer to current set of registers
+
+// Register validity checking
+#ifdef CYGHWR_REGISTER_VALIDITY_CHECKING
+int registers_valid[NUMREGS];
+int *_registers_valid = registers_valid;
+#endif
 
 #ifndef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // this should go away
 // Interrupt control.
@@ -92,6 +102,15 @@ get_register (regnames_t reg)
 {
     return _registers[reg];
 }
+
+#ifdef CYGHWR_REGISTER_VALIDITY_CHECKING
+// Return the validity of register REG.
+int
+get_register_valid (regnames_t reg)
+{
+    return _registers_valid[reg];
+}
+#endif
 
 // Store VALUE in the register corresponding to WHICH in the exception
 // context.
@@ -351,7 +370,9 @@ cyg_hal_gdb_diag_putc(void* __ch_data, cyg_uint8 c)
             CYGACC_COMM_IF_PUTC(*__chan, hex[(csum>>4)&0xF]);
             CYGACC_COMM_IF_PUTC(*__chan, hex[csum&0xF]);
 
+        nak:
             c1 = CYGACC_COMM_IF_GETC(*__chan);
+
             if( c1 == '+' ) break;
 
             if( cyg_hal_is_break( &c1 , 1 ) ) {
@@ -359,6 +380,7 @@ cyg_hal_gdb_diag_putc(void* __ch_data, cyg_uint8 c)
                 CYGACC_CALL_IF_CONSOLE_INTERRUPT_FLAG_SET(1);
                 break;
             }
+            if( c1 != '-' ) goto nak;
         }
 
         pos = 0;

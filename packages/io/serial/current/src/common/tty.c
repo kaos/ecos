@@ -55,6 +55,7 @@ static Cyg_ErrNo tty_lookup(struct cyg_devtab_entry **tab,
                                const char *name);
 static Cyg_ErrNo tty_write(cyg_io_handle_t handle, const void *buf, cyg_uint32 *len);
 static Cyg_ErrNo tty_read(cyg_io_handle_t handle, void *buf, cyg_uint32 *len);
+static Cyg_ErrNo tty_select(cyg_io_handle_t handle, cyg_uint32 which, CYG_ADDRWORD info);
 static Cyg_ErrNo tty_get_config(cyg_io_handle_t handle, cyg_uint32 key, void *buf, cyg_uint32 *len);
 static Cyg_ErrNo tty_set_config(cyg_io_handle_t handle, cyg_uint32 key, const void *buf, cyg_uint32 *len);
 
@@ -66,6 +67,7 @@ struct tty_private_info {
 static DEVIO_TABLE(tty_devio,
                    tty_write,
                    tty_read,
+                   tty_select,
                    tty_get_config,
                    tty_set_config
     );
@@ -254,6 +256,17 @@ tty_read(cyg_io_handle_t handle, void *_buf, cyg_uint32 *len)
     }
     *len = size;
     return ENOERR;
+}
+
+static cyg_bool
+tty_select(cyg_io_handle_t handle, cyg_uint32 which, CYG_ADDRWORD info)
+{
+    cyg_devtab_entry_t *t = (cyg_devtab_entry_t *)handle;
+    struct tty_private_info *priv = (struct tty_private_info *)t->priv;
+    cyg_io_handle_t chan = (cyg_io_handle_t)priv->dev_handle;    
+
+    // Just pass it on to next driver level
+    return cyg_io_select( chan, which, info );
 }
 
 static Cyg_ErrNo 

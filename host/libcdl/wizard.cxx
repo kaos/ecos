@@ -366,7 +366,6 @@ CdlWizardBody::parse_screen(CdlInterpreter interp, int argc, char** argv)
 
 void
 CdlWizardBody::save(CdlInterpreter interp, Tcl_Channel chan, int indentation, bool minimal)
-    throw(CdlInputOutputException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlWizard::save");
     CYG_REPORT_FUNCARG5XV(this, interp, chan, indentation, minimal);

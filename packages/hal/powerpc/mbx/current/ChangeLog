@@ -1,3 +1,7 @@
+2000-08-15  Gary Thomas  <gthomas@redhat.com>
+
+	* src/mbx.S: Use actual ROM layout instead of magic numbers.
+
 2000-06-28  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_diag.h: 

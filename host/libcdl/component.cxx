@@ -371,7 +371,6 @@ CdlComponentBody::initialize_savefile_support(CdlToplevel toplevel)
 
 void
 CdlComponentBody::save(CdlInterpreter interp, Tcl_Channel chan, int indentation, bool minimal)
-    throw(CdlInputOutputException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlComponent::save");
     CYG_REPORT_FUNCARG5XV(this, interp, chan, indentation, minimal);

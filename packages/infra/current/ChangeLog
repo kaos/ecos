@@ -1,3 +1,13 @@
+2000-07-25  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/cyg_type.inc: Create. Used for the equivalent stuff of
+	cyg_type.h in assembler and linker scripts
+
+2000-07-19  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/pkgstart.cxx (cyg_package_start): Remove POSIX startup option
+	* cdl/startup.cdl: Likewise
+
 2000-07-18  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* src/buffer.cxx (increment_buffer_pos): Reset buffer pos *before*
@@ -5,9 +15,53 @@
 	Thanks to Chris Morrow (cmorrow at YottaYotta.com ) for spotting
 	the problem.
 
+2000-07-04  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/infra.cdl: Add CYGFUN_INFRA_EMPTY_DELETE_FUNCTIONS option
+	to control presence of empty C++ delete functions
+
+	* src/delete.cxx: Move comments into above option, and simplify
+	the configuration now that it's more straightforward
+
+2000-06-21  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/simple.cxx: 
+	* src/null.cxx: 
+	* src/fancy.cxx: 
+	* src/buffer.cxx:
+	Removed use of CYG_LABEL_NAME() and added extra underscores to
+	_stext and _etext.
+
+	* include/cyg_type.h: Changed default for CYG_LABEL_DEFN() to
+	define labels without an extra underscore. This reflects the
+	practice of most of the targets we support.
+
+2000-06-19  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/cyg_type.h:
+	Added CYGBLD_ATTRIB_SECTION to assign variables to a named
+	section.
+	Added CYG_LABEL_DEFN() macro for defining labels in asm and linker
+	scripts. This is particularly useful for generating labels in
+	inline assembler fragments.
+
+2000-05-02  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/startup.cdl:
+	* src/pkgstart.cxx:
+	Remove CYGSEM_START_ISO_C_COMPATIBILITY: startup is now handled
+	via extras.o
+	* include/cyg_type.h: Define __externC alternative to externC
+
 2000-04-12  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/infra.cdl: Allow build flags to be tweaked.
+
+2000-03-31  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* cdl/startup.cdl: 
+	* src/pkgstart.cxx:
+	Added POSIX startup option.
 
 2000-03-28  Jonathan Larmour  <jlarmour@redhat.co.uk>
 

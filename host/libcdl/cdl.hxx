@@ -117,9 +117,8 @@ class CdlPackagesDatabaseBody {
   public:
 
     static CdlPackagesDatabase  make(std::string = "", CdlDiagnosticFnPtr /* error */ = 0,
-                                     CdlDiagnosticFnPtr /* warn */ = 0)
-        throw(CdlInputOutputException,std::bad_alloc);
-    bool                        update(void) throw(CdlInputOutputException,std::bad_alloc);
+                                     CdlDiagnosticFnPtr /* warn */ = 0);
+    bool                        update(void);
     ~CdlPackagesDatabaseBody();
 
     std::string                         get_component_repository() const;
@@ -163,8 +162,7 @@ class CdlPackagesDatabaseBody {
     // The only valid constructor gets invoked from the make() member function.
     // The argument should be a pathname for the component repository. The
     // constructor is responsible for reading in the whole packages file.
-    CdlPackagesDatabaseBody(std::string, CdlDiagnosticFnPtr, CdlDiagnosticFnPtr)
-        throw(CdlInputOutputException,std::bad_alloc);
+    CdlPackagesDatabaseBody(std::string, CdlDiagnosticFnPtr, CdlDiagnosticFnPtr);
 
     std::string                         component_repository;
     std::vector<std::string>            package_names;
@@ -311,11 +309,9 @@ class CdlConfigurationBody : public virtual CdlToplevelBody
 
     // A version argument of "" implies the most recent version.
     void load_package(std::string /* name */, std::string /* version */,
-                      CdlDiagnosticFnPtr /* error */, CdlDiagnosticFnPtr /* warn */, bool /* limbo */ = true)
-        throw(CdlInputOutputException, CdlParseException, std::bad_alloc);
+                      CdlDiagnosticFnPtr /* error */, CdlDiagnosticFnPtr /* warn */, bool /* limbo */ = true);
     void load_package(CdlTransaction, std::string /* name */, std::string /* version */,
-                      CdlDiagnosticFnPtr /* error */, CdlDiagnosticFnPtr /* warn */, bool /* limbo */ = true)
-        throw(CdlInputOutputException, CdlParseException, std::bad_alloc);
+                      CdlDiagnosticFnPtr /* error */, CdlDiagnosticFnPtr /* warn */, bool /* limbo */ = true);
 
     void unload_package(std::string /* name */, bool /* limbo */ = true);
     void unload_package(CdlPackage, bool /* limbo */ = true);
@@ -323,18 +319,14 @@ class CdlConfigurationBody : public virtual CdlToplevelBody
     void unload_package(CdlTransaction, CdlPackage, bool /* limbo */ = true);
     
     void change_package_version(std::string /*name*/, std::string /*version*/,
-                                CdlDiagnosticFnPtr /* error */, CdlDiagnosticFnPtr /* warn */, bool /* limbo */ = true)
-        throw(CdlInputOutputException, CdlParseException, std::bad_alloc);
+                                CdlDiagnosticFnPtr /* error */, CdlDiagnosticFnPtr /* warn */, bool /* limbo */ = true);
     void change_package_version(CdlPackage, std::string /*version*/, CdlDiagnosticFnPtr /* error */,
-                                CdlDiagnosticFnPtr /* warn */, bool /* limbo */ = true)
-        throw(CdlInputOutputException, CdlParseException, std::bad_alloc);
+                                CdlDiagnosticFnPtr /* warn */, bool /* limbo */ = true);
 
     void change_package_version(CdlTransaction, std::string /*name*/, std::string /*version*/,
-                                CdlDiagnosticFnPtr /* error */, CdlDiagnosticFnPtr /* warn */, bool /* limbo */ = true)
-        throw(CdlInputOutputException, CdlParseException, std::bad_alloc);
+                                CdlDiagnosticFnPtr /* error */, CdlDiagnosticFnPtr /* warn */, bool /* limbo */ = true);
     void change_package_version(CdlTransaction, CdlPackage, std::string /*version*/, CdlDiagnosticFnPtr /* error */,
-                                CdlDiagnosticFnPtr /* warn */, bool /* limbo */ = true)
-        throw(CdlInputOutputException, CdlParseException, std::bad_alloc);
+                                CdlDiagnosticFnPtr /* warn */, bool /* limbo */ = true);
 
     // Loading a savefile is different in that it creates a new
     // toplevel. Since transactions can only be created if the
@@ -342,40 +334,31 @@ class CdlConfigurationBody : public virtual CdlToplevelBody
     // per-transaction load() operation. It is possible to have
     // a per-transaction add() operation.
     static CdlConfiguration load(std::string /* filename */, CdlPackagesDatabase, CdlInterpreter,
-                                 CdlDiagnosticFnPtr /* error */,  CdlDiagnosticFnPtr /* warn */)
-        throw(CdlInputOutputException, CdlParseException, std::bad_alloc);
+                                 CdlDiagnosticFnPtr /* error */,  CdlDiagnosticFnPtr /* warn */);
 
     void add(std::string /* filename */,
-             CdlDiagnosticFnPtr /* error */, CdlDiagnosticFnPtr /* warn */)
-        throw(CdlInputOutputException, CdlParseException, std::bad_alloc);
+             CdlDiagnosticFnPtr /* error */, CdlDiagnosticFnPtr /* warn */);
     void add(CdlTransaction, std::string /* filename */,
-             CdlDiagnosticFnPtr /* error */, CdlDiagnosticFnPtr /* warn */)
-        throw(CdlInputOutputException, CdlParseException, std::bad_alloc);
+             CdlDiagnosticFnPtr /* error */, CdlDiagnosticFnPtr /* warn */);
 
     // As with packages, a version of "" implies the most recent.
     void set_template(std::string, std::string /* version */,
-                      CdlDiagnosticFnPtr, CdlDiagnosticFnPtr /* warn */,bool /* limbo */ = true)
-        throw(CdlInputOutputException, CdlParseException, std::bad_alloc);
+                      CdlDiagnosticFnPtr, CdlDiagnosticFnPtr /* warn */,bool /* limbo */ = true);
     void set_template_file(std::string,
-                           CdlDiagnosticFnPtr /* error */, CdlDiagnosticFnPtr /* warn */, bool /* limbo */ = true)
-        throw(CdlInputOutputException, CdlParseException, std::bad_alloc);
+                           CdlDiagnosticFnPtr /* error */, CdlDiagnosticFnPtr /* warn */, bool /* limbo */ = true);
     void set_template(CdlTransaction, std::string, std::string /* version */,
-                      CdlDiagnosticFnPtr, CdlDiagnosticFnPtr /* warn */, bool /* limbo */ = true)
-        throw(CdlInputOutputException, CdlParseException, std::bad_alloc);
+                      CdlDiagnosticFnPtr, CdlDiagnosticFnPtr /* warn */, bool /* limbo */ = true);
     void set_template_file(CdlTransaction, std::string,
-                           CdlDiagnosticFnPtr /* error */, CdlDiagnosticFnPtr /* warn */, bool /* limbo */ = true)
-        throw(CdlInputOutputException, CdlParseException, std::bad_alloc);
+                           CdlDiagnosticFnPtr /* error */, CdlDiagnosticFnPtr /* warn */, bool /* limbo */ = true);
     void unload_template(bool /* limbo */ = true);
     void unload_template(CdlTransaction, bool /* limbo */ = true);
     std::string get_template() const;
     void        set_template_name(std::string); // Intended for library use only
 
     void set_hardware(std::string,
-                      CdlDiagnosticFnPtr /* error */, CdlDiagnosticFnPtr /* warn */, bool /* limbo */ = true)
-        throw(CdlInputOutputException, CdlParseException, std::bad_alloc);
+                      CdlDiagnosticFnPtr /* error */, CdlDiagnosticFnPtr /* warn */, bool /* limbo */ = true);
     void set_hardware(CdlTransaction, std::string,
-                      CdlDiagnosticFnPtr /* error */, CdlDiagnosticFnPtr /* warn */, bool /* limbo */ = true)
-        throw(CdlInputOutputException, CdlParseException, std::bad_alloc);
+                      CdlDiagnosticFnPtr /* error */, CdlDiagnosticFnPtr /* warn */, bool /* limbo */ = true);
     void unload_hardware(bool /* limbo */ = true);
     void unload_hardware(CdlTransaction, bool /* limbo */ = true);
     std::string get_hardware() const;
@@ -383,7 +366,7 @@ class CdlConfigurationBody : public virtual CdlToplevelBody
     
     // ----------------------------------------------------------------------------
     // Save a configuration to a file
-    void        save(std::string, bool /* minimal */ = false) throw(CdlInputOutputException,std::bad_alloc);
+    void        save(std::string, bool /* minimal */ = false);
     void        initialize_savefile_support();
     std::string get_save_file() const;
 
@@ -401,7 +384,7 @@ class CdlConfigurationBody : public virtual CdlToplevelBody
     CdlConfigurationBody(std::string, CdlPackagesDatabase, CdlInterpreter);
 
     // The internal implementation of the persistence support
-    virtual void                save(CdlInterpreter, Tcl_Channel, int, bool) throw(CdlInputOutputException, std::bad_alloc);
+    virtual void                save(CdlInterpreter, Tcl_Channel, int, bool);
     static int                  savefile_configuration_command(CdlInterpreter, int, char**);
     static int                  savefile_description_command(CdlInterpreter, int, char**);
     static int                  savefile_hardware_command(CdlInterpreter, int, char**);
@@ -476,7 +459,7 @@ class CdlPackageBody : public virtual CdlNodeBody,
     virtual void update(CdlTransaction, CdlUpdate);
     
     // Persistence support.
-    virtual void        save(CdlInterpreter, Tcl_Channel, int, bool) throw(CdlInputOutputException, std::bad_alloc);
+    virtual void        save(CdlInterpreter, Tcl_Channel, int, bool);
     static void         initialize_savefile_support(CdlToplevel);
     static int          savefile_package_command(CdlInterpreter, int, char**);
 
@@ -535,7 +518,7 @@ class CdlComponentBody : public virtual CdlNodeBody,
     virtual void update(CdlTransaction, CdlUpdate);
     
     // Persistence support.
-    virtual void        save(CdlInterpreter, Tcl_Channel, int, bool) throw(CdlInputOutputException, std::bad_alloc);
+    virtual void        save(CdlInterpreter, Tcl_Channel, int, bool);
     static void         initialize_savefile_support(CdlToplevel);
     static int          savefile_component_command(CdlInterpreter, int, char**);
     
@@ -580,7 +563,7 @@ class CdlOptionBody : public virtual CdlNodeBody,
     static int          parse_option(CdlInterpreter, int, char**);
     
     // Persistence support.
-    virtual void        save(CdlInterpreter, Tcl_Channel, int, bool) throw(CdlInputOutputException, std::bad_alloc);
+    virtual void        save(CdlInterpreter, Tcl_Channel, int, bool);
     static void         initialize_savefile_support(CdlToplevel);
     static int          savefile_option_command(CdlInterpreter, int, char**);
     

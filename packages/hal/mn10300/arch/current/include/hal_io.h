@@ -35,7 +35,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   nickg
-// Contributors:        nickg
+// Contributors:        nickg, dmoseley
 // Date:        1998-02-17
 // Purpose:     Define IO register support
 // Description: The macros defined here provide the HAL APIs for handling
@@ -50,13 +50,17 @@
 //
 //=============================================================================
 
+#ifndef __ASSEMBLER__
 #include <cyg/infra/cyg_type.h>
+#endif
 
 //-----------------------------------------------------------------------------
 // IO Register address.
 // This type is for recording the address of an IO register.
 
+#ifndef __ASSEMBLER__
 typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
+#endif
 
 //-----------------------------------------------------------------------------
 // BYTE Register access.

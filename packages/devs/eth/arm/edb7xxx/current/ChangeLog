@@ -1,3 +1,27 @@
+2000-08-21  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/edb7xxx_eth_drivers.cdl: Add configury to set ESA.
+
+	* src/if_edb7xxx.c: Hardware address can come from various
+	sources, not just hardwired.	
+
+2000-08-16  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_edb7xxx.c (cs8900_can_send): Can only send if the link
+	is OK.  If the link is bad, the chip just stops...
+
+2000-08-14  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_edb7xxx.c: Changes to support stand-alone usage.
+
+2000-08-03  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/edb7xxx_eth_drivers.cdl: Ethernet driver package hierarchy changed.
+
+2000-07-26  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_edb7xxx.c: Update for new eth_drv interfaces.
+
 2000-06-22  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* cdl/<yournamehere>.cdl: Remove the comment on the empty

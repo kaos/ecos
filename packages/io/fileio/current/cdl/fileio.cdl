@@ -1,0 +1,148 @@
+# ====================================================================
+#
+#      fileio.cdl
+#
+#      FILEIO layer configuration data
+#
+# ====================================================================
+#####COPYRIGHTBEGIN####
+#                                                                          
+# -------------------------------------------                              
+# The contents of this file are subject to the Red Hat eCos Public License 
+# Version 1.1 (the "License"); you may not use this file except in         
+# compliance with the License.  You may obtain a copy of the License at    
+# http://www.redhat.com/                                                   
+#                                                                          
+# Software distributed under the License is distributed on an "AS IS"      
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+# License for the specific language governing rights and limitations under 
+# the License.                                                             
+#                                                                          
+# The Original Code is eCos - Embedded Configurable Operating System,      
+# released September 30, 1998.                                             
+#                                                                          
+# The Initial Developer of the Original Code is Red Hat.                   
+# Portions created by Red Hat are                                          
+# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# All Rights Reserved.                                                     
+# -------------------------------------------                              
+#                                                                          
+#####COPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      nickg
+# Contributors:
+# Date:           2000-5-25
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_IO_FILEIO {
+    display        "POSIX File IO compatibility layer"
+    description    "This package enables the POSIX compatibility
+                    layer that implements IEEE 1003.1 file IO."
+    include_dir    cyg/fileio
+    
+    requires       CYGPKG_KERNEL
+    requires       CYGPKG_ISOINFRA
+    requires       CYGPKG_ERROR
+    requires       CYGINT_ISO_ERRNO
+    requires       CYGINT_ISO_ERRNO_CODES
+    requires       CYGINT_ISO_STRING_STRFUNCS
+
+    implements	   CYGINT_ISO_FCNTL
+    implements     CYGINT_ISO_OPEN
+    implements     CYGINT_ISO_DIRENT
+
+    requires       { CYGBLD_ISO_DIRENT_HEADER == "<cyg/fileio/dirent.h>" }
+
+    compile 	   fd.cxx file.cxx io.cxx select.cxx dir.cxx
+    compile        -library=libextras.a devfs.cxx misc.cxx
+
+    cdl_option CYGPKG_IO_FILEIO_SOCKET_SUPPORT {
+	display          "Enable socket support"
+	active_if        CYGPKG_NET
+	default_value    1
+	description      "
+	    This option enables support for the socket interface. It is
+	    only present if the NET package is included."
+
+	compile          socket.cxx
+    }
+    
+    cdl_option CYGNUM_FILEIO_NFILE {
+	display          "Maximum number of open files"
+	flavor           data
+	default_value    16
+	legal_values     1 to 9999999
+	description      "This option controls the number of open files
+	                  that are allowed for all filesystems."
+    }
+
+    cdl_option CYGNUM_FILEIO_NFD {
+	display          "Maximum number of open file descriptors"
+	flavor           data
+	default_value    16
+	legal_values     CYGNUM_FILEIO_NFILE to 9999999
+	description      "This option controls the number of open file descriptors
+	                  that are allowed for all filesystems."
+    }
+
+    cdl_option CYGNUM_FILEIO_FSTAB_MAX {
+	display          "Maximum number of installed filesystems"
+	flavor           data
+	default_value    4
+	legal_values     1 to 9999999
+	description      "This option controls the maximum number of filesystems
+			  that can be handled by the fileio system."
+
+    }
+
+    cdl_option CYGNUM_FILEIO_MTAB_MAX {
+	display          "Maximum number of mounted filesystems"
+	flavor           data
+	default_value    8
+	legal_values     CYGNUM_FILEIO_MTAB_EXTRA to 9999999
+	description      "This option controls the maximum number of mounted
+			  filesystems that can be handled by the fileio system."
+
+    }
+
+    cdl_option CYGNUM_FILEIO_MTAB_EXTRA {
+	display          "Number of dynamically mounted filesystems"
+	flavor           data
+	default_value    8
+	legal_values     0 to 9999999
+	description      "This option controls the number of mounted
+			  filesystems that can be created dynamically."
+    }
+
+    cdl_option CYGNUM_FILEIO_NSTAB_MAX {
+	display          "Maximum number of installed network stacks"
+	flavor           data
+	default_value    1
+	legal_values     1 to 9999999
+	description      "This option controls the maximum number of installed
+			  network stacks that can be handled by the fileio system."
+    }
+
+
+    # ----------------------------------------------------------------
+    # Tests
+
+        cdl_option CYGPKG_IO_FILEIO_TESTS {
+            display "Fileio tests"
+            flavor  data
+            no_define
+            calculated { "tests/testfs.c tests/fileio1.c tests/socket.c tests/select.c tests/stdio.c" }
+            description   "
+                This option specifies the set of tests for the FileIO package."
+        }
+}
+
+# ====================================================================
+# End of fileio.cdl
+
+

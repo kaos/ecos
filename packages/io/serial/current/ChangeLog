@@ -1,3 +1,63 @@
+2000-08-09  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/common/serial.c (serial_indicate_status): Treat flow control
+	case conditionally
+
+2000-08-08  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/common/serial.c (serial_data_rcv_req): Adjust nb in correct
+	direction
+
+2000-08-04  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/io_serial.cdl: Default software flow control to on (but keep
+	flow control overall default off)
+
+	* tests/flow1.c (cyg_start): Fix N_A_MSG -> NA_MSG typo
+	* tests/flow2.c (cyg_start): Ditto
+
+2000-08-03  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/io_serial.cdl: Should default flow control to off
+
+	* src/common/serial.c (serial_data_xmt_req): Update cbuf->nb
+	(serial_data_rcv_req): Update cbuf->nb
+
+2000-08-01  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/io_serial.cdl: Add support for line status queries,
+	software flow control, hardware flow control and POSIX termios
+	* include/serial.h: Likewise. Also change prototype for set_config
+	hardware operations to use keys to be more flexible.
+	* include/serialio.h: Add lots of types and constants to support
+	new line status and flow control config key queries
+	
+	* src/common/haldiag.c (haldiag_set_config): Use keys to be more
+	flexible.
+
+	* src/common/serial.c: Many changes to support software/hardware
+	flow control (with low and high water points), line status and
+	fix some omissions with select. Also fix bugs in block transfer
+	functions resulting from EL/IX merge.
+
+	* tests/flow1.c, tests/flow2.c: New tests for flow control
+
+	* cdl/termios.cdl: Add to configure termios
+	* src/termios.c: Add new POSIX Termios API
+	* src/termiostty.c: Add POSIX Termios tty driver
+
+	* tests/ser_test_protocol.inl (change_config): Add support for
+	hardware and software flow control testing, indicated to the 
+	host by an extra CONFIG argument.
+
+	* tests/serial3.c: Add flow control config
+	* tests/serial5.c: Add flow control config
+
+2000-07-31  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/common/serial.c: Changed BLOCKING control definitions to
+	generic versions.
+
 2000-07-03  Jesper Skov  <jskov@redhat.com>
 
 	* src/common/serial.c (serial_data_rcv_req): Fix off-by-1 bug.
@@ -5,6 +65,31 @@
 2000-06-23  Jesper Skov  <jskov@redhat.com>
 
 	* tests/ser_test_protocol.inl: Added cq7708 definitions.
+
+2000-06-19  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/serial.h:
+	* src/common/serial.c:
+	Added nb field to cbuf_t structure. This keeps track of the number of
+	bytes currently in the buffer. Without this counter, there is no
+	way to distinguish a totally full buffer from one that is totally
+	empty, since in both cases put==get.
+
+2000-06-15  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/serial.h: Added selinfo field to cbuf structure when
+	select support is enabled.
+
+	* src/common/serial.c:
+	* src/common/tty.c:
+	Added select support.
+
+	* cdl/io_serial.cdl: Added CYGPKG_IO_SERIAL_SELECT_SUPPORT to
+	enable select() support. Defaults to on.
+	Also added component for loopback driver.
+
+	* tests/ser_test_protocol.inl: Added test setup for loopback
+	driver.
 
 2000-05-28  Gary Thomas  <gthomas@redhat.com>
 

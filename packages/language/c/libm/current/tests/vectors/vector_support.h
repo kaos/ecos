@@ -46,10 +46,8 @@
 
 // CONFIGURATION
 
-#include <pkgconf/libm.h>   // Configuration header
-
-// Include the Math library?
-#ifdef CYGPKG_LIBM     
+#include <pkgconf/libm.h>      // Configuration header
+#include <pkgconf/isoinfra.h>  // CYGINT_ISO_MAIN_STARTUP
 
 // INCLUDES
 
@@ -70,38 +68,16 @@
 
 // HOW TO START TESTS
 
-#ifndef CYGPKG_LIBM
-
-externC int main( int, char ** );
-
-externC void
-cyg_user_start( void )
-{
-    (void) main(0, NULL);
-} // cyg_user_start()
-
-# define START_TEST( test ) CYG_MACRO_START                         \
-                            CYG_ADDRESS _foo_ = (CYG_ADDRESS)&test; \
-                            CYG_UNUSED_PARAM( CYG_ADDRESS, _foo_ ); \
-                            CYG_MACRO_END  
-
-#elif defined(CYGPKG_LIBC)
-
-# include <sys/cstartup.h>
-
-externC void
-cyg_package_start( void )
-{
-    cyg_iso_c_start();
-} // cyg_package_start()
+#if CYGINT_ISO_MAIN_STARTUP
 
 # define START_TEST( test ) test(0)
 
 #elif defined(CYGFUN_KERNEL_API_C)
 
+# include <cyg/hal/hal_arch.h>
 # include <cyg/kernel/kapi.h>
 
-# define STACKSIZE 32768
+# define STACKSIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
 
 static cyg_uint8 stack[STACKSIZE];
 static cyg_handle_t thr_handle;
@@ -122,7 +98,7 @@ cyg_user_start( void )
     (void) main(0, NULL);
 } // cyg_user_start()
 
-#else
+#else // !defined(CYGFUN_KERNEL_API_C)
 
 externC int main( int, char ** );
 
@@ -132,13 +108,9 @@ cyg_user_start( void )
     (void) main(0, NULL);
 } // cyg_user_start()
 
-# define START_TEST( test ) CYG_MACRO_START                         \
-                            CYG_ADDRESS _foo_ = (CYG_ADDRESS)&test; \
-                            CYG_UNUSED_PARAM( CYG_ADDRESS, _foo_ ); \
-                            CYG_MACRO_END  
+# define START_TEST( test ) test(0)
 
 #endif
-
 
 // TYPE DEFINITIONS
 
@@ -513,8 +485,6 @@ doTestVec( CYG_ADDRESS func_ptr,
         return true;
 
 } // doTestVec()
-
-#endif // ifdef CYGPKG_LIBM     
 
 #endif // CYGONCE_LIBM_VECTOR_SUPPORT_H multiple inclusion protection
 

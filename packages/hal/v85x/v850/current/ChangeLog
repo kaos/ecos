@@ -1,3 +1,11 @@
+2000-07-24  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/v850_stub.c (__is_breakpoint_function): Removed use
+	of CYG_LABEL_NAME() and added underscore to _breakinst.
+
+	* src/nec.ld, src/v85x_v850.ld:
+	Switched to new table definition mechanism.
+
 2000-06-12  Gary Thomas  <gthomas@redhat.com>
 
 	* src/v850_misc.c (hal_interrupt_unmask): Remove [extra]

@@ -51,10 +51,9 @@
 #define CYG_BYTEORDER           CYG_LSBFIRST    // Little endian
 
 //-----------------------------------------------------------------------------
-// NEC does not usually use labels with undersores. Some labels generated
-// by the linker do, so add an underscore where required.
+// NEC usually uses labels with undersores.
 
-#define CYG_LABEL_NAME(_name_) _##_name_
+#define CYG_LABEL_DEFN(_name_) _##_name_
 
 //-----------------------------------------------------------------------------
 // Define the standard variable sizes

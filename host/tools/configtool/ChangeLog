@@ -1,3 +1,14 @@
+2000-08-15  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* common/win32/memmap.cpp (export_files): In header file, wrap parts
+	that aren't ASM safe in "#ifndef __ASSEMBLER__"
+	(export_sections): Ditto
+
+2000-07-25  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* common/win32/memmap.cpp (export_sections): 
+	Use CYG_LABEL_DEFN to define linker symbols
+
 2000-07-18  John Dallaway  <jld@redhat.com>
 
 	* standalone/win32/Configtool.rc:

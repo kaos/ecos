@@ -78,7 +78,8 @@ static Cyg_ErrNo vrc4373_serial_lookup(struct cyg_devtab_entry **tab,
                                        struct cyg_devtab_entry *sub_tab,
                                        const char *name);
 static unsigned char vrc4373_serial_getc(serial_channel *chan);
-static bool vrc4373_serial_set_config(serial_channel *chan, cyg_serial_info_t *config);
+static Cyg_ErrNo vrc4373_serial_set_config(serial_channel *chan, cyg_uint32 key,
+                                           const void *xbuf, cyg_uint32 *len);
 static void vrc4373_serial_start_xmit(serial_channel *chan);
 static void vrc4373_serial_stop_xmit(serial_channel *chan);
 
@@ -313,6 +314,8 @@ vrc4373_serial_init(struct cyg_devtab_entry *tab)
     (chan->callbacks->serial_init)(chan);  // Really only required for interrupt driven devices
     if (!init && chan->out_cbuf.len != 0) {
         init = true;
+// Note that the hardware is rather broken.  The interrupt status needs to
+// be read using only channel A
         cyg_drv_interrupt_create(VRC4373_SCC_INT,
                                  99,                     
                                  (cyg_addrword_t)VRC4373_SCC_BASE+SCC_CHANNEL_A,
@@ -368,10 +371,26 @@ vrc4373_serial_getc(serial_channel *chan)
 }
 
 // Set up the device characteristics; baud rate, etc.
-static bool 
-vrc4373_serial_set_config(serial_channel *chan, cyg_serial_info_t *config)
+static Cyg_ErrNo
+vrc4373_serial_set_config(serial_channel *chan, cyg_uint32 key,
+                          const void *xbuf, cyg_uint32 *len)
 {
-    return vrc4373_serial_config_port(chan, config, false);
+    switch (key) {
+    case CYG_IO_SET_CONFIG_SERIAL_INFO:
+      {
+        cyg_serial_info_t *config = (cyg_serial_info_t *)xbuf;
+        if ( *len < sizeof(cyg_serial_info_t) ) {
+            return -EINVAL;
+        }
+        *len = sizeof(cyg_serial_info_t);
+        if ( true != vrc4373_serial_config_port(chan, config, false) )
+            return -EINVAL;
+      }
+      break;
+    default:
+        return -EINVAL;
+    }
+    return ENOERR;
 }
 
 // Enable the transmitter on the device

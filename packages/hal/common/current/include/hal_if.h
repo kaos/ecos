@@ -205,13 +205,13 @@ typedef cyg_bool (*__comm_if_getc_timeout_t)(void* __ch_data, cyg_uint8* __ch);
 #define CYGNUM_CALL_IF_SET_DEBUG_COMM             12
 #define CYGNUM_CALL_IF_SET_CONSOLE_COMM           13
 #define CYGNUM_CALL_IF_SET_SERIAL_BAUD            14
-#define CYGNUM_CALL_IF_DBG_DATA                   15
-#define CYGNUM_CALL_IF_DBG_SYSCALL                15 // conflict!
+#define CYGNUM_CALL_IF_DBG_SYSCALL                15
 #define CYGNUM_CALL_IF_RESET                      16
 #define CYGNUM_CALL_IF_CONSOLE_INTERRUPT_FLAG     17
 #define CYGNUM_CALL_IF_DELAY_US                   18
+#define CYGNUM_CALL_IF_DBG_DATA                   19
 
-#define CYGNUM_CALL_IF_LAST_ENTRY                 CYGNUM_CALL_IF_DELAY_US
+#define CYGNUM_CALL_IF_LAST_ENTRY                 CYGNUM_CALL_IF_DBG_DATA
 
 #define CYGNUM_CALL_IF_INSTALL_BPT_FN             35
 

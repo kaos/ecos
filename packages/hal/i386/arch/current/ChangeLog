@@ -1,3 +1,18 @@
+2000-08-14  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	From Fabrice Gautier:
+	* src/hal_misc.c (hal_zero_bss): Use __bss_end not _end
+	* src/i386.ld: Add __bss_end symbol to end of SECTION_bss
+
+2000-06-21  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/i386_stub.c: Removed use of CYG_LABEL_NAME() and added
+	underscore to _breakinst.
+
+	* src/i386.ld: Switched to new table definition mechanism.
+
+	* include/basetype.h: Removed definition of CYG_LABEL_NAME().
+
 2000-06-08  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_arch.h (CYGARC_HAL_SAVE_GP, CYGARC_HAL_RESTORE_GP):

@@ -210,7 +210,10 @@ typedef struct
     cyg_thread *prev;
 
     cyg_priority_t      priority;       /* current thread priority */
-    
+
+#ifdef CYGSEM_KERNEL_SCHED_TIMESLICE_ENABLE
+    cyg_bool            timeslice_enabled; /* per-thread timeslice enable */
+#endif    
 #elif defined(CYGSEM_KERNEL_SCHED_LOTTERY)
 
     cyg_thread *next;
@@ -228,9 +231,19 @@ typedef struct
 
     cyg_threadqueue     *queue;
 
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE
+#ifdef CYGSEM_KERNEL_SCHED_ASR_SUPPORT
+    volatile cyg_bool   asr_inhibit;    // If true, blocks calls to ASRs
+    volatile cyg_bool   asr_pending;    // If true, this thread's ASR should be called.
+#ifndef CYGSEM_KERNEL_SCHED_ASR_GLOBAL
+    void              (*asr)(CYG_ADDRWORD);   // ASR function
+#endif    
+#ifndef CYGSEM_KERNEL_SCHED_ASR_DATA_GLOBAL
+    CYG_ADDRWORD        asr_data;       // ASR data pointer
+#endif    
+#endif    
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL
     cyg_count32         mutex_count;
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_SIMPLE
     cyg_priority_t      original_priority;
     cyg_bool            priority_inherited;
 #endif
@@ -328,6 +341,13 @@ struct cyg_mutex_t
     cyg_bool            locked;         /* true if locked               */
     cyg_thread          *owner;         /* Current locking thread       */
     cyg_threadqueue     queue;          /* Queue of waiting threads     */
+
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DYNAMIC
+    cyg_uint32          protocol;       /* this mutex's protocol        */
+#endif    
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_CEILING
+    cyg_priority_t      ceiling;        /* mutex priority ceiling       */
+#endif
     
 };
 
@@ -339,45 +359,12 @@ struct cyg_cond_t
     cyg_threadqueue     queue;          /* Queue of waiting threads     */
 };
 
-/*---------------------------------------------------------------------------*/
-
-/* This corresponds to the extra fields provided by the mempoolt template
-   not the actual size of the template in any given instance. */
-typedef struct cyg_mempoolt {
-    cyg_threadqueue queue;
-} cyg_mempoolt;
-
-
-struct cyg_mempool_var_memdq {
-    struct cyg_mempool_var_memdq *prev, *next;
-    cyg_int32 size;
-};
-
-struct cyg_mempool_var {
-    struct cyg_mempool_var_memdq head;
-    cyg_uint8  *obase;
-    cyg_int32  osize;
-    cyg_int32  oalign;
-    cyg_uint8  *bottom;
-    cyg_uint8  *top;
-    cyg_int32  alignment;
-    cyg_int32  freemem;
-    cyg_mempoolt mempoolt;
-};
-
-struct cyg_mempool_fix {
-    cyg_uint32 *bitmap;
-    cyg_int32 maptop;
-    cyg_uint8  *mempool;
-    cyg_int32 numblocks;
-    cyg_int32 freeblocks;
-    cyg_int32 blocksize;
-    cyg_int32 firstfree;
-    cyg_uint8  *top;
-    cyg_mempoolt mempoolt;
-};
-
 /*------------------------------------------------------------------------*/
+
+/* Memory allocator types now come from the "memalloc" package which is   */
+/* where the implementation lives.                                        */
+
+#include <cyg/memalloc/kapidata.h>
 
 #ifdef __cplusplus
 }

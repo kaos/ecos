@@ -31,12 +31,12 @@
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour
-// Contributors:        jlarmour
-// Date:        1998-06-11
-// Purpose:     To provide the strerror() implementation
-// Description: This implements strerror() as described in ANSI chap 7.11.6.2
-// Usage:       See <cyg/error/codes.h>
+// Author(s):    jlarmour
+// Contributors: 
+// Date:         2000-04-14
+// Purpose:      To provide the strerror() implementation
+// Description:  This implements strerror() as described in ANSI chap 7.11.6.2
+// Usage:        See <cyg/error/codes.h>
 //
 //####DESCRIPTIONEND####
 //
@@ -46,9 +46,6 @@
 // CONFIGURATION
 
 #include <pkgconf/error.h>   // Configuration header
-
-// Include the C library?
-#ifdef CYGPKG_ERROR
 
 // INCLUDES
 
@@ -60,16 +57,16 @@
 // EXPORTED SYMBOLS
 
 externC char *
-strerror( int errnum ) __attribute__ ((weak, alias("_strerror") ));
+strerror( int errnum ) __attribute__ ((weak, alias("__strerror") ));
 
 // FUNCTIONS
 
 externC char *
-_strerror( int errnum )
+__strerror( int errnum )
 {
     register char *s;
     
-    CYG_REPORT_FUNCNAMETYPE( "_strerror", "String form of error is \"%s\"" );
+    CYG_REPORT_FUNCNAMETYPE( "__strerror", "String form of error is \"%s\"" );
 
     switch (errnum)
     {
@@ -140,9 +137,27 @@ _strerror( int errnum )
         break;
 #endif
 
+#ifdef ENOTDIR
+    case ENOTDIR:
+        s = "Not a directory";
+        break;
+#endif
+
+#ifdef EISDIR
+    case EISDIR:
+        s = "Is a directory";
+        break;
+#endif
+
 #ifdef EINVAL
     case EINVAL:
         s = "Invalid argument";
+        break;
+#endif
+
+#ifdef ENFILE
+    case ENFILE:
+        s = "Too many open files in system";
         break;
 #endif
 
@@ -152,6 +167,30 @@ _strerror( int errnum )
         break;
 #endif
 
+#ifdef EFBIG
+    case EFBIG:
+        s = "File too large";
+        break;
+#endif
+        
+#ifdef ENOSPC
+    case ENOSPC:
+        s = "No space left on device";
+        break;
+#endif
+
+#ifdef ESPIPE
+    case ESPIPE:
+        s = "Illegal seek";
+        break;
+#endif
+        
+#ifdef EROFS
+    case EROFS:
+        s = "Read-only file system";
+        break;
+#endif
+        
 #ifdef EDOM
     case EDOM:
         s = "Argument to math function outside valid domain";
@@ -164,9 +203,27 @@ _strerror( int errnum )
         break;
 #endif
 
+#ifdef EDEADLK
+    case EDEADLK:
+        s = "Resource deadlock would occur";
+        break;
+#endif
+
 #ifdef ENOSYS
     case ENOSYS:
         s = "Function not implemented";
+        break;
+#endif
+
+#ifdef ENAMETOOLONG
+    case ENAMETOOLONG:
+        s = "File name too long";
+        break;
+#endif
+        
+#ifdef ENOTSUP
+    case ENOTSUP:
+        s = "Not supported";
         break;
 #endif
 
@@ -188,6 +245,12 @@ _strerror( int errnum )
         break;
 #endif
 
+#ifdef EXDEV
+    case EXDEV:
+        s = "Improper link";
+        break;
+#endif
+        
 // Additional errors used by networking
 #ifdef ENXIO
     case ENXIO:
@@ -364,8 +427,6 @@ _strerror( int errnum )
     CYG_REPORT_RETVAL(s);
 
     return s;
-} // _strerror()
-
-#endif // ifdef CYGPKG_ERROR
+} // __strerror()
 
 // EOF strerror.cxx

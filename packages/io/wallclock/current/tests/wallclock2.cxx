@@ -45,8 +45,8 @@
 #include <pkgconf/system.h>
 #include <cyg/infra/testcase.h>
 #include <cyg/infra/diag.h>
-#ifdef CYGPKG_LIBC
-#include <pkgconf/libc.h>
+#ifdef CYGPKG_LIBC_TIME
+#include <pkgconf/libc_time.h>
 #endif
 
 #if defined(CYGSEM_LIBC_TIME_CLOCK_WORKING)

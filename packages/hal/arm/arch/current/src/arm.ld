@@ -91,12 +91,12 @@ OUTPUT_FORMAT(elf32-bigarm)
 
 #define SECTION_text(_region_, _vma_, _lma_) \
     .text _vma_ : _lma_ \
-    { stext = ABSOLUTE(.); \
+    { _stext = ABSOLUTE(.); \
     PROVIDE (__stext = ABSOLUTE(.)); \
     *(.text*) *(.gnu.warning) *(.gnu.linkonce*) *(.init) \
     *(.glue_7) *(.glue_7t)  \
     } > _region_ \
-    etext = .; PROVIDE (__etext = .);
+    _etext = .; PROVIDE (__etext = .);
 
 #define SECTION_fini(_region_, _vma_, _lma_) \
     .fini _vma_ : _lma_ \
@@ -144,8 +144,8 @@ OUTPUT_FORMAT(elf32-bigarm)
     _GOT1_START_ = ABSOLUTE (.); *(.got1) _GOT1_END_ = ABSOLUTE (.); \
     _GOT2_START_ = ABSOLUTE (.); *(.got2) _GOT2_END_ = ABSOLUTE (.); \
     . = ALIGN (4); \
-    __DEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.devtab*))) __DEVTAB_END__ = ABSOLUTE (.); \
-    __NETDEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.netdevtab*))) __NETDEVTAB_END__ = ABSOLUTE (.); \
+    KEEP(*( SORT (.ecos.table.*))) ;            \
+    . = ALIGN (4); \
     __CTOR_LIST__ = ABSOLUTE (.); KEEP (*(SORT (.ctors*))) __CTOR_END__ = ABSOLUTE (.); \
     __DTOR_LIST__ = ABSOLUTE (.); KEEP (*(SORT (.dtors*))) __DTOR_END__ = ABSOLUTE (.); \
     *(.dynamic) *(.sdata*) *(.sbss*) } \

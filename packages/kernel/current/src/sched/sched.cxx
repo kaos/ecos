@@ -58,6 +58,7 @@
 #include <cyg/hal/hal_arch.h>          // Architecture specific definitions
 
 #include <cyg/kernel/thread.inl>       // thread inlines
+#include <cyg/kernel/sched.inl>        // scheduler inlines
 
 //-------------------------------------------------------------------------
 // Some local tracing control - a default.
@@ -91,19 +92,37 @@ cyg_ucount32          Cyg_Scheduler_Base::thread_switches = 0;
 
 // -------------------------------------------------------------------------
 // Scheduler unlock function.
-// This is only called when the lock is to be decremented to zero and there
-// is the potential for real work to be done. Other cases are handled in
-// Cyg_Scheduler::unlock() which is an inline.
 
-void Cyg_Scheduler::unlock_inner()
+// This is only called when the lock is to be zeroed and there is the
+// potential for real work to be done. Other cases are handled in
+// Cyg_Scheduler::unlock() which is an inline.  The new_lock argument
+// contains the value that the scheduler lock should have after this
+// function has completed. If it is zero then the lock is being
+// released and some extra work (running ASRs, checking for DSRs) is
+// done before returning. If it is non-zero then it must equal the
+// current value of the lock, and is used to indicate that we want to
+// reacquire the scheduler lock before returning. This latter option
+// only makes any sense if the current thread is no longer runnable,
+// otherwise this function will do nothing.
+
+void Cyg_Scheduler::unlock_inner( cyg_ucount32 new_lock )
 {
 #ifdef CYGDBG_KERNEL_TRACE_UNLOCK_INNER
     CYG_REPORT_FUNCTION();
 #endif    
 
+    // This assert must be outside the loop because running DSRs can make
+    // it fail if the current thread that was about to sleep is awoken by
+    // the DSR!  Going round the loop to run new DSRs does the same.
+    CYG_ASSERT( (new_lock == 0) ||
+                (current_thread->state != Cyg_Thread::RUNNING ||
+                 need_reschedule) ,
+                "Unnecessary call to unlock_inner()" );
+        
     do {
 
-        CYG_PRECONDITION( sched_lock == 1 , "sched_lock not 1" );
+        CYG_PRECONDITION( new_lock==0 ? sched_lock == 1 : sched_lock == new_lock,
+                          "sched_lock not at expected value" );
         
 #ifdef CYGIMP_KERNEL_INTERRUPTS_DSRS
         
@@ -113,7 +132,7 @@ void Cyg_Scheduler::unlock_inner()
         if( Cyg_Interrupt::DSRs_pending() )
             Cyg_Interrupt::call_pending_DSRs();
 #endif
-            
+
         Cyg_Thread *current = current_thread;
 
         CYG_ASSERTCLASS( current, "Bad current thread" );
@@ -172,29 +191,72 @@ void Cyg_Scheduler::unlock_inner()
 
             need_reschedule = false;        // finished rescheduling
         }
-          
-        HAL_REORDER_BARRIER(); // Make sure everything above has happened
-                               // by this point
-        sched_lock = 0;       // Clear the lock
-        HAL_REORDER_BARRIER();
+
+        if( new_lock == 0 )
+        {
+
+#ifdef CYGSEM_KERNEL_SCHED_ASR_SUPPORT
+
+            // Check whether the ASR is pending and not inhibited.  If
+            // we can call it, then transfer this info to a local
+            // variable (call_asr) and clear the pending flag.  Note
+            // that we only do this if the scheduler lock is about to
+            // be zeroed. In any other circumstance we are not
+            // unlocking.
+
+            cyg_bool call_asr = false;
+            
+            if( !current->asr_inhibit && current->asr_pending )
+            {
+                call_asr = true;
+                current->asr_pending = false;
+            }
+#endif
+            
+            HAL_REORDER_BARRIER(); // Make sure everything above has happened
+                                   // by this point
+            sched_lock = 0;        // Clear the lock
+            HAL_REORDER_BARRIER();
                 
 #ifdef CYGIMP_KERNEL_INTERRUPTS_DSRS
 
-        // Now check whether any DSRs got posted during the thread
-        // switch and if so, go around again. Making this test after
-        // the lock has been zeroed avoids a race condition in which
-        // a DSR could have been posted during a reschedule, but would
-        // not be run until the _next_ time we release the sched lock.
+            // Now check whether any DSRs got posted during the thread
+            // switch and if so, go around again. Making this test after
+            // the lock has been zeroed avoids a race condition in which
+            // a DSR could have been posted during a reschedule, but would
+            // not be run until the _next_ time we release the sched lock.
 
-        if( Cyg_Interrupt::DSRs_pending() ) {
-            sched_lock = 1;     // reclaim the lock
-            continue;           // go back to head of loop
-        }
+            if( Cyg_Interrupt::DSRs_pending() ) {
+                sched_lock = 1;     // reclaim the lock
+                continue;           // go back to head of loop
+            }
 
 #endif
-        // Otherwise the lock is zero, we can return.
+            // Otherwise the lock is zero, we can return.
 
-        CYG_POSTCONDITION( sched_lock == 0, "sched_lock not zero" );
+            CYG_POSTCONDITION( sched_lock == 0, "sched_lock not zero" );
+
+#ifdef CYGSEM_KERNEL_SCHED_ASR_SUPPORT
+            // If the test within the sched_lock indicating that the ASR
+            // be called was true, call it here. Calling the ASR must be
+            // the very last thing we do here, since it must run as close
+            // to "user" state as possible.
+        
+            if( call_asr ) current->asr(current->asr_data);
+#endif
+
+        }
+        else
+        {
+            // If new_lock is non-zero then we restore the sched_lock to
+            // the value given.
+            
+            HAL_REORDER_BARRIER();
+            
+            sched_lock = new_lock;
+            
+            HAL_REORDER_BARRIER();            
+        }
         
 #ifdef CYGDBG_KERNEL_TRACE_UNLOCK_INNER
         CYG_REPORT_RETURN();
@@ -270,6 +332,21 @@ cyg_bool Cyg_Scheduler::check_this( cyg_assert_class_zeal zeal) const
 // SchedThread members
 
 // -------------------------------------------------------------------------
+// Static data members
+
+#ifdef CYGSEM_KERNEL_SCHED_ASR_SUPPORT
+
+# ifdef CYGSEM_KERNEL_SCHED_ASR_GLOBAL
+Cyg_ASR *Cyg_SchedThread::asr = &Cyg_SchedThread::asr_default;
+# endif
+
+# ifdef CYGSEM_KERNEL_SCHED_ASR_DATA_GLOBAL
+CYG_ADDRWORD Cyg_SchedThread::asr_data = 0;
+# endif
+
+#endif // CYGSEM_KERNEL_SCHED_ASR_SUPPORT
+
+// -------------------------------------------------------------------------
 // Constructor
 
 Cyg_SchedThread::Cyg_SchedThread(Cyg_Thread *thread, CYG_ADDRWORD sched_info)
@@ -282,42 +359,116 @@ Cyg_SchedThread::Cyg_SchedThread(Cyg_Thread *thread, CYG_ADDRWORD sched_info)
     if( Cyg_Scheduler::current_thread == NULL )
         Cyg_Scheduler::current_thread = thread;
 
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL
 
     mutex_count = 0;
+    
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_SIMPLE
+    
     priority_inherited = false;
     
 #endif
+#endif
+
+#ifdef CYGSEM_KERNEL_SCHED_ASR_SUPPORT
+
+    asr_inhibit = false;
+    asr_pending = false;
+
+#ifndef CYGSEM_KERNEL_SCHED_ASR_GLOBAL
+    asr = asr_default;
+#endif
+#ifdef CYGSEM_KERNEL_SCHED_ASR_DATA_GLOBAL
+    asr_data = NULL
+#endif        
     
+#endif    
 }
 
 // -------------------------------------------------------------------------
-// Priority inheritance support.
+// ASR support functions
 
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE
+#ifdef CYGSEM_KERNEL_SCHED_ASR_SUPPORT
 
 // -------------------------------------------------------------------------
-// Inherit the priority of the provided thread if it
-// has a higher priority than ours.
+// Set ASR
+// Install a new ASR, returning the old one.
 
-void Cyg_SchedThread::inherit_priority( Cyg_Thread *thread)
+void Cyg_SchedThread::set_asr( Cyg_ASR  *new_asr, CYG_ADDRWORD  new_data,
+                  Cyg_ASR **old_asr, CYG_ADDRWORD *old_data)
 {
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE
+    CYG_REPORT_FUNCTION();
 
-    // A simple implementation of priority inheritance.  If the other
-    // thread is of higher priority, reset our priority to his. The
-    // first time we do this, save our original priority.
+    // Do this with the scheduler locked...
+    Cyg_Scheduler::lock();
 
+    if( old_asr != NULL ) *old_asr = asr;
+    if( old_data != NULL ) *old_data = asr_data;
+
+    // If new_asr is NULL, do not change the ASR,
+    // but only change the data.
+    if( new_asr != NULL ) asr = new_asr;
+    asr_data = new_data;
+    
+    Cyg_Scheduler::unlock();
+}
+
+// -------------------------------------------------------------------------
+// Clear ASR
+
+void Cyg_SchedThread::clear_asr()
+{
+    CYG_REPORT_FUNCTION();
+
+    // Do this with the scheduler locked...
+    Cyg_Scheduler::lock();
+
+    // Reset ASR to default.
+    asr = asr_default;
+    asr_data = 0;
+    
+    Cyg_Scheduler::unlock();    
+}
+
+// -------------------------------------------------------------------------
+// Default ASR function.
+// having this avoids our having to worry about ever seeing a NULL
+// pointer as the ASR function.
+
+void Cyg_SchedThread::asr_default(CYG_ADDRWORD data)
+{
+    CYG_REPORT_FUNCTION();
+
+    data=data;
+    return;
+}
+
+#endif
+
+// -------------------------------------------------------------------------
+// Generic priority protocol support
+
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL
+
+void Cyg_SchedThread::set_inherited_priority( cyg_priority pri, Cyg_Thread *thread )
+{
+    CYG_REPORT_FUNCTION();
+
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_SIMPLE
+
+    // This is the comon code for priority inheritance and ceiling
+    // protocols. This implementation provides a simplified version of
+    // the protocol.
+    
     Cyg_Thread *self = CYG_CLASSFROMBASE(Cyg_Thread,
                                          Cyg_SchedThread,
                                          this);
 
     CYG_ASSERT( mutex_count > 0, "Non-positive mutex count");
-    CYG_ASSERT( self != thread, "Trying to inherit from self!");
     
     // Compare with *current* priority in case thread has already
     // inherited - for relay case below.
-    if( thread->get_current_priority() < priority )
+    if( pri < priority )
     {
         cyg_priority mypri = priority;
         cyg_bool already_inherited = priority_inherited;
@@ -329,7 +480,7 @@ void Cyg_SchedThread::inherit_priority( Cyg_Thread *thread)
 
         priority_inherited = false;     // so that set_prio DTRT
 
-        self->set_priority( thread->get_current_priority() );            
+        self->set_priority( pri );            
 
         if( !already_inherited )
             original_priority = mypri;
@@ -341,18 +492,14 @@ void Cyg_SchedThread::inherit_priority( Cyg_Thread *thread)
 #endif
 }
 
-// -------------------------------------------------------------------------
-// Inherit the priority of the ex-owner thread or from the queue if it
-// has a higher priority than ours.
-
-void Cyg_SchedThread::relay_priority( Cyg_Thread *ex_owner, Cyg_ThreadQueue *pqueue)
+void Cyg_SchedThread::relay_inherited_priority( Cyg_Thread *ex_owner, Cyg_ThreadQueue *pqueue)
 {
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE
+    CYG_REPORT_FUNCTION();
+
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_SIMPLE
 
     // A simple implementation of priority inheritance.
     // At its simplest, this member does nothing.
-
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE_RELAY
 
     // If there is anyone else waiting, then the *new* owner inherits from
     // the current one, since that is a maxima of the others waiting.
@@ -361,37 +508,29 @@ void Cyg_SchedThread::relay_priority( Cyg_Thread *ex_owner, Cyg_ThreadQueue *pqu
     // priority ceiling.
 
     if ( !pqueue->empty() )
-        inherit_priority( ex_owner );
+        set_inherited_priority( ex_owner->get_current_priority(), ex_owner );
 
-#endif
 #endif
 }
 
-// -------------------------------------------------------------------------
-// Lose a priority inheritance
-
-void Cyg_SchedThread::disinherit_priority()
+void Cyg_SchedThread::clear_inherited_priority()
 {
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE
+    CYG_REPORT_FUNCTION();
 
-    // A simple implementation of priority inheritance.  The
-    // simplification in this algorithm is that we do not reduce our
-    // priority until we have freed all mutexes claimed. Hence we can
-    // continue to run at an artificially high priority even when we
-    // should not.  However, since nested mutexes are rare, the thread
-    // we have inherited from is likely to be locking the same mutexes
-    // we are, and mutex claim periods should be very short, the
-    // performance difference between this and a more complex algorithm
-    // should be negligible. The most important advantage of this
-    // algorithm is that it is fast and deterministic.
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_SIMPLE
+
+    // A simple implementation of priority inheritance/ceiling
+    // protocols.  The simplification in this algorithm is that we do
+    // not reduce our priority until we have freed all mutexes
+    // claimed. Hence we can continue to run at an artificially high
+    // priority even when we should not.  However, since nested
+    // mutexes are rare, the thread we have inherited from is likely
+    // to be locking the same mutexes we are, and mutex claim periods
+    // should be very short, the performance difference between this
+    // and a more complex algorithm should be negligible. The most
+    // important advantage of this algorithm is that it is fast and
+    // deterministic.
     
-    // The simplest algorithm also does not cause a 2nd owner (who waited)
-    // of a mutex to inherit from 3rd, 4th &c threads that are queueing up
-    // when it is awoken.  That limitation is avoided when
-    // CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE_RELAY is also
-    // enabled, see above, which passes the raised priority from one thread
-    // to the next along with the mutex, like a relay baton.
-
     Cyg_Thread *self = CYG_CLASSFROMBASE(Cyg_Thread,
                                          Cyg_SchedThread,
                                          this);
@@ -408,10 +547,85 @@ void Cyg_SchedThread::disinherit_priority()
         
     }
     
-#endif    
+#endif        
 }
 
-#endif // CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE of any kind
+#endif // CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL
+
+// -------------------------------------------------------------------------
+// Priority inheritance support.
+
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_INHERIT
+
+// -------------------------------------------------------------------------
+// Inherit the priority of the provided thread if it
+// has a higher priority than ours.
+
+void Cyg_SchedThread::inherit_priority( Cyg_Thread *thread)
+{
+    CYG_REPORT_FUNCTION();
+
+    Cyg_Thread *self = CYG_CLASSFROMBASE(Cyg_Thread,
+                                         Cyg_SchedThread,
+                                         this);
+
+    CYG_ASSERT( mutex_count > 0, "Non-positive mutex count");
+    CYG_ASSERT( self != thread, "Trying to inherit from self!");
+
+    self->set_inherited_priority( thread->get_current_priority(), thread );
+    
+}
+
+// -------------------------------------------------------------------------
+// Inherit the priority of the ex-owner thread or from the queue if it
+// has a higher priority than ours.
+
+void Cyg_SchedThread::relay_priority( Cyg_Thread *ex_owner, Cyg_ThreadQueue *pqueue)
+{
+    CYG_REPORT_FUNCTION();
+
+    relay_inherited_priority( ex_owner, pqueue );
+}
+
+// -------------------------------------------------------------------------
+// Lose a priority inheritance
+
+void Cyg_SchedThread::disinherit_priority()
+{
+    CYG_REPORT_FUNCTION();
+
+    CYG_ASSERT( mutex_count >= 0, "Non-positive mutex count");
+
+    clear_inherited_priority();
+}
+
+#endif // CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_INHERIT
+
+// -------------------------------------------------------------------------
+// Priority ceiling support
+
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_CEILING
+
+void Cyg_SchedThread::set_priority_ceiling( cyg_priority pri )
+{
+    CYG_REPORT_FUNCTION();
+
+    CYG_ASSERT( mutex_count > 0, "Non-positive mutex count");
+
+    set_inherited_priority( pri );
+
+}
+
+void Cyg_SchedThread::clear_priority_ceiling( )
+{
+    CYG_REPORT_FUNCTION();
+
+    CYG_ASSERT( mutex_count >= 0, "Non-positive mutex count");
+
+    clear_inherited_priority();
+}
+
+#endif // CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_CEILING
 
 // -------------------------------------------------------------------------
 // EOF sched/sched.cxx

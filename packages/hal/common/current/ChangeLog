@@ -1,3 +1,51 @@
+2000-08-14  Drew Moseley  <dmoseley@redhat.com>
+
+	* src/hal_if.c: Added an extern declaration for
+	cyg_hal_plf_comms_init.	
+
+	* src/bplist-dynamic.c: Only use breakpoint lists when building
+	stubs.
+
+2000-08-10  Drew Moseley  <dmoseley@redhat.com>
+
+	* include/generic-stub.h: Added support for register validity
+	checking.
+	* src/generic-stub.c: Ditto.
+	* src/hal_stub.c: Ditto.
+
+	* include/drv_api.h: Added cyg_code_t.
+
+2000-08-03  Gary Thomas  <gthomas@redhat.com>
+
+	* include/hal_if.h (CYGNUM_CALL_IF_DBG_DATA): Move to avoid
+	conflict.
+
+2000-07-26  Gary Thomas  <gthomas@redhat.com>
+
+	* src/hal_stub.c (cyg_hal_gdb_diag_putc): Ignore any characters
+	other than the protocol chars of ACK/NAK/^C.
+
+	* src/hal_if.c (hal_if_diag_init): Only reset console channel
+	if user has configured a non-default choice.
+
+2000-07-24  Drew Moseley  <dmoseley@redhat.com>
+
+	* src/bplist-dynamic.c (__install_breakpoint_list): Call
+	HAL_ICACHE_SYNC() rather than HAL_ICACHE_INVALIDATE_ALL().
+
+2000-07-21  Drew Moseley  <dmoseley@cygnus.com>
+
+	* src/hal_stub.c: Cleanup of #define's.
+
+	* src/generic-stub.c: Rearrange the linkage between Cygmon and HAL so
+	that Cygmon needs HAL but not vice-versa.  ie HAL no longer calls
+	any Cygmon functions.
+	* src/hal_misc.c: Ditto.
+
+	* src/bplist-dynamic.c: Use HAL macros rather than Cygmon
+	functions for flushing the cache.
+	Also handle the case where target_register_t is not defined.
+
 2000-07-21  Gary Thomas  <gthomas@redhat.com>
 
 	* src/hal_if.c (CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS): Define to allow
@@ -118,6 +166,14 @@
 	functions. PROCS_HANDLED removed since the procs table will now
 	always service any port.
 
+2000-06-21  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/hal_stub.h: Added underscore to breakinst().
+
+	* include/hal_tables.h:
+	Added this file to contain macros for defining datatables in a
+	systematic and extensible way.
+
 2000-06-19  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/hal.cdl: Revert change below - GUARANTEED can exist
@@ -140,6 +196,12 @@
 2000-06-15  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_if.h: Added console-include decision logic.
+
+2000-06-15  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/drv_api.c: 
+	* include/drv_api.h: Added boolean result to cyg_drv_cond_wait()
+	to match change to the kernel and KAPI functionality.
 
 2000-06-14  Jesper Skov  <jskov@redhat.com>
 

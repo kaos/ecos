@@ -1170,17 +1170,17 @@ bool mem_map::export_sections (FILE * script_stream, FILE * header_stream, mem_t
                 {
                     // output section symbol
                     if (section_view->section->final_location->anchor == absolute) // an absolute VMA
-                        fprintf (script_stream, "    __%s = %#lx;", section_view->section->name.c_str (), section_view->section->final_location->address);
+                        fprintf (script_stream, "    CYG_LABEL_DEFN(__%s) = %#lx;", section_view->section->name.c_str (), section_view->section->final_location->address);
                     else // a relative VMA
-                        fprintf (script_stream, "    __%s = ALIGN (%#lx);", section_view->section->name.c_str (), section_view->section->alignment);
+                        fprintf (script_stream, "    CYG_LABEL_DEFN(__%s) = ALIGN (%#lx);", section_view->section->name.c_str (), section_view->section->alignment);
 
                     // update current location pointer
                     if (section_view->section->size != 0) // size is known
-                        fprintf (script_stream, " . = __%s + %#lx;", section_view->section->name.c_str (), section_view->section->size);
+                        fprintf (script_stream, " . = CYG_LABEL_DEFN(__%s) + %#lx;", section_view->section->name.c_str (), section_view->section->size);
 
                     // output reference to symbol in header file
-                    fprintf (header_stream, "extern char CYG_LABEL_NAME (_%s) [];\n", section_view->section->name.c_str ());
-                    fprintf (header_stream, "#define CYGMEM_SECTION_%s (CYG_LABEL_NAME (_%s))\n", section_view->section->name.c_str (), section_view->section->name.c_str ());
+                    fprintf (header_stream, "#ifndef __ASSEMBLER__\nextern char CYG_LABEL_NAME (__%s) [];\n#endif\n", section_view->section->name.c_str ());
+                    fprintf (header_stream, "#define CYGMEM_SECTION_%s (CYG_LABEL_NAME (__%s))\n", section_view->section->name.c_str (), section_view->section->name.c_str ());
                     if (section_view->section->size == 0) // a section of unknown size
                     {
                         mem_address section_end_address;
@@ -1192,7 +1192,7 @@ bool mem_map::export_sections (FILE * script_stream, FILE * header_stream, mem_t
                             section_end_address = section_view->section->final_location->address;
                         --section_view; // move back to previous section view
 
-                        fprintf (header_stream, "#define CYGMEM_SECTION_%s_SIZE (%#lx - (size_t) CYG_LABEL_NAME (_%s))\n", section_view->section->name.c_str (), section_end_address, section_view->section->name.c_str ());
+                        fprintf (header_stream, "#define CYGMEM_SECTION_%s_SIZE (%#lx - (size_t) CYG_LABEL_NAME (__%s))\n", section_view->section->name.c_str (), section_end_address, section_view->section->name.c_str ());
                     }
                     else // a section of known size
                         fprintf (header_stream, "#define CYGMEM_SECTION_%s_SIZE (%#lx)\n", section_view->section->name.c_str (), section_view->section->size);
@@ -1245,12 +1245,15 @@ bool mem_map::export_files (LPCTSTR  script_name, LPCTSTR  header_name)
     time (&export_time);
     struct tm * local = localtime (&export_time);
     fprintf (script_stream, "// eCos memory layout - %s\n%s\n\n", asctime (local), MLT_GENERATED_WARNING);
+    fprintf (script_stream, "#include <cyg/infra/cyg_type.inc>\n\n");
 
     // output the header file header
 
     fprintf (header_stream, "// eCos memory layout - %s\n%s\n\n", asctime (local), MLT_GENERATED_WARNING);
+	fprintf (header_stream, "#ifndef __ASSEMBLER__\n");
 	fprintf (header_stream, "#include <cyg/infra/cyg_type.h>\n"); // for the CYG_LABEL_NAME macro definition
 	fprintf (header_stream, "#include <stddef.h>\n\n"); // for size_t
+	fprintf (header_stream, "#endif\n");
 
     // output the MEMORY block
 

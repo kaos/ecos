@@ -365,7 +365,7 @@ void __clear_breakpoints (void)
 int
 __is_breakpoint_function ()
 {
-    return get_register (PC) == (target_register_t)(unsigned long)&CYG_LABEL_NAME(breakinst);
+    return get_register (PC) == (target_register_t)(unsigned long)&_breakinst;
 }
 
 

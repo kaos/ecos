@@ -113,7 +113,7 @@ public:
         
     void        post();                 // Increment count
 
-    cyg_count32 peek();                 // Get current count value
+    cyg_count32 peek() const;           // Get current count value
     
     inline
     cyg_bool    waiting()               // Is anyone waiting?

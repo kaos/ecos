@@ -1409,19 +1409,19 @@ cre_mpl ( ID mplid, T_CMPL *pk_cmpl )
     CYG_UIT_PARAMCHECK_PTR( pk_cmpl );
     CYG_UITRON_CHECK_NO_OBJ_LOCK_SCHED( MEMPOOLVAR, mplid );
     Cyg_Mempool_Variable *p = &(CYG_UITRON_OBJS( MEMPOOLVAR )[ mplid - 1 ]);
-    cyg_uint8 *base;
-    cyg_int32 size;
-    CYG_ADDRWORD scratch;
-    // preserve the original memory area to use
-    p->get_arena( base, size, scratch );
+    Cyg_Mempool_Status stat;
 
-    if ( size < pk_cmpl->mplsz )
+    // preserve the original memory area to use
+    p->get_status( CYG_MEMPOOL_STAT_ORIGBASE|CYG_MEMPOOL_STAT_ORIGSIZE, stat );
+
+    if ( stat.origsize < pk_cmpl->mplsz )
         ret = E_NOMEM;
     else if ( TA_TFIFO != pk_cmpl->mplatr )
         ret = E_RSATR;
     else
         CYG_UITRON_PTRS( MEMPOOLVAR )[ mplid - 1 ] =
-            new( p ) Cyg_Mempool_Variable( base, size );
+            new( p ) Cyg_Mempool_Variable( 
+                const_cast<cyg_uint8 *>(stat.origbase), stat.origsize );
     Cyg_Scheduler::unlock();
     return ret;
 }
@@ -1513,7 +1513,7 @@ rel_blk ( ID mplid, VP blk )
     Cyg_Mempool_Variable *p;
     CYG_UITRON_CHECK_AND_GETP_MEMPOOLVAR( mplid, p );
     CYG_UIT_PARAMCHECK_PTR( blk );
-    cyg_bool result = p->free( (cyg_uint8 *)blk, 0 );
+    cyg_bool result = p->free( (cyg_uint8 *)blk );
     if ( ! result )
         return E_PAR;
     return E_OK;
@@ -1524,17 +1524,17 @@ ER
 ref_mpl ( T_RMPL *pk_rmpl, ID mplid )
 {
     Cyg_Mempool_Variable *p;
+    Cyg_Mempool_Status stat;
     CYG_UITRON_CHECK_AND_GETP_MEMPOOLVAR( mplid, p );
     CYG_UIT_PARAMCHECK_PTR( pk_rmpl );
+    p->get_status( CYG_MEMPOOL_STAT_WAITING|
+                   CYG_MEMPOOL_STAT_TOTALFREE|
+                   CYG_MEMPOOL_STAT_MAXFREE, stat );
+
     pk_rmpl->exinf = NADR;
-    pk_rmpl->wtsk = p->waiting();
-    pk_rmpl->frsz = p->get_freemem();
-    
-    cyg_uint8 *base;
-    cyg_int32 size;
-    CYG_ADDRWORD maxfree;
-    p->get_arena(base, size, maxfree);
-    pk_rmpl->maxsz = maxfree;
+    pk_rmpl->wtsk = stat.waiting;
+    pk_rmpl->frsz = stat.totalfree;
+    pk_rmpl->maxsz = stat.maxfree;
 
     return E_OK;
 }
@@ -1557,21 +1557,20 @@ cre_mpf ( ID mpfid, T_CMPF *pk_cmpf )
     CYG_UIT_PARAMCHECK_PTR( pk_cmpf );
     CYG_UITRON_CHECK_NO_OBJ_LOCK_SCHED( MEMPOOLFIXED, mpfid );
     Cyg_Mempool_Fixed *p = &(CYG_UITRON_OBJS( MEMPOOLFIXED )[ mpfid - 1 ]);
-    cyg_uint8 *base;
-    cyg_int32 size;
-    CYG_ADDRWORD scratch;
-    // preserve the original memory area to use
-    p->get_arena( base, size, scratch );
+    Cyg_Mempool_Status stat;
 
-    if ( size < (pk_cmpf->blfsz * (pk_cmpf->mpfcnt + 1)) )
+    // preserve the original memory area to use
+    p->get_status( CYG_MEMPOOL_STAT_ORIGBASE|CYG_MEMPOOL_STAT_ORIGSIZE, stat );
+
+    if ( stat.origsize < (pk_cmpf->blfsz * (pk_cmpf->mpfcnt + 1)) )
         ret = E_NOMEM;
     else if ( TA_TFIFO != pk_cmpf->mpfatr )
         ret = E_RSATR;
     else
         CYG_UITRON_PTRS( MEMPOOLFIXED )[ mpfid - 1 ] =
             new( p )
-            Cyg_Mempool_Fixed( base, size,
-                               (CYG_ADDRWORD)pk_cmpf->blfsz );
+            Cyg_Mempool_Fixed( const_cast<cyg_uint8 *>(stat.origbase),
+                               stat.origsize, (CYG_ADDRWORD)pk_cmpf->blfsz );
     Cyg_Scheduler::unlock();
     return ret;
 }
@@ -1670,16 +1669,22 @@ ER
 ref_mpf ( T_RMPF *pk_rmpf, ID mpfid )
 {
     Cyg_Mempool_Fixed *p;
+    Cyg_Mempool_Status stat;
     CYG_UITRON_CHECK_AND_GETP_MEMPOOLFIXED( mpfid, p );
     CYG_UIT_PARAMCHECK_PTR( pk_rmpf );
-    pk_rmpf->exinf = NADR;
-    pk_rmpf->wtsk = p->waiting();
 
-    cyg_int32 blocksize = p->get_blocksize();
-    pk_rmpf->frbcnt = p->get_freemem() / blocksize;
+    p->get_status( CYG_MEMPOOL_STAT_WAITING|
+                   CYG_MEMPOOL_STAT_TOTALFREE|
+                   CYG_MEMPOOL_STAT_TOTALALLOCATED|
+                   CYG_MEMPOOL_STAT_BLOCKSIZE, stat );
+
+    pk_rmpf->exinf = NADR;
+    pk_rmpf->wtsk = stat.waiting;
+
+    pk_rmpf->frbcnt = stat.totalfree / stat.blocksize;
     // these two are "implementation dependent" ie. eCos only
-    pk_rmpf->numbcnt = p->get_totalmem() / blocksize;
-    pk_rmpf->bsize = blocksize;
+    pk_rmpf->numbcnt = stat.totalallocated / stat.blocksize;
+    pk_rmpf->bsize = stat.blocksize;
 
     return E_OK;
 }

@@ -219,15 +219,34 @@ ipq_unlock()
 	splx(s);
 }
 
+static char *ui8tod( cyg_uint8 n, char *p )
+{
+    if( n > 99 ) *p++ = (n/100) + '0';
+    if( n >  9 ) *p++ = ((n/10)%10) + '0';
+    *p++ = (n%10) + '0';
+    return p;
+}
+
 char *
 inet_ntoa(ina)
 	struct in_addr ina;
 {
 	static char buf[4*sizeof "123"];
+        char *p = buf;
 	unsigned char *ucp = (unsigned char *)&ina;
 
-	sprintf(buf, "%d.%d.%d.%d", ucp[0] & 0xff, ucp[1] & 0xff,
-	    ucp[2] & 0xff, ucp[3] & 0xff);
+//	sprintf(buf, "%d.%d.%d.%d", ucp[0] & 0xff, ucp[1] & 0xff,
+//	    ucp[2] & 0xff, ucp[3] & 0xff);
+
+        p = ui8tod( ucp[0] & 0xFF, p);
+        *p++ = '.';
+        p = ui8tod( ucp[1] & 0xFF, p);
+        *p++ = '.';
+        p = ui8tod( ucp[2] & 0xFF, p);
+        *p++ = '.';
+        p = ui8tod( ucp[3] & 0xFF, p);
+        *p++ = '\0';
+                    
 	return (buf);
 }
 

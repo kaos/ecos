@@ -167,7 +167,7 @@ extern void __install_traps (void);
 
 #ifndef BREAKINST_DEFINED
 #define BREAKINST_DEFINED
-extern void CYG_LABEL_NAME(breakinst) (void);
+extern void _breakinst (void);
 #endif
 
 /* The opcode for a breakpoint instruction.  */

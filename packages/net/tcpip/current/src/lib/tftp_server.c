@@ -42,7 +42,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas
+// Contributors: gthomas, hmt, andrew.lunn@ascom.ch (Andrew Lunn)
 // Date:         2000-04-06
 // Purpose:      
 // Description:  
@@ -71,6 +71,18 @@ struct tftp_server {
     struct tftpd_fileops *ops;
 };
 
+static char * errmsg[] = {
+  "Undefined error code",
+  "File not found",
+  "Access violation",
+  "Disk full or allocation exceeded",
+  "Illegal TFTP operation",
+  "Unknown transfer ID",
+  "File already exists",
+  "No such user" 
+};
+
+
 //
 // Receive a file from the client
 //
@@ -83,7 +95,7 @@ tftpd_write_file(struct tftp_server *server,
     char data_in[SEGSIZE+sizeof(struct tftphdr)];
     struct tftphdr *reply = (struct tftphdr *)data_out;
     struct tftphdr *response = (struct tftphdr *)data_in;
-    int fd, block, len, ok, data_len, s;
+    int fd, block, len, ok, closed, data_len, s;
     struct timeval timeout;
     fd_set fds;
     int total_timeouts = 0;
@@ -107,8 +119,8 @@ tftpd_write_file(struct tftp_server *server,
     }
     if ((fd = (server->ops->open)(hdr->th_stuff, O_WRONLY)) < 0) {
         reply->th_opcode = htons(ERROR);
-        reply->th_code = htons(ENOTFOUND);
-        strcpy(reply->th_msg, "Can't open file");
+        reply->th_code = htons(TFTP_ENOTFOUND);
+        strcpy(reply->th_msg, errmsg[TFTP_ENOTFOUND]);
         sendto(s, reply, 4+strlen(reply->th_msg)+1, 0, 
                (struct sockaddr *)from_addr, from_len);
         close(s);
@@ -120,6 +132,7 @@ tftpd_write_file(struct tftp_server *server,
     sendto(s, reply, 4, 0, (struct sockaddr *)from_addr, from_len);
     block = 1;
     ok = true;
+    closed = false;
     while (ok) {
         timeout.tv_sec = TFTP_TIMEOUT_PERIOD;
         timeout.tv_usec = 0;
@@ -151,15 +164,33 @@ tftpd_write_file(struct tftp_server *server,
                         // File is "full"
                         reply->th_opcode = htons(ERROR);
                         reply->th_code = htons(TFTP_ENOSPACE);
+                        strcpy(reply->th_msg, errmsg[TFTP_ENOSPACE]);
+                        sendto(s, reply, 4+strlen(reply->th_msg)+1, 0, 
+                               (struct sockaddr *)from_addr, from_len);
                         ok = false;  // Give up
                     } else {
-                        reply->th_opcode = htons(ACK);
-                        reply->th_block = htons(block++);
-                    }
-                    sendto(s, reply, 4, 0, (struct sockaddr *)from_addr, from_len);
-                    if (data_len < (SEGSIZE+4)) { 
-                        // End of file
-                        ok = false;
+                        if (data_len < (SEGSIZE+4)) {
+                            // End of file
+                            closed = true;
+                            ok = false;
+                            if ((server->ops->close)(fd) == -1) {
+                                reply->th_opcode = htons(ERROR);
+                                reply->th_code = htons(TFTP_EACCESS); 
+                                strcpy(reply->th_msg, errmsg[TFTP_EACCESS]);
+                                sendto(s, reply, 4+strlen(reply->th_msg)+1, 0, 
+                                    (struct sockaddr *)from_addr, from_len);
+                            } else {
+                                reply->th_opcode = htons(ACK);
+                                reply->th_block = htons(block++);
+                                sendto(s, reply, 4, 0,
+                                       (struct sockaddr *)from_addr, from_len);
+                            }
+                        } else {
+                            reply->th_opcode = htons(ACK);
+                            reply->th_block = htons(block++);
+                            sendto(s, reply, 4, 0,
+                                   (struct sockaddr *)from_addr, from_len);
+                        }
                     }
                 } else {
                     // Something is wrong - tell client last good block
@@ -168,14 +199,18 @@ tftpd_write_file(struct tftp_server *server,
             } else {
                 // Client has sent something bogus - bag out!
                 reply->th_opcode = htons(ERROR);
-                reply->th_code = htons(TFTP_EBADOP);
-                sendto(s, reply, 4, 0, (struct sockaddr *)from_addr, from_len);
+                reply->th_code = htons(TFTP_EBADOP); 
+                strcpy(reply->th_msg, errmsg[TFTP_EBADOP]);
+                sendto(s, reply, 4+strlen(reply->th_msg)+1, 0, 
+                       (struct sockaddr *)from_addr, from_len);
                 ok = false;
             }
         }
     }
     close(s);
-    (server->ops->close)(fd);
+    if (!closed) {
+      (server->ops->close)(fd);
+    }
 }
 
 //
@@ -214,8 +249,8 @@ tftpd_read_file(struct tftp_server *server,
     }
     if ((fd = (server->ops->open)(hdr->th_stuff, O_RDONLY)) < 0) {
         reply->th_opcode = htons(ERROR);
-        reply->th_code = htons(ENOTFOUND);
-        strcpy(reply->th_msg, "Can't open file");
+        reply->th_code = htons(TFTP_ENOTFOUND);
+        strcpy(reply->th_msg, errmsg[TFTP_ENOTFOUND]);
         sendto(s, reply, 4+strlen(reply->th_msg)+1, 0, 
                (struct sockaddr *)from_addr, from_len);
         close(s);
@@ -348,8 +383,8 @@ tftpd_server(cyg_addrword_t p)
                 diag_printf("TFTPD: bogus request %x from %s:%d\n", 
                             ntohs(hdr->th_opcode), inet_ntoa(from_addr.sin_addr), from_addr.sin_port);
                 hdr->th_opcode = htons(ERROR);
-                hdr->th_code = htons(EBADOP);
-                strcpy(hdr->th_msg, "Illegal request/operation");
+                hdr->th_code = htons(TFTP_EBADOP);
+                strcpy(hdr->th_msg, errmsg[TFTP_EBADOP]);;
                 sendto(s, hdr, 4+strlen(hdr->th_msg)+1, 0, 
                        (struct sockaddr *)&from_addr, from_len);
             }

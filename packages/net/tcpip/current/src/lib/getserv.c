@@ -60,6 +60,7 @@ static struct servent services[] = {
     { "ftp",      0, 21, "tcp" },
     { "ftp-data", 0, 20, "tcp" },
     { "tftp",     0, 69, "udp" },
+    { NULL,       0,  0, NULL  }
 };
 
 struct servent *

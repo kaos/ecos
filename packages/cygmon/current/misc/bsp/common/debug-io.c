@@ -49,12 +49,18 @@
 
 static unsigned char __debug_ungetc;
 
+extern int stub_is_active;
+extern int __output_gdb_string (const char *str, int string_len);
 void
 bsp_debug_write(const char *p, int len)
 {
     struct bsp_comm_procs *com = bsp_shared_data->__debug_procs;
-
-    com->__write(com->ch_data, p, len);
+    if (stub_is_active) {
+        // We are running in 'GDB' mode
+        __output_gdb_string(p, len);
+    } else {
+        com->__write(com->ch_data, p, len);
+    }
 }
 
 

@@ -517,11 +517,11 @@ cyg_assert_fail( const char *psz_func, const char *psz_file,
 
 extern "C"
 {
-extern unsigned long CYG_LABEL_NAME(stext);
-extern unsigned long CYG_LABEL_NAME(etext);
+extern unsigned long _stext;
+extern unsigned long _etext;
 
-unsigned long stext_addr = (unsigned long)&CYG_LABEL_NAME(stext);
-unsigned long etext_addr = (unsigned long)&CYG_LABEL_NAME(etext);
+unsigned long stext_addr = (unsigned long)&_stext;
+unsigned long etext_addr = (unsigned long)&_etext;
 };
 
 externC cyg_bool cyg_check_data_ptr(void *ptr)

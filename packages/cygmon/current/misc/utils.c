@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    
-// Contributors: gthomas
+// Contributors: gthomas, dmoseley
 // Date:         1999-10-20
 // Purpose:      Monitor utilities.
 // Description:  
@@ -137,41 +137,6 @@ str2int (char *str, int base)
 {
   return str2ull(str, base);
 }
-
-
-/* Converts a string to a float, input is a raw integer string
- * of the given assumed base. */
-#if HAVE_FLOAT_REGS
-static float
-str2float (char *str, int base)
-{
-  float f;
-  unsigned long long ull = str2ull(str, base);
-
-  switch (sizeof(float))
-    {
-      case sizeof(unsigned int):
-	*((unsigned int *)&f) = ull;
-	break;
-#if __LONG_MAX__ != __INT_MAX__
-      case sizeof(unsigned long):
-	*((unsigned long *)&f) = ull;
-	break;
-#endif
-#if __LONG_LONG_MAX__ != __LONG_MAX__
-      case sizeof(unsigned long long):
-	*((unsigned long long *)&f) = ull;
-	break;
-#endif
-      default:
-	f = 0.0;
-	break;
-    }
-
-  return f;
-}
-#endif
-
 
 /* Converts a string to a double, input is a raw integer string
  * of the given assumed base. */
@@ -297,30 +262,6 @@ int2str (target_register_t number, int base, int numdigs)
   return ull2str((unsigned long long)number, base, numdigs);
 }
 
-#if HAVE_FLOAT_REGS
-static char *
-float2str(float f)
-{
-  switch(sizeof(float))
-    {
-      case sizeof(unsigned int):
-	return ull2str(*((unsigned int *)&f), 16, sizeof(float) * 2);
-	break;
-#if __LONG_MAX__ != __INT_MAX__
-      case sizeof(unsigned long):
-	return ull2str(*((unsigned long *)&f), 16, sizeof(float) * 2);
-	break;
-#endif
-#if __LONG_LONG_MAX__ != __LONG_MAX__
-      case sizeof(unsigned long long):
-	return ull2str(*((unsigned long long *)&f), 16, sizeof(float) * 2);
-	break;
-#endif
-    }
-  return "....fixme...";
-}
-#endif
-
 #if HAVE_DOUBLE_REGS
 static char *
 doudble2str(double d)
@@ -377,9 +318,7 @@ get_register_type(regnames_t which)
 }
 #endif
 
-
-char *
-get_register_str (regnames_t which, int detail)
+char *get_register_str (regnames_t which, int detail, int valid)
 {
 #ifdef SPECIAL_REG_OUTPUT
   char *res;
@@ -389,7 +328,21 @@ get_register_str (regnames_t which, int detail)
       return res;
     }
 #endif
-  return int2str (get_register (which), 16, sizeof (target_register_t) * 2);
+  if (valid == 0)
+    {
+      switch (sizeof (target_register_t))
+        {
+        case 1:  return "...";
+        case 2:  return ".....";
+        case 4:  return ".........";
+        case 8:  return ".................";
+        default: return ".........";
+        }
+    }
+  else
+    {
+      return int2str (get_register (which), 16, sizeof (target_register_t) * 2);
+    }
 }
 
 

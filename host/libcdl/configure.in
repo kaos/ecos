@@ -70,11 +70,6 @@ CYG_AC_PROG_STANDARD_COMPILER_FLAGS
 dnl AM_DISABLE_SHARED
 dnl AM_PROG_LIBTOOL
 
-dnl This package cannot be cross-compiled yet.
-if test ${cross_compiling} = yes; then
-  AC_MSG_ERROR(cross-compilation of this package is not supported)
-fi
-
 dnl Allow the usual assertion and trace related options.
 CYG_AC_ARG_INFRASTRUCTURE
 

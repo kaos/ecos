@@ -289,7 +289,6 @@ CdlConfigurationBody::get_class_name() const
 void
 CdlConfigurationBody::load_package(std::string name, std::string version,
                                    CdlDiagnosticFnPtr error_fn, CdlDiagnosticFnPtr warn_fn, bool limbo)
-    throw(CdlInputOutputException, CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlConfiguration::load_package");
     CYG_REPORT_FUNCARG1XV(this);
@@ -350,7 +349,6 @@ CdlConfigurationBody::unload_package(CdlTransaction transaction, std::string nam
 void
 CdlConfigurationBody::change_package_version(std::string name, std::string version,
                                              CdlDiagnosticFnPtr error_fn, CdlDiagnosticFnPtr warn_fn, bool limbo)
-    throw(CdlInputOutputException, CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlConfiguration::change_package_version");
     CYG_REPORT_FUNCARG1XV(this);
@@ -365,7 +363,6 @@ CdlConfigurationBody::change_package_version(std::string name, std::string versi
 void
 CdlConfigurationBody::change_package_version(CdlPackage package, std::string version,
                                              CdlDiagnosticFnPtr error_fn, CdlDiagnosticFnPtr warn_fn, bool limbo)
-    throw(CdlInputOutputException, CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlConfiguration::change_package_version");
     CYG_REPORT_FUNCARG1XV(this);
@@ -380,7 +377,6 @@ CdlConfigurationBody::change_package_version(CdlPackage package, std::string ver
 void
 CdlConfigurationBody::change_package_version(CdlTransaction transaction, std::string name, std::string new_version,
                                              CdlDiagnosticFnPtr error_fn, CdlDiagnosticFnPtr warn_fn, bool limbo)
-    throw(CdlInputOutputException, CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlConfiguration::change_package_version");
     CYG_REPORT_FUNCARG2XV(this, transaction);
@@ -408,7 +404,6 @@ CdlConfigurationBody::change_package_version(CdlTransaction transaction, std::st
 void
 CdlConfigurationBody::add(std::string filename,
                           CdlDiagnosticFnPtr error_fn, CdlDiagnosticFnPtr warn_fn)
-    throw(CdlInputOutputException, CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlConfiguration::add");
     CYG_REPORT_FUNCARG1XV(this);
@@ -423,7 +418,6 @@ CdlConfigurationBody::add(std::string filename,
 void
 CdlConfigurationBody::set_template(std::string name, std::string version,
                                    CdlDiagnosticFnPtr error_fn, CdlDiagnosticFnPtr warn_fn, bool limbo)
-    throw(CdlInputOutputException, CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlConfiguration::set_template");
     CYG_REPORT_FUNCARG1XV(this);
@@ -438,7 +432,6 @@ CdlConfigurationBody::set_template(std::string name, std::string version,
 void
 CdlConfigurationBody::set_template_file(std::string filename,
                                         CdlDiagnosticFnPtr error_fn, CdlDiagnosticFnPtr warn_fn, bool limbo)
-    throw(CdlInputOutputException, CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlConfiguration::set_template_file");
     CYG_REPORT_FUNCARG1XV(this);
@@ -453,7 +446,6 @@ CdlConfigurationBody::set_template_file(std::string filename,
 void
 CdlConfigurationBody::set_template(CdlTransaction transaction, std::string template_name, std::string version,
                                    CdlDiagnosticFnPtr error_fn, CdlDiagnosticFnPtr warn_fn, bool limbo)
-    throw(CdlInputOutputException, CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlConfiguration::set_template");
     CYG_REPORT_FUNCARG2XV(this, transaction);
@@ -495,7 +487,6 @@ CdlConfigurationBody::unload_template(bool limbo)
 void
 CdlConfigurationBody::set_hardware(std::string name,
                                    CdlDiagnosticFnPtr error_fn, CdlDiagnosticFnPtr warn_fn, bool limbo)
-    throw(CdlInputOutputException, CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlConfiguration::set_hardware");
     CYG_REPORT_FUNCARG1XV(this);
@@ -735,7 +726,6 @@ class CdlConfiguration_CommitCancelTemplateName :
 void
 CdlConfigurationBody::load_package(CdlTransaction transaction, std::string name, std::string version,
                                    CdlDiagnosticFnPtr error_fn, CdlDiagnosticFnPtr warn_fn, bool limbo)
-    throw(CdlInputOutputException, CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlConfiguration::load_package");
     CYG_REPORT_FUNCARG1XV(this);
@@ -989,7 +979,6 @@ CdlConfigurationBody::unload_package(CdlTransaction transaction, CdlPackage pack
 void
 CdlConfigurationBody::change_package_version(CdlTransaction transaction, CdlPackage package, std::string new_version,
                                              CdlDiagnosticFnPtr error_fn, CdlDiagnosticFnPtr warn_fn, bool limbo)
-    throw(CdlInputOutputException, CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlConfiguration::change_package_version");
     CYG_REPORT_FUNCARG3XV(this, transaction, package);
@@ -1042,7 +1031,6 @@ CdlConfigurationBody::change_package_version(CdlTransaction transaction, CdlPack
 void
 CdlConfigurationBody::set_hardware(CdlTransaction transaction, std::string target_name,
                                    CdlDiagnosticFnPtr error_fn, CdlDiagnosticFnPtr warn_fn, bool limbo)
-    throw(CdlInputOutputException, CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlConfiguration::set_hardware");
     CYG_REPORT_FUNCARG2XV(this, transaction);
@@ -1247,7 +1235,6 @@ CdlConfigurationBody::unload_hardware(CdlTransaction transaction, bool limbo)
 void
 CdlConfigurationBody::set_template_file(CdlTransaction transaction, std::string filename,
                                         CdlDiagnosticFnPtr error_fn, CdlDiagnosticFnPtr warn_fn, bool limbo)
-    throw(CdlInputOutputException, CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlConfiguration::set_template_file");
     CYG_REPORT_FUNCARG3XV(this, transaction, limbo);
@@ -1404,7 +1391,6 @@ CdlConfigurationBody::initialize_savefile_support()
 
 void
 CdlConfigurationBody::save(CdlInterpreter interp, Tcl_Channel chan, int indentation, bool minimal)
-    throw(CdlInputOutputException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlConfiguration::save");
     CYG_REPORT_FUNCARG5XV(this, interp, chan, indentation, minimal);
@@ -1481,7 +1467,6 @@ CdlConfigurationBody::save(CdlInterpreter interp, Tcl_Channel chan, int indentat
 
 void
 CdlConfigurationBody::save(std::string filename, bool minimal)
-    throw(CdlInputOutputException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlConfiguration::save");
     CYG_REPORT_FUNCARG2XV(this, minimal);
@@ -1564,7 +1549,6 @@ CdlConfigurationBody::save(std::string filename, bool minimal)
 CdlConfiguration
 CdlConfigurationBody::load(std::string filename, CdlPackagesDatabase db, CdlInterpreter interp,
                            CdlDiagnosticFnPtr error_fn, CdlDiagnosticFnPtr warn_fn)
-    throw(CdlInputOutputException, CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAMETYPE("CdlConfiguration::load", "result %p");
     CYG_REPORT_FUNCARG4XV(db, interp, error_fn, warn_fn);
@@ -1593,7 +1577,6 @@ CdlConfigurationBody::load(std::string filename, CdlPackagesDatabase db, CdlInte
 void
 CdlConfigurationBody::add(CdlTransaction transaction, std::string filename,
                           CdlDiagnosticFnPtr error_fn, CdlDiagnosticFnPtr warn_fn)
-    throw(CdlInputOutputException, CdlParseException, std::bad_alloc)
 {
     CYG_REPORT_FUNCNAME("CdlConfiguration::add");
     CYG_REPORT_FUNCARG3XV(this, error_fn, warn_fn);

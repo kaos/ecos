@@ -153,6 +153,34 @@ cdl_package CYGPKG_INFRA {
     }
 
     # ========================================================================
+
+    cdl_option CYGFUN_INFRA_EMPTY_DELETE_FUNCTIONS {
+        display       "Provide empty C++ delete functions"
+        default_value 1
+        description   "
+            To deal with virtual destructors, where the correct delete()
+            function must be called for the derived class in question, the
+            underlying delete is called when needed, from destructors.  This
+            is regardless of whether the destructor is called by delete itself.
+            So there is a reference to delete() from all destructors.  The
+            default builtin delete() attempts to call free() if there is
+            one defined.  So, if you have destructors, and you have free(),
+            as in malloc() and free(), any destructor counts as a reference
+            to free().  So the dynamic memory allocation code is linked
+            in regardless of whether it gets explicitly called. This
+            increases code and data size needlessly.
+            
+            To defeat this undesirable behaviour, we define empty versions
+            of delete and delete[].  But doing this prevents proper use
+            of dynamic memory in C++ programs via C++'s new and delete
+            operators.
+            
+            Therefore, this option is provided
+            for explicitly disabling the provision of these empty functions,
+            so that new and delete can be used, if that is what is required."
+    }
+
+    # ========================================================================
     # Debugging-related miscellania.
     #
     # NOTE: this is not yet fully supported, by CDL nor by having a proper

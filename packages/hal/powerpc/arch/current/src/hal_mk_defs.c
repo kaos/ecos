@@ -44,6 +44,7 @@
 //==========================================================================
 
 #include <pkgconf/hal.h>
+#include CYGHWR_MEMORY_LAYOUT_H     
 
 #include <cyg/hal/hal_arch.h>           // HAL header
 #include <cyg/hal/hal_intr.h>           // HAL header
@@ -123,6 +124,14 @@ main(void)
     // Variant definitions - want these to be included instead.
 #ifdef CYGPKG_HAL_POWERPC_MPC8xx
     DEFINE(CYGNUM_HAL_VECTOR_NMI, CYGNUM_HAL_VECTOR_NMI);
+#endif
+
+    // Memory layout values (since these aren't "asm"-safe)
+#ifdef CYGMEM_REGION_rom    
+    DEFINE(CYGMEM_REGION_rom, CYGMEM_REGION_rom);
+#endif
+#ifdef CYGMEM_REGION_ram    
+    DEFINE(CYGMEM_REGION_ram, CYGMEM_REGION_ram);
 #endif
 }
 

@@ -88,13 +88,36 @@ INCLUDES = @INCLUDES@
 
 include_HEADERS = cdlcore.hxx cdl.hxx
 
-sources := interp.cxx	               expr.cxx                    refer.cxx                   cdlmisc.cxx                 conflict.cxx                property.cxx                parse.cxx                   base.cxx                    value.cxx                   build.cxx	               dialog.cxx                  wizard.cxx                  interface.cxx               transact.cxx                infer.cxx                   database.cxx                config.cxx                  package.cxx                 component.cxx               option.cxx
+sources := interp.cxx	    \
+           expr.cxx         \
+           refer.cxx        \
+           cdlmisc.cxx      \
+           conflict.cxx     \
+           property.cxx     \
+           parse.cxx        \
+           base.cxx         \
+           value.cxx        \
+           build.cxx	    \
+           dialog.cxx       \
+           wizard.cxx       \
+           interface.cxx    \
+           transact.cxx     \
+           infer.cxx        \
+           database.cxx     \
+           config.cxx       \
+           package.cxx      \
+           component.cxx    \
+           option.cxx
 
 
 noinst_LIBRARIES = libcdl.a
 libcdl_a_SOURCES = $(sources)
 
-infra_headers := $(cyg_ac_infra_incdir)/cyg/infra/cyg_ass.h                   $(cyg_ac_infra_incdir)/cyg/infra/cyg_trac.h                  $(cyg_ac_infra_incdir)/pkgconf/infra.h                       $(cyg_ac_infra_incdir)/pkgconf/hostinfra.h                   $(cyg_ac_infra_incdir)/cyg/infra/cyg_type.h
+infra_headers := $(cyg_ac_infra_incdir)/cyg/infra/cyg_ass.h  \
+                 $(cyg_ac_infra_incdir)/cyg/infra/cyg_trac.h \
+                 $(cyg_ac_infra_incdir)/pkgconf/infra.h      \
+                 $(cyg_ac_infra_incdir)/pkgconf/hostinfra.h  \
+                 $(cyg_ac_infra_incdir)/cyg/infra/cyg_type.h
 
 
 cdlcore_headers := cdlconfig.h cdlcore.hxx
@@ -369,7 +392,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  if test -f $$file; then d=.; else d=$(srcdir); fi; \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \

@@ -1,3 +1,18 @@
+2000-08-16  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/pkgconf/mlt_mips_vr4300_vrc4373_romram.mlt: 
+	* include/pkgconf/mlt_mips_vr4300_vrc4373_romram.ldi: 
+	* include/pkgconf/mlt_mips_vr4300_vrc4373_romram.h: 
+	Fixed typo in last change. Forgot that the RAM base address
+	appears twice in these files. Also fixed .h file to match.
+	
+2000-08-15  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/pkgconf/mlt_mips_vr4300_vrc4373_romram.mlt: 
+	* include/pkgconf/mlt_mips_vr4300_vrc4373_romram.ldi:
+	RAM start on these configurations should be 0x80000000 not
+	0x80100000.
+
 2000-05-22  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_diag.c: Removed CTRLC init hacks.

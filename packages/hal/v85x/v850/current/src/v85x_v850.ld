@@ -100,8 +100,7 @@ GROUP(libtarget.a libgcc.a)
     _GOT1_START_ = ABSOLUTE (.); *(.got1) _GOT1_END_ = ABSOLUTE (.); \
     _GOT2_START_ = ABSOLUTE (.); *(.got2) _GOT2_END_ = ABSOLUTE (.); \
     . = ALIGN (4); \
-    ___DEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.devtab*))) ___DEVTAB_END__ = ABSOLUTE (.); \
-    ___NETDEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.netdevtab*))) ___NETDEVTAB_END__ = ABSOLUTE (.); \
+    KEEP(*( SORT (.ecos.table.*))) ; \
     ___CTOR_LIST__ = ABSOLUTE (.); KEEP (*(SORT (.ctors*))) ___CTOR_END__ = ABSOLUTE (.); \
     ___DTOR_LIST__ = ABSOLUTE (.); KEEP (*(SORT (.dtors*))) ___DTOR_END__ = ABSOLUTE (.); \
     *(.dynamic) *(.sdata*) *(.sbss*) } \

@@ -68,6 +68,10 @@ __backup_return_address:
 
 #endif
 
+#if defined(CYGPKG_CYGMON)
+unsigned long cygmon_memsize = 0;
+#endif
+
 //--------------------------------------------------------------------------
 // Functions to support the detection and execution of a user provoked
 // program break. These are usually called from interrupt routines.

@@ -58,8 +58,8 @@
 #include <cyg/kernel/mbox.hxx>          // Cyg_Mbox
 #include <cyg/kernel/flag.hxx>          // Cyg_Flag
 #include <cyg/kernel/sema2.hxx>         // Cyg_Counting_Semaphore2
-#include <cyg/kernel/memfixed.hxx>      // Cyg_Mempool_Fixed
-#include <cyg/kernel/memvar.hxx>        // Cyg_Mempool_Variable
+#include <cyg/memalloc/memfixed.hxx>    // Cyg_Mempool_Fixed
+#include <cyg/memalloc/memvar.hxx>      // Cyg_Mempool_Variable
 #include <cyg/kernel/timer.hxx>         // Cyg_Timer
 
 // ------------------------------------------------------------------------

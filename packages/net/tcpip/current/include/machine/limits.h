@@ -58,6 +58,4 @@
 
 #include <limits.h>  // Compiler provided
 
-#define SSIZE_MAX       INT_MAX         /* max value for a ssize_t */
-
 #endif  /* _MACHINE_LIMITS_H_ */

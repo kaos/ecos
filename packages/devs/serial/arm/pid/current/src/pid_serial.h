@@ -100,7 +100,13 @@ struct serial_port {
 
 // Line Status Register
 #define LSR_RSR 0x01
+#define LSR_OE  0x02
+#define LSR_PE  0x04
+#define LSR_FE  0x08
+#define LSR_BI  0x10
 #define LSR_THE 0x20
+#define LSR_TEMT 0x40
+#define LSR_FIE 0x80
 
 // Modem Control Register
 #define MCR_DTR 0x01
@@ -108,9 +114,22 @@ struct serial_port {
 #define MCR_INT 0x08   // Enable interrupts
 
 // Interrupt status Register
+#define ISR_MS  0x00
+#define ISR_nIP 0x01
 #define ISR_Tx  0x02
+#define ISR_LS  0x03
 #define ISR_Rx  0x04
 #define ISR_RxTO  0x0C
+
+// Modem Status Register
+#define MSR_DCTS 0x01
+#define MSR_DDSR 0x02
+#define MSR_TERI 0x04
+#define MSR_DDCD 0x08
+#define MSR_CTS  0x10
+#define MSR_DSR  0x20
+#define MSR_RI   0x40
+#define MSR_CD   0x80
 
 static unsigned char select_word_length[] = {
     LCR_WL5,    // 5 bits / word (char)

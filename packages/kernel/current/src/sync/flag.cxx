@@ -242,12 +242,8 @@ Cyg_Flag::wait( Cyg_FlagValue pattern, WaitMode mode )
         // keep track of myself on the queue of waiting threads
         queue.enqueue( self );
 
-        CYG_ASSERT( 1 == Cyg_Scheduler::get_sched_lock(),
-                    "Called with non-zero scheduler lock");
-        
-        // Unlock scheduler and allow other threads to run
-        Cyg_Scheduler::unlock();
-        Cyg_Scheduler::lock();
+        // Allow other threads to run
+        Cyg_Scheduler::reschedule();
 
         CYG_ASSERT( ((CYG_ADDRWORD)&saveme) == 
                     Cyg_Thread::self()->get_wait_info(),
@@ -333,12 +329,8 @@ Cyg_Flag::wait( Cyg_FlagValue pattern, WaitMode mode,
         // keep track of myself on the queue of waiting threads
         queue.enqueue( self );
 
-        CYG_ASSERT( 1 == Cyg_Scheduler::get_sched_lock(),
-                    "Called with non-zero scheduler lock");
-        
-        // Unlock scheduler and allow other threads to run
-        Cyg_Scheduler::unlock();
-        Cyg_Scheduler::lock();
+        // Allow other threads to run
+        Cyg_Scheduler::reschedule();
 
         CYG_ASSERT( ((CYG_ADDRWORD)&saveme) == 
                     Cyg_Thread::self()->get_wait_info(),

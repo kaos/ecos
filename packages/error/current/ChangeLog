@@ -1,3 +1,38 @@
+2000-06-19  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/errno.h (errno): Added extern modifier to non-per-thread
+	instance of errno.
+
+2000-06-07  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/strerror.cxx: 
+	* include/codes.h: Added ESPIPE.
+
+2000-06-02  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/codes.h:
+	* src/strerror.cxx: Added some more codes.
+	
+2000-05-31  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/strerror.cxx: 
+	* include/codes.h:  Added EXDEV.
+
+2000-05-20  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/codes.h: Add EDEADLOCK synonym for EDEADLK
+	Add ENFILE
+	* src/strerror.cxx: Add blurb for ENFILE, ENOSPC, EDEADLK and ENOTSUP
+
+2000-05-02  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/codes.h: No need to conditionalize codes on CYGPKG_NET
+	Tidy a bit.
+	* src/errno.cxx: Move here from libc. Use kernel constant
+	per-thread data slot, not a dynamic one. Generally tidy.
+	* src/strerror.cxx: No need to conditionalize codes on CYGPKG_NET.
+	Tidy a bit.	
+
 2000-03-31  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/codes.h: Added some further codes.

@@ -34,7 +34,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas
+// Contributors: gthomas, dmoseley
 // Date:         1999-10-20
 // Purpose:      
 // Description:  
@@ -53,6 +53,10 @@
 
 #ifdef CYGPKG_HAL_MIPS
 #include "mips/cpu.h"
+#endif
+
+#ifdef CYGPKG_HAL_MN10300
+#include "mn10300/cpu.h"
 #endif
 
 #endif // __BSP_CPU_H__

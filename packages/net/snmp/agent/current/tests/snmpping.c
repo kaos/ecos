@@ -138,6 +138,8 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include <network.h>
 
+#include <cyg/infra/testcase.h>
+
 #define STACK_SIZE (CYGNUM_HAL_STACK_SIZE_TYPICAL + 0x1000)
 static char stack[STACK_SIZE];
 static cyg_thread thread_data;
@@ -148,16 +150,6 @@ static cyg_handle_t thread_handle;
 static unsigned char pkt1[MAX_PACKET], pkt2[MAX_PACKET];
 
 #define UNIQUEID 0x1234
-
-extern void
-cyg_test_exit(void);
-
-void
-pexit(char *s)
-{
-    perror(s);
-    cyg_test_exit();
-}
 
 // Compute INET checksum
 int
@@ -309,10 +301,42 @@ ping_test(struct bootp *bp)
     close(s);
 }
 
+static void
+ping_test_loopback( int lo )
+{
+    struct protoent *p;
+    struct timeval tv;
+    struct sockaddr_in host;
+    int s;
+
+    if ((p = getprotobyname("icmp")) == (struct protoent *)0) {
+        perror("getprotobyname");
+        return;
+    }
+    s = socket(AF_INET, SOCK_RAW, p->p_proto);
+    if (s < 0) {
+        perror("socket");
+        return;
+    }
+    tv.tv_sec = 1;
+    tv.tv_usec = 0;
+    setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+    // Set up host address
+    host.sin_family = AF_INET;
+    host.sin_addr.s_addr = htonl(INADDR_LOOPBACK + (0x100 * lo));
+    host.sin_port = 0;
+    ping_host(s, &host);
+    // Now try a bogus host
+    host.sin_addr.s_addr = htonl(ntohl(host.sin_addr.s_addr) + 32);
+    ping_host(s, &host);
+    close(s);
+}
+
 void
 net_test(cyg_addrword_t p)
 {
-    int i = 4;
+    int i = 0;
+    int j;
     diag_printf("Start PING test\n");
     init_all_network_interfaces();
 #ifdef CYGPKG_SNMPAGENT
@@ -325,17 +349,23 @@ net_test(cyg_addrword_t p)
 #ifdef CYGHWR_NET_DRIVER_ETH0
         if (eth0_up) {
             ping_test(&eth0_bootp_data);
+            cyg_thread_delay(500);
         }
-        cyg_thread_delay(500);
+#endif
+#if NLOOP > 0
+        for ( j = 0; j < NLOOP; j++ ) {
+            ping_test_loopback( j );
+            cyg_thread_delay(500);
+        }
 #endif
 #ifdef CYGHWR_NET_DRIVER_ETH1
         if (eth1_up) {
             ping_test(&eth1_bootp_data);
+            cyg_thread_delay(500);
         }
-        cyg_thread_delay(500);
 #endif
     } while ( i-- > 0 );
-    cyg_test_exit();
+    CYG_TEST_PASS_FINISH( "Done pinging while SNMP looks on" );
 }
 
 void

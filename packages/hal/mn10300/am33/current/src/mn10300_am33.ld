@@ -52,10 +52,10 @@ GROUP(libtarget.a libgcc.a)
 
 #define SECTION_text(_region_, _vma_, _lma_) \
     .text _vma_ : _lma_ \
-    { _stext = ABSOLUTE(.); \
+    { __stext = ABSOLUTE(.); \
     *(.text*) *(.gnu.warning) *(.gnu.linkonce*) *(.init) } \
     > _region_ \
-    _etext = .; PROVIDE (etext = .);
+    __etext = .; PROVIDE (etext = .);
 
 #define SECTION_fini(_region_, _vma_, _lma_) \
     .fini _vma_ : _lma_ \
@@ -86,11 +86,11 @@ GROUP(libtarget.a libgcc.a)
     .data _vma_ : _lma_ \
     { __ram_data_start = ABSOLUTE (.); *(.data*) *(.data1) \
     . = ALIGN(4); \
-    ___DEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.devtab*))) ___DEVTAB_END__ = ABSOLUTE (.); \
-    __NETDEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.netdevtab*))) __NETDEVTAB_END__ = ABSOLUTE (.); \
     _GOT1_START_ = ABSOLUTE (.); *(.got1) _GOT1_END_ = ABSOLUTE (.); \
     _GOT2_START_ = ABSOLUTE (.); *(.got2) _GOT2_END_ = ABSOLUTE (.); \
     . = ALIGN (4); \
+    KEEP(*( SORT (.ecos.table.*))) ; \
+    . = ALIGN(4); \
     __CTOR_LIST__ = ABSOLUTE (.); KEEP (*(SORT (.ctors*))) __CTOR_END__ = ABSOLUTE (.); \
     __DTOR_LIST__ = ABSOLUTE (.); KEEP (*(SORT (.dtors*))) __DTOR_END__ = ABSOLUTE (.); \
     _GOT_START = ABSOLUTE (.); _GLOBAL_OFFSET_TABLE_ = ABSOLUTE (.) + 32768; _SDA_BASE_ = ABSOLUTE (.); \
@@ -114,5 +114,15 @@ GROUP(libtarget.a libgcc.a)
 _mn10300_interrupt_control = 0xD4000000;
 _mn10300_interrupt_vectors = 0xC0000000;
 
+#include CYGBLD_HAL_TARGET_H
+
+#if CYGHWR_HAL_MN10300_AM33_REVISION == 1
+
 _hal_vsr_table = 0x50000100;
 _hal_virtual_vector_table = 0x50000200;
+
+#else
+
+#error Unknown AM33 Revision
+
+#endif

@@ -34,7 +34,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     nickg
-// Contributors:  nickg
+// Contributors:  nickg, dmoseley
 // Date:          1999-02-18
 // Purpose:       Define architecture abstractions
 // Usage:         #include <cyg/hal/hal_arch.h>
@@ -133,16 +133,19 @@ externC void hal_thread_load_context( CYG_ADDRESS to )
 // happen if executed.
 // HAL_BREAKINST is the value of the breakpoint instruction and
 // HAL_BREAKINST_SIZE is its size in bytes.
+// HAL_BREAKINST_TYPE is the type.
 
 #define HAL_BREAKPOINT(_label_)                 \
-asm volatile (" .globl  " #_label_ ";"          \
-              #_label_":"                       \
+asm volatile (" .globl  _" #_label_ ";"         \
+              "_"#_label_":"                    \
               ".byte 0xFF"                      \
     );
 
 #define HAL_BREAKINST           0xFF
 
 #define HAL_BREAKINST_SIZE      1
+
+#define HAL_BREAKINST_TYPE      cyg_uint8
 
 //--------------------------------------------------------------------------
 // Thread register state manipulation for GDB support.
@@ -175,8 +178,8 @@ asm volatile (" .globl  " #_label_ ";"          \
     _regval_[6]         = (_regs_)->a2;                         \
     _regval_[7]         = (_regs_)->a3;                         \
                                                                 \
-    _regval_[8]         = (CYG_ADDRWORD)(_regs_) +              \
-                          sizeof(HAL_SavedRegisters);           \
+    _regval_[8] = (_regs_)->sp = (CYG_ADDRWORD)(_regs_) +       \
+                                 sizeof(HAL_SavedRegisters);    \
     _regval_[9]         = (_regs_)->pc;                         \
     _regval_[10]        = (_regs_)->mdr;                        \
     _regval_[11]        = (_regs_)->psw;                        \
@@ -187,6 +190,34 @@ asm volatile (" .globl  " #_label_ ";"          \
 }
 
 // Copy a GDB ordered array into a HAL_SavedRegisters structure.
+//
+// The CYGMON version should differ by also handling SP and PSW
+// since we will be using a different stack.
+#ifdef CYGPKG_CYGMON
+#define HAL_SET_GDB_REGISTERS( _regs_ , _aregval_ )                     \
+{                                                                       \
+    CYG_ADDRWORD *_regval_ = (CYG_ADDRWORD *)(_aregval_);               \
+                                                                        \
+    (_regs_)->d0             = _regval_[0];                             \
+    (_regs_)->d1             = _regval_[1];                             \
+    (_regs_)->d2             = _regval_[2];                             \
+    (_regs_)->d3             = _regval_[3];                             \
+    (_regs_)->a0             = _regval_[4];                             \
+    (_regs_)->a1             = _regval_[5];                             \
+    (_regs_)->a2             = _regval_[6];                             \
+    (_regs_)->a3             = _regval_[7];                             \
+                                                                        \
+    (_regs_)->sp             = _regval_[8];                             \
+    (_regs_)->pc             = _regval_[9];                             \
+    (_regs_)->mdr            = _regval_[10];                            \
+    (_regs_)->psw            = _regval_[11];                            \
+                                                                        \
+    (_regs_)->lar            = _regval_[12];                            \
+    (_regs_)->lir            = _regval_[13];                            \
+                                                                        \
+    HAL_SET_GDB_EXTRA_REGISTERS( _regs_, _regval_ );                    \
+}
+#else
 #define HAL_SET_GDB_REGISTERS( _regs_ , _aregval_ )                     \
 {                                                                       \
     CYG_ADDRWORD *_regval_ = (CYG_ADDRWORD *)(_aregval_);               \
@@ -213,6 +244,7 @@ asm volatile (" .globl  " #_label_ ";"          \
                                                                         \
      HAL_SET_GDB_EXTRA_REGISTERS( _regs_, _regval_ );                   \
 }
+#endif
 
 //-------------------------------------------------------------------------
 // HAL setjmp

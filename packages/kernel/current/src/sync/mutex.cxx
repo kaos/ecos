@@ -55,6 +55,23 @@
 #include <cyg/kernel/sched.inl>        // scheduler inlines
 #include <cyg/kernel/clock.inl>        // clock inlines
 
+// -------------------------------------------------------------------------
+// Mutex protocol test macros.
+// If the dynamic protocol option is enabled, then these generate appropriate
+// tests on the protocol field. If there is no dynamic choice then they simply
+// result in empty statements.
+
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DYNAMIC
+
+#define IF_PROTOCOL_INHERIT if( protocol == INHERIT )
+#define IF_PROTOCOL_CEILING if( protocol == CEILING )
+
+#else
+
+#define IF_PROTOCOL_INHERIT
+#define IF_PROTOCOL_CEILING
+
+#endif
 
 // -------------------------------------------------------------------------
 // Constructor
@@ -66,8 +83,58 @@ Cyg_Mutex::Cyg_Mutex()
     locked      = false;
     owner       = NULL;
 
+#if defined(CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DEFAULT) && \
+    defined(CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DYNAMIC)
+
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DEFAULT_INHERIT
+    protocol    = INHERIT;
+#endif    
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DEFAULT_CEILING
+    protocol    = CEILING;
+    ceiling     = CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DEFAULT_PRIORITY;
+#endif    
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DEFAULT_NONE
+    protocol    = NONE;
+#endif    
+
+#endif    
+    
     CYG_REPORT_RETURN();
 }
+
+// -------------------------------------------------------------------------
+// Construct with defined protocol
+
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DYNAMIC
+
+Cyg_Mutex::Cyg_Mutex( cyg_protcol protocol_arg )
+{
+    CYG_REPORT_FUNCTION();
+        
+    locked      = false;
+    owner       = NULL;
+
+    protocol    = protocol_arg;
+
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_CEILING    
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DEFAULT_PRIORITY
+
+    // if there is a default priority ceiling defined, use that to initialize
+    // the ceiling.
+    ceiling = CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DEFAULT_PRIORITY;    
+
+#else
+
+    // Otherwise set it to zero.
+    ceiling = 0;
+    
+#endif    
+#endif
+    
+    CYG_REPORT_RETURN();
+}
+
+#endif
 
 // -------------------------------------------------------------------------
 // Destructor
@@ -135,7 +202,7 @@ Cyg_Mutex::lock(void)
     // thread grabbing the mutex between the wakeup in unlock() and
     // this thread actually starting.
     
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL
 
     self->count_mutex();
 
@@ -151,21 +218,18 @@ Cyg_Mutex::lock(void)
         
         queue.enqueue( self );
 
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_INHERIT
 
-        owner->inherit_priority(self);
+        IF_PROTOCOL_INHERIT
+            owner->inherit_priority(self);
 
 #endif
 
         CYG_INSTRUMENT_MUTEX(WAIT, this, 0);
 
-        CYG_ASSERT( Cyg_Scheduler::get_sched_lock() == 1, "Called with non-zero scheduler lock");
+        // Allow other threads to run
+        Cyg_Scheduler::reschedule();
         
-        // Unlock scheduler and allow other threads
-        // to run
-        Cyg_Scheduler::unlock();
-        Cyg_Scheduler::lock();
-
         CYG_ASSERTCLASS( this, "Bad this pointer");
 
         switch( self->get_wake_reason() )
@@ -190,13 +254,23 @@ Cyg_Mutex::lock(void)
         locked      = true;
         owner       = self;
 
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_CEILING
+
+        IF_PROTOCOL_CEILING
+            self->set_priority_ceiling(ceiling);
+        
+#endif        
+               
         CYG_INSTRUMENT_MUTEX(LOCKED, this, 0);
     }
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_INHERIT
     else
     {
-        self->uncount_mutex();
-        self->disinherit_priority();
+        IF_PROTOCOL_INHERIT
+        {
+            self->uncount_mutex();
+            self->disinherit_priority();
+        }
     }
 #endif
     
@@ -234,11 +308,18 @@ Cyg_Mutex::trylock(void)
         locked  = true;
         owner   = self;
 
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL
 
         self->count_mutex();
 
 #endif
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_CEILING
+
+        IF_PROTOCOL_CEILING
+            self->set_priority_ceiling(ceiling);
+        
+#endif        
+        
     }
     else result = false;
 
@@ -277,12 +358,13 @@ Cyg_Mutex::unlock(void)
 
         CYG_ASSERTCLASS( thread, "Bad thread pointer");
 
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_INHERIT
 
         // Give the owner-to-be a chance to inherit from the remaining
         // queue or the relinquishing thread:
 
-        thread->relay_priority(owner, &queue);
+        IF_PROTOCOL_INHERIT
+            thread->relay_priority(owner, &queue);
 
 #endif
 
@@ -294,11 +376,22 @@ Cyg_Mutex::unlock(void)
         
     }
 
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL
 
     owner->uncount_mutex();
-    owner->disinherit_priority();
+
+#endif    
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_INHERIT
+
+    IF_PROTOCOL_INHERIT
+        owner->disinherit_priority();
     
+#endif
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_CEILING
+
+    IF_PROTOCOL_CEILING
+        owner->clear_priority_ceiling();
+        
 #endif
     
     locked      = false;
@@ -349,6 +442,31 @@ void Cyg_Mutex::release()
     CYG_REPORT_RETURN();
 }
 
+// -------------------------------------------------------------------------
+// Set ceiling priority for priority ceiling protocol
+
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_CEILING
+
+void Cyg_Mutex::set_ceiling( cyg_priority priority )
+{
+    CYG_REPORT_FUNCTION();
+
+//    CYG_ASSERT( priority >=  CYG_THREAD_MAX_PRIORITY, "Priority out of range");
+//    CYG_ASSERT( priority <=  CYG_THREAD_MIN_PRIORITY, "Priority out of range");
+    
+    // Prevent preemption
+    Cyg_Scheduler::lock();
+
+    ceiling = priority;
+    
+    // Unlock the scheduler
+    Cyg_Scheduler::unlock();
+
+    CYG_REPORT_RETURN();    
+}
+
+#endif
+
 //==========================================================================
 // Condition variables
 
@@ -361,6 +479,15 @@ Cyg_Condition_Variable::Cyg_Condition_Variable(
     mutex       = &mx;
 
     CYG_ASSERTCLASS( mutex, "Invalid mutex argument");
+
+    CYG_REPORT_RETURN();
+}
+
+Cyg_Condition_Variable::Cyg_Condition_Variable()
+{
+    CYG_REPORT_FUNCTION();
+        
+    mutex       = NULL;
 
     CYG_REPORT_RETURN();
 }
@@ -399,7 +526,7 @@ Cyg_Condition_Variable::check_this( cyg_assert_class_zeal zeal) const
         case cyg_system_test:
         case cyg_extreme:
         case cyg_thorough:
-            if( !mutex->check_this(zeal) )
+            if( mutex != NULL && !mutex->check_this(zeal) )
                 result = false;
         case cyg_quick:
         case cyg_trivial:
@@ -422,11 +549,12 @@ Cyg_Condition_Variable::check_this( cyg_assert_class_zeal zeal) const
 // in this case, exit with the scheduler locked, which allows this function
 // to be used in a totally thread-safe manner.
 
-void
-Cyg_Condition_Variable::wait(void)
+cyg_bool
+Cyg_Condition_Variable::wait_inner( Cyg_Mutex *mx )
 {
     CYG_REPORT_FUNCTION();
-        
+
+    cyg_bool result = true;
     Cyg_Thread *self = Cyg_Thread::self();
 
     cyg_int32 current_lock = Cyg_Scheduler::get_sched_lock();
@@ -436,12 +564,12 @@ Cyg_Condition_Variable::wait(void)
         Cyg_Scheduler::lock();
 
     CYG_ASSERTCLASS( this, "Bad this pointer");
-    CYG_ASSERTCLASS( mutex, "Corrupt mutex");
+    CYG_ASSERTCLASS( mx, "Corrupt mutex");
     CYG_ASSERTCLASS( self, "Bad self thread");
 
     CYG_INSTRUMENT_CONDVAR(WAIT, this, 0);
     
-    mutex->unlock();
+    mx->unlock();
 
     self->set_sleep_reason( Cyg_Thread::WAIT );
         
@@ -450,17 +578,28 @@ Cyg_Condition_Variable::wait(void)
     queue.enqueue( self );
 
     CYG_ASSERT( Cyg_Scheduler::get_sched_lock() == 1, "Called with non-zero scheduler lock");
+
+    // Avoid calling ASRs during the following unlock.
+    self->set_asr_inhibit();
     
     // Unlock the scheduler and switch threads
     Cyg_Scheduler::unlock();
 
+    // Allow ASRs again
+    self->clear_asr_inhibit();
+            
     CYG_INSTRUMENT_CONDVAR(WOKE, this, self->get_wake_reason());
-    
+
     CYG_ASSERTCLASS( this, "Bad this pointer");
-    CYG_ASSERTCLASS( mutex, "Corrupt mutex");
+    CYG_ASSERTCLASS( mx, "Corrupt mutex");
 
     switch( self->get_wake_reason() )
     {
+    case Cyg_Thread::DESTRUCT:          // which, the cv or the mutex?
+    case Cyg_Thread::BREAK:
+        result = false;
+        break;
+            
     case Cyg_Thread::EXIT:            
         self->exit();
         break;
@@ -468,7 +607,6 @@ Cyg_Condition_Variable::wait(void)
     default:
         break;
     }
-
 
     // When we awake, we must re-acquire the mutex.  Note that while
     // it is essential to release the mutex and queue on the CV
@@ -478,19 +616,21 @@ Cyg_Condition_Variable::wait(void)
     // We need to loop here in case the thread is released while waiting
     // for the mutex. It is essential that we exit this function with the
     // mutex claimed.
-    
-    while ( !mutex->lock() )
+
+    while ( !mx->lock() )
         continue;
 
     CYG_ASSERTCLASS( this, "Bad this pointer");
-    CYG_ASSERTCLASS( mutex, "Corrupt mutex");
-    CYG_ASSERT( mutex->owner == self, "Not mutex owner");
+    CYG_ASSERTCLASS( mx, "Corrupt mutex");
+    CYG_ASSERT( mx->owner == self, "Not mutex owner");
 
     CYG_REPORT_RETURN();
 
     if (current_lock)
         // Reacquire the DSR pseudo lock
         Cyg_Scheduler::lock();
+
+    return result;
 }
 
 // -------------------------------------------------------------------------
@@ -502,7 +642,6 @@ Cyg_Condition_Variable::signal(void)
     CYG_REPORT_FUNCTION();
         
     CYG_ASSERTCLASS( this, "Bad this pointer");
-    CYG_ASSERTCLASS( mutex, "Corrupt mutex");
 
     // Prevent preemption
     Cyg_Scheduler::lock();
@@ -527,7 +666,6 @@ Cyg_Condition_Variable::signal(void)
     }
     
     CYG_ASSERTCLASS( this, "Bad this pointer");
-    CYG_ASSERTCLASS( mutex, "Corrupt mutex");
 
     // Unlock the scheduler and maybe switch threads
     Cyg_Scheduler::unlock();
@@ -544,7 +682,6 @@ Cyg_Condition_Variable::broadcast(void)
     CYG_REPORT_FUNCTION();
         
     CYG_ASSERTCLASS( this, "Bad this pointer");
-    CYG_ASSERTCLASS( mutex, "Corrupt mutex");
 
     // Prevent preemption
     Cyg_Scheduler::lock();
@@ -568,7 +705,6 @@ Cyg_Condition_Variable::broadcast(void)
     }
     
     CYG_ASSERTCLASS( this, "Bad this pointer");
-    CYG_ASSERTCLASS( mutex, "Corrupt mutex");
     
     // Unlock the scheduler and maybe switch threads
     Cyg_Scheduler::unlock();    
@@ -582,13 +718,13 @@ Cyg_Condition_Variable::broadcast(void)
 #if defined(CYGMFN_KERNEL_SYNCH_CONDVAR_TIMED_WAIT)
 
 cyg_bool
-Cyg_Condition_Variable::wait( cyg_tick_count timeout )
+Cyg_Condition_Variable::wait_inner( Cyg_Mutex *mx, cyg_tick_count timeout )
 {
     CYG_REPORT_FUNCTYPE("returning %d");
     CYG_REPORT_FUNCARG1("timeout = %d", timeout);
         
     CYG_ASSERTCLASS( this, "Bad this pointer");
-    CYG_ASSERTCLASS( mutex, "Corrupt mutex");
+    CYG_ASSERTCLASS( mx, "Corrupt mutex");
 
     cyg_bool result = true;
     
@@ -601,7 +737,7 @@ Cyg_Condition_Variable::wait( cyg_tick_count timeout )
 
     CYG_INSTRUMENT_CONDVAR(TIMED_WAIT, this, 0 );
     
-    mutex->unlock();
+    mx->unlock();
 
     // The ordering of sleep() and set_timer() here are
     // important. If the timeout is in the past, the thread
@@ -617,12 +753,18 @@ Cyg_Condition_Variable::wait( cyg_tick_count timeout )
         queue.enqueue( self );
 
     CYG_ASSERT( Cyg_Scheduler::get_sched_lock() == 1, "Called with non-zero scheduler lock");
-    
+
+    // Avoid calling ASRs during the following unlock.
+    self->set_asr_inhibit();
+        
     // Unlock the scheduler and switch threads
     Cyg_Scheduler::unlock();
 
+    // Allow ASRs again
+    self->clear_asr_inhibit();
+                
     CYG_ASSERTCLASS( this, "Bad this pointer");
-    CYG_ASSERTCLASS( mutex, "Corrupt mutex");
+    CYG_ASSERTCLASS( mx, "Corrupt mutex");
     
     self->clear_timer();
 
@@ -651,13 +793,11 @@ Cyg_Condition_Variable::wait( cyg_tick_count timeout )
     // necessary for us to re-acquire the mutex in the same atomic
     // action. Hence we can do it after unlocking the scheduler.
 
-    // FIXME: what if we woke up above due to TIMEOUT/DESTRUCT/BREAK?
-    // In that situation is it correct to not lock the mutex?
-    if (false != result)
-        result = mutex->lock();
-
+    while ( !mx->lock() )
+        continue;
+    
     CYG_ASSERTCLASS( this, "Bad this pointer");
-    CYG_ASSERTCLASS( mutex, "Corrupt mutex");
+    CYG_ASSERTCLASS( mx, "Corrupt mutex");
 
     CYG_REPORT_RETVAL(result);
     

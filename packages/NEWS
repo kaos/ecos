@@ -1,3 +1,66 @@
+* Move logical ethernet "driver" into io/eth where the interface can be shared
+  between multiple implementations, e.g. BSD TCP/IP and Red Boot's TCP/IP
+  stacks.
+* RedBoot - the Red Hat Bootstrap ROM monitor has been added, initially
+  supporting ARM-EDB7xxx, ARM-EBSA285, and ARM-Assabet boards. Provides
+  serial and ethernet GDB debugging support, flash image management and flash
+  booting, BOOTP/DHCP and TFTP boot support and a CLI interface.
+* Added PCMCIA and Compact Flash support, including drivers for the ARM-Assabet
+  board.
+* Added generic FLASH memory support
+* Added flash memory support for ARM-EBSA285 and ARM-EDB7xxx boards
+* Added Compact Flash Ethernet driver
+* Hitachi SH7707a variant support added.
+* Support added for both software and hardware flow control (the latter
+  initially only for the ARM PID board)
+* Loopback serial device driver added
+* POSIX termios support added for EL/IX level 1 compatibility
+* Improved dynamic memory management support in the memory allocator
+  package. Existing dynamic memory support in the kernel (fixed and variable
+  block allocators) and in libc (malloc, etc.) has been moved to this
+  package, located at services/memalloc/common. It is now possible to support
+  memory pools occupying all of remaining memory (as determined by the MLT).
+  New memory allocators can be "plugged in", and an example of Doug Lea's
+  malloc (dlmalloc) has been included.
+* Plug-in filesystem support added, with a POSIX 1003.1 compatible API, found
+  in the io/fileio package, and integrated with the C library.
+* An initial example filesystem implementation is provided in fs/ram. This
+  is a RAM filesystem that attempts to both be a useful tool in its own
+  right and an example of how to write a filesystem that plugs into the
+  fileio infrastructure.
+  The source of the filesystem is in fs/ram/VERSION/src/ramfs.c and is
+  intended to be largely self documenting. The General Description at
+  the beginning of the file gives an overview of the structure of the
+  system, and comments within the code explain specific points. This
+  code should be read in conjunction with the description of the fileio
+  infrastructure.
+* Support added for POSIX 1003.1 threads, mutexes, semaphores, message queues,
+  condition variables, clocks, timers and real-time signals in the POSIX
+  compatibility package (part of the EL/IX compatibility initiative) found at
+  compat/posix.
+* Kernel enhanced with Asynchronous Service Routines (ASRs) which are routines
+  called back at the point a thread is scheduled.
+* Added (configurably) priority ceilings for kernel mutexes
+* Support sorted thread queues in kernel, rather than LIFO, controlled by the
+  CYGIMP_KERNEL_SCHED_SORTED_QUEUES option.
+* The Kernel C API functions cyg_semaphore_wait() and cyg_cond_wait() now
+  return booleans to indicate if the wait failed.
+* Added enhanced form of kernel message queue which is more flexible at runtime
+  than mboxes - available in <cyg/kernel/mqueue.hxx>
+* Add a generic interface in <cyg/hal/hal_tables.h> to allow tables of
+  data, particularly initialization data, to be included in an application
+  image. This replaces the previous __DEVTAB__ and __NETDEVTAB__ references
+  in linker scripts.
+* Most standard top-level header files now controlled by the "isoinfra"
+  package
+* C library package split into separate packages on functional boundaries:
+  i18n, setjmp, signals, startup, stdio, stdlib, time
+* Most targets now implement a standard form of "virtual vectors" - a
+  mechanism to allow enhanced co-operation between ROM monitors and running
+  applications. This allows the application to leave to the ROM things that
+  the ROM supports rather than duplicating. It also will permit network
+  debugging in future. To take advantage of this, new GDB stub
+  images/CygMon images should be programmed onto boards.
 * DHCP support has been added to the TCP/IP support, in addition to the
   existing BOOTP support
 * CDL now supports type bool and booldata for interfaces

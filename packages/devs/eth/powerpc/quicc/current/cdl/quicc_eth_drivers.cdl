@@ -43,8 +43,8 @@
 cdl_package CYGPKG_DEVS_ETH_POWERPC_QUICC {
     display       "MPC8xx QUICC ethernet driver"
 
-    parent        CYGPKG_NET_ETH_DRIVERS
-    active_if	  CYGPKG_NET_ETH_DRIVERS
+    parent        CYGPKG_IO_ETH_DRIVERS
+    active_if	  CYGPKG_IO_ETH_DRIVERS
     active_if	  CYGPKG_HAL_POWERPC 
     active_if	  CYGPKG_HAL_POWERPC_MPC8xx
 

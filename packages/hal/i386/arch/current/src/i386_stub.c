@@ -164,7 +164,7 @@ int isBreakpointFunction ;
 int
 __is_breakpoint_function ()
 {
-    isBreakpointFunction = (get_register (PC) == (target_register_t)&CYG_LABEL_NAME(breakinst));
+    isBreakpointFunction = (get_register (PC) == (target_register_t)&_breakinst);
     return isBreakpointFunction ;
 }
 

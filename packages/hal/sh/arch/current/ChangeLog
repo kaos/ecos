@@ -7,6 +7,8 @@
 	* src/vectors.S (__reset): Change calculation of uncached startup
 	address.
 
+	* include/mod_7707a.h: 7707a has 32K caches (we believe).
+
 2000-07-17  Gary Thomas  <gthomas@redhat.com>
 
 	* src/hal_misc.c (cyg_hal_exception_handler): Handle exception caused by
@@ -19,6 +21,18 @@
 	* src/hal_misc.c (hal_delay_us): New function.  Used in ROM/stand-alone
 	applications when there is no kernel.
 
+2000-07-15  Gary Thomas  <gthomas@redhat.com>
+
+	* include/sh_regs.h: Add additional 7707 registers.
+
+2000-07-06  Jesper Skov  <jskov@redhat.com>
+
+	* src/vectors.S: 
+	* include/mod_7707a.h:
+	* include/hal_intr.h:
+	* include/sh_regs.h:
+	Added additional 7707 interrupt vectors.
+	
 2000-06-30  Jesper Skov  <jskov@redhat.com>
 
 	* src/vectors.S (__reset): Jump to VMA for RAM startup.
@@ -65,6 +79,19 @@
 
 	* cdl/hal_sh.cdl: Also build simple drivers.
 
+2000-06-21  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/sh_stub.c (__is_breakpoint_function): Removed use of
+	CYG_LABEL_NAME() and added underscore to _breakinst.
+
+	* src/context.S: Switched use of CYG_LABEL_NAME() to
+	CYG_LABEL_DEFN().
+
+	* include/basetype.h: Removed definition of CYG_LABEL_NAME() and
+	added CYG_LABEL_DEFN().
+
+	* src/sh.ld: Switched to new table definition mechanism.
+
 2000-06-15  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_intr.h: Added HAL_DEFAULT_ISR.
@@ -78,6 +105,13 @@
 	* include/mod_7709a.h: 
 	* src/vectors.S:
 	Minor config change to get rid of growing list of variant checks.
+
+2000-06-08  Jesper Skov  <jskov@redhat.com>
+
+	* include/mod_7707a.h: 
+	* src/vectors.S:
+	* cdl/hal_sh.cdl: 
+	Added first level of support for 7707A variant.
 
 2000-06-06  Jesper Skov  <jskov@redhat.com>
 

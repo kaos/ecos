@@ -385,10 +385,9 @@ pc_extended_memory_size:
 	cmpl	$0x20, %edx
 	jl	8f
 	cmpl	$0x30, %edx
-	jge	9f
-	outb	%al, $0x20
-	jmp	8f
-9:	outb	%al, $0xA0
+	jl	9f
+	outb	%al, $0xA0
+9:	outb	%al, $0x20
 8:	nop
 	.endm
 	

@@ -63,7 +63,14 @@
 #include <cyg/hal/drv_api.h>
 #include <netdev.h>
 #include <eth_drv.h>
+
+#ifdef CYGPKG_NET
+#include <pkgconf/net.h>
 #include <net/if.h>  /* Needed for struct ifnet */
+#else
+#include <cyg/hal/hal_if.h>
+#define diag_printf printf
+#endif
 
 #ifdef CYGPKG_IO_PCI
 #include <cyg/io/pci.h>
@@ -80,8 +87,6 @@
 #define DEBUG          // Startup printing mainly
 #define DEBUG_EE       // Some EEPROM specific retries &c
 #endif
-
-
 
 #define os_printf diag_printf
 #define db_printf diag_printf
@@ -385,7 +390,8 @@ I82559_COUNTERS i82559_counters[2];
 // ------------------------------------------------------------------------
 // Instantiate the interfaces that we have:
 
-#define MAX_82559 2                     // number of interfaces
+// number of interfaces
+#define MAX_82559 CYGNUM_DEVS_ETH_ARM_EBSA285_DEV_COUNT 
 
 I82559 i82559[MAX_82559];               // i82559 device info. structure
 
@@ -407,7 +413,7 @@ NETDEVTAB_ENTRY(ebsa285_netdev0,
                 ebsa285_i82559_init, 
                 &ebsa285_sc0);
 
-#if 1
+#if (MAX_82559 > 1)
 
 // eth1
 
@@ -472,7 +478,9 @@ static void ResetTxRing(struct i82559* p_i82559);
 #ifdef CYGPKG_DEVS_ETH_ARM_EBSA285_WRITE_EEPROM
 static void program_eeprom(cyg_uint32 , cyg_uint32 , cyg_uint8 * );
 #endif
+#ifdef CYGPKG_NET
 static int eth_set_promiscuous_mode(struct i82559* p_i82559);
+#endif
 
 // debugging/logging only:
 void dump_txcb(TxCB *p_txcb);
@@ -562,6 +570,7 @@ static void udelay(int delay)
 static void *pciwindow_mem_alloc(int size)
 {
     void *p_memory;
+    int _size = size;
 
     CYG_ASSERT(
         (CYGHWR_HAL_ARM_EBSA285_PCI_MEM_MAP_BASE <= (int)i82559_heap_free)
@@ -582,7 +591,7 @@ static void *pciwindow_mem_alloc(int size)
         cyg_uint32 *p;
         p_memory = (void *)i82559_heap_free;
         i82559_heap_free += size;
-        for ( p = (cyg_uint32 *)p_memory; size > 0; size -= 4 )
+        for ( p = (cyg_uint32 *)p_memory; _size > 0; _size -= 4 )
             *p++ = 0;
     }
 
@@ -910,9 +919,9 @@ ebsa285_i82559_init(struct cyg_netdevtab_entry * ndp)
 
     // Initialize upper level driver
     if ( p_i82559->mac_addr_ok )
-        eth_drv_init(sc, &(p_i82559->mac_address[0]) );
+        (sc->funs->eth_drv->init)(sc, &(p_i82559->mac_address[0]) );
     else
-        eth_drv_init(sc, 0 );
+        (sc->funs->eth_drv->init)(sc, 0 );
 
     return (1);
 }
@@ -930,7 +939,9 @@ static void i82559_start( struct eth_drv_sc *sc,
 #ifdef KEEP_STATISTICS
     void *p_statistics;
 #endif
+#ifdef CYGPKG_NET
     struct ifnet *ifp = &sc->sc_arpcom.ac_if;
+#endif
 
     p_i82559 = (struct i82559 *)sc->driver_private;
     
@@ -980,6 +991,7 @@ static void i82559_start( struct eth_drv_sc *sc,
     
     p_i82559->active = 1;
 
+#ifdef CYGPKG_NET
     if (( 0
 #ifdef ETH_DRV_FLAGS_PROMISC_MODE
          != (flags & ETH_DRV_FLAGS_PROMISC_MODE)
@@ -988,6 +1000,7 @@ static void i82559_start( struct eth_drv_sc *sc,
         ) {
         eth_set_promiscuous_mode(p_i82559);
     }
+#endif
 #ifdef DEBUG
     {
         int status = i82559_status( sc );
@@ -1153,9 +1166,14 @@ static void PacketRxReady(struct i82559* p_i82559)
 //        dump_rfd( p_rfd, 1 );
 #endif
 
-        // Offer the data to the network stack
         p_i82559->next_rx_descriptor = next_descriptor;
-        eth_drv_recv( sc, length );
+        // Check for bogusly short packets; can happen in promisc mode:
+        // Asserted against and checked by upper layer driver.
+#ifdef CYGPKG_NET
+        if ( length > sizeof( struct ether_header ) )
+            // then it is acceptable; offer the data to the network stack
+#endif
+        (sc->funs->eth_drv->recv)( sc, length );
 
         p_rfd->count = 0;
         p_rfd->f = 0;
@@ -1273,7 +1291,9 @@ static void i82559_recv( struct eth_drv_sc *sc,
         to_p = (cyg_uint8 *)(sg_list->buf);
         l = sg_list->len;
 
-        if ( 0 == l || 0 == to_p )
+        CYG_ASSERT( 0 <= l, "sg length -ve" );
+
+        if ( 0 >= l || 0 == to_p )
             return; // caller was out of mbufs
 
         if ( l > total_len )
@@ -1438,7 +1458,7 @@ static void TxDone(struct i82559* p_i82559)
         os_printf("TxDone %d %x: KEY %x\n",
                   p_i82559->index, (int)p_i82559, key );
 #endif
-        eth_drv_tx_done( sc, key, 1 /* status */ );
+        (sc->funs->eth_drv->tx_done)( sc, key, 1 /* status */ );
         
         if ( ++tx_descriptor_remove >= MAX_TX_DESCRIPTORS )
             tx_descriptor_remove = 0;
@@ -1753,7 +1773,7 @@ void i82559_poll(struct eth_drv_sc *sc)
 
     // As it happens, this driver always requests the DSR to be called:
     (void)eth_mux_isr( CYGNUM_HAL_INTERRUPT_PCI_IRQ, (cyg_addrword_t)p_i82559 );
-    eth_dsr( CYGNUM_HAL_INTERRUPT_PCI_IRQ, 1, (cyg_addrword_t)p_i82559 );
+    eth_mux_dsr( CYGNUM_HAL_INTERRUPT_PCI_IRQ, 1, (cyg_addrword_t)p_i82559 );
 }
 
 // ------------------------------------------------------------------------
@@ -1915,7 +1935,7 @@ pci_init_find_82559s( void )
                 i82559_reset(p_i82559);
 
                 if (p_i82559->vector != 0) {
-                    cyg_interrupt_acknowledge(p_i82559->vector);
+                    cyg_drv_interrupt_acknowledge(p_i82559->vector);
                     cyg_drv_interrupt_unmask(p_i82559->vector);
                 }
 #ifdef DEBUG
@@ -1941,7 +1961,7 @@ pci_init_find_82559s( void )
 
     // Now enable the mux shared interrupt if it is in use
     if (mux_interrupt_handle) {
-        cyg_interrupt_acknowledge(CYGNUM_HAL_INTERRUPT_PCI_IRQ);
+        cyg_drv_interrupt_acknowledge(CYGNUM_HAL_INTERRUPT_PCI_IRQ);
         cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_PCI_IRQ);
     }
 
@@ -1953,6 +1973,7 @@ pci_init_find_82559s( void )
     return 1;
 }
 
+#ifdef CYGPKG_NET
 // ------------------------------------------------------------------------
 //
 //  Function : eth_set_promiscuous_mode
@@ -2020,7 +2041,7 @@ static int eth_set_promiscuous_mode(struct i82559* p_i82559)
                                         // \ or 0x80 for normal mode.
     ccs->config_bytes[16]=0x0;
     ccs->config_bytes[17]=0x40;
-    ccs->config_bytes[18]=0x70;
+    ccs->config_bytes[18]=0x72;         // Keep the Padding Enable bit
     
     // wait for SCB command complete
     wait_for_cmd_done(ioaddr);   
@@ -2045,6 +2066,7 @@ static int eth_set_promiscuous_mode(struct i82559* p_i82559)
 
     return 0; // OK
 }
+#endif
 
 // ------------------------------------------------------------------------
 // We use this as a templete when writing a new MAC address into the

@@ -1,0 +1,93 @@
+//=================================================================
+//
+//        abs.c
+//
+//        Testcase for C library abs()
+//
+//=================================================================
+//####COPYRIGHTBEGIN####
+//                                                                          
+// -------------------------------------------                              
+// The contents of this file are subject to the Red Hat eCos Public License 
+// Version 1.1 (the "License"); you may not use this file except in         
+// compliance with the License.  You may obtain a copy of the License at    
+// http://www.redhat.com/                                                   
+//                                                                          
+// Software distributed under the License is distributed on an "AS IS"      
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+// License for the specific language governing rights and limitations under 
+// the License.                                                             
+//                                                                          
+// The Original Code is eCos - Embedded Configurable Operating System,      
+// released September 30, 1998.                                             
+//                                                                          
+// The Initial Developer of the Original Code is Red Hat.                   
+// Portions created by Red Hat are                                          
+// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// All Rights Reserved.                                                     
+// -------------------------------------------                              
+//                                                                          
+//####COPYRIGHTEND####
+//=================================================================
+//#####DESCRIPTIONBEGIN####
+//
+// Author(s):     ctarpy, jlarmour
+// Contributors:  
+// Date:          2000-04-30
+// Description:   Contains testcode for C library abs() function
+//
+//
+//####DESCRIPTIONEND####
+
+// INCLUDES
+
+#include <stdlib.h>
+#include <limits.h>
+#include <cyg/infra/testcase.h>
+
+// FUNCTIONS
+
+int
+main( int argc, char *argv[] )
+{
+    int x;
+
+    CYG_TEST_INIT();
+
+    CYG_TEST_INFO("Starting tests from testcase " __FILE__ " for C "
+                  "library abs() function");
+
+    // Check 1
+    x = 5;
+    CYG_TEST_PASS_FAIL( abs(x) == 5, "abs(5)");
+
+    // Check 2
+    x = -5;
+    CYG_TEST_PASS_FAIL( abs(x) == 5, "abs(-5)");
+    
+    // Check 3
+    x = 12345;
+    CYG_TEST_PASS_FAIL( abs(x) == 12345, "abs(12345)");
+
+    // Check 4
+    x = -23456;
+    CYG_TEST_PASS_FAIL( abs(x) == 23456, "abs(-23456");
+
+    // Check 5
+    x = 0;
+    CYG_TEST_PASS_FAIL( abs(x) == 0, "abs(0)");
+
+    // Check 6
+    x = INT_MAX;
+    CYG_TEST_PASS_FAIL( abs(x) == INT_MAX, "abs(INT_MAX)");
+
+    // Check 7
+    x = -INT_MAX;
+    CYG_TEST_PASS_FAIL( abs(x) == INT_MAX, "abs(-INT_MAX)");
+
+    CYG_TEST_FINISH("Finished tests from testcase " __FILE__ " for C "
+                    "library abs() function");
+
+} // main()
+
+// EOF abs.c

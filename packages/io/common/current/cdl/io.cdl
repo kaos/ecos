@@ -51,7 +51,6 @@ cdl_package CYGPKG_IO {
         support which is the basis for all drivers."
 
     compile       -library=libextras.a iosys.c ioinit.cxx io_diag.c
-    compile       io_file.c
 
  
     cdl_option CYGDBG_IO_INIT {
@@ -62,11 +61,22 @@ cdl_package CYGPKG_IO {
             system 'diag' device during I/O system initialization."
    }
 
-    cdl_option CYGPKG_IO_NFILE {
-        display "Number of open files"
-        flavor  data
-        default_value 16
-        description   "
-            This option controls the number of open files."
+   cdl_component CYGPKG_IO_FILE_SUPPORT {
+       display    "Basic support for file based I/O"
+       active_if  !CYGPKG_IO_FILEIO
+       default_value 1       
+       description "
+           This option control support for simple file I/O primitives. It is only
+           present if the FILEIO package is not included."
+
+       compile       io_file.c
+
+       cdl_option CYGPKG_IO_NFILE {
+	   display "Number of open files"
+	   flavor  data
+	   default_value 16
+	   description   "
+	       This option controls the number of open files."
+       }
     }
 }

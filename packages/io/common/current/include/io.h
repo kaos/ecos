@@ -74,6 +74,16 @@ Cyg_ErrNo cyg_io_write(cyg_io_handle_t handle,
 Cyg_ErrNo cyg_io_read(cyg_io_handle_t handle, 
                       void *buf, 
                       cyg_uint32 *len);
+// Write data to a block device
+Cyg_ErrNo cyg_io_bwrite(cyg_io_handle_t handle, 
+                       const void *buf, 
+                       cyg_uint32 *len,
+                       cyg_uint32 pos);
+// Read data from a block device
+Cyg_ErrNo cyg_io_bread(cyg_io_handle_t handle, 
+                      void *buf, 
+                      cyg_uint32 *len,
+                      cyg_uint32 pos);
 // Get the configuration of a device
 Cyg_ErrNo cyg_io_get_config(cyg_io_handle_t handle, 
                             cyg_uint32 key,
@@ -84,6 +94,10 @@ Cyg_ErrNo cyg_io_set_config(cyg_io_handle_t handle,
                             cyg_uint32 key,
                             const void *buf, 
                             cyg_uint32 *len);
+// Test a device for readiness    
+cyg_bool cyg_io_select(cyg_io_handle_t handle,
+                       cyg_uint32 which,
+                       CYG_ADDRWORD info);
 
 #ifdef __cplusplus
 }
