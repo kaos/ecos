@@ -6,7 +6,7 @@
 #   cd emptydir
 #   make -f /path/to/this/makefile WXDIR=/path/to/wx/installation ECOSSRCDIR=/path/to/ecos/tools/src OSTYPE=$OSTYPE
 
-TCLDIR=/usr
+TCLDIR=TCLDIR_not_defined
 WXDIR=WXDIR_not_defined
 ECOSSRCDIR=ECOSSRCDIR_not_defined
 
@@ -33,7 +33,7 @@ ifeq "$(OSTYPE)" "cygwin"
 else
   PROGRAM=configtool
   CPPFLAGS=-I$(WXDIR)/include -I$(WXDIR)/lib/wx/include -DGTK_NO_CHECK_CASTS -D__WXGTK__ -D__USE_WXCONFIG__
-  LDFLAGS=-L$(WXDIR)/lib -L/usr/lib -L/usr/X11R6/lib -lwx_gtk -lgtk -lgdk -rdynamic -lgmodule -lgthread -lglib -lpthread -ldl -lXi -lXext -lX11 -lm
+  LDFLAGS=-L$(WXDIR)/lib -L/usr/X11R6/lib -lwx_gtk -lgtk -lgdk -rdynamic -lgmodule -lgthread -lglib -lpthread -ldl -lXi -lXext -lX11 -lm
   EXTRAOBJECTS=
 endif
 
