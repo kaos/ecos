@@ -584,7 +584,7 @@ do_load(int argc, char *argv[])
     char *mode_str;
 #ifdef CYGPKG_REDBOOT_NETWORKING
     struct sockaddr_in host;
-    bool hostname_set;
+    bool hostname_set, port_set;
     char *hostname;
 #endif
     bool decompress = false;
@@ -600,6 +600,7 @@ do_load(int argc, char *argv[])
     connection_info_t info;
     getc_io_funcs_t *io = NULL;
     struct load_io_entry *io_tab;
+    unsigned int port;	//int because it's an OPTION_ARG_TYPE_NUM, but will be cast to short
 #ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
     bool spillover_ok = false;
 #endif
@@ -630,6 +631,9 @@ do_load(int argc, char *argv[])
     init_opts(&opts[num_options], 'h', true, OPTION_ARG_TYPE_STR, 
               (void *)&hostname, (bool *)&hostname_set, "host name or IP address");
     num_options++;
+    init_opts(&opts[num_options], 'p', true, OPTION_ARG_TYPE_NUM, 
+              (void *)&port, (bool *)&port_set, "TCP port");
+    num_options++;
 #endif
 #ifdef CYGBLD_BUILD_REDBOOT_WITH_ZLIB
     init_opts(&opts[num_options], 'd', false, OPTION_ARG_TYPE_FLG, 
@@ -655,6 +659,8 @@ do_load(int argc, char *argv[])
             return;
         }
     }
+    if (port_set) 
+	    host.sin_port = port;
 #endif
     if (chan >= CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS) {
         diag_printf("Invalid I/O channel: %d\n", chan);

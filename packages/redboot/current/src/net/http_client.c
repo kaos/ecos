@@ -85,7 +85,8 @@ http_stream_open(connection_info_t *info, int *err)
     int res;
     struct _stream *s = &http_stream;
 
-    info->server->sin_port = 80;  // HTTP port
+    if (!info->server->sin_port)
+        info->server->sin_port = 80;  // HTTP port
     if ((res = __tcp_open(&s->sock, info->server, get_port++, 5000, err)) < 0) {
         *err = HTTP_OPEN;
         return -1;
