@@ -536,7 +536,7 @@
                        
 //-----------------------------------------------------------------------------
 // All registers in the internal memory map
-#define CYGARC_REG_IMM_BASE                  0x002fc000
+#define CYGARC_REG_IMM_BASE                  (0x002fc000)
 
 			// General register definitions
 #define CYGARC_REG_IMM_SIUMCR                (CYGARC_REG_IMM_BASE+0x0000)

@@ -1,3 +1,7 @@
+2004-04-21  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/var_intr.c: 
+	* include/var_regs.h: Changes to allow compilation with latest GCC.
 
 2003-11-30  Bob Koninckx  <bob.koninckx@fmtc.be>
 

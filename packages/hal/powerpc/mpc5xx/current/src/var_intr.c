@@ -256,7 +256,7 @@ mpc5xx_remove(hal_mpc5xx_arbitration_data * list,
               cyg_uint32 apriority)
 {
   hal_mpc5xx_arbitration_data   tmp;
-  hal_mpc5xx_arbitration_data   result = 0;
+  hal_mpc5xx_arbitration_data * result = 0;
   hal_mpc5xx_arbitration_data * ptmp = &tmp;
   tmp.reserved = list;
 
