@@ -1,3 +1,7 @@
+2003-02-12  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/plf_io.h: Provide proper memory layout for EDB7312.
+
 2003-02-06  Gary Thomas  <gary@mind.be>
 
 	* misc/edb7312_redboot_ROMRAM.ecm: 

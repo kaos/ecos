@@ -1,3 +1,8 @@
+2003-02-12  Gary Thomas  <gary@mlbassoc.com> inspired by
+2003-02-12  Robin Farine <robin.farine@acn-group.ch>	
+
+	* src/redboot_linux_exec.c: Allow platform to override memory layout.
+	Also, give error if no "-b" option and base/load address unknown.	
 2003-02-06  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/redboot_linux_exec.c: Make sure RAM description is sane.

@@ -45,7 +45,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    jskov
-// Contributors: jskov
+// Contributors: jskov, gthomas
 // Date:         2002-01-28
 // Purpose:      Platform specific support routines
 // Description: 
@@ -62,6 +62,23 @@
 
 extern unsigned long _edb7xxx_physical_address(unsigned long addr);
 #define CYGARC_PHYSICAL_ADDRESS(x) _edb7xxx_physical_address((unsigned long) x)
+
+#if defined(CYGPKG_REDBOOT_ARM_LINUX_EXEC) && defined(CYGHWR_HAL_ARM_EDB7XXX_VARIANT_EP7312)
+#define _CYGHWR_LAYOUT_ONLY
+#include <cyg/hal/hal_platform_setup.h>
+// Describe memory layout for Linux
+#define CYGHWR_REDBOOT_LINUX_ATAG_MEM(_p_)                                                      \
+    /* Next ATAG_MEM. */                                                                        \
+    _p_->hdr.size = (sizeof(struct tag_mem32) + sizeof(struct tag_header))/sizeof(long);        \
+    _p_->hdr.tag = ATAG_MEM;                                                                    \
+    /* Round up so there's only one bit set in the memory size.                                 \
+     * Don't double it if it's already a power of two, though.                                  \
+     */                                                                                         \
+    _p_->u.mem.size  = 1<<hal_msbindex(CYGMEM_REGION_ram_SIZE);                                 \
+    if (_p_->u.mem.size < CYGMEM_REGION_ram_SIZE)                                               \
+	    _p_->u.mem.size <<= 1;                                                              \
+    _p_->u.mem.start = DRAM_PA_START;
+#endif
 
 #endif // CYGONCE_HAL_ARM_EDB7XXX_PLF_IO_H
 // EOF plf_io.h

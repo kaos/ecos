@@ -248,6 +248,23 @@ struct tag {
 // End of inclusion from <asm-arm/setup.h>
 //=========================================================================
 
+// Default memory layout - can be overridden by platform, typically in
+// <cyg/hal/plf_io.h>
+#ifndef CYGHWR_REDBOOT_LINUX_ATAG_MEM
+#define CYGHWR_REDBOOT_LINUX_ATAG_MEM(_p_)                                                      \
+    /* Next ATAG_MEM. */                                                                        \
+    _p_->hdr.size = (sizeof(struct tag_mem32) + sizeof(struct tag_header))/sizeof(long);        \
+    _p_->hdr.tag = ATAG_MEM;                                                                    \
+    /* Round up so there's only one bit set in the memory size.                                 \
+     * Don't double it if it's already a power of two, though.                                  \
+     */                                                                                         \
+    _p_->u.mem.size  = 1<<hal_msbindex(CYGMEM_REGION_ram_SIZE);                                 \
+    if (_p_->u.mem.size < CYGMEM_REGION_ram_SIZE)                                               \
+	    _p_->u.mem.size <<= 1;                                                              \
+    _p_->u.mem.start = CYGARC_PHYSICAL_ADDRESS(CYGMEM_REGION_ram);
+#endif
+
+
 // Round up a quantity to a longword (32 bit) length
 #define ROUNDUP(n) (((n)+3)&~3)
 
@@ -304,18 +321,7 @@ do_exec(int argc, char *argv[])
     params->u.core.rootdev = 0;
     params = (struct tag *)((long *)params + params->hdr.size);
     
-    /* Next ATAG_MEM. */
-    params->hdr.size = (sizeof(struct tag_mem32) + sizeof(struct tag_header))/sizeof(long);
-    params->hdr.tag = ATAG_MEM;
-    /* Round up so there's only one bit set in the memory size.
-     * Don't double it if it's already a power of two, though.
-     */
-    params->u.mem.size  = 1<<hal_msbindex(CYGMEM_REGION_ram_SIZE);
-    if (params->u.mem.size < CYGMEM_REGION_ram_SIZE)
-	    params->u.mem.size <<= 1;
-    params->u.mem.start = CYGARC_PHYSICAL_ADDRESS(CYGMEM_REGION_ram);
-    // Linux doesn't like physical RAM to start on odd boundary 
-    params->u.mem.start &= ~(params->u.mem.size-1);
+    CYGHWR_REDBOOT_LINUX_ATAG_MEM(params)
     params = (struct tag *)((long *)params + params->hdr.size);
     if (ramdisk_addr_set) {
         params->hdr.size = (sizeof(struct tag_initrd) + sizeof(struct tag_header))/sizeof(long);
@@ -354,6 +360,11 @@ do_exec(int argc, char *argv[])
         }
     }
     if (!base_addr_set) {
+        if ((base_addr == 0) || (length == 0)) {
+            // Probably not valid - don't try it
+            diag_printf("No default base address set!\n");
+            return;
+        }
         diag_printf("Using base address %p and length %p\n",
                     (void*)base_addr, (void*)length);
     } else if (base_addr_set && !length_set) {
