@@ -497,11 +497,6 @@ return_to_redboot(int status)
     CYGARC_HAL_RESTORE_GP();
 }
 
-#if 0
-externC _get_cache_contents(unsigned char *buf);
-unsigned char _hold_cache_contents[2][256*2*8];
-#endif
-
 void
 do_go(int argc, char *argv[])
 {
@@ -518,6 +513,7 @@ do_go(int argc, char *argv[])
     char line[8];
     hal_virtual_comm_table_t *__chan;
 
+    __mem_fault_handler = 0; // Let GDB handle any faults directly
     entry = entry_address;  // Default from last 'load' operation
     init_opts(&opts[0], 'w', true, OPTION_ARG_TYPE_NUM, 
               (void **)&wait_time, (bool *)&wait_time_set, "wait timeout");
@@ -575,9 +571,6 @@ do_go(int argc, char *argv[])
 #endif
 	
     HAL_DISABLE_INTERRUPTS(oldints);
-#if 0
-    _get_cache_contents(CYGARC_UNCACHED_ADDRESS(&_hold_cache_contents[0][0]));
-#endif
     HAL_DCACHE_SYNC();
     if (!cache_enabled) {
 	HAL_ICACHE_DISABLE();
@@ -586,13 +579,6 @@ do_go(int argc, char *argv[])
     }
     HAL_ICACHE_INVALIDATE_ALL();
     HAL_DCACHE_INVALIDATE_ALL();
-#if 0
-    _get_cache_contents(CYGARC_UNCACHED_ADDRESS(&_hold_cache_contents[1][0]));
-    diag_printf("Cache before flush/invalidate\n");
-    diag_dump_buf(&_hold_cache_contents[0][0], sizeof(_hold_cache_contents[0]));
-    diag_printf("Cache after flush/invalidate\n");
-    diag_dump_buf(&_hold_cache_contents[1][0], sizeof(_hold_cache_contents[1]));
-#endif
     // set up a temporary context that will take us to the trampoline
     HAL_THREAD_INIT_CONTEXT((CYG_ADDRESS)workspace_end, entry, trampoline, 0);
 
