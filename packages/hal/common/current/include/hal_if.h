@@ -11,7 +11,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 // Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -365,8 +365,9 @@ __call_COMM1(IF_GETC_TIMEOUT, cyg_bool, __comm_if_getc_timeout_t, cyg_uint8 *)
 #define CYGNUM_CALL_IF_DELAY_US                   18
 #define CYGNUM_CALL_IF_DBG_DATA                   19
 #define CYGNUM_CALL_IF_FLASH_CFG_OP               20
+#define CYGNUM_CALL_IF_MONITOR_RETURN             21
 
-#define CYGNUM_CALL_IF_LAST_ENTRY                 CYGNUM_CALL_IF_FLASH_CFG_OP
+#define CYGNUM_CALL_IF_LAST_ENTRY                 CYGNUM_CALL_IF_MONITOR_RETURN
 
 #define CYGNUM_CALL_IF_INSTALL_BPT_FN             35
 
@@ -424,6 +425,7 @@ typedef void (__call_if_install_bpt_fn_t)(void *__epc);
 typedef cyg_bool (__call_if_flash_cfg_op_fn_t)(int __oper, char *__key,
                                                void *__val, int __type);
 typedef char *__call_if_monitor_version_t;
+typedef void (__call_if_monitor_return_t)(int status);
 
 #ifndef CYGACC_CALL_IF_DEFINED
 
@@ -618,6 +620,12 @@ __call_VV4(CYGNUM_CALL_IF_FLASH_CFG_OP, __call_if_flash_cfg_op_fn_t, cyg_bool, i
 #define CYGACC_CALL_IF_FLASH_CFG_OP_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_FLASH_CFG_OP]=(CYG_ADDRWORD)(_x_)
 #define CYGNUM_CALL_IF_FLASH_CFG_GET (0)
+
+#define CYGACC_CALL_IF_MONITOR_RETURN(_u_) \
+ CYGACC_CALL_VV1(__call_if_monitor_return_t*, CYGNUM_CALL_IF_MONITOR_RETURN, (_u_))
+__call_voidVV1(CYGNUM_CALL_IF_MONITOR_RETURN, __call_if_monitor_return_t, void, int)
+#define CYGACC_CALL_IF_MONITOR_RETURN_SET(_x_) \
+ hal_virtual_vector_table[CYGNUM_CALL_IF_MONITOR_RETURN]=(CYG_ADDRWORD)(_x_)
 
 // These need to be kept uptodate with the (unadorned) masters
 // in RedBoot's flash_config.h:

@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -52,6 +52,7 @@
 #include <redboot.h>
 #include <cyg/hal/hal_intr.h>
 #include <cyg/hal/drv_api.h>
+#include <cyg/hal/hal_stub.h>
 
 #ifdef CYGSEM_REDBOOT_BSP_SYSCALLS
 
@@ -223,7 +224,7 @@ sys_timer_isr(cyg_vector_t vector, cyg_addrword_t data)
         CYGARC_HAL_RESTORE_GP();
     }
 #endif // CYGSEM_REDBOOT_BSP_SYSCALLS_GPROF
-    return 0;
+    return CYG_ISR_HANDLED;
 }
 
 
@@ -628,6 +629,16 @@ __do_syscall(CYG_ADDRWORD func,                 // syscall function number
       case __GET_SHARED:
         *(__shared_t **)arg1 = &__shared_data;
         break;
+
+      case SYS_exit:
+	if (gdb_active) {
+	    *sig = SIGTRAP;
+	    err = func;
+	} else {
+	    CYGACC_CALL_IF_MONITOR_RETURN(arg1);
+	    // never returns
+	}
+	break;
 
       default:
         return 0;

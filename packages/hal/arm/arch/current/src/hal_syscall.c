@@ -106,12 +106,6 @@ hal_syscall_handler(void)
     else
 	put_register(PC, get_register(LR));
 
-    if (func == SYS_exit) {
-	// We want to stop in exit so that the user may poke around
-	//  to see why his app exited.
-        return SIGTRAP;
-    }
-
     if (func == SYS_interrupt) {
 	//  A console interrupt landed us here.
 	//  Invoke the debug agent so as to cause a SIGINT.

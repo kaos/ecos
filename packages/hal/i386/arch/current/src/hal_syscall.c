@@ -145,12 +145,6 @@ hal_syscall_handler(void)
 	return SIGTRAP;
     }
 
-    if (func == SYS_exit) {
-	// We want to stop in exit so that the user may poke around
-	//  to see why his app exited.
-        return SIGTRAP;
-    }
-
     if (__do_syscall(func, arg1, arg2, arg3, arg4, &err, &sig)) {
         put_register(EAX, err);
 	return (int)sig;

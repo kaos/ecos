@@ -1,3 +1,8 @@
+2003-01-31  Mark Salter  <msalter@redhat.com>
+
+	* src/hal_syscall.c (hal_syscall_handler): Let generic syscall code
+	handle exit.
+
 2002-12-06  Mark Salter  <msalter@redhat.com>
 
 	* cdl/hal_mn10300.cdl: Add CYGINT_HAL_MN10300_MEM_REAL_REGION_TOP.

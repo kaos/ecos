@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -117,12 +117,6 @@ hal_syscall_handler(void)
     arg2 = get_register(REG_A9);
     arg3 = get_register(REG_A10);
     arg4 = get_register(REG_A11);
-
-    if (func == SYS_exit) {
-	// We want to stop in exit so that the user may poke around
-	//  to see why his app exited.
-        return SIGTRAP;
-    }
 
     if (func == SYS_interrupt) {
 	//  A console interrupt landed us here.

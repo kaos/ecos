@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 // Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -75,6 +75,10 @@ extern void breakpoint(void);
 
 // Builtin Self Test (BIST)
 externC void bist(void);
+
+// Return path for code run from a go command
+static void return_to_redboot(int status);
+
 
 // CLI command processing (defined in this file)
 RedBoot_cmd("version", 
@@ -184,6 +188,8 @@ cyg_start(void)
 
     // Export version information
     CYGACC_CALL_IF_MONITOR_VERSION_SET(RedBoot_version);
+
+    CYGACC_CALL_IF_MONITOR_RETURN_SET(return_to_redboot);
 
     // Make sure the channels are properly initialized.
     diag_init_putc(_mon_write_char);
@@ -378,23 +384,53 @@ do_help(int argc, char *argv[])
     return;
 }
 
+static void * go_saved_context;
+static int go_return_status;
+
+static void
+go_trampoline(unsigned long entry)
+{
+    typedef void code_fun(void);
+    code_fun *fun = (code_fun *)entry;
+    unsigned long oldints;
+
+    HAL_DISABLE_INTERRUPTS(oldints);
+
+#ifdef HAL_ARCH_PROGRAM_NEW_STACK
+    HAL_ARCH_PROGRAM_NEW_STACK(fun);
+#else
+    (*fun)();
+#endif
+}
+
+static void
+return_to_redboot(int status)
+{
+    CYGARC_HAL_SAVE_GP();
+
+    go_return_status = status;
+    HAL_THREAD_LOAD_CONTEXT(&go_saved_context);
+    // never returns
+}
+
 void
 do_go(int argc, char *argv[])
 {
-    typedef void code_fun(void);
     unsigned long entry;
     unsigned long oldints;
-    code_fun *fun;
     bool wait_time_set;
     int  wait_time, res;
-    struct option_info opts[1];
+    bool cache_enabled = false;
+    struct option_info opts[2];
     char line[8];
     hal_virtual_comm_table_t *__chan = CYGACC_CALL_IF_CONSOLE_PROCS();
 
     entry = entry_address;  // Default from last 'load' operation
     init_opts(&opts[0], 'w', true, OPTION_ARG_TYPE_NUM, 
               (void **)&wait_time, (bool *)&wait_time_set, "wait timeout");
-    if (!scan_opts(argc, argv, 1, opts, 1, (void *)&entry, OPTION_ARG_TYPE_NUM, "starting address"))
+    init_opts(&opts[1], 'c', false, OPTION_ARG_TYPE_FLG, 
+              (void **)&cache_enabled, (bool *)0, "go with caches enabled");
+    if (!scan_opts(argc, argv, 1, opts, 2, (void *)&entry, OPTION_ARG_TYPE_NUM, "starting address"))
     {
         return;
     }
@@ -419,19 +455,35 @@ do_go(int argc, char *argv[])
     }
     CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_ENABLE_LINE_FLUSH);
 
-    fun = (code_fun *)entry;
     HAL_DISABLE_INTERRUPTS(oldints);
     HAL_DCACHE_SYNC();
-    HAL_ICACHE_DISABLE();
-    HAL_DCACHE_DISABLE();
-    HAL_DCACHE_SYNC();
+    if (!cache_enabled) {
+	HAL_ICACHE_DISABLE();
+	HAL_DCACHE_DISABLE();
+	HAL_DCACHE_SYNC();
+    }
     HAL_ICACHE_INVALIDATE_ALL();
     HAL_DCACHE_INVALIDATE_ALL();
-#ifdef HAL_ARCH_PROGRAM_NEW_STACK
-    HAL_ARCH_PROGRAM_NEW_STACK(fun);
-#else
-    (*fun)();
-#endif
+
+    // set up a temporary context that will take us to the trampoline
+    HAL_THREAD_INIT_CONTEXT((CYG_ADDRESS)workspace_end, entry, go_trampoline, 0);
+
+    // switch context to trampoline
+    HAL_THREAD_SWITCH_CONTEXT(&go_saved_context, &workspace_end);
+
+    // we get back here by way of return_to_redboot()
+
+    // undo the changes we made before switching context
+    if (!cache_enabled) {
+	HAL_ICACHE_ENABLE();
+	HAL_DCACHE_ENABLE();
+    }
+
+    CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_DISABLE_LINE_FLUSH);
+
+    HAL_RESTORE_INTERRUPTS(oldints);
+
+    diag_printf("\nProgram completed with status %d\n", go_return_status);
 }
 
 #ifdef HAL_PLATFORM_RESET
