@@ -56,7 +56,7 @@ cdl_package CYGPKG_IO_USB_SLAVE_ETH {
     requires    { CYGHWR_IO_USB_SLAVE_IN_ENDPOINTS >= 1 }
     compile     usbseth.c
     implements  CYGINT_IO_USB_SLAVE_CLIENTS
-    doc         io-usb-slave-eth.html
+    doc         ref/io-usb-slave-eth.html
     
     description "
         The USB slave ethernet package supports the development

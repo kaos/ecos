@@ -1,3 +1,10 @@
+2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/usbs_eth.cdl: Fix doc link.
+
+	* doc/usbseth.sgml: Comment out DOCTYPE for now to allow building
+	with standard doc build.
+
 2002-07-26  David Smith  <dsmith@redhat.com>
 
 	* host/ecos_usbeth.c (ecos_usbeth_probe):
