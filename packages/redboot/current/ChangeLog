@@ -1,3 +1,28 @@
+2002-08-06  Gary Thomas  <gary@chez-thomas.org>
+
+	* src/crc.c: POSIX crc code is now separate.
+	
+	* src/mfill.c: 
+	* src/mcmp.c: 
+	* src/dump.c: 
+	* src/cksum.c: 
+	* src/caches.c: New (split out) file(s).
+
+	* src/main.c: 
+	* cdl/redboot.cdl: Split major CLI functionality to separate
+	files, more easily controlled by CDL - inspired by Andrew.
+
+2002-08-06  Andrew Lunn  <Andrew.Lunn@ascom.ch>
+
+	* src/io.c: Fix the parsing of boot scripts to allow the use
+	  of aliases. This was broken when the ability to do startup
+	  type specific scripting was added.
+
+2002-08-05  Andrew Lunn  <Andrew.Lunn@ascom.ch>
+
+	* src/main.c: Made more of the commands conditionally compilable
+	* cdl/redboot.cdl: CDL code to control the compilation.
+	
 2002-07-30  Gary Thomas  <gary@chez-thomas.org>
 
 	* src/net/net_io.c: Handle broadcast/mask setup better (failed if

@@ -43,7 +43,7 @@
 #
 # Author(s):      gthomas
 # Original data:  gthomas
-# Contributors:   Philippe Robin
+# Contributors:   Philippe Robin, Andrew Lunn
 # Date:           2000-05-01
 #
 #####DESCRIPTIONEND####
@@ -68,6 +68,11 @@ cdl_package CYGPKG_REDBOOT {
         default_value 1
     }
 
+
+    cdl_interface CYGINT_REDBOOT_LOAD_METHOD {
+        display "Methods of loading images using redboot"
+    }
+
     cdl_component CYGBLD_BUILD_REDBOOT {
         display "Build Redboot ROM ELF image"
         default_value 0
@@ -87,15 +92,7 @@ cdl_package CYGPKG_REDBOOT {
 
         requires CYGINT_ISO_STRING_MEMFUNCS 
         requires CYGINT_ISO_STRING_STRFUNCS
-
-        cdl_option CYGBLD_BUILD_REDBOOT_WITH_ZLIB {
-            display       "Include support gzip/zlib decompression"
-            active_if     CYGPKG_COMPRESS_ZLIB
-            no_define
-            default_value 1
-            implements    CYGINT_COMPRESS_ZLIB_LOCAL_ALLOC
-            compile       decompress.c
-        }
+        requires CYGINT_REDBOOT_LOAD_METHOD
 
         cdl_option CYGBLD_BUILD_REDBOOT_WITH_THREADS {
             display "Threads debugging support"
@@ -130,19 +127,57 @@ cdl_package CYGPKG_REDBOOT {
                enable rudimentary editting of the lines themselves."
         }
 
+        cdl_option CYGBLD_BUILD_REDBOOT_WITH_ZLIB {
+            display       "Include support gzip/zlib decompression"
+            active_if     CYGPKG_COMPRESS_ZLIB
+            no_define
+            default_value 1
+            implements    CYGINT_COMPRESS_ZLIB_LOCAL_ALLOC
+            compile       decompress.c
+        }
+
+        cdl_option CYGBLD_BUILD_REDBOOT_WITH_XYZMODEM {
+            display       "Include support for xyzModem downloads"
+            no_define
+            default_value 1
+            implements    CYGINT_REDBOOT_LOAD_METHOD
+            compile -library=libextras.a xyzModem.c
+        }
+
         cdl_option CYGBLD_BUILD_REDBOOT_WITH_CKSUM {
             display       "Include POSIX checksum command"
             default_value 1
+            compile -library=libextras.a cksum.c
         }
 
         cdl_option CYGBLD_BUILD_REDBOOT_WITH_MFILL {
             display       "Include memory fill command"
             default_value 1
+            compile -library=libextras.a mfill.c
         }
 
         cdl_option CYGBLD_BUILD_REDBOOT_WITH_MCMP {
             display       "Include memory compare command"
             default_value 1
+            compile -library=libextras.a mcmp.c
+        }
+
+        cdl_option CYGBLD_BUILD_REDBOOT_WITH_DUMP {
+            display       "Include memory dump command"
+            default_value 1
+            compile -library=libextras.a dump.c
+        }
+
+        cdl_option CYGBLD_BUILD_REDBOOT_WITH_CACHES {
+            display       "Include cache command"
+            default_value 1
+            compile -library=libextras.a caches.c
+        }
+
+        cdl_option CYGBLD_BUILD_REDBOOT_WITH_EXEC {
+            display       "Include exec command"
+            default_value 1
+            # Implemented within the platform HAL
         }
 
         no_define
@@ -153,7 +188,7 @@ cdl_package CYGPKG_REDBOOT {
 
         compile main.c crc.c
         compile misc_funs.c io.c parse.c ticks.c syscall.c alias.c
-        compile -library=libextras.a load.c xyzModem.c 
+        compile -library=libextras.a load.c
 
         make -priority 320 {
             <PREFIX>/bin/redboot.elf : $(PREFIX)/lib/target.ld $(PREFIX)/lib/vectors.o $(PREFIX)/lib/libtarget.a $(PREFIX)/lib/libextras.a
@@ -168,6 +203,7 @@ cdl_package CYGPKG_REDBOOT {
         flavor        bool
         active_if     CYGPKG_IO_ETH_DRIVERS
         default_value 1
+        implements    CYGINT_REDBOOT_LOAD_METHOD
         compile net/bootp.c net/udp.c net/ip.c net/pktbuf.c net/cksum.c
         compile net/enet.c net/icmp.c net/tcp.c net/timers.c net/arp.c
         compile net/net_io.c net/inet_addr.c

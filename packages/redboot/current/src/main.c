@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -68,15 +69,12 @@
 #else
 #include <cyg/hal/plf_stub.h>
 #endif
+// GDB interfaces
+extern void breakpoint(void);
 #endif
 
 // Builtin Self Test (BIST)
 externC void bist(void);
-
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-// GDB interfaces
-extern void breakpoint(void);
-#endif
 
 // CLI command processing (defined in this file)
 RedBoot_cmd("version", 
@@ -93,42 +91,6 @@ RedBoot_cmd("go",
             "Execute code at a location", 
             "[-w <timeout>] [entry]",
             do_go 
-    );
-RedBoot_cmd("dump", 
-            "Display (hex dump) a range of memory", 
-            "-b <location> [-l <length>] [-s] [-1|2|4]",
-            do_dump 
-    );
-RedBoot_cmd("x", 
-            "Display (hex dump) a range of memory", 
-            "-b <location> [-l <length>] [-s] [-1|2|4]",
-            do_x
-    );
-#ifdef CYGBLD_BUILD_REDBOOT_WITH_CKSUM
-RedBoot_cmd("cksum", 
-            "Compute a 32bit checksum [POSIX algorithm] for a range of memory", 
-            "-b <location> -l <length>",
-            do_cksum
-    );
-#endif
-#ifdef CYGBLD_BUILD_REDBOOT_WITH_MFILL
-RedBoot_cmd("mfill", 
-            "Fill a block of memory with a pattern",
-            "-b <location> -l <length> -p <pattern> [-1|-2|-4]",
-            do_mfill
-    );
-#endif
-#ifdef CYGBLD_BUILD_REDBOOT_WITH_MCMP
-RedBoot_cmd("mcmp", 
-            "Compare two blocks of memory",
-            "-s <location> -d <location> -l <length> [-1|-2|-4]",
-            do_mcmp
-    );
-#endif
-RedBoot_cmd("cache", 
-            "Manage machine caches", 
-            "[ON | OFF]",
-            do_caches 
     );
 #ifdef HAL_PLATFORM_RESET
 RedBoot_cmd("reset", 
@@ -369,42 +331,6 @@ cyg_start(void)
 }
 
 void
-do_caches(int argc, char *argv[])
-{
-    unsigned long oldints;
-    int dcache_on=0, icache_on=0;
-
-    if (argc == 2) {
-        if (strcasecmp(argv[1], "on") == 0) {
-            HAL_DISABLE_INTERRUPTS(oldints);
-            HAL_ICACHE_ENABLE();
-            HAL_DCACHE_ENABLE();
-            HAL_RESTORE_INTERRUPTS(oldints);
-        } else if (strcasecmp(argv[1], "off") == 0) {
-            HAL_DISABLE_INTERRUPTS(oldints);
-            HAL_DCACHE_SYNC();
-            HAL_ICACHE_DISABLE();
-            HAL_DCACHE_DISABLE();
-            HAL_DCACHE_SYNC();
-            HAL_ICACHE_INVALIDATE_ALL();
-            HAL_DCACHE_INVALIDATE_ALL();
-            HAL_RESTORE_INTERRUPTS(oldints);
-        } else {
-            diag_printf("Invalid cache mode: %s\n", argv[1]);
-        }
-    } else {
-#ifdef HAL_DCACHE_IS_ENABLED
-        HAL_DCACHE_IS_ENABLED(dcache_on);
-#endif
-#ifdef HAL_ICACHE_IS_ENABLED
-        HAL_ICACHE_IS_ENABLED(icache_on);
-#endif
-        diag_printf("Data cache: %s, Instruction cache: %s\n", 
-                    dcache_on?"On":"Off", icache_on?"On":"Off");
-    }
-}
-
-void
 show_help(struct cmd *cmd, struct cmd *cmd_end, char *which, char *pre)
 {
     bool show;
@@ -442,258 +368,6 @@ do_help(int argc, char *argv[])
     show_help(cmd, &__RedBoot_CMD_TAB_END__, which, "");
     return;
 }
-
-void
-do_dump(int argc, char *argv[])
-{
-    struct option_info opts[6];
-    unsigned long base, len;
-    bool base_set, len_set;
-    static unsigned long _base, _len;
-    static char _size = 1;
-    bool srec_dump, set_32bit, set_16bit, set_8bit;
-    int i, n, off, cksum;
-    cyg_uint8 ch;
-
-    init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&base, (bool *)&base_set, "base address");
-    init_opts(&opts[1], 'l', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&len, (bool *)&len_set, "length");
-    init_opts(&opts[2], 's', false, OPTION_ARG_TYPE_FLG, 
-              (void **)&srec_dump, 0, "dump data using Morotola S-records");
-    init_opts(&opts[3], '4', false, OPTION_ARG_TYPE_FLG,
-              (void *)&set_32bit, (bool *)0, "dump 32 bit units");
-    init_opts(&opts[4], '2', false, OPTION_ARG_TYPE_FLG,
-              (void **)&set_16bit, (bool *)0, "dump 16 bit units");
-    init_opts(&opts[5], '1', false, OPTION_ARG_TYPE_FLG,
-              (void **)&set_8bit, (bool *)0, "dump 8 bit units");
-    if (!scan_opts(argc, argv, 1, opts, 6, 0, 0, "")) {
-        return;
-    }
-    if (!base_set) {
-        if (_base == 0) {
-            diag_printf("Dump what [location]?\n");
-            return;
-        }
-        base = _base;
-        if (!len_set) {
-            len = _len;
-            len_set = true;
-        }
-    }
-
-    if (set_32bit) {
-      _size = 4;
-    } else if (set_16bit) {
-      _size = 2;
-    } else if (set_8bit) {
-      _size = 1;
-    }
-
-    if (!len_set) {
-        len = 32;
-    }
-    if (srec_dump) {
-        off = 0;
-        while (off < len) {
-            n = (len > 16) ? 16 : len;
-            cksum = n+5;
-            diag_printf("S3%02X%08X", n+5, off+base);
-            for (i = 0;  i < 4;  i++) {
-                cksum += (((base+off)>>(i*8)) & 0xFF);
-            }
-            for (i = 0;  i < n;  i++) {
-                ch = *(cyg_uint8 *)(base+off+i);
-                diag_printf("%02X", ch);
-                cksum += ch;
-            }
-            diag_printf("%02X\n", ~cksum & 0xFF);
-            off += n;
-        }
-    } else {
-        switch( _size ) {
-        case 1:
-            diag_dump_buf((void *)base, len);
-            break;
-        case 2:
-            diag_dump_buf_16bit((void *)base, len);
-            break;
-        case 4:
-            diag_dump_buf_32bit((void *)base, len);
-            break;
-        }
-    }
-    _base = base + len;
-    _len = len;
-}
-
-// Simple alias for the dump command
-void
-do_x(int argc, char *argv[])
-{
-    do_dump(argc, argv);
-}
-
-#ifdef CYGBLD_BUILD_REDBOOT_WITH_CKSUM
-void
-do_cksum(int argc, char *argv[])
-{
-    // Compute a CRC, using the POSIX 1003 definition
-    extern unsigned long 
-        posix_crc32(unsigned char *s, int len);
-
-    struct option_info opts[2];
-    unsigned long base, len, crc;
-    bool base_set, len_set;
-
-    init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&base, (bool *)&base_set, "base address");
-    init_opts(&opts[1], 'l', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&len, (bool *)&len_set, "length");
-    if (!scan_opts(argc, argv, 1, opts, 2, 0, 0, "")) {
-        return;
-    }
-    if (!base_set || !len_set) {
-	if (load_address >= (CYG_ADDRESS)ram_start &&
-	    load_address_end < (CYG_ADDRESS)ram_end &&
-	    load_address < load_address_end) {
-	    base = load_address;
-	    len = load_address_end - load_address;
-            diag_printf("Computing cksum for area %p-%p\n",
-                        base, load_address_end);
-	} else {
-	    diag_printf("usage: cksum -b <addr> -l <length>\n");
-	    return;
-	}
-    }
-    crc = posix_crc32((unsigned char *)base, len);
-    diag_printf("POSIX cksum = %lu %lu (0x%08lx 0x%08lx)\n", crc, len, crc, len);
-}
-#endif
-
-#ifdef CYGBLD_BUILD_REDBOOT_WITH_MFILL
-void
-do_mfill(int argc, char *argv[])
-{
-    // Fill a region of memory with a pattern
-    struct option_info opts[6];
-    unsigned long base, pat;
-    long len;
-    bool base_set, len_set, pat_set;
-    bool set_32bit, set_16bit, set_8bit;
-
-    init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&base, (bool *)&base_set, "base address");
-    init_opts(&opts[1], 'l', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&len, (bool *)&len_set, "length");
-    init_opts(&opts[2], 'p', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&pat, (bool *)&pat_set, "pattern");
-    init_opts(&opts[3], '4', false, OPTION_ARG_TYPE_FLG,
-              (void *)&set_32bit, (bool *)0, "fill 32 bit units");
-    init_opts(&opts[4], '2', false, OPTION_ARG_TYPE_FLG,
-              (void **)&set_16bit, (bool *)0, "fill 16 bit units");
-    init_opts(&opts[5], '1', false, OPTION_ARG_TYPE_FLG,
-              (void **)&set_8bit, (bool *)0, "fill 8 bit units");
-    if (!scan_opts(argc, argv, 1, opts, 6, 0, 0, "")) {
-        return;
-    }
-    if (!base_set || !len_set) {
-        diag_printf("usage: mfill -b <addr> -l <length> [-p <pattern>] [-1|-2|-4]\n");
-        return;
-    }
-    if (!pat_set) {
-        pat = 0;
-    }
-    // No checks here    
-    if (set_8bit) {
-        // Fill 8 bits at a time
-        while ((len -= sizeof(cyg_uint8)) >= 0) {
-            *((cyg_uint8 *)base)++ = (cyg_uint8)pat;
-        }
-    } else if (set_16bit) {
-        // Fill 16 bits at a time
-        while ((len -= sizeof(cyg_uint16)) >= 0) {
-            *((cyg_uint16 *)base)++ = (cyg_uint16)pat;
-        }
-    } else {
-        // Default - 32 bits
-        while ((len -= sizeof(cyg_uint32)) >= 0) {
-            *((cyg_uint32 *)base)++ = (cyg_uint32)pat;
-        }
-    }
-}
-#endif
-
-#ifdef CYGBLD_BUILD_REDBOOT_WITH_MCMP
-void
-do_mcmp(int argc, char *argv[])
-{
-    // Fill a region of memory with a pattern
-    struct option_info opts[6];
-    unsigned long src_base, dst_base;
-    long len;
-    bool src_base_set, dst_base_set, len_set;
-    bool set_32bit, set_16bit, set_8bit;
-
-    init_opts(&opts[0], 's', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&src_base, (bool *)&src_base_set, "base address");
-    init_opts(&opts[1], 'l', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&len, (bool *)&len_set, "length");
-    init_opts(&opts[2], 'd', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&dst_base, (bool *)&dst_base_set, "base address");
-    init_opts(&opts[3], '4', false, OPTION_ARG_TYPE_FLG,
-              (void *)&set_32bit, (bool *)0, "fill 32 bit units");
-    init_opts(&opts[4], '2', false, OPTION_ARG_TYPE_FLG,
-              (void **)&set_16bit, (bool *)0, "fill 16 bit units");
-    init_opts(&opts[5], '1', false, OPTION_ARG_TYPE_FLG,
-              (void **)&set_8bit, (bool *)0, "fill 8 bit units");
-    if (!scan_opts(argc, argv, 1, opts, 6, 0, 0, "")) {
-        return;
-    }
-    if (!src_base_set || !dst_base_set || !len_set) {
-        diag_printf("usage: mcmp -s <addr> -d <addr> -l <length> [-1|-2|-4]\n");
-        return;
-    }
-    // No checks here    
-    if (set_8bit) {
-        // Compare 8 bits at a time
-        while ((len -= sizeof(cyg_uint8)) >= 0) {
-            if (*((cyg_uint8 *)src_base)++ != *((cyg_uint8 *)dst_base)++) {
-                ((cyg_uint8 *)src_base)--;
-                ((cyg_uint8 *)dst_base)--;
-                diag_printf("Buffers don't match - %p=0x%02x, %p=0x%02x\n",
-                            src_base, *((cyg_uint8 *)src_base),
-                            dst_base, *((cyg_uint8 *)dst_base));
-                return;
-            }
-        }
-    } else if (set_16bit) {
-        // Compare 16 bits at a time
-        while ((len -= sizeof(cyg_uint16)) >= 0) {
-            if (*((cyg_uint16 *)src_base)++ != *((cyg_uint16 *)dst_base)++) {
-                ((cyg_uint16 *)src_base)--;
-                ((cyg_uint16 *)dst_base)--;
-                diag_printf("Buffers don't match - %p=0x%04x, %p=0x%04x\n",
-                            src_base, *((cyg_uint16 *)src_base),
-                            dst_base, *((cyg_uint16 *)dst_base));
-                return;
-            }
-        }
-    } else {
-        // Default - 32 bits
-        while ((len -= sizeof(cyg_uint32)) >= 0) {
-            if (*((cyg_uint32 *)src_base)++ != *((cyg_uint32 *)dst_base)++) {
-                ((cyg_uint32 *)src_base)--;
-                ((cyg_uint32 *)dst_base)--;
-                diag_printf("Buffers don't match - %p=0x%08x, %p=0x%08x\n",
-                            src_base, *((cyg_uint32 *)src_base),
-                            dst_base, *((cyg_uint32 *)dst_base));
-                return;
-            }
-        }
-    }
-}
-#endif
 
 void
 do_go(int argc, char *argv[])

@@ -284,8 +284,11 @@ getc_script(char *cp)
 
 	} else {
 	    *cp = *script++;
-	    if (*cp == '\n')
-		newline = true;
+	    if (*cp == '\n') {
+              newline = true;
+            } else {
+              newline = false;
+            }
 	    return true;
 	}
     }
