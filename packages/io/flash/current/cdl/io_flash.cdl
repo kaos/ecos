@@ -92,10 +92,10 @@ cdl_package CYGPKG_IO_FLASH {
         display       "Hardware FLASH device drivers are not in RAM"
         flavor        booldata
         description   "
-            This option makes the IO driver copy the device
-            driver functions to RAM before calling them. Newer
-            drivers should make sure that the functions are
+            Use of this interface is deprecated.
+            Drivers should make sure that the functions are
             linked to RAM by putting them in .2ram sections."
+	    requires !CYGHWR_IO_FLASH_DEVICE_NOT_IN_RAM
     }
 
     cdl_interface CYGHWR_IO_FLASH_BLOCK_LOCKING {
