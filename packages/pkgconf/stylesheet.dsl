@@ -81,6 +81,9 @@
 ;; Boring admonitions
 (define %admon-graphics% #f)
 
+;; No callout pictures, just (1), (2), etc.
+(define %callout-graphics% #f)
+
 ;; Nicely decorated program listing (in boxes)
 (define %shade-verbatim% #t)
 (define ($shade-verbatim-attr$)

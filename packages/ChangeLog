@@ -1,3 +1,7 @@
+2003-05-21  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* pkgconf/stylesheet.dsl: No callout graphics.
+
 2003-05-14  Thomas Koeller  <thomas.koeller@baslerweb.com>
 
 	* ecos.db: Changed human-readable name and description of
