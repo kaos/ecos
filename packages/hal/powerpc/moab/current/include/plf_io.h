@@ -65,6 +65,46 @@
 #define CYG_PCI_MAX_BUS                       1  // Only one BUS
 #define CYG_PCI_MIN_DEV                       1  // Slots start at 11
 #define CYG_PCI_MAX_DEV                      21  // ... and end at 31
+#define _IRQ1 CYGNUM_HAL_INTERRUPT_IRQ1
+#define _IRQ2 CYGNUM_HAL_INTERRUPT_IRQ2
+#define _IRQ3 CYGNUM_HAL_INTERRUPT_IRQ3
+#define _IRQ4 CYGNUM_HAL_INTERRUPT_IRQ4
+#define CYG_PCI_IRQ_MAP                                                         \
+/*                                                                              \
+ * This mapping comes from this table, based on how the backplane is wired      \
+ * IRQ assignments (Acrosser):                                                  \
+ *                                                                              \
+ *               CPU        Slot1      Slot2    Slot3    Slot4                  \
+ * IRQ1     PCI INTD        INTB       INTA     INTD      na                    \
+ * IRQ2     PCI INTC        INTA       INTD     INTC      na                    \
+ * IRQ3     PCI INTB        INTD       INTC     INTB      na                    \
+ * IRQ4     PCI INTA        INTC       INTB     INTA      na                    \
+ *                                                                              \
+ *      PCI IDSEL/INTPIN->INTLINE                                               \
+ *      A       B       C       D                                               \
+ */                                                                             \
+{                                                                               \
+    {_IRQ1, _IRQ4, _IRQ3, _IRQ2},   /* IDSEL 1 - 2nd LAN */                     \
+    {_IRQ3, _IRQ3, _IRQ3, _IRQ3},   /* IDSEL 2 - USB */                         \
+    {   -1,    -1,    -1,    -1},   /* IDSEL 3 - unavailable */                 \
+    {   -1,    -1,    -1,    -1},   /* IDSEL 4 - unavailable */                 \
+    {   -1,    -1,    -1,    -1},   /* IDSEL 5 - unavailable */                 \
+    {   -1,    -1,    -1,    -1},   /* IDSEL 6 - unavailable */                 \
+    {   -1,    -1,    -1,    -1},   /* IDSEL 7 - unavailable */                 \
+    {   -1,    -1,    -1,    -1},   /* IDSEL 8 - unavailable */                 \
+    {   -1,    -1,    -1,    -1},   /* IDSEL 9 - unavailable */                 \
+    {   -1,    -1,    -1,    -1},   /* IDSEL 10 - unavailable */                \
+    {   -1,    -1,    -1,    -1},   /* IDSEL 11 - unavailable */                \
+    {   -1,    -1,    -1,    -1},   /* IDSEL 12 - unavailable */                \
+    {   -1,    -1,    -1,    -1},   /* IDSEL 13 - unavailable */                \
+    {   -1,    -1,    -1,    -1},   /* IDSEL 14 - unavailable */                \
+    {   -1,    -1,    -1,    -1},   /* IDSEL 15 - unavailable */                \
+    {   -1,    -1,    -1,    -1},   /* IDSEL 16 - unavailable */                \
+    {_IRQ1, _IRQ4, _IRQ3, _IRQ2},   /* IDSEL 17 - PCI slot 2 */                 \
+    {_IRQ4, _IRQ3, _IRQ2, _IRQ1},   /* IDSEL 18 - PCI slot 3 */                 \
+    {_IRQ1, _IRQ4, _IRQ3, _IRQ2},   /* IDSEL 19 - PCI slot 2 */                 \
+    {_IRQ2, _IRQ1, _IRQ4, _IRQ3},   /* IDSEL 20 - PCI slot 1 */                 \
+}
 
 //-----------------------------------------------------------------------------
 // Resources
