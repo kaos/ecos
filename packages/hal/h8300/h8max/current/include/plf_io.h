@@ -55,6 +55,7 @@
 //==========================================================================
 
 #include <pkgconf/system.h>
+#include <cyg/hal/hal_endian.h>
 
 //-----------------------------------------------------------------------------
 // IDE interface macros
@@ -62,7 +63,7 @@
 #define HAL_IDE_NUM_CONTROLLERS 1
 
 // Initialize the IDE controller(s).
-#define HAL_IDE_INIT()
+#define HAL_IDE_INIT() (HAL_IDE_NUM_CONTROLLERS)
 
 #define IDE_CMD_ADDRESS 0x200000
 #define IDE_CTL_ADDRESS 0x600000
@@ -85,12 +86,12 @@ static inline void hal_ide_read_uint16_swap(CYG_WORD16 __regno, CYG_WORD16 *__va
 {
     CYG_WORD16 d;
     d = *(volatile CYG_WORD16 *)(IDE_CMD_ADDRESS + (__regno <<1));
-    *__val = (d >> 8) | (d << 8);
+    *__val = CYG_LE16_TO_CPU(d);
 }
 
 static inline void hal_ide_write_uint16_swap(CYG_WORD16 __regno, CYG_WORD16 __val )
 {
-    *(volatile CYG_WORD16 *)(IDE_CMD_ADDRESS + (__regno <<1)) = (__val >> 8) | (__val << 8);
+    *(volatile CYG_WORD16 *)(IDE_CMD_ADDRESS + (__regno <<1)) = CYG_CPU_TO_LE16(__val);
 }
 //-----------------------------------------------------------------------------
 #endif

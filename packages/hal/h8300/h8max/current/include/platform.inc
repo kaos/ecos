@@ -72,13 +72,11 @@
 1:
 	mov.w	@er0+,r2
 	beq	1f
+	mov.w	#0x00ff,e2	; internal I/O regs (2) high address
 	cmp.w	#0xf000,r2
 	bhi	2f
-	mov.w	#0x00fe,e2
-	bra	3f
+	dec.w	#1,e2		; internal I/O regs (1) high address
 2:
-	mov.w	#0x00ff,e2
-3:
 	mov.w	@er0+,r1
 	mov.b	r1l,@er2
 	bra	1b
@@ -104,18 +102,12 @@ INIT_REGS_DATA(CYGARC_P8DDR,0xee)
 	.word	0
 ;; Special Thanks Masahiro Ochiai
 
-;; DRAM Setup delay
+;; External peripheral setup delay
 1:
-	mov.b	#8,r0h
+	mov.l	#420000,er0	;wait 50ms
 2:
-	mov.b	#0,r0l
-3:
-	dec.b	r0l
-	bne	3b
-	mov.b	@CYGARC_RTMCSR,r0l
+	dec.l	#1,er0
 	bpl	2b
-	dec	r0h
-	bne	2b
 #endif
 	.endm
 
@@ -139,6 +131,13 @@ INIT_REGS_DATA(CYGARC_P8DDR,0xee)
 
 	.macro	hal_diag_data
 	.endm
+
+#if defined(CYGPKG_IO_ETH_DRIVERS)
+#define CYGPKG_HAL_H8300_SAVED_VECTORS
+	.macro	h8300_save_vectors
+	.byte	16
+	.endm
+#endif
 
 #------------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_PLATFORM_INC

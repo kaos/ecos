@@ -1,3 +1,24 @@
+2004-03-17  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* src/hal_diag.c
+	fix warning.
+
+2004-03-02  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* include/platform.inc
+	add h8300_save_vectors macro.
+
+2004-02-24  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* cdl/hal_h8300_h8300h_h8max.cdl
+	add Linker flags "-relax"
+	move CYGSEM_HAL_H8300_VECTOR_HOOK to hal_h8300.cdl
+
+2003-12-26  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* include/plf_io.h
+	use endian macros.
+
 2003-03-09  Yoshinori Sato  <ysato@users.sourceforge.jp>
 
 	* New package.
