@@ -80,6 +80,8 @@
 #include <time.h>
 #include <pthread.h>
 #include <semaphore.h>
+// Avoid compatibility problems with Tcl 8.4 vs. earlier
+#define USE_NON_CONST
 #include <tcl.h>
 #include <linux/usb.h>
 #include <linux/usbdevice_fs.h>

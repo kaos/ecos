@@ -10,6 +10,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
+// Copyright (C) 2002 Bart Veer
 // Copyright (C) 1999, 2000 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
@@ -82,7 +83,7 @@ CYGDBG_DEFINE_MEMLEAK_COUNTER(CdlProperty_GoalExpressionBody);
 
 // ----------------------------------------------------------------------------
 
-CdlPropertyBody::CdlPropertyBody(CdlNode node, std::string name_arg, int argc, char** argv_arg,
+CdlPropertyBody::CdlPropertyBody(CdlNode node, std::string name_arg, int argc, const char* argv_arg[],
                                  std::vector<std::pair<std::string,std::string> >& options_arg)
 {
     CYG_REPORT_FUNCNAME("CdlProperty:: constructor");
@@ -239,13 +240,13 @@ CdlPropertyBody::check_this(cyg_assert_class_zeal zeal) const
 // ----------------------------------------------------------------------------
 
 CdlProperty_Minimal
-CdlProperty_MinimalBody::make(CdlNode node_arg, std::string name_arg, int argc_arg, char** argv_arg,
+CdlProperty_MinimalBody::make(CdlNode node_arg, std::string name_arg, int argc_arg, const char* argv_arg[],
                               std::vector<std::pair<std::string,std::string> >& options_arg)
 {
     return new CdlProperty_MinimalBody(node_arg, name_arg, argc_arg, argv_arg, options_arg);
 }
 
-CdlProperty_MinimalBody::CdlProperty_MinimalBody(CdlNode node_arg, std::string name_arg, int argc_arg, char** argv_arg,
+CdlProperty_MinimalBody::CdlProperty_MinimalBody(CdlNode node_arg, std::string name_arg, int argc_arg, const char* argv_arg[],
                                                  std::vector<std::pair<std::string,std::string> >& options_arg)
     : inherited(node_arg, name_arg, argc_arg, argv_arg, options_arg)
 {
@@ -287,14 +288,14 @@ CdlProperty_MinimalBody::check_this(cyg_assert_class_zeal zeal) const
 // ----------------------------------------------------------------------------
 
 CdlProperty_String
-CdlProperty_StringBody::make(CdlNode node_arg, std::string name_arg, std::string value_arg, int argc_arg, char** argv_arg,
+CdlProperty_StringBody::make(CdlNode node_arg, std::string name_arg, std::string value_arg, int argc_arg, const char* argv_arg[],
                              std::vector<std::pair<std::string,std::string> >& options_arg)
 {
     return new CdlProperty_StringBody(node_arg, name_arg, value_arg, argc_arg, argv_arg, options_arg);
 }
 
 CdlProperty_StringBody::CdlProperty_StringBody(CdlNode node_arg, std::string name_arg, std::string value_arg,
-                                               int argc_arg, char** argv_arg,
+                                               int argc_arg, const char* argv_arg[],
                                                std::vector<std::pair<std::string,std::string> >& options_arg)
     : inherited(node_arg, name_arg, argc_arg, argv_arg, options_arg)
 {
@@ -349,15 +350,16 @@ CdlProperty_StringBody::check_this(cyg_assert_class_zeal zeal) const
 // ----------------------------------------------------------------------------
 
 CdlProperty_TclCode
-CdlProperty_TclCodeBody::make(CdlNode node_arg, std::string name_arg, cdl_tcl_code code_arg, int argc_arg, char** argv_arg,
-                                 std::vector<std::pair<std::string,std::string> >& options_arg)
+CdlProperty_TclCodeBody::make(CdlNode node_arg, std::string name_arg, cdl_tcl_code code_arg,
+                              int argc_arg, const char* argv_arg[],
+                              std::vector<std::pair<std::string,std::string> >& options_arg)
 {
     return new CdlProperty_TclCodeBody(node_arg, name_arg, 0, code_arg, argc_arg, argv_arg, options_arg);
 }
 
 CdlProperty_TclCode
 CdlProperty_TclCodeBody::make(CdlNode node_arg, std::string name_arg, cdl_int number_arg, cdl_tcl_code code_arg,
-                              int argc_arg, char** argv_arg,
+                              int argc_arg, const char* argv_arg[],
                               std::vector<std::pair<std::string,std::string> >& options_arg)                              
 {
     return new CdlProperty_TclCodeBody(node_arg, name_arg, number_arg, code_arg, argc_arg, argv_arg, options_arg);
@@ -366,7 +368,7 @@ CdlProperty_TclCodeBody::make(CdlNode node_arg, std::string name_arg, cdl_int nu
 
 CdlProperty_TclCodeBody::CdlProperty_TclCodeBody(CdlNode node_arg, std::string name_arg,
                                                  cdl_int number_arg, cdl_tcl_code code_arg,
-                                                 int argc_arg, char** argv_arg,
+                                                 int argc_arg, const char* argv_arg[],
                                                  std::vector<std::pair<std::string,std::string> >& options_arg)
     : inherited(node_arg, name_arg, argc_arg, argv_arg, options_arg)
 {
@@ -435,7 +437,7 @@ CdlProperty_TclCodeBody::check_this(cyg_assert_class_zeal zeal) const
 
 CdlProperty_StringVector
 CdlProperty_StringVectorBody::make(CdlNode node_arg, std::string name_arg, const std::vector<std::string>& data_arg,
-                                   int argc_arg, char** argv_arg,
+                                   int argc_arg, const char* argv_arg[],
                                    std::vector<std::pair<std::string,std::string> >& options_arg)
 {
     return new CdlProperty_StringVectorBody(node_arg, name_arg, data_arg, argc_arg, argv_arg, options_arg);
@@ -443,7 +445,7 @@ CdlProperty_StringVectorBody::make(CdlNode node_arg, std::string name_arg, const
 
 CdlProperty_StringVectorBody::CdlProperty_StringVectorBody(CdlNode node_arg, std::string name_arg,
                                                            const std::vector<std::string>& data_arg,
-                                                           int argc_arg, char** argv_arg,
+                                                           int argc_arg, const char* argv_arg[],
                                                            std::vector<std::pair<std::string,std::string> >& options_arg)
     : inherited(node_arg, name_arg, argc_arg, argv_arg, options_arg)
 {
@@ -543,7 +545,7 @@ CdlProperty_StringVectorBody::check_this(cyg_assert_class_zeal zeal) const
 
 CdlProperty_Reference
 CdlProperty_ReferenceBody::make(CdlNode node_arg, std::string name_arg, std::string ref_arg, CdlUpdateHandler update_handler,
-                                int argc_arg, char** argv_arg,
+                                int argc_arg, const char* argv_arg[],
                                 std::vector<std::pair<std::string,std::string> >& options_arg)
 {
     return new CdlProperty_ReferenceBody(node_arg, name_arg, ref_arg, update_handler, argc_arg, argv_arg, options_arg);
@@ -551,7 +553,7 @@ CdlProperty_ReferenceBody::make(CdlNode node_arg, std::string name_arg, std::str
 
 CdlProperty_ReferenceBody::CdlProperty_ReferenceBody(CdlNode node_arg, std::string name_arg, std::string ref_arg,
                                                      CdlUpdateHandler update_handler_arg,
-                                                     int argc_arg, char** argv_arg,
+                                                     int argc_arg, const char* argv_arg[],
                                                      std::vector<std::pair<std::string,std::string> >& options_arg)
     : CdlPropertyBody(node_arg, name_arg, argc_arg, argv_arg, options_arg),
       CdlReference(ref_arg),
@@ -679,7 +681,7 @@ CdlProperty_ReferenceBody::check_this(cyg_assert_class_zeal zeal) const
 CdlProperty_Expression
 CdlProperty_ExpressionBody::make(CdlNode node_arg, std::string name_arg, CdlExpression expr_arg,
                                  CdlUpdateHandler update_handler_arg,
-                                 int argc_arg, char** argv_arg,
+                                 int argc_arg, const char* argv_arg[],
                                  std::vector<std::pair<std::string,std::string> >& options_arg)
 {
     return new CdlProperty_ExpressionBody(node_arg, name_arg, expr_arg, update_handler_arg, argc_arg, argv_arg, options_arg);
@@ -687,7 +689,7 @@ CdlProperty_ExpressionBody::make(CdlNode node_arg, std::string name_arg, CdlExpr
 
 CdlProperty_ExpressionBody::CdlProperty_ExpressionBody(CdlNode node_arg, std::string name_arg, CdlExpression expr_arg,
                                                        CdlUpdateHandler update_handler_arg,
-                                                       int argc_arg, char** argv_arg,
+                                                       int argc_arg, const char* argv_arg[],
                                                        std::vector<std::pair<std::string,std::string> >& options_arg)
     : CdlPropertyBody(node_arg, name_arg, argc_arg, argv_arg, options_arg),
       CdlExpressionBody(*expr_arg),
@@ -755,7 +757,7 @@ CdlProperty_ExpressionBody::check_this(cyg_assert_class_zeal zeal) const
 CdlProperty_ListExpression
 CdlProperty_ListExpressionBody::make(CdlNode node_arg, std::string name_arg, CdlListExpression expr_arg,
                                      CdlUpdateHandler update_handler_arg, 
-                                     int argc_arg, char** argv_arg,
+                                     int argc_arg, const char* argv_arg[],
                                      std::vector<std::pair<std::string,std::string> >& options_arg)
 {
     return new CdlProperty_ListExpressionBody(node_arg, name_arg, expr_arg, update_handler_arg,
@@ -765,7 +767,7 @@ CdlProperty_ListExpressionBody::make(CdlNode node_arg, std::string name_arg, Cdl
 CdlProperty_ListExpressionBody::CdlProperty_ListExpressionBody(CdlNode node_arg, std::string name_arg,
                                                                CdlListExpression expr_arg,
                                                                CdlUpdateHandler update_handler_arg,
-                                                               int argc_arg, char** argv_arg,
+                                                               int argc_arg, const char* argv_arg[],
                                                                std::vector<std::pair<std::string,std::string> >& options_arg)
     : CdlPropertyBody(node_arg, name_arg, argc_arg, argv_arg, options_arg),
       CdlListExpressionBody(*expr_arg),
@@ -833,7 +835,7 @@ CdlProperty_ListExpressionBody::check_this(cyg_assert_class_zeal zeal) const
 CdlProperty_GoalExpression
 CdlProperty_GoalExpressionBody::make(CdlNode node_arg, std::string name_arg, CdlGoalExpression expr_arg,
                                      CdlUpdateHandler update_handler_arg,
-                                     int argc_arg, char** argv_arg,
+                                     int argc_arg, const char* argv_arg[],
                                      std::vector<std::pair<std::string,std::string> >& options_arg)
 {
     return new CdlProperty_GoalExpressionBody(node_arg, name_arg, expr_arg, update_handler_arg,
@@ -843,7 +845,7 @@ CdlProperty_GoalExpressionBody::make(CdlNode node_arg, std::string name_arg, Cdl
 CdlProperty_GoalExpressionBody::CdlProperty_GoalExpressionBody(CdlNode node_arg, std::string name_arg,
                                                                CdlGoalExpression expr_arg,
                                                                CdlUpdateHandler update_handler_arg,
-                                                               int argc_arg, char** argv_arg,
+                                                               int argc_arg, const char* argv_arg[],
                                                                std::vector<std::pair<std::string,std::string> >& options_arg)
     : CdlPropertyBody(node_arg, name_arg, argc_arg, argv_arg, options_arg),
       CdlGoalExpressionBody(*expr_arg),

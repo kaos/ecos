@@ -10,6 +10,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
+// Copyright (C) 2002 Bart Veer
 // Copyright (C) 1999, 2000 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
@@ -1644,7 +1645,7 @@ CdlConfigurationBody::add(CdlTransaction transaction, std::string filename,
 // This is not done, to allow multiple savefiles to be loaded into
 // a single configuration in future.
 int
-CdlConfigurationBody::savefile_configuration_command(CdlInterpreter interp, int argc, char** argv)
+CdlConfigurationBody::savefile_configuration_command(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("CdlConfiguration::savefile_configuration_command", "result %d");
     CYG_PRECONDITION_CLASSC(interp);
@@ -1691,7 +1692,7 @@ CdlConfigurationBody::savefile_configuration_command(CdlInterpreter interp, int 
 
 // ----------------------------------------------------------------------------
 int
-CdlConfigurationBody::savefile_description_command(CdlInterpreter interp, int argc, char** argv)
+CdlConfigurationBody::savefile_description_command(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAME("CdlConfiguration::savefile_description_command");
     CYG_PRECONDITION_CLASSC(interp);
@@ -1715,7 +1716,7 @@ CdlConfigurationBody::savefile_description_command(CdlInterpreter interp, int ar
 
 // ----------------------------------------------------------------------------
 int
-CdlConfigurationBody::savefile_hardware_command(CdlInterpreter interp, int argc, char** argv)
+CdlConfigurationBody::savefile_hardware_command(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAME("CdlConfiguration::savefile_hardware_command");
     CYG_PRECONDITION_CLASSC(interp);
@@ -1739,7 +1740,7 @@ CdlConfigurationBody::savefile_hardware_command(CdlInterpreter interp, int argc,
 
 // ----------------------------------------------------------------------------
 int
-CdlConfigurationBody::savefile_template_command(CdlInterpreter interp, int argc, char** argv)
+CdlConfigurationBody::savefile_template_command(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAME("CdlConfiguration::savefile_template_command");
     CYG_PRECONDITION_CLASSC(interp);
@@ -1763,7 +1764,7 @@ CdlConfigurationBody::savefile_template_command(CdlInterpreter interp, int argc,
 
 // ----------------------------------------------------------------------------
 int
-CdlConfigurationBody::savefile_package_command(CdlInterpreter interp, int argc, char** argv)
+CdlConfigurationBody::savefile_package_command(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAME("CdlConfiguration::savefile_package_command");
     CYG_PRECONDITION_CLASSC(interp);

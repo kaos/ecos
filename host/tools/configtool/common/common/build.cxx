@@ -85,7 +85,7 @@ bool eval_tcl_command (const std::string command) {
 	Tcl_Channel outchan = Tcl_OpenFileChannel (interp, "nul", "a+", 777);
 	Tcl_SetStdChannel (outchan, TCL_STDOUT); // direct standard output to the null device
 #endif
-	int nStatus = Tcl_Eval (interp, (char *) command.c_str ());
+	int nStatus = Tcl_Eval (interp, CDL_TCL_CONST_CAST(char*, command.c_str()));
 #if SET_STDOUT_TO_NULL
 	Tcl_SetStdChannel (NULL, TCL_STDOUT);
 	Tcl_UnregisterChannel (interp, outchan);

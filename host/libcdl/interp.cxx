@@ -10,6 +10,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
+// Copyright (C) 2002 Bart Veer
 // Copyright (C) 1999, 2000, 2001 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
@@ -145,10 +146,10 @@ CdlInterpreterBody::make(Tcl_Interp* tcl_interp_arg)
         result = new CdlInterpreterBody(tcl_interp);
         
         std::string version = Cdl::get_library_version();
-        if (0 == Tcl_SetVar(tcl_interp, "cdl_version", const_cast<char*>(version.c_str()), TCL_GLOBAL_ONLY)) {
+        if (0 == Tcl_SetVar(tcl_interp, "cdl_version", CDL_TCL_CONST_CAST(char*,version.c_str()), TCL_GLOBAL_ONLY)) {
             throw std::bad_alloc();
         }
-        if (0 == Tcl_SetVar(tcl_interp, "cdl_interactive", const_cast<char*>(Cdl::is_interactive() ? "1" : "0"),
+        if (0 == Tcl_SetVar(tcl_interp, "cdl_interactive", CDL_TCL_CONST_CAST(char*, (Cdl::is_interactive() ? "1" : "0")),
                             TCL_GLOBAL_ONLY)) {
             throw std::bad_alloc();
         }
@@ -193,7 +194,7 @@ CdlInterpreterBody::create_slave(CdlLoadable loadable_arg, bool safe)
 
     // FIXME: creating a slave that is not safe appears to fail.
 #if 0    
-    Tcl_Interp* slave = Tcl_CreateSlave(interp, const_cast<char*>(slave_name.c_str()), safe);
+    Tcl_Interp* slave = Tcl_CreateSlave(interp, CDL_TCL_CONST_CAST(char*, slave_name.c_str()), safe);
 #else
     Tcl_Interp* slave = Tcl_CreateInterp();
 #endif
@@ -687,7 +688,7 @@ CdlInterpreterBody::eval(std::string script, std::string& str_result)
     // raised up to the library level. That way the error count
     // etc. are kept accurate.
     if ((TCL_OK != result) && !cdl_result) {
-        char* tcl_result = Tcl_GetStringResult(tcl_interp);
+        const char* tcl_result = Tcl_GetStringResult(tcl_interp);
         if ((0 == tcl_result) || ('\0' == tcl_result[0])) {
             tcl_result = "Internal error, no additional information available.";
         }
@@ -743,7 +744,7 @@ CdlInterpreterBody::eval_cdl_code(const cdl_tcl_code script, std::string& str_re
     // raised up to the library level. That way the error count
     // etc. are kept accurate.
     if ((TCL_OK != result) && !cdl_result) {
-        char* tcl_result = Tcl_GetStringResult(tcl_interp);
+        const char* tcl_result = Tcl_GetStringResult(tcl_interp);
         if ((0 == tcl_result) || ('\0' == tcl_result[0])) {
             tcl_result = "Internal error, no additional information available.";
         }
@@ -768,7 +769,7 @@ CdlInterpreterBody::eval_file(std::string script, std::string& str_result)
     // set by CDL-related commands running in that interpreter.
     cdl_result = false;
     
-    int result = Tcl_EvalFile(tcl_interp, const_cast<char*>(script.c_str()));
+    int result = Tcl_EvalFile(tcl_interp, CDL_TCL_CONST_CAST(char*, script.c_str()));
     // The distinction between TCL_OK and TCL_RETURN is probably not worth
     // worrying about.
     if (TCL_RETURN == result) {
@@ -780,7 +781,7 @@ CdlInterpreterBody::eval_file(std::string script, std::string& str_result)
     // raised up to the library level. That way the error count
     // etc. are kept accurate.
     if ((TCL_OK != result) && !cdl_result) {
-        char* tcl_result = Tcl_GetStringResult(tcl_interp);
+        const char* tcl_result = Tcl_GetStringResult(tcl_interp);
         if ((0 == tcl_result) || ('\0' == tcl_result[0])) {
             tcl_result = "Internal error, no additional information available.";
         }
@@ -867,7 +868,7 @@ CdlInterpreterBody::get_result()
 // i.e. a function pointer. That function needs a pointer to the
 // CdlInterpreter object, which can be accessed via AssocData.
 int
-CdlInterpreterBody::tcl_command_proc(ClientData data, Tcl_Interp* tcl_interp, int argc, char* argv[])
+CdlInterpreterBody::tcl_command_proc(ClientData data, Tcl_Interp* tcl_interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("CdlInterpreter::tcl_command_proc", "result %d");
     CYG_REPORT_FUNCARG3XV(data, tcl_interp, argc);
@@ -920,9 +921,19 @@ CdlInterpreterBody::add_command(std::string name, CdlInterpreterCommand command)
     } x;
     x.command = command;
 
-    if (0 == Tcl_CreateCommand(tcl_interp, const_cast<char*>(name.c_str()), &tcl_command_proc, x.data, 0)) {
+    // Tcl 8.4 involves some incompatible API changes
+#if (TCL_MAJOR_VERSION > 8) || ((TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION >= 4))
+    if (0 == Tcl_CreateCommand(tcl_interp, CDL_TCL_CONST_CAST(char*, name.c_str()), &tcl_command_proc, x.data, 0)) {
         throw std::bad_alloc();
     }
+#else
+    if (0 == Tcl_CreateCommand(tcl_interp, CDL_TCL_CONST_CAST(char*, name.c_str()),
+                               (int (*)(ClientData,Tcl_Interp*, int, char*[])) &tcl_command_proc,
+                               x.data, 0)) {
+        throw std::bad_alloc();
+    }
+#endif
+    
     CYG_REPORT_RETURN();
 }
 
@@ -938,7 +949,7 @@ CdlInterpreterBody::remove_command(std::string name)
     CYG_PRECONDITION_THISC();
     CYG_PRECONDITIONC("" != name);
 
-    if (0 != Tcl_DeleteCommand(tcl_interp, const_cast<char*>(name.c_str()))) {
+    if (0 != Tcl_DeleteCommand(tcl_interp, CDL_TCL_CONST_CAST(char*, name.c_str()))) {
         CYG_FAIL("attempt to delete non-existant command");
     }
     CYG_REPORT_RETURN();
@@ -1024,7 +1035,7 @@ CdlInterpreterBody::set_variable(std::string name, std::string value)
     CYG_REPORT_FUNCARG2("this %p, name %s", this, name.c_str());
     CYG_PRECONDITION_THISC();
     CYG_PRECONDITIONC("" != name);
-    if (0 == Tcl_SetVar(tcl_interp, const_cast<char*>(name.c_str()), const_cast<char*>(value.c_str()), TCL_GLOBAL_ONLY)) {
+    if (0 == Tcl_SetVar(tcl_interp, CDL_TCL_CONST_CAST(char*, name.c_str()), CDL_TCL_CONST_CAST(char*, value.c_str()), TCL_GLOBAL_ONLY)) {
         throw std::bad_alloc();
     }
     CYG_REPORT_RETURN();
@@ -1038,7 +1049,7 @@ CdlInterpreterBody::unset_variable(std::string name)
     CYG_PRECONDITION_THISC();
     CYG_PRECONDITIONC("" != name);
 
-    Tcl_UnsetVar(tcl_interp, const_cast<char*>(name.c_str()), TCL_GLOBAL_ONLY);
+    Tcl_UnsetVar(tcl_interp, CDL_TCL_CONST_CAST(char*, name.c_str()), TCL_GLOBAL_ONLY);
     CYG_REPORT_RETURN();
 }
 
@@ -1051,7 +1062,7 @@ CdlInterpreterBody::get_variable(std::string name)
     CYG_PRECONDITIONC("" != name);
 
     std::string result = "";
-    char *tmp = Tcl_GetVar(tcl_interp, const_cast<char*>(name.c_str()), TCL_GLOBAL_ONLY);
+    const char *tmp = Tcl_GetVar(tcl_interp, CDL_TCL_CONST_CAST(char*, name.c_str()), TCL_GLOBAL_ONLY);
     if (0 != tmp) {
         result = tmp;
     }
@@ -1078,7 +1089,7 @@ CdlInterpreterBody::set_assoc_data(const char* key, ClientData data, Tcl_InterpD
     CYG_PRECONDITION_THISC();
     CYG_PRECONDITIONC((0 != key) && ('\0' != key[0]));
 
-    Tcl_SetAssocData(tcl_interp, const_cast<char*>(key), del_proc, data);
+    Tcl_SetAssocData(tcl_interp, CDL_TCL_CONST_CAST(char*, key), del_proc, data);
     CYG_REPORT_RETURN();
 }
 
@@ -1090,7 +1101,7 @@ CdlInterpreterBody::get_assoc_data(const char* key)
     CYG_PRECONDITION_THISC();
     CYG_PRECONDITIONC((0 != key) && ('\0' != key[0]));
 
-    ClientData result = Tcl_GetAssocData(tcl_interp, const_cast<char*>(key), 0);
+    ClientData result = Tcl_GetAssocData(tcl_interp, CDL_TCL_CONST_CAST(char*, key), 0);
     CYG_REPORT_RETVAL(result);
     return result;
 }
@@ -1103,7 +1114,7 @@ CdlInterpreterBody::delete_assoc_data(const char* key)
     CYG_PRECONDITION_THISC();
     CYG_PRECONDITIONC((0 != key) && ('\0' != key[0]));
 
-    Tcl_DeleteAssocData(tcl_interp, const_cast<char*>(key));
+    Tcl_DeleteAssocData(tcl_interp, CDL_TCL_CONST_CAST(char*, key));
     CYG_REPORT_RETURN();
 }
 
@@ -1179,9 +1190,9 @@ return $result                                              \n\
         CYG_FAIL("Internal error evaluating Tcl script");
     }
 
-    int         count;
-    char**      array;
-    if (TCL_OK != Tcl_SplitList(tcl_interp, const_cast<char*>(tcl_result.c_str()), &count, &array)) {
+    int             count;
+    const char**    array;
+    if (TCL_OK != Tcl_SplitList(tcl_interp, CDL_TCL_CONST_CAST(char*, tcl_result.c_str()), &count, CDL_TCL_CONST_CAST(char***, &array))) {
         throw std::bad_alloc();
     }
     for (int i = 0; i < count; i++) {
@@ -1246,9 +1257,9 @@ return $result                                          \n\
     if (TCL_OK != eval(locate_files_script, tcl_result)) {
         CYG_FAIL("Internal error evaluating Tcl script");
     }
-    int         count;
-    char**      array;
-    if (TCL_OK != Tcl_SplitList(tcl_interp, const_cast<char*>(tcl_result.c_str()), &count, &array)) {
+    int             count;
+    const char**    array;
+    if (TCL_OK != Tcl_SplitList(tcl_interp, CDL_TCL_CONST_CAST(char*, tcl_result.c_str()), &count, CDL_TCL_CONST_CAST(char***, &array))) {
         throw std::bad_alloc();
     }
     for (int i = 0; i < count; i++) {
@@ -1305,7 +1316,7 @@ CdlInterpreterBody::write_data(Tcl_Channel chan, std::string data)
     CYG_REPORT_FUNCARG2XV(this, chan);
     CYG_PRECONDITION_THISC();
 
-    if (-1 == Tcl_Write(chan, const_cast<char*>(data.data()), data.size())) {
+    if (-1 == Tcl_Write(chan, CDL_TCL_CONST_CAST(char*, data.data()), data.size())) {
         std::string msg = "Unexpected error writing to file " + this->get_context() + " : " + Tcl_PosixError(tcl_interp);
         throw CdlInputOutputException(msg);
     }

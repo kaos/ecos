@@ -10,6 +10,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
+// Copyright (C) 2002 Bart Veer
 // Copyright (C) 1999, 2000, 2001 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
@@ -1583,7 +1584,7 @@ CdlValuableBody::dialog_update_handler(CdlTransaction transaction, CdlNode sourc
 }
 
 int
-CdlValuableBody::parse_dialog(CdlInterpreter interp, int argc, char** argv)
+CdlValuableBody::parse_dialog(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_dialog", "result %d");
 
@@ -1682,7 +1683,7 @@ CdlValuableBody::wizard_update_handler(CdlTransaction transaction, CdlNode sourc
 }
 
 int
-CdlValuableBody::parse_wizard(CdlInterpreter interp, int argc, char** argv)
+CdlValuableBody::parse_wizard(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_wizard", "result %d");
 
@@ -1777,7 +1778,7 @@ CdlValuableBody::legal_values_update_handler(CdlTransaction transaction, CdlNode
 }
 
 int
-CdlValuableBody::parse_legal_values(CdlInterpreter interp, int argc, char** argv)
+CdlValuableBody::parse_legal_values(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_legal_values", "result %d");
 
@@ -1869,7 +1870,7 @@ CdlValuableBody::default_value_update_handler(CdlTransaction transaction, CdlNod
 }
 
 int
-CdlValuableBody::parse_default_value(CdlInterpreter interp, int argc, char** argv)
+CdlValuableBody::parse_default_value(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_default_value", "result %d");
     int result = CdlParse::parse_expression_property(interp, argc, argv, CdlPropertyId_DefaultValue, 0, 0,
@@ -1961,7 +1962,7 @@ CdlValuableBody::calculated_update_handler(CdlTransaction transaction, CdlNode s
 
 // FIXME: check for flavor none?
 int
-CdlValuableBody::parse_calculated(CdlInterpreter interp, int argc, char** argv)
+CdlValuableBody::parse_calculated(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_calculated", "result %d");
 
@@ -2041,7 +2042,7 @@ CdlValuableBody::active_if_update_handler(CdlTransaction transaction, CdlNode so
 }
 
 int
-CdlValuableBody::parse_active_if(CdlInterpreter interp, int argc, char** argv)
+CdlValuableBody::parse_active_if(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_active_if", "result %d");
 
@@ -2117,7 +2118,7 @@ CdlValuableBody::requires_update_handler(CdlTransaction transaction, CdlNode sou
 }
 
 int
-CdlValuableBody::parse_requires(CdlInterpreter interp, int argc, char** argv)
+CdlValuableBody::parse_requires(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_requires", "result %d");
 
@@ -2230,7 +2231,7 @@ CdlValuableBody::implements_update_handler(CdlTransaction transaction, CdlNode s
 }
 
 int
-CdlValuableBody::parse_implements(CdlInterpreter interp, int argc, char** argv)
+CdlValuableBody::parse_implements(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_implements", "result %d");
 
@@ -2291,7 +2292,7 @@ parse_flavor_final_check(CdlInterpreter interp, CdlProperty_String prop)
 
 
 int
-CdlValuableBody::parse_flavor(CdlInterpreter interp, int argc, char** argv)
+CdlValuableBody::parse_flavor(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_flavor", "result %d");
 
@@ -2303,7 +2304,7 @@ CdlValuableBody::parse_flavor(CdlInterpreter interp, int argc, char** argv)
 // ----------------------------------------------------------------------------
 // syntax: group <group name>
 int
-CdlValuableBody::parse_group(CdlInterpreter interp, int argc, char** argv)
+CdlValuableBody::parse_group(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_group", "result %d");
 
@@ -2317,7 +2318,7 @@ CdlValuableBody::parse_group(CdlInterpreter interp, int argc, char** argv)
 // Syntax: check_proc <tclcode>
 
 int
-CdlValuableBody::parse_check_proc(CdlInterpreter interp, int argc, char** argv)
+CdlValuableBody::parse_check_proc(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_check_proc", "result %d");
 
@@ -2362,7 +2363,7 @@ CdlValuableBody::get_check_proc() const
 // Syntax: entry_proc <tclcode>
 
 int
-CdlValuableBody::parse_entry_proc(CdlInterpreter interp, int argc, char** argv)
+CdlValuableBody::parse_entry_proc(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_entry_proc", "result %d");
 
@@ -3985,7 +3986,7 @@ CdlValuableBody::save(CdlInterpreter interp, Tcl_Channel chan, int indentation, 
 }
 
 int
-CdlValuableBody::savefile_value_source_command(CdlInterpreter interp, int argc, char** argv)
+CdlValuableBody::savefile_value_source_command(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAME("CdlValuable::savefile_value_source_command");
     CYG_REPORT_FUNCARG2XV(interp, argc);
@@ -4014,7 +4015,7 @@ CdlValuableBody::savefile_value_source_command(CdlInterpreter interp, int argc, 
 }
 
 int
-CdlValuableBody::savefile_xxx_value_command(CdlInterpreter interp, int argc, char** argv, CdlValueSource source)
+CdlValuableBody::savefile_xxx_value_command(CdlInterpreter interp, int argc, const char* argv[], CdlValueSource source)
 {
     CYG_REPORT_FUNCNAME("CdlValuable::savefile_xxx_value_command");
     CYG_REPORT_FUNCARG3XV(interp, argc, source);
@@ -4084,7 +4085,7 @@ CdlValuableBody::savefile_xxx_value_command(CdlInterpreter interp, int argc, cha
 }
 
 int
-CdlValuableBody::savefile_user_value_command(CdlInterpreter interp, int argc, char** argv)
+CdlValuableBody::savefile_user_value_command(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAME("CdlValuable::savefile_user_value_command");
     int result = CdlValuableBody::savefile_xxx_value_command(interp, argc, argv, CdlValueSource_User);
@@ -4093,7 +4094,7 @@ CdlValuableBody::savefile_user_value_command(CdlInterpreter interp, int argc, ch
 }
 
 int
-CdlValuableBody::savefile_wizard_value_command(CdlInterpreter interp, int argc, char** argv)
+CdlValuableBody::savefile_wizard_value_command(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAME("CdlValuable::savefile_wizard_value_command");
     int result = CdlValuableBody::savefile_xxx_value_command(interp, argc, argv, CdlValueSource_Wizard);
@@ -4102,7 +4103,7 @@ CdlValuableBody::savefile_wizard_value_command(CdlInterpreter interp, int argc, 
 }
 
 int
-CdlValuableBody::savefile_inferred_value_command(CdlInterpreter interp, int argc, char** argv)
+CdlValuableBody::savefile_inferred_value_command(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAME("CdlValuable::savefile_inferred_value_command");
     int result = CdlValuableBody::savefile_xxx_value_command(interp, argc, argv, CdlValueSource_Inferred);

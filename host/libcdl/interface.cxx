@@ -10,6 +10,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
+// Copyright (C) 2002 Bart Veer
 // Copyright (C) 1999, 2000 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
@@ -112,7 +113,7 @@ CdlInterfaceBody::~CdlInterfaceBody()
 // an option, component, or package.
 
 int
-CdlInterfaceBody::parse_interface(CdlInterpreter interp, int argc, char** argv)
+CdlInterfaceBody::parse_interface(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("CdlInterface::parse_interface", "result %d");
     CYG_REPORT_FUNCARG1("argc %d", argc);
@@ -143,7 +144,7 @@ CdlInterfaceBody::parse_interface(CdlInterpreter interp, int argc, char** argv)
             CdlParse::report_error(interp, "", std::string("Incorrect number of arguments to `") + diag_argv0 +
                                    "'\nExpecting name and properties list.");
             ok = false;
-        } else if (!Tcl_CommandComplete(argv[2])) {
+        } else if (!Tcl_CommandComplete(CDL_TCL_CONST_CAST(char*, argv[2]))) {
             CdlParse::report_error(interp, "", std::string("Invalid property list for cdl_interface `") + argv[1] + "'.");
             ok = false;
         } else if (0 != toplevel->lookup(argv[1])) {
@@ -377,7 +378,7 @@ CdlInterfaceBody::save(CdlInterpreter interp, Tcl_Channel chan, int indentation,
 }
 
 int
-CdlInterfaceBody::savefile_interface_command(CdlInterpreter interp, int argc, char** argv)
+CdlInterfaceBody::savefile_interface_command(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("CdlInterface::savefile_interface_command", "result %d");
     CYG_PRECONDITION_CLASSC(interp);

@@ -13,6 +13,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
+// Copyright (C) 2002 Bart Veer
 // Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
@@ -392,11 +393,11 @@ class CdlConfigurationBody : public virtual CdlToplevelBody
 
     // The internal implementation of the persistence support
     virtual void                save(CdlInterpreter, Tcl_Channel, int, bool);
-    static int                  savefile_configuration_command(CdlInterpreter, int, char**);
-    static int                  savefile_description_command(CdlInterpreter, int, char**);
-    static int                  savefile_hardware_command(CdlInterpreter, int, char**);
-    static int                  savefile_template_command(CdlInterpreter, int, char**);
-    static int                  savefile_package_command(CdlInterpreter, int, char**);
+    static int                  savefile_configuration_command(CdlInterpreter, int, const char*[]);
+    static int                  savefile_description_command(CdlInterpreter, int, const char*[]);
+    static int                  savefile_hardware_command(CdlInterpreter, int, const char*[]);
+    static int                  savefile_template_command(CdlInterpreter, int, const char*[]);
+    static int                  savefile_package_command(CdlInterpreter, int, const char*[]);
     
     std::string                 current_hardware;
     std::string                 current_template;
@@ -445,10 +446,10 @@ class CdlPackageBody : public virtual CdlNodeBody,
 
     ~CdlPackageBody();
     
-    static int          parse_package(CdlInterpreter, int, char**);
-    static int          parse_hardware(CdlInterpreter, int, char**);
-    static int          parse_install_proc(CdlInterpreter, int, char**);
-    static int          parse_license_proc(CdlInterpreter, int, char**);
+    static int          parse_package(CdlInterpreter, int, const char*[]);
+    static int          parse_hardware(CdlInterpreter, int, const char*[]);
+    static int          parse_install_proc(CdlInterpreter, int, const char*[]);
+    static int          parse_license_proc(CdlInterpreter, int, const char*[]);
 
     // Override the CdlDefineLoadable member. Hardware packages always
     // send their configuration options to hardware.h
@@ -468,7 +469,7 @@ class CdlPackageBody : public virtual CdlNodeBody,
     // Persistence support.
     virtual void        save(CdlInterpreter, Tcl_Channel, int, bool);
     static void         initialize_savefile_support(CdlToplevel);
-    static int          savefile_package_command(CdlInterpreter, int, char**);
+    static int          savefile_package_command(CdlInterpreter, int, const char*[]);
 
     // Was this package loaded because of a template or hardware setting?
     bool                belongs_to_template() const;
@@ -516,8 +517,8 @@ class CdlComponentBody : public virtual CdlNodeBody,
   public:
 
     ~CdlComponentBody();
-    static int          parse_component(CdlInterpreter, int, char**);
-    static int          parse_script(CdlInterpreter, int, char**);
+    static int          parse_component(CdlInterpreter, int, const char*[]);
+    static int          parse_script(CdlInterpreter, int, const char*[]);
 
     // Propagation support. Because of multiple virtual inheritance
     // it is necessary to invoke the container and valuable
@@ -527,7 +528,7 @@ class CdlComponentBody : public virtual CdlNodeBody,
     // Persistence support.
     virtual void        save(CdlInterpreter, Tcl_Channel, int, bool);
     static void         initialize_savefile_support(CdlToplevel);
-    static int          savefile_component_command(CdlInterpreter, int, char**);
+    static int          savefile_component_command(CdlInterpreter, int, const char*[]);
     
     virtual std::string get_class_name() const;
     bool                check_this(cyg_assert_class_zeal = cyg_quick) const;
@@ -567,12 +568,12 @@ class CdlOptionBody : public virtual CdlNodeBody,
   public:
     ~CdlOptionBody();
     
-    static int          parse_option(CdlInterpreter, int, char**);
+    static int          parse_option(CdlInterpreter, int, const char*[]);
     
     // Persistence support.
     virtual void        save(CdlInterpreter, Tcl_Channel, int, bool);
     static void         initialize_savefile_support(CdlToplevel);
-    static int          savefile_option_command(CdlInterpreter, int, char**);
+    static int          savefile_option_command(CdlInterpreter, int, const char*[]);
     
     virtual std::string get_class_name() const;
     bool                check_this(cyg_assert_class_zeal = cyg_quick) const;

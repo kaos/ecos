@@ -10,6 +10,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
+// Copyright (C) 2002 Bart Veer
 // Copyright (C) 1999, 2000 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
@@ -109,7 +110,7 @@ CdlWizardBody::~CdlWizardBody()
 // Parsing a wizard definition.
 
 int
-CdlWizardBody::parse_wizard(CdlInterpreter interp, int argc, char** argv)
+CdlWizardBody::parse_wizard(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("CdlWizard::parse_wizard", "result %d");
     CYG_REPORT_FUNCARG1("argc %d", argc);
@@ -138,7 +139,7 @@ CdlWizardBody::parse_wizard(CdlInterpreter interp, int argc, char** argv)
         if (3 != argc) {
             CdlParse::report_error(interp, "", std::string("Incorrect number of arguments to `") + diag_argv0 +
                                    "'\nExpecting name and properties list.");
-        } else if (!Tcl_CommandComplete(argv[2])) {
+        } else if (!Tcl_CommandComplete(CDL_TCL_CONST_CAST(char*, argv[2]))) {
             CdlParse::report_error(interp, "", std::string("Invalid property list for cdl_wizard `") + argv[1]+ "'.");
         } else if (0 != toplevel->lookup(argv[1])) {
             CdlParse::report_error(interp, "", std::string("Wizard `") + argv[1] +
@@ -263,7 +264,7 @@ CdlWizardBody::parse_wizard(CdlInterpreter interp, int argc, char** argv)
 // Syntax: cancel_proc <tclcode>
 
 int
-CdlWizardBody::parse_cancel_proc(CdlInterpreter interp, int argc, char** argv)
+CdlWizardBody::parse_cancel_proc(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_cancel_proc", "result %d");
 
@@ -277,7 +278,7 @@ CdlWizardBody::parse_cancel_proc(CdlInterpreter interp, int argc, char** argv)
 // Syntax: confirm_proc <tclcode>
 
 int
-CdlWizardBody::parse_confirm_proc(CdlInterpreter interp, int argc, char** argv)
+CdlWizardBody::parse_confirm_proc(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_confirm_proc", "result %d");
 
@@ -291,7 +292,7 @@ CdlWizardBody::parse_confirm_proc(CdlInterpreter interp, int argc, char** argv)
 // syntax: decoration_proc <tclcode>
 
 int
-CdlWizardBody::parse_decoration_proc(CdlInterpreter interp, int argc, char** argv)
+CdlWizardBody::parse_decoration_proc(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_decoration_proc", "result %d");
 
@@ -305,7 +306,7 @@ CdlWizardBody::parse_decoration_proc(CdlInterpreter interp, int argc, char** arg
 // Syntax: init_proc <tclcode>
 
 int
-CdlWizardBody::parse_init_proc(CdlInterpreter interp, int argc, char** argv)
+CdlWizardBody::parse_init_proc(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_init_proc", "result %d");
 
@@ -320,7 +321,7 @@ CdlWizardBody::parse_init_proc(CdlInterpreter interp, int argc, char** argv)
 // generic parsers. There are two arguments, a number and some Tcl code.
 
 int
-CdlWizardBody::parse_screen(CdlInterpreter interp, int argc, char** argv)
+CdlWizardBody::parse_screen(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAME("CdlParse::parse_screen");
     CYG_REPORT_FUNCARG1("argc %d", argc);
@@ -337,7 +338,7 @@ CdlWizardBody::parse_screen(CdlInterpreter interp, int argc, char** argv)
                                          "    Expecting two arguments, a number and some Tcl code.");
         } else if (!Cdl::string_to_integer(argv[data_index], number)) {
             CdlParse::report_property_parse_error(interp, argv[0], std::string(argv[data_index]) + " is not a valid number.");
-        } else if (!Tcl_CommandComplete(argv[data_index + 1])) {
+        } else if (!Tcl_CommandComplete(CDL_TCL_CONST_CAST(char*, argv[data_index + 1]))) {
             CdlParse::report_property_parse_error(interp, argv[0], "incomplete Tcl code fragment.");
         } else {
             

@@ -10,6 +10,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
+// Copyright (C) 2002 Bart Veer
 // Copyright (C) 1999, 2000 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
@@ -2748,7 +2749,7 @@ CdlToplevelBody::get_savefile_subcommands(std::string main_command, std::vector<
 // start of savefiles. The command takes two arguments, a primary
 // command name and a set of subcommand names.
 int
-CdlToplevelBody::savefile_handle_command(CdlInterpreter interp, int argc, char** argv)
+CdlToplevelBody::savefile_handle_command(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAME("CdlToplevel::savefile_handle_command");
     CYG_REPORT_FUNCARG2XV(interp, argc);
@@ -2800,12 +2801,12 @@ CdlToplevelBody::savefile_handle_command(CdlInterpreter interp, int argc, char**
     // Now take care of all the subcommands.
     if (2 != argc) {
 
-        int    list_count = 0;
-        char** list_entries = 0;
+        int          list_count = 0;
+        const char** list_entries = 0;
 
         try {
             Tcl_Interp* tcl_interp = interp->get_tcl_interpreter();
-            if (TCL_OK != Tcl_SplitList(tcl_interp, argv[2], &list_count, &list_entries)) {
+            if (TCL_OK != Tcl_SplitList(tcl_interp, CDL_TCL_CONST_CAST(char*, argv[2]), &list_count, CDL_TCL_CONST_CAST(char***, &list_entries))) {
                 CdlParse::report_error(interp, "", std::string("Invalid subcommand list for `cdl_command ") + argv[1] + "'.");
             }
 
@@ -2871,7 +2872,7 @@ CdlToplevelBody::savefile_handle_command(CdlInterpreter interp, int argc, char**
 // interpreter somehow. Currently this data is not readily available,
 // and the resulting string may not match the original data exactly.
 int
-CdlToplevelBody::savefile_handle_unsupported(CdlInterpreter interp, int argc, char** argv)
+CdlToplevelBody::savefile_handle_unsupported(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAME("CdlNode::savefile_handle_unsupported");
     CYG_REPORT_FUNCARG2XV(interp, argc);
@@ -2931,7 +2932,7 @@ CdlToplevelBody::save_unsupported_commands(CdlInterpreter interp, Tcl_Channel ch
 // ----------------------------------------------------------------------------
 
 int
-CdlToplevelBody::savefile_handle_unknown(CdlInterpreter interp, int argc, char** argv)
+CdlToplevelBody::savefile_handle_unknown(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAME("CdlToplevel::savefile_handle_unknown");
     CYG_REPORT_FUNCARG2XV(interp, argc);
@@ -2966,7 +2967,7 @@ CdlToplevelBody::get_library_savefile_version()
 // version number with the interpreter, allowing it to be retrieved
 // by other commands.
 int
-CdlToplevelBody::savefile_handle_version(CdlInterpreter interp, int argc, char** argv)
+CdlToplevelBody::savefile_handle_version(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAME("CdlToplevel::savefile_handle_version");
     CYG_REPORT_FUNCARG2XV(interp, argc);
@@ -3328,7 +3329,7 @@ CdlUserVisibleBody::check_properties(CdlInterpreter interp)
 // Syntax: description <string>
 
 int
-CdlUserVisibleBody::parse_description(CdlInterpreter interp, int argc, char** argv)
+CdlUserVisibleBody::parse_description(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_description", "result %d");
 
@@ -3343,7 +3344,7 @@ CdlUserVisibleBody::parse_description(CdlInterpreter interp, int argc, char** ar
 // Syntax: display <short description>
 
 int
-CdlUserVisibleBody::parse_display(CdlInterpreter interp, int argc, char** argv)
+CdlUserVisibleBody::parse_display(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_display", "result %d");
 
@@ -3357,7 +3358,7 @@ CdlUserVisibleBody::parse_display(CdlInterpreter interp, int argc, char** argv)
 // Syntax: doc <url>
 
 int
-CdlUserVisibleBody::parse_doc(CdlInterpreter interp, int argc, char** argv)
+CdlUserVisibleBody::parse_doc(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_doc", "result %d");
     
@@ -3694,7 +3695,7 @@ CdlParentableBody::update_handler(CdlTransaction transaction, CdlNode source, Cd
 }
 
 int
-CdlParentableBody::parse_parent(CdlInterpreter interp, int argc, char** argv)
+CdlParentableBody::parse_parent(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_parent", "result %d");
 

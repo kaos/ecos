@@ -1,3 +1,8 @@
+2002-09-21  Bart Veer  <bartv@ecoscentric.com>
+
+	* host/usbhost.c:
+	Avoid const compatibility problems with Tcl 8.4
+
 2002-01-23  Bart Veer  <bartv@redhat.com>
 
 	* host/Makefile.am, host/Makefile.in, host/acinclude.m4,

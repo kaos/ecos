@@ -10,6 +10,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
+// Copyright (C) 2002 Bart Veer
 // Copyright (C) 1999, 2000 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
@@ -113,7 +114,7 @@ CdlComponentBody::~CdlComponentBody()
 // Tcl interpreter.
 
 int
-CdlComponentBody::parse_component(CdlInterpreter interp, int argc, char** argv)
+CdlComponentBody::parse_component(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("CdlComponentBody::parse_component", "result %d");
     CYG_REPORT_FUNCARG1("argc %d", argc);
@@ -149,7 +150,7 @@ CdlComponentBody::parse_component(CdlInterpreter interp, int argc, char** argv)
             ok = false;
             goto done;
         }
-        if (!Tcl_CommandComplete(argv[2])) {
+        if (!Tcl_CommandComplete(CDL_TCL_CONST_CAST(char*, argv[2]))) {
             CdlParse::report_error(interp, "",
                                    std::string("Invalid property list for cdl_component `") + argv[1] + "'.");
             ok = false;
@@ -329,7 +330,7 @@ CdlComponentBody::parse_component(CdlInterpreter interp, int argc, char** argv)
 // ----------------------------------------------------------------------------
 // Syntax: script <filename>
 int
-CdlComponentBody::parse_script(CdlInterpreter interp, int argc, char** argv)
+CdlComponentBody::parse_script(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_script", "result %d");
 
@@ -407,7 +408,7 @@ CdlComponentBody::save(CdlInterpreter interp, Tcl_Channel chan, int indentation,
 }
 
 int
-CdlComponentBody::savefile_component_command(CdlInterpreter interp, int argc, char** argv)
+CdlComponentBody::savefile_component_command(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("CdlComponent::savefile_component_command", "result %d");
     CYG_PRECONDITION_CLASSC(interp);

@@ -10,6 +10,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
+// Copyright (C) 2002 Bart Veer
 // Copyright (C) 1999, 2000 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
@@ -129,7 +130,7 @@ CdlParse::get_tcl_cmd_name(std::string name)
 // This makes expression parsing easier. The final argument should be an
 // index into the array, typically the result of a call to skip_argv_options().
 std::string
-CdlParse::concatenate_argv(int argc, char** argv, int index)
+CdlParse::concatenate_argv(int argc, const char* argv[], int index)
 {
     CYG_REPORT_FUNCNAME("CdlParse::concatenate_argv");
 
@@ -220,7 +221,7 @@ get_option_string(char* name)
 
 int
 CdlParse::parse_options(CdlInterpreter interp, std::string diag_prefix, char** options,
-                                 int argc, char** argv, int index,
+                                 int argc, const char* argv[], int index,
                                  std::vector<std::pair<std::string,std::string> >& result)
 {
     CYG_REPORT_FUNCNAMETYPE("CdlParse::parse_options", "final index %d");
@@ -241,7 +242,7 @@ CdlParse::parse_options(CdlInterpreter interp, std::string diag_prefix, char** o
             break;
         }
 
-        char* arg_ptr       = argv[index];
+        const char* arg_ptr       = argv[index];
         // Skip the initial -, and the second one as well if it is present.
         if ('-' == *++arg_ptr) {
             arg_ptr++;
@@ -633,7 +634,7 @@ CdlParse::report_warning(CdlInterpreter interp, std::string sub_id, std::string 
 // This routine should be uninstalled after the parsing is complete,
 // to avoid e.g. a ParseException when it is not expected.
 int
-CdlParse::unknown_command(CdlInterpreter interp, int argc, char** argv)
+CdlParse::unknown_command(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAME("CdlParse::unknown_command");
     CYG_REPORT_FUNCARG3XV(interp, argc, argv);
@@ -729,7 +730,7 @@ CdlParse::report_property_parse_warning(CdlInterpreter interp, CdlProperty prop,
 // A minimal property takes no arguments.
 
 int
-CdlParse::parse_minimal_property(CdlInterpreter interp, int argc, char** argv, std::string name,
+CdlParse::parse_minimal_property(CdlInterpreter interp, int argc, const char* argv[], std::string name,
                                  char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_Minimal))
 {
     CYG_REPORT_FUNCNAME("parse_minimal_property");
@@ -770,7 +771,7 @@ CdlParse::parse_minimal_property(CdlInterpreter interp, int argc, char** argv, s
 // ----------------------------------------------------------------------------
 
 int
-CdlParse::parse_string_property(CdlInterpreter interp, int argc, char** argv, std::string name,
+CdlParse::parse_string_property(CdlInterpreter interp, int argc, const char* argv[], std::string name,
                                 char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_String))
 {
     CYG_REPORT_FUNCNAME("parse_string_property");
@@ -812,7 +813,7 @@ CdlParse::parse_string_property(CdlInterpreter interp, int argc, char** argv, st
 // ----------------------------------------------------------------------------
 
 int
-CdlParse::parse_tclcode_property(CdlInterpreter interp, int argc, char** argv, std::string name,
+CdlParse::parse_tclcode_property(CdlInterpreter interp, int argc, const char* argv[], std::string name,
                                  char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_TclCode))
 {
     CYG_REPORT_FUNCNAME("parse_tclcode_property");
@@ -828,7 +829,7 @@ CdlParse::parse_tclcode_property(CdlInterpreter interp, int argc, char** argv, s
         } else if ((data_index + 1) < argc) {
             CdlParse::report_property_parse_error(interp, argv[0], std::string("Invalid number of arguments.\n") +
                                          "Expecting one argument, a Tcl code fragment.");
-        } else if (!Tcl_CommandComplete(argv[data_index])) {
+        } else if (!Tcl_CommandComplete(CDL_TCL_CONST_CAST(char*, argv[data_index]))) {
             CdlParse::report_property_parse_error(interp, argv[0], "Incomplete Tcl code fragment.");
         } else {
         
@@ -855,7 +856,7 @@ CdlParse::parse_tclcode_property(CdlInterpreter interp, int argc, char** argv, s
 // ----------------------------------------------------------------------------
 
 int
-CdlParse::parse_stringvector_property(CdlInterpreter interp, int argc, char** argv, std::string name,
+CdlParse::parse_stringvector_property(CdlInterpreter interp, int argc, const char* argv[], std::string name,
                                       char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_StringVector),
                                       bool allow_empty)
 {
@@ -900,7 +901,7 @@ CdlParse::parse_stringvector_property(CdlInterpreter interp, int argc, char** ar
 // ----------------------------------------------------------------------------
 
 int
-CdlParse::parse_reference_property(CdlInterpreter interp, int argc, char** argv, std::string name,
+CdlParse::parse_reference_property(CdlInterpreter interp, int argc, const char* argv[], std::string name,
                                    char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_Reference),
                                    bool allow_empty, CdlUpdateHandler update_handler)
 {
@@ -946,7 +947,7 @@ CdlParse::parse_reference_property(CdlInterpreter interp, int argc, char** argv,
 // ----------------------------------------------------------------------------
 
 int
-CdlParse::parse_expression_property(CdlInterpreter interp, int argc, char** argv, std::string name,
+CdlParse::parse_expression_property(CdlInterpreter interp, int argc, const char* argv[], std::string name,
                                     char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_Expression),
                                     CdlUpdateHandler update_handler)
 {
@@ -1005,7 +1006,7 @@ CdlParse::parse_expression_property(CdlInterpreter interp, int argc, char** argv
 // ----------------------------------------------------------------------------
 
 int
-CdlParse::parse_listexpression_property(CdlInterpreter interp, int argc, char** argv, std::string name,
+CdlParse::parse_listexpression_property(CdlInterpreter interp, int argc, const char* argv[], std::string name,
                                         char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_ListExpression),
                                         CdlUpdateHandler update_handler)
 {
@@ -1059,7 +1060,7 @@ CdlParse::parse_listexpression_property(CdlInterpreter interp, int argc, char** 
 // ----------------------------------------------------------------------------
 
 int
-CdlParse::parse_goalexpression_property(CdlInterpreter interp, int argc, char** argv, std::string name,
+CdlParse::parse_goalexpression_property(CdlInterpreter interp, int argc, const char* argv[], std::string name,
                                         char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_GoalExpression),
                                         CdlUpdateHandler update_handler)
 {

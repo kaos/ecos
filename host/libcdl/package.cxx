@@ -10,6 +10,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
+// Copyright (C) 2002 Bart Veer
 // Copyright (C) 1999, 2000 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
@@ -139,7 +140,7 @@ CdlPackageBody::~CdlPackageBody()
 // to be defined inside a package definition.
 
 int
-CdlPackageBody::parse_package(CdlInterpreter interp, int argc, char** argv)
+CdlPackageBody::parse_package(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("CdlPackageBody::parse_package", "result %d");
     CYG_REPORT_FUNCARG1("argc %d", argc);
@@ -207,7 +208,7 @@ CdlPackageBody::parse_package(CdlInterpreter interp, int argc, char** argv)
         } else if (0 != properties.size()) {
             CdlParse::report_error(interp, "",
                                    std::string("Duplicate cdl_package commands for package `") + argv[1] + "'.");
-        } else if (!Tcl_CommandComplete(argv[2])) {
+        } else if (!Tcl_CommandComplete(CDL_TCL_CONST_CAST(char*, argv[2]))) {
             CdlParse::report_error(interp, "",
                                    std::string("Invalid property list for cdl_package `") + argv[1] + "'.");
         } else {
@@ -307,7 +308,7 @@ CdlPackageBody::parse_package(CdlInterpreter interp, int argc, char** argv)
 // ----------------------------------------------------------------------------
 // Syntax: hardware
 int
-CdlPackageBody::parse_hardware(CdlInterpreter interp, int argc, char** argv)
+CdlPackageBody::parse_hardware(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_hardware", "result %d");
 
@@ -320,7 +321,7 @@ CdlPackageBody::parse_hardware(CdlInterpreter interp, int argc, char** argv)
 // ----------------------------------------------------------------------------
 // Syntax: install_proc <tclcode>
 int
-CdlPackageBody::parse_install_proc(CdlInterpreter interp, int argc, char** argv)
+CdlPackageBody::parse_install_proc(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_install_proc", "result %d");
 
@@ -335,7 +336,7 @@ CdlPackageBody::parse_install_proc(CdlInterpreter interp, int argc, char** argv)
 // Syntax: license_proc <tclcode>
 
 int
-CdlPackageBody::parse_license_proc(CdlInterpreter interp, int argc, char** argv)
+CdlPackageBody::parse_license_proc(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_license_proc", "result %d");
 
@@ -515,7 +516,7 @@ CdlPackageBody::save(CdlInterpreter interp, Tcl_Channel chan, int indentation, b
 }
 
 int
-CdlPackageBody::savefile_package_command(CdlInterpreter interp, int argc, char** argv)
+CdlPackageBody::savefile_package_command(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("CdlPackage::savefile_package_command", "result %d");
     CYG_PRECONDITION_CLASSC(interp);

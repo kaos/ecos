@@ -57,6 +57,8 @@
 #include <fcntl.h>
 #include <sys/param.h>
 #include <sys/types.h>
+// Avoid compatibility problems with Tcl 8.4 vs. earlier
+#define USE_NON_CONST
 #include <tcl.h>
 #include <tk.h>
 

@@ -10,6 +10,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
+// Copyright (C) 2002 Bart Veer
 // Copyright (C) 1999, 2000 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
@@ -113,7 +114,7 @@ CdlOptionBody::~CdlOptionBody()
 // a container, and the only non-standard property is "parent".
 
 int
-CdlOptionBody::parse_option(CdlInterpreter interp, int argc, char** argv)
+CdlOptionBody::parse_option(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("CdlOptionBody::parse_option", "result %d");
     CYG_REPORT_FUNCARG1("argc %d", argc);
@@ -147,7 +148,7 @@ CdlOptionBody::parse_option(CdlInterpreter interp, int argc, char** argv)
                                    std::string("Incorrect number of arguments to `") + diag_argv0 +
                                          "'\nExpecting name and properties list.");
             ok = false;
-        } else if (!Tcl_CommandComplete(argv[2])) {
+        } else if (!Tcl_CommandComplete(CDL_TCL_CONST_CAST(char*, argv[2]))) {
             CdlParse::report_error(interp, "",
                                    std::string("Invalid property list for cdl_option `") + argv[1] + "'.");
             ok = false;
@@ -307,7 +308,7 @@ CdlOptionBody::save(CdlInterpreter interp, Tcl_Channel chan, int indentation, bo
 }
 
 int
-CdlOptionBody::savefile_option_command(CdlInterpreter interp, int argc, char** argv)
+CdlOptionBody::savefile_option_command(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("CdlOption::savefile_option_command", "result %d");
     CYG_PRECONDITION_CLASSC(interp);

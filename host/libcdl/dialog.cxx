@@ -10,6 +10,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
+// Copyright (C) 2002 Bart Veer
 // Copyright (C) 1999, 2000 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
@@ -142,7 +143,7 @@ CdlDialogBody::~CdlDialogBody()
 // ----------------------------------------------------------------------------
 // Parsing a dialog definition.
 int
-CdlDialogBody::parse_dialog(CdlInterpreter interp, int argc, char** argv)
+CdlDialogBody::parse_dialog(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("CdlDialog::parse_dialog", "result %d");
     CYG_REPORT_FUNCARG1("argc %d", argc);
@@ -172,7 +173,7 @@ CdlDialogBody::parse_dialog(CdlInterpreter interp, int argc, char** argv)
     if (3 != argc) {
         CdlParse::report_error(interp, "", std::string("Incorrect number of arguments to `") + diag_argv0 +
                                "'\nExpecting name and properties list.");
-    } else if (!Tcl_CommandComplete(argv[2])) {
+    } else if (!Tcl_CommandComplete(CDL_TCL_CONST_CAST(char*, argv[2]))) {
         CdlParse::report_error(interp, "", std::string("Invalid property list for cdl_dialog `") + argv[1] + "'.");
     } else if (0 != toplevel->lookup(argv[1])) {
         CdlParse::report_error(interp, "", std::string("Dialog `") + argv[1] + "' cannot be loaded.\n" +
@@ -267,7 +268,7 @@ CdlDialogBody::parse_dialog(CdlInterpreter interp, int argc, char** argv)
 // ----------------------------------------------------------------------------
 // Syntax: display_proc <tclcode>
 int
-CdlDialogBody::parse_display_proc(CdlInterpreter interp, int argc, char** argv)
+CdlDialogBody::parse_display_proc(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_display_proc", "result %d");
 
@@ -280,7 +281,7 @@ CdlDialogBody::parse_display_proc(CdlInterpreter interp, int argc, char** argv)
 // ----------------------------------------------------------------------------
 // Syntax: update_proc <tclcode>
 int
-CdlDialogBody::parse_update_proc(CdlInterpreter interp, int argc, char** argv)
+CdlDialogBody::parse_update_proc(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_update_proc", "result %d");
 

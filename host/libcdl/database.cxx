@@ -12,6 +12,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
+// Copyright (C) 2002 Bart Veer
 // Copyright (C) 1999, 2000, 2001 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
@@ -106,20 +107,20 @@ CYGDBG_DEFINE_MEMLEAK_COUNTER(CdlPackagesDatabaseBody);
 
 class CdlDbParser {
   public:
-    static int new_package(CdlInterpreter, int, char**);
-    static int package_description(CdlInterpreter, int, char**);
-    static int package_alias(CdlInterpreter, int, char**);
-    static int package_directory(CdlInterpreter, int, char**);
-    static int package_script(CdlInterpreter, int, char**);
-    static int package_hardware(CdlInterpreter, int, char**);
+    static int new_package(CdlInterpreter, int, const char*[]);
+    static int package_description(CdlInterpreter, int, const char*[]);
+    static int package_alias(CdlInterpreter, int, const char*[]);
+    static int package_directory(CdlInterpreter, int, const char*[]);
+    static int package_script(CdlInterpreter, int, const char*[]);
+    static int package_hardware(CdlInterpreter, int, const char*[]);
 
-    static int new_target(CdlInterpreter, int, char**);
-    static int target_description(CdlInterpreter, int, char**);
-    static int target_alias(CdlInterpreter, int, char**);
-    static int target_packages(CdlInterpreter, int, char**);
-    static int target_enable(CdlInterpreter, int, char**);
-    static int target_disable(CdlInterpreter, int, char**);
-    static int target_set_value(CdlInterpreter, int, char**);
+    static int new_target(CdlInterpreter, int, const char*[]);
+    static int target_description(CdlInterpreter, int, const char*[]);
+    static int target_alias(CdlInterpreter, int, const char*[]);
+    static int target_packages(CdlInterpreter, int, const char*[]);
+    static int target_enable(CdlInterpreter, int, const char*[]);
+    static int target_disable(CdlInterpreter, int, const char*[]);
+    static int target_set_value(CdlInterpreter, int, const char*[]);
 };
 
 //}}}
@@ -129,7 +130,7 @@ class CdlDbParser {
 // package <name> <body>
 
 int
-CdlDbParser::new_package(CdlInterpreter interp, int argc, char** argv)
+CdlDbParser::new_package(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("CdlDbParser::new_package", "result %d");
     CYG_REPORT_FUNCARG1XV(argc);
@@ -264,7 +265,7 @@ CdlDbParser::new_package(CdlInterpreter interp, int argc, char** argv)
 
 // Syntax: description <text>
 int
-CdlDbParser::package_description(CdlInterpreter interp, int argc, char** argv)
+CdlDbParser::package_description(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("CdlDbParser::package_description", "result %d");
     CYG_REPORT_FUNCARG1XV(argc);
@@ -290,7 +291,7 @@ CdlDbParser::package_description(CdlInterpreter interp, int argc, char** argv)
 // Syntax: alias <list>
 // For example: alias { "This is an alias" another_alias dummy_name }
 int
-CdlDbParser::package_alias(CdlInterpreter interp, int argc, char** argv)
+CdlDbParser::package_alias(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("CdlDbParser::package_alias", "result %d");
     CYG_REPORT_FUNCARG1XV(argc);
@@ -309,10 +310,10 @@ CdlDbParser::package_alias(CdlInterpreter interp, int argc, char** argv)
     } else if (0 < package->aliases.size()) {
         CdlParse::report_warning(interp, diag_package + name, "There should be only one list of aliases.");
     } else {
-        int         list_count      = 0;
-        char**      list_entries    = 0;
+        int          list_count     = 0;
+        const char** list_entries   = 0;
         Tcl_Interp* tcl_interp      = interp->get_tcl_interpreter();
-        if (TCL_OK != Tcl_SplitList(tcl_interp, argv[1], &list_count, &list_entries)) {
+        if (TCL_OK != Tcl_SplitList(tcl_interp, CDL_TCL_CONST_CAST(char*, argv[1]), &list_count, CDL_TCL_CONST_CAST(char***, &list_entries))) {
             CdlParse::report_error(interp, diag_package + name, Tcl_GetStringResult(tcl_interp));
         } else {
             if (0 == list_count) {
@@ -333,7 +334,7 @@ CdlDbParser::package_alias(CdlInterpreter interp, int argc, char** argv)
 // Syntax: directory <path>
 // The path is of course relative to the component repository.
 int
-CdlDbParser::package_directory(CdlInterpreter interp, int argc, char** argv)
+CdlDbParser::package_directory(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("CdlDbParser::package_directory", "result %d");
     CYG_REPORT_FUNCARG1XV(argc);
@@ -360,7 +361,7 @@ CdlDbParser::package_directory(CdlInterpreter interp, int argc, char** argv)
 // Syntax: hardware
 // There are no arguments.
 int
-CdlDbParser::package_hardware(CdlInterpreter interp, int argc, char** argv)
+CdlDbParser::package_hardware(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("CdlDbParser::package_hardware", "result %d");
     CYG_REPORT_FUNCARG1XV(argc);
@@ -385,7 +386,7 @@ CdlDbParser::package_hardware(CdlInterpreter interp, int argc, char** argv)
 
 // Syntax: script <filename>
 int
-CdlDbParser::package_script(CdlInterpreter interp, int argc, char** argv)
+CdlDbParser::package_script(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("CdlDbParser::package_script", "result %d");
     CYG_REPORT_FUNCARG1XV(argc);
@@ -417,7 +418,7 @@ CdlDbParser::package_script(CdlInterpreter interp, int argc, char** argv)
 // target <name> <body>
 
 int
-CdlDbParser::new_target(CdlInterpreter interp, int argc, char** argv)
+CdlDbParser::new_target(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("CdlDbParser::new_target", "result %d");
     CYG_REPORT_FUNCARG1XV(argc);
@@ -495,7 +496,7 @@ CdlDbParser::new_target(CdlInterpreter interp, int argc, char** argv)
 
 // Syntax: description <text>
 int
-CdlDbParser::target_description(CdlInterpreter interp, int argc, char** argv)
+CdlDbParser::target_description(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("CdlDbParser::target_description", "result %d");
     CYG_REPORT_FUNCARG1XV(argc);
@@ -521,7 +522,7 @@ CdlDbParser::target_description(CdlInterpreter interp, int argc, char** argv)
 // Syntax: alias <list>
 // For example: alias { "This is an alias" another_alias dummy_name }
 int
-CdlDbParser::target_alias(CdlInterpreter interp, int argc, char** argv)
+CdlDbParser::target_alias(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("CdlDbParser::target_alias", "result %d");
     CYG_REPORT_FUNCARG1XV(argc);
@@ -539,10 +540,10 @@ CdlDbParser::target_alias(CdlInterpreter interp, int argc, char** argv)
     } else if (0 < target->aliases.size()) {
         CdlParse::report_warning(interp, diag_target + name, "There should be only one list of aliases.");
     } else {
-        int         list_count      = 0;
-        char**      list_entries    = 0;
+        int          list_count     = 0;
+        const char** list_entries   = 0;
         Tcl_Interp* tcl_interp      = interp->get_tcl_interpreter();
-        if (TCL_OK != Tcl_SplitList(tcl_interp, argv[1], &list_count, &list_entries)) {
+        if (TCL_OK != Tcl_SplitList(tcl_interp, CDL_TCL_CONST_CAST(char*, argv[1]), &list_count, CDL_TCL_CONST_CAST(char***, &list_entries))) {
             CdlParse::report_error(interp, diag_target + name, Tcl_GetStringResult(tcl_interp));
         } else {
             if (0 == list_count) {
@@ -563,7 +564,7 @@ CdlDbParser::target_alias(CdlInterpreter interp, int argc, char** argv)
 // Syntax: packages <list> ...
 // For example: packages { CYGPKG_HAL_XXX CYGPKG_HAL_YYY }
 int
-CdlDbParser::target_packages(CdlInterpreter interp, int argc, char** argv)
+CdlDbParser::target_packages(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("CdlDbParser::target_packages", "result %d");
     CYG_REPORT_FUNCARG1XV(argc);
@@ -581,10 +582,10 @@ CdlDbParser::target_packages(CdlInterpreter interp, int argc, char** argv)
     } else if (0 < target->packages.size()) {
         CdlParse::report_warning(interp, diag_target + name, "There should be only one list of packages.");
     } else {
-        int         list_count      = 0;
-        char**      list_entries    = 0;
+        int          list_count     = 0;
+        const char** list_entries   = 0;
         Tcl_Interp* tcl_interp      = interp->get_tcl_interpreter();
-        if (TCL_OK != Tcl_SplitList(tcl_interp, argv[1], &list_count, &list_entries)) {
+        if (TCL_OK != Tcl_SplitList(tcl_interp, CDL_TCL_CONST_CAST(char*, argv[1]), &list_count, CDL_TCL_CONST_CAST(char***, &list_entries))) {
             CdlParse::report_error(interp, diag_target + name, Tcl_GetStringResult(tcl_interp));
         } else {
             // Allow for a dummy target spec, just in case it proves useful.
@@ -604,7 +605,7 @@ CdlDbParser::target_packages(CdlInterpreter interp, int argc, char** argv)
 // Syntax: enable { opt1 opt2 ... }
 // For example: enable { CYGPKG_HAL_ARM_CL7xxx_7211 }
 int
-CdlDbParser::target_enable(CdlInterpreter interp, int argc, char** argv)
+CdlDbParser::target_enable(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("CdlDbParser::target_enable", "result %d");
     CYG_REPORT_FUNCARG1XV(argc);
@@ -619,10 +620,10 @@ CdlDbParser::target_enable(CdlInterpreter interp, int argc, char** argv)
     if (2 != argc) {
         CdlParse::report_error(interp, diag_target + name, "`enable' should be followed by a list of CDL options.");
     } else {
-        int         list_count      = 0;
-        char**      list_entries    = 0;
+        int          list_count     = 0;
+        const char** list_entries   = 0;
         Tcl_Interp* tcl_interp      = interp->get_tcl_interpreter();
-        if (TCL_OK != Tcl_SplitList(tcl_interp, argv[1], &list_count, &list_entries)) {
+        if (TCL_OK != Tcl_SplitList(tcl_interp, CDL_TCL_CONST_CAST(char*, argv[1]), &list_count, CDL_TCL_CONST_CAST(char***, &list_entries))) {
             CdlParse::report_error(interp, diag_target + name, Tcl_GetStringResult(tcl_interp));
         } else {
             for (int i = 0; i < list_count; i++) {
@@ -640,7 +641,7 @@ CdlDbParser::target_enable(CdlInterpreter interp, int argc, char** argv)
 // Syntax: disable { opt1 opt2 ... }
 // For example: disable { CYGPKG_HAL_ARM_CL7xxx_7111 }
 int
-CdlDbParser::target_disable(CdlInterpreter interp, int argc, char** argv)
+CdlDbParser::target_disable(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("CdlDbParser::target_disable", "result %d");
     CYG_REPORT_FUNCARG1XV(argc);
@@ -655,10 +656,10 @@ CdlDbParser::target_disable(CdlInterpreter interp, int argc, char** argv)
     if (2 != argc) {
         CdlParse::report_error(interp, diag_target + name, "`disable' should be followed by a list of CDL options.");
     } else {
-        int         list_count      = 0;
-        char**      list_entries    = 0;
+        int          list_count     = 0;
+        const char** list_entries   = 0;
         Tcl_Interp* tcl_interp      = interp->get_tcl_interpreter();
-        if (TCL_OK != Tcl_SplitList(tcl_interp, argv[1], &list_count, &list_entries)) {
+        if (TCL_OK != Tcl_SplitList(tcl_interp, CDL_TCL_CONST_CAST(char*, argv[1]), &list_count, CDL_TCL_CONST_CAST(char***, &list_entries))) {
             CdlParse::report_error(interp, diag_target + name, Tcl_GetStringResult(tcl_interp));
         } else {
             for (int i = 0; i < list_count; i++) {
@@ -675,7 +676,7 @@ CdlDbParser::target_disable(CdlInterpreter interp, int argc, char** argv)
 // Syntax: set_value <option> <value>
 // For example: set_value CYGHWR_MEMSIZE 0x100000
 int
-CdlDbParser::target_set_value(CdlInterpreter interp, int argc, char** argv)
+CdlDbParser::target_set_value(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("CdlDbParser::target_set_value", "result %d");
     CYG_REPORT_FUNCARG1XV(argc);
@@ -1467,13 +1468,13 @@ CdlPackagesDatabaseBody::get_template_packages(std::string template_name, std::s
 // its sub-commands description and package.
 
 static int
-extract_ignore(CdlInterpreter interp, int argc, char** argv)
+extract_ignore(CdlInterpreter interp, int argc, const char* argv[])
 {
     return TCL_OK;
 }
 
 static int
-extract_cdl_configuration(CdlInterpreter interp, int argc, char** argv)
+extract_cdl_configuration(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("extract_cdl_configuration", "result %d");
     CYG_REPORT_FUNCARG2XV(interp, argc);
@@ -1504,7 +1505,7 @@ extract_cdl_configuration(CdlInterpreter interp, int argc, char** argv)
 }
 
 static int
-extract_cdl_description(CdlInterpreter interp, int argc, char** argv)
+extract_cdl_description(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("extract_cdl_description", "result %d");
     CYG_REPORT_FUNCARG2XV(interp, argc);
@@ -1528,7 +1529,7 @@ extract_cdl_description(CdlInterpreter interp, int argc, char** argv)
 }
 
 static int
-extract_cdl_package(CdlInterpreter interp, int argc, char** argv)
+extract_cdl_package(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("extract_cdl_package", "result %d");
     CYG_REPORT_FUNCARG2XV(interp, argc);

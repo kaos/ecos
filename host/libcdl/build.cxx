@@ -10,6 +10,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
+// Copyright (C) 2002 Bart Veer
 // Copyright (C) 1999, 2000, 2001 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
@@ -208,7 +209,7 @@ CdlBuildableBody::check_properties(CdlInterpreter interp)
 // scheme.
 
 int
-CdlBuildableBody::parse_compile(CdlInterpreter interp, int argc, char** argv)
+CdlBuildableBody::parse_compile(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_compile", "result %d");
     static char* options[] = {
@@ -387,7 +388,7 @@ parse_make_final_check(CdlInterpreter interp, CdlProperty_String prop)
 }
 
 int
-CdlBuildableBody::parse_make(CdlInterpreter interp, int argc, char** argv)
+CdlBuildableBody::parse_make(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_make", "result %d");
     static char* options[] = {
@@ -441,7 +442,7 @@ parse_make_object_final_check(CdlInterpreter interp, CdlProperty_String prop)
 }
 
 int
-CdlBuildableBody::parse_make_object(CdlInterpreter interp, int argc, char** argv)
+CdlBuildableBody::parse_make_object(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_make_object", "result %d");
     static char* options[] = {
@@ -462,7 +463,7 @@ CdlBuildableBody::parse_make_object(CdlInterpreter interp, int argc, char** argv
 // Syntax: object <file1> <file2> ...
 
 int
-CdlBuildableBody::parse_object(CdlInterpreter interp, int argc, char** argv)
+CdlBuildableBody::parse_object(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_object", "result %d");
     static char* options[] = {
@@ -480,7 +481,7 @@ CdlBuildableBody::parse_object(CdlInterpreter interp, int argc, char** argv)
 // Syntax: build_proc { tcl code }
 
 int
-CdlBuildableBody::parse_build_proc(CdlInterpreter interp, int argc, char** argv)
+CdlBuildableBody::parse_build_proc(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_build_proc", "result %d");
 
@@ -816,7 +817,7 @@ CdlBuildLoadableBody::check_properties(CdlInterpreter interp)
 // a valid format, i.e. libxxx.a
 
 int
-CdlBuildLoadableBody::parse_library(CdlInterpreter interp, int argc, char** argv)
+CdlBuildLoadableBody::parse_library(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_library", "result %d");
 
@@ -832,7 +833,7 @@ CdlBuildLoadableBody::parse_library(CdlInterpreter interp, int argc, char** argv
 // NOTE: possibly there should be a check that the makefile exists.
 // Do we want to allow build_proc's to generate makefiles?
 int
-CdlBuildLoadableBody::parse_makefile(CdlInterpreter interp, int argc, char** argv)
+CdlBuildLoadableBody::parse_makefile(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_makefile", "result %d");
 
@@ -845,7 +846,7 @@ CdlBuildLoadableBody::parse_makefile(CdlInterpreter interp, int argc, char** arg
 // ----------------------------------------------------------------------------
 // syntax: include_dir <directory name>
 int
-CdlBuildLoadableBody::parse_include_dir(CdlInterpreter interp, int argc, char** argv)
+CdlBuildLoadableBody::parse_include_dir(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_include_dir", "result %d");
 
@@ -866,7 +867,7 @@ CdlBuildLoadableBody::parse_include_dir(CdlInterpreter interp, int argc, char** 
 // NOTE: add a finalizer to check that the files exist or get created.
 
 int
-CdlBuildLoadableBody::parse_include_files(CdlInterpreter interp, int argc, char** argv)
+CdlBuildLoadableBody::parse_include_files(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_include_files", "result %d");
 
@@ -1376,7 +1377,7 @@ CdlDefinableBody::check_properties(CdlInterpreter interp)
 // ----------------------------------------------------------------------------
 // Syntax: no_define
 int
-CdlDefinableBody::parse_no_define(CdlInterpreter interp, int argc, char** argv)
+CdlDefinableBody::parse_no_define(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_no_define", "result %d");
 
@@ -1416,7 +1417,7 @@ parse_define_final_check(CdlInterpreter interp, CdlProperty_String prop)
 }
 
 int
-CdlDefinableBody::parse_define(CdlInterpreter interp, int argc, char** argv)
+CdlDefinableBody::parse_define(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_define", "result %d");
 
@@ -1444,7 +1445,7 @@ CdlDefinableBody::parse_define(CdlInterpreter interp, int argc, char** argv)
 // FIXME: enforce mutual exclusion with no_define
 
 int
-CdlDefinableBody::parse_define_format(CdlInterpreter interp, int argc, char** argv)
+CdlDefinableBody::parse_define_format(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_format", "result %d");
 
@@ -1456,7 +1457,7 @@ CdlDefinableBody::parse_define_format(CdlInterpreter interp, int argc, char** ar
 // ----------------------------------------------------------------------------
 // syntax: define_proc <tclcode>
 int
-CdlDefinableBody::parse_define_proc(CdlInterpreter interp, int argc, char** argv)
+CdlDefinableBody::parse_define_proc(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_define_proc", "result %d");
 
@@ -1499,7 +1500,7 @@ parse_if_define_final_check(CdlInterpreter interp, CdlProperty_StringVector prop
 }
 
 int
-CdlDefinableBody::parse_if_define(CdlInterpreter interp, int argc, char** argv)
+CdlDefinableBody::parse_if_define(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_if_define", "result %d");
 
@@ -1804,7 +1805,7 @@ CdlDefineLoadableBody::check_properties(CdlInterpreter interp)
 // ----------------------------------------------------------------------------
 // syntax: define_header <header file name>
 int
-CdlDefineLoadableBody::parse_define_header(CdlInterpreter interp, int argc, char** argv)
+CdlDefineLoadableBody::parse_define_header(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_define_header", "result %d");
 
