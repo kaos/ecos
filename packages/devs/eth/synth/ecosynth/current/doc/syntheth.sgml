@@ -339,6 +339,30 @@ address information. Instead the eCos configuration should use manual
 or static addresses.
     </para>
     <para>
+When <command>rawether</command> exits, the tap interface is removed
+by the kernel. By adding the parameter persistent
+<command>rawether</command> will set the persistent flag on the tap
+device.
+    </para>
+    <programlisting>
+synth_device ethernet {
+    eth0 ethertap tap3 00:01:02:03:FE:05
+    eth1 ethertap tap4 00:01:02:03:FE:06 persistent
+    &hellip;
+}
+</programlisting>
+    <para>
+With this flag set the kernel will not remove the interface when
+<command>rawether</command> exits. This means applications such as
+<command>dhcpd</command>, <command>radvd</command>, and
+<command>tcpdump</command> will continue to run on the interface
+between invocations of synthetic targets. As a result the target can
+dynamically obtain its IP addresses from these daemons. Note it is a
+good idea to specify a MAC address otherwise a different random MAC
+address will be used each time and the dhcpd daemon will not be able
+to reissue the same IP address.
+    </para>
+    <para>
 An alternative approach would be to set up the Linux box as a network
 bridge, using commands like <command>brctl</command> to connect the
 virtual network interface <varname>tap3</varname> to a physical

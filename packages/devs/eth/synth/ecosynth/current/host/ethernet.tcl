@@ -165,7 +165,7 @@ namespace eval ethernet {
 	# Do some validation here, before the rawether process is started.
 	# Typical entries would look like
 	#     eth0 real eth1
-	#     eth1 ethertap [[tap-device] [MAC]]
+	#     eth1 ethertap [[tap-device] [MAC] [persistent]]
 	set junk ""
 	set optional ""
 	set mac      ""
@@ -176,7 +176,7 @@ namespace eval ethernet {
 		if { ! [regexp -- {^tap[0-9]+\s*(.*)$} $optional junk mac ] } {
 		    synth::report_error "Cannot instantiate ethernet device $name\n   \
 			    Invalid entry \"$use\" in target definition file $synth::target_definition\n   \
-			    Should be \"ethertap \[<tap-device> \[<MAC address>\]\]\"\n"
+			    Should be \"ethertap \[<tap-device> \[<MAC address>\]\] [persistent]\"\n"
 		    return ""
 		}
 		if { "" != $mac } {

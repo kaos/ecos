@@ -1,3 +1,11 @@
+2003-04-08  Andrew Lunn  <lunn@londo>
+
+	* host/rawether.c (tap_init): Set the persistent flag on the tap
+	device if requested by the user. This allows dhcpd and radvd to
+	keep running on the tap device between invocations of the synth
+	target.	
+	* doc/syntheth.sgml: Documentation for the persistent option.
+
 2003-04-01  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/syntheth.c (synth_eth_init): Set the flag IFF_ALLMULTI when

@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   bartv
-// Contact(s):  bartv
+// Contact(s):  bartv, andrew.lunn@ascom.ch
 // Date:        2002/08/07
 // Version:     0.01
 // Description:
@@ -525,6 +525,8 @@ tap_init(int argc, char** argv)
 {
     char* devname   = NULL;
     struct ifreq    ifr;
+    int persistent  = 0;
+    int have_mac    = 0;
 
     tx_fn           = &tap_handle_tx;
     rx_fn           = &tap_handle_rx;
@@ -542,31 +544,46 @@ tap_init(int argc, char** argv)
     // but the user can specify one to avoid a source of randomness.
     // This MAC address is not actually needed by any of the code here,
     // but should be returned to eCos.
-    if (2 == argc) {
+    if (2 <= argc) {
         unsigned int mac_data[6];   // sscanf() needs unsigned ints
-        int result = sscanf(argv[1], "%x:%x:%x:%x:%x:%x",
-                            &(mac_data[0]), &(mac_data[1]), &(mac_data[2]),
-                            &(mac_data[3]), &(mac_data[4]), &(mac_data[5]));
-        if (6 != result) {
-            snprintf(msg, MSG_SIZE, "Invalid MAC address %s\n", argv[1]);
-            report_error(msg);
-        }
-        MAC[0] = mac_data[0];
-        MAC[1] = mac_data[1];
-        MAC[2] = mac_data[2];
-        MAC[3] = mac_data[3];
-        MAC[4] = mac_data[4];
-        MAC[5] = mac_data[5];
-    } else {
-        srand(time(NULL));
-        MAC[0] = 0;
-        MAC[1] = 0x0FF;
-        MAC[2] = rand() & 0x0FF;
-        MAC[3] = rand() & 0x0FF;
-        MAC[4] = rand() & 0x0FF;
-        MAC[5] = rand() & 0x0FF;
+	int result = sscanf(argv[1], "%x:%x:%x:%x:%x:%x",
+			    &(mac_data[0]), &(mac_data[1]), &(mac_data[2]),
+			    &(mac_data[3]), &(mac_data[4]), &(mac_data[5]));
+	if (6 != result) {
+	  if (strncmp(argv[1], "persistent", 10)) {
+	    snprintf(msg, MSG_SIZE, "Invalid MAC address %s\n", argv[1]);
+	    report_error(msg);
+	  } 
+	} else {
+	  MAC[0] = mac_data[0];
+	  MAC[1] = mac_data[1];
+	  MAC[2] = mac_data[2];
+	  MAC[3] = mac_data[3];
+	  MAC[4] = mac_data[4];
+	  MAC[5] = mac_data[5];
+	  argv += 1;
+	  argc -= 1;
+	  have_mac = 1;
+	}
+    } 
+    if ( 1 != have_mac) {
+      srand(time(NULL));
+      MAC[0] = 0;
+      MAC[1] = 0x0FF;
+      MAC[2] = rand() & 0x0FF;
+      MAC[3] = rand() & 0x0FF;
+      MAC[4] = rand() & 0x0FF;
+      MAC[5] = rand() & 0x0FF;
     }
 
+    // Should we make the TAP device persistent. When persistence is
+    // enabled, the tap device is not removed when rawether
+    // exits. This makes daemons happier. They can keep running
+    // between invocations of rawether.
+    if (2 <= argc ) {
+      persistent = !strncmp(argv[1], "persistent", 10);
+    }
+    
     ether_fd = open("/dev/net/tun", O_RDWR);
     if (ether_fd < 0) {
         snprintf(msg, MSG_SIZE, "Failed to open /dev/net/tun, errno %s (%d)\n", (errno < sys_nerr) ? sys_errlist[errno] : "<unknown>", errno);
@@ -586,6 +603,14 @@ tap_init(int argc, char** argv)
     // Supporting multicasts is a no-op
     multicast_supported = 1;
     
+    if (persistent) {
+      if (ioctl(ether_fd, TUNSETPERSIST, 1) < 0) {
+	snprintf(msg, MSG_SIZE, "Failed to set persistent flag, errno %s (%d)\n",
+		 ( errno < sys_nerr) ? 
+		 sys_errlist[errno] : "<unknown>", errno);
+	report_error(msg);
+      }
+    }
     // All done.
 }
 #else
@@ -769,4 +794,5 @@ main(int argc, char**argv)
     
     return 0;
 }
+
 
