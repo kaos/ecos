@@ -281,6 +281,8 @@ cyg_hal_gdb_place_break (target_register_t pc)
 void 
 cyg_hal_gdb_interrupt (target_register_t pc)
 {
+    t_inst break_inst = HAL_BREAKINST;
+
     CYGARC_HAL_SAVE_GP();
 
     // Clear flag that we Continued instead of Stepping
@@ -290,9 +292,15 @@ cyg_hal_gdb_interrupt (target_register_t pc)
         cyg_hal_gdb_remove_break( (target_register_t)break_buffer.targetAddr );
 
     if (NULL == break_buffer.targetAddr) {
-        break_buffer.targetAddr = (t_inst*) pc;
-        break_buffer.savedInstr = *(t_inst*)pc;
-        *(t_inst*)pc = (t_inst)HAL_BREAKINST;
+	// Not always safe to read/write directly to program
+	// memory due to possibly unaligned instruction, use the
+	// provided memory functions instead.
+	__read_mem_safe(&break_buffer.savedInstr, (t_inst*)pc, HAL_BREAKINST_SIZE);
+	__write_mem_safe(&break_inst, (t_inst*)pc, HAL_BREAKINST_SIZE);
+
+	// Save the PC where we put the break, so we can remove
+	// it after the target takes the break.
+	break_buffer.targetAddr = (t_inst*)pc;
 
         __data_cache(CACHE_FLUSH);
         __instruction_cache(CACHE_FLUSH);
@@ -308,7 +316,8 @@ cyg_hal_gdb_remove_break (target_register_t pc)
         return 0;
 
     if ((t_inst*)pc == break_buffer.targetAddr) {
-        *(t_inst*)pc = break_buffer.savedInstr;
+
+	__write_mem_safe(&break_buffer.savedInstr, (t_inst*)pc, HAL_BREAKINST_SIZE);
         break_buffer.targetAddr = NULL;
 
         __data_cache(CACHE_FLUSH);
