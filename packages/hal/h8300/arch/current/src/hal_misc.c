@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2005 eCosCentric Ltd.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -122,21 +123,27 @@ hal_arch_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 cyg_uint32
 hal_lsbit_index(cyg_uint32 mask)
 {
-    cyg_uint32 n = mask;
+    int bit = -1;
+    
+    if (mask == 0)
+	return -1;
 
-    static const signed char tab[64] =
-    { -1, 0, 1, 12, 2, 6, 0, 13, 3, 0, 7, 0, 0, 0, 0, 14, 10,
-      4, 0, 0, 8, 0, 0, 25, 0, 0, 0, 0, 0, 21, 27 , 15, 31, 11,
-      5, 0, 0, 0, 0, 0, 9, 0, 0, 24, 0, 0 , 20, 26, 30, 0, 0, 0,
-      0, 23, 0, 19, 29, 0, 22, 18, 28, 17, 16, 0
-    };
+    if ((mask & 0xffff) == 0) {
+	mask >>= 16;
+	bit += 16;
+    }
+    if ((mask & 0xff) == 0) {
+	mask >>= 8;
+	bit += 8;
+    }
 
-    n &= ~(n-1UL);
-    n = (n<<16)-n;
-    n = (n<<6)+n;
-    n = (n<<4)+n;
+    __asm__("1:\n\t"
+	    "adds #1,%0\n\t"
+	    "shlr.b %w2\n\t"
+	    "bcc 1b\n\t"
+	    :"=r"(bit):"0"(bit),"r"(mask));
 
-    return tab[n>>26];
+    return bit;
 }
 
 /*------------------------------------------------------------------------*/
@@ -145,23 +152,28 @@ hal_lsbit_index(cyg_uint32 mask)
 cyg_uint32
 hal_msbit_index(cyg_uint32 mask)
 {
-    cyg_uint32 x = mask;    
-    cyg_uint32 w;
+    unsigned int bit = 8;
+    
+    if (mask == 0)
+	return -1;
 
-    /* Phase 1: make word with all ones from that one to the right */
-    x |= x >> 16;
-    x |= x >> 8;
-    x |= x >> 4;
-    x |= x >> 2;
-    x |= x >> 1;
+    if ((mask & ~0xffff) != 0)
+	mask >>= 16;
+    else
+	bit += 16;
 
-    /* Phase 2: calculate number of "1" bits in the word        */
-    w = (x & 0x55555555) + ((x >> 1) & 0x55555555);
-    w = (w & 0x33333333) + ((w >> 2) & 0x33333333);
-    w = w + (w >> 4);
-    w = (w & 0x000F000F) + ((w >> 8) & 0x000F000F);
-    return (cyg_uint32)((w + (w >> 16)) & 0xFF)-1;
+    if ((mask & 0xff00) != 0)
+	mask >>= 8;
+    else
+	bit += 8;
 
+    __asm__("1:\n\t"
+	    "dec.b %w0\n\t"
+	    "shll.b %w2\n\t"
+	    "bcc 1b\n\t"
+	    :"=r"(bit):"0"(bit),"r"(mask));
+
+    return bit;
 }
 
 /*------------------------------------------------------------------------*/
@@ -174,7 +186,6 @@ externC HAL_SavedRegisters *_hal_registers;
 void
 cyg_hal_exception_handler(HAL_SavedRegisters *regs,CYG_WORD vector)
 {
-
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
     // Set the pointer to the registers of the current exception
