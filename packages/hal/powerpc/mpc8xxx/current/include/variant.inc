@@ -119,7 +119,7 @@ __exception_\name:
         .globl  __exception_\name
 __exception_\name:
 	mflr	r0
-	lwi	r1,CYGARC_IMMM_BASE
+	lwi	r1,CYGARC_IMM_BASE
 	lwi	r2,0x12345678
 	stw	r0,0(r1)
 	lwi	r3,__exception_\name
