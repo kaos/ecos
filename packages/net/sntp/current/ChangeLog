@@ -2,7 +2,7 @@
 
 	* include/sntp.h: Include <cyg/infra/cyg_type.h> for __externC.
 
-2003-02-25  Gary Thomas  <mlbassoc.com>
+2003-02-25  Gary Thomas  <gary@mlbassoc.com>
 
 	* tests/sntp1.c (net_test): Strip the trailing "\n" making it more
 	  readable.
