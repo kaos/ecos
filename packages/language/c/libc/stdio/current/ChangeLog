@@ -1,3 +1,8 @@
+2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/stdio.h: Added CYGBLD_ATTRIB_{PRINTF|SCANF}_FORMAT where
+	appropriate so the compiler does more checking.
+
 2004-12-08  Daniel Neri  <daniel.neri@sigicom.se>
 
 	* cdl/stdio.cdl (CYGPKG_LIBC_STDIO_FILEIO): The FILEIO variant of

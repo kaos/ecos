@@ -162,33 +162,40 @@ setvbuf( FILE * /* stream */, char * /* buffer */, int /* mode */,
 // ISO C89 7.9.6 Formatted input/output functions
 
 __externC int
-fprintf( FILE * /* stream */, const char * /* format */, ... ) __THROW;
+fprintf( FILE * /* stream */, const char * /* format */, ... ) __THROW 
+    CYGBLD_ATTRIB_PRINTF_FORMAT(2, 3);
 
 __externC int
-fscanf( FILE * /* stream */, const char * /* format */, ... ) __THROW;
+fscanf( FILE * /* stream */, const char * /* format */, ... ) __THROW 
+    CYGBLD_ATTRIB_SCANF_FORMAT(2, 3);
 
 __externC int
-printf( const char * /* format */, ... ) __THROW;
+printf( const char * /* format */, ... ) __THROW 
+    CYGBLD_ATTRIB_PRINTF_FORMAT(1, 2);
 
 __externC int
-scanf( const char * /* format */, ... ) __THROW;
+scanf( const char * /* format */, ... ) __THROW 
+    CYGBLD_ATTRIB_SCANF_FORMAT(1, 2);;
 
 __externC int
-sprintf( char * /* str */, const char * /* format */, ... ) __THROW;
+sprintf( char * /* str */, const char * /* format */, ... ) __THROW
+    CYGBLD_ATTRIB_PRINTF_FORMAT(2, 3);
 
 __externC int
-sscanf( const char * /* str */, const char * /* format */, ... ) __THROW;
+sscanf( const char * /* str */, const char * /* format */, ... ) __THROW
+    CYGBLD_ATTRIB_SCANF_FORMAT(2, 3);
 
 __externC int
 vfprintf( FILE * /* stream */, const char * /* format */,
-          va_list /* args */ ) __THROW;
+          va_list /* args */ ) __THROW CYGBLD_ATTRIB_PRINTF_FORMAT(2, 0);
 
 __externC int
-vprintf( const char * /* format */, va_list /* args */ ) __THROW;
+vprintf( const char * /* format */, va_list /* args */ ) __THROW
+    CYGBLD_ATTRIB_PRINTF_FORMAT(1, 0);
 
 __externC int
 vsprintf( char * /* str */, const char * /* format */,
-          va_list /* args */ ) __THROW;
+          va_list /* args */ ) __THROW CYGBLD_ATTRIB_PRINTF_FORMAT(2, 0);
 
 //========================================================================
 
@@ -287,7 +294,8 @@ perror( const char * /* prefix_str */ ) __THROW;
 
 __externC int
 fnprintf( FILE * /* stream */, size_t /* length */,
-          const char * /* format */, ... ) __THROW CYGBLD_ATTRIB_PRINTF_FORMAT(3, 4);
+          const char * /* format */, ... ) __THROW 
+    CYGBLD_ATTRIB_PRINTF_FORMAT(3, 4);
 
 __externC int
 snprintf( char * /* str */, size_t /* length */, const char * /* format */,
@@ -295,22 +303,25 @@ snprintf( char * /* str */, size_t /* length */, const char * /* format */,
 
 __externC int
 vfnprintf( FILE * /* stream */, size_t /* length */,
-           const char * /* format */, va_list /* args */ ) __THROW;
+           const char * /* format */, va_list /* args */ ) __THROW
+    CYGBLD_ATTRIB_PRINTF_FORMAT(3, 0);
 
 __externC int
 vsnprintf( char * /* str */, size_t /* length */,
-           const char * /* format */, va_list /* args */ ) __THROW;
+           const char * /* format */, va_list /* args */ ) __THROW
+    CYGBLD_ATTRIB_PRINTF_FORMAT(3, 0);
 
 __externC int
-vscanf( const char * /* format */, va_list /* args */ ) __THROW;
+vscanf( const char * /* format */, va_list /* args */ ) __THROW
+    CYGBLD_ATTRIB_SCANF_FORMAT(1, 0);
 
 __externC int
 vsscanf( const char * /* str */, const char * /* format */,
-         va_list /* args */ ) __THROW;
+         va_list /* args */ ) __THROW CYGBLD_ATTRIB_SCANF_FORMAT(2, 0);
 
 __externC int
 vfscanf( FILE * /* stream */, const char * /* format */,
-         va_list /* args */ ) __THROW;
+         va_list /* args */ ) __THROW CYGBLD_ATTRIB_PRINTF_FORMAT(2, 0);
 
 
 // INLINE FUNCTIONS
