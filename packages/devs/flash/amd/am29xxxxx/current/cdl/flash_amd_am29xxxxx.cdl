@@ -286,4 +286,35 @@ cdl_package CYGPKG_DEVS_FLASH_AMD_AM29XXXXX {
             able to recognize and handle the S29GL064M
             part in the family."
     }
+
+    cdl_option CYGHWR_DEVS_FLASH_AMD_S29PL032J {
+        display       "Spansion S29PL032J flash memory support"
+        default_value 0
+        implements    CYGINT_DEVS_FLASH_AMD_VARIANTS
+        description   "
+            When this option is enabled, the AMD flash driver will be
+            able to recognize and handle the S29PL032J
+            part in the family."
+    }
+
+    cdl_option CYGHWR_DEVS_FLASH_AMD_S29PL064J {
+        display       "Spansion S29PL064J flash memory support"
+        default_value 0
+        implements    CYGINT_DEVS_FLASH_AMD_VARIANTS
+        description   "
+            When this option is enabled, the AMD flash driver will be
+            able to recognize and handle the S29PL064J
+            part in the family."
+    }
+
+    cdl_option CYGHWR_DEVS_FLASH_AMD_S29PL127J {
+        display       "Spansion S29PL127J flash memory support"
+        default_value 0
+        implements    CYGINT_DEVS_FLASH_AMD_VARIANTS
+        description   "
+            When this option is enabled, the AMD flash driver will be
+            able to recognize and handle the S29PL0127J
+            part in the family."
+    }
+
 }

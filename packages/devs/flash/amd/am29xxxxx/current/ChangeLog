@@ -1,3 +1,10 @@
+2005-03-18  Peter Korsgaard <jacmet@sunsite.dk>
+
+	* include/flash_am29xxxxx_parts.inl (CYGHWR_DEVS_FLASH_AMD_S29PL032J,
+	CYGHWR_DEVS_FLASH_AMD_S29PL064J, CYGHWR_DEVS_FLASH_AMD_S29PL127J):
+	* cdl/flash_amd_am29xxxxx.cdl: Add support for Spansion S29PL032J,
+	S29PL064J and S29PL127J parts.
+
 2005-02-20  Kurt Stremerch <kurt.stremerch@exys.be>
 
 	* include/flash_am29xxxxx_parts.inl (CYGHWR_DEVS_FLASH_AMD_S29GL064M):
