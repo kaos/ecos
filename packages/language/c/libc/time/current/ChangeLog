@@ -1,3 +1,10 @@
+2003-01-27  Gary Thomas  <gary@mlbassoc.com>
+
+	* tests/strptime.c: 
+	* src/strptime.cxx: 
+	* include/time.h: 
+	* cdl/time.cdl: Add support for strptime().
+
 2002-05-14  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/time.cdl: Added -Wno-format to the compiler flags. This is

@@ -65,11 +65,12 @@ cdl_package CYGPKG_LIBC_TIME {
     requires      CYGINT_ISO_DIV
     requires      CYGINT_ISO_ABS
 
-    compile       asctime.cxx       asctime_r.cxx    clock.cxx      \
-                  ctime.cxx         ctime_r.cxx      difftime.cxx   \
-                  gmtime.cxx        gmtime_r.cxx     localtime.cxx  \
-                  localtime_r.cxx   mktime.cxx       settime.cxx    \
-                  strftime.cxx      time.cxx         timeutil.cxx  
+    compile       asctime.cxx       clock.cxx      \
+                  ctime.cxx         difftime.cxx   \
+                  gmtime.cxx        localtime.cxx  \
+                  mktime.cxx        settime.cxx    \
+                  strftime.cxx      time.cxx       \
+                  timeutil.cxx
 
 
 # ====================================================================
@@ -114,10 +115,13 @@ cdl_package CYGPKG_LIBC_TIME {
     cdl_option CYGFUN_LIBC_TIME_POSIX {
         display       "POSIX time functions"
         default_value 1
+        requires      CYGFUN_LIBC_STRING_BSD_FUNCS
+        compile       asctime_r.cxx ctime_r.cxx gmtime_r.cxx \
+                      localtime_r.cxx strptime.cxx
         description   "
             Enabling this option allows the use of the
             following functions defined in POSIX 1003.1:
-            asctime_r(), ctime_r(), gmtime_r(), and
+            asctime_r(), ctime_r(), gmtime_r(), strptime(), and
             localtime_r()."
     }
 
@@ -316,7 +320,10 @@ cdl_package CYGPKG_LIBC_TIME {
             display "C library time and date function tests"
             flavor  data
             no_define
-            calculated { "tests/asctime tests/clock tests/ctime tests/gmtime tests/localtime tests/mktime tests/strftime tests/time" }
+            calculated { 
+                "tests/asctime tests/clock tests/ctime tests/gmtime tests/localtime tests/mktime tests/strftime tests/time " 
+                . (CYGSEM_LIBC_TIME_POSIX_TIME_ROUTINES ? "tests/strptime" : "")
+            }
             description   "
                 This option specifies the set of tests for the C library
                 time and date functions."
