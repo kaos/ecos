@@ -1,3 +1,8 @@
+2004-08-24  Gary Thomas  <gary@mlbassoc.com>
+
+	* cdl/io_flash.cdl:
+	* tests/flash1.c: Add simple test of FLASH driver.
+
 2004-06-20  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/flash.c (flash_read): Don't check if the flash is write 
