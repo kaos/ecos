@@ -171,7 +171,7 @@ send_cmd(int s,char * msgbuf,ftp_printf_t ftp_printf) {
       ftp_printf(1,"write %s\n",strerror(errno));
       return FTP_BAD;
     } else {
-      ftp_printf(1,"write truncasted!\n");
+      ftp_printf(1,"write truncated!\n");
       return FTP_BAD;
     }
   }
@@ -376,12 +376,12 @@ opendatasock(int ctrl_s,
               NI_NUMERICHOST|NI_NUMERICSERV);
   switch (local.sa_family) {
   case AF_INET: {
-    sprintf(buf,"|1|%s|%s|", name, port);
+    snprintf(buf, sizeof(buf), "|1|%s|%s|", name, port);
     break;
   }
 #ifdef CYGPKG_NET_INET6
   case AF_INET6: {
-    sprintf(buf,"|2|%s|%s|", name, port);
+    snprintf(buf, sizeof(buf), "|2|%s|%s|", name, port);
     break;
   }
 #endif
