@@ -171,6 +171,23 @@
                      }
     },
 #endif
+#if defined(CYGHWR_DEVS_FLASH_ATMEL_AT29LV200BB)
+    {   // AT29LV200BB
+        device_id  : FLASHWORD(0x22BF),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 4,
+        device_size: 0x40000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x40000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : true,
+        bootblocks : { 0x000000 * CYGNUM_FLASH_INTERLEAVE,  // 0x00000..0x03FFF
+                       0x004000 * CYGNUM_FLASH_INTERLEAVE,  // 0x04000..0x05FFF
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,  // 0x06000..0x07FFF
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,  // 0x08000..0x0FFFF
+                       0x008000 * CYGNUM_FLASH_INTERLEAVE,
+                       _LAST_BOOTBLOCK
+                     }
+    },
+#endif
 
 #endif // ifndef CYGONCE_DEVS_FLASH_ATMEL_AT49XXXX_PARTS_INL
 

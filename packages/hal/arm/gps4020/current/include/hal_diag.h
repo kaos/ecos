@@ -1,47 +1,18 @@
-2003-11-10  Gary Thomas  <gary@mlbassoc.com>
+#ifndef CYGONCE_HAL_DIAG_H
+#define CYGONCE_HAL_DIAG_H
 
-	* include/flash_at49xxxx_parts.inl: Add AT29LV200BB
-
-2003-09-19  Gary Thomas  <gary@mlbassoc.com>
-
-	* include/flash_at49xxxx_parts.inl: Add support for AT49LV040
-
-	* include/flash_at49xxxx.inl: Support devices which need "chip erase"
-	as opposed to "sector erase" operations.
-
-2003-08-08  Oyvind Harboe <oyvind.harboe@zylin.com>
-
-	* include/flash_at49xxxx.inl: the program/erase completion had a
-	race condtion.  Changes algorithms to one that does not suffer
-	from potential race conditions.
-
-2003-07-15  Jonathan Larmour  <jifl@eCosCentric.com>
-
-	* include/flash_at49xxxx.inl: Reorganise to support boot blocks,
-	multiple flash types from the same driver, and do proper
-	verification.
-	* include/flash_at49xxxx_parts.inl: New file to describe flash
-	part information.
-
-2003-06-10  Øyvind Harboe  <oyvind.harboe@zylin.com>
-
-	* include/flash_at49xxxx.inl: wait_while_busy needs to be in RAM
-	since its called while the flash is not readable.
-	
-2002-07-12  Tim Drury (tdrury@siliconmotorsports.com>
-
-	* include/flash_at49xxxx.inl: added support for AT49LV1614
-
-2002-06-24  Jani Monoses <jani@iv.ro>
-
-	* include/flash_at49xxxx.inl: Added support for AT49BV8011
-	based on AT29XXXXX
-	
-//===========================================================================
+/*=============================================================================
+//
+//      hal_diag.h
+//
+//      HAL Support for Kernel Diagnostic Routines
+//
+//=============================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -70,4 +41,34 @@
 // at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
-//===========================================================================
+//=============================================================================
+//#####DESCRIPTIONBEGIN####
+//
+// Author(s):   nickg, gthomas
+// Contributors:        nickg, gthomas
+// Date:        1998-09-11
+// Purpose:     HAL Support for Kernel Diagnostic Routines
+// Description: Diagnostic routines for use during kernel development.
+// Usage:       #include <cyg/hal/hal_diag.h>
+//
+//####DESCRIPTIONEND####
+//
+//===========================================================================*/
+
+#include <pkgconf/hal.h>
+
+#include <cyg/infra/cyg_type.h>
+
+#include <cyg/hal/hal_if.h>
+
+#define HAL_DIAG_INIT() hal_if_diag_init()
+#define HAL_DIAG_WRITE_CHAR(_c_) hal_if_diag_write_char(_c_)
+#define HAL_DIAG_READ_CHAR(_c_) hal_if_diag_read_char(&_c_)
+
+// Not the best place for this, but ...
+extern void hal_delay_us(cyg_int32 usecs);
+#define HAL_DELAY_US(n)          hal_delay_us(n);
+
+/*---------------------------------------------------------------------------*/
+/* end of hal_diag.h                                                         */
+#endif /* CYGONCE_HAL_DIAG_H */

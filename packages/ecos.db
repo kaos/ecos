@@ -5324,6 +5324,50 @@ target pc_rltk8139 {
 
 # --------------------------------------------------------------------------
 
+package CYGPKG_HAL_ARM_GPS4020 {
+	alias		{ "GPS4020" hal_gps4020 }
+	directory	hal/arm/gps4020
+	script		hal_arm_gps4020.cdl
+	hardware
+        description "
+            The GPS4020 HAL package provides the support needed to run
+            eCos on a GPS 4020 board using the Firefly MF1 (ARM) processor."
+}
+
+package CYGPKG_DEVS_FLASH_GPS4020 {
+	alias 		{ "FLASH memory support for GPS4020" flash_gps4020 }
+	directory	devs/flash/arm/gps4020
+	script		flash_gps4020.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the GPS4020 platform."
+}
+
+package CYGPKG_IO_SERIAL_ARM_GPS4020 {
+    alias             { "GPS4020 serial device drivers"
+                        devs_serial_arm_gps4020 gps4020_serial_driver }
+    hardware
+    directory	      devs/serial/arm/gps4020
+    script	      ser_arm_gps4020.cdl	
+    description       "GPS4020 serial device drivers"
+}
+
+target gps4020 {
+        alias		{ "GPS 4020" gps_4020 gps}
+	packages        { CYGPKG_HAL_ARM
+                          CYGPKG_HAL_ARM_GPS4020
+                          CYGPKG_DEVS_FLASH_ATMEL_AT49XXXX
+                          CYGPKG_DEVS_FLASH_GPS4020
+                          CYGPKG_IO_SERIAL_ARM_GPS4020
+        }
+        description "
+            The gps4020 target provides the packages needed to run
+            eCos on a GPS-4020 board."
+}
+
+# --------------------------------------------------------------------------
+
 package CYGPKG_VNC_SERVER {
     alias       { "VNC server" vnc_server }
     directory   net/vnc_server
