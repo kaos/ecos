@@ -1,5 +1,13 @@
 2003-05-14  John Dallaway  <jld@ecoscentric.com>
 
+	* standalone/common/ecosconfig.cxx,
+	  standalone/wxwin/configtooldoc.cpp,
+	  standalone/wxwin/admindlg.cpp: Convert native Windows format
+        repository specifications to POSIX format in Cygwin builds, as now
+	required by the CDL library.
+
+2003-05-14  John Dallaway  <jld@ecoscentric.com>
+
 	* standalone/wxwin/admindlg.cpp,
 	  standalone/wxwin/buildoptionsdlg.cpp,
 	  standalone/wxwin/configtool.cpp,

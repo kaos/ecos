@@ -2,6 +2,7 @@
 //                                                                          
 // ----------------------------------------------------------------------------
 // Copyright (C) 2003 Bart Veer
+// Copyright (C) 2003 John Dallaway
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
 // This program is part of the eCos host tools.
@@ -255,6 +256,15 @@ int main (int argc, char * argv []) {
             }
         }
     }
+
+    // convert a DOS format repository directory to POSIX format for backward compatibility (Cygwin only)
+#ifdef __CYGWIN__
+    if (1 < repository.size() && ':' == repository [1]) {
+        char buffer [MAX_PATH + 1];
+        cygwin_conv_to_posix_path (repository.c_str (), buffer);
+        repository = buffer;
+    }
+#endif
 
     // Initialize the cdl_exec code (not quite sure why this needs a
     // separate object rather than just a bunch of statics). 

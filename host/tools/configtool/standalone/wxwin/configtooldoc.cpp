@@ -896,7 +896,7 @@ bool ecConfigToolDoc::OpenRepository (ecFileName& strNewRepository, CdlPackagesD
 
                     // create a CDL repository, interpreter and configuration
                     try {// create a new package database, interpreter and configuration
-                        NewCdlPkgData = CdlPackagesDatabaseBody::make ((const wxChar*) strNewPackagesDir, &CdlParseErrorHandler, &CdlParseWarningHandler);
+                        NewCdlPkgData = CdlPackagesDatabaseBody::make ((const wxChar*) ecUtils::NativeToPosixPath(strNewPackagesDir), &CdlParseErrorHandler, &CdlParseWarningHandler);
                         NewCdlInterp = CdlInterpreterBody::make ();
                         NewCdlConfig = CdlConfigurationBody::make ("eCos", NewCdlPkgData, NewCdlInterp);
                     }

@@ -452,7 +452,7 @@ bool ecAdminDialog::PopulatePackageTree (const wxString& packageDatabase)
     try
     {
         // Cdl asserts unless the handlers are present.
-        m_CdlPkgData = CdlPackagesDatabaseBody::make (ecUtils::UnicodeToStdStr (packageDatabase), &CdlErrorHandler, &CdlWarningHandler);
+        m_CdlPkgData = CdlPackagesDatabaseBody::make (ecUtils::UnicodeToStdStr (ecUtils::NativeToPosixPath (packageDatabase)), &CdlErrorHandler, &CdlWarningHandler);
     }
     catch (CdlStringException exception)
     {
