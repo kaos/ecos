@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
 // Copyright (C) 2003 John Dallaway
+// Copyright (C) 2004 eCosCentric Limited
 //
 // This program is part of the eCos host tools.
 //
@@ -1351,17 +1352,27 @@ void ecApp::Build(const wxString &strWhat /*=wxT("")*/ )
     {
         wxGetApp().GetMainFrame()->ToggleWindow(ecID_TOGGLE_OUTPUT);
     }
-    if (!pDoc->GetDocumentSaved())
+    if (!pDoc->GetDocumentSaved()) // if document has never been saved
     {
-        pDoc->SaveAs();
+        if (!pDoc->SaveAs())
+            return; // user chose not to save the unsaved document so cannot build eCos
     }
-/*
-    if (pDoc->IsModified() && !wxDirExists(pDoc->GetBuildTree()))
+
+    if (pDoc->IsModified()) // if document has been modified since last save
     {
-        pDoc->SaveAs();
+        if (wxOK == wxMessageBox("Building eCos will save changes to your current eCos configuration.",
+            "Build", wxOK|wxCANCEL|wxICON_EXCLAMATION))
+            pDoc->Save();
+        else
+            return; // user chose not to save changes so cannot build eCos
     }
-*/
-//    if ( !(pDoc->IsModified() || !wxDirExists(pDoc->GetBuildTree())) ) // verify the save worked
+
+    // save an eCos configuration which is already saved but is without a corresponding build tree
+    if (!wxDirExists(pDoc->GetBuildTree()))
+    {
+        pDoc->Save();
+    }
+
     if ( pDoc->GetDocumentSaved() )
     {
         //wxString strCmd (wxT("c:\\bin\\testmake.bat"));
