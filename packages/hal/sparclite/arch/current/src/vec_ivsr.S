@@ -51,6 +51,9 @@
 
 #ifdef CYGPKG_KERNEL
 # include <pkgconf/kernel.h>
+#else
+# undef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+# undef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
 #endif
 
 !------------------------------------------------------------------------
@@ -60,14 +63,22 @@
 #define DELAYS_AFTER_WRPSR_SAME_WINDOW
 #define DELAYS_AFTER_WRWIM
 
+! Macro to mark the stack as we descend, for debugging, because it is likely
+! that actually running the ISR won~t touch the stack, but the memory needs
+! to be there.  Normally blank.
+//#define	MARKSTACKUSED st %sp, [ %sp ]
+#define MARKSTACKUSED
+
 !------------------------------------------------------------------------
 
 	.text
 
 !---------------------------------------------------------------------------
 ! default interrupt VSR, which calls the appropriate ISR after scheduler
-! lock andinterrupt masking, then interrupt_end().  interrupt_end() must be
-! called with interrupts enabled, on the original thread stack.
+! lock and interrupt masking, then interrupt_end().  interrupt_end() must be
+! called with interrupts enabled, on the original thread stack (no separate
+! interrupt stack) or with interrupts masked, on the original stack (when
+! separate interrupt stack is supported).
 
 	.global hal_default_interrupt_vsr
 hal_default_interrupt_vsr:
@@ -147,6 +158,29 @@ hal_default_interrupt_vsr:
 
 	sub	%sp, 24 * 4, %sp	! fresh frame including
 					! arg spill area for callees
+	MARKSTACKUSED			! kilroy was here
+
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+	! we will switch to the interrupt stack unless already running on it
+
+	.extern cyg_interrupt_stack
+	.extern cyg_interrupt_stack_base
+	set	cyg_interrupt_stack, %g1
+	set	cyg_interrupt_stack_base, %g2
+
+	cmp	%sp, %g2		! below base?
+	blu	1f			! if so, switch.
+	cmp	%sp, %g1		! below top? (DELAY SLOT)
+	blu	2f			! if so, DON~T switch.
+	nop				! (DELAY SLOT)
+1:	! switch to the interrupt stack
+	st	%sp, [ %g1 ]		! there is spare above stack
+	sub	%g1, 24 * 4, %sp	! fresh frame including
+					! arg spill area for callees
+	MARKSTACKUSED			! kilroy was here
+2:	
+	! continue as before, already in the interrupt stack.
+#endif // CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
 
 #ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
 	! Lock the scheduler
@@ -158,7 +192,7 @@ hal_default_interrupt_vsr:
 #endif
 
 	! HELP_GDB_WITH_BACKTRACE
-	mov	%i7, %l5		! preserve it JIC
+	mov	%i7, %l5		! preserve it in l5
 	mov	%l1, %i7		! bogus return link here
 
 	! and we must preserve the Y register (multiply/divide auxiliary)
@@ -202,6 +236,29 @@ hal_default_interrupt_vsr:
 	! We only need to call _interrupt_end() when there is a kernel
 	! present to do any tidying up.
 
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+	! now we switch back to the user stack (if we~re at the top
+	! of the interrupt stack).
+
+	or	%l0, 0xfe0, %l7
+	wr	%l7, %psr		! Interrupts all masked, ET
+#ifdef DELAYS_AFTER_WRPSR_SAME_WINDOW
+	nop
+	nop
+	nop
+#endif
+	
+	.extern cyg_interrupt_stack
+	set	cyg_interrupt_stack - (24 * 4), %g1
+
+	cmp	%sp, %g1		! is SP less?
+	blu	1f			! if so, do not change back
+	nop
+	! switch to the thread stack
+	ld	[ %g1 + (24 * 4) ], %sp		! there is spare above stack
+1:	
+
+#else // CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
 	! First restore the processor interrupt level to that interrupted
 	! (otherwise a task-switch runs at the current PIL) on the assumption
 	! that the ISR dealt with the interrupt source per se, so it is safe
@@ -213,6 +270,8 @@ hal_default_interrupt_vsr:
 	nop
 	nop
 #endif
+#endif // CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+
 	! then call interrupt_end( isr_retcode, &intr_object, &regsave )
 	! to unlock the scheduler and do any rescheduling that~s needed.
 	! argument 0 (isr_retcode) is already in place in %o0
@@ -304,5 +363,61 @@ hal_default_interrupt_vsr:
 	jmpl	%l1,  %g0
 	rett	%l2
 
+!----------------------------------------------------------------------------
+
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+
+! This routine can only be called from a thread stack, maybe
+! with interrupts (but not traps) disabled.
+! It switches to the interrupt stack then calls back to the
+! kernel to execute DSRs.
+
+	.global hal_interrupt_stack_call_pending_DSRs
+hal_interrupt_stack_call_pending_DSRs:
+	save	%sp, -24 * 4, %sp
+
+	MARKSTACKUSED			! kilroy was here
+
+	! be atomic
+	rd	%psr, %l0
+	andn	%l0, 0x20, %l1		! clear ET to disable traps
+	wr	%l1, %psr		! into the PSR
+	nop
+	nop
+	nop
+
+	mov	%sp, %l7		! save calling stack location	
+
+	! now switch stack to the interrupt stack, plus some headroom
+	! for saving a register set if we are interrupted
+	.extern cyg_interrupt_stack
+	set	cyg_interrupt_stack - 4 * 24, %sp
+
+	MARKSTACKUSED			! kilroy was here
+
+	! and enable interrupts unconditionally to call the DSRs
+	or	%l0, 0x0e0, %l2		! set ET, S, PS
+	andn	%l2, 0xf00, %l2		! PIL to zero
+	wr	%l2, %psr		! into the PSR
+	nop
+	nop
+	nop
+		
+	.extern cyg_interrupt_call_pending_DSRs
+	call	cyg_interrupt_call_pending_DSRs
+	nop
+
+	mov	%l7, %sp		! restore calling stack
+
+	wr	%l0, %psr		! restore interrupt status
+	nop
+	nop
+	nop
+
+	ret
+	restore
+#endif // CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+
+!----------------------------------------------------------------------------
 
 ! end of vec_ivsr.S

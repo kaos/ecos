@@ -1,3 +1,55 @@
+1999-05-20  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/tm_basic.cxx (run_all_tests): Added some more stack stats
+	output using stackmon.hxx; also fixed a BUG associated with the
+	definition of stacks in testaux.hxx (within tests dir) that was
+	making the main stack usage bogus.
+
+	* include/stackmon.hxx: new file, to ease printing stuff about
+	stack usage, particularly of interrupt stacks and the idle
+	thread.  It's not HAL specific, and it can apply to tests outside
+	of the kernel, which is why it's in a public include-place.
+	It just contains inline functions which define empty if there's no
+	handle on the symbols available, so should be safe enough.
+
+1999-05-18  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/stress_threads.c (main_program): Changed behavior of
+	cyg_thread_delete caller.
+
+1999-05-18  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/kapi.h (cyg_thread_delete): is now a boolean function to
+	indicate success.  Failure is when the thread needs to run in
+	order to become killed.
+
+	* src/common/kapi.cxx (cyg_thread_delete): Try killing the thread
+	if necessary before deleting; only run the destructor if it was
+	killed, and tell the caller so.
+	(cyg_thread_kill): Back to the simpler version with no priority
+	diddling; it's up to the called to determine that it _has_ died.
+
+	* src/common/thread.cxx (kill): Only perform the state-changes
+	implied by kill if the thread has not already been killed;
+	otherwise two kill()'s will remove a thread unconditionally,
+	whether it's in the middle of a wait that needs tidying up or not.
+	In other words, ensure idempotency.
+	
+1999-05-17  Hugo Tyson  <hmt@masala.cygnus.co.uk>
+
+	* src/common/kapi.cxx (cyg_thread_kill): Up the priority of the
+	killee to make it terminate *now* if we have priorities and they
+	are not unique, otherwise asserts are likely with the bitmap
+	scheduler.  Likewise in thread delete.  Condition out the bodies
+	of the priority ops if the scheduler does not support priorities.
+
+1999-05-16  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/intr/intr.cxx (call_pending_DSRs): 
+	* include/intr.hxx: Change mechanism for defining HAL function
+	to run DSRs.  This was a "weak" symbol with override, but is now
+	a macro in <cyg/hal/hal_intr.h>.
+
 1999-05-13  Nick Garnett  <nickg@cygnus.co.uk>
 
 	The following changes were all made in a branch and are now being

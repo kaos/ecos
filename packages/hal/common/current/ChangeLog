@@ -1,3 +1,20 @@
+1999-05-21  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_stub.c (__install_traps): Set exit vector to __reset.
+
+	
+1999-05-21  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/intr.c: Get RTC values from CYGBLD_HAL_PLATFORM_H.
+	Ensure there are fallback definitions.
+
+	* src/hal_stub.c (handle_exception_cleanup): Added optional call
+	of HAL_STUB_PLATFORM_STUBS_FIXUP macro.
+
+1999-05-18  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_stub.c (hal_output_gdb_string): Added missing ;
+
 1999-05-13  Nick Garnett  <nickg@cygnus.co.uk>
 
 	The following changes were all made on a branch and imported into

@@ -178,6 +178,7 @@ target powerpc {
     }
 }
 
+
 target i386 {
     alias		{ i386 i486 i586 i86 ix86 }
     command_prefix  	i686-pc-linux-gnu

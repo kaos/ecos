@@ -105,7 +105,7 @@
 
 // ============================ END ============================
 
-
+#include <cyg/kernel/stackmon.hxx>      // stack analysis tools
 
 #include <cyg/compat/uitron/uit_func.h> // uITRON
 
@@ -705,6 +705,17 @@ void task1( unsigned int arg )
 
     CYG_TEST_INFO( "Task 1 running" );
 
+    {
+        extern Cyg_Thread cyg_uitron_TASKS[];
+        cyg_test_dump_thread_stack_stats(
+            "Startup, task1", &cyg_uitron_TASKS[ 0 ] );
+        cyg_test_dump_thread_stack_stats(
+            "Startup, task2", &cyg_uitron_TASKS[ 1 ] );
+        cyg_test_dump_interrupt_stack_stats( "Startup" );
+        cyg_test_dump_idlethread_stack_stats( "Startup" );
+        cyg_test_clear_interrupt_stack();
+    }
+
     ercd = chg_pri( 1, 8 );
     CYG_TEST_CHECK( E_OK == ercd, "chg_pri bad ercd" );
 
@@ -964,6 +975,15 @@ void task1( unsigned int arg )
     }
     CYG_TEST_PASS("synchronization interaction tests");
 
+    {
+        extern Cyg_Thread cyg_uitron_TASKS[];
+        cyg_test_dump_thread_stack_stats(
+            "All done, task1", &cyg_uitron_TASKS[ 0 ] );
+        cyg_test_dump_thread_stack_stats(
+            "All done, task2", &cyg_uitron_TASKS[ 1 ] );
+        cyg_test_dump_interrupt_stack_stats( "All done" );
+        cyg_test_dump_idlethread_stack_stats( "All done" );
+    }
     // all done
     CYG_TEST_EXIT( "All done" );
     ext_tsk();

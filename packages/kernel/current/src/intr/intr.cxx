@@ -183,16 +183,16 @@ cyg_interrupt_call_pending_DSRs(void)
     Cyg_Interrupt::call_pending_DSRs_inner();
 }
 
-// This function will be provided by HALs that fully implement
-// interrupt stack functionality
-externC void 
-hal_interrupt_stack_call_pending_DSRs(void)
-  __attribute__ ((weak, alias("cyg_interrupt_call_pending_DSRs")));
+//
+// Use HAL supported function to run through the DSRs, but executing using
+// the separate interrupt stack if available.  This function calls back
+// into this module via 'cyg_interrupt_call_pending_DSRs' above, to keep
+// the whole process as general as possible.
 
 void
 Cyg_Interrupt::call_pending_DSRs(void)
 {
-    hal_interrupt_stack_call_pending_DSRs();
+    HAL_INTERRUPT_STACK_CALL_PENDING_DSRS();
 }
 
 

@@ -57,16 +57,17 @@
 ## Hardware supplied vectors
 	
 	.set	noreorder
-	.set	noat
  
 	.section ".reset_vector","ax"
 
 	# Reset vector at 0xBFC00000
 	
 FUNC_START(reset_vector)
-	la	v0,_start		# jump to start
+
+	lar	v0,_start		# jump to start
 	jr	v0
 	nop				# (delay slot)
+
 FUNC_END(reset_vector)
 	
 	.section ".debug_vector","ax"
@@ -108,20 +109,19 @@ FUNC_END(utlb_vector)
 
 ##-----------------------------------------------------------------------------
 ## Startup code
-	
+
 	.text
 	
 FUNC_START(_start)
 
 	# Initialize hardware
-
 	hal_cpu_init
+	hal_diag_init
 	hal_mmu_init
 	hal_fpu_init
 	hal_memc_init
 	hal_intc_init
 	hal_cache_init
-	hal_diag_init
 	hal_timer_init
 		
 	# Load Global Pointer register.
@@ -141,14 +141,14 @@ FUNC_START(_start)
 	nop
 
 #endif
-		
+
 	# Zero BSS
 
 	.extern hal_zero_bss
 	jal	hal_zero_bss
 	nop
 
-	# Cal variant and platform HAL
+	# Call variant and platform HAL
 	# initialization routines.
 
 	.extern	hal_variant_init
@@ -158,13 +158,13 @@ FUNC_START(_start)
 	.extern	hal_platform_init
 	jal	hal_platform_init
 	nop
-	
+
 	# Call constructors
 	.extern cyg_hal_invoke_constructors
 	jal     cyg_hal_invoke_constructors
 	nop
 
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+#if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS) && !defined(CYG_HAL_STARTUP_STUBS)
         .extern initialize_stub
         jal     initialize_stub
         nop
@@ -176,7 +176,7 @@ FUNC_START(_start)
 	jal	cyg_start
 	nop
 
-9:	j	9b		# Loop if we return
+9:	b	9b		# Loop if we return
 	nop			# (delay slot)
 	
 FUNC_END(_start	)
@@ -207,8 +207,8 @@ FUNC_START(__default_exception_vsr)
 	andi	k0,k0,0x7F		# isolate exception code	
 	sw	k0,mipsreg_vector(sp)	# store vector
 
-	.set	noat
 	# store GPRs
+	.set	noat
 	sw	$0,(mipsreg_regs+0*4)(sp)
 	sw	$1,(mipsreg_regs+1*4)(sp)
 	sw	$2,(mipsreg_regs+2*4)(sp)
@@ -241,7 +241,8 @@ FUNC_START(__default_exception_vsr)
 #	sw	$29,(mipsreg_regs+29*4)(sp)	# == SP
 	sw	$30,(mipsreg_regs+30*4)(sp)	# == FP
 	sw	$31,(mipsreg_regs+31*4)(sp)	# == RA
-
+	.set	at
+	
 	mfhi	a0
 	mflo	a1
 	sw	a0,mipsreg_hi(sp)
@@ -316,6 +317,7 @@ FUNC_START(__default_interrupt_vsr)
 	sw	k0,mipsreg_vector(sp)	# store vector
 
 	# store GPRs
+	.set	noat
 	sw	$0,(mipsreg_regs+0*4)(sp)
 	sw	$1,(mipsreg_regs+1*4)(sp)
 	sw	$2,(mipsreg_regs+2*4)(sp)
@@ -348,7 +350,8 @@ FUNC_START(__default_interrupt_vsr)
 #	sw	$29,(mipsreg_regs+29*4)(sp)	# == SP
 	sw	$30,(mipsreg_regs+30*4)(sp)	# == FP
 	sw	$31,(mipsreg_regs+31*4)(sp)	# == RA
-
+	.set	at
+	
 	mfhi	a0
 	mflo	a1
 	sw	a0,mipsreg_hi(sp)
@@ -509,7 +512,8 @@ restore_state:
 	mthi	t1
 	mtlo	t2
 
-		# load GPRs
+	# load GPRs
+	.set	noat
 #	lw	$0,(mipsreg_regs+0*4)(sp)
 	lw	$1,(mipsreg_regs+1*4)(sp)
 	lw	$2,(mipsreg_regs+2*4)(sp)
@@ -542,7 +546,8 @@ restore_state:
 #	lw	$29,(mipsreg_regs+29*4)(sp)	# == SP
 	lw	$30,(mipsreg_regs+30*4)(sp)	# == FP
 	lw	$31,(mipsreg_regs+31*4)(sp)	# == RA
-
+	.set	at
+	
 	lw	k0,mipsreg_pc(sp)		# K0 = return PC
 	lw	k1,mipsreg_sr(sp)		# K1 = saved SR
 	lw	sp,(mipsreg_regs+29*4)(sp)	# load SP
@@ -605,11 +610,15 @@ FUNC_END(__gccmain)
 	.bss
 
 	.balign 16
+	.global cyg_interrupt_stack_base
+cyg_interrupt_stack_base:
 __interrupt_stack_base:
 	.rept CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE
 	.byte 0
 	.endr
 	.balign 16
+	.global cyg_interrupt_stack
+cyg_interrupt_stack:
 __interrupt_stack:
 
 	.long	0,0,0,0,0,0,0,0	
@@ -676,7 +685,7 @@ hal_interrupt_objects:
 	.endr
 
 #endif	
-	
+
 ##-----------------------------------------------------------------------------
 ## end of vectors.S
 

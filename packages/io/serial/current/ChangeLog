@@ -1,3 +1,8 @@
+1999-05-18  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 19926
+	* src/sparclite/sleb_sdtr.c (sleb_sdtr_rx_DSR): Only read chan if
+	there is one.
+
 1999-05-14  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* tests/ser_test_protocol.inl: Removed workaround for spurious

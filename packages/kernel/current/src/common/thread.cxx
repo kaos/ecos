@@ -759,8 +759,8 @@ Cyg_Thread::kill()
                                         // does not persist.
 #endif
 
-    switch( sleep_reason )
-    {
+    if ( EXIT != wake_reason ) switch( sleep_reason ) {
+        // Only do any of this if the thread is not in pending death already:
 
     case NONE:
         // The thread is not sleeping for any reason, it must be

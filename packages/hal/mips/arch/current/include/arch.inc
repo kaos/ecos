@@ -68,6 +68,15 @@
 #endif
 
 ##-----------------------------------------------------------------------------
+## Setup the initial value for the config0 register
+
+#ifndef INITIAL_CONFIG0
+
+#define	INITIAL_CONFIG0	0x00000002
+
+#endif
+
+##-----------------------------------------------------------------------------
 ## MIPS thread and interrupt saved state. This must match the layout of the
 ## HAL_SavedRegisters in hal_arch.h. Do not change this without changing the
 ## layout there, or viceversa.	
@@ -116,7 +125,22 @@
 	
 #define mips_stack_frame_size		32	// 4 (64 bit) args worth
 
-	
+##-----------------------------------------------------------------------------
+## Load Address and Relocate. This macro is used in code that may be linked
+## to execute out of RAM but is actually executed from ROM. If that is the
+## case a suitable version of this macro will have been defined elsewhere.
+## This is just a default version for use when that does not happen.
+
+#ifndef CYGPKG_HAL_MIPS_LAR_DEFINED
+
+	.macro	lar	reg,addr
+	la	\reg,\addr
+	.endm
+
+#define CYGPKG_HAL_MIPS_LAR_DEFINED
+
+#endif
+
 ##-----------------------------------------------------------------------------
 ## CPU specific macros. These provide a common assembler interface to
 ## operations that may have CPU specific implementations on different
@@ -131,7 +155,11 @@
 	nop
 	nop
 	nop
-	
+	la	v0,INITIAL_CONFIG0
+	mtc0	v0,config0
+	nop
+	nop
+	nop
 	.endm
 
 	# Enable interrupts

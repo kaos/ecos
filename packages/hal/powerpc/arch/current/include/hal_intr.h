@@ -324,6 +324,21 @@ typedef cyg_uint32 CYG_INTERRUPT_STATE;
 #endif
 
 //--------------------------------------------------------------------------
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+
+// Macro/routine to call DSRs on interrupt stack?
+
+// these are offered solely for stack usage testing
+// if they are not defined, then there is no interrupt stack.
+#define HAL_INTERRUPT_STACK_BASE cyg_interrupt_stack_base
+#define HAL_INTERRUPT_STACK_TOP  cyg_interrupt_stack
+// use them to declare these extern however you want:
+//       extern char HAL_INTERRUPT_STACK_BASE[];
+//       extern char HAL_INTERRUPT_STACK_TOP[];
+// is recommended
+#endif
+
+//--------------------------------------------------------------------------
 // Interrupt and VSR attachment macros
 
 #define HAL_INTERRUPT_IN_USE( _vector_, _state_)                          \

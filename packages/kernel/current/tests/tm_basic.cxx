@@ -49,6 +49,8 @@
 
 #include <cyg/infra/testcase.h>
 
+#include <cyg/kernel/stackmon.hxx>
+
 // Define this to see the statistics with the first sample datum removed.
 // This can expose the effects of caches on the speed of operations.
 #undef STATS_WITHOUT_FIRST_SAMPLE
@@ -1436,6 +1438,12 @@ run_all_tests(CYG_ADDRESS id)
 #endif
 
     disable_clock_latency_measurement();
+
+    cyg_test_dump_thread_stack_stats( "Startup, main stack", thread[0] );
+    cyg_test_dump_interrupt_stack_stats( "Startup" );
+    cyg_test_dump_idlethread_stack_stats( "Startup" );
+    cyg_test_clear_interrupt_stack();
+
     diag_printf("\neCos Kernel Timings\n");
     diag_printf("Notes: all times are in microseconds (.000001) unless otherwise stated\n");
 #ifdef STATS_WITHOUT_FIRST_SAMPLE
@@ -1529,11 +1537,16 @@ run_all_tests(CYG_ADDRESS id)
         total_stack += actual_stack;
     }
     for (j = 0;  j < STACKSIZE;  j++) {
-        if (stack[j]) break;
+        if (((char *)stack[0])[j]) break;
     }
     diag_printf("%5d   %5d   %5d  (main stack: %5d)  Thread stack used (%d total)\n", 
                 total_stack/NTEST_THREADS, min_stack, max_stack, 
                 STACKSIZE - j, STACK_SIZE);
+
+    cyg_test_dump_thread_stack_stats( "All done, main stack", thread[0] );
+    cyg_test_dump_interrupt_stack_stats( "All done" );
+    cyg_test_dump_idlethread_stack_stats( "All done" );
+
     enable_clock_latency_measurement();
 
     ticks = cyg_current_time();

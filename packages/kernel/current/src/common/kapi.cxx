@@ -151,12 +151,15 @@ externC void cyg_thread_exit()
     Cyg_Thread::exit();
 }
 
-externC void cyg_thread_delete( cyg_handle_t thread )
+externC cyg_bool_t cyg_thread_delete( cyg_handle_t thread )
 {
     Cyg_Thread *th = (Cyg_Thread *)thread;
     if( th->get_state() != Cyg_Thread::EXITED )
-        th->kill();
-    th->~Cyg_Thread();    
+        th->kill(); // encourage it to terminate
+    if( th->get_state() != Cyg_Thread::EXITED )
+        return false; // it didn't run yet, leave it up to the app to fix
+    th->~Cyg_Thread();
+    return true;
 }
 
 externC void cyg_thread_suspend(cyg_handle_t thread)
@@ -179,7 +182,7 @@ externC void cyg_thread_resume(cyg_handle_t thread)
 
 externC void cyg_thread_kill( cyg_handle_t thread)
 {
-    ((Cyg_Thread *)thread)->kill();    
+    ((Cyg_Thread *)thread)->kill();
 }
 
 externC void cyg_thread_release( cyg_handle_t thread)
@@ -201,12 +204,18 @@ externC cyg_handle_t cyg_thread_self()
 externC void cyg_thread_set_priority(
     cyg_handle_t thread, cyg_priority_t priority )
 {
+#ifdef CYGIMP_THREAD_PRIORITY
     ((Cyg_Thread *)thread)->set_priority(priority);
+#endif
 }
 
 externC cyg_priority_t cyg_thread_get_priority(cyg_handle_t thread)
 {
+#ifdef CYGIMP_THREAD_PRIORITY
     return ((Cyg_Thread *)thread)->get_priority();
+#else
+    return 0;
+#endif
 }
 
 /* Deadline scheduling control (optional) */

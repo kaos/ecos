@@ -317,8 +317,10 @@ cre_tsk ( ID tskid, T_CTSK *pk_ctsk )
         // but ensure the task state is dormant:
         // (it is not constructed dormant, but suspended)
         p->kill();
+#ifdef CYGIMP_THREAD_PRIORITY
         // and record the initial priority outside the task too.
         CYG_UITRON_TASK_INITIAL_PRIORITY( tskid ) = pk_ctsk->itskpri;
+#endif
     }
     Cyg_Scheduler::unlock();
     return ret;
@@ -425,16 +427,25 @@ ter_tsk ( ID tskid )
         p->force_resume(); // let it run
         p->kill(); // and set prio high so it runs RIGHT NOW!!
 #ifdef CYGIMP_THREAD_PRIORITY
-        p->set_priority( (cyg_priority) 0 );
+#if CYG_SCHED_UNIQUE_PRIORITIES != 0
+        // see if we are already at prio 0:
+        if ( 0 == cyg_uitron_dis_dsp_old_priority )
+            // then dispatch is enabled, we are not at prio 0
+#endif
+            p->set_priority( (cyg_priority) 0 );
+        // if we do not do this, then we are not running a strictly
+        // uITRON compatible scheduler - so just hope for the best.
 #endif
     }
     Cyg_Scheduler::unlock();
 #ifdef CYGIMP_THREAD_PRIORITY
+#if CYG_SCHED_UNIQUE_PRIORITIES == 0
     if ( (E_OK == ret) && (0 != cyg_uitron_dis_dsp_old_priority) ) {
         // then dispatching is disabled, so our prio is 0 too
         Cyg_Thread::yield(); // so let the dying thread run;
         Cyg_Thread::yield(); // no cost here of making sure.
-    }        
+    }
+#endif
 #endif
     return ret;
 }
@@ -497,6 +508,11 @@ chg_pri ( ID tskid, PRI tskpri )
     else
         CYG_UITRON_CHECK_AND_GETP_TASKS( tskid, p );
 
+#ifdef CYGIMP_THREAD_PRIORITY
+    if ( 0 == tskpri )
+        // then use the initial priority [Level X]
+        tskpri = CYG_UITRON_TASK_INITIAL_PRIORITY( tskid );
+#endif
     CYG_UIT_PARAMCHECK( 0 < tskpri, E_PAR );
 #ifdef CYGIMP_THREAD_PRIORITY
 #if CYG_THREAD_MAX_PRIORITY < CYG_THREAD_MIN_PRIORITY

@@ -200,6 +200,17 @@ handle_exception_cleanup( void )
     HAL_GET_GDB_REGISTERS(&registers[0], _hal_registers);
     _registers = &registers[0];
 
+#ifdef HAL_STUB_PLATFORM_STUBS_FIXUP
+    // Some architectures may need to fix the PC in case of a partial
+    // or fully executed trap instruction. GDB only takes correct action
+    // when the PC is pointing to the breakpoint instruction it set.
+    // 
+    // Most architectures would leave PC pointing at the trap
+    // instruction itself though, and so do not need to do anything
+    // special.
+    HAL_STUB_PLATFORM_STUBS_FIXUP();
+#endif
+
 #ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
     // FIXME: (there may be a better way to do this)
     // If we hit a breakpoint set by the gdb interrupt stub, make it
@@ -239,6 +250,9 @@ __install_traps (void)
 {
     // Set signal handling vector so we can treat 'C<signum>' as 'c'.
     __process_signal_vec = &cyg_hal_process_signal;
+    // Set exit vector to reset vector. This will allow automatic reset on
+    // some platforms.
+    __process_exit_vec = &__reset;
 
     __cleanup_vec = &handle_exception_cleanup;
     __init_vec    = &handle_exception_init;
@@ -517,7 +531,7 @@ void
 hal_output_gdb_string(target_register_t str, int string_len)
 {
     unsigned long __state;
-    HAL_DISABLE_INTERRUPTS(__state)
+    HAL_DISABLE_INTERRUPTS(__state);
     __output_gdb_string(str, string_len);
     HAL_RESTORE_INTERRUPTS(__state);
 }

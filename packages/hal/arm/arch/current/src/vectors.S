@@ -730,11 +730,15 @@ __undef_exception_stack:
 #endif
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
 	.balign 16
+	.global cyg_interrupt_stack_base
+cyg_interrupt_stack_base:
 __interrupt_stack_base:
         .rept CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE
         .byte 0
         .endr
 	.balign 16
+	.global cyg_interrupt_stack
+cyg_interrupt_stack:
 __interrupt_stack:
 irq_level:
 	.long	0

@@ -1,3 +1,7 @@
+1999-05-20  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/hal_arm_aeb.h: Move RTC setup here.
+
 1999-04-13  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/aeb_misc.c: Add some testing code using a second timer.

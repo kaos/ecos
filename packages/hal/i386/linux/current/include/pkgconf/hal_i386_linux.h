@@ -73,6 +73,12 @@
 #define CYGHWR_HAL_I386_LINUX_STARTUP       ram
 #undef  CYGSEM_HAL_I386_LINUX_REAL_TIME
 
+// Real-time clock/counter specifics
+
+#define CYGNUM_HAL_RTC_NUMERATOR     1000000000
+#define CYGNUM_HAL_RTC_DENOMINATOR   100
+#define CYGNUM_HAL_RTC_PERIOD        10000
+
 /* -------------------------------------------------------------------*/
 #endif  /* CYGONCE_PKGCONF_HAL_I386_LINUX_H */
 /* EOF hal_i386_linux.h */

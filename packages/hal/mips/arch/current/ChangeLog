@@ -1,8 +1,41 @@
-1999-05-12  Nick Garnett  <nickg@cygnus.co.uk>
+1999-05-21  Hugo Tyson  <hmt@cygnus.co.uk>
 
+	* include/hal_intr.h: Define HAL_INTERRUPT_STACK_BASE and
+	HAL_INTERRUPT_STACK_TOP so that stack usage macros in
+	kernel/.../stackmon.hxx can work.
+
+	* src/vectors.S (cyg_interrupt_stack_base): Define this symbol for
+	the interrupt stack and its friend for the stack top so that we
+	can publish them with nice names.
+
+1999-05-21  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/vectors.S: 
+	Rationalized use of "at" and "noat" setting.
+	Made use of "lar" where necessary.
+	
+	* src/mips-stub.c (__install_breakpoints): Added cache flushes to
+	ensure that the just-set breakpoint is migrated to main memory and
+	will be fetched by the instruction cache.
+
+	* src/context.S:
+	Rationalized use of "at" and "noat" setting.
+
+	* include/arch.inc:
+	Added initial value for the config0 register and added code to set
+	it to hal_cpu_init.
+	Added default "lar" macro.
+
+1999-05-16  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/hal_intr.h (HAL_INTERRUPT_STACK_CALL_PENDING_DSRS): 
+	Add macro for new DSR handling mechanism (was override of a
+	"weak" symbol in kernel).	
+
+1999-05-13  Nick Garnett  <nickg@cygnus.co.uk>
 	The following have been merged from a branch:
 	
-	(1999-05-11  Nick Garnett  <nickg@cygnus.co.uk>)
+    1999-05-11  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/hal_arch.h: 
 	* include/hal_intr.h: 
@@ -16,7 +49,7 @@
 	Removed or disabled some development/debug code.
 	Same imp->var changes as above.
 	
-	(1999-05-06  Nick Garnett  <nickg@cygnus.co.uk>)
+    1999-05-06  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/vectors.S: Added call to hal_cpu_except_enable in
 	__default_exception_vsr to re-enable nested exceptions.
@@ -31,7 +64,7 @@
 	necessary if we are to allow nested exceptions (like breakpoints
 	in exception handlers).
 
-	(1999-04-29  Nick Garnett  <nickg@cygnus.co.uk>)
+    1999-04-29  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/vectors.S: Reenable interrupts while processing exceptions.
 	Several temporary kludges to permit us to test ROM code from RAM
@@ -47,17 +80,17 @@
 	operations to 0x80000000, zero caused MMU exceptions.
 	Fixed looping bugs in all macros that use them.
 
-	(1999-04-28  Gary Thomas  <gthomas@cygnus.co.uk>)
+    1999-04-28  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	[v1_2_2_beta branch]
 	* src/vectors.S: Add dummy "__gccmain()"
 
-	(1999-04-27  Gary Thomas  <gthomas@cygnus.co.uk>)
+    1999-04-27  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/hal_arch.h: Make minimum stack sizes more realistic.
 	Also fix size of interrupt stack frame when FPU present.
 
-	(1999-04-23  Nick Garnett  <nickg@cygnus.co.uk>)
+    1999-04-23  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/vectors.S: Added support for floating point register save
 	and restore. Fixed hal_interrupt_stack_call_pending_DSRs to use
@@ -78,7 +111,7 @@
 	and restore. Moved assembler version of saved state layout here
 	from mips.inc.
 
-	(1999-04-22  Nick Garnett  <nickg@cygnus.co.uk>)
+    1999-04-22  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/context.S (hal_thread_load_context): Substituted explicit
 	code to reload the interrupt enable state with a macro.
@@ -97,7 +130,7 @@
 	Use hal_cpu_int_ensable macro in place of explicit code in
 	hal_interrupt_stack_call_pending_DSRs().
 
-	(1999-04-21  Nick Garnett  <nickg@cygnus.co.uk>)
+    1999-04-21  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/arch.inc: Ifdeffed definition of hal_intc_init macro to
 	allow it to be defined elsewhere. Added default versions of diag
@@ -131,7 +164,7 @@
 
 	* include/arch.inc: Added some nops to eret macros.
 
-	(1999-04-13  John Dallaway  <jld@cygnus.co.uk>)
+    1999-04-13  John Dallaway  <jld@cygnus.co.uk>
 
 	* src/mips.ld: Migrate global MIPS linker script to individual
 	MIPS variant directories

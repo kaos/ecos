@@ -1,3 +1,7 @@
+1999-05-20  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/hal_i386_linux.h: Move RTC setup here.
+
 1999-05-14  Jesper Skov  <jskov@cygnus.co.uk>
         PR 18956
 	* include/pkgconf/mlt_i386_linux_ram.mlt: 

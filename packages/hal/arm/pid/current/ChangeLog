@@ -1,3 +1,7 @@
+1999-05-20  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/hal_arm_pid.h: Move RTC setup here.
+
 1999-04-13  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/hal_platform_setup.h: New file

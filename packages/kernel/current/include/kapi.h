@@ -144,7 +144,8 @@ void cyg_thread_create(
     
 void cyg_thread_exit(void);
 
-void cyg_thread_delete(cyg_handle_t thread);
+/* It may be necessary to arrange for the victim to run for it to disappear */
+cyg_bool_t cyg_thread_delete(cyg_handle_t thread); /* false if NOT deleted */
 
 void cyg_thread_suspend(cyg_handle_t thread);
 

@@ -103,6 +103,20 @@
 
 // #define CYGHWR_HAL_MIPS_TX39_JMR3904_ENABLE_TOE
 
+#include <pkgconf/hal_mips.h>  // Make sure clock frequency is defined
+
+// Real-time clock/counter specifics
+
+#define CYGNUM_HAL_RTC_NUMERATOR     1000000000
+#define CYGNUM_HAL_RTC_DENOMINATOR   100
+#if (CYGHWR_HAL_MIPS_CPU_FREQ == 50)
+# define CYGNUM_HAL_RTC_PERIOD       15360
+#elif (CYGHWR_HAL_MIPS_CPU_FREQ == 66)
+# define CYGNUM_HAL_RTC_PERIOD       20736
+#else
+#error Unsupported clock frequency
+#endif
+
 /* -------------------------------------------------------------------*/
 #endif  /* CYGONCE_PKGCONF_HAL_TX39_JMR3904_H */
 /* EOF hal_tx39_jmr3904.h */

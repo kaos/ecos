@@ -1,3 +1,18 @@
+1999-05-20  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/testcx7.cxx (task1): Add some statistics dumping about
+	stack usage; since this is quite a long and arduous test.  This
+	just helps en passant with testing the interrupt stack work that's
+	been happening recently.  C++ only, so not for test7.
+
+1999-05-17  Hugo Tyson  <hmt@masala.cygnus.co.uk>
+
+	* include/uit_func.inl (ter_tsk): Only up the priority of the
+	killee if priorities are not unique or we are not already
+	elevated.  This is to prevent asserts with the bitmap scheduler.
+	(chg_pri): Support a level X feature, pri zero => reset to the
+	thread's initial priority.
+
 1999-05-14  Hugo Tyson  <hmt@masala.cygnus.co.uk>
 
 	* include/uit_objs.hxx: object array declaration macro now

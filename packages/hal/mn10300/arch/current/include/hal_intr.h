@@ -486,6 +486,19 @@ externC volatile cyg_uint16     mn10300_interrupt_control[0x300/2];
 typedef cyg_uint32 CYG_INTERRUPT_STATE;
 
 //--------------------------------------------------------------------------
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+
+// these are offered solely for stack usage testing
+// if they are not defined, then there is no interrupt stack.
+#define HAL_INTERRUPT_STACK_BASE cyg_interrupt_stack_base
+#define HAL_INTERRUPT_STACK_TOP  cyg_interrupt_stack
+// use them to declare these extern however you want:
+//       extern char HAL_INTERRUPT_STACK_BASE[];
+//       extern char HAL_INTERRUPT_STACK_TOP[];
+// is recommended
+#endif
+
+//--------------------------------------------------------------------------
 // Interrupt control macros
 
 #define HAL_DISABLE_INTERRUPTS(_old_)   \

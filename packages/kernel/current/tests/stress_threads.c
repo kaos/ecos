@@ -298,12 +298,14 @@ void main_program(cyg_addrword_t data)
                            "Handler not in use!");
                 handler_thread_in_use[handler_id]--;
                 priority_in_use[handler_pri]--;
-                // Finally delete the handler thread.
-                {
-                    // workaround for PRs 20054-20058/20065
-                    cyg_thread_kill(handlerH[handler_id]);
+
+                // Finally delete the handler thread. This must be done in a
+                // loop, waiting for the call to return true. If it returns
+                // false, go to sleep for a bit, so the killed thread gets a
+                // chance to run and complete its business.
+                while (!cyg_thread_delete(handlerH[handler_id])) {
+                    cyg_thread_delay(2);
                 }
-                cyg_thread_delete(handlerH[handler_id]);
             } cyg_mutex_unlock(&handler_slot_lock);
         }
 
@@ -417,10 +419,8 @@ void handler_program(cyg_addrword_t data)
       } while (!freed);
   }
 
-  // Then wait for the main_program to kill us.
-  for (;;) {
-      cyg_thread_delay(100);
-  }
+  // Then exit.
+  cyg_thread_exit();
 }
 
 /* look for an available handler thread */

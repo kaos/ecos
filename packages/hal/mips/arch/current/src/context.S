@@ -44,8 +44,6 @@
 
 #include <cyg/hal/arch.inc>
 
-	.set noat
-	
 #------------------------------------------------------------------------------
 # hal_thread_switch_context
 # Switch thread contexts
@@ -58,6 +56,7 @@ hal_thread_switch_context:
 	addi	sp,sp,-mipsreg_size	# space for registers
 
 	# store GPRs
+	.set	noat
 #ifndef CYGDBG_HAL_COMMON_CONTEXT_SAVE_MINIMUM
 	sw	$0,(mipsreg_regs+0*mips_regsize)(sp)
 	sw	$1,(mipsreg_regs+1*mips_regsize)(sp)
@@ -93,7 +92,8 @@ hal_thread_switch_context:
 	sw	$30,(mipsreg_regs+30*mips_regsize)(sp)	# == FP
 	sw	$31,(mipsreg_regs+31*mips_regsize)(sp)	# == RA
 	sw	$31,(mipsreg_pc)(sp)		# == PC (to help with debugging)
-
+	.set	at
+	
 #ifndef CYGDBG_HAL_COMMON_CONTEXT_SAVE_MINIMUM
 
 	mflo	t0				# save LO and HI regs
@@ -152,6 +152,7 @@ hal_thread_load_context:
 #endif
 
 	# load GPRs
+	.set	noat
 #	lw	$0,(mipsreg_regs+0*mips_regsize)(sp)
 	lw	$4,(mipsreg_regs+4*mips_regsize)(sp)	# A0, must load for thread startup
 #ifndef CYGDBG_HAL_COMMON_CONTEXT_SAVE_MINIMUM
@@ -186,7 +187,8 @@ hal_thread_load_context:
 #	lw	$29,(mipsreg_regs+29*mips_regsize)(sp)	# == SP
 	lw	$30,(mipsreg_regs+30*mips_regsize)(sp)	# == FP
 	lw	$31,(mipsreg_regs+31*mips_regsize)(sp)	# == RA
-
+	.set	at
+	
 	lw	a2,mipsreg_sr(sp)		# A2 = saved SR
 	lw	sp,(mipsreg_regs+29*mips_regsize)(sp)	# SP = saved SP
 

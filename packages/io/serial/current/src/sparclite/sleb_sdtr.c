@@ -362,8 +362,10 @@ sleb_sdtr_rx_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     CYG_ADDRWORD port = sdtr_chan->base;
     cyg_uint8 status, c;
     HAL_SPARC_86940_READ(SDTR_STATUS(port), status);
-    HAL_SPARC_86940_READ(SDTR_RXDATA(port), c);
-    (chan->callbacks->rcv_char)(chan, c);
+    if ((status & SDTR_STAT_RxRDY) != 0) {
+        HAL_SPARC_86940_READ(SDTR_RXDATA(port), c);
+        (chan->callbacks->rcv_char)(chan, c);
+    }
     cyg_drv_interrupt_acknowledge(sdtr_chan->rx_int_num);
     cyg_drv_interrupt_unmask(sdtr_chan->rx_int_num);
 }

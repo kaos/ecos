@@ -1,3 +1,7 @@
+1999-05-20  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/hal_mips_sim.h: Move RTC setup here.
+
 1999-05-14  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/plf_misc.c:

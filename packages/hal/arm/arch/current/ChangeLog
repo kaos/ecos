@@ -1,3 +1,23 @@
+1999-05-21  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/hal_intr.h: Define HAL_INTERRUPT_STACK_BASE and
+	HAL_INTERRUPT_STACK_TOP so that stack usage macros in
+	kernel/.../stackmon.hxx can work.
+
+	* src/vectors.S (cyg_interrupt_stack_base): Define this symbol for
+	the interrupt stack and its friend for the stack top so that we
+	can publish them with nice names.
+
+1999-05-19  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/arm.ld: Change symbols to match new no-underscore ABI.
+
+1999-05-16  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/hal_intr.h (HAL_INTERRUPT_STACK_CALL_PENDING_DSRS): 
+	Add macro for new DSR handling mechanism (was override of a
+	"weak" symbol in kernel).	
+
 1999-05-13  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* include/hal_arch.h (HAL_THREAD_INIT_CONTEXT): Align stack

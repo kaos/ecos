@@ -910,11 +910,15 @@ hal_interrupt_objects:
         .section ".bss"
 
 	.balign 16
+	.global cyg_interrupt_stack_base
+cyg_interrupt_stack_base:
 __interrupt_stack_base:
 	.rept CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE
 	.byte 0
 	.endr
 	.balign 16
+	.global cyg_interrupt_stack
+cyg_interrupt_stack:
 __interrupt_stack:
         
         .long   0,0,0,0,0,0,0,0 

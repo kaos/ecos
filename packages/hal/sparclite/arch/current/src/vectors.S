@@ -52,9 +52,17 @@
 #include <pkgconf/hal.h>
 
 #ifdef CYGPKG_KERNEL
-# include <pkgconf/kernel.h>	
+# include <pkgconf/kernel.h>
+#else
+# undef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+# undef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
 #endif
 			
+#if defined( CYG_HAL_SPARCLITE_SIM ) || \
+    defined( CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK )
+#define BOOTUPSTACK_IS_INTERRUPTSTACK
+#endif
+	
 !------------------------------------------------------------------------
 
 #include <cyg/hal/vectors.h>
@@ -253,6 +261,7 @@ genuine_reset:				! set psr, mask interrupts & traps
 #include <cyg/hal/halboot.si>
 	
 // halboot.si returns with %sp all set, in sleb versions.
+// (though we override if there is an interrupt stack)
 
 	led	0x80
 		
@@ -262,9 +271,9 @@ genuine_reset:				! set psr, mask interrupts & traps
 	! saved frame thingy that refers to itself in the stack,
 	! then another which is valid and drop into main from there.
 
-#ifdef CYG_HAL_SPARCLITE_SIM
-	sethi	%hi(cyg_bootup_stack), %i6
-	or	%i6, %lo(cyg_bootup_stack), %i6
+#ifdef BOOTUPSTACK_IS_INTERRUPTSTACK
+	sethi	%hi(cyg_interrupt_stack), %i6
+	or	%i6, %lo(cyg_interrupt_stack), %i6
 #endif	
 	andn	%i6, 7, %i6		! round fp down to double alignment
 	mov	0, %i7			! null return address
@@ -367,17 +376,22 @@ hal_vsr_table:
 !---------------------------------------------------------------------------
 ! Bootup stack (only needed explicitly in sim)
 	
-#ifdef CYG_HAL_SPARCLITE_SIM
+#ifdef BOOTUPSTACK_IS_INTERRUPTSTACK
 	.section ".bss"
 
+#ifndef CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE
+#define CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE 4096
+#endif
 	.balign 16
-cyg_bootup_stack_base:
-	.rept 4064
+	.global cyg_interrupt_stack_base
+cyg_interrupt_stack_base:
+	.rept CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE
 	.byte 0
 	.endr
 	.balign 16
-cyg_bootup_stack:
-	.long	0,0,0,0,0,0,0,0	
+	.global cyg_interrupt_stack
+cyg_interrupt_stack:
+	.long	0,0,0,0,0,0,0,0		! here be secret state stored
 #endif
 
 ! end of vectors.S

@@ -76,6 +76,12 @@
 
 #define CYGHWR_HAL_ARM_AEB_STARTUP       ram
 
+// Real-time clock/counter specifics
+
+#define CYGNUM_HAL_RTC_NUMERATOR     1000000000
+#define CYGNUM_HAL_RTC_DENOMINATOR   100
+#define CYGNUM_HAL_RTC_PERIOD        (240000/16)
+
 /* -------------------------------------------------------------------*/
 #endif  /* CYGONCE_PKGCONF_HAL_ARM_AEB_H */
 /* EOF hal_arm_aeb.h */

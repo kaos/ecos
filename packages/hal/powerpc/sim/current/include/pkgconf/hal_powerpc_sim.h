@@ -61,6 +61,13 @@
    }}CFG_DATA
 */
 
+// Real-time clock/counter specifics
+
+// Period is busclock/16/100.
+#define CYGNUM_HAL_RTC_NUMERATOR     1000000000
+#define CYGNUM_HAL_RTC_DENOMINATOR   100
+#define CYGNUM_HAL_RTC_PERIOD        9999
+
 /* -------------------------------------------------------------------*/
 #endif  /* CYGONCE_PKGCONF_HAL_POWERPC_SIM_H */
 /* EOF hal_powerpc_sim.h */

@@ -1,3 +1,25 @@
+1999-05-19  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/PKGconf.mak: Make below workaround be the other way around by
+	using -O1 and adding more explicit -O2 optimizations, just so we
+	don't lose very many optimizations. This is for sparclite
+
+1999-05-19  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/PKGconf.mak: Make below workaround be the other way around by
+	using -O1 and adding more explicit -O2 optimizations, just so we
+	don't lose very many optimizations. This is for ARM
+
+1999-05-18  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/PKGconf.mak: For the sparclite, prevent insn scheduling -
+	workaround for PR 19698
+
+1999-05-18  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/PKGconf.mak: For the ARM, change from -O1 to just prevent insn
+	scheduling - workaround for PR 19698
+
 1999-04-15  John Dallaway  <jld@cygnus.co.uk>
 
 	* include/pkgconf/libm.h: Tidy display string capitalization.

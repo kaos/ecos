@@ -41,65 +41,18 @@
 
 #include <cyg/hal/hal_intr.h>
 
+// Include HAL/Platform specifics
+#include CYGBLD_HAL_PLATFORM_H
+
 #ifdef CYGPKG_KERNEL
 #include <pkgconf/kernel.h>             // Need to look for the RTC config.
-
-// These are redefined below.
-#undef CYGNUM_KERNEL_COUNTERS_RTC_RESOLUTION
-#undef CYGNUM_KERNEL_COUNTERS_RTC_PERIOD
 #endif
 
-// -------------------------------------------------------------------------
-
-#if defined(CYG_HAL_MN10300_STDEVAL1)
-
-#define CYGNUM_KERNEL_COUNTERS_RTC_RESOLUTION   {1000000000, 100}
-#define CYGNUM_KERNEL_COUNTERS_RTC_PERIOD       150000
-
-#endif
-#if defined(CYG_HAL_MN10300_SIM)
-
-#define CYGNUM_KERNEL_COUNTERS_RTC_RESOLUTION   {1000000000, 100}
-#define CYGNUM_KERNEL_COUNTERS_RTC_PERIOD       9999
-
-#endif
-
-#if defined(CYG_HAL_MIPS_JMR3904)
-
-#define CYGNUM_KERNEL_COUNTERS_RTC_RESOLUTION   {1000000000, 100}
-#define CYGNUM_KERNEL_COUNTERS_RTC_PERIOD       15625
-
-#endif
-#if defined(CYG_HAL_MIPS_SIM)
-
-#define CYGNUM_KERNEL_COUNTERS_RTC_RESOLUTION   {1000000000, 1000}
-#define CYGNUM_KERNEL_COUNTERS_RTC_PERIOD       999
-
-#endif
-
-#if defined(CYG_HAL_POWERPC_COGENT)
-
-#define CYGNUM_KERNEL_COUNTERS_RTC_RESOLUTION   {1000000000, 100}
-#define CYGNUM_KERNEL_COUNTERS_RTC_PERIOD       20625
-
-#endif
-#if defined(CYGPKG_HAL_POWERPC_SIM)
-
-#define CYGNUM_KERNEL_COUNTERS_RTC_RESOLUTION   {1000000000, 100}
-#define CYGNUM_KERNEL_COUNTERS_RTC_PERIOD       999
-
-#endif
-
-#if defined(CYG_HAL_I386_LINUX)
-#define CYGNUM_KERNEL_COUNTERS_RTC_RESOLUTION   {1000000000, 100}
-#define CYGNUM_KERNEL_COUNTERS_RTC_PERIOD       10000
-#endif
-
-#ifndef CYGNUM_KERNEL_COUNTERS_RTC_RESOLUTION
-
-#define CYGNUM_KERNEL_COUNTERS_RTC_RESOLUTION   {1000000000, 100}
-#define CYGNUM_KERNEL_COUNTERS_RTC_PERIOD       9999
-
+// Fallback defaults (in case HAL didn't define these)
+#ifndef CYGNUM_HAL_RTC_NUMERATOR       
+#define CYGNUM_HAL_RTC_NUMERATOR     1000000000
+#define CYGNUM_HAL_RTC_DENOMINATOR   100
+#define CYGNUM_HAL_RTC_PERIOD        9999
 #endif
 
 // -------------------------------------------------------------------------

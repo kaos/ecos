@@ -136,13 +136,12 @@ hal_thread_load_context:
 	! sequence itself gets interrupted and recurses too deep.
 	
 	! now select the new window with traps disabled...
-					! preserve ET, clear CWP
-	andn	%g6, __WINBITS_MAXIMAL, %g6
-	andn	%g6, 0x20, %g5		! clear ET also into %g5
 
-	! get new CWP from %g0 save place...
-	ld	[%g7 + 16 * 4], %g4	! %g7 holds the new stack pointer
-	and	%g4, __WINBITS, %g4	! preserve CWP bits
+	! get the new PSR and CWP that we will ultimately restore
+	! from the %g0 save place...
+	ld	[%g7 + 16 * 4], %g6	! %g7 holds the new stack pointer
+	andn	%g6, 0x20, %g5		! clear ET into %g5
+	and	%g6, __WINBITS, %g4	! CWP bits only in %g4
 		
 	! calculate a new WIM...
 	add	%g4, 1, %g3		! required invalid window number
@@ -150,8 +149,8 @@ hal_thread_load_context:
 	mov	1, %g2
 	sll	%g2, %g3, %g2		! converted to a mask for the WIM
 
-	! DISABLE INTERRUPTS
-	wr	%g5, %g4, %psr		! set CWP to new window, disable traps
+	! DISABLE INTERRUPTS (TRAPS)
+	wr	%g5, %psr		! set CWP to new window, disable traps
 	wr	%g2, %wim		! and WIM to new value
 	nop
 	nop
@@ -172,14 +171,15 @@ hal_thread_load_context:
 	ldd	[%sp + 12 * 4], %i4
 	ldd	[%sp + 14 * 4], %i6
 
-	! ENABLE INTERRUPTS
-	wr	%g6, %g4, %psr		! set new CWP and old ET
+	! RESTORE INTERRUPTS to saved state
+	wr	%g6, %psr		! set new CWP and old ET and PIL
 	nop
 	nop
 	nop
 	
-	! now load the rest of the context; we can be interrupted here, but
-	! that is OK, other state will be preserved in that case...
+	! now load the rest of the context; we can be interrupted here
+	! (if the saved context was a voluntary yield or threadstart)
+	! but that is OK, other state will be preserved in that case...
 
 #ifdef CYGDBG_HAL_COMMON_CONTEXT_SAVE_MINIMUM
 	ld	[%sp + 24 * 4], %o0	! must load the initial argument

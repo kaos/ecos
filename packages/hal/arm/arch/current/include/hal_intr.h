@@ -158,6 +158,24 @@ typedef cyg_uint32 CYG_INTERRUPT_STATE;
         );
 
 //--------------------------------------------------------------------------
+// Routine to execute DSRs using separate interrupt stack
+
+#ifdef  CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+externC void hal_interrupt_stack_call_pending_DSRs(void);
+#define HAL_INTERRUPT_STACK_CALL_PENDING_DSRS() \
+    hal_interrupt_stack_call_pending_DSRs()
+
+// these are offered solely for stack usage testing
+// if they are not defined, then there is no interrupt stack.
+#define HAL_INTERRUPT_STACK_BASE cyg_interrupt_stack_base
+#define HAL_INTERRUPT_STACK_TOP  cyg_interrupt_stack
+// use them to declare these extern however you want:
+//       extern char HAL_INTERRUPT_STACK_BASE[];
+//       extern char HAL_INTERRUPT_STACK_TOP[];
+// is recommended
+#endif
+
+//--------------------------------------------------------------------------
 // Vector translation.
 
 #ifndef HAL_TRANSLATE_VECTOR

@@ -260,6 +260,12 @@ void __install_breakpoints ()
       *instrBuffer.targetAddr = __break_opcode ();
 //diag_printf("ta %08x si %08x *ta %08x\n",
 //            instrBuffer.targetAddr,instrBuffer.savedInstr,*instrBuffer.targetAddr);
+
+      /* Ensure that the planted breakpoint makes it out to memory and
+         is subsequently loaded into the instruction cache.
+      */
+      __data_cache (CACHE_FLUSH) ;
+      __instruction_cache (CACHE_FLUSH) ;
     }
 }
 

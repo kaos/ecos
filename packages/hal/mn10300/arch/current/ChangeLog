@@ -1,3 +1,13 @@
+1999-05-21  Hugo Tyson  <hmt@masala.cygnus.co.uk>
+
+	* include/hal_intr.h: Define HAL_INTERRUPT_STACK_BASE and
+	HAL_INTERRUPT_STACK_TOP so that stack usage macros in
+	kernel/.../stackmon.hxx can work.
+
+	* src/vectors.S (cyg_interrupt_stack_base): Define this symbol for
+	the interrupt stack and its friend for the stack top so that we
+	can publish them with nice names.
+
 1999-05-13  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* include/hal_arch.h (HAL_THREAD_INIT_CONTEXT): Align stack

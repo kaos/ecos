@@ -81,6 +81,11 @@ class Cyg_Interrupt;
 
 #include <cyg/hal/hal_intr.h>
 
+#ifndef HAL_INTERRUPT_STACK_CALL_PENDING_DSRS
+#define HAL_INTERRUPT_STACK_CALL_PENDING_DSRS()    \
+      Cyg_Interrupt::call_pending_DSRs_inner()
+#endif
+
 externC void interrupt_end(
     cyg_uint32          isr_ret,
     Cyg_Interrupt       *intr,

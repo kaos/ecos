@@ -136,10 +136,10 @@ hal_thread_init_context(  CYG_WORD sparg,
     // this is the argument that the entry point is called with
     regs->o[0] = thread;
 
-    // this is the initial CWP; quite arbitrary really, the WIM is set up
-    // accordingly in hal_thread_load_context().
+    // this is the initial CWP and interrupt state; CWP is quite arbitrary
+    // really, the WIM is set up accordingly in hal_thread_load_context().
 
-    regs->g[0] = 7;
+    regs->g[0] = 0x0e7; // PIL zero, ET, S, PS and CWP is 7.
 
     return (CYG_ADDRESS)sp;
 }

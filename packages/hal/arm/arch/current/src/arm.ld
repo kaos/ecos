@@ -59,11 +59,11 @@ GROUP(libtarget.a libgcc.a)
 
 #define SECTION_text(_region_, _vma_, _lma_) \
     .text _vma_ : _lma_ \
-    { _stext = ABSOLUTE(.); \
+    { stext = ABSOLUTE(.); \
     PROVIDE (__stext = ABSOLUTE(.)); \
     *(.text*) *(.gnu.warning) *(.gnu.linkonce*) *(.init) } \
     > _region_ \
-    __etext = .; PROVIDE (__etext = .);
+    etext = .; PROVIDE (__etext = .);
 
 #define SECTION_fini(_region_, _vma_, _lma_) \
     .fini _vma_ : _lma_ \

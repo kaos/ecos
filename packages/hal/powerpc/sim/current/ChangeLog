@@ -1,3 +1,7 @@
+1999-05-20  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/hal_powerpc_sim.h: Move RTC setup here.
+
 1999-04-28  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* include/pkgconf/mlt_powerpc_sim_ram.ldi: 

@@ -145,6 +145,7 @@ package CYGPKG_HAL_ARM_AEB {
 }
 
 
+
 package CYGPKG_HAL_I386 {
 	alias		{ "i386 common HAL" hal_i386 i386_hal i386_arch_hal }
 	directory	hal/i386/arch
@@ -221,6 +222,7 @@ package CYGPKG_HAL_POWERPC_SIM {
         include_dir	cyg/hal
 	hardware
 }
+
 
 package CYGPKG_HAL_SPARCLITE {
 	alias		{ "SPARClite common HAL" hal_sparclite sparclite_hal sparclite_arch_hal }

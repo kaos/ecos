@@ -1,3 +1,7 @@
+1999-05-20  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/hal_mn10300_stdeval1.h: Move RTC setup here.
+
 1999-04-08  John Dallaway  <jld@cygnus.co.uk>
 
 	* include/pkgconf/*.ldi: Revised SECTION_* macro arguments to

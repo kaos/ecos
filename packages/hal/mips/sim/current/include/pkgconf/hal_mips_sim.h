@@ -63,5 +63,12 @@
    }}CFG_DATA */
 
 /* -------------------------------------------------------------------*/
+
+// Real-time clock/counter specifics
+
+#define CYGNUM_HAL_RTC_NUMERATOR     1000000000
+#define CYGNUM_HAL_RTC_DENOMINATOR   100
+#define CYGNUM_HAL_RTC_PERIOD        999
+
 #endif  /* CYGONCE_PKGCONF_HAL_MIPS_SIM_H */
 /* EOF hal_mips_sim.h */

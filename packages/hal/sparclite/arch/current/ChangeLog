@@ -1,3 +1,29 @@
+1999-05-20  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/hal_intr.h (HAL_INTERRUPT_STACK_CALL_PENDING_DSRS): 
+	Define this if CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK;
+	ie. we are running a separate interrupt stack.  Also define
+	symbols for it so that we can monitor its usage easily.
+
+	* src/vec_ivsr.S (hal_interrupt_stack_call_pending_DSRs): Add this
+	function to run DSRs on the interrupt stack (if using it).  Switch
+	over to executing on the interrupt stack when needed.
+
+	* src/vectors.S (cyg_interrupt_stack_base): Define the interrupt
+	stack either if we need it as an interrupt stack or if we need it
+	as a bootup stack (simulator); if it's there, use it as a bootup
+	stack anyway.
+
+	* src/context.S (hal_thread_load_context): Install the PSR that
+	was saved in its entirety, including the interrupt and trap enable
+	state.  This is needed for running a separate interrupt stack, but
+	harmless when not so doing.
+
+	* src/icontext.c (hal_thread_init_context): Install an initial PSR
+	which includes ET, S and PS (Enable traps, Supermode, prevSuper)
+	and a PIL (processor interrupt level) of 15 (maximum)
+	so that a context switch which preserves interrupt mode will work.
+
 1999-05-13  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* include/hal_arch.h (HAL_THREAD_INIT_CONTEXT): Align stack
