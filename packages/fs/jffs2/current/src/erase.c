@@ -3,11 +3,11 @@
  *
  * Copyright (C) 2001-2003 Red Hat, Inc.
  *
- * Created by David Woodhouse <dwmw2@redhat.com>
+ * Created by David Woodhouse <dwmw2@infradead.org>
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: erase.c,v 1.64 2004/11/12 15:25:14 jwboyer Exp $
+ * $Id: erase.c,v 1.69 2004/12/06 10:17:48 dedekind Exp $
  *
  */
 
@@ -47,6 +47,7 @@ void jffs2_erase_block(struct jffs2_sb_info *c, struct jffs2_eraseblock *jeb)
 #else /* Linux */
 	struct erase_info *instr;
 
+	D1(printk(KERN_DEBUG "jffs2_erase_block(): erase block %#x (range %#x-%#x)\n", jeb->offset, jeb->offset, jeb->offset + c->sector_size));
 	instr = kmalloc(sizeof(struct erase_info) + sizeof(struct erase_priv_struct), GFP_KERNEL);
 	if (!instr) {
 		printk(KERN_WARNING "kmalloc for struct erase_info in jffs2_erase_block failed. Refiling block for later\n");
@@ -387,7 +388,7 @@ static void jffs2_mark_erased_block(struct jffs2_sb_info *c, struct jffs2_eraseb
 		jeb->dirty_size = 0;
 		jeb->wasted_size = 0;
 	} else {
-		struct iovec vecs[1];
+		struct kvec vecs[1];
 		struct jffs2_unknown_node marker = {
 			.magic =	cpu_to_je16(JFFS2_MAGIC_BITMASK),
 			.nodetype =	cpu_to_je16(JFFS2_NODETYPE_CLEANMARKER),

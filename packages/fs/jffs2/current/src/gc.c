@@ -3,11 +3,11 @@
  *
  * Copyright (C) 2001-2003 Red Hat, Inc.
  *
- * Created by David Woodhouse <dwmw2@redhat.com>
+ * Created by David Woodhouse <dwmw2@infradead.org>
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: gc.c,v 1.137 2004/07/20 13:44:55 dwmw2 Exp $
+ * $Id: gc.c,v 1.144 2004/12/21 11:18:50 dwmw2 Exp $
  *
  */
 
@@ -103,7 +103,7 @@ static struct jffs2_eraseblock *jffs2_find_gc_block(struct jffs2_sb_info *c)
 		ret->wasted_size = 0;
 	}
 
-	D1(jffs2_dump_block_lists(c));
+	D2(jffs2_dump_block_lists(c));
 	return ret;
 }
 
@@ -134,7 +134,7 @@ int jffs2_garbage_collect_pass(struct jffs2_sb_info *c)
 		if (c->checked_ino > c->highest_ino) {
 			printk(KERN_CRIT "Checked all inodes but still 0x%x bytes of unchecked space?\n",
 			       c->unchecked_size);
-			D1(jffs2_dump_block_lists(c));
+			D2(jffs2_dump_block_lists(c));
 			spin_unlock(&c->erase_completion_lock);
 			BUG();
 		}
@@ -602,7 +602,7 @@ static int jffs2_garbage_collect_pristine(struct jffs2_sb_info *c,
 			printk(KERN_NOTICE "Not marking the space at 0x%08x as dirty because the flash driver returned retlen zero\n", nraw->flash_offset);
                         jffs2_free_raw_node_ref(nraw);
 		}
-		if (!retried && (nraw == jffs2_alloc_raw_node_ref())) {
+		if (!retried && (nraw = jffs2_alloc_raw_node_ref())) {
 			/* Try to reallocate space and retry */
 			uint32_t dummy;
 			struct jffs2_eraseblock *jeb = &c->blocks[phys_ofs / c->sector_size];
@@ -628,6 +628,7 @@ static int jffs2_garbage_collect_pristine(struct jffs2_sb_info *c,
 			jffs2_free_raw_node_ref(nraw);
 		}
 
+		jffs2_free_raw_node_ref(nraw);
 		if (!ret)
 			ret = -EIO;
 		goto out_node;
@@ -637,10 +638,12 @@ static int jffs2_garbage_collect_pristine(struct jffs2_sb_info *c,
 
 	/* Link into per-inode list. This is safe because of the ic
 	   state being INO_STATE_GC. Note that if we're doing this
-	   for an inode which is in-code, the 'nraw' pointer is then
+	   for an inode which is in-core, the 'nraw' pointer is then
 	   going to be fetched from ic->nodes by our caller. */
+	spin_lock(&c->erase_completion_lock);
         nraw->next_in_ino = ic->nodes;
         ic->nodes = nraw;
+	spin_unlock(&c->erase_completion_lock);
 
 	jffs2_mark_node_obsolete(c, raw);
 	D1(printk(KERN_DEBUG "WHEEE! GC REF_PRISTINE node at 0x%08x succeeded\n", ref_offset(raw)));
@@ -828,7 +831,7 @@ static int jffs2_garbage_collect_deletion_dirent(struct jffs2_sb_info *c, struct
 				continue;
 			}
 			if (retlen != rawlen) {
-				printk(KERN_WARNING "jffs2_g_c_deletion_dirent(): Short read (%zd not %zd) reading header from obsolete node at %08x\n",
+				printk(KERN_WARNING "jffs2_g_c_deletion_dirent(): Short read (%zd not %u) reading header from obsolete node at %08x\n",
 				       retlen, rawlen, ref_offset(raw));
 				continue;
 			}

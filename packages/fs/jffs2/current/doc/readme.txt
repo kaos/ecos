@@ -15,13 +15,18 @@ io/flash/current/src/flash.c
 
 devs/flash/intel/strata/current/src/flash_program_buf.c
 
-to allow byte aligned rather than word aligned writes, and to ensure overwriting an existing
-word is successful (these are supplied in jffs2/current/src).
+to allow byte aligned rather than word aligned writes, and to ensure
+overwriting an existing word is successful (these are supplied in
+jffs2/current/src).
 
 
-Two test files are included fileio1.c (which performs the same tests as used for eCos RamFS),
-and romfileio1.c (tests as eCos RomFS).
+Three test files are included jffs2_1.c (which performs the same tests
+as used for eCos RamFS), jffs2_2.c (tests is seeking works) and jffs2_3.c
+(garbage collection and memory leak detection)
 
-romfileio1.c requires that a jffs2 filesystem image jffs2.img is present at the desired mount point.
-This image was prepared on Linux with the tools originating with JFFS2 source from
-www.infradead.org
+jffs2_2.c requires that a jffs2 filesystem image jffs2.img is present
+at the desired mount point.  This image was prepared on Linux with the
+tools originating with JFFS2 source from www.infradead.org. Note that
+this image is little endian and will only work on little endian
+targets. For big endian targets it will be necassary to generate a new
+image.
