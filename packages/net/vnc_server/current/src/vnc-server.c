@@ -94,6 +94,17 @@ void lwip_init(void);
 #define BLUE_SHIFT          0
 #endif
 
+#ifdef CYGNUM_VNC_SERVER_PIXEL_BGR233
+#define BITS_PER_PIXEL      8      /* Bits per pixel */
+#define PIXEL_DEPTH         8      /* Usefull bits per pixel */
+#define RED_MAX             7
+#define GREEN_MAX           7
+#define BLUE_MAX            3
+#define RED_SHIFT           0
+#define GREEN_SHIFT         3
+#define BLUE_SHIFT          6
+#endif
+
 #ifdef CYGNUM_VNC_SERVER_PIXEL_RGB555
 #define BITS_PER_PIXEL      16     /* Bits per pixel */
 #define PIXEL_DEPTH         15     /* Usefull bits per pixel */
@@ -226,6 +237,11 @@ vnc_frame_format_t frame_format = {CYGNUM_VNC_SERVER_FRAME_WIDTH,
                                    0,
 #endif
 #ifdef CYGNUM_VNC_SERVER_PIXEL_RGB565
+                                   1,
+#else
+                                   0,
+#endif
+#ifdef CYGNUM_VNC_SERVER_PIXEL_BGR233
                                    1};
 #else
                                    0};

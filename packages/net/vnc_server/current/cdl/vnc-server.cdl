@@ -168,9 +168,17 @@ cdl_package CYGPKG_VNC_SERVER {
         cdl_option CYGNUM_VNC_SERVER_PIXEL_RGB332 {
             display     "RGB332 pixel format (8-bit)"
             flavor bool
-            default_value 1
+            default_value 0
             implements CYGNUM_VNC_SERVER_PIXEL_SELECTED
             description "This selects 8-bit, RGB332 pixel format."
+        }
+
+        cdl_option CYGNUM_VNC_SERVER_PIXEL_BGR233 {
+            display     "BGR233 pixel format (8-bit)"
+            flavor bool
+            default_value 1
+            implements CYGNUM_VNC_SERVER_PIXEL_SELECTED
+            description "This selects 8-bit, BGR233 pixel format."
         }
 
         cdl_option CYGNUM_VNC_SERVER_PIXEL_RGB555 {

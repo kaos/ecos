@@ -1,3 +1,10 @@
+2003-09-01  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/vnc-server.c: 
+	* include/vnc-server.h: 
+	* cdl/vnc-server.cdl: Add support for BGR233 (8 bit) mode, since
+	newer viewers support this on all displays.
+
 2003-08-31  Chris Garry  <cgarry@sweeneydesign.co.uk>
 
     * src/vnc-server.c:
