@@ -1,3 +1,8 @@
+2004-02-23  Jeff Duncan  <jeffd@magtek.com>
+
+        * src/httpd.c (cyg_httpd_server): Fix http header by adding
+          newline after server name.
+
 2003-10-21  Eric Doenges <Eric.Doenges@DynaPel.com>
 
 	* src/monitor.c (cyg_monitor_memory): Check if the request

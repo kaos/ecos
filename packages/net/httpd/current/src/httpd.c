@@ -413,7 +413,7 @@ __externC void cyg_http_start( FILE *client, char *content_type,
                                int content_length )
 {
     fputs( "HTTP/1.1 200 OK\n"
-           "Server: " CYGDAT_HTTPD_SERVER_ID,
+           "Server: " CYGDAT_HTTPD_SERVER_ID "\n",
            client );
 
     if( content_type != NULL )
