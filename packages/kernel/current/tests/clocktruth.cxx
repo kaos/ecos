@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -66,7 +67,7 @@
 
 #ifdef CYGVAR_KERNEL_COUNTERS_CLOCK
 
-externC void diag_printf(const char *, ...);
+#include <cyg/infra/diag.h>
 
 #define NTHREADS 1
 #include "testaux.hxx"

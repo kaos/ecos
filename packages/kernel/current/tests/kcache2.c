@@ -76,8 +76,8 @@
 // Define this to enable a simple, but hopefully useful, data cache
 // test.  It may help discover if the cache support has been defined
 // properly (in terms of size and shape)
-#ifdef HAL_DCACHE_SIZE
-//#define _TEST_DCACHE_OPERATION
+#ifdef HAL_DCACHE_LINE_SIZE
+#define _TEST_DCACHE_OPERATION
 #endif
 
 static cyg_handle_t thread[NTHREADS];
@@ -315,6 +315,7 @@ test_dcache_operation(void)
 {
     long *lp = (long *)m;
     int i, errs;
+    cyg_uint32 oldints;
 
     CYG_TEST_INFO("Data cache basic");
 
@@ -329,6 +330,8 @@ test_dcache_operation(void)
     HAL_DCACHE_INVALIDATE_ALL();
     HAL_DCACHE_ENABLE();
     // Now push data through the cache
+    // Note: 256 seems like a reasonable offset.  It may be useful to actually
+    // compute this (and the size of the test region) based on cache geometry
     for (i = 256;  i < 256+HAL_DCACHE_SIZE/sizeof(*lp);  i++) {
         lp[i] = 0xFF000000 + i;
     }
@@ -355,8 +358,11 @@ test_dcache_operation(void)
             }
         }
     }
+    CYG_TEST_CHECK(0 == errs, "dcache basic failed");
+#if 0 // Additional information
     diag_printf("%d total errors during compare\n", errs);
     diag_dump_buf(&lp[240], 128);
+#endif
     HAL_RESTORE_INTERRUPTS(oldints);
 }
 #endif
@@ -818,9 +824,6 @@ static void time_dlock(void)
 static void entry0( cyg_addrword_t data )
 {
     int numtests = 0;
-#ifdef _TEST_DCACHE_OPERATION
-    test_dcache_operation();
-#endif
 #ifdef HAL_DCACHE_QUERY_WRITE_MODE
     int wmode;
 #endif
@@ -835,6 +838,9 @@ static void entry0( cyg_addrword_t data )
 #endif
 #ifdef HAL_DCACHE_STORE
     test_dstore(); numtests++;
+#endif
+#ifdef _TEST_DCACHE_OPERATION
+    test_dcache_operation(); numtests++;
 #endif
 #ifdef HAL_DCACHE_READ_HINT
     test_dread_hint(); numtests++;
