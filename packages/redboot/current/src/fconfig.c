@@ -768,8 +768,8 @@ void
 flash_write_config(bool prompt)
 {
 #if defined(CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_FLASH)
-    void *err_addr;
 #if !defined(CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG)
+    void *err_addr;
     int stat;
 #endif
 #endif
