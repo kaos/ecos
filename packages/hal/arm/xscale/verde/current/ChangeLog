@@ -1,3 +1,7 @@
+2004-09-24  Drew Moseley  <drew.moseley@intel.com>
+
+       * src/verde_misc.c: Fix typo in drain-write-buffer command.
+
 2003-07-18  Nick Garnett  <nickg@balti.calivar.com>
 
 	* cdl/hal_arm_xscale_verde.cdl:

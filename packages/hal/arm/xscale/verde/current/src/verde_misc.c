@@ -140,7 +140,7 @@ _scrub_ecc(unsigned p)
 	        IACR_PBI(IACR_PRI_OFF)  | IACR_CORE(IACR_PRI_HIGH);
 
     // drain write buffer
-    asm volatile ("mrc  p15,0,r1,c7,c10,4\n");
+    asm volatile ("mcr  p15,0,r1,c7,c10,4\n");
     CPWAIT();
 
     asm volatile ("ldrb r4, [%0]\n"
