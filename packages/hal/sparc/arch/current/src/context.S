@@ -131,6 +131,7 @@ hal_thread_load_context:
 	rd	%psr, %g6
 	or	%g6, 0xfe0, %g5		! PIL up to 15 leave traps enabled
 	wr	%g5, %psr
+	nop; nop; nop
 	
 	! force out all our callers register sets onto the stack
 	! if necessary:	the system will handily take care of this for
@@ -263,6 +264,7 @@ hal_setjmp:
 	! DISABLE INTERRUPTS *ONLY* NOT TRAPS
 	or	%g7, 0xfe0, %g6		! PIL up to 15 leave traps enabled
 	wr	%g6, %psr
+	nop; nop; nop
 	
 	! force out all our callers register sets onto the stack
 	! if necessary:	the system will handily take care of this for

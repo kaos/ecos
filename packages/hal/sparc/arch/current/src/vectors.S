@@ -369,21 +369,11 @@ real_vector_instructions:
 
 	! genuine reset code called from time zero:
 genuine_reset:				! set psr, mask interrupts & traps
-	wr	%g0, 0xfc0 + __WIN_INIT, %psr
-	nop				! mode = prevMode = S, CWP=7
-	nop
-	nop
-	wr	%g0, 0, %wim		! No invalid windows (yet)
-	nop
-	nop
-	nop
-
 	sethi	%hi(reset_vector), %g1
 	andn	%g1, 0xfff, %g1		! should not be needed
 	wr	%g1, %tbr		! Traps are at reset_vector
-	nop
-	nop
-	nop
+	wr	%g0, 0xfc0 + __WIN_INIT, %psr ! mode = prevMode = S, CWP=7
+	wr	%g0, 0, %wim		! No invalid windows (yet)
 #ifdef CYGHWR_HAL_SPARC_HAS_ASR17
 #ifdef CYGHWR_HAL_SPARC_MULTIPLE_VECTOR_TRAPPING
 	wr	%g0, 0, %asr17		! Multiple vector trapping
