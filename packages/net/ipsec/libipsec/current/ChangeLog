@@ -1,3 +1,10 @@
+2004-01-05  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* doc/prepare-manpages.sh: Shorten sect1 id's to make them more
+	acceptable to default jade installations.
+
+	* doc/libipsec-manpages.sgml: Regenerate.
+
 2003-11-22  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* Import of the KAME libipsec library. This is from the snapshot

@@ -30,7 +30,7 @@ do
     # note that _ is illegal in an id, so we canonicalize it to -
     docbook_section_id=`echo $manpage_title | sed 's/_/-/g'`
     # now prepare out a section and title
-    echo "  <sect1 id=\"net-ipsec-common-libipsec-manpages-$docbook_section_id\">" >> libipsec-manpages.sgml
+    echo "  <sect1 id=\"net-ipsec-libipsec-man-$docbook_section_id\">" >> libipsec-manpages.sgml
     echo "    <title>$manpage_title</title>" >> libipsec-manpages.sgml
     # we make it <screen> so that it is a monospaced font
     echo "    <screen>" >> libipsec-manpages.sgml

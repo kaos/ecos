@@ -8,10 +8,10 @@
   <title>libipsec Reference</title>
 
 
-  <sect1 id="net-ipsec-common-libipsec-manpages-ipsec-set-policy">
+  <sect1 id="net-ipsec-libipsec-man-ipsec-set-policy">
     <title>ipsec_set_policy</title>
     <screen>
-IPSEC_SET_POLICY(3)      BSD Library Functions Manual      IPSEC_SET_POLICY(3)
+IPSEC_SET_POLICY(3)     System Library Functions Manual    IPSEC_SET_POLICY(3)
 
 NAME
      ipsec_set_policy, ipsec_get_policylen, ipsec_dump_policy - manipulate
@@ -136,10 +136,10 @@ KAME                              May 5, 1998                             KAME
     </screen>
   </sect1>
 
-  <sect1 id="net-ipsec-common-libipsec-manpages-ipsec-strerror">
+  <sect1 id="net-ipsec-libipsec-man-ipsec-strerror">
     <title>ipsec_strerror</title>
     <screen>
-IPSEC_STRERROR(3)        BSD Library Functions Manual        IPSEC_STRERROR(3)
+IPSEC_STRERROR(3)       System Library Functions Manual      IPSEC_STRERROR(3)
 
 NAME
      ipsec_strerror - error message for IPsec policy manipulation library
