@@ -13,7 +13,7 @@ cdl_configuration eCos {
     template    redboot ;
     package -hardware CYGPKG_HAL_ARM current ;
     package -hardware CYGPKG_HAL_ARM_AT91 current ;
-    package -hardware CYGPKG_DEVS_FLASH_AT91 current ;
+    package -hardware CYGPKG_DEVS_FLASH_EB40 current ;
     package -template CYGPKG_HAL current ;
     package -template CYGPKG_INFRA current ;
     package -template CYGPKG_REDBOOT current ;

@@ -1,3 +1,7 @@
+2003-08-05  Thomas Koeller <thomas.koeller@baslerweb.com>
+
+	* misc/redboot_*.ecm: Updated to use the new eb40 flash drive.
+	
 2003-07-15  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/hal_platform_ints.h (HAL_PLATFORM_RESET): Actually use
