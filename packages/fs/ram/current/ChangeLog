@@ -1,3 +1,7 @@
+2004-03-15  Sebastien Couret <sebastien.couret@elios-informatique.fr>
+
+	* src/ramfs.c (block_init): Fixed compiler warning.
+
 2004-02-20  Vincent Catros  <Vincent.Catros@elios-informatique.fr>
 
 	* src/ramfs.c :

@@ -551,7 +551,7 @@ static ramfs_block *block_free_list = NULL;
 
 #ifdef CYGPKG_FS_RAM_BLOCKS_ARRAY
 
-static void block_init()
+static void block_init(void)
 {
     static cyg_bool initialized = false;
     int i;
