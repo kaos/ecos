@@ -1,3 +1,8 @@
+2002-06-25  Gary Thomas  <gary@chez-thomas.org>
+
+	* src/redboot_linux_exec.c:
+	* cdl/hal_powerpc_viper.cdl: Add Linux boot (exec) command.
+
 2002-06-24  Gary Thomas  <gary@chez-thomas.org>
 
 	* misc/redboot_ROMRAM.ecm: Update for new FLASH chips.

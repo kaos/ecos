@@ -42,7 +42,7 @@
 #
 # Author(s):      jskov
 # Original data:  hmt
-# Contributors:
+# Contributors:   gthomas
 # Date:           1999-11-02
 #
 #####DESCRIPTIONEND####
@@ -332,6 +332,16 @@ cdl_package CYGPKG_HAL_POWERPC_VIPER {
             This option lists the target's requirements for a valid Redboot
             configuration."
 
+        cdl_option CYGSEM_REDBOOT_HAL_LINUX_BOOT {
+            display        "Support booting Linux via RedBoot"
+            flavor         bool
+            default_value  1
+            description    "
+               This option enables RedBoot to support booting of a Linux kernel."
+
+            compile -library=libextras.a redboot_linux_exec.c
+        }
+
         cdl_option CYGBLD_BUILD_REDBOOT_BIN {
             display       "Build Redboot ROM binary image"
             active_if     CYGBLD_BUILD_REDBOOT
@@ -341,7 +351,7 @@ cdl_package CYGPKG_HAL_POWERPC_VIPER {
                          image to a binary image suitable for ROM programming."
 
 #            compile -library=libextras.a redboot_cmds.c
-    
+ 
             make -priority 325 {
                 <PREFIX>/bin/redboot.bin : <PREFIX>/bin/redboot.elf
                 $(OBJCOPY) --strip-debug $< $(@:.bin=.img) 
