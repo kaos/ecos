@@ -320,7 +320,11 @@ struct sockaddr_in {
  */
 struct ip_opts {
 	struct	in_addr ip_dst;		/* first hop, 0 w/o src rt */
-	char	ip_opts[40];		/* actually variable in size */
+#if defined(__cplusplus)
+	int8_t		Ip_opts[40];	/* cannot have same name as class */
+#else
+	int8_t		ip_opts[40];	/* actually variable in size */
+#endif
 };
 
 /*
