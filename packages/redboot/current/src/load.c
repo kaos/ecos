@@ -77,7 +77,10 @@ static char usage[] = "[-r] [-v] "
 #ifdef CYGBLD_BUILD_REDBOOT_WITH_ZLIB
                       "[-d] "
 #endif
-                      "[-h <host>] [-m <varies>] "
+#ifdef CYGPKG_REDBOOT_NETWORKING
+                      "[-h <host>] [-p <TCP port>]"
+#endif
+                      "[-m <varies>] "
 #if CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS > 1
                       "[-c <channel_number>] "
 #endif
@@ -298,7 +301,7 @@ load_elf_image(getc_t getc, unsigned long base)
     unsigned long addr_offset = 0;
     unsigned long highest_address = 0;
     unsigned long lowest_address = 0xFFFFFFFF;
-    unsigned char *SHORT_DATA = "Short data reading ELF file";
+    unsigned char *SHORT_DATA = "Short data reading ELF file\n";
 
     // Read the header
     if (_read(getc, (unsigned char *)&ehdr, sizeof(ehdr)) != sizeof(ehdr)) {
