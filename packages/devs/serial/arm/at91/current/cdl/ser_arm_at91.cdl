@@ -62,7 +62,6 @@ cdl_package CYGPKG_IO_SERIAL_ARM_AT91 {
     description   "
            This option enables the serial device drivers for the
            Atmel AT91 (EB40)."
-    doc           redirect/ecos-device-drivers.html
 
     compile       -library=libextras.a   at91_serial.c
 
