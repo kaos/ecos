@@ -1,3 +1,7 @@
+2003-07-01  Michael Checky  <Michael_Checky@ThermoKing.com>
+
+	* src/diag.cxx: Added support for the 'z' qualifier in format strings.
+
 2003-05-05  Gary Thomas  <gary@mlbassoc.com>
 
 	* cdl/infra.cdl: Add option to control number of times tests run.

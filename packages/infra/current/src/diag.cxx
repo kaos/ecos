@@ -345,6 +345,10 @@ _vprintf(void (*putc)(char c, void **param), void **param, const char *fmt, va_l
                     islonglong = 1;
                 }
             }
+            if (c == 'z') {
+                c = *fmt++;
+		islong = sizeof(size_t) == sizeof(long);
+            }
             // Fetch value [numeric descriptors only]
             switch (c) {
             case 'p':
