@@ -2007,6 +2007,7 @@ package CYGPKG_IO_SPI {
         alias      { "Generic SPI support" spi io_spi spi_io }
         directory  io/spi
         script     spi.cdl
+        hardware
         description "
           The generic SPI package provides an API for accessing devices
           attached to an SPI bus. It also provides support for writing
