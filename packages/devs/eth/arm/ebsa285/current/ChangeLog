@@ -1,3 +1,9 @@
+2002-10-06  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/devs_eth_ebsa285.inl: EBSA has the ethernet devices
+	multiplexed onto one interrupt. This got losted when generalising
+	the driver.
+
 2002-05-14  Jesper Skov  <jskov@redhat.com>
 
 	* include/devs_eth_ebsa285.inl: Fix warnings.

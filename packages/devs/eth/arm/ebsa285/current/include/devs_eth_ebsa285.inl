@@ -57,38 +57,16 @@
 // support SDRAM with gaps in it.
 #define CYGHWR_DEVS_ETH_INTEL_I82559_PCIMEM_DISCONTIGUOUS
 
-// Interrupts are wire-or'd together.
-#if 1 < CYGNUM_DEVS_ETH_INTEL_I82559_DEV_COUNT
-#define CYGHWR_DEVS_ETH_INTEL_I82559_DEMUX_ALL
-#endif // multiple devs, so demux_all needed
-
-// define multiple interrupt handling anyway:
-//? #define CYGHWR_DEVS_ETH_INTRS (SA11X0_GPIO_PIN_10)
-
-// This brings in code to ensure missed interrupts are properly
-// acknowledged so that another interrupt can occur in future.
-// Only a problem with edge-triggered systems.
-
-/* #define CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT(p_i82559) \
-     (CYGHWR_DEVS_ETH_INTRS != (CYGHWR_DEVS_ETH_INTRS & *SA11X0_GPIO_PIN_LEVEL))
-*/
+// Interrupts are multiplex onto one interrupt pin.
+#define CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT \
+          CYGNUM_HAL_INTERRUPT_PCI_IRQ
 
 // This brings on code to perform a selective reset on the device if the CU
 // wedges.
 
 #define CYGHWR_DEVS_ETH_INTEL_I82559_DEAD_TO (368640) // 0.1S of OS timer
 
-/*  #define CYGHWR_DEVS_ETH_INTEL_I82559_RESET_TIMEOUT( anon_uint ) \
-    CYG_MACRO_START                                                 \
-        (anon_uint) = *SA11X0_OSCR;                                 \
-    CYG_MACRO_END
-*/
-
-/*  #define CYGHWR_DEVS_ETH_INTEL_I82559_TIMEOUT_FIRED( anon_uint )         \
-      ((*SA11X0_OSCR - (anon_uint)) > CYGHWR_DEVS_ETH_INTEL_I82559_DEAD_TO)
-*/
-
-// The mask on an SA1110 is really an enable: 1 => enabled, 0 => masked.
+// The mask on an SA110 is really an enable: 1 => enabled, 0 => masked.
 // So to behave nestedly, we only need save the old value of the bits
 // of interest.
 
