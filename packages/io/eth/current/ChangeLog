@@ -1,3 +1,8 @@
+2002-07-31  Gary Thomas  <gary@chez-thomas.org>
+
+	* src/net/eth_drv.c (eth_drv_start): Fix compile error when
+	built with old stack (no multicast) - introduced below.
+
 2002-07-26  Gary Thomas  <gary@chez-thomas.org>
 2002-07-26  Ken Cox <jkc@redhat.com>
 

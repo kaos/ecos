@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -410,15 +411,17 @@ static void
 eth_drv_start(struct eth_drv_sc *sc)
 {
     struct ifnet *ifp = &sc->sc_arpcom.ac_if;
-    int s;
+
     // Perform any hardware initialization
     (sc->funs->start)(sc, (unsigned char *)&sc->sc_arpcom.ac_enaddr, 0);
+#ifdef CYGPKG_NET_FREEBSD_STACK
     // resend multicast addresses if present
     if(ifp->if_multiaddrs.lh_first && ifp->if_ioctl) {
-      	s = splimp();
+        int s = splimp();
 	ifp->if_ioctl(ifp, SIOCADDMULTI, 0);
 	splx(s);
     }
+#endif
     // Set 'running' flag, and clear output active flag.
     ifp->if_flags |= IFF_RUNNING;
     ifp->if_flags &= ~IFF_OACTIVE;
