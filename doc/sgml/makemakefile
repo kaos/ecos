@@ -68,15 +68,17 @@ cat >ecos.sgml <<EOF
 <!ENTITY lt SDATA "[lt    ]">
 EOF
 
+PACKAGEVER=${1:-'current'}
+
 for i in `cat doclist`; do
   line="`echo $i | sed 's/#.*//;'`"
   if (test ! -z $line); then
-   /bin/echo -n " ../../packages/$i" >> makefile
+   /bin/echo -n " ../../packages/$i" | sed "s@/current/@/${PACKAGEVER}/@g" >> makefile
    entityi="`echo $i | sed 's@/@-@g; s@\.@-@g; s@_@-@g; s@-current-doc@@g; s@-current@@g'`"
-   echo "<!ENTITY $entityi SYSTEM \"../../packages/$i\">" >> ecos.sgml
+   echo "<!ENTITY $entityi SYSTEM \"../../packages/$i\">" | sed "s@/current/@/${PACKAGEVER}/@g" >> ecos.sgml
   fi
 done
-echo "<!ENTITY hal-common-current-doc-porting-sgml SYSTEM \"../../packages/hal/common/current/doc/porting.sgml\">" >> ecos.sgml
+echo "<!ENTITY hal-common-current-doc-porting-sgml SYSTEM \"../../packages/hal/common/${PACKAGEVER}/doc/porting.sgml\">" >> ecos.sgml
 
 cat >> makefile <<EOF
 

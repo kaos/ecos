@@ -1,3 +1,8 @@
+2003-01-22  John Dallaway  <jld@ecoscentric.com>
+
+	* sgml/makemakefile: Allow eCos package version to be specified
+	(when not "current") as the first command line parameter.
+
 2003-01-04  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* sgml/makemakefile: Oops, use new entity consistently in generated
