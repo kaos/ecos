@@ -430,7 +430,7 @@ static void block_reached_bottom(nstate *state)
 			state->level++;
 		draw_score(state);
 		y++;
-		nr:
+        nr: ;
 	}
 
 	choose_new_shape(state);
@@ -700,7 +700,6 @@ static int random8(int limit)
 
 static void choose_new_shape(nstate *state)
 {
-    diag_printf("%s - state: %x\n", __FUNCTION__, state);
 	state->current_shape.type = state->next_shape.type;
 	state->current_shape.orientation = state->next_shape.orientation;
 	state->current_shape.colour = state->next_shape.colour;
@@ -975,7 +974,7 @@ int main(int argc, char *argv[])
 {
 	nstate *state = my_malloc(sizeof(nstate));
 
-        printf("state = %x\n", state);
+        bzero(state, sizeof(*state));
 	init_game(state);
 	main_game_loop(state);
 

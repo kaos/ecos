@@ -1,3 +1,9 @@
+2003-10-24  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/demos/nanox/ntetris.c (main): Start with a good known
+	state (by zeroing) - otherwise, the results are unpredictable
+	and often crash.
+
 2003-09-03  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/ecos/nanox_thread.c (nanox_thread): Fill in program
