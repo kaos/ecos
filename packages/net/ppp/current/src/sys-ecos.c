@@ -1654,6 +1654,8 @@ externC cyg_int32 cyg_ppp_options_init( cyg_ppp_options_t *options )
     options->flowctl            = CYG_PPP_FLOWCTL_HARDWARE;
     options->refuse_pap         = 0;
     options->refuse_chap        = 0;
+    options->neg_accm           = 0;
+    options->conf_accm          = 0;
 
     options->baud               = CYGNUM_SERIAL_BAUD_115200;
     
@@ -1747,6 +1749,8 @@ externC void cyg_ppp_options_install( const cyg_ppp_options_t *options )
     flowctl             = options->flowctl;
     refuse_pap          = options->refuse_pap;
     refuse_chap         = options->refuse_chap;
+    neg_accm            = options->neg_accm;
+    conf_accm           = options->conf_accm;
 
     inspeed             = options->baud;
     

@@ -220,8 +220,10 @@ lcp_init(unit)
 					   implementations */
     wo->neg_mru = 1;
     wo->mru = DEFMRU;
-    wo->neg_asyncmap = 0;
-    wo->asyncmap = 0;
+
+    wo->neg_asyncmap = cyg_ppp_neg_accm; /* Set flag to enable ACCM negotiation */
+    wo->asyncmap = cyg_ppp_conf_accm;    /* Set ACCM based on configured value */
+
     wo->neg_chap = 0;			/* Set to 1 on server */
     wo->neg_upap = 0;			/* Set to 1 on server */
     wo->chap_mdtype = CHAP_DIGEST_MD5;

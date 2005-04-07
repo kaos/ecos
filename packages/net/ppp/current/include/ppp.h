@@ -95,11 +95,13 @@ typedef struct
         modem           : 1,            /* Use modem control lines */
         flowctl         : 2,            /* Flow control, see below */
         refuse_pap      : 1,	        /* Don't wanna auth. ourselves with PAP */
-	refuse_chap     : 1	        /* Don't wanna auth. ourselves with CHAP */
+        refuse_chap     : 1,	        /* Don't wanna auth. ourselves with CHAP */
+        neg_accm        : 1             /* Flag to enable ACCM negotiation */
         ;
 
     cyg_serial_baud_rate_t      baud;   /* serial line baud rate */
     
+    int         conf_accm;              /* Configurable value of ACCM */
     int	        idle_time_limit;        /* Shut down link if idle for this long */
     int         maxconnect;             /* Maximum connect time (seconds) */
 

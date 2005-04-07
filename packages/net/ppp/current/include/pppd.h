@@ -148,6 +148,8 @@ extern int	maxconnect;	/* Maximum connect time (seconds) */
 extern char	user[];		/* Our name for authenticating ourselves */
 extern char	passwd[];	/* Password for PAP */
 extern int	auth_required;	/* Peer is required to authenticate */
+extern int	neg_accm;	/* Flag to enable ACCM negotiation */
+extern int	conf_accm;	/* Configurable value of ACCM */
 extern int	proxyarp;	/* Set up proxy ARP entry for peer */
 extern int	persist;	/* Reopen link after it goes down */
 extern int	uselogin;	/* Use /etc/passwd for checking PAP */

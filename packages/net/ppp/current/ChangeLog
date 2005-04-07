@@ -13,6 +13,20 @@
 	required according to RFC 1662, but found to be necessary to
 	interwork with some broken implementations.
 
+2004-12-01    Murali Parvathaneni <murkrisp@yahoo.com>
+
+	* include/ppp.h: Add options to negotiate ACCM in
+	cyg_ppp_options_t structure.
+	* include/pppd.h: Make ACCM negotiation fields externally
+	available.
+	* include/names.h: Redefine neg_accm and conf_accm with cyg_ppp_
+	prefix.
+	* src/pppd.c: Define storage for ACCM and a flag for ACCM
+	negotiation.
+	* src/sys-ecos.c: Initialize and set parameters to negotiate ACCM
+	based on the configuration option.
+	* src/lcp.c: Set WantOptions (wo) to negotiate ACCM.
+	
 2004-08-19  Oyvind Harboe <oyvind.harboe@zylin.com>
 2004-09-08  Andrew Lunn <andrew.lunn@ascom.ch>
 	

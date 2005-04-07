@@ -207,6 +207,8 @@
 #define quit cyg_ppp_quit
 #define refuse_chap cyg_ppp_refuse_chap
 #define refuse_pap cyg_ppp_refuse_pap
+#define neg_accm cyg_ppp_neg_accm
+#define conf_accm cyg_ppp_conf_accm
 #define remote_name cyg_ppp_remote_name
 #define s_env_nalloc cyg_ppp_s_env_nalloc
 #define script cyg_ppp_script

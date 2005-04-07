@@ -162,6 +162,8 @@ int	idle_time_limit = 60;   /* Shut down link if idle for this long */
 int	holdoff = 0;	        /* Dead time before restarting */
 int	refuse_pap = 0;	        /* Don't wanna auth. ourselves with PAP */
 int	refuse_chap = 0;	/* Don't wanna auth. ourselves with CHAP */
+int	neg_accm = 0;	        /* Flag to enable ACCM negotiation */
+int	conf_accm = 0;	        /* Confgurable value of ACCM */
 
 const char    **script;               /* Chat connection script */
 
@@ -256,11 +258,11 @@ cyg_pppd_main(CYG_ADDRWORD arg)
 
     phase = PHASE_INITIALIZE;
 
+    cyg_ppp_options_install( ((struct tty *)arg)->options );
+
     for (i = 0; (protp = protocols[i]) != NULL; ++i)
         (*protp->init)(0);
 
-    cyg_ppp_options_install( ((struct tty *)arg)->options );
-    
     if (!ppp_available()) {
 	option_error(no_ppp_msg);
 	exit(1);
