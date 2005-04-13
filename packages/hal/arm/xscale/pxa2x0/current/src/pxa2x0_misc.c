@@ -233,7 +233,7 @@ int hal_IRQ_handler(void)
                         return index+96;
                     }
                     index++;
-                } while (index < 16);
+                } while (index < 21);
 
             }
             return index;
