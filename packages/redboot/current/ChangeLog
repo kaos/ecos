@@ -1,3 +1,8 @@
+2005-04-11  Peter Korsgaard  <jacmet@sunsite.dk>
+
+	* src/flash.c (find_free): Correctly split chunks in two when
+	not final chunk.
+
 2005-03-07 Alexander Neundorf <alexander.neundorf@jenoptik.com>
 
         * src/net/arp.c: use correct sizeof(rt->enet_addr) in
