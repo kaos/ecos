@@ -54,8 +54,6 @@
 
 // There's a single AM29LV320D on the phycore board.
 
-#define CYGHWR_DEVS_FLASH_AMD_AM29LV320D
-
 #define CYGNUM_FLASH_INTERLEAVE	(1)
 #define CYGNUM_FLASH_WIDTH      (16)
 #define CYGNUM_FLASH_SERIES	(1)
