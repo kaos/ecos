@@ -381,6 +381,16 @@ package CYGPKG_DEVS_FLASH_JTST {
 	   on the Atmel JTST platform(s)."
 }
 
+package CYGPKG_DEVS_FLASH_PHYCORE {
+	alias 		{ "FLASH memory support for PHYTEC phyCORE AT91M55800A" flash_phycore }
+	directory	devs/flash/arm/phycore
+	script		flash_phycore.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the PHYTEC phyCORE AT91M55800A platform(s)."
+}
+
 package CYGPKG_DEVS_FLASH_ASSABET {
 	alias 		{ "FLASH memory support for Intel SA1110 (Assabet)" flash_assabet }
 	directory	devs/flash/arm/assabet
@@ -2454,6 +2464,16 @@ package CYGPKG_HAL_ARM_AT91_EB55 {
         Atmel evaluation board (EB55)."
 }
 
+package CYGPKG_HAL_ARM_AT91_PHYCORE {
+	alias		{ "PHYTEC evaluation board (phyCORE AT91M55800A)" hal_arm_at91_phycore arm_at91_phycore_hal }
+	directory	hal/arm/at91/phycore
+	script		hal_arm_at91_phycore.cdl
+	hardware
+        description "
+	The phyCORE HAL package provides the support needed to run eCos on 
+        an PHYTEC evaluation board (phyCORE AT91M55800A based on HD200)."
+} 
+
 package CYGPKG_HAL_ARM_LPC2XXX {
         alias           { "Philips LPC2XXX variant HAL" hal_arm_lpc2xxx arm_lpc2xxx_hal }
         directory       hal/arm/lpc2xxx/var
@@ -4120,6 +4140,22 @@ target eb55 {
         description "
 	The eb55 target provides the packages needed to run eCos on an Atmel
 	evaluation board (EB55)."
+}
+
+target phycore {
+	alias { "PHYTEC evaluation board (phyCORE AT91M55800A)" at91_phycore }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_AT91
+                   CYGPKG_HAL_ARM_AT91_PHYCORE
+                   CYGPKG_DEVS_FLASH_PHYCORE
+                   CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
+                   CYGPKG_IO_SERIAL_ARM_AT91
+                   CYGPKG_DEVICES_WATCHDOG_ARM_AT91
+        }
+        description "
+	The phyCORE AT91M55800A target provides the packages needed to 
+        run eCos on an PHYTEC evaluation board (phycore AT91M55800A based 
+        on HD200)."
 }
 
 target mcb2100 {
