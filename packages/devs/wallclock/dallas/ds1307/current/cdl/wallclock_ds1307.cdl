@@ -10,6 +10,7 @@
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 ## Copyright (C) 2003 Gary Thomas
+## Copyright (C) 2004 eCosCentric Ltd
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -70,7 +71,15 @@ cdl_package CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS1307 {
         implements    CYGINT_WALLCLOCK_IMPLEMENTATIONS
     }
 
-
+    cdl_interface CYGINT_DEVICES_WALLCLOCK_DALLAS_DS1307_I2C {
+	display		"Access DS1307 device via the I2C API"
+	flavor		bool
+	description "
+            This interface will be implemented if the platform supports
+            the standard I2C API and the platform HAL exports an I2C
+            device cyg_i2c_wallclock_ds1307."
+    }
+    
     cdl_component CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS1307_OPTIONS {
         display "DS1307 wallclock build options"
         flavor  none

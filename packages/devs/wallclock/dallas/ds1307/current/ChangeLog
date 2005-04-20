@@ -1,3 +1,10 @@
+2004-10-09  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/ds1307.sgml: add package documentation
+	
+	* src/ds1307.cxx, cdl/wallclock_ds1307.cdl: use the generic I2C
+	API rather than ad-hoc macros, if supported.
+
 2003-09-19  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/ds1307.cxx: 
@@ -7,6 +14,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 2004 eCosCentric Ltd.	
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under

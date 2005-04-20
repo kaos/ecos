@@ -1,0 +1,126 @@
+<!-- DOCTYPE refentry  PUBLIC "-//OASIS//DTD DocBook V3.1//EN" -->
+
+<!-- {{{ Banner                         -->
+
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!--     ds1307.sgml                                                 -->
+<!--                                                                 -->
+<!--     Documentation for the ds1307 wallclock driver               -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- ####COPYRIGHTBEGIN####                                          -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- Copyright (C) 2004 eCosCentric Limited.                         -->
+<!-- This material may be distributed only subject to the terms      -->
+<!-- and conditions set forth in the Open Publication License, v1.0  -->
+<!-- or later (the latest version is presently available at          -->
+<!-- http://www.opencontent.org/openpub/)                            -->
+<!-- Distribution of the work or derivative of the work in any       -->
+<!-- standard (paper) book form is prohibited unless prior           -->
+<!-- permission obtained from the copyright holder                   -->
+<!-- =============================================================== -->
+<!--                                                                 -->      
+<!-- ####COPYRIGHTEND####                                            -->
+<!-- =============================================================== -->
+<!-- =============================================================== -->
+<!-- #####DESCRIPTIONBEGIN####                                       -->
+<!--                                                                 -->
+<!-- Author(s):   bartv                                              -->
+<!-- Contact(s):  bartv                                              -->
+<!-- Date:        2004/10/09                                         -->
+<!-- Version:     0.01                                               -->
+<!--                                                                 -->
+<!-- ####DESCRIPTIONEND####                                          -->
+<!-- =============================================================== -->
+
+<!-- }}} -->
+
+<part id="devs-wallclock-dallas-ds1307-part"><title>Dallas DS1307 Wallclock Device Driver</title>
+
+<refentry id="devs-wallclock-dallas-ds1307">
+  <refmeta>
+    <refentrytitle>Dallas DS1307 Wallclock Device Driver</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname><varname>CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS1307</varname></refname>
+    <refpurpose>eCos Support for the Dallas DS1307 Serial Real-Time Clock</refpurpose>
+  </refnamediv>
+
+  <refsect1 id="devs-wallclock-dallas-ds1307-description"><title>Description</title>
+    <para>
+This package
+<varname>CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS1307</varname> provides a
+device driver for the wallclock device in the Dallas DS1307 Serial
+Real-Time Clock chips. This combines a real-time clock and 56 bytes of
+battery-backed RAM in a single package. The driver can also be used
+with any other chips that provide the same interface to the clock
+hardware.
+    </para>
+    <para>
+The package will usually be loaded into the configuration
+automatically whenever selecting a target which contains a compatible
+chip. By default it will provide the standard eCos wallclock device,
+although another implementation such as software emulation may be
+selected if desired. The only other configuration options related to
+this package allow users to change the compiler flags. If the
+application does not actually use the wallclock device, directly or
+indirectly, then the code should get removed automatically at
+link-time to ensure that the application does not suffer any
+unnecessary overheads.
+    </para>
+  </refsect1>
+
+  <refsect1 id="devs-wallclock-dallas-ds1307-functions"><title>Functionality</title>
+    <para>
+This wallclock device driver package implements the standard
+functionality required by the generic wallclock support
+<varname>CYGPKG_IO_WALLCLOCK</varname>. The functionality is not
+normally accessed directly. Instead it is used by the C library time
+package to implement standard calls such as <function>time</function>
+and <function>gmtime</function>. The eCos C library also provides a
+non-standard function <function>cyg_libc_time_settime</function> for
+changing the current wallclock setting. In addition RedBoot provides
+a <command>date</command> command which interacts with the wallclock
+device.
+    </para>
+  </refsect1>
+
+  <refsect1 id="devs-wallclock-dallas-ds1307-porting"><title>Porting</title>
+    <para>
+DS1307 platform support can be implemented in one of two ways. The
+preferred approach involves the generic I2C API, as defined by the
+package <varname>CYGPKG_IO_I2C</varname>. The platform HAL can just
+provide a <structname>cyg_i2c_device</structname> structure
+<varname>cyg_i2c_wallclock_ds1307</varname> and implement the CDL
+interface
+<varname>CYGINT_DEVICES_WALLCLOCK_DALLAS_DS1307_I2C</varname>. The
+DS1307 driver will now use I2C rx and tx operations to interact with
+the chip.
+    </para>
+    <para>
+Alternatively the DS1307 driver can use macros or functions provided
+by another package to access the chip. This is intended primarily for
+older platforms that predate the <varname>CYGPKG_IO_I2C</varname>
+package. The other package should export a header file containing
+macros <function>DS_GET</function> and <function>DS_PUT</function>
+that transfer the eight bytes corresponding to the chip's clock
+registers. It should also export the name of this header via a
+<literal>#define</literal>
+<varname>CYGDAT_DEVS_WALLCLOCK_DS1307_INL</varname> in the global
+configuration header <filename
+class="headerfile">pkgconf/system.h</filename>. For full details see
+the source code.
+    </para>
+    <para>
+In addition the DS1307 device driver package
+<varname>CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS1307</varname> should be
+included in the CDL target entry so that it gets loaded automatically
+whenever eCos is configured for that target.
+    </para>
+  </refsect1>
+
+</refentry>
+
+</part>
