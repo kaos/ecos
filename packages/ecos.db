@@ -10,8 +10,8 @@
 #####ECOSGPLCOPYRIGHTBEGIN####
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2004, 2005 eCosCentric Limited
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-## Copyright (C) 2004 eCosCentric Limited
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -2083,6 +2083,18 @@ package CYGPKG_IO_SPI {
           The generic SPI package provides an API for accessing devices
           attached to an SPI bus. It also provides support for writing
           bus drivers and for defining SPI device structures."
+}
+
+package CYGPKG_IO_I2C {
+        alias           { "Generic I2C support" i2c io_i2c i2c_io }
+        directory       io/i2c
+        script          i2c.cdl
+        hardware
+        description "
+            The generic I2C package provides an API for accessing devices
+            attached to an I2C bus. It specifies how I2C bus drivers should
+            be written and how I2C devices should be defined. There is also
+            support for bit-banged I2C buses."
 }
 
 package CYGPKG_KERNEL {
