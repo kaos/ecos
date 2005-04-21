@@ -203,6 +203,15 @@ cdl_package CYGPKG_REDBOOT {
                         This CDL indicates whether flash images can
                         be decompressed from gzip/zlib format into RAM."
             }
+
+            cdl_option CYGBLD_BUILD_REDBOOT_WITH_GUNZIP {
+                 display       "Include GZIP uncompress command"
+                 default_value 0
+                 description   "
+                        Enable this option to include a 'gunzip' command 
+                        to uncompress GZIP compressed data."
+                 compile -library=libextras.a gunzip.c
+            }
         }
 
         cdl_option CYGBLD_BUILD_REDBOOT_WITH_XYZMODEM {

@@ -863,6 +863,8 @@ Manage configuration kept in FLASH memory
    fconfig [-i] [-l] [-n] [-f] [-d] | [-d] nickname [value]
 Execute code at a location
    go [-w &lt;timeout&gt;] [entry]
+Uncompress GZIP compressed data
+   gunzip -s &lt;location&gt; -d &lt;location&gt;
 Help about help?
    help [&lt;topic&gt;]
 Read I/O location
@@ -1083,6 +1085,68 @@ RedBoot> <userinput>iopoke -b 0x200 -v 0x123 -2</userinput>
     </refsect1>
   </refentry>
 
+<!-- ******** gunzip *************************************************** -->
+  <refentry id="gunzip-command">
+  <refnamediv>
+    <refname>gunzip</refname>
+    <refpurpose>Uncompress GZIP compressed data</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>gunzip</command>
+      <arg choice="req">-s <replaceable>source</replaceable></arg>
+	  <arg choice="req">-d <replaceable>destination</replaceable></arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>      
+  <refsect1>
+    <title>Arguments</title>
+    <informaltable frame="all">
+      <tgroup cols="4" colsep="1" rowsep="1" align="left">
+        <colspec colname="c1">
+        <colspec colname="c2">
+        <colspec colname="c3">
+        <colspec colname="c4">
+        <thead>
+          <row>
+            <entry>Name</entry>
+            <entry>Type</entry>
+            <entry>Description</entry>
+            <entry>Default</entry>
+          </row>
+        </thead>
+        <tbody>
+	      <row>
+	        <entry>-s <replaceable>location1</replaceable></entry>	     
+	        <entry>Memory address</entry>
+	        <entry>Location of GZIP compressed data to uncompress.</entry>
+	        <entry>Value set by last <command>load</command> or <command>fis load</command> command.</entry>	     
+	      </row>
+	      <row>
+	        <entry>-d <replaceable>location2</replaceable></entry>
+	        <entry>Memory address</entry>
+	        <entry>Destination to write uncompressed data to.</entry>	     
+	        <entry><emphasis>none</emphasis></entry>	     
+	      </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </refsect1>
+  <refsect1>
+    <title>Description</title>
+      <para>Uncompress GZIP compressed data.</para>
+  </refsect1>
+  <refsect1>
+    <title>Examples</title>
+    <para>
+Uncompress data at location 0x100000 to 0x200000.
+<screen> 
+RedBoot> <userinput>gunzip -s 0x100000 -d 0x200000</userinput>
+Decompressed 38804 bytes
+</screen> 
+</para>
+    </refsect1>
+  </refentry>
+
 <!-- ******** ip_address *************************************************** -->
   <refentry id="ip-address-command">
     <refnamediv>
@@ -1092,6 +1156,7 @@ RedBoot> <userinput>iopoke -b 0x200 -v 0x123 -2</userinput>
     <refsynopsisdiv>
       <cmdsynopsis>
 	<command>ip_address</command>
+        <arg>-b</arg>
 	<arg>-l <replaceable> local_IP_address</replaceable>
 	<arg choice=opt>/<replaceable>netmask_length</replaceable></arg> </arg>
 	<arg>-h <replaceable> server_IP_address</replaceable></arg>
@@ -1116,6 +1181,12 @@ DNS_server_IP_address</replaceable></arg>
 	    </row>
 	  </thead>
 	  <tbody>
+            <row>
+              <entry>-b</entry>
+              <entry>Boolean</entry>
+              <entry>Obtain an IP address using BOOTP or DHCP.</entry>
+              <entry>don't use BOOTP/DHCP</entry>
+            </row>
 	    <row>
 	      <entry>-l <replaceable>
 local_IP_address</replaceable><option>[<replaceable>/netmask_length</replaceable>]</option></entry>	     
@@ -1150,6 +1221,9 @@ DNS_server_IP_address</replaceable></entry>
 addresses used by RedBoot. IP addresses may be given as numeric
 values, e.g. 192.168.1.67, or as symbolic names such as www.redhat.com
 if DNS support is enabled.
+      </para>
+      <para>
+The <option>-b</option> option is used to cause the target to perform a bootp or dhcp negotiation to get an IP address.
       </para>
       <para>
 The <option>-l</option> option is used to set the IP address used by

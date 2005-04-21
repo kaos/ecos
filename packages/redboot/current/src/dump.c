@@ -121,7 +121,7 @@ do_dump(int argc, char *argv[])
         while (off < len) {
             n = (len > 16) ? 16 : len;
             cksum = n+5;
-            diag_printf("S3%02X%08X", n+5, off+base);
+            diag_printf("S3%02X%08lX", n+5, off+base);
             for (i = 0;  i < 4;  i++) {
                 cksum += (((base+off)>>(i*8)) & 0xFF);
             }

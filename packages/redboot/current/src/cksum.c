@@ -83,7 +83,7 @@ do_cksum(int argc, char *argv[])
 	    load_address < load_address_end) {
 	    base = load_address;
 	    len = load_address_end - load_address;
-            diag_printf("Computing cksum for area %p-%p\n",
+            diag_printf("Computing cksum for area %lx-%lx\n",
                         base, load_address_end);
 	} else {
 	    diag_printf("usage: cksum -b <addr> -l <length>\n");

@@ -770,11 +770,17 @@ net_init(void)
             }
         }
     } else {
-        enet_addr_t enet_addr;
-        have_net = true;  // Assume values in FLASH were OK
-        // Tell the world that we are using this fixed IP address
-        if (__arp_request((ip_addr_t *)__local_ip_addr, &enet_addr, 1) >= 0) {
-            diag_printf("Warning: IP address %s in use\n", inet_ntoa((in_addr_t *)&__local_ip_addr));
+        if (__local_ip_addr[0] == 0 && __local_ip_addr[1] == 0 &&
+            __local_ip_addr[2] == 0 && __local_ip_addr[3] == 0) {
+            show_eth_info();
+            diag_printf("No IP info for device!\n");
+        } else {
+            enet_addr_t enet_addr;
+            have_net = true;  // Assume values in FLASH were OK
+            // Tell the world that we are using this fixed IP address
+            if (__arp_request((ip_addr_t *)__local_ip_addr, &enet_addr, 1) >= 0) {
+                diag_printf("Warning: IP address %s in use\n", inet_ntoa((in_addr_t *)&__local_ip_addr));
+            }
         }
     }
     if (have_net) {
@@ -795,7 +801,11 @@ net_init(void)
     }
 }
 
-static char usage[] = "[-l <local_ip_address>[/<mask_len>]] [-h <server_address>]";
+static char usage[] = "[-b] [-l <local_ip_address>[/<mask_len>]] [-h <server_address>]"
+#ifdef CYGPKG_REDBOOT_NETWORKING_DNS
+	" [-d <dns_server_address]"
+#endif
+        ;
 
 // Exported CLI function
 static void do_ip_addr(int argc, char *argv[]);
@@ -808,9 +818,10 @@ RedBoot_cmd("ip_address",
 void 
 do_ip_addr(int argc, char *argv[])
 {
-    struct option_info opts[3];
+    struct option_info opts[4];
     char *ip_addr, *host_addr;
     bool ip_addr_set, host_addr_set;
+    bool do_bootp = false;
     struct sockaddr_in host;
 #ifdef CYGPKG_REDBOOT_NETWORKING_DNS
     char *dns_addr;
@@ -822,9 +833,11 @@ do_ip_addr(int argc, char *argv[])
               (void *)&ip_addr, (bool *)&ip_addr_set, "local IP address");
     init_opts(&opts[1], 'h', true, OPTION_ARG_TYPE_STR, 
               (void *)&host_addr, (bool *)&host_addr_set, "default server address");
-    num_opts = 2;
+    init_opts(&opts[2], 'b', false, OPTION_ARG_TYPE_FLG,
+              &do_bootp, 0, "use BOOTP");
+    num_opts = 3;
 #ifdef CYGPKG_REDBOOT_NETWORKING_DNS
-    init_opts(&opts[2], 'd', true, OPTION_ARG_TYPE_STR, 
+    init_opts(&opts[num_opts], 'd', true, OPTION_ARG_TYPE_STR, 
               (void *)&dns_addr, (bool *)&dns_addr_set, "DNS server address");
     num_opts++;
 #endif
@@ -833,6 +846,11 @@ do_ip_addr(int argc, char *argv[])
 
     if (!scan_opts(argc, argv, 1, opts, num_opts, 0, 0, "")) {
         return;
+    }
+    if (do_bootp) {
+        if (__bootp_find_local_ip(&my_bootp_info) != 0) {
+            diag_printf("Failed to get BOOTP address\n");
+        }
     }
     if (ip_addr_set) {
 #ifdef CYGSEM_REDBOOT_NETWORKING_USE_GATEWAY

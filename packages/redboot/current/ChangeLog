@@ -1,3 +1,25 @@
+2005-04-21  Ian Campbell  <icampbell@arcom.com>
+
+	* src/net/net_io.c (net_init): Don't initialize the network if we
+	don't have an IP address.
+
+	* src/net/net_io.c (do_ip_addr): Add a '-b' option to obtain IP
+	address using BOOTP/DHCP.
+
+	* doc/redboot_cmds.sgml: Document the new '-b' option to the
+	'ip_address' command.
+	
+2005-04-17  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/alias.c (lookup_alias): Fix compiler warnings about formats
+	* src/cksum.c (do_cksum): Ditto
+	* src/dump.c  (do_dump): Ditto	
+
+2005-04-07  Peter Korsgaard  <jacmet@sunsite.dk>
+
+	* cdl/redboot.cdl, doc/redboot_cmds.sgml, src/gunzip.c: Added
+	gunzip command to uncompress GZIP compressed data.	
+
 2005-04-11  Peter Korsgaard  <jacmet@sunsite.dk>
 
 	* src/flash.c (find_free): Correctly split chunks in two when
