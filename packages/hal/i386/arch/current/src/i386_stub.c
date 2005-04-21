@@ -46,7 +46,7 @@
 
 // We need a local memcpy so we don't rely on libc.
 static inline void*
-memcpy(void* dest, void* src, int size)
+local_memcpy(void* dest, void* src, size_t size)
 {
     unsigned char* __d = (unsigned char*) dest;
     unsigned char* __s = (unsigned char*) src;
@@ -419,7 +419,7 @@ cyg_hal_stub_process_query (char *pkt, char *buf, int bufsize)
 	    if (rdmsr(val1, msrval))
 		__mem2hex ((char*)msrval, buf, 8, 0);
 	    else
-		memcpy (buf, "INVALID", 8);
+		local_memcpy (buf, "INVALID", 8);
         }
 	return 1;
     }
@@ -440,7 +440,7 @@ get_register_as_bytes (regnames_t which, char *value)
     // Read the currently selected MSR
     if (which == REG_MSR) {
 	if (rdmsr(_which_msr, _msrval)) {
-	    memcpy (value, _msrval, REGSIZE(which));
+	    local_memcpy (value, _msrval, REGSIZE(which));
 	    return 1;
 	}
 	return 0;
@@ -453,15 +453,15 @@ get_register_as_bytes (regnames_t which, char *value)
         // GDB requires these to be sent base first though the CPU stores them
 	// limit first in 6 bytes. Weird.
         offset = reg_offset(which);
-        memcpy (value, (char *)_registers + offset + 2, 4);
-        memcpy (value + 4, (char *)_registers + offset, 2);
+        local_memcpy (value, (char *)_registers + offset + 2, 4);
+        local_memcpy (value + 4, (char *)_registers + offset, 2);
         return 1;
     }
 #endif
 
     offset = reg_offset(which);
     if (offset != -1) {
-	memcpy (value, (char *)_registers + offset, REGSIZE(which));
+	local_memcpy (value, (char *)_registers + offset, REGSIZE(which));
 	return 1;
     }
     return 0;
@@ -486,15 +486,15 @@ put_register_as_bytes (regnames_t which, char *value)
         // GDB sends these base first, though the CPU stores them
 	// limit first. Weird.
         offset = reg_offset(which);
-        memcpy ((char *)_registers + offset + 2, value, 4);
-        memcpy ((char *)_registers + offset, value + 4, 2);
+        local_memcpy ((char *)_registers + offset + 2, value, 4);
+        local_memcpy ((char *)_registers + offset, value + 4, 2);
         return 1;
     }
 #endif
 
     offset = reg_offset(which);
     if (offset != -1) {
-	memcpy ((char *)_registers + offset, value, REGSIZE(which));
+	local_memcpy ((char *)_registers + offset, value, REGSIZE(which));
 	return 1;
     }
     return 0;
@@ -591,14 +591,14 @@ void hal_get_gdb_registers(CYG_ADDRWORD *dest, HAL_SavedRegisters * s)
 #ifdef CYGHWR_HAL_I386_FPU
 #ifdef CYGHWR_HAL_I386_FPU_SWITCH_LAZY
     asm volatile ("fnop\n");  // force state save
-    memcpy(&d->fcw, &s->fpucontext->fpstate[0], sizeof(s->fpucontext->fpstate));
+    local_memcpy(&d->fcw, &s->fpucontext->fpstate[0], sizeof(s->fpucontext->fpstate));
 #ifdef CYGHWR_HAL_I386_PENTIUM_SSE
-    memcpy(&d->xmm0[0], &s->fpucontext->xmm0[0], (16 * 8) + 4);
+    local_memcpy(&d->xmm0[0], &s->fpucontext->xmm0[0], (16 * 8) + 4);
 #endif
 #else
-    memcpy(&d->fcw, &s->fpucontext.fpstate[0], sizeof(s->fpucontext.fpstate));
+    local_memcpy(&d->fcw, &s->fpucontext.fpstate[0], sizeof(s->fpucontext.fpstate));
 #ifdef CYGHWR_HAL_I386_PENTIUM_SSE
-    memcpy(&d->xmm0[0], &s->fpucontext.xmm0[0], (16 * 8) + 4);
+    local_memcpy(&d->xmm0[0], &s->fpucontext.xmm0[0], (16 * 8) + 4);
 #endif
 #endif
 #endif
@@ -642,14 +642,14 @@ void hal_set_gdb_registers(HAL_SavedRegisters * d, CYG_ADDRWORD * src)
     d->eflags = s->ps;
 #ifdef CYGHWR_HAL_I386_FPU
 #ifdef CYGHWR_HAL_I386_FPU_SWITCH_LAZY
-    memcpy(&d->fpucontext->fpstate[0], &s->fcw, sizeof(d->fpucontext->fpstate));
+    local_memcpy(&d->fpucontext->fpstate[0], &s->fcw, sizeof(d->fpucontext->fpstate));
 #ifdef CYGHWR_HAL_I386_PENTIUM_SSE
-    memcpy(&d->fpucontext->xmm0[0], &s->xmm0[0], (16 * 8) + 4);
+    local_memcpy(&d->fpucontext->xmm0[0], &s->xmm0[0], (16 * 8) + 4);
 #endif
 #else
-    memcpy(&d->fpucontext.fpstate[0], &s->fcw, sizeof(d->fpucontext.fpstate));
+    local_memcpy(&d->fpucontext.fpstate[0], &s->fcw, sizeof(d->fpucontext.fpstate));
 #ifdef CYGHWR_HAL_I386_PENTIUM_SSE
-    memcpy(&d->fpucontext.xmm0[0], &s->xmm0[0], (16 * 8) + 4);
+    local_memcpy(&d->fpucontext.xmm0[0], &s->xmm0[0], (16 * 8) + 4);
 #endif
 #endif
 #endif

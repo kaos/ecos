@@ -1,5 +1,9 @@
 2005-04-21  David Vrabel  <dvrabel@arcom.com>
 
+	* src/i386_stub.c: Rename the local memcpy function to
+	local_memcpy so it doesn't conflict with later GCC's built-in
+	memcpy.
+
 	* src/i386.ld: Add .2ram section.
 
 2005-04-17  Andrew Lunn  <andrew.lunn@ascom.ch>
