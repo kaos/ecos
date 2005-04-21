@@ -1,3 +1,9 @@
+2005-04-21  Ian Campbell  <icampbell@arcom.com>
+
+	* src/redboot_linux_exec.c: Added -t option which takes the
+	physical address to copy to. Very useful for booting non-Linux
+	operating systems.
+
 2005-03-03  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/redboot_linux_exec.c (CYGARC_HAL_MMU_OFF_X): Fix compiler

@@ -92,7 +92,7 @@ RedBoot_cmd("exec",
             "Execute an image - with MMU off", 
             "[-w timeout] [-b <load addr> [-l <length>]]\n"
             "        [-r <ramdisk addr> [-s <ramdisk length>]]\n"
-            "        [-c \"kernel command line\"] [<entry_point>]",
+            "        [-c \"kernel command line\"] [-t <target> ] [<entry_point>]",
             do_exec
     );
 
@@ -307,6 +307,7 @@ static void
 do_exec(int argc, char *argv[])
 {
     unsigned long entry;
+    unsigned long target;
     unsigned long oldints;
     bool wait_time_set;
     int  wait_time, res, num_opts;
@@ -331,6 +332,7 @@ do_exec(int argc, char *argv[])
     }
     // Default physical entry point for Linux is kernel base.
     entry = (unsigned long)CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS;
+    target = (unsigned long)CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS;
 
     base_addr = load_address;
     length = load_address_end - load_address;
@@ -350,9 +352,11 @@ do_exec(int argc, char *argv[])
               (void **)&ramdisk_addr, (bool *)&ramdisk_addr_set, "ramdisk_addr");
     init_opts(&opts[5], 's', true, OPTION_ARG_TYPE_NUM, 
               (void **)&ramdisk_size, (bool *)&ramdisk_size_set, "ramdisk_size");
-    num_opts = 6;
+    init_opts(&opts[6], 't', true, OPTION_ARG_TYPE_NUM,
+              &target, 0, "[physical] target address");
+    num_opts = 7;
 #ifdef CYGHWR_REDBOOT_LINUX_EXEC_X_SWITCH
-    init_opts(&opts[6], 'x', false, OPTION_ARG_TYPE_FLG, 
+    init_opts(&opts[num_opts], 'x', false, OPTION_ARG_TYPE_FLG, 
               (void **)&swap_endian, 0, "swap endianess");
     ++num_opts;
 #endif
@@ -398,8 +402,8 @@ do_exec(int argc, char *argv[])
         unsigned char *hold_script = script;
         script = (unsigned char *)0;
 #endif
-        diag_printf("About to start execution at %p - abort with ^C within %d seconds\n",
-                    (void *)entry, wait_time);
+        diag_printf("About to start execution of image at %p, entry point %p - abort with ^C within %d seconds\n",
+                    (void *)target, (void *)entry, wait_time);
         while (script_timeout_ms >= CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT) {
             res = _rb_gets(line, sizeof(line), CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT);
             if (res == _GETS_CTRLC) {
@@ -514,7 +518,7 @@ do_exec(int argc, char *argv[])
         "r"(CYGARC_PHYSICAL_ADDRESS(base_addr)),
         "r"(length),
         "r"(CYGHWR_REDBOOT_ARM_MACHINE_TYPE),
-        "r"(CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS),
+        "r"(target),
         "r"(CYGARC_PHYSICAL_ADDRESS(CYGHWR_REDBOOT_ARM_TRAMPOLINE_ADDRESS)),
         "r"(CYGARC_PHYSICAL_ADDRESS(CYGHWR_REDBOOT_ARM_LINUX_TAGS_ADDRESS))
         : "r0", "r1"
