@@ -132,7 +132,8 @@ GROUP(libtarget.a libgcc.a)
       /* We want the small data sections together, so single-instruction */ \
       /* offsets can access them all, and initialized data all before    */ \
       /* uninitialized, so we can shorten the on-disk segment size.      */ \
-    _SDATA_START_ = ABSOLUTE(.); *(.sdata*) }                                \
+    _SDATA_START_ = ABSOLUTE(.); *(.sdata*)                                 \
+    . = ALIGN (4); *(.2ram.*) }                                             \
     > _region_                                                              \
     __rom_data_start = LOADADDR(.data);                                     \
     __ram_data_end = .; PROVIDE(__ram_data_end = .);                        \
