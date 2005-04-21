@@ -199,7 +199,6 @@ zcfree(void *opaque, void *ptr)
     diag_printf("%s(%p) = 0x%x bytes\n", __FUNCTION__, ptr, bp->size);
 #endif
 
-    bp = (struct _block *)((char *)ptr - sizeof(struct _block));
     while(bp->next && bp->next->magic == 0) {
 #ifdef DEBUG_ZLIB_MALLOC
         diag_printf("  merging %08p and %08p (after)\n", bp, bp->next);

@@ -8,6 +8,10 @@
 
 	* doc/redboot_cmds.sgml: Document the new '-b' option to the
 	'ip_address' command.
+
+	* src/decompress.c (zcfree): Remove unnecessary variable
+        reinitialisation.
+
 	
 2005-04-17  Andrew Lunn  <andrew.lunn@ascom.ch>
 
