@@ -201,7 +201,7 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_IXP425 {
 	compile -library=libextras.a ixp425_redboot.c
 
         # RedBoot details
-        requires { CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS_DEFAULT != 0 }
+        requires { !CYGPKG_REDBOOT_BUILD_WITH_EXEC || CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS_DEFAULT != 0 }
         define_proc {
             puts $::cdl_header "#define CYGHWR_REDBOOT_ARM_TRAMPOLINE_ADDRESS 0x00001f00"
             puts $::cdl_header "#define HAL_FLASH_READ(a,b,c,d) hal_flash_read((a),(b),(c),(d))"

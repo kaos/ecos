@@ -1,3 +1,9 @@
+2005-04-21  David Vrabel  <dvrabel@arcom.com>
+
+	* cdl/hal_arm_xscale_ixp425.cdl: Only require
+	CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS_DEFAULT if the exec command
+	is included.
+
 2004-11-05  David Vrabel  <dvrabel@arcom.com>
 
 	* src/ixp425_redboot.c: Put #ifdef CYGPKG_IO_FLASH around flash
