@@ -7,6 +7,7 @@ io/fileio/current/doc/fileio.sgml
 io/pci/current/doc/pci.sgml
 io/flash/current/doc/flash.sgml
 io/spi/current/doc/spi.sgml
+io/i2c/current/doc/i2c.sgml
 compat/posix/current/doc/posix.sgml
 compat/uitron/current/doc/uitron.sgml
 net/common/current/doc/tcpip.sgml
@@ -39,3 +40,4 @@ devs/usb/sa11x0/current/doc/usbs_sa11x0.sgml
 devs/usb/nec_upd985xx/current/doc/usbs_upd985xx.sgml
 devs/eth/synth/ecosynth/current/doc/syntheth.sgml
 devs/watchdog/synth/current/doc/synth_watchdog.sgml
+devs/wallclock/dallas/ds1307/current/doc/ds1307.sgml

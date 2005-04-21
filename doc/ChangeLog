@@ -1,3 +1,7 @@
+2005-04-21  Bart Veer  <bartv@ecoscentric.com>
+
+	* sgml/doclist: add I2C and DS1307 documentation
+
 2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* sgml/doclist: added memalloc documentation.
