@@ -544,7 +544,7 @@ before the transaction is ended.
     </para>
   </refsect1>
 
-  <refsect1 id="i2c-api_initialization"><title>Initialization</title>
+  <refsect1 id="i2c-api-initialization"><title>Initialization</title>
     <para>
 The generic package <varname>CYGPKG_IO_I2C</varname> arranges for all
 I2C bus devices to be initialized via a single prioritized C++ static

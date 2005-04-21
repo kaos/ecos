@@ -1,3 +1,7 @@
+2005-04-21  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* doc/i2c.sgml: Replaced a _ with a - to keep jade happy.
+
 2005-03-03  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/i2c.cxx: cope with ports which define HAL_DELAY_US() in
