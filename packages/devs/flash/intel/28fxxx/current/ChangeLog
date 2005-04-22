@@ -1,3 +1,8 @@
+2005-04-22  David Vrabel  <dvrabel@arcom.com>
+
+	* cdl/flash_intel_28fxxx.cdl, include/flash_28fxxx_parts.inl: Add
+	Intel 28F800B5-T and 28F800B5-B parts.
+	
 2002-12-12  Gary Thomas  <gthomas@ecoscentric.com>
 2002-12-12  Patrick Doyle <wpd@delcomsys.com>
 

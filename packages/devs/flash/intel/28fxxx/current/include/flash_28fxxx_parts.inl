@@ -209,6 +209,43 @@
     },
 #endif
 
+#ifdef CYGHWR_DEVS_FLASH_INTEL_28F800B5
+    {   // 28F800B5-T
+        device_id  : FLASHWORD(0x889c),
+        block_size : 0x20000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 8,
+        device_size: 0x100000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x100000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        locking    : false,
+        buffered_w : false,
+        bootblock  : true,
+        bootblocks : { 0xE0000,
+                       0x18000,
+                       0x2000,
+                       0x2000,
+                       0x4000
+                     },
+        banked     : false
+    },
+    {   // 28F800B5-B
+        device_id  : FLASHWORD(0x889d),
+        block_size : 0x20000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 8,
+        device_size: 0x100000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x100000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        locking    : false,
+        buffered_w : false,
+        bootblock  : true,
+        bootblocks : { 0x00000,
+                       0x4000,
+                       0x2000,
+                       0x2000,
+                       0x18000
+                     },
+        banked     : false
+    },
+#endif
+
 #endif // 16 bit devices
 
 
