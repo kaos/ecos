@@ -170,7 +170,7 @@ cyg_hal_plf_serial_init_channel(void* __ch_data)
     HAL_READ_UINT8(base+CYG_DEV_LSR, lsr);
     ((channel_data_t*)__ch_data)->valid = (lsr != 0xFF);
     
-//    HAL_WRITE_UINT8(base+CYG_DEV_FCR, 0x07);  // Enable & clear FIFO
+    HAL_WRITE_UINT8(base+CYG_DEV_FCR, 0x07);  // Enable & clear FIFO
 }
 
 //-----------------------------------------------------------------------------
