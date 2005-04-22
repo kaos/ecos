@@ -1,3 +1,7 @@
+2005-04-22  Ian Campbell  <icampbell@arcom.com>
+
+	* include/hal_pxa2x0.h: OSCC was incorrectly name CSCC.
+
 2005-04-12  Alexander Neundorf <alexander.neundorf@jenoptik.com>
 
 	* src/pxa2x0_misc.c (hal_IRQ_handler): also check interrupt bits 
