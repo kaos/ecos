@@ -1,3 +1,9 @@
+2005-04-22  David Vrabel  <dvrabel@arcom.com>
+
+	* cdl/hal_i386.cdl (CYGHWR_REDBOOT_I386_TRAMPOLINE_ADDRESS): Don't
+	require CYGINT_HAL_I386_PCMB_SCREEN_SUPPORT so we can use the exec
+	command on platforms without a screen.
+
 2005-04-21  David Vrabel  <dvrabel@arcom.com>
 
 	* src/i386_stub.c: Rename the local memcpy function to

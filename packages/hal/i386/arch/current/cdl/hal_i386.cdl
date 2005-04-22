@@ -176,10 +176,12 @@ cdl_package CYGPKG_HAL_I386 {
         compile -library=libextras.a redboot_linux_exec.c 
 
         cdl_option CYGHWR_REDBOOT_I386_TRAMPOLINE_ADDRESS {
-            display       "Provide the trampoline address into Linux"
+            display       "Address for the trampoline code"
             flavor        data
             default_value 0x7C000
-            requires      CYGINT_HAL_I386_PCMB_SCREEN_SUPPORT
+            description   "This is the address to where the trampoline code is
+                           copied.  The trampoline copies the image to its
+                           final location and jumps to its entry point."
         }
     }
 }
