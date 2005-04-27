@@ -1,3 +1,11 @@
+2005-04-21	Matt Jerdonek <maj1224@yahoo.com>
+
+	* src/ipcp.c:
+	* src/sys-ecos.c: Move ipcp wantoptions initialization from
+	  cyg_ppp_options_install to ipcp_init.  This fixes a bug
+	  with default route operation introduced in the ACCM 
+	  enhancement on 2004-12-1.
+
 2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/ppp_up.c: Change the prototype of pr_func to match 

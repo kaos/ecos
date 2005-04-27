@@ -87,6 +87,7 @@
 #include "cyg/ppp/pppd.h"
 #include "cyg/ppp/fsm.h"
 #include "cyg/ppp/ipcp.h"
+#include "cyg/ppp/ppp_io.h"
 
 #define option_error(msg) db_printf("Option error: %s\n", msg )
 
@@ -229,6 +230,9 @@ ipcp_init(unit)
     wo->vj_protocol = IPCP_VJ_COMP;
     wo->maxslotindex = MAX_STATES - 1; /* really max index */
     wo->cflag = 1;
+    wo->ouraddr     = ppp_tty.options->our_address;
+    wo->hisaddr     = ppp_tty.options->his_address;
+    wo->default_route = ppp_tty.options->default_route;
 
     /* max slots and slot-id compression are currently hardwired in */
     /* ppp_if.c to 16 and 1, this needs to be changed (among other */

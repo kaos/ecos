@@ -1757,16 +1757,6 @@ externC void cyg_ppp_options_install( const cyg_ppp_options_t *options )
     idle_time_limit     = options->idle_time_limit;
     maxconnect          = options->maxconnect;
 
-    {
-        ipcp_options *wo = &ipcp_wantoptions[0];
-
-        wo->ouraddr     = options->our_address;
-        wo->hisaddr     = options->his_address;
-
-        wo->default_route = options->default_route;
-        
-    }
-
     script              = options->script;
     
     strncpy( user, &options->user[0], MAXNAMELEN );
