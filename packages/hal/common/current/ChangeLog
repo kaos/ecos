@@ -1,3 +1,8 @@
+2005-04-27  Enrico Piria <epiria@libero.it>
+
+	* src/hal_if.c Added missing declarations of tries when compiling
+	with CYGNUM_HAL_DEBUG_GDB_PROTOCOL_RETRIES != 0.
+
 2004-11-20  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/intr.c: Make the ISR call the DSR to make sure this works

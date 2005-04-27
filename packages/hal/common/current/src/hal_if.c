@@ -496,6 +496,10 @@ cyg_hal_diag_mangler_gdb_flush(void* __ch_data)
 {
     CYG_INTERRUPT_STATE old;
     hal_virtual_comm_table_t* __chan = CYGACC_CALL_IF_DEBUG_PROCS();
+#if CYGNUM_HAL_DEBUG_GDB_PROTOCOL_RETRIES != 0
+    int tries = CYGNUM_HAL_DEBUG_GDB_PROTOCOL_RETRIES;
+#endif
+
 
     // Nothing to do if mangler buffer is empty.
     if (__mangler_pos == 0)
@@ -573,10 +577,6 @@ cyg_hal_diag_mangler_gdb_flush(void* __ch_data)
 static void
 cyg_hal_diag_mangler_gdb_putc(void* __ch_data, cyg_uint8 c)
 {
-#if CYGNUM_HAL_DEBUG_GDB_PROTOCOL_RETRIES != 0
-    int tries = CYGNUM_HAL_DEBUG_GDB_PROTOCOL_RETRIES;
-#endif
-
     // No need to send CRs
     if( c == '\r' ) return;
 
