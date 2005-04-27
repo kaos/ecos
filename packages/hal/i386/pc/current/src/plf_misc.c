@@ -87,6 +87,9 @@ extern void hal_pcmb_init(void);
 __externC void cyg_hal_smp_init(void);
 #endif
 
+CYG_ADDRWORD cyg_hal_pc_memsize_base;
+CYG_ADDRWORD cyg_hal_pc_memsize_extended;
+
 //----------------------------------------------------------------------------
 // ISR tables
 
@@ -116,6 +119,33 @@ void hal_platform_init(void)
     HAL_ICACHE_ENABLE();
     HAL_DCACHE_INVALIDATE_ALL();
     HAL_DCACHE_ENABLE();
+
+#ifdef CYGPKG_HAL_I386_PC_MEMSIZE_HARDCODE
+    cyg_hal_pc_memsize_base = CYGNUM_HAL_I386_PC_MEMSIZE_BASE;
+    cyg_hal_pc_memsize_extended = CYGNUM_HAL_I386_PC_MEMSIZE_EXTENDED;
+#endif
+
+#ifdef CYGPKG_HAL_I386_PC_MEMSIZE_BIOS
+    cyg_uint8 lo,hi;
+    
+    HAL_READ_CMOS( 0x15, lo );
+    HAL_READ_CMOS( 0x16, hi );
+
+    cyg_hal_pc_memsize_base = ((hi<<8)+lo)*1024;
+
+#ifndef CYG_HAL_STARTUP_ROM
+    // If we started up under a BIOS, then it will have put
+    // the discovered extended memory size in CMOS bytes 30/31.
+    HAL_READ_CMOS( 0x30, lo );
+    HAL_READ_CMOS( 0x31, hi );
+#else
+    // 
+    HAL_READ_CMOS( 0x17, lo );
+    HAL_READ_CMOS( 0x18, hi );
+#endif
+
+    cyg_hal_pc_memsize_extended = ((hi<<8)+lo)*1024;
+#endif
 
     // Call motherboard init function
     hal_pcmb_init();
@@ -172,6 +202,19 @@ void hal_platform_init(void)
     
 #endif
     
+}
+
+cyg_uint8 *hal_i386_mem_real_region_top( cyg_uint8 *regionend )
+{
+    CYG_ASSERT( cyg_hal_pc_memsize_base > 0 , "No base RAM size set!");
+    CYG_ASSERT( cyg_hal_pc_memsize_extended > 0 , "No extended RAM size set!");
+
+    if( (CYG_ADDRESS)regionend <= 0x000A0000 )
+        regionend = (cyg_uint8 *)cyg_hal_pc_memsize_base;
+    else if( (CYG_ADDRESS)regionend >= 0x00100000 )
+        regionend = (cyg_uint8 *)cyg_hal_pc_memsize_extended+0x00100000;
+
+    return regionend;
 }
 
 /*------------------------------------------------------------------------*/

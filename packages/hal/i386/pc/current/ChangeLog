@@ -1,3 +1,13 @@
+2005-04-27  David Vrabel <dvrabel@arcom.com>
+
+	* cdl/hal_i386_pc.cdl (CYGPKG_HAL_I386_PC_MEMSIZE): Moved from the
+	pcmb package since it's PC specific.
+
+	* src/pc_misc.c (hal_i386_mem_real_region_top): Moved from the
+	pcmb package since it's PC specific.
+	(hal_pc_init): Moved bits from the pcmb packaged related to
+	hal_i386_mem_real_region_top.
+
 2005-04-17  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/hal_i386_pc.cdl: 

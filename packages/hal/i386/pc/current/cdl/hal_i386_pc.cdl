@@ -76,6 +76,31 @@ cdl_package CYGPKG_HAL_I386_PC {
         puts $::cdl_header ""
     }
 
+    cdl_component CYGPKG_HAL_I386_PC_MEMSIZE {
+        display       "How to discover the size of available RAM."
+        flavor        data
+        legal_values  {"BIOS" "HARDCODE"}
+        default_value {"BIOS"}
+        description   "It is possible for the HAL to discover the 
+                       size of RAM In several ways. Currently this
+                        can be done by querying the BIOS or by 
+                        hardcoding the values into the executable."
+ 
+        cdl_option CYGNUM_HAL_I386_PC_MEMSIZE_BASE {
+            display       "Amount of Base RAM available."
+            flavor        data
+            default_value 0x000F0000
+            active_if     { CYGPKG_HAL_I386_PC_MEMSIZE == "HARDCODE" }
+        }
+ 
+        cdl_option CYGNUM_HAL_I386_PC_MEMSIZE_EXTENDED {
+            display       "Amount of Extended RAM available."
+            flavor        data
+            default_value 0x00100000
+            active_if     { CYGPKG_HAL_I386_PC_MEMSIZE == "HARDCODE" }
+        }
+    }
+
     cdl_component CYG_HAL_STARTUP {
         display       "Startup type"
         flavor        data
