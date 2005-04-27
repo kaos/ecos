@@ -75,60 +75,17 @@ volatile CYG_BYTE hal_interrupt_level[CYGNUM_HAL_ISR_COUNT];
 /*------------------------------------------------------------------------*/
 // Static variables
 
-CYG_ADDRWORD cyg_hal_pcmb_memsize_base;
-CYG_ADDRWORD cyg_hal_pcmb_memsize_extended;
-
 /*------------------------------------------------------------------------*/
 // Initializer
 
 void hal_pcmb_init(void)
 {
-#ifdef CYGPKG_HAL_I386_PCMB_MEMSIZE_HARDCODE
-    cyg_hal_pcmb_memsize_base = CYGNUM_HAL_I386_PCMB_MEMSIZE_BASE;
-    cyg_hal_pcmb_memsize_extended = CYGNUM_HAL_I386_PCMB_MEMSIZE_EXTENDED;
-#endif
-
-#ifdef CYGPKG_HAL_I386_PCMB_MEMSIZE_BIOS
-    cyg_uint8 lo,hi;
-    
-    HAL_READ_CMOS( 0x15, lo );
-    HAL_READ_CMOS( 0x16, hi );
-
-    cyg_hal_pcmb_memsize_base = ((hi<<8)+lo)*1024;
-
-#ifndef CYG_HAL_STARTUP_ROM
-    // If we started up under a BIOS, then it will have put
-    // the discovered extended memory size in CMOS bytes 30/31.
-    HAL_READ_CMOS( 0x30, lo );
-    HAL_READ_CMOS( 0x31, hi );
-#else
-    // 
-    HAL_READ_CMOS( 0x17, lo );
-    HAL_READ_CMOS( 0x18, hi );
-#endif
-
-    cyg_hal_pcmb_memsize_extended = ((hi<<8)+lo)*1024;
-#endif
-
     // Disable NMI - this can be reenabled later, once a proper handler
     // is registered and ready to handle events
     HAL_WRITE_UINT8(0x70, 0x80);
 }
 
 /*------------------------------------------------------------------------*/
-
-cyg_uint8 *hal_i386_mem_real_region_top( cyg_uint8 *regionend )
-{
-    CYG_ASSERT( cyg_hal_pcmb_memsize_base > 0 , "No base RAM size set!");
-    CYG_ASSERT( cyg_hal_pcmb_memsize_extended > 0 , "No extended RAM size set!");
-
-    if( (CYG_ADDRESS)regionend <= 0x000A0000 )
-        regionend = (cyg_uint8 *)cyg_hal_pcmb_memsize_base;
-    else if( (CYG_ADDRESS)regionend >= 0x00100000 )
-        regionend = (cyg_uint8 *)cyg_hal_pcmb_memsize_extended+0x00100000;
-
-    return regionend;
-}
 
 /*------------------------------------------------------------------------*/
 // Clock initialization and access

@@ -1,3 +1,13 @@
+2005-04-27  David Vrabel <dvrabel@arcom.com>
+
+	* cdl/hal_i386_pcmb.cdl (CYGPKG_HAL_I386_PCMB_MEMSIZE): Moved this
+	PC specific option to the pc package.
+
+	* src/pcmb_misc.c (hal_i386_mem_real_region_top): Moved this PC
+	specific function to the pc package.
+	(hal_pcmb_init): Moved the bits related to
+	hal_i386_mem_real_region_top to the pc package.
+
 2005-04-22  Ian Campbell <icampbell@arcom.com>
 
 	* src/pcmb_serial.c: Enable FIFO.
