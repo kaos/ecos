@@ -69,10 +69,10 @@ static char *
 lookup_alias(char *alias, char *alias_buf)
 {
     if (0 == strcasecmp("FREEMEMLO", alias)) {
-        diag_sprintf(alias_buf,"%x", ((CYG_ADDRWORD)mem_segments[0].start + 0x03ff) & ~0x03ff);
+        diag_sprintf(alias_buf,"0x%x", ((CYG_ADDRWORD)mem_segments[0].start + 0x03ff) & ~0x03ff);
         return alias_buf;
     } else if (0 == strcasecmp("FREEMEMHI", alias)) {
-        diag_sprintf(alias_buf,"%x", ((CYG_ADDRWORD)mem_segments[0].end) & ~0x03ff);
+        diag_sprintf(alias_buf,"0x%x", ((CYG_ADDRWORD)mem_segments[0].end) & ~0x03ff);
         return alias_buf;
     }
 
