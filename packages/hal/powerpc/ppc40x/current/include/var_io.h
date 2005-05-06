@@ -60,7 +60,7 @@
 
 #include CYGBLD_HAL_PLF_IO_H
 
-#ifdef CYGPKG_IO_PCI
+#ifdef CYGHWR_HAL_POWERPC_PPC405_PCI
 // These must be defined by the platform
 #if !defined(CYG_PCI_MAX_BUS)
 #error "Missing CYG_PCI_MAX_BUS platform definition"
@@ -128,7 +128,7 @@ externC void hal_ppc405_pci_cfg_write_uint16(int bus, int dev, int offset, cyg_u
 externC void hal_ppc405_pci_cfg_write_uint32(int bus, int dev, int offset, cyg_uint32 val);
 #define HAL_PCI_CFG_WRITE_UINT32( __bus, __devfn, __offset, __val ) \
   hal_ppc405_pci_cfg_write_uint32(__bus, __devfn, __offset, __val)
-#endif // CYGPKG_IO_PCI
+#endif // CYGHWR_HAL_POWERPC_PPC405_PCI
 
 static __inline__ unsigned long
 _le32(unsigned long val)

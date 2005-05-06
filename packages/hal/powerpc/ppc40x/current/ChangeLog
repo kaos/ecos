@@ -1,3 +1,8 @@
+2005-05-04  Peter Korsgaard  <jacmet@sunsite.dk>
+
+	* include/var_io.h: Only define PCI macros if 405GP PCI support is
+	enabled.
+
 2004-09-16  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/hal_diag.c: Assert RTS/DTR modem signals.
