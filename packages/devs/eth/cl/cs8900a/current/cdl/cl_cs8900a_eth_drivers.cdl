@@ -68,11 +68,23 @@ cdl_package CYGPKG_DEVS_ETH_CL_CS8900A {
         puts $::cdl_header "#include CYGDAT_DEVS_ETH_CL_CS8900A_CFG";
     }
 
-	cdl_option CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED {
-	    display "Byte swapped data bus"
-		flavor  bool
-		default_value 0
-		description   "
+    cdl_option CYGSEM_DEVS_ETH_CL_CS8900A_WRITE_EEPROM {
+        display "SIOCSIFHWADDR records ESA (MAC address) in EEPROM"
+        default_value 0
+        description   "
+            The ioctl() socket call with operand SIOCSIFHWADDR sets the
+            interface hardware address - the MAC address or Ethernet Station
+            Address (ESA).  This option causes the new MAC address to be written
+            into the EEPROM associated with the interface, so that the new
+            MAC address is permanently recorded.  Doing this should be a
+            carefully chosen decision, hence this option."
+    }
+
+    cdl_option CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED {
+	display "Byte swapped data bus"
+	flavor  bool
+	default_value 0
+	description   "
 		    From the application note AN205 from Cirrus Logic ...The CS8900a
 			assumes a litte-endian ISA type system. However, network byte order
 			is always big-endian.Therefore to minimize software manipulation of

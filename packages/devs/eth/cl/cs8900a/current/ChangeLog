@@ -1,3 +1,12 @@
+2005-05-04  Ian Campbell  <icampbell@arcom.com>
+
+	* cdl/cl_cs8900a_eth_drivers.cdl: Added
+	CYGSEM_DEVS_ETH_CL_CS8900A_WRITE_EEPROM
+
+	* src/if_cs8900a.c: Added debug statements to print out where the
+	driver is obtaining its ESA from. Implement
+	ETH_DRV_SET_MAC_ADDRESS and ETH_DRV_GET_MAC_ADDRESS.
+
 2004-06-29  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/if_cs8900a.c: Added missing include of cyg_ass.h.

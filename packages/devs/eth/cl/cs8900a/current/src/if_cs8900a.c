@@ -259,6 +259,9 @@ cs8900a_init(struct cyg_netdevtab_entry *tab)
     }
     if (!esa_configured && cpd->hardwired_esa) {
         // ESA is already set in cpd->esa[]
+#if DEBUG & 8
+        diag_printf("Got hardcoded ESA\n");
+#endif
         esa_configured = true;
     }
     if (!esa_configured && (chip_status & PP_SelfStat_EEPROM)) {
@@ -275,6 +278,9 @@ cs8900a_init(struct cyg_netdevtab_entry *tab)
             cpd->esa[i] = (esa_word >> 8) & 0xFF;
 #endif
         }
+#if DEBUG & 8
+        diag_printf("Got EEPROM ESA\n");
+#endif
         esa_configured = true;
     }
     if (!esa_configured) {
@@ -360,11 +366,51 @@ cs8900a_control(struct eth_drv_sc *sc, unsigned long key, void *data, int data_l
     cs8900a_priv_data_t *cpd = (cs8900a_priv_data_t *)sc->driver_private;
     cyg_addrword_t base = cpd->base;
     struct eth_drv_mc_list *mc_list = data;
+    unsigned char *esa = (unsigned char *)data;
+    int i;
 
     switch (key) {
     case ETH_DRV_SET_MAC_ADDRESS:
+#if 9 & DEBUG
+        diag_printf("CS8900A - set ESA: %02x:%02x:%02x:%02x:%02x:%02x\n",
+                esa[0], esa[1], esa[2],
+                esa[3], esa[4], esa[5] );
+#if !defined(CYGSEM_DEVS_ETH_CL_CS8900A_WRITE_EEPROM) || !defined(CS8900A_PROGRAM_EEPROM)
+        diag_printf("*** PERMANENT EEPROM WRITE NOT ENABLED ***\n");
+#endif
+#endif // DEBUG
+
+        // We can write the MAC address into the interface info,
+        // and the chip registers no problem.
+        for ( i = 0; i < sizeof(cpd->esa);  i++ )
+            cpd->esa[i] = esa[i];
+        for (i = 0;  i < sizeof(cpd->esa);  i += 2) {
+            cyg_uint16 reg = cpd->esa[i] | (cpd->esa[i+1] << 8);
+            put_reg(cpd->base, PP_IA+i, reg );
+        }
+#if defined(CYGSEM_DEVS_ETH_CL_CS8900A_WRITE_EEPROM) && defined(CS8900A_PROGRAM_EEPROM)
+        if (CS8900A_PROGRAM_EEPROM(cpd))
+            return 1;
+        else 
+            return 0;
+#elif defined(CYGSEM_DEVS_ETH_CL_CS8900A_WRITE_EEPROM) && !defined(CS8900A_PROGRAM_EEPROM)
+        /* WRITE_EEPROM requested, but no PROGRAM_EEPROM provided */
+        return 1;
+#else /* !CYGSEM_DEVS_ETH_CL_CS8900A_WRITE_EEPROM - No need to write EEPROM */
         return 0;
-        break;
+#endif
+
+#ifdef ETH_DRV_GET_MAC_ADDRESS
+    case ETH_DRV_GET_MAC_ADDRESS:
+        // Extract the MAC address that is in the chip, and tell the
+        // system about it.
+        for (i = 0;  i < sizeof(cpd->esa);  i += 2) {
+            unsigned short z = get_reg(cpd->base, PP_IA+i/2 );
+            esa[i] =   (unsigned char)(0xff & z);
+            esa[i+1] = (unsigned char)(0xff & (z >> 8));
+        }
+        return 0;
+#endif
     case ETH_DRV_SET_MC_LIST:
     case ETH_DRV_SET_MC_ALL:
         // Note: this code always accepts all multicast addresses if any
