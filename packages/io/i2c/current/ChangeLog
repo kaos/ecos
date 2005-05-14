@@ -1,3 +1,23 @@
+2005-05-11  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/i2c.h: add a CYG_HAL_TABLE_TYPE to the bus data
+	structure to allow for architectures with alignments > 4 bytes.
+
+2005-04-28  Peter Korsgaard  <jacmet@sunsite.dk>
+
+	* doc/i2c.sgml: Corrected cyg_i2c_rx, cyg_i2c_transaction_rx and	
+	xyzzy_i2c_rx prototype. Removed continuation character in
+	CYG_I2C_DEVICE example.
+
+2005-04-28  Peter Korsgaard  <jacmet@sunsite.dk>
+ 
+ 	* src/i2c.cxx: Corrected DEBUG macro.
+ 
+2005-04-28  Peter Korsgaard  <jacmet@sunsite.dk>
+ 
+ 	* src/i2c.cxx: Renamed cyg_i2c_stop to cyg_i2c_transaction_stop to
+ 	match header file.	
+ 
 2005-04-21  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* doc/i2c.sgml: Replaced a _ with a - to keep jade happy.

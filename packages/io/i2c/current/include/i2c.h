@@ -92,7 +92,7 @@ typedef struct cyg_i2c_bus {
     void                    (*i2c_stop_fn)(const cyg_i2c_device*);
     // A spare field for use by the driver
     void*                   i2c_extra;
-} cyg_i2c_bus;
+} CYG_HAL_TABLE_TYPE cyg_i2c_bus;
 
 #define CYG_I2C_BUS(_name_, _init_fn_, _tx_fn_, _rx_fn_, _stop_fn_, _extra_)    \
     cyg_i2c_bus _name_  CYG_HAL_TABLE_ENTRY( i2c_buses ) = {                    \

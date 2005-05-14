@@ -216,7 +216,7 @@ cyg_i2c_transaction_rx(const cyg_i2c_device* dev, cyg_bool start, cyg_uint8* buf
 }
 
 extern "C" void
-cyg_i2c_stop(const cyg_i2c_device* dev)
+cyg_i2c_transaction_stop(const cyg_i2c_device* dev)
 {
     cyg_i2c_bus*    bus;
     
@@ -237,7 +237,7 @@ cyg_i2c_stop(const cyg_i2c_device* dev)
 #if 1
 # define DEBUG(_format_, ...)
 #else
-# define DEBUG(_format_, ...) diag_printf(format, ## __VA_ARGS__)
+# define DEBUG(_format_, ...) diag_printf(_format_, ## __VA_ARGS__)
 #endif
 
 

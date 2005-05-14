@@ -231,7 +231,7 @@ application code.
       <funcprototype>
         <funcdef>cyg_uint32 <function>cyg_i2c_rx</function></funcdef>
         <paramdef>const cyg_i2c_device* <parameter>device</parameter></paramdef>
-        <paramdef>const cyg_uint8* <parameter>tx_data</parameter></paramdef>
+        <paramdef>cyg_uint8* <parameter>rx_data</parameter></paramdef>
         <paramdef>cyg_uint32 <parameter>count</parameter></paramdef>
       </funcprototype>
       <funcprototype>
@@ -254,7 +254,7 @@ application code.
         <funcdef>cyg_uint32 <function>cyg_i2c_transaction_rx</function></funcdef>
         <paramdef>const cyg_i2c_device* <parameter>device</parameter></paramdef>
         <paramdef>cyg_bool <parameter>send_start</parameter></paramdef>
-        <paramdef>const cyg_uint8* <parameter>tx_data</parameter></paramdef>
+        <paramdef>cyg_uint8* <parameter>rx_data</parameter></paramdef>
         <paramdef>cyg_uint32 <parameter>count</parameter></paramdef>
         <paramdef>cyg_bool <parameter>send_nack</parameter></paramdef>
         <paramdef>cyg_bool <parameter>send_stop</parameter></paramdef>
@@ -641,16 +641,16 @@ provided by <filename class="headerfile">cyg/io/i2c.h</filename>:
     <programlisting width=72>
 #include &lt;cyg/io/i2c.h&gt;
 
-CYG_I2C_DEVICE(cyg_i2c_wallclock_ds1307,            \
-               &amp;hal_alaia_i2c_bus,                  \
-               0x68,                                \
-               0x00,                                \
+CYG_I2C_DEVICE(cyg_i2c_wallclock_ds1307,
+               &amp;hal_alaia_i2c_bus,
+               0x68,
+               0x00,
                CYG_I2C_DEFAULT_DELAY);
 
-CYG_I2C_DEVICE(hal_alaia_i2c_fs6377,                \
-               &amp;hal_alaia_i2c_bus,                  \
-               0x58,                                \
-               0x00,                                \
+CYG_I2C_DEVICE(hal_alaia_i2c_fs6377,
+               &amp;hal_alaia_i2c_bus,
+               0x58,
+               0x00,
                CYG_I2C_DEFAULT_DELAY);
     </programlisting>
     <para>
@@ -906,10 +906,10 @@ xyzzy_i2c_tx(const cyg_i2c_device* dev,
 }
 
 static cyg_uint32
-xyzzy_i2c_tx(const cyg_i2c_device* dev,
+xyzzy_i2c_rx(const cyg_i2c_device* dev,
              cyg_bool send_start,
-             const cyg_uint8* tx_data, cyg_uint32 count,
-             cyg_bool send_stop)
+             cyg_uint8* rx_data, cyg_uint32 count,
+             cyg_bool send_nack, cyg_bool send_stop)
 {
     &hellip;
 }
