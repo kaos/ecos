@@ -224,8 +224,7 @@ hal_ppc40x_delay_us(int us)
     cyg_uint32 delay_period, delay, diff;
     cyg_uint32 pit_val1, pit_val2;
 
-    delay_period = (_period * us) / 10000;
-    delay_period = ((_period / 10000) * us);
+    delay_period = ((_period / ((CYGNUM_HAL_RTC_NUMERATOR/1000) / CYGNUM_HAL_RTC_DENOMINATOR)) * us);
     delay = 0;
     CYGARC_MFSPR(SPR_PIT, pit_val1);
     while (delay < delay_period) {

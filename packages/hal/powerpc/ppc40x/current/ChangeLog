@@ -1,3 +1,9 @@
+2005-05-18  Peter Korsgaard  <jacmet@sunsite.dk>
+
+	* src/var_misc.c (hal_ppc40x_delay_us): Removed double
+	initialization of delay_period. Work correctly for system clock !=
+	100Hz.
+
 2005-05-04  Peter Korsgaard  <jacmet@sunsite.dk>
 
 	* include/var_io.h: Only define PCI macros if 405GP PCI support is
