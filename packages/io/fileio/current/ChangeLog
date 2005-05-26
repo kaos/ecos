@@ -1,3 +1,11 @@
+2005-05-26  Gary Thomas  <gary@mlbassoc.com>
+
+	* tests/socket.c: Fix config test (CYGPKG_POSIX_SIGNALS)
+	
+	* tests/pselect.c: Fix config test (CYGPKG_POSIX_SIGNALS is
+	only defined in <pkgconf/posix.h>)  Also, reduce number of
+	iterations so test completes in a reasonable time (~30 seconds).
+
 2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/testfs.c: Fixed compiler warnigs for passing wrong types

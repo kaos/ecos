@@ -56,12 +56,15 @@
 
 #include <pkgconf/system.h>
 #include <pkgconf/isoinfra.h>
+#ifdef CYGPKG_POSIX
+#include <pkgconf/posix.h>
+#endif
 
 #ifndef CYGINT_ISO_PTHREAD_IMPL
 # define NA_MSG "POSIX threads needed to run test"
-#elif !defined CYGPKG_NET
+#elif !defined(CYGPKG_NET)
 # define NA_MSG "NET package needed to run test"
-#elif !defined CYGPKG_POSIX_SIGNALS
+#elif !defined(CYGPKG_POSIX_SIGNALS)
 # define NA_MSG "POSIX signals package needed to run test"
 #endif
 
@@ -95,6 +98,8 @@
 
 
 #include <cyg/infra/diag.h>            // HAL polled output
+
+#define NUM_TEST_SIGNALS 1500          // So test completes in ~30 seconds
 
 //--------------------------------------------------------------------------
 
@@ -265,7 +270,7 @@ void *pthread_entry2( void *arg)
     nanosleep( &zzz, NULL );
     nanosleep( &zzz, NULL );
     
-    while( sigusr1_sent < 20000 )
+    while( sigusr1_sent < NUM_TEST_SIGNALS )
     {
         nanosleep( &zzz, NULL );
 
