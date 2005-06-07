@@ -1,3 +1,8 @@
+2005-06-07  Savin Zlobec  <savin@elatec.si>
+
+	* src/fatfs_supp.c: lseek returned EEOF when at the end of the
+	file rather than the current position. 
+
 2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/fatfs1.c: Fixed various compiler warnings about types passed to

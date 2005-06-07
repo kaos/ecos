@@ -1172,8 +1172,10 @@ get_position_from_off(fatfs_disk_t     *disk,
     // Err could be EEOF wich means that the given 
     // offset if out of given file (cluster chain)
 
-    if (ENOERR == err)
-        *pos = new_pos; 
+    if (EEOF == err)
+        new_pos.cluster_pos = disk->cluster_size; 
+    
+    *pos = new_pos; 
     
     return err;
 } 
@@ -2056,11 +2058,18 @@ fatfs_setpos(fatfs_disk_t      *disk,
              fatfs_data_pos_t  *pos,
              cyg_uint32         offset)
 {
+    int err;
+    
     CYG_CHECK_DATA_PTRC(disk);
     CYG_CHECK_DATA_PTRC(file);
     CYG_CHECK_DATA_PTRC(pos);
     
-    return get_position_from_off(disk, file->cluster, offset, pos, CO_NONE);
+    err = get_position_from_off(disk, file->cluster, offset, pos, CO_NONE);
+
+    if (EEOF == err && offset == file->size)
+        return ENOERR;
+    else
+        return err;
 }
 
 // -------------------------------------------------------------------------
