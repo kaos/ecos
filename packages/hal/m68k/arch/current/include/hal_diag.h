@@ -21,7 +21,7 @@
 //
 // All inquiries about this file, or the functionality provided by it,
 // should be directed to the 'ecos-discuss' mailing list (see
-// http://sourceware.cygnus.com/ecos/intouch.html for details).
+// http://ecos.sourceware.org/ecos/intouch.html for details).
 //
 // Maintained by:  <Unmaintained>
 // -------------------------------------------
