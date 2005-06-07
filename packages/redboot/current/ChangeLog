@@ -1,3 +1,14 @@
+2005-06-07  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/flash.c (_flash_info): Fixed a warning about a diag_printf
+	format string.
+
+2005-05-27  David Vrabel  <dvrabel@arcom.com>
+
+	* src/main.c (cyg_start): Expand aliases even if
+	CYGSEM_REDBOOT_FLASH_ALIASES is not enabled since there are some
+	hardcoded aliases (e.g., FREEMEMLO).
+
 2005-05-04  David Vrabel  <dvrabel@arcom.com>
  
  	* src/alias.c (lookup_alias): The expansion of FREEMEMLO and

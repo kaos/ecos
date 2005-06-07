@@ -1344,7 +1344,7 @@ void
 _flash_info(void)
 {
     if (!__flash_init) return;
-    diag_printf("FLASH: %p - %p, %d blocks of %p bytes each.\n", 
+    diag_printf("FLASH: %p - 0x%x, %d blocks of %p bytes each.\n", 
            flash_start, (CYG_ADDRWORD)flash_end + 1, flash_num_blocks, (void *)flash_block_size);
 }
 
