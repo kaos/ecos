@@ -281,6 +281,7 @@ static int dev_stat     ( cyg_mtab_entry *mte, cyg_dir dir, const char *name,
 {
     Cyg_ErrNo err;
     cyg_io_handle_t handle;
+    cyg_devtab_entry_t *dev;
 
     name -= 5;          // See comment in dev_open()
     
@@ -290,13 +291,16 @@ static int dev_stat     ( cyg_mtab_entry *mte, cyg_dir dir, const char *name,
         return -err;
 
     // Just fill in the stat buffer with some constant values.
+    dev = (cyg_devtab_entry_t *)handle;
 
-    // FIXME: change this when block devices are available
-    buf->st_mode = __stat_mode_CHR;     
+    if (dev->status & CYG_DEVTAB_STATUS_BLOCK)
+	buf->st_mode = __stat_mode_BLK;
+    else
+	buf->st_mode = __stat_mode_CHR;
 
     buf->st_ino         = (ino_t)handle;    // map dev handle to inode
     buf->st_dev         = 0; // (dev_t)handle;    // same with dev id
-    buf->st_nlink       = 0;
+    buf->st_nlink       = 1;
     buf->st_uid         = 0;
     buf->st_gid         = 0;
     buf->st_size        = 0;
@@ -444,14 +448,17 @@ static int dev_fo_close     (struct CYG_FILE_TAG *fp)
 
 static int dev_fo_fstat     (struct CYG_FILE_TAG *fp, struct stat *buf )
 {
-    // Just fill in the stat buffer with some constant values.
+    cyg_devtab_entry_t *dev = (cyg_devtab_entry_t *)fp->f_data;
 
-    // FIXME: change this when block devices are available
-    buf->st_mode = __stat_mode_CHR;     
+    // Just fill in the stat buffer with some constant values.
+    if (dev->status & CYG_DEVTAB_STATUS_BLOCK)
+	buf->st_mode = __stat_mode_BLK;
+    else
+	buf->st_mode = __stat_mode_CHR;
 
     buf->st_ino         = (ino_t)fp->f_data;    // map dev handle to inode
-    buf->st_dev         = (dev_t)fp->f_data;    // same with dev id
-    buf->st_nlink       = 0;
+    buf->st_dev         = 0;   //(dev_t)fp->f_data;    // same with dev id
+    buf->st_nlink       = 1;
     buf->st_uid         = 0;
     buf->st_gid         = 0;
     buf->st_size        = 0;

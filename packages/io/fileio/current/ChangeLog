@@ -1,3 +1,9 @@
+2005-05-13  Peter Korsgaard  <jacmet@sunsite.dk>
+
+	* src/devfs.cxx (dev_stat, dev_fo_fstat): Corrected mode for block
+	devices, made nlink 1.
+	* src/devfs.cxx (dev_fo_fstat): Set st_dev to zero to match dev_stat.
+
 2005-05-26  Gary Thomas  <gary@mlbassoc.com>
 
 	* tests/socket.c: Fix config test (CYGPKG_POSIX_SIGNALS)
