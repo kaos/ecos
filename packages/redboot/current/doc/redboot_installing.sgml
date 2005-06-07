@@ -1156,6 +1156,7 @@ directory of the jtst hal. The binaries can be found along with the
 binaries for redboot on the eCos website at 
 <ulink url="http://ecos.sourceware.org/ecos/boards/redbootbins/at91jtst/index.html">
 http://ecos.sourceware.org/ecos/boards/redbootbins/at91jtst/</ulink>
+</para>
 <para>
 When the jtstflashd.elf is started, the user should open the jumper
 JP5 to write in the second half (512Kbytes) of the flash, in this way
