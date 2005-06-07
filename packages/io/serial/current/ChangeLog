@@ -1,3 +1,8 @@
+2005-05-13  Peter Korsgaard  <jacmet@sunsite.dk>
+
+	* src/common/serial.c (serial_init): Fix compiler warnings about
+	formats strings for diag_printf.	
+
 2004-11-30  Jani Monoses <jani@iv.ro>
 
 	 * cdl/io_serial.cdl : CYGPKG_IO_SERIAL_SELECT_SUPPORT requires 

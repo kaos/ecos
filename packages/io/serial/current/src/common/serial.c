@@ -239,7 +239,7 @@ serial_init(serial_channel *chan)
     if (chan->init) return;
     if (chan->out_cbuf.len != 0) {
 #ifdef CYGDBG_IO_INIT
-        diag_printf("Set output buffer - buf: %x len: %d\n", chan->out_cbuf.data, chan->out_cbuf.len);
+        diag_printf("Set output buffer - buf: %p len: %d\n", chan->out_cbuf.data, chan->out_cbuf.len);
 #endif
         chan->out_cbuf.waiting = false;
         chan->out_cbuf.abort = false;
@@ -258,7 +258,7 @@ serial_init(serial_channel *chan)
         cbuf_t *cbuf = &chan->in_cbuf;
 
 #ifdef CYGDBG_IO_INIT
-        diag_printf("Set input buffer - buf: %x len: %d\n", cbuf->data, cbuf->len);
+        diag_printf("Set input buffer - buf: %p len: %d\n", cbuf->data, cbuf->len);
 #endif
         cbuf->waiting = false;
         cbuf->abort = false;
