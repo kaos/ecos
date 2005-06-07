@@ -1,3 +1,8 @@
+2005-06-07  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* Changed all sourceware.cygnus.com URLs to 
+	ecos.sourceware.org.
+
 2003-07-18  Nick Garnett  <nickg@balti.calivar.com>
 
 	* cdl/hal_powerpc_fads.cdl:
