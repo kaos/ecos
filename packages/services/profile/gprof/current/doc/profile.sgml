@@ -480,7 +480,7 @@ generated when the profiling data is extracted.
 
   <refsect1 id="gprof-hal"><title>Implementing the HAL Support</title>
     <para>
-The profiling package requires two lots of HAL support: a function
+The profiling package requires HAL support: A function
 <function>hal_enable_profile_timer</function> and an implementation
 of <function>mcount</function>. The profile timer is required.
 Typically it will be implemented by the variant or platform HAL

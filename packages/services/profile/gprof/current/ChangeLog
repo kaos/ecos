@@ -1,3 +1,7 @@
+2005-05-13  Peter Korsgaard  <jacmet@sunsite.dk>
+
+	* doc/profile.sgml: Fixed typo in HAL support section.
+
 2005-02-18  Bart Veer  <bartv@ecoscentric.com>
 
 	* doc/profile.sgml, misc/gprof.gdb, host/gprof.gdb,
