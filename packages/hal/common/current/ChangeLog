@@ -1,3 +1,8 @@
+2005-05-19  Peter Korsgaard  <jacmet@sunsite.dk>
+
+	* doc/porting.sgml: Changed dead sourceware.cygnus.com links to
+	ecos.sourceware.org.
+
 2005-04-27  Enrico Piria <epiria@libero.it>
 
 	* src/hal_if.c Added missing declarations of tries when compiling

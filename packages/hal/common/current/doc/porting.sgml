@@ -65,12 +65,12 @@ things, and just plain have to rely on common sense.
 <para>
 However, what is covered here should be a large part of the
 process. If you get stuck, you are advised to read the
-<ulink url="http://sourceware.cygnus.com/ml/ecos-discuss/">
+<ulink url="http://ecos.sourceware.org/ml/ecos-discuss/">
 ecos-discuss archive
 </ulink>
 where you may find discussions which apply to the problem at
 hand. You are also invited to ask questions on the
-<ulink url="http://sourceware.cygnus.com/ecos/intouch.html">
+<ulink url="http://ecos.sourceware.org/intouch.html">
 ecos-discuss mailing list
 </ulink>
 to help you resolve problems - but as is always the case
@@ -78,9 +78,9 @@ with community lists, do not consider it an oracle for any and all
 questions. Use common sense - if you ask too many questions which
 could have been answered by reading the
 <ulink
-url="http://sourceware.cygnus.com/ecos/docs-latest/">documentation</ulink>,
-<ulink url="http://sourceware.cygnus.com/fom/ecos">FAQ</ulink> or
-<ulink url="http://sourceware.cygnus.com/cgi-bin/cvsweb.cgi/ecos/packages/?cvsroot=ecos">
+url="http://ecos.sourceware.org/ecos/docs-latest/">documentation</ulink>,
+<ulink url="http://ecos.sourceware.org/fom/ecos">FAQ</ulink> or
+<ulink url="http://ecos.sourceware.org/cgi-bin/cvsweb.cgi/ecos/packages/?cvsroot=ecos">
 source code
 </ulink>, you are likely to be ignored.
 </para>
@@ -90,7 +90,7 @@ This document will be continually improved by Red Hat engineers as
 time allows. Feedback and help with improving the document is sought,
 so if you have any comments at all, please do not hesitate to post
 them on
-<ulink url="mailto:ecos-discuss@sourceware.cygnus.com?subject=[porting]<subject>">
+<ulink url="mailto:ecos-discuss@ecos.sourceware.org?subject=[porting]<subject>">
 ecos-discuss
 </ulink>
 (please prefix the subject with [porting]).
@@ -149,14 +149,14 @@ the PowerPC MBX target).
 <tbody>
 <row>
 <entry>
-Common HAL <ulink url="http://sourceware.cygnus.com/cgi-bin/cvsweb.cgi/ecos/packages/hal/common/current?cvsroot=ecos">(hal/common)</ulink>
+Common HAL <ulink url="http://ecos.sourceware.org/cgi-bin/cvsweb.cgi/ecos/packages/hal/common/current?cvsroot=ecos">(hal/common)</ulink>
 </entry>
 <entry>Configuration options and functionality shared by all HALs.</entry>
 <entry>Generic debugging functionality, driver API, eCos/ROM monitor
       calling interface, and tests.</entry>
 </row>
 <row>
-  <entry>Architecture HAL <ulink url="http://sourceware.cygnus.com/cgi-bin/cvsweb.cgi/ecos/packages/hal/powerpc/arch/current?cvsroot=ecos">(hal/&lt;architecture&gt;/arch)</ulink></entry>
+  <entry>Architecture HAL <ulink url="http://ecos.sourceware.org/cgi-bin/cvsweb.cgi/ecos/packages/hal/powerpc/arch/current?cvsroot=ecos">(hal/&lt;architecture&gt;/arch)</ulink></entry>
   <entry>Functionality specific to the given architecture. Also default
   implementations of some functionality which can be overridden by
   variant or platform HALs.</entry>
@@ -168,7 +168,7 @@ Common HAL <ulink url="http://sourceware.cygnus.com/cgi-bin/cvsweb.cgi/ecos/pack
      and possibly tests. </entry>
 </row>
 <row>
-  <entry>Variant HAL <ulink url="http://sourceware.cygnus.com/cgi-bin/cvsweb.cgi/ecos/packages/hal/powerpc/mpc8xx/current?cvsroot=ecos">(hal/&lt;architecture&gt;/&lt;variant&gt;)</ulink></entry>
+  <entry>Variant HAL <ulink url="http://ecos.sourceware.org/cgi-bin/cvsweb.cgi/ecos/packages/hal/powerpc/mpc8xx/current?cvsroot=ecos">(hal/&lt;architecture&gt;/&lt;variant&gt;)</ulink></entry>
   <entry>Some CPU architectures consist of a number variants, for example
      MIPS CPUs come in both 32 and 64 bit versions, and some variants
      have embedded features additional to the CPU core.
@@ -178,7 +178,7 @@ Common HAL <ulink url="http://sourceware.cygnus.com/cgi-bin/cvsweb.cgi/ecos/pack
      variant on-core devices, and possibly tests.</entry>
 </row>
 <row>
-  <entry>Platform HAL <ulink url="http://sourceware.cygnus.com/cgi-bin/cvsweb.cgi/ecos/packages/hal/powerpc/mbx/current?cvsroot=ecos">(hal/&lt;architecture&gt;/&lt;platform&gt;)</ulink></entry>
+  <entry>Platform HAL <ulink url="http://ecos.sourceware.org/cgi-bin/cvsweb.cgi/ecos/packages/hal/powerpc/mbx/current?cvsroot=ecos">(hal/&lt;architecture&gt;/&lt;platform&gt;)</ulink></entry>
   <entry>Contains functionality and configuration options specific to the
       platform.
 </entry>
@@ -189,7 +189,7 @@ Common HAL <ulink url="http://sourceware.cygnus.com/cgi-bin/cvsweb.cgi/ecos/pack
      (off-core interrupt controller), and possibly tests.</entry>
 </row>
 <row>
-  <entry>Auxiliary HAL <ulink url="http://sourceware.cygnus.com/cgi-bin/cvsweb.cgi/ecos/packages/hal/powerpc/quicc/current?cvsroot=ecos">(hal/&lt;architecture&gt;/&lt;module&gt;)</ulink></entry>
+  <entry>Auxiliary HAL <ulink url="http://ecos.sourceware.org/cgi-bin/cvsweb.cgi/ecos/packages/hal/powerpc/quicc/current?cvsroot=ecos">(hal/&lt;architecture&gt;/&lt;module&gt;)</ulink></entry>
   <entry>Some variants share common modules on the core. Motorola's PowerPC
       QUICC is an example of such a module.
 </entry>
