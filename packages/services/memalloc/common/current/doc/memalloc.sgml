@@ -378,5 +378,6 @@ struct mallinfo {
      </para>
    </refsect1> 
  </refentry>
+</SECT1>
 </CHAPTER> 
 </PART>
