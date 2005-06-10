@@ -68,7 +68,7 @@
 #define CAN 0x18
 #define EOF 0x1A  // ^Z for DOS officionados
 
-#define nUSE_YMODEM_LENGTH
+#define USE_YMODEM_LENGTH
 
 // Data & state local to the protocol
 static struct {
@@ -416,13 +416,14 @@ xyzModem_stream_read(char *buf, int size, int *err)
                         xyz.tx_ack = true;
                         ZM_DEBUG(zm_dprintf("ACK block %d (%d)\n", xyz.blk, __LINE__));
                         xyz.next_blk = (xyz.next_blk + 1) & 0xFF;
-                        // Data blocks can be padded with ^Z (EOF) characters
-                        // This code tries to detect and remove them
-#ifdef xyzModem_zmodem
-                        if (xyz.mode != xyzModem_zmodem) {
+
+#if defined(xyzModem_zmodem) || defined(USE_YMODEM_LENGTH)
+                        if (xyz.mode == xyzModem_xmodem || xyz.file_length == 0) {
 #else
                         if (1) {
 #endif
+                            // Data blocks can be padded with ^Z (EOF) characters
+                            // This code tries to detect and remove them
                             if ((xyz.bufp[xyz.len-1] == EOF) &&
                                 (xyz.bufp[xyz.len-2] == EOF) &&
                                 (xyz.bufp[xyz.len-3] == EOF)) {
