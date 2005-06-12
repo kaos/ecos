@@ -1,0 +1,136 @@
+# ====================================================================
+#
+#	netarm_eth_driver.cdl
+#
+#	Ethernet driver
+#	NET+ARM ethernet interface
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2005 eCosCentric LTD
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+##
+## -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      Harald Brandl (harald.brandl@fh-joanneum.at)
+# Original data:
+# Contributors:	  
+# Date:           01.08.2004
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_DEVS_ETH_ARM_NETARM {
+    display       "NetSilicon board ethernet driver"
+    description   "Ethernet driver for NET+ARM."
+
+    parent        CYGPKG_IO_ETH_DRIVERS
+    active_if	  CYGPKG_IO_ETH_DRIVERS
+
+    
+    compile -library=libextras.a MII.c netarm_eth_drv.c eeprom.c
+
+    define_proc {
+        puts $::cdl_system_header "/***** ethernet driver proc output start *****/"
+        puts $::cdl_system_header "#define CYGDAT_DEVS_ETH_NETARM_CFG <pkgconf/devs_eth_arm_netarm.h>"
+        puts $::cdl_system_header "/*****  ethernet driver proc output end  *****/"
+    }
+    
+    cdl_interface CYGSEM_DEVS_ETH_ARM_NETARM_ETH0_ESA {
+        no_define
+        requires 1 == CYGSEM_DEVS_ETH_ARM_NETARM_ETH0_ESA
+    }
+
+    cdl_component CYGPKG_DEVS_ETH_ARM_NETARM_ETH0 {
+        display       "Ethernet port 0 driver"
+        flavor        bool
+        default_value 1
+
+        implements CYGHWR_NET_DRIVERS
+        implements CYGHWR_NET_DRIVER_ETH0
+
+        cdl_option CYGDAT_DEVS_ETH_ARM_NETARM_ETH0_NAME {
+            display       "Device name for the ETH0 ethernet port 0 driver"
+            flavor        data
+            default_value {"\"eth0\""}
+            description   "
+                This option sets the name of the ethernet device for the
+                netarm ethernet port 0."
+        }
+
+        cdl_component CYGSEM_DEVS_ETH_ARM_NETARM_ETH0_SET_ESA {
+            display       "Set the ethernet station address"
+            flavor        bool
+	    default_value 1
+	    implements CYGSEM_DEVS_ETH_ARM_NETARM_ETH0_ESA
+            description   "Enabling this option will allow the ethernet
+            station address to be forced to the value set by the
+            configuration.  This may be required if the hardware does
+            not include a serial EEPROM for the ESA."
+            
+            cdl_option CYGDAT_DEVS_ETH_ARM_NETARM_ETH0_ESA {
+                display       "The ethernet station address"
+                flavor        data
+                default_value {"{0x00, 0x40, 0xaf, 0x77, 0xe0, 0x80}"}
+                description   "The ethernet station address"
+            }
+        }
+        
+        cdl_option CYGDAT_DEVS_ETH_ARM_NETARM_ETH0_ESA_EEPROM {
+            display       "Read ethernet station address from eeprom"
+            flavor        bool
+            default_value 0
+            implements CYGSEM_DEVS_ETH_ARM_NETARM_ETH0_ESA
+            description   "Read ethernet station address from eeprom (I2C)"
+        }
+        
+        cdl_component CYGPKG_DEVS_ETH_ARM_NETARM_OPTIONS {
+	    display "NETARM ethernet driver build options"
+	    flavor  none
+	    no_define
+	
+	    cdl_option CYGPKG_DEVS_ETH_ARM_NETARM_CFLAGS_ADD {
+	        display "Additional compiler flags"
+	        flavor  data
+	        no_define
+	        default_value { "-D_KERNEL -D__ECOS" }
+	        description   "
+	            This option modifies the set of compiler flags for
+	            building the NETARM ethernet driver
+	            package. These flags are used in addition to the set of
+	            global flags."
+	    }
+        }
+    }
+}
+
+# EOF netarm_eth_driver.cdl

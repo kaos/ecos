@@ -1130,6 +1130,14 @@ package CYGPKG_DEVS_ETH_ARM_CERFPDA {
         description     "Ethernet driver for Crystal LAN on the Cerfpda."
 }
 
+package CYGPKG_DEVS_ETH_ARM_NETARM {
+	alias 		{ "Ethernet driver for the NETARM" NETARM_eth_driver }
+	hardware
+	directory	devs/eth/arm/netarm
+	script		netarm_eth_driver.cdl
+        description     "Ethernet driver for NETARM."
+}
+
 package CYGPKG_IO_SERIAL_SH_EDK7708 {
     alias             { "SH3 EDK7708 serial device drivers"
                         devs_serial_sh3_edk7708

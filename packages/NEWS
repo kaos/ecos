@@ -1,3 +1,4 @@
+* Support for the Ethenet device on the NETARM devices.
 * Added support for the AT91 based PhyCore.
 * Added support for Exys XSEngine (PXA255) based system.
 * Port of ezXML parser added.

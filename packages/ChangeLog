@@ -1,3 +1,7 @@
+2005-06-12   Brandl Harald <Harald.Brandl@fh-joanneum.at>
+
+	* ecos.db: Added a ethernet device driver for the NETARM.
+	
 2005-04-17   Andrew Lunn <andrew.lunn@ascom.ch>
 
 	* ecos.db: Added support for the AT91 based PhyCore

@@ -1,0 +1,467 @@
+diff -Naur orig/hal/arm/netarm/current/cdl/hal_arm_netarm.cdl new/hal/arm/netarm/current/cdl/hal_arm_netarm.cdl
+--- orig/hal/arm/netarm/current/cdl/hal_arm_netarm.cdl	2004-11-29 17:35:46.000000000 +0100
++++ new/hal/arm/netarm/current/cdl/hal_arm_netarm.cdl	2005-03-10 14:54:13.903367200 +0100
+@@ -18,6 +18,26 @@
+ 		puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_arm_netarm.h>"
+ 	}
+ 
++	cdl_option CYGSEM_HAL_INSTRUCTION_CACHE_SETS {
++	    display "Sets for Instruction Cache"
++	    parent CYGPKG_HAL_CACHE_CONTROL
++	    active_if CYGSEM_HAL_ENABLE_ICACHE_ON_STARTUP
++		flavor data
++		legal_values 0 to 15
++		default_value 0xc
++	    description "MSB: SET1 | SET2 | SET3 | SET4"
++	}
++	
++	cdl_option CYGSEM_HAL_DATA_CACHE_SETS {
++	    display "Sets for Data Cache"
++	    parent CYGPKG_HAL_CACHE_CONTROL
++	    active_if CYGSEM_HAL_ENABLE_DCACHE_ON_STARTUP
++		flavor data
++		legal_values 0 to 15
++		default_value 0x3
++	    description "MSB: SET1 | SET2 | SET3 | SET4"
++	}
++
+   	cdl_component CYG_HAL_STARTUP {
+     	display "Startup type" 
+ 		flavor data 
+diff -Naur orig/hal/arm/netarm/current/include/hal_cache.h new/hal/arm/netarm/current/include/hal_cache.h
+--- orig/hal/arm/netarm/current/include/hal_cache.h	2004-11-29 17:35:46.000000000 +0100
++++ new/hal/arm/netarm/current/include/hal_cache.h	2005-03-10 14:41:51.032173600 +0100
+@@ -19,25 +19,57 @@
+ #define HAL_ICACHE_WAYS                 4        // Associativity of the cache
+ #define HAL_ICACHE_LINE_SIZE            4       // Size of a cache line
+ 
+-#define HAL_ICACHE_BASE					0x08000000
+-#define HAL_ICACHE_MASK					0xfe000000
++#if defined(CYG_HAL_STARTUP_ROMRAM) || defined(CYG_HAL_STARTUP_RAM)
++	#define HAL_ICACHE_BASE					0x04000000
++	#define HAL_DCACHE_BASE					0x08000000
++#else
++	#define HAL_ICACHE_BASE					0x02000000
++	#define HAL_DCACHE_BASE					0x04000000
++#endif
++
++#define HAL_ICACHE_MASK					0xff000000
++#define HAL_DCACHE_MASK					0xff000000
++
++
++#ifdef CYGSEM_HAL_ENABLE_ICACHE_ON_STARTUP
++	#define HAL_ICACHE_ENABLE()						\
++	{												\
++		*(CCR0)=(HAL_ICACHE_BASE) |					\
++				(HAL_ICACHE_MASK >> 8) |			\
++				(CCR_ENABLE) |						\
++				(1 << 11)	|						\
++				(CYGSEM_HAL_INSTRUCTION_CACHE_SETS);	\
++	}
++#else
++	#define HAL_ICACHE_ENABLE() (*(CCR0)=0)
++#endif
+ 
+-#define HAL_ICACHE_ENABLE()                     \
++#ifdef CYGSEM_HAL_ENABLE_DCACHE_ON_STARTUP
++	#define HAL_DCACHE_ENABLE()						\
++	{												\
++		*(CCR1)=(HAL_DCACHE_BASE) |					\
++				(HAL_DCACHE_MASK >> 8) |			\
++				(CCR_ENABLE) |						\
++				(1 << 11)	|						\
++				(CYGSEM_HAL_DATA_CACHE_SETS);	\
++	}
++#else
++	#define HAL_DCACHE_ENABLE() (*(CCR1)=0)
++#endif
++
++#define HAL_CACHE_ENABLE()                      \
+ {	 											\
+ 	unsigned int *p;							\
+ 	int i;									    \
+ 												\
+ 	*(SYSCON)|=SYSCON_CINIT|SYSCON_CACHE;		\
+ 	p=(unsigned int *)0xfff00000;				\
+-	for(i=0;i<(0x2000/4);i++,p++)				\
++	for(i=0;i<(0x4000/4);i++,p++)				\
+ 		*p=0;									\
+ 												\
+-	*(SYSCON)&=~(SYSCON_CINIT);					\
+-	*(CCR0)=(HAL_ICACHE_BASE) |					\
+-			(HAL_ICACHE_MASK >> 8) |			\
+-			(CCR_ENABLE) |						\
+-			(CCR_SET1 | CCR_SET2 | CCR_SET3 | CCR_SET4);		\
+-	*(CCR1)=0;									\
++	HAL_ICACHE_ENABLE();						\
++	HAL_DCACHE_ENABLE();						\
++												\
+ 	*(SYSCON)|=SYSCON_CACHE;					\
+ 	*(SYSCON)&=~SYSCON_WB;						\
+ }
+@@ -45,17 +77,25 @@
+ #define HAL_ICACHE_DISABLE()                    \
+ {												\
+ 	*(CCR0)=0;									\
+-	*(SYSCON)&=~SYSCON_CACHE;							\
++	if (HAL_DCACHE_IS_ENABLED == 0)				\
++		*(SYSCON)&=~SYSCON_CACHE;				\
+ }
+ 
+-#define HAL_ICACHE_IS_ENABLED(_state_) _state_ = ((*(CCR0) & CCR_ENABLE) >> 15)
++#define HAL_DCACHE_DISABLE()                    \
++{												\
++	*(CCR1)=0;									\
++	if (HAL_ICACHE_IS_ENABLED == 0)				\
++		*(SYSCON)&=~SYSCON_CACHE;				\
++}
++
++#define HAL_ICACHE_IS_ENABLED ((*(CCR0) & CCR_ENABLE) >> 15)
+ 
+-#define HAL_ICACHE_INVALIDATE_ALL()				\
++#define HAL_CACHE_INVALIDATE_ALL()				\
+ {												\
+ 	unsigned *p;								\
+ 	*(SYSCON)|=SYSCON_CINIT;							\
+ 	for(p=(unsigned int*)0xfff00000;			\
+-		(unsigned int)p<0xfff02000;				\
++		(unsigned int)p<0xfff04000;				\
+ 		p++)									\
+ 		*p=0;									\
+ 												\
+@@ -64,25 +104,13 @@
+ 
+ #define HAL_ICACHE_SYNC()
+ 
+-#define HAL_ICACHE_PURGE_ALL()  HAL_ICACHE_INVALIDATE_ALL()
+-
+-#define HAL_DCACHE_LINE_SIZE 0
+-#define HAL_DCACHE_WAYS 0
+-#define HAL_DCACHE_SETS 0
+-
+-#define HAL_DCACHE_ENABLE()
++#define HAL_CACHE_PURGE_ALL()  HAL_ICACHE_INVALIDATE_ALL()
+ 
+-#define HAL_DCACHE_DISABLE()
+-
+-#define HAL_DCACHE_INVALIDATE_ALL()
++#define HAL_DCACHE_LINE_SIZE 4
++#define HAL_DCACHE_WAYS 4
+ 
+ #define HAL_DCACHE_SYNC()
+ 
+-#define HAL_DCACHE_IS_ENABLED(_state_) 0
+-
+-#define HAL_DCACHE_FLUSH( _base_ , _size_ )
+-
+-#define HAL_DCACHE_STORE( _base_ , _size_ )
++#define HAL_DCACHE_IS_ENABLED ((*(CCR1) & CCR_ENABLE) >> 15)
+ 
+ #endif
+-
+diff -Naur orig/hal/arm/netarm/current/include/hal_platform_setup.h new/hal/arm/netarm/current/include/hal_platform_setup.h
+--- orig/hal/arm/netarm/current/include/hal_platform_setup.h	2004-11-29 17:35:46.000000000 +0100
++++ new/hal/arm/netarm/current/include/hal_platform_setup.h	2005-03-14 17:10:01.542675500 +0100
+@@ -19,7 +19,7 @@
+ // Usage:       #include <cyg/hal/hal_platform_setup.h>
+ //
+ //####DESCRIPTIONEND####
+-// 
++//
+ //===========================================================================*/
+ 
+ #include <pkgconf/system.h>           // System-wide configuration info
+@@ -34,15 +34,31 @@
+ 							bic	r0,r0, #((\x & 3)<<1); \
+ 							str r0,[r1]
+ 
+-#if defined(CYG_HAL_STARTUP_ROMRAM) 
++#if defined(CYG_HAL_STARTUP_ROMRAM)
+ #define HAL_FLASH_PHYS_ADDR		0x02000000
+-#define UNMAPPED(x) 			((x)-0x08000000)
++#define UNMAPPED(x) 			((x)-0x04000000)
+ #elif  defined(CYG_HAL_STARTUP_ROM)
+ #define HAL_FLASH_PHYS_ADDR		0x02000000
+ #define UNMAPPED(x) 			((x)-0x02000000)
+ #endif
+ 		.macro	PLATFORM_SETUP1
+-	
++
++		ldr		r1,=0xffb0000c		// software reset
++		ldr		r0,=0x00000123
++		str		r0,[r1]
++		ldr		r0,=0x00000321
++		str		r0,[r1]
++
++		mov		r0,#1000
++loop:
++		sub		r0,r0,#1
++		cmp		r0,#0
++		bne		loop
++
++		ldr		r0,=0x00000123
++		str		r0,[r1]
++		ldr		r0,=0x00000321
++		str		r0,[r1]
+ 
+ #if defined(CYG_HAL_STARTUP_ROMRAM) || defined(CYG_HAL_STARTUP_ROM)
+ 		mov		r1,#0xff000000
+@@ -51,7 +67,11 @@
+ 		ldr		r0,=0x4004a800		/* System control register */
+ 		str		r0,[r1]
+ 
++#ifdef CYG_HAL_STARTUP_ROM
+ 		mov		r0,#0				/* PLL config */
++#else
++		ldr		r0,=0x09000e1e
++#endif
+ 		str		r0,[r1,#8]
+ 
+ 		ldr		r0,=0xfff00000		/* PORT A mode & dir */
+@@ -64,7 +84,7 @@
+ 		str		r0,[r1,#0x28]
+ 
+ 		add		r1,r1,#0x100000		/* Setup MEM Module base addr */
+-		
++
+ 		ldr		r0,=0x148C0000		/* Memory Module Config register */
+ 		str		r0,[r1]
+ 
+@@ -79,7 +99,7 @@
+ 		ldr		r0,=0xf3f00304		/* CS0 Option register */
+ 		str		r0,[r1,#0x14]
+ 
+-		ldr		r0,=0x02000001		/* CS0 Base Address register */ 
++		ldr		r0,=0x02000001		/* CS0 Base Address register */
+ 		str		r0,[r1,#0x10]
+ 
+ 		mov		pc,r2				/* Jump to new flash base */
+@@ -92,7 +112,7 @@
+ 
+ 		/* Configure SDRAM */
+ 
+-		ldr		r0,=0xf38000b0		/* CS1 Option register, BLEN=11 */
++		ldr		r0,=0xf3000070		/* CS1 Option register, BLEN=11 (0xf38000b0)*/
+ 		str		r0,[r1,#0x24]
+ 
+ 		ldr		r0,=0x0000022d		/* CS1 Base Address register */
+@@ -110,7 +130,7 @@
+ #if defined(CYG_HAL_STARTUP_ROMRAM)
+ 		mov		r1,#0
+ 		mov		r2,#HAL_FLASH_PHYS_ADDR
+-		ldr		r3,=(__heap1 - 0x04000000 + HAL_FLASH_PHYS_ADDR)
++		ldr		r3,=(__heap1 - 0x08000000 + HAL_FLASH_PHYS_ADDR)
+ 
+ 		mov		r4,#0
+ 		mov		r6,#0
+@@ -129,11 +149,11 @@
+ 		nop
+ 		nop
+ 		nop
+-30:	
++30:
+ #endif
+ 
+ #endif
+ 		.endm
+-			
++
+ #endif
+ 
+diff -Naur orig/hal/arm/netarm/current/include/pkgconf/mlt_arm_netarm_ram.ldi new/hal/arm/netarm/current/include/pkgconf/mlt_arm_netarm_ram.ldi
+--- orig/hal/arm/netarm/current/include/pkgconf/mlt_arm_netarm_ram.ldi	2004-11-29 17:35:46.000000000 +0100
++++ new/hal/arm/netarm/current/include/pkgconf/mlt_arm_netarm_ram.ldi	2005-03-10 14:56:07.137708600 +0100
+@@ -3,34 +3,32 @@
+ MEMORY
+ {
+     noncacheram : ORIGIN = 0, LENGTH = 16*1024*1024
+-    dataram : ORIGIN = 0x4000000, LENGTH = 16*1024*1024
+-    codecacheram : ORIGIN = 0x8000000, LENGTH = 16*1024*1024
++    codecacheram : ORIGIN = 0x4000000, LENGTH = 16*1024*1024
++    datacacheram : ORIGIN = 0x8000000, LENGTH = 16*1024*1024
+ }
+ 
+ SECTIONS
+ {
+     SECTIONS_BEGIN
+-	_dataram = 0x4000000;
++	_dataram = 0x8000000;
+     SECTION_rom_vectors (nocacheram, 0x0, LMA_EQ_VMA)
+     SECTION_fixed_vectors (nocacheram, ALIGN (0x4), LMA_EQ_VMA)
+-	code_start = . + 0x8000000; 
+-    SECTION_text (codecacheram, code_start, AT (code_start - 0x8000000))
++	code_start = . + 0x4000000; 
++    SECTION_text (codecacheram, code_start, AT (code_start - 0x4000000))
+ 	fini = .;
+-    SECTION_fini (codecacheram, ALIGN (0x4), AT (fini - 0x8000000))
++    SECTION_fini (codecacheram, ALIGN (0x4), AT (fini - 0x4000000))
+ 	rodata = .;
+-    SECTION_rodata (codecacheram, ALIGN (0x4), AT (rodata - 0x8000000))
++    SECTION_rodata (codecacheram, ALIGN (0x4), AT (rodata - 0x4000000))
+ 	rodata1 = .;
+-    SECTION_rodata1 (codecacheram, ALIGN (0x4), AT (rodata1 - 0x8000000))
++    SECTION_rodata1 (codecacheram, ALIGN (0x4), AT (rodata1 - 0x4000000))
+ 	fixup = .;
+-    SECTION_fixup (codecacheram, ALIGN (0x4), AT (fixup - 0x8000000))
++    SECTION_fixup (codecacheram, ALIGN (0x4), AT (fixup - 0x4000000))
+ 	gcc_except_table =.;
+-    SECTION_gcc_except_table (codecacheram, ALIGN (0x4), AT (gcc_except_table - 0x8000000))
+-	data_start = ALIGN(0x4) - 0x4000000; 
+-    SECTION_data (dataram, data_start, AT (data_start - 0x4000000))
++    SECTION_gcc_except_table (codecacheram, ALIGN (0x4), AT (gcc_except_table - 0x4000000))
++	data_start = ALIGN(0x4) + 0x4000000; 
++    SECTION_data (datacacheram, data_start, AT (data_start - 0x8000000))
+ 	bss = .;
+-    SECTION_bss (dataram, ALIGN (0x4), AT (bss - 0x4000000))
++    SECTION_bss (datacacheram, ALIGN (0x4), AT (bss - 0x8000000))
+     CYG_LABEL_DEFN(__heap1) = ALIGN (0x8);
+     SECTIONS_END
+ }
+-
+-
+diff -Naur orig/hal/arm/netarm/current/include/pkgconf/mlt_arm_netarm_romram.ldi new/hal/arm/netarm/current/include/pkgconf/mlt_arm_netarm_romram.ldi
+--- orig/hal/arm/netarm/current/include/pkgconf/mlt_arm_netarm_romram.ldi	2004-11-29 17:35:46.000000000 +0100
++++ new/hal/arm/netarm/current/include/pkgconf/mlt_arm_netarm_romram.ldi	2005-03-10 14:56:18.184583600 +0100
+@@ -3,34 +3,32 @@
+ MEMORY
+ {
+     noncacheram : ORIGIN = 0, LENGTH = 16*1024*1024
+-    dataram : ORIGIN = 0x4000000, LENGTH = 16*1024*1024
+-    codecacheram : ORIGIN = 0x8000000, LENGTH = 16*1024*1024
++    codecacheram : ORIGIN = 0x4000000, LENGTH = 16*1024*1024
++    datacacheram : ORIGIN = 0x8000000, LENGTH = 16*1024*1024
+ }
+ 
+ SECTIONS
+ {
+     SECTIONS_BEGIN
+-	_dataram = 0x4000000;
++	_dataram = 0x8000000;
+     SECTION_rom_vectors (nocacheram, 0x0, LMA_EQ_VMA)
+     SECTION_fixed_vectors (nocacheram, ALIGN (0x4), LMA_EQ_VMA)
+-	code_start = . + 0x8000000; 
+-    SECTION_text (codecacheram, code_start, AT (code_start -  0x8000000))
++	code_start = . + 0x4000000; 
++    SECTION_text (codecacheram, code_start, AT (code_start - 0x4000000))
+ 	fini = .;
+-    SECTION_fini (codecacheram, ALIGN (0x4), AT (fini -  0x8000000))
++    SECTION_fini (codecacheram, ALIGN (0x4), AT (fini - 0x4000000))
+ 	rodata = .;
+-    SECTION_rodata (codecacheram, ALIGN (0x4), AT (rodata -  0x8000000))
++    SECTION_rodata (codecacheram, ALIGN (0x4), AT (rodata - 0x4000000))
+ 	rodata1 = .;
+-    SECTION_rodata1 (codecacheram, ALIGN (0x4), AT (rodata1 -  0x8000000))
++    SECTION_rodata1 (codecacheram, ALIGN (0x4), AT (rodata1 - 0x4000000))
+ 	fixup = .;
+-    SECTION_fixup (codecacheram, ALIGN (0x4), AT (fixup -  0x8000000))
+-	gcc_except_table = .;
+-    SECTION_gcc_except_table (codecacheram, ALIGN (0x4), AT (gcc_except_table -  0x8000000))
+-	data_start = . - 0x4000000; 
+-    SECTION_data (dataram, data_start, AT (data_start -  0x4000000))
++    SECTION_fixup (codecacheram, ALIGN (0x4), AT (fixup - 0x4000000))
++	gcc_except_table =.;
++    SECTION_gcc_except_table (codecacheram, ALIGN (0x4), AT (gcc_except_table - 0x4000000))
++	data_start = ALIGN(0x4) + 0x4000000; 
++    SECTION_data (datacacheram, data_start, AT (data_start - 0x8000000))
+ 	bss = .;
+-    SECTION_bss (dataram, ALIGN (0x4), AT (bss -  0x4000000))
++    SECTION_bss (datacacheram, ALIGN (0x4), AT (bss - 0x8000000))
+     CYG_LABEL_DEFN(__heap1) = ALIGN (0x8);
+     SECTIONS_END
+ }
+-
+-
+diff -Naur orig/hal/arm/netarm/current/src/netarm_misc.c new/hal/arm/netarm/current/src/netarm_misc.c
+--- orig/hal/arm/netarm/current/src/netarm_misc.c	2004-11-29 17:35:48.000000000 +0100
++++ new/hal/arm/netarm/current/src/netarm_misc.c	2005-02-22 11:57:58.296703200 +0100
+@@ -7,15 +7,15 @@
+ //==========================================================================
+ //==========================================================================
+ //#####DESCRIPTIONBEGIN####
+-// 
++//
+ // Author(s):    Peter De Schrijver (p2@mind.be)
+ // Contributors: Peter De Schrijver (p2@mind.be)
+ // Date:         2002-10-25
+ // Purpose:      HAL board support
+ // Description:  Implementations of HAL board interfaces
+-// 
++//
+ //####DESCRIPTIONEND####
+-// 
++//
+ //========================================================================*/
+ 
+ #include <pkgconf/hal.h>
+@@ -29,7 +29,7 @@
+ #include <cyg/hal/hal_io.h>             // IO macros
+ #include <cyg/hal/hal_arch.h>           // Register state info
+ #include <cyg/hal/hal_diag.h>
+-#include <cyg/hal/hal_intr.h>           // Interrupt names 
++#include <cyg/hal/hal_intr.h>           // Interrupt names
+ #include <cyg/hal/hal_cache.h>
+ #include <cyg/hal/hal_netarm.h>         // Hardware definitions
+ #include <cyg/hal/hal_if.h>             // calling interface API
+@@ -74,9 +74,9 @@
+ void hal_clock_read(cyg_uint32 *pvalue) {
+ 
+ 	static cyg_uint32 clock_val;
+-	
+-	clock_val=*TIMERSTAT1 & 0x1ff; 
+-	*pvalue = (cyg_uint32)(_period - clock_val); 
++
++	clock_val=*TIMERSTAT1 & 0x1ff;
++	*pvalue = (cyg_uint32)(_period - clock_val);
+ 
+ }
+ 
+@@ -97,24 +97,19 @@
+ 
+ void hal_hardware_init(void) {
+ 
++#if defined (CYGSEM_HAL_ENABLE_ICACHE_ON_STARTUP) ||	\
++	defined (CYGSEM_HAL_ENABLE_DCACHE_ON_STARTUP)
+ 
+-#ifdef ENABLECACHE
+-	/* CS1 BSIZE = 4 */
+-	*OR1&=~(3 << 4);
+-	*OR1|=1 << 4;
+-	
+-	HAL_ICACHE_ENABLE();
+-#endif /* ENABLECACHE */
++	HAL_CACHE_ENABLE();
+ 
++#endif /* ENABLECACHE */
+ 
+ 	*INTENABLE_CLR=0xffffffff;
+-			
++
+ 	hal_clock_initialize(CYGNUM_HAL_RTC_PERIOD);
+ 
+ 	hal_if_init();
+ 
+-//	HAL_ICACHE_DISABLE();
+-
+ }
+ 
+ int hal_spurious_ints;
+@@ -125,8 +120,8 @@
+ 	int i;
+ 
+ 	stat=*INTSTATUS;
+-	
+-	for(i=0;i<CYGNUM_HAL_ISR_MAX;i++) 
++
++	for(i=0;i<CYGNUM_HAL_ISR_MAX;i++)
+ 		if(stat & (1<<i))
+ 			return i+1;
+ 
+@@ -154,7 +149,7 @@
+ 
+ 	if((vector>=CYGNUM_HAL_INTERRUPT_C0) && (vector<=CYGNUM_HAL_INTERRUPT_C3)) {
+ 		*PORTC|=1<< (vector+23);
+-    	if(up) 
++    	if(up)
+ 			*PORTC|=1<< (vector+15);
+ 		else
+ 			*PORTC&=~(1<< (vector+15));
