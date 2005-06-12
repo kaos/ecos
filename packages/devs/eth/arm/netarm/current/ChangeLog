@@ -1,4 +1,4 @@
-2005-06-12 Brandl Harald <Harald.Brandl@fh-joanneum.at>
+2005-06-12 Harald Brandl <Harald.Brandl@fh-joanneum.at>
 
 	* First import of an ethernet device driver for the NETARM
 	processors.
