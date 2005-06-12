@@ -80,6 +80,25 @@
 #define _LAST_BOOTBLOCK (-1)
 
 #if CYGNUM_FLASH_WIDTH == 8
+#ifdef CYGHWR_DEVS_FLASH_AMD_AM29F002T
+    {   // AM29F002T
+        device_id  : FLASHWORD(0xb0),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 4,
+        device_size: 0x40000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x40000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : true,
+        bootblocks : { 0x030000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x008000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x004000 * CYGNUM_FLASH_INTERLEAVE,
+                       _LAST_BOOTBLOCK
+                     },
+        banked     : false,
+        bufsiz     : 1
+    },
+#endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29F010
     {   // AM29F010
         device_id  : FLASHWORD(0x20),
@@ -407,7 +426,7 @@
                        0
                      },
         bufsiz     : 1
-    }
+    },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29F800
     {   // AM29F800-T
@@ -565,7 +584,10 @@
 
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29LV128
     {   // AM29LV128
+        long_device_id: true,
         device_id  : FLASHWORD(0x227e),
+        device_id2 : FLASHWORD(0x2212),
+        device_id3 : FLASHWORD(0x2200),
         block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
         block_count: 256,
         device_size: 0x1000000 * CYGNUM_FLASH_INTERLEAVE,
@@ -1090,6 +1112,21 @@
                      },
         banked     : false,
         bufsiz     : 1
+    },
+#endif
+#ifdef CYGHWR_DEVS_FLASH_AMD_AM29LV256
+    {   // AMD AM29LV256
+        long_device_id: true,
+        device_id  : FLASHWORD(0x227e),
+        device_id2 : FLASHWORD(0x2212),
+        device_id3 : FLASHWORD(0x2201),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 512,
+        device_size: 0x2000000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x2000000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : false,
+        banked     : false,
+        bufsiz     : 16,
     },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_S29PL032J

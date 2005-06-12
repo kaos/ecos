@@ -1,3 +1,14 @@
+2005-04-17  David Vrabel  <dvrabel@arcom.com>
+
+	* include/flash_am29xxxxx_parts.inl [CYGHWR_DEVS_FLASH_AMD_AM29F002T]:
+	* cdl/flash_amd_am29xxxxx.cdl: Add AMD AM29F002T part.
+
+	* include/flash_am29xxxxx_parts.inl [CYGHWR_DEVS_FLASH_AMD_AM29LV256]:
+	* cdl/flash_amd_am29xxxxx.cdl: Add AMD AM29LV256 part.
+
+	* include/flash_am29xxxxx_parts.inl [CYGHWR_DEVS_FLASH_AMD_AM29LV128]:
+	Use long device id for AM29LV128 part.
+
 2005-03-18  Peter Korsgaard <jacmet@sunsite.dk>
 
 	* include/flash_am29xxxxx_parts.inl (CYGHWR_DEVS_FLASH_AMD_S29PL032J,
