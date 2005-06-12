@@ -148,6 +148,9 @@ void hal_delay_us(cyg_int32 usecs)
     HAL_WRITE_UINT32(timer+AT91_TC_RA, 0);
     HAL_WRITE_UINT32(timer+AT91_TC_RC, ticks);
 
+	// Clear status flags
+    HAL_READ_UINT32(timer+AT91_TC_SR, stat);
+
     // Start timer
     HAL_WRITE_UINT32(timer+AT91_TC_CCR, AT91_TC_CCR_TRIG | AT91_TC_CCR_CLKEN);
 
