@@ -32,16 +32,13 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   jskov
-// Contributors:jskov
+// Contributors:jskov, Hajime Ishitani 
 // Date:        2000-10-30
 //              
 //####DESCRIPTIONEND####
@@ -51,23 +48,24 @@
 //--------------------------------------------------------------------------
 // RealTime Clock
 
-#define CYGARC_REG_RC64CNT              0xfffffec0
-#define CYGARC_REG_RSECCNT              0xfffffec2
-#define CYGARC_REG_RMINCNT              0xfffffec4
-#define CYGARC_REG_RHRCNT               0xfffffec6
-#define CYGARC_REG_RWKCNT               0xfffffec8
-#define CYGARC_REG_RDAYCNT              0xfffffeca
-#define CYGARC_REG_RMONCNT              0xfffffecc
-#define CYGARC_REG_RYRCNT               0xfffffece
-#define CYGARC_REG_RSECAR               0xfffffed0
-#define CYGARC_REG_RMINAR               0xfffffed2
-#define CYGARC_REG_RHRAR                0xfffffed4
-#define CYGARC_REG_RWKAR                0xfffffed6
-#define CYGARC_REG_RDAYAR               0xfffffed8
-#define CYGARC_REG_RMONAR               0xfffffeda
-#define CYGARC_REG_RCR1                 0xfffffedc
-#define CYGARC_REG_RCR2                 0xfffffede
-
+#define CYGARC_REG_RC64CNT              0xFFC80000		// 8bit
+#define CYGARC_REG_RSECCNT              0xFFC80004		// 8bit
+#define CYGARC_REG_RMINCNT              0xFFC80008		// 8bit
+#define CYGARC_REG_RHRCNT               0xFFC8000C		// 8bit
+#define CYGARC_REG_RWKCNT               0xFFC80010		// 8bit
+#define CYGARC_REG_RDAYCNT              0xFFC80014		// 8bit
+#define CYGARC_REG_RMONCNT              0xFFC80018		// 8bit
+#define CYGARC_REG_RYRCNT               0xFFC8001C		// 16bit
+#define CYGARC_REG_RSECAR               0xFFC80020		// 8bit
+#define CYGARC_REG_RMINAR               0xFFC80024		// 8bit
+#define CYGARC_REG_RHRAR                0xFFC80028		// 8bit
+#define CYGARC_REG_RWKAR                0xFFC8002C		// 8bit
+#define CYGARC_REG_RDAYAR               0xFFC80030		// 8bit
+#define CYGARC_REG_RMONAR               0xFFC80034		// 8bit
+#define CYGARC_REG_RCR1                 0xFFC80038		// 8bit
+#define CYGARC_REG_RCR2                 0xFFC8003C		// 8bit
+#define CYGARC_REG_RCR3                 0xFFC80050		// 8bit
+#define CYGARC_REG_RYRAR                0xFFC80054		// 8bit
 
 #define CYGARC_REG_RCR1_CF              0x80 // carry flag
 #define CYGARC_REG_RCR1_CIE             0x10 // carry interrupt enable
@@ -82,5 +80,4 @@
 #define CYGARC_REG_RCR2_ADJ             0x04 // second adjustment
 #define CYGARC_REG_RCR2_RESET           0x02 // reset
 #define CYGARC_REG_RCR2_START           0x01 // start
-
 

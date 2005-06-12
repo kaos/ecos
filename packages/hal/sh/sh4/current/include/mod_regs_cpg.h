@@ -92,6 +92,8 @@
 # define CYGARC_REG_FRQCR_INIT_PLL1 0x0400
 #elif (CYGHWR_HAL_SH_OOC_PLL_1 == 8)
 # define CYGARC_REG_FRQCR_INIT_PLL1 0x0400
+#elif (CYGHWR_HAL_SH_OOC_PLL_1 == 12)
+# define CYGARC_REG_FRQCR_INIT_PLL1 0x0400
 #else
 # error "Unsupported PLL1 setting"
 #endif

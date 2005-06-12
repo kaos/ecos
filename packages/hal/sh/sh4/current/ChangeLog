@@ -1,3 +1,11 @@
+2005-05-13  Hajime Ishitani <pigmon@mail.snd.co.jp>
+
+	* include/mod_regs_cpg.h :
+	added CYGHWR_HAL_SH_OOC_PLL_1  12 multiply(SH7751R).
+
+	* include/mod_regs_rtc.h : Fix register addresses which changes
+	between SH3 and SH4 versions of the Renesas device.
+
 2004-04-22  Jani Monoses <jani@iv.ro>
 
 	 * cdl/hal_sh_sh4.cdl :
