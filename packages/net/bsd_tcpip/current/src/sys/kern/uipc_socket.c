@@ -188,8 +188,10 @@ sobind(so, nam, p)
 void
 sodealloc(so)
 	struct socket *so;
+        
 {
-
+        vm_zone_t zone;
+  
 	so->so_gencnt = ++so_gencnt;
 #ifdef INET
 	if (so->so_accf != NULL) {
@@ -202,8 +204,9 @@ sodealloc(so)
 		FREE(so->so_accf, M_ACCF);
 	}
 #endif /* INET */
-	zfreei(so->so_zone, so);
-        wakeup(so->so_zone);
+        zone = so->so_zone;
+        zfreei(zone, so);
+        wakeup(zone);
 }
 
 int
