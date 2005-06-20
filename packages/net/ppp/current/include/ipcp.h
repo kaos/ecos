@@ -101,6 +101,12 @@ typedef struct ipcp_options {
     int old_vj : 1;		/* use old (short) form of VJ option? */
     int accept_local : 1;	/* accept peer's value for ouraddr */
     int accept_remote : 1;	/* accept peer's value for hisaddr */
+#ifdef CYGOPT_PPP_NS_NEGOTIATE
+    int neg_dns1 : 1;           /* Negotiate primary domain name server? */
+    int neg_wins1 : 1;          /* Negotiate primary WINS? */
+    int neg_dns2 : 1;           /* Negotiate secondary domain name server? */
+    int neg_wins2 : 1;          /* Negotiate secondary WINS? */
+#endif
     u_short vj_protocol;	/* protocol value to use in VJ option */
     u_char maxslotindex, cflag;	/* values for RFC1332 VJ compression neg. */
     u_int32_t ouraddr, hisaddr;	/* Addresses in NETWORK BYTE ORDER */

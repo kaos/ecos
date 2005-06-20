@@ -1,3 +1,15 @@
+2005-06-07	Matt Jerdonek <maj1224@yahoo.com>
+
+	* src/ipcp.c:
+	* include/ipcp.h: Added code to support RFC 1877 (IPCP
+	  Extension for DNS) for client operation.
+	* src/sys-ecos.c:
+	* include/ppp.h: Added function for application to get
+	  the negotiated addresses from the PPP stack.
+	* cdl/ppp.cdl: Added option to enable name server negotiation
+	  and to automatically configure the DNS resolver with the 
+	  negotiated address
+
 2005-04-21	Matt Jerdonek <maj1224@yahoo.com>
 
 	* src/ipcp.c:

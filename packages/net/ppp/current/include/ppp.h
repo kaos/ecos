@@ -71,8 +71,7 @@
 typedef CYG_ADDRWORD cyg_ppp_handle_t;
 
 // -------------------------------------------------------------------------
-/* PPP statistics */
-
+/* PPP failure statistics */
 typedef struct {
 	int auth_failures;        /* PAP or CHAP failures */
 	int no_proto;             /* No network protocol running */
@@ -81,11 +80,19 @@ typedef struct {
 	int loopback;             /* Loopback detected */
 	int no_response;          /* Peer not responding */
 } cyg_ppp_stats_t;
-
 extern cyg_ppp_stats_t cyg_ppp_stats; /* PPP statistics */
+// -------------------------------------------------------------------------
+// PPP negotiated addresses
+typedef struct {
+	u_int32_t local_ip;       /* Local ip address */
+	u_int32_t peer_ip;        /* Peer ip address */
+	u_int32_t pri_dns;        /* Primary DNS address */
+	u_int32_t alt_dns;        /* Alternate DNS address */
+	u_int32_t pri_wins;       /* Primary WINS address */
+	u_int32_t alt_wins;       /* Alternate WINS address */
+} cyg_ppp_neg_addrs_t;
 
 // -------------------------------------------------------------------------
-
 typedef struct
 {
     unsigned int
@@ -98,7 +105,6 @@ typedef struct
         refuse_chap     : 1,	        /* Don't wanna auth. ourselves with CHAP */
         neg_accm        : 1             /* Flag to enable ACCM negotiation */
         ;
-
     cyg_serial_baud_rate_t      baud;   /* serial line baud rate */
     
     int         conf_accm;              /* Configurable value of ACCM */
@@ -149,6 +155,10 @@ externC cyg_int32 cyg_ppp_chat( const char *devname,
                                 const char *script[] );
 
 
+// -------------------------------------------------------------------------
+#ifdef CYGOPT_PPP_NS_NEGOTIATE
+externC u_int32_t cyg_ppp_get_neg_addrs(cyg_ppp_neg_addrs_t *addrs);
+#endif
 // -------------------------------------------------------------------------
 #endif // CYGONCE_PPP_PPP_H multiple inclusion protection
 // EOF ppp.h

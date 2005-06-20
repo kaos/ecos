@@ -1802,6 +1802,26 @@ externC void cyg_ppp_wait_down( cyg_ppp_handle_t handle )
     cyg_thread_delete( ppp_tty.pppd_thread );
 }
 
+// -------------------------------------------------------------------------
+#ifdef CYGOPT_PPP_NS_NEGOTIATE
+externC u_int32_t cyg_ppp_get_neg_addrs(cyg_ppp_neg_addrs_t *addrs)
+{
+	if (phase == PHASE_NETWORK && ifaddrs[0] != 0)
+	{
+		addrs->local_ip = ipcp_gotoptions[0].ouraddr;
+		addrs->peer_ip = ipcp_hisoptions[0].hisaddr;
+		addrs->pri_dns = ipcp_gotoptions[0].dnsaddr[0];
+		addrs->alt_dns = ipcp_gotoptions[0].dnsaddr[1];
+		addrs->pri_wins = ipcp_gotoptions[0].winsaddr[0];
+		addrs->alt_wins = ipcp_gotoptions[0].winsaddr[1];
+		return(1);
+	}
+	else
+	{
+		return(0);
+	}
+}
+#endif
 //=====================================================================
 // eCos extras
 

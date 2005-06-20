@@ -83,11 +83,16 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+#include <pkgconf/system.h>
 #include <pkgconf/ppp.h>
 #include "cyg/ppp/pppd.h"
 #include "cyg/ppp/fsm.h"
 #include "cyg/ppp/ipcp.h"
 #include "cyg/ppp/ppp_io.h"
+
+#ifdef CYGPKG_NS_DNS
+#include <cyg/ns/dns/dns.h>
+#endif
 
 #define option_error(msg) db_printf("Option error: %s\n", msg )
 
@@ -234,6 +239,10 @@ ipcp_init(unit)
     wo->hisaddr     = ppp_tty.options->his_address;
     wo->default_route = ppp_tty.options->default_route;
 
+#ifdef CYGOPT_PPP_NS_NEGOTIATE
+    wo->neg_dns1 = 1;       
+#endif
+
     /* max slots and slot-id compression are currently hardwired in */
     /* ppp_if.c to 16 and 1, this needs to be changed (among other */
     /* things) gmc */
@@ -352,6 +361,7 @@ ipcp_cilen(f)
     ipcp_options *go = &ipcp_gotoptions[f->unit];
     ipcp_options *wo = &ipcp_wantoptions[f->unit];
     ipcp_options *ho = &ipcp_hisoptions[f->unit];
+    int len;
 
 #define LENCIVJ(neg, old)	(neg ? (old? CILEN_COMPRESS : CILEN_VJ) : 0)
 #define LENCIADDR(neg, old)	(neg ? (old? CILEN_ADDRS : CILEN_ADDR) : 0)
@@ -382,8 +392,16 @@ ipcp_cilen(f)
 	}
     }
 
-    return (LENCIADDR(go->neg_addr, go->old_addrs) +
-	    LENCIVJ(go->neg_vj, go->old_vj));
+    len = LENCIADDR(go->neg_addr, go->old_addrs) +
+          LENCIVJ(go->neg_vj, go->old_vj);
+    
+#ifdef CYGOPT_PPP_NS_NEGOTIATE
+    len += LENCIADDR(go->neg_dns1, 0) +
+           LENCIADDR(go->neg_wins1, 0) +
+           LENCIADDR(go->neg_dns2, 0) +
+           LENCIADDR(go->neg_wins2, 0);
+#endif
+    return (len);
 }
 
 
@@ -438,6 +456,13 @@ ipcp_addci(f, ucp, lenp)
 
     ADDCIVJ(CI_COMPRESSTYPE, go->neg_vj, go->vj_protocol, go->old_vj,
 	    go->maxslotindex, go->cflag);
+
+#ifdef CYGOPT_PPP_NS_NEGOTIATE
+    ADDCIADDR(CI_MS_DNS1, go->neg_dns1, 0, go->dnsaddr[0], 0);
+    ADDCIADDR(CI_MS_WINS1, go->neg_wins1, 0, go->winsaddr[0], 0);
+    ADDCIADDR(CI_MS_DNS2, go->neg_dns2, 0, go->dnsaddr[1], 0);
+    ADDCIADDR(CI_MS_WINS2, go->neg_wins2, 0, go->winsaddr[1], 0);
+#endif
 
     *lenp -= len;
 }
@@ -518,6 +543,13 @@ ipcp_ackci(f, p, len)
 
     ACKCIVJ(CI_COMPRESSTYPE, go->neg_vj, go->vj_protocol, go->old_vj,
 	    go->maxslotindex, go->cflag);
+
+#ifdef CYGOPT_PPP_NS_NEGOTIATE
+    ACKCIADDR(CI_MS_DNS1, go->neg_dns1, 0, go->dnsaddr[0], 0);
+    ACKCIADDR(CI_MS_WINS1, go->neg_wins1, 0, go->winsaddr[0], 0);
+    ACKCIADDR(CI_MS_DNS2, go->neg_dns2, 0, go->dnsaddr[1], 0);
+    ACKCIADDR(CI_MS_WINS2, go->neg_wins2, 0, go->winsaddr[1], 0);
+#endif
 
     /*
      * If there are any remaining CIs, then this packet is bad.
@@ -639,6 +671,22 @@ ipcp_nakci(f, p, len)
 	    }
 	    );
 
+#ifdef CYGOPT_PPP_NS_NEGOTIATE
+    /*
+     * Accept the peer's idea of the DNS and WINS addresses
+     */
+    NAKCIADDR(CI_MS_DNS1, neg_dns1, 0, try.dnsaddr[0] = ciaddr1;);
+    NAKCIADDR(CI_MS_WINS1, neg_wins1, 0, try.winsaddr[0] = ciaddr1;);
+    NAKCIADDR(CI_MS_DNS2, neg_dns2, 0, try.dnsaddr[1] = ciaddr1;);
+    NAKCIADDR(CI_MS_WINS2, neg_wins2, 0, try.winsaddr[1] = ciaddr1;);
+#ifdef CYGOPT_PPP_DNS_CONFIGURE
+	if (try.dnsaddr[0] != 0 )
+	{
+    	cyg_dns_res_init((struct in_addr *)&try.dnsaddr[0]);
+    }
+#endif
+#endif
+
     /*
      * There may be remaining CIs, if the peer is requesting negotiation
      * on an option that we didn't include in our request packet.
@@ -723,6 +771,9 @@ ipcp_rejci(f, p, len)
     u_short cishort;
     u_int32_t cilong;
     ipcp_options try;		/* options to request next time */
+#ifdef CYGOPT_PPP_NS_NEGOTIATE
+    u_char citype, *next;    
+#endif
 
     try = *go;
     /*
@@ -780,6 +831,38 @@ ipcp_rejci(f, p, len)
 
     REJCIVJ(CI_COMPRESSTYPE, neg_vj, go->vj_protocol, go->old_vj,
 	    go->maxslotindex, go->cflag);
+
+#ifdef CYGOPT_PPP_NS_NEGOTIATE
+/*
+     * There may be remaining CIs, if the peer is unable to support
+     * DNS or WINS negotiation.  If so, just turn them off
+     *
+     */     
+            
+    while (len > CILEN_VOID) {
+        GETCHAR(citype, p);
+        GETCHAR(cilen, p);
+        if( (len -= cilen) < 0 )
+            goto bad;
+        next = p + cilen - 2;
+
+        switch (citype) {
+        case CI_MS_DNS1:
+                try.neg_dns1 = 0;
+                break;
+        case CI_MS_WINS1:
+                try.neg_wins1 = 0;
+                break;
+        case CI_MS_DNS2:
+                try.neg_dns2 = 0;
+                break;
+        case CI_MS_WINS2:
+                try.neg_wins2 = 0;
+                break;
+        }
+        p = next;
+    }           
+#endif
 
     /*
      * If there are any remaining CIs, then this packet is bad.

@@ -248,6 +248,31 @@ cdl_package CYGPKG_PPP {
         }
     }
 
+    cdl_component CYGPKG_PPP_NEGOTIATE_OPTIONS {
+        display "PPP negotiation options"
+        flavor none
+        no_define
+        
+        cdl_option CYGOPT_PPP_NS_NEGOTIATE {
+            display "Name server support"
+            default_value CYGINT_ISO_DNS
+            flavor bool
+            description "
+                This option allows negotiation of the domain
+                name server IPCP extensions as defined in 
+                RFC 1877"
+        }
+        cdl_option CYGOPT_PPP_DNS_CONFIGURE {
+        display       "Allow the PPP code to configure the resolver"
+        default_value 1
+        description   "
+            The PPP code can negotionate with the peer what the 
+            recommended DNS server is. This option causes the PPP 
+            code to then configure the DNS resolver with the address
+            of the discovered server."
+       }
+    }    
+
     cdl_component CYGPKG_PPP_OPTIONS {
         display "PPP build options"
         flavor  none
