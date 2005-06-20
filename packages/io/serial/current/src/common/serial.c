@@ -507,20 +507,24 @@ serial_select(cyg_io_handle_t handle, cyg_uint32 which, CYG_ADDRWORD info)
 
     cyg_devtab_entry_t *t = (cyg_devtab_entry_t *)handle;
     serial_channel *chan = (serial_channel *)t->priv;
-
+    cyg_bool retval = false;
+ 
+    cyg_drv_dsr_lock(); // Avoid races
     
     switch( which )
     {
     case CYG_FREAD:
         {
             cbuf_t *cbuf = &chan->in_cbuf;
-
+            cyg_drv_mutex_lock(&cbuf->lock);
+            
             // Check for data in the input buffer. If there is none,
             // register the select operation, otherwise return true.
 
             if( cbuf->nb == 0 )
                 cyg_selrecord( info, &cbuf->selinfo );
-            else return true;
+            else retval = true;
+            cyg_drv_mutex_unlock(&cbuf->lock);        
         }
         break;
         
@@ -530,6 +534,8 @@ serial_select(cyg_io_handle_t handle, cyg_uint32 which, CYG_ADDRWORD info)
             // register the select operation, otherwise return true.
 
             cbuf_t *cbuf = &chan->out_cbuf;
+            cyg_drv_mutex_lock(&cbuf->lock);
+            
             int space = cbuf->len - cbuf->nb;
 #ifdef CYGPKG_IO_SERIAL_FLOW_CONTROL
             if ( (space < cbuf->low_water) ||
@@ -539,14 +545,18 @@ serial_select(cyg_io_handle_t handle, cyg_uint32 which, CYG_ADDRWORD info)
             if (space < cbuf->low_water)
                 cyg_selrecord( info, &cbuf->selinfo );
 #endif
-            else return true;
+            else retval = true;
+            
+            cyg_drv_mutex_unlock(&cbuf->lock);
         }
         break;
 
     case 0: // exceptions - none supported
         break;
     }
-    return false;
+
+    cyg_drv_dsr_unlock();
+    return retval;
 #else
 
     // With no select support, we simply return true.

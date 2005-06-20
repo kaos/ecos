@@ -1,3 +1,10 @@
+2005-06-17  Andreas Gaer <andreas.gaer@baslerweb.com>
+
+	 * src/common/serial.c : Lock DSRs inside serial_select() as
+	 the serial DSR calls functions manipulating the cbuf structs,
+	 leading to a race condition. Also use the mutex to avoid races
+	 between different threads.
+
 2005-05-13  Peter Korsgaard  <jacmet@sunsite.dk>
 
 	* src/common/serial.c (serial_init): Fix compiler warnings about
