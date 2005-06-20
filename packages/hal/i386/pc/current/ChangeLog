@@ -1,3 +1,8 @@
+2005-06-20  Frank Pagliughi <fpagliughi@mindspring.com>
+
+	* cdl/hal_i386_pc.cdl, include/pkgconf/mlt_i386_pc_grub_hi.*:
+	Support for booting with GRUB in the High Memory.
+
 2005-04-27  David Vrabel <dvrabel@arcom.com>
 
 	* cdl/hal_i386_pc.cdl (CYGPKG_HAL_I386_PC_MEMSIZE): Moved from the
