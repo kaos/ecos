@@ -1,3 +1,8 @@
+2005-06-22  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/if_fec.c (fec_eth_int): Avoid race when handling interrupt
+	events - reported by Fernando Flores 
+
 2004-10-11  Harald Kuethe  <hkuethe@controlware.de>
 
        * src/if_fec.c (fec_eth_RxEvent): remove crc from packet.

@@ -763,13 +763,13 @@ fec_eth_int(struct eth_drv_sc *sc)
     unsigned long event;
 
     while ((event = qi->fec->iEvent) != 0) {
+        qi->fec->iEvent = event;  // Reset the bits we handled
         if ((event & iEvent_TFINT) != 0) {
             fec_eth_TxEvent(sc);
         }
         if ((event & iEvent_RFINT) != 0) {
             fec_eth_RxEvent(sc);
         }
-        qi->fec->iEvent = event;  // Reset the bits we handled
     }
 }
 
