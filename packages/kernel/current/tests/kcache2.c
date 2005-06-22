@@ -345,14 +345,14 @@ test_dcache_operation(void)
         if ((i >= 256) && (i < 256+HAL_DCACHE_SIZE/sizeof(*lp))) {
             if (lp[i] != (0xFF000000 + i)) {
                 if (++errs < 16) {
-                    diag_printf("Data inside test range changed - was: %x, is %x, index: %x\n",
+                    diag_printf("Data inside test range changed - was: %x, is %lx, index: %x\n",
                                 0xFF000000+i, lp[i], i);
                 }
             }
         } else {
             if (lp[i] != i) {
                 if (++errs < 16) {
-                    diag_printf("Data outside test range changed - was: %x, is %x, index: %x\n",
+                    diag_printf("Data outside test range changed - was: %x, is %lx, index: %x\n",
                                 i, lp[i], i);
                 }
             }

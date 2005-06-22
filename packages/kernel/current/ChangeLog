@@ -1,3 +1,8 @@
+2005-06-21  Peter Korsgaard  <jacmet@sunsite.dk>
+
+	* tests/kcache2.c (test_dcache_operation): Fixed compiler warnings
+	about formats strings for diag_printf.
+
 2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/tm_basic.cxx (_run_all_tests): Fixed compiler warning.
