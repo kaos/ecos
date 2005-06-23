@@ -122,6 +122,7 @@ struct sockaddr_inarp {
 	struct	in_addr sin_srcaddr;
 	u_short	sin_tos;
 	u_short	sin_other;
+        u_char  _padding[16];    // So this matches in size with struct sockaddr
 #define SIN_PROXY 1
 };
 /*
