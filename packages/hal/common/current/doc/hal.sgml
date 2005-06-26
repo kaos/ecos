@@ -1156,20 +1156,58 @@ HAL_DELAY_US(us)
 </programlisting>
 
 <para>
-This is an optional definition. If defined the macro implements a busy
-loop delay for the given number of microseconds. This is usually
-implemented by waiting for the required number of hardware timer ticks
-to pass. 
+This macro provides a busy loop delay for the given number of
+microseconds. It is intended mainly for controlling hardware that
+needs short delays between operations. Code which needs longer delays,
+of the order of milliseconds, should instead use higher-level
+functions such as <function>cyg_thread_delay</function>. The macro
+implementation should be thread-safe. It can also be used in ISRs or
+DSRs, although such usage is undesirable because of the impact on
+interrupt and dispatch latency.
 </para>
 
 <para>
-This operation should normally be used when a very short delay is
-needed when controlling hardware, programming FLASH devices and similar
-situations where a wait/timeout loop would otherwise be used. Since it
-may disable interrupts, and is implemented by busy waiting, it should
-not be used in code that is sensitive to interrupt or context switch
-latencies.
+The macro should never delay for less than the specified amount of
+time. It may delay for somewhat longer, although since the macro uses
+a busy loop this is a waste of cpu cycles. Of course the code invoking
+<function>HAL_DELAY_US</function> may get interrupted or timesliced,
+in which case the delay may be much longer than intended. If this is
+unacceptable then the calling code must take preventative action
+such as disabling interrupts or locking the scheduler.
 </para>
+
+<para>
+There are three main ways of implementating the macro:
+</para>
+
+<orderedlist>
+  <listitem><para>
+a counting loop, typically written in inline assembler, using an outer
+loop for the microseconds and an inner loop that consumes
+approximately 1us. This implementation is automatically thread-safe
+and does not impose any dependencies on the rest of the system, for
+example it does not depend on the system clock having been started.
+However it assumes that the cpu clock speed is known at compile-time
+or can be easily determined at run-time.
+  </para></listitem>
+  <listitem><para>
+monitor one of the hardware clocks, usually the system clock. Usually
+this clock ticks at a rate independent of the cpu so calibration is
+easier. However the implementation relies on the system clock having
+been started, and assumes that no other code is manipulating the clock
+hardware. There can also be complications when the system clock wraps
+around.
+  </para></listitem>
+  <listitem><para>
+a combination of the previous two. The system clock is used during
+system initialization to determine the cpu clock speed, and the result
+is then used to calibrate a counting loop. This has the disadvantage
+of significantly increasing the system startup time, which may be
+unacceptable to some applications. There are also complications if the
+system startup code normally runs with the cache disabled because the
+instruction cache will greatly affect any calibration loop.
+  </para></listitem>
+</orderedlist>
 
 </section>
 

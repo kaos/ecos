@@ -1,3 +1,8 @@
+2005-06-26  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/hal.sgml: make HAL_DELAY_US() mandatory and define it to be
+	thread-safe.
+
 2005-05-19  Peter Korsgaard  <jacmet@sunsite.dk>
 
 	* doc/porting.sgml: Changed dead sourceware.cygnus.com links to
