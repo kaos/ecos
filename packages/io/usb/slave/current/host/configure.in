@@ -9,6 +9,7 @@ dnl ====================================================================
 dnl ####ECOSGPLCOPYRIGHTBEGIN####
 dnl -------------------------------------------
 dnl This file is part of eCos, the Embedded Configurable Operating System.
+dnl Copyright (C) 2005 eCosCentric Ltd    
 dnl Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 dnl
 dnl eCos is free software; you can redistribute it and/or modify it under
@@ -98,6 +99,14 @@ else
         AC_CHECK_HEADERS("linux/usb.h" "linux/usbdevice_fs.h",,SUPPORTED="no")
         if test "${SUPPORTED}" = "no" ; then
 	    AC_MSG_WARN([Required Linux kernel functionality does not appear to be available])
+	else
+	  AC_TRY_COMPILE([
+	          #include <linux/usbdevice_fs.h>
+              ], [
+	          static struct usbdevfs_ctrltransfer xx = { .bRequestType = 0 };
+	      ],
+	          AC_DEFINE(CYGBLD_USE_NEW_FIELD_NAMES)
+	      )
         fi
     fi
 fi
@@ -108,8 +117,5 @@ fi
 	
 AM_CONDITIONAL(SUPPORTED, test "${SUPPORTED}" = "yes")
 
-dnl There is no real need for a config.h file at this time, since the code
-dnl is specific to Linux. This may change in future.
-dnl AM_CONFIG_HEADER(config.h:config.h.in)
-
+AM_CONFIG_HEADER(config.h:config.h.in)
 AC_OUTPUT(Makefile:Makefile.in)

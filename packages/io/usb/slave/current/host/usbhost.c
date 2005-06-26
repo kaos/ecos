@@ -10,6 +10,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 2005 eCosCentric Ltd.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -86,9 +87,23 @@
 #include <linux/usb.h>
 #include <linux/usbdevice_fs.h>
 #include "../tests/protocol.h"
+#include "config.h"
 
 /*}}}*/
 
+/*{{{  Backwards compatibility                                  */
+
+// The header file <linux/usbdevice_fs.h> has changed in an incompatible
+// way. This is detected by autoconf
+#ifndef CYGBLD_USE_NEW_FIELD_NAMES
+# define bRequestType   requesttype
+# define bRequest       request
+# define wValue         value
+# define wIndex         index
+# define wLength        length
+#endif
+
+/*}}}*/
 /*{{{  Statics                                                  */
 
 // ----------------------------------------------------------------------------
@@ -308,22 +323,22 @@ usb_control_message(int fd, int request_type, int request, int value, int index,
             int this_len = length - 1;
             int ioctl_result;
             
-            transfer.requesttype    = USB_TYPE_CLASS | USB_RECIP_DEVICE;
+            transfer.bRequestType   = USB_TYPE_CLASS | USB_RECIP_DEVICE;
             if (this_len > 4) {
                 this_len = 4;
             }
             switch (this_len) {
-              case 1: transfer.request  = USBTEST_CONTROL_DATA1; break;
-              case 2: transfer.request  = USBTEST_CONTROL_DATA2; break;
-              case 3: transfer.request  = USBTEST_CONTROL_DATA3; break;
-              case 4: transfer.request  = USBTEST_CONTROL_DATA4; break;
+              case 1: transfer.bRequest = USBTEST_CONTROL_DATA1; break;
+              case 2: transfer.bRequest = USBTEST_CONTROL_DATA2; break;
+              case 3: transfer.bRequest = USBTEST_CONTROL_DATA3; break;
+              case 4: transfer.bRequest = USBTEST_CONTROL_DATA4; break;
               default:
                 fprintf(stderr, "usbhost: internal error, confusion about transfer length.\n");
                 exit(EXIT_FAILURE);
             }
-            transfer.value      = (buf[i]   << 8) | buf[i+1];   // Possible read beyond end of buffer,
-            transfer.index      = (buf[i+2] << 8) | buf[i+3];   // but not worth worrying about.
-            transfer.length     = 0;
+            transfer.wValue     = (buf[i]   << 8) | buf[i+1];   // Possible read beyond end of buffer,
+            transfer.wIndex     = (buf[i+2] << 8) | buf[i+3];   // but not worth worrying about.
+            transfer.wLength    = 0;
             transfer.timeout    = 10 * 1000; // ten seconds, the target should always accept data faster than this.
             transfer.data       = NULL;
 
@@ -339,11 +354,11 @@ usb_control_message(int fd, int request_type, int request, int value, int index,
         length = 0;
     }
 #endif    
-    transfer.requesttype        = request_type;
-    transfer.request            = request;
-    transfer.value              = value;
-    transfer.index              = index;
-    transfer.length             = length;
+    transfer.bRequestType       = request_type;
+    transfer.bRequest           = request;
+    transfer.wValue             = value;
+    transfer.wIndex             = index;
+    transfer.wLength            = length;
     transfer.timeout            = 10000;
     transfer.data               = data;
 

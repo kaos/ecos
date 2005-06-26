@@ -1,0 +1,11 @@
+/* config.h.in.  Generated automatically from configure.in by autoheader.  */
+
+#undef PACKAGE
+#undef VERSION
+#undef CYGBLD_USE_NEW_FIELD_NAMES
+
+/* Define if you have the <linux/usb.h> header file.  */
+#undef HAVE_LINUX_USB_H
+
+/* Define if you have the <linux/usbdevice_fs.h> header file.  */
+#undef HAVE_LINUX_USBDEVICE_FS_H

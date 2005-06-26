@@ -1,3 +1,13 @@
+2005-06-26  Bart Veer  <bartv@ecoscentric.com>
+
+	* host/usbhost.c, host/configure.in: cope with incompatible
+	changes to the system header <linux/usbdevice_fs.h>
+
+	* host/acconfig.h: new file to support the above
+
+	* host/Makefile.in, host/aclocal.m4, host/config.h.in,
+	host/configure, host/stamp-h.in: regenerate
+
 2003-03-27  Bart Veer  <bartv@ecoscentric.com>
 
 	* host/Makefile.am, host/Makefile.in:
