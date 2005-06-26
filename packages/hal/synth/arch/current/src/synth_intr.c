@@ -129,6 +129,9 @@
 // ----------------------------------------------------------------------------
 // Statics.
 
+// The bogomips rating, used by HAL_DELAY_US()
+int hal_bogomips;
+
 // Are interrupts currently enabled?
 volatile cyg_bool_t hal_interrupts_enabled = false;
 
@@ -1325,6 +1328,42 @@ synth_hardware_init(void)
         CYG_FAIL("Failed to install signal handler for SIGCHLD");
     }
 
+    // Determine the processor's bogomips rating. This adds some
+    // start-up overhead to all applications, even if HAL_DELAY_US()
+    // is not used. However doing it on demand in the first call
+    // to HAL_DELAY_US() would risk running out of file descriptors.
+    {
+        int     fd;
+        char    buf[4096];      // much larger than current /proc/cpuinfo, but still small enough for synthetic target stacks
+        int     read;
+        int     i;
+
+        fd  = cyg_hal_sys_open("/proc/cpuinfo", CYG_HAL_SYS_O_RDONLY, 0);
+        if (fd < 0) {
+            CYG_FAIL("Failed to open /proc/cpuinfo, needed for BogoMips rating");
+        }
+        read    = cyg_hal_sys_read(fd, buf, 4096);
+        cyg_hal_sys_close(fd);
+
+        for (i = 0; i < read; i++) {
+            if ((buf[i  ] == 'b') && (buf[i+1] == 'o') && (buf[i+2] == 'g') && (buf[i+3] == 'o') &&
+                (buf[i+4] == 'm') && (buf[i+5] == 'i') && (buf[i+6] == 'p') && (buf[i+7] == 's')) {
+
+                for ( i += 8; (i < read) && ((buf[i] < '1') || (buf[i] > '9')); i++) {
+                    ;
+                }
+                // Only bother with the integer part of the rating
+                for ( ; (i < read) && (buf[i] >= '0') && (buf[i] <= '9'); i++) {
+                    hal_bogomips = (10 * hal_bogomips) + (buf[i] - '0');
+                }
+                break;
+            }
+        }
+        if (0 == hal_bogomips) {
+            CYG_FAIL("Failed to find bogomips entry in /proc/cpuinfo");
+        }
+    }
+    
     // Start up the auxiliary process.
     synth_start_auxiliary();
     

@@ -106,7 +106,6 @@
 // cyg_vector_t etc., supplied either by the kernel or the common HAL
 #include <cyg/hal/drv_api.h>
 
-
 // Nearly all interrupt state control happens via functions. This
 // facilitates debugging, for example it is easier to set breakpoints
 // that way, at the cost of performance. However performance is not a
@@ -238,6 +237,12 @@ externC cyg_uint32      hal_clock_read(void);
     CYG_MACRO_START                                             \
     *(_pvalue_) = hal_clock_read();                             \
     CYG_MACRO_END
+
+// ----------------------------------------------------------------------------
+// HAL_DELAY_US() support. The macro is provided by the processor-specific
+// HAL, but the bogomips rating is provided by the architectural code.
+extern int hal_bogomips;
+#include <cyg/hal/var_intr.h>
 
 // ----------------------------------------------------------------------------
 // Resetting the Synth target is not possible, but existing the process is.

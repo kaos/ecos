@@ -1,3 +1,11 @@
+2005-06-26  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/synth_intr.c (synth_hardware_init): extract bogomips rating
+	for use by HAL_DELAY_US()
+
+	* include/hal_intr.h: add #include of <cyg/hal/var_intr.h> for
+	HAL_DELAY_US().
+
 2005-03-11  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/synth_intr.c (synth_hardware_init): allow the platform to
