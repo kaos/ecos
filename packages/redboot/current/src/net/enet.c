@@ -238,7 +238,7 @@ ntohl(unsigned long x)
             ((x & 0xFF000000) >> 24));
 }
 
-unsigned long
+unsigned short
 ntohs(unsigned short x)
 {
     return (((x & 0x00FF) << 8) |

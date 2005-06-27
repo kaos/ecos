@@ -232,7 +232,7 @@ do_ping(int argc, char *argv[])
         if (icmp_received) {
             received++;
             if (verbose) {
-                diag_printf(" seq: %ld, time: %ld (ticks)\n",
+                diag_printf(" seq: %d, time: %ld (ticks)\n",
                             ntohs(hold_hdr.seqnum), end_time-start_time);
             }
         }

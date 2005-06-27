@@ -1,3 +1,13 @@
+2005-06-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/net/enet.c (ntohs): Return type is a short.
+
+2005-06-22  Peter Korsgaard  <jacmet@sunsite.dk>
+
+	* src/flash.c (fis_list, fis_free, fis_create):
+	* src/iomem.c (do_iopeek): Fixed compiler warnings about formats
+	strings for diag_printf.
+
 2005-06-09  David Vrabel  <dvrabel@arcom.com>
 
 	* src/xyzModem.c: Use the Ymodem length field by #define'ing

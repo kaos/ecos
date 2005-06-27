@@ -157,15 +157,15 @@ do_iopeek(int argc, char *argv[])
     switch (size) {
     case 4:
         HAL_READ_UINT32 ( base, value );
-        diag_printf("0x%04x = 0x%08x\n", base, value );
+        diag_printf("0x%04lx = 0x%08x\n", base, value );
         break;
     case 2:
         HAL_READ_UINT16 ( base, value );
-        diag_printf("0x%04x = 0x%04x\n", base, value );
+        diag_printf("0x%04lx = 0x%04x\n", base, value );
         break;
     case 1: 
         HAL_READ_UINT8 ( base, value );
-        diag_printf("0x%04x = 0x%02x\n", base, value );
+        diag_printf("0x%04lx = 0x%02x\n", base, value );
         break;
     }
 }

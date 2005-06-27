@@ -86,7 +86,7 @@ extern unsigned long get_ms_ticks(void);
 #define __LITTLE_ENDIAN__
 #endif
 extern unsigned long  ntohl(unsigned long x);
-extern unsigned long  ntohs(unsigned short x);
+extern unsigned short ntohs(unsigned short x);
 #else
 #define	ntohl(x)	(x)
 #define	ntohs(x)	(x)

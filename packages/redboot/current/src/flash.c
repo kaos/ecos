@@ -535,7 +535,7 @@ fis_list(int argc, char *argv[])
             img = (struct fis_image_desc *) fis_work_block;
             img += image_indx;
             diag_printf("%-16s  0x%08lX  0x%08lX  0x%08lX  0x%08lX\n", img->name, 
-                        img->flash_base, 
+                        (unsigned long)img->flash_base, 
 #ifdef CYGSEM_REDBOOT_FIS_CRC_CHECK
                         show_cksums ? img->file_cksum : img->mem_base, 
                         show_datalen ? img->data_length : img->size, 
@@ -543,7 +543,7 @@ fis_list(int argc, char *argv[])
                         img->mem_base, 
                         img->size, 
 #endif
-                        img->entry_point);
+                        (unsigned long)img->entry_point);
         }
         last_addr = lowest_addr;
     } while (image_found == true);
@@ -654,7 +654,9 @@ fis_free(int argc, char *argv[])
 
     num_chunks = find_free(chunks);
     for (idx = 0;  idx < num_chunks;  idx++) {
-        diag_printf("  0x%08lX .. 0x%08lX\n", chunks[idx].start, chunks[idx].end);
+        diag_printf("  0x%08lX .. 0x%08lX\n", 
+		    (unsigned long)chunks[idx].start,
+		    (unsigned long)chunks[idx].end);
     }
 #endif
 }
@@ -853,7 +855,7 @@ fis_create(int argc, char *argv[])
         if (flash_addr_set && (img->flash_base != flash_addr)) {
             diag_printf("Image found, but flash address (%p)\n"
                         "             is incorrect (present image location %p)\n",
-                        flash_addr, img->flash_base);
+                        (void*)flash_addr, (void*)img->flash_base);
             
             return;
         }
