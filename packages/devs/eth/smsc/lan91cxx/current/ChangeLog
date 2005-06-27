@@ -1,3 +1,8 @@
+2005-06-12  Yoshinori Sato <ysato@users.sourceforge.jp>
+
+	* src/if_lan91cxx.c: Reset the physical layer before configuring
+	it, otherwise it might not work.
+
 2004-05-22  Andrew Dyer  <adyer@righthandtech.com>
 
 	* src/if_lan91cxx.c: Fail initialization if no device found.

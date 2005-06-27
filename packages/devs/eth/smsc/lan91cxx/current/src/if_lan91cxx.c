@@ -454,7 +454,6 @@ lan91cxx_start(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
 {
     cyg_uint16 intr;
 #ifdef LAN91CXX_IS_LAN91C111
-    cyg_uint16 phy_ctl;
     int delay;
 #endif
 #ifdef CYGPKG_NET
@@ -463,12 +462,11 @@ lan91cxx_start(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
     DEBUG_FUNCTION();
 
 #ifdef LAN91CXX_IS_LAN91C111
-    HAL_DELAY_US(100000);
-
     // 91C111 Errata. Internal PHY comes up disabled. Must enable here.
-    phy_ctl = lan91cxx_read_phy(sc, 0, LAN91CXX_PHY_CTRL);
-    phy_ctl &= ~LAN91CXX_PHY_CTRL_MII_DIS;
-    lan91cxx_write_phy(sc, 0, LAN91CXX_PHY_CTRL, phy_ctl);
+    lan91cxx_write_phy(sc, 0, LAN91CXX_PHY_CTRL, LAN91CXX_PHY_CTRL_RST);
+    HAL_DELAY_US(500000);
+    lan91cxx_write_phy(sc, 0, LAN91CXX_PHY_CTRL, LAN91CXX_PHY_CTRL_ANEG_EN |
+		                                 LAN91CXX_PHY_CTRL_SPEED);
 
     // Start auto-negotiation
     put_reg(sc, LAN91CXX_RPCR,
@@ -482,6 +480,10 @@ lan91cxx_start(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
 	    break;
 	HAL_DELAY_US(100000);
     }
+#if DEBUG & 1
+    if (delay <= 0)
+	    diag_printf("auto-negotiation failed.\n");
+#endif
 #endif
 
     put_reg(sc, LAN91CXX_MMU_COMMAND, LAN91CXX_MMU_reset_mmu);
