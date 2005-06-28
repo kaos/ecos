@@ -509,14 +509,14 @@ serial_select(cyg_io_handle_t handle, cyg_uint32 which, CYG_ADDRWORD info)
     serial_channel *chan = (serial_channel *)t->priv;
     cyg_bool retval = false;
  
-    cyg_drv_dsr_lock(); // Avoid races
-    
     switch( which )
     {
     case CYG_FREAD:
         {
             cbuf_t *cbuf = &chan->in_cbuf;
+            
             cyg_drv_mutex_lock(&cbuf->lock);
+            cyg_drv_dsr_lock(); // Avoid races
             
             // Check for data in the input buffer. If there is none,
             // register the select operation, otherwise return true.
@@ -524,7 +524,9 @@ serial_select(cyg_io_handle_t handle, cyg_uint32 which, CYG_ADDRWORD info)
             if( cbuf->nb == 0 )
                 cyg_selrecord( info, &cbuf->selinfo );
             else retval = true;
-            cyg_drv_mutex_unlock(&cbuf->lock);        
+
+            cyg_drv_dsr_unlock();
+            cyg_drv_mutex_unlock(&cbuf->lock);
         }
         break;
         
@@ -533,10 +535,13 @@ serial_select(cyg_io_handle_t handle, cyg_uint32 which, CYG_ADDRWORD info)
             // Check for space in the output buffer. If there is none,
             // register the select operation, otherwise return true.
 
+            int space ;
             cbuf_t *cbuf = &chan->out_cbuf;
-            cyg_drv_mutex_lock(&cbuf->lock);
             
-            int space = cbuf->len - cbuf->nb;
+            cyg_drv_mutex_lock(&cbuf->lock);
+            cyg_drv_dsr_lock(); // Avoid races
+
+            space = cbuf->len - cbuf->nb;
 #ifdef CYGPKG_IO_SERIAL_FLOW_CONTROL
             if ( (space < cbuf->low_water) ||
                  (chan->flow_desc.flags & CYG_SERIAL_FLOW_OUT_THROTTLED) )
@@ -546,7 +551,8 @@ serial_select(cyg_io_handle_t handle, cyg_uint32 which, CYG_ADDRWORD info)
                 cyg_selrecord( info, &cbuf->selinfo );
 #endif
             else retval = true;
-            
+
+            cyg_drv_dsr_unlock();
             cyg_drv_mutex_unlock(&cbuf->lock);
         }
         break;
@@ -554,8 +560,6 @@ serial_select(cyg_io_handle_t handle, cyg_uint32 which, CYG_ADDRWORD info)
     case 0: // exceptions - none supported
         break;
     }
-
-    cyg_drv_dsr_unlock();
     return retval;
 #else
 
