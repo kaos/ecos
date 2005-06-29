@@ -57,12 +57,12 @@
 
 RedBoot_cmd("dump", 
             "Display (hex dump) a range of memory", 
-            "-b <location> [-l <length>] [-s] [-1|2|4]",
+            "-b <location> [-l <length>] [-s] [-1|-2|-4]",
             do_dump 
     );
 RedBoot_cmd("x", 
             "Display (hex dump) a range of memory", 
-            "-b <location> [-l <length>] [-s] [-1|2|4]",
+            "-b <location> [-l <length>] [-s] [-1|-2|-4]",
             do_x
     );
 

@@ -856,7 +856,7 @@ Display/switch console channel
 Compute a 32bit checksum [POSIX algorithm] for a range of memory
    cksum -b &lt;location&gt; -l &lt;length&gt;
 Display (hex dump) a range of memory
-   dump -b &lt;location&gt; [-l &lt;length&gt;] [-s] [-1|2|4]
+   dump -b &lt;location&gt; [-l &lt;length&gt;] [-s] [-1|-2|-4]
 Manage FLASH images
    fis {cmds}
 Manage configuration kept in FLASH memory
@@ -889,7 +889,7 @@ Reset the system
 Display RedBoot version information
    version 
 Display (hex dump) a range of memory
-   x -b &lt;location&gt; [-l &lt;length&gt;] [-s] [-1|2|4]
+   x -b &lt;location&gt; [-l &lt;length&gt;] [-s] [-1|-2|-4]
 </screen> 
       </para>
       <para>

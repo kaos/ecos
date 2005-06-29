@@ -1,3 +1,8 @@
+2005-06-29  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* doc/redboot_cmds.sgml: 
+	* src/dump.c: Fix the usage for dump and x command.
+
 2005-06-29  Peter Korsgaard  <jacmet@sunsite.dk>
 
 	* src/flash.c (find_free): Maintain sort order when splitting
