@@ -1,3 +1,12 @@
+2005-06-27  Stefan Sommerfeld <sommerfeld@mikrom.com>
+ 
+	* src/if_lan91cxx.c: Changed some debug messages to output right
+	hex syntax (0x....)
+	* src/if_lan91cxx.c: 32bit mode can now be selected is correctly
+	working. The old implementation truncated some data.
+	* cdl/smsc_lan91cxx_eth_drivers.cdl: Added CDL to control if
+	16 or 32 bit access is used.
+ 
 2005-06-12  Yoshinori Sato <ysato@users.sourceforge.jp>
 
 	* src/if_lan91cxx.c: Reset the physical layer before configuring

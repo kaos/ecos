@@ -749,7 +749,7 @@ lan91cxx_can_send(struct eth_drv_sc *sc)
     tcr = get_reg(sc, LAN91CXX_TCR);
     if ( 0 == (LAN91CXX_TCR_TXENA & tcr) ) {
 #if DEBUG & 1
-        db_printf("%s: ENGINE RESTART: tcr %x\n", __FUNCTION__, tcr );
+        db_printf("%s: ENGINE RESTART: tcr 0x%04x\n", __FUNCTION__, tcr );
 #endif
         // Complete any outstanding activity:
         if ( cpd->txbusy ) {
@@ -792,7 +792,7 @@ lan91cxx_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
     tcr = get_reg(sc, LAN91CXX_TCR);
     if ( 0 == (LAN91CXX_TCR_TXENA & tcr) ) {
 #if DEBUG & 1
-        db_printf("%s: ENGINE RESTART: tcr %x\n", __FUNCTION__, tcr );
+        db_printf("%s: ENGINE RESTART: tcr 0x%04x\n", __FUNCTION__, tcr );
 #endif
         tcr |= LAN91CXX_TCR_TXENA;
         put_reg(sc, LAN91CXX_TCR, tcr);
@@ -846,7 +846,7 @@ lan91cxx_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
     } while (0);
 
 #if DEBUG & 4
-    db_printf("#####Tx packet allocated %x (previous %x)\n",
+    db_printf("#####Tx packet allocated 0x%04x (previous 0x%04x)\n",
                 packet, cpd->txpacket);
 #endif
     cpd->txpacket = packet;
@@ -964,7 +964,7 @@ lan91cxx_TxEvent(struct eth_drv_sc *sc, int stat)
     tcr = get_reg(sc, LAN91CXX_TCR);
     if ( 0 == (LAN91CXX_TCR_TXENA & tcr) ) {
 #if DEBUG & 1
-        db_printf("%s: ENGINE RESTART: tcr %x ints %04x\n", __FUNCTION__, tcr, ints);
+        db_printf("%s: ENGINE RESTART: tcr 0x%04x ints %04x\n", __FUNCTION__, tcr, ints);
 #endif
         tcr |= LAN91CXX_TCR_TXENA;
         put_reg(sc, LAN91CXX_TCR, tcr);
@@ -985,7 +985,7 @@ lan91cxx_TxEvent(struct eth_drv_sc *sc, int stat)
         lan91cxx_txfifo_good++;
 #endif
 #if DEBUG & 4
-    db_printf("#####Tx packet freed %x (expected %x)\n", packet, cpd->txpacket );
+    db_printf("#####Tx packet freed 0x%04x (expected 0x%04x)\n", packet, cpd->txpacket );
 #endif
     // and then free the packet
     put_reg(sc, LAN91CXX_PNR, cpd->txpacket);
@@ -1024,7 +1024,7 @@ lan91cxx_RxEvent(struct eth_drv_sc *sc)
     struct lan91cxx_priv_data *cpd = 
         (struct lan91cxx_priv_data *)sc->driver_private;
     unsigned short stat, len;
-#ifdef LAN91CXX_32BIT_RX
+#ifdef CYGSEM_DEVS_ETH_SMSC_LAN91CXX_USE_32BIT
     cyg_uint32 val;
 #endif
 
@@ -1045,7 +1045,7 @@ lan91cxx_RxEvent(struct eth_drv_sc *sc)
     INCR_STAT( rx_count );
 
 #if DEBUG & 4
-    db_printf("#####Rx packet allocated %x (previous %x)\n",
+    db_printf("#####Rx packet allocated 0x%04x (previous 0x%04x)\n",
                 0xff & (stat >> 8), cpd->rxpacket );
 #endif
     // There is an Rx Packet ready
@@ -1054,7 +1054,7 @@ lan91cxx_RxEvent(struct eth_drv_sc *sc)
     // Read status and (word) length
     put_reg(sc, LAN91CXX_POINTER, (LAN91CXX_POINTER_RCV | LAN91CXX_POINTER_READ |
                                  LAN91CXX_POINTER_AUTO_INCR | 0x0000));
-#ifdef LAN91CXX_32BIT_RX
+#ifdef CYGSEM_DEVS_ETH_SMSC_LAN91CXX_USE_32BIT
     val = get_data(sc);
     val = CYG_LE32_TO_CPU(val);
     stat = val & 0xffff;
@@ -1122,8 +1122,13 @@ lan91cxx_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
 #endif
     int i;
     short mlen=0, plen;
-    rxd_t *data=NULL, val;
-    unsigned char *cp, cval;
+    cyg_uint16 *data=NULL;
+    unsigned char *cp, cval, odd_even = 0;
+#ifdef CYGSEM_DEVS_ETH_SMSC_LAN91CXX_USE_32BIT
+    cyg_uint32 val;
+#else
+    cyg_uint16 val;
+#endif
 
     DEBUG_FUNCTION();
 
@@ -1134,7 +1139,7 @@ lan91cxx_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
     val = get_data(sc);
 
     // packet length (minus header/footer)
-#ifdef LAN91CXX_32BIT_RX
+#ifdef CYGSEM_DEVS_ETH_SMSC_LAN91CXX_USE_32BIT
     val = CYG_LE32_TO_CPU(val);
     plen = (val >> 16) - 6;
 #else
@@ -1147,31 +1152,55 @@ lan91cxx_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
 	plen++;
 
     for (i = 0;  i < sg_len;  i++) {
-        data = (rxd_t *)sg_list[i].buf;
+        data = (cyg_uint16 *)sg_list[i].buf;
         mlen = sg_list[i].len;
 
         CYG_ASSERT(0 == (mlen & (sizeof(*data) - 1)) || (i == (sg_len-1)), "odd length");
 
 #if DEBUG & 1
-        db_printf("%s : mlen %x, plen %x\n", __FUNCTION__, mlen, plen);
+        db_printf("%s : mlen 0x%04x, plen 0x%04x\n", __FUNCTION__, mlen, plen);
 #endif
         if (data) {
             while (mlen >= sizeof(*data)) {
-                *data++ = get_data(sc);
+#ifdef CYGSEM_DEVS_ETH_SMSC_LAN91CXX_USE_32BIT
+            	if (!(odd_even)) {        // because of the 32bit to 16bit conversion, read only every 2nd word
+#endif
+                   val = get_data(sc);
+#ifdef CYGSEM_DEVS_ETH_SMSC_LAN91CXX_USE_32BIT
+                   odd_even = 1;
+               }
+               else {
+                	  val >>= 16;
+                	  odd_even = 0;
+               }
+#endif
+                *data++ = val;
                 mlen -= sizeof(*data);
                 plen -= sizeof(*data);
             }
         }
         else { // must actively discard ie. read it from the chip anyway.
             while (mlen >= sizeof(*data)) {
-                (void)get_data(sc);
+#ifdef CYGSEM_DEVS_ETH_SMSC_LAN91CXX_USE_32BIT
+                if (!(odd_even)) {
+#endif
+                    val = get_data(sc);
+#ifdef CYGSEM_DEVS_ETH_SMSC_LAN91CXX_USE_32BIT
+                    odd_even = 1;
+               }
+               else {
+                   val >>= 16;
+                   odd_even = 0;
+               }
+#endif
                 mlen -= sizeof(*data);
                 plen -= sizeof(*data);
             }
         }
     }
+    if (!(odd_even)) {      // read the control word only if we not already have it because of a 32bit access
     val = get_data(sc); // Read control word (and potential data) unconditionally
-#ifdef LAN91CXX_32BIT_RX
+#ifdef CYGSEM_DEVS_ETH_SMSC_LAN91CXX_USE_32BIT
     val = CYG_LE32_TO_CPU(val);
     if (plen & 2) {
 	if (data)
@@ -1179,10 +1208,11 @@ lan91cxx_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
 	cp = (unsigned char *)data + 2;
 	val >>= 16;
 	mlen -= 2;
-    } else
+        }
 #else
     val = CYG_LE16_TO_CPU(val);
 #endif
+    }
 	cp = (unsigned char *)data;
 
     CYG_ASSERT(val & LAN91CXX_CONTROLBYTE_RX, 
@@ -1197,10 +1227,10 @@ lan91cxx_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
     val = get_reg(sc, LAN91CXX_FIFO_PORTS);
 #if DEBUG & 4
     if ( 0x8000 & val ) // Then the Rx FIFO is empty
-        db_printf("#####Rx packet NOT freed, stat is %x (expected %x)\n",
+        db_printf("#####Rx packet NOT freed, stat is 0x%04x (expected 0x%04x)\n",
                     val, cpd->rxpacket);
     else
-        db_printf("#####Rx packet freed %x (expected %x)\n",
+        db_printf("#####Rx packet freed 0x%04x (expected 0x%04x)\n",
                     0xff & (val >> 8), cpd->rxpacket );
 #endif
     CYG_ASSERT( (0xff & (val >> 8)) == cpd->rxpacket, "Unexpected rx packet" );
