@@ -1,3 +1,24 @@
+2005-06-28  Peter Korsgaard  <jacmet@sunsite.dk>
+
+	* src/ChangeLog: 
+	* src/configure: 
+	* src/deflate.c: 
+	* src/deflate.h: 
+	* src/FAQ: 
+	* src/gzio.c: 
+	* src/INDEX: 
+	* src/infback.c: 
+	* src/inffast.c: 
+	* src/inflate.c: 
+	* src/Makefile: 
+	* src/Makefile.in: 
+	* src/README: 
+	* src/trees.c: 
+	* src/zlib.3: 
+	* src/zutil.h: 
+	* include/zlib.h: 
+	* include/zconf.h: Upgrade to zlib-1.2.2
+
 2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/zlib1.c: Include diag.h for diag_printf proto.
