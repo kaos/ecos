@@ -591,8 +591,12 @@ find_free(struct free_chunk *chunks)
                     } else {
                         // Split chunk into two parts
                         if ((img->flash_base+img->size) < (CYG_ADDRESS)fis_end) {
-                            chunks[num_chunks].start = img->flash_base + img->size;
-                            chunks[num_chunks].end = chunks[idx].end;
+                            int j;
+                            // make room for new chunk
+                            for (j = num_chunks; j > (idx+1); j--)
+                                chunks[j] = chunks[j-1];
+                            chunks[idx+1].start = img->flash_base + img->size;
+                            chunks[idx+1].end = chunks[idx].end;
                             if (++num_chunks == CYGDAT_REDBOOT_FIS_MAX_FREE_CHUNKS) {
                                 diag_printf("Warning: too many free chunks\n");
                                 return num_chunks;
