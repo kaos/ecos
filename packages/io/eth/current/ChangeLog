@@ -1,7 +1,12 @@
+2005-06-29  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* doc/driver_doc: Removed, it has been superseded by the sgml
+	documentation.
+
 2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
 
-	* src/net/eth_drv.c (eth_drv_send): Fixed a compiler warning about type of
-	parameter passed to diag_printf.
+	* src/net/eth_drv.c (eth_drv_send): Fixed a compiler warning about
+	type of parameter passed to diag_printf.
 
 2004-08-06  Jani Monoses <jani@iv.ro>
 
