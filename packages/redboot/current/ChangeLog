@@ -1,3 +1,8 @@
+2005-07-06  Isaac Claymore <iclaymore@gmail.com>
+
+	* src/fconfig.c: (get_config): Verify the length of the script is
+	less than MAX_SCRIPT_LENGTH.
+
 2005-06-29  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* doc/redboot_cmds.sgml: 

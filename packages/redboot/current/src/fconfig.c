@@ -262,7 +262,7 @@ get_config(unsigned char *dp, char *title, int list_opt, char *newvalue )
     char *esp;
 #endif
     void *val_ptr;
-    int type;
+    int type, script_len;
 
     if (CONFIG_OBJECT_ENABLE_KEYLEN(dp)) {
         flash_get_config(CONFIG_OBJECT_ENABLE_KEY(dp), &enable, CONFIG_BOOL);
@@ -433,6 +433,7 @@ get_config(unsigned char *dp, char *title, int list_opt, char *newvalue )
     case CONFIG_SCRIPT:
         // Assume it always changes
         sp = (unsigned char *)val_ptr;
+	script_len = 0;
         diag_printf("Enter script, terminate with empty line\n");
         while (true) {
             *sp = '\0';
@@ -440,6 +441,12 @@ get_config(unsigned char *dp, char *title, int list_opt, char *newvalue )
             ret = _rb_gets(line, sizeof(line), 0);
             if (ret < 0) return CONFIG_ABORT;
             if (strlen(line) == 0) break;
+	    script_len += strlen(line) + 1;
+	    if (script_len > config_length(CONFIG_SCRIPT)) {
+		diag_printf("script longer than %d not allowed!\n", 
+				config_length(CONFIG_SCRIPT));
+		return CONFIG_ABORT;
+	    }
             lp = line;
             while (*lp) {
                 *sp++ = *lp++;
