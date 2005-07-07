@@ -1,3 +1,7 @@
+2005-06-28  Nick Garnett  <nickg@ecoscentric.com>
+
+	* ecos.db: Added Object Loader package.
+
 2005-06-12   Brandl Harald <Harald.Brandl@fh-joanneum.at>
 
 	* ecos.db: Added a ethernet device driver for the NETARM.

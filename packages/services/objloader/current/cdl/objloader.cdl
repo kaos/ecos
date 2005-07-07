@@ -1,0 +1,165 @@
+# ====================================================================
+#
+#      objloader.cdl
+#
+#      Object loader configuration data
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2005 eCosCentric Ltd.
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+##
+## -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      atonizzo (atonizzo@lycos.com)
+# Contributors:
+# Date:           2005-05-13
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_OBJLOADER {
+    display       "Object file loader"
+    description   "This package provides support for loading and relocating 
+                   object files within eCos."
+    include_dir   cyg/objloader
+    include_files elf.h objelf.h loader_fs.h relocate_ppc.h
+    compile       objloader.c objelf.c loader_fs.c
+    requires      CYGPKG_MEMALLOC
+    requires      CYGPKG_IO_FILEIO
+# ====================================================================
+
+    cdl_component CYGPKG_SERVICES_OBJLOADER_ARCHITECTURE {
+        display "Architecture dependent settings"
+        flavor  none
+        no_define
+        description   "Each of the options here enables the correct
+                       relocation support for the architectures supported."
+
+        cdl_option CYGBLD_OBJLOADER_ARCHITECTURE_POWERPC {
+           display       "Support loading on PowerPC processors"
+           calculated    CYGPKG_HAL_POWERPC
+           define_proc {
+               puts $::cdl_header "#include <cyg/objloader/relocate_ppc.h>"
+           }
+           compile relocate_ppc.c
+        }
+
+#        cdl_option CYGBLD_OBJLOADER_ARCHITECTURE_ARM {
+#            display       "Support loading on ARM processors"
+#            calculated    CYGPKG_HAL_ARM
+#            define_proc {
+#               puts $::cdl_header "#include <cyg/objloader/relocate_arm.h>"
+#            }
+#            compile relocate_arm.c
+#        }
+        
+    }
+ 
+    cdl_option CYGPKG_SERVICES_OBJLOADER_DEBUG_LEVEL {
+        display          "Verbosity of debug output"
+        flavor           data
+        legal_values     0 1 2
+        default_value    0
+        description      "This option allows controls over the verbosity of
+                         the debug output. 1 is moderate, 2 is very
+                         verbose, including the symbol name of each relocation
+                         performed. Any value other than 0 will prevent the
+                         unloading of unused library data, thus increasing the
+                         heap memory requirements of the package."
+    }
+   
+    cdl_component CYGPKG_SERVICES_OBJLOADER_OPTIONS {
+        display "Object loader build options"
+        flavor  none
+        description   "
+	    Package specific build options including control over
+	    compiler flags used only in building this package,
+	    and details of which tests are built."
+
+
+        cdl_option CYGPKG_SERVICES_OBJLOADER_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the serial device drivers. These flags are
+                used in addition to the set of global flags."
+        }
+
+        cdl_option CYGPKG_SERVICES_OBJLOADER_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the serial device drivers. These flags are
+                removed from the set of global flags if present."
+        }
+    }
+
+    cdl_option CYGBLD_SERVICES_OBJLOADER_BUILD_TESTS {
+        display "Build test library"
+        default_value 0
+        no_define
+        description "
+            This option enables the building of a library and an
+            application for testing the loader. These
+            are not built by default since they do not use the dedicated
+            testing infrastructure."
+
+        make -priority 320 {
+            <PREFIX>/bin/test_mods : <PACKAGE>/tests/test_mods.c
+            @sh -c "mkdir -p tests $(dir $@)"
+            $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o tests/test_mods.o $<
+            @echo $@ ": \\" > $(notdir $@).deps
+            @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
+            @tail -n +2 deps.tmp >> $(notdir $@).deps
+            @echo >> $(notdir $@).deps
+            @rm deps.tmp
+            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ tests/test_mods.o
+        }
+
+        make -priority 320 {
+            <PREFIX>/bin/hello.o : <PACKAGE>/tests/library/hello.c
+            @sh -c "mkdir -p tests $(dir $@)"
+            $(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -o $@ $<
+        }
+    }
+
+    
+}
+
+# ====================================================================
+# EOF objloader.cdl

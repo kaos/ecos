@@ -1,0 +1,156 @@
+These are very preliminary notes on the design and use of the object loader.
+Users should be aware that the package is still undergoing some changes.
+Feedback is appreciated.
+
+--------------------------------------------------------------------------------
+Creating libraries
+--------------------------------------------------------------------------------
+Libraries can be created by simply compiling the sources into .o files.
+The typical command line will look something like this:
+
+<toolchain>-gcc -c -I$(ECOS_DIRECTORY)/include -Wall hello.c
+
+The eCos "include" directory is needed to get the header files for the API.
+Multiple object files can be compiled into a single object with the
+
+<toolchain>-ld -r -o out.o file1.o file2.o file3.o
+
+It must be noted that the use of a linker to collect multiple object files
+into a single one considerably increases the size of the symbol table.
+
+--------------------------------------------------------------------------------
+Init/fini functions
+--------------------------------------------------------------------------------
+When the library is loaded the loader will look for a symbol with the name of 
+"library_open" and, if found, will call the symbol with a prototype of
+
+void library_open( void )
+
+When the cyg_ldr_close_library() function is called, the loader will also 
+look for a function called library close() and call it. The prototype is the 
+same as library_open().
+
+--------------------------------------------------------------------------------
+External references.
+--------------------------------------------------------------------------------
+External references are the calls that the library makes to the eCos. These
+calls are resolved by the loader if the function name is available in a table
+provided by the user which maps a function name with its pointer. The loader
+provides an empty table so that the user need only provide additional entry
+required by the relocator.
+
+In order to keep the size of the table to a minimum, the user can selectively 
+include only those functions that are expected to be used by the loader to 
+resolve all references.
+
+The following is an example of how to add an entry to the external references 
+table:
+
+CYG_LDR_TABLE_ENTRY( diag_printf_entry, "diag_printf", diag_printf );
+
+The first parameter is a unique identifier, the second is a string containing
+the name of the function, and the third is the pointer to the function itself.
+The entries can be added anywhere in the file.
+
+The objelf.h file contains a number of macros that collect groups of
+functions together as a convenient way to include blocks of
+functionality.
+
+
+--------------------------------------------------------------------------------
+Writing the relocator for a new architecture
+--------------------------------------------------------------------------------
+A relocator for a new architecture must provide a function with the following
+prototype:
+
+cyg_int32 
+cyg_ldr_relocate( cyg_int32 sym_type, cyg_uint32 mem, cyg_int32 sym_value )
+
+The sym type is the type of relocation to apply. This value is architecture
+dependent and it is obtained from the r_info field of the relocation entry.
+The mem address is the memory location to relocate. The sym_value is the
+value to use for the relocation. The size of the write operation is dependent
+on the sym_type value.
+
+The relocate_xxx.h file must provide definitions for:
+
+1) the machine ELF type
+2) the endianness of the architecture
+           ELFDATA2MSB : Big endian
+           ELFDATA2LSB : Little endian
+3) The relocation type
+           Elf_Rela    : With addend
+           Elf_Rel     : Without addend
+
+An example of the definition for the PowerPC processor is the following:
+
+#define ELF_ARCH_MACHINE_TYPE         20              // PowerPC.
+#define ELF_ARCH_ENDIANNESS           ELFDATA2MSB     // Big Endian.
+#define ELF_ARCH_RELTYPE              Elf_Rela        // With addend.
+
+These definitions can be found in the relocate_ppc.h file.
+
+The user must also provide a way to flush the data and address caches. This
+is architecture dependent and usually the macros to do this are already part
+of the eCos HAL.
+
+--------------------------------------------------------------------------------
+CDL File
+--------------------------------------------------------------------------------
+
+The CDL file allows the selective compilation of the architecture dependent
+file. If a new architecture is added, the CDL file must be updated to
+include the architecture dependent files.
+
+--------------------------------------------------------------------------------
+Test program
+--------------------------------------------------------------------------------
+
+The 'tests' directory contains a simple/sample application that shows how to
+use the object loader. The application loads a couple of symbols and runs
+the functions pointed by those symbols. In particular, the second symbol is
+a function which, in the library, is declared with the CYGBLD_ATTRIB_WEAK. If
+the entry 
+
+CYG_LDR_TABLE_ENTRY( weak_function_entry, "weak_function", weak_function );
+
+is found in the application then the function in the application is called.
+Otherwise, the function in the library is.
+
+The source code for the library used for this example can be found under the 
+'library' directory.
+
+The library shows a number of concepts, including external references and WEAK 
+references. The ubiquitous "twothreads' application is also included, and run
+by the main application. Notice the initialization of the semaphore in the 
+library_open() call.
+
+The library can be compiled with the command
+
+<toolchain>-gcc -c -Wall -o hello.o hello.c
+
+and then be put into some file system and loaded. In the specific example 
+provided, the library was placed in the root directory of a FAT partition.
+JFFS2 is also an option.
+
+If the CDL option CYGBLD_SERVICES_OBJLOADER_BUILD_TESTS is enabled,
+then the test program and the library will be compiled automatically
+and placed in the install tree bin directory.
+
+--------------------------------------------------------------------------------
+Final musings
+--------------------------------------------------------------------------------
+
+The cyg_ldr_open_library() call can be modified so that the user can use a 
+library that is already in memory, or one that must be retrieved via ftp or
+tftp. In order to do this some functions must be added:
+
+- A function to open the file. In the simplest case of a file system, this
+   function would be a wrapper for fopen(). See loader_fs.c for a possible
+   implementation for a file system
+- Function to read, seek and close the library. 
+- In case you have a statically allocated memory pool, you might want to
+  define your own cyg_ldr_malloc() and cyg_ldr_free(). Currently they are
+  defined as weak bindings to wrappers of the malloc() and free() functions
+
+

@@ -2136,6 +2136,14 @@ This package provides support for the dynamic executable and
 library loader."
 }
 
+package CYGPKG_OBJLOADER {
+        alias           { "Object file loader" objloader }
+        directory       services/objloader
+        script          objloader.cdl
+        description "
+This package provides support for the object file loader and relocator."
+}
+
 package CYGPKG_COMPRESS_ZLIB {
         alias           { "Zlib compress/decompress" zlib_compress compress_zlib zlib }
         directory       services/compress/zlib
@@ -5955,4 +5963,5 @@ package CYGPKG_NET_LWIP {
 	script		cdl/lwip_net.cdl
 	description	"Lightweight TCP/IP stack: lwIP"
 }
+
 
