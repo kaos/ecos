@@ -1,3 +1,15 @@
+2005-07-08  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/objelf.h: Include hal_tables.h otherwise we get strange
+	linker errors.
+	* cdl/objloader.cdl: Rearranged the building of the test case.
+	* include/relocate_i386.h (New):
+	* src/relocate_i386.c (New): Added a relocator for i386.
+	* src/objelf.c: Fixed various Elf_Rel vs Elf_Rela issues.
+	* test/load_mods.c: 
+	* test/library/hello.c: Modified to make use of the eCos test 
+	infrastructure. Uses a romfs to hold the object file to be loaded.
+	
 2005-05-10  Anthony Tonizzo  <atonizzo@lycos.com>
 
 	* include/elf.h: 

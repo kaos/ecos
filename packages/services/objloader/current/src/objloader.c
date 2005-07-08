@@ -55,11 +55,11 @@
 
 #include <cyg/infra/diag.h>     // For diagnostic printing.
 #include <cyg/infra/cyg_ass.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <pkgconf/objloader.h>
+
 #include <cyg/objloader/elf.h>
 #include <cyg/objloader/objelf.h>
 #include <cyg/objloader/loader_fs.h>

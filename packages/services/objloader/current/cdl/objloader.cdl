@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 2005 eCosCentric Ltd.
+## Copyright (C) 2005 Andrew Lunn
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -39,7 +40,7 @@
 ######DESCRIPTIONBEGIN####
 #
 # Author(s):      atonizzo (atonizzo@lycos.com)
-# Contributors:
+# Contributors:   Andrew Lunn
 # Date:           2005-05-13
 #
 #####DESCRIPTIONEND####
@@ -51,7 +52,7 @@ cdl_package CYGPKG_OBJLOADER {
     description   "This package provides support for loading and relocating 
                    object files within eCos."
     include_dir   cyg/objloader
-    include_files elf.h objelf.h loader_fs.h relocate_ppc.h
+    include_files elf.h objelf.h loader_fs.h relocate_ppc.h relocate_i386.h
     compile       objloader.c objelf.c loader_fs.c
     requires      CYGPKG_MEMALLOC
     requires      CYGPKG_IO_FILEIO
@@ -61,16 +62,37 @@ cdl_package CYGPKG_OBJLOADER {
         display "Architecture dependent settings"
         flavor  none
         no_define
+        requires CYGINT_SERVICES_OBJLOADER_RELOCATOR == 1
+
         description   "Each of the options here enables the correct
                        relocation support for the architectures supported."
+
+        cdl_interface CYGINT_SERVICES_OBJLOADER_RELOCATOR {
+            display "Suitable function to perform a symbol relocation"
+            description "
+                For each architecture we need a function which relocate
+                a symbol. If we don't have a relocator the loader
+                cannot work."
+        }
 
         cdl_option CYGBLD_OBJLOADER_ARCHITECTURE_POWERPC {
            display       "Support loading on PowerPC processors"
            calculated    CYGPKG_HAL_POWERPC
+           implements    CYGINT_SERVICES_OBJLOADER_RELOCATOR
            define_proc {
                puts $::cdl_header "#include <cyg/objloader/relocate_ppc.h>"
            }
            compile relocate_ppc.c
+        }
+
+        cdl_option CYGBLD_OBJLOADER_ARCHITECTURE_I386 {
+           display       "Support loading on I386 processors"
+           calculated    CYGPKG_HAL_I386 || CYGPKG_HAL_SYNTH_I386
+           implements    CYGINT_SERVICES_OBJLOADER_RELOCATOR
+           define_proc {
+               puts $::cdl_header "#include <cyg/objloader/relocate_i386.h>"
+           }
+           compile relocate_i386.c
         }
 
 #        cdl_option CYGBLD_OBJLOADER_ARCHITECTURE_ARM {
@@ -129,36 +151,49 @@ cdl_package CYGPKG_OBJLOADER {
         }
     }
 
-    cdl_option CYGBLD_SERVICES_OBJLOADER_BUILD_TESTS {
-        display "Build test library"
+    cdl_component CYGTST_SERVICES_OBJLOADER_BUILD_TESTS {
+        display       "Build test library"
         default_value 0
+        active_if     CYGPKG_FS_ROM
+        active_if     CYGINT_SERVICES_OBJLOADER_RELOCATOR
+        requires      CYGBLD_FS_ROMFS_MK_ROMFS
         no_define
-        description "
+        description   "
             This option enables the building of a library and an
-            application for testing the loader. These
-            are not built by default since they do not use the dedicated
-            testing infrastructure."
-
+            application for testing the loader." 
+        
         make -priority 320 {
-            <PREFIX>/bin/test_mods : <PACKAGE>/tests/test_mods.c
-            @sh -c "mkdir -p tests $(dir $@)"
-            $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o tests/test_mods.o $<
-            @echo $@ ": \\" > $(notdir $@).deps
-            @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
-            @tail -n +2 deps.tmp >> $(notdir $@).deps
-            @echo >> $(notdir $@).deps
-            @rm deps.tmp
-            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ tests/test_mods.o
-        }
-
-        make -priority 320 {
-            <PREFIX>/bin/hello.o : <PACKAGE>/tests/library/hello.c
-            @sh -c "mkdir -p tests $(dir $@)"
+            tests/testromfs/hello.o : <PACKAGE>/tests/library/hello.c
+            @sh -c "mkdir -p tests tests/testromfs"
             $(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -o $@ $<
         }
-    }
 
+        make -priority 322 {
+            <PREFIX>/include/cyg/objloader/testromfs_be.h : tests/testromfs/hello.o 
+            $(PREFIX)/bin/mk_romfs -b tests/testromfs testromfs_be.bin 
+	    @mkdir -p "$(dir $@)"
+            @sh $(PREFIX)/bin/file2c.tcl testromfs_be.bin testromfs_be.h
+            @cp testromfs_be.h $@
+        }
+        
+        make -priority 322 {
+            <PREFIX>/include/cyg/objloader/testromfs_le.h : tests/testromfs/hello.o 
+            $(PREFIX)/bin/mk_romfs tests/testromfs testromfs_le.bin
+	    @mkdir -p "$(dir $@)"
+            @sh $(PREFIX)/bin/file2c.tcl testromfs_le.bin testromfs_le.h
+            @cp testromfs_le.h $@
+        }
     
+        cdl_option CYGPKG_OBJLOADER_TESTS {
+            display     "Objloader tests"
+            flavor      data
+            no_define
+            calculated  { "tests/test_mods" }
+            description "
+                This option specifies the set of tests for the object
+                loader package"
+       }
+    }
 }
 
 # ====================================================================

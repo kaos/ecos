@@ -171,12 +171,22 @@ cyg_ldr_print_rel_names( PELF_OBJECT p )
             {
                 sprintf( strname, 
                          "%08X  %08X  ", 
+#if ELF_ARCH_RELTYPE == Elf_Rela        
                          p_rela[j].r_offset,
-                         p_rela[j].r_info );
+                         p_rela[j].r_info 
+#else
+                         p_rel[j].r_offset,
+                         p_rel[j].r_info 
+#endif
+                         );
 
                 diag_printf( strname );         
-                
+
+#if ELF_ARCH_RELTYPE == Elf_Rela        
                 cyg_uint8 sym_type = ELF32_R_SYM( p_rela[j].r_info );
+#else
+                cyg_uint8 sym_type = ELF32_R_SYM( p_rel[j].r_info );
+#endif
                 if ( strlen ( p_strtab + p_symtab[sym_type].st_name ) > 0 )
                     diag_printf( p_strtab + p_symtab[sym_type].st_name );         
                 else 
@@ -220,7 +230,7 @@ static void
     return (void*)( addr + p_symtab[sym_index].st_value);
 }    
 
-static void
+void
 *cyg_ldr_external_address( PELF_OBJECT p, cyg_uint32 sym_index )
 {
     cyg_uint8*    tmp2;

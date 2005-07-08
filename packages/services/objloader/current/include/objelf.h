@@ -58,6 +58,7 @@
 
 #include <pkgconf/system.h>
 #include <pkgconf/objloader.h>
+#include <cyg/hal/hal_tables.h>
 
 //==============================================================================
 
@@ -302,11 +303,11 @@ CYG_LDR_TABLE_ENTRY( cyg_mbox_tryput_entry,                                    \
 CYG_LDR_TABLE_ENTRY( cyg_mbox_peek_entry,                                      \
                      "cyg_mbox_peek", cyg_mbox_peek );                         \
 CYG_LDR_TABLE_ENTRY( cyg_mbox_waiting_to_get_entry,                            \
-                     "cyg_mbox_waiting_to_get_item",                           \
-                     cyg_mbox_waiting_to_get_item );                           \
+                     "cyg_mbox_waiting_to_get",                                \
+                     cyg_mbox_waiting_to_get );                                \
 CYG_LDR_TABLE_ENTRY( cyg_mbox_waiting_to_put_entry,                            \
-                     "cyg_mbox_waiting_to_put_item",                           \
-                     cyg_mbox_waiting_to_put_item );
+                     "cyg_mbox_waiting_to_put",                                \
+                     cyg_mbox_waiting_to_put );
 
 #define CYG_LDR_TABLE_KAPI_MEMPOOL_FIX()                                       \
 CYG_LDR_TABLE_ENTRY( cyg_mempool_fix_create_entry,                             \
@@ -386,7 +387,7 @@ CYG_LDR_TABLE_ENTRY( cyg_semaphore_wait_entry,                                 \
 CYG_LDR_TABLE_ENTRY( cyg_semaphore_timed_wait_entry,                           \
                      "cyg_semaphore_timed_wait", cyg_semaphore_timed_wait );   \
 CYG_LDR_TABLE_ENTRY( cyg_semaphore_try_wait_entry,                             \
-                     "cyg_semaphore_try_wait", cyg_semaphore_try_wait );       \
+                     "cyg_semaphore_trywait", cyg_semaphore_trywait );         \
 CYG_LDR_TABLE_ENTRY( cyg_semaphore_post_entry,                                 \
                      "cyg_semaphore_post", cyg_semaphore_post );               \
 CYG_LDR_TABLE_ENTRY( cyg_semaphore_peek_entry,                                 \
@@ -426,12 +427,6 @@ CYG_LDR_TABLE_ENTRY( cyg_thread_get_stack_base_entry,                          \
                      "cyg_thread_get_stack_base", cyg_thread_get_stack_base ); \
 CYG_LDR_TABLE_ENTRY( cyg_thread_get_stack_size_entry,                          \
                      "cyg_thread_get_stack_size", cyg_thread_get_stack_size ); \
-CYG_LDR_TABLE_ENTRY( cyg_thread_get_stack_usage_entry,                         \
-                     "cyg_thread_get_stack_usage",                             \
-                     cyg_thread_get_stack_usage );                             \
-CYG_LDR_TABLE_ENTRY( cyg_thread_measure_stack_usage_entry,                     \
-                     "cyg_thread_measure_stack_usage",                         \
-                     cyg_thread_measure_stack_usage );                         \
 CYG_LDR_TABLE_ENTRY( cyg_thread_new_data_index_entry,                          \
                      "cyg_thread_new_data_index", cyg_thread_new_data_index ); \
 CYG_LDR_TABLE_ENTRY( cyg_thread_free_data_index_entry,                         \
@@ -442,11 +437,7 @@ CYG_LDR_TABLE_ENTRY( cyg_thread_get_data_entry,                                \
 CYG_LDR_TABLE_ENTRY( cyg_thread_get_data_ptr_entry,                            \
                      "cyg_thread_get_data_ptr", cyg_thread_get_data_ptr );     \
 CYG_LDR_TABLE_ENTRY( cyg_thread_set_data_entry,                                \
-                     "cyg_thread_set_data", cyg_thread_set_data );             \
-CYG_LDR_TABLE_ENTRY( cyg_thread_add_destructor_entry,                          \
-                     "cyg_thread_add_destructor", cyg_thread_add_destructor ); \
-CYG_LDR_TABLE_ENTRY( cyg_thread_rem_destructor_entry,                          \
-                     "cyg_thread_rem_destructor", cyg_thread_rem_destructor );
+                     "cyg_thread_set_data", cyg_thread_set_data );             
 
 #define CYG_LDR_TABLE_STRING()                                                 \
 CYG_LDR_TABLE_ENTRY( memchr_entry,  "memchr",  memchr );                       \
@@ -484,7 +475,6 @@ CYG_LDR_TABLE_ENTRY( fgets_entry,   "fgets",   fgets );                        \
 CYG_LDR_TABLE_ENTRY( fopen_entry,   "fopen",   fopen );                        \
 CYG_LDR_TABLE_ENTRY( fprintf_entry, "fprintf", fprintf );                      \
 CYG_LDR_TABLE_ENTRY( fputc_entry,   "fputc",   fputc );                        \
-CYG_LDR_TABLE_ENTRY( fputchar_entry, "fputchar", fputchar );                   \
 CYG_LDR_TABLE_ENTRY( fputs_entry,   "fputs",   fputs );                        \
 CYG_LDR_TABLE_ENTRY( fread_entry,   "fread",   fread );                        \
 CYG_LDR_TABLE_ENTRY( freopen_entry, "freopen", freopen );                      \
@@ -493,16 +483,11 @@ CYG_LDR_TABLE_ENTRY( fseek_entry,   "fseek",   fseek );                        \
 CYG_LDR_TABLE_ENTRY( fsetpos_entry, "fsetpos", fsetpos );                      \
 CYG_LDR_TABLE_ENTRY( ftell_entry,   "ftell",   ftell );                        \
 CYG_LDR_TABLE_ENTRY( fwrite_entry,  "fwrite",  fwrite );                       \
-CYG_LDR_TABLE_ENTRY( fgetc_entry,   "fgetc",   fgetc );                        \
-CYG_LDR_TABLE_ENTRY( fgetchar_entry, "fgetchar", fgetchar );                   \
-CYG_LDR_TABLE_ENTRY( fgets_entry,   "fgets",   fgets );                        \
-CYG_LDR_TABLE_ENTRY( fgetw_entry,   "fgetw",   fgetw );                        \
 CYG_LDR_TABLE_ENTRY( perror_entry,  "perror",  perror );                       \
 CYG_LDR_TABLE_ENTRY( printf_entry,  "printf",  printf );                       \
 CYG_LDR_TABLE_ENTRY( putc_entry,    "putc",    putc );                         \
 CYG_LDR_TABLE_ENTRY( putchar_entry, "putchar", putchar );                      \
 CYG_LDR_TABLE_ENTRY( puts_entry,    "puts",    puts );                         \
-CYG_LDR_TABLE_ENTRY( putw_entry,    "putw",    putw );                         \
 CYG_LDR_TABLE_ENTRY( remove_entry,  "remove",  remove );                       \
 CYG_LDR_TABLE_ENTRY( rename_entry,  "rename",  rename );                       \
 CYG_LDR_TABLE_ENTRY( rewind_entry,  "rewind",  rewind );                       \
@@ -531,8 +516,6 @@ CYG_LDR_TABLE_ENTRY( diag_dump_buf_32bit_entry,                                \
                      "diag_dump_buf_32bit", diag_dump_buf_32bit );             \
 CYG_LDR_TABLE_ENTRY( diag_dump_buf_16bit_entry,                                \
                      "diag_dump_buf_16bit", diag_dump_buf_16bit );             \
-CYG_LDR_TABLE_ENTRY( __printf_fun_entry,                                       \
-                     "__printf_fun", __printf_fun );                           \
 CYG_LDR_TABLE_ENTRY( diag_vdump_buf_with_offset_entry,                         \
                      "diag_vdump_buf_with_offset",                             \
                      diag_vdump_buf_with_offset );                             \
@@ -554,4 +537,3 @@ CYG_LDR_TABLE_ENTRY( diag_vprintf_entry, "diag_vprintf", diag_vprintf );
 
 //==============================================================================
 #endif
-

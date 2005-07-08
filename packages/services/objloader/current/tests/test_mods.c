@@ -52,9 +52,10 @@
  * =================================================================
  */
 
+#include <pkgconf/system.h>
 #include <cyg/kernel/kapi.h>    // Kernel API.
 #include <cyg/infra/diag.h>     // For diagnostic printing.
-#include <pkgconf/io_fileio.h>
+#include <cyg/infra/testcase.h>
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -64,9 +65,31 @@
 #include <dirent.h>
 #include <stdio.h>
 
-#include <cyg/fileio/fileio.h>
 #include <cyg/objloader/elf.h>
 #include <cyg/objloader/objelf.h>
+
+#ifdef CYGPKG_IO_FILEIO
+#include <cyg/fileio/fileio.h>
+#endif
+
+// Test ROMFS data. Two example data files are generated so that
+// the test will work on both big-endian and little-endian targets.
+#if (CYG_BYTEORDER == CYG_LSBFIRST)
+# include <cyg/objloader/testromfs_le.h>
+#else
+# include <cyg/objloader/testromfs_be.h>
+#endif
+
+//==========================================================================
+
+MTAB_ENTRY( romfs_mte1,
+                   "/",
+                   "romfs",
+                   "",
+                   (CYG_ADDRWORD) &filedata[0] );
+
+
+//==========================================================================
 
 #define THREAD_STACK_SIZE   8192
 #define THREAD_PRIORITY     12
@@ -82,10 +105,12 @@ cyg_handle_t thread_b_hdl;
 #define SHOW_RESULT( _fn, _res ) \
 diag_printf("<FAIL>: " #_fn "() returned %d %s\n", _res, _res<0?strerror(errno):"");
 
+int weak_fn_called = 0;
+
 void weak_function( void )
 {
-    // Store the data value passed in for this thread.
-    diag_printf( "This is the application function\n" );
+  CYG_TEST_PASS( "Applications weak function called" );
+  weak_fn_called++;
 }
 
 void (*thread_a)( cyg_addrword_t );
@@ -98,30 +123,36 @@ void cyg_user_start( void )
     void* lib_handle;
     void (*fn)( void );
     
-    // It wouldn't be much of a basic example if some
-    // kind of hello message wasn't output.
-    diag_printf( "Hello eCos World!!!\n\n" );
+    CYG_TEST_INIT();
 
-    err = mount( "/dev/disk0/1", "/", "fatfs" );
-    if( err < 0 ) 
-        SHOW_RESULT( mount, err );
+    CYG_TEST_INFO( "Object loader module test started" );
 
     err = chdir( "/" );
+
     if( err < 0 ) 
         SHOW_RESULT( chdir, err );
 
     lib_handle = cyg_ldr_open_library( (CYG_ADDRWORD)"/hello.o", 0 );
-//    cyg_ldr_print_symbol_names( lib_handle );
-//    cyg_ldr_print_rel_names( lib_handle );
+    CYG_TEST_CHECK( lib_handle , "Unable to load object file to load" );
+
     fn = cyg_ldr_find_symbol( lib_handle, "print_message" );
-    fn();
-    fn = cyg_ldr_find_symbol( lib_handle, "weak_function" );
+    CYG_TEST_CHECK( fn , "Unable to find print_message function" );
+
     fn();
 
+    fn = cyg_ldr_find_symbol( lib_handle, "weak_function" );
+    CYG_TEST_CHECK( fn , "Unable to find weak_function" );
+    
+    fn();
+
+    fn = cyg_ldr_find_symbol ( lib_handle, "unresolvable_symbol" );
+    CYG_TEST_CHECK( !fn , "Found none existing symbol!" );
+    
     thread_a = cyg_ldr_find_symbol( lib_handle, "thread_a" );
     thread_b = cyg_ldr_find_symbol( lib_handle, "thread_b" );
-
-   // Create our two threads.
+    CYG_TEST_CHECK( thread_a && thread_b , "Unable to find thread functions" );
+    
+    // Create our two threads.
     cyg_thread_create( THREAD_PRIORITY,
                        thread_a,
                        (cyg_addrword_t) 75,
@@ -143,65 +174,37 @@ void cyg_user_start( void )
     // Resume the threads so they start when the scheduler begins.
     cyg_thread_resume( thread_a_hdl );
     cyg_thread_resume( thread_b_hdl );
+
+    cyg_scheduler_start();
 }
 
 // -----------------------------------------------------------------------------
 // External symbols.
 // -----------------------------------------------------------------------------
+CYG_LDR_TABLE_KAPI_ALARM()
+CYG_LDR_TABLE_KAPI_CLOCK()
+CYG_LDR_TABLE_KAPI_COND()
+CYG_LDR_TABLE_KAPI_COUNTER()
+CYG_LDR_TABLE_KAPI_EXCEPTIONS()
+CYG_LDR_TABLE_KAPI_FLAG()
+CYG_LDR_TABLE_KAPI_INTERRUPTS()
+CYG_LDR_TABLE_KAPI_MBOX()
+CYG_LDR_TABLE_KAPI_MEMPOOL_FIX()
+CYG_LDR_TABLE_KAPI_MEMPOOL_VAR()
+CYG_LDR_TABLE_KAPI_MUTEX()
+CYG_LDR_TABLE_KAPI_SCHEDULER()
+CYG_LDR_TABLE_KAPI_SEMAPHORE()
+CYG_LDR_TABLE_KAPI_THREAD()
+CYG_LDR_TABLE_STRING()
+CYG_LDR_TABLE_STDIO()
+CYG_LDR_TABLE_INFRA_DIAG()
 
-// eCos semaphores
-CYG_LDR_TABLE_ENTRY( cyg_thread_delay_entry,
-                     "cyg_thread_delay",   
-                     cyg_thread_delay );
-CYG_LDR_TABLE_ENTRY( cyg_semaphore_wait_entry,
-                     "cyg_semaphore_wait", 
-                     cyg_semaphore_wait );
-CYG_LDR_TABLE_ENTRY( cyg_semaphore_init_entry,
-                     "cyg_semaphore_init", 
-                     cyg_semaphore_init );
-CYG_LDR_TABLE_ENTRY( cyg_semaphore_post_entry,
-                     "cyg_semaphore_post", 
-                     cyg_semaphore_post );
+// Test case infrastructure function
+CYG_LDR_TABLE_ENTRY( cyg_test_output_entry, "cyg_test_output", cyg_test_output );
+CYG_LDR_TABLE_ENTRY( cyg_test_exit_entry, "cyg_test_exit", cyg_test_exit );
 
-// eCos mailboxes
-CYG_LDR_TABLE_ENTRY( cyg_mbox_put_entry, "cyg_mbox_put", cyg_mbox_put );
-
-// eCos Flags
-CYG_LDR_TABLE_ENTRY( cyg_flag_poll_entry, "cyg_flag_poll", cyg_flag_poll );
-CYG_LDR_TABLE_ENTRY( cyg_flag_setbits_entry, 
-                     "cyg_flag_setbits", 
-                     cyg_flag_setbits );
-
-// eCos misc
-CYG_LDR_TABLE_ENTRY( hal_delay_us_entry, "hal_delay_us", hal_delay_us );
-CYG_LDR_TABLE_ENTRY( cyg_assert_msg_entry, "cyg_assert_msg", cyg_assert_msg );
-CYG_LDR_TABLE_ENTRY( cyg_assert_fail_entry, 
-                     "cyg_assert_fail", 
-                     cyg_assert_fail );
-
-// memory
-CYG_LDR_TABLE_ENTRY( memcpy_entry, "memcpy", memcpy );
-CYG_LDR_TABLE_ENTRY( memset_entry, "memset", memset );
-CYG_LDR_TABLE_ENTRY( memcmp_entry, "memcmp", memcmp );
-CYG_LDR_TABLE_ENTRY( malloc_entry, "malloc", malloc );
-CYG_LDR_TABLE_ENTRY( free_entry,   "free",   free );
-
-// Strings                     
-CYG_LDR_TABLE_ENTRY( strcpy_entry,  "strcpy",  strcpy );
-CYG_LDR_TABLE_ENTRY( strcat_entry,  "strcat",  strcat );
-CYG_LDR_TABLE_ENTRY( sprintf_entry, "sprintf", sprintf );
-CYG_LDR_TABLE_ENTRY( strlen_entry,  "strlen",  strlen );
-CYG_LDR_TABLE_ENTRY( strcmp_entry,  "strcmp",  strcmp );
-CYG_LDR_TABLE_ENTRY( strncmp_entry, "strncmp", strncmp );
-
-// files
-CYG_LDR_TABLE_ENTRY( fopen_entry,  "fopen",  fopen );
-CYG_LDR_TABLE_ENTRY( fread_entry,  "fread",  fread );
-CYG_LDR_TABLE_ENTRY( fclose_entry, "fclose", fclose );
-CYG_LDR_TABLE_ENTRY( fseek_entry,  "fseek",  fseek );
-CYG_LDR_TABLE_ENTRY( stat_entry,   "stat",   stat );
-
-// Diagnostic printout
-CYG_LDR_TABLE_ENTRY( diag_printf_entry, "diag_printf", diag_printf );
-
+// Test function
 CYG_LDR_TABLE_ENTRY( weak_function_entry, "weak_function", weak_function );
+
+// Test Variable
+CYG_LDR_TABLE_ENTRY( weak_fn_called_entry, "weak_fn_called", &weak_fn_called );
