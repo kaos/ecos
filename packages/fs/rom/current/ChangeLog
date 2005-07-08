@@ -1,3 +1,9 @@
+2005-07-08  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/romfs.cdl: Allow mk_romfs to be build even when the tests
+	are disabled. It is generally useful and other tests programs may
+	want it.
+
 2004-12-13  John Dallaway  <jld@ecoscentric.com>
 
 	* tests/fileio1.c: Rename to romfs1.c. eCos test names should be

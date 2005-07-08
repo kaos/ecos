@@ -65,6 +65,24 @@ cdl_package CYGPKG_FS_ROM {
     
     compile        -library=libextras.a romfs.c
 
+    cdl_option CYGBLD_FS_ROMFS_MK_ROMFS {
+        display       "Build the tool used to build filesystems"
+        flavor        bool
+        default_value 1
+
+        # FIXME: host compiler/flags should be provided by config system
+        make -priority 100 {
+            <PREFIX>/bin/mk_romfs: <PACKAGE>/support/mk_romfs.c <PREFIX>/bin/file2c.tcl
+            @mkdir -p "$(dir $@)"
+            @$(HOST_CC) -g -O2 -o $@ $< || cc -g -O2 -o $@ $< || gcc -g -O2 -o $@ $<
+            @cp $(REPOSITORY)/$(PACKAGE)/support/file2c.tcl $(PREFIX)/bin
+        }
+
+        description "
+            When enabled this option will build a host tool which can be
+            used to create a rom filesystem image."
+    }
+
     # ----------------------------------------------------------------
     # Tests
 
@@ -76,16 +94,10 @@ cdl_package CYGPKG_FS_ROM {
         requires      CYGINT_LIBC_STARTUP_CONTEXT
         requires      CYGINT_ISO_STDIO_FORMATTED_IO
         requires      CYGINT_ISO_STRERROR
+        requires      CYGBLD_FS_ROMFS_MK_ROMFS        
         description   "
                 This option enables the building of the ROM filesystem tests."
 
-        # FIXME: host compiler/flags should be provided by config system
-        make -priority 100 {
-            <PREFIX>/bin/mk_romfs: <PACKAGE>/support/mk_romfs.c
-            @mkdir -p "$(dir $@)"
-            @$(HOST_CC) -g -O2 -o $@ $< || cc -g -O2 -o $@ $< || gcc -g -O2 -o $@ $<
-        }
-    
         make -priority 100 {
             <PREFIX>/include/cyg/romfs/testromfs_le.h : $(PREFIX)/bin/mk_romfs <PACKAGE>/support/file2c.tcl
             $(PREFIX)/bin/mk_romfs $(REPOSITORY)/$(PACKAGE)/tests/testromfs testromfs_le.bin
@@ -101,10 +113,9 @@ cdl_package CYGPKG_FS_ROM {
             <PREFIX>/include/cyg/romfs/testromfs_be.h : $(PREFIX)/bin/mk_romfs <PACKAGE>/support/file2c.tcl
             $(PREFIX)/bin/mk_romfs -b $(REPOSITORY)/$(PACKAGE)/tests/testromfs testromfs_be.bin
             @mkdir -p "$(dir $@)"
-            # work around cygwin path problems by copying to build dir
-            @cp $(REPOSITORY)/$(PACKAGE)/support/file2c.tcl .
-            sh file2c.tcl testromfs_be.bin testromfs_be.h
-            @rm -f $@ file2c.tcl
+            # work around cygwin path problems by copying to bin dir
+            @cp $(REPOSITORY)/$(PACKAGE)/support/file2c.tcl $(PREFIX)/bin/
+            sh $(PREFIX)/bin/file2c.tcl testromfs_be.bin testromfs_be.h
             @cp testromfs_be.h $@
         }
     
