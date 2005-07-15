@@ -97,7 +97,7 @@ cyg_i2c_init::cyg_i2c_init()
 #ifdef CYGDBG_USE_ASSERTS
         bus->i2c_current_device = (const cyg_i2c_device*) 0;
 #endif        
-        if ((void (*)(const cyg_i2c_bus*))0 != bus->i2c_init_fn) {
+        if ((void (*)(cyg_i2c_bus*))0 != bus->i2c_init_fn) {
             (*bus->i2c_init_fn)(bus);
         }
     }
