@@ -1,3 +1,7 @@
+2005-07-18  David Vrabel  <dvrabel@arcom.com>
+
+	* include/hal_arch.h: #define CYGARC_VIRTUAL_ADDRESS.
+
 2005-04-22  David Vrabel  <dvrabel@arcom.com>
 
 	* cdl/hal_i386.cdl (CYGHWR_REDBOOT_I386_TRAMPOLINE_ADDRESS): Don't

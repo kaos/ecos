@@ -366,6 +366,7 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 #define CYGARC_CACHED_ADDRESS(x)                       (x)
 #define CYGARC_UNCACHED_ADDRESS(x)                     (x)
 #define CYGARC_PHYSICAL_ADDRESS(x)                     (x)
+#define CYGARC_VIRTUAL_ADDRESS(x)                      (x)
 
 //--------------------------------------------------------------------------
 // Region size finder
