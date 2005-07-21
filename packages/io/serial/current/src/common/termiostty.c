@@ -107,9 +107,6 @@ struct termios_private_info {
     cyg_io_handle_t dev_handle;
     cyg_drv_mutex_t lock;
     cyg_bool        init;
-    cyg_uint8      *errbuf;
-    cyg_uint8      *errbufpos;
-    cyg_uint32      errbufsize;
 };
 
 typedef struct {
@@ -255,12 +252,6 @@ real_termios_init( struct termios_private_info *priv )
                                  CYG_IO_GET_CONFIG_SERIAL_BUFFER_INFO,
                                  &dev_buf_conf, &len );
     }
-
-    priv->errbuf = (cyg_uint8 *)malloc( dev_buf_conf.rx_bufsize );
-    if ( NULL == priv->errbuf )
-        res = ENOMEM;   // FIXME: Are we allowed to do this?
-    priv->errbufpos = priv->errbuf;
-    priv->errbufsize = dev_buf_conf.rx_bufsize;
 
     if ( ENOERR != res ) {
         CYG_REPORT_RETVAL( res );

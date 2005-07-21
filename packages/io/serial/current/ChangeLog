@@ -1,3 +1,8 @@
+2005-07-21  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/common/termiostty.c: Removed errbuf from priv. It was never
+	being used after being allocated and never freed.
+
 2005-06-27  Andrew Lunn <andrew.lunn@ascom.ch>
 
 	* src/common/serial.c (serial_select): Swap the DSR locks and
