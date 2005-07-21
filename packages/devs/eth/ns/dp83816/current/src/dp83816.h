@@ -152,6 +152,11 @@ static void dp83816_poll(struct eth_drv_sc *sc);
 #define   _CFG_FDUP    (1<<29) // Full duplex
 #define   _CFG_POL     (1<<28) // 10Mb polarity
 #define   _CFG_ANDONE  (1<<27) // Auto-negotiation done
+#define DP_MEAR        0x08  // EEPROM access
+#define   _MEAR_EESEL  (1<<3) // EEPROM chip select
+#define   _MEAR_EECLK  (1<<2) // EEPROM serial clock
+#define   _MEAR_EEDO   (1<<1) // EEPROM data out
+#define   _MEAR_EEDI   (1<<0) // EEPROM data in
 #define DP_ISR         0x10  // Interrupt status
 #define   _ISR_TXRCMP (1<<25) // Tx reset complete
 #define   _ISR_RXRCMP (1<<24) // Rx reset complete

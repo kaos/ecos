@@ -1,3 +1,13 @@
+2005-07-18  David Vrabel  <dvrabel@arcom.com>
+
+	* src/if_dp83816.c: Use CYG_CPU_TO_LE32 and CYG_LE32_TO_CPU macros
+	instead of the _h2le and _le2h functions.
+
+	* src/dp83816.h: #define's for MEAR (EEPROM access) register.
+
+	* src/dp83816.c [CYGHWR_NS_DP83186_USE_EEPROM]: Read MAC address
+	from EEPROM.
+
 2004-08-24  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/if_dp83816.c: Enable start/stop functions (device was always

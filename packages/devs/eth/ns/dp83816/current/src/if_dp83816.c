@@ -56,6 +56,7 @@
 
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/hal_arch.h>
+#include <cyg/hal/hal_endian.h>
 #include <cyg/infra/diag.h>
 #include <cyg/hal/drv_api.h>
 #include <cyg/hal/hal_if.h>
@@ -64,6 +65,10 @@
 
 #include "dp83816.h"
 #include CYGDAT_DEVS_ETH_NS_DP83816_INL
+
+#ifdef CYGHWR_NS_DP83816_USE_EEPROM
+static cyg_uint16 dp83816_eeprom_read(struct dp83816_priv_data *dp, int location);
+#endif
 
 #ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
 // This ISR is called when the ethernet interrupt occurs
@@ -120,24 +125,24 @@ dp83816_reset(dp83816_priv_data_t *dp)
     bdp = dp->rxnext = CYGARC_UNCACHED_ADDRESS(dp->rxd);
     bp = dp->rxbuf;
     for (i = 0; i < dp->rxnum; i++, bdp++) {
-        bdp->next = (dp83816_bd_t *)_h2le(CYGARC_PHYSICAL_ADDRESS(bdp+1));
-        bdp->stat = _h2le(BD_INTR | _DP83816_BUFSIZE);  // Max buffer
-        bdp->buf = (unsigned char *)_h2le(CYGARC_PHYSICAL_ADDRESS(bp));
+        bdp->next = (dp83816_bd_t *)CYG_CPU_TO_LE32(CYGARC_PHYSICAL_ADDRESS(bdp+1));
+        bdp->stat = CYG_CPU_TO_LE32(BD_INTR | _DP83816_BUFSIZE);  // Max buffer
+        bdp->buf = (unsigned char *)CYG_CPU_TO_LE32(CYGARC_PHYSICAL_ADDRESS(bp));
         bp += _DP83816_BUFSIZE;
     }
-    bdp--;  bdp->next = (dp83816_bd_t *)_h2le(CYGARC_PHYSICAL_ADDRESS(dp->rxd));
+    bdp--;  bdp->next = (dp83816_bd_t *)CYG_CPU_TO_LE32(CYGARC_PHYSICAL_ADDRESS(dp->rxd));
     DP_OUT(dp->base, DP_RXCFG, _RXCFG_MXDMA_128 | ((64/32)<<_RXCFG_DRTH_SHIFT));
     DP_OUT(dp->base, DP_RXDP, CYGARC_PHYSICAL_ADDRESS(dp->rxd));
     // Tx ring
     bdp = dp->txfill = dp->txint = CYGARC_UNCACHED_ADDRESS(dp->txd);
     bp = dp->txbuf;
     for (i = 0; i < dp->txnum; i++, bdp++) {
-        bdp->next = (dp83816_bd_t *)_h2le(CYGARC_PHYSICAL_ADDRESS(bdp+1));
+        bdp->next = (dp83816_bd_t *)CYG_CPU_TO_LE32(CYGARC_PHYSICAL_ADDRESS(bdp+1));
         bdp->stat = 0;  // Driver owns buffer for now
-        bdp->buf = (unsigned char *)_h2le(CYGARC_PHYSICAL_ADDRESS(bp));
+        bdp->buf = (unsigned char *)CYG_CPU_TO_LE32(CYGARC_PHYSICAL_ADDRESS(bp));
         bp += _DP83816_BUFSIZE;
     }
-    bdp--;  bdp->next = (dp83816_bd_t *)_h2le(CYGARC_PHYSICAL_ADDRESS(dp->txd));
+    bdp--;  bdp->next = (dp83816_bd_t *)CYG_CPU_TO_LE32(CYGARC_PHYSICAL_ADDRESS(dp->txd));
     DP_OUT(dp->base, DP_TXCFG, _TXCFG_ATP |
                                _TXCFG_MXDMA_128 |
                                ((256/32)<<_TXCFG_FLTH_SHIFT) |
@@ -167,7 +172,33 @@ dp83816_init(struct cyg_netdevtab_entry *tab)
     bool esa_ok;
     unsigned char enaddr[6];
 
+    DEBUG_FUNCTION();
+
+    CYGHWR_NS_DP83816_PLF_INIT(dp);
+    base = dp->base;
+    if (!base) return false;  // No device found
+
     // Get physical device address
+#ifdef CYGHWR_NS_DP83816_USE_EEPROM
+    {
+        cyg_uint16 t;
+
+        t = (dp83816_eeprom_read(dp, 0x0006) >> 15)
+            | (dp83816_eeprom_read(dp, 0x0007) << 1);
+        enaddr[0] = t & 0xFF;
+        enaddr[1] = t >> 8;
+        t = (dp83816_eeprom_read(dp, 0x0007) >> 15)
+            | (dp83816_eeprom_read(dp, 0x0008) << 1);
+        enaddr[2] = t & 0xFF;
+        enaddr[3] = t >> 8;
+        t = (dp83816_eeprom_read(dp, 0x0008) >> 15)
+            | (dp83816_eeprom_read(dp, 0x0009) << 1);
+        enaddr[4] = t & 0xFF;
+        enaddr[5] = t >> 8;
+        
+        esa_ok =  true;
+    }
+#else
 #ifdef CYGPKG_REDBOOT
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
     esa_ok = flash_get_config(dp->esa_key, enaddr, CONFIG_ESA);
@@ -178,6 +209,7 @@ dp83816_init(struct cyg_netdevtab_entry *tab)
     esa_ok = CYGACC_CALL_IF_FLASH_CFG_OP(CYGNUM_CALL_IF_FLASH_CFG_GET,         
                                          dp->esa_key, enaddr, CONFIG_ESA);
 #endif
+#endif
     if (esa_ok) {
         memcpy(dp->enaddr, enaddr, sizeof(enaddr));
     } else {
@@ -185,17 +217,7 @@ dp83816_init(struct cyg_netdevtab_entry *tab)
         diag_printf("DP83816 - Warning! ESA unknown\n");
     }
 
-    DEBUG_FUNCTION();
-
-    CYGHWR_NS_DP83816_PLF_INIT(dp);
-    base = dp->base;
-    if (!base) return false;  // No device found
-
     if (!dp83816_reset(dp)) return false;
-
-    diag_printf("DP83816 - ESA: %02x:%02x:%02x:%02x:%02x:%02x\n",
-                dp->enaddr[0], dp->enaddr[1], dp->enaddr[2],
-                dp->enaddr[3], dp->enaddr[4], dp->enaddr[5] );
 
 #ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
     cyg_drv_interrupt_create(
@@ -290,15 +312,15 @@ dp83816_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
 
     len = total_len;
     if (len < IEEE_8023_MIN_FRAME) len = IEEE_8023_MIN_FRAME;
-    data = (unsigned char *)CYGARC_VIRTUAL_ADDRESS(_le2h((unsigned long)bdp->buf));
+    data = (unsigned char *)CYGARC_VIRTUAL_ADDRESS(CYG_LE32_TO_CPU((unsigned long)bdp->buf));
     for (i = 0;  i < sg_len;  i++) {
         memcpy(data, (unsigned char *)sg_list[i].buf, sg_list[i].len);
         data += sg_list[i].len;
     }
     bdp->key = key;
-    bdp->stat = _h2le(len | BD_OWN | BD_INTR);
+    bdp->stat = CYG_CPU_TO_LE32(len | BD_OWN | BD_INTR);
     dp->txbusy++;
-    bdp = (dp83816_bd_t *)CYGARC_UNCACHED_ADDRESS(CYGARC_VIRTUAL_ADDRESS(_le2h((unsigned long)bdp->next)));
+    bdp = (dp83816_bd_t *)CYGARC_UNCACHED_ADDRESS(CYGARC_VIRTUAL_ADDRESS(CYG_LE32_TO_CPU((unsigned long)bdp->next)));
     dp->txfill = bdp;
     // Kick the device, in case it went idle
     DP_OUT(dp->base, DP_CR, _CR_TXE);
@@ -311,13 +333,13 @@ dp83816_TxEvent(struct eth_drv_sc *sc)
     dp83816_bd_t *bdp = dp->txint;
 
     DEBUG_FUNCTION();
-    while ((_le2h(bdp->stat) & (BD_OWN|BD_INTR)) == BD_INTR) {
+    while ((CYG_LE32_TO_CPU(bdp->stat) & (BD_OWN|BD_INTR)) == BD_INTR) {
         // Tell higher level we sent this packet
         (sc->funs->eth_drv->tx_done)(sc, bdp->key, 0);
         bdp->stat = 0;  // retake buffer
         bdp->key = 0;
         dp->txbusy--;
-        bdp = (dp83816_bd_t *)CYGARC_UNCACHED_ADDRESS(CYGARC_VIRTUAL_ADDRESS(_le2h((unsigned long)bdp->next)));
+        bdp = (dp83816_bd_t *)CYGARC_UNCACHED_ADDRESS(CYGARC_VIRTUAL_ADDRESS(CYG_LE32_TO_CPU((unsigned long)bdp->next)));
     }
     dp->txint = bdp;
 }
@@ -340,17 +362,17 @@ dp83816_RxEvent(struct eth_drv_sc *sc)
     DEBUG_FUNCTION();
 
     while (true) {
-        if ((_le2h(bdp->stat) & BD_OWN) != 0) {
-            err = _le2h(bdp->stat) & (BD_RXA|BD_RXO|BD_LONG|BD_RUNT|BD_ISE|BD_CRCE|BD_FAE|BD_COL);
+        if ((CYG_LE32_TO_CPU(bdp->stat) & BD_OWN) != 0) {
+            err = CYG_LE32_TO_CPU(bdp->stat) & (BD_RXA|BD_RXO|BD_LONG|BD_RUNT|BD_ISE|BD_CRCE|BD_FAE|BD_COL);
             if (err != 0) {
                 diag_printf("RxError: %x\n", err);
             }
-            len = _le2h(bdp->stat) & BD_LENGTH_MASK;
+            len = CYG_LE32_TO_CPU(bdp->stat) & BD_LENGTH_MASK;
             dp->rxnext = bdp;
             (sc->funs->eth_drv->recv)(sc, len);
-            bdp->stat = _h2le(BD_INTR | _DP83816_BUFSIZE);  // Give back buffer
+            bdp->stat = CYG_CPU_TO_LE32(BD_INTR | _DP83816_BUFSIZE);  // Give back buffer
         }
-        bdp = (dp83816_bd_t *)CYGARC_UNCACHED_ADDRESS(CYGARC_VIRTUAL_ADDRESS(_le2h((unsigned long)bdp->next)));
+        bdp = (dp83816_bd_t *)CYGARC_UNCACHED_ADDRESS(CYGARC_VIRTUAL_ADDRESS(CYG_LE32_TO_CPU((unsigned long)bdp->next)));
         if (bdp == bdfirst) {
             break;
         }
@@ -372,7 +394,7 @@ dp83816_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
     unsigned char *data;
     int i;
 
-    data = (unsigned char *)CYGARC_VIRTUAL_ADDRESS(_le2h((unsigned long)bdp->buf));
+    data = (unsigned char *)CYGARC_VIRTUAL_ADDRESS(CYG_LE32_TO_CPU((unsigned long)bdp->buf));
     for (i = 0;  i < sg_len;  i++) {
         memcpy((void *)sg_list[i].buf, data, sg_list[i].len);
         data += sg_list[i].len;
@@ -442,3 +464,65 @@ dp83816_int_vector(struct eth_drv_sc *sc)
     struct dp83816_priv_data *dp = (struct dp83816_priv_data *)sc->driver_private;
     return dp->interrupt;
 }
+
+/* EEPROM Functions */
+#ifdef CYGHWR_NS_DP83816_USE_EEPROM
+
+#define EEPROM_READ(dp, x)  DP_IN((dp)->base, DP_MEAR, (x))
+#define EEPROM_WRITE(dp, x) DP_OUT((dp)->base, DP_MEAR, (x))
+#define EEPROM_DELAY(dp)    CYG_MACRO_START cyg_uint16 t; EEPROM_READ((dp), t); CYG_MACRO_END
+
+#define DP83816_EEPROM_ADDR_LEN  6
+#define DP83816_EE_READ_CMD     (6 << DP83816_EEPROM_ADDR_LEN)
+
+
+/* EEPROM data is bit-swapped. */
+static cyg_uint16 dp83816_eeprom_fixup_data(cyg_uint16 input)
+{
+    cyg_uint16 output = 0;
+    int i;
+
+    for (i = 0; i < 16; i++) {
+        output = (output << 1) | (input & 0x0001);
+        input >>= 1;
+    }
+    return output;
+}
+
+static cyg_uint16 dp83816_eeprom_command(struct dp83816_priv_data *dp, int cmd, int cmd_len)
+{
+    int d = 0;
+
+    EEPROM_WRITE(dp, _MEAR_EESEL);
+
+    do {
+        cyg_uint32 c = (cmd & (1 << cmd_len)) ? _MEAR_EEDI : 0;
+        cyg_uint8 t;
+
+        EEPROM_WRITE(dp, c | _MEAR_EESEL);
+        EEPROM_DELAY(dp);
+        EEPROM_WRITE(dp, c | _MEAR_EESEL | _MEAR_EECLK);
+        EEPROM_DELAY(dp);
+
+        EEPROM_READ(dp, t);
+        d <<= 1;
+        d |= (t & _MEAR_EEDO) ? 1 : 0;
+    } while (cmd_len--);
+
+    EEPROM_WRITE(dp, _MEAR_EESEL);
+    EEPROM_WRITE(dp, 0);
+
+    return d & 0xffff;
+}
+
+static cyg_uint16 dp83816_eeprom_read(struct dp83816_priv_data *dp, int loc)
+{
+    cyg_uint16 d;
+
+    d = dp83816_eeprom_command(dp, (loc | DP83816_EE_READ_CMD) << 16,
+                               3 + DP83816_EEPROM_ADDR_LEN + 16);
+
+    return dp83816_eeprom_fixup_data(d);
+}
+
+#endif /* CYGHWR_NS_DP83816_USE_EEPROM */
