@@ -1,3 +1,8 @@
+2005-07-18  David Vrabel  <dvrabel@arcom.com>
+
+	* include/moab_eth_dp83816.inl: Remove unneeded _h2le and _le2h
+	functions.
+
 2003-10-02  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/moab_eth_dp83816.inl: 

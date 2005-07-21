@@ -80,26 +80,6 @@ _moab_eth_init(dp83816_priv_data_t *dp)
 #undef  CYGHWR_NS_DP83816_PLF_INIT
 #define CYGHWR_NS_DP83816_PLF_INIT(dp) _moab_eth_init(dp)
 
-// Map a 32 bit host quantity to little endian
-unsigned long
-_h2le(unsigned long val)
-{
-    unsigned long res; 
-    unsigned long *addr = &val;
-    __asm__ __volatile__ ("lwbrx %0,0,%1" : "=r" (res) : "r" (addr), "m" (*addr));
-    return res;
-}
-
-// Map a 32 bit little endian quantity to host representation
-unsigned long
-_le2h(unsigned long val)
-{
-    unsigned long res; 
-    unsigned long *addr = &val;
-    __asm__ __volatile__ ("lwbrx %0,0,%1" : "=r" (res) : "r" (addr), "m" (*addr));
-    return res;
-}
-
 // Align buffers on a cache boundary
 #define RxBUFSIZE CYGNUM_DEVS_ETH_MOAB_DP83816_RxNUM*_DP83816_BUFSIZE
 #define TxBUFSIZE CYGNUM_DEVS_ETH_MOAB_DP83816_TxNUM*_DP83816_BUFSIZE
