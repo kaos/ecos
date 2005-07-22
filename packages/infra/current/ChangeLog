@@ -1,3 +1,9 @@
+2005-06-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/cyg_type.h: Added CYGBLD_ATTRIB_USED so that we can
+	indicate to gcc 3.4.4 or above not to throw away a variable or
+	function even when it appears to be not references.
+	
 2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/diag.h: Added CYGBLD_ATTRIB_PRINTF_FORMAT where

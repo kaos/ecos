@@ -313,6 +313,15 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 // COMPILER-SPECIFIC STUFF
 
 #ifdef __GNUC__
+#if defined(__GNU_PATCHLEVEL__)
+# define __GNUC_VERSION__ (__GNUC__ * 10000 \
+                            + __GNUC_MINOR__ * 100 \
+                            + __GNUC_PATCHLEVEL__)
+#else
+# define __GNUC_VERSION__ (__GNUC__ * 10000 \
+                            + __GNUC_MINOR__ * 100)
+#endif
+
 // Force a 'C' routine to be called like a 'C++' contructor
 # if !defined(CYGBLD_ATTRIB_CONSTRUCTOR)
 #  define CYGBLD_ATTRIB_CONSTRUCTOR __attribute__((constructor))
@@ -383,6 +392,16 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 # define CYGBLD_ATTRIB_STRFTIME_FORMAT(__format__, __args__) \
         __attribute__((format (strftime, __format__, __args__)))
 
+// Tell the compiler not to throw away a variable or function. Only
+// available on 3.3.4 or above. Old version's didn't throw them away,
+// but using the unused attribute should stop warnings.
+# if !defined(CYGBLD_ATTRIB_USED)
+#  if __GNUC_VERSION__ >= 30404
+#   define CYGBLD_ATTRIB_USED __attribute__((used))
+#  else
+#   define CYGBLD_ATTRIB_USED __attribute__((unused))
+#  endif
+# endif 
 #else // non-GNU
 
 # define CYGBLD_ATTRIB_CONSTRUCTOR
