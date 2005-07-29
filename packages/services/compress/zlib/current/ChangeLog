@@ -1,3 +1,33 @@
+2005-07-27  Peter Korsgaard  <jacmet@sunsite.dk>
+
+	* src/ChangeLog: 
+	* src/configure: 
+	* src/deflate.c: 
+	* src/deflate.h: 
+	* src/FAQ: 
+	* src/gzio.c: 
+	* src/Make_vms.com: 
+	* src/adler32.c: 
+	* src/compress.c: 
+	* src/example.c: 
+	* src/minigzip.c: 
+	* src/infback.c: 
+	* src/inffast.c: 
+	* src/inflate.c: 
+	* src/inflate.h: 
+	* src/inftrees.c: 
+	* src/inftrees.h: 
+	* src/Makefile: 
+	* src/Makefile.in: 
+	* src/README: 
+	* src/README.eCos: 
+	* src/trees.c: 
+	* src/zlib.3: 
+	* src/zutil.c: 
+	* src/zutil.h: 
+	* include/zlib.h: 
+	* include/zconf.h: Upgrade to zlib-1.2.3
+
 2005-06-28  Peter Korsgaard  <jacmet@sunsite.dk>
 
 	* src/ChangeLog: 
