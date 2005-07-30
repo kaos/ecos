@@ -271,7 +271,7 @@ cdl_package CYGPKG_MEMALLOC {
 
         make -priority 50 {
             heapgeninc.tcl : <PACKAGE>/src/heapgen.cpp
-            $(CC) $(CFLAGS) $(INCLUDE_PATH) -Wp,-MD,heapgen.tmp -E $< -o $@
+            $(CC) $(ACTUAL_CXXFLAGS) $(INCLUDE_PATH) -Wp,-MD,heapgen.tmp -E $< -o $@
             @sed -e '/^ *\\/d' -e "s#.*: #$@: #" heapgen.tmp > $(notdir $@).deps
             @rm heapgen.tmp
         }
@@ -290,7 +290,7 @@ cdl_package CYGPKG_MEMALLOC {
 
         make_object {
             heaps.o.d : heaps.cxx
-            $(CC) $(CFLAGS) $(INCLUDE_PATH) -Wp,-MD,heaps.tmp -c -o $(OBJECT_PREFIX)_$(notdir $(@:.o.d=.o)) $<
+            $(CC) $(ACTUAL_CXXFLAGS) $(INCLUDE_PATH) -Wp,-MD,heaps.tmp -c -o $(OBJECT_PREFIX)_$(notdir $(@:.o.d=.o)) $<
             @sed -e '/^ *\\/d' -e "s#.*: #$@: #" heaps.tmp > $@
             @rm heaps.tmp
         }

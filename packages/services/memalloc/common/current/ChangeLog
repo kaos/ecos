@@ -1,3 +1,8 @@
+2005-07-22  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/memalloc.cdl: Use the CXXFLAGS for the native compiler to
+	avoid passing it flags only valid for C.
+
 2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/memalloc.cdl: Added reference to documentation
