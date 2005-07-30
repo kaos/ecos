@@ -1,3 +1,8 @@
+2005-07-29  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/arch.inc: Add one-time-include protection since newer
+	versions of the GNU assembler complain about redefining macros.
+
 2005-03-14  Peter Korsgaard  <jacmetd@sunsite.dk>
 
 	* src/redboot_linux_exec.c (do_exec): Correctly set bi_size.

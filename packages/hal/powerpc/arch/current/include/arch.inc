@@ -1,3 +1,5 @@
+#ifndef _CYGONCE_HAL_POWERPC_ARCH_INC_
+#define _CYGONCE_HAL_POWERPC_ARCH_INC_
 ##=============================================================================
 ##
 ##	arch.inc
@@ -225,3 +227,5 @@ name:
 
 #------------------------------------------------------------------------------
 # end of arch.inc
+
+#endif // _CYGONCE_HAL_POWERPC_ARCH_INC_
