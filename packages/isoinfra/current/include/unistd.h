@@ -258,14 +258,14 @@ extern char 	*ctermid(char *s);
 extern char	*ttyname(int fd);
 extern int 	isatty(int fd);
 extern long 	sysconf(int name);
-
+  
 extern int 	vfork(void);
-extern int 	execl(char *path,...);
-extern int 	execv(char *path,char **argv);
-extern int 	execle(char *path,...);
-extern int 	execlp(char *file,...);
-extern int 	execvp(char *file, char **argv);
-extern int 	execve(char *name, char **argv, char **envv);
+extern int 	execl(const char *path, const char *arg, ...);
+extern int 	execv(const char *path,char **argv);
+extern int 	execle(const char *path, const char *arg , ... );
+extern int 	execlp(const char *file, const char * argv, ...);
+extern int 	execvp(const char *file, char **argv);
+extern int 	execve(const char *name, char **argv, char **envv);
 extern void 	_exit(int code);
 
 #ifdef __cplusplus

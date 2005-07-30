@@ -1,3 +1,7 @@
+2005-07-22  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/unistd.h: Const correctness to keep the compiler happy.
+
 2004-03-30  Alex Paulis and Cameron Taylor  <ctaylor@waverider.com>
 
 	* include/sys/select.h: set FD_SETSIZE to CYGNUM_FILEIO_NFD
