@@ -81,7 +81,7 @@ __strcmp( const char *s1, const char *s2 )
     CYG_CHECK_DATA_PTR( s1, "s1 is not a valid pointer!" );
     CYG_CHECK_DATA_PTR( s2, "s2 is not a valid pointer!" );
 
-    int retval;
+    int retval = 0;
 
     CYG_UNUSED_PARAM( int, retval ); // in case tracing is off
 
