@@ -1,3 +1,8 @@
+2005-07-30  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/pppd.h: Remove incorrect declaration of ifunit which
+	the compiler complains about.
+
 2005-06-07	Matt Jerdonek <maj1224@yahoo.com>
 
 	* src/ipcp.c:

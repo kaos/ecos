@@ -111,7 +111,6 @@
  */
 
 extern int	hungup;		/* Physical layer has disconnected */
-extern int	ifunit;		/* Interface unit number */
 extern char	ifname[];	/* Interface name */
 extern int	ttyfd;		/* Serial device file descriptor */
 extern char	cyg_ppp_hostname[];	/* Our hostname */
