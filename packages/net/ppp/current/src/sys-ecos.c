@@ -388,7 +388,7 @@ set_up_tty(cyg_io_handle_t handle, int local)
 {
     cyg_serial_info_t   cfg;
     int                 err;
-    int                 len = sizeof(cfg);
+    cyg_uint32          len = sizeof(cfg);
 
     err = cyg_io_get_config( handle,
                              CYG_IO_GET_CONFIG_SERIAL_INFO,
@@ -624,7 +624,7 @@ wait_input(timo)
     for(;;)
     {
         int s;
-        int len = 1;
+        cyg_uint32 len = 1;
         Cyg_ErrNo err;
         cyg_serial_buf_info_t info;
         cyg_uint32 ilen = sizeof(info);

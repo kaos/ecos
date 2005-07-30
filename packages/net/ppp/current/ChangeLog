@@ -1,5 +1,9 @@
 2005-07-30  Andrew Lunn  <andrew.lunn@ascom.ch>
 
+	* src/ppp_io.c (cyg_ppp_pppread): caddrt_t to stop compiler warnings.
+	* src/cbcp.c (cbcp_recvack, cbcp_recvreq): u_char to stop compiler
+	warnigs
+	* src/sys-ecos.c (set_up_tty): 
 	* include/pppd.h: Remove incorrect declaration of ifunit which
 	the compiler complains about.
 

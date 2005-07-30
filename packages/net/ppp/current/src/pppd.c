@@ -782,7 +782,7 @@ pr_log __V((void *arg, char *fmt, ...))
  */
 void
 print_string(p, len, printer, arg)
-    char *p;
+    unsigned char *p;
     int len;
     void (*printer) __P((void *, char *, ...));
     void *arg;

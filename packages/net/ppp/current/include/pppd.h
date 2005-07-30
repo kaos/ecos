@@ -251,7 +251,7 @@ void format_packet __P((u_char *, int, void (*) (void *, char *, ...),
 		void *));	/* Format a packet in human-readable form */
 void log_packet __P((u_char *, int, char *, int));
 				/* Format a packet and log it with syslog */
-void print_string __P((char *, int,  void (*) (void *, char *, ...),
+void print_string __P((unsigned char *, int,  void (*) (void *, char *, ...),
 		void *));	/* Format a string for output */
 int fmtmsg __P((char *, int, char *, ...));		/* sprintf++ */
 int vfmtmsg __P((char *, int, char *, va_list));	/* vsprintf++ */

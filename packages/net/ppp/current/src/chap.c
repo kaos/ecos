@@ -501,7 +501,7 @@ ChapReceiveChallenge(cstate, inp, id, len)
     case CHAP_DIGEST_MD5:
 	MD5Init(&mdContext);
 	MD5Update(&mdContext, &cstate->resp_id, 1);
-	MD5Update(&mdContext, secret, secret_len);
+	MD5Update(&mdContext, (u_char *)secret, secret_len);
 	MD5Update(&mdContext, rchallenge, rchallenge_len);
 	MD5Final(hash, &mdContext);
 	BCOPY(hash, cstate->response, MD5_SIGNATURE_SIZE);
@@ -611,7 +611,7 @@ ChapReceiveResponse(cstate, inp, id, len)
 		break;			/* it's not even the right length */
 	    MD5Init(&mdContext);
 	    MD5Update(&mdContext, &cstate->chal_id, 1);
-	    MD5Update(&mdContext, secret, secret_len);
+	    MD5Update(&mdContext, (u_char *)secret, secret_len);
 	    MD5Update(&mdContext, cstate->challenge, cstate->chal_len);
 	    MD5Final(hash, &mdContext); 
 
@@ -901,12 +901,12 @@ ChapPrintPkt(p, plen, printer, arg)
 	    printer(arg, "%.2x", x);
 	}
 	printer(arg, ">, name = ");
-	print_string((char *)p, nlen, printer, arg);
+	print_string(p, nlen, printer, arg);
 	break;
     case CHAP_FAILURE:
     case CHAP_SUCCESS:
 	printer(arg, " ");
-	print_string((char *)p, len, printer, arg);
+	print_string(p, len, printer, arg);
 	break;
     default:
 	for (clen = len; clen > 0; --clen) {

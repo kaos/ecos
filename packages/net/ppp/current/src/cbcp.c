@@ -116,10 +116,10 @@ cbcp_state cbcp[NUM_PPP];
 
 /* internal prototypes */
 
-static void cbcp_recvreq __P((cbcp_state *us, char *pckt, int len));
+static void cbcp_recvreq __P((cbcp_state *us, u_char *pckt, int len));
 static void cbcp_resp __P((cbcp_state *us));
 static void cbcp_up __P((cbcp_state *us));
-static void cbcp_recvack __P((cbcp_state *us, char *pckt, int len));
+static void cbcp_recvack __P((cbcp_state *us, u_char *pckt, int len));
 static void cbcp_send __P((cbcp_state *us, u_char code, u_char *buf, int len));
 
 /* init state */
@@ -310,7 +310,7 @@ cbcp_printpkt(p, plen, printer, arg)
 static void
 cbcp_recvreq(us, pckt, pcktlen)
     cbcp_state *us;
-    char *pckt;
+    u_char *pckt;
     int pcktlen;
 {
     u_char type, opt_len, delay, addr_type;
@@ -440,7 +440,7 @@ cbcp_send(us, code, buf, len)
 static void
 cbcp_recvack(us, pckt, len)
     cbcp_state *us;
-    char *pckt;
+    u_char *pckt;
     int len;
 {
     u_char type, delay, addr_type;

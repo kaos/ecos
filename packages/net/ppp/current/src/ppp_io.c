@@ -373,7 +373,7 @@ cyg_ppp_pppread(tp, uio, flag)
  
     for (m = m0; m && uio->uio_resid; m = m->m_next)
     {
-	if ((error = uiomove(mtod(m, u_char *), m->m_len, uio)) != 0)
+	if ((error = uiomove(mtod(m, caddr_t), m->m_len, uio)) != 0)
 	    break;
     }
     m_freem(m0);
@@ -413,7 +413,7 @@ cyg_ppp_pppwrite(tp, uio, flag)
 	len = M_TRAILINGSPACE(m);
 	if (len > uio->uio_resid)
 	    len = uio->uio_resid;
-	if ((error = uiomove(mtod(m, u_char *), len, uio)) != 0) {
+	if ((error = uiomove(mtod(m, caddr_t), len, uio)) != 0) {
 	    m_freem(m0);
 	    splx(s);
 	    return (error);
@@ -597,9 +597,10 @@ pppasyncstart(sc)
 {
     register struct tty *tp = (struct tty *) sc->sc_devp;
     register struct mbuf *m;
-    register int len;
+    register unsigned int len;
     register u_char *start, *stop, *cp;
-    int n, ndone, done, idle;
+    int n, done, idle;
+    cyg_uint32 ndone;
     struct mbuf *m2;
     int s;
     idle = 0;
@@ -697,7 +698,7 @@ pppasyncstart(sc)
                             info.tx_bufsize-info.tx_count >= 2 )
                         {
                             char buf[2];
-                            int blen = 2;
+                            cyg_uint32 blen = 2;
                             buf[0] = PPP_ESCAPE;
                             buf[1] = *start ^ PPP_TRANS;
                             if( cyg_io_write( tp->t_handle, buf, &blen) != 0 ) {
@@ -764,7 +765,7 @@ pppasyncstart(sc)
 		    }
 #else
                 {
-                    int elen = p-endseq;
+                    cyg_uint32 elen = p-endseq;
                     cyg_serial_buf_info_t info;
                     cyg_uint32 ilen = sizeof(info);
                     q = p;
@@ -788,7 +789,7 @@ pppasyncstart(sc)
 
 	    if (!done) {
 		/* remember where we got to */
-		m->m_data = start;
+		m->m_data = (char *)start;
 		m->m_len = len;
 		break;
 	    }

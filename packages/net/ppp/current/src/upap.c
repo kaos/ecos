@@ -604,7 +604,7 @@ upap_printpkt(p, plen, printer, arg)
 {
     int code, id, len;
     int mlen, ulen, wlen;
-    char *user, *pwd, *msg;
+    u_char *user, *pwd, *msg;
     u_char *pstart;
 
     if (plen < UPAP_HEADERLEN)
@@ -632,8 +632,8 @@ upap_printpkt(p, plen, printer, arg)
 	wlen = p[ulen + 1];
 	if (len < ulen + wlen + 2)
 	    break;
-	user = (char *) (p + 1);
-	pwd = (char *) (p + ulen + 2);
+	user = (p + 1);
+	pwd =  (p + ulen + 2);
 	p += ulen + wlen + 2;
 	len -= ulen + wlen + 2;
 	printer(arg, " user=");
@@ -648,7 +648,7 @@ upap_printpkt(p, plen, printer, arg)
 	mlen = p[0];
 	if (len < mlen + 1)
 	    break;
-	msg = (char *) (p + 1);
+	msg = (p + 1);
 	p += mlen + 1;
 	len -= mlen + 1;
 	printer(arg, " ");
