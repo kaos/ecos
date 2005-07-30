@@ -207,9 +207,9 @@ static FILE *fopen_inner( cyg_stdio_handle_t dev,
 externC FILE *
 fopen( const char *filename, const char *mode ) __THROW
 {
-    cyg_stdio_handle_t dev;
+    cyg_stdio_handle_t dev = 0;
     Cyg_ErrNo err;
-    Cyg_StdioStream::OpenMode open_mode;
+    Cyg_StdioStream::OpenMode open_mode = Cyg_StdioStream::CYG_STREAM_READ;
     cyg_bool binary, append;
     
     // process_mode returns true on error
