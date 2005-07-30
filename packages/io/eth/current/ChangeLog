@@ -1,3 +1,8 @@
+2005-07-29  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/net/eth_drv.c (eth_drv_recv): Change of type to remove
+	compiler warning.
+
 2005-06-29  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* doc/driver_doc: Removed, it has been superseded by the sgml

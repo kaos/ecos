@@ -800,7 +800,7 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
     struct ether_header _eh, *eh=&_eh;
     struct mbuf *top, **mp, *m;
     int mlen;
-    unsigned char *data;
+    caddr_t data;
 #if MAX_ETH_DRV_SG > 64
     static  // Avoid large stack requirements
 #endif
