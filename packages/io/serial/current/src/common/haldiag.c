@@ -118,9 +118,9 @@ haldiag_putc(serial_channel *chan, unsigned char c)
 static unsigned char 
 haldiag_getc(serial_channel *chan)
 {
-    unsigned char c;
+    char c;
     HAL_DIAG_READ_CHAR(c);
-    return c;
+    return (unsigned char)c;
 }
 
 static Cyg_ErrNo

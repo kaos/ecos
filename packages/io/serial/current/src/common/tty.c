@@ -167,7 +167,8 @@ tty_write(cyg_io_handle_t handle, const void *_buf, cyg_uint32 *len)
     cyg_devtab_entry_t *t = (cyg_devtab_entry_t *)handle;
     struct tty_private_info *priv = (struct tty_private_info *)t->priv;
     cyg_io_handle_t chan = (cyg_io_handle_t)priv->dev_handle;
-    cyg_int32 size, bytes_successful, actually_written;
+    cyg_uint32 size;
+    cyg_int32 bytes_successful, actually_written;
     cyg_uint8 xbuf[BUFSIZE];
     cyg_uint8 c;
     cyg_uint8 *buf = (cyg_uint8 *)_buf;
