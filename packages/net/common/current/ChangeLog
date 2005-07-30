@@ -1,3 +1,11 @@
+2005-07-29  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/tftp_dummy_file.c: unsigned char when needed to prevent warnings.
+	* src/tftp_server.c: fromlen in recvfrom should be of socklen_t.
+	* src/tftp_client.c: fromlen in recvfrom should be of socklen_t.
+	* src/dhcp_prot.c (do_dhcp): Casts etc so that it compiles cleanly
+	with gcc4.0
+
 2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/tftp_server.c (tftpd_server): Fixed compiler warning about

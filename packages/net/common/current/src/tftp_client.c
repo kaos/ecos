@@ -76,7 +76,8 @@ int tftp_client_get(char *filename,
 		    
     int result = 0;
     int s=-1;
-    int actual_len, data_len, recv_len, from_len;
+    int actual_len, data_len;
+    socklen_t from_len, recv_len;
     static int get_port = 7700;
     struct addrinfo * addrinfo;
     struct addrinfo * res;
@@ -358,7 +359,8 @@ int tftp_client_put(char *filename,
 		    int *err) {
 
     int result = 0;
-    int s = -1, actual_len, data_len, recv_len, from_len;
+    int s = -1, actual_len, data_len;
+    socklen_t recv_len, from_len;
     static int put_port = 7800;
     struct sockaddr local_addr, from_addr;
     char data[SEGSIZE+sizeof(struct tftphdr)];

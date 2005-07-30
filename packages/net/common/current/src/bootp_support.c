@@ -86,7 +86,8 @@ do_bootp(const char *intf, struct bootp *recv)
     struct ifreq ifr;
     struct sockaddr_in cli_addr, serv_addr, bootp_server_addr;
     struct ecos_rtentry route;
-    int s=-1, addrlen;
+    int s=-1;
+    socklen_t addrlen;
     int one = 1;
     struct bootp bootp_xmit;
     unsigned char mincookie[] = {99,130,83,99,255} ;
@@ -263,7 +264,8 @@ void
 show_bootp(const char *intf, struct bootp *bp)
 {
     int i, len;
-    unsigned char *op, *ap = 0, optover;
+    unsigned char *op, optover;
+    char  *ap = 0;
     unsigned char name[128];
     struct in_addr addr[32];
     unsigned int length;
@@ -305,7 +307,7 @@ show_bootp(const char *intf, struct bootp *bp)
             case TAG_GATEWAY:
             case TAG_IP_BROADCAST:
             case TAG_DOMAIN_SERVER:
-                ap = (unsigned char *)&addr[0];
+                ap = (char *)&addr[0];
                 len = *(op+1);
                 for (i = 0;  i < len;  i++) {
                     *ap++ = *(op+i+2);
@@ -315,7 +317,7 @@ show_bootp(const char *intf, struct bootp *bp)
                 if (*op == TAG_IP_BROADCAST)  ap =  " IP broadcast";
                 if (*op == TAG_DOMAIN_SERVER) ap =  "domain server";
                 diag_printf("      %s: ", ap);
-                ap = (unsigned char *)&addr[0];
+                ap = (char *)&addr[0];
                 while (len > 0) {
                     diag_printf("%s", inet_ntoa(*(struct in_addr *)ap));
                     len -= sizeof(struct in_addr);
@@ -431,10 +433,10 @@ CYG_MACRO_END
         return false;
 
     if ( 1 & optover ) // then the file field also holds options
-        SCANTAG( &bp->bp_file[0] );
+        SCANTAG( (unsigned char *)&bp->bp_file[0] );
 
     if ( 2 & optover ) // then the sname field also holds options
-        SCANTAG( &bp->bp_sname[0] );
+        SCANTAG( (unsigned char *)&bp->bp_sname[0] );
 
     return false;
 }

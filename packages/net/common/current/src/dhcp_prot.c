@@ -602,7 +602,8 @@ do_dhcp(const char *intf, struct bootp *res,
 {
     struct ifreq ifr;
     struct sockaddr_in cli_addr, broadcast_addr, server_addr, rx_addr;
-    int s = -1, addrlen;
+    int s = -1;
+    socklen_t addrlen;
     int one = 1;
     unsigned char mincookie[] = {99,130,83,99,255} ;
     struct timeval tv;
@@ -1183,7 +1184,7 @@ do_dhcp(const char *intf, struct bootp *res,
 
             if ( 0 == received->bp_siaddr.s_addr ) {
                 // then fill in from the options...
-                int length = sizeof(received->bp_siaddr.s_addr );
+                unsigned int length = sizeof(received->bp_siaddr.s_addr );
                 get_bootp_option( received, TAG_DHCP_SERVER_ID,
                                   &received->bp_siaddr.s_addr,
                                   &length);

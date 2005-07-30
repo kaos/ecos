@@ -84,7 +84,7 @@ struct _file_info {
 };
 
 // TEMP
-static char _uu_data[] = "This is a test\n\
+static unsigned char _uu_data[] = "This is a test\n\
 Four score and seven years ago,\n\
 our forefathers brought forth a new nation,\n\
 conceived in liberty and dedicated to the\n\
@@ -100,9 +100,9 @@ and so dedicated, can long endure.\n\
 6666666666666666666666666666666666\n\
 ";
 
-static char _f0_data[1024*1024];
-static char _f1_data[1024*1024];
-static char _f2_data[1024*1024];
+static unsigned char _f0_data[1024*1024];
+static unsigned char _f1_data[1024*1024];
+static unsigned char _f2_data[1024*1024];
 
 static char _name0[256] = "", _name1[256] = "", _name2[256] = "";
 

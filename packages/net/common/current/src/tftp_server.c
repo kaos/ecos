@@ -235,7 +235,7 @@ tftpd_write_file(struct tftp_server *server,
     struct sockaddr client_addr;
     struct addrinfo hints;
     struct addrinfo *res;
-    int client_len;
+    socklen_t client_len;
     int error;
     
     memset(&hints,0,sizeof(hints));
@@ -403,7 +403,7 @@ tftpd_read_file(struct tftp_server *server,
     struct sockaddr client_addr;
     struct addrinfo hints;
     struct addrinfo *res;
-    int client_len;
+    socklen_t client_len;
     int error;
 
     memset(&hints,0,sizeof(hints));
@@ -539,7 +539,8 @@ tftpd_server(cyg_addrword_t p)
 {
     struct tftp_server *server = (struct tftp_server *)p;
     int max_s = 0;
-    int data_len, recv_len, from_len;
+    int data_len, recv_len;
+    socklen_t from_len;
     struct sockaddr from_addr;
     char data[SEGSIZE+sizeof(struct tftphdr)];
     struct tftphdr *hdr = (struct tftphdr *)data;
