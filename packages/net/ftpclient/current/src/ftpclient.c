@@ -214,7 +214,8 @@ connect_to_server(char *hostname,
                   struct sockaddr * local,
                   ftp_printf_t ftp_printf) 
 { 
-  int s, len;
+  int s;
+  socklen_t len;
   int error;
   struct addrinfo *res, *nai;
   char name[80];
