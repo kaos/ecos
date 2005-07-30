@@ -1126,10 +1126,10 @@ synth_auxiliary_xchgmsg(int devid, int reqcode, int arg1, int arg2,
 int
 synth_auxiliary_instantiate(const char* pkg, const char* version, const char* devtype, const char* devinst, const char* devdata)
 {
-    int         result = -1;
-    char        buf[512 + 1];
-    const char* str;
-    int         index;
+    int           result = -1;
+    unsigned char buf[512 + 1];
+    const char*   str;
+    int           index;
 
     CYG_ASSERT((const char*)0 != devtype, "Device instantiations must specify a valid device type");
     CYG_ASSERT((((const char*)0 != pkg) && ((const char*)0 != version)) || \

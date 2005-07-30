@@ -1,3 +1,8 @@
+2005-07-30  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/synth_diag.c (hal_diag_write_char): Compiler warning fix.
+	* src/synth_intr.c (synth_auxiliary_instantiate): Ditto
+	
 2005-06-26  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/synth_intr.c (synth_hardware_init): extract bogomips rating

@@ -116,7 +116,7 @@ void hal_diag_write_char(char c)
             diag_index = 0;
         } else {
             int     written;
-            char*   next    = diag_buffer;
+            unsigned char* next    = diag_buffer;
 
             while (diag_index > 0) {
                 written = cyg_hal_sys_write(1, next, diag_index);
