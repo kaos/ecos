@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: read.c,v 1.38 2004/11/16 20:36:12 dwmw2 Exp $
+ * $Id: read.c,v 1.41 2005/07/22 10:32:08 dedekind Exp $
  *
  */
 
@@ -174,7 +174,6 @@ int jffs2_read_inode_range(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 			if (frag) {
 				D1(printk(KERN_NOTICE "Eep. Hole in ino #%u fraglist. frag->ofs = 0x%08x, offset = 0x%08x\n", f->inocache->ino, frag->ofs, offset));
 				holesize = min(holesize, frag->ofs - offset);
-				D2(jffs2_print_frag_list(f));
 			}
 			D1(printk(KERN_DEBUG "Filling non-frag hole from %d-%d\n", offset, offset+holesize));
 			memset(buf, 0, holesize);
@@ -214,33 +213,3 @@ int jffs2_read_inode_range(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 	return 0;
 }
 
-/* Core function to read symlink target. */
-char *jffs2_getlink(struct jffs2_sb_info *c, struct jffs2_inode_info *f)
-{
-	char *buf;
-	int ret;
-
-	down(&f->sem);
-
-	if (!f->metadata) {
-		printk(KERN_NOTICE "No metadata for symlink inode #%u\n", f->inocache->ino);
-		up(&f->sem);
-		return ERR_PTR(-EINVAL);
-	}
-	buf = kmalloc(f->metadata->size+1, GFP_USER);
-	if (!buf) {
-		up(&f->sem);
-		return ERR_PTR(-ENOMEM);
-	}
-	buf[f->metadata->size]=0;
-
-	ret = jffs2_read_dnode(c, f, f->metadata, buf, 0, f->metadata->size);
-
-	up(&f->sem);
-
-	if (ret) {
-		kfree(buf);
-		return ERR_PTR(ret);
-	}
-	return buf;
-}

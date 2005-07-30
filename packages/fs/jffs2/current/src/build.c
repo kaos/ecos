@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: build.c,v 1.69 2004/12/16 20:22:18 dmarlin Exp $
+ * $Id: build.c,v 1.75 2005/07/22 10:32:07 dedekind Exp $
  *
  */
 
@@ -97,14 +97,16 @@ static int jffs2_build_filesystem(struct jffs2_sb_info *c)
 	/* First, scan the medium and build all the inode caches with
 	   lists of physical nodes */
 
-	c->flags |= JFFS2_SB_FLAG_MOUNTING;
+	c->flags |= JFFS2_SB_FLAG_SCANNING;
 	ret = jffs2_scan_medium(c);
+	c->flags &= ~JFFS2_SB_FLAG_SCANNING;
 	if (ret)
 		goto exit;
 
 	D1(printk(KERN_DEBUG "Scanned flash completely\n"));
-	D2(jffs2_dump_block_lists(c));
+	jffs2_dbg_dump_block_lists_nolock(c);
 
+	c->flags |= JFFS2_SB_FLAG_BUILDING;
 	/* Now scan the directory tree, increasing nlink according to every dirent found. */
 	for_each_inode(i, c, ic) {
 		D1(printk(KERN_DEBUG "Pass 1: ino #%u\n", ic->ino));
@@ -116,7 +118,6 @@ static int jffs2_build_filesystem(struct jffs2_sb_info *c)
 			cond_resched();
 		}
 	}
-	c->flags &= ~JFFS2_SB_FLAG_MOUNTING;
 
 	D1(printk(KERN_DEBUG "Pass 1 complete\n"));
 
@@ -164,8 +165,10 @@ static int jffs2_build_filesystem(struct jffs2_sb_info *c)
 		ic->scan_dents = NULL;
 		cond_resched();
 	}
+	c->flags &= ~JFFS2_SB_FLAG_BUILDING;
+	
 	D1(printk(KERN_DEBUG "Pass 3 complete\n"));
-	D2(jffs2_dump_block_lists(c));
+	jffs2_dbg_dump_block_lists_nolock(c);
 
 	/* Rotate the lists by some number to ensure wear levelling */
 	jffs2_rotate_lists(c);
@@ -334,13 +337,6 @@ int jffs2_do_mount_fs(struct jffs2_sb_info *c)
 		c->blocks[i].last_node = NULL;
 		c->blocks[i].bad_count = 0;
 	}
-
-	init_MUTEX(&c->alloc_sem);
-	init_MUTEX(&c->erase_free_sem);
-	init_waitqueue_head(&c->erase_wait);
-	init_waitqueue_head(&c->inocache_wq);
-	spin_lock_init(&c->erase_completion_lock);
-	spin_lock_init(&c->inocache_lock);
 
 	INIT_LIST_HEAD(&c->clean_list);
 	INIT_LIST_HEAD(&c->very_dirty_list);

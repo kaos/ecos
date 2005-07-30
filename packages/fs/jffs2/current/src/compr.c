@@ -9,7 +9,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: compr.c,v 1.43 2005/01/12 22:34:35 gleixner Exp $
+ * $Id: compr.c,v 1.45 2005/07/26 13:24:40 havasi Exp $
  *
  */
 
@@ -22,16 +22,6 @@ static LIST_HEAD(jffs2_compressor_list);
 
 /* Actual compression mode */
 static int jffs2_compression_mode = JFFS2_COMPR_MODE_PRIORITY;
-
-void jffs2_set_compression_mode(int mode) 
-{
-        jffs2_compression_mode = mode;
-}
-
-int jffs2_get_compression_mode(void)
-{
-        return jffs2_compression_mode;
-}
 
 /* Statistics for blocks stored without compression */
 static uint32_t none_stat_compr_blocks=0,none_stat_decompr_blocks=0,none_stat_compr_size=0;
@@ -435,12 +425,6 @@ int jffs2_compressors_init(void)
         jffs2_rubinmips_init();
         jffs2_dynrubin_init();
 #endif
-#ifdef CONFIG_JFFS2_LZARI
-        jffs2_lzari_init();
-#endif
-#ifdef CONFIG_JFFS2_LZO
-        jffs2_lzo_init();
-#endif
 /* Setting default compression mode */
 #ifdef CONFIG_JFFS2_CMODE_NONE
         jffs2_compression_mode = JFFS2_COMPR_MODE_NONE;
@@ -459,12 +443,6 @@ int jffs2_compressors_init(void)
 int jffs2_compressors_exit(void) 
 {
 /* Unregistering compressors */
-#ifdef CONFIG_JFFS2_LZO
-        jffs2_lzo_exit();
-#endif
-#ifdef CONFIG_JFFS2_LZARI
-        jffs2_lzari_exit();
-#endif
 #ifdef CONFIG_JFFS2_RUBIN
         jffs2_dynrubin_exit();
         jffs2_rubinmips_exit();

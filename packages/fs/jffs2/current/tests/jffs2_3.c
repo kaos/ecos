@@ -68,7 +68,7 @@
 #define NELEM(_x_) (sizeof(_x_)/sizeof(*(_x_)))
 
 #define SHOW_RESULT( _fn, _res ) \
-diag_printf("FAIL: " #_fn "() returned %ld %s\n", _res, \
+diag_printf("FAIL: " #_fn "() returned %d %s\n", _res, \
             (unsigned long) _res<0?strerror(errno):"");
 
 //==========================================================================
@@ -91,7 +91,7 @@ static void create_file(int i)
   }
   
   buffer[0] = 0;
-  buffer[0] = cyg_posix_crc32((char *)buffer, sizeof(buffer));
+  buffer[0] = cyg_posix_crc32((unsigned char *)buffer, sizeof(buffer));
   
   err = write(fd, buffer, sizeof(buffer));
   if (err == -1) SHOW_RESULT( write, err );
@@ -129,7 +129,7 @@ static void check_file(int i)
   crc = buffer[0];
   buffer[0] = 0;
   
-  if (crc != cyg_posix_crc32((char *)buffer, sizeof(buffer))) {
+  if (crc != cyg_posix_crc32((unsigned char *)buffer, sizeof(buffer))) {
     CYG_TEST_FAIL("File corrupt");
   }
 
@@ -144,7 +144,6 @@ static void check_file(int i)
 int main( int argc, char **argv )
 {
     int err, iteration;
-    cyg_tick_count_t ticks;
     struct mallinfo minfo
 ;
     CYG_TEST_INIT();

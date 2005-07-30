@@ -1,8 +1,6 @@
-2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+2005-07-30  Andrew Lunn  <andrew.lunn@ascom.ch>
 
-	* tests/jffs2_[123].c: Fixed compiler warnings for parameter
-	mismatch for diag_printf().
-	
+	* Merge to public MTD
 
 2005-02-25  Andrew Lunn  <andrew.lunn@ascom.ch>
 

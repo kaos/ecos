@@ -7,7 +7,7 @@
  * For licensing information, see the file 'LICENCE' in the 
  * jffs2 directory.
  *
- * $Id: compr.h,v 1.6 2004/07/16 15:17:57 dwmw2 Exp $
+ * $Id: compr.h,v 1.8 2005/07/26 13:24:40 havasi Exp $
  *
  */
 
@@ -40,9 +40,6 @@
 #define JFFS2_COMPR_MODE_NONE       0
 #define JFFS2_COMPR_MODE_PRIORITY   1
 #define JFFS2_COMPR_MODE_SIZE       2
-
-void jffs2_set_compression_mode(int mode);
-int jffs2_get_compression_mode(void);
 
 struct jffs2_compressor {
         struct list_head list;
@@ -105,14 +102,6 @@ void jffs2_rtime_exit(void);
 #ifdef CONFIG_JFFS2_ZLIB
 int jffs2_zlib_init(void);
 void jffs2_zlib_exit(void);
-#endif
-#ifdef CONFIG_JFFS2_LZARI
-int jffs2_lzari_init(void);
-void jffs2_lzari_exit(void);
-#endif
-#ifdef CONFIG_JFFS2_LZO
-int jffs2_lzo_init(void);
-void jffs2_lzo_exit(void);
 #endif
 
 #endif /* __JFFS2_COMPR_H__ */

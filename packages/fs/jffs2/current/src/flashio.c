@@ -21,7 +21,7 @@
 
 cyg_bool jffs2_flash_read(struct jffs2_sb_info * c,
 			  cyg_uint32 read_buffer_offset, const size_t size,
-			  size_t * return_size, char *write_buffer)
+			  size_t * return_size, unsigned char *write_buffer)
 {
 	Cyg_ErrNo err;
 	cyg_uint32 len = size;
@@ -39,7 +39,7 @@ cyg_bool jffs2_flash_read(struct jffs2_sb_info * c,
 
 cyg_bool jffs2_flash_write(struct jffs2_sb_info * c,
 			   cyg_uint32 write_buffer_offset, const size_t size,
-			   size_t * return_size, char *read_buffer)
+			   size_t * return_size, unsigned char *read_buffer)
 {
 
 	Cyg_ErrNo err;

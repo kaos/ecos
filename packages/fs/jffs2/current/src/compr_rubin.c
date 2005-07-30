@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: compr_rubin.c,v 1.20 2004/06/23 16:34:40 havasi Exp $
+ * $Id: compr_rubin.c,v 1.21 2005/05/20 15:39:54 gleixner Exp $
  *
  */
 
@@ -228,8 +228,10 @@ int jffs2_rubinmips_compress(unsigned char *data_in, unsigned char *cpage_out,
 	return rubin_do_compress(BIT_DIVIDER_MIPS, bits_mips, data_in, cpage_out, sourcelen, dstlen);
 }
 #endif
-int jffs2_dynrubin_compress(unsigned char *data_in, unsigned char *cpage_out, 
-		   uint32_t *sourcelen, uint32_t *dstlen, void *model)
+static int jffs2_dynrubin_compress(unsigned char *data_in,
+				   unsigned char *cpage_out,
+				   uint32_t *sourcelen, uint32_t *dstlen,
+				   void *model)
 {
 	int bits[8];
 	unsigned char histo[256];
@@ -306,15 +308,19 @@ static void rubin_do_decompress(int bit_divider, int *bits, unsigned char *cdata
 }		   
 
 
-int jffs2_rubinmips_decompress(unsigned char *data_in, unsigned char *cpage_out, 
-		   uint32_t sourcelen, uint32_t dstlen, void *model)
+static int jffs2_rubinmips_decompress(unsigned char *data_in,
+				      unsigned char *cpage_out,
+				      uint32_t sourcelen, uint32_t dstlen,
+				      void *model)
 {
 	rubin_do_decompress(BIT_DIVIDER_MIPS, bits_mips, data_in, cpage_out, sourcelen, dstlen);
         return 0;
 }
 
-int jffs2_dynrubin_decompress(unsigned char *data_in, unsigned char *cpage_out, 
-		   uint32_t sourcelen, uint32_t dstlen, void *model)
+static int jffs2_dynrubin_decompress(unsigned char *data_in,
+				     unsigned char *cpage_out,
+				     uint32_t sourcelen, uint32_t dstlen,
+				     void *model)
 {
 	int bits[8];
 	int c;

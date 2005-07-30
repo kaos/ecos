@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: gcthread.c,v 1.1 2003/12/01 17:02:31 affe Exp $
+ * $Id: gcthread.c,v 1.3 2005/01/22 16:01:12 lunn Exp $
  *
  */
 #include <linux/kernel.h>

@@ -8,7 +8,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: fs-ecos.c,v 1.41 2005/01/22 16:01:12 lunn Exp $
+ * $Id: fs-ecos.c,v 1.44 2005/07/24 15:29:57 dedekind Exp $
  *
  */
 
@@ -167,12 +167,12 @@ static unsigned char n_fs_mounted = 0;  // a counter to track the number of jffs
 // Directory operations
 
 struct jffs2_dirsearch {
-	struct _inode *dir;	// directory to search
-	const char *path;	// path to follow
-	struct _inode *node;	// Node found
-	const char *name;	// last name fragment used
-	int namelen;		// name fragment length
-	cyg_bool last;		// last name in path?
+	struct _inode *dir;	    // directory to search
+	const unsigned char *path;  // path to follow
+	struct _inode *node;	    // Node found
+	const unsigned char *name;  // last name fragment used
+	int namelen;		    // name fragment length
+	cyg_bool last;		    // last name in path?
 };
 
 typedef struct jffs2_dirsearch jffs2_dirsearch;
@@ -221,7 +221,7 @@ static void icache_evict(struct _inode *root_i, struct _inode *i)
 // Initialize a dirsearch object to start a search
 
 static void init_dirsearch(jffs2_dirsearch * ds,
-			   struct _inode *dir, const char *name)
+			   struct _inode *dir, const unsigned char *name)
 {
 	D2(printf("init_dirsearch name = %s\n", name));
 	D2(printf("init_dirsearch dir = %x\n", dir));
@@ -243,8 +243,8 @@ static void init_dirsearch(jffs2_dirsearch * ds,
 static int find_entry(jffs2_dirsearch * ds)
 {
 	struct _inode *dir = ds->dir;
-	const char *name = ds->path;
-	const char *n = name;
+	const unsigned char *name = ds->path;
+	const unsigned char *n = name;
 	char namelen = 0;
 	struct _inode *d;
 
@@ -693,7 +693,8 @@ static int jffs2_open(cyg_mtab_entry * mte, cyg_dir dir, const char *name,
 	if (mode & (O_CREAT|O_TRUNC|O_WRONLY))
 		return EROFS;
 #endif
-	init_dirsearch(&ds, (struct _inode *) dir, name);
+	init_dirsearch(&ds, (struct _inode *) dir, 
+                       (const unsigned char *) name);
 
 	err = jffs2_find(&ds);
 
@@ -776,7 +777,8 @@ static int jffs2_ops_unlink(cyg_mtab_entry * mte, cyg_dir dir, const char *name)
 
 	D2(printf("jffs2_ops_unlink\n"));
 
-	init_dirsearch(&ds, (struct _inode *) dir, name);
+	init_dirsearch(&ds, (struct _inode *) dir, 
+                       (const unsigned char *)name);
 
 	err = jffs2_find(&ds);
 
@@ -812,7 +814,8 @@ static int jffs2_ops_mkdir(cyg_mtab_entry * mte, cyg_dir dir, const char *name)
 
 	D2(printf("jffs2_ops_mkdir\n"));
 
-	init_dirsearch(&ds, (struct _inode *) dir, name);
+	init_dirsearch(&ds, (struct _inode *) dir, 
+                       (const unsigned char *)name);
 
 	err = jffs2_find(&ds);
 
@@ -848,7 +851,8 @@ static int jffs2_ops_rmdir(cyg_mtab_entry * mte, cyg_dir dir, const char *name)
 
 	D2(printf("jffs2_ops_rmdir\n"));
 
-	init_dirsearch(&ds, (struct _inode *) dir, name);
+	init_dirsearch(&ds, (struct _inode *) dir, 
+                       (const unsigned char *)name);
 
 	err = jffs2_find(&ds);
 
@@ -883,7 +887,8 @@ static int jffs2_ops_rename(cyg_mtab_entry * mte, cyg_dir dir1,
 
 	D2(printf("jffs2_ops_rename\n"));
 
-	init_dirsearch(&ds1, (struct _inode *) dir1, name1);
+	init_dirsearch(&ds1, (struct _inode *) dir1, 
+                       (const unsigned char *)name1);
 
 	err = jffs2_find(&ds1);
 
@@ -892,7 +897,8 @@ static int jffs2_ops_rename(cyg_mtab_entry * mte, cyg_dir dir1,
 		return err;
 	}
 
-	init_dirsearch(&ds2, (struct _inode *) dir2, name2);
+	init_dirsearch(&ds2, (struct _inode *) dir2, 
+                       (const unsigned char *)name2);
 
 	err = jffs2_find(&ds2);
 
@@ -983,7 +989,8 @@ static int jffs2_ops_link(cyg_mtab_entry * mte, cyg_dir dir1, const char *name1,
 	if (type != CYG_FSLINK_HARD)
 		return EINVAL;
 
-	init_dirsearch(&ds1, (struct _inode *) dir1, name1);
+	init_dirsearch(&ds1, (struct _inode *) dir1, 
+                       (const unsigned char *) name1);
 
 	err = jffs2_find(&ds1);
 
@@ -992,7 +999,8 @@ static int jffs2_ops_link(cyg_mtab_entry * mte, cyg_dir dir1, const char *name1,
 		return err;
 	}
 
-	init_dirsearch(&ds2, (struct _inode *) dir2, name2);
+	init_dirsearch(&ds2, (struct _inode *) dir2, 
+                       (const unsigned char *) name2);
 
 	err = jffs2_find(&ds2);
 
@@ -1046,7 +1054,8 @@ static int jffs2_opendir(cyg_mtab_entry * mte, cyg_dir dir, const char *name,
 
 	D2(printf("jffs2_opendir\n"));
 
-	init_dirsearch(&ds, (struct _inode *) dir, name);
+	init_dirsearch(&ds, (struct _inode *) dir, 
+                       (const unsigned char *) name);
 
 	err = jffs2_find(&ds);
 
@@ -1090,7 +1099,8 @@ static int jffs2_chdir(cyg_mtab_entry * mte, cyg_dir dir, const char *name,
 		jffs2_dirsearch ds;
 		int err;
 
-		init_dirsearch(&ds, (struct _inode *) dir, name);
+		init_dirsearch(&ds, (struct _inode *) dir, 
+                               (const unsigned char *) name);
 
 		err = jffs2_find(&ds);
 		jffs2_iput(ds.dir);
@@ -1132,7 +1142,8 @@ static int jffs2_stat(cyg_mtab_entry * mte, cyg_dir dir, const char *name,
 
 	D2(printf("jffs2_stat\n"));
 
-	init_dirsearch(&ds, (struct _inode *) dir, name);
+	init_dirsearch(&ds, (struct _inode *) dir, 
+                       (const unsigned char *) name);
 
 	err = jffs2_find(&ds);
 	jffs2_iput(ds.dir);
@@ -1169,7 +1180,8 @@ static int jffs2_getinfo(cyg_mtab_entry * mte, cyg_dir dir, const char *name,
 
 	D2(printf("jffs2_getinfo\n"));
 
-	init_dirsearch(&ds, (struct _inode *) dir, name);
+	init_dirsearch(&ds, (struct _inode *) dir, 
+                       (const unsigned char *) name);
 
 	err = jffs2_find(&ds);
 	jffs2_iput(ds.dir);
@@ -1377,7 +1389,7 @@ static int jffs2_truncate_file (struct _inode *inode)
      inode->i_mtime = cyg_timestamp();
      inode->i_size = 0;
      old_metadata = f->metadata;
-     jffs2_truncate_fraglist (c, &f->fragtree, 0);
+     jffs2_truncate_fragtree (c, &f->fragtree, 0);
      f->metadata = new_metadata;
      if (old_metadata) {
           jffs2_mark_node_obsolete(c, old_metadata->raw);
@@ -1430,7 +1442,7 @@ static int jffs2_fo_write(struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio)
 	// we get an error.
 	for (i = 0; i < uio->uio_iovcnt; i++) {
 		cyg_iovec *iov = &uio->uio_iov[i];
-		char *buf = (char *) iov->iov_base;
+		unsigned char *buf = iov->iov_base;
 		off_t len = iov->iov_len;
 
 		uint32_t writtenlen;
@@ -1621,7 +1633,7 @@ static int jffs2_fo_setinfo(struct CYG_FILE_TAG *fp, int key, void *buf,
 // jffs2_fo_dirread()
 // Read a single directory entry from a file.
 
-static __inline void filldir(char *nbuf, int nlen, const char *name, int namlen)
+static __inline void filldir(char *nbuf, int nlen, const unsigned char *name, int namlen)
 {
 	int len = nlen < namlen ? nlen : namlen;
 	memcpy(nbuf, name, len);
@@ -1656,11 +1668,11 @@ static int jffs2_fo_dirread(struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio)
 	if (offset == 0) {
 		D1(printk
 		   (KERN_DEBUG "Dirent 0: \".\", ino #%lu\n", inode->i_ino));
-		filldir(nbuf, nlen, ".", 1);
+		filldir(nbuf, nlen, (const unsigned char *) ".", 1);
 		goto out;
 	}
 	if (offset == 1) {
-		filldir(nbuf, nlen, "..", 2);
+		filldir(nbuf, nlen, (const unsigned char *) "..", 2);
 		goto out;
 	}
 
@@ -1687,7 +1699,7 @@ static int jffs2_fo_dirread(struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio)
 		D2(printk
 		   (KERN_DEBUG "Dirent %ld: \"%s\", ino #%u, type %d\n", offset,
 		    fd->name, fd->ino, fd->type));
-		filldir(nbuf, nlen, fd->name, strlen(fd->name));
+		filldir(nbuf, nlen, fd->name, strlen((char *)fd->name));
 		goto out_sem;
 	}
 	/* Reached the end of the directory */

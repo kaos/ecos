@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: os-ecos.h,v 1.20 2004/05/05 12:00:31 dwmw2 Exp $
+ * $Id: os-ecos.h,v 1.24 2005/02/09 09:23:55 pavlov Exp $
  *
  */
 
@@ -175,9 +175,9 @@ uint32_t jffs2_to_os_mode (uint32_t jmode);
 
 /* flashio.c */
 cyg_bool jffs2_flash_read(struct jffs2_sb_info *c, cyg_uint32 read_buffer_offset,
-			  const size_t size, size_t * return_size, char * write_buffer);
+			  const size_t size, size_t * return_size, unsigned char * write_buffer);
 cyg_bool jffs2_flash_write(struct jffs2_sb_info *c, cyg_uint32 write_buffer_offset,
-			   const size_t size, size_t * return_size, char * read_buffer);
+			   const size_t size, size_t * return_size, unsigned char * read_buffer);
 int jffs2_flash_direct_writev(struct jffs2_sb_info *c, const struct iovec *vecs,
 			      unsigned long count, loff_t to, size_t *retlen);
 cyg_bool jffs2_flash_erase(struct jffs2_sb_info *c, struct jffs2_eraseblock *jeb);
@@ -196,12 +196,13 @@ int jffs2_rename (struct _inode *old_dir_i, struct _inode *d_inode, const unsign
 static inline void jffs2_erase_pending_trigger(struct jffs2_sb_info *c)
 { }
 
-#ifndef CONFIG_JFFS2_FS_NAND
+#ifndef CONFIG_JFFS2_FS_WRITEBUFFER
+#define SECTOR_ADDR(x) ( ((unsigned long)(x) & ~(c->sector_size-1)) )
 #define jffs2_can_mark_obsolete(c) (1)
 #define jffs2_cleanmarker_oob(c) (0)
 #define jffs2_write_nand_cleanmarker(c,jeb) (-EIO)
 
-#define jffs2_flush_wbuf_pad(c) ({ (void)(c), 0; })
+#define jffs2_flush_wbuf_pad(c) (c=c)
 #define jffs2_flush_wbuf_gc(c, i) ({ (void)(c), (void) i, 0; })
 #define jffs2_nand_read_failcnt(c,jeb) do { ; } while(0)
 #define jffs2_write_nand_badblock(c,jeb,p) (0)

@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: dir-ecos.c,v 1.10 2003/11/26 15:55:35 dwmw2 Exp $
+ * $Id: dir-ecos.c,v 1.11 2005/02/08 19:36:27 lunn Exp $
  *
  */
 
@@ -38,8 +38,8 @@ struct _inode *jffs2_lookup(struct _inode *dir_i, const unsigned char *d_name, i
 	for (fd_list = dir_f->dents; fd_list && fd_list->nhash <= hash; fd_list = fd_list->next) {
 		if (fd_list->nhash == hash && 
 		    (!fd || fd_list->version > fd->version) &&
-		    strlen(fd_list->name) == namelen &&
-		    !strncmp(fd_list->name, d_name, namelen)) {
+		    strlen((char *)fd_list->name) == namelen &&
+		    !strncmp((char *)fd_list->name, (char *)d_name, namelen)) {
 			fd = fd_list;
 		}
 	}
@@ -90,7 +90,8 @@ int jffs2_create(struct _inode *dir_i, const unsigned char *d_name, int mode,
 	dir_f = JFFS2_INODE_INFO(dir_i);
 
 	ret = jffs2_do_create(c, dir_f, f, ri, 
-			      d_name, strlen(d_name));
+			      (const char *)d_name, 
+                              strlen((char *)d_name));
 
 	if (ret) {
 		inode->i_nlink = 0;
@@ -117,8 +118,8 @@ int jffs2_unlink(struct _inode *dir_i, struct _inode *d_inode, const unsigned ch
 	struct jffs2_inode_info *dead_f = JFFS2_INODE_INFO(d_inode);
 	int ret;
 
-	ret = jffs2_do_unlink(c, dir_f, d_name, 
-			       strlen(d_name), dead_f);
+	ret = jffs2_do_unlink(c, dir_f, (const char *)d_name, 
+			       strlen((char *)d_name), dead_f);
 	if (dead_f->inocache)
 		d_inode->i_nlink = dead_f->inocache->nlink;
 	return ret;
@@ -137,7 +138,9 @@ int jffs2_link (struct _inode *old_d_inode, struct _inode *dir_i, const unsigned
 	uint8_t type = (old_d_inode->i_mode & S_IFMT) >> 12;
 	if (!type) type = DT_REG;
 
-	ret = jffs2_do_link(c, dir_f, f->inocache->ino, type, d_name, strlen(d_name));
+	ret = jffs2_do_link(c, dir_f, f->inocache->ino, type, 
+                            (const char * )d_name, 
+                            strlen((char *)d_name));
 
 	if (!ret) {
 		down(&f->sem);
@@ -171,7 +174,7 @@ int jffs2_mkdir (struct _inode *dir_i, const unsigned char *d_name, int mode)
 	/* Try to reserve enough space for both node and dirent. 
 	 * Just the node will do for now, though 
 	 */
-	namelen = strlen(d_name);
+	namelen = strlen((char *)d_name);
 	ret = jffs2_reserve_space(c, sizeof(*ri), &phys_ofs, &alloclen, ALLOC_NORMAL);
 
 	if (ret) {
@@ -331,7 +334,8 @@ int jffs2_rename (struct _inode *old_dir_i, struct _inode *d_inode, const unsign
 
 	ret = jffs2_do_link(c, JFFS2_INODE_INFO(new_dir_i), 
 			    d_inode->i_ino, type,
-			    new_d_name, strlen(new_d_name));
+			    (const char *)new_d_name, 
+                            strlen((char *)new_d_name));
 
 	if (ret)
 		return ret;
@@ -349,7 +353,8 @@ int jffs2_rename (struct _inode *old_dir_i, struct _inode *d_inode, const unsign
 
 	/* Unlink the original */
 	ret = jffs2_do_unlink(c, JFFS2_INODE_INFO(old_dir_i), 
-		      old_d_name, strlen(old_d_name), NULL);
+                              (const char *)old_d_name, 
+                              strlen((char *)old_d_name), NULL);
 
 	if (ret) {
 		/* Oh shit. We really ought to make a single node which can do both atomically */
