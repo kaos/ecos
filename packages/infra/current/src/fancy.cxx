@@ -643,7 +643,7 @@ externC cyg_bool cyg_check_data_ptr(const void *ptr)
     return true;
 }
 
-externC cyg_bool cyg_check_func_ptr(const void (*ptr)(void))
+externC cyg_bool cyg_check_func_ptr(void (*ptr)(void))
 {
     unsigned long p = (unsigned long)ptr;
     

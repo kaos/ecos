@@ -1,3 +1,10 @@
+2005-07-29  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/cyg_ass.h: Fixed a function prototype so that
+	gcc4 does not give warnings. A const void makes no sense.
+	* src/*.cxx (cyg_check_func_ptr): match the implementation to the
+	prototype.
+
 2005-06-27  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/cyg_type.h: Added CYGBLD_ATTRIB_USED so that we can

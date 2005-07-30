@@ -157,7 +157,7 @@ cyg_assert_msg( const char *psz_func, const char *psz_file,
 // regions.
 
 externC cyg_bool cyg_check_data_ptr(const void *ptr);
-externC cyg_bool cyg_check_func_ptr(const void (*ptr)(void));
+externC cyg_bool cyg_check_func_ptr(void (*ptr)(void));
 
 #ifdef CYGDBG_USE_ASSERTS
 
@@ -169,7 +169,7 @@ externC cyg_bool cyg_check_func_ptr(const void (*ptr)(void));
 
 # define CYG_CHECK_FUNC_PTR( _ptr_, _msg_ )             \
         CYG_MACRO_START                                 \
-        if( !cyg_check_func_ptr((const void (*)(void))(_ptr_))) \
+        if( !cyg_check_func_ptr((void (*)(void))(_ptr_))) \
            CYG_ASSERT_DOCALL( _msg_ );                   \
         CYG_MACRO_END
         
@@ -181,7 +181,7 @@ externC cyg_bool cyg_check_func_ptr(const void (*ptr)(void));
 
 # define CYG_CHECK_FUNC_PTRC( _ptr_ )                       \
          CYG_MACRO_START                                    \
-         if ( !cyg_check_func_ptr((const void (*)(void))(_ptr_))) \
+         if ( !cyg_check_func_ptr((void (*)(void))(_ptr_))) \
              CYG_ASSERT_DOCALL("function pointer (" #_ptr_ ") is valid"); \
          CYG_MACRO_END
 
