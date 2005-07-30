@@ -129,7 +129,7 @@ Cyg_Mbox::get( cyg_tick_count timeout )
 void *
 Cyg_Mbox::tryget()
 {
-    void * p;
+    void * p=NULL;
     if ( ! m.tryget( p ) )
         return NULL;
     return p;
@@ -160,7 +160,7 @@ Cyg_Mbox::tryput( void *item )
 void *
 Cyg_Mbox::peek_item()                   // Get next item to be returned
 {
-    void *p;
+    void *p=NULL;
     if ( ! m.peek_item( p ) )
         return NULL;
     return p;
