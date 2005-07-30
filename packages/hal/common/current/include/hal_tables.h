@@ -101,13 +101,15 @@ __xstring(CYG_LABEL_DEFN(_label)) ":\n"                                      \
 
 #ifndef CYG_HAL_TABLE_ENTRY
 #define CYG_HAL_TABLE_ENTRY( _name ) \
-        CYGBLD_ATTRIB_SECTION(".ecos.table." __xstring(_name) ".data")
+        CYGBLD_ATTRIB_SECTION(".ecos.table." __xstring(_name) ".data") \
+        CYGBLD_ATTRIB_USED
 #endif
 
 #ifndef CYG_HAL_TABLE_QUALIFIED_ENTRY
 #define CYG_HAL_TABLE_QUALIFIED_ENTRY( _name, _qual ) \
         CYGBLD_ATTRIB_SECTION(".ecos.table." __xstring(_name) ".data." \
-                              __xstring(_qual))
+                              __xstring(_qual))                        \
+        CYGBLD_ATTRIB_USED
 #endif
 
 /*------------------------------------------------------------------------*/

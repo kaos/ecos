@@ -1,3 +1,10 @@
+2005-06-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/hal_tables.h (CYG_HAL_TABLE_{QUALIFIED_}ENTRY): added
+	CYGBLD_ATTRIB_USED so that gcc 3.4.4 does not discard entries
+	which are not refereced explicitly. Problem reported by
+	Oliver Munz.
+	
 2005-06-26  Bart Veer  <bartv@ecoscentric.com>
 
 	* doc/hal.sgml: make HAL_DELAY_US() mandatory and define it to be
