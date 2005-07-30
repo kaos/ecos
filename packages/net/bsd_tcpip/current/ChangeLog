@@ -1,3 +1,18 @@
+2005-07-29  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/sys/netinet/ip_output.c (ip_output): initialize len to 0.
+	* src/sys/net/if.c (ifioctl): Cast to keep compiler happy.
+	* src/ecos/support.c (_mask): Use the correct cast to keep the
+	compiler happy.
+	* include/sys/param.h: give proc0 the correct type so we don't
+	have to cast it and avoid a compiler warning.
+	* src/sys/kern/uipc_socket.c (soopt_mcopyout): Lefthand casts no
+	longer allowed with gcc4. 
+	* src/sys/net/if_ethersubr.c (ether_resolvemulti): Cast to keep
+	compiler happy.
+	* src/sys/net/rtsock.c: Define routedomain consistently to avoid
+	compiler warnings.
+	
 2005-06-23  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/netinet/if_ether.h: Adjust size of struct sockaddr_inarp

@@ -1434,7 +1434,7 @@ soopt_mcopyin(struct sockopt *sopt, struct mbuf *m)
 		} else
 			bcopy(sopt->sopt_val, mtod(m, char *), m->m_len);
 		sopt->sopt_valsize -= m->m_len;
-		(caddr_t)sopt->sopt_val += m->m_len;
+		sopt->sopt_val = (char *)sopt->sopt_val + m->m_len;
 		m = m->m_next;
 	}
 	if (m != NULL) /* should be allocated enoughly at ip6_sooptmcopyin() */
@@ -1464,7 +1464,7 @@ soopt_mcopyout(struct sockopt *sopt, struct mbuf *m)
 		} else
 			bcopy(mtod(m, char *), sopt->sopt_val, m->m_len);
 	       sopt->sopt_valsize -= m->m_len;
-	       (caddr_t)sopt->sopt_val += m->m_len;
+               sopt->sopt_val = (char *)sopt->sopt_val + m->m_len;
 	       valsize += m->m_len;
 	       m = m->m_next;
 	}

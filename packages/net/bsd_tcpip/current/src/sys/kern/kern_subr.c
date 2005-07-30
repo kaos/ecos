@@ -104,8 +104,8 @@ uiomove(cp, n, uio)
 				bcopy(iov->iov_base, (caddr_t)cp, cnt);
 			break;
 		}
-                (char *)(iov->iov_base) += cnt;
-		iov->iov_len -= cnt;
+                iov->iov_base = (char *)iov->iov_base + cnt;
+                iov->iov_len -= cnt;
 		uio->uio_resid -= cnt;
 		uio->uio_offset += cnt;
 		cp += cnt;

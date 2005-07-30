@@ -892,7 +892,7 @@ ether_resolvemulti(ifp, llsa, sa)
 		 * No mapping needed. Just check that it's a valid MC address.
 		 */
 		sdl = (struct sockaddr_dl *)sa;
-		e_addr = LLADDR(sdl);
+		e_addr = (u_char *)LLADDR(sdl);
 		if ((e_addr[0] & 1) != 1)
 			return EADDRNOTAVAIL;
 		*llsa = 0;
@@ -910,7 +910,7 @@ ether_resolvemulti(ifp, llsa, sa)
 		sdl->sdl_index = ifp->if_index;
 		sdl->sdl_type = IFT_ETHER;
 		sdl->sdl_alen = ETHER_ADDR_LEN;
-		e_addr = LLADDR(sdl);
+		e_addr = (u_char *)LLADDR(sdl);
 		ETHER_MAP_IP_MULTICAST(&sin->sin_addr, e_addr);
 		*llsa = (struct sockaddr *)sdl;
 		return 0;

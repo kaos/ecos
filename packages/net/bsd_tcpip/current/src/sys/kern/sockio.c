@@ -217,7 +217,7 @@ bsd_socket(cyg_nstab_entry *nste, int domain, int type,
     int error = 0;
     struct socket *so;
 
-    error = socreate(domain, &so, type, protocol, (struct proc *)&proc0);
+    error = socreate(domain, &so, type, protocol, proc0);
 
     if( error == ENOERR)
     {

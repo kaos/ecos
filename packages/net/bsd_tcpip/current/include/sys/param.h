@@ -785,7 +785,7 @@ extern int hz;
 extern volatile struct timeval ktime;
 #define time_second ktime.tv_sec
 extern int tick;
-extern int proc0;
+extern struct proc * proc0;
 #define curproc 0
 extern void microtime(struct timeval *tp);
 extern void getmicrotime(struct timeval *tp);

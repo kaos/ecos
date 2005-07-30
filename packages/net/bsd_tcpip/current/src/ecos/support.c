@@ -95,7 +95,7 @@ int hz = 100;
 int tick = 10000;  // usec per "tick"
 volatile struct timeval ktime;
 int proc = 0;  // unused
-int proc0 = 0;  // unused
+struct proc * proc0 = 0;  // unused
 
 volatile struct timeval mono_time;
 
@@ -900,7 +900,7 @@ typedef void pr_fun(char *fmt, ...);
 static void
 _mask(struct sockaddr *sa, char *buf, int _len)
 {
-    unsigned char *cp = ((char *)sa) + 4;
+    unsigned char *cp = ((unsigned char *)sa) + 4;
     int len = sa->sa_len - 4;
     int tot = 0;
 

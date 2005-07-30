@@ -548,7 +548,8 @@ in_lifaddr_ioctl(so, cmd, data, ifp, p)
 		struct sockaddr_in *sin;
 		int cmp;
 
-		bzero(&mask, sizeof(mask));
+                bzero(&match.s_addr, sizeof(match.s_addr));
+                bzero(&mask, sizeof(mask));
 		if (iflr->flags & IFLR_PREFIX) {
 			/* lookup a prefix rather than address. */
 			in_len2mask(&mask, iflr->prefixlen);

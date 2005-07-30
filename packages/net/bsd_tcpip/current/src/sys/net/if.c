@@ -1260,7 +1260,7 @@ ifioctl(so, cmd, data, p)
 
 	case SIOCSIFLLADDR:
 		return if_setlladdr(ifp,
-		    ifr->ifr_addr.sa_data, ifr->ifr_addr.sa_len);
+		    (u_char *)ifr->ifr_addr.sa_data, ifr->ifr_addr.sa_len);
 
 	default:
 		oif_flags = ifp->if_flags;

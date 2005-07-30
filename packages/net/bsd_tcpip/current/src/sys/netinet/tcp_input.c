@@ -1134,7 +1134,7 @@ findpcb:
 		laddr = inp->inp_laddr;
 		if (inp->inp_laddr.s_addr == INADDR_ANY)
 			inp->inp_laddr = ip->ip_dst;
-		if (in_pcbconnect(inp, (struct sockaddr *)sin, (struct proc *)&proc0)) {
+		if (in_pcbconnect(inp, (struct sockaddr *)sin, proc0)) {
 			inp->inp_laddr = laddr;
 			FREE(sin, M_SONAME);
 			goto drop;

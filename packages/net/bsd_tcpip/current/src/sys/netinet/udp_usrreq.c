@@ -672,7 +672,8 @@ udp_output(inp, m, addr, control, p)
 	struct sockaddr_in *sin;
 	int s = 0, error = 0;
 
-	if (control)
+        bzero(&laddr, sizeof(laddr));
+        if (control)
 		m_freem(control);		/* XXX */
 
 	if (len + sizeof(struct udpiphdr) > IP_MAXPACKET) {
