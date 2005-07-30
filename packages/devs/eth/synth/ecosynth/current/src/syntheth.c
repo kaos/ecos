@@ -436,7 +436,7 @@ synth_eth_init(struct cyg_netdevtab_entry* ndp)
             unsigned char data[7];
             result = true;
             synth_auxiliary_xchgmsg(eth->synth_id, SYNTH_ETH_GETPARAMS, 0, 0, (const unsigned char*) 0, 0,
-                                    &(eth->interrupt), data, 0, 7);
+                                    (int *)&(eth->interrupt), data, 0, 7);
             memcpy(eth->MAC, data, 6);
             eth->multi_supported = data[6];
             cyg_drv_interrupt_create(eth->interrupt,

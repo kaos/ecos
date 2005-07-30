@@ -1,3 +1,8 @@
+2005-07-22  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/syntheth.c (synth_eth_init): Cast to keep the compiler
+	happy.
+
 2003-07-16  Gary Thomas  <gary@mlbassoc.com>
 
 	* host/rawether.c: Change error reporting to use standard 'strerror()' 
