@@ -90,7 +90,7 @@ valid_hostname(const char *hostname)
    <len><label> where <label> is eg ma in tux.ma.tech.ascom.ch. len is
    the length of the label. */
 static int 
-build_qname(char *ptr, const char *hostname)
+build_qname(unsigned char *ptr, const char *hostname)
 {
     const char *label = hostname;
     char *end_label;
@@ -145,7 +145,7 @@ qname_len(unsigned char * qname)
 /* Build a real name from a qname. Alloc the memory needed and return
    it. Return NULL on error */
 char *
-real_name(char *msg, unsigned char *qname)
+real_name(unsigned char *msg, unsigned char *qname)
 {
     unsigned char * ptr = qname;
     char * name;
@@ -191,10 +191,10 @@ real_name(char *msg, unsigned char *qname)
 /* Build a query message which can be sent to the server. If something
    goes wrong return -1, otherwise the length of the query message */
 static int 
-build_query(const char * msg, const char * hostname, short rr_type)
+build_query(const unsigned char * msg, const char * hostname, short rr_type)
 {
     struct dns_header *dns_hdr;
-    char *ptr;
+    unsigned char *ptr;
     int len;
 
     /* Fill out the header */
@@ -205,7 +205,7 @@ build_query(const char * msg, const char * hostname, short rr_type)
     dns_hdr->qdcount = htons(1);
   
     /* Now the question we want to ask */
-    ptr = (char *)&dns_hdr[1];
+    ptr = (unsigned char *)&dns_hdr[1];
 
     len = build_qname(ptr, hostname);
 
@@ -290,13 +290,13 @@ colon_hostname(const char *hostname)
                       must fill out!
 */
 static struct hostent *
-parse_answer(char * msg, short rr_type)
+parse_answer(unsigned char * msg, short rr_type)
 {
     static struct hostent *hent;
     struct dns_header *dns_hdr;
     struct resource_record rr, *rr_p = NULL;
-    char *qname = NULL;
-    char *ptr;
+    unsigned char *qname = NULL;
+    unsigned char *ptr;
 
     dns_hdr = (struct dns_header *)msg;
 
@@ -314,7 +314,7 @@ parse_answer(char * msg, short rr_type)
   
     dns_hdr->ancount = ntohs(dns_hdr->ancount);
     dns_hdr->qdcount = ntohs(dns_hdr->qdcount);
-    ptr = (char *)&dns_hdr[1];
+    ptr = (unsigned char *)&dns_hdr[1];
 
     /* Skip over the query section */
     if (dns_hdr->qdcount > 0) {
@@ -356,7 +356,7 @@ parse_answer(char * msg, short rr_type)
             hent->h_length = sizeof(struct in_addr);
             return hent;
         case DNS_TYPE_PTR:
-            hent->h_name = real_name(msg, rr_p->rdata);
+            hent->h_name = real_name(msg, (unsigned char *)rr_p->rdata);
             if (!hent->h_name) {
                 free_hent(hent);
                 return NULL;

@@ -183,7 +183,7 @@ free_stored_hent(void)
    if it fails, otherwise put the response back in msg and return the
    length of the response. */
 static int 
-send_recv(char * msg, int len, int msglen)
+send_recv(unsigned char * msg, int len, int msglen)
 {
     struct dns_header *dns_hdr;
     struct timeval timeout;
@@ -391,13 +391,13 @@ add_answer(char *rdata, short rr_type, int family,
    i decided to leave parse_anser alone. */
 
 static int
-decode(char *msg, short rr_type, int family, 
+decode(unsigned char *msg, short rr_type, int family, 
        struct sockaddr addrs[], int num, int used, char **canon) {
   
     struct dns_header *dns_hdr;
     struct resource_record rr, *rr_p = NULL;
-    char *qname = NULL;
-    char *ptr;
+    unsigned char *qname = NULL;
+    unsigned char *ptr;
     
     dns_hdr = (struct dns_header *)msg;
     
@@ -417,7 +417,7 @@ decode(char *msg, short rr_type, int family,
 
     dns_hdr->ancount = ntohs(dns_hdr->ancount);
     dns_hdr->qdcount = ntohs(dns_hdr->qdcount);
-    ptr = (char *)&dns_hdr[1];
+    ptr = (unsigned char *)&dns_hdr[1];
     
     /* Skip over the query section */
     if (dns_hdr->qdcount > 0) {
@@ -665,7 +665,7 @@ cyg_dns_getnameinfo(const struct sockaddr * sa, char * host, size_t hostlen)
     switch (sa->sa_family) {
     case AF_INET: {
         struct sockaddr_in * sa4 = (struct sockaddr_in *)sa;
-        unsigned char * addr = (char *)&sa4->sin_addr.s_addr;
+        unsigned char * addr = (unsigned char *)&sa4->sin_addr.s_addr;
         sprintf(hostname, "%d.%d.%d.%d.IN-ADDR.ARPA.",
                 addr[3],addr[2],addr[1],addr[0]);
         break;

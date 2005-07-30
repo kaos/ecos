@@ -1,3 +1,7 @@
+2005-07-29  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/dns.c Various casts and type fixes to stop gcc 4 warnings.
+
 2004-07-13  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/dns.c (cyg_dns_getaddrinfo): Typo spotted by Andy Jackson.

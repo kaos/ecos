@@ -105,7 +105,7 @@ struct test_info_s test_info[] = {
 #endif
 #ifdef CYGPKG_NS_DNS_TESTS_LUNN
     {
-        "80.238.139.98",
+        "192.168.10.1",
         "3ffe:bc0:8000::839",
         "test.ecos.",
         "hostnamev4",
