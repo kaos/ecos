@@ -205,7 +205,7 @@ static void sntp_fn(cyg_addrword_t data)
   struct sntp_srv_s new_srv;
   struct sntp_srv_s best_srv;
   int mode;
-  int len;
+  socklen_t len;
   time_t new_time, current_time, diff;
   fd_set readfds;
   int n;

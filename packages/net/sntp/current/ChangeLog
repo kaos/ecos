@@ -1,3 +1,7 @@
+2005-07-30  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/sntp.c: Compiler warning fixes.
+
 2004-02-26 Yuxin Jiang <yjiang@matrics.com>
 
 	* src/sntp.c: When a new server is added to the list of unicast
