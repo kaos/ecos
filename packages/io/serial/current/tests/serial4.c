@@ -92,7 +92,7 @@ serial_test( void )
         int i;
         int count = sizeof(test_configs) / sizeof(cyg_ser_cfg_t);
         char msg[] = "This is a test\n";
-        int msglen = strlen(msg);
+        cyg_uint32 msglen = strlen(msg);
 
         for (i = 0; i < count; i++){
             if (ENOERR == change_config(ser_handle, &test_configs[i])) {

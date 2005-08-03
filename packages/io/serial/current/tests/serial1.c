@@ -76,7 +76,8 @@ void
 serial_api_test(int dummy)
 {
     cyg_io_handle_t handle;
-    int res, len;
+    int res;
+    cyg_uint32 len;
     unsigned char buffer[16];
 
     // Always return...

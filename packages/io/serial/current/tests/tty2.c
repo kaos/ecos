@@ -75,7 +75,7 @@ tty_test( void )
 {
     char test_msg1[]="This is a test message!\n";
     char test_msg2[]="$O5468697320697320612074657374206d657373616765210d0a#12";
-    int msglen;
+    cyg_uint32 msglen;
     cyg_io_handle_t tty_handle;
 
     test_open_tty(&tty_handle);

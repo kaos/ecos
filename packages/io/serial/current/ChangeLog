@@ -3,7 +3,9 @@
 	* src/common/tty.c (tty_write): 
 	* src/common/haldiag.c (haldiag_getc): Fixed pointer signness to
 	avoid compiler warnings.
-
+	* tests/*.c msglen should by an unsigned int to avoid compiler
+	warnings.
+	
 2005-07-21  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/common/termiostty.c: Removed errbuf from priv. It was never

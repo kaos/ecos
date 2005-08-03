@@ -144,12 +144,12 @@
 
 #define TEST_CRASH(__h, __code, __msg, args...)                         \
     CYG_MACRO_START                                                     \
-    int __len = 1;                                                      \
+    cyg_uint32 __len = 1;                                               \
     /* Try to flush remaining input */                                  \
     cyg_thread_delay(50);                                               \
     cyg_io_get_config(__h, CYG_IO_GET_CONFIG_SERIAL_INPUT_FLUSH,        \
                       0, &__len);                                       \
-    diag_printf("FAILCODE:<" TEST_CRASH_ID ":%04x:" __code, ## args);    \
+    diag_printf("FAILCODE:<" TEST_CRASH_ID ":%04x:" __code, ## args);   \
     diag_printf("!>\n");                                                \
     CYG_FAIL(__msg);                                                    \
     hang();                                                             \
@@ -189,7 +189,7 @@
 #endif
 cyg_uint8 in_buffer[IN_BUFFER_SIZE];
 
-cyg_int8 cmd_buffer[128];
+char cmd_buffer[128];
 
 //----------------------------------------------------------------------------
 // Some types specific to the testing protocol.
@@ -368,7 +368,7 @@ static void
 do_abort(void *handle)
 {
     cyg_io_handle_t io_handle = (cyg_io_handle_t)handle;
-    cyg_int32 len = 1;  // Need something here
+    cyg_uint32 len = 1;  // Need something here
     cyg_io_get_config(io_handle, CYG_IO_GET_CONFIG_SERIAL_ABORT, 0, &len);
     aborted = 1;
 }
@@ -505,9 +505,10 @@ change_config(cyg_io_handle_t handle, cyg_ser_cfg_t* cfg)
     cyg_serial_info_t old_cfg, new_cfg;
     const char cmd[] = "@CONFIG:";
     char reply[2];
-    int msglen;
-    int res, len;
-    cyg_uint8 *p1;
+    cyg_uint32 msglen;
+    int res;
+    cyg_uint32 len;
+    char *p1;
 
     // Prepare the command.
     p1 = &cmd_buffer[0];
@@ -525,7 +526,7 @@ change_config(cyg_io_handle_t handle, cyg_ser_cfg_t* cfg)
     *p1 = 0;                            // note: we may append to this later
 
     // Tell user what we're up to.
-    CYG_TEST_INFO(&cmd_buffer[1]);
+    CYG_TEST_INFO((char *)&cmd_buffer[1]);
 
     // Change to new config and then back to determine if the driver likes it.
     len = sizeof(old_cfg);
@@ -610,7 +611,7 @@ change_config(cyg_io_handle_t handle, cyg_ser_cfg_t* cfg)
         int change_succeeded = 0;
         int using_old_config = 0;
         char in_buf[1];
-        int len;
+        cyg_uint32 len;
         int saw_host_sync;
 
         for (;;) {
@@ -637,7 +638,7 @@ change_config(cyg_io_handle_t handle, cyg_ser_cfg_t* cfg)
                 } else if ('S' == in_buf[0] && !saw_host_sync) {
                     // In sync - reply to host if we haven't already
                     char ok_msg[2] = "OK";
-                    int ok_len = 2;
+                    cyg_uint32 ok_len = 2;
                     Tcyg_io_write(handle, ok_msg, &ok_len);
                     saw_host_sync = 1;
                 } else if ('D' == in_buf[0] && saw_host_sync) {
@@ -683,7 +684,8 @@ change_config(cyg_io_handle_t handle, cyg_ser_cfg_t* cfg)
 int
 read_host_crc(cyg_io_handle_t handle)
 {
-    int crc, len;
+    int crc;
+    cyg_uint32 len;
     cyg_uint8 ch;
 
     crc = 0;
@@ -744,10 +746,10 @@ cyg_test_return_t
 test_binary(cyg_io_handle_t handle, int size, cyg_mode_t mode)
 {
     const char cmd[] = "@BINARY:";
-    int msglen;
+    cyg_uint32 msglen;
     cyg_uint32 xcrc;
     int icrc, host_crc;
-    cyg_uint8 *p1;
+    char *p1;
     cyg_int8 host_status = 'O';         // host is happy by default
 
     // Verify that the test can be run with available ressources.
@@ -777,7 +779,8 @@ test_binary(cyg_io_handle_t handle, int size, cyg_mode_t mode)
     case MODE_NO_ECHO:
     {
         // Break transfers into chunks no larger than the buffer size.
-        int tx_len, chunk_len, i;
+        int tx_len, i;
+        cyg_uint32 chunk_len;
         while (size > 0) {
             chunk_len = min(IN_BUFFER_SIZE, size);
             tx_len = chunk_len;
@@ -803,7 +806,8 @@ test_binary(cyg_io_handle_t handle, int size, cyg_mode_t mode)
     case MODE_EOP_ECHO:
     {
         // We have already checked that the in buffer is large enough.
-        int i, tx_len, chunk_len;
+        int i, tx_len;
+        cyg_uint32 chunk_len;
         chunk_len = tx_len = size;
         Tcyg_io_read(handle, &in_buffer[0], &chunk_len);
 
@@ -831,7 +835,7 @@ test_binary(cyg_io_handle_t handle, int size, cyg_mode_t mode)
     break;
     case MODE_DUPLEX_ECHO:
     {
-        int chunk_len;
+        cyg_uint32 chunk_len;
         int block_size = 64;
 
         // This is a simple implementation (maybe too simple).
@@ -953,7 +957,7 @@ test_ping(cyg_io_handle_t handle)
 {
     char msg[] = "@PING:" TEST_CRASH_ID "!";
     char msg2[] = "\n";
-    int msglen = strlen(msg);
+    cyg_uint32 msglen = strlen(msg);
     int res;
 
     msglen = strlen(msg);
@@ -985,8 +989,8 @@ void
 test_options(cyg_io_handle_t handle, int count, cyg_uint32* options)
 {
     const char cmd[] = "@OPT:";
-    int msglen;
-    cyg_uint8 *p1;
+    cyg_uint32 msglen;
+    char *p1;
 
     // Prepare and send the command.
     p1 = &cmd_buffer[0];
