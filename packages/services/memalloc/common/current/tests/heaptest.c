@@ -96,7 +96,7 @@ test_pat(unsigned char *buf, int size,
     int errors=0;
     unsigned char bpat = pat & 0xFF;
 
-    endptra = (int *)((unsigned long)endptr & ~(sizeof(int)-1));
+    endptra = (unsigned int *)((unsigned long)endptr & ~(sizeof(int)-1));
     
     // Set to the pattern
     while (!INTALIGNED(bufptr)) {
@@ -195,7 +195,7 @@ cyg_start(void)
 
     for (;;) {
         struct mallinfo info;
-        char *buf;
+        unsigned char *buf;
         
         info = mallinfo();
 

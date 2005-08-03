@@ -1,3 +1,8 @@
+2005-07-30  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/heaptest.c (test_pat): Casts to prevent compiler warnings.
+	* tests/testaux.hxx: new cannot be both global and static.
+
 2005-07-22  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/memalloc.cdl: Use the CXXFLAGS for the native compiler to

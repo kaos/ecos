@@ -55,7 +55,7 @@
 //####DESCRIPTIONEND####
 
 
-static inline void *operator new(size_t size, void *ptr) { return ptr; };
+inline void *operator new(size_t size, void *ptr) { return ptr; };
 
 
 #include <pkgconf/hal.h>
