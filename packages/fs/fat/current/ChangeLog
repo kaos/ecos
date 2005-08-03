@@ -1,3 +1,7 @@
+2005-07-30  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/fatfs_supp.c: Correct types to remove compiler warnings.
+
 2005-06-07  Savin Zlobec  <savin@elatec.si>
 
 	* src/fatfs_supp.c: lseek returned EEOF when at the end of the

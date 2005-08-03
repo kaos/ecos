@@ -389,7 +389,7 @@ gdate_to_jdays(int day, int month, int year, cyg_uint32 *jd)
 // Converts unix timestamp to dos time and date. 
                  
 static void
-date_unix2dos(cyg_uint32  unix_timestamp, 
+date_unix2dos(time_t  unix_timestamp, 
               cyg_uint16 *dos_time,
               cyg_uint16 *dos_date)
 {
@@ -427,7 +427,7 @@ date_unix2dos(cyg_uint32  unix_timestamp,
 static void
 date_dos2unix(cyg_uint16  dos_time, 
               cyg_uint16  dos_date, 
-              cyg_uint32 *unix_timestamp)
+              time_t *unix_timestamp)
 {
     cyg_uint32 ts; 
     int        hour, min, sec;
@@ -512,7 +512,8 @@ static int
 read_boot_record(fatfs_disk_t *disk, fat_boot_record_t *fbr)
 {
     cyg_uint8 data[0x5A];
-    int       len, err;
+    cyg_uint32 len;
+    int err;
     
     len = 0x5A;
     err = disk_read(disk, (void*)data, &len, 0);
@@ -594,7 +595,8 @@ read_tentry(fatfs_disk_t *disk, cyg_uint32 num, cyg_uint32 *entry)
     cyg_uint8  data[4];
     cyg_uint32 pos, num3;
     cyg_uint32 e;
-    int        len, err;
+    cyg_uint32 len;
+    int err;
 
     switch (disk->fat_type)
     {
@@ -656,7 +658,9 @@ write_tentry(fatfs_disk_t *disk, cyg_uint32 num, cyg_uint32 *entry)
     cyg_uint8  data[4];
     cyg_uint32 pos=0, num3; 
     cyg_uint32 e;
-    int        i, len, err;
+    cyg_uint32 len;
+    int i;
+    int err;
 
     switch (disk->fat_type)
     {
@@ -858,7 +862,8 @@ erase_cluster(fatfs_disk_t *disk, cyg_uint32 cluster)
 {
     cyg_uint8  data[32];
     cyg_uint32 pos;
-    int        err, len, i;
+    cyg_uint32 len;
+    int err, i;
     
     pos = 0;
     len = 32;
@@ -1275,8 +1280,9 @@ read_raw_dentry(fatfs_disk_t        *disk,
                 fat_raw_dir_entry_t *dentry)
 {
     cyg_uint8  data[DENTRY_SIZE];
-    int        len, err;
- 
+    cyg_uint32 len;
+    int err;
+
     CYG_TRACE3(TDE, "cluster=%d snum=%d pos=%d",
                pos->cluster, pos->cluster_snum, pos->cluster_pos); 
    
@@ -1327,8 +1333,9 @@ write_raw_dentry(fatfs_disk_t        *disk,
                  fat_raw_dir_entry_t *dentry)
 {
     cyg_uint8  data[DENTRY_SIZE];
-    int        len, err;
- 
+    cyg_uint32 len;
+    int err;
+
     CYG_TRACE3(TDE, "cluster=%d snum=%d pos=%d",
                pos->cluster, pos->cluster_snum, pos->cluster_pos); 
    
