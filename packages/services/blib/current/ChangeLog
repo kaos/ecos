@@ -1,3 +1,7 @@
+2005-07-30  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/blib.c: made the types consistent to fix compiler warnings.
+
 2004-08-09 Savin Zlobec <savin@elatec.si>
 
         * inc/blib.h:

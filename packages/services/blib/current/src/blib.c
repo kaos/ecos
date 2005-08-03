@@ -258,7 +258,7 @@ blib_sync_block(cyg_blib_t *bl, blib_block_t *block)
 
     if (block->modified)
     {
-        int len = 1;
+        cyg_uint32 len = 1;
 
         D(("blib writting block=%d\n", block->num)); 
  
@@ -302,7 +302,7 @@ blib_get_block(cyg_blib_t    *bl,
 {
     blib_block_t *block = NULL;
     int ret = ENOERR;
-    int len;
+    cyg_uint32 len;
  
     D(("blib get block=%d\n", num)); 
     
@@ -543,7 +543,7 @@ cyg_blib_read(cyg_blib_t *bl,
 
     while (size > 0)
     {
-        int csize;
+        cyg_uint32 csize;
 
         if ((size + pos) > bl->block_size)
             csize = bl->block_size - pos;
@@ -589,7 +589,7 @@ cyg_blib_write(cyg_blib_t *bl,
 
     while (size > 0)
     {
-        int csize;
+        cyg_uint32 csize;
 
         if ((size + pos) > bl->block_size)
             csize = bl->block_size - pos;
