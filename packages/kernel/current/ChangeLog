@@ -1,3 +1,9 @@
+2005-08-03  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/ksem1.c: Type fix to fix a compiler warning.
+	* tests/mutex3.cxx: new cannot be both static and global.
+	* tests/testaux.hxx: Ditto
+
 2005-07-30  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/sync/mbox.cxx (tryget,peak_item): initialize local variable

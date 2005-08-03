@@ -131,7 +131,7 @@ cyg_hal_invoke_constructors();
 
 #define NTHREADS 7
 
-static inline void *operator new(size_t size, void *ptr) { return ptr; };
+inline void *operator new(size_t size, void *ptr) { return ptr; };
 
 #define STACKSIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
 

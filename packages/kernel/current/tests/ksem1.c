@@ -72,7 +72,7 @@ static volatile cyg_ucount8 q = 0;
 
 static void entry0( cyg_addrword_t data )
 {
-    cyg_ucount32 val;
+    cyg_count32 val;
 
     cyg_semaphore_wait(&s0);
     CHECK( 1 == q++ );
