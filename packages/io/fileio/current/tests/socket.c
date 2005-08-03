@@ -101,7 +101,7 @@
 //--------------------------------------------------------------------------
 
 #define SHOW_RESULT( _fn, _res ) \
-diag_printf(#_fn " returned %d %s\n", _res, _res<0?strerror(errno):"");
+diag_printf(#_fn " returned %d %s\n", (int) _res, _res<0?strerror(errno):"");
 
 //--------------------------------------------------------------------------
 // Thread stack.

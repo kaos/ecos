@@ -1,3 +1,10 @@
+2005-08-02  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/socket.c (SHOW_RESULT): Add a cast to avoid compiler
+	warnings about the format string not matching the parameters.
+	* tests/testfs.c: rename strcmp and strcpy to mystrcmp and
+	mystrcpy to avoid clashes with the normal implementations.
+	
 2005-05-13  Peter Korsgaard  <jacmet@sunsite.dk>
 
 	* src/devfs.cxx (dev_stat, dev_fo_fstat): Corrected mode for block

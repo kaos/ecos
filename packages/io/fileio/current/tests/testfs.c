@@ -257,7 +257,7 @@ static cyg_fileops testfs_dirops =
 // -------------------------------------------------------------------------
 // Local strcmp() and strcpy()
 
-static int strcmp( const char *s1, const char *s2 )
+static int mystrcmp( const char *s1, const char *s2 )
 {
     while( *s1 == *s2 && *s1 != '\0' && *s2 != '\0' )
         s1++, s2++;
@@ -265,7 +265,7 @@ static int strcmp( const char *s1, const char *s2 )
     return (*s2)-(*s1);
 }
 
-static char *strcpy( char *s1, const char *s2 )
+static char *mystrcpy( char *s1, const char *s2 )
 {
     char *s = s1;
     while( (*s1++ = *s2++) != 0);
@@ -325,7 +325,7 @@ static int testfs_find( testfs_node *dir,       // dir to start search in
             if( n == NULL )
                 continue;
 
-            if( strcmp( name, n->name ) == 0 )
+            if( mystrcmp( name, n->name ) == 0 )
             {
                 nd1 = n;
                 break;
@@ -448,7 +448,7 @@ static int testfs_mount    ( cyg_fstab_entry *fste, cyg_mtab_entry *mte )
     root->next                  = root;  // form circular list
     root->parent                = root;  // I'm my own parent!
     root->refcnt                = 1;     // don't want to ever lose root
-    strcpy( root->name, "root");
+    mystrcpy( root->name, "root");
     root->status.st_mode        = __stat_mode_DIR;
     root->status.st_ino         = root-&node[0];
     root->status.st_dev         = 0;
@@ -529,7 +529,7 @@ static int testfs_open     ( cyg_mtab_entry *mte, cyg_dir dir, const char *path,
         // Fill in details
         nd->parent              = parent;
         nd->refcnt              = 1;    // 1 for directory reference
-        strcpy( nd->name, name);
+        mystrcpy( nd->name, name);
         nd->status.st_mode      = __stat_mode_REG;
         nd->status.st_ino       = nd-&node[0];
         nd->status.st_dev       = 0;
@@ -647,7 +647,7 @@ static int testfs_mkdir    ( cyg_mtab_entry *mte, cyg_dir dir, const char *path 
         // Fill in details
         nd->parent              = parent;
         nd->refcnt              = 1;    // 1 for directory reference
-        strcpy( nd->name, name);
+        mystrcpy( nd->name, name);
         nd->status.st_mode      = __stat_mode_DIR;
         nd->status.st_ino       = nd-&node[0];
         nd->status.st_dev       = 0;
@@ -762,7 +762,7 @@ static int testfs_rename   ( cyg_mtab_entry *mte, cyg_dir dir1, const char *path
     nd1->parent = parent2;
     
     // And give it a new name.
-    strcpy( nd1->name, name2 );
+    mystrcpy( nd1->name, name2 );
     
     return err;
 }
@@ -1121,7 +1121,7 @@ static int testfs_fo_dirread      (struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *
         if( nd->u.dir.nodes[pos] != NULL )
         {
             struct dirent *ent = (struct dirent *)buf;
-            strcpy( ent->d_name, nd->u.dir.nodes[pos]->name );
+            mystrcpy( ent->d_name, nd->u.dir.nodes[pos]->name );
             uio->uio_resid -= sizeof(struct dirent);
             break;
         }
