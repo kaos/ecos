@@ -109,7 +109,7 @@ flash_hwr_init(void)
     }
     cyg_dev_flash_synth_base = (flash_t *)cyg_hal_sys_mmap( 
 #ifdef CYGMEM_FLASH_SYNTH_BASE
-                CYGMEM_FLASH_SYNTH_BASE,
+                (void *)CYGMEM_FLASH_SYNTH_BASE,
 #else
                 NULL,
 #endif

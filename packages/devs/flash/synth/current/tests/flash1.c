@@ -133,7 +133,7 @@ void cyg_user_start(void)
     CYG_TEST_PASS_FAIL((ret == 0),"flash program overrun check");
 
     /* Program over a block boundary */
-    prog_start = (unsigned char *)flash_start + block_size - sizeof(copyright)/2;
+    prog_start = (char *)flash_start + block_size - sizeof(copyright)/2;
     ret = flash_program(prog_start,&copyright,sizeof(copyright),NULL);
     CYG_TEST_PASS_FAIL((ret == FLASH_ERR_OK),"flash_program2");
   
