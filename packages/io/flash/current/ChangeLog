@@ -1,3 +1,7 @@
+2005-08-02  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/flash1.c (cyg_start): Compiler warning fixes.
+
 2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/flash1.c: Fixed compiler warning with diag_printf.

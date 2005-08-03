@@ -67,8 +67,10 @@ cyg_start( void )
     int stat;
     void *err_addr;
     CYG_ADDRWORD flash_start, flash_end;
+    void **flash_start_addr = (void *)&flash_start;
+    void **flash_end_addr = (void *)&flash_end;
     void *flash_test_start, *flash_addr;
-    cyg_uint32 flash_block_size, flash_num_blocks;
+    cyg_int32 flash_block_size, flash_num_blocks;
     CYG_ADDRWORD test_buf1, test_buf2;
     cyg_uint32 *lp1, *lp2;
     int i, len;
@@ -93,13 +95,14 @@ cyg_start( void )
         diag_printf("FLASH: driver init failed: %s\n", flash_errmsg(stat));
         CYG_TEST_FAIL_FINISH("FLASH driver init failed");
     }
-    flash_get_limits((void *)0, (void **)&flash_start, (void **)&flash_end);
+    flash_get_limits((void *)0, flash_start_addr, flash_end_addr);
     // Keep 'end' address as last valid location, to avoid wrap around problems
     flash_end = flash_end - 1;
     flash_get_block_info(&flash_block_size, &flash_num_blocks);
 
-    diag_printf("FLASH: %p - %x, %d blocks of 0x%x bytes each.\n", 
-                flash_start, flash_end + 1, flash_num_blocks, flash_block_size);
+    diag_printf("FLASH: 0x%x - 0x%x, %d blocks of 0x%x bytes each.\n", 
+                flash_start, flash_end + 1, flash_num_blocks, 
+                flash_block_size);
 
     // Verify that the testing limits are within the bounds of the
     // physical device.  Also verify that the size matches with
