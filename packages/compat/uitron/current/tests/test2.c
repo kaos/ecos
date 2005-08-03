@@ -143,7 +143,7 @@ void task1( unsigned int arg )
     T_RMPL mpl_info;
     UINT flagptn;
     static char foo[] = "Test message";
-    T_MSG *msgptr = foo;
+    T_MSG *msgptr = (T_MSG *)foo;
     T_MSG *rxptr = NULL;
     VP blfptr = (VP)foo;
     VP blkptr = (VP)foo;
