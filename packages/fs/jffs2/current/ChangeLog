@@ -1,3 +1,7 @@
+2005-08-03  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/jffs2_1.c: Include <stdio.h> to stop compiler warning.
+
 2005-07-30  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* Merge to public MTD
