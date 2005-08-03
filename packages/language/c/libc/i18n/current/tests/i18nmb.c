@@ -221,7 +221,7 @@ main( int argc, char *argv[] )
   int result, i, j, k;
   wchar_t *wcptr;
 
-  k=k; locale=locale; // silence warnings
+  k=0; locale=NULL; // silence warnings
   
   CYG_TEST_INIT();
   
