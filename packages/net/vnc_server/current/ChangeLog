@@ -1,3 +1,9 @@
+2005-07-30  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/vnc-server.h (vnc_printf_return_t): removed ununsed char
+	member from structure.
+	* tests/vnc-test.c (main): Correct the declaration of main.
+
 2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/vnc-test.c: main() added function parmeters to stop gcc

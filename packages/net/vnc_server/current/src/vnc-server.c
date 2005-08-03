@@ -327,7 +327,7 @@ static void client_handler(void *data)
     int server_sock;                /* Socket descriptor for server */
     struct sockaddr_in server_addr; /* Details of my IP address and port */
     struct sockaddr_in client_addr; /* Details of new connection IP address */
-    int client_addr_size;
+    socklen_t client_addr_size;
 
     int i, j;
     long int temp_long;
@@ -785,7 +785,7 @@ static void client_handler(void *data)
 
 #ifdef CYGPKG_VNC_SERVER_BUILD_KEYBOARD_DRIVER
                 /* Call the keyboard handle function */
-                vnc_kbd_handler(&(message_buffer[0]));
+                vnc_kbd_handler((unsigned char *)&(message_buffer[0]));
 #endif
                 break;
 
@@ -802,7 +802,7 @@ static void client_handler(void *data)
 
 #ifdef CYGPKG_VNC_SERVER_BUILD_MOUSE_DRIVER
                 /* Called the mouse handler function */
-                vnc_mouse_handler(&(message_buffer[0]));
+                vnc_mouse_handler((unsigned char *)&(message_buffer[0]));
 #endif
                 break;
 

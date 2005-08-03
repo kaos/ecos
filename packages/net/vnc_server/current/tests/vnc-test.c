@@ -35,7 +35,7 @@ void HideCursor(void);
 int cursor_x, cursor_y;  /* Cursor position */
 vnc_frame_format_t *display_info;  /* Display Info */
 
-int main(int argc, char * argv)
+int main(int argc, char * argv[])
 {
     int mouse_handle = -1;
     int kbd_handle = -1;

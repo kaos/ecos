@@ -89,7 +89,6 @@ typedef struct {
 /* Type to hold rectangle size details */
 typedef struct
 {
-    int chars;
     cyg_uint16 width;
     cyg_uint16 height;
 } vnc_printf_return_t;
