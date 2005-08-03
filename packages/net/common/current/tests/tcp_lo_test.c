@@ -62,7 +62,7 @@ void server(void)
     struct sockaddr_in e_source_addr, local;
     int one = 1;
     fd_set in_fds;
-    int len;
+    socklen_t len;
     
     char *hello_string=" Hello eCos network \n";
     diag_printf("TCP SERVER:");

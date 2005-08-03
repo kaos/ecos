@@ -1,3 +1,11 @@
+2005-08-02  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/ping_lo_test.c (ping_host): Use socklen_t to avoid
+	compiler warnings.
+	* tests/tcp_lo_test.c (server): Ditto	
+	* tests/udp_lo_test.c (server): Ditto
+	* tests/tcp_lo_select.c (server): Ditto
+
 2005-07-29  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/tftp_dummy_file.c: unsigned char when needed to prevent warnings.

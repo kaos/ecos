@@ -77,7 +77,7 @@ void server(void)
     int s_s1, e_s1, s_s2, e_s2;
     struct sockaddr_in e_s1_addr,e_s2_addr,local;
     fd_set in_fds;
-    int len;
+    socklen_t len;
     int num;
     
     char *hello_string=" Hello eCos network \n";

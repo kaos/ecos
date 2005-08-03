@@ -200,7 +200,7 @@ void listener( cyg_addrword_t which )
     int s_s1 = -1, e_s1 = 0, s_s2 = -1, e_s2 = 0;
     struct sockaddr_in e_s1_addr,e_s2_addr,local;
     fd_set in_fds;
-    int len;
+    socklen_t len;
     int num;
 
     // do we select on multiple sources?

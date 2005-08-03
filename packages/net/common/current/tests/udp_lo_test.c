@@ -60,7 +60,7 @@ void server(void)
 {
     int s_source;
     struct sockaddr_in local,c_addr;
-    int c_len;
+    socklen_t c_len;
     int len;
     
     char *hello_string=" Hello eCos network \n";
