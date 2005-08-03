@@ -79,13 +79,15 @@ cyg_start( void )
   
   CYG_TEST_INFO("Calculating CRCs");
  
-  if (1500790746UL != cyg_posix_crc32(license_txt,sizeof(license_txt)-1)) {
+  if (1500790746UL != cyg_posix_crc32((unsigned char *)license_txt,
+                                      sizeof(license_txt)-1)) {
     CYG_TEST_FAIL("Wrong POSIX CRC32 calculation");
   } else {
     CYG_TEST_PASS("POSIX CRC32 calculation");
   }
   
-  if (1667500021UL != cyg_ether_crc32(license_txt,sizeof(license_txt)-1)) {
+  if (1667500021UL != cyg_ether_crc32((unsigned char *)license_txt,
+                                      sizeof(license_txt)-1)) {
     CYG_TEST_FAIL("Wrong Ethernet crc32 calculation");
   } else {
     CYG_TEST_PASS("Ethernet crc32 calculation");
@@ -94,8 +96,10 @@ cyg_start( void )
   if (0 != cyg_ether_crc32_accumulate(0,0,0)) {
     CYG_TEST_FAIL("Ethernet crc32 accumulate setup");
   } else {
-    crc1= cyg_ether_crc32_accumulate(0, license_txt,sizeof(license_txt)-1);
-    crc2 = cyg_ether_crc32_accumulate(crc1, license_txt,sizeof(license_txt)-1);
+    crc1= cyg_ether_crc32_accumulate(0, (unsigned char *)license_txt,
+                                     sizeof(license_txt)-1);
+    crc2 = cyg_ether_crc32_accumulate(crc1, (unsigned char *)license_txt,
+                                      sizeof(license_txt)-1);
     
     if ((1667500021UL != crc1) || (3478736840UL != crc2)) {
       CYG_TEST_FAIL("Wrong Etheret crc32 accumulate");
@@ -104,14 +108,17 @@ cyg_start( void )
     }
   }
 
-  if (1247800780UL != cyg_crc32(license_txt,sizeof(license_txt)-1)) {
+  if (1247800780UL != cyg_crc32((unsigned char *)license_txt,
+                                sizeof(license_txt)-1)) {
     CYG_TEST_FAIL("Wrong Gary S. Browns' crc32 calculation");
   } else {
     CYG_TEST_PASS("Gary S. Browns' crc32 calculation");
   }
 
-  crc1 = cyg_crc32_accumulate(0,license_txt,sizeof(license_txt)-1);
-  crc2 = cyg_crc32_accumulate(crc1,license_txt,sizeof(license_txt)-1);
+  crc1 = cyg_crc32_accumulate(0,(unsigned char *)license_txt,
+                              sizeof(license_txt)-1);
+  crc2 = cyg_crc32_accumulate(crc1,(unsigned char *)license_txt,
+                              sizeof(license_txt)-1);
     
   if ((1247800780UL != crc1) || (926002294UL != crc2)) {
     CYG_TEST_FAIL("Wrong Gary S. Browns' crc32 accumulate calculation");
@@ -119,12 +126,10 @@ cyg_start( void )
     CYG_TEST_PASS("Gary S. Browns' crc32 accumulate calculation");
   }
     
-  if (32256UL != cyg_crc16(license_txt,sizeof(license_txt)-1)) {
+  if (32256UL != cyg_crc16((unsigned char *)license_txt,
+                           sizeof(license_txt)-1)) {
     CYG_TEST_FAIL_FINISH("Wrong 16bit CRC calculation");
   } else {
     CYG_TEST_PASS_FINISH("16bit CRC calculation");
   }
 }
-
-  
-

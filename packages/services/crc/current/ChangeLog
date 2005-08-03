@@ -1,3 +1,7 @@
+2005-08-03  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/crc_test.c: casts to make it gcc 4.0.1 frendly.
+
 2003-11-21  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/crc_test.c: Made the test text gcc 3.3.2 friendly. It does
