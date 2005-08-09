@@ -32,9 +32,6 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -85,6 +82,9 @@
 # define SCIF_SCFDR      0x10      // FIFO data count register
 # define SCIF_SCFER      0x12      // FIFO error register
 # define SCIF_SCIMR      0x14      // IrDA mode register
+# define HAL_READ(x,y)  HAL_READ_UINT8(x,y)
+# define HAL_WRITE(x,y) HAL_WRITE_UINT8(x,y)  
+
 #elif defined(CYGPKG_HAL_SH_SH3)
 // The SCIF controller register layout on the SH3
 // The controller base is defined in the board specification file.
@@ -96,6 +96,21 @@
 # define SCIF_SCFRDR     0x0a      // receive data register
 # define SCIF_SCFCR      0x0c      // FIFO control
 # define SCIF_SCFDR      0x0e      // FIFO data count register
+# define HAL_READ(x,y)  HAL_READ_UINT8(x,y)
+# define HAL_WRITE(x,y) HAL_WRITE_UINT8(x,y)  
+#elif defined(CYGPKG_HAL_SH_SH4)
+// The SCIF controller register layout on the SH4
+// The controller base is defined in the board specification file.
+# define SCIF_SCSMR      0x00      // serial mode register
+# define SCIF_SCBRR      0x04      // bit rate register
+# define SCIF_SCSCR      0x08      // serial control register
+# define SCIF_SCFTDR     0x0C      // transmit data register
+# define SCIF_SCSSR      0x10      // serial status register
+# define SCIF_SCFRDR     0x14      // receive data register
+# define SCIF_SCFCR      0x18      // FIFO control
+# define SCIF_SCFDR      0x1C      // FIFO data count register
+# define HAL_READ(x,y)  HAL_READ_UINT16(x,y)
+# define HAL_WRITE(x,y) HAL_WRITE_UINT16(x,y)  
 #else
 # error "Unsupported variant"
 #endif
@@ -254,12 +269,12 @@ sh_scif_config_port(serial_channel *chan, cyg_serial_info_t *new_config,
         return false;
 
     // Disable SCI interrupts while changing hardware
-    HAL_READ_UINT8(base+SCIF_SCSCR, _scr);
-    HAL_WRITE_UINT8(base+SCIF_SCSCR, 0);
+    HAL_READ(base+SCIF_SCSCR, _scr);
+    HAL_WRITE(base+SCIF_SCSCR, 0);
 
     // Reset FIFO.
-    HAL_WRITE_UINT8(base+SCIF_SCFCR, 
-                    CYGARC_REG_SCIF_SCFCR_TFRST|CYGARC_REG_SCIF_SCFCR_RFRST);
+    HAL_WRITE(base+SCIF_SCFCR, 
+              CYGARC_REG_SCIF_SCFCR_TFRST|CYGARC_REG_SCIF_SCFCR_RFRST);
 
 #ifdef CYGINT_IO_SERIAL_SH_SCIF_ASYNC_RXTX
     sh_chan->async_rxtx_mode = false;
@@ -285,16 +300,16 @@ sh_scif_config_port(serial_channel *chan, cyg_serial_info_t *new_config,
 #ifdef CYGINT_IO_SERIAL_SH_SCIF_IRDA
 #ifdef SCIF_SCIMR
         // Disable IrDA mode
-        HAL_WRITE_UINT8(base+SCIF_SCIMR, 0);
+        HAL_WRITE(base+SCIF_SCIMR, 0);
 #endif
 #endif
     }
-    HAL_WRITE_UINT8(base+SCIF_SCSMR, _smr);
+    HAL_WRITE(base+SCIF_SCSMR, _smr);
 
     // Set baud rate.
     _smr &= ~CYGARC_REG_SCIF_SCSMR_CKSx_MASK;
     _smr |= baud_divisor >> 8;
-    HAL_WRITE_UINT8(base+SCIF_SCSMR, _smr);
+    HAL_WRITE(base+SCIF_SCSMR, _smr);
     HAL_WRITE_UINT8(base+SCIF_SCBRR, baud_divisor & 0xff);
 
     // FIXME: Should delay 1/<baud> second here.
@@ -322,10 +337,10 @@ sh_scif_config_port(serial_channel *chan, cyg_serial_info_t *new_config,
     // and actual transmission stop, it may be necessary to reduce the
     // trigger level further.
 #ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_HW
-    HAL_WRITE_UINT8(base+SCIF_SCFCR, 
+    HAL_WRITE(base+SCIF_SCFCR, 
                     CYGARC_REG_SCIF_SCFCR_RTRG_8|CYGARC_REG_SCIF_SCFCR_TTRG_8);
 #else
-    HAL_WRITE_UINT8(base+SCIF_SCFCR, 
+    HAL_WRITE(base+SCIF_SCFCR, 
                     CYGARC_REG_SCIF_SCFCR_RTRG_14|CYGARC_REG_SCIF_SCFCR_TTRG_8);
 #endif
 
@@ -345,7 +360,7 @@ sh_scif_config_port(serial_channel *chan, cyg_serial_info_t *new_config,
             _scr |= CYGARC_REG_SCIF_SCSCR_RIE; // enable rx interrupts
     }
      
-    HAL_WRITE_UINT8(base+SCIF_SCSCR, _scr);
+    HAL_WRITE(base+SCIF_SCSCR, _scr);
 
     if (new_config != &chan->config) {
         chan->config = *new_config;
@@ -537,12 +552,12 @@ sh_scif_set_config(serial_channel *chan, cyg_uint32 key,
               // RX interrupt.  When disabled, FIFO will fill up and
               // clear RTS.
               cyg_uint8 _scscr;
-              HAL_READ_UINT8(base+SCIF_SCSCR, _scscr);
+              HAL_READ(base+SCIF_SCSCR, _scscr);
               if (*f) // we should throttle
                   _scscr &= ~CYGARC_REG_SCIF_SCSCR_RIE;
               else // we should no longer throttle
                   _scscr |= CYGARC_REG_SCIF_SCSCR_RIE;
-              HAL_WRITE_UINT8(base+SCIF_SCSCR, _scscr);
+              HAL_WRITE(base+SCIF_SCSCR, _scscr);
           }
 #ifdef CYGHWR_SH_SCIF_FLOW_DSRDTR
           if ( chan->config.flags & CYGNUM_SERIAL_FLOW_DSRDTR_RX ) {
@@ -562,12 +577,12 @@ sh_scif_set_config(serial_channel *chan, cyg_uint32 key,
               cyg_addrword_t base = ser_chan->ctrl_base;
               cyg_uint8 *f = (cyg_uint8 *)xbuf;
 
-              HAL_READ_UINT8(base+SCIF_SCFCR, _scfcr);
+              HAL_READ(base+SCIF_SCFCR, _scfcr);
               if (*f) // enable RTS/CTS flow control
                   _scfcr |= CYGARC_REG_SCIF_SCFCR_MCE;
               else // disable RTS/CTS flow control
                   _scfcr &= ~CYGARC_REG_SCIF_SCFCR_MCE;
-              HAL_WRITE_UINT8(base+SCIF_SCFCR, _scfcr);
+              HAL_WRITE(base+SCIF_SCFCR, _scfcr);
           }
 #ifndef CYGHWR_SH_SCIF_FLOW_DSRDTR
           // Clear DSR/DTR flag as it's not supported.
@@ -630,9 +645,9 @@ sh_scif_start_dma_xmt(serial_channel *chan)
                          | CYGARC_REG_CHCR_IE | CYGARC_REG_CHCR_DE);
 
         // Enable serial interrupts
-        HAL_READ_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, scr);
+        HAL_READ(sh_chan->ctrl_base+SCIF_SCSCR, scr);
         scr |= CYGARC_REG_SCIF_SCSCR_TIE;
-        HAL_WRITE_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, scr);
+        HAL_WRITE(sh_chan->ctrl_base+SCIF_SCSCR, scr);
     }
 
     return res;
@@ -690,9 +705,9 @@ sh_dma_xmt_ISR(cyg_vector_t vector, cyg_addrword_t data)
     cyg_uint32 _cr;
 
     // mask serial interrupt
-    HAL_READ_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, _cr);
+    HAL_READ(sh_chan->ctrl_base+SCIF_SCSCR, _cr);
     _cr &= ~CYGARC_REG_SCIF_SCSCR_TIE;      // Disable xmit interrupt
-    HAL_WRITE_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, _cr);
+    HAL_WRITE(sh_chan->ctrl_base+SCIF_SCSCR, _cr);
 
     // mask DMA interrupt and disable engine
     HAL_READ_UINT32(sh_chan->dma_xmt_base+CYGARC_REG_CHCR, _cr);
@@ -753,7 +768,7 @@ sh_scif_start_xmit(serial_channel *chan)
         // middle of this would result in a bad CR state.
         cyg_drv_isr_lock();
         {
-            HAL_READ_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
+            HAL_READ(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
             _scr |= CYGARC_REG_SCIF_SCSCR_TIE;       // Enable xmit interrupt
 #ifdef CYGINT_IO_SERIAL_SH_SCIF_IRDA
             if (sh_chan->irda_mode) {
@@ -773,7 +788,7 @@ sh_scif_start_xmit(serial_channel *chan)
                 _scr &= ~CYGARC_REG_SCIF_SCSCR_RE;
             }
 #endif
-            HAL_WRITE_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
+            HAL_WRITE(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
             sh_chan->tx_enabled = true;
         }
         cyg_drv_isr_unlock();
@@ -812,7 +827,7 @@ sh_scif_stop_xmit(serial_channel *chan)
     // result in a bad CR state.
     cyg_drv_isr_lock();
     {
-            HAL_READ_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
+            HAL_READ(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
             _scr &= ~CYGARC_REG_SCIF_SCSCR_TIE;      // Disable xmit interrupt
 #ifdef CYGINT_IO_SERIAL_SH_SCIF_IRDA
             if (sh_chan->irda_mode) {
@@ -841,7 +856,7 @@ sh_scif_stop_xmit(serial_channel *chan)
                 _scr &= ~CYGARC_REG_SCIF_SCSCR_TE;
             }
 #endif
-            HAL_WRITE_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
+            HAL_WRITE(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
     }
     cyg_drv_isr_unlock();
 
@@ -862,9 +877,9 @@ sh_scif_tx_ISR(cyg_vector_t vector, cyg_addrword_t data)
     sh_scif_info *sh_chan = (sh_scif_info *)chan->dev_priv;
     cyg_uint8 _scr;
 
-    HAL_READ_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
+    HAL_READ(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
     _scr &= ~CYGARC_REG_SCIF_SCSCR_TIE;      // mask out tx interrupts
-    HAL_WRITE_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
+    HAL_WRITE(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
 
     return CYG_ISR_CALL_DSR;  // Cause DSR to be run
 }
@@ -925,9 +940,9 @@ sh_scif_tx_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
 
     if (sh_chan->tx_enabled) {
         cyg_uint8 _scr;
-        HAL_READ_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
+        HAL_READ(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
         _scr |= CYGARC_REG_SCIF_SCSCR_TIE;       // unmask tx interrupts
-        HAL_WRITE_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
+        HAL_WRITE(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
     }
 }
 
@@ -939,9 +954,9 @@ sh_scif_rx_ISR(cyg_vector_t vector, cyg_addrword_t data)
     sh_scif_info *sh_chan = (sh_scif_info *)chan->dev_priv;
     cyg_uint8 _scr;
 
-    HAL_READ_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
+    HAL_READ(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
     _scr &= ~CYGARC_REG_SCIF_SCSCR_RIE;      // mask rx interrupts
-    HAL_WRITE_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
+    HAL_WRITE(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
     return CYG_ISR_CALL_DSR;            // Cause DSR to be run
 }
 
@@ -998,9 +1013,9 @@ sh_scif_rx_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     HAL_WRITE_UINT16(sh_chan->ctrl_base+SCIF_SCSSR, 
                      CYGARC_REG_SCIF_SCSSR_CLEARMASK & ~(CYGARC_REG_SCIF_SCSSR_RDF|CYGARC_REG_SCIF_SCSSR_DR));
 
-    HAL_READ_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
+    HAL_READ(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
     _scr |= CYGARC_REG_SCIF_SCSCR_RIE;       // unmask rx interrupts
-    HAL_WRITE_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
+    HAL_WRITE(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
 }
 
 // Serial I/O - low level error interrupt handler (ISR)
@@ -1011,9 +1026,9 @@ sh_scif_er_ISR(cyg_vector_t vector, cyg_addrword_t data)
     sh_scif_info *sh_chan = (sh_scif_info *)chan->dev_priv;
     cyg_uint8 _scr;
 
-    HAL_READ_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
+    HAL_READ(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
     _scr &= ~CYGARC_REG_SCIF_SCSCR_RIE;      // mask rx interrupts
-    HAL_WRITE_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
+    HAL_WRITE(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
     return CYG_ISR_CALL_DSR;            // Cause DSR to be run
 }
 
@@ -1070,9 +1085,9 @@ sh_scif_er_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     }
     HAL_WRITE_UINT16(sh_chan->ctrl_base+SCIF_SCSSR, _ssr_mask);
 
-    HAL_READ_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
+    HAL_READ(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
     _scr |= CYGARC_REG_SCIF_SCSCR_RIE;       // unmask rx interrupts
-    HAL_WRITE_UINT8(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
+    HAL_WRITE(sh_chan->ctrl_base+SCIF_SCSCR, _scr);
 }
 
 #endif // ifdef CYGDAT_IO_SERIAL_SH_SCIF_INL

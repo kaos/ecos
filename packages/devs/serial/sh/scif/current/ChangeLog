@@ -1,3 +1,8 @@
+2005-08-04  Andrew Lunn  <andrew.lunn@ascom.ch>
+2005-05-02  Hajime Ishitani <pigmon@mail.snd.co.jp>
+
+	* src/sh_scif_serial.c: support SH4 register access
+
 2003-03-18  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/sh_scif_serial.c (sh_scif_set_config): 
