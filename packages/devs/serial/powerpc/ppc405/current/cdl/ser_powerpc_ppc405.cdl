@@ -58,14 +58,14 @@ cdl_package CYGPKG_IO_SERIAL_POWERPC_PPC405 {
     active_if     CYGPKG_IO_SERIAL
     active_if     CYGPKG_HAL_POWERPC_PPC40x  
 # Only the 405GP has these ports
-    active_if     { CYGHWR_HAL_POWERPC_PPC4XX == "405GP" }
+    active_if     { CYGHWR_HAL_POWERPC_PPC4XX == "405GP" || CYGHWR_HAL_POWERPC_PPC4XX == "405EP" }
 
     requires      CYGPKG_ERROR
     include_dir   cyg/io
 
     description   "
            This option enables the serial 16x5x device drivers for the
-           PowerPC PPC405GP based platforms."
+           PowerPC PPC405GP/EP based platforms."
 
     # FIXME: This really belongs in the GENERIC_16X5X package
     cdl_interface CYGINT_IO_SERIAL_GENERIC_16X5X_REQUIRED {
@@ -84,7 +84,7 @@ cdl_package CYGPKG_IO_SERIAL_POWERPC_PPC405 {
     }
 
     cdl_component CYGPKG_IO_SERIAL_POWERPC_PPC405_SERIAL0 {
-        display       "PowerPC PPC405GP serial port 0 driver"
+        display       "PowerPC PPC405GP/EP serial port 0 driver"
         flavor        bool
         default_value 1
 
@@ -97,7 +97,7 @@ cdl_package CYGPKG_IO_SERIAL_POWERPC_PPC405 {
             PowerPC PPC405GP port 0."
 
         cdl_option CYGDAT_IO_SERIAL_POWERPC_PPC405_SERIAL0_NAME {
-            display       "Device name for PowerPC PPC405GP serial port 0 driver"
+            display       "Device name for PowerPC PPC405GP/EP serial port 0 driver"
             flavor        data
             default_value {"\"/dev/ser0\""}
             description   "
@@ -111,7 +111,7 @@ cdl_package CYGPKG_IO_SERIAL_POWERPC_PPC405 {
             legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400
                             3600 4800 7200 9600 14400 19200 38400
                             57600 115200 230400 }
-            default_value 38400
+            default_value 115200
             description   "
                 This option specifies the default baud rate (speed)
                 for the PowerPC PPC405GP port 0."
@@ -156,7 +156,7 @@ cdl_package CYGPKG_IO_SERIAL_POWERPC_PPC405 {
             legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400
                             3600 4800 7200 9600 14400 19200 38400
                             57600 115200 230400 }
-            default_value 38400
+            default_value 115200
             description   "
                 This option specifies the default baud rate (speed)
                 for the PowerPC PPC405GP port 1."
@@ -169,7 +169,7 @@ cdl_package CYGPKG_IO_SERIAL_POWERPC_PPC405 {
              default_value 128
              description   "
                  This option specifies the size of the internal
-                 buffers used for the PowerPC PPC405GP port 1."
+                 buffers used for the PowerPC PPC405GP/EP port 1."
          }
     }
 

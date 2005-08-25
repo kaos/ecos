@@ -57,7 +57,7 @@ cdl_package CYGPKG_DEVS_ETH_POWERPC_PPC405 {
     active_if	  CYGPKG_IO_ETH_DRIVERS
     active_if	  CYGPKG_HAL_POWERPC 
     active_if	  CYGPKG_HAL_POWERPC_PPC40x
-    requires      { CYGHWR_HAL_POWERPC_PPC4XX == "405GP" }
+    requires      { (CYGHWR_HAL_POWERPC_PPC4XX == "405GP") || (CYGHWR_HAL_POWERPC_PPC4XX == "405EP") }
     requires      CYGPKG_DEVS_ETH_PHY
 
     implements    CYGHWR_NET_DRIVERS
@@ -74,7 +74,7 @@ cdl_package CYGPKG_DEVS_ETH_POWERPC_PPC405 {
     }
     requires { CYGHWR_DEVS_ETH_POWERPC_PPC405_NET_DRIVERS == 1 }
 
-    description   "Ethernet driver for PowerPC 405GP boards."
+    description   "Ethernet driver for PowerPC 405GP/EP boards."
     compile       -library=libextras.a if_ppc405.c
 
     cdl_option CYGNUM_DEVS_ETH_POWERPC_PPC405_BUFSIZE {

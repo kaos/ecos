@@ -1,3 +1,7 @@
+2005-08-25  Markus Schade <marks@peppercon.de>
+
+	* enabled build for PowerPC 405EP
+
 2005-02-03  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/ppc405_enet.h: 

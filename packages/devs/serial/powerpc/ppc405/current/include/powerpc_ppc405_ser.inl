@@ -2,7 +2,7 @@
 //
 //      io/serial/powerpc/powerpc_ppc405_ser.inl
 //
-//      PPC405GP Serial I/O definitions
+//      PPC405GP/EP Serial I/O definitions
 //
 //==========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
@@ -44,7 +44,7 @@
 // Author(s):    gthomas
 // Contributors: 
 // Date:         2003-09-16
-// Purpose:      PowerPC PPC405GP serial drivers
+// Purpose:      PowerPC PPC405GP/EP serial drivers
 // Description: 
 //
 //####DESCRIPTIONEND####
@@ -87,7 +87,12 @@ externC int cyg_var_baud_generator(int baud);
 #define CYG_IO_SERIAL_GENERIC_16X5X_BAUD_GENERATOR cyg_var_baud_generator
 
 #ifdef CYGPKG_IO_SERIAL_POWERPC_PPC405_SERIAL0
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP)
 static pc_serial_info ppc405_serial_info0 = {_PPC405GP_UART0, CYGNUM_HAL_INTERRUPT_UART0};
+#endif
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405EP)
+static pc_serial_info ppc405_serial_info0 = {_PPC405EP_UART0, CYGNUM_HAL_INTERRUPT_UART0};
+#endif
 #if CYGNUM_IO_SERIAL_POWERPC_PPC405_SERIAL0_BUFSIZE > 0
 static unsigned char ppc405_serial_out_buf0[CYGNUM_IO_SERIAL_POWERPC_PPC405_SERIAL0_BUFSIZE];
 static unsigned char ppc405_serial_in_buf0[CYGNUM_IO_SERIAL_POWERPC_PPC405_SERIAL0_BUFSIZE];
@@ -126,7 +131,12 @@ DEVTAB_ENTRY(ppc405_serial_io0,
 #endif //  CYGPKG_IO_SERIAL_POWERPC_PPC405_SERIAL0
 
 #ifdef CYGPKG_IO_SERIAL_POWERPC_PPC405_SERIAL1
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP)
 static pc_serial_info ppc405_serial_info1 = {_PPC405GP_UART1, CYGNUM_HAL_INTERRUPT_UART1};
+#endif
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405EP)
+static pc_serial_info ppc405_serial_info1 = {_PPC405EP_UART1, CYGNUM_HAL_INTERRUPT_UART1};
+#endif
 #if CYGNUM_IO_SERIAL_POWERPC_PPC405_SERIAL1_BUFSIZE > 0
 static unsigned char ppc405_serial_out_buf1[CYGNUM_IO_SERIAL_POWERPC_PPC405_SERIAL1_BUFSIZE];
 static unsigned char ppc405_serial_in_buf1[CYGNUM_IO_SERIAL_POWERPC_PPC405_SERIAL1_BUFSIZE];
