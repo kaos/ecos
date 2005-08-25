@@ -128,6 +128,17 @@
 
 #define CYG_IO_GET_CONFIG_DISK_INFO              0x700
 
+// ======== 0x800 CAN ========================================================
+// Get/Set configuration 'key' values for DISK I/O 
+
+#define CYG_IO_GET_CONFIG_CAN_INFO                  0x0801
+#define CYG_IO_GET_CONFIG_CAN_BUFFER_INFO           0x0802
+#define CYG_IO_GET_CONFIG_CAN_TIMEOUT               0x0803
+
+#define CYG_IO_SET_CONFIG_CAN_INFO                  0x0881
+#define CYG_IO_SET_CONFIG_CAN_TIMEOUT               0x0883
+#define CYG_IO_SET_CONFIG_CAN_RTR_BUF               0x0884
+
 // ======== 0x1000 Generic ===================================================
 // Get/Set configuration 'key' values that can apply to more than one
 // class of device.

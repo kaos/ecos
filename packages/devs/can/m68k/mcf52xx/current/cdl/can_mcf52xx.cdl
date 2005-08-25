@@ -1,0 +1,369 @@
+# ====================================================================
+#
+#      can_mcf52xx.cdl
+#
+#      eCos MCF52xx FlexCAN configuration data
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2003, 2004 eCosCentric Limited
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+## -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      Uwe Kindler
+# Contributors:
+# Date:           2005-05-17
+#
+#####DESCRIPTIONEND####
+# ====================================================================
+
+
+cdl_package CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN {
+    display       "CAN driver for FlexCAN module of coldfire mcf52xx family"
+
+    parent        CYGPKG_IO_CAN_DEVICES
+    active_if     CYGPKG_IO_CAN
+    active_if     CYGPKG_HAL_M68K_MCF52xx
+
+    requires      CYGPKG_ERROR
+
+    description   "
+           This package provides a generic CAN device driver for the on-chip
+           FlexCAN modules in MCF52xx ColdFire processors."
+    compile       -library=libextras.a   can_mcf52xx.c
+    define_proc {
+        puts $::cdl_system_header "/***** CAN driver proc output start *****/"
+        puts $::cdl_system_header "#define CYGDAT_IO_CAN_DEVICE_HEADER <pkgconf/devs_can_mcf52xx_flexcan.h>"
+        puts $::cdl_system_header "/*****  CAN driver proc output end  *****/"
+    }
+    
+    # Support up to two on-chip FlexCAN modules. The number varies between
+    # processor variants
+    for { set ::flexcan 0 } { $::flexcan < 2 } { incr ::flexcan } {
+    
+        cdl_interface CYGINT_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan] {
+            display     "Platform provides FlexCAN [set ::flexcan]"
+            flavor      bool
+            description "
+                This interface will be implemented if the specific coldfire
+                processor being used has an on-chip FlexCAN[set ::flexcan], and if
+                that FlexCAN is accessible on the target hardware."
+        }
+    
+        cdl_component CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan] {
+            display     "Allow access to the on-chip FlexCAN[set ::flexcan] via a CAN driver"
+            flavor      bool
+            active_if       CYGINT_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]
+            default_value   1
+            implements      CYGINT_IO_CAN_TIMESTAMP
+            
+            description "
+                If the application needs to access the on-chip FlexCAN[set ::flexcan]
+                via an eCos CAN driver then this option should be enabled."
+
+            cdl_option CYGDAT_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_NAME {
+                display     "Device name for FlexCAN [set ::flexcan]"
+                flavor      data
+                default_value   [format {"\"/dev/can%d\""} $::flexcan]
+                description "
+                    This option controls the name that an eCos application
+                    should use to access this device via cyg_io_lookup(),
+                    open(), or similar calls."
+            }
+
+        
+            cdl_option CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_KBAUD {
+                display     "Default baud rate for FlexCAN [set ::flexcan]"
+                flavor      data
+                default_value   100
+                legal_values    { 10 20 50 100 125 250 500 800 1000 }
+                description "This option determines the initial baud rate in KBaud for FlexCAN [set ::flexcan]"
+            }
+
+            cdl_option CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_QUEUESIZE_TX {
+                display     "Size of TX Queue for the FlexCAN [set ::flexcan] driver"
+                flavor      data
+                default_value   32
+                legal_values    16 to 512
+                description "
+                    The CAN device driver will run in interrupt mode and will
+                    perform buffering of outgoing data. This option controls the number
+                    of CAN messages the TX queue can store."
+            }
+            
+            cdl_option CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_QUEUESIZE_RX {
+                display     "Size of RX Queue for the FlexCAN [set ::flexcan] driver"
+                flavor      data
+                default_value   32
+                legal_values    16 to 512
+                description "
+                    The CAN device driver will run in interrupt mode and will
+                    perform buffering of incoming data. This option controls the number
+                    of CAN events the RX queue can store."
+            }
+            
+            cdl_option CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_RXMASK_GLOBAL {
+                display     "Receive mask for message buffers 0 - 13"
+                flavor      data
+                default_value   0x1FFFFFFF
+                description "
+                    The global RX-mask is composed of 4 bytes. The mask bits are
+                    applied to all Rx-Identifiers excluding Rx-buffers 14-15, that 
+                    have their specific Rx-mask. (0 corresponding incoming ID bit is 
+                    \"don’t care\". 1 corresponding ID bit is checked against the incoming 
+                    ID bit, to see if a match exists). By default the message buffers
+                    should only receive messages that exactly match the configured
+                    message buffer CAN identifier - that means alle bits are 1."
+            }
+            
+            cdl_option CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_RXMASK_14 {
+                display     "Receive mask for message buffer 14"
+                flavor      data
+                default_value   0x0
+                description "
+                    The RX-mask for message buffer 14 is composed of 4 bytes. The mask
+                    bits are applied to message buffer 14. (0 corresponding incoming ID 
+                    bit is \"don’t care\". 1 corresponding ID bit is checked against the 
+                    incoming ID bit, to see if a match exists). Message buffer 14 is
+                    the receive message buffer and should receive all available CAN
+                    messages - all bits are 0."
+            }
+            
+            cdl_option CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_RXMASK_15 {
+                display     "Receive mask for message buffer 15"
+                flavor      data
+                default_value   0x1FFFFFFF
+                description "
+                    The RX-mask for message buffer 15 is composed of 4 bytes. The mask
+                    bits are applied to message buffer 15. (0 corresponding incoming ID 
+                    bit is \"don’t care\". 1 corresponding ID bit is checked against the 
+                    incoming ID bit, to see if a match exists)."
+            }
+            
+            cdl_option CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN[set ::flexcan]_WAKEINT {
+                display     "Wake interrupt priority"
+                flavor      data
+                default_value   is_loaded(CYGNUM_HAL_M68K_MCF52xx_ISR_DEFAULT_PRIORITY_FLEXCAN[set ::flexcan]_WAKEINT) ? \
+                                CYGNUM_HAL_M68K_MCF52xx_ISR_DEFAULT_PRIORITY_FLEXCAN[set ::flexcan]_WAKEINT : \
+                                CYGNUM_HAL_M68K_MCF52xx_ISR_PRIORITY_MIN
+                legal_values   CYGNUM_HAL_M68K_MCF52xx_ISR_PRIORITY_MIN to CYGNUM_HAL_M68K_MCF52xx_ISR_PRIORITY_MAX
+                description "
+                    Interrupt priority for wake interrupt."
+            }
+            
+            cdl_option CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN[set ::flexcan]_ERRINT {
+                display     "Error interrupt priority"
+                flavor      data
+                default_value   is_loaded(CYGNUM_HAL_M68K_MCF52xx_ISR_DEFAULT_PRIORITY_FLEXCAN[set ::flexcan]_ERRINT) ? \
+                                CYGNUM_HAL_M68K_MCF52xx_ISR_DEFAULT_PRIORITY_FLEXCAN[set ::flexcan]_ERRINT : \
+                                CYGNUM_HAL_M68K_MCF52xx_ISR_PRIORITY_MIN
+                legal_values   CYGNUM_HAL_M68K_MCF52xx_ISR_PRIORITY_MIN to CYGNUM_HAL_M68K_MCF52xx_ISR_PRIORITY_MAX
+                description "
+                    Interrupt priority for error interrupt."
+            }
+            
+            cdl_option CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN[set ::flexcan]_BOFFINT {
+                display     "Bus off interrupt priority"
+                flavor      data
+                default_value   is_loaded(CYGNUM_HAL_M68K_MCF52xx_ISR_DEFAULT_PRIORITY_FLEXCAN[set ::flexcan]_BOFFINT) ? \
+                                CYGNUM_HAL_M68K_MCF52xx_ISR_DEFAULT_PRIORITY_FLEXCAN[set ::flexcan]_BOFFINT : \
+                                CYGNUM_HAL_M68K_MCF52xx_ISR_PRIORITY_MIN
+                legal_values   CYGNUM_HAL_M68K_MCF52xx_ISR_PRIORITY_MIN to CYGNUM_HAL_M68K_MCF52xx_ISR_PRIORITY_MAX
+                description "
+                    Interrupt priority for bus off interrupt."
+            }
+            
+            cdl_option CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_DEFAULT_RX_MBOX {
+                display "Default receive message buffer"
+                flavor  data
+                calculated    14
+                legal_values  0 to 15
+                description "
+                    By default one message buffer will be used for reception of
+                    all CAN messages. This option selects one of the 16 message
+                    buffers for reception."
+            }
+            
+            cdl_option CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_DEFAULT_TX_MBOX {
+                display "Default transmit message buffer"
+                flavor  data
+                calculated    15
+                legal_values  0 to 15
+                description "
+                    By default one message buffer will be used for message transmission.
+                    This option selects one of the 16 FlexCAN message buffers for
+                    transmission."
+            }
+            
+            cdl_component CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_MBOXCFG {
+                display     "Message buffer configuration"
+                flavor       none
+                active_if       CYGINT_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]
+                description "
+                    The FlexCAN module contains 16 flexible message buffers of 0-8 bytes 
+                    data length, each configurable as Rx or Tx, all supporting standard and 
+                    extended messages. At the moment a fixed configuration is used for
+                    TX and RX message buffers but in future this may be configurable."
+                
+                cdl_component CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_MBOX14_CFG {
+                    display "Message buffer 14 configuration"
+                    flavor  none
+                    active_if       CYGINT_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]
+                    description "
+                       Configuration of FlexCAN message buffer 14."
+                   
+                    cdl_option CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN[set ::flexcan]_MBOX14 {
+                        display     "Interrupt priority."
+                        flavor      data
+                        default_value   is_loaded(CYGNUM_HAL_M68K_MCF52xx_ISR_DEFAULT_PRIORITY_FLEXCAN[set ::flexcan]_MBOX14) ? \
+                                    CYGNUM_HAL_M68K_MCF52xx_ISR_DEFAULT_PRIORITY_FLEXCAN[set ::flexcan]_MBOX14 : \
+                                    CYGNUM_HAL_M68K_MCF52xx_ISR_PRIORITY_MIN
+                        legal_values   CYGNUM_HAL_M68K_MCF52xx_ISR_PRIORITY_MIN to CYGNUM_HAL_M68K_MCF52xx_ISR_PRIORITY_MAX
+                        description "
+                            Interrupt priority for message buffer 14"
+                    }
+                    
+                    cdl_option CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_MBOX14_IS_TX {
+                        display "Use for transmit"
+                        flavor  bool
+                        active_if       CYGINT_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]
+                        calculated      0
+                        description "
+                            This option controls if this message buffer is used for sending
+                            or receiving messages. Currently this option is not configurable
+                            and message box 14 is used for reception of CAN messages."
+                        
+                    }
+                }
+                
+                cdl_component CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_MBOX15_CFG {
+                    display "Message buffer 15 configuration"
+                    flavor  none
+                    active_if       CYGINT_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]
+                    description "
+                       Configuration of FlexCAN message buffer 15."
+                   
+                    cdl_option CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN[set ::flexcan]_MBOX15 {
+                        display     "Interrupt priority."
+                        flavor      data
+                        default_value   is_loaded(CYGNUM_HAL_M68K_MCF52xx_ISR_DEFAULT_PRIORITY_FLEXCAN[set ::flexcan]_MBOX15) ? \
+                                    CYGNUM_HAL_M68K_MCF52xx_ISR_DEFAULT_PRIORITY_FLEXCAN[set ::flexcan]_MBOX15 : \
+                                    CYGNUM_HAL_M68K_MCF52xx_ISR_PRIORITY_MIN
+                        legal_values   CYGNUM_HAL_M68K_MCF52xx_ISR_PRIORITY_MIN to CYGNUM_HAL_M68K_MCF52xx_ISR_PRIORITY_MAX
+                        description "
+                            Interrupt priority for message buffer 15"
+                    }
+                    
+                    cdl_option CYGOPT_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_MBOX15_IS_TX {
+                        display "Use for transmit"
+                        flavor  bool
+                        active_if       CYGINT_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]
+                        calculated      1
+                        description "
+                            This option controls if this message buffer is used for sending
+                            or receiving messages. Currently this option is not configurable
+                            and message box 15 is used for transmission of CAN messages."
+                        
+                    }
+                }
+            } 
+        }    
+    }
+    
+    cdl_option CYGBLD_DEVS_CAN_MCF52xx_FLEXCAN_EXTRA_TESTS {
+        display "Build extra FlexCAN tests"
+        default_value 0
+        no_define
+        description "
+            This option enables the building of some extra tests which
+            can be used when testing / debugging FlexCAN drivers. These
+            are not built by default since they do not use the dedicated
+            testing infrastructure. All tests require a properly configured
+            CAN network with a second CAN node that can send and receive
+            CAN messages."
+
+        make -priority 320 {
+            <PREFIX>/bin/flexcan_load : <PACKAGE>/tests/flexcan_load.c
+            @sh -c "mkdir -p tests $(dir $@)"
+            $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o tests/flexcan_load.o $<
+            @echo $@ ": \\" > $(notdir $@).deps
+            @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
+            @tail -n +2 deps.tmp >> $(notdir $@).deps
+            @echo >> $(notdir $@).deps
+            @rm deps.tmp
+            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ tests/flexcan_load.o
+        }
+        
+        make -priority 320 {
+            <PREFIX>/bin/flexcan_remote : <PACKAGE>/tests/flexcan_remote.c
+            @sh -c "mkdir -p tests $(dir $@)"
+            $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o tests/flexcan_remote.o $<
+            @echo $@ ": \\" > $(notdir $@).deps
+            @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
+            @tail -n +2 deps.tmp >> $(notdir $@).deps
+            @echo >> $(notdir $@).deps
+            @rm deps.tmp
+            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ tests/flexcan_remote.o
+        }
+    }
+
+
+
+    cdl_component CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN_OPTIONS {
+        display "FlexCAN device driver build options"
+        flavor  none
+        description   "
+        Package specific build options including control over
+        compiler flags used only in building this package,
+        and details of which tests are built."
+
+        cdl_option CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building these CAN device drivers. These flags are
+                used in addition to the set of global flags."
+        }
+
+        cdl_option CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building these CAN device drivers. These flags are
+                removed from the set of global flags if present."
+        }
+    }
+}

@@ -94,6 +94,33 @@ package CYGPKG_IO_SERIAL {
            serial devices."
 }
 
+package CYGPKG_IO_CAN {
+	alias 		{ "CAN device drivers" can io_can }
+	directory	io/can
+	script		io_can.cdl
+        description "
+           This package contains drivers for basic I/O services on
+           CAN devices."
+}
+
+package CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN {
+    alias             { "MCF52xx FlexCAN device drivers"
+                        devs_can_mcf52xx_flexcan mcf52xx_flexcan_serial_driver }
+    hardware
+    directory	      devs/can/m68k/mcf52xx
+    script	          can_mcf52xx.cdl	
+    description       "Generic CAN device driver for the on-chip
+                       FlexCAN modules in MCF52xx ColdFire processors."
+}
+
+package CYGPKG_IO_CAN_LOOP {
+    alias             { "Loop CAN device drivers"
+                        devs_can_loop loop_can_driver }
+    directory	      devs/can/loop
+    script	      can_loop.cdl	
+    description       "Loopback CAN device driver."
+}
+
 package CYGPKG_IO_PCMCIA {
 	alias 		{ "PCMCIA & Compact Flash support" pcmcia io_pcmcia cf }
 	directory	io/pcmcia
