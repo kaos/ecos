@@ -265,7 +265,7 @@ __exception_\name:
         slwi    r3,r3,2
         lwi     \dreg,EXISR_TAB         # convert bit # to signal #
         lwzx    \dreg,\dreg,r3
-#elif defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP)
+#elif defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405EP)
 0:      mfdcr   r3,DCR_UIC0_MSR          # Status register
         cntlzw  \dreg,r3                # find highest "1" bit
         addi    \dreg,\dreg,2

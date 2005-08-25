@@ -113,9 +113,9 @@
 #define DCR_EXIER  66
 #define DCR_EXISR  64
 #define DCR_IOCR   160
-#endif
+#endif //ifdef PPC4XX_403
 
-#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP)
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405EP)
 // Interrupt controller
 #define DCR_UIC0_SR   0xC0  // Status register
 #define DCR_UIC0_ER   0xC2  // Enable register
@@ -126,34 +126,70 @@
 #define DCR_UIC0_VR   0xC7  // Vector
 #define DCR_UIC0_VCR  0xC8  // Vector configuration
 
-// PPC 405GP control registers (in DCR space)
-#define DCR_SDRAM0_CFGADDR   0x10
+// PPC 405GP/EP control registers (in DCR space)
+#define DCR_SDRAM0_CFGADDR   0x10	// memory controller
 #define DCR_SDRAM0_CFGDATA   0x11
-#define DCR_EBC0_CFGADDR     0x12
+#define DCR_EBC0_CFGADDR     0x12	// peripheral controller
 #define DCR_EBC0_CFGDATA     0x13
-#define DCR_CPC0_CR0         0xB1
+#endif //all ppc40x
+
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP) 
+// PPC 405GP control registers (in DCR space)
+#define DCR_CPC0_CR0         0xB1	// chip control register
 #define DCR_CPC0_CR1         0xB2
 #define DCR_CPC0_ECR         0xAA
 #define DCR_CPC0_ECID0       0xA8     // 64 bit unique chip serial number
 #define DCR_CPC0_ECID1       0xA9     // 64 bit unique chip serial number
+#endif //ifdef 405GP control
+
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405EP) 
+// PPC 405EP clocking & chip control registers (in DCR space)
+#define DCR_CPC0_PLLMR0_BASE   0x0F0
+#define DCR_CPC0_BOOT_BASE     0x0F1
+#define DCR_CPC0_CR1_BASE      0x0F2
+#define DCR_CPC0_EPRCSR_BASE   0x0F3
+#define DCR_CPC0_PLLMR1_BASE   0x0F4
+#define DCR_CPC0_UCR_BASE      0x0F5
+#define DCR_CPC0_SRR_BASE      0x0F6
+#define DCR_CPC0_JTAGID_BASE   0x0F7
+#define DCR_CPC0_SPARE_BASE    0x0F8
+#define DCR_CPC0_PCI_BASE      0x0F9
+// PPC 405EP clock and power management (in DCR space)
+#define DCR_CPC0_ER		0x0B8	//CPM enable register
+#define DCR_CPC0_FR		0x0B9	//CPM force register
+#define DCR_CPC0_SR		0x0BA	//CPM status register
+#endif //ifef 405EP
 
 // External bus controller (indirect via EBC0_CFGADDR/EBC0_CFGDATA)
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405EP)
 #define DCR_EBC0_B0CR        0x00
 #define DCR_EBC0_B1CR        0x01
 #define DCR_EBC0_B2CR        0x02
 #define DCR_EBC0_B3CR        0x03
 #define DCR_EBC0_B4CR        0x04
+#endif //ifdef all ppc40x
+
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP) 
 #define DCR_EBC0_B5CR        0x05
 #define DCR_EBC0_B6CR        0x06
 #define DCR_EBC0_B7CR        0x07
+#endif //ifdef 405gp
+
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405EP)
 #define DCR_EBC0_B0AP        0x10
 #define DCR_EBC0_B1AP        0x11
 #define DCR_EBC0_B2AP        0x12
 #define DCR_EBC0_B3AP        0x13
 #define DCR_EBC0_B4AP        0x14
+#endif //ifdef all ppc40x
+
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP) 
 #define DCR_EBC0_B5AP        0x15
 #define DCR_EBC0_B6AP        0x16
 #define DCR_EBC0_B7AP        0x17
+#endif // ifdef 405gp
+
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405EP)
 #define DCR_EBC0_BEAR        0x20
 #define DCR_EBC0_BESR0       0x21
 #define DCR_EBC0_BESR1       0x22
@@ -173,7 +209,9 @@
 #define DCR_OCM0_ISCNTL      0x19     // Instruction side control
 #define DCR_OCM0_DSARC       0x1A     // Data side address compare
 #define DCR_OCM0_DSCNTL      0x1B     // Data side control
+#endif //ifdef all ppc40x SDRAM, OnChipmem
 
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP) 
 // I2C controller
 #define IIC0_MDBUF           ((_PPC405GP_IIC0)+0x00)  // Master data buffer
 #define IIC0_SDBUF           ((_PPC405GP_IIC0)+0x02)  // Slave data buffer
@@ -234,7 +272,72 @@
 #define IIC0_XFRCNT_MTC_SHIFT   0         
 #define IIC0_XTCNTLSS        ((_PPC405GP_IIC0)+0x0F)  // Extended control & slave status
 #define IIC0_DIRECT          ((_PPC405GP_IIC0)+0x10)  // Direct control over I/O lines
+#endif //endif 405gp
 
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405EP) 
+// I2C controller
+#define IIC0_MDBUF           ((_PPC405EP_IIC0)+0x00)  // Master data buffer
+#define IIC0_SDBUF           ((_PPC405EP_IIC0)+0x02)  // Slave data buffer
+#define IIC0_LMADR           ((_PPC405EP_IIC0)+0x04)  // Master address (low)
+#define IIC0_HMADR           ((_PPC405EP_IIC0)+0x05)  // Master address (high)
+#define IIC0_CNTL            ((_PPC405EP_IIC0)+0x06)  // Control
+#define IIC0_MDCNTL          ((_PPC405EP_IIC0)+0x07)  // Mode control
+#define IIC0_STS             ((_PPC405EP_IIC0)+0x08)  // Status
+#define IIC0_EXTSTS          ((_PPC405EP_IIC0)+0x09)  // Extended status
+#define IIC0_LSADR           ((_PPC405EP_IIC0)+0x0A)  // Slave address (low)
+#define IIC0_HSADR           ((_PPC405EP_IIC0)+0x0B)  // Slave address (high)
+#define IIC0_CLKDIV          ((_PPC405EP_IIC0)+0x0C)  // Clock divide
+#define IIC0_INTRMSK         ((_PPC405EP_IIC0)+0x0D)  // Interrupt mask
+#define IIC0_XFRCNT          ((_PPC405EP_IIC0)+0x0E)  // Transfer count
+#define IIC0_XTCNTLSS        ((_PPC405EP_IIC0)+0x0F)  // Extended control & slave status
+#define IIC0_DIRECT          ((_PPC405EP_IIC0)+0x10)  // Direct control over I/O lines
+#define IIC0_CNTL_HMT           0x80   // Halt master transfer
+#define IIC0_CNTL_AMD           0x40   // Address mode (0=7 bit, 1=10 bit)
+#define IIC0_CNTL_TCT           0x30   // Transfer size (1-4 bytes)
+#define IIC0_CNTL_TCT_SHIFT     4
+#define IIC0_CNTL_TCT_1         0x00
+#define IIC0_CNTL_TCT_2         0x10
+#define IIC0_CNTL_TCT_3         0x20
+#define IIC0_CNTL_TCT_4         0x30
+#define IIC0_CNTL_RPST          0x08   // Repeated start
+#define IIC0_CNTL_CHT           0x04   // Chain transfer
+#define IIC0_CNTL_RW            0x02   // Read/write
+#define IIC0_CNTL_RW_READ       0x02
+#define IIC0_CNTL_RW_WRITE      0x00
+#define IIC0_CNTL_PT            0x01   // Pending transfer
+#define IIC0_MDCNTL_FSDB        0x80   // Flush slave data buffer
+#define IIC0_MDCNTL_FMDB        0x40   // Flush master data buffer
+#define IIC0_MDCNTL_FSM         0x10   // Fast/standard mode (1=fast)
+#define IIC0_MDCNTL_ESM         0x08   // Enable slave mode
+#define IIC0_MDCNTL_EINT        0x04   // Enable interrupt
+#define IIC0_MDCNTL_EUBS        0x02   // Exit unknown bus state
+#define IIC0_MDCNTL_HSCL        0x01   // Hold serial clock low (slave only)
+#define IIC0_STS_SSS            0x80   // Slave operation in progress
+#define IIC0_STS_SLPR           0x40   // Sleep request
+#define IIC0_STS_MDBS           0x20   // Master data buffer status (0=empty)
+#define IIC0_STS_MDBF           0x10   // Master data buffer status (1=full)
+#define IIC0_STS_SCMP           0x08   // Stop complete
+#define IIC0_STS_ERR            0x04   // Error
+#define IIC0_STS_IRQA           0x02   // Interrupt active
+#define IIC0_STS_PT             0x01   // Transfer pending
+#define IIC0_EXTSTS_IRQP        0x80   // Interrupt pending
+#define IIC0_EXTSTS_BCS         0x70   // Bus status
+#define IIC0_EXTSTS_BCS_ss      0x10   // Slave selected
+#define IIC0_EXTSTS_BCS_st      0x20   // Slave transfer
+#define IIC0_EXTSTS_BCS_mt      0x30   // Master transfer
+#define IIC0_EXTSTS_BCS_free    0x40   // Bus free
+#define IIC0_EXTSTS_BCS_busy    0x50   // Bus busy
+#define IIC0_EXTSTS_IRQD        0x08   // IRQ on deck 
+#define IIC0_EXTSTS_LA          0x04   // Lost arbitration
+#define IIC0_EXTSTS_ICT         0x02   // Incomplete transfer
+#define IIC0_EXTSTS_XFRA        0x01   // Transfer aborted
+#define IIC0_XFRCNT_STC         0x70   // Slave transfer count
+#define IIC0_XFRCNT_STC_SHIFT   4
+#define IIC0_XFRCNT_MTC         0x07   // Master transfer count
+#define IIC0_XFRCNT_MTC_SHIFT   0         
+#endif //ifdef 405EP
+
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP)
 // GPIO (General Purpose I/O)
 #define GPIO_OR              ((_PPC405GP_GPIO)+0x00)  // Output register
 #define GPIO_TCR             ((_PPC405GP_GPIO)+0x04)  // Tri-state control
@@ -247,9 +350,26 @@
 #define GPIO_RR              ((_PPC405GP_GPIO)+0x20)  // Receive register
 #define GPIO_ISRH            ((_PPC405GP_GPIO)+0x30)  // Input select (high)
 #define GPIO_ISRL            ((_PPC405GP_GPIO)+0x34)  // Input select (low)
+#endif //ifdef GPIO 405
+
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405EP)
+// GPIO (General Purpose I/O)
+#define GPIO_OR              ((_PPC405EP_GPIO)+0x00)  // Output register
+#define GPIO_TCR             ((_PPC405EP_GPIO)+0x04)  // Tri-state control
+#define GPIO_OSRH            ((_PPC405EP_GPIO)+0x08)  // Output select (high)
+#define GPIO_OSRL            ((_PPC405EP_GPIO)+0x0C)  // Output select (low)
+#define GPIO_TSRH            ((_PPC405EP_GPIO)+0x10)  // Tri-state select (high)
+#define GPIO_TSRL            ((_PPC405EP_GPIO)+0x14)  // Tri-state select (low)
+#define GPIO_ODR             ((_PPC405EP_GPIO)+0x18)  // Open drain
+#define GPIO_IR              ((_PPC405EP_GPIO)+0x1C)  // Input register
+#define GPIO_RR              ((_PPC405EP_GPIO)+0x20)  // Receive register
+#define GPIO_ISRH            ((_PPC405EP_GPIO)+0x30)  // Input select (high)
+#define GPIO_ISRL            ((_PPC405EP_GPIO)+0x34)  // Input select (low)
+#endif //ifdef GPIO 405EP
 
 // PCI
 
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP)
 // PCI Bridge
 #define PCIL0_PMM0LA         ((_PPC405GP_PCI_BRIDGE)+0x00)     // PMM 0 Local address
 #define PCIL0_PMM0MA         ((_PPC405GP_PCI_BRIDGE)+0x04)     // PMM 0 Mask/Attributes
@@ -277,6 +397,36 @@
 
 #endif // PPC4XX_405 || PPC4XX_405GP
 
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405EP)
+// PCI Bridge
+#define PCIL0_PMM0LA         ((_PPC405EP_PCI_BRIDGE)+0x00)     // PMM 0 Local address
+#define PCIL0_PMM0MA         ((_PPC405EP_PCI_BRIDGE)+0x04)     // PMM 0 Mask/Attributes
+#define PCIL0_PMM0PCILA      ((_PPC405EP_PCI_BRIDGE)+0x08)     // PMM 0 PCI Low Address
+#define PCIL0_PMM0PCIHA      ((_PPC405EP_PCI_BRIDGE)+0x0C)     // PMM 0 PCI High Address
+#define PCIL0_PMM1LA         ((_PPC405EP_PCI_BRIDGE)+0x10)     // PMM 1 Local address
+#define PCIL0_PMM1MA         ((_PPC405EP_PCI_BRIDGE)+0x14)     // PMM 1 Mask/Attributes
+#define PCIL0_PMM1PCILA      ((_PPC405EP_PCI_BRIDGE)+0x18)     // PMM 1 PCI Low Address
+#define PCIL0_PMM1PDIHA      ((_PPC405EP_PCI_BRIDGE)+0x1C)     // PMM 1 PCI High Address
+#define PCIL0_PMM2LA         ((_PPC405EP_PCI_BRIDGE)+0x20)     // PMM 2 Local address
+#define PCIL0_PMM2MA         ((_PPC405EP_PCI_BRIDGE)+0x24)     // PMM 2 Mask/Attributes
+#define PCIL0_PMM2PCILA      ((_PPC405EP_PCI_BRIDGE)+0x28)     // PMM 2 PCI Low Address
+#define PCIL0_PMM2PCIHA      ((_PPC405EP_PCI_BRIDGE)+0x2C)     // PMM 2 PCI High Address
+#define PCIL0_PTM1MS         ((_PPC405EP_PCI_BRIDGE)+0x30)     // PTM 1 Memory Size/Attribute
+#define PCIL0_PTM1LA         ((_PPC405EP_PCI_BRIDGE)+0x34)     // PTM 1 Local address
+#define PCIL0_PTM2MS         ((_PPC405EP_PCI_BRIDGE)+0x38)     // PTM 2 Memory Size/Attribute
+#define PCIL0_PTM2LA         ((_PPC405EP_PCI_BRIDGE)+0x3C)     // PTM 2 Local address
+
+// Access to local/bridge PCI configuration registers
+#define PCIC0_CFGADDR        ((_PPC405EP_PCI_IO)+0x00C00000)   // Indirect address pointer
+#define PCIC0_CFGDATA        ((_PPC405EP_PCI_IO)+0x00C00004)   // Indirect data
+
+// Debug control registers (SPR)
+#define SPR_DBCR0       0x3F2
+#define SPR_DBCR1       0x3BD
+
+#endif // PPC4XX_405EP
+
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405EP)
 // Timer control (special) registers
 #define SPR_PIT    987
 #define SPR_TCR    986
@@ -320,6 +470,7 @@
 
 #define DBCR_IDM        0x40000000  // Internal debug enable
 #define DBCR_IC         0x08000000  // Instruction completion
+#endif // Timer all ppc40x
 
 #endif //  CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
 
@@ -343,6 +494,28 @@
 //
 #define _PPC405GP_OCM              0xD0000000
 #endif // 405GP
+//
+
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405EP)
+//
+// Memory mapped peripherals
+//
+#define _PPC405EP_UART0            0xEF600300 
+#define _PPC405EP_UART1            0xEF600400 
+#define _PPC405EP_IIC0             0xEF600500 
+#define _PPC405EP_OPB_ARBITER      0xEF600600 
+#define _PPC405EP_GPIO             0xEF600700 
+#define _PPC405EP_ENET             0xEF600800 
+#define _PPC405EP_PCI_BRIDGE       0xEF400000
+#define _PPC405EP_PCI_IO           0xEE000000
+//
+// Window to PCI memory space (256MB, must be configured by target)
+#define _PPC405EP_PCI_MEM          0x80000000
+//
+// On-chip memory (4K only, must be configured by target platform)
+//
+#define _PPC405EP_OCM              0x40000000
+#endif // 405EP
 
 //-----------------------------------------------------------------------------
 #endif // ifdef CYGONCE_HAL_VAR_REGS_H

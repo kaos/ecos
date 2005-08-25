@@ -309,7 +309,7 @@ hal_ppc40x_interrupt_set_level(int vector, int level)
 }
 #endif // CYGHWR_HAL_POWERPC_PPC4XX_403
 
-#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP)
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405EP)
 
 cyg_uint32 _hold_tcr = 0;  // Shadow of hardware register
 

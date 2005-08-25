@@ -75,7 +75,8 @@ void hal_variant_init(void)
     // Initialize I/O interfaces
     hal_if_init();
 
-#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP)
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405EP)
+
     // Initialize I2C controller
     hal_ppc405_i2c_init();
 #endif
@@ -244,7 +245,7 @@ hal_ppc40x_delay_us(int us)
     }
 }
 
-#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP)
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405EP)
 //----------------------------------------------------------------------
 // I2C Support
 static void

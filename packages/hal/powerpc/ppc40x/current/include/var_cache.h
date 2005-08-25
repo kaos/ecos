@@ -80,7 +80,7 @@
 #define HAL_ICACHE_WAYS                 2       // Associativity of the cache
 #endif  // 403
 
-#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP)
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405EP)
 // Data cache
 #define HAL_DCACHE_SIZE                 (16*1024) // Size of data cache in bytes
 #define HAL_DCACHE_LINE_SIZE            32        // Size of a data cache line

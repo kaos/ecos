@@ -75,12 +75,17 @@
 
 //-----------------------------------------------------------------------------
 // There are two serial ports.
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP)
 #define CYG_DEV_SERIAL_BASE_A    _PPC405GP_UART0
 #define CYG_DEV_SERIAL_BASE_B    _PPC405GP_UART1
-
+#endif
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405EP)
+#define CYG_DEV_SERIAL_BASE_A    _PPC405EP_UART0
+#define CYG_DEV_SERIAL_BASE_B    _PPC405EP_UART1
+#endif
 //-----------------------------------------------------------------------------
 // Define the serial registers. The PPC405GP has 16552 UART(s) builtin.
-//
+// The PPC405EP has 16750 UART(s) builtin
 #define CYG_DEV_SERIAL_RBR   0x00  // receiver buffer register, read, dlab = 0
 #define CYG_DEV_SERIAL_THR   0x00 // transmitter holding register, write, dlab = 0
 #define CYG_DEV_SERIAL_DLL   0x00 // divisor latch (LS), read/write, dlab = 1

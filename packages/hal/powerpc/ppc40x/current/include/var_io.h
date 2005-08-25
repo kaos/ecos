@@ -169,7 +169,8 @@ _le16(unsigned short val)
 // Additional functions exported by HAL (no good place to define them!)
 //
 #if !defined(__ASSEMBLER__)
-#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP)
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405EP)
+
 externC bool hal_ppc405_i2c_put_bytes(int addr, cyg_uint8 *val, int len);
 externC bool hal_ppc405_i2c_get_bytes(int addr, cyg_uint8 *val, int len);
 #endif

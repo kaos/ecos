@@ -70,7 +70,7 @@ cdl_package CYGPKG_HAL_POWERPC_PPC40x {
     cdl_component CYGHWR_HAL_POWERPC_PPC4XX {
         display       "PowerPC 4xx microprocessor family"
         flavor        data
-	legal_values  { "403" "405" "405GP" }
+	legal_values  { "403" "405" "405GP" "405EP" }
         default_value { "405GP" }
         implements    CYGINT_HAL_POWERPC_VARIANT
         description "
@@ -93,9 +93,9 @@ cdl_package CYGPKG_HAL_POWERPC_PPC40x {
 
     cdl_component CYGHWR_HAL_POWERPC_PPC405_PCI {
         display       "PCI support"
-        requires      { (CYGHWR_HAL_POWERPC_PPC4XX == "405GP") }
+        requires      { (CYGHWR_HAL_POWERPC_PPC4XX == "405GP") || (CYGHWR_HAL_POWERPC_PPC4XX == "405EP") }
         active_if     CYGPKG_IO_PCI
-        description   "Variant PCI support - only for 405GP"
+        description   "Variant PCI support - only for 405GP/EP"
         default_value 1
         compile       ppc405_pci.c
 
@@ -107,8 +107,8 @@ cdl_package CYGPKG_HAL_POWERPC_PPC40x {
 
     cdl_component CYGHWR_HAL_POWERPC_PPC405_IO {
         display       "Misc I/O support, including diagnostic serial ports"
-        active_if     { (CYGHWR_HAL_POWERPC_PPC4XX == "405GP") }
-        description   "Variant I/O support - only for 405GP"
+        active_if     { (CYGHWR_HAL_POWERPC_PPC4XX == "405GP" || CYGHWR_HAL_POWERPC_PPC4XX == "405EP") }
+        description   "Variant I/O support - only for 405GP/EP"
         default_value 1
         compile       hal_diag.c 
 

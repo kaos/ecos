@@ -1,3 +1,15 @@
+2005-08-25  Markus Schade <marks@peppercon.de>
+
+	* src/var_misc.c: 
+	* src/var_intr.c: 
+	* src/hal_diag.c: 
+	* include/variant.inc: 
+	* include/var_regs.h: 
+	* include/var_io.h: 
+	* include/var_intr.h: 
+	* include/var_cache.h: 
+	* cdl/hal_powerpc_ppc40x.cdl: Add support for PPC405EP
+
 2005-05-18  Peter Korsgaard  <jacmet@sunsite.dk>
 
 	* src/var_misc.c (hal_ppc40x_delay_us): Removed double
