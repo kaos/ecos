@@ -2,7 +2,7 @@
 #
 #      phy_eth_drivers.cdl
 #
-#      API support for ethernet transcievers (PHY)
+#      API support for ethernet transceivers (PHY)
 #
 #====================================================================
 #####ECOSGPLCOPYRIGHTBEGIN####
@@ -86,5 +86,14 @@ cdl_package CYGPKG_DEVS_ETH_PHY {
         compile       -library=libextras.a AM79C874.c
         description "
           Include support for AMD 79C874 NetPHY"
+    }
+
+    cdl_option CYGHWR_DEVS_ETH_PHY_INLXT972 {
+        display       "Intel LXT972"
+        flavor        bool
+        default_value 0
+        compile       -library=libextras.a INLXT972.c
+        description "
+          Include support for Intel LXT972xxx PHY"
     }
 }

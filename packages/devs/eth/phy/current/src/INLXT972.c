@@ -1,6 +1,6 @@
 //==========================================================================
 //
-//      dev/DP83847.c
+//      dev/INLXT972.c
 //
 //      Ethernet transceiver (PHY) support 
 //
@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 2003 Gary Thomas
+// Copyright (C) 2005 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -40,11 +40,11 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    gthomas
-// Contributors: 
-// Date:         2003-08-01
+// Author(s):    Markus Schade <marks@peppercon.de>
+// Contributors:
+// Date:         2005-08­25
 // Purpose:      
-// Description:  Support for ethernet NS DP83847 PHY
+// Description:  Support for ethernet Intel LXT972xxx PHY
 //              
 //
 //####DESCRIPTIONEND####
@@ -65,18 +65,18 @@
 #include <cyg/io/eth_phy.h>
 #include <cyg/io/eth_phy_dev.h>
 
-static bool dp83847_stat(eth_phy_access_t *f, int *state)
+static bool inlxt972_stat(eth_phy_access_t *f, int *state)
 {
     unsigned short phy_state;
     int tries;
 
     // Read negotiated state
-    if (_eth_phy_read(f, 0x10, f->phy_addr, &phy_state)) {
-        if ((phy_state & 0x10) == 0) {
+    if (_eth_phy_read(f, PHY_BMSR, f->phy_addr, &phy_state)) {
+        if ((phy_state & PHY_BMSR_AUTO_NEG) == 0) {
             diag_printf("... waiting for auto-negotiation");
             for (tries = 0;  tries < CYGINT_DEVS_ETH_PHY_AUTO_NEGOTIATION_TIME;  tries++) {
-                if (_eth_phy_read(f, 0x10, f->phy_addr, &phy_state)) {
-                    if ((phy_state & 0x10) != 0) {
+                if (_eth_phy_read(f, PHY_BMSR, f->phy_addr, &phy_state)) {
+                    if ((phy_state & PHY_BMSR_AUTO_NEG) != 0) {
                         break;
                     }
                 }
@@ -85,15 +85,14 @@ static bool dp83847_stat(eth_phy_access_t *f, int *state)
             }
             diag_printf("\n");
         }
-        if ((phy_state & 0x10) != 0) {
+        if ((phy_state & PHY_BMSR_AUTO_NEG) != 0) {
             *state = 0;
-            if ((phy_state & 0x0001) != 0) *state |= ETH_PHY_STAT_LINK;
-            if ((phy_state & 0x0002) == 0) *state |= ETH_PHY_STAT_100MB;
-            if ((phy_state & 0x0004) != 0) *state |= ETH_PHY_STAT_FDX;
+            if ((phy_state & PHY_BMSR_LINK) != 0) *state |= ETH_PHY_STAT_LINK;
+            if ((phy_state & PHY_BMSR_100FDX) != 0) *state |= ETH_PHY_STAT_100MB | ETH_PHY_STAT_FDX;
             return true;
         }
     }
     return false;
 }
 
-_eth_phy_dev("National Semiconductor DP83847", 0x20005c30, dp83847_stat)
+_eth_phy_dev("Intel LXT972", 0x001378E2, inlxt972_stat)

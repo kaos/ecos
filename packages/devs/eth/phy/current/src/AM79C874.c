@@ -2,7 +2,7 @@
 //
 //      dev/AM79C874.c
 //
-//      Ethernet transciever (PHY) support 
+//      Ethernet transceiver (PHY) support 
 //
 //==========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
