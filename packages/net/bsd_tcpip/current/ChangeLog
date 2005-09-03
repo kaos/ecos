@@ -1,3 +1,8 @@
+2005-09-02  Sebastien Couret <sebastien.couret@elios-informatique.fr>
+
+	* src/sys/kern/kern_sysctl.c: Silent compiler warning on lvalue
+	assignment
+
 2005-07-29  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/sys/netinet/ip_output.c (ip_output): initialize len to 0.
