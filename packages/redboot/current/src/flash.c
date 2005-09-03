@@ -909,6 +909,10 @@ fis_create(int argc, char *argv[])
                 break;
             }
         }
+	if (i >= fisdir_size/sizeof(*img)) {
+	    diag_printf("Can't find an empty slot in FIS directory!\n");
+	    return;
+	}
     }
     if (!no_copy) {
         // Safety check - make sure the address range is not within the code we're running

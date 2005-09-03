@@ -1,3 +1,8 @@
+2005-09-03  Isaac Claymore   <iclaymore@gmail.com>
+
+	* src/flash.c (fis_create): Print an error if the FIS directory is
+	full when we try to create a new entry.
+	
 2005-07-06  Isaac Claymore <iclaymore@gmail.com>
 
 	* src/fconfig.c: (get_config): Verify the length of the script is
