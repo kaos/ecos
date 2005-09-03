@@ -1,8 +1,22 @@
+2005-09-03  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/redboot.cdl: White space changes to aid readability. 
+
 2005-09-03  Isaac Claymore   <iclaymore@gmail.com>
 
 	* src/flash.c (fis_create): Print an error if the FIS directory is
 	full when we try to create a new entry.
 	
+2005-08-17  David Vrabel  <dvrabel@arcom.com>
+
+	* cdl/redboot.cdl (CYGNUM_REDBOOT_DEFAULT_NETWORK_DEVICE): Removed
+	since isn't used anywhere.
+	* cdl/redboot.cdl (CYGDAT_REDBOOT_DEFAULT_NETWORK_DEVICE): New option 
+	to specify the name of the default network device.
+
+	* src/net/net_io.c: Use CYGDAT_REDBOOT_DEFAULT_NETWORK_DEVICE as
+	the default to the net_device config option.
+
 2005-07-06  Isaac Claymore <iclaymore@gmail.com>
 
 	* src/fconfig.c: (get_config): Verify the length of the script is

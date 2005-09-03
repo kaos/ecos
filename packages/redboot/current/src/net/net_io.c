@@ -81,7 +81,7 @@ RedBoot_config_option("Default network device",
                       net_device, 
                       ALWAYS_ENABLED, true,
                       CONFIG_NETPORT,
-                      ""
+                      CYGDAT_REDBOOT_DEFAULT_NETWORK_DEVICE
     );
 #endif
 // Note: the following options are related.  If 'bootp' is false, then

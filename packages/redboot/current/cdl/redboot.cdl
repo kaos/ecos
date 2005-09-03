@@ -112,19 +112,21 @@ cdl_package CYGPKG_REDBOOT {
             requires      CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
             requires      CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
             description "
-              RedBoot normally includes support for the GDB debugging protocols.
-              This option allows this to be disabled which may yield a substantial
-              savings in terms of code and memory usage by RedBoot."
+              RedBoot normally includes support for the GDB debugging
+              protocols. This option allows this to be disabled which
+              may yield a substantial savings in terms of code and memory 
+              usage by RedBoot."
         }
 
         cdl_option CYGBLD_BUILD_REDBOOT_WITH_THREADS {
             display "Threads debugging support"
             no_define
             description "
-              Enabling this option will include special code in the GDB stubs to
-              support debugging of threaded programs.  In the case of eCos programs,
-              this support allows GDB to have complete access to the eCos threads
-              in the program."
+              Enabling this option will include special code in the
+              GDB stubs to support debugging of threaded programs.  In
+              the case of eCos programs, this support allows GDB to
+              have complete access to the eCos threads in the
+              program."
             active_if { CYG_HAL_STARTUP != "RAM" }
             requires  CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
         }
@@ -145,9 +147,10 @@ cdl_package CYGPKG_REDBOOT {
             flavor           data
             default_value    16
             description      "
-               If this option is non-zero, RedBoot will remember the last N command
-               lines.  These lines may be reused.  Enabling this history will also
-               enable rudimentary editting of the lines themselves."
+               If this option is non-zero, RedBoot will remember the
+               last N command lines.  These lines may be reused.
+               Enabling this history will also enable rudimentary
+               editting of the lines themselves."
         }
 
         cdl_option CYGBLD_REDBOOT_CMD_LINE_HISTORY {
@@ -156,9 +159,10 @@ cdl_package CYGPKG_REDBOOT {
             flavor         bool
             default_value  1
             description  "
-              Enabling this option will allow RedBoot to provide a history command
-              to list previous commands. Also enables history expansion via '!'
-              character similar to bash shell."
+              Enabling this option will allow RedBoot to provide a
+              history command to list previous commands. Also enables
+              history expansion via '!'  character similar to bash
+              shell."
         }
 
         cdl_option CYGBLD_REDBOOT_MAX_MEM_SEGMENTS {
@@ -190,8 +194,9 @@ cdl_package CYGPKG_REDBOOT {
                     function. For ethernet downloads this can be made bigger
                     (at the cost of memory), but for serial downloads on slow
                     processors it may be necessary to reduce the size to
-                    avoid serial overruns. zlib appears to bail out if less than
-                    five bytes are available initially so this is the minimum."
+                    avoid serial overruns. zlib appears to bail out if less 
+                    than five bytes are available initially so this is the 
+                    minimum."
             }
     
             cdl_option CYGPRI_REDBOOT_ZLIB_FLASH {
@@ -279,10 +284,11 @@ cdl_package CYGPKG_REDBOOT {
 	}
 
         no_define
-        description "This option enables the building of the Redboot ELF image.
-                     The image may require further relocation or symbol
-                     stripping before being converted to a binary image.
-                     This is handled by a rule in the target CDL."
+        description "
+            This option enables the building of the Redboot ELF image.
+            The image may require further relocation or symbol
+            stripping before being converted to a binary image.
+            This is handled by a rule in the target CDL."
 
     
         cdl_option CYGDBG_REDBOOT_TICK_GRANULARITY {
@@ -328,7 +334,8 @@ cdl_package CYGPKG_REDBOOT {
                 flavor           bool
                 default_value    0
                 description      "
-                    This option is overriden by the configuration stored in flash."
+                    This option is overriden by the configuration stored 
+                    in flash."
             }
     
             cdl_option CYGSEM_REDBOOT_NET_TFTP_DOWNLOAD {
@@ -337,7 +344,8 @@ cdl_package CYGPKG_REDBOOT {
                 default_value    1
                 compile          -library=libextras.a net/tftp_client.c
                 description      "
-                    This option enables the use of the TFTP protocol for download"
+                    This option enables the use of the TFTP protocol for 
+                    download"
             }
     
             cdl_option CYGSEM_REDBOOT_NET_HTTP_DOWNLOAD {
@@ -346,7 +354,8 @@ cdl_package CYGPKG_REDBOOT {
                 default_value    1
                 compile          -library=libextras.a net/http_client.c
                 description      "
-                    This option enables the use of the HTTP protocol for download"
+                    This option enables the use of the HTTP protocol for 
+                    download"
             }
     
             cdl_component CYGDAT_REDBOOT_DEFAULT_IP_ADDR {
@@ -355,10 +364,11 @@ cdl_package CYGPKG_REDBOOT {
                 default_value    CYGSEM_REDBOOT_FLASH_CONFIG ? 0 : \
                                     { "0, 0, 0, 0" }
                 description      "
-                    This IP address is the default used by RedBoot if a BOOTP/DHCP
-                    server does not respond. The numbers should be separated by
-                    *commas*, and not dots. If an IP address is configured into
-                    the Flash configuration, that will be used in preference."
+                    This IP address is the default used by RedBoot if
+                    a BOOTP/DHCP server does not respond. The numbers
+                    should be separated by *commas*, and not dots. If
+                    an IP address is configured into the Flash
+                    configuration, that will be used in preference."
     
                 cdl_option CYGSEM_REDBOOT_DEFAULT_NO_BOOTP {
                      display          "Do not try to use BOOTP"
@@ -392,8 +402,8 @@ cdl_package CYGPKG_REDBOOT {
                 flavor           bool
                 default_value    1
                 description      "
-                    Use DHCP protocol to obtain pertinent IP addresses, such as
-                    the client, server, gateway, etc."
+                    Use DHCP protocol to obtain pertinent IP addresses, such 
+                    as the client, server, gateway, etc."
             }
     
             cdl_component CYGSEM_REDBOOT_NETWORKING_USE_GATEWAY {
@@ -413,10 +423,12 @@ cdl_package CYGPKG_REDBOOT {
                     default_value    CYGSEM_REDBOOT_FLASH_CONFIG ? 0 : \
                                         { "0, 0, 0, 0" }
                     description      "
-                        This IP address is the default used by RedBoot if a BOOTP/DHCP
-                        server does not respond. The numbers should be separated by
-                        *commas*, and not dots. If an IP address is configured into
-                        the Flash configuration, that will be used in preference."
+                        This IP address is the default used by RedBoot
+                        if a BOOTP/DHCP server does not respond. The
+                        numbers should be separated by *commas*, and
+                        not dots. If an IP address is configured into
+                        the Flash configuration, that will be used in
+                        preference."
                 }
     
                 cdl_component CYGDAT_REDBOOT_DEFAULT_IP_ADDR_MASK {
@@ -425,10 +437,12 @@ cdl_package CYGPKG_REDBOOT {
                     default_value    CYGSEM_REDBOOT_FLASH_CONFIG ? 0 : \
                                         { "255, 255, 255, 0" }
                     description      "
-                        This IP address mask is the default used by RedBoot if a BOOTP/DHCP
-                        server does not respond. The numbers should be separated by
-                        *commas*, and not dots. If an IP address is configured into
-                        the Flash configuration, that will be used in preference."
+                        This IP address mask is the default used by
+                        RedBoot if a BOOTP/DHCP server does not
+                        respond. The numbers should be separated by
+                        *commas*, and not dots. If an IP address is
+                        configured into the Flash configuration, that
+                        will be used in preference."
                 }
             }
     
@@ -437,9 +451,9 @@ cdl_package CYGPKG_REDBOOT {
                 flavor           data
                 default_value    9000
                 description      "
-                   RedBoot will 'listen' on this port for incoming TCP connections.
-                   This allows outside connections to be made to the platform, either
-                   for GDB or RedBoot commands."
+                   RedBoot will 'listen' on this port for incoming TCP 
+                   connections. This allows outside connections to be made 
+                   to the platform, either for GDB or RedBoot commands."
             }
     
             cdl_option CYGNUM_REDBOOT_NETWORKING_MAX_PKTBUF {
@@ -448,12 +462,14 @@ cdl_package CYGPKG_REDBOOT {
                 default_value    4
                 legal_values     3 to 8
                 description      "
-                   RedBoot may need to buffer network data to support various connections.
-                   This option allows control over the number of such buffered packets,
-                   and in turn, controls the amount of memory used by RedBoot (which
-                   is not available to user applications).  Each packet buffer takes up
-                   about 1514 bytes.  Note: there is little need to make this larger
-                   than the default."
+                   RedBoot may need to buffer network data to support
+                   various connections.  This option allows control
+                   over the number of such buffered packets, and in
+                   turn, controls the amount of memory used by RedBoot
+                   (which is not available to user applications).
+                   Each packet buffer takes up about 1514 bytes.
+                   Note: there is little need to make this larger than
+                   the default."
             }
     
             cdl_component CYGPKG_REDBOOT_NETWORKING_DNS {
@@ -488,15 +504,13 @@ cdl_package CYGPKG_REDBOOT {
     
             }
 
-	    cdl_option CYGNUM_REDBOOT_DEFAULT_NETWORK_DEVICE {
+	    cdl_option CYGDAT_REDBOOT_DEFAULT_NETWORK_DEVICE {
                 display         "Default network device driver"
                 flavor          data
-                active_if       { !CYGSEM_REDBOOT_FLASH_CONFIG && CYGHWR_NET_DRIVERS > 1 }
-	        legal_values    0 to CYGHWR_NET_DRIVERS-1
-                default_value   0
+                active_if       { CYGSEM_REDBOOT_FLASH_CONFIG && CYGHWR_NET_DRIVERS > 1 }
+                default_value   { "\"\"" }
                 description     "
-                    This is the index of the first network device driver that
-                    RedBoot will try to initialize."
+                    This is the name of the default network device to use."
             }
 
 	    cdl_option CYGSEM_REDBOOT_NETWORK_INIT_ONE_DEVICE {
@@ -513,7 +527,7 @@ cdl_package CYGPKG_REDBOOT {
         }
     
         cdl_option CYGPKG_REDBOOT_ANY_CONSOLE {
-            display       "Allow RedBoot to use any I/O channel for its console."
+            display       "Let RedBoot use any I/O channel for its console."
             flavor        bool
             default_value 1
             description   "
@@ -524,13 +538,13 @@ cdl_package CYGPKG_REDBOOT {
         }
     
         cdl_option CYGSEM_REDBOOT_VARIABLE_BAUD_RATE {
-            display       "Allow RedBoot to adjust the baud rate on the serial console."
+            display       "Let RedBoot adjust the baud off the serial console."
             flavor        bool
             default_value 1
             active_if     CYGINT_HAL_VIRTUAL_VECTOR_COMM_BAUD_SUPPORT
             description   "
-              If this option is enabled then RedBoot will support commands to set
-              and query the baud rate on the selected console."     
+              If this option is enabled then RedBoot will support commands 
+              to set and query the baud rate on the selected console."     
         }
     
         cdl_option CYGSEM_REDBOOT_PLF_STARTUP {
@@ -583,11 +597,13 @@ cdl_package CYGPKG_REDBOOT {
             flavor        bool
             default_value 1
             description   "
-              This option controls whether or not RedBoot will make sure that
-              memory being used by the \"load\" command is in fact in user RAM.
-              Leaving the option enabled makes for a safer environment, but this
-              check may not be valid on all platforms, thus the ability to
-              disable it.  ** Disable this only with great care **"
+
+              This option controls whether or not RedBoot will make
+              sure that memory being used by the \"load\" command is
+              in fact in user RAM.  Leaving the option enabled makes
+              for a safer environment, but this check may not be valid
+              on all platforms, thus the ability to disable it.  
+              ** Disable this only with great care **"
         }
     
         cdl_component CYGPKG_REDBOOT_FLASH {
@@ -629,13 +645,16 @@ cdl_package CYGPKG_REDBOOT {
                 flavor         booldata
                 default_value  32
                 description    "
-                  If this option is defined then \"fis free\" will rely on the
-                  FIS directory to determine what space is free within the FLASH.
-                  This option controls the maximum number of free segment which
-                  can be handled (typically this number is small).  If this option
-                  is not enabled, the the archaic behaviour of actually scanning
-                  the FLASH for erased sectors (unreliable) will be used to 
-                  determine what's free and what's not."
+
+                  If this option is defined then \"fis free\" will
+                  rely on the FIS directory to determine what space is
+                  free within the FLASH.  This option controls the
+                  maximum number of free segment which can be handled
+                  (typically this number is small).  If this option is
+                  not enabled, the the archaic behaviour of actually
+                  scanning the FLASH for erased sectors (unreliable)
+                  will be used to determine what's free and what's
+                  not."
             }
     
             cdl_component CYGPKG_REDBOOT_FIS_CONTENTS {
@@ -648,10 +667,11 @@ cdl_package CYGPKG_REDBOOT {
                     flavor          data
                     default_value   (-1)
                     description "
-                      Which block of flash should hold the directory 
-                      information. Positive numbers are absolute block numbers. 
-                      Negative block numbers count backwards from the last block.
-                      eg 2 means block 2, -2 means the last but one block."
+                      Which block of flash should hold the directory
+                      information. Positive numbers are absolute block
+                      numbers.  Negative block numbers count backwards
+                      from the last block.  eg 2 means block 2, -2
+                      means the last but one block."
                 }
     
                 cdl_option CYGOPT_REDBOOT_FIS_RESERVED_BASE {
@@ -764,8 +784,8 @@ cdl_package CYGPKG_REDBOOT {
                     requires      { CYGNUM_REDBOOT_FLASH_RESERVED_BASE <= \
                                     CYGBLD_REDBOOT_FLASH_BOOT_OFFSET }
                     description "
-                      This option controls where the RedBoot boot image is located
-                      relative to the start of FLASH."
+                      This option controls where the RedBoot boot image is 
+                      located relative to the start of FLASH."
                 }
         
                 cdl_option CYGNUM_REDBOOT_FLASH_RESERVED_BASE {
@@ -773,10 +793,11 @@ cdl_package CYGPKG_REDBOOT {
                     flavor        data
                     default_value 0
                     description "
-                      This option reserves an area at the start of FLASH where RedBoot
-                      will never interfere; it is expected that this area contains
-                      (non-RedBoot-based) POST code or some other boot monitor that
-                      executes before RedBoot."
+                      This option reserves an area at the start of
+                      FLASH where RedBoot will never interfere; it is
+                      expected that this area contains
+                      (non-RedBoot-based) POST code or some other boot
+                      monitor that executes before RedBoot."
                 }
             }
     
@@ -814,8 +835,8 @@ cdl_package CYGPKG_REDBOOT {
                 active_if     CYGINT_REDBOOT_ARM_FLASH_SIB_SUPPORTED
                 default_value 1
                 description "
-                  This option is used to interpret ARM Flash System information
-                  blocks."
+                  This option is used to interpret ARM Flash System 
+                  information blocks."
             }
         }
     
@@ -843,8 +864,6 @@ cdl_package CYGPKG_REDBOOT {
                 flavor        data
                 legal_values  { "FLASH" "EEPROM" }
                 default_value { "FLASH" }
-#                requires      { ((CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA == "FLASH") && CYGOPT_REDBOOT_FIS) ||
-#                                ((CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA == "EEPROM") && !CYGOPT_REDBOOT_FIS) }
                 description "
                   Persistent data storage can either be held in 'norma' FLASH
                   or some other device (represented by the 'EEPROM' choice).
@@ -854,7 +873,8 @@ cdl_package CYGPKG_REDBOOT {
             cdl_option CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG {
                 display       "Merged config data and FIS directory"
                 flavor        bool              
-                active_if     { CYGOPT_REDBOOT_FIS && (CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA == "FLASH") }
+                active_if     { CYGOPT_REDBOOT_FIS && \
+                               (CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA == "FLASH") }
                 default_value 1
                 description "
                   If this option is set, then the FIS directory and FLASH 
@@ -888,8 +908,9 @@ cdl_package CYGPKG_REDBOOT {
                 flavor        data
                 default_value 128
                 description "
-                  This option is used to control the amount of memory and FLASH
-                  to be used for string configuration options (persistent storage)."
+                  This option is used to control the amount of memory
+                  and FLASH to be used for string configuration
+                  options (persistent storage)."
             }
 
             cdl_option CYGNUM_REDBOOT_FLASH_SCRIPT_SIZE {
@@ -897,8 +918,9 @@ cdl_package CYGPKG_REDBOOT {
                 flavor        data
                 default_value 512
                 description "
-                  This option is used to control the amount of memory and FLASH
-                  to be used for configuration options (persistent storage)."
+                  This option is used to control the amount of memory and 
+                  FLASH to be used for configuration options (persistent 
+                  storage)."
             }
 
             cdl_option CYGSEM_REDBOOT_FLASH_CONFIG_READONLY_FALLBACK {
@@ -961,7 +983,8 @@ cdl_package CYGPKG_REDBOOT {
                 flavor        data
                 default_value 4
                 description "
-                  This option controls the number of disks supported by RedBoot."
+                  This option controls the number of disks supported by 
+                  RedBoot."
             }
     
             cdl_option CYGNUM_REDBOOT_MAX_PARTITIONS {
@@ -969,7 +992,8 @@ cdl_package CYGPKG_REDBOOT {
                 flavor        data
                 default_value 8
                 description "
-                  This option controls the maximum number of supported partitions per disk."
+                  This option controls the maximum number of supported 
+                  partitions per disk."
             }
     
             cdl_component CYGSEM_REDBOOT_DISK_IDE {
@@ -987,7 +1011,8 @@ cdl_package CYGPKG_REDBOOT {
                     flavor        bool
                     default_value 0
                     description "
-			This option controls the disk driver beaviour at ide-init"
+			This option controls the disk driver behavior at 
+                        ide-init"
 		}
             }
     
@@ -1005,7 +1030,8 @@ cdl_package CYGPKG_REDBOOT {
                 flavor        bool
                 calculated    0
                 description "
-                  When this option is enabled, RedBoot will support ISO9660 filesystems."
+                  When this option is enabled, RedBoot will support ISO9660 
+                  filesystems."
                 compile -library=libextras.a fs/iso9660fs.c
             }
         }
@@ -1035,8 +1061,8 @@ cdl_package CYGPKG_REDBOOT {
                     flavor          booldata
                     default_value   0
                     description "
-                      If enabled, this option will tell RedBoot to use the value of
-                      this option as a default boot script."
+                      If enabled, this option will tell RedBoot to use the 
+                      value of this option as a default boot script."
             }
     
             cdl_option CYGNUM_REDBOOT_BOOT_SCRIPT_TIMEOUT_RESOLUTION {
@@ -1044,9 +1070,10 @@ cdl_package CYGPKG_REDBOOT {
                 flavor        data
                 default_value 1000
                 description "
-                  This option controls the resolution of the script timeout.
-                  The value is specified in milliseconds (ms), thus to have the
-                  script timeout be defined in terms of tenths of seconds, use 100."
+                  This option controls the resolution of the script
+                  timeout.  The value is specified in milliseconds
+                  (ms), thus to have the script timeout be defined in
+                  terms of tenths of seconds, use 100."    
             }
     
             cdl_option CYGNUM_REDBOOT_BOOT_SCRIPT_DEFAULT_TIMEOUT {
@@ -1071,13 +1098,14 @@ cdl_package CYGPKG_REDBOOT {
     
         cdl_option CYGPRI_REDBOOT_ROM_MONITOR {
             display      "Behave like a ROM monitor"
-            active_if    { CYG_HAL_STARTUP == "ROM" || CYG_HAL_STARTUP == "ROMRAM" }
+            active_if    { CYG_HAL_STARTUP == "ROM" || \
+                           CYG_HAL_STARTUP == "ROMRAM" }
             requires     CYGSEM_HAL_ROM_MONITOR
             calculated   1
             no_define
             description  "
-              Enabling this option will allow RedBoot to provide ROM monitor-style
-              services to programs which it executes."
+              Enabling this option will allow RedBoot to provide ROM 
+              monitor-style services to programs which it executes."
         }
     
         cdl_component CYGSEM_REDBOOT_BSP_SYSCALLS {
@@ -1085,8 +1113,9 @@ cdl_package CYGPKG_REDBOOT {
             flavor        bool
             default_value 0
             description   "
-              If this option is enabled then RedBoot will install a syscall handler
-              to support debugging of applications based on GNUPro newlib/bsp."
+              If this option is enabled then RedBoot will install a
+              syscall handler to support debugging of applications
+              based on GNUPro newlib/bsp."
     
             cdl_option CYGSEM_REDBOOT_BSP_SYSCALLS_GPROF {
                 display	"Support additional syscalls for 'gprof' profiling"
