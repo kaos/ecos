@@ -75,7 +75,7 @@ serial_test( void )
 {
     cyg_io_handle_t ser_handle;
     cyg_uint8 in_buffer[1];
-    int len = 1;
+    unsigned int len = 1;
 
     test_open_ser(&ser_handle);
 

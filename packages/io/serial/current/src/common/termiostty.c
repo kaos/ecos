@@ -603,7 +603,7 @@ termios_write(cyg_io_handle_t handle, const void *_buf, cyg_uint32 *len)
         if ((xbufsize >= (WRITE_BUFSIZE-1)) || (input_bytes_read == *len) ||
             (*buf == '\n'))
         {
-            cyg_int32 size = xbufsize;
+            cyg_uint32 size = xbufsize;
             res = cyg_io_write(chan, xbuf, &size);
             if (res != ENOERR) {
                 *len = input_bytes_read - (xbufsize - size);
