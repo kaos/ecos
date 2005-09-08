@@ -1,3 +1,15 @@
+2005-09-08  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/io.c: 
+	* include/redboot.h: 
+	* doc/redboot.sgml: 
+	* cdl/redboot.cdl: Add support for ANSI keyboard cursor keys
+	such as HOME/END/Arrows
+
+2005-09-08  Stefan Sommerfeld  <sommerfeld@mikrom.com>
+	* src/flash.c: Fix usage of "fis create", more arguments are optional
+	Set mem_base to mem_addr instead of flash_addr for a loaded image
+	
 2005-09-03  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/redboot.cdl: White space changes to aid readability. 

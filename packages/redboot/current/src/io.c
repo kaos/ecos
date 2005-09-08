@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
-// Copyright (C) 2002, 2003 Gary Thomas
+// Copyright (C) 2002, 2003, 2005 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -164,7 +164,7 @@ mon_read_char(char *c)
 static int _mon_timeout;
 #endif
 
-static bool
+bool
 mon_read_char_with_timeout(char *c)
 {
     bool res = false;
@@ -216,7 +216,7 @@ mon_read_char_with_timeout(char *c)
     return res;
 }
 
-static void
+void
 mon_set_read_char_timeout(int ms)
 {
     hal_virtual_comm_table_t *__chan;
@@ -339,6 +339,14 @@ static void expand_history(char *);
 //    ^E - Move cursor to end of line
 //    ^B - Move cursor back [previous character]
 //    ^F - Move cursor forward [next character]
+// "standard" arrow keys work as well
+//   left  ^[[D      == ^B
+//   right ^[[C      == ^F
+//   up    ^[[A      == ^P
+//   down  ^[[B      == ^N
+//   home  ^[[H/^[1~ == ^A
+//   end   ^[[F/^[OF == ^E
+//   del   ^[3~      == ^D
 //
 int
 _rb_gets_preloaded(char *buf, int buflen, int timeout)
@@ -350,8 +358,12 @@ _rb_gets_preloaded(char *buf, int buflen, int timeout)
     static char last_ch = '\0';
     int _timeout;
 #if CYGNUM_REDBOOT_CMD_LINE_EDITING != 0
-    int _index = _cl_index;  // Last saved line
+    int   _index = _cl_index;  // Last saved line
     char *xp;
+#ifdef CYGSEM_REDBOOT_CMD_LINE_ANSI_SEQUENCES
+    int   ansi_state = 0;      // Used to drive ANSI parser
+    char  ansi_char = '\0';
+#endif
 #endif
 
     // Display current buffer data
@@ -387,8 +399,87 @@ _rb_gets_preloaded(char *buf, int buflen, int timeout)
             mon_read_char(&c);
         }
         *eol = '\0';
-        switch (c) {
 #define CTRL(c) ((c)&0x1F)
+#ifdef CYGSEM_REDBOOT_CMD_LINE_ANSI_SEQUENCES
+        // Special handling of ANSI keyboard sequences (arrows, etc)
+        if (c == 0x1B) {
+            // Leadin for ANSI keyboard sequence
+            ansi_state = 1;
+            continue;
+        }
+        switch (ansi_state) {
+        case 0:
+            // No ANSI sequence in progress
+            break;
+        case 1:
+            // ESC seen, look for '['
+            if (c == '[') {
+                ansi_state = 2;
+            } else if (c == 'O') {
+                ansi_state = 4;
+            } else {
+                // Handle bad sequences?
+                ansi_state = 0;
+            }
+            continue;
+        case 2:
+            // ESC+[ seen, process key
+            ansi_state = 0;
+            switch (c) {
+            case 'A':
+                c = CTRL('P');
+                break;
+            case 'B':
+                c = CTRL('N');
+                break;
+            case 'C':
+                c = CTRL('F');
+                break;
+            case 'D':
+                c = CTRL('B');
+                break;
+            case 'F':
+                c = CTRL('E');
+                break;
+            case 'H':
+                c = CTRL('A');
+                break;
+            case '1':
+                ansi_char = CTRL('A');
+                ansi_state = 3;
+                continue;
+            case '3':
+                ansi_char = CTRL('D');
+                ansi_state = 3;
+                continue;
+            default:
+                // Handle bad sequences?
+                continue;
+            }
+            break;
+        case 3:
+            // Sequences like ^[[1~ == ^H
+            ansi_state = 0;
+            if (c == '~') {
+                c = ansi_char;
+            } else {
+                // Handle bad sequences?
+                continue;
+            }
+            break;
+        case 4:
+            // Sequences like ^[OF == ^E
+            ansi_state = 0;
+            if (c == 'F') {
+                c = CTRL('E');
+            } else {
+                // Handle bad sequences?
+                continue;
+            }
+            break;
+        }
+#endif
+        switch (c) {
 #if CYGNUM_REDBOOT_CMD_LINE_EDITING != 0
         case CTRL('P'):
             // Fetch the previous line into the buffer

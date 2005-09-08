@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004 Red Hat, Inc.
-// Copyright (C) 2002, 2003, 2004 Gary Thomas
+// Copyright (C) 2002, 2003, 2004, 2005 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -135,6 +135,8 @@ externC int  strcasecmp(const char *s1, const char *s2);
 externC int  strncasecmp(const char *s1, const char *s2, size_t len);
 
 externC void mon_write_char(char c);
+externC bool mon_read_char_with_timeout(char *c);
+externC void mon_set_read_char_timeout(int ms);
 externC bool verify_action(char *fmt, ...);
 externC bool verify_action_with_timeout(int timeout, char *fmt, ...);
 

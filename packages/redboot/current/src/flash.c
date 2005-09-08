@@ -113,7 +113,7 @@ local_cmd_entry("load",
     );
 local_cmd_entry("create",
                 "Create an image",
-                "-b <mem_base> -l <image_length> [-s <data_length>]\n"
+                "[-b <mem_base>] [-l <image_length>] [-s <data_length>]\n"
                 "      [-f <flash_addr>] [-e <entry_point>] [-r <ram_addr>] [-n] <name>",
                 fis_create,
                 FIS_cmds
@@ -940,7 +940,7 @@ fis_create(int argc, char *argv[])
         memset(img, 0, sizeof(*img));
         strcpy(img->name, name);
         img->flash_base = flash_addr;
-        img->mem_base = exec_addr_set ? exec_addr : (flash_addr_set ? flash_addr : mem_addr);
+        img->mem_base = exec_addr_set ? exec_addr : (mem_addr_set ? mem_addr : flash_addr);
         img->entry_point = entry_addr_set ? entry_addr : (CYG_ADDRESS)entry_address;  // Hope it's been set
         img->size = length;
         img->data_length = img_size;

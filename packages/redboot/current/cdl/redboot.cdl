@@ -9,7 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-## Copyright (C) 2002, 2003, 2004 Gary Thomas
+## Copyright (C) 2002, 2003, 2004, 2005 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -151,6 +151,16 @@ cdl_package CYGPKG_REDBOOT {
                last N command lines.  These lines may be reused.
                Enabling this history will also enable rudimentary
                editting of the lines themselves."
+        }
+
+        cdl_option CYGSEM_REDBOOT_CMD_LINE_ANSI_SEQUENCES {
+            display          "Enable command line editing using ANSI arrows, etc"
+            flavor           bool
+            default_value    1
+            active_if        CYGNUM_REDBOOT_CMD_LINE_EDITING != 0
+            description      "
+               If this option is enabled, RedBoot will accept standard ANSI key
+               sequences for cursor movement (along with the emacs style keys)."
         }
 
         cdl_option CYGBLD_REDBOOT_CMD_LINE_HISTORY {
@@ -310,7 +320,7 @@ cdl_package CYGPKG_REDBOOT {
         make -priority 320 {
             <PREFIX>/bin/redboot.elf : $(PREFIX)/lib/target.ld $(PREFIX)/lib/vectors.o $(PREFIX)/lib/libtarget.a $(PREFIX)/lib/libextras.a
                     @sh -c "mkdir -p $(dir $@)"
-                    $(CC) -c $(INCLUDE_PATH) $(CFLAGS) -o $(PREFIX)/lib/version.o $(REPOSITORY)/$(PACKAGE)/src/version.c
+                    $(CC) -c $(INCLUDE_PATH) $(ACTUAL_CFLAGS) -o $(PREFIX)/lib/version.o $(REPOSITORY)/$(PACKAGE)/src/version.c
                     $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ $(PREFIX)/lib/version.o
         }
 

@@ -161,7 +161,7 @@ by typing the letter &ldquo;A&rdquo; while holding down the control key.
 erases the character to the left of the cursor.
 </para></listitem>
 <listitem><para>
-<guibutton>^A</guibutton>
+<guibutton>^A</guibutton> or <guibutton>HOME</guibutton>
 moves the cursor (insertion point) to the beginning of the line.
 </para></listitem>
 <listitem><para>
@@ -169,30 +169,30 @@ moves the cursor (insertion point) to the beginning of the line.
 erases all characters on the line from the cursor to the end.
 </para></listitem>
 <listitem><para>
-<guibutton>^E</guibutton>
+<guibutton>^E</guibutton> or <guibutton>END</guibutton>
 positions the cursor to the end of the line.
 </para></listitem>
 <listitem><para>
-<guibutton>^D</guibutton>
+<guibutton>^D</guibutton> or <guibutton>DELETE</guibutton>
 erases the character under the cursor.
 </para></listitem>
 <listitem><para>
-<guibutton>^F</guibutton>
+<guibutton>^F</guibutton> or <guibutton>RIGHT-ARROW</guibutton>
 moves the cursor one character to the right.
 </para></listitem>
 <listitem><para>
-<guibutton>^B</guibutton>
+<guibutton>^B</guibutton> or <guibutton>LEFT-ARROW</guibutton>
 moves the cursor one character to the left.
 </para></listitem>
 <listitem><para>
-<guibutton>^P</guibutton>
+<guibutton>^P</guibutton> or <guibutton>UP-ARROW</guibutton>
 replaces the current line by a previous line from the history buffer.  
 A small number of lines
 can be kept as history.  Using ^P (and ^N), the current line can be replaced
 by any one of the previously typed lines.
 </para></listitem>
 <listitem><para>
-<guibutton>^N</guibutton>
+<guibutton>^N</guibutton> or <guibutton>DOWN-ARROW</guibutton>
 replaces the current line by the next line from the history buffer.  
 </para></listitem>
 </itemizedlist></para>
