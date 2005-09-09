@@ -87,6 +87,7 @@
 extern int   tftp_stream_open(connection_info_t *info, int *err);
 extern int   tftp_stream_read(char *buf, int len, int *err);
 extern void  tftp_stream_close(int *err);
+extern void  tftp_stream_terminate(bool abort, int (*getc)(void));
 extern char *tftp_error(int err);
 
 #define TFTP_TIMEOUT_PERIOD 5

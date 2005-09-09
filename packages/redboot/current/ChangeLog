@@ -1,3 +1,16 @@
+2005-09-09  Andrew Dyer  <adyer@righthandtech.com>
+ 
+ 	* src/load.c: add calls to redboot_getc_terminate before exiting
+ 	load_elf_image() in various error scenarios, change the final call
+ 	to redboot_getc_terminate to have the error flag set.  This will
+ 	cause a tftp nak and close down the connection since for ELF files
+ 	we don't read the whole content but end the connection when the
+ 	runnable parts are in.
+ 
+ 	* src/net/tftp_client.c: add tftp_error() to send an error back to
+ 	the server. define tftp_stream_terminate() and pass it into the
+ 	redboot interface.
+ 
 2005-09-08  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/io.c: 

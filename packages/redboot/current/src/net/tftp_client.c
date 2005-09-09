@@ -158,10 +158,49 @@ tftp_ack(int *err)
     return 0;
 }
 
+static int
+tftp_error_ack(int *err, short code, char *msg)
+{
+    struct tftphdr *hdr = (struct tftphdr *)tftp_stream.data;
+
+    if (strlen(msg) > (SEGSIZE-1)) {
+      *(msg + SEGSIZE) = NULL;
+    }
+
+    if (tftp_stream.packets_received > 0) {
+        hdr->th_opcode = htons(ERROR);
+        hdr->th_code = code;
+        strcpy(&hdr->th_data, msg);
+        if (__udp_sendto(tftp_stream.data, (5 + strlen(msg)), 
+                         &tftp_stream.from_addr, &tftp_stream.local_addr) < 0) {
+            // Problem sending ACK
+            *err = TFTP_NETERR;
+            return -1;
+        }
+    }
+    return 0;
+}
+
 void
 tftp_stream_close(int *err)
 {
-    tftp_ack(err);
+    if (tftp_stream.open == true) {
+        tftp_ack(err);
+        tftp_stream.open = false;
+    }
+}
+
+void
+tftp_stream_terminate(bool abort,
+                      int (*getc)(void))
+{
+    int err;
+
+    if (abort)
+        tftp_error_ack(&err, EUNDEF, "redboot tftp_stream_terminate");
+    else
+        tftp_ack(&err);
+
     tftp_stream.open = false;
 }
 
@@ -274,6 +313,6 @@ tftp_error(int err)
 // RedBoot interface
 //
 GETC_IO_FUNCS(tftp_io, tftp_stream_open, tftp_stream_close,
-              0, tftp_stream_read, tftp_error);
+              tftp_stream_terminate, tftp_stream_read, tftp_error);
 RedBoot_load(tftp, tftp_io, true, true, 0);
 

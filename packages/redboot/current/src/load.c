@@ -307,6 +307,7 @@ load_elf_image(getc_t getc, unsigned long base)
     // Read the header
     if (_read(getc, (unsigned char *)&ehdr, sizeof(ehdr)) != sizeof(ehdr)) {
         diag_printf("Can't read ELF header\n");
+        redboot_getc_terminate(true);
         return 0;
     }
     offset += sizeof(ehdr);    
@@ -318,15 +319,18 @@ load_elf_image(getc_t getc, unsigned long base)
 #endif
     if (ehdr.e_type != ET_EXEC) {
         diag_printf("Only absolute ELF images supported\n");
+        redboot_getc_terminate(true);
         return 0;
     }
     if (ehdr.e_phnum > MAX_PHDR) {
         diag_printf("Too many program headers\n");
+        redboot_getc_terminate(true);
         return 0;
     }
     while (offset < ehdr.e_phoff) {
         if ((*getc)() < 0) {
             diag_printf(SHORT_DATA);
+            redboot_getc_terminate(true);
             return 0;
         }
         offset++;
@@ -334,6 +338,7 @@ load_elf_image(getc_t getc, unsigned long base)
     for (phx = 0;  phx < ehdr.e_phnum;  phx++) {
         if (_read(getc, (unsigned char *)&phdr[phx], sizeof(phdr[0])) != sizeof(phdr[0])) {
             diag_printf("Can't read ELF program header\n");
+            redboot_getc_terminate(true);
             return 0;
         }
 #if 0 // DEBUG
@@ -376,6 +381,7 @@ load_elf_image(getc_t getc, unsigned long base)
             if (offset > phdr[phx].p_offset) {
                 if ((phdr[phx].p_offset + len) < offset) {
                     diag_printf("Can't load ELF file - program headers out of order\n");
+                    redboot_getc_terminate(true);
                     return 0;
                 }
                 addr += offset - phdr[phx].p_offset;
@@ -383,6 +389,7 @@ load_elf_image(getc_t getc, unsigned long base)
                 while (offset < phdr[phx].p_offset) {
                     if ((*getc)() < 0) {
                         diag_printf(SHORT_DATA);
+                        redboot_getc_terminate(true);
                         return 0;
                     }
                     offset++;
@@ -400,6 +407,7 @@ load_elf_image(getc_t getc, unsigned long base)
 #endif
                 if ((ch = (*getc)()) < 0) {
                     diag_printf(SHORT_DATA);
+                    redboot_getc_terminate(true);
                     return 0;
                 }
                 *addr++ = ch;
@@ -422,7 +430,10 @@ load_elf_image(getc_t getc, unsigned long base)
         entry_address = ehdr.e_entry;
     }
 
-    redboot_getc_terminate(false);
+    // nak everything to stop the transfer, since redboot
+    // usually doesn't read all the way to the end of the
+    // elf files.
+    redboot_getc_terminate(true);
     if (addr_offset) diag_printf("Address offset = %p\n", (void *)addr_offset);
     diag_printf("Entry point: %p, address range: %p-%p\n", 
                 (void*)entry_address, (void *)load_address, (void *)load_address_end);
