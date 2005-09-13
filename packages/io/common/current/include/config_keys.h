@@ -128,16 +128,27 @@
 
 #define CYG_IO_GET_CONFIG_DISK_INFO              0x700
 
-// ======== 0x800 CAN ========================================================
-// Get/Set configuration 'key' values for DISK I/O 
 
+// ======== 0x800 CAN ========================================================
+// Get/Set configuration 'key' values for CAN I/O 
 #define CYG_IO_GET_CONFIG_CAN_INFO                  0x0801
 #define CYG_IO_GET_CONFIG_CAN_BUFFER_INFO           0x0802
-#define CYG_IO_GET_CONFIG_CAN_TIMEOUT               0x0803
+#define CYG_IO_GET_CONFIG_CAN_MSGBUF_INFO           0x0803
+#define CYG_IO_GET_CONFIG_CAN_TIMEOUT               0x0804
+#define CYG_IO_GET_CONFIG_CAN_HDI                   0x0805
+#define CYG_IO_GET_CONFIG_CAN_STATE                 0x0806
 
 #define CYG_IO_SET_CONFIG_CAN_INFO                  0x0881
-#define CYG_IO_SET_CONFIG_CAN_TIMEOUT               0x0883
-#define CYG_IO_SET_CONFIG_CAN_RTR_BUF               0x0884
+#define CYG_IO_SET_CONFIG_CAN_OUTPUT_DRAIN          0x0882
+#define CYG_IO_SET_CONFIG_CAN_OUTPUT_FLUSH          0x0883
+#define CYG_IO_SET_CONFIG_CAN_INPUT_FLUSH           0x0884
+#define CYG_IO_SET_CONFIG_CAN_TIMEOUT               0x0885
+#define CYG_IO_SET_CONFIG_CAN_REMOTE_BUF            0x0886
+#define CYG_IO_SET_CONFIG_CAN_MODE                  0x0887
+#define CYG_IO_SET_CONFIG_CAN_FILTER_ALL            0x0888
+#define CYG_IO_SET_CONFIG_CAN_FILTER_MSG            0x0889
+
+
 
 // ======== 0x1000 Generic ===================================================
 // Get/Set configuration 'key' values that can apply to more than one

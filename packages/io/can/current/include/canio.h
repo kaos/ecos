@@ -114,7 +114,36 @@ typedef enum
     CYGNUM_CAN_EVENT_ENTERING_STANDBY    = 0x0400, // CAN hardware enters standby / power down mode
     CYGNUM_CAN_EVENT_ARBITRATION_LOST    = 0x0800, // arbitration lost
     CYGNUM_CAN_EVENT_DEVICE_CHANGED      = 0x1000, // device changed event
+    CYGNUM_CAN_EVENT_PHY_FAULT           = 0x2000, // General failure of physical layer detected (if supported by hardware)
+    CYGNUM_CAN_EVENT_PHY_H               = 0x4000, // Fault on CAN-H detected (Low Speed CAN)
+    CYGNUM_CAN_EVENT_PHY_L               = 0x8000, // Fault on CAN-L detected (Low Speed CAN)
 } cyg_can_event_flags;
+
+//
+// State of CAN controller
+//
+typedef enum
+{
+    CYGNUM_CAN_STATE_ACTIVE,       // CAN controller is active, no errors
+    CYGNUM_CAN_STATE_STOPPED,      // CAN controller is in stopped mode
+    CYGNUM_CAN_STATE_STANDBY,      // CAN controller is in Sleep mode
+    CYGNUM_CAN_STATE_BUS_WARN,     // CAN controller is active, warning level is reached
+    CYGNUM_CAN_STATE_ERR_PASSIVE,  // CAN controller went into error passive mode
+    CYGNUM_CAN_STATE_BUS_OFF,      // CAN controller went into bus off mode
+    CYGNUM_CAN_STATE_PHY_FAULT,    // General failure of physical layer detected (if supported by hardware)
+    CYGNUM_CAN_STATE_PHY_H,        // Fault on CAN-H detected (Low Speed CAN)
+    CYGNUM_CAN_STATE_PHY_L,        // Fault on CAN-L detected (Low Speed CAN)
+} cyg_can_state;
+
+//
+// Identifiers for operating mode of the CAN controller.
+//
+typedef enum 
+{
+    CYGNUM_CAN_MODE_STOP,   // set controller into stop mode
+    CYGNUM_CAN_MODE_START,  // set controller into operational mode
+    CYGNUM_CAN_MODE_STANDBY // set controller into standby / sleep mode
+} cyg_can_mode;
 
 //
 // Type of CAN identifier. 
@@ -167,17 +196,31 @@ typedef struct cyg_can_info_st {
     cyg_can_baud_rate_t   baud;
 } cyg_can_info_t;
 
+
+#define CYG_CAN_INFO_INIT(_baud) \
+  { _baud}
+
 //
 // buffer configuration - bufsize and count for tx are the number of messages
 // and for rx the number of events
 //
 typedef struct cyg_can_buf_info_st
 {  
-    cyg_int32 rx_bufsize; 
-    cyg_int32 rx_count;
-    cyg_int32 tx_bufsize;
-    cyg_int32 tx_count;
+    cyg_uint32 rx_bufsize; 
+    cyg_uint32 rx_count;
+    cyg_uint32 tx_bufsize;
+    cyg_uint32 tx_count;
 } cyg_can_buf_info_t;
+
+//
+// Message box configuration
+//
+typedef struct cyg_can_msgbox_info_st
+{
+    cyg_uint8 count;    // number of message buffers available for this device
+    cyg_uint8 free;     // number of free message buffers
+} cyg_can_msgbuf_info;
+
 
 //
 // Timeout configuration
@@ -188,24 +231,82 @@ typedef struct cyg_can_timeout_info_st
     cyg_uint32 tx_timeout;
 } cyg_can_timeout_info_t;
 
+
 //
-// this data type defines a remote transmission request buffer
+// this data type defines a handle to a message buffer or message box
+// of the CAN hardware device
 //
-typedef struct cyg_can_rtr_buf_st
+typedef cyg_int8 cyg_can_msgbuf_handle;
+
+
+//
+// structure for configuration of message buffers
+//
+typedef struct cyg_can_msgbox_cfg_st
 {
-    cyg_int8        handle;
-    cyg_can_message msg;
-} cyg_can_rtr_buf_t;
+    cyg_can_msgbuf_handle  handle;
+    cyg_can_message        msg;
+} cyg_can_msgbuf_cfg;
+
+//
+// this data type defines a CAN message filter. It consits
+// of a handle to a message box or message buffer and a CAN message.
+// For the filtering only the id and the ext field of the CAN message are
+// important. The values of the other fields doesn't matter
+//
+typedef cyg_can_msgbuf_cfg cyg_can_filter;
+
+//
+// this data type defines a remote buffer. It consits
+// of a handle to a message box or message buffer and the message data
+// to send on reception of a remote request
+//
+typedef cyg_can_msgbuf_cfg cyg_can_remote_buf;
 
 //
 // Values for the handle field of the cyg_can_rtr_buf_t data structure
 //
-#define CYGNUM_CAN_RTR_BUF_NA    -0x01 // no free message buffer available
-#define CYGNUM_CAN_RTR_BUF_INIT  -0x02 // initialize the remote message buffer
+#define CYGNUM_CAN_MSGBUF_NA    -0x01 // no free message buffer available
+#define CYGNUM_CAN_MSGBUF_INIT  -0x02 // initialize the remote message buffer
 
 
-#define CYG_CAN_INFO_INIT(_baud) \
-  { _baud}
+//
+// The Hardware Description Interface provides a method to gather information
+// about the CAN hardware and the functionality of the driver. For
+// this purpose the following structure is defined:
+//
+// Support flags:
+// |   7   |   6   |   5   |   4   |   3   |   2   |   1   |   0    |
+// +-------+-------+-------+-------+-------+-------+-------+--------+
+// | res   |  res  |  res  |timest.|SW-Filt|FullCAN|   Frametype    |
+//
+typedef struct cyg_can_hdi_st
+{
+    cyg_uint8 support_flags;
+    cyg_uint8 controller_type;
+} cyg_can_hdi;
+ 
+//
+// Bit 0 and Bit 1 of the structure member support_flags describe the
+// possibities of the CAN controller. The following values are defined: 
+//
+#define CYGNUM_CAN_HDI_FRAMETYPE_STD           0x00 // standard frame (11-bit identifier), 2.0A
+#define CYGNUM_CAN_HDI_FRAMETYPE_EXT_PASSIVE   0x01 // extended frame (29-bit identifier), 2.0B passive
+#define CYGNUM_CAN_HDI_FRAMETYPE_EXT_ACTIVE    0x02 // extended frame (29-bit identifier), 2.0B active
+
+//
+// If the flag "FullCAN" is set to "1", the CAN controller has more than one
+// receive buffer and one transmit buffer.
+//
+#define CYGNUM_CAN_HDI_FULLCAN                 0x04
+
+//
+// If the flag "Software ID-Filter" is set to "1", the driver has implemented
+// the software ID filter for standard frames. If the member is set to "0", the
+// software filter is not available.
+//
+#define CYGNUM_CAN_HDI_FILT_SW                 0x08
+#define CYGNUM_CAN_HDI_TIMESTAMP               0x10
 
 #ifdef __cplusplus
 }

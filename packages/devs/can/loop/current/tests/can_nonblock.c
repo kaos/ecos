@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//        flexcan_load.c
+//        can_nonblock.c
 //
-//        FlexCAN load test
+//        CAN driver test of nonblocking calls
 //
 //==========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
@@ -43,7 +43,7 @@
 // Author(s):     Uwe Kindler
 // Contributors:  Uwe Kindler
 // Date:          2005-08-14
-// Description:   FlexCAN load test
+// Description:   CAN driver test of nonblocking callst
 //####DESCRIPTIONEND####
 
 
@@ -193,4 +193,4 @@ cyg_start( void )
 }
 #endif // N_A_MSG
 
-// EOF flexcan_load.c
+// EOF can_nonblock.c

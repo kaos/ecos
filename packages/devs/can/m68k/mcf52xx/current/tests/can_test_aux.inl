@@ -124,6 +124,9 @@ void print_can_flags(cyg_uint16 flags, char *pMsg)
         "ESTY  ",
         "ALOS  ",
         "DEVC  ",
+        "PHYF  ",
+        "PHYH  ",
+        "PHYL  "
     };
     i = 0;
     while (flags && (i < 16))

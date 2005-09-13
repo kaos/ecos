@@ -1,3 +1,25 @@
+2005-09-11  Uwe Kindler  <uwe_kindler@web.de>
+
+	* cdl/can_mcf52xx.cdl Default message buffer configuration 
+	  changed. Message buffer 13 now is transmit message buffer.
+	  Message buffers 14 and 15 are no receive message buffers
+	  for all standard and extended frames.
+	  
+	* src/can_mcf52xx.c Driver partly rewritten. Support for message 
+	  filtering added. Message buffer handling added. Several bugs 
+	  fixed. Support added for configuration options
+	  CYG_IO_SET_CONFIG_CAN_REMOTE_BUF
+	  CYG_IO_SET_CONFIG_CAN_FILTER_MSG
+	  CYG_IO_SET_CONFIG_CAN_FILTER_ALL
+	  CYG_IO_SET_CONFIG_CAN_MODE
+	  CYG_IO_GET_CONFIG_CAN_STATE
+	  CYG_IO_GET_CONFIG_CAN_MSGBUF_INFO
+	  CYG_IO_GET_CONFIG_CAN_HDI
+	  
+	* tests/flexcan_filter.c Test of message filtering addded
+	* tests/flexcan_wake.c Test of mode setting and standby mode of
+	  FlexCAN module added.
+	
 2005-05-24  Uwe Kindler  <uwe_kindler@web.de>
 
 	* mcf52xx FlexCAN driver package created

@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//        flexcan_load.c
+//        flexcan_filter.c
 //
-//        FlexCAN load test
+//        FlexCAN message filter test
 //
 //==========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
@@ -42,8 +42,8 @@
 //
 // Author(s):     Uwe Kindler
 // Contributors:  Uwe Kindler
-// Date:          2005-08-14
-// Description:   FlexCAN load test
+// Date:          2005-09-10
+// Description:   FlexCAN hardware filter test
 //####DESCRIPTIONEND####
 
 
@@ -87,8 +87,6 @@ typedef struct st_thread_data
 cyg_thread_entry_t can0_thread;
 thread_data_t      can0_thread_data;
 
-cyg_thread_entry_t can1_thread;
-thread_data_t      can1_thread_data;
 
 cyg_io_handle_t    hDrvFlexCAN;
 
@@ -106,140 +104,176 @@ void can0_thread(cyg_addrword_t data)
 {
     cyg_uint32             len;
     cyg_can_event          rx_event;
-    cyg_can_timeout_info_t timeouts;
+    cyg_can_mode           mode;
+    cyg_uint8              i;
+    cyg_can_hdi            hdi;
+    cyg_can_msgbuf_info    msgbox_info;
 
-#if defined(CYGOPT_IO_CAN_SUPPORT_TIMEOUTS)   
-    //
-    // setup large timeout values because we do not need timeouts here
-    //
-    timeouts.rx_timeout = 100000;
-    timeouts.tx_timeout = 100000;
     
-    len = sizeof(timeouts);
-    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_TIMEOUT ,&timeouts, &len))
+    len = sizeof(hdi);
+    if (ENOERR != cyg_io_get_config(hDrvFlexCAN, CYG_IO_GET_CONFIG_CAN_HDI ,&hdi, &len))
+    {
+        CYG_TEST_FAIL_FINISH("Error reading config of /dev/can0");
+    } 
+    
+    //
+    // Normally the FlexCAN modul should support message filters. So the
+    // FULLCAN flag should be set - if it is not, we treat this as an error
+    //
+    if (!(hdi.support_flags & CYGNUM_CAN_HDI_FULLCAN))
+    {
+        CYG_TEST_FAIL_FINISH("/dev/can0 does not support message buffers");
+    }
+    
+    //
+    // Now query number of available and free message boxes
+    //
+    len = sizeof(msgbox_info);
+    if (ENOERR != cyg_io_get_config(hDrvFlexCAN, CYG_IO_GET_CONFIG_CAN_MSGBUF_INFO ,&msgbox_info, &len))
+    {
+        CYG_TEST_FAIL_FINISH("Error reading config of /dev/can0");
+    } 
+    
+    //
+    // if there are no free message boxes available then this is a failure
+    //
+    if (!msgbox_info.free)
+    {
+        CYG_TEST_FAIL_FINISH("No free message boxes available for /dev/can0");
+    }
+    
+    //
+    // We have free message boxes available and now we can setup the message 
+    // filters, during this configuration process we set the FlexCAN modul into
+    // stopped state
+    //
+    mode = CYGNUM_CAN_MODE_STOP;
+    len = sizeof(mode);
+    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_MODE ,&mode, &len))
     {
         CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
-    }
-#endif // defined(CYGOPT_IO_CAN_SUPPORT_TIMEOUTS)  
+    } 
     
     //
-    // This thread simply receives all CAN events and prints the event flags and the
-    // CAN message if it was a TX or RX event. You can use this test in order to check
-    // when a RX overrun occurs
+    // Now device is stopped an we can setup all free message buffers
+    // we setup as many standard CAN message filters as there are free
+    // message buffers available.
     //
-    while (1)
+    for (i = 0; i < msgbox_info.free; ++i)
+    {
+        cyg_can_filter rx_filter;
+        
+        rx_filter.msg.id  = i;
+        
+        if (i % 2)
+        {
+            rx_filter.msg.ext = CYGNUM_CAN_ID_EXT;
+        }
+        else
+        {
+            rx_filter.msg.ext = CYGNUM_CAN_ID_STD;
+        }
+    
+        len = sizeof(rx_filter); 
+        if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_FILTER_MSG ,&rx_filter, &len))
+        {
+            CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
+        }
+        else if (CYGNUM_CAN_MSGBUF_NA == rx_filter.handle)
+        {
+            CYG_TEST_FAIL_FINISH("Error setting up message filter for /dev/can0");
+        }
+    }
+    
+    //
+    // Now message filters have been setup and we can start the FlexCAN modul again
+    //
+    mode = CYGNUM_CAN_MODE_START;
+    len = sizeof(mode);
+    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_MODE ,&mode, &len))
+    {
+        CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
+    } 
+    
+    diag_printf("Now try to send CAN messages. The device should only\n"
+                "receive messages identifiers in the range of 0x00 to 0x%X.\n"
+                "All CAN filters with an odd identifier will receive\n"
+                "extended CAN messages. As soon as a standard message\n"
+                "with ID 0 arrives, all message filters will be cleared\n\n", (msgbox_info.free - 1));
+    
+    //
+    // Now receive messages until a message arrives with largest ID of all
+    // available message filters
+    //
+    rx_event.msg.id = 1;
+    while(rx_event.msg.id != 0)
     {
         len = sizeof(rx_event); 
             
         if (ENOERR != cyg_io_read(hDrvFlexCAN, &rx_event, &len))
         {
             CYG_TEST_FAIL_FINISH("Error reading from /dev/can0");
-        }
-        else
+        }      
+        else if (rx_event.flags & CYGNUM_CAN_EVENT_RX)
         {
-            print_can_flags(rx_event.flags, "");
-            
-            if ((rx_event.flags & CYGNUM_CAN_EVENT_RX) || (rx_event.flags & CYGNUM_CAN_EVENT_TX))
-            {
-                print_can_msg(&rx_event.msg, "");
-            }
-        }    
-    }             
-}
-
-
-//===========================================================================
-//                            WRITER THREAD
-//===========================================================================
-void can1_thread(cyg_addrword_t data)
-{
-    cyg_uint16      i = 0;
-    cyg_uint32      len;
-    cyg_can_message tx_msg =
-    {
-        0x000,                                               // CAN identifier
-        {0x00, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7},    // 8 data bytes
-        CYGNUM_CAN_ID_STD,                                   // standard frame
-        CYGNUM_CAN_FRAME_DATA,                               // data frame
-        8,                                                   // data length code
-    };
+            print_can_msg(&rx_event.msg, "");    
+        } // if (ENOERR != cyg_io_read(hDrvFlexCAN, &rx_event, &len))
+    } // while(1)
     
     //
-    // This thread simply sends CAN messages. It increments the ID for each new CAN messsage
-    // and sends a remote frame after seven data frames. In the first byte of each data frame
-    // the number (0 - 7) of the data frame is stored and the length of the data frame grows
-    // from 1 - 8 data bytes.
+    // Stop device in order to clear all message filters and to activate
+    // the receive all message box
     //
-    // The received pattern should look like this way:
-    // ID    Length    Data
-    // ----------------------------------------------
-    // 000   1         00
-    // 001   2         01 F1
-    // 002   3         02 F1 F2
-    // 003   4         03 F1 F2 F3
-    // 004   5         04 F1 F2 F3 F4
-    // 005   6         05 F1 F2 F3 F4 F5
-    // 006   7         06 F1 F2 F3 F4 F5 F6
-    // 007   8         Remote Request
-    // 008   1         00
-    // 009   2         01 F1
-    // 00A   3         02 F1 F2
-    // ...
-    //
-    while (1)
+    mode = CYGNUM_CAN_MODE_STOP;
+    len = sizeof(mode);
+    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_MODE ,&mode, &len))
     {
-        tx_msg.id      = i;
-        tx_msg.dlc     = (i % 8) + 1;
-        tx_msg.data[0] = (i % 8);
-        i = (i + 1) % 0x7FF;
-        
-        //
-        // the 6th frame is a remote frame
-        //
-        if ((i % 8) == 6)
+        CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
+    } 
+    
+    //
+    // Now enable reception of all available CAN messages
+    //
+    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_FILTER_ALL , 0, 0))
+    {
+        CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
+    }
+    
+    //
+    // Now we can start FlexCAN modul again
+    //
+    mode = CYGNUM_CAN_MODE_START;
+    len = sizeof(mode);
+    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_MODE ,&mode, &len))
+    {
+        CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
+    } 
+    
+    diag_printf("\nAll message filters have been cleared an now the device\n"
+                "will receive any available CAN message identifier.\n"
+                "Send a CAN message with ID 0x100 to stop this test.\n\n");
+    
+    //
+    // Now receive messages until a message arrives with largest ID of all
+    // available message filters
+    //
+    rx_event.msg.id = 1;
+    while(rx_event.msg.id != 0x100)
+    {
+        len = sizeof(rx_event); 
+            
+        if (ENOERR != cyg_io_read(hDrvFlexCAN, &rx_event, &len))
         {
-            tx_msg.rtr =  CYGNUM_CAN_FRAME_RTR;
-            tx_msg.ext =  CYGNUM_CAN_ID_STD;
-        }
-        //
-        // the 7th frame is a extended frame
-        //
-        else if ((i % 8) == 7)
+            CYG_TEST_FAIL_FINISH("Error reading from /dev/can0");
+        }      
+        else if (rx_event.flags & CYGNUM_CAN_EVENT_RX)
         {
-            tx_msg.ext =  CYGNUM_CAN_ID_EXT;
-            tx_msg.rtr = CYGNUM_CAN_FRAME_DATA;
-        }
-        //
-        // the 8th frame is a extended remote frame
-        //
-        else if (!(i % 8))
-        {
-            tx_msg.ext =  CYGNUM_CAN_ID_EXT;
-            tx_msg.rtr = CYGNUM_CAN_FRAME_RTR;
-        }
-        //
-        // all other frames are standard data framse
-        //
-        else
-        {
-            tx_msg.ext =  CYGNUM_CAN_ID_STD;
-            tx_msg.rtr =  CYGNUM_CAN_FRAME_DATA;
-        }
-        
-        len = sizeof(tx_msg);
-        if (ENOERR != cyg_io_write(hDrvFlexCAN, &tx_msg, &len))
-        {
-            CYG_TEST_FAIL_FINISH("Error writing to /dev/can0");
-        }
-        else
-        {
-            print_can_msg(&tx_msg, "TX: ");
-        } 
-        
-        cyg_thread_delay(100);          
-    } // while (1)
+            print_can_msg(&rx_event.msg, "");    
+        } // if (ENOERR != cyg_io_read(hDrvFlexCAN, &rx_event, &len))
+    } // while(1)
+    
+    CYG_TEST_PASS_FINISH("flexcan_filter test OK");
 }
-
 
 
 void
@@ -281,16 +315,7 @@ cyg_start(void)
 		                &can0_thread_data.hdl, 
 		                &can0_thread_data.obj);
 		                
-    cyg_thread_create(5, can1_thread, 
-                        (cyg_addrword_t) can0_thread_data.hdl,
-		                "can1_thread", 
-		                (void *) can1_thread_data.stack, 
-		                1024 * sizeof(long),
-		                &can1_thread_data.hdl, 
-		                &can1_thread_data.obj);
-		                
     cyg_thread_resume(can0_thread_data.hdl);
-    cyg_thread_resume(can1_thread_data.hdl);
     
     cyg_scheduler_start();
 }
@@ -312,4 +337,4 @@ cyg_start( void )
 }
 #endif // N_A_MSG
 
-// EOF flexcan_load.c
+// EOF flexcan_filter.c

@@ -177,7 +177,11 @@ struct can_lowlevel_funs
 {
     bool (*putmsg)(can_channel *priv, cyg_can_message *pmsg, void *pdata);   // send one can message - return true if consumed
     bool (*getevent)(can_channel *priv, cyg_can_event *pevent, void *pdata); // fetch one CAN event from device
-    Cyg_ErrNo (*set_config)(can_channel    *priv,                        // Change hardware configuration (baud rate, etc)
+    Cyg_ErrNo (*get_config)(can_channel    *priv,                            // query hardware configuration (baud rate, etc)
+                            cyg_uint32      key, 
+                            const void     *xbuf,
+                            cyg_uint32     *len);
+    Cyg_ErrNo (*set_config)(can_channel    *priv,                           // Change hardware configuration (baud rate, etc)
                             cyg_uint32      key, 
                             const void     *xbuf,
                             cyg_uint32     *len);
@@ -185,13 +189,14 @@ struct can_lowlevel_funs
     void (*stop_xmit)(can_channel *priv);                                // Disable the transmit channel and turn transmit interrupts off
 };
 
-#define CAN_LOWLEVEL_FUNS(_l,_putmsg,_getevent,_set_config,_start_xmit,_stop_xmit)  \
-can_lowlevel_funs _l = {                                                            \
-  _putmsg,                                                                          \
-  _getevent,                                                                        \
-  _set_config,                                                                      \
-  _start_xmit,                                                                      \
-  _stop_xmit                                                                        \
+#define CAN_LOWLEVEL_FUNS(_l,_putmsg,_getevent,_get_config,_set_config,_start_xmit,_stop_xmit)  \
+can_lowlevel_funs _l = {                                                                        \
+  _putmsg,                                                                                      \
+  _getevent,                                                                                    \
+  _get_config,                                                                                  \
+  _set_config,                                                                                  \
+  _start_xmit,                                                                                  \
+  _stop_xmit                                                                                    \
 };
 
 extern cyg_devio_table_t cyg_io_can_devio;

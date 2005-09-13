@@ -104,11 +104,42 @@ void can0_thread(cyg_addrword_t data)
 {
     cyg_uint32             len;
     cyg_can_event          rx_event;
-    cyg_can_rtr_buf_t      rtr_buf;
-    cyg_can_rtr_buf_t      rtr_buf2;
+    cyg_can_remote_buf     rtr_buf;
+    cyg_can_remote_buf     rtr_buf2;
+    cyg_can_msgbuf_info    msgbox_info;
+    cyg_can_mode           mode; 
+    cyg_can_state          state;
+    
+    //
+    // before we start configuring the CAN hardware we stop the chip
+    //
+    mode = CYGNUM_CAN_MODE_STOP;
+    len = sizeof(mode);
+    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_MODE ,&mode, &len))
+    {
+        CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
+    } 
+    
+    //
+    // now check if FlexCAN modul is really stopped
+    //
+    len = sizeof(state);
+    if (ENOERR != cyg_io_get_config(hDrvFlexCAN, CYG_IO_GET_CONFIG_CAN_STATE ,&state, &len))
+    {
+        CYG_TEST_FAIL_FINISH("Error reading config of /dev/can0");
+    } 
+    
+    if (state != CYGNUM_CAN_STATE_STOPPED)
+    {
+        CYG_TEST_FAIL_FINISH("Error stopping FlexCAN /dev/can0");
+    }
 
    
-    rtr_buf.handle      = CYGNUM_CAN_RTR_BUF_INIT;
+    //
+    // Setup the first remote response buffer for resception of standard
+    // remote frames
+    //
+    rtr_buf.handle      = CYGNUM_CAN_MSGBUF_INIT;
     rtr_buf.msg.id      = 0x7FF;
     rtr_buf.msg.ext     = CYGNUM_CAN_ID_STD;
     rtr_buf.msg.rtr     = CYGNUM_CAN_FRAME_DATA;
@@ -116,39 +147,59 @@ void can0_thread(cyg_addrword_t data)
     rtr_buf.msg.data[0] = 0xAB;
     
     len = sizeof(rtr_buf);
-    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_RTR_BUF ,&rtr_buf, &len))
+    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_REMOTE_BUF ,&rtr_buf, &len))
     {
         CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
     } 
     
-    if (rtr_buf.handle == CYGNUM_CAN_RTR_BUF_NA)
-    {
-        CYG_TEST_FAIL_FINISH("No free message buffer available for /dev/can0");
-    }
-    
-    rtr_buf2.handle      = CYGNUM_CAN_RTR_BUF_INIT;
-    rtr_buf2.msg.id      = 0x7FE;
-    rtr_buf2.msg.ext     = CYGNUM_CAN_ID_STD;
+    //
+    // setup the second remote response buffer for reception of extended
+    // remote frames
+    // 
+    rtr_buf2.handle      = CYGNUM_CAN_MSGBUF_INIT;
+    rtr_buf2.msg.id      = 0x800;
+    rtr_buf2.msg.ext     = CYGNUM_CAN_ID_EXT;
     rtr_buf2.msg.rtr     = CYGNUM_CAN_FRAME_DATA;
     rtr_buf2.msg.dlc     = 4;
     rtr_buf2.msg.data[0] = 0xAB;
     
     len = sizeof(rtr_buf2);
-    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_RTR_BUF ,&rtr_buf2, &len))
+    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_REMOTE_BUF ,&rtr_buf2, &len))
     {
         CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
     } 
     
-    if (rtr_buf.handle == CYGNUM_CAN_RTR_BUF_NA)
+    if (rtr_buf.handle == CYGNUM_CAN_MSGBUF_NA)
     {
         CYG_TEST_FAIL_FINISH("No free message buffer available for /dev/can0");
     }
     
+    //
+    // now configuration is finished and we can start chip again
+    //
+    mode = CYGNUM_CAN_MODE_START;
+    len = sizeof(mode);
+    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_MODE ,&mode, &len))
+    {
+        CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
+    } 
+    
     diag_printf("Test of FlexCAN remote response buffer configuration\n"
-                "If a CAN node sends a remote request with ID 0x7FE\n"
-                "or 0x7FF then the FlexCAN modul should respond with\n"
+                "If a CAN node sends a remote request with ID 0x7FF\n"
+                "or 0x800 then the FlexCAN modul should respond with\n"
                 "data frames.\n");
     diag_printf("!!! This test can be stopped by sending a data frame with ID 0x100 !!!\n\n");
+    
+    len = sizeof(msgbox_info);
+    if (ENOERR != cyg_io_get_config(hDrvFlexCAN, CYG_IO_GET_CONFIG_CAN_MSGBUF_INFO ,&msgbox_info, &len))
+    {
+        CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
+    } 
+    else
+    {
+        diag_printf("Message boxes available: %d    free: %d\n", 
+                    msgbox_info.count, msgbox_info.free);
+    }
     
     while (1)
     {
@@ -162,6 +213,11 @@ void can0_thread(cyg_addrword_t data)
         if (0x100 == rx_event.msg.id)
         {
             CYG_TEST_PASS_FINISH("flexcan_remote test OK"); 
+        }
+        else
+        {
+            print_can_flags(rx_event.flags, "");
+            print_can_msg(&rx_event.msg, "");    
         }
     }
 

@@ -159,7 +159,7 @@ cdl_package CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN {
             cdl_option CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_RXMASK_15 {
                 display     "Receive mask for message buffer 15"
                 flavor      data
-                default_value   0x1FFFFFFF
+                default_value   0x0
                 description "
                     The RX-mask for message buffer 15 is composed of 4 bytes. The mask
                     bits are applied to message buffer 15. (0 corresponding incoming ID 
@@ -200,21 +200,32 @@ cdl_package CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN {
                     Interrupt priority for bus off interrupt."
             }
             
-            cdl_option CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_DEFAULT_RX_MBOX {
-                display "Default receive message buffer"
+            cdl_option CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_DEFAULT_RX_MBOX_EXT {
+                display "Default RX buffer for extended frames"
+                flavor  data
+                calculated    15
+                legal_values  0 to 15
+                description "
+                    By default one message buffer will be used for reception of
+                    all CAN messages with extended identifier. This option selects one of the 
+                    16 message buffers for reception."
+            }
+            
+            cdl_option CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_DEFAULT_RX_MBOX_STD {
+                display "Default RX buffer for standard frames"
                 flavor  data
                 calculated    14
                 legal_values  0 to 15
                 description "
                     By default one message buffer will be used for reception of
-                    all CAN messages. This option selects one of the 16 message
-                    buffers for reception."
+                    all CAN messages with standard identifier. This option selects one of 
+                    the 16 message buffers for reception."
             }
             
             cdl_option CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_DEFAULT_TX_MBOX {
-                display "Default transmit message buffer"
+                display "Default TX buffer"
                 flavor  data
-                calculated    15
+                calculated    13
                 legal_values  0 to 15
                 description "
                     By default one message buffer will be used for message transmission.
@@ -231,68 +242,23 @@ cdl_package CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN {
                     data length, each configurable as Rx or Tx, all supporting standard and 
                     extended messages. At the moment a fixed configuration is used for
                     TX and RX message buffers but in future this may be configurable."
-                
-                cdl_component CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_MBOX14_CFG {
-                    display "Message buffer 14 configuration"
-                    flavor  none
-                    active_if       CYGINT_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]
-                    description "
-                       Configuration of FlexCAN message buffer 14."
-                   
-                    cdl_option CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN[set ::flexcan]_MBOX14 {
-                        display     "Interrupt priority."
+                    
+                    
+                # Support all 16 message buffers. 
+                for { set ::mbox 0 } { $::mbox < 16 } { incr ::mbox } {
+                                  
+                    cdl_option CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN[set ::flexcan]_MBOX[set ::mbox] {
+                        display     "Interrupt priority for message buffer [set ::mbox]"
                         flavor      data
-                        default_value   is_loaded(CYGNUM_HAL_M68K_MCF52xx_ISR_DEFAULT_PRIORITY_FLEXCAN[set ::flexcan]_MBOX14) ? \
-                                    CYGNUM_HAL_M68K_MCF52xx_ISR_DEFAULT_PRIORITY_FLEXCAN[set ::flexcan]_MBOX14 : \
+                        default_value   is_loaded(CYGNUM_HAL_M68K_MCF52xx_ISR_DEFAULT_PRIORITY_FLEXCAN[set ::flexcan]_MBOX[set ::mbox]) ? \
+                                    CYGNUM_HAL_M68K_MCF52xx_ISR_DEFAULT_PRIORITY_FLEXCAN[set ::flexcan]_MBOX[set ::mbox] : \
                                     CYGNUM_HAL_M68K_MCF52xx_ISR_PRIORITY_MIN
                         legal_values   CYGNUM_HAL_M68K_MCF52xx_ISR_PRIORITY_MIN to CYGNUM_HAL_M68K_MCF52xx_ISR_PRIORITY_MAX
                         description "
-                            Interrupt priority for message buffer 14"
+                            Interrupt priority for message buffer [set ::mbox]. Normally this should be
+                            the default interrupt priority provided by HAL."
                     }
-                    
-                    cdl_option CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_MBOX14_IS_TX {
-                        display "Use for transmit"
-                        flavor  bool
-                        active_if       CYGINT_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]
-                        calculated      0
-                        description "
-                            This option controls if this message buffer is used for sending
-                            or receiving messages. Currently this option is not configurable
-                            and message box 14 is used for reception of CAN messages."
-                        
-                    }
-                }
-                
-                cdl_component CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_MBOX15_CFG {
-                    display "Message buffer 15 configuration"
-                    flavor  none
-                    active_if       CYGINT_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]
-                    description "
-                       Configuration of FlexCAN message buffer 15."
-                   
-                    cdl_option CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN[set ::flexcan]_MBOX15 {
-                        display     "Interrupt priority."
-                        flavor      data
-                        default_value   is_loaded(CYGNUM_HAL_M68K_MCF52xx_ISR_DEFAULT_PRIORITY_FLEXCAN[set ::flexcan]_MBOX15) ? \
-                                    CYGNUM_HAL_M68K_MCF52xx_ISR_DEFAULT_PRIORITY_FLEXCAN[set ::flexcan]_MBOX15 : \
-                                    CYGNUM_HAL_M68K_MCF52xx_ISR_PRIORITY_MIN
-                        legal_values   CYGNUM_HAL_M68K_MCF52xx_ISR_PRIORITY_MIN to CYGNUM_HAL_M68K_MCF52xx_ISR_PRIORITY_MAX
-                        description "
-                            Interrupt priority for message buffer 15"
-                    }
-                    
-                    cdl_option CYGOPT_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_MBOX15_IS_TX {
-                        display "Use for transmit"
-                        flavor  bool
-                        active_if       CYGINT_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]
-                        calculated      1
-                        description "
-                            This option controls if this message buffer is used for sending
-                            or receiving messages. Currently this option is not configurable
-                            and message box 15 is used for transmission of CAN messages."
-                        
-                    }
-                }
+                }             
             } 
         }    
     }
@@ -331,6 +297,30 @@ cdl_package CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN {
             @echo >> $(notdir $@).deps
             @rm deps.tmp
             $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ tests/flexcan_remote.o
+        }
+        
+        make -priority 320 {
+            <PREFIX>/bin/flexcan_wake : <PACKAGE>/tests/flexcan_wake.c
+            @sh -c "mkdir -p tests $(dir $@)"
+            $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o tests/flexcan_wake.o $<
+            @echo $@ ": \\" > $(notdir $@).deps
+            @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
+            @tail -n +2 deps.tmp >> $(notdir $@).deps
+            @echo >> $(notdir $@).deps
+            @rm deps.tmp
+            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ tests/flexcan_wake.o
+        }
+        
+        make -priority 320 {
+            <PREFIX>/bin/flexcan_filter : <PACKAGE>/tests/flexcan_filter.c
+            @sh -c "mkdir -p tests $(dir $@)"
+            $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o tests/flexcan_filter.o $<
+            @echo $@ ": \\" > $(notdir $@).deps
+            @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
+            @tail -n +2 deps.tmp >> $(notdir $@).deps
+            @echo >> $(notdir $@).deps
+            @rm deps.tmp
+            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ tests/flexcan_filter.o
         }
     }
 

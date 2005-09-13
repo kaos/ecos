@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//        flexcan_load.c
+//        flexcan_wake.c
 //
-//        FlexCAN load test
+//        FlexCAN wake test
 //
 //==========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
@@ -42,8 +42,8 @@
 //
 // Author(s):     Uwe Kindler
 // Contributors:  Uwe Kindler
-// Date:          2005-08-14
-// Description:   FlexCAN load test
+// Date:          2005-09-10
+// Description:   FlexCAN test of standby and wake
 //####DESCRIPTIONEND####
 
 
@@ -87,8 +87,6 @@ typedef struct st_thread_data
 cyg_thread_entry_t can0_thread;
 thread_data_t      can0_thread_data;
 
-cyg_thread_entry_t can1_thread;
-thread_data_t      can1_thread_data;
 
 cyg_io_handle_t    hDrvFlexCAN;
 
@@ -105,141 +103,149 @@ cyg_io_handle_t    hDrvFlexCAN;
 void can0_thread(cyg_addrword_t data)
 {
     cyg_uint32             len;
-    cyg_can_event          rx_event;
-    cyg_can_timeout_info_t timeouts;
-
-#if defined(CYGOPT_IO_CAN_SUPPORT_TIMEOUTS)   
-    //
-    // setup large timeout values because we do not need timeouts here
-    //
-    timeouts.rx_timeout = 100000;
-    timeouts.tx_timeout = 100000;
+    cyg_can_event          rx_event1;
+    cyg_can_event          rx_event2;
+    cyg_can_remote_buf     rtr_buf;
+    cyg_can_msgbuf_info    msgbox_info;
+    cyg_can_mode           mode; 
+    cyg_can_state          state;
     
-    len = sizeof(timeouts);
-    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_TIMEOUT ,&timeouts, &len))
+    //
+    // before we start configuring the CAN hardware we stop the chip
+    //
+    mode = CYGNUM_CAN_MODE_STOP;
+    len = sizeof(mode);
+    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_MODE ,&mode, &len))
     {
         CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
+    } 
+    
+    //
+    // now check if FlexCAN modul is really stopped
+    //
+    len = sizeof(state);
+    if (ENOERR != cyg_io_get_config(hDrvFlexCAN, CYG_IO_GET_CONFIG_CAN_STATE ,&state, &len))
+    {
+        CYG_TEST_FAIL_FINISH("Error reading config of /dev/can0");
+    } 
+    
+    if (state != CYGNUM_CAN_STATE_STOPPED)
+    {
+        CYG_TEST_FAIL_FINISH("Error stopping FlexCAN /dev/can0");
     }
-#endif // defined(CYGOPT_IO_CAN_SUPPORT_TIMEOUTS)  
+
+   
+    //
+    // Setup the first remote response buffer for resception of standard
+    // remote frames
+    //
+    rtr_buf.handle      = CYGNUM_CAN_MSGBUF_INIT;
+    rtr_buf.msg.id      = 0x7FF;
+    rtr_buf.msg.ext     = CYGNUM_CAN_ID_STD;
+    rtr_buf.msg.rtr     = CYGNUM_CAN_FRAME_DATA;
+    rtr_buf.msg.dlc     = 1;
+    rtr_buf.msg.data[0] = 0xAB;
     
+    len = sizeof(rtr_buf);
+    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_REMOTE_BUF ,&rtr_buf, &len))
+    {
+        CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
+    } 
+    
+      
     //
-    // This thread simply receives all CAN events and prints the event flags and the
-    // CAN message if it was a TX or RX event. You can use this test in order to check
-    // when a RX overrun occurs
+    // now configuration is finished and we can start chip again
     //
+    mode = CYGNUM_CAN_MODE_START;
+    len = sizeof(mode);
+    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_MODE ,&mode, &len))
+    {
+        CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
+    } 
+    
+    diag_printf("Test of FlexCAN standby mode with selfwakeup\n"
+                "As soon as a message arrives the FlexCAN modul\n"
+                "will leave standby and generates a leave standby event.\n"
+                "Each time you send a message you should see LSTY first\n"
+                "for \"leaving standby\" and then \"RX\" for the\n"
+                "RX event caused the leave standby event. You can send\n"
+                "a CAN data frame with any ID or a remote frame with ID\n"
+                "0x7FF\n" );
+                
+    diag_printf("!!! This test can be stopped by sending a data frame with ID 0x100 !!!\n\n");
+    
+    len = sizeof(msgbox_info);
+    if (ENOERR != cyg_io_get_config(hDrvFlexCAN, CYG_IO_GET_CONFIG_CAN_MSGBUF_INFO ,&msgbox_info, &len))
+    {
+        CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
+    } 
+    else
+    {
+        diag_printf("Message boxes available: %d    free: %d\n", 
+                    msgbox_info.count, msgbox_info.free);
+    }
+    
     while (1)
     {
-        len = sizeof(rx_event); 
-            
-        if (ENOERR != cyg_io_read(hDrvFlexCAN, &rx_event, &len))
-        {
-            CYG_TEST_FAIL_FINISH("Error reading from /dev/can0");
-        }
-        else
-        {
-            print_can_flags(rx_event.flags, "");
-            
-            if ((rx_event.flags & CYGNUM_CAN_EVENT_RX) || (rx_event.flags & CYGNUM_CAN_EVENT_TX))
-            {
-                print_can_msg(&rx_event.msg, "");
-            }
-        }    
-    }             
-}
-
-
-//===========================================================================
-//                            WRITER THREAD
-//===========================================================================
-void can1_thread(cyg_addrword_t data)
-{
-    cyg_uint16      i = 0;
-    cyg_uint32      len;
-    cyg_can_message tx_msg =
-    {
-        0x000,                                               // CAN identifier
-        {0x00, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7},    // 8 data bytes
-        CYGNUM_CAN_ID_STD,                                   // standard frame
-        CYGNUM_CAN_FRAME_DATA,                               // data frame
-        8,                                                   // data length code
-    };
+       //
+       // now we set FlexCAN into standby mode
+       //
+       mode = CYGNUM_CAN_MODE_STANDBY;
+       len = sizeof(mode);
+       if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_MODE ,&mode, &len))
+       {
+           CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
+       } 
     
-    //
-    // This thread simply sends CAN messages. It increments the ID for each new CAN messsage
-    // and sends a remote frame after seven data frames. In the first byte of each data frame
-    // the number (0 - 7) of the data frame is stored and the length of the data frame grows
-    // from 1 - 8 data bytes.
-    //
-    // The received pattern should look like this way:
-    // ID    Length    Data
-    // ----------------------------------------------
-    // 000   1         00
-    // 001   2         01 F1
-    // 002   3         02 F1 F2
-    // 003   4         03 F1 F2 F3
-    // 004   5         04 F1 F2 F3 F4
-    // 005   6         05 F1 F2 F3 F4 F5
-    // 006   7         06 F1 F2 F3 F4 F5 F6
-    // 007   8         Remote Request
-    // 008   1         00
-    // 009   2         01 F1
-    // 00A   3         02 F1 F2
-    // ...
-    //
-    while (1)
-    {
-        tx_msg.id      = i;
-        tx_msg.dlc     = (i % 8) + 1;
-        tx_msg.data[0] = (i % 8);
-        i = (i + 1) % 0x7FF;
-        
-        //
-        // the 6th frame is a remote frame
-        //
-        if ((i % 8) == 6)
-        {
-            tx_msg.rtr =  CYGNUM_CAN_FRAME_RTR;
-            tx_msg.ext =  CYGNUM_CAN_ID_STD;
-        }
-        //
-        // the 7th frame is a extended frame
-        //
-        else if ((i % 8) == 7)
-        {
-            tx_msg.ext =  CYGNUM_CAN_ID_EXT;
-            tx_msg.rtr = CYGNUM_CAN_FRAME_DATA;
-        }
-        //
-        // the 8th frame is a extended remote frame
-        //
-        else if (!(i % 8))
-        {
-            tx_msg.ext =  CYGNUM_CAN_ID_EXT;
-            tx_msg.rtr = CYGNUM_CAN_FRAME_RTR;
-        }
-        //
-        // all other frames are standard data framse
-        //
-        else
-        {
-            tx_msg.ext =  CYGNUM_CAN_ID_STD;
-            tx_msg.rtr =  CYGNUM_CAN_FRAME_DATA;
-        }
-        
-        len = sizeof(tx_msg);
-        if (ENOERR != cyg_io_write(hDrvFlexCAN, &tx_msg, &len))
-        {
-            CYG_TEST_FAIL_FINISH("Error writing to /dev/can0");
-        }
-        else
-        {
-            print_can_msg(&tx_msg, "TX: ");
-        } 
-        
-        cyg_thread_delay(100);          
-    } // while (1)
+       //
+       // now check if FlexCAN modul is really in standby mode
+       //
+       len = sizeof(state);
+       if (ENOERR != cyg_io_get_config(hDrvFlexCAN, CYG_IO_GET_CONFIG_CAN_STATE ,&state, &len))
+       {
+           CYG_TEST_FAIL_FINISH("Error reading config of /dev/can0");
+       } 
+    
+       if (state != CYGNUM_CAN_STATE_STANDBY)
+       {
+           CYG_TEST_FAIL_FINISH("Error stopping FlexCAN /dev/can0");
+       }
+       
+       //
+       // as soon as a message arrives the FlexCAN modul leaves standby mode
+       // and we should receive a CYGNUM_CAN_EVENT_LEAVING_STANDBY event but
+       // we will also receive a RX event because a message arrived
+       // 
+       len = sizeof(rx_event1);      
+       if (ENOERR != cyg_io_read(hDrvFlexCAN, &rx_event1, &len))
+       {
+           CYG_TEST_FAIL_FINISH("Error reading from /dev/can0");
+       }
+       
+       len = sizeof(rx_event2);      
+       if (ENOERR != cyg_io_read(hDrvFlexCAN, &rx_event2, &len))
+       {
+           CYG_TEST_FAIL_FINISH("Error reading from /dev/can0");
+       }
+       
+       print_can_flags(rx_event1.flags, "");
+       print_can_flags(rx_event2.flags, "");
+       
+       //
+       // The first event we receive should be a leaving standby event because
+       // first flexcan leaves standby and then a message will be received
+       // 
+       if (!(rx_event1.flags & CYGNUM_CAN_EVENT_LEAVING_STANDBY))
+       {
+           CYG_TEST_FAIL_FINISH("CYGNUM_CAN_EVENT_LEAVING_STANDBY event expexted /dev/can0");
+       }
+       
+       if (rx_event2.msg.id == 0x100)
+       {
+           CYG_TEST_PASS_FINISH("flexcan_wake test OK");
+       }
+    }              
 }
-
 
 
 void
@@ -281,16 +287,7 @@ cyg_start(void)
 		                &can0_thread_data.hdl, 
 		                &can0_thread_data.obj);
 		                
-    cyg_thread_create(5, can1_thread, 
-                        (cyg_addrword_t) can0_thread_data.hdl,
-		                "can1_thread", 
-		                (void *) can1_thread_data.stack, 
-		                1024 * sizeof(long),
-		                &can1_thread_data.hdl, 
-		                &can1_thread_data.obj);
-		                
     cyg_thread_resume(can0_thread_data.hdl);
-    cyg_thread_resume(can1_thread_data.hdl);
     
     cyg_scheduler_start();
 }
@@ -312,4 +309,4 @@ cyg_start( void )
 }
 #endif // N_A_MSG
 
-// EOF flexcan_load.c
+// EOF flexcan_wake.c
