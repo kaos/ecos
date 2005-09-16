@@ -166,7 +166,8 @@ ping_host(int s, struct sockaddr_in *host)
     cyg_tick_count_t *tp;
     long *dp;
     struct sockaddr_in from;
-    int i, len, fromlen;
+    int i, len;
+    socklen_t fromlen;
 
     ok_recv = 0;
     bogus_recv = 0;

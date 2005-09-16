@@ -216,7 +216,7 @@ calibrate_load(int desired_load)
         load_idle = idle_thread_count;
         start_load(0);                         // Shut down background load
         percent_load = 100 - ((load_idle * 100) / no_load_idle);
-        diag_printf("High Load[%d] = %d => %d%%\n", load_thread_level, 
+        diag_printf("High Load[%ld] = %d => %d%%\n", load_thread_level, 
                     (int)idle_thread_count, percent_load);
         if ( percent_load > desired_load )
             break; // HIGH level is indeed higher
@@ -235,7 +235,7 @@ calibrate_load(int desired_load)
         load_idle = idle_thread_count;
         start_load(0);                         // Shut down background load
         percent_load = 100 - ((load_idle * 100) / no_load_idle);
-        diag_printf("Load[%d] = %d => %d%%\n", load_thread_level, 
+        diag_printf("Load[%ld] = %d => %d%%\n", load_thread_level, 
                     (int)idle_thread_count, percent_load);
         if (((high-low) <= 1) || (abs(desired_load-percent_load) <= 2)) break;
         if (percent_load < desired_load) {
@@ -257,7 +257,7 @@ calibrate_load(int desired_load)
     load_idle = idle_thread_count;
     start_load(0);                         // Shut down background load
     percent_load = 100 - ((load_idle * 100) / no_load_idle);
-    diag_printf("Final load[%d] = %d => %d%%\n", load_thread_level, 
+    diag_printf("Final load[%ld] = %d => %d%%\n", load_thread_level, 
                 (int)idle_thread_count, percent_load);
     no_load_idle_count_1_second = no_load_idle;
 }
@@ -359,7 +359,8 @@ echo_test(cyg_addrword_t p)
     struct sockaddr_in e_source_addr, e_sink_addr, local;
     int one = 1;
     fd_set in_fds;
-    int i, num, len;
+    int i, num;
+    socklen_t len;
     struct test_params params,nparams;
     struct test_status status,nstatus;
 
@@ -443,7 +444,7 @@ echo_test(cyg_addrword_t p)
     params.bufsize = ntohl(nparams.bufsize);
     params.load = ntohl(nparams.load);
   
-    diag_printf("Using %d buffers of %d bytes each, %d%% background load\n", 
+    diag_printf("Using %ld buffers of %ld bytes each, %ld%% background load\n", 
                 params.nbufs, params.bufsize, params.load);
 
     // Tell the sink what the parameters are
@@ -517,7 +518,7 @@ echo_test(cyg_addrword_t p)
     cyg_semaphore_wait(&idle_thread_sem);  // Stop idle thread
     start_load(0);                         // Shut down background load
     i = 100 - ((idle_thread_count * 100) / no_load_idle_count_1_second );
-    diag_printf("Final load[%d] = %d => %d%%\n", load_thread_level, 
+    diag_printf("Final load[%ld] = %d => %d%%\n", load_thread_level, 
                 (int)idle_thread_count, i);
 
 //#ifdef CYGDBG_USE_ASSERTS

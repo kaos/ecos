@@ -1,3 +1,13 @@
+2005-09-16  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/server_test.c: use socklen_t.
+	* tests/nc_test_slave.c: use socklen_t and diag_print type fixes
+	to stop warnings with gcc4.x
+	* tests/tcp_echo.c: use socklen_t and diag_print type fixes to
+	stop warnings with gcc4.x
+	* tests/ping_test.c: use socklen_t.
+	* tests/dhcp_test.c: use socklen_t.
+	
 2005-09-05  David Vrabel  <dvrabel@arcom.com>
             Andrew Lunn   <andrew.lunn@ascom.ch>
 	

@@ -290,7 +290,8 @@ do_read(int fd, void *buf, int buflen)
 static void
 do_tcp_test(int s1, struct nc_request *req, struct sockaddr_in *master)
 {
-    int i, s, len, td_len, seq, seq_errors, lost, test_chan, res;
+    int i, s, td_len, seq, seq_errors, lost, test_chan, res;
+    socklen_t len;
     struct sockaddr_in test_chan_slave, test_chan_master;
     struct nc_test_results results;
     struct nc_test_data *tdp;
@@ -427,7 +428,8 @@ do_tcp_test(int s1, struct nc_request *req, struct sockaddr_in *master)
 static void
 nc_slave(test_param_t param)
 {
-    int s, masterlen;
+    int s;
+    socklen_t masterlen;
     struct sockaddr_in my_addr, master;
     struct nc_request req;
     struct nc_reply reply;
@@ -603,7 +605,7 @@ calibrate_load(int desired_load)
         load_idle = idle_thread_count;
         start_load(0);                         // Shut down background load
         percent_load = 100 - ((load_idle * 100) / no_load_idle);
-        diag_printf("High Load[%d] = %d => %d%%\n", load_thread_level, 
+        diag_printf("High Load[%ld] = %d => %d%%\n", load_thread_level, 
                     (int)idle_thread_count, percent_load);
         if ( percent_load > desired_load )
             break; // HIGH level is indeed higher
@@ -622,7 +624,7 @@ calibrate_load(int desired_load)
         load_idle = idle_thread_count;
         start_load(0);                         // Shut down background load
         percent_load = 100 - ((load_idle * 100) / no_load_idle);
-        diag_printf("Load[%d] = %d => %d%%\n", load_thread_level, 
+        diag_printf("Load[%ld] = %d => %d%%\n", load_thread_level, 
                     (int)idle_thread_count, percent_load);
         if (((high-low) <= 1) || (abs(desired_load-percent_load) <= 2)) break;
         if (percent_load < desired_load) {
@@ -644,7 +646,7 @@ calibrate_load(int desired_load)
     load_idle = idle_thread_count;
     start_load(0);                         // Shut down background load
     percent_load = 100 - ((load_idle * 100) / no_load_idle);
-    diag_printf("Final load[%d] = %d => %d%%\n", load_thread_level, 
+    diag_printf("Final load[%ld] = %d => %d%%\n", load_thread_level, 
                 (int)idle_thread_count, percent_load);
 //    no_load_idle_count_1_second = no_load_idle;
 }

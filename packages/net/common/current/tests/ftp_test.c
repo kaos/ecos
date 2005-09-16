@@ -54,7 +54,8 @@ pexit(char *s)
 static void
 ftp_test(struct bootp *bp)
 {
-    int s, len, slen;
+    int s, slen;
+    socklen_t len;
     struct sockaddr_in host, local;
     struct servent *sent;
     char buf[256];

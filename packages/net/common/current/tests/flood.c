@@ -216,7 +216,8 @@ floodrecv(cyg_addrword_t p)
 {
     unsigned char pkt[MAX_PACKET];
     struct sockaddr_in from;
-    int len, fromlen;
+    int len; 
+    socklen_t fromlen;
 
     diag_printf("PING listener...\n" );
     for (;;) {

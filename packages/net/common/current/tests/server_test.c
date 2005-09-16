@@ -55,7 +55,8 @@ pexit(char *s)
 static void
 server_test(struct bootp *bp)
 {
-    int s, client, client_len;
+    int s, client;
+    socklen_t client_len;
     struct sockaddr_in client_addr, local;
     char buf[256];
     int one = 1;
