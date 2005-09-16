@@ -77,12 +77,36 @@ __externC int tftpd_stop(int);
  */
 
 /* IPv4 and IPv6 */
-__externC int tftp_client_get(char *, char *, int, char *, int, int, int *);
-__externC int tftp_client_put(char *, char *, int, char *, int, int, int *);
+__externC int tftp_client_get(const char * const filename,
+                              const char * const server, 
+                              const int port, 
+                              char * buff, 
+                              int len,
+                              const int mode, 
+                              int * const err);
+
+__externC int tftp_client_put(const char * const filename,
+                              const char * const server, 
+                              const int port, 
+                              const char * buf, 
+                              int len, 
+                              const int mode, 
+                              int * const err);
 
 /* IPv4 only */
-__externC int tftp_get(char *, struct sockaddr_in *, char *, int, int, int *);
-__externC int tftp_put(char *, struct sockaddr_in *, char *, int, int, int *);
+__externC int tftp_get(const char * const filename, 
+                       const struct sockaddr_in * const server, 
+                       char * buf, 
+                       int len, 
+                       const int mode, 
+                       int * const error);
+
+__externC int tftp_put(const char * const filename, 
+                       const struct sockaddr_in * const server, 
+                       const char * buffer, 
+                       int len, 
+                       const int mode, 
+                       int * const err);
 
 #define TFTP_TIMEOUT_PERIOD  5          // Seconds between retries
 #define TFTP_TIMEOUT_MAX    50          // Max timeouts over all blocks

@@ -425,21 +425,21 @@ IPv4 only.
 <PARA>
 The new API is as follows:
 </PARA>
-<PROGRAMLISTING>int tftp_client_get(char *filename,
-		    char *server,
-		    int port,
+<PROGRAMLISTING>int tftp_client_get(const char * const filename,
+		    const char * const server,
+		    const int port,
 		    char *buf,
 		    int len,
-		    int mode,
-		    int *err);
+		    const int mode,
+		    int * const err);
 
-int tftp_client_put(char *filename,
-		    char *server,
-		    int port,
-		    char *buf,
+int tftp_client_put(const char * const filename,
+		    const char * const server,
+		    const int port,
+		    const char *buf,
 		    int len,
-		    int mode,
-		    int *err);
+		    const int mode,
+		    int *const err);
 </PROGRAMLISTING>
 <PARA>Currently <varname>server</varname> can only be a numeric IPv4 or
 IPv6 address. The resolver is currently not used, but it is planned to
@@ -449,19 +449,20 @@ the specified port is used.
 </PARA>
 <PARA> 
 The deprecated API is:
-<PROGRAMLISTING>int tftp_client_get(char *filename,
-		    struct sockaddr_in *server,
-		    char *buf,
-		    int len,
-		    int mode,
-		    int *err);
+<PROGRAMLISTING>
+int tftp_get(const char * const filename, 
+             const struct sockaddr_in * const server, 
+             char * buf, 
+             int len, 
+             const int mode, 
+             int * const error);
 
-int tftp_client_put(char *filename,
-		    struct sockaddr_in *server,
-		    char *buf,
-		    int len,
-		    int mode,
-		    int *err);
+int tftp_put(const char * const filename, 
+             const struct sockaddr_in * const server, 
+             const char * buffer, 
+             int len, 
+             const int mode, 
+             int * const err);
 </PROGRAMLISTING>
 </PARA>
 <PARA>

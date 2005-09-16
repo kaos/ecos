@@ -46,7 +46,7 @@ cyg_start(void)
 
     for (i = 0;  i < 32;  i++) {
         m[i] = m_get(M_DONTWAIT, MT_DATA);
-        diag_printf("allocate mbuf = %x\n", m[i]);
+        diag_printf("allocate mbuf = 0x%p\n", m[i]);
     }
     
     cyg_test_exit();

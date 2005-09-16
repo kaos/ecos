@@ -66,13 +66,13 @@
 // On error, *err will hold the reason.
 // This version uses the server name. This can be a name for DNS lookup
 // or a dotty or colony number format for IPv4 or IPv6.
-int tftp_client_get(char *filename,
-		    char *server,
-		    int port,
+int tftp_client_get(const char * const filename,
+		    const char * const server,
+		    const int port,
 		    char *buf,
 		    int len,
-		    int mode,
-		    int *err) {
+		    const int mode,
+		    int * const err) {
 		    
     int result = 0;
     int s=-1;
@@ -87,7 +87,8 @@ int tftp_client_get(char *filename,
     struct sockaddr local_addr, from_addr;
     char data[SEGSIZE+sizeof(struct tftphdr)];
     struct tftphdr *hdr = (struct tftphdr *)data;
-    char *cp, *fp;
+    const char *fp;
+    char *cp, *bp;
     struct timeval timeout;
     unsigned short last_good_block = 0;
     fd_set fds;
@@ -173,7 +174,7 @@ int tftp_client_get(char *filename,
 	}
 
 	// Read data
-	fp = buf;
+	bp = buf;
 	while (true) {
 	  timeout.tv_sec = TFTP_TIMEOUT_PERIOD;
 	  timeout.tv_usec = 0;
@@ -231,7 +232,7 @@ int tftp_client_get(char *filename,
 		result += actual_len;
 		while (data_len-- > 0) {
 		  if (len-- > 0) {
-		    *fp++ = *cp++;
+		    *bp++ = *cp++;
 		  } else {
 		    // Buffer overflow
 		    *err = TFTP_TOOLARGE;
@@ -296,12 +297,12 @@ int tftp_client_get(char *filename,
 //
 // Depreciated. Use tftp_client_get instead.
 int
-tftp_get(char *filename,
-         struct sockaddr_in *server,
+tftp_get(const char * const filename,
+         const struct sockaddr_in * const server,
          char *buf,
          int len,
-         int mode,
-         int *err)
+         const int mode,
+         int * const err)
 {
   char server_name[20];
   char *ret;
@@ -322,12 +323,12 @@ tftp_get(char *filename,
 // Send data to a file on a server via TFTP.
 //
 int
-tftp_put(char *filename,
-         struct sockaddr_in *server,
-         char *buf,
+tftp_put(const char * const filename,
+         const struct sockaddr_in * const server,
+         const char *buf,
          int len,
-         int mode,
-         int *err)
+         const int mode,
+         int * const err)
 {
   char server_name[20];
   char *ret;
@@ -350,13 +351,13 @@ tftp_put(char *filename,
 // On error, *err will hold the reason.
 // This version uses the server name. This can be a name for DNS lookup
 // or a dotty or colony number format for IPv4 or IPv6.
-int tftp_client_put(char *filename,
-		    char *server,
-		    int port,
-		    char *buf,
+int tftp_client_put(const char * const filename,
+		    const char * const server,
+		    const int port,
+		    const char *buf,
 		    int len,
-		    int mode,
-		    int *err) {
+		    const int mode,
+		    int * const err) {
 
     int result = 0;
     int s = -1, actual_len, data_len;
@@ -365,7 +366,8 @@ int tftp_client_put(char *filename,
     struct sockaddr local_addr, from_addr;
     char data[SEGSIZE+sizeof(struct tftphdr)];
     struct tftphdr *hdr = (struct tftphdr *)data;
-    char *cp, *fp, *sfp;
+    const char *fp, *sfp;
+    char *cp;
     struct timeval timeout;
     unsigned short last_good_block = 0;
     fd_set fds;

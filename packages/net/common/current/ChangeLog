@@ -1,3 +1,10 @@
+2005-09-05  David Vrabel  <dvrabel@arcom.com>
+            Andrew Lunn   <andrew.lunn@ascom.ch>
+	
+	* src/tftp_client.c, include/tftp_support.h: const parameters
+	where appropriate.
+	* doc/tcpip.sgml: Update for the above.
+ 
 2005-08-02  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/ping_lo_test.c (ping_host): Use socklen_t to avoid
