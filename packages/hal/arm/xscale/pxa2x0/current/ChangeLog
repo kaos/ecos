@@ -1,3 +1,8 @@
+2005-09-15  David Vrabel  <dvrabel@arcom.com>
+
+	* cdl/hal_arm_xscale_pxa2x0.cdl: Only build hal_diag.c if one of
+	the three internal UARTs is used.
+
 2005-04-22  Ian Campbell  <icampbell@arcom.com>
 
 	* include/hal_pxa2x0.h: OSCC was incorrectly name CSCC.

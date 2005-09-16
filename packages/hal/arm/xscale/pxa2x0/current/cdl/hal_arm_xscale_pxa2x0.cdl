@@ -68,7 +68,7 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_PXA2X0 {
 		puts $::cdl_system_header "#define CYGBLD_HAL_ARM_VAR_IO_H"
 	}
 	
-    compile       hal_diag.c pxa2x0_misc.c
+    compile       pxa2x0_misc.c
     
 	# Real-time clock/counter specifics
 	cdl_component CYGNUM_HAL_RTC_CONSTANTS {
@@ -129,6 +129,14 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_PXA2X0 {
 			serial port can be used as a diagnostic and/or debug channel."
 	}
 
+    cdl_option CYGBLD_BUILD_HAL_ARM_XSCALE_PXA2X0_SERIAL_DIAG {
+        display     "Include support for PXA2X0 serial diagnostic/debug channels"
+        default_value { CYGHWR_HAL_ARM_PXA2X0_FFUART
+                      | CYGHWR_HAL_ARM_PXA2X0_BTUART
+                      | CYGHWR_HAL_ARM_PXA2X0_STUART }
+
+        compile     hal_diag.c
+    }
 }
 
 
