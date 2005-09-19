@@ -132,8 +132,8 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_PXA2X0 {
     cdl_option CYGBLD_BUILD_HAL_ARM_XSCALE_PXA2X0_SERIAL_DIAG {
         display     "Include support for PXA2X0 serial diagnostic/debug channels"
         default_value { CYGHWR_HAL_ARM_PXA2X0_FFUART
-                      | CYGHWR_HAL_ARM_PXA2X0_BTUART
-                      | CYGHWR_HAL_ARM_PXA2X0_STUART }
+                      || CYGHWR_HAL_ARM_PXA2X0_BTUART
+                      || CYGHWR_HAL_ARM_PXA2X0_STUART }
 
         compile     hal_diag.c
     }
