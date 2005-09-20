@@ -64,7 +64,6 @@
 #include CYGHWR_MEMORY_LAYOUT_H
 
 #include <cyg/hal/hal_io.h>
-#include <cyg/hal/pcmb_serial.h>
 
 /* 
  * Code to launch a Linux image directly in protected mode.
