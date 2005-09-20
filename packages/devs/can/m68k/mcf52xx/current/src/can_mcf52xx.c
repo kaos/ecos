@@ -1094,8 +1094,9 @@ static bool flexcan_getevent(can_channel *chan, cyg_can_event *pevent, void *pda
                      }
                  }
                  break;           
-            
-            //
+
+#ifdef CYGOPT_IO_CAN_TX_EVENT_SUPPORT
+//
             // If a TX message box cause the event then we store the last transmitted
             // message into the receive message queue
             //
@@ -1103,6 +1104,7 @@ static bool flexcan_getevent(can_channel *chan, cyg_can_event *pevent, void *pda
                  pevent->flags = CYGNUM_CAN_EVENT_TX;
                  pevent->msg = info->last_tx_msg;
                  break;
+#endif // CYGOPT_IO_CAN_TX_EVENT_SUPPORT
                             
             case MBOX_STATE_REMOTE_TX:
                  break;

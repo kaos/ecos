@@ -1,3 +1,9 @@
+2005-09-20  Uwe Kindler  <uwe_kindler@web.de>
+
+	* src/can_mcf52xx.c Only support events of tx message buffers
+          in flexcan_getevent() if CYGOPT_IO_CAN_TX_EVENT_SUPPORT is
+          active.
+
 2005-09-11  Uwe Kindler  <uwe_kindler@web.de>
 
 	* cdl/can_mcf52xx.cdl Default message buffer configuration 
