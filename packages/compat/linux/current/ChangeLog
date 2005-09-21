@@ -1,3 +1,7 @@
+2005-09-21  Steven_cheng <05071@alphanetworks.com>
+
+	* include/linux/types.h: Added unsigned types.
+
 2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/linux/kernel.h (PTR_ERR): Should be an unsigned long,
