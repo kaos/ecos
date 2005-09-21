@@ -1,3 +1,8 @@
+2005-09-08  Peter Korsgaard  <jacmet@sunsite.dk>
+
+	* include/flash_am29xxxxx.inl (flash_program_buf): Handle writes
+	with length not a multiple of flash word size.
+
 2005-04-17  David Vrabel  <dvrabel@arcom.com>
 
 	* include/flash_am29xxxxx_parts.inl [CYGHWR_DEVS_FLASH_AMD_AM29F002T]:

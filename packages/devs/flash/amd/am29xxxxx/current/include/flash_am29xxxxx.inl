@@ -442,6 +442,7 @@ flash_program_buf(void* addr, void* data, int len)
     const CYG_ADDRWORD mask  =
         flash_dev_info->bufsiz * sizeof (flash_data_t) - 1;
     unsigned long rem_sect_size;
+    int remain;
 
     // check the address is suitably aligned
     if ((unsigned long)addr & (CYGNUM_FLASH_INTERLEAVE * CYGNUM_FLASH_WIDTH / 8 - 1))
@@ -454,6 +455,7 @@ flash_program_buf(void* addr, void* data, int len)
     f_s1 = FLASH_P2V(BANK + FLASH_Setup_Addr1);
     f_s2 = FLASH_P2V(BANK + FLASH_Setup_Addr2);
     rem_sect_size = 0;
+    remain = len % sizeof (flash_data_t);
     len /= sizeof (flash_data_t);
 
     while (len > 0) {
@@ -525,6 +527,51 @@ flash_program_buf(void* addr, void* data, int len)
             break;
         }
         len -= nwords;
+    }
+
+    // Program remaining bytes if len not a multiple of flash word size
+    if ((FLASH_ERR_OK == res) && remain)
+    {
+        // construct final word to be programmed with 0xff in the
+        // remaining bytes
+        flash_data_t final = (flash_data_t)-1;
+        unsigned char *src = (unsigned char *) data_ptr;
+        unsigned char *dst = (unsigned char *) &final;
+
+        while (remain--)
+            *dst++ = *src++;
+
+        addr_v = FLASH_P2V(addr_p);
+
+        // Program data [byte] - 4 step sequence
+        *f_s1 = FLASH_Setup_Code1;
+        *f_s2 = FLASH_Setup_Code2;
+        *f_s1 = FLASH_Program;
+        *addr_v = final;
+
+        timeout = CYGNUM_FLASH_TIMEOUT_PROGRAM;
+        while (true) {
+            flash_data_t state = *addr_v;
+            if (final == state) {
+                break;
+            }
+
+            // Can't check for FLASH_Err since it'll fail in parallel
+            // configurations.
+
+            if (--timeout == 0) {
+                res = FLASH_ERR_DRV_TIMEOUT;
+                break;
+            }
+        }
+
+        if (FLASH_ERR_OK != res)
+            *FLASH_P2V(ROM) = FLASH_Reset;
+
+        if (*addr_v != final) {
+            // Only update return value if write operation was OK
+            if (FLASH_ERR_OK == res) res = FLASH_ERR_DRV_VERIFY;
+        }
     }
 
     // Ideally, we'd want to return not only the failure code, but also
