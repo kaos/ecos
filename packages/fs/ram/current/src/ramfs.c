@@ -654,7 +654,7 @@ static int findbuffer_node( ramfs_node  *node,  // node pointer
                             size_t *size,       // returned buffer size
                             cyg_bool alloc)     // extend allocation?
 {
-    if( alloc && (pos == node->datasize || node->datasize == 0) )
+    if( alloc && (pos >= node->datasize || node->datasize == 0) )
     {
         // If we are allowed to alloc new data, and we are at the end of the
         // current data allocation, or there is no data present, allocate or
@@ -668,7 +668,8 @@ static int findbuffer_node( ramfs_node  *node,  // node pointer
             newdata = realloc( node->data, pos+CYGNUM_RAMFS_REALLOC_INCREMENT );
         
         if( newdata == NULL ) return ENOSPC;
-        else memset( newdata+pos, 0, CYGNUM_RAMFS_REALLOC_INCREMENT );
+        else memset( newdata + node->datasize, 0, 
+                     pos + CYGNUM_RAMFS_REALLOC_INCREMENT - node->datasize );
         
         node->data = newdata;
         node->datasize = pos+CYGNUM_RAMFS_REALLOC_INCREMENT;
@@ -730,7 +731,7 @@ static int findbuffer_direct( off_t pos,
     ramfs_block *b;
     
     *buffer = NULL;
-    *size = 0;
+    *size = CYGNUM_RAMFS_BLOCK_SIZE - bpos;
     
     if( bi >= nblocks )
         return ENOERR;
@@ -740,8 +741,9 @@ static int findbuffer_direct( off_t pos,
     if( b == NULL )
     {
         // There is no block there. If _alloc_ is true we can fill the
-        // slot in with a new block. If it is false, we indicate end of
-        // data with a zero size result.
+        // slot in with a new block. If it is false, we indicate there
+        // is no block and size indicates where the block would end if
+        // it existed.
         if( alloc )
         {
             b = block_alloc();
@@ -753,7 +755,6 @@ static int findbuffer_direct( off_t pos,
     }
 
     *buffer = &((*b)[bpos]);
-    *size = CYGNUM_RAMFS_BLOCK_SIZE - bpos;
 
     return ENOERR;
 }
@@ -1491,7 +1492,7 @@ static int ramfs_mount    ( cyg_fstab_entry *fste, cyg_mtab_entry *mte )
     
     // Allocate a node to be the root of this filesystem and initialize it.
 
-    root = alloc_node(__stat_mode_DIR);
+    root = alloc_node(__stat_mode_DIR|S_IRWXU|S_IRWXG|S_IRWXO);
 
     if( root == NULL )
         return ENOSPC;
@@ -1565,7 +1566,7 @@ static int ramfs_open     ( cyg_mtab_entry *mte, cyg_dir dir, const char *name,
             // create a new one. The dir and name fields of the dirsearch
             // object will have been updated so we know where to put it.
 
-            node = alloc_node( __stat_mode_REG );
+            node = alloc_node( __stat_mode_REG|S_IRWXU|S_IRWXG|S_IRWXO);
 
             if( node == NULL )
                 return ENOSPC;
@@ -1669,7 +1670,7 @@ static int ramfs_mkdir    ( cyg_mtab_entry *mte, cyg_dir dir, const char *name )
             // the pathname, so we can create it here.
             int doterr, dotdoterr, direrr;
         
-            node = alloc_node( __stat_mode_DIR );
+            node = alloc_node( __stat_mode_DIR | S_IRWXU|S_IRWXG|S_IRWXO);
 
             if( node == NULL )
                 return ENOSPC;
@@ -2058,10 +2059,14 @@ static int ramfs_fo_read      (struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio)
             // at present.
             if( l > bsize )
                 l = bsize;
-
-            // copy data out
-            memcpy( buf, fbuf, l );
-
+            
+            if (fbuf) {
+              // copy data out
+              memcpy( buf, fbuf, l );
+            } else { // hole, so return zeros here.
+              memset( buf, 0, l );
+            }
+ 
             // Update working vars
             len -= l;
             buf += l;
@@ -2098,10 +2103,6 @@ static int ramfs_fo_write     (struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio)
     if( fp->f_flag & CYG_FAPPEND )
         pos = fp->f_offset = node->size;
     
-    // Check that pos is within current file size, or at the very end.
-    if( pos < 0 || pos > node->size )
-        return EINVAL;
-
     // Now loop over the iovecs until they are all done, or
     // we get an error.
     for( i = 0; i < uio->uio_iovcnt; i++ )
@@ -2186,11 +2187,6 @@ static int ramfs_fo_lseek     (struct CYG_FILE_TAG *fp, off_t *apos, int whence 
         return EINVAL;
     }
     
-    // Check that pos is still within current file size, or at the
-    // very end.
-    if( pos < 0 || pos > node->size )
-        return EINVAL;
-
     // All OK, set fp offset and return new position.
     *apos = fp->f_offset = pos;
     

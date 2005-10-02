@@ -65,6 +65,17 @@ cdl_package CYGPKG_FS_RAM {
     implements     CYGINT_IO_FILEIO_FS
 
     compile        -library=libextras.a ramfs.c
+        
+    requires       CYGINT_FS_RAM_ALLOC == 1
+
+    cdl_interface  CYGINT_FS_RAM_ALLOC {
+        display       "Functions to allocate RAM"
+        description   "
+            This interface is implemented by functions
+            which allocate RAM to hold the contents of the files"
+    }
+
+
 
     # ----------------------------------------------------------------------
     # Simple allocation mechanism using malloc()
@@ -75,6 +86,7 @@ cdl_package CYGPKG_FS_RAM {
 	default_value 1
 	active_if      !CYGPKG_FS_RAM_BLOCKS
 
+        implements CYGINT_FS_RAM_ALLOC
 	cdl_option     CYGNUM_RAMFS_REALLOC_INCREMENT {
 	    display       "Size of file data storage increment"
 	    flavor        data
@@ -95,7 +107,7 @@ cdl_package CYGPKG_FS_RAM {
 	default_value  0
 	active_if      !CYGPKG_FS_RAM_SIMPLE
 
-	
+        implements CYGINT_FS_RAM_ALLOC	
 	cdl_option     CYGNUM_RAMFS_BLOCK_SIZE {
 	    display       "Size of file data storage block"
 	    flavor        data

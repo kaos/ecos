@@ -166,9 +166,75 @@ int main( int argc, char **argv )
     err = fclose(stream);
     if (err != 0) SHOW_RESULT( fclose, err );
 
+    CYG_TEST_INFO("open file /fseek");
+    stream = fopen("/fseek", "r+");
+    if (!stream) {
+      diag_printf("<FAIL>: fopen() returned NULL, %s\n", strerror(errno));
+    }
+
+    CYG_TEST_INFO("fseek()ing past the end to create a hole");
+    /* Seek 1K after the end of the file */
+    err = fseek(stream, sizeof(buf), SEEK_END);
+    if ( err < 0 ) SHOW_RESULT( fseek, err );
+
+    pos = ftell(stream);
+    
+    if (pos < 0) SHOW_RESULT( ftell, pos );
+    if (pos != (2*sizeof(buf))) CYG_TEST_FAIL("ftell is not telling the truth");
+    
+    CYG_TEST_INFO("writing test pattern");    
+    err=fwrite(buf,sizeof(buf), 1, stream);
+    if ( err < 0 ) SHOW_RESULT( fwrite, err );
+    
+    pos = ftell(stream);
+    
+    if (pos < 0) SHOW_RESULT( ftell, pos );
+    if (pos != (3*sizeof(buf))) CYG_TEST_FAIL("ftell is not telling the truth");
+
+    CYG_TEST_INFO("closing file");
+    err = fclose(stream);
+    if (err != 0) SHOW_RESULT( fclose, err );
+
+    CYG_TEST_INFO("open file /fseek");
+    stream = fopen("/fseek", "r+");
+    if (!stream) {
+      diag_printf("<FAIL>: fopen() returned NULL, %s\n", strerror(errno));
+    }
+    
+    err = fread(buf1,sizeof(buf1),1, stream);
+    if (err != 1) SHOW_RESULT( fread, err );
+    
+    CYG_TEST_INFO("Comparing contents");
+    if (memcmp(buf, buf1, sizeof(buf1))) {
+      CYG_TEST_FAIL("File contents inconsistent");
+    }
+
+    err = fread(buf1,sizeof(buf1),1, stream);
+    if (err != 1) SHOW_RESULT( fread, err );
+    
+    for (i = 0; i< sizeof(buf); i++) {
+      if (buf1[i] != 0)
+        CYG_TEST_FAIL("Hole does not contain zeros");
+    }
+    
+    err = fread(buf1,sizeof(buf1),1, stream);
+    if (err != 1) SHOW_RESULT( fread, err );
+    
+    if (memcmp(buf, buf1, sizeof(buf1))) {
+      CYG_TEST_FAIL("File contents inconsistent");
+    }
+
+    CYG_TEST_INFO("closing file");
+
+    /* Close the file */
+    err = fclose(stream);
+    if (err != 0) SHOW_RESULT( fclose, err );
+    
     CYG_TEST_INFO("umount /");    
     err = umount( "/" );
     if( err < 0 ) SHOW_RESULT( umount, err );    
     
     CYG_TEST_PASS_FINISH("ramfs2");
+
+
 }

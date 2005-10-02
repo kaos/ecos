@@ -1,3 +1,26 @@
+2005-10-01  Andrew Lunn   <andrew.lunn@ascom.ch>
+
+	* src/ramfs.c: Implement holes in files when using BLOCK
+	allocation method. This requires allowing lseek to go past the end
+	of the file.
+
+	* test/ramfs2.c: Extended the lseek test to now seek past the end
+	of the file. With the BLOCK allocation method this will create a
+	whole. With the SIMPLE allocation method is just allocates the
+	memory and fills it with zero.
+
+	* cdl/ramfs.cdl: Added in interface which both SIMPLE and BLOCK
+	implement. This allows the inference engine to work out is should
+	enable BLOCK if SIMPLE is disabled by the user.
+
+2005-10-01  Dan Jakubiec  <dan.jakubiec@systech.com>
+
+	* src/ramfs.c: (ramfs_mount, ramfs_open, ramfs_mkdir) Changed the
+	permissions for files and directories created on RAMFS file systems
+	from 000 to 777. This helps ported applications which wrongly
+	assume there is some security concept and check for the existence
+	of certain file permissions.
+
 2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/ramfs1.c (SHOW_RESULT): Fixed compiler warning about format
