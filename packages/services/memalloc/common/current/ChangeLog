@@ -1,3 +1,7 @@
+2005-09-30  Alexander Neundorf <neundorf@kde.org>
+
+        * doc/memalloc.sgml: two minor fixes
+
 2005-07-30  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/heaptest.c (test_pat): Casts to prevent compiler warnings.

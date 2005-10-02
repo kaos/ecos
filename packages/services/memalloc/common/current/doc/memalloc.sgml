@@ -203,7 +203,7 @@ typedef struct {
           <paramdef>cyg_uint32 <parameter>size</parameter></paramdef>
           <paramdef>cyg_uint32 <parameter>blocksize</parameter></paramdef>
           <paramdef>cyg_handle_t* <parameter>fixpool</parameter></paramdef>
-          <paramdef>cyg_mempool_var* <parameter>var</parameter></paramdef>
+          <paramdef>cyg_mempool_fix* <parameter>fix</parameter></paramdef>
         </funcprototype>
         <funcprototype>
           <funcdef>void <function>cyg_mempool_fix_delete</function></funcdef>
