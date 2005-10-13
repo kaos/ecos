@@ -1,3 +1,8 @@
+2005-10-13  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* docs/manpages/sys/socketpair.2: Removed this man page since
+	socketpair(2) is not supported.
+ 
 2005-09-16  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/server_test.c: use socklen_t.
