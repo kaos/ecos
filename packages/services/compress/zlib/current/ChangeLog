@@ -1,3 +1,8 @@
+2005-10-16  Peter Korsgaard  <jacmet@sunsite.dk>
+
+	* cdl/compress_zlib.cdl (CYGFUN_COMPRESS_ZLIB_GZIO): New option to
+	include zlib stdio-like utility functions.
+
 2005-07-27  Peter Korsgaard  <jacmet@sunsite.dk>
 
 	* src/ChangeLog: 

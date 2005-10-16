@@ -87,6 +87,20 @@ cdl_package CYGPKG_COMPRESS_ZLIB {
            infrastructure."
     }
 
+    cdl_option CYGFUN_COMPRESS_ZLIB_GZIO {
+        display        "Include stdio-like utility functions"
+        flavor         bool
+        requires       CYGINT_ISO_STDIO_FILEPOS
+        requires       CYGINT_ISO_STRING_STRFUNCS
+        requires       CYGINT_ISO_STDIO_FORMATTED_IO
+        requires       CYGINT_ISO_STDIO_FILEACCESS
+        default_value  { CYGPKG_LIBC_STDIO_OPEN ? 1 : 0 }
+        compile        gzio.c
+        description    "
+           This option enables the stdio-like zlib utility functions
+           (gzread/gzwrite and friends) provided in gzio.c."
+    }
+
 
 # ====================================================================
 
