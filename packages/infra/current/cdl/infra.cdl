@@ -177,6 +177,20 @@ cdl_package CYGPKG_INFRA {
             so that new and delete can be used, if that is what is required."
     }
 
+    cdl_option CYGNUM_INFRA_EMPTY_DELETE_THRESHOLD {
+        display       "Threshold for valid number of delete calls"
+        default_value 100
+        active_if     CYGPKG_INFRA_DEBUG
+        description   "
+            Some users don't know about the empty delete function and then
+            wonder why there C++ classes are leaking memory. If
+            INFRA_DEBUG is enabled we keep a counter for the number of
+            times delete is called. If it goes above this threshold we throw
+            an assertion failure. This should point heavy users of
+            delete in the right direction without upsetting those who want
+            an empty delete function. "
+    }
+    
     # ========================================================================
 
     cdl_option CYGFUN_INFRA_DUMMY_ABORT {

@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2005 Andrew Lunn
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -57,6 +58,7 @@
 #include <pkgconf/infra.h>
 
 #include <cyg/infra/cyg_type.h>
+#include <cyg/infra/cyg_ass.h>
 
 // see the description comment in infra.cdl for
 // CYGFUN_INFRA_EMPTY_DELETE_FUNCTIONS
@@ -64,14 +66,30 @@
 #ifdef CYGFUN_INFRA_EMPTY_DELETE_FUNCTIONS
 // then define these empty functions:
 
+#ifdef CYGPKG_INFRA_DEBUG
+static cyg_uint32 counter;
+#endif
+
 void operator delete(void *x) throw()
 {
+#ifndef CYGPKG_INFRA_DEBUG  
     CYG_EMPTY_STATEMENT;
+#else
+    counter++;
+    CYG_ASSERT(counter < CYGNUM_INFRA_EMPTY_DELETE_THRESHOLD,
+               "Do you want an empty delete function?");
+#endif
 }
 
 void operator delete[](void *x) throw()
 {
+#ifndef CYGPKG_INFRA_DEBUG  
     CYG_EMPTY_STATEMENT;
+#else
+    counter++;
+    CYG_ASSERT(counter < CYGNUM_INFRA_EMPTY_DELETE_THRESHOLD,
+               "Do you want an empty delete function?");
+#endif
 }
 
 #endif // CYGFUN_INFRA_EMPTY_DELETE_FUNCTIONS

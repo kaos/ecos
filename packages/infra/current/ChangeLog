@@ -1,3 +1,15 @@
+2005-10-16  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/delete.cxx: 
+	* cdl/infra.cdl: Count the number of calls to delete when
+	INFRA_DEBUG is enabled. If the threshold is exceeded it probably
+	means the user expects a real delete function, not the empty one.
+	
+2005-10-12  Laurent Gonzalez  <laurent.gonzalez@trango-systems.com>
+
+	* src/simple.cxx (cyg_check_func_ptr): match the implementation to
+	the prototype. This got forgotten in the last patch.
+	
 2005-07-29  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/cyg_ass.h: Fixed a function prototype so that
