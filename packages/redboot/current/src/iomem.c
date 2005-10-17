@@ -139,7 +139,7 @@ do_iopeek(int argc, char *argv[])
               &set_16bit, 0, "output 16 bit units");
     init_opts(&opts[3], '1', false, OPTION_ARG_TYPE_FLG,
               &set_8bit, 0, "output 8 bit units");
-    if (!scan_opts(argc, argv, 1, opts, 5, 0, 0, "")) {
+    if (!scan_opts(argc, argv, 1, opts, 4, 0, 0, "")) {
         return;
     }
     if (!base_set) {
