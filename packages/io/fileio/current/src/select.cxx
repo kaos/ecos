@@ -67,6 +67,7 @@
 #include "fio.h"                       // Private header
 
 #include <sys/select.h>                // select header
+#include <sys/time.h>
 
 #include <cyg/kernel/sched.hxx>        // scheduler definitions
 #include <cyg/kernel/thread.hxx>       // thread definitions
