@@ -134,7 +134,7 @@ uiomove(cp, n, uio)
 			break;
 #endif
 		}
-		(char *)(iov->iov_base) += cnt;
+                iov->iov_base = (char *)iov->iov_base + cnt;
 		iov->iov_len -= cnt;
 		uio->uio_resid -= cnt;
 		uio->uio_offset += cnt;
