@@ -98,7 +98,10 @@ pexit(char *s)
 }
 
 #ifdef __ECOS
-#ifndef CYGPKG_SNMPLIB
+# ifdef CYGPKG_POSIX
+# #include <pkgconf/posix.h>
+# endif
+# ifndef CYGPKG_POSIX_TIMERS
 int
 gettimeofday(struct timeval *tv, struct timezone *tz)
 {
@@ -107,11 +110,9 @@ gettimeofday(struct timeval *tv, struct timezone *tz)
     tv->tv_sec = cur_time / 100;
     tv->tv_usec = (cur_time % 100) * 10000;
 }
-#else
-int
-gettimeofday(struct timeval *tv, struct timezone *tz);
+# endif
 #endif
-#endif
+
 void
 show_results(const char *msg, struct timeval *start, 
              struct timeval *end, int nbufs, int buflen,
