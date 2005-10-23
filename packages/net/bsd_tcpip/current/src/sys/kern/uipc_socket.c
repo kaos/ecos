@@ -65,6 +65,7 @@
 #include <sys/socketvar.h>
 
 #include <cyg/io/file.h>
+#include <sys/time.h>
 
 #ifdef INET
 static int	 do_setopt_accept_filter(struct socket *so, struct sockopt *sopt);

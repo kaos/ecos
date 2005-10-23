@@ -64,7 +64,11 @@
  * <net/if.h> does not depend on <sys/time.h> on most other systems.  This
  * helps userland compatability.  (struct timeval ifi_lastchange)
  */
+#ifndef __ECOS
 #ifndef _KERNEL
+#include <sys/time.h>
+#endif
+#else
 #include <sys/time.h>
 #endif
 

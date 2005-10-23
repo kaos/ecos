@@ -586,7 +586,7 @@ in6_pcbdetach(inp)
 #endif /* IPSEC */
 	inp->inp_gencnt = ++ipi->ipi_gencnt;
 	in_pcbremlists(inp);
-	sotoinpcb(so) = 0;
+	so->so_pcb = 0;
 	sofree(so);
 
 	if (inp->in6p_inputopts) /* Free all received options. */

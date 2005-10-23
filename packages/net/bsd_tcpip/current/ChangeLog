@@ -1,3 +1,12 @@
+2005-10-23  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/sys/time.h (Removed): Use the isoinfra sys/time.h
+	* include/net/if.h: We do need sys/time.h for timeval.
+	* src/sys/kern/uipc_socket.c: include sys/time.h for timeval
+	* src/sys/kern/uipc_socket2.c: Ditto
+	* src/sys/netinet6/in6_pcb.c (in6_pcbdetach): remove lvalue cast
+	to keep gcc4.x happy.
+	
 2005-09-02  Sebastien Couret <sebastien.couret@elios-informatique.fr>
 
 	* src/sys/kern/kern_sysctl.c: Silent compiler warning on lvalue

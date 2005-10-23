@@ -64,6 +64,7 @@
 #include <sys/socketvar.h>
 
 #include <cyg/io/file.h>
+#include <sys/time.h>
 
 int	maxsockets = CYGPKG_NET_MAXSOCKETS;
 
