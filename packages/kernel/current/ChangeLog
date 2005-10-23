@@ -1,3 +1,8 @@
+2005-10-23  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/flag.hxx: We need thread.inl for the empty() function
+	implementation which the compiler wants to inline.
+	
 2005-08-03  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/ksem1.c: Type fix to fix a compiler warning.

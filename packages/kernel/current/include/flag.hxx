@@ -59,6 +59,7 @@
 #include <cyg/infra/cyg_ass.h>                     // assertion macros
 #include <cyg/kernel/thread.hxx>                   // Cyg_Thread
 
+#include <cyg/kernel/thread.inl>                   // queue implementation
 // -------------------------------------------------------------------------
 
 // Flag object.  This class implements a queue of threads waiting for a
