@@ -64,6 +64,7 @@ cdl_package CYGPKG_SNMPLIB {
     requires      { 0 != CYGINT_ISO_ERRNO }
     requires      { 0 != CYGINT_ISO_ERRNO_CODES }
     requires      CYGPKG_NET
+    requires      CYGPKG_POSIX_TIMERS
     description   "SNMP protocol support library based on the UCD-SNMP project."
 
     compile					\

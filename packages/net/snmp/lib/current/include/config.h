@@ -344,7 +344,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //#define HAVE_GETPID 1
 
 /* Define if you have the gettimeofday function.  */
-//#define HAVE_GETTIMEOFDAY 1
+define HAVE_GETTIMEOFDAY 1
 
 /* Define if you have the if_freenameindex function.  */
 //#define HAVE_IF_FREENAMEINDEX 1

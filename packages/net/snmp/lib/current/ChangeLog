@@ -1,3 +1,8 @@
+2005-10-23  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/config.h: POSIX provides gettimeofday()
+	* cdl/snmplib.cdl: We require gettimeofday from POSIX
+
 2003-03-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/keytools.c (decode_keychange): Avoid undefined behaviour.
