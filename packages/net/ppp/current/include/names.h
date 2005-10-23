@@ -246,7 +246,6 @@
 #define establish_ppp cyg_ppp_establish_ppp
 #define get_host_seed cyg_ppp_get_host_seed
 #define get_idle_time cyg_ppp_get_idle_time
-#define gettimeofday cyg_ppp_gettimeofday
 #define mrand48 cyg_ppp_mrand48
 #define netmask cyg_ppp_netmask
 #define output cyg_ppp_output

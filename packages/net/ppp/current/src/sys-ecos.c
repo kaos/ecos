@@ -1845,20 +1845,6 @@ void syslog( int level, char *fmt, ... )
 
 //=====================================================================
 
-int gettimeofday(struct timeval *tv, struct timezone *tz)
-{
-    cyg_tick_count_t time = cyg_current_time();
-    
-    tv->tv_sec = time/CYGNUM_HAL_RTC_DENOMINATOR;
-    tv->tv_usec = (time%CYGNUM_HAL_RTC_DENOMINATOR)*10000;
-    
-//    db_printf("%s: %d %d\n", __PRETTY_FUNCTION__, tv->tv_sec, tv->tv_usec);
-
-    return 0;
-}
-
-//=====================================================================
-
 char *crypt (const char *key, const char *salt)
 {
     static char res[13];

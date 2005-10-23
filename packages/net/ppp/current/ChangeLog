@@ -1,3 +1,8 @@
+2005-10-23  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/ppp.cdl: Require CYGPKG_POSIX_TIMERS
+	* src/sys-ecos.c (gettimeofday): Removed, now get it from POSIX
+
 2005-07-30  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/ppp_io.c (cyg_ppp_pppread): caddrt_t to stop compiler warnings.
