@@ -52,6 +52,7 @@
 cdl_package CYGPKG_MICROWINDOWS {
     display       "MicroWindows"
     requires      CYGPKG_POSIX
+    requires      CYGPKG_POSIX_TIMERS
     requires      CYGPKG_ISOINFRA
     requires      CYGINT_ISO_C_TIME_TYPES
     requires      CYGINT_ISO_STRERROR

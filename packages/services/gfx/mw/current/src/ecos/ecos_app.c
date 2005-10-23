@@ -59,16 +59,6 @@ static char startup_stack[STACKSIZE];
 cyg_handle_t startup_thread;
 cyg_thread   startup_thread_obj;
 
-
-int 
-gettimeofday(struct timeval *tv,
-             struct timezone *tz)
-{
-    tv->tv_usec = 0;
-    tv->tv_sec = time(NULL);
-    return(0);
-}
-
 int
 strcasecmp(const char *s1, const char *s2)
 {
