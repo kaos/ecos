@@ -59,7 +59,7 @@
 #include <pkgconf/posix.h>
 
 #include <sys/types.h>   // pthread_* types
-
+#include <time.h>
 //=============================================================================
 // Mutexes
 

@@ -55,6 +55,8 @@
 #define NA_MSG "No POSIX signals"
 #elif !defined(CYGPKG_POSIX_TIMERS)
 #define NA_MSG "No POSIX timers"
+#elif !defined(CYGPKG_POSIX_SEMAPHORES)
+#define NA_MSG "POSIX semaphores not enabled"
 #endif
 
 #ifdef NA_MSG

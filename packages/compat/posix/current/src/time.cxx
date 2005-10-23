@@ -55,8 +55,6 @@
 
 #include <pkgconf/posix.h>
 
-#ifdef CYGPKG_POSIX_CLOCKS
-
 #include <pkgconf/hal.h>
 #include <pkgconf/kernel.h>
 
@@ -67,9 +65,11 @@
 #include "pprivate.h"                   // POSIX private header
 
 #include <time.h>                       // our header
+#include <sys/time.h>
 
 #include <cyg/kernel/thread.hxx>
 #include <cyg/kernel/clock.hxx>
+#include <cyg/kernel/kapi.h>
 
 #include <cyg/kernel/thread.inl>
 #include <cyg/kernel/clock.inl>
@@ -694,7 +694,20 @@ externC unsigned int sleep( unsigned int seconds )
     TIME_RETURN(0);
 } 
 
-#endif // ifdef CYGPKG_POSIX_CLOCKS
+// -------------------------------------------------------------------------
+// gettimeofday()
+// Get the current time in a struct timeval
+externC int gettimeofday(struct timeval* tv, struct timezone* tz)
+{
+    int ticks_per_second = 1000000000/
+      (CYGNUM_HAL_RTC_NUMERATOR/CYGNUM_HAL_RTC_DENOMINATOR);    
+    cyg_tick_count_t cur_time = cyg_current_time();
+    int tix = cur_time % ticks_per_second;
+    tv->tv_sec = cur_time / ticks_per_second;
+    tv->tv_usec = (tix * 1000000)/ticks_per_second;
+    return 0;
+}
+
 
 // -------------------------------------------------------------------------
 // EOF time.cxx

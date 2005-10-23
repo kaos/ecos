@@ -52,6 +52,7 @@ cdl_package CYGPKG_POSIX {
     display        "POSIX compatibility layer"
     description    "This package enables the POSIX compatibility
                     layer that implements IEEE 1003.1."
+
     doc            ref/posix-compatibility.html
     include_dir    cyg/posix
     
@@ -62,10 +63,7 @@ cdl_package CYGPKG_POSIX {
     requires       CYGINT_ISO_ERRNO_CODES
     requires       CYGIMP_KERNEL_SCHED_SORTED_QUEUES
 
-    implements     CYGINT_ISO_SCHED_IMPL
     implements     CYGINT_ISO_POSIX_LIMITS
-    implements     CYGINT_ISO_PMUTEXTYPES
-    implements     CYGINT_ISO_PTHREAD_MUTEX
     requires       { CYGBLD_ISO_POSIX_LIMITS_HEADER == \
                          "<cyg/posix/limits.h>" }
     requires       { CYGBLD_ISO_PMUTEXTYPES_HEADER == \
@@ -73,26 +71,41 @@ cdl_package CYGPKG_POSIX {
     requires       { CYGBLD_ISO_PTHREAD_MUTEX_HEADER == \
                          "<cyg/posix/mutex.h>" }
     
-    compile        mqueue.cxx mutex.cxx misc.cxx
+    compile        misc.cxx
     compile       -library=libextras.a startup.cxx
 
-    cdl_option _POSIX_THREAD_PRIO_INHERIT {
-        display		"POSIX mutex priority inheritance feature test macro"
-        flavor        	bool
-        default_value 	1
-        requires	CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_INHERIT
-        description	"This option defines the POSIX feature test macro
-                         for supporting priority inheritance protocol in
-                         mutexes."
-    }
+    cdl_component CYGPKG_POSIX_PTHREAD_MUTEX {
+
+	display          "POSIX pthread mutexes"
+	flavor           bool
+	default_value    1
+        implements       CYGINT_ISO_PMUTEXTYPES
+        implements       CYGINT_ISO_PTHREAD_MUTEX
+	description      "
+            This component provides support for POSIX pthreads
+            mutexes."
+
+        compile          mutex.cxx
+
+        cdl_option _POSIX_THREAD_PRIO_INHERIT {
+            display	  "POSIX mutex priority inheritance feature test macro"
+            flavor        bool
+            default_value 1
+            requires	  CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_INHERIT
+            description	  "
+                This option defines the POSIX feature test macro for
+                supporting priority inheritance protocol in mutexes."
+        }
     
-    cdl_option _POSIX_THREAD_PRIO_PROTECT {
-        display		"POSIX mutex priority ceiling feature test macro"
-        flavor        	bool
-        default_value 	1
-        requires	CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_CEILING
-        description	"This option defines the POSIX feature test macro
-                         for supporting priority ceiling protocol in mutexes."
+        cdl_option _POSIX_THREAD_PRIO_PROTECT {
+            display	  "POSIX mutex priority ceiling feature test macro"
+            flavor        bool
+            default_value 1
+            requires      CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_CEILING
+            description	  "
+                This option defines the POSIX feature test macro for 
+                supporting priority ceiling protocol in mutexes."
+        }
     }
     
     # ----------------------------------------------------------------
@@ -102,9 +115,12 @@ cdl_package CYGPKG_POSIX {
 	display          "POSIX scheduling configuration"
 	flavor           bool
 	default_value    1
-	description      "This component provides controls over scheduling
-	                  in POSIX."
+        implements       CYGINT_ISO_SCHED_IMPL
         requires         CYGPKG_POSIX_CLOCKS
+
+	description      "
+            This component provides controls over scheduling in POSIX."
+
         compile          sched.cxx
 
 	cdl_option _POSIX_PRIORITY_SCHEDULING {
@@ -112,9 +128,10 @@ cdl_package CYGPKG_POSIX {
 	    flavor        bool
 	    calculated    1
 	    requires      CYGSEM_KERNEL_SCHED_MLQUEUE
-	    description   "This option defines the POSIX feature test macro
-	                   that indicates that priority scheduling is present.
-	                   This should not be undefined."
+	    description   "
+                This option defines the POSIX feature test macro that 
+                indicates that priority scheduling is present. This 
+                should not be undefined."
 	}
     }
 
@@ -125,14 +142,17 @@ cdl_package CYGPKG_POSIX {
 	display          "POSIX pthread configuration"
 	flavor           bool
 	default_value    1
-	description      "This component provides configuration controls for
-	                  the POSIX pthreads package."
-        compile          pthread.cxx
+	description      "
+            This component provides configuration controls for the 
+            POSIX pthreads package."
+
 	script           pthread.cdl
+        compile          pthread.cxx
+
     }
 
     # ----------------------------------------------------------------
-    # Timers component
+    # Clock component
 
     cdl_option CYGPKG_POSIX_CLOCKS {
 	display          "POSIX clocks"
@@ -145,11 +165,18 @@ cdl_package CYGPKG_POSIX {
                              "<cyg/posix/time.h>" }
         requires         { CYGBLD_ISO_POSIX_CLOCKS_HEADER == \
                              "<cyg/posix/time.h>" }
+        requires         { CYGBLD_ISO_STRUCTTIMEVAL_HEADER == \
+                             "<cyg/posix/sys/time.h>" }
         requires         CYGPKG_KERNEL
         requires         CYGVAR_KERNEL_COUNTERS_CLOCK
+
+        description      "
+            This component provides configuration controls for
+	    the POSIX clocks and the sleep(), nanosleep() and 
+            gettimeofday() functions."
+
         compile          time.cxx
-	description      "This component provides configuration controls for
-	                  the POSIX clocks."
+
     }
 
     # ----------------------------------------------------------------
@@ -169,10 +196,11 @@ cdl_package CYGPKG_POSIX {
         requires         CYGPKG_KERNEL
         requires         CYGVAR_KERNEL_COUNTERS_CLOCK
         requires         CYGPKG_POSIX_PTHREAD
-        requires         CYGPKG_POSIX_CLOCKS
         requires         CYGPKG_POSIX_SIGNALS
-	description      "This component provides configuration controls for
-	                  the POSIX timers."
+        requires         CYGINT_ISO_POSIX_CLOCKS
+	description      "
+             This component provides configuration controls for
+	     the POSIX timers."
     }
 
     # ----------------------------------------------------------------
@@ -198,11 +226,14 @@ cdl_package CYGPKG_POSIX {
 	display          "POSIX message queues"
 	flavor           bool
 	default_value    1
+        compile          mqueue.cxx
         implements       CYGINT_ISO_MQUEUE
         requires         CYGPKG_KERNEL
         requires         CYGINT_ISO_MALLOC
         requires         CYGINT_ISO_ERRNO
         requires         CYGINT_ISO_STRING_STRFUNCS
+        requires         CYGINT_ISO_PTHREAD_MUTEX
+        requires         CYGPKG_POSIX_CLOCKS
 	description      "This component provides configuration controls for
 	                  POSIX message queues."
 
@@ -261,8 +292,10 @@ cdl_package CYGPKG_POSIX {
                              "<cyg/posix/signal.h>" }
         requires         { CYGBLD_ISO_SIGNAL_IMPL_HEADER == \
                              "<cyg/posix/signal.h>" }
-	description      "This component provides configuration controls for
-	                  the POSIX signals."
+	description      "
+            This component provides configuration controls for
+	    the POSIX signals."
+
         compile          signal.cxx except.cxx 
     }
 
@@ -275,8 +308,9 @@ cdl_package CYGPKG_POSIX {
 	default_value     1
 	requires          { CYGBLD_ISO_UTSNAME_HEADER == \
                             "<cyg/posix/utsname.h>" }
-	description       "This component provides configuration controls for
-	                   the POSIX utsname structure and the uname() function."
+	description       "
+            This component provides configuration controls for
+	    the POSIX utsname structure and the uname() function."
 
 	cdl_option CYG_POSIX_UTSNAME_LENGTH {
 	    display          "Length of name strings in utsname structure"
@@ -297,13 +331,24 @@ cdl_package CYGPKG_POSIX {
     # ----------------------------------------------------------------
     # Tests
 
-        cdl_option CYGPKG_POSIX_TESTS {
-            display "POSIX tests"
-            flavor  data
-            no_define
-            calculated { 
-                "tests/pthread1 tests/pthread2 tests/pthread3 tests/mutex3 tests/mqueue2"
-                . ((CYGPKG_POSIX_SIGNALS) ? " tests/mqueue1 tests/signal1 tests/signal2 tests/signal3 tests/sigsetjmp tests/timer1 tests/tm_basic" : "")
+    cdl_option CYGPKG_POSIX_TESTS {
+        display "POSIX tests"
+        flavor  data
+        no_define
+        calculated { 
+            (CYGPKG_POSIX_PTHREAD ? "tests/pthread1 tests/pthread2 tests/pthread3 " 
+                                  : "") .
+            (CYGPKG_POSIX_PTHREAD_MUTEX ? "tests/mutex3 " : "") .
+            (CYGPKG_POSIX_MQUEUES ? "tests/mqueue1 tests/mqueue2 " : "") .
+            (CYGPKG_POSIX_SIGNALS ? "tests/signal1 tests/signal2 tests/signal3 \
+                                     tests/sigsetjmp " : "") .
+            ((CYGPKG_POSIX_SIGNALS && 
+              CYGPKG_POSIX_TIMERS && 
+              CYGPKG_POSIX_SEMAPHORES) ? "tests/timer1 " : "") .
+            ((CYGPKG_POSIX_SIGNALS && 
+              CYGPKG_POSIX_TIMERS &&     
+              CYGPKG_POSIX_PTHREAD &&
+              CYGPKG_POSIX_SEMAPHORES) ? "tests/tm_basic " : "")
             }
             description   "
                 This option specifies the set of tests for the POSIX package."

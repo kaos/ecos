@@ -50,14 +50,14 @@
 
 cdl_option CYGPKG_POSIX_PTHREAD_REQUIREMENTS {
 	display         "Generic requirements of pthread package"
-	flavor          bool
-	calculated 	1
+        flavor          bool
+        calculated      1
         implements      CYGINT_ISO_PTHREADTYPES
         implements      CYGINT_ISO_PTHREAD_IMPL
-	requires        CYGPKG_POSIX_SCHED
-	requires	CYGSEM_KERNEL_SCHED_TIMESLICE_ENABLE
-	requires	CYGSEM_KERNEL_SCHED_ASR_SUPPORT
-	requires	CYGSEM_KERNEL_SCHED_ASR_GLOBAL
+        requires        CYGPKG_POSIX_SCHED
+        requires        CYGSEM_KERNEL_SCHED_TIMESLICE_ENABLE
+        requires        CYGSEM_KERNEL_SCHED_ASR_SUPPORT
+        requires        CYGSEM_KERNEL_SCHED_ASR_GLOBAL
 	requires	!CYGSEM_KERNEL_SCHED_ASR_DATA_GLOBAL
 	requires	CYGFUN_KERNEL_THREADS_STACK_LIMIT
         requires        { CYGBLD_ISO_PTHREADTYPES_HEADER == \

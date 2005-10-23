@@ -55,6 +55,8 @@
 #define NA_MSG "POSIX signals not enabled"
 #elif !defined(CYGPKG_POSIX_PTHREAD)
 #define NA_MSG "POSIX threads not enabled"
+#elif !defined(CYGPKG_POSIX_SEMAPHORES)
+#define NA_MSG "POSIX semaphores not enabled"
 #endif
 
 #ifdef NA_MSG

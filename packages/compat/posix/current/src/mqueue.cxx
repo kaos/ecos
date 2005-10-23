@@ -58,8 +58,6 @@
 
 #include <pkgconf/posix.h>
 
-#ifdef CYGPKG_POSIX_MQUEUES
-
 #include <pkgconf/kernel.h>
 
 /* INCLUDES */
@@ -999,7 +997,5 @@ mq_getattr( mqd_t mqdes, struct mq_attr *mqstat )
 
 
 //------------------------------------------------------------------------
-
-#endif // ifdef CYGPKG_POSIX_MQUEUES
 
 /* EOF mqueue.cxx */

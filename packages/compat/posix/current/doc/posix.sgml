@@ -1046,6 +1046,7 @@ int timer&lowbar;settime( timer&lowbar;t timerid, int flags,
 int timer&lowbar;gettime( timer&lowbar;t timerid, struct itimerspec &ast;value ); 
 int timer&lowbar;getoverrun( timer&lowbar;t timerid ); 
 int nanosleep( const struct timespec &ast;rqtp, struct timespec &ast;rmtp);
+int gettimeofday(struct timeval *tv, struct timezone* tz);
 </screen>
 
 </sect2>

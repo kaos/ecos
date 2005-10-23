@@ -1,3 +1,16 @@
+2005-10-23  Andrew Lunn  <andrew.lunn@ascom.ch>
+2005-10-18  Alexander Neundorf <neundorf@kde.org>
+
+	* src/time.cxx: add gettimeofday() implementation
+	* cdl/posix.cdl: make some descriptions a bit more verbose.  move
+	mutex.cxx into its own component (CYGPKG_POSIX_PTHREAD_MUTEX).
+	move compilation of mqueue.cxx into the CYGPKG_POSIX_MQUEUES
+	component.  Fixed the tests so that only the ones which stand a
+	chance of compling are compiled.
+	* include/sys/time.h (new): Header file which implements sys/time.h 
+	* include/pthread.h: Include time.h for struct timespec
+	* include/mutex.h: Include time.h for struct timespec
+
 2004-10-01  Oyvind Harboe  <oyvind.harboe@zylin.com>
 
 	* src/signal.cxx:  place the CYGBLD_ATTRIB_INIT_PRI such that it

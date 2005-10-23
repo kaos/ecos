@@ -71,6 +71,8 @@
 #define NA_MSG "Kernel clock not enabled"
 #elif CYGNUM_KERNEL_SCHED_PRIORITIES <= 12
 #define NA_MSG "Kernel scheduler properties <= 12"
+#elif !defined(CYGPKG_POSIX_SEMAPHORES)
+#define NA_MSG "POSIX semaphores not enabled"
 #endif
 
 //==========================================================================
@@ -156,7 +158,9 @@ typedef struct fun_times {
 static int nsamples;
 static int ntest_threads;
 static int nthread_switches;
+#ifdef CYGPKG_POSIX_PTHREAD_MUTEX
 static int nmutexes;
+#endif
 static int nmboxes;
 static int nsemaphores;
 static int nscheds;
@@ -169,11 +173,11 @@ static sem_t synchro;
 static fun_times thread_ft[NTEST_THREADS];
 
 static fun_times test2_ft[NTHREAD_SWITCHES];
-
+#ifdef CYGPKG_POSIX_PTHREAD_MUTEX
 static pthread_mutex_t test_mutexes[NMUTEXES];
 static fun_times mutex_ft[NMUTEXES];
 static pthread_t mutex_test_thread_handle;
-
+#endif
 #if 0
 static cyg_mbox test_mboxes[NMBOXES];
 static cyg_handle_t test_mbox_handles[NMBOXES];
@@ -212,8 +216,10 @@ extern bool measure_clock_latency;
 void run_sched_tests(void);
 void run_thread_tests(void);
 void run_thread_switch_test(void);
+#ifdef CYGPKG_POSIX_PTHREAD_MUTEX
 void run_mutex_tests(void);
 void run_mutex_circuit_test(void);
+#endif
 void run_mbox_tests(void);
 void run_mbox_circuit_test(void);
 void run_semaphore_tests(void);
@@ -413,7 +419,9 @@ show_test_parameters(void)
     diag_printf("   Clock samples:         %5d\n", nsamples);
     diag_printf("   Threads:               %5d\n", ntest_threads);
     diag_printf("   Thread switches:       %5d\n", nthread_switches);
+#ifdef CYGPKG_POSIX_PTHREAD_MUTEX
     diag_printf("   Mutexes:               %5d\n", nmutexes);
+#endif
     diag_printf("   Mailboxes:             %5d\n", nmboxes);
     diag_printf("   Semaphores:            %5d\n", nsemaphores);
     diag_printf("   Scheduler operations:  %5d\n", nscheds);
@@ -495,7 +503,7 @@ test2(void *indx)
 
     return indx;
 }
-
+#ifdef CYGPKG_POSIX_PTHREAD_MUTEX
 //--------------------------------------------------------------------------
 // Full-circuit mutex unlock/lock test
 
@@ -531,7 +539,7 @@ mbox_test(cyg_uint32 indx)
     cyg_thread_exit(0);
 }
 #endif
-
+#endif
 //--------------------------------------------------------------------------
 // Full-circuit semaphore post/wait test
 
@@ -767,7 +775,7 @@ run_thread_switch_test(void)
 
 
 //--------------------------------------------------------------------------
-
+#ifdef CYGPKG_POSIX_PTHREAD_MUTEX
 void
 run_mutex_tests(void)
 {
@@ -889,7 +897,7 @@ run_mutex_circuit_test(void)
 
 }
 
-
+#endif
 //--------------------------------------------------------------------------
 // Message queue tests
 
@@ -1576,8 +1584,10 @@ run_all_tests()
     reset_clock_latency_measurement();
 
     run_thread_tests();
+#ifdef CYGPKG_POSIX_PTHREAD_MUTEX
     run_mutex_tests();
 //    run_mbox_tests();
+#endif
     run_semaphore_tests();
     run_timer_tests();
 
@@ -1655,7 +1665,9 @@ int main( int argc, char **argv )
         nsamples = NSAMPLES_SIM;
         ntest_threads = NTEST_THREADS_SIM;
         nthread_switches = NTHREAD_SWITCHES_SIM;
+#ifdef CYGPKG_POSIX_PTHREAD_MUTEX
         nmutexes = NMUTEXES_SIM;
+#endif
         nmboxes = NMBOXES_SIM;
         nsemaphores = NSEMAPHORES_SIM;
         nscheds = NSCHEDS_SIM;
@@ -1664,7 +1676,9 @@ int main( int argc, char **argv )
         nsamples = NSAMPLES;
         ntest_threads = NTEST_THREADS;
         nthread_switches = NTHREAD_SWITCHES;
+#ifdef CYGPKG_POSIX_PTHREAD_MUTEX
         nmutexes = NMUTEXES; 
+#endif
         nmboxes = NMBOXES;
         nsemaphores = NSEMAPHORES;
         nscheds = NSCHEDS;
@@ -1674,14 +1688,18 @@ int main( int argc, char **argv )
     // Sanity
 #ifdef WORKHORSE_TEST
     ntest_threads = max(512, ntest_threads);
+#ifdef CYGPKG_POSIX_PTHREAD_MUTEX
     nmutexes = max(1024, nmutexes);
+#endif
     nsemaphores = max(1024, nsemaphores);
     nmboxes = max(1024, nmboxes);
     ncounters = max(1024, ncounters);
     ntimers = max(1024, ntimers);
 #else
     ntest_threads = max(64, ntest_threads);
+#ifdef CYGPKG_POSIX_PTHREAD_MUTEX
     nmutexes = max(32, nmutexes);
+#endif
     nsemaphores = max(32, nsemaphores);
     nmboxes = max(32, nmboxes);
     ntimers = max(32, ntimers);

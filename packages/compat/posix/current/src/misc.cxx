@@ -32,9 +32,6 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -65,7 +62,9 @@
 #include "pprivate.h"                   // POSIX private header
 
 #include <unistd.h>
+#ifdef CYGPKG_POSIX_UTSNAME
 #include <sys/utsname.h>                // My header
+#endif
 #include <string.h>                     // strcpy
 #include <limits.h>
 #include <time.h>
@@ -93,6 +92,7 @@
 // -------------------------------------------------------------------------
 // uname()
 
+#ifdef CYGPKG_POSIX_UTSNAME
 __externC int uname( struct utsname *name )
 {
     CYG_REPORT_FUNCTYPE( "returning %d" );
@@ -106,6 +106,7 @@ __externC int uname( struct utsname *name )
     CYG_REPORT_RETVAL(0);
     return 0;
 }
+#endif
 
 // -------------------------------------------------------------------------
 // sysconf()
@@ -126,14 +127,18 @@ __externC long sysconf( int name )
         SC_CASE( _SC_GETGR_R_SIZE_MAX,                  0 );
         SC_CASE( _SC_GETPW_R_SIZE_MAX,                  0 );
         SC_CASE( _SC_LOGIN_NAME_MAX,                    LOGIN_NAME_MAX );
+#ifdef CYGPKG_POSIX_MQUEUES        
         SC_CASE( _SC_MQ_OPEN_MAX,                       MQ_OPEN_MAX );
         SC_CASE( _SC_MQ_PRIO_MAX,                       MQ_PRIO_MAX );
+#endif
         SC_CASE( _SC_NGROUPS_MAX,                       NGROUPS_MAX );
         SC_CASE( _SC_OPEN_MAX,                          OPEN_MAX );
         SC_CASE( _SC_PAGESIZE,                          PAGESIZE );
         SC_CASE( _SC_RTSIG_MAX,                         RTSIG_MAX );
+#ifdef CYGPKG_POSIX_SEMAPHORES
         SC_CASE( _SC_SEM_NSEMS_MAX,                     SEM_NSEMS_MAX );
         SC_CASE( _SC_SEM_VALUE_MAX,                     SEM_VALUE_MAX );
+#endif
         SC_CASE( _SC_SIGQUEUE_MAX,                      SIGQUEUE_MAX );
         SC_CASE( _SC_STREAM_MAX,                        STREAM_MAX );
 #ifdef CYGPKG_POSIX_PTHREAD

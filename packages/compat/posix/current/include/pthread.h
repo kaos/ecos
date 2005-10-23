@@ -75,7 +75,7 @@
 #include <sys/types.h>
 
 #include <sched.h>              // SCHED_*
-
+#include <time.h>
 //=============================================================================
 // General thread operations
 
