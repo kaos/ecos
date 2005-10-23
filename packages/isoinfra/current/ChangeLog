@@ -1,3 +1,9 @@
+2005-10-20  Alexander Neundorf <neundorf@kde.org>
+	    Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/sys/time.h (new): Basic implementation.
+	* include/time.h: Removed timeval which is now in sys/time.h
+
 2005-07-22  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/unistd.h: Const correctness to keep the compiler happy.

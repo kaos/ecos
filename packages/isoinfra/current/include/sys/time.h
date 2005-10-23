@@ -1,16 +1,16 @@
-#ifndef CYGONCE_ISO_TIME_H
-#define CYGONCE_ISO_TIME_H
+#ifndef CYGONCE_ISO_SYS_TIME_H
+#define CYGONCE_ISO_SYS_TIME_H
 /*========================================================================
 //
-//      time.h
+//      sys/time.h
 //
-//      ISO time functions
+//      struct timeval and gettimeofday()
 //
 //========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2005  eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -39,14 +39,14 @@
 //========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):     jlarmour
+// Author(s):     Alexander Neundorf <neundorf@kde.org>
 // Contributors:  
-// Date:          2000-04-14
+// Date:          2005-10-04
 // Purpose:       This file provides the time macros, types and functions
 //                required by ISO C and POSIX 1003.1.
 // Description:   The real contents of this file get set from the
 //                configuration (set by the implementation)
-// Usage:         #include <time.h>
+// Usage:         #include <sys/time.h>
 //
 //####DESCRIPTIONEND####
 //
@@ -66,82 +66,23 @@
 #define __need_size_t
 #include <stddef.h>
 
-#ifdef CYGBLD_ISO_TIME_T_HEADER
-# include CYGBLD_ISO_TIME_T_HEADER
+#include <time.h>
+#ifdef CYGBLD_ISO_STRUCTTIMEVAL_HEADER
+# include CYGBLD_ISO_STRUCTTIMEVAL_HEADER
 #else
 
-/* Define time_t as per ISO C para 7.12.1
- * It is conventionally given the meaning of seconds since the
- * Epoch (00:00:00 GMT, 1970-01-01), but don't rely on this - always use
- * the type opaquely
+/*
+ * Structure returned by gettimeofday(2),
+ * and used in other calls such as select(2).
  */
-typedef int time_t;
-# define __time_t_defined
-
-#endif
-
-#ifdef CYGBLD_ISO_CLOCK_T_HEADER
-# include CYGBLD_ISO_CLOCK_T_HEADER
-#else
-
-/* What to divide clock_t by to get seconds (para 7.12.1)
- * According to SUS3, CLOCKS_PER_SEC must be 1 million on all
- * XSI-conformant systems.
- */
-#  define CLOCKS_PER_SEC 1000000
-
-/* Define clock_t as per ISO C para 7.12.1 */
-
-typedef long clock_t;
-#  define __clock_t_defined
-#endif
-
-#ifdef CYGINT_ISO_POSIX_CLOCK_TYPES
-# include CYGBLD_ISO_POSIX_CLOCK_TYPES_HEADER
-#else
-
-/* Provide a default struct timespec. */
-
-struct timespec
-{
-    time_t      tv_sec;
-    long        tv_nsec;
-};
-#endif
-
-#ifdef CYGINT_ISO_POSIX_TIMER_TYPES
-# include CYGBLD_ISO_POSIX_TIMER_TYPES_HEADER
-#else
-
-/* Provide a default struct itimerspec. */
-struct itimerspec
-{
-    struct timespec     it_interval;
-    struct timespec     it_value;
+struct timeval {
+	time_t	tv_sec;		/* seconds */
+	time_t	tv_usec;	/* and microseconds */
 };
 
 #endif
 
-#ifdef CYGINT_ISO_C_TIME_TYPES
-# include CYGBLD_ISO_C_TIME_TYPES_HEADER
-#endif
 
-#ifdef CYGINT_ISO_POSIX_CLOCKS
-# include CYGBLD_ISO_POSIX_CLOCKS_HEADER
-#endif
+#endif /* CYGONCE_ISO_SYS_TIME_H multiple inclusion protection */
 
-#ifdef CYGINT_ISO_POSIX_TIMERS
-# include CYGBLD_ISO_POSIX_TIMERS_HEADER
-#endif
-
-#ifdef CYGINT_ISO_C_CLOCK_FUNCS
-# include CYGBLD_ISO_C_CLOCK_FUNCS_HEADER
-#endif
-
-#ifdef CYGINT_ISO_TZSET
-# include CYGBLD_ISO_TZSET_HEADER
-#endif
-
-#endif /* CYGONCE_ISO_TIME_H multiple inclusion protection */
-
-/* EOF time.h */
+/* EOF sys/time.h */
