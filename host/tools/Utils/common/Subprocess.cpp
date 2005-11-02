@@ -2,6 +2,7 @@
 //                                                                          
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 2004 eCosCentric Limited
 //
 // This program is part of the eCos host tools.
 //
@@ -42,6 +43,10 @@
 //####DESCRIPTIONEND####
 //
 //===========================================================================
+
+// define _GNU_SOURCE to ensure that stdlib.h provides Unix98 PTY declarations
+#define _GNU_SOURCE
+
 #include "eCosTrace.h"
 #include "Subprocess.h"
 #ifdef _WIN32
@@ -331,22 +336,41 @@ bool CSubprocess::CreateProcess(LPCTSTR pszCmdline)
   m_idProcess=0;
   int fdchild=-1; // the file descriptor for the child (slave) half of the pseudo-tty pair
 
-  // Get a free /dev/ptyp0 (master) and /dev/ttyp0 (slave) tty pair
-  String strMasterTty,strChildTty;
-  for(unsigned int c=0;c<64;c++){
-    strMasterTty.Format("/dev/pty%c%x",'p'+c/16,c%16);
+  // Try the Unix98 scheme to get a pseudo-tty pair
+  String strMasterTty("/dev/ptmx"), strChildTty;
+  m_tty=open(strMasterTty, O_RDWR | O_NOCTTY);
+  if (-1!=m_tty) {
+    if ((0 == grantpt(m_tty)) && (0 == unlockpt(m_tty))) {
+      strChildTty = ptsname(m_tty);
+      if (!strChildTty.empty()) {
+        fdchild = open(strChildTty, O_RDWR);
+      }
+    }
+    if (-1==fdchild) {
+      close(m_tty);
+      m_tty=fdchild=-1;
+    } else {
+      VTRACE("opened %s - fd=%d\n",(LPCTSTR)strMasterTty,m_tty);
+    }
+  }
+  
+  if (-1==m_tty) {
+    // Try the BSD scheme to get a free /dev/ptyp0 (master) and /dev/ttyp0 (slave) tty pair
+    for(unsigned int c=0;c<64;c++){
+      strMasterTty.Format("/dev/pty%c%x",'p'+c/16,c%16);
     
-    m_tty=open(strMasterTty, O_RDWR | O_NOCTTY);
-    if (-1!=m_tty) { 
-      strChildTty.Format("/dev/tty%c%x",'p'+c/16,c%16);	
+      m_tty=open(strMasterTty, O_RDWR | O_NOCTTY);
+      if (-1!=m_tty) { 
+        strChildTty.Format("/dev/tty%c%x",'p'+c/16,c%16);	
       
-      fdchild = open(strChildTty, O_RDWR);
-      if (-1==fdchild) {
-        close(m_tty);
-        m_tty=fdchild=-1;
-      } else {
-        VTRACE("opened %s - fd=%d\n",(LPCTSTR)strMasterTty,m_tty);
-        break;
+        fdchild = open(strChildTty, O_RDWR);
+        if (-1==fdchild) {
+          close(m_tty);
+          m_tty=fdchild=-1;
+        } else {
+          VTRACE("opened %s - fd=%d\n",(LPCTSTR)strMasterTty,m_tty);
+          break;
+        }
       }
     }
   }

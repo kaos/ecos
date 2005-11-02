@@ -1,3 +1,14 @@
+2004-12-14  John Dallaway  <jld@ecoscentric.com>
+
+	* common/Subprocess.cpp: Define _GNU_SOURCE to ensure that stdlib.h
+	provides Unix98 PTY declarations on Red Hat Linux 7.3.
+
+2004-12-03  John Dallaway  <jld@ecoscentric.com>
+
+	* common/Subprocess.cpp (CSubprocess::CreateProcess): Try the Unix98
+	PTY scheme in addition to the BSD scheme. Recent Linux kernels may
+	be built without legacy PTY support.
+
 2003-04-30  John Dallaway  <jld@ecoscentric.com>
 
 	* common/eCosStd.h: Update version string to "2.net".
