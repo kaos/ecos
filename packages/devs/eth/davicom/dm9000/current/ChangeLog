@@ -1,3 +1,20 @@
+2005-10-25  David Vrabel <dvrabel@arcom.com>
+
+	* src/if_dm9000.c (eeprom_read, eeprom_write, eeprom_reload):
+	Delay more when writing/reading eeprom (200 us isn't enough).
+	(phy_init): Turn on PHY before writing PHY registers.  Wait for
+	auto negotiation to be complete.
+	(dm9000_send): Correctly write last words to Tx SRAM when using a
+	8/16 bit device.  Clarify and comment code.
+	(dm9000_poll): Parse Rx packet header correctly on 8/16 bit
+	devices.
+	(dm9000_ioctl): Handle ETH_DRV_GET_MAC_ADDRESS and
+	ETH_DRV_SET_MAC_ADDRESS.
+
+	* cdl/davicom_dm9000_eth_drivers.cdl: New option
+	CYGSEM_DEVS_ETH_DAVICOM_DM9000_WRITE_EEPROM to enable/disable
+	writing to EEPROM.
+
 2004-09-05  Mark Salter <msalter@redhat.com>
 
 	Initial Checkin of DM9000 Ethernet driver (RedBoot only for now).

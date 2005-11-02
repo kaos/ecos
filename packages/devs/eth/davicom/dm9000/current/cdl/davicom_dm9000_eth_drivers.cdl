@@ -64,6 +64,18 @@ cdl_package CYGPKG_DEVS_ETH_DAVICOM_DM9000 {
 
     compile       -library=libextras.a if_dm9000.c
 
+    cdl_option CYGSEM_DEVS_ETH_DAVICOM_DM9000_WRITE_EEPROM {
+        display "SIOCSIFHWADDR records ESA (MAC address) in EEPROM"
+        default_value 0
+        description   "
+            The ioctl() socket call with operand SIOCSIFHWADDR sets the
+            interface hardware address - the MAC address or Ethernet Station
+            Address (ESA).  This option causes the new MAC address to be
+            written into the EEPROM associated with the interface, so that the
+            new MAC address is permanently recorded.  Doing this should be a
+            carefully chosen decision, hence this option."
+    }
+
     cdl_option CYGNUM_DEVS_ETH_DAVICOM_DM9000_DEV_COUNT {
 	display "Number of supported interfaces."
 	calculated    { CYGINT_DEVS_ETH_DAVICOM_DM9000_REQUIRED }

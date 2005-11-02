@@ -77,6 +77,9 @@
 
 #define DM9000_PKT_MAX 1536
 
+//#define DEBUG
+//#define DEBUG_DUMP
+
 //
 // Control and Status register offsets
 //
@@ -225,6 +228,17 @@
 #define IMR_PTM       (1 << 1)
 #define IMR_PRM       (1 << 0)
 
+/* PHY registers */
+#define PHY_BMCR      0x00
+#define PHY_BMSR      0x01
+#define PHY_ANAR      0x04
+
+/* PHY BMCR (Basic Mode Control Register) */
+#define PHY_BMCR_AUTO_NEG_EN    (1 << 12)
+#define PHY_BMCR_AUTO_NEG_START (1 << 12)
+
+/* PHY BMSR (Basic Mode Status Register) */
+#define PHY_BMSR_AUTO_NEG_COMPLETE (1 << 5)
 
 // Read one datum from 8-bit bus
 static int read_data_8(struct dm9000 *p, cyg_uint8 *dest)
@@ -306,7 +320,7 @@ static cyg_uint16 eeprom_read(struct dm9000 *p, int offset)
     putreg(p, DM_EPCR, EPCR_ERPRR);
     while (getreg(p, DM_EPCR) & EPCR_ERRE)
 	;
-    CYGACC_CALL_IF_DELAY_US(200);
+    CYGACC_CALL_IF_DELAY_US(8000);
     putreg(p, DM_EPCR, 0);
     return getreg(p, DM_EPDRL) | (getreg(p, DM_EPDRH) << 8);
 }
@@ -320,7 +334,7 @@ static void eeprom_write(struct dm9000 *p, int offset, cyg_uint16 val)
     putreg(p, DM_EPCR, EPCR_WEP | EPCR_ERPRW);
     while (getreg(p, DM_EPCR) & EPCR_ERRE)
 	;
-    CYGACC_CALL_IF_DELAY_US(200);
+    CYGACC_CALL_IF_DELAY_US(8000);
     putreg(p, DM_EPCR, 0);
 }
 
@@ -330,7 +344,7 @@ static void eeprom_reload(struct dm9000 *p)
     putreg(p, DM_EPCR, EPCR_REEP);
     while (getreg(p, DM_EPCR) & EPCR_ERRE)
 	;
-    CYGACC_CALL_IF_DELAY_US(200);
+    CYGACC_CALL_IF_DELAY_US(8000);
     putreg(p, DM_EPCR, 0);
 }
 
@@ -359,12 +373,21 @@ static void phy_write(struct dm9000 *p, int offset, cyg_uint16 val)
 
 static void init_phy(struct dm9000 *p)
 {
-    phy_write(p, 4, 0x1e1); // Advertise 10/100 half/full duplex w/CSMA
-    phy_write(p, 0, 0x1200); // enable autoneg
+    int t = 0;
+    cyg_uint16 r;
 
-    // release reset
-    putreg(p, DM_GPCR, 1);
-    putreg(p, DM_GPR, 0);  
+    /* power on PHY */
+    putreg(p, DM_GPCR, 0x01);
+    putreg(p, DM_GPR,  0x00);
+
+    phy_write(p, PHY_ANAR, 0x1e1); // Advertise 10/100 half/full duplex w/CSMA
+    phy_write(p, PHY_BMCR, PHY_BMCR_AUTO_NEG_EN | PHY_BMCR_AUTO_NEG_START);
+
+    /* wait for autonegotiation to complete */
+    do {
+        CYGACC_CALL_IF_DELAY_US(1000);
+        r = phy_read(p, PHY_BMSR);
+    } while (!(r & PHY_BMSR_AUTO_NEG_COMPLETE) && t++ < 2000);
 }
 
 
@@ -600,8 +623,7 @@ dm9000_recv( struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len )
 	++sg;
     } while (nread < total_len);
 
-#if 0
-    // dump packet
+#ifdef DEBUG_DUMP
     for (sg = sg_list; sg < (sg_list + sg_len); sg++) {
 	diag_printf("\n");
 	diag_dump_buf(sg->buf, sg->len);
@@ -637,22 +659,29 @@ dm9000_send(struct eth_drv_sc *sc,
 	    int total_len, unsigned long key)
 {
     struct dm9000 *priv = (struct dm9000 *)sc->driver_private;
-    struct eth_drv_sg *sg = sg_list;
+    struct eth_drv_sg *sg;
     cyg_uint8 tmpbuf[4];
-    int i, len, extra, n, save_len;
+    int i, len, n, save_len, tail_extra;
     char *p;
 
-    if (0) {
-	diag_printf("dm9000_send: NCR[%02x] NSR[%02x] TPL[%02x]\n",
-		    getreg(priv, DM_NCR), getreg(priv, DM_NSR),
-		    getreg(priv, DM_TRPAL) | (getreg(priv, DM_TRPAH) << 8)
-	    );
+#ifdef DEBUG
+    diag_printf("dm9000_send: NCR[%02x] NSR[%02x] TRPA[%04x]\n",
+                getreg(priv, DM_NCR), getreg(priv, DM_NSR),
+                getreg(priv, DM_TRPAL) | (getreg(priv, DM_TRPAH) << 8)
+        );
+#endif
+#ifdef DEBUG_DUMP
+    for (sg = sg_list; sg < (sg_list + sg_len); sg++) {
+	diag_printf("\n");
+	diag_dump_buf(sg->buf, sg->len);
     }
+#endif
 
     priv->txbusy = 1;
 
+    sg = sg_list;
     save_len = total_len;
-    extra = 0;
+    tail_extra = 0;
 
     HAL_WRITE_UINT8(priv->io_addr, DM_MWCMD);
 
@@ -662,39 +691,41 @@ dm9000_send(struct eth_drv_sc *sc,
 	    len = total_len;
 	p = (char *)sg->buf;
 
-	if (extra) {
-	    n = sizeof(tmpbuf) - extra;
-	    memcpy(tmpbuf + extra, p, n);
-	    p += n;
-	    len -= n;
+        /* write any left over partial words by combining them with the start
+         * of this sg block */
+        if (tail_extra) {
+            int head_extra = sizeof(tmpbuf) - tail_extra;
+            memcpy(tmpbuf + tail_extra, p, head_extra);
+            p += head_extra;
+            len -= head_extra;
 	    for (i = 0; i < sizeof(tmpbuf) && total_len > 0; i += n) {
 		n = priv->write_data(priv, tmpbuf + i);
 		total_len -= n;
 	    }
-	    extra = 0;
-	}
-	
-	while (len >= sizeof(tmpbuf) && total_len > 0) {
+            tail_extra = 0;
+        }
+
+        /* write out whole words */
+        while (len >= priv->buswidth) {
 	    n = priv->write_data(priv, p);
-	    len -= n;
-	    total_len -= n;
-	    p += n;
-	}
+            len -= n;
+            total_len -= n;
+            p += n;
+        }
 
-	if (len > 0 && total_len > 0) {
-	    extra = len;
-	    memcpy(tmpbuf, p, extra);
-
-	    if ((total_len - extra) <= 0) {
-		// go ahead and write it now
-		for (i = 0; total_len > 0; i += n, total_len -= n) {
-		    n = priv->write_data(priv, tmpbuf + i);
-		    total_len = 0;
-		}
-		break;
-	    }
-	}
-	sg++;
+        /* if we have some left over partial words... */
+        if (len > 0) {
+            /* combine them with the next sg block if available */
+            if (total_len > len ) {
+                tail_extra = len;
+                memcpy(tmpbuf, p, tail_extra);
+            } else {
+                /* otherwise just write this last partial word */
+                n = priv->write_data(priv, p);
+                total_len -= n;
+            }
+        }
+        sg++;
     }
 
     priv->txkey = key;
@@ -703,8 +734,6 @@ dm9000_send(struct eth_drv_sc *sc,
     putreg(priv, DM_TXPLH, save_len >> 8);
 
     putreg(priv, DM_TCR, TCR_TXREQ);
-
-    return;
 }
 
 // ------------------------------------------------------------------------
@@ -716,7 +745,7 @@ static void
 dm9000_poll(struct eth_drv_sc *sc)
 {
     struct dm9000 *priv = (struct dm9000 *)sc->driver_private;
-    cyg_uint8 status, rxstat, rx1;
+    cyg_uint8 status, rxstat;
     cyg_uint16 pkt_stat, pkt_len;
     int i;
 
@@ -729,29 +758,20 @@ dm9000_poll(struct eth_drv_sc *sc)
 
     // check for rx done
     if (1 /*status & ISR_PRS*/) {
+        cyg_uint8 hdr[4]; /* 4 byte Rx pkt hdr */
 
-	rx1 = getreg(priv, DM_MRCMDX);
-	HAL_READ_UINT8(priv->io_data, rxstat);
+        getreg(priv, DM_MRCMDX); /* dummy read */
+
+        HAL_READ_UINT8(priv->io_data, rxstat);
 
 	// check for packet ready
 	if (rxstat == 1) {
-	    cyg_uint16 u16[2];
-	    cyg_uint8 *cp;
+            HAL_WRITE_UINT8(priv->io_addr, DM_MRCMD);
+            for (i = 0; i < 4;)
+                i += priv->read_data(priv, hdr + i);
 
-	    HAL_WRITE_UINT8(priv->io_addr, DM_MRCMD);
-	    for (i = 0, cp = (cyg_uint8 *)u16; i < 4; )
-		i += priv->read_data(priv, cp + i);
-
-	    u16[0] = CYG_LE16_TO_CPU(u16[0]);
-	    u16[1] = CYG_LE16_TO_CPU(u16[1]);
-
-#if (CYG_BYTEORDER == CYG_MSBFIRST)
-	    pkt_stat = u16[0];
-	    pkt_len = u16[1];
-#else
-	    pkt_stat = u16[1];
-	    pkt_len = u16[0];
-#endif
+            pkt_stat = hdr[0] | (hdr[1] << 8);
+            pkt_len  = hdr[2] | (hdr[3] << 8);
 
 #ifdef DEBUG
 	    diag_printf("pkt_stat=%04x pkt_len=%04x\n", pkt_stat, pkt_len);
@@ -761,7 +781,7 @@ dm9000_poll(struct eth_drv_sc *sc)
 		diag_printf("packet too short: %d (0x%04x)\n", pkt_len, pkt_len);
 		i = 0;
 		while (i < pkt_len)
-		    i += priv->read_data(priv, cp);
+		    i += priv->read_data(priv, hdr);
 	    } else if (pkt_len > 1536) {
 		priv->reset_pending = 1;
 		diag_printf("packet too long: %d (0x%04x)\n", pkt_len, pkt_len);
@@ -769,7 +789,7 @@ dm9000_poll(struct eth_drv_sc *sc)
 		diag_printf("bad packet status: 0x%04x\n", pkt_stat);
 		i = 0;
 		while (i < pkt_len)
-		    i += priv->read_data(priv, cp);
+		    i += priv->read_data(priv, hdr);
 	    } else {
 		// receive packet
 		priv->rxlen = pkt_len;
@@ -860,6 +880,32 @@ static int
 dm9000_ioctl(struct eth_drv_sc *sc, unsigned long key,
 	  void *data, int data_length)
 {
+    struct dm9000 *priv = (struct dm9000 *)sc->driver_private;
+    cyg_uint8 *esa = (cyg_uint8 *)data;
+    int i;
+
+    switch (key) {
+#ifdef ETH_DRV_GET_MAC_ADDRESS
+    case ETH_DRV_GET_MAC_ADDRESS:
+        memcpy(esa, priv->mac_address, sizeof(priv->mac_address));
+        return 0;
+#endif
+#ifdef ETH_DRV_SET_MAC_ADDRESS
+    case ETH_DRV_SET_MAC_ADDRESS:
+        for (i = 0; i < sizeof(priv->mac_address);  i++) {
+            priv->mac_address[i] = esa[i];
+            putreg(priv, DM_PAR + i, priv->mac_address[i]);
+        }
+#if defined(CYGSEM_DEVS_ETH_DAVICOM_DM9000_WRITE_EEPROM)
+        for (i = 0; i < sizeof(priv->mac_address) / 2; i++)
+            eeprom_write(priv, i, priv->mac_address[2*i] | (priv->mac_address[2*i+1] << 8));
+#else
+        diag_printf("dm9000: eeprom write disabled\n");
+#endif
+        return 0;
+#endif
+    }
+
     return -1;
 }
 
