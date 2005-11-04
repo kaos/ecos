@@ -1,3 +1,7 @@
+2005-10-24  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/sys/param.h: Include <string.h> to stop warnings.
+
 2005-10-23  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/sys/time.h (Removed): Use the isoinfra sys/time.h
