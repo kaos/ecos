@@ -67,6 +67,7 @@ protected:
     int instance;
 public:
     Pure(int i);
+    virtual ~Pure() {}
     virtual void pure_fun1(void) = 0;
     virtual void pure_fun2(void) = 0;
     virtual void impure_fun1(void);
@@ -95,6 +96,7 @@ class Derived : public Pure
 {
 public:
     Derived(int i);
+    virtual ~Derived() {}
     void pure_fun1(void);
     void pure_fun2(void);
     void impure_fun2(void);
