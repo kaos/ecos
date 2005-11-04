@@ -49,6 +49,7 @@
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
 #include <net/route.h>
+#include <string.h>
 
 #include <cyg/infra/diag.h>
 #include <cyg/kernel/kapi.h>
