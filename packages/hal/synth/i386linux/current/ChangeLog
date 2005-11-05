@@ -1,3 +1,9 @@
+2005-11-05  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/syscall-i386-linux-1.0.S: renamed prev_?stat to old?stat to
+	match the kernel. Removed STATCALL2 macro because it caused
+	confusion. Added the new?stat system calls.
+
 2005-06-26  Bart Veer  <bartv@ecoscentric.com>
 
 	* include/var_intr.h (HAL_DELAY_US): new header to supply

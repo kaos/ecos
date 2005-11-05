@@ -157,9 +157,9 @@
 #define SYS_klog                103
 #define SYS_setitimer           104
 #define SYS_getitimer           105
-#define SYS_prev_stat           106
-#define SYS_prev_lstat          107
-#define SYS_prev_fstat          108
+#define SYS_newstat             106
+#define SYS_newlstat            107
+#define SYS_newfstat            108
 #define SYS_olduname            109
 #define SYS_iopl                110
 #define SYS_vhangup             111
@@ -324,20 +324,6 @@ NAME(x):                                        \
                                                 \
     END(x)
 
-#define STATCALL2(x)                            \
-   .globl NAME(x) ;                             \
-                                                \
-NAME(x):                                        \
-                                                \
-        push %ebx;                              \
-        mov 8(%esp), %ebx;                      \
-        mov 12(%esp), %ecx;                     \
-        lea SYS_prev_##x, %eax;                 \
-        int $0x80;                              \
-        pop %ebx;                               \
-        ret;                                    \
-        END(x)
-
 #define SYSCALL3(x)                             \
         .globl NAME(x) ;                        \
                                                 \
@@ -438,8 +424,12 @@ SYSCALL1(fdatasync)
 SYSCALL2(getcwd)
 SYSCALL2(access)
 SYSCALL3(readdir)
-STATCALL2(lstat)
-STATCALL2(fstat)
+SYSCALL2(oldlstat)
+SYSCALL2(oldfstat)
+SYSCALL2(oldstat)
+SYSCALL2(newlstat)
+SYSCALL2(newfstat)
+SYSCALL2(newstat)        
 SYSCALL2(mkdir)
 SYSCALL5(ipc)
 
