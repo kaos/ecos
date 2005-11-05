@@ -136,4 +136,26 @@ cdl_package CYGPKG_HAL_SYNTH {
         calculated  { "src/synth.ld" }
     }
 
+    cdl_option CYGSEM_HAL_SYNTH_TESTS {
+        display       "Build the Synth HAL tests"
+        default_value 0
+        description   "
+             The only test at the moment is disabled by default
+             because it has to be run manually. It should be run both within 
+             eCos and natively on Linux and the results compared"
+    }
+
+    cdl_component CYGPKG_HAL_SYNTH_TESTS {
+        display       "Synth HAL tests"
+        active_if     CYGSEM_HAL_SYNTH_TESTS
+        flavor        data
+        no_define
+        calculated    { "tests/ftok.c" }
+        
+        make {
+            <PREFIX>/tests/ftok: <PACKAGE>/tests/ftok.c
+            @mkdir -p "$(dir $@)"
+            @$(HOST_CC) -DHOST -g -O2 -o $@ $< || cc -DHOST -g -O2 -o $@ $< || -DHOST gcc -g -O2 -o $@ $<
+        }
+    }
 }

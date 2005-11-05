@@ -438,21 +438,44 @@ struct cyg_hal_sys_timespec
    unsigned int tv_nsec;
 };
 
-struct cyg_hal_sys_stat
+// NOTE: This corresponds to __old_kernel_stat in the kernel sources
+// and should be used with cyg_hal_sys_oldstat etc.
+
+struct cyg_hal_sys_old_stat
 {
-	unsigned int  dev;          /* inode */
-	unsigned long ino;          /* device */
-	unsigned short mode;        /* protection */
-	unsigned short	nlink;       /* number of hard links */
-	unsigned short	uid;         /* user ID of owner */
-	unsigned short	gid;         /* group ID of owner */
-	unsigned long rdev;         /* device type (if inode device) */
-	unsigned long size;         /* total size, in bytes */
-	unsigned int blksize;       /* blocksize for filesystem I/O */
-	unsigned int blocks;        /* number of blocks allocated */
-	struct cyg_hal_sys_timespec atime; /* time of last access */
-	struct cyg_hal_sys_timespec mtime; /* time of last modification */
-	struct cyg_hal_sys_timespec ctime; /* time of last change */
+  unsigned short st_dev;   /* device */
+  unsigned short st_ino;   /* inode */
+  unsigned short st_mode;  /* protection */
+  unsigned short st_nlink; /* number of hard links */
+  unsigned short st_uid;   /* user ID of owner */
+  unsigned short st_gid;   /* group ID of owner */
+  unsigned short st_rdev;  /* device type (if inode device) */
+  unsigned long  st_size;  /* total size, in bytes */
+  unsigned long  st_atime; /* time of last access */
+  unsigned long  st_mtime; /* time of last modification */
+  unsigned long  st_ctime; /* time of last change */
+};
+
+struct cyg_hal_sys_new_stat 
+{
+  unsigned long  st_dev;
+  unsigned long  st_ino;
+  unsigned short st_mode;
+  unsigned short st_nlink;
+  unsigned short st_uid;
+  unsigned short st_gid;
+  unsigned long  st_rdev;
+  unsigned long  st_size;
+  unsigned long  st_blksize;
+  unsigned long  st_blocks;
+  unsigned long  st_atime;
+  unsigned long  st_atime_nsec;
+  unsigned long  st_mtime;
+  unsigned long  st_mtime_nsec;
+  unsigned long  st_ctime;
+  unsigned long  st_ctime_nsec;
+  unsigned long  __unused4;
+  unsigned long  __unused5;
 };
 
 // System calls, or rather the subset that is needed internally or by
@@ -514,6 +537,9 @@ externC void *          cyg_hal_sys_shmat (int shmid, const void* shmaddr,
 //detach from it again
 externC int             cyg_hal_sys_shmdt (const void* shmaddr);
 
+// Convert a pathname and an identifier into a System V IPC key
+externC int             cyg_hal_sys_ftok(const char* path, int id);
+
 // The actual implementation appears to return the new brk() value.
 externC void*           cyg_hal_sys_brk(void*);
 
@@ -537,8 +563,19 @@ externC int             cyg_hal_sys_mmap(void *addr,
 externC int cyg_hal_sys_readdir(unsigned int fd, 
                                 struct cyg_hal_sys_dirent *dp, 
                                 unsigned int count);
-externC int cyg_hal_sys_lstat(const char* name, struct cyg_hal_sys_stat *buf);
-externC int cyg_hal_sys_fstat(int fd, struct cyg_hal_sys_stat *buf);
+// Old syscall versions 
+externC int cyg_hal_sys_oldlstat(const char* name, 
+                                 struct cyg_hal_sys_old_stat *buf);
+externC int cyg_hal_sys_oldfstat(int fd, struct cyg_hal_sys_old_stat *buf);
+externC int cyg_hal_sys_oldstat(const char* name,
+                                struct cyg_hal_sys_old_stat *buf);
+// New syscall versions 
+externC int cyg_hal_sys_newlstat(const char* name, 
+                                 struct cyg_hal_sys_new_stat *buf);
+externC int cyg_hal_sys_newfstat(int fd, struct cyg_hal_sys_new_stat *buf);
+externC int cyg_hal_sys_newstat(const char* name,
+                                struct cyg_hal_sys_old_stat *buf);
+
 externC int cyg_hal_sys_mkdir(const char* path, int mode);
 
 // Access to environmental data

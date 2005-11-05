@@ -34,7 +34,6 @@
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
 // -------------------------------------------
-//####ECOSGPLCOPYRIGHTEND####
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -92,3 +91,15 @@ cyg_hal_sys_mmap(void *addr, unsigned long length, unsigned long prot,
   
   return (cyg_hal_sys_mmapx(&args));
 } 
+
+int cyg_hal_sys_ftok(const char* path, int id)
+{
+  struct cyg_hal_sys_old_stat st;
+  
+  if (cyg_hal_sys_oldstat(path, &st) != 0)
+    return (cyg_uint32)-1;
+  
+  return (cyg_uint32) (id << 24 | 
+                       (st.st_dev & 0xff) << 16 | 
+                       (st.st_ino & 0xffff));
+}

@@ -1,3 +1,19 @@
+2005-11-05  Andrew Lunn <andrew.lunn@ascom.ch>
+
+	* include/hal_io.h (struct cyg_hal_sys_old_stat): Make the
+	structure match the kernel version otherwise the stack gets
+	corrupt and we die 'orribly. Added cyg_hal_sys_new_stat for when
+	using the new?stat() calls.
+	* src/synth_syscall.c (cyg_hal_sys_ftok): use the correct structure 
+        member names and use the newstat system call so we get 
+	values back which are compatible with glibc ftok() function.
+	* tests/ftok.c (new): Test case for the cyg_hal_sys_ftok() 
+        function added in the previous patch.
+
+2005-10-19  Alexander Neundorf <neundorf@kde.org>
+
+	* src/synth_syscall.c: add cyg_hal_sys_ftok().
+
 2005-07-30  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/synth_diag.c (hal_diag_write_char): Compiler warning fix.
