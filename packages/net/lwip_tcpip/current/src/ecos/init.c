@@ -123,7 +123,9 @@ struct netif ecos_loopif;
 int
 lwip_init(void)
 {
+#if LWIP_HAVE_LOOPIF
 	struct ip_addr ipaddr, netmask, gw;
+#endif
 	static int inited = 0;
 	sys_sem_t sem;
 	if (inited)

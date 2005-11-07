@@ -1,3 +1,17 @@
+2005-10-07  Uwe Kindler <uwe_kindler@web.de>
+
+	* src/core/tcp_in.c: pbuf_free() assert triggered by 
+	NULLified inseg.p
+	* include/lwip/tcp.h Do no longer try to free pbuf 
+	when TCP_EVENT_RECV() is called without a callback 
+	handler, and without packet. 
+	* tests/nc_test_slave.c Fixed test_printf and diag_printf
+	format strings that caused errors or warnings.
+	* tests/nc_test_slave.c Included <lwip/inet.h> - required
+	for compilation
+	* src/ecos/init.c Added structs ip_addr ipaddr, netmask and gw
+	in lwip_init() if loop interface is used
+
 2004-05-05  Jani Monoses <jani@iv.ro>
 
 	* src/netif/ppp/ppp.c: Decrease sleep period in main thread

@@ -42,6 +42,7 @@
 
 #include <lwip/inet.h>
 #include <lwip/arch.h>
+#include <lwip/sys.h>
 #define LWIP_TIMEVAL_PRIVATE 
 #include <lwip/sockets.h>
 
@@ -58,9 +59,14 @@
 #define MAIN_THREAD_PRIORITY     CYGPKG_NET_THREAD_PRIORITY-2
 #define DESIRED_BACKGROUND_LOAD  20
 #define CYGHWR_NET_DRIVERS 1
+
+#if 0
 static char         main_thread_stack[CYGHWR_NET_DRIVERS][STACK_SIZE];
 static cyg_thread   main_thread_data[CYGHWR_NET_DRIVERS];
 static cyg_handle_t main_thread_handle[CYGHWR_NET_DRIVERS];
+#endif
+
+
 static char         idle_thread_stack[STACK_SIZE];
 static cyg_thread   idle_thread_data;
 static cyg_handle_t idle_thread_handle;
@@ -185,7 +191,7 @@ do_udp_test(int s1, struct nc_request *req, struct sockaddr_in *master)
                         seq_errors++;
                     }
                 } else {
-                    test_printf("Bad data packet - key: %x/%x, seq: %d\n",
+                    test_printf("Bad data packet - key: %lx/%lx, seq: %d\n",
                                 ntohl(tdp->key1), ntohl(tdp->key2),
                                 ntohl(tdp->seq));
                 }
@@ -358,7 +364,7 @@ do_tcp_test(int s1, struct nc_request *req, struct sockaddr_in *master)
                         seq_errors++;
                     }
                 } else {
-                    test_printf("Bad data packet - key: %x/%x, seq: %d\n",
+                    test_printf("Bad data packet - key: %lx/%lx, seq: %d\n",
                                 ntohl(tdp->key1), ntohl(tdp->key2),
                                 ntohl(tdp->seq));
                 }
@@ -514,8 +520,9 @@ nc_slave(test_param_t param)
 }
 
 void
-net_test(test_param_t param)
+net_test(void *arg)
 {
+    test_param_t param = (test_param_t)arg;
 //    int i;
     if (param == 0) {
         test_printf("Start Network Characterization - SLAVE\n");
@@ -571,7 +578,7 @@ calibrate_load(int desired_load)
         load_idle = idle_thread_count;
         start_load(0);                         // Shut down background load
         percent_load = 100 - ((load_idle * 100) / no_load_idle);
-        diag_printf("High Load[%d] = %d => %d%%\n", load_thread_level, 
+        diag_printf("High Load[%ld] = %d => %d%%\n", load_thread_level, 
                     (int)idle_thread_count, percent_load);
         if ( percent_load > desired_load )
             break; // HIGH level is indeed higher
@@ -590,7 +597,7 @@ calibrate_load(int desired_load)
         load_idle = idle_thread_count;
         start_load(0);                         // Shut down background load
         percent_load = 100 - ((load_idle * 100) / no_load_idle);
-        diag_printf("Load[%d] = %d => %d%%\n", load_thread_level, 
+        diag_printf("Load[%ld] = %d => %d%%\n", load_thread_level, 
                     (int)idle_thread_count, percent_load);
         if (((high-low) <= 1) || (abs(desired_load-percent_load) <= 2)) break;
         if (percent_load < desired_load) {
@@ -612,7 +619,7 @@ calibrate_load(int desired_load)
     load_idle = idle_thread_count;
     start_load(0);                         // Shut down background load
     percent_load = 100 - ((load_idle * 100) / no_load_idle);
-    diag_printf("Final load[%d] = %d => %d%%\n", load_thread_level, 
+    diag_printf("Final load[%ld] = %d => %d%%\n", load_thread_level, 
                 (int)idle_thread_count, percent_load);
 //    no_load_idle_count_1_second = no_load_idle;
 }

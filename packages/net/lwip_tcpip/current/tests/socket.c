@@ -32,9 +32,10 @@
 
 /* Simple test-case for the BSD socket API  : echo on TCP port 7 */
 
-#include "lwip/sys.h"
+#include <lwip/sys.h>
 #define LWIP_COMPAT_SOCKETS 1
-#include "lwip/sockets.h"
+#include <lwip/sockets.h>
+#include <lwip/inet.h>
 
 char buf[400];
 static void
