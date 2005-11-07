@@ -94,7 +94,7 @@ cdl_package CYGPKG_DEVS_ETH_DAVICOM_DM9000 {
             display "Additional compiler flags"
             flavor  data
             no_define
-            default_value { "" }
+            default_value { "-D_KERNEL -D__ECOS" }
             description   "
                 This option modifies the set of compiler flags for
                 building the Davicom DM9000 ethernet driver package.

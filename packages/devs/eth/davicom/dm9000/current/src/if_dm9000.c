@@ -53,6 +53,7 @@
 #include <pkgconf/system.h>
 #include <pkgconf/io_eth_drivers.h>
 #include <pkgconf/devs_eth_davicom_dm9000.h>
+
 #include <cyg/infra/cyg_type.h>
 #include <cyg/infra/cyg_ass.h>
 #include <cyg/hal/hal_arch.h>
@@ -447,6 +448,19 @@ static int initialize_nic(struct dm9000 *priv)
     return 1;
 }
 
+#ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
+static cyg_uint32 dm9000_isr(cyg_vector_t vector, cyg_addrword_t data)
+{
+    struct eth_drv_sc *sc = (struct eth_drv_sc *)data;
+    struct dm9000 *priv = (struct dm9000 *)sc->driver_private;
+
+    cyg_drv_interrupt_mask(priv->interrupt);
+    cyg_drv_interrupt_acknowledge(priv->interrupt);
+
+    return CYG_ISR_HANDLED | CYG_ISR_CALL_DSR;
+}
+#endif
+
 
 // ------------------------------------------------------------------------
 //
@@ -479,6 +493,19 @@ dm9000_init(struct cyg_netdevtab_entry * ndp)
 
     if (id != 0x90000A46)
 	return 0;
+
+#ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
+    cyg_drv_interrupt_create(priv->interrupt,
+                             0,
+                             (cyg_addrword_t)sc,
+                             dm9000_isr,
+                             eth_drv_dsr,
+                             &priv->interrupt_handle,
+                             &priv->interrupt_object);
+    cyg_drv_interrupt_attach(priv->interrupt_handle);
+    cyg_drv_interrupt_acknowledge(priv->interrupt);
+    cyg_drv_interrupt_unmask(priv->interrupt);
+#endif // !CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
 
     for (i = 0; i < 64; i++)
 	u16tab[i] = eeprom_read(priv, i);
@@ -683,6 +710,9 @@ dm9000_send(struct eth_drv_sc *sc,
     save_len = total_len;
     tail_extra = 0;
 
+    /* Disable all interrupts */
+    putreg(priv, DM_IMR, IMR_PAR);
+
     HAL_WRITE_UINT8(priv->io_addr, DM_MWCMD);
 
     while (total_len > 0) {
@@ -734,6 +764,9 @@ dm9000_send(struct eth_drv_sc *sc,
     putreg(priv, DM_TXPLH, save_len >> 8);
 
     putreg(priv, DM_TCR, TCR_TXREQ);
+
+    /* Re-enable interrupt */
+    putreg(priv, DM_IMR, IMR_PAR | IMR_PTM | IMR_PRM);
 }
 
 // ------------------------------------------------------------------------
@@ -853,7 +886,13 @@ dm9000_poll(struct eth_drv_sc *sc)
 static void
 dm9000_deliver(struct eth_drv_sc *sc)
 {
+    struct dm9000 *priv = (struct dm9000 *)sc->driver_private;
+
     dm9000_poll(sc);
+
+#ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
+    cyg_drv_interrupt_unmask(priv->interrupt);
+#endif
 }
 
 // ------------------------------------------------------------------------
@@ -864,10 +903,9 @@ dm9000_deliver(struct eth_drv_sc *sc)
 static int
 dm9000_int_vector(struct eth_drv_sc *sc)
 {
-    struct dm9000 *priv;
-    priv = (struct dm9000 *)sc->driver_private;
+    struct dm9000 *priv = (struct dm9000 *)sc->driver_private;
 
-    return -1;
+    return priv->interrupt;
 }
 
 

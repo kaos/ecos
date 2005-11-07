@@ -1,3 +1,10 @@
+2005-11-07  David Vrabel <dvrabel@arcom.com>
+
+	* src/if_dm9000.c, include/dm9000_info.h: Support interrupts.
+	* cdl/davicom_dm9000_eth_drivers.cdl
+	(CYGPKG_DEVS_ETH_DAVICOM_DM9000_CFLAGS_ADD): Need _KERNEL and
+	__ECOS defined for non-stand-alone builds.
+
 2005-10-25  David Vrabel <dvrabel@arcom.com>
 
 	* src/if_dm9000.c (eeprom_read, eeprom_write, eeprom_reload):

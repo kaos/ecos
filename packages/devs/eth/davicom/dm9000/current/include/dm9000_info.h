@@ -61,9 +61,14 @@ struct dm9000 {
     unsigned long txkey;
     volatile unsigned char *io_addr;  // addr register
     volatile unsigned char *io_data;  // data register
+    cyg_vector_t interrupt;           // Interrupt vector used by controller
     int (*read_data)(struct dm9000 *p, cyg_uint8 *dest);
     int (*write_data)(struct dm9000 *p, cyg_uint8 *src);
     int buswidth;
+#ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
+    cyg_handle_t  interrupt_handle;
+    cyg_interrupt interrupt_object;
+#endif
 };
 
 #define CYGDAT_DEVS_ETH_DESCRIPTION "Davicom DM9000 Ethernet"
