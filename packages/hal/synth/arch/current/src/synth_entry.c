@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 2002 Bart Veer
+// Copyright (C) 2002, 2005 Bart Veer
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -105,29 +105,16 @@ externC void    synth_hardware_init2(void);
 
 void _linux_entry( void )
 {
-    void* new_top = (void*) 0;
-    
     // "Initialize various cpu status registers, including disabling interrupts."
     // That is a no-op for the synthetic target, in particular interrupts are
     // already disabled.
 
-    // "Set up any CPU memory controller to access ROM, RAM, and I/O devices
-    // correctly".
-    //
-    // This involves using the brk() system call to allocate the RAM used
-    // for the heaps. There are no variables mapped there so the system
-    // will not have done this for us. Note that the implementation of
-    // brk() (mm/mmap.c) differs from the documentation - the return
-    // value is the new brk value, not an error code.
-    new_top = (void*) (CYGMEM_REGION_ram + CYGMEM_REGION_ram_SIZE);
-    if (new_top != cyg_hal_sys_brk(new_top)) {
-        CYG_FAIL("Failed to initialize memory");
-        cyg_hal_sys_exit(1);
-    }
-    
-    // Again a no-op for the synthetic target. All memory is readily
-    // accessible. Arguably the auxiliary should be started up here, but
-    // instead that is left to platform initialization.
+    // "Set up any CPU memory controller to access ROM, RAM, and I/O
+    // devices correctly". The ROM and RAM are set up via the linker
+    // script and taken care of automatically during loading. There
+    // are no memory-mapped devices. Arguably the auxiliary should be
+    // started up here, but instead that is left to platform
+    // initialization.
 
     // "Enable the cache". Effectively the synthetic target has no cache,
     // anything provided by the hardware is not readily accessible.

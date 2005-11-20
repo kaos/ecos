@@ -1,3 +1,12 @@
+2005-11-19  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/synth_entry.c (_linux_entry): brk() is no longer needed to
+	get heap memory.
+
+	* src/synth.ld: add new section to contain the heap memory rather
+	than rely on brk().
+	
+
 2005-11-05  Andrew Lunn <andrew.lunn@ascom.ch>
 
 	* include/hal_io.h (struct cyg_hal_sys_old_stat): Make the

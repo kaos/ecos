@@ -8,6 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 2005 Bart Veer
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -211,6 +212,11 @@ GROUP(libtarget.a libgcc.a)
     { FORCE_OUTPUT; *(.dynbss*) *(.bss*) *(COMMON) *(.gnu.linkonce.b.*) }       \
     > _region_                                                                  \
     __bss_end = .;
+
+#define SECTIONS_HEAP(_region_, _start_, _end_)					\
+    .synth_heap _start_ :							\
+    { FORCE_OUTPUT; . = _end_ - _start_ ; }					\
+    > _region_
 
 #define SECTIONS_END . = ALIGN(4); _end = .; PROVIDE (end = .);
 
