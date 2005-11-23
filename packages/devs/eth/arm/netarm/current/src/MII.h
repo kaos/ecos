@@ -1,5 +1,5 @@
-#ifndef _NETARM_MII_
-#define _NETARM_MII_
+#ifndef CYGONCE_DEVS_ETH_ARM_NETARM_MII_H
+#define CYGONCE_DEVS_ETH_ARM_NETARM_MII_H
 // ====================================================================
 //
 //      MII.h
@@ -10,7 +10,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 2005 eCosCentric LTD
+// Copyright (C) 2005 eCosCentric Ltd.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -34,23 +34,25 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
+//
+//####ECOSGPLCOPYRIGHTEND####
 // ====================================================================
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):           Harald Brandl (harald.brandl@fh-joanneum.at)
 // Contributors:        Harald Brandl
-// Date:                01.08.2004
-// Purpose:             Functions for PHY control
+// Date:        	01.08.2004
+// Purpose:     	Functions for PHY control
 // Description:
 //
 //####DESCRIPTIONEND####
 //
 // ====================================================================
 
-void mii_reset(void);
-void mii_set_speed (cyg_bool speed, cyg_bool duplex);
-cyg_bool mii_check_speed(void);
-cyg_bool mii_check_duplex(void);
-cyg_bool mii_negotiate(void);
+void     cyg_netarm_mii_reset(void);
+void     cyg_netarm_mii_set_speed (cyg_uint32 speed, cyg_bool duplex);
+cyg_uint32 cyg_netarm_mii_check_speed(void);
+cyg_bool cyg_netarm_mii_check_duplex(void);
+cyg_bool cyg_netarm_mii_negotiate(void);
 
-#endif
+#endif // CYGONCE_DEVS_ETH_ARM_NETARM_MII_H

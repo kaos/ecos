@@ -6,7 +6,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 2005 eCosCentric LTD
+// Copyright (C) 2005 eCosCentric Ltd.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -30,175 +30,196 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
+//
+//####ECOSGPLCOPYRIGHTEND####
 // ====================================================================
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):           Harald Brandl (harald.brandl@fh-joanneum.at)
 // Contributors:        Harald Brandl
-// Date:                10.03.2005
-// Purpose:             EEPROM I/O
+// Date:        		10.03.2005
+// Purpose:     		EEPROM I/O
 // Description:
 //
 //####DESCRIPTIONEND####
 //
 // ====================================================================
 
-#include <cyg/hal/hal_netarm.h>
-#include <sys/types.h>
+#include <cyg/hal/hal_modnet50.h>
+#include "eth_regs.h"
 
 static void wait(int time)
 {
-  int i;
-  
-  for(i=0; i < time; i++);
+	int i;
+
+	for(i=0; i < time; i++);
 }
 
+/* send i2c stop condition */
 static void i2cStop(void)
 {
-  *PORTC |= 0x00c00000;
-  *PORTC &= ~0x000000c0;  // SDA = 0, SLK = 0
-  wait(5);
-  *PORTC |= 0x00000040;   // SLK = 1
-  wait(5);
-  *PORTC |= 0x00000080;   // SDA = 1
+	HAL_OR_UINT32(PORTC, 0x00c00000);
+	HAL_AND_UINT32(PORTC, ~0x000000c0);	// SDA = 0, SLK = 0
+	wait(5);
+	HAL_OR_UINT32(PORTC, 0x00000040);	// SLK = 1
+	wait(5);
+	HAL_OR_UINT32(PORTC, 0x00000080);	// SDA = 1
 }
 
+/* send i2c start condition */
 static void i2cStart(void)
 {
-  *PORTC |= 0x00c000c0;   // SDA = 1, SLK = 1
-  wait(5);
-  *PORTC &= ~0x00000080;  // SDA = 0
-  wait(5);
-  *PORTC &= ~0x00000040;  // SLK = 0
+	HAL_OR_UINT32(PORTC, 0x00c000c0);	// SDA = 1, SLK = 1
+	wait(5);
+	HAL_AND_UINT32(PORTC, ~0x00000080);	// SDA = 0
+	wait(5);
+	HAL_AND_UINT32(PORTC, ~0x00000040);	// SLK = 0
 }
 
 static void i2cPutByte(char byte)
 {
-  int i, bit;
-  
-  *PORTC |= 0x00c00000;
-  
-  for(i=7; i >= 0; i--)
-    {
-      bit = (byte >> i) & 1;
-      *PORTC = (*PORTC & ~0x80) | (bit << 7); // SDA = data
-      *PORTC |= 0x00000040;   // SLK = 1
-      wait(5);
-      *PORTC &= ~0x00000040;  // SLK = 0
-      wait(5);
-    }
-  *PORTC |= 0x00000080;           // SDA = 1
+	int i, bit, reg;
+
+	HAL_OR_UINT32(PORTC, 0x00c00000);
+
+	for(i=7; i >= 0; i--)
+	{
+		bit = (byte >> i) & 1;
+		HAL_READ_UINT32(PORTC, reg);
+		HAL_WRITE_UINT32(PORTC, (reg & ~0x80) | (bit << 7));	// SDA = data
+		HAL_OR_UINT32(PORTC, 0x00000040);	// SLK = 1
+		wait(5);
+		HAL_AND_UINT32(PORTC, ~0x00000040);	// SLK = 0
+		wait(5);
+	}
+	HAL_OR_UINT32(PORTC, 0x00000080);		// SDA = 1
 }
 
 static char i2cGetByte(void)
 {
-  int i;
-  char byte = 0;
-  
-  *PORTC &= ~0x00800000;
-  for(i=7; i >= 0; i--)
-    {
-      *PORTC |= 0x00000040;   // SLK = 1
-      byte |= ((*PORTC & 0x80) >> 7) << i;    // data = SDA
-      wait(5);
-      *PORTC &= ~0x00000040;  // SLK = 0
-      wait(5);
-    }
-  *PORTC |= 0x00800080;           // SDA = 1
-  return byte;
+	int i, reg;
+	char byte = 0;
+
+	HAL_AND_UINT32(PORTC, ~0x00800000);
+	for(i=7; i >= 0; i--)
+	{
+		HAL_OR_UINT32(PORTC, 0x00000040);	// SLK = 1
+		HAL_READ_UINT32(PORTC, reg);
+		byte |= ((reg & 0x80) >> 7) << i;	// data = SDA
+		wait(5);
+		HAL_AND_UINT32(PORTC, ~0x00000040);	// SLK = 0
+		wait(5);
+	}
+	HAL_OR_UINT32(PORTC, 0x00800080);		// SDA = 1
+	return byte;
 }
 
+/* acknowledge received bytes */
 static void i2cGiveAck(void)
 {
-  *PORTC |= 0x00c00000;
-  *PORTC &= ~0x00000080;  // SDA = 0
-  wait(5);
-  *PORTC |= 0x00000040;   // SLK = 1
-  wait(5);
-  *PORTC &= ~0x00000040;  // SLK = 0
-  wait(5);
-  *PORTC |= 0x00000080;   // SDA = 1
-  wait(5);
+	HAL_OR_UINT32(PORTC, 0x00c00000);
+	HAL_AND_UINT32(PORTC, ~0x00000080);	// SDA = 0
+	wait(5);
+	HAL_OR_UINT32(PORTC, 0x00000040);	// SLK = 1
+	wait(5);
+	HAL_AND_UINT32(PORTC, ~0x00000040);	// SLK = 0
+	wait(5);
+	HAL_OR_UINT32(PORTC, 0x00000080);	// SDA = 1
+	wait(5);
 }
 
+/* wait for acknowledge from slaves */
 static void i2cGetAck(void)
 {
-  *PORTC &= ~0x00800000;  // SDA in
-  *PORTC |= 0x00400040;   // SLK = 1
-  while(*PORTC & 0x80);   // wait for SDA = 1
-  *PORTC &= ~0x00000040;  // SLK = 0
+	unsigned reg;
+
+	HAL_AND_UINT32(PORTC, ~0x00800000);	// SDA in
+	HAL_OR_UINT32(PORTC, 0x00400040);	// SLK = 1
+	do
+	{
+		HAL_READ_UINT32(PORTC, reg);
+	}while(reg & 0x80);					// wait for SDA = 1
+	HAL_AND_UINT32(PORTC, ~0x00000040);	// SLK = 0
 }
 
-void initI2C(void)
+void cyg_netarm_initI2C(void)
 {
-  *PORTC &= ~0xc0000000;  // mode GPIO
-  i2cStop();
+	HAL_AND_UINT32(PORTC, ~0xc0000000);	// mode GPIO
+	i2cStop();
 }
 
-void eepromPollAck(int deviceAddr)
+/* wait until eeprom's internal write cycle has finished */
+void cyg_netarm_eepromPollAck(int deviceAddr)
 {
-  deviceAddr <<= 1;
-  
-  *PORTC |= 0x00400040;   // SLK = 1
-  while(1)
-    {
-      i2cStart();
-      i2cPutByte(deviceAddr);
-      *PORTC &= ~0x00800000;          // SDA in
-      *PORTC |= 0x00400040;           // SLK = 1
-      if((*PORTC & 0x80) == 0)
-        {
-          *PORTC &= ~0x00000040;  // SLK = 0
-          break;
-        }
-      *PORTC &= ~0x00000040;          // SLK = 0
-    }
+	unsigned reg;
+
+	deviceAddr <<= 1;
+
+	HAL_OR_UINT32(PORTC, 0x00400040);	// SLK = 1
+	while(1)
+	{
+		i2cStart();
+		i2cPutByte(deviceAddr);
+		HAL_AND_UINT32(PORTC, ~0x00800000);		// SDA in
+		HAL_OR_UINT32(PORTC, 0x00400040);		// SLK = 1
+		HAL_READ_UINT32(PORTC, reg);
+		if((reg & 0x80) == 0)
+		{
+			HAL_AND_UINT32(PORTC, ~0x00000040);	// SLK = 0
+			break;
+		}
+		HAL_AND_UINT32(PORTC, ~0x00000040);		// SLK = 0
+	}
 }
 
-void eepromRead(int deviceAddr, int readAddr, char *buf, int numBytes)
+/* reads numBytes from eeprom starting at readAddr into buf */
+void cyg_netarm_eepromRead(int deviceAddr, int readAddr, char *buf, int numBytes)
 {
-  int i;
-  
-  deviceAddr <<= 1;
-  i2cStart();
-  i2cPutByte(deviceAddr);
-  i2cGetAck();
-  i2cPutByte(readAddr >> 8);
-  i2cGetAck();
-  i2cPutByte(readAddr & 0xff);
-  i2cGetAck();
-  i2cStart();
-  i2cPutByte(deviceAddr | 1);             // set read flag
-  i2cGetAck();
-  
-  for(i=0;i<numBytes;i++)
-    {
-      buf[i] = i2cGetByte();
-      if(i < numBytes - 1)
-        i2cGiveAck();
-    }
-  
-  i2cStop();
+	int i;
+
+	deviceAddr <<= 1;
+	i2cStart();
+	i2cPutByte(deviceAddr);
+	i2cGetAck();
+	i2cPutByte(readAddr >> 8);
+	i2cGetAck();
+	i2cPutByte(readAddr & 0xff);
+	i2cGetAck();
+	i2cStart();
+	i2cPutByte(deviceAddr | 1);		// set read flag
+	i2cGetAck();
+
+	for(i=0;i<numBytes;i++)
+	{
+		buf[i] = i2cGetByte();
+		if(i < numBytes - 1)
+			i2cGiveAck();
+	}
+
+	i2cStop();
 }
 
-void eepromWrite(int deviceAddr, int writeAddr, char *buf, int numBytes)
+/* writes up to a page of 32 bytes from buf into eeprom;
+max. number of bytes depends on the offset within a page, indexed by the
+lower 5 bits of writeAddr and equals 32 - offset */
+void cyg_netarm_eepromWrite(int deviceAddr, int writeAddr, char *buf, int numBytes)
 {
-  int i;
-  
-  deviceAddr <<= 1;
-  i2cStart();
-  i2cPutByte(deviceAddr);
-  i2cGetAck();
-  i2cPutByte(writeAddr >> 8);
-  i2cGetAck();
-  i2cPutByte(writeAddr & 0xff);
-  i2cGetAck();
-  
-  for(i=0; i<numBytes; i++)
-    {
-      i2cPutByte(buf[i]);
-      i2cGetAck();
-    }
-  
-  i2cStop();
+	int i;
+
+	deviceAddr <<= 1;
+	i2cStart();
+	i2cPutByte(deviceAddr);
+	i2cGetAck();
+	i2cPutByte(writeAddr >> 8);
+	i2cGetAck();
+	i2cPutByte(writeAddr & 0xff);
+	i2cGetAck();
+
+	for(i=0; i<numBytes; i++)
+	{
+		i2cPutByte(buf[i]);
+		i2cGetAck();
+	}
+
+	i2cStop();
 }

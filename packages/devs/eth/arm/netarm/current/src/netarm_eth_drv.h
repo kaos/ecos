@@ -1,18 +1,19 @@
-#ifndef NETARM_ETH_DRV_H
-#define NETARM_ETH_DRV_H
+#ifndef CYGONCE_DEVS_ETH_ARM_NETARM_ETH_DR_H
+#define CYGONCE_DEVS_ETH_ARM_NETARM_ETH_DR_H
 
-//====================================================================
+// ====================================================================
 //
 //      netarm_eth_drv.h
 //
 //      Device I/O - Description of NET+ARM ethernet hardware functions
-//              and data structures
+//		and data structures
 //
 // ====================================================================
+
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 2005 eCosCentric LTD
+// Copyright (C) 2005 eCosCentric Ltd.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -36,13 +37,15 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
+//
+//####ECOSGPLCOPYRIGHTEND####
 // ====================================================================
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):           Harald Brandl (harald.brandl@fh-joanneum.at)
 // Contributors:        Harald Brandl
-// Date:                        01.08.2004
-// Purpose:                     Internal interfaces and data structures
+// Date:        		01.08.2004
+// Purpose:     		Internal interfaces and data structures
 // Description:
 //
 //####DESCRIPTIONEND####
@@ -53,34 +56,31 @@
 
 typedef struct
 {
-  unsigned char *RxBuffer;
-  unsigned short key_head, key_tail;
-  unsigned KeyBuffer[MaxKeys];
+	unsigned char *RxBuffer;
+	unsigned short key_head, key_tail;
+	unsigned KeyBuffer[MaxKeys];
 }private_data_t;
 
 typedef struct
 {
-  unsigned lo;
-  unsigned hi;
+	unsigned lo;
+	unsigned hi;
 }BDP_t;
 
 
 static bool netarm_init(struct cyg_netdevtab_entry *tab);
 
-static void netarm_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, 
-                        int sg_len);
+static void netarm_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len);
 static void netarm_deliver(struct eth_drv_sc *sc);
-static int  netarm_can_send(struct eth_drv_sc *sc);
-static void netarm_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, 
-                        int sg_len, int total_len, unsigned long key);
+static int netarm_can_send(struct eth_drv_sc *sc);
+static void netarm_send(
+	struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len, int total_len, unsigned long key);
 static void netarm_start(struct eth_drv_sc *sc, unsigned char *enaddr, int flags);
 static void netarm_stop(struct eth_drv_sc *sc);
-static int  netarm_control(struct eth_drv_sc *sc, unsigned long key, void *data, 
-                          int len);
+static int netarm_control(struct eth_drv_sc *sc, unsigned long key, void *data, int len);
 static void netarm_poll(struct eth_drv_sc *sc);
-static int  netarm_int_vector(struct eth_drv_sc *sc);
+static int netarm_int_vector(struct eth_drv_sc *sc);
 
-static void SetMAC(unsigned char *esa);
+static void setMAC(unsigned char *esa);
 
-#endif //NETARM__ETH_DRV_H
-
+#endif	// CYGONCE_DEVS_ETH_ARM_NETARM_ETH_DR_H

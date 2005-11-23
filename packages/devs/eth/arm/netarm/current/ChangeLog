@@ -1,3 +1,9 @@
+2005-11-17 Harald Brandl <Harald.Brandl@fh-joanneum.at>
+
+	* Fixed data alignment problems. Cleaned up the naming of
+	functions to avoid name space pollution. Us the HAL macros to
+	access the hardware.
+	
 2005-06-12 Harald Brandl <Harald.Brandl@fh-joanneum.at>
 
 	* First import of an ethernet device driver for the NETARM

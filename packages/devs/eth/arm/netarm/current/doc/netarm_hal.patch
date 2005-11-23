@@ -161,7 +161,7 @@ diff -Naur orig/hal/arm/netarm/current/include/hal_cache.h new/hal/arm/netarm/cu
 -
 diff -Naur orig/hal/arm/netarm/current/include/hal_platform_setup.h new/hal/arm/netarm/current/include/hal_platform_setup.h
 --- orig/hal/arm/netarm/current/include/hal_platform_setup.h	2004-11-29 17:35:46.000000000 +0100
-+++ new/hal/arm/netarm/current/include/hal_platform_setup.h	2005-03-14 17:10:01.542675500 +0100
++++ new/hal/arm/netarm/current/include/hal_platform_setup.h	2005-03-15 12:20:27.760534400 +0100
 @@ -19,7 +19,7 @@
  // Usage:       #include <cyg/hal/hal_platform_setup.h>
  //
@@ -210,8 +210,9 @@ diff -Naur orig/hal/arm/netarm/current/include/hal_platform_setup.h new/hal/arm/
  		ldr		r0,=0x4004a800		/* System control register */
  		str		r0,[r1]
  
-+#ifdef CYG_HAL_STARTUP_ROM
- 		mov		r0,#0				/* PLL config */
+-		mov		r0,#0				/* PLL config */
++#ifdef CYG_HAL_STARTUP_ROM			/* PLL config */
++		mov		r0,#0
 +#else
 +		ldr		r0,=0x09000e1e
 +#endif
@@ -241,7 +242,7 @@ diff -Naur orig/hal/arm/netarm/current/include/hal_platform_setup.h new/hal/arm/
  		/* Configure SDRAM */
  
 -		ldr		r0,=0xf38000b0		/* CS1 Option register, BLEN=11 */
-+		ldr		r0,=0xf3000070		/* CS1 Option register, BLEN=11 (0xf38000b0)*/
++		ldr		r0,=0xf3000070		/* CS1 Option register, BLEN=11 */
  		str		r0,[r1,#0x24]
  
  		ldr		r0,=0x0000022d		/* CS1 Base Address register */
@@ -371,6 +372,72 @@ diff -Naur orig/hal/arm/netarm/current/include/pkgconf/mlt_arm_netarm_romram.ldi
  }
 -
 -
+diff -Naur orig/hal/arm/netarm/current/include/plf_mmap.h new/hal/arm/netarm/current/include/plf_mmap.h
+--- orig/hal/arm/netarm/current/include/plf_mmap.h	1970-01-01 01:00:00.000000000 +0100
++++ new/hal/arm/netarm/current/include/plf_mmap.h	2005-04-01 11:13:23.378304500 +0200
+@@ -0,0 +1,62 @@
++#ifndef CYGONCE_HAL_NETARM_PLATFORM_PLF_MMAP_H
++#define CYGONCE_HAL_NETARM_PLATFORM_PLF_MMAP_H
++//==========================================================================
++//
++//      plf_mmap.h
++//
++//      Platform specific memory map support
++//
++//==========================================================================
++//####ECOSGPLCOPYRIGHTBEGIN####
++// -------------------------------------------
++// This file is part of eCos, the Embedded Configurable Operating System
++// Copyright (C) 2005 eCosCentric Ltd.
++//
++// eCos is free software; you can redistribute it and/or modify it under
++// the terms of the GNU General Public License as published by the Free
++// Software Foundation; either version 2 or (at your option) any later version.
++//
++// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
++// WARRANTY; without even the implied warranty of MERCHANTABILITY or
++// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++// for more details.
++//
++// You should have received a copy of the GNU General Public License along
++// with eCos; if not, write to the Free Software Foundation, Inc.,
++// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
++//
++// As a special exception, if other files instantiate templates or use macros
++// or inline functions from this file, or you compile this file and link it
++// with other works to produce a work based on this file, this file does not
++// by itself cause the resulting work to be covered by the GNU General Public
++// License. However the source code for this file must still be made available
++// in accordance with section (3) of the GNU General Public License.
++//
++// This exception does not invalidate any other reasons why a work based on
++// this file might be covered by the GNU General Public License.
++//
++// -------------------------------------------
++//####ECOSGPLCOPYRIGHTEND####
++//==========================================================================
++//#####DESCRIPTIONBEGIN####
++//
++// Author(s):           Harald Brandl (harald.brandl@fh-joanneum.at)
++// Contributors:        Harald Brandl
++// Date:                01.04.2005
++// Purpose:             NET+ARM memory map macro
++// Description:
++//
++//####DESCRIPTIONEND####
++//
++//==========================================================================
++
++
++extern unsigned int _dataram;
++
++
++#define HAL_CACHED_TO_UNCACHED_ADDRESS( caddr, uaddr, type ) CYG_MACRO_START       \
++    uaddr = (type)((cyg_uint32)caddr - (cyg_uint32)(&_dataram)); \
++CYG_MACRO_END
++
++//---------------------------------------------------------------------------
++#endif // CYGONCE_HAL_NETARM_PLATFORM_PLF_MMAP_H
 diff -Naur orig/hal/arm/netarm/current/src/netarm_misc.c new/hal/arm/netarm/current/src/netarm_misc.c
 --- orig/hal/arm/netarm/current/src/netarm_misc.c	2004-11-29 17:35:48.000000000 +0100
 +++ new/hal/arm/netarm/current/src/netarm_misc.c	2005-02-22 11:57:58.296703200 +0100

@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 2005 eCosCentric LTD
+// Copyright (C) 2005 eCosCentric Ltd.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -32,30 +32,30 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
+//
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):           Harald Brandl (harald.brandl@fh-joanneum.at)
-// Contributors:        Harald Brandl
-// Date:                01.08.2004
-// Purpose:             PHY chip configuration
+// Author(s):   	Harald Brandl (harald.brandl@fh-joanneum.at)
+// Contributors:  	Harald Brandl
+// Date:        	01.08.2004
+// Purpose:     	PHY chip configuration
 // Description:
 //
 //####DESCRIPTIONEND####
 //
 //==========================================================================
 
-#include <stdio.h>
-#include <pkgconf/devs_eth_arm_netarm.h>
-#include <cyg/hal/hal_diag.h>
-#include <cyg/hal/hal_io.h>
 #include "eth_regs.h"
+
 
 #define PHYS(_i_) (0x800 | _i_)
 
-#define SysReg (unsigned int*)0xffb00004        // System Status Register
+#define SysReg (unsigned *)0xffb00004	// System Status Register
 
-/*  Function: void mii_poll_busy (void)
+/*  Function: void cyg_netarm_mii_poll_busy (void)
  *
  *  Description:
  *     This routine is responsible for waiting for the current PHY
@@ -65,14 +65,18 @@
  *     none
  */
 
-void mii_poll_busy(void)
+static void
+mii_poll_busy(void)
 {
-  /* check to see if PHY is busy with read or write */
-  while (MIIIR & 1)
-    HAL_DELAY_US(1);
+	unsigned reg;
+     /* check to see if PHY is busy with read or write */
+    do
+    {
+		HAL_READ_UINT32(MIIIR, reg);
+	}while (reg & 1);
 }
 
-/*  Function: void mii_reset (void)
+/*  Function: void cyg_netarm_mii_reset (void)
  *
  *  Description:
  *
@@ -82,14 +86,15 @@ void mii_poll_busy(void)
  *      none
  */
 
-void mii_reset(void)
+void
+cyg_netarm_mii_reset(void)
 {
-  MIIAR = PHYS(0);      // select command register
-  MIIWDR = 0x8000;      // reset
-  mii_poll_busy();
+     HAL_WRITE_UINT32(MIIAR, PHYS(0));	// select command register
+     HAL_WRITE_UINT32(MIIWDR, 0x8000);	// reset
+     mii_poll_busy();
 }
 
-/*  Function: cyg_bool mii_negotiate (void)
+/*  Function: cyg_bool cyg_netarm_mii_negotiate (void)
  *
  *  Description:
  *     This routine is responsible for causing the external Ethernet PHY
@@ -103,37 +108,40 @@ void mii_reset(void)
  *     1: ERROR
  */
 
-cyg_bool mii_negotiate(void)
+cyg_bool
+cyg_netarm_mii_negotiate(void)
 {
-  int timeout = 100000;
-  
-  MIIAR = PHYS(4);
-  
-  mii_poll_busy();
-  
-  MIIAR = PHYS(0);
-  MIIWDR |= 0x1200;
-  
-  mii_poll_busy();
-  
-  while(timeout)
-    {
-      MIIAR = PHYS(1);
-      MIICR = 1;
-      
-      mii_poll_busy();
-      
-      if(0x24 == (MIIRDR & 0x24))
-        return 0;
-      else
-        timeout--;
-    }
-  
-  return 1;
+     unsigned timeout = 100000, reg;
+
+     HAL_WRITE_UINT32(MIIAR, PHYS(4));
+
+     mii_poll_busy();
+
+     HAL_WRITE_UINT32(MIIAR, PHYS(0));
+     HAL_OR_UINT32(MIIWDR, 0x1200);
+
+     mii_poll_busy();
+
+     while(timeout)
+     {
+          HAL_WRITE_UINT32(MIIAR, PHYS(1));
+          HAL_WRITE_UINT32(MIICR, 1);
+
+          mii_poll_busy();
+
+          HAL_READ_UINT32(MIIRDR, reg);
+
+          if(0x24 == (reg & 0x24))
+               return 0;
+          else
+               timeout--;
+     }
+
+     return 1;
 }
 
 
-/*  Function: void mii_set_speed (cyg_bool speed, cyg_bool duplex)
+/*  Function: void cyg_netarm_mii_set_speed (cyg_bool speed, cyg_bool duplex)
  *
  *  Description:
  *
@@ -151,27 +159,28 @@ cyg_bool mii_negotiate(void)
  *      none
  */
 
-void mii_set_speed(cyg_bool speed, cyg_bool duplex)
+void
+cyg_netarm_mii_set_speed(cyg_uint32 speed, cyg_bool duplex)
 {
-  unsigned long int timeout = 1000000;
-  
-  MIIAR = PHYS(0);      // select command register
-  MIIWDR = (speed << 13) | (duplex << 8);       // set speed and duplex
-  mii_poll_busy();
-  
-  
-  while(timeout)
-    {
-      MIIAR = PHYS(1);  // select status register
-      MIICR = 1;
-      mii_poll_busy();
-      if((MIIRDR) & 0x4)
-        break;
-      timeout--;
-    }
+     unsigned timeout = 1000000, reg;
+
+     HAL_WRITE_UINT32(MIIAR, PHYS(0));	// select command register
+     HAL_WRITE_UINT32(MIIWDR, (speed << 13) | (duplex << 8));	// set speed and duplex
+     mii_poll_busy();
+
+     while(timeout)
+     {
+          HAL_WRITE_UINT32(MIIAR, PHYS(1));	// select status register
+          HAL_WRITE_UINT32(MIICR, 1);
+          mii_poll_busy();
+          HAL_READ_UINT32(MIIRDR, reg);
+          if(reg & 0x4)
+               break;
+          timeout--;
+     }
 }
 
-/*  Function: cyg_bool mii_check_speed
+/*  Function: cyg_bool cyg_netarm_mii_check_speed
  *
  *  Description:
  *
@@ -186,15 +195,19 @@ void mii_set_speed(cyg_bool speed, cyg_bool duplex)
  *      1: 100Mbit Speed
  */
 
-cyg_bool mii_check_speed(void)
+cyg_uint32
+cyg_netarm_mii_check_speed(void)
 {
-  MIIAR = PHYS(17);
-  MIICR = 1;
-  mii_poll_busy();
-  return (MIIRDR >> 14) & 1;
+	unsigned reg;
+
+     HAL_WRITE_UINT32(MIIAR, PHYS(17));
+     HAL_WRITE_UINT32(MIICR, 1);
+     mii_poll_busy();
+     HAL_READ_UINT32(MIIRDR, reg);
+     return (reg >> 14) & 1;
 }
 
-/*  Function: void mii_check_duplex
+/*  Function: void cyg_netarm_mii_check_duplex
  *
  *  Description:
  *
@@ -209,10 +222,14 @@ cyg_bool mii_check_speed(void)
  *      1: Full Duplex
  */
 
-cyg_bool mii_check_duplex(void)
+cyg_bool
+cyg_netarm_mii_check_duplex(void)
 {
-  MIIAR = PHYS(17);
-  MIICR = 1;
-  mii_poll_busy();
-  return (MIIRDR >> 9) & 1;
+	unsigned reg;
+
+     HAL_WRITE_UINT32(MIIAR, PHYS(17));
+     HAL_WRITE_UINT32(MIICR, 1);
+     mii_poll_busy();
+     HAL_READ_UINT32(MIIRDR, reg);
+     return (reg >> 9) & 1;
 }
