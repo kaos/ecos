@@ -113,6 +113,7 @@ typedef struct cs8900a_priv_data {
     cyg_uint8 esa[6];
     provide_esa_t provide_esa;
     cyg_vector_t interrupt;             // Interrupt vector used by controller
+    int priority;						// Priority level used by controller
     cyg_handle_t  interrupt_handle;
     cyg_interrupt interrupt_object;
     cyg_addrword_t base;

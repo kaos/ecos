@@ -181,7 +181,7 @@ cs8900a_init(struct cyg_netdevtab_entry *tab)
 #ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
     // Initialize environment, setup interrupt handler
     cyg_drv_interrupt_create(cpd->interrupt,
-                             0, // Priority - what goes here?
+                             cpd->priority,
                              (cyg_addrword_t)cpd, //  Data item passed to interrupt handler
                              (cyg_ISR_t *)cs8900a_isr,
                              (cyg_DSR_t *)cs8900a_dsr,

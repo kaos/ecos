@@ -1,3 +1,9 @@
+2005-11-10  Laurent Gonzalez <laurent.gonzalez@trango-systems.com>
+
+	* include/cs8900a.h:
+	* src/if_cs8900a.c: Added a priority field in cpd
+	that makes interrupt priority configurable
+
 2005-05-04  Ian Campbell  <icampbell@arcom.com>
 
 	* cdl/cl_cs8900a_eth_drivers.cdl: Added
