@@ -59,7 +59,7 @@ cdl_package CYGPKG_PPP {
     requires      CYGOPT_IO_SERIAL_SUPPORT_NONBLOCKING
     requires      CYGPKG_NET
     requires      CYGPKG_IO_SERIAL_FLOW_CONTROL
-    requires      CYGPKG_POSIX_TIMERS
+    requires      CYGPKG_POSIX_CLOCKS
     
     description "PPP support for eCos. This package contains the PPP
                  daemon functionality, BSD kernel device drivers for
