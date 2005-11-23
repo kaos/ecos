@@ -4380,7 +4380,9 @@ isr_function(cyg_vector_t vector, cyg_addrword_t data)
 
     &hellip;
 
-    return dsr_required ? CYG_ISR_CALL_DSR : CYG_ISR_HANDLED;
+    return dsr_required ? 
+        (CYG_ISR_CALL_DSR : CYG_ISR_HANDLED) :
+        CYG_ISR_HANDLED;
 }
           </programlisting>
           <para>
@@ -4409,12 +4411,16 @@ normal. However eCos device drivers usually will not assume that they
 are especially important, so their ISRs will be as short as possible.
           </para>
           <para>
-The return value of an ISR is normally one of
-<literal>CYG_ISR_CALL_DSR</literal> or
+The return value of an ISR is normally a bit mask containing zero, one
+or both of the following bits: <literal>CYG_ISR_CALL_DSR</literal> or
 <literal>CYG_ISR_HANDLED</literal>. The former indicates that further
 processing is required at DSR level, and the interrupt handler's DSR
 will be run as soon as possible. The latter indicates that the
-interrupt has been fully handled and no further effort is required.
+interrupt was handled by this ISR so there is no need to call other
+interrupt handlers which might be chained on this interrupt vector. If
+this ISR did not handle the interrupt it should not set the
+CYG_ISR_HANDLED bit so that other chained interrupt handlers may
+handle the interrupt.
           </para>
           <para>
 An ISR is allowed to make very few kernel calls. It can manipulate the
@@ -4429,8 +4435,8 @@ improves interrupt latency.
           <term>cyg_DSR_t <parameter>dsr</parameter></term>
           <listitem><para>
 If an interrupt has occurred and the ISR has returned a value
-<literal>CYG_ISR_CALL_DSR</literal>, the system will call the
-deferred service routine or DSR associated with this interrupt
+<literal>CYG_ISR_CALL_DSR</literal> bit being set, the system 
+will call the deferred service routine or DSR associated with this interrupt
 handler. If the scheduler is not currently locked then the DSR will
 run immediately. However if the interrupted thread was in the middle
 of a kernel call and had locked the scheduler, then the DSR will be

@@ -1,3 +1,8 @@
+2005-11-23  Sergei Organov  <osv@javad.com>
+
+	* doc/kernel.sgml: Fix description of CYG_ISR_CALL_DSR and
+	CYG_ISR_HANDLED. Fix example isr_function() accordingly.
+
 2005-10-23  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/flag.hxx: We need thread.inl for the empty() function
