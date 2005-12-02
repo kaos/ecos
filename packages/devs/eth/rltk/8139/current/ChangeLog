@@ -1,3 +1,13 @@
+2005-12-02  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/if_8139.c (rltk8139_deliver): Fix the compiler warnings by
+	adding some casts.
+
+2005-11-25  Hajime Ishitani <pigmon@mail.snd.co.jp>
+
+	* src/if_8139.h:
+	* src/if_8139.c: Added a priority level field
+
 2005-03-03  Bob Koninckx <bob.koninckx@fmtc.be>
 
 	* src/if_8139.c: fixed bug that prevented rltk8139_find to find

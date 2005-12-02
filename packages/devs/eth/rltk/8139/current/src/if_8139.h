@@ -149,6 +149,10 @@ typedef struct {
   cyg_vector_t  vector;
   cyg_handle_t  interrupt_handle;
   cyg_interrupt interrupt;
+
+  /* device ISR priority */
+  cyg_priority_t isr_priority;
+
 } Rltk8139_t;
 
 

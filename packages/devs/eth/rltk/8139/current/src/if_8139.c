@@ -346,7 +346,8 @@ rltk8139_find(int n_th, struct eth_drv_sc *sc)
      * Note that we use the generic eth_drv_dsr routine instead of
      * our own.
      */
-    cyg_drv_interrupt_create(rltk8139_info->vector, 0,
+    cyg_drv_interrupt_create(rltk8139_info->vector,
+                             rltk8139_info->isr_priority,
                              (CYG_ADDRWORD)sc,
                              rltk8139_isr,
                              eth_drv_dsr,
@@ -936,8 +937,8 @@ rltk8139_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
    * this happens so seldomly that it's simply not worth the extra
    * runtime check.
    */
-  tx_buffer = CYGARC_UNCACHED_ADDRESS(rltk8139_info->tx_buffer
-                                      + TX_BUF_SIZE * desc);
+  tx_buffer = (cyg_uint8 *)CYGARC_UNCACHED_ADDRESS(rltk8139_info->tx_buffer
+                                                   + TX_BUF_SIZE * desc);
   rltk8139_info->tx_desc_key[desc] = key;
 
   /*
@@ -1201,7 +1202,9 @@ rltk8139_deliver(struct eth_drv_sc *sc)
          * doesn't have to redetermine this information. Then, inform
          * the generic ethernet driver about the packet.
          */
-        rltk8139_info->rx_current = CYGARC_UNCACHED_ADDRESS(rltk8139_info->rx_ring + rx_pos + 4);
+        rltk8139_info->rx_current = 
+          (cyg_uint8 *)CYGARC_UNCACHED_ADDRESS(rltk8139_info->rx_ring + 
+                                               rx_pos + 4);
         rltk8139_info->rx_size = length;
 
         /* Tell eCos about the packet */
