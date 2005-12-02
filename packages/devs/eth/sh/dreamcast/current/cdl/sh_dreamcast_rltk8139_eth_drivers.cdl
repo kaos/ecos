@@ -86,6 +86,22 @@ cdl_package CYGPKG_DEVS_ETH_SH_DREAMCAST_RLTK8139 {
                 RealTek 8139 ethernet port 0."
         }
     }
+    cdl_component CYGPKG_DEVS_ETH_SH_DREAMCAST_RLTK8139_OPTIONS {
+        display "RealTek 8139 ethernet driver build options"
+        flavor  none
+	      no_define
+
+        cdl_option CYGPKG_DEVS_ETH_SH_DREAMCAST_RLTK8139_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "-D_KERNEL -D__ECOS" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the RealTek 8139 ethernet driver package. These
+                flags are used in addition to the set of global flags."
+        }
+    }
 }
 
 # EOF sh_dreamcast_rltk8139_eth_drivers.cdl

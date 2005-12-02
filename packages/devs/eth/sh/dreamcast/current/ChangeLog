@@ -1,3 +1,8 @@
+2005-12-02  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/sh_dreamcast_rltk8139_eth_drivers.cdl: Add compiler
+	flags "-D_KERNEL -D__ECOS" so the code compiles.
+
 2004-04-21  Yoshinori Sato <ysato@users.sourceforge.jp>
 
 	* src/if_dreamcast.c
