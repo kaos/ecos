@@ -1,3 +1,8 @@
+2005-12-02  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/hal_sh_sh7750_dreamcast.cdl: Fix the require statements so
+	we can build things other than RedBoot.
+
 2004-04-30  Yoshinori Sato  <ysato@users.sourceforge.jp>
 
 	* cdl/hal_sh_sh7750_dreamcast.cdl: Build boot.S.
