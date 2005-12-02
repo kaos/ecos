@@ -1,3 +1,8 @@
+2005-12-02  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/disk.c: Add comments that bread/bwrite take the position and
+	len in terms of blocks, not bytes.
+
 2004-07-01  Savin Zlobec  <savin@elatec.si> 
 
  	* src/disk.c:

@@ -370,8 +370,8 @@ disk_lookup(struct cyg_devtab_entry **tab,
 static Cyg_ErrNo 
 disk_bread(cyg_io_handle_t  handle, 
            void            *buf, 
-           cyg_uint32      *len,
-           cyg_uint32       pos)
+           cyg_uint32      *len,  // In blocks
+           cyg_uint32       pos)  // In blocks
 {
     cyg_devtab_entry_t *t    = (cyg_devtab_entry_t *) handle;
     disk_channel       *chan = (disk_channel *) t->priv;
@@ -428,8 +428,8 @@ disk_bread(cyg_io_handle_t  handle,
 static Cyg_ErrNo 
 disk_bwrite(cyg_io_handle_t  handle, 
             const void      *buf, 
-            cyg_uint32      *len,
-            cyg_uint32       pos)
+            cyg_uint32      *len,   // In blocks
+            cyg_uint32       pos)   // In blocks
 {
     cyg_devtab_entry_t *t    = (cyg_devtab_entry_t *) handle;
     disk_channel       *chan = (disk_channel *) t->priv;
