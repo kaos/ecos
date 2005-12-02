@@ -69,13 +69,13 @@ typedef struct {
                       void *buf, 
                       cyg_uint32 *len);
     Cyg_ErrNo (*bwrite)(cyg_io_handle_t handle, 
-                       const void *buf, 
-                       cyg_uint32 *len,
-                       cyg_uint32 pos);
+                        const void *buf, 
+                        cyg_uint32 *len,   // in blocks
+                        cyg_uint32 pos);   // in blocks
     Cyg_ErrNo (*bread)(cyg_io_handle_t handle, 
-                      void *buf, 
-                      cyg_uint32 *len,
-                      cyg_uint32 pos);
+                       void *buf, 
+                       cyg_uint32 *len,    // in blocks
+                       cyg_uint32 pos);    // in blocks
     cyg_bool  (*select)(cyg_io_handle_t handle,
                         cyg_uint32 which,
                         CYG_ADDRWORD info);
@@ -130,6 +130,8 @@ cyg_devio_table_t _l = {                                        \
     _set_config,                                                \
 };
 
+// Note: _bwrite and _bread pass len and pos in terms of blocks, not
+// bytes.
 #define BLOCK_DEVIO_TABLE(_l,_bwrite,_bread,_select,_get_config,_set_config)    \
 cyg_devio_table_t _l = {                                        \
     cyg_devio_cwrite,                                           \

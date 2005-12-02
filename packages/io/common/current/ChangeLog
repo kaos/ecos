@@ -1,3 +1,9 @@
+2005-12-02  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/iosys.c: 
+	* include/devtab.h: Add comments that bread/bwrite takes there
+	parameters in blocks, not bytes.
+
 2005-09-11  Uwe Kindler  <uwe_kindler@web.de>
 
 	* include/config_keys.h Configuration keys for CAN driver added. 

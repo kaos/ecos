@@ -198,6 +198,10 @@ cyg_io_read(cyg_io_handle_t handle, void *buf, cyg_uint32 *len)
     return t->handlers->read(handle, buf, len);
 }
 
+//
+// 'write' blocks to a device. The len and the position are in terms
+// of blocks, not bytes like the cyg_io_write.
+//
 Cyg_ErrNo 
 cyg_io_bwrite(cyg_io_handle_t handle, const void *buf, cyg_uint32 *len, cyg_uint32 pos)
 {
@@ -215,9 +219,9 @@ cyg_io_bwrite(cyg_io_handle_t handle, const void *buf, cyg_uint32 *len, cyg_uint
 }
 
 //
-// 'read' data from a device.
+// 'read' blocks from a device. The len and the position are in terms of
+// blocks, not bytes like the cyg_io_read.
 //
-
 Cyg_ErrNo 
 cyg_io_bread(cyg_io_handle_t handle, void *buf, cyg_uint32 *len, cyg_uint32 pos)
 {
