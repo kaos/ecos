@@ -40,5 +40,35 @@ EOF
 
 cat ${ECOS_INSTALL_DIR}/include/pkgconf/ecos.mak >>Make.params
 
+#
+# Add CFLAGS manipulation - this should match <ecos>/packages/pkgconf/rules.mak
+#
 
+cat <<EOF >>Make.params
+
+#
+# Modify CFLAGS to match newer compilers
+#
+ACTUAL_CFLAGS = \$(ECOS_GLOBAL_CFLAGS)
+ACTUAL_CXXFLAGS = \$(ECOS_GLOBAL_CFLAGS)
+ACTUAL_LDFLAGS = \$(ECOS_GLOBAL_LDFLAGS)
+
+# GCC since 2.95 does -finit-priority by default so remove it from old HALs
+ACTUAL_CFLAGS := \$(subst -finit-priority,,\$(ACTUAL_CFLAGS))
+
+# -fvtable-gc is known to be broken in all recent GCC.
+ACTUAL_CFLAGS := \$(subst -fvtable-gc,,\$(ACTUAL_CFLAGS))
+
+# Expand inline functions
+ACTUAL_CFLAGS := -finline-limit=7000 \$(ACTUAL_CFLAGS)
+
+# Separate C++ flags out from C flags.
+ACTUAL_CFLAGS := \$(subst -fno-rtti,,\$(ACTUAL_CFLAGS))
+ACTUAL_CFLAGS := \$(subst -frtti,,\$(ACTUAL_CFLAGS))
+ACTUAL_CFLAGS := \$(subst -Woverloaded-virtual,,\$(ACTUAL_CFLAGS))
+ACTUAL_CFLAGS := \$(subst -fvtable-gc,,\$(ACTUAL_CFLAGS))
+
+ACTUAL_CXXFLAGS := \$(subst -Wstrict-prototypes,,\$(ACTUAL_CXXFLAGS))
+
+EOF
 

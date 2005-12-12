@@ -19,10 +19,10 @@ include Make.params
 # Simple build rules
 
 .c.o:
-	\$(CC) -c \$(ECOS_GLOBAL_CFLAGS) -I\$(PREFIX)/include \$*.c
+	\$(CC) -c \$(ACTUAL_CFLAGS) -I\$(PREFIX)/include \$*.c
 
 .o:
-	\$(CC) \$(ECOS_GLOBAL_LDFLAGS) -L\$(PREFIX)/lib -Ttarget.ld \$*.o -o \$@
+	\$(CC) \$(ACTUAL_LDFLAGS) -L\$(PREFIX)/lib -Ttarget.ld \$*.o -o \$@
 
 SRCS=${SRCS-source_file.c}
 OBJS=\${SRCS:%.c=%.o}
