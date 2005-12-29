@@ -83,7 +83,7 @@
 
 // MACROS
 
-#define Ise(c)          ((c == 'e') || (c == 'E') || (c == 'd') || (c == 'D'))
+#define Ise(c)          ((c == 'e') || (c == 'E'))
 #define Issign(c)       ((c == '-') || (c == '+'))
 #define Val(c)          ((c - '0'))
 
@@ -219,7 +219,7 @@ strtod( const char *nptr, char **endptr )
     if(Ise(*nptr))
     {
         conv_done = 1;
-        if(*++nptr != '\0') /* skip e|E|d|D */
+        if(*++nptr != '\0') /* skip e|E */
         {  /* ! ([nptr]xxx[.[yyy]]e)  */
             
             while(isspace(*nptr)) nptr++; /* Ansi allows spaces after e */

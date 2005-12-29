@@ -1,3 +1,8 @@
+2005-12-27  Sergei Organov  <osv@javad.com>
+
+	* src/strtod.cxx (Ise): 'd' and 'D' aren't allowed in floating
+	formats.
+
 2004-08-18  Fredrik Hederstierna  <fredrik@wespot.com>
 2004-08-18  Jonathan Larmour  <jifl@eCosCentric.com>
 
