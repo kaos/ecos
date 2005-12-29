@@ -404,6 +404,8 @@
 #define PXA2X0_ICFP					PXA2X0_REGISTER( PXA2X0_IC_BASE+0x000c )
 #define PXA2X0_ICPR					PXA2X0_REGISTER( PXA2X0_IC_BASE+0x0010 )
 #define PXA2X0_ICCR					PXA2X0_REGISTER( PXA2X0_IC_BASE+0x0014 )
+#define PXA2X0_ICMR2					PXA2X0_REGISTER( PXA2X0_IC_BASE+0x00a0 )
+#define PXA2X0_ICLR2					PXA2X0_REGISTER( PXA2X0_IC_BASE+0x00a4 )
 
 // GPIO
 #define PXA2X0_GPIO_BASE			( PXA2X0_PERIPHERALS_BASE + 0x0e00000 )
@@ -434,6 +436,15 @@
 #define PXA2X0_GAFR1_U				PXA2X0_REGISTER( PXA2X0_GPIO_BASE+0x0060 )
 #define PXA2X0_GAFR2_L				PXA2X0_REGISTER( PXA2X0_GPIO_BASE+0x0064 )
 #define PXA2X0_GAFR2_U				PXA2X0_REGISTER( PXA2X0_GPIO_BASE+0x0068 )
+#define PXA2X0_GAFR3_L                          PXA2X0_REGISTER( PXA2X0_GPIO_BASE+0x006c )
+#define PXA2X0_GAFR3_U                          PXA2X0_REGISTER( PXA2X0_GPIO_BASE+0x0070 )
+#define PXA2X0_GPLR3                            PXA2X0_REGISTER( PXA2X0_GPIO_BASE+0x0100 )
+#define PXA2X0_GPDR3                            PXA2X0_REGISTER( PXA2X0_GPIO_BASE+0x010c )
+#define PXA2X0_GPSR3                            PXA2X0_REGISTER( PXA2X0_GPIO_BASE+0x0118 )
+#define PXA2X0_GPCR3                            PXA2X0_REGISTER( PXA2X0_GPIO_BASE+0x0124 )
+#define PXA2X0_GRER3                            PXA2X0_REGISTER( PXA2X0_GPIO_BASE+0x0130 )
+#define PXA2X0_GFER3                            PXA2X0_REGISTER( PXA2X0_GPIO_BASE+0x013c )
+#define PXA2X0_GEDR3                            PXA2X0_REGISTER( PXA2X0_GPIO_BASE+0x0148 )
 
 #define PXA2X0_GPIO_NORM 0x00
 #define PXA2X0_GPIO_AF1  0x01
@@ -492,24 +503,46 @@
 #define PXA2X0_CCCR					PXA2X0_REGISTER( PXA2X0_CLK_BASE+0x0000 )
 #define PXA2X0_CKEN					PXA2X0_REGISTER( PXA2X0_CLK_BASE+0x0004 )
 #define PXA2X0_OSCC					PXA2X0_REGISTER( PXA2X0_CLK_BASE+0x0008 )
-	//	Memory Clock
-#define PXA2X0_CCCR_L09	(0x1f)
-#define PXA2X0_CCCR_L27	(0x01)
-#define PXA2X0_CCCR_L32	(0x02)
-#define PXA2X0_CCCR_L36	(0x03)
-#define PXA2X0_CCCR_L40	(0x04)
-#define PXA2X0_CCCR_L45	(0x05)
-	//	Memory-to-Run-Mode multiplier
-#define PXA2X0_CCCR_M1	(0x1 << 5)
-#define PXA2X0_CCCR_M2	(0x2 << 5)
-#define PXA2X0_CCCR_M4	(0x3 << 5)
-	//	Run-Mode-to-Turbo-Mode multiplier
-#define PXA2X0_CCCR_N10	(0x2 << 7)	// N=1.0
-#define PXA2X0_CCCR_N15	(0x3 << 7)	// N=1.5
-#define PXA2X0_CCCR_N20	(0x4 << 7)	// N=2.0
-#define PXA2X0_CCCR_N25	(0x5 << 7)	// N=2.5
-#define PXA2X0_CCCR_N30	(0x6 << 7)	// N=3.0
 
+// PXA25x CCCR bits
+#ifdef CYGOPT_HAL_ARM_XSCALE_PXA2X0_VARIANT_PXA25X
+// Crystal Frequency to Memory Frequency multiplier
+#  define PXA2X0_CCCR_L09	(0x1f)
+#  define PXA2X0_CCCR_L27	(0x01)
+#  define PXA2X0_CCCR_L32	(0x02)
+#  define PXA2X0_CCCR_L36	(0x03)
+#  define PXA2X0_CCCR_L40	(0x04)
+#  define PXA2X0_CCCR_L45	(0x05)
+// Memory frequency to to run mode frequency multiplier
+#  define PXA2X0_CCCR_M1	(0x1 << 5)
+#  define PXA2X0_CCCR_M2	(0x2 << 5)
+#  define PXA2X0_CCCR_M4	(0x3 << 5)
+// Run mode frequency to turbo mode frequency multiplier
+#  define PXA2X0_CCCR_N10	(0x2 << 7)	// N=1.0
+#  define PXA2X0_CCCR_N15	(0x3 << 7)	// N=1.5
+#  define PXA2X0_CCCR_N20	(0x4 << 7)	// N=2.0
+#  define PXA2X0_CCCR_N25	(0x5 << 7)	// N=2.5
+#  define PXA2X0_CCCR_N30	(0x6 << 7)	// N=3.0
+#endif
+
+// PXA27x CCCR bits
+#ifdef CYGOPT_HAL_ARM_XSCALE_PXA2X0_VARIANT_PXA27X
+// Run-mode-to-oscillator ratio
+#  define PXA27X_CCCR_L8           (0x08)
+#  define PXA27X_CCCR_L16          (0x10)
+// Turbo-mode-to-run-mode ratio
+#  define PXA27X_CCCR_N1           (0x02 << 7)
+#  define PXA27X_CCCR_N1_5         (0x03 << 7)
+#  define PXA27X_CCCR_N2           (0x04 << 7)
+#  define PXA27X_CCCR_N2_5         (0x05 << 7)
+#  define PXA27X_CCCR_N3           (0x06 << 7)
+
+#  define PXA27X_CCCR_A            (0x02000000)
+#  define PXA27X_CCCR_PLL_EARLY_EN (0x04000000)
+#  define PXA27X_CCCR_LCD_26       (0x08000000)
+#  define PXA27X_CCCR_PPDIS        (0x40000000)
+#  define PXA27X_CCCR_CPDIS        (0x80000000)
+#endif
 
 // LCD Controller
 #define PXA2X0_LCCR0				PXA2X0_REGISTER( PXA2X0_LCD_BASE+0x0000 )

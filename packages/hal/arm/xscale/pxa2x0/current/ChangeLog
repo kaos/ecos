@@ -1,3 +1,19 @@
+2005-12-06  David Vrabel  <dvrabel@arcom.com>
+
+	* cdl/hal_arm_xscale_pxa2x0.cdl: New
+	CYGOPT_HAL_ARM_XSCALE_PXA2X0_VARIANT option to select support for
+	the PXA25x series or the PXA27x series.  The default is PXA25x so
+	existing packages work as-is.
+
+	* include/hal_pxa2x0.h: Add some extra PXA27x specific registers.
+
+	* src/pxa2x0_misc.c, include/hal_var_ints.h: Add support for the
+	extra interrupts (including the extra GPIO ones) on the PXA27x.
+
+	* src/pxa2x0_misc.c (hal_delay_us): Use correct timer clock
+	frequency for PXA27x.  Correctly handle the loop taking longer
+	than 1 timer tick.
+
 2005-09-19  David Vrabel  <dvrabel@arcom.com>
 
 	* cdl/hal_arm_xscale_pxa2x0.cdl: Fix the last patch, logical OR

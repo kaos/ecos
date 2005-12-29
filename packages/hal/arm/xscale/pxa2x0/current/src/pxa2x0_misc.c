@@ -85,9 +85,22 @@ void hal_hardware_init(void)
     *PXA2X0_GFER1 = 0;
     *PXA2X0_GFER2 = 0;
 
+#if defined(CYGOPT_HAL_ARM_XSCALE_PXA2X0_VARIANT_PXA25X)
     *PXA2X0_GEDR0 = 0xffffffff; // Clear edge detect status
     *PXA2X0_GEDR1 = 0xffffffff;
     *PXA2X0_GEDR2 = 0x0001ffff;
+#elif defined(CYGOPT_HAL_ARM_XSCALE_PXA2X0_VARIANT_PXA27X)
+    *PXA2X0_ICMR2 = 0;
+    *PXA2X0_ICLR2 = 0;
+
+    *PXA2X0_GRER3 = 0;
+    *PXA2X0_GFER3 = 0;
+
+    *PXA2X0_GEDR0 = 0xfffff71b;
+    *PXA2X0_GEDR1 = 0xffffffff;
+    *PXA2X0_GEDR2 = 0xffffffff;
+    *PXA2X0_GEDR3 = 0x1fffffff;
+#endif
 
     plf_hardware_init();        // Perform any platform specific initializations
 
@@ -165,15 +178,21 @@ void hal_clock_read(cyg_uint32 *pvalue)
 // Delay for some number of micro-seconds
 void hal_delay_us(cyg_int32 usecs)
 {
+#if defined(CYGOPT_HAL_ARM_XSCALE_PXA2X0_VARIANT_PXA25X)
+#  define NSECS_PER_TICK 271267 /* 3.6865 MHz clock */
+#elif defined(CYGOPT_HAL_ARM_XSCALE_PXA2X0_VARIANT_PXA27X)
+#  define NSECS_PER_TICK 307692 /* 3.25 MHz clock */
+#endif
+
     cyg_uint32 val = 0;
-    cyg_uint32 ctr = *PXA2X0_OSCR;
+    cyg_uint32 prev = *PXA2X0_OSCR;
     while (usecs-- > 0) {
-        do {
-            if (ctr != *PXA2X0_OSCR) {
-                val += 271267;          // 271267ps (3.6865Mhz -> 271.267ns)
-                ++ctr;
-            }
-        } while (val < 1000000);
+        while (val < 1000000) {
+            cyg_uint32 now = *PXA2X0_OSCR;
+            cyg_uint32 diff = now - prev;
+            val += NSECS_PER_TICK * diff;
+            prev = now;
+        }
         val -= 1000000;
     }
 }
@@ -208,13 +227,13 @@ int hal_IRQ_handler(void)
 
     do {
         if ( (1 << index) & sources ) {
-            if (index == CYGNUM_HAL_INTERRUPT_GPIO) {
+            if (index == CYGNUM_HAL_INTERRUPT_GPIOX) {
                 // Special case of GPIO cascade.  Search for lowest set bit
                 sources = *PXA2X0_GEDR0;
                 index = 0;
                 do {
                     if (sources & (1 << index)) {
-                        return index+32;
+                        return CYGNUM_HAL_INTERNAL_IRQS + index;
                     }
                     index++;
                 } while (index < 32);
@@ -222,7 +241,7 @@ int hal_IRQ_handler(void)
                 index = 0;
                 do {
                     if (sources & (1 << index)) {
-                        return index+64;
+                        return CYGNUM_HAL_INTERNAL_IRQS + 32 + index;
                     }
                     index++;
                 } while (index < 32);
@@ -230,11 +249,20 @@ int hal_IRQ_handler(void)
                 index = 0;
                 do {
                     if (sources & (1 << index)) {
-                        return index+96;
+                        return CYGNUM_HAL_INTERNAL_IRQS + 64 + index;
                     }
                     index++;
-                } while (index < 21);
-
+                } while (index < 32);
+#ifdef CYGOPT_HAL_ARM_XSCALE_PXA2X0_VARIANT_PXA27X
+                sources = *PXA2X0_GEDR3;
+                index = 0;
+                do {
+                    if (sources & (1 << index)) {
+                        return CYGNUM_HAL_INTERNAL_IRQS + 96 + index;
+                    }
+                    index++;
+                } while (index < 32);
+#endif
             }
             return index;
         }
@@ -253,9 +281,14 @@ void hal_interrupt_mask(int vector)
     // Normal vectors are handled by code subsequent to the macro call.
     HAL_EXTENDED_INTERRUPT_MASK(vector);
 #endif
-    
-    if (vector >= CYGNUM_HAL_INTERRUPT_GPIO2) {
-        vector = CYGNUM_HAL_INTERRUPT_GPIO;
+#ifdef CYGOPT_HAL_ARM_XSCALE_PXA2X0_VARIANT_PXA27X
+    if (vector >= 32 && vector < CYGNUM_HAL_INTERNAL_IRQS) {
+        *PXA2X0_ICMR2 &= ~(1 << (vector - 32));
+        return;
+    }
+#endif
+    if (vector >= CYGNUM_HAL_INTERRUPT_GPIO(2)) {
+        vector = CYGNUM_HAL_INTERRUPT_GPIOX;
     }
     *PXA2X0_ICMR &= ~(1 << vector);
 }
@@ -269,9 +302,14 @@ void hal_interrupt_unmask(int vector)
     // Normal vectors are handled by code subsequent to the macro call.
     HAL_EXTENDED_INTERRUPT_UNMASK(vector);
 #endif
-
-    if (vector >= CYGNUM_HAL_INTERRUPT_GPIO2) {
-        vector = CYGNUM_HAL_INTERRUPT_GPIO;
+#ifdef CYGOPT_HAL_ARM_XSCALE_PXA2X0_VARIANT_PXA27X
+    if (vector >= 32 && vector < CYGNUM_HAL_INTERNAL_IRQS) {
+        *PXA2X0_ICMR2 |= (1 << (vector - 32));
+        return;
+    }
+#endif
+    if (vector >= CYGNUM_HAL_INTERRUPT_GPIO(2)) {
+        vector = CYGNUM_HAL_INTERRUPT_GPIOX;
     }
     *PXA2X0_ICMR |= (1 << vector);
 }
@@ -285,25 +323,31 @@ void hal_interrupt_acknowledge(int vector)
     // Normal vectors are handled by code subsequent to the macro call.
     HAL_EXTENDED_INTERRUPT_ACKNOWLEDGE(vector);
 #endif
-	if (vector == CYGNUM_HAL_INTERRUPT_GPIO0 || vector == CYGNUM_HAL_INTERRUPT_GPIO1)
-	{
-		*PXA2X0_GEDR0  = (1 << (vector - 8));
-	}else{
-	    if (vector >= CYGNUM_HAL_INTERRUPT_GPIO64) {
-			*PXA2X0_GEDR2  = (1 << (vector - 96));
-		} else if (vector >= CYGNUM_HAL_INTERRUPT_GPIO32) {
-			*PXA2X0_GEDR1  = (1 << (vector - 64));
-		} else if (vector >= CYGNUM_HAL_INTERRUPT_GPIO2) {
-			*PXA2X0_GEDR0  = (1 << (vector - 32));
-		} else {
-			// Not a GPIO interrupt
-			return;
-		}
-	}
+    if (vector == CYGNUM_HAL_INTERRUPT_GPIO0 || vector == CYGNUM_HAL_INTERRUPT_GPIO1) {
+        *PXA2X0_GEDR0  = (1 << (vector - 8));
+    } else {
+#ifdef CYGOPT_HAL_ARM_XSCALE_PXA2X0_VARIANT_PXA27X
+        if (vector >= CYGNUM_HAL_INTERRUPT_GPIO(96)) {
+            *PXA2X0_GEDR3 = (1 << (vector - CYGNUM_HAL_INTERNAL_IRQS - 96));
+        } else
+#endif
+	if (vector >= CYGNUM_HAL_INTERRUPT_GPIO(64)) {
+            *PXA2X0_GEDR2  = (1 << (vector - CYGNUM_HAL_INTERNAL_IRQS - 64));
+        } else if (vector >= CYGNUM_HAL_INTERRUPT_GPIO(32)) {
+            *PXA2X0_GEDR1  = (1 << (vector - CYGNUM_HAL_INTERNAL_IRQS - 32));
+        } else if (vector >= CYGNUM_HAL_INTERRUPT_GPIO(2)) {
+            *PXA2X0_GEDR0  = (1 << (vector - CYGNUM_HAL_INTERNAL_IRQS));
+        } else {
+            // Not a GPIO interrupt
+            return;
+        }
+    }
 }
 
 void hal_interrupt_configure(int vector, int level, int up)
 {
+    cyg_bool falling = level || !up;
+    cyg_bool rising  = level || up;
 
 #ifdef HAL_EXTENDED_INTERRUPT_CONFIGURE
     // Use platform specific handling, if defined
@@ -311,102 +355,55 @@ void hal_interrupt_configure(int vector, int level, int up)
     // Normal vectors are handled by code subsequent to the macro call.
     HAL_EXTENDED_INTERRUPT_CONFIGURE(vector, level, up);
 #endif
-    if (vector >= CYGNUM_HAL_INTERRUPT_GPIO64) {
-        if (level) {
-            if (up) {
-                // Enable both edges
-                *PXA2X0_GRER2 |= (1 << (vector - 96));
-                *PXA2X0_GFER2 |= (1 << (vector - 96));
-            } else {
-                // Disable both edges
-                *PXA2X0_GRER2 &= ~(1 << (vector - 96));
-                *PXA2X0_GFER2 &= ~(1 << (vector - 96));
-            }
-        } else {
-            // Only interested in one edge
-            if (up) {
-                // Set rising edge detect and clear falling edge detect.
-                *PXA2X0_GRER2 |= (1 << (vector - 96));
-                *PXA2X0_GFER2 &= ~(1 << (vector - 96));
-            } else {
-                // Set falling edge detect and clear rising edge detect.
-                *PXA2X0_GFER2 |= (1 << (vector - 96));
-                *PXA2X0_GRER2 &= ~(1 << (vector - 96));
-            }
-        }
-    } else if (vector >= CYGNUM_HAL_INTERRUPT_GPIO32) {
-        if (level) {
-            if (up) {
-                // Enable both edges
-                *PXA2X0_GRER1 |= (1 << (vector - 64));
-                *PXA2X0_GFER1 |= (1 << (vector - 64));
-            } else {
-                // Disable both edges
-                *PXA2X0_GRER1 &= ~(1 << (vector - 64));
-                *PXA2X0_GFER1 &= ~(1 << (vector - 64));
-            }
-        } else {
-            // Only interested in one edge
-            if (up) {
-                // Set rising edge detect and clear falling edge detect.
-                *PXA2X0_GRER1 |= (1 << (vector - 64));
-                *PXA2X0_GFER1 &= ~(1 << (vector - 64));
-            } else {
-                // Set falling edge detect and clear rising edge detect.
-                *PXA2X0_GFER1 |= (1 << (vector - 64));
-                *PXA2X0_GRER1 &= ~(1 << (vector - 64));
-            }
-        }
-    } else if (vector >= CYGNUM_HAL_INTERRUPT_GPIO2) {
-        if (level) {
-            if (up) {
-                // Enable both edges
-                *PXA2X0_GRER0 |= (1 << (vector - 32));
-                *PXA2X0_GFER0 |= (1 << (vector - 32));
-            } else {
-                // Disable both edges
-                *PXA2X0_GRER0 &= ~(1 << (vector - 32));
-                *PXA2X0_GFER0 &= ~(1 << (vector - 32));
-            }
-        } else {
-            // Only interested in one edge
-            if (up) {
-                // Set rising edge detect and clear falling edge detect.
-                *PXA2X0_GRER0 |= (1 << (vector - 32));
-                *PXA2X0_GFER0 &= ~(1 << (vector - 32));
-            } else {
-                // Set falling edge detect and clear rising edge detect.
-                *PXA2X0_GFER0 |= (1 << (vector - 32));
-                *PXA2X0_GRER0 &= ~(1 << (vector - 32));
-            }
-        }
-    } else if (vector == CYGNUM_HAL_INTERRUPT_GPIO0 || vector == CYGNUM_HAL_INTERRUPT_GPIO1)
-	{
-        if (level) {
-            if (up) {
-                // Enable both edges
-                *PXA2X0_GRER0 |= (1 << (vector - 8));
-                *PXA2X0_GFER0 |= (1 << (vector - 8));
-            } else {
-                // Disable both edges
-                *PXA2X0_GRER0 &= ~(1 << (vector - 8));
-                *PXA2X0_GFER0 &= ~(1 << (vector - 8));
-            }
-        } else {
-            // Only interested in one edge
-            if (up) {
-                // Set rising edge detect and clear falling edge detect.
-                *PXA2X0_GRER0 |= (1 << (vector - 8));
-                *PXA2X0_GFER0 &= ~(1 << (vector - 8));
-            } else {
-                // Set falling edge detect and clear rising edge detect.
-                *PXA2X0_GFER0 |= (1 << (vector - 8));
-                *PXA2X0_GRER0 &= ~(1 << (vector - 8));
-            }
-        }
-	}
-
-
+#ifdef CYGOPT_HAL_ARM_XSCALE_PXA2X0_VARIANT_PXA27X
+    if (vector >= CYGNUM_HAL_INTERRUPT_GPIO(96)) {
+        if (falling)
+            *PXA2X0_GFER3 |=  (1 << (vector - CYGNUM_HAL_INTERNAL_IRQS - 96));
+        else
+            *PXA2X0_GFER3 &= ~(1 << (vector - CYGNUM_HAL_INTERNAL_IRQS - 96));
+        if (rising)
+            *PXA2X0_GRER3 |=  (1 << (vector - CYGNUM_HAL_INTERNAL_IRQS - 96));
+        else
+            *PXA2X0_GRER3 &= ~(1 << (vector - CYGNUM_HAL_INTERNAL_IRQS - 96));
+    } else
+#endif
+    if (vector >= CYGNUM_HAL_INTERRUPT_GPIO(64)) {
+        if (falling)
+            *PXA2X0_GFER2 |=  (1 << (vector - CYGNUM_HAL_INTERNAL_IRQS - 64));
+        else
+            *PXA2X0_GFER2 &= ~(1 << (vector - CYGNUM_HAL_INTERNAL_IRQS - 64));
+        if (rising)
+            *PXA2X0_GRER2 |=  (1 << (vector - CYGNUM_HAL_INTERNAL_IRQS - 64));
+        else
+            *PXA2X0_GRER2 &= ~(1 << (vector - CYGNUM_HAL_INTERNAL_IRQS - 64));
+    } else if (vector >= CYGNUM_HAL_INTERRUPT_GPIO(32)) {
+        if (falling)
+            *PXA2X0_GFER1 |=  (1 << (vector - CYGNUM_HAL_INTERNAL_IRQS - 32));
+        else
+            *PXA2X0_GFER1 &= ~(1 << (vector - CYGNUM_HAL_INTERNAL_IRQS - 32));
+        if (rising)
+            *PXA2X0_GRER1 |=  (1 << (vector - CYGNUM_HAL_INTERNAL_IRQS - 32));
+        else
+            *PXA2X0_GRER1 &= ~(1 << (vector - CYGNUM_HAL_INTERNAL_IRQS - 32));
+    } else if (vector >= CYGNUM_HAL_INTERRUPT_GPIO(2)) {
+        if (falling)
+            *PXA2X0_GFER1 |=  (1 << (vector - CYGNUM_HAL_INTERNAL_IRQS));
+        else
+            *PXA2X0_GFER1 &= ~(1 << (vector - CYGNUM_HAL_INTERNAL_IRQS));
+        if (rising)
+            *PXA2X0_GRER1 |=  (1 << (vector - CYGNUM_HAL_INTERNAL_IRQS));
+        else
+            *PXA2X0_GRER1 &= ~(1 << (vector - CYGNUM_HAL_INTERNAL_IRQS));
+    } else if (vector == CYGNUM_HAL_INTERRUPT_GPIO0 || vector == CYGNUM_HAL_INTERRUPT_GPIO1) {
+        if (falling)
+            *PXA2X0_GFER0 |=  (1 << (vector - 8));
+        else
+            *PXA2X0_GFER0 &= ~(1 << (vector - 8));
+        if (rising)
+            *PXA2X0_GRER0 |=  (1 << (vector - 8));
+        else
+            *PXA2X0_GRER0 &= ~(1 << (vector - 8));
+    }
 }
 
 void hal_interrupt_set_level(int vector, int level)

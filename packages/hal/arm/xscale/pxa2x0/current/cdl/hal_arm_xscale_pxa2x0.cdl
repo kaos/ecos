@@ -67,6 +67,16 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_PXA2X0 {
 		puts $::cdl_header "#define CYGBLD_HAL_VAR_H <cyg/hal/hal_pxa2x0.h>"
 		puts $::cdl_system_header "#define CYGBLD_HAL_ARM_VAR_IO_H"
 	}
+
+    cdl_option CYGOPT_HAL_ARM_XSCALE_PXA2X0_VARIANT {
+        display         "PXA2XX processor model"
+        description     "
+                This option selects the variant of the PXA2XX family (PXA25x
+                or PXA27x) to support."
+        flavor          data
+        legal_values  { "PXA25X" "PXA27X" }
+        default_value { "PXA25X" }
+    }
 	
     compile       pxa2x0_misc.c
     
