@@ -1,3 +1,8 @@
+2005-12-16  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl_exec.cxx (cmd_remove): replace reserved word interface with
+	iface
+
 2005-04-05  Bart Veer  <bartv@ecoscentric.com>
 
 	* cdl_exec.cxx (cmd_remove): check that the entities being removed

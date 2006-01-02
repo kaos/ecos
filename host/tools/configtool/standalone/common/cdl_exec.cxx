@@ -382,12 +382,12 @@ cdl_exec::cmd_remove (const std::vector<std::string> cdl_packages)
                 std::string     owner_name  = owner ? owner->get_name() : "<unknown>";
                 CdlOption       option      = dynamic_cast<CdlOption>(base);
                 CdlComponent    component   = dynamic_cast<CdlComponent>(base);
-                CdlInterface    interface   = dynamic_cast<CdlInterface>(base);
+                CdlInterface    iface       = dynamic_cast<CdlInterface>(base);
                 if (0 != option) {
                     throw CdlStringException (cdl_packages [n] + " is an option within " + owner_name + ", not a loadable package");
                 } else if (0 != component) {
                     throw CdlStringException (cdl_packages [n] + " is a component of " + owner_name + ", not a loadable package");
-                } else if (0 != interface) {
+                } else if (0 != iface) {
                     throw CdlStringException (cdl_packages [n] + " is an interface within " + owner_name + ", not a loadable package");
                 } else {
                     throw CdlStringException (cdl_packages [n] + " is not a loadable package");
