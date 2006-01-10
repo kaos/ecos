@@ -309,6 +309,28 @@ void Cyg_Scheduler::unlock_inner( cyg_ucount32 new_lock )
 }
 
 // -------------------------------------------------------------------------
+// Thread startup. This is called from Cyg_Thread::thread_entry() and
+// performs some housekeeping for a newly started thread.
+
+void Cyg_Scheduler::thread_entry( Cyg_Thread *thread )
+{
+    clear_need_reschedule();            // finished rescheduling
+    set_current_thread(thread);         // restore current thread pointer
+
+    CYG_INSTRUMENT_THREAD(ENTER,thread,0);
+    
+#ifdef CYGSEM_KERNEL_SCHED_TIMESLICE
+    // Reset the timeslice counter so that this thread gets a full
+    // quantum. 
+    reset_timeslice_count();
+#endif
+    
+    // Finally unlock the scheduler. As well as clearing the scheduler
+    // lock this allows any pending DSRs to execute.
+    unlock();    
+}
+
+// -------------------------------------------------------------------------
 // Start the scheduler. This is called after the initial threads have been
 // created to start scheduling. It gets any other CPUs running, and then
 // enters the scheduler.

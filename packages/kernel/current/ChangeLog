@@ -1,3 +1,14 @@
+2006-01-10  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/sched/sched.cxx: 
+	* include/sched.hxx (class Cyg_Scheduler): Added thread_entry()
+	member function. This handles thread startup housekeeping. Zeroing
+	the scheduler lock is handled by calling unlock() so that DSRs may
+	be run.
+
+	* src/common/thread.cxx (thread_entry): Refactored code to call
+	Cyg_Scheduler::thread_entry() instead of doing all the work here.	
+
 2005-11-23  Sergei Organov  <osv@javad.com>
 
 	* doc/kernel.sgml: Fix description of CYG_ISR_CALL_DSR and
