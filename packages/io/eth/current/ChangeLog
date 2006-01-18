@@ -1,3 +1,8 @@
+2006-01-18  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/net/eth_drv.c (eth_drv_send): Better check for overflow
+	of SG list - pointed out by Ferenc Deak
+
 2005-07-29  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/net/eth_drv.c (eth_drv_recv): Change of type to remove

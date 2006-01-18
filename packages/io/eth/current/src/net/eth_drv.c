@@ -703,7 +703,7 @@ eth_drv_send(struct ifnet *ifp)
                 END_CONSOLE();
             }
 #endif
-            if ( MAX_ETH_DRV_SG < sg_len ) {
+            if (m->m_next && (MAX_ETH_DRV_SG <= sg_len)) {
 #ifdef CYGPKG_IO_ETH_DRIVERS_WARN_NO_MBUFS
                 int needed = 0;
                 struct mbuf *m1;
