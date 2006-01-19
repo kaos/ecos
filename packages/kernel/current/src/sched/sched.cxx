@@ -326,8 +326,11 @@ void Cyg_Scheduler::thread_entry( Cyg_Thread *thread )
 #endif
     
     // Finally unlock the scheduler. As well as clearing the scheduler
-    // lock this allows any pending DSRs to execute.
-    unlock();    
+    // lock this allows any pending DSRs to execute. The new thread
+    // must start with a lock of zero, so we keep unlocking until the
+    // lock reaches zero.
+    while( get_sched_lock() != 0 )
+        unlock();    
 }
 
 // -------------------------------------------------------------------------

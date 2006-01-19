@@ -1230,6 +1230,7 @@ idle_thread_main( CYG_ADDRESS data )
 
         HAL_IDLE_THREAD_ACTION(idle_thread_loops[CYG_KERNEL_CPU_THIS()]);
 
+        CYG_ASSERT( Cyg_Scheduler::get_sched_lock() == 0, "Scheduler lock not zero" );
 #if 0
         // For testing, it is useful to be able to fake
         // clock interrupts in the idle thread.

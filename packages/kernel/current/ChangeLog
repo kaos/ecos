@@ -1,3 +1,15 @@
+2006-01-19  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/sched/sched.cxx (thread_entry): Fixed a bug which could
+	cause a thread to be started with a non-zero scheduler lock. The
+	previous code only decremented it by 1 so if the previous thread
+	was executing with the lock > 1 the thread ended up with a
+	non-zero lock. This is fixed by decrementing the lock in a loop
+	until it reaches zero.
+
+	* src/common/thread.cxx (idle_thread_main): Added an assert for a
+	non-zero scheduler lock.
+
 2006-01-10  Nick Garnett  <nickg@ecoscentric.com>
 
 	* src/sched/sched.cxx: 
