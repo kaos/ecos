@@ -48,6 +48,10 @@
 #include "lkvm.h"
 #include "getopt.h"
 
+#define FTP_SERV "192.168.1.125"
+#define FTP_USER "george"
+#define FTP_PASS "allen"
+
 #define MAX_ARGV 32
 
 #ifdef CYGHWR_NET_DRIVER_ETH0
@@ -520,11 +524,11 @@ loader_main(char *cmdline)
 
     do_load(boot_info);
 
-    len = ftp_get("192.168.1.125", "gthomas", "Zorkle!!", "TEST.dat", 
+    len = ftp_get(FTP_SERV, FTP_USER, FTP_PASS, "TEST.dat", 
                   (char *)0x200000, 0x100000, ftpclient_printf);
     diag_printf("res = %d\n", len);
     if (len <= 0) exit(0);
-    wlen = ftp_put("192.168.1.125", "gthomas", "Zorkle!!", "TEST2.dat", 
+    wlen = ftp_put(FTP_SERV, FTP_USER, FTP_PASS, "TEST2.dat", 
                    (char *)0x200000, len, ftpclient_printf);
     diag_printf("res = %d\n", wlen);
 
@@ -546,7 +550,7 @@ loader_main(char *cmdline)
 
     err = deflateInit(&dp.stream, Z_DEFAULT_COMPRESSION);
     diag_printf("err = %d\n", err);
-    wlen = ftp_put_var("192.168.1.125", "gthomas", "Zorkle!!", "TEST3.dat.gz", 
+    wlen = ftp_put_var(FTP_SERV, FTP_USER, FTP_PASS, "TEST3.dat.gz", 
                        _ftp_write_gz, &dp, ftpclient_printf);
     diag_printf("res = %d\n", wlen);
     deflateEnd(&dp.stream);
