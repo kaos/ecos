@@ -1,3 +1,8 @@
+2006-01-27 Will Wagner <willw@carallon.com>
+
+        * include/ppc8xx.h: Add definition for frame and parity errors in BD ctrl.
+        Changed macro calculating SMCMR CLEN.
+        
 2004-04-01  Robert Chenault  <robertchenault@yahoo.com>
 
 	* include/ppc8xx.h: Add definition for 8 bytes to spi_pram structure

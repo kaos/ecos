@@ -58,13 +58,6 @@
 
 #include <cyg/hal/quicc/ppc8xx.h>                  // QUICC structure definitions
 
-static unsigned int smc_select_word_length[] = {
-    QUICC_SMCMR_CLEN(5),  // 5 bits / word (char)
-    QUICC_SMCMR_CLEN(6),
-    QUICC_SMCMR_CLEN(7),
-    QUICC_SMCMR_CLEN(8)
-};
-
 static unsigned int smc_select_stop_bits[] = {
     0, 
     QUICC_SMCMR_SB(1),   // 1 stop bit

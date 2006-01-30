@@ -345,7 +345,7 @@ quicc_smc_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config
     ctl->smc_smcmr = QUICC_SMCMR_UART;  // Disabled, UART mode
     HAL_IO_BARRIER();  // Inforce I/O ordering
     // Disable port interrupts while changing hardware
-    _lcr = smc_select_word_length[new_config->word_length - CYGNUM_SERIAL_WORD_LENGTH_5] | 
+    _lcr = QUICC_SMCMR_CLEN(new_config->word_length + ((new_config->parity == CYGNUM_SERIAL_PARITY_NONE)? 0: 1) + ((new_config->stop == CYGNUM_SERIAL_STOP_2)? 2: 1)) |
         smc_select_stop_bits[new_config->stop] |
         smc_select_parity[new_config->parity];
     // Stop transmitter while changing baud rate
@@ -970,12 +970,17 @@ quicc_smc_serial_DSR(serial_channel *chan)
     while (ctl->smc_smce & QUICC_SMCE_RX) {
         // Receive interrupt
         ctl->smc_smce = QUICC_SMCE_RX;  // Reset interrupt state;
-        rxlast = (struct cp_bufdesc *) (
-            (char *)eppc_base() + pram->rbptr );
+        rxlast = (struct cp_bufdesc *) ((char *)eppc_base() + pram->rbptr);
         while (rxbd != rxlast) {
             if ((rxbd->ctrl & QUICC_BD_CTL_Ready) == 0) {
-                for (i = 0;  i < rxbd->length;  i++) {
-                    (chan->callbacks->rcv_char)(chan, rxbd->buffer[i]);
+                if((rxbd->ctrl & (QUICC_BD_CTL_Frame | QUICC_BD_CTL_Parity)) == 0) {
+                    for (i = 0;  i < rxbd->length;  i++) {
+                        (chan->callbacks->rcv_char)(chan, rxbd->buffer[i]);
+                    }
+                } else {
+                    // is this necessary?
+                    rxbd->ctrl &= QUICC_BD_CTL_MASK;
+                    // should we report the error?
                 }
                 // Note: the MBX860 does not seem to snoop/invalidate the data cache properly!
                 HAL_DCACHE_IS_ENABLED(cache_state);
@@ -1035,8 +1040,14 @@ quicc_scc_serial_DSR(serial_channel *chan)
         rxlast = (struct cp_bufdesc *) ((char *)eppc_base() + pram->rbptr);
         while (rxbd != rxlast) {
             if ((rxbd->ctrl & QUICC_BD_CTL_Ready) == 0) {
-                for (i = 0;  i < rxbd->length;  i++) {
-                    (chan->callbacks->rcv_char)(chan, rxbd->buffer[i]);
+                if((rxbd->ctrl & (QUICC_BD_CTL_Frame | QUICC_BD_CTL_Parity)) == 0) {
+                    for (i = 0;  i < rxbd->length;  i++) {
+                        (chan->callbacks->rcv_char)(chan, rxbd->buffer[i]);
+                    }
+                } else {
+                    // is this necessary?
+                    rxbd->ctrl &= QUICC_BD_CTL_MASK;
+                    // should we report the error?
                 }
                 // Note: the MBX860 does not seem to snoop/invalidate the data cache properly!
                 HAL_DCACHE_IS_ENABLED(cache_state);

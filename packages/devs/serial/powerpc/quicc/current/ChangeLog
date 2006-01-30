@@ -1,3 +1,9 @@
+2006-01-27 Will Wagner <willw@carallon.com>
+
+        * src/quicc_smc_serial.h: Removed unused structure
+        * src/quicc_smc_serial.c(quicc_smc_serial_config_port): Corrected CLEN in SMCMR
+        * src/quicc_smc_serial.c(quicc_smc_serial_DSR & quicc_scc_serial_DSR): Better handling of frame and parity errors
+
 2004-05-10  Robert Chenault <robertchenault@yahoo.com>
 
 	* src/quicc_smc_serial.h: Added two casts of (int) on

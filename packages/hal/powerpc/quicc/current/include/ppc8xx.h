@@ -968,6 +968,8 @@ __externC unsigned long *_mpc8xx_allocate_brg(int port);
 #define QUICC_BD_CTL_Wrap           0x2000  // Last buffer in list
 #define QUICC_BD_CTL_Int            0x1000  // Generate interrupt when empty (tx) or full (rx)
 #define QUICC_BD_CTL_Last           0x0800  // Last buffer in a sequence
+#define QUICC_BD_CTL_Frame          0x0010  // Framing Error
+#define QUICC_BD_CTL_Parity         0x0008  // Parity Error
 #define QUICC_BD_CTL_MASK           0xB000  // User settable bits
 
 // Command register
@@ -996,7 +998,7 @@ __externC unsigned long *_mpc8xx_allocate_brg(int port);
 #define QUICC_SMCE_RX               0x01  // Rx interrupt
 
 // SMC Mode Register
-#define QUICC_SMCMR_CLEN(n)   ((n+1)<<11)   // Character length
+#define QUICC_SMCMR_CLEN(n)   (n<<11)       // Character length + parity + stop bits
 #define QUICC_SMCMR_SB(n)     ((n-1)<<10)   // Stop bits (1 or 2)
 #define QUICC_SMCMR_PE(n)     (n<<9)        // Parity enable (0=disable, 1=enable)
 #define QUICC_SMCMR_PM(n)     (n<<8)        // Parity mode (0=odd, 1=even)
