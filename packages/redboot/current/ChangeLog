@@ -1,3 +1,7 @@
+2005-11-23  Peter Korsgaard  <peter.korsgaard@barco.com>
+
+	* src/gunzip.c (do_gunzip): Fixed diag_printf format string warnings.
+
 2005-10-17  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/iomem.c (do_iopeek): Correct number of options.
