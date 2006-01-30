@@ -1,3 +1,11 @@
+2006-01-23  Peter Korsgaard  <jacmet@sunsite.dk>
+
+	* src/ezxml.c:
+	* include/ezxml.h:
+	* doc/ezxml.txt:
+	* doc/ezxml.html:
+	* doc/license.txt: Upgrade to ezxml-0.8.5
+
 2005-01-31  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* Import of the ezxml XML parsing library

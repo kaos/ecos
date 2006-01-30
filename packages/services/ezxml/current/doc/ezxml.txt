@@ -1,15 +1,15 @@
 ezXML - XML Parsing C Library
-version 0.8
+version 0.8.5
 
 ezXML is a C library for parsing XML documents inspired by simpleXML for PHP.
-As the name implies, it's easy to use. It's ideal for parsing xml configuration
-files or REST web service responses. It's also fast and lightweight (11k
-compiled).  The latest version is available here:
-http://prdownloads.sf.net/ezxml/ezxml-0.8.tar.gz?download
+As the name implies, it's easy to use. It's ideal for parsing XML configuration
+files or REST web service responses. It's also fast and lightweight (less than
+20k compiled). The latest verions is available here:
+http://prdownloads.sf.net/ezxml/ezxml-0.8.5.tar.gz?download
 
 Example Usage
 
-Given the following example xml document:
+Given the following example XML document:
 
 <?xml version="1.0"?>
 <formula1>
@@ -25,7 +25,7 @@ Given the following example xml document:
   </team>
 </formula1>
 
-This code snipped prints out a list of drivers, which team they drive for,
+This code snippet prints out a list of drivers, which team they drive for,
 and how many championship points they have:
 
 ezxml_t f1 = ezxml_parse_file("formula1.xml"), team, driver;
@@ -40,7 +40,7 @@ for (team = ezxml_child(f1, "team"); team; team = team->next) {
 }
 ezxml_free(f1);
 
-Alternately, the following would print out the name of the second driver of the
+Alternately, the following would print out the name of the second driver on the
 first team:
 
 ezxml_t f1 = ezxml_parse_file("formula1.xml");
@@ -53,18 +53,18 @@ there is to it. Complete API documentation can be found in ezxml.h.
 
 Known Limitations
 
-- No support for UTF-16, however UTF-8 is handled correctly. UTF-16 support is
-  required for XML 1.0 conformity and will be implimented for the 1.0 release.
+- ezXML is not a validating parser
 
-- Loads the entire xml document into memory at once and does not allow for
-  documents to be passed in a chunk at a time. Large xml files can still be
+- Loads the entire XML document into memory at once and does not allow for
+  documents to be passed in a chunk at a time. Large XML files can still be
   handled though through ezxml_parse_file() and ezxml_parse_fd(), which use mmap
   to map the file to a virtual address space and rely on the virtual memory
   system to page in data as needed.
 
-- Ignores DTDs. Parsing of the internal DTD subset is required for XML 1.0
-  conformity and will be implimented for the 1.0 release. ezXML is not, and is
-  not likely to become, a validating parser.
+- Does not currently recognize all possible well-formedness errors. It should
+  correctly handle all well-formed XML documents and will either ignore or halt
+  XML processing on well-formedness errors. More well-formedness checking will
+  be added in subsiquent releases.
 
 - In making the character content of tags easy to access, there is no way
   provided to keep track of the location of sub tags relative to the character
@@ -76,7 +76,7 @@ Known Limitations
   The character content of the doc tag is reported as "line one\nline two", and
   <br/> is reported as a sub tag, but the location of <br/> within the
   character data is not. The function ezxml_toxml() will convert an ezXML
-  structure back to xml with sub tag locations intact.
+  structure back to XML with sub tag locations intact.
 
 Licensing
 
