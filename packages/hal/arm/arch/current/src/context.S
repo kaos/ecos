@@ -89,12 +89,13 @@ _name_:
 // Need to save/restore R4..R12, R13 (sp), R14 (lr)
 
 // Note: this is a little wasteful since r0..r3 don't need to be saved.
-// They are saved here though so that the information can match the HAL_SavedRegisters
+// They are saved here though so that the information can match the
+// HAL_SavedRegisters
         
 FUNC_START_ARM(hal_thread_switch_context, r2)
-        sub     ip,sp,#20               // skip svc_sp, svc_lr, vector, cpsr, and pc
-        stmfd   ip!,{sp,lr}
-        mov     sp,ip
+        mov     ip,sp
+        sub     sp,sp,#(ARMREG_SIZE - armreg_lr - 4) // skip svc_sp, svc_lr, vector, cpsr, and pc
+        stmfd   sp!,{ip,lr}
         stmfd   sp!,{r0-r10,fp,ip}
         mrs     r2,cpsr
         str     r2,[sp,#armreg_cpsr]

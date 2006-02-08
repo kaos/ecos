@@ -1,3 +1,8 @@
+2006-01-18  Jay Foster    <jay@systech.com>
+
+	* src/context.S (hal_thread_switch_context): Close race condition
+	that could cause corruption of the sp or lr registers.
+
 2005-04-21  Ian Campbell  <icampbell@arcom.com>
 
 	* src/redboot_linux_exec.c: Added -t option which takes the
