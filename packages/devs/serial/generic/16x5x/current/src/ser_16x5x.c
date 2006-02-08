@@ -33,9 +33,6 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -194,6 +191,8 @@ typedef struct pc_serial_info {
         s16550,
         s16550a
     } deviceType;
+    unsigned tx_fifo_size;
+    volatile unsigned tx_fifo_avail;
 #endif
 } pc_serial_info;
 
@@ -304,10 +303,17 @@ serial_config_port(serial_channel *chan,
                 _fcr_thresh=FCR_RT14; break;
             }
             _fcr_thresh|=FCR_FE|FCR_CRF|FCR_CTF;
-            HAL_WRITE_UINT8(base+REG_fcr, _fcr_thresh); // Enable and clear FIFO
+            ser_chan->tx_fifo_size = 
+              CYGNUM_IO_SERIAL_GENERIC_16X5X_FIFO_TX_SIZE;
+            // Enable and clear FIFO
+            HAL_WRITE_UINT8(base+REG_fcr, _fcr_thresh); 
         }
-        else
+        else {
+            ser_chan->tx_fifo_size = 1;
             HAL_WRITE_UINT8(base+REG_fcr, 0); // make sure it's disabled
+        }
+
+        ser_chan->tx_fifo_avail = ser_chan->tx_fifo_size;
 #endif
         if (chan->out_cbuf.len != 0) {
             _ier = IER_RCV;
@@ -395,16 +401,26 @@ pc_serial_lookup(struct cyg_devtab_entry **tab,
 static bool
 pc_serial_putc(serial_channel *chan, unsigned char c)
 {
+#ifndef CYGPKG_IO_SERIAL_GENERIC_16X5X_FIFO
     cyg_uint8 _lsr;
+#endif
     pc_serial_info *ser_chan = (pc_serial_info *)chan->dev_priv;
     cyg_addrword_t base = ser_chan->base;
 
+#ifdef CYGPKG_IO_SERIAL_GENERIC_16X5X_FIFO
+    if (ser_chan->tx_fifo_avail > 0) {
+        HAL_WRITE_UINT8(base+REG_thr, c);
+        --ser_chan->tx_fifo_avail;
+        return true;
+    }
+#else
     HAL_READ_UINT8(base+REG_lsr, _lsr);
     if (_lsr & LSR_THE) {
         // Transmit buffer is empty
         HAL_WRITE_UINT8(base+REG_thr, c);
         return true;
     }
+#endif
     // No space
     return false;
 }
@@ -549,6 +565,9 @@ pc_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
             break;
         }
         case ISR_Tx:
+#ifdef CYGPKG_IO_SERIAL_GENERIC_16X5X_FIFO
+            ser_chan->tx_fifo_avail = ser_chan->tx_fifo_size;
+#endif
             (chan->callbacks->xmt_char)(chan);
             break;
 

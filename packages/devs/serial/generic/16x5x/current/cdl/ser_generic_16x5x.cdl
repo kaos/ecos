@@ -94,6 +94,15 @@ cdl_package CYGPKG_IO_SERIAL_GENERIC_16X5X {
                 the RX interrupt occurs when a FIFO is used. (16550 and
                 above only), this may be after 1, 4, 8 or 14 characters."
         }
+
+	cdl_option CYGNUM_IO_SERIAL_GENERIC_16X5X_FIFO_TX_SIZE {
+	    display       "16x5x TX FIFO size"
+	    flavor        data
+	    default_value 16
+	    description   "
+	        Configures the maximum number of bytes written to the
+	        16x5x UART transmit FIFO when the TX interrupt occurs."
+	}
     }
 	     
     cdl_component CYGPKG_IO_SERIAL_GENERIC_16X5X_OPTIONS {
