@@ -787,11 +787,16 @@ IRQ:
         mov     r2,#CYGNUM_HAL_VECTOR_IRQ
         mov     r3,sp
 	
-handle_IRQ_or_FIQ:
-
         mrs     r4,cpsr                 // switch to Supervisor Mode
         bic     r4,r4,#CPSR_MODE_BITS
-        orr     r4,r4,#CPSR_SUPERVISOR_MODE
+        // When handling an IRQ we must disable FIQ unless the current 
+        // mode in CPSR is IRQ. If we were to get a FIQ while in another 
+        // mode, the FIQ handling code would transform the FIQ into an 
+        // IRQ and call the non-reentrant IRQ handler again. As a result, 
+        // for example, the stack pointer would be set to the beginning 
+        // of the exception_stack clobbering the registers we have just 
+        // saved.
+        orr     r4,r4,#CPSR_SUPERVISOR_MODE|CPSR_FIQ_DISABLE
         msr     cpsr,r4
 
         mov     r5,sp                   // save original svc sp
