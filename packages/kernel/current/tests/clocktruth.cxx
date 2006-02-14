@@ -2,7 +2,7 @@
 //
 //        clocktruth.cxx
 //
-//        Clock Converter test
+//        Clock accuracy test
 //
 //==========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####

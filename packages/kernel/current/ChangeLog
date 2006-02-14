@@ -1,3 +1,11 @@
+2006-02-14  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/timeslice.c  (STACK_SIZE): Reduce the stack size so it will
+	compile on targets wit h only small amounts of RAM.
+	* tests/fptest.c: Calculate the size of ftp2_values array to fit
+	the amount of RAM in small systems.
+	* tests/clocktruth.cxx: Fix the header.
+	
 2006-01-19  Nick Garnett  <nickg@ecoscentric.com>
 
 	* src/sched/sched.cxx (thread_entry): Fixed a bug which could

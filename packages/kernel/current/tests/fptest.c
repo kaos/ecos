@@ -61,7 +61,7 @@
 #include <cyg/infra/diag.h>
 
 //#include <cyg/kernel/test/stackmon.h>
-//#include CYGHWR_MEMORY_LAYOUT_H
+#include CYGHWR_MEMORY_LAYOUT_H
 
 //==========================================================================
 
@@ -243,8 +243,11 @@ void fptest1( CYG_ADDRWORD id )
 }
 
 //==========================================================================
-
+#if (CYGMEM_REGION_ram_SIZE / 8 / 2) < 10000
+#define FP2_COUNT (CYGMEM_REGION_ram_SIZE / 8 / 2)
+#else
 #define FP2_COUNT 10000
+#endif
 
 static double fpt2_values[FP2_COUNT];
 

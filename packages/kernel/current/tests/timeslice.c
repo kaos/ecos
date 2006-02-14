@@ -71,7 +71,7 @@
 
 //==========================================================================
 
-#define STACK_SIZE CYGNUM_HAL_STACK_SIZE_TYPICAL*5
+#define STACK_SIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
 
 #define NTHREADS_MAX (CYGNUM_KERNEL_CPU_MAX*6)
 
