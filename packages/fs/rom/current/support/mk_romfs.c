@@ -63,6 +63,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
+#include <stdint.h>
 
 //==========================================================================
 //
@@ -71,10 +72,10 @@
 //==========================================================================
 
 // define LONG to be a four byte unsigned integer on the host
-#define LONG	unsigned long
+#define LONG	uint32_t
 
 // define SHORT to be a two byte unsigned integer on the host
-#define SHORT	unsigned short
+#define SHORT	uint16_t
 
 // All data files should be aligned to this sized boundary (minimum probably 32)
 #define DATA_ALIGN	32
@@ -235,7 +236,7 @@ static void myrealloc( void **o, size_t newsize ) {
     }
 }
 
-static void outputlong( unsigned char *b, unsigned long w ) {
+static void outputlong( unsigned char *b, LONG w ) {
     if ( bigendian ) {
 	b[0] = (w>>24) & 0xff;
 	b[1] = (w>>16) & 0xff;
@@ -249,7 +250,7 @@ static void outputlong( unsigned char *b, unsigned long w ) {
     }
 }
 
-static void outputshort( unsigned char *b, unsigned short w ) {
+static void outputshort( unsigned char *b, SHORT w ) {
     if ( bigendian ) {
 	b[0] = (w>> 8) & 0xff;
 	b[1] = (w    ) & 0xff;
@@ -288,8 +289,8 @@ static const char *AddDirEntry( const char *name, node *parent_node, int node_nu
     myrealloc( (void**)&parent_node->entry, (parent_node->size += this_size) );
     g = (romfs_dirent *)((unsigned char *)parent_node->entry + start);
     memset( (void*)g, '\0', this_size );
-    outputlong( (char*)&g->node, node_num);
-    outputlong( (char*)&g->next, parent_node->size);
+    outputlong( (unsigned char*)&g->node, node_num);
+    outputlong( (unsigned char*)&g->next, parent_node->size);
     strcpy(g->name,name);
     verb_printf( VERB_MAX, "\t%s --> node %d\n", name, node_num );
     return (const char *)g->name;
@@ -503,13 +504,13 @@ static void AllocateSpaceToExecutables( node *first ) {
 static void WriteNode( int fd, node *np ) {
     romfs_node anode;
     char padhere[9];
-    outputlong( (char*) &anode.mode, ConvertMode( np->st_mode ) );
-    outputlong( (char*) &anode.nlink, np->nlink );
-    outputshort((char*) &anode.uid, np->uid );
-    outputshort((char*) &anode.gid, np->gid );
-    outputlong( (char*) &anode.size, np->size );
-    outputlong( (char*) &anode.ctime, np->ctime );
-    outputlong( (char*) &anode.data_offset, np->offset );
+    outputlong( (unsigned char*) &anode.mode, ConvertMode( np->st_mode ) );
+    outputlong( (unsigned char*) &anode.nlink, np->nlink );
+    outputshort((unsigned char*) &anode.uid, np->uid );
+    outputshort((unsigned char*) &anode.gid, np->gid );
+    outputlong( (unsigned char*) &anode.size, np->size );
+    outputlong( (unsigned char*) &anode.ctime, np->ctime );
+    outputlong( (unsigned char*) &anode.data_offset, np->offset );
     sprintf( padhere, "<%6d>", np->nodenum );
     memcpy( anode.pad, padhere, 8 );
     if ( dowrite && write( fd, (void*)&anode, sizeof(anode) ) != sizeof(anode) )
@@ -538,10 +539,10 @@ static void WriteNodeTable( int fd ) {
     romfs_disk header;
     int wnodes;
 
-    outputlong( (char*) &header.magic, ROMFS_MAGIC );
-    outputlong( (char*) &header.nodecount, nodes );
-    outputlong( (char*) &header.disksize, coffset );
-    outputlong( (char*) &header.dev_id, 0x01020304 );
+    outputlong( (unsigned char*) &header.magic, ROMFS_MAGIC );
+    outputlong( (unsigned char*) &header.nodecount, nodes );
+    outputlong( (unsigned char*) &header.disksize, coffset );
+    outputlong( (unsigned char*) &header.dev_id, 0x01020304 );
     strcpy( header.name, "ROMFS v1.0" );
     if ( dowrite && write( fd, (void*)&header, sizeof(header) ) != sizeof(header) )
 	fatal_error(EXIT_WRITE, "Error writing ROMFS header: %s\n", strerror(errno) );

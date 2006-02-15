@@ -1,3 +1,9 @@
+2006-02-15  Andrew Lunn  <andrew.lunn@ascom.ch>
+            Peter Korsgaard  <jacmet@sunsite.dk>
+	
+	* support/mk_romfs.c: Use stdint.h defined types so the code is
+	64 bit clean. Fix compiler warnings.
+
 2005-07-08  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/romfs.cdl: Allow mk_romfs to be build even when the tests
