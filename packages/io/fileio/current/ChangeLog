@@ -1,3 +1,9 @@
+2006-02-16  Peter Korsgaard  <jacmet@sunsite.dk>
+
+	* src/misc.cxx (cyg_mtab_lookup): Corrected implementation for
+	relative paths crossing mount points.
+	* tests/fileio1.c (cyg_user_start): Add a test for the above fix.
+
 2005-10-20  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/select.cxx: Needs sys/time.h for struct timeval.

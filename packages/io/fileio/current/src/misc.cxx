@@ -222,6 +222,16 @@ static int matchlen( const char *s1, const char *s2 )
 }
 
 // -------------------------------------------------------------------------
+// Simple strlen implementation
+
+static int my_strlen(const char *c)
+{
+    int l = 0;
+    while (*c++) l++;
+    return l;
+}
+
+// -------------------------------------------------------------------------
 // Search the mtab for the entry that matches the longest substring of
 // **name. 
 
@@ -230,35 +240,64 @@ __externC int cyg_mtab_lookup( cyg_dir *dir, const char **name, cyg_mtab_entry *
     cyg_mtab_entry *m, *best = NULL;
     int best_len = 0;
 
-    // Unrooted file names go straight to current dir
+    // Unrooted file names start from current dir
     if( **name != '/' ) {
+        int cwd_len;
         if (*mte == (cyg_mtab_entry *)NULL) {
             // No known current directory
             return -1;
         }
-        // Current directory is well known
-        return 0;
-    }
 
-    // Otherwise search the mount table.
-    for( m = &cyg_mtab[0]; m != &cyg_mtab_end; m++ )
-    {
-        if( m->name != NULL && m->valid )
-        {
-            int len = matchlen(*name,m->name);
-            if( len > best_len )
-                best = m, best_len = len;
+        best = *mte;
+	cwd_len = my_strlen((*mte)->name);
+
+        // current dir is not the correct mte if the relative path crosses
+        // mount points -  search for best matching mount point
+        for( m = &cyg_mtab[0]; m != &cyg_mtab_end; m++ )
+	{
+            if( m->name != NULL && m->valid )
+            {
+                int len = matchlen(m->name, (*mte)->name);
+                // mount point under cwd?
+                if (len == cwd_len)
+                {
+                    if (m->name[len] == '/')
+                        len++;
+
+                    len = matchlen(*name, &m->name[len]);
+                    if (len > best_len)
+                        best = m, best_len = len;
+                }
+            }
         }
+
+	// did we find a better match?
+	if (best != *mte)
+	  *dir = best->root;
+    }
+    else
+    {
+        // Otherwise search the mount table.
+        for( m = &cyg_mtab[0]; m != &cyg_mtab_end; m++ )
+        {
+            if( m->name != NULL && m->valid )
+            {
+                int len = matchlen(*name,m->name);
+                if( len > best_len )
+                    best = m, best_len = len;
+            }
+        }
+
+        // No match found, bad path name...
+        if( best_len == 0 ) return -1;
+
+	*dir = best->root;
     }
 
-    // No match found, bad path name...
-    if( best_len == 0 ) return -1;
-    
     *name += best_len;
     if( **name == '/' )
         (*name)++;
     *mte = best;
-    *dir = best->root;
 
     return 0;
 }

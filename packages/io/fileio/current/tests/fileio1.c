@@ -422,6 +422,8 @@ int cyg_user_start(void)
     checkfile( "/ram/tinky");
     checkfile( "/ram/laalaa");
     comparefiles( "/ram/tinky", "/ram/laalaa" );
+    comparefiles( "/ram/tinky", "ram/laalaa" );
+    comparefiles( "ram/tinky", "/ram/laalaa" );
 
     err = chdir( "/ram" );
     if( err < 0 ) SHOW_RESULT( chdir, err );
