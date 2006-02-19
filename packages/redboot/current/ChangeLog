@@ -1,3 +1,10 @@
+2006-02-17  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/flash.c (fis_lock & fis_unlock): Allow compilation without
+	FIS being enabled.
+	* src/flash.c (fis_update_directory): When reading/writing flash
+	use the full size of the fis directory, not just one block.
+
 2005-11-23  Peter Korsgaard  <peter.korsgaard@barco.com>
 
 	* src/gunzip.c (do_gunzip): Fixed diag_printf format string warnings.

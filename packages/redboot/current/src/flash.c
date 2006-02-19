@@ -255,20 +255,20 @@ fis_update_directory(void)
 #endif
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
     // Ensure [quietly] that the directory is unlocked before trying to update
-    flash_unlock((void *)fis_addr, flash_block_size, (void **)&err_addr);
+    flash_unlock((void *)fis_addr, fisdir_size, (void **)&err_addr);
 #endif
-    if ((stat = flash_erase(fis_addr, flash_block_size, (void **)&err_addr)) != 0) {
+    if ((stat = flash_erase(fis_addr, fisdir_size, (void **)&err_addr)) != 0) {
         diag_printf("Error erasing FIS directory at %p: %s\n", err_addr, flash_errmsg(stat));
     } else {
         if ((stat = FLASH_PROGRAM(fis_addr, fis_work_block,
-                                  flash_block_size, (void **)&err_addr)) != 0) {
+                                  fisdir_size, (void **)&err_addr)) != 0) {
             diag_printf("Error writing FIS directory at %p: %s\n", 
                         err_addr, flash_errmsg(stat));
         }
     }
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
     // Ensure [quietly] that the directory is locked after the update
-    flash_lock((void *)fis_addr, flash_block_size, (void **)&err_addr);
+    flash_lock((void *)fis_addr, fisdir_size, (void **)&err_addr);
 #endif
     fis_endian_fixup(fis_work_block);
 }
@@ -1273,7 +1273,7 @@ fis_lock(int argc, char *argv[])
         fis_usage("invalid arguments");
         return;
     }
-
+#ifdef CYGOPT_REDBOOT_FIS
     /* Get parameters from image if specified */
     if (name) {
         struct fis_image_desc *img;
@@ -1284,7 +1284,9 @@ fis_lock(int argc, char *argv[])
 
         flash_addr = img->flash_base;
         length = img->size;
-    } else if (!flash_addr_set || !length_set) {
+    } else
+#endif
+      if (!flash_addr_set || !length_set) {
         fis_usage("missing argument");
         return;
     }
@@ -1320,7 +1322,7 @@ fis_unlock(int argc, char *argv[])
         fis_usage("invalid arguments");
         return;
     }
-
+#ifdef CYGOPT_REDBOOT_FIS
     if (name) {
         struct fis_image_desc *img;
         if ((img = fis_lookup(name, NULL)) == (struct fis_image_desc *)0) {
@@ -1330,7 +1332,9 @@ fis_unlock(int argc, char *argv[])
 
         flash_addr = img->flash_base;
         length = img->size;
-    } else  if (!flash_addr_set || !length_set) {
+    } else
+#endif
+      if (!flash_addr_set || !length_set) {
         fis_usage("missing argument");
         return;
     }
@@ -1393,6 +1397,7 @@ do_flash_init(void)
             fis_addr = (void *)((CYG_ADDRESS)flash_start + 
                                 (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK*flash_block_size));
         }
+        
         if (((CYG_ADDRESS)fis_addr + fisdir_size - 1) > (CYG_ADDRESS)flash_end) {
             diag_printf("FIS directory doesn't fit\n");
             return false;
