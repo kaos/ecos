@@ -1,3 +1,21 @@
+2006-02-19  Andrew Lunn  <andrew.lunn@ascom.ch>
+           Oliver Munz  <munz@speag.ch>
+
+	* cdl/hal_arm_at9a.cdl: Add the AT91SAM7S variant and control
+ 	  for new timer and debug usart code.
+	* include/var_io.h: Register definitions for AT91SAM7S
+	* include/var_arch.h: Idle action for AT91SAM7S
+	* src/at91_misc.c (hal_hardware_init): Call HAL_PLF_HARDWARE_INIT 
+	  for any platform specific initialization
+	* src/at91_misc.c (hal_at91_reset_cpu): Use the reset controller 
+	  if it exists.
+	* src/at91_misc.c (hal_IRQ_handler): Decode interrupts from
+	  the system controller if it exists.
+	* src/timer_tc.c (NEW) eCos timer using the Timer Counter
+	* src/timer_pit.c (NEW) eCos timer using Periodic Interval Timer
+	* src/hal_diag_dbg.c (NEW) Debug output via debug UART.
+	* src/hal_diag.h: Indicate hal_at91_reset_cpu() is a C function
+	  otherwise we have problems with the watchdog driver which is C++.
 
 2005-05-30  Ezequiel Conde <ezeq@cc.isel.ipl.pt>
 

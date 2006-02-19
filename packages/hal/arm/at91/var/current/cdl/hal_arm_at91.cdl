@@ -59,7 +59,7 @@ cdl_package CYGPKG_HAL_ARM_AT91 {
         The AT91 HAL package provides the support needed to run
         eCos on Atmel AT91 based targets."
 
-    compile       hal_diag.c at91_misc.c
+    compile       at91_misc.c
 
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
@@ -78,7 +78,8 @@ cdl_package CYGPKG_HAL_ARM_AT91 {
         display        "AT91 variant used"
         flavor         data
         default_value  {"R40807"}
-        legal_values   {"R40807" "R40008" "M42800A" "M55800A" "JTST"}
+        legal_values   {"R40807" "R40008" "M42800A" "M55800A" "JTST" 
+                        "AT91SAM7S" }
         description    "The AT91 microcontroller family has several variants,
                         the main differences being the amount of on-chip SRAM,
                         peripherals and their layout. This option allows the
@@ -94,5 +95,78 @@ cdl_package CYGPKG_HAL_ARM_AT91 {
             Enable this option if you need to handle FIQ interrupts in the
             normal way, i.e. a FIQ interrupt will be treated as a normal IRQ 
             using the highest priority"
+    }
+
+    cdl_interface CYGINT_HAL_ARM_AT91_SYS_INTERRUPT {
+        display     "AT91 core has multiplexed system interrupts"    
+        description "
+            Some AT91 cores have a system controller which multiplexes
+            many interrupts onto the system interrupt. When this interface
+            is enabled the variant hal will perform a second level
+            expansion of these interrupts"
+    }
+
+    cdl_interface CYGINT_HAL_ARM_AT91_PIT_HW {
+        display     "Platform has a Periodic Interval Timer"
+        description "
+            This interface if implemented by HALs for CPU cores which
+            have the Periodic Interval Timer."
+    }
+
+    cdl_option CYGBLD_HAL_ARM_AT91_TIMER_TC {
+        display       "Use Timer Counter for eCos Clock"
+        flavor        bool
+        default_value 1
+        requires      !CYGBLD_HAL_ARM_AT91_TIMER_PIT
+        compile       timer_tc.c
+        description   "
+            Use a Timer Counter Channel to generate the eCos Clock."
+    }
+
+    cdl_option CYGBLD_HAL_ARM_AT91_TIMER_PIT {
+        display       "Use Periodic Interval Timer for eCos Clock"
+        flavor        bool
+        default_value !CYGBLD_HAL_ARM_AT91_TIMER_TC
+        requires      !CYGBLD_HAL_ARM_AT91_TIMER_TC
+        active_if     CYGINT_HAL_ARM_AT91_PIT_HW
+        compile       timer_pit.c
+        description   "
+            Use Periodic Interval Timer to generate the eCos Clock."
+    }
+
+    cdl_interface CYGINT_HAL_ARM_AT91_SERIAL_DBG_HW {
+        display     "Platform has the DBG serial port"
+        description "
+            Some varients of the AT91 have a dedicated debug serial
+            port. The HALs of such a varient should implement this interface
+            so allowing the serial driver to the compiled"
+    }
+
+    cdl_option CYGBLD_HAL_ARM_AT91_SERIAL_DBG {
+        display       "Enable the use of the DBG serial port"
+        flavor        bool
+        active_if     CYGINT_HAL_ARM_AT91_SERIAL_DBG_HW
+        active_if     !CYGBLD_HAL_ARM_AT91_SERIAL_UART
+        requires      CYGINT_HAL_ARM_AT91_SYS_INTERRUPT
+        default_value 1
+
+        compile       hal_diag_dbg.c 
+        requires      CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL == 0
+        requires      CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL == 0
+
+        description   "
+            The driver for the dedicated DBG UART will be compiled in the
+            varient HAL when this option is enabled."
+    }
+
+    cdl_option CYGBLD_HAL_ARM_AT91_SERIAL_UART {
+        display       "Enable the use of the UARTS for debug output"
+        flavor        bool
+        default_value 1
+        compile       hal_diag.c 
+        requires      !CYGBLD_HAL_ARM_AT91_SERIAL_DBG
+        description   "        
+            The driver for using the UARTS will be compiled in the
+            varient HAL when this option is enabled."
     }
 }

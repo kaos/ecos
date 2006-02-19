@@ -74,7 +74,8 @@ CYG_MACRO_START                                               \
 CYG_MACRO_END
 
 #elif defined(CYGHWR_HAL_ARM_AT91_M42800A) || \
-      defined(CYGHWR_HAL_ARM_AT91_M55800A)
+      defined(CYGHWR_HAL_ARM_AT91_M55800A) || \
+      defined(CYGHWR_HAL_ARM_AT91SAM7S)
 
 #define HAL_IDLE_THREAD_ACTION(_count_)                       \
 CYG_MACRO_START                                               \

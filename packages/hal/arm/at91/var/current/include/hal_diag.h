@@ -79,7 +79,7 @@ externC void hal_delay_us(cyg_int32 usecs);
 //-----------------------------------------------------------------------------
 // reset
 
-extern void hal_at91_reset_cpu(void);
+externC void hal_at91_reset_cpu(void);
 
 //-----------------------------------------------------------------------------
 // end of hal_diag.h

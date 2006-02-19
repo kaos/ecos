@@ -12,6 +12,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2003 Nick Garnett <nickg@calivar.com>
+// Copyright (C) 2005, 2006 Andrew Lunn (andrew.lunn@ascom.ch>
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -35,16 +36,13 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   jskov
-// Contributors:jskov, gthomas, tkoeller, tdrury, nickg
+// Contributors:jskov, gthomas, tkoeller, tdrury, nickg, asl
 // Date:        2001-07-12
 // Purpose:     AT91 variant specific registers
 // Description: 
@@ -217,6 +215,81 @@
 #define AT91_PIO_PSR_TIOA2   0x04000000 // Timer 2 Signal A
 #define AT91_PIO_PSR_TIOB2   0x08000000 // Timer 2 Signal B
 
+#elif defined (CYGHWR_HAL_ARM_AT91SAM7S)
+#include <pkgconf/hal_arm_at91sam7s.h>
+
+// PIOA
+#define AT91_PIO_PSR_PWM0     0x00000001 // Pulse Width Modulation 0
+#define AT91_PIO_PSR_PWM1     0x00000002 // Pulse Width Modulation 1
+#define AT91_PIO_PSR_PWM2     0x00000004 // Pulse Width Modulation 2
+#define AT91_PIO_PSR_TWD      0x00000008 // Two Wire Data
+#define AT91_PIO_PSR_TWCK     0x00000010 // Two Wire Clock
+#define AT91_PIO_PSR_RXD0     0x00000020 // USART 0 Receive Data
+#define AT91_PIO_PSR_TXD0     0x00000040 // USART 0 Transmit Data
+#define AT91_PIO_PSR_RTS0     0x00000080 // USART 0 Ready To Send
+#define AT91_PIO_PSR_CTS0     0x00000100 // USART 0 Clear To Send
+#define AT91_PIO_PSR_DRXD     0x00000200 // Debug UART Receive
+#define AT91_PIO_PSR_DTXD     0x00000400 // Debug UAET Transmit
+#define AT91_PIO_PSR_NPCS0    0x00000800 // SPI Chip Select 0
+#define AT91_PIO_PSR_MISO     0x00001000 // SPI Input
+#define AT91_PIO_PSR_MOIS     0x00002000 // SPI Output
+#define AT91_PIO_PSR_SPCK     0x00004000 // SPI clock
+#define AT91_PIO_PSR_TF       0x00008000 // Transmit Frame Sync
+#define AT91_PIO_PSR_TK       0x00010000 // Transmit Clock
+#define AT91_PIO_PSR_TD       0x00020000 // Transmit Data
+#define AT91_PIO_PSR_RD       0x00040000 // Receive Data
+#define AT91_PIO_PSR_RK       0x00080000 // Receive Clock
+#define AT91_PIO_PSR_RF       0x00100000 // Receive Frame Sync
+#if !defined(CYGHWR_HAL_ARM_AT91SAM7S_at91sam7s32)
+#define AT91_PIO_PSR_RXD1     0x00200000 // USART 1 Receive Data
+#define AT91_PIO_PSR_TXD1     0x00400000 // USART 1 Transmit Data
+#define AT91_PIO_PSR_SCK1     0x00800000 // USART 1 Serial Clock
+#define AT91_PIO_PSR_RTS1     0x01000000 // USART 1 Ready To Send
+#define AT91_PIO_PSR_CTS1     0x02000000 // USART 1 Clear To Send
+#define AT91_PIO_PSR_DCD1     0x04000000 // USART 1 Data Carrier Detect
+#define AT91_PIO_PSR_DTR1     0x08000000 // USART 1 Data Terminal Ready
+#define AT91_PIO_PSR_DSR1     0x10000000 // USART 1 Data Set Ready
+#define AT91_PIO_PSR_RI1      0x20000000 // USART 2 Ring Indicator
+#define AT91_PIO_PSR_IRQ1     0x40000000 // Interrupt Request 1
+#define AT01_PIO_PSR_NPCS1    x800000000 // SPI Chip Select 1
+#endif // !defined(CYGHWR_HAL_ARM_AT91SAM7S_at91sam7s64)
+
+// PIOB
+#define AT91_PIO_PSR_TIOA0     0x00000001 // Timer/Counter 0 IO Line A
+#define AT91_PIO_PSR_TIOB0     0x00000002 // Timer/Counter 0 IO Line B
+#define AT91_PIO_PSR_SCK0      0x00000004 // USART 0 Serial Clock
+#define AT91_PIO_PSR_NPCS3     0x00000008 // SPI Chip Select 3
+#define AT91_PIO_PSR_TCLK0     0x00000010 // Timer/Counter 0 Clock Input
+#define AT91_PIO_PSR_NPCS3X    0x00000020 // SPI Chip Select 3 (again)
+#define AT91_PIO_PSR_PCK0      0x00000040 // Programmable Clock Output 0
+#define AT91_PIO_PSR_PWM3      0x00000080 // Pulse Width Modulation #3
+#define AT91_PIO_PSR_ADTRG     0x00000100 // ADC Trigger
+#define AT91_PIO_PSR_NPCS1     0x00000200 // SPI Chip Select 1
+#define AT91_PIO_PSR_NPCS2     0x00000400 // SPI Chip Select 2
+#define AT91_PIO_PSR_PWMOX     0x00000800 // Pulse Width Modulation #0 (again)
+#define AT91_PIO_PSR_PWM1X     0x00001000 // Pulse Width Modulation #1 (again)
+#define AT91_PIO_PSR_PWM2X     0x00002000 // Pulse Width Modulation #2 (again)
+#define AT91_PIO_PSR_PWM3X     0x00004000 // Pulse Width Modulation #4 (again)
+#define AT91_PIO_PSR_TIOA1     0x00008000 // Timer/Counter 1 IO Line A
+#define AT91_PIO_PSR_TIOB1     0x00010000 // Timer/Counter 1 IO Line B
+#define AT91_PIO_PSR_PCK1      0x00020000 // Programmable Clock Output 1
+#define AT91_PIO_PSR_PCK2      0x00040000 // Programmable Clock Output 2
+#define AT91_PIO_PSR_FIQ       0x00080000 // Fast Interrupt Request
+#define AT91_PIO_PSR_IRQ0      0x00100000 // Interrupt Request 0
+#if !defined(CYGHWR_HAL_ARM_AT91SAM7S_at91sam7s32)
+#define AT91_PIO_PSR_PCK1X     0x00200000 // Programmable Clock Output 1(again)
+#define AT91_PIO_PSR_NPCS3XX   0x00400000 // SPI Chip Select 3 (yet again)
+#define AT91_PIO_PSR_PWMOXX    0x00800000 // Pulse Width Modulation #0 (again)
+#define AT91_PIO_PSR_PWM1XX    0x01000000 // Pulse Width Modulation #1 (again)
+#define AT91_PIO_PSR_PWM2XX    0x02000000 // Pulse Width Modulation #2 (again)
+#define AT91_PIO_PSR_TIOA2     0x04000000 // Timer/Counter 2 IO Line A
+#define AT91_PIO_PSR_TIOB2     0x08000000 // Timer/Counter 2 IO Line B
+#define AT91_PIO_PSR_TCLK1     0x10000000 // External Clock Input 1
+#define AT91_PIO_PSR_TCLK2     0x20000000 // External Clock Input 2
+#define AT91_PIO_PSR_NPCS2X    0x40000000 // SPI Chip Select 2 (again)
+#define AT91_PIO_PSR_PCK2X     0x80000000 // Programmable Clock Output 2(again)
+#endif // !defined(CYGHWR_HAL_ARM_AT91SAM7S_at91sam7s64)
+
 #else
 
 #define AT91_PIO_PSR_TCLK0    0x00000001 // Timer #0 clock
@@ -269,6 +342,20 @@
 #define AT91_PIO_IMR  0x48  // Interrupt mask
 #define AT91_PIO_ISR  0x4C  // Interrupt status
 
+#ifdef CYGHWR_HAL_ARM_AT91SAM7S
+#define AT91_PIO_MDER  0x50  // Multi-drive Enable Register
+#define AT91_PIO_MDDR  0x54  // Multi-drive Disable Register
+#define AT91_PIO_MDSR  0x58  // Multi-drive Status Register
+#define AT91_PIO_PPUDR 0x60  // Pad Pull-up Disable Register
+#define AT91_PIO_PPUER 0x64  // Pad Pull-up Enable Register
+#define AT91_PIO_PPUSR 0x68  // Pad Pull-Up Status Register
+#define AT91_PIO_ASR   0x70  // Select A Register
+#define AT91_PIO_BSR   0x74  // Select B Regsiter
+#define AT91_PIO_ABS   0x78  // AB Select Regsiter
+#define AT91_PIO_OWER  0xa0  // Output Write Enable Register
+#define AT91_PIO_OWDR  0xa4  // Output Write Disable Register
+#define AT91_PIO_OWSR  0xa8  // Output Write Status Register
+#endif // CYGHWR_HAL_ARM_AT91SAM7S
 //=============================================================================
 // Advanced Interrupt Controller (AIC)
 
@@ -357,6 +444,13 @@
 #define AT91_AIC_ISCR   0x12C
 #define AT91_AIC_EOI    0x130
 #define AT91_AIC_SVR    0x134
+
+#ifdef CYGHWR_HAL_ARM_AT91SAM7S
+#define AT91_AIC_DCR    0x138 // Debug Control Register
+#define AT91_AIC_FFER   0x140 // Fast Forcing Enable Register
+#define AT91_AIC_FFDR   0x144 // Fast Forcing Enable Register
+#define AT91_AIC_FFSR   0x148 // Fast Forcing Enable Register
+#endif 
 
 //=============================================================================
 // Timer / counter
@@ -535,7 +629,6 @@
 #define AT91_EBI_MCR_ALE_1M   0x7   // Address line enable
 #define AT91_EBI_MCR_DRP      (0x1 << 4)  // Data read protocol
 
-
 //=============================================================================
 // Power Saving or Management
 
@@ -555,7 +648,8 @@
 #define AT91_PS_PCSR      0x00c    // Peripheral clock status
 
 #elif defined(CYGHWR_HAL_ARM_AT91_M42800A) || \
-      defined(CYGHWR_HAL_ARM_AT91_M55800A)
+      defined(CYGHWR_HAL_ARM_AT91_M55800A) || \
+      defined(CYGHWR_HAL_ARM_AT91SAM7S)
 
 // (Advanced) Power Management
 
@@ -572,11 +666,22 @@
 #define AT91_PMC_PCSR           0x18
 
 #define AT91_PMC_CGMR           0x20
-    
+
+#ifndef AT91_PMC_SR
 #define AT91_PMC_SR             0x30
+#endif
+
+#ifndef AT91_PMC_IER
 #define AT91_PMC_IER            0x34
+#endif
+
+#ifndef AT91_PMC_IDR
 #define AT91_PMC_IDR            0x38
+#endif
+
+#ifndef AT91_PMC_IMR
 #define AT91_PMC_IMR            0x3c
+#endif
 
 #if defined(CYGHWR_HAL_ARM_AT91_M42800A)
 
@@ -683,16 +788,35 @@
 #define AT91_PMC_SR_MOSCS       0x01
 #define AT91_PMC_SR_LOCK        0x02
 
-#endif
-
 #elif defined(CYGHWR_HAL_ARM_AT91_JTST)
-// Now power management control for the JTST
+// No power management control for the JTST
+
+#elif defined(CYGHWR_HAL_ARM_AT91SAM7S)
+#define AT91_PMC_SCER_PCK  (1 << 0) // Processor Clock
+#define AT91_PMC_SCER_UDP  (1 << 7) // USB Device Clock
+#define AT91_PMC_SCER_PCK0 (1 << 8) // Programmable Clock Output
+#define AT91_PMC_SCER_PCK1 (1 << 9) // Programmable Clock Output
+#define AT91_PMC_SCER_PCK2 (1 << 10) // Programmable Clock Output
+#define AT91_PMC_SCER_PCK3 (1 << 11) // Programmable Clock Output
+
+#define AT91_PMC_PCER_PIOA (1 << 2) // Parallel IO Controller
+#define AT91_PMC_PCER_ADC  (1 << 4) // Analog-to-Digital Conveter
+#define AT91_PMC_PCER_SPI  (1 << 5) // Serial Peripheral Interface
+#define AT91_PMC_PCER_US0  (1 << 6) // USART 0
+#define AT91_PMC_PCER_US1  (1 << 7) // USART 1
+#define AT91_PMC_PCER_SSC  (1 << 8) // Serial Synchronous Controller
+#define AT91_PMC_PCER_TWI  (1 << 9) // Two-Wire Interface
+#define AT91_PMC_PCER_PWMC (1 <<10) // PWM Controller
+#define AT91_PMC_PCER_UDP  (1 <<11) // USB Device Port
+#define AT91_PMC_PCER_TC0  (1 <<12) // Timer Counter 0
+#define AT91_PMC_PCER_TC1  (1 <<13) // Timer Counter 1
+#define AT91_PMC_PCER_TC2  (1 <<14) // Timer Counter 2
 #else
 
 #error Unknown AT91 variant
 
-#endif
-
+#endif 
+#endif 
 
 //=============================================================================
 // Watchdog
@@ -786,6 +910,272 @@
  
 #define AT91_SPI_PIO         AT91_PIOA
 #define AT91_SPI_PIO_NPCS(x) (((x)&0x0F)<<26)
+#endif
+
+#if defined(CYGHWR_HAL_ARM_AT91SAM7S)
+ 
+#define AT91_SPI_PIO         AT91_PIOA
+#define AT91_SPI_PIO_NPCS(x)                   \
+   ( (x & (1 << 0) ? AT91_PIO_PSR_NPCS0 : 0) | \
+     (x & (1 << 1) ? AT91_PIO_PSR_NPCS1 : 0) | \
+     (x & (1 << 2) ? AT91_PIO_PSR_NPCS2 : 0) | \
+     (x & (1 << 3) ? AT91_PIO_PSR_NPCS3 : 0))
+#endif
+
+//=============================================================================
+// Watchdog Timer Controller
+
+#if defined(CYGHWR_HAL_ARM_AT91SAM7S)
+
+#ifndef AT91_WDTC
+#define AT91_WDTC 0xFFFFFD40
+#endif
+
+#define AT91_WDTC_WDCR 0x00 // Watchdog Control Register
+#define AT91_WDTC_WDCR_RELOAD  (1 << 0)  // Reload the watchdog
+#define AT91_WDTC_WDCR_KEY     (0xa5 << 24) // Password for the write op
+#define AT91_WDTC_WDMR 0x04 // Watchdog Mode Register
+#define AT91_WDTC_WDMR_FIEN    (1 << 12) // Fault Interrupt Mode Enable
+#define AT91_WDTC_WDMR_RSTEN   (1 << 13) // Reset Enable
+#define AT91_WDTC_WDMR_RPROC   (1 << 14) // Trigger a processor reset
+#define AT91_WDTC_WDMR_DIS     (1 << 15) // Disable
+#define AT91_WDTC_WDMR_WDD_SHIFT (16)    // Delta Value shift
+#define AT91_WDTC_WDMR_DBGHLT  (1 << 28) // Stop when in debug state
+#define AT91_WDTC_WDMR_IDLEHLT (1 << 29) // Stop when in idle more
+#define AT91_WDTC_WDSR 0x08 // Watchdog Status Register
+#define AT91_WDTC_WDSR_UNDER   (1 << 0)  // Underflow has occurred
+#define AT91_WDTC_WDSR_ERROR   (1 << 1)  // Error has occurred
+#endif //CYGHWR_HAL_ARM_AT91SAM7S 
+
+//=============================================================================
+// Reset Controller
+
+#if defined(CYGHWR_HAL_ARM_AT91SAM7S)
+
+#ifndef AT91_RST
+#define AT91_RST 0xFFFFFD00
+#endif
+
+#define AT91_RST_RCR 0x00 // Reset Control Register
+#define AT91_RST_RCR_PROCRST  (1 << 0) // Processor Reset
+#define AT91_RST_RCR_ICERST   (1 << 1) // ICE Reset
+#define AT91_RST_RCR_PERRST   (1 << 2) // Peripheral Reset
+#define AT91_RST_RCR_EXTRST   (1 << 3) // External Reset
+#define AT91_RST_RCR_KEY      (0xA5 << 24) // Key
+#define AT91_RST_RSR 0x04 // Reset Status Register
+#define AT91_RST_RSR_USER          (1 << 0) // User Reset
+#define AT91_RST_RSR_BROWN         (1 << 1) // Brownout detected
+#define AT91_RST_RSR_TYPE_POWERUP  (0 << 8) // Power on Reset
+#define AT91_RST_RSR_TYPE_WATCHDOG (2 << 8) // Watchdog Reset
+#define AT91_RST_RSR_TYPE_SW       (3 << 8) // Software Reset
+#define AT91_RST_RSR_TYPE_USER     (4 << 8) // NRST pin Reset
+#define AT91_RST_RSR_TYPE_BROWNOUT (5 << 8) // Brown-out Reset
+#define AT91_RST_RSR_NRST_SET (1 << 16) // NRST pin set
+#define AT91_RST_RSR_SRCMP    (1 << 17) // Software reset in progress
+#define AT91_RST_RMR 0x08 // Reset Mode Register
+#define AT91_RST_RMR_URSTEN  (1 << 0)  // User Reset Enabled
+#define AT91_RST_RMR_URSTIEN (1 << 4)  // User Reset Interrupt Enabled
+#define AT91_RST_RMR_BODIEN  (1 << 16) // Brownout Dection Interrupt Enabled
+#define AT91_RST_RMR_KEY     (0xA5 << 24) // Key
+
+#endif
+
+//=============================================================================
+// Memory Controller
+
+#if defined(CYGHWR_HAL_ARM_AT91SAM7S)
+
+#ifndef AT91_MC
+#define AT91_MC 0xFFFFFF00
+#endif
+
+#define AT91_MC_RCR  0x00 // Remap Control Register
+#define AT91_MC_ASR  0x04 // Abort Status Register
+#define AT91_MC_AASR 0x08 // Abort Address Status Register
+#define AT91_MC_FMR  0x60 // Flash Mode Register
+#define AT91_MC_FMR_FRDY  (1 << 0) // Enable interrupt for Flash Ready
+#define AT91_MC_FMR_LOCKE (1 << 2) // Enable interrupt for Flash Lock Error
+#define AT91_MC_FMR_PROGE (1 << 3) // Enable interrupt for Flash Prog Error
+#define AT91_MC_FMR_NEBP  (1 << 7) // No erase before programming
+#define AT91_MC_FMR_0FWS  (0 << 8) // 1R,2W wait states
+#define AT91_MC_FMR_1FWS  (1 << 8) // 2R,3W wait states
+#define AT91_MC_FMR_2FWS  (2 << 8) // 3R,4W wait states
+#define AT91_MC_FMR_3FWS  (3 << 8) // 4R,4W wait states
+#define AT91_MC_FMR_FMCN_MASK (0xff << 16)
+#define AT91_MC_FMR_FMCN_SHIFT 16
+#define AT91_MC_FCR  0x64 // Flash Command Register
+#define AT91_MC_FCR_START_PROG (0x1 << 0) // Start Programming of Page
+#define AT91_MC_FCR_LOCK       (0x2 << 0) // Lock sector
+#define AT91_MC_FCR_PROG_LOCK  (0x3 << 0) // Program and Lock
+#define AT91_MC_FCR_UNLOCK     (0x4 << 0) // Unlock a segment
+#define AT91_MC_FCR_ERASE_ALL  (0x8 << 0) // Erase everything
+#define AT91_MC_FCR_SET_GP_NVM (0xb << 0) // Set general purpose NVM bits
+#define AT91_MC_FCR_CLR_GP_NVM (0xd << 0) // Clear general purpose NVM bits
+#define AT91_MC_FCR_SET_SECURITY (0xf << 0) // Set security bit
+#define AT91_MC_FCR_PAGE_MASK  (0x3ff)
+#define AT91_MC_FCR_PAGE_SHIFT 8
+#define AT91_MC_FCR_KEY        (0x5a << 24) // Key to enable command
+#define AT91_MC_FSR  0x68 // Flash Status Register
+#define AT91_MC_FSR_FRDY       (1 << 0) // Flash Ready for next command
+#define AT91_MC_FSR_LOCKE      (1 << 2) // Programming of a locked block
+#define AT91_MC_FSR_PROGE      (1 << 3) // Programming error
+#define AT91_MC_FSR_SECURITY   (1 << 4) // Security bit is set
+#define AT91_MC_FSR_GPNVM0     (1 << 8) // General purpose NVM bit 0
+#define AT91_MC_FSR_GPNVM1     (1 << 9) // General purpose NVM bit 1
+#endif
+
+//=============================================================================
+// Debug Unit
+
+#if defined(CYGHWR_HAL_ARM_AT91SAM7S)
+
+#ifndef AT91_DBG
+#define AT91_DBG 0xFFFFF200
+#endif
+
+#define AT91_DBG_CR   0x00 // Control Register
+#define AT91_DBG_CR_RSTRX  (0x1 << 2)   // Reset Receiver
+#define AT91_DBG_CR_RSTTX  (0x1 << 3)   // Reset Transmitter
+#define AT91_DBG_CR_RXEN   (0x1 << 4)   // Receiver Enable
+#define AT91_DBG_CR_RXDIS  (0x1 << 5)   // Receiver Disable
+#define AT91_DBG_CR_TXEN   (0x1 << 6)   // Transmitter Enable
+#define AT91_DBG_CR_TXDIS  (0x1 << 7)   // Transmitter Disable
+#define AT91_DBG_CR_RSTSTA (0x1 << 8)   // Reset Status Bits
+#define AT91_DBG_MR   0x04 // Mode Register
+#define AT91_DBG_MR_PAR_EVEN  (0x0 << 9) // Even Parity
+#define AT91_DBG_MR_PAR_ODD   (0x1 << 9) // Odd Parity
+#define AT91_DBG_MR_PAR_SPACE (0x2 << 9) // Parity forced to Space
+#define AT91_DBG_MR_PAR_MARK  (0x3 << 9) // Parity forced to Mark
+#define AT91_DBG_MR_PAR_NONE  (0x4 << 9) // No Parity
+#define AT91_DBG_MR_PAR_MULTI (0x6 << 9) // Multi-drop mode
+#define AT91_DBG_MR_CHMODE_NORMAL  (0x0 << 14) // Normal mode
+#define AT91_DBG_MR_CHMODE_AUTO    (0x1 << 14) // Automatic Echo
+#define AT91_DBG_MR_CHMODE_LOCAL   (0x2 << 14) // Local Loopback
+#define AT91_DBG_MR_CHMODE_REMOTE  (0x3 << 14) // Remote Loopback
+#define AT91_DBG_IER  0x08 // Interrupt Enable Register
+#define AT91_DBG_IDR  0x0c // Interrupt Disable Register
+#define AT91_DBG_IMR  0x10 // Interrupt Mask Register
+#define AT91_DBG_CSR  0x14 // Channel Status Register
+#define AT91_DBG_CSR_RXRDY  (1 << 0) // Receiver Ready
+#define AT91_DBG_CSR_TXRDY  (1 << 1) // Transmitter Ready
+#define AT91_DBG_RHR  0x18 // Receiver Holding Register
+#define AT91_DBG_THR  0x1c // Transmitter Holding Register
+#define AT91_DBG_BRGR 0x20 // Baud Rate Generator Register
+#define AT91_DBG_C1R  0x40 // Chip ID1 register
+#define AT91_DBG_C1R_ARM945ES (1 << 5) 
+#define AT91_DBG_C1R_ARM7TDMI (2 << 5)
+#define AT91_DBG_C1R_ARM920T  (4 << 5)
+#define AT91_DBG_C1R_ARM926EJ (5 << 5)
+#define AT91_DBG_C1R_CPU_MASK  (0x7 << 5)
+#define AT91_DBG_C1R_FLASH_0K    (0x0 << 8)
+#define AT91_DBG_C1R_FLASH_8K    (0x1 << 8)
+#define AT91_DBG_C1R_FLASH_16K   (0x2 << 8)
+#define AT91_DBG_C1R_FLASH_32K   (0x3 << 8)
+#define AT91_DBG_C1R_FLASH_64K   (0x5 << 8)
+#define AT91_DBG_C1R_FLASH_128K  (0x7 << 8)
+#define AT91_DBG_C1R_FLASH_256K  (0x9 << 8)
+#define AT91_DBG_C1R_FLASH_512K  (0xa << 8)
+#define AT91_DBG_C1R_FLASH_1024K (0xc << 8)
+#define AT91_DBG_C1R_FLASH_2048K (0xe << 8)
+#define AT91_DBG_C1R_FLASH_MASK  (0xf << 8)
+#define AT91_DBG_C1R_FLASH2_0K    (0x0 << 12)
+#define AT91_DBG_C1R_FLASH2_8K    (0x1 << 12)
+#define AT91_DBG_C1R_FLASH2_16K   (0x2 << 12)
+#define AT91_DBG_C1R_FLASH2_32K   (0x3 << 12)
+#define AT91_DBG_C1R_FLASH2_64K   (0x5 << 12)
+#define AT91_DBG_C1R_FLASH2_128K  (0x7 << 12)
+#define AT91_DBG_C1R_FLASH2_256K  (0x9 << 12)
+#define AT91_DBG_C1R_FLASH2_512K  (0xa << 12)
+#define AT91_DBG_C1R_FLASH2_1024K (0xc << 12)
+#define AT91_DBG_C1R_FLASH2_2048K (0xe << 12)
+#define AT91_DBG_C1R_FLASH2_MASK  (0xf << 12)
+#define AT91_DBG_C1R_SRAM_1K      (0x1 << 16)  
+#define AT91_DBG_C1R_SRAM_2K      (0x2 << 16)
+#define AT91_DBG_C1R_SRAM_112K    (0x4 << 16)
+#define AT91_DBG_C1R_SRAM_4K      (0x5 << 16)
+#define AT91_DBG_C1R_SRAM_80K     (0x6 << 16)
+#define AT91_DBG_C1R_SRAM_160K    (0x7 << 16)
+#define AT91_DBG_C1R_SRAM_8K      (0x8 << 16)
+#define AT91_DBG_C1R_SRAM_16K     (0x9 << 16)
+#define AT91_DBG_C1R_SRAM_32K     (0xa << 16)
+#define AT91_DBG_C1R_SRAM_64K     (0xb << 16)
+#define AT91_DBG_C1R_SRAM_128K    (0xc << 16)
+#define AT91_DBG_C1R_SRAM_256K    (0xd << 16)
+#define AT91_DBG_C1R_SRAM_96K     (0xe << 16)
+#define AT91_DBG_C1R_SRAM_512K    (0xf << 16)
+#define AT91_DBG_C1R_SRAM_MASK    (0xf << 16)
+#define AT91_DBG_C1R_ARCH_AT75Cxx (0xf0 << 20)
+#define AT91_DBG_C1R_ARCH_AT91x40 (0x40 << 20)
+#define AT91_DBG_C1R_ARCH_AT91x63 (0x63 << 20)
+#define AT91_DBG_C1R_ARCH_AT91x55 (0x55 << 20)
+#define AT91_DBG_C1R_ARCH_AT91x42 (0x42 << 20)
+#define AT91_DBG_C1R_ARCH_AT91x92 (0x92 << 20)
+#define AT91_DBG_C1R_ARCH_AT91x34 (0x24 << 20)
+#define AT91_DBG_C1R_ARCH_AT91SAM7Axx  (0x60 << 20)
+#define AT91_DBG_C1R_ARCH_AT91SAM7Sxx  (0x70 << 20)
+#define AT91_DBG_C1R_ARCH_AT91SAM7XC   (0x71 << 20)
+#define AT91_DBG_C1R_ARCH_AT91SAM7SExx (0x72 << 20)
+#define AT91_DBG_C1R_ARCH_AT91SAM7Lxx  (0x73 << 20)
+#define AT91_DBG_C1R_ARCH_AT91SAM7Xxx  (0x75 << 20)
+#define AT91_DBG_C1R_ARCH_AT91SAM9xx   (0x19 << 20)
+#define AT91_DBG_C1R_ARCH_MASK         (0xff << 20)
+#define AT91_DBG_C1R_NVPTYP_ROM      (0 << 28) // ROM only
+#define AT91_DBG_C1R_NVPTYP_RLOCF    (1 << 28) // ROMless of on chip Flash
+#define AT91_DBG_C1R_NVPTYP_SRAMROM  (4 << 28) // SRAM emulating ROM
+#define AT91_DBG_C1R_NVPTYP_EFLASH   (2 << 28) // Embedded Flash
+#define AT91_DBG_C1R_NVPTYP_ROMFLASH (3 << 28) // ROM & FLASH
+#define AT91_DBG_C1R_NVPTYP_MASK     (7 << 28)
+#define AT91_DBG_C1R_EXT (1 << 31) // Extension Register Exists
+#define AT91_DBG_C2R  0x44 // Chip ID2 register
+#define AT91_DBG_FNTR 0x48 // Force NTRST Register
+#define AT91_DBG_RPR  0x100 // Receiver Pointer Register
+#define AT91_DBG_RCR  0x104 // Receiver Counter Register
+#define AT91_DBG_TPR  0x108 // Transmit Pointer Register
+#define AT91_DBG_TCR  0x10c // Transmit Counter Register
+#define AT91_DBG_RNPR 0x110 // Receiver Next Pointer Register
+#define AT91_DBG_RNCR 0x114 // Receiver Next Counter Register
+#define AT91_DBG_TNPR 0x118 // Transmit Next Pointer Register
+#define AT91_DBG_TNCR 0x11c // Transmit Next Counter Register
+#define AT91_DBG_PTCR 0x120 // PDC Transfer Control Register
+#define AT91_DBG_PTSR 0x124 // PDC Transfer Status Register
+#endif
+
+//=============================================================================
+// Periodic Interval Timer Controller
+
+#if defined(CYGHWR_HAL_ARM_AT91SAM7S)
+
+#ifndef AT91_PITC
+#define AT91_PITC 0xfffffd30
+#endif
+
+#define AT91_PITC_PIMR 0x00  // Period Interval Mode Register
+#define AT91_PITC_PIMR_PITEN  (1 << 24) // Periodic Interval Timer Enable
+#define AT91_PITC_PIMR_PITIEN (1 << 25) // Periodic Interval Timer Interrupt Enable
+#define AT91_PITC_PISR 0x04  // Period Interval Status Register
+#define AT91_PITC_PISR_PITS   (1 << 0)  // Periodic Interval Timer Status
+#define AT91_PITC_PIVR 0x08  // Period Interval Status Register
+#define AT91_PITC_PIIR 0x0C  // Period Interval Image Register
+#endif
+
+//=============================================================================
+// Real Time Timer Controller
+
+#if defined(CYGHWR_HAL_ARM_AT91SAM7S)
+
+#ifndef AT91_RTTC
+#define AT91_RTTC 0xFFFFFD20
+#endif
+
+#define AT91_RTTC_RTMR 0x00 // Real Time Mode Register
+#define AT91_RTTC_RTMR_ALMIEN    (1 << 16) // Alarm Interrupt Enable
+#define AT91_RTTC_RTMR_RTTINCIEN (1 << 17) // Timer Increment Interrupt Enable
+#define AT91_RTTC_RTMR_RTTRST    (1 << 18) // Timer Reset
+#define AT91_RTTC_RTAR 0x04 // Real Time Alarm Register
+#define AT91_RTTC_RTVR 0x08 // Real Time Value Register
+#define AT91_RTTC_RTSR 0x0C // Real Time Status Register
+#define AT91_RTTC_RTSR_ALMS      (1 << 0) // Alarm Status
+#define AT91_RTTC_RTSR_RTTINC    (1 << 1) // Timer Increment
 #endif
 
 //=============================================================================
