@@ -1,3 +1,8 @@
+2006-02-19  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/at91_serial.c (at91_serial_lookup): Enable the peripheral
+	clock at lookup time to keep the power usage low.
+
 2004-11-10  Sebastian Block <sebastianblock@gmx.net>
 
         * src/at91_serial.c: Added third port

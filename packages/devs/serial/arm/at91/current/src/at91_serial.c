@@ -369,7 +369,13 @@ at91_serial_lookup(struct cyg_devtab_entry **tab,
                   const char *name)
 {
     serial_channel * const chan = (serial_channel *) (*tab)->priv;
-
+    
+#ifdef AT91_PMC_PCER
+    // Enable the peripheral clock to the device
+    at91_serial_info * const at91_chan = (at91_serial_info *)chan->dev_priv;
+    HAL_WRITE_UINT32(AT91_PMC+AT91_PMC_PCER, 
+                     (1 << at91_chan->int_num));
+#endif
     (chan->callbacks->serial_init)(chan);  // Really only required for interrupt driven devices
     return ENOERR;
 }
