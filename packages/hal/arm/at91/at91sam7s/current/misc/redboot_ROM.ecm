@@ -13,7 +13,7 @@ cdl_configuration eCos {
     template    redboot ;
     package -hardware CYGPKG_HAL_ARM current ;
     package -hardware CYGPKG_HAL_ARM_AT91 current ;
-    package -hardware CYGPKG_DEVS_FLASH_AT91SAM7S current ;
+    package -hardware CYGPKG_DEVS_FLASH_AT91 current ;
     package -template CYGPKG_HAL current ;
     package -template CYGPKG_INFRA current ;
     package -template CYGPKG_REDBOOT current ;
@@ -73,7 +73,7 @@ cdl_option CYGBLD_BUILD_REDBOOT_WITH_EXEC {
     user_value 0
 };
 
-cdl_option CYGBLD_DEV_FLASH_AT91SAM7S_LOCKING {
+cdl_option CYGBLD_DEV_FLASH_AT91_LOCKING {
     user_value 0
 };
 
