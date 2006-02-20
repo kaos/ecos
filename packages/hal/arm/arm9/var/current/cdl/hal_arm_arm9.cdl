@@ -106,6 +106,17 @@ cdl_package CYGPKG_HAL_ARM_ARM9 {
             The ARM925T has 8k data cache, 16k instruction cache, 16 word
             write buffer and an MMU."
     }
+    
+    cdl_option CYGPKG_HAL_ARM_ARM9_ARM926EJ {
+        display       "ARM ARM926EJ microprocessor"
+        implements    CYGINT_HAL_ARM_ARM9_VARIANT
+        default_value 0
+        no_define
+        define        -file=system.h CYGPKG_HAL_ARM_ARM9_ARM926EJ
+        description "
+            The ARM926EJ has 16k data cache, 16k instruction cache, 16 word
+            write buffer and an MMU."
+    }
 
     cdl_option CYGPKG_HAL_ARM_ARM9_ARM940T {
         display       "ARM ARM940T microprocessor"

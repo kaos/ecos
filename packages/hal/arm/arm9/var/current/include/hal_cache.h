@@ -46,7 +46,8 @@
 // Author(s):   gthomas
 // Contributors:hmt, jskov
 //              Travis C. Furrer <furrer@mit.edu>
-// Date:        2000-05-08
+//              Tom Chase        <tomc@dtccom.com>
+// Date:        2005-05-10
 // Purpose:     Cache control API
 // Description: The macros defined here provide the HAL APIs for handling
 //              cache control operations.
@@ -112,8 +113,23 @@
 # define HAL_DCACHE_SETS (HAL_DCACHE_SIZE/(HAL_DCACHE_LINE_SIZE*HAL_DCACHE_WAYS))
 
 # define HAL_WRITE_BUFFER                64
+// must flush everything manually
+# define CYGHWR_HAL_ARM_ARM9_ALT_CLEAN_DCACHE 
 
-# define CYGHWR_HAL_ARM_ARM9_CLEAN_DCACHE // has instruction to clean D-cache
+#elif defined(CYGPKG_HAL_ARM_ARM9_ARM926EJ)
+# define HAL_ICACHE_SIZE                 0x4000
+# define HAL_ICACHE_LINE_SIZE            32
+# define HAL_ICACHE_WAYS                 4
+# define HAL_ICACHE_SETS (HAL_ICACHE_SIZE/(HAL_ICACHE_LINE_SIZE*HAL_ICACHE_WAYS))
+
+# define HAL_DCACHE_SIZE                 0x2000
+# define HAL_DCACHE_LINE_SIZE            32
+# define HAL_DCACHE_WAYS                 4
+# define HAL_DCACHE_SETS (HAL_DCACHE_SIZE/(HAL_DCACHE_LINE_SIZE*HAL_DCACHE_WAYS))
+
+# define HAL_WRITE_BUFFER                64
+
+#define CYGHWR_HAL_ARM_ARM926EJ_CLEAN_DCACHE //has instruction to clean D-cache
 
 #elif defined(CYGPKG_HAL_ARM_ARM9_ARM940T)
 # define HAL_ICACHE_SIZE                 0x1000
@@ -366,6 +382,40 @@ CYG_MACRO_START                                                         \
         : "=r" (_tmp1), "=r" (_tmp2)                                    \
         : "I" (CYGHWR_HAL_ARM_ARM9_CLEAN_DCACHE_INDEX_STEP),            \
           "I" (CYGHWR_HAL_ARM_ARM9_CLEAN_DCACHE_INDEX_LIMIT)            \
+        : "r0" /* Clobber list */                                       \
+        );                                                              \
+CYG_MACRO_END
+#elif defined(CYGHWR_HAL_ARM_ARM9_ALT_CLEAN_DCACHE)
+/*
+ * 'Clean & Invalidate whole DCache'
+  */
+#define HAL_DCACHE_SYNC()                                               \
+CYG_MACRO_START                                                         \
+    asm volatile (                                                      \
+	"mov	r0, #255 << 4;" /* 256 entries/set */ \
+        "2: "                    \
+	"mcr	p15, 0, r0, c7, c14, 2;" \
+	"subs	r0, r0, #1 << 4;" \
+	"bcs	2b;"		/* entries 255 to 0 */ \
+        "mcr    p15,0,r0,c7,c10,4;" /* drain the write buffer */        \
+        : \
+        : \
+        : "r0" /* Clobber list */                                       \
+        );                                                              \
+CYG_MACRO_END
+#elif defined(CYGHWR_HAL_ARM_ARM926EJ_CLEAN_DCACHE)
+/*
+ * 'Clean & Invalidate whole DCache'
+ */
+#define HAL_DCACHE_SYNC()                                               \
+CYG_MACRO_START                                                         \
+    asm volatile (                                                      \
+        "1: "                   /* clean & invalidate D index */ \
+	"mrc	p15, 0, r15, c7, c14, 3;" \
+	"bne    1b;" \
+        "mcr    p15,0,r0,c7,c10,4;" /* drain the write buffer */        \
+        : \
+        : \
         : "r0" /* Clobber list */                                       \
         );                                                              \
 CYG_MACRO_END

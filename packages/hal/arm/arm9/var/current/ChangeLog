@@ -1,3 +1,13 @@
+2006-02-17  Tom Chase  <tchase@dtccom.com>
+
+	* include/hal_cache.h: Added support for ARM926EJ.  Changed
+	ARM925T to use CYGHWR_HAL_ARM_ARM9_ALT_CLEAN_CACHE and defined 
+	CYGHWR_HAL_ARM_ARM9_ALT_CLEAN_CACHE to clean the cache manually 
+	because CYGHWR_HAL_ARM_ARM9_CLEAN_CACHE did not work for the 
+	OMAP1510.
+
+	* cdl/hal_arm_arm9.cdl: Added option for ARM926EJ.
+
 2003-01-08  Patrick Doyle  <wpd@delcomsys.com>
 
 	* include/hal_cache.h: Changed HAL_ICACHE_LINE_SIZE and
