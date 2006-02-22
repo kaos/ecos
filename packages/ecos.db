@@ -1356,6 +1356,13 @@ package CYGPKG_NET {
         description     "Generic networking support, including TCP/IP."
 }
 
+package CYGPKG_NET_AUTOTEST {
+	alias 		{ "Network Autotesting" autotest net_autotest }
+	directory	net/autotest
+	script		net_autotest.cdl
+        description     "Automated network testing support."
+}
+
 package CYGPKG_NET_OPENBSD_STACK {
 	alias 		{ "OpenBSD Stack" openbsd_net }
 	directory	net/tcpip
