@@ -1,0 +1,13 @@
+
+# add the net and the net drivers, and the SNMP parts
+pkgconf -disable-uitron -enable-net -enable-net_drivers -enable-snmplib -enable-snmpagent -enable-autotest
+
+# larger heap for SNMP to run?  Not needed any more.
+
+# use the RealTime test harness, and two loopback interfaces
+header net.h {
+	enable CYGPKG_NET_TESTS_USE_RT_TEST_HARNESS
+	value  CYGPKG_NET_NLOOP 2
+}
+
+

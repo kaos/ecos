@@ -1,0 +1,414 @@
+
+Host Software for Automated Network Testing for eCos
+====================================================
+
+Hugo Tyson, Red Hat, Cambridge UK, 2000-10-20
+
+
+What Host Software?
+-------------------
+
+This note refers to the package CYGPKG_NET_AUTOTEST which lives in
+packages/net/autotest in the eCos repository.
+
+It contains, amongst other things, some software to run a "network testing
+server" which eCos network test cases (from the same package) use to test
+the network stack.
+
+The reason such a server is needed is simple: testing the eCos network
+stack involves an external, standard, computer _doing_things_to_ the target
+board as well as having the target board's test program do things itself.
+
+For example, one test case (in the main network package, net/tcpip) to test
+TFTP will get a file from a server using TFTP and put the data to another
+file on the server using TFTP.  This tests the ability of the eCos TCPIP
+stack to act as a TFTP client.  But it does not test the eCos TCPIP stack's
+TFTP server at all.  To do that an external agent must act as client -
+using the standard tftp(1) app on linux, for example - to put and get data
+to and from an eCos testcase running on the target, offering a TFTP server.
+
+
+Quick Start Guide
+-----------------
+
+Set up your LINUX machine to serve DHCP to the target you want to test;
+ensure that any 10.0.0.x addresses used are given a class C (/24) netmask.
+Provide a genuine gateway to the internet via some route; the routing tests
+expect to ping www.cygnus.com!  Also let it have the normal networking apps
+(tftp, ftp, ping) and servers (tftpd, ftpd) available, plus the SNMP
+package from UCD: snmpwalk and snmpstatus and standard MIBs.
+
+Make sure it is on on the same network(s) as the target you want to test.
+
+Set up aliases for loopback interface on the servers: on server for eth0 on
+the target, add an alias for 10.0.3.1/24.  For eth1, 10.0.4.1/24.
+
+With a checked-out eCos source tree, change directory into either
+packages/net/autotest/current/host or a copy of it, and type make.
+
+Follow the printed instruction to change the simple executable "./_suping"
+to su root execution.  You will need to become root temporarily to do this.
+
+Make sure . is on your path and type "awaitorder | obey.sh" to run the
+server; it prints info about messages it receives and sends.
+
+The test server is now running.  You can now run test built from the
+CYGPKG_NET_AUTOTEST package (packages/net/autotest) on your target and they
+will talk to this host test server.
+
+
+Categories of Tests
+-------------------
+
+ o Host passive
+
+	The host is server, the eCos test case is the proactive client.
+
+	Such tests use the host to talk to, where the eCos testcase is the
+	client, and the host is the server.  The network testing server is
+	not involved in these tests, but other servers which must be set up
+	there are used.
+ 
+ o Host proactive
+
+	The host is client to the eCos server.
+
+	The target board running eCos is the server, the host must run
+	scripts to do thing to it and report success or otherwise over the
+	net.  The eCos test case typically starts a server, issues order
+	about how to test it, then sleeps for a time until the test is
+	deemed complete.
+
+
+Building the Network Testing Server
+-----------------------------------
+
+Cd into either packages/net/autotest/current/host or a copy of it, and type
+make.  The standard makefile just compiles ./awaitorder.c into ./awaitorder
+the executable that waits for a request from a testcase and prints it to
+its stdout.  It also builds some other utilities that are used by the test
+scripts, for example ./tmpfile from ./tmpfile.c - this just creates a file
+of random data for passing back and forth.  It also builds _suping: make
+sure this is suid-root to be able to flood-ping the target.
+
+
+Running the Network Testing Server
+----------------------------------
+
+Make sure "." is on your path, early enough, then
+
+	awaitorder | obey.sh
+
+This is all you need to do to run the testing server.
+
+
+"./awaitorder" just waits for a connection on TCP port 9980 and prints what
+it receives.  For example, to test it:
+
+		% telnet masala 9980
+ you type --->	Eggs, bacon, beans, mushrooms, toast and coffee
+		Acknowledged
+		Connection closed by foreign host.
+		% 
+
+and awaitorder will print as follows:
+
+		 % awaitorder 
+		awaitorder: connection from 172.16.19.13:3739
+		ORDERS: Eggs, bacon, beans, mushrooms, toast and coffee
+
+and continue waiting for the next order.
+
+
+"./obey.sh" does rather more.  It assumes that its stdin is connected to a
+source of orders, and it expects that lines of input will look like this:
+
+	ORDERS: TFTP_SERV_GET 10.16.19.171 300
+
+or more generally
+
+	"ORDERS:" [XFAIL] <order> <target IP> <extra params...>
+
+The set of valid orders (TFTP_SERV_GET, TFTP_SERV_PUT ...) will expand with
+time as we add more tests.
+
+Having checked that an order looks generally valid, and set up some
+environment, it then switches on the order to execute a test script to do
+what the testcase that sent the order wants.  The extra params are given to
+the test script.  The test script is invoked in background, so that several
+sessions can be running at once to hit the target board hard, or of course
+one network testing server can be servicing several target boards running
+different testcases all at once.  After the test script is launched,
+obey.sh just loops back to reading an input line, to get the next order.
+
+"XFAIL" in parameter 1 means the target is configured to simulate network
+unreliability, or otherwise be uncooperative.  It is passed both to the
+individual testing scripts and to the system for returning status messages
+to the test target.
+
+This structure is designed to allow separate development and testing of the
+individual parts of the network testing server and also of new testcases;
+the eCos testcase and its test script can be developed on your desk without
+running the network test server - you only need to knit them all together
+at the end by adding a simple clause to obey.sh to invoke the test script
+automatically.
+
+
+Test Script Environment
+-----------------------
+
+There is some IO redirection nastiness in obey.sh to separate errors from
+good status from status to return to the eCos testcase and so on.
+
+awaitorder takes care to issue complaints to stderr, whilst obviously its
+stdout is piped in to obey.sh
+
+obey.sh takes care to issue problem reports to stderr, and mere commentary
+to stdout; neither is paricularly verbose right now, so there's no need to
+so anything special.
+
+Individual test scripts are invoked as follows.  Stdout is directed to a
+logfile named uniquely and for the test in question, according the the
+variable $LG.  Stderr is piped to an acknowledgement agent, by default
+"./sendack.sh", which is invoked with the target address as its argument.
+This returns status messages from the host testing script to the eCos
+testcase via TCP port 9990.
+
+Let's look at the two example switch cases for the TFTP tests.  There are
+two to mostly put versus mostly get files with the eCos TFTP server.
+
+    # Now the main swicth that runs the test script: this is where
+    # new testcases are added:
+    case $TEST in
+
+    TFTP_SERV_GET)
+    tftpget.sh $TARGET $WF/tftpget.$unique ${PARAMS[@]} \
+	    2>&1 >$LG/tftpget.$unique | $SENDACK $TARGET & ;;
+
+    TFTP_SERV_PUT)
+    tftpput.sh $TARGET $WF/tftpput.$unique ${PARAMS[@]} \
+	    2>&1 >$LG/tftpput.$unique | $SENDACK $TARGET & ;;
+
+OK, this is horrid.  But breaking up one example:
+
+this first part is the invokation of the script:
+
+    tftpput.sh $TARGET $WF/tftpput.$unique ${PARAMS[@]}
+
+its arguments are
+
+    tftpput.sh <target IP> <temporary file> <timeout> <filesize>
+
+ o <target IP> is $TARGET, from the original order.
+
+ o obey.sh has invented <temporary file> with a unique id, in the workfiles
+   directory, $WF.  It will typically be "/tmp/auto/wf/tftpput.1138".  In
+   this example, the test script will make files called
+   "/tmp/auto/wf/tftpput.1138.src" and "/tmp/auto/wf/tftpput.1138.tmp" to
+   play with; one is created by the tmpfile program, the other read back
+   from the TFTP server.
+
+ o <timeout> is part of the extra params supplied by the eCos testcase,
+   which in this case will serve TFTP for about 5 minutes, so it tells the
+   test script to diddle it for about 5 minutes too.
+
+ o <filesize> is another param supplied by the eCos testcase, which tells
+   the script to create a testfile of a particular size to exercise edge
+   conditions wrt the blocksize.
+
+The second part of the example is the IO redirection and backgrounding:
+
+	    2>&1 >$LG/tftpput.$unique | $SENDACK $XFAIL $TARGET & ;;
+
+This sets the script's fd2 to a copy of its stdout, then sets its stdout to
+go to the logfile, typically "/tmp/auto/log/tftpput.1138", then pipes the
+original stdout which now occupies fd2 into $SENDACK, the acknowledgement
+agent, which is itself invoked with the target's IP address and optionally
+XFAIL to tell it not to be so upset if it fails to return the result.  The
+whole thing is run in background by the "&" and the ";;" is the end of this
+case within the switch statement.  Phew!
+
+More briefly, the test script's stdout goes into the logfile and the test
+script's stderr goes into $SENDACK (./sendack.sh) and thence to the
+testcase.
+
+
+Typical Output
+--------------
+
+This is the output from awaitorder | obey.sh from running just one eCos
+testcase, which requests 3 simultaneous TFTP sessions for 5 minutes:
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+awaitorder: connection from 10.16.19.171:34554
+test TFTP_SERV_PUT; target 10.16.19.171; params 300 512
+awaitorder: connection from 10.16.19.171:46052
+test TFTP_SERV_PUT; target 10.16.19.171; params 300 513
+awaitorder: connection from 172.16.19.171:25388
+test TFTP_SERV_PUT; target 172.16.19.171; params 300 512
+10.16.19.171: result INFO:<10.16.19.171 is up>
+172.16.19.171: result INFO:<172.16.19.171 is up>
+10.16.19.171: result INFO:<10.16.19.171 is up>
+10.16.19.171: result PASS:<tftp put OK, 300 seconds 513 bytes 20696 xfers>
+10.16.19.171: result PASS:<tftp put OK, 300 seconds 512 bytes 14982 xfers>
+172.16.19.171: result PASS:<tftp put OK, 300 seconds 512 bytes 12649 xfers>
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+and the eCos test case prints, amongst other things, on receipt of the
+results via sendack.sh
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+INFO:<10.16.19.171 is up> (10.16.19.171) (from 10.16.19.13:4764)
+INFO:<172.16.19.171 is up> (172.16.19.171) (from 172.16.19.13:4765)
+INFO:<10.16.19.171 is up> (10.16.19.171) (from 10.16.19.13:4766)
+....
+PASS:<tftp put OK, 300 seconds 513 bytes 20696 xfers> (10.16.19.171) (from 10.16.19.13:4775)
+PASS:<tftp put OK, 300 seconds 512 bytes 14982 xfers> (10.16.19.171) (from 10.16.19.13:4776)
+PASS:<tftp put OK, 300 seconds 512 bytes 12649 xfers> (172.16.19.171) (from 172.16.19.13:4777)
+....
+PASS:<Results from host[s] OK>
+EXIT:<Done>
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+This output format will change over time as more features may be added, but
+this example should convey the general idea.
+
+
+Individual Host Testing Scripts
+-------------------------------
+
+The params and invocation of these is entirely a matter of agreement
+between the eCos testcase and the test script.  A new case arm in the
+obey.sh switch statement must be written for any new testcase, so the
+script's invocation is not prescribed in any way.
+
+For the sake of easier separate development of testcases, it would be
+better to follow the pattern of the other testcases, also for consistency
+and comprehensibility.  Here are some guidelines and requirements, but
+first some assumptions:
+
+ o One test script "does things to" one target board, and more specifically
+   one target IP address.  If you want several things done to your target
+   board at once, invoke several scripts at once - all on the same IP
+   address if you want, that's fine.
+
+ o The test script may need to be told that the target network stack is
+   configured to simulate network unreliability, so the test script should
+   not expect perfect communications.  Eg. weaker protocols will in fact
+   fail - the point of the test is verify that the target does not hang or
+   crash or assert-fail and so on; host side network failures within the
+   script are unimportant.  Otherwise, the test script should expect
+   correct operation in the operations it performs.
+
+ o The network test server can serve testing to many eCos target boards at
+   once.  Therefore any particular test script can be invoked several times
+   at once to deal with different target boards, if they happen at random
+   to run the same testcase at the same time as each other.  Therefore a
+   test script should only use temporary files which are uniquely named per
+   invocation.
+
+These lead to requirements and guidelines:
+
+ o Take the flag XFAIL optionally as the first argument, if it is XFAIL
+   shift to get the other arguments.
+
+ o Take the target IP address as the next argument; it's an obvious place
+   for it and you'll certainly need it anyhow.
+
+ o For workfiles, have obey.sh supply a parameter to name such files
+   uniquely.  Use a full pathname.  Include the test type also, for example
+   "/tmp/auto/wf/tftpput.1138" identifies the file as belonging to the
+   tftpput testcase.  Make required workfiles be second and subsequent
+   arguments.
+
+ o Further arguments which are arbitrary and passed from the testcase
+   should be last, and passed all together.  It's not convenient in the
+   shell to split out words 2 through the end from an array if you already
+   quoted word one elsewhere, so instead put all the extras together as in
+   ${PARAMS[@]} in the tftpput.sh invocation discussed above.
+
+
+Other Environment
+-----------------
+
+ o DHCP
+
+Set up DHCP to support the target board - it's the easiest way.
+
+The tests know which server to talk to by looking in the server ID field of
+the bootp information record; if DHCP or BOOTP is used, this will be the
+server that served it.  It is also possible to set up the stack with static
+initialization of that field - if you do this, make sure it points to a
+machine that is running the network test server.
+
+Setting up the server to serve DHCP to the target boards only is easy;
+keeping other DHCP servers, who offer dynamic addresses to any new net
+presence, from offering service to them requires a little trick.  A dynamic
+server should be set up to supply a static address to the target board's
+MAC address, with the additional key: "deny booting;".  This does nothing
+malicious, but it lets the server recognize the target board and ignore it.
+
+This ensures that the network test server machine "wins" the race to set up
+the target, and so ensures that the test talks to the network test server
+rather than trying to talk to a global DHCP server.
+
+
+ o /tmp clearance
+
+The ongoing testing fills /tmp with log files and work files.  The logs
+will likely not be very large, but the work files could be a few Mb per
+test run.
+
+A cron job to remove everything older than an hour, or some such might be
+useful; or if the machine can stand it, just wipe /tmp/auto every night.
+
+
+ o Ping!
+
+The tests will expect to ping (and flood ping) the server; it should be
+allowed to do this back.  An suid executable (CARE!) is needed to enable
+this.  "./_suping" is built by the host makefile: make it be suid root.
+It is a trivial app that execs ping after setting the effective UID to
+root.  This is necessary because ping is an suid-root executable anyway, to
+be able to get at raw sockets; it checks the effective UID to decide
+whether to permit flood pinging; we need this for the flood tests floodping
+and floodpingmux.
+
+
+ o Network aliases in the loopback interface
+
+The routing tests require a network setup like this:
+
+  10.0.3.1      A.B.C.D   A.B.C.E        N.M.O.P   N.M.O.Q      10.0.4.1
+  -------- Box1 ----------------- target ----------------- Box2 --------
+
+
+Optionally with 10.0.3 and 10.0.4 being real networks, with other stations
+on them; addresses 10.0.x.99 are also pinged.  Alternatively, 10.0.3 and
+10.0.4 can be aliases for the loopback device in Box1 and Box2 (which may
+be the same box really).  A typical setup might really look like:
+             
+  HOST: eth0 172.16.19.13 ------ 172.16.19.171 eth0 on TARGET
+  HOST: eth1 10.16.19.13 -------- 10.16.19.171 eth1 on TARGET
+  HOST: lo:0 10.0.3.1
+  HOST: lo:1 10.0.4.1
+
+with all netmasks being /24 (255.255.255.0).
+
+This means that the target can only ping addresses 10.0.3.x and 10.0.4.x if
+a route has been set up via 172.16.19.13 or 10.16.19.13 (respectively, for
+the case of having two distinct hosts).  The routing tests verify that
+behaviour.
+
+
+ o TFTP server and its files
+
+No test of the eCos TFTP client yet, so no details here.
+
+ o FTP server and its files
+
+No test for the eCos FTP client yet, so no details here.
+
+
+
+.fin

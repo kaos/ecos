@@ -1,0 +1,301 @@
+2002-02-01  Gary Thomas  <gthomas@redhat.com>
+
+	* tests/slowpingmux.c (ping_test): 
+	* tests/routeping.inl: (ping_test): 
+	* tests/floodpingmux.c: (net_test): 
+	* tests/autohost.inl (autohost_tell): 
+	* host/awaitorder.c (main): Need valid value for sin_len.
+
+2001-10-10  Hugo Tyson  <hmt@redhat.com>
+
+	* tests/floodping.c:
+	* tests/floodpingmux.c:
+	* tests/snmpmulti.c:
+	* tests/snmppings.c:
+	* tests/snmpwalk.c:
+	More conditional compilation needed for use of eth0_up, eth1_up
+	and the like, since the config opt is now a boolean and so these
+	might not exist.
+
+2001-06-26  Hugo Tyson  <hmt@redhat.com>
+
+	* tests/routeping.inl (route_add_s): Add a close to the socket.
+	Don't be upset if you can't ping www.cygnus.com by number!
+
+2000-12-08  Hugo Tyson  <hmt@redhat.com>
+
+	* host/tftpget.sh (TARGET): Try a little harder to put a correct
+	test dataset into the target; we are testing GET not PUT here.  We
+	are seeing get fails of 1Mb data on the zeroth try; it could be a
+	real get bug, or problems putting the original image.  This change
+	should help diagnose which.
+
+	* tests/slowpingmux.c (ping_host): Make this much less verbose in
+	[good] output; the farm rejects too much chatter.
+
+2000-11-17  Hugo Tyson  <hmt@redhat.com>
+
+	* tests/memcheck.inl (memcheck_final): Ignore clusters if
+	simulating network failures; I guess memory is used up with
+	partial packets awaiting reassembly, and they'll time out.
+
+	* tests/routeping.inl (net_test): Call TNR_ON/OFF() correctly.
+
+	* tests/slowpingmux.c (net_test): Call TNR_ON/OFF() correctly.
+
+	* tests/floodpingmux.c (net_test): Only call TNR_INIT() once.
+	Call TNR_OFF(); again after dumpstats() turned it on again.
+	Call TNR_ON/OFF() correctly.
+
+	* tests/autohost.inl (autohost_getresults): Add a missing
+	semicolon.  Doh!  Only a problem with realtime test harness
+	enabled.
+
+2000-11-15  Hugo Tyson  <hmt@redhat.com>
+
+	* doc/host.txt: Updated.
+
+2000-11-15  Hugo Tyson  <hmt@redhat.com>
+
+	* cdl/net_autotest.cdl: Build the new tests.
+
+	* tests/routeping.inl: New file: the meat of a testcase to check
+	that external networks are only accessible if we have added a
+	suitable route.  This requires a further network called 10.0.3.x
+	attached to the machine that serves DHCP to eth0, and one called
+	10.0.4.x on the server for eth1.  These can both be aliases for
+	loopback on the linux host if needs be.
+
+	* tests/route_none.c:
+	* tests/route_3.c: 
+	* tests/route_4.c: 
+	* tests/route_3_4.c: 
+	New files: Various invocations of the above.  These just make a
+	few #defines then #include "routeping.inl"
+	
+2000-11-10  Hugo Tyson  <hmt@redhat.com>
+
+	* tests/autohost.inl (autohost_init): Call the memory checking
+	init and finalization functions in the appropriate places.
+
+	* tests/memcheck.inl (RATIO): New file; check for mbuf &c leaks
+	(if the API is defined in network.h, so it it'll work with the 144
+	tarball).  We allow either as much again or 15% of memory to be
+	used at the end of the test, for each of the 3 memory regions the
+	stack uses.
+
+	* tests/floodpingmux.c (net_test): Don't print out mbuf &c usage,
+	leave it up to the memory checking subsystem.
+
+2000-11-10  Hugo Tyson  <hmt@redhat.com>
+
+	* host/obey.sh: Handle the new case of doing snmpwalk and
+	snmpstatus to the target. (SNMP_WALK)
+
+	* cdl/net_autotest.cdl: Build the new tests.
+
+	* host/snmpwalk.sh: New file: snmpwalk the target's public MIB and
+	check target status for the timeout.  Much like the other cases.
+
+	* tests/snmpwalk.c: New file: do one snmpwalk session on each
+	interface.
+
+	* tests/snmpmulti.c: New file: ditto, 3 sessions per i/f.
+
+	* tests/snmppings.c: New file: ditto, 2 x snmp, plus some pinging
+	and flood pinging simulataneously.
+
+2000-11-09  Hugo Tyson  <hmt@redhat.com>
+
+	* host/obey.sh: Handle the new case of flood pinging the
+	target. (FLOOD_PING)
+
+	* host/floodping.sh: New file: flood ping the target, with a
+	variable active/sleep ratio so that we can use this to perturb
+	other tests also.  An suid executable "./_suping" is needed to be
+	able to flood ping automatically.
+
+	* cdl/net_autotest.cdl: Build the two new tests.
+
+	* tests/floodping.c: New file: ask the host to flood ping me, for
+	5 minutes in the usual manner.
+
+	* tests/floodpingmux.c: New file: as floodping.c and the target
+	floods the host in turn also.
+
+	* host/makefile: Build _suping: it must be set uid &c manually.
+
+	* host/_suping.c: New file: a tiny su root program to run ping
+	with real uid root (ping is suid root anyway) to allow us to flood
+	the target.
+
+2000-11-08  Hugo Tyson  <hmt@redhat.com>
+
+	* tests/autohost.inl (XFAIL): Detect the configuration that means
+	simulated unreliable network is enabled.  Send the XFAIL parameter
+	to the network testing server if so.  Also do not check for the
+	count of pass messages required in the autohost_end() routine; we
+	expect them to go missing and/or there to be failures per se.
+
+	* host/obey.sh (XFAIL): Detect and pass through the XFAIL
+	parameter to indicate simulated unreliable network is enabled.
+
+	* host/tftpget.sh (XFAIL): 
+	* host/tftpput.sh (XFAIL): 
+	* host/slowping.sh (XFAIL): If XFAIL, do not report failures as
+	such; also echo the process ID ($$) in messages to help untangle
+	the interleaved status messages.
+
+	* host/sendack.sh (XFAIL): Try less zealously and moan less loudly
+	if failure is expected.
+
+	* doc/host.txt: Document XFAIL stuff.
+
+2000-10-26  Hugo Tyson  <hmt@redhat.com>
+
+	* tests/slowping.c (net_test): New file: 
+	* tests/slowpingmux.c (net_test): New file: simple test, the host
+	pings the target (a lot, 10x simultaneously), while the target
+	also pings the host in slowpingmux.
+
+	* host/slowping.sh (TARGET): New file: handle target side of ping
+	testing.
+
+	* cdl/net_autotest.cdl: Build the new tests.
+
+2000-10-26  Hugo Tyson  <hmt@redhat.com>
+
+	* tests/tftp_serv.inl (do_tftp_tests): Fix typo in info printf;
+	nothing of substance.
+
+2000-10-25  Hugo Tyson  <hmt@redhat.com>
+
+	* permtests/netauto_bootp.ptest: net with bootp only init.
+	* permtests/netauto_corrupt.ptest: net + 10% rx corruption.
+	* permtests/netauto_failrx.ptest: net + 10% rx discards.
+	* permtests/netauto_failtx.ptest: net + 10% tx discards.
+	* permtests/netauto_rt.ptest: net + snmp + realtime test.
+	* permtests/netauto_snmp.ptest: net + snmp.
+	* permtests/netauto_std.ptest: standard net config
+	New files; permtest configurations for farm testing.
+
+2000-10-24  Hugo Tyson  <hmt@redhat.com>
+
+	* doc/host.txt: More info added; kept up to date.
+
+2000-10-24  Hugo Tyson  <hmt@redhat.com>
+
+	* tests/tftp_serv.inl: New file, the guts of both tftp_serv_get.c
+	and tftp_serv_put.c removed to here, so that a number of tests can
+	be created to hit the server with different sizes of datafile.
+	This is the easiest way to test lots of different filesizes and
+	edge conditions; just replicate the testcase.
+
+	* tests/tftp_serv_put.c (FILESIZE): 
+	* tests/tftp_serv_get.c (FILESIZE): Use "tftp_serv.inl" with a
+	coupla #defines for the op and the filesize to implement the test.
+
+	* tests/tftp_serv_g0.c:   New: get zero and 1-byte datafiles.
+	* tests/tftp_serv_g1M.c:  New: get 1Mb and 1Mb-1 datafiles.
+	* tests/tftp_serv_g512.c: New: get 512 and 513-byte datafiles.
+	* tests/tftp_serv_p0.c:   New: put zero and 1-byte datafiles.
+	* tests/tftp_serv_p1M.c:  New: put 1Mb and 1Mb-1 datafiles.
+	* tests/tftp_serv_p512.c: New: put 512 and 513-byte datafiles.
+
+	* cdl/net_autotest.cdl: Build all the new testcases to diddle
+	different file sizes.
+
+	* host/tftpput.sh (TARGET): Do not read back the file every time;
+	check the gotton file once at the end correctly; count up the
+	transfers for info.
+
+	* host/tftpget.sh (TARGET): Check the gotton file correctly; count
+	up the transfers for info.
+
+2000-10-23  Hugo Tyson  <hmt@redhat.com>
+
+	* host/tftpdata.src: DELETED: we now make our own data files on
+	the fly.
+
+	* host/makefile (tmpfile): Build this.  Also add a make clean.
+
+	* host/tmpfile.c (main): New file: builds to a simple executable
+	that makes a scratch file full of random data of the length
+	requested.  A simple but order-sensitive checksum is appended,
+	though the testcase doesn't use this yet.
+
+	* tests/tftp_serv_put.c (do_tftp_tests): 
+	* tests/tftp_serv_get.c (do_tftp_tests): Pass a filesize to the
+	test script; it will make a temp file accordingly.
+
+	* host/tftpput.sh: 
+	* host/tftpget.sh: Parameterize these more so that they accept a
+	filesize; the data file is created with random data.
+
+2000-10-20  Hugo Tyson  <hmt@redhat.com>
+
+	* doc/host.txt: New file.  Details the host side code, scripts,
+	environment, tempfiles, conventions, output...
+
+	* doc/strategy.txt: New file.  The original design notes.
+	
+	* host/obey.sh: Correct typo and add . to the path; stupid
+	pedantic environment.
+
+2000-10-20  Hugo Tyson  <hmt@redhat.com>
+
+	* tests/tftp_serv_get.c (net_test): 
+	* tests/tftp_serv_put.c (net_test): Use the new API, and remember
+	how many host sessions we expected to invoke.
+
+	* tests/autohost.inl (autohost_end): New API to check counts of
+	PASS and FAIL statii from the hosts.
+
+2000-10-19  Hugo Tyson  <hmt@redhat.com>
+
+	* Changelog: New file.
+	* cdl/net_autotest.cdl: New file.
+	* host/awaitorder.c: New file.
+	* host/makefile: New file.
+	* host/obey.sh: New file.
+	* host/sendack.sh: New file.
+	* host/tftpdata.src: New file.
+	* host/tftpget.sh: New file.
+	* host/tftpput.sh: New file.
+	* tests/autohost.inl: New file.
+	* tests/tftp_serv_get.c: New file.
+	* tests/tftp_serv_put.c: New file.
+	Indeed a new package, even.  Documentation will be forthcoming.
+
+//===========================================================================
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
+//===========================================================================

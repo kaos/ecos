@@ -1,0 +1,11 @@
+
+# add the net and the net drivers, and the SNMP parts
+pkgconf -disable-uitron -enable-net -enable-net_drivers -enable-snmplib -enable-snmpagent -enable-autotest
+
+# larger heap for SNMP to run?  Not needed any more.
+
+# asserts on
+header infra.h {
+        enable CYGPKG_INFRA_DEBUG
+}
+

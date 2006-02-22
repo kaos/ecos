@@ -1,0 +1,19 @@
+
+# add the net and the net drivers, and the SNMP parts
+pkgconf -disable-uitron -enable-net -enable-net_drivers -enable-snmplib -enable-snmpagent -enable-autotest
+
+# larger heap for SNMP to run?  Not needed any more.
+
+# asserts on
+header infra.h {
+        enable CYGPKG_INFRA_DEBUG
+}
+
+# Simulated failures on:
+header io_eth_drivers.h {
+	enable CYGPKG_IO_ETH_DRIVERS_SIMULATED_FAILURES
+	disable CYGPKG_IO_ETH_DRIVERS_SIMULATE_DROP_RX      
+	value CYGPKG_IO_ETH_DRIVERS_SIMULATE_CORRUPT_RX  10
+	disable CYGPKG_IO_ETH_DRIVERS_SIMULATE_DROP_TX	  
+	disable CYGPKG_IO_ETH_DRIVERS_SIMULATE_LINE_CUT
+}

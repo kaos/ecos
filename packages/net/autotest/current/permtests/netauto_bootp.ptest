@@ -1,0 +1,13 @@
+
+# add the net and the net drivers
+pkgconf -disable-uitron -enable-net -enable-net_drivers -enable-autotest
+
+# asserts on
+header infra.h {
+	enable CYGPKG_INFRA_DEBUG
+}
+
+# no DHCP, just bootp
+header net.h {
+	disable CYGPKG_NET_DHCP
+}

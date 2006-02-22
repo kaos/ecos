@@ -1,0 +1,237 @@
+
+Some Thoughts on Automated Network Testing for eCos
+***************************************************
+
+Hugo Tyson, Red Hat, Cambridge UK, 2000-07-28
+
+
+Requirements
+============
+
+This thinking is dominated by the need for automated continuous testing
+of the StrongARM EBSA-285 boards, which have two ethernet interfaces.
+We also have some needs for ongoing eCos network testing.
+
+ o TCP testing: move a large amount of data, checking its correctness.
+   (with several streams running in parallel at once)
+
+ o UDP testing: similar but using UDP.
+
+ o TFTP testing: an external server, from a choice of LINUX, NT, SunOS, and
+   another EBSA board, get from the target some files, of sizes 0, 1, 512,
+   513, 1048576 bytes.  (with several streams running in parallel at once)
+
+ o TFTP testing: put to the target some files, ....
+
+ o TFTP testing: the target tftp client code does the same, getting and
+   putting, to an external server.
+
+   [ All that TFTP test makes explicit testing of UDP unneccessary; UDP
+   testing would need sequence numbers and so on, so we may as well use
+   TFTP as the implementation of that]
+
+ o FTP test: we have a trivial "connect" test; continue to use it.
+
+ o Performance testing: TCP_ECHO, TCP_SOURCE, TCP_SINK programs work in
+   concert to measure throughput of a partially loaded target board.
+   Source and Sink apps run on an external host.
+
+ o Flood pings: the target floods the hosts on its two external interfaces
+   whilst they flood it.  This is left going for a long time, and store
+   leaks or crashes are checked for.
+
+Orthogonally to these "feature tests" are requirements to run these tests
+with and without these features in combinations:
+
+ o The "realtime test harness" operating - it checks interrupt latencies
+   and so on.  This is written and works.
+
+ o Booting statically, via bootp, via DHCP statically/leased on the two
+   interfaces in combination.
+
+ o Simulated failure of the network, of the kinds "drop 1 in N packets",
+   "drop all for 0 < random() < 30 Seconds" and the like.  Corrupted
+   packets being sent out by the target, also!
+
+Needs
+---------------
+
+We have some other requirements:
+
+ o Support testing of other net-enabled targets!
+
+ o Run tests at a reasonable rate, so do NOT require a reboot of, say, a
+   LINUX host every test run to reconfigure the network environment.
+
+ o Feasible: do NOT require anything too complex in terms of controlling
+   the network environment.
+
+ o Do not use too many machines.  The farm is full already.
+
+
+Other Goals
+-----------
+
+These are some ideas that are useful but not strictly necessary:
+
+ o Re-use/work-with the existing test infrastructure
+
+ o Provide the sort of results information that the existing test
+   infrastructure does.
+
+ o Work with standard testing *host* computers of various kinds.
+
+ o Support conveniently debugging these test examples at developers' desks
+   - not just in the farm.
+
+
+Details
+=======
+
+Because of the flood pinging and malformed packet requirements, the target
+boards need to be on an isolated network.
+
+The target board's two interfaces need to be on distinct networks for the
+stack to behave properly.
+
+
+
+Strategy
+========
+
+I believe we can implement everything we need for the host computers to do
+using a daemon or server, (cf. the serial test filter) which sits on the
+host computer waiting to be told what test we are about to run, and takes
+appropriate action.
+
+Note that this does work even for situations where the target is passive,
+eg. being a TFTP server.  The target simply "does" TFTP serving for a set
+period of time - or perhaps until a cookie file exists in its test file
+system - and then performs a set of consistency checks (including on the
+state of the test FS), thus creating a PASS/FAIL test result.  It can also
+periodically run those checks anyway, and choose FAIL at any time.
+
+But who tells the host daemon what to do?  The target does, of course.
+That way, the host is stateless, it simply runs that daemon doing what it's
+bid, and does NOT ever have to report test results.  This has enormous
+advantages, because it means we gather test results from what the target
+said, and no other source, thus minimizing changes to the farm software.
+It also means that to add a new test, we can asynchronously add the feature
+to the test daemons of that is required, then add a new testcase in the
+usual manner, with all the usual (compile-time) testing of its
+applicability as usual.
+
+Network Topology
+----------------
+
+The idea is that we can initially have a setup like this:
+
+    house network <---> [net-testfarm-machine] serial -------+
+                                                             |
+                                                           serial
+    house network <----> eth0 [LINUX BOX] eth1 <---> eth0 [ EBSA ]
+                              [ dhcpd   ] eth2 <---> eth1 [      ]
+                              [ tftpd   ]
+                              [ ftpd    ]
+                              [ testd   ]
+
+for developing the system.  Testd is our new daemon that runs tcp_sink, or
+tcp_source, or a floodping, or does tftp to the target (rather than vice
+versa) as and when the target instructs it.  The target can report test
+results to the net-testfarm-machine as usual, but with bigger timeouts &c
+configured in the test farm.
+
+This system can then be generalized to
+
+        test-server1            test-server2            test-serverN
+           eth0                   eth0                     eth0
+            |                      |                        |
+            |                      |                        |
+           eth0                    |                        |
+        target1                 target4                 targetM
+           target2                target5                 targetM+1
+              target3               target6                 targetM+2
+           eth1
+            |
+            |
+        test-server11
+                
+where target1,2,3 have 2 ethernet interfaces and the others have only one.
+
+And further, provided the testd protocol supports targets choosing one
+server from many which offer service, which would be a good thing:
+
+        test-server1            test-server2            test-serverN
+           eth0                   eth0                     eth0
+         [LINUX]                 [Solaris]                [NT4.0]
+            |                      |                        |
+            +----------------------+------------------------+
+            |                      |                        |
+           eth0                    |                        |
+        target1                 target4                 targetM
+           target2                target5                 targetM+1
+              target3               target6                 targetM+2
+           eth1
+            |
+            +-----------------------+
+            |                       |
+         [LINUX]                 [NT4.0]
+        test-server11          test-server12
+
+which would IMHO be a good thing IN ADDITION to a completely partitioned
+set of test network as above.  The partitioned set of test networks is
+required also because we need to test all of:
+
+ Target asks for BOOTP vs. DHCP  -X-  Server does only BOOTP vs. DHCP
+
+in combinations on the different interfaces.  Simply setting up servers
+that way statically is best, rather than trying to script controls for
+servers that have them offering bootp one minute and DHCP the next.
+
+
+Test Farm
+---------
+
+Orthogonal to the network topology, the network test farm is connected to
+all these targets in the usual manner by serial lines.  That way the tests
+can run and busy/cripple that local network without affecting the house
+network *and* without affecting the debug connection, and with the
+advantage that tests net traffic can interfere with each other, providing a
+diverse network environment for testing, rather than a quiet net.
+
+For testing with GDB connection over the network, which is desirable, I
+suggest either keeping those machines separate, or having the farm's
+connection into the test-net be via second interfaces fitted to the server
+machines.
+
+Otherwise, it's a standard test farm, which knows to choose only from a
+special set of perms, and which has waaay longer timeouts.
+
+
+Test Cases
+----------
+
+In this way, tests of the form "make an external machine do tftp to the
+target board" are implemented by means of a standard eCos test case, which
+requests that action from a server, then waits for it to be told AOK or
+just for a certain time, and reports as such to the test farm as usual.
+
+These special tests are only compiled in certain perms.
+
+Those same special perms select between the various initialization options
+required also: DHCP or BOOTP or static initialization, and so on, in the
+usual manner.
+
+
+Implementation
+--------------
+
+Just a quick note on this: DHCP has a lot of the properties we want for the
+test protocol.  We should take a copy of that and use different port
+numbers, re-use a lot of the code, since server code is also available.
+
+Or something simpler; none of this seems especially challenging.
+
+
+That's all for now.
+.ends
