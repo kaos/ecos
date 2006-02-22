@@ -1,3 +1,7 @@
+2006-02-22  Mark Salter  <msalter@redhat.com>
+
+	* ecos.db: Added net autotest.
+
 2005-06-28  Nick Garnett  <nickg@ecoscentric.com>
 
 	* ecos.db: Added Object Loader package.
