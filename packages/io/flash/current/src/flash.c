@@ -87,8 +87,9 @@ flash_init(_printf *pf)
 {
     int err;
 
-    if (flash_info.init) return FLASH_ERR_OK;
     flash_info.pf = pf; // Do this before calling into the driver
+    if (flash_info.init) return FLASH_ERR_OK;
+
     if ((err = flash_hwr_init()) != FLASH_ERR_OK) {
         return err;
     }

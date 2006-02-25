@@ -1,3 +1,10 @@
+2006-02-21  Oliver Munz  <munz@speag.ch>
+	    Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/flash.c (flash_init): Allow repeat calls change the function
+	used for printing. There are times you don't any output, eg you
+	are downloading am image over the serial port.
+
 2005-08-02  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/flash1.c (cyg_start): Compiler warning fixes.
