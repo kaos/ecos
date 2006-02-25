@@ -1,3 +1,5 @@
+* Port to the ATMEL AT91SAM7S by Oliver Munz and Andrew Lunn
+* Improved varient support for the AT91
 * Support for the Ethenet device on the NETARM devices.
 * Added support for the AT91 based PhyCore.
 * Added support for Exys XSEngine (PXA255) based system.

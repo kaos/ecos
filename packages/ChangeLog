@@ -2,6 +2,14 @@
 
 	* ecos.db: Added net autotest.
 
+2006-01-01  Andrew Lunn <andrew.lunn@ascom.ch>
+            Oliver Munz <munz@speag.ch>
+	
+	* ecos.db: Added support for the AT91SAM7S. This includes a new
+	flash driver, watchdog driver, minor changes to the AT91 USART
+	driver, and extensions to the AT91 variant HAL in addition to the
+	AT91SAM7S HAL.
+
 2005-06-28  Nick Garnett  <nickg@ecoscentric.com>
 
 	* ecos.db: Added Object Loader package.

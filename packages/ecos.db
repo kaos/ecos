@@ -358,6 +358,16 @@ package CYGPKG_DEVS_FLASH_EDB7XXX {
 	   on the Cirrus Logic EP7xxx based platform(s)."
 }
 
+package CYGPKG_DEVS_FLASH_AT91 {
+	alias 		{ "FLASH memory support for Atmel AT91 EFC" flash_at91 }
+	directory	devs/flash/arm/at91
+	script		flash_at91.cdl
+	hardware
+        description "
+           This package contains hardware support for Embedded FLASH 
+           controller as found in the AT91SAM7S platform"
+}
+
 package CYGPKG_DEVS_FLASH_EB40 {
 	alias 		{ "FLASH memory support for Atmel AT91/EB40" flash_eb40 }
 	directory	devs/flash/arm/eb40
@@ -2012,6 +2022,16 @@ package CYGPKG_DEVICES_WATCHDOG_ARM_AT91 {
            ARM AT91 CPU."
 }
 
+package CYGPKG_DEVICES_WATCHDOG_ARM_AT91WDTC {
+	alias		{ "Watchdog driver for ARM AT91 WDTC" devices_watchdog_at91wdtc device_watchdog_at91wdtc }
+	directory	devs/watchdog/arm/at91wdtc
+	script          watchdog_at91wdtc.cdl
+	hardware
+        description "
+           This package provides a watchdog driver implementation for the
+           ARM AT91 CPUs which have the Watchdog Timer Controller."
+}
+
 package CYGPKG_DEVICES_WATCHDOG_ARM_LPC2XXX {
         alias           { "Watchdog driver for ARM LPC2XXX CPU" devices_watchdog_lpc2xxx device_watchdog_lpc2xxx }
        directory       devs/watchdog/arm/lpc2xxx
@@ -2475,6 +2495,7 @@ package CYGPKG_HAL_ARM_AT91 {
         The at91 HAL package provides the support needed to run eCos on Atmel
         AT91 based targets."
 }
+
 package CYGPKG_HAL_ARM_AT91_JTST {
 	alias		{ "Atmel AT572D740 (diopsis) evaluation board (jtst)" hal_arm_at91 arm_at91_hal }
 	directory	hal/arm/at91/jtst
@@ -2483,6 +2504,16 @@ package CYGPKG_HAL_ARM_AT91_JTST {
         description "
 	The JTST HAL package provides the support needed to run eCos on 
         the Atmel evaluation board AT572D74-DK1."
+}
+
+package CYGPKG_HAL_ARM_AT91SAM7S {
+	alias		{ "Atmel AT91SAM7S" hal_arm_at91sam7s arm_at91_sam7s }
+	directory	hal/arm/at91/at91sam7s
+	script		hal_arm_at91sam7s.cdl
+	hardware
+        description "
+	The at91sam7s HAL package provides the support needed to run eCos on 
+        an Atmel evaluation board for the AT91SAM7S."
 }
 
 package CYGPKG_HAL_ARM_AT91_EB40 {
@@ -2494,7 +2525,6 @@ package CYGPKG_HAL_ARM_AT91_EB40 {
 	The eb40 HAL package provides the support needed to run eCos on an Atmel
 	evaluation board (EB40)."
 }
-
 
 package CYGPKG_HAL_ARM_AT91_EB40A {
 	alias		{ "Atmel evaluation board (EB40A)" hal_arm_at91_eb40a arm_at91_eb40a_hal }
@@ -4156,6 +4186,21 @@ target jtst {
         description "
         The jtst target provides the packages needed to run eCos on an Atmel
         Diospsis evaluation board (jtst)."
+}
+
+target at91sam7s {
+	alias { "Atmel AT91SAM7S evaluation board" at91_at91sam7s }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_AT91
+                   CYGPKG_HAL_ARM_AT91SAM7S
+                   CYGPKG_IO_SERIAL_ARM_AT91
+                   CYGPKG_DEVS_FLASH_AT91
+                   CYGPKG_DEVS_SPI_ARM_AT91
+                   CYGPKG_DEVICES_WATCHDOG_ARM_AT91WDTC
+        }
+        description "
+        The at91sam7s target provides the packages needed to run eCos on an 
+        Atmel at91sam7s evaluation board."
 }
 
 target eb40a {
