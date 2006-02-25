@@ -1,3 +1,7 @@
+2006-02-25  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/var_io.h: Added the USB device registers.
+
 2006-02-19  Andrew Lunn  <andrew.lunn@ascom.ch>
            Oliver Munz  <munz@speag.ch>
 

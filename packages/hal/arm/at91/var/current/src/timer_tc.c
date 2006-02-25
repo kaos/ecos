@@ -129,7 +129,13 @@ void hal_delay_us(cyg_int32 usecs)
     ticks = (((cyg_uint64)usecs) * 
              ((cyg_uint64)CYGNUM_HAL_ARM_AT91_CLOCK_SPEED))/32000000LL;
     
-    CYG_ASSERT(ticks < (1 << 16), "Timer overflow");
+    //    CYG_ASSERT(ticks < (1 << 16), "Timer overflow");
+    
+    if (ticks > (1 << 16))
+      ticks = (1 << 16) - 1;
+    
+    if (ticks == 0)
+      return;
     
     // Disable counter
     HAL_WRITE_UINT32(timer+AT91_TC_CCR, AT91_TC_CCR_CLKDIS);
