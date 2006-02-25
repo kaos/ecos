@@ -53,11 +53,11 @@ cdl_component CYGBLD_BUILD_REDBOOT {
 };
 
 cdl_option CYGOPT_REDBOOT_FIS {
-    user_value 1
+    user_value 0
 };
 
 cdl_component CYGSEM_REDBOOT_FLASH_CONFIG {
-    user_value 1
+    user_value 0
 };
 
 cdl_option CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG {
@@ -83,4 +83,8 @@ cdl_option CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK {
 
 cdl_option CYGBLD_REDBOOT_MIN_IMAGE_SIZE {
     user_value 0x15000
+};
+
+cdl_option CYGBLD_REDBOOT_LOAD_INTO_FLASH {
+    user_value 1
 };
