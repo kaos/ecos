@@ -73,6 +73,10 @@
 #endif
 #endif
 #include <cyg/infra/cyg_ass.h>         // assertion macros
+#ifdef CYGBLD_REDBOOT_LOAD_INTO_FLASH
+#include <cyg/io/flash.h>
+#include "flash_load.h"
+#endif
 
 static char usage[] = "[-r] [-v] "
 #ifdef CYGBLD_BUILD_REDBOOT_WITH_ZLIB
@@ -84,6 +88,9 @@ static char usage[] = "[-r] [-v] "
                       "[-m <varies>] "
 #if CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS > 1
                       "[-c <channel_number>] "
+#endif
+#ifdef CYGBLD_REDBOOT_LOAD_INTO_FLASH
+                      "[-f <flash_address>] "
 #endif
                       "\n        [-b <base_address>] <file_name>";
 
@@ -399,9 +406,13 @@ load_elf_image(getc_t getc, unsigned long base)
             // Copy data into memory
             while (len-- > 0) {
 #ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
-                if (!valid_address(addr)) {
+                if (!(valid_address(addr) 
+#ifdef CYGBLD_REDBOOT_LOAD_INTO_FLASH
+                    || (flash_verify_addr(addr) == FLASH_ERR_OK)
+#endif
+                    )) {
                     redboot_getc_terminate(true);
-                    diag_printf("*** Abort! Attempt to load ELF data to address: %p which is not in RAM\n", (void*)addr);
+                    diag_printf("*** Abort! Attempt to load ELF data to address: %p which is not valid\n", (void*)addr);
                     return 0;
                 }
 #endif
@@ -410,7 +421,15 @@ load_elf_image(getc_t getc, unsigned long base)
                     redboot_getc_terminate(true);
                     return 0;
                 }
-                *addr++ = ch;
+                if (valid_address(addr)) {
+                  *addr++ = ch;
+                }
+#ifdef CYGBLD_REDBOOT_LOAD_INTO_FLASH
+                else {
+                  flash_load_write(addr, ch);
+                  addr++;
+                }
+#endif
                 offset++;
                 if ((unsigned long)(addr-addr_offset) > highest_address) {
                     highest_address = (unsigned long)(addr - addr_offset);
@@ -531,11 +550,15 @@ load_srec_image(getc_t getc, unsigned long base)
                 lowest_address = (unsigned long)(addr - addr_offset);
             }
 #ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
-            if (!valid_address(addr)) {
+            if (!(valid_address(addr)
+#ifdef CYGBLD_REDBOOT_LOAD_INTO_FLASH
+                  || (flash_verify_addr(addr) == FLASH_ERR_OK)
+#endif
+                  )) {
 	      // Only if there is no need to stop the download before printing
 	      // output can we ask confirmation questions.
                 redboot_getc_terminate(true);
-		diag_printf("*** Abort! Attempt to load S-record to address: %p, which is not in RAM\n",(void*)addr);
+		diag_printf("*** Abort! Attempt to load S-record to address: %p, which is not valid\n",(void*)addr);
                 return 0;
             }
 #endif
@@ -543,7 +566,15 @@ load_srec_image(getc_t getc, unsigned long base)
             offset += count;
             while (count-- > 0) {
                 val = _hex2(getc, 1, &sum);
-                *addr++ = val;
+                if (valid_address(addr)) {
+                  *addr++ = val;
+                }
+#ifdef CYGBLD_REDBOOT_LOAD_INTO_FLASH
+                else {
+                  flash_load_write(addr, val);
+                  addr++;
+                }
+#endif
             }
             cksum = _hex2(getc, 1, 0);
             offset += 1;
@@ -599,6 +630,9 @@ load_srec_image(getc_t getc, unsigned long base)
 #ifdef CYGBLD_BUILD_REDBOOT_WITH_ZLIB
 //   -d - Decompress data [packed via 'zlib']
 #endif
+#ifdef CYGBLD_REDBOOT_LOAD_INTO_FLASH
+//   -f - specify a flash address
+#endif
 //
 void 
 do_load(int argc, char *argv[])
@@ -615,6 +649,9 @@ do_load(int argc, char *argv[])
                         // but will be cast to short
     char *hostname;
 #endif
+#ifdef CYGBLD_REDBOOT_LOAD_INTO_FLASH
+    bool flash_addr_set = false;
+#endif
     bool decompress = false;
     int chan = -1;
 #if CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS > 1
@@ -624,7 +661,7 @@ do_load(int argc, char *argv[])
     unsigned long end = 0;
     char type[4];
     char *filename = 0;
-    struct option_info opts[8];
+    struct option_info opts[9];
     connection_info_t info;
     getc_io_funcs_t *io = NULL;
     struct load_io_entry *io_tab;
@@ -667,7 +704,11 @@ do_load(int argc, char *argv[])
               (void *)&decompress, 0, "decompress");
     num_options++;
 #endif
-
+#ifdef CYGBLD_REDBOOT_LOAD_INTO_FLASH
+    init_opts(&opts[num_options], 'f', true, OPTION_ARG_TYPE_NUM,
+              (void *)&base, (bool *)&flash_addr_set, "flash address");
+    num_options++;
+#endif
     CYG_ASSERT(num_options <= NUM_ELEMS(opts), "Too many options");
     
     if (!scan_opts(argc, argv, 1, opts, num_options, 
@@ -721,7 +762,7 @@ do_load(int argc, char *argv[])
             return;
         }
     } else {
-        char *which;
+        char *which = "";
         io_tab = (struct load_io_entry *)NULL;  // Default
 #ifdef CYGPKG_REDBOOT_NETWORKING
 #ifdef CYGSEM_REDBOOT_NET_TFTP_DOWNLOAD        
@@ -752,13 +793,24 @@ do_load(int argc, char *argv[])
         diag_printf("Using default protocol (%s)\n", which);
     }
 #ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
+#ifdef  CYGBLD_REDBOOT_LOAD_INTO_FLASH
+    if (flash_addr_set && flash_verify_addr((unsigned char *)base)) {
+        if (!verify_action("Specified address (%p) is not believed to be in FLASH", (void*)base))
+          return;
+        spillover_ok = true;
+    }
+#endif
     if (base_addr_set && !valid_address((unsigned char *)base)) {
         if (!verify_action("Specified address (%p) is not believed to be in RAM", (void*)base))
             return;
         spillover_ok = true;
     }
 #endif
-    if (raw && !base_addr_set) {
+    if (raw && !(base_addr_set 
+#ifdef CYGBLD_REDBOOT_LOAD_INTO_FLASH
+                || flash_addr_set
+#endif
+        )) {
         diag_printf("Raw load requires a memory address\n");
         return;
     }
@@ -772,14 +824,27 @@ do_load(int argc, char *argv[])
     if (res < 0) {
         return;
     }
-
+#ifdef CYGBLD_REDBOOT_LOAD_INTO_FLASH
+    flash_load_start();
+#endif
     // Stream open, process the data
     if (raw) {
         unsigned char *mp = (unsigned char *)base;
         err = 0;
         while ((res = redboot_getc()) >= 0) {
 #ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
-            if (!valid_address(mp) && !spillover_ok) {
+#ifdef CYGBLD_REDBOOT_LOAD_INTO_FLASH
+            if (flash_addr_set && flash_verify_addr(mp) && !spillover_ok) {
+                // Only if there is no need to stop the download
+                // before printing output can we ask confirmation
+                // questions.
+                redboot_getc_terminate(true);
+                diag_printf("*** Abort! RAW data spills over limit of FLASH at %p\n",(void*)mp);
+                err = -1;
+                break;
+            }
+#endif
+            if (base_addr_set && !valid_address(mp) && !spillover_ok) {
                 // Only if there is no need to stop the download
                 // before printing output can we ask confirmation
                 // questions.
@@ -788,6 +853,13 @@ do_load(int argc, char *argv[])
                 err = -1;
                 break;
             }
+#endif
+#ifdef CYGBLD_REDBOOT_LOAD_INTO_FLASH
+            if (flash_addr_set) {
+              flash_load_write(mp, res);
+              mp++;
+              res++;
+            } else
 #endif
             *mp++ = res;
         }
@@ -825,6 +897,9 @@ do_load(int argc, char *argv[])
             }
         }
     }
+#ifdef CYGBLD_REDBOOT_LOAD_INTO_FLASH
+    flash_load_finish();
+#endif
 
     redboot_getc_close();  // Clean up
     return;

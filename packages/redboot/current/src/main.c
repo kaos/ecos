@@ -361,7 +361,8 @@ cyg_start(void)
         }
     }
 #endif
-
+    CYG_ASSERT(workspace_start < workspace_end, 
+               "negative workspace size");
     while (true) {
         if (prompt) {
             diag_printf("RedBoot> ");

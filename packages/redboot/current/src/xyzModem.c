@@ -319,7 +319,7 @@ xyzModem_get_hdr(void)
 int 
 xyzModem_stream_open(connection_info_t *info, int *err)
 {
-    int console_chan, stat;
+    int console_chan, stat=0;
     int retries = xyzModem_MAX_RETRIES;
     int crc_retries = xyzModem_MAX_RETRIES_WITH_CRC;
 

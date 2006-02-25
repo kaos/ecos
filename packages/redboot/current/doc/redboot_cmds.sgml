@@ -875,7 +875,7 @@ Set/change IP addresses
    ip_address [-l &lt;local_ip_address&gt;[/&lt;mask_length&gt;]] [-h &lt;server_address&gt;]
 Load a file
    load [-r] [-v] [-d] [-h &lt;host&gt;] [-m {TFTP | HTTP | {x|y}MODEM -c &lt;channel_number&gt;}]
-        [-b &lt;base_address&gt;] &lt;file_name&gt;
+        [-f &lt;flash_address&gt;] [-b &lt;base_address&gt;]  &lt;file_name&gt;
 Compare two blocks of memory
    mcmp -s &lt;location&gt; -d &lt;location&gt; -l &lt;length&gt; [-1|-2|-4]
 Fill a block of memory with a pattern
@@ -1295,6 +1295,7 @@ IP: 192.168.1.32, Default server: 192.168.1.104, DNS server IP: 192.168.1.101
 	  </group>
         </arg>  
 	<arg>-h <replaceable> server_IP_address</replaceable></arg>
+	<arg>-f <replaceable> location</replaceable></arg>
 	<arg>-b <replaceable> location</replaceable></arg>
 	<arg>-c <replaceable> channel</replaceable></arg>
         <arg><replaceable>file_name</replaceable></arg>
@@ -1335,7 +1336,7 @@ serial download method since it would interfere with the protocol.</entry>
 	    <row>
 	      <entry>-r</entry>	     
 	      <entry>Boolean</entry>
-	      <entry>Raw (or binary) data</entry>	     
+	      <entry>Raw (or binary) data. -b or -f must be used</entry>
 	      <entry><emphasis>formatted (S-records, ELF image, etc)</emphasis></entry>	     
 	    </row>
 	    <row>
@@ -1378,6 +1379,13 @@ serial download method since it would interfere with the protocol.</entry>
 	      <entry>-b <replaceable>location</replaceable></entry>	     
 	      <entry>Number</entry>
 	      <entry>Address in memory to load the data.  Formatted data streams will have
+an implied load address which this option may override.</entry>	     
+	      <entry><emphasis>Depends on data format</emphasis></entry>	     
+	    </row>
+	    <row>
+	      <entry>-f <replaceable>location</replaceable></entry>	     
+	      <entry>Number</entry>
+	      <entry>Address in flash to load the data.  Formatted data streams will have
 an implied load address which this option may override.</entry>	     
 	      <entry><emphasis>Depends on data format</emphasis></entry>	     
 	    </row>

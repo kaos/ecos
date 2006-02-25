@@ -208,7 +208,6 @@ cdl_package CYGPKG_REDBOOT {
                     than five bytes are available initially so this is the 
                     minimum."
             }
-    
             cdl_option CYGPRI_REDBOOT_ZLIB_FLASH {
                  display       "Support compression of Flash images"
                  active_if     CYGPKG_REDBOOT_FLASH
@@ -238,6 +237,14 @@ cdl_package CYGPKG_REDBOOT {
             compile -library=libextras.a xyzModem.c
         }
 
+        cdl_option CYGBLD_REDBOOT_LOAD_INTO_FLASH {
+            display       "Allow the load-command write into Flash."
+            default_value 0
+            active_if     CYGPKG_REDBOOT_FLASH     
+            compile       flash_load.c
+            description "
+                Write images direct to Flash via the load command."
+        }
         cdl_option CYGBLD_BUILD_REDBOOT_WITH_CKSUM {
             display       "Include POSIX checksum command"
             doc           ref/cksum-command.html

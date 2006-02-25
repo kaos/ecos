@@ -1,3 +1,15 @@
+2006-02-25  Oliver Munz  <munz@speag.ch>
+	    Andrew Lunn  <andrew.lunn@ascom.ch>
+	
+	* src/xyzModem.c (xyzModem_stream_open): Fix compiler warnings.
+	* src/flash_load.c (NEW): Implements access to flash
+	* src/load.c: Allow load command to load directly into flash
+	* cdl/redboot.c (CYGBLD_REDBOOT_LOAD_INTO_FLASH) Control new
+	feature, disabled by default.
+	* cdl/main.c (cyg_start): Assert check to see if we have 
+	overflowed the workspace.
+	* doc/redboot_cmds.sgml: Document new flag.
+	
 2006-02-17  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/flash.c (fis_lock & fis_unlock): Allow compilation without
