@@ -1,0 +1,120 @@
+dnl Process this file with autoconf to produce a configure script.
+dnl ====================================================================
+dnl
+dnl     configure.in
+dnl
+dnl	ecostest
+dnl
+dnl ====================================================================
+dnl ####ECOSHOSTGPLCOPYRIGHTBEGIN####
+dnl -------------------------------------------
+dnl Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+dnl
+dnl This file is part of the eCos host tools.
+dnl
+dnl This program is free software; you can redistribute it and/or modify it
+dnl under the terms of the GNU General Public License as published by the Free
+dnl Software Foundation; either version 2 of the License, or (at your option)
+dnl any later version.
+dnl
+dnl This program is distributed in the hope that it will be useful, but WITHOUT
+dnl ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+dnl FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+dnl more details.
+dnl
+dnl You should have received a copy of the GNU General Public License along with
+dnl this program; if not, write to the Free Software Foundation, Inc.,
+dnl 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+dnl
+dnl -------------------------------------------
+dnl ####ECOSHOSTGPLCOPYRIGHTEND####
+dnl ====================================================================
+dnl#####DESCRIPTIONBEGIN####
+dnl
+dnl Author(s):	bartv
+dnl Contact(s):	bartv
+dnl Date:	1999/11/09
+dnl Version:	0.01
+dnl
+dnl####DESCRIPTIONEND####
+dnl ====================================================================
+
+AC_INIT(permtest.cxx)
+
+dnl Pick up the support files from the top-level of the source tree
+AC_CONFIG_AUX_DIR(../../..)
+
+AM_INIT_AUTOMAKE(ecostest, 0.1)
+AM_MAINTAINER_MODE
+
+dnl Other standard options.
+AC_CANONICAL_HOST
+AC_PROG_CC
+AC_PROG_CXX
+AC_OBJEXT
+AC_EXEEXT
+CYG_AC_PROG_STANDARD_COMPILER_FLAGS
+
+dnl ----------------------------------------------------------------------------
+dnl Where can the Tcl library be found?
+dnl There are command-line argument --with-tcl and --with-tcl-version.
+dnl Otherwise assume that there is already a working installation
+dnl in $(PREFIX)
+CYG_AC_PATH_TCL
+
+dnl Now for the host-side infrastructure and for libcdl
+dnl The names and paths can just be hardwired, with a minimal
+dnl sanity check. Note that for the infrastructure it is
+dnl necessary to use the build tree for the include path,
+dnl since header files from various places need to be
+dnl gathered together.
+
+AC_MSG_CHECKING(for host-side infrastructure)
+cyg_ac_infra_incdir=../../../infra
+cyg_ac_infra_libdir=../../../infra
+cyg_ac_infra_libraries=cyginfra
+if test \! -d ${cyg_ac_infra_incdir} ; then
+  AC_MSG_ERROR(unable to locate the infrastructure build directory)
+fi
+AC_SUBST(cyg_ac_infra_incdir)
+AC_SUBST(cyg_ac_infra_libdir)
+AC_SUBST(cyg_ac_infra_libraries)
+AC_MSG_RESULT(-I${cyg_ac_infra_incdir} -L${cyg_ac_infra_libdir} libraries ${cyg_ac_infra_libraries})
+
+AC_MSG_CHECKING(for libcdl)
+cyg_ac_cdl_incdir=${srcdir}/../../../libcdl
+cyg_ac_cdl_libdir=../../../libcdl
+cyg_ac_cdl_libraries=cdl
+if test \! -d ${cyg_ac_cdl_incdir} ; then
+  AC_MSG_ERROR(unable to locate the libcdl source directory)
+fi
+if test \! -f ${cyg_ac_cdl_incdir}/cdl.hxx ; then
+  AC_MSG_ERROR(unable to locate the libcdl header file cdl.hxx)
+fi
+if test \! -d ${cyg_ac_cdl_libdir} ; then
+  AC_MSG_ERROR(unable to locate the libcdl build directory)
+fi
+AC_SUBST(cyg_ac_cdl_incdir)
+AC_SUBST(cyg_ac_cdl_libdir)
+AC_SUBST(cyg_ac_cdl_libraries)
+AC_MSG_RESULT(-I${cyg_ac_cdl_incdir} -L${cyg_ac_cdl_libdir} libraries ${cyg_ac_cdl_libraries})
+
+AC_MSG_CHECKING(for libutils)
+cyg_ac_utils_incdir=${srcdir}/../../Utils/common
+cyg_ac_utils_libdir=../../Utils/common
+cyg_ac_utils_libraries=utils
+if test \! -d ${cyg_ac_utils_incdir} ; then
+  AC_MSG_ERROR(unable to locate the libutils source directory)
+fi
+if test \! -f ${cyg_ac_utils_incdir}/eCosStd.h ; then
+  AC_MSG_ERROR(unable to locate the libutils header file ${cyg_ac_utils_incdir}/eCosStd.h)
+fi
+if test \! -d ${cyg_ac_utils_libdir} ; then
+  AC_MSG_ERROR(unable to locate the libutils build directory)
+fi
+AC_SUBST(cyg_ac_utils_incdir)
+AC_SUBST(cyg_ac_utils_libdir)
+AC_SUBST(cyg_ac_utils_libraries)
+AC_MSG_RESULT(-I${cyg_ac_utils_incdir} -L${cyg_ac_utils_libdir} libraries ${cyg_ac_utils_libraries})
+
+AC_OUTPUT(Makefile)
