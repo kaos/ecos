@@ -1,3 +1,7 @@
+2006-02-28  Oliver Munz <munz@speag.ch>
+
+	* include/hal_platform_setup.h: Fix the PLL multiplier settings
+	
 2006-02-25  Andrew Lunn <andrew.lunn@ascom.ch>
 
 	* misc/redboot_R[AO]M.ecm: Disable FIS and fconfig, enable

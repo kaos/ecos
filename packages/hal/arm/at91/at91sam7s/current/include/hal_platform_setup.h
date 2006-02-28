@@ -90,7 +90,7 @@ wait_pmc_sr_1:
 
         // Set the PLL multiplier and divider. 16 slow clocks go by
 	// before the LOCK bit is set. */
-        ldr     r1,=((AT91_PMC_PLLR_DIV(CYGNUM_HAL_ARM_AT91_PLL_DIVIDER))|(AT91_PMC_PLLR_PLLCOUNT(16))|(AT91_PMC_PLLR_MUL(CYGNUM_HAL_ARM_AT91_PLL_MULTIPLIER+1)))
+        ldr     r1,=((AT91_PMC_PLLR_DIV(CYGNUM_HAL_ARM_AT91_PLL_DIVIDER))|(AT91_PMC_PLLR_PLLCOUNT(16))|(AT91_PMC_PLLR_MUL(CYGNUM_HAL_ARM_AT91_PLL_MULTIPLIER-1)))
         str     r1,[r0,#AT91_PMC_PLLR]
 
         // Wait for PLL locked indication
