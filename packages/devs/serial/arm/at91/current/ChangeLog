@@ -1,3 +1,9 @@
+2006-02-28  Andrew Lunn  <andrew.lunn@ascom.ch>
+            Oliver Munz  <munz@speag.ch>
+
+	* src/at91_serial.c (at91_serial_config_port): Enable the DMA
+	if the control register exists.
+	
 2006-02-19  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/at91_serial.c (at91_serial_lookup): Enable the peripheral

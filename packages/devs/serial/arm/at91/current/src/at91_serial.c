@@ -325,6 +325,13 @@ at91_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config, boo
       AT91_US_CR_RxENAB | AT91_US_CR_TxENAB | AT91_US_CR_RSTATUS | AT91_US_CR_STTTO
     );
 
+    // Enable the DMA is the control register exists
+#ifdef AT91_US_PTCR
+    HAL_WRITE_UINT32(base + AT91_US_PTCR, 
+                     AT91_US_PTCR_RXTEN |
+                     AT91_US_PTCR_TXTEN);
+#endif
+                     
     if (new_config != &chan->config) {
         chan->config = *new_config;
     }
