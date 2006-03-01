@@ -151,7 +151,7 @@ cdl_package CYGPKG_HAL_ARM_AT91SAM7S {
         display       "Main oscillator frequency"
         flavor        data
         legal_values { 3000000 to 20000000} 
-        default_value { 20000000 }
+        default_value { 18432000 }
         description   "
             What frequency of crystal is clocking the device."
     }
@@ -160,7 +160,7 @@ cdl_package CYGPKG_HAL_ARM_AT91SAM7S {
         display       "Divider for PLL clock"
         flavor        data
         legal_values  { 0 to 255 }
-        default_value 5
+        default_value 14
         description   "
             The X-tal clock is divided by this value when generating the
             PLL clock"
@@ -170,7 +170,7 @@ cdl_package CYGPKG_HAL_ARM_AT91SAM7S {
         display       "Multiplier for PLL clock"
         flavor        data
         legal_values  { 0 to 2047 }
-        default_value 24
+        default_value 145
         description   "
            The X-tal clock is multiplied by this value when generating
            the PLL clock."

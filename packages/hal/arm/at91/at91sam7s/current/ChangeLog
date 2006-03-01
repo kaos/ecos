@@ -1,3 +1,15 @@
+2006-03-01  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/hal_arm_at91sam7s.cdl: Change the crystal frequency.  The
+	numbers printed on top of the crystal are misleading. It has a
+	18.432MHz crystal, not 20MHz. This error when combined with the
+	previous fix to the PLL made the serial baud rate wrong.  Change
+	the multiplier and divisor to achieve about the same CPU clock,
+	which should be USB compatible.
+	* src/at91sam7s_misc.c (hal_at91_us_baud): Need the same PLL fix
+	when calculating the baud rate dynamically.
+	* include/plf_io.h: Add the Programmable Clock Output registers.
+	
 2006-02-28  Oliver Munz <munz@speag.ch>
 
 	* include/hal_platform_setup.h: Fix the PLL multiplier settings

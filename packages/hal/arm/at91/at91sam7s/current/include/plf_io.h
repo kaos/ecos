@@ -124,6 +124,9 @@ extern cyg_uint32 hal_at91_us_baud(cyg_uint32 baud);
 #define AT91_PMC_MCKR_PRES_CLK_16 (4 << 2) // divide by 16
 #define AT91_PMC_MCKR_PRES_CLK_32 (5 << 2) // divide by 32
 #define AT91_PMC_MCKR_PRES_CLK_64 (6 << 2) // divide by 64
+#define AT91_PMC_PCKR0 0x40  // Programmable Clock Register 0
+#define AT91_PMC_PCKR1 0x44  // Programmable Clock Register 1
+#define AT91_PMC_PCKR2 0x48  // Programmable Clock Register 2
 #define AT91_PMC_IER  0x60 // Interrupt Enable Register
 #define AT91_PMC_IDR  0x64 // Interrupt Disable Register
 #define AT91_PMC_SR   0x68 // Status Register

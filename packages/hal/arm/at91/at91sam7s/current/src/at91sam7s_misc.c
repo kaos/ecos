@@ -166,7 +166,7 @@ hal_at91_us_baud(cyg_uint32 baud_rate)
     case AT91_PMC_MCKR_PLL_CLK:
       HAL_READ_UINT32((AT91_PMC+AT91_PMC_PLLR), pll);
       main_clock = CYGNUM_HAL_ARM_AT91_CLOCK_OSC_MAIN * 
-        (((pll & 0x7FF0000) >> 16) - 1) / (pll & 0xFF);
+        (((pll & 0x7FF0000) >> 16) + 1) / (pll & 0xFF);
       break;
   }
   
