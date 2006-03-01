@@ -1289,6 +1289,51 @@
         bufsiz     : 1
     },
 #endif
+#ifdef CYGHWR_DEVS_FLASH_AMD_S29GL128N
+    {   // AMD/SPANSION S29GL128N
+        long_device_id: true,
+        device_id  : FLASHWORD(0x227e),
+        device_id2 : FLASHWORD(0x2221),
+        device_id3 : FLASHWORD(0x2201),
+        block_size : 0x20000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 128,
+        device_size: 0x1000000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x1000000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : false,
+        banked     : false,
+        bufsiz     : 16,
+    },
+#endif
+#ifdef CYGHWR_DEVS_FLASH_AMD_S29GL256N
+    {   // AMD/SPANSION S29GL256N
+        long_device_id: true,
+        device_id  : FLASHWORD(0x227e),
+        device_id2 : FLASHWORD(0x2222),
+        device_id3 : FLASHWORD(0x2201),
+        block_size : 0x20000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 256,
+        device_size: 0x2000000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x2000000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : false,
+        banked     : false,
+        bufsiz     : 16,
+    },
+#endif
+#ifdef CYGHWR_DEVS_FLASH_AMD_S29GL512N
+    {   // AMD/SPANSION S29GL512N
+        long_device_id: true,
+        device_id  : FLASHWORD(0x227e),
+        device_id2 : FLASHWORD(0x2223),
+        device_id3 : FLASHWORD(0x2201),
+        block_size : 0x20000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 512,
+        device_size: 0x4000000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x4000000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : false,
+        banked     : false,
+        bufsiz     : 16,
+    },
+#endif
 
 #endif // 16 bit devices
 
