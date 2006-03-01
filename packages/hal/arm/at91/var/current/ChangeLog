@@ -1,3 +1,9 @@
+2006-02-28  Andrew Lunn  <andrew.lunn@ascom.ch>
+            Oliver Munz  <munz@speag.ch>
+	
+	* include/var_io.h (AT91_US_PTCR_RXTDIS): Add bit fields for the
+	USART DMA control register.
+
 2006-02-25  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/var_io.h: Added the USB device registers.

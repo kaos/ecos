@@ -150,6 +150,12 @@
 #define AT91_US_TCR 0x3c  // Transmit counter register
 #endif
 
+// PDC Control register bits
+#define AT91_US_PTCR_RXTEN  (1 << 0)
+#define AT91_US_PTCR_RXTDIS (1 << 1)
+#define AT91_US_PTCR_TXTEN  (1 << 8)
+#define AT91_US_PTCR_TXTDIS (1 << 9)
+
 // macro could be different from target to target (i.e jtst)
 #ifndef AT91_US_BAUD
 #define AT91_US_BAUD(baud) ((CYGNUM_HAL_ARM_AT91_CLOCK_SPEED/(8*(baud))+1)/2)
