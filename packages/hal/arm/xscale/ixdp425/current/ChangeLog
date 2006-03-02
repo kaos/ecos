@@ -1,3 +1,7 @@
+2006-03-01  Mark Salter  <msalter@sadr.localdomain>
+
+	* include/hal_platform_setup.h: Fix DELAY macro.
+
 2004-09-27  Mark Salter  <msalter@redhat.com>
 
 	* misc/redboot_ROMRAM.ecm: Remove CYGHWR_HAL_IXP425_PCI_NP_WORKAROUND.

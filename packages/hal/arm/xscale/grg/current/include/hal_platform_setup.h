@@ -93,11 +93,9 @@
 
 // Delay a bit
 .macro DELAY cycles, reg0
-#if 0
     ldr     \reg0, =\cycles
     subs    \reg0, \reg0, #1
     subne   pc,  pc, #0xc
-#endif
 .endm
 
 // ------------------------------------------------------------------------

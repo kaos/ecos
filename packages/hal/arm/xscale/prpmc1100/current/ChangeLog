@@ -1,3 +1,7 @@
+2006-03-01  Mark Salter  <msalter@sadr.localdomain>
+
+	* include/hal_platform_setup.h: Fix DELAY macro.
+
 2004-09-02  Mark Salter  <msalter@redhat.com>
 
 	* misc/redboot_RAM.ecm: Remove CYGOPT_DEVS_FLASH_STRATA_NOT_IN_RAM.
