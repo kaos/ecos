@@ -48,11 +48,17 @@
 #define NETCONN_COPY   0x01
 
 enum netconn_type {
+#if LWIP_TCP
   NETCONN_TCP,
+#endif
+#if LWIP_UDP
   NETCONN_UDP,
   NETCONN_UDPLITE,
   NETCONN_UDPNOCHKSUM,
+#endif
+#if LWIP_RAW
   NETCONN_RAW
+#endif
 };
 
 enum netconn_state {

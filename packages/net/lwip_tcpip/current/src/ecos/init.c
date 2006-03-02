@@ -174,9 +174,9 @@ lwip_set_addr(struct netif *netif)
 {
 	struct ip_addr ipaddr, netmask, gw;
 
-	IP_ADDR(&gw, CYGPKG_LWIP_SERV_ADDR);
-	IP_ADDR(&ipaddr, CYGPKG_LWIP_MY_ADDR);
-	IP_ADDR(&netmask, CYGPKG_LWIP_NETMASK);
+	IP_ADDR(&gw, CYGDAT_LWIP_SERV_ADDR);
+	IP_ADDR(&ipaddr, CYGDAT_LWIP_MY_ADDR);
+	IP_ADDR(&netmask, CYGDAT_LWIP_NETMASK);
 	netif_set_addr(netif, &ipaddr, &netmask, &gw);
 	netif->next = netif_list;
 	netif_list = netif;
@@ -253,7 +253,7 @@ ecosglue_init(void)
 {
   cyg_semaphore_init(&delivery, 0);
   init_hw_drivers();
-  sys_thread_new(input_thread, (void*)0, CYGPKG_LWIP_ETH_THREAD_PRIORITY);
+  sys_thread_new(input_thread, (void*)0, CYGNUM_LWIP_ETH_THREAD_PRIORITY);
   etharp_init();
   sys_timeout(ARP_TMR_INTERVAL, (sys_timeout_handler) arp_timer, NULL);
 }

@@ -1,3 +1,31 @@
+2006-03-02  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/lwip_net.cdl: Add the interfaces CYGPKG_NET_STACK,
+	CYGPKG_NET_STACK_INET and CYGPKG_NET_STACK_INET6 and say that we
+	implement a network stack and an IPv4 stack. Without these interfaces
+	some of the Ethernet device drivers won't be compiled.
+
+2006-02-24  Uwe Kindler <uwe_kindler@web.de>
+
+	* cdl/lwip_net.cdl: Changed names of configuration options
+	according to eCos configuration option naming convention in 
+	component writers guide.
+	* include/lwipopts.h: Changed mapping of eCos configuration
+	parameters to lwip configuration parameters. The mapping
+	was wrong because it expected a disabled eCos configuration
+	option is defined as 0 but a disabled eCos configuration option
+	is not defined.
+	* include/lwip/api.h Enumeration values of netconn_type are
+	defined conditional now to avoid compiler warnings if these
+	values are not evaluated in a switch statement.
+	* src/api/api_lib.c Compilation of code in several switch 
+	statements is now conditional depending on configured 
+	functionality.
+	* src/api/sockets.c Compilation of some code is now conditional 
+	depending on configured functionality.
+	* src/ecos/init.c Changed initialisation values to match the
+	new configuration option names.
+
 2005-10-07  Uwe Kindler <uwe_kindler@web.de>
 
 	* src/core/tcp_in.c: pbuf_free() assert triggered by 

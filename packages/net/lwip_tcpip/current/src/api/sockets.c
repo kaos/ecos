@@ -460,7 +460,6 @@ int
 lwip_send(int s, void *data, int size, unsigned int flags)
 {
   struct lwip_socket *sock;
-  struct netbuf *buf;
   err_t err;
 
   LWIP_DEBUGF(SOCKETS_DEBUG, ("lwip_send(%d, data=%p, size=%d, flags=0x%x)\n", s, data, size, flags));
@@ -472,10 +471,15 @@ lwip_send(int s, void *data, int size, unsigned int flags)
   }
 
   switch (netconn_type(sock->conn)) {
+#if LWIP_RAW
   case NETCONN_RAW:
+#endif
+#if LWIP_UDP
   case NETCONN_UDP:
   case NETCONN_UDPLITE:
   case NETCONN_UDPNOCHKSUM:
+  {
+    struct netbuf *buf;
     /* create a buffer */
     buf = netbuf_new();
 
@@ -494,10 +498,14 @@ lwip_send(int s, void *data, int size, unsigned int flags)
 
     /* deallocated the buffer */
     netbuf_delete(buf);
+  }
     break;
+#endif
+#if LWIP_TCP
   case NETCONN_TCP:
     err = netconn_write(sock->conn, data, size, NETCONN_COPY);
     break;
+#endif
   default:
     err = ERR_ARG;
     break;
@@ -559,18 +567,24 @@ lwip_socket(int domain, int type, int protocol)
 
   /* create a netconn */
   switch (type) {
+#if LWIP_RAW
   case SOCK_RAW:
     conn = netconn_new_with_proto_and_callback(NETCONN_RAW, protocol, event_callback);
     LWIP_DEBUGF(SOCKETS_DEBUG, ("lwip_socket(%s, SOCK_RAW, %d) = ", domain == PF_INET ? "PF_INET" : "UNKNOWN", protocol));
     break;
+#endif
+#if LWIP_UDP
   case SOCK_DGRAM:
     conn = netconn_new_with_callback(NETCONN_UDP, event_callback);
     LWIP_DEBUGF(SOCKETS_DEBUG, ("lwip_socket(%s, SOCK_DGRAM, %d) = ", domain == PF_INET ? "PF_INET" : "UNKNOWN", protocol));
     break;
+#endif
+#if LWIP_TCP
   case SOCK_STREAM:
     conn = netconn_new_with_callback(NETCONN_TCP, event_callback);
     LWIP_DEBUGF(SOCKETS_DEBUG, ("lwip_socket(%s, SOCK_STREAM, %d) = ", domain == PF_INET ? "PF_INET" : "UNKNOWN", protocol));
     break;
+#endif
   default:
     LWIP_DEBUGF(SOCKETS_DEBUG, ("lwip_socket(%d, %d/UNKNOWN, %d) = -1\n", domain, type, protocol));
     set_errno(EINVAL);
@@ -1091,17 +1105,23 @@ int lwip_getsockopt (int s, int level, int optname, void *optval, socklen_t *opt
 
     case SO_TYPE:
       switch (sock->conn->type) {
+#if LWIP_RAW
       case NETCONN_RAW:
         *(int*)optval = SOCK_RAW;
         break;
+#endif
+#if LWIP_TCP
       case NETCONN_TCP:
         *(int*)optval = SOCK_STREAM;
         break;
+#endif
+#if LWIP_UDP
       case NETCONN_UDP:
       case NETCONN_UDPLITE:
       case NETCONN_UDPNOCHKSUM:
         *(int*)optval = SOCK_DGRAM;
         break;
+#endif
       default: /* unrecognized socket type */
         *(int*)optval = sock->conn->type;
         LWIP_DEBUGF(SOCKETS_DEBUG, ("lwip_getsockopt(%d, SOL_SOCKET, SO_TYPE): unrecognized socket type %d\n", s, *(int *)optval));

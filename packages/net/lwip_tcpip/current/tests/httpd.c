@@ -250,7 +250,7 @@ tmain(cyg_addrword_t p)
   sys_thread_new(httpd_init, (void*)"httpd",7);  
 }
 
-#define STACK_SIZE 0x1000
+#define STACK_SIZE 0x4000
 static char stack[STACK_SIZE];
 static cyg_thread thread_data;
 static cyg_handle_t thread_handle;

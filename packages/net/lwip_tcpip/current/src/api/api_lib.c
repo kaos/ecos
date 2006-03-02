@@ -321,9 +321,12 @@ netconn_peer(struct netconn *conn, struct ip_addr *addr,
        u16_t *port)
 {
   switch (conn->type) {
+#if LWIP_RAW
   case NETCONN_RAW:
     /* return an error as connecting is only a helper for upper layers */
     return ERR_CONN;
+#endif
+#if LWIP_UDP
   case NETCONN_UDPLITE:
   case NETCONN_UDPNOCHKSUM:
   case NETCONN_UDP:
@@ -333,12 +336,15 @@ netconn_peer(struct netconn *conn, struct ip_addr *addr,
     *addr = (conn->pcb.udp->remote_ip);
     *port = conn->pcb.udp->remote_port;
     break;
+#endif
+#if LWIP_TCP
   case NETCONN_TCP:
     if (conn->pcb.tcp == NULL)
       return ERR_CONN;
     *addr = (conn->pcb.tcp->remote_ip);
     *port = conn->pcb.tcp->remote_port;
     break;
+#endif
   }
   return (conn->err = ERR_OK);
 }
@@ -348,20 +354,26 @@ netconn_addr(struct netconn *conn, struct ip_addr **addr,
        u16_t *port)
 {
   switch (conn->type) {
+#if LWIP_RAW
   case NETCONN_RAW:
     *addr = &(conn->pcb.raw->local_ip);
     *port = conn->pcb.raw->protocol;
     break;
+#endif
+#if LWIP_UDP
   case NETCONN_UDPLITE:
   case NETCONN_UDPNOCHKSUM:
   case NETCONN_UDP:
     *addr = &(conn->pcb.udp->local_ip);
     *port = conn->pcb.udp->local_port;
     break;
+#endif
+#if LWIP_TCP
   case NETCONN_TCP:
     *addr = &(conn->pcb.tcp->local_ip);
     *port = conn->pcb.tcp->local_port;
     break;
+#endif
   }
   return (conn->err = ERR_OK);
 }
