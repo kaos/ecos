@@ -1,3 +1,8 @@
+2006-02-23 Thomas Siegmund  <thomas.siegmund@hach-lange.de>
+
+	* include/usb.h: changed position of __attribute__((packed)) to be
+	 compatible with more recent versions of GCC.
+
 2001-01-25  Bart Veer  <bartv@redhat.com>
 
 	* cdl/usb.cdl:

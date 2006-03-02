@@ -69,7 +69,7 @@ typedef struct usb_devreq {
     unsigned char       index_hi;
     unsigned char       length_lo;
     unsigned char       length_hi;
-} usb_devreq __attribute__((packed));
+} __attribute__((packed)) usb_devreq; 
 
 // Encoding of the request_type    
 #define USB_DEVREQ_DIRECTION_OUT        0
@@ -145,7 +145,7 @@ typedef struct usb_device_descriptor {
     unsigned char       product_str;
     unsigned char       serial_number_str;
     unsigned char       number_configurations;
-} usb_device_descriptor __attribute__((packed));
+} __attribute__((packed)) usb_device_descriptor;
 
 #define USB_DEVICE_DESCRIPTOR_LENGTH             18
 #define USB_DEVICE_DESCRIPTOR_TYPE               USB_DEVREQ_DESCRIPTOR_TYPE_DEVICE
@@ -169,7 +169,7 @@ typedef struct usb_configuration_descriptor {
     unsigned char       configuration_str;
     unsigned char       attributes;
     unsigned char       max_power;
-} usb_configuration_descriptor __attribute__((packed));
+} __attribute__((packed)) usb_configuration_descriptor;
 
 #define USB_CONFIGURATION_DESCRIPTOR_LENGTH     9
 #define USB_CONFIGURATION_DESCRIPTOR_TYPE       USB_DEVREQ_DESCRIPTOR_TYPE_CONFIGURATION
@@ -187,7 +187,7 @@ typedef struct usb_interface_descriptor {
     unsigned char       interface_subclass;
     unsigned char       interface_protocol;
     unsigned char       interface_str;
-} usb_interface_descriptor __attribute__((packed));        
+} __attribute__((packed)) usb_interface_descriptor;        
 
 #define USB_INTERFACE_DESCRIPTOR_LENGTH          9
 #define USB_INTERFACE_DESCRIPTOR_TYPE            USB_DEVREQ_DESCRIPTOR_TYPE_INTERFACE
@@ -203,7 +203,7 @@ typedef struct usb_endpoint_descriptor {
     unsigned char       max_packet_lo;
     unsigned char       max_packet_hi;
     unsigned char       interval;
-} usb_endpoint_descriptor;
+} __attribute__((packed)) usb_endpoint_descriptor;
 
 #define USB_ENDPOINT_DESCRIPTOR_LENGTH           7
 #define USB_ENDPOINT_DESCRIPTOR_TYPE             USB_DEVREQ_DESCRIPTOR_TYPE_ENDPOINT
