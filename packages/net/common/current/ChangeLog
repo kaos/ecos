@@ -1,3 +1,13 @@
+2006-02-27	Jay Foster   <jay@systech.com>
+
+	* src/dhcp_prot.c: Updated set_fixed_tag(), set_variable_tag(),
+	and unset_tag() to handle TAG_PAD bytes properly.  Also updated
+	set_fixed_tag() and set_variable_tag() to permit setting options that
+	already exist, but are a different size, rather than asserting.
+	This corrects problems interacting with mis-behaving DHCP servers
+	that reply with modified versions of a DHCP option sent by the eCos
+	client, such as TAG_HOST_NAME.
+
 2005-10-24  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/network.h: Include <string.h> to stop warnings.

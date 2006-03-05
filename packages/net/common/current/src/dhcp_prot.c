@@ -90,6 +90,9 @@ void dhcp_set_hostname(char *hostname)
 }
 #endif
 
+/* Forward reference prototypes. */
+static int unset_tag( struct bootp *ppkt, unsigned char tag );
+
 // ------------------------------------------------------------------------
 // Returns a pointer to the end of dhcp message (or NULL if invalid)
 // meaning the address of the byte *after* the TAG_END token in the vendor
@@ -183,13 +186,41 @@ set_fixed_tag( struct bootp *ppkt,
         }
         if (*op == tag)                 // Found it...
             break;
-        op += *(op+1)+2;
+        if ( *op == TAG_PAD ) {
+            op++;
+        } else {
+          op += *(op+1)+2;
+        }
     }
     
     if (*op == tag) { // Found it...
+        /* There are three possibilities:
+         * 1) *(op+1) == len
+         * 2) *(op+1) > len
+         * 3) *(op+1) < len
+         * For 1, just overwrite the existing option data.
+         * For 2, overwrite the existing option data and pullup the
+         *        remaining option data (if any).
+         * For 3, pullup any remaining option data to remove the option
+         *        and then add the option to the end.
+         * For simplicity, for case 2 and 3, we just call unset_tag()
+         * and re-add the option to the end.
+         */
         if ( *(op+1) != len ) {
-            CYG_FAIL( "Wrong size in set_fixed_tag" );
-            return false;           // wrong size
+            /* Remove existing option entry. */
+            unset_tag(ppkt, tag);
+            /* Adjust the op pointer to re-add at the end. */
+            op = scan_dhcp_size(ppkt);
+            CYG_ASSERT(op!=NULL, "Invalid options size in set_fixed_tag" );
+            op--;
+            CYG_ASSERT(*op==TAG_END, "Missing TAG_END in set_fixed_tag");
+            if ( op + len + 2 > &ppkt->bp_vend[BP_VEND_LEN-1] ) {
+                CYG_FAIL( "Oversize DHCP packet in set_fixed_tag replace" );
+                return false;
+            }
+            *op = tag;
+            *(op+1) = len;
+            *(op + len + 2) = TAG_END;
         }
     }
     else { // overwrite the end tag and install a new one
@@ -210,7 +241,6 @@ set_fixed_tag( struct bootp *ppkt,
     return true;
 }
 
-// Note that this does not permit changing the size of an extant tag.
 static int
 set_variable_tag( struct bootp *ppkt,
                unsigned char tag,
@@ -228,13 +258,41 @@ set_variable_tag( struct bootp *ppkt,
         }
         if (*op == tag)                 // Found it...
             break;
-        op += *(op+1)+2;
+        if ( *op == TAG_PAD ) {
+            op++;
+        } else {
+          op += *(op+1)+2;
+        }
     }
     
     if (*op == tag) { // Found it...
+        /* There are three possibilities:
+         * 1) *(op+1) == len
+         * 2) *(op+1) > len
+         * 3) *(op+1) < len
+         * For 1, just overwrite the existing option data.
+         * For 2, overwrite the existing option data and pullup the
+         *        remaining option data (if any).
+         * For 3, pullup any remaining option data to remove the option
+         *        and then add the option to the end.
+         * For simplicity, for case 2 and 3, we just call unset_tag()
+         * and re-add the option to the end.
+         */
         if ( *(op+1) != len ) {
-            CYG_FAIL( "Wrong size in set_variable_tag" );
-            return false;           // wrong size
+            /* Remove existing option entry. */
+            unset_tag(ppkt, tag);
+            /* Adjust the op pointer to re-add at the end. */
+            op = scan_dhcp_size(ppkt);
+            CYG_ASSERT(op!=NULL, "Invalid options size in set_variable_tag" );
+            op--;
+            CYG_ASSERT(*op==TAG_END, "Missing TAG_END in set_variable_tag");
+            if ( op + len + 2 > &ppkt->bp_vend[BP_VEND_LEN-1] ) {
+                CYG_FAIL( "Oversize DHCP packet in set_variable_tag replace" );
+                return false;
+            }
+            *op = tag;
+            *(op+1) = len;
+            *(op + len + 2) = TAG_END;
         }
     }
     else { // overwrite the end tag and install a new one
@@ -272,7 +330,11 @@ unset_tag( struct bootp *ppkt,
             killp = op;                 // item to kill
             nextp = op + *(op+1)+2;     // next item address
         }
-        op += *(op+1)+2;                // scan to the end
+        if ( *op == TAG_PAD ) {
+            op++;
+        } else {
+          op += *(op+1)+2;
+        }
     }
 
     if ( !killp )
