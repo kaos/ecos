@@ -111,9 +111,11 @@ usbs_devtab_cwrite(cyg_io_handle_t handle, const void* buf, cyg_uint32* size)
     (*endpoint->start_tx_fn)(endpoint);
     
     cyg_drv_mutex_lock(&wait.lock);
+    cyg_drv_dsr_lock();
     while (!wait.completed) {
         cyg_drv_cond_wait(&wait.signal);
     }
+    cyg_drv_dsr_unlock();
     cyg_drv_mutex_unlock(&wait.lock);
     if (wait.result < 0) {
         result = wait.result;
@@ -155,9 +157,11 @@ usbs_devtab_cread(cyg_io_handle_t handle, void* buf, cyg_uint32* size)
     endpoint->complete_data     = (void*) &wait;
     (*endpoint->start_rx_fn)(endpoint);
     cyg_drv_mutex_lock(&wait.lock);
+    cyg_drv_dsr_lock();
     while (!wait.completed) {
         cyg_drv_cond_wait(&wait.signal);
     }
+    cyg_drv_dsr_unlock();
     cyg_drv_mutex_unlock(&wait.lock);
     if (wait.result < 0) {
         result = wait.result;

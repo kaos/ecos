@@ -1,3 +1,8 @@
+2006-03-10  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/usbs.c (usbs_devtab_cwrite, usbs_devtab_cwrite): add
+	DSR locking
+
 2005-06-26  Bart Veer  <bartv@ecoscentric.com>
 
 	* host/usbhost.c, host/configure.in: cope with incompatible
