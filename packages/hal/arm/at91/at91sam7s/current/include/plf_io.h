@@ -63,6 +63,12 @@
 #define AT91_USART0 0xFFFC0000
 #define AT91_USART1 0xFFFC4000
 
+// Define USART2 to be the debug UART. It is similar enough to a USART
+// that both the hal_diag and interrupt driven driver will work.
+// However trying to change parity, start/stop bits etc will not work.
+#define CYGNUM_HAL_INTERRUPT_USART2 CYGNUM_HAL_INTERRUPT_DBG 
+#define AT91_USART2 AT91_DBG 
+
 #ifndef __ASSEMBLER__
 #ifdef CYGBLD_HAL_ARM_AT91_BAUD_DYNAMIC
 extern cyg_uint32 hal_at91_us_baud(cyg_uint32 baud);

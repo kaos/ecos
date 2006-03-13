@@ -1,3 +1,17 @@
+2006-03-10  Oliver Munz  <oli@snr.ch>
+
+	* hal_arm_at91sam7s.cdl: Change the PLL-defaults so that 96MHz is
+	generated so that the USB does work.
+	
+2006-03-10  Andrew Lunn  <andrew.lunn@ascom.ch>
+            Oliver Munz  <munz@speag.ch>
+	
+	* cdl/hal_arm_at91sam7s.cdl: Set the debug UART as the default
+	channel and fix some dodge spelling.
+	* src/at91sam7s_misc.c (hal_plf_hardware_init): Enable the Debug UART
+	pins for output and control by the device.
+	* include/plf_io.h: Define USART2 to be the debug UART.
+	
 2006-03-01  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/hal_arm_at91sam7s.cdl: Change the crystal frequency.  The

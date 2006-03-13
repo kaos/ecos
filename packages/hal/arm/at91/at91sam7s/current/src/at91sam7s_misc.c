@@ -94,11 +94,12 @@ void hal_plf_hardware_init (void)
 {
   /* Enable the Serial devices to driver the serial port pins */
   HAL_WRITE_UINT32(AT91_PIO+AT91_PIO_PDR, 
-                   AT91_PIO_PSR_RXD0 | AT91_PIO_PSR_TXD0);
+                   AT91_PIO_PSR_RXD0 | AT91_PIO_PSR_TXD0 | AT91_PIO_PSR_DTXD);
 
   /* Set the serial port pins to PIOA */
   HAL_WRITE_UINT32(AT91_PIO+AT91_PIO_ASR,
-                   AT91_PIO_PSR_RXD0 | AT91_PIO_PSR_TXD0);
+                   AT91_PIO_PSR_RXD0 | AT91_PIO_PSR_TXD0 |
+                   AT91_PIO_PSR_DRXD | AT91_PIO_PSR_DTXD);
 
 #if !defined(CYGHWR_HAL_ARM_AT91SAM7S_at91sam7s32)
   /* Enable the Serial devices to driver the serial port pins */
@@ -120,8 +121,7 @@ void hal_plf_hardware_init (void)
   /* Enable peripheral clocks for USART 0 and 1 if they are to be used */
   HAL_WRITE_UINT32(AT91_PMC+AT91_PMC_PCER, 
                    AT91_PMC_PCER_US0 |
-                   AT91_PMC_PCER_US1 |
-                   CYGNUM_HAL_INTERRUPT_SYS);
+                   AT91_PMC_PCER_US1);
 #endif
 
 #ifdef CYGBLD_HAL_ARM_AT91_TIMER_TC
