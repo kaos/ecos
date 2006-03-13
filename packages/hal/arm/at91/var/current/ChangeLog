@@ -1,3 +1,8 @@
+2006-03-10  Oliver Munz  <munz@speag.ch>
+
+	* src/hal_diag.c (cyg_hal_plf_serial_isr): Change the #ifdefs to
+	cleanly match the CDL.
+
 2006-02-28  Andrew Lunn  <andrew.lunn@ascom.ch>
             Oliver Munz  <munz@speag.ch>
 	

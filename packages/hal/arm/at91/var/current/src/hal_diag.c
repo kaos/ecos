@@ -269,11 +269,15 @@ cyg_hal_plf_serial_isr(void *__ch_data, int* __ctrlc,
     return res;
 }
 
-static channel_data_t at91_ser_channels[3] = {
+static channel_data_t at91_ser_channels[CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS] = {
+#if CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS > 0
     { (cyg_uint8*)AT91_USART0, 1000, CYGNUM_HAL_INTERRUPT_USART0, CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD},
+#if CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS > 1
     { (cyg_uint8*)AT91_USART1, 1000, CYGNUM_HAL_INTERRUPT_USART1, CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD},
-#ifdef AT91_USART2
+#if CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS > 2
     { (cyg_uint8*)AT91_USART2, 1000, CYGNUM_HAL_INTERRUPT_USART2, CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD}
+#endif
+#endif
 #endif
 };
 
@@ -286,16 +290,19 @@ cyg_hal_plf_serial_init(void)
     cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
 
     // Init channels
+#if CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS > 0
     cyg_hal_plf_serial_init_channel(&at91_ser_channels[0]);
 #if CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS > 1
     cyg_hal_plf_serial_init_channel(&at91_ser_channels[1]);
-#endif
 #if CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS > 2
     cyg_hal_plf_serial_init_channel(&at91_ser_channels[2]);
+#endif
+#endif
 #endif
     // Setup procs in the vector table
 
     // Set channel 0
+#if CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS > 0
     CYGACC_CALL_IF_SET_CONSOLE_COMM(0);
     comm = CYGACC_CALL_IF_CONSOLE_PROCS();
     CYGACC_COMM_IF_CH_DATA_SET(*comm, &at91_ser_channels[0]);
@@ -319,7 +326,7 @@ cyg_hal_plf_serial_init(void)
     CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_plf_serial_control);
     CYGACC_COMM_IF_DBG_ISR_SET(*comm, cyg_hal_plf_serial_isr);
     CYGACC_COMM_IF_GETC_TIMEOUT_SET(*comm, cyg_hal_plf_serial_getc_timeout);
-#endif
+
 #if CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS > 2    
     CYGACC_CALL_IF_SET_CONSOLE_COMM(2);
     comm = CYGACC_CALL_IF_CONSOLE_PROCS();
@@ -331,6 +338,8 @@ cyg_hal_plf_serial_init(void)
     CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_plf_serial_control);
     CYGACC_COMM_IF_DBG_ISR_SET(*comm, cyg_hal_plf_serial_isr);
     CYGACC_COMM_IF_GETC_TIMEOUT_SET(*comm, cyg_hal_plf_serial_getc_timeout);
+#endif
+#endif
 #endif
 
     // Restore original console
