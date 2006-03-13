@@ -1,3 +1,33 @@
+2006-02-15  Uwe Kindler  <uwe_kindler@web.de>
+
+	* cdl/can_mcf52xx.cdl Added two interfaces
+	CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID and
+	CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_EXT_CAN_ID.
+	The number of standard and extended message boxes is now
+	configurable:
+	CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_STD_MBOXES
+	CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_EXT_MBOXES
+	Channged default TX buffer to 15.
+
+	* src/can_mcf52xx.c Added initialisation macro for second
+	FlexCAN modul. Driver partly rewritten - support of up to
+	15 message buffers when reception of all CAN frames is
+	configured - improves performance when "bursts" of CAN
+	messages arrive. Changed message buffer configuration -
+	only the config key CYG_IO_SET_CONFIG_CAN_MSGBUF is
+	supported now. The exact configuration option is defined
+	in new data field cyg_can_msgbuf_cfg_id in cyg_can_msgbuf_cfg
+	structure.
+
+	* tests/flexcan_filter.c
+	* tests/flexcan_wake.c
+	* tests/flexcan_remote.c
+	* tests/flexcan_load.c
+	Changed message buffer configuration to support of new
+	config key CYG_IO_SET_CONFIG_CAN_MSGBUF. Removed baudrate
+	runtime configuration of 250 kBaud - now default
+	value is used.
+
 2005-09-20  Uwe Kindler  <uwe_kindler@web.de>
 
 	* src/can_mcf52xx.c Only support events of tx message buffers

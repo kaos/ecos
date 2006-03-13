@@ -1,3 +1,9 @@
+2006-02-15  Uwe Kindler  <uwe_kindler@web.de>
+
+    * include/can_io.h Added message buffer configuration identifier:
+    CYGNUM_CAN_MSGBUF_RESET_ALL, CYGNUM_CAN_MSGBUF_RX_FILTER_ALL ...
+    Added cfg_id field to cyg_can_msgbuf_cfg data structure.
+
 2005-09-11  Uwe Kindler  <uwe_kindler@web.de>
 
 	* include/can_io.h Added support for get_config to CAN_LOWLEVEL_FUNS

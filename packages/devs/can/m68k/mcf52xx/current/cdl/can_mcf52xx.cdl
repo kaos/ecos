@@ -64,6 +64,22 @@ cdl_package CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN {
         puts $::cdl_system_header "/*****  CAN driver proc output end  *****/"
     }
     
+    cdl_interface CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID {
+        display "11 Bit standard ID support"
+        flavor bool
+        description "
+               This interface is implemented if support for CAN
+               messages with 11 Bit standard CAN ID is required."
+    }
+
+    cdl_interface CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_EXT_CAN_ID {
+        display "29 Bit extended ID support"
+        flavor bool
+        description "
+               This interface is implemented if support for CAN
+               messages with 29 Bit standard CAN ID is required."
+    }
+
     # Support up to two on-chip FlexCAN modules. The number varies between
     # processor variants
     for { set ::flexcan 0 } { $::flexcan < 2 } { incr ::flexcan } {
@@ -110,8 +126,8 @@ cdl_package CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN {
             cdl_option CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_QUEUESIZE_TX {
                 display     "Size of TX Queue for the FlexCAN [set ::flexcan] driver"
                 flavor      data
-                default_value   32
-                legal_values    16 to 512
+                default_value   64
+                legal_values    16 to 1024
                 description "
                     The CAN device driver will run in interrupt mode and will
                     perform buffering of outgoing data. This option controls the number
@@ -121,50 +137,12 @@ cdl_package CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN {
             cdl_option CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_QUEUESIZE_RX {
                 display     "Size of RX Queue for the FlexCAN [set ::flexcan] driver"
                 flavor      data
-                default_value   32
-                legal_values    16 to 512
+                default_value   128
+                legal_values    16 to 1024
                 description "
                     The CAN device driver will run in interrupt mode and will
                     perform buffering of incoming data. This option controls the number
                     of CAN events the RX queue can store."
-            }
-            
-            cdl_option CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_RXMASK_GLOBAL {
-                display     "Receive mask for message buffers 0 - 13"
-                flavor      data
-                default_value   0x1FFFFFFF
-                description "
-                    The global RX-mask is composed of 4 bytes. The mask bits are
-                    applied to all Rx-Identifiers excluding Rx-buffers 14-15, that 
-                    have their specific Rx-mask. (0 corresponding incoming ID bit is 
-                    \"don’t care\". 1 corresponding ID bit is checked against the incoming 
-                    ID bit, to see if a match exists). By default the message buffers
-                    should only receive messages that exactly match the configured
-                    message buffer CAN identifier - that means alle bits are 1."
-            }
-            
-            cdl_option CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_RXMASK_14 {
-                display     "Receive mask for message buffer 14"
-                flavor      data
-                default_value   0x0
-                description "
-                    The RX-mask for message buffer 14 is composed of 4 bytes. The mask
-                    bits are applied to message buffer 14. (0 corresponding incoming ID 
-                    bit is \"don’t care\". 1 corresponding ID bit is checked against the 
-                    incoming ID bit, to see if a match exists). Message buffer 14 is
-                    the receive message buffer and should receive all available CAN
-                    messages - all bits are 0."
-            }
-            
-            cdl_option CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_RXMASK_15 {
-                display     "Receive mask for message buffer 15"
-                flavor      data
-                default_value   0x0
-                description "
-                    The RX-mask for message buffer 15 is composed of 4 bytes. The mask
-                    bits are applied to message buffer 15. (0 corresponding incoming ID 
-                    bit is \"don’t care\". 1 corresponding ID bit is checked against the 
-                    incoming ID bit, to see if a match exists)."
             }
             
             cdl_option CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN[set ::flexcan]_WAKEINT {
@@ -200,37 +178,53 @@ cdl_package CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN {
                     Interrupt priority for bus off interrupt."
             }
             
-            cdl_option CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_DEFAULT_RX_MBOX_EXT {
-                display "Default RX buffer for extended frames"
-                flavor  data
-                calculated    15
-                legal_values  0 to 15
-                description "
-                    By default one message buffer will be used for reception of
-                    all CAN messages with extended identifier. This option selects one of the 
-                    16 message buffers for reception."
-            }
-            
-            cdl_option CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_DEFAULT_RX_MBOX_STD {
-                display "Default RX buffer for standard frames"
-                flavor  data
-                calculated    14
-                legal_values  0 to 15
-                description "
-                    By default one message buffer will be used for reception of
-                    all CAN messages with standard identifier. This option selects one of 
-                    the 16 message buffers for reception."
-            }
-            
             cdl_option CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_DEFAULT_TX_MBOX {
                 display "Default TX buffer"
                 flavor  data
-                calculated    13
-                legal_values  0 to 15
+                calculated    15
                 description "
                     By default one message buffer will be used for message transmission.
                     This option selects one of the 16 FlexCAN message buffers for
                     transmission."
+            }
+            
+            cdl_option CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_STD_MBOXES {
+                display "11 Bit standard ID msg. buffers"
+                flavor  booldata
+                implements CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID
+                default_value 15
+                legal_values  0 to 15
+                description "
+                    The FlexCAN module contains 16 message buffers. One message buffer
+                    is reserved for message transmission. The remaining 15 buffers are
+                    available for reception of messages. This configuration option
+                    defines the number of message boxes for reception of CAN messages
+                    with standard identifier. This configuration option does not matter
+                    when you configure message filters at runtime. Only if the FlexCAN
+                    modul is configured to receive all available standard CAN identifiers
+                    (0 - 0x7FF), then this configuration option is important. If you get
+                    RX overrun events, you should raise the number of message boxes or
+                    lower the CAN baud rate."
+            }
+
+            cdl_option CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_EXT_MBOXES {
+                display "29 Bit extended ID msg. buffers"
+                flavor  booldata
+                requires ((CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_STD_MBOXES + CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_EXT_MBOXES) <= 15)
+                implements CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_EXT_CAN_ID
+                default_value 0
+                legal_values  0 to 15
+                description "
+                    The FlexCAN module contain 16 message buffers. One message buffer
+                    is reserved for message transmission. The remaining 15 buffers are
+                    available for reception of messages. This configuration option
+                    defines the number of message boxes for reception of CAN messages
+                    with extended identifier. This configuration option does not matter
+                    when you configure message filters at runtime. Only if the FlexCAN
+                    modul is configured to receive all available standard CAN identifiers
+                    (0 - 0x7FF), then this configuration option is important. If you get
+                    RX overrun events, you should raise the number of message boxes or
+                    lower the CAN baud rate."
             }
             
             cdl_component CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_MBOXCFG {

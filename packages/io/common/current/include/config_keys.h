@@ -143,10 +143,9 @@
 #define CYG_IO_SET_CONFIG_CAN_OUTPUT_FLUSH          0x0883
 #define CYG_IO_SET_CONFIG_CAN_INPUT_FLUSH           0x0884
 #define CYG_IO_SET_CONFIG_CAN_TIMEOUT               0x0885
-#define CYG_IO_SET_CONFIG_CAN_REMOTE_BUF            0x0886
+#define CYG_IO_SET_CONFIG_CAN_MSGBUF                0x0886
 #define CYG_IO_SET_CONFIG_CAN_MODE                  0x0887
-#define CYG_IO_SET_CONFIG_CAN_FILTER_ALL            0x0888
-#define CYG_IO_SET_CONFIG_CAN_FILTER_MSG            0x0889
+#define CYG_IO_SET_CONFIG_CAN_ABORT                 0x0888
 
 
 

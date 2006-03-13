@@ -163,6 +163,12 @@
 #define FLEXCAN_BUSOFF_EVENT                    17
 #define FLEXCAN_WAKE_EVENT                      18
 
+//
+// Acceptance mask
+//
+#define FLEXCAN_ACCEPTANCE_MASK_RX_ALL          0x00       // receive all messages - mbox ID does not matter
+#define FLEXCAN_ACCEPTANCE_MASK_RX_ID           0x1FFFFFFF // receive only messages where ID exactly matches mbox ID
+
 
 //---------------------------------------------------------------------------
 // message buffer cfg bits
@@ -193,11 +199,18 @@
 
 
 //---------------------------------------------------------------------------
-// define
+// flexcan message buffer configuration
 //
-#define FLEXCAN_MBOX_NO        16
+#define FLEXCAN_MBOX_MIN      0
 #define FLEXCAN_MBOX_MAX       15
-#define FLEXCAN_MBOX_LAST_FREE 13
+#define FLEXCAN_MBOX_CNT      16
+#define FLEXCAN_MBOX_TX       CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN0_DEFAULT_TX_MBOX
+#define FLEXCAN_MBOX_RX_MIN   0
+#define FLEXCAN_MBOX_RX_MAX   (FLEXCAN_MBOX_MAX - 1) // one msg box is tx
+#define FLEXCAN_MBOX_RX_CNT   (FLEXCAN_MBOX_CNT - 1) // one msg box is tx
+
+
+#define FLEXCAN_CTRLSTAT_NOT_READ 0 // indicates that control status register is not read
 
 
 //===========================================================================
@@ -212,7 +225,9 @@ typedef enum
     MBOX_STATE_DISABLED,  // message box unused (free)
     MBOX_STATE_TX,        // TX message box
     MBOX_STATE_REMOTE_TX, // remote TX msaage box (data will be sent on reception of rtr frame) 
-    MBOX_STATE_RX         // RX message box
+    MBOX_STATE_RX_ALL_STD, // RX message box for standard IDs
+    MBOX_STATE_RX_ALL_EXT, // RX message box for standard IDs
+    MBOX_STATE_RX_FILT     // RX message box for filter mboxes
 } flexcan_mbox_state;
 
 
@@ -226,9 +241,23 @@ typedef struct flexcan_mbox_info_st
     cyg_interrupt      interrupt;         // stores interrupt data
     cyg_handle_t       interrupt_handle;  // stores interrupt number 
     cyg_uint8          num;               // number of message buffer
-    bool               tx_busy;           // if true, then transmission is in progress
+    bool               busy;              // if true, then transmission or reception is in progress
     flexcan_mbox_state state;             // message box state
+    cyg_uint8          ctrlstat_shadow;   // shadow register of message box ctrlstat register
 } flexcan_mbox_info; 
+
+//
+// Between ISR and DSR handling there is some kind of circular buffer.
+// A DSR is only invoked if no other message box invoked a DSR before
+// the DSR will read all available message buffers. This structure
+// is for exchange of information between ISR and DSR
+//
+typedef struct st_rxmbox_circbuf
+{
+    cyg_uint8 idx_rd;       // the message box the DSR will read from
+    cyg_uint8 idx_wr;       // the message box that will receive the next message
+    cyg_uint8 count;        // the number of received message before DSR starts (number of ISR nesting)
+} flexcan_rxmbox_circbuf;
 
 //
 // flexcan interrupt (busoff, err, wake) data - stores interrupt data for
@@ -249,7 +278,7 @@ typedef struct flexcan_int_st
     isr_vec      : (_mbox0_vec) + (_mbox_no),            \
     isr_priority : (_prio),                              \
     num          : (_mbox_no),                           \
-    tx_busy      : false                                 \
+    busy         : false                                 \
 }
 
 //
@@ -268,23 +297,25 @@ typedef struct flexcan_info
 {
     cyg_uint8          *base;            // base address of flexcan modul
     cyg_vector_t        isr_vec_mbox0;   // vector number of ISR vector of first message box
-    flexcan_mbox_info   mboxes[FLEXCAN_MBOX_NO];// message boxes
+    flexcan_mbox_info   mboxes[FLEXCAN_MBOX_CNT];// message boxes
     cyg_uint32          last_tx_id;      // last transmitted message identifier
-    
-    cyg_uint32          rxgmask;         // acceptance filter for message box 0 - 13
-    cyg_uint32          rx14mask;        // acceptance filter for message box 14
-    cyg_uint32          rx15mask;        // acceptance filter for message box 15
     
     flexcan_int         boff_int;        // bus off interrupt data
     flexcan_int         err_int;         // error interrupt data
     flexcan_int         wake_int;        // wake interrupt data
     
     cyg_uint8           tx_all_mbox;     // number of message box for all transmit messages
-    cyg_uint8           rx_all_mbox_std; // number of message box for reception of all standard CAN messages
-    cyg_uint8           rx_all_mbox_ext; // number of message box for reception of all extended CAN messages
     cyg_uint8           free_mboxes;     // number of free message boxes for msg filters and rtr buffers
     cyg_can_state       state;           // state of CAN controller
     
+    flexcan_rxmbox_circbuf rxmbox_std_circbuf;
+    flexcan_rxmbox_circbuf rxmbox_ext_circbuf;
+
+    cyg_uint8           mboxes_std_cnt;   // contains number of standard message boxes available
+    cyg_uint8           mboxes_ext_cnt;   // number of message boxes with ext id
+    cyg_uint8           mboxes_rx_all_cnt;// number of all available mboxes
+
+    bool                rx_all;           // true if reception of call can messages is active
     cyg_uint16          imask_shadow;    // interrupt mask shadow register
 #ifdef CYGOPT_IO_CAN_TX_EVENT_SUPPORT 
     cyg_can_message     last_tx_msg;     // stores last transmitted message for TX events
@@ -322,13 +353,11 @@ typedef struct flexcan_info
                      _mbox13_isr_prio,                                  \
                      _mbox14_isr_prio,                                  \
                      _mbox15_isr_prio,                                  \
-                     _rxgmask,                                          \
-                     _rx14mask,                                         \
-                     _rx15mask,                                         \
                      _boff_isr_vec, _boff_isr_prio,                     \
                      _err_isr_vec, _err_isr_prio,                       \
                      _wake_isr_vec, _wake_isr_prio,                     \
-                     _tx_all_mbox, _rx_all_mbox_std, _rx_all_mbox_ext)  \
+                     _tx_all_mbox,                                      \
+                     _std_mboxes, _ext_mboxes)                          \
 flexcan_info _l = {                                                     \
     (void *)( _baseaddr),                                               \
     (_isr_vec_mbox0),                                                   \
@@ -351,17 +380,16 @@ flexcan_info _l = {                                                     \
     FLEXCAN_MBOX_INIT((_isr_vec_mbox0), (_mbox15_isr_prio),15),         \
     },                                                                  \
     last_tx_id      : 0xFFFFFFFF,                                       \
-    rxgmask         : _rxgmask,                                         \
-    rx14mask        : _rx14mask,                                        \
-    rx15mask        : _rx15mask,                                        \
     boff_int        : FLEXCAN_INT_INIT(_boff_isr_vec, _boff_isr_prio),  \
     err_int         : FLEXCAN_INT_INIT(_err_isr_vec, _err_isr_prio),    \
     wake_int        : FLEXCAN_INT_INIT(_wake_isr_vec, _wake_isr_prio),  \
     tx_all_mbox     : _tx_all_mbox,                                     \
-    rx_all_mbox_std : _rx_all_mbox_std,                                 \
-    rx_all_mbox_ext : _rx_all_mbox_ext,                                 \
-    free_mboxes     : FLEXCAN_MBOX_LAST_FREE,                           \
-    state           : CYGNUM_CAN_STATE_ACTIVE                           \
+    free_mboxes      : ((_std_mboxes) + (_ext_mboxes)),                 \
+    state            : CYGNUM_CAN_STATE_ACTIVE,                         \
+    rx_all           : true,                                            \
+    mboxes_std_cnt   : _std_mboxes,                                     \
+    mboxes_ext_cnt   : _ext_mboxes,                                     \
+    mboxes_rx_all_cnt : ((_std_mboxes) + (_ext_mboxes))                 \
 };
 
 
@@ -374,9 +402,26 @@ flexcan_info _l = {                                                     \
 #define _FLEXCAN_MBOX_INTPRIO(n) CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN0_MBOX##n
 #define FLEXCAN_MBOX_INTPRIO(n) _FLEXCAN_MBOX_INTPRIO(n)
 
-
 //
-// FlexCAN channel initialisation
+// Define number of message boxes if they are not defined yet
+//
+#ifndef CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN0_STD_MBOXES
+#define CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN0_STD_MBOXES 0
+#endif
+#ifndef CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN0_EXT_MBOXES
+#define CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN0_EXT_MBOXES 0
+#endif
+#ifndef CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN1_STD_MBOXES
+#define CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN1_STD_MBOXES 0
+#endif
+#ifndef CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN1_EXT_MBOXES
+#define CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN1_EXT_MBOXES 0
+#endif
+
+
+#ifdef CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN0
+//
+// FlexCAN channel initialisation for FlexCAN channel 0
 //
 FLEXCAN_INFO(flexcan_can0_info, 
              HAL_MCF52xx_MBAR + HAL_MCF52xx_FLEXCAN0_BASE,
@@ -397,9 +442,6 @@ FLEXCAN_INFO(flexcan_can0_info,
              CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN0_MBOX13,
              CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN0_MBOX14,
              CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN0_MBOX15,
-             CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN0_RXMASK_GLOBAL,
-             CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN0_RXMASK_14,
-             CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN0_RXMASK_15,
              HAL_MCF52xx_FLEXCAN0_BOFF_ISRVEC,
              CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN0_BOFFINT,  
              HAL_MCF52xx_FLEXCAN0_ERR_ISRVEC,          
@@ -407,8 +449,43 @@ FLEXCAN_INFO(flexcan_can0_info,
              HAL_MCF52xx_FLEXCAN0_WAKE_ISRVEC,       
              CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN0_WAKEINT,
              CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN0_DEFAULT_TX_MBOX,
-             CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN0_DEFAULT_RX_MBOX_STD,
-             CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN0_DEFAULT_RX_MBOX_EXT);
+             CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN0_STD_MBOXES,
+             CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN0_EXT_MBOXES);
+#endif // CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]
+
+#ifdef CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN1
+//
+// FlexCAN channel initialisation for FlexCAN channel 1
+//
+FLEXCAN_INFO(flexcan_can0_info,
+             HAL_MCF52xx_MBAR + HAL_MCF52xx_FLEXCAN0_BASE,
+             HAL_MCF52xx_FLEXCAN1_MBOX0_ISRVEC,
+             CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN1_MBOX0,
+             CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN1_MBOX1,
+             CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN1_MBOX2,
+             CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN1_MBOX3,
+             CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN1_MBOX4,
+             CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN1_MBOX5,
+             CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN1_MBOX6,
+             CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN1_MBOX7,
+             CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN1_MBOX8,
+             CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN1_MBOX9,
+             CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN1_MBOX10,
+             CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN1_MBOX11,
+             CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN1_MBOX12,
+             CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN1_MBOX13,
+             CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN1_MBOX14,
+             CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN1_MBOX15,
+             HAL_MCF52xx_FLEXCAN1_BOFF_ISRVEC,
+             CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN1_BOFFINT,
+             HAL_MCF52xx_FLEXCAN1_ERR_ISRVEC,
+             CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN1_ERRINT,
+             HAL_MCF52xx_FLEXCAN1_WAKE_ISRVEC,
+             CYGNUM_DEVS_CAN_MCF52xx_ISR_PRIORITY_FLEXCAN1_WAKEINT,
+             CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN1_DEFAULT_TX_MBOX,
+             CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN1_STD_MBOXES,
+             CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN1_EXT_MBOXES);
+#endif // CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN1
 
 //
 // message box structure for hardware access of message box
@@ -485,10 +562,18 @@ static void        flexcan_stop_xmit(can_channel* chan);
 //
 // TX and RX ISRs and DSRs
 //
-static cyg_uint32  flexcan_mbox_rx_isr(cyg_vector_t, cyg_addrword_t);
-static void        flexcan_mbox_rx_dsr(cyg_vector_t, cyg_ucount32, cyg_addrword_t);
+#ifdef CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID
+static cyg_uint32  flexcan_mbox_rx_std_isr(cyg_vector_t, cyg_addrword_t);
+static void        flexcan_mbox_rx_std_dsr(cyg_vector_t, cyg_ucount32, cyg_addrword_t);
+#endif // #ifdef CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID
+#ifdef CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_EXT_CAN_ID
+static cyg_uint32  flexcan_mbox_rx_ext_isr(cyg_vector_t, cyg_addrword_t);
+static void        flexcan_mbox_rx_ext_dsr(cyg_vector_t, cyg_ucount32, cyg_addrword_t);
+#endif // CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_EXT_ID
+static cyg_uint32  flexcan_mbox_rx_filt_isr(cyg_vector_t, cyg_addrword_t);
 static cyg_uint32  flexcan_mbox_tx_isr(cyg_vector_t, cyg_addrword_t);
 static void        flexcan_mbox_tx_dsr(cyg_vector_t, cyg_ucount32, cyg_addrword_t);
+static void        flexcan_mbox_rx_filt_dsr(cyg_vector_t, cyg_ucount32, cyg_addrword_t );
 
 //
 // All other flexcan interrupt handlers
@@ -500,9 +585,11 @@ static void        flexcan_busoff_dsr(cyg_vector_t, cyg_ucount32, cyg_addrword_t
 static cyg_uint32  flexcan_wake_isr(cyg_vector_t, cyg_addrword_t);
 static void        flexcan_wake_dsr(cyg_vector_t, cyg_ucount32, cyg_addrword_t);
 
-
+//
+// Flexcan utility functions
+//
 static bool flexcan_cfg_mbox_tx(flexcan_mbox *pmbox, cyg_can_message  *pmsg, bool rtr);
-static void flexcan_cfg_mbox_rx(flexcan_mbox *pmbox, cyg_can_message  *pmsg);
+static void flexcan_cfg_mbox_rx(flexcan_mbox *pmbox, cyg_can_message  *pmsg, bool enable);
 static void flexcan_read_from_mbox(can_channel *chan, cyg_uint8 mbox, cyg_can_event *pevent, cyg_uint8 *ctrlstat);
 static void flexcan_set_acceptance_mask(cyg_uint16 *rxmask_reg, cyg_uint32 mask, cyg_can_id_type ext);
 static void flexcan_start_chip(can_channel *chan);
@@ -513,11 +600,13 @@ static bool flexcan_set_baud(can_channel *chan, cyg_uint16 baudrate);
 static bool flexcan_config(can_channel* chan, cyg_can_info_t* config, cyg_bool init);
 static cyg_int8 flexcan_alloc_mbox(flexcan_info *info);
 static void flexcan_disable_mbox(can_channel *chan, cyg_uint32 mbox_id);
-static void flexcan_setup_rxmbox(can_channel *chan, cyg_uint32 mbox_id, cyg_can_message *pmsg);
+static void flexcan_setup_rxmbox(can_channel *chan, cyg_uint32 mbox_id, cyg_ISR_t *isr, cyg_can_message *pmsg, bool enable, bool int_enable);
 static void flexcan_setup_txmbox(can_channel *chan, cyg_uint32 mbox_id, cyg_can_message *pmsg);
 static void flexcan_setup_rtrmbox(can_channel *chan, cyg_uint32 mbox_id, cyg_can_message *pmsg);
 static void flexcan_mboxint_enable(flexcan_info *info, cyg_uint32 mbox_id);
 static void flexcan_mboxint_disable(flexcan_info *info, cyg_uint32 mbox_id);
+static void flexcan_config_rx_all(can_channel *chan);
+static void flexcan_enable_rxmbox(can_channel *chan, cyg_uint32 mbox_id);
 
 
 CAN_LOWLEVEL_FUNS(flexcan_lowlevel_funs,
@@ -567,6 +656,33 @@ flexcan_lookup(struct cyg_devtab_entry** tab, struct cyg_devtab_entry* sub_tab, 
 
 
 //===========================================================================
+// Enable hardware message box for reception
+//===========================================================================
+static __inline__  void flexcan_hwmbox_enable_rx(flexcan_regs *flexcan, cyg_uint32 mbox_id)
+{
+    HAL_WRITE_UINT8(&(flexcan->mbox[mbox_id].ctrlstat), MBOX_RXCODE_EMPTY);
+}
+
+
+//===========================================================================
+// Disable hardware message box
+//===========================================================================
+static __inline__  void flexcan_hwmbox_disable(flexcan_regs *flexcan, cyg_uint32 mbox_id)
+{
+    HAL_WRITE_UINT8(&(flexcan->mbox[mbox_id].ctrlstat), MBOX_RXCODE_NOT_ACTIVE);
+}
+
+
+//===========================================================================
+// lock mbox by reading control status register
+//===========================================================================
+static __inline__  void flexcan_hwmbox_lock(flexcan_regs *flexcan, cyg_uint32 mbox_id, cyg_uint8 *pctrlstat)
+{
+    HAL_READ_UINT8(&(flexcan->mbox[mbox_id].ctrlstat), *pctrlstat); // this read will lock the mbox
+}
+
+
+//===========================================================================
 //  Enable message box interrupt for one message box
 //===========================================================================
 static void flexcan_mboxint_enable(flexcan_info *info, cyg_uint32 mbox_id)
@@ -589,6 +705,7 @@ static void flexcan_mboxint_disable(flexcan_info *info, cyg_uint32 mbox_id)
     HAL_WRITE_UINT16(&flexcan->IMASK, info->imask_shadow);
 }
 
+
 //===========================================================================
 // Allocate message box
 // Try to find a free message box and return its ID
@@ -596,11 +713,11 @@ static void flexcan_mboxint_disable(flexcan_info *info, cyg_uint32 mbox_id)
 static cyg_int8 flexcan_alloc_mbox(flexcan_info *info)
 {
     cyg_uint8     i;
-    cyg_int8      res = -1;
+    cyg_int8      res = CYGNUM_CAN_MSGBUF_NA;
     
     if (info->free_mboxes)
     {  
-        for (i = 0; i < FLEXCAN_MBOX_LAST_FREE; ++i)
+        for (i = (FLEXCAN_MBOX_RX_CNT - info->free_mboxes); i <= FLEXCAN_MBOX_RX_MAX; ++i)
         {
             if (MBOX_STATE_DISABLED == info->mboxes[i].state)
             {
@@ -608,7 +725,7 @@ static cyg_int8 flexcan_alloc_mbox(flexcan_info *info)
                 res = i;
                 break;
             }               
-        }  // for (i = 0; i < FLEXCAN_MBOX_LAST_FREE; ++i)
+        }
     } // if (info->free_mboxes)
     
     return res;
@@ -616,38 +733,111 @@ static cyg_int8 flexcan_alloc_mbox(flexcan_info *info)
 
 
 //===========================================================================
+// Enable a previously configured rx mbox - a mbox ready to recive
+//===========================================================================
+static void flexcan_enable_rxmbox(can_channel     *chan,
+                                  cyg_uint32       mbox_id)
+{
+    flexcan_info *info = (flexcan_info *)chan->dev_priv;
+    flexcan_regs *flexcan = (flexcan_regs *)info->base;
+
+    flexcan_hwmbox_enable_rx(flexcan, mbox_id);
+    flexcan_mboxint_enable(info, mbox_id);
+}
+
+//===========================================================================
 // Prepare message buffer filter
-// Setup a RX message box for reception of a certain CAN identifier
+// Setup a RX message box for reception of a certain CAN identifier but do
+// not enable it
 //===========================================================================
 static void flexcan_setup_rxmbox(can_channel     *chan, 
                                  cyg_uint32       mbox_id,
-                                 cyg_can_message *pmsg)
+                                 cyg_ISR_t       *isr,
+                                 cyg_can_message *pmsg,
+                                 bool             enable,
+                                 bool             int_enable)
 {
     flexcan_info      *info    = (flexcan_info *)chan->dev_priv;
     flexcan_regs      *flexcan = (flexcan_regs *)info->base;
     flexcan_mbox_info *pmbox;
+    cyg_DSR_t         *dsr_func = &flexcan_mbox_rx_filt_dsr;
     
-    info->mboxes[mbox_id].state = MBOX_STATE_RX;
+    //
+    // Set state of message buffer accoring to ISR function that
+    // will be registered
+    //
+#ifdef CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID
+    if (*isr == flexcan_mbox_rx_std_isr)
+    {
+        //
+        // If we have only one single RX all message box then we use
+        // the filter ISR instead of RX all standard ISR because it
+        // is better suited for a single RX mbox
+    //
+        if (info->mboxes_std_cnt > 1)
+        {
+            info->mboxes[mbox_id].state = MBOX_STATE_RX_ALL_STD;
+            dsr_func = &flexcan_mbox_rx_std_dsr;
+        }
+        else
+        {
+            info->mboxes[mbox_id].state = MBOX_STATE_RX_FILT;
+            isr = flexcan_mbox_rx_filt_isr;
+        }
+    }
+    else
+#endif // CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID
+#ifdef CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_EXT_CAN_ID
+    if (*isr == flexcan_mbox_rx_ext_isr)
+    {
+        //
+        // If we have only one single RX all message box then we use
+        // the filter ISR instead of RX all standard ISR because it
+        // is better suited for a single RX mbox
+        //
+        if (info->mboxes_ext_cnt > 1)
+        {
+            info->mboxes[mbox_id].state = MBOX_STATE_RX_ALL_EXT;
+            dsr_func = &flexcan_mbox_rx_ext_dsr;
+        }
+        else
+        {
+            info->mboxes[mbox_id].state = MBOX_STATE_RX_FILT;
+            isr = flexcan_mbox_rx_filt_isr;
+        }
+    }
+    else
+#endif // CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_EXT_CAN_ID
+    if (*isr == flexcan_mbox_rx_filt_isr)
+    {
+        info->mboxes[mbox_id].state = MBOX_STATE_RX_FILT;
+    }
+    else
+    {
+        CYG_ASSERT(0, "Invalid ISR function pointer");
+    }
+
     pmbox = &info->mboxes[mbox_id];
-    flexcan_cfg_mbox_rx(&flexcan->mbox[mbox_id], pmsg);
-    
-    //
-    // prepare message box interrupt for message box 
-    //
+    flexcan_cfg_mbox_rx(&flexcan->mbox[mbox_id], pmsg, enable);
+
     cyg_drv_interrupt_create(pmbox->isr_vec,
                              pmbox->isr_priority,
                              (cyg_addrword_t) chan,
-                             &flexcan_mbox_rx_isr,
-                             &flexcan_mbox_rx_dsr,
+                             isr,
+                             dsr_func,
                              &(pmbox->interrupt_handle),
                              &(pmbox->interrupt));
     cyg_drv_interrupt_attach(pmbox->interrupt_handle);
     cyg_drv_interrupt_unmask(pmbox->isr_vec);
     
     //
-    // now enable interrupt for this message box
+    // now enable interrupt for this message box - but only if we
+    // really should do it
     //
+    if (int_enable)
+    {
     flexcan_mboxint_enable(info, mbox_id);
+    }
 }
 
 
@@ -721,6 +911,7 @@ static void flexcan_setup_txmbox(can_channel      *chan,
     flexcan_mboxint_enable(info, mbox_id);
 }
 
+
 //===========================================================================
 // Setup a RTR response message box
 //===========================================================================
@@ -730,26 +921,232 @@ static void flexcan_setup_rtrmbox(can_channel      *chan,
 {
     flexcan_info      *info   = (flexcan_info *)chan->dev_priv;
     flexcan_regs      *flexcan = (flexcan_regs *)info->base;
-    flexcan_mbox_info *pmbox;
     
     info->mboxes[mbox_id].state = MBOX_STATE_REMOTE_TX;
-    pmbox = &info->mboxes[mbox_id];
     flexcan_cfg_mbox_tx(&flexcan->mbox[mbox_id], pmsg, true);
-
-    //
-    // prepare message box interrupt for message box 
-    //
-    cyg_drv_interrupt_create(pmbox->isr_vec,
-                             pmbox->isr_priority,
-                             (cyg_addrword_t) chan,
-                             &flexcan_mbox_rx_isr,
-                             &flexcan_mbox_rx_dsr,
-                             &(pmbox->interrupt_handle),
-                             &(pmbox->interrupt));
-    cyg_drv_interrupt_attach(pmbox->interrupt_handle);
-    cyg_drv_interrupt_unmask(pmbox->isr_vec);
 }
 
+
+//===========================================================================
+// Setup the list of message boxes ready to receive a message
+//===========================================================================
+static void flexcan_setup_rxmbox_circbuf(flexcan_rxmbox_circbuf *pbuf)
+{
+    pbuf->count  = 0;
+    pbuf->idx_rd = 0;
+    pbuf->idx_wr = 0;
+}
+
+
+//===========================================================================
+// Setup flexCAN modul for reception of any kind of message
+//===========================================================================
+static void flexcan_config_rx_all(can_channel *chan)
+{
+    flexcan_info *info       = (flexcan_info *)chan->dev_priv;
+    flexcan_regs       *flexcan = (flexcan_regs *)info->base;
+    cyg_int8           i;
+    
+        //
+    // setup all available message boxes for reception of of messages
+    // All standard and extended message buffers will be configured
+        //
+    for (i = 0; i < info->mboxes_rx_all_cnt; ++i)
+             {
+        cyg_can_message filter_param;
+        filter_param.id  = 0;
+
+        //
+        // configure message buffers for standard frames
+        //
+#ifdef CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID
+        if (i < info->mboxes_std_cnt)
+                 {
+            filter_param.ext = CYGNUM_CAN_ID_STD;
+            flexcan_setup_rxmbox(chan, i, &flexcan_mbox_rx_std_isr, &filter_param, false, true);
+                 }
+#endif // CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID
+
+       //
+       // configure message buffers for extended frames
+       //
+#ifdef CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_EXT_CAN_ID
+        else
+                 {
+            filter_param.ext = CYGNUM_CAN_ID_EXT;
+            flexcan_setup_rxmbox(chan, i, &flexcan_mbox_rx_ext_isr, &filter_param, false, true);
+                 }
+#endif // CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID
+            }
+       
+        //
+    // We need to receive all available CAN messages so we have to set the acceptance filter
+    // properly
+    //
+    flexcan_set_acceptance_mask(&flexcan->RXGMASK_HI,  FLEXCAN_ACCEPTANCE_MASK_RX_ALL,  CYGNUM_CAN_ID_EXT);
+    flexcan_set_acceptance_mask(&flexcan->RX14MASK_HI, FLEXCAN_ACCEPTANCE_MASK_RX_ALL, CYGNUM_CAN_ID_EXT);
+    info->free_mboxes = FLEXCAN_MBOX_RX_CNT - info->mboxes_rx_all_cnt;
+    info->rx_all = true;
+
+    //
+    // now finally setup the first active message boxes and enable ist
+        //     
+#ifdef CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID
+    if (info->mboxes_std_cnt)
+             { 
+        flexcan_setup_rxmbox_circbuf(&info->rxmbox_std_circbuf);
+        flexcan_enable_rxmbox(chan, 0);
+    }
+#endif // CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID
+                             
+#ifdef CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_EXT_CAN_ID
+    if (info->mboxes_ext_cnt)
+                 {
+        flexcan_setup_rxmbox_circbuf(&info->rxmbox_ext_circbuf);
+        flexcan_enable_rxmbox(chan, info->mboxes_std_cnt);
+                 }
+#endif // CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID
+
+}
+
+//===========================================================================
+// Setup Flex CAN moduls in a state where all message boxes are disabled
+// After this call single message filters and buffers can be added
+//===========================================================================
+static void flexcan_config_rx_none(can_channel *chan)
+{
+    flexcan_info       *info = (flexcan_info *)chan->dev_priv;
+    flexcan_regs       *flexcan = (flexcan_regs *)info->base;
+    cyg_int8           i;
+                 
+                 //
+    // setup all RX messages moxes into a disabled state
+                 //
+    for (i = 0; i < FLEXCAN_MBOX_RX_CNT; ++i)
+                 {
+        flexcan_disable_mbox(chan, i);
+    }
+                     
+    //
+    // If we want to receive only certain CAN identiffiers then the ID does matter and
+    // we have to setup the acceptance mask properly
+    //
+    flexcan_set_acceptance_mask(&flexcan->RXGMASK_HI,  FLEXCAN_ACCEPTANCE_MASK_RX_ID,  CYGNUM_CAN_ID_EXT);
+    flexcan_set_acceptance_mask(&flexcan->RX14MASK_HI, FLEXCAN_ACCEPTANCE_MASK_RX_ID,  CYGNUM_CAN_ID_EXT);
+    info->free_mboxes = FLEXCAN_MBOX_RX_CNT;
+    info->rx_all = false;
+}
+
+
+//===========================================================================
+// Configure message buffers
+//===========================================================================
+static Cyg_ErrNo flexcan_set_config_msgbuf(can_channel *chan, cyg_can_msgbuf_cfg *buf)
+{
+    Cyg_ErrNo     res = ENOERR;
+    flexcan_info *info = (flexcan_info *)chan->dev_priv;
+
+    switch (buf->cfg_id)
+                     {
+                         //
+        // clear all message filters and remote buffers - prepare for message buffer
+        // configuration
+                         //
+        case CYGNUM_CAN_MSGBUF_RESET_ALL :
+                     {
+                 flexcan_config_rx_none(chan);
+                     }
+            break;
+
+                     //
+        // setup FlexCAN modul for reception of all standard and extended messages
+                     //
+        case CYGNUM_CAN_MSGBUF_RX_FILTER_ALL :
+                     {
+                if (!info->rx_all) // if rx_all is enabled we do not need to do anything
+                     {
+                    flexcan_config_rx_none(chan); // set into default state
+                    flexcan_config_rx_all(chan);  // setup RX all state
+                     }
+             }
+             break;
+        
+        //
+        // add single message filter, message with filter ID will be received
+        //     
+        case CYGNUM_CAN_MSGBUF_RX_FILTER_ADD :
+             {
+                 cyg_can_filter *filter   = (cyg_can_filter*) buf;
+                 
+                 //
+                 // if FlexCAN is configured to receive all messages then it is not
+                 // allowed to add single message filters because then more than
+                 // one message buffer would receive the same CAN id
+                 //
+                 if (info->rx_all)
+                 {
+                    return -EPERM;
+                 }
+                 
+                 //
+                 // try to allocate a free message box - if we have a free one
+                 // then we can prepare the message box for reception of the
+                 // desired message id
+                 //
+                 filter->handle = flexcan_alloc_mbox(info);
+                 if (filter->handle > CYGNUM_CAN_MSGBUF_NA)
+                 {
+                     flexcan_setup_rxmbox(chan, filter->handle, &flexcan_mbox_rx_filt_isr, &filter->msg, true, true);
+                 }
+             }
+             break; //CYGNUM_CAN_MSGBUF_RX_FILTER_ADD
+
+                     //
+        // Try to add a new RTR response message buffer for automatic transmisson
+        // of data frame on reception of a remote frame
+                     //
+        case CYGNUM_CAN_MSGBUF_REMOTE_BUF_ADD :
+                     {
+                 cyg_can_remote_buf *rtr_buf    = (cyg_can_remote_buf*) buf;
+                 rtr_buf->handle = flexcan_alloc_mbox(info);
+                     
+                 if (rtr_buf->handle > CYGNUM_CAN_MSGBUF_NA)
+                     {
+                     //
+                     // if we have a free message buffer then we setup this buffer
+                     // for remote frame reception
+                     //
+                     flexcan_setup_rtrmbox(chan, rtr_buf->handle, &rtr_buf->msg);
+                 }
+                     }
+             break;
+                     
+                     //
+        // write data into remote response buffer
+        //
+        case CYGNUM_CAN_MSGBUF_REMOTE_BUF_WRITE :
+             {
+                 cyg_can_remote_buf *rtr_buf    = (cyg_can_remote_buf*) buf;
+
+                 //
+                 // If we have a valid rtr buf handle then we can store data into
+                 // rtr message box
+                     // 
+                 if ((rtr_buf->handle >= 0) && (rtr_buf->handle <= FLEXCAN_MBOX_RX_MAX))
+                 {
+                     flexcan_regs *flexcan = (flexcan_regs *)info->base;
+                     flexcan_cfg_mbox_tx(&flexcan->mbox[rtr_buf->handle], &rtr_buf->msg, true);
+                 }
+                 else
+                 {
+                    return -EINVAL;
+                 }    
+             }
+             break;
+    } // switch (buf->cfg_id)
+        
+     return res;
+}
 
 //===========================================================================
 // Set device configuration
@@ -758,167 +1155,40 @@ static Cyg_ErrNo
 flexcan_set_config(can_channel *chan, cyg_uint32 key, const void* buf, cyg_uint32* len)
 {
     Cyg_ErrNo     res = ENOERR;
-    flexcan_info *info       = (flexcan_info *)chan->dev_priv;
-    
-    switch(key) 
-    {
-        //
-        //Setup a new CAN configuration. This will i.e. setup a new baud rate
-        //
-        case CYG_IO_SET_CONFIG_CAN_INFO:
+
+    switch(key)
              {
-                 cyg_can_info_t*  config = (cyg_can_info_t*) buf;
-                 if (*len < sizeof(cyg_can_info_t)) 
+                 //
+        //Setup a new CAN configuration. This will i.e. setup a new baud rate
+                 //
+        case CYG_IO_SET_CONFIG_CAN_INFO:
                  {
+                 cyg_can_info_t*  config = (cyg_can_info_t*) buf;
+                 if (*len < sizeof(cyg_can_info_t))
+                     {
                     return -EINVAL;
                  }
                  *len = sizeof(cyg_can_info_t);
-                 if (!flexcan_config(chan, config, false)) 
+                 if (!flexcan_config(chan, config, false))
                  {
                     return -EINVAL;
+                     }
                  }
-            }
             break;
-       
-        //
-        // Try to add a new RTR response message buffer for automatic transmisson
-        // of data frame on reception of a remote frame
-        //     
-        case CYG_IO_SET_CONFIG_CAN_REMOTE_BUF:
-             { 
-                 cyg_can_remote_buf *rtr_buf    = (cyg_can_remote_buf*) buf;
-                             
-                 if (*len != sizeof(cyg_can_remote_buf)) 
-                 {
-                    return -EINVAL;
-                 }
-                 *len = sizeof(cyg_can_remote_buf);
                  
                  //
-                 // If we need to create a new remote buffer then we check if there
-                 // is one message box free and then setup this box for remote frame
-                 // reception
+        // configure message buffers
                  //
-                 if (CYGNUM_CAN_MSGBUF_INIT == rtr_buf->handle)
-                 {
-                     cyg_int8 mbox_index = flexcan_alloc_mbox(info);
-                     
-                     if (mbox_index > -1)
-                     {
-                         //
-                         // if we have a free message buffer then we setup this buffer
-                         // for remote frame reception
-                         //
-                         rtr_buf->handle = mbox_index;
-                         flexcan_setup_rtrmbox(chan, rtr_buf->handle, &rtr_buf->msg);
-                     }
-                     else
-                     {
-                         rtr_buf->handle = CYGNUM_CAN_MSGBUF_NA;
-                     }
-                 } // if (CYGNUM_CAN_RTR_BUF_INIT == rtr_buf->handle)
-                 else // if (!(CYGNUM_CAN_MBUF_INIT == rtr_buf->handle))
-                 {
-                     //
-                     // If we have a valid rtr buf handle then we can store data into 
-                     // rtr message box
-                     //
-                     if ((rtr_buf->handle >= 0) && (rtr_buf->handle < FLEXCAN_MBOX_LAST_FREE))
-                     {
-                         flexcan_regs *flexcan = (flexcan_regs *)info->base;
-                         flexcan_cfg_mbox_tx(&flexcan->mbox[rtr_buf->handle], &rtr_buf->msg, true); 
-                     }
-                     else
-                     {
-                        return -EINVAL;
-                     }
-                 } // if (!(CYGNUM_CAN_MBUF_INIT == rtr_buf->handle))        
-             }
-             break;
-        
-        //
-        // Add a new message filter for reception of a certain CAN id. A call
-        // to this function will disable the RX all message boxes
-        //     
-        case CYG_IO_SET_CONFIG_CAN_FILTER_MSG :
+        case CYG_IO_SET_CONFIG_CAN_MSGBUF :
              {
-                 cyg_int8        mbox_index; 
-                 cyg_can_filter *filter   = (cyg_can_filter*) buf;
-                 
-                 if (*len != sizeof(cyg_can_filter)) 
-                 {
+                cyg_can_msgbuf_cfg *msg_buf = (cyg_can_msgbuf_cfg *) buf;
+
+                if (*len != sizeof(cyg_can_msgbuf_cfg))
+                {
                     return -EINVAL;
-                 }
-                 *len = sizeof(cyg_can_filter);
-                 
-                 //
-                 // try to allocate a free message box - if we have a free one
-                 // then we can prepare the message box for reception of the
-                 // desired message id
-                 //
-                 mbox_index = flexcan_alloc_mbox(info);
-                 if (mbox_index > -1)
-                 {
-                     //
-                     // if message filtering is used the generic RX mbox should
-                     // be disabled
-                     //
-                     if (MBOX_STATE_DISABLED != info->mboxes[info->rx_all_mbox_std].state)
-                     {
-                         flexcan_disable_mbox(chan, info->rx_all_mbox_std);
-                     }
-                     
-                     if (MBOX_STATE_DISABLED != info->mboxes[info->rx_all_mbox_ext].state)
-                     {
-                         flexcan_disable_mbox(chan, info->rx_all_mbox_ext);
-                     }
-                     
-                     //
-                     // generic RX mbox is disabled and now we can setup message filter
-                     // 
-                     filter->handle = mbox_index;
-                     flexcan_setup_rxmbox(chan, mbox_index, &filter->msg);
-                 }
-                 else
-                 {
-                     filter->handle = CYGNUM_CAN_MSGBUF_NA;            
-                 }    
-             }
-             break; // CYG_IO_SET_CONFIG_CAN_FILTER_MSG
-        
-        //
-        // Setup the FlexCAN modul for reception of any kind of CAN messages 
-        // This call will setup 2 message boxes, one for all standad frames and one 
-        // for all extended frames. This function will diable all other message 
-        // filters
-        //
-        case CYG_IO_SET_CONFIG_CAN_FILTER_ALL:
-             {
-                 cyg_uint8          i;
-                 flexcan_mbox_info *pmbox;
-                 cyg_can_message    filter_param;
-                 //
-                 // before we can enable the generic receive message box
-                 // we have to disable all other RX message boxes
-                 //
-                 for (i = 0; i < FLEXCAN_MBOX_LAST_FREE; ++i)
-                 {
-                     pmbox = &info->mboxes[i];
-                     if (MBOX_STATE_RX == pmbox->state)
-                     {
-                         flexcan_disable_mbox(chan, i);
-                     }
-                 }
-                 
-                 //
-                 // id does not matter here because the message buffers 14 and 15
-                 // have their own acceptance mask
-                 //
-                 filter_param.id  = 0;
-                 filter_param.ext = CYGNUM_CAN_ID_STD;
-                 flexcan_setup_rxmbox(chan, info->rx_all_mbox_std, &filter_param);
-                 filter_param.ext = CYGNUM_CAN_ID_EXT;
-                 flexcan_setup_rxmbox(chan, info->rx_all_mbox_ext, &filter_param);
+                }
+
+                flexcan_set_config_msgbuf(chan, msg_buf);
              }
              break;
         
@@ -1002,7 +1272,7 @@ flexcan_get_config(can_channel *chan, cyg_uint32 key, const void* buf, cyg_uint3
                  }
                 *len = sizeof(cyg_can_msgbuf_info);
                 
-                 mbox_info->count = FLEXCAN_MBOX_LAST_FREE;
+                 mbox_info->count = FLEXCAN_MBOX_RX_CNT;
                  mbox_info->free  = info->free_mboxes;
              }
              break;
@@ -1034,16 +1304,47 @@ flexcan_get_config(can_channel *chan, cyg_uint32 key, const void* buf, cyg_uint3
 
 
 //===========================================================================
+//  Check if we received self transmitted frame
+//===========================================================================
+static bool flexcan_is_no_self_tx(cyg_can_event *pevent, flexcan_info *info, flexcan_mbox_info *pmbox)
+{
+    //
+    // If we received a self transmitted frame
+    // then this is not really an rx event and we return false. We rely on the
+    // fact here that two devices in network do not send the same identifier
+    //
+    if (pevent->msg.id == info->last_tx_id)
+    {
+        info->last_tx_id = 0xFFFFFFFF; // set last received ID to an invalid value
+        return false;
+    }
+    else
+    {
+        pevent->flags |= CYGNUM_CAN_EVENT_RX;
+
+        //
+        // check if an overun occured in this message box
+        //
+        if ((pmbox->ctrlstat_shadow & MBOX_RXCODE_OVERRUN) == MBOX_RXCODE_OVERRUN)
+        {
+            pevent->flags |= CYGNUM_CAN_EVENT_OVERRUN_RX;
+        }
+
+        return true;
+    }
+}
+
+
+//===========================================================================
 //  Read one event from can hardware - called from high level I/O CAN driver
 //===========================================================================
 static bool flexcan_getevent(can_channel *chan, cyg_can_event *pevent, void *pdata)
 {
     flexcan_info *info           = (flexcan_info *)chan->dev_priv;
     flexcan_regs *flexcan        = (flexcan_regs *)info->base;
-    cyg_uint8     mbox_ctrlstat;
     bool          res            = true;
-    cyg_uint8     event_id       = *((cyg_uint8 *)pdata);
     cyg_uint16    estat;
+    cyg_uint8     event_id       = *((cyg_uint8 *)pdata);
      
     //   
     // if event_id is 0 - 15 the we have a message box event
@@ -1051,7 +1352,6 @@ static bool flexcan_getevent(can_channel *chan, cyg_can_event *pevent, void *pda
     if (event_id < FLEXCAN_ERR_EVENT)
     {   
         flexcan_mbox_info *pmbox_info;
-        
         pmbox_info = &info->mboxes[event_id];
         
         //
@@ -1062,41 +1362,25 @@ static bool flexcan_getevent(can_channel *chan, cyg_can_event *pevent, void *pda
             //
             // If we have an RX event then we need to read the received data from
             // message box that caused this event and fill it into message queue of
-            // high level I/O CAN driver
+            // high level I/O CAN driver. We could handle this stuff in a function
+            // because it is the same like MBOX_STATE_RX_ALL_EXT but speed is more
+            // important here than codesize
             //
-            case MBOX_STATE_RX:
+            case MBOX_STATE_RX_ALL_STD:
+            case MBOX_STATE_RX_ALL_EXT:
+            case MBOX_STATE_RX_FILT:
+            {
                  //
                  // read data from message box - during processing of this function
                  // the message box is locked and cannot receive further messages
                  //
-                 flexcan_read_from_mbox(chan, event_id, pevent, &mbox_ctrlstat); 
-
-                 //
-                 // If we received a self transmitted frame
-                 // then this is not really an rx event and we return false. We rely on the
-                 // fact here that two devices in network do not send the same identifier
-                 //
-                 if (pevent->msg.id == info->last_tx_id)    
-                 {   
-                     info->last_tx_id = 0xFFFFFFFF; // set last received ID to an invalid value
-                     res = false; 
-                 }
-                 else
-                 {                
-                     pevent->flags = CYGNUM_CAN_EVENT_RX;
-
-                     //
-                     // check if an overun occured in this message box
-                     //
-                     if ((mbox_ctrlstat & MBOX_RXCODE_OVERRUN) == MBOX_RXCODE_OVERRUN)
-                     {
-                         pevent->flags |= CYGNUM_CAN_EVENT_OVERRUN_RX;
-                     }
+                 flexcan_read_from_mbox(chan, event_id, pevent, &(pmbox_info->ctrlstat_shadow));
+                 res = flexcan_is_no_self_tx(pevent, info, pmbox_info);
                  }
                  break;           
 
 #ifdef CYGOPT_IO_CAN_TX_EVENT_SUPPORT
-//
+            //
             // If a TX message box cause the event then we store the last transmitted
             // message into the receive message queue
             //
@@ -1189,7 +1473,7 @@ static bool flexcan_putmsg(can_channel *chan, cyg_can_message *pmsg, void *pdata
     //
     // check if device is busy sending a message
     //
-    if (pmbox->tx_busy)
+    if (pmbox->busy)
     {
         //
         // if device is busy and the interrupt flag is set, then we know
@@ -1205,7 +1489,7 @@ static bool flexcan_putmsg(can_channel *chan, cyg_can_message *pmsg, void *pdata
         }
     }
     
-    pmbox->tx_busy    = true;     // mark transmitter as busy
+    pmbox->busy    = true;        // mark transmitter as busy
     info->last_tx_id  = pmsg->id; // store message in order to identify self recieved frames 
 
 #ifdef CYGOPT_IO_CAN_TX_EVENT_SUPPORT 
@@ -1283,10 +1567,6 @@ static bool flexcan_config(can_channel* chan, cyg_can_info_t* config, cyg_bool i
     cyg_uint16       tmp16;
     cyg_uint8        tmp8;
     cyg_uint8        i;
-    cyg_can_message  rx_all_filter =
-    {
-        id  : 0,                 // CAN identifier      
-    };
     
     //
     // the first thing we need to do is to stop the chip
@@ -1334,17 +1614,10 @@ static bool flexcan_config(can_channel* chan, cyg_can_info_t* config, cyg_bool i
                                             & ~FLEXCAN_CTRL0_ERRMASK);
                                             
         //
-        // setup message box acceptance filter
-        //
-        flexcan_set_acceptance_mask(&flexcan->RXGMASK_HI,  info->rxgmask,  CYGNUM_CAN_ID_EXT);
-        flexcan_set_acceptance_mask(&flexcan->RX14MASK_HI, info->rx14mask, CYGNUM_CAN_ID_EXT);
-        flexcan_set_acceptance_mask(&flexcan->RX15MASK_HI, info->rx15mask, CYGNUM_CAN_ID_EXT);  
-        
-        //
         // deactivate all message buffers - this is mandatory for configuration
         // of message buffers
         //
-        for (i = 0; i < 16; ++i)
+        for (i = FLEXCAN_MBOX_MIN; i <= FLEXCAN_MBOX_MAX; ++i)
         {
             HAL_WRITE_UINT16(&flexcan->mbox[i], MBOX_RXCODE_NOT_ACTIVE);
         }   
@@ -1366,13 +1639,9 @@ static bool flexcan_config(can_channel* chan, cyg_can_info_t* config, cyg_bool i
         HAL_WRITE_UINT8(&flexcan->CANCTRL1, (tmp8 & ~FLEXCAN_CTRL1_LBUF));    
         
         //
-        // Message box 14 is our receiv message box. We configure it for
-        // reception of any message
+        // setup all rx message buffers
         //
-        rx_all_filter.ext = CYGNUM_CAN_ID_STD;
-        flexcan_setup_rxmbox(chan, info->rx_all_mbox_std, &rx_all_filter);
-        rx_all_filter.ext = CYGNUM_CAN_ID_EXT;
-        flexcan_setup_rxmbox(chan, info->rx_all_mbox_ext, &rx_all_filter);
+        flexcan_config_rx_all(chan);
     
         //
         // bus off interrupt and error interrupt
@@ -1650,9 +1919,10 @@ static void flexcan_wake_dsr(cyg_vector_t vec, cyg_ucount32 count, cyg_addrword_
 
 
 //===========================================================================
-// Flexcan message box isr
+// Flexcan message box isr for rx messages if message filtering is
+// enabled
 //===========================================================================
-static cyg_uint32 flexcan_mbox_rx_isr(cyg_vector_t vec, cyg_addrword_t data)
+static cyg_uint32 flexcan_mbox_rx_filt_isr(cyg_vector_t vec, cyg_addrword_t data)
 {
     can_channel  *chan    = (can_channel *)data;
     flexcan_info *info    = (flexcan_info *)chan->dev_priv;
@@ -1671,6 +1941,7 @@ static cyg_uint32 flexcan_mbox_rx_isr(cyg_vector_t vec, cyg_addrword_t data)
     // reenable it later
     //
     flexcan_mboxint_disable(info, mbox);
+    info->mboxes[mbox].ctrlstat_shadow = FLEXCAN_CTRLSTAT_NOT_READ;
     
     //
     // for clearing the interrupt we first read the flag register as 1
@@ -1690,10 +1961,243 @@ static cyg_uint32 flexcan_mbox_rx_isr(cyg_vector_t vec, cyg_addrword_t data)
 }
 
 
+#ifdef CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_EXT_CAN_ID
 //===========================================================================
-// Flexcan message box dsr
+// Flexcan message box isr for extended identifiers if reception of all
+// available messages is enabled
 //===========================================================================
-static void flexcan_mbox_rx_dsr(cyg_vector_t vec, cyg_ucount32 count, cyg_addrword_t data)
+static cyg_uint32 flexcan_mbox_rx_ext_isr(cyg_vector_t vec, cyg_addrword_t data)
+{
+    can_channel            *chan    = (can_channel *)data;
+    flexcan_info           *info    = (flexcan_info *)chan->dev_priv;
+    flexcan_regs           *flexcan = (flexcan_regs *)info->base;
+    cyg_uint16              iflag;
+    flexcan_rxmbox_circbuf *prx_mbox_list = &(info->rxmbox_ext_circbuf);
+
+    //
+    // number of message box can be calculated from vector that caused
+    // interrupt - we pass this message box number as additional data to the
+    // callback because it is required in the receive event function later
+    //
+    cyg_uint8 mbox = vec - info->isr_vec_mbox0;
+    if (++prx_mbox_list->count < info->mboxes_ext_cnt)
+    {
+        prx_mbox_list->idx_wr = (prx_mbox_list->idx_wr + 1) % info->mboxes_ext_cnt;
+        flexcan_hwmbox_enable_rx(flexcan, prx_mbox_list->idx_wr + info->mboxes_std_cnt);
+        flexcan_hwmbox_lock(flexcan, mbox, &(info->mboxes[mbox].ctrlstat_shadow));
+        flexcan_hwmbox_disable(flexcan, mbox);  // now disable this message box - it is already locked
+        //
+        // first we disable interrupts of this message box - the DSR will
+        // reenable it later
+        //
+        flexcan_mboxint_disable(info, mbox);
+    }
+    else
+    {
+        prx_mbox_list->count = info->mboxes_ext_cnt;
+        info->mboxes[mbox].ctrlstat_shadow = FLEXCAN_CTRLSTAT_NOT_READ;
+    }
+
+    //
+    // for clearing the interrupt we first read the flag register as 1
+    // and then write it as 1 (and not as zero like the manual stated)
+    // we clear only the flag of this interrupt and leave all other
+    // message box interrupts untouched
+    //
+    HAL_READ_UINT16(&flexcan->IFLAG, iflag);
+    HAL_WRITE_UINT16(&flexcan->IFLAG, (0x0001 << mbox));
+
+    //
+    // On the mcf5272 there is no need to acknowledge internal
+    // interrupts, only external ones.
+    // cyg_drv_interrupt_acknowledge(vec); If counter of mbox list is > 1
+    // then we know that there is already a DSR running and we do not
+    // need to invoke one
+    //
+    if (prx_mbox_list->count > 1)
+    {
+        return CYG_ISR_HANDLED;
+    }
+    else
+    {
+        return CYG_ISR_CALL_DSR;
+    }
+}
+
+
+//===========================================================================
+// FlexCAN message box DSR for extended CAN frames
+//===========================================================================
+static void flexcan_mbox_rx_ext_dsr(cyg_vector_t vec, cyg_ucount32 count, cyg_addrword_t data)
+{
+    can_channel  *          chan    = (can_channel *)data;
+    flexcan_info           *info    = (flexcan_info *)chan->dev_priv;
+    flexcan_rxmbox_circbuf *prx_mbox_list = &(info->rxmbox_ext_circbuf);
+    cyg_uint8               mbox;
+    cyg_uint8               mbox_cnt;
+
+    //
+    // we do not process the message box we received as event_id
+    // we take the message boxes from the ring buffer
+    //
+    do
+    {
+        cyg_drv_isr_lock();
+        mbox_cnt = --prx_mbox_list->count;
+        cyg_drv_isr_unlock();
+
+        mbox = prx_mbox_list->idx_rd + info->mboxes_std_cnt;
+        prx_mbox_list->idx_rd = (prx_mbox_list->idx_rd + 1) % info->mboxes_ext_cnt;
+        chan->callbacks->rcv_event(chan, &mbox);
+        flexcan_mboxint_enable(info, mbox);
+
+        //
+        // if the last message box is enabled, then we have to enable
+        // another one now because the last message box is filled already
+        //
+        if (mbox_cnt == (info->mboxes_ext_cnt - 1))
+        {
+            cyg_uint8     active_mbox;
+            cyg_uint8     next_mbox;
+            flexcan_regs *flexcan = (flexcan_regs *)info->base;
+
+            cyg_drv_isr_lock();
+            active_mbox = prx_mbox_list->idx_wr;
+            next_mbox = prx_mbox_list->idx_wr = (prx_mbox_list->idx_wr + 1) % info->mboxes_ext_cnt;
+            cyg_drv_isr_unlock();
+
+            active_mbox += info->mboxes_std_cnt;
+            next_mbox += info->mboxes_std_cnt;
+            flexcan_hwmbox_lock(flexcan, active_mbox, &(info->mboxes[active_mbox].ctrlstat_shadow));
+            flexcan_hwmbox_disable(flexcan, active_mbox);  // now disable this message box - it is already locked
+            flexcan_hwmbox_enable_rx(flexcan, next_mbox);
+        }
+    }
+    while (mbox_cnt);
+}
+
+#endif // #ifdef CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_EXT_CAN_ID
+
+
+#ifdef CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID
+//===========================================================================
+// Flexcan message box isr for standard identifiers if reception of all
+// available messages is enabled
+//===========================================================================
+static cyg_uint32 flexcan_mbox_rx_std_isr(cyg_vector_t vec, cyg_addrword_t data)
+{
+    can_channel            *chan    = (can_channel *)data;
+    flexcan_info           *info    = (flexcan_info *)chan->dev_priv;
+    flexcan_regs           *flexcan = (flexcan_regs *)info->base;
+    cyg_uint16              iflag;
+    flexcan_rxmbox_circbuf *prx_mbox_list = &(info->rxmbox_std_circbuf);
+
+    //
+    // number of message box can be calculated from vector that caused
+    // interrupt - we pass this message box number as additional data to the
+    // callback because it is required in the receive event function later
+    //
+    cyg_uint8 mbox = vec - info->isr_vec_mbox0;
+    if (++prx_mbox_list->count < info->mboxes_std_cnt)
+    {
+        prx_mbox_list->idx_wr = (prx_mbox_list->idx_wr + 1) % info->mboxes_std_cnt;
+        flexcan_hwmbox_enable_rx(flexcan, prx_mbox_list->idx_wr);
+        flexcan_hwmbox_lock(flexcan, mbox, &(info->mboxes[mbox].ctrlstat_shadow));
+        flexcan_hwmbox_disable(flexcan, mbox);  // now disable this message box - it is already locked
+        //
+        // first we disable interrupts of this message box - the DSR will
+        // reenable it later
+        //
+        flexcan_mboxint_disable(info, mbox);
+    }
+    else
+    {
+        prx_mbox_list->count = info->mboxes_std_cnt;
+        info->mboxes[mbox].ctrlstat_shadow = FLEXCAN_CTRLSTAT_NOT_READ;
+    }
+
+    //
+    // for clearing the interrupt we first read the flag register as 1
+    // and then write it as 1 (and not as zero like the manual stated)
+    // we clear only the flag of this interrupt and leave all other
+    // message box interrupts untouched
+    //
+    HAL_READ_UINT16(&flexcan->IFLAG, iflag);
+    HAL_WRITE_UINT16(&flexcan->IFLAG, (0x0001 << mbox));
+
+    //
+    // On the mcf5272 there is no need to acknowledge internal
+    // interrupts, only external ones.
+    // cyg_drv_interrupt_acknowledge(vec); If counter of mbox list is > 1
+    // then we know that there is already a DSR running and we do not
+    // need to invoke one
+    //
+    if (prx_mbox_list->count > 1)
+    {
+        return CYG_ISR_HANDLED;
+    }
+    else
+    {
+        return CYG_ISR_CALL_DSR;
+    }
+}
+
+
+//===========================================================================
+// Flexcan message box dsr for standard CAN frames
+//===========================================================================
+static void flexcan_mbox_rx_std_dsr(cyg_vector_t vec, cyg_ucount32 count, cyg_addrword_t data)
+{
+    can_channel  *          chan    = (can_channel *)data;
+    flexcan_info           *info    = (flexcan_info *)chan->dev_priv;
+    flexcan_rxmbox_circbuf *prx_mbox_list = &(info->rxmbox_std_circbuf);
+    cyg_uint8               mbox;
+    cyg_uint8               mbox_cnt;
+
+    //
+    // we do not process the message box we received as event_id
+    // we take the message boxes from the ring buffer
+    //
+    do
+    {
+        cyg_drv_isr_lock();
+        mbox_cnt = --prx_mbox_list->count;
+        cyg_drv_isr_unlock();
+
+        mbox = prx_mbox_list->idx_rd;
+        prx_mbox_list->idx_rd = (prx_mbox_list->idx_rd + 1) % info->mboxes_std_cnt;
+        chan->callbacks->rcv_event(chan, &mbox);
+        flexcan_mboxint_enable(info, mbox);
+
+        //
+        // if the last message box is enabled, then we have to enable
+        // another one now because the last message box is filled already
+        //
+        if (mbox_cnt == (info->mboxes_std_cnt - 1))
+        {
+            cyg_uint8     active_mbox;
+            cyg_uint8     next_mbox;
+            flexcan_regs *flexcan = (flexcan_regs *)info->base;
+
+            cyg_drv_isr_lock();
+            active_mbox = prx_mbox_list->idx_wr;
+            next_mbox = prx_mbox_list->idx_wr = (prx_mbox_list->idx_wr + 1) % info->mboxes_ext_cnt;
+            cyg_drv_isr_unlock();
+
+            flexcan_hwmbox_lock(flexcan, active_mbox, &(info->mboxes[active_mbox].ctrlstat_shadow));
+            flexcan_hwmbox_disable(flexcan, active_mbox);  // now disable this message box - it is already locked
+            flexcan_hwmbox_enable_rx(flexcan, next_mbox);
+        }
+    }
+    while (mbox_cnt);
+}
+#endif // CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID
+
+
+//===========================================================================
+// FlexCAN DSR for message filters
+//===========================================================================
+static void flexcan_mbox_rx_filt_dsr(cyg_vector_t vec, cyg_ucount32 count, cyg_addrword_t data)
 {
     can_channel  *chan    = (can_channel *)data;
     flexcan_info *info    = (flexcan_info *)chan->dev_priv;
@@ -1791,7 +2295,7 @@ static void flexcan_mbox_tx_dsr(cyg_vector_t vec, cyg_ucount32 count, cyg_addrwo
     chan->callbacks->rcv_event(chan, &mbox);
 #endif
     
-    pmbox->tx_busy = false; 
+    pmbox->busy = false;
        
     //
     // send next message 
@@ -2049,7 +2553,8 @@ static bool flexcan_cfg_mbox_tx(flexcan_mbox     *pmbox,
 // Configure message box for reception of a certain CAN identifier
 //===========================================================================
 static void flexcan_cfg_mbox_rx(flexcan_mbox     *pmbox,
-                                cyg_can_message  *pmsg)
+                                cyg_can_message  *pmsg,
+                                bool              enable)
 {
     cyg_uint16 id;
     
@@ -2074,7 +2579,10 @@ static void flexcan_cfg_mbox_rx(flexcan_mbox     *pmbox,
         HAL_WRITE_UINT16(&pmbox->id_lo, 0);
     }
     
+    if (enable)
+    {
     HAL_WRITE_UINT8(&pmbox->ctrlstat, MBOX_RXCODE_EMPTY);
+    }
 }
 
 
@@ -2091,9 +2599,16 @@ static void flexcan_read_from_mbox(can_channel  *chan,
     flexcan_mbox    *pmbox   = &flexcan->mbox[mbox];
     cyg_can_message *pmsg    = &pevent->msg;
     cyg_uint16       id;
-    cyg_uint8        i;
+    bool             enable_mbox = false;
     
+    //
+    // If controlstat was not read, then read it now
+    //
+    if (FLEXCAN_CTRLSTAT_NOT_READ == *ctrlstat)
+    {
     HAL_READ_UINT8(&pmbox->ctrlstat, *ctrlstat); // this read will lock the mbox
+        enable_mbox = true;
+    }
     
     //
     // If message buffer is busy then it is now beeing filled with a new message
@@ -2148,20 +2663,14 @@ static void flexcan_read_from_mbox(can_channel  *chan,
     HAL_READ_UINT8_VECTOR(&pmbox->data, pmsg->data, pmsg->dlc, 1);
        
     //
-    // now zero out the remaining bytes in can message in order
-    // to deliver a defined state
-    //
-    for (i = pmsg->dlc; i < 8; ++i)
-    {
-        pmsg->data[i] = 0;
-    }
-  
-    //
     // now mark this mbox as empty and read the free running timer
     // to unlock this mbox
     //
+    if (enable_mbox)
+    {
     HAL_WRITE_UINT8(&pmbox->ctrlstat, MBOX_RXCODE_EMPTY);
     HAL_READ_UINT16(&flexcan->TIMER, id);
+    }
 #ifdef CYGOPT_IO_CAN_SUPPORT_TIMESTAMP    
     pevent->timestamp = id;
 #endif

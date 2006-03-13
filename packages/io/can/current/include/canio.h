@@ -122,7 +122,7 @@ typedef enum
 //
 // State of CAN controller
 //
-typedef enum
+typedef enum e_cyg_can_state
 {
     CYGNUM_CAN_STATE_ACTIVE,       // CAN controller is active, no errors
     CYGNUM_CAN_STATE_STOPPED,      // CAN controller is in stopped mode
@@ -138,7 +138,7 @@ typedef enum
 //
 // Identifiers for operating mode of the CAN controller.
 //
-typedef enum 
+typedef enum e_cyg_can_mode
 {
     CYGNUM_CAN_MODE_STOP,   // set controller into stop mode
     CYGNUM_CAN_MODE_START,  // set controller into operational mode
@@ -148,7 +148,7 @@ typedef enum
 //
 // Type of CAN identifier. 
 //
-typedef enum
+typedef enum e_cyg_can_id_type
 {
     CYGNUM_CAN_ID_STD = 0x00, // standard ID 11 Bit
     CYGNUM_CAN_ID_EXT = 0x01  // extended ID 29 Bit
@@ -157,17 +157,27 @@ typedef enum
 //
 // Type of CAN frame
 //
-typedef enum
+typedef enum e_cyg_can_frame_type
 {
     CYGNUM_CAN_FRAME_DATA = 0x00, // CAN data frame
     CYGNUM_CAN_FRAME_RTR  = 0x01  // CAN remote transmission request
 } cyg_can_frame_type;
 
+//
+// Message buffer configuration identifier - we do not use an enum here so that
+// a specific device driver can add its own configuration identifier
+//
+typedef cyg_uint8 cyg_can_msgbuf_cfg_id;
+#define CYGNUM_CAN_MSGBUF_RESET_ALL         0 // no message will be received, all remote buffers deleted
+#define CYGNUM_CAN_MSGBUF_RX_FILTER_ALL     1 // cfg driver for reception of all can messges
+#define CYGNUM_CAN_MSGBUF_RX_FILTER_ADD     2 // add single message filter
+#define CYGNUM_CAN_MSGBUF_REMOTE_BUF_ADD    3 // add new remote response buffer
+#define CYGNUM_CAN_MSGBUF_REMOTE_BUF_WRITE  4 // store data into existing remote buffer (remote buf handle required)
 
 //
 // CAN message type for transport or transmit of CAN messages 
 //
-typedef struct can_message
+typedef struct st_cyg_can_message
 {
     cyg_uint32          id;     // 11 Bit or 29 Bit CAN identifier - cyg_can_id_type 
     cyg_uint8           data[8];// 8 data bytes
@@ -236,7 +246,7 @@ typedef struct cyg_can_timeout_info_st
 // this data type defines a handle to a message buffer or message box
 // of the CAN hardware device
 //
-typedef cyg_int8 cyg_can_msgbuf_handle;
+typedef cyg_int32 cyg_can_msgbuf_handle;
 
 
 //
@@ -244,8 +254,9 @@ typedef cyg_int8 cyg_can_msgbuf_handle;
 //
 typedef struct cyg_can_msgbox_cfg_st
 {
-    cyg_can_msgbuf_handle  handle;
-    cyg_can_message        msg;
+    cyg_can_msgbuf_cfg_id  cfg_id; // configuration id - cfg. what to do with message buffer
+    cyg_can_msgbuf_handle  handle; // handle to message buffer
+    cyg_can_message        msg;    // CAN message - for configuration of buffer
 } cyg_can_msgbuf_cfg;
 
 //
@@ -264,10 +275,10 @@ typedef cyg_can_msgbuf_cfg cyg_can_filter;
 typedef cyg_can_msgbuf_cfg cyg_can_remote_buf;
 
 //
-// Values for the handle field of the cyg_can_rtr_buf_t data structure
+// Values for the handle field of the cyg_can_rtr_buf, cyg_can_filter and
+// cyg_can_msgbuf_cfg data structure
 //
 #define CYGNUM_CAN_MSGBUF_NA    -0x01 // no free message buffer available
-#define CYGNUM_CAN_MSGBUF_INIT  -0x02 // initialize the remote message buffer
 
 
 //

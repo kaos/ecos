@@ -108,6 +108,7 @@ void can0_thread(cyg_addrword_t data)
     cyg_uint8              i;
     cyg_can_hdi            hdi;
     cyg_can_msgbuf_info    msgbox_info;
+    cyg_can_msgbuf_cfg     msgbox_cfg;
 
     
     len = sizeof(hdi);
@@ -124,6 +125,28 @@ void can0_thread(cyg_addrword_t data)
     {
         CYG_TEST_FAIL_FINISH("/dev/can0 does not support message buffers");
     }
+    
+    //
+    // We have free message boxes available and now we can setup the message 
+    // filters, during this configuration process we set the FlexCAN modul into
+    // stopped state
+    //
+    mode = CYGNUM_CAN_MODE_STOP;
+    len = sizeof(mode);
+    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_MODE ,&mode, &len))
+    {
+        CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
+    }
+    
+    //
+    // Now reset message buffer configuration - this is mandatory bevore adding
+    //
+    msgbox_cfg.cfg_id = CYGNUM_CAN_MSGBUF_RESET_ALL;
+    len = sizeof(msgbox_cfg);
+    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_MSGBUF ,&msgbox_cfg, &len))
+    {
+        CYG_TEST_FAIL_FINISH("Error restting message buffer configuration of /dev/can0");
+    } 
     
     //
     // Now query number of available and free message boxes
@@ -143,18 +166,6 @@ void can0_thread(cyg_addrword_t data)
     }
     
     //
-    // We have free message boxes available and now we can setup the message 
-    // filters, during this configuration process we set the FlexCAN modul into
-    // stopped state
-    //
-    mode = CYGNUM_CAN_MODE_STOP;
-    len = sizeof(mode);
-    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_MODE ,&mode, &len))
-    {
-        CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
-    } 
-    
-    //
     // Now device is stopped an we can setup all free message buffers
     // we setup as many standard CAN message filters as there are free
     // message buffers available.
@@ -163,6 +174,7 @@ void can0_thread(cyg_addrword_t data)
     {
         cyg_can_filter rx_filter;
         
+        rx_filter.cfg_id  = CYGNUM_CAN_MSGBUF_RX_FILTER_ADD;
         rx_filter.msg.id  = i;
         
         if (i % 2)
@@ -175,7 +187,7 @@ void can0_thread(cyg_addrword_t data)
         }
     
         len = sizeof(rx_filter); 
-        if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_FILTER_MSG ,&rx_filter, &len))
+        if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_MSGBUF ,&rx_filter, &len))
         {
             CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
         }
@@ -234,7 +246,10 @@ void can0_thread(cyg_addrword_t data)
     //
     // Now enable reception of all available CAN messages
     //
-    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_FILTER_ALL , 0, 0))
+    cyg_can_filter rx_filter;
+    rx_filter.cfg_id  = CYGNUM_CAN_MSGBUF_RX_FILTER_ALL;
+    len = sizeof(rx_filter);
+    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_MSGBUF , &rx_filter, &len))
     {
         CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
     }
@@ -279,9 +294,6 @@ void can0_thread(cyg_addrword_t data)
 void
 cyg_start(void)
 {
-    cyg_uint32     len;
-    cyg_can_info_t can_cfg;
-    
     CYG_TEST_INIT();
     
     //
@@ -292,15 +304,19 @@ cyg_start(void)
         CYG_TEST_FAIL_FINISH("Error opening /dev/can0");
     }
     
+    // We do not setup baudrate and take dafauklt baudrate from config tool instead
+    /*
     //
     // setup CAN baudrate 250 KBaud
     //
+    cyg_uint32     len;
+    cyg_can_info_t can_cfg;
     can_cfg.baud = CYGNUM_CAN_KBAUD_250;
     len = sizeof(can_cfg);
     if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_INFO ,&can_cfg, &len))
     {
         CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
-    }
+    }*/
     
     //
     // create the two threads which access the CAN device driver

@@ -1,3 +1,11 @@
+2006-02-15  Uwe Kindler  <uwe_kindler@web.de>
+
+	* include/config_keys.h Replaced CAN configuration keys
+	CYG_IO_SET_CONFIG_CAN_REMOTE_BUF, 
+	CYG_IO_SET_CONFIG_CAN_FILTER_ALL and
+	CYG_IO_SET_CONFIG_CAN_FILTER_MSG with new single config key
+	CYG_IO_SET_CONFIG_CAN_MSGBUF
+
 2005-12-02  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/iosys.c: 

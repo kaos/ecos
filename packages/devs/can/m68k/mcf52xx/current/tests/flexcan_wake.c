@@ -139,7 +139,7 @@ void can0_thread(cyg_addrword_t data)
     // Setup the first remote response buffer for resception of standard
     // remote frames
     //
-    rtr_buf.handle      = CYGNUM_CAN_MSGBUF_INIT;
+    rtr_buf.cfg_id      = CYGNUM_CAN_MSGBUF_REMOTE_BUF_ADD;
     rtr_buf.msg.id      = 0x7FF;
     rtr_buf.msg.ext     = CYGNUM_CAN_ID_STD;
     rtr_buf.msg.rtr     = CYGNUM_CAN_FRAME_DATA;
@@ -147,7 +147,7 @@ void can0_thread(cyg_addrword_t data)
     rtr_buf.msg.data[0] = 0xAB;
     
     len = sizeof(rtr_buf);
-    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_REMOTE_BUF ,&rtr_buf, &len))
+    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_MSGBUF ,&rtr_buf, &len))
     {
         CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
     } 
@@ -251,9 +251,6 @@ void can0_thread(cyg_addrword_t data)
 void
 cyg_start(void)
 {
-    cyg_uint32     len;
-    cyg_can_info_t can_cfg;
-    
     CYG_TEST_INIT();
     
     //
@@ -264,15 +261,19 @@ cyg_start(void)
         CYG_TEST_FAIL_FINISH("Error opening /dev/can0");
     }
     
+    // We do not setup baudrate and take dafauklt baudrate from config tool instead
+    /*
     //
     // setup CAN baudrate 250 KBaud
     //
+    cyg_uint32     len;
+    cyg_can_info_t can_cfg;
     can_cfg.baud = CYGNUM_CAN_KBAUD_250;
     len = sizeof(can_cfg);
     if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_INFO ,&can_cfg, &len))
     {
         CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
-    }
+    }*/
     
     //
     // create the two threads which access the CAN device driver
