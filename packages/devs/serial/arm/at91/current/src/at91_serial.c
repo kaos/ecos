@@ -524,7 +524,8 @@ at91_serial_ISR(cyg_vector_t vector, cyg_addrword_t data)
     at91_serial_info * const at91_chan = (at91_serial_info *) chan->dev_priv;
     const CYG_ADDRWORD base = at91_chan->base;
     CYG_WORD32 stat, mask;
-
+    cyg_uint32 retcode = 0;
+    
     HAL_READ_UINT32(base + AT91_US_CSR, stat);
     HAL_READ_UINT32(base + AT91_US_IMR, mask);
     stat &= mask;
@@ -540,14 +541,17 @@ at91_serial_ISR(cyg_vector_t vector, cyg_addrword_t data)
             (CYG_ADDRESS) at91_chan->rcv_buffer[at91_chan->curbuf]
                 + at91_chan->rcv_chunk_size + RCVBUF_EXTRA - x
         );
+        retcode = CYG_ISR_CALL_DSR;
     }
 
-    if (stat & (AT91_US_IER_TxRDY | AT91_US_IER_ENDTX))
+    if (stat & (AT91_US_IER_TxRDY | AT91_US_IER_ENDTX)) {
       HAL_WRITE_UINT32(base + AT91_US_IDR, AT91_US_IER_TxRDY | AT91_US_IER_ENDTX);
-
+      retcode = CYG_ISR_CALL_DSR;
+    }
     at91_chan->stat |= stat;
+
     cyg_drv_interrupt_acknowledge(vector);
-    return CYG_ISR_CALL_DSR;
+    return retcode;
 }
 
 // Serial I/O - high level interrupt handler (DSR)

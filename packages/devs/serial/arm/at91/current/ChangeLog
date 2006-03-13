@@ -1,3 +1,8 @@
+2006-03-05  Oliver Munz  <munz@speag.ch>
+
+	* src/at91_serial.c (at91_serial_ISR): Only call the DSR if there
+	is work to do.
+	
 2006-02-28  Andrew Lunn  <andrew.lunn@ascom.ch>
             Oliver Munz  <munz@speag.ch>
 
