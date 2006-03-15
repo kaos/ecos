@@ -142,6 +142,20 @@ u8_t ip_addr_isbroadcast(struct ip_addr *, struct netif *);
 #define ip4_addr2(ipaddr) ((unsigned int)(ntohl((ipaddr)->addr) >> 16) & 0xff)
 #define ip4_addr3(ipaddr) ((unsigned int)(ntohl((ipaddr)->addr) >> 8) & 0xff)
 #define ip4_addr4(ipaddr) ((unsigned int)(ntohl((ipaddr)->addr)) & 0xff)
+
+/**
+ * Determine if two address are on the same network.
+ *
+ * @arg addr1 IP address 1
+ * @arg addr2 IP address 2
+ * @arg mask network identifier mask
+ * @return !0 if the network identifiers of both address match
+ */
+#define ip_addr_netcmp(addr1, addr2, mask) (((addr1)->addr & \
+                                              (mask)->addr) == \
+                                             ((addr2)->addr & \
+                                              (mask)->addr))
+                                              
 #endif /* __LWIP_IP_ADDR_H__ */
 
 

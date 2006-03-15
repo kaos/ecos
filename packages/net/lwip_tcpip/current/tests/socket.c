@@ -68,7 +68,7 @@ tmain(cyg_addrword_t p)
   sys_thread_new(socket_thread, (void*)"socket",7);
 }
 
-#define STACK_SIZE 0x4000
+#define STACK_SIZE 0x1000
 static char stack[STACK_SIZE];
 static cyg_thread thread_data;
 static cyg_handle_t thread_handle;

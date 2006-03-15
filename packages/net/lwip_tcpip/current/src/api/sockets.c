@@ -499,7 +499,7 @@ lwip_send(int s, void *data, int size, unsigned int flags)
     /* deallocated the buffer */
     netbuf_delete(buf);
   }
-    break;
+  break;
 #endif
 #if LWIP_TCP
   case NETCONN_TCP:

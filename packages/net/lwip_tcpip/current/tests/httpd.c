@@ -39,7 +39,7 @@
 #include "lwip/tcp.h"
 
 struct http_state {
-  char *file;
+  const char *file;
   u32_t left;
   u8_t retries;
 };
@@ -171,7 +171,7 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 	  }
 	}
 
-	hs->file = &sdata;
+	hs->file = sdata;
 	hs->left = sizeof(sdata);
 
 	pbuf_free(p);
@@ -250,7 +250,7 @@ tmain(cyg_addrword_t p)
   sys_thread_new(httpd_init, (void*)"httpd",7);  
 }
 
-#define STACK_SIZE 0x4000
+#define STACK_SIZE 0x1000
 static char stack[STACK_SIZE];
 static cyg_thread thread_data;
 static cyg_handle_t thread_handle;

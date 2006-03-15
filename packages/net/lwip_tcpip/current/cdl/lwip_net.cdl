@@ -169,7 +169,7 @@ cdl_package CYGPKG_NET_LWIP {
 		no_define
 		description   	"
 			Tunables for various aspects of memory usage throughout the stack."
-			
+				
 		cdl_option CYGNUM_LWIP_MEM_ALIGNMENT {
 			display		"Memory alignment"
 			flavor		data
@@ -185,7 +185,7 @@ cdl_package CYGPKG_NET_LWIP {
 			default_value 	4000
 			description   	"
 				MEM_SIZE: the size of the heap memory. If the application will send
-				a lot of data that needs to be copied, this should be set high."
+				a lot of data that needs to be copied, this should be set high."		
 		}		 
 		
 		cdl_option CYGNUM_LWIP_MEMP_NUM_PBUF {
@@ -237,7 +237,7 @@ cdl_package CYGPKG_NET_LWIP {
 		cdl_option CYGNUM_LWIP_MEMP_NUM_SYS_TIMEOUT {
 			display		"Simultaneous active timeouts"
 			flavor		data
-			default_value 	3
+			default_value 	CYGPKG_LWIP_DHCP ? 6 : 4
 			description   	"
 				MEMP_NUM_SYS_TIMEOUT: the number of simulateously active
 				timeouts."
@@ -249,7 +249,7 @@ cdl_package CYGPKG_NET_LWIP {
 			no_define
 			description	"
 				The following four are used only with the sequential API and can be
-  			        set to 0 if the application only will use the raw API."
+  			    set to 0 if the application only will use the raw API."
 		
 
 			cdl_option CYGNUM_LWIP_MEMP_NUM_NETBUF {
@@ -315,7 +315,7 @@ cdl_package CYGPKG_NET_LWIP {
 			default_value 	1024
 			description   	"
 			PBUF_POOL_BUFSIZE: the size of each pbuf in the pbuf pool."
-		}		 
+		}		
 		 
 		cdl_option CYGNUM_LWIP_PBUF_LINK_HLEN {
 			display		"Allocation for a link level header"
@@ -332,7 +332,7 @@ cdl_package CYGPKG_NET_LWIP {
 		flavor 		none
 		no_define
 		description   	"
-		Tune the TCP protocol details"
+		           Tune the TCP protocol details"
 			
 		cdl_option CYGFUN_LWIP_TCP {
 			display		"Activate TCP"
@@ -372,7 +372,7 @@ cdl_package CYGPKG_NET_LWIP {
 			default_value 	2048
 			description   	"
 				TCP Maximum segment size."
-		}		 
+		}	
 			 
 		cdl_option CYGNUM_LWIP_TCP_SND_BUF {
 			display		"Sender buffer space"
@@ -486,27 +486,32 @@ cdl_package CYGPKG_NET_LWIP {
 		}
 	}
 
-	cdl_component CYGPKG_LWIP_DHCP_OPTIONS {
-		display		"DHCP"
-		flavor		none
-		no_define
+	cdl_component CYGPKG_LWIP_DHCP {
+		display		  "Use DHCP"
+		flavor		  bool
+		default_value 0
+		requires  { CYGNUM_LWIP_MEMP_NUM_SYS_TIMEOUT >= 6 }
+		description "
+		    Provide DHCP for initializing the IP address of network interfaces."
+		compile core/dhcp.c
 
-
-		cdl_option CYGFUN_LWIP_DHCP {
-			display		"Activate DHCP"
-			flavor		bool
-			default_value 	0
-			description   	"
-				Enable this option if you want DHCP configuration of
-				interfaces."
-			compile core/dhcp.c
-		}
-
-
+        cdl_option CYGOPT_LWIP_DHCP_MANAGEMENT {
+            display    "DHCP management"
+            flavor     bool
+            default_value 1
+            description "
+                If enabled then the lwIP stack automatically calls dhcp_start(), 
+                dhcp_fine_tmr() and dhcp_coarse_tmr(). The DHCP stuff is handled 
+                in the TCP/IP thread. If this causes trouble on high traffic loads 
+                or if the application need to be aware of the DHCP state then it 
+                is better to disable this option. In this case managing the DHCP 
+                state in an application aware thread is recommended."        
+        }
+        
 		cdl_option CYGOPT_LWIP_DHCP_DOES_ARP_CHECK {
 			display		"Check offered address"
 			flavor		bool
-			default_value 	0
+			default_value 	1
 			description   	"
 				Enable this option if you want to do an ARP check on the offered address
 				(recommended)."
@@ -557,7 +562,7 @@ cdl_package CYGPKG_NET_LWIP {
 			flavor 	data
 			default_value {"\"/dev/ser0\""}
 			description "
-			Which serial port to use SLIP on."
+			        Which serial port to use SLIP on."
 		}
 	}
 	

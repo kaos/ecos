@@ -34,6 +34,7 @@
  * init.c - misc lwip ecos glue functions 
  */
 #include <pkgconf/system.h>
+#include <pkgconf/net_lwip.h>
 #include "lwip/opt.h"
 #include "lwip/sys.h"
 #include "lwip/memp.h"
@@ -75,12 +76,6 @@ void inline IP_ADDR(struct ip_addr *ipaddr, char a, char b, char c, char d)
 }
 
 
-void tcpip_init_done(void * arg)
-{
-	sys_sem_t *sem = arg;
-	sys_sem_signal(*sem);
-}
-
 struct netif mynetif, loopif;
 void lwip_set_addr(struct netif *netif);
 #if PPP_SUPPORT
@@ -115,6 +110,48 @@ ppp_trace(int level, const char *format,...)
 #if LWIP_HAVE_LOOPIF
 struct netif ecos_loopif;
 #endif
+
+
+static void
+arp_timer(void *arg)
+{
+  etharp_tmr();
+  sys_timeout(ARP_TMR_INTERVAL, (sys_timeout_handler) arp_timer, NULL);
+}
+
+#if LWIP_DHCP
+static void lwip_dhcp_fine_tmr(void *arg)
+{
+    dhcp_fine_tmr();
+    sys_timeout(500, (sys_timeout_handler) lwip_dhcp_fine_tmr, NULL);
+}
+
+static void lwip_dhcp_coarse_tmr(void *arg)
+{
+    dhcp_coarse_tmr();
+    sys_timeout(60000, (sys_timeout_handler) lwip_dhcp_coarse_tmr, NULL);
+}
+#endif
+
+
+//
+// This function is called when tcpip thread finished initialisation.
+// We start several timers here - these timers are all handled in the
+// tcpip thread. That means that also the DHCP stuff is handled in the
+// TCPIP thread. If this causes any trouble than it may be necessaray to
+// use an own DHCP thread insted.
+//
+void tcpip_init_done(void * arg)
+{
+    sys_timeout(ARP_TMR_INTERVAL, (sys_timeout_handler) arp_timer, NULL);
+#ifdef CYGOPT_LWIP_DHCP_MANAGEMENT
+	sys_timeout(500, (sys_timeout_handler) lwip_dhcp_fine_tmr, NULL);
+	sys_timeout(60000, (sys_timeout_handler) lwip_dhcp_coarse_tmr, NULL);
+#endif
+	sys_sem_t *sem = arg;
+	sys_sem_signal(*sem);
+}
+
 
 /*
  * Called by the eCos application at startup
@@ -169,21 +206,42 @@ lwip_init(void)
 	return 0;
 }
 
+
+err_t lwip_dummy_netif_init(struct netif *netif)
+{
+    return ERR_OK; 
+}
+
+
 void
 lwip_set_addr(struct netif *netif)
 {
 	struct ip_addr ipaddr, netmask, gw;
+  
+#if LWIP_DHCP
+    IP4_ADDR(&gw, 0,0,0,0);
+    IP4_ADDR(&ipaddr, 0,0,0,0);
+    IP4_ADDR(&netmask, 0,0,0,0);
 
+    netif_add(netif, &ipaddr, &netmask, &gw, netif->state, lwip_dummy_netif_init, tcpip_input);
+    netif_set_default(netif);
+#else
 	IP_ADDR(&gw, CYGDAT_LWIP_SERV_ADDR);
 	IP_ADDR(&ipaddr, CYGDAT_LWIP_MY_ADDR);
 	IP_ADDR(&netmask, CYGDAT_LWIP_NETMASK);
-	netif_set_addr(netif, &ipaddr, &netmask, &gw);
-	netif->next = netif_list;
-	netif_list = netif;
-	
-	netif->input = tcpip_input;
-	//netif->input = ip_input;
+
+	netif_add(netif, &ipaddr, &netmask, &gw, netif->state, lwip_dummy_netif_init, tcpip_input);
+    netif_set_default(netif); 
+#endif 
 }
+
+void lwip_dhcp_init(struct netif *netif)
+{
+#ifdef CYGOPT_LWIP_DHCP_MANAGEMENT
+    dhcp_start(netif);
+#endif
+}
+
 
 #ifdef CYGPKG_LWIP_ETH
 //io eth stuff
@@ -224,6 +282,7 @@ input_thread(void *arg)
 
 }
 
+
 // Initialize all network devices
 static void
 init_hw_drivers(void)
@@ -240,22 +299,15 @@ init_hw_drivers(void)
   }
 }
 
-static void
-arp_timer(void *arg)
-{
-  etharp_tmr();
-  sys_timeout(ARP_TMR_INTERVAL, (sys_timeout_handler) arp_timer, NULL);
-}
-
+extern struct netif *netif_default;
 
 static void
 ecosglue_init(void)
 {
-  cyg_semaphore_init(&delivery, 0);
-  init_hw_drivers();
-  sys_thread_new(input_thread, (void*)0, CYGNUM_LWIP_ETH_THREAD_PRIORITY);
-  etharp_init();
-  sys_timeout(ARP_TMR_INTERVAL, (sys_timeout_handler) arp_timer, NULL);
+    etharp_init();
+    cyg_semaphore_init(&delivery, 0);
+    init_hw_drivers();
+    sys_thread_new(input_thread, (void*)0, CYGNUM_LWIP_ETH_THREAD_PRIORITY);
 }
 
 #endif //CYGPKG_LWIP_ETH

@@ -185,13 +185,13 @@ do_udp_test(int s1, struct nc_request *req, struct sockaddr_in *master)
                 if ((ntohl(tdp->key1) == NC_TEST_DATA_KEY1) &&
                     (ntohl(tdp->key2) == NC_TEST_DATA_KEY2)) {
                     if (ntohl(tdp->seq) != seq) {
-                        test_printf("Packets out of sequence - recvd: %d, expected: %d\n",
+                        test_printf("Packets out of sequence - recvd: %ld, expected: %d\n",
                                     ntohl(tdp->seq), seq);
                         seq = ntohl(tdp->seq);
                         seq_errors++;
                     }
                 } else {
-                    test_printf("Bad data packet - key: %lx/%lx, seq: %d\n",
+                    test_printf("Bad data packet - key: %lx/%lx, seq: %ld\n",
                                 ntohl(tdp->key1), ntohl(tdp->key2),
                                 ntohl(tdp->seq));
                 }
@@ -358,13 +358,13 @@ do_tcp_test(int s1, struct nc_request *req, struct sockaddr_in *master)
                 if ((ntohl(tdp->key1) == NC_TEST_DATA_KEY1) &&
                     (ntohl(tdp->key2) == NC_TEST_DATA_KEY2)) {
                     if (ntohl(tdp->seq) != seq) {
-                        test_printf("Packets out of sequence - recvd: %d, expected: %d\n",
+                        test_printf("Packets out of sequence - recvd: %ld, expected: %d\n",
                                     ntohl(tdp->seq), seq);
                         seq = ntohl(tdp->seq);
                         seq_errors++;
                     }
                 } else {
-                    test_printf("Bad data packet - key: %lx/%lx, seq: %d\n",
+                    test_printf("Bad data packet - key: %lx/%lx, seq: %ld\n",
                                 ntohl(tdp->key1), ntohl(tdp->key2),
                                 ntohl(tdp->seq));
                 }
@@ -452,22 +452,22 @@ nc_slave(test_param_t param)
             done = true;
             break;
         case NC_REQUEST_UDP_SEND:
-            test_printf("UDP send - %d buffers, %d bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
+            test_printf("UDP send - %ld buffers, %ld bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
             break;
         case NC_REQUEST_UDP_RECV:
-            test_printf("UDP recv - %d buffers, %d bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
+            test_printf("UDP recv - %ld buffers, %ld bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
             break;
         case NC_REQUEST_UDP_ECHO:
-            test_printf("UDP echo - %d buffers, %d bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
+            test_printf("UDP echo - %ld buffers, %ld bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
             break;
         case NC_REQUEST_TCP_SEND:
-            test_printf("TCP send - %d buffers, %d bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
+            test_printf("TCP send - %ld buffers, %ld bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
             break;
         case NC_REQUEST_TCP_RECV:
-            test_printf("TCP recv - %d buffers, %d bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
+            test_printf("TCP recv - %ld buffers, %ld bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
             break;
         case NC_REQUEST_TCP_ECHO:
-            test_printf("TCP echo - %d buffers, %d bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
+            test_printf("TCP echo - %ld buffers, %ld bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
             break;
         case NC_REQUEST_SET_LOAD:
             start_load(ntohl(req.nbufs));
@@ -487,7 +487,7 @@ nc_slave(test_param_t param)
             reply.misc.idle_results.count[1] = htonl((long)idle_thread_count);
             break;
         default:
-            test_printf("Unrecognized request: %d\n", ntohl(req.type));
+            test_printf("Unrecognized request: %ld\n", ntohl(req.type));
             reply.response = htonl(NC_REPLY_NAK);
             reply.reason = htonl(NC_REPLY_NAK_UNKNOWN_REQUEST);
             break;

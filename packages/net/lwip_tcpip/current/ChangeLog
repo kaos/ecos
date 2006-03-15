@@ -1,3 +1,31 @@
+2006-03-15  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/nc_test_slave.c (nc_slave): Fix some of the compiler
+	warnings.
+
+2006-03-13  Uwe Kindler <uwe_kindler@web.de>
+
+	* cdl/lwip_net.cdl Changed default value of 
+	CYGNUM_LWIP_MEMP_NUM_SYS_TIMEOUT (required for DHCP). 
+	Replaced CYGPKG_LWIP_DHCP_OPTIONS with CYGPKG_LWIP_DHCP 
+	and add CYGOPT_LWIP_DHCP_MANAGEMENT for automatic DHCP
+	management.
+	* include/lwip/ip_addr.h Add macro ip_addr_netcmp() 
+	(copied from lwIP CVS).
+	* include/netif/etharp.h Updated file to version of
+	lwIP CVS.
+	* src/ecos/init.c Add include <pkgconf/net_lwip.h>
+	Add lwip_dhcp_fine_tmr() and lwip_dhcp_coarse_tmr()
+	for DHCP processing.
+	Change tcpip_init_done() to start DHCP timers and
+	ARP timer.
+	Changed lwip_set_addr() to properly setup IP adress
+	if DHCP is used.
+	Added lwip_dhcp_init() for start of DHCP client.
+	Removed start of ARP timer from ecosclue_init().
+	* src/netif/etharp.c Updated file to version of
+	lwIP CVS.
+	
 2006-03-02  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/lwip_net.cdl: Add the interfaces CYGPKG_NET_STACK,

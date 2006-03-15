@@ -158,7 +158,7 @@ a lot of data that needs to be copied, this should be set high. */
 /* Define LWIP_DHCP to 1 if you want DHCP configuration of
    interfaces.*/
 
-#ifdef CYGFUN_LWIP_DHCP
+#ifdef CYGPKG_LWIP_DHCP
   #define LWIP_DHCP               1
 
 /* 1 if you want to do an ARP check on the offered address
@@ -202,7 +202,7 @@ a lot of data that needs to be copied, this should be set high. */
 #else
 #define LWIP_HAVE_LOOPIF	    0
 #endif
-/* ---------- PPP options --------- */  
+/* ---------- PPP options --------- */ 
 #ifdef CYGPKG_LWIP_PPP 
 #define PPP_SUPPORT             1
 #else
