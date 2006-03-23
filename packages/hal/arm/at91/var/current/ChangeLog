@@ -1,3 +1,9 @@
+2006-03-23  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/timer_pit.c (hal_delay_us): Start the PIT if it is not
+	running when hal_delay_us is called. This happens when the kernel
+	is not used. Problem found by Oliver Munz.
+
 2006-03-10  Oliver Munz  <munz@speag.ch>
 
 	* src/hal_diag.c (cyg_hal_plf_serial_isr): Change the #ifdefs to

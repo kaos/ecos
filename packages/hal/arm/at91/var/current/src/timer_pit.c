@@ -105,7 +105,14 @@ void hal_delay_us(cyg_int32 usecs)
 {
   cyg_int64 ticks;
   cyg_uint32 val1, val2;
-  cyg_uint32 piv;
+  cyg_uint32 pimr;
+  
+  // Check that the PIT is running. If not start it.
+  HAL_READ_UINT32((AT91_PITC + AT91_PITC_PIMR),pimr);
+  if (!(pimr & AT91_PITC_PIMR_PITEN)) {
+    HAL_WRITE_UINT32((AT91_PITC + AT91_PITC_PIMR), 
+                     0xffff | AT91_PITC_PIMR_PITEN);
+  }
   
   // Calculate how many PIT ticks the required number of microseconds
   // equate to. We do this calculation in 64 bit arithmetic to avoid
@@ -117,8 +124,6 @@ void hal_delay_us(cyg_int32 usecs)
   // above does not work by about a factor or 3. If anybody works out
   // why, please let me know!
   ticks = ticks / 3;
-  
-  HAL_READ_UINT32(AT91_PITC + AT91_PITC_PIMR, piv);
   
   while (ticks > 0) {
     hal_clock_read(&val1);
