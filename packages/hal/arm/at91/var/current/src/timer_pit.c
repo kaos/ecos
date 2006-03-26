@@ -79,7 +79,19 @@ void
 hal_clock_reset(cyg_uint32 vector, cyg_uint32 period)
 {
   cyg_uint32 reg;
+  cyg_uint32 pimr;
   
+  CYG_ASSERT(period < 0xffffff, "Invalid HAL clock configuration");
+  
+  // Check that the PIT has the right period.
+  HAL_READ_UINT32((AT91_PITC + AT91_PITC_PIMR), pimr);
+  if ((pimr & 0xffffff) != (period - 1)){
+    HAL_WRITE_UINT32((AT91_PITC + AT91_PITC_PIMR), 
+                     (period - 1) |  
+                     AT91_PITC_PIMR_PITEN |
+                     AT91_PITC_PIMR_PITIEN);
+  }
+
   /* Read the value register so that we clear the interrupt */
   HAL_READ_UINT32(AT91_PITC + AT91_PITC_PIVR, reg);
 }
@@ -91,6 +103,14 @@ void
 hal_clock_read(cyg_uint32 *pvalue)
 {
   cyg_uint32 ir;
+  cyg_uint32 pimr;
+  
+  // Check that the PIT is running. If not start it.
+  HAL_READ_UINT32((AT91_PITC + AT91_PITC_PIMR),pimr);
+  if (!(pimr & AT91_PITC_PIMR_PITEN)) {
+    HAL_WRITE_UINT32((AT91_PITC + AT91_PITC_PIMR), 
+                     0xffffff | AT91_PITC_PIMR_PITEN);
+  }
   
   HAL_READ_UINT32(AT91_PITC + AT91_PITC_PIIR, ir);
   *pvalue = ir & 0xfffff;
@@ -105,14 +125,7 @@ void hal_delay_us(cyg_int32 usecs)
 {
   cyg_int64 ticks;
   cyg_uint32 val1, val2;
-  cyg_uint32 pimr;
-  
-  // Check that the PIT is running. If not start it.
-  HAL_READ_UINT32((AT91_PITC + AT91_PITC_PIMR),pimr);
-  if (!(pimr & AT91_PITC_PIMR_PITEN)) {
-    HAL_WRITE_UINT32((AT91_PITC + AT91_PITC_PIMR), 
-                     0xffff | AT91_PITC_PIMR_PITEN);
-  }
+  cyg_uint32 piv;
   
   // Calculate how many PIT ticks the required number of microseconds
   // equate to. We do this calculation in 64 bit arithmetic to avoid
@@ -120,23 +133,18 @@ void hal_delay_us(cyg_int32 usecs)
   ticks = (((cyg_uint64)usecs) * 
            ((cyg_uint64)CYGNUM_HAL_ARM_AT91_CLOCK_SPEED))/16/1000000LL;
   
-  // I've no idea why, but waiting for the number of ticks calculated
-  // above does not work by about a factor or 3. If anybody works out
-  // why, please let me know!
-  ticks = ticks / 3;
+  // Calculate the wrap around period. 
+  HAL_READ_UINT32(AT91_PITC + AT91_PITC_PIMR, piv);
+  piv = (piv & 0xffffff) - 1; 
   
+  hal_clock_read(&val1);
   while (ticks > 0) {
-    hal_clock_read(&val1);
-    do {
-      hal_clock_read(&val2);
-    } while (val1 == val2);
-    // Sometimes we miss a tick, maybe because of interrupt handling?
-    // So calculate the number of ticks, without making a big error
-    // with wrap around.
-    if (val2 > val1)
-      ticks -= (val2 - val1);
+    hal_clock_read(&val2);
+    if (val2 < val1)
+      ticks -= ((piv + val2) - val1); //overflow occurred
     else 
-      ticks--;
+      ticks -= (val2 - val1);
+    val1 = val2;
   }
 }
 

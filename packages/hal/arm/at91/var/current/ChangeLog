@@ -1,3 +1,11 @@
+2006-03-10  Oliver Munz  <munz@speag.ch>
+
+	* src/timer_pit.c: fix hal_delay_us(). hal_clock_read for
+	initializing the PIT if needed. Change hal_clock_reset() to allow
+	setting of a new period.  This is required when the timer is
+	started by hal_delay_us() or hal_clock_read() before
+	hal_clock_initialize().
+
 2006-03-23  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/timer_pit.c (hal_delay_us): Start the PIT if it is not
