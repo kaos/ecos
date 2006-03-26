@@ -1,3 +1,9 @@
+2006-03-26  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/nc_test_framework.h: 
+	* tests/nc_test_master.c: Fix the compiler warnings when
+	building for Linux.
+
 2006-02-27	Jay Foster   <jay@systech.com>
 
 	* src/dhcp_prot.c: Updated set_fixed_tag(), set_variable_tag(),

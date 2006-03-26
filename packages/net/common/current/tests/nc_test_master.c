@@ -66,6 +66,7 @@ struct pause {
 extern void
 cyg_test_exit(void);
 #else
+#include <stdlib.h>
 void
 cyg_test_exit(void)
 {

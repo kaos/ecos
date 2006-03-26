@@ -47,6 +47,7 @@
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
+#include <string.h>
 
 #include <netdb.h>
 #ifndef EAI_NONE
@@ -58,6 +59,7 @@
 #define test_printf diag_printf
 typedef cyg_addrword_t test_param_t;
 #else
+#include <stdio.h>
 #define test_printf printf
 typedef void *test_param_t;
 #endif
