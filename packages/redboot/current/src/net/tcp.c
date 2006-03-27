@@ -868,6 +868,7 @@ __tcp_write_block(tcp_socket_t *s, char *buf, int len)
         if (n > 0) {
             len -= n;
             buf += n;
+            total += n;
         }
         __tcp_poll();
     }
