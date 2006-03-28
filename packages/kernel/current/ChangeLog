@@ -1,3 +1,10 @@
+2006-03-27  Marco Cruz  <marco@daruma.com.br>
+
+	* include/thread.hxx: removed extra qualifier of
+	Cyg_Thread::reinitialize() to permit compile on gcc 4.1.0
+	* include/sched.hxx: removed extra qualifier of
+	Cyg_Scheduler::thread_entry to permit compile on gcc 4.1.0
+
 2006-02-14  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/timeslice.c  (STACK_SIZE): Reduce the stack size so it will

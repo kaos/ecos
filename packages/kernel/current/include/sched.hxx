@@ -178,7 +178,7 @@ public:
     static void             unlock_simple();
 
     // perform thread startup housekeeping
-    void Cyg_Scheduler::thread_entry( Cyg_Thread *thread );
+    void thread_entry( Cyg_Thread *thread );
     
     // Start execution of the scheduler
     static void start() CYGBLD_ATTRIB_NORET;
