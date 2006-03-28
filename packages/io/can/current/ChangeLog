@@ -1,29 +1,34 @@
+2006-03-27  Uwe Kindler  <uwe_kindler@web.de>
+
+	* src/can.c can_rcv_event() Clear the flag field in new event before
+	calling into low level hardware driver.
+
 2006-02-15  Uwe Kindler  <uwe_kindler@web.de>
 
-    * include/can_io.h Added message buffer configuration identifier:
-    CYGNUM_CAN_MSGBUF_RESET_ALL, CYGNUM_CAN_MSGBUF_RX_FILTER_ALL ...
-    Added cfg_id field to cyg_can_msgbuf_cfg data structure.
+	* include/can_io.h Added message buffer configuration identifier:
+	CYGNUM_CAN_MSGBUF_RESET_ALL, CYGNUM_CAN_MSGBUF_RX_FILTER_ALL ...
+	Added cfg_id field to cyg_can_msgbuf_cfg data structure.
 
 2005-09-11  Uwe Kindler  <uwe_kindler@web.de>
 
 	* include/can_io.h Added support for get_config to CAN_LOWLEVEL_FUNS
-	  structure. 
-	  Added additional CAN events. 
-	  Added support for can state (cyg_can_state) and CAN mode (cyg_can_mode).  
-	  Changed data type of cyg_can_buf_info_t data structure from cyg_int32 
-	  to cyg_uint32. 
-	  Added support for message box configuration (cyg_can_msgbuf_info).
-	  Added support for message filtering (cyg_cn_filter). 
-	  Renamed cyg_can_rtr_buf to cyg_can_remote_buf. 
-	  Renamed CYGNUM_CAN_RTR_BUF_NA and CYGNUM_CAN_RTR_BUF_INIT to 
-	  CYGNUM_CAN_MSGBUF_NA and CYGNUM_CAN_MSGBUF_INIT because they are
-	  also used for message filtering. 
-	  Added support for hardware description interface. 
-	  Added support for CYG_IO_SET_CONFIG_CAN_INPUT_FLUSH,
-	  CYG_IO_SET_CONFIG_CAN_OUTPUT_FLUSH and CYG_IO_GET_CONFIG_SERIAL_OUTPUT_DRAIN.
-	  
+	structure. 
+	Added additional CAN events. 
+	Added support for can state (cyg_can_state) and CAN mode (cyg_can_mode).  
+	Changed data type of cyg_can_buf_info_t data structure from cyg_int32 
+	to cyg_uint32. 
+	Added support for message box configuration (cyg_can_msgbuf_info).
+	Added support for message filtering (cyg_cn_filter). 
+	Renamed cyg_can_rtr_buf to cyg_can_remote_buf. 
+	Renamed CYGNUM_CAN_RTR_BUF_NA and CYGNUM_CAN_RTR_BUF_INIT to 
+	CYGNUM_CAN_MSGBUF_NA and CYGNUM_CAN_MSGBUF_INIT because they are
+	also used for message filtering. 
+	Added support for hardware description interface. 
+	Added support for CYG_IO_SET_CONFIG_CAN_INPUT_FLUSH,
+	CYG_IO_SET_CONFIG_CAN_OUTPUT_FLUSH and CYG_IO_GET_CONFIG_SERIAL_OUTPUT_DRAIN.
+	
 	* doc/can_driver_doc.html Additional configuration options
-	  documented.
+	documented.
 	
 2005-05-24  Uwe Kindler  <uwe_kindler@web.de>
 

@@ -705,6 +705,7 @@ static void can_rcv_event(can_channel *chan, void *pdata)
     // protect data access here
     //
     cyg_drv_dsr_lock();
+    prxbuf[cbuf->put].flags = 0; // clear flags because it is a new event
     if (chan->funs->getevent(chan, &prxbuf[cbuf->put], pdata))
     {
         if (cbuf->data_cnt < cbuf->len)
