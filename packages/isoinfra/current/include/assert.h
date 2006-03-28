@@ -73,7 +73,7 @@
 
 /* First preference is to be standards compliant */
 
-#if defined(CYGINT_ISO_STDIO_FORMATTED_IO) && defined(CYGINT_ISO_EXIT)
+#if defined(CYGINT_ISO_STDIO_FORMATTED_IO) && CYGINT_ISO_EXIT
 
 # include <stdio.h>
 # include <stdlib.h>

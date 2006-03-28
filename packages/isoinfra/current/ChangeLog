@@ -1,3 +1,10 @@
+2006-03-17  Sergei Organov  <osv@javad.com>
+
+	* include/assert.h: Replace #if defined(CYGINT_ISO_EXIT) with #if
+	CYGINT_ISO_EXIT. CYGINT_ISO_EXIT configuration variable is always
+	defined to either 0 or 1, so check of the former form is always
+	evaluated to true.
+					 
 2005-10-20  Alexander Neundorf <neundorf@kde.org>
 	    Andrew Lunn  <andrew.lunn@ascom.ch>
 
