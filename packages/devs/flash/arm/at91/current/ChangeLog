@@ -1,4 +1,9 @@
 2006-02-19  Oliver Munz <munz@speag.ch>
+	
+	* src/at91_flash.c: Optimize the cyg_uint32 page.
+	  Make the lock/unlock functions work.
+
+2006-02-19  Oliver Munz <munz@speag.ch>
 	    Andrew Lunn <andrew.lunn@ascom.ch>
 
 	* src/at91_flash.c: 

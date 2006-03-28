@@ -129,19 +129,23 @@ flash_wait_for_controller (cyg_uint32 timeout)
 // probably not be in flash
 
 static int 
-flash_run_command(cyg_uint32 page, 
+flash_run_command(cyg_uint32 address, 
                   cyg_uint32 command, 
                   cyg_uint32 timeout) 
 CYGBLD_ATTRIB_SECTION(".2ram.flash_run_command");
 
 static int 
-flash_run_command(cyg_uint32 page, 
+flash_run_command(cyg_uint32 address, 
                   cyg_uint32 command, 
                   cyg_uint32 timeout) 
 {
   cyg_uint32 retcode;
   cyg_uint32 fsr;
   cyg_uint32 mask;
+  cyg_uint32 page;
+  
+  page = ((cyg_uint32) address - (cyg_uint32) flash_info.start) / 
+    flash_info.block_size;
   
   // Wait for the last command to finish
   retcode = flash_wait_for_controller(timeout);
@@ -269,7 +273,6 @@ flash_erase_block (volatile unsigned long block)
   cyg_uint32 retcode;
   cyg_uint32 *buffer;
   cyg_uint32 *end;
-  cyg_uint32 page;
   
   buffer = (cyg_uint32 *) block;
   end = (cyg_uint32 *) (block + flash_info.block_size);
@@ -279,11 +282,8 @@ flash_erase_block (volatile unsigned long block)
     buffer++;
   }
   
-  page = ((cyg_uint32) block - (cyg_uint32)flash_info.start) / 
-    flash_info.block_size;
-  
   flash_erase_before_write_enable();
-  retcode = flash_run_command(page, 
+  retcode = flash_run_command(block, 
                               AT91_MC_FCR_START_PROG, 
                               FLASH_TIMEOUT);
   
@@ -300,7 +300,6 @@ flash_program_buf (volatile unsigned long addr, unsigned long *data, int len)
 {
   cyg_uint32 retcode;
   volatile unsigned long *target;
-  cyg_uint32 page;
   
   CYG_ASSERT(len % 4 == 0, "Only word writes allowed by current code");
   CYG_ASSERT(addr % 4 == 0, "Address must be word aligned for current code");
@@ -314,11 +313,8 @@ flash_program_buf (volatile unsigned long addr, unsigned long *data, int len)
     len = len - sizeof(unsigned long);
   }
   
-  page = ((cyg_uint32) addr - (cyg_uint32)flash_info.start) / 
-    flash_info.block_size;
-
   flash_erase_before_write_disable();
-  retcode = flash_run_command(page, 
+  retcode = flash_run_command(addr, 
                               AT91_MC_FCR_START_PROG, 
                               FLASH_TIMEOUT);
   
@@ -334,14 +330,21 @@ flash_unlock_block(volatile unsigned long block, int block_size, int blocks)
 {
   cyg_uint32 sector;
   cyg_uint32 retcode;
+  cyg_uint32 status;
   
-  sector = ((cyg_uint32 )block) / sector_size;
-
-  retcode = flash_run_command(sector << 4, 
-                              AT91_MC_FCR_UNLOCK, 
-                              FLASH_TIMEOUT);
-
-  return retcode;
+  sector = (((cyg_uint32) block) - (cyg_uint32) flash_info.start) / 
+    sector_size;
+ 
+  HAL_READ_UINT32(AT91_MC + AT91_MC_FSR, status);
+  
+  if (status & (1 << (sector + 16))){
+      retcode = flash_run_command(block, 
+                                  AT91_MC_FCR_UNLOCK, 
+                                  FLASH_TIMEOUT);
+      return retcode;
+  } else {
+    return FLASH_ERR_OK;
+  }
 }
 
 // Lock a block. This is not strictly possible, we can only lock and
@@ -352,14 +355,22 @@ flash_lock_block(volatile unsigned long block, int block_size, int blocks)
 {
   cyg_uint32 sector;
   cyg_uint32 retcode;
+  cyg_uint32 status;
   
-  sector = ((cyg_uint32) block) / sector_size;
+  sector = (((cyg_uint32) block) - (cyg_uint32) flash_info.start) / 
+    sector_size;
 
-  retcode = flash_run_command(sector << 4, 
-                              AT91_MC_FCR_UNLOCK, 
-                              FLASH_TIMEOUT);
+  HAL_READ_UINT32(AT91_MC + AT91_MC_FSR, status);
   
-  return retcode;
+  if (!(status & (1 << (sector + 16)))){
+      retcode = flash_run_command(block, 
+                                  AT91_MC_FCR_LOCK, 
+                                  FLASH_TIMEOUT);
+      
+      return retcode;
+  } else {
+    return FLASH_ERR_OK;
+  }
 }
 #endif 
   
