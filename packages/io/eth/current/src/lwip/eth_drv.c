@@ -88,6 +88,7 @@ int cyg_io_eth_net_debug = CYGDBG_IO_ETH_DRIVERS_DEBUG_VERBOSITY;
 
 extern void lwip_dsr_stuff(void);
 extern void lwip_set_addr(struct netif *);
+extern void lwip_dhcp_init(struct netif *);
 
 //DSR called from the low level driver.Signals the input_thread
 void
@@ -126,7 +127,10 @@ eth_drv_init(struct eth_drv_sc *sc, unsigned char *enaddr)
         }
     }
 #endif
-
+    //
+    // we call this after the driver was started successfully
+    //
+    lwip_dhcp_init(netif);
 }
 
 //
@@ -277,13 +281,8 @@ low_level_output(struct netif *netif, struct pbuf *p)
 static err_t
 ecosif_output(struct netif *netif, struct pbuf *p, struct ip_addr *ipaddr)
 {
-
-  p = etharp_output(netif, ipaddr, p);
-  if (p) {
-    low_level_output(netif, p);
-    p = NULL;
-  }
-  return ERR_OK;
+  // resolve hardware address, then send (or queue) packet
+  return etharp_output(netif, ipaddr, p);
 }
 
 

@@ -1,3 +1,9 @@
+2006-03-26  Uwe Kindler  <uwe_kindler@web.de>
+
+	* src/lwip/eth_drv.c Add call to lwip_dhcp_init() for
+	start of DHCP client. Fixed ecosif_output() for 
+	lwip 1.1.1 support.
+
 2006-01-18  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/net/eth_drv.c (eth_drv_send): Better check for overflow
