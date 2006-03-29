@@ -1,3 +1,8 @@
+2006-03-29  John Dallaway  <jld@ecoscentric.com>
+
+	* common/eCosSocket.h: Specify CeCosSerial as a friend class to
+	enable compilation with GCC 4.x. [ Bugzilla 1000207 ]
+
 2004-12-14  John Dallaway  <jld@ecoscentric.com>
 
 	* common/Subprocess.cpp: Define _GNU_SOURCE to ensure that stdlib.h

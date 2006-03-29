@@ -75,6 +75,7 @@ class CeCosSerial;
 
 class CeCosSocket {
 public:	
+	friend class CeCosSerial;
 	static const String GetHostByName(LPCTSTR pszHost);
 
   // These functions must be called before any other operation is carried out:
