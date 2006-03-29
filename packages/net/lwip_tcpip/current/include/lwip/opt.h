@@ -68,7 +68,7 @@ a lot of data that needs to be copied, this should be set high. */
 #endif
 
 #ifndef MEMP_SANITY_CHECK
-#define MEMP_SANITY_CHECK		0
+#define MEMP_SANITY_CHECK       0
 #endif
 
 /* MEMP_NUM_PBUF: the number of memp struct pbufs. If the application
@@ -146,10 +146,10 @@ a lot of data that needs to be copied, this should be set high. */
 #endif
 
 /* PBUF_LINK_HLEN: the number of bytes that should be allocated for a
-   link level header. */
+   link level header. Defaults to 14 for Ethernet. */
 
 #ifndef PBUF_LINK_HLEN
-#define PBUF_LINK_HLEN                  0
+#define PBUF_LINK_HLEN                  14
 #endif
 
 
@@ -163,17 +163,23 @@ a lot of data that needs to be copied, this should be set high. */
 
 /**
  * If enabled, outgoing packets are queued during hardware address
- * resolution. The etharp.c implementation queues 1 packet only.
+ * resolution.
+ *
+ * This feature has not stabilized yet. Single-packet queueing is
+ * believed to be stable, multi-packet queueing is believed to
+ * clash with the TCP segment queueing.
+ * 
+ * As multi-packet-queueing is currently disabled, enabling this
+ * _should_ work, but we need your testing feedback on lwip-users.
+ *
  */
 #ifndef ARP_QUEUEING
 #define ARP_QUEUEING                    1
 #endif
-/** If enabled, the first packet queued will not be overwritten by
- * later packets. If disabled, later packets overwrite early packets
- * in the queue. Default is disabled, which is recommended. 
- */
-#ifndef ARP_QUEUE_FIRST
-#define ARP_QUEUE_FIRST                 0
+
+/* This option is deprecated */
+#ifdef ETHARP_QUEUE_FIRST
+#error ETHARP_QUEUE_FIRST option is deprecated. Remove it from your lwipopts.h.
 #endif
 
 /* This option is removed to comply with the ARP standard */
@@ -305,7 +311,7 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* Support loop interface (127.0.0.1) */
 #ifndef LWIP_HAVE_LOOPIF
-#define LWIP_HAVE_LOOPIF		1
+#define LWIP_HAVE_LOOPIF                0
 #endif
 
 #ifndef LWIP_EVENT_API
@@ -340,8 +346,11 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* ---------- Socket Options ---------- */
 /* Enable SO_REUSEADDR and SO_REUSEPORT options */ 
-#ifndef SO_REUSE
-# define SO_REUSE 1
+#define SO_REUSE 0
+#if SO_REUSE
+/* I removed the lot since this was an ugly hack. It broke the raw-API.
+   It also came with many ugly goto's, Christiaan Simons. */
+#error "SO_REUSE currently unavailable, this was a hack"
 #endif                                                                        
 
 
@@ -357,63 +366,63 @@ a lot of data that needs to be copied, this should be set high. */
 #endif
 
 #ifndef LINK_STATS
-#define LINK_STATS	1
+#define LINK_STATS  1
 #endif
 
 #ifndef IP_STATS
-#define IP_STATS	1
+#define IP_STATS    1
 #endif
 
 #ifndef IPFRAG_STATS
-#define IPFRAG_STATS	1
+#define IPFRAG_STATS    1
 #endif
 
 #ifndef ICMP_STATS
-#define ICMP_STATS	1
+#define ICMP_STATS  1
 #endif
 
 #ifndef UDP_STATS
-#define UDP_STATS	1
+#define UDP_STATS   1
 #endif
 
 #ifndef TCP_STATS
-#define TCP_STATS	1
+#define TCP_STATS   1
 #endif
 
 #ifndef MEM_STATS
-#define MEM_STATS	1
+#define MEM_STATS   1
 #endif
 
 #ifndef MEMP_STATS
-#define MEMP_STATS	1
+#define MEMP_STATS  1
 #endif
 
 #ifndef PBUF_STATS
-#define PBUF_STATS	1
+#define PBUF_STATS  1
 #endif
 
 #ifndef SYS_STATS
-#define SYS_STATS	1
+#define SYS_STATS   1
 #endif
 
 #ifndef RAW_STATS
-#define RAW_STATS	0
+#define RAW_STATS   0
 #endif
 
 #else
 
-#define LINK_STATS	0
-#define IP_STATS	0
-#define IPFRAG_STATS	0
-#define ICMP_STATS	0
-#define UDP_STATS	0
-#define TCP_STATS	0
-#define MEM_STATS	0
-#define MEMP_STATS	0
-#define PBUF_STATS	0
-#define SYS_STATS	0
-#define RAW_STATS	0
-#define LWIP_STATS_DISPLAY	0
+#define LINK_STATS  0
+#define IP_STATS    0
+#define IPFRAG_STATS    0
+#define ICMP_STATS  0
+#define UDP_STATS   0
+#define TCP_STATS   0
+#define MEM_STATS   0
+#define MEMP_STATS  0
+#define PBUF_STATS  0
+#define SYS_STATS   0
+#define RAW_STATS   0
+#define LWIP_STATS_DISPLAY  0
 
 #endif /* LWIP_STATS */
 

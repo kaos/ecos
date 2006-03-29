@@ -255,7 +255,7 @@ sys_thread_t sys_thread_new(void (*function) (void *arg), void *arg,int prio)
 			(char *)arg , stack, CYGNUM_LWIP_THREAD_STACK_SIZE, &(nt->th), &(nt->t) );
 
 	cyg_thread_resume(nt->th);
-	return NULL;
+	return nt->th;
 }
 
 /* 

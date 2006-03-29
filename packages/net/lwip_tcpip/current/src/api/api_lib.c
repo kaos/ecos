@@ -165,7 +165,7 @@ netbuf_copy_partial(struct netbuf *buf, void *dataptr, u16_t len, u16_t offset)
       offset -= p->len;
     } else {    
       for(i = offset; i < p->len; ++i) {
-  ((char *)dataptr)[left] = ((char *)p->payload)[i];
+  ((u8_t *)dataptr)[left] = ((u8_t *)p->payload)[i];
   if (++left >= len) {
     return;
   }
@@ -280,9 +280,10 @@ netconn_delete(struct netconn *conn)
   if (conn->recvmbox != SYS_MBOX_NULL) {
     while (sys_arch_mbox_fetch(conn->recvmbox, &mem, 1) != SYS_ARCH_TIMEOUT) {
       if (conn->type == NETCONN_TCP) {
-  pbuf_free((struct pbuf *)mem);
+        if(mem != NULL)
+          pbuf_free((struct pbuf *)mem);
       } else {
-  netbuf_delete((struct netbuf *)mem);
+        netbuf_delete((struct netbuf *)mem);
       }
     }
     sys_mbox_free(conn->recvmbox);
@@ -321,30 +322,29 @@ netconn_peer(struct netconn *conn, struct ip_addr *addr,
        u16_t *port)
 {
   switch (conn->type) {
-#if LWIP_RAW
   case NETCONN_RAW:
     /* return an error as connecting is only a helper for upper layers */
     return ERR_CONN;
-#endif
-#if LWIP_UDP
   case NETCONN_UDPLITE:
   case NETCONN_UDPNOCHKSUM:
   case NETCONN_UDP:
+#if LWIP_UDP
     if (conn->pcb.udp == NULL ||
   ((conn->pcb.udp->flags & UDP_FLAGS_CONNECTED) == 0))
      return ERR_CONN;
     *addr = (conn->pcb.udp->remote_ip);
     *port = conn->pcb.udp->remote_port;
-    break;
 #endif
-#if LWIP_TCP
+    break;
+    
   case NETCONN_TCP:
+#if LWIP_TCP
     if (conn->pcb.tcp == NULL)
       return ERR_CONN;
     *addr = (conn->pcb.tcp->remote_ip);
     *port = conn->pcb.tcp->remote_port;
-    break;
 #endif
+    break;
   }
   return (conn->err = ERR_OK);
 }
@@ -354,26 +354,27 @@ netconn_addr(struct netconn *conn, struct ip_addr **addr,
        u16_t *port)
 {
   switch (conn->type) {
-#if LWIP_RAW
   case NETCONN_RAW:
+#if LWIP_RAW
     *addr = &(conn->pcb.raw->local_ip);
     *port = conn->pcb.raw->protocol;
-    break;
 #endif
-#if LWIP_UDP
+    break;
   case NETCONN_UDPLITE:
   case NETCONN_UDPNOCHKSUM:
   case NETCONN_UDP:
+#if LWIP_UDP
     *addr = &(conn->pcb.udp->local_ip);
     *port = conn->pcb.udp->local_port;
-    break;
 #endif
-#if LWIP_TCP
+    break;
+    
   case NETCONN_TCP:
+#if LWIP_TCP
     *addr = &(conn->pcb.tcp->local_ip);
     *port = conn->pcb.tcp->local_port;
-    break;
 #endif
+    break;
   }
   return (conn->err = ERR_OK);
 }
@@ -684,7 +685,7 @@ netconn_write(struct netconn *conn, void *dataptr, u16_t size, u8_t copy)
     api_msg_post(msg);
     sys_mbox_fetch(conn->mbox, NULL);    
     if (conn->err == ERR_OK) {
-      dataptr = (void *)((char *)dataptr + len);
+      dataptr = (void *)((u8_t *)dataptr + len);
       size -= len;
     } else if (conn->err == ERR_MEM) {
       conn->err = ERR_OK;

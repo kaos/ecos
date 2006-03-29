@@ -327,28 +327,12 @@ cdl_package CYGPKG_NET_LWIP {
 			}		 
 	}
 	
-	cdl_component CYGPKG_LWIP_TCP_OPTIONS {
-		display		"TCP"
-		flavor 		none
-		no_define
+	cdl_component CYGPKG_LWIP_TCP {
+		display		    "TCP"
+		flavor 		    bool
+		default_value 	1
 		description   	"
-		           Tune the TCP protocol details"
-			
-		cdl_option CYGFUN_LWIP_TCP {
-			display		"Activate TCP"
-			flavor		bool
-			default_value 	1
-			description   	""
-
-		}
-		
-		cdl_option CYGNUM_LWIP_TCPIP_THREAD_PRIORITY {
-			display "TCP/IP thread priority"
-			flavor data
-			default_value	7
-			description "Pririty of the lwIP network thread.This thread handles all API messages and
-					network packets."
-		}		 
+		           Support TCP protocol."
 		
 		cdl_option CYGNUM_LWIP_TCP_TTL {
 			display		"Time To Live"
@@ -385,7 +369,7 @@ cdl_package CYGPKG_NET_LWIP {
 		cdl_option CYGNUM_LWIP_TCP_SND_QUEUELEN {
 			display		"Sender pbufs"
 			flavor		data
-			calculated 	"4 * CYGNUM_LWIP_TCP_SND_BUF/CYGNUM_LWIP_TCP_MSS"
+			calculated 	CYGPKG_LWIP_TCP ? "4 * CYGNUM_LWIP_TCP_SND_BUF/CYGNUM_LWIP_TCP_MSS" : 0
 			description   	"
 				TCP sender buffer space (pbufs). This must be at least = 2 *
 				TCP_SND_BUF/TCP_MSS for things to work."
@@ -487,12 +471,13 @@ cdl_package CYGPKG_NET_LWIP {
 	}
 
 	cdl_component CYGPKG_LWIP_DHCP {
-		display		  "Use DHCP"
+		display		  "DHCP"
 		flavor		  bool
+		requires  CYGPKG_LWIP_UDP
 		default_value 0
 		requires  { CYGNUM_LWIP_MEMP_NUM_SYS_TIMEOUT >= 6 }
 		description "
-		    Provide DHCP for initializing the IP address of network interfaces."
+		    Provide DHCP support for initializing the IP address of network interfaces."
 		compile core/dhcp.c
 
         cdl_option CYGOPT_LWIP_DHCP_MANAGEMENT {
@@ -541,6 +526,14 @@ cdl_package CYGPKG_NET_LWIP {
 		}
 		
 	}
+	
+    cdl_option CYGNUM_LWIP_NETWORK_THREAD_PRIORITY {
+			display "Network thread priority"
+			flavor data
+			default_value	7
+			description "Priority of the lwIP network thread.This thread handles all API messages and
+					network packets."
+		}	
 
 	cdl_component CYGPKG_LWIP_SLIP {
 		display "SLIP"
@@ -615,18 +608,12 @@ cdl_package CYGPKG_NET_LWIP {
 		}	
 	}
 
-	cdl_component CYGPKG_LWIP_UDP_OPTIONS {
+	cdl_component CYGPKG_LWIP_UDP {
 		display		"UDP"
-		flavor		none
-		no_define
-
-		cdl_option CYGFUN_LWIP_UDP {
-			display		"Activate UDP"
-			flavor		bool
-			default_value 	1
-			description   	""
-			compile core/udp.c
-		}
+		flavor		bool
+		default_value 	1
+		description   	"Support UDP protocol."
+		compile core/udp.c
 
 		cdl_option CYGNUM_LWIP_UDP_TTL {
 			display		"Time To Live"
@@ -643,6 +630,17 @@ cdl_package CYGPKG_NET_LWIP {
 		description   	""
 		compile core/raw.c
 	}
+	
+	cdl_option CYGFUN_LWIP_COMPAT_SOCKETS {
+	    display       "Provide compatible socket API"
+	    flavor        bool
+	    default_value 1
+	    description "
+	         The lwIP socket API uses defines to map the lwip socket functions 
+	         (lwip_accept(), lwip_bind(), lwip_listen()...) to BSD like names
+	         (accept(), bind(), listen()...). If this causes trouble or naming
+	         conficts for your application, then disable this option"
+    }
 
 	cdl_component CYGPKG_LWIP_APP_MEM_OPTIONS {
 		display		"Memory options for apps"

@@ -35,19 +35,20 @@
 
 #include "nc_test_framework.h"
 
-#include <cyg/error/errno.h>
-#include <cyg/error/codes.h>
-#include <cyg/error/strerror.h>
 #include <cyg/infra/diag.h>
 
 #include <lwip/inet.h>
 #include <lwip/arch.h>
 #include <lwip/sys.h>
-#define LWIP_TIMEVAL_PRIVATE 
+#define LWIP_TIMEVAL_PRIVATE 1
 #include <lwip/sockets.h>
+#include <cyg/infra/testcase.h>
 
 #ifndef CYGPKG_LIBC_STDIO
+#include <cyg/error/errno.h>
 #define perror(s) diag_printf(#s ": %s\n", strerror(errno))
+#else
+#include <stdio.h>
 #endif
 #define STACK_SIZE               (CYGNUM_HAL_STACK_SIZE_TYPICAL + 0x1000)
 #define MAX_LOAD_THREAD_LEVEL    20
@@ -59,6 +60,11 @@
 #define MAIN_THREAD_PRIORITY     CYGPKG_NET_THREAD_PRIORITY-2
 #define DESIRED_BACKGROUND_LOAD  20
 #define CYGHWR_NET_DRIVERS 1
+
+#if SO_REUSE
+#ifdef CYGPKG_LWIP_TCP
+#ifdef CYGPKG_LWIP_UDP
+
 
 #if 0
 static char         main_thread_stack[CYGHWR_NET_DRIVERS][STACK_SIZE];
@@ -185,13 +191,13 @@ do_udp_test(int s1, struct nc_request *req, struct sockaddr_in *master)
                 if ((ntohl(tdp->key1) == NC_TEST_DATA_KEY1) &&
                     (ntohl(tdp->key2) == NC_TEST_DATA_KEY2)) {
                     if (ntohl(tdp->seq) != seq) {
-                        test_printf("Packets out of sequence - recvd: %ld, expected: %d\n",
+                        test_printf("Packets out of sequence - recvd: %d, expected: %d\n",
                                     ntohl(tdp->seq), seq);
                         seq = ntohl(tdp->seq);
                         seq_errors++;
                     }
                 } else {
-                    test_printf("Bad data packet - key: %lx/%lx, seq: %ld\n",
+                    test_printf("Bad data packet - key: %lx/%lx, seq: %d\n",
                                 ntohl(tdp->key1), ntohl(tdp->key2),
                                 ntohl(tdp->seq));
                 }
@@ -358,13 +364,13 @@ do_tcp_test(int s1, struct nc_request *req, struct sockaddr_in *master)
                 if ((ntohl(tdp->key1) == NC_TEST_DATA_KEY1) &&
                     (ntohl(tdp->key2) == NC_TEST_DATA_KEY2)) {
                     if (ntohl(tdp->seq) != seq) {
-                        test_printf("Packets out of sequence - recvd: %ld, expected: %d\n",
+                        test_printf("Packets out of sequence - recvd: %d, expected: %d\n",
                                     ntohl(tdp->seq), seq);
                         seq = ntohl(tdp->seq);
                         seq_errors++;
                     }
                 } else {
-                    test_printf("Bad data packet - key: %lx/%lx, seq: %ld\n",
+                    test_printf("Bad data packet - key: %lx/%lx, seq: %d\n",
                                 ntohl(tdp->key1), ntohl(tdp->key2),
                                 ntohl(tdp->seq));
                 }
@@ -452,22 +458,22 @@ nc_slave(test_param_t param)
             done = true;
             break;
         case NC_REQUEST_UDP_SEND:
-            test_printf("UDP send - %ld buffers, %ld bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
+            test_printf("UDP send - %d buffers, %d bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
             break;
         case NC_REQUEST_UDP_RECV:
-            test_printf("UDP recv - %ld buffers, %ld bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
+            test_printf("UDP recv - %d buffers, %d bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
             break;
         case NC_REQUEST_UDP_ECHO:
-            test_printf("UDP echo - %ld buffers, %ld bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
+            test_printf("UDP echo - %d buffers, %d bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
             break;
         case NC_REQUEST_TCP_SEND:
-            test_printf("TCP send - %ld buffers, %ld bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
+            test_printf("TCP send - %d buffers, %d bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
             break;
         case NC_REQUEST_TCP_RECV:
-            test_printf("TCP recv - %ld buffers, %ld bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
+            test_printf("TCP recv - %d buffers, %d bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
             break;
         case NC_REQUEST_TCP_ECHO:
-            test_printf("TCP echo - %ld buffers, %ld bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
+            test_printf("TCP echo - %d buffers, %d bytes\n", ntohl(req.nbufs), ntohl(req.buflen));
             break;
         case NC_REQUEST_SET_LOAD:
             start_load(ntohl(req.nbufs));
@@ -487,7 +493,7 @@ nc_slave(test_param_t param)
             reply.misc.idle_results.count[1] = htonl((long)idle_thread_count);
             break;
         default:
-            test_printf("Unrecognized request: %ld\n", ntohl(req.type));
+            test_printf("Unrecognized request: %d\n", ntohl(req.type));
             reply.response = htonl(NC_REPLY_NAK);
             reply.reason = htonl(NC_REPLY_NAK_UNKNOWN_REQUEST);
             break;
@@ -757,9 +763,11 @@ static cyg_thread thread_data;
 static cyg_handle_t thread_handle;
 
 void
-cyg_user_start(void)
+nc_slave_main(void)
 {
 	int i;	
+	
+	CYG_TEST_INIT();
    // Create the idle thread environment
     cyg_semaphore_init(&idle_thread_sem, 0);
     cyg_thread_create(IDLE_THREAD_PRIORITY,     // Priority
@@ -797,4 +805,32 @@ cyg_user_start(void)
                       &thread_data       // Thread data structure
             );
     cyg_thread_resume(thread_handle);  // Start it
+    cyg_scheduler_start();
+    CYG_TEST_FAIL_FINISH("Not reached");
 }
+
+
+externC void
+cyg_start( void )
+{
+    nc_slave_main();
+}
+
+#else // def CYGPKG_LWIP_UDP
+#define N_A_MSG "UDP support disabled"
+#endif // def CYGPKG_LWIP_UDP
+#else // def CYGPKG_LWIP_TCP
+#define N_A_MSG "TCP support disabled"
+#endif // def CYGPKG_LWIP_TCP
+#else // SO_REUSE
+#define N_A_MSG "SO_REUSE currently unavailable"
+#endif // SO_REUSE
+
+#ifdef N_A_MSG
+externC void
+cyg_start( void )
+{
+    CYG_TEST_INIT();
+    CYG_TEST_NA(N_A_MSG);
+}
+#endif // N_A_MSG

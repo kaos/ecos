@@ -38,6 +38,7 @@
 #include "lwip/pbuf.h"
 
 #include "lwip/ip.h"
+#include "lwip/ip_frag.h"
 #include "lwip/udp.h"
 #include "lwip/tcp.h"
 
@@ -46,33 +47,50 @@
 static void (* tcpip_init_done)(void *arg) = NULL;
 static void *tcpip_init_done_arg;
 static sys_mbox_t mbox;
+
 #if LWIP_TCP
 static int tcpip_tcp_timer_active = 0;
-
-
 
 static void
 tcpip_tcp_timer(void *arg)
 {
   (void)arg;
 
+  /* call TCP timer handler */
   tcp_tmr();
+  /* timer still needed? */
   if (tcp_active_pcbs || tcp_tw_pcbs) {
+    /* restart timer */
     sys_timeout(TCP_TMR_INTERVAL, tcpip_tcp_timer, NULL);
   } else {
-  tcpip_tcp_timer_active = 0;
+    /* disable timer */
+    tcpip_tcp_timer_active = 0;
   }
 }
 
+#if !NO_SYS
 void
 tcp_timer_needed(void)
 {
+  /* timer is off but needed again? */
   if (!tcpip_tcp_timer_active && (tcp_active_pcbs || tcp_tw_pcbs)) {
-  tcpip_tcp_timer_active = 1;
+    /* enable and start timer */
+    tcpip_tcp_timer_active = 1;
     sys_timeout(TCP_TMR_INTERVAL, tcpip_tcp_timer, NULL);
   }
 }
+#endif /* !NO_SYS */
 #endif /* LWIP_TCP */
+
+#if IP_REASSEMBLY
+static void
+ip_timer(void *data)
+{
+  LWIP_DEBUGF(TCPIP_DEBUG, ("tcpip: ip_reass_tmr()\n"));
+  ip_reass_tmr();
+  sys_timeout(1000, ip_timer, NULL);
+}
+#endif
 
 static void
 tcpip_thread(void *arg)
@@ -87,6 +105,9 @@ tcpip_thread(void *arg)
 #endif
 #if LWIP_TCP
   tcp_init();
+#endif
+#if IP_REASSEMBLY
+  sys_timeout(1000, ip_timer, NULL);
 #endif
   if (tcpip_init_done != NULL) {
     tcpip_init_done(tcpip_init_done_arg);

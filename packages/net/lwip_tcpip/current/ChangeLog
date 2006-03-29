@@ -1,3 +1,22 @@
+2006-03-26  Uwe Kindler <uwe_kindler@web.de>
+
+	* Updated the complete lwIP source to the latest lwIP
+	CVS version 1.1.1
+	* src/ecos/init.c Added call to netif_set_up(netif) in
+	function lwip_set_addr() - this is required since lwIP
+	version 1.0.0
+	* cdl/lwip_net.cdl Minor modifications for UDP configuration
+	options. Renamed CYGNUM_LWIP_TCPIP_THREAD_PRIORITY to
+	CYGNUM_LWIP_NETWORK_THREAD_PRIORITY and moved option outside
+	CYGPKG_LWIP_TCPIP component because the network thread needs to
+	run in all configurations.
+	* tests/nc_slave.c
+	* tests/tcpecho.c 
+	* tests/udpecho.c
+	* tests/sockets.c
+	* tests/httpd.c Added eCos test infrastructure to tests and 
+	made tests applicable depending on lwip configuration.
+
 2006-03-15  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/nc_test_slave.c (nc_slave): Fix some of the compiler

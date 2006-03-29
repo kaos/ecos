@@ -225,6 +225,7 @@ lwip_set_addr(struct netif *netif)
 
     netif_add(netif, &ipaddr, &netmask, &gw, netif->state, lwip_dummy_netif_init, tcpip_input);
     netif_set_default(netif);
+    netif_set_up(netif);        // new step from lwip 1.0.0
 #else
 	IP_ADDR(&gw, CYGDAT_LWIP_SERV_ADDR);
 	IP_ADDR(&ipaddr, CYGDAT_LWIP_MY_ADDR);
@@ -232,6 +233,7 @@ lwip_set_addr(struct netif *netif)
 
 	netif_add(netif, &ipaddr, &netmask, &gw, netif->state, lwip_dummy_netif_init, tcpip_input);
     netif_set_default(netif); 
+    netif_set_up(netif);        // new step from lwip 1.0.0
 #endif 
 }
 
@@ -306,8 +308,13 @@ ecosglue_init(void)
 {
     etharp_init();
     cyg_semaphore_init(&delivery, 0);
-    init_hw_drivers();
+    //
+    // start input thread before hardware drivers are initialized because
+    // init_hw_drivers() calls dhcp_init() if DHCP support is configured 
+    // and dhcp_init() requires a running input thread
+    //
     sys_thread_new(input_thread, (void*)0, CYGNUM_LWIP_ETH_THREAD_PRIORITY);
+    init_hw_drivers();
 }
 
 #endif //CYGPKG_LWIP_ETH

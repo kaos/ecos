@@ -93,22 +93,13 @@ a lot of data that needs to be copied, this should be set high. */
 #define PBUF_LINK_HLEN          CYGNUM_LWIP_PBUF_LINK_HLEN
 
 /* ---------- TCP options ---------- */
-#ifdef CYGFUN_LWIP_TCP
-#define LWIP_TCP                1
-#else
-#define LWIP_TCP                0
-#endif
-
+#define LWIP_TCP                defined(CYGPKG_LWIP_TCP)
 #define TCP_TTL                 CYGNUM_LWIP_TCP_TTL
 
 /* Controls if TCP should queue segments that arrive out of
    order. Define to 0 if your device is low on memory. */
-#ifdef CYGIMP_LWIP_TCP_QUEUE_OOSEQ
-#define TCP_QUEUE_OOSEQ        1
-#else
-#define TCP_QUEUE_OOSEQ        0
-#endif        
-
+#define TCP_QUEUE_OOSEQ         defined(CYGIMP_LWIP_TCP_QUEUE_OOSEQ)
+    
 /* TCP Maximum segment size. */
 #define TCP_MSS                 CYGNUM_LWIP_TCP_MSS
 
@@ -136,19 +127,13 @@ a lot of data that needs to be copied, this should be set high. */
 /* Define IP_FORWARD to 1 if you wish to have the ability to forward
    IP packets across network interfaces. If you are going to run lwIP
    on a device with only one network interface, define this to 0. */
-#ifdef CYGFUN_LWIP_IP_FORWARD
-#define IP_FORWARD              1
-#else 
-#define IP_FORWARD              0
-#endif
+#define IP_FORWARD              defined(CYGFUN_LWIP_IP_FORWARD)
+
 
 /* If defined to 1, IP options are allowed (but not parsed). If
    defined to 0, all packets with IP options are dropped. */
-#ifdef CYGFUN_LWIP_IP_OPTIONS
-#define IP_OPTIONS              1
-#else
-#define IP_OPTIONS              0
-#endif           
+#define IP_OPTIONS              defined(CYGFUN_LWIP_IP_OPTIONS)
+
 
 /* ---------- ICMP options ---------- */
 #define ICMP_TTL                CYGNUM_LWIP_ICMP_TTL
@@ -157,84 +142,45 @@ a lot of data that needs to be copied, this should be set high. */
 /* ---------- DHCP options ---------- */
 /* Define LWIP_DHCP to 1 if you want DHCP configuration of
    interfaces.*/
-
-#ifdef CYGPKG_LWIP_DHCP
-  #define LWIP_DHCP               1
-
-/* 1 if you want to do an ARP check on the offered address
-   (recommended). */
-  #ifdef CYGOPT_LWIP_DHCP_DOES_ARP_CHECK
-    #define DHCP_DOES_ARP_CHECK     1
-  #else
-    #define DHCP_DOES_ARP_CHECK     0
-  #endif
-#else
-  #define LWIP_DHCP               0
-  #define DHCP_DOES_ARP_CHECK     0
-#endif
+#define LWIP_DHCP               defined(CYGPKG_LWIP_DHCP)
+#define DHCP_DOES_ARP_CHECK     defined(CYGOPT_LWIP_DHCP_DOES_ARP_CHECK)
 
 
 /* ---------- UDP options ---------- */
-#ifdef CYGFUN_LWIP_UDP
-#define LWIP_UDP                1
-#else
-#define LWIP_UDP                0
-#endif
+#define LWIP_UDP                defined(CYGPKG_LWIP_UDP)
 #define UDP_TTL                 CYGNUM_LWIP_UDP_TTL
 
 /* ---------- RAW socket support ---------- */
-#ifdef CYGFUN_LWIP_RAW
-#define LWIP_RAW                1
-#else
-#define LWIP_RAW                0
-#endif
+#define LWIP_RAW                defined(CYGFUN_LWIP_RAW)
 
 /* ---------- SLIP options --------- */ 
-#ifdef CYGPKG_LWIP_SLIP
-#define LWIP_SLIP               1
-#else
-#define LWIP_SLIP               0
-#endif
+#define LWIP_SLIP               defined(CYGPKG_LWIP_SLIP)
 #define SLIP_DEV                CYGDAT_LWIP_SLIP_DEV
 
-#ifdef CYGFUN_LWIP_LOOPIF
-#define LWIP_HAVE_LOOPIF	    1
-#else
-#define LWIP_HAVE_LOOPIF	    0
-#endif
+/* ---------- LOOPIF options --------- */ 
+#define LWIP_HAVE_LOOPIF	    defined(CYGFUN_LWIP_LOOPIF)
+
 /* ---------- PPP options --------- */ 
-#ifdef CYGPKG_LWIP_PPP 
-#define PPP_SUPPORT             1
-#else
-#define PPP_SUPPORT             0
-#endif
+#define PPP_SUPPORT             defined(CYGPKG_LWIP_PPP)
 #define PPP_DEV                 CYGDAT_LWIP_PPP_DEV
 #define MD5_SUPPORT             1
+#define PAP_SUPPORT	            defined(CYGIMP_LWIP_PPP_PAP_AUTH)
+#define CHAP_SUPPORT	        defined(CYGIMP_LWIP_PPP_CHAP_AUTH)
 
-#ifdef CYGIMP_LWIP_PPP_PAP_AUTH
-#define PAP_SUPPORT	1
-#else
-#define PAP_SUPPORT	0
-#endif
-
-#ifdef CYGIMP_LWIP_PPP_CHAP_AUTH
-#define CHAP_SUPPORT	1
-#else
-#define CHAP_SUPPORT	0
-#endif
 
 /* ------- Thread priorities ---------------*/
-#define TCPIP_THREAD_PRIO       CYGNUM_LWIP_TCPIP_THREAD_PRIORITY
+#define TCPIP_THREAD_PRIO       CYGNUM_LWIP_NETWORK_THREAD_PRIORITY
 #define SLIPIF_THREAD_PRIO      CYGNUM_LWIP_SLIPIF_THREAD_PRIORITY
 #define PPP_THREAD_PRIO         CYGNUM_LWIP_PPP_THREAD_PRIORITY
 
 
 /* ---------- Statistics options ---------- */
-#ifdef CYGDBG_LWIP_STATS
-#define LWIP_STATS		1
-#else
-#define LWIP_STATS		0
-#endif
+#define LWIP_STATS		        defined(CYGDBG_LWIP_STATS)
+
+
+// --------- Sockets options --------------
+#define LWIP_COMPAT_SOCKETS     defined(CYGFUN_LWIP_COMPAT_SOCKETS)
+
 
 /* ---------- Debug options ---------- */
 #if !defined(CYGDBG_LWIP_ASSERTS)

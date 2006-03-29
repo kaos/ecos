@@ -33,9 +33,13 @@
 /* Simple test-case for the BSD socket API  : echo on TCP port 7 */
 
 #include <lwip/sys.h>
+#undef LWIP_COMPAT_SOCKETS
 #define LWIP_COMPAT_SOCKETS 1
 #include <lwip/sockets.h>
 #include <lwip/inet.h>
+#include <cyg/infra/testcase.h>
+
+#ifdef CYGPKG_LWIP_TCP
 
 char buf[400];
 static void
@@ -74,8 +78,9 @@ static cyg_thread thread_data;
 static cyg_handle_t thread_handle;
 
 void
-cyg_user_start(void)
+socket_main(void)
 {
+    CYG_TEST_INIT();
     // Create a main thread, so we can run the scheduler and have time 'pass'
     cyg_thread_create(10,                // Priority - just a number
                       tmain,          // entry
@@ -87,5 +92,26 @@ cyg_user_start(void)
                       &thread_data       // Thread data structure
             );
     cyg_thread_resume(thread_handle);  // Start it
+    cyg_scheduler_start();
+    CYG_TEST_FAIL_FINISH("Not reached");
 }
+
+externC void
+cyg_start( void )
+{
+    socket_main();
+}
+
+#else // def CYGPKG_LWIP_TCP
+#define N_A_MSG "TCP support disabled"
+#endif // def CYGFUN_KERNEL_API_C
+
+#ifdef N_A_MSG
+externC void
+cyg_start( void )
+{
+    CYG_TEST_INIT();
+    CYG_TEST_NA(N_A_MSG);
+}
+#endif // N_A_MSG
 
