@@ -245,6 +245,7 @@ fis_lookup(char *name, int *num)
 void
 fis_update_directory(void)
 {
+    int blk_size = fisdir_size;
     int stat;
     void *err_addr;
 
@@ -252,23 +253,24 @@ fis_update_directory(void)
 #ifdef CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG
     memcpy((char *)fis_work_block+fisdir_size, config, cfg_size);
     conf_endian_fixup((char *)fis_work_block+fisdir_size);
+    blk_size += cfg_size;
 #endif
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
     // Ensure [quietly] that the directory is unlocked before trying to update
-    flash_unlock((void *)fis_addr, fisdir_size, (void **)&err_addr);
+    flash_unlock((void *)fis_addr, blk_size, (void **)&err_addr);
 #endif
-    if ((stat = flash_erase(fis_addr, fisdir_size, (void **)&err_addr)) != 0) {
+    if ((stat = flash_erase(fis_addr, blk_size, (void **)&err_addr)) != 0) {
         diag_printf("Error erasing FIS directory at %p: %s\n", err_addr, flash_errmsg(stat));
     } else {
         if ((stat = FLASH_PROGRAM(fis_addr, fis_work_block,
-                                  fisdir_size, (void **)&err_addr)) != 0) {
+                                  blk_size, (void **)&err_addr)) != 0) {
             diag_printf("Error writing FIS directory at %p: %s\n", 
                         err_addr, flash_errmsg(stat));
         }
     }
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
     // Ensure [quietly] that the directory is locked after the update
-    flash_lock((void *)fis_addr, fisdir_size, (void **)&err_addr);
+    flash_lock((void *)fis_addr, blk_size, (void **)&err_addr);
 #endif
     fis_endian_fixup(fis_work_block);
 }
