@@ -1,3 +1,7 @@
+2006-04-07  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* doc/eth_phy.sgml: Fixed a few typos
+
 2005-08-25  Markus Schade <marks@peppercon.de>
 
 	* src/INLXT972.c: 
