@@ -61,6 +61,14 @@ cdl_package CYGPKG_DEVS_ETH_PHY {
 
     compile eth_phy.c
 
+    cdl_option CYGDBG_DEVS_ETH_PHY {
+        display       "Enable driver debugging"
+        flavor        bool
+        default_value 0
+        description   "Enables the diagnostic debug messages on the
+                       console device."
+    }
+
     cdl_option CYGINT_DEVS_ETH_PHY_AUTO_NEGOTIATION_TIME {
         display       "Time period (seconds) to wait for auto-negotiation"
         flavor        data
@@ -96,4 +104,32 @@ cdl_package CYGPKG_DEVS_ETH_PHY {
         description "
           Include support for Intel LXT972xxx PHY"
     }
+
+    cdl_option CYGHWR_DEVS_ETH_PHY_ICS1890 {
+        display       "ICS 1890"
+        flavor        bool
+        default_value 0
+        compile       -library=libextras.a ics189x.c
+        description "
+          Include support for ICS 1890 PHY"
+    }
+
+    cdl_option CYGHWR_DEVS_ETH_PHY_ICS1892 {
+        display       "ICS 1892"
+        flavor        bool
+        default_value 0
+        compile       -library=libextras.a ics189x.c
+        description "
+          Include support for ICS 1892 PHY"
+    }
+
+    cdl_option CYGHWR_DEVS_ETH_PHY_ICS1893 {
+        display       "ICS 1893"
+        flavor        bool
+        default_value 0
+        compile       -library=libextras.a ics189x.c
+        description "
+          Include support for ICS 1893 and 1893AF PHY"
+    }
+
 }

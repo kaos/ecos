@@ -55,7 +55,6 @@
 #include <pkgconf/devs_eth_phy.h>
 
 #include <cyg/infra/cyg_type.h>
-#include <cyg/infra/diag.h>
 
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/drv_api.h>
@@ -73,7 +72,7 @@ static bool inlxt972_stat(eth_phy_access_t *f, int *state)
     // Read negotiated state
     if (_eth_phy_read(f, PHY_BMSR, f->phy_addr, &phy_state)) {
         if ((phy_state & PHY_BMSR_AUTO_NEG) == 0) {
-            diag_printf("... waiting for auto-negotiation");
+            eth_phy_printf("... waiting for auto-negotiation");
             for (tries = 0;  tries < CYGINT_DEVS_ETH_PHY_AUTO_NEGOTIATION_TIME;  tries++) {
                 if (_eth_phy_read(f, PHY_BMSR, f->phy_addr, &phy_state)) {
                     if ((phy_state & PHY_BMSR_AUTO_NEG) != 0) {
@@ -81,9 +80,9 @@ static bool inlxt972_stat(eth_phy_access_t *f, int *state)
                     }
                 }
                 CYGACC_CALL_IF_DELAY_US(1000000);   // 1 second
-                diag_printf(".");
+                eth_phy_printf(".");
             }
-            diag_printf("\n");
+            eth_phy_printf("\n");
         }
         if ((phy_state & PHY_BMSR_AUTO_NEG) != 0) {
             *state = 0;

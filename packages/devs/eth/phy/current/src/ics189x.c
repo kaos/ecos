@@ -1,6 +1,6 @@
 //==========================================================================
 //
-//      dev/AM79C874.c
+//      ics189x.c
 //
 //      Ethernet transceiver (PHY) support 
 //
@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 2003 Gary Thomas
+// Copyright (C) 2005 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -41,10 +41,10 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: 
-// Date:         2003-08-01
+// Contributors: Jay Foster
+// Date:         2006-03-17
 // Purpose:      
-// Description:  Support for ethernet NS AM79C874 PHY
+// Description:  Support for ethernet ICS 189x PHYs
 //              
 //
 //####DESCRIPTIONEND####
@@ -64,18 +64,25 @@
 #include <cyg/io/eth_phy.h>
 #include <cyg/io/eth_phy_dev.h>
 
-static bool am79c874_stat(eth_phy_access_t *f, int *state)
+#define Bit(n) (1<<(n))
+
+static bool ics189x_stat(eth_phy_access_t *f, int *state)
 {
     unsigned short phy_state;
     int tries;
 
-    // Read negotiated state
-    if (_eth_phy_read(f, 0x1, f->phy_addr, &phy_state)) {
-        if ((phy_state & 0x20) == 0) {
+    // Read negotiated state from the Quick Poll Detailed Status Register
+    if (_eth_phy_read(f, 17, f->phy_addr, &phy_state))
+    {
+        if ((phy_state & Bit(4)) == 0)
+        {
             eth_phy_printf("... waiting for auto-negotiation");
-            for (tries = 0;  tries < CYGINT_DEVS_ETH_PHY_AUTO_NEGOTIATION_TIME;  tries++) {
-                if (_eth_phy_read(f, 0x1, f->phy_addr, &phy_state)) {
-                    if ((phy_state & 0x20) != 0) {
+            for (tries = 0;  tries < CYGINT_DEVS_ETH_PHY_AUTO_NEGOTIATION_TIME;  tries++)
+            {
+                if (_eth_phy_read(f, 17, f->phy_addr, &phy_state))
+                {
+                    if ((phy_state & Bit(4)) != 0)
+                    {
                         break;
                     }
                 }
@@ -84,19 +91,29 @@ static bool am79c874_stat(eth_phy_access_t *f, int *state)
             }
             eth_phy_printf("\n");
         }
-        if ((phy_state & 0x20) != 0) {
+        if ((phy_state & Bit(4)) != 0)
+        {
             *state = 0;
-            if ((phy_state & 0x0004) != 0) *state |= ETH_PHY_STAT_LINK;
-            if (_eth_phy_read(f, 0x5, f->phy_addr, &phy_state)) {
-                // Partner negotiated parameters
-                if ((phy_state & 0x0100) != 0) *state |= ETH_PHY_STAT_100MB | ETH_PHY_STAT_FDX;
-                if ((phy_state & 0x0080) != 0) *state |= ETH_PHY_STAT_100MB;
-                if ((phy_state & 0x0040) != 0) *state |= ETH_PHY_STAT_FDX;
-                return true;
-            }
+            if (phy_state & Bit(0))
+                *state |= ETH_PHY_STAT_LINK;
+            if (phy_state & Bit(14))
+                *state |= ETH_PHY_STAT_FDX;
+            if (phy_state & Bit(15))
+                *state |= ETH_PHY_STAT_100MB;
+            return true;
         }
     }
     return false;
 }
 
-_eth_phy_dev("AMD AM79C874", 0x0022561B, am79c874_stat)
+#ifdef CYGHWR_DEVS_ETH_PHY_ICS1890
+_eth_phy_dev("ICS 1890", 0x0015F422, ics189x_stat) // 1st general release
+_eth_phy_dev("ICS 1890", 0x0015F423, ics189x_stat) // 1890 "J" release
+#endif
+#ifdef CYGHWR_DEVS_ETH_PHY_ICS1892
+_eth_phy_dev("ICS 1892", 0x0015F430, ics189x_stat)
+#endif
+#ifdef CYGHWR_DEVS_ETH_PHY_ICS1893
+_eth_phy_dev("ICS 1893", 0x0015F441, ics189x_stat)
+#endif
+

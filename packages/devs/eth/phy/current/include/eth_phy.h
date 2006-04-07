@@ -93,6 +93,8 @@ externC bool _eth_phy_init(eth_phy_access_t *f);
 externC void _eth_phy_reset(eth_phy_access_t *f);
 externC int  _eth_phy_state(eth_phy_access_t *f);
 externC int  _eth_phy_cfg(eth_phy_access_t *f, int mode);
+#define ETH_PHY_MODE_DEFAULT  0
+
 // Internal routines
 externC void _eth_phy_write(eth_phy_access_t *f, int reg, int unit, unsigned short data);
 externC bool _eth_phy_read(eth_phy_access_t *f, int reg, int unit, unsigned short *val);

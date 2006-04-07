@@ -2,6 +2,17 @@
 
 	* doc/eth_phy.sgml: Fixed a few typos
 
+2006-03-30  Jay Foster <jay@systech.com>
+	* include/eth_phy.h:  Add default mode value for _eth_phy_cfg().
+	* cdl/phy_eth_drivers.cdl: Add support for ICS189x.
+	* include/eth_phy_dev.h:
+	* src/AM79C874.c:
+	* src/DP83847.c:
+	* src/INLXT972.c: Make debug output CDL configurable.
+	* src/eth_phy.c: Fix bug in _eth_phy_init() that prevented using
+					 a PHY MII address other than 0.
+	* src/ics189x.c: New
+
 2005-08-25  Markus Schade <marks@peppercon.de>
 
 	* src/INLXT972.c: 

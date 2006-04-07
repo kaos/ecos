@@ -52,8 +52,9 @@
 //==========================================================================
 
 #include <pkgconf/system.h>
+#include <pkgconf/io_eth_drivers.h>
+#include <pkgconf/devs_eth_phy.h>
 #include <cyg/infra/cyg_type.h>
-#include <cyg/infra/diag.h>
 
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/drv_api.h>
@@ -153,7 +154,7 @@ _eth_phy_init(eth_phy_access_t *f)
 {
     int addr;
     unsigned short state;
-    unsigned long id;
+    unsigned long id = 0;
     struct _eth_phy_dev_entry *dev;
 
     if (f->init_done) return true;
@@ -168,15 +169,18 @@ _eth_phy_init(eth_phy_access_t *f)
                 f->phy_addr = addr;
                 for (dev = __ETH_PHY_TAB__; dev != &__ETH_PHY_TAB_END__;  dev++) {
                     if (dev->id == id) {
-                        diag_printf("PHY: %s\n", dev->name);
+                        eth_phy_printf("PHY: %s\n", dev->name);
                         f->dev = dev;
                         return true;
                     }
                 }
-                diag_printf("Unsupported PHY device - id: %x\n", id);
-                break;  // Can't handle this PHY
             }
         }
+    }
+    if (addr >= 0x20)
+    {
+        // Can't handle this PHY
+        eth_phy_printf("Unsupported PHY device - id: %x\n", id);
     }
     f->init_done = false;
     return false;
@@ -186,7 +190,7 @@ externC void
 _eth_phy_reset(eth_phy_access_t *f)
 {
     if (!f->init_done) {
-        diag_printf("PHY reset without init on PHY: %x\n", f);
+        eth_phy_printf("PHY reset without init on PHY: %x\n", f);
         return;
     }
     (f->init)();
@@ -196,7 +200,7 @@ externC void
 _eth_phy_write(eth_phy_access_t *f, int reg, int addr, unsigned short data)
 {
     if (!f->init_done) {
-        diag_printf("PHY write without init on PHY: %x\n", f);
+        eth_phy_printf("PHY write without init on PHY: %x\n", f);
         return;
     }
     if (f->ops_type == PHY_BIT_LEVEL_ACCESS_TYPE) {
@@ -212,7 +216,7 @@ _eth_phy_read(eth_phy_access_t *f, int reg, int addr, unsigned short *val)
     cyg_uint32 ret;
 
     if (!f->init_done) {
-        diag_printf("PHY read without init on PHY: %x\n", f);
+        eth_phy_printf("PHY read without init on PHY: %x\n", f);
         return false;
     }
     if (f->ops_type == PHY_BIT_LEVEL_ACCESS_TYPE) {
@@ -233,7 +237,7 @@ _eth_phy_cfg(eth_phy_access_t *f, int mode)
     int i;
 
     if (!f->init_done) {
-        diag_printf("PHY config without init on PHY: %x\n", f);
+        eth_phy_printf("PHY config without init on PHY: %x\n", f);
         return 0;
     }
 
@@ -244,12 +248,12 @@ _eth_phy_cfg(eth_phy_access_t *f, int mode)
     _eth_phy_write(f, PHY_BMCR, f->phy_addr, PHY_BMCR_RESET);
     for (i = 0;  i < 5*100;  i++) {
         phy_ok = _eth_phy_read(f, PHY_BMCR, f->phy_addr, &phy_state);            
-        diag_printf("PHY: %x\n", phy_state);
+        eth_phy_printf("PHY: %x\n", phy_state);
         if (phy_ok && !(phy_state & PHY_BMCR_RESET)) break;
         CYGACC_CALL_IF_DELAY_US(10000);   // 10ms
     }
     if (!phy_ok || (phy_state & PHY_BMCR_RESET)) {
-        diag_printf("PPC405: Can't get PHY unit to soft reset: %x\n", phy_state);
+        eth_phy_printf("PPC405: Can't get PHY unit to soft reset: %x\n", phy_state);
         return 0;
     }
 
@@ -264,7 +268,7 @@ _eth_phy_cfg(eth_phy_access_t *f, int mode)
         }
     }
     if (phy_timeout <= 0) {
-        diag_printf("** PPC405 Warning: PHY LINK UP failed: %04x\n", phy_state);
+        eth_phy_printf("** PPC405 Warning: PHY LINK UP failed: %04x\n", phy_state);
         return 0;
     }
 
@@ -277,7 +281,7 @@ _eth_phy_state(eth_phy_access_t *f)
     int state = 0;
 
     if (!f->init_done) {
-        diag_printf("PHY state without init on PHY: %x\n", f);
+        eth_phy_printf("PHY state without init on PHY: %x\n", f);
         return 0;
     }
     if ((f->dev->stat)(f, &state)) {

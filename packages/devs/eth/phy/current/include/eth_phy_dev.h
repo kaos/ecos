@@ -52,6 +52,13 @@
 //
 //==========================================================================
 
+#ifdef  CYGDBG_DEVS_ETH_PHY
+#include <cyg/infra/diag.h>
+#define eth_phy_printf(args...)   diag_printf(args)
+#else
+#define eth_phy_printf(args...)   /* NOOP */
+#endif
+
 // Transceiver mode
 #define PHY_BMCR             0x00    // Register number
 #define PHY_BMCR_RESET       0x8000
@@ -75,6 +82,20 @@
 
 #define PHY_ID1              0x02    // Chip ID register (high 16 bits)
 #define PHY_ID2              0x03    // Chip ID register (low 16 bits)
+
+#define PHY_AN_ADV           0x04    // Auto negotiation advertisement register
+#define PHY_AN_ADV_10HDX     0x0020
+#define PHY_AN_ADV_10FDX     0x0040
+#define PHY_AN_ADV_100HDX    0x0080
+#define PHY_AN_ADV_100FDX    0x0100
+#define PHY_AN_ADV_100_T4    0x0200
+
+#define PHY_AN_PAR           0x05    // Auto negotiation link partner ability
+#define PHY_AN_PAR_10HDX     0x0020
+#define PHY_AN_PAR_10FDX     0x0040
+#define PHY_AN_PAR_100HDX    0x0080
+#define PHY_AN_PAR_100FDX    0x0100
+#define PHY_AN_PAR_100_T4    0x0200
 
 struct _eth_phy_dev_entry {
     char          *name;
