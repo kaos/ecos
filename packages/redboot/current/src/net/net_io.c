@@ -170,8 +170,10 @@ static void net_io_putc(void*, cyg_uint8);
 // Special characters used by Telnet - must be interpretted here
 #define TELNET_IAC    0xFF // Interpret as command (escape)
 #define TELNET_IP     0xF4 // Interrupt process
-#define TELNET_WONT   0xFC // I Won't do it
+#define TELNET_WILL   0xFB // I Will do XXX
+#define TELNET_WONT   0xFC // I Won't do XXX
 #define TELNET_DO     0xFD // Will you XXX
+#define TELNET_DONT   0xFE // Don't you XXX
 #define TELNET_TM     0x06 // Time marker (special DO/WONT after IP)
 
 static cyg_bool
@@ -246,6 +248,14 @@ net_io_getc_nonblock(void* __ch_data, cyg_uint8* ch)
         // Respond with WONT option
         net_io_putc(__ch_data, TELNET_IAC);
         net_io_putc(__ch_data, TELNET_WONT);
+        net_io_putc(__ch_data, esc);
+        return false;  // Ignore this whole thing!
+    case TELNET_WILL:
+        // Telnet WILL option
+        while (!_net_io_getc_nonblock(__ch_data, &esc)) ;                
+        // Respond with DONT option
+        net_io_putc(__ch_data, TELNET_IAC);
+        net_io_putc(__ch_data, TELNET_DONT);
         net_io_putc(__ch_data, esc);
         return false;  // Ignore this whole thing!
     default:

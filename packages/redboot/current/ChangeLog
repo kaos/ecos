@@ -1,3 +1,8 @@
+2006-04-07  Grant Edwards <grante@visi.com>
+
+	* src/net/net_io.c (net_io_getc_nonblock): 
+	Handle TELNET_WILL (reject same as TELNET_DO)
+
 2006-04-03  Lars Povlsen  <lpovlsen@vitesse.com>
  
  	* src/flash.c (fis_update_directory): Fixed flash region size when
