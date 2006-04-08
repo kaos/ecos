@@ -1,3 +1,17 @@
+2006-04-07  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/hal_arm_at91sam7s.cdl: 
+	* include/pkgconf/mlt_arm_at91sam7s32_rom.ldi: 
+	* include/pkgconf/mlt_arm_at91sam7s64_rom.ldi: 
+	* include/pkgconf/mlt_arm_at91sam7s128_rom.ldi: 
+	* include/pkgconf/mlt_arm_at91sam7s267_rom.ldi: 
+	Allow CDL to control where in flash the image is placed.
+
+2006-03-23  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/hal_arm_at91sam7s.cdl: Implement the USB interface when chip
+	has the device.
+	
 2006-03-10  Oliver Munz  <oli@snr.ch>
 
 	* hal_arm_at91sam7s.cdl: Change the PLL-defaults so that 96MHz is

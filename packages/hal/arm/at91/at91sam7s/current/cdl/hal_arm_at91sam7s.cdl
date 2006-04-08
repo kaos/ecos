@@ -66,7 +66,6 @@ cdl_package CYGPKG_HAL_ARM_AT91SAM7S {
     implements    CYGINT_HAL_ARM_AT91_SERIAL_DBG_HW
     implements    CYGINT_HAL_ARM_AT91_PIT_HW
     implements    CYGINT_HAL_ARM_AT91_SYS_INTERRUPT
-    implements    CYGINT_DEVS_USB_AT91_HAS_USB
 
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_arm.h>"
@@ -90,6 +89,15 @@ cdl_package CYGPKG_HAL_ARM_AT91SAM7S {
            FLASH, peripherals and their layout. This option allows the
            platform HALs to select the specific microcontroller
            being used."
+    }
+
+    cdl_option CYGBLD_HAL_ARM_AT91SAM7S_USB {
+        active_if     {!( "at91sam7s32" == CYGHWR_HAL_ARM_AT91SAM7S) }
+        implements    CYGINT_DEVS_USB_AT91_HAS_USB
+        default_value 1
+        no_define
+        description   "
+            All but the AT91SAM7S32 has the USB device"
     }
 
     cdl_component CYGNUM_HAL_RTC_CONSTANTS {
@@ -132,7 +140,19 @@ cdl_package CYGPKG_HAL_ARM_AT91SAM7S {
             into ROM"
     }
 
-        
+    cdl_option CYGNUM_HAL_ARM_AT91_IMAGE_ADDRESS {
+        display       "Address in flash the image should live"
+        active_if     { CYG_HAL_STARTUP == "ROM" }
+        flavor        data        
+        default_value 0x00100000
+        description   "
+            This optionspecifies where in flash the image
+            lives. By default it is at the bottom of the flash,
+            but for example redboot may be at the bottom and an
+            application lives higher up, which is acheived by 
+            setting the address here."
+    }
+
     # Real-time clock/counter specifics
     cdl_option CYGNUM_HAL_ARM_AT91_CLOCK_SPEED {
         display       "CPU clock speed"

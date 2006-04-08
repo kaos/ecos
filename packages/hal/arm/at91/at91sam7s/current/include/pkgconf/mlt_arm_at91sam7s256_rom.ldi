@@ -3,6 +3,7 @@
 // This is a generated file - do not edit
 
 #include <cyg/infra/cyg_type.inc>
+#include <pkgconf/hal_arm_at91sam7s.h>
 
 MEMORY
 {
@@ -14,7 +15,7 @@ SECTIONS
 {
     SECTIONS_BEGIN
     CYG_LABEL_DEFN(__reserved_bootmon) = 0x00000000; . = CYG_LABEL_DEFN(__reserved_bootmon) + 0x01000;
-    SECTION_rom_vectors (rom, 0x00100000, LMA_EQ_VMA)
+    SECTION_rom_vectors (rom, CYGNUM_HAL_ARM_AT91_IMAGE_ADDRESS, LMA_EQ_VMA)
     SECTION_text (rom, ALIGN (0x1), LMA_EQ_VMA)
     SECTION_fini (rom, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_rodata (rom, ALIGN (0x4), LMA_EQ_VMA)
