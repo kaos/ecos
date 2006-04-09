@@ -1,3 +1,11 @@
+2006-04-03  Lars Povlsen  <lpovlsen@vitesse.com>
+
+	* include/flash_am29xxxxx_parts.inl [CYGHWR_DEVS_FLASH_AMD_MX29LV128]:
+	* cdl/flash_amd_am29xxxxx.cdl: Add MXIC MX29LV128 part.
+
+	* include/flash_am29xxxxx.inl: (find_sector) Fixed dealing with
+	bootblocks. Was returning device block size even for boot blocks.
+
 2006-02-15  Stephane Deltour  <stephane.deltour@barco.com>
 
 	* include/flash_am29xxxxx_parts.inl [CYGHWR_DEVS_FLASH_AMD_S29GL128N]:

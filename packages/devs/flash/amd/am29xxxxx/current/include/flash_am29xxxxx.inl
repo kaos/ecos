@@ -613,20 +613,18 @@ find_sector(volatile flash_data_t * addr, unsigned long *remain_size)
     if (flash_dev_info->bootblock) {
         cyg_uint32 * bootblocks = flash_dev_info->bootblocks;
         while (*bootblocks != _LAST_BOOTBLOCK) {
-            int ls = flash_dev_info->block_size;
-
-            if (*bootblocks++ == (res - base)) {
-                while (res + *bootblocks < a) {
+            if (*bootblocks++ == (res - base)) { /* Matching offset marker */
+                while (res + *bootblocks <= a) {
                     res += *bootblocks++;
                 }
+                *remain_size = *bootblocks - (a - res);
+                break;
             } else {
+                int ls = flash_dev_info->block_size;
                 // Skip over segment
                 while ((ls -= *bootblocks++) > 0) ;
             }
         }
-
-        if (*bootblocks != _LAST_BOOTBLOCK)   
-            *remain_size = *bootblocks - (a - res);
     }
     
     return (flash_data_t *) res;
