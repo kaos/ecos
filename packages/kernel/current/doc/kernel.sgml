@@ -4380,8 +4380,8 @@ isr_function(cyg_vector_t vector, cyg_addrword_t data)
 
     &hellip;
 
-    return dsr_required ? 
-        (CYG_ISR_CALL_DSR : CYG_ISR_HANDLED) :
+    return dsr_required ?
+        (CYG_ISR_CALL_DSR | CYG_ISR_HANDLED) :
         CYG_ISR_HANDLED;
 }
           </programlisting>
@@ -4435,8 +4435,8 @@ improves interrupt latency.
           <term>cyg_DSR_t <parameter>dsr</parameter></term>
           <listitem><para>
 If an interrupt has occurred and the ISR has returned a value
-<literal>CYG_ISR_CALL_DSR</literal> bit being set, the system 
-will call the deferred service routine or DSR associated with this interrupt
+with <literal>CYG_ISR_CALL_DSR</literal> bit being set, the system
+will call the DSR associated with this interrupt
 handler. If the scheduler is not currently locked then the DSR will
 run immediately. However if the interrupted thread was in the middle
 of a kernel call and had locked the scheduler, then the DSR will be
