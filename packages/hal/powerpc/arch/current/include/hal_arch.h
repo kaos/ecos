@@ -403,8 +403,13 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
     (38*4 /* offsetof(HAL_SavedRegisters, context_size) */)
 
 // Interrupt + call to ISR, interrupt_end() and the DSR
+#ifdef CYGHWR_HAL_POWERPC_FPU
+#define CYGNUM_HAL_STACK_INTERRUPT_SIZE \
+    (((43*4)+(16*8) /* sizeof(HAL_SavedRegisters) */) + 2 * CYGNUM_HAL_STACK_FRAME_SIZE)
+#else
 #define CYGNUM_HAL_STACK_INTERRUPT_SIZE \
     ((43*4 /* sizeof(HAL_SavedRegisters) */) + 2 * CYGNUM_HAL_STACK_FRAME_SIZE)
+#endif
 
 // We have lots of registers so no particular amount is added in for
 // typical local variable usage.
@@ -414,6 +419,12 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 // than this. Allow enough for three interrupt sources - clock, serial and
 // one other
 
+#ifdef CYGFUN_KERNEL_THREADS_STACK_CHECKING
+#define CYGNUM_HAL_STACK_CHECKING_OVERHEAD (2*CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE)
+#else
+#define CYGNUM_HAL_STACK_CHECKING_OVERHEAD 0
+#endif
+
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK 
 
 // An interrupt stack which is large enough for all possible interrupt
@@ -421,7 +432,9 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 // can therefore be much smaller
 
 # define CYGNUM_HAL_STACK_SIZE_MINIMUM \
-         (16*CYGNUM_HAL_STACK_FRAME_SIZE + 2*CYGNUM_HAL_STACK_INTERRUPT_SIZE)
+         (16*CYGNUM_HAL_STACK_FRAME_SIZE + \
+          2*CYGNUM_HAL_STACK_INTERRUPT_SIZE + \
+          CYGNUM_HAL_STACK_CHECKING_OVERHEAD)
 
 #else
 
@@ -429,7 +442,8 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 // a stack sufficiently large
 # define CYGNUM_HAL_STACK_SIZE_MINIMUM                  \
         (((2+3)*CYGNUM_HAL_STACK_INTERRUPT_SIZE) +      \
-         (16*CYGNUM_HAL_STACK_FRAME_SIZE))
+         (16*CYGNUM_HAL_STACK_FRAME_SIZE) +             \
+         CYGNUM_HAL_STACK_CHECKING_OVERHEAD)
 #endif
 
 // Now make a reasonable choice for a typical thread size. Pluck figures
@@ -437,7 +451,8 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 // automatic variables per call frame
 #define CYGNUM_HAL_STACK_SIZE_TYPICAL                \
         (CYGNUM_HAL_STACK_SIZE_MINIMUM +             \
-         30 * (CYGNUM_HAL_STACK_FRAME_SIZE+(16*4)))
+         (30 * (CYGNUM_HAL_STACK_FRAME_SIZE+(16*4))) + \
+         CYGNUM_HAL_STACK_CHECKING_OVERHEAD)
 
 //--------------------------------------------------------------------------
 // Macros for switching context between two eCos instances (jump from

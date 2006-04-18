@@ -1,3 +1,8 @@
+2006-04-18  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/hal_arch.h: Adjust stack sizes - they were too small
+	(on machines with FPU) and didn't account for stack checking.
+
 2005-07-29  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/arch.inc: Add one-time-include protection since newer
