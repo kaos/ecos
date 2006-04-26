@@ -257,7 +257,7 @@
 #define AT91_PIO_PSR_DSR1     0x10000000 // USART 1 Data Set Ready
 #define AT91_PIO_PSR_RI1      0x20000000 // USART 2 Ring Indicator
 #define AT91_PIO_PSR_IRQ1     0x40000000 // Interrupt Request 1
-#define AT01_PIO_PSR_NPCS1    x800000000 // SPI Chip Select 1
+#define AT01_PIO_PSR_NPCS1    0x80000000 // SPI Chip Select 1
 #endif // !defined(CYGHWR_HAL_ARM_AT91SAM7S_at91sam7s64)
 
 // PIOB
@@ -1185,7 +1185,7 @@
 #endif
 
 //=============================================================================
-// Real Time Timer Controller
+// USB Device Port
 
 #if defined(CYGHWR_HAL_ARM_AT91SAM7S)
 
@@ -1235,19 +1235,152 @@
 #define AT91_UDP_CSR_DIR         (1 <<  7) // Transfer Direction
 #define AT91_UDP_CSR_DIR_OUT     (0 <<  7) // Transfer Direction OUT
 #define AT91_UDP_CSR_DIR_IN      (1 <<  7) // Transfer Direction IN
-#define AT91_UDP_CSR_EPTYPE_CTRL     (0 << 9) // Control
-#define AT91_UDP_CSR_EPTYPE_ISO_OUT  (1 << 9) // Isochronous OUT
-#define AT91_UDP_CSR_EPTYPE_BULK_OUT (2 << 9) // Bulk OUT
-#define AT91_UDP_CSR_EPTYPE_INT_OUT  (3 << 9) // Interrupt OUT
-#define AT91_UDP_CSR_EPTYPE_ISO_IN   (5 << 9) // Isochronous IN
-#define AT91_UDP_CSR_EPTYPE_BULK_IN  (6 << 9) // Bulk IN
-#define AT91_UDP_CSR_EPTYPE_INT_IN   (6 << 9) // Interrupt IN
+#define AT91_UDP_CSR_EPTYPE_CTRL     (0 << 8) // Control
+#define AT91_UDP_CSR_EPTYPE_ISO_OUT  (1 << 8) // Isochronous OUT
+#define AT91_UDP_CSR_EPTYPE_BULK_OUT (2 << 8) // Bulk OUT
+#define AT91_UDP_CSR_EPTYPE_INT_OUT  (3 << 8) // Interrupt OUT
+#define AT91_UDP_CSR_EPTYPE_ISO_IN   (5 << 8) // Isochronous IN
+#define AT91_UDP_CSR_EPTYPE_BULK_IN  (6 << 8) // Bulk IN
+#define AT91_UDP_CSR_EPTYPE_INT_IN   (7 << 8) // Interrupt IN
 #define AT91_UDP_CSR_DTGLE       (1 << 11) // Data Toggle
 #define AT91_UDP_CSR_EPEDS       (1 << 15) // Endpoint Enable Disable
 #define AT91_UDP_FDR        0x50  // Endpoint FIFO Data
 #define AT91_UDP_TXVC       0x74  // Transceiver Control
 #define AT91_UDP_TXVC_TXVDIS     (1 <<  8) // Disable Transceiver
 #define AT91_UDP_TXVC_PUON       (1 <<  9) // Pull-up ON
+#endif
+
+//=============================================================================
+// Synchronous Serial Controller (SSC)
+
+#if defined(CYGHWR_HAL_ARM_AT91SAM7S)
+
+#ifndef AT91_SSC
+   #define AT91_SSC 0xFFFD4000
+#endif
+
+#define AT91_SSC_CR   (0x00)
+#define AT91_SSC_CR_RXEN   (1<<0)  //Enable Receiver
+#define AT91_SSC_CR_RXDIS  (1<<1)  //Disable Receiver
+#define AT91_SSC_CR_TXEN   (1<<8)  //Enable Transmitter
+#define AT91_SSC_CR_TXDIS  (1<<9)  //Disable Transmitter
+#define AT91_SSC_CR_SWRST  (1<<15) //Soft Reset
+#define AT91_SSC_CMR  (0x04)
+#define AT91_SSC_RCMR (0x10)
+#define AT91_SSC_RCMR_CKS_DIV    (0<<0)  //Select Divider Clock
+#define AT91_SSC_RCMR_CKS_TX     (1<<0)  //Select Transmit Clock
+#define AT91_SSC_RCMR_CKS_RK     (2<<0)  //Select Receiver Clock
+#define AT91_SSC_RCMR_CKO_NONE   (0<<2)  //No Clock Output
+#define AT91_SSC_RCMR_CKO_CONT   (1<<2)  //Continuous Clock Output
+#define AT91_SSC_RCMR_CKO_TFER   (2<<2)  //Clock Output During Transfer only
+#define AT91_SSC_RCMR_CKI        (1<<5)  //Clock Invert
+#define AT91_SSC_RCMR_CKG_NONE   (0<<6)  //No Clock Gating, Continuous Clock
+#define AT91_SSC_RCMR_CKG_RFLOW  (1<<6)  //Clock Enabled by RF Low
+#define AT91_SSC_RCMR_CKG_RFHIGH (2<<6)  //Clock Enabled by RF HIGH
+#define AT91_SSC_RCMR_START_CONT    (0<<8) //Start when data in RHR, Continous operation
+#define AT91_SSC_RCMR_START_TX      (1<<8) //Start when TX Start
+#define AT91_SSC_RCMR_START_RFLOW   (2<<8) //Start when LOW level on RF 
+#define AT91_SSC_RCMR_START_RFHIGH  (3<<8) //Start when HIGH level on RF
+#define AT91_SSC_RCMR_START_RFFALL  (4<<8) //Start when Falling Edge on RF
+#define AT91_SSC_RCMR_START_RFRISE  (5<<8) //Start when Rising Edge on RF 
+#define AT91_SSC_RCMR_START_RFLEVEL (6<<8) //Start when any Level Change on RF 
+#define AT91_SSC_RCMR_START_RFEDGE  (7<<8) //Start when any Edge on RF
+#define AT91_SSC_RCMR_START_CMP0    (8<<8) //Start when Compare 0 match 
+#define AT91_SSC_RCMR_STOP_CMP1  (1<<12)   //Stop when Compare 1 Match
+#define AT91_SSC_RCMR_STTDLY(x)  ((x&0xFF)<<16) //Start Delay
+#define AT91_SSC_RCMR_PERIOD(x)  ((x&0xFF)<<24) //Frame Period
+#define AT91_SSC_RFMR (0x14)
+#define AT91_SSC_RFMR_DATLEN(x)  (x&0x1F) //Data word length 
+#define AT91_SSC_RFMR_LOOP       (1<<5)   //Loop Mode
+#define AT91_SSC_RFMR_MSBF       (1<<7)   //MSB First 
+#define AT91_SSC_RFMR_DATNB(x)   ((x&0xf)<<8)  //Data Number, Number of words per frame
+#define AT91_SSC_RFMR_FSLEN(x)   ((x&0xf)<<16) //Frame sync length
+#define AT91_SSC_RFMR_FSOS_NONE     (0<<16) //No Frame Synch Output
+#define AT91_SSC_RFMR_FSOS_NEGPULSE (1<<16) //Negative Pulse Frame Synch Output 
+#define AT91_SSC_RFMR_FSOS_POSPULSE (2<<16) //Positive Pulse Frame Synch Output  
+#define AT91_SSC_RFMR_FSOS_LOW      (3<<16) //Low Level Frame Synch Output  
+#define AT91_SSC_RFMR_FSOS_HIGH     (4<<16) //High Level Frame Synch Output   
+#define AT91_SSC_RFMR_FSOS_TOGGLE   (5<<16) //Toggle Frame Synch Output    
+#define AT91_SSC_RFMR_FSEDGE_POS    (0<<24) //RXSYN interrupt on Postive edge of Frame Sync
+#define AT91_SSC_RFMR_FSEDGE_NEG    (1<<24) //RXSYN interrupt on Postive edge of Frame Sync 
+#define AT91_SSC_TCMR (0x18)
+#define AT91_SSC_TCMR_CKS_DIV    (0<<0) //Select Divider Clock               
+#define AT91_SSC_TCMR_CKS_TX     (1<<0) //Select Transmit Clock              
+#define AT91_SSC_TCMR_CKS_RK     (2<<0) //Select Receiver Clock              
+#define AT91_SSC_TCMR_CKO_NONE   (0<<2) //No Clock Output                    
+#define AT91_SSC_TCMR_CKO_CONT   (1<<2) //Continuous Clock Output            
+#define AT91_SSC_TCMR_CKO_TFER   (2<<2) //Clock Output During Transfer only  
+#define AT91_SSC_TCMR_CKI        (1<<5) //Clock Invert                       
+#define AT91_SSC_TCMR_CKG_NONE   (0<<6) //No Clock Gating, Continuous Clock  
+#define AT91_SSC_TCMR_CKG_RFLOW  (1<<6) //Clock Enabled by RF Low            
+#define AT91_SSC_TCMR_CKG_RFHIGH (2<<6) //Clock Enabled by RF HIGH           
+#define AT91_SSC_TCMR_START_CONT    (0<<8) //Start when data in THR, Continous operation 
+#define AT91_SSC_TCMR_START_TX      (1<<8) //Start when TX Start                         
+#define AT91_SSC_TCMR_START_RFLOW   (2<<8) //Start when LOW level on RF                  
+#define AT91_SSC_TCMR_START_RFHIGH  (3<<8) //Start when HIGH level on RF                 
+#define AT91_SSC_TCMR_START_RFFALL  (4<<8) //Start when Falling Edge on RF               
+#define AT91_SSC_TCMR_START_RFRISE  (5<<8) //Start when Rising Edge on RF                
+#define AT91_SSC_TCMR_START_RFLEVEL (6<<8) //Start when any Level Change on RF           
+#define AT91_SSC_TCMR_START_RFEDGE  (6<<8) //Start when any Edge on RF                   
+#define AT91_SSC_TCMR_STDDLY(x)  ((x&0xFF)<<16) //Start Delay 
+#define AT91_SSC_TCMR_PERIOD(x)  ((x&0xFF)<<24) //Frame Period
+#define AT91_SSC_TFMR (0x1C)
+#define AT91_SSC_TFMR_DATLEN(x)  (x&0x1F) //Data word length  
+#define AT91_SSC_TFMR_DATDEF     (1<<5)   //Default Data is 1's
+#define AT91_SSC_TFMR_MSBF       (1<<7)   //MSB First 
+#define AT91_SSC_TFMR_DATNB(x)   ((x&0xf)<<8)  //Data Number, Number of words per frame  
+#define AT91_SSC_TFMR_FSLEN(x)   ((x&0xf)<<16) //Frame sync length                       
+#define AT91_SSC_TFMR_FSOS_NONE     (0<<16) //No Frame Synch Output                         
+#define AT91_SSC_TFMR_FSOS_NEGPULSE (1<<16) //Negative Pulse Frame Synch Output             
+#define AT91_SSC_TFMR_FSOS_POSPULSE (2<<16) //Positive Pulse Frame Synch Output             
+#define AT91_SSC_TFMR_FSOS_LOW      (3<<16) //Low Level Frame Synch Output                  
+#define AT91_SSC_TFMR_FSOS_HIGH     (4<<16) //High Level Frame Synch Output                 
+#define AT91_SSC_TFMR_FSOS_TOGGLE   (5<<16) //Toggle Frame Synch Output                     
+#define AT91_SSC_RFMR_FSDEN_DEF     (0<<23) //Frame Sync is Default Data 
+#define AT91_SSC_RFMR_FSDEN_TSHR    (1<<23) //Frame Sync is TSHR Data   
+#define AT91_SSC_RFMR_FSEDGE_POS    (0<<24) //TXSYN interrupt on Postive edge of Frame Sync
+#define AT91_SSC_RFMR_FSEDGE_NEG    (1<<24) //TXSYN interrupt on Postive edge of Frame Sync
+#define AT91_SSC_RHR  (0x20)
+#define AT91_SSC_THR  (0x24)
+#define AT91_SSC_RSHR (0x30)
+#define AT91_SSC_TSHR (0x34)
+#define AT91_SSC_RC0R (0x38)
+#define AT91_SSC_RC1R (0x3C)
+#define AT91_SSC_SR   (0x40)
+#define AT91_SSC_SR_TXRDY   (1<<0) //Transmit Ready
+#define AT91_SSC_SR_TXEMPTY (1<<1) //Transmit Empty
+#define AT91_SSC_SR_ENDTX   (1<<2) //End of Transmission
+#define AT91_SSC_SR_TXBUFE  (1<<3) //Transmit Buffer Empty
+#define AT91_SSC_SR_RXRDY   (1<<4) //Receiver Ready
+#define AT91_SSC_SR_OVRUN   (1<<5) //Receiver Overrun
+#define AT91_SSC_SR_ENDRX   (1<<6) //End of Reception
+#define AT91_SSC_SR_RXBUFF  (1<<7) //Receive Buffer Full
+#define AT91_SSC_SR_CP0     (1<<8) //Compare 0 match
+#define AT91_SSC_SR_CP1     (1<<9) //Compare 1 Match
+#define AT91_SSC_SR_TXSYN   (1<<10) //Transmit Frame Sync
+#define AT91_SSC_SR_RXSYN   (1<<11) //Receive Frame Sync 
+#define AT91_SSC_SR_TXEN    (1<<16) //Transmitter Enabled
+#define AT91_SSC_SR_RXEN    (1<<17) //Receiver Enabled
+#define AT91_SSC_IER  (0x44)
+#define AT91_SSC_IDR  (0x48)
+#define AT91_SSC_IMR  (0x4C)
+
+#define AT91_SSC_RPR  0x100 // Receiver Pointer Register
+#define AT91_SSC_RCR  0x104 // Receiver Counter Register
+#define AT91_SSC_TPR  0x108 // Transmit Pointer Register
+#define AT91_SSC_TCR  0x10c // Transmit Counter Register
+#define AT91_SSC_RNPR 0x110 // Receiver Next Pointer Register
+#define AT91_SSC_RNCR 0x114 // Receiver Next Counter Register
+#define AT91_SSC_TNPR 0x118 // Transmit Next Pointer Register
+#define AT91_SSC_TNCR 0x11c // Transmit Next Counter Register
+#define AT91_SSC_PTCR 0x120 // PDC Transfer Control Register
+#define AT91_SSC_PTSR 0x124 // PDC Transfer Status Register
+
+#define AT91_SSC_PTCR_RXTEN  (1 << 0) //Receive Transfers Enabled
+#define AT91_SSC_PTCR_RXTDIS (1 << 1) //Receive Transfers Disabled 
+#define AT91_SSC_PTCR_TXTEN  (1 << 8) //Receive Transfers Enabled  
+#define AT91_SSC_PTCR_TXTDIS (1 << 9) //Receive Transfers Disabled 
+
 #endif
 
 //=============================================================================

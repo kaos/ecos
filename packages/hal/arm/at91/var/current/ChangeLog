@@ -1,3 +1,8 @@
+2006-04-26  John Eigelaar <jeigelaar@mweb.co.za>
+
+	* include/var_io.h: Fix typo's in the USB register definitions 
+	and add definitions for the S2C controller. 
+	
 2006-03-10  Oliver Munz  <munz@speag.ch>
 
 	* src/timer_pit.c: fix hal_delay_us(). hal_clock_read for
