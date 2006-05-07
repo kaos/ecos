@@ -1,0 +1,209 @@
+# ====================================================================
+#
+#      usbs_at91.cdl
+#
+#      USB device driver for the ATMEL AT91 family of processors.
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2006 eCosCentric
+## Copyright (C) 2006 Andrew Lunn
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+## -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      Oliver Munz, Andrew Lunn
+# Original data:  bartv
+# Contributors:
+# Date:           2006-02-25
+#
+#####DESCRIPTIONEND####
+# ====================================================================
+
+cdl_package CYGPKG_DEVS_USB_AT91 {
+    display     "Atmel AT91 USB Device Driver"
+    include_dir "cyg/io/usb"
+    parent      CYGPKG_IO_USB
+    implements  CYGHWR_IO_USB_SLAVE
+    
+    cdl_interface CYGINT_DEVS_USB_AT91_HAS_USB {
+        description "
+            This interface is implemented by HALs for devices which have
+            the USB hardware."
+    }
+
+    description "
+        This package provides a suitable eCos device driver
+        for AT91 USB. 
+        In this version the driver will support the AT91SAM7S.
+        Other AT92 devices may work, but have not been tested. 
+        The Driver needs 48, 96 or 192MHz plus minus 0.25%.
+        Buffers are allocated only in the higher level. There
+        is no need to configure the endpoints in this CDL, because
+        they will be configured dynamical at the set_configuration
+        call from the host...
+        The endpoints 1..3 can be configured as bulk or interrupt
+        IN or OUT endpoint. Isochronous transfer is not supported."
+
+    cdl_component CYGFUN_DEVS_USB_AT91_EP0 {
+        display       "Support the control endpoint 0"
+        flavor        bool
+        calculated    CYGINT_IO_USB_SLAVE_CLIENTS
+        requires      CYGPKG_IO_USB CYGPKG_IO_USB_SLAVE
+        requires { 
+            ((CYGNUM_HAL_ARM_AT91_CLOCK_SPEED < 48120000 && 
+              CYGNUM_HAL_ARM_AT91_CLOCK_SPEED > 47880000) || 
+             (CYGNUM_HAL_ARM_AT91_CLOCK_SPEED <  96240000 && 
+             CYGNUM_HAL_ARM_AT91_CLOCK_SPEED >  95760000)) 
+        }   
+
+        active_if CYGINT_DEVS_USB_AT91_HAS_USB
+
+        compile       usbs_at91.c
+        compile       -library=libextras.a usbs_at91_data.cxx
+        description   "
+            Enable support for endpoint 0. If this support is disabled
+            then the entire USB port is unusable."
+    
+        cdl_option CYGNUM_DEVS_USB_AT91_PIO_SET_PULLUP_PIN {
+            display       "PIO-Pin who controls the pullup resistor"
+            flavor        data
+            default_value 16
+            legal_values  { 0 to 32 }
+            description "
+                   Every pin from the PIO is able to do it. If you don't
+                   need a pin because your HW has the pullup fixed wired
+                   then select 32."
+        }
+
+        cdl_option CYGNUM_DEVS_USB_AT91_PIO_SET_PULLUP_INVERTED {
+            display       "Has the signal to be inverted?"
+            flavor        bool
+            default_value 1
+            description "
+                   This option indicates that the pullup pin should
+                   be inverted. ie VDD is active, VCC is inactive."
+        }
+
+        cdl_option CYGNUM_DEVS_USB_AT91_PIO_READ_POWER_PIN {
+            display       "PIO-Pin who see the USB-Power"
+            flavor        data
+            default_value 13
+            legal_values  { 0 to 32 }
+            description "
+                   Every pin from the PIO is able to do it. If you don't
+                   need a pin select 32."
+        }
+
+        cdl_option CYGNUM_DEVS_USB_AT91_PIO_READ_POWER_INVERTED {
+            display       "Has the signal to be inverted?"
+            flavor        bool
+            default_value 0
+            description "
+                   This option indicates that the power detect pin should
+                   be inverted. ie VDD is active, VCC is inactive."
+        }
+    }    
+    
+    cdl_component CYGPKG_DEVS_USB_AT91_DEVTAB_ENTRIES {
+        display       "Provide a devtab entry for endpoints"
+        active_if     CYGFUN_DEVS_USB_AT91_EP0
+        default_value 0
+        description "
+             This component controls if /dev/usb entries will be created."
+
+        cdl_option CYGVAR_DEVS_USB_AT91_EP0_DEVTAB_ENTRY {
+            display       "Provide a devtab entry for endpoint 0"
+            flavor        bool
+            default_value 0
+            requires      CYGPKG_IO
+            description "
+               If endpoint 0 will only be accessed via the low-level
+               USB-specific calls then there is no need for an entry
+               in the device table, saving some memory. If the
+               application intends to access the endpoint by means
+               of open and ioctl calls then a devtab entry is needed."
+        }
+
+        cdl_option CYGVAR_DEVS_USB_AT91_EP1_DEVTAB_ENTRY {
+            display       "Provide a devtab entry for endpoint 1"
+            flavor        bool
+            default_value 1
+            requires      CYGPKG_IO 
+            description "
+                If this endpoint will only be accessed via the low-level
+                USB-specific calls then there is no need for an entry
+                in the device table, saving some memory. If the
+                application intends to access the endpoint by means
+                of open and read calls then a devtab entry is needed."
+        }
+
+        cdl_option CYGVAR_DEVS_USB_AT91_EP2_DEVTAB_ENTRY {
+            display       "Provide a devtab entry for endpoint 2"
+            flavor        bool
+            default_value 1
+            requires      CYGPKG_IO 
+            description "
+                If this endpoint will only be accessed via the low-level
+                USB-specific calls then there is no need for an entry
+                in the device table, saving some memory. If the
+                application intends to access the endpoint by means
+                of open and read calls then a devtab entry is needed."
+        }
+
+        cdl_option CYGVAR_DEVS_USB_AT91_EP3_DEVTAB_ENTRY {
+            display       "Provide a devtab entry for endpoint 3"
+            flavor        bool
+            default_value 1
+            requires      CYGPKG_IO 
+            description "
+                If this endpoint will only be accessed via the low-level
+                USB-specific calls then there is no need for an entry
+                in the device table, saving some memory. If the
+                application intends to access the endpoint by means
+                of open and read calls then a devtab entry is needed."
+        }
+
+            cdl_option CYGDAT_DEVS_USB_AT91_DEVTAB_BASENAME {
+                display       "Base name for devtab entries"
+                flavor        data
+                default_value { "\"/dev/usbs\"" }
+                description "
+                    If the uAT91 USB device driver package provides devtab
+                    entries for any of the endpoints then this option gives
+                    control over the names of these entries. By default the
+                    endpoints will be called \"/dev/usbs0c\", \"/dev/usbs3w\"
+                    and \"/dev/usbs4r\" (assuming all three endpoints are
+                    enabled. The common part \"/dev/usbs\" is determined
+                    by this configuration option. It may be necessary to
+                    change this if there are multiple USB slave-side
+                    devices on the target hardware to prevent a name clash."
+            }
+    }
+}
