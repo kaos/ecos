@@ -374,8 +374,7 @@
 
 #define CYGARC_HAL_LPC2XXX_REG_IO_BASE                   0xE0028000
 
-
-#if defined(CYGHWR_HAL_ARM_LPC2XXX_LPC210x)
+#if defined(CYGHWR_HAL_ARM_LPC2XXX_FAMILY_LPC210X)
 
 // Registers are offsets from base of this subsystem
 #define CYGARC_HAL_LPC2XXX_REG_IOPIN                     0x000
@@ -494,8 +493,7 @@
 //=============================================================================
 // External Memory Controller
 
-#if defined(CYGHWR_HAL_ARM_LPC2XXX_LPC2212) || \
-    defined(CYGHWR_HAL_ARM_LPC2XXX_LPC2214)
+#if defined(CYGHWR_HAL_ARM_LPC2XXX_FAMILY_LPC22XX)
 
 #define CYGARC_HAL_LPC2XXX_REG_BCFG0                    0xFFE00000
 #define CYGARC_HAL_LPC2XXX_REG_BCFG1                    0xFFE00004

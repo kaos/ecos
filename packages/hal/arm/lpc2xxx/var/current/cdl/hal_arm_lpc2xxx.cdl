@@ -73,20 +73,70 @@ cdl_package CYGPKG_HAL_ARM_LPC2XXX {
         puts $::cdl_system_header "#define CYGBLD_HAL_ARM_VAR_ARCH_H"
     }
 
-    cdl_option CYGHWR_HAL_ARM_LPC2XXX {
+    # This is going to get really messy before long as the number of parts
+    # explodes. Its useful to know the actual part in use, but its just as
+    # useful to know which family it belongs to. LPC210x shouldn't really
+    # be in the list of devices, but will probably break something if removed.
+    cdl_component CYGHWR_HAL_ARM_LPC2XXX {
         display        "LPC2XXX variant used"
         flavor         data
-        default_value  {"LPC210x"}
-        legal_values   {"LPC210x" 
-			"LPC2114" "LPC2119" "LPC2124" "LPC2129" "LPC2132" 
-                        "LPC2138" "LPC2194" "LPC2212" "LPC2214" "LPC2290" 
-                        "LPC2292" "LPC2294"}
+        default_value  { "LPC210x" }
+        legal_values   { "LPC210x"
+                "LPC2101" "LPC2102" "LPC2103" "LPC2104" "LPC2105" "LPC2106"
+                "LPC2114" "LPC2119" "LPC2124" "LPC2129" "LPC2131" "LPC2132" 
+                "LPC2134" "LPC2136" "LPC2138" "LPC2141" "LPC2142" "LPC2144"
+                "LPC2146" "LPC2148" "LPC2194" "LPC2210" "LPC2212" "LPC2214"
+                "LPC2220" "LPC2290" "LPC2292" "LPC2294" }
+        description    "
+             The LPC2XXX microcontroller family has several variants,
+             the main differences being the amount of on-chip RAM,
+             flash and peripherals. This option allows the platform
+             HALs to select the specific microcontroller being used."
 
-        description    "The LPC2XXX microcontroller family has several
-                        variants, the main differences being the amount of 
-                        on-chip RAM, flash and peripherals. This option allows 
-                        the platform HALs to select the specific 
-                        microcontroller being used."
+        cdl_option CYGHWR_HAL_ARM_LPC2XXX_FAMILY {
+            display       "LPC2XXX variant family"
+            flavor        data
+            calculated    {
+                is_substr(CYGHWR_HAL_ARM_LPC2XXX, "LPC22") ? "LPC22XX" :
+                is_substr(CYGHWR_HAL_ARM_LPC2XXX, "LPC213") ? "LPC213X" :
+                is_substr(CYGHWR_HAL_ARM_LPC2XXX, "LPC214") ? "LPC214X" :
+                is_substr(CYGHWR_HAL_ARM_LPC2XXX, "LPC210") ? "LPC210X" :
+                "LPC21XX"
+                          }
+            description   "
+                This specifies the family that the processor
+                belongs to. This is useful as it defines certain common
+                characteristics (e.g lpc22xx has the external bus and
+                lpc214x has USB) which affect which features should be
+                available in the HAL."
+        }
+    }
+
+    cdl_option CYGNUM_HAL_ARM_LPC2XXX_VPBDIV {
+        display       "VPB clock divisor"
+        flavor        data
+        legal_values  { 4 2 1 }
+        default_value { 4 }
+        description   "
+            This option sets the divisor for the VPB clock relative to
+            the processor clock. 4 means that the VPB clock runs at
+            one fourth the processor clock, 2 means that it runs at
+            one half of the processor clock and 1 means that it is the
+            same as the processor clock."
+    }
+
+    cdl_option CYGNUM_HAL_ARM_LPC2XXX_XCLKDIV {
+        display         "XCLK clock divisor"
+        flavor          data
+        legal_values    { 4 2 1 }
+        default_value   { 4 }
+        active_if       { CYGHWR_HAL_ARM_LPC2XXX_FAMILY == "LPC22XX" }
+        description     "
+            This option sets the divisor for the XCLK clock relative
+            to the processor clock. 4 means that the XCLK clock runs
+            at one fourth the processor clock, 2 means that it runs at
+            one half of the processor clock and 1 means that it is the
+            same as the processor clock."
     }
 
     cdl_component CYGNUM_HAL_RTC_CONSTANTS {
@@ -111,13 +161,31 @@ cdl_package CYGPKG_HAL_ARM_LPC2XXX {
         }
     }
    
+    # Enable this by default, as I believe it won't affect parts that
+    # don't have the problem (other than slowing them down slightly)
+    # but causes a lock-up on those that do...
     cdl_option CYGHWR_HAL_ARM_LPC2XXX_EXTINT_ERRATA {
         display       "EXTINT.1 errata workaround"
-	flavor        data	       
-	default_value 0	       
-        description    "On some chips writing to the EXTPOLAR or EXTMODE 
-                        registers while VPBDIV is non-zero can corrupt the 
-                        latter. Also reading them will yield incorrect values.
-		        Enable this option to work around the problem."
+        flavor        bool       
+        default_value 1           
+        description   "
+
+            On some chips writing to the EXTPOLAR or EXTMODE registers
+            while VPBDIV is non-zero can corrupt the latter. Also
+            reading them will yield incorrect values.  Enable this
+            option to work around the problem."  
+    }
+
+    cdl_option CYGHWR_HAL_ARM_LPC2XXX_IDLE_PWRSAVE {
+        display       "Stop clock in idle loop to save power"
+        flavor        bool
+        default_value { is_active(CYGPKG_REDBOOT) ? 0 : 1 }
+        description   "
+           Select this option when it is desired to save power by
+           stoping the processor clock in the idle loop. This is
+           controlled by the PCON register. Generally this is a good
+           thing, but it may be necessary to disable this when
+           debugging via JTAG, as stopping the clock can prevent the
+           debugger getting control of the system."
     }
 }

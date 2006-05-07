@@ -50,6 +50,7 @@
 //========================================================================*/
 
 #include <pkgconf/hal.h>
+#include <pkgconf/hal_arm_lpc2xxx.h>
 
 #include <cyg/infra/cyg_type.h>         // base types
 #include <cyg/infra/cyg_trac.h>         // tracing macros
@@ -67,17 +68,33 @@
 #endif
 #include <cyg/hal/var_io.h>             // platform registers
 
-static cyg_uint32 lpc_cclk;	//CPU clock frequency
-static cyg_uint32 lpc_pclk;	//peripheral devices clock speed
-                                //(equal to, half, or quarter of CPU
-                                //clock)
+#include <cyg/infra/diag.h>     // For diagnostic printing
+
+// -------------------------------------------------------------------------
+// Processor clock configuration values and accessor functions
+static cyg_uint32 lpc_cclk; // CPU clock frequency
+static cyg_uint32 lpc_pclk; // peripheral devices clock speed
+                            // (equal to, half, or quarter of CPU clock)
+static cyg_uint32 lpc_xclk; // XCLK speed (equal to, half, or quarter of
+                            // CPU clock)
+
+cyg_uint32 hal_lpc_get_cclk(void)
+{
+    return (lpc_cclk); 
+}
 
 cyg_uint32 hal_lpc_get_pclk(void)
 {
-    return lpc_pclk; 
+    return (lpc_pclk); 
 }
+
+cyg_uint32 hal_lpc_get_xclk(void)
+{
+    return (lpc_xclk); 
+}
+
 // -------------------------------------------------------------------------
-// Clock support
+// eCos clock support
 // Use TIMER0
 static cyg_uint32 _period;
 
@@ -172,35 +189,53 @@ void hal_delay_us(cyg_int32 usecs)
 // we need to read twice consecutively to get correct value
 cyg_uint32 lpc_get_vpbdiv(void)
 {   
-    cyg_uint32 div;	
+    cyg_uint32 vpbdiv_reg;
+	
     HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE + 
-                    CYGARC_HAL_LPC2XXX_REG_VPBDIV, div);
+                    CYGARC_HAL_LPC2XXX_REG_VPBDIV, vpbdiv_reg);
     HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE + 
-                    CYGARC_HAL_LPC2XXX_REG_VPBDIV, div);
+                    CYGARC_HAL_LPC2XXX_REG_VPBDIV, vpbdiv_reg);
 
-    return div;
+    return (vpbdiv_reg);
 }
 
-//Set the two bits in VPBDIV which control peripheral clock division
-//div must be 1,2 or 4
-void lpc_set_vpbdiv(int div)
-{   
-    cyg_uint8 orig = lpc_get_vpbdiv();
-    
-    // update VPBDIV register
+// Set the VPBDIV register. The vpb bits are 1:0 and the xclk bits are 5:4. The
+// mapping of values passed to this routine to field values is:
+//		4 = divide by 4 (register bits 00)
+//		2 = divide by 2 (register bits 10)
+//		1 = divide by 1 (register bits 01)
+// This routine assumes that only these values can occur. As they are
+// generated in the CDL hopefully this should be the case. Fortunately
+// writing 11 merely causes the previous value to be retained.
+void lpc_set_vpbdiv(int vpbdiv, int xclkdiv)
+{
+    CYG_ASSERT(((vpbdiv & 0x3) != 3) && ((xclkdiv & 0x3) != 3),
+               "illegal VPBDIV register value");
+
+    // Update VPBDIV register
+#ifdef CYGHWR_HAL_ARM_LPC2XXX_FAMILY_LPC22XX
+    HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE +
+                     CYGARC_HAL_LPC2XXX_REG_VPBDIV,
+                     ((xclkdiv & 0x3) << 4) | (vpbdiv & 0x3));
+#else
     HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE + 
-                     CYGARC_HAL_LPC2XXX_REG_VPBDIV, (div % 4) | (orig & 0xFC));
+                     CYGARC_HAL_LPC2XXX_REG_VPBDIV, vpbdiv & 0x3);
+#endif
     
-    lpc_pclk = lpc_cclk/div;
+    lpc_pclk = lpc_cclk / vpbdiv;
+    lpc_xclk = lpc_cclk / xclkdiv;
 }
 
+// Perform variant setup
 void hal_hardware_init(void)
 {
     lpc_cclk = CYGNUM_HAL_ARM_LPC2XXX_CLOCK_SPEED;
-    lpc_set_vpbdiv(4);
+#ifdef CYGHWR_HAL_ARM_LPC2XXX_FAMILY_LPC22XX
+    lpc_set_vpbdiv(CYGNUM_HAL_ARM_LPC2XXX_VPBDIV,
+                   CYGNUM_HAL_ARM_LPC2XXX_XCLKDIV);
+#endif
     // Set up eCos/ROM interfaces
     hal_if_init();
-
 }
 
 // -------------------------------------------------------------------------
@@ -208,104 +243,178 @@ void hal_hardware_init(void)
 // should interrogate the hardware and return the IRQ vector number.
 int hal_IRQ_handler(void)
 {
-    cyg_uint32 irq_num,irq_stat;
-    // Find out which interrupt caused the IRQ
-    // picks the lowest if there are more.
+    cyg_uint32 irq_num, irq_stat;
+
+    // Find out which interrupt caused the IRQ. This picks the lowest
+    // if there are more than 1.
     // FIXME:try to make use of the VIC for better latency.
     //       That will probably need changes to vectors.S and 
     //       other int-related code
     HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_VIC_BASE + 
                     CYGARC_HAL_LPC2XXX_REG_VICIRQSTAT, irq_stat);
     for (irq_num = 0; irq_num < 32; irq_num++)
-	    if (irq_stat & (1<<irq_num)) break;
-    // No valid interrrupt source, treat as spurious interrupt    
+      if (irq_stat & (1 << irq_num))
+        break;
+    
+    // If not a valid interrrupt source, treat as spurious interrupt    
     if (irq_num < CYGNUM_HAL_ISR_MIN || irq_num > CYGNUM_HAL_ISR_MAX)
       irq_num = CYGNUM_HAL_INTERRUPT_NONE;
     
-    return irq_num;
+    return (irq_num);
 }
 
 // -------------------------------------------------------------------------
 // Interrupt control
 //
 
+// Block the the interrupt associated with the vector
 void hal_interrupt_mask(int vector)
 {
     CYG_ASSERT(vector <= CYGNUM_HAL_ISR_MAX &&
                vector >= CYGNUM_HAL_ISR_MIN , "Invalid vector");
 
     HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_VIC_BASE + 
-                     CYGARC_HAL_LPC2XXX_REG_VICINTENCLEAR, 1<<vector);
+                     CYGARC_HAL_LPC2XXX_REG_VICINTENCLEAR, 1 << vector);
 }
 
+// Unblock the the interrupt associated with the vector
 void hal_interrupt_unmask(int vector)
 {
     CYG_ASSERT(vector <= CYGNUM_HAL_ISR_MAX &&
                vector >= CYGNUM_HAL_ISR_MIN , "Invalid vector");
 
     HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_VIC_BASE + 
-                     CYGARC_HAL_LPC2XXX_REG_VICINTENABLE, 1<<vector);
+                     CYGARC_HAL_LPC2XXX_REG_VICINTENABLE, 1 << vector);
 }
 
+// Acknowledge the the interrupt associated with the vector. This
+// clears the interrupt but may result in another interrupt being
+// delivered
 void hal_interrupt_acknowledge(int vector)
 {
+
+    // External interrupts have to be cleared from the EXTINT register
+    if (vector >= CYGNUM_HAL_INTERRUPT_EINT0 &&
+        vector <= CYGNUM_HAL_INTERRUPT_EINT3)
+      {
+        // Map int vector to corresponding bit (0..3)
+        vector = 1 << (vector - CYGNUM_HAL_INTERRUPT_EINT0);
+        
+        // Clear the external interrupt
+        HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE + 
+                         CYGARC_HAL_LPC2XXX_REG_EXTINT, vector);
+      }
+    
+    //
     HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_VIC_BASE + 
                      CYGARC_HAL_LPC2XXX_REG_VICVECTADDR, 0);  
 }
 
+// This provides control over how an interrupt signal is detected.
+// Options are between level or edge sensitive (level) and high/low
+// level or rising/falling edge triggered (up).
+//
+// This should be simple, but unfortunately on some processor revisions,
+// it trips up on two errata issues (for the LPC2294 Rev.A these are
+// EXTINT.1 and VPBDIV.1) and so on these devices a somewhat convoluted
+// sequence in order to work properly. There is nothing in the errata
+// sequence that won't work on a processor without these issues.
 void hal_interrupt_configure(int vector, int level, int up)
 {
-    cyg_uint32 mode;
-    cyg_uint32 pol;
-    // only external interrupts are configurable	
+    cyg_uint32 regval, saved_vpbdiv;
+
+    // Only external interrupts are configurable	
     CYG_ASSERT(vector <= CYGNUM_HAL_INTERRUPT_EINT3 &&
                vector >= CYGNUM_HAL_INTERRUPT_EINT0 , "Invalid vector");
-#if CYGHWR_HAL_ARM_LPC2XXX_EXTINT_ERRATA
-    // Errata sheet says VPBDIV is corrupted when accessing EXTPOL or EXTMOD
-    // Must be written as 0 and at the end restored to original value
-    
-    HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE + 
-                     CYGARC_HAL_LPC2XXX_REG_VPBDIV, 0);
-#endif    
-    HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE + 
-                    CYGARC_HAL_LPC2XXX_REG_EXTMODE, mode);
-    HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE + 
-                    CYGARC_HAL_LPC2XXX_REG_EXTPOLAR, pol);
-    
-    // map int vector to corresponding bit (0..3)
+
+    // Map int vector to corresponding bit (0..3)
     vector = 1 << (vector - CYGNUM_HAL_INTERRUPT_EINT0);
     
-    // level or edge
-    if (level) {
-	mode &= ~vector;   
-    } else {
-	mode |= vector;   
-    }
+#ifdef CYGHWR_HAL_ARM_LPC2XXX_EXTINT_ERRATA
+    // From discussions with the Philips applications engineers on the
+    // Yahoo LPC2000 forum, it appears that in order up change both
+    // EXTMODE and EXTPOLAR, the operations have to be performed in
+    // two passes as follows:
+    // old=VPBDIV (x2),
+    //     VPBDIV=0, EXTMODE=n, VPBDIV=n, VPBDIV=0, EXTPOLAR=y, VPBDIV=y
+    // VPCDIV=old
     
-    // high/low or falling/rising
-    if (up) {
-	pol |= vector;   
-    } else {
-	pol &= ~vector;   
-    }
+    // Save current VPBDIV register settings
+    saved_vpbdiv = lpc_get_vpbdiv();
     
+    // Clear VPBDIV register
     HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE + 
-                     CYGARC_HAL_LPC2XXX_REG_EXTMODE, mode);
-    HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE + 
-                     CYGARC_HAL_LPC2XXX_REG_EXTPOLAR, pol);
+                     CYGARC_HAL_LPC2XXX_REG_VPBDIV, 0);
     
-#if CYGHWR_HAL_ARM_LPC2XXX_EXTINT_ERRATA    
-    // we know this was the original value
-    lpc_set_vpbdiv(lpc_cclk/lpc_pclk);
+    // Read current mode and update for level (0) or edge detection (1)
+    HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE + 
+                    CYGARC_HAL_LPC2XXX_REG_EXTMODE, regval);
+    if (level)
+      regval &= ~vector;
+    else
+      regval |= vector;
+    HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE + 
+                     CYGARC_HAL_LPC2XXX_REG_EXTMODE, regval);
+    
+    // Set VPBDIV register to same value as mode
+    HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE + 
+                     CYGARC_HAL_LPC2XXX_REG_VPBDIV, regval);
+    
+    // Clear VPBDIV register
+    HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE + 
+                     CYGARC_HAL_LPC2XXX_REG_VPBDIV, 0);
+    
+    // Read current polarity and update for trigger level or edge
+    // level: high (1), low (0) edge: rising (1), falling (0)
+    HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE + 
+                    CYGARC_HAL_LPC2XXX_REG_EXTPOLAR, regval);
+    if (up)
+      regval |= vector;
+    else
+      regval &= ~vector;
+    HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE + 
+                     CYGARC_HAL_LPC2XXX_REG_EXTPOLAR, regval);
+    
+    // Set VPBDIV register to same value as mode
+    HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE + 
+                     CYGARC_HAL_LPC2XXX_REG_VPBDIV, regval);
+    
+    // Restore saved VPBDIV register
+    HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE + 
+                     CYGARC_HAL_LPC2XXX_REG_VPBDIV, saved_vpbdiv);
+#else
+    // Read current mode and update for level (0) or edge detection (1)
+    HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE + 
+                    CYGARC_HAL_LPC2XXX_REG_EXTMODE, regval);
+    if (level)
+      regval &= ~vector;
+    else
+      regval |= vector;
+    HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE + 
+                     CYGARC_HAL_LPC2XXX_REG_EXTMODE, regval);
+    
+    // Read current polarity and update for trigger level or edge
+    // level: high (1), low (0) edge: rising (1), falling (0)
+    HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE + 
+                    CYGARC_HAL_LPC2XXX_REG_EXTPOLAR, regval);
+    if (up)
+      regval |= vector;
+    else
+      regval &= ~vector;
+    HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE + 
+                     CYGARC_HAL_LPC2XXX_REG_EXTPOLAR, regval);
 #endif
+    // Clear any spurious interrupt that might have been generated
+    HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE + 
+                     CYGARC_HAL_LPC2XXX_REG_EXTINT, vector);
 }
 
+// Change interrupt level. This is a non-operation on the LPC2XXX
 void hal_interrupt_set_level(int vector, int level)
 {
     CYG_ASSERT(vector <= CYGNUM_HAL_ISR_MAX &&
                vector >= CYGNUM_HAL_ISR_MIN , "Invalid vector");
     CYG_ASSERT(level >= 0 && level <= 15, "Invalid level");
-
 }
 
 // Use the watchdog to generate a reset
@@ -326,7 +435,8 @@ void hal_lpc_watchdog_reset(void)
                      CYGARC_HAL_LPC2XXX_REG_WDFEED, 
                      CYGARC_HAL_LPC2XXX_REG_WDFEED_MAGIC2);
     
-    while(1);
+    while(1)
+      continue;
 }
 
 //--------------------------------------------------------------------------

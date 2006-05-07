@@ -1,3 +1,17 @@
+2006-02-14  Andy Jackson <andy@grapevinetech.co.uk>
+
+	* cdl/hal_arm_lpc2xxx.cdl: Added CYGHWR_HAL_ARM_LPC2XXX_FAMILY,
+	CYGNUM_HAL_ARM_LPC2XXX_VPBDIV, CYGNUM_HAL_ARM_LPC2XXX_XCLKDIV
+	and CYGHWR_HAL_ARM_LPC2XXX_IDLE_PWRSAVE. Changed 
+	CYGHWR_HAL_ARM_LPC2XXX_EXTINT_ERRATA to a bool.
+	* include/hal_var_ints.h: Removed lpc2xxx misc functions and
+	added an include for lpc2xxx_misc.h to avoid breaking things.
+	* include/lpc2xxx_misc.h: New header file for all the lpc2xxx
+	miscellaneous functions.
+	* include/var_arch.h: Made idle powerdown CDL controlled.
+	* include/var_io.h: Changed to use family CDL variables.
+	* src/lpc2xxx_misc.c: Changes to interrupt and VPBDIV code.
+
 2004-09-12  Jani Monoses <jani@iv.ro>
 
 	* src/hal_diag.c: 

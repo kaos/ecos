@@ -95,16 +95,11 @@
 
 #define CYGNUM_HAL_ISR_COUNT         (CYGNUM_HAL_ISR_MAX+1)
 
-__externC cyg_uint32 hal_lpc_get_pclk(void);
-#define CYG_HAL_ARM_LPC2XXX_PCLK() hal_lpc_get_pclk() 
-#define CYG_HAL_ARM_LPC2XXX_BAUD_GENERATOR(baud) \
-            (CYG_HAL_ARM_LPC2XXX_PCLK()/((baud)*16))
-
 //The vector used by the Real time clock
 #define CYGNUM_HAL_INTERRUPT_RTC     CYGNUM_HAL_INTERRUPT_TIMER0
 
-__externC void hal_lpc_watchdog_reset(void);
-#define HAL_PLATFORM_RESET() hal_lpc_watchdog_reset()
-#define HAL_PLATFORM_RESET_ENTRY 0
+// Other entries here moved to variant specific include file
+// This is included here to avoid breaking anything
+#include <cyg/hal/lpc2xxx_misc.h>
 
 #endif // CYGONCE_HAL_VAR_INTS_H

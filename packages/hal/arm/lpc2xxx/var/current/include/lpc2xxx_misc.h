@@ -1,17 +1,16 @@
-#ifndef CYGONCE_HAL_VAR_ARCH_H
-#define CYGONCE_HAL_VAR_ARCH_H
+#ifndef CYGONCE_HAL_ARM_LPC2XXX_VAR_LPC2XXX_MISC_H
+#define CYGONCE_HAL_ARM_LPC2XXX_VAR_LPC2XXX_MISC_H
 //=============================================================================
 //
-//      var_arch.h
+//      lpc2xxx_misc.h
 //
-//      LPC2XXX variant architecture overrides
+//      HAL misc variant support code for Philips LPC2xxx header file
 //
 //=============================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 2003 Jonathan Larmour <jifl@eCosCentric.com>
-// Copyright (C) 2004 eCosCentric Limited 
+// Copyright (C) 2006 eCosCentric Limited 
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -40,40 +39,39 @@
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    jani 
-// Contributors: jlarmour,Daniel Neri
-// Date:         2004-10-05
-// Purpose:      LPC2XXX variant architecture overrides
+// Author(s):    andyj 
+// Contributors: jani
+// Date:         2006-02-04
+// Purpose:      LPC2XXX specific miscellaneous support header file
 // Description: 
-// Usage:        #include <cyg/hal/hal_arch.h>
+// Usage:        #include <cyg/hal/lpc2xxx_misc.h>
 //
 //####DESCRIPTIONEND####
 //
 //=============================================================================
 
-#include <pkgconf/hal.h>
-#include <cyg/hal/hal_io.h>
-//--------------------------------------------------------------------------
-// Idle thread code.
-// This macro is called in the idle thread loop, and gives the HAL the
-// chance to insert code. Typical idle thread behaviour might be to halt the
-// processor. These implementations halt the system core clock.
-
-#ifdef CYGHWR_HAL_ARM_LPC2XXX_IDLE_PWRSAVE
-
-#ifndef HAL_IDLE_THREAD_ACTION
-
-#define HAL_IDLE_THREAD_ACTION(_count_)                       \
-CYG_MACRO_START                                               \
-HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE +            \
-                 CYGARC_HAL_LPC2XXX_REG_PCON,                 \
-                 CYGARC_HAL_LPC2XXX_REG_PCON_IDL);            \
-CYG_MACRO_END
-
-#endif		// HAL_IDLE_THREAD_ACTION
-
-#endif		// CYGHWR_HAL_ARM_LPC2XXX_IDLE_MODE
+//-----------------------------------------------------------------------------
+// Functions to obtain the current processor clock settings
+//-----------------------------------------------------------------------------
+externC cyg_uint32 hal_lpc_get_cclk(void);
+externC cyg_uint32 hal_lpc_get_pclk(void);
+externC cyg_uint32 hal_lpc_get_xclk(void);
 
 //-----------------------------------------------------------------------------
-// end of var_arch.h
-#endif // CYGONCE_HAL_VAR_ARCH_H
+// Macros to derive the baudrate divider values for the internal UARTs
+//-----------------------------------------------------------------------------
+#define CYG_HAL_ARM_LPC2XXX_PCLK() hal_lpc_get_pclk() 
+#define CYG_HAL_ARM_LPC2XXX_BAUD_GENERATOR(baud) \
+            (CYG_HAL_ARM_LPC2XXX_PCLK()/((baud)*16))
+
+//-----------------------------------------------------------------------------
+// LPX2xxx watchdog support
+//-----------------------------------------------------------------------------
+externC void hal_lpc_watchdog_reset(void);
+
+#define HAL_PLATFORM_RESET() hal_lpc_watchdog_reset()
+#define HAL_PLATFORM_RESET_ENTRY 0
+
+//-----------------------------------------------------------------------------
+// end of lpc2xxx_misc.h
+#endif // CYGONCE_HAL_ARM_LPC2XXX_VAR_LPC2XXX_MISC_H
