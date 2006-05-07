@@ -3485,6 +3485,16 @@ test scripts include the following:
       be used.
     </para></listitem>
   </varlistentry>
+  <varlistentry><term><filename>bulk-boundaries.tcl</filename></term>
+    <listitem><para> This script performs simple bulk IN and OUT
+      transfers of different sizes around interesting boundaries. This
+      test is useful to ensure the driver correctly handles the case
+      where a transfer is just smaller than, the same size as, and
+      just bigger than the hardware buffer in the endpoint hardware.
+      This script takes no parameters. It determines what endpoints
+      the device has by asking it.
+    </para></listitem>
+  </varlistentry>
 </variablelist>
 </refsect1>
 

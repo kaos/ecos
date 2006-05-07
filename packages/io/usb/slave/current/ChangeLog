@@ -1,3 +1,28 @@
+2006-05-07  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* host/bulk-boundaries.tcl(New): test bulk transfers at
+	boundary cases.
+	* doc/usbs.sgml: Documentation of bulk-boundaries.tcl test.
+
+2006-04-23  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* doc/usbs-testing.html: Correct "format" for "data" when
+	specifiying what the data in the USB message will contain.
+
+2006-04-16  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* host/usbhost.c (tcl_run): Fix compiler warnings
+	* host/usbhost.c (pool_function): sem_wait can exit with a
+	EINTR. If so loop and try again.
+
+	* host/usbchmod.c (usb_scan_devices) propergate previous fix from
+	usbhost.c
+
+2006-04-16  Frank Pagliughi <fpagliughi@mindspring.com>
+
+	*host/usbhost.c (usb_scan_devices) Fix parsing EOL for FC4 and
+	others.
+
 2006-03-10  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/usbs.c (usbs_devtab_cwrite, usbs_devtab_cwrite): add

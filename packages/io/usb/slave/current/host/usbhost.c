@@ -216,9 +216,9 @@ usb_scan_devices(int* bus, int* dev)
             } 
         }
         // Move to the end of the current line.
-        do {
+        while ((EOF != ch) && ('\n' != ch)) {
             ch = getc(devs_file);
-        } while ((EOF != ch) && ('\n' != ch));
+        } 
         if (EOF != ch) {
             ch = getc(devs_file);
         }
@@ -280,6 +280,7 @@ usb_open_device(void)
     }
     if (-1 == result) {
         fprintf(stderr, "usbhost: error, failed to open \"%s\", errno %d\n", devname, errno);
+        exit(EXIT_FAILURE);
     }
 
     VERBOSE(1, "USB device now accessible via file descriptor %d\n", result);
@@ -500,8 +501,8 @@ usb_initialise_bulk_in_endpoint(int number, int min_size, int max_size, int padd
 static void
 usb_initialise_bulk_out_endpoint(int number, int min_size, int max_size)
 {
-    char buf[1];
-    
+    unsigned char buf[1];
+
     // On the SA1110 the hardware comes up with a bogus default value,
     // causing the hardware to accept packets before the software has
     // set up DMA or in any way prepared for incoming data. This is
@@ -943,8 +944,16 @@ static void*
 pool_function(void* arg)
 {
     PoolEntry*  pool_entry  = (PoolEntry*) arg;
+    int ret;
+    
     for ( ; ; ) {
-        sem_wait(&(pool_entry->wakeup));
+        do {
+             ret = sem_wait(&(pool_entry->wakeup));
+             if (ret != 0 && errno != EINTR) {
+                  perror("sem_wait");
+                  exit(1);
+             }
+        } while (ret != 0);
         run_test(&(pool_entry->test));
         pool_entry->running = 0;
     }
@@ -1560,7 +1569,7 @@ tcl_run(ClientData     clientData    __attribute__ ((unused)),
         usb_reliable_control_message(usb_master_fd, USB_TYPE_CLASS | USB_RECIP_DEVICE | USB_DIR_IN, USBTEST_GET_RESULT,
                                      0, i, USBTEST_MAX_CONTROL_DATA, (void*) result_buf);
         if (!result_buf[0]) {
-            Tcl_SetVar(interp, "usbtest::results", &(result_buf[1]),
+            Tcl_SetVar(interp, "usbtest::results", (char *)&(result_buf[1]),
                        all_ok ? TCL_GLOBAL_ONLY : (TCL_GLOBAL_ONLY | TCL_APPEND_VALUE | TCL_LIST_ELEMENT));
             all_ok = 0;
         }
@@ -1576,7 +1585,7 @@ tcl_run(ClientData     clientData    __attribute__ ((unused)),
         usb_reliable_control_message(usb_master_fd, USB_TYPE_CLASS | USB_RECIP_DEVICE | USB_DIR_IN, USBTEST_GET_RESULT,
                                      0, i, USBTEST_MAX_CONTROL_DATA, (void*) result_buf);
         if (!result_buf[0]) {
-            Tcl_SetVar(interp, "usbtest::results", &(result_buf[1]),
+            Tcl_SetVar(interp, "usbtest::results", (char *)&(result_buf[1]),
                        all_ok ? TCL_GLOBAL_ONLY : (TCL_GLOBAL_ONLY | TCL_APPEND_VALUE | TCL_LIST_ELEMENT));
             all_ok = 0;
         }

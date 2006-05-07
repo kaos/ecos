@@ -825,9 +825,11 @@ run_test_bulk_in(UsbTest* test)
         test->recovery.protocol     = USB_ENDPOINT_DESCRIPTOR_ATTR_BULK;
         test->recovery.size         = packet_size + usbs_testing_endpoints[ep_index].max_in_padding;
 
+        CYG_ASSERTC(sizeof(test->buffer) > packet_size);
+        
         // Make sure the buffer contains the data expected by the host
         usbtest_fill_buffer(&(test->test_params.bulk.data), buf, packet_size);
-                            
+
         if (verbose < 3) {
             VERBOSE(2, "Bulk OUT test %d: iteration %d, packet size %d\n", test->id, i, packet_size);
         } else {
@@ -1016,7 +1018,7 @@ static usbs_control_return
 handle_reserved_control_messages(usbs_control_endpoint* endpoint, void* data)
 {
     usb_devreq*         req = (usb_devreq*) endpoint->control_buffer;
-    usbs_control_return result;
+    usbs_control_return result = USBS_CONTROL_RETURN_UNKNOWN;
 
     CYG_ASSERT(endpoint == control_endpoint, "control endpoint mismatch");
     switch(req->request) {
@@ -1049,7 +1051,7 @@ handle_reserved_control_messages(usbs_control_endpoint* endpoint, void* data)
             if (control_in_test_packet_size != len) {
                 control_in_test->result_pass   = 0;
                 snprintf(control_in_test->result_message, USBTEST_MAX_MESSAGE,
-                         "Target, control IN transfer on endpoint %d : the host only requested %d bytes instead of %d",
+                         "Target, control IN transfer : the host only requested %d bytes instead of %d",
                          len, control_in_test_packet_size);
                 cyg_semaphore_post(&(control_in_test->sem));
                 control_in_test = (UsbTest*) 0;
@@ -1835,7 +1837,7 @@ main(int argc, char** argv)
     // function pointer is used to keep track of what operation is actually required.
     for (;;) {
         void (*handler)(void);
-        
+
         cyg_semaphore_wait(&main_wakeup);
         handler = main_thread_action;
         main_thread_action   = 0;

@@ -57,6 +57,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <string.h>
 
 // Note: this code is duplicated in usbhost.c. Any changes here
 // should be propagated. For now the routine is too small to warrant
@@ -94,9 +95,9 @@ usb_scan_devices(int* bus, int* dev)
             } 
         }
         // Move to the end of the current line.
-        do {
+        while ((EOF != ch) && ('\n' != ch)) {
             ch = getc(devs_file);
-        } while ((EOF != ch) && ('\n' != ch));
+        }
         if (EOF != ch) {
             ch = getc(devs_file);
         }
@@ -170,9 +171,7 @@ main(int argc, char** argv)
     if (0 != chmod(devname, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)) {
         int old_errno = errno;
         fprintf(stderr, "usbchmod: failed to modify access rights on %s\n", devname);
-        if ((old_errno >= 0) && (old_errno < sys_nerr)) {
-            fprintf(stderr, "         : %s\n", sys_errlist[old_errno]);
-        }
+        fprintf(stderr, "         : %s\n", strerror(old_errno));
         exit(EXIT_FAILURE);
     }
 
