@@ -1359,6 +1359,14 @@ package CYGPKG_DEVS_USB_UPD985XX {
         description     "A device driver for the NEC uPD985xx on-chip USB device"
 }
 
+package CYGPKG_DEVS_USB_AT91 {
+        alias           { usb_at91 }
+        hardware
+        directory       devs/usb/at91
+        script          usbs_at91.cdl
+        description     "A device driver for the ATMEL AT91 on-chip USB device"
+}
+
 package CYGPKG_NET {
 	alias 		{ "Networking" net }
 	directory	net/common
