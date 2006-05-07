@@ -4205,6 +4205,7 @@ target at91sam7s {
                    CYGPKG_DEVS_FLASH_AT91
                    CYGPKG_DEVS_SPI_ARM_AT91
                    CYGPKG_DEVICES_WATCHDOG_ARM_AT91WDTC
+                   CYGPKG_DEVS_USB_AT91
         }
         description "
         The at91sam7s target provides the packages needed to run eCos on an 
