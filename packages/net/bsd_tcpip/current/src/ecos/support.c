@@ -251,7 +251,7 @@ void cyg_net_show_mbufs(void)
         default: type="UNKNOWN"; break;
         }
 
-        diag_printf("%08x: %s %04x %08x[%03d] %08x %08x\n",
+        diag_printf("%p: %s %04x %p[%03d] %p %p\n",
                     m, type,
                     m->m_hdr.mh_flags,
                     m->m_hdr.mh_data,

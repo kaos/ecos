@@ -1,3 +1,8 @@
+2006-05-08  Andy Jackson <andy@grapevinetech.co.uk>
+
+	* src/ecos/support.c (cyg_net_show_mbufs): Use %p in diag_printf
+	to keep the compiler happy.
+
 2005-10-24  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/sys/param.h: Include <string.h> to stop warnings.
