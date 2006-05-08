@@ -1,9 +1,14 @@
+2006-05-08  Andy Jackson <andy@grapevinetech.co.uk>
+ 
+	* src/lpc2xxx_misc.c: Fixed issue with VPBDIV initialisation on
+	non lpc22xx parts code.
+
 2006-05-08  Sergei Gavrikov  <sg@belvok.com>
 
 	* src/lpc2xxx.misc (hal_hardware_init): Call HAL_PLF_HARDWARE_INIT
 	for any platform specific initialization.
 
-2006-02-14  Andy Jackson <andy@grapevinetech.co.uk>
+2006-05-07  Andy Jackson <andy@grapevinetech.co.uk>
 
 	* cdl/hal_arm_lpc2xxx.cdl: Added CYGHWR_HAL_ARM_LPC2XXX_FAMILY,
 	CYGNUM_HAL_ARM_LPC2XXX_VPBDIV, CYGNUM_HAL_ARM_LPC2XXX_XCLKDIV

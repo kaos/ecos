@@ -201,9 +201,9 @@ cyg_uint32 lpc_get_vpbdiv(void)
 
 // Set the VPBDIV register. The vpb bits are 1:0 and the xclk bits are 5:4. The
 // mapping of values passed to this routine to field values is:
-//		4 = divide by 4 (register bits 00)
-//		2 = divide by 2 (register bits 10)
-//		1 = divide by 1 (register bits 01)
+//       4 = divide by 4 (register bits 00)
+//       2 = divide by 2 (register bits 10)
+//       1 = divide by 1 (register bits 01)
 // This routine assumes that only these values can occur. As they are
 // generated in the CDL hopefully this should be the case. Fortunately
 // writing 11 merely causes the previous value to be retained.
@@ -217,16 +217,18 @@ void lpc_set_vpbdiv(int vpbdiv, int xclkdiv)
     HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE +
                      CYGARC_HAL_LPC2XXX_REG_VPBDIV,
                      ((xclkdiv & 0x3) << 4) | (vpbdiv & 0x3));
+    lpc_xclk = lpc_cclk / xclkdiv;
 #else
     HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE + 
                      CYGARC_HAL_LPC2XXX_REG_VPBDIV, vpbdiv & 0x3);
+    lpc_xclk = 0;        // Obvious bad value
 #endif
     
     lpc_pclk = lpc_cclk / vpbdiv;
-    lpc_xclk = lpc_cclk / xclkdiv;
 }
 
-// Perform variant setup
+// Perform variant setup. This optionally calls into the platform
+// HAL if it has defined HAL_PLF_HARDWARE_INIT.
 void hal_hardware_init(void)
 {
     lpc_cclk = CYGNUM_HAL_ARM_LPC2XXX_CLOCK_SPEED;
@@ -234,6 +236,8 @@ void hal_hardware_init(void)
 #ifdef CYGHWR_HAL_ARM_LPC2XXX_FAMILY_LPC22XX
     lpc_set_vpbdiv(CYGNUM_HAL_ARM_LPC2XXX_VPBDIV,
                    CYGNUM_HAL_ARM_LPC2XXX_XCLKDIV);
+#else
+    lpc_set_vpbdiv(CYGNUM_HAL_ARM_LPC2XXX_VPBDIV, 1);
 #endif
 
 #ifdef HAL_PLF_HARDWARE_INIT
@@ -312,7 +316,7 @@ void hal_interrupt_acknowledge(int vector)
                          CYGARC_HAL_LPC2XXX_REG_EXTINT, vector);
       }
     
-    //
+    // Acknowledge interrupt in the VIC
     HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_VIC_BASE + 
                      CYGARC_HAL_LPC2XXX_REG_VICVECTADDR, 0);  
 }
