@@ -682,7 +682,7 @@ cyg_trace_dump(void)
                          "",
                          t->get_stack_base(),
 #ifdef CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT
-                         t->get_saved_context(),
+                         (int) t->get_saved_context(),
 #else
                          0,
 #endif
@@ -697,7 +697,7 @@ cyg_trace_dump(void)
 
             diag_printf( "%20s queue = %08x      wait info = %08x\n",
                          "",
-                         t->get_current_queue(),
+                         (int) t->get_current_queue(),
                          t->get_wait_info()
                          );
 
