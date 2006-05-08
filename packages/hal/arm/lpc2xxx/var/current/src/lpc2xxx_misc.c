@@ -230,10 +230,17 @@ void lpc_set_vpbdiv(int vpbdiv, int xclkdiv)
 void hal_hardware_init(void)
 {
     lpc_cclk = CYGNUM_HAL_ARM_LPC2XXX_CLOCK_SPEED;
+
 #ifdef CYGHWR_HAL_ARM_LPC2XXX_FAMILY_LPC22XX
     lpc_set_vpbdiv(CYGNUM_HAL_ARM_LPC2XXX_VPBDIV,
                    CYGNUM_HAL_ARM_LPC2XXX_XCLKDIV);
 #endif
+
+#ifdef HAL_PLF_HARDWARE_INIT
+    // Perform any platform specific initializations
+    HAL_PLF_HARDWARE_INIT();
+#endif
+
     // Set up eCos/ROM interfaces
     hal_if_init();
 }
