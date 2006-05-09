@@ -524,7 +524,8 @@ cyg_hal_diag_mangler_gdb_flush(void* __ch_data)
     while(1)
     {
 	static const char hex[] = "0123456789ABCDEF";
-	cyg_uint8 csum = 0, c1;
+	cyg_uint8 csum = 0;
+	char c1;
 	int i;
         
 	CYGACC_COMM_IF_PUTC(*__chan, '$');

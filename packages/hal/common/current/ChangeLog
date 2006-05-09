@@ -1,3 +1,8 @@
+2006-05-09  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/hal_if.c (cyg_hal_diag_mangler_gdb_flush): Fix compiler
+	warning about signed/unsigned.
+
 2005-06-27  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/hal_tables.h (CYG_HAL_TABLE_{QUALIFIED_}ENTRY): added
