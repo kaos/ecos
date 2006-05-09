@@ -247,6 +247,7 @@ fis_lookup(char *name, int *num)
 
 int fis_start_update_directory(int autolock)
 {
+#ifdef CYGOPT_REDBOOT_REDUNDANT_FIS
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
    // Ensure [quietly] that the directory is unlocked before trying to update and locked again afterwards
    int do_autolock=1;
@@ -254,7 +255,6 @@ int fis_start_update_directory(int autolock)
    int do_autolock=autolock;
 #endif
 
-#ifdef CYGOPT_REDBOOT_REDUNDANT_FIS
    struct fis_image_desc* img=NULL;
    void* err_addr=NULL;
    void* tmp_fis_addr=NULL;
@@ -334,7 +334,7 @@ fis_update_directory(int autolock, int error)
       flash_lock((void *)fis_addr, fisdir_size, (void **)&err_addr);
 
 #else // CYGOPT_REDBOOT_REDUNDANT_FIS
-    int blk_size = fisdir_size
+    int blk_size = fisdir_size;
     int stat;
 
     fis_endian_fixup(fis_work_block);
@@ -1554,11 +1554,11 @@ do_flash_init(void)
 {
     int stat;
 
-    void *err_addr;
 #ifdef CYGOPT_REDBOOT_REDUNDANT_FIS
     struct fis_image_desc img0;
     struct fis_image_desc img1;
     int fis_update_was_interrupted=0;
+    void *err_addr;
 
     //check the size of fis_valid_info
     CYG_ASSERT((sizeof(struct fis_valid_info)<=sizeof(img0.u.name)), "fis_valid_info size mismatch");
