@@ -58,11 +58,40 @@
 #ifdef CYGOPT_REDBOOT_FIS
 #include <cyg/infra/cyg_type.h>
 
+//the version can be tested via the VV calls to check for compatibility
+#define CYG_REDBOOT_FIS_VERSION      (1)
+
+// the following defines will be used if RedBoot is configured
+// with support for redundant FIS tables, which enable failsafe updating
+#ifdef CYGOPT_REDBOOT_REDUNDANT_FIS
+
+#define CYG_REDBOOT_RFIS_VALID_MAGIC_LENGTH 10
+#define CYG_REDBOOT_RFIS_VALID_MAGIC ".FisValid"  // exactly 10 bytes
+
+#define CYG_REDBOOT_RFIS_VALID       (0xa5)       // this FIS table is valid, the only "good" value
+#define CYG_REDBOOT_RFIS_IN_PROGRESS (0xfd)       // this FIS table is being modified
+#define CYG_REDBOOT_RFIS_EMPTY       (0xff)       // this FIS table is empty
+
+struct fis_valid_info
+{
+   char magic_name[CYG_REDBOOT_RFIS_VALID_MAGIC_LENGTH];
+   unsigned char valid_flag[2];   // one of the flags defined above
+   unsigned long version_count;   // with each successfull update the version count will increase by 1
+};
+
+#endif // CYGOPT_REDBOOT_REDUNDANT_FIS
+
 #define FIS_IMAGE_DESC_SIZE_UNPADDED \
   (16 + 4 * sizeof(unsigned long) + 3 * sizeof(CYG_ADDRESS))
 
 struct fis_image_desc {
+    union
+    {
     unsigned char name[16];      // Null terminated name
+        #ifdef CYGOPT_REDBOOT_REDUNDANT_FIS
+           struct fis_valid_info valid_info;
+        #endif
+    } u;
     CYG_ADDRESS   flash_base;    // Address within FLASH of image
     CYG_ADDRESS   mem_base;      // Address in memory where it executes
     unsigned long size;          // Length of image

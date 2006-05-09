@@ -169,6 +169,9 @@ int flash_block_size, flash_num_blocks;
 #ifdef CYGOPT_REDBOOT_FIS
 void *fis_work_block;
 void *fis_addr;
+#ifdef CYGOPT_REDBOOT_REDUNDANT_FIS
+void *redundant_fis_addr;
+#endif
 int fisdir_size;  // Size of FIS directory.
 #endif
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
@@ -233,8 +236,8 @@ fis_lookup(char *name, int *num)
 
     img = (struct fis_image_desc *)fis_work_block;
     for (i = 0;  i < fisdir_size/sizeof(*img);  i++, img++) {
-        if ((img->name[0] != (unsigned char)0xFF) && 
-            (strcasecmp(name, img->name) == 0)) {
+        if ((img->u.name[0] != (unsigned char)0xFF) &&
+            (strcasecmp(name, img->u.name) == 0)) {
             if (num) *num = i;
             return img;
         }
@@ -242,12 +245,97 @@ fis_lookup(char *name, int *num)
     return (struct fis_image_desc *)0;
 }
 
-void
-fis_update_directory(void)
+int fis_start_update_directory(int autolock)
 {
-    int blk_size = fisdir_size;
+#ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
+   // Ensure [quietly] that the directory is unlocked before trying to update and locked again afterwards
+   int do_autolock=1;
+#else
+   int do_autolock=autolock;
+#endif
+
+#ifdef CYGOPT_REDBOOT_REDUNDANT_FIS
+   struct fis_image_desc* img=NULL;
+   void* err_addr=NULL;
+   void* tmp_fis_addr=NULL;
+
+   /*exchange old and new valid fis tables*/
+   tmp_fis_addr=fis_addr;
+   fis_addr=redundant_fis_addr;
+   redundant_fis_addr=tmp_fis_addr;
+
+   //adjust the contents of the new fis table
+   img=(struct fis_image_desc*)fis_work_block;
+
+   memcpy(img->u.valid_info.magic_name, CYG_REDBOOT_RFIS_VALID_MAGIC, CYG_REDBOOT_RFIS_VALID_MAGIC_LENGTH);
+   img->u.valid_info.valid_flag[0]=CYG_REDBOOT_RFIS_IN_PROGRESS;
+   img->u.valid_info.valid_flag[1]=CYG_REDBOOT_RFIS_IN_PROGRESS;
+   img->u.valid_info.version_count=img->u.valid_info.version_count+1;
+
+   //ready to go....
+   if (do_autolock)
+      flash_unlock((void *)fis_addr, fisdir_size, (void **)&err_addr);
+
+   flash_erase(fis_addr, fisdir_size, (void **)&err_addr);
+   //now magic is 0xffffffff
+   fis_endian_fixup(fis_work_block);
+   flash_program(fis_addr, fis_work_block, flash_block_size, (void **)&err_addr);
+   fis_endian_fixup(fis_work_block);
+   //now magic is 0xff1234ff, valid is IN_PROGRESS, version_count is the old one +1
+
+#else
+   /* nothing to do here without redundant fis */
+#endif
+   return 0;
+
+}
+
+int
+fis_update_directory(int autolock, int error)
+{
+   void* err_addr=0;
+
+#ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
+   // Ensure [quietly] that the directory is unlocked before trying to update and locked again afterwards
+   int do_autolock=1;
+#else
+   int do_autolock=autolock;
+#endif
+
+#ifdef CYGOPT_REDBOOT_REDUNDANT_FIS
+
+   struct fis_image_desc* img=(struct fis_image_desc*)fis_work_block;
+
+   // called from invalid state
+   if (img->u.valid_info.valid_flag[0]!=CYG_REDBOOT_RFIS_IN_PROGRESS)
+      return -1;
+
+   //if it failed, reset is0Valid to the state before startUpdateDirectory()
+   //g_data.fisTable hasn't been changed yet, so it doesn't have to be reset now
+   //then reread the contents from flash
+   //setting the valid flag of the failed table to "INVALID" might also be not too bad
+   //but IN_PROGRESS is also good enough I think
+   if (error!=0)
+   {
+      void* swap_fis_addr=fis_addr;
+      fis_addr=redundant_fis_addr;
+      redundant_fis_addr=swap_fis_addr;
+   }
+   else //success
+   {
+      void* tmp_fis_addr=(void *)((CYG_ADDRESS)fis_addr+CYG_REDBOOT_RFIS_VALID_MAGIC_LENGTH);
+
+      img->u.valid_info.valid_flag[0]=CYG_REDBOOT_RFIS_VALID;
+      img->u.valid_info.valid_flag[1]=CYG_REDBOOT_RFIS_VALID;
+
+      flash_program(tmp_fis_addr, img->u.valid_info.valid_flag, sizeof(img->u.valid_info.valid_flag), (void **)&err_addr);
+   }
+   if (do_autolock)
+      flash_lock((void *)fis_addr, fisdir_size, (void **)&err_addr);
+
+#else // CYGOPT_REDBOOT_REDUNDANT_FIS
+    int blk_size = fisdir_size
     int stat;
-    void *err_addr;
 
     fis_endian_fixup(fis_work_block);
 #ifdef CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG
@@ -255,10 +343,9 @@ fis_update_directory(void)
     conf_endian_fixup((char *)fis_work_block+fisdir_size);
     blk_size += cfg_size;
 #endif
-#ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
-    // Ensure [quietly] that the directory is unlocked before trying to update
+    if (do_autolock)
     flash_unlock((void *)fis_addr, blk_size, (void **)&err_addr);
-#endif
+
     if ((stat = flash_erase(fis_addr, blk_size, (void **)&err_addr)) != 0) {
         diag_printf("Error erasing FIS directory at %p: %s\n", err_addr, flash_errmsg(stat));
     } else {
@@ -268,12 +355,81 @@ fis_update_directory(void)
                         err_addr, flash_errmsg(stat));
         }
     }
+    fis_endian_fixup(fis_work_block);
+    if (do_autolock)
+       flash_lock((void *)fis_addr, blk_size, (void **)&err_addr);
+
+#endif // CYGOPT_REDBOOT_REDUNDANT_FIS
+
+    return 0;
+}
+
+#ifdef CYGOPT_REDBOOT_REDUNDANT_FIS
+
+int
+fis_get_valid_buf(struct fis_image_desc* img0, struct fis_image_desc* img1, int* update_was_interrupted)
+{
+   *update_was_interrupted=0;
+   if (strncmp(img1->u.valid_info.magic_name, CYG_REDBOOT_RFIS_VALID_MAGIC, CYG_REDBOOT_RFIS_VALID_MAGIC_LENGTH)!=0)  //buf0 must be valid
+   {
+      if (img0->u.valid_info.version_count>0)
+      {
+         *update_was_interrupted=1;
+      }
+      return 0;
+   }
+   else if (strncmp(img0->u.valid_info.magic_name, CYG_REDBOOT_RFIS_VALID_MAGIC, CYG_REDBOOT_RFIS_VALID_MAGIC_LENGTH)!=0)  //buf1 must be valid
+   {
+      if (img1->u.valid_info.version_count>0)
+      {
+         *update_was_interrupted=1;
+      }
+      return 1;
+   }
+   //magic is ok for both, now check the valid flag
+   if ((img1->u.valid_info.valid_flag[0]!=CYG_REDBOOT_RFIS_VALID)
+       || (img1->u.valid_info.valid_flag[1]!=CYG_REDBOOT_RFIS_VALID)) //buf0 must be valid
+   {
+      *update_was_interrupted=1;
+      return 0;
+   }
+   else if ((img0->u.valid_info.valid_flag[0]!=CYG_REDBOOT_RFIS_VALID)
+            || (img0->u.valid_info.valid_flag[1]!=CYG_REDBOOT_RFIS_VALID)) //buf1 must be valid
+   {
+      *update_was_interrupted=1;
+      return 1;
+   }
+
+   //now check the version
+   if (img1->u.valid_info.version_count == (img0->u.valid_info.version_count+1)) //buf1 must be valid
+      return 1;
+
+   return 0;
+}
+
+void
+fis_erase_redundant_directory(void)
+{
+    int stat;
+    void *err_addr;
+
+#ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
+    // Ensure [quietly] that the directory is unlocked before trying
+    // to update
+    flash_unlock((void *)redundant_fis_addr, fisdir_size,
+                 (void **)&err_addr);
+#endif
+    if ((stat = flash_erase(redundant_fis_addr, fisdir_size,
+                            (void **)&err_addr)) != 0) {
+         diag_printf("Error erasing FIS directory at %p: %s\n",
+                     err_addr, flash_errmsg(stat));
+    }
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
     // Ensure [quietly] that the directory is locked after the update
-    flash_lock((void *)fis_addr, blk_size, (void **)&err_addr);
+    flash_lock((void *)redundant_fis_addr, fisdir_size, (void **)&err_addr);
 #endif
-    fis_endian_fixup(fis_work_block);
 }
+#endif
 
 static void
 fis_init(int argc, char *argv[])
@@ -303,12 +459,23 @@ fis_init(int argc, char *argv[])
     redboot_image_size = flash_block_size > MIN_REDBOOT_IMAGE_SIZE ? 
                          flash_block_size : MIN_REDBOOT_IMAGE_SIZE;
 
-    // Create a pseudo image for RedBoot
     img = (struct fis_image_desc *)fis_work_block;
     memset(img, 0xFF, fisdir_size);  // Start with erased data
+
+#ifdef CYGOPT_REDBOOT_REDUNDANT_FIS
+    //create the valid flag entry
+    memset(img, 0, sizeof(struct fis_image_desc));
+    strcpy(img->u.valid_info.magic_name, CYG_REDBOOT_RFIS_VALID_MAGIC);
+    img->u.valid_info.valid_flag[0]=CYG_REDBOOT_RFIS_VALID;
+    img->u.valid_info.valid_flag[1]=CYG_REDBOOT_RFIS_VALID;
+    img->u.valid_info.version_count=0;
+    img++;
+#endif
+
+    // Create a pseudo image for RedBoot
 #ifdef CYGOPT_REDBOOT_FIS_RESERVED_BASE
     memset(img, 0, sizeof(*img));
-    strcpy(img->name, "(reserved)");
+    strcpy(img->u.name, "(reserved)");
     img->flash_base = (CYG_ADDRESS)flash_start;
     img->mem_base = (CYG_ADDRESS)flash_start;
     img->size = CYGNUM_REDBOOT_FLASH_RESERVED_BASE;
@@ -317,7 +484,7 @@ fis_init(int argc, char *argv[])
     redboot_flash_start = (CYG_ADDRESS)flash_start + CYGBLD_REDBOOT_FLASH_BOOT_OFFSET;
 #ifdef CYGOPT_REDBOOT_FIS_REDBOOT
     memset(img, 0, sizeof(*img));
-    strcpy(img->name, "RedBoot");
+    strcpy(img->u.name, "RedBoot");
     img->flash_base = redboot_flash_start;
     img->mem_base = redboot_flash_start;
     img->size = redboot_image_size;
@@ -330,7 +497,7 @@ fis_init(int argc, char *argv[])
     redboot_flash_start = (CYG_ADDRESS)flash_start + CYGNUM_REDBOOT_FIS_REDBOOT_POST_OFFSET;
 #endif
     memset(img, 0, sizeof(*img));
-    strcpy(img->name, "RedBoot[post]");
+    strcpy(img->u.name, "RedBoot[post]");
     img->flash_base = redboot_flash_start;
     img->mem_base = redboot_flash_start;
     img->size = redboot_image_size;
@@ -340,7 +507,7 @@ fis_init(int argc, char *argv[])
 #ifdef CYGOPT_REDBOOT_FIS_REDBOOT_BACKUP
     // And a backup image
     memset(img, 0, sizeof(*img));
-    strcpy(img->name, "RedBoot[backup]");
+    strcpy(img->u.name, "RedBoot[backup]");
     img->flash_base = redboot_flash_start;
     img->mem_base = redboot_flash_start;
     img->size = redboot_image_size;
@@ -350,7 +517,7 @@ fis_init(int argc, char *argv[])
 #if defined(CYGSEM_REDBOOT_FLASH_CONFIG) && defined(CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_FLASH)
     // And a descriptor for the configuration data
     memset(img, 0, sizeof(*img));
-    strcpy(img->name, "RedBoot config");
+    strcpy(img->u.name, "RedBoot config");
     img->flash_base = (CYG_ADDRESS)cfg_base;
     img->mem_base = (CYG_ADDRESS)cfg_base;
     img->size = cfg_size;
@@ -358,11 +525,21 @@ fis_init(int argc, char *argv[])
 #endif
     // And a descriptor for the descriptor table itself
     memset(img, 0, sizeof(*img));
-    strcpy(img->name, "FIS directory");
+    strcpy(img->u.name, "FIS directory");
     img->flash_base = (CYG_ADDRESS)fis_addr;
     img->mem_base = (CYG_ADDRESS)fis_addr;
     img->size = fisdir_size;
     img++;
+
+    //create the entry for the redundant fis table
+#ifdef CYGOPT_REDBOOT_REDUNDANT_FIS
+    memset(img, 0, sizeof(*img));
+    strcpy(img->u.name, "Redundant FIS");
+    img->flash_base = (CYG_ADDRESS)redundant_fis_addr;
+    img->mem_base = (CYG_ADDRESS)redundant_fis_addr;
+    img->size = fisdir_size;
+    img++;
+#endif
 
 #ifdef CYGOPT_REDBOOT_FIS_DIRECTORY_ARM_SIB_ID
     // FIS gets the size of a full block - note, this should be changed
@@ -476,7 +653,11 @@ fis_init(int argc, char *argv[])
         diag_printf("    Warning: device contents not erased, some blocks may not be usable\n");
 #endif
     }
-    fis_update_directory();
+    fis_start_update_directory(0);
+    fis_update_directory(0, 0);
+#ifdef CYGOPT_REDBOOT_REDUNDANT_FIS
+    fis_erase_redundant_directory();
+#endif
 }
 
 static void
@@ -525,7 +706,7 @@ fis_list(int argc, char *argv[])
         lowest_addr = 0xFFFFFFFF;
         img = (struct fis_image_desc *) fis_work_block;
         for (i = 0;  i < fisdir_size/sizeof(*img);  i++, img++) {
-            if (img->name[0] != (unsigned char)0xFF) {
+            if (img->u.name[0] != (unsigned char)0xFF) {
                 if ((img->flash_base > last_addr) && (img->flash_base < lowest_addr)) {
                     lowest_addr = img->flash_base;
                     image_found = true;
@@ -536,7 +717,7 @@ fis_list(int argc, char *argv[])
         if (image_found) {
             img = (struct fis_image_desc *) fis_work_block;
             img += image_indx;
-            diag_printf("%-16s  0x%08lX  0x%08lX  0x%08lX  0x%08lX\n", img->name, 
+            diag_printf("%-16s  0x%08lX  0x%08lX  0x%08lX  0x%08lX\n", img->u.name,
                         (unsigned long)img->flash_base, 
 #ifdef CYGSEM_REDBOOT_FIS_CRC_CHECK
                         show_cksums ? img->file_cksum : img->mem_base, 
@@ -573,7 +754,7 @@ find_free(struct free_chunk *chunks)
     fis_read_directory();
     img = (struct fis_image_desc *) fis_work_block;
     for (i = 0;  i < fisdir_size/sizeof(*img);  i++, img++) {
-        if (img->name[0] != (unsigned char)0xFF) {
+        if (img->u.name[0] != (unsigned char)0xFF) {
             // Figure out which chunk this is in and split it
             for (idx = 0;  idx < num_chunks;  idx++) {
                 if ((img->flash_base >= chunks[idx].start) && 
@@ -841,8 +1022,8 @@ fis_create(int argc, char *argv[])
         diag_printf("   must be 0x%x aligned\n", flash_block_size);
         return;
     }
-    if (strlen(name) >= sizeof(img->name)) {
-        diag_printf("Name is too long, must be less than %d chars\n", (int)sizeof(img->name));
+    if (strlen(name) >= sizeof(img->u.name)) {
+        diag_printf("Name is too long, must be less than %d chars\n", (int)sizeof(img->u.name));
         return;
     }
     if (!no_copy) {
@@ -907,7 +1088,7 @@ fis_create(int argc, char *argv[])
         // If not image by that name, try and find an empty slot
         img = (struct fis_image_desc *)fis_work_block;
         for (i = 0;  i < fisdir_size/sizeof(*img);  i++, img++) {
-            if (img->name[0] == (unsigned char)0xFF) {
+            if (img->u.name[0] == (unsigned char)0xFF) {
                 break;
             }
         }
@@ -940,7 +1121,7 @@ fis_create(int argc, char *argv[])
     if (prog_ok) {
         // Update directory
         memset(img, 0, sizeof(*img));
-        strcpy(img->name, name);
+        strcpy(img->u.name, name);
         img->flash_base = flash_addr;
         img->mem_base = exec_addr_set ? exec_addr : (mem_addr_set ? mem_addr : flash_addr);
         img->entry_point = entry_addr_set ? entry_addr : (CYG_ADDRESS)entry_address;  // Hope it's been set
@@ -954,7 +1135,8 @@ fis_create(int argc, char *argv[])
             img->file_cksum = 0;
         }
 #endif
-        fis_update_directory();
+        fis_start_update_directory(0);
+        fis_update_directory(0, 0);
     }
 }
 
@@ -1001,7 +1183,7 @@ fis_delete(int argc, char *argv[])
     img = fis_lookup(name, &i);
     if (img) {
         if (i < num_reserved) {
-            diag_printf("Sorry, '%s' is a reserved image and cannot be deleted\n", img->name);
+            diag_printf("Sorry, '%s' is a reserved image and cannot be deleted\n", img->u.name);
             return;
         }
         if (!verify_action("Delete image '%s'", name)) {
@@ -1015,8 +1197,9 @@ fis_delete(int argc, char *argv[])
     if ((stat = flash_erase((void *)img->flash_base, img->size, (void **)&err_addr)) != 0) {
         diag_printf("Error erasing at %p: %s\n", err_addr, flash_errmsg(stat));
     } else {
-        img->name[0] = (unsigned char)0xFF;    
-        fis_update_directory();
+        img->u.name[0] = (unsigned char)0xFF;    
+        fis_start_update_directory(0);
+        fis_update_directory(0, 0);
     }
 }
 
@@ -1364,16 +1547,32 @@ _flash_info(void)
            flash_start, (CYG_ADDRWORD)flash_end + 1, flash_num_blocks, (void *)flash_block_size);
 }
 
-bool
+/* Returns -1 on failure, 0 on success, 1 if it was successfull
+ but a failed fis update was detected  */
+int
 do_flash_init(void)
 {
     int stat;
+
+    void *err_addr;
+#ifdef CYGOPT_REDBOOT_REDUNDANT_FIS
+    struct fis_image_desc img0;
+    struct fis_image_desc img1;
+    int fis_update_was_interrupted=0;
+
+    //check the size of fis_valid_info
+    CYG_ASSERT((sizeof(struct fis_valid_info)<=sizeof(img0.u.name)), "fis_valid_info size mismatch");
+    //try to check the alignment of version_count
+    CYG_ASSERT((((unsigned long)&img0.u.valid_info.version_count - (unsigned long)&img0) % sizeof(unsigned long) == 0), "alignment problem");
+#endif
+
+
 
     if (!__flash_init) {
         __flash_init = 1;
         if ((stat = flash_init(diag_printf)) != 0) {
             diag_printf("FLASH: driver init failed: %s\n", flash_errmsg(stat));
-            return false;
+            return -1;
         }
         flash_get_limits((void *)0, (void **)&flash_start, (void **)&flash_end);
         // Keep 'end' address as last valid location, to avoid wrap around problems
@@ -1386,10 +1585,10 @@ do_flash_init(void)
 	fis_work_block = fis_zlib_common_buffer;
 	if(CYGNUM_REDBOOT_FIS_ZLIB_COMMON_BUFFER_SIZE < fisdir_size) {
             diag_printf("FLASH: common buffer too small\n");
-            return false;
+            return -1;
 	}
 # else
-        workspace_end = (unsigned char *)(workspace_end-fisdir_size);
+        workspace_end = (unsigned char *)(workspace_end_init-fisdir_size);
         fis_work_block = workspace_end;
 # endif
         if (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK < 0) {
@@ -1402,12 +1601,60 @@ do_flash_init(void)
         
         if (((CYG_ADDRESS)fis_addr + fisdir_size - 1) > (CYG_ADDRESS)flash_end) {
             diag_printf("FIS directory doesn't fit\n");
-            return false;
+            return -1;
         }
+#ifdef CYGOPT_REDBOOT_REDUNDANT_FIS
+
+        if (CYGNUM_REDBOOT_FIS_REDUNDANT_DIRECTORY_BLOCK < 0) {
+            redundant_fis_addr = (void *)((CYG_ADDRESS)flash_end + 1 +
+                                          (CYGNUM_REDBOOT_FIS_REDUNDANT_DIRECTORY_BLOCK*flash_block_size));
+        } else {
+            redundant_fis_addr = (void *)((CYG_ADDRESS)flash_start +
+                                (CYGNUM_REDBOOT_FIS_REDUNDANT_DIRECTORY_BLOCK*flash_block_size));
+        }
+
+        if (((CYG_ADDRESS)redundant_fis_addr + fisdir_size - 1) > (CYG_ADDRESS)flash_end) {
+            diag_printf("Redundant FIS directory doesn't fit\n");
+            return -1;
+        }
+        FLASH_READ(fis_addr, &img0, sizeof(img0), (void **)&err_addr);
+        FLASH_READ(redundant_fis_addr, &img1, sizeof(img1), (void **)&err_addr);
+
+        if (strncmp(img0.u.valid_info.magic_name, CYG_REDBOOT_RFIS_VALID_MAGIC, CYG_REDBOOT_RFIS_VALID_MAGIC_LENGTH)!=0)
+        {
+           memset(&img0, 0, sizeof(img0));
+        }
+
+        if (strncmp(img1.u.valid_info.magic_name, CYG_REDBOOT_RFIS_VALID_MAGIC, CYG_REDBOOT_RFIS_VALID_MAGIC_LENGTH)!=0)
+        {
+           memset(&img1, 0, sizeof(img0));
+        }
+
+#ifdef REDBOOT_FLASH_REVERSE_BYTEORDER
+        img0.u.valid_info.version_count = CYG_SWAP32(img0.u.valid_info.version_count);
+        img1.u.valid_info.version_count = CYG_SWAP32(img1.u.valid_info.version_count);
+#endif
+
+        if (fis_get_valid_buf(&img0, &img1, &fis_update_was_interrupted)==1)
+        {
+           // Valid, so swap primary and secondary
+           void * tmp;
+           tmp = fis_addr;
+           fis_addr = redundant_fis_addr;
+           redundant_fis_addr = tmp;
+        }
+#endif
         fis_read_directory();
 #endif
     }
-    return true;
+#ifdef CYGOPT_REDBOOT_REDUNDANT_FIS
+    if (fis_update_was_interrupted)
+       return 1;
+    else
+       return 0;
+#else
+    return 0;
+#endif
 }
 
 // Wrapper to avoid compiler warnings
@@ -1431,7 +1678,7 @@ do_fis(int argc, char *argv[])
         fis_usage("too few arguments");
         return;
     }
-    if (!do_flash_init()) {
+    if (do_flash_init()<0) {
         diag_printf("Sorry, no FLASH memory is available\n");
         return;
     }

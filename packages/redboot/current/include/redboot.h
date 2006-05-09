@@ -89,7 +89,7 @@ EXTERN struct _mem_segment {
 #define NO_MEMORY (unsigned char *)0xFFFFFFFF
 EXTERN bool valid_address(unsigned char *addr);
 EXTERN void cyg_plf_memory_segment(int seg, unsigned char **start, unsigned char **end);
-EXTERN unsigned char *workspace_start, *workspace_end;
+EXTERN unsigned char *workspace_start, *workspace_end, *workspace_end_init;
 
 // Data squirreled away after a load operation
 EXTERN unsigned long entry_address;

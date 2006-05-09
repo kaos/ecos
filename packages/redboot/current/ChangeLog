@@ -1,3 +1,9 @@
+2006-04-19 Alexander Neundorf <alexander.neundorf@jenoptik.com>
+	* src/flash.c, src/main.c, src/fconfig.c: 
+        * include/fis.h, include/redboot.h:
+        * cdl/redboot.cdl:
+        add support for redundant FIS tables, configurable via CYGOPT_REDBOOT_REDUNDANT_FIS
+
 2006-04-07  Grant Edwards <grante@visi.com>
 
 	* src/net/net_io.c (net_io_getc_nonblock): 

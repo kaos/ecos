@@ -691,6 +691,32 @@ cdl_package CYGPKG_REDBOOT {
                       means the last but one block."
                 }
     
+                cdl_component CYGOPT_REDBOOT_REDUNDANT_FIS {
+                    display         "Redundant Flash Image System Directory Support"
+                    default_value   0
+                    requires { 0 == CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG }
+                    description "
+                              This option enables the use of a redundant FIS
+                              directory within RedBoot.  If enabled a flash block
+                              will be reserved for a second copy of the fis
+                              directory. Doing this allow for power failure safe
+                              updates of the directory by the application."
+      
+                    cdl_option CYGNUM_REDBOOT_FIS_REDUNDANT_DIRECTORY_BLOCK {
+                        display         "Flash block containing the backup Directory"
+                        flavor          data
+                        default_value   (-3)
+                        requires { CYGNUM_REDBOOT_FIS_REDUNDANT_DIRECTORY_BLOCK !=
+                                   CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK }
+                        description "
+                                 Which block of flash should hold the redundant
+                                 directory information. Positive numbers are
+                                 absolute block numbers. Negative block numbers
+                                 count backwards from the last block. eg 2 means
+                                 block 2, -2 means the last but one block."
+                    }
+                }
+    
                 cdl_option CYGOPT_REDBOOT_FIS_RESERVED_BASE {
                     display         "Pseudo-file to describe reserved area"
                     active_if       { 0 != CYGNUM_REDBOOT_FLASH_RESERVED_BASE }

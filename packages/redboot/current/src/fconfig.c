@@ -75,7 +75,7 @@ externC bool cyg_plf_redboot_esa_validate(unsigned char *val);
 #endif
 
 #ifdef CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_FLASH
-externC bool do_flash_init(void);
+externC int do_flash_init(void);
 externC int flash_read(void *flash_base, void *ram_base, int len, void **err_address);
 #endif
 
@@ -1137,7 +1137,7 @@ load_flash_config(void)
 #endif
     workspace_end = cfg_temp;
 #ifdef CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_FLASH
-    if (!do_flash_init()) return;
+    if (do_flash_init()<0) return;
 #ifdef CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG
     cfg_size = _rup(sizeof(struct _config), sizeof(struct fis_image_desc));
     if ((fisdir_size-cfg_size) < (CYGNUM_REDBOOT_FIS_DIRECTORY_ENTRY_COUNT *

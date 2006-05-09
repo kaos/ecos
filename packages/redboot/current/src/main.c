@@ -298,6 +298,8 @@ cyg_start(void)
         workspace_end = ram_end;
     }
 
+    workspace_end_init=workspace_end;
+
     // Nothing has ever been loaded into memory
     entry_address = (unsigned long)NO_MEMORY;
 
