@@ -1,3 +1,10 @@
+2006-05-09  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/ecos/init.c (arp_timer): Only compile this function when
+	Ethernet is supported.
+	* include/lwipopts.h: PAP_SUPPORT & CHAP_SUPPORT must be either 0
+	or 1 otherwise we get compiler errors.
+	
 2006-03-26  Uwe Kindler <uwe_kindler@web.de>
 
 	* Updated the complete lwIP source to the latest lwIP

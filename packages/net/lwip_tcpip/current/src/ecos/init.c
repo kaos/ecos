@@ -111,13 +111,14 @@ ppp_trace(int level, const char *format,...)
 struct netif ecos_loopif;
 #endif
 
-
+#ifdef CYGPKG_LWIP_ETH
 static void
 arp_timer(void *arg)
 {
   etharp_tmr();
   sys_timeout(ARP_TMR_INTERVAL, (sys_timeout_handler) arp_timer, NULL);
 }
+#endif
 
 #if LWIP_DHCP
 static void lwip_dhcp_fine_tmr(void *arg)
@@ -143,7 +144,9 @@ static void lwip_dhcp_coarse_tmr(void *arg)
 //
 void tcpip_init_done(void * arg)
 {
+#ifdef CYGPKG_LWIP_ETH
     sys_timeout(ARP_TMR_INTERVAL, (sys_timeout_handler) arp_timer, NULL);
+#endif
 #ifdef CYGOPT_LWIP_DHCP_MANAGEMENT
 	sys_timeout(500, (sys_timeout_handler) lwip_dhcp_fine_tmr, NULL);
 	sys_timeout(60000, (sys_timeout_handler) lwip_dhcp_coarse_tmr, NULL);

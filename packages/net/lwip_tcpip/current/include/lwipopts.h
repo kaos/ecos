@@ -164,8 +164,16 @@ a lot of data that needs to be copied, this should be set high. */
 #define PPP_SUPPORT             defined(CYGPKG_LWIP_PPP)
 #define PPP_DEV                 CYGDAT_LWIP_PPP_DEV
 #define MD5_SUPPORT             1
-#define PAP_SUPPORT	            defined(CYGIMP_LWIP_PPP_PAP_AUTH)
-#define CHAP_SUPPORT	        defined(CYGIMP_LWIP_PPP_CHAP_AUTH)
+#ifdef CYGIMP_LWIP_PPP_PAP_AUTH
+#define PAP_SUPPORT	        1
+#else
+#define PAP_SUPPORT	        0
+#endif
+#ifdef CYGIMP_LWIP_PPP_CHAP_AUTH
+#define CHAP_SUPPORT	        1
+#else
+#define CHAP_SUPPORT	        0
+#endif
 
 
 /* ------- Thread priorities ---------------*/
