@@ -3,6 +3,11 @@
 	* src/hal_if.c (cyg_hal_diag_mangler_gdb_flush): Fix compiler
 	warning about signed/unsigned.
 
+2006-04-19  Alexander Neundorf <alexander.neundorf@jenoptik.com
+
+	* include/hal_if.h, src/hal_if.c: add a VV call for modifying
+        the FIS table from eCos applications
+
 2005-06-27  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/hal_tables.h (CYG_HAL_TABLE_{QUALIFIED_}ENTRY): added

@@ -174,6 +174,94 @@ flash_fis_op( int op, char *name, void *val)
     CYGARC_HAL_RESTORE_GP();
     return res;
 }
+
+#include <cyg/io/flash.h>
+
+extern int __flash_init;
+extern int fisdir_size;
+extern int flash_block_size;
+extern void* fis_addr;
+#ifdef CYGOPT_REDBOOT_REDUNDANT_FIS
+extern void* redundant_fis_addr;
+#endif
+extern void* fis_work_block;
+extern int do_flash_init(void);
+extern int fis_start_update_directory(int autolock);
+extern int fis_update_directory(int autolock, int error);
+
+static __call_if_flash_fis_op2_fn_t flash_fis_op2;
+
+static int
+flash_fis_op2( int op, unsigned int index, struct fis_table_entry *entry)
+{
+   int res=0;
+   CYGARC_HAL_SAVE_GP();
+   switch ( op ) {
+      case CYGNUM_CALL_IF_FLASH_FIS_GET_VERSION:
+         res=CYG_REDBOOT_FIS_VERSION;
+         break;
+      case CYGNUM_CALL_IF_FLASH_FIS_INIT:
+         __flash_init=0;  //force reinitialization
+         res=do_flash_init();
+         break;
+      case CYGNUM_CALL_IF_FLASH_FIS_GET_ENTRY_COUNT:
+         res=fisdir_size / sizeof(struct fis_image_desc);
+         break;
+      case CYGNUM_CALL_IF_FLASH_FIS_GET_ENTRY:
+         {
+            struct fis_image_desc* img = (struct fis_image_desc *)fis_work_block;
+            CYG_ASSERT(entry!=0, "fis_table_entry == 0 !");
+            memcpy(entry->name, img[index].u.name, 16);
+            entry->flash_base=img[index].flash_base;
+            entry->mem_base=img[index].mem_base;
+            entry->size=img[index].size;
+            entry->entry_point=img[index].entry_point;
+            entry->data_length=img[index].data_length;
+            entry->desc_cksum=img[index].desc_cksum;
+            entry->file_cksum=img[index].file_cksum;
+            res=0;
+         }
+         break;
+      case CYGNUM_CALL_IF_FLASH_FIS_START_UPDATE:
+         fis_start_update_directory(1);
+         break;
+      case CYGNUM_CALL_IF_FLASH_FIS_FINISH_UPDATE:
+         fis_update_directory(1, index);
+         break;
+      case CYGNUM_CALL_IF_FLASH_FIS_MODIFY_ENTRY:
+         {
+            res=0;
+            if (entry->name[0]!=0xff)
+            {
+               if ((entry->size==0)
+                   || ((entry->size % flash_block_size) !=0)
+                   || (flash_verify_addr((void*)entry->flash_base)!=0)
+                   || (flash_verify_addr((void*)(entry->flash_base+entry->size-1))!=0)
+                   || (entry->size < entry->data_length))
+                  res=-1;
+            }
+
+            if (res==0)
+            {
+               struct fis_image_desc* img = (struct fis_image_desc *)fis_work_block;
+               memcpy(img[index].u.name, entry->name, 16);
+               img[index].flash_base=entry->flash_base;
+               img[index].mem_base=entry->mem_base;
+               img[index].size=entry->size;
+               img[index].entry_point=entry->entry_point;
+               img[index].data_length=entry->data_length;
+               img[index].desc_cksum=entry->desc_cksum;
+               img[index].file_cksum=entry->file_cksum;
+            }
+         }
+         break;
+      default:
+         break;
+   }
+   CYGARC_HAL_RESTORE_GP();
+   return res;
+}
+
 #endif
 
 //----------------------------
@@ -978,6 +1066,7 @@ hal_if_init(void)
 
 #ifdef CYGOPT_REDBOOT_FIS
     CYGACC_CALL_IF_FLASH_FIS_OP_SET(flash_fis_op);
+    CYGACC_CALL_IF_FLASH_FIS_OP2_SET(flash_fis_op2);
 #endif
 
     // Data entries not currently supported in eCos

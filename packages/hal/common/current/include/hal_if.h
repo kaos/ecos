@@ -367,8 +367,9 @@ __call_COMM1(IF_GETC_TIMEOUT, cyg_bool, __comm_if_getc_timeout_t, cyg_uint8 *)
 #define CYGNUM_CALL_IF_FLASH_CFG_OP               20
 #define CYGNUM_CALL_IF_MONITOR_RETURN             21
 #define CYGNUM_CALL_IF_FLASH_FIS_OP               22
+#define CYGNUM_CALL_IF_FLASH_FIS_OP2              23
 
-#define CYGNUM_CALL_IF_LAST_ENTRY                 CYGNUM_CALL_IF_FLASH_FIS_OP
+#define CYGNUM_CALL_IF_LAST_ENTRY                 CYGNUM_CALL_IF_FLASH_FIS_OP2
 
 #define CYGNUM_CALL_IF_INSTALL_BPT_FN             35
 
@@ -426,6 +427,22 @@ typedef void (__call_if_install_bpt_fn_t)(void *__epc);
 typedef char *__call_if_monitor_version_t;
 typedef void (__call_if_monitor_return_t)(int status);
 typedef cyg_bool (__call_if_flash_fis_op_fn_t)(int __oper, char *__name, void *__val);
+
+//
+// This structure is used to pass parameters to/from the fis routines
+//
+struct fis_table_entry {
+   unsigned char name[16];
+   CYG_ADDRESS   flash_base;
+   CYG_ADDRESS   mem_base;
+   unsigned long size;
+   CYG_ADDRESS   entry_point;
+   unsigned long data_length;
+   unsigned long desc_cksum;
+   unsigned long file_cksum;
+};
+
+typedef int (__call_if_flash_fis_op2_fn_t)(int __oper, unsigned int index, struct fis_table_entry *__fis_entry);
 //
 // This structure is used to pass parameters to/from the fconfig routines.
 // This allows a single virtual vector interface, with widely varying functionality
@@ -689,6 +706,20 @@ __call_VV3(CYGNUM_CALL_IF_FLASH_FIS_OP, __call_if_flash_fis_op_fn_t, cyg_bool, i
 #define CYGNUM_CALL_IF_FLASH_FIS_GET_DATA_LENGTH (4)
 #define CYGNUM_CALL_IF_FLASH_FIS_GET_DESC_CKSUM  (5)
 #define CYGNUM_CALL_IF_FLASH_FIS_GET_FILE_CKSUM  (6)
+
+#define CYGACC_CALL_IF_FLASH_FIS_OP2(_o_,_k_,_d_) \
+ CYGACC_CALL_VV3(__call_if_flash_fis_op2_fn_t*, CYGNUM_CALL_IF_FLASH_FIS_OP2, (_o_),(_k_),(_d_))
+__call_VV3(CYGNUM_CALL_IF_FLASH_FIS_OP2, __call_if_flash_fis_op2_fn_t, int, int, unsigned int, struct fis_table_entry *)
+#define CYGACC_CALL_IF_FLASH_FIS_OP2_SET(_x_) \
+ hal_virtual_vector_table[CYGNUM_CALL_IF_FLASH_FIS_OP2]=(CYG_ADDRWORD)(_x_)
+#define CYGNUM_CALL_IF_FLASH_FIS_GET_VERSION     (0)
+#define CYGNUM_CALL_IF_FLASH_FIS_INIT            (1)
+#define CYGNUM_CALL_IF_FLASH_FIS_GET_ENTRY_COUNT (2)
+#define CYGNUM_CALL_IF_FLASH_FIS_GET_ENTRY       (3)
+#define CYGNUM_CALL_IF_FLASH_FIS_START_UPDATE    (4)
+#define CYGNUM_CALL_IF_FLASH_FIS_FINISH_UPDATE   (5)
+#define CYGNUM_CALL_IF_FLASH_FIS_MODIFY_ENTRY    (6)
+
 
 
 // These need to be kept uptodate with the (unadorned) masters
