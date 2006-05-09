@@ -132,7 +132,7 @@ tty_init(struct cyg_devtab_entry *tab)
 {
     struct tty_private_info *priv = (struct tty_private_info *)tab->priv;
 #ifdef CYGDBG_IO_INIT
-    diag_printf("Init tty channel: %x\n", tab);
+    diag_printf("Init tty channel: %p\n", tab);
 #endif
     priv->dev_info.tty_out_flags = CYG_TTY_OUT_FLAGS_DEFAULT;
     priv->dev_info.tty_in_flags = CYG_TTY_IN_FLAGS_DEFAULT;
