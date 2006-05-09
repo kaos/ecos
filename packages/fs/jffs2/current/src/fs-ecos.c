@@ -21,9 +21,10 @@
 #include <string.h>
 #include <cyg/io/config_keys.h>
 
-#if (__GNUC__ == 3) && (__GNUC_MINOR__ == 2) && defined (__ARM_ARCH_4__)
+#if (__GNUC__ == 3) && (__GNUC_MINOR__ == 2) && \
+    (defined (__arm__) || defined (_mips))
 #error This compiler is known to be broken. Please see:
-#error http://ecos.sourceware.org/ml/ecos-patches/2003-08/msg00006.html
+#error "http://ecos.sourceware.org/ml/ecos-patches/2003-08/msg00006.html"
 #endif
 
 //==========================================================================
