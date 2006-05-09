@@ -1,3 +1,8 @@
+2006-05-09  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* ecos.db: Add the Coldfire architecture HAL, the mcf5272 varient
+	HAL and the m5272c3 platform HAL.
+
 2006-05-07  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* ecos.db: Add AT91 USB device driver.

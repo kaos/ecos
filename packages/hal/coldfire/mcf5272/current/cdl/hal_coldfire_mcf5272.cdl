@@ -1,0 +1,94 @@
+# ====================================================================
+#
+#      hal_coldfire_mcf5272.cdl
+#
+#      MCF5272 variant architectural HAL package configuration data
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2006 eCosCentric Ltd.
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+## -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+#######DESCRIPTIONBEGIN####
+##
+## Author(s):     Enrico Piria
+## Contributors:  Wade Jensen
+## Date:          2005-25-06
+##
+######DESCRIPTIONEND####
+##========================================================================
+
+cdl_package CYGPKG_HAL_COLDFIRE_MCF5272 {
+    display     "MCF5272 ColdFire variant HAL"
+    parent      CYGPKG_HAL_COLDFIRE
+    requires    CYGPKG_HAL_COLDFIRE
+    implements  CYGINT_HAL_COLDFIRE_VARIANT
+    implements  CYGARC_HAL_COLDFIRE_V2_CORE
+    implements  CYGARC_HAL_COLDFIRE_MAC
+    implements  CYGARC_HAL_COLDFIRE_ISA_A
+    hardware
+    include_dir   cyg/hal
+    define_header hal_coldfire_mcf5272.h
+
+    description   "The ColdFire 5272 variant HAL  package  provides
+                generic support for the ColdFire 5272 processor.  It is  also
+                necessary to select a specific target platform HAL package."
+
+    define_proc {
+        puts $::cdl_header "#include <pkgconf/hal_coldfire.h>"
+    }
+
+    compile     var_startup.c var_misc.c variant.S
+
+    cdl_option CYGHWR_HAL_COLDFIRE_MAC {
+        display       "MAC support"
+        flavor        bool
+        default_value 0
+        description "
+            Enable or disable support for MAC operations. MAC registers will be
+            saved during context switches, during exceptions, and in the
+            setjmp/longjmp routines. If you don't use the MAC unit, you can
+            leave this option disabled."
+    }
+
+    # With this calculated option, code for diagnostic/debug output is compiled
+    # only if it is really needed.
+    cdl_option CYGBLD_HAL_COLDFIRE_MCF5272_DIAG {
+        display     "Compile HAL diagnostic output code"
+        flavor      bool
+        no_define
+        calculated  { is_active(CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL) ||
+                    is_active(CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL) }
+        compile     hal_diag.c
+        description "
+            This calculated option is enabled only when code for
+            diagnostic/debug output is really needed."
+    }
+}

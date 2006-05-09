@@ -1,0 +1,94 @@
+//===========================================================================
+//
+//      mlt_coldfire_m5272c3_rom.ldi
+//
+//      ROM startup linker control script
+//
+//===========================================================================
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2006 eCosCentric Ltd.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
+//===========================================================================
+//#####DESCRIPTIONBEGIN####
+//
+// Author(s):     Enrico Piria
+// Contributors:  Wade Jensen
+// Date:          2005-25-06
+// Purpose:       Linker script specific to the M5272C3 board, used for
+//                ROM startup.
+//
+//####DESCRIPTIONEND####
+//========================================================================
+
+#include <cyg/infra/cyg_type.inc>
+#include CYGBLD_HAL_PLATFORM_H
+
+MEMORY
+{
+    sdram           : ORIGIN = 0x00000000, LENGTH = 0x01000000
+    devs            : ORIGIN = 0x10000000, LENGTH = 0x00001800
+    sram            : ORIGIN = 0x20000000, LENGTH = 0x00001000
+    ext_sram        : ORIGIN = 0x30000000, LENGTH = 0x00080000
+    flash           : ORIGIN = 0xFFE00000, LENGTH = 0x00200000
+}
+
+SECTIONS
+{
+    SECTIONS_BEGIN
+
+#if (CYGHWR_HAL_ROM_LMA == 0xFFF00000)
+    SECTION_romvec              (flash, 0xFFF00000, LMA_EQ_VMA)
+#else
+    SECTION_romvec              (flash, 0xFFE00000, LMA_EQ_VMA)
+#endif
+
+    SECTION_boot                (flash, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_text                (flash, ALIGN (0x4),LMA_EQ_VMA)
+    SECTION_fini                (flash, ALIGN (0x4),LMA_EQ_VMA)
+    SECTION_rodata1             (flash, ALIGN (0x4),LMA_EQ_VMA)
+    SECTION_rodata              (flash, ALIGN (0x4),LMA_EQ_VMA)
+    SECTION_fixup               (flash, ALIGN (0x4),LMA_EQ_VMA)
+    SECTION_gcc_except_table    (flash, ALIGN (0x4),LMA_EQ_VMA)
+
+    SECTION_ramvec              (sdram, 0x00000000 (NOLOAD), LMA_EQ_VMA)
+    SECTION_virtual_vec_table   (sdram, ALIGN (0x4) (NOLOAD), LMA_EQ_VMA)
+    SECTION_data                (sdram, ALIGN (0x4), FOLLOWING (.gcc_except_table))
+    SECTION_bss                 (sdram, ALIGN (0x4) (NOLOAD), LMA_EQ_VMA)
+    SECTION_uninvar             (sdram, ALIGN (0x4) (NOLOAD), LMA_EQ_VMA)
+
+    // The heap starts here.
+    CYG_LABEL_DEFN(__heap1) = ALIGN (0x4);
+
+    CYG_LABEL_DEFN(__romram_copy_source) = LOADADDR(.data);
+    CYG_LABEL_DEFN(__romram_copy_dest) = ADDR(.data);
+    CYG_LABEL_DEFN(__romram_copy_length) = SIZEOF(.data);
+
+    SECTIONS_END
+}

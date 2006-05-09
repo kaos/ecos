@@ -1,3 +1,5 @@
+* Coldfire architecture HAL, the mcf5272 varient HAL and the m5272c3
+  platform HAL. Contributed by Enrico Piria.
 * AT91 USB device driver by Oliver Munz and Andrew Lunn
 * Port to the ATMEL AT91SAM7S by Oliver Munz and Andrew Lunn
 * Improved varient support for the AT91
