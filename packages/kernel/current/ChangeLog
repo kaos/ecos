@@ -1,3 +1,7 @@
+2006-05-09  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/stress_threads.c: Add string.h to avoid compiler warning.
+
 2006-04-11  Sergei Organov <osv@javad.com>
 
 	* doc/kernel.sgml: Fix typo
