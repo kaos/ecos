@@ -1175,7 +1175,7 @@ void testfs_dump(void)
                 {
                     if( j > 0 && (j%4) == 0 )
                         diag_printf(indent);
-                    diag_printf(" %3d[%3ld,%3d]",b-block,
+                    diag_printf(" %3d[%3ld,%3zd]",(int) (b-block),
                                 (unsigned long)b->pos,b->size);
                     if( b->u.file != nd )
                     {
@@ -1199,7 +1199,7 @@ void testfs_dump(void)
                 {
                     if( j > 0 && (j%4) == 0 )
                         diag_printf(indent);
-                    diag_printf(" %3d[%7s]",n-node,n->name);
+                    diag_printf(" %3d[%7s]",(int) (n-node),n->name);
                     rc++;
                 }
             }
@@ -1228,7 +1228,7 @@ void testfs_dump(void)
         {
             int j;
             testfs_node *nd = b->u.file;
-            diag_printf(" %3ld %3d %d[%7s]",b->pos,b->size,nd-node,nd->name);
+            diag_printf(" %3ld %3zd %d[%7s]",b->pos,b->size,(int) (nd-node),nd->name);
             for( j = 0; j < TESTFS_FILEBLOCKS; j++ )
             {
                 if( nd->u.file.data[j] == b )
