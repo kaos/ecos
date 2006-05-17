@@ -328,6 +328,7 @@ typedef struct {
         </funcprototype>
         <funcprototype>
           <funcdef>void *<function>calloc</function></funcdef>
+          <paramdef>size_t <parameter>nmemb</parameter></paramdef>
           <paramdef>size_t <parameter>size</parameter></paramdef>
         </funcprototype>
         <funcprototype>

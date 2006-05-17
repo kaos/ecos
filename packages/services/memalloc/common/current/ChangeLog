@@ -1,3 +1,8 @@
+2006-05-17  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* doc/memalloc.sgml: Fix parameters for calloc. Reported by
+	Andy Jackson.
+
 2005-09-30  Alexander Neundorf <neundorf@kde.org>
 
         * doc/memalloc.sgml: two minor fixes
