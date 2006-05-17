@@ -73,6 +73,7 @@
 #include <string.h>
 #include <dirent.h>
 
+#include <stdio.h>
 #include <cyg/fileio/fileio.h>
 
 #include <cyg/infra/testcase.h>
@@ -187,7 +188,7 @@ static void createfile( char *name, size_t size )
     int i;
     int err;
 
-    diag_printf("<INFO>: create file %s size %d\n",name,size);
+    diag_printf("<INFO>: create file %s size %zd\n",name,size);
 
     err = access( name, F_OK );
     if( err < 0 && errno != EACCES ) SHOW_RESULT( access, err );

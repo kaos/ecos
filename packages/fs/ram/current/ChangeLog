@@ -1,3 +1,7 @@
+2006-05-17  Andy Jackson  <andy@grapevinetech.co.uk>
+
+	* tests/ramfs1.c (createfile): Fix compile warnings.
+
 2005-10-01  Andrew Lunn   <andrew.lunn@ascom.ch>
 
 	* src/ramfs.c: Implement holes in files when using BLOCK
