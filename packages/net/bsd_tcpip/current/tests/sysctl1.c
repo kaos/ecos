@@ -33,9 +33,6 @@
 #include <sys/sysctl.h>
 
 #include <cyg/infra/testcase.h>
-#ifndef NELEM
-#define NELEM(x) sizeof(x)/sizeof(*x)
-#endif
 
 #define STACK_SIZE (CYGNUM_HAL_STACK_SIZE_TYPICAL + 0x1000)
 static char stack[STACK_SIZE];
@@ -65,7 +62,7 @@ net_test(cyg_addrword_t q)
 
     /* Test the OID to name function of sysctl*/
     oldbuffsize = sizeof(oldbuff);
-    ret = sysctl(mib_name_debug_name, NELEM(mib_name_debug_name), 
+    ret = sysctl(mib_name_debug_name, CYG_NELEM(mib_name_debug_name), 
                  oldbuff, &oldbuffsize, NULL, 0);
     if (ret == -1) CYG_TEST_FAIL("sysclt(mib_name) failed");
     CYG_TEST_INFO(oldbuff);
@@ -73,7 +70,7 @@ net_test(cyg_addrword_t q)
 
     /* Test the name to OID function of sysclt */
     oldbuffsize = sizeof(oldbuff);
-    ret = sysctl(mib_name2oid, NELEM(mib_name2oid), oldbuff, &oldbuffsize, 
+    ret = sysctl(mib_name2oid, CYG_NELEM(mib_name2oid), oldbuff, &oldbuffsize, 
                  name2oid, sizeof(name2oid));
     if (ret == -1) CYG_TEST_FAIL("sysclt(mib_name) failed");
     CYG_TEST_PASS_FAIL(((ret == 8 ) && 
@@ -82,8 +79,8 @@ net_test(cyg_addrword_t q)
                        "sysctl.name2oid");
     
     /* Walk the table using the next function of sysclt */
-    num_elem = NELEM(mib_next)+1;
-    new_oid = mib + NELEM(mib_next);
+    num_elem = CYG_NELEM(mib_next)+1;
+    new_oid = mib + CYG_NELEM(mib_next);
     mib[2] = 0;
     do {
       memcpy(mib,mib_next,sizeof(mib_next));
@@ -97,7 +94,7 @@ net_test(cyg_addrword_t q)
         }
       }
       p = pbuff;
-      num_elem = NELEM(mib_next) + (ret / 4);
+      num_elem = CYG_NELEM(mib_next) + (ret / 4);
       i=0;
       while (ret > 0) {
         p+=diag_sprintf(p, "%d ",new_oid[i++]);
@@ -166,7 +163,7 @@ net_test(cyg_addrword_t q)
     } while (ret != -1);
 
     /* Tests for sysctlnametomib */
-    num_elem = NELEM(mib);
+    num_elem = CYG_NELEM(mib);
     ret = sysctlnametomib(name2oid, mib,&num_elem);
     if (ret == -1) CYG_TEST_FAIL("sysctlnametomib failed");
     CYG_TEST_PASS_FAIL(((num_elem == 2 ) && 
@@ -180,7 +177,7 @@ net_test(cyg_addrword_t q)
     CYG_TEST_PASS_FAIL((ret == -1) && (errno = ENOMEM), 
                        "sysctlnametooid2");
     /* This time with an unknown name */
-    num_elem = NELEM(mib);
+    num_elem = CYG_NELEM(mib);
     ret = sysctlnametomib("unknown.unknown", mib,&num_elem);
     CYG_TEST_PASS_FAIL((ret == -1) && (errno = ENOENT), 
                        "sysctlnametooid3");
