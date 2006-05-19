@@ -251,6 +251,11 @@ typedef cyg_haladdress  CYG_ADDRESS;
 typedef cyg_haladdrword CYG_ADDRWORD;
 
 // -------------------------------------------------------------------------
+// Number of elements in a (statically allocated) array.
+
+#define CYG_NELEM(a) (sizeof(a) / sizeof((a)[0]))
+
+// -------------------------------------------------------------------------
 // Constructor ordering macros.  These are added as annotations to all
 // static objects to order the constuctors appropriately.
 
