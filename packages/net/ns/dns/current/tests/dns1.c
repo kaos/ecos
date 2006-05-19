@@ -67,8 +67,6 @@ static char stack[STACK_SIZE];
 static cyg_thread thread_data;
 static cyg_handle_t thread_handle;
 
-#define NELEM(x) (sizeof(x) / sizeof(x[0]))
-
 struct test_info_s {
     char * dns_server_v4;
     char * dns_server_v6;
@@ -908,7 +906,7 @@ dns_test_thread(cyg_addrword_t p)
 
     CYG_TEST_INFO("Starting dns1 test");
     
-    for (i = 0; i < NELEM(test_info); i++) {
+    for (i = 0; i < CYG_NELEM(test_info); i++) {
       dns_test(&test_info[i]);
     }
     
