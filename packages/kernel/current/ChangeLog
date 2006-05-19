@@ -1,3 +1,8 @@
+2006-05-19  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* host/instr/dump_instr.c: Use CYG_NELEM from infra.
+	* src/instrmnt/meminst.cxx: Use CYG_NELEM from infra.
+
 2006-05-09  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/stress_threads.c: Add string.h to avoid compiler warning.
