@@ -1,3 +1,8 @@
+2006-05-23  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/flash.c (fis_update_directory): Fix problems building on systems
+	with no FLASH locking.
+
 2006-04-19 Alexander Neundorf <alexander.neundorf@jenoptik.com>
 	* src/flash.c, src/main.c, src/fconfig.c: 
         * include/fis.h, include/redboot.h:

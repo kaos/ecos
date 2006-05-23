@@ -295,11 +295,13 @@ fis_update_directory(int autolock, int error)
 {
    void* err_addr=0;
 
+#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
    // Ensure [quietly] that the directory is unlocked before trying to update and locked again afterwards
    int do_autolock=1;
 #else
    int do_autolock=autolock;
+#endif
 #endif
 
 #ifdef CYGOPT_REDBOOT_REDUNDANT_FIS
@@ -330,8 +332,10 @@ fis_update_directory(int autolock, int error)
 
       flash_program(tmp_fis_addr, img->u.valid_info.valid_flag, sizeof(img->u.valid_info.valid_flag), (void **)&err_addr);
    }
+#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
    if (do_autolock)
       flash_lock((void *)fis_addr, fisdir_size, (void **)&err_addr);
+#endif
 
 #else // CYGOPT_REDBOOT_REDUNDANT_FIS
     int blk_size = fisdir_size;
@@ -343,8 +347,10 @@ fis_update_directory(int autolock, int error)
     conf_endian_fixup((char *)fis_work_block+fisdir_size);
     blk_size += cfg_size;
 #endif
+#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
     if (do_autolock)
-    flash_unlock((void *)fis_addr, blk_size, (void **)&err_addr);
+        flash_unlock((void *)fis_addr, blk_size, (void **)&err_addr);
+#endif
 
     if ((stat = flash_erase(fis_addr, blk_size, (void **)&err_addr)) != 0) {
         diag_printf("Error erasing FIS directory at %p: %s\n", err_addr, flash_errmsg(stat));
@@ -356,8 +362,10 @@ fis_update_directory(int autolock, int error)
         }
     }
     fis_endian_fixup(fis_work_block);
+#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
     if (do_autolock)
        flash_lock((void *)fis_addr, blk_size, (void **)&err_addr);
+#endif
 
 #endif // CYGOPT_REDBOOT_REDUNDANT_FIS
 
