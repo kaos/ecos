@@ -838,6 +838,11 @@ do_ip_addr(int argc, char *argv[])
     bool dns_addr_set;
 #endif
     int num_opts;
+ 
+    if (!have_net) {
+        diag_printf("Sorry, networking is not available.\n");
+        return;
+    }
 
     init_opts(&opts[0], 'l', true, OPTION_ARG_TYPE_STR, 
               (void *)&ip_addr, (bool *)&ip_addr_set, "local IP address");
