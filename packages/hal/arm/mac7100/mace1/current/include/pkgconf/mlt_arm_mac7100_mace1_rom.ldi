@@ -1,0 +1,39 @@
+// eCos memory layout - Wed Apr 11 13:49:55 2001
+
+// This is a generated file - do not edit
+
+#include <cyg/infra/cyg_type.inc>
+
+MEMORY
+{
+    ram  : ORIGIN = 0x00000000, LENGTH = 0x8000
+    rom  : ORIGIN = 0x20000000, LENGTH = 0x80000
+}
+
+SECTIONS
+{
+    SECTIONS_BEGIN
+    SECTION_rom_vectors (rom, 0x20000000, LMA_EQ_VMA)
+
+//  MAC7100 Flash Security
+//  Following section is manually added to address MAC7100 flash security area
+//  It should actually be something like this
+//    SECTION_sgfm_config (rom, 0x20000400, LMA_EQ_VMA)
+
+    .mac7100_flash_security 0x20000400 : { KEEP (*(.mac7100_flash_security))} > rom
+
+//  END MAC7100 Flash Security
+    
+    SECTION_text (rom, ALIGN (0x1), LMA_EQ_VMA)
+    SECTION_fini (rom, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_rodata (rom, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_rodata1 (rom, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_fixup (rom, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_gcc_except_table (rom, ALIGN (0x4), LMA_EQ_VMA)
+
+    SECTION_fixed_vectors (ram, 0x00000020, LMA_EQ_VMA)
+    SECTION_data (ram, ALIGN(0x4), FOLLOWING(.gcc_except_table))
+    SECTION_bss (ram, ALIGN (0x4), LMA_EQ_VMA)
+    CYG_LABEL_DEFN(__heap1) = ALIGN (0x8);
+    SECTIONS_END
+}
