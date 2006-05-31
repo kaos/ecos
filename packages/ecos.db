@@ -1010,6 +1010,25 @@ package CYGPKG_IO_SERIAL_POWERPC_CME555 {
     description       "cme555 PowerPC serial device drivers"
 }
 
+package CYGPKG_IO_SERIAL_FREESCALE_ESCI_H {
+    alias             { "ESCI serial device header"
+                        devs_serial_freescale_esci_h esci_serial_header }
+    hardware
+    directory	      devs/serial/freescale/esci
+    script	      ser_freescale_esci_h.cdl	
+    description       "Freescale eSCI - Enhanced Serial Communications Interface header.
+                       Needed by hal_diag and ser_esci drivers."
+}
+
+package CYGPKG_IO_SERIAL_FREESCALE_ESCI {
+    alias             { "ESCI serial device driver"
+                        devs_serial_freescale_esci esci_serial_driver }
+    hardware
+    directory	      devs/serial/freescale/esci
+    script	      ser_freescale_esci.cdl	
+    description       "Freescale eSCI - Enhanced Serial Communications Interface serial device driver"
+}
+
 package CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC {
     alias             { "PowerPC QUICC/SMC serial device drivers"
                         devs_serial_quicc_smc quicc_smc_serial_driver
@@ -2613,6 +2632,27 @@ package CYGPKG_HAL_ARM_LPC2XXX_LPCMT {
 	The lpcmt HAL package provides the support needed to run eCos on an the 
 	LPC-MT evaluation board from Olimex."
 }
+
+package CYGPKG_HAL_ARM_MAC7100 {
+	alias		{ "Freescale MAC7100 variant HAL" hal_arm_mac7100 arm_mac7100_hal }
+	directory	hal/arm/mac7100/var
+	script		hal_arm_mac7100.cdl
+	hardware
+        description "
+        The mac7100 HAL package provides the support needed to run eCos on Freescale
+        MAC7100 based targets."
+}
+
+package CYGPKG_HAL_ARM_MAC7100_MACE1 {
+	alias		{ "MAC7100 evaluation board (MACE1)" hal_arm_mac7100_mace1 arm_mac7100_mace1_hal }
+	directory	hal/arm/mac7100/mace1
+	script		hal_arm_mac7100_mace1.cdl
+	hardware
+        description "
+	The MACE1 HAL package provides the support needed to run eCos on an 
+        MAC7100 evaluation board (MACE1)."
+}
+
 package CYGPKG_HAL_ARM_EBSA285 {
 	alias		{ "Intel EBSA285 StrongARM board" hal_arm_ebsa285 arm_ebsa285_hal }
 	directory	hal/arm/ebsa285
@@ -4263,7 +4303,7 @@ target at91sam7s {
                    CYGPKG_DEVS_USB_AT91
         }
         description "
-        The at91sam7s target provides the packages needed to run eCos on an 
+        The at91sam7s target provides the packages needed to run eCos on an
         Atmel at91sam7s evaluation board."
 }
 
@@ -4369,6 +4409,19 @@ target lpcmt {
         description "
         The lpcmt target provides the packages needed to run eCos on the
         LPC-LPCMT evaluation board from Olimex."
+}
+
+target mace1 {
+	alias { "MACE1 - a MAC7100 evaluation board" mac7100_mace1 }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_MAC7100
+                   CYGPKG_HAL_ARM_MAC7100_MACE1
+                   CYGPKG_IO_SERIAL_FREESCALE_ESCI_H
+                   CYGPKG_IO_SERIAL_FREESCALE_ESCI
+        }
+        description "
+            The mace1 target provides the packages needed to run eCos
+            on MAC7100 evaluation board (MACE1).  "
 }
 
 target ebsa285 {

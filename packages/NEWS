@@ -1,3 +1,4 @@
+* Freescale MAC7100 varient and SIva MACE1 platfrom by Ilija Koco.
 * Coldfire architecture HAL, the mcf5272 varient HAL and the m5272c3
   platform HAL. Contributed by Enrico Piria.
 * AT91 USB device driver by Oliver Munz and Andrew Lunn

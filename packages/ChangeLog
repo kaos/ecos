@@ -1,3 +1,8 @@
+2006-05-24  Ilija Koco <ilijak@siva.com.mk>
+
+	* ecos.db: Add Freescale MAC7100 variant, SIvA MACE1 platform
+	and Freescale ESCI serial driver
+
 2006-05-09  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* ecos.db: Add the Coldfire architecture HAL, the mcf5272 varient
