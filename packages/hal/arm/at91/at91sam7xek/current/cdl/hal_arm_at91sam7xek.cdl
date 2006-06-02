@@ -1,0 +1,61 @@
+# ====================================================================
+#
+#      hal_arm_at91_sam7xek.cdl
+#
+#      ARM AT91 SAM7X EK development board package configuration data
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+## Copyright (C) 2006 Andrew Lunn
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+## -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      andrew lunn
+# Contributors:   
+# Date:           2006-05-20
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_HAL_ARM_AT91SAM7XEK {
+    display       "Atmel AT91SAM7X EK development board"
+    parent        CYGPKG_HAL_ARM_AT91SAM7
+    define_header hal_arm_at91sam7xek.h
+    include_dir   cyg/hal
+    hardware
+    description   "
+        The AT91SAM7XEK HAL package provides the support needed to run
+        eCos on an Atmel AT91SAM7X-EK development board."
+
+    compile       at91sam7xek_misc.c
+    
+    requires      { CYGHWR_HAL_ARM_AT91 == "AT91SAM7S" }
+    requires      { CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7x256" ||
+                    CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7x128" }
+}
