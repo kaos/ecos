@@ -1,3 +1,27 @@
+2006-06-01  John Eigelaar <jeigelaar@mweb.co.za>
+
+	* include/var_io.h: Added SPI PDC register definitions 
+
+2006-05-20  John Eigelaar <jeigelaar@mweb.co.za>
+
+	* include/var_io.h: AT91SAM7X pin definitions
+	* include/hal_platform_int.h: AT91SAM7X interrupts
+	* include/plf_io.h: AT91SAM7X device addresses.
+
+2006-05-20  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/hal_arm_at91sam7s.cdl: Rename to AT91SAM7 and add support
+	for AT91SAM7X, based on code from John Eigelaar.
+	* include/var_io.h: add CAN, TWI and ADC registers.
+	
+2006-05-17  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/var_io.h: Add macros to manipulate the PIO controllers.
+
+2006-05-10  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/var_io.h: Added the Ethernet MAC registers. 
+
 2006-04-26  John Eigelaar <jeigelaar@mweb.co.za>
 
 	* include/var_io.h: Fix typo's in the USB register definitions 
