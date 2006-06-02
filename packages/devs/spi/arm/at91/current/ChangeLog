@@ -1,3 +1,15 @@
+2006-06-01  John Eigelaar <jeigelaar@mweb.co.za>
+
+	* src/spi_at91.c:
+	* cdl/spi_at91.cdl:
+	* include/spi_at91.h: Generalize so that multiple SPI
+	busses can be driven.
+	
+2006-05-19  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/spi_at91.c: Use the AT91 GPIO/PIO macros to aid
+	portability between different AT91 device.
+
 2004-11-11  Sebastian Block <sebastianblock@gmx.net>
 
         * src/spi_at91.c: Fixed negation of the chip select signal when

@@ -72,7 +72,11 @@ typedef struct cyg_spi_at91_bus_s
     cyg_drv_mutex_t   transfer_mx;          // Transfer mutex
     cyg_drv_cond_t    transfer_cond;        // Transfer condition
     cyg_bool          transfer_end;         // Transfer end flag
-    cyg_bool          cs_up;                // Chip Select up flag       
+    cyg_bool          cs_up;                // Chip Select up flag 
+    cyg_vector_t      interrupt_number;     // SPI Interrupt Number
+    cyg_addrword_t    base;                 // Base Address of the SPI peripheral
+    cyg_uint8         cs_en[4];             // The Configurations state for the CS
+    cyg_uint32        cs_gpio[4];           // The GPIO Configurations for the CS
 } cyg_spi_at91_bus_t;
 
 //-----------------------------------------------------------------------------
@@ -102,9 +106,13 @@ typedef struct cyg_spi_at91_device_s
 } cyg_spi_at91_device_t;
 
 //-----------------------------------------------------------------------------
-// AT91 SPI exported bus
+// AT91 SPI exported busses
 
-externC cyg_spi_at91_bus_t cyg_spi_at91_bus;
+/* For backwards compatability  */
+#define cyg_spi_at91_bus cyg_spi_at91_bus0
+
+externC cyg_spi_at91_bus_t cyg_spi_at91_bus0;
+externC cyg_spi_at91_bus_t cyg_spi_at91_bus1;
 
 //-----------------------------------------------------------------------------
 

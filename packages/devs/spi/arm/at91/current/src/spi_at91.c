@@ -32,9 +32,6 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -62,6 +59,7 @@
 #include <cyg/error/codes.h>
 
 // -------------------------------------------------------------------------
+static void spi_at91_init_bus(cyg_spi_at91_bus_t * bus);
 
 static cyg_uint32 spi_at91_ISR(cyg_vector_t vector, cyg_addrword_t data);
 
@@ -97,79 +95,169 @@ static int spi_at91_set_config(cyg_spi_device *dev,
 // -------------------------------------------------------------------------
 // AT91 SPI BUS
 
-cyg_spi_at91_bus_t cyg_spi_at91_bus = {
+#ifdef CYGHWR_DEVS_SPI_ARM_AT91_BUS0
+cyg_spi_at91_bus_t cyg_spi_at91_bus0 = {
     .spi_bus.spi_transaction_begin    = spi_at91_transaction_begin,
     .spi_bus.spi_transaction_transfer = spi_at91_transaction_transfer,
     .spi_bus.spi_transaction_tick     = spi_at91_transaction_tick,
     .spi_bus.spi_transaction_end      = spi_at91_transaction_end,
     .spi_bus.spi_get_config           = spi_at91_get_config,
-    .spi_bus.spi_set_config           = spi_at91_set_config
+    .spi_bus.spi_set_config           = spi_at91_set_config,
+    .interrupt_number                 = CYGNUM_HAL_INTERRUPT_SPI,
+    .base                             = AT91_SPI,
+#ifndef CYGDAT_DEVS_SPI_ARM_AT91_BUS0_NPCS0_NONE
+    .cs_en[0]                         = true,
+    .cs_gpio[0]                       = CYGDAT_DEVS_SPI_ARM_AT91_BUS0_NPCS0,
+#else
+    .cs_en[0]                         = false,
+#endif
+#ifndef CYGDAT_DEVS_SPI_ARM_AT91_BUS0_NPCS1_NONE
+    .cs_en[1]                         = true,
+    .cs_gpio[1]                       = CYGDAT_DEVS_SPI_ARM_AT91_BUS0_NPCS1,
+#else
+    .cs_en[1]                         = false,
+#endif
+#ifndef CYGDAT_DEVS_SPI_ARM_AT91_BUS0_NPCS2_NONE
+    .cs_en[2]                         = true,
+    .cs_gpio[2]                       = CYGDAT_DEVS_SPI_ARM_AT91_BUS0_NPCS2,
+#else
+    .cs_en[2]                         = false,
+#endif
+#ifndef CYGDAT_DEVS_SPI_ARM_AT91_BUS0_NPCS3_NONE
+    .cs_en[3]                         = true,
+    .cs_gpio[3]                       = CYGDAT_DEVS_SPI_ARM_AT91_BUS0_NPCS3,
+#else
+    .cs_en[3]                         = false,
+#endif
 };
 
 CYG_SPI_DEFINE_BUS_TABLE(cyg_spi_at91_device_t, 0);
+#endif
+#ifdef CYGHWR_DEVS_SPI_ARM_AT91_BUS1
+cyg_spi_at91_bus_t cyg_spi_at91_bus1 = {
+    .spi_bus.spi_transaction_begin    = spi_at91_transaction_begin,
+    .spi_bus.spi_transaction_transfer = spi_at91_transaction_transfer,
+    .spi_bus.spi_transaction_tick     = spi_at91_transaction_tick,
+    .spi_bus.spi_transaction_end      = spi_at91_transaction_end,
+    .spi_bus.spi_get_config           = spi_at91_get_config,
+    .spi_bus.spi_set_config           = spi_at91_set_config,
+    .interrupt_number                 = CYGNUM_HAL_INTERRUPT_SPI1,
+    .base                             = AT91_SPI1,
+#ifndef CYGDAT_DEVS_SPI_ARM_AT91_BUS1_NPCS0_NONE
+    .cs_en[0]                         = true,
+    .cs_gpio[0]                       = CYGDAT_DEVS_SPI_ARM_AT91_BUS1_NPCS0,
+#else
+    .cs_en[0]                         = false,
+#endif
+#ifndef CYGDAT_DEVS_SPI_ARM_AT91_BUS1_NPCS1_NONE
+    .cs_en[1]                         = true,
+    .cs_gpio[1]                       = CYGDAT_DEVS_SPI_ARM_AT91_BUS1_NPCS1,
+#else
+    .cs_en[1]                         = false,
+#endif
+#ifndef CYGDAT_DEVS_SPI_ARM_AT91_BUS1_NPCS2_NONE
+    .cs_en[2]                         = true,
+    .cs_gpio[2]                       = CYGDAT_DEVS_SPI_ARM_AT91_BUS1_NPCS2,
+#else
+    .cs_en[2]                         = false,
+#endif
+#ifndef CYGDAT_DEVS_SPI_ARM_AT91_BUS1_NPCS3_NONE
+    .cs_en[3]                         = true,
+    .cs_gpio[3]                       = CYGDAT_DEVS_SPI_ARM_AT91_BUS1_NPCS3,
+#else
+    .cs_en[3]                         = false,
+#endif
+};
 
+CYG_SPI_DEFINE_BUS_TABLE(cyg_spi_at91_device_t, 1);
+#endif
 // -------------------------------------------------------------------------
 
 void
 cyg_spi_at91_bus_init(void)
 {
-    // Create and attach SPI interrupt object
-    cyg_drv_interrupt_create(CYGNUM_HAL_INTERRUPT_SPI,
-                             4,                   
-                             (cyg_addrword_t)&cyg_spi_at91_bus,   
-                             spi_at91_ISR,
-                             spi_at91_DSR,
-                             &cyg_spi_at91_bus.spi_interrupt_handle,
-                             &cyg_spi_at91_bus.spi_interrupt);
 
-    cyg_drv_interrupt_attach(cyg_spi_at91_bus.spi_interrupt_handle);
+#ifdef CYGHWR_DEVS_SPI_ARM_AT91_BUS0
+   // NOTE: here we let the SPI controller control 
+   //       the data in, out and clock signals, but 
+   //       we need to handle the chip selects manually 
+   //       in order to achieve better chip select control 
+   //       in between transactions.
 
-    // Init transfer mutex and condition
-    cyg_drv_mutex_init(&cyg_spi_at91_bus.transfer_mx);
-    cyg_drv_cond_init(&cyg_spi_at91_bus.transfer_cond, 
-                      &cyg_spi_at91_bus.transfer_mx);
-   
-    // Init flags
-    cyg_spi_at91_bus.transfer_end = true;
-    cyg_spi_at91_bus.cs_up        = false;
-    
-    // Soft reset the SPI controller
-    HAL_WRITE_UINT32(AT91_SPI+AT91_SPI_CR, AT91_SPI_CR_SWRST);
+   // Put SPI MISO, MOIS and SPCK pins into peripheral mode
+   HAL_ARM_AT91_PIO_CFG(AT91_SPI_SPCK);
+   HAL_ARM_AT91_PIO_CFG(AT91_SPI_MISO);
+   HAL_ARM_AT91_PIO_CFG(AT91_SPI_MOIS);
+   spi_at91_init_bus(&cyg_spi_at91_bus0);
+#endif
+#ifdef CYGHWR_DEVS_SPI_ARM_AT91_BUS1
+   // NOTE: here we let the SPI controller control 
+   //       the data in, out and clock signals, but 
+   //       we need to handle the chip selects manually 
+   //       in order to achieve better chip select control 
+   //       in between transactions.
 
-    // Configure SPI pins
-      
-    // NOTE: here we let the SPI controller control 
-    //       the data in, out and clock signals, but 
-    //       we need to handle the chip selects manually 
-    //       in order to achieve better chip select control 
-    //       inbetween transactions.
-    
-    // Put SPI MISO, MOIS and SPCK pins into peripheral mode
-    HAL_WRITE_UINT32(AT91_SPI_PIO+AT91_PIO_PDR, AT91_PIO_PSR_SPCK |
-                                                AT91_PIO_PSR_MISO |
-                                                AT91_PIO_PSR_MOIS); 
- 
-    // Put SPI chip select pins in IO output mode
-    HAL_WRITE_UINT32(AT91_SPI_PIO+AT91_PIO_SODR, AT91_SPI_PIO_NPCS(0x0F));
-    HAL_WRITE_UINT32(AT91_SPI_PIO+AT91_PIO_PER,  AT91_SPI_PIO_NPCS(0x0F));
-    HAL_WRITE_UINT32(AT91_SPI_PIO+AT91_PIO_OER,  AT91_SPI_PIO_NPCS(0x0F));
-
-    // Call upper layer bus init
-    CYG_SPI_BUS_COMMON_INIT(&cyg_spi_at91_bus.spi_bus);
+   // Put SPI MISO, MOIS and SPCK pins into peripheral mode
+   HAL_ARM_AT91_PIO_CFG(AT91_SPI1_SPCK);
+   HAL_ARM_AT91_PIO_CFG(AT91_SPI1_MISO);
+   HAL_ARM_AT91_PIO_CFG(AT91_SPI1_MOSI);
+   spi_at91_init_bus(&cyg_spi_at91_bus1);
+#endif
 }
 
 // -------------------------------------------------------------------------
+
+static void spi_at91_init_bus(cyg_spi_at91_bus_t * spi_bus)
+{
+    cyg_uint32 ctr;
+    // Create and attach SPI interrupt object
+    cyg_drv_interrupt_create(spi_bus->interrupt_number,
+                             4,                   
+                             (cyg_addrword_t)spi_bus,   
+                             spi_at91_ISR,
+                             spi_at91_DSR,
+                             &spi_bus->spi_interrupt_handle,
+                             &spi_bus->spi_interrupt);
+
+    cyg_drv_interrupt_attach(spi_bus->spi_interrupt_handle);
+
+    // Init transfer mutex and condition
+    cyg_drv_mutex_init(&spi_bus->transfer_mx);
+    cyg_drv_cond_init(&spi_bus->transfer_cond, 
+                      &spi_bus->transfer_mx);
+   
+    // Init flags
+    spi_bus->transfer_end = true;
+    spi_bus->cs_up        = false;
+    
+    // Soft reset the SPI controller
+    HAL_WRITE_UINT32(spi_bus->base+AT91_SPI_CR, AT91_SPI_CR_SWRST);
+
+    // Configure SPI pins
+      
+
+    // Put SPI chip select pins in IO output mode
+    for(ctr = 0;ctr<4;ctr++)
+    {
+       if(spi_bus->cs_en[ctr])
+       {
+          HAL_ARM_AT91_GPIO_CFG_DIRECTION(spi_bus->cs_gpio[ctr],AT91_PIN_OUT);
+       }
+    }
+    // Call upper layer bus init
+    CYG_SPI_BUS_COMMON_INIT(&spi_bus->spi_bus);
+}
 
 static cyg_uint32 
 spi_at91_ISR(cyg_vector_t vector, cyg_addrword_t data)
 {
     cyg_uint32 stat;
-
+    cyg_spi_at91_bus_t * spi_bus = (cyg_spi_at91_bus_t *)data;
     // Read the status register and disable
     // the SPI int events that have occoured
     
-    HAL_READ_UINT32(AT91_SPI+AT91_SPI_SR,   stat);
-    HAL_WRITE_UINT32(AT91_SPI+AT91_SPI_IDR, stat);
+    HAL_READ_UINT32(spi_bus->base+AT91_SPI_SR,   stat);
+    HAL_WRITE_UINT32(spi_bus->base+AT91_SPI_IDR, stat);
     
     cyg_drv_interrupt_mask(vector);
     cyg_drv_interrupt_acknowledge(vector);
@@ -186,7 +274,7 @@ spi_at91_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     // Read the status register and 
     // check for transfer completition
     
-    HAL_READ_UINT32(AT91_SPI+AT91_SPI_SR, stat);
+    HAL_READ_UINT32(spi_bus->base+AT91_SPI_SR, stat);
 
     if((stat & AT91_SPI_SR_ENDRX) && (stat & AT91_SPI_SR_ENDTX))
     {
@@ -247,6 +335,19 @@ spi_at91_calc_scbr(cyg_spi_at91_device_t *dev)
 }
 
 static void
+spi_at91_set_npcs(cyg_spi_at91_bus_t *spi_bus,int val)
+{
+   cyg_uint32 ctr;
+   for(ctr=0;ctr<4;ctr++)
+   {
+      if(spi_bus->cs_en[ctr])
+      {
+         HAL_ARM_AT91_GPIO_PUT(spi_bus->cs_gpio[ctr], (val & (1<<ctr)));
+      }
+   }
+}
+
+static void
 spi_at91_start_transfer(cyg_spi_at91_device_t *dev)
 {
     cyg_spi_at91_bus_t *spi_bus = (cyg_spi_at91_bus_t *)dev->spi_device.spi_bus;
@@ -262,11 +363,9 @@ spi_at91_start_transfer(cyg_spi_at91_device_t *dev)
     // Raise CS
 
 #ifdef CYGHWR_DEVS_SPI_ARM_AT91_PCSDEC
-    HAL_WRITE_UINT32(AT91_SPI_PIO+AT91_PIO_CODR, 
-                     AT91_SPI_PIO_NPCS(~dev->dev_num));
+    spi_at91_set_npcs(spi_bus,~dev->dev_num);
 #else
-    HAL_WRITE_UINT32(AT91_SPI_PIO+AT91_PIO_CODR,
-                      AT91_SPI_PIO_NPCS(1<<dev->dev_num));
+    spi_at91_set_npcs(spi_bus,1<<dev->dev_num);
 #endif
     CYGACC_CALL_IF_DELAY_US(dev->cs_up_udly);
    
@@ -284,7 +383,7 @@ spi_at91_drop_cs(cyg_spi_at91_device_t *dev)
     // Drop CS
 
     CYGACC_CALL_IF_DELAY_US(dev->cs_dw_udly);
-    HAL_WRITE_UINT32(AT91_SPI_PIO+AT91_PIO_SODR, AT91_SPI_PIO_NPCS(0x0F)); 
+    spi_at91_set_npcs(spi_bus,0x0F); 
     spi_bus->cs_up = false;
 }
 
@@ -305,24 +404,28 @@ spi_at91_transfer(cyg_spi_at91_device_t *dev,
         // Set rx buf pointer and counter 
         if (NULL != rx_data)
         {
-            HAL_WRITE_UINT32(AT91_SPI+AT91_SPI_RPR, (cyg_uint32)rx_data);
-            HAL_WRITE_UINT32(AT91_SPI+AT91_SPI_RCR, (cyg_uint32)tr_count);
+            HAL_WRITE_UINT32(spi_bus->base+AT91_SPI_RPR, (cyg_uint32)rx_data);
+            HAL_WRITE_UINT32(spi_bus->base+AT91_SPI_RCR, (cyg_uint32)tr_count);
         }
 
         // Set tx buf pointer and counter  
-        HAL_WRITE_UINT32(AT91_SPI+AT91_SPI_TPR, (cyg_uint32)tx_data);
-        HAL_WRITE_UINT32(AT91_SPI+AT91_SPI_TCR, (cyg_uint32)tr_count);
+        HAL_WRITE_UINT32(spi_bus->base+AT91_SPI_TPR, (cyg_uint32)tx_data);
+        HAL_WRITE_UINT32(spi_bus->base+AT91_SPI_TCR, (cyg_uint32)tr_count);
    
+#ifdef AT91_SPI_PTCR
+        HAL_WRITE_UINT32(spi_bus->base+AT91_SPI_PTCR, 
+                         AT91_SPI_PTCR_RXTEN | AT91_SPI_PTCR_TXTEN);
+#endif
         // Enable the SPI int events we are interested in
-        HAL_WRITE_UINT32(AT91_SPI+AT91_SPI_IER, AT91_SPI_SR_ENDRX | 
-                                                AT91_SPI_SR_ENDTX);
+        HAL_WRITE_UINT32(spi_bus->base+AT91_SPI_IER, 
+                         AT91_SPI_SR_ENDRX | AT91_SPI_SR_ENDTX);
 
         cyg_drv_mutex_lock(&spi_bus->transfer_mx);
         {
             spi_bus->transfer_end = false;
     
             // Unmask the SPI int
-            cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_SPI);
+            cyg_drv_interrupt_unmask(spi_bus->interrupt_number);
         
             // Wait for its completition
             cyg_drv_dsr_lock();
@@ -352,7 +455,7 @@ spi_at91_transfer(cyg_spi_at91_device_t *dev,
             CYGACC_CALL_IF_DELAY_US(val > 1 ? val : 1);
 
             // Clear the rx data reg
-            HAL_READ_UINT32(AT91_SPI+AT91_SPI_RDR, val);
+            HAL_READ_UINT32(spi_bus->base+AT91_SPI_RDR, val);
         }
 
         // Adjust running variables
@@ -371,6 +474,7 @@ spi_at91_transfer_polled(cyg_spi_at91_device_t *dev,
                          cyg_uint8             *rx_data)
 {
     cyg_uint32 val;
+    cyg_spi_at91_bus_t *spi_bus = (cyg_spi_at91_bus_t *)dev->spi_device.spi_bus;
 
     // Transmit and receive byte by byte
     while (count-- > 0)
@@ -378,21 +482,21 @@ spi_at91_transfer_polled(cyg_spi_at91_device_t *dev,
         // Wait for transmit data register empty
         do
         {
-            HAL_READ_UINT32(AT91_SPI+AT91_SPI_SR, val);
+            HAL_READ_UINT32(spi_bus->base+AT91_SPI_SR, val);
         } while ( !(val & AT91_SPI_SR_TDRE) );
        
         // Send next byte over the wire 
         val = *tx_data++;
-        HAL_WRITE_UINT32(AT91_SPI+AT91_SPI_TDR, val);
+        HAL_WRITE_UINT32(spi_bus->base+AT91_SPI_TDR, val);
         
         // Wait for reveive data register full 
         do
         {
-            HAL_READ_UINT32(AT91_SPI+AT91_SPI_SR, val);
+            HAL_READ_UINT32(spi_bus->base+AT91_SPI_SR, val);
         } while ( !(val & AT91_SPI_SR_RDRF) );
         
         // Store received byte 
-        HAL_READ_UINT32(AT91_SPI+AT91_SPI_RDR, val);
+        HAL_READ_UINT32(spi_bus->base+AT91_SPI_RDR, val);
         if (NULL != rx_data)
             *rx_data++ = val; 
     }
@@ -404,6 +508,8 @@ static void
 spi_at91_transaction_begin(cyg_spi_device *dev)
 {
     cyg_spi_at91_device_t *at91_spi_dev = (cyg_spi_at91_device_t *) dev;    
+    cyg_spi_at91_bus_t *spi_bus = 
+      (cyg_spi_at91_bus_t *)at91_spi_dev->spi_device.spi_bus;
     cyg_uint32 val;
     
     if (!at91_spi_dev->init)
@@ -425,20 +531,20 @@ spi_at91_transaction_begin(cyg_spi_device *dev)
 
     val |= AT91_SPI_CSR_SCBR(at91_spi_dev->cl_scbr);
 
-    HAL_WRITE_UINT32(AT91_SPI+AT91_SPI_CSR0, val); 
+    HAL_WRITE_UINT32(spi_bus->base+AT91_SPI_CSR0, val); 
 
     // Enable SPI clock
-    HAL_WRITE_UINT32(AT91_PMC+AT91_PMC_PCER, AT91_PMC_PCER_SPI);
-    
+    HAL_WRITE_UINT32(AT91_PMC+AT91_PMC_PCER, 1<<spi_bus->interrupt_number);
+
     // Enable the SPI controller
-    HAL_WRITE_UINT32(AT91_SPI+AT91_SPI_CR, AT91_SPI_CR_SPIEN);
+    HAL_WRITE_UINT32(spi_bus->base+AT91_SPI_CR, AT91_SPI_CR_SPIEN);
     
     // Put SPI bus into master mode
     if (1 == at91_spi_dev->cl_div32)
-        HAL_WRITE_UINT32(AT91_SPI+AT91_SPI_MR, AT91_SPI_MR_MSTR | 
+        HAL_WRITE_UINT32(spi_bus->base+AT91_SPI_MR, AT91_SPI_MR_MSTR | 
                                                AT91_SPI_MR_DIV32);
     else
-        HAL_WRITE_UINT32(AT91_SPI+AT91_SPI_MR, AT91_SPI_MR_MSTR);
+        HAL_WRITE_UINT32(spi_bus->base+AT91_SPI_MR, AT91_SPI_MR_MSTR);
 }
 
 static void 
@@ -497,12 +603,16 @@ spi_at91_transaction_tick(cyg_spi_device *dev,
 static void                    
 spi_at91_transaction_end(cyg_spi_device* dev)
 {
+    cyg_spi_at91_device_t * at91_spi_dev = (cyg_spi_at91_device_t *)dev; 
+    cyg_spi_at91_bus_t *spi_bus = 
+      (cyg_spi_at91_bus_t *)at91_spi_dev->spi_device.spi_bus;
+
     // Disable the SPI controller
-    HAL_WRITE_UINT32(AT91_SPI+AT91_SPI_CR, AT91_SPI_CR_SPIDIS);
-
+    HAL_WRITE_UINT32(spi_bus->base+AT91_SPI_CR, AT91_SPI_CR_SPIDIS);
+   
     // Disable SPI clock
-    HAL_WRITE_UINT32(AT91_PMC+AT91_PMC_PCDR, AT91_PMC_PCER_SPI);
-
+    HAL_WRITE_UINT32(AT91_PMC+AT91_PMC_PCDR,1<<spi_bus->interrupt_number);
+   
     spi_at91_drop_cs((cyg_spi_at91_device_t *) dev);
 }
 
