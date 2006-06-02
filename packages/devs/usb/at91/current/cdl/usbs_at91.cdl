@@ -84,6 +84,8 @@ cdl_package CYGPKG_DEVS_USB_AT91 {
         }   
 
         active_if CYGINT_DEVS_USB_AT91_HAS_USB
+        implements CYGHWR_IO_USB_SLAVE_OUT_ENDPOINTS
+        implements CYGHWR_IO_USB_SLAVE_IN_ENDPOINTS    
 
         compile       usbs_at91.c
         compile       -library=libextras.a usbs_at91_data.cxx
@@ -91,15 +93,14 @@ cdl_package CYGPKG_DEVS_USB_AT91 {
             Enable support for endpoint 0. If this support is disabled
             then the entire USB port is unusable."
     
-        cdl_option CYGNUM_DEVS_USB_AT91_PIO_SET_PULLUP_PIN {
+        cdl_option CYGDAT_DEVS_USB_AT91_GPIO_SET_PULLUP_PIN {
             display       "PIO-Pin who controls the pullup resistor"
             flavor        data
-            default_value 16
-            legal_values  { 0 to 32 }
+            default_value { "AT91_GPIO_PA16" }
             description "
-                   Every pin from the PIO is able to do it. If you don't
-                   need a pin because your HW has the pullup fixed wired
-                   then select 32."
+                   Every GPIO pin is able to do it. If you don't need
+                   a pin because your HW has the pullup fixed wired
+                   then select NONE"
         }
 
         cdl_option CYGNUM_DEVS_USB_AT91_PIO_SET_PULLUP_INVERTED {
@@ -111,14 +112,13 @@ cdl_package CYGPKG_DEVS_USB_AT91 {
                    be inverted. ie VDD is active, VCC is inactive."
         }
 
-        cdl_option CYGNUM_DEVS_USB_AT91_PIO_READ_POWER_PIN {
+        cdl_option CYGDAT_DEVS_USB_AT91_GPIO_READ_POWER_PIN {
             display       "PIO-Pin who see the USB-Power"
             flavor        data
-            default_value 13
-            legal_values  { 0 to 32 }
+            default_value { "AT91_GPIO_PA13"}
             description "
-                   Every pin from the PIO is able to do it. If you don't
-                   need a pin select 32."
+                   Every GPIO pin is able to do it. If you don't need
+                   a pin then select NONE"
         }
 
         cdl_option CYGNUM_DEVS_USB_AT91_PIO_READ_POWER_INVERTED {

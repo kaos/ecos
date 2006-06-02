@@ -78,7 +78,7 @@ public:
   }
 };
 
-static usbs_at91_initialization CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_IO) 
+static usbs_at91_initialization CYGBLD_ATTRIB_INIT_BEFORE(CYG_INIT_IO) 
   usbs_at91_init_object;
 #endif
 

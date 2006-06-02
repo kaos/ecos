@@ -277,19 +277,17 @@ static void
 usbs_at91_set_pullup (bool set)
 {                
 
-#if CYGNUM_DEVS_USB_AT91_PIO_SET_PULLUP_PIN <= 31
+#ifndef CYGDAT_DEVS_USB_AT91_GPIO_SET_PULLUP_PIN_NONE
   if (
-#ifdef CYGNUM_DEVS_USB_AT91_PIO_SET_PULLUP_INVERTED
+#ifdef CYGNUM_DEVS_USB_AT91_GPIO_SET_PULLUP_INVERTED
       !set
 #else
       set
 #endif
       ) {
-    HAL_WRITE_UINT32 (AT91_PIO + AT91_PIO_SODR,
-                      (1 << CYGNUM_DEVS_USB_AT91_PIO_SET_PULLUP_PIN));
+    HAL_ARM_AT91_GPIO_RESET(CYGDAT_DEVS_USB_AT91_GPIO_SET_PULLUP_PIN);
   } else {
-    HAL_WRITE_UINT32 (AT91_PIO + AT91_PIO_CODR,
-                      (1 << CYGNUM_DEVS_USB_AT91_PIO_SET_PULLUP_PIN));
+    HAL_ARM_AT91_GPIO_SET(CYGDAT_DEVS_USB_AT91_GPIO_SET_PULLUP_PIN);
   }
 #endif
 }
@@ -297,14 +295,15 @@ usbs_at91_set_pullup (bool set)
 /* Is the USB powered? */
 bool
 usbs_at91_read_power (void)
-{                               
-#if CYGNUM_DEVS_USB_AT91_PIO_READ_POWER_PIN <= 31
-#ifdef CYGNUM_DEVS_USB_AT91_PIO_READ_POWER_INVERTED
-  return BITS_ARE_CLEARED ((cyg_addrword_t) (AT91_PIO + AT91_PIO_PDSR),
-                           (1 << CYGNUM_DEVS_USB_AT91_PIO_READ_POWER_PIN));
+{
+#ifndef CYGDAT_DEVS_USB_AT91_GPIO_READ_POWER_PIN_NONE
+  cyg_bool state;
+  
+  HAL_ARM_AT91_GPIO_GET(CYGDAT_DEVS_USB_AT91_GPIO_READ_POWER_PIN, state);
+#ifdef CYGNUM_DEVS_USB_AT91_GPIO_READ_POWER_INVERTED
+  return !state;
 #else
-  return BITS_ARE_SET ((cyg_addrword_t) (AT91_PIO + AT91_PIO_PDSR),
-                       (1 << CYGNUM_DEVS_USB_AT91_PIO_READ_POWER_PIN));
+  return state;
 #endif
 #endif
   return true;
@@ -1310,14 +1309,14 @@ usbs_at91_init (void)
   HAL_WRITE_UINT32 (AT91_PMC + AT91_PMC_PCER, AT91_PMC_PCER_UDP); 
 
   usbs_at91_set_pullup (false);
-  HAL_WRITE_UINT32 (AT91_PIO + AT91_PIO_PER,
-                    (1 << CYGNUM_DEVS_USB_AT91_PIO_SET_PULLUP_PIN) |
-                    (1 << CYGNUM_DEVS_USB_AT91_PIO_READ_POWER_PIN));
-  HAL_WRITE_UINT32 (AT91_PIO + AT91_PIO_OER,
-                    (1 << CYGNUM_DEVS_USB_AT91_PIO_SET_PULLUP_PIN));
-  HAL_WRITE_UINT32 (AT91_PIO + AT91_PIO_ODR,
-                    (1 << CYGNUM_DEVS_USB_AT91_PIO_READ_POWER_PIN));
-  
+#ifndef CYGDAT_DEVS_USB_AT91_GPIO_SET_PULLUP_PIN_NONE
+  HAL_ARM_AT91_GPIO_CFG_DIRECTION(CYGDAT_DEVS_USB_AT91_GPIO_SET_PULLUP_PIN,
+                                  AT91_PIN_OUT);
+#endif
+#ifndef CYGDAT_DEVS_USB_AT91_GPIO_READ_POWER_PIN_NONE
+  HAL_ARM_AT91_GPIO_CFG_DIRECTION(CYGDAT_DEVS_USB_AT91_GPIO_READ_POWER_PIN,
+                                  AT91_PIN_IN);
+#endif
   usbs_at91_handle_reset ();
   
   cyg_drv_interrupt_create (CYGNUM_HAL_INTERRUPT_UDP, 

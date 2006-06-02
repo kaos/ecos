@@ -1,3 +1,14 @@
+2006-05-25  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/usbs_at91_data.cxx: Change the initialization priority.  The
+	USB tty driver is initialized at priority CYG_INIT_IO, so the USB
+	device has to be initialized before that.
+
+2006-05-19  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/usbs_at91.c: Rework pullup and power dectect to use the AT91
+	GPIO macros.
+
 2006-05-07  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* Included into eCos anonymous CVS.
