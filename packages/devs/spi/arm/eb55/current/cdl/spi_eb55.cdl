@@ -52,7 +52,7 @@ cdl_package CYGPKG_DEVS_SPI_ARM_EB55 {
     active_if     CYGPKG_IO_SPI
     active_if     CYGPKG_DEVS_SPI_ARM_AT91
     display       "Atmel AT91EB55 SPI devices"
-    requires      CYGHWR_DEVS_SPI_ARM_AT91_PCSDEC
+    requires      CYGHWR_DEVS_SPI_ARM_AT91_BUS0_PCSDEC
     hardware
     include_dir   cyg/io
     compile       spi_eb55.c

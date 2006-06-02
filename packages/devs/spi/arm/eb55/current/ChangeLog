@@ -1,3 +1,8 @@
+2006-06-01  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/spi_eb55.cdl: Updates needed for recent changes to AT91 SPI
+	driver.
+
 2004-08-31  Savin Zlobec  <savin@elatec.si> 
 
         * cdl/spi_eb55.cdl:
