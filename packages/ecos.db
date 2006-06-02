@@ -2533,14 +2533,34 @@ package CYGPKG_HAL_ARM_AT91_JTST {
         the Atmel evaluation board AT572D74-DK1."
 }
 
-package CYGPKG_HAL_ARM_AT91SAM7S {
-	alias		{ "Atmel AT91SAM7S" hal_arm_at91sam7s arm_at91_sam7s }
+package CYGPKG_HAL_ARM_AT91SAM7 {
+	alias		{ "Atmel AT91SAM7" hal_arm_at91sam7 arm_at91_sam7 }
 	directory	hal/arm/at91/at91sam7s
 	script		hal_arm_at91sam7s.cdl
 	hardware
         description "
-	The at91sam7s HAL package provides the support needed to run eCos on 
-        an Atmel evaluation board for the AT91SAM7S."
+	The at91sam7 HAL package provides the support needed to run eCos on 
+        an Atmel AT91SAM7 family of CPUs."
+}
+
+package CYGPKG_HAL_ARM_AT91SAM7SEK {
+	alias		{ "Atmel AT91SAM7S" hal_arm_at91sam7sek arm_at91_sam7sek }
+	directory	hal/arm/at91/at91sam7sek
+	script		hal_arm_at91sam7sek.cdl
+	hardware
+        description "
+	The at91sam7sek HAL package provides the support needed to run eCos on 
+        an Atmel AT91SAM7S-EK development board."
+}
+
+package CYGPKG_HAL_ARM_AT91SAM7XEK {
+	alias		{ "Atmel AT91SAM7X" hal_arm_at91sam7xek arm_at91_sam7xek }
+	directory	hal/arm/at91/at91sam7xek
+	script		hal_arm_at91sam7xek.cdl
+	hardware
+        description "
+	The at91sam7xek HAL package provides the support needed to run eCos on 
+        an Atmel AT91SAM7X-EK development board."
 }
 
 package CYGPKG_HAL_ARM_AT91_EB40 {
@@ -4291,11 +4311,29 @@ target jtst {
         Diospsis evaluation board (jtst)."
 }
 
-target at91sam7s {
-	alias { "Atmel AT91SAM7S evaluation board" at91_at91sam7s }
+target at91sam7sek {
+	alias { "Atmel AT91SAM7SEK evaluation board" at91_at91sam7sek }
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_AT91
-                   CYGPKG_HAL_ARM_AT91SAM7S
+                   CYGPKG_HAL_ARM_AT91SAM7
+                   CYGPKG_HAL_ARM_AT91SAM7SEK
+                   CYGPKG_IO_SERIAL_ARM_AT91
+                   CYGPKG_DEVS_FLASH_AT91
+                   CYGPKG_DEVS_SPI_ARM_AT91
+                   CYGPKG_DEVICES_WATCHDOG_ARM_AT91WDTC
+                   CYGPKG_DEVS_USB_AT91
+        }
+        description "
+        The at91sam7sek target provides the packages needed to run eCos on an 
+        Atmel AT91SAM7S-EK evaluation board."
+}
+
+target at91sam7xek {
+	alias { "Atmel AT91SAM7XEK evaluation board" at91_at91sam7xek }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_AT91
+                   CYGPKG_HAL_ARM_AT91SAM7
+                   CYGPKG_HAL_ARM_AT91SAM7XEK
                    CYGPKG_IO_SERIAL_ARM_AT91
                    CYGPKG_DEVS_FLASH_AT91
                    CYGPKG_DEVS_SPI_ARM_AT91

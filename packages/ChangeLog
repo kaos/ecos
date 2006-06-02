@@ -1,3 +1,7 @@
+2006-06-02  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* ecos.db: Add AT91SAM7SEK and AT91SAM7XEK packages and targets
+	
 2006-05-24  Ilija Koco <ilijak@siva.com.mk>
 
 	* ecos.db: Add Freescale MAC7100 variant, SIvA MACE1 platform
