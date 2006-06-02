@@ -49,12 +49,36 @@
 //####DESCRIPTIONEND####
 //
 //=============================================================================
+#include <pkgconf/hal_arm_at91sam7.h>
 
 #define CYGARC_PHYSICAL_ADDRESS(_x_)
 
+//SPI - Serial Peripheral Interface
 #define AT91_SPI0   0xFFFE0000
 
-#define AT91_PIOA   0xfffff400
+#ifdef CYGHWR_HAL_ARM_AT91SAM7X
+#define AT91_SPI1   0xFFFE4000
+#endif
+
+#define AT91_SPI AT91_SPI0
+
+// DMA registers 
+#define AT91_SPI_RPR  0x100 // Receive Pointer Register
+#define AT91_SPI_RCR  0x104 // Receive Counter Register
+#define AT91_SPI_TPR  0x108 // Transmit Pointer Register
+#define AT91_SPI_TCR  0x10C // Transmit Counter Register
+#define AT91_SPI_NRPR 0x110 // Next Receive Pointer Register
+#define AT91_SPI_NRCR 0x114 // Next Receive Counter Register
+#define AT91_SPI_NTPR 0x118 // Next Transmit Pointer Register
+#define AT91_SPI_NTCR 0x11C // Next Trsnsmit Counter Register
+#define AT91_SPI_PTCR 0x120 // PDC Transfer Control Register
+#define AT91_SPI_PTSR 0x124 // PDC Transfer Status Register
+
+// Peripheral Input/Output Controllers
+#define AT91_PIOA   0xFFFFF400
+#ifdef CYGHWR_HAL_ARM_AT91SAM7X
+#define AT91_PIOB   0xFFFFF600
+#endif
 
 #define AT91_WSTC   0xFFFFFD40
 
@@ -89,7 +113,7 @@ extern cyg_uint32 hal_at91_us_baud(cyg_uint32 baud);
 
 // PIO - Programmable I/O
 
-#define AT91_PIO    0xFFFFF400
+#define AT91_PIO    AT91_PIOA
 
 // AIC - Advanced Interrupt Controller
 
@@ -144,6 +168,18 @@ extern cyg_uint32 hal_at91_us_baud(cyg_uint32 baud);
 #define AT91_PMC_SR_PCK2RDY (1 << 10) // Pad clock 2 is ready to be enabled
 #define AT91_PMC_SR_PCK3RDY (1 << 11) // Pad clock 3 is ready to be enabled
 #define AT91_PMC_IMR  0x6c // Interrupt Mask Register
+
+#ifdef CYGHWR_HAL_ARM_AT91SAM7X
+
+// EMAC - Ethernet Medium Access Controller
+
+#define AT91_EMAC 0xFFFDC000
+
+// CAN - Controller Area Network
+
+#define AT91_CAN 0xFFFD0000 
+
+#endif
 
 //----------------------------------------------------------------------
 // The platform needs this initialization during the

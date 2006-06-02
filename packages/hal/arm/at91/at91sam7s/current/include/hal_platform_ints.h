@@ -4,7 +4,7 @@
 //
 //      hal_platform_ints.h
 //
-//      HAL Interrupt and clock assignments for AT91SAM7S
+//      HAL Interrupt and clock assignments for AT91SAM7
 //
 //==========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
@@ -41,10 +41,10 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas, Oliver Munz, Andrew Lunn
+// Contributors: gthomas, Oliver Munz, Andrew Lunn, John Eigelaar
 // Date:         2001-07-12
 // Purpose:      Define Interrupt support
-// Description:  The interrupt specifics for the AT91SAM7Splatform are
+// Description:  The interrupt specifics for the AT91SAM7 platform are
 //               defined here.
 //              
 // Usage:        #include <cyg/hal/hal_platform_ints.h>
@@ -55,13 +55,23 @@
 //
 //==========================================================================
 
+#include <pkgconf/hal_arm_at91sam7.h>
+
 #define CYGNUM_HAL_INTERRUPT_FIQ		0
 
 #define CYGNUM_HAL_INTERRUPT_SYS		1
 #define CYGNUM_HAL_INTERRUPT_PIOA		2
 
+#ifdef CYGHWR_HAL_ARM_AT91SAM7X
+#define CYGNUM_HAL_INTERRUPT_PIOB		3
+#define CYGNUM_HAL_INTERRUPT_SPI		4
+#define CYGNUM_HAL_INTERRUPT_SPI1		5
+#endif
+#ifdef CYGHWR_HAL_ARM_AT91SAM7S
 #define CYGNUM_HAL_INTERRUPT_ADC		4
 #define CYGNUM_HAL_INTERRUPT_SPI		5
+#endif
+
 #define CYGNUM_HAL_INTERRUPT_USART0		6
 #define CYGNUM_HAL_INTERRUPT_USART1		7
 #define CYGNUM_HAL_INTERRUPT_SSC		8
@@ -71,6 +81,12 @@
 #define CYGNUM_HAL_INTERRUPT_TC0		12
 #define CYGNUM_HAL_INTERRUPT_TC1		13
 #define CYGNUM_HAL_INTERRUPT_TC2		14
+
+#ifdef CYGHWR_HAL_ARM_AT91SAM7X
+#define CYGNUM_HAL_INTERRUPT_CAN		15
+#define CYGNUM_HAL_INTERRUPT_EMAC		16
+#define CYGNUM_HAL_INTERRUPT_ADC		17
+#endif
 
 #define CYGNUM_HAL_INTERRUPT_IRQ0		30
 #define CYGNUM_HAL_INTERRUPT_IRQ1		31

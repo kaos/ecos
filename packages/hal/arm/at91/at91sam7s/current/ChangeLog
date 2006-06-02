@@ -1,3 +1,24 @@
+2006-06-01  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/hal_arm_at91sam7s.cdl: Implement the SPI bus 1 interface for
+	the SAM7X and SAM7XC.
+
+2006-06-01  John Eigelaar <jeigelaar@mweb.co.za>
+
+	* include/plf_io.h: Add SPI DMA registers.
+
+2006-05-20  John Eigelaar <jeigelaar@mweb.co.za>
+
+	include/pkgconf/mlt_arm_at91sam7x128_rom.{h|ldi}
+	include/pkgconf/mlt_arm_at91sam7x256_rom.{h|ldi}: Linker files
+	for AT91SAM7X processor.
+	
+2006-05-17  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/at91sam7s_misc.c: Use the AT91 generic PIO manipulation
+	macros. Move the LED function out into the board specific HAL
+	package.
+
 2006-04-07  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/hal_arm_at91sam7s.cdl: 

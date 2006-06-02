@@ -68,18 +68,7 @@
 #include <cyg/hal/drv_api.h>            // HAL ISR support
 #endif
 
-// The development board has four LEDs
-void 
-hal_at91_led (int val)
-{
-  HAL_WRITE_UINT32(AT91_PIO+AT91_PIO_PPUDR, 0x0000000f); // Disable pull ups
-  HAL_WRITE_UINT32(AT91_PIO+AT91_PIO_OER,  0x0000000f); // Enable Output
-  HAL_WRITE_UINT32(AT91_PIO+AT91_PIO_PER,  0x0000000f); // Enable Output
-  HAL_WRITE_UINT32(AT91_PIO+AT91_PIO_ASR,  0x0000000f);
-
-  HAL_WRITE_UINT32(AT91_PIO+AT91_PIO_SODR, 0x0000000f); // All off
-  HAL_WRITE_UINT32(AT91_PIO+AT91_PIO_CODR, (val & 0xf));
-}
+extern void hal_at91_led(int val);
 
 void
 hal_at91_set_leds (int val)
@@ -93,22 +82,15 @@ hal_at91_set_leds (int val)
 void hal_plf_hardware_init (void) 
 {
   /* Enable the Serial devices to driver the serial port pins */
-  HAL_WRITE_UINT32(AT91_PIO+AT91_PIO_PDR, 
-                   AT91_PIO_PSR_RXD0 | AT91_PIO_PSR_TXD0 | AT91_PIO_PSR_DTXD);
-
-  /* Set the serial port pins to PIOA */
-  HAL_WRITE_UINT32(AT91_PIO+AT91_PIO_ASR,
-                   AT91_PIO_PSR_RXD0 | AT91_PIO_PSR_TXD0 |
-                   AT91_PIO_PSR_DRXD | AT91_PIO_PSR_DTXD);
+  HAL_ARM_AT91_PIO_CFG(AT91_USART_RXD0);
+  HAL_ARM_AT91_PIO_CFG(AT91_USART_TXD0);
+  HAL_ARM_AT91_PIO_CFG(AT91_DBG_DTXD);
+  HAL_ARM_AT91_PIO_CFG(AT91_DBG_DRXD);
 
 #if !defined(CYGHWR_HAL_ARM_AT91SAM7S_at91sam7s32)
   /* Enable the Serial devices to driver the serial port pins */
-  HAL_WRITE_UINT32(AT91_PIO+AT91_PIO_PDR, 
-                   AT91_PIO_PSR_RXD1 | AT91_PIO_PSR_TXD1);
-
-  /* Set the serial port pins to PIOA */
-  HAL_WRITE_UINT32(AT91_PIO+AT91_PIO_ASR,
-                   AT91_PIO_PSR_RXD1 | AT91_PIO_PSR_TXD1);
+  HAL_ARM_AT91_PIO_CFG(AT91_USART_RXD1);
+  HAL_ARM_AT91_PIO_CFG(AT91_USART_TXD1);
 #endif
 
   /* Setup the Reset controller. Allow user resets */

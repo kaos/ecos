@@ -3,7 +3,7 @@
 // This is a generated file - do not edit
 
 #include <cyg/infra/cyg_type.inc>
-#include <pkgconf/hal_arm_at91sam7s.h>
+#include <pkgconf/hal_arm_at91sam7.h>
 
 MEMORY
 {
