@@ -74,7 +74,7 @@ cdl_package CYGPKG_DEVS_USB_AT91 {
     cdl_component CYGFUN_DEVS_USB_AT91_EP0 {
         display       "Support the control endpoint 0"
         flavor        bool
-        calculated    CYGINT_IO_USB_SLAVE_CLIENTS
+        default_value CYGINT_IO_USB_SLAVE_CLIENTS
         requires      CYGPKG_IO_USB CYGPKG_IO_USB_SLAVE
         requires { 
             ((CYGNUM_HAL_ARM_AT91_CLOCK_SPEED < 48120000 && 

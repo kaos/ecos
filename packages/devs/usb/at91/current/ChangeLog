@@ -1,3 +1,8 @@
+2006-06-06  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/usbs_at91.cdl: Allow EP0 to be enabled when there are no
+	slave clients.
+
 2006-05-25  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/usbs_at91_data.cxx: Change the initialization priority.  The
