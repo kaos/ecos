@@ -1,3 +1,8 @@
+2006-06-06  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* ecos.db: Remove the hardware property from the USB and USB slave
+	package. They themselves are not hardware dependent.
+
 2006-06-02  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* ecos.db: Add AT91SAM7SEK and AT91SAM7XEK packages and targets

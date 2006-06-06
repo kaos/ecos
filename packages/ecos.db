@@ -1341,7 +1341,6 @@ package CYGPKG_IO_ETH_DRIVERS {
 
 package CYGPKG_IO_USB { 
         alias           { "Generic USB support" usb }
-        hardware
         directory       io/usb/common
         script          usb.cdl
         description     "Generic USB support"
@@ -1349,7 +1348,6 @@ package CYGPKG_IO_USB {
 
 package CYGPKG_IO_USB_SLAVE {
 	alias           { "Generic USB slave-side support" usbs }
-        hardware
         directory       io/usb/slave
         script          usbs.cdl
 	description     "Generic USB slave-side support"
