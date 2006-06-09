@@ -1341,6 +1341,7 @@ package CYGPKG_IO_ETH_DRIVERS {
 
 package CYGPKG_IO_USB { 
         alias           { "Generic USB support" usb }
+        hardware
         directory       io/usb/common
         script          usb.cdl
         description     "Generic USB support"
@@ -1348,6 +1349,7 @@ package CYGPKG_IO_USB {
 
 package CYGPKG_IO_USB_SLAVE {
 	alias           { "Generic USB slave-side support" usbs }
+        hardware
         directory       io/usb/slave
         script          usbs.cdl
 	description     "Generic USB slave-side support"
@@ -1358,6 +1360,13 @@ package CYGPKG_IO_USB_SLAVE_ETH {
         directory       io/usb/eth/slave
         script          usbs_eth.cdl
         description     "Support for USB peripherals that provide an ethernet-class function"
+}
+
+package CYGPKG_IO_USB_SLAVE_TTY {
+        alias		{ "USB slave-side tty class drivers" usbs_tty }
+        directory       io/usb/tty/slave
+        script          usbs_tty.cdl
+        description     "Support for USB peripherals that provide an tty function"
 }
 
 package CYGPKG_DEVS_USB_SA11X0 {
@@ -1382,6 +1391,22 @@ package CYGPKG_DEVS_USB_AT91 {
         directory       devs/usb/at91
         script          usbs_at91.cdl
         description     "A device driver for the ATMEL AT91 on-chip USB device"
+}
+
+package CYGPKG_DEVS_USB_D12 {
+	alias           { usb_d12 }
+	hardware
+	directory       devs/usb/d12
+	script          usbs_d12.cdl
+	description     "A device driver for the Philips PDIUSBD12 full speed USB peripheral chip."
+}
+
+package CYGPKG_DEVS_USB_I386_SOROD12 {
+	alias           { usb_sorod12 }
+	hardware
+	directory       devs/usb/i386/SoRoD12
+	script          usbs_i386_sorod12.cdl
+	description     "A device driver for the SoRo PC/104 D12 USB Slave Board."
 }
 
 package CYGPKG_NET {
@@ -1906,6 +1931,14 @@ package CYGPKG_DEVS_ETH_ECOSYNTH {
         script          syntheth.cdl
         hardware
         description     "Ethernet driver for the synthetic target"
+}
+
+package CYGPKG_DEVS_ETH_ARM_AT91 {
+        alias           { "AT91 Ethernet driver" at91_eth_driver }
+        directory       devs/eth/arm/at91
+        script          at91_eth.cdl
+        hardware
+        description     "Ethernet driver for the AT91 family of chips"
 }
 
 package CYGPKG_IO_PCI	{
@@ -4337,10 +4370,12 @@ target at91sam7xek {
                    CYGPKG_DEVS_SPI_ARM_AT91
                    CYGPKG_DEVICES_WATCHDOG_ARM_AT91WDTC
                    CYGPKG_DEVS_USB_AT91
+                   CYGPKG_DEVS_ETH_ARM_AT91
+                   CYGPKG_DEVS_ETH_PHY
         }
         description "
-        The at91sam7s target provides the packages needed to run eCos on an
-        Atmel at91sam7s evaluation board."
+        The at91sam7xek target provides the packages needed to run eCos on an 
+        Atmel AT91SAM7X-EK evaluation board."
 }
 
 target eb40a {
@@ -5075,6 +5110,30 @@ target pc_vmWare {
         description "
     	    The pc_vmWare target provides the packages needed to run eCos binaries
             on a standard i386 PC under wmWare."
+}
+
+
+target pc_usb_d12 {
+        alias		{ "i386 PC target with SoRo PC/104 D12 USB Slave" }
+	packages        { CYGPKG_HAL_I386
+                          CYGPKG_HAL_I386_GENERIC
+                          CYGPKG_HAL_I386_PC
+                          CYGPKG_HAL_I386_PCMB
+                          CYGPKG_IO_PCI
+                          CYGPKG_IO_SERIAL_GENERIC_16X5X
+                          CYGPKG_IO_SERIAL_I386_PC
+                          CYGPKG_IO_USB
+                          CYGPKG_IO_USB_SLAVE
+                          CYGPKG_DEVS_USB_D12
+                          CYGPKG_DEVS_USB_I386_SOROD12
+                          CYGPKG_IO_FILEIO
+                          CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS12887
+                          CYGPKG_DEVICES_WALLCLOCK_I386_PC
+        }
+        description "
+    	    Provides the packages needed to run eCos binaries
+	    on a standard i386 PC motherboard with USB Slave support for the
+	    Philips D12 chip."
 }
 
 # --------------------------------------------------------------------------

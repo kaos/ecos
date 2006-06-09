@@ -1,3 +1,4 @@
+* USB device driver for Philips D12.
 * Port to ATMEL AT91SAM7X by John Eigelaar
 * Freescale MAC7100 varient and SIva MACE1 platfrom by Ilija Koco.
 * Coldfire architecture HAL, the mcf5272 varient HAL and the m5272c3

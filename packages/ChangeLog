@@ -1,3 +1,8 @@
+2006-09-09 Frank Pagliughi <fpagliughi@mindspring.com>
+
+	* ecos.db: Add Philips D12 USB device driver and hardware specific
+	package for i386.
+	
 2006-06-06  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* ecos.db: Remove the hardware property from the USB and USB slave
