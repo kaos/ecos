@@ -1,0 +1,91 @@
+# ====================================================================
+#
+#   usbs_i386_sorod12.cdl
+#
+#   Hardware specific parts for the SoRo D12 PC 104 USB card.
+#   
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2003, 2004, 2006 eCosCentric Limited
+## Copyright (C) 2006 eCosCentric Ltd
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+## -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      Frank M. Pagliughi (fmp), SoRo Systems, Inc., asl
+# Contributors:
+# Date:           2006-04-27
+#
+#####DESCRIPTIONEND####
+# ====================================================================
+
+cdl_package CYGPKG_DEVS_USB_I386_SOROD12 {
+    display     "Hardware specific part for SoRo D12 USB Device Driver"
+    include_dir "cyg/io/usb"
+    parent      CYGPKG_DEVS_USB_D12
+
+    requires    { CYGIMP_DEVS_USB_D12_HW_ACCESS_HEADER ==
+                  "<cyg/io/usb/usbs_i386_sorod12.inl>" }
+
+    cdl_option CYGSEM_DEVS_USB_I386_SOROD12_IO_MAPPED {
+        display "I/O mapped."
+        flavor  bool
+        default_value 1
+        description  "
+            The PDIUSBD12 can be mapped into the processor's I/O space or memory
+            space. If this is set the driver accesses the chip through HAL_READ
+            and HAL_WRITE macros, otherwise it uses direct memory access."
+    }
+
+    cdl_option CYGNUM_DEVS_USB_I386_SOROD12_BASEADDR {
+        display       "Base Address of D12 chip"
+        flavor        data
+        no_define
+        legal_values  1 to 0xFF8
+        default_value 544
+        active_if     CYGFUN_DEVS_USB_D12_EP0
+        requires      { CYGNUM_DEVS_USB_D12_BASEADDR == 
+                        CYGNUM_DEVS_USB_I386_SOROD12_BASEADDR }
+        description "
+            The base memory or I/O address where the USB chip resides."
+    }
+
+    cdl_option CYGNUM_DEVS_USB_I386_SORODD12_IRQ {
+        display       "IRQ for the D12 chip"
+        flavor        data
+        no_define
+        legal_values  { 3 5 7 }
+        default_value 5
+        active_if     CYGFUN_DEVS_USB_D12_EP0
+        requires      { CYGNUM_DEVS_USB_D12_IRQ == 
+                        CYGNUM_DEVS_USB_I386_SORODD12_IRQ }
+        description "
+            The IRQ assigned to the D12 chip."
+    }
+}
