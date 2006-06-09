@@ -1,0 +1,317 @@
+# ====================================================================
+#
+#       usbs_d12.cdl
+#
+#       USB device driver for the Philips PDIUSBD12 Full Speed USB
+#       peripheral chip.
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2003, 2004 eCosCentric Limited
+## Copyright (C) 2006 eCosCentric Ltd
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+## -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      Frank M. Pagliughi (fmp), SoRo Systems, Inc.
+# Contributors:
+# Date:           2004-05-24
+#
+#####DESCRIPTIONEND####
+# ====================================================================
+
+cdl_package CYGPKG_DEVS_USB_D12 {
+    display     "Philips D12 USB Device Driver"
+    include_dir "cyg/io/usb"
+    parent      CYGPKG_USB
+    implements  CYGHWR_IO_USB_SLAVE
+    doc         ref/devs-usb-philips-pdiusbd12.html
+        
+    description "
+        The Philips PDIUSBD12 is a USB peripheral controller (slave)
+        chip that can connect to a microcontroller or microprocessor
+        through an 8-bit parallel bus. The SoRo Systems USB-D12-104 is
+        a slave board for the PC's ISA or PC/104 bus that contains a
+        D12 chip placed in the PC's I/O space with jumpered selections
+        for IRQ and DMA settings. This package provides an eCos device
+        driver."
+        
+    requires      CYGIMP_DEVS_USB_D12_HW_ACCESS_HEADER
+
+    cdl_option CYGIMP_DEVS_USB_D12_HW_ACCESS_HEADER {
+        display       "Inline file implementing hardware access"
+        flavor        booldata
+        default_value false
+        description   "
+            This option should contain the header file which
+            implements basic access to the D12 registers"
+    }
+
+    cdl_component CYGFUN_DEVS_USB_D12_EP0 {
+         display       "Support the Control Endpoint 0"
+         default_value CYGINT_IO_USB_SLAVE_CLIENTS
+         requires      CYGPKG_IO_USB CYGPKG_IO_USB_SLAVE
+         compile       usbs_d12.c
+         compile       -library=libextras.a usbs_d12_data.cxx
+         description "
+             Enable support for endpoint 0. If this support is disabled
+             then the entire USB port is unusable."
+        
+         cdl_option CYGVAR_DEVS_USB_D12_EP0_DEVTAB_ENTRY {
+              display       "Provide a devtab entry for endpoint 0"
+              default_value CYGGLO_IO_USB_SLAVE_PROVIDE_DEVTAB_ENTRIES
+              requires      CYGPKG_IO
+              description "
+                  If endpoint 0 will only be accessed via the low-level
+                  USB-specific calls then there is no need for an entry
+                  in the device table, saving some memory. If the
+                  application intends to access the endpoint by means
+                  of open and ioctl calls then a devtab entry is needed.
+                        "
+         }
+         cdl_option CYGNUM_DEVS_USB_D12_EP0_TXBUFSIZE {
+              display       "Size of statically-allocated endpoint 0 transmit buffer"
+              flavor        data
+              default_value 256
+              requires      { CYGNUM_DEVS_USB_D12_EP0_TXBUFSIZE >= 
+	      		      CYGNUM_DEVS_USB_D12_EP0_PKTSIZE }
+              description "
+                  The implementation of the support for endpoint 0 uses
+                  a single static buffer to hold the response to the
+                  current control message. Typically this buffer can be
+                  fairly small since replies to control messages tend to
+                  be small: typically some tens of bytes for the enumeration
+                  data, perhaps a bit more for unicode-encoded string
+                  descriptors. However if some application-specific protocol
+                  depends on larger control messages then this buffer
+                  size may need to be increased."
+              }
+    }    
+
+    cdl_option CYGNUM_DEVS_USB_D12_BASEADDR {
+        display       "Base Address of D12 chip"
+        flavor        data
+        active_if     CYGFUN_DEVS_USB_D12_EP0
+        description   "
+            The base memory or I/O address where the USB chip resides.
+            The value is set by the hardware specific driver's CDL."
+    }
+
+    cdl_option CYGNUM_DEVS_USB_D12_IRQ {
+         display       "IRQ for the D12 chip"
+         active_if     CYGFUN_DEVS_USB_D12_EP0
+         flavor        data
+         description   "
+             The IRQ assigned to the D12 chip. The value 
+             is set by the hardware specific drivers's CDL."
+    }
+
+    cdl_option CYGNUM_DEVS_USB_D12_INT {
+         display       "INT for the D12 chip"
+         active_if     CYGFUN_DEVS_USB_D12_EP0
+         flavor        data
+         default_value { CYGNUM_DEVS_USB_D12_IRQ + 32 }
+         description "
+             The interrupt vector assigned to the D12 chip."
+        }
+
+    cdl_component CYGPKG_DEVS_USB_D12_THREAD {
+         display         "Use a thread to service D12 chip"
+         active_if       CYGFUN_DEVS_USB_D12_EP0
+         default_value   0
+         description     "
+             Services the D12 USB chip with a thread, rather than at
+             the DSR level.  This allows for increased debug support,
+             like TRACE output from the driver at the expense of some
+             throughput & reaction time. The service thread MUST be at
+             a higher priority than any application thread that uses
+             the USB port.  "
+
+         cdl_option CYGNUM_DEVS_USB_D12_THREAD_PRIORITY {
+              display       "Thread Priority"
+              flavor        data
+              legal_values  1 to 30
+              default_value 4
+              description "
+                  The priority of the D12 device driver thread."
+         }
+
+         cdl_option CYGNUM_DEVS_USB_D12_THREAD_STACK_SIZE {
+              display         "USB Thread Stack Size"
+              flavor          data
+              default_value   4096
+              description     "
+                  The stack size for the D12 device driver thread."
+         }
+    }       
+
+    cdl_component CYGFUN_DEVS_USB_D12_DEBUG {
+         display       "Debug output from the D12 Device Driver"
+         requires      CYGPKG_DEVS_USB_D12_THREAD
+         default_value 0
+         description "
+             Provide debugging output from the D12 Device Driver"
+                
+         cdl_option CYGSEM_DEVS_USB_D12_DEBUG_DUMP_EP0_BUFS {
+              display         "Dump the contents of EP0 buffers"
+              flavor          bool
+              default_value   0
+              description "
+
+                  Dump the contents of the packages going through
+                  EP0. This allows you to see things like device
+                  requests and responses."
+         }
+
+         cdl_option CYGSEM_DEVS_USB_D12_DEBUG_DUMP_BUFS {
+              display         "Dump the contents of data buffers"
+              flavor          bool
+              default_value   0
+              description "
+                  Dump the contents of the packages going through the generic
+                  endpoints. This allow you to see all of the data going through
+                  the device."
+         }
+    }
+
+    cdl_component CYGPKG_DEVS_USB_D12_TX_EP1 {
+         display       "Endpoint 1 Interrupt IN, (tx_ep1)"
+         implements    CYGHWR_IO_USB_SLAVE_IN_ENDPOINTS
+         requires      CYGFUN_DEVS_USB_D12_EP0
+         default_value CYGFUN_DEVS_USB_D12_EP0
+         description "
+             On the D12, Endpoint 1 IN can be used for Interrupt,
+             Bulk, or Control packages. This driver currently only supports
+             Interrupt packages on Endpoint 1 (slave -> host) transfers."
+                
+         cdl_option CYGVAR_DEVS_USB_D12_TX_EP1_DEVTAB_ENTRY {
+             display       "Provide a devtab entry for Endpoint 1 IN"
+             default_value CYGGLO_IO_USB_SLAVE_PROVIDE_DEVTAB_ENTRIES
+             requires      CYGPKG_IO
+             description "
+                 If Endpoint 1 IN will only be accessed via the low-level
+                 USB-specific calls then there is no need for an entry
+                 in the device table, saving some memory. If the
+                 application intends to access the endpoint by means
+                 of open and write calls then a devtab entry is needed."
+         }
+    }
+
+    cdl_component CYGPKG_DEVS_USB_D12_RX_EP1 {
+        display       "Endpoint 1 Interrupt OUT, (rx_ep1)"
+        implements    CYGHWR_IO_USB_SLAVE_OUT_ENDPOINTS
+        requires      CYGFUN_DEVS_USB_D12_EP0
+        default_value CYGFUN_DEVS_USB_D12_EP0
+        description "
+           In the D12, Endpoint 1 OUT can be used for Interrupt,
+           Bulk, or Control packages. This driver currently only supports
+           Interrupt packages on Endpoint 1 for (host -> slave) transfers" 
+               
+        cdl_option CYGVAR_DEVS_USB_D12_RX_EP1_DEVTAB_ENTRY {
+             display       "Provide a devtab entry for Endpoint 1 OUT"
+             default_value CYGGLO_IO_USB_SLAVE_PROVIDE_DEVTAB_ENTRIES
+             requires      CYGPKG_IO
+             description "
+                 If Endpoint 1 OUT will only be accessed via the low-level
+                 USB-specific calls then there is no need for an entry
+                 in the device table, saving some memory. If the
+                 application intends to access the endpoint by means
+                 of open and write calls then a devtab entry is needed."
+        }
+    }
+
+    cdl_component CYGPKG_DEVS_USB_D12_TX_EP2 {
+         display                 "Endpoint 2 Bulk IN, (tx_ep2)"
+         implements              CYGHWR_IO_USB_SLAVE_IN_ENDPOINTS
+         requires                CYGFUN_DEVS_USB_D12_EP0
+         default_value   CYGFUN_DEVS_USB_D12_EP0
+         description "
+             In the D12, Endpoint 2 IN can be used for Bulk, Interrupt,
+             or Control packages. This driver currently only supports
+             Bulk packages on Endpoint 2 for (slave -> host) transfers."
+                
+         cdl_option CYGVAR_DEVS_USB_D12_TX_EP2_DEVTAB_ENTRY {
+             display       "Provide a devtab entry for Endpoint 2 IN"
+             default_value CYGGLO_IO_USB_SLAVE_PROVIDE_DEVTAB_ENTRIES
+             requires      CYGPKG_IO
+             description "
+                 If Endpoint 2 IN will only be accessed via the low-level
+                 USB-specific calls then there is no need for an entry
+                 in the device table, saving some memory. If the
+                 application intends to access the endpoint by means
+                 of open and write calls then a devtab entry is needed."
+         }
+    }
+
+    cdl_component CYGPKG_DEVS_USB_D12_RX_EP2 {
+         display       "Endpoint 2 Bulk OUT, (rx_ep2)"
+         implements    CYGHWR_IO_USB_SLAVE_OUT_ENDPOINTS
+         requires      CYGFUN_DEVS_USB_D12_EP0
+         default_value CYGFUN_DEVS_USB_D12_EP0
+         description "
+             In the D12, Endpoint 2 OUT can be used for Bulk, Interrupt,
+             Control packages. This driver currently only supports
+             Bulk packages on Endpoint 2 for (host -> slave) transfers."
+                
+         cdl_option CYGVAR_DEVS_USB_D12_RX_EP2_DEVTAB_ENTRY {
+              display       "Provide a devtab entry for Endpoint 2 OUT"
+              default_value CYGGLO_IO_USB_SLAVE_PROVIDE_DEVTAB_ENTRIES
+              requires      CYGPKG_IO
+              description "
+                  If Endpoint 2 OUT will only be accessed via the low-level
+                  USB-specific calls then there is no need for an entry
+                  in the device table, saving some memory. If the
+                  application intends to access the endpoint by means
+                  of open and write calls then a devtab entry is needed."
+        }
+    }
+
+    cdl_option CYGDAT_DEVS_USB_D12_DEVTAB_BASENAME {
+        display       "Base name for devtab entries"
+        flavor        data
+        active_if     { CYGVAR_DEVS_USB_D12_EP0_DEVTAB_ENTRY ||
+                        CYGVAR_DEVS_USB_D12_TX_EP1_DEVTAB_ENTRY ||
+                        CYGVAR_DEVS_USB_D12_RX_EP1_DEVTAB_ENTRY ||
+                        CYGVAR_DEVS_USB_D12_TX_EP2_DEVTAB_ENTRY ||
+                        CYGVAR_DEVS_USB_D12_RX_EP2_DEVTAB_ENTRY }
+        default_value { "\"/dev/usbs\"" }
+        description "
+            If the D12 USB device driver package provides devtab entries
+            for any of the endpoints then this option gives
+            control over the names of these entries. By default the
+            endpoints will be called \"/dev/usbs0c\", \"/dev/usbs1r\"
+            \"/dev/usbs1w\", \"/dev/usbs2r\", \"/dev/usbs2w\"
+            (assuming those endpoints are all enabled. The common
+            part \"/dev/usbs\" is determined by this configuration
+            option. It may be necessary to change this if there are
+            multiple USB slave-side devices on the target hardware to
+            prevent a name clash."
+    }
+}
+
