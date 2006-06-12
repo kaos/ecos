@@ -636,7 +636,11 @@ externC int pthread_create ( pthread_t *thread,
         Cyg_Thread ( PTHREAD_ECOS_PRIORITY(use_attr.schedparam.sched_priority),
                      pthread_entry,
                      (CYG_ADDRWORD)nthread,
+#ifdef CYGVAR_KERNEL_THREADS_NAME
                      name,
+#else
+		     NULL,
+#endif
                      stackbase,
                      stacksize);
 

@@ -1,3 +1,8 @@
+2006-06-12  Klaas Gadeyne  <klaas.gadeyne@fmtc.be>
+
+	* src/pthread.cxx (pthread_create): name is only defined if
+	CYGVAR_KERNEL_THREADS_NAME is set to 1
+
 2005-10-23  Andrew Lunn  <andrew.lunn@ascom.ch>
 2005-10-18  Alexander Neundorf <neundorf@kde.org>
 
