@@ -665,6 +665,11 @@ externC int nanosleep( const struct timespec *rqtp,
         ticks -= (now-then);
 
         cyg_ticks_to_timespec( ticks, rmtp );
+
+        // Check for cancellation and then notify the caller that we
+        // were interrupted.
+        PTHREAD_TESTCANCEL();
+        TIME_RETURN(EINTR);
     }
     
     // check if we were woken up because we were cancelled.

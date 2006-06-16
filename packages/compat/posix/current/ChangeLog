@@ -1,3 +1,9 @@
+2006-06-13  Dan Jakubiec  <dan.jakubiec@systech.com>
+
+	* src/time.cxx: (nanosleep): Fixed to return EINTR when it is
+	interrupted by a signal.  This in turn fixed sleep() to return the
+	number of unelapsed seconds when interrupted by a signal.
+
 2006-06-12  Klaas Gadeyne  <klaas.gadeyne@fmtc.be>
 
 	* src/pthread.cxx (pthread_create): name is only defined if
