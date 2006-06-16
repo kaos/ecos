@@ -57,7 +57,7 @@
 
 #include <time.h>
 #include <cyg/infra/testcase.h>
-
+#include <string.h>                     // strlen()
 // HOW TO START TESTS
 
 # define START_TEST( test ) test(0)
@@ -96,6 +96,17 @@ test( CYG_ADDRWORD data )
     size = strftime(s, sizeof(s), fp, &tm1);
     CYG_TEST_PASS_FAIL(((size==strlen(dp)) && (my_strcmp(s, dp) == 0)), "strptime test #4");
 
+    dp = "2006:06:13 12:22:01";
+    fp = "%x %X";
+    sp = strptime(dp, fp, &tm1);    
+    CYG_TEST_PASS_FAIL(((sp!=NULL) && (*sp=='\0')), "strptime test #5");
+    CYG_TEST_PASS_FAIL((tm1.tm_sec == 01) &&
+                       (tm1.tm_min == 22) &&
+                       (tm1.tm_hour == 12) &&
+                       (tm1.tm_mday == 13) &&
+                       (tm1.tm_mon ==  (06 - 1)) &&
+                       (tm1.tm_year == (2006 - 1900)), "strptime test #6");
+    size = strftime(s, sizeof(s), fp, &tm1);
     CYG_TEST_FINISH("Finished tests from testcase " __FILE__ " for C library "
                     "strptime() function");
 } // test()

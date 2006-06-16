@@ -1,3 +1,13 @@
+2006-06-16  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/strptime.c: Add a testcase for the previous fix.
+
+2006-06-13  Dan Jakubiec  <dan.jakubiec@systech.com>
+
+	* src/strptime.cxx: Removed the initialization of the struct tm fields
+	to prevent clobbering of time values when using the following format
+	specifiers: %D, %r, %R, %T, %X, %x.
+
 2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/time.h: Added CYGBLD_ATTRIB_STRFTIME_FORMAT where
