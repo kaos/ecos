@@ -170,7 +170,7 @@ cdl_package CYGPKG_NET {
         cdl_option CYGPKG_NET_TFTPD_THREAD_STACK_SIZE {
             display "Stack size for TFTP threads."
             flavor  data
-            default_value (CYGNUM_HAL_STACK_SIZE_TYPICAL+(3*(SEGSIZE+4)))
+            default_value { "(CYGNUM_HAL_STACK_SIZE_TYPICAL+(3*(SEGSIZE+4)))" }
             description   "
                This option controls the size of the stack used for the 
                TFTP server. The default should be sufficient for most cases

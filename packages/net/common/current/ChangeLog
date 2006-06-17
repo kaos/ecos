@@ -1,3 +1,10 @@
+2006-05-25  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/net.cdl: Fix calculation of TFTPD stack
+	size. CYGNUM_HAL_STACK_SIZE_TYPICAL is not a CDL variable, it is a
+	#define, so we need to ensure that the compiler evaluates the
+	expression, not the CDL library.
+  
 2006-03-26  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/nc_test_framework.h: 
