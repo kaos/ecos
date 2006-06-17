@@ -1,3 +1,9 @@
+2006-06-08  Ilija Koco  <ilijak@siva.com.mk>
+
+	* hal_variant_setup.h: (new) Assembly macros shared between targets.
+	* cdl/hal_arm_mac7100.cdl: some defaults changed in favour of
+	MAC7100EVB
+
 2006-05-24  Ilija Koco  <ilijak@siva.com.mk>
 
 	* cdl/hal_arm_mac7100.cdl:

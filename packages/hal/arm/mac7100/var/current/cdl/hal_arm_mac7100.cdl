@@ -77,7 +77,7 @@ cdl_package CYGPKG_HAL_ARM_MAC7100 {
     cdl_option CYGHWR_HAL_ARM_MAC7100 {
         display        "MAC7100 variant used"
         flavor         data
-        default_value  {"MAC7121"}
+        default_value  {"MAC7111"}
         legal_values   {"MAC7111" "MAC7121" "MAC7116" }
         description    "
             The MAC7100 microcontroller family has several variants,

@@ -61,12 +61,7 @@
 
 #ifndef HAL_IDLE_THREAD_ACTION
 
-#if defined(CYGHWR_HAL_ARM_MAC7100_MAC7121)
-// No idle action for the MAC7121
-#else
-#error Unknown MAC7100 variant
-
-#endif
+// No idle action
 
 #endif
 
