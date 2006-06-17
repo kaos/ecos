@@ -64,7 +64,8 @@ static cyg_alarm timeout_alarm;
 static cyg_int32 last_delta;
 static cyg_tick_count_t last_set_time;
 
-#define STACK_SIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
+#define STACK_SIZE CYGNUM_NET_FAST_THREAD_STACKSIZE
+
 static char alarm_stack[STACK_SIZE];
 static cyg_thread alarm_thread_data;
 static cyg_handle_t alarm_thread_handle;

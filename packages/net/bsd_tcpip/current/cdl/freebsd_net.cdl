@@ -320,7 +320,7 @@ cdl_package CYGPKG_NET_FREEBSD_STACK {
     }
 
     cdl_option CYGPKG_NET_MAXSOCKETS {
-        display "Max number of open sockets."
+        display "Max number of open sockets"
         flavor  data
         default_value CYGNUM_FILEIO_NFILE
         description   "
@@ -337,31 +337,63 @@ cdl_package CYGPKG_NET_FREEBSD_STACK {
         used by the networking code."
     }
 
-    cdl_option CYGPKG_NET_THREAD_PRIORITY {
-        display "Priority level for backgound network processing."
-        flavor  data
-        default_value 7
-        description   "
-            This option allows the thread priority level used by the
-        networking stack to be adjusted by the user.  It should be set
-        high enough that sufficient CPU resources are available to
-        process network data, but may be adjusted so that application
-        threads can have precedence over network processing."
+    cdl_component CYGPKG_NET_THREAD {
+        display        "Background network processing thread options"
+        flavor        none
+        no_define
+
+     cdl_option CYGPKG_NET_THREAD_PRIORITY {
+            display "Priority level for background network processing"
+            flavor  data
+            default_value 7
+            description   "
+                This option allows the thread priority level used by the
+            networking stack to be adjusted by the user.  It should be set
+            high enough that sufficient CPU resources are available to
+            process network data, but may be adjusted so that application
+            threads can have precedence over network processing."
+        }
+
+        cdl_option CYGNUM_NET_THREAD_STACKSIZE {
+            display "Stack size for backgound network processing"
+            flavor  data
+            default_value { (CYGPKG_NET_INET6 ? 
+                             "CYGNUM_HAL_STACK_SIZE_TYPICAL+2048" :
+                             "CYGNUM_HAL_STACK_SIZE_TYPICAL") }
+            description   "
+                This option allows the thread stack allocated for the
+            networking stack to be adjusted by the user. "
+        }
     }
 
-    cdl_option CYGPKG_NET_FAST_THREAD_PRIORITY {
-        display "Priority level for fast network processing."
-        flavor  data
-        default_value CYGPKG_NET_THREAD_PRIORITY - 1
-        description   "
-            This option sets the thread priority level used by the fast
-        network thread.  The fast network thread runs often but briefly, to
-        service network device interrupts and network timeout events.  This
-        thread should have higher priority than the background network
-        thread.  It is reasonable to set this thread's priority higher than
-        application threads for best network throughput, or to set it lower
-        than application threads for best latency for those application
-        threads themselves, potentially at a cost to network throughput."
+    cdl_component CYGPKG_NET_FAST_THREAD {
+        display       "Fast network processing thread options"
+        flavor        none
+        no_define
+
+        cdl_option CYGPKG_NET_FAST_THREAD_PRIORITY {
+            display       "Priority level for fast network processing"
+            flavor        data
+            default_value CYGPKG_NET_THREAD_PRIORITY - 1
+            description   "
+                This option sets the thread priority level used by the fast
+            network thread.  The fast network thread runs often but briefly, to
+            service network device interrupts and network timeout events.  This
+            thread should have higher priority than the background network
+            thread.  It is reasonable to set this thread's priority higher than
+            application threads for best network throughput, or to set it lower
+            than application threads for best latency for those application
+            threads themselves, potentially at a cost to network throughput."
+        }
+
+        cdl_option CYGNUM_NET_FAST_THREAD_STACKSIZE {
+            display       "Stack size for fast network processing"
+            flavor        data
+            default_value { "CYGNUM_HAL_STACK_SIZE_TYPICAL" }
+            description   "
+                This option allows the thread stack allocated for the
+            fast networking stack to be adjusted by the user. "
+        }
     }
 
     cdl_component CYGPKG_NET_FAST_THREAD_TICKLE_DEVS {
