@@ -1,3 +1,9 @@
+2006-06-08  Ilija Koco  <ilijak@siva.com.mk>
+
+	* include/hal_platform_setup.h: PLL clock and memory remap
+	moved to hal_variant_setup.h
+	* include/mace1_misc.h: LED macros added
+    
 2006-05-24  Ilija Koco  <ilijak@siva.com.mk>
 
 	* cdl/hal_arm_mac7100_mace1.cdl: 

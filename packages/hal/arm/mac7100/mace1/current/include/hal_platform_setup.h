@@ -54,7 +54,7 @@
 //===========================================================================
 
 #include <cyg/hal/var_io.h>
-
+#include <cyg/hal/hal_var_setup.h>
 //===========================================================================
 
    .macro _led y
@@ -68,7 +68,7 @@
 
 // Initialize LED PORT
 // Set appropriate peripheral pins
-.macro  _led_init
+	.macro  _led_init
         mov r1, #MAC7100_PIM_DDR  // Pin setting: Output+Low
         ldr r0,=MAC7100_PIM_CONFIG(MAC7100_PORT_A_OFFSET, 8) // LED pin cfg
         strh r1,[r0],#2 // LED: LSB ...
@@ -82,85 +82,22 @@
       _led    0         // Set initial LED state. 
     .endm
 
-// Initialize PLL
-#if defined(CYGNUM_HAL_ARM_MAC7100_FDIV)  // Divider set by user.
-#   define MAC7100_CRG_REFDV_VAL (CYGNUM_HAL_ARM_MAC7100_FDIV-1)
-#else                                     //  Divider calculated. 
-      //NOTE: works for f_osc <= 8MHz
-#   define MAC7100_CRG_REFDV_VAL (((CYGNUM_HAL_ARM_MAC7100_F_OSC/500000) - 1) & 0x0F) // 15 (1)
-#endif
-#define MAC7100_CRG_SYNR_VAL (CYGNUM_HAL_ARM_MAC7100_CLOCK_SPEED / 2 / \
-        (CYGNUM_HAL_ARM_MAC7100_F_OSC / (MAC7100_CRG_REFDV_VAL+1))-1) // 47 (5)
 
-#define MAC7100_CRG_PLLCTL_VAL                                          \
-      (MAC7100_CRG_CME|MAC7100_CRG_PLLON|MAC7100_CRG_AUTO|              \
-       MAC7100_CRG_ACQ|MAC7100_CRG_SCME)
-#define MAC7100_CRG_CLKSEL_VAL (MAC7100_CRG_PLLSEL)
-
-.macro  _pclock_init
-        ldr r2,=MAC7100_CRG_BASE
-        mov r3,#0
-        // Disable clock interrupts
-        strb r3,[r2,#(MAC7100_CRG_CRGINT-MAC7100_CRG_BASE)]  
-        // DeSelect PLL clock
-        mov r3,#MAC7100_CRG_REFDV_VAL
-        // Reference Divider reg.
-        strb r3,[r2,#(MAC7100_CRG_REFDV-MAC7100_CRG_BASE)]   
-        mov r3,#MAC7100_CRG_SYNR_VAL
-        // Synthesizer register
-        strb r3,[r2,#(MAC7100_CRG_SYNR-MAC7100_CRG_BASE)]   
-        mov r3,#MAC7100_CRG_PLLCTL_VAL
-        // PLL control register
-        strb r3,[r2,#(MAC7100_CRG_PLLCTL-MAC7100_CRG_BASE)]   
-        // Wait PLL lock  <---
-1:      ldrb r3,[r2,#(MAC7100_CRG_CRGFLG-MAC7100_CRG_BASE)] 
-        tst r3,#MAC7100_CRG_LOCK
-        bne 2f      // PLL locked, GO ON  ----->>
-        _led 0x55   
-        b 1b        // Still waiting for PLL lock  -------------------------->
-2:      mov r3,#MAC7100_CRG_CLKSEL_VAL  // <<----
-        // Select PLL clock
-        strb r3,[r2,#(MAC7100_CRG_CLKSEL-MAC7100_CRG_BASE)]  
-        mov r3,#0
-        strb r3,[r2,#(MAC7100_CRG_BDMCTL-MAC7100_CRG_BASE)]  // Set CRG BDMCTL 
-        mov r3,r3
+// Clock initilalization
+	.macro  _pclock_init
+		_mac7100_setpll
     .endm
 
+// Memory re-mapping
+	.macro _memory_remap
+		_mac7100_remap_single_chip
+    .endm
+
+
+// Initialize paralel port
     .macro  _pio_init
     .endm
-                
-// Memory re-mapping
-    .macro _TelePort
-        _led    1
-        ldr     r1, TelePort    //AAMR_REG
-        ldr     r0, [r1]
 
-        mvn     r4, #0xf0000000      // 1. Copy telepoter to RAM
-        ldr     r2, TelePort+4       // TelePorter
-        ldr     r3, TelePort+8       // TelePort (TelePorter end)
-        and     r2,r2,r4
-        and     r3,r3,r4
-        mov     r4, #0x40000000      // RAM address
-1: //CopyTelePorter:                 // copying teleporter                 
-            ldr     r5,[r2],#4       // <---
-            str     r5,[r4],#4
-            cmp     r2,r3
-            bne     1b               //CopyTelePorter  // --->
-        ldr     r3,TelePort+12
-        mov     pc,#0x40000000      // 2. Jump to TelePorter in RAM
-TelePorter:
-        bic     r0,r0,#0x000000ff   // 3. Re-map memory
-        orr     r0,r0,#0x8b         //    Flash -> 0x20000000
-        str     r0,[r1]             //    RAM   -> 0x00000000 and 0x40000000
-        mov     pc,r3               // 4. Teleport back to Flash
-TelePort:
-        .long MAC7100_MCM_AAMR
-        .long TelePorter
-        .long TelePort
-        .long TelePortReturn
-TelePortReturn:
-    .endm
-// End memory re-mapping
 
 #define CYGHWR_LED_MACRO _led \x
 
@@ -171,7 +108,7 @@ TelePortReturn:
     .macro  _setup
         ldr r0,=VAE_MAC7100_FlashSecurity
         _led_init
-        _TelePort
+        _memory_remap
         _pclock_init
         _pio_init
     .endm

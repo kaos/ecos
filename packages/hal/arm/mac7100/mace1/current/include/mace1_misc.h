@@ -57,6 +57,12 @@ void hal_mace1_led_on(int);
 void hal_mace1_led_off(int);
 int hal_mace1_get_leds(void);
 
+#define HAL_MAC7100_SET_LEDS(x) hal_mace1_set_leds(x)
+#define HAL_MAC7100_LED_ON(x) hal_mace1_led_on(x)
+#define HAL_MAC7100_LED_OFF(x) hal_mace1_led_off(x)
+#define HAL_MAC7100_GET_LEDS(x) hal_mace1_get_leds(x)
+
+
 //-----------------------------------------------------------------------------
 // end of mace1_misc.h
 #endif // CYGONCE_HAL_MACE1_MISC_H
