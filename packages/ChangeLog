@@ -2,7 +2,7 @@
  
 	* ecos.db: Add Freescale MAC7100EVB platform and target
  
-2006-09-09 Frank Pagliughi <fpagliughi@mindspring.com>
+2006-06-09 Frank Pagliughi <fpagliughi@mindspring.com>
 
 	* ecos.db: Add Philips D12 USB device driver and hardware specific
 	package for i386.
