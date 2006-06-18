@@ -2704,6 +2704,16 @@ package CYGPKG_HAL_ARM_MAC7100_MACE1 {
         MAC7100 evaluation board (MACE1)."
 }
 
+package CYGPKG_HAL_ARM_MAC7100_MAC7100EVB {
+	alias		{ "MAC7100EVB evaluation board (Freescale)" hal_arm_mac7100_mac7100evb arm_mac7100_mac7100evb_hal }
+	directory	hal/arm/mac7100/mac7100evb
+	script		hal_arm_mac7100_mac7100evb.cdl
+	hardware
+        description "
+	The MAC7100EVB HAL package provides the support needed to run eCos on an 
+        MAC7100 evaluation board (MAC7100EVB)."
+}
+
 package CYGPKG_HAL_ARM_EBSA285 {
 	alias		{ "Intel EBSA285 StrongARM board" hal_arm_ebsa285 arm_ebsa285_hal }
 	directory	hal/arm/ebsa285
@@ -4493,6 +4503,19 @@ target mace1 {
         description "
             The mace1 target provides the packages needed to run eCos
             on MAC7100 evaluation board (MACE1).  "
+}
+
+target mac7100evb {
+	alias { "MAC7100EVB - a MAC7100 evaluation board" mac7100_mac7100evb }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_MAC7100
+                   CYGPKG_HAL_ARM_MAC7100_MAC7100EVB
+                   CYGPKG_IO_SERIAL_FREESCALE_ESCI_H
+                   CYGPKG_IO_SERIAL_FREESCALE_ESCI
+        }
+        description "
+            The MAC7100EVB target provides the packages needed to run eCos
+            on Freescale MAC7100EVB evaluation board.  "
 }
 
 target ebsa285 {
