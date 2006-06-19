@@ -1362,13 +1362,6 @@ package CYGPKG_IO_USB_SLAVE_ETH {
         description     "Support for USB peripherals that provide an ethernet-class function"
 }
 
-package CYGPKG_IO_USB_SLAVE_TTY {
-        alias		{ "USB slave-side tty class drivers" usbs_tty }
-        directory       io/usb/tty/slave
-        script          usbs_tty.cdl
-        description     "Support for USB peripherals that provide an tty function"
-}
-
 package CYGPKG_DEVS_USB_SA11X0 {
         alias           { "Device-driver for the SA11X0 on-chip USB support" usb_sa11x0 }
         hardware
@@ -1931,14 +1924,6 @@ package CYGPKG_DEVS_ETH_ECOSYNTH {
         script          syntheth.cdl
         hardware
         description     "Ethernet driver for the synthetic target"
-}
-
-package CYGPKG_DEVS_ETH_ARM_AT91 {
-        alias           { "AT91 Ethernet driver" at91_eth_driver }
-        directory       devs/eth/arm/at91
-        script          at91_eth.cdl
-        hardware
-        description     "Ethernet driver for the AT91 family of chips"
 }
 
 package CYGPKG_IO_PCI	{
