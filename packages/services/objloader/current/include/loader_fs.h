@@ -3,7 +3,7 @@
 
 /* =================================================================
  *
- *      loader_fs.c
+ *      loader_fs.h
  *
  * ================================================================= 
  * ####ECOSGPLCOPYRIGHTBEGIN####
@@ -43,7 +43,7 @@
  * =================================================================
  * #####DESCRIPTIONBEGIN####
  * 
- *  Author(s):    atonizzo@lycos.com
+ *  Author(s):    Anthony Tonizzo (atonizzo@gmail.com)
  *  Date:         2005-05-13
  *  Purpose:      
  *  Description:  
@@ -53,8 +53,10 @@
  * =================================================================
  */
 
-size_t    cyg_ldr_fs_read( PELF_OBJECT, size_t, size_t, void* );
-cyg_int32 cyg_ldr_fs_seek( PELF_OBJECT, cyg_uint32 );
-cyg_int32 cyg_ldr_fs_close( PELF_OBJECT );
+size_t    cyg_ldr_fs_read(PELF_OBJECT, size_t, size_t, void*);
+cyg_int32 cyg_ldr_fs_seek(PELF_OBJECT, cyg_uint32);
+cyg_int32 cyg_ldr_fs_close(PELF_OBJECT);
+PELF_OBJECT cyg_ldr_open_library_fs(char *);
+void cyg_ldr_close_library_fs(PELF_OBJECT);
 
 #endif // __LOADER_FS_H__

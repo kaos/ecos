@@ -42,7 +42,7 @@
  * =================================================================
  * #####DESCRIPTIONBEGIN####
  * 
- *  Author(s):    atonizzo@lycos.com
+ *  Author(s):    Anthony Tonizzo (atonizzo@gmail.com)
  *  Date:         2005-05-13
  *  Purpose:      
  *  Description:  
@@ -61,76 +61,76 @@ int thread_a_count;
 
 extern int weak_fn_called;
 
-void weak_function( void ) CYGBLD_ATTRIB_WEAK;
-void weak_function( void )
+void weak_function(void) CYGBLD_ATTRIB_WEAK;
+void weak_function(void)
 {
     // Store the data value passed in for this thread.
-    diag_printf( "INFO:< This is the library weak function>" );
-    CYG_TEST_FAIL ( "Libraries weak function called when apps should be called" );
+    diag_printf("INFO:< This is the library weak function>");
+    CYG_TEST_FAIL ("Libraries weak function called when apps should be called");
 }
 
-void library_open( void )
+void library_open(void)
 {
     // Initialize the count for thread a.
     thread_a_count = 0;
 
     // Initialize the semaphore with a count of zero,
     // prior to creating the threads.
-    cyg_semaphore_init( &sem_signal_thread, 0 );
-    CYG_TEST_INFO( "Library initialized" );
+    cyg_semaphore_init(&sem_signal_thread, 0);
+    CYG_TEST_INFO("Library initialized");
 }
 
-void library_close( void )
+void library_close(void)
 {
-    CYG_TEST_INFO( "Library closed" );
+    CYG_TEST_INFO("Library closed");
 }
 
-void print_message( void )
+void print_message(void)
 {
-    diag_printf( "INFO:<Printing a silly message...>\n" );
+    diag_printf("INFO:<Printing a silly message...>\n");
 }
 
 // Thread A - signals thread B via semaphore.
-void thread_a( cyg_addrword_t data )
+void thread_a(cyg_addrword_t data)
 {
     // Store the data value passed in for this thread.
     int msg = (int)data;
 
     weak_function ();
     
-    while( thread_a_count < 5 )
+    while(thread_a_count < 5)
     {
         // Increment the thread a count.
         thread_a_count++;
 
 
         // Send out a message to the diagnostic port.
-        diag_printf( "INFO:<Thread A, count: %d  message: %d>\n", thread_a_count, msg );
+        diag_printf("INFO:<Thread A, count: %d  message: %d>\n", thread_a_count, msg);
 
         // Delay for 1 second.
-        cyg_thread_delay( 100 );
+        cyg_thread_delay(100);
 
         // Signal thread B using the semaphore.
-        cyg_semaphore_post( &sem_signal_thread );
+        cyg_semaphore_post(&sem_signal_thread);
     }
     
-    CYG_TEST_CHECK( weak_fn_called == 2 , "Application week function not called" );
-    CYG_TEST_FINISH( "Object loader test finished" );
+    CYG_TEST_CHECK(weak_fn_called == 2 , "Application week function not called");
+    CYG_TEST_FINISH("Object loader test finished");
 }
 
 // Thread B - waits for semaphore signal from thread A.
-void thread_b( cyg_addrword_t data )
+void thread_b(cyg_addrword_t data)
 {
     // Store the data value passed in for this thread.
     int msg = (int)data;
 
-    while( 1 )
+    while(1)
     {
 
         // Signal thread B using the semaphore.
-        cyg_semaphore_wait( &sem_signal_thread );
+        cyg_semaphore_wait(&sem_signal_thread);
 
         // Send out a message to the diagnostic port.
-        diag_printf( "INFO:< Thread B, message: %d>\n", msg );
+        diag_printf("INFO:< Thread B, message: %d>\n", msg);
     }
 }

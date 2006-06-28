@@ -42,7 +42,7 @@
  * =================================================================
  * #####DESCRIPTIONBEGIN####
  * 
- *  Author(s):    atonizzo@lycos.com
+ *  Author(s):    Anthony Tonizzo (atonizzo@gmail.com)
  *  Date:         2005-05-13
  *  Purpose:      
  *  Description:  
@@ -67,7 +67,7 @@
 
 #ifdef CYGPKG_HAL_POWERPC
 void
-cyg_ldr_flush_cache( void )
+cyg_ldr_flush_cache(void)
 {
     HAL_DCACHE_SYNC();
     HAL_ICACHE_SYNC();
@@ -79,38 +79,38 @@ cyg_ldr_flush_cache( void )
 // mem       Address in memory to modify (relocate).
 // sym_value 
 cyg_int32 
-cyg_ldr_relocate( cyg_int32 sym_type, cyg_uint32 mem, cyg_int32 sym_value )
+cyg_ldr_relocate(cyg_int32 sym_type, cyg_uint32 mem, cyg_int32 sym_value)
 {
     cyg_int32  rel_offset, i;
 
     // PPC uses rela, so we have to add the addend.
-    switch( sym_type )
+    switch(sym_type)
     {
     case R_PPC_ADDR16_HA:
-        HAL_WRITE_UINT16( mem, _ha_( sym_value ) );
+        HAL_WRITE_UINT16(mem, _ha_(sym_value));
         return 0;
     case R_PPC_ADDR16_HI:
-        HAL_WRITE_UINT16( mem, _hi_( sym_value ) );
+        HAL_WRITE_UINT16(mem, _hi_(sym_value));
         return 0;
     case R_PPC_ADDR16_LO:
-        HAL_WRITE_UINT16( mem, _lo_( sym_value ) );
+        HAL_WRITE_UINT16(mem, _lo_(sym_value));
         return 0;
     case R_PPC_REL24:
         // Now it is time to seek the destination address of the call.
         // We need to do something in case the user jumps more than 16MB.
-        rel_offset = ( sym_value - mem ) & 0x03FFFFFC; 
-        HAL_READ_UINT32( mem, i );
+        rel_offset = (sym_value - mem) & 0x03FFFFFC; 
+        HAL_READ_UINT32(mem, i);
         i &= 0xFC000003;
-        HAL_WRITE_UINT32( mem, rel_offset | i );
+        HAL_WRITE_UINT32(mem, rel_offset | i);
         return 0;
     case R_PPC_REL32:
-        HAL_WRITE_UINT32( mem, ( sym_value - mem ) );
+        HAL_WRITE_UINT32(mem, (sym_value - mem));
         return 0;
     case R_PPC_ADDR32:
-        HAL_WRITE_UINT32( mem, sym_value );
+        HAL_WRITE_UINT32(mem, sym_value);
         return 0;
     default:
-        ELFDEBUG( "FIXME: Unknown relocation value!!!\n" );
+        ELFDEBUG("FIXME: Unknown relocation value!!!\n");
         return -1;
     }
 }

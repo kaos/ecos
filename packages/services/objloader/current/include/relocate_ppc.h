@@ -45,7 +45,7 @@
  * =================================================================
  * #####DESCRIPTIONBEGIN####
  * 
- *  Author(s):    atonizzo@lycos.com
+ *  Author(s):    Anthony Tonizzo (atonizzo@gmail.com)
  *  Date:         2005-05-13
  *  Purpose:      
  *  Description:  

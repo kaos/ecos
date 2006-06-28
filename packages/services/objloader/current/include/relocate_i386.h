@@ -62,10 +62,10 @@
 #define ELF_ARCH_ENDIANNESS    ELFDATA2LSB
 #define ELF_ARCH_RELTYPE       Elf_Rel
 
-#define R_386_32        1
-#define R_386_PC32      2
+#define R_386_32               1
+#define R_386_PC32             2
 
-void      cyg_ldr_flush_cache( void );
-cyg_int32 cyg_ldr_relocate( cyg_int32, cyg_uint32, cyg_int32 );
+void      cyg_ldr_flush_cache(void);
+cyg_int32 cyg_ldr_relocate(cyg_int32, cyg_uint32, cyg_int32);
 
 #endif //__RELOCATE_I386_H__

@@ -42,7 +42,7 @@
  * =================================================================
  * #####DESCRIPTIONBEGIN####
  * 
- *  Author(s):    atonizzo@lycos.com
+ *  Author(s):    Anthony Tonizzo (atonizzo@gmail.com)
  *  Contributors: nickg@ecoscentric.com
  *  Date:         2005-05-13
  *  Purpose:      
@@ -66,46 +66,43 @@
 #include <cyg/objloader/loader_fs.h>
 
 size_t 
-cyg_ldr_fs_read( PELF_OBJECT p, size_t s, size_t n, void *mem )
+cyg_ldr_fs_read(PELF_OBJECT p, size_t s, size_t n, void *mem)
 {
-    return fread( mem, s, n, (FILE*)p->ptr );
+    return fread(mem, s, n, (FILE*)p->ptr);
 }
 
 cyg_int32 
-cyg_ldr_fs_seek( PELF_OBJECT p, cyg_uint32 offs )
+cyg_ldr_fs_seek(PELF_OBJECT p, cyg_uint32 offs)
 {
-    return fseek( (FILE*)p->ptr, offs, SEEK_SET );
+    return fseek((FILE*)p->ptr, offs, SEEK_SET);
 }
 
 cyg_int32 
-cyg_ldr_fs_close( PELF_OBJECT p )
+cyg_ldr_fs_close(PELF_OBJECT p)
 {
-    return fclose( (FILE*)p->ptr );
+    return fclose((FILE*)p->ptr);
 }
 
 PELF_OBJECT
-cyg_ldr_open_library_fs( cyg_uint8 *ptr )
+cyg_ldr_open_library_fs(char *ptr)
 {
-    PELF_OBJECT  e_obj; 
-    FILE        *fp;
-
-    fp = fopen( ptr, "rb" );
-    if ( fp == 0 )
+    FILE *fp = fopen(ptr, "rb");
+    if (fp == NULL)
     {
         cyg_ldr_last_error = "FILE NOT FOUND";
         return (void*)0;
     }
     
     // Create a file object to keep track of this library.
-    e_obj = (PELF_OBJECT)malloc( sizeof( ELF_OBJECT ) );
-    CYG_ASSERT( e_obj != 0, "Cannot malloc() e_obj" );
-    if ( e_obj == 0 )
+    PELF_OBJECT e_obj = (PELF_OBJECT)malloc(sizeof(ELF_OBJECT));
+    CYG_ASSERT(e_obj != 0, "Cannot malloc() e_obj");
+    if (e_obj == 0)
     {
         cyg_ldr_last_error = "ERROR IN MALLOC";
-        fclose( fp ); 
+        fclose(fp); 
         return (void*)0;
     }
-    memset( e_obj, 0, sizeof( ELF_OBJECT ) );
+    memset(e_obj, 0, sizeof(ELF_OBJECT));
     e_obj->ptr   = (CYG_ADDRWORD)fp;
     e_obj->mode  = CYG_LDR_MODE_FILESYSTEM;
 
@@ -117,7 +114,7 @@ cyg_ldr_open_library_fs( cyg_uint8 *ptr )
 }
 
 void
-cyg_ldr_close_library_fs( PELF_OBJECT p )
+cyg_ldr_close_library_fs(PELF_OBJECT p)
 {
 }
 

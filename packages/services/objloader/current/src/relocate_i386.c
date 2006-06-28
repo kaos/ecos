@@ -43,7 +43,7 @@
  * =================================================================
  * #####DESCRIPTIONBEGIN####
  * 
- *  Author(s):    atonizzo@lycos.com, andrew.lunn@ascom.ch
+ *  Author(s):    Anthony Tonizzo (atonizzo@gmail.com), andrew.lunn@ascom.ch
  *  Date:         2005-07-07
  *  Purpose:      
  *  Description:  
@@ -63,7 +63,7 @@
 
 #if defined(CYGPKG_HAL_I386) || defined(CYGPKG_HAL_SYNTH_I386)
 void
-cyg_ldr_flush_cache( void )
+cyg_ldr_flush_cache(void)
 {
     HAL_DCACHE_SYNC();
     HAL_ICACHE_SYNC();
@@ -75,23 +75,23 @@ cyg_ldr_flush_cache( void )
 // mem       Address in memory to modify (relocate).
 // sym_value 
 cyg_int32 
-cyg_ldr_relocate( cyg_int32 sym_type, cyg_uint32 mem, cyg_int32 sym_value )
+cyg_ldr_relocate(cyg_int32 sym_type, cyg_uint32 mem, cyg_int32 sym_value)
 {
   cyg_int32  i;
   
   // PPC uses rela, so we have to add the addend.
-  switch( sym_type )
+  switch(sym_type)
     {
       case R_386_32:
-        HAL_READ_UINT32( mem , i );
-        HAL_WRITE_UINT32( mem, i + sym_value  );
+        HAL_READ_UINT32(mem , i);
+        HAL_WRITE_UINT32(mem, i + sym_value );
       return 0;
       case R_386_PC32:
-        HAL_READ_UINT32( mem , i );
-        HAL_WRITE_UINT32( mem,  i + sym_value - mem );
+        HAL_READ_UINT32(mem , i);
+        HAL_WRITE_UINT32(mem,  i + sym_value - mem);
         return 0;
       default:
-        ELFDEBUG( "FIXME: Unknown relocation value!!!\n" );
+        ELFDEBUG("FIXME: Unknown relocation value!!!\n");
         return -1;
     }
 }

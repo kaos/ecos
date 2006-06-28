@@ -1,31 +1,48 @@
+2006-06-27  Anthony Tonizzo  <atonizzo@gmail.com>
+
+    * src/loader_fs.c : Minor cosmetic and formatting changes on all files. 
+    Also got rid of some signed/unsigned comparison which did not show up using
+    the PPC toolchain but do when compiled with gcc under the synthetic target.
+    * src/objelf.c :    
+    * src/objloader.c :
+    * src/relocate_i386.c : 
+    * src/relocate_ppc.c : 
+    * include/elf.h :
+    * include/loader_fs.h :
+    * include/objelf.h :
+    * include/relocate_i386.h : 
+    * include/relocate_ppc.h : 
+    * test/test_mods.c : 
+    * test/library/hello.c : 
+    
 2005-07-08  Andrew Lunn  <andrew.lunn@ascom.ch>
 
-	* include/objelf.h: Include hal_tables.h otherwise we get strange
-	linker errors.
-	* cdl/objloader.cdl: Rearranged the building of the test case.
-	* include/relocate_i386.h (New):
-	* src/relocate_i386.c (New): Added a relocator for i386.
-	* src/objelf.c: Fixed various Elf_Rel vs Elf_Rela issues.
-	* test/load_mods.c: 
-	* test/library/hello.c: Modified to make use of the eCos test 
-	infrastructure. Uses a romfs to hold the object file to be loaded.
-	
-2005-05-10  Anthony Tonizzo  <atonizzo@lycos.com>
+    * include/objelf.h: Include hal_tables.h otherwise we get strange
+    linker errors.
+    * cdl/objloader.cdl: Rearranged the building of the test case.
+    * include/relocate_i386.h (New):
+    * src/relocate_i386.c (New): Added a relocator for i386.
+    * src/objelf.c: Fixed various Elf_Rel vs Elf_Rela issues.
+    * test/load_mods.c: 
+    * test/library/hello.c: Modified to make use of the eCos test 
+    infrastructure. Uses a romfs to hold the object file to be loaded.
+    
+2005-05-10  Anthony Tonizzo  <atonizzo@gmail.com>
 
-	* include/elf.h: 
-	* include/loader_fs.h: 
-	* include/objelf.h: 
-	* include/relocate_ppc.h: 
-	* src/loader_fs.c: 
-	* src/objelf.c: 
-	* src/objloader.c: 
-	* src/relocate_ppc.c: 
-	* doc/notes.txt: 
-	* cdl/objloader.cdl:
-	* tests/test_mods.c:
-	* tests/library/hello.c: 
-	Created OBJLDR package.
-	
+    * include/elf.h: 
+    * include/loader_fs.h: 
+    * include/objelf.h: 
+    * include/relocate_ppc.h: 
+    * src/loader_fs.c: 
+    * src/objelf.c: 
+    * src/objloader.c: 
+    * src/relocate_ppc.c: 
+    * doc/notes.txt: 
+    * cdl/objloader.cdl:
+    * tests/test_mods.c:
+    * tests/library/hello.c: 
+    Created OBJLDR package.
+    
 //===========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
