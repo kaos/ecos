@@ -1,3 +1,8 @@
+2006-07-10  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/synth_entry.c (__stack_chk_fail_local): new function needed
+	when building with gcc 4.1.1
+
 2005-11-19  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/synth_entry.c (_linux_entry): brk() is no longer needed to

@@ -54,6 +54,7 @@
 #include <pkgconf/hal.h>
 #include <cyg/infra/cyg_type.h>
 #include <cyg/infra/cyg_ass.h>
+#include <cyg/infra/diag.h>
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_intr.h>
 #include <cyg/hal/hal_io.h>
@@ -195,6 +196,19 @@ int
 dl_iterate_phdr(void* arg1, void* arg2)
 {
     return -1;
+}
+#endif
+
+#if (__GNUC__ >= 4)
+// First noticed with gcc 4.1.1. There is now code to detect stack
+// smashing.
+void __attribute__ ((noreturn))
+__stack_chk_fail_local(void)
+{
+    CYG_FAIL("Stack smashing detected, aborting");
+    diag_printf("Application error: stack smashing detected.\n");
+    cyg_hal_sys_exit(1);
+    for (;;);
 }
 #endif
 
