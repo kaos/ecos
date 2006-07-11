@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
 // Copyright (C) 2003 John Dallaway
-// Copyright (C) 2004 eCosCentric Limited
+// Copyright (C) 2004, 2005, 2006 eCosCentric Limited
 //
 // This program is part of the eCos host tools.
 //
@@ -160,6 +160,13 @@ ecApp::~ecApp()
 // 'Main program' equivalent: the program execution "starts" here
 bool ecApp::OnInit()
 {
+// workaround for an exception handling issue with Cygwin 1.5.20
+#ifdef __CYGWIN__
+    try {
+        throw int(42);
+    } catch(...) { };
+#endif
+
     wxLog::SetTimestamp(NULL);
 
     wxHelpProvider::Set(new wxSimpleHelpProvider);

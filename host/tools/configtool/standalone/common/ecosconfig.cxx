@@ -1,6 +1,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
+// Copyright (C) 2004, 2005, 2006 eCosCentric Limited
 // Copyright (C) 2003 Bart Veer
 // Copyright (C) 2003 John Dallaway
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
@@ -52,7 +53,7 @@
 #include "ecosconfig.hxx"
 
 #define TOOL_VERSION "2.net"
-#define TOOL_COPYRIGHT "Copyright (c) 2002 Red Hat, Inc."
+#define TOOL_COPYRIGHT "Copyright (c) 2002 Red Hat, Inc.\nCopyright (c) 2004-2006 eCosCentric Limited"
 #define DEFAULT_SAVE_FILE "ecos.ecc"
 static char* tool = "ecosconfig";
 

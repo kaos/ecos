@@ -2,6 +2,7 @@
 //                                                                          
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 2006 eCosCentric Limited
 //
 // This program is part of the eCos host tools.
 //
@@ -57,7 +58,7 @@ LPCTSTR  const CeCosTestUtils::Tail(LPCTSTR  const pszFile)
 }
 
 // File iterator.  Gets next file in directory, avoiding _T(".") and _T("..")
-bool CeCosTestUtils::NextFile (void *&pHandle,String &str)
+bool CeCosTestUtils::NextFile (void *pHandle,String &str)
 {
 #ifdef _WIN32
   WIN32_FIND_DATA fd;
@@ -77,7 +78,7 @@ bool CeCosTestUtils::NextFile (void *&pHandle,String &str)
   }
   
   // Start file iteration and return first file.
-bool CeCosTestUtils::StartSearch (void *&pHandle,String &str)
+bool CeCosTestUtils::StartSearch (void *pHandle,String &str)
   {
 #ifdef _WIN32
     WIN32_FIND_DATA fd;
@@ -86,7 +87,7 @@ bool CeCosTestUtils::StartSearch (void *&pHandle,String &str)
       ERROR(_T("Failed to open dir\n"));
       return false;
     } else if (fd.cFileName[0]=='.') {
-      return NextFile((HANDLE)pHandle,str);
+      return NextFile(pHandle,str);
     } else {
 		str=String(fd.cFileName);
       return true;
@@ -102,7 +103,7 @@ bool CeCosTestUtils::StartSearch (void *&pHandle,String &str)
   }
   
   // End file iteration
-void CeCosTestUtils::EndSearch (void *&pHandle)
+void CeCosTestUtils::EndSearch (void *pHandle)
   {
 #ifdef _WIN32
     FindClose((HANDLE)pHandle);
