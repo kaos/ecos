@@ -72,6 +72,12 @@ int main (int argc, char * argv []) {
     bool enable_debug_set = false;  // --enable-debug or --disable-debug
     int  debug_level = 0;       // --enable-debug=[0|1|2]
 
+#ifdef __CYGWIN__
+    try {
+        throw int(42);
+    } catch(...) { };
+#endif
+    
     Tcl_FindExecutable(argv[0]);
     
     // getopt() cannot easily be used here since this code has to

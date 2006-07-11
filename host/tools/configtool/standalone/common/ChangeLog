@@ -1,3 +1,8 @@
+2006-07-10  Bart Veer  <bartv@ecoscentric.com>
+
+	* ecosconfig.cxx: add early C++ exception throw to work around
+	a cygwin issue.
+
 2005-12-16  Bart Veer  <bartv@ecoscentric.com>
 
 	* cdl_exec.cxx (cmd_remove): replace reserved word interface with
