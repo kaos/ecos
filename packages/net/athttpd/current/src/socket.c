@@ -1,0 +1,454 @@
+/* =================================================================
+ *
+ *      socket.c
+ *
+ *      Opens socket and starts the daemon.
+ *
+ * ================================================================= 
+ * ####ECOSGPLCOPYRIGHTBEGIN####
+ * -------------------------------------------
+ * This file is part of eCos, the Embedded Configurable Operating
+ * System.
+ * Copyright (C) 2005 eCosCentric Ltd.
+ * 
+ * eCos is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 or (at your option)
+ * any later version.
+ * 
+ * eCos is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with eCos; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+ * 
+ * As a special exception, if other files instantiate templates or
+ * use macros or inline functions from this file, or you compile this
+ * file and link it with other works to produce a work based on this
+ * file, this file does not by itself cause the resulting work to be
+ * covered by the GNU General Public License. However the source code
+ * for this file must still be made available in accordance with
+ * section (3) of the GNU General Public License.
+ * 
+ * This exception does not invalidate any other reasons why a work
+ * based on this file might be covered by the GNU General Public
+ * License.
+ *
+ * -------------------------------------------
+ * ####ECOSGPLCOPYRIGHTEND####
+ * =================================================================
+ * #####DESCRIPTIONBEGIN####
+ * 
+ *  Author(s):    Anthony Tonizzo (atonizzo@gmail.com)
+ *  Contributors: 
+ *  Date:         2006-06-12
+ *  Purpose:      
+ *  Description:  
+ *               
+ * ####DESCRIPTIONEND####
+ * 
+ * =================================================================
+ */
+#include <pkgconf/hal.h>
+#include <pkgconf/kernel.h>
+#include <cyg/kernel/kapi.h>           // Kernel API.
+#include <cyg/kernel/ktypes.h>         // base kernel types.
+#include <cyg/infra/diag.h>            // For diagnostic printing.
+#include <network.h>
+#include <sys/uio.h>
+#include <fcntl.h>
+#include <stdio.h>                     // sprintf().
+#include <time.h>                      // sprintf().
+
+#include <cyg/athttpd/http.h>
+#include <cyg/athttpd/socket.h>
+#include <cyg/athttpd/cgi.h>
+
+#define MAX(X, Y) ((X) > (Y) ? (X) : (Y))
+#define CYG_HTTPD_DAEMON_STACK_SIZE (CYGNUM_HAL_STACK_SIZE_MINIMUM + \
+                                          CYGNUM_NET_ATHTTPD_THREADOPT_STACKSIZE)
+static cyg_int32    cyg_httpd_initialized = 0;
+cyg_thread   cyg_httpd_thread_object;
+cyg_handle_t cyg_httpd_thread_handle;
+cyg_uint8    cyg_httpd_thread_stack[CYG_HTTPD_DAEMON_STACK_SIZE]     
+                                       __attribute__((__aligned__ (16)));
+CYG_HTTPD_STATE httpstate;
+                                         
+__inline__ ssize_t
+cyg_httpd_write(char* buf, int len)
+{
+    // We are not going to write anything in case
+    ssize_t sent = send(httpstate.sockets[httpstate.client_index].descriptor, 
+                        buf, 
+                        len,
+                        0);
+    CYG_ASSERT(sent == len, "send() did not send out all bytes");
+    return sent;
+}
+
+__inline__ ssize_t
+cyg_httpd_writev(cyg_iovec *bufs, int count)
+{
+    return writev(httpstate.sockets[httpstate.client_index].descriptor, 
+                  bufs, 
+                  count);
+}
+    
+// The need for chunked transfers arises from the fact that with dinamic
+//  pages it is not always possible to know the packet size upfront, and thus
+//  it is not possible to fill the Content-Length: field in the header.
+// Today's web browser apparently do not even use 'Content-Length:' because
+//  many sites that generate dinamic frames send a header with a length of 0.
+// Even though this system works (the browsers probably reads everything that
+//  comes in before the socket is closed and then figure it out) the HTTP
+//  standard _mandates_ the Content-Length: with a correct valie, and whenever
+//  that is not possible, chunked transfers must be used.
+// This function also handles the case of a chunked frame. 
+//
+// A chunked transer takes the form of:
+// -----------------------------------------------------------------------------
+//    cyg_httpd_start_chunked("html");
+//    sprintf(phttpstate->payload, ...);             
+//    cyg_httpd_write_chunked(phttpstate->payload, 
+//                             strlen(phttpstate->payload));
+//    ...                         
+//    cyg_httpd_end_chunked();
+// -----------------------------------------------------------------------------
+ssize_t
+cyg_httpd_start_chunked(char *extension)
+{
+    httpstate.status_code = CYG_HTTPD_STATUS_OK;
+    httpstate.mode        |= CYG_HTTPD_MODE_TRANSFER_CHUNKED;
+
+    // I am not really sure that this is necessary, but even if it isn't, the
+    //  added overhead is not such a big deal. In simple terms, I am not sure 
+    //  how much I can rely the client to understand that the frame has ended 
+    //  with the last 5 bytes sent out. In an ideal world, the data '0\r\n\r\n'
+    //  should be enough, but several posting I read seem to imply otherwise,
+    //  at least with early generation browsers that supported the
+    //  "Transfer-Encoding: chunked" mechanism. Things might be getting better
+    //  now but I snooped some sites that use the chunked stuff and all of them
+    //  with no exception issue a "Connection: close" on chunked frames even
+    //  if there is nothing in the HTTP 1.1 spec that requires it.
+    httpstate.mode        |= CYG_HTTPD_MODE_CLOSE_CONN;
+    
+    // We do not cache the CGI script. In case they are used to display
+    //  dynamic data we want them to be executed any every time they are 
+    //  requested.
+    httpstate.last_modified = -1;
+    httpstate.mime_type = cyg_httpd_find_mime_string(extension);
+    cyg_int32 header_length = cyg_httpd_format_header();
+    ssize_t sent = send(httpstate.sockets[httpstate.client_index].descriptor, 
+                        httpstate.outbuffer, 
+                        header_length,
+                        0);
+    CYG_ASSERT(sent == header_length, "Did not send out all header bytes");
+    return sent;
+}
+
+ssize_t
+cyg_httpd_write_chunked(char* buf, int len)
+{
+    char leader[16], trailer[] = {'\r', '\n'};
+
+    cyg_iovec iovec_bufs[] = { {leader, 0}, {buf, 0}, {trailer, 2} };
+    sprintf(leader, "%x\r\n", len);
+    iovec_bufs[0].iov_len = strlen(leader);
+    iovec_bufs[1].iov_len = len;
+    iovec_bufs[2].iov_len = 2;
+    if (httpstate.mode & CYG_HTTPD_SEND_HEADER_ONLY)
+        return (iovec_bufs[0].iov_len + iovec_bufs[1].iov_len + 
+                                                  iovec_bufs[2].iov_len);
+    ssize_t sent = cyg_httpd_writev(iovec_bufs, 3);
+    CYG_ASSERT(sent == (iovec_bufs[0].iov_len + iovec_bufs[1].iov_len + 
+                                                       iovec_bufs[1].iov_len),
+                        "Writev did not send out all bytes");
+    return sent;
+}
+
+void
+cyg_httpd_end_chunked(void)
+{
+    if (httpstate.mode & CYG_HTTPD_SEND_HEADER_ONLY)
+        return;
+    strcpy(httpstate.outbuffer, "0\r\n\r\n");
+    cyg_httpd_write(httpstate.outbuffer, 5);
+    httpstate.mode &= ~CYG_HTTPD_MODE_TRANSFER_CHUNKED;
+}    
+
+// This function builds and send out a standard header. It is likely going to
+//  be used by a c language callback function, and thus followed by one or
+//  more calls to cyg_httpd_write(). Unlike cyg_httpd_start_chunked(), this
+//  call requires prior knowledge of the final size of the frame, and the user 
+//  is expected to make sure that the total number of bytes (octets) sent out
+//  via 'cyg_httpd_write()' matches the number passed in the len parameter. 
+// Its use it thus more limited, and the more flexible chunked frames should 
+//  be used whenever possible.
+void
+cyg_httpd_create_std_header(char *extension, int len)
+{
+    httpstate.status_code = CYG_HTTPD_STATUS_OK;
+    httpstate.mode        = 0;
+
+    // We do not want to send out a "Last-Modified:" field for c language
+    //  callbacks.
+    httpstate.last_modified = -1;
+    httpstate.mime_type = cyg_httpd_find_mime_string(extension);
+    httpstate.payload_len = len;
+    cyg_int32 header_length = cyg_httpd_format_header();
+    cyg_httpd_write(httpstate.outbuffer, header_length);
+}
+
+void 
+cyg_httpd_process_request(cyg_int32 index)
+{
+    int rc = 1;
+    httpstate.client_index = index;
+    cyg_int32 descr = httpstate.sockets[index].descriptor;
+    fd_set rfds_tmp;
+    FD_ZERO( &rfds_tmp);
+    FD_SET( descr, &rfds_tmp);
+    while (FD_ISSET(descr, &rfds_tmp))
+    {
+        cyg_int32 n = recv(descr, httpstate.inbuffer, CYG_HTTPD_MAXINBUFFER, 0);
+        if (n == 0)
+        {
+            // This is the client that has closed its TX socket, possibly as
+            //  a response from a shutdown() initiated by the server. Another
+            //  possibility is that the client was closed altogether, in
+            //  which case EOFs are sent on each open sockets.
+#if CYGOPT_NET_ATHTTPD_DEBUG_LEVEL > 0
+            printf("EOF received on descriptor: %d. Closing it.\n", descr);
+#endif    
+            close(descr);
+            FD_CLR(descr, &httpstate.rfds);
+            httpstate.sockets[index].descriptor = 0;
+            return;
+        }    
+        
+        if (n < 0)
+        {
+            diag_printf("ERROR reading from socket. read() returned: %d\n", n);
+            return;
+        }  
+        httpstate.inbuffer[n] = '\0';
+      
+        // Timestamp the socket. 
+        httpstate.sockets[index].timestamp = time(NULL);
+        
+        // This is where it all happens.
+        cyg_httpd_process_method();
+        
+        if (httpstate.mode & CYG_HTTPD_MODE_CLOSE_CONN)
+            // There are 2 cases we can be here:
+            // 1) chunked frames close their connection by default
+            // 2) The client requested the connection be terminated.
+            // In any case, we close the TX pipe, and wait for the client to
+            //  send us an EOF on the receive pipe. This is a more graceful way
+            //  to handle the closing of the socket, compared to just calling
+            //  close() without first asking the opinion of the client, and 
+            //  running the risk of stray data lingering around.
+            shutdown(descr, SHUT_WR);
+        
+        // Now check if we have pipelined frames. We'll set up a 
+        //  select() to see if more data is waiting to be read. Pipeline is
+        //  still not enabled by default in most browsers.
+        struct timeval tv_tmp = {0, 20000};
+        rc = select(descr + 1, &rfds_tmp, NULL, NULL, &tv_tmp);
+        CYG_ASSERT(rc != -1, "select() return -1");
+        if (rc == 0)
+            return;
+    }
+}
+
+void
+cyg_httpd_handle_new_connection(cyg_int32 listener)
+{
+    cyg_int32 i;
+
+    int fd_client = accept(listener, NULL, NULL);
+    CYG_ASSERT(listener != -1, "accept() failed");
+    if (fd_client == -1) 
+        return;
+    
+#if CYGOPT_NET_ATHTTPD_DEBUG_LEVEL > 0
+    printf("Opening descriptor: %d\n", fd_client);
+#endif    
+    // Timestamp the socket and process the frame immediately, since the accept
+    //  guarantees the presence of valid data on the newly opened socket.
+    for (i = 0; i < CYGPKG_NET_MAXSOCKETS; i++)
+        if (httpstate.sockets[i].descriptor == 0)
+        {
+            httpstate.sockets[i].descriptor = fd_client;
+            httpstate.sockets[i].timestamp  = time(NULL);
+            cyg_httpd_process_request(i);
+            return;
+        }    
+}
+
+// This is the "garbage collector" (or better, the "garbage disposer") of
+//  the server. It closes any socket that has been idle for a time period
+//  of CYG_HTTPD_SELECT_TIMEOUT seconds.
+void
+cyg_httpd_close_unused_sockets(cyg_int32 listener)
+{
+    cyg_int32 i;
+    
+#if CYGOPT_NET_ATHTTPD_DEBUG_LEVEL > 0
+    diag_printf("Garbage collector called\r\n");
+#endif    
+    httpstate.fdmax = listener;
+    for (i = 0; i < CYGPKG_NET_MAXSOCKETS; i++)
+    {
+        if (httpstate.sockets[i].descriptor != 0)
+        {
+            if (time(NULL) - httpstate.sockets[i].timestamp > 
+                                          CYG_HTTPD_SOCKET_IDLE_TIMEOUT)
+            {           
+#if CYGOPT_NET_ATHTTPD_DEBUG_LEVEL > 0
+                diag_printf("Closing descriptor: %d\n", 
+                            httpstate.sockets[i].descriptor);
+#endif    
+                shutdown(httpstate.sockets[i].descriptor, SHUT_WR);
+            }
+            else
+                httpstate.fdmax = MAX(httpstate.fdmax, 
+                                      httpstate.sockets[i].descriptor);
+        }                              
+    }
+}
+
+void
+cyg_httpd_daemon(cyg_addrword_t data)
+{
+    cyg_int32 rc;
+    init_all_network_interfaces();
+
+#if CYGOPT_NET_ATHTTPD_DEBUG_LEVEL > 0
+#ifdef CYGHWR_NET_DRIVER_ETH0
+    if (eth0_up)
+    {
+        struct bootp* bps = &eth0_bootp_data;
+        diag_printf("ETH0 is up. IP address: %s\n", inet_ntoa(bps->bp_yiaddr));
+    }
+#endif
+#endif
+
+#ifdef CYGOPT_NET_ATHTTPD_USE_CGIBIN_TCL
+    cyg_httpd_init_tcl_interpreter();
+#endif    
+    
+    cyg_httpd_initialize();
+
+    // Get the network going. This is benign if the application has
+    //  already done this.
+    cyg_int32 listener = socket(AF_INET, SOCK_STREAM, 0);
+    CYG_ASSERT(listener > 0, "Socket create failed");
+    if (listener < 0)
+        return;
+
+    cyg_int32 yes = 1;
+    rc = setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
+    if (rc == -1) 
+        return;
+    
+    memset(&(httpstate.server_conn), 0, sizeof(struct sockaddr_in));
+    httpstate.server_conn.sin_family = AF_INET;
+    httpstate.server_conn.sin_addr.s_addr = INADDR_ANY;
+    httpstate.server_conn.sin_port = htons(CYGNUM_NET_ATHTTPD_SERVEROPT_PORT);
+    rc = bind(listener,
+              (struct sockaddr *)&httpstate.server_conn, 
+              sizeof(struct sockaddr)); 
+    CYG_ASSERT(rc == 0, "bind() returned error");
+    if (rc != 0)
+        return;
+
+    rc = listen(listener, SOMAXCONN);
+    CYG_ASSERT(rc == 0, "listen() returned error");
+    if (rc != 0)
+        return;
+
+    diag_printf("Web server Started and listening...\n");
+    cyg_int32 i;
+    for (i = 0; i < CYGNUM_FILEIO_NFILE; i++)
+    {
+        httpstate.sockets[i].descriptor  = 0;
+        httpstate.sockets[i].timestamp   = (time_t)0;
+    }
+    
+    FD_ZERO(&httpstate.rfds);
+    httpstate.fdmax = listener;
+    while (1)
+    {
+        FD_SET(listener, &httpstate.rfds); 
+        struct timeval tv = {CYG_HTTPD_SOCKET_IDLE_TIMEOUT, 0};
+        rc = select(httpstate.fdmax + 1, &httpstate.rfds, NULL, NULL, &tv);
+        if (rc > 0)
+        {
+            if (FD_ISSET(listener, &httpstate.rfds))
+                // If the request is from the listener socket, then 
+                //  this must be a new connection.
+                cyg_httpd_handle_new_connection(listener);
+
+            httpstate.fdmax = listener;
+            for (i = 0; i < CYGPKG_NET_MAXSOCKETS; i ++)
+            {
+                cyg_int32 descr = httpstate.sockets[i].descriptor;
+                if (descr != 0)
+                {
+                    // If the descriptor is set in the descriptor list, we
+                    //  service it. Otherwise, we add it to the descriptor list
+                    //  to listen for. The rfds list gets rewritten each time
+                    //  select() is called and after the call it contains only
+                    //  the descriptors that need be serviced. Before calling
+                    //  select() again we must repopulate the list with all the
+                    //  descriptors that must be listened for.
+                    if (FD_ISSET(descr, &httpstate.rfds))
+                        cyg_httpd_process_request(i);
+                    else       
+                        FD_SET(descr, &httpstate.rfds); 
+                    httpstate.fdmax = MAX(httpstate.fdmax, descr);
+                }
+            }
+        }
+        else if (rc == 0)
+        {
+            cyg_httpd_close_unused_sockets(listener);
+        }
+        else
+        {
+            perror("error");
+            cyg_int8 *ptr = (cyg_int8*)&httpstate.rfds;
+            printf("rfds: %x %x %x %x\n", ptr[0], ptr[1], ptr[2], ptr[3] );
+            for (i = 0; i < CYGPKG_NET_MAXSOCKETS; i++)
+                if (httpstate.sockets[i].descriptor != 0)
+                     diag_printf("Socket in list: %d\n", 
+                                 httpstate.sockets[i].descriptor);
+            CYG_ASSERT(rc != -1, "Error during select()");                 
+        }
+    }
+}
+
+void
+cyg_httpd_start(void)
+{
+    if (cyg_httpd_initialized)
+        return;
+    cyg_httpd_initialized = 1;
+    
+    cyg_thread_create(CYGNUM_NET_ATHTTPD_THREADOPT_PRIORITY,
+                      cyg_httpd_daemon,
+                      (cyg_addrword_t)0,
+                      "HTTPD Thread",
+                      (void *)cyg_httpd_thread_stack,
+                      CYG_HTTPD_DAEMON_STACK_SIZE,
+                      &cyg_httpd_thread_handle,
+                      &cyg_httpd_thread_object);
+    cyg_thread_resume(cyg_httpd_thread_handle);
+}                       
+
+
+

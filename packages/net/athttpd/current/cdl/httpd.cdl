@@ -1,0 +1,296 @@
+# ====================================================================
+#
+#      httpd.cdl
+#
+#      HTTP server configuration data
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2005 eCosCentric Ltd.
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+##
+## -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      Anthony Tonizzo (atonizzo@gmail.com)
+# Contributors:   
+# Date:           2006-06-09
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_ATHTTPD {
+    display       "Another Tiny HTTP server"
+    description   "This package provides an small footprint web server for eCos
+                   with configurable features."
+    include_dir   cyg/athttpd
+    include_files auth.h digcalc.h forms.h global.h handler.h http.h md5.h socket.h cgi.h jim.h
+    compile       forms.c handler.c http.c socket.c cgi.c
+    requires      CYGPKG_NET
+    requires      !CYGPKG_HTTPD
+# ====================================================================
+   
+    cdl_component CYGPKG_NET_ATHTTPD_THREADOPT {
+        display "Thread settings"
+        flavor  none
+        no_define
+        description   "Options to change ceratain thread values."
+
+      cdl_option CYGNUM_NET_ATHTTPD_THREADOPT_PRIORITY {
+          display "Thread priority"
+          flavor data
+          default_value { CYGNUM_KERNEL_SCHED_PRIORITIES/2 }
+          legal_values 0 to CYGNUM_KERNEL_SCHED_PRIORITIES
+          description "The HTTP server threads can be run at any priority.
+                       The exact priority depends on the importance of the
+                       server relative to the rest of the system. The default
+                       is to put it in the middle of the priority range to provide
+                       reasonable response without impacting genuine high
+                       priority threads."
+      }
+
+      cdl_option CYGNUM_NET_ATHTTPD_THREADOPT_STACKSIZE {
+          display "Thread stack size"
+          flavor data
+          default_value 4096
+          description "This is the amount of extra stack to be allocated for 
+                       the HTTPD thread. This value is added to
+                       CYGNUM_HAL_STACK_SIZE_MINIMUM to determine the final
+                       size of the stack."
+      }
+    }  
+
+    cdl_component CYGOPT_NET_ATHTTPD_SERVEROPT {
+        display "Server settings"
+        flavor  none
+        no_define
+        description   "Options to change ceratain server options."
+
+      cdl_option CYGNUM_NET_ATHTTPD_SERVEROPT_PORT {
+          display "Server Port"
+          flavor data
+          default_value 80
+          description "This is the port to which the server will be listening
+                      for requests. Unless overridden in the request by the 
+                      client, the well known port for HTTP is 80."
+      }
+
+      cdl_option CYGDAT_NET_ATHTTPD_SERVEROPT_SERVERID {
+          display "Server ID string"
+          flavor data
+          default_value {"\"eCos Embedded Web Server\""}
+          description "This is the string sent out in the 'Server:' header."
+      }
+      
+      cdl_option CYGNUM_ATHTTPD_SERVER_BUFFER_SIZE {
+          display "IO buffer size"
+          flavor data
+          default_value 2048
+          description "This option defines the size of the buffers used to 
+                       receive and transmit transmit data to and from the TCP/IP
+                       stack."
+      }
+
+      cdl_option CYGDAT_NET_ATHTTPD_SERVEROPT_ROOTDIR {
+          display "HTTPD root directory"
+          flavor data
+          default_value {"\"/\""}
+          description "This is the absolute path in the eCos file system to the 
+                       all HTML documents, including cgi-bin files and error
+                       files and it is generally where the web server will
+                       look for the home page. Include a trialing slash."
+      }
+      
+      cdl_option CYGDAT_NET_ATHTTPD_SERVEROPT_CGIDIR {
+          display "cgi-bin directory"
+          active_if    { 0 != CYGOPT_NET_ATHTTPD_USE_CGIBIN_OBJLOADER }
+          flavor data
+          default_value {"\"cgi-bin/\""}
+          description "This is the path, relative to CYGDAT_NET_ATHTTPD_SERVEROPT_ROOTDIR,
+                       where the cgi-bin files are held. Currently only the
+                       object loader package is used to provide cgi support
+                       and any request for a URL ending in .o will look for
+                       the corresponding file in this directory. Include a 
+                       trialing slash."
+      }
+      
+      cdl_option CYGDAT_NET_ATHTTPD_SERVEROPT_ERRORDIR {
+          display "Error files directory"
+          flavor data
+          default_value {"\"errors/\""}
+          description "This is the path, relative to the HTTP root directory,
+                       that contains the user-defined files that are sent out
+                       by the server in case of error. The files are named
+                       error_XXX.html where XXX is the 3 digit HTML error
+                       code. For example, for a 404 error the server file will be
+                       named error_404.html. Upon a 404 error, the server will
+                       check the existence of such a file in this directory and
+                       if found, it will send it out. Missing that file, a
+                       standard simple message will be sent instead.  Include 
+                       a trialing slash."
+      }
+
+      cdl_option CYGDAT_NET_ATHTTPD_DEFAULT_MIME_TYPE {
+          display "Default MIME type"
+          flavor data
+          default_value {"\"text/plain\""}
+          description "When accessing internal resources or a file system,
+                       the MIME type is determined from the extension of the
+                       file itsef, by looking up the extension in the MIME
+                       table. In case no extension is found the user can
+                       define the default MIME type to use. Notice that
+                       this is the full MIME type and not the extension.
+                       A list of standard MIME types sorted by extension can
+                       be found int he doc directory"
+      }
+      
+      cdl_option CYGDAT_NET_ATHTTPD_ALTERNATE_HOME {
+          display "User defined Home Page"
+          flavor booldata
+          default_value {"\"/index.html\""}
+          description "This file name is used to define a custom index file and
+                       added in case none of the default index files are 
+                       found in a directory. Notice that this file name is
+                       only appended to GET requests for \"/\""
+      }
+    }  
+
+    cdl_option CYGOPT_NET_ATHTTPD_USE_FS {
+        display       "Support for file system access"
+        flavor        bool
+        default_value 1
+        active_if     CYGPKG_IO_FILEIO
+        description   "
+            This option enables the use of a file system to access the pages
+             to be served. It is the responsibility of the user to properly
+             mount the file system(s) required by the web server. If this
+             option is not selected each URL requested must be serviced using
+             c language callback, internal resources or, if this option is
+             enabled, objloader libraries." 
+    }
+
+    cdl_option CYGOPT_NET_ATHTTPD_USE_AUTH {
+        display       "Support for basic authentication"
+        flavor        bool
+        default_value 0
+        description   "
+            This option enables the use the basic authentication in web pages.
+            Digest authentication code is also included, but has not been
+            extensively tested." 
+       compile md5c.c
+       compile auth.c
+    }
+
+    cdl_option CYGOPT_NET_ATHTTPD_USE_DIRLIST {
+        display       "Support for directory listing"
+        flavor        bool
+        default_value 0
+        active_if     CYGPKG_IO_FILEIO
+        active_if     CYGOPT_NET_ATHTTPD_USE_FS
+        description   "
+            When a client issues a request that ends in '/' the server will
+            try to locate anyone of a number of index files. Failing to find
+            one, it will list the directory contents."
+    }
+
+    cdl_component CYGOPT_NET_ATHTTPD_CGIBIN {
+        display "Supported CGI Types"
+        flavor  none
+        no_define
+        description   "Options to select which CGI types are supported."
+
+      cdl_option CYGOPT_NET_ATHTTPD_USE_CGIBIN_OBJLOADER {
+          display       "cgi-bin via the OBJLOADER package"
+          flavor        bool
+          default_value 0
+          active_if     CYGPKG_OBJLOADER
+          description   "This option enables the use of the object loader 
+                         package as a means of providing on-demand loading and 
+                         execution of code, thus providing a simple cgi
+                         capability that does not involve scripting." 
+      }
+
+      cdl_option CYGOPT_NET_ATHTTPD_USE_CGIBIN_TCL {
+          display       "cgi-bin via the a simple tcl interpreter (jim)"
+          flavor        bool
+          default_value 0
+          description   "This option enables the use of a small tcl
+                         interpreter as a means of providing a simple cgi
+                         capability. Checking this option increases 
+                         considerably the size of the executable." 
+          compile       jim.c
+          define        JIM_ANSIC
+          define        JIM_EMBEDDED
+      }
+    }  
+
+    cdl_option CYGOPT_NET_ATHTTPD_DEBUG_LEVEL {
+        display          "Verbosity of debug output"
+        flavor           data
+        legal_values     0 1 2
+        default_value    0
+        description      "This option allows controls over the verbosity of
+                         the debug output. 1 mostly reports opening and
+                         closing of socket descriptors, 2 is very
+                         verbose, including the name of all files sent
+                         out, including internal resources."
+    }
+    cdl_component CYGPKG_ATHTTPD_OPTIONS {
+        display "AT HTTP server build options"
+        flavor  none
+        no_define
+
+        cdl_option CYGPKG_ATHTTPD_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "-D__ECOS" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the HTTP server package.
+                These flags are used in addition
+                to the set of global flags."
+        }
+
+        cdl_option CYGPKG_ATHTTPD_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the HTTP server package. These flags are removed from
+                the set of global flags if present."
+        }
+    }
+}
+
+# ====================================================================
+# EOF httpd.cdl
