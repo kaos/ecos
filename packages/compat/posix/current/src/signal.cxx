@@ -10,6 +10,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2002 Nick Garnett
+// Copyright (C) 2004 eCosCentric Ltd.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -1068,12 +1069,9 @@ externC int pause( void )
 
     // Check for any pending signals that can be delivered and
     // if there are none, wait for a signal to be generated
-    if( !cyg_deliver_signals() )
+    while( !cyg_deliver_signals() )
         signal_sigwait.wait();
 
-    // Now check again for some signals to deliver
-    cyg_deliver_signals();
-    
     signal_mutex.unlock();
     
     SIGNAL_RETURN(EINTR);

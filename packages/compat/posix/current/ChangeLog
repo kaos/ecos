@@ -1,3 +1,8 @@
+2006-07-18  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/signal.cxx (pause): Although already POSIX compliant, if we wait
+	for all signals, behaviour is more Linux-like.
+
 2006-06-13  Dan Jakubiec  <dan.jakubiec@systech.com>
 
 	* src/time.cxx: (nanosleep): Fixed to return EINTR when it is
