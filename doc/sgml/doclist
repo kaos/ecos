@@ -28,6 +28,7 @@ net/snmp/agent/current/doc/snmp-manpages.sgml
 net/httpd/current/doc/httpd.sgml
 net/ftpclient/current/doc/ftpclient.sgml
 net/sntp/current/doc/sntp.sgml
+net/athttpd/current/doc/athttpd.sgml
 services/memalloc/common/current/doc/memalloc.sgml
 services/crc/current/doc/crc.sgml
 services/cpuload/current/doc/cpuload.sgml

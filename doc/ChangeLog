@@ -1,3 +1,7 @@
+2006-06-16  Anthony Tonizzo  <atonizzo@gmail.com>
+
+	* sgml/doclist: add ATHTTPD documentation
+
 2005-04-21  Bart Veer  <bartv@ecoscentric.com>
 
 	* sgml/doclist: add I2C and DS1307 documentation
