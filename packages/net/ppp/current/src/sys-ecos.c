@@ -558,7 +558,7 @@ static void cyg_ppp_tx_thread(CYG_ADDRWORD arg)
 
     // Wait for the PPPD thread to get going and start the PPP
     // initialization phase.
-    while(phase == PHASE_DEAD )
+    while(phase == PHASE_DEAD)
         cyg_thread_delay(100);
 
     // Now loop until the link goes back down.
@@ -1702,6 +1702,8 @@ externC cyg_ppp_handle_t cyg_ppp_up( const char *devnam_arg,
 
     ppp_tty.options = options;
 
+    cyg_semaphore_init( &ppp_tty.tx_sem,  0 );
+
     // Start the PPPD thread
     cyg_thread_create(CYGNUM_PPP_PPPD_THREAD_PRIORITY,
                       cyg_pppd_main,
@@ -1715,8 +1717,6 @@ externC cyg_ppp_handle_t cyg_ppp_up( const char *devnam_arg,
     cyg_thread_resume(ppp_tty.pppd_thread);
 
     // Start the TX thread
-    cyg_semaphore_init( &ppp_tty.tx_sem,  0 );
-    
     cyg_thread_create(CYGNUM_PPP_PPPD_THREAD_PRIORITY+1,
                       cyg_ppp_tx_thread,
                       (CYG_ADDRWORD)&ppp_tty,
@@ -1730,7 +1730,7 @@ externC cyg_ppp_handle_t cyg_ppp_up( const char *devnam_arg,
 
     // Wait for the PPPD thread to get going and start the PPP
     // initialization phase.
-    while(phase == PHASE_DEAD )
+    while(phase == PHASE_DEAD)
         cyg_thread_delay(100);
     
     return (cyg_ppp_handle_t)&ppp_tty;
