@@ -6278,4 +6278,11 @@ package CYGPKG_NET_LWIP {
 	description	"Lightweight TCP/IP stack: lwIP"
 }
 
+package CYGPKG_ATHTTPD {
+	alias 		{ "ATHTTP server" athttpd }
+	directory	net/athttpd
+	script		httpd.cdl
+    description "Another Tiny HTTP server."
+}
+
 
