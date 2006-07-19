@@ -1,3 +1,10 @@
+2006-07-19  Philip Keller  <keller@metrolab.ch>
+
+	* src/ecos/support.c (cyg_netint): Don't handle events that don't
+	have handlers registered. Fixes Bug 1000046, whereby an assertion
+	or crash resulted from an ARP package arriving before network
+	initialization was complete.
+
 2006-06-14  Andy Jackson <andy@xylanta.com>
 
 	* cdl/freebsd_net.cdl, src/ecos/support.c, src/ecos/support.c:

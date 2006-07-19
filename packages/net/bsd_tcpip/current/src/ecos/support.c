@@ -726,8 +726,8 @@ cyg_netint(cyg_addrword_t param)
         spl = splsoftnet(); // Prevent any overlapping "stack" processing
         for (lvl = NETISR_MIN;  lvl <= NETISR_MAX;  lvl++) {
             if (curisr & (1<<lvl)) {
-                CYG_ASSERT(_netisr_handlers[lvl] != 0, "unregistered netisr handler");
-                (*_netisr_handlers[lvl])();
+                if (NULL != _netisr_handlers[lvl])
+                    (*_netisr_handlers[lvl])();
             }
         }
         splx(spl);
