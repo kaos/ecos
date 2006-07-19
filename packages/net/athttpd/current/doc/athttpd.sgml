@@ -185,7 +185,7 @@ len         : length of the data to send out
 as <command>cyg_httpd_write_chunked()</command></para>
 </sect1>
 
-<sect1 id="athttpd-mime_types">
+<sect1 id="athttpd-mime-types">
 <title>MIME types</title>
 <para>
 The server has an internal table with all the recognized mime types. Each time
@@ -217,7 +217,7 @@ The following is an example of how to add the Adobe Portable Document Format
 CYG_HTTPD_MIME_TABLE_ENTRY(hal_pdf_entry, "pdf", "application/pdf");
 </programlisting></para>
 
-<sect2 id="athttpd-mime_types-chunked">
+<sect2 id="athttpd-mime-types-chunked">
 <title>MIME Types for Chunked Frames</title>
 <para>
 For chunked frames, which are generally used inside c language callbacks, there

@@ -1,3 +1,8 @@
+2006-07-19  Sergei Gavrikov  <w3sg@softhome.net>
+
+	* doc/athttpd.sgml: jade doesn't allow underscores in
+	id attributes, so fix.
+
 2006-07-18  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/httpd.cdl: Add -D __ECOS in compiler flags.
