@@ -13,6 +13,23 @@
 	* src/if_dp83816.c: Enable start/stop functions (device was always
 	enabled once configured before)
 
+2004-05-14  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/if_dp83816.c (dp83816_init): Make ESA diag_printf()
+	controlled by DEBUG flag.
+	(dp83816_init): 
+	(dp83816_poll): Fixed interrupt enable, masking and acknowledges
+	so that the driver correctly handles Ctrl-C interrupts in RedBoot.
+
+2004-05-13  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/if_dp83816.c (dp83816_poll): Removed test for locked up
+	transmit engine. This test triggers in otherwise normal situations
+	and the warm reset messes things up a lot in both the driver and
+	network stack.
+	(dp83816_recv): Avoid memcpy() when passed a NULL buffer, this can
+	happen when the stack runs out of MBUFs.
+
 2003-10-14  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/if_dp83816.c (dp83816_poll): Try to better detect condition
@@ -37,6 +54,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2004 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free

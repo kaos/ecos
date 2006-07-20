@@ -10,6 +10,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2003 Gary Thomas
+// Copyright (C) 2004 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -63,10 +64,10 @@
 // 2 for added data IO output: get_reg, put_reg
 // 4 for packet allocation/free output
 // 8 for only startup status, so we can tell we're installed OK
-#define DEBUG 0x0
-
+#define DEBUG 0
+__externC int norecurse;
 #if DEBUG & 1
-#define DEBUG_FUNCTION() do { diag_printf("%s\n", __FUNCTION__); } while (0)
+#define DEBUG_FUNCTION() do { if (!norecurse) { norecurse=1; diag_printf("%s\n", __FUNCTION__); norecurse=0;}} while (0)
 #define DEBUG_LINE() do { diag_printf("%d\n", __LINE__); } while (0)
 #else
 #define DEBUG_FUNCTION() do {} while(0)
@@ -76,10 +77,10 @@
 // ------------------------------------------------------------------------
 // Buffer descriptors
 typedef struct dp83816_bd {
-    struct dp83816_bd *next;  // Next descriptor
-    unsigned long      stat;  // Buffer status & flags
-    unsigned char     *buf;   // Buffer memory
-    unsigned long      key;   // Internal use only
+    volatile struct dp83816_bd *next;  // Next descriptor
+    volatile unsigned long      stat;  // Buffer status & flags
+    volatile unsigned char     *buf;   // Buffer memory
+    volatile unsigned long      key;   // Internal use only
 } dp83816_bd_t;
 
 // ------------------------------------------------------------------------

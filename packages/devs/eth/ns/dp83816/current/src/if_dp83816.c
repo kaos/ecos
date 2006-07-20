@@ -10,6 +10,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2003, 2004 Gary Thomas
+// Copyright (C) 2004 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -62,9 +63,14 @@
 #include <cyg/hal/hal_if.h>
 #include <cyg/io/eth/eth_drv.h>
 #include <cyg/io/eth/netdev.h>
+#include <string.h> // memcpy
 
 #include "dp83816.h"
 #include CYGDAT_DEVS_ETH_NS_DP83816_INL
+
+#if DEBUG & 1
+int norecurse;
+#endif
 
 #ifdef CYGHWR_NS_DP83816_USE_EEPROM
 static cyg_uint16 dp83816_eeprom_read(struct dp83816_priv_data *dp, int location);
@@ -121,6 +127,7 @@ dp83816_reset(dp83816_priv_data_t *dp)
         diag_printf("DP83816 - reset timed out! - stat: %x\n", stat);
         return false;
     }
+
     // Rx ring
     bdp = dp->rxnext = CYGARC_UNCACHED_ADDRESS(dp->rxd);
     bp = dp->rxbuf;
@@ -145,6 +152,7 @@ dp83816_reset(dp83816_priv_data_t *dp)
     bdp--;  bdp->next = (dp83816_bd_t *)CYG_CPU_TO_LE32(CYGARC_PHYSICAL_ADDRESS(dp->txd));
     DP_OUT(dp->base, DP_TXCFG, _TXCFG_ATP |
                                _TXCFG_MXDMA_128 |
+           /* _TXCFG_CSI | */
                                ((256/32)<<_TXCFG_FLTH_SHIFT) |
                                ((512/32)<<_TXCFG_DRTH_SHIFT));
     DP_OUT(dp->base, DP_TXDP, CYGARC_PHYSICAL_ADDRESS(dp->txd));
@@ -169,7 +177,7 @@ dp83816_init(struct cyg_netdevtab_entry *tab)
     struct eth_drv_sc *sc = (struct eth_drv_sc *)tab->device_instance;
     dp83816_priv_data_t *dp = (dp83816_priv_data_t *)sc->driver_private;
     cyg_uint8 *base;
-    bool esa_ok;
+    bool esa_ok = false;
     unsigned char enaddr[6];
 
     DEBUG_FUNCTION();
@@ -178,8 +186,36 @@ dp83816_init(struct cyg_netdevtab_entry *tab)
     base = dp->base;
     if (!base) return false;  // No device found
 
+#ifdef CYGPKG_REDBOOT
+#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
+    esa_ok = flash_get_config(dp->esa_key, enaddr, CONFIG_ESA);
+#endif
+#elif defined (CONFIG_ESA)
+    esa_ok = CYGACC_CALL_IF_FLASH_CFG_OP(CYGNUM_CALL_IF_FLASH_CFG_GET,         
+                                         dp->esa_key, enaddr, CONFIG_ESA);
+#endif
     // Get physical device address
-#ifdef CYGHWR_NS_DP83816_USE_EEPROM
+    // There are two different implementations due to parallel implementations.
+    // Both are included for backward compatibility, but
+    // the CYGHWR_DEVS_ETH_NS_DP83816_USE_EEPROM_ESA implementation is
+    // preferred simply because it is smaller.
+#if defined(CYGHWR_DEVS_ETH_NS_DP83816_USE_EEPROM_ESA)
+    if (!esa_ok)
+    {
+        // Read the ESA from the PMATCH receive filter register, which
+        // will have been initialised from the EEPROM.
+        cyg_uint32 rfcrdat;
+        cyg_ucount8 i;
+        for (i = 0;  i < 6;  i+=2) {
+            DP_OUT(dp->base, DP_RFCR, i);
+            DP_IN(dp->base, DP_RFDR, rfcrdat );
+            enaddr[i] = rfcrdat & 0xff;
+            enaddr[i+1] = (rfcrdat>>8) & 0xff;
+        }
+        esa_ok = true;
+    }
+#elif defined(CYGHWR_NS_DP83816_USE_EEPROM)
+    // This define (CYGHWR_NS_DP83816_USE_EEPROM) is deprecated.
     {
         cyg_uint16 t;
 
@@ -198,17 +234,6 @@ dp83816_init(struct cyg_netdevtab_entry *tab)
         
         esa_ok =  true;
     }
-#else
-#ifdef CYGPKG_REDBOOT
-#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
-    esa_ok = flash_get_config(dp->esa_key, enaddr, CONFIG_ESA);
-#else
-    esa_ok = false;
-#endif
-#else
-    esa_ok = CYGACC_CALL_IF_FLASH_CFG_OP(CYGNUM_CALL_IF_FLASH_CFG_GET,         
-                                         dp->esa_key, enaddr, CONFIG_ESA);
-#endif
 #endif
     if (esa_ok) {
         memcpy(dp->enaddr, enaddr, sizeof(enaddr));
@@ -217,8 +242,16 @@ dp83816_init(struct cyg_netdevtab_entry *tab)
         diag_printf("DP83816 - Warning! ESA unknown\n");
     }
 
+    //    DEBUG_FUNCTION();
+
     if (!dp83816_reset(dp)) return false;
 
+#if DEBUG & 8
+    diag_printf("DP83816 - ESA: %02x:%02x:%02x:%02x:%02x:%02x\n",
+                dp->enaddr[0], dp->enaddr[1], dp->enaddr[2],
+                dp->enaddr[3], dp->enaddr[4], dp->enaddr[5] );
+#endif
+    
 #ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
     cyg_drv_interrupt_create(
         dp->interrupt,
@@ -231,6 +264,8 @@ dp83816_init(struct cyg_netdevtab_entry *tab)
 
     cyg_drv_interrupt_attach(dp->interrupt_handle);
     cyg_drv_interrupt_unmask(dp->interrupt);
+#elif defined(CYGPKG_REDBOOT)
+    cyg_drv_interrupt_unmask(dp->interrupt);    
 #endif
 
     // Initialize upper level driver
@@ -306,13 +341,27 @@ dp83816_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
     struct dp83816_priv_data *dp = (struct dp83816_priv_data *)sc->driver_private;
     int i, len;
     unsigned char *data;
-    dp83816_bd_t *bdp = dp->txfill;
+    dp83816_bd_t *bdp;
+#if 0
+    cyg_uint32 ints;
+    cyg_drv_dsr_lock();
+    HAL_DISABLE_INTERRUPTS(ints);
+#endif
+    
+    bdp= dp->txfill;
 
     DEBUG_FUNCTION();
 
     len = total_len;
     if (len < IEEE_8023_MIN_FRAME) len = IEEE_8023_MIN_FRAME;
     data = (unsigned char *)CYGARC_VIRTUAL_ADDRESS(CYG_LE32_TO_CPU((unsigned long)bdp->buf));
+#if DEBUG & 1
+    if (!norecurse) {
+        norecurse=1;
+        diag_printf("send sg_len==%d, txbusy=%d, len=%d, total_len=%d\n", sg_len, dp->txbusy, len, total_len);
+        norecurse = 0;
+    }
+#endif
     for (i = 0;  i < sg_len;  i++) {
         memcpy(data, (unsigned char *)sg_list[i].buf, sg_list[i].len);
         data += sg_list[i].len;
@@ -324,6 +373,10 @@ dp83816_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
     dp->txfill = bdp;
     // Kick the device, in case it went idle
     DP_OUT(dp->base, DP_CR, _CR_TXE);
+#if 0
+    cyg_drv_dsr_unlock();
+    HAL_RESTORE_INTERRUPTS(ints);
+#endif
 }
 
 static void
@@ -396,7 +449,8 @@ dp83816_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
 
     data = (unsigned char *)CYGARC_VIRTUAL_ADDRESS(CYG_LE32_TO_CPU((unsigned long)bdp->buf));
     for (i = 0;  i < sg_len;  i++) {
-        memcpy((void *)sg_list[i].buf, data, sg_list[i].len);
+        if( sg_list[i].buf )
+            memcpy((void *)sg_list[i].buf, data, sg_list[i].len);
         data += sg_list[i].len;
     }
 }
@@ -408,6 +462,7 @@ dp83816_warm_reset(struct eth_drv_sc *sc)
     dp83816_bd_t *bdp;
     int i;
 
+    DEBUG_FUNCTION();
     // Free up any active Tx buffers
     bdp = CYGARC_UNCACHED_ADDRESS(dp->txd);
     for (i = 0; i < dp->txnum; i++, bdp++) {
@@ -426,6 +481,10 @@ dp83816_poll(struct eth_drv_sc *sc)
     struct dp83816_priv_data *dp = (struct dp83816_priv_data *)sc->driver_private;
     unsigned long stat, cr_stat;
 
+#if defined(CYGPKG_REDBOOT)
+    cyg_drv_interrupt_acknowledge(dp->interrupt);
+#endif
+    
     DP_IN(dp->base, DP_ISR, stat);
     do {
         if ((stat & (_ISR_TXDESC|_ISR_TXOK)) != 0) {
@@ -436,21 +495,24 @@ dp83816_poll(struct eth_drv_sc *sc)
         }
         DP_IN(dp->base, DP_CR, cr_stat);
         if ((stat & (_ISR_HIBERR|_ISR_TXURN|_ISR_RXORN)) != 0) {            
-#if 0
+#if DEBUG & 2
             diag_printf("DP83816 - major error: %x, cmd_stat: %x\n", stat, cr_stat);
 #endif
             // Try to reset the device
             dp83816_warm_reset(sc);
         }
-        if (((cr_stat & _CR_RXE) == 0) ||
-            ((dp->txbusy > 1) && ((cr_stat & _CR_TXE) == 0))) {
 #if 0
+        if (((cr_stat & _CR_RXE) == 0) ||
+            ((dp->txbusy > 1) && ((cr_stat & _CR_TXE) == 0)))
+        {
+#if DEBUG & 2
             // What happened?
-            diag_printf("DP83816 went to lunch? - stat: %x/%x, txbusy: %x\n", cr_stat, stat, dp->txbusy);
+            diag_printf("DP83816 went to lunch? - stat: %x/%x, txbusy: %x, bdstat: %x\n", cr_stat, stat, dp->txbusy, dp->txint->stat);
 #endif
             // Try to reset the device
             dp83816_warm_reset(sc);
         }
+#endif
         DP_IN(dp->base, DP_ISR, stat);
     } while (stat != 0);
 #ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
