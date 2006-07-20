@@ -10,6 +10,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2002, 2003, 2004 Gary Thomas
+// Copyright (C) 2004 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -143,7 +144,7 @@ redboot_getc(void)
     }
     if (getc_info.avail == 0) {
         if (getc_info.verbose) {
-            diag_printf("%c\b", spin[getc_info.tick++]);
+            err_printf("%c\b", spin[getc_info.tick++]);
             if (getc_info.tick >= sizeof(spin)) {
                 getc_info.tick = 0;
             }
@@ -212,7 +213,7 @@ redboot_getc_init(connection_info_t *info, getc_io_funcs_t *funcs,
 
     res = (funcs->open)(info, &getc_info.err);    
     if (res < 0) {
-        diag_printf("Can't load '%s': %s\n", info->filename, (funcs->error)(getc_info.err));
+        err_printf("Can't load '%s': %s\n", info->filename, (funcs->error)(getc_info.err));
             return res;
     }
     getc_info.io = funcs;
@@ -232,7 +233,7 @@ redboot_getc_init(connection_info_t *info, getc_io_funcs_t *funcs,
         getc_info.fun = _decompress_stream;
         getc_info.err = (*_dc_init)(p);
         if (0 != getc_info.err && p->msg) {
-            diag_printf("open decompression error: %s\n", p->msg);
+            err_printf("open decompression error: %s\n", p->msg);
         }
     }
 #endif
@@ -313,7 +314,7 @@ load_elf_image(getc_t getc, unsigned long base)
 
     // Read the header
     if (_read(getc, (unsigned char *)&ehdr, sizeof(ehdr)) != sizeof(ehdr)) {
-        diag_printf("Can't read ELF header\n");
+        err_printf("Can't read ELF header\n");
         redboot_getc_terminate(true);
         return 0;
     }
@@ -325,18 +326,18 @@ load_elf_image(getc_t getc, unsigned long base)
                 ehdr.e_shoff, ehdr.e_shentsize, ehdr.e_shnum);
 #endif
     if (ehdr.e_type != ET_EXEC) {
-        diag_printf("Only absolute ELF images supported\n");
+        err_printf("Only absolute ELF images supported\n");
         redboot_getc_terminate(true);
         return 0;
     }
     if (ehdr.e_phnum > MAX_PHDR) {
-        diag_printf("Too many program headers\n");
+        err_printf("Too many program headers\n");
         redboot_getc_terminate(true);
         return 0;
     }
     while (offset < ehdr.e_phoff) {
         if ((*getc)() < 0) {
-            diag_printf(SHORT_DATA);
+            err_printf(SHORT_DATA);
             redboot_getc_terminate(true);
             return 0;
         }
@@ -344,7 +345,7 @@ load_elf_image(getc_t getc, unsigned long base)
     }
     for (phx = 0;  phx < ehdr.e_phnum;  phx++) {
         if (_read(getc, (unsigned char *)&phdr[phx], sizeof(phdr[0])) != sizeof(phdr[0])) {
-            diag_printf("Can't read ELF program header\n");
+            err_printf("Can't read ELF program header\n");
             redboot_getc_terminate(true);
             return 0;
         }
@@ -387,7 +388,7 @@ load_elf_image(getc_t getc, unsigned long base)
             addr += addr_offset;
             if (offset > phdr[phx].p_offset) {
                 if ((phdr[phx].p_offset + len) < offset) {
-                    diag_printf("Can't load ELF file - program headers out of order\n");
+                    err_printf("Can't load ELF file - program headers out of order\n");
                     redboot_getc_terminate(true);
                     return 0;
                 }
@@ -395,7 +396,7 @@ load_elf_image(getc_t getc, unsigned long base)
             } else {
                 while (offset < phdr[phx].p_offset) {
                     if ((*getc)() < 0) {
-                        diag_printf(SHORT_DATA);
+                        err_printf(SHORT_DATA);
                         redboot_getc_terminate(true);
                         return 0;
                     }
@@ -412,12 +413,12 @@ load_elf_image(getc_t getc, unsigned long base)
 #endif
                     )) {
                     redboot_getc_terminate(true);
-                    diag_printf("*** Abort! Attempt to load ELF data to address: %p which is not valid\n", (void*)addr);
+                    err_printf("*** Abort! Attempt to load ELF data to address: %p which is not valid\n", (void*)addr);
                     return 0;
                 }
 #endif
                 if ((ch = (*getc)()) < 0) {
-                    diag_printf(SHORT_DATA);
+                    err_printf(SHORT_DATA);
                     redboot_getc_terminate(true);
                     return 0;
                 }
@@ -458,7 +459,7 @@ load_elf_image(getc_t getc, unsigned long base)
                 (void*)entry_address, (void *)load_address, (void *)load_address_end);
     return 1;
 #else // CYGSEM_REDBOOT_ELF
-    diag_printf("Loading ELF images not supported\n");
+    err_printf("Loading ELF images not supported\n");
     return 0;
 #endif // CYGSEM_REDBOOT_ELF
 }
@@ -516,7 +517,7 @@ load_srec_image(getc_t getc, unsigned long base)
         // Start of line
         if (c != 'S') {
             redboot_getc_terminate(true);
-            diag_printf("Invalid S-record at offset %p, input: %c\n", 
+            err_printf("Invalid S-record at offset %p, input: %c\n", 
                    (void *)offset, c);
             return 0;
         }
@@ -525,7 +526,7 @@ load_srec_image(getc_t getc, unsigned long base)
         sum = 0;
         if ((count = _hex2(getc, 1, &sum)) < 0) {
             redboot_getc_terminate(true);
-            diag_printf("Bad S-record count at offset %p\n", (void *)offset);
+            err_printf("Bad S-record count at offset %p\n", (void *)offset);
             return 0;
         }
         offset += 1;
@@ -558,7 +559,7 @@ load_srec_image(getc_t getc, unsigned long base)
 	      // Only if there is no need to stop the download before printing
 	      // output can we ask confirmation questions.
                 redboot_getc_terminate(true);
-		diag_printf("*** Abort! Attempt to load S-record to address: %p, which is not valid\n",(void*)addr);
+		err_printf("*** Abort! Attempt to load S-record to address: %p, which is not valid\n",(void*)addr);
                 return 0;
             }
 #endif
@@ -582,7 +583,7 @@ load_srec_image(getc_t getc, unsigned long base)
             cksum = (~cksum & 0xFF);
             if (cksum != sum) {
                 redboot_getc_terminate(true);
-                diag_printf("*** Warning! Checksum failure - Addr: %lx, %02lX <> %02lX\n", 
+                err_printf("*** Warning! Checksum failure - Addr: %lx, %02lX <> %02lX\n", 
                        (unsigned long)base_addr, sum, cksum);
                 return 0;
             }
@@ -613,7 +614,7 @@ load_srec_image(getc_t getc, unsigned long base)
             return load_address_end;
         default:
             redboot_getc_terminate(true);
-            diag_printf("Invalid S-record at offset 0x%lx, type: %x\n", 
+            err_printf("Invalid S-record at offset 0x%lx, type: %x\n", 
                    (unsigned long)offset, type);
             return 0;
         }
@@ -719,12 +720,12 @@ do_load(int argc, char *argv[])
     if (hostname_set) {
         ip_route_t rt;
         if (!_gethostbyname(hostname, (in_addr_t *)&host)) {
-            diag_printf("Invalid host: %s\n", hostname);
+            err_printf("Invalid host: %s\n", hostname);
             return;
         }
         /* check that the host can be accessed */
         if (__arp_lookup((ip_addr_t *)&host.sin_addr, &rt) < 0) {
-            diag_printf("Unable to reach host %s (%s)\n",
+            err_printf("Unable to reach host %s (%s)\n",
                         hostname, inet_ntoa((in_addr_t *)&host));
             return;
         }
@@ -733,7 +734,7 @@ do_load(int argc, char *argv[])
 	    host.sin_port = port;
 #endif
     if (chan >= CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS) {
-        diag_printf("Invalid I/O channel: %d\n", chan);
+        err_printf("Invalid I/O channel: %d\n", chan);
         return;
     }
     if (mode_str_set) {
@@ -750,7 +751,7 @@ do_load(int argc, char *argv[])
                  io_tab != &__RedBoot_LOAD_TAB_END__;  io_tab++) {
                 diag_printf(" %s", io_tab->name);
             }
-            diag_printf("\n");
+            err_printf("\n");
         }
         if (!io) {
             return;
@@ -758,7 +759,7 @@ do_load(int argc, char *argv[])
         verbose &= io_tab->can_verbose;
         if (io_tab->need_filename && !filename) {
             diag_printf("File name required\n");
-            diag_printf("usage: load %s\n", usage);
+            err_printf("usage: load %s\n", usage);
             return;
         }
     } else {
@@ -773,7 +774,7 @@ do_load(int argc, char *argv[])
         io = &http_io;
 #endif
 #endif
-#ifdef CYGPKG_REDBOOT_FILEIO
+#if 0 //def CYGPKG_REDBOOT_FILEIO
         // Make file I/O default if mounted
 	if (fileio_mounted) {
 	    which = "file";
@@ -786,7 +787,7 @@ do_load(int argc, char *argv[])
             io = &xyzModem_io;
             verbose = false;
 #else
-            diag_printf("No default protocol!\n");
+            err_printf("No default protocol!\n");
             return;
 #endif
         }
@@ -811,7 +812,7 @@ do_load(int argc, char *argv[])
                 || flash_addr_set
 #endif
         )) {
-        diag_printf("Raw load requires a memory address\n");
+        err_printf("Raw load requires a memory address\n");
         return;
     }
     info.filename = filename;
@@ -839,7 +840,7 @@ do_load(int argc, char *argv[])
                 // before printing output can we ask confirmation
                 // questions.
                 redboot_getc_terminate(true);
-                diag_printf("*** Abort! RAW data spills over limit of FLASH at %p\n",(void*)mp);
+                err_printf("*** Abort! RAW data spills over limit of FLASH at %p\n",(void*)mp);
                 err = -1;
                 break;
             }
@@ -849,7 +850,7 @@ do_load(int argc, char *argv[])
                 // before printing output can we ask confirmation
                 // questions.
                 redboot_getc_terminate(true);
-                diag_printf("*** Abort! RAW data spills over limit of user RAM at %p\n",(void*)mp);
+                err_printf("*** Abort! RAW data spills over limit of user RAM at %p\n",(void*)mp);
                 err = -1;
                 break;
             }
@@ -893,7 +894,7 @@ do_load(int argc, char *argv[])
 		end = load_srec_image(redboot_getc, base);
             } else {
                 redboot_getc_terminate(true);
-                diag_printf("Unrecognized image type: 0x%lx\n", *(unsigned long *)type);
+                err_printf("Unrecognized image type: 0x%lx\n", *(unsigned long *)type);
             }
         }
     }

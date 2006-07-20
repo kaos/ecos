@@ -594,7 +594,7 @@ RedBoot_idle(net_io_test, RedBoot_IDLE_NETIO);
 CYG_HAL_TABLE_BEGIN( __NETDEVTAB__, netdev );
 CYG_HAL_TABLE_END( __NETDEVTAB_END__, netdev );
 
-RedBoot_init(net_init, RedBoot_INIT_LAST);
+RedBoot_init(net_init, RedBoot_INIT_NET);
 
 static void
 show_addrs(void)

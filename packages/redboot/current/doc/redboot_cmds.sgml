@@ -1289,9 +1289,10 @@ IP: 192.168.1.32, Default server: 192.168.1.104, DNS server IP: 192.168.1.101
             <arg choice="req"><group>
               <arg>xmodem</arg>
               <arg>ymodem</arg>
-            </group></arg>
-            <arg>tftp</arg>
-            <arg>disk</arg>
+              <arg>tftp</arg>
+              <arg>disk</arg>
+              <arg>file</arg></group>
+            </arg>
 	  </group>
         </arg>  
 	<arg>-h <replaceable> server_IP_address</replaceable></arg>
@@ -1367,6 +1368,13 @@ serial download method since it would interfere with the protocol.</entry>
 	      <entry>-m disk</entry>	     
 	      <entry></entry>
 	      <entry>Transfer data from a local disk.</entry>	     
+	      <entry><acronym>TFTP</acronym></entry>	     
+	    </row>
+	    <row>
+	      <entry>-m file</entry>	     
+	      <entry></entry>
+	      <entry>Transfer data from a local filesystem such as
+	             JFFS2 or FAT.</entry>	     
 	      <entry><acronym>TFTP</acronym></entry>	     
 	    </row>
 	    <row>
@@ -1448,6 +1456,14 @@ Entry point: 0x80000000, address range: 0x80000000-0x8000fe80
 Load an ELF file from /dev/hda1 which should be an EXT2 partition:
 <screen>
 RedBoot> <userinput>load -mode disk hda1:hello.elf</userinput>
+Entry point: 0x00020000, address range: 0x00020000-0x0002fd70
+</screen>
+      </para>
+      <para>
+Load an ELF file from /jffs2/applications which should be a directory
+in a JFFS2 filesystem:
+<screen>
+RedBoot> <userinput>load -mode file /jffs2/applications/hello.elf</userinput>
 Entry point: 0x00020000, address range: 0x00020000-0x0002fd70
 </screen>
       </para>
@@ -2794,8 +2810,766 @@ RedBoot> <userinput>fis write -b 0x0606f000 -l 0x1000 -f 0x00020000</userinput>
 </para>
 </refsect1>
 </refentry>
+</sect1>
+
+<sect1 id="filesystem-commands">
+<title>Filesystem Interface</title>
+
+<para>
+<indexterm><primary>commands</primary><secondary>filesystem access
+</secondary></indexterm><indexterm><primary>filesystem commands</primary>
+</indexterm><indexterm><primary>commands</primary><secondary>fs</secondary>
+</indexterm><indexterm><primary>fs commands</primary></indexterm>
+
+If the platform has access to secondary storage, then RedBoot may be
+able to access a filesystem stored on this device. RedBoot can access
+FAT filesystems stored on IDE disks or CompactFlash devices and can
+use JFFS2 filesystems stored in FLASH memory. The
+<command>fs</command> command is used to manipulate files on
+filesystems. Applications may be loaded into memory using the
+<emphasis>file</emphasis> mode of the <command>load</command> command.
+</para>
+
+<!-- ******** fs info ************************************************ -->
+
+<refentry id="fs-info-command">
+  <refnamediv>
+    <refname>fs info</refname>
+    <refpurpose>Print filesystem information</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>fs info</command>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+  <refsect1>
+    <title>Arguments</title>
+      <para>
+        The command takes no arguments.
+      </para>
+  </refsect1>
+  <refsect1>
+    <title>Description</title>
+<para>This command prints information about the filesystems that are
+available. Three lists are produced. The first is a list of the
+filsystem implementations available in RedBoot; names from this list
+may be used in the <parameter>-t</parameter> option to the <command>fs
+mount</command> command. The second list describes the block devices
+that are available for mounting a filesystem; names from this list may
+be used in the <parameter>-d</parameter> option to the <command>fs
+mount</command> command. The last list describes the filesystems that
+are already mounted.
+</para>
+</refsect1>
+
+  <refsect1>
+    <title>Examples</title>
+    <para>
+<screen>
+RedBoot> <userinput>fs info</userinput>                                                                
+Filesystems available:                                                          
+ramfs                                                                           
+jffs2
+
+Devices available:
+/dev/flash1
+
+Mounted filesystems:                                                            
+         Device Filesystem Mounted on                                           
+    &lt;undefined&gt;      ramfs /
+    /dev/flash1      jffs2 /flash
+RedBoot></screen>
+    </para>
+  </refsect1>
+</refentry>
+
+<!-- ******** fs mount ************************************************ -->
+
+<refentry id="fs-mount-command">
+  <refnamediv>
+    <refname>fs mount</refname>
+    <refpurpose>Mount a filesystem</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>fs mount</command>
+      <arg choice="opt">-d <replaceable>device</replaceable></arg>
+      <arg choice="req">-t <replaceable>fstype</replaceable></arg>
+      <arg choice="req">mountpoint</arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+  <refsect1>
+    <title>Arguments</title>
+    <informaltable frame="all">
+      <tgroup cols="4" colsep="1" rowsep="1" align="left">
+        <colspec colname="c1">
+        <colspec colname="c2">
+        <colspec colname="c3">
+        <colspec colname="c4">
+        <thead>
+          <row>
+            <entry>Name</entry>
+            <entry>Type</entry>
+            <entry>Description</entry>
+            <entry>Default</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><replaceable>device</replaceable></entry>
+            <entry>Number</entry>
+            <entry>Device containing filsystem to mount.</entry>
+            <entry>undefined</entry>
+          </row>
+          <row>
+            <entry><replaceable>fstype</replaceable></entry>
+            <entry>Number</entry>
+            <entry>Filesystem type.</entry>
+            <entry></entry>
+          </row>
+	    <row>
+	      <entry><replaceable>mountpoint</replaceable></entry>
+	      <entry>String</entry>
+	      <entry>Pathname for filesystem root.</entry>
+	      <entry>/</entry>
+	    </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </refsect1>
+  <refsect1>
+    <title>Description</title>
+<para>This command is used make a filesystem available for access with
+the filesystem access commands. Three things need to be defined to do
+this. First, the name of the device on which the filesystem is stored
+needs to be given to the <parameter>-d</parameter> option. Secondly,
+the type of filesystem it is needs to be given to the
+<parameter>-t</parameter> option. Finally, the pathname by which the
+new filesystem will be accessed needs to be supplied. Following a
+successful mount, the root of the filesystem will be accessible
+at the mountpoint.
+</para>
+</refsect1>
+
+  <refsect1>
+    <title>Examples</title>
+<para>Mount a JFF2 partititon:
+<screen>
+RedBoot> <userinput>fs info</userinput>                                                                
+Filesystems available:                                                          
+ramfs                                                                           
+jffs2
+
+Devices available:
+/dev/flash1
+
+Mounted filesystems:                                                            
+         Device Filesystem Mounted on                                           
+    &lt;undefined&gt;      ramfs /
+RedBoot> <userinput>fs mount -d /dev/flash1 -t jffs2 /flash</userinput>
+RedBoot> <userinput>fs info</userinput>                                                                
+Filesystems available:                                                          
+ramfs                                                                           
+jffs2
+
+Devices available:
+/dev/flash1
+
+Mounted filesystems:                                                            
+         Device Filesystem Mounted on                                           
+    &lt;undefined&gt;      ramfs /
+    /dev/flash1      jffs2 /flash
+RedBoot>
+</screen>
+    </para>
+  </refsect1>
+</refentry>
+
+<!-- ******** fs umount ************************************************ -->
+
+<refentry id="fs-umount-command">
+  <refnamediv>
+    <refname>fs umount</refname>
+    <refpurpose>Unmount filesystem</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>fs umount</command>
+      <arg choice="req"><replaceable>mountpoint</replaceable></arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+  <refsect1>
+    <title>Arguments</title>
+    <informaltable frame="all">
+      <tgroup cols="4" colsep="1" rowsep="1" align="left">
+        <colspec colname="c1">
+        <colspec colname="c2">
+        <colspec colname="c3">
+        <colspec colname="c4">
+        <thead>
+          <row>
+            <entry>Name</entry>
+            <entry>Type</entry>
+            <entry>Description</entry>
+            <entry>Default</entry>
+          </row>
+        </thead>
+        <tbody>
+	    <row>
+	      <entry><replaceable>mountpoint</replaceable></entry>
+	      <entry>String</entry>
+	      <entry>Mountpoint of filesystem to unmount.</entry>
+	      <entry></entry>
+	    </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </refsect1>
+  <refsect1>
+    <title>Description</title>
+<para>This command removes a filesystem from being accessible using
+the filesystem commands. The single argument needs to be the
+mountpoint that was used when mounting the filesystem. This command
+will fail if the current directory is currently within the filesystem
+to be unmounted.
+</para>
+</refsect1>
+
+  <refsect1>
+    <title>Examples</title>
+<para>Unmount a JFF2 partititon:
+<screen>
+RedBoot> <userinput>fs info</userinput>                                                                
+Filesystems available:                                                          
+ramfs                                                                           
+jffs2
+
+Devices available:
+/dev/flash1
+
+Mounted filesystems:                                                            
+         Device Filesystem Mounted on                                           
+    &lt;undefined&gt;      ramfs /
+    /dev/flash1      jffs2 /flash
+RedBoot> <userinput>fs umount /flash</userinput>
+RedBoot> <userinput>fs info</userinput>                                                                
+Filesystems available:                                                          
+ramfs                                                                           
+jffs2
+
+Devices available:
+/dev/flash1
+
+Mounted filesystems:                                                            
+         Device Filesystem Mounted on                                           
+    &lt;undefined&gt;      ramfs /
+RedBoot>
+</screen>
+    </para>
+  </refsect1>
+</refentry>
+
+<!-- ******** fs cd ************************************************ -->
+
+<refentry id="fs-cd-command">
+  <refnamediv>
+    <refname>fs cd</refname>
+    <refpurpose>Change filesystem directory</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>fs cd</command>
+      <arg choice="opt"><replaceable>directory</replaceable></arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+  <refsect1>
+    <title>Arguments</title>
+    <informaltable frame="all">
+      <tgroup cols="4" colsep="1" rowsep="1" align="left">
+        <colspec colname="c1">
+        <colspec colname="c2">
+        <colspec colname="c3">
+        <colspec colname="c4">
+        <thead>
+          <row>
+            <entry>Name</entry>
+            <entry>Type</entry>
+            <entry>Description</entry>
+            <entry>Default</entry>
+          </row>
+        </thead>
+        <tbody>
+	    <row>
+	      <entry><replaceable>directory</replaceable></entry>
+	      <entry>String</entry>
+	      <entry>Pathname to directory to change to.</entry>
+	      <entry>Root directory</entry>
+	    </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </refsect1>
+  <refsect1>
+    <title>Description</title>
+<para>This command changes the current filesystem
+directory. Subsequent filesystem commands will be executed in the new
+directory. If no argument is given, then the current directory is set
+back to the root of the filesystem name space.
+</para>
+</refsect1>
+
+  <refsect1>
+    <title>Examples</title>
+    <para>Change current directory:
+<screen>
+RedBoot> <userinput>fs list</userinput>
+212416 d---------  3 size    128 .
+212416 d---------  3 size    128 ..
+211392 d---------  2 size     96 tests
+210368 ----------  1 size   4096 image
+RedBoot> <userinput>fs cd tests</userinput>
+RedBoot> <userinput>fs list</userinput>
+211392 d---------  2 size     96 .                                              
+212416 d---------  3 size    128 ..                                             
+205760 ----------  1 size  16384 test1                                          
+RedBoot>
+</screen>
+    </para>
+  </refsect1>
+</refentry>
+
+<!-- ******** fs mkdir ************************************************ -->
+
+<refentry id="fs-mkdir-command">
+  <refnamediv>
+    <refname>fs mkdir</refname>
+    <refpurpose>Create filesystem directory</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>fs mkdir</command>
+      <arg choice="req"><replaceable>directory</replaceable></arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+  <refsect1>
+    <title>Arguments</title>
+    <informaltable frame="all">
+      <tgroup cols="4" colsep="1" rowsep="1" align="left">
+        <colspec colname="c1">
+        <colspec colname="c2">
+        <colspec colname="c3">
+        <colspec colname="c4">
+        <thead>
+          <row>
+            <entry>Name</entry>
+            <entry>Type</entry>
+            <entry>Description</entry>
+            <entry>Default</entry>
+          </row>
+        </thead>
+        <tbody>
+	    <row>
+	      <entry><replaceable>directory</replaceable></entry>
+	      <entry>String</entry>
+	      <entry>Pathname to directory to delete.</entry>
+	      <entry></entry>
+	    </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </refsect1>
+  <refsect1>
+    <title>Description</title>
+<para>This command creates (makes) a directory in the filesystem.
+</para>
+</refsect1>
+
+  <refsect1>
+    <title>Examples</title>
+    <para>Create directory:
+<screen>
+RedBoot> <userinput>fs list</userinput>                                                                
+212416 d---------  2 size    128 .                                              
+212416 d---------  2 size    128 ..                                             
+210368 ----------  1 size   4096 image                                          
+RedBoot> <userinput>fs mkdir tests</userinput>                                                         
+RedBoot> <userinput>fs list</userinput>                                                                
+212416 d---------  3 size    128 .                                              
+212416 d---------  3 size    128 ..                                             
+211392 d---------  2 size     64 tests                                          
+210368 ----------  1 size   4096 image                                          
+RedBoot>
+</screen>
+    </para>
+  </refsect1>
+</refentry>
+
+<!-- ******** fs deldir ************************************************ -->
+
+<refentry id="fs-deldir-command">
+  <refnamediv>
+    <refname>fs deldir</refname>
+    <refpurpose>Delete filesystem directory</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>fs deldir</command>
+      <arg choice="req"><replaceable>directory</replaceable></arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+  <refsect1>
+    <title>Arguments</title>
+    <informaltable frame="all">
+      <tgroup cols="4" colsep="1" rowsep="1" align="left">
+        <colspec colname="c1">
+        <colspec colname="c2">
+        <colspec colname="c3">
+        <colspec colname="c4">
+        <thead>
+          <row>
+            <entry>Name</entry>
+            <entry>Type</entry>
+            <entry>Description</entry>
+            <entry>Default</entry>
+          </row>
+        </thead>
+        <tbody>
+	    <row>
+	      <entry><replaceable>directory</replaceable></entry>
+	      <entry>String</entry>
+	      <entry>Pathname to directory to delete.</entry>
+	      <entry></entry>
+	    </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </refsect1>
+  <refsect1>
+    <title>Description</title>
+<para>This command deletes a directory from the filesystem. If the
+directory contains files or other directories then this command will
+fail.
+</para>
+</refsect1>
+
+  <refsect1>
+    <title>Examples</title>
+    <para>Delete directory:
+<screen>
+RedBoot> <userinput>fs list</userinput>                                                                
+212416 d---------  3 size    128 .                                              
+212416 d---------  3 size    128 ..                                             
+211392 d---------  2 size     96 tests                                          
+210368 ----------  1 size   4096 image                                          
+RedBoot> <userinput>fs deldir tests</userinput>                                                        
+RedBoot> <userinput>fs list</userinput>                                                                
+212416 d---------  2 size    128 .                                              
+212416 d---------  2 size    128 ..                                             
+210368 ----------  1 size   4096 image                                          
+RedBoot>
+</screen>
+    </para>
+  </refsect1>
+</refentry>
+
+<!-- ******** fs del ************************************************ -->
+
+<refentry id="fs-del-command">
+  <refnamediv>
+    <refname>fs del</refname>
+    <refpurpose>Delete file</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>fs del</command>
+      <arg choice="req"><replaceable>file</replaceable></arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+  <refsect1>
+    <title>Arguments</title>
+    <informaltable frame="all">
+      <tgroup cols="4" colsep="1" rowsep="1" align="left">
+        <colspec colname="c1">
+        <colspec colname="c2">
+        <colspec colname="c3">
+        <colspec colname="c4">
+        <thead>
+          <row>
+            <entry>Name</entry>
+            <entry>Type</entry>
+            <entry>Description</entry>
+            <entry>Default</entry>
+          </row>
+        </thead>
+        <tbody>
+	    <row>
+	      <entry><replaceable>file</replaceable></entry>
+	      <entry>String</entry>
+	      <entry>Pathname of file to delete.</entry>
+	      <entry></entry>
+	    </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </refsect1>
+  <refsect1>
+    <title>Description</title>
+<para>This command deletes a file from the filesystem.
+</para>
+</refsect1>
+
+  <refsect1>
+    <title>Examples</title>
+    <para>Change current directory:
+<screen>
+RedBoot> <userinput>fs list tests</userinput>                                                          
+211392 d---------  2 size     96 .                                              
+212416 d---------  3 size    128 ..                                             
+205760 ----------  1 size  16384 test1                                          
+RedBoot> <userinput>fs del tests/test1</userinput>                                                     
+RedBoot> <userinput>fs list tests</userinput>                                                          
+211392 d---------  2 size     96 .                                              
+212416 d---------  3 size    128 ..                                             
+RedBoot> 
+</screen>
+    </para>
+  </refsect1>
+</refentry>
+
+<!-- ******** fs move ************************************************ -->
+
+<refentry id="fs-move-command">
+  <refnamediv>
+    <refname>fs move</refname>
+    <refpurpose>Move file</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>fs move</command>
+      <arg choice="req"><replaceable>source</replaceable></arg>
+      <arg choice="req"><replaceable>dest</replaceable></arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+  <refsect1>
+    <title>Arguments</title>
+    <informaltable frame="all">
+      <tgroup cols="4" colsep="1" rowsep="1" align="left">
+        <colspec colname="c1">
+        <colspec colname="c2">
+        <colspec colname="c3">
+        <colspec colname="c4">
+        <thead>
+          <row>
+            <entry>Name</entry>
+            <entry>Type</entry>
+            <entry>Description</entry>
+            <entry>Default</entry>
+          </row>
+        </thead>
+        <tbody>
+	    <row>
+	      <entry><replaceable>source</replaceable></entry>
+	      <entry>String</entry>
+	      <entry>Pathname of file to move.</entry>
+	      <entry></entry>
+	    </row>
+	    <row>
+	      <entry><replaceable>dest</replaceable></entry>
+	      <entry>String</entry>
+	      <entry>Pathname to new file location.</entry>
+	      <entry></entry>
+	    </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </refsect1>
+  <refsect1>
+    <title>Description</title>
+<para>This command moves a file within a filesystem. This command will
+fail if the destination file already exists, or is in a different
+filesystem.
+</para>
+</refsect1>
+
+  <refsect1>
+    <title>Examples</title>
+    <para>Rename a file:
+<screen>
+RedBoot> <userinput>fs list tests</userinput>                                                          
+211392 d---------  2 size     96 .                                              
+212416 d---------  3 size    128 ..                                             
+205760 ----------  1 size  12288 test1                                          
+RedBoot> <userinput>fs move tests/test1 tests/test2</userinput>                                        
+RedBoot> <userinput>fs list tests</userinput>                                                                
+211392 d---------  2 size    128 .                                              
+212416 d---------  3 size    128 ..                                             
+205760 ----------  1 size  12288 test2                                          
+RedBoot>
+</screen>
+    </para>
+  </refsect1>
+</refentry>
+
+<!-- ******** fs list ************************************************ -->
+
+<refentry id="fs-list-command">
+  <refnamediv>
+    <refname>fs list</refname>
+    <refpurpose>List filesystem directory</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>fs list</command>
+      <arg choice="opt"><replaceable>directory</replaceable></arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+  <refsect1>
+    <title>Arguments</title>
+    <informaltable frame="all">
+      <tgroup cols="4" colsep="1" rowsep="1" align="left">
+        <colspec colname="c1">
+        <colspec colname="c2">
+        <colspec colname="c3">
+        <colspec colname="c4">
+        <thead>
+          <row>
+            <entry>Name</entry>
+            <entry>Type</entry>
+            <entry>Description</entry>
+            <entry>Default</entry>
+          </row>
+        </thead>
+        <tbody>
+	    <row>
+	      <entry><replaceable>directory</replaceable></entry>
+	      <entry>String</entry>
+	      <entry>Pathname to directory to list.</entry>
+	      <entry>Current directory</entry>
+	    </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </refsect1>
+  <refsect1>
+    <title>Description</title>
+<para>This command prints a list of the contents of the named
+directory. Each line of the listing starts with the file's inode
+number, which is its address in the filesystem. Following is a set of
+UNIX-like access flags, the first character of this will be a
+&rdquo;d&ldquo; if this entry is a directory. The third item indicates
+the number of links to the file. Following this is the size of the
+file in bytes and the last item is its name.
+</para>
+</refsect1>
+
+  <refsect1>
+    <title>Examples</title>
+    <para>List the current directory:
+<screen>
+RedBoot> <userinput>fs list</userinput>
+212416 d---------  3 size    128 .                                              
+212416 d---------  3 size    128 ..                                             
+211392 ----------  1 size   4096 image                                          
+206784 d---------  2 size     96 tests
+RedBoot>
+</screen>
+    </para>
+<para>
+List a subdirectory:
+<screen>
+RedBoot> fs list tests                                                            
+206784 d---------  2 size     96 .                                              
+212416 d---------  3 size    128 ..                                             
+205760 ----------  1 size  16384 test1                                          
+RedBoot>
+</screen>
+</para>
+  </refsect1>
+</refentry>
+
+<!-- ******** fs write ************************************************ -->
+
+<refentry id="fs-write-command">
+  <refnamediv>
+    <refname>fs write</refname>
+    <refpurpose>Write to filesystem</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>fs write</command>
+      <arg choice="opt">-b <replaceable>mem_address</replaceable></arg>
+      <arg choice="opt">-l <replaceable>length</replaceable></arg>
+      <arg choice="req">name</arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+  <refsect1>
+    <title>Arguments</title>
+    <informaltable frame="all">
+      <tgroup cols="4" colsep="1" rowsep="1" align="left">
+        <colspec colname="c1">
+        <colspec colname="c2">
+        <colspec colname="c3">
+        <colspec colname="c4">
+        <thead>
+          <row>
+            <entry>Name</entry>
+            <entry>Type</entry>
+            <entry>Description</entry>
+            <entry>Default</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><replaceable>mem_address</replaceable></entry>
+            <entry>Number</entry>
+            <entry>Address of data to be written to flash.</entry>
+            <entry>Address of last loaded file. If not set by a load
+            operation it must be specified.</entry>
+          </row>
+          <row>
+            <entry><replaceable>length</replaceable></entry>
+            <entry>Number</entry>
+            <entry>Length of data to be written.</entry>
+            <entry>Length of last loaded file.</entry>
+          </row>
+	    <row>
+	      <entry><replaceable>name</replaceable></entry>
+	      <entry>String</entry>
+	      <entry>Name of file to create.</entry>
+	      <entry></entry>
+	    </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </refsect1>
+  <refsect1>
+    <title>Description</title>
+<para>This command is used to write data from memory to a file. If the
+file does not exist it will be created. If it does exist, then it will
+be overwritten with the new contents.</para>
+</refsect1>
+
+  <refsect1>
+    <title>Examples</title>
+<para>Write an area of data to a file
+<screen>
+RedBoot> <userinput>fs write -b 0x0606f000 -l 0x1000 image</userinput>
+RedBoot> <userinput>fs list</userinput>
+212416 d---------  3 size    128 .                                              
+212416 d---------  3 size    128 ..                                             
+211392 ----------  1 size   4096 image                                          
+206784 d---------  2 size     96 tests
+RedBoot>
+</screen>
+    </para>
+  </refsect1>
+</refentry>
+
+
 
 </sect1>
+
+
 <sect1 id="Persistent-State-Flash">
 <title>Persistent State Flash-based Configuration and Control</title>
 <para><indexterm><primary>persistent state flash-based configuration and control

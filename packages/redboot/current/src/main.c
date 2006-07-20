@@ -10,6 +10,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.
 // Copyright (C) 2002, 2003, 2004 Gary Thomas
+// Copyright (C) 2003, 2004, 2005, 2006 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -33,16 +34,13 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas, tkoeller
+// Contributors: gthomas, tkoeller, eCosCentric
 // Date:         2000-07-14
 // Purpose:      
 // Description:  
@@ -178,7 +176,8 @@ do_version(int argc, char *argv[])
 #ifdef HAL_PLATFORM_CPU
     diag_printf("Platform: %s (%s) %s\n", HAL_PLATFORM_BOARD, HAL_PLATFORM_CPU, HAL_PLATFORM_EXTRA);
 #endif
-    diag_printf("Copyright (C) 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.\n\n");
+    diag_printf("Copyright (C) 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.\n");
+    diag_printf("Copyright (C) 2003, 2004, 2005, 2006 eCosCentric Limited\n\n");
     diag_printf("RAM: %p-%p, ", (void*)ram_start, (void*)ram_end);
     diag_printf("[%p-%p]", mem_segments[0].start, mem_segments[0].end);
     diag_printf(" available\n");
@@ -227,14 +226,13 @@ _mon_write_char(char c, void **param)
 //
 static hal_jmp_buf error_jmpbuf;
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-externC 
-#endif
-  void* volatile __mem_fault_handler;
+__externC void* volatile __mem_fault_handler;
 
 static void error_handler(void)
 {
     hal_longjmp(error_jmpbuf, 1);
 }
+#endif
 
 
 //
@@ -274,7 +272,6 @@ cyg_start(void)
     console_selected = false;
 #endif
     console_echo = true;
-    CYGACC_CALL_IF_DELAY_US((cyg_int32)2*100000);
 
     ram_start = (unsigned char *)CYGMEM_REGION_ram;
     ram_end = (unsigned char *)(CYGMEM_REGION_ram+CYGMEM_REGION_ram_SIZE);
@@ -422,13 +419,17 @@ cyg_start(void)
                     while (strlen(command) > 0) {                    
                         if ((cmd = parse(&command, &argc, &argv[0])) != (struct cmd *)0) {
                             // Try to handle aborts - messy because of the stack unwinding...
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
                             __mem_fault_handler = error_handler;
+#endif
                             if (hal_setjmp(error_jmpbuf)) {
                                 diag_printf("** command abort - illegal memory access?\n");
                             } else {
                                 (cmd->fun)(argc, argv);
                             }
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
                             __mem_fault_handler = 0;
+#endif
                         } else {
                             diag_printf("** Error: Illegal command: \"%s\"\n", argv[0]);
                         }
@@ -527,7 +528,9 @@ do_go(int argc, char *argv[])
     char line[8];
     hal_virtual_comm_table_t *__chan;
 
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
     __mem_fault_handler = 0; // Let GDB handle any faults directly
+#endif
     entry = entry_address;  // Default from last 'load' operation
     init_opts(&opts[0], 'w', true, OPTION_ARG_TYPE_NUM, 
               (void *)&wait_time, (bool *)&wait_time_set, "wait timeout");
@@ -547,7 +550,7 @@ do_go(int argc, char *argv[])
         return;
     }
     if (entry == (unsigned long)NO_MEMORY) {
-        diag_printf("No entry point known - aborted\n");
+        err_printf("No entry point known - aborted\n");
         return;
     }
     if (wait_time_set) {

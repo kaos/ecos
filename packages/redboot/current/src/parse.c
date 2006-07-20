@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2004, 2005, 2006 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -32,16 +33,13 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas
+// Contributors: gthomas, eCosCentric
 // Date:         2000-07-14
 // Purpose:      
 // Description:  
@@ -192,6 +190,97 @@ cmd_usage(struct cmd *tab, struct cmd *tabend, char *prefix)
         diag_printf("  %s%s %s\n", prefix, cmd->str, cmd->usage);
     }
 }
+
+//
+// Handle illegal memory accesses (and other abort conditions)
+//
+static hal_jmp_buf error_jmpbuf;
+static cyg_bool redboot_exec_call = false;
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+__externC void* volatile __mem_fault_handler;
+
+static void error_handler(void)
+{
+    hal_longjmp(error_jmpbuf, 1);
+}
+#endif
+
+// Routine to allow code to invoke RedBoot commands. This is useful
+// during initialization and in platform specific code.
+//
+// Call it like this:
+//
+// result = redboot_exec( "load", "-m", "file", "foo", 0 );
+//
+// Note the terminating zero. The result will be zero if the command
+// succeeded, and <0 if something went wrong.
+
+#define ARGV_MAX        20
+int redboot_exec( char *command, ... )
+{
+    int argc;
+    char *argv[ARGV_MAX+1];
+    va_list ap;
+    struct cmd *cmd;
+    int result = 0;
+    
+    va_start(ap, command);
+
+    argv[0] = command;
+    for( argc = 1; argc < ARGV_MAX; argc++ )
+    {
+        char *arg = va_arg(ap, char *);
+        if( arg == 0 )
+            break;
+        argv[argc] = arg;
+    }
+    argv[argc] = NULL;
+
+    if(( cmd = cmd_search(__RedBoot_CMD_TAB__, &__RedBoot_CMD_TAB_END__, command) ))
+    {
+        // Try to handle aborts - messy because of the stack unwinding...
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+        __mem_fault_handler = error_handler;
+#endif
+        redboot_exec_call = true;
+        if (hal_setjmp(error_jmpbuf))
+            result = -1;
+        else
+            (cmd->fun)(argc, argv);
+
+        redboot_exec_call = false;
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+        __mem_fault_handler = 0;
+#endif
+    }
+    else
+        result = -1;
+    
+    va_end(ap);
+
+    return result;
+}
+
+externC void err_printf( char *fmt, ... )
+{
+    va_list ap;
+    
+    va_start(ap, fmt);
+
+    diag_vprintf( fmt, ap );
+
+    va_end(ap);
+
+    // If we are not in redboot_exec() just return as usual. If we are
+    // inside a call to redboot_exec(), longjump out to terminate the command.
+    
+    if( redboot_exec_call )
+    {
+        diag_printf("err_printf: aborting command\n");
+        hal_longjmp(error_jmpbuf, 1);
+    }
+}
+
 
 // Option processing
 

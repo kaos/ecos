@@ -40,6 +40,11 @@
 	overflowed the workspace.
 	* doc/redboot_cmds.sgml: Document new flag.
 	
+2006-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/fs/fileio.c (do_list): Use getcwd for current directory,
+	rather than "." which may not be implemented in the FS.
+
 2006-02-17  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/flash.c (fis_lock & fis_unlock): Allow compilation without
@@ -54,6 +59,17 @@
 2005-10-17  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/iomem.c (do_iopeek): Correct number of options.
+
+2005-09-13  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/parse.c (redboot_exec): Conditionalise use of 
+	__mem_fault_handler to only be when stubs are included.
+	(error_handler): Ditto for this function.
+
+	* src/main.c (cyg_start): Conditionalise use of 
+	__mem_fault_handler to only be when stubs are included.
+	(do_go): Ditto.
+	(error_handler): Ditto for this function.
 
 2005-09-09  Andrew Dyer  <adyer@righthandtech.com>
  
@@ -184,11 +200,28 @@
         * src/net/arp.c: use correct sizeof(rt->enet_addr) in
 	__arp_lookup()
 	
+2005-01-26  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/fs/fileio.c (do_mkdir, do_deldir, do_del, do_write): Added
+	some extra argument checking to these functions.
+
 2005-01-22  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/main.c (cyg_start): Fix compiler warning with 
 	HAL_THREAD_INIT_CONTEXT and the worspace end address.
 	* src/fs/disk.c (find_dos_partitions): Removed unused variable.
+
+2005-01-19  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/fs/fileio.c (do_mount): Only support -f with "legacy" flash
+	block devices.
+	Clear mount table on failure.
+	(do_move): Silence rename undefined warning.
+	(do_write): Silence warnings.
+	(do_info): Support longer device names.
+
+	* src/decompress.c (ZLIB_COMPRESSION_OVERHEAD): 
+	Increase substantially if jffs2 is present.
 
 2005-01-05  David Vrabel  <dvrabel@arcom.com>
 
@@ -196,12 +229,54 @@
  	* src/net/bootp.c (__bootp_find_local_ip): Only print the
  	"waiting for BOOTP" message when after first retry.
 	
+2004-12-17  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/fs/fileio.c: Fixed some bugs in handling of mounts. The
+	strings used in the mount table must be copied, otherwise the
+	mount table is corrupted by later commands. Also toughened up some
+	error testing.
+
+2004-12-16  Nick Garnett  <nickg@ecoscentric.com>
+
+	* doc/redboot_cmds.sgml: Added file mode documentation to load
+	command.
+
 2004-12-01  Andrea Michelotti  <amichelotti@atmel.com>
 
 	* main.c :
 	* mfill.c: 
 	* mcmp.c : Changes required for use with GCC v4 - cast as lvalue
 	is no longer supported.
+
+2004-11-26  Nick Garnett  <nickg@ecoscentric.com>
+
+	* doc/redboot_cmds.sgml: Added documentation of filesystem access
+	commands.
+
+	* src/fs/fileio.c (do_write): Added O_TRUNC to the open call to
+	ensure that the file is resized to fit the new data.
+
+2004-11-24  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/fs/fileio.c: Significantly reorganized to present an
+	interface similar to the fis commands. Added a variety of command
+	to manipulate files and directories in a filesystem.
+
+	* src/parse.c: Added redboot_exec() to provide an internal
+	interface for executing RedBoot commands. Added err_printf() which
+	allows an error message to be printed before longjumping out to an
+	enclosing call to redboot_exec(). Where redboot_exec() is not
+	involved, it just behaves like diag_printf().
+
+	* src/main.c: Removed unnecessary delay during startup. Changed
+	diag_printf() in do_go() into err_printf().
+
+	* src/load.c: Changed some calls to diag_printf() to err_printf().
+
+	* src/net/net_io.c: Changed init priority to RedBoot_INIT_NET.
+	
+	* include/redboot.h: Added some extra initialization
+	priorities. Added prototypes for redboot_exec() and err_printf().
 
 2004-11-09  Ian Campbell  <icampbell@arcom.com>
 

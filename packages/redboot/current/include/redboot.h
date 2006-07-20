@@ -10,6 +10,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004 Red Hat, Inc.
 // Copyright (C) 2002, 2003, 2004, 2005 Gary Thomas
+// Copyright (C) 2004, 2005 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -251,11 +252,14 @@ extern _cmd_entry(_s_,_h_,_u_,_f_,_subs_,_sube_,_n_)
 static _cmd_entry(_s_,_h_,_u_,_f_,0,0,_n_)
 
 // Initialization functions
-#define RedBoot_INIT_FIRST  0000
-#define RedBoot_INIT_SECOND 0100
+#define RedBoot_INIT_FIRST              0000
+#define RedBoot_INIT_SECOND             0100
 // Specify a 3 digit numeric value for proper prioritizing
 #define RedBoot_INIT_PRIO(_n_) 1##_n_
-#define RedBoot_INIT_LAST  9999
+#define RedBoot_INIT_BEFORE_NET         6900
+#define RedBoot_INIT_NET                7000
+#define RedBoot_INIT_AFTER_NET          7100
+#define RedBoot_INIT_LAST               9999
 typedef void void_fun(void);
 typedef void_fun *void_fun_ptr;
 struct init_tab_entry {
@@ -311,6 +315,10 @@ externC void init_opts(struct option_info *opts, char flag, bool takes_arg,
 externC bool scan_opts(int argc, char *argv[], int first, 
                        struct option_info *opts, int num_opts, 
                        void *def_arg, int def_arg_type, char *def_descr);
+
+externC int redboot_exec( char *command, ... );
+
+externC void err_printf( char *fmt, ... );
 
 #ifdef CYGNUM_HAL_VIRTUAL_VECTOR_AUX_CHANNELS
 #define CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS \
