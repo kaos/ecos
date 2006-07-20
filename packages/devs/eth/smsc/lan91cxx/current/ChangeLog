@@ -12,6 +12,27 @@
 	* src/if_lan91cxx.c: Reset the physical layer before configuring
 	it, otherwise it might not work.
 
+2005-01-24  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/if_lan91cxx.c (lan91cxx_send): Rewrote parts of transmit
+	machinery to deal with odd sized message buffers. The TCP/IP stack
+	generates these in rare circumstances.
+
+2005-01-21  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/smsc_lan91cxx.h: 	
+	* src/if_lan91cxx.c:
+	Rewrote parts of receive machinery to properly deal with 32 bit
+	wide access to the device. The original code didn't quite work.
+	Switched all calls the HAL_DELAY_US() to CYGACC_CALL_IF_DELAY_US().
+	Various small changes to debugging code.
+
+2004-12-01  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/if_lan91cxx.c (lan91cxx_start): Added option to force speed
+	negotiation to 10MHz. Some embedded boards cannot handle 100MHz.
+	Generally added some small improvements to debugging messages.
+
 2004-05-22  Andrew Dyer  <adyer@righthandtech.com>
 
 	* src/if_lan91cxx.c: Fail initialization if no device found.
@@ -185,6 +206,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2005 eCosCentric Ltd.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free

@@ -330,6 +330,8 @@ typedef struct lan91cxx_priv_data {
     int within_send;
     int addrsh;                         // Address bits to shift
     int c111_reva;                      // true if this is a revA LAN91C111
+    cyg_uint32 data_buf;
+    int   data_pos;
 #ifdef KEEP_STATISTICS
     struct smsc_lan91cxx_stats stats;
 #endif
@@ -339,7 +341,7 @@ typedef struct lan91cxx_priv_data {
 
 #include CYGDAT_DEVS_ETH_SMSC_LAN91CXX_INL
 
-#ifdef CYGSEM_DEVS_ETH_SMSC_LAN91CXX_USE_32BIT
+#ifdef LAN91CXX_32BIT_RX
 typedef cyg_uint32 rxd_t;
 #else
 typedef cyg_uint16 rxd_t;
@@ -406,7 +408,7 @@ get_data(struct eth_drv_sc *sc)
     struct lan91cxx_priv_data *cpd =
         (struct lan91cxx_priv_data *)sc->driver_private;
 	
-#ifdef CYGSEM_DEVS_ETH_SMSC_LAN91CXX_USE_32BIT
+#ifdef LAN91CXX_32BIT_RX
     HAL_READ_UINT32(cpd->base+((LAN91CXX_DATA_HIGH & 0x7) << cpd->addrsh), val);
 #else
     HAL_READ_UINT16(cpd->base+((LAN91CXX_DATA & 0x7) << cpd->addrsh), val);

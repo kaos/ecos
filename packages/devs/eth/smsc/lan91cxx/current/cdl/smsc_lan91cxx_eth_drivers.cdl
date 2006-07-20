@@ -109,15 +109,6 @@ cdl_package CYGPKG_DEVS_ETH_SMSC_LAN91CXX {
             configured in PCMCIA mode."
     }
 
-    cdl_option CYGSEM_DEVS_ETH_SMSC_LAN91CXX_USE_32BIT {
-	display "use 32 bit data access"
-	default_value 0
-	description   "
-	    The device driver uses 32 bit data access if
-	    this option is enabled, otherwise 16 bit data access is
-	    used."
-    }
-
     cdl_component CYGPKG_DEVS_ETH_SMSC_LAN91CXX_OPTIONS {
         display "LAN91CXX ethernet driver build options"
         flavor  none

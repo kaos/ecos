@@ -11,6 +11,7 @@
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2003 Nick Garnett 
 // Copyright (C) 2004 Andrew Lunn
+// Copyright (C) 2004 eCosCentric Ltd.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -35,8 +36,6 @@
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
 //
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //####BSDCOPYRIGHTBEGIN####
@@ -127,10 +126,36 @@ static void db_printf( char *fmt, ... )
     va_end( a );
 }
 #else
+#if 0
+static void db_printf( char *fmt, ... )
+{
+    va_list a;
+    int old_console = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+    va_start( a, fmt );
+    CYGACC_CALL_IF_SET_CONSOLE_COMM( 0 );
+    diag_vprintf( fmt, a );
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(old_console);
+    va_end( a );
+}
+#else
 #define db_printf diag_printf
 #endif
+#endif
+#else
+#if 0
+static void db_printf( char *fmt, ... )
+{
+    va_list a;
+    int old_console = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+    va_start( a, fmt );
+    CYGACC_CALL_IF_SET_CONSOLE_COMM( 0 );
+    diag_vprintf( fmt, a );
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(old_console);
+    va_end( a );
+}
 #else
 #define db_printf( fmt, ... )
+#endif
 #endif
 
 
@@ -192,7 +217,7 @@ static int lan91cxx_isr(cyg_vector_t vector, cyg_addrword_t data)
     struct lan91cxx_priv_data *cpd =
         (struct lan91cxx_priv_data *)sc->driver_private;
 
-    DEBUG_FUNCTION();
+//    DEBUG_FUNCTION();
 
     INCR_STAT( interrupts );
 
@@ -210,7 +235,7 @@ lan91cxx_deliver(struct eth_drv_sc *sc)
     struct lan91cxx_priv_data *cpd =
         (struct lan91cxx_priv_data *)sc->driver_private;
 
-    DEBUG_FUNCTION();
+//    DEBUG_FUNCTION();
 
     // Service the interrupt:
     lan91cxx_poll(sc);
@@ -262,7 +287,7 @@ smsc_lan91cxx_init(struct cyg_netdevtab_entry *tab)
     ecor |= LAN91CXX_ECOR_RESET;
     put_att(sc, LAN91CXX_ECOR, ecor);
     
-    HAL_DELAY_US(1);
+    CYGACC_CALL_IF_DELAY_US(1);
     
     ecor &= ~LAN91CXX_ECOR_RESET;
     put_att(sc, LAN91CXX_ECOR, ecor);
@@ -298,9 +323,7 @@ smsc_lan91cxx_init(struct cyg_netdevtab_entry *tab)
     cyg_drv_interrupt_attach(lan91cxx_interrupt_handle);
 #endif // !CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
     cyg_drv_interrupt_acknowledge(cpd->interrupt);
-#ifndef CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
     cyg_drv_interrupt_unmask(cpd->interrupt);
-#endif // !CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
     
     // probe chip by reading the signature in BS register
     val = get_banksel(sc);
@@ -340,7 +363,7 @@ smsc_lan91cxx_init(struct cyg_netdevtab_entry *tab)
     // LINK_OK on 91C111 is just a general purpose input and may not
     // have anything to do with the link.
     if (!(val & LAN91CXX_STATUS_LINK_OK)) {
- db_printf("no link\n");
+        db_printf("no link\n");
         return false;  // Link not connected
     }
 #endif
@@ -464,9 +487,13 @@ lan91cxx_start(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
 #ifdef LAN91CXX_IS_LAN91C111
     // 91C111 Errata. Internal PHY comes up disabled. Must enable here.
     lan91cxx_write_phy(sc, 0, LAN91CXX_PHY_CTRL, LAN91CXX_PHY_CTRL_RST);
-    HAL_DELAY_US(500000);
+    CYGACC_CALL_IF_DELAY_US(500000);
     lan91cxx_write_phy(sc, 0, LAN91CXX_PHY_CTRL, LAN91CXX_PHY_CTRL_ANEG_EN |
 		                                 LAN91CXX_PHY_CTRL_SPEED);
+
+#ifdef LAN91CXX_FORCE_10MHZ
+    lan91cxx_write_phy( sc, 0, LAN91CXX_PHY_AUTO_AD, 0x0061);
+#endif
 
     // Start auto-negotiation
     put_reg(sc, LAN91CXX_RPCR,
@@ -478,7 +505,7 @@ lan91cxx_start(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
     while (!(lan91cxx_read_phy(sc, 0, LAN91CXX_PHY_STAT) & 0x20)) {
 	if (--delay <= 0)
 	    break;
-	HAL_DELAY_US(100000);
+	CYGACC_CALL_IF_DELAY_US(100000);
     }
 #if DEBUG & 1
     if (delay <= 0)
@@ -732,7 +759,7 @@ lan91cxx_can_send(struct eth_drv_sc *sc)
         (struct lan91cxx_priv_data *)sc->driver_private;
     int tcr;
 
-    DEBUG_FUNCTION();
+//    DEBUG_FUNCTION();
 
 #ifndef LAN91CXX_IS_LAN91C111
     // LINK_OK on 91C111 is just a general purpose input and may not
@@ -780,7 +807,9 @@ lan91cxx_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
         (struct lan91cxx_priv_data *)sc->driver_private;
     int i, len, plen, tcr;
 
-    unsigned short *sdata = NULL;
+    cyg_uint8 *sdata;
+    cyg_uint16 data = 0;
+    int dpos = 0;
     unsigned short ints, control;
     cyg_uint16 packet, status;
 
@@ -788,6 +817,11 @@ lan91cxx_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
 
     INCR_STAT( tx_count );
 
+#if DEBUG & 1
+    ints = get_reg(sc, LAN91CXX_INTERRUPT);
+    db_printf("%s:START: ints: %04x\n", __FUNCTION__, ints);
+#endif
+    
     // Worry about the TX engine stopping.
     tcr = get_reg(sc, LAN91CXX_TCR);
     if ( 0 == (LAN91CXX_TCR_TXENA & tcr) ) {
@@ -862,32 +896,32 @@ lan91cxx_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
     // packet length (includes status, byte-count and control shorts)
     put_data(sc, CYG_CPU_TO_LE16(0x7FE & (plen + 6)) ); // Always even, always < 15xx(dec)
 
-    // Put data into buffer
     for (i = 0;  i < sg_len;  i++) {
-        sdata = (unsigned short *)sg_list[i].buf;
+        sdata = (cyg_uint8 *)sg_list[i].buf;
         len = sg_list[i].len;
-
-        CYG_ASSERT(0 == (len & 1) || (i == (sg_len-1)), "odd length");
-        CYG_ASSERT( sdata, "No sg data pointer here" );
-        while(len >= sizeof(*sdata)) {
-            put_data(sc, *sdata++);
-            len -= sizeof(*sdata);
+        while( len > 0 )
+        {
+            data |= *sdata<<((dpos&1)*8);
+            dpos++, len--, sdata++;
+            if( (dpos & 1) == 0 )
+            {
+                put_data(sc, CYG_CPU_TO_LE16(data));
+                data = 0;
+            }
         }
     }
-    CYG_ASSERT( sdata, "No sg data pointer outside" );
 
     // Lay down the control short unconditionally at the end.
     // (or it might use random memory contents)
     control = 0;
-    if ( 1 & plen ) {
+    if( 1 & plen ) {
         // Need to set ODD flag and insert the data
-        unsigned char onebyte = *(unsigned char*)sdata;
-        control = onebyte;
+        control = data;
         control |= LAN91CXX_CONTROLBYTE_ODD;
     }
     control |= LAN91CXX_CONTROLBYTE_CRC; // Just in case...
     put_data(sc, CYG_CPU_TO_LE16(control));
-
+    
     // Enqueue the packet
     put_reg(sc, LAN91CXX_MMU_COMMAND, LAN91CXX_MMU_enq_packet);
 
@@ -964,7 +998,7 @@ lan91cxx_TxEvent(struct eth_drv_sc *sc, int stat)
     tcr = get_reg(sc, LAN91CXX_TCR);
     if ( 0 == (LAN91CXX_TCR_TXENA & tcr) ) {
 #if DEBUG & 1
-        db_printf("%s: ENGINE RESTART: tcr 0x%04x ints %04x\n", __FUNCTION__, tcr, ints);
+        db_printf("%s: ENGINE RESTART: tcr 0x%04x eph 0x%04x ints 0x%04x\n", __FUNCTION__, tcr, get_reg(sc, LAN91CXX_EPH_STATUS), ints);
 #endif
         tcr |= LAN91CXX_TCR_TXENA;
         put_reg(sc, LAN91CXX_TCR, tcr);
@@ -1010,6 +1044,43 @@ lan91cxx_TxEvent(struct eth_drv_sc *sc, int stat)
     }
 }
 
+void get_data_init(struct eth_drv_sc *sc)
+{
+    struct lan91cxx_priv_data *cpd =
+        (struct lan91cxx_priv_data *)sc->driver_private;
+
+    cpd->data_buf = 0xa5a5a5a5;
+    cpd->data_pos = sizeof(rxd_t);
+}
+
+cyg_uint8 get_data_byte(struct eth_drv_sc *sc)
+{
+    cyg_uint8 c;
+    struct lan91cxx_priv_data *cpd =
+        (struct lan91cxx_priv_data *)sc->driver_private;
+
+    if( cpd->data_pos == sizeof(rxd_t) )
+    {
+        cpd->data_buf = get_data(sc);
+        cpd->data_pos = 0;
+    }
+
+    c = (cpd->data_buf>>(cpd->data_pos*8))&0xFF;
+    cpd->data_pos++;
+    
+    return c;
+
+}
+
+cyg_uint16 get_data_short(struct eth_drv_sc *sc)
+{
+    cyg_uint16 val;
+
+    val = get_data_byte(sc);
+    val |= get_data_byte(sc)<<8;
+    
+    return CYG_LE16_TO_CPU(val);
+}
 
 //
 // This function is called when a packet has been received.  Its job is
@@ -1024,9 +1095,6 @@ lan91cxx_RxEvent(struct eth_drv_sc *sc)
     struct lan91cxx_priv_data *cpd = 
         (struct lan91cxx_priv_data *)sc->driver_private;
     unsigned short stat, len;
-#ifdef CYGSEM_DEVS_ETH_SMSC_LAN91CXX_USE_32BIT
-    cyg_uint32 val;
-#endif
 
     DEBUG_FUNCTION();
 
@@ -1054,17 +1122,11 @@ lan91cxx_RxEvent(struct eth_drv_sc *sc)
     // Read status and (word) length
     put_reg(sc, LAN91CXX_POINTER, (LAN91CXX_POINTER_RCV | LAN91CXX_POINTER_READ |
                                  LAN91CXX_POINTER_AUTO_INCR | 0x0000));
-#ifdef CYGSEM_DEVS_ETH_SMSC_LAN91CXX_USE_32BIT
-    val = get_data(sc);
-    val = CYG_LE32_TO_CPU(val);
-    stat = val & 0xffff;
-    len = ((val >> 16) & 0xffff) - 6;   // minus header/footer words
-#else
-    stat = get_data(sc);
-    stat = CYG_LE16_TO_CPU(stat);
-    len = get_data(sc);
-    len = CYG_LE16_TO_CPU(len) - 6;     // minus header/footer words
-#endif
+    get_data_init(sc);
+    
+    stat = get_data_short(sc);
+    len = get_data_short(sc);
+    len = len - 6;     // minus header/footer words
 
 #ifdef KEEP_STATISTICS
     if ( stat & LAN91CXX_RX_STATUS_ALIGNERR ) INCR_STAT( rx_align_errors );
@@ -1099,11 +1161,23 @@ lan91cxx_RxEvent(struct eth_drv_sc *sc)
     // Not OK for one reason or another...
 #if DEBUG & 1
     db_printf("RxEvent - bad rx: stat: 0x%04x, len: 0x%04x\n", stat, len);
+    db_printf("PHY %2d: %04x\n",0,lan91cxx_read_phy( sc, 0, 0));
+    db_printf("PHY %2d: %04x\n",1,lan91cxx_read_phy( sc, 0, 1));
+    db_printf("PHY %2d: %04x\n",2,lan91cxx_read_phy( sc, 0, 2));
+    db_printf("PHY %2d: %04x\n",3,lan91cxx_read_phy( sc, 0, 3));
+    db_printf("PHY %2d: %04x\n",4,lan91cxx_read_phy( sc, 0, 4));
+    db_printf("PHY %2d: %04x\n",5,lan91cxx_read_phy( sc, 0, 5));
+    db_printf("PHY %2d: %04x\n",16,lan91cxx_read_phy( sc, 0, 16));
+    db_printf("PHY %2d: %04x\n",17,lan91cxx_read_phy( sc, 0, 17));
+    db_printf("PHY %2d: %04x\n",18,lan91cxx_read_phy( sc, 0, 18));
+    db_printf("PHY %2d: %04x\n",19,lan91cxx_read_phy( sc, 0, 19));
+    db_printf("PHY %2d: %04x\n",20,lan91cxx_read_phy( sc, 0, 20));
 #endif
 
     // Free packet
     put_reg(sc, LAN91CXX_MMU_COMMAND, LAN91CXX_MMU_remrel_rx_frame);
 }
+
 
 //
 // This function is called as a result of the "eth_drv_recv()" call above.
@@ -1122,13 +1196,9 @@ lan91cxx_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
 #endif
     int i;
     short mlen=0, plen;
-    cyg_uint16 *data=NULL;
-    unsigned char *cp, cval, odd_even = 0;
-#ifdef CYGSEM_DEVS_ETH_SMSC_LAN91CXX_USE_32BIT
-    cyg_uint32 val;
-#else
-    cyg_uint16 val;
-#endif
+    cyg_uint8 *data=NULL;
+    short val;
+    unsigned char *cp, cval;
 
     DEBUG_FUNCTION();
 
@@ -1136,84 +1206,49 @@ lan91cxx_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
 
     put_reg(sc, LAN91CXX_POINTER, (LAN91CXX_POINTER_RCV | LAN91CXX_POINTER_READ |
                                  LAN91CXX_POINTER_AUTO_INCR));
-    val = get_data(sc);
-
-    // packet length (minus header/footer)
-#ifdef CYGSEM_DEVS_ETH_SMSC_LAN91CXX_USE_32BIT
-    val = CYG_LE32_TO_CPU(val);
-    plen = (val >> 16) - 6;
-#else
-    val = CYG_LE16_TO_CPU(val);
-    plen = get_data(sc);
-    plen = CYG_LE16_TO_CPU(plen) - 6;
-#endif
-
-    if( LAN91CXX_RX_STATUS_IS_ODD(cpd,val) )
-	plen++;
+    get_data_init(sc);
+    
+    val = get_data_short(sc);
+    plen = get_data_short(sc);
+    plen = plen - 6;
 
     for (i = 0;  i < sg_len;  i++) {
-        data = (cyg_uint16 *)sg_list[i].buf;
+        int clen;
+        data = (cyg_uint8 *)sg_list[i].buf;
         mlen = sg_list[i].len;
 
-        CYG_ASSERT(0 == (mlen & (sizeof(*data) - 1)) || (i == (sg_len-1)), "odd length");
+        clen = mlen;
+        if( clen > plen )
+            clen = plen;
 
 #if DEBUG & 1
-        db_printf("%s : mlen 0x%04x, plen 0x%04x\n", __FUNCTION__, mlen, plen);
+        db_printf("%s : mlen 0x%04x plen 0x%04x clen 0x%04x\n", __FUNCTION__, mlen, plen, clen);
 #endif
+        mlen -= clen;
+        plen -= clen;
+        
         if (data) {
-            while (mlen >= sizeof(*data)) {
-#ifdef CYGSEM_DEVS_ETH_SMSC_LAN91CXX_USE_32BIT
-            	if (!(odd_even)) {        // because of the 32bit to 16bit conversion, read only every 2nd word
-#endif
-                   val = get_data(sc);
-#ifdef CYGSEM_DEVS_ETH_SMSC_LAN91CXX_USE_32BIT
-                   odd_even = 1;
-               }
-               else {
-                	  val >>= 16;
-                	  odd_even = 0;
-               }
-#endif
-                *data++ = val;
-                mlen -= sizeof(*data);
-                plen -= sizeof(*data);
+            while( clen > 0 ) {
+                *data++ = get_data_byte(sc);
+                clen--;
             }
         }
         else { // must actively discard ie. read it from the chip anyway.
-            while (mlen >= sizeof(*data)) {
-#ifdef CYGSEM_DEVS_ETH_SMSC_LAN91CXX_USE_32BIT
-                if (!(odd_even)) {
+#if DEBUG & 1            
+            db_printf("lan91cxx_recv: No data!!!!!\n");
 #endif
-                    val = get_data(sc);
-#ifdef CYGSEM_DEVS_ETH_SMSC_LAN91CXX_USE_32BIT
-                    odd_even = 1;
-               }
-               else {
-                   val >>= 16;
-                   odd_even = 0;
-               }
-#endif
-                mlen -= sizeof(*data);
-                plen -= sizeof(*data);
+            while( clen > 0 ) {            
+                (void)get_data_byte(sc);
+                clen--;                
             }
         }
-    }
-    if (!(odd_even)) {      // read the control word only if we not already have it because of a 32bit access
-    val = get_data(sc); // Read control word (and potential data) unconditionally
-#ifdef CYGSEM_DEVS_ETH_SMSC_LAN91CXX_USE_32BIT
-    val = CYG_LE32_TO_CPU(val);
-    if (plen & 2) {
-	if (data)
-	    *(cyg_uint16 *)data = val & 0xffff;
-	cp = (unsigned char *)data + 2;
-	val >>= 16;
-	mlen -= 2;
-        }
-#else
-    val = CYG_LE16_TO_CPU(val);
+#if DEBUG & 1
+        diag_dump_buf( sg_list[i].buf, sg_list[i].len > 64 ? 64 : sg_list[i].len );
 #endif
     }
-	cp = (unsigned char *)data;
+    val = get_data_short(sc); // Read control word (and potential data) unconditionally
+
+    cp = (unsigned char *)data;
 
     CYG_ASSERT(val & LAN91CXX_CONTROLBYTE_RX, 
                "Controlbyte is not for Rx");
@@ -1239,6 +1274,7 @@ lan91cxx_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
     put_reg(sc, LAN91CXX_MMU_COMMAND, LAN91CXX_MMU_remrel_rx_frame);
 }
 
+
 static void
 lan91cxx_poll(struct eth_drv_sc *sc)
 {
@@ -1252,20 +1288,25 @@ lan91cxx_poll(struct eth_drv_sc *sc)
         // Get the (unmasked) requests
         event = get_reg(sc, LAN91CXX_INTERRUPT);
         event = event & (event >> 8) & 0xff;
+
         if (0 == event)
             break;
 #if 0
         if (event & LAN91CXX_INTERRUPT_ERCV_INT) {
             // Early receive interrupt
+            db_printf("Early receive interrupt\n");
         }
         else if (event & LAN91CXX_INTERRUPT_EPH_INT) {
             // ethernet protocol handler failures
+            db_printf("Ethernet protocol handler failures\n");
         }
         else if (event & LAN91CXX_INTERRUPT_RX_OVRN_INT) {
             // receive overrun
+            db_printf("Receive overrun\n");
         }
         else if (event & LAN91CXX_INTERRUPT_ALLOC_INT) {
             // allocation interrupt
+            db_printf("Allocation interrupt\n");
         }
         else
 #endif
@@ -1342,18 +1383,18 @@ lan91cxx_read_phy(struct eth_drv_sc *sc, cyg_uint8 phyaddr, cyg_uint8 phyreg)
     for (i = 0; i < sizeof(bits); ++i) {
 	// Clock Low - output data
 	put_reg(sc, LAN91CXX_MGMT, mii_reg | bits[i]);
-	HAL_DELAY_US(50);
+	CYGACC_CALL_IF_DELAY_US(50);
 
 	// Clock Hi - input data
 	put_reg(sc, LAN91CXX_MGMT, mii_reg | bits[i] | LAN91CXX_MGMT_MCLK);
-	HAL_DELAY_US(50);
+	CYGACC_CALL_IF_DELAY_US(50);
 
 	bits[i] |= get_reg(sc, LAN91CXX_MGMT) & LAN91CXX_MGMT_MDI;
     }
 
     // Return to idle state
     put_reg(sc, LAN91CXX_MGMT, mii_reg);
-    HAL_DELAY_US(50);
+    CYGACC_CALL_IF_DELAY_US(50);
 
     // Recover input data
     for (value = 0, i = 0; i < 16; ++i) {
@@ -1426,18 +1467,18 @@ lan91cxx_write_phy(struct eth_drv_sc *sc, cyg_uint8 phyaddr,
     for (i = 0; i < sizeof(bits); ++i) {
 	// Clock Low - output data
 	put_reg(sc, LAN91CXX_MGMT, mii_reg | bits[i]);
-	HAL_DELAY_US(50);
+	CYGACC_CALL_IF_DELAY_US(50);
 
 	// Clock Hi - input data
 	put_reg(sc, LAN91CXX_MGMT, mii_reg | bits[i] | LAN91CXX_MGMT_MCLK);
-	HAL_DELAY_US(50);
+	CYGACC_CALL_IF_DELAY_US(50);
 
 //	bits[i] |= get_reg(sc, LAN91CXX_MGMT) & LAN91CXX_MGMT_MDI;
     }
 
     // Return to idle state
     put_reg(sc, LAN91CXX_MGMT, mii_reg);
-    HAL_DELAY_US(50);
+    CYGACC_CALL_IF_DELAY_US(50);
 }
 #endif // LAN91CXX_IS_LAN91C111
 
