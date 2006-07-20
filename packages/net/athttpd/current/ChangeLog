@@ -1,3 +1,9 @@
+2006-07-19  Anthony Tonizzo  <atonizzo@gmail.com>
+
+	* src/socket.c: Corrected a typo that generated an assertion.
+    Modified slightly the source of cyg_httpd_write and cyg_httpd_writev
+     to make the code more consistent as to when assertions are thrown.
+
 2006-07-19  Sergei Gavrikov  <w3sg@softhome.net>
 
 	* doc/athttpd.sgml: jade doesn't allow underscores in

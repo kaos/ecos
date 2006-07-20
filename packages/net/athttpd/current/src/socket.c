@@ -78,23 +78,29 @@ cyg_uint8    cyg_httpd_thread_stack[CYG_HTTPD_DAEMON_STACK_SIZE]
 CYG_HTTPD_STATE httpstate;
                                          
 __inline__ ssize_t
-cyg_httpd_write(char* buf, int len)
+cyg_httpd_write(char* buf, int buf_len)
 {
     // We are not going to write anything in case
     ssize_t sent = send(httpstate.sockets[httpstate.client_index].descriptor, 
                         buf, 
-                        len,
+                        buf_len,
                         0);
-    CYG_ASSERT(sent == len, "send() did not send out all bytes");
+    CYG_ASSERT(sent == buf_len, "send() did not send out all bytes");
     return sent;
 }
 
 __inline__ ssize_t
-cyg_httpd_writev(cyg_iovec *bufs, int count)
+cyg_httpd_writev(cyg_iovec *iovec_bufs, int count)
 {
-    return writev(httpstate.sockets[httpstate.client_index].descriptor, 
-                  bufs, 
-                  count);
+    int i;
+    ssize_t sent = writev(httpstate.sockets[httpstate.client_index].descriptor, 
+                          iovec_bufs, 
+                          count);
+    ssize_t buf_len = 0;
+    for (i = 0; i < count; i++)
+        buf_len += iovec_bufs[i].iov_len;
+    CYG_ASSERT(sent == buf_len, "writev() did not send out all bytes");
+    return sent;
 }
     
 // The need for chunked transfers arises from the fact that with dinamic
@@ -141,12 +147,7 @@ cyg_httpd_start_chunked(char *extension)
     httpstate.last_modified = -1;
     httpstate.mime_type = cyg_httpd_find_mime_string(extension);
     cyg_int32 header_length = cyg_httpd_format_header();
-    ssize_t sent = send(httpstate.sockets[httpstate.client_index].descriptor, 
-                        httpstate.outbuffer, 
-                        header_length,
-                        0);
-    CYG_ASSERT(sent == header_length, "Did not send out all header bytes");
-    return sent;
+    return cyg_httpd_write(httpstate.outbuffer, header_length);
 }
 
 ssize_t
@@ -162,11 +163,7 @@ cyg_httpd_write_chunked(char* buf, int len)
     if (httpstate.mode & CYG_HTTPD_SEND_HEADER_ONLY)
         return (iovec_bufs[0].iov_len + iovec_bufs[1].iov_len + 
                                                   iovec_bufs[2].iov_len);
-    ssize_t sent = cyg_httpd_writev(iovec_bufs, 3);
-    CYG_ASSERT(sent == (iovec_bufs[0].iov_len + iovec_bufs[1].iov_len + 
-                                                       iovec_bufs[1].iov_len),
-                        "Writev did not send out all bytes");
-    return sent;
+    return cyg_httpd_writev(iovec_bufs, 3);
 }
 
 void
