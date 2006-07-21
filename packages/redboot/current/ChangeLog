@@ -1,3 +1,8 @@
+2006-07-21  David Ho <davidkwho@gmail.com>
+
+	* src/flash.c (fis_start_update_directory): Fix build error when
+	redundant FIS selected and locking is not enabled/supported.
+
 2006-05-24  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/net/net_io.c (do_ip_addr): Bail out if no networking.

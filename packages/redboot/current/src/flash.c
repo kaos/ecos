@@ -248,11 +248,13 @@ fis_lookup(char *name, int *num)
 int fis_start_update_directory(int autolock)
 {
 #ifdef CYGOPT_REDBOOT_REDUNDANT_FIS
+#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
    // Ensure [quietly] that the directory is unlocked before trying to update and locked again afterwards
    int do_autolock=1;
 #else
    int do_autolock=autolock;
+#endif
 #endif
 
    struct fis_image_desc* img=NULL;
@@ -273,8 +275,10 @@ int fis_start_update_directory(int autolock)
    img->u.valid_info.version_count=img->u.valid_info.version_count+1;
 
    //ready to go....
+#ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
    if (do_autolock)
       flash_unlock((void *)fis_addr, fisdir_size, (void **)&err_addr);
+#endif
 
    flash_erase(fis_addr, fisdir_size, (void **)&err_addr);
    //now magic is 0xffffffff
