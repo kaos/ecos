@@ -1,3 +1,8 @@
+2006-07-27  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/config.h (HAVE_GETTIMEOFDAY): Add missing hash (reported
+	by Richard Jennings).
+
 2005-10-23  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/config.h: POSIX provides gettimeofday()
