@@ -1,3 +1,11 @@
+2006-08-04  Paul Fine  <pfine@dtccom.com>
+            Andrew Lunn <andrew.lunn@ascom.ch>
+	
+	* src/fats.c: Added functionality to the fatfs_getinfo() function
+	to return disk usage information about the filesystem, making this
+	information accessible through the cyg_fs_getinfo() interface.
+	* tests/fatfs1.c: Added code to test the disk usage.
+	
 2005-07-30  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/fatfs_supp.c: Correct types to remove compiler warnings.

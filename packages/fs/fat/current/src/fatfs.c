@@ -1109,6 +1109,22 @@ fatfs_getinfo(cyg_mtab_entry *mte,
             err = fatfs_get_attrib(mte, dir, name, (cyg_fs_attrib_t*)buf);
             break;
 #endif // CYGCFG_FS_FAT_USE_ATTRIBUTES
+#if defined(CYGSEM_FILEIO_BLOCK_USAGE)
+        case FS_INFO_BLOCK_USAGE: {
+	  cyg_uint32 total_clusters;
+	  cyg_uint32 free_clusters;
+	  struct cyg_fs_block_usage *usage = (struct cyg_fs_block_usage *) buf;
+	  fatfs_disk_t  *disk   = (fatfs_disk_t *) mte->data;
+
+	  err = fatfs_get_disk_usage(disk, &total_clusters, &free_clusters);
+	  if (err)
+	    return err;
+	  usage->total_blocks = total_clusters; 
+	  usage->free_blocks = free_clusters;
+	  usage->block_size = disk->cluster_size;
+	  break;
+	}
+#endif
         default:
             err = EINVAL;
             break;
