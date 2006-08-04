@@ -800,7 +800,7 @@ static int romfs_stat     ( cyg_mtab_entry *mte, cyg_dir dir, const char *name,
 
 // -------------------------------------------------------------------------
 // romfs_getinfo()
-// Getinfo. Currently only support pathconf().
+// Getinfo. Currently only support pathconf() and file system block usage
 
 static int romfs_getinfo  ( cyg_mtab_entry *mte, cyg_dir dir, const char *name,
                              int key, void *buf, int len )
@@ -819,7 +819,16 @@ static int romfs_getinfo  ( cyg_mtab_entry *mte, cyg_dir dir, const char *name,
     case FS_INFO_CONF:
         err = romfs_pathconf( ds.node, (struct cyg_pathconf_info *)buf );
         break;
-        
+#if defined(CYGSEM_FILEIO_BLOCK_USAGE)
+    case FS_INFO_BLOCK_USAGE: {
+      struct cyg_fs_block_usage *usage = (struct cyg_fs_block_usage *) buf;
+      struct romfs_disk *disk = (struct romfs_disk*) mte->data;
+      usage->total_blocks = disk->disksize;
+      usage->free_blocks = 0;
+      usage->block_size = 1;
+      return ENOERR;
+    }
+#endif
     default:
         err = EINVAL;
     }

@@ -91,11 +91,11 @@ MTAB_ENTRY( romfs_mte1,
 //==========================================================================
 
 #define SHOW_RESULT( _fn, _res ) \
-diag_printf("<FAIL>: " #_fn "() returned %d %s\n", _res, _res<0?strerror(errno):"");
+  diag_printf("<FAIL>: " #_fn "() returned %d %s\n", (int)_res, _res<0?strerror(errno):"");
 
 #define CHKFAIL_TYPE( _fn, _res, _type ) { \
 if ( _res != -1 ) \
-    diag_printf("<FAIL>: " #_fn "() returned %d (expected -1)\n", _res); \
+  diag_printf("<FAIL>: " #_fn "() returned %d (expected -1)\n", (int)_res); \
 else if ( errno != _type ) \
     diag_printf("<FAIL>: " #_fn "() failed with errno %d (%s),\n    expected %d (%s)\n", errno, strerror(errno), _type, strerror(_type) ); \
 }
@@ -166,7 +166,7 @@ static void listdir( char *name, int statp )
             }
             else
             {
-                diag_printf(" [mode %08x ino %08x nlink %d size %d]",
+                diag_printf(" [mode %08x ino %08x nlink %d size %ld]",
                             sbuf.st_mode,sbuf.st_ino,sbuf.st_nlink,sbuf.st_size);
             }
         }
@@ -286,6 +286,9 @@ int main( int argc, char **argv )
 {
     int err;
     char address[16];
+#if defined(CYGSEM_FILEIO_BLOCK_USAGE)
+    struct cyg_fs_block_usage usage;
+#endif
 
     CYG_TEST_INIT();
 
@@ -376,6 +379,17 @@ int main( int argc, char **argv )
 #else
     CHKFAIL_TYPE( umount, err, EINVAL );
 #endif
+
+#if defined(CYGSEM_FILEIO_BLOCK_USAGE)
+    err = cyg_fs_getinfo("/", FS_INFO_BLOCK_USAGE, &usage, sizeof(usage));
+    if( err < 0 ) SHOW_RESULT( cyg_fs_getinfo, err );
+    diag_printf("<INFO>: total size: %6lld blocks, %10lld bytes\n",
+		usage.total_blocks, usage.total_blocks * usage.block_size); 
+    diag_printf("<INFO>: free size:  %6lld blocks, %10lld bytes\n",
+		usage.free_blocks, usage.free_blocks * usage.block_size); 
+    diag_printf("<INFO>: block size: %6u bytes\n", usage.block_size);
+#endif
+    // --------------------------------------------------------------
 
     err = umount( "/" );
     if( err < 0 ) SHOW_RESULT( umount, err );    

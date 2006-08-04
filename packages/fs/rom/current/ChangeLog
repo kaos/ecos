@@ -1,3 +1,8 @@
+2006-08-04 Andrew Lunn <andrew.lunn@ascom.ch>
+	
+	* src/romfs.c (romfs_getinfo): Support for block usage call.
+	* tests/romfs1.c (main): Add file system block usage test. 
+
 2006-02-15  Andrew Lunn  <andrew.lunn@ascom.ch>
             Peter Korsgaard  <jacmet@sunsite.dk>
 	
