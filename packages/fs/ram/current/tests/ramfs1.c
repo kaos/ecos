@@ -61,6 +61,7 @@
 #include <pkgconf/hal.h>
 #include <pkgconf/kernel.h>
 #include <pkgconf/io_fileio.h>
+#include <pkgconf/fs_ram.h>
 
 #include <cyg/kernel/ktypes.h>         // base kernel types
 #include <cyg/infra/cyg_trac.h>        // tracing macros
@@ -415,6 +416,9 @@ int main( int argc, char **argv )
 {
     int err;
     int existingdirents=-1;
+#if defined(CYGSEM_FILEIO_BLOCK_USAGE) && defined(CYGPKG_FS_RAM_BLOCKS_ARRAY)
+    struct cyg_fs_block_usage usage;
+#endif
 
     CYG_TEST_INIT();
 
@@ -431,7 +435,16 @@ int main( int argc, char **argv )
     listdir( "/", true, -1, &existingdirents );
     if ( existingdirents < 2 )
         CYG_TEST_FAIL("Not enough dir entries\n");
-
+    // --------------------------------------------------------------
+#if defined(CYGSEM_FILEIO_BLOCK_USAGE) && defined(CYGPKG_FS_RAM_BLOCKS_ARRAY)
+    err = cyg_fs_getinfo("/", FS_INFO_BLOCK_USAGE, &usage, sizeof(usage));
+    if( err < 0 ) SHOW_RESULT( cyg_fs_getinfo, err );
+    diag_printf("<INFO>: total size: %6lld blocks, %10lld bytes\n",
+		usage.total_blocks, usage.total_blocks * usage.block_size); 
+    diag_printf("<INFO>: free size:  %6lld blocks, %10lld bytes\n",
+		usage.free_blocks, usage.free_blocks * usage.block_size); 
+    diag_printf("<INFO>: block size: %6u bytes\n", usage.block_size);
+#endif
     // --------------------------------------------------------------
 
     createfile( "/foo", 202 );
@@ -551,6 +564,16 @@ int main( int argc, char **argv )
     listdir( "", true, 5, NULL );
     listdir( "..", true, existingdirents+3, NULL );
 
+    // --------------------------------------------------------------
+#if defined(CYGSEM_FILEIO_BLOCK_USAGE) && defined(CYGPKG_FS_RAM_BLOCKS_ARRAY)
+    err = cyg_fs_getinfo("/", FS_INFO_BLOCK_USAGE, &usage, sizeof(usage));
+    if( err < 0 ) SHOW_RESULT( cyg_fs_getinfo, err );
+    diag_printf("<INFO>: total size: %6lld blocks, %10lld bytes\n",
+		usage.total_blocks, usage.total_blocks * usage.block_size); 
+    diag_printf("<INFO>: free size:  %6lld blocks, %10lld bytes\n",
+		usage.free_blocks, usage.free_blocks * usage.block_size); 
+    diag_printf("<INFO>: block size: %6u bytes\n", usage.block_size);
+#endif
     // --------------------------------------------------------------
 
     diag_printf("<INFO>: unlink tinky\n");    

@@ -1210,11 +1210,11 @@ static ramfs_dirent *find_direntry( ramfs_node *dir, const char *name, int namel
         ramfs_dirent *d;
         cyg_uint8 *buf;
         size_t size;
-        
+
         // look for a first name fragment
         for(;;)
         {
-            err = findbuffer_node( dir, pos, &buf, &size, false );
+	  err = findbuffer_node( dir, pos, &buf, &size, false );
             if( err != ENOERR || size == 0)
                 return NULL;
 
@@ -1223,7 +1223,10 @@ static ramfs_dirent *find_direntry( ramfs_node *dir, const char *name, int namel
             if( size < sizeof(ramfs_dirent) || !d->inuse || !d->first )
             {
                 pos += sizeof(ramfs_dirent);
-                continue;
+		if ( pos < dir->size )
+		  continue;
+		// End if directory, didn't find it.
+		return NULL;
             }
 
             break;
@@ -1248,17 +1251,17 @@ static ramfs_dirent *find_direntry( ramfs_node *dir, const char *name, int namel
                     fraglen = d->fraglen;
 
                 // compare strings, if different, look for another
-                if( memcmp( frag, d->name, fraglen ) != 0 )
-                    break;
-
+                if( memcmp( frag, d->name, fraglen ) != 0 ) {
+		  break;
+		}
                 frag        += fraglen;
             
                 // If we are at the last fragment, then the whole name string
                 // has matched and we have a successful search.
                 
-                if( d->last )
-                        return first;
-
+                if( d->last ) 
+		  return first;
+		
                 // Otherwise move on to next entry in chain
                 err = findbuffer_node( dir, d->next, &buf, &size, false );
                 if( err != ENOERR )
@@ -1977,7 +1980,7 @@ static int ramfs_stat     ( cyg_mtab_entry *mte, cyg_dir dir, const char *name,
 
 // -------------------------------------------------------------------------
 // ramfs_getinfo()
-// Getinfo. Currently only support pathconf().
+// Getinfo. Currently only support pathconf() and filesystem usage.
 
 static int ramfs_getinfo  ( cyg_mtab_entry *mte, cyg_dir dir, const char *name,
                              int key, void *buf, int len )
@@ -1996,7 +1999,26 @@ static int ramfs_getinfo  ( cyg_mtab_entry *mte, cyg_dir dir, const char *name,
     case FS_INFO_CONF:
         err = ramfs_pathconf( ds.node, (struct cyg_pathconf_info *)buf );
         break;
-        
+#if defined(CYGSEM_FILEIO_BLOCK_USAGE) && defined(CYGPKG_FS_RAM_BLOCKS_ARRAY)
+	// When using malloc for storage this does not make much
+	// sense, so only implement this when using pre-allocated
+	// blocks
+    case FS_INFO_BLOCK_USAGE: {
+      struct cyg_fs_block_usage *usage = (struct cyg_fs_block_usage *) buf;
+      ramfs_block *b;
+      
+      usage->total_blocks = CYGNUM_FS_RAM_BLOCKS_ARRAY_SIZE;
+      usage->free_blocks = 0;
+      // Iterate over the free list to count its size
+      b = block_free_list;
+      while(b) {
+	usage->free_blocks++;
+	b=*(ramfs_block **)b;
+      }
+      usage->block_size = CYGNUM_RAMFS_BLOCK_SIZE;
+      return ENOERR;
+    }
+#endif
     default:
         err = EINVAL;
     }

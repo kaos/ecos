@@ -1,3 +1,10 @@
+2006-06-25  Andrew Lunn  <lunn@laptop.lunn.ch>
+
+	* src/ramfs.c (find_direntry): Don't search off the end of the
+	directory node into hyperspace.
+	* src/ramfs.c (ramfs_getinfo): Support for block usage call.
+	* tests/ramfs1.c (main): Add file system block usage test. 
+
 2006-05-17  Andy Jackson  <andy@grapevinetech.co.uk>
 
 	* tests/ramfs1.c (createfile): Fix compile warnings.
