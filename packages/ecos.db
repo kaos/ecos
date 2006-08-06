@@ -2202,6 +2202,16 @@ package CYGPKG_IO_I2C {
             support for bit-banged I2C buses."
 }
 
+package CYGPKG_DEVS_I2C_MCF52xx {
+	alias		{ "MCF52xx I2C driver" devs_i2c_mcf52xx mcf52xx_i2c_driver }
+	hardware
+	directory	devs/i2c/m68k/mcf52xx
+	script		i2c_mcf52xx.cdl
+	description "
+            This packages provides an I2C driver for the on-chip
+	        device provided by the MCF52xx coldfire processor family."
+}
+
 package CYGPKG_KERNEL {
 	alias		{ "eCos kernel" kernel }
 	directory	kernel
