@@ -1,3 +1,14 @@
+2006-07-19  Anthony Tonizzo  <atonizzo@gmail.com> and Sergei Gavrikov  <w3sg@softhome.net>
+
+	* cdl/httpd.cdl: 
+	* doc/athttpd.sgml: Corrected some typos and rectified some omissions.
+	* include/jim.h:    Added an inline to Jim_InitExtension()
+	* src/cgi.c:        used malloc() instead of cyg_ldr_malloc();
+	* src/forms.c:      Added a #define to be able tio use the TCL scripting
+	                     without OBJLOADER
+	* src/http.c:       
+	* src/socket.c:     Lots of typos stamped out, and some better comments too.
+	                     
 2006-07-19  Anthony Tonizzo  <atonizzo@gmail.com>
 
 	* src/socket.c: Corrected a typo that generated an assertion.
@@ -25,17 +36,21 @@
 	* doc/athttpd.sgml: 
 	* doc/mime_types.txt: 
 	* include/auth.h: 
+	* include/cgi.h: 
 	* include/digcalc.h: 
 	* include/forms.h: 
 	* include/global.h: 
 	* include/handler.h: 
 	* include/http.h: 
+	* include/jim.h: 
 	* include/md5.h: 
 	* include/socket.h: 
 	* src/auth.c: 
+	* src/cgi.c: 
 	* src/forms.c: 
 	* src/handler.c: 
 	* src/http.c: 
+	* src/jim.c: 
 	* src/md5c.c: 
 	* src/socket.c: 
 	Created ATHTTPD package.

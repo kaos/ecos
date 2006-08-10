@@ -65,7 +65,7 @@
 #include <cyg/athttpd/http.h>
 #include <cyg/athttpd/md5.h>
 
-// This is the domain that is currently authorized.
+// This is a string that contains the domain that is currently authorized.
 cyg_uint8 *cyg_httpd_current_authName;
 
 CYG_HAL_TABLE_BEGIN(cyg_httpd_auth_table, httpd_auth_table );
@@ -84,7 +84,7 @@ char cyg_httpd_md5_ha2[HASHHEXLEN+1] = {'\0'};
 char cyg_httpd_md5_ha1[HASHHEXLEN+1];
 
 char b64string[] =
-	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 cyg_httpd_auth_table_entry*
 cyg_httpd_auth_entry_from_path(char *authPath)
@@ -129,55 +129,55 @@ cyg_httpd_auth_entry_from_domain(char *authDomain)
 cyg_int32
 cyg_httpd_base64_encode(char* to, char* from, cyg_uint32 len )
 {
-	char     *fromp = from;
-	char     *top = to;
-	char      cbyte;
-	char      obyte;
-	cyg_int8  end[3];
+    char     *fromp = from;
+    char     *top = to;
+    char      cbyte;
+    char      obyte;
+    cyg_int8  end[3];
 
-	for (; len >= 3; len -= 3)
+    for (; len >= 3; len -= 3)
     {
-		cbyte = *fromp++;
-		*top++ = b64string[(int)(cbyte >> 2)];
-		obyte = (cbyte << 4) & 0x30;
+        cbyte = *fromp++;
+        *top++ = b64string[(int)(cbyte >> 2)];
+        obyte = (cbyte << 4) & 0x30;
 
-		cbyte = *fromp++;
-		obyte |= (cbyte >> 4);		
-		*top++ = b64string[(cyg_int32)obyte];
-		obyte = (cbyte << 2) & 0x3C;
+        cbyte = *fromp++;
+        obyte |= (cbyte >> 4);        
+        *top++ = b64string[(cyg_int32)obyte];
+        obyte = (cbyte << 2) & 0x3C;
 
-		cbyte = *fromp++;
-		obyte |= (cbyte >> 6);		
-		*top++ = b64string[(cyg_int32)obyte];
-		*top++ = b64string[(cyg_int32)(cbyte & 0x3F)];
-	}
+        cbyte = *fromp++;
+        obyte |= (cbyte >> 6);        
+        *top++ = b64string[(cyg_int32)obyte];
+        *top++ = b64string[(cyg_int32)(cbyte & 0x3F)];
+    }
 
-	if (len)
+    if (len)
     {
-		end[0] = *fromp++;
-		if (--len )
+        end[0] = *fromp++;
+        if (--len )
             end[1] = *fromp++; 
         else 
             end[1] = 0;
-		end[2] = 0;
+        end[2] = 0;
 
-		cbyte = end[0];
-		*top++ = b64string[(cyg_int32)(cbyte >> 2)];
-		obyte = (cbyte << 4) & 0x30;
+        cbyte = end[0];
+        *top++ = b64string[(cyg_int32)(cbyte >> 2)];
+        obyte = (cbyte << 4) & 0x30;
 
-		cbyte = end[1];
-		obyte |= (cbyte >> 4);
-		*top++ = b64string[(cyg_int32)obyte];
-		obyte = (cbyte << 2) & 0x3C;
+        cbyte = end[1];
+        obyte |= (cbyte >> 4);
+        *top++ = b64string[(cyg_int32)obyte];
+        obyte = (cbyte << 2) & 0x3C;
 
-		if (len )
+        if (len )
             *top++ = b64string[(cyg_int32)obyte];
-		else 
+        else 
             *top++ = '=';
-		*top++ = '=';
-	}
-	*top = 0;
-	return top - to;
+        *top++ = '=';
+    }
+    *top = 0;
+    return top - to;
 }
 
 cyg_int32
@@ -190,11 +190,11 @@ cyg_httpd_base64_decode(char* to, char* from, cyg_uint32 len )
     char      obyte;
     cyg_int32 padding = 0;
 
-	for (; len >= 4; len -= 4)
+    for (; len >= 4; len -= 4)
     {
         if ((cbyte = *fromp++) == '=')
             cbyte = 0;
-		else
+        else
         {
             if (badchar(cbyte, p ) )
                 return -1;
@@ -204,12 +204,12 @@ cyg_httpd_base64_decode(char* to, char* from, cyg_uint32 len )
 
         if ((cbyte = *fromp++) == '=')
             cbyte = 0;
-		else
+        else
         {
-			if (badchar(cbyte, p))
+            if (badchar(cbyte, p))
                 return -1;
             cbyte = p - b64string;
-		}
+        }
         obyte |= cbyte >> 4;
         *top++ = obyte;
 
@@ -219,7 +219,7 @@ cyg_httpd_base64_decode(char* to, char* from, cyg_uint32 len )
             cbyte = 0; 
             padding++;
         }
-		else
+        else
         {
             padding = 0;
             if (badchar(cbyte, p))

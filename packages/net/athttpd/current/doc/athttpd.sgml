@@ -75,116 +75,6 @@ to call multiple times.
 </para>
 </sect1>
 
-<sect1 id="athttpd-callback">
-<title>C language callback functions</title>
-<para>
-The server allows the association of particular URLs to C language callback 
-functions. Tables are again used for the association. The syntax of the macro 
-to add callback entries to the table is:
-</para>
-
-<para><programlisting width=72>
-CYG_HTTPD_HANDLER_TABLE_ENTRY(entry_label, url_string, callback);
-
-entry table      : an identifier unique to this entry.
-url_string       : a string with the extension url that will be appended to the
-                   default directory.
-callback         : a function with a prototype:
-                   cyg_int32 callback_function(CYG_HTTPS_STATE*);
-</programlisting></para>
-
-<para>
-<command>CYG_HTTPS_STATE*</command> is a pointer to a structure that
-contains, among others, a buffer (outbuffer) that can be used to send data
-out. The definitions of the structure is in http.h.</para>
-
-<para>
-If the callback function returns the value of 0, the server will try to find 
-the file with the same URL in the file system and send it. Any other value 
-returned causes the sever to stop further processing of this request. It is 
-assumed that in this case the user has send the response back to the client
-inside the body of the callback function.
-
-The following is an example of how to add a callback to a function myForm()
-whenever the /myform.gci is called.
-</para>
-
-<programlisting width=72>
-CYG_HTTPD_HANDLER_TABLE_ENTRY( hal_cb_entry, "/myform.cgi", myForm );
-</programlisting>
-
-<para>
-and somewhere in the source tree there is a function:</para>
-
-<programlisting>
-cyg_int32 myForm(CYG_HTTPS_STATE* p)
-{
-   cyg_httpd_start_chunked("html");
-   strcpy(p->outbuffer, "eCos Web Server");
-   cyg_httpd_write_chunked(p->outbuffer, strlen(p->outbuffer))
-   cyg_httpd_end_chunked();
-   return -1; // Do not further search the file system.
-}  
-</programlisting>
-
-<para>This function also shows the correct method of using the chunked frames
-API inside a c language callback and also shows the use of outbuffer to
-collect data to send out.</para>
-
-<para>Chunked frames are useful when the size of the frame is not known upfront. 
-In this case it possible to send a response in chunks of various sizes, and
-terminate it with a null chunk. See RFC 2616 for details. To use chunked 
-frames, the <command>cyg_httpd_start_chunked()</command> function is used. 
-The prototype is the following:</para>
-
-<programlisting>
-ssize_t cyg_httpd_start_chunked(char *);
-</programlisting>
-
-<para>The only parameter is the <command>extension</command> to use in the 
-search for the MIME type. For most files this will be "html" or "htm" and
-it will be searched in the MIME table for an approriate MIME type that will
-be sent along in the header. The function returns the number of bytes sent
-out.</para>
-
-<para>The chunked frame must be terminated by a call to 
-<command>cyg_httpd_end_chunked()</command>:</para>
-
-<programlisting>
-void cyg_httpd_end_chunked()(void);
-</programlisting>
-
-<para>In between these two calls, the user can call the function
-<command>cyg_httpd_write_chunked()</command> to send out data, any number of
-times. It is important that <command>cyg_httpd_write_chunked()</command> be
-the only function used to send data out for chunked frames. This
-guarantees that proper formatting of the response is respected.
-The prototype for the function is:</para>
-
-<programlisting>
-ssize_t cyg_httpd_write_chunked(char* p, int len);
-</programlisting>
-
-<para>The 'char*' points to the data to send out, the 'int' is the length of the
-data to send.</para>
-
-<para>In the case in which the size of the data is known upfront, the
-callback can instead create the header with a call to
-<command>cyg_httpd_create_std_header()</command> with the following
-prototype:</para>
-
-<programlisting>
-void cyg_httpd_create_std_header(char *ext, int len);
-
-extension   : the extension used in the search of the MIME type
-len         : length of the data to send out
-</programlisting>
-
-<para>and 
-<command>cyg_httpd_write</command>, the prototype of which is the same
-as <command>cyg_httpd_write_chunked()</command></para>
-</sect1>
-
 <sect1 id="athttpd-mime-types">
 <title>MIME types</title>
 <para>
@@ -197,7 +87,7 @@ The server already provides entries for the following standard file extensions:
 
 'html', 'htm', 'gif', 'jpg', 'css', 'js'
 
-and the user can add further enties entries to the table. The syntax for 
+and the user is responsible for adding any further entry. The syntax for 
 adding an entry is the following:</para>
 
 <para><programlisting width=72>
@@ -240,6 +130,117 @@ string is returned.</para>
 </sect2>
 </sect1>
 
+<sect1 id="athttpd-callback">
+<title>C language callback functions</title>
+<para>
+The server allows the association of particular URLs to C language callback 
+functions. eCos tables are used to define the association between a URL and its
+corresponding callback. The syntax of the macro to add callback entries to 
+the table is:
+</para>
+
+<para><programlisting width=72>
+CYG_HTTPD_HANDLER_TABLE_ENTRY(entry_label, url_string, callback);
+
+entry table      : an identifier unique to this entry.
+url_string       : a string with the extension url that will be appended to the
+                   default directory.
+callback         : a function with a prototype:
+                   cyg_int32 callback_function(CYG_HTTPS_STATE*);
+</programlisting></para>
+
+<para>
+<command>CYG_HTTPS_STATE*</command> is a pointer to a structure that
+contains, among others, a buffer (outbuffer) that can be used to send data
+out. The definitions of the structure is in http.h.</para>
+
+<para>
+If the callback function returns the value of 0, the server will try to find 
+the file with the same URL in the file system and send it. Any other value 
+returned causes the sever to stop further processing of this request. It is 
+assumed that in this case the user has send the response back to the client
+inside the body of the callback function.
+
+The following is an example of how to add a callback to a function myForm()
+whenever the URL /myform.cgi is requested:
+</para>
+
+<programlisting width=72>
+CYG_HTTPD_HANDLER_TABLE_ENTRY(hal_cb_entry, "/myform.cgi", myForm);
+</programlisting>
+
+<para>
+and somewhere in the source tree there is a function:</para>
+
+<programlisting>
+cyg_int32 myForm(CYG_HTTPS_STATE* p)
+{
+   cyg_httpd_start_chunked("html");
+   strcpy(p->outbuffer, "eCos Web Server");
+   cyg_httpd_write_chunked(p->outbuffer, strlen(p->outbuffer))
+   cyg_httpd_end_chunked();
+   return -1; // Do not further search the file system.
+}  
+</programlisting>
+
+<para>This function also shows the correct method of using the chunked frames
+API inside a c language callback and also shows the use of outbuffer to
+collect data to send out.</para>
+
+<para>Chunked frames are useful when the size of the frame is not known upfront. 
+In this case it possible to send a response in chunks of various sizes, and
+terminate it with a null chunk (See RFC 2616 for details). To use chunked 
+frames, the <command>cyg_httpd_start_chunked()</command> function is used. 
+The prototype is the following:</para>
+
+<programlisting>
+ssize_t cyg_httpd_start_chunked(char *);
+</programlisting>
+
+<para>The only parameter is the <command>extension</command> to use in the 
+search for the MIME type. For most files this will be "html" or "htm" and
+it will be searched in the MIME table for an approriate MIME type that will
+be sent along in the header. The function returns the number of bytes sent
+out.</para>
+
+<para>The chunked frame must be terminated by a call to 
+<command>cyg_httpd_end_chunked()</command>:</para>
+
+<programlisting>
+void cyg_httpd_end_chunked()(void);
+</programlisting>
+
+<para>In between these two calls, the user can call the function
+<command>cyg_httpd_write_chunked()</command> to send out data any number of
+times. It is important that <command>cyg_httpd_write_chunked()</command> be
+the only function used to send data out for chunked frames. This
+guarantees that proper formatting of the response is respected.
+The prototype for the function is:</para>
+
+<programlisting>
+ssize_t cyg_httpd_write_chunked(char* p, int len);
+</programlisting>
+
+<para>The 'char*' points to the data to send out, the 'int' is the length of the
+data to send.</para>
+
+<para>In the case in which the size of the data is known upfront, the
+callback can instead create the header with a call to
+<command>cyg_httpd_create_std_header()</command> with the following
+prototype:</para>
+
+<programlisting>
+void cyg_httpd_create_std_header(char *ext, int len);
+
+extension   : the extension used in the search of the MIME type
+len         : length of the data to send out
+</programlisting>
+
+<para>and use
+<command>cyg_httpd_write()</command> to send data out to the client. The
+ prototype of <command>cyg_httpd_write()</command> is the same as 
+<command>cyg_httpd_write_chunked()</command></para></sect1>
+
 <sect1 id="athttpd-cgi">
 <title>CGI</title>
 <para>
@@ -249,9 +250,9 @@ reflash it.</para>
 
 <para>One way to implement CGI is, of course, the C language callback mechanism
 described above: This assumes, of course, that all the callbacks are written
-at compile time and cannot be modified later on. Another way to perform the
+by compile time and cannot be modified later on. Another way to perform the
 same functionality is the use of a library in the form of an object file. 
-These object files reside in the file system, and are loaded, executed and 
+These object files reside in the file system and are loaded, executed and 
 unloaded on demand.</para>
 
 <para>Yet a third way is the use of a scripting language. Since full fledged
@@ -261,8 +262,9 @@ was chosen for this server. Most of the tcl functionality is still there,
 and makes writing cgi a lot easier.</para>
 
 <para>In order to limit the footprint of the operating system support for both
-the objloader and the tcl script for dealing with cgi files can be selected 
-out. Tcl support in particular increases the memory requirements considerably.
+the objloader and the tcl script for dealing with cgi files can be 
+independently selected out. Tcl support in particular increases the memory
+requirements considerably.
 </para>
 
 <sect2 id="athttpd-cgi-objloader">
@@ -270,13 +272,15 @@ out. Tcl support in particular increases the memory requirements considerably.
 <para>
 In order to use the cgi mechanism the CYGPKG_OBJLOADER must be included
 when building the operating system. This will enable the proper option in the
-configuration tool, and if selected, the necessary code will be compiled
-in the OS kernel. The user will then have to compile a library and place it
-in the file system under a directory defined by 
+configuration tool and if selected, the necessary code will be compiled
+in the eCos kernel. The user will then have to compile the necessary libraries
+and place them in the file system under a directory defined by 
 CYGDAT_NET_ATHTTPD_SERVEROPT_CGIDIR.
-When a request is made to the server, the web server looks into the
+When a request is made, the web server checks if the root directory of the 
+requested URL is inside the CYGDAT_NET_ATHTTPD_SERVEROPT_CGIDIR directory.
+If so, the server assumes that the user requested a cgi file and looks into the
 directory to see if a library by the same name is present, and if so load it
-and tries to execute a library function with the following prototype:
+and tries to execute a function inside the library with the following prototype:
 </para>
 
 <programlisting width=72>void exec_cgi(CYG_HTTPS_STATE *)
@@ -336,7 +340,7 @@ macro are accessible via tcl. For example, if we have registered a
 form variable called foo, and during the GET request we are defining foo
 as being "1":</para>
 
-<programlisting width=72>GET /myForm.gci?foo=1</programlisting>
+<programlisting width=72>GET /myForm.cgi?foo=1</programlisting>
 
 <para>then tcl will be able to access the variable foo as $foo.</para>
 
@@ -388,26 +392,26 @@ path             : the path to the directory whose content must be
 domain           : a domain identifier for this directory.
 un               : username for authentication
 pw               : password for authentication
-mode             : CYG_HTTPD_AUTH_BASIC fpr base64 encoding or 
+mode             : CYG_HTTPD_AUTH_BASIC for base64 encoding or 
                    CYG_HTTPD_AUTH_DIGEST for MD5 encoding
 </programlisting>
 
 <para>for example, to require basic authentication of the content of directory 
-"/foo/" with a username of 'ecos' and password "bar", the following is used:
+"/ecos/" with a username of "foo" and password "bar", the following is used:
 </para>
 
 <programlisting>
-CYG_HTTPD_AUTH_TABLE_ENTRY(hal_domain1_entry,         \
-                           "/foo/",     "foo_domain", \
-                           "ecos",      "bar",        \
+CYG_HTTPD_AUTH_TABLE_ENTRY(hal_domain1_entry,          \
+                           "/ecos/",    "ecos_domain", \
+                           "foo",       "bar",         \
                            CYG_HTTPD_AUTH_BASIC);
 </programlisting>
 
-<para>Any request for a file in the directory /foo/ will now trigger a
+<para>Any request for a file in the directory /ecos/ will now trigger a
 credential check. These credentials, once provided, are automatically sent by
-the client for every request wihtin the particular domain.</para>
+the client for every request within the particular domain.</para>
 
-<para>It must be notice that the path name set in the macro is relative to the
+<para>It must be noticed that the path name set in the macro is relative to the
 HTML document directory, CYGDAT_NET_HTTPD_SERVEROPT_HTMLDIR and it is the
 first part of the path provided by the client request (including the leading
 slash).</para>
@@ -439,7 +443,9 @@ choosing one in the following order:</para>
 </itemizedlist>
 
 <para>If any of these files is found, its contents are sent back
-to the client. If no such file is found a directory listing is sent.</para>
+to the client. If no such file is found the server uses the user-provided
+index file name (if any is specified with the CYGDAT_NET_ATHTTPD_ALTERNATE_HOME
+setting. Failing all this a directory listing is sent.</para>
 
 <para>Trailing slash redirection for directory names is supported.</para>
 
@@ -458,7 +464,7 @@ an eCos table. In order to take advantage of this feature, the user first
 adds the variable names to the table, also providing a buffer where the parsed
 value will eventually be stored. The values will then be available in
 the buffers during the processing of the request, presumably in the body
-of a c language callback.</para>
+of a c language callback or CGI script.</para>
 
 <para>For example, if the user wants two form variables, "foo" and "bar", to 
 be parsed automatically, those variable names must be added to the table 
@@ -478,10 +484,11 @@ bufflen          : The length of the buffer. Must include a trailing string
 <para>or, in the specific instance mentioned above:</para>
 
 <programlisting>
-char var_foo[20];
-char var_bar[20];
-CYG_HTTPD_FVAR_TABLE_ENTRY(hal_form_entry_foo, "foo", var_foo, 20);
-CYG_HTTPD_FVAR_TABLE_ENTRY(hal_form_entry_bar, "bar", var_bar, 20);
+#define HTML_VAR_LEN   20
+char var_foo[HTML_VAR_LEN];
+char var_bar[HTML_VAR_LEN];
+CYG_HTTPD_FVAR_TABLE_ENTRY(hal_form_entry_foo, "foo", var_foo, HTML_VAR_LEN);
+CYG_HTTPD_FVAR_TABLE_ENTRY(hal_form_entry_bar, "bar", var_bar, HTML_VAR_LEN);
 </programlisting>
 
 <para>and after the GET or POST submissions, the list will contain the value 
@@ -497,14 +504,10 @@ for further processing, keeping in mind that the parsing always result
 in a string of characters to be produced, and any conversion from strings to
 integer (i.e. atoi()) must be performed in the callback.</para>
 
-<para>In order to avoid stale data, all the buffers in the table are cleared
-before running the parser and thus any variable in the list that was not
-assigned a new value will be an empty string.</para>
-
 <para>In CGI functions implemented using the objloader the pointers to the
 variables cannot be accessed directly, since the library will likely not
 know their location in memory. The proper way to access them is by using the
-cyg_httpd_find_form_variable() function:</para>
+cyg_httpd_find_form_variable() function from withing the library:</para>
 
 <programlisting>
 char* cyg_httpd_find_form_variable(char* name)
@@ -514,10 +517,14 @@ name             : name of the form variable to look up
 returns a pointer to the buffer, or 0 if the variable was not found.
 </programlisting>
 
-<para>When using the OBJLOADER package within the web server, a
-pointer to this function is automatically added to the externals table the
-OBJLOADER for relocation. See the OBLOADER paragraph of the ATHTTP user's
-guide for the full list of the exported functions.</para>
+<para>When using the OBJLOADER package within the web server, an entry
+for the cyg_httpd_find_form_variable() function is automatically added to the
+externals table the OBJLOADER for relocation. See the OBLOADER paragraph of 
+the ATHTTP user's guide for the full list of the exported functions.</para>
+
+<para>In order to avoid stale data, all the buffers in the table are cleared
+before running the parser and thus any variable in the list that was not
+assigned a new value dureing the request will be an empty string.</para>
 </sect1>
 
 <sect1 id="athttpd-ires">
@@ -530,7 +537,7 @@ using either <command>cyg_httpd_write()</command> or
 <command>cyg_httpd_write_chunked()</command>.</para>
 
 <para>In order to simplify this process the server allows registering
-any number of URLs inside internal resources, by providing the URL name, the
+any number of URLs as internal resources, by providing the URL name, the
 pointer to the resource data and its size. When a URL is requested the
 server will look it up among all internal resources, and if found, it
 will send out the resource.</para>

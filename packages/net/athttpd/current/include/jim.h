@@ -798,7 +798,7 @@ JIM_STATIC void JIM_API(Jim_Panic) (const char *fmt, ...);
 
 #if defined JIM_EXTENSION || defined JIM_EMBEDDED
 /* This must be included "inline" inside the extension */
-static void Jim_InitExtension(Jim_Interp *interp)
+static __inline__ void Jim_InitExtension(Jim_Interp *interp)
 {
   Jim_GetApi = interp->getApiFuncPtr;
 

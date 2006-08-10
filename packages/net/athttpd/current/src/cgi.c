@@ -43,7 +43,7 @@
  * #####DESCRIPTIONBEGIN####
  * 
  *  Author(s):    Anthony Tonizzo (atonizzo@gmail.com)
- *  Contributors: 
+ *  Contributors: Sergei Gavrikov (w3sg@SoftHome.net)
  *  Date:         2006-06-12
  *  Purpose:      
  *  Description:  
@@ -179,7 +179,7 @@ cyg_int32 cyg_httpd_exec_cgi_tcl(char *file_name)
         return 0;
     }
     
-    char* tcl_buffer = (char*)cyg_ldr_malloc(sp.st_size);
+    char* tcl_buffer = (char*)malloc(sp.st_size);
     CYG_ASSERT(tcl_buffer != NULL, "Cannot malloc() for tcl CGI");
     if (tcl_buffer == NULL)
     {
@@ -304,7 +304,7 @@ cyg_httpd_exec_cgi(void)
 #ifdef CYGOPT_NET_ATHTTPD_USE_CGIBIN_TCL
     if ( strcmp(extension, CYG_HTTPD_DEFAULT_CGIBIN_TCL_EXTENSION) == 0)
     {
-        // Load a cgibin via OBJLOADER.
+        // Load a cgibin via the TCL interpreter.
         cyg_int32 rc = cyg_httpd_exec_cgi_tcl(file_name);
         return rc;
     }    

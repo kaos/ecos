@@ -43,7 +43,7 @@
  * #####DESCRIPTIONBEGIN####
  * 
  *  Author(s):    Anthony Tonizzo (atonizzo@gmail.com)
- *  Contributors: 
+ *  Contributors: Sergei Gavrikov (w3sg@SoftHome.net)
  *  Date:         2006-06-12
  *  Purpose:      
  *  Description:  
@@ -192,6 +192,9 @@ cyg_httpd_find_form_variable(char *p)
 void
 cyg_httpd_handle_method_POST(void)
 {
+    // TODO: Need to support the case in which a POST request will send
+    //  LOTS of data that does not fit into a single inbuffer. For example,
+    //  file transfer over HTTP.
     cyg_int32 len = read(httpstate.sockets[httpstate.client_index].descriptor,
                           httpstate.inbuffer, 
                           CYG_HTTPD_MAXINBUFFER);
@@ -200,7 +203,7 @@ cyg_httpd_handle_method_POST(void)
         return;
     
     char  *cp = httpstate.inbuffer;
-    while((*cp == '\r') || (*cp == '\n'))
+    while ((*cp == '\r') || (*cp == '\n'))
         cp++;
     cp[httpstate.inbuffer_len] = ' ';
     cyg_httpd_store_form_data(cp);
@@ -214,9 +217,13 @@ cyg_httpd_handle_method_POST(void)
         return;
     }
 
-#ifdef CYGOPT_NET_ATHTTPD_USE_CGIBIN_OBJLOADER
-    // If we did not find a c language callback handler for this URL see if
-    //  we are trying to execute a CGI via the OBJLOADER package.
+#if defined(CYGOPT_NET_ATHTTPD_USE_CGIBIN_OBJLOADER) || \
+                           defined(CYGOPT_NET_ATHTTPD_USE_CGIBIN_TCL)
+    // See if we are trying to execute a CGI via one of the supported methods.
+    // If we the GET request is trying to access a file in the 
+    //  CYGDAT_NET_ATHTTPD_SERVEROPT_CGIDIR directory then it is assumed that
+    //  we are trying to execute a CGI script. The extension of the file will
+    //  determine the appropriate interpreter to use.
     if (httpstate.url[0] == '/' &&
                     !strncmp(httpstate.url + 1, 
                               CYGDAT_NET_ATHTTPD_SERVEROPT_CGIDIR, 
@@ -227,8 +234,6 @@ cyg_httpd_handle_method_POST(void)
         cyg_httpd_exec_cgi();
         return;
     }
-    // If the OBJLOADER package is not loaded, then we'll try to send the
-    //  file, which will likely generate a 404.
 #endif    
 
     // No handler of any kind for a post request. Must send 404.

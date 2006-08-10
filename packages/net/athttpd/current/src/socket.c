@@ -43,7 +43,7 @@
  * #####DESCRIPTIONBEGIN####
  * 
  *  Author(s):    Anthony Tonizzo (atonizzo@gmail.com)
- *  Contributors: 
+ *  Contributors: Sergei Gavrikov (w3sg@SoftHome.net)
  *  Date:         2006-06-12
  *  Purpose:      
  *  Description:  
@@ -105,14 +105,12 @@ cyg_httpd_writev(cyg_iovec *iovec_bufs, int count)
     
 // The need for chunked transfers arises from the fact that with dinamic
 //  pages it is not always possible to know the packet size upfront, and thus
-//  it is not possible to fill the Content-Length: field in the header.
-// Today's web browser apparently do not even use 'Content-Length:' because
-//  many sites that generate dinamic frames send a header with a length of 0.
-// Even though this system works (the browsers probably reads everything that
-//  comes in before the socket is closed and then figure it out) the HTTP
-//  standard _mandates_ the Content-Length: with a correct valie, and whenever
-//  that is not possible, chunked transfers must be used.
-// This function also handles the case of a chunked frame. 
+//  it is not possible to fill the 'Content-Length:' field in the header.
+// Today's web browser use 'Content-Length:' when present in the header and 
+//  when not present they read everything that comes in up to the last 2 \r\n
+//  and then figure it out. The HTTP standard _mandates_ 'Content-Length:' to
+//  be present in the header with a correct value, and whenever that is not
+//  possible, chunked transfers must be used.
 //
 // A chunked transer takes the form of:
 // -----------------------------------------------------------------------------
@@ -136,9 +134,10 @@ cyg_httpd_start_chunked(char *extension)
     //  should be enough, but several posting I read seem to imply otherwise,
     //  at least with early generation browsers that supported the
     //  "Transfer-Encoding: chunked" mechanism. Things might be getting better
-    //  now but I snooped some sites that use the chunked stuff and all of them
-    //  with no exception issue a "Connection: close" on chunked frames even
-    //  if there is nothing in the HTTP 1.1 spec that requires it.
+    //  now but I snooped some sites that use the chunked stuff (Yahoo! for one)
+    /// and all of them with no exception issue a "Connection: close" on 
+    //  chunked frames even if there is nothing in the HTTP 1.1 spec that
+    //  requires it.
     httpstate.mode        |= CYG_HTTPD_MODE_CLOSE_CONN;
     
     // We do not cache the CGI script. In case they are used to display
@@ -179,10 +178,11 @@ cyg_httpd_end_chunked(void)
 // This function builds and send out a standard header. It is likely going to
 //  be used by a c language callback function, and thus followed by one or
 //  more calls to cyg_httpd_write(). Unlike cyg_httpd_start_chunked(), this
-//  call requires prior knowledge of the final size of the frame, and the user 
+//  call requires prior knowledge of the final size of the frame (browsers
+//  _will_trust_ the "Content-Length:" field when present!), and the user 
 //  is expected to make sure that the total number of bytes (octets) sent out
-//  via 'cyg_httpd_write()' matches the number passed in the len parameter. 
-// Its use it thus more limited, and the more flexible chunked frames should 
+//  via 'cyg_httpd_write()' matches the number passed in the len parameter.
+// Its use is thus more limited, and the more flexible chunked frames should 
 //  be used whenever possible.
 void
 cyg_httpd_create_std_header(char *extension, int len)
@@ -242,8 +242,9 @@ cyg_httpd_process_request(cyg_int32 index)
         if (httpstate.mode & CYG_HTTPD_MODE_CLOSE_CONN)
             // There are 2 cases we can be here:
             // 1) chunked frames close their connection by default
-            // 2) The client requested the connection be terminated.
-            // In any case, we close the TX pipe, and wait for the client to
+            // 2) The client requested the connection be terminated with a
+            //     "Connection: close" in the header
+            // In any case, we close the TX pipe and wait for the client to
             //  send us an EOF on the receive pipe. This is a more graceful way
             //  to handle the closing of the socket, compared to just calling
             //  close() without first asking the opinion of the client, and 
@@ -265,6 +266,7 @@ void
 cyg_httpd_handle_new_connection(cyg_int32 listener)
 {
     cyg_int32 i;
+
 
     int fd_client = accept(listener, NULL, NULL);
     CYG_ASSERT(listener != -1, "accept() failed");
@@ -336,6 +338,9 @@ cyg_httpd_daemon(cyg_addrword_t data)
 
 #ifdef CYGOPT_NET_ATHTTPD_USE_CGIBIN_TCL
     cyg_httpd_init_tcl_interpreter();
+#if CYGOPT_NET_ATHTTPD_DEBUG_LEVEL > 0
+    diag_printf("Tcl interpreter has been initialized...\n");
+#endif
 #endif    
     
     cyg_httpd_initialize();
@@ -380,6 +385,7 @@ cyg_httpd_daemon(cyg_addrword_t data)
     httpstate.fdmax = listener;
     while (1)
     {
+        // The listener is always added to the select() sensitivity list.
         FD_SET(listener, &httpstate.rfds); 
         struct timeval tv = {CYG_HTTPD_SOCKET_IDLE_TIMEOUT, 0};
         rc = select(httpstate.fdmax + 1, &httpstate.rfds, NULL, NULL, &tv);
@@ -391,6 +397,10 @@ cyg_httpd_daemon(cyg_addrword_t data)
                 cyg_httpd_handle_new_connection(listener);
 
             httpstate.fdmax = listener;
+            
+            // The sensitivity list returned by select() can have multiple
+            //  socket descriptors that need service. Loop through the whole
+            //  descriptor list to see if one or more need to be served.
             for (i = 0; i < CYGPKG_NET_MAXSOCKETS; i ++)
             {
                 cyg_int32 descr = httpstate.sockets[i].descriptor;
@@ -417,13 +427,14 @@ cyg_httpd_daemon(cyg_addrword_t data)
         }
         else
         {
-            perror("error");
+#if CYGOPT_NET_ATHTTPD_DEBUG_LEVEL > 0
             cyg_int8 *ptr = (cyg_int8*)&httpstate.rfds;
             printf("rfds: %x %x %x %x\n", ptr[0], ptr[1], ptr[2], ptr[3] );
             for (i = 0; i < CYGPKG_NET_MAXSOCKETS; i++)
                 if (httpstate.sockets[i].descriptor != 0)
                      diag_printf("Socket in list: %d\n", 
                                  httpstate.sockets[i].descriptor);
+#endif                                 
             CYG_ASSERT(rc != -1, "Error during select()");                 
         }
     }

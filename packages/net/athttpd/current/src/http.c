@@ -43,7 +43,7 @@
  * #####DESCRIPTIONBEGIN####
  * 
  *  Author(s):    Anthony Tonizzo (atonizzo@gmail.com)
- *  Contributors: 
+ *  Contributors: Sergei Gavrikov (w3sg@SoftHome.net)
  *  Date:         2006-06-12
  *  Purpose:      
  *  Description:  
@@ -159,10 +159,10 @@ cyg_httpd_send_error(cyg_int32 err_type)
         if(fp == NULL)
             return;
 
-        int payload_size = fread(httpstate.outbuffer, 
-                                 1, 
-                                 CYG_HTTPD_MAXOUTBUFFER, 
-                                 fp);
+        ssize_t payload_size = fread(httpstate.outbuffer, 
+                                     1, 
+                                     CYG_HTTPD_MAXOUTBUFFER, 
+                                     fp);
         while (payload_size > 0)
         {
             ssize_t bytes_written = cyg_httpd_write_chunked(httpstate.outbuffer, 
@@ -263,7 +263,7 @@ cyg_httpd_parse_date(char *time)
     char   month[4];
     struct tm tm_mod;
 
-    // We are going to get rid of the day if the week. This is the first
+    // We are going to get rid of the day of the week. This is always the first
     //  part of the string, separated by a blank.
     time = strchr( time, ' ' );
     if ( time == NULL )
@@ -320,15 +320,15 @@ cyg_httpd_parse_date(char *time)
 
 // Finds the mime string into the mime_table associated with a specific 
 //  extension. Returns the MIME type to send in the header, or NULL if the
-//  extension is not int he table.
+//  extension is not in the table.
 char*
-cyg_httpd_find_mime_string(char *fname)
+cyg_httpd_find_mime_string(char *ext)
 {
     cyg_httpd_mime_table_entry *entry = cyg_httpd_mime_table;
 
     while (entry != cyg_httpd_mime_table_end)
     {
-        if (!strcmp((const char*)fname, entry->extension ))
+        if (!strcmp((const char*)ext, entry->extension ))
             return entry->mime_string;
         entry++;
     }
@@ -482,8 +482,8 @@ cyg_httpd_send_file(char *name)
             return;
         }
 
-        // We are going to try to locate a home page, if any is defined in
-        // the directory we are trying to access. 
+        // We are going to try to locate an index page in the directory we got
+        //  in the URL. 
         cyg_httpd_append_homepage(file_name);
         if (file_name[strlen(file_name)-1] == '/')
         {

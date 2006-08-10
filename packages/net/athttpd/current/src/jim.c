@@ -11698,7 +11698,7 @@ int Jim_InteractivePrompt(Jim_Interp *interp)
     printf("Welcome to Jim version %d.%d, "
            "Copyright (c) 2005 Salvatore Sanfilippo\n",
            JIM_VERSION / 100, JIM_VERSION % 100);
-    printf("CVS ID: $Id: jim.c,v 1.163 2005/09/19 15:47:15 antirez Exp $\n");
+    printf("CVS ID: $Id: jim.c,v 1.1 2006/07/18 16:37:24 jlarmour Exp $\n");
     Jim_SetVariableStrWithStr(interp, "jim_interactive", "1");
     while (1) {
         char buf[1024];
