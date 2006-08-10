@@ -1,3 +1,9 @@
+2006-08-10  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/wcstombs.cxx (wcstombs): Follow Single Unix Spec
+	and if string is NULL, return chars that would have been
+	returned.
+
 2005-07-30  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/i18nmb.c (main): Really silence the warnings.

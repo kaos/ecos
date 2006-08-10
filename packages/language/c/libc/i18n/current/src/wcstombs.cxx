@@ -85,12 +85,13 @@ be restricted to a defined set of locales.
 
 RETURNS
 This implementation of <<wcstombs>> returns <<0>> if
-<[s]> is <<NULL>> or is the empty string; 
+<[s]> is the empty string;
 it returns <<-1>> if CYGINT_LIBC_I18N_MB_REQUIRED and one of the
 wide-char characters does not represent a valid multi-byte character;
 otherwise it returns the minimum of: <<n>> or the
 number of bytes that are transferred to <<s>>, not including the
-nul terminator.
+nul terminator. If <[s]> is <<NULL>> it returns the number of
+bytes that would have been transferred.
 
 If the return value is -1, the state of the <<pwc>> string is
 indeterminate.  If the input has a length of 0, the output
@@ -193,11 +194,15 @@ wcstombs ( char *s, const wchar_t *pwcs, size_t n )
 #endif /* CYGINT_LIBC_I18N_MB_REQUIRED */
   
   int count = 0;
+  char c;
 
   if (n != 0) {
     do {
-      if ((*s++ = (char) *pwcs++) == 0)
-	break;
+      c = (char) *pwcs++;
+      if (s)
+        *s++ = c;
+      if (0 == c)
+        break;
       count++;
     } while (--n != 0);
   }
