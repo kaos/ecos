@@ -11,6 +11,24 @@
 
 	* doc/kernel.sgml: Fix typo
 
+2006-04-10  Sergei Organov  <osv@javad.com>
+
+	Implement FIFO variant of scheduling of DSRs and make it the
+	default. This is reworked patch originally suggested by Stefan
+	Sommerfeld <sommerfeld@mikrom.com>.
+
+	* cdl/interrupts.cdl (CYGIMP_KERNEL_INTERRUPTS_DSRS_LIST): make it
+	cdl_component.
+	* cdl/interrupts.cdl (CYGSEM_KERNEL_INTERRUPTS_DSRS_LIST_FIFO):
+	new option for CYGIMP_KERNEL_INTERRUPTS_DSRS_LIST.
+	* include/intr.hxx (class Cyg_Interrupt): new static variable
+	dsr_list_tail.
+	* src/intr/intr.cxx (call_pending_DSRs_inner): add
+	CYGSEM_KERNEL_INTERRUPTS_DSRS_LIST_FIFO variant.
+	(post_dsr): likewise.
+	* tests/intr0.cxx: fix comments to match actual option names.
+	* tests/kintr0.c: likewise.2006-03-27  Marco Cruz  <marco@daruma.com.br>
+	
 2006-03-27  Marco Cruz  <marco@daruma.com.br>
 
 	* include/thread.hxx: removed extra qualifier of

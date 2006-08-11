@@ -240,10 +240,10 @@ FUNC_START(hal_thread_load_context)
         
         lds.l   @r0+,pr                 ! pr
 
-        mov     r3,r15                  ! update stack pointer
-
         mov.l   @r0+,r2                 ! SR
         hal_cpu_int_merge r2,r0,r1      ! restore interrupt state
+
+        mov     r3,r15                  ! update stack pointer
 
         rts                             ! and return
          nop

@@ -46,8 +46,9 @@
 // Description:   Very basic test of interrupt objects
 // Options:
 //     CYGIMP_KERNEL_INTERRUPTS_DSRS_TABLE
-//     CYGIMP_KERNEL_INTERRUPTS_DSRS_TABLE_SIZE
+//     CYGNUM_KERNEL_INTERRUPTS_DSRS_TABLE_SIZE
 //     CYGIMP_KERNEL_INTERRUPTS_DSRS_LIST
+//     CYGSEM_KERNEL_INTERRUPTS_DSRS_LIST_FIFO
 //####DESCRIPTIONEND####
 
 #include <pkgconf/kernel.h>

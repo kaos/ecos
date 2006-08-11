@@ -74,7 +74,7 @@ cdl_component CYGIMP_KERNEL_INTERRUPTS_DSRS {
     # NOTE: the choice of list vs table should not be two separate
     # options. There is a single option which must have one of
     # two legal values.
-    cdl_option CYGIMP_KERNEL_INTERRUPTS_DSRS_LIST {
+    cdl_component CYGIMP_KERNEL_INTERRUPTS_DSRS_LIST {
         display       "Use linked lists for DSRs"
         default_value 1
         implements    CYGINT_KERNEL_INTERRUPTS_DSRS
@@ -85,6 +85,22 @@ cdl_component CYGIMP_KERNEL_INTERRUPTS_DSRS {
             requires that the kernel disable interrupts for a very short
             period of time outside interrupt handlers, but there is no
             possibility of a table overflow occurring."
+
+        cdl_option CYGSEM_KERNEL_INTERRUPTS_DSRS_LIST_FIFO {
+            display       "Schedule DSRs in FIFO order"
+            flavor        bool
+            default_value 1
+            description   "When this option is set, DSRs are scheduled
+                in the natural FIFO (first in, first out) order,
+                otherwise they are scheduled in LIFO (last in, first
+                out) order. Applications should not rely on any
+                particular order of scheduling of DSRs. LIFO
+                scheduling is kept for backward compatibility only and
+                is not recommended as it may lead to high (up to 2
+                times higher then FIFO) IRQ-to-DSR latencies at some
+                (typically rare) conditions. If unsure, leave this set."
+        }
+
     }
 
     cdl_component CYGIMP_KERNEL_INTERRUPTS_DSRS_TABLE {

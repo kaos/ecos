@@ -137,6 +137,10 @@ volatile cyg_ucount32 Cyg_Interrupt::dsr_table_tail[CYGNUM_KERNEL_CPU_MAX];
 
 Cyg_Interrupt* volatile Cyg_Interrupt::dsr_list[CYGNUM_KERNEL_CPU_MAX];
 
+#  ifdef CYGSEM_KERNEL_INTERRUPTS_DSRS_LIST_FIFO
+Cyg_Interrupt* volatile Cyg_Interrupt::dsr_list_tail[CYGNUM_KERNEL_CPU_MAX];
+#  endif
+
 #endif
 
 // -------------------------------------------------------------------------
@@ -170,6 +174,35 @@ Cyg_Interrupt::call_pending_DSRs_inner(void)
 
 #ifdef CYGIMP_KERNEL_INTERRUPTS_DSRS_LIST
 
+#  ifdef CYGSEM_KERNEL_INTERRUPTS_DSRS_LIST_FIFO
+
+    cyg_uint32 old_intr;
+    HAL_DISABLE_INTERRUPTS(old_intr);
+    Cyg_Interrupt* intr = dsr_list[cpu];
+    CYG_ASSERT(intr != 0, "No DSRs are pended");
+    dsr_list[cpu] = 0;
+    dsr_list_tail[cpu] = 0;
+    while(true)
+    {
+        cyg_count32 count = intr->dsr_count;
+        Cyg_Interrupt* next = intr->next_dsr;
+        intr->dsr_count = 0;
+        intr->next_dsr = 0;
+        HAL_RESTORE_INTERRUPTS(old_intr);
+
+        CYG_ASSERT(intr->dsr != 0, "No DSR defined");
+        CYG_ASSERT(count > 0, "DSR posted but post count is zero");
+        intr->dsr(intr->vector, count, (CYG_ADDRWORD)intr->data);
+
+        if (!next)
+            break;
+
+        intr = next;
+        HAL_DISABLE_INTERRUPTS(old_intr);
+    }
+
+#  else // ! defined CYGSEM_KERNEL_INTERRUPTS_DSRS_LIST_FIFO
+    
     while( dsr_list[cpu] != NULL )
     {
         Cyg_Interrupt* intr;
@@ -191,8 +224,10 @@ Cyg_Interrupt::call_pending_DSRs_inner(void)
         
     }
     
-#endif
-    
+#  endif  // ! defined CYGSEM_KERNEL_INTERRUPTS_DSRS_LIST_FIFO
+
+#endif  // defined CYGIMP_KERNEL_INTERRUPTS_DSRS_LIST
+
 };
 
 externC void
@@ -245,17 +280,39 @@ Cyg_Interrupt::post_dsr(void)
 
     // Only add the interrupt to the dsr list if this is
     // the first DSR call.
-    // At present DSRs are pushed onto the list and will be
-    // called in reverse order. We do not define the order
-    // in which DSRs are called, so this is acceptable.
-    
     if( dsr_count++ == 0 )
     {
+#  ifdef CYGSEM_KERNEL_INTERRUPTS_DSRS_LIST_FIFO
+
+        // Add to the tail of the list.
+        Cyg_Interrupt* tail = dsr_list_tail[cpu];
+        dsr_list_tail[cpu] = this;
+        if( tail )
+        {
+            CYG_ASSERT( 0 != dsr_list[cpu] ,
+              "DSR list is not empty but its head is 0");
+            tail->next_dsr = this;
+        }
+        else
+        {
+            CYG_ASSERT( 0 == dsr_list[cpu] ,
+              "DSR list tail is 0 but its head is not");
+            dsr_list[cpu] = this;
+        }
+
+#  else   // ! defined CYGSEM_KERNEL_INTERRUPTS_DSRS_LIST_FIFO
+
+        // At present DSRs are pushed onto the list and will be called
+        // in reverse order. We do not define the order in which DSRs
+        // are called, so this is acceptable.
         next_dsr = dsr_list[cpu];
         dsr_list[cpu] = this;
+
+#  endif  // ! defined CYGSEM_KERNEL_INTERRUPTS_DSRS_LIST_FIFO
+
     }
-    
-#endif
+
+#endif  // defined CYGIMP_KERNEL_INTERRUPTS_DSRS_LIST
     
     HAL_RESTORE_INTERRUPTS(old_intr);    
 };

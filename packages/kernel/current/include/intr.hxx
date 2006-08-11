@@ -195,11 +195,17 @@ class Cyg_Interrupt
     // next DSR in list
     Cyg_Interrupt* volatile next_dsr CYGBLD_ANNOTATE_VARIABLE_INTR; 
 
-    // static list of pending DSRs
+    // head of static list of pending DSRs
     static Cyg_Interrupt* volatile dsr_list[CYGNUM_KERNEL_CPU_MAX]
                                            CYGBLD_ANNOTATE_VARIABLE_INTR;
-    
-#endif
+
+#  ifdef CYGSEM_KERNEL_INTERRUPTS_DSRS_LIST_FIFO
+    // tail of static list of pending DSRs
+    static Cyg_Interrupt* volatile dsr_list_tail[CYGNUM_KERNEL_CPU_MAX]
+                                           CYGBLD_ANNOTATE_VARIABLE_INTR;
+#  endif
+
+#endif  // defined  CYGIMP_KERNEL_INTERRUPTS_DSRS_LIST
 
 #ifdef CYGIMP_KERNEL_INTERRUPTS_CHAIN
 
