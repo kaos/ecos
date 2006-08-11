@@ -97,7 +97,8 @@
 #define _16AS8 CYGNUM_FLASH_16AS8
 #endif
 
-#if (_16AS8 == 0)
+
+# if (_16AS8 == 0)||CYGHWR_DEVS_FLASH_ST_M29W320D
 # define FLASH_Setup_Addr1              (0x555)
 # define FLASH_Setup_Addr2              (0x2AA)
 # define FLASH_VendorID_Addr            (0)
@@ -114,6 +115,7 @@
 # define FLASH_DeviceID_Addr3           (0x1e)
 # define FLASH_WP_Addr                  (4)
 #endif
+
 #define FLASH_Setup_Code1               FLASHWORD( 0xAA )
 #define FLASH_Setup_Code2               FLASHWORD( 0x55 )
 #define FLASH_Setup_Erase               FLASHWORD( 0x80 )

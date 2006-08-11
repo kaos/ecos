@@ -1,3 +1,8 @@
+2005-08-11  Oyvind Harboe  <oyvind.harboe@zylin.com>
+
+	* include/flash_am29xxxxx_parts.inl [CYGHWR_DEVS_FLASH_ST_M29W320D]:
+	* cdl/flash_amd_am29xxxxx.cdl: Add ST M29W320D part.
+	
 2006-04-03  Lars Povlsen  <lpovlsen@vitesse.com>
 
 	* include/flash_am29xxxxx_parts.inl [CYGHWR_DEVS_FLASH_AMD_MX29LV128]:
