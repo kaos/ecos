@@ -27,7 +27,7 @@
 	CYGSEM_KERNEL_INTERRUPTS_DSRS_LIST_FIFO variant.
 	(post_dsr): likewise.
 	* tests/intr0.cxx: fix comments to match actual option names.
-	* tests/kintr0.c: likewise.2006-03-27  Marco Cruz  <marco@daruma.com.br>
+	* tests/kintr0.c: likewise.
 	
 2006-03-27  Marco Cruz  <marco@daruma.com.br>
 
