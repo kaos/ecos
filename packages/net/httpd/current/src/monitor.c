@@ -702,7 +702,8 @@ static cyg_bool cyg_monitor_network( FILE * client, char *filename,
 {
     struct ifaddrs *iflist, *ifp;
 
-    getifaddrs(&iflist);
+    if(getifaddrs(&iflist)!=0)
+        return 0;
     
     html_begin(client);
 

@@ -1,3 +1,10 @@
+2006-07-28  Jochen Gerster <JochenGerster@gmx.de>
+
+	* src/monitor.c (cyg_monitor_network): Calling the network monitor
+	  html handler can trigger an exception when the function
+	  getifaddrs() fails because we are out of memory. Check the
+	  return code and return failure if this happens.
+	
 2005-07-30  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/httpd.c (cyg_httpd_server): Use socklen_t to avoid compiler
