@@ -1,3 +1,8 @@
+2006-08-11  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/wcstombs.cxx (wcstombs): Previous change should have
+	disregarded 'n'. Now fixed. Thanks to Klaas Gadeyne.
+
 2006-08-10  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/wcstombs.cxx (wcstombs): Follow Single Unix Spec

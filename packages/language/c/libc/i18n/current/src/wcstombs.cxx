@@ -91,7 +91,7 @@ wide-char characters does not represent a valid multi-byte character;
 otherwise it returns the minimum of: <<n>> or the
 number of bytes that are transferred to <<s>>, not including the
 nul terminator. If <[s]> is <<NULL>> it returns the number of
-bytes that would have been transferred.
+bytes that would have been transferred, regardless of <<[n]>>.
 
 If the return value is -1, the state of the <<pwc>> string is
 indeterminate.  If the input has a length of 0, the output
@@ -196,15 +196,18 @@ wcstombs ( char *s, const wchar_t *pwcs, size_t n )
   int count = 0;
   char c;
 
-  if (n != 0) {
-    do {
-      c = (char) *pwcs++;
-      if (s)
-        *s++ = c;
-      if (0 == c)
-        break;
-      count++;
-    } while (--n != 0);
+  if (s == NULL) {
+      while (*pwcs++ != 0) {
+          count++;
+      }
+  } else {
+      if (n != 0) {
+          do {
+              if ((*s++ = (char) *pwcs++) == 0) 
+                  break;
+              count++;
+          } while (--n != 0);
+      }
   }
   
   retval = count;
