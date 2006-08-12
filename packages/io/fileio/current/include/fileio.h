@@ -159,7 +159,9 @@ struct cyg_fstab_entry
 #define FS_INFO_GETCWD          3       /* getcwd() */
 #define FS_INFO_SYNC            4       /* cyg_fs_fssync() */
 #define FS_INFO_ATTRIB          5       /* cyg_fs_(get|set)_attrib() */
-
+#ifdef  CYGSEM_FILEIO_INFO_DISK_USAGE
+#define FS_INFO_DISK_USAGE      6       /* get_disk_usage()    */
+#endif
 //-----------------------------------------------------------------------------
 // Types for link()
 
@@ -173,6 +175,12 @@ struct cyg_getcwd_info
 {
     char        *buf;           /* buffer for cwd string */
     size_t      size;           /* size of buffer */
+};
+
+struct cyg_fs_disk_usage{
+  cyg_uint64 total_blocks;
+  cyg_uint64 free_blocks;
+  cyg_uint32 block_size;
 };
 
 typedef cyg_uint32 cyg_fs_attrib_t;

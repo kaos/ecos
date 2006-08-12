@@ -1,3 +1,9 @@
+2006-05-18  Paul Fine  <pfine@dtccom.com>
+
+	* include/fileio.h : Added a key and a structure to extract the
+	disk size and the available free space for a filesystem using
+	the cyg_fs_getinfo() interface.
+
 2006-05-17  Andy Jackson <andy@grapevinetech.co.uk>
 	
 	* tests/fileio1.c: Compiler warning fixes.

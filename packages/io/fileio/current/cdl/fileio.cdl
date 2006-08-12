@@ -224,6 +224,15 @@ cdl_package CYGPKG_IO_FILEIO {
 
     }
 
+    cdl_option CYGSEM_FILEIO_INFO_DISK_USAGE {
+        display       "cyg_fs_getinfo call for disk usage"
+        flavor        bool
+        default_value 0
+        description   "
+            Enabling this option includes code in some filesystems to
+            implement a call using cyg_fs_getinfo to return the current
+            filesystem block usage."
+    }
     # ----------------------------------------------------------------
     # Tests
 
