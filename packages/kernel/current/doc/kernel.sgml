@@ -1244,7 +1244,7 @@ cyg_start( void )
     &hellip;
     cyg_thread_create( &hellip;,
                       &amp;fred::static_thread_aux,
-                      static_cast&lt;cyg_addrword_t&gt;(&amp;instance),
+                      reinterpret_cast&lt;cyg_addrword_t&gt;(&amp;instance),
                       &hellip;);
     &hellip;
 }
