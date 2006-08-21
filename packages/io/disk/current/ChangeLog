@@ -1,3 +1,9 @@
+2006-08-18  Andy Jackson  <andy@xylanta.com>
+
+	* cdl/io_disk.cdl: Made debugging CDL controlled. 
+	* src/disk.c: Added support to allow non-CHS disk devices to 
+	use LBA information in MBR.
+
 2005-12-02  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/disk.c: Add comments that bread/bwrite take the position and

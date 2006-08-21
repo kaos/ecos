@@ -58,7 +58,9 @@
 
 // ---------------------------------------------------------------------------
 
-//#define DEBUG 1
+#ifdef CYGDBG_IO_DISK_DEBUG
+#define DEBUG 1
+#endif
 
 #ifdef DEBUG
 # define D(_args_) diag_printf _args_
@@ -160,18 +162,37 @@ read_partition(cyg_uint8            *data,
                cyg_disk_info_t      *info,
                cyg_disk_partition_t *part)
 {
+    cyg_disk_identify_t *ident = &info->ident;
     cyg_uint16 c, h, s;
 
+    // Retrieve basic information
     part->type  = data[4];
     part->state = data[0];
-
-    READ_CHS(&data[1], c, h, s);
-    CHS_TO_LBA(&info->ident, c, h, s, part->start);
-
-    READ_CHS(&data[5], c, h, s);
-    CHS_TO_LBA(&info->ident, c, h, s, part->end);
-    
     READ_DWORD(&data[12], part->size);
+
+    // If disk doesn't have cylinders/heads, use LBA data rather than CHS
+    if (ident->cylinders_num == 0 && ident->heads_num == 0 &&
+        ident->sectors_num== 0)
+    {
+        // Use LBA data to determine disk size
+        READ_DWORD(&data[8], part->start);
+        part->end = (part->start + part->size) - 1;
+        D(("LBA partition data (%d,%d,%d)\n", 
+           part->start, part->end, part->size));
+    }
+    else
+    {
+        // Use CHS data to determine disk size
+        READ_CHS(&data[1], c, h, s);
+        D(("partition start CHS %d,%d,%d\n", c, h, s));
+        CHS_TO_LBA(ident, c, h, s, part->start);
+
+        READ_CHS(&data[5], c, h, s);
+        D(("partition end CHS %d,%d,%d\n", c, h, s));
+        CHS_TO_LBA(ident, c, h, s, part->end);
+        D(("CHS partition data (%d,%d,%d)\n", 
+           part->start, part->end, part->size));
+    }
 }
 
 //

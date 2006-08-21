@@ -62,12 +62,12 @@ cdl_package CYGPKG_IO_DISK {
     compile       -library=libextras.a disk.c
  
     define_proc {
-	puts $::cdl_header "/***** proc output start *****/"
-	puts $::cdl_header "#include <pkgconf/system.h>"
-	puts $::cdl_header "#ifdef CYGDAT_IO_DISK_DEVICE_HEADER"
-	puts $::cdl_header "# include CYGDAT_IO_DISK_DEVICE_HEADER"
-	puts $::cdl_header "#endif "
-	puts $::cdl_header "/****** proc output end ******/"
+        puts $::cdl_header "/***** proc output start *****/"
+        puts $::cdl_header "#include <pkgconf/system.h>"
+        puts $::cdl_header "#ifdef CYGDAT_IO_DISK_DEVICE_HEADER"
+        puts $::cdl_header "# include CYGDAT_IO_DISK_DEVICE_HEADER"
+        puts $::cdl_header "#endif "
+        puts $::cdl_header "/****** proc output end ******/"
     }
 
     cdl_component CYGPKG_IO_DISK_DEVICES {
@@ -76,16 +76,25 @@ cdl_package CYGPKG_IO_DISK {
         default_value 1
         description   "
             This option enables the hardware disk drivers
-	        for the current platform."
+            for the current platform."
+    }
+
+    cdl_component CYGDBG_IO_DISK_DEBUG {
+        display       "Enable debugging output"
+        flavor        bool
+        default_value 0
+        description   "
+            This option enables debugging information from
+            the disk driver package."
     }
 
     cdl_component CYGPKG_IO_DISK_OPTIONS {
         display "Disk device driver build options"
         flavor  none
         description   "
-	        Package specific build options including control over
-	        compiler flags used only in building this package,
-	        and details of which tests are built."
+                Package specific build options including control over
+                compiler flags used only in building this package,
+                and details of which tests are built."
 
 
         cdl_option CYGPKG_IO_DISK_CFLAGS_ADD {
