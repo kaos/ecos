@@ -179,6 +179,7 @@ cdl_package CYGPKG_INFRA {
 
     cdl_option CYGNUM_INFRA_EMPTY_DELETE_THRESHOLD {
         display       "Threshold for valid number of delete calls"
+        flavor        data
         default_value 100
         active_if     CYGPKG_INFRA_DEBUG
         description   "

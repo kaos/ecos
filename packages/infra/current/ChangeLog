@@ -1,3 +1,8 @@
+2006-08-25  Gary Thomas  <gary@mlbassoc.com>
+
+	* cdl/infra.cdl: 
+	CYGNUM_INFRA_EMPTY_DELETE_THRESHOLD must be 'data', not 'boolean'
+
 2006-05-17  David Vrabel <dvrabel@arcom.com>
  
 	* include/cyg_type.h: #define CYG_NELEM to calculate the
