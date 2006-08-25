@@ -1,3 +1,7 @@
+2006-08-24  Alexander Neundorf <alexander.neundorf@jenoptik.com>
+
+	* src/strftime.cxx: Fixed "%I" (Time in 12 hour modus was 1 hour off)
+
 2006-06-16  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/strptime.c: Add a testcase for the previous fix.
