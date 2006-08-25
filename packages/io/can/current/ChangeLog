@@ -1,3 +1,7 @@
+2006-08-25  Gary Thomas  <gary@mlbassoc.com>
+
+	* cdl/io_can.cdl: Set parent for more intuitive ConfigTool layout.
+
 2006-03-27  Uwe Kindler  <uwe_kindler@web.de>
 
 	* src/can.c can_rcv_event() Clear the flag field in new event before

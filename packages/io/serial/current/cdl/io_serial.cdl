@@ -51,6 +51,7 @@
 
 cdl_package CYGPKG_IO_SERIAL {
     display       "Serial device drivers"
+    parent        CYGPKG_IO
     active_if     CYGPKG_IO
     requires      CYGPKG_ERROR
     include_dir   cyg/io
