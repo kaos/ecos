@@ -1,3 +1,7 @@
+2006-08-28  Sergei Gavrikov  <w3sg@SoftHome.net>
+
+	* src/net/tftp_client.c (tftp_error_ack): Fix compiler warnings.
+
 2006-07-21  David Ho <davidkwho@gmail.com>
 
 	* src/flash.c (fis_start_update_directory): Fix build error when

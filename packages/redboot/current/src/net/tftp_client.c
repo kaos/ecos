@@ -164,13 +164,13 @@ tftp_error_ack(int *err, short code, char *msg)
     struct tftphdr *hdr = (struct tftphdr *)tftp_stream.data;
 
     if (strlen(msg) > (SEGSIZE-1)) {
-      *(msg + SEGSIZE) = NULL;
+      *(msg + SEGSIZE) = 0;
     }
 
     if (tftp_stream.packets_received > 0) {
         hdr->th_opcode = htons(ERROR);
         hdr->th_code = code;
-        strcpy(&hdr->th_data, msg);
+        strcpy((char *)&hdr->th_data, msg);
         if (__udp_sendto(tftp_stream.data, (5 + strlen(msg)), 
                          &tftp_stream.from_addr, &tftp_stream.local_addr) < 0) {
             // Problem sending ACK
