@@ -194,7 +194,6 @@ wcstombs ( char *s, const wchar_t *pwcs, size_t n )
 #endif /* CYGINT_LIBC_I18N_MB_REQUIRED */
   
   int count = 0;
-  char c;
 
   if (s == NULL) {
       while (*pwcs++ != 0) {

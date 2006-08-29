@@ -1,3 +1,7 @@
+2006-08-28  Sergei Gavrikov  <w3sg@SoftHome.net>
+
+	* src/wcstombs.cxx (wcstombs): unused variable removed.
+
 2006-08-11  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/wcstombs.cxx (wcstombs): Previous change should have
