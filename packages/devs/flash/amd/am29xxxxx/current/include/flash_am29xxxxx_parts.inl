@@ -1404,6 +1404,21 @@
         bufsiz     : 16,
     },
 #endif
+#ifdef CYGHWR_DEVS_FLASH_AMD_S29GL128M
+    {   // AMD/SPANSION S29GL128M
+        long_device_id: true,
+        device_id  : FLASHWORD(0x227e),
+        device_id2 : FLASHWORD(0x2212),
+        device_id3 : FLASHWORD(0x2200),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 256,
+        device_size: 0x1000000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x1000000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : false,
+        banked     : false,
+        bufsiz     : 16,
+    },
+#endif
 
 #endif // 16 bit devices
 

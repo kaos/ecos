@@ -1,3 +1,8 @@
+2006-08-29  Yoshinori Sato <ysato@users.sourceforge.jp>
+
+	* include/flash_am29xxxxx_parts.inl [CYGHWR_DEVS_FLASH_AMD_S29GL128M]:
+	* cdl/flash_amd_am29xxxxx.cdl: Add AMD/SPANSION S29GL128M part
+	
 2005-08-11  Oyvind Harboe  <oyvind.harboe@zylin.com>
 
 	* include/flash_am29xxxxx_parts.inl [CYGHWR_DEVS_FLASH_ST_M29W320D]:

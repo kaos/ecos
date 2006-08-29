@@ -386,4 +386,15 @@ cdl_package CYGPKG_DEVS_FLASH_AMD_AM29XXXXX {
             able to recognize and handle the S29GL512N
             part in the family."
     }
+
+   cdl_option CYGHWR_DEVS_FLASH_AMD_S29GL128M {
+        display       "AMD/SPANSION S29GL128M flash memory support"
+        default_value 0
+        implements    CYGINT_DEVS_FLASH_AMD_VARIANTS
+        description   "
+            When this option is enabled, the AMD/SPANSION flash driver will be
+            able to recognize and handle the S29GL128M
+            part in the family."
+    }
+
 }
