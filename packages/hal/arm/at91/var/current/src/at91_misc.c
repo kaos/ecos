@@ -325,6 +325,7 @@ void hal_at91_reset_cpu(void)
     HAL_WRITE_UINT32(AT91_WD + AT91_WD_OMR, 
                      (AT91_WD_OMR_OKEY | 
                       AT91_WD_OMR_RSTEN |
+                      AT91_WD_OMR_EXTEN | // also reset external circuitry
                       AT91_WD_OMR_WDEN));
     while(1) CYG_EMPTY_STATEMENT;
 }

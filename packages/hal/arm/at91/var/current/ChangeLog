@@ -1,3 +1,8 @@
+2006-08-31  Oyvind Harboe <oyvind.harboe@zylin.com>
+
+	* src/at91_misc.c: Now also resets external circuitry via
+	AT91_WD_OMR_EXTEN
+	
 2006-06-01  John Eigelaar <jeigelaar@mweb.co.za>
 
 	* include/var_io.h: Added SPI PDC register definitions 
