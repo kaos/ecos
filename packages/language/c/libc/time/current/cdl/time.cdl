@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2006 eCosCentric Ltd.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -238,7 +239,7 @@ cdl_package CYGPKG_LIBC_TIME {
     
         cdl_option CYGIMP_LIBC_TIME_MKTIME_INLINE {
             display       "mktime()"
-            default_value 1
+            default_value 0
             description   "
                 Allow the mktime() function to be inlined"
         }
@@ -262,7 +263,7 @@ cdl_package CYGPKG_LIBC_TIME {
         cdl_option CYGIMP_LIBC_TIME_GMTIME_R_INLINE {
             display       "gmtime_r()"
             requires      CYGFUN_LIBC_TIME_POSIX
-            default_value 1
+            default_value 0
             description   "
                 Allow the gmtime_r() function to be inlined"
         }
