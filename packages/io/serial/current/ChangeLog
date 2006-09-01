@@ -1,3 +1,8 @@
+2006-08-22  Peter Csordas <csordas@mit.bme.hu>
+
+        * include/serialio.h (cyg_serial_baud_rate_t): Adding baud rate
+	defines for 460800 and 921600 baud. 
+
 2006-08-25  Gary Thomas  <gary@mlbassoc.com>
 
 	* cdl/io_serial.cdl:  Set parent for more intuitive ConfigTool layout.
