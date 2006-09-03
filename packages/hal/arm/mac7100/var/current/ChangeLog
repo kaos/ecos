@@ -1,3 +1,8 @@
+2006-08-08  Ilija Koco  <ilijak@siva.com.mk>
+
+	* var_io.h: Freescale eSCI platform dependent clock related macros
+	moved here from ser_esci.h
+	
 2006-06-08  Ilija Koco  <ilijak@siva.com.mk>
 
 	* hal_var_setup.h: (new) Assembly macros shared between targets.

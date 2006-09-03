@@ -184,6 +184,12 @@
 #define CYGADDR_IO_SERIAL_FREESCALE_ESCI_D_BASE 0xFC0D0000
 #define CYGNUM_IO_SERIAL_FREESCALE_ESCI_D_INT_VECTOR MAC7100_ESCI_D_IV
 
+#define CYGNUM_DEV_SER_FREESCALE_ESCI_SYSTEM_CLOCK \
+  (CYGNUM_HAL_ARM_MAC7100_CLOCK_SPEED/2)
+#define FREESCALE_ESCI_BAUD(baud_rate)            \
+  ((CYGNUM_DEV_SER_FREESCALE_ESCI_SYSTEM_CLOCK)/(baud_rate*16))
+
+
 // *********************************************************************
 //
 // PIT Module
