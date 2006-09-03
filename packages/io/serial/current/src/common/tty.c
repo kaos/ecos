@@ -127,6 +127,17 @@ DEVTAB_ENTRY(tty_io2,
              &tty_private_info2);
 #endif
 
+#ifdef CYGPKG_IO_SERIAL_TTY_TTY3
+static struct tty_private_info tty_private_info3;
+DEVTAB_ENTRY(tty_io3, 
+             "/dev/tty3", 
+             CYGDAT_IO_SERIAL_TTY_TTY3_DEV,
+             &tty_devio, 
+             tty_init, 
+             tty_lookup,      // Execute this when device is being looked up
+             &tty_private_info3);
+#endif
+
 static bool 
 tty_init(struct cyg_devtab_entry *tab)
 {

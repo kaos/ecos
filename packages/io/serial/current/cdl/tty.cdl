@@ -128,3 +128,21 @@ cdl_component CYGPKG_IO_SERIAL_TTY_TTY2 {
             '/dev/tty2'."
     }
 }
+
+cdl_component CYGPKG_IO_SERIAL_TTY_TTY3 {
+    display       "TTY mode channel #3"
+    flavor        bool
+    default_value 0
+    description   "
+        This option causes '/dev/tty3' to be included in the standard 
+        drivers."
+
+    cdl_option CYGDAT_IO_SERIAL_TTY_TTY3_DEV {
+        display       "TTY mode channel #3 device"
+        flavor        data
+        default_value {"\"/dev/ser3\""}
+        description   "
+            This option selects the physical device to use for 
+            '/dev/tty3'."
+    }
+}

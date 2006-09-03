@@ -116,6 +116,25 @@ cdl_component CYGPKG_IO_SERIAL_TERMIOS_TERMIOS2 {
     }
 }
 
+cdl_component CYGPKG_IO_SERIAL_TERMIOS_TERMIOS3 {
+    display       "Termios TTY channel #3"
+    flavor        bool
+    default_value 0
+    implements    CYGINT_IO_SERIAL_TERMIOS_TERMIOS_TTY
+    description   "
+        This option causes '/dev/termios3' to be included in the standard 
+        drivers."
+
+    cdl_option CYGDAT_IO_SERIAL_TERMIOS_TERMIOS3_DEV {
+        display       "Termios TTY channel #3 device"
+        flavor        data
+        default_value {"\"/dev/ser3\""}
+        description   "
+            This option selects the physical device to use for 
+            '/dev/termios3'."
+    }
+}
+
 cdl_option CYGSEM_IO_SERIAL_TERMIOS_USE_SIGNALS {
     display         "Support signals"
     flavor          bool

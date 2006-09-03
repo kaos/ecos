@@ -1,3 +1,12 @@
+2006-08-31  Ilija Koco  <ilijak@siva.com.mk>
+	    Andrew Lunn <andrew.lunn@ascom.ch>
+	
+	* cdl/termios.cdl: 
+	  src/common/termiostty.c: added Termios TTY channel #3
+	* cdl/tty.cdl: 
+	  src/common/tty.c: added TTY mode channel #3
+
+
 2006-08-22  Peter Csordas <csordas@mit.bme.hu>
 
         * include/serialio.h (cyg_serial_baud_rate_t): Adding baud rate

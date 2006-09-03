@@ -158,6 +158,17 @@ DEVTAB_ENTRY(termios_io2,
              &termios_private_info2);
 #endif
 
+#ifdef CYGPKG_IO_SERIAL_TERMIOS_TERMIOS3
+static struct termios_private_info termios_private_info3;
+DEVTAB_ENTRY(termios_io3, 
+             "/dev/termios3", 
+             CYGDAT_IO_SERIAL_TERMIOS_TERMIOS3_DEV,
+             &termios_devio, 
+             termios_init, 
+             termios_lookup,
+             &termios_private_info3);
+#endif
+
 static const cc_t c_cc_init[ NCCS ] = { 
     0x04,     /* EOF == ^D */
     0,        /* EOL */
