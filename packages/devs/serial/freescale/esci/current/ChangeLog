@@ -1,3 +1,13 @@
+2006-08-31  Ilija Koco  <ilijak@siva.com.mk>
+
+	* ser_freescale_esci.cdl: driver now requires at least 1 selected
+	channel
+
+2006-08-08  Ilija Koco  <ilijak@siva.com.mk>
+
+	* ser_esci.h : platform dependent clock related macros
+	removed and placed in platform/var header 
+	
 2006-05-24  Ilija Koco  <ilijak@siva.com.mk>
 
 	* cdl/ser_freescale_esci.cdl:

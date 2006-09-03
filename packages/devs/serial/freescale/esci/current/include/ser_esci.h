@@ -50,10 +50,27 @@
 //####DESCRIPTIONEND####
 //==========================================================================
 
-#define CYGNUM_DEV_SER_FREESCALE_ESCI_SYSTEM_CLOCK      \
-  (CYGNUM_HAL_ARM_MAC7100_CLOCK_SPEED/2)
-#define FREESCALE_ESCI_BAUD(baud_rate)                          \
-  ((CYGNUM_DEV_SER_FREESCALE_ESCI_SYSTEM_CLOCK)/(baud_rate*16))
+// Note: Following macros are platform dependent
+//       and have to be defined in var_io.h or plf_io.h
+//    Macros referenced by serial driver:
+//      CYGADDR_IO_SERIAL_FREESCALE_ESCI_A_BASE
+//      CYGADDR_IO_SERIAL_FREESCALE_ESCI_B_BASE
+//      CYGADDR_IO_SERIAL_FREESCALE_ESCI_C_BASE
+//      CYGADDR_IO_SERIAL_FREESCALE_ESCI_D_BASE
+//      CYGNUM_DEV_SER_FREESCALE_ESCI_SYSTEM_CLOCK
+//      FREESCALE_ESCI_BAUD(baud_rate)
+
+//    Macros not referenced by serial driver
+//    but by interrupt controller
+//      CYGNUM_IO_SERIAL_FREESCALE_ESCI_A_INT_VECTOR
+//      CYGNUM_IO_SERIAL_FREESCALE_ESCI_B_INT_VECTOR
+//      CYGNUM_IO_SERIAL_FREESCALE_ESCI_C_INT_VECTOR
+//      CYGNUM_IO_SERIAL_FREESCALE_ESCI_D_INT_VECTOR
+//      MAC7100_ESCI_A_IV
+//      MAC7100_ESCI_B_IV
+//      MAC7100_ESCI_C_IV
+//      MAC7100_ESCI_D_IV
+//
 
 #define FREESCALE_ESCI_A_BASE       (CYGADDR_IO_SERIAL_FREESCALE_ESCI_A_BASE)
 #define FREESCALE_ESCI_B_BASE       (CYGADDR_IO_SERIAL_FREESCALE_ESCI_B_BASE)

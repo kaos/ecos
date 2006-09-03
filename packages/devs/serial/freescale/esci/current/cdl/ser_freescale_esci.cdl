@@ -53,7 +53,12 @@ cdl_package CYGPKG_IO_SERIAL_FREESCALE_ESCI {
     parent        CYGPKG_IO_SERIAL_DEVICES
     active_if     CYGPKG_IO_SERIAL
 
-    requires      CYGPKG_ERROR
+    requires      (CYGPKG_ERROR && (CYGPKG_IO_SERIAL_FREESCALE_ESCI_A || \
+                                    CYGPKG_IO_SERIAL_FREESCALE_ESCI_B || \
+                                    CYGPKG_IO_SERIAL_FREESCALE_ESCI_C || \
+                                    CYGPKG_IO_SERIAL_FREESCALE_ESCI_D) \
+                                    )
+    
     include_dir   cyg/devs
 
     description   "
