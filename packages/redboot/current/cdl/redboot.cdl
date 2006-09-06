@@ -1064,7 +1064,8 @@ cdl_package CYGPKG_REDBOOT {
                 flavor        bool
                 default_value 1
                 description "
-                  When this option is enabled, RedBoot will support IDE disks."
+                  When this option is enabled, RedBoot will support EXT2 
+                  filesystems."
                 compile -library=libextras.a fs/e2fs.c
             }
     
