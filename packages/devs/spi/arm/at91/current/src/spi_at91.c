@@ -365,7 +365,7 @@ spi_at91_start_transfer(cyg_spi_at91_device_t *dev)
 #ifdef CYGHWR_DEVS_SPI_ARM_AT91_PCSDEC
     spi_at91_set_npcs(spi_bus,~dev->dev_num);
 #else
-    spi_at91_set_npcs(spi_bus,1<<dev->dev_num);
+    spi_at91_set_npcs(spi_bus,~(1<<dev->dev_num));
 #endif
     CYGACC_CALL_IF_DELAY_US(dev->cs_up_udly);
    
@@ -539,12 +539,25 @@ spi_at91_transaction_begin(cyg_spi_device *dev)
     // Enable the SPI controller
     HAL_WRITE_UINT32(spi_bus->base+AT91_SPI_CR, AT91_SPI_CR_SPIEN);
     
+    /* As we are using this driver only in master mode with NPCS0 
+       configured as GPIO instead of a peripheral pin, it is neccessary 
+       for the Mode Failure detection to be switched off as this will
+       cause havoc with the driver */ 
+
     // Put SPI bus into master mode
     if (1 == at91_spi_dev->cl_div32)
         HAL_WRITE_UINT32(spi_bus->base+AT91_SPI_MR, AT91_SPI_MR_MSTR | 
-                                               AT91_SPI_MR_DIV32);
+                                               AT91_SPI_MR_DIV32
+#ifdef AT91_SPI_MR_MODFDIS
+                                               | AT91_SPI_MR_MODFDIS
+#endif
+                                               );
     else
-        HAL_WRITE_UINT32(spi_bus->base+AT91_SPI_MR, AT91_SPI_MR_MSTR);
+        HAL_WRITE_UINT32(spi_bus->base+AT91_SPI_MR, AT91_SPI_MR_MSTR 
+#ifdef AT91_SPI_MR_MODFDIS
+                                                    | AT91_SPI_MR_MODFDIS
+#endif
+                                                    );
 }
 
 static void 

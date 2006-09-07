@@ -1,3 +1,11 @@
+2006-09-07  John Eigelaar <jeigelaar@mweb.co.za>
+
+	* src/spi_at91.c: Fixed the chip select functions.
+	Changed the Mode Register setup as to disable the Mode Failure
+	Detaction for variants that support it. The Mode Failure Detection
+	breaks because NPCS0 is not connected, we are using GPIO, and is 
+	thus floating. 
+
 2006-06-01  John Eigelaar <jeigelaar@mweb.co.za>
 
 	* src/spi_at91.c:
