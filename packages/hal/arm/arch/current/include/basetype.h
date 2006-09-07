@@ -61,7 +61,12 @@
 #else
 # define CYG_BYTEORDER           CYG_LSBFIRST    // Little endian
 #endif
-#define CYG_DOUBLE_BYTEORDER    CYG_MSBFIRST    // Big? endian
+
+#if defined(__ARMEL__) && defined(__VFP_FP__)
+# define CYG_DOUBLE_BYTEORDER    CYG_LSBFIRST
+#else
+# define CYG_DOUBLE_BYTEORDER    CYG_MSBFIRST    // Big? endian
+#endif
 
 //-----------------------------------------------------------------------------
 // ARM does not usually use labels with underscores.

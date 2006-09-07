@@ -1,3 +1,9 @@
+2006-09-06  Daniel Néri  <daniel.neri@sigicom.se>
+ 
+ 	* include/basetype.h: (CYG_DOUBLE_BYTEORDER): Add proper
+ 	definition for VFP floating point format (uses "natural" byte
+ 	order) on little-endian ARM.
+ 
 2006-02-06  Sergei Organov  <osv@javad.com>
 
 	* src/vectors.S: disable FIQ in IRQ handler to fix race condition
