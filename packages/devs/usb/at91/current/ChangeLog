@@ -1,3 +1,8 @@
+2006-09-07  John Eigelaar  <jeigelaar@mweb.co.za>
+
+	* cdl/usbs_at91.c: Read actual EP addresses from the EP configuartion
+	rather than relying on the order in the configuration list.
+
 2006-06-06  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/usbs_at91.cdl: Allow EP0 to be enabled when there are no

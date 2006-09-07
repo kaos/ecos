@@ -472,6 +472,8 @@ usbs_at91_handle_reset (void)
   const usb_endpoint_descriptor *usb_endpoints;
   cyg_uint8 endpoint_type;
   
+   cyg_uint8 endpoint_number;
+
   usbs_end_all_transfers (-EPIPE);
   
   HAL_WRITE_UINT32 (AT91_UDP + AT91_UDP_IDR, 0xffffffff);
@@ -502,9 +504,13 @@ usbs_at91_handle_reset (void)
                       USB_ENDPOINT_DESCRIPTOR_ENDPOINT_IN ?
                       USB_ENDPOINT_DESCRIPTOR_ENDPOINT_IN : 
                       USB_ENDPOINT_DESCRIPTOR_ENDPOINT_OUT));
-    usbs_at91_endpoint_init((usbs_rx_endpoint *)usbs_at91_endpoints[epn],
-                            endpoint_type,
-                            true);
+    endpoint_number = usb_endpoints[epn-1].endpoint & ~(USB_ENDPOINT_DESCRIPTOR_ENDPOINT_IN); 
+    if ( endpoint_number < AT91_USB_ENDPOINTS )
+    {
+        usbs_at91_endpoint_init((usbs_rx_endpoint *)usbs_at91_endpoints[endpoint_number],
+                                endpoint_type,
+                                true);
+    }
   }
 }
 
