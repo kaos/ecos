@@ -1,3 +1,7 @@
+2006-09-08  John Eigelaar <jeigelaar@mweb.co.za>
+
+	* include/var_io.h: Added definition for SPI MODFDIS bit 
+
 2006-08-31  Oyvind Harboe <oyvind.harboe@zylin.com>
 
 	* src/at91_misc.c: Now also resets external circuitry via

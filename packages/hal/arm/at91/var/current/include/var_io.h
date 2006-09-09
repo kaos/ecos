@@ -1324,6 +1324,9 @@
 #define AT91_SPI_MR_PS         0x00000002        // Peripheral Select
 #define AT91_SPI_MR_PCSDEC     0x00000004        // Chip Select Decode
 #define AT91_SPI_MR_DIV32      0x00000008        // Clock Selection 
+#if defined(CYGHWR_HAL_ARM_AT91SAM7)
+#define AT91_SPI_MR_MODFDIS (1<<4)               // Mode Failure Detect Disable
+#endif
 #define AT91_SPI_MR_LLB        0x00000080        // Local Loopback Enable
 #define AT91_SPI_MR_PCS(x)     (((x)&0x0F)<<16)  // Peripheral Chip Select
 #define AT91_SPI_MR_DLYBCS(x)  (((x)&0xFF)<<24)  // Delay Between Chip Selects
