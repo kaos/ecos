@@ -1,8 +1,3 @@
-2006-06-01  John Eigelaar <jeigelaar@mweb.co.za>
-
-	* include/plf_io.h: Added definition for SPI Mode Failure Disable bit
-	in the SPI Mode register.
-
 2006-06-01  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/hal_arm_at91sam7s.cdl: Implement the SPI bus 1 interface for

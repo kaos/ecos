@@ -62,9 +62,6 @@
 
 #define AT91_SPI AT91_SPI0
 
-//Extra SPI control bits
-#define AT91_SPI_MR_MODFDIS (1<<4)
-
 // DMA registers 
 #define AT91_SPI_RPR  0x100 // Receive Pointer Register
 #define AT91_SPI_RCR  0x104 // Receive Counter Register
