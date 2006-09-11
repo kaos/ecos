@@ -2,6 +2,7 @@
 //
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 2006 eCosCentric Limited
 //
 // This program is part of the eCos host tools.
 //
@@ -1400,7 +1401,7 @@ IMPLEMENT_CLASS(ecIntegerEditorCtrl, wxSpinCtrl)
 
 ecIntegerEditorCtrl::ecIntegerEditorCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size,
                                    long style):
-    wxSpinCtrl(parent, id, wxEmptyString, pos, size, style, -32000, 32000, 0)
+    wxSpinCtrl(parent, id, wxEmptyString, pos, size, style, INT_MIN, INT_MAX, 0)
 {
 }
 

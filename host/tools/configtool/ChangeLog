@@ -1,3 +1,8 @@
+2006-09-06  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/configitem.cpp: Allow full 32-bit signed integer
+	range when editing CDL items using the ecIntegerEditorCtrl.
+
 2006-07-11  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/configtool.cpp: Workaround an exception handling
