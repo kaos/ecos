@@ -1,3 +1,7 @@
+2006-09-11  Daniel Néri  <daniel.neri@sigicom.se>
+
+	* src/ftpclient.c (send_cmd): Use correct variable in error check.
+
 2005-07-30  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/ftpclient.c (connect_to_server): Use socklen_t to avoid

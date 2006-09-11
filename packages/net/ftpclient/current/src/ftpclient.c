@@ -169,7 +169,7 @@ send_cmd(int s, char * msgbuf, ftp_printf_t ftp_printf)
   int slen = strlen(msgbuf);
   
   if ((len = write(s,msgbuf,slen)) != slen) {
-    if (slen < 0) {
+    if (len < 0) {
       ftp_printf(1,"write %s\n",strerror(errno));
       return FTP_BAD;
     } else {
