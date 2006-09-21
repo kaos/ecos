@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 2003 Savin Zlobec.
+// Copyright (C) 2006 eCosCentric Ltd.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -136,14 +137,18 @@ static Cyg_ErrNo cf_disk_lookup(struct cyg_devtab_entry **tab,
                                 struct cyg_devtab_entry  *sub_tab,
                                 const char               *name);
 
-static DISK_FUNS(cf_disk_funs, 
-                 cf_disk_read, 
-                 cf_disk_write, 
-                 cf_disk_get_config,
-                 cf_disk_set_config
+DISK_FUNS(cf_disk_funs, 
+          cf_disk_read, 
+          cf_disk_write, 
+          cf_disk_get_config,
+          cf_disk_set_config
 );
 
 // ----------------------------------------------------------------------------
+
+// No h/w controller structure is needed, but the address of the
+// second argument is taken anyway.
+DISK_CONTROLLER(cf_disk_controller, cf_disk_controller);
 
 #define CF_DISK_INSTANCE(_number_,_base_,_mbr_supp_,_name_)           \
 static cf_disk_info_t cf_disk_info##_number_ = {                      \
@@ -152,6 +157,7 @@ static cf_disk_info_t cf_disk_info##_number_ = {                      \
 DISK_CHANNEL(cf_disk_channel##_number_,                               \
              cf_disk_funs,                                            \
              cf_disk_info##_number_,                                  \
+             cf_disk_controller,                                      \
              _mbr_supp_,                                              \
              4                                                        \
 );                                                                    \
@@ -327,7 +333,8 @@ cf_disk_init(struct cyg_devtab_entry *tab)
     ident.sectors_num     = ata_id->num_sectors;
     ident.lba_sectors_num = ata_id->lba_total_sectors[1] << 16 | 
                             ata_id->lba_total_sectors[0];
-    
+    ident.phys_block_size = 1;
+    ident.max_transfer    = 512;
     if (!(chan->callbacks->disk_init)(tab))
         return false;
 
