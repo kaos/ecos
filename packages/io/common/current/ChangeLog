@@ -1,3 +1,8 @@
+2006-09-21  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/config_keys.h: Merge from eCosCentric repository.
+	ChangeLogs incorporated in correct location below.
+
 2006-02-15  Uwe Kindler  <uwe_kindler@web.de>
 
 	* include/config_keys.h Replaced CAN configuration keys
@@ -16,6 +21,10 @@
 
 	* include/config_keys.h Configuration keys for CAN driver added. 
 	
+2005-01-19  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/config_keys.h: Add device close key.
+
 2004-12-23  Peter Korsgaard  <jacmet@sunsite.dk>
 
 	* doc/io.sgml: Match CYG_TTY_IN_FLAGS_ECHO and
@@ -31,7 +40,12 @@
 	* src/iosys.c (cyg_io_lookup): Use union to avoid aliasing problems
 	with compiler.
 
-2004-01-19  Nick Garnett  <nickg@calivar.com>
+2004-04-15  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/config_keys.h: Added CYG_IO_SET_CONFIG_DISK_MOUNT and
+	CYG_IO_SET_CONFIG_DISK_UMOUNT keys.
+
+2004-01-19  Nick Garnett  <nickg@ecoscentric.com>
 
 	* include/config_keys.h (CYG_IO_GET_CONFIG_DISK_INFO): Added DISK
 	IO config key base definition.
@@ -255,6 +269,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2004, 2006 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free

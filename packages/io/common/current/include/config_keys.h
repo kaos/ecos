@@ -11,6 +11,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2004 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -128,6 +129,8 @@
 
 #define CYG_IO_GET_CONFIG_DISK_INFO              0x700
 
+#define CYG_IO_SET_CONFIG_DISK_MOUNT             0x781
+#define CYG_IO_SET_CONFIG_DISK_UMOUNT            0x782
 
 // ======== 0x800 CAN ========================================================
 // Get/Set configuration 'key' values for CAN I/O 
@@ -148,7 +151,6 @@
 #define CYG_IO_SET_CONFIG_CAN_ABORT                 0x0888
 
 
-
 // ======== 0x1000 Generic ===================================================
 // Get/Set configuration 'key' values that can apply to more than one
 // class of device.
@@ -159,6 +161,11 @@
 #define CYG_IO_SET_CONFIG_READ_BLOCKING         0x1081
 #define CYG_IO_SET_CONFIG_WRITE_BLOCKING        0x1082
 
+// Close the underlying device - primarily useful for io/fileio's devfs,
+// but probably more widely applicable. Note that this is not like UNIX
+// close in that there is no reference counting. If that is needed it must
+// be done at a higher level.
+#define CYG_IO_SET_CONFIG_CLOSE                 0x1100
 
 #endif  /* CYGONCE_CONFIG_KEYS_H */
 /* EOF config_keys.h */
