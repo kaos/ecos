@@ -10,7 +10,8 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 2003 Savin Zlobec 
+// Copyright (C) 2003 Savin Zlobec
+// Copyright (C) 2004, 2006 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -55,11 +56,14 @@
 #include <cyg/infra/cyg_type.h>
 #include <cyg/io/config_keys.h>
 
+#include <cyg/io/devtab.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-typedef struct {
+    
+struct cyg_disk_identify_t
+{
     char        serial[20+1];      // serial number
     char        firmware_rev[8+1]; // firmware revision
     char        model_num[40+1];   // model number 
@@ -67,24 +71,30 @@ typedef struct {
     cyg_uint32  heads_num;         // number of heads             (CHS)
     cyg_uint32  sectors_num;       // number of sectors per track (CHS)
     cyg_uint32  lba_sectors_num;   // total number of sectors in LBA mode
-} cyg_disk_identify_t;
+    cyg_uint32  phys_block_size;   // physical block size in sectors
+    cyg_uint32  max_transfer;      // Maximum transfer size in bytes
+};
 
-typedef struct {
+struct  cyg_disk_partition_t
+{
     cyg_uint8  type;    // partition type
     cyg_uint8  state;   // state 0x00 - inactive, 0x80 - active
     cyg_uint32 start;   // first sector number
     cyg_uint32 end;     // last sector number
     cyg_uint32 size;    // size in sectors
-} cyg_disk_partition_t;
+};
 
-typedef struct {
-    cyg_disk_partition_t *partitions;    // partition table
-    int                   partitions_num;// partition table size
-    cyg_disk_identify_t   ident;         // identify data
-    cyg_uint32            block_size;    // block size
-    cyg_uint32            blocks_num;    // number of blocks on disk
-    cyg_bool              connected;     // true if device connected
-} cyg_disk_info_t;
+struct  cyg_disk_info_t
+{
+    cyg_disk_partition_t       *partitions;    // partition table
+    int                         partitions_num;// partition table size
+    cyg_disk_identify_t         ident;         // identify data
+    cyg_uint32                  block_size;    // logical block size
+    cyg_uint32                  blocks_num;    // number of blocks on disk
+    cyg_uint32                  phys_block_size; // physical block size
+    cyg_bool                    connected;     // true if device connected
+    cyg_ucount16                mounts;        // total number of mounts for all partitions
+};
 
 #ifdef __cplusplus
 }

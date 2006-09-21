@@ -1,13 +1,72 @@
+2006-09-21  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/disk.h (DISK_CHANNEL): No need for extra _part_dev
+	slot intended for entire disk's own devtab.
+
+	* src/disk.c (disk_lookup): Just access pdevs_dev directly
+	with no adjusted offset.
+	(disk_init): No longer set entry 0 from device devtab.
+	It's unnecessary.
+
+2006-09-20  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/disk.h: Merge eCosCentric CVS with public eCos CVS.
+	This merges (and therefore changes) the API. ChangeLog
+	entries have been incorporated in the correct places below.
+	* include/diskio.h: Also merged.
+	* cdl/io_disk.cdl: Also merged.
+	* src/disk.c: Also merged.
+
 2006-08-18  Andy Jackson  <andy@xylanta.com>
 
 	* cdl/io_disk.cdl: Made debugging CDL controlled. 
 	* src/disk.c: Added support to allow non-CHS disk devices to 
 	use LBA information in MBR.
 
+2006-02-03  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/disk.c (read_partition): Switched to favour LBA partition
+	information in partition tables. This also means we don't now rely
+	on the driver reporting a correct CHS size for the disk.
+	(disk_bread, disk_bwrite): API changed to take length in sectors
+	rather than bytes. Also call hardware driver to transfer in
+	(up to) max_transfer sized chunks, rather than a sector at a
+	time. Call in to driver now made with DSR lock claimed, to avoid a
+	race condition between the DSR and the calling thread.
+	(disk_get_config): Added phys_block_size to channel info.
+
+	* include/diskio.h (struct cyg_disk_identify_t): Added
+	phys_block_size and max_transfer fields. These must be filled in
+	by the driver.
+
+2005-12-12  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/disk.h (DISK_CHANNEL_INIT): New macro. Allows a
+	DISK_CHANNEL to be defined dynamically.
+
 2005-12-02  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/disk.c: Add comments that bread/bwrite take the position and
 	len in terms of blocks, not bytes.
+
+2005-10-11  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/disk.c (disk_bread, disk_bwrite): Made calls to
+	cyg_thread_yield() dependent on presence ok kernel.
+
+2005-06-01  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/disk.c (disk_bwrite): Uncomment the cyg_thread_yield() at
+	the end to prevent thread starvation between threads at the same
+	priority.
+	(disk_bread): Ditto.
+
+2004-07-21  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/disk.c (read_partition): Changed to account for very large
+	disks which report bogus CHS geometry. We can only use the LBA
+	partition parameters in such disks.
+	(disk_set_config): Added some extra debug output.
 
 2004-07-01  Savin Zlobec  <savin@elatec.si> 
 
@@ -18,7 +77,39 @@
  	radher than malloc. Extended DISK_CHANNEL macro to
   	support defining maximum number of partitions.
 
-2004-01-15  Nick Garnett  <nickg@calivar.com>
+2004-04-15  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/disk.c: 
+	Various changes to support disconnect/reconnect of changeable
+	media.
+
+	* include/diskio.h: Added mount counter to disk_info structure.
+
+	* include/disk.h: Changed disk_disconnected() function to take a
+	pointer to a struct disk_channel rather than a struct
+	cyg_devtab_entry. Added mount count to disk_channel structure.
+	Moved include of diskio.h to end to fix declaration problems.
+
+2004-02-04  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/disk.c: Fixed bug in write routine where controller result
+	field was not being initialized. Added signals on controller queue
+	condition variable after setting controller busy flag to false.
+
+	* include/disk.h: Made controller result and busy fields
+	volatile. Just in case.
+
+2004-01-23  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/disk.h: 
+	* src/disk.c:
+	Many changes. Added additional disk_controller data structure to
+	better reflect hardware structure. Added support for serialization
+	of multithreaded accesses to a single controller. Added support
+	for asynchronous, interrupt driven, IO operations. Various
+	tidies.
+
+2004-01-15  Nick Garnett  <nickg@ecoscentric.com>
 
 	* src/disk.c:
 	* include/disk.h: Removed block_pos arguments from
@@ -48,7 +139,8 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 2003 Savin Zlobec 
+// Copyright (C) 2003 Savin Zlobec
+// Copyright (C) 2004, 2005, 2006 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
