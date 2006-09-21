@@ -152,11 +152,11 @@ static Cyg_ErrNo ide_disk_lookup(struct cyg_devtab_entry **tab,
                                 struct cyg_devtab_entry  *sub_tab,
                                 const char               *name);
 
-static DISK_FUNS(ide_disk_funs, 
-                 ide_disk_read, 
-                 ide_disk_write, 
-                 ide_disk_get_config,
-                 ide_disk_set_config
+DISK_FUNS(ide_disk_funs, 
+          ide_disk_read, 
+          ide_disk_write, 
+          ide_disk_get_config,
+          ide_disk_set_config
 );
 
 // ----------------------------------------------------------------------------
@@ -169,6 +169,7 @@ static ide_disk_info_t ide_disk_info##_number_ = {                      \
 DISK_CHANNEL(ide_disk_channel##_number_,                                \
              ide_disk_funs,                                             \
              ide_disk_info##_number_,                                   \
+             ide_disk_controller,                                       \
              _mbr_supp_,                                                \
              4                                                          \
 );                                                                      \

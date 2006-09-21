@@ -1,3 +1,13 @@
+2006-09-21  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/ide_disk.h: DISK_FUNS is now implicitly static.
+	(IDE_DISK_INSTANCE): Reflect updated io/disk API by using
+	ide_disk_controller.
+	* src/ide_disk.c: Define ide_disk_controller (even though unused
+	in practice).
+	(ide_disk_init): Provide phys_block_size and max_transfer disk ident
+	members.	
+
 2005-02-02 Knud Woehler <knud.woehler@microplex.de>
 
 	* src/ide_disk.c: Check the device is not busy before sending a

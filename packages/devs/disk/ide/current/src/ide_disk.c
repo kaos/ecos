@@ -74,6 +74,10 @@
 
 // ----------------------------------------------------------------------------
 
+// No h/w controller structure is needed in this driver, but the address of the
+// second argument is taken anyway.
+DISK_CONTROLLER(ide_disk_controller, ide_disk_controller);
+
 #ifdef CYGVAR_DEVS_DISK_IDE_DISK0
 IDE_DISK_INSTANCE(0, 0, 0, true, CYGDAT_IO_DISK_IDE_DISK0_NAME);
 #endif
@@ -355,6 +359,8 @@ ide_disk_init(struct cyg_devtab_entry *tab)
     ident.sectors_num = ide_idData->num_sectors;
     ident.lba_sectors_num = ide_idData->lba_total_sectors[1] << 16 | 
                             ide_idData->lba_total_sectors[0];
+    ident.phys_block_size = 1;
+    ident.max_transfer = 512;
     
     D("\tSerial : %s\n", ident.serial);
     D("\tFirmware rev. : %s\n", ident.firmware_rev);
