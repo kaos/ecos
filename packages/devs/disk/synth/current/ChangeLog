@@ -1,14 +1,33 @@
+2006-02-03  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/synthdisk.c: Updated to match changes in io/disk package.
+
 2004-07-01  Savin Zlobec  <savin@elatec.si> 
 
         * src/synthdisk.c:
         Updated to work with the new DISK_CHANNEL macro definition.
 
-2004-01-15  Nick Garnett  <nickg@calivar.com>
+2004-04-15  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/synthdisk.c: Mildly reorganized to support changeable
+	media. Added synth_disk_change() function to allow us to fake a
+	disk change for testing purposes.
+
+2004-02-05  Nick Garnett  <nickg@ecoscentric.com>
+
+	* cdl/synthdisk.cdl: Added testing config options, plus
+	define_proc to export CYGDAT_DEVS_DISK_CFG include file name.
+
+2004-01-30  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/synthdisk.c: Updated to latest disk device specification.
+
+2004-01-15  Nick Garnett  <nickg@ecoscentric.com>
 
 	* cdl/synthdisk.cdl:
 	* src/synthdisk.c: 	
 	Added _FILENAME option for disk instances to map device to an
-	arbitrary cinfigured file.
+	arbitrary configured file.
 	
 	* src/synthdisk.c: Removed block_pos arguments from read
 	and write calls: it is not necessary.
@@ -31,7 +50,8 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 2003 Savin Zlobec 
+// Copyright (C) 2003 Savin Zlobec
+// Copyright (C) 2004, 2006 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
