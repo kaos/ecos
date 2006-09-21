@@ -1,0 +1,214 @@
+<!-- DOCTYPE refentry  PUBLIC "-//OASIS//DTD DocBook V3.1//EN" -->
+
+<!-- {{{ Banner                         -->
+
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!--     disk_mmc.sgml                                               -->
+<!--                                                                 -->
+<!--     Documentation for the MMC disk device driver                -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- ####COPYRIGHTBEGIN####                                          -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- Copyright (C) 2004 eCosCentric Limited                          -->
+<!-- This material may be distributed only subject to the terms      -->
+<!-- and conditions set forth in the Open Publication License, v1.0  -->
+<!-- or later (the latest version is presently available at          -->
+<!-- http://www.opencontent.org/openpub/)                            -->
+<!-- Distribution of the work or derivative of the work in any       -->
+<!-- standard (paper) book form is prohibited unless prior           -->
+<!-- permission obtained from the copyright holder                   -->
+<!-- =============================================================== -->
+<!--                                                                 -->      
+<!-- ####COPYRIGHTEND####                                            -->
+<!-- =============================================================== -->
+<!-- =============================================================== -->
+<!-- #####DESCRIPTIONBEGIN####                                       -->
+<!--                                                                 -->
+<!-- Author(s):   bartv                                              -->
+<!-- Contact(s):  bartv                                              -->
+<!-- Date:        2004/04/25                                         -->
+<!-- Version:     0.01                                               -->
+<!--                                                                 -->
+<!-- ####DESCRIPTIONEND####                                          -->
+<!-- =============================================================== -->
+
+<!-- }}} -->
+
+<part id="devs-disk-mmc-part"><title>MMC MultiMedia Card Disk Driver</title>
+
+<refentry id="devs-disk-mmc">
+  <refmeta>
+    <refentrytitle>Device Driver for MMC MultiMedia Cards</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname><varname>CYGPKG_DEVS_DISK_MMC</varname></refname>
+    <refpurpose>eCos Support for MMC MultiMedia Cards</refpurpose>
+  </refnamediv>
+
+  <refsect1 id="devs-disk-mmc-description"><title>Description</title>
+    <para>
+This package provides a disk device driver for MultiMediaCards (MMC).
+A MultiMediaCard provides non-volatile storage in a small footprint
+(24mm &ast; 32mm &ast; 1.4mm), and weighing less than 2 grams. Typical
+card sizes are 16MB to 128MB, with an upper limit of 4GB. It
+should be noted that these sizes are measured in millions of bytes,
+not 2^20. The <ulink url="http://www.mmca.org">MultiMediaCard
+Association</ulink> defines the standard for these cards.
+    </para>
+    <para>
+At the hardware level there are two ways of accessing an MMC card,
+either using a custom interface or via an SPI bus. A card will detect
+the interface in use at run-time. The custom interface allows for
+better performance but requires additional hardware. Currently only
+SPI mode is supported by this package.
+    </para>
+    <para>
+Theoretically an MMC card can be used with any file system. In
+practice all cards are formatted for PC compatibility, with a
+partition table in the first block and a single FAT file system on the
+rest of the card. Currently this package checks the format of the MMC
+card and will only allow access to a card if it is formatted this way.
+    </para>
+    <para>
+An MMC socket allows cards to be removed and inserted at any time. The
+device driver will detect removal events when the next I/O operation
+happens and will report them to higher-level code via an error code
+<literal>ENODEV</literal>. However there are no guarantees that the
+higher-level code will be able to recover from this error. The
+expected usage is that application code will explicitly
+<function>mount</function> the card before attempting any file I/O,
+and will <function>umount</function> the card before it is removed.
+Between these operations the system is likely to keep some disk blocks
+cached, for performance reasons. If the card is removed before the
+<function>umount</function> then it may end up with a corrupted file
+system, and the disk subsystem may be left in an inconsistent state.
+Regular uses of <function>sync</function> will reduce the risk
+of file system corruption.
+    </para>
+  </refsect1>
+
+  <refsect1 id="devs-disk-mmc-config"><title>Configuration Options</title>
+    <para>
+<varname>CYGPKG_DEVS_DISK_MMC</varname> is a hardware package which
+should get loaded automatically when you configure for a suitable eCos
+target platform. In this case suitable means that the hardware has an
+MMC socket connected to an SPI bus, that an SPI bus driver package
+exists and is also automatically loaded, and that the platform HAL
+provides <link linkend="devs-disk-mmc-porting">information</link>
+on how the card is connected to the SPI bus.
+    </para>
+    <para>
+The package depends on support from the generic disk package
+<varname>CYGPKG_IO_DISK</varname>. That will not be loaded
+automatically: the presence of an MMC socket on the board does not
+mean that the application has any need for a file system. Hence by
+default <varname>CYGPKG_DEVS_DISK_MMC</varname> will be inactive and
+will not contribute any code or data to the application's memory
+footprint. To activate the driver it will be necessary to add one or
+more packages to the configuration using
+<command>ecosconfig&nbsp;add</command> or the graphical configuration
+tool: the generic disk support <varname>CYGPKG_IO_DISK</varname>;
+usually a file system, <varname>CYGPKG_FS_FAT</varname>; support for
+the file I/O API <varname>CYGPKG_IO_FILEIO</varname>; and possibly
+additional support packages that may be needed by the file system, for
+example <varname>CYGPKG_LINUX_COMPAT</varname>. Depending on the
+template used to create the initial configuration some of these may be
+loaded already.
+    </para>
+    <para>
+The package provides two main configuration options.
+<varname>CYGDAT_DEVS_DISK_MMC_SPI_DISK0_NAME</varname> specifies the
+name of the raw disk device, for example <literal>/dev/hd0</literal>.
+Allowing for partition tables that makes <literal>/dev/hd0/1</literal>
+the first argument that shoul be passed to a
+<function>mount</function> call. If the hardware has multiple disk
+devices then each one will need a unique name.
+<varname>CYGIMP_DEVS_DISK_MMC_SPI_POLLED</varname> controls whether
+the SPI bus will be accessed in interrupt-driven or polled mode. It
+will default to interrupt-driven if the application is multi-threaded,
+which is assumed to be the case if the kernel is present. If the
+kernel is absent, for example in a RedBoot configuration, then the
+driver will default to polled mode. With some hardware polled mode may
+significantly increase disk throughput even in a multi-threaded
+application, but will consume cpu cycles that could be used by other
+threads.
+    </para>
+  </refsect1>
+  
+  <refsect1 id="devs-disk-mmc-extra"><title>Additional Functionality</title>
+    <para>
+The disk driver package exports a variable
+<varname>cyg_mmc_spi_polled</varname>. This defaults to true or false
+depending on the configuration option
+<varname>CYGIMP_DEVS_DISK_MMC_SPI_POLLED</varname>. If the default
+mode is interrupt-driven then file I/O, including mount operations,
+are only allowed when the scheduler has started and interrupts have
+been enabled. Any attempts at file I/O earlier during system
+initialization, for example inside a C++ static constructor, will lock
+up. If it is necessary to perform file I/O at this time then the
+driver can be temporarily switched to polling mode before the I/O
+operation by setting <varname>cyg_mmc_spi_polled</varname>, and
+clearing it again after the I/O. Alternatively the default mode can be
+changed to polling by editing the configuration, and then the
+<function>main()</function> thread can change the mode to
+interrupt-driven once the scheduler has started.
+    </para>
+  </refsect1>
+
+  <refsect1 id="devs-disk-mmc-porting"><title>Porting to New Hardware</title>
+    <para>
+Assuming that the MMC connector is hooked up to a standard SPI bus and
+that there is already an eCos SPI bus driver, porting the MMC disk
+driver package should be straightforward. Some other package, usually
+the platform HAL, should provide a <type>cyg_spi_device</type>
+structure <varname>cyg_spi_mmc_dev0</varname>. That structure contains
+the information needed by this package to interact with the MMC card
+via the usual SPI interface, for example how to activate the
+appropriate chip select. The platform HAL should also implement the
+CDL interface <varname>CYGINT_DEVS_DISK_MMC_SPI_CONNECTORS</varname>.
+    </para>
+    <para>
+When defining <varname>cyg_spi_mmc_dev0</varname> special care must be
+taken with the chip select. The MMC protocol is transaction-oriented.
+For example a read operation involves an initial command sent to the
+card, then a reply, then the actual data, and finally a checksum. The
+card's chip select must be kept asserted for the entire operation, and
+there can be no interactions with other devices on the same SPI bus
+during this time.
+    </para>
+    <para>
+Optionally the platform HAL may define a macro
+<function>HAL_MMC_SPI_INIT</function> which will be invoked during a
+mount operation. This can take any hardware-specific actions that may
+be necessary, for example manipulating GPIO pins. Usually no such
+macro is needed because the hardware is set up during platform
+initialization.
+    </para>
+    <para>
+Currently the package does not provide any support for accessing MMC
+cards using an interface other than SPI. On some targets there may be
+additional hardware to detect events such as card insertion or
+removal, but there is no support for exploiting such hardware at
+present.
+    </para>
+    <para>
+Only a single MMC socket is supported. Extending the package to
+support multiple sockets would be straightforward but it seems
+unlikely that any hardware would come with multiple MMC sockets. Given
+the nature of SPI buses there is a problem if the MMC socket is hooked
+up via an expansion connector rather than being attached to the main
+board. The platform HAL would not know about the socket so would not
+implement the CDL interface
+<varname>CYGINT_DEVS_DISK_MMC_SPI_CONNECTORS</varname>, and the
+<database>ecos.db</database> target entry would not include
+<varname>CYGPKG_DEVS_DISK_MMC</varname>. Because this is a hardware
+package it cannot easily be added by hand. Instead this scenario would
+require some editing of the existing platform HAL and target entry.
+    </para>
+  </refsect1>
+
+</refentry>  
+</part>

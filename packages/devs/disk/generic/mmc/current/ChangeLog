@@ -1,0 +1,94 @@
+2006-09-20  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/mmc_spi.c: DISK_FUNS, DISK_CHANNEL and DISK_CONTROLLER are now
+	implicitly static.
+	Update DISK_CHANNEL for new io/disk macro definition.
+
+2006-04-05  John Dallaway  <jld@ecoscentric.com>
+
+	* cdl/devs_disk_mmc.cdl: Add reference to package documentation.
+
+2006-03-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/mmc_spi.c (struct cyg_mmc_spi_disk_info_t): Store underlying
+	medium's read/write block length.
+	(mmc_spi_check_for_disk): Store underlying medium's
+	read/write block length.
+	(mmc_spi_disk_lookup): Report medium block size to disk layer.
+	(mmc_spi_disk_read): API now requires sector reads to be with length
+	of sectors not bytes.
+	(mmc_spi_disk_write): Ditto.
+
+2005-10-28  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/mmc_protocol.h: Move from src/ to here.
+	* src/mmc_spi.c: Reflect above move.
+
+2004-08-30  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/mmc_spi.c (mmc_spi_write_disk_block): disable background
+	writes. Some MMC cards don't seem to implement this correctly so
+	if you are trying to talking to another SPI device the MMC card
+	still replies.
+
+2004-07-03  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/mmc_spi.c (MMC_SPI_READ_DATA_TOKEN_RETRIES): increase the
+	number of iterations. With some cards a read can occasionally take
+	50* longer than normal.
+
+2004-07-01  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/mmc_spi.c: reorganize write code, to work around problems
+	with some cards.
+
+2004-06-29  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/mmc_spi.c: some cards require an extra delay during a mount
+	sequence, when doing the first read of a data block. Also added
+	some recovery code to the mount code in case a previous session
+	left the card still sending data.
+
+2004-06-15  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/mmc_spi.c (mmc_spi_check_for_disk): allow platform HALs to
+	customize the mount sequence.
+
+	* doc/disk_mmc.sgml: document the above change.
+	
+2004-04-25  Bart Veer  <bartv@ecoscentric.com>
+
+	* MMC package created
+
+//===========================================================================
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 2004, 2005, 2006 eCosCentric Ltd.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
+//===========================================================================

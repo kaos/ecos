@@ -1,3 +1,7 @@
+2006-09-21  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* ecos.db: add MMC/SPI device driver.
+
 2006-08-06  Bart Veer  <bartv@ecoscentric.com>
 
 	* ecos.db: add M68K/MCF52xx ColdFire I2C driver

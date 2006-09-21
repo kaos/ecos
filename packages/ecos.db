@@ -6253,6 +6253,14 @@ package CYGPKG_DEVS_DISK_IDE {
     description     "Disk driver for generic IDE interface." 
 }
 
+package CYGPKG_DEVS_DISK_MMC {
+    alias      { "Disk driver for MMC cards" mmcdisk mmc_disk_driver }
+    directory  devs/disk/generic/mmc
+    script     devs_disk_mmc.cdl
+    hardware
+    description "Disk driver for MMC cards"
+}
+
 package CYGPKG_IO_DISK {
     alias           { "Disk device drivers" disk io_disk }
     directory       io/disk
