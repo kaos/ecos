@@ -1,3 +1,7 @@
+2006-09-25  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* sgml/doclist: added MMC disk documentation
+
 2006-06-16  Anthony Tonizzo  <atonizzo@gmail.com>
 
 	* sgml/doclist: add ATHTTPD documentation

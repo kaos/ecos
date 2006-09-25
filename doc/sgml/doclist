@@ -42,3 +42,4 @@ devs/usb/nec_upd985xx/current/doc/usbs_upd985xx.sgml
 devs/eth/synth/ecosynth/current/doc/syntheth.sgml
 devs/watchdog/synth/current/doc/synth_watchdog.sgml
 devs/wallclock/dallas/ds1307/current/doc/ds1307.sgml
+devs/disk/generic/mmc/current/doc/disk_mmc.sgml
