@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2006 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -32,9 +33,6 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //========================================================================
@@ -386,8 +384,6 @@ Cyg_StdioStream::read( cyg_uint8 *user_buffer, cyg_ucount32 buffer_length,
         flags.readbuf_char_in_use = false;
     }
 
-    position += *bytes_read;
-    
 
     // if we are unbuffered, we read as much as we can directly from the 
     // file system at this point.
@@ -404,6 +400,8 @@ Cyg_StdioStream::read( cyg_uint8 *user_buffer, cyg_ucount32 buffer_length,
         read_err = cyg_stdio_read(my_device, user_buffer + *bytes_read, &len);      
         *bytes_read+=len;
     }
+    
+    position += *bytes_read;
     
     unlock_me();
 
@@ -615,8 +613,22 @@ Cyg_StdioStream::write( const cyg_uint8 *buffer,
     }
 
 #ifdef CYGSEM_LIBC_STDIO_WANT_BUFFERED_IO
-    if (flags.last_buffer_op_was_read == true)
+    if (flags.last_buffer_op_was_read == true) {
+#ifdef CYGPKG_LIBC_STDIO_FILEIO
+        if ( 0 != io_buf.get_buffer_space_used() )
+        {
+            off_t newpos = position;
+            io_buf.drain_buffer();  // nuke input bytes to prevent confusion
+            Cyg_ErrNo err = cyg_stdio_lseek( my_device, &newpos, SEEK_SET );
+            if (err) {
+                unlock_me();
+                return err;
+            }
+        }
+#else
         io_buf.drain_buffer();  // nuke input bytes to prevent confusion
+#endif
+    }
 
     flags.last_buffer_op_was_read = false;
 
