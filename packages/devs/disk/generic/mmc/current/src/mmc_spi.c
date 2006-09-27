@@ -975,7 +975,7 @@ mmc_spi_disk_lookup(struct cyg_devtab_entry** tab, struct cyg_devtab_entry *sub_
         ident.heads_num         = disk->mmc_heads_per_cylinder;
         ident.sectors_num       = disk->mmc_sectors_per_head;
         ident.lba_sectors_num   = disk->mmc_block_count;
-        ident.phys_block_size   = disk->mmc_write_block_length/512
+        ident.phys_block_size   = disk->mmc_write_block_length/512;
         ident.max_transfer      = disk->mmc_write_block_length;
 
         DEBUG1("Calling disk_connected(): serial %s, firmware %s, model %s, heads %d, sectors %d, lba_sectors_num %d, phys_block_size %d\n", \

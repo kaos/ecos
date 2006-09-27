@@ -1,3 +1,8 @@
+2006-09-27  Sergei Gavrikov  <sg@sgs.gomel.by>
+
+	* src/mmc_spi.c: (mmc_spi_disk_lookup): just fixed a missed
+	semicolon.
+
 2006-09-21  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* Contribution of MMC/SPI package from eCosCentric. eCosCentric
