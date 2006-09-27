@@ -442,6 +442,7 @@ Cyg_StdioStream::set_position( fpos_t pos, int whence )
 
         if (whence == SEEK_CUR) {
             position += bytesavail;
+            pos -= bytesavail;
         }
     } //endif (whence != SEEK_END)
 

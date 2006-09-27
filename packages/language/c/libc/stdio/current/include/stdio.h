@@ -89,7 +89,7 @@
 
 // A type capable of specifying uniquely every file position - ISO C
 // standard chap 7.9.1
-typedef cyg_ucount32 fpos_t;
+typedef cyg_count32 fpos_t;
 
 
 // FILE is just cast to an address here. It is uncast internally to the

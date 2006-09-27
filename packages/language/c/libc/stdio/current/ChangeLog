@@ -1,3 +1,13 @@
+2006-09-27  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/stdio.h: Make fpos_t be signed to allow negative
+	SEEK_CUR offsets to fseek().
+	* include/stream.inl (set_position): If SEEK_CUR, then if
+	having to reconcile difference between position and underlying
+	file position, then requested seek position needs adjusting
+	for buffer size.
+	Both above reported and analysed by Ivan Djelic.
+
 2006-09-26  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/common/stream.cxx (read): Only update position after direct
