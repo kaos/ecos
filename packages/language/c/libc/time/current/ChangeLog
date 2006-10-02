@@ -1,3 +1,7 @@
+2006-10-02  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* tests/strftime.c (test): Fix %I test.
+
 2006-08-31  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/time.cdl: Don't bother inlining mktime() or
