@@ -1,4 +1,10 @@
-2006-06-25  Andrew Lunn  <lunn@laptop.lunn.ch>
+2006-10-05  Andrew Lunn  <andrew.lunn@ascom.ch
+	    Paluch Sebastian <the_sorcerer&op.pl>
+	
+	* test/ramfs3 (new): Test for lseek bug found in fileio.
+	* cdl/ramfs.cdl: Build new test.
+	
+2006-06-25  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/ramfs.c (find_direntry): Don't search off the end of the
 	directory node into hyperspace.
