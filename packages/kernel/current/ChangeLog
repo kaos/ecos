@@ -1,3 +1,20 @@
+2006-10-12  Nick Garnett  <nickg@ecoscentric.com>
+
+	* cdl/synch.cdl: Added CYGIMP_MBOX_USE_MBOXT_PLAIN option. This is
+	tested in various places but was not actually defined. It now is
+	and defaults to 1 so that the plain version of mail boxes is
+	selected.
+
+	* include/mboxt.inl: 
+	* include/mboxt2.inl: Moved various CYG_ASSERTCLASS() calls to be
+	within scheduler locked regions. Race conditions could have caused
+	them to fail before.
+
+	* tests/mbox1.cxx:
+	* tests/kmbox1.cxx: Updated tests to work with mboxt
+	implementation. This requires thread 1 to run at lower priority
+	than thread 0.
+
 2006-08-21  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* doc/kernel.sgml: Use reinterpret_cast, not static cast

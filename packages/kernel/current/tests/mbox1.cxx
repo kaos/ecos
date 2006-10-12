@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2006 eCosCentric Ltd.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -32,9 +33,6 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -76,6 +74,8 @@ static void entry0( CYG_ADDRWORD data )
 {
     cyg_count8 u,i;
 
+    Cyg_Thread::self()->set_priority(4);
+    
     CYG_TEST_INFO("Testing put() and tryput() without wakeup");
     CYG_TEST_CHECK(!m0.waiting_to_get(), "mbox not initialized properly");
     CYG_TEST_CHECK(0==m0.peek(), "mbox not initialized properly");
@@ -151,6 +151,9 @@ static void entry0( CYG_ADDRWORD data )
 static void entry1( CYG_ADDRWORD data )
 {
     cyg_count8 i;
+
+    Cyg_Thread::self()->set_priority(5);
+    
     i = (cyg_count8)m1.get();
     CYG_TEST_CHECK(1==q++, "bad synchronization");
     m0.PUT((void *)3);                  // wake t0

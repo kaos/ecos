@@ -11,6 +11,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2006 eCosCentric Ltd.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -34,9 +35,6 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -223,10 +221,10 @@ Cyg_Mboxt<T,QUEUE_SIZE>::get( T &ritem )
 
         CYG_INSTRUMENT_MBOXT(WAIT, this, count);
         
+        CYG_ASSERTCLASS( this, "Bad this pointer");        
+
         // Allow other threads to run
         Cyg_Scheduler::reschedule();
-
-        CYG_ASSERTCLASS( this, "Bad this pointer");        
 
         switch( self->get_wake_reason() )
         {
@@ -259,10 +257,11 @@ Cyg_Mboxt<T,QUEUE_SIZE>::get( T &ritem )
 #endif
     }
 
+    CYG_ASSERTCLASS( this, "Bad this pointer");
+
     // Unlock the scheduler and maybe switch threads
     Cyg_Scheduler::unlock();
 
-    CYG_ASSERTCLASS( this, "Bad this pointer");
     CYG_REPORT_RETVAL( result );
     return result;
 }
@@ -309,7 +308,7 @@ Cyg_Mboxt<T,QUEUE_SIZE>::get( T &ritem, cyg_tick_count abs_timeout )
         get_threadq.enqueue( self );
 
         CYG_INSTRUMENT_MBOXT(WAIT, this, count);
-        
+
         // Allow other threads to run
         Cyg_Scheduler::reschedule();
 
@@ -355,10 +354,11 @@ Cyg_Mboxt<T,QUEUE_SIZE>::get( T &ritem, cyg_tick_count abs_timeout )
 #endif
     }
 
+    CYG_ASSERTCLASS( this, "Bad this pointer");
+
     // Unlock the scheduler and maybe switch threads
     Cyg_Scheduler::unlock();
 
-    CYG_ASSERTCLASS( this, "Bad this pointer");
     CYG_REPORT_RETVAL( result );
     return result;
 }
@@ -373,11 +373,11 @@ Cyg_Mboxt<T,QUEUE_SIZE>::tryget( T &ritem )
 {
     CYG_REPORT_FUNCTION();
         
-    CYG_ASSERTCLASS( this, "Bad this pointer");
-    
     // Prevent preemption
     Cyg_Scheduler::lock();
 
+    CYG_ASSERTCLASS( this, "Bad this pointer");
+    
     CYG_INSTRUMENT_MBOXT(TRY, this, count);
     
     cyg_bool result = ( 0 < count );
@@ -408,11 +408,11 @@ Cyg_Mboxt<T,QUEUE_SIZE>::peek_item( T &ritem )
 {
     CYG_REPORT_FUNCTION();
         
-    CYG_ASSERTCLASS( this, "Bad this pointer");
-    
     // Prevent preemption
     Cyg_Scheduler::lock();
 
+    CYG_ASSERTCLASS( this, "Bad this pointer");
+    
     CYG_INSTRUMENT_MBOXT(TRY, this, count);
     
     cyg_bool result = ( 0 < count );

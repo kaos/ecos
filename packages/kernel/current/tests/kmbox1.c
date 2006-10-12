@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2006 eCosCentric Ltd.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -32,9 +33,6 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -187,7 +185,7 @@ void kmbox1_main( void )
         (void *)stack[0], STACKSIZE, &thread[0], &thread_obj[0]);
     cyg_thread_resume(thread[0]);
 
-    cyg_thread_create(4, entry1 , (cyg_addrword_t)1, "kmbox1-1",
+    cyg_thread_create(5, entry1 , (cyg_addrword_t)1, "kmbox1-1",
         (void *)stack[1], STACKSIZE, &thread[1], &thread_obj[1]);
     cyg_thread_resume(thread[1]);
 
