@@ -1,3 +1,8 @@
+2006-10-16  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* ecos.db: Comment out CYGPKG_DEVS_ETH_ARM_AT91 for now - it's still
+	work in progress apparently.
+
 2006-09-21  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* ecos.db: add MMC/SPI device driver.

@@ -4375,9 +4375,9 @@ target at91sam7xek {
                    CYGPKG_DEVS_SPI_ARM_AT91
                    CYGPKG_DEVICES_WATCHDOG_ARM_AT91WDTC
                    CYGPKG_DEVS_USB_AT91
-                   CYGPKG_DEVS_ETH_ARM_AT91
                    CYGPKG_DEVS_ETH_PHY
         }
+#                   CYGPKG_DEVS_ETH_ARM_AT91
         description "
         The at91sam7xek target provides the packages needed to run eCos on an 
         Atmel AT91SAM7X-EK evaluation board."
