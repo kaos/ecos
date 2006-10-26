@@ -1,3 +1,10 @@
+2006-10-26  Stefan Sommerfeld <sommerfeld@mikrom.com>
+
+	* include/cyg_types.h: fixed typo, __GNU_PATCHLEVEL__ was checked,
+	should be __GNUC_PATCHLEVEL__ (which is already used later)
+	* include/cyg_types.h: fixed comment for CYGBLD_ATTRIB_USED, wrong
+	GCC version was referenced
+
 2006-08-25  Gary Thomas  <gary@mlbassoc.com>
 
 	* cdl/infra.cdl: 

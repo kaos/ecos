@@ -318,7 +318,7 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 // COMPILER-SPECIFIC STUFF
 
 #ifdef __GNUC__
-#if defined(__GNU_PATCHLEVEL__)
+#if defined(__GNUC_PATCHLEVEL__)
 # define __GNUC_VERSION__ (__GNUC__ * 10000 \
                             + __GNUC_MINOR__ * 100 \
                             + __GNUC_PATCHLEVEL__)
@@ -397,11 +397,11 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 # define CYGBLD_ATTRIB_STRFTIME_FORMAT(__format__, __args__) \
         __attribute__((format (strftime, __format__, __args__)))
 
-// Tell the compiler not to throw away a variable or function. Only
-// available on 3.3.4 or above. Old version's didn't throw them away,
+// Tell the compiler not to throw away a variable or function. Only known
+// available on 3.3.2 or above. Old version's didn't throw them away,
 // but using the unused attribute should stop warnings.
 # if !defined(CYGBLD_ATTRIB_USED)
-#  if __GNUC_VERSION__ >= 30404
+#  if __GNUC_VERSION__ >= 30302
 #   define CYGBLD_ATTRIB_USED __attribute__((used))
 #  else
 #   define CYGBLD_ATTRIB_USED __attribute__((unused))
