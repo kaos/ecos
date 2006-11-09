@@ -1,3 +1,9 @@
+2006-11-08 Andre Mas <andrejohn.mas@gmail.com>
+
+        * src/sntp.c: Removed optional KeyIdentifer and MessageDigest
+        fields, which weren't being used, and caused certain servers
+        not to respond when these fields were included with null values.
+
 2005-07-30  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/sntp.c: Compiler warning fixes.

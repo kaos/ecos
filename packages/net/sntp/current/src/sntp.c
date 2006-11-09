@@ -81,8 +81,8 @@ typedef struct
   NTP_TIMESTAMP ReceiveTimestamp;
   NTP_TIMESTAMP TransmitTimestamp;
 
-  cyg_uint32    KeyIdentifier;          /* Optional */
-  cyg_uint8     MessageDigest[16];      /* Optional */
+//  cyg_uint32    KeyIdentifier;          /* Optional */
+//  cyg_uint8     MessageDigest[16];      /* Optional */
 } NTP_PACKET;
 #define NTP_PACKET_MINLEN       48      /* Packet size - optional fields */
 
