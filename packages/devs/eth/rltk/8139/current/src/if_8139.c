@@ -127,7 +127,7 @@
 #include "if_8139.h"
 
 /* Which interrupts we will handle */
-#define RLTK8139_IRQ (IR_SERR|IR_FOVW|IR_RXOVW|IR_TER|IR_TOK|IR_RER|IR_ROK)
+#define RLTK8139_IRQ (IR_SERR|IR_FOVW|IR_RXOVW|IR_TER|IR_TOK|IR_RER|IR_ROK|IR_FUN)
 
 /* Allow platform-specific configuration of the driver */
 #ifndef CYGDAT_DEVS_ETH_RLTK_8139_INL
@@ -1247,6 +1247,17 @@ rltk8139_deliver(struct eth_drv_sc *sc)
 #endif
     rltk8139_reset(sc);
     return;
+  }
+
+  if (status & IR_FUN) {
+    /*
+     * Packet underrun or link change interrupt.
+     * A cable was packet underrun or re-connected ?
+     */
+#ifdef DEBUG_RLTK8139_DRIVER
+    diag_printf("rltk8139_deliver(%s): packet underrun or link change\n",
+                sc->dev_name);
+#endif
   }
 
 #ifndef CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
