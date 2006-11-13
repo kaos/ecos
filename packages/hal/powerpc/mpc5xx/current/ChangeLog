@@ -1,3 +1,7 @@
+2006-11-13  Andreas Fritiofson  <andreas.fritiofson@newmad.se>
+
+    * include/var_intr.h: Fixed a set of incorrect asserts.
+
 2004-04-22  Jani Monoses <jani@iv.ro>
 
 	 * cdl/hal_powerpc_mpc5xx.cdl :

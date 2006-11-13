@@ -296,7 +296,7 @@ hal_mpc5xx_remove_arbitration_isr(cyg_uint32 apriority);
 #define CYGNUM_HAL_ISR_MAX      CYGNUM_HAL_INTERRUPT_IMB3_MIOS_MDASM31
 
 #define CYGARC_SIU_PRIORITY_HIGH                 7 // Maximum interrupt priority on SIU 
-#define CYGARC_SIU_PRIORITY_LOW                  0 // Minimum interrupt prioeirt on SIU
+#define CYGARC_SIU_PRIORITY_LOW                  0 // Minimum interrupt priority on SIU
 #define CYGARC_IMB3_PRIORITY_HIGH               31 // Maximum interrupt priority on IMB3
 #define CYGARC_IMB3_PRIORITY_LOW                 0 // Minimum interrupt priority on IMB3
 
@@ -2335,13 +2335,13 @@ cyg_hal_interrupt_set_level ( cyg_uint32 vector, cyg_uint32 level )
     if(vector < CYGNUM_HAL_INTERRUPT_IMB3_QUADCA_CI1)
     {
         // Note: highest priority has the lowest numerical value.
-        CYG_ASSERT( level >= CYGARC_SIU_PRIORITY_HIGH, "Invalid priority");
-        CYG_ASSERT( level <= CYGARC_SIU_PRIORITY_LOW, "Invalid priority");
+        CYG_ASSERT( level >= CYGARC_SIU_PRIORITY_LOW, "Invalid priority");
+        CYG_ASSERT( level <= CYGARC_SIU_PRIORITY_HIGH, "Invalid priority");
     }
     else
     {
-        CYG_ASSERT( level >= CYGARC_IMB3_PRIORITY_HIGH, "Invalid priority");
-        CYG_ASSERT( level <= CYGARC_IMB3_PRIORITY_LOW, "Invalid priority");
+        CYG_ASSERT( level >= CYGARC_IMB3_PRIORITY_LOW, "Invalid priority");
+        CYG_ASSERT( level <= CYGARC_IMB3_PRIORITY_HIGH, "Invalid priority");
     }
 
     switch (vector) {
