@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004 Red Hat, Inc.
-// Copyright (C) 2004 eCosCentric, Ltd.
+// Copyright (C) 2004, 2006 eCosCentric, Ltd.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -264,8 +264,8 @@ ide_read_sector(int ctlr, int dev, cyg_uint32 start,
     for (j = 0, c=0 ; j < (CYGDAT_DEVS_DISK_IDE_SECTOR_SIZE / sizeof(cyg_uint16));
          j++) {
         HAL_IDE_READ_UINT16(ctlr, IDE_REG_DATA, p);
-        if (c++<len) *b++=p&0xff;
-        if (c++<len) *b++=(p>>8)&0xff;
+        if (c++<(len*512)) *b++=p&0xff;
+        if (c++<(len*512)) *b++=(p>>8)&0xff;
     }
     return 1;
 }
@@ -298,8 +298,8 @@ ide_write_sector(int ctlr, int dev, cyg_uint32 start,
     //
     for (j = 0, c=0 ; j < (CYGDAT_DEVS_DISK_IDE_SECTOR_SIZE / sizeof(cyg_uint16));
          j++) {
-        p = (c++<len) ? *b++ : 0;
-        p |= (c++<len) ? (*b++<<8) : 0; 
+        p = (c++<(len*512)) ? *b++ : 0;
+        p |= (c++<(len*512)) ? (*b++<<8) : 0; 
         HAL_IDE_WRITE_UINT16(ctlr, IDE_REG_DATA, p);
     }
     return 1;
