@@ -1,3 +1,9 @@
+2006-11-17  Alexander Neundorf <alexander.neundorf@jenoptik.com>
+
+	* cdl/flash_intel_28fxxx.cdl, include/flash_28fxxx.inl: 
+	Make the timeout configurable by adding a new CDL-option 
+	CYGNUM_DEVS_FLASH_INTEL_28FXXX_TIMEOUT
+
 2006-05-10  Sergei Gavrikov <sg@belvok.com>
 
 	* cdl/flash_intel_28fxxx.cdl, include/flash_28fxxx_parts.inl: Add

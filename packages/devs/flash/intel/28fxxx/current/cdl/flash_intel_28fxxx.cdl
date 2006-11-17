@@ -63,6 +63,18 @@ cdl_package CYGPKG_DEVS_FLASH_INTEL_28FXXX {
 
     requires      { CYGINT_DEVS_FLASH_INTEL_VARIANTS != 0 }
 
+    cdl_option CYGNUM_DEVS_FLASH_INTEL_28FXXX_TIMEOUT {
+        display       "Timeout for flash operations (simple counter based)"
+        flavor        data
+        legal_values  1000000 to 1000000000
+        default_value 50000000
+        description   " 
+            Timeout for flash operations. This is just a simple
+            counter. It depends on the speed of the flash, the processor, etc.
+            It has to be adjusted for each hardware configuration. "
+    }
+
+
     cdl_interface CYGINT_DEVS_FLASH_INTEL_VARIANTS {
         display   "Number of included variants"
     }

@@ -297,7 +297,7 @@ flash_erase_block(void* block, unsigned int block_size)
         ROM[0] = FLASH_Block_Erase;
         *b_v = FLASH_Confirm;
 
-        timeout = 5000000;
+        timeout = CYGNUM_DEVS_FLASH_INTEL_28FXXX_TIMEOUT ;
         while(((stat = ROM[0]) & FLASH_Status_Ready) != FLASH_Status_Ready) {
             if (--timeout == 0) break;
         }
@@ -376,7 +376,7 @@ flash_program_buf(void* addr, void* data, int len,
             if (wc > len) wc = len;
             len -= wc;
             wc = wc / ((CYGNUM_FLASH_WIDTH/8)*CYGNUM_FLASH_INTERLEAVE);  // Word count
-            timeout = 5000000;
+            timeout = CYGNUM_DEVS_FLASH_INTEL_28FXXX_TIMEOUT;
             
             *BA = FLASH_Write_Buffer;
             while(((stat = ROM[0]) & FLASH_Status_Ready) != FLASH_Status_Ready) {
@@ -394,7 +394,7 @@ flash_program_buf(void* addr, void* data, int len,
             *BA = FLASH_Confirm;
             
             ROM[0] = FLASH_Read_Status;
-            timeout = 5000000;
+            timeout = CYGNUM_DEVS_FLASH_INTEL_28FXXX_TIMEOUT;
             while(((stat = ROM[0]) & FLASH_Status_Ready) != FLASH_Status_Ready) {
                 if (--timeout == 0) {
                     res = FLASH_ERR_DRV_TIMEOUT;
@@ -409,7 +409,7 @@ flash_program_buf(void* addr, void* data, int len,
         addr_v = FLASH_P2V(addr_p++);
         ROM[0] = FLASH_Program;
         *addr_v = *data_p;
-        timeout = 5000000;
+        timeout = CYGNUM_DEVS_FLASH_INTEL_28FXXX_TIMEOUT;
         while(((stat = ROM[0]) & FLASH_Status_Ready) != FLASH_Status_Ready) {
             if (--timeout == 0) {
                 res = FLASH_ERR_DRV_TIMEOUT;
@@ -458,7 +458,7 @@ flash_lock_block(void* block)
     volatile flash_data_t *ROM;
     int res = FLASH_ERR_OK;
     flash_data_t state;
-    int timeout = 5000000;
+    int timeout = CYGNUM_DEVS_FLASH_INTEL_28FXXX_TIMEOUT;
     volatile flash_data_t* b_p = (flash_data_t*) block;
     volatile flash_data_t *b_v;
     cyg_bool bootblock;
@@ -531,7 +531,7 @@ flash_unlock_block(void* block, int block_size, int blocks)
     volatile flash_data_t *ROM;
     int res = FLASH_ERR_OK;
     flash_data_t state;
-    int timeout = 5000000;
+    int timeout = CYGNUM_DEVS_FLASH_INTEL_28FXXX_TIMEOUT;
     volatile flash_data_t* b_p = (flash_data_t*) block;
     volatile flash_data_t *b_v;
 
@@ -599,7 +599,7 @@ flash_unlock_block(void* block, int block_size, int blocks)
     // Clears all lock bits
     ROM[0] = FLASH_Clear_Lock;
     ROM[0] = FLASH_Clear_Lock_Confirm;  // Confirmation
-    timeout = 5000000;
+    timeout = CYGNUM_DEVS_FLASH_INTEL_28FXXX_TIMEOUT;
     while(((state = ROM[0]) & FLASH_Status_Ready) != FLASH_Status_Ready) {
         if (--timeout == 0) break;
     }
@@ -611,7 +611,7 @@ flash_unlock_block(void* block, int block_size, int blocks)
         if (is_locked[i]) {
             *b_v = FLASH_Set_Lock;
             *b_v = FLASH_Set_Lock_Confirm;  // Confirmation
-            timeout = 5000000;
+            timeout = CYGNUM_DEVS_FLASH_INTEL_28FXXX_TIMEOUT;
             while(((state = ROM[0]) & FLASH_Status_Ready)
                   != FLASH_Status_Ready) {
                 if (--timeout == 0){
@@ -736,7 +736,7 @@ flash_unlock_block(void* block, int block_size, int blocks)
     // Clears all lock bits
     ROM[0] = FLASH_Clear_Locks;
     ROM[0] = FLASH_Clear_Locks_Confirm;  // Confirmation
-    timeout = 5000000;
+    timeout = CYGNUM_DEVS_FLASH_INTEL_28FXXX_TIMEOUT;
     while(((stat = ROM[0]) & FLASH_Status_Ready) != FLASH_Status_Ready) {
         if (--timeout == 0) break;
     }
@@ -748,7 +748,7 @@ flash_unlock_block(void* block, int block_size, int blocks)
         if (is_locked[i]) {
             *bpv = FLASH_Set_Lock;
             *bpv = FLASH_Set_Lock_Confirm;  // Confirmation
-            timeout = 5000000;
+            timeout = CYGNUM_DEVS_FLASH_INTEL_28FXXX_TIMEOUT;
             while(((stat = ROM[0]) & FLASH_Status_Ready) != FLASH_Status_Ready) {
                 if (--timeout == 0) break;
             }
