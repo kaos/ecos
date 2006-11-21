@@ -194,6 +194,48 @@
     },
 #endif
 	
+#ifdef CYGHWR_DEVS_FLASH_INTEL_28F128K3
+    {   
+        device_id  : FLASHWORD(0x8802),
+        block_size : 0x20000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 128,
+        device_size: 0x1000000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x1000000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        locking    : true,
+        buffered_w : true,
+        bootblock  : false,
+        banked     : false
+    },
+#endif
+
+#ifdef CYGHWR_DEVS_FLASH_INTEL_28F128P30
+    {   
+        device_id  : FLASHWORD(0x8818),
+        block_size : 0x20000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 128,
+        device_size: 0x1000000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x1000000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        locking    : true,
+        buffered_w : true,
+        bootblock  : false,
+        banked     : false
+    },
+#endif
+
+#ifdef CYGHWR_DEVS_FLASH_INTEL_28F128J3
+    {   
+        device_id  : FLASHWORD(0x18),
+        block_size : 0x20000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 128,
+        device_size: 0x1000000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x1000000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        locking    : true,
+        buffered_w : true,
+        bootblock  : false,
+        banked     : false
+    },
+#endif
+
 #ifdef CYGHWR_DEVS_FLASH_INTEL_28F160S5
     {   // 28F160S5
         device_id  : FLASHWORD(0x00d0),
