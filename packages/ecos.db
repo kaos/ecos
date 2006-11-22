@@ -836,6 +836,16 @@ package CYGPKG_IO_SERIAL_ARM_EBSA285 {
     description       "Intel StrongARM/EBSA285 serial device drivers"
 }
 
+package CYGPKG_IO_SERIAL_ARM_XSCALE_PXA2X0 {
+    alias         { "Intel XScale PXA2X0 serial driver"
+                        devs_serial_arm_xscale_pxa pxa_serial_driver }
+    hardware
+    directory        devs/serial/arm/pxa2x0
+    script        ser_arm_xscale_pxa2x0.cdl
+    description       "Intel XScale/PXA2X0 serial device drivers"
+}
+
+
 package CYGPKG_IO_SERIAL_ARM_XSCALE_IOP310 {
     alias 	      { "Intel XScale IOP310 serial driver"
                         devs_serial_arm_iop310 iop310_serial_driver }
