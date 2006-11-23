@@ -209,7 +209,7 @@
     CYGACC_CALL_IF_SET_CONSOLE_COMM(_cur_console);      \
 }   /* END BLOCK */
 
-void CheckRxRing(struct i82559* p_i82559, char * func, int line);
+void CheckRxRing(struct i82559* p_i82559, const char * func, int line);
 
 // ------------------------------------------------------------------------
 // Check on the environment.
@@ -900,15 +900,19 @@ static int pci_init_find_82559s(void);
 
 static void i82559_reset(struct i82559* p_i82559);
 static void i82559_restart(struct i82559 *p_i82559);
-static int eth_set_mac_address(struct i82559* p_i82559, char *addr, int eeprom );
+static int eth_set_mac_address(struct i82559* p_i82559, cyg_uint8 *addr, int eeprom );
 
 static void InitRxRing(struct i82559* p_i82559);
 static void ResetRxRing(struct i82559* p_i82559);
 static void InitTxRing(struct i82559* p_i82559);
 static void ResetTxRing(struct i82559* p_i82559);
 
+#if defined(CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT)              \
+||  (defined(CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT)   &&  \
+    !defined(CYGPKG_IO_ETH_DRIVERS_STAND_ALONE)                     )
 static void
 eth_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data);
+#endif
 static cyg_uint32
 eth_isr(cyg_vector_t vector, cyg_addrword_t data);
 
@@ -1325,7 +1329,7 @@ read_eeprom(long ioaddr, int location, int addr_len)
 }
 
 static int
-read_eeprom_esa(struct i82559 *p_i82559, char *addr)
+read_eeprom_esa(struct i82559 *p_i82559, cyg_uint8 *addr)
 {
     int addr_length, i, count;
     cyg_uint16 checksum;
@@ -1903,7 +1907,7 @@ ResetRxRing(struct i82559* p_i82559)
 //
 // ------------------------------------------------------------------------
 void
-CheckRxRing(struct i82559* p_i82559, char * func, int line)
+CheckRxRing(struct i82559* p_i82559, const char * func, int line)
 {
     RFD *p_rfd;
     int i;
@@ -2709,6 +2713,10 @@ eth_mux_isr(cyg_vector_t vector, cyg_addrword_t data)
 
 // ------------------------------------------------------------------------
 
+#if defined(CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT)              \
+||  (defined(CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT)   &&  \
+    !defined(CYGPKG_IO_ETH_DRIVERS_STAND_ALONE)                     )
+
 static void
 eth_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
 {
@@ -2729,6 +2737,7 @@ eth_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
 # endif
 #endif
 }
+#endif
 
 // ------------------------------------------------------------------------
 // Deliver routine:
@@ -3373,7 +3382,7 @@ static cyg_uint16 eeprom_burn[64] = {
 //           non0 = It failed.
 // ------------------------------------------------------------------------
 static int
-eth_set_mac_address(struct i82559* p_i82559, char *addr, int eeprom)
+eth_set_mac_address(struct i82559* p_i82559, cyg_uint8 *addr, int eeprom)
 {
     cyg_uint32  ioaddr;
     cyg_uint16 status;
