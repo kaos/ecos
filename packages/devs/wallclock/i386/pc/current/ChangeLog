@@ -1,3 +1,10 @@
+2006-11-23  David Fernandez  <dfernandez@cct.co.uk>
+
+	* include/devices_wallclock_i386_pc.inl: Added exception for DS_READ
+	  DS_WRITE. Take into account that in Intel PC platforms the 8Th bit
+	  in DS_ADDR is used to enable or disable NMI gate, and therefore,
+	  should be preserved.
+
 2001-09-18  Rajagopalan Thiruvenkatachary  <rajt@us.ibm.com>
 
 	* include/devices_wallclock_i386_pc.inl:

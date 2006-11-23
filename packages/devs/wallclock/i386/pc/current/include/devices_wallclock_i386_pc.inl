@@ -52,4 +52,22 @@
 #define DS_ADDR CYGDAT_DEVS_WALLCLOCK_I386_PC_RTC_ADDRESS_PORT
 #define DS_DATA    CYGDAT_DEVS_WALLCLOCK_I386_PC_RTC_DATA_PORT
 
+#ifndef DS_LINEAR
+#define DS_READ(offset, data)                               \
+CYG_MACRO_START                                             \
+    register CYG_BYTE btval;                                \
+    DS_READ_UINT8( DS_ADDR, (btval));                       \
+    DS_WRITE_UINT8(DS_ADDR, ((offset)&0x7F)|(btval&0x80));  \
+    DS_READ_UINT8( DS_DATA, (data));                        \
+CYG_MACRO_END
+#define DS_WRITE(offset, data)                              \
+CYG_MACRO_START                                             \
+    register CYG_BYTE btval;                                \
+    DS_READ_UINT8( DS_ADDR, (btval));                       \
+    DS_WRITE_UINT8(DS_ADDR, ((offset)&0x7F)|(btval&0x80));  \
+    DS_WRITE_UINT8(DS_DATA, (data));                        \
+CYG_MACRO_END
+#endif
+
+
 // EOF devs_wallclock_i386_pc.inl
