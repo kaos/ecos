@@ -70,6 +70,7 @@
 # define DS_WRITE_UINT8(x,y) HAL_WRITE_UINT8(x,y)
 #endif
 
+#if !defined(DS_READ) && !defined(DS_WRITE) //  Allow for INL to define this
 #ifdef DS_LINEAR
 # ifndef DS_STEP
 #  define DS_STEP 0
@@ -77,9 +78,11 @@
 # ifndef DS_BASE
 #  error "Need to know base of DS12887 part"
 # endif
-# define DS_READ(offset, data) DS_READ_UINT8(DS_BASE + ((offset) << DS_STEP), (data))
-# define DS_WRITE(offset, data) DS_WRITE_UINT8(DS_BASE + ((offset) << DS_STEP), (data))
-#else
+#define DS_READ( offset, data)  \
+    DS_READ_UINT8( DS_BASE + ((offset) << DS_STEP), (data))
+#define DS_WRITE(offset, data)  \
+    DS_WRITE_UINT8(DS_BASE + ((offset) << DS_STEP), (data))
+#else   //  !DS_LINEAR
 # if !defined(DS_ADDR) || !defined(DS_DATA)
 #  error "Need to know addr/data locations of DS12887 part"
 # endif
@@ -94,6 +97,7 @@
   DS_WRITE_UINT8(DS_DATA, (data));             \
   CYG_MACRO_END
 #endif
+#endif  //  ! DS_READ && ! DS_WRITE
 
 // Registers
 #define DS_SECONDS         0x00

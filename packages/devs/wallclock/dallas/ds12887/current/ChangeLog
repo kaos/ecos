@@ -1,3 +1,8 @@
+2006-11-23  David Fernandez  <dfernandez@cct.co.uk>
+
+	* src/ds17887.cxx (defines): Added check for some defines being done
+	  in INL file.
+
 2001-07-27  Jesper Skov  <jskov@redhat.com>
 
 	* src/ds12887.cxx (init_ds_hwclock): Use BCD mode since Century is
