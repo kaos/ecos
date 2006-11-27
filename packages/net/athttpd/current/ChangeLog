@@ -1,3 +1,52 @@
+2006-11-27  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/httpd.cdl: Improve CDL dependencies.
+
+2006-11-08  Anthony Tonizzo  <atonizzo@gmail.com>
+
+	* doc/athttpd.sgml: Updated to describe lasted changes and corrected
+	minor typos.
+	* src/http.c: Check for "Content-Type" header. This is needed if we
+	want to support parsing form variables in POST requests.
+	* src/jim.c: Updated with latest release from Jim CVS.
+	* src/cgi.c: streamlined cyg_httpd_exec_cgi_tcl(), now uses the 'source'
+	command of tcl to execute a tcl script.
+	* src/forms.c: Modified cyg_handle_method_POST so that the variables in the
+	payload are scanned only if the request has a Content-Type 
+	of 'application/x-www-form-urlencoded'
+	* src/jim-aio.c: Added to package. Now tcl has IO functions to access a
+	file system.
+	* include/httpd.h: Added a new mode, CYG_HTTPD_MODE_FORM_DATA which is set
+	when a POST request has a Content-Type of 
+	'application/x-www-form-urlencoded'
+	    
+2006-10-16  Lars Povlsen  <lpovlsen@vitesse.com> and Anthony Tonizzo  <atonizzo@gmail.com>
+
+	* cdl/httpd.cdl: add CYGOPT_NET_ATHTTPD_CLOSE_CHUNKED_CONNECTIONS. Default
+	is set to CLOSE, so it is backward compatible with 
+	previous versions of the browser.
+	* src/socket.c: cyg_httpd_process_request() uses a loop to collect at least
+	one full frame (til a header terminator is found), 
+	cyg_httpd_start_chunked() only close if configured to do so.
+	* src/httpd.c: Overhaul of cyg_httpd_send_error to avoid the use of
+	inbuffer as temporary storage (conflicts with pipelined frames),
+	removed the option to send a page after calling a C language
+	handler
+	* include/httpd.h: Added a new mode, CYG_HTTPD_MODE_NO_CACHE
+	    
+2006-10-12  Lars Povlsen  <lpovlsen@vitesse.com> and Anthony Tonizzo  <atonizzo@gmail.com>
+
+	* cdl/httpd.cdl: add CYGNUM_ATHTTPD_SERVER_MAX_POST to limit POST'ed data
+	* include/http.h: Added header_end, post_data fields to httpstate,
+	Added "302 Found" for POST handler redirect (CYG_HTTPD_STATUS_MOVED_TEMPORARILY)
+	* src/forms.c: Fixed variable decoding, fixed large POST processing
+	* src/http.c: Fixed some debug ouptuts, cleanup after POST processing, 
+	overhaul of the pipelined requests code which can now
+	handle multiple requests per frame.
+	* src/socket.c: Removed assert for socket write failure, Accumulating receiving
+	of requests (Browsers (Firefox) may pass partial headers in separate 
+	fragments). Fixed some diagnostics output.
+
 2006-07-19  Anthony Tonizzo  <atonizzo@gmail.com> and Sergei Gavrikov  <w3sg@softhome.net>
 
 	* cdl/httpd.cdl: 
@@ -5,15 +54,15 @@
 	* include/jim.h:    Added an inline to Jim_InitExtension()
 	* src/cgi.c:        used malloc() instead of cyg_ldr_malloc();
 	* src/forms.c:      Added a #define to be able tio use the TCL scripting
-	                     without OBJLOADER
+	without OBJLOADER
 	* src/http.c:       
 	* src/socket.c:     Lots of typos stamped out, and some better comments too.
 	                     
 2006-07-19  Anthony Tonizzo  <atonizzo@gmail.com>
 
 	* src/socket.c: Corrected a typo that generated an assertion.
-    Modified slightly the source of cyg_httpd_write and cyg_httpd_writev
-     to make the code more consistent as to when assertions are thrown.
+	Modified slightly the source of cyg_httpd_write and cyg_httpd_writev
+	to make the code more consistent as to when assertions are thrown.
 
 2006-07-19  Sergei Gavrikov  <w3sg@softhome.net>
 
@@ -59,7 +108,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 2005 eCosCentric Ltd.
+// Copyright (C) 2005, 2006 eCosCentric Ltd.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free

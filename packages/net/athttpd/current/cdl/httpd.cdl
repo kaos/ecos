@@ -39,7 +39,7 @@
 ######DESCRIPTIONBEGIN####
 #
 # Author(s):      Anthony Tonizzo (atonizzo@gmail.com)
-# Contributors:   
+# Contributors:   Lars Povlsen    (lpovlsen@vitesse.com)
 # Date:           2006-06-09
 #
 #####DESCRIPTIONEND####
@@ -54,7 +54,18 @@ cdl_package CYGPKG_ATHTTPD {
     include_files auth.h digcalc.h forms.h global.h handler.h http.h md5.h socket.h cgi.h jim.h
     compile       forms.c handler.c http.c socket.c cgi.c
     requires      CYGPKG_NET
+    requires      CYGPKG_NET_STACK_INET
     requires      !CYGPKG_HTTPD
+    requires      CYGINT_ISO_STDIO_STREAMS
+    requires      CYGINT_ISO_STDIO_FILEACCESS
+    requires      CYGINT_ISO_STDIO_FORMATTED_IO
+    requires      CYGINT_ISO_STRING_MEMFUNCS
+    requires      CYGINT_ISO_STRING_STRFUNCS
+    requires      CYGINT_ISO_STRING_BSD_FUNCS
+    requires      CYGINT_ISO_C_CLOCK_FUNCS
+    requires      CYGINT_ISO_MALLOC
+    requires      CYGINT_ISO_CTYPE
+
 # ====================================================================
    
     cdl_component CYGPKG_NET_ATHTTPD_THREADOPT {
@@ -116,6 +127,14 @@ cdl_package CYGPKG_ATHTTPD {
           description "This option defines the size of the buffers used to 
                        receive and transmit transmit data to and from the TCP/IP
                        stack."
+      }
+
+      cdl_option CYGNUM_ATHTTPD_SERVER_MAX_POST {
+          display "Maximum data received upon POST"
+          flavor data
+          default_value 2048
+          description "This option defines the size of maximum amount of data 
+                       the web server will accept from POST'ed forms."
       }
 
       cdl_option CYGDAT_NET_ATHTTPD_SERVEROPT_ROOTDIR {
@@ -185,6 +204,7 @@ cdl_package CYGPKG_ATHTTPD {
         flavor        bool
         default_value 1
         active_if     CYGPKG_IO_FILEIO
+        requires      
         description   "
             This option enables the use of a file system to access the pages
              to be served. It is the responsibility of the user to properly
@@ -203,6 +223,36 @@ cdl_package CYGPKG_ATHTTPD {
             extensively tested." 
        compile md5c.c
        compile auth.c
+    }
+
+    cdl_option CYGOPT_NET_ATHTTPD_CLOSE_CHUNKED_CONNECTIONS {
+        display       "Close connections used for chunked transfers"
+        flavor        bool
+        default_value 1
+        description   "
+            This option causes connections used for chunked transfer to be
+             closed after use. Persisting the connection will use less
+             network resources and will improve latency, but may do so at
+             the risk of compatibility with older browsers."
+    }
+
+    cdl_option CYGOPT_NET_ATHTTPD_DOCUMENT_EXPIRATION_TIME {
+        display          "Maximum lifetime of a document in seconds"
+        flavor           data
+        default_value    0
+        description      "
+            This options causes documents to 'expire' after a set number
+            of seconds. If certain pages are updated frequently, it might be a
+            good idea to assign them an expitation time in seconds. If the
+            client needs to reload a page that has expired, it will request
+            it again, otherwise it will use the copy in the cache. A value
+            of 0 means that this option is disabled. Any other value
+            represents the number of seconds (after the last modification to
+            the document) after which the page becomes stale. This option
+            applies to all the pages (including those that reside in ROM
+            and thus, by definition, won't change) and thus is it preferable
+            to use the CYG_HTTPD_MODE_NO_CACHE mode for pages that need to be
+            refreshed frequently."
     }
 
     cdl_option CYGOPT_NET_ATHTTPD_USE_DIRLIST {
@@ -242,9 +292,9 @@ cdl_package CYGPKG_ATHTTPD {
                          interpreter as a means of providing a simple cgi
                          capability. Checking this option increases 
                          considerably the size of the executable." 
-          compile       jim.c
+          compile       jim.c jim-aio.c
           define        JIM_ANSIC
-          define        JIM_EMBEDDED
+          define        JIM_STATICEXT
       }
     }  
 

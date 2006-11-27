@@ -2,7 +2,7 @@
  * Copyright 2005 Salvatore Sanfilippo <antirez@invece.org>
  * Copyright 2005 Clemens Hintze <c.hintze@gmx.net>
  *
- * $Id: jim.h,v 1.73 2005/04/18 08:31:26 antirez Exp $
+ * $Id: jim.h,v 1.76 2006/11/06 20:29:15 antirez Exp $
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ extern "C" {
 
 #include <time.h>
 #include <limits.h>
+#include <stdio.h>  /* for the FILE typedef definition */
 #include <stdlib.h> /* In order to export the Jim_Free() macro */
 
 /* -----------------------------------------------------------------------------
@@ -117,6 +118,7 @@ extern "C" {
 #define JIM_BREAK 3
 #define JIM_CONTINUE 4
 #define JIM_EVAL 5
+#define JIM_EXIT 6
 #define JIM_MAX_NESTING_DEPTH 10000 /* default max nesting depth */
 
 /* Some function get an integer argument with flags to change
@@ -138,6 +140,13 @@ extern "C" {
 
 /* Filesystem related */
 #define JIM_PATH_LEN 1024
+
+/* Newline, some embedded system may need -DJIM_CRLF */
+#ifdef JIM_CRLF
+#define JIM_NL "\r\n"
+#else
+#define JIM_NL "\n"
+#endif
 
 /* -----------------------------------------------------------------------------
  * Stack
@@ -442,6 +451,7 @@ typedef struct Jim_Interp {
     int numLevels; /* Number of current nested calls. */
     int maxNestingDepth; /* Used for infinite loop detection. */
     int returnCode; /* Completion code to return on JIM_RETURN. */
+    int exitCode; /* Code to return to the OS on JIM_EXIT. */
     Jim_CallFrame *framePtr; /* Pointer to the current call frame */
     Jim_CallFrame *topFramePtr; /* toplevel/global frame pointer. */
     struct Jim_HashTable commands; /* Commands hash table */
@@ -481,6 +491,9 @@ typedef struct Jim_Interp {
     struct Jim_HashTable assocData; /* per-interp storage for use by packages */
     Jim_PrngState *prngState; /* per interpreter Random Number Gen. state. */
     struct Jim_HashTable packages; /* Provided packages hash table */
+    FILE *stdin; /* input file pointer, 'stdin' by default */
+    FILE *stdout; /* output file pointer, 'stdout' by default */
+    FILE *stderr; /* errors file pointer, 'stderr' by default */
 } Jim_Interp;
 
 /* Currently provided as macro that performs the increment.
@@ -638,6 +651,10 @@ JIM_STATIC int JIM_API(Jim_GetFinalizer) (Jim_Interp *interp, Jim_Obj *objPtr, J
 /* interpreter */
 JIM_STATIC Jim_Interp * JIM_API(Jim_CreateInterp) (void);
 JIM_STATIC void JIM_API(Jim_FreeInterp) (Jim_Interp *i);
+JIM_STATIC int JIM_API(Jim_GetExitCode) (Jim_Interp *interp);
+JIM_STATIC FILE * JIM_API(Jim_SetStdin) (Jim_Interp *interp, FILE *fp);
+JIM_STATIC FILE * JIM_API(Jim_SetStdout) (Jim_Interp *interp, FILE *fp);
+JIM_STATIC FILE * JIM_API(Jim_SetStderr) (Jim_Interp *interp, FILE *fp);
 
 /* commands */
 JIM_STATIC void JIM_API(Jim_RegisterCoreCommands) (Jim_Interp *interp);
@@ -786,7 +803,7 @@ JIM_STATIC void JIM_API(Jim_PrintErrorMessage) (Jim_Interp *interp);
 JIM_STATIC int JIM_API(Jim_InteractivePrompt) (Jim_Interp *interp);
 
 /* Misc */
-JIM_STATIC void JIM_API(Jim_Panic) (const char *fmt, ...);
+JIM_STATIC void JIM_API(Jim_Panic) (Jim_Interp *interp, const char *fmt, ...);
 
 #undef JIM_STATIC
 #undef JIM_API
@@ -798,7 +815,7 @@ JIM_STATIC void JIM_API(Jim_Panic) (const char *fmt, ...);
 
 #if defined JIM_EXTENSION || defined JIM_EMBEDDED
 /* This must be included "inline" inside the extension */
-static __inline__ void Jim_InitExtension(Jim_Interp *interp)
+static void Jim_InitExtension(Jim_Interp *interp)
 {
   Jim_GetApi = interp->getApiFuncPtr;
 
@@ -845,6 +862,10 @@ static __inline__ void Jim_InitExtension(Jim_Interp *interp)
   JIM_GET_API(GetFinalizer);
   JIM_GET_API(CreateInterp);
   JIM_GET_API(FreeInterp);
+  JIM_GET_API(GetExitCode);
+  JIM_GET_API(SetStdin);
+  JIM_GET_API(SetStdout);
+  JIM_GET_API(SetStderr);
   JIM_GET_API(CreateCommand);
   JIM_GET_API(CreateProcedure);
   JIM_GET_API(DeleteCommand);
@@ -916,14 +937,14 @@ static __inline__ void Jim_InitExtension(Jim_Interp *interp)
 
 #undef JIM_GET_API
 
-//#ifdef JIM_EMBEDDED
-//Jim_Interp *ExportedJimCreateInterp(void);
-//static void Jim_InitEmbedded(void) {
-//    Jim_Interp *i = ExportedJimCreateInterp();
-//    Jim_InitExtension(i);
-//    Jim_FreeInterp(i);
-//}
-//#endif /* JIM_EMBEDDED */
+#ifdef JIM_EMBEDDED
+Jim_Interp *ExportedJimCreateInterp(void);
+static void Jim_InitEmbedded(void) {
+    Jim_Interp *i = ExportedJimCreateInterp();
+    Jim_InitExtension(i);
+    Jim_FreeInterp(i);
+}
+#endif /* JIM_EMBEDDED */
 #endif /* __JIM_CORE__ */
 
 #ifdef __cplusplus

@@ -367,7 +367,7 @@ cyg_httpd_send_ires(cyg_httpd_ires_table_entry *entry)
          httpstate.outbuffer, 
          header_length,
          0);
-    if (httpstate.mode & CYG_HTTPD_SEND_HEADER_ONLY) 
+    if (httpstate.mode & CYG_HTTPD_MODE_SEND_HEADER_ONLY) 
         return;
     cyg_httpd_write(entry->f_ptr, entry->f_size);
 }
@@ -387,7 +387,7 @@ cyg_httpd_find_handler(void)
     cyg_httpd_handler_table_entry *entry = cyg_httpd_handler_table;
     while (entry != cyg_httpd_handler_table_end)
     {
-        if (!strcmp((const char*)httpstate.url, entry->path))
+        if (strcmp((const char*)httpstate.url, entry->path) == 0)
             return entry->h;
         entry++;
     }

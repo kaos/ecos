@@ -69,7 +69,7 @@
 
 typedef enum cyg_httpd_req_type
 {
-    CYG_HTTPD_METHOD_GET = 1,
+    CYG_HTTPD_METHOD_GET  = 1,
     CYG_HTTPD_METHOD_HEAD = 2,
     CYG_HTTPD_METHOD_POST = 3
 } cyg_httpd_req_type;
@@ -87,6 +87,7 @@ typedef enum cyg_httpd_req_type
 
 #define CYG_HTTPD_STATUS_OK                      200
 #define CYG_HTTPD_STATUS_MOVED_PERMANENTLY       301
+#define CYG_HTTPD_STATUS_MOVED_TEMPORARILY       302
 #define CYG_HTTPD_STATUS_NOT_MODIFIED            304
 #define CYG_HTTPD_STATUS_BAD_REQUEST             400
 #define CYG_HTTPD_STATUS_NOT_AUTHORIZED          401
@@ -98,12 +99,16 @@ typedef enum cyg_httpd_req_type
 
 #define CYG_HTTPD_MODE_CLOSE_CONN             0x0001
 #define CYG_HTTPD_MODE_TRANSFER_CHUNKED       0x0002
-#define CYG_HTTPD_SEND_HEADER_ONLY            0x0004
+#define CYG_HTTPD_MODE_SEND_HEADER_ONLY       0x0004
+#define CYG_HTTPD_MODE_NO_CACHE               0x0008
+#define CYG_HTTPD_MODE_FORM_DATA              0x0010
 
 // This must be generated at random...
 #define CYG_HTTPD_MD5_AUTH_NAME                "MD5"
 #define CYG_HTTPD_MD5_AUTH_QOP                 "auth"
 #define CYG_HTTPD_MD5_AUTH_OPAQUE              "0000000000000000"
+
+#define TIME_FORMAT_RFC1123                    "%a, %d %b %Y %H:%H:%S GMT"
 
 typedef struct __socket_entry
 {
@@ -122,19 +127,25 @@ typedef struct
     cyg_int32    host[4];
 
     char         url[CYG_HTTPD_MAXURL+1];
-    char         inbuffer[CYG_HTTPD_MAXINBUFFER+1];  
-    cyg_int32    inbuffer_len;
-
-
+    char         inbuffer[CYG_HTTPD_MAXINBUFFER+1];
+    cyg_int32    inbuffer_len, content_len;
+    
     // Packet status.
     //
     //   bit      Description
     // -------------------------------------------------------------------------
-    //    0       When set inserts 'Pragma: no-cache' and 
-    //             'Cache-control: no-cache' in the header. Default for callback
-    //             functions.
-    //    1       When to close the connection: 
-    //             'Connection: close' when 0, 'Connection: keep-alive' when 1.
+    //    0       A 1 means that the connection will be closed after the request
+    //             has been served (i.e. Connection: close" will appear in
+    //             the header. Otherwise the connection will be kept alive
+    //             "Connection: keep-alive"
+    //    1       Set when the transfer will be chunked
+    //    2       Set when the we need to send only the header
+    //    3       Set when the we do not want this document to be cached (i.e.
+    //             "Cache-Control: no-cache" will appear in the header) which
+    //             is meant for c language callbacks and GCI.
+    //    4       Set when the the frame we just received contains form data.
+    //             In this case we call the function that parsed the data into
+    //             user-defined form variables.
     cyg_uint16   mode;
     
     // Ouptut data.
@@ -142,7 +153,7 @@ typedef struct
     char        *mime_type;
     cyg_int32    payload_len;
     char         outbuffer[CYG_HTTPD_MAXOUTBUFFER+1];
-
+    
     socket_entry sockets[CYGNUM_FILEIO_NFILE];
     cyg_int32    fdmax;
     
@@ -155,6 +166,15 @@ typedef struct
 #ifdef CYGOPT_NET_ATHTTPD_USE_CGIBIN_TCL
     Jim_Interp *jim_interp;
 #endif    
+
+    // Pointer to the data immediately following the last byte of the header.
+    // In a POST request, this is where the goods are.
+    char        *header_end;
+
+    // This pointer points to the buffer where we collected all the post
+    //  data (it might come in more than one frame)  and must be visible to
+    //  handlers and cgi scripts.
+    char        *post_data;
 
     // This pointer points to the information about the domain that needs
     //  to be authenticated. It is only used by the function that builds the
@@ -184,17 +204,15 @@ cyg_httpd_mime_table_entry __name CYG_HAL_TABLE_ENTRY(httpd_mime_table) = \
 
 extern cyg_int32 debug_print;
 
-void cyg_httpd_format_time_string(char*, time_t*);
 void cyg_httpd_set_home_page(cyg_int8*);
 char* cyg_httpd_find_mime_string(char*);
 cyg_int32 cyg_httpd_initialize(void);
 void cyg_httpd_cleanup_filename(char*);
 char* cyg_httpd_parse_GET(char*);
 char* cyg_httpd_parse_POST(char*);
-char* cyg_httpd_parse_HEAD(char*);
 void cyg_httpd_handle_method_GET(void);
 void cyg_httpd_handle_method_HEAD(void);
-cyg_int32 cyg_httpd_process_method(void);
+void cyg_httpd_process_method(void);
 void cyg_httpd_send_file(char*);
 void cyg_httpd_send_error(cyg_int32);
 cyg_int32 cyg_httpd_format_header(void);

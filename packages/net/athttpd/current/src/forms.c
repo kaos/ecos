@@ -44,6 +44,7 @@
  * 
  *  Author(s):    Anthony Tonizzo (atonizzo@gmail.com)
  *  Contributors: Sergei Gavrikov (w3sg@SoftHome.net)
+ *                Lars Povlsen    (lpovlsen@vitesse.com)
  *  Date:         2006-06-12
  *  Purpose:      
  *  Description:  
@@ -136,9 +137,13 @@ cyg_httpd_store_form_data(char *p)
         entry++;
     }
 
-    while(*p != ' ')
+    if (!p)    /* No form data? just return after clearing variables */
+        return NULL;
+
+    while (*p && *p != ' ')
     {
-        p2 = strchr(p, '=');
+        if (!(p2 = strchr(p, '=')))
+            return NULL;        /* Malformed post? */
         var_length = (cyg_int32)p2 - (cyg_int32)p;
         entry = cyg_httpd_fvars_table;
         while (entry != cyg_httpd_fvars_table_end)
@@ -151,23 +156,20 @@ cyg_httpd_store_form_data(char *p)
         if (entry == cyg_httpd_fvars_table_end)
         {
             // No such variable. Run through the data.
-            while ((*p != '&') && (*p != ' '))
+            while ((*p != '&') && (*p && *p != ' '))
+                p++;
+            if(*p == '&')
                 p++;
             continue;
         }
             
-        p = p2;
-        if (*p == '=')
-        {
-            ++p;
-            // Found the variable, store the name.
-            p = cyg_httpd_store_form_variable(p, entry);
+        // Found the variable, store the name.
+        p = cyg_httpd_store_form_variable(++p2, entry);
 #if CYGOPT_NET_ATHTTPD_DEBUG_LEVEL > 1
-            diag_printf("Stored form variable: %s Value: %s\n",
-                        entry->name,
-                        entry->buf);
+        diag_printf("Stored form variable: %s Value: %s\n",
+                    entry->name,
+                    entry->buf);
 #endif    
-        }
         if (*p == '&')
             p++;
     }
@@ -192,28 +194,71 @@ cyg_httpd_find_form_variable(char *p)
 void
 cyg_httpd_handle_method_POST(void)
 {
-    // TODO: Need to support the case in which a POST request will send
-    //  LOTS of data that does not fit into a single inbuffer. For example,
-    //  file transfer over HTTP.
-    cyg_int32 len = read(httpstate.sockets[httpstate.client_index].descriptor,
-                          httpstate.inbuffer, 
-                          CYG_HTTPD_MAXINBUFFER);
-    CYG_ASSERT(len > 0, "Cannot read POST data");
-    if (len == 0)
+    CYG_ASSERT(httpstate.post_data == NULL, "Leftover content data");
+    CYG_ASSERT(httpstate.header_end != NULL, "Cannot see POST data");
+    if (httpstate.content_len == 0 || 
+        httpstate.content_len > CYGNUM_ATHTTPD_SERVER_MAX_POST) {
+        cyg_httpd_send_error(CYG_HTTPD_STATUS_BAD_REQUEST);
         return;
+    }
     
-    char  *cp = httpstate.inbuffer;
-    while ((*cp == '\r') || (*cp == '\n'))
-        cp++;
-    cp[httpstate.inbuffer_len] = ' ';
-    cyg_httpd_store_form_data(cp);
+    // The content data is only valid during a POST.
+    httpstate.post_data = (char*)malloc(httpstate.content_len + 1);
+    CYG_ASSERT(httpstate.post_data != NULL, "Cannot malloc POST buffer");
+    if (httpstate.post_data == NULL)
+    {
+        cyg_httpd_send_error(CYG_HTTPD_STATUS_SYSTEM_ERROR);
+        return;
+    }
+
+    /* Grab partial/all content from data read with headers */
+    /*
+     * TODO: This does NOT (yet) support multipart/form-data!
+     */
+    int header_len = (int)httpstate.header_end - (int)httpstate.inbuffer;
+    int post_data_len = httpstate.inbuffer_len - header_len;
+    
+    // Some POST data might have come along with the header frame, and the
+    //  rest is coming in on following frames. Copy the data that already
+    //  arriced into the post buffer.
+    memcpy(httpstate.post_data, httpstate.header_end, post_data_len);
+    // Do we need additional data?
+    if (post_data_len < httpstate.content_len) 
+    {   
+        while (post_data_len < httpstate.content_len)
+        {
+            cyg_int32 len = read(httpstate.sockets[httpstate.client_index].
+                                                                   descriptor,
+                                 httpstate.post_data + post_data_len,
+                                 httpstate.content_len - post_data_len);
+            if (len < 0)
+            {
+                /* This releases POST data area*/
+                free(httpstate.post_data);
+                httpstate.post_data = NULL;
+                return;
+            }    
+            post_data_len += len;
+        }    
+    }
+    CYG_ASSERT(post_data_len == httpstate.content_len, "Partial read");
+
+    /* httpstate.content remains available in handler */
+    httpstate.post_data[httpstate.content_len] = '\0';
+    
+    // This assumes that the data that arrived in the POST body is of
+    //  multipart/form-data MIME type. We need to change this, if we are to
+    //  support things such as HTTP file transfer.
+    if (httpstate.mode & CYG_HTTPD_MODE_FORM_DATA)
+        cyg_httpd_store_form_data(httpstate.post_data);
 
     handler h = cyg_httpd_find_handler();
     if (h != 0)
     {
-        // A handler was found. We'll call the function associated to it. If 
-        //  the return value is 0 we'll also call cyg_httpd_send_file().
+        // A handler was found. We'll call the function associated to it.
         h(&httpstate);
+        free(httpstate.post_data);
+        httpstate.post_data = NULL;
         return;
     }
 
@@ -232,12 +277,17 @@ cyg_httpd_handle_method_POST(void)
         // Here we'll look for extension to the file. We'll call the cgi
         //  handler only if the extension is '.o'.
         cyg_httpd_exec_cgi();
+        free(httpstate.post_data);
+        httpstate.post_data = NULL;
         return;
     }
 #endif    
 
     // No handler of any kind for a post request. Must send 404.
     cyg_httpd_send_error(CYG_HTTPD_STATUS_NOT_FOUND);
+    free(httpstate.post_data);
+    httpstate.post_data = NULL;
+    return;
 }
 
 

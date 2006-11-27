@@ -62,6 +62,7 @@
 #include <string.h>
 #include <stdio.h>                     // sprintf().
 
+#define JIM_EMBEDDED
 #include <cyg/athttpd/http.h>
 #include <cyg/athttpd/socket.h>
 #include <cyg/athttpd/handler.h>
@@ -160,41 +161,14 @@ cyg_int32 cyg_httpd_exec_cgi_objloader(char *file_name)
 // tcl CGI Support
 // =============================================================================
 #ifdef CYGOPT_NET_ATHTTPD_USE_CGIBIN_TCL
-cyg_int32 cyg_httpd_exec_cgi_tcl(char *file_name)
+int Jim_AioInit(Jim_Interp *);
+cyg_int32
+cyg_httpd_exec_cgi_tcl(char *file_name)
 {
-    struct stat sp;
-    // Check if the file is in the file system.
-    cyg_int32 rc = stat(file_name, &sp);
-    if (rc < 0)
-    {
-        cyg_httpd_send_error(CYG_HTTPD_STATUS_NOT_FOUND);
-        return 0;
-    }    
-    
-    FILE *fp = fopen(file_name, "rb");
-    CYG_ASSERT(fp != NULL, "Cannot open file()");
-    if (fp == NULL)
-    {
-        cyg_httpd_send_error(CYG_HTTPD_STATUS_SYSTEM_ERROR);
-        return 0;
-    }
-    
-    char* tcl_buffer = (char*)malloc(sp.st_size);
-    CYG_ASSERT(tcl_buffer != NULL, "Cannot malloc() for tcl CGI");
-    if (tcl_buffer == NULL)
-    {
-        cyg_httpd_send_error(CYG_HTTPD_STATUS_SYSTEM_ERROR);
-        return 0;
-    }
-    
-    rc = fread(tcl_buffer, sizeof(char), sp.st_size, fp);
-    if (rc != sp.st_size)
-    {
-        cyg_httpd_send_error(CYG_HTTPD_STATUS_SYSTEM_ERROR);
-        return 0;
-    }
+    char tcl_cmd[CYG_HTTPD_MAXPATH];
+    sprintf(tcl_cmd, "source %s", file_name);
 
-    // Make sure that tcl sees the internal variables.
+    // Make sure that tcl sees the internal variables including the post_data.
     cyg_httpd_fvars_table_entry *entry = cyg_httpd_fvars_table;
     while (entry != cyg_httpd_fvars_table_end)
     {
@@ -204,51 +178,54 @@ cyg_int32 cyg_httpd_exec_cgi_tcl(char *file_name)
                                       entry->buf);
         entry++;
     }
+
+    if (httpstate.post_data != NULL)
+        Jim_SetVariableStrWithStr(httpstate.jim_interp, 
+                                  "post_data", 
+                                  httpstate.post_data);
      
-    Jim_Eval(httpstate.jim_interp, tcl_buffer);
-    free(tcl_buffer);
+    Jim_Eval(httpstate.jim_interp, tcl_cmd);
     return 0;
 }
 
-Jim_Interp *ExportedJimCreateInterp(void);
-static void Jim_InitEmbedded(void) {
-    Jim_Interp *i = ExportedJimCreateInterp();
-    Jim_InitExtension(i);
-    Jim_FreeInterp(i);
-}    
-
-int cyg_httpd_Jim_Command_startchunked(Jim_Interp *interp, 
-                                       int argc,
-                                       Jim_Obj *const *argv)
+int
+cyg_httpd_Jim_Command_startchunked(Jim_Interp *interp, 
+                                   int argc,
+                                   Jim_Obj *const *argv)
 {
-    Jim_Obj *objPtr = (Jim_Obj *)argv[1];
-    cyg_httpd_start_chunked(objPtr->bytes);
+    char *buf = (char*)Jim_GetString(argv[1], NULL);
+    cyg_httpd_start_chunked(buf);
     return JIM_OK;
 }
   
-int cyg_httpd_Jim_Command_writechunked(Jim_Interp *interp, 
-                                       int argc,
-                                       Jim_Obj *const *argv)
+int
+cyg_httpd_Jim_Command_writechunked(Jim_Interp *interp, 
+                                   int argc,
+                                   Jim_Obj *const *argv)
 {
-    Jim_Obj *objPtr = (Jim_Obj *)argv[1];
-    cyg_httpd_write_chunked(objPtr->bytes, objPtr->length);
+    int len;
+    char *buf = (char*)Jim_GetString(argv[1], &len);
+    cyg_httpd_write_chunked(buf, len);
     return JIM_OK;
 }
   
-int cyg_httpd_Jim_Command_endchunked(Jim_Interp *interp, 
-                                     int argc,
-                                     Jim_Obj *const *argv)
+int
+cyg_httpd_Jim_Command_endchunked(Jim_Interp *interp, 
+                                 int argc,
+                                 Jim_Obj *const *argv)
 {
     cyg_httpd_end_chunked();
     return JIM_OK;
 }
   
-void cyg_httpd_init_tcl_interpreter(void)
+void
+cyg_httpd_init_tcl_interpreter(void)
 {
     // Start the TCL interpreter.
     Jim_InitEmbedded();
     httpstate.jim_interp = Jim_CreateInterp();
     Jim_RegisterCoreCommands(httpstate.jim_interp);
+    Jim_AioInit(httpstate.jim_interp);
     
     // Add a new cyg_httpd_write_chunked command for tcl.
     Jim_CreateCommand(httpstate.jim_interp,
@@ -272,8 +249,8 @@ void cyg_httpd_init_tcl_interpreter(void)
 // =============================================================================
 // CGI Support
 // =============================================================================
-#if (CYGOPT_NET_ATHTTPD_USE_CGIBIN_TCL == 1 ) || \
-                                 (CYGOPT_NET_ATHTTPD_USE_CGIBIN_OBJLOADER == 1 )
+#if defined(CYGOPT_NET_ATHTTPD_USE_CGIBIN_TCL ) || \
+    defined(CYGOPT_NET_ATHTTPD_USE_CGIBIN_OBJLOADER)
 cyg_int32 
 cyg_httpd_exec_cgi(void)
 {

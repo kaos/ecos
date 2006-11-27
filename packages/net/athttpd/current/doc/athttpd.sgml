@@ -85,7 +85,7 @@ then sent out in the header.
 
 The server already provides entries for the following standard file extensions:
 
-'html', 'htm', 'gif', 'jpg', 'css', 'js'
+'html', 'htm', 'gif', 'jpg', 'css', 'js', 'png'
 
 and the user is responsible for adding any further entry. The syntax for 
 adding an entry is the following:</para>
@@ -155,12 +155,6 @@ contains, among others, a buffer (outbuffer) that can be used to send data
 out. The definitions of the structure is in http.h.</para>
 
 <para>
-If the callback function returns the value of 0, the server will try to find 
-the file with the same URL in the file system and send it. Any other value 
-returned causes the sever to stop further processing of this request. It is 
-assumed that in this case the user has send the response back to the client
-inside the body of the callback function.
-
 The following is an example of how to add a callback to a function myForm()
 whenever the URL /myform.cgi is requested:
 </para>
@@ -179,7 +173,6 @@ cyg_int32 myForm(CYG_HTTPS_STATE* p)
    strcpy(p->outbuffer, "eCos Web Server");
    cyg_httpd_write_chunked(p->outbuffer, strlen(p->outbuffer))
    cyg_httpd_end_chunked();
-   return -1; // Do not further search the file system.
 }  
 </programlisting>
 
@@ -459,12 +452,21 @@ resources (gif files) which are also compiled out.</para>
 <title>Form Variables</title>
 
 <para>The server will automatically try to parse form variables when a form is
-submitted.The variable names to look for during the parsing are held in
+submitted in the following cases:
+
+<itemizedlist>
+  <listitem><para>In a GET request, when the URL is followed by a question
+                  mark sign</para></listitem>
+  <listitem><para>In a POST request, when the the 'Content-Type' header line
+                  is set to 'application/x-www-form-urlencoded'</para></listitem>
+</itemizedlist>
+
+The variable names to look for during the parsing are held in
 an eCos table. In order to take advantage of this feature, the user first
-adds the variable names to the table, also providing a buffer where the parsed
-value will eventually be stored. The values will then be available in
-the buffers during the processing of the request, presumably in the body
-of a c language callback or CGI script.</para>
+adds the variable names to the table, which also requires providing a buffer 
+where the parsed value will eventually be stored. The values will then be
+available in the buffers during the processing of the request, presumably in
+the body of a c language callback or CGI script.</para>
 
 <para>For example, if the user wants two form variables, "foo" and "bar", to 
 be parsed automatically, those variable names must be added to the table 
@@ -496,18 +498,22 @@ for "foo" and "bar" (if they were found in the form data.) It is the
 responsability of the user to make sure that the buffer is large enough
 to hold all the data parsed (including the string terminator). The parser will
 write only up to the length of the buffer minus one (the last being the
-terminator).</para>
+terminator) and discard any additional data.</para>
 
 <para>The values parsed are likely going to be used in c language callback, or
-in CGI files. The user can access the pointers of individual variable
-for further processing, keeping in mind that the parsing always result
-in a string of characters to be produced, and any conversion from strings to
-integer (i.e. atoi()) must be performed in the callback.</para>
-
-<para>In CGI functions implemented using the objloader the pointers to the
+in CGI files. In a c language callback the user can directly access the pointers
+of individual variables for further processing, keeping in mind that the parsing 
+always result in a string of characters to be produced, and any conversion
+(e.g. from strings to integer) must be performed within the callback. In
+a TCL script the user can just access a variable by its name. For example,
+in the case of the variables 'foo' and 'bar' shown above, it is possible
+to do something like 'write_chunked "You wrote $foo". The data that was sent in
+the body of a POST request is accessible in through a variable called
+'post_data'. In CGI functions
+implemented using the objloader the pointers to the
 variables cannot be accessed directly, since the library will likely not
 know their location in memory. The proper way to access them is by using the
-cyg_httpd_find_form_variable() function from withing the library:</para>
+cyg_httpd_find_form_variable() function from within the library:</para>
 
 <programlisting>
 char* cyg_httpd_find_form_variable(char* name)

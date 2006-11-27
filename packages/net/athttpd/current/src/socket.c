@@ -43,7 +43,8 @@
  * #####DESCRIPTIONBEGIN####
  * 
  *  Author(s):    Anthony Tonizzo (atonizzo@gmail.com)
- *  Contributors: Sergei Gavrikov (w3sg@SoftHome.net)
+ *  Contributors: Sergei Gavrikov (w3sg@SoftHome.net), 
+ *                Lars Povlsen    (lpovlsen@vitesse.com)
  *  Date:         2006-06-12
  *  Purpose:      
  *  Description:  
@@ -85,7 +86,6 @@ cyg_httpd_write(char* buf, int buf_len)
                         buf, 
                         buf_len,
                         0);
-    CYG_ASSERT(sent == buf_len, "send() did not send out all bytes");
     return sent;
 }
 
@@ -99,7 +99,12 @@ cyg_httpd_writev(cyg_iovec *iovec_bufs, int count)
     ssize_t buf_len = 0;
     for (i = 0; i < count; i++)
         buf_len += iovec_bufs[i].iov_len;
-    CYG_ASSERT(sent == buf_len, "writev() did not send out all bytes");
+#if CYGOPT_NET_ATHTTPD_DEBUG_LEVEL > 1
+    if (sent != buf_len)
+        diag_printf("writev() did not send out all bytes (%ld of %ld)\n", 
+                    sent,
+                    buf_len);
+#endif    
     return sent;
 }
     
@@ -125,24 +130,27 @@ ssize_t
 cyg_httpd_start_chunked(char *extension)
 {
     httpstate.status_code = CYG_HTTPD_STATUS_OK;
-    httpstate.mode        |= CYG_HTTPD_MODE_TRANSFER_CHUNKED;
 
-    // I am not really sure that this is necessary, but even if it isn't, the
+#if defined(CYGOPT_NET_ATHTTPD_CLOSE_CHUNKED_CONNECTIONS)
+     // I am not really sure that this is necessary, but even if it isn't, the
     //  added overhead is not such a big deal. In simple terms, I am not sure 
-    //  how much I can rely the client to understand that the frame has ended 
+    //  how much I can rely on the client to understand that the frame has ended 
     //  with the last 5 bytes sent out. In an ideal world, the data '0\r\n\r\n'
-    //  should be enough, but several posting I read seem to imply otherwise,
-    //  at least with early generation browsers that supported the
-    //  "Transfer-Encoding: chunked" mechanism. Things might be getting better
-    //  now but I snooped some sites that use the chunked stuff (Yahoo! for one)
-    /// and all of them with no exception issue a "Connection: close" on 
-    //  chunked frames even if there is nothing in the HTTP 1.1 spec that
+    //  should be enough, but several posting on the subject I read seem to
+    //  imply otherwise, at least with early generation browsers that supported
+    //  the "Transfer-Encoding: chunked" mechanism. Things might be getting 
+    //  better now but I snooped some sites that use the chunked stuff (Yahoo!
+    //  for one) and all of them with no exception issue a "Connection: close" 
+    //  on chunked frames even if there is nothing in the HTTP 1.1 spec that
     //  requires it.
-    httpstate.mode        |= CYG_HTTPD_MODE_CLOSE_CONN;
+    httpstate.mode |= CYG_HTTPD_MODE_CLOSE_CONN;
+#endif
     
-    // We do not cache the CGI script. In case they are used to display
-    //  dynamic data we want them to be executed any every time they are 
-    //  requested.
+    // We do not cache chunked frames. In case they are used to display dynamic
+    //  data we want them to be executed any every time they are requested.
+    httpstate.mode |= 
+              (CYG_HTTPD_MODE_TRANSFER_CHUNKED | CYG_HTTPD_MODE_NO_CACHE);
+    
     httpstate.last_modified = -1;
     httpstate.mime_type = cyg_httpd_find_mime_string(extension);
     cyg_int32 header_length = cyg_httpd_format_header();
@@ -159,7 +167,7 @@ cyg_httpd_write_chunked(char* buf, int len)
     iovec_bufs[0].iov_len = strlen(leader);
     iovec_bufs[1].iov_len = len;
     iovec_bufs[2].iov_len = 2;
-    if (httpstate.mode & CYG_HTTPD_SEND_HEADER_ONLY)
+    if (httpstate.mode & CYG_HTTPD_MODE_SEND_HEADER_ONLY)
         return (iovec_bufs[0].iov_len + iovec_bufs[1].iov_len + 
                                                   iovec_bufs[2].iov_len);
     return cyg_httpd_writev(iovec_bufs, 3);
@@ -168,7 +176,7 @@ cyg_httpd_write_chunked(char* buf, int len)
 void
 cyg_httpd_end_chunked(void)
 {
-    if (httpstate.mode & CYG_HTTPD_SEND_HEADER_ONLY)
+    if (httpstate.mode & CYG_HTTPD_MODE_SEND_HEADER_ONLY)
         return;
     strcpy(httpstate.outbuffer, "0\r\n\r\n");
     cyg_httpd_write(httpstate.outbuffer, 5);
@@ -188,7 +196,7 @@ void
 cyg_httpd_create_std_header(char *extension, int len)
 {
     httpstate.status_code = CYG_HTTPD_STATUS_OK;
-    httpstate.mode        = 0;
+    httpstate.mode |= CYG_HTTPD_MODE_NO_CACHE;
 
     // We do not want to send out a "Last-Modified:" field for c language
     //  callbacks.
@@ -199,67 +207,77 @@ cyg_httpd_create_std_header(char *extension, int len)
     cyg_httpd_write(httpstate.outbuffer, header_length);
 }
 
-void 
+void
 cyg_httpd_process_request(cyg_int32 index)
 {
-    int rc = 1;
     httpstate.client_index = index;
     cyg_int32 descr = httpstate.sockets[index].descriptor;
-    fd_set rfds_tmp;
-    FD_ZERO( &rfds_tmp);
-    FD_SET( descr, &rfds_tmp);
-    while (FD_ISSET(descr, &rfds_tmp))
-    {
-        cyg_int32 n = recv(descr, httpstate.inbuffer, CYG_HTTPD_MAXINBUFFER, 0);
-        if (n == 0)
+    
+    // By placing a terminating '\0' not only we have a safe stopper point
+    //  for our parsing, but also we can detect if we have a split header.
+    // Since headers always end with an extra '\r\n', if we find a '\0'
+    //  before the terminator than we can safely assume that the header has
+    //  not been received completely and more is following (i.e. split headers.)
+    httpstate.inbuffer[0] = '\0';
+    httpstate.inbuffer_len = 0;
+    while ((strstr(httpstate.inbuffer, "\r\n\r\n") == 0) &&
+                (strstr(httpstate.inbuffer, "\n\n") == 0))
+    {            
+        int len = recv(descr,
+                       httpstate.inbuffer + httpstate.inbuffer_len,
+                       CYG_HTTPD_MAXINBUFFER - httpstate.inbuffer_len,
+                       0);
+        if (len == 0)
         {
             // This is the client that has closed its TX socket, possibly as
             //  a response from a shutdown() initiated by the server. Another
             //  possibility is that the client was closed altogether, in
-            //  which case EOFs are sent on each open sockets.
-#if CYGOPT_NET_ATHTTPD_DEBUG_LEVEL > 0
-            printf("EOF received on descriptor: %d. Closing it.\n", descr);
-#endif    
+            //  which case the client sent EOFs on each open sockets before 
+            //  dying.
             close(descr);
             FD_CLR(descr, &httpstate.rfds);
             httpstate.sockets[index].descriptor = 0;
+#if CYGOPT_NET_ATHTTPD_DEBUG_LEVEL > 0
+            printf("EOF received on descriptor: %d. Closing it.\n", descr);
+#endif    
             return;
         }    
         
-        if (n < 0)
+        if (len < 0)
         {
-            diag_printf("ERROR reading from socket. read() returned: %d\n", n);
+            // There was an error reading from this socket. Play it safe and
+            //  close it. This will force the client to generate a shutdown
+            //  and we will read a len = 0 the next time around.
+            shutdown(descr, SHUT_WR);
+#if CYGOPT_NET_ATHTTPD_DEBUG_LEVEL > 0
+            diag_printf("ERROR reading from socket. read() returned: %d\n", 
+                        httpstate.inbuffer_len);
+#endif    
             return;
         }  
-        httpstate.inbuffer[n] = '\0';
-      
-        // Timestamp the socket. 
-        httpstate.sockets[index].timestamp = time(NULL);
-        
-        // This is where it all happens.
-        cyg_httpd_process_method();
-        
-        if (httpstate.mode & CYG_HTTPD_MODE_CLOSE_CONN)
-            // There are 2 cases we can be here:
-            // 1) chunked frames close their connection by default
-            // 2) The client requested the connection be terminated with a
-            //     "Connection: close" in the header
-            // In any case, we close the TX pipe and wait for the client to
-            //  send us an EOF on the receive pipe. This is a more graceful way
-            //  to handle the closing of the socket, compared to just calling
-            //  close() without first asking the opinion of the client, and 
-            //  running the risk of stray data lingering around.
-            shutdown(descr, SHUT_WR);
-        
-        // Now check if we have pipelined frames. We'll set up a 
-        //  select() to see if more data is waiting to be read. Pipeline is
-        //  still not enabled by default in most browsers.
-        struct timeval tv_tmp = {0, 20000};
-        rc = select(descr + 1, &rfds_tmp, NULL, NULL, &tv_tmp);
-        CYG_ASSERT(rc != -1, "select() return -1");
-        if (rc == 0)
-            return;
+    
+        httpstate.inbuffer_len += len;
     }
+    
+    httpstate.inbuffer[httpstate.inbuffer_len] = '\0';
+
+    // Timestamp the socket. 
+    httpstate.sockets[index].timestamp = time(NULL);
+        
+    // This is where it all happens.
+    cyg_httpd_process_method();
+        
+    if (httpstate.mode & CYG_HTTPD_MODE_CLOSE_CONN)
+        // There are 2 cases we can be here:
+        // 1) chunked frames close their connection by default
+        // 2) The client requested the connection be terminated with a
+        //     "Connection: close" in the header
+        // In any case, we close the TX pipe and wait for the client to
+        //  send us an EOF on the receive pipe. This is a more graceful way
+        //  to handle the closing of the socket, compared to just calling
+        //  close() without first asking the opinion of the client, and 
+        //  running the risk of stray data lingering around.
+        shutdown(descr, SHUT_WR);
 }
 
 void
@@ -267,14 +285,13 @@ cyg_httpd_handle_new_connection(cyg_int32 listener)
 {
     cyg_int32 i;
 
-
     int fd_client = accept(listener, NULL, NULL);
     CYG_ASSERT(listener != -1, "accept() failed");
     if (fd_client == -1) 
         return;
     
 #if CYGOPT_NET_ATHTTPD_DEBUG_LEVEL > 0
-    printf("Opening descriptor: %d\n", fd_client);
+    diag_printf("Opening descriptor: %d\n", fd_client);
 #endif    
     // Timestamp the socket and process the frame immediately, since the accept
     //  guarantees the presence of valid data on the newly opened socket.
@@ -373,7 +390,9 @@ cyg_httpd_daemon(cyg_addrword_t data)
     if (rc != 0)
         return;
 
+#if CYGOPT_NET_ATHTTPD_DEBUG_LEVEL > 0
     diag_printf("Web server Started and listening...\n");
+#endif
     cyg_int32 i;
     for (i = 0; i < CYGNUM_FILEIO_NFILE; i++)
     {
@@ -417,7 +436,8 @@ cyg_httpd_daemon(cyg_addrword_t data)
                         cyg_httpd_process_request(i);
                     else       
                         FD_SET(descr, &httpstate.rfds); 
-                    httpstate.fdmax = MAX(httpstate.fdmax, descr);
+                    if (httpstate.sockets[i].descriptor != 0)
+                        httpstate.fdmax = MAX(httpstate.fdmax, descr);
                 }
             }
         }
@@ -429,7 +449,7 @@ cyg_httpd_daemon(cyg_addrword_t data)
         {
 #if CYGOPT_NET_ATHTTPD_DEBUG_LEVEL > 0
             cyg_int8 *ptr = (cyg_int8*)&httpstate.rfds;
-            printf("rfds: %x %x %x %x\n", ptr[0], ptr[1], ptr[2], ptr[3] );
+            diag_printf("rfds: %x %x %x %x\n", ptr[0], ptr[1], ptr[2], ptr[3] );
             for (i = 0; i < CYGPKG_NET_MAXSOCKETS; i++)
                 if (httpstate.sockets[i].descriptor != 0)
                      diag_printf("Socket in list: %d\n", 
