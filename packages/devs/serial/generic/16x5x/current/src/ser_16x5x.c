@@ -10,6 +10,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2003 Gary Thomas
+// Copyright (C) 2006 eCosCentric Limited
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -327,6 +328,10 @@ serial_config_port(serial_channel *chan,
     _ier |= (IER_LS|IER_MS);
 #endif
     HAL_WRITE_UINT8(base+REG_ier, _ier);
+
+#ifdef CYGPRI_IO_SERIAL_GENERIC_16X5X_PLF_INIT_HOOK
+    CYGPRI_IO_SERIAL_GENERIC_16X5X_PLF_INIT_HOOK( ser_chan, new_config );
+#endif
 
     if (new_config != &chan->config) {
         chan->config = *new_config;
