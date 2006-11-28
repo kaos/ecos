@@ -1,3 +1,7 @@
+2006-11-28 Oyvind Harboe  <oyvind.harboe@zylin.com>
+
+	* Fixed boot sectors for ST M29W320D
+	
 2006-08-29  Yoshinori Sato <ysato@users.sourceforge.jp>
 
 	* include/flash_am29xxxxx_parts.inl [CYGHWR_DEVS_FLASH_AMD_S29GL128M]:

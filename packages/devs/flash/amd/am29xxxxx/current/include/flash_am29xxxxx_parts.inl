@@ -775,36 +775,28 @@
         device_size: 0x400000 * CYGNUM_FLASH_INTERLEAVE,
         base_mask  : ~(0x400000 * CYGNUM_FLASH_INTERLEAVE - 1),
         bootblock  : true,
-        bootblocks : { 0x3f0000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+        bootblocks : { 0x3f0000 * CYGNUM_FLASH_INTERLEAVE, // offset
+                       0x008000 * CYGNUM_FLASH_INTERLEAVE, // size 1
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE, // size 2
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE, // size 3
+                       0x004000 * CYGNUM_FLASH_INTERLEAVE, // size 4
                        _LAST_BOOTBLOCK
                      },
         banked     : false,
         bufsiz     : 1
     },
-    {   // M29W320DT
+    {   // M29W320DB
         device_id  : FLASHWORD(0x22cb),
         block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
         block_count: 64,
         device_size: 0x400000 * CYGNUM_FLASH_INTERLEAVE,
         base_mask  : ~(0x400000 * CYGNUM_FLASH_INTERLEAVE - 1),
         bootblock  : true,
-        bootblocks : { 0x000000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+        bootblocks : { 0x000000 * CYGNUM_FLASH_INTERLEAVE, // offset 
+                       0x004000 * CYGNUM_FLASH_INTERLEAVE, // size 1
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE, // size 2
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE, // size 3
+                       0x008000 * CYGNUM_FLASH_INTERLEAVE, // size 4
                        _LAST_BOOTBLOCK
                      },
         banked     : false,
