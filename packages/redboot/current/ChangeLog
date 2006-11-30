@@ -1,3 +1,8 @@
+2006-11-19  Andrew Lunn  <lunn@laptop.lunn.ch>
+
+	* src/load.c: Only call valid_address() if
+	CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS is enabled.
+
 2006-09-06  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/redboot.cdl: Fix description of CYGSEM_REDBOOT_DISK_IDE.

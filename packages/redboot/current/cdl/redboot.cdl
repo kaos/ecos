@@ -240,10 +240,13 @@ cdl_package CYGPKG_REDBOOT {
         cdl_option CYGBLD_REDBOOT_LOAD_INTO_FLASH {
             display       "Allow the load-command write into Flash."
             default_value 0
-            active_if     CYGPKG_REDBOOT_FLASH     
+            active_if     CYGPKG_REDBOOT_FLASH
+	    requires	  CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
             compile       flash_load.c
             description "
-                Write images direct to Flash via the load command."
+                Write images direct to Flash via the load command.
+                We assume anything which is invalid RAM is flash, hence
+                the requires statement"
         }
         cdl_option CYGBLD_BUILD_REDBOOT_WITH_CKSUM {
             display       "Include POSIX checksum command"

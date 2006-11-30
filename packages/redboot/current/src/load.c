@@ -422,9 +422,11 @@ load_elf_image(getc_t getc, unsigned long base)
                     redboot_getc_terminate(true);
                     return 0;
                 }
-                if (valid_address(addr)) {
+#ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
+                if (valid_address(addr)) 
+#endif
                   *addr++ = ch;
-                }
+                
 #ifdef CYGBLD_REDBOOT_LOAD_INTO_FLASH
                 else {
                   flash_load_write(addr, ch);
@@ -567,9 +569,11 @@ load_srec_image(getc_t getc, unsigned long base)
             offset += count;
             while (count-- > 0) {
                 val = _hex2(getc, 1, &sum);
-                if (valid_address(addr)) {
+#ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
+                if (valid_address(addr)) 
+#endif
                   *addr++ = val;
-                }
+                
 #ifdef CYGBLD_REDBOOT_LOAD_INTO_FLASH
                 else {
                   flash_load_write(addr, val);
