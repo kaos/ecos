@@ -204,7 +204,6 @@ cdl_package CYGPKG_ATHTTPD {
         flavor        bool
         default_value 1
         active_if     CYGPKG_IO_FILEIO
-        requires      
         description   "
             This option enables the use of a file system to access the pages
              to be served. It is the responsibility of the user to properly

@@ -1,3 +1,8 @@
+2006-12-03  Anthony Tonizzo  <atonizzo@gmail.com>
+
+	* cdl/httpd.cdl: Corrected a CDL error in the requirements of
+	CYGOPT_NET_ATHTTPD_USE_FS
+
 2006-11-27  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/httpd.cdl: Improve CDL dependencies.
