@@ -193,7 +193,21 @@
         banked     : false
     },
 #endif
-	
+
+#ifdef CYGHWR_DEVS_FLASH_INTEL_28F320J3
+    {   // 28F320J3
+        device_id  : FLASHWORD(0x0016),
+        block_size : 0x20000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 32,
+        device_size: 0x400000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x400000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        locking    : false,
+        buffered_w : false,
+        bootblock  : false,
+        banked     : false
+    },
+#endif
+
 #ifdef CYGHWR_DEVS_FLASH_INTEL_28F128K3
     {   
         device_id  : FLASHWORD(0x8802),

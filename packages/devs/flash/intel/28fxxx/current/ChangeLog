@@ -1,3 +1,8 @@
+2006-12-14  Yoshinori Sato <ysato@users.sourceforge.jp>
+
+	* cdl/flash_intel_28fxxx.cdl, include/flash_28fxxx_parts.inl: Add
+	Intel 28F320J3 part.
+
 2006-11-28  Sergei Gavrikov  <sg@sgs.gomel.by>
 
 	* cdl/flash_intel_28fxxx.cdl, include/flash_28fxxx_parts.inl:

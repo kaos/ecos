@@ -184,6 +184,17 @@ cdl_package CYGPKG_DEVS_FLASH_INTEL_28FXXX {
             part in the family."
     }
 
+    cdl_option CYGHWR_DEVS_FLASH_INTEL_28F320J3 {
+        display       "Intel 28F320J3 flash memory support"
+        default_value 0
+        implements    CYGHWR_IO_FLASH_BLOCK_LOCKING
+        implements    CYGINT_DEVS_FLASH_INTEL_VARIANTS
+        description   "
+            When this option is enabled, the Intel flash driver will be
+            able to recognize and handle the 28F320J3
+            part in the family."
+    }
+
     cdl_option CYGHWR_DEVS_FLASH_INTEL_28F800B5 {
         display       "Intel 28F800B5 flash memory support"
         default_value 0
