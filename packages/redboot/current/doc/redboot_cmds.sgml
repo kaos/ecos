@@ -2096,7 +2096,8 @@ About to initialize [format] flash image system - continue (y/n)? <userinput>y</
     <refsynopsisdiv>
       <cmdsynopsis>
 	<command>fis list</command>
-	<arg><replaceable>-f</replaceable></arg>
+	<arg><replaceable>-c</replaceable></arg>
+	<arg><replaceable>-d</replaceable></arg>
       </cmdsynopsis>
     </refsynopsisdiv>
     <refsect1>
