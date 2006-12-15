@@ -2274,7 +2274,7 @@ RedBoot> <userinput>fis free</userinput>
 	    <row>
 	      <entry>-l</entry>
 	      <entry>Number</entry>
-	      <entry>Length of flash area to occopy. If specified, and
+	      <entry>Length of flash area to occupy. If specified, and
 	      the named image already exists, the length must match
 	      the value in the FIS directory.</entry>
 	      <entry>Length of area reserved in FIS directory if the
@@ -2582,7 +2582,7 @@ Delete image &lsquo;junk&rsquo; - continue (y/n)? <userinput>y</userinput>
     <refsect1>
       <title>Description</title>
 <para>This command is used to write-protect (lock) a portion of flash memory,
-to prevent accidental overwriting of images. In order to make make any modifications
+to prevent accidental overwriting of images. In order to make any modifications
 to the flash, a matching <command>fis unlock</command> command must be
 issued. This command is optional and will only be provided on hardware
 which can support write-protection of the flash space.</para>
