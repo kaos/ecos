@@ -1,3 +1,7 @@
+2006-12-16 Uwe.Kindler <uwe.kindler@cetoni.de>
+
+	* sgml/doclist: Added CAN documentation.
+	
 2006-09-25  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* sgml/doclist: added MMC disk documentation

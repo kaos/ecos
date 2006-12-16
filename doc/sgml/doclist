@@ -8,6 +8,7 @@ io/pci/current/doc/pci.sgml
 io/flash/current/doc/flash.sgml
 io/spi/current/doc/spi.sgml
 io/i2c/current/doc/i2c.sgml
+io/can/current/doc/can.sgml
 compat/posix/current/doc/posix.sgml
 compat/uitron/current/doc/uitron.sgml
 net/common/current/doc/tcpip.sgml
