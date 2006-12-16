@@ -1,3 +1,7 @@
+2006-12-13  Uwe Kindler  <uwe_kindler@web.de>
+
+	* doc/can.sgml: CAN driver SGML documentation added.
+
 2006-08-25  Gary Thomas  <gary@mlbassoc.com>
 
 	* cdl/io_can.cdl: Set parent for more intuitive ConfigTool layout.

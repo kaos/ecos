@@ -1,0 +1,1902 @@
+<!-- {{{ Banner                         -->
+
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!--     can.sgml                                                    -->
+<!--                                                                 -->
+<!--     Generic CAN documentation.                                  -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- ####COPYRIGHTBEGIN####                                          -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- Copyright (C) 2004 eCosCentric Limited                          -->
+<!-- This material may be distributed only subject to the terms      -->
+<!-- and conditions set forth in the Open Publication License, v1.0  -->
+<!-- or later (the latest version is presently available at          -->
+<!-- http://www.opencontent.org/openpub/)                            -->
+<!-- Distribution of the work or derivative of the work in any       -->
+<!-- standard (paper) book form is prohibited unless prior           -->
+<!-- permission obtained from the copyright holder                   -->
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!-- ####COPYRIGHTEND####                                            -->
+<!-- =============================================================== -->
+<!-- #####DESCRIPTIONBEGIN####                                       -->
+<!--                                                                 -->
+<!-- Author(s):   Uwe Kindler                                        -->
+<!-- Date:        2006/12/04                                         -->
+<!--                                                                 -->
+<!-- ####DESCRIPTIONEND####                                          -->
+<!-- =============================================================== -->
+
+<!-- }}} -->
+
+<PART id="io-can"><title>CAN Support</title>
+
+<CHAPTER id="io-can-overview">
+<TITLE>Overview</TITLE>
+
+<SECTION id="io-can-overview-descr">
+<TITLE>Description</TITLE>
+
+<PARA>
+The Controller Area Network, CAN, is a multicast shared, differential 
+serial bus standard especially suited for networking "intelligent" 
+devices as well as sensors and actuators within a system or sub-system. 
+The protocol was originally developed in the 1980s by Robert Bosch GmbH 
+aiming at automotive applications. Nowadays CAN has gained widespread use 
+and is used in industrial automation as well as in automotive, mobile 
+machines and in many embedded control applications.
+</PARA>
+    
+<PARA>
+The CAN protocol is defined by the ISO 11898-1 standard. The physical layer 
+uses differential transmission on a twisted pair wire.  CAN uses a 
+non-destructive bit-wise arbitration to control access to the bus.
+</PARA>
+    
+<PARA>
+There is no explicit address in the messages because in CAN networks there 
+is no addressing of subscribers or stations, but instead, each message carries 
+a prioritized identifier. A transmitter sends a message to all CAN nodes 
+(broadcasting). The identifier may serve as an identification of the contents 
+of the message and also determines the priority that the message enjoys in 
+competition for bus access. A node decides on the basis of this identifier 
+received whether it should process the message or not.
+</PARA>
+    
+<PARA>
+The CAN messages are small (at most eight data bytes) and are protected 
+by a checksum. Each CAN message consists of  an 11 bit message ID, up to 8 
+bytes of data and, a CRC checksum and a number of  control bits. These 
+short messages ensure a robust transfer of data in electromagnetically 
+noisy environments. An extended version of the CAN frame supports 29 bit 
+message identifiers.
+</PARA>
+    
+<PARA>
+Basically there are two different operational modes for CAN receivers - 
+FullCAN and BasicCAN.  The difference between these two modes is the 
+Object Storage function. The BasicCAN architecture is quite similar to a 
+simple UART. A BasicCAN device has typically one transmit buffer and two 
+receive buffers. The CAN chip handles only the transmitting and receiving 
+of the data (and the error handling) and so most of the manipulation of the 
+data has to be done by the CPU. The CPU has to request the transmitting or 
+acknowledge the receiving of the data through the interrupt flags. This will 
+burden the CPU and take up much of the CPU time. 
+</PARA>
+
+<PARA>
+The FullCAN architecture is more suitable for high-speed performance. It 
+has its own storage area on chip and works with a number of message buffers 
+or message boxes. The CAN controller has its own Acceptance Filtering Mask 
+on chip. It can thus determine which frames are to be received by examining 
+the identifiers. The CPU in this case will only receive the valid (wanted) 
+frames and hence improve the performance of the CPU.
+</PARA>
+    
+<PARA>
+You can find more information at the 
+<ulink url="http://www.can-cia.org/">CAN in Automation</ulink> website.
+</PARA>
+
+</SECTION> <!-- "io-can-description" -->
+
+<SECTION id="io-can-ecos-support">
+<TITLE>eCos Support for CAN</TITLE>
+
+<PARA>
+The eCos CAN subsystem supports the BasicCAN and FullCAN mode. The architecture 
+and the interface of the eCos CAN driver is quite similar to the eCos serial 
+driver and supports the same interface.
+</PARA>
+
+<PARA>
+The eCos CAN support for any given platform is spread over a number of different 
+packages: 
+</PARA>
+
+<itemizedlist>
+  <listitem>
+    <para>
+
+This package, <varname>CYGPKG_IO_CAN</varname>, exports a generic
+device independent CAN I/O API for accessing devices attached to a CAN
+network. This API handles issues such as locking between threads. The
+package does not contain any hardware-specific code. Instead it will
+call into a CAN device driver to handle the hardware device
+access. This package also defines the inderface that such hardware
+drivers should provide.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+Each CAN device will have its own device driver, which is implemented 
+as a separate package, for example 
+<varname>CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN</varname>. For devices that may 
+be attached to a variety of different boards the device driver will be 
+generic and a second platform specific package will be used to customize 
+it to each platform. For devices that are associated with a specific 
+chipset, only a single package may be present.
+    </para>
+  </listitem>
+</itemizedlist>
+
+<PARA>
+Typically all appropriate packages will be loaded automatically when 
+you configure eCos for a given platform. If the application does not use 
+any of the CAN I/O facilities, directly or indirectly, then linker garbage 
+collection should eliminate all unnecessary code and data. All necessary 
+initialization should happen automatically. However the exact details may 
+depend on the platform, so the platform HAL documentation should be 
+checked for further details.
+</PARA>
+    
+<PARA>
+There is an important exception to this: if the CAN devices are attached 
+to an expansion connector, such as PCI, then the platform HAL will not 
+know about these devices. Instead the necessary packages will need to be 
+added explicitly during configuration.
+</PARA>
+</SECTION>
+</CHAPTER>
+
+<CHAPTER id="io-can-api">
+<TITLE>User API</TITLE>
+
+<PARA>
+The CAN driver uses the standard eCos I/O API functions. All functions 
+except <function>cyg_io_lookup()</function> require an I/O "handle".
+</PARA>
+
+<PARA>
+All functions return a value of the type <type>Cyg_ErrNo</type>. 
+If an error condition is detected, this value will be negative and the 
+absolute value indicates the actual error, as specified in 
+<filename>cyg/error/codes.h</filename>. The only other legal return values 
+will be <varname>ENOERR</varname>, <varname>-EINTR</varname> and 
+<varname>-EAGAIN</varname>. All other function arguments are pointers 
+(references). This allows the drivers to pass information efficiently, 
+both into and out of the driver. The most striking example of this is the 
+<parameter>len</parameter> value passed to the read and write functions. 
+This parameter contains the desired length of data on input to the 
+function and the actual transferred length on return.
+</PARA>
+    
+<PROGRAMLISTING>
+// Lookup a CAN device and return its handle 
+Cyg_ErrNo <FUNCTION><!-- <index></index> -->cyg_io_lookup</function>( 
+    const char <parameter>*name</parameter>,
+    cyg_io_handle_t <parameter>*handle</parameter> )
+</PROGRAMLISTING>
+
+<PARA>
+This function maps a CAN device name onto an appropriate handle. If the
+named device is not in the system, then the error
+<varname>-ENOENT</varname> is returned. If the device is found, then
+the handle for the device is returned by way of the handle pointer
+<parameter>*handle</parameter>.
+</PARA>
+
+<PROGRAMLISTING>
+// Send a CAN message
+Cyg_ErrNo <FUNCTION><!-- <index></index> -->cyg_io_write</function>( 
+    cyg_io_handle_t <parameter>handle</parameter>,
+    const void <parameter>*buf</parameter>,
+    cyg_uint32 <parameter>*len</parameter> )
+</PROGRAMLISTING>
+
+<PARA>
+This function sends one single CAN message (not a buffer of CAN messages) 
+to a device. The size of data to send is contained in 
+<parameter>*len</parameter> and the actual size sent will be returned in 
+the same place.
+</PARA>
+
+<PROGRAMLISTING>
+// Read one CAN event from device
+Cyg_ErrNo <!-- <index></index> --><function>cyg_io_read</function>( 
+    cyg_io_handle_t <parameter>handle</parameter>,
+    void <parameter>*buf</parameter>,
+    cyg_uint32 <parameter>*len</parameter> )
+</PROGRAMLISTING>
+
+<PARA>
+This function receives one single CAN event from a device. The desired size 
+of data to receive is contained in <parameter>*len</parameter> and the 
+actual size obtained will be returned in the same place. 
+</PARA>
+
+<PROGRAMLISTING>
+// Read configuration of a CAN device
+Cyg_ErrNo <FUNCTION><!-- <index></index> -->cyg_io_get_config</FUNCTION>( 
+    cyg_io_handle_t <parameter>handle</parameter>,
+    cyg_uint32 <parameter>key</parameter>,
+    void *<parameter>buf</parameter>,
+    cyg_uint32 *<parameter>len</parameter> )
+</PROGRAMLISTING>
+
+<PARA>
+This function is used to obtain run-time configuration about a
+device. The type of information retrieved is specified by the
+<parameter>key</parameter>. The data will be returned in the given
+buffer. The value of <parameter>*len</parameter> should contain the
+amount of data requested, which must be at least as large as the size
+appropriate to the selected key. The actual size of data retrieved is
+placed in <parameter>*len</parameter>. The appropriate key values 
+are all listed in the file <filename>&lt;cyg/io/config_keys.h&gt;</filename>.
+</PARA>
+
+<PROGRAMLISTING>
+// Change configuration of a CAN device
+Cyg_ErrNo <!-- <index></index> --><function>cyg_io_set_config</function>( 
+    cyg_io_handle_t <parameter>handle</parameter>,
+    cyg_uint32 <parameter>key</parameter>,
+    const void <parameter>*buf</parameter>,
+    cyg_uint32 <parameter>*len</parameter> )
+</PROGRAMLISTING>
+
+<PARA>
+This function is used to manipulate or change the run-time
+configuration of a device. The type of information is specified by the
+<parameter>key</parameter>. The data will be obtained from the given
+buffer. The value of <parameter>*len</parameter> should contain the
+amount of data provided, which must match the size appropriate to the
+selected key.  The appropriate key values are all listed in the file
+<filename>&lt;cyg/io/config_keys.h&gt;</filename>.
+</PARA> 
+</CHAPTER>   
+
+<CHAPTER id="io-can-driver-details">
+<TITLE>CAN driver details</TITLE>
+
+<PARA>
+Allow applications and other packages to access CAN devices.
+</PARA>
+
+<SECTION id="io-can-driver-description">
+<TITLE>Description</TITLE>
+
+<PARA>
+A raw CAN driver is is provided as a standard part of the eCos system.
+</PARA>
+
+<PARA>
+Use the include file <filename>&lt;cyg/io/canio.h&gt;</filename> for this driver.
+</PARA>
+    
+<PARA>
+The CAN driver is capable of sending single CAN messages to a device and 
+receiving single CAN events from a CAN device. Controls are provided to 
+configure the actual hardware, but there is no manipulation of the data by 
+this driver. 
+</PARA>
+    
+<PARA>
+There may be many instances of this driver in a given system, one for each 
+CAN channel. Each channel corresponds to a physical device and there will 
+typically be a device module created for this purpose. The device modules 
+themselves are configurable, allowing specification of the actual hardware 
+details.     
+</PARA>
+</SECTION>
+
+<SECTION id="io-can-api-details">
+<TITLE>API Details</TITLE>
+
+<SECTION>
+<TITLE>cyg_io_write</TITLE>
+  
+<PROGRAMLISTING>
+cyg_io_write(handle, buf, len)
+</PROGRAMLISTING>
+
+<PARA>
+To transmit a message an application must fill a <type>cyg_can_message</type>
+buffer and call <function>cyg_io_write()</function>.
+This function sends one single CAN message (not a buffer of CAN messages) 
+to a device. The size of data to send is contained in <parameter>*len</parameter> 
+and the actual size sent will be returned in the same place. A pointer to a
+<type>cyg_can_message</type> is contained in <parameter>*buf</parameter>. 
+The driver maintains a buffer to hold the data. The size of the intermediate
+buffer is configurable within the interface module. The data is not modified 
+at all while it is being buffered. On return, <parameter>*len</parameter> 
+contains the amount of characters actually consumed - that means 
+<parameter>*len</parameter> always contains 
+<function>sizeof(cyg_can_message)</function>.
+</PARA>
+    
+<PARA>
+It is possible to configure the write call to be blocking (default) or 
+non-blocking. Non-blocking mode requires both the configuration option 
+<varname>CYGOPT_IO_CAN_SUPPORT_NONBLOCKING</varname> to be enabled, and 
+the specific device to be set to non-blocking mode for writes 
+(see <function>cyg_io_set_config()</function>). In blocking mode, the 
+call will not return until there is space in the buffer and the content 
+of the CAN message has been consumed. In non-blocking mode, if there is 
+no space in buffer for the CAN message, <varname>-EAGAIN</varname> is 
+returned and the caller must try again.
+</PARA>
+    
+<PARA>
+It is possible to configure the write call to be non-blocking with timeout. 
+None-blocking mode with timeout requires the configuration option 
+<varname>CYGOPT_IO_CAN_SUPPORT_NONBLOCKING</varname> and 
+<varname>CYGOPT_IO_CAN_SUPPORT_TIMEOUTS</varname> to be enabled, requires 
+the eCos kernel package to be included and the specific device to be set 
+to non-blocking mode for writes (see <function>cyg_io_set_config()
+</function>). 
+In non-blocking mode with timeouts, if there is no space in buffer for the 
+CAN message, the driver waits a certain amount of time (the timeout time) 
+for space in the buffer. If there is still no space in buffer after 
+expiration of the timeout time, <varname>-EINTR</varname> is returned and 
+the caller must try again.
+</PARA>
+    
+<PARA>
+If a message was sucessfully sent, the function returns <varname>ENOERR</varname>.
+</PARA>
+</SECTION>
+    
+<SECTION>  
+<TITLE>CAN Messages</TITLE>
+    
+<PARA>
+The CAN driver uses <structname>cyg_can_message</structname> structures to 
+pass messages between the application and the CAN driver. The type 
+cyg_can_message provides a device independent type of CAN message. 
+Before calling the write function this message should be setup properly.
+</PARA>
+
+<PROGRAMLISTING>
+typedef struct can_message
+{
+    cyg_uint32         id;
+    cyg_uint8          data[8];
+    cyg_can_id_type    ext;
+    cyg_can_frame_type rtr;
+    cyg_uint8          dlc;
+} cyg_can_message;
+</PROGRAMLISTING>
+
+<PARA>
+The structure contains the following fields:
+</PARA>
+ 
+<variablelist>
+   <varlistentry>
+       <term><type>cyg_uint32</type> <varname>id</varname></term>
+           <listitem><para>
+Message ID. This is the ID to be transmitted with the message, or the 
+ID received. If the <structfield>ext</structfield> field is set, then 
+this will contain a 29 bit ID, otherwise it will contain an 11 bit ID.
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>cyg_uint32</type> <varname>data</varname></term>
+           <listitem><para>
+Message data. Only the first <structfield>dlc</structfield> bytes of 
+data are valid. If the <structfield>rtr</structfield> field is set, 
+then the contents of this field are ignored.
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>cyg_can_id_type</type> <varname>ext</varname></term>
+           <listitem><para>
+Extended ID. If this field is <varname>CYGNUM_CAN_ID_EXT</varname> then the 
+<structname>id</structname> field contains a 29 bit extended ID. If it 
+contains <varname>CYGNUM_CAN_ID_STD</varname> then the ID is 11 bits.
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>cyg_can_frame_type</type> <varname>rtr</varname></term>
+           <listitem><para>
+Remote Transmission Request. If this field contains 
+<varname>CYGNUM_CAN_FRAME_RTR</varname> then the RTR bit on the message 
+will be set and the <structfield>data</structfield> field will be ignored. 
+If the field contains <varname>CYGNUM_CAN_FRAME_DATA</varname> then a 
+normal data frame will be send.
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>cyg_uint8</type> <varname>dlc</varname></term>
+           <listitem><para>
+The length of the data carried in the message. This can range from 
+zero to 8. In a message with the <structfield>rtr</structfield> field set, 
+this indicates the size of data being requested.
+          </para></listitem>
+   </varlistentry>
+</variablelist>
+
+<PARA>
+Example code for sending one single CAN message:
+</PARA>
+
+<PROGRAMLISTING>
+cyg_can_message tx_msg;
+cyg_uint32      len;
+Cyg_ErrNo       ret;
+
+tx_msg.id  = 0x100;
+tx_msg.ext = CYGNUM_CAN_ID_EXT;
+tx_msg.rtr = CYGNUM_CAN_FRAME_DATA;
+tx_msg.dlc = 1;
+tx_msg.data[0] = 0xF1;
+
+len = sizeof(tx_msg);
+ret = cyg_io_write(hDrvCAN, &amp;tx_msg, &amp;len);
+</PROGRAMLISTING>       
+</SECTION><!-- can-cyg_can_message -->
+
+<SECTION>
+<TITLE>cyg_io_read</TITLE> 
+ 
+<PROGRAMLISTING>
+cyg_io_read(handle, buf, len)
+</PROGRAMLISTING>
+
+<PARA>
+To receive a message the application calls <function>cyg_can_recv()</function>.
+This function receives one single event from a device. The desired size 
+of data to receive is contained in <parameter>*len</parameter> and the
+actual size obtained will be returned in the same place. A pointer to 
+a <type>cyg_can_event</type> is contained in <parameter>*buf</parameter>. 
+No manipulation of the data is performed before being transferred. 
+Again, this buffering is completely configurable. On return, 
+<parameter>*len</parameter> contains <function>sizeof(cyg_can_event)</function>.
+</PARA>
+   
+<PARA>    
+It is possible to configure the read call to be blocking (default) or 
+non-blocking. Non-blocking mode requires both the configuration option 
+<varname>CYGOPT_IO_CAN_SUPPORT_NONBLOCKING</varname> to be enabled, 
+and the specific device to be set to non-blocking mode for reads 
+(see <function>cyg_io_set_config()</function>). In blocking mode, 
+the call will not return until one single CAN event has been read. 
+In non-blocking mode, if there is no CAN event in buffer, the call 
+returns immediately with <varname>-EAGAIN</varname> and the caller must 
+try again.
+<PARA>
+    
+<PARA>
+It is possible to configure the write call to be non-blocking with timeout. 
+None-blocking mode with timeout requires the configuration option 
+<varname>CYGOPT_IO_CAN_SUPPORT_NONBLOCKING</varname> and 
+<varname>CYGOPT_IO_CAN_SUPPORT_TIMEOUTS</varname> to be enabled, 
+requires the eCos kernel package to be included and the specific device 
+to be set to non-blocking mode for reads (see 
+<function>cyg_io_set_config()</function>). In non-blocking mode with timeouts, 
+if there is no CAN event in receive buffer, the driver waits a certain amount 
+of time (the timeout time) for a CAN event to arrive. If there is still no 
+CAN event in buffer after expiration of the timeout time, <varname>-EINTR</varname> 
+is returned and the caller must try again.
+</PARA>
+    
+<PARA>
+If a event was sucessfully received, the function returns <varname>ENOERR</varname>.    
+</PARA>
+</SECTION><!-- cyg_io_read -->
+
+
+<SECTION>  
+<TITLE>CAN Events</TITLE>
+
+<PARA>
+The CAN driver uses <structname>cyg_can_event</structname> structures to
+pass events from hardware device driver to the generic CAN driver.
+A <structname>cyg_can_event</structname> provides a generic device 
+independent type for handling CAN events that may occur.
+</PARA> 
+
+<PROGRAMLISTING>
+typedef struct cyg_can_event_st
+{
+    cyg_uint32      timestamp;
+    cyg_can_message msg;
+    cyg_uint16      flags;
+} cyg_can_event;
+</PROGRAMLISTING>
+
+<PARA>
+The structure contains the following fields:
+</PARA>
+ 
+<variablelist>
+   <varlistentry>
+       <term><type>cyg_uint32</type> <varname>timestamp</varname></term>
+           <listitem><para>
+If the hardware CAN device driver supports timestamps then this field may 
+contain a timestamp value for an event that occured.
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>cyg_can_message</type> <varname>msg</varname></term>
+           <listitem><para>
+CAN message. The msg field contains a CAN message if an RX or TX event
+occured.  If another type of event occured,
+the <structfield>data</structfield> field of
+the <structfield>msg</structfield> may contain additional event
+specific data.
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>cyg_uint16</type> <varname>flags</varname></term>
+           <listitem><para>
+Event flags. The <varname>flags</varname> field contains 16 bits that 
+indicate which kind of events occured. 
+          </para></listitem>
+   </varlistentry>
+</variablelist>
+    
+<PARA>
+The following events are supported and after receiving an event the 
+application should check the flag field against these values:
+</PARA>
+    
+<PROGRAMLISTING>
+typedef enum
+{
+  CYGNUM_CAN_EVENT_RX               = 0x0001, // message received
+  CYGNUM_CAN_EVENT_TX               = 0x0002, // message transmitted
+  CYGNUM_CAN_EVENT_WARNING_RX       = 0x0004, // (TEC) reached warning level (>96)
+  CYGNUM_CAN_EVENT_WARNING_TX       = 0x0008, // (REC) reached warning level (>96)
+  CYGNUM_CAN_EVENT_ERR_PASSIVE      = 0x0010, // CAN "error passive" occured
+  CYGNUM_CAN_EVENT_BUS_OFF          = 0x0020, // CAN "bus off" error occured
+  CYGNUM_CAN_EVENT_OVERRUN_RX       = 0x0040, // overrun in RX queue or hardware 
+  CYGNUM_CAN_EVENT_OVERRUN_TX       = 0x0080, // overrun in TX queue occured
+  CYGNUM_CAN_EVENT_CAN_ERR          = 0x0100, // a CAN bit or frame error occured
+  CYGNUM_CAN_EVENT_LEAVING_STANDBY  = 0x0200, // CAN hardware leaves standby
+  CYGNUM_CAN_EVENT_ENTERING_STANDBY = 0x0400, // CAN hardware enters standby
+  CYGNUM_CAN_EVENT_ARBITRATION_LOST = 0x0800, // arbitration lost
+  CYGNUM_CAN_EVENT_DEVICE_CHANGED   = 0x1000, // device changed event
+  CYGNUM_CAN_EVENT_PHY_FAULT        = 0x2000, // General failure of physical layer 
+  CYGNUM_CAN_EVENT_PHY_H            = 0x4000, // Fault on CAN-H (Low Speed CAN)
+  CYGNUM_CAN_EVENT_PHY_L            = 0x8000, // Fault on CAN-L (Low Speed CAN)
+} cyg_can_event_flags;
+</PROGRAMLISTING>
+
+<PARA>
+Often the flags field will contain only one single set flag. But it is 
+possible that a number of flags is set and so the flag field should always 
+be checked by a receiver. I.e. if the <varname>CYGNUM_CAN_EVENT_RX</varname> 
+is set then also the <varname>CYGNUM_CAN_EVENT_OVERRUN_RX</varname> 
+may be set if the received message caused an RX overrun.
+</PARA>
+    
+<PARA>
+The internal receive buffers of the CAN device driver are circular buffers. 
+That means that even if the buffers are completely filled new messages 
+will be received. In this case the newest message will always overwrite 
+the oldest message in receive buffer. If this happens the 
+<varname>CYGNUM_CAN_EVENT_OVERRUN_RX</varname> flag will be set for this 
+new message that caused overwriting of the old one. The 
+<varname>CYGNUM_CAN_EVENT_OVERRUN_RX</varname> flag will be set also if 
+a overrun occures in hardware message buffers of the CAN device.
+</PARA>
+    
+<PARA>
+Example code for receiving one single CAN event:
+</PARA>
+
+<PROGRAMLISTING>
+cyg_can_event rx_event;
+cyg_uint32    len;
+Cyg_ErrNo     ret;
+
+len = sizeof(rx_event);
+ret = cyg_io_read(hDrvCAN, &amp;rx_event, &amp;len);
+
+if (ENOERR == ret)
+{
+    if (rx_event.flags &amp; CYGNUM_CAN_EVENT_RX)
+    {
+        // handle RX event
+    }
+    
+    if (rx_event.flags &amp; ~CYGNUM_CAN_EVENT_RX)
+    {
+        // handle other events
+    }
+}
+else if (-EINTR == ret)
+{
+    // handle timeout
+}
+</PROGRAMLISTING>       
+</SECTION><!-- can-cyg_can_event -->
+
+  
+<SECTION>
+<TITLE>cyg_io_get_config</TITLE> 
+  
+<PROGRAMLISTING>
+cyg_io_get_config(handle, key, buf, len)
+</PROGRAMLISTING>
+
+<PARA>
+This function is used to obtain run-time configuration about a device. 
+The type of information retrieved is specified by the <parameter>key</parameter>. 
+The data will be returned in the given buffer. The value of 
+<parameter>*len</parameter> should contain the amount of data requested, 
+which must be at least as large as the size appropriate to the selected 
+<parameter>key</parameter>. The actual size of data retrieved is placed 
+in <parameter>*len</parameter>. The appropriate key values are all listed 
+in the file <filename>&lt;cyg/io/config_keys.h&gt;</filename>.    
+</PARA>   
+    
+<PARA>
+The following config keys are currently supported:
+</PARA>  
+    
+<PROGRAMLISTING>
+CYG_IO_GET_CONFIG_READ_BLOCKING
+CYG_IO_GET_CONFIG_WRITE_BLOCKING
+CYG_IO_GET_CONFIG_CAN_INFO
+CYG_IO_GET_CONFIG_CAN_BUFFER_INFO
+CYG_IO_GET_CONFIG_CAN_MSGBUF_INFO
+CYG_IO_GET_CONFIG_CAN_TIMEOUT
+CYG_IO_GET_CONFIG_CAN_HDI
+CYG_IO_GET_CONFIG_CAN_STATE
+</PROGRAMLISTING>
+</SECTION><!-- can-cyg-io-get-config -->
+  
+<SECTION>
+<TITLE>cyg_io_set_config</TITLE> 
+  
+<PROGRAMLISTING>
+cyg_io_set_config(handle, key, buf, len)
+</PROGRAMLISTING>
+
+<PARA>
+This function is used to manipulate or change the run-time configuration 
+of a device. The type of information is specified by the <parameter>key</parameter>. 
+The data will be obtained from the given buffer. The value of 
+<parameter>*len</parameter> should contain the amount of data provided, 
+which must match the size appropriate to the selected <parameter>key</parameter>. 
+The appropriate key values are all listed in the file 
+<filename>&lt;cyg/io/config_keys.h&gt;</filename>.  
+</PARA>   
+    
+<PARA>
+The following config keys are currently supported:
+</PARA>  
+    
+<PROGRAMLISTING>
+CYG_IO_SET_CONFIG_READ_BLOCKING
+CYG_IO_SET_CONFIG_WRITE_BLOCKING
+CYG_IO_SET_CONFIG_CAN_INFO
+CYG_IO_SET_CONFIG_CAN_OUTPUT_DRAIN
+CYG_IO_SET_CONFIG_CAN_OUTPUT_FLUSH
+CYG_IO_SET_CONFIG_CAN_INPUT_FLUSH
+CYG_IO_SET_CONFIG_CAN_TIMEOUT
+CYG_IO_SET_CONFIG_CAN_MSGBUF
+CYG_IO_SET_CONFIG_CAN_MODE
+</PROGRAMLISTING>
+</SECTION><!-- can-cyg-io-set-config -->
+</SECTION><!-- io-can-api-details -->
+
+<SECTION id="io-can-runtime-cfg">  
+<TITLE>Runtime Configuration</TITLE>
+  
+<PARA>
+Runtime configuration is achieved by exchanging data structures with the 
+driver via the <function>cyg_io_set_config()</function> and 
+<function>cyg_io_get_config()</function> functions.
+</PARA>
+
+<SECTION>
+<TITLE>Device configuration</TITLE>
+  
+<PROGRAMLISTING>
+typedef struct cyg_can_info_st {
+    cyg_can_baud_rate_t baud;
+} cyg_can_info_t;
+</PROGRAMLISTING>
+
+<PARA>
+Device configuration is achieved by by exchanging 
+<structname>cyg_can_info_t</structname> data structures with the driver 
+via the <function>cyg_io_set_config()</function> and 
+<function>cyg_io_get_config()</function> functions using the config keys 
+<varname>CYG_IO_GET_CONFIG_CAN_INFO</varname> and 
+<varname>CYG_IO_SET_CONFIG_CAN_INFO</varname>. 
+The field <structfield>baud</structfield> contains a baud rate selection. 
+This must be one of the following values:  
+</PARA>
+  
+<PROGRAMLISTING>
+CYGNUM_CAN_KBAUD_10
+CYGNUM_CAN_KBAUD_20
+CYGNUM_CAN_KBAUD_50
+CYGNUM_CAN_KBAUD_100
+CYGNUM_CAN_KBAUD_125
+CYGNUM_CAN_KBAUD_250
+CYGNUM_CAN_KBAUD_500
+CYGNUM_CAN_KBAUD_800
+CYGNUM_CAN_KBAUD_1000
+</PROGRAMLISTING>
+</SECTION><!-- can-cyg-io-set-config -->
+  
+<SECTION>
+<TITLE>Timeout configuration</TITLE>
+
+<PROGRAMLISTING>
+typedef struct cyg_can_timeout_info_st
+{
+    cyg_uint32 rx_timeout;
+    cyg_uint32 tx_timeout;
+} cyg_can_timeout_info_t;
+</PROGRAMLISTING>
+
+<PARA>
+Timeout configuration is achieved by by exchanging 
+<structname>cyg_can_timeout_info_t</structname> data structures with the 
+driver via the <function>cyg_io_set_config()</function> and 
+<function>cyg_io_get_config()</function> functions using the config keys 
+<varname>CYG_IO_SET_CONFIG_CAN_TIMEOUT</varname> and 
+<varname>CYG_IO_SET_CONFIG_CAN_TIMEOUT</varname>.   
+</PARA>
+
+<variablelist>
+   <varlistentry>
+       <term><type>cyg_uint32</type> <varname>rx_timeout</varname></term>
+           <listitem><para>
+Timeout for <function>cyg_io_read</function> calls.
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>cyg_uint32</type> <varname>tx_timeout</varname></term>
+           <listitem><para>
+Timeout for <function>cyg_io_write</function> calls.
+          </para></listitem>
+   </varlistentry>
+</variablelist>   
+
+<PARA>
+Timeout runtime configuration is supported if the configuration options 
+<varname>CYGOPT_IO_CAN_SUPPORT_NONBLOCKING</varname> 
+and <varname>CYGOPT_IO_CAN_SUPPORT_TIMEOUTS</varname> are enabled. 
+</PARA>
+</SECTION><!-- can-timeout-config -->
+
+<SECTION>
+<TITLE>Reading buffer configuration</TITLE>
+    
+<PROGRAMLISTING>    
+typedef struct cyg_can_buf_info_st
+{
+    cyg_int32 rx_bufsize;
+    cyg_int32 rx_count;
+    cyg_int32 tx_bufsize;
+    cyg_int32 tx_count;
+} cyg_can_buf_info_t;
+</PROGRAMLISTING>
+
+<PARA>
+<varname>CYG_IO_GET_CONFIG_CAN_BUFFER_INFO</varname> - This function 
+retrieves the current state of the software buffers in the CAN drivers. 
+For the transmit buffer it returns the the total number of 
+<type>cyg_can_message</type> objects in buffer and the current number of 
+<type>cyg_can_message</type> objects occupied in the buffer. 
+For the receive buffer it returns the total number of 
+<type>cyg_can_event</type> objects in receive buffer and the current 
+number of <type>cyg_can_event</type> objects occupied in the buffer. 
+It does not take into account any buffering such as FIFOs or holding 
+registers that the CAN hardware device itself may have.
+</PARA>
+
+<variablelist>
+   <varlistentry>
+       <term><type>cyg_uint32</type> <varname>rx_bufsize</varname></term>
+           <listitem><para>
+Total number of <type>cyg_can_event</type> buffers in receive queue.
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>cyg_uint32</type> <varname>rx_count</varname></term>
+           <listitem><para>
+Current number of <type>cyg_can_event</type> buffers occupied in receive queue.
+          </para></listitem>
+   </varlistentry>
+      <varlistentry>
+       <term><type>cyg_uint32</type> <varname>tx_bufsize</varname></term>
+           <listitem><para>
+Total number of <type>cyg_can_message</type> buffers in transmit queue.
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>cyg_uint32</type> <varname>rtx_count</varname></term>
+           <listitem><para>
+Current number of <type>cyg_can_message</type> buffers occupied in transmit queue.
+          </para></listitem>
+   </varlistentry>
+</variablelist>   
+</SECTION>  <!-- can-read-buffer-config -->
+  
+  
+<SECTION>
+<TITLE>Reading hardware description information</TITLE>
+    
+<PROGRAMLISTING>    
+typedef struct cyg_can_hdi_st
+{
+    cyg_uint8 support_flags;
+    cyg_uint8 controller_type;
+} cyg_can_hdi;
+</PROGRAMLISTING>
+
+<PARA>
+<varname>CYG_IO_GET_CONFIG_CAN_HDI</varname> - This function retrieves 
+information about the used hardware. The Hardware Description Interface 
+provides a method to gather information about the CAN hardware and the 
+functionality of the driver. For this purpose the structure 
+<structname>cyg_can_hdi</structname> is defined.  
+</PARA>
+     
+<variablelist>
+   <varlistentry>
+       <term><type>cyg_uint8</type> <varname>support_flags</varname></term>
+           <listitem><para>
+Contains information about the capabilities of the used CAN hardware.
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>cyg_uint8</type> <varname>controller_type</varname></term>
+           <listitem><para>
+A number that identifies the CAN controller type.
+          </para></listitem>
+   </varlistentry>
+</variablelist>
+
+<PARA>
+The following flags are available in the field <structfield>support_flags</structfield>:  
+</PARA>
+     
+<PROGRAMLISTING>    
+|   7   |   6   |   5   |   4   |   3   |   2   |   1   |   0   |
++-------+-------+-------+-------+-------+-------+-------+-------+
+|  res  |  res  |  res  |timest.|SW-Filt|FullCAN|   Frametype   |
+</PROGRAMLISTING>
+
+<variablelist>
+  <varlistentry>
+    <term><parameter>Frametype</parameter></term>
+    <listitem><para>
+Bit 0 and Bit 1 of the structure describe the possibilities of the CAN
+controller. The following values are defined:
+    <PROGRAMLISTING>    
+CYGNUM_CAN_HDI_FRAMETYPE_STD          // receives only standard frame
+CYGNUM_CAN_HDI_FRAMETYPE_EXT_PASSIVE  // can receive but not send extended frames
+CYGNUM_CAN_HDI_FRAMETYPE_EXT_ACTIVE   // can send and receive extended frames
+    </PROGRAMLISTING>
+    </para></listitem>
+  </varlistentry>
+    <varlistentry>
+    <term><parameter>FullCAN</parameter></term>
+    <listitem><para>
+If the Bit 2 - <varname>CYGNUM_CAN_HDI_FULLCAN </varname> - is set to one, 
+the CAN controller supports more than one message buffer.
+    </para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><parameter>SW-Filter</parameter></term>
+    <listitem><para>
+If Bit 3 - <varname>CYGNUM_CAN_HDI_FILT_SW</varname> - is set to one then 
+the CAN driver supports some kind of software message filtering.
+    </para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><parameter>Timestamp</parameter></term>
+    <listitem><para>
+If Bit 4 - <varname>CYGNUM_CAN_HDI_TIMESTAMP</varname> - is set to one then 
+the CAN hardware supports timestamps for CAN messages
+    </para></listitem>
+  </varlistentry>
+</variablelist>
+</SECTION>  <!-- can-read-buffer-config -->
+   
+<SECTION>
+<TITLE>Reading hardware message buffer configuration</TITLE>
+<PROGRAMLISTING>    
+typedef struct cyg_can_msgbox_info_st
+{
+    cyg_uint8 count; // number of message buffers available for this device
+    cyg_uint8 free;  // number of free message buffers
+} cyg_can_msgbuf_info;
+</PROGRAMLISTING>
+   
+<PARA>
+<varname>CYG_IO_GET_CONFIG_CAN_MSGBUF_INFO</varname> - If the CAN hardware supports 
+more than one message buffer for reception of CAN messages (flag 
+<varname>CYGNUM_CAN_HDI_FULLCAN</varname> is set while reading hardware description 
+interface with <varname>CYG_IO_GET_CONFIG_CAN_HDI</varname>) then this function 
+reads the number of message buffers the CAN hardware supports and the number of 
+free message buffers.   
+</PARA>
+
+<variablelist>
+   <varlistentry>
+       <term><type>cyg_uint8</type> <varname>count</varname></term>
+           <listitem><para>
+Counts the number of message buffers supported by the device.
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>cyg_uint8</type> <varname>free</varname></term>
+           <listitem><para>
+Contains the number of free message buffers. The free message buffers are 
+available for setting up remote buffers (<varname>CYG_IO_SET_CONFIG_CAN_REMOTE_BUF</varname>) 
+and message filters (<varname>CYG_IO_SET_CONFIG_CAN_FILTER_MSG</varname>).
+          </para></listitem>
+   </varlistentry>
+</variablelist>   
+</SECTION> <!-- can-read-buffer-config -->
+   
+<SECTION>
+<TITLE>Reading state of CAN hardware</TITLE>
+
+<PROGRAMLISTING>    
+typedef enum
+{
+  CYGNUM_CAN_STATE_ACTIVE,      // CAN controller active, no errors
+  CYGNUM_CAN_STATE_STOPPED,     // CAN controller in stopped mode
+  CYGNUM_CAN_STATE_STANDBY,     // CAN controller in Sleep mode
+  CYGNUM_CAN_STATE_BUS_WARN,    // CAN controller active, warning level is reached
+  CYGNUM_CAN_STATE_ERR_PASSIVE, // CAN controller went into error passive mode
+  CYGNUM_CAN_STATE_BUS_OFF,     // CAN controller went into bus off mode
+  CYGNUM_CAN_STATE_PHY_FAULT,   // General failure of physical layer 
+  CYGNUM_CAN_STATE_PHY_H,       // Fault on CAN-H detected (Low Speed CAN)
+  CYGNUM_CAN_STATE_PHY_L,       // Fault on CAN-L detected (Low Speed CAN)
+} cyg_can_state;
+</PROGRAMLISTING>
+
+<PARA>
+<varname>CYG_IO_GET_CONFIG_CAN_STATE</varname> - This function retrieves the 
+present state of the CAN controller. Possible values are defined in the 
+<type>cyg_can_state</type> enumeration.
+</PARA>   
+</SECTION> <!-- can-read-hw-state -->
+
+
+<SECTION>
+<TITLE>Changing mode of CAN hardware</TITLE>
+
+<PARA>
+<varname>CYG_IO_SET_CONFIG_CAN_MODE</varname> - This function changes 
+the operating mode of the CAN controller. The identifiers for the different 
+operating modes are defined in the <type>cyg_can_mode</type> enumeration.
+</PARA>
+
+<PROGRAMLISTING> 
+typedef enum
+{
+  CYGNUM_CAN_MODE_STOP,   // set controller into stop mode
+  CYGNUM_CAN_MODE_START,  // set controller into operational mode
+  CYGNUM_CAN_MODE_STANDBY // set controller into standby / sleep mode
+} cyg_can_mode;
+</PROGRAMLISTING>
+ 
+<variablelist>
+   <varlistentry>
+       <term><type>CYGNUM_CAN_MODE_STOP</type></term>
+           <listitem><para>
+Set controller into stop mode
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>CYGNUM_CAN_MODE_START</type></term>
+           <listitem><para>
+Set controller into operational mode
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>CYGNUM_CAN_MODE_STANDBY</type></term>
+           <listitem><para>
+Set controller into standby / sleep mode.
+          </para></listitem>
+   </varlistentry>
+</variablelist>
+
+<PARA>
+Before the hardware configuration of the device is changed, that means
+if baud rate is changed or the message buffer and filter configuration
+is changed, the CAN hardware should be set into stop mode and if
+configuration is finished, then device should be set back into
+operational mode.  Before the device is set into standby mode, the
+output buffers should be flushed or drained because transmission of a
+CAN message may wake up the CAN hardware. If a received message wakes
+up the CAN hardware from standby mode then
+a <varname>CYGNUM_CAN_EVENT_LEAVING_STANDBY</varname> event will be
+inserted into receive message buffer or
+the <varname>CYGNUM_CAN_EVENT_LEAVING_STANDBY</varname> flag will be
+set for the message that caused wake up of CAN hardware.
+</PARA>
+</SECTION> <!-- can-mode-cfg -->
+   
+<SECTION>
+<TITLE>Flush or drain buffers</TITLE>
+
+<PARA>
+<varname>CYG_IO_SET_CONFIG_CAN_OUTPUT_DRAIN</varname> - This function
+waits for any buffered output to complete. This function only
+completes when there is no more data remaining to be sent to the
+device.
+</PARA>
+   
+<PARA>
+<varname>CYG_IO_SET_CONFIG_CAN_OUTPUT_FLUSH</varname> - This function
+discards any buffered output for the device.
+</PARA> 
+
+<PARA>
+<varname>CYG_IO_SET_CONFIG_CAN_INPUT_FLUSH</varname> - This function
+discards any buffered input for the device.
+</PARA>
+</SECTION>
+   
+<SECTION>
+<TITLE>Configuring blocking/non-blocking calls</TITLE>
+<PARA>
+By default all calls to <function>cyg_io_read()</function>
+and <function>cyg_io_write()</function> are blocking calls. The config
+keys
+</PARA>
+
+<PROGRAMLISTING>
+CYG_IO_SET_CONFIG_READ_BLOCKING
+CYG_IO_SET_CONFIG_WRITE_BLOCKING
+</PROGRAMLISTING>
+
+<PARA>
+enable switching between blocking and nonblocking calls separatly for
+read and write calls.  If blocking calls are configured then the
+read/write functions return only if a message was stored into TX
+buffer or a event was received from RX buffer. If non-blocking calls
+are enabled and there is no space in TX buffer or RX buffer is empty
+then the function returns immediately
+with <varname>-EAGAIN</varname>.
+</PARA>
+   
+<PARA>
+If non-blocking calls are enabled and additionally timeouts are
+supported by driver, then the read/write functions wait until timeout
+value is expired and then return with <varname>-EINTR</varname>.  If
+the read/write operation succeeds during the timed wait then the
+functions return succesfully with
+<varname>ENOERR</varname>.
+</PARA>
+
+<PARA>
+To query if <function>cyg_io_read()</function>
+and <function>cyg_io_write()</function> are blocking or non-blocking
+you can use the config keys
+</PARA>
+
+<PROGRAMLISTING>
+CYG_IO_GET_CONFIG_READ_BLOCKING
+CYG_IO_GET_CONFIG_WRITE_BLOCKING
+</PROGRAMLISTING>
+</SECTION> <!-- can-cfg-unblock -->
+   
+<SECTION>
+<TITLE>Message buffer management</TITLE>
+
+<PARA>
+Full CAN controllers often support more the one message buffer. These
+message buffers are often configurable for transmission or reception
+of certain CAN messages or as a remote buffers.  If a CAN hardware
+supports more than one message buffer then it is possible to configure
+the CAN hardware to receive only CAN messages with certain identifiers
+or to configure hardware support for remote buffers. If message
+filtering is done by hardware, the number of received CAN messages
+decreases and so also the time for processing received CAN messages
+and the memory required for buffering received messages
+decreases. This saves valuable memory and processing time.
+</PARA>
+
+<PARA>
+The eCos CAN driver supports a generic way of adding message filters
+or remote buffers. By default the CAN driver is configured for
+reception of any kind of CAN standard and extended
+frames. Configuration of message buffers is done by
+calling <function>cyg_io_set_config()</function> with the config key
+</PARA>
+
+<PROGRAMLISTING>
+CYG_IO_SET_CONFIG_CAN_MSGBUF
+</PROGRAMLISTING>
+
+<PARA>
+and by exchanging <type>cyg_can_msgbuf_cfg</type> data structures.
+</PARA>
+
+<PROGRAMLISTING>
+typedef struct cyg_can_msgbox_cfg_st
+{
+    cyg_can_msgbuf_cfg_id cfg_id; // configuration id
+    cyg_can_msgbuf_handle handle; // handle to message buffer
+    cyg_can_message msg;          // CAN message - for configuration of buffer
+} cyg_can_msgbuf_cfg;
+</PROGRAMLISTING>
+<variablelist>
+   <varlistentry>
+       <term><type>cyg_can_msgbuf_cfg_id</type> <varname>cfg_id</varname></term>
+           <listitem><para> The <varname>cfg_id</varname> field
+contains the configuration ID that tells the driver what to do with a
+message buffer.
+          </para></listitem>
+   </varlistentry>
+    <varlistentry>
+       <term><type>cyg_can_msgbuf_handle</type> <varname>handle</varname></term>
+           <listitem><para>
+Contains a reference to a certain message buffer.
+          </para></listitem>
+   </varlistentry>
+    <varlistentry>
+       <term><type>cyg_can_message</type> <varname>msg</varname></term>
+           <listitem><para>
+Required for configuration of message buffer parameters.
+          </para></listitem>
+   </varlistentry>
+</variablelist>
+
+<PARA>
+The following configuration identifiers are supported:
+</PARA>
+
+<PROGRAMLISTING>
+CYGNUM_CAN_MSGBUF_RESET_ALL        // clears alle message buffers
+CYGNUM_CAN_MSGBUF_RX_FILTER_ALL    // cfg driver for reception of all can messages
+CYGNUM_CAN_MSGBUF_RX_FILTER_ADD    // add single message filter
+CYGNUM_CAN_MSGBUF_REMOTE_BUF_ADD   // add new remote response buffer
+CYGNUM_CAN_MSGBUF_REMOTE_BUF_WRITE // stores data into existing remote buffer 
+</PROGRAMLISTING>
+
+<variablelist>
+   <varlistentry>
+       <term><type>CYGNUM_CAN_MSGBUF_RESET_ALL</type></term>
+           <listitem><para>
+Clears alle message buffers - no message will be received and all remote buffers are deleted.
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>CYGNUM_CAN_MSGBUF_RX_FILTER_ALL</type></term>
+           <listitem><para>
+Configure driver for reception of all can messages
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>CYGNUM_CAN_MSGBUF_RX_FILTER_ADD</type></term>
+           <listitem><para>
+Add single message filter.
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>CYGNUM_CAN_MSGBUF_REMOTE_BUF_ADD</type></term>
+           <listitem><para>
+Add new remote response buffer.
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>CYGNUM_CAN_MSGBUF_REMOTE_BUF_WRITE</type></term>
+           <listitem><para>
+Stores data into existing remote buffer (remote buffer handle required).
+          </para></listitem>
+   </varlistentry>
+</variablelist>
+
+<PARA>
+Example code for resetting all message buffers:
+</PARA>
+
+<PROGRAMLISTING>
+cyg_can_msgbuf_cfg msgbox_cfg;
+
+msgbox_cfg.cfg_id = CYGNUM_CAN_MSGBUF_RESET_ALL;
+len = sizeof(msgbox_cfg);
+if (ENOERR != cyg_io_set_config(hDrvFlexCAN,
+                                CYG_IO_SET_CONFIG_CAN_MSGBUF,
+                                &amp;msgbox_cfg, &amp;len))
+{
+    // handle configuration error
+}
+</PROGRAMLISTING> 
+</SECTION> <!-- can-msgbuf-cfg -->
+   
+   
+<SECTION>
+<TITLE>Remote frame response buffer configuration</TITLE>
+
+<PARA>
+The remote frame is a message frame which is transmitted to request a
+data frame. Some CAN hardware generates receive interrupts when a
+remote transmission request arrives. Other CAN hardware, i.e.  the
+Motorola FlexCAN module, does not generate any receive
+interrupt. These CAN hardware chips like the FlexCAN module can be
+configured to transmit a data frame automatically in response to a
+remote frame. In order to support any kind of CAN hardware the eCos CAN
+driver provides a generic handling of remote transmission requests.
+</PARA>
+
+<PARA>
+The transmission of the data frame in response to a remote frame is
+completely handled by the CAN driver.  If the hardware driver, like
+the driver for the FlexCAN module, supports hardware message buffers,
+then the response frame is automatically transmitted if a remote
+transmission request with a matching ID arrives.  If a CAN hardware
+does not provide hardware support for sending data frames in response
+to a remote frame, then this need to be implemented in software by the
+hardware device driver.
+</PARA>
+
+<PARA>
+It is always possible to add remote response buffers. It does not
+matter if the driver is configured for reception of all CAN messages
+or if message filtering is used. As long as there are free message
+buffers available, it is possible to add remote response buffers.
+</PARA>
+   
+<PARA>
+In order to respond to a remote frame, a remote frame response buffer
+need to be initialized before a data frame can be sent in response to
+a remote frame. This is achieved by by
+exchanging <type>cyg_can_remote_buf</type> data structures with the
+driver via the <function>cyg_io_set_config()</function> function using
+the config key <varname>CYG_IO_SET_CONFIG_CAN_MSGBUF</varname>. Once
+the buffer is initialized, the CAN data can be changed at any time by
+the application.
+</PARA>
+
+<PROGRAMLISTING>
+typedef struct cyg_can_msgbuf_cfg_st
+{
+    cyg_can_msgbuf_cfg_id cfg_id; // configuration id 
+    cyg_can_msgbuf_handle handle; // handle to message buffer
+    cyg_can_message msg;          // CAN message - for configuration of buffer
+} cyg_can_remote_buf;
+</PROGRAMLISTING> 
+<variablelist>
+   <varlistentry>
+       <term><type>cyg_can_msgbuf_cfg_id</type> <varname>cfg_id</varname></term>
+           <listitem><para>
+The <varname>cfg_id</varname> field contains the configuration ID that tells the driver what to do with 
+a message buffer (<varname>CYGNUM_CAN_MSGBUF_REMOTE_BUF_ADD</varname> or 
+<varname>CYGNUM_CAN_MSGBUF_REMOTE_BUF_WRITE</varname>).
+          </para></listitem>
+   </varlistentry>
+    <varlistentry>
+       <term><type>cyg_can_msgbuf_handle</type> <varname>handle</varname></term>
+           <listitem><para>
+If there is no buffer initialized for this data, the value of the handle field need to be set to 
+<varname>CYGNUM_CAN_MSGBUF_INIT</varname>. After the call to <function>cyg_io_set_config()</function> 
+the handle field contains a valid remote buffer handle ( &gt;= 0) or the value 
+<varname>CYGNUM_CAN_MSGBUF_NA</varname> ( &lt; 0) if no free buffer is available.
+          </para></listitem>
+   </varlistentry>
+    <varlistentry>
+       <term><type>cyg_can_message</type> <varname>msg</varname></term>
+           <listitem><para>
+The CAN frame that should be transmitted in response to a remote frame.
+          </para></listitem>
+   </varlistentry>
+</variablelist>
+
+<PARA>
+Example code for setting up a remote response buffer:
+</PARA>
+
+<PROGRAMLISTING>
+cyg_can_remote_buf rtr_buf;
+
+// prepare the remote response buffer
+rtr_buf.cfg_id  = CYGNUM_CAN_MSGBUF_REMOTE_BUF_ADD;
+rtr_buf.handle  = CYGNUM_CAN_MSGBUF_INIT;
+rtr_buf.msg.id  = 0x7FF;
+rtr_buf.msg.ext = CYGNUM_CAN_ID_STD;
+rtr_buf.msg.rtr = CYGNUM_CAN_FRAME_DATA;
+rtr_buf.msg.dlc = 1;
+rtr_buf.msg.data[0] = 0xAB;
+
+len = sizeof(rtr_buf);
+if (ENOERR != cyg_io_set_config(hDrvFlexCAN,
+                                CYG_IO_SET_CONFIG_CAN_MSGBUF,
+                                &amp;rtr_buf, &amp;len))
+{
+    // handle configuration error
+}
+
+if (rtr_buf.handle == CYGNUM_CAN_MSGBUF_NA)
+{
+    // no free message buffer available - handle this problem here
+}
+
+
+// change CAN data for a buffer that is already initialized
+rtr_buf.cfg_id = CYGNUM_CAN_MSGBUF_REMOTE_BUF_WRITE;
+rtr_buf.msg.data[0] = 0x11;
+
+len = sizeof(rtr_buf);
+if (ENOERR != cyg_io_set_config(hDrvFlexCAN,
+                                CYG_IO_SET_CONFIG_CAN_MSGBUF,
+                                &amp;rtr_buf, &amp;len))
+{
+    // handle configuration error
+} 
+</PROGRAMLISTING> 
+</SECTION> <!-- can-rtrbuf-cfg -->
+    
+
+<SECTION>
+<TITLE>Message filter configuration</TITLE>
+
+<PARA>
+If message filtering is done by hardware the number of received CAN
+messages decreases and so also the time for processing received CAN
+messages and the memory required for buffering received messages
+decreases.  This saves valuable memory and processing time. The eCos
+CAN driver supports a generic way of adding message filters. By
+default the CAN driver is configured for reception of any kind of CAN
+standard and extended frames. As soon as a message filter is added,
+the CAN driver will only receive the CAN frames with the identifier of
+the CAN filter. By adding a number of message filters it is possible
+for the CAN hardware to receive an number of different CAN messages.
+</PARA>
+
+<PARA>
+Adding message filters is only possible if driver is not configured
+for reception of all available CAN messages. If the driver is
+configured for reception of all CAN messages then message buffers need
+to be reset before adding single message filters.
+</PARA>
+    
+<PARA>
+In order to add a message filter, a message buffer need to be
+initialized. This is achieved by
+exchanging <type>cyg_can_filter</type> data structures with the driver
+via the <function>cyg_io_set_config()</function> function using the
+config key <varname>CYG_IO_SET_CONFIG_CAN_MSGBUF</varname>. Once the
+buffer is initialized, the CAN hardware can receive messages with the
+identifier of the filter.
+</PARA>
+
+<PROGRAMLISTING> 
+typedef struct cyg_can_msgbox_cfg_st
+{
+    cyg_can_msgbuf_cfg_id cfg_id;
+    cyg_can_msgbuf_handle handle;
+    cyg_can_message       msg;
+} cyg_can_filter;
+</PROGRAMLISTING> 
+
+<variablelist>
+   <varlistentry>
+       <term><type>cyg_can_msgbuf_cfg_id</type> <varname>cfg_id</varname></term>
+           <listitem><para>
+The <varname>cfg_id</varname> field contains the configuration ID that tells the driver what to do with 
+a message buffer.
+          </para></listitem>
+   </varlistentry>
+    <varlistentry>
+       <term><type>cyg_can_msgbuf_handle</type> <varname>handle</varname></term>
+           <listitem><para>
+After the call to <function>cyg_io_set_config()</function> the handle field contains a valid value 
+( &gt;= 0) or the value <varname>CYGNUM_CAN_MSGBUF_NA</varname> ( &lt; 0) if no free buffer is available. 
+          </para></listitem>
+   </varlistentry>
+    <varlistentry>
+       <term><type>cyg_can_message</type> <varname>msg</varname></term>
+           <listitem><para>
+The fields <structfield>id</structfield> and <structfield>ext</structfield> of the <structfield>msg</structfield>
+configure the type of message to receive by a certain message filter.
+          </para></listitem>
+   </varlistentry>
+</variablelist>
+
+<PARA>
+Before adding message filters the device should be stopped and after
+configuration it should be set into operational mode again.
+</PARA>
+
+<PARA>
+Example code for setting up a message filter:   
+</PARA>
+
+<PROGRAMLISTING> 
+cyg_can_msgbuf_cfg msgbox_cfg;
+cyg_can_filter rx_filter;
+
+// reset all message buffers
+msgbox_cfg.cfg_id = CYGNUM_CAN_MSGBUF_RESET_ALL;
+len = sizeof(msgbox_cfg);
+if (ENOERR != cyg_io_set_config(hDrvFlexCAN, 
+                                CYG_IO_SET_CONFIG_CAN_MSGBUF,
+                                &amp;msgbox_cfg, &amp;len))
+{
+    // handle configuration error
+}
+
+// prepare the message filter
+rx_filter.cfg_id = CYGNUM_CAN_MSGBUF_RX_FILTER_ADD
+rx_filter.msg.id  = 0x800;
+rx_filter.msg.ext = CYGNUM_CAN_ID_EXT;
+
+len = sizeof(rx_filter);
+if (ENOERR != cyg_io_set_config(hDrvFlexCAN,
+                                CYG_IO_SET_CONFIG_CAN_MSGBUF,
+                                &amp;rx_filter, &amp;len))
+{
+    // handle configuration error;
+}
+else if (CYGNUM_CAN_MSGBUF_NA == rx_filter.handle)
+{
+    // no free message buffer available - handle this problem here
+}
+</PROGRAMLISTING> 
+</SECTION> <!-- can-msgfilt-cfg -->
+  
+  
+<SECTION id="can-msgfilt-deact">
+<TITLE>Message filter deactivation</TITLE>
+
+<PARA>
+After startup of your device the CAN driver is configured for
+reception of all available CAN messages.  If you change this
+configuration by adding single message filters then you can reset this
+default state with the configuration ID:
+</PARA> 
+
+<PROGRAMLISTING> 
+CYGNUM_CAN_MSGBUF_RX_FILTER_ALL
+</PROGRAMLISTING> 
+
+<PARA>
+This message buffer configuration id will clear all message filters
+and remote buffers and prepares the CAN hardware for reception of any
+kind of CAN standard and extended frames. It is not necessary to reset
+the message buffer configuration before this configuration step is
+executed because this should be done by device driver.
+</PARA> 
+   
+<PARA>
+Example code for deactivation of message filtering:
+</PARA>
+
+<PROGRAMLISTING> 
+cyg_can_filter rx_filter;
+
+// now setup a RX all configuration
+rx_filter.cfg_id = CYGNUM_CAN_MSGBUF_RX_FILTER_ALL;
+len = sizeof(rx_filter);
+if (ENOERR != cyg_io_set_config(hDrvFlexCAN,
+                                CYG_IO_SET_CONFIG_CAN_MSGBUF,
+                                &amp;rx_filter, &amp;len))
+{
+    CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
+}
+</PROGRAMLISTING> 
+</SECTION> <!-- can-msgfilt-cfg -->
+</SECTION>  
+</CHAPTER>
+
+<CHAPTER id="io-can-configuration">
+<TITLE>Configuration</TITLE>
+
+<PARA>
+The CAN subsystem has a number of configuration options.
+</PARA>
+
+<variablelist>
+   <varlistentry>
+       <term><type>cdl_interface CYGINT_IO_CAN_TIMESTAMP</type></term>
+           <listitem><para>
+A hardware device driver that supports timestamps should implement this interface.
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>cdl_option CYGOPT_IO_CAN_SUPPORT_TIMESTAMP</type></term>
+           <listitem><para>
+If the CAN hardware driver supports some kind of timestamps then this option enables 
+propagation of timestamps to higher layers. This may add some extra code to hardware 
+drivers.
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>cdl_option CYGOPT_IO_CAN_TX_EVENT_SUPPORT</type></term>
+           <listitem>
+<para> This option enables support for TX
+events. If a CAN message is transmitted successfully a TX event will
+be inserted into the receive event queue and propagated to higher
+layers.  If this option is enabled the RX event queue will be filled
+faster.
+</para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>cdl_option CYGOPT_IO_CAN_SUPPORT_NONBLOCKING</type></term>
+           <listitem>
+<para>
+This option enables extra code in the generic CAN driver which allows
+clients to switch read() and write() call semantics from blocking to
+non-blocking.
+</para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>cdl_option CYGNUM_IO_CAN_DEFAULT_TIMEOUT_READ</type></term>
+           <listitem><para>
+The initial timeout value in clock ticks for <FUNCTION>cyg_io_read()</FUNCTION> calls.
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>cdl_option CYGNUM_IO_CAN_DEFAULT_TIMEOUT_WRITE</type></term>
+           <listitem><para> The initial timeout value in clock ticks
+for <FUNCTION>cyg_io_write()</FUNCTION> calls.
+          </para></listitem>
+   </varlistentry>
+</variablelist>
+</CHAPTER>
+
+
+<CHAPTER id="io-can-device-drivers">
+<TITLE>Writing a CAN hardware device driver</TITLE>
+
+<PARA>
+A CAN driver is nothing more than a named entity that supports the
+basic I/O functions - read, write, get config, and set config. The
+device driver uses and manages interrupts from the device. While the
+interface is generic and device driver independent, the actual driver
+implementation is completely up to the device driver designer.
+</PARA>
+
+<PARA>
+That said, the reason for using a device driver is to provide access
+to a CAN device from application code in as general purpose a fashion
+as reasonable. Most driver writers are also concerned with making this
+access as simple as possible while being as efficient as possible.
+</PARA>
+
+<PARA>
+Like other device drivers the CAN device driver is concerned with the
+movement of information - the CAN messages. In order to make the most
+efficient use of system resources, interrupts are used.  This will
+allow other application processing to take place while the data
+transfers are under way, with interrupts used to indicate when various
+events have occurred. For example, a CAN device typically generates an
+interrupt after a CAN message has been sent or a CAN message has been
+received by a CAN hardware message buffer. It makes sense to allow
+further application processing while the data is being sent since this
+can take quite a long time. The interrupt can be used to allow the
+driver to send a CAN message as soon as the current one is complete,
+without any active participation by the application code.
+</PARA>
+
+<PARA>
+The main building blocks for CAN device drivers are found in the
+include files
+<filename>&lt;cyg/io/devtab.h&gt;</filename> and <filename>&lt;cyg/io/can.h&gt;</filename>
+</PARA>
+
+<PARA>
+Like many other device drivers in eCos, CAN device drivers are described by a device 
+table entry, using the <type>cyg_devtab_entry_t</type> type. The entry should be created using 
+the <varname>DEVTAB_ENTRY()</varname> macro.
+</PARA>
+
+
+<SECTION id="io-can-how-to-write-interface-driver">
+<TITLE>How to Write a CAN Hardware Interface Driver</TITLE>
+
+<PARA>
+The standard CAN driver supplied with eCos is structured as a hardware
+independent portion and a hardware dependent interface module. To add
+support for a new CAN device, the user should be able to use the
+existing hardware independent portion and just add their own interface
+driver which handles the details of the actual device. The user should
+have no need to change the hardware independent portion.
+</PARA>
+
+<PARA>
+The interfaces used by the CAN driver and CAN implementation modules
+are contained in the file <filename>&lt;cyg/io/can.h&gt;</filename>.
+</PARA>
+
+<SECTION>
+<title>DevTab Entry</TITLE>
+
+<PARA>
+The interface module contains the devtab entry (or entries if a single
+module supports more than one interface). This entry should have the
+form:
+</PARA>
+
+<PROGRAMLISTING> 
+DEVTAB_ENTRY(&lt;&lt;module_name&gt;&gt;, 
+             &lt;&lt;device_name&gt;&gt;,
+             0,
+             &amp;can_devio, 
+             &lt;&lt;module_init&gt;&gt;, 
+             &lt;&lt;module_lookup&gt;&gt;,
+             &amp;&lt;&lt;can_channel&gt;&gt;
+            );
+</PROGRAMLISTING> 
+
+<variablelist>
+<title>Arguments</title>
+  <varlistentry>
+    <term><parameter>module_name</parameter></term>
+    <listitem><para>The "C" label for this devtab entry</para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><parameter>device_name</parameter></term>
+    <listitem><para>The "C" string for the
+    device. E.g. <filename>/dev/can0</filename>.</para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><parameter>can_devio</parameter></term>
+    <listitem><para>The table of I/O functions. This set is defined in
+    the hardware independent CAN driver and should be used.</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><parameter>module_init</parameter></term>
+    <listitem><para>The hardware module initialization function.</para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><parameter>module_lookup</parameter></term>
+    <listitem><para>The device lookup function. This function
+    typically sets up the CAN device for actual use, turning on
+    interrupts, configuring the message buffers, etc.</para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><parameter>can_channel</parameter></term>
+    <listitem><para>This table (defined below) contains the interface
+    between the interface module and the CAN driver proper.</para></listitem>
+  </varlistentry>
+</variablelist>
+
+<PARA>
+Example devtab entry for Motorola FlexCAN device driver:
+</PARA>
+
+<PROGRAMLISTING>
+DEVTAB_ENTRY(flexcan_devtab, 
+             CYGDAT_DEVS_CAN_MCF52xx_FLEXCAN0_NAME,
+             0,                     // Does not depend on a lower level interface
+             &amp;cyg_io_can_devio, 
+             flexcan_init, 
+             flexcan_lookup,        // CAN driver may need initializing
+             &amp;flexcan_can0_chan
+    );
+</PROGRAMLISTING>
+</SECTION>
+
+
+<SECTION>
+<title>CAN Channel Structure</TITLE>
+
+<PARA>
+Each CAN device must have a &ldquo;CAN channel&rdquo;.
+This is a set of data which describes all operations on the device.
+It also contains buffers, etc. The CAN channel is created by the macro: 
+</PARA>
+
+<PROGRAMLISTING>
+CAN_CHANNEL_USING_INTERRUPTS(l, funs, dev_priv, baud,
+                             out_buf, out_buflen,
+                             in_buf,  in_buflen)
+</PROGRAMLISTING>
+
+<variablelist>
+  <title>Arguments</title>
+  <varlistentry>
+    <term><parameter>l</parameter></term>
+    <listitem><para>The "C" label for this structure.</para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><parameter>funs</parameter></term>
+    <listitem><para>The set of interface functions (see below).</para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><structfield>dev_priv</structfield></term>
+    <listitem><para>A placeholder for any device specific data for
+    this channel.</para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><structfield>baud</structfield></term>
+    <listitem><para>The initial baud rate value
+    (<type>cyg_can_baud_rate_t</type>).</para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><structfield>out_buf</structfield></term>
+    <listitem><para>Pointer to the output buffer</para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><structfield>out_buflen</structfield></term>
+    <listitem><para>The length of the output buffer.</para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><structfield>in_buf</structfield></term>
+    <listitem><para>pointer to the input buffer.</para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><structfield>in_buflen</structfield></term>
+    <listitem><para>The length of the input buffer.</PARA></listitem>
+  </varlistentry>
+</variablelist>
+
+<PARA>
+Example CAN channel implementation for Motorola FlexCAN device driver:
+</PARA>
+
+<PROGRAMLISTING>
+CAN_CHANNEL_USING_INTERRUPTS(
+    flexcan_can0_chan,
+    flexcan_lowlevel_funs,
+    flexcan_can0_info,
+    CYG_CAN_BAUD_RATE(CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN0_KBAUD),
+    flexcan_can0_txbuf, CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN0_QUEUESIZE_TX,
+    flexcan_can0_rxbuf, CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN0_QUEUESIZE_RX
+);
+</PROGRAMLISTING>
+
+<PARA>
+The interface from the hardware independent driver into the hardware
+interface module is contained in the <structfield>funs</structfield>
+table.  This is defined by the macro:
+</PARA>
+</SECTION>
+
+<SECTION>
+<TITLE>CAN Lowlevel Functions Structure</TITLE>
+
+<PROGRAMLISTING>
+CAN_LOWLEVEL_FUNS(l, putmsg, getevent, get_config, set_config, start_xmit, stop_xmit)
+</PROGRAMLISTING>
+
+<variablelist>
+  <title>Arguments</title>
+  <varlistentry>
+    <term><structfield>l</structfield></term>
+    <listitem><para>The "C" label for this structure.</para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><structfield>putmsg</structfield></term>
+    <listitem>
+      <para><literal>
+      bool (*putmsg)(can_channel *priv, cyg_can_message *pmsg, void *pdata)
+      </literal></para>
+      <para>
+      This function sends one CAN message to the interface. It should
+      return <literal>true</literal> if the message is actually
+      consumed. It should return <literal>false</literal> if there is
+      no space in the interface
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><structfield>getevent</structfield></term>
+    <listitem>
+      <para><literal>
+      bool (*getevent)(can_channel *priv, cyg_can_event *pevent, void *pdata)
+      </literal></para>
+      <para>
+      This function fetches one event from the interface.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><structfield>get_config</structfield></term>
+    <listitem>
+      <para><literal> 
+      Cyg_ErrNo (*get_config)(can_channel *priv, cyg_uint32 key, const void *xbuf, cyg_uint32 *len)
+      </literal></para>
+      <para>
+        This function is used to query the configuration of a CAN channel.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><structfield>set_config</structfield></term>
+    <listitem>
+      <para><literal> 
+      Cyg_ErrNo (*set_config)(can_channel *priv, cyg_uint32 key, const void *xbuf, cyg_uint32 *len)
+      </literal></para>
+      <para>
+        This function is used to change configuration of a CAN channel.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><parameter>start_xmit</parameter></term>
+    <listitem><para><literal>void (*start_xmit)(can_channel *priv)</literal></para>
+      <para>
+        Enable the transmit channel and turn on transmit interrupts.
+      </para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><parameter>stop_xmit</parameter></term>
+    <listitem>
+      <para><literal>void (*stop_xmit)(can_channel *priv)</literal></para>
+      <para>Disable the transmit channel and turn transmit interrupts off.</PARA>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<PARA>
+Example implementation of low level function structure for Motorola FlexCAN 
+device driver:
+</PARA>
+
+<PROGRAMLISTING>
+CAN_LOWLEVEL_FUNS(flexcan_lowlevel_funs,
+                  flexcan_putmsg,
+                  flexcan_getevent,
+                  flexcan_get_config,
+                  flexcan_set_config,
+                  flexcan_start_xmit,
+                  flexcan_stop_xmit
+     );
+</PROGRAMLISTING>
+</SECTION>
+
+<SECTION>
+<TITLE>Callbacks</TITLE>
+
+<PARA>
+The device interface module can execute functions in the
+hardware independent driver via <literal>chan-&gt;callbacks</literal>.
+These functions are available:
+</PARA>
+
+<PROGRAMLISTING>
+void (*can_init)(can_channel *chan)
+</PROGRAMLISTING>
+
+<PARA>This function is used to initialize the CAN channel.</PARA>
+
+<PROGRAMLISTING>
+void (*xmt_msg)(can_channel *chan, void *pdata)
+</PROGRAMLISTING>
+
+<PARA>
+This function would be called from an interrupt handler after a
+transmit interrupt indicating that additional messages may be
+sent. The upper driver will call the <function>putmsg</function>
+function as appropriate to send more data to the device.
+</PARA>
+
+<PROGRAMLISTING>
+void (*rcv_event)(can_channel *chan, void *pdata)
+</PROGRAMLISTING>
+
+<PARA>
+This function is used to tell the driver that a message has arrived
+at the interface or that an event has occurred. This function is typically 
+called from the interrupt handler. 
+</PARA>
+</SECTION><!-- Callbacks -->
+
+</SECTION><!-- id="io-can-how-to-write-interface-driver" -->
+</CHAPTER>
+
+</PART>
