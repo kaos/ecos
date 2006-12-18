@@ -274,11 +274,12 @@ static inline cyg_uint32 INL(cyg_uint32 io_address)
  * Table of all known PCI device/vendor ID combinations for the RealTek 8139.
  * Add them as you get to know them.
  */
-#define CYGNUM_DEVS_ETH_RLTK_8139_KNOWN_ALIASES 2
+#define CYGNUM_DEVS_ETH_RLTK_8139_KNOWN_ALIASES 3
 static pci_identifier_t
 known_8139_aliases[CYGNUM_DEVS_ETH_RLTK_8139_KNOWN_ALIASES] = {
-  { 0x10ec, 0x8139, NULL }, /* This is the offical RealTek vendor/device code */
-  { 0x11db, 0x1234, NULL} /* SEGA DreamCast BroadBandAdapter */
+  { 0x10ec, 0x8139, NULL }, /* This is the official RealTek vendor/device code of 8139D(L) */
+  { 0x11db, 0x1234, NULL}, /* SEGA DreamCast BroadBandAdapter */
+  { 0x10ec, 0x8129, NULL } /* This is the official RealTek vendor/device code of 8139C(L) */
 };
 
 
