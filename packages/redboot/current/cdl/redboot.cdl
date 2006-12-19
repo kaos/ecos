@@ -527,7 +527,7 @@ cdl_package CYGPKG_REDBOOT {
 	    cdl_option CYGDAT_REDBOOT_DEFAULT_NETWORK_DEVICE {
                 display         "Default network device driver"
                 flavor          data
-                active_if       { CYGSEM_REDBOOT_FLASH_CONFIG && CYGHWR_NET_DRIVERS > 1 }
+                active_if       { CYGHWR_NET_DRIVERS > 1 }
                 default_value   { "\"\"" }
                 description     "
                     This is the name of the default network device to use."

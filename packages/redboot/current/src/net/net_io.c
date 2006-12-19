@@ -683,7 +683,7 @@ net_init(void)
     unsigned index;
     struct eth_drv_sc *primary_net = (struct eth_drv_sc *)0;
 #if defined(CYGHWR_NET_DRIVERS) && (CYGHWR_NET_DRIVERS > 1)
-    char *default_devname;
+    char *default_devname = CYGDAT_REDBOOT_DEFAULT_NETWORK_DEVICE;
     int default_index;
 #endif
 #ifdef CYGDAT_REDBOOT_DEFAULT_BOOTP_SERVER_IP_ADDR
@@ -740,7 +740,7 @@ net_init(void)
 	primary_net = __local_enet_sc;
     } else
 #endif
-#endif
+#endif // (CYGHWR_NET_DRIVERS) && (CYGHWR_NET_DRIVERS > 1)
     for (index = 0; (t = net_devtab_entry(index)) != NULL; index++) {
 #ifdef CYGSEM_REDBOOT_NETWORK_INIT_ONE_DEVICE
 	if (index == default_index)
@@ -752,9 +752,13 @@ net_init(void)
                 primary_net = __local_enet_sc;
             }
 #if defined(CYGHWR_NET_DRIVERS) && (CYGHWR_NET_DRIVERS > 1)
+#   ifdef CYGSEM_REDBOOT_NETWORK_INIT_ONE_DEVICE
+            break;
+#   else
             if (index == default_index) {
                 primary_net = __local_enet_sc;
             }
+#   endif // CYGSEM_REDBOOT_NETWORK_INIT_ONE_DEVICE
 #endif
         }
     }

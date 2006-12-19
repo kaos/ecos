@@ -1,3 +1,19 @@
+2006-11-28  David Fernandez  <dfernandez@cct.co.uk>
+
+	* cdl/redboot.cdl: Modified to change the option
+	CYGDAT_REDBOOT_DEFAULT_NETWORK_DEVICE to make it independent of
+	CYGSEM_REDBOOT_FLASH_CONFIG, changes in net_io.c will allow to
+	specify a default interface in terms of the name and its position
+	in the table of interfaces for the driver.
+
+	* src/net/net_io.c: Modified to allow
+	CYGDAT_REDBOOT_DEFAULT_NETWORK_DEVICE to be used even with no flash
+	available.
+	Bug regarding CYGSEM_REDBOOT_NETWORK_INIT_ONE_DEVICE fixed, so that
+	when working with several network interfaces, and the default one
+	fails to initialize, only the first successfully initialized one is
+	used.
+
 2006-11-19  Andrew Lunn  <lunn@laptop.lunn.ch>
 
 	* src/load.c: Only call valid_address() if
