@@ -477,7 +477,7 @@ the call will not return until one single CAN event has been read.
 In non-blocking mode, if there is no CAN event in buffer, the call 
 returns immediately with <varname>-EAGAIN</varname> and the caller must 
 try again.
-<PARA>
+</PARA>
     
 <PARA>
 It is possible to configure the write call to be non-blocking with timeout. 

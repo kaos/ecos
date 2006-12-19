@@ -1,3 +1,7 @@
+2006-12-19  Sergei Gavrikov  <sg@sgs.gomel.by>
+
+	* doc/can.sgml: Correctly close para tag.
+
 2006-12-13  Uwe Kindler  <uwe_kindler@web.de>
 
 	* doc/can.sgml: CAN driver SGML documentation added.
