@@ -1,3 +1,8 @@
+2006-12-18  Sergei Gavrikov  <sg@sgs.gomel.by>
+
+	* tests/ga_server_test.c: Updated flags argument in call of
+	getnameinfo().
+
 2006-05-25  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/net.cdl: Fix calculation of TFTPD stack
