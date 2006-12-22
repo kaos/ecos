@@ -1,3 +1,9 @@
+2006-12-21  Wang Cui <iucgnaw@msn.com>
+
+	* include/flash_sst_39vfxxx.inl: Add supported devices:
+	SST39VF160, SST39VF1601, SST39VF1602, SST39VF320, SST39VF3201,
+	SST39VF3202, SST39VF6401, SST39VF6402,
+
 2003-10-02  Roland Caﬂebohm <r.cassebohm@visionsystems.de>
 
 	* include/flash_sst_39vfxxx.inl: 
