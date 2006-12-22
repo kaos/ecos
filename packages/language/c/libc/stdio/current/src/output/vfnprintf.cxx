@@ -555,8 +555,9 @@ number:                 if ((dprec = prec) >= 0)
                                 case DEC:
                                         /* many numbers are 1 digit */
                                         while (_uquad >= 10) {
-                                                *--cp = to_char(_uquad % 10);
-                                                _uquad /= 10;
+                                                u_quad_t next = _uquad / 10;
+                                                *--cp = to_char(_uquad - (next * 10));
+                                                _uquad = next;
                                         }
                                         *--cp = to_char(_uquad);
                                         break;

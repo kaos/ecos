@@ -1,3 +1,9 @@
+2006-12-22  Sergei Organov  <osv@javad.com>
+
+	* src/output/vfnprintf.cxx (vfnprintf): Speed-up formatting of
+	decimal integers by replacing modulo operation with multiply and
+	subtract.
+
 2006-09-27  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/stdio.h: Make fpos_t be signed to allow negative
