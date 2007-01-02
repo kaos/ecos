@@ -555,6 +555,7 @@ number:                 if ((dprec = prec) >= 0)
                                 case DEC:
                                         /* many numbers are 1 digit */
                                         while (_uquad >= 10) {
+                                                /* The following is usually faster than using a modulo */
                                                 u_quad_t next = _uquad / 10;
                                                 *--cp = to_char(_uquad - (next * 10));
                                                 _uquad = next;
