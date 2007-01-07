@@ -271,6 +271,17 @@ cdl_package CYGPKG_NET {
             network thread itself."
         }
 
+        cdl_option CYGPKG_NET_DHCP_THREAD_STACK_SIZE {
+            display "Stack size for DHCP management threads."
+            flavor  data
+            default_value { "(CYGNUM_HAL_STACK_SIZE_TYPICAL+sizeof(struct bootp))" }
+            description   "
+               This option controls the size of the stack used for the
+               DHCP mamagement thread. The default should be
+               sufficient for most cases but some applications my
+               require bigger stacks when using for example diag_printf."
+        }
+
         cdl_option CYGOPT_NET_DHCP_PARM_REQ_LIST_REPLACE {
             display "Replace DHCP request options"
             flavor  booldata

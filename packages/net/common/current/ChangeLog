@@ -1,3 +1,10 @@
+2007-01-07  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/dhcp_support.c: 
+	* cdl/net.cdl:
+	Added CDL to control the size of the stack used by
+	the DHCP management thread.
+
 2006-12-18  Sergei Gavrikov  <sg@sgs.gomel.by>
 
 	* tests/ga_server_test.c: Updated flags argument in call of
