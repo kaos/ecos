@@ -109,7 +109,7 @@ Cyg_Mbox::check_this(cyg_assert_class_zeal zeal) const
 void *
 Cyg_Mbox::get()
 {
-    void * p;
+    void * p=NULL;
     if ( ! m.get( p ) )
         return NULL;
     return p;
@@ -119,7 +119,7 @@ Cyg_Mbox::get()
 void *
 Cyg_Mbox::get( cyg_tick_count timeout )
 {
-    void * p;
+    void * p=NULL;
     if ( ! m.get( p, timeout ) )
         return NULL;
     return p;

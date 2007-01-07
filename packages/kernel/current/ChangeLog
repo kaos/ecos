@@ -1,3 +1,8 @@
+2007-01-07  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/sync/mbox.cxx (Cyg_Mbox::get): Fix compiler warning with gcc
+	version 4.1.2.
+
 2006-10-12  Nick Garnett  <nickg@ecoscentric.com>
 
 	* cdl/synch.cdl: Added CYGIMP_MBOX_USE_MBOXT_PLAIN option. This is
