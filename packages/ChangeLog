@@ -1,3 +1,7 @@
+2007-01-02  Uwe Kindler <uwe_kindler@web.de>
+
+	* ecos.db Add Olimex SAM7-EX256 platform and target
+
 2006-11-21  Alexander Neundorf <alexander.neundorf@jenoptik.com>
 
 	* ecos.db: add generic interrupt driven serial IO driver

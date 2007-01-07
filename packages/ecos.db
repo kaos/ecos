@@ -2599,6 +2599,16 @@ package CYGPKG_HAL_ARM_AT91SAM7XEK {
         an Atmel AT91SAM7X-EK development board."
 }
 
+package CYGPKG_HAL_ARM_SAM7EX256 {
+	alias		{ "Olimex SAM7EX256" hal_arm_sam7ex256 arm_sam7_ex256 }
+	directory	hal/arm/at91/sam7ex256
+	script		hal_arm_sam7ex256.cdl
+	hardware
+        description "
+	The SAM7EX256 HAL package provides the support needed to run eCos on 
+        an Olimex SAM7-EX256 development board."
+}
+
 package CYGPKG_HAL_ARM_AT91_EB40 {
 	alias		{ "Atmel evaluation board (EB40)" hal_arm_at91 arm_at91_hal }
 	directory	hal/arm/at91/eb40
@@ -4391,6 +4401,25 @@ target at91sam7xek {
         description "
         The at91sam7xek target provides the packages needed to run eCos on an 
         Atmel AT91SAM7X-EK evaluation board."
+}
+
+target sam7ex256 {
+	alias { "Olimex SAM7-EX256 evaluation board" at91_sam7ex256 }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_AT91
+                   CYGPKG_HAL_ARM_AT91SAM7
+                   CYGPKG_HAL_ARM_SAM7EX256
+                   CYGPKG_IO_SERIAL_ARM_AT91
+                   CYGPKG_DEVS_FLASH_AT91
+                   CYGPKG_DEVS_SPI_ARM_AT91
+                   CYGPKG_DEVICES_WATCHDOG_ARM_AT91WDTC
+                   CYGPKG_DEVS_USB_AT91
+                   CYGPKG_DEVS_ETH_PHY
+        }
+#                   CYGPKG_DEVS_ETH_ARM_AT91
+        description "
+        The SAM7EX256 target provides the packages needed to run eCos on an 
+        Olimex SAM7-EX256 evaluation board."
 }
 
 target eb40a {
