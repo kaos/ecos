@@ -61,4 +61,14 @@ cdl_package CYGPKG_HAL_ARM_AT91SAM7SEK {
                     CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7s64"  ||
                     CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7s32"  ||
                     CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7s321" }
+    
+    define_proc {
+        puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_arm_at91sam7sek.h>"
+        puts $::cdl_header "/***** proc output start *****/"
+        puts $::cdl_header "#include <pkgconf/hal_arm_at91sam7.h>"
+        puts $::cdl_header "#define HAL_PLATFORM_CPU    \"ARM7TDMI\""
+        puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"Atmel (AT91SAM7S-EK)\""
+        puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
+        puts $::cdl_header "/****** proc output end ******/"
+    }
 }

@@ -69,11 +69,7 @@ cdl_package CYGPKG_HAL_ARM_AT91SAM7 {
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_arm.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_VARIANT_H  <pkgconf/hal_arm_at91.h>"
-        puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_arm_at91sam7.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_ARM_VAR_IO_H"
-        puts $::cdl_header "#define HAL_PLATFORM_CPU    \"ARM7TDMI\""
-        puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"Atmel (at91sam7)\""
-        puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
     }
 
     cdl_option CYGHWR_HAL_ARM_AT91SAM7 {
@@ -120,6 +116,7 @@ cdl_package CYGPKG_HAL_ARM_AT91SAM7 {
     }
 
     cdl_option CYGBLD_HAL_ARM_AT91SAM7_USB {
+        display       "USB device"
         active_if     {!( "at91sam7s32" == CYGHWR_HAL_ARM_AT91SAM7S) ||
                         CYGHWR_HAL_ARM_AT91SAM7X                     ||
                         CYGHWR_HAL_ARM_AT91SAM7XC }
@@ -131,6 +128,7 @@ cdl_package CYGPKG_HAL_ARM_AT91SAM7 {
     }
 
     cdl_option CYGBLD_HAL_ARM_AT91SAM7_SPI1 {
+        display       "Second SPI bus controller"
         active_if     { CYGHWR_HAL_ARM_AT91SAM7X ||
                         CYGHWR_HAL_ARM_AT91SAM7XC }
         implements    CYGINT_DEVS_SPI_ARM_AT91_HAS_BUS1

@@ -1,3 +1,9 @@
+2007-01-02  Uwe Kindler <uwe_kindler@web.de>
+
+	* cdl/hal_arm_at91sam7s.cdl Moved HAL_PLATFORM_XXX defines and
+	definition of platform header file (CYGBLD_HAL_PLATFORM_H) from
+	package CYGPKG_HAL_ARM_AT91SAM7 into board specific packages.
+	
 2006-06-01  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/hal_arm_at91sam7s.cdl: Implement the SPI bus 1 interface for
