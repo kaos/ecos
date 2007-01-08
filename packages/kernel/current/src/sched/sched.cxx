@@ -198,7 +198,8 @@ void Cyg_Scheduler::unlock_inner( cyg_ucount32 new_lock )
 #ifdef CYGFUN_KERNEL_THREADS_STACK_CHECKING
                 next->check_stack(); // before running it
 #endif
-
+                current->timeslice_save();
+                
                 // Switch contexts
                 HAL_THREAD_SWITCH_CONTEXT( &current->stack_ptr,
                                            &next->stack_ptr );
@@ -221,13 +222,9 @@ void Cyg_Scheduler::unlock_inner( cyg_ucount32 new_lock )
                 CYG_ASSERTCLASS( current, "Bad current thread" );
 
                 current_thread[CYG_KERNEL_CPU_THIS()] = current;   // restore current thread pointer
-            }
 
-#ifdef CYGSEM_KERNEL_SCHED_TIMESLICE
-            // Reset the timeslice counter so that this thread gets a full
-            // quantum. 
-            reset_timeslice_count();
-#endif
+                current->timeslice_restore();
+            }
 
             clear_need_reschedule();    // finished rescheduling
         }
@@ -318,12 +315,9 @@ void Cyg_Scheduler::thread_entry( Cyg_Thread *thread )
     set_current_thread(thread);         // restore current thread pointer
 
     CYG_INSTRUMENT_THREAD(ENTER,thread,0);
-    
-#ifdef CYGSEM_KERNEL_SCHED_TIMESLICE
-    // Reset the timeslice counter so that this thread gets a full
-    // quantum. 
-    reset_timeslice_count();
-#endif
+
+    thread->timeslice_reset();
+    thread->timeslice_restore();
     
     // Finally unlock the scheduler. As well as clearing the scheduler
     // lock this allows any pending DSRs to execute. The new thread

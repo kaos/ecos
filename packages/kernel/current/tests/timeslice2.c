@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//        timeslice.c
+//        timeslice2.c
 //
-//        Timeslice test
+//        Timeslice 2 test
 //
 //==========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
@@ -44,7 +44,7 @@
 // Author(s):     nickg
 // Contributors:  nickg
 // Date:          2001-06-18
-// Description:   A basic timeslicing test.
+// Description:   An additional timeslicing test.
 //
 //####DESCRIPTIONEND####
 //==========================================================================
@@ -82,6 +82,10 @@ static char test_stack[STACK_SIZE];
 static cyg_thread test_thread;
 static cyg_handle_t main_thread;
 
+static char hipri_stack[STACK_SIZE];
+static cyg_thread hipri_thread_obj;
+static cyg_handle_t hipri_thread;
+
 static char stacks[NTHREADS_MAX][STACK_SIZE];
 static cyg_thread test_threads[NTHREADS_MAX];
 static cyg_handle_t threads[NTHREADS_MAX];
@@ -108,7 +112,7 @@ void run_test_timeslice(int nthread)
     cyg_uint32 cpu_threads[CYGNUM_KERNEL_CPU_MAX];
     cyg_uint32 thread_total[NTHREADS_MAX];
 
-    CYG_TEST_INFO( "Timeslice Test: Check timeslicing works");
+    CYG_TEST_INFO( "Timeslice2 Test: Check timeslicing works under preemption");
     
     // Init flags.
     for (i = 0;  i < nthread;  i++)
@@ -189,9 +193,20 @@ void run_test_timeslice(int nthread)
         cyg_thread_delete(threads[i]);
     }
 
-    CYG_TEST_INFO( "Timeslice Test: done");
+    CYG_TEST_INFO( "Timeslice2 Test: done");
 }
 
+
+//==========================================================================
+
+void 
+hipri_test(CYG_ADDRESS id)
+{
+    while( 1 )
+    {
+        cyg_thread_delay( CYGNUM_KERNEL_SCHED_TIMESLICE_TICKS/2 );
+    }
+}
 
 //==========================================================================
 
@@ -213,9 +228,9 @@ run_tests(CYG_ADDRESS id)
             run_test_timeslice(nthread);
 
     if( failed )
-        CYG_TEST_FAIL_FINISH("Timeslice test failed\n");
+        CYG_TEST_FAIL_FINISH("Timeslice2 test failed\n");
     
-    CYG_TEST_PASS_FINISH("Timeslice test OK");    
+    CYG_TEST_PASS_FINISH("Timeslice2 test OK");    
 }
 
 //==========================================================================
@@ -237,6 +252,17 @@ void timeslice_main( void )
                       &test_thread // Thread data structure
         );
     cyg_thread_resume( main_thread);
+
+    cyg_thread_create(5,               // Priority - just a number
+                      hipri_test,      // entry
+                      0,               // index
+                      "hipri_run",     // Name
+                      hipri_stack,   // Stack
+                      STACK_SIZE,      // Size
+                      &hipri_thread,     // Handle
+                      &hipri_thread_obj // Thread data structure
+        );
+    cyg_thread_resume( hipri_thread);
     
     cyg_scheduler_start();
 }
@@ -278,4 +304,4 @@ cyg_start( void )
 #endif // CYGSEM_KERNEL_SCHED_TIMESLICE etc.
 
 //==========================================================================
-// EOF timeslice.c
+// EOF timeslice2.c

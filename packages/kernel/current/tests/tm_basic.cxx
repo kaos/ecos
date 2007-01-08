@@ -86,7 +86,7 @@ typedef struct fun_times {
     cyg_uint32 end;
 } fun_times;
 
-#define STACK_SIZE CYGNUM_HAL_STACK_SIZE_MINIMUM
+#define STACK_SIZE (CYGNUM_HAL_STACK_SIZE_TYPICAL+4*1024)
 
 #ifdef CYGMEM_REGION_ram_SIZE
 #define CYG_THREAD_OVERHEAD  (STACK_SIZE+sizeof(cyg_thread)+(sizeof(fun_times)*2))

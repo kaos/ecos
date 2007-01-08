@@ -236,6 +236,11 @@ Cyg_Scheduler_Implementation::add_thread(Cyg_Thread *thread)
     // current thread, request a reschedule.
 
     set_need_reschedule(thread);
+
+    // Also reset the timeslice_count so that this thread gets a full
+    // timeslice once it begins to run.
+    
+    thread->timeslice_reset();
     
 #ifdef CYGPKG_KERNEL_SMP_SUPPORT
 
@@ -640,12 +645,14 @@ Cyg_SchedThread_Implementation::yield(void)
         
         if( queue->get_head() != thread )
             sched->set_need_reschedule();
+        else
+        {
+            // Reset the timeslice counter so that this thread gets a
+            // full quantum as a reward for yielding when it is
+            // eventually rescheduled.
+            thread->timeslice_reset();
+        }
 
-#ifdef CYGSEM_KERNEL_SCHED_TIMESLICE
-            // Reset the timeslice counter so that this thread gets a full
-            // quantum. 
-        else Cyg_Scheduler::reset_timeslice_count();
-#endif
     }
     
     // Unlock the scheduler and switch threads

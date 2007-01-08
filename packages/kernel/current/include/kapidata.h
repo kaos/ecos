@@ -277,6 +277,13 @@ typedef struct
 # define CYG_SCHEDTHREAD_CPU_MEMBER
 #endif
 
+#ifdef CYGSEM_KERNEL_SCHED_TIMESLICE
+# define CYG_SCHEDTHREAD_TIMESLICE_MEMBER \
+    cyg_ucount32         timeslice_count; /* per-thread timeslice counter */
+#else
+# define CYG_SCHEDTHREAD_TIMESLICE_MEMBER
+#endif
+
 #ifdef CYGSEM_KERNEL_SCHED_TIMESLICE_ENABLE
 # define CYG_SCHEDTHREAD_TIMESLICE_ENABLED_MEMBER \
     cyg_bool            timeslice_enabled; /* per-thread timeslice enable */
@@ -293,6 +300,7 @@ typedef struct
     cyg_thread *prev;                                                        \
     cyg_priority_t      priority;             /* current thread priority */  \
     CYG_SCHEDTHREAD_CPU_MEMBER                                               \
+    CYG_SCHEDTHREAD_TIMESLICE_MEMBER                                         \
     CYG_SCHEDTHREAD_TIMESLICE_ENABLED_MEMBER
 #elif defined(CYGSEM_KERNEL_SCHED_LOTTERY)
 # define CYG_SCHEDTHREAD_SCHEDIMP_MEMBERS                                    \

@@ -3,6 +3,26 @@
 	* src/sync/mbox.cxx (Cyg_Mbox::get): Fix compiler warning with gcc
 	version 4.1.2.
 
+2006-12-08  Nick Garnett  <nickg@ecoscentric.com>
+	
+        * src/sched/mlqueue.cxx (add_thread, yield): 
+	* src/sched/sched.cxx (unlock_inner, thread_entry): 
+	* include/mlqueue.hxx (class Cyg_SchedThread_Implementation):
+	* include/kapidata.h (CYG_SCHEDTHREAD_TIMESLICE_MEMBER): 
+	* include/bitmap.hxx (class Cyg_SchedThread_Implementation):
+	Reimplement timeslicing code. There is now a timeslice_count field
+	in each thread which is moved to and from the per-CPU counter
+	during thread dispatch. This approach has been taken to minimize
+	the changes needed to SMP code. Scheduler specific thread
+	functions handle counter save, restore and reset. These functions
+	are defined (as empty inlines) even when timeslicing is disabled,
+	or in non-timeslicing schedulers, to avoid adding ifdefs to the
+	code (this change actually removes some).
+
+	* tests/timeslice2.c: 
+	* cdl/kernel.cdl: Added timeslice2 test to test behaviour of
+	timeslicing while being preempted.
+
 2006-10-12  Nick Garnett  <nickg@ecoscentric.com>
 
 	* cdl/synch.cdl: Added CYGIMP_MBOX_USE_MBOXT_PLAIN option. This is

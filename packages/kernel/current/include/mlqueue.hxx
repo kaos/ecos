@@ -180,8 +180,6 @@ protected:
     static cyg_ucount32 timeslice_count[CYGNUM_KERNEL_CPU_MAX]
                                         CYGBLD_ANNOTATE_VARIABLE_SCHED;
 
-    static void reset_timeslice_count();
-
 #endif
 
     Cyg_Scheduler_Implementation();     // Constructor
@@ -237,14 +235,6 @@ inline void Cyg_Scheduler_Implementation::set_need_reschedule()
     need_reschedule[CYG_KERNEL_CPU_THIS()] = true;
 }
 
-#ifdef CYGSEM_KERNEL_SCHED_TIMESLICE
-
-inline void Cyg_Scheduler_Implementation::reset_timeslice_count()
-{
-    timeslice_count[CYG_KERNEL_CPU_THIS()] = CYGNUM_KERNEL_SCHED_TIMESLICE_TICKS;
-}
-
-#endif
 
 // -------------------------------------------------------------------------
 // Scheduler thread implementation.
@@ -278,6 +268,16 @@ protected:
                                         // of its queue (not necessarily
                                         // a scheduler queue)
 
+#ifdef CYGSEM_KERNEL_SCHED_TIMESLICE
+
+    cyg_ucount32 timeslice_count;
+        
+    void timeslice_save();
+
+    void timeslice_restore();
+    
+    void timeslice_reset();
+
 #ifdef CYGSEM_KERNEL_SCHED_TIMESLICE_ENABLE
 
     // This defines whether this thread is subject to timeslicing.
@@ -291,12 +291,37 @@ public:
 
     void timeslice_disable();
     
+#endif
+
+#else
+
+    inline void timeslice_save() {};
+    inline void timeslice_restore() {};
+    inline void timeslice_reset() {};
+    
 #endif    
        
 };
 
 // -------------------------------------------------------------------------
 // Cyg_SchedThread_Implementation inlines.
+
+#ifdef CYGSEM_KERNEL_SCHED_TIMESLICE
+
+inline void Cyg_SchedThread_Implementation::timeslice_save()
+{
+    timeslice_count = Cyg_Scheduler_Implementation::timeslice_count[CYG_KERNEL_CPU_THIS()];
+}
+
+inline void Cyg_SchedThread_Implementation::timeslice_restore()
+{
+    Cyg_Scheduler_Implementation::timeslice_count[CYG_KERNEL_CPU_THIS()] = timeslice_count;
+}
+
+inline void Cyg_SchedThread_Implementation::timeslice_reset()
+{
+    timeslice_count = CYGNUM_KERNEL_SCHED_TIMESLICE_TICKS;
+}
 
 #ifdef CYGSEM_KERNEL_SCHED_TIMESLICE_ENABLE
 
@@ -309,6 +334,8 @@ inline void Cyg_SchedThread_Implementation::timeslice_disable()
 {
     timeslice_enabled = false;
 }
+
+#endif
 
 #endif
 
