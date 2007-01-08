@@ -53,15 +53,14 @@
 #include <cyg/hal/hal_io.h>             // IO macros
 
 //
-// the development board does not contain any leds but this function is
-// required for proper compilation - maybe we can use the integrated
-// nokia 320x 320 pixel lcd for led debug output
+// The development board does not contain any leds but a nokia 320 x 320 
+// pixel lcd. We use the backlight of the lcd as a simple 1-bit LED
 //
 void hal_at91_led (int val)
 {
-    //
-    // todo: implement led simulation for nokia 320 x 320 pixel LCD
-    //
+     HAL_ARM_AT91_GPIO_CFG_DIRECTION(AT91_GPIO_PB20, AT91_PIN_OUT);
+     HAL_ARM_AT91_GPIO_PUT(AT91_GPIO_PB20, (val & 1));
+
 }
 
 

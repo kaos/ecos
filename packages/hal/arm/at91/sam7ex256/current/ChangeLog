@@ -1,3 +1,7 @@
+2007-08-01  Uwe Kindler  <uwe_kindler@web.de>
+
+	* src/sam7ex256_misc.c Use the backlight of the lcd as a simple 1-bit LED
+
 2006-12-30  Uwe Kindler  <uwe_kindler@web.de>
 
 	* SAM7-EX256 development board package
