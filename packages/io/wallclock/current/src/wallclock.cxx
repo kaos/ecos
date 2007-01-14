@@ -87,6 +87,8 @@ static cyg_uint32 epoch_ticks;
 static cyg_uint32 epoch_time_stamp;
 #endif
 
+static cyg_drv_mutex_t wallclock_lock;
+
 Cyg_WallClock *Cyg_WallClock::wallclock;
 
 //-----------------------------------------------------------------------------
@@ -96,6 +98,9 @@ Cyg_WallClock::Cyg_WallClock()
 {
     // install instance pointer
     wallclock = &wallclock_instance;
+
+    // Initialize lock used for mutually exclusive access to hardware
+    cyg_drv_mutex_init(&wallclock_lock);
 
     // Always allow low-level driver to initialize clock, even though it
     // may not be necessary for set-get mode.
@@ -111,7 +116,7 @@ cyg_uint32 Cyg_WallClock::get_current_time()
 {
     cyg_uint32 res;
 
-    cyg_drv_dsr_lock();
+    while (!cyg_drv_mutex_lock(&wallclock_lock));
 
 #ifdef CYGSEM_WALLCLOCK_SET_GET_MODE
     res = get_hw_seconds();
@@ -119,7 +124,7 @@ cyg_uint32 Cyg_WallClock::get_current_time()
     res = epoch_time_stamp + get_hw_seconds() - epoch_ticks;
 #endif
 
-    cyg_drv_dsr_unlock();
+    cyg_drv_mutex_unlock(&wallclock_lock);
 
     return res;
 }
@@ -130,7 +135,7 @@ cyg_uint32 Cyg_WallClock::get_current_time()
 // anything up to a second to complete.
 void Cyg_WallClock::set_current_time( cyg_uint32 time_stamp )
 {
-    cyg_drv_dsr_lock();
+    while (!cyg_drv_mutex_lock(&wallclock_lock));
 
 #ifdef CYGSEM_WALLCLOCK_SET_GET_MODE
     set_hw_seconds(time_stamp);
@@ -139,7 +144,7 @@ void Cyg_WallClock::set_current_time( cyg_uint32 time_stamp )
     epoch_ticks         = get_hw_seconds();
 #endif
 
-    cyg_drv_dsr_unlock();
+    cyg_drv_mutex_unlock(&wallclock_lock);
 }
 
 //-----------------------------------------------------------------------------

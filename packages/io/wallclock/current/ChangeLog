@@ -1,3 +1,10 @@
+2007-01-14  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/wallclock.cxx: Use a mutex for exclusion during get/set
+	operations as the DSR lock may not be appropriate for systems
+	that need to use interrupts to accomplish these functions,
+	(e.g. I2C clock devices).
+
 2003-09-23  Dan Jakubiec <firstname.lastname@systech.com>
 
 	* src/emulate.cxx (get_hw_seconds): Modified the ticks-to-seconds
