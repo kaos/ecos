@@ -1,3 +1,9 @@
+2007-01-15  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/dhcp_support.c (dhcp_mgt_entry): Better handling when restarting
+	interfaces after expired lease(s).  Keep trying in case the DHCP server
+	has gone down.
+
 2007-01-09  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* doc/manpages/net/getaddrinfo.3: Remove obsolete comment about

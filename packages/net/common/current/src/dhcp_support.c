@@ -196,9 +196,19 @@ int dhcp_release( void )
 
 // ------------------------------------------------------------------------
 // The management thread function
+//
+// Note: 2007-01-15
+//  This single management thread attempts to keep all configured
+//  interfaces alive via DHCP.  While this may be sufficient for 
+//  many systems, it falls short of perfect.  There should probably
+//  be a separate thread for each possible interface, along with
+//  appropriate CDL to control how each inteface is managed.
+//
 void dhcp_mgt_entry( cyg_addrword_t loop_on_failure )
 {
     int j;
+    bool any_interfaces_up;
+
     while ( 1 ) {
         while ( 1 ) {
             cyg_semaphore_wait( &dhcp_needs_attention );
@@ -208,7 +218,17 @@ void dhcp_mgt_entry( cyg_addrword_t loop_on_failure )
         dhcp_halt(); // tear everything down
         if ( !loop_on_failure )
             return; // exit the thread/return
-        init_all_network_interfaces(); // re-initialize
+        do {
+            init_all_network_interfaces(); // re-initialize
+            // If at least one interface is up, then the DHCP machine will run
+            any_interfaces_up = false;
+#ifdef CYGHWR_NET_DRIVER_ETH0
+            any_interfaces_up |= eth0_up;
+#endif
+#ifdef CYGHWR_NET_DRIVER_ETH1
+            any_interfaces_up |= eth1_up;
+#endif
+        } while (!any_interfaces_up);
         for ( j = 0; j < CYGPKG_NET_NLOOP; j++ )
             init_loopback_interface( j );
 #ifdef CYGPKG_SNMPAGENT
