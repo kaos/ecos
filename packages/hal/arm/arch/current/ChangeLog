@@ -1,3 +1,7 @@
+2007-01-09  Sergei Gavrikov  <sg@sgs.gomel.by>
+
+	* src/arm-stub.c: Added string.h header (`memcpy' declaration).
+	
 2006-09-06  Daniel Néri  <daniel.neri@sigicom.se>
  
  	* include/basetype.h: (CYG_DOUBLE_BYTEORDER): Add proper
