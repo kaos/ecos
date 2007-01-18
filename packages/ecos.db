@@ -1024,7 +1024,7 @@ package CYGPKG_IO_SERIAL_FREESCALE_ESCI_H {
     alias             { "ESCI serial device header"
                         devs_serial_freescale_esci_h esci_serial_header }
     hardware
-    directory	      devs/serial/freescale/esci
+    directory	      devs/serial/freescale/esci/hdr
     script	      ser_freescale_esci_h.cdl	
     description       "Freescale eSCI - Enhanced Serial Communications Interface header.
                        Needed by hal_diag and ser_esci drivers."
@@ -1034,7 +1034,7 @@ package CYGPKG_IO_SERIAL_FREESCALE_ESCI {
     alias             { "ESCI serial device driver"
                         devs_serial_freescale_esci esci_serial_driver }
     hardware
-    directory	      devs/serial/freescale/esci
+    directory	      devs/serial/freescale/esci/drv
     script	      ser_freescale_esci.cdl	
     description       "Freescale eSCI - Enhanced Serial Communications Interface serial device driver"
 }

@@ -1,39 +1,34 @@
 2007-01-10  Ilija Koco  <ilijak@siva.com.mk>
 
-	* hal_arm_mac7100.cdl: added property
-	"requires CYGPKG_IO_SERIAL_FREESCALE_ESCI_H"
+	* ser_freescale_esci_h.cdl: moved in a newly created directory for
+	CYGPKG_IO_SERIAL_FREESCALE_ESCI_H due ecosadmin.tcl issue
+	reported by John Dallaway
+
+
+2006-08-31  Ilija Koco  <ilijak@siva.com.mk>
+
+	* ser_freescale_esci.cdl: driver now requires at least 1 selected
+	channel
 
 2006-08-08  Ilija Koco  <ilijak@siva.com.mk>
 
-	* var_io.h: Freescale eSCI platform dependent clock related macros
-	moved here from ser_esci.h
+	* ser_esci.h : platform dependent clock related macros
+	removed and placed in platform/var header 
 	
-2006-06-08  Ilija Koco  <ilijak@siva.com.mk>
-
-	* hal_var_setup.h: (new) Assembly macros shared between targets.
-	* cdl/hal_arm_mac7100.cdl: some defaults changed in favour of
-	MAC7100EVB
-
 2006-05-24  Ilija Koco  <ilijak@siva.com.mk>
 
-	* cdl/hal_arm_mac7100.cdl:
-	* include/hal_cache.h: 
-	* include/hal_diag.h: 
-	* include/mac7100_misc.h: 
-	* include/plf_stub.h: unchanged from AT91
-	* include/var_arch.h:
-	* include/var_io.h:	
-	* src/flash_security.S:
-	* src/hal_diag.c:
-	* src/mac7100_misc.c
-	New variant port - based on at91 variant by Gary Thomas
+	* cdl/ser_freescale_esci.cdl:
+	* include/ser_esci.h: 
+	* src/ser_esci.c
+	New package
 
 //===========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-//
+// Copyright (C) 2006 eCosCentric Ltd
+//	
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
 // Software Foundation; either version 2 or (at your option) any later version.

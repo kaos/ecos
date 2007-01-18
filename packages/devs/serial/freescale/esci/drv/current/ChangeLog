@@ -1,3 +1,9 @@
+2007-01-10  Ilija Koco  <ilijak@siva.com.mk>
+
+	* ser_freescale_esci_h.cdl: CYGPKG_IO_SERIAL_FREESCALE_ESCI_H
+	moved in a new directory due ecosadmin.tcl issue
+	reported by John Dallaway
+
 2006-08-31  Ilija Koco  <ilijak@siva.com.mk>
 
 	* ser_freescale_esci.cdl: driver now requires at least 1 selected

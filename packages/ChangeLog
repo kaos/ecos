@@ -1,3 +1,6 @@
+2007-01-10 Ilija Koco <ilijak@siva.com.mk>
+    * ecos.db: Splitted esci directory in esci/drv and esci/hdr
+
 2007-01-02  Uwe Kindler <uwe_kindler@web.de>
 
 	* ecos.db Add Olimex SAM7-EX256 platform and target

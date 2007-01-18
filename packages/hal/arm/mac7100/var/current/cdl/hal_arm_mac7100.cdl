@@ -66,8 +66,11 @@ cdl_package CYGPKG_HAL_ARM_MAC7100 {
     implements    CYGINT_HAL_ARM_ARCH_ARM7
     implements    CYGINT_HAL_ARM_THUMB_ARCH
     implements    CYGINT_HAL_ARM_BIGENDIAN
-    requires { CYGHWR_HAL_ARM_BIGENDIAN == 1 }
 
+    requires      CYGHWR_HAL_ARM_BIGENDIAN == 1
+    
+    requires      CYGPKG_IO_SERIAL_FREESCALE_ESCI_H
+    
     # Let the architectural HAL see this variant's files
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_ARM_VAR_IO_H"
