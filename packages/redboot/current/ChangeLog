@@ -1,3 +1,8 @@
+2007-01-22  Peter Korsgaard  <peter.korsgaard@barco.com>
+
+	* src/load.c (do_load): Reset entry address before load so
+	go/exec commands will fail after an incomplete upload.
+
 2006-11-28  David Fernandez  <dfernandez@cct.co.uk>
 
 	* cdl/redboot.cdl: Modified to change the option
@@ -46,7 +51,8 @@
 	* src/flash.c, src/main.c, src/fconfig.c: 
         * include/fis.h, include/redboot.h:
         * cdl/redboot.cdl:
-        add support for redundant FIS tables, configurable via CYGOPT_REDBOOT_REDUNDANT_FIS
+        add support for redundant FIS tables, configurable via 
+	CYGOPT_REDBOOT_REDUNDANT_FIS
 
 2006-04-07  Grant Edwards <grante@visi.com>
 

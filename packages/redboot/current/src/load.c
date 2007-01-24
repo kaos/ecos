@@ -720,6 +720,10 @@ do_load(int argc, char *argv[])
                    (void *)&filename, OPTION_ARG_TYPE_STR, "file name")) {
         return;
     }
+
+    /* make sure any future go/exec's will fail until a successful upload */
+    entry_address = (unsigned long)NO_MEMORY;
+
 #ifdef CYGPKG_REDBOOT_NETWORKING
     if (hostname_set) {
         ip_route_t rt;
