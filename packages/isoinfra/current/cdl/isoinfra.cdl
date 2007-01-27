@@ -577,6 +577,12 @@ cdl_package CYGPKG_ISOINFRA {
             default_value 0
         }
 
+        cdl_option CYGBLD_ISO_FNMATCH_HEADER {
+            display       "fnmatch implementation header"
+            flavor        booldata
+            default_value 0
+        }
+
         cdl_interface CYGINT_ISO_POSIX_TIMER_TYPES {
             display       "Number of implementations of POSIX timer types"
             requires      { 1 >= CYGINT_ISO_POSIX_TIMER_TYPES }
