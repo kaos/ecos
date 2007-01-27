@@ -179,7 +179,7 @@ static void createfile( char *name, size_t size )
     int i;
     int err;
 
-    diag_printf("<INFO>: create file %s size %d\n",name,size);
+    diag_printf("<INFO>: create file %s size %zd \n",name,size);
 
     err = access( name, F_OK );
     if( err < 0 && errno != EACCES ) SHOW_RESULT( access, err );
@@ -237,13 +237,13 @@ static void maxfile( char *name )
 
         if( (size-prevsize) > 100000 )
         {
-            diag_printf("<INFO>: size = %d \n", size);
+            diag_printf("<INFO>: size = %zd \n", size);
             prevsize = size;
         }
         
     } while( wrote == IOSIZE );
 
-    diag_printf("<INFO>: file size == %d\n",size);
+    diag_printf("<INFO>: file size == %zd\n",size);
 
     err = close( fd );
     if( err < 0 ) SHOW_RESULT( close, err );

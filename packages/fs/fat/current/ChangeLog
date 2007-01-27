@@ -1,3 +1,8 @@
+2007-01-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/fatfs1.c: Fixed the format string to diag_printf()
+	to remove compiler warnings.
+
 2006-08-04  Paul Fine  <pfine@dtccom.com>
             Andrew Lunn <andrew.lunn@ascom.ch>
 	
