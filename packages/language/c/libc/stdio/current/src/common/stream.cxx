@@ -720,4 +720,25 @@ Cyg_StdioStream::write( const cyg_uint8 *buffer,
     return write_err;
 } // write()
 
+//
+// class Cyg_OutputStream
+//
+
+Cyg_ErrNo
+Cyg_OutputStream::write( const cyg_uint8 *buffer, cyg_ucount32 buffer_length,
+    cyg_ucount32 *bytes_written )
+{
+    CYG_FAIL("Cyg_OutputStream::write(): pure virtual called");
+    return ENOSYS;
+}
+
+Cyg_ErrNo
+Cyg_OutputStream::get_error( void )
+{
+    CYG_FAIL("Cyg_OutputStream::get_error(): pure virtual called");
+    return ENOSYS;
+}
+
+
+
 // EOF stream.cxx

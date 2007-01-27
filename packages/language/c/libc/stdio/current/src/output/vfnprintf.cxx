@@ -210,7 +210,7 @@ vfnprintf ( FILE *stream, size_t n, const char *format, va_list arg) __THROW
 #define PRINT(ptr, len)                                                      \
 CYG_MACRO_START                                                              \
     cyg_ucount32 length = MIN( (cyg_ucount32) len, n - ret - 1);             \
-    if (((Cyg_StdioStream *)stream)->write( (const cyg_uint8 *)ptr,          \
+    if (((Cyg_OutputStream *)stream)->write( (const cyg_uint8 *)ptr,         \
                                             length, &length ))               \
         goto error;                                                          \
     if (length < (cyg_ucount32)len) {                                        \
@@ -672,7 +672,7 @@ number:                 if ((dprec = prec) >= 0)
         }
 done:
 error:
-        return (((Cyg_StdioStream *) stream)->get_error() ? EOF : ret);
+        return (((Cyg_OutputStream *) stream)->get_error() ? EOF : ret);
         /* NOTREACHED */
 }
 

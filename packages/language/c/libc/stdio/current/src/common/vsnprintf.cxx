@@ -61,92 +61,49 @@
 #include <stddef.h>                 // NULL and size_t from compiler
 #include <stdio.h>                  // header for this file
 #include <errno.h>                  // error codes
-#include <cyg/io/devtab.h>          // Device table
 #include <cyg/libc/stdio/stream.hxx>// Cyg_StdioStream
 
 #include <cyg/libc/stdio/io.inl>     // I/O system inlines
 
-#ifndef CYGPKG_LIBC_STDIO_FILEIO
-
 // FUNCTIONS
 
-static Cyg_ErrNo
-str_write(cyg_stdio_handle_t handle, const void *buf, cyg_uint32 *len)
+class Cyg_VsnprintfStream: public Cyg_OutputStream
 {
-    cyg_devtab_entry_t *dev = (cyg_devtab_entry_t *)handle;
-    cyg_uint8 **str_p = (cyg_uint8 **)dev->priv;
-    cyg_ucount32 i;
+public:
+    Cyg_VsnprintfStream(char* s): s_(s) {}
 
-    // I suspect most strings passed to vsnprintf will be relatively short,
-    // so we just take the simple approach rather than have the overhead
-    // of calling memcpy etc.
+    virtual ~Cyg_VsnprintfStream() { *s_ = '\0'; }
 
-    // simply copy string until we run out of user space
+    virtual Cyg_ErrNo write( const cyg_uint8 *buffer,
+        cyg_ucount32 buffer_length, cyg_ucount32 *bytes_written );
 
-    for (i = 0; i < *len; i++, (*str_p)++ )
-    {
-        **str_p = *((cyg_uint8 *)buf + i);
-    } // for
+    virtual Cyg_ErrNo get_error( void ) { return ENOERR; }
 
-    *len = i;
+private:
+    char* s_;
+};
 
+Cyg_ErrNo
+Cyg_VsnprintfStream::write(
+    const cyg_uint8 *buffer,
+    cyg_ucount32 buffer_length,
+    cyg_ucount32 *bytes_written )
+{
+    char *dest = s_;
+    char const *src = (char const *)buffer;
+    char const *end = src + buffer_length;
+    while(src < end)
+        *dest++ = *src++;
+    s_ = dest;
+    *bytes_written = buffer_length;
     return ENOERR;
-    
-} // str_write()
-
-static DEVIO_TABLE(devio_table,
-                   str_write,       // write
-                   NULL,            // read
-                   NULL,            // select
-                   NULL,            // get_config
-                   NULL);           // set_config
+}
 
 externC int
 vsnprintf( char *s, size_t size, const char *format, va_list arg ) __THROW
 {
-    int rc;
-    // construct a fake device with the address of the string we've
-    // been passed as its private data. This way we can use the data
-    // directly
-    DEVTAB_ENTRY_NO_INIT(strdev,
-                         "strdev",       // Name
-                         NULL,           // Dependent name (layered device)
-                         &devio_table,   // I/O function table
-                         NULL,           // Init
-                         NULL,           // Lookup
-                         &s);            // private
-    Cyg_StdioStream my_stream( &strdev, Cyg_StdioStream::CYG_STREAM_WRITE,
-                               false, false, _IONBF, 0, NULL );
-    
-    rc = vfnprintf( (FILE *)&my_stream, size, format, arg );
-
-    // Null-terminate it, but note that s has been changed by str_write(), so
-    // that it now points to the end of the string
-    s[0] = '\0';
-
-    return rc;
-
+    Cyg_VsnprintfStream stream(s);
+    return vfnprintf( (FILE *)(void *)&stream, size, format, arg );
 } // vsnprintf()
-
-#else
-
-externC int
-vsnprintf( char *s, size_t size, const char *format, va_list arg ) __THROW
-{
-    int rc;
-
-    Cyg_StdioStream my_stream( Cyg_StdioStream::CYG_STREAM_WRITE,
-                               size, (cyg_uint8 *)s );
-    
-    rc = vfnprintf( (FILE *)&my_stream, size, format, arg );
-
-    if( rc > 0 )
-        s[rc] = '\0';
-
-    return rc;
-
-} // vsnprintf()
-
-#endif
 
 // EOF vsnprintf.cxx

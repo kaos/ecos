@@ -73,11 +73,28 @@
 
 // TYPE DEFINITIONS
 
+class Cyg_OutputStream
+{
+public:
+
+    // Provide empty virtual destructor
+    virtual ~Cyg_OutputStream() {}
+
+    // The following two functions aren't made pure virtual not to bring
+    // dependency on C++ runtime to every application.
+
+    virtual Cyg_ErrNo write( const cyg_uint8 *buffer, cyg_ucount32 buffer_length,
+        cyg_ucount32 *bytes_written );
+
+    virtual Cyg_ErrNo get_error( void );
+
+};
+
 class Cyg_StdioStream;
 __externC Cyg_ErrNo
 cyg_libc_stdio_flush_all_but( Cyg_StdioStream * );
 
-class Cyg_StdioStream
+class Cyg_StdioStream: public Cyg_OutputStream
 {
     friend int setvbuf( FILE *, char *, int, size_t ) __THROW;
     friend Cyg_ErrNo
@@ -207,7 +224,7 @@ private:
 public:
     
     // DESTRUCTOR
-
+    virtual
     ~Cyg_StdioStream();
 
 
@@ -253,7 +270,7 @@ public:
     cyg_ucount32
     bytes_available_to_read( void );
 
-    Cyg_ErrNo
+    virtual Cyg_ErrNo
     write( const cyg_uint8 *buffer, cyg_ucount32 buffer_length,
            cyg_ucount32 *bytes_written );
 
@@ -284,7 +301,7 @@ public:
     unlock_me( void );
 
     // get error status for this file 
-    Cyg_ErrNo
+    virtual Cyg_ErrNo
     get_error( void );
 
     // set error status for this file.
