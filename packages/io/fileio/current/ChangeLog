@@ -1,3 +1,13 @@
+2007-01-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/fnmatch.c: Test case for fnmatch.
+
+2007-01-24  Peter Korsgaard  <peter.korsgaard@barco.com>
+
+	* cdl/fileio.cdl:
+	* src/fnmatch.c:
+	* include/fnmatch.h: Added fnmatch() implementation (from NetBSD).
+
 2006-05-18  Paul Fine  <pfine@dtccom.com>
 
 	* include/fileio.h : Added a key and a structure to extract the

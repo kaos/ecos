@@ -233,6 +233,20 @@ cdl_package CYGPKG_IO_FILEIO {
             implement a call using cyg_fs_getinfo to return the current
             filesystem block usage."
     }
+
+    cdl_component CYGPKG_FILEIO_FNMATCH {
+	display           "POSIX fnmatch configuration"
+	flavor            bool
+	default_value     ( CYGINT_ISO_STRING_STRFUNCS && CYGINT_ISO_CTYPE )
+	requires          { CYGBLD_ISO_FNMATCH_HEADER == \
+                            "<cyg/fileio/fnmatch.h>" }
+	description       "
+            This component provides configuration controls for
+	    the POSIX fnmatch() function."
+
+        compile          fnmatch.c
+    }
+
     # ----------------------------------------------------------------
     # Tests
 
@@ -240,7 +254,7 @@ cdl_package CYGPKG_IO_FILEIO {
             display "Fileio tests"
             flavor  data
             no_define
-            calculated { "tests/fileio1 tests/socket tests/select tests/stdio tests/pselect" }
+            calculated { "tests/fileio1 tests/socket tests/select tests/stdio tests/pselect tests/fnmatch" }
             description   "
                 This option specifies the set of tests for the FileIO package."
         }
