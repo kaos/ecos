@@ -1,3 +1,12 @@
+2006-02-03  Sergei Gavrikov <sg@sgs.gomel.by>
+
+	* cdl/hal_arm_lpc2xxx.cdl: Added CYGNUM_HAL_ARM_VECTOR_0x14. That
+	gives us a chance to correct a LPC2XXX program signature (ARM
+	unused vector at 0x14).  The program signature is the two's
+	compliment of the checksum of the ARM7 vector table. Note:
+	you can quite overwrite that CDL value in your plf. startup
+	code (hal_platform_setup.h).
+
 2006-05-08  Andy Jackson <andy@grapevinetech.co.uk>
  
 	* src/lpc2xxx_misc.c: Fixed issue with VPBDIV initialisation on

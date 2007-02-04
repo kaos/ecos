@@ -206,7 +206,11 @@ __exception_handlers:
         ldr     pc,.software_interrupt          // 0x08 start && software int
         ldr     pc,.abort_prefetch              // 0x0C
         ldr     pc,.abort_data                  // 0x10
+#ifdef CYGNUM_HAL_ARM_VECTOR_0x14
+        .word   CYGNUM_HAL_ARM_VECTOR_0x14
+#else
         .word   0                               // unused
+#endif
         ldr     pc,.IRQ                         // 0x18
         ldr     pc,.FIQ                         // 0x1C
 

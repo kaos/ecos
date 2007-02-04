@@ -112,6 +112,24 @@ cdl_package CYGPKG_HAL_ARM_LPC2XXX {
         }
     }
 
+    # Important! Be very careful changing this value. That will always
+    # enter the LPC2XXX bootloader after reset and consequently will
+    # never run your code. You must know what you are doing. Look at
+    # arch. vectors.S for details.
+    cdl_option CYGNUM_HAL_ARM_VECTOR_0x14 {
+        display       "ARM vector at 0x14"
+        flavor        data
+        default_value 0xB4405F62
+        legal_values  0 to 0xFFFFFFFF
+        description "
+           In order to detect if a valid program is present, every
+           user program must have a program signature. This signature
+           is a word-wide number that is stored in the unused
+           location in the ARM7 vector table at 0x00000014. The
+           program signature is the two's compliment of the checksum
+           of the ARM vector table."
+    }
+
     cdl_option CYGNUM_HAL_ARM_LPC2XXX_VPBDIV {
         display       "VPB clock divisor"
         flavor        data
