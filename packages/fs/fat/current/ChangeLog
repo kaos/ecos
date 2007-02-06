@@ -1,3 +1,9 @@
+2007-02-05  Ya-Chau Yang <a8850607@stmail.fju.edu.tw> 
+            Savin Zlobec <savinz@users.sourceforge.net>
+
+	* src/fatfs_supp.c: Fixed FAT32 cluster handling in
+	fatfs_delete_file and fatfs_rename_file.
+
 2007-01-27  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/fatfs1.c: Fixed the format string to diag_printf()

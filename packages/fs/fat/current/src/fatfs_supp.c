@@ -1265,7 +1265,7 @@ print_raw_dentry(fat_raw_dir_entry_t* dentry)
     diag_printf("FAT: FDE acc date: %u\n", dentry->acc_date);
     diag_printf("FAT: FDE wrt time: %u\n", dentry->wrt_time);
     diag_printf("FAT: FDE wrt date: %u\n", dentry->wrt_date);
-    diag_printf("FAT: FDE cluster:  %u\n", dentry->cluster);
+    diag_printf("FAT: FDE cluster:  %u\n", (dentry->cluster_HI << 16) | dentry->cluster);
     diag_printf("FAT: FDE size:     %u\n", dentry->size);
 }
 #endif // TDE
@@ -2166,7 +2166,7 @@ fatfs_delete_file(fatfs_disk_t *disk, fatfs_dir_entry_t *file)
     }    
     
     // Free file clusters
-    free_cluster_chain(disk, raw_dentry.cluster);
+    free_cluster_chain(disk, raw_dentry.cluster | (raw_dentry.cluster_HI << 16));
     raw_dentry_set_deleted(disk, &raw_dentry);
     err = write_raw_dentry(disk, &file->disk_pos, &raw_dentry);
     return err;
@@ -2404,6 +2404,7 @@ fatfs_rename_file(fatfs_disk_t      *disk,
     raw_dentry_set_deleted(disk, &raw_dentry);
     raw_dentry.size    = 0;
     raw_dentry.cluster = 0;
+    raw_dentry.cluster_HI = 0;
     err = write_raw_dentry(disk, &target->disk_pos, &raw_dentry);
     if (err != ENOERR)
         return err;
@@ -2436,7 +2437,8 @@ fatfs_rename_file(fatfs_disk_t      *disk,
 
             if (0 == strncmp("..", raw_cdentry.name, 2))
             {
-                raw_cdentry.cluster = dir2->cluster;
+                raw_cdentry.cluster = dir2->cluster & 0xFFFF;
+                raw_cdentry.cluster_HI = dir2->cluster >> 16;
                 err = write_raw_dentry(disk, &pos, &raw_cdentry);
                 if (err != ENOERR)
                     return err;
