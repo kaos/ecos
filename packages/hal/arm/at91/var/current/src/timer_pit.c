@@ -66,7 +66,7 @@ hal_clock_initialize(cyg_uint32 period)
   
   /* Set Period Interval timer and enable interrupt */
   HAL_WRITE_UINT32((AT91_PITC + AT91_PITC_PIMR), 
-                   period |  
+                   (period - 1) |  
                    AT91_PITC_PIMR_PITEN |
                    AT91_PITC_PIMR_PITIEN);
   
@@ -81,11 +81,11 @@ hal_clock_reset(cyg_uint32 vector, cyg_uint32 period)
   cyg_uint32 reg;
   cyg_uint32 pimr;
   
-  CYG_ASSERT(period < 0xffffff, "Invalid HAL clock configuration");
+  CYG_ASSERT(period < AT91_PITC_VALUE_MASK, "Invalid HAL clock configuration");
   
   // Check that the PIT has the right period.
   HAL_READ_UINT32((AT91_PITC + AT91_PITC_PIMR), pimr);
-  if ((pimr & 0xffffff) != (period - 1)){
+  if ((pimr & AT91_PITC_VALUE_MASK) != (period - 1)) {
     HAL_WRITE_UINT32((AT91_PITC + AT91_PITC_PIMR), 
                      (period - 1) |  
                      AT91_PITC_PIMR_PITEN |
@@ -109,11 +109,11 @@ hal_clock_read(cyg_uint32 *pvalue)
   HAL_READ_UINT32((AT91_PITC + AT91_PITC_PIMR),pimr);
   if (!(pimr & AT91_PITC_PIMR_PITEN)) {
     HAL_WRITE_UINT32((AT91_PITC + AT91_PITC_PIMR), 
-                     0xffffff | AT91_PITC_PIMR_PITEN);
+                     AT91_PITC_VALUE_MASK | AT91_PITC_PIMR_PITEN);
   }
   
   HAL_READ_UINT32(AT91_PITC + AT91_PITC_PIIR, ir);
-  *pvalue = ir & 0xfffff;
+  *pvalue = ir & AT91_PITC_VALUE_MASK;
 }
 
 // -------------------------------------------------------------------------
@@ -135,7 +135,7 @@ void hal_delay_us(cyg_int32 usecs)
   
   // Calculate the wrap around period. 
   HAL_READ_UINT32(AT91_PITC + AT91_PITC_PIMR, piv);
-  piv = (piv & 0xffffff) - 1; 
+  piv = (piv & AT91_PITC_VALUE_MASK) - 1; 
   
   hal_clock_read(&val1);
   while (ticks > 0) {

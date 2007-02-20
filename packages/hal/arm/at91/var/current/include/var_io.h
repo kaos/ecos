@@ -379,8 +379,8 @@
 #define AT91_SPI_NPCS1      AT91_PIN(0,0,31) // SPI Chip Select 1
 #endif
 
-#define AT91_TC_TI0A0       AT91_PIN(0,1, 0) // Timer/Counter 0 IO Line A
-#define AT91_TC_TI0B0       AT91_PIN(0,1, 1) // Timer/Counter 0 IO Line B
+#define AT91_TC_TIOA0       AT91_PIN(0,1, 0) // Timer/Counter 0 IO Line A
+#define AT91_TC_TIOB0       AT91_PIN(0,1, 1) // Timer/Counter 0 IO Line B
 #define AT91_USART_SCK0     AT91_PIN(0,1, 2) // USART 0 Serial Clock
 #define AT91_SPI_NPCS3      AT91_PIN(0,1, 3) // SPI Chip Select 3
 #define AT91_TC_TCLK0       AT91_PIN(0,1, 4) // Timer/Counter 0 Clock Input
@@ -903,6 +903,10 @@
 #endif
 
 #define AT91_TC_TC0     0x00
+#define AT91_TC_TC1     0x40
+#define AT91_TC_TC2     0x80
+#define AT91_TC_TC_SIZE 0x40
+
 #define AT91_TC_CCR     0x00
 #define AT91_TC_CCR_CLKEN  0x01
 #define AT91_TC_CCR_CLKDIS 0x02
@@ -1020,6 +1024,21 @@
 #define AT91_TC_BCR     0xC0
 #define AT91_TC_BCR_SYNC   0x01
 #define AT91_TC_BMR     0xC4
+#define AT91_TC_BMR_MASK (0x3f)
+#define AT91_TC_BMR_TC0XC0S_TCLK0 (0 << 0) // XC0S = TCLK0
+#define AT91_TC_BMR_TC0XC0S_NONE  (1 << 0) // XC0S = none
+#define AT91_TC_BMR_TC0XC0S_TIOA1 (2 << 0) // XC0S = TIOA1
+#define AT91_TC_BMR_TC0XC0S_TIOA2 (3 << 0) // XC0S = TIOA2
+#define AT91_TC_BMR_TC1XC1S_TCLK1 (0 << 2) // XC1S = TCLK1
+#define AT91_TC_BMR_TC1XC1S_NONE  (1 << 2) // XC1S = none
+#define AT91_TC_BMR_TC1XC1S_TIOA0 (2 << 2) // XC1S = TIOA0
+#define AT91_TC_BMR_TC1XC1S_TIOA2 (3 << 2) // XC1S = TIOA2
+#define AT91_TC_BMR_TC2XC2S_TCLK2 (0 << 4) // XC2S = TCLK2
+#define AT91_TC_BMR_TC2XC2S_NONE  (1 << 4) // XC2S = none
+#define AT91_TC_BMR_TC2XC2S_TIOA0 (2 << 4) // XC2S = TIOA0
+#define AT91_TC_BMR_TC2XC2S_TIOA1 (3 << 4) // XC2S = TIOA1
+
+
 
 //=============================================================================
 // External Bus Interface
@@ -1618,6 +1637,7 @@
 #define AT91_PITC_PISR_PITS   (1 << 0)  // Periodic Interval Timer Status
 #define AT91_PITC_PIVR 0x08  // Period Interval Status Register
 #define AT91_PITC_PIIR 0x0C  // Period Interval Image Register
+#define AT91_PITC_VALUE_MASK 0x000fffff  // 20-bit period value
 #endif
 
 //=============================================================================
@@ -1848,46 +1868,44 @@
 #define AT91_EMAC 0xFFFBC000
 #endif
 
+#define AT91_EMAC_NCR  (0x00) // Network Control
+#define AT91_EMAC_NCR_LB     (1 <<  0) // Loopback
+#define AT91_EMAC_NCR_LBL    (1 <<  1) // Loopback Local 
+#define AT91_EMAC_NCR_RE     (1 <<  2) // Receiver Enable
+#define AT91_EMAC_NCR_TX     (1 <<  3) // Transmit Enable
+#define AT91_EMAC_NCR_MPE    (1 <<  4) // Management Port Enable
+#define AT91_EMAC_NCR_CSR    (1 <<  5) // Clear Statistics Registers
+#define AT91_EMAC_NCR_ISR    (1 <<  6) // Increment Statistics Registers
+#define AT91_EMAC_NCR_WES    (1 <<  7) // Write Enable for Statistics Registers
+#define AT91_EMAC_NCR_BP     (1 <<  8) // Back Pressure 
+#define AT91_EMAC_NCR_TSTART (1 <<  9) // Start Transmitter
+#define AT91_EMAC_NCR_THALT  (1 << 10) // Halt Transmitter
 
-#define AT91_EMAC_CTL  (0x00) // Network Control
-#define AT91_EMAC_CTL_LB     (1 <<  0) // Loopback
-#define AT91_EMAC_CTL_LBL    (1 <<  1) // Loopback Local 
-#define AT91_EMAC_CTL_RE     (1 <<  2) // Receiver Enable
-#define AT91_EMAC_CTL_TX     (1 <<  3) // Transmit Enable
-#define AT91_EMAC_CTL_MPE    (1 <<  4) // Management Port Enable
-#define AT91_EMAC_CTL_CSR    (1 <<  5) // Clear Statistics Registers
-#define AT91_EMAC_CTL_ISR    (1 <<  6) // Increment Statistics Registers
-#define AT91_EMAC_CTL_WES    (1 <<  7) // Write Enable for Statistics Registers
-#define AT91_EMAC_CTL_BP     (1 <<  8) // Back Pressure 
-#define AT91_EMAC_CTL_TSTART (1 <<  9) // Start Transmitter
-#define AT91_EMAC_CTL_THALT  (1 << 10) // Halt Transmitter
+#define AT91_EMAC_NCFG  (0x04) // Network Configuration
+#define AT91_EMAC_NCFG_SPD_10Mbps  (0 <<  0) // 10Mbps line speed
+#define AT91_EMAC_NCFG_SPD_100Mbps (1 <<  0) // 100Mbps line speed
+#define AT91_EMAC_NCFG_FD          (1 <<  1) // Full Deplex
+#define AT91_EMAC_NCFG_BR          (1 <<  2) // Bit Rate
+#define AT91_EMAC_NCFG_CAF         (1 <<  4) // Copy All Frames
+#define AT91_EMAC_NCFG_NBC         (1 <<  5) // Don't receiver Broadcasts
+#define AT91_EMAC_NCFG_MTI         (1 <<  6) // Multicast Hash Enable
+#define AT91_EMAC_NCFG_UNI         (1 <<  7) // Unicast hash enable
+#define AT91_EMAC_NCFG_BIG         (1 <<  8) // Receive upto 1522 byte frames
+#define AT91_EMAC_NCFG_EAE         (1 <<  9) // External Address match Enable
+#define AT91_EMAC_NCFG_CLK_HCLK_8  (0 << 10) // HCLK divided by 8
+#define AT91_EMAC_NCFG_CLK_HCLK_16 (1 << 10) // HCLK divided by 16
+#define AT91_EMAC_NCFG_CLK_HCLK_32 (2 << 10) // HCLK divided by 32
+#define AT91_EMAC_NCFG_CLK_HCLK_64 (3 << 10) // HCLK divided by 64
+#define AT91_EMAC_NCFG_CLK_MASK    (3 << 10) // HCLK mask
+#define AT91_EMAC_NCFG_CLK_RTY     (1 << 12) // Retry Test
+#define AT91_EMAC_NCFG_CLK_RMII    (1 << 13) // Enable RMII mode
+#define AT91_EMAC_NCFG_CLK_MII     (0 << 13) // Enable MII mode
+#define AT91_EMAC_NCFG_RLCE        (0 << 16) // Receive Length Check Enable
 
-#define AT91_EMAC_CFG  (0x04) // Network Configuration
-#define AT91_EMAC_CFG_SPD_10Mbps  (0 <<  0) // 10Mbps line speed
-#define AT91_EMAC_CFG_SPD_100Mbps (1 <<  0) // 100Mbps line speed
-#define AT91_EMAC_CFG_FD          (1 <<  1) // Full Deplex
-#define AT91_EMAC_CFG_BR          (1 <<  2) // Bit Rate
-#define AT91_EMAC_CFG_CAF         (1 <<  4) // Copy All Frames
-#define AT91_EMAC_CFG_NBC         (1 <<  5) // Don't receiver Broadcasts
-#define AT91_EMAC_CFG_MTI         (1 <<  6) // Multicast Hash Enable
-#define AT91_EMAC_CFG_UNI         (1 <<  7) // Unicast hash enable
-#define AT91_EMAC_CFG_BIG         (1 <<  8) // Receive upto 1522 byte frames
-#define AT91_EMAC_CFG_EAE         (1 <<  9) // External Address match Enable
-#define AT91_EMAC_CFG_CLK_HCLK_8  (0 << 10) // HCLK divided by 8
-#define AT91_EMAC_CFG_CLK_HCLK_16 (1 << 10) // HCLK divided by 16
-#define AT91_EMAC_CFG_CLK_HCLK_32 (2 << 10) // HCLK divided by 32
-#define AT91_EMAC_CFG_CLK_HCLK_64 (3 << 10) // HCLK divided by 64
-#define AT91_EMAC_CFG_CLK_MASK    (3 << 10) // HCLK mask
-#define AT91_EMAC_CFG_CLK_RTY     (1 << 12) // Retry Test
-#define AT91_EMAC_CFG_CLK_RMII    (1 << 13) // Enable RMII mode
-#define AT91_EMAC_CFG_CLK_MII     (0 << 13) // Enable MII mode
-#define AT91_EMAC_SR   (0x08) // Network Status
-#define AT91_EMAC_SR_MDIO_MASK (1 << 1) // MDIO Pin status
-#define AT91_EMAC_SR_IDLE      (1 << 2) // PHY logical is idle
-#define AT91_EMAC_TAR  (0x0c) // Transmit Address 
-#define AT91_EMAC_TCR  (0x10) // Transmit Control
-#define AT91_EMAC_TCR_LEN_MASK (0x3ff <<  0) // Transmit frame length
-#define AT91_EMAC_TCR_NCRC     (    1 << 15) // No CRC added by MAC
+#define AT91_EMAC_NSR   (0x08) // Network Status
+#define AT91_EMAC_NSR_MDIO_MASK (1 << 1) // MDIO Pin status
+#define AT91_EMAC_NSR_IDLE      (1 << 2) // PHY logical is idle
+
 #define AT91_EMAC_TSR  (0x14) // Transmit Status
 #define AT91_EMAC_TSR_OVR    (1 << 0) // Overrun
 #define AT91_EMAC_TSR_COL    (1 << 1) // Collision occurred
@@ -1896,12 +1914,15 @@
 #define AT91_EMAC_TSR_BNQ    (1 << 4) // Buffer Not Queues
 #define AT91_EMAC_TSR_COMP   (1 << 5) // Transmission Complete
 #define AT91_EMAC_TSR_UND    (1 << 6) // Transmit Underrun
+
 #define AT91_EMAC_RBQP (0x18) // Receiver Buffer Queue Pointer
 #define AT91_EMAC_TBQP (0x1c) // Transmit Buffer Queue Pointer
+
 #define AT91_EMAC_RSR  (0x20) // Receiver Status
 #define AT91_EMAC_RSR_BNA (1 << 0) // Buffer Not Available
 #define AT91_EMAC_RSR_REC (1 << 1) // Frame Received
 #define AT91_EMAC_RSR_OVR (1 << 2) // Transmit Buffer Overrun
+
 #define AT91_EMAC_ISR  (0x24) // Interrupt Status
 #define AT91_EMAC_ISR_DONE  (1 <<  0) // Management Done
 #define AT91_EMAC_ISR_RCOM  (1 <<  1) // Receiver Complete
@@ -1918,35 +1939,46 @@
 #define AT91_EMAC_IER  (0x28) // Interrupt Enable
 #define AT91_EMAC_IDR  (0x2c) // Interrupt Disable
 #define AT91_EMAC_IMR  (0x30) // Interrupt Mask
+
 #define AT91_EMAC_MAN  (0x34) // PHY Maintenance
-#define AT91_EMAC_MAN_DATA_MASK  (0xffff <<  0) // Data to/from PHY
-#define AT91_EMAC_MAN_CODE       (2      << 16) // Code
-#define AT91_EMAC_MAN_REGA_MASK  (0x1f   << 18) // Register Address Mask
+#define AT91_EMAC_MAN_DATA_MASK  (0xffff<<0)    // Data to/from PHY
+#define AT91_EMAC_MAN_CODE       (2<<16)        // Code
+#define AT91_EMAC_MAN_REGA_MASK  (0x1f<<18)     // Register Address Mask
 #define AT91_EMAC_MAN_REGA_SHIFT (18)           // Register Address Shift
-#define AT91_EMAC_MAN_PHY_MASK   (0x1f   << 23) // PHY Address Mask
+#define AT91_EMAC_MAN_PHY_MASK   (0x1f<<23)     // PHY Address Mask
 #define AT91_EMAC_MAN_PHY_SHIFT  (23)           // PHY Address Shift
-#define AT91_EMAC_MAN_RD         (2      << 28) // Read operation
-#define AT91_EMAC_MAN_WR         (1      << 28) // Write Operation
-#define AT91_EMAC_MAN_HIGH       (1      << 30) // Must be set to 1
-#define AT91_EMAC_FRA  (0x40) // Frames Transmitted OK
-#define AT91_EMAC_SCOL (0x44) // Single Collision Frame
-#define AT91_EMAC_MCOL (0x48) // Multiple Collision Frame
-#define AT91_EMAC_OK   (0x4c) // Frames Received OK
-#define AT91_EMAC_SEQE (0x50) // Frame Check Sequence Error
+#define AT91_EMAC_MAN_RD         (2<<28)        // Read operation
+#define AT91_EMAC_MAN_WR         (1<<28)        // Write Operation
+#define AT91_EMAC_MAN_SOF        (1<<30)        // Must be set to 01
+#define AT91_EMAC_MAN_PHYA(x)    ((x&0x1f)<<23) // Create a PHY Address
+#define AT91_EMAC_MAN_REGA(x)    ((x&0x1f)<<18) // Create a Register Address
+#define AT91_EMAC_MAN_DATA(x)    (x&0xffff)     // Create a Data word
+                                          
+
+#define AT91_EMAC_PTR  (0x38) // Pause Time Register
+#define AT91_EMAC_PFR  (0x3C) // Pause Frames Received
+#define AT91_EMAC_FTO  (0x40) // Frames Transmitted OK
+#define AT91_EMAC_SCF  (0x44) // Single Collision Frame
+#define AT91_EMAC_MCF  (0x48) // Multiple Collision Frame
+#define AT91_EMAC_FRO  (0x4c) // Frames Received OK
+#define AT91_EMAC_FCSE (0x50) // Frame Check Sequence Error
 #define AT91_EMAC_ALE  (0x54) // Alignment Error
 #define AT91_EMAC_DTR  (0x58) // Deferred Transmission Frame
 #define AT91_EMAC_LCOL (0x5c) // Late Collision
-#define AT91_EMAC_XCOL (0x60) // Excessive Collisions - ECAL!!
-#define AT91_EMAC_CSE  (0x64) // Carrier Sense Error
-#define AT91_EMAC_TUE  (0x68) // Transmit Underrun Error
-#define AT91_EMAC_CDE  (0x6c) // Code Error
-#define AT91_EMAC_ELR  (0x70) // Excessive Length
-#define AT91_EMAC_RJB  (0x74) // Receiver Jabber 
-#define AT91_EMAC_USF  (0x78) // Undersize Frame
-#define AT91_EMAC_SQEE (0x7c) // SEQ Test Error
-#define AT91_EMAC_DRFC (0x80) // Discarded RX Frame
-#define AT91_EMAC_HSH  (0x90) // Hash Address High [63:21]
-#define AT91_EMAC_HSL  (0x94) // Hash Address Low  [31:0]
+#define AT91_EMAC_XCOL (0x60) // Excessive Collisions - ECOL!!
+#define AT91_EMAC_TUND (0x64) // Transmit Underrun Error
+#define AT91_EMAC_CSE  (0x68) // Carrier Sense Error
+#define AT91_EMAC_RRE  (0x6c) // Receive Resource Errors
+#define AT91_EMAC_ROV  (0x70) // Receive Overrun
+#define AT91_EMAC_RSE  (0x74) // Receiver Symbol erros 
+#define AT91_EMAC_ELE  (0x78) // Excessive Length Errors
+#define AT91_EMAC_RJE  (0x7c) // Receive Jabber Errors
+#define AT91_EMAC_USF  (0x80) // Undersize Frame Errors
+#define AT91_EMAC_STE  (0x84) // SQE Test Errors
+#define AT91_EMAC_RLE  (0x88) // Receive Length Field Mismatch
+                              
+#define AT91_EMAC_HRB  (0x90) // Hash Address Low  [31:0]
+#define AT91_EMAC_HRT  (0x94) // Hash Address High [63:32]
 #define AT91_EMAC_SA1L (0x98) // Specific Address 1 Low, First 4 bytes
 #define AT91_EMAC_SA1H (0x9c) // Specific Address 1 High, Last 2 bytes
 #define AT91_EMAC_SA2L (0xa0) // Specific Address 2 Low, First 4 bytes
@@ -1955,9 +1987,15 @@
 #define AT91_EMAC_SA3H (0xac) // Specific Address 3 High, Last 2 bytes
 #define AT91_EMAC_SA4L (0xb0) // Specific Address 4 Low, First 4 bytes
 #define AT91_EMAC_SA4H (0xb4) // Specific Address 4 High, Last 2 bytes
+#define AT91_EMAC_TID  (0xb8) // Type ID Checking Register
+
+#define AT91_EMAC_USRIO  (0xc0) // User IO Register
+#define AT91_EMAC_USRIO_RMII   (1<<0) // RMII Mode
+#define AT91_EMAC_USRIO_CLKEN  (1<<1) // Clock Enable
 
 // Receiver Buffer Descriptor
 #define AT91_EMAC_RBD_ADDR 0x0  // Address to beginning of buffer
+#define AT91_EMAC_RBD_ADDR_MASK   (0xFFFFFFFC) // Address Mask masking the reserved bits
 #define AT91_EMAC_RBD_ADDR_OWNER_EMAC (0 << 0) // EMAC owns receiver buffer
 #define AT91_EMAC_RBD_ADDR_OWNER_SW   (1 << 0) // SW owns receiver buffer
 #define AT91_EMAC_RBD_ADDR_WRAP       (1 << 1) // Last receiver buffer
@@ -2248,12 +2286,103 @@
 
 #endif
 
+//=============================================================================
+// Pulse Width Modulation (PWM)
+
+#if defined(CYGHWR_HAL_ARM_AT91SAM7)
+
+#ifndef AT91_PWM
+#define AT91_PWM     0XFFFCC000
+#define AT91_PWM_CH0 0xFFFCC200
+#define AT91_PWM_CH1 0xFFFCC220
+#define AT91_PWM_CH2 0xFFFCC240
+#define AT91_PWM_CH3 0xFFFCC260
+#define AT91_PWM_CH_SIZE 0x20
+#endif
+
+#if defined(CYGHWR_HAL_ARM_AT91SAM7)
+#define AT91_PWM_CHANNELS 4
+#endif
+
+#define AT91_PWM_MR  (0x00) // Mode 
+#define AT91_PWM_MR_DIVA_MASK  (0xff) // CLKA divide factor mask
+#define AT91_PWM_MR_DIVA_SHIFT (00)   // CLKA divide factor shirt
+#define AT91_PWM_MR_PREA_MCK_BY_1    ( 0 <<  8) // Prescale A MCLK / 1
+#define AT91_PWM_MR_PREA_MCK_BY_2    ( 1 <<  8) // Prescale A MCLK / 2
+#define AT91_PWM_MR_PREA_MCK_BY_4    ( 2 <<  8) // Prescale A MCLK / 4
+#define AT91_PWM_MR_PREA_MCK_BY_8    ( 3 <<  8) // Prescale A MCLK / 8
+#define AT91_PWM_MR_PREA_MCK_BY_16   ( 4 <<  8) // Prescale A MCLK / 16
+#define AT91_PWM_MR_PREA_MCK_BY_32   ( 5 <<  8) // Prescale A MCLK / 32
+#define AT91_PWM_MR_PREA_MCK_BY_64   ( 6 <<  8) // Prescale A MCLK / 64
+#define AT91_PWM_MR_PREA_MCK_BY_128  ( 7 <<  8) // Prescale A MCLK / 128
+#define AT91_PWM_MR_PREA_MCK_BY_256  ( 8 <<  8) // Prescale A MCLK / 256
+#define AT91_PWM_MR_PREA_MCK_BY_512  ( 9 <<  8) // Prescale A MCLK / 512
+#define AT91_PWM_MR_PREA_MCK_BY_1024 (10 <<  8) // Prescale A MCLK / 1024
+
+#define AT91_PWM_MR_DIVB_MASK  (0xff) // CLKB divide factor mask
+#define AT91_PWM_MR_DIVB_SHIFT (16)   // CLKB divide factor shirt
+#define AT91_PWM_MR_PREB_MCK_BY_1    ( 0 << 24) // Prescale B MCLK / 1
+#define AT91_PWM_MR_PREB_MCK_BY_2    ( 1 << 24) // Prescale B MCLK / 2
+#define AT91_PWM_MR_PREB_MCK_BY_4    ( 2 << 24) // Prescale B MCLK / 4
+#define AT91_PWM_MR_PREB_MCK_BY_8    ( 3 << 24) // Prescale B MCLK / 8
+#define AT91_PWM_MR_PREB_MCK_BY_16   ( 4 << 24) // Prescale B MCLK / 16
+#define AT91_PWM_MR_PREB_MCK_BY_32   ( 5 << 24) // Prescale B MCLK / 32
+#define AT91_PWM_MR_PREB_MCK_BY_64   ( 6 << 24) // Prescale B MCLK / 64
+#define AT91_PWM_MR_PREB_MCK_BY_128  ( 7 << 24) // Prescale B MCLK / 128
+#define AT91_PWM_MR_PREB_MCK_BY_256  ( 8 << 24) // Prescale B MCLK / 256
+#define AT91_PWM_MR_PREB_MCK_BY_512  ( 9 << 24) // Prescale B MCLK / 512
+#define AT91_PWM_MR_PREB_MCK_BY_1024 (10 << 24) // Prescale B MCLK / 1024
+#define AT91_PWM_ENA (0x04) // Enable
+#define AT91_PWM_CHANNEL_ID_0 (0)    // Channel ID 0
+#define AT91_PWM_CHANNEL_ID_1 (1)    // Channel ID 1
+#define AT91_PWM_CHANNEL_ID_2 (2)    // Channel ID 2
+#define AT91_PWM_CHANNEL_ID_3 (3)    // Channel ID 3
+#define AT91_PWM_CHANNEL_ID_4 (4)    // Channel ID 4
+#define AT91_PWM_CHANNEL_ID_5 (5)    // Channel ID 5
+#define AT91_PWM_CHANNEL_ID_6 (6)    // Channel ID 6
+#define AT91_PWM_CHANNEL_ID_7 (7)    // Channel ID 7
+#define AT91_PWM_DIS (0x08) // Disable 
+#define AT91_PWM_SR  (0x0c) // Status 
+#define AT91_PWM_IER (0x10) // Interrupt Enable
+#define AT91_PWM_IDR (0x14) // Interrupt Disable
+#define AT91_PWM_IMR (0x18) // Interrupt Mask
+#define AT91_PWM_ISR (0x1c) // Interrupt Status
+#define AT91_PWM_VR  (0xfc) // Version
+
+// Channel registers. 
+#define AT91_PWM_CMR   (0x00) // Channel Mode
+#define AT91_PWM_CMR_CPRE_MCK_BY_1     0  // Channel Prescale MCL / 1
+#define AT91_PWM_CMR_CPRE_MCK_BY_2     1  // Channel Prescale MCL / 2
+#define AT91_PWM_CMR_CPRE_MCK_BY_4     2  // Channel Prescale MCL / 4
+#define AT91_PWM_CMR_CPRE_MCK_BY_8     3  // Channel Prescale MCL / 8
+#define AT91_PWM_CMR_CPRE_MCK_BY_16    4  // Channel Prescale MCL / 16
+#define AT91_PWM_CMR_CPRE_MCK_BY_32    5  // Channel Prescale MCL / 32
+#define AT91_PWM_CMR_CPRE_MCK_BY_64    6  // Channel Prescale MCL / 64
+#define AT91_PWM_CMR_CPRE_MCK_BY_128   7  // Channel Prescale MCL / 128
+#define AT91_PWM_CMR_CPRE_MCK_BY_256   8  // Channel Prescale MCL / 256
+#define AT91_PWM_CMR_CPRE_MCK_BY_512   9  // Channel Prescale MCL / 512
+#define AT91_PWM_CMR_CPRE_MCK_BY_1024 10 // Channel Prescale MCL / 1024
+#define AT91_PWM_CMR_CPRE_MCK_A       11 // Channel MCLK A
+#define AT91_PWM_CMR_CPRE_MCK_B       12 // Channel MCLK B
+#define AT91_PWM_CMR_CALG_LEFT   (0 <<  8) // Left align period
+#define AT91_PWM_CMR_CALG_CENTER (1 <<  8) // Center align period
+#define AT91_PWM_CMR_CPOL_LOW    (0 <<  9) // Low to start with
+#define AT91_PWM_CMR_CPOL_HIGH   (1 <<  9) // High to start with
+#define AT91_PWM_CPD_DUTY        (0 << 10) // Notify the duty cycle
+#define AT91_PWM_CPD_PERIOD      (1 << 10) // Notify the period
+#define AT91_PWM_CDTY  (0x04) // Channel Duty Cycle
+#define AT91_PWM_CPRDR (0x08) // Channel Period
+#define AT91_PWM_CCNTR (0x0C) // Channel Counter
+#define AT91_PWM_CUPDR (0x10) // Channel Update
+
+#endif
 
 //=============================================================================
 // FIQ interrupt vector which is shared by all HAL varients.
 
 #define CYGNUM_HAL_INTERRUPT_FIQ 0
 
+//=============================================================================
 // Macros for access the GPIO lines and configuring peripheral pins
 
 // Given a pin description, determine which PIO controller it is on

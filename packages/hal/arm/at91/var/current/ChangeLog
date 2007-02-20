@@ -1,3 +1,21 @@
+2007-02-13  John Eigelaar <jeigelaar@mweb.co.za>
+ 
+ 	* include/var_io.h: Fixed up the EMAC definitions to work
+ 	with the brand new EMAC driver  
+
+2007-02-01  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/var_io.h: Added PWM registers.
+
+2007-01-25  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/var_io.h (AT91_PITC_VALUE_MASK): New - mask to access
+	the PITC value which is a 20 bit number.
+	* src/timer_pit.c: Change all hard coded mask for the period, 
+	some of which were wrong, to use AT91_PITC_VALUE_MASK. 
+	When initializing the PIT, remember to decrement the period first.
+	Bugs found by Jim Seymour.
+
 2006-09-08  John Eigelaar <jeigelaar@mweb.co.za>
 
 	* include/var_io.h: Added definition for SPI MODFDIS bit 
