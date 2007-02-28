@@ -553,14 +553,26 @@ number:                 if ((dprec = prec) >= 0)
                                         break;
 
                                 case DEC:
-                                        /* many numbers are 1 digit */
-                                        while (_uquad >= 10) {
-                                                /* The following is usually faster than using a modulo */
-                                                u_quad_t next = _uquad / 10;
-                                                *--cp = to_char(_uquad - (next * 10));
-                                                _uquad = next;
+                                        if (!(flags & QUADINT)) {
+                                                /* many numbers are 1 digit */
+                                                unsigned long v = (unsigned long)_uquad;
+                                                while (v >= 10) {
+	                                                /* The following is usually faster than using a modulo */
+                                                        unsigned long next = v / 10;
+                                                        *--cp = to_char(v - (next * 10));
+                                                        v = next;
+                                                }
+                                                *--cp = to_char(v);
                                         }
-                                        *--cp = to_char(_uquad);
+                                        else {
+                                                while (_uquad >= 10) {
+	                                                /* The following is usually faster than using a modulo */
+                                                        u_quad_t next = _uquad / 10;
+                                                        *--cp = to_char(_uquad - (next * 10));
+                                                        _uquad = next;
+                                                }
+                                                *--cp = to_char(_uquad);
+                                        }
                                         break;
 
                                 case HEX:

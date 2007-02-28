@@ -1,3 +1,10 @@
+2007-02-05  Sergei Organov  <osv@javad.com>
+
+	* src/output/vfnprintf.cxx (vfnprintf): while formatting integers
+	in decimal, convert the value to unsigned long from unsigned long
+	long before processing, unless we actually print long long
+	argument. This tremendously speeds-up the formatting.
+
 2007-01-16  Sergei Organov  <osv@javad.com>
 
 	Speed-up [v]s[n]printf() functions by a factor of about 2+. In
