@@ -132,4 +132,13 @@ cdl_package CYGPKG_DEVS_ETH_PHY {
           Include support for ICS 1893 and 1893AF PHY"
     }
 
+    cdl_option CYGHWR_DEVS_ETH_PHY_DM9161A {
+        display       "Davicom DM9161A"
+        flavor        bool
+        default_value 0
+        compile       -library=libextras.a DM9161A.c
+        description "
+          Include support for the Davicom DM9161A PHY"
+    }
+
 }
