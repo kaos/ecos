@@ -1,3 +1,8 @@
+2006-09-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/spi_at91.c (spi_at91_transaction_begin): Don't use #ifdef
+	inside a macro invocation. The compiler throws a wobbly.
+
 2006-09-07  John Eigelaar <jeigelaar@mweb.co.za>
 
 	* src/spi_at91.c: Fixed the chip select functions.

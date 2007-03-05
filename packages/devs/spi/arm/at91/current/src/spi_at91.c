@@ -342,7 +342,7 @@ spi_at91_set_npcs(cyg_spi_at91_bus_t *spi_bus,int val)
    {
       if(spi_bus->cs_en[ctr])
       {
-         HAL_ARM_AT91_GPIO_PUT(spi_bus->cs_gpio[ctr], (val & (1<<ctr)));
+        HAL_ARM_AT91_GPIO_PUT(spi_bus->cs_gpio[ctr], (val & (1<<ctr)));
       }
    }
 }
@@ -545,19 +545,19 @@ spi_at91_transaction_begin(cyg_spi_device *dev)
        cause havoc with the driver */ 
 
     // Put SPI bus into master mode
-    if (1 == at91_spi_dev->cl_div32)
-        HAL_WRITE_UINT32(spi_bus->base+AT91_SPI_MR, AT91_SPI_MR_MSTR | 
-                                               AT91_SPI_MR_DIV32
+    if (1 == at91_spi_dev->cl_div32) {
+      val = AT91_SPI_MR_MSTR | AT91_SPI_MR_DIV32;
 #ifdef AT91_SPI_MR_MODFDIS
-                                               | AT91_SPI_MR_MODFDIS
+      val |= AT91_SPI_MR_MODFDIS;
 #endif
-                                               );
-    else
-        HAL_WRITE_UINT32(spi_bus->base+AT91_SPI_MR, AT91_SPI_MR_MSTR 
+      HAL_WRITE_UINT32(spi_bus->base+AT91_SPI_MR, val);
+    } else {
+      val = AT91_SPI_MR_MSTR;
 #ifdef AT91_SPI_MR_MODFDIS
-                                                    | AT91_SPI_MR_MODFDIS
+      val |= AT91_SPI_MR_MODFDIS;
 #endif
-                                                    );
+      HAL_WRITE_UINT32(spi_bus->base+AT91_SPI_MR, val);
+    }
 }
 
 static void 
