@@ -1,3 +1,4 @@
+* AT91 Ethernet device driver for EMAC by John Eigelaar and Andrew Lunn. 
 * MMC/SPI driver provided by eCosCentric Ltd.
 * USB device driver for Philips D12.
 * Port to ATMEL AT91SAM7X by John Eigelaar

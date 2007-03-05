@@ -4204,6 +4204,16 @@ package CYGPKG_DEVS_ETH_FRV_CB70 {
                          Davicom DM9000 ethernet interface."
 }
 
+
+package CYGPKG_DEVS_ETH_ARM_AT91 {
+        alias           { "AT91 Ethernet driver" at91_eth_driver }
+        directory       devs/eth/arm/at91
+        script          at91_eth.cdl
+        hardware
+        description     "Ethernet driver for the AT91 family of chips"
+}
+
+
 # --------------------------------------------------------------------------
 
 # ==========================================================================
@@ -4396,8 +4406,8 @@ target at91sam7xek {
                    CYGPKG_DEVICES_WATCHDOG_ARM_AT91WDTC
                    CYGPKG_DEVS_USB_AT91
                    CYGPKG_DEVS_ETH_PHY
+                   CYGPKG_DEVS_ETH_ARM_AT91
         }
-#                   CYGPKG_DEVS_ETH_ARM_AT91
         description "
         The at91sam7xek target provides the packages needed to run eCos on an 
         Atmel AT91SAM7X-EK evaluation board."

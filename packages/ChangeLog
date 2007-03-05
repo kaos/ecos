@@ -1,5 +1,11 @@
+2007-02-13 John Eigelaar <jeigelaar@mweb.co.za>
+	   Andrew Lunn <andrew.lunn@ascom.ch>
+
+	* ecos.db: Ethernet device driver for AT91 EMAC.
+	
 2007-01-10 Ilija Koco <ilijak@siva.com.mk>
-    * ecos.db: Splitted esci directory in esci/drv and esci/hdr
+
+        * ecos.db: Splitted esci directory in esci/drv and esci/hdr
 
 2007-01-02  Uwe Kindler <uwe_kindler@web.de>
 
