@@ -120,6 +120,17 @@ void hal_plf_hardware_init (void)
      watchdog driver, hence the conditional compilation. */
   HAL_WRITE_UINT32(AT91_WDTC + AT91_WDTC_WDMR, AT91_WDTC_WDMR_DIS); 
 #endif
+
+/* Perform some platform specific bits to get the Ethernet hardware
+   setup. Specifically if a specific phy is used and does not start in
+   the correct mode a function needs to be supplied as part of the plf
+   to do the necessary initializations.
+*/
+#ifdef CYGPKG_DEVS_ETH_ARM_AT91
+#ifdef HAL_PLF_ETH_INIT
+       HAL_PLF_ETH_INIT();
+#endif
+#endif
 }
 
 // Calculate the baud value to be programmed into the serial port baud

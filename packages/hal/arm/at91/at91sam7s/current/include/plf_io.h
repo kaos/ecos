@@ -62,6 +62,9 @@
 
 #define AT91_SPI AT91_SPI0
 
+//Extra SPI control bits
+#define AT91_SPI_MR_MODFDIS (1<<4)
+
 // DMA registers 
 #define AT91_SPI_RPR  0x100 // Receive Pointer Register
 #define AT91_SPI_RCR  0x104 // Receive Counter Register
@@ -188,8 +191,14 @@ extern cyg_uint32 hal_at91_us_baud(cyg_uint32 baud);
 extern void hal_plf_hardware_init(void);
 #define HAL_PLF_HARDWARE_INIT() \
     hal_plf_hardware_init()
+
+#ifdef CYGHWR_HAL_ARM_AT91SAM7X
+extern void hal_plf_eth_init(void);
+#define HAL_PLF_ETH_INIT() \
+    hal_plf_eth_init()
 #endif          
 
+#endif  //__ASSEMBLER__         
 
 
 #endif //CYGONCE_HAL_PLF_IO_H
