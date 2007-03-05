@@ -1,3 +1,8 @@
+2007-01-17  John Eigelaar <jeigelaar@mweb.co.za>
+
+        * Added hal_plf_eth_init() in order to initialise the Davicom
+	  9161A PHY properly on the Evaluation board
+	  
 2007-01-02  Uwe Kindler <uwe_kindler@web.de>
 
 	* cdl/hal_arm_at91sam7s.cdl Moved HAL_PLATFORM_XXX defines and

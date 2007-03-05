@@ -73,5 +73,41 @@ hal_at91_led (int val)
   HAL_ARM_AT91_GPIO_PUT(AT91_GPIO_PB22, !(val & 8));
 }
 
+void hal_plf_eth_init(void)
+{
+   cyg_uint32 stat;
+
+   /* Enable the PIOB Clock */
+   HAL_WRITE_UINT32(AT91_PMC + AT91_PMC_PCER, AT91_PMC_PCER_PIOB);
+  
+   /* RXDV / Testmode select */
+   HAL_ARM_AT91_GPIO_CFG_DIRECTION(AT91_GPIO_PB15, AT91_PIN_IN);
+   HAL_ARM_AT91_GPIO_CFG_PULLUP(AT91_GPIO_PB15, AT91_PIN_PULLUP_DISABLE);
+
+   //TODO: The errata reports that the RMII mode for the SAM7X does not work.
+   //      It would probably still be a good idea to use the RMII/MII CDL 
+   //      configuration to select the appropriate mode here
+   /* COL / !MII select */
+   HAL_ARM_AT91_GPIO_CFG_DIRECTION(AT91_GPIO_PB16, AT91_PIN_IN);
+   HAL_ARM_AT91_GPIO_CFG_PULLUP(AT91_GPIO_PB16, AT91_PIN_PULLUP_DISABLE);
+
+   /* TXCLK / ISOLATE */
+   HAL_ARM_AT91_GPIO_CFG_DIRECTION(AT91_GPIO_PB0, AT91_PIN_IN);
+   HAL_ARM_AT91_GPIO_CFG_PULLUP(AT91_GPIO_PB0, AT91_PIN_PULLUP_DISABLE);
+
+   /* Power Down Mode */
+   HAL_ARM_AT91_GPIO_CFG_DIRECTION(AT91_GPIO_PB18, AT91_PIN_OUT);
+   HAL_ARM_AT91_GPIO_PUT(AT91_GPIO_PB19,0);
+
+   /* All the lines setup correctly. Now do a external reset and let the phy 
+      start up in the correct mode */
+   HAL_WRITE_UINT32(AT91_RST+AT91_RST_RMR,AT91_RST_RMR_KEY|(1<<0x8));
+   HAL_WRITE_UINT32(AT91_RST+AT91_RST_RCR,AT91_RST_RCR_KEY|AT91_RST_RCR_EXTRST);
+
+   do {
+     HAL_READ_UINT32(AT91_RST+AT91_RST_RSR,stat);
+   } while (!(stat&AT91_RST_RSR_NRST_SET));
+}
+
 //--------------------------------------------------------------------------
 // EOF at91sam7sek_misc.c

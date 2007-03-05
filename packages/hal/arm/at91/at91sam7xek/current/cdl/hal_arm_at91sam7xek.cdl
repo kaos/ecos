@@ -58,7 +58,10 @@ cdl_package CYGPKG_HAL_ARM_AT91SAM7XEK {
     requires      { CYGHWR_HAL_ARM_AT91 == "AT91SAM7S" }
     requires      { CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7x256" ||
                     CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7x128" }
-                        
+		    
+    requires      { is_active(CYGPKG_DEVS_ETH_PHY) implies
+                    (1 == CYGHWR_DEVS_ETH_PHY_DM9161A) }
+    		                            
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_arm_at91sam7xek.h>"
         puts $::cdl_header "/***** proc output start *****/"
