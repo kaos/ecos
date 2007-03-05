@@ -520,7 +520,7 @@
 #define AT91_DBG_DRXD   AT91_PIN(0,0,27) // DBGU Receive Data 
 #define AT91_DBG_DTXD   AT91_PIN(0,0,28) // DBGU Transmit Data 
 #define AT91_INT_FIQ    AT91_PIN(0,0,29) // Fast Interrupt Request 
-#define AT91_INT_IRQ0   AT91_PIN(0,0,39) // Interrupt Request 0
+#define AT91_INT_IRQ0   AT91_PIN(0,0,30) // Interrupt Request 0
 
 //PIO controller A, peripheral B
 #define AT91_SPI1_NPCS1  AT91_PIN(0,1, 2) // SPI 1 Chip Select 1 
@@ -2529,20 +2529,20 @@
   HAL_ARM_AT91_GPIOX_CFG_INTERRUPT(_pin_, _enable_, 0, AT91_PIO);   \
   CYG_MACRO_END
 
-// Configure a GPIO pin to generate interrupts
+// Set a GPIO pin to one
 #define HAL_ARM_AT91_GPIO_SET(_pin_)                                \
   CYG_MACRO_START                                                   \
   HAL_ARM_AT91_GPIOX_SET(_pin_, 0, AT91_PIO);                       \
   CYG_MACRO_END
 
-// Configure a GPIO pin to generate interrupts
+// Reset a GPIO pin to zero
 #define HAL_ARM_AT91_GPIO_RESET(_pin_)                              \
   CYG_MACRO_START                                                   \
   HAL_ARM_AT91_GPIOX_RESET(_pin_, 0, AT91_PIO);                     \
   CYG_MACRO_END
 
-// Configure a GPIO pin to generate interrupts
-#define HAL_ARM_AT91_GPIO_GET(_pin_, _value_)                       \
+// Get the state of a GPIO pin
+#define HAL_ARM_AT91_GPIO_GET(_pin_, _value_)			     \
   CYG_MACRO_START                                                    \
   HAL_ARM_AT91_GPIOX_GET(_pin_, _value_, 0, AT91_PIO);               \
   CYG_MACRO_END
@@ -2592,7 +2592,7 @@ CYG_MACRO_END
   HAL_ARM_AT91_GPIOX_RESET(_pin_, 1, AT91_PIOB);                    \
   CYG_MACRO_END
 
-// Configure a GPIO pin to generate interrupts
+// Get the state of a GPIO pin
 #define HAL_ARM_AT91_GPIO_GET(_pin_, _value_)                        \
   CYG_MACRO_START                                                    \
   HAL_ARM_AT91_GPIOX_GET(_pin_, _value_, 0, AT91_PIO);               \

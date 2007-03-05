@@ -1,3 +1,8 @@
+2007-03-05  Andrew Lunn <andrew.lunn@ascom.ch>
+
+	* include/var_io.h: Fix a few typos pointed out by
+	Igor B. Poretsky.
+	
 2007-02-13  John Eigelaar <jeigelaar@mweb.co.za>
  
  	* include/var_io.h: Fixed up the EMAC definitions to work
