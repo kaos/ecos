@@ -1,3 +1,8 @@
+2007-03-21  Jay Foster <jay@systech.com>
+
+	* cdl/freebsd_net.cdl: Added option to enable BOOTP_COMPAT to
+	allow bootp to work.
+
 2006-07-19  Philip Keller  <keller@metrolab.ch>
 
 	* src/ecos/support.c (cyg_netint): Don't handle events that don't

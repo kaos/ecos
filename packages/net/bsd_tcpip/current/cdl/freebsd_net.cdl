@@ -431,6 +431,20 @@ cdl_package CYGPKG_NET_FREEBSD_STACK {
         flavor  none
         no_define
 
+        cdl_option CYGOPT_NET_FREEBSD_STACK_ACCEPT_UNICAST {
+            display "Accept unicast packets on INADDR_ANY interfaces"
+            flavor  bool
+            no_define
+            define        BOOTP_COMPAT
+            default_value 0
+            description   "This option enables passing of unicast
+                IP packets to the application, when the interface
+                IP address is configured as INADDR_ANY (0.0.0.0).
+                This option is useful for some applications that
+                need to receive unicast IP packets when the interface
+                address is unknown.  Such an application is bootp."
+        }
+
         cdl_option CYGPKG_NET_FREEBSD_STACK_CFLAGS_ADD {
             display "Additional compiler flags"
             flavor  data
