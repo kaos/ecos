@@ -1,3 +1,9 @@
+2007-03-23  John Eigelaar  <jeigelaar@mweb.co.za>
+
+	* src/if_at91.c: Added support for the ETH_DRV_SET_MAC_ADDRESS
+	control key. Added functionality to clear the transmit buffer
+	ownershiop bits when the TXCOMP status is detected.
+
 2007-01-17  John Eigelaar  <jeigelaar@mweb.co.za>
 
 	* src/if_at91.c * include/at91_eth.cdl: Working implementation

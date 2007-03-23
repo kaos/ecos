@@ -174,6 +174,7 @@ typedef struct at91_eth_priv_s
    tbd_t tbd[CYGNUM_DEVS_ETH_ARM_AT91_TX_BUFS];
    unsigned long curr_tx_key;
    cyg_bool tx_busy;
+   cyg_uint32 last_tbd_idx;
    cyg_uint32 curr_tbd_idx;
    cyg_uint32 curr_rbd_idx;
 #ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
@@ -660,8 +661,33 @@ static int
 at91_eth_control(struct eth_drv_sc *sc, unsigned long key,
                  void *data, int length)
 {
-   diag_printf("%s.%d: key %lx\n", __FUNCTION__, __LINE__, key);
-   return (1);
+
+   switch (key)
+   {
+      case ETH_DRV_SET_MAC_ADDRESS:
+         {
+            if(length >= ETHER_ADDR_LEN)
+            {
+               at91_eth_stop(sc);
+
+               cyg_uint8 * enaddr = (cyg_uint8 *)data;
+               debug1_printf("AT91_ETH: %02x:%02x:%02x:%02x:%02x:%02x\n",
+                             enaddr[0],enaddr[1],enaddr[2],
+                             enaddr[3],enaddr[4],enaddr[5]);
+
+               at91_set_mac((at91_eth_priv_t *)sc->driver_private,enaddr,1);
+               at91_eth_start(sc,enaddr,0);
+               return 0;
+            }
+            return 1;
+         }
+      default:
+         {
+            diag_printf("%s.%d: key %lx\n", __FUNCTION__, __LINE__, key);
+            return (1);
+         }
+   }
+
 }
 
 // This function is called to see if another packet can be sent.
@@ -700,6 +726,9 @@ at91_eth_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
    cyg_uint32 sr;
 
    priv->tx_busy = true;
+
+   priv->last_tbd_idx = priv->curr_tbd_idx;
+
    for(i = 0;i<sg_len;i++)
    {
       priv->tbd[priv->curr_tbd_idx].addr = sg_list[i].buf;
@@ -729,6 +758,25 @@ at91_eth_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
 
    at91_start_transmitter(priv);
 }
+
+static void at91_reset_tbd(at91_eth_priv_t *priv)
+{
+     while(priv->curr_tbd_idx != priv->last_tbd_idx)
+     {
+        if(priv->last_tbd_idx == (CYGNUM_DEVS_ETH_ARM_AT91_TX_BUFS-1))
+        {
+           priv->tbd[priv->last_tbd_idx].sr = 
+             (AT91_EMAC_TBD_SR_USED|AT91_EMAC_TBD_SR_WRAP);
+           priv->last_tbd_idx = 0;
+        }
+        else
+        {
+           priv->tbd[priv->last_tbd_idx].sr = AT91_EMAC_TBD_SR_USED;
+           priv->last_tbd_idx++;
+        }
+     }
+}
+
 
 //======================================================================
 
@@ -810,6 +858,7 @@ at91_eth_deliver(struct eth_drv_sc *sc)
    /* Check that the last transmission is completed */
    if (tsr&AT91_EMAC_TSR_COMP) //5
    {
+      at91_reset_tbd(priv);
       _eth_drv_tx_done(sc,priv->curr_tx_key,0);
       priv->tx_busy = false;
    }
