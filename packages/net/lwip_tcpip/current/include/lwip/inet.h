@@ -47,9 +47,9 @@ u16_t inet_chksum_pseudo(struct pbuf *p,
        struct ip_addr *src, struct ip_addr *dest,
        u8_t proto, u16_t proto_len);
 
-u32_t inet_addr(const char *cp);
-s8_t inet_aton(const char *cp, struct in_addr *addr);
-char *inet_ntoa(struct in_addr addr); /* returns ptr to static buffer; not reentrant! */
+externC u32_t inet_addr(const char *cp);
+externC s8_t inet_aton(const char *cp, struct in_addr *addr);
+externC char *inet_ntoa(struct in_addr addr); /* returns ptr to static buffer; not reentrant! */
 
 #ifdef htons
 #undef htons
@@ -77,10 +77,10 @@ char *inet_ntoa(struct in_addr addr); /* returns ptr to static buffer; not reent
 #define htonl lwip_htonl
 #define ntohl lwip_ntohl
 #endif
-u16_t htons(u16_t x);
-u16_t ntohs(u16_t x);
-u32_t htonl(u32_t x);
-u32_t ntohl(u32_t x);
+externC u16_t htons(u16_t x);
+externC u16_t ntohs(u16_t x);
+externC u32_t htonl(u32_t x);
+externC u32_t ntohl(u32_t x);
 #endif
 
 #endif /* __LWIP_INET_H__ */

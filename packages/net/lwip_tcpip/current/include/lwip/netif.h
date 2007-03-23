@@ -119,32 +119,32 @@ extern struct netif *netif_list;
 extern struct netif *netif_default;
 
 /* netif_init() must be called first. */
-void netif_init(void);
+externC void netif_init(void);
 
-struct netif *netif_add(struct netif *netif, struct ip_addr *ipaddr, struct ip_addr *netmask,
+externC struct netif *netif_add(struct netif *netif, struct ip_addr *ipaddr, struct ip_addr *netmask,
       struct ip_addr *gw,
       void *state,
       err_t (* init)(struct netif *netif),
       err_t (* input)(struct pbuf *p, struct netif *netif));
 
-void
+externC void
 netif_set_addr(struct netif *netif,struct ip_addr *ipaddr, struct ip_addr *netmask,
     struct ip_addr *gw);
-void netif_remove(struct netif * netif);
+externC void netif_remove(struct netif * netif);
 
 /* Returns a network interface given its name. The name is of the form
    "et0", where the first two letters are the "name" field in the
    netif structure, and the digit is in the num field in the same
    structure. */
-struct netif *netif_find(char *name);
+externC struct netif *netif_find(char *name);
 
-void netif_set_default(struct netif *netif);
+externC void netif_set_default(struct netif *netif);
 
-void netif_set_ipaddr(struct netif *netif, struct ip_addr *ipaddr);
-void netif_set_netmask(struct netif *netif, struct ip_addr *netmast);
-void netif_set_gw(struct netif *netif, struct ip_addr *gw);
-void netif_set_up(struct netif *netif);
-void netif_set_down(struct netif *netif);
-u8_t netif_is_up(struct netif *netif);
+externC void netif_set_ipaddr(struct netif *netif, struct ip_addr *ipaddr);
+externC void netif_set_netmask(struct netif *netif, struct ip_addr *netmast);
+externC void netif_set_gw(struct netif *netif, struct ip_addr *gw);
+externC void netif_set_up(struct netif *netif);
+externC void netif_set_down(struct netif *netif);
+externC u8_t netif_is_up(struct netif *netif);
 
 #endif /* __LWIP_NETIF_H__ */
