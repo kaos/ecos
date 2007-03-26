@@ -113,6 +113,15 @@ package CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN {
                        FlexCAN modules in MCF52xx ColdFire processors."
 }
 
+package CYGPKG_DEVS_CAN_AT91SAM7 {
+    alias             { "AT91SAM7 CAN device drivers"
+                        devs_can_at91sam7 at91sam7_can_driver }
+    hardware
+    directory	      devs/can/arm/at91/at91sam7
+    script	          can_at91sam7.cdl	
+    description       "Atmel AT91SAM7 on-chip CAN device driver."
+}
+
 package CYGPKG_IO_CAN_LOOP {
     alias             { "Loop CAN device drivers"
                         devs_can_loop loop_can_driver }
@@ -4425,6 +4434,7 @@ target sam7ex256 {
                    CYGPKG_DEVICES_WATCHDOG_ARM_AT91WDTC
                    CYGPKG_DEVS_USB_AT91
                    CYGPKG_DEVS_ETH_PHY
+                   CYGPKG_DEVS_CAN_AT91SAM7
         }
 #                   CYGPKG_DEVS_ETH_ARM_AT91
         description "
