@@ -236,12 +236,12 @@ static Cyg_ErrNo can_write(cyg_io_handle_t handle, const void *_buf, cyg_uint32 
             //
             // there is enougth space left so we can store additional data
             //
-            cyg_can_message *ptxbuf       = (cyg_can_message *)cbuf->pdata;
-            cyg_can_message *pbuf_message = &ptxbuf[cbuf->put];
+            CYG_CAN_MSG_T   *ptxbuf       = (CYG_CAN_MSG_T *)cbuf->pdata;
+            CYG_CAN_MSG_T   *pbuf_message = &ptxbuf[cbuf->put];
             cyg_can_message *pmessage     = (cyg_can_message *)_buf;
             
-            *pbuf_message = *pmessage; // copy message
-   
+            CYG_CAN_WRITE_MSG(pbuf_message, pmessage); // copy message
+              
             cbuf->put = (cbuf->put + 1) % cbuf->len;
             cbuf->data_cnt++;   
             size -= sizeof(cyg_can_message);   
@@ -286,11 +286,11 @@ static Cyg_ErrNo can_read(cyg_io_handle_t handle, void *_buf, cyg_uint32 *len)
         //
         if (cbuf->data_cnt > 0)
         {
-            cyg_can_event *prxbuf     = (cyg_can_event *)cbuf->pdata;   
-            cyg_can_event *pbuf_event = &prxbuf[cbuf->get];
-            cyg_can_event *pevent     = (cyg_can_event *)_buf;
-
-            *pevent = *pbuf_event; // copy event
+            CYG_CAN_EVENT_T *prxbuf     = (CYG_CAN_EVENT_T *)cbuf->pdata;   
+            CYG_CAN_EVENT_T *pbuf_event = &prxbuf[cbuf->get];
+            cyg_can_event *pevent       = (cyg_can_event *)_buf;
+           
+            CYG_CAN_READ_EVENT(pevent, pbuf_event); // copy event
             
             cbuf->get = (cbuf->get + 1) % cbuf->len;
             cbuf->data_cnt--; 
@@ -693,8 +693,8 @@ static cyg_bool can_select(cyg_io_handle_t handle, cyg_uint32 which, CYG_ADDRWOR
 //===========================================================================
 static void can_rcv_event(can_channel *chan, void *pdata)
 {
-    can_cbuf_t     *cbuf   = &chan->in_cbuf;
-    cyg_can_event  *prxbuf = (cyg_can_event *)cbuf->pdata;
+    can_cbuf_t       *cbuf   = &chan->in_cbuf;
+    CYG_CAN_EVENT_T  *prxbuf = (CYG_CAN_EVENT_T *)cbuf->pdata;
     
     //
     // cbuf is a ring buffer - if the buffer is full, then we overwrite the
@@ -743,8 +743,8 @@ static void can_xmt_msg(can_channel *chan, void *pdata)
 {
     can_cbuf_t        *cbuf    = &chan->out_cbuf;
     can_lowlevel_funs *funs    = chan->funs;  
-    cyg_can_message   *ptxbuf  = (cyg_can_message *)cbuf->pdata;
-    cyg_can_message   *pbuf_txmsg;
+    CYG_CAN_MSG_T     *ptxbuf  = (CYG_CAN_MSG_T *)cbuf->pdata;
+    CYG_CAN_MSG_T     *pbuf_txmsg;
 
     //
     // transmit messages as long as there are messages in the buffer 

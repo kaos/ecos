@@ -1,3 +1,57 @@
+2007-03-23  Uwe Kindler  <uwe_kindler@web.de>
+
+	* cdl/io_can.cdl: Added several interfaces for implementation by
+	  device drivers.
+	  Moved several configuration options from device drivers to the
+	  generic CAN driver. With this design a device driver does not
+	  need to provide all configuration options in its CDL file - it
+	  simply needs to implement the provided interfaces. The drawback
+	  of this decicsion is, that it is not possible to control these
+	  options independently for several CAN devices. (But most platforms
+	  will have only 1 channel)
+	  Added configuration option CYGBLD_IO_CAN_EXTRA_TESTS. This option
+	  enables the build of the interactive CAN tests.
+	  
+	* test/can_filter: Added interactive message filtering test
+	
+	* test/can_hdi: Added interactive hardware description interface
+	  test
+	  
+	* test/can_load: Added interactive message handling (reception,
+	  transmission) test.
+	  
+	* test/can_remote: Added interactive remote response buffer test
+	  
+	* test/can_tx: Added interactive basic TX test. All tests are not
+	  part of the eCos test framework because they are interactive. That
+	  means, they require interaction with another user controlled 
+	  CAN node.
+	  
+	* include/can.h: Added identifier masks for standard and extended
+	  identifiers.
+	  Added the line #include CYGDAT_IO_CAN_DEVICE_INL. This enables a
+	  device driver to provide an own device inline file. In this inline
+	  file the driver may define own data types for CAN messages (for
+	  internal storage of CAN messages (see AT91SAM7 CAN driver))
+
+	* include/canio.h: Added baudrate CYGNUM_CAN_KBAUD_AUTO - support of 
+	  automatic baudrate detection if a driver supports such a feature.
+	  Added state CYGNUM_CAN_STATE_CONFIG and mode CYGNUM_CAN_MODE_CONFIG.
+	  The application may use these identifiers to set the CAN device into
+	  a state where it is safe to add/remove/configure message buffers.
+	  Added union data type cyg_can_msg_data. With this data type a 4 byte
+	  alignment of message data is guaranteed, an byte, word and dword 
+	  access to the data is possible and an assignment of two CAN datas are
+	  possible now.
+	  cyg_can_message now uses cyg_can_msg_data union for CAN data.
+	  Replaced SW-Filt flag by autobaud flag in HDI.
+	  Added CAN message access macros for read/write acces of CAN message
+	  structures. These macros hide implementation of CAN message from 
+	  application.
+ 
+	* src/can.c: Added support for device driver defined CAN message 
+	  data types
+
 2006-12-19  Sergei Gavrikov  <sg@sgs.gomel.by>
 
 	* doc/can.sgml: Correctly close para tag.

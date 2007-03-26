@@ -70,31 +70,44 @@ cdl_package CYGPKG_IO_CAN {
 	puts $::cdl_header "#endif "
 	puts $::cdl_header "/****** proc output end ******/"
     }
-
+    
+    #-----------------------------------------------------------------
+    # Interfaces
+    # A hardware device driver should implement each interface it
+    # supports
+    #
     cdl_interface CYGINT_IO_CAN_TIMESTAMP {
         display "CAN driver supports timestamps"
     }
     
-    cdl_option CYGOPT_IO_CAN_SUPPORT_TIMESTAMP {
-        display       "Support CAN event timestamps"
-        requires      { CYGINT_IO_CAN_TIMESTAMP > 0 }
-        default_value 0
-        description "
-            If the CAN hardware driver supports some kind of timestamps
-            then this option enables propagation of timestamps to higher layers. 
-            This may add some extra code to hardware drivers."
+    cdl_interface CYGINT_IO_CAN_STD_CAN_ID {
+        display "11 Bit standard CAN ID support"
     }
     
-    cdl_option CYGOPT_IO_CAN_TX_EVENT_SUPPORT {
-        display       "Support TX events"
-        default_value 0
-        description "
-            This option enables support for TX events. If a CAN message is
-            transmitted successfully a TX event will be inserted into the
-            receive event queue and propagated to higher layers. If this
-            option is enabled the RX event queue will be filled faster."
+    cdl_interface CYGINT_IO_CAN_EXT_CAN_ID {
+        display "29 Bit extended CAN ID support"
     }
     
+    cdl_interface CYGINT_IO_CAN_RUNTIME_MBOX_CFG {
+        display "CAN driver supports message box runtime configuration"
+    }
+    
+    cdl_interface CYGINT_IO_CAN_REMOTE_BUF {
+        display "CAN driver supports remote response buffers"
+    }
+    
+    cdl_interface CYGINT_IO_CAN_AUTOBAUD {
+        display "CAN driver supports automatic baudrate detection"
+    }
+    
+    cdl_interface CYGINT_IO_CAN_TX_EVENTS {
+        display "CAN driver supports TX events"
+    }
+    
+    
+    #-----------------------------------------------------------------
+    # Generic CAN driver configuration
+    #
     cdl_component CYGPKG_IO_CAN_DEVICES {
         display       "Hardware CAN device drivers"
         flavor        bool
@@ -104,6 +117,89 @@ cdl_package CYGPKG_IO_CAN {
 	        for the current platform."
     }
     
+    cdl_option CYGOPT_IO_CAN_SUPPORT_TIMESTAMP {
+        display       "Support CAN event timestamps"
+        requires      { CYGINT_IO_CAN_TIMESTAMP > 0 }
+        active_if     { CYGINT_IO_CAN_TIMESTAMP > 0 }
+        default_value 0
+        description "
+            If the CAN hardware driver supports some kind of timestamps
+            then this option enables propagation of timestamps to higher layers. 
+            This may add some extra code to hardware drivers."
+    }
+    
+    cdl_option CYGOPT_IO_CAN_TX_EVENT_SUPPORT {
+        display       "Support TX events"
+        requires      { CYGINT_IO_CAN_TX_EVENTS > 0 }
+        active_if     { CYGINT_IO_CAN_TX_EVENTS > 0 }
+        default_value 0
+        description "
+            This option enables support for TX events. If a CAN message is
+            transmitted successfully a TX event will be inserted into the
+            receive event queue and propagated to higher layers. If this
+            option is enabled the RX event queue will be filled faster."
+    }
+    
+    cdl_option CYGOPT_IO_CAN_STD_CAN_ID {
+        display "11 Bit standard CAN ID support"
+        requires      { CYGINT_IO_CAN_STD_CAN_ID > 0 }
+        active_if     { CYGINT_IO_CAN_STD_CAN_ID > 0 }
+        default_value { CYGINT_IO_CAN_STD_CAN_ID > 0 ? 1 : 0 }
+        description "
+               This option enables support for 11 Bit standard CAN identifiers.
+               If the application deals only with 29 Bit extended CAN messages
+               then disabling this option may reduce codesize or increase
+               performance."
+    }
+    
+    cdl_option CYGOPT_IO_CAN_EXT_CAN_ID {
+        display "29 Bit extended CAN ID support"
+        requires      { CYGINT_IO_CAN_EXT_CAN_ID > 0 }
+        active_if     { CYGINT_IO_CAN_EXT_CAN_ID > 0 }
+        default_value { CYGINT_IO_CAN_EXT_CAN_ID > 0 ? 1 : 0 }
+        description "
+               This option enables support for 29 Bit extended CAN identifiers.
+               If the application deals only with 11 Bit standard CAN messages
+               then disabling this option may reduce codesize or increase
+               performance."
+    }
+    
+     cdl_option CYGOPT_IO_CAN_AUTOBAUD {
+        display "Support automatic baudrate detection."
+        requires      { CYGINT_IO_CAN_AUTOBAUD > 0 }
+        active_if     { CYGINT_IO_CAN_AUTOBAUD > 0 }
+        default_value 0
+        description "
+                If the CAN hardware device driver supports any kind of automatic
+                baudrate detection then this option enables support for this feature.
+                If automatic baudrate detection is not required, then disabling this
+                option may reduce codesize."
+    }
+    
+    cdl_option CYGOPT_IO_CAN_RUNTIME_MBOX_CFG {
+        display "Message box runtime configuration support"
+        requires      { CYGINT_IO_CAN_RUNTIME_MBOX_CFG > 0 }
+        active_if     { CYGINT_IO_CAN_RUNTIME_MBOX_CFG > 0 }
+        default_value 1
+        description "
+                Message box runtime configuration is required for for hardware message 
+                filtering and for hardware remote response buffers. If no hardware
+                filtering is required and if the application does not need remote
+                response buffers this option can be disabled to decrease codesize."
+    }
+    
+    cdl_option CYGOPT_IO_CAN_REMOTE_BUF {
+        display "Remote response buffer support"
+        requires { CYGOPT_IO_CAN_RUNTIME_MBOX_CFG }
+        requires { CYGINT_IO_CAN_REMOTE_BUF > 0}
+        active_if  { CYGINT_IO_CAN_REMOTE_BUF > 0 }
+        default_value 1
+        description "
+                If the driver should handle remote requests automatically then remote
+                response buffers are required. Disabling this option may save some 
+                bytes of ROM memory."
+    }
+        
     cdl_option CYGOPT_IO_CAN_SUPPORT_NONBLOCKING {
         display       "Support non-blocking read and write calls"
         default_value 0
@@ -142,38 +238,78 @@ cdl_package CYGPKG_IO_CAN {
                 The initial timeout value in clock ticks for cyg_io_write() calls."
         }
     }
-
-   cdl_component CYGPKG_IO_CAN_OPTIONS {
-        display "CAN device driver build options"
-        flavor  none
-        description   "
-	    Package specific build options including control over
-	    compiler flags used only in building this package,
-	    and details of which tests are built."
-
-
-        cdl_option CYGPKG_IO_CAN_CFLAGS_ADD {
-            display "Additional compiler flags"
-            flavor  data
-            no_define
-            default_value { "" }
-            description   "
-                This option modifies the set of compiler flags for
-                building the CAN device drivers. These flags are used in addition
-                to the set of global flags."
+    
+    cdl_option CYGBLD_IO_CAN_EXTRA_TESTS {
+        display "Build extra CAN tests"
+        default_value 0
+        no_define
+        description "
+            This option enables the building of some extra tests which
+            can be used when testing / debugging CAN drivers. These
+            are not built by default since they do not use the dedicated
+            testing infrastructure. All tests require a properly configured
+            CAN network with a second CAN node that can send and receive
+            CAN messages."
+    
+        make -priority 320 {
+            <PREFIX>/bin/can_load : <PACKAGE>/tests/can_load.c
+            @sh -c "mkdir -p tests $(dir $@)"
+            $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o tests/can_load.o $<
+            @echo $@ ": \\" > $(notdir $@).deps
+            @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
+            @tail -n +2 deps.tmp >> $(notdir $@).deps
+            @echo >> $(notdir $@).deps
+            @rm deps.tmp
+            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ tests/can_load.o
         }
-
-        cdl_option CYGPKG_IO_CAN_CFLAGS_REMOVE {
-            display "Suppressed compiler flags"
-            flavor  data
-            no_define
-            default_value { "" }
-            description   "
-                This option modifies the set of compiler flags for
-                building the CAN device drivers. These flags are removed from
-                the set of global flags if present."
+        
+        make -priority 320 {
+            <PREFIX>/bin/can_remote : <PACKAGE>/tests/can_remote.c
+            @sh -c "mkdir -p tests $(dir $@)"
+            $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o tests/can_remote.o $<
+            @echo $@ ": \\" > $(notdir $@).deps
+            @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
+            @tail -n +2 deps.tmp >> $(notdir $@).deps
+            @echo >> $(notdir $@).deps
+            @rm deps.tmp
+            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ tests/can_remote.o
         }
-
+                
+        make -priority 320 {
+            <PREFIX>/bin/can_tx : <PACKAGE>/tests/can_tx.c
+            @sh -c "mkdir -p tests $(dir $@)"
+            $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o tests/can_tx.o $<
+            @echo $@ ": \\" > $(notdir $@).deps
+            @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
+            @tail -n +2 deps.tmp >> $(notdir $@).deps
+            @echo >> $(notdir $@).deps
+            @rm deps.tmp
+            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ tests/can_tx.o
+        }
+        
+        make -priority 320 {
+            <PREFIX>/bin/can_filter : <PACKAGE>/tests/can_filter.c
+            @sh -c "mkdir -p tests $(dir $@)"
+            $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o tests/can_filter.o $<
+            @echo $@ ": \\" > $(notdir $@).deps
+            @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
+            @tail -n +2 deps.tmp >> $(notdir $@).deps
+            @echo >> $(notdir $@).deps
+            @rm deps.tmp
+            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ tests/can_filter.o
+        }
+        
+        make -priority 320 {
+            <PREFIX>/bin/can_hdi : <PACKAGE>/tests/can_hdi.c
+            @sh -c "mkdir -p tests $(dir $@)"
+            $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o tests/can_hdi.o $<
+            @echo $@ ": \\" > $(notdir $@).deps
+            @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
+            @tail -n +2 deps.tmp >> $(notdir $@).deps
+            @echo >> $(notdir $@).deps
+            @rm deps.tmp
+            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ tests/can_hdi.o
+        }
     }
 }
 

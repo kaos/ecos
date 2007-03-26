@@ -85,6 +85,7 @@ typedef enum {
     CYGNUM_CAN_KBAUD_500,
     CYGNUM_CAN_KBAUD_800,
     CYGNUM_CAN_KBAUD_1000,
+    CYGNUM_CAN_KBAUD_AUTO, // automatic detection of baudrate (if supported by hardware)
 } cyg_can_baud_rate_t;
 #define CYGNUM_CAN_KBAUD_MIN CYGNUM_CAN_KBAUD_10 
 #define CYGNUM_CAN_KBAUD_MAX CYGNUM_CAN_KBAUD_1000
@@ -133,6 +134,7 @@ typedef enum e_cyg_can_state
     CYGNUM_CAN_STATE_PHY_FAULT,    // General failure of physical layer detected (if supported by hardware)
     CYGNUM_CAN_STATE_PHY_H,        // Fault on CAN-H detected (Low Speed CAN)
     CYGNUM_CAN_STATE_PHY_L,        // Fault on CAN-L detected (Low Speed CAN)
+    CYGNUM_CAN_STATE_CONFIG,       // CAN controller is in configuration state
 } cyg_can_state;
 
 //
@@ -142,7 +144,8 @@ typedef enum e_cyg_can_mode
 {
     CYGNUM_CAN_MODE_STOP,   // set controller into stop mode
     CYGNUM_CAN_MODE_START,  // set controller into operational mode
-    CYGNUM_CAN_MODE_STANDBY // set controller into standby / sleep mode
+    CYGNUM_CAN_MODE_STANDBY,// set controller into standby / sleep mode
+    CYGNUM_CAN_MODE_CONFIG  // set controller and driver into a state where it is safe to add/delete message buffers
 } cyg_can_mode;
 
 //
@@ -174,13 +177,28 @@ typedef cyg_uint8 cyg_can_msgbuf_cfg_id;
 #define CYGNUM_CAN_MSGBUF_REMOTE_BUF_ADD    3 // add new remote response buffer
 #define CYGNUM_CAN_MSGBUF_REMOTE_BUF_WRITE  4 // store data into existing remote buffer (remote buf handle required)
 
+
+//
+// CAN message data - this union is a container for the 8 data bytes of a can
+// message and the union is alway part of a can message - no matter if this type
+// is defined by generic CAN layer or by CAN hardware device driver
+//
+typedef union u_cyg_can_msg_data
+{
+    cyg_uint8  bytes[8];    // byte access (array of 8 bytes)
+    cyg_uint16 words[4];    // word access (array of 4 words)
+    cyg_uint32 dwords[2];   // double word access (array of 2 dwords)
+} cyg_can_msg_data;
+
 //
 // CAN message type for transport or transmit of CAN messages 
+// The message data is a union. This enables byte, word and dword access and
+// also ensures a 4 byte alignment of the message data
 //
 typedef struct st_cyg_can_message
 {
     cyg_uint32          id;     // 11 Bit or 29 Bit CAN identifier - cyg_can_id_type 
-    cyg_uint8           data[8];// 8 data bytes
+    cyg_can_msg_data    data;   // CAN data (8 data bytes)
     cyg_can_id_type     ext;    // CYGNUM_CAN_ID_STD = 11 Bit CAN id, CYGNUM_CAN_ID_EXT = 29 Bit CAN id
     cyg_can_frame_type  rtr;    // CYGNUM_CAN_FRAME_DATA = data frame, CYGNUM_CAN_FRAME_RTR = remote transmission request
     cyg_uint8           dlc;    // data length code (number of bytes (0 - 8) containing valid data
@@ -287,9 +305,9 @@ typedef cyg_can_msgbuf_cfg cyg_can_remote_buf;
 // this purpose the following structure is defined:
 //
 // Support flags:
-// |   7   |   6   |   5   |   4   |   3   |   2   |   1   |   0    |
-// +-------+-------+-------+-------+-------+-------+-------+--------+
-// | res   |  res  |  res  |timest.|SW-Filt|FullCAN|   Frametype    |
+// |   7   |   6   |   5   |   4   |   3    |   2   |   1   |   0    |
+// +-------+-------+-------+-------+--------+-------+-------+--------+
+// | res   |  res  |  res  |timest.|autobaud|FullCAN|   Frametype    |
 //
 typedef struct cyg_can_hdi_st
 {
@@ -304,20 +322,92 @@ typedef struct cyg_can_hdi_st
 #define CYGNUM_CAN_HDI_FRAMETYPE_STD           0x00 // standard frame (11-bit identifier), 2.0A
 #define CYGNUM_CAN_HDI_FRAMETYPE_EXT_PASSIVE   0x01 // extended frame (29-bit identifier), 2.0B passive
 #define CYGNUM_CAN_HDI_FRAMETYPE_EXT_ACTIVE    0x02 // extended frame (29-bit identifier), 2.0B active
+#define CYGNUM_CAN_HDI_FULLCAN                 0x04 // controller supports more than one receive and transmit buffer
+#define CYGNUM_CAN_HDI_AUTBAUD                 0x08 // driver supports automatic baudrate detection
+#define CYGNUM_CAN_HDI_TIMESTAMP               0x10 // driver supports timestamps
 
-//
-// If the flag "FullCAN" is set to "1", the CAN controller has more than one
-// receive buffer and one transmit buffer.
-//
-#define CYGNUM_CAN_HDI_FULLCAN                 0x04
 
+//===========================================================================
+//                      CAN MESSAGE ACCESS MACROS
 //
-// If the flag "Software ID-Filter" is set to "1", the driver has implemented
-// the software ID filter for standard frames. If the member is set to "0", the
-// software filter is not available.
+// An application should not access a cyg_can_message directly instead it
+// should use these macros for all manipulations to a CAN message.
+//===========================================================================
+
+//---------------------------------------------------------------------------
+// Frame type macros
 //
-#define CYGNUM_CAN_HDI_FILT_SW                 0x08
-#define CYGNUM_CAN_HDI_TIMESTAMP               0x10
+#define CYG_CAN_MSG_SET_FRAME_TYPE(_msg_, _type_)  ((_msg_).rtr = (_type_))
+#define CYG_CAN_MSG_GET_FRAME_TYPE(_msg_)          ((_msg_).rtr)
+#define CYG_CAN_MSG_SET_RTR(_msg_)                 ((_msg_).rtr = CYGNUM_CAN_FRAME_RTR)
+#define CYG_CAN_MSG_IS_REMOTE(_msg_)               ((_msg_).rtr == CYGNUM_CAN_FRAME_RTR)
+
+
+//---------------------------------------------------------------------------
+// ID type macros
+//
+#define CYG_CAN_MSG_SET_ID_TYPE(_msg_, _type_)     ((_msg_).ext = (_type_))
+#define CYG_CAN_MSG_GET_ID_TYPE(_msg_)             ((_msg_).ext)
+#define CYG_CAN_MSG_SET_EXT(_msg_)                 ((_msg_).ext = CYGNUM_CAN_ID_EXT)
+#define CYG_CAN_MSG_SET_STD(_msg_)                 ((_msg_).ext = CYGNUM_CAN_ID_STD)
+#define CYG_CAN_MSG_IS_EXT(_msg_)                  ((_msg_).ext == CYGNUM_CAN_ID_EXT)
+
+
+//---------------------------------------------------------------------------
+// Identifier access macros
+//
+#define CYG_CAN_MSG_GET_ID(_msg_)                  ((_msg_).id)
+#define CYG_CAN_MSG_SET_ID(_msg_, _id_)            ((_msg_).id = (_id_))
+#define CYG_CAN_MSG_SET_STD_ID(_msg_, _id_)  \
+CYG_MACRO_START                              \
+    CYG_CAN_MSG_SET_ID(_msg_, _id_);         \
+    CYG_CAN_MSG_SET_STD(_msg_);              \
+CYG_MACRO_END
+
+#define CYG_CAN_MSG_SET_EXT_ID(_msg_, _id_)  \
+CYG_MACRO_START                              \
+    CYG_CAN_MSG_SET_ID(_msg_, _id_);         \
+    CYG_CAN_MSG_SET_EXT(_msg_);              \
+CYG_MACRO_END
+
+
+//---------------------------------------------------------------------------
+// DLC (data length code) access macros
+//
+#define CYG_CAN_MSG_GET_DATA_LEN(_msg_)             ((_msg_).dlc)
+#define CYG_CAN_MSG_SET_DATA_LEN(_msg_, _len_)      ((_msg_).dlc = (_len_))
+
+
+//---------------------------------------------------------------------------
+// CAN message data access
+// This macro returns a pointer to a cyg_can_msg_data union
+//
+#define CYG_CAN_MSG_DATA_PTR(_msg_)                 (&(_msg_).data)
+#define CYG_CAN_MSG_GET_DATA(_msg_, _pos_)          ((_msg_).data.bytes[_pos_])
+#define CYG_CAN_MSG_SET_DATA(_msg_, _pos_, _val_)   ((_msg_).data.bytes[_pos_] = (_val_)) 
+
+
+//---------------------------------------------------------------------------
+// Access multiple parameters
+//
+#define CYG_CAN_MSG_SET_PARAM(_msg_, _id_, _ext_, _dlc_, _rtr_)     \
+CYG_MACRO_START                                                     \
+    CYG_CAN_MSG_SET_ID(_msg_, _id_);                                \
+    CYG_CAN_MSG_SET_ID_TYPE(_msg_, _ext_);                          \
+    CYG_CAN_MSG_SET_DATA_LEN(_msg_, _dlc_);                         \
+    CYG_CAN_MSG_SET_FRAME_TYPE(_msg_, _rtr_);                       \
+CYG_MACRO_END
+
+#define CYG_CAN_MSG_INIT(_clabel_, _id_, _ext_, _dlc_, _rtr_)      \
+cyg_can_message _clabel_ =                                         \
+{                                                                  \
+	id  : _id_,                                                    \
+    ext : _ext_,                                                   \
+    rtr : _rtr_,                                                   \
+    dlc : _dlc_,                                                   \
+}
+                                                       
+
 
 #ifdef __cplusplus
 }

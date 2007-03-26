@@ -66,6 +66,34 @@
 #include <cyg/hal/drv_api.h>
 
 
+// define standard and extended id masks
+#define CYG_CAN_STD_ID_MASK 0x7FF
+#define CYG_CAN_EXT_ID_MASK 0x1FFFFFFF
+
+//
+// include device header
+// a device can define its own types of CAN messages and CAN events. It does this
+// in the device header CYGDAT_IO_CAN_DEVICE_INL. Because this header is included
+// here, the device header file can use all definitions in the files included
+// in the include section above
+//
+#ifdef CYGDAT_IO_CAN_DEVICE_INL 
+#include CYGDAT_IO_CAN_DEVICE_INL   // include device header
+#endif
+
+//
+// If the device did not define its own type of CAN message and CAN event, then
+// we define standard types here and use the types cyg_can_message and cyg_can_event
+// from CAN I/O layer
+//
+#ifndef CYG_CAN_MSG_T
+#define CYG_CAN_MSG_T cyg_can_message
+#define CYG_CAN_EVENT_T cyg_can_event
+#define CYG_CAN_WRITE_MSG(_devmsg_ptr_, _iomsg_ptr_) (*(_devmsg_ptr_) = *(_iomsg_ptr_))
+#define CYG_CAN_READ_EVENT(_ioevent_ptr_, _devevent_ptr_) (*(_ioevent_ptr_) = *(_devevent_ptr_))
+#endif
+
+
 //===========================================================================
 //                            FORWARD DECLARATIONS
 //===========================================================================
@@ -175,18 +203,18 @@ can_channel _l = {                                                      \
 //
 struct can_lowlevel_funs 
 {
-    bool (*putmsg)(can_channel *priv, cyg_can_message *pmsg, void *pdata);   // send one can message - return true if consumed
-    bool (*getevent)(can_channel *priv, cyg_can_event *pevent, void *pdata); // fetch one CAN event from device
-    Cyg_ErrNo (*get_config)(can_channel    *priv,                            // query hardware configuration (baud rate, etc)
+    bool (*putmsg)(can_channel *priv, CYG_CAN_MSG_T *pmsg, void *pdata);       // send one can message - return true if consumed
+    bool (*getevent)(can_channel *priv, CYG_CAN_EVENT_T *pevent, void *pdata); // fetch one CAN event from device
+    Cyg_ErrNo (*get_config)(can_channel    *priv,                              // query hardware configuration (baud rate, etc)
                             cyg_uint32      key, 
                             const void     *xbuf,
                             cyg_uint32     *len);
-    Cyg_ErrNo (*set_config)(can_channel    *priv,                           // Change hardware configuration (baud rate, etc)
+    Cyg_ErrNo (*set_config)(can_channel    *priv,                              // Change hardware configuration (baud rate, etc)
                             cyg_uint32      key, 
                             const void     *xbuf,
                             cyg_uint32     *len);
-    void (*start_xmit)(can_channel *priv);                               // Enable the transmit channel and turn on transmit interrupts
-    void (*stop_xmit)(can_channel *priv);                                // Disable the transmit channel and turn transmit interrupts off
+    void (*start_xmit)(can_channel *priv);                                    // Enable the transmit channel and turn on transmit interrupts
+    void (*stop_xmit)(can_channel *priv);                                     // Disable the transmit channel and turn transmit interrupts off
 };
 
 #define CAN_LOWLEVEL_FUNS(_l,_putmsg,_getevent,_get_config,_set_config,_start_xmit,_stop_xmit)  \
