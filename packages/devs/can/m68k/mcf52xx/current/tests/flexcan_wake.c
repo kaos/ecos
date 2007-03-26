@@ -105,72 +105,18 @@ void can0_thread(cyg_addrword_t data)
     cyg_uint32             len;
     cyg_can_event          rx_event1;
     cyg_can_event          rx_event2;
-    cyg_can_remote_buf     rtr_buf;
     cyg_can_msgbuf_info    msgbox_info;
     cyg_can_mode           mode; 
     cyg_can_state          state;
     
-    //
-    // before we start configuring the CAN hardware we stop the chip
-    //
-    mode = CYGNUM_CAN_MODE_STOP;
-    len = sizeof(mode);
-    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_MODE ,&mode, &len))
-    {
-        CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
-    } 
-    
-    //
-    // now check if FlexCAN modul is really stopped
-    //
-    len = sizeof(state);
-    if (ENOERR != cyg_io_get_config(hDrvFlexCAN, CYG_IO_GET_CONFIG_CAN_STATE ,&state, &len))
-    {
-        CYG_TEST_FAIL_FINISH("Error reading config of /dev/can0");
-    } 
-    
-    if (state != CYGNUM_CAN_STATE_STOPPED)
-    {
-        CYG_TEST_FAIL_FINISH("Error stopping FlexCAN /dev/can0");
-    }
-
    
-    //
-    // Setup the first remote response buffer for resception of standard
-    // remote frames
-    //
-    rtr_buf.cfg_id      = CYGNUM_CAN_MSGBUF_REMOTE_BUF_ADD;
-    rtr_buf.msg.id      = 0x7FF;
-    rtr_buf.msg.ext     = CYGNUM_CAN_ID_STD;
-    rtr_buf.msg.rtr     = CYGNUM_CAN_FRAME_DATA;
-    rtr_buf.msg.dlc     = 1;
-    rtr_buf.msg.data[0] = 0xAB;
-    
-    len = sizeof(rtr_buf);
-    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_MSGBUF ,&rtr_buf, &len))
-    {
-        CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
-    } 
-    
-      
-    //
-    // now configuration is finished and we can start chip again
-    //
-    mode = CYGNUM_CAN_MODE_START;
-    len = sizeof(mode);
-    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_MODE ,&mode, &len))
-    {
-        CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
-    } 
-    
     diag_printf("Test of FlexCAN standby mode with selfwakeup\n"
                 "As soon as a message arrives the FlexCAN modul\n"
                 "will leave standby and generates a leave standby event.\n"
                 "Each time you send a message you should see LSTY first\n"
                 "for \"leaving standby\" and then \"RX\" for the\n"
-                "RX event caused the leave standby event. You can send\n"
-                "a CAN data frame with any ID or a remote frame with ID\n"
-                "0x7FF\n" );
+                "RX event that caused the leave standby event. You can send\n"
+                "a CAN data frame with any ID\n");
                 
     diag_printf("!!! This test can be stopped by sending a data frame with ID 0x100 !!!\n\n");
     
@@ -206,6 +152,7 @@ void can0_thread(cyg_addrword_t data)
            CYG_TEST_FAIL_FINISH("Error reading config of /dev/can0");
        } 
     
+   
        if (state != CYGNUM_CAN_STATE_STANDBY)
        {
            CYG_TEST_FAIL_FINISH("Error stopping FlexCAN /dev/can0");
@@ -261,20 +208,7 @@ cyg_start(void)
         CYG_TEST_FAIL_FINISH("Error opening /dev/can0");
     }
     
-    // We do not setup baudrate and take dafauklt baudrate from config tool instead
-    /*
-    //
-    // setup CAN baudrate 250 KBaud
-    //
-    cyg_uint32     len;
-    cyg_can_info_t can_cfg;
-    can_cfg.baud = CYGNUM_CAN_KBAUD_250;
-    len = sizeof(can_cfg);
-    if (ENOERR != cyg_io_set_config(hDrvFlexCAN, CYG_IO_SET_CONFIG_CAN_INFO ,&can_cfg, &len))
-    {
-        CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
-    }*/
-    
+   
     //
     // create the two threads which access the CAN device driver
     // a reader thread with a higher priority and a writer thread

@@ -562,14 +562,14 @@ static void        flexcan_stop_xmit(can_channel* chan);
 //
 // TX and RX ISRs and DSRs
 //
-#ifdef CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID
+#ifdef CYGOPT_IO_CAN_STD_CAN_ID
 static cyg_uint32  flexcan_mbox_rx_std_isr(cyg_vector_t, cyg_addrword_t);
 static void        flexcan_mbox_rx_std_dsr(cyg_vector_t, cyg_ucount32, cyg_addrword_t);
-#endif // #ifdef CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID
-#ifdef CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_EXT_CAN_ID
+#endif // CYGOPT_IO_CAN_STD_CAN_ID
+#ifdef CYGOPT_IO_CAN_EXT_CAN_ID
 static cyg_uint32  flexcan_mbox_rx_ext_isr(cyg_vector_t, cyg_addrword_t);
 static void        flexcan_mbox_rx_ext_dsr(cyg_vector_t, cyg_ucount32, cyg_addrword_t);
-#endif // CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_EXT_ID
+#endif // CYGOPT_IO_CAN_EXT_CAN_ID
 static cyg_uint32  flexcan_mbox_rx_filt_isr(cyg_vector_t, cyg_addrword_t);
 static cyg_uint32  flexcan_mbox_tx_isr(cyg_vector_t, cyg_addrword_t);
 static void        flexcan_mbox_tx_dsr(cyg_vector_t, cyg_ucount32, cyg_addrword_t);
@@ -766,7 +766,7 @@ static void flexcan_setup_rxmbox(can_channel     *chan,
     // Set state of message buffer accoring to ISR function that
     // will be registered
     //
-#ifdef CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID
+#ifdef CYGOPT_IO_CAN_STD_CAN_ID
     if (*isr == flexcan_mbox_rx_std_isr)
     {
         //
@@ -786,8 +786,8 @@ static void flexcan_setup_rxmbox(can_channel     *chan,
         }
     }
     else
-#endif // CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID
-#ifdef CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_EXT_CAN_ID
+#endif // CYGOPT_IO_CAN_STD_CAN_ID
+#ifdef CYGOPT_IO_CAN_EXT_CAN_ID
     if (*isr == flexcan_mbox_rx_ext_isr)
     {
         //
@@ -807,7 +807,7 @@ static void flexcan_setup_rxmbox(can_channel     *chan,
         }
     }
     else
-#endif // CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_EXT_CAN_ID
+#endif // CYGOPT_IO_CAN_EXT_CAN_ID
     if (*isr == flexcan_mbox_rx_filt_isr)
     {
         info->mboxes[mbox_id].state = MBOX_STATE_RX_FILT;
@@ -959,24 +959,24 @@ static void flexcan_config_rx_all(can_channel *chan)
         //
         // configure message buffers for standard frames
         //
-#ifdef CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID
+#ifdef CYGOPT_IO_CAN_STD_CAN_ID
         if (i < info->mboxes_std_cnt)
                  {
             filter_param.ext = CYGNUM_CAN_ID_STD;
             flexcan_setup_rxmbox(chan, i, &flexcan_mbox_rx_std_isr, &filter_param, false, true);
                  }
-#endif // CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID
+#endif // CYGOPT_IO_CAN_STD_CAN_ID
 
        //
        // configure message buffers for extended frames
        //
-#ifdef CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_EXT_CAN_ID
+#ifdef CYGOPT_IO_CAN_EXT_CAN_ID
         else
                  {
             filter_param.ext = CYGNUM_CAN_ID_EXT;
             flexcan_setup_rxmbox(chan, i, &flexcan_mbox_rx_ext_isr, &filter_param, false, true);
                  }
-#endif // CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID
+#endif // CYGOPT_IO_CAN_EXT_CAN_ID
             }
        
         //
@@ -991,21 +991,21 @@ static void flexcan_config_rx_all(can_channel *chan)
     //
     // now finally setup the first active message boxes and enable ist
         //     
-#ifdef CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID
+#ifdef CYGOPT_IO_CAN_STD_CAN_ID
     if (info->mboxes_std_cnt)
              { 
         flexcan_setup_rxmbox_circbuf(&info->rxmbox_std_circbuf);
         flexcan_enable_rxmbox(chan, 0);
     }
-#endif // CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID
+#endif // CYGOPT_IO_CAN_STD_CAN_ID
                              
-#ifdef CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_EXT_CAN_ID
+#ifdef CYGOPT_IO_CAN_EXT_CAN_ID
     if (info->mboxes_ext_cnt)
                  {
         flexcan_setup_rxmbox_circbuf(&info->rxmbox_ext_circbuf);
         flexcan_enable_rxmbox(chan, info->mboxes_std_cnt);
                  }
-#endif // CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID
+#endif // CYGOPT_IO_CAN_EXT_CAN_ID
 
 }
 
@@ -1222,6 +1222,10 @@ flexcan_set_config(can_channel *chan, cyg_uint32 key, const void* buf, cyg_uint3
                     case CYGNUM_CAN_MODE_STANDBY :   // set FlexCAN modul into standby state
                          flexcan_enter_standby(chan, true);
                          break;
+                         
+                    case CYGNUM_CAN_MODE_CONFIG : // stop FlexCAN modul for configuration
+                    	 flexcan_stop_chip(chan);
+                    	 break;
                 }
              }
              break; // case CYG_IO_SET_CONFIG_CAN_MODE :         
@@ -1404,10 +1408,10 @@ static bool flexcan_getevent(can_channel *chan, cyg_can_event *pevent, void *pda
         // error interrupt and provide error information to upper layer
         //
         HAL_READ_UINT16(&flexcan->ESTAT, estat);
-        pevent->msg.data[0] = estat & 0xFF;
-        pevent->msg.data[1] = (estat >> 8) & 0xFF; 
-        HAL_READ_UINT8(&flexcan->RXERRCNT, pevent->msg.data[2]);
-        HAL_READ_UINT8(&flexcan->TXERRCNT, pevent->msg.data[3]);
+        pevent->msg.data.bytes[0] = estat & 0xFF;
+        pevent->msg.data.bytes[1] = (estat >> 8) & 0xFF; 
+        HAL_READ_UINT8(&flexcan->RXERRCNT, pevent->msg.data.bytes[2]);
+        HAL_READ_UINT8(&flexcan->TXERRCNT, pevent->msg.data.bytes[3]);
         switch (event_id)
         {
             case FLEXCAN_ERR_EVENT :
@@ -1961,7 +1965,7 @@ static cyg_uint32 flexcan_mbox_rx_filt_isr(cyg_vector_t vec, cyg_addrword_t data
 }
 
 
-#ifdef CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_EXT_CAN_ID
+#ifdef CYGOPT_IO_CAN_EXT_CAN_ID
 //===========================================================================
 // Flexcan message box isr for extended identifiers if reception of all
 // available messages is enabled
@@ -2076,10 +2080,10 @@ static void flexcan_mbox_rx_ext_dsr(cyg_vector_t vec, cyg_ucount32 count, cyg_ad
     while (mbox_cnt);
 }
 
-#endif // #ifdef CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_EXT_CAN_ID
+#endif // #ifdef CYGOPT_IO_CAN_EXT_CAN_ID
 
 
-#ifdef CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID
+#ifdef CYGOPT_IO_CAN_STD_CAN_ID
 //===========================================================================
 // Flexcan message box isr for standard identifiers if reception of all
 // available messages is enabled
@@ -2191,7 +2195,7 @@ static void flexcan_mbox_rx_std_dsr(cyg_vector_t vec, cyg_ucount32 count, cyg_ad
     }
     while (mbox_cnt);
 }
-#endif // CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID
+#endif // CYGOPT_IO_CAN_STD_CAN_ID
 
 
 //===========================================================================
@@ -2532,7 +2536,7 @@ static bool flexcan_cfg_mbox_tx(flexcan_mbox     *pmbox,
     //
     // Now copy data bytes into buffer and start transmission
     //
-    HAL_WRITE_UINT8_VECTOR(&pmbox->data, pmsg->data, pmsg->dlc, 1); 
+    HAL_WRITE_UINT8_VECTOR(&pmbox->data, pmsg->data.bytes, pmsg->dlc, 1); 
     
    
     if (rtr)
@@ -2660,7 +2664,7 @@ static void flexcan_read_from_mbox(can_channel  *chan,
     //
     // now finally copy data
     //
-    HAL_READ_UINT8_VECTOR(&pmbox->data, pmsg->data, pmsg->dlc, 1);
+    HAL_READ_UINT8_VECTOR(&pmbox->data, pmsg->data.bytes, pmsg->dlc, 1);
        
     //
     // now mark this mbox as empty and read the free running timer

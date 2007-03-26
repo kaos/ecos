@@ -82,6 +82,8 @@ static Cyg_ErrNo loop_can_lookup(struct cyg_devtab_entry **tab,
 static bool loop_can_getevent(can_channel *priv, cyg_can_event *pevent, void *pdata);
 static Cyg_ErrNo loop_can_set_config(can_channel *chan, cyg_uint32 key,
                                      const void *xbuf, cyg_uint32 *len);
+static Cyg_ErrNo loop_can_get_config(can_channel *chan, cyg_uint32 key, 
+                                     const void*  buf,  cyg_uint32* len);
 static void loop_can_start_xmit(can_channel *chan);
 static void loop_can_stop_xmit(can_channel *chan);
 
@@ -129,6 +131,7 @@ typedef struct loop_can_info {
 CAN_LOWLEVEL_FUNS(loop_can_lowlevel_funs,
                   loop_can_putmsg,
                   loop_can_getevent,
+                  loop_can_get_config,
                   loop_can_set_config,
                   loop_can_start_xmit,
                   loop_can_stop_xmit
@@ -266,7 +269,9 @@ loop_can_putmsg(can_channel *chan, cyg_can_message *pmsg, void *pdata)
     loop_can_info *loop_chan = (loop_can_info *)chan->dev_priv;
 
     struct fifo *fwr = loop_chan->write_fifo;
+#ifdef CYGOPT_IO_CAN_TX_EVENT_SUPPORT 
     struct fifo *frd = loop_chan->read_fifo;
+#endif
 
     if( fwr->num == FIFO_SIZE )
     {
@@ -331,6 +336,16 @@ loop_can_set_config(can_channel *chan, cyg_uint32 key,
                     const void *xbuf, cyg_uint32 *len)
 {
     return ENOERR;
+}
+
+//-------------------------------------------------------------------------
+// Query device configuration
+
+static Cyg_ErrNo 
+loop_can_get_config(can_channel *chan, cyg_uint32 key, 
+                    const void*  buf,  cyg_uint32* len)
+{
+	return ENOERR;
 }
 
 

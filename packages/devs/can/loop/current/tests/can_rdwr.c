@@ -90,6 +90,8 @@ thread_data_t      can0_thread_data;
 cyg_thread_entry_t can1_thread;
 thread_data_t      can1_thread_data;
 
+cyg_sem_t          sem_wait;
+
 
 //===========================================================================
 //                          LOCAL FUNCTIONS
@@ -108,11 +110,14 @@ void can0_thread(cyg_addrword_t data)
     cyg_can_buf_info_t tx_buf_info;
     cyg_can_message    tx_msg =
     {
-        0x000,                                               // CAN identifier
-        {0x00, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7},    // 8 data bytes
-        CYGNUM_CAN_ID_STD,                                   // standard frame
-        CYGNUM_CAN_FRAME_DATA,                               // data frame
-        8,                                                   // data length code
+        0x000,                                                   // CAN identifier
+        data :
+        {
+            {0x00, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7},    // 8 data bytes
+        },
+        CYGNUM_CAN_ID_STD,                                       // standard frame
+        CYGNUM_CAN_FRAME_DATA,                                   // data frame
+        8,                                                       // data length code
     };
     
     if (ENOERR != cyg_io_lookup("/dev/can0", &hCAN0)) 
@@ -143,8 +148,8 @@ void can0_thread(cyg_addrword_t data)
             // we store the message number as CAN id and in first data byte so
             // a receiver can check this later
             //
-            tx_msg.id = 0x000 + i;
-            tx_msg.data[0] = i;
+            CYG_CAN_MSG_SET_STD_ID(tx_msg, 0x000 + i);
+            CYG_CAN_MSG_SET_DATA(tx_msg, 0, i);
             len = sizeof(tx_msg); 
             
             if (ENOERR != cyg_io_write(hCAN0, &tx_msg, &len))
@@ -155,15 +160,21 @@ void can0_thread(cyg_addrword_t data)
             {
                 print_can_msg(&tx_msg, "");
             }
-        }
+        } // for (i = 0; i < 10; ++i)    
         
         //
-        // Now we we give the reader thread a chance to run and to read
-        // the messages      
+        // Give reader thread 200 ticks time for readung all messages. The reader thread
+        // signals the semaphore if it received all transmitted messages
         //
-        cyg_thread_delay(100);
-        CYG_TEST_FAIL_FINISH("Error reading from /dev/can0");                      
-    }
+        if (!cyg_semaphore_timed_wait( &sem_wait,  cyg_current_time( ) + 200 ))
+        {
+        	CYG_TEST_FAIL_FINISH("Waiting for reader thread timed out.");
+        } 
+        else
+        {
+        	CYG_TEST_PASS_FINISH("can_rdwr test OK");
+        }      
+    } // while (1)
 }
 
 
@@ -223,7 +234,7 @@ void can1_thread(cyg_addrword_t data)
             // The writer thread stored the message number in CAN id and first
             // data byte so we can check now if we received valid data
             //
-            if ((rx_event.msg.id != i) || (rx_event.msg.data[0] != i))
+            if ((rx_event.msg.id != i) || (rx_event.msg.data.bytes[0] != i))
             {
                 CYG_TEST_FAIL_FINISH("Received CAN message contains unexpected data");
             }
@@ -233,7 +244,10 @@ void can1_thread(cyg_addrword_t data)
             }
         } //for (i = 0; i < 10; ++i)
         
-        CYG_TEST_PASS_FINISH("can_rdwr test OK");
+        //
+        // signal successfull reception of all messages
+        //
+        cyg_semaphore_post(&sem_wait);
     } // while (1)
 }
 
@@ -243,6 +257,11 @@ void
 cyg_start(void)
 {
     CYG_TEST_INIT();
+    
+    //
+    // Initialize the wait semaphore to 0
+    //
+    cyg_semaphore_init( &sem_wait, 0 );
     
     //
     // create the two threads which access the CAN device driver

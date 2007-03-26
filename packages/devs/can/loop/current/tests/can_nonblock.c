@@ -70,7 +70,7 @@
 #include <cyg/kernel/kapi.h>
 
 // Package option requirements
-#if defined(CYGOPT_IO_CAN_SUPPORT_NONBLOCKING) && !defined(CYGOPT_IO_CAN_SUPPORT_TIMEOUTS)
+#if defined(CYGOPT_IO_CAN_SUPPORT_NONBLOCKING)
 
 //===========================================================================
 //                               DATA TYPES
@@ -107,6 +107,7 @@ void can0_thread(cyg_addrword_t data)
     cyg_uint32             len;
     cyg_uint32             blocking;
     cyg_can_event          rx_event;
+    Cyg_ErrNo              res;
 
     blocking = 0;
     len = sizeof(blocking);
@@ -115,11 +116,16 @@ void can0_thread(cyg_addrword_t data)
         CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
     } 
     
-    len = sizeof(rx_event); 
+    len = sizeof(rx_event);  
+    res = cyg_io_read(hDrvFlexCAN, &rx_event, &len);
             
-    if (-EAGAIN == cyg_io_read(hDrvFlexCAN, &rx_event, &len))
+    if (-EAGAIN == res)
     {
         CYG_TEST_PASS_FINISH("can_test1 test OK");
+    }
+    else if (-EINTR == res)
+    {
+    	CYG_TEST_PASS_FINISH("can_test1 test OK");
     }
     else
     {
@@ -155,9 +161,7 @@ cyg_start(void)
     }
     
     //
-    // create the two threads which access the CAN device driver
-    // a reader thread with a higher priority and a writer thread
-    // with a lower priority
+    // create the main thread
     //
     cyg_thread_create(4, can0_thread, 
                         (cyg_addrword_t) 0,
@@ -172,8 +176,8 @@ cyg_start(void)
     cyg_scheduler_start();
 }
 
-#else // #if defined(CYGOPT_IO_CAN_SUPPORT_NONBLOCKING) && !defined(CYGOPT_IO_CAN_SUPPORT_TIMEOUTS
-#define N_A_MSG "Needs nonblocking calls and disabled timeouts"
+#else // #if defined(CYGOPT_IO_CAN_SUPPORT_NONBLOCKING)
+#define N_A_MSG "Needs nonblocking calls"
 #endif
 
 #else // CYGFUN_KERNEL_API_C

@@ -110,7 +110,10 @@ void can0_thread(cyg_addrword_t data)
     cyg_can_message    tx_msg =
     {
         0x000,                                               // CAN identifier
-        {0x00, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7},    // 8 data bytes
+        data :
+        {
+            {0x00, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7 }// 8 data bytes
+        },
         CYGNUM_CAN_ID_STD,                                   // standard frame
         CYGNUM_CAN_FRAME_DATA,                               // data frame
         4,                                                   // data length code
@@ -146,8 +149,8 @@ void can0_thread(cyg_addrword_t data)
     diag_printf("Sending %d CAN messages to /dev/can0 \n", buf_info.rx_bufsize);
     for (i = 0; i < buf_info.rx_bufsize; ++i)
     {
-        tx_msg.id = i;
-        tx_msg.data[0] = i;
+        CYG_CAN_MSG_SET_STD_ID(tx_msg, 0x000 + i);
+        CYG_CAN_MSG_SET_DATA(tx_msg, 0, i);
         len = sizeof(tx_msg);
         
         if (ENOERR != cyg_io_write(hCAN0, &tx_msg, &len))
@@ -204,7 +207,7 @@ void can0_thread(cyg_addrword_t data)
         // Now check if TX events contain valid data - we know that the ID and the first
         // data byte contain the message number
         //
-        if ((rx_event.msg.id != i) || (rx_event.msg.data[0] != i))
+        if ((rx_event.msg.id != i) || (rx_event.msg.data.bytes[0] != i))
         {
             CYG_TEST_FAIL_FINISH("Received invalid data in TX event");
         }

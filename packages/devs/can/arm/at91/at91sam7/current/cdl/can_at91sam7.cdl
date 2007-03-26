@@ -1,0 +1,214 @@
+# ====================================================================
+#
+#      can_at91sam7.cdl
+#
+#      eCos AT91SAM7 CAN module configuration data
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2003, 2004 eCosCentric Limited
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+## -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      Uwe Kindler
+# Contributors:
+# Date:           2007-02-10
+#
+#####DESCRIPTIONEND####
+# ====================================================================
+
+
+cdl_package CYGPKG_DEVS_CAN_AT91SAM7 {
+    display       "Atmel AT91SAM7 CAN device drivers"
+    parent        CYGPKG_IO_CAN_DEVICES
+    active_if     CYGPKG_IO_CAN
+    active_if     CYGPKG_HAL_ARM_AT91SAM7
+    requires      CYGPKG_ERROR
+    include_dir   cyg/io
+    description   "
+           This option enables the CAN device drivers for the
+           Atmel AT91SAM7."
+    compile       -library=libextras.a   can_at91sam7.c
+    define_proc {
+        puts $::cdl_system_header "/***** CAN driver proc output start *****/"
+        puts $::cdl_system_header "#define CYGDAT_IO_CAN_DEVICE_HEADER <pkgconf/devs_can_at91sam7.h>"
+        puts $::cdl_system_header "#define CYGDAT_IO_CAN_DEVICE_INL <cyg/io/can_at91sam7.inl>"
+        puts $::cdl_system_header "/*****  CAN driver proc output end  *****/"
+    }
+
+    cdl_interface CYGINT_DEVS_CAN_AT91SAM7_CAN_CHANNELS {
+        display "AT91SAM7 CAN Channel"
+        flavor bool
+        description "
+               This interface is implemented for each single CAN channnel
+               of an AT91SAM7 chip and counts the number of available 
+               channels."
+    }
+    
+
+    # Support up one on-chip CAN module. The number may vary between
+    # processor variants so it is easy to update this here
+    for { set ::sam7can 0 } { $::sam7can < 1 } { incr ::sam7can } {
+    
+        cdl_interface CYGINT_DEVS_CAN_AT91SAM7_CAN[set ::sam7can] {
+            display     "Platform provides CAN [set ::sam7can]"
+            flavor      bool
+            description "
+                This interface will be implemented if the specific AT91SAM7
+                processor being used has on-chip CAN [set ::sam7can], and if
+                that CAN module is accessible on the target hardware."
+        }
+    
+        cdl_component CYGPKG_DEVS_CAN_AT91SAM7_CAN[set ::sam7can] {
+            display     "Allow access to the on-chip CAN [set ::sam7can] via a CAN driver"
+            flavor      bool
+            active_if       CYGINT_DEVS_CAN_AT91SAM7_CAN[set ::sam7can]
+            default_value   1
+            implements      CYGINT_DEVS_CAN_AT91SAM7_CAN_CHANNELS 
+            implements      CYGINT_IO_CAN_TIMESTAMP       
+            implements      CYGINT_IO_CAN_RUNTIME_MBOX_CFG
+            implements      CYGINT_IO_CAN_REMOTE_BUF  
+            implements      CYGINT_IO_CAN_AUTOBAUD
+            description "
+                If the application needs to access the on-chip CAN module [set ::sam7can]
+                via an eCos CAN driver then this option should be enabled."
+
+            cdl_option CYGPKG_DEVS_CAN_AT91SAM7_CAN[set ::sam7can]_NAME {
+                display     "Device name for CAN module [set ::sam7can]"
+                flavor      data
+                default_value   [format {"\"/dev/can%d\""} $::sam7can]
+                description "
+                    This option controls the name that an eCos application
+                    should use to access this device via cyg_io_lookup(),
+                    open(), or similar calls."
+            }
+
+        
+            cdl_option CYGNUM_DEVS_CAN_AT91SAM7_CAN[set ::sam7can]_KBAUD {
+                display     "Default baud rate for CAN module [set ::sam7can]"
+                flavor      data
+                default_value   100
+                legal_values    { 10 20 50 100 125 250 500 800 1000 "AUTO"}
+                description "This option determines the initial baud rate in KBaud for 
+                             CAN module [set ::sam7can]"
+            }
+
+            cdl_option CYGNUM_DEVS_CAN_AT91SAM7_CAN[set ::sam7can]_QUEUESIZE_TX {
+                display     "Size of TX Queue for the CAN module [set ::sam7can] driver"
+                flavor      data
+                default_value   8
+                legal_values    1 to 64
+                description "
+                    The CAN device driver will run in interrupt mode and will
+                    perform buffering of outgoing data. This option controls the number
+                    of CAN messages the TX queue can store."
+            }
+            
+            cdl_option CYGNUM_DEVS_CAN_AT91SAM7_CAN[set ::sam7can]_QUEUESIZE_RX {
+                display     "Size of RX Queue for the CAN module [set ::sam7can] driver"
+                flavor      data
+                default_value   32
+                legal_values    8 to 128
+                description "
+                    The CAN device driver will run in interrupt mode and will
+                    perform buffering of incoming data. This option controls the number
+                    of CAN events the RX queue can store."
+            }
+            
+            cdl_option CYGNUM_DEVS_CAN_AT91SAM7_CAN[set ::sam7can]_ISR_PRIORITY {
+                display     "Interrupt priority"
+                flavor      data
+                default_value 4
+                legal_values   0 to 7
+                description "
+                    Interrupt priority CAN module [set ::sam7can]. Each interrupt source 
+                    has a programmable priority level of 0 to 7. Level 7 is the
+                    highest priority and level 0 the lowest."
+            }
+            
+            cdl_option CYGNUM_DEVS_CAN_AT91SAM7_CAN[set ::sam7can]_DEFAULT_TX_MBOX {
+                display "Default TX message box"
+                flavor  data
+                calculated    7
+                description "
+                    By default one message buffer will be used for message transmission.
+                    This option selects one of the 8 CAN message buffers for
+                    transmission."
+            }
+            
+            cdl_option CYGNUM_DEVS_CAN_AT91SAM7_CAN[set ::sam7can]_STD_MBOXES {
+                display "11 Bit standard ID msg. buffers"
+                flavor  booldata
+                implements CYGINT_IO_CAN_STD_CAN_ID
+                default_value 3
+                legal_values  1 to 7
+                requires CYGNUM_DEVS_CAN_AT91SAM7_CAN[set ::sam7can]_STD_MBOXES + CYGNUM_DEVS_CAN_AT91SAM7_CAN[set ::sam7can]_EXT_MBOXES < 8
+                description "
+                    The CAN module provides 8 message buffers. One message buffer
+                    is reserved for message transmission. The remaining 7 buffers are
+                    available for reception of messages. This configuration option
+                    defines the number of message boxes for reception of CAN messages
+                    with standard identifier. This configuration option does not matter
+                    when you configure message filters at runtime. Only if the CAN
+                    modul is configured to receive all available CAN identifiers, 
+                    then this configuration option is important. If you get
+                    RX overrun events, you should raise the number of message boxes or
+                    lower the CAN baud rate."
+            }
+            
+            cdl_option CYGNUM_DEVS_CAN_AT91SAM7_CAN[set ::sam7can]_EXT_MBOXES {
+                display "29 Bit extended ID msg. buffers"
+                flavor  booldata
+                implements CYGINT_IO_CAN_EXT_CAN_ID
+                default_value 4
+                legal_values  1 to 7
+                requires CYGNUM_DEVS_CAN_AT91SAM7_CAN[set ::sam7can]_STD_MBOXES + CYGNUM_DEVS_CAN_AT91SAM7_CAN[set ::sam7can]_EXT_MBOXES < 8 
+                description "
+                    The CAN module provides 8 message buffers. One message buffer
+                    is reserved for message transmission. The remaining 7 buffers are
+                    available for reception of messages. This configuration option
+                    defines the number of message boxes for reception of CAN messages
+                    with extended identifier. This configuration option does not matter
+                    when you configure message filters at runtime. Only if the FlexCAN
+                    modul is configured to receive all available CAN identifiers, 
+                    then this configuration option is important. If you get
+                    RX overrun events, you should raise the number of message boxes or
+                    lower the CAN baud rate."
+            }
+        }    
+    }
+       
+    cdl_option CYGDBG_DEVS_CAN_AT91SAM7_DEBUG {
+        display "Support printing debug information"
+            default_value 0
+            description "
+                Check this box to turn ON debug options for AT91SAM7 CAN device driver."
+    }    
+}

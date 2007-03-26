@@ -64,21 +64,6 @@ cdl_package CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN {
         puts $::cdl_system_header "/*****  CAN driver proc output end  *****/"
     }
     
-    cdl_interface CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID {
-        display "11 Bit standard ID support"
-        flavor bool
-        description "
-               This interface is implemented if support for CAN
-               messages with 11 Bit standard CAN ID is required."
-    }
-
-    cdl_interface CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_EXT_CAN_ID {
-        display "29 Bit extended ID support"
-        flavor bool
-        description "
-               This interface is implemented if support for CAN
-               messages with 29 Bit standard CAN ID is required."
-    }
 
     # Support up to two on-chip FlexCAN modules. The number varies between
     # processor variants
@@ -98,7 +83,10 @@ cdl_package CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN {
             flavor      bool
             active_if       CYGINT_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]
             default_value   1
-            implements      CYGINT_IO_CAN_TIMESTAMP
+            implements      CYGINT_IO_CAN_TIMESTAMP       
+            implements      CYGINT_IO_CAN_RUNTIME_MBOX_CFG
+            implements      CYGINT_IO_CAN_REMOTE_BUF  
+            implements      CYGINT_IO_CAN_TX_EVENTS
             
             description "
                 If the application needs to access the on-chip FlexCAN[set ::flexcan]
@@ -191,9 +179,10 @@ cdl_package CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN {
             cdl_option CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_STD_MBOXES {
                 display "11 Bit standard ID msg. buffers"
                 flavor  booldata
-                implements CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID
-                default_value 15
-                legal_values  0 to 15
+                requires CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_STD_MBOXES + CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_EXT_MBOXES < 16
+                implements CYGINT_IO_CAN_STD_CAN_ID
+                default_value 7
+                legal_values  1 to 15
                 description "
                     The FlexCAN module contains 16 message buffers. One message buffer
                     is reserved for message transmission. The remaining 15 buffers are
@@ -210,10 +199,10 @@ cdl_package CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN {
             cdl_option CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_EXT_MBOXES {
                 display "29 Bit extended ID msg. buffers"
                 flavor  booldata
-                requires ((CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_STD_MBOXES + CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_EXT_MBOXES) <= 15)
-                implements CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_EXT_CAN_ID
-                default_value 0
-                legal_values  0 to 15
+                requires CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_STD_MBOXES + CYGNUM_DEVS_CAN_MCF52xx_FLEXCAN[set ::flexcan]_EXT_MBOXES < 16
+                implements CYGINT_IO_CAN_EXT_CAN_ID
+                default_value 8
+                legal_values  1 to 15
                 description "
                     The FlexCAN module contain 16 message buffers. One message buffer
                     is reserved for message transmission. The remaining 15 buffers are
@@ -268,31 +257,7 @@ cdl_package CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN {
             testing infrastructure. All tests require a properly configured
             CAN network with a second CAN node that can send and receive
             CAN messages."
-
-        make -priority 320 {
-            <PREFIX>/bin/flexcan_load : <PACKAGE>/tests/flexcan_load.c
-            @sh -c "mkdir -p tests $(dir $@)"
-            $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o tests/flexcan_load.o $<
-            @echo $@ ": \\" > $(notdir $@).deps
-            @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
-            @tail -n +2 deps.tmp >> $(notdir $@).deps
-            @echo >> $(notdir $@).deps
-            @rm deps.tmp
-            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ tests/flexcan_load.o
-        }
-        
-        make -priority 320 {
-            <PREFIX>/bin/flexcan_remote : <PACKAGE>/tests/flexcan_remote.c
-            @sh -c "mkdir -p tests $(dir $@)"
-            $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o tests/flexcan_remote.o $<
-            @echo $@ ": \\" > $(notdir $@).deps
-            @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
-            @tail -n +2 deps.tmp >> $(notdir $@).deps
-            @echo >> $(notdir $@).deps
-            @rm deps.tmp
-            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ tests/flexcan_remote.o
-        }
-        
+       
         make -priority 320 {
             <PREFIX>/bin/flexcan_wake : <PACKAGE>/tests/flexcan_wake.c
             @sh -c "mkdir -p tests $(dir $@)"
@@ -303,51 +268,6 @@ cdl_package CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN {
             @echo >> $(notdir $@).deps
             @rm deps.tmp
             $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ tests/flexcan_wake.o
-        }
-        
-        make -priority 320 {
-            <PREFIX>/bin/flexcan_filter : <PACKAGE>/tests/flexcan_filter.c
-            @sh -c "mkdir -p tests $(dir $@)"
-            $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o tests/flexcan_filter.o $<
-            @echo $@ ": \\" > $(notdir $@).deps
-            @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
-            @tail -n +2 deps.tmp >> $(notdir $@).deps
-            @echo >> $(notdir $@).deps
-            @rm deps.tmp
-            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ tests/flexcan_filter.o
-        }
-    }
-
-
-
-    cdl_component CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN_OPTIONS {
-        display "FlexCAN device driver build options"
-        flavor  none
-        description   "
-        Package specific build options including control over
-        compiler flags used only in building this package,
-        and details of which tests are built."
-
-        cdl_option CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN_CFLAGS_ADD {
-            display "Additional compiler flags"
-            flavor  data
-            no_define
-            default_value { "" }
-            description   "
-                This option modifies the set of compiler flags for
-                building these CAN device drivers. These flags are
-                used in addition to the set of global flags."
-        }
-
-        cdl_option CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN_CFLAGS_REMOVE {
-            display "Suppressed compiler flags"
-            flavor  data
-            no_define
-            default_value { "" }
-            description   "
-                This option modifies the set of compiler flags for
-                building these CAN device drivers. These flags are
-                removed from the set of global flags if present."
         }
     }
 }

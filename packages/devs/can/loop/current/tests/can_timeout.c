@@ -113,6 +113,7 @@ void check_timeout(cyg_io_handle_t hCAN, cyg_uint32 timeout)
 
     timeout_info.tx_timeout = timeout;
     timeout_info.rx_timeout = timeout;
+    len = sizeof(timeout_info);
     if (ENOERR != cyg_io_set_config(hCAN, CYG_IO_SET_CONFIG_CAN_TIMEOUT ,&timeout_info, &len))
     {
         CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");

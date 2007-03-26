@@ -69,8 +69,11 @@ cdl_package CYGPKG_IO_CAN_LOOP {
     cdl_component CYGPKG_IO_CAN_LOOP_CAN[set ::loopcan] {
         display       "LOOP CAN channel [set ::loopcan] driver"
         flavor        bool
-        default_value 0
+        default_value 1
         implements    CYGINT_IO_CAN_TIMESTAMP
+        implements    CYGINT_IO_CAN_TX_EVENTS
+        implements    CYGINT_IO_CAN_STD_CAN_ID
+        implements    CYGINT_IO_CAN_EXT_CAN_ID
         description   "
             This option includes the CAN loop device driver for channel [set ::loopcan]." 
     
@@ -124,28 +127,6 @@ cdl_package CYGPKG_IO_CAN_LOOP {
 	    compiler flags used only in building this package,
 	    and details of which tests are built."
 
-
-        cdl_option CYGPKG_IO_CAN_LOOP_CFLAGS_ADD {
-            display "Additional compiler flags"
-            flavor  data
-            no_define
-            default_value { "" }
-            description   "
-                This option modifies the set of compiler flags for
-                building these CAN device drivers. These flags
-                are used in addition to the set of global flags."
-        }
-
-        cdl_option CYGPKG_IO_CAN_LOOP_CFLAGS_REMOVE {
-            display "Suppressed compiler flags"
-            flavor  data
-            no_define
-            default_value { "" }
-            description   "
-                This option modifies the set of compiler flags for
-                building these CAN device drivers. These flags are
-                removed from the set of global flags if present."
-        }
         
         cdl_option CYGPKG_IO_CAN_LOOP_TESTS {
             display "CAN loop device driver tests"

@@ -111,7 +111,10 @@ void can0_thread(cyg_addrword_t data)
     cyg_can_message    tx_msg =
     {
         0x000,                                               // CAN identifier
-        {0x00, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7},    // 8 data bytes
+        data :
+        {
+            {0x00, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7 }// 8 data bytes
+        },
         CYGNUM_CAN_ID_STD,                                   // standard frame
         CYGNUM_CAN_FRAME_DATA,                               // data frame
         2,                                                   // data length code
@@ -148,7 +151,7 @@ void can0_thread(cyg_addrword_t data)
         CYG_TEST_FAIL_FINISH("Unexpected RX event for /dev/can0");
     }
     
-    rx_bufsize = *((cyg_uint32 *)rx_event.msg.data);
+    rx_bufsize = *((cyg_uint32 *)rx_event.msg.data.bytes);
     
     //
     // now we send exactly one CAN message more than there is space in the receive buffer
@@ -161,8 +164,8 @@ void can0_thread(cyg_addrword_t data)
         // we store the message number as CAN id and in first data byte so
         // a receiver can check this later
         //
-        tx_msg.id = 0x000 + i;
-        tx_msg.data[0] = i;
+        CYG_CAN_MSG_SET_STD_ID(tx_msg, 0x000 + i);
+        CYG_CAN_MSG_SET_DATA(tx_msg, 0, i);
         len = sizeof(tx_msg); 
             
         if (ENOERR != cyg_io_write(hCAN0, &tx_msg, &len))
@@ -216,7 +219,7 @@ void can1_thread(cyg_addrword_t data)
     // endianess here because this is a loopback driver test and we will receive
     // our own messages
     //
-    *((cyg_uint32 *)tx_msg.data) = rx_buf_info.rx_bufsize;
+    *((cyg_uint32 *)tx_msg.data.bytes) = rx_buf_info.rx_bufsize;
     len = sizeof(tx_msg); 
     
     //
@@ -261,7 +264,7 @@ void can1_thread(cyg_addrword_t data)
             if (rx_event.flags & CYGNUM_CAN_EVENT_RX)
             {
                 print_can_msg(&rx_event.msg, "");
-                if (rx_event.msg.data[0] != (i + 1))
+                if (rx_event.msg.data.bytes[0] != (i + 1))
                 {
                     CYG_TEST_FAIL_FINISH("Received /dev/can1 RX event contains invalid data");
                 }                    

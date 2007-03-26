@@ -1,3 +1,37 @@
+2007-03-23  Uwe Kindler  <uwe_kindler@web.de>
+
+	* cdl/can_mcf52xx.cdl Removed interfaces 
+	  CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID and
+	  CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_EXT_CAN_ID. The generic
+	  CAN I/O layer provides some similar interfaces now.
+	  Driver now implements the new CAN I/O interfaces 
+	  CYGINT_IO_CAN_TIMESTAMP, CYGINT_IO_CAN_RUNTIME_MBOX_CFG
+	  CYGINT_IO_CAN_REMOTE_BUF and CYGINT_IO_CAN_TX_EVENTS,
+	  CYGINT_IO_CAN_STD_CAN_ID, CYGINT_IO_CAN_EXT_CAN_ID
+	  Removed make commands for removed test cases.
+	  Removed cdl component CYGPKG_DEVS_CAN_MCF52xx_FLEXCAN_OPTIONS
+	  because it did not have any functionality.
+	  
+	* src/can_mcf52xx.c Replaced 
+	  CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_EXT_CAN_ID with 
+	  generic CAN I/O option CYGOPT_IO_CAN_EXT_CAN_ID and 
+	  CYGINT_DEVS_CAN_MCF52xx_FLEXCAN_SUPP_STD_CAN_ID with
+	  generic CAN I/O option CYGOPT_IO_CAN_STD_CAN_ID
+	  Implemented CAN mode CYGNUM_CAN_MODE_CONFIG.
+	  Changed old access to CAN data (byte array) to access
+	  to new cyg_can_msg_data type.
+	  
+	* tests/flexcan_filter: removed. This tast case is now part of
+	  generic CAN I/O layer.
+	  
+	* tests/flexcan_load: removed. This tast case is now part of
+	  generic CAN I/O layer.
+	
+	* tests/flexcan_remote: removed. This tast case is now part of
+	  generic CAN I/O layer.
+	
+	* tets/flexcan_wake: Did some code cleaning.
+
 2006-02-15  Uwe Kindler  <uwe_kindler@web.de>
 
 	* cdl/can_mcf52xx.cdl Added two interfaces

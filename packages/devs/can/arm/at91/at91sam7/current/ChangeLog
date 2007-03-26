@@ -1,20 +1,9 @@
 2007-03-23  Uwe Kindler  <uwe_kindler@web.de>
 
-	* cdl/can_loop.cdl: Driver now implements the interfaces
-	  CYGINT_IO_CAN_TX_EVENTS, CYGINT_IO_CAN_STD_CAN_ID, 
-	  CYGINT_IO_CAN_EXT_CAN_ID.
-	  Removed CYGPKG_IO_CAN_LOOP_CFLAGS_ADD and 
-	  CYGPKG_IO_CAN_LOOP_CFLAGS_REMOVE because they had no function.
-	  
-	* src/loop_can.c: Added missing function loop_can_get_config
-	  to make the driver build properly.
-	
-	* tests: Did some fixes and cleanups for all test cases to make them
-	  work properly with the changes in the CAN I/O layer.
-	
-2005-08-15  Uwe Kindler  <uwe_kindler@web.de>
-
-	* Loopback CAN driver created
+	* AT91SAM7 CAN driver package created
+	* cdl/can_at91sam7.cdl
+	* include/can_at91sam7.inl
+	* src/can_at91sam7.c
 
 //===========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####

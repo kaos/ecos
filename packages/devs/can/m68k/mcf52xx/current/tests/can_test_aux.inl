@@ -68,11 +68,12 @@ void print_can_msg(cyg_can_message *pmsg, char *pMsg)
     
     if (pmsg->rtr)
     {
-        diag_printf("%s [ID:%03X] [RTR:%d] [EXT:%d]\n",
+        diag_printf("%s [ID:%03X] [RTR:%d] [EXT:%d] [DLC:%d]\n",
                     pMsg,
                     pmsg->id,
                     pmsg->rtr,
-                    pmsg->ext);
+                    pmsg->ext,
+                    pmsg->dlc);
                     
         return;
     }
@@ -91,14 +92,14 @@ void print_can_msg(cyg_can_message *pmsg, char *pMsg)
                 pmsg->id,
                 pmsg->rtr,
                 pmsg->ext,
-                pmsg->data[0],
-                pmsg->data[1],
-                pmsg->data[2],
-                pmsg->data[3],
-                pmsg->data[4],
-                pmsg->data[5],
-                pmsg->data[6],
-                pmsg->data[7]);
+                pmsg->data.bytes[0],
+                pmsg->data.bytes[1],
+                pmsg->data.bytes[2],
+                pmsg->data.bytes[3],
+                pmsg->data.bytes[4],
+                pmsg->data.bytes[5],
+                pmsg->data.bytes[6],
+                pmsg->data.bytes[7]);
 }
 
 
