@@ -138,6 +138,17 @@ cdl_package CYGPKG_HAL_ARM_AT91SAM7 {
             The SAM7X and SAM7XC have the second SPI bus controller"
     }
 
+    cdl_option CYGBLD_HAL_ARM_AT91SAM7_CAN0 {
+        display       "CAN bus controller"
+        active_if     { CYGHWR_HAL_ARM_AT91SAM7X ||
+                        CYGHWR_HAL_ARM_AT91SAM7XC }
+        implements    CYGINT_DEVS_CAN_AT91SAM7_CAN0
+        default_value 1
+        no_define
+        description   "
+            The SAM7X and SAM7XC have the CAN controller"
+    }
+
     cdl_component CYGNUM_HAL_RTC_CONSTANTS {
         display       "Real-time clock constants"
         flavor        none
