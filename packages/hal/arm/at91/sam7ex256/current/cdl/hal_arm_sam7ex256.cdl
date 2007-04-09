@@ -58,6 +58,10 @@ cdl_package CYGPKG_HAL_ARM_SAM7EX256 {
     requires      { CYGHWR_HAL_ARM_AT91 == "AT91SAM7S" }
     requires      { CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7x256" }
     
+    requires      { is_active(CYGPKG_DEVS_ETH_PHY) implies
+                    (1 == CYGHWR_DEVS_ETH_PHY_KS8721) }
+
+    
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_arm_sam7ex256.h>"
         puts $::cdl_header "/***** proc output start *****/"
@@ -67,4 +71,8 @@ cdl_package CYGPKG_HAL_ARM_SAM7EX256 {
         puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
         puts $::cdl_header "/****** proc output end ******/"
     }
+    
+    # The AT91SAM7X provides one CAN channel and the Olimex SAM7-EX256 main board
+    # provides a connector for this channel
+    implements CYGINT_DEVS_CAN_AT91SAM7_CAN0
 }
