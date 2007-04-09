@@ -140,5 +140,14 @@ cdl_package CYGPKG_DEVS_ETH_PHY {
         description "
           Include support for the Davicom DM9161A PHY"
     }
+    
+    cdl_option CYGHWR_DEVS_ETH_PHY_KS8721 {
+        display       "Micrel KS8721"
+        flavor        bool
+        default_value 0
+        compile       -library=libextras.a KS8721.c
+        description "
+          Include support for the Micrel KS8721 PHY"
+    }
 
 }

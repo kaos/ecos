@@ -1,3 +1,8 @@
+2007-04-06  Uwe Kindler <uwe_kindler@web.de>
+
+	* cdl/phy_eth_drivers.cdl: 
+	* src/KS8721.c: Add support for support for Micrel KS8721 PHY
+	
 2007-01-17  John Eigelaar <jeigelaar@mweb.co.za>
 
 	* cdl/phy_eth_drivers.cdl: 
