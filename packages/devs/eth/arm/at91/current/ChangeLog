@@ -1,3 +1,8 @@
+2007-04-08  Uwe Kindler  <uwe_kindler@web.de>
+
+	* cdl/at91_eth.cdl: Fixed typo. (Removed AT91RM9200 from
+	  CYGPKG_DEVS_ETH_ARM_AT91_DEBUG_LEVEL)
+	
 2007-03-23  John Eigelaar  <jeigelaar@mweb.co.za>
 
 	* src/if_at91.c: Added support for the ETH_DRV_SET_MAC_ADDRESS

@@ -65,7 +65,7 @@ cdl_package CYGPKG_DEVS_ETH_ARM_AT91 {
     compile       -library=libextras.a if_at91.c
 
     cdl_option CYGPKG_DEVS_ETH_ARM_AT91_DEBUG_LEVEL {
-         display "AT91RM9200 device driver debug output level"
+         display "Driver debug output level"
          flavor  data
          legal_values {0 1 2}
          default_value 1
