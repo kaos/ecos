@@ -1,3 +1,7 @@
+2007-04-08   uwe.kindler <uwe.kindler@cetoni.de>
+
+	* ecos.db Ethernet driver for Olimex SAM7-EX256 
+	
 2007-03-26   uwe.kindler <uwe.kindler@cetoni.de>
 
 	* ecos.db CAN driver for AT91.
