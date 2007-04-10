@@ -1,3 +1,9 @@
+2007-04-10  Uwe Kindler  <uwe_kindler@web.de>
+
+	* cdl/hal_arm_sam7ex256.cdl Removed "implements 
+	  CYGINT_DEVS_CAN_AT91SAM7_CAN0" because this interface is already
+	  implemented by package CYGPKG_HAL_ARM_AT91SAM7
+	  
 2007-04-06  Uwe Kindler  <uwe_kindler@web.de>
 
 	* src/sam7ex256_misc.c Added hal_plf_eth_init() in order to initialise 

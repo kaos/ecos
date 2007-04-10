@@ -71,8 +71,4 @@ cdl_package CYGPKG_HAL_ARM_SAM7EX256 {
         puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
         puts $::cdl_header "/****** proc output end ******/"
     }
-    
-    # The AT91SAM7X provides one CAN channel and the Olimex SAM7-EX256 main board
-    # provides a connector for this channel
-    implements CYGINT_DEVS_CAN_AT91SAM7_CAN0
 }
