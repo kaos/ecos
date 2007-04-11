@@ -64,6 +64,7 @@
 #include <unistd.h>
 #include <string.h>
 #ifdef CYGPKG_IO_FLASH
+#include <pkgconf/io_flash.h>
 #include <cyg/io/io.h>
 #include <cyg/io/flash.h>
 #include <cyg/io/config_keys.h>
@@ -107,6 +108,17 @@ static struct
 
 static void do_mount(int argc, char *argv[]);
 static void do_umount(int argc, char *argv[]);
+
+/* Temporary hack until flashv2 merged to trunk. We can't tell whether we're
+ * working with flash v1 or v2 from the package version. So if legacy device isn't
+ * defined we check whether, if there is a block device, there's a tell-tale define
+ * that only exists with the v1 version.
+ */
+#if !defined(CYGPKG_IO_FLASH_BLOCK_DEVICE_LEGACY) && \
+     defined(CYGPKG_IO_FLASH_BLOCK_DEVICE) && \
+     defined(CYGINT_IO_FLASH_BLOCK_CFG_1)
+# define CYGPKG_IO_FLASH_BLOCK_DEVICE_LEGACY 1
+#endif
 
 #ifdef CYGPKG_IO_FLASH_BLOCK_DEVICE_LEGACY
 #define FLASHPART "[-f <partition>] "
@@ -174,7 +186,7 @@ do_mount(int argc, char *argv[])
     
 #ifdef CYGPKG_IO_FLASH_BLOCK_DEVICE_LEGACY
     if (part_set) {
-        int len;
+        cyg_uint32 len;
         cyg_io_handle_t h;
 
         if (dev_set && strcmp(dev_str, CYGDAT_IO_FLASH_BLOCK_DEVICE_NAME_1)) {
@@ -183,11 +195,11 @@ do_mount(int argc, char *argv[])
         }
 
         dev_str = CYGDAT_IO_FLASH_BLOCK_DEVICE_NAME_1;
-        len = strlen(part_str);
+        len = (cyg_uint32)strlen(part_str);
 
         err = cyg_io_lookup(dev_str, &h);
         if (err < 0) {
-            err_printf("fs mount: cyg_io_lookup of \"%s\" returned %d\n", err);
+            err_printf("fs mount: cyg_io_lookup of \"%s\" returned %d\n", dev_str, err);
             return;
         }
         err = cyg_io_set_config(h, CYG_IO_SET_CONFIG_FLASH_FIS_NAME,
@@ -342,7 +354,7 @@ do_list(int argc, char * argv[])
                       rwx[(sbuf.st_mode & S_IRWXG) >> 19],
                       rwx[(sbuf.st_mode & S_IRWXO) >> 22]);
           diag_printf(" %2d size %6d %s\n",
-                      sbuf.st_nlink,sbuf.st_size, 
+                      sbuf.st_nlink,(int)sbuf.st_size, 
                       entry->d_name);
      }
      
