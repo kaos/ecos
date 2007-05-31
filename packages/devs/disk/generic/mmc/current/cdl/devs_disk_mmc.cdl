@@ -100,6 +100,13 @@ cdl_package CYGPKG_DEVS_DISK_MMC {
                 mode if the kernel is present, i.e. if the application is likely
                 to be multi-threaded. Otherwise it will operate in polled mode."
 	}
+    cdl_option CYGPKG_DEVS_DISK_MMC_SPI_IDLE_RETRIES_WAIT {
+        display          "Idle to operational retry wait"
+        flavor           data
+        default_value    10000
+        description      "
+            This option sets how long to wait between retries of attempts to change the
+            card state from idle to operational. It is measured in microseconds."
     }
 }
 

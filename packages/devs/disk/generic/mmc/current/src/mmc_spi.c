@@ -50,6 +50,7 @@
 #include <cyg/infra/cyg_ass.h>
 #include <cyg/infra/diag.h>
 #include <cyg/hal/hal_arch.h>
+#include <cyg/hal/hal_if.h>             // delays
 #include <cyg/hal/hal_intr.h>
 #include <string.h>
 #include <errno.h>
@@ -194,6 +195,13 @@ typedef struct cyg_mmc_spi_disk_info_t {
 static void
 mmc_spi_send_init(cyg_mmc_spi_disk_info_t* disk)
 {
+    cyg_spi_bus     *bus;
+    cyg_spi_device  *dev;
+
+    DEBUG2("mmc_spi_send_init(): dev pointer 0x%p, %d\n", disk->mmc_spi_dev, cyg_mmc_spi_polled );
+    dev = disk->mmc_spi_dev;
+    bus = dev->spi_bus;
+    DEBUG2("                   : begin pointer %p\n", bus->spi_transaction_begin );
     cyg_spi_tick(disk->mmc_spi_dev, cyg_mmc_spi_polled, 10);
 }
 
@@ -589,6 +597,9 @@ mmc_spi_check_for_disk(cyg_mmc_spi_disk_info_t* disk)
     // not idle
     reply = 0x00ff;
     for (i = 0; (i < MMC_SPI_OP_COND_RETRIES) && ((0x00ff == reply) || (0 != (MMC_REPLY_IN_IDLE_STATE & reply))); i++) {
+#ifdef CYGPKG_DEVS_DISK_MMC_SPI_IDLE_RETRIES_WAIT
+        CYGACC_CALL_IF_DELAY_US(CYGPKG_DEVS_DISK_MMC_SPI_IDLE_RETRIES_WAIT);
+#endif
         reply = mmc_spi_send_command(disk, MMC_REQUEST_SEND_OP_COND, 0);
     }
     if (MMC_REPLY_SUCCESS != reply) {
@@ -610,6 +621,22 @@ mmc_spi_check_for_disk(cyg_mmc_spi_disk_info_t* disk)
            disk->mmc_id.cid_data[ 4], disk->mmc_id.cid_data[ 5], disk->mmc_id.cid_data[ 6], disk->mmc_id.cid_data[ 7],  \
            disk->mmc_id.cid_data[ 8], disk->mmc_id.cid_data[ 9], disk->mmc_id.cid_data[10], disk->mmc_id.cid_data[11],  \
            disk->mmc_id.cid_data[12], disk->mmc_id.cid_data[13], disk->mmc_id.cid_data[14], disk->mmc_id.cid_data[15]);
+#if DEBUG > 0
+    DEBUG1("CID data: register\n");
+    DEBUG1("        : Manufacturer ID       : MID = 0x%02x\n", MMC_CID_REGISTER_MID(&(disk->mmc_id)) & 0xff);
+    DEBUG1("        : OEM/Application ID    : OID = 0x%04x\n", MMC_CID_REGISTER_OID(&(disk->mmc_id)) & 0xffff);
+    DEBUG1("        : Product name          : PNM = 0x%02x%02x%02x%02x%02x%02x\n",
+                                                               MMC_CID_REGISTER_PNM(&(disk->mmc_id))[0] & 0xff,
+                                                               MMC_CID_REGISTER_PNM(&(disk->mmc_id))[1] & 0xff,
+                                                               MMC_CID_REGISTER_PNM(&(disk->mmc_id))[2] & 0xff,
+                                                               MMC_CID_REGISTER_PNM(&(disk->mmc_id))[3] & 0xff,
+                                                               MMC_CID_REGISTER_PNM(&(disk->mmc_id))[4] & 0xff,
+                                                               MMC_CID_REGISTER_PNM(&(disk->mmc_id))[5] & 0xff);
+    DEBUG1("        : Product revision      : PRV = 0x%02x\n", MMC_CID_REGISTER_PRV(&(disk->mmc_id)) & 0xff);
+    DEBUG1("        : Product serial number : PSN = 0x%08x\n", MMC_CID_REGISTER_PSN(&(disk->mmc_id)) & 0xffffffff);
+    DEBUG1("        : Manufacturing date    : MDT = 0x%02x\n", MMC_CID_REGISTER_MDT(&(disk->mmc_id)) & 0xff);
+    DEBUG1("        : 7-bit CRC checksum    : CRC = 0x%02x\n", MMC_CID_REGISTER_CRC(&(disk->mmc_id)) & 0xff);
+#endif
 
     // And retrieve the card's configuration data.
     code = mmc_spi_read_register(disk, MMC_REQUEST_SEND_CSD, (cyg_uint8*) &csd, 16);
@@ -628,18 +655,21 @@ mmc_spi_check_for_disk(cyg_mmc_spi_disk_info_t* disk)
     // correct then we really are interacting properly with an MMC card.
 #if DEBUG > 0
     DEBUG1("CSD data: structure 0x%02x, version 0x%02x\n", MMC_CSD_REGISTER_CSD_STRUCTURE(&csd), MMC_CSD_REGISTER_SPEC_VERS(&csd));
-    if ((0 != MMC_CSD_REGISTER_FILE_FORMAT_GROUP(&csd)) ||
-        ((0 != MMC_CSD_REGISTER_FILE_FORMAT(&csd)) && (1 != MMC_CSD_REGISTER_FILE_FORMAT(&csd)))) {
-        DEBUG1("        : unknown disk format, FILE_FORMAT_GROUP %d, FILE_FORMAT %d\n", \
+    if (0 != MMC_CSD_REGISTER_FILE_FORMAT_GROUP(&csd)) {
+        DEBUG1("        : Reserved (unknown), FILE_FORMAT_GROUP %d, FILE_FORMAT %d\n", \
                     MMC_CSD_REGISTER_FILE_FORMAT_GROUP(&csd), MMC_CSD_REGISTER_FILE_FORMAT(&csd));
     } else if (0 == MMC_CSD_REGISTER_FILE_FORMAT(&csd)) {
-        DEBUG1("        : partioned disk, FILE_FORMAT_GROUP 0, FILE_FORMAT 0\n");
-    } else {
+        DEBUG1("        : Partioned disk, FILE_FORMAT_GROUP 0, FILE_FORMAT 0\n");
+    } else if (1 == MMC_CSD_REGISTER_FILE_FORMAT(&csd)) {
         DEBUG1("        : FAT disk, FILE_FORMAT_GROUP 0, FILE_FORMAT 1\n");
+    } else if (2 == MMC_CSD_REGISTER_FILE_FORMAT(&csd)) {
+        DEBUG1("        : Universal File format, FILE_FORMAT_GROUP 0, FILE_FORMAT 2\n");
+    } else {
+        DEBUG1("        : Others/Unknown disk, FILE_FORMAT_GROUP 0, FILE_FORMAT 3\n");
     }
     {
-        static cyg_uint32 mantissa_speeds_x10[16]   = { 0, 10, 12, 13, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80 };
-        static cyg_uint32 exponent_speeds_div10[8]  = { 10000, 100000, 1000000, 10000000, 0, 0, 0, 0 };
+        static const cyg_uint32 mantissa_speeds_x10[16]   = { 0, 10, 12, 13, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80 };
+        static const cyg_uint32 exponent_speeds_div10[8]  = { 10000, 100000, 1000000, 10000000, 0, 0, 0, 0 };
         cyg_uint32 speed = mantissa_speeds_x10[MMC_CSD_REGISTER_TRAN_SPEED_MANTISSA(&csd)] *
             exponent_speeds_div10[MMC_CSD_REGISTER_TRAN_SPEED_EXPONENT(&csd)];
         speed /= 1000;
@@ -660,13 +690,20 @@ mmc_spi_check_for_disk(cyg_mmc_spi_disk_info_t* disk)
     }
     DEBUG1("        : WR_BL_LEN block length 2^%d (%d)\n", \
            MMC_CSD_REGISTER_WRITE_BL_LEN(&csd), 0x01 << MMC_CSD_REGISTER_WRITE_BL_LEN(&csd));
-    DEBUG1("        : asynchronous read access time TAAC %dE%d ns\n", \
-           MMC_CSD_REGISTER_TAAC_MANTISSA(&csd), MMC_CSD_REGISTER_TAAC_EXPONENT(&csd));
+    {
+        static cyg_uint32 taac_mantissa_speeds_x10[16]   = { 0, 10, 12, 13, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80 };
+        static cyg_uint32 taac_exponent_speeds_div10[8]  = { 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000 };
+        cyg_uint32 taac_speed = taac_mantissa_speeds_x10[MMC_CSD_REGISTER_TAAC_MANTISSA(&csd)] *
+            taac_exponent_speeds_div10[MMC_CSD_REGISTER_TAAC_EXPONENT(&csd)];
+        taac_speed /= 100;
+        DEBUG1("        : asynchronous read access time TAAC %d %d -> %d ns\n", \
+               MMC_CSD_REGISTER_TAAC_MANTISSA(&csd), MMC_CSD_REGISTER_TAAC_EXPONENT(&csd), taac_speed);
+    }
     DEBUG1("        : synchronous read access time NSAC %d * 100 cycles\n", \
            MMC_CSD_REGISTER_NSAC(&csd));
     DEBUG1("        : typical write program time %d * read time\n", MMC_CSD_REGISTER_R2W_FACTOR(&csd));
     DEBUG1("        : CCC command classes 0x%04x\n", MMC_CSD_REGISTER_CCC(&csd));
-    DEBUG1("        : READ_BL_PARTIAL %d, WRITE_BLK_MISALIGN %d, READ_BLK_MISALIGN %D, DSR_IMP %d\n",   \
+    DEBUG1("        : READ_BL_PARTIAL %d, WRITE_BLK_MISALIGN %d, READ_BLK_MISALIGN %d, DSR_IMP %d\n",   \
            MMC_CSD_REGISTER_READ_BL_PARTIAL(&csd), MMC_CSD_REGISTER_WRITE_BLK_MISALIGN(&csd),           \
            MMC_CSD_REGISTER_READ_BLK_MISALIGN(&csd), MMC_CSD_REGISTER_DSR_IMP(&csd));
     DEBUG1("        : WR_BL_PARTIAL %d\n", MMC_CSD_REGISTER_WR_BL_PARTIAL(&csd));
@@ -769,6 +806,22 @@ mmc_spi_check_for_disk(cyg_mmc_spi_disk_info_t* disk)
             mmc_spi_restore_baud(disk);
             return code;
         }
+#if DEBUG > 1
+        {
+            cyg_uint8 *ptr_data;
+
+            DEBUG2("MBR dump\n");
+            for (i = 0; i < MMC_SPI_BLOCK_SIZE; i += 16) {
+                ptr_data = &data[i];
+                DEBUG2(" %04x: %02x %02x %02x %02x  %02x %02x %02x %02x  %02x %02x %02x %02x  %02x %02x %02x %02x\n",
+                    i,
+                    ptr_data[ 0], ptr_data[ 1], ptr_data[ 2], ptr_data[ 3],
+                    ptr_data[ 4], ptr_data[ 5], ptr_data[ 6], ptr_data[ 7],
+                    ptr_data[ 8], ptr_data[ 9], ptr_data[10], ptr_data[11],
+                    ptr_data[12], ptr_data[13], ptr_data[14], ptr_data[15]);
+            }
+        }
+#endif
 #if DEBUG > 0
         DEBUG1("Read block 0 (partition table)\n");
         DEBUG1("Signature 0x%02x 0x%02x, should be 0x55 0xaa\n", data[0x1fe], data[0x1ff]);
@@ -889,6 +942,10 @@ mmc_spi_disk_lookup(struct cyg_devtab_entry** tab, struct cyg_devtab_entry *sub_
     disk_channel*               chan    = (disk_channel*) (*tab)->priv;
     cyg_mmc_spi_disk_info_t*    disk    = (cyg_mmc_spi_disk_info_t*) chan->dev_priv;
     Cyg_ErrNo                   result;
+
+    DEBUG2("mmc_spi_disk_lookup(): target name=%s\n", name );
+    DEBUG2("                     : device name=%s dep_name=%s\n", tab[0]->name, tab[0]->dep_name );
+    DEBUG2("                     : sub    name=%s dep_name=%s\n", sub_tab->name, sub_tab->dep_name );
 
     if (disk->mmc_connected) {
         // There was a card plugged in last time we looked. Is it still there?
