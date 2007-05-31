@@ -1,3 +1,8 @@
+2007-05-31  Rutger Hofman <rutger@cs.vu.nl>
+
+	* src/diag.cxx: when printing a long long, should not truncate
+	its value to a long or int size
+
 2006-10-26  Stefan Sommerfeld <sommerfeld@mikrom.com>
 
 	* include/cyg_types.h: fixed typo, __GNU_PATCHLEVEL__ was checked,
