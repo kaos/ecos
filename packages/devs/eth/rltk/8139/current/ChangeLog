@@ -1,3 +1,9 @@
+2007-05-30  Hajime Ishitani <pigmon@mail.snd.co.jp>
+
+	* src/if_8139.c:
+	* cdl/rltk_8139_eth_drivers.cdl
+	add write in MAC address at EEPROM by SIOCSIFHWADDR.
+
 2006-12-17  Hajime Ishitani <pigmon@mail.snd.co.jp>
 
 	* src/if_8139.c:

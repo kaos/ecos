@@ -177,8 +177,42 @@ static void rltk8139_deliver(struct eth_drv_sc *sc);
 static void rltk8139_poll(struct eth_drv_sc *sc);
 static int rltk8139_int_vector(struct eth_drv_sc *sc);
 
+#ifdef CYGPKG_DEVS_ETH_RLTK_8139_WRITE_EEPROM
+static cyg_uint16 rltk8139_eeprom_read( char *cpErAddr, cyg_uint8 Cmd, cyg_uint8 RomAdr );
+static void rltk8139_eeprom_write( char *cpErAddr, cyg_uint8 Cmd, cyg_uint8 RomAdr, cyg_uint16 SrcData );
+#endif
+
 #ifdef DEBUG_RLTK8139_DRIVER
 void rltk8139_print_state(struct eth_drv_sc *sc);
+#endif
+
+#ifdef CYGPKG_DEVS_ETH_RLTK_8139_WRITE_EEPROM
+#define EEPROM_CMD_READ         0x06  // eeprom read command
+#define EEPROM_CMD_WRITE        0x05  // eeprom write command
+#define EEPROM_PG_ON            0x80
+#define EEPROM_PG_EECS          0x08
+#define EEPROM_PG_EESK          0x04
+#define EEPROM_PG_EEDI          0x02
+#define EEPROM_PG_EEDO          0x01
+#define EEPROM_WR_BUSY_RETRIES  100   // ready wait re-try count
+
+#define	EEPROM_MASK(_param0_,_param1_)            ((_param0_ & _param1_) ? EEPROM_PG_EEDI : 0 )
+
+
+#define EEPROM_WR_DATA(_addr_,_txdata_)           HAL_WRITE_UINT8(_addr_,_txdata_);
+
+#define EEPROM_WR_DATAPULSE(_addr_,_txdata_)      HAL_WRITE_UINT8(_addr_,_txdata_); \
+                                                  cyg_thread_delay(0); \
+                                                  HAL_WRITE_UINT8(_addr_,_txdata_ | EEPROM_PG_EESK);
+
+#define EEPROM_RD_DATA(_addr_,_txdata_,_rxdata_)  { \
+                                                  cyg_uint16  read_data; \
+                                                  HAL_WRITE_UINT8(_addr_,_txdata_); \
+                                                  cyg_thread_delay(1); \
+                                                  HAL_READ_UINT8(_addr_, read_data); \
+                                                  _rxdata_ <<= 1; \
+                                                  _rxdata_ |= ((read_data & EEPROM_PG_EEDO) ? 0x0001 : 0x0000 ); \
+                                                  HAL_WRITE_UINT8(_addr_,_txdata_ | EEPROM_PG_EESK); }
 #endif
 
 /*
@@ -778,6 +812,11 @@ rltk8139_control(struct eth_drv_sc *sc, unsigned long key, void *data,
   int i;
   Rltk8139_t *rltk8139_info;
 
+#ifdef CYGPKG_DEVS_ETH_RLTK_8139_WRITE_EEPROM
+  cyg_uint16 WrData, RdData;
+  cyg_uint8  *pSrcData;
+  int iRetry;
+#endif
 
 #ifdef DEBUG_RLTK8139_DRIVER
   diag_printf("rltk8139_control(%08x, %lx)\n", sc, key);
@@ -796,6 +835,26 @@ rltk8139_control(struct eth_drv_sc *sc, unsigned long key, void *data,
       rltk8139_info->mac[i] = *(((cyg_uint8 *)data) + i);
       OUTB(rltk8139_info->mac[i], rltk8139_info->base_address + IDR0 + i);
     }
+
+#ifdef CYGPKG_DEVS_ETH_RLTK_8139_WRITE_EEPROM
+    pSrcData = (cyg_uint8 *)data;
+    for(i = 0; i < 3; i++){
+      WrData  = ((cyg_uint16)(*pSrcData++)) & 0xff;
+      WrData |=  ((cyg_uint16)(*pSrcData++)) << 8;
+      for( iRetry = 0; iRetry < 3; iRetry++){
+        rltk8139_eeprom_write(
+                         (char *)(rltk8139_info->base_address + CR9346),
+                                           EEPROM_CMD_WRITE, i + 7, WrData);
+        RdData = rltk8139_eeprom_read(
+                         (char *)(rltk8139_info->base_address + CR9346),
+                                           EEPROM_CMD_READ, i + 7);
+        if( RdData == WrData ){
+          break;
+        }
+      }
+    }
+#endif
+
     return 0;
 #endif
 
@@ -1331,4 +1390,138 @@ rltk8139_print_state(struct eth_drv_sc *sc) {
     diag_printf(" 0x%08x\n", INL(rltk8139_info->base_address + i + 12));
   }
 }
+#endif
+
+
+#ifdef CYGPKG_DEVS_ETH_RLTK_8139_WRITE_EEPROM
+/*
+ * Read mac_address from EEPROM.
+ */
+static cyg_uint16
+rltk8139_eeprom_read( char *rtl_addr, cyg_uint8 eeprom_cmd, cyg_uint8 eeprom_addr )
+{
+cyg_uint8   read_data;                   // read from eeprom bit data
+cyg_uint8   org_param;                   // original register parameter
+cyg_uint8   mask_bit8;                   // mask bit
+int         icount;                      // for loop counter
+
+    // get old parameter
+    HAL_READ_UINT8( rtl_addr, org_param );
+
+    // ready
+    EEPROM_WR_DATAPULSE( rtl_addr, EEPROM_PG_ON );
+
+    // set command
+    mask_bit8 = 0x04;
+    for(icount = 0; icount < 3; icount++){
+        EEPROM_WR_DATAPULSE( rtl_addr, EEPROM_PG_ON | EEPROM_PG_EECS | EEPROM_MASK( mask_bit8, eeprom_cmd ));
+        mask_bit8 >>= 1;
+    }
+
+    // set address
+    mask_bit8 = 0x20;
+    for(icount = 0; icount < 6; icount++){
+        EEPROM_WR_DATAPULSE( rtl_addr, EEPROM_PG_ON | EEPROM_PG_EECS | EEPROM_MASK( mask_bit8, eeprom_addr ));
+        mask_bit8 >>= 1;
+    }
+
+    // read data
+    read_data = 0;
+    for(icount = 0; icount < 16; icount++){
+        EEPROM_RD_DATA( rtl_addr, EEPROM_PG_ON | EEPROM_PG_EECS, read_data );
+    }
+
+    // close
+    EEPROM_WR_DATA( rtl_addr, EEPROM_PG_ON | EEPROM_PG_EECS );
+    EEPROM_WR_DATA( rtl_addr, EEPROM_PG_ON );
+
+    // put old parameter
+    HAL_WRITE_UINT8(rtl_addr, org_param);
+
+    return(read_data);
+}
+
+
+/*
+ * Write in mac_address at EEPROM.
+ */
+static void
+rltk8139_eeprom_write( char *rtl_addr, cyg_uint8 eeprom_cmd, cyg_uint8 eeprom_addr, cyg_uint16 src_data )
+{
+cyg_uint8   read_data;                   // read from eeprom bit data
+cyg_uint8   org_param;                   // original register parameter
+cyg_uint8   mask_bit8;                   // mask bit
+cyg_uint16  mask_bit16;                  // mask bit for write data
+int         icount;                      // for loop counter
+
+    // get old parameter
+    HAL_READ_UINT8( rtl_addr, org_param );
+
+    // ready
+    EEPROM_WR_DATA( rtl_addr, EEPROM_PG_ON );
+    EEPROM_WR_DATA( rtl_addr, EEPROM_PG_ON | EEPROM_PG_EESK );
+    EEPROM_WR_DATA( rtl_addr, EEPROM_PG_ON );
+
+    // set EWEN (eeprom write enable)
+    EEPROM_WR_DATAPULSE( rtl_addr, EEPROM_PG_ON | EEPROM_PG_EECS | EEPROM_PG_EEDI );
+    EEPROM_WR_DATAPULSE( rtl_addr, EEPROM_PG_ON | EEPROM_PG_EECS );
+    EEPROM_WR_DATAPULSE( rtl_addr, EEPROM_PG_ON | EEPROM_PG_EECS );
+    EEPROM_WR_DATAPULSE( rtl_addr, EEPROM_PG_ON | EEPROM_PG_EECS | EEPROM_PG_EEDI );
+    EEPROM_WR_DATAPULSE( rtl_addr, EEPROM_PG_ON | EEPROM_PG_EECS | EEPROM_PG_EEDI );
+    EEPROM_WR_DATAPULSE( rtl_addr, EEPROM_PG_ON | EEPROM_PG_EECS );
+    EEPROM_WR_DATAPULSE( rtl_addr, EEPROM_PG_ON | EEPROM_PG_EECS );
+    EEPROM_WR_DATAPULSE( rtl_addr, EEPROM_PG_ON | EEPROM_PG_EECS );
+    EEPROM_WR_DATAPULSE( rtl_addr, EEPROM_PG_ON | EEPROM_PG_EECS );
+    EEPROM_WR_DATAPULSE( rtl_addr, EEPROM_PG_ON );
+
+    // set command
+    mask_bit8 = 0x04;
+    for(icount = 0; icount < 3; icount++){
+        EEPROM_WR_DATAPULSE( rtl_addr, EEPROM_PG_ON | EEPROM_PG_EECS | EEPROM_MASK( mask_bit8, eeprom_cmd ));
+        mask_bit8 >>= 1;
+    }
+
+    // set address
+    mask_bit8 = 0x20;
+    for(icount = 0; icount < 6; icount++){
+        EEPROM_WR_DATAPULSE( rtl_addr, EEPROM_PG_ON | EEPROM_PG_EECS | EEPROM_MASK( mask_bit8, eeprom_addr ));
+        mask_bit8 >>= 1;
+    }
+
+    // set data
+    mask_bit16 = 0x8000;
+    for(icount = 0; icount < 16; icount++){
+        EEPROM_WR_DATAPULSE( rtl_addr, EEPROM_PG_ON | EEPROM_PG_EECS | EEPROM_MASK( mask_bit16, src_data ));
+        mask_bit16 >>= 1;
+    }
+
+    // close
+    EEPROM_WR_DATA( rtl_addr, EEPROM_PG_ON );
+    EEPROM_WR_DATA( rtl_addr, EEPROM_PG_ON | EEPROM_PG_EESK );
+    EEPROM_WR_DATA( rtl_addr, EEPROM_PG_ON );
+
+    // write ready check
+    EEPROM_WR_DATA( rtl_addr, EEPROM_PG_ON | EEPROM_PG_EECS );
+
+    // wait busy disable
+    icount = 0;
+    while( 1 ){
+        cyg_thread_delay( 1 );
+        HAL_WRITE_UINT8( rtl_addr, EEPROM_PG_ON | EEPROM_PG_EECS | EEPROM_PG_EESK );
+        HAL_WRITE_UINT8( rtl_addr, EEPROM_PG_ON | EEPROM_PG_EECS );
+        HAL_READ_UINT8( rtl_addr, read_data );
+        if(( read_data & EEPROM_PG_EEDO ) != 0 ){
+            break;
+        }
+        if( icount++ >= EEPROM_WR_BUSY_RETRIES ){
+            diag_printf("EEPROM write wait error adr=0x%02x data=0x%04x\n", eeprom_addr, src_data );
+            break;
+        }
+    }
+    HAL_WRITE_UINT8( rtl_addr, EEPROM_PG_ON );
+
+    // put old parameter
+    HAL_WRITE_UINT8( rtl_addr, org_param );
+}
+
 #endif

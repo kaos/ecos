@@ -123,17 +123,17 @@ cdl_package CYGPKG_DEVS_ETH_RLTK_8139 {
 #	}
 #    }
 
-#    cdl_component CYGPKG_DEVS_ETH_RLTK_8139_WRITE_EEPROM {
-#	display "SIOCSIFHWADDR records MAC address in EEPROM"
-#	default_value 0
-#	description   "
-#	    The ioctl() socket call with operand SIOCSIFHWADDR sets the
-#	    interface hardware address - the MAC address or ethernet
-#	    address.  This option causes the new MAC address to be written
-#	    into the EEPROM associated with the interface, so that the new
-#	    MAC address is permanently recorded.  Doing this should be a
-#	    carefully chosen decision, hence this option."
-#    }
+    cdl_component CYGPKG_DEVS_ETH_RLTK_8139_WRITE_EEPROM {
+    display "SIOCSIFHWADDR records MAC address in EEPROM"
+    default_value 0
+    description   "
+        The ioctl() socket call with operand SIOCSIFHWADDR sets the
+        interface hardware address - the MAC address or ethernet
+        address.  This option causes the new MAC address to be written
+        into the EEPROM associated with the interface, so that the new
+        MAC address is permanently recorded.  Doing this should be a
+        carefully chosen decision, hence this option."
+    }
 
     cdl_option CYGNUM_DEVS_ETH_RLTK_8139_RX_BUF_LEN_IDX {
         display       "Size of the receive ring"
