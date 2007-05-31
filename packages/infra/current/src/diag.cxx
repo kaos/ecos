@@ -375,11 +375,9 @@ _vprintf(void (*putc)(char c, void **param), void **param, const char *fmt, va_l
                     }
                 } else {
                     // Mask to unsigned, sized quantity
-                    if (islonglong) {
-                        // No need to mask
-                    } else if (islong) {
+                    if (islong) {
                         val &= ((long long)1 << (sizeof(long) * 8)) - 1;
-                    } else{
+                    } else if (!islonglong) { // no need to mask longlong
                         val &= ((long long)1 << (sizeof(int) * 8)) - 1;
                     }
                 }
