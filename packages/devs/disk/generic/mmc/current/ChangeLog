@@ -1,3 +1,9 @@
+2007-05-30  Hajime Ishitani <pigmon@mail.snd.co.jp>
+
+	* src/mmc_spi.c: Revise debug information with addition.
+	Add idle to operational retry wait.
+	* cdl/devs_disk_mmc.cdl: Add idle to operational retry wait parameter.
+
 2006-09-27  Sergei Gavrikov  <sg@sgs.gomel.by>
 
 	* src/mmc_spi.c: (mmc_spi_disk_lookup): just fixed a missed

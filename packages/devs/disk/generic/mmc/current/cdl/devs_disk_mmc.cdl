@@ -102,7 +102,7 @@ cdl_package CYGPKG_DEVS_DISK_MMC {
 	}
     cdl_option CYGPKG_DEVS_DISK_MMC_SPI_IDLE_RETRIES_WAIT {
         display          "Idle to operational retry wait"
-        flavor           data
+        flavor           booldata
         default_value    10000
         description      "
             This option sets how long to wait between retries of attempts to change the
