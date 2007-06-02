@@ -719,7 +719,7 @@ fis_list(int argc, char *argv[])
         img = (struct fis_image_desc *) fis_work_block;
         for (i = 0;  i < fisdir_size/sizeof(*img);  i++, img++) {
             if (img->u.name[0] != (unsigned char)0xFF) {
-                if ((img->flash_base > last_addr) && (img->flash_base < lowest_addr)) {
+                if ((img->flash_base >= last_addr) && (img->flash_base < lowest_addr)) {
                     lowest_addr = img->flash_base;
                     image_found = true;
                     image_indx = i;
@@ -740,7 +740,7 @@ fis_list(int argc, char *argv[])
 #endif
                         (unsigned long)img->entry_point);
         }
-        last_addr = lowest_addr;
+        last_addr = lowest_addr + 1;
     } while (image_found == true);
 }
 

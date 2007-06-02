@@ -1,3 +1,8 @@
+2007-06-02  Hans Rosenfeld <rosenfeld@grumpf.hope-2000.org>
+
+	* src/flash.c: (fis_list): fis list will now list an image
+	which happens to start at address 0.
+	
 2007-04-11  Gary Thomas  <gary@mlbassoc.com>
 2007-04-11  Jonathan Larmour  <jifl@eCosCentric.com>
 
