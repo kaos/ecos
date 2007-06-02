@@ -571,10 +571,12 @@ at91_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     if (stat & (AT91_US_IER_ENDRX | AT91_US_IER_TIMEOUT)) {
         const cyg_uint8 cb = at91_chan->curbuf, nb = cb ^ 0x01;
         const cyg_uint8 * p = at91_chan->rcv_buffer[cb], * end;
+        cyg_uint32 temp_word;
 
         at91_chan->curbuf = nb;
         HAL_WRITE_UINT32(base + AT91_US_RCR, 0);
-        HAL_READ_UINT32(base + AT91_US_RPR, (CYG_ADDRESS) end);
+        HAL_READ_UINT32(base + AT91_US_RPR, temp_word);
+        end = (const cyg_uint8 *)temp_word;
         HAL_WRITE_UINT32(base + AT91_US_RTO, RCV_TIMEOUT);
 	HAL_WRITE_UINT32(base + AT91_US_CR, AT91_US_CR_RSTATUS | AT91_US_CR_STTTO);
         HAL_WRITE_UINT32(base + AT91_US_RPR, (CYG_ADDRESS) at91_chan->rcv_buffer[nb]);
@@ -609,7 +611,6 @@ at91_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
                 default:
                     // Buffer full or unknown error, can't do anything about it
                     // Discard data
-                    CYG_FAIL("Serial receiver buffer overflow");
                     p = end;
                     break;
             }

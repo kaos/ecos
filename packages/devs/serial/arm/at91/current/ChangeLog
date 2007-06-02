@@ -1,3 +1,9 @@
+2007-06-01  Jim Seymour <jim@cipher.com>
+
+	* src/at91_serial.c (at91_serial_DSR): Remove CYG_FAIL if receive
+	buffer fills up; eliminate compiler warning when setting "end"
+	pointer.
+
 2006-03-05  Oliver Munz  <munz@speag.ch>
 
 	* src/at91_serial.c (at91_serial_ISR): Only call the DSR if there
