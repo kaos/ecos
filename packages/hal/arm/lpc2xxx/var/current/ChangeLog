@@ -1,3 +1,10 @@
+2007-06-04  Alexey Shusharin <mrfinch@mail.ru>
+
+	* src/hal_diag.c (cyg_hal_plf_serial_isr): Fixed issue with UART
+	ISR handling. Old handler doesn't read the UxIIR register in order
+	to clear the interrupt flag. The resulted in endless interrupts
+	and the DSR never got to run.
+
 2006-02-03  Sergei Gavrikov <sg@sgs.gomel.by>
 
 	* cdl/hal_arm_lpc2xxx.cdl: Added CYGNUM_HAL_ARM_VECTOR_0x14. That
