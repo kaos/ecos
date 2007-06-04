@@ -360,6 +360,10 @@ extern ip_addr_t   __local_ip_mask;
 #endif
 
 #ifdef CYGPKG_REDBOOT_NETWORKING_DNS
+#ifdef CYGPKG_REDBOOT_NETWORKING_DNS_DHCP_DOMAIN
+extern char __bootp_dns_domain[CYGNUM_REDBOOT_NETWORK_DNS_DOMAIN_BUFSIZE];
+extern cyg_bool __bootp_dns_domain_set;
+#endif
 extern struct in_addr __bootp_dns_addr;
 extern cyg_bool __bootp_dns_set;
 #endif

@@ -303,7 +303,18 @@ __bootp_find_local_ip(bootp_header_t *info)
 				memcpy(&__bootp_dns_addr, p, 4);
 				__bootp_dns_set = 1;
 				break;
-#endif
+#ifdef CYGPKG_REDBOOT_NETWORKING_DNS_DHCP_DOMAIN
+                            case TAG_DOMAIN_NAME:
+                                if(optlen < sizeof(__bootp_dns_domain)) {
+                                    memcpy(__bootp_dns_domain, p, optlen);
+                                    __bootp_dns_domain[optlen] = '\0';
+                                    __bootp_dns_domain_set = 1;
+                                } else {
+                                  diag_printf("DNS domain name too long\n");
+                                }
+                                break;
+#endif //CYGPKG_REDBOOT_NETWORKING_DNS_DHCP_DOMAIN
+#endif //CYGPKG_REDBOOT_NETWORKING_DNS
                             default:
                                 break;
                             }

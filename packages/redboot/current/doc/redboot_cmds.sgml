@@ -1245,28 +1245,35 @@ that an address of 0.0.0.0 will disable DNS lookups.
 Display the current network settings. 
 <screen> 
 RedBoot> <userinput>ip_address</userinput> 
-IP: 192.168.1.31, Default server: 192.168.1.101, DNS server IP: 0.0.0.0 
+IP: 192.168.1.31, Default server: 192.168.1.101, DNS server IP: 0.0.0.0, DNS domain name:  
 </screen> 
 </para>
 <para>
 Change the DNS server address. 
 <screen> 
 RedBoot> <userinput>ip_address -d 192.168.1.101</userinput> 
-IP: 192.168.1.31, Default server: 192.168.1.101, DNS server IP: 192.168.1.101 
+IP: 192.168.1.31, Default server: 192.168.1.101, DNS server IP: 192.168.1.101, DNS domain name:  
+</screen> 
+</para>
+<para>
+Change the DNS domain name. 
+<screen> 
+RedBoot> <userinput>ip_address -D example.com</userinput> 
+IP: 192.168.1.31, Default server: 192.168.1.101, DNS server IP: 192.168.1.101, DNS domain name: example.com 
 </screen> 
 </para>
 <para>
 Change the default server address. 
 <screen> 
 RedBoot> <userinput>ip_address -h 192.168.1.104</userinput> 
-IP: 192.168.1.31, Default server: 192.168.1.104, DNS server IP: 192.168.1.101
+IP: 192.168.1.31, Default server: 192.168.1.104, DNS server IP: 192.168.1.101, DNS domain name: 
 </screen>
 </para>
 <para>
 Set the IP address to something new, with a 255.255.255.0 netmask
 <screen> 
 RedBoot> <userinput>ip_address -l 192.168.1.32/24</userinput> 
-IP: 192.168.1.32, Default server: 192.168.1.104, DNS server IP: 192.168.1.101
+IP: 192.168.1.32, Default server: 192.168.1.104, DNS server IP: 192.168.1.101, DNS domain name: 
 </screen>
       </para>
     </refsect1>
@@ -3700,6 +3707,7 @@ Use BOOTP for network configuration: false
 Local IP address: 192.168.1.29
 Default server IP address: 192.168.1.101
 DNS server IP address: 192.168.1.1
+DNS domain name: example.com
 GDB connection port: 9000
 Network debug at boot time: false
 </screen></para>

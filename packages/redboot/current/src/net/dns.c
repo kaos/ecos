@@ -73,6 +73,13 @@ RedBoot_config_option("DNS server IP address",
                       CONFIG_IP,
                       0
     );
+
+RedBoot_config_option("DNS domain name",
+                      dns_domain,
+                      ALWAYS_ENABLED, true,
+                      CONFIG_STRING,
+                      0
+        );
 #endif
 
 /* So we remember which ports have been used */
@@ -86,6 +93,12 @@ static int get_port = 7700;
 /* DNS server address possibly returned from bootp */
 struct in_addr __bootp_dns_addr;
 cyg_bool __bootp_dns_set = false;
+
+/* DNS domain name possibly returned from bootp */
+#ifdef CYGPKG_REDBOOT_NETWORKING_DNS_DHCP_DOMAIN
+char __bootp_dns_domain[CYGNUM_REDBOOT_NETWORK_DNS_DOMAIN_BUFSIZE];
+cyg_bool __bootp_dns_domain_set = false;
+#endif
 
 struct sockaddr_in server;
 
@@ -240,7 +253,9 @@ set_dns(char* new_ip)
 void
 show_dns(void)
 {
-    diag_printf(", DNS server IP: %s", inet_ntoa((in_addr_t *)&server.sin_addr));
+    diag_printf("\nDNS server IP: %s, DNS domain name: %s", 
+                inet_ntoa((in_addr_t *)&server.sin_addr),
+                domainname);
     if (0 == server.sin_addr.s_addr) {
         s = -1;
     }
@@ -251,16 +266,41 @@ show_dns(void)
 int  
 redboot_dns_res_init(void)
 {
+#ifdef CYGPKG_REDBOOT_NETWORKING_DNS_FCONFIG_DOMAIN
+  char *dns_domain = NULL;
+#endif
     memset((char *)&server, 0, sizeof(server));
     server.sin_len = sizeof(server);
     server.sin_family = AF_INET;
     server.sin_port = htons(DOMAIN_PORT);
     cyg_drv_mutex_init(&dns_mutex);
 
-    /* If we got a DNS server address from the DHCP/BOOTP, then use that address */
+    /* Set the default DNS domain first, so that it can be overwritten
+       latter */
+#ifdef CYGPKG_REDBOOT_NETWORKING_DNS_DEFAULT_DOMAIN
+        setdomainname(__Xstr(CYGPKG_REDBOOT_NETWORKING_DNS_DEFAULT_DOMAIN), 
+                      strlen(__Xstr(CYGPKG_REDBOOT_NETWORKING_DNS_DEFAULT_DOMAIN)));
+#endif
+        /* Set the domain name from flash so that DHCP can later
+           overwrite it. */
+#ifdef CYGPKG_REDBOOT_NETWORKING_DNS_FCONFIG_DOMAIN
+        flash_get_config("dns_domain", &dns_domain, CONFIG_STRING);
+        if(dns_domain != NULL && dns_domain[0] != '\0')
+                setdomainname(dns_domain, strlen(dns_domain));
+#endif
+
+    /* If we got a DNS server address from the DHCP/BOOTP, then use
+       that address */
     if ( __bootp_dns_set ) {
-	memcpy(&server.sin_addr, &__bootp_dns_addr, sizeof(__bootp_dns_addr) );
-	s = 0;
+	memcpy(&server.sin_addr, &__bootp_dns_addr, 
+               sizeof(__bootp_dns_addr) );
+    
+#ifdef CYGPKG_REDBOOT_NETWORKING_DNS_DHCP_DOMAIN        
+        if(__bootp_dns_domain_set) 
+            setdomainname(__bootp_dns_domain, strlen(__bootp_dns_domain));
+#endif
+        /* server config is valid */
+        s = 0; 
     }
     else {
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
@@ -268,15 +308,17 @@ redboot_dns_res_init(void)
         ip_addr_t dns_ip;
 
         flash_get_config("dns_ip", &dns_ip, CONFIG_IP);
-        if (dns_ip[0] == 0 && dns_ip[1] == 0 && dns_ip[2] == 0 && dns_ip[3] == 0)
+        if (dns_ip[0] == 0 && dns_ip[1] == 0 && 
+            dns_ip[2] == 0 && dns_ip[3] == 0)
             return -1;
         memcpy(&server.sin_addr, &dns_ip, sizeof(dns_ip));
         /* server config is valid */
         s = 0;
     }
 #else
-      // Use static configuration
-	set_dns(__Xstr(CYGPKG_REDBOOT_NETWORKING_DNS_IP));
+    // Use static configuration. If CYGPKG_REDBOOT_NETWORKING_DNS_IP
+    // is valid s will set set as a side effect.
+    set_dns(__Xstr(CYGPKG_REDBOOT_NETWORKING_DNS_IP));
 #endif
     }
 

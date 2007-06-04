@@ -1,3 +1,14 @@
+2007-06-03  Andrew Lunn <andrew.lunn@ascom.ch>
+
+	* src/net/net_io.c: (do_ip_addr): Option to set domain name.
+	* doc/redboot_cmds.sgml: Document new option.
+	
+2007-06-03  Hans Rosenfeld <rosenfeld@grumpf.hope-2000.org>
+
+	* cdl/redboot.cdl: CDL to control the use of DNS domain name.
+	* src/net/bootp.c: Get the domain name from the reply.
+	* src/net/dns.c: Domain name from CDL, fconfig and DHCP.
+	
 2007-06-02  Hans Rosenfeld <rosenfeld@grumpf.hope-2000.org>
 
 	* src/flash.c: (fis_list): fis list will now list an image

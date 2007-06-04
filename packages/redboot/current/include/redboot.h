@@ -350,6 +350,7 @@ externC int redboot_dns_res_init(void);
 externC void set_dns(char* new_ip);
 externC void show_dns(void);
 externC struct hostent *gethostbyname(const char *host);
+externC int setdomainname(const char *, size_t);
 
 // Error reporting
 externC int h_errno;

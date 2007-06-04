@@ -512,7 +512,7 @@ cdl_package CYGPKG_REDBOOT {
                       This option sets the IP of the default DNS. The IP can be
                       changed at runtime as well."
                 }
-    
+
                 cdl_option CYGNUM_REDBOOT_NETWORKING_DNS_TIMEOUT {
                     display         "Timeout in DNS lookup"
                     flavor          data
@@ -522,6 +522,55 @@ cdl_package CYGPKG_REDBOOT {
                       address via the DNS. Default is 10 seconds."
                 }
     
+                cdl_component CYGPKG_REDBOOT_NETWORKING_DNS_WITH_DOMAIN {
+                    display         "Support the use of a domain name"
+                    flavor          bool
+                    default_value   0
+                    description     "
+                       This option controls if Redboot supports domain
+                       names when performing DNS lookups"
+                       
+                    cdl_option    CYGPKG_REDBOOT_NETWORKING_DNS_DEFAULT_DOMAIN {
+                        display         "Default DNS domain"
+                        flavor          booldata
+                        default_value   0
+                        description "
+                            This option sets the default DNS domain name.
+                            This value will be overwritten by the value in
+                            flash or a domain returned by DHCP"
+                    }
+
+                    cdl_option    CYGPKG_REDBOOT_NETWORKING_DNS_FCONFIG_DOMAIN {
+                        display         "Get DNS domain from Flash"
+                        flavor          bool
+                        active_if       CYGSEM_REDBOOT_FLASH_CONFIG
+                        default_value   0
+                        description "
+                            This option enables getting the domain name 
+                            from the flash configuration. This can later be 
+                            overwritten by a value learnt from DHCP"
+                    }
+
+                    cdl_option    CYGPKG_REDBOOT_NETWORKING_DNS_DHCP_DOMAIN {
+                        display         "Use DNS domain from DHCP"
+                        flavor          bool
+                        default_value   0
+                        description "
+                            This option enables the use of the domain name
+                            returned by DHCP."
+                    }
+
+                    cdl_option CYGNUM_REDBOOT_NETWORK_DNS_DOMAIN_BUFSIZE {
+                        display         "BOOTP/DHCP DNS domain buffer size"
+                        flavor          data
+                        default_value   32
+                        description "
+                           This options sets the size of the static
+                           buffer used by BOOTP/DHCP to store the DNS
+                           domain name. The domain name will not be
+                           set if the buffer is too small to hold it."
+                    }
+                }
             }
 
 	    cdl_option CYGDAT_REDBOOT_DEFAULT_NETWORK_DEVICE {

@@ -817,7 +817,10 @@ net_init(void)
 
 static char usage[] = "[-b] [-l <local_ip_address>[/<mask_len>]] [-h <server_address>]"
 #ifdef CYGPKG_REDBOOT_NETWORKING_DNS
-	" [-d <dns_server_address]"
+	" [-d <dns_server_address>]"
+#ifdef CYGPKG_REDBOOT_NETWORKING_DNS_FCONFIG_DOMAIN                                                  
+        " [-D <dns_domain_name>]" 
+#endif
 #endif
         ;
 
@@ -832,7 +835,7 @@ RedBoot_cmd("ip_address",
 void 
 do_ip_addr(int argc, char *argv[])
 {
-    struct option_info opts[4];
+    struct option_info opts[5];
     char *ip_addr, *host_addr;
     bool ip_addr_set, host_addr_set;
     bool do_bootp = false;
@@ -840,6 +843,10 @@ do_ip_addr(int argc, char *argv[])
 #ifdef CYGPKG_REDBOOT_NETWORKING_DNS
     char *dns_addr;
     bool dns_addr_set;
+#ifdef CYGPKG_REDBOOT_NETWORKING_DNS_FCONFIG_DOMAIN 
+    char *dns_domain;
+    bool dns_domain_set;
+#endif
 #endif
     int num_opts;
  
@@ -859,8 +866,12 @@ do_ip_addr(int argc, char *argv[])
     init_opts(&opts[num_opts], 'd', true, OPTION_ARG_TYPE_STR, 
               (void *)&dns_addr, (bool *)&dns_addr_set, "DNS server address");
     num_opts++;
+#ifdef CYGPKG_REDBOOT_NETWORKING_DNS_FCONFIG_DOMAIN 
+    init_opts(&opts[num_opts], 'D', true, OPTION_ARG_TYPE_STR, 
+              (void *)&dns_domain, (bool *)&dns_domain_set, "DNS domain");
+    num_opts++;
 #endif
-
+#endif
     CYG_ASSERT(num_opts <= NUM_ELEMS(opts), "Too many options");
 
     if (!scan_opts(argc, argv, 1, opts, num_opts, 0, 0, "")) {
@@ -907,6 +918,11 @@ do_ip_addr(int argc, char *argv[])
     if (dns_addr_set) {
         set_dns(dns_addr);
     }
+#ifdef CYGPKG_REDBOOT_NETWORKING_DNS_FCONFIG_DOMAIN 
+    if (dns_domain_set) {
+      setdomainname(dns_domain, strlen(dns_domain));
+    }
+#endif
 #endif
     show_addrs();
     if (!have_net) {
