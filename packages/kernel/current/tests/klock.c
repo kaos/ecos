@@ -153,6 +153,8 @@ static void entry0( cyg_addrword_t data )
       mbret = cyg_mbox_get( mbh );
       CYG_TEST_CHECK( mbret == (void *)0xAAAAAAAA , "bad result from cyg_mbox_timed_get()");
       thread0_state = 10;
+
+      while( thread1_state < 10 ) cyg_thread_yield();
       
       cyg_mbox_put( mbh, (void *)0xBBBBBBBB );
       thread0_state = 11;
@@ -246,13 +248,16 @@ static void entry1( cyg_addrword_t data )
 #endif
       thread1_state = 10;
 
+      while( thread0_state < 10 ) cyg_thread_yield();
+      
 #ifdef CYGFUN_KERNEL_THREADS_TIMER
       mbret = cyg_mbox_timed_get( mbh, cyg_current_time()+10);
 #else
       mbret = cyg_mbox_get( mbh );
 #endif
+      thread1_state = 11;
       CYG_TEST_CHECK( mbret == (void *)0xBBBBBBBB , "bad result from cyg_mbox[_timed]_get()");
-      thread1_state = 9;
+      thread1_state = 12;
     }
 #endif    
     // --------------------------------------------------

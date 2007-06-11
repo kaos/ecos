@@ -1,3 +1,9 @@
+2007-06-11  Nick Garnett  <nickg@ecoscentric.com>
+
+	* tests/klock.c (entry0, entry1): Modify mbox part of test to
+	reflect use of plain mbox implementation. The precise ordering of
+	events is slightly different.
+
 2007-01-07  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/sync/mbox.cxx (Cyg_Mbox::get): Fix compiler warning with gcc
