@@ -110,7 +110,7 @@ GROUP(libtarget.a libgcc.a)
   .eh_frame _vma_ : _lma_                             \
     {                                                 \
        FORCE_OUTPUT;  __EH_FRAME_BEGIN__ = .;         \
-       KEEP(*(.eh_frame))                             \
+       KEEP(*(.eh_frame*))                             \
        __FRAME_END__ = .;                             \
        . = . + 8;                                     \
     } > _region_ = 0

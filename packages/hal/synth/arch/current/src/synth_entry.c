@@ -210,6 +210,11 @@ __stack_chk_fail_local(void)
     cyg_hal_sys_exit(1);
     for (;;);
 }
+// Another symbol which indicates a similar problem occurred.
+void __stack_chk_fail(void)
+{
+  __stack_chk_fail_local();
+}
 #endif
 
 //-----------------------------------------------------------------------------
