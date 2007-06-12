@@ -1,3 +1,8 @@
+2007-06-12  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/misc.cxx (cyg_mtab_extra): Only create the array if it has more
+	than 0 entries.
+
 2007-01-27  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/fnmatch.c: Test case for fnmatch.

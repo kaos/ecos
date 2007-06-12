@@ -113,8 +113,9 @@ __externC cyg_mtab_entry cyg_mtab[];
 CYG_HAL_TABLE_BEGIN( cyg_mtab, mtab );
 
 // Extra entries at end of mtab for dynamic mount points.
+#if CYGNUM_FILEIO_MTAB_EXTRA > 0
 cyg_mtab_entry cyg_mtab_extra[CYGNUM_FILEIO_MTAB_EXTRA] CYG_HAL_TABLE_EXTRA(mtab) = { { NULL } };
-
+#endif
 // End of mount table, set in the linker script.
 __externC cyg_mtab_entry cyg_mtab_end;
 CYG_HAL_TABLE_END( cyg_mtab_end, mtab );
