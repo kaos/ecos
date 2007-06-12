@@ -280,7 +280,7 @@ static void install_handlers( Cyg_Thread *thread)
     {
         thread->register_exception( exception_signal_mapping[i].exception,
                                     cyg_posix_exception_handler,
-                                    exception_signal_mapping[i].signal,,
+                                    exception_signal_mapping[i].signal,
                                     NULL,
                                     NULL);
     }

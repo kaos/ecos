@@ -1,3 +1,7 @@
+2007-06-12  Richard.Yuan <lemonskin@tom.com>
+
+	* src/except.cxx (install_handlers): Fixed typo. Bug #1000373
+	
 2006-07-18  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/signal.cxx (pause): Although already POSIX compliant, if we wait
