@@ -69,6 +69,7 @@ cdl_package CYGPKG_IO_SERIAL_ARM_LPC2XXX {
         puts $::cdl_header "#define CYGPRI_IO_SERIAL_GENERIC_16X5X_STEP 4"
     }
 
+    requires { CYGPKG_IO_SERIAL_GENERIC_16X5X_XMIT_REQUIRE_PRIME == "1" }
 
     define_proc {
         puts $::cdl_system_header "/***** serial driver proc output start *****/"

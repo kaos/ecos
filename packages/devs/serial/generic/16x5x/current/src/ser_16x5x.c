@@ -516,6 +516,9 @@ pc_serial_start_xmit(serial_channel *chan)
     HAL_READ_UINT8(base+REG_ier, _ier);
     _ier |= IER_XMT;                    // Enable xmit interrupt
     HAL_WRITE_UINT8(base+REG_ier, _ier);
+#ifdef CYGPKG_IO_SERIAL_GENERIC_16X5X_XMIT_REQUIRE_PRIME
+    (chan->callbacks->xmt_char)(chan);
+#endif
 }
 
 // Disable the transmitter on the device

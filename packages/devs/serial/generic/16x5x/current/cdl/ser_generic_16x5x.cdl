@@ -77,6 +77,15 @@ cdl_package CYGPKG_IO_SERIAL_GENERIC_16X5X {
         puts $::cdl_header "#include CYGDAT_IO_SERIAL_GENERIC_16X5X_CFG";
     }
 
+    cdl_option CYGPKG_IO_SERIAL_GENERIC_16X5X_XMIT_REQUIRE_PRIME {
+        display       "Transmission require priming"
+        flavor        bool
+        default_value 0
+        description   "
+            This option should be switched on when enabling THRE interrupt
+            does not generate interrupt unless bytes are posted to the FIFO."
+    }
+
     cdl_component CYGPKG_IO_SERIAL_GENERIC_16X5X_FIFO {
         display       "16x5x FIFO support"
         flavor        bool
