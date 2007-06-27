@@ -191,7 +191,7 @@ typedef cyg_uint8 (*__comm_if_getc_t)(void* __ch_data);
 typedef int (*__comm_if_control_t)(void *__ch_data, 
                                    __comm_control_cmd_t __func, ...);
 typedef int (*__comm_if_dbg_isr_t)(void *__ch_data, 
-                               int* __ctrlc, CYG_ADDRWORD __vector,
+                               int* __ctrlc, CYG_ADDRWORD __vec,
                                CYG_ADDRWORD __data);
 typedef cyg_bool (*__comm_if_getc_timeout_t)(void* __ch_data, cyg_uint8* __ch);
 
