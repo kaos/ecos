@@ -1,3 +1,8 @@
+2007-06-28  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/tcdiag.cxx: 
+	* src/diag.cxx: Add (char *) casts to make GCC 4.2.x happy.
+
 2007-05-31  Rutger Hofman <rutger@cs.vu.nl>
 
 	* src/diag.cxx: when printing a long long, should not truncate

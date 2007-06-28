@@ -1,3 +1,7 @@
+2007-06-28  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/strerror.cxx: Add (char *) casts to make GCC 4.2.x happy.
+
 2003-06-24  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/codes.h (ENOTEMPTY): Needed by the sysctl call in the

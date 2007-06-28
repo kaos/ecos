@@ -156,12 +156,12 @@ cyg_assert_msg( const char *psz_func, const char *psz_file,
         struct cyg_fconfig fc;
 
         cur_console = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
-        fc.key = "info_console_force";
+        fc.key = (char *)"info_console_force";
         fc.type = CYGNUM_FLASH_CFG_TYPE_CONFIG_BOOL;
         fc.val = (void *)&i;
         if (CYGACC_CALL_IF_FLASH_CFG_OP2(CYGNUM_CALL_IF_FLASH_CFG_GET, &fc)) {
             if (i) {
-                fc.key = "info_console_number";
+                fc.key = (char *)"info_console_number";
                 fc.type = CYGNUM_FLASH_CFG_TYPE_CONFIG_INT;
                 if (CYGACC_CALL_IF_FLASH_CFG_OP2(CYGNUM_CALL_IF_FLASH_CFG_GET, &fc)) {
                     // Then i is the console to force it to:
@@ -205,25 +205,25 @@ cyg_test_output(Cyg_test_code status, const char *msg, int line,
 
     switch (status) {
     case CYGNUM_TEST_FAIL:
-        st = "FAIL:";
+        st = (char *)"FAIL:";
         break;
     case CYGNUM_TEST_PASS:
-        st = "PASS:";
+        st = (char *)"PASS:";
         break;
     case CYGNUM_TEST_EXIT:
-        st = "EXIT:";
+        st = (char *)"EXIT:";
         break;
     case CYGNUM_TEST_INFO:
-        st = "INFO:";
+        st = (char *)"INFO:";
         break;
     case CYGNUM_TEST_GDBCMD:
-        st = "GDB:";
+        st = (char *)"GDB:";
         break;
     case CYGNUM_TEST_NA:
-        st = "NOTAPPLICABLE:";
+        st = (char *)"NOTAPPLICABLE:";
         break;
     default:
-        st = "UNKNOWN STATUS:";
+        st = (char *)"UNKNOWN STATUS:";
         break;
     }
 

@@ -82,353 +82,353 @@ __strerror( int errnum )
 
 #ifdef ENOERR
     case ENOERR:
-        s = "No error";
+        s = (char *)"No error";
         break;
 #endif
 
 #ifdef EPERM
     case EPERM:
-        s = "Not permitted";
+        s = (char *)"Not permitted";
         break;
 #endif
 
 #ifdef ENOENT
     case ENOENT:
-        s = "No such entity";
+        s = (char *)"No such entity";
         break;
 #endif
 
 #ifdef ESRCH
     case ESRCH:
-        s = "No such process";
+        s = (char *)"No such process";
         break;
 #endif
 
 #ifdef EINTR
     case EINTR:
-        s = "Operation interrupted";
+        s = (char *)"Operation interrupted";
         break;
 #endif
 
 #ifdef EIO
     case EIO:
-        s = "I/O error";
+        s = (char *)"I/O error";
         break;
 #endif
 
 #ifdef EBADF
     case EBADF:
-        s = "Bad file handle";
+        s = (char *)"Bad file handle";
         break;
 #endif
 
 #ifdef EAGAIN
     case EAGAIN:
-        s = "Try again later";
+        s = (char *)"Try again later";
         break;
 #endif
 
 #ifdef ENOMEM
     case ENOMEM:
-        s = "Out of memory";
+        s = (char *)"Out of memory";
         break;
 #endif
 
 #ifdef EBUSY
     case EBUSY:
-        s = "Resource busy";
+        s = (char *)"Resource busy";
         break;
 #endif
 
 #ifdef ENODEV
     case ENODEV:
-        s = "No such device";
+        s = (char *)"No such device";
         break;
 #endif
 
 #ifdef ENOTDIR
     case ENOTDIR:
-        s = "Not a directory";
+        s = (char *)"Not a directory";
         break;
 #endif
 
 #ifdef EISDIR
     case EISDIR:
-        s = "Is a directory";
+        s = (char *)"Is a directory";
         break;
 #endif
 
 #ifdef EINVAL
     case EINVAL:
-        s = "Invalid argument";
+        s = (char *)"Invalid argument";
         break;
 #endif
 
 #ifdef ENFILE
     case ENFILE:
-        s = "Too many open files in system";
+        s = (char *)"Too many open files in system";
         break;
 #endif
 
 #ifdef EMFILE
     case EMFILE:
-        s = "Too many open files";
+        s = (char *)"Too many open files";
         break;
 #endif
 
 #ifdef EFBIG
     case EFBIG:
-        s = "File too large";
+        s = (char *)"File too large";
         break;
 #endif
         
 #ifdef ENOSPC
     case ENOSPC:
-        s = "No space left on device";
+        s = (char *)"No space left on device";
         break;
 #endif
 
 #ifdef ESPIPE
     case ESPIPE:
-        s = "Illegal seek";
+        s = (char *)"Illegal seek";
         break;
 #endif
         
 #ifdef EROFS
     case EROFS:
-        s = "Read-only file system";
+        s = (char *)"Read-only file system";
         break;
 #endif
         
 #ifdef EDOM
     case EDOM:
-        s = "Argument to math function outside valid domain";
+        s = (char *)"Argument to math function outside valid domain";
         break;
 #endif
 
 #ifdef ERANGE
     case ERANGE:
-        s = "Math result cannot be represented";
+        s = (char *)"Math result cannot be represented";
         break;
 #endif
 
 #ifdef EDEADLK
     case EDEADLK:
-        s = "Resource deadlock would occur";
+        s = (char *)"Resource deadlock would occur";
         break;
 #endif
 
 #ifdef ENOSYS
     case ENOSYS:
-        s = "Function not implemented";
+        s = (char *)"Function not implemented";
         break;
 #endif
 
 #ifdef ENAMETOOLONG
     case ENAMETOOLONG:
-        s = "File name too long";
+        s = (char *)"File name too long";
         break;
 #endif
         
 #ifdef ENOTSUP
     case ENOTSUP:
-        s = "Not supported";
+        s = (char *)"Not supported";
         break;
 #endif
 
 #ifdef EEOF
     case EEOF:
-        s = "End of file reached";
+        s = (char *)"End of file reached";
         break;
 #endif
 
 #ifdef ENOSUPP
     case ENOSUPP:
-        s = "Operation not supported";
+        s = (char *)"Operation not supported";
         break;
 #endif
 
 #ifdef EDEVNOSUPP
     case EDEVNOSUPP:
-        s = "Device does not support this operation";
+        s = (char *)"Device does not support this operation";
         break;
 #endif
 
 #ifdef EXDEV
     case EXDEV:
-        s = "Improper link";
+        s = (char *)"Improper link";
         break;
 #endif
         
 // Additional errors used by networking
 #ifdef ENXIO
     case ENXIO:
-        s =  "Device not configured";
+        s = (char *)"Device not configured";
         break;
 #endif
 #ifdef EACCES
     case EACCES:
-        s =  "Permission denied";
+        s = (char *)"Permission denied";
         break;
 #endif
 #ifdef EEXIST
     case EEXIST:
-        s =  "File exists";
+        s = (char *)"File exists";
         break;
 #endif
 #ifdef ENOTTY
     case ENOTTY:
-        s =  "Inappropriate ioctl for device";
+        s = (char *)"Inappropriate ioctl for device";
         break;
 #endif
 #ifdef EPIPE
     case EPIPE:
-        s =  "Broken pipe";
+        s = (char *)"Broken pipe";
         break;
 #endif
 #ifdef EINPROGRESS
     case EINPROGRESS:
-        s =  "Operation now in progress";
+        s = (char *)"Operation now in progress";
         break;
 #endif
 #ifdef EALREADY
     case EALREADY:
-        s =  "Operation already in progress";
+        s = (char *)"Operation already in progress";
         break;
 #endif
 #ifdef ENOTSOCK
     case ENOTSOCK:
-        s =  "Socket operation on non-socket";
+        s = (char *)"Socket operation on non-socket";
         break;
 #endif
 #ifdef EDESTADDRREQ
     case EDESTADDRREQ:
-        s =  "Destination address required";
+        s = (char *)"Destination address required";
         break;
 #endif
 #ifdef EMSGSIZE
     case EMSGSIZE:
-        s =  "Message too long";
+        s = (char *)"Message too long";
         break;
 #endif
 #ifdef EPROTOTYPE
     case EPROTOTYPE:
-        s =  "Protocol wrong type for socket";
+        s = (char *)"Protocol wrong type for socket";
         break;
 #endif
 #ifdef ENOPROTOOPT
     case ENOPROTOOPT:
-        s =  "Protocol not available";
+        s = (char *)"Protocol not available";
         break;
 #endif
 #ifdef EPROTONOSUPPORT
     case EPROTONOSUPPORT:
-        s =  "Protocol not supported";
+        s = (char *)"Protocol not supported";
         break;
 #endif
 #ifdef ESOCKTNOSUPPORT
     case ESOCKTNOSUPPORT:
-        s =  "Socket type not supported";
+        s = (char *)"Socket type not supported";
         break;
 #endif
 #ifdef EOPNOTSUPP
     case EOPNOTSUPP:
-        s =  "Operation not supported";
+        s = (char *)"Operation not supported";
         break;
 #endif
 #ifdef EPFNOSUPPORT
     case EPFNOSUPPORT:
-        s =  "Protocol family not supported";
+        s = (char *)"Protocol family not supported";
         break;
 #endif
 #ifdef EAFNOSUPPORT
     case EAFNOSUPPORT:
-        s =  "Address family not supported by protocol family";
+        s = (char *)"Address family not supported by protocol family";
         break;
 #endif
 #ifdef EADDRINUSE
     case EADDRINUSE:
-        s =  "Address already in use";
+        s = (char *)"Address already in use";
         break;
 #endif
 #ifdef EADDRNOTAVAIL
     case EADDRNOTAVAIL:
-        s =  "Can't assign requested address";
+        s = (char *)"Can't assign requested address";
         break;
 #endif
 #ifdef ENETDOWN
     case ENETDOWN:
-        s =  "Network is down";
+        s = (char *)"Network is down";
         break;
 #endif
 #ifdef ENETUNREACH
     case ENETUNREACH:
-        s =  "Network is unreachable";
+        s = (char *)"Network is unreachable";
         break;
 #endif
 #ifdef ENETRESET
     case ENETRESET:
-        s =  "Network dropped connection on reset";
+        s = (char *)"Network dropped connection on reset";
         break;
 #endif
 #ifdef ECONNABORTED
     case ECONNABORTED:
-        s =  "Software caused connection abort";
+        s = (char *)"Software caused connection abort";
         break;
 #endif
 #ifdef ECONNRESET
     case ECONNRESET:
-        s =  "Connection reset by peer";
+        s = (char *)"Connection reset by peer";
         break;
 #endif
 #ifdef ENOBUFS
     case ENOBUFS:
-        s =  "No buffer space available";
+        s = (char *)"No buffer space available";
         break;
 #endif
 #ifdef EISCONN
     case EISCONN:
-        s =  "Socket is already connected";
+        s = (char *)"Socket is already connected";
         break;
 #endif
 #ifdef ENOTCONN
     case ENOTCONN:
-        s =  "Socket is not connected";
+        s = (char *)"Socket is not connected";
         break;
 #endif
 #ifdef ESHUTDOWN
     case ESHUTDOWN:
-        s =  "Can't send after socket shutdown";
+        s = (char *)"Can't send after socket shutdown";
         break;
 #endif
 #ifdef ETOOMANYREFS
     case ETOOMANYREFS:
-        s =  "Too many references: can't splice";
+        s = (char *)"Too many references: can't splice";
         break;
 #endif
 #ifdef ETIMEDOUT
     case ETIMEDOUT:
-        s =  "Operation timed out";
+        s = (char *)"Operation timed out";
         break;
 #endif
 #ifdef ECONNREFUSED
     case ECONNREFUSED:
-        s =  "Connection refused";
+        s = (char *)"Connection refused";
         break;
 #endif
 #ifdef EHOSTDOWN
     case EHOSTDOWN:
-        s =  "Host is down";
+        s = (char *)"Host is down";
         break;
 #endif
 #ifdef EHOSTUNREACH
     case EHOSTUNREACH:
-        s =  "No route to host";
+        s = (char *)"No route to host";
         break;
 #endif
 
     default:
-        s = "Unknown error";
+        s = (char *)"Unknown error";
         break;
 
     } // switch

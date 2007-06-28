@@ -176,7 +176,7 @@ externC void diag_write_long_num(
     char buf[32];
     cyg_count8 bpos;
     char bufinit = pfzero?'0':' ';
-    char *digits = "0123456789ABCDEF";
+    char *digits = (char *)"0123456789ABCDEF";
 
     /* init buffer to padding char: space or zero */
     for( bpos = 0; bpos < (cyg_count8)sizeof(buf); bpos++ ) buf[bpos] = bufinit;
@@ -404,14 +404,14 @@ _vprintf(void (*putc)(char c, void **param), void **param, const char *fmt, va_l
                 case 'D':
                 case 'u':
                 case 'U':
-                    length = _cvt(val, buf, 10, "0123456789");
+                    length = _cvt(val, buf, 10, (char *)"0123456789");
                     break;
                 case 'p':
                 case 'x':
-                    length = _cvt(val, buf, 16, "0123456789abcdef");
+                    length = _cvt(val, buf, 16, (char *)"0123456789abcdef");
                     break;
                 case 'X':
-                    length = _cvt(val, buf, 16, "0123456789ABCDEF");
+                    length = _cvt(val, buf, 16, (char *)"0123456789ABCDEF");
                     break;
                 }
                 cp = buf;
@@ -420,11 +420,11 @@ _vprintf(void (*putc)(char c, void **param), void **param, const char *fmt, va_l
             case 'S':
                 cp = va_arg(ap, char *);
                 if (cp == NULL) 
-                    cp = "<null>";
+                    cp = (char *)"<null>";
                 else if (!diag_check_string(cp)) {
                     diag_write_string("<Not a string: 0x");
                     diag_write_hex((cyg_uint32)cp);
-                    cp = ">";
+                    cp = (char *)">";
                 }
                 length = 0;
                 while (cp[length] != '\0') length++;
