@@ -476,13 +476,13 @@ reswitch:       switch (ch) {
                         /* NOSTRICT */
                         _uquad = (unsigned long)va_arg(arg, void *);
                         base = HEX;
-                        xdigs = "0123456789abcdef";
+                        xdigs = (char *)"0123456789abcdef";
                         flags |= HEXPREFIX;
                         ch = 'x';
                         goto nosign;
                 case 's':
                         if ((cp = va_arg(arg, char *)) == NULL)
-                                cp = "(null)";
+                                cp = (char *)"(null)";
                         if (prec >= 0) {
                                 /*
                                  * can't use strlen; can only look for the
@@ -509,10 +509,10 @@ reswitch:       switch (ch) {
                         base = DEC;
                         goto nosign;
                 case 'X':
-                        xdigs = "0123456789ABCDEF";
+                        xdigs = (char *)"0123456789ABCDEF";
                         goto hex;
                 case 'x':
-                        xdigs = "0123456789abcdef";
+                        xdigs = (char *)"0123456789abcdef";
 hex:                    _uquad = UARG();
                         base = HEX;
                         /* leading 0x/X only if non-zero */
@@ -583,7 +583,7 @@ number:                 if ((dprec = prec) >= 0)
                                         break;
 
                                 default:
-                                        cp = "bug in vfprintf: bad base";
+                                        cp = (char *)"bug in vfprintf: bad base";
                                         size = strlen(cp);
                                         goto skipsize;
                                 }

@@ -88,7 +88,7 @@ cdl_package CYGPKG_LIBC_STARTUP {
     cdl_option CYGDAT_LIBC_ARGUMENTS {
         display       "Arguments to main()"
         flavor        data
-        default_value {"{\"\", NULL}"}
+        default_value {"{(char *)\"\", (char *)NULL}"}
         description   "
             This option allows the setting of the arguments
             to the main function. This only has any effect

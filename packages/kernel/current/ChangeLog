@@ -1,3 +1,9 @@
+2007-07-02  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/debug/dbg_gdb.cxx: 
+	* src/common/thread.cxx (Cyg_IdleThread): Add (char *) casts
+	to make GCC/4.2.x happy.
+
 2007-06-11  Nick Garnett  <nickg@ecoscentric.com>
 
 	* tests/klock.c (entry0, entry1): Modify mbox part of test to

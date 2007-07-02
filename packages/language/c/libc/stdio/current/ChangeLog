@@ -1,3 +1,7 @@
+2007-07-02  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/output/vfnprintf.cxx: Add (char *) casts to make GCC/4.2.x happy.
+
 2007-02-05  Sergei Organov  <osv@javad.com>
 
 	* src/output/vfnprintf.cxx (vfnprintf): while formatting integers

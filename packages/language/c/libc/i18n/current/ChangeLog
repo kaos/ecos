@@ -1,3 +1,7 @@
+2007-07-02  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/locale.cxx: Add (char *) casts to make GCC/4.2.x happy.
+
 2006-08-28  Sergei Gavrikov  <w3sg@SoftHome.net>
 
 	* src/wcstombs.cxx (wcstombs): unused variable removed.

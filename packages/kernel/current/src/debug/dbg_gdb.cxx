@@ -241,7 +241,7 @@ static char *dbg_addint(char *s, int n, int base)
     char buf[16];
     char sign = '+';
     cyg_count8 bpos;
-    char *digits = "0123456789ABCDEF";
+    char *digits = (char *)"0123456789ABCDEF";
 
     if( n < 0 ) n = -n, sign = '-';
     
@@ -296,36 +296,36 @@ externC int dbg_threadinfo(
 
     if( thread->get_state() & Cyg_Thread::SUSPENDED )
     {
-        sbp = dbg_addstr( sbp, "suspended+");
+        sbp = dbg_addstr( sbp, (char *)"suspended+");
     }
 
     switch( thread->get_state() & ~Cyg_Thread::SUSPENDED )
     {
     case Cyg_Thread::RUNNING:
         if ( Cyg_Scheduler::get_current_thread() == thread ) {
-            s = "running";              break;
+            s = (char *)"running";              break;
         }
         else if ( thread->get_state() & Cyg_Thread::SUSPENDED ) {
-            s = ""; sbp--; /*kill '+'*/ break;
+            s = (char *)""; sbp--; /*kill '+'*/ break;
         }
         else {
-            s = "ready";                break;
+            s = (char *)"ready";                break;
         }
     case Cyg_Thread::SLEEPING:
-        s = "sleeping";                 break;
+        s = (char *)"sleeping";                 break;
     case Cyg_Thread::COUNTSLEEP | Cyg_Thread::SLEEPING:
     case Cyg_Thread::COUNTSLEEP:
-        s = "counted sleep";            break;
+        s = (char *)"counted sleep";            break;
     case Cyg_Thread::CREATING:
-        s = "creating"; sbp = statebuf; break;
+        s = (char *)"creating"; sbp = statebuf; break;
     case Cyg_Thread::EXITED:
-        s = "exited"; sbp = statebuf;   break;
+        s = (char *)"exited"; sbp = statebuf;   break;
     default:
-        s = "unknown state";            break;
+        s = (char *)"unknown state";            break;
     }
 
     sbp = dbg_addstr( sbp, s );
-    sbp = dbg_addstr( sbp, ", Priority: " );
+    sbp = dbg_addstr( sbp, (char *)", Priority: " );
     sbp = dbg_adddec( sbp, thread->get_priority() );
     
     info->thread_display        = statebuf;

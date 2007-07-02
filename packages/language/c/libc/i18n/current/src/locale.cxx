@@ -70,8 +70,8 @@
 // define the "C" locale
 static const Cyg_libc_locale_t
 C_locale = { 
-  "C",
-  { ".", "", "", "", "", "", "", "", "", "",
+  (char *)"C",
+  { (char *)".", (char *)"", (char *)"", (char *)"", (char *)"", (char *)"", (char *)"", (char *)"", (char *)"", (char *)"",
     CHAR_MAX, CHAR_MAX, CHAR_MAX, CHAR_MAX, CHAR_MAX, CHAR_MAX,
     CHAR_MAX, CHAR_MAX
   },

@@ -1268,7 +1268,7 @@ Cyg_IdleThread::Cyg_IdleThread()
     : Cyg_Thread( CYG_THREAD_MIN_PRIORITY,
                   idle_thread_main,
                   0,
-                  "Idle Thread",
+                  (char *)"Idle Thread",
                   (CYG_ADDRESS)idle_thread_stack[this-&idle_thread[0]],
                   CYGNUM_KERNEL_THREADS_IDLE_STACK_SIZE)
 {
