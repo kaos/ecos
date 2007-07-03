@@ -104,6 +104,15 @@ cdl_package CYGPKG_IO_CAN {
         display "CAN driver supports TX events"
     }
     
+    #-----------------------------------------------------------------
+    # Each single channel of a CAN chip or on chip CAN module should
+    # implement this interface. It counts the number of available
+    # CAN channels
+    #
+    cdl_interface CYGINT_IO_CAN_CHANNELS {
+        display "Number of CAN channels"
+    }
+    
     
     #-----------------------------------------------------------------
     # Generic CAN driver configuration

@@ -49,7 +49,7 @@
 #
 # ====================================================================
 
-cdl_package CYGPKG_IO_CAN_LOOP {
+cdl_package CYGPKG_DEVS_CAN_LOOP {
     display       "Loop CAN device drivers"
 
     parent        CYGPKG_IO_CAN_DEVICES
@@ -66,10 +66,10 @@ cdl_package CYGPKG_IO_CAN_LOOP {
     # Support up to two CAN loop device.
     for { set ::loopcan 0 } { $::loopcan < 2 } { incr ::loopcan } {
     
-    cdl_component CYGPKG_IO_CAN_LOOP_CAN[set ::loopcan] {
+    cdl_component CYGPKG_DEVS_CAN_LOOP_CAN[set ::loopcan] {
         display       "LOOP CAN channel [set ::loopcan] driver"
         flavor        bool
-        default_value 1
+        default_value 0
         implements    CYGINT_IO_CAN_TIMESTAMP
         implements    CYGINT_IO_CAN_TX_EVENTS
         implements    CYGINT_IO_CAN_STD_CAN_ID
@@ -119,7 +119,7 @@ cdl_package CYGPKG_IO_CAN_LOOP {
     }
     
 
-    cdl_component CYGPKG_IO_CAN_LOOP_OPTIONS {
+    cdl_component CYGPKG_DEVS_CAN_LOOP_OPTIONS {
         display "CAN device driver build options"
         flavor  none
         description   "
@@ -128,7 +128,7 @@ cdl_package CYGPKG_IO_CAN_LOOP {
 	    and details of which tests are built."
 
         
-        cdl_option CYGPKG_IO_CAN_LOOP_TESTS {
+        cdl_option CYGPKG_DEVS_CAN_LOOP_TESTS {
             display "CAN loop device driver tests"
             flavor  data
             calculated { "tests/can_rdwr tests/can_timeout tests/can_txevent tests/can_overrun1 tests/can_overrun2 tests/can_nonblock"}         

@@ -56,7 +56,7 @@
 
 #include <pkgconf/hal.h>
 #include <pkgconf/io_can.h>
-#include <pkgconf/io_can_loop.h>
+#include <pkgconf/devs_can_loop.h>
 #include <cyg/hal/hal_io.h>
 
 #include <cyg/io/io.h>

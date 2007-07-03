@@ -1,3 +1,8 @@
+2007-07-02   uwe.kindler <uwe.kindler@cetoni.de>
+
+	* ecos.db CAN driver for LPC2xxx. Updated entry for loop
+	  CAN device driver.
+
 2007-04-08   uwe.kindler <uwe.kindler@cetoni.de>
 
 	* ecos.db Ethernet driver for Olimex SAM7-EX256 

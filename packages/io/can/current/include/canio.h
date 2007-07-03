@@ -245,8 +245,8 @@ typedef struct cyg_can_buf_info_st
 //
 typedef struct cyg_can_msgbox_info_st
 {
-    cyg_uint8 count;    // number of message buffers available for this device
-    cyg_uint8 free;     // number of free message buffers
+    cyg_uint16 count;    // number of message buffers available for this device
+    cyg_uint16 free;     // number of free message buffers
 } cyg_can_msgbuf_info;
 
 

@@ -1,5 +1,10 @@
 2007-03-23  Uwe Kindler  <uwe_kindler@web.de>
 
+    * cdl/can_loop.cd: Changed naming of various options from 
+      xxx_IO_CAN_LOOP into xxx_DEVS_CAN_LOOP
+
+2007-03-23  Uwe Kindler  <uwe_kindler@web.de>
+
 	* cdl/can_loop.cdl: Driver now implements the interfaces
 	  CYGINT_IO_CAN_TX_EVENTS, CYGINT_IO_CAN_STD_CAN_ID, 
 	  CYGINT_IO_CAN_EXT_CAN_ID.

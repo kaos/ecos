@@ -122,13 +122,23 @@ package CYGPKG_DEVS_CAN_AT91SAM7 {
     description       "Atmel AT91SAM7 on-chip CAN device driver."
 }
 
-package CYGPKG_IO_CAN_LOOP {
+package CYGPKG_DEVS_CAN_LPC2XXX {
+    alias             { "LPC2xxx CAN device drivers"
+                        devs_can_lpc2xxx lpc2xxx_can_driver }
+    hardware
+    directory	      devs/can/arm/lpc2xxx
+    script	          can_lpc2xxx.cdl	
+    description       "LPC2xxx on-chip CAN device driver."
+}
+
+package CYGPKG_DEVS_CAN_LOOP {
     alias             { "Loop CAN device drivers"
                         devs_can_loop loop_can_driver }
     directory	      devs/can/loop
     script	      can_loop.cdl	
     description       "Loopback CAN device driver."
 }
+
 
 package CYGPKG_IO_PCMCIA {
 	alias 		{ "PCMCIA & Compact Flash support" pcmcia io_pcmcia cf }

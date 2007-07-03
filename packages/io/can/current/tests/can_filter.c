@@ -107,7 +107,7 @@ void can0_thread(cyg_addrword_t data)
 {
     cyg_uint32             len;
     cyg_can_event          rx_event;
-    cyg_uint8              i;
+    cyg_uint16             i;
     cyg_can_hdi            hdi;
     cyg_can_msgbuf_info    msgbox_info;
     cyg_can_msgbuf_cfg     msgbox_cfg;
