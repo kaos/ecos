@@ -1,0 +1,258 @@
+# ====================================================================
+#
+#      can_lpc2xxx.cdl
+#
+#      eCos LPC2xxx CAN module configuration data
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2003, 2004 eCosCentric Limited
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+## -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      Uwe Kindler
+# Contributors:
+# Date:           2007-02-10
+#
+#####DESCRIPTIONEND####
+# ====================================================================
+
+
+cdl_package CYGPKG_DEVS_CAN_LPC2XXX {
+    display       "Philips LPC2xxx CAN device drivers"
+    parent        CYGPKG_IO_CAN_DEVICES
+    active_if     CYGPKG_IO_CAN
+    active_if     CYGPKG_HAL_ARM_LPC2XXX
+    requires      CYGPKG_ERROR
+    
+    implements      CYGINT_IO_CAN_STD_CAN_ID
+    implements      CYGINT_IO_CAN_EXT_CAN_ID
+            
+    include_dir   cyg/io
+    description   "
+           This option enables the CAN device drivers for the
+           Philips LPC2XXX."
+    compile       -library=libextras.a   can_lpc2xxx.c
+    define_proc {
+        puts $::cdl_system_header "/***** CAN driver proc output start *****/"
+        puts $::cdl_system_header "#define CYGDAT_IO_CAN_DEVICE_HEADER <pkgconf/devs_can_lpc2xxx.h>"
+        puts $::cdl_system_header "/*****  CAN driver proc output end  *****/"
+    }
+    
+    cdl_component CYGOPT_DEVS_CAN_LPC2XXX_RUNTIME_ACCFILT {
+        display    "Acceptance filter runtime configuration"
+        flavor      bool
+        implements  CYGINT_IO_CAN_RUNTIME_MBOX_CFG
+        description "
+            The LPC2xxx CAN module supports a global acceptance filter. Enabling this
+            option provides support for runtime configuration of this acceptance filter.
+            If each CAN channel should receive all CAN messages and individual message
+            filtering is not required then disable this option to eleminate almost
+            the complete acceptance filter code and to decrease codesize. If this
+            option is disabled the option CYGOPT_IO_CAN_RUNTIME_MBOX_CFG is not
+            available and the configuration key CYG_IO_SET_CONFIG_CAN_MSGBUF is
+            not supported by this driver." 
+            
+            cdl_option CYGOPT_DEVS_CAN_LPC2XXX_EXTENDED_CFG_KEYS {
+                display       "Extended acceptance filtering"
+                flavor        bool
+                default_value 0
+                description   "
+                    The common CAN I/O layer supports setup of single message filters for
+                    reception of single CAN messages. The global LPC2xxx acceptance filter
+                    supports not only single message filters but also message groups.
+                    A message group is defined by a lower bound CAN identifier and an upper
+                    bound CAN identifier. The acceptance filter will accept all messages within
+                    this range of CAN identifiers. The acceptance filter supports a number of
+                    message groups for each CAN channel. The support of message filter groups
+                    is not conform to the standard API of the CAN I/O layer and should only
+                    be used for application where portability is not important."
+             }
+    }
+       
+    cdl_option CYGDBG_DEVS_CAN_LPC2XXX_DEBUG {
+        display "Support printing debug information"
+            default_value 0
+            description "
+                Check this box to turn ON debug options for AT91SAM7 CAN device driver."
+    } 
+    
+    # Support up to 4 on-chip CAN modules. The number may vary between
+    # processor variants so it is easy to update this here
+    for { set ::channel 0 } { $::channel < 4 } { incr ::channel } {
+    
+        cdl_interface CYGINT_DEVS_CAN_LPC2XXX_CAN[set ::channel] {
+            display     "Platform provides CAN [set ::channel]"
+            flavor      bool
+            description "
+                This interface will be implemented if the specific LPC2xxx
+                processor being used has on-chip CAN [set ::channel], and if
+                that CAN module is accessible on the target hardware."
+        }
+    
+        cdl_component CYGPKG_DEVS_CAN_LPC2XXX_CAN[set ::channel] {
+            display     "Allow access to the on-chip CAN [set ::channel] via a CAN driver"
+            flavor      bool
+            active_if       CYGINT_DEVS_CAN_LPC2XXX_CAN[set ::channel]
+            default_value   1
+            implements      CYGINT_IO_CAN_CHANNELS
+            description "
+                If the application needs to access the on-chip CAN module [set ::channel]
+                via an eCos CAN driver then this option should be enabled."
+
+            cdl_option CYGPKG_DEVS_CAN_LPC2XXX_CAN[set ::channel]_NAME {
+                display     "Device name for CAN module [set ::channel]"
+                flavor      data
+                default_value   [format {"\"/dev/can%d\""} $::channel]
+                description "
+                    This option controls the name that an eCos application
+                    should use to access this device via cyg_io_lookup(),
+                    open(), or similar calls."
+            }
+
+        
+            cdl_option CYGNUM_DEVS_CAN_LPC2XXX_CAN[set ::channel]_KBAUD {
+                display     "Default baud rate for CAN module [set ::channel]"
+                flavor      data
+                default_value   100
+                legal_values    { 10 20 50 100 125 250 500 800 1000 "AUTO"}
+                description "This option determines the initial baud rate in KBaud for 
+                             CAN module [set ::channel]"
+            }
+
+            cdl_option CYGNUM_DEVS_CAN_LPC2XXX_CAN[set ::channel]_QUEUESIZE_TX {
+                display     "Size of TX Queue for the CAN module [set ::channel] driver"
+                flavor      data
+                default_value   32
+                legal_values    1 to 1024
+                description "
+                    The CAN device driver will run in interrupt mode and will
+                    perform buffering of outgoing data. This option controls the number
+                    of CAN messages the TX queue can store."
+            }
+            
+            cdl_option CYGNUM_DEVS_CAN_LPC2XXX_CAN[set ::channel]_QUEUESIZE_RX {
+                display     "Size of RX Queue for the CAN module [set ::channel] driver"
+                flavor      data
+                default_value   64
+                legal_values    8 to 4096
+                description "
+                    The CAN device driver will run in interrupt mode and will
+                    perform buffering of incoming data. This option controls the number
+                    of CAN events the RX queue can store."
+            }
+                       
+            cdl_option CYGOPT_DEVS_CAN_LPC2XXX_CAN[set ::channel]_ACCFILT_STARTUP_CFG {
+                display       "Acceptance filter startup configuration"
+                flavor        data
+                legal_values  {"RX_ALL" "RX_NONE"}
+                default_value {"RX_ALL"}
+                active_if   CYGOPT_DEVS_CAN_LPC2XXX_RUNTIME_ACCFILT
+                description   "
+                    Normally the acceptance filter will be configured at startup time to
+                    receive all available CAN messages. The application can setup single
+                    message filters during runtime later. If RX_NONE is selected then the 
+                    acceptance filter for this channel is configured to receive no CAN
+                    message identifier."
+             }
+
+        }    
+    } 
+    
+    cdl_option CYGPKG_DEVS_CAN_LPC2XXX_TESTS {
+        display "CAN LPC2xxx device driver tests"
+        flavor  data
+        no_define
+        calculated { "tests/can_busload tests/can_rx_tx" }
+        description   "
+            This option specifies the set of tests for the LPC2xxx CAN device driver."
+    }
+    
+    cdl_option CYGBLD_DEVS_CAN_LPC2XXX_EXTRA_TESTS {
+        display "Build extra CAN tests"
+        default_value 0
+        no_define
+        description "
+            This option enables the building of some extra tests which
+            can be used when testing / debugging the LPC2xxx CAN driver. These
+            are not built by default since they do not use the dedicated
+            testing infrastructure. All tests require a properly configured
+            CAN network with a second CAN node that can send and receive
+            CAN messages."
+    
+        make -priority 320 {
+            <PREFIX>/bin/can_multichan_rx : <PACKAGE>/tests/can_multichan_rx.c
+            @sh -c "mkdir -p tests $(dir $@)"
+            $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o tests/can_multichan_rx.o $<
+            @echo $@ ": \\" > $(notdir $@).deps
+            @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
+            @tail -n +2 deps.tmp >> $(notdir $@).deps
+            @echo >> $(notdir $@).deps
+            @rm deps.tmp
+            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ tests/can_multichan_rx.o
+        }
+        
+        make -priority 320 {
+            <PREFIX>/bin/can_multichan_tx : <PACKAGE>/tests/can_multichan_tx.c
+            @sh -c "mkdir -p tests $(dir $@)"
+            $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o tests/can_multichan_tx.o $<
+            @echo $@ ": \\" > $(notdir $@).deps
+            @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
+            @tail -n +2 deps.tmp >> $(notdir $@).deps
+            @echo >> $(notdir $@).deps
+            @rm deps.tmp
+            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ tests/can_multichan_tx.o
+        }
+                
+        make -priority 320 {
+            <PREFIX>/bin/can_baudrates : <PACKAGE>/tests/can_baudrates.c
+            @sh -c "mkdir -p tests $(dir $@)"
+            $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o tests/can_baudrates.o $<
+            @echo $@ ": \\" > $(notdir $@).deps
+            @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
+            @tail -n +2 deps.tmp >> $(notdir $@).deps
+            @echo >> $(notdir $@).deps
+            @rm deps.tmp
+            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ tests/can_baudrates.o
+        }
+        
+        make -priority 320 {
+            <PREFIX>/bin/can_extended_cfg : <PACKAGE>/tests/can_extended_cfg.c
+            @sh -c "mkdir -p tests $(dir $@)"
+            $(CC) -c $(INCLUDE_PATH) -Wp,-MD,deps.tmp -I$(dir $<) $(CFLAGS) -o tests/can_extended_cfg.o $<
+            @echo $@ ": \\" > $(notdir $@).deps
+            @echo $(wildcard $(PREFIX)/lib/*) " \\" >> $(notdir $@).deps
+            @tail -n +2 deps.tmp >> $(notdir $@).deps
+            @echo >> $(notdir $@).deps
+            @rm deps.tmp
+            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ tests/can_extended_cfg.o
+        }
+    } 
+}
