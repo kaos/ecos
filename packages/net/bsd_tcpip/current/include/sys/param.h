@@ -1040,7 +1040,7 @@ if (cyg_net_log_mask & lvl)
 #else
 #define log(lvl, args...) 
 #define log_dump(lvl, buf, len)
-#define log_(lvl)
+#define log_(lvl) if (0)
 #endif
 
 #endif // _KERNEL

@@ -1,3 +1,8 @@
+2007-07-08  Alexander Aganichev <aaganichev@gmail.com>
+
+	* include/sys/param.h (log_): Really disable logging when
+	it is disabled.
+
 2007-03-21  Jay Foster <jay@systech.com>
 
 	* cdl/freebsd_net.cdl: Added option to enable BOOTP_COMPAT to
