@@ -206,4 +206,20 @@ cdl_package CYGPKG_HAL_ARM_LPC2XXX {
            debugging via JTAG, as stopping the clock can prevent the
            debugger getting control of the system."
     }
+    
+    cdl_option CYGNUM_HAL_KERNEL_COUNTERS_CLOCK_ISR_DEFAULT_PRIORITY {
+	    display		"Default priority for system clock interrupts"
+	    flavor		data
+	    legal_values  { 0 to 16 }
+        default_value 0
+	    description "
+            The LPC2xxx eCos HAL supports up to 17 interrupt levels.
+            Interrupt levels 0 - 15 are vectored IRQs. Vectored IRQs 
+            have a higher priority then non vectored IRQs and they 
+            are processed faster. Non vectored  IRQs are all chained together 
+            into one single slot and the ISR need to  find out which interrupt 
+            occured. The default value for the system clock interrupts is 0 - 
+            this is the highest priority IRQ."
+    }
+
 }

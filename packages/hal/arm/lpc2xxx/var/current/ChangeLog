@@ -1,3 +1,15 @@
+2007_07-10  Uwe Kindler <uwe_kindler@web.de>
+
+	* cdl/hal_arm_lpc2xxx.cdl: Added option
+	CYGNUM_HAL_KERNEL_COUNTERS_CLOCK_ISR_DEFAULT_PRIORITY for
+	configuration of priority of system clock interrupts.
+	
+	* src/lpc2xxx_misc.c: Added support for vectored interrupt
+	controller and up to 17 interrupt priorities. This improves
+	interrupt processing time and makes processing of vectored
+	interrupts more determenistic because no for loop is required
+	for detection of interrupt source.
+
 2007-06-04  Alexey Shusharin <mrfinch@mail.ru>
 
 	* src/hal_diag.c (cyg_hal_plf_serial_isr): Fixed issue with UART

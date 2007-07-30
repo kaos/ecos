@@ -240,6 +240,13 @@ void hal_hardware_init(void)
     lpc_set_vpbdiv(CYGNUM_HAL_ARM_LPC2XXX_VPBDIV, 1);
 #endif
 
+    //
+    // 0xFFFFFFFF indicates that this is a non vectored ISR
+    // This is the default setting for all  interrupts
+    //
+    HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_VIC_BASE + 
+                     CYGARC_HAL_LPC2XXX_REG_VICDEFVECTADDR, 0xFFFFFFFF);
+
 #ifdef HAL_PLF_HARDWARE_INIT
     // Perform any platform specific initializations
     HAL_PLF_HARDWARE_INIT();
@@ -254,22 +261,35 @@ void hal_hardware_init(void)
 // should interrogate the hardware and return the IRQ vector number.
 int hal_IRQ_handler(void)
 {
-    cyg_uint32 irq_num, irq_stat;
-
-    // Find out which interrupt caused the IRQ. This picks the lowest
-    // if there are more than 1.
-    // FIXME:try to make use of the VIC for better latency.
-    //       That will probably need changes to vectors.S and 
-    //       other int-related code
-    HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_VIC_BASE + 
-                    CYGARC_HAL_LPC2XXX_REG_VICIRQSTAT, irq_stat);
-    for (irq_num = 0; irq_num < 32; irq_num++)
-      if (irq_stat & (1 << irq_num))
-        break;
+    cyg_uint32 irq_num;
     
-    // If not a valid interrrupt source, treat as spurious interrupt    
-    if (irq_num < CYGNUM_HAL_ISR_MIN || irq_num > CYGNUM_HAL_ISR_MAX)
-      irq_num = CYGNUM_HAL_INTERRUPT_NONE;
+    HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_VIC_BASE + 
+                    CYGARC_HAL_LPC2XXX_REG_VICVECTADDR, irq_num);
+    //
+    // if this is a non vectored ISR then we need to find out which interrupt 
+    // caused the IRQ
+    //      
+    if (0xFFFFFFFF == irq_num)
+    {
+        cyg_uint32 irq_stat;
+        
+        // Find out which interrupt caused the IRQ. This picks the lowest
+        // if there are more than 1.
+        HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_VIC_BASE + 
+                        CYGARC_HAL_LPC2XXX_REG_VICIRQSTAT, irq_stat);
+        irq_num = 0;
+        while (!(irq_stat & 0x01))
+        {
+            irq_stat >>= 1;	
+            irq_num++;
+        }
+        
+        // If not a valid interrrupt source, treat as spurious interrupt    
+        if (irq_num < CYGNUM_HAL_ISR_MIN || irq_num > CYGNUM_HAL_ISR_MAX)
+        {
+            irq_num = CYGNUM_HAL_INTERRUPT_NONE;
+        }
+    } // if (0xFFFFFFFF == irq_num)
     
     return (irq_num);
 }
@@ -420,12 +440,48 @@ void hal_interrupt_configure(int vector, int level, int up)
                      CYGARC_HAL_LPC2XXX_REG_EXTINT, vector);
 }
 
-// Change interrupt level. This is a non-operation on the LPC2XXX
+//
+// We support up to 17 interrupt levels
+// Interrupts 0 - 15 are vectored interrupt requests. Vectored IRQs have 
+// the higher priority then non vectored IRQs, but only 16 of the 32 requests 
+// can be assigned to this category. Any of the 32 requests can be assigned 
+// to any of the 16 vectored IRQ slots, among which slot 0 has the highest 
+// priority and slot 15 has the lowest. Priority 16 indicates a non vectored
+// IRQ.
+//
 void hal_interrupt_set_level(int vector, int level)
 {
     CYG_ASSERT(vector <= CYGNUM_HAL_ISR_MAX &&
                vector >= CYGNUM_HAL_ISR_MIN , "Invalid vector");
-    CYG_ASSERT(level >= 0 && level <= 15, "Invalid level");
+    CYG_ASSERT(level >= 0 && level <= 16, "Invalid level");
+    
+    //
+    // If level is < 16 then this is a vectored ISR and we try to write
+    // the vector number of this ISR in the right slot of the vectored 
+    // interrupt controller
+    //
+    if (level < 16)
+    {
+        cyg_uint32 addr_offset =  level << 2;
+        cyg_uint32 reg_val;
+        
+        HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_VIC_BASE + 
+                        CYGARC_HAL_LPC2XXX_REG_VICVECTCNTL0 + 
+                        addr_offset, reg_val);
+        CYG_ASSERT((reg_val == 0) || (reg_val == (vector | 0x20)), 
+                   "Priority already used by another vector");
+        HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_VIC_BASE + 
+                         CYGARC_HAL_LPC2XXX_REG_VICVECTCNTL0 + 
+                         addr_offset, vector | 0x20);
+        //
+        // We do not store the adress of the ISR here but we store the
+        // vector number The hal_IRQ_handler then can faster determine
+        // the right vector number
+        //
+        HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_VIC_BASE + 
+                         CYGARC_HAL_LPC2XXX_REG_VICVECTADDR0 + 
+                         addr_offset, vector);
+    }     
 }
 
 // Use the watchdog to generate a reset
