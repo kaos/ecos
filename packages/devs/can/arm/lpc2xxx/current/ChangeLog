@@ -1,3 +1,16 @@
+2007-07-07  Alexey Shusharin <mrfinch@mail.ru>
+
+	* cdl/can_lpx2xxx.cdl: Option
+	  CYGOPT_DEVS_CAN_LPC2XXX_USE_SELF_RECEPTION added for enabling
+	  self reception requests instead of transmission requests.
+	
+	* src/can_lpc2xxx.c: Some small bugs fixed. Added support for LUT
+	  error. Support for self transmission request added. Debug output
+	  improved.
+	  
+	* src/can_accfilt_lpc2xxx.c: Added support for baudrates of 10kbaud 
+	  and 20 kbaud at clock speed of 60 MHz
+	
 2007-07-01  Uwe Kindler  <uwe_kindler@web.de>
 
 	* LPC2xxx CAN driver package created
@@ -5,6 +18,7 @@
 	* include/can_lpc2xxx.h
 	* include/can_lpc2xxx_baudrates.h
 	* src/can_lpc2xxx.c
+	* src/can_accfilt_lpc2xxx.c
 
 //===========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####

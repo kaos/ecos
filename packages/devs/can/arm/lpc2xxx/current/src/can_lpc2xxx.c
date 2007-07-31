@@ -233,6 +233,7 @@
 #define ICR_ID_READY            0x00000100
 #define ICR_TX2                 0x00000200
 #define ICR_TX3                 0x00000400
+#define ICR_LUT_ERR             0x00000800
 #define ICR_GET_ERRBIT(_icr_)   (((_icr_) >> 16) & 0x1F)
 #define ICR_ERR_DIRECTION       0x00200000
 #define ICR_GET_ERRCODE(_icr_)  (((_icr_) >> 22) & 0x03)
@@ -388,6 +389,29 @@
 //
 // Structure stores LPC2xxx CAN channel related stuff
 //
+
+// If we use Self Reception Request command instead of the Transmission Request
+// we must add last transmit message id in order to reject it in rx_ISR
+// There are two last_tx_id because tx interrupt (and so transmition of next 
+// message) happens before rx interrupt (which uses last_tx_id for rejecting)) 
+
+// Format of last_tx_id:
+//  (bits: 28:0-ID, 29-Validation, 30-RTR, 31-EXT)
+//  if last_tx_id == 0xFFFFFFFF (Validation == 1) then last id is not valid
+#ifdef CYGOPT_DEVS_CAN_LPC2XXX_USE_SELF_RECEPTION
+ #define LPC2XXX_CAN_INFO_LAST_TX_ID_IDMASK   0x1FFFFFFF
+ #define LPC2XXX_CAN_INFO_LAST_TX_ID_FLMASK   0xC0000000
+ #define LPC2XXX_CAN_INFO_LAST_TX_ID_NOVALID  0xFFFFFFFF
+
+ #define LPC2XXX_CAN_INFO_LAST_TX_ID_DECL     cyg_uint8    last_tx_index;                 \
+                                              cyg_uint32   last_tx_id[2];
+ #define LPC2XXX_CAN_INFO_LAST_TX_ID_INIT     last_tx_index : 0,                          \
+                                              last_tx_id    : {LPC2XXX_CAN_INFO_LAST_TX_ID_NOVALID, LPC2XXX_CAN_INFO_LAST_TX_ID_NOVALID},
+#else
+ #define LPC2XXX_CAN_INFO_LAST_TX_ID_DECL
+ #define LPC2XXX_CAN_INFO_LAST_TX_ID_INIT
+#endif
+
 typedef struct lpc2xxx_can_info_st
 {
     cyg_interrupt      tx_interrupt;
@@ -396,7 +420,8 @@ typedef struct lpc2xxx_can_info_st
     cyg_handle_t       rx_interrupt_handle; 
     cyg_can_state      state;            // state of CAN controller 
     cyg_uint32         icr;              // buffers icr register
-    cyg_uint8          flags;            // flags indicating several states          
+    cyg_uint8          flags;            // flags indicating several states       
+    LPC2XXX_CAN_INFO_LAST_TX_ID_DECL     // last transmited messages ids   
 #if CYGINT_IO_CAN_CHANNELS > 1
     cyg_uint32         base;             // Per-bus h/w details
     cyg_uint8          isrvec;           // ISR vector (peripheral id)
@@ -420,12 +445,15 @@ lpc2xxx_can_info_t _l  = {                                                      
     isrvec            : (_isrvec),                                               \
     flags             : (_flags),                                                \
     icr               : 0,                                                       \
+    LPC2XXX_CAN_INFO_LAST_TX_ID_INIT                                             \
 };
 #else
 #define LPC2XXX_CAN_INFO(_l, _flags)               \
 lpc2xxx_can_info_t _l = {                          \
     state      : CYGNUM_CAN_STATE_STOPPED,         \
     flags      : (_flags),                         \
+    icr        : 0,                                \
+    LPC2XXX_CAN_INFO_LAST_TX_ID_INIT               \
 };
 #endif
 
@@ -927,7 +955,7 @@ static Cyg_ErrNo lpc2xxx_can_lookup(struct cyg_devtab_entry** tab, struct cyg_de
 
 #ifdef CYGOPT_IO_CAN_RUNTIME_MBOX_CFG
 //===========================================================================
-// Setup AT91SAM7 CAN module in a state where all message boxes are disabled
+// Setup LPC2XXX CAN module in a state where all message boxes are disabled
 // After this call it is possible to add single message buffers and filters
 //===========================================================================
 static void lpc2xxx_can_config_rx_none(can_channel *chan)
@@ -1373,7 +1401,11 @@ static Cyg_ErrNo lpc2xxx_can_get_config(can_channel *chan, cyg_uint32 key, const
 static bool lpc2xxx_can_putmsg(can_channel *chan, CYG_CAN_MSG_T *pmsg, void *pdata)
 {
     cyg_uint32 regval;
-    CAN_DECLARE_INFO(priv);
+#ifdef CYGOPT_DEVS_CAN_LPC2XXX_USE_SELF_RECEPTION
+    lpc2xxx_can_info_t  *info = (lpc2xxx_can_info_t *) chan->dev_priv;
+#else
+    CAN_DECLARE_INFO(info);
+#endif
     
     //
     // We use only one single transmit buffer of the three available buffers
@@ -1419,11 +1451,23 @@ static bool lpc2xxx_can_putmsg(can_channel *chan, CYG_CAN_MSG_T *pmsg, void *pda
     // Work-around: Use the Self Reception Request command instead of the Transmission 
     // Request command. However, it has to be taken into account that now all transmitted
     // messages may be received if not prevented by appropriate Acceptance Filter settings. 
-    // (Don't set up Acceptance Filter Message Identifiers for the messages you are 
+    // (Don't set up Acceptance Filter Message Identifiers for the messages you are
     // transmitting yourself.)
     //
-    HAL_WRITE_UINT32(CAN_CTRL_CMR(info), CMR_TX_REQ | CMR_SEND_TX_BUF1); // Write transmission request
-    //HAL_WRITE_UINT32(CAN_CTRL_CMR(info), CMR_SELF_RX_REQ | CMR_SEND_TX_BUF1); // Write self transmission request
+#ifdef CYGOPT_DEVS_CAN_LPC2XXX_USE_SELF_RECEPTION
+    // Calc last_tx_id
+    regval = pmsg->id | (regval & LPC2XXX_CAN_INFO_LAST_TX_ID_FLMASK);
+    
+    // Save last message id to next last_tx_id
+    info->last_tx_index = info->last_tx_index == 0 ? 1 : 0;
+    info->last_tx_id[info->last_tx_index] = regval;
+    
+    // Write self transmission request
+    HAL_WRITE_UINT32(CAN_CTRL_CMR(info), CMR_SELF_RX_REQ | CMR_SEND_TX_BUF1);
+#else
+    // Write transmission request
+    HAL_WRITE_UINT32(CAN_CTRL_CMR(info), CMR_TX_REQ | CMR_SEND_TX_BUF1);
+#endif
    
     return true;
 }
@@ -1501,7 +1545,7 @@ static bool lpc2xxx_can_getevent(can_channel *chan, CYG_CAN_EVENT_T *pevent, voi
     //
     // Handle all other events
     //
-    if (event & CAN_MISC_INT)
+    if (event & (CAN_MISC_INT | ICR_LUT_ERR))
     {
         HAL_READ_UINT32(CAN_CTRL_GSR(info), data.dword);
         
@@ -1531,7 +1575,7 @@ static bool lpc2xxx_can_getevent(can_channel *chan, CYG_CAN_EVENT_T *pevent, voi
             {
                 info->state = CYGNUM_CAN_STATE_ACTIVE;
             }
-            LPC2XXX_DBG_PRINT("ICR_ERR_WARN\n");
+            LPC2XXX_DBG_PRINT("ICR_ERR_WARN (%p)\n", (void*) chan);
         }
         
         //
@@ -1542,7 +1586,7 @@ static bool lpc2xxx_can_getevent(can_channel *chan, CYG_CAN_EVENT_T *pevent, voi
         {
             pevent->flags |= CYGNUM_CAN_EVENT_LEAVING_STANDBY; 
             info->state = CYGNUM_CAN_STATE_ACTIVE;
-            LPC2XXX_DBG_PRINT("ICR_WAKE_UP\n");
+            LPC2XXX_DBG_PRINT("ICR_WAKE_UP (%p)\n", (void*) chan);
         }
         
         //
@@ -1563,7 +1607,7 @@ static bool lpc2xxx_can_getevent(can_channel *chan, CYG_CAN_EVENT_T *pevent, voi
             {
                 info->state = CYGNUM_CAN_STATE_ACTIVE;    
             }
-            LPC2XXX_DBG_PRINT("ICR_ERR_PASSIVE\n");
+            LPC2XXX_DBG_PRINT("ICR_ERR_PASSIVE (%p)\n", (void*) chan);
         }
         
         //
@@ -1573,7 +1617,7 @@ static bool lpc2xxx_can_getevent(can_channel *chan, CYG_CAN_EVENT_T *pevent, voi
         if (event & ICR_ARBITR_LOST)
         {
             pevent->flags |= CYGNUM_CAN_EVENT_ARBITRATION_LOST;   
-            LPC2XXX_DBG_PRINT("ICR_ARBITR_LOST\n");
+            LPC2XXX_DBG_PRINT("ICR_ARBITR_LOST (%p)\n", (void*) chan);
         }
         
         //
@@ -1583,9 +1627,22 @@ static bool lpc2xxx_can_getevent(can_channel *chan, CYG_CAN_EVENT_T *pevent, voi
         if (event & ICR_BUS_ERR)
         {
             pevent->flags |= CYGNUM_CAN_EVENT_BUS_OFF; 
-            LPC2XXX_DBG_PRINT("ICR_BUS_ERR\n");
+            LPC2XXX_DBG_PRINT("ICR_BUS_ERR (%p)\n", (void*) chan);
         }
-    } // if (event & CAN_MISC_INT)
+        
+#ifdef CYGOPT_IO_CAN_RUNTIME_MBOX_CFG
+        //
+        // LUT error interrupt -- this bit is set if bit 0 in LUTerr is 1 and LUTerrAd
+        // points to entry in filter table for this CAN controller
+        //
+        if(event & ICR_LUT_ERR)
+        {
+            pevent->flags |= CYGNUM_CAN_EVENT_FILTER_ERR;
+            LPC2XXX_DBG_PRINT("ICR_LUT_ERR (%p)\n", (void*) chan);
+        }
+#endif
+
+    } // if (event & (CAN_MISC_INT | ICR_LUT_ERR))
           
     return res;
 }
@@ -1599,7 +1656,7 @@ static void lpc2xxx_can_start_xmit(can_channel* chan)
     cyg_uint32 regval;
     CAN_DECLARE_INFO(chan);
     
-    LPC2XXX_DBG_PRINT("start_xmit\n");
+    LPC2XXX_DBG_PRINT("start_xmit (%p)\n", (void*) chan);
 
     cyg_drv_dsr_lock();
     HAL_READ_UINT32(CAN_CTRL_IER(info), regval);
@@ -1622,7 +1679,7 @@ static void lpc2xxx_can_stop_xmit(can_channel* chan)
     cyg_uint32 regval; 
     CAN_DECLARE_INFO(chan);
     
-    LPC2XXX_DBG_PRINT("stop_xmit\n");
+    LPC2XXX_DBG_PRINT("stop_xmit (%p)\n", (void*) chan);
      
     cyg_drv_dsr_lock();
     HAL_READ_UINT32(CAN_CTRL_IER(info), regval);
@@ -1657,7 +1714,7 @@ static cyg_uint32 lpc2xxx_can_tx_ISR(cyg_vector_t vector, cyg_addrword_t data)
     HAL_READ_UINT32(CAN_CTRL_ICR(info), regval);
     info->icr |= (regval &~ ICR_RX);        // do not handle RX events - this is done by RX ISR  
     cyg_drv_interrupt_acknowledge(vector);
-    LPC2XXX_DBG_PRINT("tx_ISR\n");
+    LPC2XXX_DBG_PRINT("tx_ISR (%p)\n", (void*) data);
     return CYG_ISR_CALL_DSR;
 }
 
@@ -1701,7 +1758,7 @@ static void lpc2xxx_can_tx_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addr
     regval |= IER_TX1;                 // reenable interrupts for the message box that caused the DSR to run
     HAL_WRITE_UINT32(CAN_CTRL_IER(info), regval);  
     
-    LPC2XXX_DBG_PRINT("tx_DSR\n");
+    LPC2XXX_DBG_PRINT("tx_DSR (%p)\n", (void*) data);
 }
 
 
@@ -1712,7 +1769,36 @@ static cyg_uint32 lpc2xxx_can_rx_ISR(cyg_vector_t vector, cyg_addrword_t data)
 {
     cyg_uint32    regval;
     CAN_DECLARE_CHAN(data); // declares chan pointer if required
-    CAN_DECLARE_INFO(chan); // declares info pointer if reuired
+    
+#ifdef CYGOPT_DEVS_CAN_LPC2XXX_USE_SELF_RECEPTION
+    lpc2xxx_can_info_t  *info = (lpc2xxx_can_info_t *) chan->dev_priv;
+    cyg_uint32 id;
+    cyg_uint32 index;
+    
+    // We have to reject self tx message, so read message id
+    HAL_READ_UINT32(CAN_CTRL_RID(info), id);
+    HAL_READ_UINT32(CAN_CTRL_RFS(info), regval);
+    id |= (regval & LPC2XXX_CAN_INFO_LAST_TX_ID_FLMASK);
+    
+    // Test message id
+    for(index = 0; index < 2; index++)
+    {
+        if(id == info->last_tx_id[index])
+        {
+            // Clear last_tx_id
+            info->last_tx_id[index] = LPC2XXX_CAN_INFO_LAST_TX_ID_NOVALID;
+            
+            // Clear receive buffer
+            HAL_WRITE_UINT32(CAN_CTRL_CMR(info), CMR_RX_RELEASE_BUF);
+            
+            // Exit without calling DSR
+            LPC2XXX_DBG_PRINT("self_rx_ISR (%p)\n", (void*) data);
+            return CYG_ISR_HANDLED;
+        }
+    }
+#else
+    CAN_DECLARE_INFO(info); // declares info pointer if reuired
+#endif
         
     //
     // The ISR only disables and acknowledges the RX interrupt
@@ -1722,7 +1808,7 @@ static cyg_uint32 lpc2xxx_can_rx_ISR(cyg_vector_t vector, cyg_addrword_t data)
     regval &= ~IER_RX;                          // disable rx interrupt for rx buf 1
     HAL_WRITE_UINT32(CAN_CTRL_IER(info), regval);
     cyg_drv_interrupt_acknowledge(vector);
-    LPC2XXX_DBG_PRINT("rx_ISR\n");
+    LPC2XXX_DBG_PRINT("rx_ISR (%p)\n", (void*) data);
 
     return CYG_ISR_CALL_DSR;
 }
@@ -1747,6 +1833,8 @@ static void lpc2xxx_can_rx_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addr
     HAL_READ_UINT32(CAN_CTRL_IER(info), regval);
     regval |= IER_RX;
     HAL_WRITE_UINT32(CAN_CTRL_IER(info), regval);
+    
+    LPC2XXX_DBG_PRINT("rx_DSR (%p)\n", (void*) data);
 }
 
 
@@ -1755,8 +1843,53 @@ static void lpc2xxx_can_rx_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addr
 //===========================================================================
 static cyg_uint32 lpc2xxx_can_err_ISR(cyg_vector_t vector, cyg_addrword_t data)
 {
-    cyg_uint8 i = 0;
-    LPC2XXX_DBG_PRINT("err_ISR\n");
+    cyg_uint8 i = 0;    
+#ifdef CYGOPT_IO_CAN_RUNTIME_MBOX_CFG
+    // If we use acceptance filter we can get LUT error
+    cyg_uint32 luterr;
+    cyg_uint8  luterr_chan0 = 0; // Init to avoid warnings
+    cyg_uint8  luterr_chan1 = 0; // Init to avoid warnings
+    
+    // Read LUT error flag
+    HAL_READ_UINT32(CAN_ACCFILT_LUT_ERR, luterr);
+    
+    if (luterr & 1)
+    {
+        cyg_uint32 lutaddr;
+        cyg_uint32 eff_sa;
+        lsc_buf_t  errentry;
+        
+        // Read address of failed entry (it clears interrupt flag)
+        HAL_READ_UINT32(CAN_ACCFILT_LUT_ERR_ADDR, lutaddr);
+        
+        // Read address of extended id individual table
+        HAL_READ_UINT32(CAN_ACCFILT_EFF_SA, eff_sa); 
+        
+        // Read error entry
+        HAL_READ_UINT32(CAN_ACCFILT_RAM_BASE + lutaddr, errentry.dword);
+        
+        // If errentry from standard id tables then read two controllers numbers
+        if(lutaddr < eff_sa)
+        {
+            // Calc CAN controllers numbers
+            luterr_chan0 = (cyg_uint8) ACCFILT_STD_GET_CTRL_UPPER(errentry.dword);
+            
+            if(errentry.column.lower & ACCFILT_STD_DIS)
+            {
+            	luterr_chan1 = luterr_chan0;
+            }
+            else 
+            {
+            	luterr_chan1 = (cyg_uint8) ACCFILT_STD_GET_CTRL_LOWER(errentry.dword);
+            }
+        }
+        else
+        {
+            // Calc CAN controller number 
+            luterr_chan0 = luterr_chan1 = (cyg_uint8) ACCFILT_EXT_GET_CTRL(errentry.dword);
+        }
+    }
+#endif // CYGOPT_IO_CAN_RUNTIME_MBOX_CFG
     
     while (lpc2xxx_global_can_info.active_channels[i])
     {
@@ -1768,9 +1901,18 @@ static cyg_uint32 lpc2xxx_can_err_ISR(cyg_vector_t vector, cyg_addrword_t data)
         HAL_WRITE_UINT32(CAN_CTRL_IER(info), regval);
         HAL_READ_UINT32(CAN_CTRL_ICR(info), regval);
         info->icr |= (regval &~ ICR_RX);                // do not handle RX intrupts - this is done by RX isr
-    }
+        
+#ifdef CYGOPT_IO_CAN_RUNTIME_MBOX_CFG
+        // Set ICR_LUT_ERR flag only for controller which cause LUT error
+        if ((luterr & 1) && ((luterr_chan0 == i) || (luterr_chan1 == i)))
+        {
+            info->icr |= ICR_LUT_ERR;
+        }
+#endif
+    } // while (lpc2xxx_global_can_info.active_channels[i])
         
     cyg_drv_interrupt_acknowledge(vector);
+    LPC2XXX_DBG_PRINT("err_ISR\n");
     return CYG_ISR_CALL_DSR;    
 }
 
@@ -1780,7 +1922,6 @@ static cyg_uint32 lpc2xxx_can_err_ISR(cyg_vector_t vector, cyg_addrword_t data)
 static void lpc2xxx_can_err_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
 {      
     cyg_uint8 i = 0;
-    LPC2XXX_DBG_PRINT("err_DSR\n");
     
     while (lpc2xxx_global_can_info.active_channels[i])
     {
@@ -1797,9 +1938,9 @@ static void lpc2xxx_can_err_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_add
         cyg_drv_isr_unlock();                  // renable ISRs
         
 #ifdef CYGOPT_IO_CAN_TX_EVENT_SUPPORT
-        if (regval & (ICR_TX1 & CAN_MISC_INT))
+        if (regval & (ICR_TX1 | CAN_MISC_INT | ICR_LUT_ERR))
 #else
-        if (regval & CAN_MISC_INT) 
+        if (regval & (CAN_MISC_INT | ICR_LUT_ERR))
 #endif
         {
             chan->callbacks->rcv_event(chan, &regval);
@@ -1808,9 +1949,11 @@ static void lpc2xxx_can_err_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_add
         // Now reenable interrupts
         // 
         HAL_READ_UINT32(CAN_CTRL_IER(info), regval);
-        regval |= CAN_MISC_INT;     // reenable interrupts for the message box that caused the DSR to run
+        regval |= CAN_MISC_INT;     // reenable interrupts
         HAL_WRITE_UINT32(CAN_CTRL_IER(info), regval); 
     } //  while (lpc2xxx_global_can_info.active_channels[i])
+    
+    LPC2XXX_DBG_PRINT("err_DSR\n");
 }
 
 

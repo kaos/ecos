@@ -390,6 +390,7 @@ void lpc2xxx_can_accfilt_ram_insert_entry(cyg_uint32 Table, cyg_uint16 EntryNo)
         //
         if (entry_size)
         {
+            HAL_READ_UINT32(CAN_ACCFILT_RAM_BASE + sff_grp_sa - sizeof(cyg_uint32) , lsc_val.dword);
             lsc_val.column.upper = 0xFFFF;  // disable the entry
             HAL_WRITE_UINT32(CAN_ACCFILT_RAM_BASE + sff_grp_sa - sizeof(cyg_uint32) , lsc_val.dword);
         }

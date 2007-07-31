@@ -71,37 +71,77 @@ cdl_package CYGPKG_DEVS_CAN_LPC2XXX {
         flavor      bool
         implements  CYGINT_IO_CAN_RUNTIME_MBOX_CFG
         description "
-            The LPC2xxx CAN module supports a global acceptance filter. Enabling this
-            option provides support for runtime configuration of this acceptance filter.
-            If each CAN channel should receive all CAN messages and individual message
-            filtering is not required then disable this option to eleminate almost
-            the complete acceptance filter code and to decrease codesize. If this
-            option is disabled the option CYGOPT_IO_CAN_RUNTIME_MBOX_CFG is not
-            available and the configuration key CYG_IO_SET_CONFIG_CAN_MSGBUF is
-            not supported by this driver." 
-            
+            The LPC2xxx CAN module supports a global acceptance
+            filter. Enabling this option provides support for runtime
+            configuration of this acceptance filter.  If each CAN
+            channel should receive all CAN messages and individual
+            message filtering is not required then disable this option
+            to eleminate almost the complete acceptance filter code
+            and to decrease codesize. If this option is disabled the
+            option CYGOPT_IO_CAN_RUNTIME_MBOX_CFG is not available and
+            the configuration key CYG_IO_SET_CONFIG_CAN_MSGBUF is not
+            supported by this driver."
+
             cdl_option CYGOPT_DEVS_CAN_LPC2XXX_EXTENDED_CFG_KEYS {
                 display       "Extended acceptance filtering"
                 flavor        bool
                 default_value 0
                 description   "
-                    The common CAN I/O layer supports setup of single message filters for
-                    reception of single CAN messages. The global LPC2xxx acceptance filter
-                    supports not only single message filters but also message groups.
-                    A message group is defined by a lower bound CAN identifier and an upper
-                    bound CAN identifier. The acceptance filter will accept all messages within
-                    this range of CAN identifiers. The acceptance filter supports a number of
-                    message groups for each CAN channel. The support of message filter groups
-                    is not conform to the standard API of the CAN I/O layer and should only
-                    be used for application where portability is not important."
+                    The common CAN I/O layer supports setup of single
+                    message filters for reception of single CAN
+                    messages. The global LPC2xxx acceptance filter
+                    supports not only single message filters but also
+                    message groups.  A message group is defined by a
+                    lower bound CAN identifier and an upper bound CAN
+                    identifier. The acceptance filter will accept all
+                    messages within this range of CAN identifiers. The
+                    acceptance filter supports a number of message
+                    groups for each CAN channel. The support of
+                    message filter groups is not conform to the
+                    standard API of the CAN I/O layer and should only
+                    be used for application where portability is not
+                    important."
              }
+    }
+    
+    cdl_option CYGOPT_DEVS_CAN_LPC2XXX_USE_SELF_RECEPTION {
+        display                 "Use Self Reception Request command"
+        flavor                  bool
+        default_value   0
+        description "   
+            Enable this option for using work-around of problem with
+            reciving messages while arbitration is lost. If this work
+            around is used each transmitted CAN message will be
+            received. This will produce additional RX interrupts an
+            requires additional time for processing these interrupts
+            and for filtering of received messages.
+
+            The errata sheet tells the following about this issue:
+            Introduction: The CAN module can lose arbitration to
+            another CAN node during an attempt to transmit a CAN
+            message. The message of the CAN node the arbitration was
+            lost to is supposed to be received correctly by the CAN
+            module.
+
+            Problem: Messages might not be received correctly if
+            during a CAN Transmission the CAN bus arbitration is lost
+            to another CAN node.
+
+            Work-around: Use the Self Reception Request command
+            instead of the Transmission Request command. However, it
+            has to be taken into account that now all transmitted
+            messages may be received if not prevented by appropriate
+            Acceptance Filter settings.  (Don't set up Acceptance
+            Filter Message Identifiers for the messages you are
+            transmitting yourself.)."  
     }
        
     cdl_option CYGDBG_DEVS_CAN_LPC2XXX_DEBUG {
         display "Support printing debug information"
             default_value 0
             description "
-                Check this box to turn ON debug options for AT91SAM7 CAN device driver."
+                Check this box to turn ON debug options for LPC2XXXX 
+                CAN device driver."
     } 
     
     # Support up to 4 on-chip CAN modules. The number may vary between
@@ -124,8 +164,9 @@ cdl_package CYGPKG_DEVS_CAN_LPC2XXX {
             default_value   1
             implements      CYGINT_IO_CAN_CHANNELS
             description "
-                If the application needs to access the on-chip CAN module [set ::channel]
-                via an eCos CAN driver then this option should be enabled."
+                If the application needs to access the on-chip CAN
+                module [set ::channel] via an eCos CAN driver then
+                this option should be enabled."
 
             cdl_option CYGPKG_DEVS_CAN_LPC2XXX_CAN[set ::channel]_NAME {
                 display     "Device name for CAN module [set ::channel]"
@@ -143,8 +184,9 @@ cdl_package CYGPKG_DEVS_CAN_LPC2XXX {
                 flavor      data
                 default_value   100
                 legal_values    { 10 20 50 100 125 250 500 800 1000 "AUTO"}
-                description "This option determines the initial baud rate in KBaud for 
-                             CAN module [set ::channel]"
+                description "
+                    This option determines the initial baud rate in
+                    KBaud for CAN module [set ::channel]"
             }
 
             cdl_option CYGNUM_DEVS_CAN_LPC2XXX_CAN[set ::channel]_QUEUESIZE_TX {
@@ -153,9 +195,10 @@ cdl_package CYGPKG_DEVS_CAN_LPC2XXX {
                 default_value   32
                 legal_values    1 to 1024
                 description "
-                    The CAN device driver will run in interrupt mode and will
-                    perform buffering of outgoing data. This option controls the number
-                    of CAN messages the TX queue can store."
+                    The CAN device driver will run in interrupt mode
+                    and will perform buffering of outgoing data. This
+                    option controls the number of CAN messages the TX
+                    queue can store."
             }
             
             cdl_option CYGNUM_DEVS_CAN_LPC2XXX_CAN[set ::channel]_QUEUESIZE_RX {
@@ -164,9 +207,10 @@ cdl_package CYGPKG_DEVS_CAN_LPC2XXX {
                 default_value   64
                 legal_values    8 to 4096
                 description "
-                    The CAN device driver will run in interrupt mode and will
-                    perform buffering of incoming data. This option controls the number
-                    of CAN events the RX queue can store."
+                    The CAN device driver will run in interrupt mode
+                    and will perform buffering of incoming data. This
+                    option controls the number of CAN events the RX
+                    queue can store."
             }
                        
             cdl_option CYGOPT_DEVS_CAN_LPC2XXX_CAN[set ::channel]_ACCFILT_STARTUP_CFG {
@@ -176,11 +220,13 @@ cdl_package CYGPKG_DEVS_CAN_LPC2XXX {
                 default_value {"RX_ALL"}
                 active_if   CYGOPT_DEVS_CAN_LPC2XXX_RUNTIME_ACCFILT
                 description   "
-                    Normally the acceptance filter will be configured at startup time to
-                    receive all available CAN messages. The application can setup single
-                    message filters during runtime later. If RX_NONE is selected then the 
-                    acceptance filter for this channel is configured to receive no CAN
-                    message identifier."
+                    Normally the acceptance filter will be configured
+                    at startup time to receive all available CAN
+                    messages. The application can setup single message
+                    filters during runtime later. If RX_NONE is
+                    selected then the acceptance filter for this
+                    channel is configured to receive no CAN message
+                    identifier."
              }
 
         }    
@@ -192,7 +238,8 @@ cdl_package CYGPKG_DEVS_CAN_LPC2XXX {
         no_define
         calculated { "tests/can_busload tests/can_rx_tx" }
         description   "
-            This option specifies the set of tests for the LPC2xxx CAN device driver."
+            This option specifies the set of tests for the LPC2xxx 
+            CAN device driver."
     }
     
     cdl_option CYGBLD_DEVS_CAN_LPC2XXX_EXTRA_TESTS {

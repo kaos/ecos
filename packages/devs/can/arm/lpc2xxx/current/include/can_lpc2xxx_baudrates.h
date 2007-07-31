@@ -75,16 +75,16 @@
 //
 static const cyg_uint32 lpc2xxx_br_tbl[] =
 {
-    CAN_BR_TBL_ENTRY(00, 00, 00, 0, 0), // 10  kbaud - not supported
-    CAN_BR_TBL_ENTRY(00, 00, 00, 0, 0), // 20  kbaud - not supported
-    CAN_BR_TBL_ENTRY(59, 15, 02, 0, 1), // 50  kbaud
-    CAN_BR_TBL_ENTRY(39, 11, 01, 0, 1), // 100 kbaud
-    CAN_BR_TBL_ENTRY(29, 12, 01, 0, 1), // 125 kbaud
-    CAN_BR_TBL_ENTRY(14, 12, 01, 0, 1), // 250 kbaud
-    CAN_BR_TBL_ENTRY(07, 11, 01, 0, 0), // 500 kbaud
-    CAN_BR_TBL_ENTRY(04, 11, 01, 0, 0), // 800 kbaud
-    CAN_BR_TBL_ENTRY(03, 11, 01, 0, 0), // 1000 kbaud
-    CAN_BR_TBL_ENTRY(00, 00, 00, 0, 0), // Autobaud  - not supported
+    CAN_BR_TBL_ENTRY(300, 15, 02, 0, 1), // 10  kbaud
+    CAN_BR_TBL_ENTRY(150, 15, 02, 0, 1), // 20  kbaud
+    CAN_BR_TBL_ENTRY(59,  15, 02, 0, 1), // 50  kbaud
+    CAN_BR_TBL_ENTRY(39,  11, 01, 0, 1), // 100 kbaud
+    CAN_BR_TBL_ENTRY(29,  12, 01, 0, 1), // 125 kbaud
+    CAN_BR_TBL_ENTRY(14,  12, 01, 0, 1), // 250 kbaud
+    CAN_BR_TBL_ENTRY(07,  11, 01, 0, 0), // 500 kbaud
+    CAN_BR_TBL_ENTRY(04,  11, 01, 0, 0), // 800 kbaud
+    CAN_BR_TBL_ENTRY(03,  11, 01, 0, 0), // 1000 kbaud
+    CAN_BR_TBL_ENTRY(00,  00, 00, 0, 0), // Autobaud  - not supported
 };
 #define HAL_LPC2XXX_BAUD_TBL_DEFINED 1
 #endif // CYGNUM_CAN_LPC2XXX_VPB_CLK == 60000000
