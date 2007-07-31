@@ -114,7 +114,7 @@ typedef enum
     CYGNUM_CAN_EVENT_LEAVING_STANDBY     = 0x0200, // CAN hardware leaves standby / power don mode or is waked up
     CYGNUM_CAN_EVENT_ENTERING_STANDBY    = 0x0400, // CAN hardware enters standby / power down mode
     CYGNUM_CAN_EVENT_ARBITRATION_LOST    = 0x0800, // arbitration lost
-    CYGNUM_CAN_EVENT_DEVICE_CHANGED      = 0x1000, // device changed event
+    CYGNUM_CAN_EVENT_FILTER_ERR          = 0x1000, // CAN message filter / acceptance filter error
     CYGNUM_CAN_EVENT_PHY_FAULT           = 0x2000, // General failure of physical layer detected (if supported by hardware)
     CYGNUM_CAN_EVENT_PHY_H               = 0x4000, // Fault on CAN-H detected (Low Speed CAN)
     CYGNUM_CAN_EVENT_PHY_L               = 0x8000, // Fault on CAN-L detected (Low Speed CAN)

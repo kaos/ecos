@@ -1,11 +1,11 @@
 2007-07-02 Uwe Kindler <uwe_kindler@web.de>
     
-    * cdl/io_can.cdl: Added interface CYGINT_IO_CAN_CHANNELS for
-      counting available CAN channels
+	* cdl/io_can.cdl: Added interface CYGINT_IO_CAN_CHANNELS for
+	  counting available CAN channels
       
-    * include/canio.h: Changed type cyg_can_msgbuf_info. The two
-      fields are 16 bit now because device drivers may support 
-      more than 256 message buffers (i.e. the LPC2xxx CAN driver)
+	* include/canio.h: Changed type cyg_can_msgbuf_info. The two
+	  fields are 16 bit now because device drivers may support more
+	  than 256 message buffers (i.e. the LPC2xxx CAN driver)
     
 2007-06-20  Uwe Kindler  <uwe_kindler@web.de>
 
