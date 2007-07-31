@@ -756,6 +756,7 @@ fatfs_rmdir(cyg_mtab_entry *mte, cyg_dir dir, const char *name)
     fatfs_disk_t      *disk = (fatfs_disk_t *) mte->data;
     fatfs_dirsearch_t  ds;
     int                err;
+    fatfs_node_t      *node;
 
     CYG_TRACE3(TFS, "rmdir mte=%p dir=%p name='%s'", mte, dir, name);
 
@@ -774,8 +775,17 @@ fatfs_rmdir(cyg_mtab_entry *mte, cyg_dir dir, const char *name)
     
     err = fatfs_delete_file(disk, &ds.node->dentry);
     if (err == ENOERR)
+    {
+        node = fatfs_node_find( disk, ".", 1, ds.node->dentry.cluster );
+        if (node != NULL)
+             fatfs_node_free(disk, node);
+
+        node = fatfs_node_find( disk, "..", 2, ds.node->dentry.cluster );
+        if (node != NULL)
+            fatfs_node_free(disk, node);
+
         fatfs_node_free(disk, ds.node);
-    
+    }
     return err;
 }
 

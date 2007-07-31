@@ -1,3 +1,8 @@
+2007-07-31  Hajime Ishitani <pigmon@mail.snd.co.jp>
+
+	* src/fatfs.c: When removing a directory, first remove . and
+	.. nodes.
+	
 2007-02-05  Ya-Chau Yang <a8850607@stmail.fju.edu.tw> 
             Savin Zlobec <savinz@users.sourceforge.net>
 
