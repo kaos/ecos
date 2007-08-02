@@ -1,3 +1,8 @@
+2007-08-02  Alexey Shusharin <mrfinch@mail.ru>
+	
+	* src/can_lpc2xxx.c: Added acknowledging call in rx interrupt
+	  (self-reception part)
+	
 2007-07-07  Alexey Shusharin <mrfinch@mail.ru>
 
 	* cdl/can_lpx2xxx.cdl: Option

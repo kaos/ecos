@@ -1791,6 +1791,9 @@ static cyg_uint32 lpc2xxx_can_rx_ISR(cyg_vector_t vector, cyg_addrword_t data)
             // Clear receive buffer
             HAL_WRITE_UINT32(CAN_CTRL_CMR(info), CMR_RX_RELEASE_BUF);
             
+            // Acknowledge a vector
+            cyg_drv_interrupt_acknowledge(vector);
+            
             // Exit without calling DSR
             LPC2XXX_DBG_PRINT("self_rx_ISR (%p)\n", (void*) data);
             return CYG_ISR_HANDLED;
