@@ -1,3 +1,9 @@
+2007-08-08  Peter Korsgaard  <peter.korsgaard@barco.com>
+
+	* include/net/http.h:
+	* src/net/http_client.c: Add HTTP_FORBIDDEN error code for 403
+	Forbidden response.
+
 2007-06-03  Andrew Lunn <andrew.lunn@ascom.ch>
 
 	* src/net/net_io.c: (do_ip_addr): Option to set domain name.

@@ -61,12 +61,13 @@ extern int   http_stream_read(char *buf, int len, int *err);
 extern void  http_stream_close(int *err);
 extern char *http_error(int err);
 
-#define HTTP_NOERR    0   // No error
-#define HTTP_BADHDR   1   // Invalid HTTP header (response)
-#define HTTP_OPEN     2   // Problems opening connection
-#define HTTP_IO       3   // Misc I/O problems
-#define HTTP_BADREQ   4   // Bad request
-#define HTTP_NOFILE   5   // No such file
+#define HTTP_NOERR     0   // No error
+#define HTTP_BADHDR    1   // Invalid HTTP header (response)
+#define HTTP_OPEN      2   // Problems opening connection
+#define HTTP_IO        3   // Misc I/O problems
+#define HTTP_BADREQ    4   // Bad request
+#define HTTP_NOFILE    5   // No such file
+#define HTTP_FORBIDDEN 6   // Forbidden
 
 extern getc_io_funcs_t http_io;
 #endif // _HTTP_H_

@@ -178,6 +178,9 @@ http_stream_read(char *buf,
                             case 400:
                                 *err = HTTP_BADREQ;
                                 break;
+                            case 403:
+                                *err = HTTP_FORBIDDEN;
+                                break;
                             case 404:
                                 *err = HTTP_NOFILE;
                                 break;
@@ -243,6 +246,8 @@ http_error(int err)
         return "Can't connect to host";
     case HTTP_IO:
         return "I/O error";
+    case HTTP_FORBIDDEN:
+        return "Forbidden (check permissions)";
     }
     return errmsg;
 }
