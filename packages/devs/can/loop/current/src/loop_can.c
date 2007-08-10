@@ -65,7 +65,7 @@
 #include <cyg/hal/hal_intr.h>
 #include <cyg/kernel/kapi.h>
 
-#ifdef CYGPKG_IO_CAN_LOOP
+#ifdef CYGPKG_DEVS_CAN_LOOP
 
 //-------------------------------------------------------------------------
 
@@ -140,7 +140,7 @@ CAN_LOWLEVEL_FUNS(loop_can_lowlevel_funs,
 //-------------------------------------------------------------------------
 // Hardware info for each serial line
 
-#ifdef CYGPKG_IO_CAN_LOOP_CAN0
+#ifdef CYGPKG_DEVS_CAN_LOOP_CAN0
 static loop_can_info loop_can_info0 = {
     &fifo0,
     &fifo1
@@ -150,7 +150,7 @@ static cyg_can_message  loop_can_txbuf0[CYGNUM_DEVS_CAN_LOOP_CAN0_QUEUESIZE_TX];
 static cyg_can_event    loop_can_rxbuf0[CYGNUM_DEVS_CAN_LOOP_CAN0_QUEUESIZE_RX];
 #endif // CYGPKG_IO_SERIAL_LOOP_SERIAL0
 
-#ifdef CYGPKG_IO_CAN_LOOP_CAN1
+#ifdef CYGPKG_DEVS_CAN_LOOP_CAN1
 static loop_can_info loop_can_info1 = {
     &fifo1,
     &fifo0
@@ -165,7 +165,7 @@ static cyg_can_event    loop_can_rxbuf1[CYGNUM_DEVS_CAN_LOOP_CAN1_QUEUESIZE_RX];
 //-------------------------------------------------------------------------
 // Channel descriptions:
 //
-#ifdef CYGPKG_IO_CAN_LOOP_CAN0
+#ifdef CYGPKG_DEVS_CAN_LOOP_CAN0
 CAN_CHANNEL_USING_INTERRUPTS(loop_can0_chan,
                              loop_can_lowlevel_funs,
                              loop_can_info0,
@@ -173,9 +173,9 @@ CAN_CHANNEL_USING_INTERRUPTS(loop_can0_chan,
                              loop_can_txbuf0, CYGNUM_DEVS_CAN_LOOP_CAN0_QUEUESIZE_TX,
                              loop_can_rxbuf0, CYGNUM_DEVS_CAN_LOOP_CAN0_QUEUESIZE_RX
     );
-#endif // CYGPKG_IO_CAN_LOOP_CAN1
+#endif // CYGPKG_DEVS_CAN_LOOP_CAN1
     
-#ifdef CYGPKG_IO_CAN_LOOP_CAN1
+#ifdef CYGPKG_DEVS_CAN_LOOP_CAN1
 CAN_CHANNEL_USING_INTERRUPTS(loop_can1_chan,
                              loop_can_lowlevel_funs,
                              loop_can_info1,
@@ -183,14 +183,14 @@ CAN_CHANNEL_USING_INTERRUPTS(loop_can1_chan,
                              loop_can_txbuf1, CYGNUM_DEVS_CAN_LOOP_CAN1_QUEUESIZE_TX,
                              loop_can_rxbuf1, CYGNUM_DEVS_CAN_LOOP_CAN1_QUEUESIZE_RX
     );
-#endif // CYGPKG_IO_CAN_LOOP_CAN1
+#endif // CYGPKG_DEVS_CAN_LOOP_CAN1
  
  
   
 //-------------------------------------------------------------------------
 // And finally, the device table entries:
 //
-#ifdef CYGPKG_IO_CAN_LOOP_CAN0
+#ifdef CYGPKG_DEVS_CAN_LOOP_CAN0
 DEVTAB_ENTRY(loop_can_io0, 
              CYGDAT_DEVS_CAN_LOOP_CAN0_NAME,
              0,                     // Does not depend on a lower level interface
@@ -199,9 +199,9 @@ DEVTAB_ENTRY(loop_can_io0,
              loop_can_lookup,        // CAN driver may need initializing
              &loop_can0_chan
     );
-#endif // CYGPKG_IO_CAN_LOOP_CAN0
+#endif // CYGPKG_DEVS_CAN_LOOP_CAN0
 
-#ifdef CYGPKG_IO_CAN_LOOP_CAN1
+#ifdef CYGPKG_DEVS_CAN_LOOP_CAN1
 DEVTAB_ENTRY(loop_can_io1, 
              CYGDAT_DEVS_CAN_LOOP_CAN1_NAME,
              0,                     // Does not depend on a lower level interface
@@ -210,7 +210,7 @@ DEVTAB_ENTRY(loop_can_io1,
              loop_can_lookup,        // CAN driver may need initializing
              &loop_can1_chan
     );
-#endif // CYGPKG_IO_CAN_LOOP_CAN1
+#endif // CYGPKG_DEVS_CAN_LOOP_CAN1
 
 //-------------------------------------------------------------------------
 
