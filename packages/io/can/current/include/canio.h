@@ -327,6 +327,24 @@ typedef struct cyg_can_hdi_st
 #define CYGNUM_CAN_HDI_TIMESTAMP               0x10 // driver supports timestamps
 
 
+//
+// Callback configuration structure.
+//
+
+typedef void (*cyg_can_event_cb_t)(cyg_uint16, cyg_addrword_t);
+//
+// flag_mask should be set with a combination of CYGNUM_CAN_EVENT_* flags.
+// If one of these events happens, the callback function will be called,
+// with the actually event flags passed as a parameter.
+//
+typedef struct cyg_can_callback_cfg_st
+{
+    cyg_can_event_cb_t callback_func;              // callback function
+    cyg_uint16  flag_mask;                         // flags mask
+    cyg_addrword_t data;                           // data passed to callback
+} cyg_can_callback_cfg;
+
+
 //===========================================================================
 //                      CAN MESSAGE ACCESS MACROS
 //

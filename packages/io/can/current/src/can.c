@@ -665,6 +665,27 @@ static Cyg_ErrNo can_set_config(cyg_io_handle_t handle,
              }
              break;
         
+
+#ifdef CYGOPT_IO_CAN_SUPPORT_CALLBACK
+        //
+        // Set waking calls configuration
+        // To disable waking calls set waking_mask = 0
+        //
+        case CYG_IO_SET_CONFIG_CAN_CALLBACK:
+             {
+                 if (*len != sizeof(cyg_can_callback_cfg))
+                 {
+                         return -EINVAL;
+                 }
+            
+                 // Copy data under DSR locking
+                 cyg_drv_dsr_lock();
+                 chan->callback_cfg = *((cyg_can_callback_cfg*) xbuf);
+                 cyg_drv_dsr_unlock();
+             }
+             break;
+#endif //CYGOPT_IO_CAN_SUPPORT_CALLBACK
+
         default:
             //
             // pass down to lower layers
@@ -695,6 +716,9 @@ static void can_rcv_event(can_channel *chan, void *pdata)
 {
     can_cbuf_t       *cbuf   = &chan->in_cbuf;
     CYG_CAN_EVENT_T  *prxbuf = (CYG_CAN_EVENT_T *)cbuf->pdata;
+#ifdef CYGOPT_IO_CAN_SUPPORT_CALLBACK
+    cyg_uint16        flags;
+#endif
     
     //
     // cbuf is a ring buffer - if the buffer is full, then we overwrite the
@@ -722,7 +746,11 @@ static void can_rcv_event(can_channel *chan, void *pdata)
             prxbuf[cbuf->put].flags |= CYGNUM_CAN_EVENT_OVERRUN_RX;
             cbuf->get = (cbuf->get + 1) % cbuf->len;
         }
-        
+
+#ifdef CYGOPT_IO_CAN_SUPPORT_CALLBACK
+        flags = prxbuf[cbuf->put].flags;
+#endif
+
         cbuf->put = (cbuf->put + 1) % cbuf->len;
         
         if (cbuf->waiting) 
@@ -730,6 +758,16 @@ static void can_rcv_event(can_channel *chan, void *pdata)
             cbuf->waiting = false;
             cyg_drv_cond_broadcast(&cbuf->wait);
         }
+#ifdef CYGOPT_IO_CAN_SUPPORT_CALLBACK
+        // Call application callback function, if any of the flag events 
+        // are unmasked.
+        if((flags & chan->callback_cfg.flag_mask) &&
+           (chan->callback_cfg.callback_func))
+        {
+            chan->callback_cfg.callback_func(flags,
+                                             chan->callback_cfg.data);
+        }
+#endif
     }
     
     cyg_drv_dsr_unlock();

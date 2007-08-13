@@ -217,7 +217,18 @@ cdl_package CYGPKG_IO_CAN {
             which allows clients to switch read() and write() call
             semantics from blocking to non-blocking."
     }
-    
+
+    cdl_option CYGOPT_IO_CAN_SUPPORT_CALLBACK {
+        display       "Support callback on events"
+        default_value 0
+        description   "
+            This option enables extra code in the generic CAN driver
+            which allows application to register a callback for
+            events. The callback function is called from DSR
+            context so you should be careful to only call API
+            functions that are safe in DSR context."
+    }
+
     cdl_component CYGOPT_IO_CAN_SUPPORT_TIMEOUTS {
         display       "Support read/write timeouts"
         flavor        bool

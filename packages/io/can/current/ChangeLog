@@ -1,3 +1,17 @@
+2007-08-06 Alexey Shusharin <mrfinch@mail.ru>
+           Andrew Lunn <andrew.lunn@ascom.ch>
+	
+	* cdl/io_can.cdl: Added option CYGOPT_IO_CAN_SUPPORT_CALLBACK
+      
+	* include/canio.h: Added struct cyg_can_callback_cfg for setting
+          callback configurations.
+       
+	* include/can.h: Added declaration and initialization of callback 
+          configuration in struct can_channel.
+       
+	* src/can.c: Added callback configuration changing and
+          application function call.
+
 2007-07-02 Uwe Kindler <uwe_kindler@web.de>
     
 	* cdl/io_can.cdl: Added interface CYGINT_IO_CAN_CHANNELS for

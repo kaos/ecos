@@ -168,15 +168,23 @@ typedef struct can_cbuf_st
 //
 struct can_channel 
 {
-    can_lowlevel_funs  *funs;
-    can_callbacks_t    *callbacks;
-    void               *dev_priv;  // Whatever is needed by actual device routines
-    cyg_can_info_t      config;    // Current configuration
-    bool                init;      // true if driver is already initialized
-    can_cbuf_t          out_cbuf;  // buffer for transmit can messages
-    can_cbuf_t          in_cbuf;   // buffer with received can events
+    can_lowlevel_funs   *funs;
+    can_callbacks_t     *callbacks;
+    void                *dev_priv;     // Whatever is needed by actual device routines
+    cyg_can_info_t       config;       // Current configuration
+    bool                 init;         // true if driver is already initialized
+    can_cbuf_t           out_cbuf;     // buffer for transmit can messages
+    can_cbuf_t           in_cbuf;      // buffer with received can events
+#ifdef CYGOPT_IO_CAN_SUPPORT_CALLBACK
+    cyg_can_callback_cfg callback_cfg; // Callback configuration
+#endif
 };
 
+#ifdef CYGOPT_IO_CAN_SUPPORT_CALLBACK
+#define CYG_CAN_CALLBACK_INIT  , {(cyg_can_event_cb_t) 0, 0, 0}
+#else
+#define CYG_CAN_CALLBACK_INIT
+#endif
 
 
 #define CAN_CHANNEL_USING_INTERRUPTS(_l,                                \
@@ -193,6 +201,7 @@ can_channel _l = {                                                      \
     false,                                                              \
     CBUF_INIT(_out_buf, _out_buflen, _TX_TIMEOUT),                      \
     CBUF_INIT(_in_buf, _in_buflen, _RX_TIMEOUT)                         \
+    CYG_CAN_CALLBACK_INIT                                               \
 };
 
 
