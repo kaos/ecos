@@ -149,7 +149,7 @@
 #define CYG_IO_SET_CONFIG_CAN_MSGBUF                0x0886
 #define CYG_IO_SET_CONFIG_CAN_MODE                  0x0887
 #define CYG_IO_SET_CONFIG_CAN_ABORT                 0x0888
-
+#define CYG_IO_SET_CONFIG_CAN_CALLBACK              0x0889
 
 // ======== 0x1000 Generic ===================================================
 // Get/Set configuration 'key' values that can apply to more than one
