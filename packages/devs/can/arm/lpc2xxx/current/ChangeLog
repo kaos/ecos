@@ -1,3 +1,13 @@
+2007-08-17  Uwe Kindler <uwe_kindler@web.de>
+	
+	* include/can_lpc2xxx_baudrates.h: Removed all prefixed zeros from
+	  baudrate table entries (they aren't intended to be interpreted as 
+	  octal)
+	  
+	* tests/can_baudrates.c
+	  tests/can_busload.c
+	  tests/can_rx_tx.c: removed #include pkgconf/devs_can_loop.h
+	
 2007-08-02  Alexey Shusharin <mrfinch@mail.ru>
 	
 	* src/can_lpc2xxx.c: Added acknowledging call in rx interrupt

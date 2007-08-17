@@ -62,7 +62,6 @@
 #include <pkgconf/kernel.h>
 #include <cyg/io/io.h>
 #include <cyg/io/canio.h>
-#include <pkgconf/devs_can_loop.h>
 
 
 // Package option requirements

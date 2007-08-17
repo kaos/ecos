@@ -75,16 +75,16 @@
 //
 static const cyg_uint32 lpc2xxx_br_tbl[] =
 {
-    CAN_BR_TBL_ENTRY(300, 15, 02, 0, 1), // 10  kbaud
-    CAN_BR_TBL_ENTRY(150, 15, 02, 0, 1), // 20  kbaud
-    CAN_BR_TBL_ENTRY(59,  15, 02, 0, 1), // 50  kbaud
-    CAN_BR_TBL_ENTRY(39,  11, 01, 0, 1), // 100 kbaud
-    CAN_BR_TBL_ENTRY(29,  12, 01, 0, 1), // 125 kbaud
-    CAN_BR_TBL_ENTRY(14,  12, 01, 0, 1), // 250 kbaud
-    CAN_BR_TBL_ENTRY(07,  11, 01, 0, 0), // 500 kbaud
-    CAN_BR_TBL_ENTRY(04,  11, 01, 0, 0), // 800 kbaud
-    CAN_BR_TBL_ENTRY(03,  11, 01, 0, 0), // 1000 kbaud
-    CAN_BR_TBL_ENTRY(00,  00, 00, 0, 0), // Autobaud  - not supported
+    CAN_BR_TBL_ENTRY(300, 15, 2, 0, 1), // 10  kbaud
+    CAN_BR_TBL_ENTRY(150, 15, 2, 0, 1), // 20  kbaud
+    CAN_BR_TBL_ENTRY(59,  15, 2, 0, 1), // 50  kbaud
+    CAN_BR_TBL_ENTRY(39,  11, 1, 0, 1), // 100 kbaud
+    CAN_BR_TBL_ENTRY(29,  12, 1, 0, 1), // 125 kbaud
+    CAN_BR_TBL_ENTRY(14,  12, 1, 0, 1), // 250 kbaud
+    CAN_BR_TBL_ENTRY( 7,  11, 1, 0, 0), // 500 kbaud
+    CAN_BR_TBL_ENTRY( 4,  11, 1, 0, 0), // 800 kbaud
+    CAN_BR_TBL_ENTRY( 3,  11, 1, 0, 0), // 1000 kbaud
+    CAN_BR_TBL_ENTRY( 0,   0, 0, 0, 0), // Autobaud  - not supported
 };
 #define HAL_LPC2XXX_BAUD_TBL_DEFINED 1
 #endif // CYGNUM_CAN_LPC2XXX_VPB_CLK == 60000000
@@ -95,16 +95,16 @@ static const cyg_uint32 lpc2xxx_br_tbl[] =
 //
 static const cyg_uint32 lpc2xxx_br_tbl[] =
 {
-    CAN_BR_TBL_ENTRY(00, 00, 00, 0, 0), // 10  kbaud - not supported
-    CAN_BR_TBL_ENTRY(00, 00, 00, 0, 0), // 20  kbaud - not supported
-    CAN_BR_TBL_ENTRY(59, 15, 02, 0, 1), // 50  kbaud
-    CAN_BR_TBL_ENTRY(39, 11, 01, 0, 1), // 100 kbaud
-    CAN_BR_TBL_ENTRY(29, 12, 01, 0, 1), // 125 kbaud
-    CAN_BR_TBL_ENTRY(14, 12, 01, 0, 1), // 250 kbaud
-    CAN_BR_TBL_ENTRY(07, 11, 01, 0, 0), // 500 kbaud
-    CAN_BR_TBL_ENTRY(04, 11, 01, 0, 0), // 800 kbaud
-    CAN_BR_TBL_ENTRY(03, 11, 01, 0, 0), // 1000 kbaud
-    CAN_BR_TBL_ENTRY(00, 00, 00, 0, 0), // Autobaud  - not supported
+    CAN_BR_TBL_ENTRY( 0,  0, 0, 0, 0), // 10  kbaud - not supported
+    CAN_BR_TBL_ENTRY( 0,  0, 0, 0, 0), // 20  kbaud - not supported
+    CAN_BR_TBL_ENTRY(59, 15, 2, 0, 1), // 50  kbaud
+    CAN_BR_TBL_ENTRY(39, 11, 1, 0, 1), // 100 kbaud
+    CAN_BR_TBL_ENTRY(29, 12, 1, 0, 1), // 125 kbaud
+    CAN_BR_TBL_ENTRY(14, 12, 1, 0, 1), // 250 kbaud
+    CAN_BR_TBL_ENTRY( 7, 11, 1, 0, 0), // 500 kbaud
+    CAN_BR_TBL_ENTRY( 4, 11, 1, 0, 0), // 800 kbaud
+    CAN_BR_TBL_ENTRY( 3, 11, 1, 0, 0), // 1000 kbaud
+    CAN_BR_TBL_ENTRY( 0,  0, 0, 0, 0), // Autobaud  - not supported
 };
 #define HAL_LPC2XXX_BAUD_TBL_DEFINED 1
 #endif // CYGNUM_CAN_LPC2XXX_VPB_CLK == 30000000
@@ -115,16 +115,16 @@ static const cyg_uint32 lpc2xxx_br_tbl[] =
 //
 static const cyg_uint32 lpc2xxx_br_tbl[] =
 {
-    CAN_BR_TBL_ENTRY(59, 15, 07, 0, 1), // 10  kbaud
-    CAN_BR_TBL_ENTRY(49, 11, 01, 0, 1), // 20  kbaud
-    CAN_BR_TBL_ENTRY(19, 11, 01, 0, 1), // 50  kbaud
-    CAN_BR_TBL_ENTRY(09, 11, 01, 0, 1), // 100 kbaud
-    CAN_BR_TBL_ENTRY(07, 11, 01, 0, 1), // 125 kbaud
-    CAN_BR_TBL_ENTRY(03, 11, 01, 0, 1), // 250 kbaud
-    CAN_BR_TBL_ENTRY(01, 11, 01, 0, 0), // 500 kbaud
-    CAN_BR_TBL_ENTRY(00, 00, 00, 0, 0), // 800 kbaud - not supported
-    CAN_BR_TBL_ENTRY(00, 11, 01, 0, 0), // 1000 kbaud
-    CAN_BR_TBL_ENTRY(00, 00, 00, 0, 0), // Autobaud  - not supported
+    CAN_BR_TBL_ENTRY(59, 15, 7, 0, 1), // 10  kbaud
+    CAN_BR_TBL_ENTRY(49, 11, 1, 0, 1), // 20  kbaud
+    CAN_BR_TBL_ENTRY(19, 11, 1, 0, 1), // 50  kbaud
+    CAN_BR_TBL_ENTRY( 9, 11, 1, 0, 1), // 100 kbaud
+    CAN_BR_TBL_ENTRY( 7, 11, 1, 0, 1), // 125 kbaud
+    CAN_BR_TBL_ENTRY( 3, 11, 1, 0, 1), // 250 kbaud
+    CAN_BR_TBL_ENTRY( 1, 11, 1, 0, 0), // 500 kbaud
+    CAN_BR_TBL_ENTRY( 0,  0, 0, 0, 0), // 800 kbaud - not supported
+    CAN_BR_TBL_ENTRY( 0, 11, 1, 0, 0), // 1000 kbaud
+    CAN_BR_TBL_ENTRY( 0,  0, 0, 0, 0), // Autobaud  - not supported
 };
 #define HAL_LPC2XXX_BAUD_TBL_DEFINED 1
 #endif // CYGNUM_CAN_LPC2XXX_VPB_CLK == 15000000
@@ -135,16 +135,16 @@ static const cyg_uint32 lpc2xxx_br_tbl[] =
 //
 static const cyg_uint32 lpc2xxx_br_tbl[] =
 {
-    CAN_BR_TBL_ENTRY(00, 00, 00, 0, 0), // 10  kbaud - not supported
-    CAN_BR_TBL_ENTRY(00, 00, 00, 0, 0), // 20  kbaud - not supported
-    CAN_BR_TBL_ENTRY(59, 12, 01, 0, 1), // 50  kbaud
-    CAN_BR_TBL_ENTRY(29, 12, 01, 0, 1), // 100 kbaud
-    CAN_BR_TBL_ENTRY(23, 12, 01, 0, 1), // 125 kbaud
-    CAN_BR_TBL_ENTRY(11, 12, 01, 0, 1), // 250 kbaud
-    CAN_BR_TBL_ENTRY(05, 12, 01, 0, 0), // 500 kbaud
-    CAN_BR_TBL_ENTRY(03, 11, 01, 0, 0), // 800 kbaud
-    CAN_BR_TBL_ENTRY(02, 12, 01, 0, 0), // 1000 kbaud
-    CAN_BR_TBL_ENTRY(00, 00, 00, 0, 0), // Autobaud  - not supported
+    CAN_BR_TBL_ENTRY( 0,  0, 0, 0, 0), // 10  kbaud - not supported
+    CAN_BR_TBL_ENTRY( 0,  0, 0, 0, 0), // 20  kbaud - not supported
+    CAN_BR_TBL_ENTRY(59, 12, 1, 0, 1), // 50  kbaud
+    CAN_BR_TBL_ENTRY(29, 12, 1, 0, 1), // 100 kbaud
+    CAN_BR_TBL_ENTRY(23, 12, 1, 0, 1), // 125 kbaud
+    CAN_BR_TBL_ENTRY(11, 12, 1, 0, 1), // 250 kbaud
+    CAN_BR_TBL_ENTRY( 5, 12, 1, 0, 0), // 500 kbaud
+    CAN_BR_TBL_ENTRY( 3, 11, 1, 0, 0), // 800 kbaud
+    CAN_BR_TBL_ENTRY( 2, 12, 1, 0, 0), // 1000 kbaud
+    CAN_BR_TBL_ENTRY( 0,  0, 0, 0, 0), // Autobaud  - not supported
 };
 #define HAL_LPC2XXX_BAUD_TBL_DEFINED 1
 #endif // CYGNUM_CAN_LPC2XXX_VPB_CLK == 48000000
@@ -155,16 +155,16 @@ static const cyg_uint32 lpc2xxx_br_tbl[] =
 //
 static const cyg_uint32 lpc2xxx_br_tbl[] =
 {
-    CAN_BR_TBL_ENTRY(00, 00, 00, 0, 0), // 10  kbaud - not supported
-    CAN_BR_TBL_ENTRY(59, 15, 02, 0, 1), // 20  kbaud
-    CAN_BR_TBL_ENTRY(29, 12, 01, 0, 1), // 50  kbaud
-    CAN_BR_TBL_ENTRY(14, 12, 01, 0, 1), // 100 kbaud
-    CAN_BR_TBL_ENTRY(11, 12, 01, 0, 1), // 125 kbaud
-    CAN_BR_TBL_ENTRY(05, 12, 01, 0, 1), // 250 kbaud
-    CAN_BR_TBL_ENTRY(02, 12, 01, 0, 0), // 500 kbaud
-    CAN_BR_TBL_ENTRY(01, 11, 01, 0, 0), // 800 kbaud
-    CAN_BR_TBL_ENTRY(01, 05, 00, 0, 0), // 1000 kbaud
-    CAN_BR_TBL_ENTRY(00, 00, 00, 0, 0), // Autobaud  - not supported
+    CAN_BR_TBL_ENTRY( 0,  0, 0, 0, 0), // 10  kbaud - not supported
+    CAN_BR_TBL_ENTRY(59, 15, 2, 0, 1), // 20  kbaud
+    CAN_BR_TBL_ENTRY(29, 12, 1, 0, 1), // 50  kbaud
+    CAN_BR_TBL_ENTRY(14, 12, 1, 0, 1), // 100 kbaud
+    CAN_BR_TBL_ENTRY(11, 12, 1, 0, 1), // 125 kbaud
+    CAN_BR_TBL_ENTRY( 5, 12, 1, 0, 1), // 250 kbaud
+    CAN_BR_TBL_ENTRY( 2, 12, 1, 0, 0), // 500 kbaud
+    CAN_BR_TBL_ENTRY( 1, 11, 1, 0, 0), // 800 kbaud
+    CAN_BR_TBL_ENTRY( 1,  5, 0, 0, 0), // 1000 kbaud
+    CAN_BR_TBL_ENTRY( 0,  0, 0, 0, 0), // Autobaud  - not supported
 };
 #define HAL_LPC2XXX_BAUD_TBL_DEFINED 1
 #endif // CYGNUM_CAN_LPC2XXX_VPB_CLK == 24000000
@@ -175,16 +175,16 @@ static const cyg_uint32 lpc2xxx_br_tbl[] =
 //
 static const cyg_uint32 lpc2xxx_br_tbl[] =
 {
-    CAN_BR_TBL_ENTRY(59, 15, 02, 0, 1), // 10  kbaud - not supported
-    CAN_BR_TBL_ENTRY(39, 11, 01, 0, 1), // 20  kbaud
-    CAN_BR_TBL_ENTRY(14, 12, 01, 0, 1), // 50  kbaud
-    CAN_BR_TBL_ENTRY(07, 11, 01, 0, 1), // 100 kbaud
-    CAN_BR_TBL_ENTRY(05, 12, 01, 0, 1), // 125 kbaud
-    CAN_BR_TBL_ENTRY(02, 12, 01, 0, 1), // 250 kbaud
-    CAN_BR_TBL_ENTRY(02, 05, 00, 0, 0), // 500 kbaud
-    CAN_BR_TBL_ENTRY(00, 11, 01, 0, 0), // 800 kbaud
-    CAN_BR_TBL_ENTRY(00, 09, 00, 0, 0), // 1000 kbaud
-    CAN_BR_TBL_ENTRY(00, 00, 00, 0, 0), // Autobaud  - not supported
+    CAN_BR_TBL_ENTRY(59, 15, 2, 0, 1), // 10  kbaud - not supported
+    CAN_BR_TBL_ENTRY(39, 11, 1, 0, 1), // 20  kbaud
+    CAN_BR_TBL_ENTRY(14, 12, 1, 0, 1), // 50  kbaud
+    CAN_BR_TBL_ENTRY( 7, 11, 1, 0, 1), // 100 kbaud
+    CAN_BR_TBL_ENTRY( 5, 12, 1, 0, 1), // 125 kbaud
+    CAN_BR_TBL_ENTRY( 2, 12, 1, 0, 1), // 250 kbaud
+    CAN_BR_TBL_ENTRY( 2, 05, 0, 0, 0), // 500 kbaud
+    CAN_BR_TBL_ENTRY( 0, 11, 1, 0, 0), // 800 kbaud
+    CAN_BR_TBL_ENTRY( 0,  9, 0, 0, 0), // 1000 kbaud
+    CAN_BR_TBL_ENTRY( 0,  0, 0, 0, 0), // Autobaud  - not supported
 };
 #define HAL_LPC2XXX_BAUD_TBL_DEFINED 1
 #endif // CYGNUM_CAN_LPC2XXX_VPB_CLK == 12000000
