@@ -130,7 +130,7 @@ int main( int argc, char **argv )
   if (failed) {
     CYG_TEST_FAIL_FINISH("fnmatch failed");
   } else {
-    CYG_TEST_PASS_FINISH("fnmatch failed");
+    CYG_TEST_PASS_FINISH("fnmatch passed");
   }
 }
 
