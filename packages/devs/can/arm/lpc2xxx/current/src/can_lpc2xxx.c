@@ -928,7 +928,7 @@ static bool lpc2xxx_can_set_baud(can_channel *chan, cyg_can_baud_rate_t *baudrat
 static Cyg_ErrNo lpc2xxx_can_lookup(struct cyg_devtab_entry** tab, struct cyg_devtab_entry* sub_tab, const char* name)
 {
     can_channel* chan    = (can_channel*) (*tab)->priv;
-    CAN_DECLARE_INFO(chan);
+    lpc2xxx_can_info_t *info = (lpc2xxx_can_info_t *)chan->dev_priv;
     cyg_uint32   regval;
 
     chan->callbacks->can_init(chan); 

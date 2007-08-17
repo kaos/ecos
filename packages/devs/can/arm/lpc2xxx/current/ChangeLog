@@ -1,3 +1,8 @@
+2007-08-17 Hans Rosenfeld <rosenfeld@grumpf.hope-2000.org>
+	
+	* src/can_lpc2xxx.c: The definition of "info" is missing when only
+	  one CAN channel is configured.
+	
 2007-08-17  Uwe Kindler <uwe_kindler@web.de>
 	
 	* include/can_lpc2xxx_baudrates.h: Removed all prefixed zeros from
