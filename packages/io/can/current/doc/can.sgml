@@ -569,7 +569,7 @@ typedef enum
   CYGNUM_CAN_EVENT_LEAVING_STANDBY  = 0x0200, // CAN hardware leaves standby
   CYGNUM_CAN_EVENT_ENTERING_STANDBY = 0x0400, // CAN hardware enters standby
   CYGNUM_CAN_EVENT_ARBITRATION_LOST = 0x0800, // arbitration lost
-  CYGNUM_CAN_EVENT_DEVICE_CHANGED   = 0x1000, // device changed event
+  CYGNUM_CAN_EVENT_FILTER_ERR       = 0x1000, // CAN message filter / acceptance filter error
   CYGNUM_CAN_EVENT_PHY_FAULT        = 0x2000, // General failure of physical layer 
   CYGNUM_CAN_EVENT_PHY_H            = 0x4000, // Fault on CAN-H (Low Speed CAN)
   CYGNUM_CAN_EVENT_PHY_L            = 0x8000, // Fault on CAN-L (Low Speed CAN)
@@ -692,6 +692,8 @@ CYG_IO_SET_CONFIG_CAN_INPUT_FLUSH
 CYG_IO_SET_CONFIG_CAN_TIMEOUT
 CYG_IO_SET_CONFIG_CAN_MSGBUF
 CYG_IO_SET_CONFIG_CAN_MODE
+CYG_IO_SET_CONFIG_CAN_ABORT
+CYG_IO_SET_CONFIG_CAN_CALLBACK
 </PROGRAMLISTING>
 </SECTION><!-- can-cyg-io-set-config -->
 </SECTION><!-- io-can-api-details -->
@@ -1495,7 +1497,73 @@ if (ENOERR != cyg_io_set_config(hDrvFlexCAN,
     CYG_TEST_FAIL_FINISH("Error writing config of /dev/can0");
 }
 </PROGRAMLISTING> 
-</SECTION> <!-- can-msgfilt-cfg -->
+</SECTION> <!-- can-msgfilt-deact -->
+
+<SECTION id="can-event-callback">
+<TITLE>Configuring a callback on events</TITLE>
+
+<PARA>
+By default application cannot get information about an event arriving
+in the RX buffer until it calls
+the <function>cyg_io_read()</function>.  Usually this leads applications
+to use accessory threads to wait for new CAN events.
+</PARA>
+
+<PARA>
+The CDL option <varname>CYGOPT_IO_CAN_SUPPORT_CALLBACK</varname>
+allows application to use a callback on event arrival. It is
+configured by passing a <structname>cyg_can_callback_cfg</structname>
+data structure to the driver via
+the <function>cyg_io_set_config()</function> function using the config
+key
+<varname>CYG_IO_SET_CONFIG_CAN_CALLBACK</varname>.
+</PARA>
+
+<PROGRAMLISTING>
+CYG_IO_SET_CONFIG_CAN_CALLBACK
+</PROGRAMLISTING>
+
+<PROGRAMLISTING>
+typedef void (*cyg_can_event_cb_t)(cyg_uint16, CYG_ADDRWORD);
+
+typedef struct cyg_can_callback_cfg_st
+{
+    cyg_can_event_cb_t callback_func;   // callback function
+    cyg_uint16  flag_mask;              // flags mask
+    CYG_ADDRWORD data;                  // data passed to callback
+} cyg_can_callback_cfg;
+</PROGRAMLISTING>
+
+<variablelist>
+   <varlistentry>
+       <term><type>cyg_can_event_cb_t</type> <varname>callback_func</varname></term>
+           <listitem><para> 
+Pointer to the callback function. The function will be called from DSR context so
+you should be careful to only call API functions that are safe in DSR
+context.  The First parameter is a combination of event flags for events that have 
+occurred. Second parameter is a user defined data pointer or value.
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>CYG_ADDRWORD</type> <varname>data</varname></term>
+           <listitem><para>
+Additional user data that will be passed to callback function as a second parameter.
+          </para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>cyg_uint16</type> <varname>flag_mask</varname></term>
+           <listitem><para>
+Should be set with a combination
+of <varname>CYGNUM_CAN_EVENT_*</varname> flags.  If one of these
+events happens, the callback function will be called, with the
+actually event flags passed as a parameter.  To disable the callback
+function from being called set <varname>flag_mask</varname> to 0.
+          </para></listitem>
+   </varlistentry>
+</variablelist>
+
+</SECTION> <!-- can-event-callback -->
+
 </SECTION>  
 </CHAPTER>
 
@@ -1538,6 +1606,16 @@ faster.
 This option enables extra code in the generic CAN driver which allows
 clients to switch read() and write() call semantics from blocking to
 non-blocking.
+</para></listitem>
+   </varlistentry>
+   <varlistentry>
+       <term><type>cdl_option CYGOPT_IO_CAN_SUPPORT_CALLBACK</type></term>
+           <listitem>
+<para>
+This option enables extra code in the generic CAN driver which allows
+an application to register a callback for events. The callback function
+is called from DSR context so you should be careful to only call API
+functions that are safe in DSR context.
 </para></listitem>
    </varlistentry>
    <varlistentry>

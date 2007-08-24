@@ -1,3 +1,10 @@
+2007-08-23 Alexey Shusharin <mrfinch@mail.ru>
+	
+	* doc/can.sgml: Callback on event documentation.
+	* src/can.c:  Change one wakeup to callback in a comment.
+	* include/canio.h: changed cyg_addrword_t to CYG_ADDRWORD so
+	  can will compile without the kernel.
+	
 2007-08-06 Alexey Shusharin <mrfinch@mail.ru>
            Andrew Lunn <andrew.lunn@ascom.ch>
 	

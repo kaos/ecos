@@ -331,7 +331,7 @@ typedef struct cyg_can_hdi_st
 // Callback configuration structure.
 //
 
-typedef void (*cyg_can_event_cb_t)(cyg_uint16, cyg_addrword_t);
+typedef void (*cyg_can_event_cb_t)(cyg_uint16, CYG_ADDRWORD);
 //
 // flag_mask should be set with a combination of CYGNUM_CAN_EVENT_* flags.
 // If one of these events happens, the callback function will be called,
@@ -341,7 +341,7 @@ typedef struct cyg_can_callback_cfg_st
 {
     cyg_can_event_cb_t callback_func;              // callback function
     cyg_uint16  flag_mask;                         // flags mask
-    cyg_addrword_t data;                           // data passed to callback
+    CYG_ADDRWORD data;                             // data passed to callback
 } cyg_can_callback_cfg;
 
 

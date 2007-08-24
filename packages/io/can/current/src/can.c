@@ -668,8 +668,8 @@ static Cyg_ErrNo can_set_config(cyg_io_handle_t handle,
 
 #ifdef CYGOPT_IO_CAN_SUPPORT_CALLBACK
         //
-        // Set waking calls configuration
-        // To disable waking calls set waking_mask = 0
+        // Set callback configuration
+        // To disable callback set flag_mask = 0
         //
         case CYG_IO_SET_CONFIG_CAN_CALLBACK:
              {
