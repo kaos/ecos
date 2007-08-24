@@ -120,7 +120,8 @@ isr(cyg_vector vector, CYG_ADDRWORD data)
 
 //==========================================================================
 
-static Cyg_Interrupt wdint(
+static CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_DRIVERS)
+  Cyg_Interrupt wdint(
     CYGNUM_HAL_INTERRUPT_WD,
     INT_PRIO,
     0,
@@ -138,7 +139,6 @@ Cyg_Watchdog::init_hw(void)
 
   wd = this;
   resolution = RESOLUTION;
-  wdint.configure_interrupt(CYGNUM_HAL_INTERRUPT_WD, false, true);
   wdint.attach();
   wdint.acknowledge_interrupt(CYGNUM_HAL_INTERRUPT_WD);
   wdint.unmask_interrupt(CYGNUM_HAL_INTERRUPT_WD);

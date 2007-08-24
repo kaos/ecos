@@ -1,3 +1,7 @@
+2007-08-19  Sergei Gavrikov  <sg@sgs.gomel.by>
+
+	* src/watchdog_lpc2xxx.cxx: Fixed to work properly in WDINT mode.
+	
 2004-10-04 Jani Monoses <jani@iv.ro>
 
 	* Added watchdog driver for ARM LPC2XXX based on the AT91 code.
