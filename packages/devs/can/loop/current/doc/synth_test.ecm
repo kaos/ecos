@@ -1,0 +1,66 @@
+cdl_savefile_version 1;
+cdl_savefile_command cdl_savefile_version {};
+cdl_savefile_command cdl_savefile_command {};
+cdl_savefile_command cdl_configuration { description hardware template package };
+cdl_savefile_command cdl_package { value_source user_value wizard_value inferred_value };
+cdl_savefile_command cdl_component { value_source user_value wizard_value inferred_value };
+cdl_savefile_command cdl_option { value_source user_value wizard_value inferred_value };
+cdl_savefile_command cdl_interface { value_source user_value wizard_value inferred_value };
+
+cdl_configuration eCos {
+    description "" ;
+    hardware    linux ;
+    template    default ;
+    package -hardware CYGPKG_HAL_SYNTH current ;
+    package -hardware CYGPKG_HAL_SYNTH_I386 current ;
+    package -hardware CYGPKG_DEVS_FLASH_SYNTH current ;
+    package -hardware CYGPKG_DEVS_ETH_ECOSYNTH current ;
+    package -hardware CYGPKG_DEVS_WATCHDOG_SYNTH current ;
+    package -hardware CYGPKG_DEVS_WALLCLOCK_SYNTH current ;
+    package -template CYGPKG_HAL current ;
+    package -template CYGPKG_IO current ;
+    package -template CYGPKG_IO_SERIAL current ;
+    package -template CYGPKG_INFRA current ;
+    package -template CYGPKG_KERNEL current ;
+    package -template CYGPKG_MEMALLOC current ;
+    package -template CYGPKG_ISOINFRA current ;
+    package -template CYGPKG_LIBC current ;
+    package -template CYGPKG_LIBC_I18N current ;
+    package -template CYGPKG_LIBC_SETJMP current ;
+    package -template CYGPKG_LIBC_SIGNALS current ;
+    package -template CYGPKG_LIBC_STARTUP current ;
+    package -template CYGPKG_LIBC_STDIO current ;
+    package -template CYGPKG_LIBC_STDLIB current ;
+    package -template CYGPKG_LIBC_STRING current ;
+    package -template CYGPKG_LIBC_TIME current ;
+    package -template CYGPKG_LIBM current ;
+    package -template CYGPKG_IO_WALLCLOCK current ;
+    package -template CYGPKG_ERROR current ;
+    package CYGPKG_IO_CAN current ;
+    package CYGPKG_DEVS_CAN_LOOP current ;
+};
+
+cdl_component CYGPKG_DEVS_CAN_LOOP_CAN0 {
+    user_value 1
+};
+
+cdl_component CYGPKG_DEVS_CAN_LOOP_CAN1 {
+    user_value 1
+};
+
+cdl_option CYGOPT_IO_CAN_TX_EVENT_SUPPORT {
+    user_value 1
+};
+
+cdl_option CYGOPT_IO_CAN_SUPPORT_NONBLOCKING {
+    user_value 1
+};
+
+cdl_option CYGOPT_IO_CAN_SUPPORT_CALLBACK {
+    user_value 1
+};
+
+cdl_component CYGOPT_IO_CAN_SUPPORT_TIMEOUTS {
+    user_value 1
+};
+

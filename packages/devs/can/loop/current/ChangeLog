@@ -1,3 +1,12 @@
+2007-08-24  Andrew Lunn <andrew.lunn>
+
+	* doc/synth_test.ecm: Import file for running the tests on synth.
+	
+2007-08-24  Alexey Shusharin <mrfinch@mail.ru>
+	
+	* tests/can_callback.c: Added test of CAN callback on event
+	* cdl/can_loop.cdl: Added can_callback.c into tests list
+	
 2007-08-09  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/loop_can.c: Change all CYGPKG_IO_CAN_* to CYGPKG_DEVS_CAN_*

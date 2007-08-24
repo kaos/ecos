@@ -1,0 +1,2 @@
+The file synth_test.ecm can be used to configure a synthetic target
+work tree to enable the various options to allow the tests to be run.

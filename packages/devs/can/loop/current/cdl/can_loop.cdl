@@ -131,7 +131,7 @@ cdl_package CYGPKG_DEVS_CAN_LOOP {
         cdl_option CYGPKG_DEVS_CAN_LOOP_TESTS {
             display "CAN loop device driver tests"
             flavor  data
-            calculated { "tests/can_rdwr tests/can_timeout tests/can_txevent tests/can_overrun1 tests/can_overrun2 tests/can_nonblock"}         
+            calculated { "tests/can_rdwr tests/can_timeout tests/can_txevent tests/can_overrun1 tests/can_overrun2 tests/can_nonblock tests/can_callback" }         
             description   "
                 This option specifies the set of tests for the CAN loop device drivers."
         }
