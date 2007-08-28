@@ -1,3 +1,9 @@
+2007-08-28  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/flash.c (do_flash_init): Memory allocation was slightly
+	incorrect - 'workspace_end' should always be used to find 
+	the end of available memory.
+
 2007-08-08  Peter Korsgaard  <peter.korsgaard@barco.com>
 
 	* include/net/http.h:

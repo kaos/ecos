@@ -1600,7 +1600,7 @@ do_flash_init(void)
             return -1;
 	}
 # else
-        workspace_end = (unsigned char *)(workspace_end_init-fisdir_size);
+        workspace_end = (unsigned char *)(workspace_end-fisdir_size);
         fis_work_block = workspace_end;
 # endif
         if (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK < 0) {
