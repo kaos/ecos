@@ -1,3 +1,14 @@
+2007-08-28  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/can_overrun1.c (can0_thread): Fix the length of the data
+	  in the message. Add a delay to allow the CAN device to process
+	  the packets.
+	* test/can_txcevent.c: (can0_thread): Add a delay to allow the CAN device
+	 to process the packet.s
+	* src/loop_can.c (FIFO_SIZE): Changed to one more than the TX
+	  queue size. If it is less, the loopback tests don't pass because
+	  packets don't get transmitted.
+		
 2007-08-24  Andrew Lunn <andrew.lunn>
 
 	* doc/synth_test.ecm: Import file for running the tests on synth.

@@ -116,7 +116,7 @@ void can0_thread(cyg_addrword_t data)
         },
         CYGNUM_CAN_ID_STD,                                   // standard frame
         CYGNUM_CAN_FRAME_DATA,                               // data frame
-        0,                                                   // data length code
+        1,                                                   // data length code
     };
     
     if (ENOERR != cyg_io_lookup("/dev/can0", &hCAN0)) 
@@ -156,6 +156,11 @@ void can0_thread(cyg_addrword_t data)
             print_can_msg(&tx_msg, "");
         } 
     }
+
+    //
+    // Give the loop back driver time to process all those messages.
+    //
+    cyg_thread_delay(10);
     
     //
     // now check if receive queue is completely filled - that means number of rx events should

@@ -164,6 +164,11 @@ void can0_thread(cyg_addrword_t data)
     }
     
     //
+    // Give the loop back driver time to process all those messages.
+    //
+    cyg_thread_delay(10);
+    
+    //
     // now we read the buffer info - we expect a completely filled recieve queue
     //
     len = sizeof(buf_info);

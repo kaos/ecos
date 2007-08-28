@@ -100,7 +100,7 @@ static cyg_handle_t alarm_handle;
 //-------------------------------------------------------------------------
 // Transfer FIFOs
 
-#define FIFO_SIZE 16
+#define FIFO_SIZE 33
 
 struct fifo
 {
