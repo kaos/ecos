@@ -1,3 +1,10 @@
+2007-09-04  Stephen Finney  <shf@pfinc.com>
+2007-09-04  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/misc/infconst.c: Declare infinity byte order as dependent on
+	double byte order, not integer.
+	Fixes bug #1000448.
+
 2004-04-14  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/double/ieee754-core/e_cosh.c (__ieee754_cosh): 
