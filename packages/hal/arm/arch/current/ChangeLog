@@ -1,3 +1,9 @@
+2007-09-11  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/hal_misc.c: Include <cyg/infra/diag.h> to prevent compiler
+	warning when CYGHWR_HAL_ARM_DUMP_EXCEPTIONS is enabled.
+	Reported by Sergei Gavrikov <w3sg@SoftHome.net.
+
 2007-02-03  Sergei Gavrikov  <sg@sgs.gomel.by>
 
 	* src/vectors.S: Added a possibility to fix ARM vector 0x14

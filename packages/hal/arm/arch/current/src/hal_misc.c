@@ -67,7 +67,7 @@
 #include <cyg/hal/hal_arch.h>           // HAL header
 #include <cyg/hal/hal_intr.h>           // HAL header
 
-externC void diag_printf(const char *fmt, ...);
+#include <cyg/infra/diag.h>
 
 /*------------------------------------------------------------------------*/
 /* First level C exception handler.                                       */
