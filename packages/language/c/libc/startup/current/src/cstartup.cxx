@@ -104,7 +104,7 @@ public:
 };
 
 static cyg_libc_startup_dummy_constructor_class cyg_libc_startup_obj
-                                  CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_LIBC);
+                                  CYGBLD_ATTRIB_INIT_AFTER(CYG_INIT_LIBC);
 
 #elif defined( CYGSEM_LIBC_STARTUP_MAIN_INITCONTEXT )
 
