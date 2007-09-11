@@ -1,3 +1,10 @@
+2007-09-11  Daniel Néri  <daniel.neri@sigicom.se>
+
+	* include/sys/socketvar.h: Fix very old and subtle macro bug. From
+	FreeBSD revision 1.141.2.3 (RELENG_6 branch): "correctly return an
+	error if M_NOWAIT is passed to sblock() and the operation might
+	block."
+
 2007-07-08  Alexander Aganichev <aaganichev@gmail.com>
 
 	* include/sys/param.h (log_): Really disable logging when

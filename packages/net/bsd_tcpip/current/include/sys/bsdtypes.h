@@ -29,6 +29,10 @@
 #undef uint8_t
 #undef uint16_t
 #undef uint32_t
+#undef int8_t
+#undef int16_t
+#undef int32_t
+
 typedef	__signed char		   int8_t;
 typedef	unsigned char		 u_int8_t;
 typedef	unsigned char		  uint8_t;
