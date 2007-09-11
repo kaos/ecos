@@ -505,9 +505,24 @@ cs8900a_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
 
     HAL_WRITE_UINT16(cpd->base+CS8900A_TxLEN, total_len);
     // Wait for controller ready signal
-    do {
-        stat = get_reg(base, PP_BusStat);
-    } while (!(stat & PP_BusStat_TxRDY));
+    {
+        // add timeout per cs8900a bugzilla report 1000281 */
+        int timeout = 1000;
+
+        do {
+            stat = get_reg(base, PP_BusStat);
+#if DEBUG & 1
+            if( stat & PP_BusStat_TxBid )
+                diag_printf( "cs8900a_send: Bid error!\n" );
+#endif
+        } while (!(stat & PP_BusStat_TxRDY) && --timeout);
+
+        if( !timeout ) {
+            // we might as well just return, since if we write the data it will
+            // just get thrown away
+            return;
+        }
+    }
 
     // Put data into buffer
     for (i = 0;  i < sg_len;  i++) {

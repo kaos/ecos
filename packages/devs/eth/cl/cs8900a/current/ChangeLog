@@ -1,3 +1,8 @@
+2007-09-04  Stephen Finney <shf@pfinc.com>
+
+	* add timeout to potential infinite loop in cs8900a_send per 
+	bugzilla report 1000281
+
 2005-11-10  Laurent Gonzalez <laurent.gonzalez@trango-systems.com>
 
 	* include/cs8900a.h:
