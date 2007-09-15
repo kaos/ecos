@@ -1,3 +1,13 @@
+2007-08-23  Hans Rosenfeld  <rosenfeld@grumpf.hope-2000.org>
+
+	* include/hal_var_ints.h: use interrupt priority 16 for
+	kernel test intr0/kintr0 interrupts
+
+2007-08-17  Hans Rosenfeld  <rosenfeld@grumpf.hope-2000.org>
+
+	* cdl/hal_arm_lpc2xxx.cdl: added VIC component to support
+	configuration of individual interrupt priorities
+
 2007_07-10  Uwe Kindler <uwe_kindler@web.de>
 
 	* cdl/hal_arm_lpc2xxx.cdl: Added option

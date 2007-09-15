@@ -95,6 +95,11 @@
 
 #define CYGNUM_HAL_ISR_COUNT         (CYGNUM_HAL_ISR_MAX+1)
 
+/* use non-vectored interrupts in kernel tests intr0/kintr0 */
+#define HAL_INTR_TEST_PRIO_A 16
+#define HAL_INTR_TEST_PRIO_B 16
+#define HAL_INTR_TEST_PRIO_C 16
+
 //The vector used by the Real time clock
 #define CYGNUM_HAL_INTERRUPT_RTC     CYGNUM_HAL_INTERRUPT_TIMER0
 
