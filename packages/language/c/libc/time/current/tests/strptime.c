@@ -84,7 +84,12 @@ test( CYG_ADDRWORD data )
     
     dp = "Fri Jan 24 08:33:14 2003";
     fp = "%a %b %d %H:%M:%S %Y";
-    sp = strptime(dp, fp, &tm1);    
+    sp = strptime(dp, fp, &tm1);
+    
+    // Set an invalid year day. The following converters don't use
+    // this, so it should not cause a problem.
+    tm1.tm_yday = 1000;
+
     CYG_TEST_PASS_FAIL(((sp!=NULL) && (*sp=='\0')), "strptime test #1");
     size = strftime(s, sizeof(s), fp, &tm1);
     CYG_TEST_PASS_FAIL(((size==strlen(dp)) && (my_strcmp(s, dp) == 0)), "strptime test #2");

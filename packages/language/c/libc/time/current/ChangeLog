@@ -1,3 +1,15 @@
+2007-09-15  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/strptime.c (test): Extend the test so that it triggers the
+	previous bug and shows that the fix works.
+
+2007-08-18  Hans Rosenfeld  <rosenfeld@grumpf.hope-2000.org>
+
+	* src/strftime.cxx: Moved CYG_PRECONDITIONs to do_format() to
+	make strftime() only complain about illegal struct tm contents if
+	these are actually used. Fixes a bug with tests/strptime which
+	would fail because tm->tm_yday was uninitialized.
+	
 2006-10-02  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* tests/strftime.c (test): Fix %I test.

@@ -85,6 +85,8 @@ do_format(cyg_uint8 fmtchar, cyg_ucount32 sizeleft, char *buf,
 
     switch (fmtchar) {
     case 'a':
+        CYG_PRECONDITION((timeptr->tm_wday >= 0) && (timeptr->tm_wday < 7),
+                         "timeptr->tm_wday out of range!");
         if (sizeleft<3)
             return -1;
         buf[0] = cyg_libc_time_day_name[timeptr->tm_wday][0];
@@ -92,6 +94,8 @@ do_format(cyg_uint8 fmtchar, cyg_ucount32 sizeleft, char *buf,
         buf[2] = cyg_libc_time_day_name[timeptr->tm_wday][2];
         return 3;
     case 'A':
+        CYG_PRECONDITION((timeptr->tm_wday >= 0) && (timeptr->tm_wday < 7),
+                         "timeptr->tm_wday out of range!");
         if (sizeleft < cyg_libc_time_day_name_len[timeptr->tm_wday])
             return -1;
         for (i=0; i<cyg_libc_time_day_name_len[timeptr->tm_wday]; ++i)
@@ -102,6 +106,8 @@ do_format(cyg_uint8 fmtchar, cyg_ucount32 sizeleft, char *buf,
         // ** fall through **
 #endif
     case 'b':
+        CYG_PRECONDITION((timeptr->tm_mon >= 0) && (timeptr->tm_mon < 12),
+                         "timeptr->tm_mon out of range!");
         if (sizeleft<3)
             return -1;
         buf[0] = cyg_libc_time_month_name[timeptr->tm_mon][0];
@@ -109,6 +115,8 @@ do_format(cyg_uint8 fmtchar, cyg_ucount32 sizeleft, char *buf,
         buf[2] = cyg_libc_time_month_name[timeptr->tm_mon][2];
         return 3;
     case 'B':
+        CYG_PRECONDITION((timeptr->tm_mon >= 0) && (timeptr->tm_mon < 12),
+                         "timeptr->tm_mon out of range!");
         if (sizeleft < cyg_libc_time_month_name_len[timeptr->tm_mon])
             return -1;
         for (i=0; i<cyg_libc_time_month_name_len[timeptr->tm_mon]; ++i)
@@ -125,6 +133,11 @@ do_format(cyg_uint8 fmtchar, cyg_ucount32 sizeleft, char *buf,
         
         return ((0==i) ? -1 : i);
     case 'd':
+        // Currently I don't check _actual_ numbers of days in each month here
+        // FIXME: No reason why not though
+        CYG_PRECONDITION((timeptr->tm_mday >= 1) && (timeptr->tm_mday < 32),
+                         "timeptr->tm_mday out of range!");
+
         if (sizeleft < 2)
             return -1;
         buf[0] = (timeptr->tm_mday / 10) + '0';
@@ -132,6 +145,10 @@ do_format(cyg_uint8 fmtchar, cyg_ucount32 sizeleft, char *buf,
         return 2;
 #ifdef CYGFUN_LIBC_TIME_SUS_EXTNS
     case 'e':
+        // Currently I don't check _actual_ numbers of days in each month here
+        // FIXME: No reason why not though
+        CYG_PRECONDITION((timeptr->tm_mday >= 1) && (timeptr->tm_mday < 32),
+                         "timeptr->tm_mday out of range!");
         if (sizeleft < 2)
             return -1;
         i = (timeptr->tm_mday / 10);
@@ -140,18 +157,24 @@ do_format(cyg_uint8 fmtchar, cyg_ucount32 sizeleft, char *buf,
         return 2;
 #endif
     case 'H':
+        CYG_PRECONDITION((timeptr->tm_hour >= 0) && (timeptr->tm_hour < 24),
+                         "timeptr->tm_hour out of range!");
         if (sizeleft < 2)
             return -1;
         buf[0] = (timeptr->tm_hour / 10) + '0';
         buf[1] = (timeptr->tm_hour % 10) + '0';
         return 2;
     case 'I':
+        CYG_PRECONDITION((timeptr->tm_hour >= 0) && (timeptr->tm_hour < 24),
+                         "timeptr->tm_hour out of range!");
         if (sizeleft < 2)
             return -1;
         buf[0] = (((timeptr->tm_hour%12) ? (timeptr->tm_hour%12) : 12) / 10) + '0';
         buf[1] = (((timeptr->tm_hour%12) ? (timeptr->tm_hour%12) : 12) % 10) + '0';
         return 2;
     case 'j':
+        CYG_PRECONDITION((timeptr->tm_yday >= 0) && (timeptr->tm_yday < 366),
+                         "timeptr->tm_yday out of range!");
         if (sizeleft < 3)
             return -1;
         buf[0] = (timeptr->tm_yday / 100) + '0';
@@ -159,24 +182,32 @@ do_format(cyg_uint8 fmtchar, cyg_ucount32 sizeleft, char *buf,
         buf[2] = (timeptr->tm_yday % 10) + '0';
         return 3;
     case 'm':
+        CYG_PRECONDITION((timeptr->tm_mon >= 0) && (timeptr->tm_mon < 12),
+                         "timeptr->tm_mon out of range!");
         if (sizeleft < 2)
             return -1;
         buf[0] = ((timeptr->tm_mon+1) / 10) + '0';
         buf[1] = ((timeptr->tm_mon+1) % 10) + '0';
         return 2;
     case 'M':
+        CYG_PRECONDITION((timeptr->tm_min >= 0) && (timeptr->tm_min < 60),
+                         "timeptr->tm_min out of range!");
         if (sizeleft < 2)
             return -1;
         buf[0] = (timeptr->tm_min / 10) + '0';
         buf[1] = (timeptr->tm_min % 10) + '0';
         return 2;
     case 'p':
+        CYG_PRECONDITION((timeptr->tm_hour >= 0) && (timeptr->tm_hour < 24),
+                         "timeptr->tm_hour out of range!");
         if (sizeleft < 2)
             return -1;
         buf[0] = (timeptr->tm_hour > 11) ? 'p' : 'a';
         buf[1] = 'm';
         return 2;
     case 'S':
+        CYG_PRECONDITION((timeptr->tm_sec >= 0) && (timeptr->tm_sec < 62),
+                         "timeptr->tm_sec out of range!");
         if (sizeleft < 2)
             return -1;
         buf[0] = (timeptr->tm_sec / 10) + '0';
@@ -195,6 +226,10 @@ do_format(cyg_uint8 fmtchar, cyg_ucount32 sizeleft, char *buf,
         return ((0==i) ? -1 : i);
 #endif
     case 'U':
+        CYG_PRECONDITION((timeptr->tm_wday >= 0) && (timeptr->tm_wday < 7),
+                         "timeptr->tm_wday out of range!");
+        CYG_PRECONDITION((timeptr->tm_yday >= 0) && (timeptr->tm_yday < 366),
+                         "timeptr->tm_yday out of range!");
         if (sizeleft < 2)
             return -1;
         i = (timeptr->tm_yday - timeptr->tm_wday + 7) / 7;
@@ -202,10 +237,16 @@ do_format(cyg_uint8 fmtchar, cyg_ucount32 sizeleft, char *buf,
         buf[1] = (i % 10) + '0';
         return 2;
     case 'w':
+        CYG_PRECONDITION((timeptr->tm_wday >= 0) && (timeptr->tm_wday < 7),
+                         "timeptr->tm_wday out of range!");
         // Don't need to check size - we'll always be called with sizeleft > 0
         buf[0] = timeptr->tm_wday + '0';
         return 1;
     case 'W':
+        CYG_PRECONDITION((timeptr->tm_wday >= 0) && (timeptr->tm_wday < 7),
+                         "timeptr->tm_wday out of range!");
+        CYG_PRECONDITION((timeptr->tm_yday >= 0) && (timeptr->tm_yday < 366),
+                         "timeptr->tm_yday out of range!");
         if (sizeleft < 2)
             return -1;
         i = (timeptr->tm_yday + ((8-timeptr->tm_wday) % 7)) / 7;
@@ -233,12 +274,18 @@ do_format(cyg_uint8 fmtchar, cyg_ucount32 sizeleft, char *buf,
 
         return (0==i) ? -1 : i;
     case 'y':
+        CYG_PRECONDITION((timeptr->tm_year > -1900) &&
+                         (timeptr->tm_year < 8100),
+                         "timeptr->tm_year out of range!");
         if (sizeleft < 2)
             return -1;
         buf[0] = ((timeptr->tm_year % 100) / 10) + '0';
         buf[1] = ((timeptr->tm_year % 100) % 10) + '0';
         return 2;
     case 'Y':
+        CYG_PRECONDITION((timeptr->tm_year > -1900) &&
+                         (timeptr->tm_year < 8100),
+                         "timeptr->tm_year out of range!");
         if (sizeleft < 4)
             return -1;
         buf[0] = ((1900+timeptr->tm_year) / 1000) + '0';
@@ -273,26 +320,6 @@ strftime( char *s, size_t maxsize, const char *format,
     CYG_REPORT_FUNCARG4("s is at address %08x, maxsize=%d, format=\"%s\", "
                         "timeptr is at address %08x",
                         s, maxsize, format, timeptr);
-
-    CYG_PRECONDITION((timeptr->tm_sec >= 0) && (timeptr->tm_sec < 62),
-                     "timeptr->tm_sec out of range!");
-    CYG_PRECONDITION((timeptr->tm_min >= 0) && (timeptr->tm_min < 60),
-                     "timeptr->tm_min out of range!");
-    CYG_PRECONDITION((timeptr->tm_hour >= 0) && (timeptr->tm_hour < 24),
-                     "timeptr->tm_hour out of range!");
-    // Currently I don't check _actual_ numbers of days in each month here
-    // FIXME: No reason why not though
-    CYG_PRECONDITION((timeptr->tm_mday >= 1) && (timeptr->tm_mday < 32),
-                     "timeptr->tm_mday out of range!");
-    CYG_PRECONDITION((timeptr->tm_mon >= 0) && (timeptr->tm_mon < 12),
-                     "timeptr->tm_mon out of range!");
-    CYG_PRECONDITION((timeptr->tm_wday >= 0) && (timeptr->tm_wday < 7),
-                     "timeptr->tm_wday out of range!");
-    CYG_PRECONDITION((timeptr->tm_yday >= 0) && (timeptr->tm_yday < 366),
-                     "timeptr->tm_yday out of range!");
-    CYG_PRECONDITION((timeptr->tm_year > -1900) &&
-                     (timeptr->tm_year < 8100),
-                     "timeptr->tm_year out of range!");
 
     if (!maxsize) {
         CYG_REPORT_RETVAL(0);
