@@ -60,6 +60,24 @@
 
 #include "testaux.hxx"
 
+#ifdef HAL_INTR_TEST_PRIO_A
+# define PRIO_A HAL_INTR_TEST_PRIO_A
+#else
+# define PRIO_A 0
+#endif
+
+#ifdef HAL_INTR_TEST_PRIO_B
+# define PRIO_B HAL_INTR_TEST_PRIO_B
+#else
+# define PRIO_B 1
+#endif
+
+#ifdef HAL_INTR_TEST_PRIO_C
+# define PRIO_C HAL_INTR_TEST_PRIO_C
+#else
+# define PRIO_C 1
+#endif
+
 static cyg_ISR isr0, isr1;
 static cyg_DSR dsr0, dsr1;
 
@@ -97,7 +115,8 @@ static void dsr1(cyg_vector vector, cyg_ucount32 count, CYG_ADDRWORD data)
 
 static bool flash( void )
 {
-    Cyg_Interrupt intr0 = Cyg_Interrupt(CYGNUM_HAL_ISR_MIN, 0, (CYG_ADDRWORD)333, isr0, dsr0 );
+    Cyg_Interrupt intr0 = Cyg_Interrupt(CYGNUM_HAL_ISR_MIN, PRIO_A,
+                                        (CYG_ADDRWORD)333, isr0, dsr0 );
 
     return true;
 }
@@ -134,13 +153,13 @@ void intr0_main( void )
     HAL_INTERRUPT_IN_USE( lvl1, in_use );
     Cyg_Interrupt* intr0 = NULL;
     if (!in_use)
-        intr0 = new((void *)&intr0_obj[0]) Cyg_Interrupt( lvl1, 1, (CYG_ADDRWORD)777, isr0, dsr0 );
+        intr0 = new((void *)&intr0_obj[0]) Cyg_Interrupt( lvl1, PRIO_B, (CYG_ADDRWORD)777, isr0, dsr0 );
      
     cyg_vector lvl2 = CYGNUM_HAL_ISR_MIN + ( 15 % CYGNUM_HAL_ISR_COUNT);
     HAL_INTERRUPT_IN_USE( lvl2, in_use );
     Cyg_Interrupt* intr1 = NULL;
     if (!in_use && lvl1 != lvl2)
-        intr1 = new((void *)&intr1_obj[0]) Cyg_Interrupt( lvl2, 1, 888, isr1, dsr1 );
+        intr1 = new((void *)&intr1_obj[0]) Cyg_Interrupt( lvl2, PRIO_C, 888, isr1, dsr1 );
 
     // Check these functions at least exist
     Cyg_Interrupt::disable_interrupts();

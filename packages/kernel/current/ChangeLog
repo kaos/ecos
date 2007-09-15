@@ -1,3 +1,9 @@
+2007-08-23  Hans Rosenfeld  <rosenfeld@grumpf.hope-2000.org>
+
+	* tests/intr0.cxx, tests/kintr0.c: As suggested by Bart Veer,
+	priorities of the interrupts created by intr0 and kintr0 can now
+	be overridden by the HAL through HAL_INTR_TEST_PRIO_x constants.
+
 2007-07-02  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/debug/dbg_gdb.cxx: 

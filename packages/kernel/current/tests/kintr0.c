@@ -61,6 +61,24 @@
 
 #include "testaux.h"
 
+#ifdef HAL_INTR_TEST_PRIO_A
+# define PRIO_A HAL_INTR_TEST_PRIO_A
+#else
+# define PRIO_A 0
+#endif
+
+#ifdef HAL_INTR_TEST_PRIO_B
+# define PRIO_B HAL_INTR_TEST_PRIO_B
+#else
+# define PRIO_B 1
+#endif
+
+#ifdef HAL_INTR_TEST_PRIO_C
+# define PRIO_C HAL_INTR_TEST_PRIO_C
+#else
+# define PRIO_C 1
+#endif
+
 static cyg_interrupt intr_obj[2];
 
 static cyg_handle_t intr0, intr1;
@@ -103,7 +121,7 @@ static bool flash( void )
     cyg_handle_t handle;
     cyg_interrupt intr;
 
-    cyg_interrupt_create(CYGNUM_HAL_ISR_MIN, 0, (cyg_addrword_t)333, 
+    cyg_interrupt_create(CYGNUM_HAL_ISR_MIN, PRIO_A, (cyg_addrword_t)333,
                          isr0, dsr0, &handle, &intr );
     cyg_interrupt_delete(handle);
 
@@ -156,13 +174,14 @@ void kintr0_main( void )
     HAL_INTERRUPT_IN_USE( lvl1, in_use );
     intr0 = 0;
     if (!in_use)
-        cyg_interrupt_create(lvl1, 1, (cyg_addrword_t)777, isr0, dsr0, 
-                             &intr0, &intr_obj[0]);
+        cyg_interrupt_create(lvl1, PRIO_B, (cyg_addrword_t)777,
+                             isr0, dsr0, &intr0, &intr_obj[0]);
     
     HAL_INTERRUPT_IN_USE( lvl2, in_use );
     intr1 = 0;
     if (!in_use && lvl1 != lvl2)
-        cyg_interrupt_create(lvl2, 1, 888, isr1, dsr1, &intr1, &intr_obj[1]);
+        cyg_interrupt_create(lvl2, PRIO_C, 888,
+                             isr1, dsr1, &intr1, &intr_obj[1]);
 
     // Check these functions at least exist
 
