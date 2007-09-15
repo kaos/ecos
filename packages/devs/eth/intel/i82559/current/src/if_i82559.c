@@ -907,9 +907,9 @@ static void ResetRxRing(struct i82559* p_i82559);
 static void InitTxRing(struct i82559* p_i82559);
 static void ResetTxRing(struct i82559* p_i82559);
 
-#if defined(CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT)              \
-||  (defined(CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT)   &&  \
-    !defined(CYGPKG_IO_ETH_DRIVERS_STAND_ALONE)                     )
+#if defined(CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT) || \
+  defined(CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT) || \
+  !defined(CYGPKG_IO_ETH_DRIVERS_STAND_ALONE)
 static void
 eth_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data);
 #endif
@@ -2713,10 +2713,9 @@ eth_mux_isr(cyg_vector_t vector, cyg_addrword_t data)
 
 // ------------------------------------------------------------------------
 
-#if defined(CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT)              \
-||  (defined(CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT)   &&  \
-    !defined(CYGPKG_IO_ETH_DRIVERS_STAND_ALONE)                     )
-
+#if defined(CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT) || \
+  defined(CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT) || \
+  !defined(CYGPKG_IO_ETH_DRIVERS_STAND_ALONE)
 static void
 eth_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
 {
