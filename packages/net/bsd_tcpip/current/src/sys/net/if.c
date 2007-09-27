@@ -1254,6 +1254,8 @@ ifioctl(so, cmd, data, p)
 	case SIOCGLIFPHYADDR:
 	case SIOCGIFMEDIA:
 	case SIOCGIFGENERIC:
+        case SIOCGIFSTATS:
+        case SIOCGIFSTATSUD:
 		if (ifp->if_ioctl == 0)
 			return (EOPNOTSUPP);
 		return ((*ifp->if_ioctl)(ifp, cmd, data));

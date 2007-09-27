@@ -1,3 +1,8 @@
+2007-09-27  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/sys/net/if.c (ifioctl): Add missing ioctl functions
+	(SIOCGIFSTATSUD, SIOCGIFSTATS) Reported by Emmanuel Coullien.
+
 2007-09-11  Daniel Néri  <daniel.neri@sigicom.se>
 
 	* include/sys/socketvar.h: Fix very old and subtle macro bug. From
