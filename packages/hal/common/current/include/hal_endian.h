@@ -63,7 +63,7 @@
 
 #ifndef CYG_SWAP16
 # define CYG_SWAP16(_x_)                                        \
-    ({ cyg_uint16 _x = (_x_); ((_x << 8) | (_x >> 8)); })
+    ({ cyg_uint16 _x = (_x_); (cyg_uint16)((_x << 8) | (_x >> 8)); })
 #endif
 
 #ifndef CYG_SWAP32
