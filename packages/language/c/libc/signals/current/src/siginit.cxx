@@ -56,6 +56,7 @@
 // CONFIGURATION
 
 #include <pkgconf/libc_signals.h>  // libc signals configuration
+#include <pkgconf/isoinfra.h>      // isoinfra defs, including CYGINT_ISO_EXIT
 
 // INCLUDES
 
@@ -392,7 +393,11 @@ cyg_libc_signals_default_handler(int sig)
 
     CYG_REPORT_FUNCARG1( "signal number = %d", sig );
 
+#if CYGINT_ISO_EXIT
     exit(1000 + sig); // FIXME
+#else
+    CYG_FAIL("Default signal handler called - no exit available");
+#endif
 
     CYG_REPORT_RETURN();
 } // cyg_libc_signals_default_handler()

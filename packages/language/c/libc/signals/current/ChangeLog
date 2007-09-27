@@ -1,3 +1,8 @@
+2007-09-27  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/siginit.cxx (cyg_libc_signals_default_handler): Handle case where
+	CYGINT_ISO_EXIT not available.
+
 2003-06-26  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/signal.h: Remove unused definitions that had been used
