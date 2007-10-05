@@ -1,3 +1,8 @@
+2007-10-05  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/main.cxx (main): Suspend main thread, rather than exit.
+	Thanks to Sergei Organov for the idea.
+
 2007-09-11  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/cstartup.cxx: Change the INIT priority of

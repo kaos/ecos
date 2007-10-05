@@ -66,6 +66,12 @@
 #include <cyg/infra/cyg_trac.h>    // Common tracing support
 #include <cyg/infra/cyg_ass.h>     // Common assertion support
 
+#ifdef CYGPKG_KERNEL
+# include <pkgconf/kernel.h>       // kernel configuration
+# include <cyg/kernel/thread.hxx>  // For thread suspend
+# include <cyg/kernel/thread.inl>
+#endif
+
 // FUNCTION PROTOTYPES
 
 // We provide a weakly named main to allow this to link if the user
@@ -103,6 +109,10 @@ main( int argc, char *argv[] )
     // Its better than just exiting
 #ifndef CYGPKG_KERNEL
     cyg_user_start();
+#else
+    // Otherwise we suspend ourselves. This prevents problems caused by
+    // running atexit() handlers.
+    Cyg_Thread::self()->suspend();
 #endif
 
     CYG_REPORT_RETVAL(0);
