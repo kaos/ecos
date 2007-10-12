@@ -303,10 +303,12 @@ _hal_hardware_init_done:
         lwi     r3,rom_vectors-4
         lwi     r4,((CYGHWR_HAL_POWERPC_VECTOR_BASE)-4)
         lwi     r5,rom_vectors_end-4
+        sub     r5,r5,r3                # compute number of words to copy
+        srwi    r5,r5,2
+        mtctr   r5
 0:      lwzu    r0,4(r3)
         stwu    r0,4(r4)
-        cmplw   r3,r5
-        bne     0b
+        bdnz    0b
 #endif        
 
         # set up stack
@@ -318,7 +320,6 @@ _hal_hardware_init_done:
         hal_mon_init        
 
 #if defined(CYG_HAL_STARTUP_ROM)
-
         # Copy data from ROM to ram
         lwi     r3,__rom_data_start     # r3 = rom start
         lwi     r4,__ram_data_start     # r4 = ram start
@@ -326,14 +327,14 @@ _hal_hardware_init_done:
 
         cmplw   r4,r5                   # skip if no data
         beq     2f
-        
-1:
-        lwz     r0,0(r3)                # get word from ROM
-        stw     r0,0(r4)                # store in RAM
-        addi    r3,r3,4                 # increment by 1 word
-        addi    r4,r4,4                 # increment by 1 word
-        cmplw   r4,r5                   # compare
-        blt     1b                      # loop if not yet done
+        sub     r5,r5,r4                # compute number of words to copy
+        srwi    r5,r5,2
+        mtctr   r5
+        subi    r3,r3,4
+        subi    r4,r4,4
+1:      lwzu    r0,4(r3)                # get word from ROM
+        stwu    r0,4(r4)                # store in RAM
+        bdnz    1b
 2:
 #endif
 
@@ -343,11 +344,13 @@ _hal_hardware_init_done:
         li      r0,0            # r0 = 0
         cmplw   r3,r4           # skip if no bss
         beq     2f
+        sub     r4,r4,r3        # compute number of words to clear
+        srwi    r4,r4,2
+        mtctr   r4
+        subi    r3,r3,4
         
-1:      stw     r0,0(r3)        # store zero
-        addi    r3,r3,4         # increment by 1 word
-        cmplw   r3,r4           # compare
-        blt     1b              # loop if not yet done
+1:      stwu    r0,4(r3)        # store zero & increment pointer
+        bdnz    1b
 2:
 
         # clear SBSS
@@ -355,11 +358,13 @@ _hal_hardware_init_done:
         lwi     r4,__sbss_end   # r4 = end
         cmplw   r3,r4           # skip if no sbss
         beq     2f
+        sub     r4,r4,r3        # compute number of words to clear
+        srwi    r4,r4,2
+        mtctr   r4
+        subi    r3,r3,4
         
-1:      stw     r0,0(r3)        # store zero
-        addi    r3,r3,4         # increment by 1 word
-        cmplw   r3,r4           # compare
-        blt     1b              # loop if not yet done
+1:      stwu    r0,4(r3)        # store zero & increment pointer
+        bdnz    1b
 2:
 
         # It is now safe to call C functions which may rely on initialized

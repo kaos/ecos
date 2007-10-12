@@ -1,3 +1,7 @@
+2007-10-12  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/vectors.S: Optimize system initialization of DATA/BSS/etc.
+
 2006-04-18  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/hal_arch.h: Adjust stack sizes - they were too small
