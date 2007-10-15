@@ -67,7 +67,7 @@ cdl_package CYGPKG_HAL_ARM {
     # n.b. grep does not behave itself under win32
     make -priority 1 {
         arm.inc : <PACKAGE>/src/hal_mk_defs.c
-        $(CC) $(CFLAGS) $(INCLUDE_PATH) -Wp,-MD,arm.tmp -o hal_mk_defs.tmp -S $<
+        $(CC) $(ACTUAL_CFLAGS) $(INCLUDE_PATH) -Wp,-MD,arm.tmp -o hal_mk_defs.tmp -S $<
         fgrep .equ hal_mk_defs.tmp | sed s/#// > $@
         @echo $@ ": \\" > $(notdir $@).deps
         @tail -n +2 arm.tmp >> $(notdir $@).deps
@@ -77,7 +77,7 @@ cdl_package CYGPKG_HAL_ARM {
 
     make {
         <PREFIX>/lib/vectors.o : <PACKAGE>/src/vectors.S
-        $(CC) -Wp,-MD,vectors.tmp $(INCLUDE_PATH) $(CFLAGS) -c -o $@ $<
+        $(CC) -Wp,-MD,vectors.tmp $(INCLUDE_PATH) $(ACTUAL_CFLAGS) -c -o $@ $<
         @echo $@ ": \\" > $(notdir $@).deps
         @tail -n +2 vectors.tmp >> $(notdir $@).deps
         @echo >> $(notdir $@).deps
@@ -86,7 +86,7 @@ cdl_package CYGPKG_HAL_ARM {
 
     make {
         <PREFIX>/lib/target.ld: <PACKAGE>/src/arm.ld
-        $(CC) -E -P -Wp,-MD,target.tmp -xc $(INCLUDE_PATH) $(CFLAGS) -o $@ $<
+        $(CC) -E -P -Wp,-MD,target.tmp -xc $(INCLUDE_PATH) $(ACTUAL_CFLAGS) -o $@ $<
         @echo $@ ": \\" > $(notdir $@).deps
         @tail -n +2 target.tmp >> $(notdir $@).deps
         @echo >> $(notdir $@).deps

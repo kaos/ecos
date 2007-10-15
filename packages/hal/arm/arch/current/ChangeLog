@@ -1,3 +1,8 @@
+2007-10-15  Sergei Gavrikov <w3sg@SoftHome.net>
+
+	* cdl/hal_arm.cdl: Use ACTUAL_CFLAGS whenever possible to avoid
+	warnings and complaints from newer compilers.
+
 2007-09-11  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/hal_misc.c: Include <cyg/infra/diag.h> to prevent compiler
