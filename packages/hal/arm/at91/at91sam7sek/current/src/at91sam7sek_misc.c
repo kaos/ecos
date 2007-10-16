@@ -67,10 +67,10 @@ hal_at91_led (int val)
   HAL_ARM_AT91_GPIO_CFG_PULLUP(AT91_GPIO_PA3, AT91_PIN_PULLUP_DISABLE);
 
   // Set the bits. The logic is inverted 
-  HAL_ARM_AT91_GPIO_PUT(AT91_GPIO_PA1, !(val & 1));
-  HAL_ARM_AT91_GPIO_PUT(AT91_GPIO_PA2, !(val & 2));
-  HAL_ARM_AT91_GPIO_PUT(AT91_GPIO_PA3, !(val & 4));
-  HAL_ARM_AT91_GPIO_PUT(AT91_GPIO_PA4, !(val & 8));
+  HAL_ARM_AT91_GPIO_PUT(AT91_GPIO_PA0, !(val & 1));
+  HAL_ARM_AT91_GPIO_PUT(AT91_GPIO_PA1, !(val & 2));
+  HAL_ARM_AT91_GPIO_PUT(AT91_GPIO_PA2, !(val & 4));
+  HAL_ARM_AT91_GPIO_PUT(AT91_GPIO_PA3, !(val & 8));
 }
 
 //--------------------------------------------------------------------------
