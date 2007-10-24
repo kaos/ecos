@@ -1,7 +1,10 @@
 2007-10-24  Oyvind Harboe <oyvind.harboe@zylin.com>
+2007-10-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/malloc.cxx: Init priority for pool initialization is now
 	CYG_INIT_MEMALLOC instead of before CYG_INIT_LIBC
+
+	* src/heapgen.tcl: Ditto.
 
 2006-05-17  Andrew Lunn  <andrew.lunn@ascom.ch>
 
