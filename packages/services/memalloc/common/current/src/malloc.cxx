@@ -86,7 +86,7 @@ cyg_uint8 cyg_memalloc_mallocpool_memory[
 
 // the memory pool object itself
 CYGCLS_MEMALLOC_MALLOC_IMPL cyg_memalloc_mallocpool
-   CYGBLD_ATTRIB_INIT_BEFORE( CYG_INIT_MEMALLOC ) =
+   CYGBLD_ATTRIB_INIT_PRI( CYG_INIT_MEMALLOC ) =
    CYGCLS_MEMALLOC_MALLOC_IMPL( cyg_memalloc_mallocpool_memory,
                                 sizeof( cyg_memalloc_mallocpool_memory ) );
 
@@ -103,7 +103,7 @@ CYGCLS_MEMALLOC_MALLOC_IMPL cyg_memalloc_mallocpool
 # include <cyg/memalloc/memjoin.hxx>
 
 Cyg_Mempool_Joined<CYGCLS_MEMALLOC_MALLOC_IMPL> cyg_memalloc_mallocpool
-   CYGBLD_ATTRIB_INIT_BEFORE( CYG_INIT_MEMALLOC ) =
+   CYGBLD_ATTRIB_INIT_PRI( CYG_INIT_MEMALLOC ) =
      Cyg_Mempool_Joined<CYGCLS_MEMALLOC_MALLOC_IMPL>(
        CYGMEM_HEAP_COUNT, cygmem_memalloc_heaps
      );
