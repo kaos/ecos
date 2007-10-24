@@ -1,3 +1,8 @@
+2007-10-24  Oyvind Harboe <oyvind.harboe@zylin.com>
+
+	* src/malloc.cxx: Init priority for pool initialization is now
+	CYG_INIT_MEMALLOC instead of before CYG_INIT_LIBC
+
 2006-05-17  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* doc/memalloc.sgml: Fix parameters for calloc. Reported by
