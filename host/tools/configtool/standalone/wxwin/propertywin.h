@@ -93,7 +93,7 @@ private:
     int m_nFirstProperty;
     ecConfigItem *m_pti;
 
-    static const std::string ecPropertyListCtrl::visible_properties [];
+    static const std::string visible_properties [];
 	static const wxChar* sm_fieldTypeImage[ecMAXFIELDTYPE];
 };
 

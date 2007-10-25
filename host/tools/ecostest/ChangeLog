@@ -1,3 +1,8 @@
+2007-10-25  Gary Thomas  <gary@mlbassoc.com>
+
+	* common/eCosTest.h: Remove class qualifier - no longer legal
+	in GCC-4.x
+
 2006-07-10  John Dallaway  <jld@ecoscentric.com>
 
 	* common/eCosTestUtils.cpp, common/eCosTestUtils.h: Tweak function

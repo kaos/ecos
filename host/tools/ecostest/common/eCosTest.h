@@ -199,7 +199,7 @@ public:
   bool GetSizes();
 
   // Connect to a test server
-  static ServerStatus CeCosTest::Connect (LPCTSTR pszHostPort, CeCosSocket *&pSock, const ExecutionParameters &e,String &strInfo,Duration dTimeout=10*1000);
+  static ServerStatus Connect (LPCTSTR pszHostPort, CeCosSocket *&pSock, const ExecutionParameters &e,String &strInfo,Duration dTimeout=10*1000);
 
   // Log some output.  The accumulated output can be retrieved using Output()
   void Log (LPCTSTR  const pszFormat,...);

@@ -1,3 +1,8 @@
+2007-10-25  Gary Thomas  <gary@mlbassoc.com>
+
+	* standalone/wxwin/propertywin.h: Remove class qualifier - not
+	legal with GCC-4.x
+
 2006-09-06  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/configitem.cpp: Allow full 32-bit signed integer
