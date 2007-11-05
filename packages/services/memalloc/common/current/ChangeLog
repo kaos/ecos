@@ -1,3 +1,10 @@
+2007-11-05  Oyvind Harboe <oyvind.harboe@zylin.com>
+	
+	* cdl/memalloc.cdl: Added option CYGBLD_MEMALLOC_MALLOC_EXTERNAL_JOIN_H
+	to let applications implement a way to pick the pool to allocate memory
+	from based on an application specific heuristic.
+	* src/malloc.cxx: Use it.
+	
 2007-10-24  Oyvind Harboe <oyvind.harboe@zylin.com>
 2007-10-24  Jonathan Larmour  <jifl@eCosCentric.com>
 

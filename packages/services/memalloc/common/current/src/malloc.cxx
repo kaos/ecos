@@ -99,8 +99,11 @@ CYGCLS_MEMALLOC_MALLOC_IMPL cyg_memalloc_mallocpool
 
 #else 
 // multiple heaps
-
+#ifdef CYGBLD_MEMALLOC_MALLOC_EXTERNAL_JOIN_H
+# include CYGBLD_MEMALLOC_MALLOC_EXTERNAL_JOIN_H
+#else
 # include <cyg/memalloc/memjoin.hxx>
+#endif
 
 Cyg_Mempool_Joined<CYGCLS_MEMALLOC_MALLOC_IMPL> cyg_memalloc_mallocpool
    CYGBLD_ATTRIB_INIT_PRI( CYG_INIT_MEMALLOC ) =

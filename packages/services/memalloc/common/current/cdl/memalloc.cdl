@@ -305,6 +305,20 @@ cdl_package CYGPKG_MEMALLOC {
                            be set to a header which provides the equivalent
                            definitions to <pkgconf/heaps.hxx>."
         }
+        
+        cdl_component CYGBLD_MEMALLOC_MALLOC_EXTERNAL_JOIN_H {
+            display       "Use external implementation of joining multiple heaps"
+            flavor        booldata
+            default_value 0
+            description   "The default implementation of joining multiple heaps
+                           is fine for the case where there are multiple disjoint
+                           memory regions of the same type. However, in a system
+                           there might be e.g. a small amount of internal SRAM and
+                           a large amount of external DRAM. The SRAM is faster and
+                           the DRAM is slower. An application can implement some 
+                           heuristic to choose which pool to allocate from. This
+                           heuristic can be highly application specific."
+        }
 
         cdl_interface CYGINT_MEMALLOC_MALLOC_ALLOCATORS {
             display       "malloc() allocator implementations"
