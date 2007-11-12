@@ -1,5 +1,6 @@
 2007-11-12  Oyvind Harboe  <oyvind.harboe@zylin.com>
 
+	* include/jim.h: include file order fix; now compiles again.
 	* doc/athttpd.cdl: Fixed typos in doc. Return value from handler is not 
 	used, recommend returning 0 in doc.
 

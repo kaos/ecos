@@ -23,10 +23,10 @@
 #include <string.h>
 #include <errno.h>
 
+#include <pkgconf/athttpd.h>
 #ifndef JIM_STATICEXT
 #define JIM_EXTENSION
 #endif
-#include <pkgconf/athttpd.h>
 #include <cyg/athttpd/jim.h>
 
 #define AIO_CMD_LEN 128
