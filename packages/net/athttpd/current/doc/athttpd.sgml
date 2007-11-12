@@ -146,11 +146,12 @@ entry table      : an identifier unique to this entry.
 url_string       : a string with the extension url that will be appended to the
                    default directory.
 callback         : a function with a prototype:
-                   cyg_int32 callback_function(CYG_HTTPS_STATE*);
+                   cyg_int32 callback_function(CYG_HTTPD_STATE*); 
+                   Return value is ignored - just return 0.
 </programlisting></para>
 
 <para>
-<command>CYG_HTTPS_STATE*</command> is a pointer to a structure that
+<command>CYG_HTTPD_STATE*</command> is a pointer to a structure that
 contains, among others, a buffer (outbuffer) that can be used to send data
 out. The definitions of the structure is in http.h.</para>
 
@@ -167,7 +168,7 @@ CYG_HTTPD_HANDLER_TABLE_ENTRY(hal_cb_entry, "/myform.cgi", myForm);
 and somewhere in the source tree there is a function:</para>
 
 <programlisting>
-cyg_int32 myForm(CYG_HTTPS_STATE* p)
+cyg_int32 myForm(CYG_HTTPD_STATE* p)
 {
    cyg_httpd_start_chunked("html");
    strcpy(p->outbuffer, "eCos Web Server");
@@ -276,11 +277,11 @@ directory to see if a library by the same name is present, and if so load it
 and tries to execute a function inside the library with the following prototype:
 </para>
 
-<programlisting width=72>void exec_cgi(CYG_HTTPS_STATE *)
+<programlisting width=72>void exec_cgi(CYG_HTTPD_STATE *)
 </programlisting>
 
 <para>
-The pointer <command>CYG_HTTPS_STATE*</command> gives access to the socket 
+The pointer <command>CYG_HTTPD_STATE*</command> gives access to the socket 
 data: The user will use this pointer to access the 'outbuffer' and use it to
 copy data to send data out.
 </para>
