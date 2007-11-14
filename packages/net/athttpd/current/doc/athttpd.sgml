@@ -1,3 +1,4 @@
+<!-- DOCTYPE part  PUBLIC "-//OASIS//DTD DocBook V3.1//EN" -->
 <!-- =============================================================== -->
 <!--                                                                 -->
 <!--     athttpd.sgml                                                -->
@@ -8,7 +9,7 @@
 <!-- ####COPYRIGHTBEGIN####                                          -->
 <!--                                                                 -->
 <!-- =============================================================== -->
-<!-- Copyright (C) 2003, 2004 eCosCentric Ltd.                       -->
+<!-- Copyright (C) 2003, 2004, 2007 eCosCentric Ltd.                       -->
 <!-- This material may be distributed only subject to the terms      -->
 <!-- and conditions set forth in the Open Publication License, v1.0  -->
 <!-- or later (the latest version is presently available at          -->
@@ -361,6 +362,41 @@ we can use: start_chunked "html";
 <title>end_chunked</title>
 <programlisting width=72>end_chunked;</programlisting>
 <para>No parameters. Send back an end of frame to the client.</para>
+</sect3>
+
+<sect3 id="athttpd-tcl-hello-world">
+<title>tcl hello world example</title>
+<para>
+The following example demonstrates how to send a log file in the file
+<filename>/ram/log</filename> to a web client. It replaces
+newline characters with <literal>&lt;br&gt;</literal> so that it is formatted on the
+browser correctly.
+<programlisting width=72>
+start_chunked "html";
+
+set fp [aio.open "/ram/log" r];
+$fp seek 0 end;
+set fsize [$fp tell];
+$fp seek 0 start;
+set data "abcxxx";
+set data [$fp read $fsize];
+$fp close;
+set data [string map {\n &lt;br&gt;} $data];
+
+set datax "";
+append datax "&lt;html&gt;&lt;body&gt;" $data "&lt;/body&gt;&lt;/html&gt;";
+
+write_chunked $datax;
+end_chunked;
+</programlisting>
+</para>
+<para>
+The above file should exist on a filesystem
+on the embedded target within its <filename class=directory>cgi-bin</filename>
+directory, for example as <filename>/cgi-bin/hello.tcl</filename>. Thereafter
+it may be accessed at the URL
+<literal>http://<replaceable>TARGET_NAME</replaceable>/cgi-bin/hello.tcl</literal>.
+</para>
 </sect3>
 </sect2>
 </sect1>

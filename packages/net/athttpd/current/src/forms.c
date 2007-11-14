@@ -252,16 +252,6 @@ cyg_httpd_handle_method_POST(void)
     if (httpstate.mode & CYG_HTTPD_MODE_FORM_DATA)
         cyg_httpd_store_form_data(httpstate.post_data);
 
-    handler h = cyg_httpd_find_handler();
-    if (h != 0)
-    {
-        // A handler was found. We'll call the function associated to it.
-        h(&httpstate);
-        free(httpstate.post_data);
-        httpstate.post_data = NULL;
-        return;
-    }
-
 #if defined(CYGOPT_NET_ATHTTPD_USE_CGIBIN_OBJLOADER) || \
                            defined(CYGOPT_NET_ATHTTPD_USE_CGIBIN_TCL)
     // See if we are trying to execute a CGI via one of the supported methods.
@@ -282,6 +272,17 @@ cyg_httpd_handle_method_POST(void)
         return;
     }
 #endif    
+    
+    handler h = cyg_httpd_find_handler();
+    if (h != 0)
+    {
+        // A handler was found. We'll call the function associated to it.
+        h(&httpstate);
+        free(httpstate.post_data);
+        httpstate.post_data = NULL;
+        return;
+    }
+
 
     // No handler of any kind for a post request. Must send 404.
     cyg_httpd_send_error(CYG_HTTPD_STATUS_NOT_FOUND);

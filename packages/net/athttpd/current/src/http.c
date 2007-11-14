@@ -9,7 +9,7 @@
  * -------------------------------------------
  * This file is part of eCos, the Embedded Configurable Operating
  * System.
- * Copyright (C) 2005 eCosCentric Ltd.
+ * Copyright (C) 2005, 2007 eCosCentric Ltd.
  * 
  * eCos is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -708,15 +708,7 @@ cyg_httpd_format_header(void)
 void
 cyg_httpd_handle_method_GET(void)
 {
-    // Use defined handlers take precedence over other forms of response.
-    handler h = cyg_httpd_find_handler();
-    if (h != 0)
-    {
-        h(&httpstate);
-        return;
-    }
-    
-#ifdef CYGOPT_NET_ATHTTPD_USE_CGIBIN_OBJLOADER
+#if defined(CYGOPT_NET_ATHTTPD_USE_CGIBIN_OBJLOADER) || defined(CYGOPT_NET_ATHTTPD_USE_CGIBIN_TCL)
     // If the URL is a CGI script, there is a different directory...
     if (httpstate.url[0] == '/' &&
                     !strncmp(httpstate.url + 1, 
@@ -729,6 +721,15 @@ cyg_httpd_handle_method_GET(void)
     // If the OBJLOADER package is not loaded, then the request for a library
     //  will likely generate a 404.
 #endif    
+
+    // Use defined handlers take precedence over other forms of response.
+    handler h = cyg_httpd_find_handler();
+    if (h != 0)
+    {
+        h(&httpstate);
+        return;
+    }
+    
 
 #ifdef CYGOPT_NET_ATHTTPD_USE_FS
     // No handler, we'll redirect to the file system.
