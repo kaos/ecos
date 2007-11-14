@@ -1,3 +1,8 @@
+2006-11-13 Oyvind Harboe <oyvind.harboe@zylin.com>
+
+	* support/file2c.tcl : align romdisk data to 4 bytes. With a bit
+	of bad luck, it would not be long-word aligned.
+
 2006-08-04 Andrew Lunn <andrew.lunn@ascom.ch>
 	
 	* src/romfs.c (romfs_getinfo): Support for block usage call.

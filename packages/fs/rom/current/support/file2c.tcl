@@ -88,7 +88,7 @@ if { $status != 0 } {
 }
 
 append result "/* This is a generated file. Do not edit. */\n\n"
-append result "static const unsigned char filedata\[\] = {\n"
+append result "static CYGBLD_ATTRIB_ALIGN(4) const unsigned char filedata\[\] = {\n"
 
 set datalength [ string length $data ]
 
