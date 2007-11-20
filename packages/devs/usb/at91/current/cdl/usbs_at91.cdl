@@ -103,13 +103,14 @@ cdl_package CYGPKG_DEVS_USB_AT91 {
                    then select NONE"
         }
 
-        cdl_option CYGNUM_DEVS_USB_AT91_PIO_SET_PULLUP_INVERTED {
+        cdl_option CYGNUM_DEVS_USB_AT91_GPIO_SET_PULLUP_INVERTED {
             display       "Has the signal to be inverted?"
             flavor        bool
             default_value 1
             description "
                    This option indicates that the pullup pin should
-                   be inverted. ie VDD is active, VCC is inactive."
+                   be inverted. ie VDD is active, VCC is inactive. For the
+                   AT91SAM7SEK it needs to be inverted, hence this default."
         }
 
         cdl_option CYGDAT_DEVS_USB_AT91_GPIO_READ_POWER_PIN {
@@ -121,7 +122,7 @@ cdl_package CYGPKG_DEVS_USB_AT91 {
                    a pin then select NONE"
         }
 
-        cdl_option CYGNUM_DEVS_USB_AT91_PIO_READ_POWER_INVERTED {
+        cdl_option CYGNUM_DEVS_USB_AT91_GPIO_READ_POWER_INVERTED {
             display       "Has the signal to be inverted?"
             flavor        bool
             default_value 0

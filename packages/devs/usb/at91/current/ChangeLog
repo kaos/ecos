@@ -1,3 +1,13 @@
+2007-11-20  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/usbs_at91.cdl: Fixed typos in
+	CYGNUM_DEVS_USB_AT91_GPIO_PULLUP_INVERTED and
+	CYGNUM_DEVS_USB_AT91_GPIO_READ_POWER_INVERTED. Fixing the typo.
+
+	* src/usbs_at91.c (usbs_at91_set_pullup): Change the logic so that
+	CYGNUM_DEVS_USB_AT91_GPIO_PULLUP_INVERTED does actually cause an
+	invert when set true.
+	
 2006-09-07  John Eigelaar  <jeigelaar@mweb.co.za>
 
 	* cdl/usbs_at91.c: Read actual EP addresses from the EP configuartion
