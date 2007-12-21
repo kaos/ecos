@@ -267,6 +267,19 @@ clock.
       </varlistentry>
     </variablelist>
     <para>
+<function>profile_on</function> can be invoked multiple times, and
+on subsequent invocations, it will delete profiling data
+and allocate a fresh profiling range.
+    </para>
+    <para>
+Profiling can be turned off using the function
+<function>profile_off</function>:
+<programlisting>
+void profile_off(void);
+</programlisting>
+This will also reset any existing profile data.
+    </para>
+    <para>
 If the eCos configuration includes a TCP/IP stack and if a tftp daemon
 will be used to <link linkend="gprof-extract">extract</link> the data
 from the target then the call to <function>profile_on</function>

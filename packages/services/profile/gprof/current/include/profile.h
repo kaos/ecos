@@ -65,6 +65,9 @@
 __externC void profile_on(void *start_addr, void *end_addr, 
                           int bucket_size, int sample_resolution);
 
+// Disable and reset profiling
+__externC void profile_off(void);
+
 // Callback used by timer routine
 __externC void __profile_hit(CYG_ADDRWORD pc);
 

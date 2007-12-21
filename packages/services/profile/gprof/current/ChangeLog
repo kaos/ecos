@@ -1,3 +1,12 @@
+2007-12-14  Oyvind Harboe  <oyvind.harboe@zylin.com>
+2007-12-21  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/profile.h: Declare profile_off.
+	* src/profile.c: Added support for invoking profile_on() multiple
+	times. It now stops profiling and sets up a fresh profiling range
+	on every invocation using new profile_off() function.
+	* doc/profile.sgml: Document it.
+	
 2005-05-13  Peter Korsgaard  <jacmet@sunsite.dk>
 
 	* doc/profile.sgml: Fixed typo in HAL support section.

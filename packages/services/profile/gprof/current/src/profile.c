@@ -435,6 +435,32 @@ static struct tftpd_fileops profile_tftp_fileops = {
 #endif
 
 // ----------------------------------------------------------------------------
+// stop profiling
+void 
+profile_off(void)
+{
+    // suspend currently running profiling
+    profile_enabled = 0;
+    // Clear all pre-existing profile data
+    profile_reset();
+    if (profile_hist_data) {
+    	free(profile_hist_data);
+        profile_hist_data = NULL;
+    }
+#ifdef CYGPKG_PROFILE_CALLGRAPH
+    if (profile_arc_hashtable) {
+    	free(profile_arc_hashtable);
+        profile_arc_hashtable=NULL;
+    }
+    if (profile_arc_records) {
+    	free(profile_arc_records);
+        profile_arc_records=NULL;
+    }
+#endif
+}
+
+
+// ----------------------------------------------------------------------------
 // profile_on() has to be called by application code to start profiling.
 // Application code will determine the start and end addresses, usually
 // _stext and _etext, but it is possible to limit profiling to only
@@ -443,6 +469,12 @@ static struct tftpd_fileops profile_tftp_fileops = {
 // but requires more memory. The resolution is used to initialize the
 // profiling timer: more frequent interrupts means more accurate results
 // but increases the risk of an overflow.
+//
+// profile_on() can be invoked multiple times. If invoked a second time
+// it will stop the current profiling run and create a new profiling 
+// range.
+
+
 
 void 
 profile_on(void *_start, void *_end, int _bucket_size, int resolution)
@@ -451,6 +483,13 @@ profile_on(void *_start, void *_end, int _bucket_size, int resolution)
     cyg_uint32      version     = GMON_VERSION;
     CYG_ADDRWORD    text_size   = (CYG_ADDRWORD)_end - (CYG_ADDRWORD)_start;
 
+    if (profile_enabled)
+    {
+    	// invoking profile_on a second time
+    	profile_off();
+    }
+    
+    
     // Initialize statics. This also ensures that they won't be
     // garbage collected by the linker so a gdb script can safely
     // reference them.
@@ -540,6 +579,7 @@ profile_on(void *_start, void *_end, int _bucket_size, int resolution)
 
 #ifdef CYGPKG_PROFILE_TFTP    
     // Create a TFTP server to provide the data
+    // invoking this a second time is harmless
     (void) tftpd_start(CYGNUM_PROFILE_TFTP_PORT, &profile_tftp_fileops);
 #endif    
 }
