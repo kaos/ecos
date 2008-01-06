@@ -1,0 +1,116 @@
+# ====================================================================
+#
+#      phycore229x_eth_drivers.cdl
+#
+#      Ethernet drivers - platform support for phyCORE-LPC229x
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2008 eCosCentric Limited 
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+## -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      Uwe Kindler
+# Contributors:
+# Date:           2007-11-24
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_DEVS_ETH_ARM_PHYCORE229X {
+    display       "LAN ethernet driver for phyCORE-LPC229x"
+
+    parent        CYGPKG_IO_ETH_DRIVERS
+    active_if	  CYGPKG_IO_ETH_DRIVERS
+    active_if	  CYGPKG_HAL_ARM_LPC2XXX_PHYCORE229X
+
+    include_dir   cyg/io
+		
+    # 32-bit mode, with EEPROM
+    implements    CYGHWR_NET_DRIVERS
+    implements    CYGHWR_NET_DRIVER_ETH0
+    implements    CYGINT_DEVS_ETH_SMSC_LAN91CXX_REQUIRED
+    
+    requires      CYGPKG_DEVS_ETH_SMSC_LAN91CXX
+    requires      CYGNUM_DEVS_ETH_SMSC_LAN91CXX_INT_PRIO == CYGHWR_HAL_ARM_PHYCORE229X_ETH_INT_PRIO
+    
+    description   "This option includes the ethernet device driver for the
+                   phyCORE-LPC229x board."
+	
+    define_proc {
+        puts $::cdl_system_header "/***** ethernet driver proc output start *****/"
+        puts $::cdl_system_header "#define CYGDAT_DEVS_ETH_SMSC_LAN91CXX_INL <cyg/io/devs_eth_phycore229x.inl>"
+        puts $::cdl_system_header "#define CYGDAT_DEVS_ETH_SMSC_LAN91CXX_CFG <pkgconf/devs_eth_arm_phycore229x.h>"
+        puts $::cdl_system_header "/*****  ethernet driver proc output end  *****/"
+    }
+    
+    # Arguably this should do in the generic package
+    # but then there is a logic loop so you can never enable it.
+
+    cdl_interface CYGINT_DEVS_ETH_SMSC_LAN91CXX_REQUIRED {
+        display   "SMSC LAN91CXX driver required"
+    }
+
+    cdl_option CYGDAT_DEVS_ETH_ARM_PHYCORE229X_NAME {
+        display       "Device name for the ETH0 ethernet driver"
+        flavor        data
+        default_value {"\"eth0\""}
+        description   "
+            This option sets the name of the ethernet device."
+    }
+    
+    cdl_component CYGSEM_DEVS_ETH_ARM_PHYCORE229X_SET_ESA {
+            display       "Set the ethernet station address"
+            flavor        bool
+            default_value 0
+            description   "
+                Enabling this option will allow the ethernet
+                station address to be forced to the value set by the
+                configuration.  This may be required if the hardware does
+                not include a serial EEPROM for the ESA. The phyCORE
+                board contains an EEPROM so setting the ESA here is not
+                required. If RedBoot supports FLASH configuration then
+                the MAC address is configurable and a static MAC address
+                is not required."
+
+            cdl_option CYGDAT_DEVS_ETH_ARM_PHYCORE229X_ESA {
+                display       "The ethernet station address (MAC)"
+                flavor        data
+                default_value {"{0x12, 0x13, 0x14, 0x15, 0x16, 0x17}"}
+                description   "
+                    A static ethernet station address. Caution: Booting two systems 
+                    with the same MAC on the same network, will cause severe conflicts."     
+            }
+    }
+}
+
+# EOF phycore229x_eth_drivers.cdl
