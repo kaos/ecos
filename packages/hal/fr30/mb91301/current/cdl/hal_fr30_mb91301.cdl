@@ -1,0 +1,192 @@
+# ====================================================================
+#
+#      hal_fr30_mb91301.cdl
+#
+#      FR30/mb91301 variant architectural HAL package configuration data
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+##
+## Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+## at http://sources.redhat.com/ecos/ecos-license/
+## -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      larsi
+# Original data:  bartv, nickg
+# Contributors:
+# Date:           2006-07-09
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_HAL_FR30_MB91301 {
+    display       "MB91301 variant"
+    parent        CYGPKG_HAL_FR30
+    implements    CYGINT_HAL_FR30_VARIANT
+    hardware
+    include_dir   cyg/hal
+    define_header hal_fr30_mb91301.h
+    description   "
+           The MB91301 architecture HAL package provides generic support
+           for this processor architecture. It is also necessary to
+           select a specific target platform HAL package."
+
+
+    define_proc {
+        puts $::cdl_header "#include <pkgconf/hal_fr30.h>"
+    }
+
+    cdl_component CYGHWR_HAL_FR30_MB91301_SYSTEM_CLOCK_MHZ {
+        display "System clock speed in MHz"
+        flavor data
+        calculated { (CYGHWR_HAL_FR30_MB91301_CRYSTAL_SPEED * \
+                    CYGHWR_HAL_FR30_MB91301_CLKR) }
+        description    "This is the resulting base clock speed for the board.
+                It is calculated
+                CLKR * CRYSTAL_SPEED.
+                This is NOT the CPU Frequency."
+
+        cdl_option CYGHWR_HAL_FR30_MB91301_CRYSTAL_SPEED {
+            display "Crystal speed in Mhz"
+            flavor data
+            description  "You have to enter the speed of the mounted crystal here.
+                    The resulting base clock is calculated:
+                    CLKR * CRYSTAL_SPEED / CLKB_DIVIDER"
+            legal_values    1 to 17
+            default_value   15
+        }
+
+        cdl_option CYGHWR_HAL_FR30_MB91301_CLKR {
+            display "Main PLL multiply-by rate"
+            flavor data
+            description  "Using this value you can set the resulting base clock
+                    speed. It is calculated:
+                    CLKR * CRYSTAL_SPEED.
+                    DO NOT DO A SETTING HIGHER THAN 4 UNLESS YOU EXACTLY
+                    KNOW WHAT YOU A DOING! "
+            legal_values    1 to 8
+            default_value   4
+        }
+
+        cdl_option CYGHWR_HAL_FR30_MB91301_CLKB_DIVIDER {
+            display "Base clock divider"
+            flavor data
+            description  "Using this value you can limit the base clock speed.
+                    You set the divider. The resulting base clock speed
+                    is calculated:
+                    CLKB = system clock / divider
+                    CPU, internal memory and internal buses use this base clock!
+                    A value other than 1 can cause problems when using the stop
+                    mode of the CPU.
+                    See Fujitsu MB91301 hardware manual Chapter 5 for
+                    constraints on setting this value!"
+            legal_values    1 to 16
+            default_value   1
+        }
+
+        cdl_option CYGHWR_HAL_FR30_MB91301_CLKP_DIVIDER {
+            display "Peripheral clock divider"
+            flavor data
+            description  "Using this value you can set the peripheral clock
+                    speed. You set the divider. The resulting peripheral clock
+                    speed is calculated:
+                    CLKP = system clock / divider
+                    See Fujitsu MB91301 hardware manual Chapter 5 for constraints on setting
+                    this value!"
+            legal_values    1 to 16
+            default_value   4
+        }
+
+        cdl_option CYGHWR_HAL_FR30_MB91301_CLKT_DIVIDER {
+            display "External buses clock divider"
+            flavor data
+            description  "Using this value you can set the external buses clock
+                    speed. You set the divider. The resulting external buses
+                    clock speed is calculated:
+                    CLKT = system clock / divider
+                    See Fujitsu MB91301 hardware manual Chapter 5 for constraints on setting
+                    this value!"
+            legal_values    1 to 16
+            default_value   1
+        }
+
+    }
+
+
+    # Real-time clock/counter specifics
+    cdl_component CYGNUM_HAL_RTC_CONSTANTS {
+        display       "Real-time clock constants."
+        flavor        none
+
+        cdl_option CYGNUM_HAL_RTC_NUMERATOR {
+            display       "Real-time clock numerator"
+            flavor        data
+            default_value 1000000000
+        }
+        cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
+            display       "Real-time clock denominator"
+            flavor        data
+            default_value 100
+        }
+        cdl_option CYGNUM_HAL_RTC_PERIOD {
+            display       "Real-time clock period"
+            flavor        data
+            default_value {(CYGHWR_HAL_FR30_MB91301_CRYSTAL_SPEED * CYGHWR_HAL_FR30_MB91301_CLKR * 1000000) / (CYGHWR_HAL_FR30_MB91301_CLKP_DIVIDER * CYGNUM_HAL_RTC_DENOMINATOR * 32)}
+            description   "
+                The tick timer facility is used
+                to drive the eCos kernel RTC. Reload Timer 1 is used. The count
+                register decrements at the CLKP clock speed. We use prescaler 32.
+                By default we want 100 Hz."
+        }
+    }
+
+
+    compile       hal_diag.c var_misc.c variant.S
+
+    make {
+        <PREFIX>/lib/target.ld: <PACKAGE>/src/fr30_mb91301.ld
+        $(CC) -E -P -Wp,-MD,target.tmp -DEXTRAS=1 -xc $(INCLUDE_PATH) $(CFLAGS) -o $@ $<
+        @echo $@ ": \\" > $(notdir $@).deps
+        @tail -n +2 target.tmp >> $(notdir $@).deps
+        @echo >> $(notdir $@).deps
+        @rm target.tmp
+    }
+
+   cdl_option CYGBLD_LINKER_SCRIPT {
+       display "Linker script"
+       flavor data
+       no_define
+       calculated  { "src/fr30_mb91301.ld" }
+   }
+
+}
