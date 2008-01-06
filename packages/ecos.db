@@ -4251,6 +4251,78 @@ package CYGPKG_DEVS_ETH_FRV_CB70 {
                          Davicom DM9000 ethernet interface."
 }
 
+# FR30 packages
+
+package CYGPKG_HAL_FR30 {
+    alias       { "Fujitsu FR30 architecture (FR30/FR50/FR60)" hal_fr30
+                    fr30_hal }
+    directory   hal/fr30/arch
+    script      hal_fr30.cdl
+    hardware
+        description "
+The Fujitsu FR30 HAL package provides the generic support needed to run eCos on 
+a FR30 based microcontroller. FR50 and FR60 architectures should also select
+this one."
+}
+
+package CYGPKG_HAL_FR30_MB91360 {
+    alias       { "Fujitsu MB31360 variant (FR50)" hal_fr30_mb91360
+                    fr30_mb91360_hal }
+    directory   hal/fr30/mb91360
+    script      hal_fr30_mb91360.cdl
+    hardware
+        description "
+The Fujitsu MB91360 HAL package provides the support needed to run eCos on 
+the Phytec MB91F364G Kit board. It contains a MB91F364G
+Microcontroller from Fujitsu with a FR50 Core. So FR30 support is needed."
+}
+
+package CYGPKG_HAL_FR30_MB91301 {
+    alias       { "Fujitsu MB31301 variant (FR60)" hal_fr30_mb91301
+                    fr30_mb91301_hal }
+    directory   hal/fr30/mb91301
+    script      hal_fr30_mb91301.cdl
+    hardware
+        description "
+The Fujitsu MB91301 HAL package provides the support needed to run eCos on
+the Fujitsu Starterkit MB91302 Evaluation board. It contains a MB91302A
+Microcontroller from Fujitsu with a FR60 Core. So FR30 support is also needed."
+}
+
+package CYGPKG_HAL_FR30_MB91360_PHYTEC91F364G {
+    alias       { "Phytec Fujitsu MB91F364G Kit board" hal_fr30_phytec91f364g
+                    fr30_phytec91f364g_hal }
+    directory   hal/fr30/phytec91f364g
+    script      hal_fr30_phytec91f364g.cdl
+    hardware
+        description "
+The Phytec91f364g HAL package provides the support needed to run eCos on 
+the Phytec Fujitsu MB91F364G Kit board. It contains a MB91F364G
+Microcontroller from Fujitsu with a FR50 Core. So FR30 support is needed."
+}
+
+package CYGPKG_HAL_FR30_MB91301_SKMB91302 {
+    alias       { "Fujitsu Starterkit MB91302 board" hal_fr30_skmb91302
+                    fr30_skmb91302_hal }
+    directory   hal/fr30/skmb91302
+    script      hal_fr30_skmb91302.cdl
+    hardware
+        description "
+The SKMB91302 HAL package provides the support needed to run eCos on
+the Fujitsu Starterkit MB91302 board. It contains a MB91302
+Microcontroller from Fujitsu with a FR60 Core. So FR30 support is needed."
+}
+
+package CYGPKG_DEVS_FLASH_FR30_SKMB91302 {
+    alias       { "Fujitsu Starterkit MB91302 FLASH memory support" flash_skmb91302 }
+    directory   devs/flash/fr30/skmb91302
+    script      flash_skmb91302.cdl
+    hardware
+        description "
+           This package contains hardware support for FLASH memory
+       on the Fujitsu Starterkit MB91302 platform.
+        (AMD 29DL640E-90 Device)"
+}
 
 package CYGPKG_DEVS_ETH_ARM_AT91 {
         alias           { "AT91 Ethernet driver" at91_eth_driver }
@@ -4313,7 +4385,35 @@ The MB93093 target provides the packages needed to run eCos on a Fujitsu
 MB93090-PD00 Portable Development Kit."
 }
 
+# FR30 Targets
 
+target phytec91f364g {
+    alias { "Phytec Fujitsu MB91F364G Kit board" phytec91f364g }
+    packages { CYGPKG_HAL_FR30
+                   CYGPKG_HAL_FR30_MB91360
+                   CYGPKG_HAL_FR30_MB91360_PHYTEC91F364G
+}
+        description "
+The Phytec91f364g HAL package provides the support needed to run eCos on 
+the Phytec Fujitsu MB91F364G Kit board. It contains a MB91F364G
+Microcontroller from Fujitsu with a FR50 Core. So FR30 support is
+included."
+}
+
+target skmb91302 {
+    alias { "Fujitsu Starterkit MB91302 board" skmb91302 }
+    packages { CYGPKG_HAL_FR30
+                   CYGPKG_HAL_FR30_MB91301
+                   CYGPKG_HAL_FR30_MB91301_SKMB91302
+                   CYGPKG_DEVS_FLASH_FR30_SKMB91302
+                   CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
+}
+        description "
+The Starterkit MB91302 HAL package provides the support needed to run
+eCos on the Fujitsu Starterkit MB91302 board. It contains a MB91302
+Microcontroller from Fujitsu with a FR60 Core. So FR30 support is
+included."
+}
 
 # --------------------------------------------------------------------------
 # ARM Targets

@@ -1,7 +1,12 @@
+2008-01-06   Lars Poeschel <larsi@wh2.tu-dresden.de>
+
+	* NEWS
+	* ecos.db: Add FR30, skmb91302 board from Fujitsu
+	
 2008-01-04   Uwe Kindler <uwe_kindler@web.de>
 
 	* NEWS:
-	* ecos.db:y Add phyCORE229x platform, target, ethernet driver and
+	* ecos.db: Add phyCORE229x platform, target, ethernet driver and
 	flash driver
 
 2007-07-02   uwe.kindler <uwe.kindler@cetoni.de>

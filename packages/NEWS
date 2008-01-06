@@ -1,3 +1,4 @@
+* FR30 arch, mb91301 variant and skmb91302 platform by Lars Poeschel.
 * phyCORE-LPC2294/92 port including flash and CAN by Uwe Kindler.
 * AT91 CAN driver by Uwe Kindler.
 * AT91 Ethernet device driver for EMAC by John Eigelaar and Andrew Lunn. 
