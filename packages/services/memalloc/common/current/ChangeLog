@@ -1,3 +1,13 @@
+2008-01-06  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/dlmalloc.cxx (MALLOC_COPY): 
+	* cdl/memalloc.cdl: Use memmove instead of memcpy which can go
+	wrong in realloc() when the new and old block overlaps.
+	CYGIMP_MEMALLOC_ALLOCATOR_DLMALLOC_USE_MEMCPY has been retained
+	instead of being renamed to ..._MEMMOVE to help backward
+	compatibility with older configurations. Thanks to Oyvind Harboe
+	and Dave Lawrence.
+
 2007-11-05  Oyvind Harboe <oyvind.harboe@zylin.com>
 	
 	* cdl/memalloc.cdl: Added option CYGBLD_MEMALLOC_MALLOC_EXTERNAL_JOIN_H
@@ -10,7 +20,6 @@
 
 	* src/malloc.cxx: Init priority for pool initialization is now
 	CYG_INIT_MEMALLOC instead of before CYG_INIT_LIBC
-
 	* src/heapgen.tcl: Ditto.
 
 2006-05-17  Andrew Lunn  <andrew.lunn@ascom.ch>

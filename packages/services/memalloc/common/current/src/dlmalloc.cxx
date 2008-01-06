@@ -295,7 +295,7 @@
 
 #ifdef CYGIMP_MEMALLOC_ALLOCATOR_DLMALLOC_USE_MEMCPY
 
-#include <string.h>                    // memcpy, memset
+#include <string.h>                    // memmove, memset
 
 /* The following macros are only invoked with (2n+1)-multiples of
    INTERNAL_SIZE_T units, with a positive integer n. This is exploited
@@ -333,7 +333,7 @@ do {                                                                          \
                                      *mcdst++ = *mcsrc++;                     \
                                      *mcdst++ = *mcsrc++;                     \
                                      *mcdst   = *mcsrc  ;                     \
-  } else memcpy(dest, src, mcsz);                                             \
+  } else memmove(dest, src, mcsz);                                             \
 } while(0)
 
 #else /* !CYGIMP_MEMALLOC_ALLOCATOR_DLMALLOC_USE_MEMCPY */

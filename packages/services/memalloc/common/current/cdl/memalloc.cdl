@@ -176,11 +176,11 @@ cdl_package CYGPKG_MEMALLOC {
             }
 
            cdl_option CYGIMP_MEMALLOC_ALLOCATOR_DLMALLOC_USE_MEMCPY {
-                display       "Use system memcpy() and memset()"
+                display       "Use system memmove() and memset()"
                 requires      CYGPKG_ISOINFRA
                 default_value { 0 != CYGPKG_ISOINFRA }
                 description   "
-                    This may be used to control whether memset() and memcpy()
+                    This may be used to control whether memset() and memmove()
                     are used within the implementation. The alternative is
                     to use some macro equivalents, which some people report
                     are faster in some circumstances."
