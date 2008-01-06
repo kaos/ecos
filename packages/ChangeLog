@@ -1,3 +1,9 @@
+2008-01-04   Uwe Kindler <uwe_kindler@web.de>
+
+	* NEWS:
+	* ecos.db:y Add phyCORE229x platform, target, ethernet driver and
+	flash driver
+
 2007-07-02   uwe.kindler <uwe.kindler@cetoni.de>
 
 	* ecos.db CAN driver for LPC2xxx. Updated entry for loop

@@ -447,6 +447,16 @@ package CYGPKG_DEVS_FLASH_PHYCORE {
 	   on the PHYTEC phyCORE AT91M55800A platform(s)."
 }
 
+package CYGPKG_DEVS_FLASH_PHYCORE229X {
+        alias           { "FLASH memory support for Phytec phyCORE-LPC229x" flash_phycore229x }
+        directory       devs/flash/arm/phycore229x
+        script          flash_phycore229x.cdl
+        hardware
+        description "
+           This package contains hardware support for FLASH memory
+           on the Phytec phyCORE-LPC229x platform(s)."
+}
+
 package CYGPKG_DEVS_FLASH_ASSABET {
 	alias 		{ "FLASH memory support for Intel SA1110 (Assabet)" flash_assabet }
 	directory	devs/flash/arm/assabet
@@ -1221,6 +1231,14 @@ package CYGPKG_DEVS_ETH_ARM_NETARM {
 	directory	devs/eth/arm/netarm
 	script		netarm_eth_driver.cdl
         description     "Ethernet driver for NETARM."
+}
+
+package CYGPKG_DEVS_ETH_ARM_PHYCORE229X {
+      alias           { "Ethernet driver for phyCORE-LPC229x board" devs_eth_arm_phycore229x }
+      hardware
+      directory       devs/eth/arm/phycore229x
+      script          phycore229x_eth_drivers.cdl
+      description     "Ethernet device driver for phyCORE-LPC229x board"
 }
 
 package CYGPKG_IO_SERIAL_SH_EDK7708 {
@@ -2706,6 +2724,16 @@ package CYGPKG_HAL_ARM_LPC2XXX_P2106 {
         description "
         The p2106 HAL package provides the support needed to run eCos on an the
         LPC-2106 evaluation board from Olimex."
+}
+
+package CYGPKG_HAL_ARM_LPC2XXX_PHYCORE229X {
+        alias           { "phyCORE-LPC229x development board" arm_lpc2xxx_phycore229x }
+        directory       hal/arm/lpc2xxx/phycore229x
+        script          hal_arm_lpc2xxx_phycore229x.cdl
+        hardware
+        description "
+            The Phycore HAL package provides the support needed to run eCos 
+            on a Phytec phyCORE-LPC229x development board."
 }
 
 package CYGPKG_HAL_ARM_LPC2XXX_LPCMT {
@@ -4554,6 +4582,26 @@ target lpcmt {
         description "
         The lpcmt target provides the packages needed to run eCos on the
         LPC-LPCMT evaluation board from Olimex."
+}
+
+target phycore229x {
+        alias { "phyCORE-LPC2294/92 development board HAL" phycore229x }
+        packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_LPC2XXX
+                   CYGPKG_HAL_ARM_LPC2XXX_PHYCORE229X 
+                   CYGPKG_IO_SERIAL_GENERIC_16X5X
+                   CYGPKG_IO_SERIAL_ARM_LPC2XXX
+                   CYGPKG_DEVICES_WATCHDOG_ARM_LPC2XXX
+                   CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
+                   CYGPKG_DEVS_FLASH_PHYCORE229X
+                   CYGPKG_DEVS_ETH_ARM_PHYCORE229X
+                   CYGPKG_DEVS_ETH_SMSC_LAN91CXX
+                   CYGPKG_DEVS_CAN_LPC2XXX
+        }
+        description "
+            The phyCORE-LPC229x HAL package provides the support
+            needed to run eCos on a Phytec phyCORE-LPC2294/2
+            development board."
 }
 
 target mace1 {

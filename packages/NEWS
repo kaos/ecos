@@ -1,3 +1,4 @@
+* phyCORE-LPC2294/92 port including flash and CAN by Uwe Kindler.
 * AT91 CAN driver by Uwe Kindler.
 * AT91 Ethernet device driver for EMAC by John Eigelaar and Andrew Lunn. 
 * MMC/SPI driver provided by eCosCentric Ltd.
