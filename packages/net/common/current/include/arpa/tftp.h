@@ -70,6 +70,7 @@
 #define	DATA	03			/* data packet */
 #define	ACK	04			/* acknowledgement */
 #define	ERROR	05			/* error code */
+#define	OACK	06			/* option acknowledge */
 
 struct	tftphdr {
 	short	th_opcode;		/* packet type */

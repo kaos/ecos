@@ -167,6 +167,31 @@ cdl_package CYGPKG_NET {
             threads can have precedence over TFTP server processing."
         }
 
+		cdl_component CYGPKG_NET_TFTPD_CLIENT_BIG_PACKET {
+		      display "Extension to allow negotiation of big packets"
+		      requires CYGINT_ISO_STDIO_FORMATTED_IO
+		      flavor bool
+		      default_value 0
+		      description   "
+                          Implements RFC 2348, an optional extension
+		          to the TFTP protocol to allow the client and
+		          server to negotiate to use bigger
+		          packets. This can make upload/download
+		          faster"
+		
+		      cdl_option  CYGPKG_NET_TFTPD_CLIENT_BIG_PACKET_SIZE {
+		          display  "Packet size to negotiate"
+		          flavor    data
+		          default_value 512
+		          legal_values 512 to 65464
+		          description "
+		              Size of the packets to negotiate. In an error 
+                              free environment, bigger packets will result 
+                              in faster transfers."
+		      }
+		}
+		
+ 
         cdl_option CYGPKG_NET_TFTPD_THREAD_STACK_SIZE {
             display "Stack size for TFTP threads."
             flavor  data

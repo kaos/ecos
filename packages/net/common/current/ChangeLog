@@ -1,3 +1,10 @@
+2007-12-21  Oyvind Harboe <oyvind.harboe@zylin.com>
+
+	* src/tftp_client.c, include/arpa/tftp.h, cdl/net.cdl: tftp
+	blksize negotiation support. >512 byte block sizes improves tftp
+	GET performance.  Switched to memcpy(), which matters for larger
+	blocks.
+	 
 2007-01-15  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/dhcp_support.c (dhcp_mgt_entry): Better handling when restarting
