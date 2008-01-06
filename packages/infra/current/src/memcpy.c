@@ -92,9 +92,13 @@ memcpy( void *s1, const void *s2, size_t n ) __attribute__((weak,
 void *
 _memcpy( void *s1, const void *s2, size_t n )
 {
-#if defined(CYGIMP_INFRA_PREFER_SMALL_TO_FAST_MEMCPY) || defined(__OPTIMIZE_SIZE__)
     char *dst = (char *) s1;
     const char *src = (const char *) s2;
+
+    CYG_ASSERT((dst >= (src+n)) || ((dst+n) <= src),
+               "memcpy() has undefined result for overlapping copies");
+	
+#if defined(CYGIMP_INFRA_PREFER_SMALL_TO_FAST_MEMCPY) || defined(__OPTIMIZE_SIZE__)
     
 #ifdef CYG_TRACING_FIXED
     CYG_REPORT_FUNCNAMETYPE( "_memcpy", "returning %08x" );
@@ -119,8 +123,6 @@ _memcpy( void *s1, const void *s2, size_t n )
 #endif
     return s1;
 #else
-    char *dst;
-    const char *src;
     CYG_WORD *aligned_dst;
     const CYG_WORD *aligned_src;
     
@@ -128,8 +130,6 @@ _memcpy( void *s1, const void *s2, size_t n )
     CYG_REPORT_FUNCNAMETYPE( "_memcpy", "returning %08x" );
 #endif
 
-    dst = (char *)s1;
-    src = (const char *)s2;
 
 #ifdef CYG_TRACING_FIXED
     CYG_REPORT_FUNCARG3( "dst=%08x, src=%08x, n=%d", dst, src, n );

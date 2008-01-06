@@ -1,3 +1,9 @@
+2007-12-28  Oyvind Harboe <oyvind.harboe@zylin.com>
+	
+	* src/memcpy.cxx: added assert when memory areas for memcpy()
+	overlaps => result is undefined. It is important to catch *all*
+	cases of this if adding an optimisation for unaligned copy.
+	
 2007-06-28  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/tcdiag.cxx: 
