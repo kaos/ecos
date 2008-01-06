@@ -308,12 +308,12 @@ rtfree(rt)
 		 * This also frees the gateway, as they are always malloc'd
 		 * together.
 		 */
-		Free(rt_key(rt));
+		R_Free(rt_key(rt));
 
 		/*
 		 * and the rtentry itself of course
 		 */
-		Free(rt);
+		R_Free(rt);
 	}
 }
 
@@ -663,7 +663,7 @@ rtrequest(req, dst, gateway, netmask, flags, ret_nrt)
 		 * also add the rt_gwroute if possible.
 		 */
 		if ((error = rt_setgate(rt, dst, gateway)) != 0) {
-			Free(rt);
+			R_Free(rt);
 			senderr(error);
 		}
 
@@ -727,8 +727,8 @@ rtrequest(req, dst, gateway, netmask, flags, ret_nrt)
 			if (rt->rt_ifa) {
 				IFAFREE(rt->rt_ifa);
 			}
-			Free(rt_key(rt));
-			Free(rt);
+			R_Free(rt_key(rt));
+			R_Free(rt);
 			senderr(EEXIST);
 		}
 
@@ -968,7 +968,7 @@ rt_setgate(rt0, dst, gate)
 	 */
 	if (old) {
 		Bcopy(dst, new, dlen);
-		Free(old);
+		R_Free(old);
 	}
 
 	/*

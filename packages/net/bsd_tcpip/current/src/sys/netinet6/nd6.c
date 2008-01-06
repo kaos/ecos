@@ -1527,7 +1527,7 @@ nd6_rtrequest(req, rt, sa)
 		rt->rt_flags &= ~RTF_LLINFO;
 		if (ln->ln_hold)
 			m_freem(ln->ln_hold);
-		Free((caddr_t)ln);
+		R_Free((caddr_t)ln);
 	}
 }
 

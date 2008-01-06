@@ -1,3 +1,15 @@
+2008-01-06  Shaun Louie <sal@microplex.com>
+
+	* include/net/radix.h
+	* src/sys/net/radix.c
+	* src/sys/net/route.c
+	* src/sys/net/rtsock.c
+	* src/sys/netinet/if_ether.c
+	* src/sys/netinet6/icmp6.c
+	* src/sys/netinet6/nd6.c: Change Free to R_Free() so that it
+	corresponds to R_Malloc, and allows Free() wrappers in other
+	places.
+
 2007-09-27  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/sys/net/if.c (ifioctl): Add missing ioctl functions

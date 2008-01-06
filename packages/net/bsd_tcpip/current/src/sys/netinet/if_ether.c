@@ -290,7 +290,7 @@ arp_rtrequest(req, rt, sa)
 		rt->rt_flags &= ~RTF_LLINFO;
 		if (la->la_hold)
 			m_freem(la->la_hold);
-		Free((caddr_t)la);
+		R_Free((caddr_t)la);
 	}
 }
 

@@ -408,7 +408,7 @@ route_output(m, so)
 				if (new_rtm == 0)
 					senderr(ENOBUFS);
 				Bcopy(rtm, new_rtm, rtm->rtm_msglen);
-				Free(rtm); rtm = new_rtm;
+				R_Free(rtm); rtm = new_rtm;
 			}
 			(void)rt_msg2(rtm->rtm_type, &info, (caddr_t)rtm,
 				(struct walkarg *)0);
@@ -492,7 +492,7 @@ flush:
 	if ((so->so_options & SO_USELOOPBACK) == 0) {
 		if (route_cb.any_count <= 1) {
 			if (rtm)
-				Free(rtm);
+				R_Free(rtm);
 			m_freem(m);
 			return (error);
 		}
@@ -506,7 +506,7 @@ flush:
 			m = NULL;
 		} else if (m->m_pkthdr.len > rtm->rtm_msglen)
 			m_adj(m, rtm->rtm_msglen - m->m_pkthdr.len);
-		Free(rtm);
+		R_Free(rtm);
 	}
 	if (rp)
 		rp->rcb_proto.sp_family = 0; /* Avoid us */

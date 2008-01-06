@@ -3520,7 +3520,7 @@ icmp6_mtuexpire(rt, rtt)
 	struct rttimer *rtt;
 {
 	rt->rt_flags |= RTF_PROBEMTU;
-	Free(rtt);
+	R_Free(rtt);
 }
 
 int *icmp6_sysvars[] = ICMPV6CTL_VARS;

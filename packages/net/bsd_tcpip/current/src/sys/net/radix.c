@@ -494,7 +494,7 @@ rn_addmask(n_arg, search, skip)
 	x = rn_insert(cp, mask_rnhead, &maskduplicated, x);
 	if (maskduplicated) {
 		log(LOG_ERR, "rn_addmask: mask impossibly already in tree");
-		Free(saved_x);
+		R_Free(saved_x);
 		return (x);
 	}
 	/*
