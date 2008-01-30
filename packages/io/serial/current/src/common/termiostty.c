@@ -190,7 +190,7 @@ static const cc_t c_cc_init[ NCCS ] = {
 
 // map eCos bitrates to POSIX bitrates.
 static speed_t ecosbaud2posixbaud[] = {
-    0, B50, B75, B110, B134, B150, B200, B300, B600, B1200, B2400, B3600,
+    0, B50, B75, B110, B134, B150, B200, B300, B600, B1200, B1800, B2400, B3600,
     B4800, B7200, B9600, B14400, B19200, B38400, B57600, B115200, B230400 };
 
 // map POSIX bitrates to eCos bitrates.
@@ -580,6 +580,7 @@ termios_lookup(struct cyg_devtab_entry **tab,
     if ( !priv->init ) {
         cyg_drv_mutex_lock( &priv->lock );
         if ( !priv->init ) {  // retest as we may have been pre-empted
+            priv->init = true;
             priv->dev_handle = chan;
             err = real_termios_init( priv );
         }

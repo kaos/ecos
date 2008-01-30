@@ -1,3 +1,14 @@
+2008-01-30  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/common/termiostty.c (termios_lookup): Add missing set of
+	init flag. Pointed out by Rainer Arndt.
+
+	
+2008-01-30  Rainer Arndt <Arndt-ADT@kieback-peter.de>
+
+	* src/common/termiostty.c (ecosbaud2posixbaud[]): Add missing
+	B1800 entry.
+
 2006-08-31  Ilija Koco  <ilijak@siva.com.mk>
 	    Andrew Lunn <andrew.lunn@ascom.ch>
 	
