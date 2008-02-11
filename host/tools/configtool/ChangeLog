@@ -1,3 +1,8 @@
+2008-02-11  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/configitem.cpp: Fix memory leak when unloading a
+	package. [ Bugzilla 1000072 ]
+
 2007-10-25  Gary Thomas  <gary@mlbassoc.com>
 
 	* standalone/wxwin/propertywin.h: Remove class qualifier - not

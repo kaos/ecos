@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
 // Copyright (C) 2003 John Dallaway
-// Copyright (C) 2004, 2005, 2006 eCosCentric Limited
+// Copyright (C) 2004, 2005, 2006, 2008 eCosCentric Limited
 //
 // This program is part of the eCos host tools.
 //
@@ -552,7 +552,7 @@ void ecMainFrame::OnAbout(wxCommandEvent& WXUNUSED(event))
 //    ecAboutDialog dialog(this, ecID_ABOUT_DIALOG, _("About eCos Configuration Tool"));
 //    dialog.ShowModal();
 	wxString msg;
-	msg.Printf("eCos Configuration Tool %s (%s %s)\n\nCopyright (c) Red Hat, Inc. 1998-2002\nCopyright (c) John Dallaway 2003\nCopyright (c) eCosCentric Limited 2004-2006", ecCONFIGURATION_TOOL_VERSION, __DATE__, __TIME__);
+	msg.Printf("eCos Configuration Tool %s (%s %s)\n\nCopyright (c) Red Hat, Inc. 1998-2002\nCopyright (c) John Dallaway 2003\nCopyright (c) eCosCentric Limited 2004-2008", ecCONFIGURATION_TOOL_VERSION, __DATE__, __TIME__);
     wxMessageBox(msg, _("About eCos Configuration Tool"), wxICON_INFORMATION | wxOK);
 }
 

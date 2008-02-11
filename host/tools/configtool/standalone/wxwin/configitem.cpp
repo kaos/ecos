@@ -2,7 +2,7 @@
 //
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
-// Copyright (C) 2006 eCosCentric Limited
+// Copyright (C) 2006, 2008 eCosCentric Limited
 //
 // This program is part of the eCos host tools.
 //
@@ -718,6 +718,8 @@ bool ecConfigItem::Unload()
         {
             item->SetTreeItem(wxTreeItemId()); // Make sure we can't attempt to paint it
             item->SetCdlItem(NULL); // Make sure we can't access stale data
+            pDoc->GetItems().DeleteObject(this); // Delete from the item list
+            delete item; // Delete the item itself
         }
         node = node->Next();
     }
