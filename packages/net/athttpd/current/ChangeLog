@@ -1,3 +1,8 @@
+2008-03-04  Danny Sade  <danny@channelot.com>
+
+	* src/socket.c: put NULL at the end of inbuff on each iteration,
+	preventing strstr from looking at old data beyond inbuffer_len
+
 2007-11-12  Oyvind Harboe  <oyvind.harboe@zylin.com>
 2007-11-12  Jonathan Larmour  <jifl@eCosCentric.com>
 

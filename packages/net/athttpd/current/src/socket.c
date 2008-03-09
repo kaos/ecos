@@ -257,6 +257,7 @@ cyg_httpd_process_request(cyg_int32 index)
         }  
     
         httpstate.inbuffer_len += len;
+        httpstate.inbuffer[httpstate.inbuffer_len] = '\0';
     }
     
     httpstate.inbuffer[httpstate.inbuffer_len] = '\0';
