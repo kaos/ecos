@@ -238,8 +238,13 @@ bool ecConfigItem::UpdateTreeItem(ecConfigTreeCtrl& treeCtrl)
 {
     treeCtrl.SetItemText(m_treeItem, m_name);
 
+#if wxCHECK_VERSION(2, 6, 0)
+    static wxColour normalColour = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
+    static wxColour disabledColour = wxSystemSettings::GetColour(wxSYS_COLOUR_GRAYTEXT);
+#else
     static wxColour normalColour = wxSystemSettings::GetSystemColour(wxSYS_COLOUR_WINDOWTEXT);
     static wxColour disabledColour = wxSystemSettings::GetSystemColour(wxSYS_COLOUR_GRAYTEXT);
+#endif
 
     treeCtrl.SetItemTextColour(m_treeItem, GetActive() ? normalColour : disabledColour);
     
@@ -710,6 +715,21 @@ bool ecConfigItem::Unload()
 
     wxGetApp().GetTreeCtrl()->Delete(GetTreeItem());
 
+#if wxCHECK_VERSION(2, 6, 0)
+    wxNode* node = pDoc->GetItems().GetFirst();
+    while (node)
+    {
+        ecConfigItem* item = wxDynamicCast(node->GetData(), ecConfigItem);
+        if (package == item->GetOwnerPackage())
+        {
+            item->SetTreeItem(wxTreeItemId()); // Make sure we can't attempt to paint it
+            item->SetCdlItem(NULL); // Make sure we can't access stale data
+            pDoc->GetItems().DeleteObject(this); // Delete from the item list
+            delete item; // Delete the item itself
+        }
+        node = node->GetNext();
+    }
+#else
     wxNode* node = pDoc->GetItems().First();
     while (node)
     {
@@ -723,6 +743,7 @@ bool ecConfigItem::Unload()
         }
         node = node->Next();
     }
+#endif
 
     const wxString strMacroName(GetMacro());
     //TRACE (wxT("Unloading package %s\n"), strMacroName);
@@ -884,7 +905,11 @@ ecConfigItem *ecConfigItem::FirstChild() const
 { 
     ecConfigTreeCtrl* treeCtrl = wxGetApp().GetTreeCtrl();
 
-    long cookie;
+#if wxCHECK_VERSION(2, 6, 0)
+		wxTreeItemIdValue cookie;
+#else
+        long cookie;
+#endif
     wxTreeItemId hChild=treeCtrl->GetFirstChild(GetTreeItem(), cookie);
     if (hChild)
     {

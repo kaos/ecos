@@ -163,7 +163,12 @@ protected:
 
 private:
     DECLARE_EVENT_TABLE()
+
+#if wxCHECK_VERSION(2, 6, 0)
+    DECLARE_DYNAMIC_CLASS(ecScrolledWindow);
+#else
     DECLARE_ABSTRACT_CLASS(ecScrolledWindow)
+#endif
 	};
 
 #else

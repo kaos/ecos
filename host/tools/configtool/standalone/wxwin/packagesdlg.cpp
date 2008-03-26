@@ -498,7 +498,11 @@ void ecPackagesDialog::Add(wxListBox* from, wxListBox* to)
         }
         
         // Now delete from one list and remove from t'other
+#if wxCHECK_VERSION(2, 6, 0)
+        for (i = 0; i < selectionsStrings.GetCount(); i++)
+#else
         for (i = 0; i < selectionsStrings.Number(); i++)
+#endif
         {
             wxString str = selectionsStrings[i];
             

@@ -159,7 +159,11 @@ void ecConfigToolView::OnUpdate(wxView *WXUNUSED(sender), wxObject *hintObj)
         
         {
             int nItem;
+#if wxCHECK_VERSION(2, 6, 0)
+            for(nItem=0;nItem<pDoc->GetItems().GetCount();nItem++)
+#else
             for(nItem=0;nItem<pDoc->GetItems().Number();nItem++)
+#endif
             {
                 ecConfigItem *pItem = (ecConfigItem*) pDoc->GetItems()[nItem];
                 wxTreeItemId treeItem = pItem->GetTreeItem();
@@ -195,7 +199,11 @@ void ecConfigToolView::OnUpdate(wxView *WXUNUSED(sender), wxObject *hintObj)
     case ecNameFormatChanged:
         {
             int nItem;
+#if wxCHECK_VERSION(2, 6, 0)
+            for(nItem=0;nItem<pDoc->GetItems().GetCount();nItem++)
+#else
             for(nItem=0;nItem<pDoc->GetItems().Number();nItem++)
+#endif
             {
                 ecConfigItem *pItem = (ecConfigItem*) pDoc->GetItems()[nItem];
                 wxString strName(pItem->GetItemNameOrMacro());
@@ -264,7 +272,11 @@ void ecConfigToolView::OnUpdate(wxView *WXUNUSED(sender), wxObject *hintObj)
     case ecExternallyChanged:
         {
             int nItem;
+#if wxCHECK_VERSION(2, 6, 0)
+            for(nItem=0;nItem<pDoc->GetItems().GetCount();nItem++)
+#else
             for(nItem=0;nItem<pDoc->GetItems().Number();nItem++)
+#endif
             {
                 ecConfigItem *pItem = (ecConfigItem*) pDoc->GetItems()[nItem];
                 pItem->UpdateTreeItem(* treeCtrl);
@@ -382,8 +394,11 @@ ecConfigItem *ecConfigToolView::DoFind(const wxString& what, wxWindow* parent)
     ecConfigToolDoc *pDoc = wxGetApp().GetConfigToolDoc();
     if (!pDoc)
         return NULL;
-
+#if wxCHECK_VERSION(2, 6, 0)
+    int nCount = pDoc->GetItems().GetCount();
+#else
     int nCount = pDoc->GetItems().Number();
+#endif
 
     // static LPCTSTR arWhereImage[]={_T("name"),_T("macro"),_T("description string"),_T("current value"),_T("default value")};
     
@@ -458,7 +473,9 @@ ecConfigItem *ecConfigToolView::DoFind(const wxString& what, wxWindow* parent)
 
         wxTreeItemId h=pItem->GetTreeItem();
         // Is h visible?
+
         wxTreeItemId hv;
+
         for(hv=wxGetApp().GetTreeCtrl()->GetFirstVisibleItem();hv;hv=wxGetApp().GetTreeCtrl()->GetNextVisible(hv))
         {
             if(hv==h)
@@ -466,7 +483,12 @@ ecConfigItem *ecConfigToolView::DoFind(const wxString& what, wxWindow* parent)
                 break;
             }
         }
+
+#if wxCHECK_VERSION(2, 6, 0)
+        if (!hv.IsOk())
+#else
         if (0==hv)
+#endif
         {
             // we want to record the highest unexpanded item
             for(hv=wxGetApp().GetTreeCtrl()->GetItemParent(h);hv;hv=wxGetApp().GetTreeCtrl()->GetItemParent(hv))

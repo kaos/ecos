@@ -118,12 +118,21 @@ ecPlatformsDialog::~ecPlatformsDialog()
 
 void ecPlatformsDialog::Clear()
 {
+#if wxCHECK_VERSION(2, 6, 0)
+    wxNode* node = m_arTargetInfo.GetFirst();
+    while (node)
+    {
+        CeCosTestPlatform* platform = (CeCosTestPlatform*) node->GetData();
+        delete platform;
+        node = node->GetNext();
+#else
     wxNode* node = m_arTargetInfo.First();
     while (node)
     {
         CeCosTestPlatform* platform = (CeCosTestPlatform*) node->Data();
         delete platform;
         node = node->Next();
+#endif
     }
     m_arTargetInfo.Clear();
 }
@@ -283,7 +292,11 @@ void ecPlatformsDialog::OnDelete(wxCommandEvent& event)
             {
                 delete Platform(sel);
                 m_listCtrl->DeleteItem(sel);
+#if wxCHECK_VERSION(2, 6, 0)
+                delete m_arTargetInfo.Item(sel);
+#else
                 delete m_arTargetInfo.Nth(sel);
+#endif
                 whereFrom = 0;
             }
         }

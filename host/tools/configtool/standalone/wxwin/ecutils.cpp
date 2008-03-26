@@ -612,10 +612,17 @@ bool wxStringToStringMap::Find(const wxString& key, wxString& value)
 void wxStringToStringMap::Clear()
 {
     m_hashTable.BeginFind();
+#if wxCHECK_VERSION(2, 6, 0)
+    wxHashTable::Node* node;
+    while ((node = m_hashTable.Next()))
+    {
+        wxString* str = (wxString*) node->GetData();
+#else
     wxNode* node;
     while ((node = m_hashTable.Next()))
     {
         wxString* str = (wxString*) node->Data();
+#endif
         delete str;
     }
 }
@@ -627,10 +634,17 @@ void wxStringToStringMap::BeginFind()
 
 bool wxStringToStringMap::Next(wxString& key, wxString& value)
 {
+#if wxCHECK_VERSION(2, 6, 0)
+    wxHashTable::Node* node = m_hashTable.Next();
+    if (node)
+    {
+        value = * (wxString*) node->GetData();
+#else
     wxNode* node = m_hashTable.Next();
     if (node)
     {
         value = * (wxString*) node->Data();
+#endif
         return TRUE;
     }
     else
@@ -804,6 +818,15 @@ int wxListCtrlFindColumn(wxListCtrl& listCtrl, int noCols, int x)
 // Utility function
 void wxRefreshControls(wxWindow* win)
 {
+#if wxCHECK_VERSION(2, 6, 0)
+    wxNode *node = (wxNode *) win->GetChildren().GetFirst();
+    while (node)
+    {
+        wxWindow* win = (wxWindow*) node->GetData();
+        win->Refresh();
+        node = node->GetNext();
+    }
+#else
     wxNode *node = win->GetChildren().First();
     while (node)
     {
@@ -811,6 +834,7 @@ void wxRefreshControls(wxWindow* win)
         win->Refresh();
         node = node->Next();
     }
+#endif
 }
 
 wxOutputStream& operator <<(wxOutputStream& stream, const wxString& s)
@@ -861,6 +885,16 @@ void ecDialog::OnSize(wxSizeEvent& event)
 
 wxWindowSettingsObject* wxWindowSettings::FindSettings(const wxString& windowName) const
 {
+#if wxCHECK_VERSION(2, 6, 0)
+    wxNode* node = m_settings.GetFirst();
+    while (node)
+    {
+        wxWindowSettingsObject* obj = (wxWindowSettingsObject*) node->GetData();
+        if (obj->m_windowName.CmpNoCase(windowName) == 0)
+            return obj;
+        node = node->GetNext();
+    }
+#else
     wxNode* node = m_settings.First();
     while (node)
     {
@@ -869,12 +903,15 @@ wxWindowSettingsObject* wxWindowSettings::FindSettings(const wxString& windowNam
             return obj;
         node = node->Next();
     }
+#endif
+
     return NULL;
 }
 
 bool wxWindowSettings::LoadConfig(wxConfigBase& config)
 {
     unsigned int i = 0;
+
     for (i = 0; i < GetCount(); i++)
     {
         wxWindowSettingsObject* obj = GetNth(i);

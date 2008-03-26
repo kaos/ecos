@@ -119,7 +119,11 @@ public:
 
     CdlBuildInfo& GetBuildInfo() { return m_BuildInfo; }
 
+#if wxCHECK_VERSION(2, 6, 0)
+    ecConfigItem* GetFirstItem() { return (m_items.GetCount() == 0 ? (ecConfigItem*) NULL : (ecConfigItem*) m_items.GetFirst()->GetData()); }
+#else
     ecConfigItem* GetFirstItem() { return (m_items.Number() == 0 ? (ecConfigItem*) NULL : (ecConfigItem*) m_items.First()->Data()); }
+#endif
 
     const wxString GetCurrentTargetPrefix();
 

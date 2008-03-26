@@ -661,7 +661,11 @@ void ecScrolledWindow::OnChar(wxKeyEvent& event)
     }
 
     int dsty;
+#if wxCHECK_VERSION(2, 6, 0)
+    switch ( event.GetKeyCode() )
+#else
     switch ( event.KeyCode() )
+#endif
     {
         case WXK_PAGEUP:
         case WXK_PRIOR:

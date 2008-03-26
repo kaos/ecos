@@ -107,7 +107,12 @@ public:
     void CreateControls(wxWindow* parent);
 
     CeCosTestPlatform *Platform (int i) { return (CeCosTestPlatform *) m_arTargetInfo[i]; }
+
+#if wxCHECK_VERSION(2, 6, 0)
+    unsigned int PlatformCount() const { return m_arTargetInfo.GetCount(); }
+#else
     unsigned int PlatformCount() const { return m_arTargetInfo.Number(); }
+#endif
     void Add(const CeCosTestPlatform &ti);   
     void Clear();
 

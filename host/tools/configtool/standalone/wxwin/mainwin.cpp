@@ -565,18 +565,29 @@ void ecMainFrame::OnSize(wxSizeEvent& WXUNUSED(event))
     {
         double factorX = ((double) rect.GetWidth() / (double) wxGetApp().GetSettings().m_frameSize.GetWidth());
         double factorY = ((double) rect.GetHeight() / (double) wxGetApp().GetSettings().m_frameSize.GetHeight());
-        
+
+#if wxCHECK_VERSION(2, 6, 0)
+		wxNode* node = (wxNode *) GetChildren().GetFirst();
+        while (node)
+        {
+            wxWindow* win = (wxWindow*) node->GetData();
+#else
         wxNode* node = GetChildren().First();
         while (node)
         {
             wxWindow* win = (wxWindow*) node->Data();
+#endif
             if (win->IsKindOf(CLASSINFO(wxSashLayoutWindow)))
             {
                 wxSashLayoutWindow* sashWin = (wxSashLayoutWindow*) win;
                 wxSize sz = sashWin->GetSize();
                 sashWin->SetDefaultSize(wxSize((int) ((double) sz.x * factorX), (int) ((double) sz.y * factorY)));
             }
+#if wxCHECK_VERSION(2, 6, 0)
+            node = node->GetNext();
+#else
             node = node->Next();
+#endif
         }
     }
     
@@ -857,17 +868,28 @@ void ecMainFrame::OnSashDrag(wxSashEvent& event)
     if (!layout.LayoutFrame(this))
     {
         // If layout failed, restored default sizes.
+#if wxCHECK_VERSION(2, 6, 0)
+        wxNode* node = (wxNode *) GetChildren().GetFirst();
+        while (node)
+        {
+            wxWindow* win = (wxWindow*) node->GetData();
+#else
         wxNode* node = GetChildren().First();
         while (node)
         {
             wxWindow* win = (wxWindow*) node->Data();
+#endif
             if (win->IsKindOf(CLASSINFO(wxSashLayoutWindow)))
             {
                 wxSashLayoutWindow* sashWin = (wxSashLayoutWindow*) win;
                 wxSize sz = sashWin->GetSize();
                 sashWin->SetDefaultSize(sz);
             }
+#if wxCHECK_VERSION(2, 6, 0)
+            node = node->GetNext();
+#else
             node = node->Next();
+#endif
         }
     }
     
@@ -875,8 +897,12 @@ void ecMainFrame::OnSashDrag(wxSashEvent& event)
 
 void ecMainFrame::OnIdle(wxIdleEvent& event)
 {
+#if wxCHECK_VERSION(2, 6, 0)
+	// Doesn't event handlling happen anyway?
+#else
     // Normal idle processing
     wxFrame::OnIdle(event);
+#endif
 
     wxString text;
     if (GetStatusBar())
@@ -955,37 +981,63 @@ void ecMainFrame::GetMinorWindows(wxList& list)
 // Get all visible sash windows
 void ecMainFrame::GetSashWindows(wxList& list)
 {
+#if wxCHECK_VERSION(2, 6, 0)
+    wxNode* node = (wxNode *) GetChildren().GetFirst();
+    while (node)
+    {
+        wxWindow* win = (wxWindow*) node->GetData();
+#else
     wxNode* node = GetChildren().First();
     while (node)
     {
         wxWindow* win = (wxWindow*) node->Data();
+#endif
         if (win->IsKindOf(CLASSINFO(wxSashLayoutWindow)) && win->IsShown())
         {
             list.Append(win);
         }
+#if wxCHECK_VERSION(2, 6, 0)
+        node = node->GetNext();
+#else
         node = node->Next();
+#endif
     }
 }
 
 // Divide the given space evenly amongst some windows
 void ecMainFrame::DivideSpaceEvenly(wxList& list, const wxSize& space, int orient)
 {
+#if wxCHECK_VERSION(2, 6, 0)
+    if (list.GetCount() == 0)
+#else
     if (list.Number() == 0)
+#endif
         return;
 
     // Find total size first
     int totalSize = 0;
     double proportion = 0.0;
+#if wxCHECK_VERSION(2, 6, 0)
+    wxNode* node = list.GetFirst();
+    while (node)
+    {
+        wxWindow* win = (wxWindow*) node->GetData();
+#else
     wxNode* node = list.First();
     while (node)
     {
         wxWindow* win = (wxWindow*) node->Data();
+#endif
         wxSize sz = win->GetSize();
         if (orient == wxHORIZONTAL)
             totalSize += sz.x;
         else
             totalSize += sz.y;
+#if wxCHECK_VERSION(2, 6, 0)
+        node = node->GetNext();
+#else
         node = node->Next();
+#endif
     }
     if (orient == wxHORIZONTAL)
     {
@@ -1001,30 +1053,53 @@ void ecMainFrame::DivideSpaceEvenly(wxList& list, const wxSize& space, int orien
 
         proportion = ((double) space.y / (double) totalSize);
     }
+
+#if wxCHECK_VERSION(2, 6, 0)
+    node = list.GetFirst();
+    while (node)
+    {
+        wxWindow* win = (wxWindow*) node->GetData();
+#else
     node = list.First();
     while (node)
     {
         wxWindow* win = (wxWindow*) node->Data();
+#endif
         wxSize sz = win->GetSize();
         if (orient == wxHORIZONTAL)
             sz.x = (int) (sz.x * proportion);
         else
             sz.y = (int) (sz.y * proportion);
         win->SetSize(sz);
+#if wxCHECK_VERSION(2, 6, 0)
+        node = node->GetNext();
+#else
         node = node->Next();
+#endif
     }
 }
 
 // Restore the sash window default size from the actual window size
 void ecMainFrame::RestoreDefaultWindowSizes(wxList& list)
 {
+#if wxCHECK_VERSION(2, 6, 0)
+    wxNode* node = list.GetFirst();
+    while (node)
+    {
+        wxSashLayoutWindow* sashWin = (wxSashLayoutWindow*) node->GetData();
+#else
     wxNode* node = list.First();
     while (node)
     {
         wxSashLayoutWindow* sashWin = (wxSashLayoutWindow*) node->Data();
+#endif
         wxSize sz = sashWin->GetSize();
         sashWin->SetDefaultSize(sz);
+#if wxCHECK_VERSION(2, 6, 0)
+        node = node->GetNext();
+#else
         node = node->Next();
+#endif
     }
 }
 

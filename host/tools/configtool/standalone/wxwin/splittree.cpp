@@ -205,7 +205,11 @@ void wxRemotelyScrolledTreeCtrl::ScrollToLine(int posHoriz, int posVert)
     {
         UINT sbCode = SB_THUMBPOSITION;
         HWND vertScrollBar = 0;
+#if wxCHECK_VERSION(2, 6, 0)
+        MSWDefWindowProc((WXUINT) WM_VSCROLL, MAKELONG(sbCode, posVert), (WXLPARAM) vertScrollBar);
+#else
         MSWDefWindowProc((WXUINT) WM_VSCROLL, MAKELONG(sbCode, posVert), (WXHWND) vertScrollBar);
+#endif
     }
     else
 #endif
@@ -338,9 +342,17 @@ void wxRemotelyScrolledTreeCtrl::CalcTreeSize(const wxTreeItemId& id, wxRect& re
         rect = CombineRectangles(rect, itemSize);
     }
 
+#if wxCHECK_VERSION(2, 6, 0)
+    wxTreeItemIdValue cookie;
+    wxTreeItemId childId = GetFirstChild(id, cookie);
+
+    while (childId.IsOk())
+#else
     long cookie;
     wxTreeItemId childId = GetFirstChild(id, cookie);
+
     while (childId != 0)
+#endif
     {
         CalcTreeSize(childId, rect);
         childId = GetNextChild(childId, cookie);
@@ -426,11 +438,19 @@ void wxTreeCompanionWindow::OnPaint(wxPaintEvent& event)
     
     if (!m_treeCtrl)
         return;
-    
+
+#if wxCHECK_VERSION(2, 6, 0)
+    wxPen pen(wxSystemSettings::GetColour(wxSYS_COLOUR_3DLIGHT), 1, wxSOLID);
+    dc.SetPen(pen);
+    dc.SetBrush(* wxTRANSPARENT_BRUSH);
+    wxFont font(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
+#else
     wxPen pen(wxSystemSettings::GetSystemColour(wxSYS_COLOUR_3DLIGHT), 1, wxSOLID);
     dc.SetPen(pen);
     dc.SetBrush(* wxTRANSPARENT_BRUSH);
     wxFont font(wxSystemSettings::GetSystemFont(wxSYS_DEFAULT_GUI_FONT));
+#endif
+
     dc.SetFont(font);
     
     wxSize clientSize = GetClientSize();
@@ -529,8 +549,15 @@ void wxThinSplitterWindow::DrawSash(wxDC& dc)
     
     if ( m_splitMode == wxSPLIT_VERTICAL )
     {
+#if wxCHECK_VERSION(2, 6, 0)
+		// The variables below don't seem to exist....
+		wxPen pen(wxSystemSettings::GetColour(wxSYS_COLOUR_3DLIGHT), 1, wxSOLID);
+		dc.SetPen(pen);
+		dc.SetBrush(* wxTRANSPARENT_BRUSH);
+#else
         dc.SetPen(* m_facePen);
         dc.SetBrush(* m_faceBrush);
+#endif
         int h1 = h-1;
         int y1 = 0;
         if ( (GetWindowStyleFlag() & wxSP_BORDER) != wxSP_BORDER && (GetWindowStyleFlag() & wxSP_3DBORDER) != wxSP_3DBORDER )
@@ -543,8 +570,15 @@ void wxThinSplitterWindow::DrawSash(wxDC& dc)
     }
     else
     {
+#if wxCHECK_VERSION(2, 6, 0)
+		// The variables below don't seem to exist....
+		wxPen pen(wxSystemSettings::GetColour(wxSYS_COLOUR_3DLIGHT), 1, wxSOLID);
+		dc.SetPen(pen);
+		dc.SetBrush(* wxTRANSPARENT_BRUSH);
+#else
         dc.SetPen(* m_facePen);
         dc.SetBrush(* m_faceBrush);
+#endif
         int w1 = w-1;
         int x1 = 0;
         if ( (GetWindowStyleFlag() & wxSP_BORDER) != wxSP_BORDER && (GetWindowStyleFlag() & wxSP_3DBORDER) != wxSP_3DBORDER )
@@ -587,9 +621,15 @@ wxSplitterScrolledWindow::wxSplitterScrolledWindow(wxWindow* parent, wxWindowID 
 void wxSplitterScrolledWindow::OnSize(wxSizeEvent& event)
 {
     wxSize sz = GetClientSize();
+#if wxCHECK_VERSION(2, 6, 0)
+    if (GetChildren().GetFirst())
+    {
+        ((wxWindow*) GetChildren().GetFirst()->GetData())->SetSize(0, 0, sz.x, sz.y);
+#else
     if (GetChildren().First())
     {
         ((wxWindow*) GetChildren().First()->Data())->SetSize(0, 0, sz.x, sz.y);
+#endif
     }
 }
 
@@ -640,10 +680,18 @@ void wxSplitterScrolledWindow::OnScroll(wxScrollWinEvent& event)
     }
     
     // Find targets in splitter window and send the event to them
+
+#if wxCHECK_VERSION(2, 6, 0)
+    wxNode* node = (wxNode *) GetChildren().GetFirst();
+    while (node)
+    {
+        wxWindow* child = (wxWindow*) node->GetData();
+#else
     wxNode* node = GetChildren().First();
     while (node)
     {
         wxWindow* child = (wxWindow*) node->Data();
+#endif
         if (child->IsKindOf(CLASSINFO(wxSplitterWindow)))
         {
             wxSplitterWindow* splitter = (wxSplitterWindow*) child;
@@ -653,7 +701,11 @@ void wxSplitterScrolledWindow::OnScroll(wxScrollWinEvent& event)
                 splitter->GetWindow2()->ProcessEvent(event);
             break;
         }
+#if wxCHECK_VERSION(2, 6, 0)
+        node = node->GetNext();
+#else
         node = node->Next();
+#endif
     }
     
 #ifdef __WXMAC__

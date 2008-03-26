@@ -121,12 +121,21 @@ ecConfigToolDoc::~ecConfigToolDoc()
 
 void ecConfigToolDoc::DeleteItems()
 {
+#if wxCHECK_VERSION(2, 6, 0)
+    // Delete any remaining items
+    wxNode* node = m_items.GetFirst();
+    while (node)
+    {
+        ecConfigItem* item = wxDynamicCast(node->GetData(), ecConfigItem);
+        wxNode* next = node->GetNext();
+#else
     // Delete any remaining items
     wxNode* node = m_items.First();
     while (node)
     {
         ecConfigItem* item = wxDynamicCast(node->Data(), ecConfigItem);
         wxNode* next = node->Next();
+#endif
 
         // Note: automatically removes itself from this list in ~ecConfigItem
         delete item;
@@ -297,7 +306,7 @@ bool ecConfigToolDoc::OnSaveDocument(const wxString& filename)
 
             if (!wxGetApp().GetSettings().m_editSaveFileOnly)
             {
-                if (!buildFilename.CreateDirectory(FALSE) || !installFilename.CreateDirectory(FALSE))
+                if (!buildFilename.EC_CreateDirectory(FALSE) || !installFilename.EC_CreateDirectory(FALSE))
                 {
                     wxString msg;
                     msg.Printf(_("Failed to save %s"), (const wxChar*) filename);
@@ -363,7 +372,7 @@ bool ecConfigToolDoc::GenerateBuildTree()
         ecFileName buildFilename(m_strBuildTree);
         ecFileName installFilename(m_strInstallTree);
         
-        if (!buildFilename.CreateDirectory() || !installFilename.CreateDirectory())
+        if (!buildFilename.EC_CreateDirectory() || !installFilename.EC_CreateDirectory())
         {
             wxString msg;
             msg.Printf(_("Failed to create build tree"));
@@ -510,7 +519,12 @@ void ecConfigToolDoc::AddAllItems()
 
     UpdateAllViews (NULL, & hint);
 
-    if(GetItems().Number()>0){
+#if wxCHECK_VERSION(2, 6, 0)
+    if(GetItems().GetCount() > 0)
+#else
+    if(GetItems().Number() > 0)
+#endif
+	{
         wxGetApp().GetTreeCtrl()->Expand(rootId);
     }
     wxGetApp().GetTreeCtrl()->SetFocus();
@@ -603,7 +617,11 @@ ecConfigItem * ecConfigToolDoc::AddItem (const CdlUserVisible vitem, ecConfigIte
 void ecConfigToolDoc::CheckRadios()
 {
     int nItem;
+#if wxCHECK_VERSION(2, 6, 0)
+    for(nItem=0; nItem < GetItems().GetCount() ; nItem++)
+#else
     for(nItem=0; nItem < GetItems().Number() ; nItem++)
+#endif
     {
         ecConfigItem *pItem=(ecConfigItem*) GetItems()[nItem];
 
@@ -648,7 +666,11 @@ void ecConfigToolDoc::CheckRadios()
 ecConfigItem * ecConfigToolDoc::Find (CdlValuable v)
 {
     int nItem;
+#if wxCHECK_VERSION(2, 6, 0)
+    for (nItem=0 ; nItem < m_items.GetCount() ; nItem++)
+#else
     for (nItem=0 ; nItem < m_items.Number() ; nItem++)
+#endif
     {
         ecConfigItem *pItem = (ecConfigItem*) m_items[nItem];
         if( v == pItem->GetCdlValuable() )
@@ -662,7 +684,11 @@ ecConfigItem * ecConfigToolDoc::Find (CdlValuable v)
 ecConfigItem * ecConfigToolDoc::Find(const wxString & strWhat, ecWhereType where)
 {
     int nItem;
+#if wxCHECK_VERSION(2, 6, 0)
+    for (nItem=0 ; nItem < m_items.GetCount() ; nItem++)
+#else
     for (nItem=0 ; nItem < m_items.Number() ; nItem++)
+#endif
     {
         ecConfigItem *pItem = (ecConfigItem*) m_items[nItem];
         if (pItem->StringValue(where) == strWhat)
@@ -1642,6 +1668,15 @@ ecConfigToolDoc::GlobalConflictOutcome ecConfigToolDoc::ResolveGlobalConflicts(w
     m_arConflictsOfInterest.Clear();
     if(parConflictsOfInterest)
     {
+#if wxCHECK_VERSION(2, 6, 0)
+        wxNode* node = parConflictsOfInterest->GetFirst();
+        while (node)
+        {
+            wxObject* obj = (wxObject*) node->GetData();
+            m_arConflictsOfInterest.Append(obj);
+            node = node->GetNext();
+        }
+#else
         wxNode* node = parConflictsOfInterest->First();
         while (node)
         {
@@ -1649,6 +1684,7 @@ ecConfigToolDoc::GlobalConflictOutcome ecConfigToolDoc::ResolveGlobalConflicts(w
             m_arConflictsOfInterest.Append(obj);
             node = node->Next();
         }
+#endif
     }
     CdlInferenceCallback fn=CdlTransactionBody::get_inference_callback_fn();
     CdlTransactionBody::set_inference_callback_fn(CdlGlobalInferenceHandler);
@@ -1929,7 +1965,7 @@ bool ecConfigToolDoc::GenerateHeaders()
         ecFileName strPkfConfDir(GetInstallTree());
         strPkfConfDir += ecFileName(wxT("include"));
         strPkfConfDir += ecFileName(wxT("pkgconf"));
-        if ( !strPkfConfDir.CreateDirectory())
+        if ( !strPkfConfDir.EC_CreateDirectory())
         {
             wxString msg;
             msg.Printf(_("Failed to create %s"), (const wxChar*) strPkfConfDir);
@@ -2011,11 +2047,11 @@ bool ecConfigToolDoc::SaveMemoryMap()
     strMLTInstallPkgconfDir = strMLTInstallPkgconfDir + ecFileName(wxT("pkgconf"));
 
     bool rc=false;
-    if(strMLTInstallPkgconfDir.CreateDirectory(true)){
+    if(strMLTInstallPkgconfDir.EC_CreateDirectory(TRUE)){
         const wxString strMLTInstallBase(strMLTInstallPkgconfDir+ecFileName(strSuffix));
         const ecFileName strMLTDir (MLTDir());
 
-        if(strMLTDir.CreateDirectory (TRUE))
+        if(strMLTDir.EC_CreateDirectory (TRUE))
         {
             const wxString strMLTBase (strMLTDir + ecFileName (strSuffix));
             // TRACE(_T("Saving memory layout to %s\n"), strMLTBase + _T(".mlt"));
@@ -2042,7 +2078,7 @@ bool ecConfigToolDoc::CopyMLTFiles()
     const ecFileName strMLTDestination (MLTDir ());
     // TRACE (_T("Copying .ldi and .h files to %s\n"), strInstallDestination);
     // TRACE (_T("Copying .mlt files to %s\n"), strMLTDestination);
-    bool rc=strInstallDestination.CreateDirectory ( TRUE ) && strMLTDestination.CreateDirectory ( TRUE );
+    bool rc=strInstallDestination.EC_CreateDirectory ( TRUE ) && strMLTDestination.EC_CreateDirectory ( TRUE );
     if (rc)
     {
         wxDir ffFileFind;
@@ -2101,8 +2137,13 @@ const wxString ecConfigToolDoc::CurrentMemoryLayout ()
 
 bool ecConfigToolDoc::ExportFile()
 {
+#if wxCHECK_VERSION(2, 6, 0)
+    wxFileDialog dialog(wxGetApp().GetTopWindow(), _("Export eCos Minimal Configuration"),
+        wxT(""), wxT(""), wxT("eCos Minimal Configuration (*.ecm)|*.ecm"), wxSAVE|wxOVERWRITE_PROMPT);
+#else
     wxFileDialog dialog(wxGetApp().GetTopWindow(), _("Export eCos Minimal Configuration"),
         wxT(""), wxT(""), wxT("eCos Minimal Configuration (*.ecm)|*.ecm"), wxSAVE|wxOVERWRITE_PROMPT|wxHIDE_READONLY);
+#endif
 
     if (dialog.ShowModal() == wxID_OK)
     {
@@ -2130,8 +2171,13 @@ bool ecConfigToolDoc::ExportFile()
 
 bool ecConfigToolDoc::ImportFile()
 {
+#if wxCHECK_VERSION(2, 6, 0)
+    wxFileDialog dialog(wxGetApp().GetTopWindow(), _("Import eCos Minimal Configuration"),
+        wxT(""), wxT(""), wxT("eCos Minimal Configuration (*.ecm)|*.ecm"), wxOPEN|wxFILE_MUST_EXIST);
+#else
     wxFileDialog dialog(wxGetApp().GetTopWindow(), _("Import eCos Minimal Configuration"),
         wxT(""), wxT(""), wxT("eCos Minimal Configuration (*.ecm)|*.ecm"), wxOPEN|wxFILE_MUST_EXIST|wxHIDE_READONLY);
+#endif
 
     if (dialog.ShowModal() == wxID_OK)
     {

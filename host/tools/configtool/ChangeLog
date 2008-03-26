@@ -18,6 +18,34 @@
 	* standalone/wxwin/configtool.cpp: Workaround an exception handling
 	issue with Cygwin 1.5.20.
 
+2006-05-01  Andy Jackson  <andy@xylanta.com>
+
+	* standalone/wxwin/admindlg.cpp,
+	standalone/wxwin/appsettings.cpp,
+	standalone/wxwin/configitem.cpp,
+	standalone/wxwin/configtool.cpp,
+	standalone/wxwin/configtooldoc.cpp,
+	standalone/wxwin/configtooldoc.h,
+	standalone/wxwin/configtoolview.cpp,
+	standalone/wxwin/configtree.cpp,
+	standalone/wxwin/conflictsdlg.cpp,
+	standalone/wxwin/docsystem.cpp,
+	standalone/wxwin/ecscrolwin.cpp,
+	standalone/wxwin/ecscrolwin.h,
+	standalone/wxwin/ecutils.cpp,
+	standalone/wxwin/ecutils.h,
+	standalone/wxwin/filename.cpp,
+	standalone/wxwin/filename.h,
+	standalone/wxwin/folderdlg.cpp,
+	standalone/wxwin/mainwin.cpp,
+	standalone/wxwin/makefile.gnu,
+	standalone/wxwin/packagesdlg.cpp,
+	standalone/wxwin/packagesdlg.h,
+	standalone/wxwin/platformsdlg.cpp,
+	standalone/wxwin/platformsdlg.h,
+	standalone/wxwin/splittree.cpp: Changes to allow building
+	against current wxWidgets version (2.6.x).
+
 2005-07-09  Bart Veer  <bartv@ecoscentric.com>
 
 	* common/common/build.cxx: add support for C++ files that use a

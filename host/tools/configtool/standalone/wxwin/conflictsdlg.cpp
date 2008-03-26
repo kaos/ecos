@@ -128,10 +128,17 @@ ecResolveConflictsDialog::ecResolveConflictsDialog(wxWindow* parent, std::list<C
 ecResolveConflictsDialog::~ecResolveConflictsDialog()
 {
     m_Map.BeginFind();
+#if wxCHECK_VERSION(2, 6, 0)
+    wxHashTable::Node* node = NULL;
+    while ((node = m_Map.Next()))
+    {
+        SolutionInfo *pInfo = (SolutionInfo*) node->GetData();
+#else
     wxNode* node = NULL;
     while ((node = m_Map.Next()))
     {
         SolutionInfo *pInfo = (SolutionInfo*) node->Data();
+#endif
         free(pInfo);
     }
     m_Map.Clear();
@@ -215,14 +222,22 @@ void ecResolveConflictsDialog::OnInitDialog(wxInitDialogEvent& event)
 
     // Select the first item and fill the solution set
     m_conflictsCtrl->AddConflicts(m_conflicts);
-    
+
+#if wxCHECK_VERSION(2, 6, 0)
+    if (m_parConflictsOfInterest && m_parConflictsOfInterest->GetCount()>0)
+#else
     if (m_parConflictsOfInterest && m_parConflictsOfInterest->Number()>0)
+#endif
     {
         wxList &arConflictsOfInterest = *m_parConflictsOfInterest;
         int i, j;
         for ( i = m_conflictsCtrl->GetItemCount() - 1; i >= 0; --i )
         {
+#if wxCHECK_VERSION(2, 6, 0)
+            for ( j = arConflictsOfInterest.GetCount() - 1; j>=0; --j )
+#else
             for ( j = arConflictsOfInterest.Number() - 1; j>=0; --j )
+#endif
             {
                 CdlConflict conflict = (CdlConflict)m_conflictsCtrl->GetItemData(i);
                 if ( ((CdlConflict) arConflictsOfInterest[j]) == conflict )

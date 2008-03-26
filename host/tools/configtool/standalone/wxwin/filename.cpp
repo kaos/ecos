@@ -371,7 +371,11 @@ bool ecFileName::Exists     () const
 
 bool ecFileName::IsDir      () const
 {
+#if wxCHECK_VERSION(2, 6, 0)
+	return (wxDirExists(* this));
+#else
     return wxPathExists(* this);
+#endif
 }
 
 bool ecFileName::IsFile     () const
@@ -410,7 +414,7 @@ bool ecFileName::SameFile(const ecFileName &o) const
 #endif
 }
 
-ecFileName ecFileName::ExpandEnvironmentStrings(const wxChar* psz)
+ecFileName ecFileName::EC_ExpandEnvironmentStrings(const wxChar* psz)
 {
     // wxExpandEnvVars is from confbase.h
 
@@ -418,9 +422,9 @@ ecFileName ecFileName::ExpandEnvironmentStrings(const wxChar* psz)
     return f;
 }
 
-const ecFileName& ecFileName::ExpandEnvironmentStrings()
+const ecFileName& ecFileName::EC_ExpandEnvironmentStrings()
 {
-    *this=ecFileName::ExpandEnvironmentStrings(*this);
+    *this=ecFileName::EC_ExpandEnvironmentStrings(*this);
     return *this;
 }
 
@@ -463,7 +467,7 @@ const ecFileName& ecFileName::MakeRelative(const wxChar* pszRelativeTo)
 }
 
 
-ecFileName ecFileName::GetCurrentDirectory()
+ecFileName ecFileName::EC_GetCurrentDirectory()
 {
     ecFileName f;
     f = wxGetCwd();
@@ -525,7 +529,7 @@ const wxChar* *ecFileName::Chop()
 }
 #endif
 
-ecFileName ecFileName::GetTempPath()
+ecFileName ecFileName::EC_GetTempPath()
 {
     ecFileName f;
 #ifdef __WXMSW__
@@ -566,7 +570,7 @@ const ecFileName ecFileName::CygPath () const
     return rc;
 }
 
-bool ecFileName::CreateDirectory(bool bParentsToo,bool bFailIfAlreadyExists) const
+bool ecFileName::EC_CreateDirectory(bool bParentsToo,bool bFailIfAlreadyExists) const
 {
     if(bParentsToo)
     {
@@ -633,7 +637,7 @@ const wxString ecFileName::Root() const
     return wxPathOnly(*this);
 }
 
-ecFileName ecFileName::SetCurrentDirectory(const wxChar* pszDir)
+ecFileName ecFileName::EC_SetCurrentDirectory(const wxChar* pszDir)
 {
     const ecFileName strPwd=wxGetCwd();
     if (::wxSetWorkingDirectory(pszDir))

@@ -62,10 +62,10 @@ public:
     void ReplaceExtension (const wxString& newExt);
     
     // previous directory is returned:
-    static ecFileName SetCurrentDirectory (const wxChar* pszDir);
+    static ecFileName EC_SetCurrentDirectory (const wxChar* pszDir);
     const wxString Root() const;
     const wxString Extension() const;
-    static ecFileName GetTempPath();
+    static ecFileName EC_GetTempPath();
     bool IsAbsolute() const;
     
     static const wxChar cSep;        // The path separator ('\' on windows)
@@ -126,9 +126,9 @@ public:
     const ecFileName Head() const;       // directory part
     const ecFileName CygPath() const;    // path mangled for CygWin
 
-    static ecFileName GetCurrentDirectory();
-    const ecFileName& ExpandEnvironmentStrings();
-    static ecFileName ExpandEnvironmentStrings(const wxChar* psz);
+    static ecFileName EC_GetCurrentDirectory();
+    const ecFileName& EC_ExpandEnvironmentStrings();
+    static ecFileName EC_ExpandEnvironmentStrings(const wxChar* psz);
 
     // Form path name relative to given parameter (if NULL, current directory)
     const ecFileName& MakeRelative(const wxChar* pszRelativeTo=0);
@@ -151,7 +151,7 @@ public:
     
     bool RecursivelyDelete(); 
     
-    bool CreateDirectory (bool bParentsToo=true,bool bFailIfAlreadyExists=false) const;
+    bool EC_CreateDirectory (bool bParentsToo = TRUE, bool bFailIfAlreadyExists = FALSE) const;
     
     static int FindFiles (const wxString& pszDir,wxArrayString &ar,const wxString& pszPattern=wxT("*.*"),bool bRecurse=TRUE,long dwExclude=wxDIR_DIRS|wxDIR_HIDDEN);
     
@@ -174,8 +174,8 @@ protected:
 class wxSaveExcursion {
     const ecFileName m_strPrevDir;
 public:
-    wxSaveExcursion(const wxChar* pszDir) : m_strPrevDir(ecFileName::SetCurrentDirectory(pszDir)) {}
-    ~wxSaveExcursion() { ecFileName::SetCurrentDirectory(m_strPrevDir); }
+    wxSaveExcursion(const wxChar* pszDir) : m_strPrevDir(ecFileName::EC_SetCurrentDirectory(pszDir)) {}
+    ~wxSaveExcursion() { ecFileName::EC_SetCurrentDirectory(m_strPrevDir); }
     bool Ok() const { return !m_strPrevDir.IsEmpty(); }
 };
 

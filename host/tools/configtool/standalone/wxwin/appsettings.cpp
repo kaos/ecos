@@ -70,6 +70,7 @@
 #include "outputwin.h"
 #include "shortdescrwin.h"
 #include "mainwin.h"
+#include "filename.h"
 
 // For SystemInfo
 #ifdef __WXMSW__
@@ -514,7 +515,11 @@ bool ecSettings::LoadConfig()
                 m_userToolPaths[i] = str;
             } else
             {
+#if wxCHECK_VERSION(2, 6, 0)
+                m_userToolPaths.RemoveAt(i);
+#else
                 m_userToolPaths.Remove(i);
+#endif
                 i--;
             }
         }
@@ -532,7 +537,11 @@ bool ecSettings::LoadConfig()
                 m_userToolPaths[i] = str;
             } else
             {
+#if wxCHECK_VERSION(2, 6, 0)
+                m_userToolPaths.RemoveAt(i);
+#else
                 m_userToolPaths.Remove(i);
+#endif
                 i--;
             }
         }
@@ -767,7 +776,7 @@ const ecFileName& ecSettings::DefaultExternalBrowser()
 #ifdef __WXMSW__
     static bool bFirstTime=TRUE;
     if(bFirstTime){
-        const ecFileName strFile(ecFileName::GetTempPath()+wxT("index.html"));
+        const ecFileName strFile(ecFileName::EC_GetTempPath()+wxT("index.html"));
         wxFile f;
         if(f.Create(strFile, TRUE))
         {

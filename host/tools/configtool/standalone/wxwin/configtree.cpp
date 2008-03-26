@@ -259,15 +259,19 @@ ecConfigTreeCtrl::~ecConfigTreeCtrl()
 void ecConfigTreeCtrl::OnPaint(wxPaintEvent& event)
 {
     wxPaintDC dc(this);
-    
+
     wxTreeCtrl::OnPaint(event);
     
     // Reset the device origin since it may have been set
     dc.SetDeviceOrigin(0, 0);
     
     wxSize sz = GetClientSize();
-    
+
+#if wxCHECK_VERSION(2, 6, 0)
+    wxPen pen(wxSystemSettings::GetColour(wxSYS_COLOUR_3DLIGHT), 1, wxSOLID);
+#else
     wxPen pen(wxSystemSettings::GetSystemColour(wxSYS_COLOUR_3DLIGHT), 1, wxSOLID);
+#endif
     dc.SetPen(pen);
     dc.SetBrush(* wxTRANSPARENT_BRUSH);
     
@@ -307,7 +311,11 @@ void ecConfigTreeCtrl::OnMouseEvent(wxMouseEvent& event)
     int flags = 0;
     wxTreeItemId item = HitTest(wxPoint(event.GetX(), event.GetY()), flags);
     
+#if wxCHECK_VERSION(2, 6, 0)
+    if (!item.IsOk())
+#else
     if (item == 0 || !item.IsOk())
+#endif
     {
         if (event.RightDown())
             PopupMenu(wxGetApp().GetWhatsThisMenu(), event.GetX(), event.GetY());
@@ -446,7 +454,11 @@ ecValueWindow::ecValueWindow(wxWindow* parent, wxWindowID id,
                              long style):
 wxTreeCompanionWindow(parent, id, pos, sz, style)
 {
+#if wxCHECK_VERSION(2, 6, 0)
+    SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOX));
+#else
     SetBackgroundColour(wxSystemSettings::GetSystemColour(wxSYS_COLOUR_LISTBOX));
+#endif
 
     if (!wxGetApp().GetSettings().GetWindowSettings().GetUseDefaults() &&
          wxGetApp().GetSettings().GetWindowSettings().GetFont(wxT("Configuration")).Ok())
@@ -454,8 +466,11 @@ wxTreeCompanionWindow(parent, id, pos, sz, style)
         SetFont(wxGetApp().GetSettings().GetWindowSettings().GetFont(wxT("Configuration")));
     }
     else
+#if wxCHECK_VERSION(2, 6, 0)
+        SetFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
+#else
         SetFont(wxSystemSettings::GetSystemFont(wxSYS_DEFAULT_GUI_FONT));
-
+#endif
     
     m_editWindow = NULL;
     m_configItem = NULL;
@@ -467,8 +482,12 @@ void ecValueWindow::OnPaint(wxPaintEvent& event)
     
     if (!m_treeCtrl)
         return;
-    
+
+#if wxCHECK_VERSION(2, 6, 0)
+    wxPen pen(wxSystemSettings::GetColour(wxSYS_COLOUR_3DLIGHT), 1, wxSOLID);
+#else
     wxPen pen(wxSystemSettings::GetSystemColour(wxSYS_COLOUR_3DLIGHT), 1, wxSOLID);
+#endif
     dc.SetPen(pen);
     dc.SetBrush(* wxTRANSPARENT_BRUSH);
     wxFont font(GetFont());
@@ -549,7 +568,11 @@ void ecValueWindow::OnMouseEvent(wxMouseEvent& event)
         // Find if this corresponds to a tree item
         int flags = 0;
         wxTreeItemId item = m_treeCtrl->HitTest(wxPoint(4, event.GetY()), flags);
+#if wxCHECK_VERSION(2, 6, 0)
+        if (item.IsOk())
+#else
         if (item != 0)
+#endif
         {
             ecConfigItem* configItem = ((ecTreeItemData*) m_treeCtrl->GetItemData(item))->GetConfigItem();
             m_treeCtrl->SelectItem(item);
@@ -575,9 +598,14 @@ void ecValueWindow::DrawItem(wxDC& dc, wxTreeItemId id, const wxRect& rect)
         
         if (text.IsEmpty())
             return;
-        
+
+#if wxCHECK_VERSION(2, 6, 0)
+        static wxColour normalColour = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
+        static wxColour disabledColour = wxSystemSettings::GetColour(wxSYS_COLOUR_GRAYTEXT);
+#else
         static wxColour normalColour = wxSystemSettings::GetSystemColour(wxSYS_COLOUR_WINDOWTEXT);
         static wxColour disabledColour = wxSystemSettings::GetSystemColour(wxSYS_COLOUR_GRAYTEXT);
+#endif
         dc.SetTextForeground( (item->GetActive() && (item->GetConfigType() != ecPackage)) ? normalColour : disabledColour );
         
         int textW, textH;
@@ -732,6 +760,15 @@ bool wxIconStateInfoDB::AddInfo(const wxString& name, const wxIcon& icon, int st
 
 wxIconStateInfo* wxIconStateInfoDB::FindInfo(const wxString& name) const
 {
+#if wxCHECK_VERSION(2, 6, 0)
+    wxNode* node = GetFirst();
+    while (node)
+    {
+        wxIconStateInfo* info = (wxIconStateInfo*) node->GetData();
+        if (info->GetName() == name)
+            return info;
+        node = node->GetNext();
+#else
     wxNode* node = First();
     while (node)
     {
@@ -739,6 +776,7 @@ wxIconStateInfo* wxIconStateInfoDB::FindInfo(const wxString& name) const
         if (info->GetName() == name)
             return info;
         node = node->Next();
+#endif
     }
     return NULL;
 }
@@ -819,7 +857,11 @@ void ecSplitterScrolledWindow::OnWhatsThis(wxCommandEvent& event)
     wxASSERT (treeCtrl != NULL) ;
 
     wxTreeItemId id = treeCtrl->GetSelection();
+#if wxCHECK_VERSION(2, 6, 0)
+    if (id.IsOk() && ecIsMenuForItem(event))
+#else
     if (id != 0 && ecIsMenuForItem(event))
+#endif
     {
         ecConfigItem* item = ((ecTreeItemData*) treeCtrl->GetItemData(id))->GetConfigItem();
         
@@ -850,7 +892,11 @@ void ecSplitterScrolledWindow::OnProperties(wxCommandEvent& event)
     wxASSERT (treeCtrl != NULL) ;
     
     wxTreeItemId id = treeCtrl->GetSelection();
+#if wxCHECK_VERSION(2, 6, 0)
+    if (id.IsOk() && ecIsMenuForItem(event))
+#else
     if (id != 0 && ecIsMenuForItem(event))
+#endif
     {
         ecConfigItem* item = ((ecTreeItemData*) treeCtrl->GetItemData(id))->GetConfigItem();
         
@@ -866,7 +912,11 @@ void ecSplitterScrolledWindow::OnRestoreDefaults(wxCommandEvent& event)
     wxASSERT (treeCtrl != NULL) ;
     
     wxTreeItemId id = treeCtrl->GetSelection();
+#if wxCHECK_VERSION(2, 6, 0)
+    if (id.IsOk() && ecIsMenuForItem(event))
+#else
     if (id != 0 && ecIsMenuForItem(event))
+#endif
     {
         ecConfigItem* item = ((ecTreeItemData*) treeCtrl->GetItemData(id))->GetConfigItem();
         if (item->HasModifiedChildren())
@@ -932,7 +982,11 @@ void ecSplitterScrolledWindow::RestoreDefault(wxTreeItemId h, bool bRecurse /* =
     
     if (bRecurse)
     {
+#if wxCHECK_VERSION(2, 6, 0)
+		wxTreeItemIdValue cookie;
+#else
         long cookie;
+#endif
         for (h = treeCtrl->GetFirstChild(h, cookie); h; h = treeCtrl->GetNextSibling(h))
         {
             RestoreDefault (h, TRUE, FALSE);
@@ -946,7 +1000,11 @@ void ecSplitterScrolledWindow::OnVisitDoc(wxCommandEvent& event)
     wxASSERT (treeCtrl != NULL) ;
 
     wxTreeItemId id = treeCtrl->GetSelection();
+#if wxCHECK_VERSION(2, 6, 0)
+    if (id.IsOk() && ecIsMenuForItem(event))
+#else
     if (id != 0 && ecIsMenuForItem(event))
+#endif
     {
         ecConfigItem* item = ((ecTreeItemData*) treeCtrl->GetItemData(id))->GetConfigItem();
         
@@ -962,7 +1020,11 @@ void ecSplitterScrolledWindow::OnViewHeader(wxCommandEvent& event)
     wxASSERT (treeCtrl != NULL) ;
 
     wxTreeItemId id = treeCtrl->GetSelection();
+#if wxCHECK_VERSION(2, 6, 0)
+    if (id.IsOk() && ecIsMenuForItem(event))
+#else
     if (id != 0 && ecIsMenuForItem(event))
+#endif
     {
         ecConfigItem* item = ((ecTreeItemData*) treeCtrl->GetItemData(id))->GetConfigItem();
         
@@ -978,7 +1040,11 @@ void ecSplitterScrolledWindow::OnUnloadPackage(wxCommandEvent& event)
     wxASSERT (treeCtrl != NULL) ;
 
     wxTreeItemId id = treeCtrl->GetSelection();
+#if wxCHECK_VERSION(2, 6, 0)
+    if (id.IsOk())
+#else
     if (id != 0)
+#endif
     {
         ecConfigItem* item = ((ecTreeItemData*) treeCtrl->GetItemData(id))->GetConfigItem();
         
@@ -997,7 +1063,11 @@ void ecSplitterScrolledWindow::OnUpdateRestoreDefaults(wxUpdateUIEvent& event)
     wxASSERT (treeCtrl != NULL) ;
 
     wxTreeItemId id = treeCtrl->GetSelection();
+#if wxCHECK_VERSION(2, 6, 0)
+    if (id.IsOk())
+#else
     if (id != 0)
+#endif
     {
         ecConfigItem* item = ((ecTreeItemData*) treeCtrl->GetItemData(id))->GetConfigItem();
         
@@ -1022,7 +1092,11 @@ void ecSplitterScrolledWindow::OnUpdateUnloadPackage(wxUpdateUIEvent& event)
     wxASSERT (treeCtrl != NULL) ;
 
     wxTreeItemId id = treeCtrl->GetSelection();
+#if wxCHECK_VERSION(2, 6, 0)
+    if (id.IsOk())
+#else
     if (id != 0)
+#endif
     {
         ecConfigItem* item = ((ecTreeItemData*) treeCtrl->GetItemData(id))->GetConfigItem();
         
@@ -1040,7 +1114,11 @@ bool ecSplitterScrolledWindow::IsChanged(wxTreeItemId id, bool bRecurse)
 
     if(!rc && bRecurse)
     {
+#if wxCHECK_VERSION(2, 6, 0)
+		wxTreeItemIdValue cookie;
+#else
         long cookie;
+#endif
         for (id=treeCtrl->GetFirstChild(id, cookie);id;id=treeCtrl->GetNextSibling(id))
         {
             if (IsChanged(id,TRUE))

@@ -123,7 +123,11 @@ public:
 
 //// Accessors
     bool IsAdded(const wxString& str) ;
+#if wxCHECK_VERSION(2, 6, 0)
+    int GetCount() const { return m_items.GetCount(); }
+#else
     int GetCount() const { return m_items.Number(); }
+#endif
     wxString GetVersion (const wxString& item);
 
 protected:

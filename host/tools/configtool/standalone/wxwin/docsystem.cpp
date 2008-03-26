@@ -628,12 +628,25 @@ bool ecHtmlIndexer::DoIndexDocs(const wxString& reposDir, wxString& projectFile,
 
     // Pop up a progress dialog
     wxProgressDialog dialog(wxGetApp().GetSettings().GetAppName(),
+#if wxCHECK_VERSION(2, 6, 0)
+        _("Compiling documentation index..."), m_indexItems.GetCount(),
+#else
         _("Compiling documentation index..."), m_indexItems.Number(),
+#endif
         wxGetApp().GetTopWindow());
     
     CreateHHCWriteHeader(stream);
 
     int count = 1;
+#if wxCHECK_VERSION(2, 6, 0)
+    wxNode* node = m_indexItems.GetFirst();
+    while (node)
+    {
+        dialog.Update(count);
+        count ++;
+
+        ecIndexItem* item = (ecIndexItem*) node->GetData();
+#else
     wxNode* node = m_indexItems.First();
     while (node)
     {
@@ -641,6 +654,7 @@ bool ecHtmlIndexer::DoIndexDocs(const wxString& reposDir, wxString& projectFile,
         count ++;
 
         ecIndexItem* item = (ecIndexItem*) node->Data();
+#endif
         wxString filename(item->m_urlToExamine);
         wxString urlFilename(item->m_urlToShow);
 
@@ -707,7 +721,11 @@ bool ecHtmlIndexer::DoIndexDocs(const wxString& reposDir, wxString& projectFile,
             }
         }
 
+#if wxCHECK_VERSION(2, 6, 0)
+        node = node->GetNext();
+#else
         node = node->Next();
+#endif
     }
     
 //    CreateHHCPackagesSection(wxT("Packages"), wxEmptyString, stream, docDir);
@@ -839,12 +857,21 @@ void ecHtmlIndexer::AddEndSection()
 
 void ecHtmlIndexer::ClearItems()
 {
+#if wxCHECK_VERSION(2, 6, 0)
+    wxNode* node = m_indexItems.GetFirst();
+    while (node)
+    {
+        ecIndexItem* item = (ecIndexItem*) node->GetData();
+        delete item;
+        node = node->GetNext();
+#else
     wxNode* node = m_indexItems.First();
     while (node)
     {
         ecIndexItem* item = (ecIndexItem*) node->Data();
         delete item;
         node = node->Next();
+#endif
     }
     m_indexItems.Clear();
 }

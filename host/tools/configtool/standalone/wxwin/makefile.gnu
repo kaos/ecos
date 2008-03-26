@@ -26,14 +26,16 @@ EXTRALDFLAGS=-L$(TCLDIR)/lib -L$(INSTALLDIR)/lib -lcdl -lcyginfra -ltcl
 
 ifneq (,$(findstring CYGWIN, $(shell uname)))
   PROGRAM=configtool.exe
-  CPPFLAGS=`$(WXDIR)/bin/wx-config --cppflags` -D_WIN32 -D__WIN32__ -DSTRICT
+  CPPFLAGS=`$(WXDIR)/bin/wx-config --cppflags` -D_WIN32 -D__WIN32__ -DSTRICT -D__USE_W32_SOCKETS
   LDFLAGS=`$(WXDIR)/bin/wx-config --libs` -lshlwapi -Wl,--subsystem,windows
   EXTRAOBJECTS=$(CTBUILDDIR)/configtoolres.o
+  RCFLAGS=`$(WXDIR)/bin/wx-config --cppflags`
 else
   PROGRAM=configtool
   CPPFLAGS=`$(WXDIR)/bin/wx-config --cppflags`
   LDFLAGS=`$(WXDIR)/bin/wx-config --libs`
   EXTRAOBJECTS=
+  RCFLAGS=`$(WXDIR)/bin/wx-config --cppflags`
 endif
 
 ifeq "$(DEBUG)" ""
@@ -107,7 +109,7 @@ $(CTBUILDDIR)/$(PROGRAM): $(OBJECTS) $(EXTRAOBJECTS)
 	$(CC) -o $@ $(OBJECTS) $(EXTRAOBJECTS) $(EXTRALDFLAGS) $(LDFLAGS)
 
 install: $(CTBUILDDIR)/$(PROGRAM)
-	install -s $< $(INSTALLDIR)/bin
+	install -D -s $< $(INSTALLDIR)/bin/$(PROGRAM)
 
 .cpp.o :
 	$(CC) $(CPPDEBUGOPTIONS) -c $(EXTRACPPFLAGS) $(CPPFLAGS) -o $@ $<
@@ -116,7 +118,7 @@ install: $(CTBUILDDIR)/$(PROGRAM)
 	$(CC) $(CPPDEBUGOPTIONS) -c $(EXTRACPPFLAGS) $(CPPFLAGS) -o $@ $<
 
 $(CTBUILDDIR)/configtoolres.o: $(CTDIR)/configtool.rc
-	$(RESCOMP) -i $< -o $@ --preprocessor "$(CC) -c -E -xc-header -DRC_INVOKED" --include-dir $(WXDIR)/include --include-dir $(CTDIR) --define __GNUWIN32__
+	$(RESCOMP) -i $< -o $@ --preprocessor "$(CC) -c -E -xc-header -DRC_INVOKED" $(RCFLAGS) --include-dir $(CTDIR) --define __GNUWIN32__
 
 clean:
 	rm -f $(CTBUILDDIR)/$(PROGRAM) $(CTBUILDDIR)/*.o

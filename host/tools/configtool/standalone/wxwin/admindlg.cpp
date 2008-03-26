@@ -323,7 +323,12 @@ void ecAdminDialog::OnRemove(wxCommandEvent& event)
         wxString pstrPackage(data->m_string);
         
         bool bStatus = TRUE;
+#if wxCHECK_VERSION(2, 6, 0)
+		wxTreeItemIdValue cookie;
+#else
         long cookie;
+#endif
+
         wxTreeItemId hChildItem = treeCtrl->GetFirstChild (hTreeItem, cookie);
         while (hChildItem && bStatus)
         {

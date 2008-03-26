@@ -302,7 +302,13 @@ bool ecApp::OnInit()
     m_mainFrame = frame;
     SetTopWindow(frame);
     frame->Show(TRUE);
+
+#if wxCHECK_VERSION(2, 6, 0)
+	// Don't do anything for now as the function is only for wxWidgets internal use
+#else
     SendIdleEvents(); // Otherwise UI updates aren't done, because it's busy loading the repository
+#endif
+
 #ifdef __WXMSW__
     ::UpdateWindow((HWND) frame->GetHWND());
 #endif
@@ -895,7 +901,10 @@ void ecApp::Log(const wxString& msg)
         if ((msg == wxEmptyString) || (msg.Last() != wxT('\n')))
             frame->GetOutputWindow()->AppendText(wxT("\n"));
 
-//        frame->GetOutputWindow()->ShowPosition(frame->GetOutputWindow()->GetLastPosition());
+#ifdef __CYGWIN__
+		// Seem to need this under Cygwin to force the last insert point to show
+		frame->GetOutputWindow()->ShowPosition(frame->GetOutputWindow()->GetLastPosition());
+#endif
     }
 }
 

@@ -358,8 +358,14 @@ public:
     wxArrayPtrVoid* GetWindows(const wxString& name) const;
     void SetWindows(const wxString& name, wxArrayPtrVoid& arr);
 
+#if wxCHECK_VERSION(2, 6, 0)
+    int GetCount() const { return m_settings.GetCount(); }
+    wxWindowSettingsObject* GetNth(int i) const { return (wxWindowSettingsObject*) m_settings.Item(i)->GetData(); }
+#else
+	// Depreciated version
     int GetCount() const { return m_settings.Number(); }
     wxWindowSettingsObject* GetNth(int i) const { return (wxWindowSettingsObject*) m_settings.Nth(i)->Data(); }
+#endif
     wxString GetName(int i) const { return GetNth(i)->m_windowName; }
 
     void SetUseDefaults(bool useDefaults) { m_useDefaults = useDefaults; }

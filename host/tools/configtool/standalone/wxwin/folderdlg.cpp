@@ -100,7 +100,11 @@ void ecFolderDialog::OnInitDialog(wxInitDialogEvent& event)
     if (comboBox->FindString(m_defaultPath) == -1)
         comboBox->Append(m_defaultPath);
 
+#if wxCHECK_VERSION(2, 6, 0)
+    if (comboBox->GetSelection() == -1)
+#else
     if (comboBox->GetSelection() == -1 && comboBox->Number() > 0)
+#endif
         comboBox->SetSelection(0);
 
     comboBox->SetFocus();
