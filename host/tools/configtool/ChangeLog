@@ -1,3 +1,11 @@
+2008-03-03  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/configitem.cpp: Do not delete the package item
+	object before unloading a package.
+	* standalone/wxwin/configtooldoc.cpp,
+	  standalone/wxwin/configtree.cpp: Delete the package item object
+	after unloading a package.
+
 2008-02-11  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/configitem.cpp: Fix memory leak when unloading a

@@ -720,11 +720,10 @@ bool ecConfigItem::Unload()
     while (node)
     {
         ecConfigItem* item = wxDynamicCast(node->GetData(), ecConfigItem);
-        if (package == item->GetOwnerPackage())
+        if (package == item->GetOwnerPackage() && item != this)
         {
             item->SetTreeItem(wxTreeItemId()); // Make sure we can't attempt to paint it
             item->SetCdlItem(NULL); // Make sure we can't access stale data
-            pDoc->GetItems().DeleteObject(this); // Delete from the item list
             delete item; // Delete the item itself
         }
         node = node->GetNext();
@@ -734,11 +733,10 @@ bool ecConfigItem::Unload()
     while (node)
     {
         ecConfigItem* item = wxDynamicCast(node->Data(), ecConfigItem);
-        if (package == item->GetOwnerPackage())
+        if (package == item->GetOwnerPackage() && item != this)
         {
             item->SetTreeItem(wxTreeItemId()); // Make sure we can't attempt to paint it
             item->SetCdlItem(NULL); // Make sure we can't access stale data
-            pDoc->GetItems().DeleteObject(this); // Delete from the item list
             delete item; // Delete the item itself
         }
         node = node->Next();

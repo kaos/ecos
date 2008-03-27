@@ -2,6 +2,7 @@
 //
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 2008 eCosCentric Limited
 //
 // This program is part of the eCos host tools.
 //
@@ -1052,6 +1053,7 @@ void ecSplitterScrolledWindow::OnUnloadPackage(wxCommandEvent& event)
                 wxYES_NO|wxICON_QUESTION))
         {
             item->Unload();
+            delete item;
             wxGetApp().GetConfigToolDoc()->RegenerateData();
         }
     }

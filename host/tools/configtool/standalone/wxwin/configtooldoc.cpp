@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
 // Copyright (C) 2003 John Dallaway
+// Copyright (C) 2008 eCosCentric Limited
 //
 // This program is part of the eCos host tools.
 //
@@ -1158,6 +1159,7 @@ void ecConfigToolDoc::SelectPackages ()
             if (! bNowLoaded && bPreviouslyLoaded){
                 // The package was loaded but should now be unloaded:
                 bChanged|=pItem->Unload();
+                delete pItem;
             } else if (bNowLoaded) {// if the package should be loaded
                 const wxString strVersion(dlg.GetVersion (strPackageName));
                 if (bPreviouslyLoaded) { // if the package is already loaded
