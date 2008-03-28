@@ -1,3 +1,12 @@
+2008-03-28  John Dallaway  <jld@ecoscentric.com>
+
+	* tests/tm_basic.cxx: Rename test to tm_posix.cxx.
+	* tests/mqueue1.c: Rename test to pmqueue1.c.
+	* tests/mqueue2.c: Rename test to pmqueue2.c.
+	* tests/mutex3.c: Rename test to pmutex3.c.
+	* cdl/posix.cdl: Accommodate the above renaming. Test names must be
+	globally unique.
+
 2007-06-12  Richard.Yuan <lemonskin@tom.com>
 
 	* src/except.cxx (install_handlers): Fixed typo. Bug #1000373

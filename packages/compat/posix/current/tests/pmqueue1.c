@@ -1,6 +1,6 @@
 /*========================================================================
 //
-//      mqueue1.c
+//      pmqueue1.c
 //
 //      POSIX Message queues tests
 //
@@ -356,4 +356,4 @@ main(void)
 
 #endif
 
-/* EOF mqueue1.c */
+/* EOF pmqueue1.c */

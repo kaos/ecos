@@ -1,6 +1,6 @@
 //==========================================================================
 //
-//        tm_basic.cxx
+//        tm_posix.cxx
 //
 //        Basic timing test / scaffolding
 //
@@ -1711,4 +1711,4 @@ int main( int argc, char **argv )
 
 #endif // CYGFUN_KERNEL_API_C, etc.
 
-// EOF tm_basic.cxx
+// EOF tm_posix.cxx

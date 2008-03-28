@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2008 eCosCentric Limited
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -338,8 +339,8 @@ cdl_package CYGPKG_POSIX {
         calculated { 
             (CYGPKG_POSIX_PTHREAD ? "tests/pthread1 tests/pthread2 tests/pthread3 " 
                                   : "") .
-            (CYGPKG_POSIX_PTHREAD_MUTEX ? "tests/mutex3 " : "") .
-            (CYGPKG_POSIX_MQUEUES ? "tests/mqueue1 tests/mqueue2 " : "") .
+            (CYGPKG_POSIX_PTHREAD_MUTEX ? "tests/pmutex3 " : "") .
+            (CYGPKG_POSIX_MQUEUES ? "tests/pmqueue1 tests/pmqueue2 " : "") .
             (CYGPKG_POSIX_SIGNALS ? "tests/signal1 tests/signal2 tests/signal3 \
                                      tests/sigsetjmp " : "") .
             ((CYGPKG_POSIX_SIGNALS && 
@@ -348,7 +349,7 @@ cdl_package CYGPKG_POSIX {
             ((CYGPKG_POSIX_SIGNALS && 
               CYGPKG_POSIX_TIMERS &&     
               CYGPKG_POSIX_PTHREAD &&
-              CYGPKG_POSIX_SEMAPHORES) ? "tests/tm_basic " : "")
+              CYGPKG_POSIX_SEMAPHORES) ? "tests/tm_posix " : "")
             }
             description   "
                 This option specifies the set of tests for the POSIX package."

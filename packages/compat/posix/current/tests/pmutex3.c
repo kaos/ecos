@@ -1,6 +1,6 @@
 //==========================================================================
 //
-//        mutex3.cxx
+//        pmutex3.c
 //
 //        Mutex test 3 - priority inheritance
 //
@@ -669,4 +669,4 @@ main( int argc, char **argv )
 
 #endif
 
-// EOF mutex3.cxx
+// EOF pmutex3.c
