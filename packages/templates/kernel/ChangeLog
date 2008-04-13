@@ -1,3 +1,7 @@
+2008-04-08  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* current.ect: Add libc_string which memalloc needs.
+
 2000-07-24  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* current.ect: Fix up after isoinfra and memalloc additions

@@ -1,3 +1,7 @@
+2008-04-08  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* current.cdl: Add LIBC_STRING which MEMALLOC now needs.
+
 2006-03-22  Uwe Kindler <uwe_kindler@web.de>
 	
 	* current.ect: Fixed configuration options to match new names of 
