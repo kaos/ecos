@@ -1,3 +1,9 @@
+2008-04-13  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/server_test.c (server_test): Fix typo with atoi which
+	should really be ultoa(). Cleanup to use diag_sprintf() which is
+	always available. Bug reported by Grant Edwards.
+
 2007-12-21  Oyvind Harboe <oyvind.harboe@zylin.com>
 
 	* src/tftp_client.c, include/arpa/tftp.h, cdl/net.cdl: tftp

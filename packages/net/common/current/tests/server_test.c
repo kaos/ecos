@@ -92,15 +92,7 @@ server_test(struct bootp *bp)
         getpeername(client, (struct sockaddr *)&client_addr, &client_len);
         diag_printf("connection from %s:%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
 
-#ifdef CYGPKG_LIBC_STDIO        
-        sprintf(buf, "Hello %s:%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
-#else        
-        strcpy(buf, "Hello ");
-        strcat(buf, inet_ntoa(client_addr.sin_addr));
-        strcat(buf,":");
-        strcat(buf, atoi(ntohs(client_addr.sin_port)));
-        strcat(buf,"\n");
-#endif
+        diag_sprintf(buf, "Hello %s:%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
         
         write(client, buf, strlen(buf));
         tv.tv_sec = 5;
