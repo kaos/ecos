@@ -1,3 +1,9 @@
+2008-04-23  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/hal_platform_setup.h: Fix setting the flash wait states
+	when the clock is running faster than 60MHz. r0 was undefined 
+	causing a data abort.
+	
 2007-03-26  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/hal_arm_at91sam7s.cdl: SAM7X and SAM7XC have a CAN bus

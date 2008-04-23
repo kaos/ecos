@@ -59,9 +59,9 @@
 // Macro to initialise the Memory Controller
         .macro _flash_init
 __flash_init__:
+        ldr     r0,=AT91_MC
 #if CYGNUM_HAL_ARM_AT91_CLOCK_SPEED > 30000000
         // When the clock is running faster than 30MHz we need a wait state
-        ldr     r0,=AT91_MC
         ldr     r1,=(AT91_MC_FMR_1FWS)
         str     r1,[r0,#AT91_MC_FMR]
 #endif
