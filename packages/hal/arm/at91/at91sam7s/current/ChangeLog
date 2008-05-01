@@ -1,3 +1,10 @@
+2008-04-30  John Eigelaar  <jeigelaar@mweb.co.za>
+
+	* include/pkgconf/mlt_arm_at91sam7x512_rom.{h|ldi}: Added the 
+	memory layout files to support the at91sam7x512  
+	* cdl/hal_arm_at91s.cdl: Added the configuration options to 
+	support the at91sam7x512
+	
 2008-04-23  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/hal_platform_setup.h: Fix setting the flash wait states

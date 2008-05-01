@@ -78,7 +78,7 @@ cdl_package CYGPKG_HAL_ARM_AT91SAM7 {
         default_value  {"at91sam7s256"}
         legal_values   {"at91sam7s32" "at91sam7s321" "at91sam7s64" 
                         "at91sam7s128" "at91sam7s256" 
-                        "at91sam7x128" "at91sam7x256" 
+                        "at91sam7x128" "at91sam7x256" "at91sam7x512" 
                         "at91sam7xc128" "at91sam7xc256" }
         description    "
            The AT91SAM7 microcontroller family has several variants,
@@ -101,7 +101,8 @@ cdl_package CYGPKG_HAL_ARM_AT91SAM7 {
 
     cdl_option CYGHWR_HAL_ARM_AT91SAM7X {
         display     "SAM7X device" 
-        calculated  { CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7x256" ||
+        calculated  { CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7x512" ||
+	              CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7x256" ||
                       CYGHWR_HAL_ARM_AT91SAM7 == "at91sam7x128" }        
         description "
             Is the AT91SAM7 device a member of the AT91SAM7X family?"
