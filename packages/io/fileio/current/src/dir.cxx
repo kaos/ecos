@@ -32,9 +32,6 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -186,6 +183,12 @@ extern int readdir_r( DIR *dirp, struct dirent *entry, struct dirent **result )
         FILEIO_RETURN_VALUE( EBADF );
     }
 
+#ifdef CYGPKG_FILEIO_DIRENT_DTYPE
+    // d_type is only supposed by a few filesystems, so make sure other
+    // filesystems return a sane value;
+    entry->d_type = 0;
+#endif
+
     res = read( fd, (void *)entry, sizeof(struct dirent));
 
     if( res < 0 )
@@ -195,7 +198,13 @@ extern int readdir_r( DIR *dirp, struct dirent *entry, struct dirent **result )
     
     if( res > 0 )
         *result = entry;
+
+#ifdef CYGPKG_FILEIO_DIRENT_DTYPE
+    // Only the lower bits contain the type of file, so and those out.
+    entry->d_type &= S_IFMT;
+#endif
     
+
     FILEIO_RETURN( ENOERR );
 }
 

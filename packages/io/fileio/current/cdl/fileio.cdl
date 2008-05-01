@@ -247,6 +247,20 @@ cdl_package CYGPKG_IO_FILEIO {
         compile          fnmatch.c
     }
 
+    cdl_option CYGPKG_FILEIO_DIRENT_DTYPE {
+        display          "Struct dirent contains a d_type field"
+        flavor           bool
+        default_value    0
+        description      "
+            If this option is enabled then struct dirent contains a
+            d_type field. With this field, file type may be
+            distinguished directly without calling stat.  Note: This
+            member is not part of the POSIX standard, however is
+            commonely implemented in Linux, FreeBSD, but not SunOS.
+            Also, not all filesystems support it.  So this feature is
+            not portable and should be used with caution." 
+    }
+
     # ----------------------------------------------------------------
     # Tests
 

@@ -520,8 +520,14 @@ specifier of <literal>SEEK_SET</literal>.
 Most of these considerations are invisible to clients of a filesystem
 since they will access directories via the POSIX
 <function>opendir()</function>, <function>readdir()</function> and
-<function>closedir()</function> functions.
-</para>
+<function>closedir()</function> functions. The <structname> struct
+dirent</structname> object returned by <function>readdir()</function>
+will always contain <structname>d_name</structname> as required by
+POSIX. When <literal>CYGPKG_FILEIO_DIRENT_DTYPE</literal> is enabled
+it will also contain <structname>d_type</structname>, which is not
+part of POSIX, but often implemented by OSes. Currently only the
+FATFS, RAMFS, ROMFS and JFFS2 filesystem sets this value. For other
+filesystems a value of 0 will be returned in the member.</para>
 
 <para>
 Support for the <function>getcwd()</function> function is provided by

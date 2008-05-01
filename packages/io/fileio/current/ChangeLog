@@ -1,3 +1,13 @@
+2008-04-02 Xinghua Yang <yxinghua@sunnorth.com.cn>
+	   Andrew Lunn <andrew.lunn@ascom.ch>
+
+	* cdl/fileio.cdl: Use CYGPKG_FILEIO_DIRENT_DTYPE to enable/disable
+	d_type field of struct dirent.
+	* include/dirent.h: Add a d_type field to struct dirent, in order to
+	distinguish file type directly without calling stat.
+	* doc/fileio.sgml: Documentation about this new member and the fact
+	it is not portable.
+
 2007-08-17 Hans Rosenfeld <rosenfeld@grumpf.hope-2000.org>
 
 	tests/fnmatch.c (main): Fix cut/paste error in final pass/fail
