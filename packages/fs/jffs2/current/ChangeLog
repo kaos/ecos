@@ -1,3 +1,12 @@
+2008-04-02  Xinghua Yang <yxinghua@sunnorth.com.cn>
+            Taiyun  Wang <taiyun@sunnorth.com.cn>
+            Andrew Lunn <andrew.lunn@ascom.ch>
+
+	* cdl/jffs2.cdl: Use CYGPKG_FS_JFFS2_RET_DIRENT_DTYPE to control
+	whether jffs2 sets file type in jffs2_fo_dirread.
+	* src/fs-ecos.c: Set file type in jffs2_fo_dirread.
+	* tests/jffs2_1.c: Test the new d_type in dirent when present.
+	
 2006-03-09  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/fs-ecos.c: Generalise the check for broken ARM compilers

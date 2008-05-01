@@ -1646,6 +1646,9 @@ static int jffs2_fo_dirread(struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio)
 	struct _inode *d_inode = (struct _inode *) fp->f_data;
 	struct dirent *ent = (struct dirent *) uio->uio_iov[0].iov_base;
 	char *nbuf = ent->d_name;
+#ifdef CYGPKG_FS_JFFS2_RET_DIRENT_DTYPE
+	struct _inode *c_ino;
+#endif
 	int nlen = sizeof (ent->d_name) - 1;
 	off_t len = uio->uio_iov[0].iov_len;
 	struct jffs2_inode_info *f;
@@ -1670,11 +1673,23 @@ static int jffs2_fo_dirread(struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio)
 		D1(printk
 		   (KERN_DEBUG "Dirent 0: \".\", ino #%lu\n", inode->i_ino));
 		filldir(nbuf, nlen, (const unsigned char *) ".", 1);
-		goto out;
+#ifdef CYGPKG_FS_JFFS2_RET_DIRENT_DTYPE
+ 		// Flags here are the same as jffs2_mkdir. Make sure
+                // d_type is the same as st_mode of calling stat.
+                ent->d_type = 
+                  jemode_to_cpu(cpu_to_jemode(S_IRUGO|S_IXUGO|S_IWUSR|S_IFDIR));
+#endif
+                goto out;
 	}
 	if (offset == 1) {
 		filldir(nbuf, nlen, (const unsigned char *) "..", 2);
-		goto out;
+#ifdef CYGPKG_FS_JFFS2_RET_DIRENT_DTYPE
+                // Flags here are the same as jffs2_mkdir. Make sure
+                // d_type is the same as st_mode of calling stat.
+                ent->d_type = 
+                  jemode_to_cpu(cpu_to_jemode(S_IRUGO|S_IXUGO|S_IWUSR|S_IFDIR));
+#endif
+                goto out;
 	}
 
 	curofs = 1;
@@ -1701,6 +1716,18 @@ static int jffs2_fo_dirread(struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio)
 		   (KERN_DEBUG "Dirent %ld: \"%s\", ino #%u, type %d\n", offset,
 		    fd->name, fd->ino, fd->type));
 		filldir(nbuf, nlen, fd->name, strlen((char *)fd->name));
+#ifdef CYGPKG_FS_JFFS2_RET_DIRENT_DTYPE
+		c_ino = jffs2_iget(inode->i_sb, fd->ino);
+		if(IS_ERR(c_ino)) {
+			D1(printk(KERN_WARNING "get entry inode failed\n"));
+			// fileio already set it to zero, so not needed here
+			// ent->d_type = 0;
+		}
+		else {
+			ent->d_type = c_ino->i_mode;
+			jffs2_iput(c_ino);
+		}
+#endif
 		goto out_sem;
 	}
 	/* Reached the end of the directory */

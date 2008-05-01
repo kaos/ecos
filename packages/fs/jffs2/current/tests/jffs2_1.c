@@ -141,6 +141,9 @@ static void listdir( char *name, int statp, int numexpected, int *numgot )
             break;
         num++;
         diag_printf("<INFO>: entry %14s",entry->d_name);
+#ifdef CYGPKG_FS_JFFS2_RET_DIRENT_DTYPE
+        diag_printf(" d_type %2d", entry->d_type);
+#endif
         if( statp )
         {
             char fullname[PATH_MAX];
@@ -169,6 +172,10 @@ static void listdir( char *name, int statp, int numexpected, int *numgot )
                             sbuf.st_mode,sbuf.st_ino,sbuf.st_nlink,
                             (unsigned long) sbuf.st_size);
             }
+#ifdef CYGPKG_FS_JFFS2_RET_DIRENT_DTYPE
+            if ((entry->d_type & S_IFMT) != (sbuf.st_mode & S_IFMT))
+              CYG_TEST_FAIL("File mode's don't match between dirent and stat");
+#endif
         }
 
         diag_printf("\n");
