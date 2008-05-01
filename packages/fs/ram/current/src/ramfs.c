@@ -2370,6 +2370,9 @@ static int ramfs_fo_dirread      (struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *u
         memcpy( nbuf, d->name, fraglen);
         nbuf += fraglen;
         nlen -= fraglen;
+#ifdef CYGPKG_FS_RAM_RET_DIRENT_DTYPE
+        ent->d_type = d->node->mode;
+#endif
             
         // if we hit the last entry, we have a successful transfer
         if( d->last || nlen == 0)

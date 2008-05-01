@@ -1,3 +1,11 @@
+2008-04-02  Xinghua Yang <yxinghua@sunnorth.com.cn>
+            Taiyun  Wang <taiyun@sunnorth.com.cn>
+	
+	* cdl/ramfs.cdl: Use CYGPKG_FS_RAM_RET_DIRENT_DTYPE to control
+	whether ram sets file type in ramfs_fo_dirread.
+	* src/ramfs.c: Set file type in ramfs_fo_dirread.
+	* tests/ramfs1.c: Test the new d_type in dirent when present.
+	
 2006-10-05  Andrew Lunn  <andrew.lunn@ascom.ch
 	    Paluch Sebastian <the_sorcerer&op.pl>
 	
