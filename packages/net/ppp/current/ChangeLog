@@ -1,3 +1,8 @@
+2008-04-28  Daniel Néri  <daniel.neri@sigicom.com>
+
+	* src/ipcp.c (ipcp_init): Negotiate both primary and secondary DNS
+	resolver addresses when CYGOPT_PPP_NS_NEGOTIATE is enabled.
+
 2006-07-18  John Paul King  <john.king@transdatainc.com>
 
 	* src/sys-ecos.c (cyg_ppp_up): Bring semaphore init earlier to avoid

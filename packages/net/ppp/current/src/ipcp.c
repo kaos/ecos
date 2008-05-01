@@ -240,7 +240,8 @@ ipcp_init(unit)
     wo->default_route = ppp_tty.options->default_route;
 
 #ifdef CYGOPT_PPP_NS_NEGOTIATE
-    wo->neg_dns1 = 1;       
+    wo->neg_dns1 = 1;
+    wo->neg_dns2 = 1;
 #endif
 
     /* max slots and slot-id compression are currently hardwired in */
