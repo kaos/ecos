@@ -97,7 +97,7 @@ void hal_plf_eth_init(void)
 
    /* Power Down Mode */
    HAL_ARM_AT91_GPIO_CFG_DIRECTION(AT91_GPIO_PB18, AT91_PIN_OUT);
-   HAL_ARM_AT91_GPIO_PUT(AT91_GPIO_PB19,0);
+   HAL_ARM_AT91_GPIO_PUT(AT91_GPIO_PB18,0);
 
    /* All the lines setup correctly. Now do a external reset and let the phy 
       start up in the correct mode */

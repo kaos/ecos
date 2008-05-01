@@ -1,3 +1,11 @@
+2008-04-30  John Eigelaar <jeigelaar@mweb.co.za>
+
+        * cdl/hal_arm_at91sam7xek.cdl: Added configuration options in 
+	order to support the at91sam7x512
+	* src/at91sam7xek_misc.c: Fix a typo in the phy initialisation code.
+	Pin 18 was being setup to drive the powerdown pin of the phy but 
+	pin 19 was driven low instead.
+
 2007-01-17  John Eigelaar <jeigelaar@mweb.co.za>
 
         * Added hal_plf_eth_init() in order to initialise the Davicom
