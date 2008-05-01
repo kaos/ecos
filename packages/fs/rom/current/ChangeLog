@@ -1,3 +1,11 @@
+2006-11-13 Xinghua Yang <yxinghua@sunnorth.com.cn>
+           Taiyun  Wang <taiyun@sunnorth.com.cn>
+
+	* cdl/romfs.cdl: Use CYGPKG_FS_ROM_RET_DIRENT_DTYPE to control
+	whether fatfs sets file type in romfs_fo_dirread.
+	* src/romfs.c: Set file type in romfs_fo_dirread.
+	* tests/romfs1.c: Test the new d_type in dirent when present.
+
 2006-11-13 Oyvind Harboe <oyvind.harboe@zylin.com>
 
 	* support/file2c.tcl : align romdisk data to 4 bytes. With a bit

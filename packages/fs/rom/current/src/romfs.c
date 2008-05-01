@@ -1077,6 +1077,9 @@ static int romfs_fo_dirread      (struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *u
 
     for ( i = 0 ; i < nlen && d->name[i] ; i++, nbuf++ )
 	*nbuf = d->name[i];
+#ifdef CYGPKG_FS_ROM_RET_DIRENT_DTYPE
+	ent->d_type = (((romfs_disk *)fp->f_mte->data)->node[d->node]).mode;
+#endif
 
     // A successful read. Terminate the entry name with a NUL, set the
     // residue and set the file offset to restart at the next
