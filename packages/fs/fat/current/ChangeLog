@@ -1,3 +1,12 @@
+2008-04-02  Xinghua Yang <yxinghua@sunnorth.com.cn>
+            Andrew Lunn <andrew.lunn@ascom.ch>
+	    Taiyun Wang <taiyun@sunnorth.com.cn>
+
+	* cdl/fatfs.cdl: Use CYGPKG_FS_FAT_RET_DIRENT_DTYPE to control
+	  whether fatfs sets file type in fatfs_fo_dirread.
+	* src/fatfs.c: Set file type in fatfs_fo_dirread
+	* test/fatfs1.c: Test the new d_type in dirent when present.
+	
 2007-07-31  Hajime Ishitani <pigmon@mail.snd.co.jp>
 
 	* src/fatfs.c: When removing a directory, first remove . and

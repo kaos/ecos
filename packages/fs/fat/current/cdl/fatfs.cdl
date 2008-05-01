@@ -112,6 +112,17 @@ cdl_package CYGPKG_FS_FAT {
         description     "This option controls if the FAT filesystem supports
                          or honors the FAT filesystem file attributes."
     }
+
+    cdl_option      CYGPKG_FS_FAT_RET_DIRENT_DTYPE {
+        display         "Support for fileio's struct dirent d_type field"
+        flavor          bool
+        default_value   0
+        active_if       CYGPKG_FILEIO_DIRENT_DTYPE
+        description     "This option controls whether the FAT filesystem 
+                         supports setting fileio's struct dirent d_type field.
+                         If this option is enabled, d_type will be set."
+    }
+
     
     # --------------------------------------------------------------------
     

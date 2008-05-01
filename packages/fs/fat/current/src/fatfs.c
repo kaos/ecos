@@ -1502,7 +1502,9 @@ fatfs_fo_dirread(struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio)
         return (err == EEOF ? ENOERR : err);
 
     strcpy(nbuf, dentry.filename);
-
+#ifdef CYGPKG_FS_FAT_RET_DIRENT_DTYPE
+    ent->d_type = dentry.mode;
+#endif
     fd->node->dentry.atime  = cyg_timestamp();
     uio->uio_resid         -= sizeof(struct dirent);
     fp->f_offset++;
