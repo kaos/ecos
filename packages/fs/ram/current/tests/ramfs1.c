@@ -169,7 +169,7 @@ static void listdir( char *name, int statp, int numexpected, int *numgot )
                             sbuf.st_mode,sbuf.st_ino,sbuf.st_nlink,
                             (unsigned long) sbuf.st_size);
             }
-#ifdef CYGPKG_FS_FAT_RET_DIRENT_DTYPE
+#ifdef CYGPKG_FS_RAM_RET_DIRENT_DTYPE
             if ((entry->d_type & S_IFMT) != (sbuf.st_mode & S_IFMT))
               CYG_TEST_FAIL("File mode's don't match between dirent and stat");
 #endif
