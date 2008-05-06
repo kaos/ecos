@@ -1031,22 +1031,13 @@ package CYGPKG_IO_SERIAL_POWERPC_COGENT {
     description       "Cogent PowerPC serial device drivers"
 }
 
-package CYGPKG_IO_SERIAL_POWERPC_EC555 {
-    alias             { "ec555 PowerPC serial device drivers"
-                        devs_serial_powerpc_ec555 ec555_serial_driver }
+package CYGPKG_IO_SERIAL_POWERPC_MPC555 {
+    alias             { "mpc555 PowerPC serial device drivers"
+                        devs_serial_powerpc_mpc555 mpc555_serial_driver }
     hardware
-    directory	      devs/serial/powerpc/ec555
-    script	      ser_powerpc_ec555.cdl	
-    description       "ec555 PowerPC serial device drivers"
-}
-
-package CYGPKG_IO_SERIAL_POWERPC_CME555 {
-    alias             { "cme555 PowerPC serial device drivers"
-                        devs_serial_powerpc_cme555 cme555_serial_driver }
-    hardware
-    directory	      devs/serial/powerpc/cme555
-    script	      ser_powerpc_cme555.cdl	
-    description       "cme555 PowerPC serial device drivers"
+    directory	      devs/serial/powerpc/mpc555
+    script	      ser_powerpc_mpc555.cdl	
+    description       "mpc555 PowerPC serial device drivers"
 }
 
 package CYGPKG_IO_SERIAL_FREESCALE_ESCI_H {
@@ -5444,7 +5435,7 @@ target cme555 {
                           CYGPKG_HAL_POWERPC_CME555
                           CYGPKG_DEVS_FLASH_CME555
                           CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
-                          CYGPKG_IO_SERIAL_POWERPC_CME555
+                          CYGPKG_IO_SERIAL_POWERPC_MPC555
                           CYGPKG_DEVICES_WALLCLOCK_MPC5xx
         }
         description "
@@ -5460,7 +5451,7 @@ target ec555 {
                           CYGPKG_HAL_POWERPC_EC555
                           CYGPKG_DEVS_FLASH_EC555
                           CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
-                          CYGPKG_IO_SERIAL_POWERPC_EC555
+                          CYGPKG_IO_SERIAL_POWERPC_MPC555
                           CYGPKG_DEVICES_WALLCLOCK_MPC5xx
         }
         description "

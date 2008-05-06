@@ -1,10 +1,10 @@
-#ifndef CYGONCE_DEVS_SERIAL_POWERPC_CME555_SERIAL_H
-#define CYGONCE_DEVS_SERIAL_POWERPC_CME555_SERIAL_H
+#ifndef CYGONCE_DEVS_SERIAL_POWERPC_MPC555_SERIAL_H
+#define CYGONCE_DEVS_SERIAL_POWERPC_MPC555_SERIAL_H
 //==========================================================================
 //
-//      cme555_serial.h
+//      mpc555_serial.h
 //
-//      PowerPC 5xx CME555 Serial I/O definitions.
+//      PowerPC 5xx MPC555 Serial I/O definitions.
 //
 //==========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
@@ -34,9 +34,6 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -45,7 +42,7 @@
 // Author(s):   Bob Koninckx
 // Contributors:
 // Date:        2002-04-25
-// Purpose:     CME555 Serial I/O definitions.
+// Purpose:     MPC555 Serial I/O definitions.
 // Description: 
 //
 //   
@@ -152,6 +149,6 @@ static unsigned char select_parity[] = {
     0,        // Space parity not supported
 };
 
-#endif // CYGONCE_DEVS_SERIAL_POWERPC_CME555_SERIAL_H
+#endif // CYGONCE_DEVS_SERIAL_POWERPC_MPC555_SERIAL_H
 
-// EOF cme555_serial.h
+// EOF mpc555_serial.h

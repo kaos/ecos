@@ -1,3 +1,7 @@
+2008-04-06  Steven Clugston <steven.clugston@ncl.ac.uk>
+
+	* Refactored cme555 package to more generic mpc555
+
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/ser_powerpc_cme555.cdl: Remove irrelevant doc link.
@@ -39,9 +43,6 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //===========================================================================

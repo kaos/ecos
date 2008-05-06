@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//      ec555_serial_with_ints.c
+//      mpc555_serial_with_ints.c
 //
-//      PowerPC 5xx EC555 Serial I/O Interface Module (interrupt driven)
+//      PowerPC 5xx MPC555 Serial I/O Interface Module (interrupt driven)
 //
 //==========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
@@ -32,9 +32,6 @@
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -43,7 +40,7 @@
 // Author(s):   Bob Koninckx
 // Contributors:
 // Date:        2002-04-25
-// Purpose:     EC555 Serial I/O module (interrupt driven version)
+// Purpose:     MPC555 Serial I/O module (interrupt driven version)
 // Description: 
 //
 //   
@@ -62,10 +59,10 @@
 #include <cyg/infra/diag.h>
 #include <cyg/io/serial.h>
 
-// Only build this driver for the MPC555 based EC555 board
-#ifdef CYGPKG_IO_SERIAL_POWERPC_EC555
+// Only build this driver for the MPC555 based boards
+#ifdef CYGPKG_IO_SERIAL_POWERPC_MPC555
 
-#include "ec555_serial.h"
+#include "mpc555_serial.h"
 
 //-----------------
 // Type definitions
@@ -116,21 +113,21 @@ static SERIAL_FUNS(mpc555_serial_funs,
 //-------------------
 // Device driver data
 //-------------------
-#ifdef CYGPKG_IO_SERIAL_POWERPC_EC555_SERIAL_A
+#ifdef CYGPKG_IO_SERIAL_POWERPC_MPC555_SERIAL_A
 static mpc555_serial_info mpc555_serial_info0 = {MPC555_SERIAL_BASE_A,
                                                  CYGNUM_HAL_INTERRUPT_IMB3_SCI0_TX,
                                                  CYGNUM_HAL_INTERRUPT_IMB3_SCI0_RX,
                                                  CYGNUM_HAL_INTERRUPT_IMB3_SCI0_TX_PRIORITY,
                                                  CYGNUM_HAL_INTERRUPT_IMB3_SCI0_RX_PRIORITY,
                                                  false};
-#if CYGNUM_IO_SERIAL_POWERPC_EC555_SERIAL_A_BUFSIZE > 0
-static unsigned char mpc555_serial_out_buf0[CYGNUM_IO_SERIAL_POWERPC_EC555_SERIAL_A_BUFSIZE]; 
-static unsigned char mpc555_serial_in_buf0[CYGNUM_IO_SERIAL_POWERPC_EC555_SERIAL_A_BUFSIZE];
+#if CYGNUM_IO_SERIAL_POWERPC_MPC555_SERIAL_A_BUFSIZE > 0
+static unsigned char mpc555_serial_out_buf0[CYGNUM_IO_SERIAL_POWERPC_MPC555_SERIAL_A_BUFSIZE]; 
+static unsigned char mpc555_serial_in_buf0[CYGNUM_IO_SERIAL_POWERPC_MPC555_SERIAL_A_BUFSIZE];
 
 static SERIAL_CHANNEL_USING_INTERRUPTS(mpc555_serial_channel0,
                                        mpc555_serial_funs,
                                        mpc555_serial_info0,
-                                       CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_POWERPC_EC555_SERIAL_A_BAUD),
+                                       CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_POWERPC_MPC555_SERIAL_A_BAUD),
                                        CYG_SERIAL_STOP_DEFAULT,
                                        CYG_SERIAL_PARITY_DEFAULT,
                                        CYG_SERIAL_WORD_LENGTH_DEFAULT,
@@ -143,36 +140,36 @@ static SERIAL_CHANNEL_USING_INTERRUPTS(mpc555_serial_channel0,
 static SERIAL_CHANNEL(mpc555_serial_channel0,
                       mpc555_serial_funs,
                       mpc555_serial_info0,
-                      CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_POWERPC_EC555_SERIAL_A_BAUD),
+                      CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_POWERPC_MPC555_SERIAL_A_BAUD),
                       CYG_SERIAL_STOP_DEFAULT,
                       CYG_SERIAL_PARITY_DEFAULT,
                       CYG_SERIAL_WORD_LENGTH_DEFAULT,
                       CYG_SERIAL_FLAGS_DEFAULT);
 #endif
 DEVTAB_ENTRY(mpc555_serial_io0,
-             CYGDAT_IO_SERIAL_POWERPC_EC555_SERIAL_A_NAME,
+             CYGDAT_IO_SERIAL_POWERPC_MPC555_SERIAL_A_NAME,
              0, // does not depend on a lower level device driver
              &cyg_io_serial_devio,
              mpc555_serial_init,
              mpc555_serial_lookup,
              &mpc555_serial_channel0);
-#endif // ifdef CYGPKG_IO_SERIAL_POWERPC_EC555_SERIAL_A
+#endif // ifdef CYGPKG_IO_SERIAL_POWERPC_MPC555_SERIAL_A
 
-#ifdef CYGPKG_IO_SERIAL_POWERPC_EC555_SERIAL_B
+#ifdef CYGPKG_IO_SERIAL_POWERPC_MPC555_SERIAL_B
 static mpc555_serial_info mpc555_serial_info1 = {MPC555_SERIAL_BASE_B,
                                                  CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TX,
                                                  CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RX,
                                                  CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TX_PRIORITY,
                                                  CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RX_PRIORITY,
                                                  false};
-#if CYGNUM_IO_SERIAL_POWERPC_EC555_SERIAL_B_BUFSIZE > 0
-static unsigned char mpc555_serial_out_buf1[CYGNUM_IO_SERIAL_POWERPC_EC555_SERIAL_B_BUFSIZE]; 
-static unsigned char mpc555_serial_in_buf1[CYGNUM_IO_SERIAL_POWERPC_EC555_SERIAL_B_BUFSIZE];
+#if CYGNUM_IO_SERIAL_POWERPC_MPC555_SERIAL_B_BUFSIZE > 0
+static unsigned char mpc555_serial_out_buf1[CYGNUM_IO_SERIAL_POWERPC_MPC555_SERIAL_B_BUFSIZE]; 
+static unsigned char mpc555_serial_in_buf1[CYGNUM_IO_SERIAL_POWERPC_MPC555_SERIAL_B_BUFSIZE];
 
 static SERIAL_CHANNEL_USING_INTERRUPTS(mpc555_serial_channel1,
                                        mpc555_serial_funs,
                                        mpc555_serial_info1,
-                                       CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_POWERPC_EC555_SERIAL_B_BAUD),
+                                       CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_POWERPC_MPC555_SERIAL_B_BAUD),
                                        CYG_SERIAL_STOP_DEFAULT,
                                        CYG_SERIAL_PARITY_DEFAULT,
                                        CYG_SERIAL_WORD_LENGTH_DEFAULT,
@@ -185,20 +182,20 @@ static SERIAL_CHANNEL_USING_INTERRUPTS(mpc555_serial_channel1,
 static SERIAL_CHANNEL(mpc555_serial_channel1,
                       mpc555_serial_funs,
                       mpc555_serial_info1,
-                      CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_POWERPC_EC555_SERIAL_B_BAUD),
+                      CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_POWERPC_MPC555_SERIAL_B_BAUD),
                       CYG_SERIAL_STOP_DEFAULT,
                       CYG_SERIAL_PARITY_DEFAULT,
                       CYG_SERIAL_WORD_LENGTH_DEFAULT,
                       CYG_SERIAL_FLAGS_DEFAULT);
 #endif
 DEVTAB_ENTRY(mpc555_serial_io1,
-             CYGDAT_IO_SERIAL_POWERPC_EC555_SERIAL_B_NAME,
+             CYGDAT_IO_SERIAL_POWERPC_MPC555_SERIAL_B_NAME,
              0, // does not depend on a lower level device driver
              &cyg_io_serial_devio,
              mpc555_serial_init,
              mpc555_serial_lookup,
              &mpc555_serial_channel1);
-#endif // ifdef CYGPKG_IO_SERIAL_POWERPC_EC555_SERIAL_B
+#endif // ifdef CYGPKG_IO_SERIAL_POWERPC_MPC555_SERIAL_B
 
 //-----------------------------
 // Device driver implementation
@@ -208,7 +205,7 @@ DEVTAB_ENTRY(mpc555_serial_io1,
 // I think this is the best place to implement it. The device driver is the only place
 // in the code where the knowledge is present about how the hardware is used
 //
-// Always check receiver interrupts. Some rom monitor might be listening to CTRL-C
+// Always check receive interrupts. Some rom monitor might be waiting for CTRL-C
 static cyg_uint32 hal_arbitration_isr_qsci(CYG_ADDRWORD a_vector, CYG_ADDRWORD a_data)
 {
   cyg_uint16 status;
@@ -218,8 +215,7 @@ static cyg_uint32 hal_arbitration_isr_qsci(CYG_ADDRWORD a_vector, CYG_ADDRWORD a
   HAL_READ_UINT16(CYGARC_REG_IMM_SCC1R1, control);
   if((status & CYGARC_REG_IMM_SCxSR_RDRF) && (control & CYGARC_REG_IMM_SCCxR1_RIE))
     return hal_call_isr(CYGNUM_HAL_INTERRUPT_IMB3_SCI0_RX);
-  
-#ifdef CYGPKG_IO_SERIAL_POWERPC_EC555_SERIAL_A // Do not waist time on unused hardware
+#ifdef CYGPKG_IO_SERIAL_POWERPC_MPC555_SERIAL_A // Do not waist time on unused hardware
   if((status & CYGARC_REG_IMM_SCxSR_TDRE) && (control & CYGARC_REG_IMM_SCCxR1_TIE))
     return hal_call_isr(CYGNUM_HAL_INTERRUPT_IMB3_SCI0_TX);
 // Don't waist time on unused interrupts
@@ -234,8 +230,7 @@ static cyg_uint32 hal_arbitration_isr_qsci(CYG_ADDRWORD a_vector, CYG_ADDRWORD a
   HAL_READ_UINT16(CYGARC_REG_IMM_SCC2R1, control);
   if((status & CYGARC_REG_IMM_SCxSR_RDRF) && (control & CYGARC_REG_IMM_SCCxR1_RIE))
     return hal_call_isr(CYGNUM_HAL_INTERRUPT_IMB3_SCI1_RX);
-  
-#ifdef CYGPKG_IO_SERIAL_POWERPC_EC555_SERIAL_B // Do not waist time on unused hardware
+#ifdef CYGPKG_IO_SERIAL_POWERPC_MPC555_SERIAL_B // Do not waist time on unused hardware
   if((status & CYGARC_REG_IMM_SCxSR_TDRE) && (control & CYGARC_REG_IMM_SCCxR1_TIE))
     return hal_call_isr(CYGNUM_HAL_INTERRUPT_IMB3_SCI1_TX);
 // Don't waist time on unused interrupts
@@ -631,6 +626,6 @@ static void mpc555_serial_rx_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_ad
   cyg_drv_interrupt_unmask(mpc555_chan->rx_interrupt_num);
 }
 
-#endif // CYGPKG_IO_SERIAL_POWERPC_EC555
+#endif // CYGPKG_IO_SERIAL_POWERPC_MPC555
 
-// EOF ec555_serial_with_ints.c
+// EOF mpc555_serial_with_ints.c
