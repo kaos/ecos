@@ -60,15 +60,19 @@
         .macro _flash_init
 __flash_init__:
         ldr     r0,=AT91_MC
-#if CYGNUM_HAL_ARM_AT91_CLOCK_SPEED > 30000000
+#if CYGNUM_HAL_ARM_AT91_CLOCK_SPEED > 60000000
+        // When the clock is running faster than 60MHz we need two wait states
+        ldr     r1,=(AT91_MC_FMR_2FWS)
+#else 
+# if CYGNUM_HAL_ARM_AT91_CLOCK_SPEED > 30000000
         // When the clock is running faster than 30MHz we need a wait state
         ldr     r1,=(AT91_MC_FMR_1FWS)
-        str     r1,[r0,#AT91_MC_FMR]
+# else
+        // We have a slow clock, no extra wait states are needed
+        ldr     r1,=AT91_MC_FMR_0FWS
+# endif
 #endif
-#if CYGNUM_HAL_ARM_AT91_CLOCK_SPEED > 60000000
-        ldr     r1,=(AT91_MC_FMR_2FWS)
         str     r1,[r0,#AT91_MC_FMR]
-#endif
         .endm
 
 // Macro to start the main clock.
@@ -79,7 +83,11 @@ __main_clock_init__:
         ldr     r1,=(AT91_PMC_MCKR_PRES_CLK|AT91_PMC_MCKR_SLOW_CLK)
         str     r1,[r0,#AT91_PMC_MCKR]
 	// startup time
+#if defined(CYGNUM_HAL_ARM_AT91_CLOCK_TYPE_EXTCLOCK)
+        ldr     r1,=(AT91_PMC_MOR_OSCBYPASS)
+#else
         ldr     r1,=(AT91_PMC_MOR_OSCCOUNT(6)|AT91_PMC_MOR_MOSCEN)
+#endif
         str     r1,[r0,#AT91_PMC_MOR]
 
         // Wait for oscilator start timeout

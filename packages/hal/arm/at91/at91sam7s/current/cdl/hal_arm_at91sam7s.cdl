@@ -220,10 +220,20 @@ cdl_package CYGPKG_HAL_ARM_AT91SAM7 {
     cdl_option CYGNUM_HAL_ARM_AT91_CLOCK_OSC_MAIN {
         display       "Main oscillator frequency"
         flavor        data
-        legal_values { 3000000 to 20000000} 
+        legal_values  { 3000000 to 20000000} 
         default_value { 18432000 }
         description   "
-            What frequency of crystal is clocking the device."
+            The frequency of the clock input, be it a crystal or a clock 
+            signal"
+    }
+
+    cdl_option CYGNUM_HAL_ARM_AT91_CLOCK_TYPE {
+        display       "Type of main frequency input"
+        flavor        data
+        default_value { "CRYSTAL" }
+        legal_values  { "CRYSTAL" "EXTCLOCK" } 
+        description   "
+            Whether a crystal or a XIN input clock is clocking the device."
     }
 
     cdl_option CYGNUM_HAL_ARM_AT91_PLL_DIVIDER {

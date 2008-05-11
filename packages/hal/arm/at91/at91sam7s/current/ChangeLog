@@ -1,3 +1,11 @@
+2008-05-11  James G. Smith <jsmith@rallysmith.co.uk
+            Andrew Lunn  <andrew@lunn.ch>
+
+	* cdl/hal_arm_at91sam7s.cdl: CDL for crystal vs clock signal.
+	* include/hal_platform_setup.h: Rework flash wait states to remove
+	redundant code when running at > 60MHz. Support clock signal input
+	when starting the main clock.
+
 2008-04-30  John Eigelaar  <jeigelaar@mweb.co.za>
 
 	* include/pkgconf/mlt_arm_at91sam7x512_rom.{h|ldi}: Added the 
