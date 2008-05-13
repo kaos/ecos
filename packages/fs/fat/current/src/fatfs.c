@@ -309,7 +309,15 @@ find_direntry(fatfs_dirsearch_t *ds)
 
     CYG_TRACE1(TFS, "searching for dir entry '%s'", ds->name);
 
-    // First check the cache
+    // Check for '.' 
+
+    if (!strncmp(".", ds->name, ds->namelen))
+    {
+        ds->node = ds->dir;
+        return ENOERR;
+    }
+   
+    // Check the cache
     
     ds->node = fatfs_node_find(ds->disk, 
                                ds->name, 
@@ -339,15 +347,53 @@ find_direntry(fatfs_dirsearch_t *ds)
             return (err == EEOF ? ENOERR : err);
 
         // Compare filenames
-        
+    
         if ('\0' == dentry.filename[ds->namelen] &&
                0 == strncasecmp(dentry.filename, ds->name, ds->namelen))
         {
             // Dir entry found - allocate new node and return
 
             CYG_TRACE0(TFS, "dir entry found");
+            
+            if (0 == strncmp(ds->name, "..", ds->namelen)) 
+            {
+                fatfs_dir_entry_t _dentry;
+                fatfs_data_pos_t  _pos;
+ 
+                if (0 == dentry.cluster) 
+                {
+                    ds->node = ds->disk->root;
+                    return ENOERR;
+                }
+             
+                fatfs_initpos(ds->disk, &dentry, &_pos);
+                while (true)
+                {
+                    err = fatfs_read_dir_entry(ds->disk, &dentry, &_pos, &_dentry);
+                    if (err != ENOERR)
+                        return err;
+                    if (0 == strcmp(".", _dentry.filename))
+                        break;
+                }
+ 
+                ds->node = fatfs_node_find(ds->disk, 
+                                           _dentry.filename, 
+                                           strlen(_dentry.filename),
+                                           _dentry.parent_cluster); 
+                
+                if (NULL != ds->node)
+                    fatfs_node_touch(ds->disk, ds->node);
+                else 
+                    ds->node = fatfs_node_alloc(ds->disk, &_dentry);
+                                
+                if (NULL == ds->node)
+                    return EMFILE;
+                                
+                return ENOERR;
+            }
+            else 
+                ds->node = fatfs_node_alloc(ds->disk, &dentry);
 
-            ds->node = fatfs_node_alloc(ds->disk, &dentry);
             if (NULL == ds->node)
                 return EMFILE;
 

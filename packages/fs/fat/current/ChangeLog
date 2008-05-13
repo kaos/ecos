@@ -1,3 +1,7 @@
+2008-05-13  Savin Zlobec <savinz@users.sourceforge.net>
+
+	* src/fatfs.c: Fix handling of '.' and '..' nodes in dirsearch. 
+
 2008-04-02  Xinghua Yang <yxinghua@sunnorth.com.cn>
             Andrew Lunn <andrew.lunn@ascom.ch>
 	    Taiyun Wang <taiyun@sunnorth.com.cn>

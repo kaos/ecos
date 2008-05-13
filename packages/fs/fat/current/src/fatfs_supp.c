@@ -2378,11 +2378,11 @@ fatfs_rename_file(fatfs_disk_t      *disk,
     
     CYG_TRACE0(TDE, "different dirs"); 
     
-    // Moveing around in different dirs
+    // Moving around in different dirs
 
     fatfs_initpos(disk, dir2, &new_pos);
 
-    CYG_TRACE0(TDE, "writting to new dir"); 
+    CYG_TRACE0(TDE, "writing to new dir"); 
 
     // Get free dir entry in target dir
 
@@ -2399,7 +2399,7 @@ fatfs_rename_file(fatfs_disk_t      *disk,
    
     CYG_TRACE0(TDE, "deleting from old dir"); 
     
-    // Deleate dentry at old location
+    // Delete dentry at old location
 
     raw_dentry_set_deleted(disk, &raw_dentry);
     raw_dentry.size    = 0;
