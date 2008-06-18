@@ -154,12 +154,17 @@ typedef struct
     cyg_int32    payload_len;
     char         outbuffer[CYG_HTTPD_MAXOUTBUFFER+1];
     
-    socket_entry sockets[CYGNUM_FILEIO_NFILE];
+    socket_entry sockets[CYGPKG_NET_MAXSOCKETS];
     cyg_int32    fdmax;
     
     // Socket handle.
     cyg_int32    client_index;
 
+    // Modified-since is always reset to -1 before parsing the headers of a
+    //  request. If the "Modified-Since" element is present in the header then
+    //  we'll copy the value in this variable, otherwise it will remain to -1.
+    // This will tell us if we can send a CYG_HTTPD_STATUS_NOT_MODIFIED back to
+    //  the client or instead we'll have to send the whole page again.
     time_t       modified_since;
     time_t       last_modified;
     
@@ -168,8 +173,9 @@ typedef struct
 #endif    
 
     // Pointer to the data immediately following the last byte of the header.
-    // In a POST request, this is where the goods are.
-    char        *header_end;
+    // In a POST request, this is where the goods are. After the post request
+    //  is handles it will point to the start of the new request, if any.
+    char        *request_end;
 
     // This pointer points to the buffer where we collected all the post
     //  data (it might come in more than one frame)  and must be visible to

@@ -1,3 +1,83 @@
+2008-06-18  Oyvind Harboe  <oyvind.harboe@zylin.com>
+
+	* src/jim-aio.c (JimAioHandlerCommand): GCC 4.3.1 pointed out a
+	buffer overrun.
+
+2008-06-17 Anthony Tonizzo <atonizzo@gmail.com>
+
+	Jumbo patch containing many individual patches from a number of
+	different contributors on different days. The ChangeLog entries
+	for all these individual patches are:
+	
+        2007-12-02  Anthony Tonizzo <atonizzo@gmail.com>
+
+	* src/socket.c src/httpd.c: Corrected a bug in
+	cyg_httpd_write_chunked(): Now the CRLF that terminates a chunk is
+	added by the function and not expected to be there already in the
+	data supplied by the user. Modified the function
+	cyg_httpd_end_chunked() so that the flag
+	CYG_HTTPD_MODE_TRANSFER_CHUNKED is always cleared after it
+	terminates. The cyg_httpd_process_request() now loops as many
+	times as the number of full requests received.  Renamed header_end
+	to request_end to better reflect its real use, and the fact that
+	the former name was misleading for POST requests (Danny
+	Sade). Changed the function that collects a request: Now the
+	remaining part of an incomplete request is copied back to the
+	beginning of the buffer. This avoids that multiple split headers
+	might creep towards the end of the buffer.
+
+        2007-11-28  Rene' Nielsen <rbn@vitesse.com> and 
+	            Anthony Tonizzo <atonizzo@gmail.com>
+
+	* doc/athttpd.sgml: Included Digest (MD5) authentication as fully
+	supported.
+	* cdl/httpd.cdl: Updated the cdl to reflect the fact that MD5
+	authentication is now a fully tested feature, at least on some
+	clients (Thanks to Tad for testing this!)
+	* src/httpd.c: Added the initialization of the global variable
+	cyg_httpd_md5_response. This corrects a security hole that could
+	allow unauthenticated browsers to access pages that require
+	authentication. This required a minor change (switch of variables
+	used) in the authentication code. Added code to avoid a buffer
+	overflow during the parsing of headers for authenticated
+	pages. Clear the CYG_HTTPD_MODE_SEND_HEADER_ONLY at the beginning
+	of any request.
+	* src/auth.c: Removed dead code and made static a bunch of
+	functions and variables.
+	* src/auth.h: The AUTH_STORAGE_BUFFER_LENGTH value is now split
+	into two numbers, one that gives the maximum length of the login
+	phrase and one for the password.
+	* src/socket.c: Added a NULL terminator after each header packet
+	that is received. Now the strstr() is guaranteed to find
+	terminated string.
+
+        2007-11-27  Tad Artis <ecos@ds3switch.com>
+
+	* src/auth.c: Modified the cyg_httpd_digest_data() and
+	cyg_httpd_digest_skip() functions to support IE7. A careful read
+	of the augmented BNF in RFC2616 indicates that spaces within the
+	elements of the authentication header are optional. The original
+	atHTTPD code incorrectly relied on a space after the comma. Moved
+	the authentication check inside cyg_httpd_process_method() so that
+	each request, regardless of the type, will have to go through
+	authentication.
+
+        2007-11-26  Tad Artis <ecos@ds3switch.com> and 
+	            Anthony Tonizzo <atonizzo@gmail.com>
+
+	* src/forms.c: Checked for a null terminator inside
+	cyg_httpd_store_form_variable, so that we do not scan past the end
+	of the packet. Check the form variables for both length and
+	content, to avoid false positives. Modified cyg_httpd_from_hex()
+	to return -1 in case of error.
+	* src/httpd.c: Corrected the strings sent back by the server to
+	challenge the client to an MD5 authentication. Adds a couple of
+	commas to separate the items in the string.
+	* src/http.h:
+	* src/socket.h: Corrected a number of indexes where
+	CYGNUM_FILEIO_NFILE was used instead of the correct
+	CYGPKG_NET_MAXSOCKETS.
+
 2008-03-04  Danny Sade  <danny@channelot.com>
 
 	* src/socket.c: put NULL at the end of inbuff on each iteration,

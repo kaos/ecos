@@ -74,10 +74,12 @@ CYG_HAL_TABLE_END(cyg_httpd_auth_table_end, httpd_auth_table );
 __externC cyg_httpd_auth_table_entry cyg_httpd_auth_table[];
 __externC cyg_httpd_auth_table_entry cyg_httpd_auth_table_end[];
 
-// Variables used for authorization.
+// Variables used for authorization. The header parsing code will only copy
+//  up to AUTH_STORAGE_BUFFER_LENGTH bytes into cyg_httpd_md5_response to
+//  avoid overflow.
+char cyg_httpd_md5_response[AUTH_STORAGE_BUFFER_LENGTH + 1];
+char cyg_httpd_md5_digest[AUTH_STORAGE_BUFFER_LENGTH + 1];
 char cyg_httpd_md5_nonce[33];
-char cyg_httpd_md5_digest[33];
-char cyg_httpd_md5_response[33];
 char cyg_httpd_md5_cnonce[33];
 char cyg_httpd_md5_noncecount[9];
 char cyg_httpd_md5_ha2[HASHHEXLEN+1] = {'\0'};
@@ -126,61 +128,7 @@ cyg_httpd_auth_entry_from_domain(char *authDomain)
     return (cyg_httpd_auth_table_entry *)0;
 }
 
-cyg_int32
-cyg_httpd_base64_encode(char* to, char* from, cyg_uint32 len )
-{
-    char     *fromp = from;
-    char     *top = to;
-    char      cbyte;
-    char      obyte;
-    cyg_int8  end[3];
-
-    for (; len >= 3; len -= 3)
-    {
-        cbyte = *fromp++;
-        *top++ = b64string[(int)(cbyte >> 2)];
-        obyte = (cbyte << 4) & 0x30;
-
-        cbyte = *fromp++;
-        obyte |= (cbyte >> 4);        
-        *top++ = b64string[(cyg_int32)obyte];
-        obyte = (cbyte << 2) & 0x3C;
-
-        cbyte = *fromp++;
-        obyte |= (cbyte >> 6);        
-        *top++ = b64string[(cyg_int32)obyte];
-        *top++ = b64string[(cyg_int32)(cbyte & 0x3F)];
-    }
-
-    if (len)
-    {
-        end[0] = *fromp++;
-        if (--len )
-            end[1] = *fromp++; 
-        else 
-            end[1] = 0;
-        end[2] = 0;
-
-        cbyte = end[0];
-        *top++ = b64string[(cyg_int32)(cbyte >> 2)];
-        obyte = (cbyte << 4) & 0x30;
-
-        cbyte = end[1];
-        obyte |= (cbyte >> 4);
-        *top++ = b64string[(cyg_int32)obyte];
-        obyte = (cbyte << 2) & 0x3C;
-
-        if (len )
-            *top++ = b64string[(cyg_int32)obyte];
-        else 
-            *top++ = '=';
-        *top++ = '=';
-    }
-    *top = 0;
-    return top - to;
-}
-
-cyg_int32
+static cyg_int32
 cyg_httpd_base64_decode(char* to, char* from, cyg_uint32 len )
 {
     char     *fromp = from;
@@ -252,19 +200,9 @@ cyg_httpd_base64_decode(char* to, char* from, cyg_uint32 len )
     return (top - to) - padding;
 }
 
-cyg_httpd_auth_table_entry*
-cyg_httpd_verify_auth(char* username, char* password)
-{
-    if ((strcmp(httpstate.needs_auth->auth_username, username) == 0) &&
-        (strcmp(httpstate.needs_auth->auth_password, password) == 0))
-        return httpstate.needs_auth;
-    else    
-        return (cyg_httpd_auth_table_entry*)0;
-}
-
 // The following code is a slightly modified version of those available at the
 //  end of RFC1270.
-void cyg_httpd_cvthex(HASH Bin, HASHHEX Hex)
+static void cyg_httpd_cvthex(HASH Bin, HASHHEX Hex)
 {
     unsigned short i;
     unsigned char j;
@@ -286,7 +224,7 @@ void cyg_httpd_cvthex(HASH Bin, HASHHEX Hex)
 };
 
 // Calculate H(A1) as per spec.
-void
+static void
 cyg_httpd_digest_calc_HA1( char    *pszAlg,
                            char    *pszUserName,
                            char    *pszRealm,
@@ -378,17 +316,17 @@ cyg_httpd_is_authenticated(char* fname)
     {
         if (entry->auth_mode == CYG_HTTPD_AUTH_BASIC)
         {
-            cyg_httpd_base64_decode(cyg_httpd_md5_response,
-                                    cyg_httpd_md5_digest,
-                                    strlen(cyg_httpd_md5_digest));
-            char *extension = rindex(cyg_httpd_md5_response, ':');
-            if (extension == NULL)
+            cyg_httpd_base64_decode(cyg_httpd_md5_digest,
+                                    cyg_httpd_md5_response,
+                                    strlen(cyg_httpd_md5_response));
+            char *colon = rindex(cyg_httpd_md5_digest, ':');
+            if (colon == NULL)
             {
                 return (httpstate.needs_auth = entry);
             }    
             else
             {    
-                *extension = '\0'; // Crypto now has the username.
+                *colon = '\0'; // Crypto now has the username.
                 
                 // In the case of a 'Basic" authentication, the HTTP header
                 //  did not return to us the domain name that we sent when we
@@ -396,10 +334,8 @@ cyg_httpd_is_authenticated(char* fname)
                 //  are the username:password duo. In this case I will just 
                 //  compare the entry's username/password to those read from 
                 //  the header.
-                if ((strcmp(entry->auth_username, 
-                            cyg_httpd_md5_response) != 0) ||
-                    (strcmp(entry->auth_password, 
-                            ++extension) != 0))
+                if ((strcmp(entry->auth_username,cyg_httpd_md5_digest) != 0) ||
+                                 (strcmp(entry->auth_password, ++colon) != 0))
                     return (httpstate.needs_auth = entry);
             }    
         }
@@ -456,13 +392,18 @@ cyg_httpd_digest_data(char *dest, char *src)
             *dest = '\0';
             exit = 1;
             break;
+        case ',':
+            // If it is a comma there might or might not be a blank space
+            //  following it (IE7 inserts no spaces, everyone else does...)
+            //  so before exiting the loop remove any blank space that follows.
+            if (src[1] == ' ')
+                src++;             
         case ' ':
             src++;
             *dest = '\0';
             exit = 1;
             break;
         case '"':
-        case ',':
             src++;
             break;
         default:

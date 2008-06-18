@@ -79,24 +79,26 @@ cdl_package CYGPKG_ATHTTPD {
           flavor data
           default_value { CYGNUM_KERNEL_SCHED_PRIORITIES/2 }
           legal_values 0 to CYGNUM_KERNEL_SCHED_PRIORITIES
-          description "The HTTP server threads can be run at any priority.
-                       The exact priority depends on the importance of the
-                       server relative to the rest of the system. The default
-                       is to put it in the middle of the priority range to provide
-                       reasonable response without impacting genuine high
-                       priority threads."
+          description "The HTTP server threads can be run at any
+                       priority.  The exact priority depends on the
+                       importance of the server relative to the rest
+                       of the system. The default is to put it in the
+                       middle of the priority range to provide
+                       reasonable response without impacting genuine
+                       high priority threads."  
       }
 
       cdl_option CYGNUM_NET_ATHTTPD_THREADOPT_STACKSIZE {
           display "Thread stack size"
           flavor data
           default_value 4096
-          description "This is the amount of extra stack to be allocated for 
-                       the HTTPD thread. This value is added to
-                       CYGNUM_HAL_STACK_SIZE_MINIMUM to determine the final
-                       size of the stack for the server."
-      }
-    }  
+          description "This is the amount of extra stack to be
+                       allocated for the HTTPD thread. This value is
+                       added to CYGNUM_HAL_STACK_SIZE_MINIMUM to
+                       determine the final size of the stack for the
+                       server."  
+      } 
+    }
 
     cdl_component CYGOPT_NET_ATHTTPD_SERVEROPT {
         display "Server settings"
@@ -117,7 +119,8 @@ cdl_package CYGPKG_ATHTTPD {
           display "Server ID string"
           flavor data
           default_value {"\"eCos Embedded Web Server\""}
-          description "This is the string sent out in the 'Server:' header line."
+          description "This is the string sent out in the 'Server:' 
+                       header line."
       }
       
       cdl_option CYGNUM_ATHTTPD_SERVER_BUFFER_SIZE {
@@ -125,8 +128,8 @@ cdl_package CYGPKG_ATHTTPD {
           flavor data
           default_value 2048
           description "This option defines the size of the buffers used to 
-                       receive and transmit transmit data to and from the TCP/IP
-                       stack."
+                       receive and transmit transmit data to and from the 
+                       TCP/IP stack."
       }
 
       cdl_option CYGNUM_ATHTTPD_SERVER_MAX_POST {
@@ -141,51 +144,60 @@ cdl_package CYGPKG_ATHTTPD {
           display "HTTPD root directory"
           flavor data
           default_value {"\"/\""}
-          description "This is the absolute path in the eCos file system to the 
-                       HTML documents, including cgi-bin files and error
-                       files and it is generally where the web server will
-                       look for the index file. Include a trailing slash."
+          description "This is the absolute path in the eCos file
+                       system to the HTML documents, including cgi-bin
+                       files and error files and it is generally where
+                       the web server will look for the index
+                       file. Include a trailing slash."
       }
       
       cdl_option CYGDAT_NET_ATHTTPD_SERVEROPT_CGIDIR {
           display "cgi-bin directory"
-          active_if    { 0 != CYGOPT_NET_ATHTTPD_USE_CGIBIN_OBJLOADER || 0 != CYGOPT_NET_ATHTTPD_USE_CGIBIN_TCL }
+          active_if    { 0 != CYGOPT_NET_ATHTTPD_USE_CGIBIN_OBJLOADER || 
+                         0 != CYGOPT_NET_ATHTTPD_USE_CGIBIN_TCL }
           flavor data
           default_value {"\"cgi-bin/\""}
-          description "This is the path, relative to CYGDAT_NET_ATHTTPD_SERVEROPT_ROOTDIR,
-                       where the cgi-bin files are stored. Based on the extension
-                       of the cgi-bin file requested, the appropriate interpreter
-                       will be used. Include a trailing slash."
+          description "This is the path, relative to
+                       CYGDAT_NET_ATHTTPD_SERVEROPT_ROOTDIR, where the
+                       cgi-bin files are stored. Based on the
+                       extension of the cgi-bin file requested, the
+                       appropriate interpreter will be used. Include a
+                       trailing slash."
       }
       
       cdl_option CYGDAT_NET_ATHTTPD_SERVEROPT_ERRORDIR {
           display "Error files directory"
           flavor data
           default_value {"\"errors/\""}
-          description "This is the path, relative to the CYGDAT_NET_ATHTTPD_SERVEROPT_ROOTDIR,
-                       that contains the user-defined files that are sent out
-                       by the server in case of error. The files are named
-                       error_XXX.html where XXX is the 3 digit HTML code. 
-                       For example, for a 404 error the server file will be
-                       named error_404.html. Upon a 404 error, the server will
-                       check the existence of such a file in this directory and
-                       if found, it will send it out. Missing that file, a
-                       standard simple message will be sent instead. Include 
-                       a trailing slash."
+          description "This is the path, relative to the
+                       CYGDAT_NET_ATHTTPD_SERVEROPT_ROOTDIR, that
+                       contains the user-defined files that are sent
+                       out by the server in case of error. The files
+                       are named error_XXX.html where XXX is the 3
+                       digit HTML code.  For example, for a 404 error
+                       the server file will be named
+                       error_404.html. Upon a 404 error, the server
+                       will check the existence of such a file in this
+                       directory and if found, it will send it
+                       out. Missing that file, a standard simple
+                       message will be sent instead. Include a
+                       trailing slash."
       }
 
       cdl_option CYGDAT_NET_ATHTTPD_DEFAULT_MIME_TYPE {
           display "Default MIME type"
           flavor data
           default_value {"\"text/plain\""}
-          description "When accessing internal resources or a file system,
-                       the MIME type is determined by first finding the extension
-                       of the file itself and then by looking up the extension
-                       in the MIME table. In case no extension is found the user 
-                       can define the default MIME type to use. Notice that
-                       this is the full MIME type and not the extension.
-                       A list of standard MIME types sorted by extension can
-                       be found in the current/doc directory"
+          description "When accessing internal resources or a file
+                       system, the MIME type is determined by first
+                       finding the extension of the file itself and
+                       then by looking up the extension in the MIME
+                       table. In case no extension is found the user
+                       can define the default MIME type to use. Notice
+                       that this is the full MIME type and not the
+                       extension.  A list of standard MIME types
+                       sorted by extension can be found in the
+                       current/doc directory" 
       }
       
       cdl_option CYGDAT_NET_ATHTTPD_ALTERNATE_HOME {
@@ -213,13 +225,12 @@ cdl_package CYGPKG_ATHTTPD {
     }
 
     cdl_option CYGOPT_NET_ATHTTPD_USE_AUTH {
-        display       "Support for basic authentication"
+        display       "Support for basic and digest authentication"
         flavor        bool
         default_value 0
         description   "
             This option enables the use basic authentication in web pages.
-            Digest authentication code is also included, but has not been
-            extensively tested." 
+            Not all clients have been tested." 
        compile md5c.c
        compile auth.c
     }
@@ -229,10 +240,10 @@ cdl_package CYGPKG_ATHTTPD {
         flavor        bool
         default_value 1
         description   "
-            This option causes connections used for chunked transfer to be
-             closed after use. Persisting the connection will use less
-             network resources and will improve latency, but may do so at
-             the risk of compatibility with older browsers."
+            This option causes connections used for chunked transfer
+            to be closed after use. Persisting the connection will use
+            less network resources and will improve latency, but may
+            do so at the risk of compatibility with older browsers."
     }
 
     cdl_option CYGOPT_NET_ATHTTPD_DOCUMENT_EXPIRATION_TIME {

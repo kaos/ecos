@@ -165,9 +165,6 @@ int Jim_AioInit(Jim_Interp *);
 cyg_int32
 cyg_httpd_exec_cgi_tcl(char *file_name)
 {
-    char tcl_cmd[CYG_HTTPD_MAXPATH];
-    sprintf(tcl_cmd, "source %s", file_name);
-
     // Make sure that tcl sees the internal variables including the post_data.
     cyg_httpd_fvars_table_entry *entry = cyg_httpd_fvars_table;
     while (entry != cyg_httpd_fvars_table_end)
@@ -184,6 +181,8 @@ cyg_httpd_exec_cgi_tcl(char *file_name)
                                   "post_data", 
                                   httpstate.post_data);
      
+    char tcl_cmd[CYG_HTTPD_MAXPATH];
+    sprintf(tcl_cmd, "source %s", file_name);
     Jim_Eval(httpstate.jim_interp, tcl_cmd);
     return 0;
 }
@@ -271,7 +270,7 @@ cyg_httpd_exec_cgi(void)
     }    
 
 #ifdef CYGOPT_NET_ATHTTPD_USE_CGIBIN_OBJLOADER
-    if ( strcmp(extension, CYG_HTTPD_DEFAULT_CGIBIN_OBJLOADER_EXTENSION) == 0)
+    if (strcmp(extension, CYG_HTTPD_DEFAULT_CGIBIN_OBJLOADER_EXTENSION) == 0)
     {
         // Load a cgibin via OBJLOADER.
         cyg_int32 rc = cyg_httpd_exec_cgi_objloader(file_name);
@@ -279,7 +278,7 @@ cyg_httpd_exec_cgi(void)
     }    
 #endif
 #ifdef CYGOPT_NET_ATHTTPD_USE_CGIBIN_TCL
-    if ( strcmp(extension, CYG_HTTPD_DEFAULT_CGIBIN_TCL_EXTENSION) == 0)
+    if (strcmp(extension, CYG_HTTPD_DEFAULT_CGIBIN_TCL_EXTENSION) == 0)
     {
         // Load a cgibin via the TCL interpreter.
         cyg_int32 rc = cyg_httpd_exec_cgi_tcl(file_name);

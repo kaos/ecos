@@ -71,7 +71,7 @@
 #define MAX(X, Y) ((X) > (Y) ? (X) : (Y))
 #define CYG_HTTPD_DAEMON_STACK_SIZE (CYGNUM_HAL_STACK_SIZE_MINIMUM + \
                                           CYGNUM_NET_ATHTTPD_THREADOPT_STACKSIZE)
-static cyg_int32    cyg_httpd_initialized = 0;
+static cyg_int32 cyg_httpd_initialized = 0;
 cyg_thread   cyg_httpd_thread_object;
 cyg_handle_t cyg_httpd_thread_handle;
 cyg_uint8    cyg_httpd_thread_stack[CYG_HTTPD_DAEMON_STACK_SIZE]     
@@ -108,9 +108,11 @@ cyg_httpd_writev(cyg_iovec *iovec_bufs, int count)
     return sent;
 }
     
-// The need for chunked transfers arises from the fact that with dinamic
-//  pages it is not always possible to know the packet size upfront, and thus
-//  it is not possible to fill the 'Content-Length:' field in the header.
+// The need for chunked transfers arises from the fact that with persistent
+//  connections it is not always easy to tell when a packet end. Also, with
+//  dynamic pages it is not always possible to know the packet size upfront,
+//  and thus the value of the 'Content-Length:' field in the header is not
+//  known upfront.
 // Today's web browser use 'Content-Length:' when present in the header and 
 //  when not present they read everything that comes in up to the last 2 \r\n
 //  and then figure it out. The HTTP standard _mandates_ 'Content-Length:' to
@@ -121,8 +123,7 @@ cyg_httpd_writev(cyg_iovec *iovec_bufs, int count)
 // -----------------------------------------------------------------------------
 //    cyg_httpd_start_chunked("html");
 //    sprintf(phttpstate->payload, ...);             
-//    cyg_httpd_write_chunked(phttpstate->payload, 
-//                             strlen(phttpstate->payload));
+//    cyg_httpd_write_chunked(phttpstate->payload, strlen(phttpstate->payload));
 //    ...                         
 //    cyg_httpd_end_chunked();
 // -----------------------------------------------------------------------------
@@ -132,7 +133,7 @@ cyg_httpd_start_chunked(char *extension)
     httpstate.status_code = CYG_HTTPD_STATUS_OK;
 
 #if defined(CYGOPT_NET_ATHTTPD_CLOSE_CHUNKED_CONNECTIONS)
-     // I am not really sure that this is necessary, but even if it isn't, the
+    // I am not really sure that this is necessary, but even if it isn't, the
     //  added overhead is not such a big deal. In simple terms, I am not sure 
     //  how much I can rely on the client to understand that the frame has ended 
     //  with the last 5 bytes sent out. In an ideal world, the data '0\r\n\r\n'
@@ -147,7 +148,7 @@ cyg_httpd_start_chunked(char *extension)
 #endif
     
     // We do not cache chunked frames. In case they are used to display dynamic
-    //  data we want them to be executed any every time they are requested.
+    //  data we want them to be executed every time they are requested.
     httpstate.mode |= 
               (CYG_HTTPD_MODE_TRANSFER_CHUNKED | CYG_HTTPD_MODE_NO_CACHE);
     
@@ -160,30 +161,28 @@ cyg_httpd_start_chunked(char *extension)
 ssize_t
 cyg_httpd_write_chunked(char* buf, int len)
 {
-    char leader[16], trailer[] = {'\r', '\n'};
+    if (len == 0)
+         return 0;
 
-    cyg_iovec iovec_bufs[] = { {leader, 0}, {buf, 0}, {trailer, 2} };
-    sprintf(leader, "%x\r\n", len);
-    iovec_bufs[0].iov_len = strlen(leader);
-    iovec_bufs[1].iov_len = len;
-    iovec_bufs[2].iov_len = 2;
+    char leader[16], trailer[] = {'\r', '\n'};
+    cyg_iovec iovec_bufs[] = { {leader, 0}, {buf, len}, {trailer, 2} };
+    iovec_bufs[0].iov_len = sprintf(leader, "%x\r\n", len);
     if (httpstate.mode & CYG_HTTPD_MODE_SEND_HEADER_ONLY)
-        return (iovec_bufs[0].iov_len + iovec_bufs[1].iov_len + 
-                                                  iovec_bufs[2].iov_len);
+        return (iovec_bufs[0].iov_len + len + 2);
     return cyg_httpd_writev(iovec_bufs, 3);
 }
 
 void
 cyg_httpd_end_chunked(void)
 {
-    if (httpstate.mode & CYG_HTTPD_MODE_SEND_HEADER_ONLY)
+    httpstate.mode &= ~CYG_HTTPD_MODE_TRANSFER_CHUNKED;
+    if ((httpstate.mode & CYG_HTTPD_MODE_SEND_HEADER_ONLY) != 0)
         return;
     strcpy(httpstate.outbuffer, "0\r\n\r\n");
     cyg_httpd_write(httpstate.outbuffer, 5);
-    httpstate.mode &= ~CYG_HTTPD_MODE_TRANSFER_CHUNKED;
 }    
 
-// This function builds and send out a standard header. It is likely going to
+// This function builds and sends out a standard header. It is likely going to
 //  be used by a c language callback function, and thus followed by one or
 //  more calls to cyg_httpd_write(). Unlike cyg_httpd_start_chunked(), this
 //  call requires prior knowledge of the final size of the frame (browsers
@@ -212,7 +211,7 @@ cyg_httpd_process_request(cyg_int32 index)
 {
     httpstate.client_index = index;
     cyg_int32 descr = httpstate.sockets[index].descriptor;
-    
+
     // By placing a terminating '\0' not only we have a safe stopper point
     //  for our parsing, but also we can detect if we have a split header.
     // Since headers always end with an extra '\r\n', if we find a '\0'
@@ -220,9 +219,12 @@ cyg_httpd_process_request(cyg_int32 index)
     //  not been received completely and more is following (i.e. split headers.)
     httpstate.inbuffer[0] = '\0';
     httpstate.inbuffer_len = 0;
-    while ((strstr(httpstate.inbuffer, "\r\n\r\n") == 0) &&
-                (strstr(httpstate.inbuffer, "\n\n") == 0))
-    {            
+
+    cyg_bool done = false;
+    do
+    {   
+        // At this point we know we have data pending because the corresponding
+        //  bit in the fd_set structure was set.
         int len = recv(descr,
                        httpstate.inbuffer + httpstate.inbuffer_len,
                        CYG_HTTPD_MAXINBUFFER - httpstate.inbuffer_len,
@@ -255,30 +257,65 @@ cyg_httpd_process_request(cyg_int32 index)
 #endif    
             return;
         }  
-    
-        httpstate.inbuffer_len += len;
-        httpstate.inbuffer[httpstate.inbuffer_len] = '\0';
-    }
-    
-    httpstate.inbuffer[httpstate.inbuffer_len] = '\0';
 
-    // Timestamp the socket. 
-    httpstate.sockets[index].timestamp = time(NULL);
-        
-    // This is where it all happens.
-    cyg_httpd_process_method();
-        
-    if (httpstate.mode & CYG_HTTPD_MODE_CLOSE_CONN)
-        // There are 2 cases we can be here:
-        // 1) chunked frames close their connection by default
-        // 2) The client requested the connection be terminated with a
-        //     "Connection: close" in the header
-        // In any case, we close the TX pipe and wait for the client to
-        //  send us an EOF on the receive pipe. This is a more graceful way
-        //  to handle the closing of the socket, compared to just calling
-        //  close() without first asking the opinion of the client, and 
-        //  running the risk of stray data lingering around.
-        shutdown(descr, SHUT_WR);
+        httpstate.inbuffer[httpstate.inbuffer_len + len] = '\0';
+
+        // It is always possible to receive split headers, in which case a
+        //  header is only partially sent on one packet, with the rest on
+        //  following packets. We can tell when a full packet is in the buffer
+        //  by scanning for a header terminator ('\r\n\r\n'). Be smart and
+        //  scan only the data received in the last read() operation, and not
+        //  the full buffer each time.
+        httpstate.request_end = 
+               strstr(&httpstate.inbuffer[httpstate.inbuffer_len], "\r\n\r\n");
+        httpstate.inbuffer_len += len;
+
+        // Go through all the requests that were received in this packet.
+        while (httpstate.request_end != 0)
+        {
+            httpstate.request_end += 4; // Include the terminator.
+            
+            // Timestamp the socket. 
+            httpstate.sockets[index].timestamp = time(NULL);
+                
+            // This is where it all happens.
+            cyg_httpd_process_method();
+                
+            if (httpstate.mode & CYG_HTTPD_MODE_CLOSE_CONN)
+            {
+                // There are 2 cases we can be here:
+                // 1) chunked frames close their connection by default
+                // 2) The client requested the connection be terminated with a
+                //     "Connection: close" in the header
+                // In any case, we close the TX pipe and wait for the client to
+                //  send us an EOF on the receive pipe. This is a more graceful
+                //  way to handle the closing of the socket, compared to just
+                //  calling close() without first asking the opinion of the
+                //  client, and  running the risk of stray data lingering 
+                //  around.
+                shutdown(descr, SHUT_WR);
+            }
+            
+            // Move back the next request (if any) to the beginning of inbuffer.
+            //  This way we avoid inching towards the end of inbuffer with
+            //  consecutive requests.
+            strcpy(httpstate.inbuffer, httpstate.request_end);
+            httpstate.inbuffer_len -= (int)(httpstate.request_end - 
+                                                       httpstate.inbuffer);
+                                                       
+            // If there is no data left over we are done processing all
+            //  requests.
+            if (httpstate.inbuffer_len == 0)
+            {
+                done = true;
+                break;
+            }    
+
+            // Any other fully formed request pending?                                           
+            httpstate.request_end = strstr(httpstate.inbuffer, "\r\n\r\n");
+        }        
+    }
+    while (done == false);
 }
 
 void
@@ -395,7 +432,7 @@ cyg_httpd_daemon(cyg_addrword_t data)
     diag_printf("Web server Started and listening...\n");
 #endif
     cyg_int32 i;
-    for (i = 0; i < CYGNUM_FILEIO_NFILE; i++)
+    for (i = 0; i < CYGPKG_NET_MAXSOCKETS; i++)
     {
         httpstate.sockets[i].descriptor  = 0;
         httpstate.sockets[i].timestamp   = (time_t)0;

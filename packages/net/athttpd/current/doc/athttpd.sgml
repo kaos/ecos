@@ -50,7 +50,7 @@ The server has been written for the FreeBSD network stack.
   <listitem><para>MIME type support</para></listitem>
   <listitem><para>CGI mechanism through the OBJLOADER package or through a
                   simple tcl interpreter</para></listitem>
-  <listitem><para>Basic Authentication</para></listitem>
+  <listitem><para>Basic and Digest (MD5) Authentication</para></listitem>
   <listitem><para>Directory Listing</para></listitem>
   <listitem><para>Extendable Internal Resources</para></listitem>
 </itemizedlist>
@@ -337,7 +337,10 @@ as being "1":</para>
 
 <programlisting width=72>GET /myForm.cgi?foo=1</programlisting>
 
-<para>then tcl will be able to access the variable foo as $foo.</para>
+<para>then tcl will be able to access the variable foo as $foo. The data
+in the body of a POST request is also accessible through the use of the variable
+$post_data. This is useful if the data is not in "multipart/form-data"
+and tcl has to perform any type of processing on the data itself.</para>
 
 <para>In order to send back a response to the client a few functions have been
 added to the interpreter. These functions are:</para>

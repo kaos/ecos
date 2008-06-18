@@ -69,6 +69,10 @@ typedef enum cyg_httpd_auth_type
     CYG_HTTPD_AUTH_DIGEST = 1
 } cyg_httpd_auth_type;
 
+#define AUTH_STORAGE_BUFFER_LENGTH_LOGIN             32
+#define AUTH_STORAGE_BUFFER_LENGTH_PASSWORD          32
+#define AUTH_STORAGE_BUFFER_LENGTH        (AUTH_STORAGE_BUFFER_LENGTH_LOGIN +\
+                                           AUTH_STORAGE_BUFFER_LENGTH_PASSWORD)
 // It must be stressed that the auth_dirname field is the directory name
 //  that will be requested by the web server, and _not_ the absolute name
 //  in the eCos file system. 
@@ -94,11 +98,8 @@ typedef struct cyg_httpd_auth_table_entry cyg_httpd_auth_table_entry;
  cyg_httpd_auth_table_entry __name CYG_HAL_TABLE_ENTRY( httpd_auth_table ) =  \
                              { __path, __domain, __un, __pw, __mode } 
 
-cyg_int32 cyg_httpd_base64_encode(char*, char*, cyg_uint32 );
-cyg_int32 cyg_httpd_base64_decode(char*, char*, cyg_uint32 );
 cyg_httpd_auth_table_entry* cyg_httpd_auth_entry_from_path(char *);
 cyg_httpd_auth_table_entry* cyg_httpd_auth_entry_from_domain(char *);
-cyg_httpd_auth_table_entry* cyg_httpd_verify_auth(char*, char*);
 cyg_httpd_auth_table_entry* cyg_httpd_is_authenticated(char*);
 char* cyg_httpd_digest_data(char *, char *);
 char* cyg_httpd_digest_skip(char *);
@@ -123,24 +124,4 @@ extern char cyg_httpd_md5_noncecount[];
 extern char cyg_httpd_md5_ha2[];
 extern char cyg_httpd_md5_ha1[];
 
-
-// Calculate H(A1) as per HTTP Digest spec.
-void cyg_httpd_digest_calc_HA1(char *,
-                               char *,
-                               char *,
-                               char *,
-                               char *,
-                               char *,
-                               HASHHEX);
-
-// Calculate request-digest/response-digest as per HTTP Digest spec.
-void cyg_httpd_digest_calc_response(HASHHEX,           
-                                    char *,
-                                    char *,
-                                    char *,
-                                    char *,
-                                    char *,
-                                    char *,
-                                    HASHHEX,
-                                    HASHHEX);
 #endif // __AUTH_H__

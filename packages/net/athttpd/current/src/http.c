@@ -292,9 +292,7 @@ cyg_httpd_parse_date(char *time)
                     &tm_mod.tm_sec);
         if (rc != 6)
         {
-            // asctime() in the stdlibc library.
-            // The date is in the format: Sun Nov 6 08:49:37 1994
-            //  and needs to be converted to GMT.
+            // asctime().
             rc = sscanf(time,"%3s %2d %2d:%2d:%2d %4d",
                         month,
                         &tm_mod.tm_mday,
@@ -411,17 +409,6 @@ cyg_httpd_send_file(char *name)
     struct stat sp;
     char       file_name[CYG_HTTPD_MAXPATH];
 
-#ifdef CYGOPT_NET_ATHTTPD_USE_AUTH
-    // Let's check that the requested URL is not inside some directory that 
-    //  needs authentication.
-    cyg_httpd_auth_table_entry* auth = cyg_httpd_is_authenticated(name);
-    if (auth != 0)
-    {
-        cyg_httpd_send_error(CYG_HTTPD_STATUS_NOT_AUTHORIZED);
-        return;
-    }
-#endif
-
     strcpy(file_name, CYGDAT_NET_ATHTTPD_SERVEROPT_ROOTDIR);
     if (file_name[strlen(file_name)-1] != '/')
         strcat(file_name, "/");
@@ -458,23 +445,14 @@ cyg_httpd_send_file(char *name)
         //  enough) "Trailing-Slash Redirection". 
         if (name[strlen(name)-1] != '/')
         {
-            if (CYGNUM_NET_ATHTTPD_SERVEROPT_PORT == 80)
-                sprintf(httpstate.url,
-                        "http://%d.%d.%d.%d%s/",
-                        httpstate.host[0],
-                        httpstate.host[1],
-                        httpstate.host[2],
-                        httpstate.host[3],
-                        tmp_url);
-            else            
-                sprintf(httpstate.url,
-                        "http://%d.%d.%d.%d:%d%s/",
-                        httpstate.host[0],
-                        httpstate.host[1],
-                        httpstate.host[2],
-                        httpstate.host[3],
-                        CYGNUM_NET_ATHTTPD_SERVEROPT_PORT,
-                        tmp_url);
+            sprintf(httpstate.url,
+                    "http://%d.%d.%d.%d:%d%s/",
+                    httpstate.host[0],
+                    httpstate.host[1],
+                    httpstate.host[2],
+                    httpstate.host[3],
+                    CYGNUM_NET_ATHTTPD_SERVEROPT_PORT,
+                    tmp_url);
             cyg_httpd_send_error(CYG_HTTPD_STATUS_MOVED_PERMANENTLY);
             return;
         }
@@ -507,9 +485,9 @@ cyg_httpd_send_file(char *name)
     else    
         httpstate.status_code = CYG_HTTPD_STATUS_OK;
 
-    // Here we'll look for extension to the file. Consider the case where
-    //  there might be more than one dot in the file name. We'll look for
-    //  the last dot, then we'll check the extension.
+    // Here we'll look for an extension to the file. Consider the case where
+    //  there might be more than one dot in the file name. We'll look for just
+    //  the last one, then we'll check the extension.
     char *extension = rindex(file_name, '.');
     if (extension == NULL)
         httpstate.mime_type = 0;
@@ -522,7 +500,7 @@ cyg_httpd_send_file(char *name)
     if ((httpstate.mode & CYG_HTTPD_MODE_SEND_HEADER_ONLY) != 0)
     {                 
 #if CYGOPT_NET_ATHTTPD_DEBUG_LEVEL > 1
-    diag_printf("Sending header only for URL: %s\n", file_name);
+        diag_printf("Sending header only for URL: %s\n", file_name);
 #endif    
         send(httpstate.sockets[httpstate.client_index].descriptor, 
              httpstate.outbuffer, 
@@ -558,7 +536,7 @@ cyg_httpd_send_file(char *name)
     }    
     
     err = fclose(fp);
-    if(err < 0)
+    if (err < 0)
         cyg_httpd_send_error(CYG_HTTPD_STATUS_SYSTEM_ERROR);
 }
 #endif
@@ -609,14 +587,14 @@ cyg_httpd_format_header(void)
         else             
         {
             sprintf(httpstate.outbuffer + strlen(httpstate.outbuffer),
-                     "WWW-Authenticate: Digest realm=\"%s\" ",
+                     "WWW-Authenticate: Digest realm=\"%s\", ",
                      httpstate.needs_auth->auth_domainname);
             strftime(cyg_httpd_md5_nonce, 
                      33,
                      TIME_FORMAT_RFC1123,
                      gmtime(&time_val));
             sprintf(httpstate.outbuffer + strlen(httpstate.outbuffer),
-                    "nonce=\"%s\" ", cyg_httpd_md5_nonce);
+                    "nonce=\"%s\", ", cyg_httpd_md5_nonce);
             sprintf(httpstate.outbuffer + strlen(httpstate.outbuffer),
                     "opaque=\"%s\", ", 
                     CYG_HTTPD_MD5_AUTH_OPAQUE);
@@ -708,7 +686,8 @@ cyg_httpd_format_header(void)
 void
 cyg_httpd_handle_method_GET(void)
 {
-#if defined(CYGOPT_NET_ATHTTPD_USE_CGIBIN_OBJLOADER) || defined(CYGOPT_NET_ATHTTPD_USE_CGIBIN_TCL)
+#if defined(CYGOPT_NET_ATHTTPD_USE_CGIBIN_OBJLOADER) ||\
+                             defined(CYGOPT_NET_ATHTTPD_USE_CGIBIN_TCL)
     // If the URL is a CGI script, there is a different directory...
     if (httpstate.url[0] == '/' &&
                     !strncmp(httpstate.url + 1, 
@@ -722,7 +701,7 @@ cyg_httpd_handle_method_GET(void)
     //  will likely generate a 404.
 #endif    
 
-    // Use defined handlers take precedence over other forms of response.
+    // User defined handlers take precedence over other forms of response.
     handler h = cyg_httpd_find_handler();
     if (h != 0)
     {
@@ -784,10 +763,21 @@ cyg_httpd_get_URL(char* p)
         if (*p == '%') 
         {
             p++;
-            if (*p) 
-                *dest = cyg_httpd_from_hex(*p++) * 16;
-            if (*p) 
-                *dest += cyg_httpd_from_hex(*p++);
+            cyg_int8 ch = cyg_httpd_from_hex(*p++);
+            if (ch == -1)
+            {
+                cyg_httpd_send_error(CYG_HTTPD_STATUS_BAD_REQUEST);
+                return (char*)0;
+            }
+            *dest = ch << 4;
+            ch = cyg_httpd_from_hex(*p++);
+            if (ch == -1)
+            {
+                cyg_httpd_send_error(CYG_HTTPD_STATUS_BAD_REQUEST);
+                return (char*)0;
+            }
+            *dest += ch;
+            dest++;
         }
         else 
             *dest++ = *p++;
@@ -809,7 +799,6 @@ char*
 cyg_httpd_parse_POST(char* p)
 {
     httpstate.method = CYG_HTTPD_METHOD_POST;
-    httpstate.mode &= ~CYG_HTTPD_MODE_SEND_HEADER_ONLY;
     char *cp = cyg_httpd_get_URL(p);
     if (cp == 0)
         return (char*)0;
@@ -849,12 +838,21 @@ cyg_httpd_parse_GET(char* p)
 char*
 cyg_httpd_process_header(char *p)
 {
+#ifdef CYGOPT_NET_ATHTTPD_USE_AUTH
+    // Clear the previous request's response. The client properly authenticated
+    //  will always reinitialize this variable during the header parsing
+    //  process. This variable is also commandeered to hold the hashed
+    //  username:password duo in the basic authentication.
+    cyg_httpd_md5_response[0] = '\0';
+#endif
+
     // The deafult for HTTP 1.1 is keep-alive connections, unless specifically
     //  closed by the far end.
-    httpstate.mode &= ~(CYG_HTTPD_MODE_CLOSE_CONN | CYG_HTTPD_MODE_FORM_DATA);
+    httpstate.mode &= ~(CYG_HTTPD_MODE_CLOSE_CONN | CYG_HTTPD_MODE_FORM_DATA |\
+                                        CYG_HTTPD_MODE_SEND_HEADER_ONLY);
     httpstate.modified_since = -1;
     httpstate.content_len = 0;
-    while ((*p != '\r') && (*p != '\n') & (*p != '\0'))
+    while (p < httpstate.request_end)
     {
         if (strncasecmp("GET ", p, 4) == 0)
         {
@@ -931,20 +929,29 @@ cyg_httpd_process_header(char *p)
                 p++;
             if (strncasecmp("Basic", p, 5) == 0)
             {
-                char *cr = cyg_httpd_md5_digest;
                 p += 5;
                 while (*p == ' ')
                     p++;
-                while ((*p != '\r') && (*p != '\n') && (*p != ' '))
-                    *cr++ = *p++;
-                *cr = '\0';
+                cyg_int32 auth_data_length = 0;    
+                while (*p != '\n') 
+                {
+                    // We are going to copy only up to 
+                    //  AUTH_STORAGE_BUFFER_LENGTH characters to prevent
+                    //  overflow of the cyg_httpd_md5_response variable.
+                    if (auth_data_length < AUTH_STORAGE_BUFFER_LENGTH)
+                        if ((*p != '\r') && (*p != ' '))
+                            cyg_httpd_md5_response[auth_data_length++] = *p;
+                    p++;
+                }    
+                p++;        
+                cyg_httpd_md5_response[auth_data_length] = '\0';
             }
             else if (strncasecmp(p, "Digest", 6) == 0)
             {
                 p += 6;
                 while (*p == ' ')
                    p++;
-                while ((*p != '\r') && (*p != '\n'))
+                while (*p != '\n')
                 {
                     if (strncasecmp(p, "realm=", 6) == 0)
                         p = cyg_httpd_digest_skip(p + 6);
@@ -968,7 +975,10 @@ cyg_httpd_process_header(char *p)
                         p = cyg_httpd_digest_skip(p + 7);
                     else if (strncasecmp(p, "uri=", 4) == 0)
                         p = cyg_httpd_digest_skip(p + 4);
+                    else
+                        p++;    
                 }
+                p++;
             }    
             else
                 while (*p++ != '\n');
@@ -987,36 +997,6 @@ cyg_httpd_process_header(char *p)
             // We'll just dump the rest of the line and move on to the next.
             while (*p++ != '\n');
     }
-    
-    if (*p == '\0')
-    {
-        // This is the case of a header that is split in two or more frames.
-        // We cannot process it right away and will have to wait for the rest
-        //  of the data. This has _major_ implications because we implicitly
-        //  and tacitly assume that the next frame that will be handled by the
-        //  server is the continuation of this one. But if the next frame is
-        //  for instance, a request from another client, we are in trouble
-        //  since the new request will be processed and this request will
-        //  be dropped.
-        // Caveat: This is all untested. While theoretically this is possible,
-        //  as much as I tried, I could not coerce any of the popular browser
-        //  to split a header in multiple frames.
-#if CYGOPT_NET_ATHTTPD_DEBUG_LEVEL > 1
-        diag_printf("Split header found.\r\n");
-#endif        
-        return 0;
-    }    
-
-    // If this is the end of this request, but there might be other queued up
-    //  because of pipelining of two requests in a single frame. This while()
-    //  will get rid of the \r\n that terminates the header section of a
-    //  request.
-    while (*p++ != '\n');
-    
-    // In the case of large POST the payload comes with the header (and
-    //  possibly further frames.) Here is where we mark the start of the
-    //  POST data.
-    httpstate.header_end = p;
     return p;
 }
 
@@ -1030,12 +1010,24 @@ cyg_httpd_process_method(void)
     //  the leading returns and line carriages we find.
     while ((*p == '\r') || (*p =='\n'))
         p++;
+
     while (*p != '\0')
     {
         p = cyg_httpd_process_header(p);
         if (p == 0)
             return;
-        
+
+#ifdef CYGOPT_NET_ATHTTPD_USE_AUTH
+        // Let's check that the requested URL is not inside some directory that 
+        //  needs authentication.
+        cyg_httpd_auth_table_entry* auth = 
+                                  cyg_httpd_is_authenticated(httpstate.url);
+        if (auth != 0)
+        {
+            cyg_httpd_send_error(CYG_HTTPD_STATUS_NOT_AUTHORIZED);
+            return;
+        }
+#endif
         switch (httpstate.method)
         {
             case CYG_HTTPD_METHOD_GET:
