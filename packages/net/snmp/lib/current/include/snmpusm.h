@@ -112,6 +112,7 @@ extern "C" {
 #define USM_MAX_KEYEDHASH_LENGTH	128		/* In BITS. */
 
 #define USM_TIME_WINDOW			150
+#define USM_MD5_AND_SHA_AUTH_LEN        12      /* bytes */
 
 
 /*

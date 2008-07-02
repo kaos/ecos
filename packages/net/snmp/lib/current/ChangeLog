@@ -1,3 +1,8 @@
+2008-07-02  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/snmpusm.h: add missing definition needed for the CERT
+	fix below.
+
 2008-06-11  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/scapi.c: Fix CVE-2008-0960 (CERT/CC VU#481564).
