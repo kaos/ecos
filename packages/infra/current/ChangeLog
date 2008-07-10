@@ -1,3 +1,8 @@
+2008-07-10  Grant Edwards <grant.b.edwards@gmail.com>
+
+        * src/diag.cxx: allow ASCII escape character in printf
+        format strings.
+
 2007-12-28  Oyvind Harboe <oyvind.harboe@zylin.com>
 	
 	* src/memcpy.cxx: added assert when memory areas for memcpy()

@@ -243,7 +243,7 @@ static cyg_bool diag_check_string( const char *str )
 	 * If we want to use other special chars, this test will
          * have to be expanded.  */
 
-        if( c == '\n' || c == '\r' || c == '\b' || c == '\t' )
+        if( c == '\n' || c == '\r' || c == '\b' || c == '\t' || c == '\033' )
             continue;
 
         /* Check for printable chars. This assumes ASCII */
