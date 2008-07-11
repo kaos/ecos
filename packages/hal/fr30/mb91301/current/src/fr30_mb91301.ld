@@ -78,6 +78,18 @@ GROUP(libtarget.a libgcc.a)
     { FORCE_OUTPUT; KEEP (*(.rom_vectors)) } \
     > _region_
 
+#define SECTION_rom_startup(_region_, _vma_, _lma_) \
+    .rom_startup_trampoline _vma_ : _lma_ \
+    { FORCE_OUTPUT; KEEP(*(.rom_startup_trampoline*)) } \
+    > _region_
+
+#define SECTION_ram_startup(_region_, _vma_, _lma_) \
+    .ram_startup_trampoline _vma_ : _lma_ \
+    { __ram_trampoline_start = ABSOLUTE (.); FORCE_OUTPUT; KEEP(*(.ram_startup_trampoline*)) } \
+    > _region_ \
+    __rom_trampoline_start = LOADADDR (.ram_startup_trampoline); \
+    __rom_trampoline_end = LOADADDR (.ram_startup_trampoline) + SIZEOF(.ram_startup_trampoline);
+
 #define SECTION_text(_region_, _vma_, _lma_) \
     .text _vma_ : _lma_ \
     { _stext = ABSOLUTE(.); \
@@ -97,11 +109,6 @@ GROUP(libtarget.a libgcc.a)
     { FORCE_OUTPUT; *(.rodata*) } \
     > _region_
 
-/* #define SECTION_startup_trampoline(_region_, _vma_, _lma_)
-    .startup_trampoline _vma_ : _lma_
-    { FORCE_OUTPUT; *(.startup_trampoline*) }
-    > _region_ */
-
 #define SECTION_rodata1(_region_, _vma_, _lma_) \
     .rodata1 _vma_ : _lma_ \
     { FORCE_OUTPUT; *(.rodata1) } \
@@ -115,11 +122,6 @@ GROUP(libtarget.a libgcc.a)
 #define SECTION_gcc_except_table(_region_, _vma_, _lma_) \
     .gcc_except_table _vma_ : _lma_ \
     { FORCE_OUTPUT; *(.gcc_except_table) } \
-    > _region_
-
-#define SECTION_mmu_tables(_region_, _vma_, _lma_) \
-    .mmu_tables _vma_ : _lma_ \
-    { FORCE_OUTPUT; *(.mmu_tables) } \
     > _region_
 
 #define SECTION_sram(_region_, _vma_, _lma_) \

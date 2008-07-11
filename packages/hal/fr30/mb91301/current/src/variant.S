@@ -69,11 +69,12 @@
 # alterable. Vectors 255 to 80 are used by the INT instruction and set to 0
 # here for now ...
 
+#ifndef CYGPKG_HAL_FR30_ROM_VECTORS_DEFINED
+#define CYGPKG_HAL_FR30_ROM_VECTORS_DEFINED
+
 #if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_ROMRAM)
 
      .section ".rom_vectors","ax"
-
-#    .data
 
     .balign 4
     .global hal_fr30_vector_table
@@ -161,7 +162,8 @@ hal_fr30_vector_table:
 # reset vector
     .long   _start
 
-#endif
+#endif /*CYG_HAL_STARTUP_ROM || CYG_HAL_STARTUP_ROMRAM*/
+#endif /*CYGPKG_HAL_FR30_ROM_VECTORS_DEFINED*/
 
 ##-----------------------------------------------------------------------------
 # Interrupt vector tables.

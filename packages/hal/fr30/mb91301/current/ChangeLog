@@ -1,3 +1,11 @@
+2008-07-01  Lars Poeschel  <larsi@wh2.tu-dresden.de>
+
+    * src/fr30_md91301.ld: Reworked memory layout for flash support.
+    * src/hal_diag.c:      Little updates in serial0 configuration registers.
+    * src/variant.S:       Made it possible for the platform to override
+                           variants rom vectors.
+    * include/variant.inc: Moved macros for sdram config addresses to platform.
+
 2007-07-09  Lars Poeschel  <larsi@wh2.tu-dresden.de>
 
     * src/fr30_md91301.ld:

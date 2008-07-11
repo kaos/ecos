@@ -100,8 +100,10 @@ void hal_diag_init_led(){
 
 void hal_diag_init(void){
 
-    HAL_WRITE_UINT8(CYG_HAL_FR30_MB91301_DDRJ, 0x2);
-    HAL_WRITE_UINT8(CYG_HAL_FR30_MB91301_PFRJ, 0x3);
+    // PJ2(SCK0) & PJ1(SOT0) output, PJ0(SIN0) input
+    HAL_WRITE_UINT8(CYG_HAL_FR30_MB91301_DDRJ, 0x6);
+    // PJ2(SCK0) & PJ1(SOT0) & PJ0(SIN0) to peripheral operation
+    HAL_WRITE_UINT8(CYG_HAL_FR30_MB91301_PFRJ, 0x7);
 
     // set up U-Timer
     HAL_WRITE_UINT8(CYG_HAL_FR30_MB91301_UTIMC0, 0x02);

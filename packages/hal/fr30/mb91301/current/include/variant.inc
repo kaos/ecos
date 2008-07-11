@@ -128,6 +128,7 @@
 
 ##-----------------------------------------------------------------------------
 ## ext bus interface registers
+## part used for flash
 
     .equ FR30_MB91301_ASR0,     0x640
     .equ FR30_MB91301_ACR0,     0x642
@@ -143,6 +144,15 @@
     .equ FR30_MB91301_DDR8,     0x608
     .equ FR30_MB91301_PFR8,     0x618
     .equ FR30_MB91301_PCR8,     0x628
+
+## part used for sdram
+    .equ FR30_MB91301_ASR6,     0x658
+    .equ FR30_MB91301_ACR6,     0x65a
+    .equ FR30_MB91301_AWR6,     0x66c
+    .equ FR30_MB91301_MCRA,     0x670
+    .equ FR30_MB91301_MCRB,     0x671
+    .equ FR30_MB91301_RCR,      0x684
+
 
 ##-----------------------------------------------------------------------------
 ## registers for serial0 and U-timer settings
