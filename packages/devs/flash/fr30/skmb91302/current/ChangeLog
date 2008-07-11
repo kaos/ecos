@@ -1,6 +1,11 @@
+2008-07-01  Lars Poeschel  <larsi@wh2.tu-dresden.de>
+
+	* src/skmb91302_flash.c: Changed CYGNUM_FLASH_BASE to 0x1000000
+          for real flash support
+
 2007-07-09  Lars Poeschel  <larsi@wh2.tu-dresden.de>
 
-	* src/skmb91302_flash.c: 
+	* src/skmb91302_flash.c:
 	* cdl/flash_skmb91302.cdl: New package - platform specifics.
 
 //===========================================================================

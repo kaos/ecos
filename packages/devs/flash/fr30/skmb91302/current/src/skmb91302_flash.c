@@ -59,7 +59,7 @@
 #define CYGNUM_FLASH_INTERLEAVE (1)
 #define CYGNUM_FLASH_SERIES     (1)
 #define CYGNUM_FLASH_WIDTH      (16)
-#define CYGNUM_FLASH_BASE       (0x100000)
+#define CYGNUM_FLASH_BASE       (0x1000000)
 
 //--------------------------------------------------------------------------
 // Platform specific extras
