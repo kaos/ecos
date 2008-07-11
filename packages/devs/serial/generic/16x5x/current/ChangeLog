@@ -1,3 +1,17 @@
+2008-07-08  Uwe Kindler <uwe_kindler@web.de>
+
+	* cdl/ser_generic_16x5x.cdl
+	(CYGINT_IO_SERIAL_GENERIC_16X5X_CHAN_INTPRIO): New interface
+	for devices that support per channel interrupt priorities.
+	
+	* src/ser_16x5x.c Added int_prio to pc_serial_info type.
+	serial_config_port(): uses macro
+	CYG_IO_SERIAL_GENERIC_16X5X_CHAN_BAUD_GENERATOR() to get the baud
+	devisor from platform if device suppports per channel baudrate
+	clocks, pc_serial_init(): Use interrupt priority from int_prio
+	data field if device implements
+	CYGINT_IO_SERIAL_GENERIC_16X5X_CHAN_INTPRIO
+
 2007-06-22  Alexander Aganichev  <aaganichev@gmail.com>
 
 	* cdl/ser_generic_16x5x.cdl

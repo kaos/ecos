@@ -182,6 +182,9 @@ static unsigned char select_parity[] = {
 typedef struct pc_serial_info {
     cyg_addrword_t base;
     int            int_num;
+#ifdef CYGINT_IO_SERIAL_GENERIC_16X5X_CHAN_INTPRIO
+    int            int_prio;
+#endif // CYGINT_IO_SERIAL_GENERIC_16X5X_CHAN_INTPRIO
     cyg_interrupt  serial_interrupt;
     cyg_handle_t   serial_interrupt_handle;
 #ifdef CYGPKG_IO_SERIAL_GENERIC_16X5X_FIFO
@@ -235,7 +238,17 @@ serial_config_port(serial_channel *chan,
 {
     pc_serial_info *ser_chan = (pc_serial_info *)chan->dev_priv;
     cyg_addrword_t base = ser_chan->base;
+    //
+    // If the device supports a dynamic per channel baudrate generator
+    // then we call the CYG_IO_SERIAL_GENERIC_16X5X_CHAN_BAUD_GENERATOR() 
+    // macro to get the baud divisor. The macro takes the serial channel data 
+    // pointer and the baudrate as parameters and returns the baud divisior
+    //
+#ifdef CYG_IO_SERIAL_GENERIC_16X5X_CHAN_BAUD_GENERATOR
+    unsigned short baud_divisor = CYG_IO_SERIAL_GENERIC_16X5X_CHAN_BAUD_GENERATOR(ser_chan, new_config->baud);
+#else
     unsigned short baud_divisor = select_baud[new_config->baud];
+#endif
     unsigned char _lcr, _ier;
     if (baud_divisor == 0) return false;  // Invalid configuration
 
@@ -372,10 +385,21 @@ pc_serial_init(struct cyg_devtab_entry *tab)
 #endif
     // Really only required for interrupt driven devices
     (chan->callbacks->serial_init)(chan);
-
+    //
+    // If the device supports per channel interrupt priorities then
+    // we take the priority from the serial channel data. If it does
+    // not support per channel interrupt priority we fall back to
+    // the old method and use CYG_IO_SERIAL_GENERIC_16X5X_INT_PRIORITY
+    // to define the priority
+    //
+#ifdef CYGINT_IO_SERIAL_GENERIC_16X5X_CHAN_INTPRIO
+    cyg_priority_t intprio = ser_chan->int_prio;
+#else 
+    cyg_priority_t intprio = CYG_IO_SERIAL_GENERIC_16X5X_INT_PRIORITY;
+#endif // CYGINT_IO_SERIAL_GENERIC_16X5X_CHAN_INTPRIO
     if (chan->out_cbuf.len != 0) {
         cyg_drv_interrupt_create(ser_chan->int_num,
-                                 CYG_IO_SERIAL_GENERIC_16X5X_INT_PRIORITY,
+                                 intprio,
                                  (cyg_addrword_t)chan,
                                  pc_serial_ISR,
                                  pc_serial_DSR,

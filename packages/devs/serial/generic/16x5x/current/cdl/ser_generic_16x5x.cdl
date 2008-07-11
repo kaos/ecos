@@ -76,6 +76,16 @@ cdl_package CYGPKG_IO_SERIAL_GENERIC_16X5X {
         puts $::cdl_header "#include <pkgconf/system.h>";
         puts $::cdl_header "#include CYGDAT_IO_SERIAL_GENERIC_16X5X_CFG";
     }
+    
+    cdl_interface CYGINT_IO_SERIAL_GENERIC_16X5X_CHAN_INTPRIO {
+            display     "Per channel interrupt priority support"
+            flavor      bool
+            description "
+                A platform should implement this interface if it supports
+                per channel interrupt priorities. If a platform implements
+                this interface it needs to provide an interrupt priority
+                value for each UART channel it supports."
+    }
 
     cdl_option CYGPKG_IO_SERIAL_GENERIC_16X5X_XMIT_REQUIRE_PRIME {
         display       "Transmission require priming"
