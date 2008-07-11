@@ -60,38 +60,6 @@
 
 #include <cyg/hal/fr30.inc>
 
-#------------------------------------------------------------------------------
-
-#define CYGPKG_HAL_RESET_VECTOR_FIRST_CODE
-	.macro hal_reset_vector_first_code
-	.endm
-
-
-##-----------------------------------------------------------------------------
-## ext bus interface registers
-## flash part
-    .equ FR30_MB91301_ASR0,     0x640
-    .equ FR30_MB91301_ACR0,     0x642
-    .equ FR30_MB91301_AWR0,     0x660
-    .equ FR30_MB91301_CSER,     0x680
-
-    .equ FR30_MB91301_PDR9,     0x9
-    .equ FR30_MB91301_DDR9,     0x609
-    .equ FR30_MB91301_PFR9,     0x619
-    .equ FR30_MB91301_PCR9,     0x629
-
-    .equ FR30_MB91301_PDR8,     0x8
-    .equ FR30_MB91301_DDR8,     0x608
-    .equ FR30_MB91301_PFR8,     0x618
-    .equ FR30_MB91301_PCR8,     0x628
-
-## sdram part
-    .equ FR30_MB91301_ASR6,     0x658
-    .equ FR30_MB91301_ACR6,     0x65a
-    .equ FR30_MB91301_AWR6,     0x66c
-    .equ FR30_MB91301_MCRA,     0x670
-    .equ FR30_MB91301_MCRB,     0x671
-    .equ FR30_MB91301_RCR,      0x684
 
 ##------------------------------------------------------------------------------
 ## ext Bus (memory controller) initialisation macros
@@ -100,10 +68,17 @@
 
 
 #define CYGPKG_HAL_FR30_FLASH_INIT_DEFINED
+## flash init is empty for this platform because it is initialized in the
+## special hal_fr30_ram_startup_trampoline to map flash to 0x1000000
 .macro hal_flash_init
+.endm
+
+## and the following macro is used in the special
+## hal_fr30_ram_startup_trampoline for flash initialisation
+.macro hal_flash_init_from_ram
 
     ldi:20  #FR30_MB91301_ASR0, r10 ; CS0 area starts at
-    ldi:8   0x000,   r0             ; 0x00000000
+    ldi:20  0x100,   r0             ; 0x01000000
     sth     r0,     @r10            ;
 
     ldi:20  #FR30_MB91301_ACR0, r11 ; configuration parameters for CS0
@@ -139,6 +114,16 @@
 #define CYGPKG_HAL_FR30_MEMC_INIT_DEFINED
 
 .macro hal_memc_init
+
+## The following instruction is without function. It is only to reference
+## hal_fr30_rom_startup_trampoline, because when not referenced the linker
+## does not include the file platform.S in the link. If somewhen some other
+## referenced code appears in platform.S the instruction here can be deleted
+## (including the surrounding macro)!
+
+#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_ROMRAM)
+    ldi:32  #hal_fr30_rom_startup_trampoline, r10
+#endif
 
     ldi:20  #FR30_MB91301_ASR6, r10 ; CS6 area starts at
     ldi:20  0x200,   r0             ; 0x02000000
@@ -183,6 +168,20 @@
     sth     r3,     @r13
 
 .endm
+
+#------------------------------------------------------------------------------
+## Vector table for storage. platform.S defines a vector table and wants to
+## override the one from variant.S with this define
+
+#define CYGPKG_HAL_FR30_ROM_VECTORS_DEFINED
+
+#------------------------------------------------------------------------------
+# Difference of the flash memory from the linkers LMA (loadmemoryaddress) after
+# the new mapping in (mapping is done in hal_fr30_ram_startup_trampoline).
+
+#define CYGPKG_HAL_FR30_LMA_OFFSET  0x1000000
+
+
 
 #------------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_PLATFORM_INC

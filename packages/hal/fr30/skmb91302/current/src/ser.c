@@ -152,12 +152,12 @@ static void cyg_hal_plf_serial_set_baudrate_internal(cyg_uint8 port, int baudrat
     /* and finally take the best */
     if (n < nn){
         /* UCC1 = 0 */
-        HAL_WRITE_UINT8(port + CYG_HAL_FR30_MB91301_UTIMC_OFFSET, 0x02);
         HAL_WRITE_UINT16(port + CYG_HAL_FR30_MB91301_UTIMR_OFFSET, t);
+        HAL_WRITE_UINT8(port + CYG_HAL_FR30_MB91301_UTIMC_OFFSET, 0x02);
     } else {
         /* UCC1 = 1 */
-        HAL_WRITE_UINT8(port + CYG_HAL_FR30_MB91301_UTIMC_OFFSET, 0x82);
         HAL_WRITE_UINT16(port + CYG_HAL_FR30_MB91301_UTIMR_OFFSET, tt);
+        HAL_WRITE_UINT8(port + CYG_HAL_FR30_MB91301_UTIMC_OFFSET, 0x82);
     }
 }
 
@@ -176,9 +176,11 @@ cyg_hal_plf_serial_init_channel(void* __ch_data)
     switch (port){
         case CYG_HAL_FR30_MB91301_SER0_BASE:
             HAL_READ_UINT8(CYG_HAL_FR30_MB91301_DDRJ, value);
-            HAL_WRITE_UINT8(CYG_HAL_FR30_MB91301_DDRJ, value | 0x2);
+            value |= 0x6;
+            value &= ~0x1;
+            HAL_WRITE_UINT8(CYG_HAL_FR30_MB91301_DDRJ, value);
             HAL_READ_UINT8(CYG_HAL_FR30_MB91301_PFRJ, value);
-            HAL_WRITE_UINT8(CYG_HAL_FR30_MB91301_PFRJ, value | 0x3);
+            HAL_WRITE_UINT8(CYG_HAL_FR30_MB91301_PFRJ, value | 0x7);
             if (CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_DEFAULT == 0){
                 cyg_hal_plf_serial_set_baudrate_internal(port, CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD);
             } else {
@@ -188,9 +190,11 @@ cyg_hal_plf_serial_init_channel(void* __ch_data)
 
         case CYG_HAL_FR30_MB91301_SER1_BASE:
             HAL_READ_UINT8(CYG_HAL_FR30_MB91301_DDRJ, value);
-            HAL_WRITE_UINT8(CYG_HAL_FR30_MB91301_DDRJ, value | 0x10);
+            value |= 0x30;
+            value &= ~0x8;
+            HAL_WRITE_UINT8(CYG_HAL_FR30_MB91301_DDRJ, value);
             HAL_READ_UINT8(CYG_HAL_FR30_MB91301_PFRJ, value);
-            HAL_WRITE_UINT8(CYG_HAL_FR30_MB91301_PFRJ, value | 0x18);
+            HAL_WRITE_UINT8(CYG_HAL_FR30_MB91301_PFRJ, value | 0x38);
             if (CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_DEFAULT == 1){
                 cyg_hal_plf_serial_set_baudrate_internal(port, CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD);
             } else {
@@ -206,7 +210,6 @@ cyg_hal_plf_serial_init_channel(void* __ch_data)
             break;
 */
     }
-
 
     // set up U-Timer
 /*    HAL_WRITE_UINT8(port + CYG_HAL_FR30_MB91301_UTIMC_OFFSET, 0x02);
@@ -226,8 +229,8 @@ cyg_hal_plf_serial_putc(void* __ch_data, cyg_uint8 __ch)
     cyg_uint8 ssr;
     cyg_uint8 port;
 
-    // wait for tx rdy
     port = ((channel_data_t*)__ch_data)->base;
+    // wait for tx rdy
     do
     {
         HAL_READ_UINT8(port + CYG_HAL_FR30_MB91301_SSR_OFFSET, ssr);
@@ -349,6 +352,7 @@ cyg_hal_plf_serial_control(void *__ch_data, __comm_control_cmd_t __func, ...)
     case __COMMCTL_SETBAUD:
     {
         cyg_uint32 baud_rate;
+        cyg_uint16 n, nn;
         va_list ap;
 
         va_start(ap, __func);
@@ -389,7 +393,6 @@ cyg_hal_plf_serial_init(void)
 
 	// Init channels
 	cyg_hal_plf_serial_init_channel((void*)&channels[i]);
-    
 	// Setup procs in the vector table
 
 	// Set COMM callbacks for channel
@@ -417,7 +420,6 @@ cyg_hal_plf_comms_init(void)
         return;
 
     initialized = 1;
-
     cyg_hal_plf_serial_init();
 
 }

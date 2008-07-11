@@ -1,3 +1,14 @@
+2008-07-01  Lars Poeschel  <larsi@wh2.tu-dresden.de>
+
+    * src/platform.S: Startup routines for remapping the flash during
+      startup. Defined own rom_vector table.
+    * src/ser.c: Little updates that could cause problems after a reset with 
+      wrong settings in the serial configuration registers.
+    * include/pkgconf/mlt_fr30_skmb91302_rom.h:
+    * include/pkgconf/mlt_fr30_skmb91302_rom.ldi: Reworked memory layout for
+      flash support.
+
+
 2007-07-09  Lars Poeschel  <larsi@wh2.tu-dresden.de>
 
     * src/platform.S:

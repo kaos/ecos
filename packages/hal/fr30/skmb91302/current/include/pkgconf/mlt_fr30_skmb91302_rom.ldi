@@ -6,26 +6,26 @@
 
 MEMORY
 {
-    ram   : ORIGIN = 0x3F000, LENGTH = 0x1000
+    ram   : ORIGIN = 0x18000, LENGTH = 0x1000
     rom1  : ORIGIN = 0x80000, LENGTH = 0x7fc00 // Length = 511 kB
     ints  : ORIGIN = 0xFFC00, LENGTH = 0x400
-    rom2  : ORIGIN = 0x100000, LENGTH = 0x700000
+    rom2  : ORIGIN = 0x1100000, LENGTH = 0x700000
     sdram : ORIGIN = 0x2000000, LENGTH = 0x800000
 }
 
 SECTIONS
 {
     SECTIONS_BEGIN
-    SECTION_text (rom1, 0x80000, LMA_EQ_VMA)
-    SECTION_fini (rom1, ALIGN (0x4), LMA_EQ_VMA)
-    SECTION_rodata (rom1, ALIGN (0x4), LMA_EQ_VMA)
-//    SECTION_rodata1 (rom, ALIGN (0x4), LMA_EQ_VMA)
-    SECTION_fixup (rom1, ALIGN (0x4), LMA_EQ_VMA)
-    SECTION_gcc_except_table (rom1, ALIGN (0x4), LMA_EQ_VMA)
-    SECTION_rom_vectors (ints,0xffc00 , LMA_EQ_VMA)
+    SECTION_rom_startup(rom1, 0x80000, LMA_EQ_VMA)
+    SECTION_ram_startup(ram, 0x18000, FOLLOWING(.rom_startup_trampoline))
+    SECTION_rom_vectors (ints, 0xffc00 , LMA_EQ_VMA)
+    SECTION_text (rom2, 0x1100000, AT(0x100000))
+    SECTION_fini (rom2, ALIGN (0x4), FOLLOWING (.text))
+    SECTION_rodata (rom2, ALIGN (0x4), FOLLOWING (.fini))
+    SECTION_fixup (rom2, ALIGN (0x4), FOLLOWING (.rodata))
+    SECTION_gcc_except_table (rom2, ALIGN (0x4), FOLLOWING (.fixup))
     SECTION_fixed_vectors (sdram, 0x2000000, LMA_EQ_VMA)
     SECTION_data (sdram, ALIGN(0x4), FOLLOWING (.gcc_except_table))
-//    SECTION_data (sdram, ALIGN(0x4), LMA_EQ_VMA)
     SECTION_bss (sdram, ALIGN (0x4), LMA_EQ_VMA)
     CYG_LABEL_DEFN(__heap1) = ALIGN (0x1000);
     SECTIONS_END
