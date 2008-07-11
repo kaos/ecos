@@ -128,7 +128,7 @@ externC cyg_uint32 hal_msbit_index(cyg_uint32 mask);
     (_regs_)->r[04] = (CYG_HAL_FR30_REG)(_thread_);   /* R4 = arg1 = thread ptr  */     \
     (_regs_)->pc = (CYG_WORD)(_entry_);               /* PC = entry point        */     \
     (_regs_)->ps = (CYG_HAL_FR30_REG)0x1f0030;        /* 0x000F0030;  set flags  */     \
-    (_regs_)->tbr = (CYG_HAL_FR30_REG)0xffc00;        /*system standard tbr value*/     \
+    (_regs_)->tbr = (CYG_HAL_FR30_REG)0x10ffc00;      /*system standard tbr value*/     \
     (_regs_)->rp = (CYG_HAL_FR30_REG)0x0;             /* return pointer = 0x0    */     \
     (_regs_)->ssp = (CYG_HAL_FR30_REG)0x0;            /* R4 = arg1 = thread ptr  */     \
     (_regs_)->usp = (CYG_HAL_FR30_REG)(_regs_);       /* r15 = USP = top of stack*/     \

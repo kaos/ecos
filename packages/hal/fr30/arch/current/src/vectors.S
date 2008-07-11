@@ -110,23 +110,24 @@ _start:
     ble:d   2b
     st      r0,     @r13
 
-
 #if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_ROMRAM)
 
 # In a ROM booted system, we also need to copy the data section
 # out to the RAM.
-    ldi:32  #__rom_data_start - 4,  r11
-    ldi:32  #__ram_data_start - 4,  r13
-    ldi:32  #__ram_data_end - 8,    r12
+
+    ldi:32  #__rom_data_start - 4 + CYGPKG_HAL_FR30_LMA_OFFSET,  r11
+    ldi:32  #__ram_data_start - 4,  r9
+    ldi:32  #__ram_data_end - 8,    r10
 3:
     add     #0x4,   r11
-    add     #0x4,   r13
+    add     #0x4,   r9
     ld      @r11,   r0
-    cmp     r12,    r13
+    cmp     r10,    r9
     ble:d   3b
-    st      r0,     @r13
+    st      r0,     @r9
 
 #endif
+
 
     # Set up the stacks
     # Begin with interrupt (system) stack
@@ -158,7 +159,6 @@ _start:
     ldi:32  #hal_platform_init,  r11
     call    @r11
 
-
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
     // This is here so we can debug the constructors.
     .extern initialize_stub
@@ -180,6 +180,7 @@ _start:
         .extern breakpoint
         call breakpoint
 #endif
+
 
     .extern cyg_start
     ldi:32  #cyg_start,  r11
@@ -391,6 +392,7 @@ hal_exception_return:
 
     andccr  #0xdf
     reti
+
 
 #==============================================================================
 # Exception trampolines

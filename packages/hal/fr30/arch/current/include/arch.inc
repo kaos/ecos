@@ -185,6 +185,16 @@
 
 #endif
 
+#------------------------------------------------------------------------------
+# Difference of the flash memory from the linkers LMA (loadmemoryaddress) after
+# the new mapping in (mapping is done in hal_fr30_ram_startup_trampoline).
+
+#ifndef CYGPKG_HAL_FR30_LMA_OFFSET
+
+#define CYGPKG_HAL_FR30_LMA_OFFSET  0x0
+
+#endif
+
 
 #endif // ifndef CYGONCE_HAL_ARCH_INC
 # end of arch.inc
