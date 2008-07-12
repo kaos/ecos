@@ -1,0 +1,3 @@
+.ecos_usbserial.o.d
+.tmp_versions
+*.ko

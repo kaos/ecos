@@ -1,0 +1,391 @@
+<!-- DOCTYPE reference  PUBLIC "-//OASIS//DTD DocBook V3.1//EN" -->
+
+<!-- {{{ Banner                         -->
+
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!--     usbs_serial.sgml                                            -->
+<!--                                                                 -->
+<!--     USB slave-side serial port package.                         -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- ####COPYRIGHTBEGIN####                                          -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- Copyright (C) 2008 FSF                                          -->
+<!-- This material may be distributed only subject to the terms      -->
+<!-- and conditions set forth in the Open Publication License, v1.0  -->
+<!-- or later (the latest version is presently available at          -->
+<!-- http://www.opencontent.org/openpub/)                            -->
+<!-- Distribution of the work or derivative of the work in any       -->
+<!-- standard (paper) book form is prohibited unless prior           -->
+<!-- permission obtained from the copyright holder                   -->
+<!-- =============================================================== -->
+<!--                                                                 -->      
+<!-- ####COPYRIGHTEND####                                            -->
+<!-- =============================================================== -->
+<!-- #####DESCRIPTIONBEGIN####                                       -->
+<!--                                                                 -->
+<!-- Author(s):   Andrew Lunn, Frank Pagliughi                       -->
+<!-- Contact(s):  asl                                                -->
+<!-- Date:        2008/06/18                                         -->
+<!-- Version:     0.01                                               -->
+<!--                                                                 -->
+<!-- ####DESCRIPTIONEND####                                          -->
+<!-- =============================================================== -->
+
+<!-- }}} -->
+
+<part id="io-usb-slave-serial">
+  <!-- reference id="io-usb-slave-serial" -->
+  <title>eCos Support for USB Serial like Peripherals</title>
+  
+  <!-- {{{ Intro                          -->
+  
+  <refentry id="usbs-serial-intro">
+    <refmeta>
+      <refentrytitle>Introduction</refentrytitle>
+    </refmeta>
+    <refnamediv>
+      <refname>Introduction</refname>
+      <refpurpose>
+        eCos support for USB Serial like Peripherals
+      </refpurpose>
+    </refnamediv>
+    
+    <refsect1><title>Introduction</title>
+      <para>
+        The eCos USB-Serial package provides additional support for
+        USB peripherals that look like a serial port to the
+        host. These can follow the ACM communication device
+        specification or simpler devices which just have two bulk
+        endpoints. Microsoft Windows requires ACM mode. Linux should
+        operate with both modes, however ACM may cause problems since
+        the eCos driver does not implement all the class descriptors,
+        so generic mode is recommended.
+      </para>
+      <para>
+        The USB-Serial package is not tied to any specific
+        hardware. It requires the presence of USB hardware on the
+        target and a suitable device driver to make endpoints
+        available for this code to use.  The configuration system
+        cannot load the eCos package automatically for specific
+        targets, in the way that a USB device driver or an ethernet
+        driver can be loaded automatically. Instead, the package has
+        to be added explicitly. When using the command line tools this
+        will involve an operation like the following:
+      </para>
+      <screen width=72 format=linespecific>
+        $ ecosconfig add usbs_serial
+      </screen>
+      <para>
+        Typically, this will automatically cause the USB device driver
+        to become active. 
+      </para>
+    </refsect1>
+  </refentry>
+  
+  <!-- }}} -->
+  <!-- {{{ Config                          -->
+  
+  <refentry id="usbs-serial-config">
+    <refmeta>
+      <refentrytitle>Configuration</refentrytitle>
+    </refmeta>
+    <refnamediv>
+      <refname>Configuration</refname>
+      <refpurpose>Configuration USB Serial like Peripherals</refpurpose>
+    </refnamediv>
+    
+    <refsect1><title>Configuration</title>
+      <para>
+        The package requires a few basic configurations plus
+        optionally some additional configuration options.
+      </para>
+      <para>
+        The driver needs two or three endpoints, depending if ACM
+        communications or a more generic model is used. This is
+        configured
+        with <literal>CYGDAT_IO_USB_SLAVE_CLASS_TYPE</literal> which
+        can take the value <literal>ACM</literal>
+        or <literal>generic</literal>.
+      </para>
+      <para>
+        The <literal>CYGDAT_IO_USB_SLAVE_SERIAL_EP0</literal> must be
+        configured with the control end point of the USB
+        device. <literal>CYGDAT_IO_USB_SLAVE_SERIAL_TX_EP</literal>
+        must be configured with the endpoint to be used for
+        transmission and  
+        <literal>CYGDAT_IO_USB_SLAVE_SERIAL_RX_EP</literal> must be
+        configured with the end point used for reception. Associated
+        with these
+        are <literal>CYGNUM_IO_USB_SLAVE_SERIAL_RX_EP_NUM</literal>
+        and <literal>CYGNUM_IO_USB_SLAVE_SERIAL_TX_EP_NUM</literal>
+        which are the endpoint numbers and are used during enumeration
+        of the device. The TX and RX endpoints must operate in BULK
+        mode.
+      </para>
+      <para>
+        If operation mode ACM is selected a third endpoint is
+        needed. This must operate in interrupt mode and should be
+        configured
+        in <literal>CYGNUM_IO_USB_SLAVE_SERIAL_INTR_EP</literal>
+        and <literal>
+        CYGNUM_IO_USB_SLAVE_SERIAL_INTR_EP_NUM</literal>.
+      </para>
+      <para>
+        The USB serial device will make its vendor:product ID known to
+        the host. This should be configured
+        with <literal>CYGNUM_IO_USB_SLAVE_SERIAL_VENDOR_ID</literal>
+        and <literal>CYGNUM_IO_USB_SLAVE_SERIAL_PRODUCT_ID</literal>. NOTE:
+        The default configurations are not valid for products, but
+        should work for testing.
+      </para>
+      <para>
+        The USB enumeration also contains text strings to describe the
+        device. This text string can be set
+        with <literal>CYGDAT_IO_USB_SLAVE_SERIAL_PRODUCT_STR</literal>.
+      </para>
+      <para>
+        The last configuration option of interest
+        is <literal>CYGPKG_IO_USB_SLAVE_SERIAL_EXAMPLES</literal>. When
+        true example programs will be built when the eCos tests are
+        built. These are not pass/fail test like other eCos tests, but
+        examples of how the eCos USB serial class can be used.
+      </para>
+    </refsect1>
+  </refentry>
+  
+  <!-- }}} -->
+  <!-- {{{ Host Config                          -->
+  
+  <refentry id="usbs-serial-host-config">
+    <refmeta>
+      <refentrytitle>Host Configuration</refentrytitle>
+    </refmeta>
+    <refnamediv>
+      <refname>Host Configuration</refname>
+      <refpurpose>Host Configuration for USB Serial like Peripherals
+      </refpurpose>
+    </refnamediv>
+    
+    <refsect1>
+      <title>Host Configuration</title>
+      <para>
+        Configuration for two hosts are listed here, Microsoft Windows
+        and Linux. It should also be possible to use the eCos USB
+        serial like peripheral driver with other hosts.
+      </para>
+      <refsect2><title>Linux</title>
+        <para>
+          The eCos USB serial like peripheral driver can be used in
+          Linux in one of two ways.
+          <itemizedlist>
+            <listitem>
+              <para>
+                Using the generic usbserial kernel module passing the
+                vendor and product ID as module parameters. e.g.
+              </para>
+              <programlisting width=72>
+                modprobe usbserial vendor=0xabcd product=0x1234
+              </programlisting>
+              <para>
+                would load the kernel module so that it would use a
+                USB device abcd:1234 as a serial device.
+              </para>
+            </listitem>
+            <listitem>
+              <para>
+                Using the mini driver provided with eCos in the
+                <filename class=directory>host/linux</filename>
+                directory. This driver must be edited and the correct
+                vendor and product ID set to match the vendor and
+                product ID used by the device. Once compiled this
+                driver can be loaded with:
+              </para>
+              <programlisting width=72>
+                modprobe usbserial
+                modprobe ecos_usbserial
+              </programlisting>
+              <para>
+                This driver is known to compile with kernel versions
+                2.6.18 and probably works fine with other
+                kernels. However it fails to compile with kernels
+                after 2.6.25.
+              </para>
+            </listitem>
+          </itemizedlist>
+          Both of these methods will result in the Linux Kernel making
+          a new serial device available. This is typically
+          named <filename>/dev/ttyUSB0</filename>.
+        </para>
+      </refsect2>
+      <refsect2><title>Microsoft Windows</title>
+        <para>
+          To install the device in a Microsoft Windows system make use
+          of the INF file
+          in <filename>host/windows/eCosUsbSerial.inf</filename>. Copy
+          this INF file and <filename>usbser.sys</filename> from your
+          version of Windows into an empty directory. Then plug in the
+          USB device. When prompted to load a driver navigate to the
+          INF file and select it.
+        </para>
+      </refsect2>
+    </refsect1>
+    
+  </refentry>
+  
+  <!-- }}} -->
+  <!-- {{{ Using                         -->
+  <refentry id="usbs-serial-using">
+    <refmeta>
+      <refentrytitle>API Function</refentrytitle>
+    </refmeta>
+    <refnamediv>
+      <refname>usbs_serial_start</refname>
+      <refname>usbs_serial_init</refname>
+      <refname>usbs_serial_start</refname>
+      <refname>usbs_serial_wait_until_configured</refname>
+      <refname>usbs_serial_is_configured</refname>
+      <refname>usbs_serial_start_tx</refname>
+      <refname>usbs_serial_wait_for_tx</refname>
+      <refname>usbs_serial_tx</refname>
+      <refname>usbs_serial_start_rx</refname>
+      <refname>usbs_serial_wait_for_rx</refname>
+      <refname>usbs_serial_rx</refname>
+      <refname>usbs_serial_state_change_handler</refname>
+      <refpurpose>
+        eCos USB Serial like Peripherals API
+      </refpurpose>
+    </refnamediv>
+    
+    <refsynopsisdiv>
+      <funcsynopsis>
+        <funcsynopsisinfo>
+#include &lt;cyg/io/usb/usbs_serial.h&gt;
+        </funcsynopsisinfo>
+        <funcprototype>
+          <funcdef>void 
+            <function>usbs_serial_start</function>
+          </funcdef>
+          <paramdef>void</paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>void 
+            <function>usbs_serial_init</function>
+          </funcdef>
+          <paramdef>usbs_serial * <parameter>ser</parameter></paramdef>
+          <paramdef>usbs_tx_endpoint * <parameter>tx_ep</parameter></paramdef>
+          <paramdef>usbs_rx_endpoint * <parameter>rx_ep</parameter></paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>void 
+            <function>usbs_serial_wait_until_configured</function>
+          </funcdef>
+          <paramdef>void></paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>cyg_bool
+            <function>usbs_serial_is_configured</function>
+          </funcdef>
+          <paramdef>void</paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>void 
+            <function>usbs_serial_start_tx</function>
+          </funcdef>
+          <paramdef>usbs_serial * <parameter>ser</parameter></paramdef>
+          <paramdef>const void *<parameter>buf</parameter></paramdef>
+          <paramdef>int * <parameter>n</parameter></paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>int 
+            <function>usbs_serial_wait_for_tx</function>
+          </funcdef>
+          <paramdef>usbs_serial * <parameter>ser</parameter></paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>void 
+            <function>usbs_serial_start_rx</function>
+          </funcdef>
+          <paramdef>usbs_serial * <parameter>ser</parameter></paramdef>
+          <paramdef>const void *<parameter>buf</parameter></paramdef>
+          <paramdef>int * <parameter>n</parameter></paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>int 
+            <function>usbs_serial_wait_for_rx</function>
+          </funcdef>
+          <paramdef>usbs_serial * <parameter>ser</parameter></paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>int 
+            <function>usbs_serial_rx</function>
+          </funcdef>
+          <paramdef>usbs_serial * <parameter>ser</parameter></paramdef>
+          <paramdef>const void *<parameter>buf</parameter></paramdef>
+          <paramdef>int * <parameter>n</parameter></paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>void 
+            <function>usbs_serial_state_change_handler</function>
+          </funcdef>
+          <paramdef>usbs_control_endpoint * <parameter>ep</parameter></paramdef>
+          <paramdef>void * <parameter>data</parameter></paramdef>
+          <paramdef>usbs_state_change <parameter>change</parameter></paramdef>
+          <paramdef>int <parameter>prev_state</parameter></paramdef>
+        </funcprototype>
+      </funcsynopsis>
+    </refsynopsisdiv>
+    
+    <refsect1 id="usbs-serial-api-description">
+      <title>Description</title>
+      <para>
+        For examples of how to use this API see the
+        files <filename>.../tests/usbserial_echo.c</filename>
+        and <filename>.../tests/usb2serial.c</filename>
+      </para>
+      
+      <para>
+        The first function that needs calling
+        is <function>usbs_serial_start()</function>. This will initialise
+        the eCos USB slave layer, creating all the enumeration data and
+        then let the host know that the device exists.
+      </para>
+      <para>
+        Once the USB subsystem has been started it is necessary to wait
+        for the host to configure the device using the
+        function <function>usbs_serial_wait_until_configured()</function>. The
+        host will assign the device an ID and then load the appropriate
+        device driver in the host in order to make use the device.
+      </para>
+      <para>
+        Once the device is configured it is then possible to make use of
+        it, i.e. send and receive data. This transfer of data can be
+        accomplished either asynchronously or synchronously. It is also
+        possible to mix asynchronously and synchronously between
+        receiving and sending data.
+      </para>
+      <para>
+        To perform asynchronous operations the
+        functions <function>usbs_serial_start_rx()</function>
+        and <function>usbs_serial_start_tx()</function> is used to
+        start the operation. These functions start the necessary
+        actions and then return immediately. At a later time the
+        functions <function>usbs_serial_wait_for_tx()</function>
+        or <function>usbs_serial_wait_for_rx()</function> should be
+        called. These will, if necessary, block and then return the
+        status and any data for the previously started asynchronous
+        call.
+      </para>
+      <para>
+        To perform synchronous operations the
+        functions <function>usbs_serial_rx()</function>
+        and <function>usbs_serial_tx()</function> are used. These
+        functions will block until the requested action is complete.
+      </para>
+    </refsect1>
+  </refentry>    
+  <!-- }}} -->
+</part>
+<!-- /reference -->

@@ -1,0 +1,49 @@
+; eCos USB Serial INF file for Windows
+; This can be used for any USB device that emulates a serial port connection.
+; Simply set the VID & PID numbers in this file to the proper values for the
+; device, copy this file and the 'usbser.sys' file from your version of Windows
+; into the same directory, and load these when prompted by the Windows device
+; manager.
+
+[Version]
+Signature="$Windows NT$"
+Class=Ports
+ClassGuid={4D36E978-E325-11CE-BFC1-08002BE10318}
+Provider=eCosUsbSerial
+DriverVer=06/02/2008,0.0.0.1
+
+[DestinationDirs]
+DefaultDestDir=12	; %windir$\System32\drivers
+
+[Manufacturer]
+eCosUsbSerial=eCosDevices
+
+[eCosDevices]
+"eCosUsbSerial"=InstalleCosUsbSerial,USB\VID_FFFF&PID_0001
+
+[InstalleCosUsbSerial]
+CopyFiles=CopyeCosUsbFiles
+AddReg=eCosUsbReg
+
+[CopyeCosUsbFiles]
+usbser.sys			; The standard Windows USB serial driver
+
+[eCosUsbReg]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,usbser.sys
+HKR,,EnumPropPages32,,"MsPorts.dll,SerialPortPropPageProvider"
+
+[InstalleCosUsbSerial.Services]
+AddService = usbser,2,eCosUsbSerialService
+
+[eCosUsbSerialService]
+DisplayName = ECOS_USB_SERIAL_NAME
+ServiceType = 1				; driver
+StartType = 3				; on-demand or manual
+ErrorControl = 1			; report errors
+ServiceBinary = %12%\usbser.sys		; Driver path: %windir%\System32\drivers
+LoadOrderGroup = Base
+
+[Strings]
+ECOS_USB_SERIAL_NAME = "eCos USB Serial Driver"
+
