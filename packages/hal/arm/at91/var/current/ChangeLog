@@ -1,3 +1,15 @@
+2008-07-12  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/hal_diag_dcc.{ch}
+	* src/hal_diag.c
+	* src/hal_diag_dbg.c
+	* cdl/hal_arm_at91.cdl: Add support for DCC, ie the Debug
+	Communications Channel, which is part of JTAG core of AT91 and
+	most ARM processors. JTAG devices often make this available via a
+	TCP port which can be accessed via telnet. NOTE: Only output to
+	DCC has been tested via diag_printf. Code exists for input, but it
+	has not been tested.
+	
 2007-03-05  Andrew Lunn <andrew.lunn@ascom.ch>
 
 	* include/var_io.h: Fix a few typos pointed out by

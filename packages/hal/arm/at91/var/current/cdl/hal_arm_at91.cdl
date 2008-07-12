@@ -169,4 +169,27 @@ cdl_package CYGPKG_HAL_ARM_AT91 {
             The driver for using the UARTS will be compiled in the
             varient HAL when this option is enabled."
     }
+
+    cdl_component CYGBLD_HAL_ARM_AT91_DCC {
+        display       "Enable the use of the DCC for debug output"
+        flavor        bool
+        default_value 0
+        compile       hal_diag_dcc.c
+        description   "
+            A <serial> driver will be compiled and inserted into the
+            vector table which does I/O via the DCC. The DCC is part of
+            the JTAG interface and some JTAG devices made this interface
+            available via telnet etc."
+        
+        cdl_option CYGBLD_HAL_ARM_AT91_DCC_CHANNEL {   
+            display       "Channel the DCC port should use in the VV table"
+            flavor        data
+            default_value 2
+            description   "
+                The DCC driver has to be registered in the VV table of
+                drivers. This option determines which entry in the
+                table it will take. The default value will overwride
+                the first serial port. "
+        }
+    }
 }

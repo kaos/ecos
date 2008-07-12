@@ -65,6 +65,7 @@
 
 #include <cyg/hal/var_io.h>             // USART registers
 
+#include "hal_diag_dcc.h"               // DCC initialization file
 //-----------------------------------------------------------------------------
 typedef struct {
     cyg_uint8* base;
@@ -357,6 +358,10 @@ cyg_hal_plf_comms_init(void)
     initialized = 1;
 
     cyg_hal_plf_serial_init();
+
+#ifdef CYGBLD_HAL_ARM_AT91_DCC
+    cyg_hal_plf_dcc_init(CYGBLD_HAL_ARM_AT91_DCC_CHANNEL);
+#endif
 }
 
 void
