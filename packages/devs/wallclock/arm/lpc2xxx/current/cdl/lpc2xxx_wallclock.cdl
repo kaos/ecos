@@ -1,0 +1,86 @@
+# ====================================================================
+#
+#      lpc2xxx_wallclock.cdl
+#
+#      eCos configuration data for LPC2xxx internal RTC
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2003 Gary Thomas
+## Copyright (C) 2004 eCosCentric Ltd
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+## -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      Hans Rosenfeld <rosenfeld@grumpf.hope-2000.org>
+# Contributors:   jskov
+# Date:           2007-06-19
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_DEVICES_WALLCLOCK_ARM_LPC2XXX {
+    display       "LPC2xxx Real-time clock"
+    description   "RTC driver for the LPC2xxx controller"
+
+    parent        CYGPKG_IO_WALLCLOCK
+    active_if     CYGPKG_IO_WALLCLOCK
+    active_if     CYGPKG_HAL_ARM_LPC2XXX
+
+    requires      { CYGHWR_HAL_ARM_LPC2XXX_IDLE_PWRSAVE == 0 }
+    compile       lpc2xxx_wallclock.cxx
+
+    implements    CYGINT_WALLCLOCK_HW_IMPLEMENTATIONS
+    active_if     CYGIMP_WALLCLOCK_HARDWARE
+    implements    CYGINT_WALLCLOCK_SET_GET_MODE_SUPPORTED
+
+    cdl_option CYGIMP_WALLCLOCK_HARDWARE {
+        parent        CYGPKG_IO_WALLCLOCK_IMPLEMENTATION
+        display       "Hardware wallclock"
+        default_value 1
+        implements    CYGINT_WALLCLOCK_IMPLEMENTATIONS
+    }
+
+    cdl_option CYGNUM_HAL_ARM_LPC2XXX_RTCDEV_PREINT {
+        display    "RTC prescaler integer portion"
+        flavor     data
+        calculated { ((CYGNUM_HAL_ARM_LPC2XXX_CLOCK_SPEED / 
+                       CYGNUM_HAL_ARM_LPC2XXX_VPBDIV) / 32768) - 1 }
+    }
+
+    cdl_option CYGNUM_HAL_ARM_LPC2XXX_RTCDEV_PREFRAC {
+        display    "RTC prescaler fractional portion"
+        flavor     data
+        calculated { ((CYGNUM_HAL_ARM_LPC2XXX_CLOCK_SPEED / 
+                       CYGNUM_HAL_ARM_LPC2XXX_VPBDIV) -
+                      ((CYGNUM_HAL_ARM_LPC2XXX_RTCDEV_PREINT + 1) * 32768)) }
+    }
+}
