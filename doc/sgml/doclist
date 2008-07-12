@@ -37,6 +37,7 @@ services/profile/gprof/current/doc/profile.sgml
 services/power/common/current/doc/power.sgml
 io/usb/slave/current/doc/usbs.sgml
 io/usb/eth/slave/current/doc/usbseth.sgml
+io/usb/serial/slave/current/doc/usbs_serial.sgml
 hal/synth/arch/current/doc/synth.sgml
 devs/usb/sa11x0/current/doc/usbs_sa11x0.sgml
 devs/usb/nec_upd985xx/current/doc/usbs_upd985xx.sgml
