@@ -1,0 +1,83 @@
+# ====================================================================
+#
+#      flash_arm_lpc2xxx.cdl
+#
+#      Philips LPC2XXX flash memory package
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+## -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      Hans Rosenfeld <rosenfeld@grumpf.hope-2000.org>
+# Contributors:   
+# Date:           2007-07-12
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_DEVS_FLASH_ARM_LPC2XXX {
+    display     "LPC2xxx internal FLASH memory support"
+    description "Support for the internal FLASH memory of LPC2xxx controllers"
+    
+    parent      CYGPKG_IO_FLASH
+    active_if   CYGPKG_IO_FLASH
+    requires    CYGPKG_HAL_ARM_LPC2XXX
+    implements  CYGHWR_IO_FLASH_DEVICE
+
+    # These chips use two erase block sizes, the access to flash is
+    # limited to the last few of the 8k blocks. I don't have a chip
+    # using only 8k block sizes, so I can't test and therefore won't
+    # implement support for these devices.
+    active_if   {
+        CYGHWR_HAL_ARM_LPC2XXX == "LPC2124" ||
+        CYGHWR_HAL_ARM_LPC2XXX == "LPC2129" ||
+        CYGHWR_HAL_ARM_LPC2XXX == "LPC2194" ||
+        CYGHWR_HAL_ARM_LPC2XXX == "LPC2214" ||
+        CYGHWR_HAL_ARM_LPC2XXX == "LPC2292" ||
+        CYGHWR_HAL_ARM_LPC2XXX == "LPC2294"
+    }
+
+    compile     flash_arm_lpc2xxx.c
+    include_dir .
+
+    cdl_option CYGPKG_DEVS_FLASH_ARM_LPC2XXX_BUFSIZE {
+        display       "copy buffer size"
+        description   "
+            Size of the buffer reserved at the end of the internal
+            SRAM area for flash writing (copy) operations.  Additional
+            32 bytes are reserved for use by the IAP routine."
+        flavor        data
+        legal_values  512 1024 4096 8192
+        default_value 8192
+    }
+}
