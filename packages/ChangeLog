@@ -1,3 +1,9 @@
+2008-07-08   Uwe Kindler <uwe_kindler@web.de>
+ 
+ 	* NEWS:
+	* ecos.db: Add EA LPC2468 OEM board, target, flash driver,
+ 	LPC24XXX variant + serial driver
+ 	
 2008-06-07  Frank Pagliughi <fpagliughi@mindspring.com>
 
 	* NEWS:

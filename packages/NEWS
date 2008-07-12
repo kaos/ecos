@@ -1,3 +1,4 @@
+* Port to Embedded Artists LPC2468 OEM board by Uwe Kindler.
 * USB serial class driver by Frank Pagliughi.
 * FR30 arch, mb91301 variant and skmb91302 platform by Lars Poeschel.
 * phyCORE-LPC2294/92 port including flash and CAN by Uwe Kindler.

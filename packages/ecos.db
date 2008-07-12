@@ -257,6 +257,16 @@ package CYGPKG_DEVS_FLASH_ARM_E7T {
        on the ARM Evaluator-7T platform."
 }
 
+package CYGPKG_DEVS_FLASH_EA2468 {
+    alias       { "FLASH memory support for EA LPC2468 OEM board" flash_ea2468 }
+    directory   devs/flash/arm/ea2468
+    script      flash_ea2468.cdl
+    hardware
+        description "
+           This package contains hardware support for FLASH memory
+           on the Embedded Artists LCP2468 OEM board."
+}
+
 package CYGPKG_DEVS_FLASH_SH_EDK7708 {
 	alias 		{ "Support for flash memory on Hitachi/EDK7708 board" flash_sh_edk7708 }
 	directory	devs/flash/sh/edk7708
@@ -1021,6 +1031,14 @@ package CYGPKG_IO_SERIAL_ARM_LPC2XXX {
     description       "ARM LPC2XXX serial device drivers"
 }
 
+package CYGPKG_IO_SERIAL_ARM_LPC24XX {
+    alias             { "ARM LPC24XX serial device drivers"
+                        devs_serial_arm_lpc24xx lpc24xx_serial_driver }
+    hardware
+    directory         devs/serial/arm/lpc24xx
+    script            ser_arm_lpc24xx.cdl
+    description       "ARM LPC24XX serial device drivers"
+}
 
 package CYGPKG_IO_SERIAL_POWERPC_COGENT {
     alias             { "Cogent PowerPC serial device drivers"
@@ -2705,6 +2723,16 @@ package CYGPKG_HAL_ARM_LPC2XXX {
         Philips LPC2XXX based targets."
 }
 
+package CYGPKG_HAL_ARM_LPC24XX {
+        alias           { "NXP LPC24XX variant HAL" hal_arm_lpc24xx arm_lpc24xx_hal }
+        directory       hal/arm/lpc24xx/var
+        script          hal_arm_lpc24xx.cdl
+        hardware
+        description "
+        The LPC24XX HAL package provides the support needed to run eCos on
+        NXP LPC24XX based targets."
+}
+
 package CYGPKG_HAL_ARM_LPC2XXX_MCB2100 {
         alias           { "Keil evaluation board MCB2100 " hal_mcb2100_arm }
         directory       hal/arm/lpc2xxx/mcb2100
@@ -2733,6 +2761,16 @@ package CYGPKG_HAL_ARM_LPC2XXX_PHYCORE229X {
         description "
             The Phycore HAL package provides the support needed to run eCos 
             on a Phytec phyCORE-LPC229x development board."
+}
+
+package CYGPKG_HAL_ARM_LPC24XX_EA2468 {
+        alias           { "Embedded Artists LPC2468 OEM board" arm_lpc2xxx_ea2468 }
+        directory       hal/arm/lpc24xx/ea2468
+        script          hal_arm_lpc24xx_ea2468.cdl
+        hardware
+        description "
+            The Embedded Artists LPC2468 HAL package provides the support needed 
+            to run eCos on a Embbeded Artists LPC2468 OEM board."
 }
 
 package CYGPKG_HAL_ARM_LPC2XXX_LPCMT {
@@ -4701,6 +4739,23 @@ target phycore229x {
             The phyCORE-LPC229x HAL package provides the support
             needed to run eCos on a Phytec phyCORE-LPC2294/2
             development board."
+}
+
+target ea2468 {
+        alias { "Embedded Artists LPC2468 OEM board HAL" ea2468 }
+        packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_LPC24XX
+                   CYGPKG_HAL_ARM_LPC24XX_EA2468 
+                   CYGPKG_IO_SERIAL_GENERIC_16X5X
+                   CYGPKG_IO_SERIAL_ARM_LPC24XX
+                   CYGPKG_DEVICES_WATCHDOG_ARM_LPC2XXX
+                   CYGPKG_DEVS_CAN_LPC2XXX
+                   CYGPKG_DEVS_FLASH_EA2468
+                   CYGPKG_DEVS_FLASH_SST_39VFXXX
+        }
+        description "
+            The Embedded Artists LPC2468 HAL package provides the support
+            needed to run eCos on an Embedded Artists LPC2468 OEM board."
 }
 
 target mace1 {
