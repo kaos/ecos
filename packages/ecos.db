@@ -1400,6 +1400,14 @@ package CYGPKG_IO_USB_SLAVE_ETH {
         description     "Support for USB peripherals that provide an ethernet-class function"
 }
 
+package CYGPKG_IO_USB_SLAVE_SERIAL {
+        alias		{ "USB slave-side serial drivers" usbs_serial }
+        directory       io/usb/serial/slave
+        script          usbs_serial.cdl
+        description     "Support for USB peripherals that present themselves 
+                         as serial devices to the host."
+}
+
 package CYGPKG_DEVS_USB_SA11X0 {
         alias           { "Device-driver for the SA11X0 on-chip USB support" usb_sa11x0 }
         hardware
