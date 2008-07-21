@@ -1,3 +1,8 @@
+2008-07-21  Guenter Ebermann  <guenter.ebermann@gmx.at>
+
+	* src/common/fclose.cxx (fclose): Replace config-dependent use of
+	delete with free(), as the memory had been allocated with malloc.
+
 2007-07-02  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/output/vfnprintf.cxx: Add (char *) casts to make GCC/4.2.x happy.

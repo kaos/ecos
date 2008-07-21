@@ -109,15 +109,11 @@ fclose( FILE *stream ) __THROW
         return EOF;
     }
     
-#ifdef CYGFUN_INFRA_EMPTY_DELETE_FUNCTIONS
     // Explicitly call destructor - this flushes the output too
     real_stream->~Cyg_StdioStream();
 
     // and free it
     free(real_stream);
-#else
-    delete real_stream;
-#endif // CYGFUN_INFRA_EMPTY_DELETE_FUNCTIONS
 
     // and mark the stream available for use
     Cyg_libc_stdio_files::set_file_stream(i, NULL);
