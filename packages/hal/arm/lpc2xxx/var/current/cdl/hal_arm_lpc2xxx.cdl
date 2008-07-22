@@ -110,6 +110,33 @@ cdl_package CYGPKG_HAL_ARM_LPC2XXX {
                 lpc214x has USB) which affect which features should be
                 available in the HAL."
         }
+        
+        cdl_option CYGHWR_HAL_ARM_LPC2XXX_VARIANT_VERSION {
+            display       "LPC2XXX variant version"
+            flavor        data
+            calculated    {
+                is_substr(CYGHWR_HAL_ARM_LPC2XXX, "LPC21") ? 1 :
+                is_substr(CYGHWR_HAL_ARM_LPC2XXX, "LPC22") ? 2 :
+                is_substr(CYGHWR_HAL_ARM_LPC2XXX, "LPC24") ? 4 : 0
+                          }
+            description   "
+                This specifies the variant version that the processor
+                belongs to. Some common characteristics may be 
+                different in newer LPC2xxx versions. I.e. the LPC24xx variants
+                are significant different from former LPC2xxx variants." 
+        }
+        
+        cdl_option CYGHWR_HAL_ARM_LPC2XXX_SUFFIX {
+            display       "Suffix of LPC2XXX device"
+            flavor        data
+            legal_values  { "no_suffix" "00" "01" }
+            default_value { "no_suffix" }
+            description   "
+                This option sets the version number of LPC2XXX microcontroller.
+                To denote different version of LPC2XXX the following suffixes 
+                are used: no suffix, /00, /01. All /01 version contain
+                enhanced features."
+        }
     }
 
     # Important! Be very careful changing this value. That will always
@@ -130,20 +157,42 @@ cdl_package CYGPKG_HAL_ARM_LPC2XXX {
            of the ARM vector table."
     }
 
-    cdl_option CYGNUM_HAL_ARM_LPC2XXX_VPBDIV {
+    cdl_component CYGNUM_HAL_ARM_LPC2XXX_VPBDIV {
         display       "VPB clock divisor"
         flavor        data
         legal_values  { 4 2 1 }
         default_value { 4 }
         description   "
+            The VPB Divider determines the relationship between the 
+            processor clock (cclk) and the clock used by peripheral 
+            devices (pclk). The VPB Divider serves two purposes. 
+            The first is to provides peripherals with desired pclk 
+            via VPB bus so that they can operate at the speed chosen for the ARM 
+            processor. In order to achieve this, the VPB bus may be slowed down 
+            to one half or one fourth of the processor clock rate. 
+            Because the VPB bus must work properly at power up (and its timing 
+            cannot be altered if it does not work since the VPB divider control 
+            registers reside on the VPB bus), the default condition at reset is 
+            for the VPB bus to run at one quarter speed. The second purpose of 
+            the VPB Divider is to allow power savings when an application 
+            does not require any peripherals to run at the full processor rate.
             This option sets the divisor for the VPB clock relative to
             the processor clock. 4 means that the VPB clock runs at
             one fourth the processor clock, 2 means that it runs at
             one half of the processor clock and 1 means that it is the
             same as the processor clock."
+        
+        cdl_option CYGNUM_HAL_ARM_LPC2XXX_PCLK {
+            display       "Peripheral clock"
+            flavor        data
+            calculated    {CYGNUM_HAL_ARM_LPC2XXX_CLOCK_SPEED / CYGNUM_HAL_ARM_LPC2XXX_VPBDIV}
+            description "
+                The peripheral clock is the clock derived from the processor clock
+                speed divided by the VPB clock divisor." 
+        }
     }
 
-    cdl_option CYGNUM_HAL_ARM_LPC2XXX_XCLKDIV {
+    cdl_component CYGNUM_HAL_ARM_LPC2XXX_XCLKDIV {
         display         "XCLK clock divisor"
         flavor          data
         legal_values    { 4 2 1 }
@@ -155,6 +204,15 @@ cdl_package CYGPKG_HAL_ARM_LPC2XXX {
             at one fourth the processor clock, 2 means that it runs at
             one half of the processor clock and 1 means that it is the
             same as the processor clock."
+            
+        cdl_option CYGNUM_HAL_ARM_LPC2XXX_XCLK {
+            display       "Clock on XCLK pin"
+            flavor        data
+            calculated    {CYGNUM_HAL_ARM_LPC2XXX_CLOCK_SPEED / CYGNUM_HAL_ARM_LPC2XXX_VPBDIV}
+            description "
+                This option controls the clock that can be driven onto the 
+                A23/XCLK pin" 
+        }
     }
 
     cdl_component CYGNUM_HAL_RTC_CONSTANTS {

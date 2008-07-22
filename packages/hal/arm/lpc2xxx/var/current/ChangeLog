@@ -1,3 +1,27 @@
+2008-07-21  Uwe Kindler <uwe_kindler@web.de>
+
+	* cdl/hal_arm_lpc2xxx.cdl: Added option
+	CYGHWR_HAL_ARM_LPC2XXX_VARIANT_VERSION to identify the variant version 
+	because some on-chip peripherals changed slightly in newer veriants.
+	CYGNUM_HAL_ARM_LPC2XXX_PCLK is the pre calculated peripheral clock
+	value. CYGNUM_HAL_ARM_LPC2XXX_XCLK is the pre calculated XCLK
+	value.
+	* include/lpc2xxx_misc.h: Added HAL_LPC2XXX_INIT_CAN() macro fo
+	initialisation of CAN channels (required by CAN driver). Added
+	CYGNUM_HAL_ARM_LPC2XXX_CAN_CLK to define the CAN peripheral clock
+	for CAN driver.
+	* include/lpc2xxx_misc.c: Removed functions hal_lpc_get_cclk()
+	hal_lpc_get_pclk() and hal_lpc_get_xclk() because they are not
+	required and all clock values (CCLK, PCLK and XCLK) are 
+	configuration values and pre calculated in CDL file.
+	Added hal_lpc_can_init() function for initialisation of CAN
+	channels.
+	
+2008-05-23  Alexey Shusharin <mrfinch@mail.ru>
+
+	* cdl/hal_arm_lpc2xxx.cdl: add suffix option to denote
+	different versions of LPC2XXX
+	
 2007-08-23  Hans Rosenfeld  <rosenfeld@grumpf.hope-2000.org>
 
 	* include/hal_var_ints.h: use interrupt priority 16 for
@@ -8,7 +32,7 @@
 	* cdl/hal_arm_lpc2xxx.cdl: added VIC component to support
 	configuration of individual interrupt priorities
 
-2007_07-10  Uwe Kindler <uwe_kindler@web.de>
+2007-07-10  Uwe Kindler <uwe_kindler@web.de>
 
 	* cdl/hal_arm_lpc2xxx.cdl: Added option
 	CYGNUM_HAL_KERNEL_COUNTERS_CLOCK_ISR_DEFAULT_PRIORITY for

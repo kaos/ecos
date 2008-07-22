@@ -51,18 +51,20 @@
 //=============================================================================
 
 //-----------------------------------------------------------------------------
-// Functions to obtain the current processor clock settings
-//-----------------------------------------------------------------------------
-externC cyg_uint32 hal_lpc_get_cclk(void);
-externC cyg_uint32 hal_lpc_get_pclk(void);
-externC cyg_uint32 hal_lpc_get_xclk(void);
-
-//-----------------------------------------------------------------------------
 // Macros to derive the baudrate divider values for the internal UARTs
 //-----------------------------------------------------------------------------
-#define CYG_HAL_ARM_LPC2XXX_PCLK() hal_lpc_get_pclk() 
 #define CYG_HAL_ARM_LPC2XXX_BAUD_GENERATOR(baud) \
-            (CYG_HAL_ARM_LPC2XXX_PCLK()/((baud)*16))
+            (CYGNUM_HAL_ARM_LPC2XXX_PCLK/((baud)*16))
+            
+//-----------------------------------------------------------------------------
+// LPX2xxx varaint specific initialisatio of CAN channels
+// This function configures the pin functions for CAN use
+//-----------------------------------------------------------------------------            
+#ifdef CYGPKG_DEVS_CAN_LPC2XXX
+externC void hal_lpc_can_init(cyg_uint8 can_chan_no);            
+#define HAL_LPC2XXX_INIT_CAN(_can_chan_no_) hal_lpc_can_init(_can_chan_no_)
+#define CYGNUM_HAL_ARM_LPC2XXX_CAN_CLK CYGNUM_HAL_ARM_LPC2XXX_PCLK
+#endif // CYGPKG_DEVS_CAN_LPC2XXX
 
 //-----------------------------------------------------------------------------
 // LPX2xxx watchdog support

@@ -70,28 +70,6 @@
 
 #include <cyg/infra/diag.h>     // For diagnostic printing
 
-// -------------------------------------------------------------------------
-// Processor clock configuration values and accessor functions
-static cyg_uint32 lpc_cclk; // CPU clock frequency
-static cyg_uint32 lpc_pclk; // peripheral devices clock speed
-                            // (equal to, half, or quarter of CPU clock)
-static cyg_uint32 lpc_xclk; // XCLK speed (equal to, half, or quarter of
-                            // CPU clock)
-
-cyg_uint32 hal_lpc_get_cclk(void)
-{
-    return (lpc_cclk); 
-}
-
-cyg_uint32 hal_lpc_get_pclk(void)
-{
-    return (lpc_pclk); 
-}
-
-cyg_uint32 hal_lpc_get_xclk(void)
-{
-    return (lpc_xclk); 
-}
 
 // -------------------------------------------------------------------------
 // eCos clock support
@@ -102,7 +80,7 @@ void hal_clock_initialize(cyg_uint32 period)
 {
     CYG_ADDRESS timer = CYGARC_HAL_LPC2XXX_REG_TIMER0_BASE;
 
-    period = period/(lpc_cclk/lpc_pclk);
+    period = period / (CYGNUM_HAL_ARM_LPC2XXX_CLOCK_SPEED / CYGNUM_HAL_ARM_LPC2XXX_PCLK);
 
     // Disable and reset counter
     HAL_WRITE_UINT32(timer+CYGARC_HAL_LPC2XXX_REG_TxTCR, 2);
@@ -159,7 +137,8 @@ void hal_delay_us(cyg_int32 usecs)
     // Calculate how many timer ticks the required number of
     // microseconds equate to. We do this calculation in 64 bit
     // arithmetic to avoid overflow.
-    ticks = (((cyg_uint64)usecs) * ((cyg_uint64)lpc_pclk))/1000000LL;
+    ticks = CYGNUM_HAL_ARM_LPC2XXX_PCLK;
+    ticks = (((cyg_uint64)usecs) * (ticks))/1000000LL;
     
     // Disable and reset counter
     HAL_WRITE_UINT32(timer+CYGARC_HAL_LPC2XXX_REG_TxTCR, 2);
@@ -217,22 +196,16 @@ void lpc_set_vpbdiv(int vpbdiv, int xclkdiv)
     HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE +
                      CYGARC_HAL_LPC2XXX_REG_VPBDIV,
                      ((xclkdiv & 0x3) << 4) | (vpbdiv & 0x3));
-    lpc_xclk = lpc_cclk / xclkdiv;
 #else
     HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_SCB_BASE + 
                      CYGARC_HAL_LPC2XXX_REG_VPBDIV, vpbdiv & 0x3);
-    lpc_xclk = 0;        // Obvious bad value
 #endif
-    
-    lpc_pclk = lpc_cclk / vpbdiv;
 }
 
 // Perform variant setup. This optionally calls into the platform
 // HAL if it has defined HAL_PLF_HARDWARE_INIT.
 void hal_hardware_init(void)
 {
-    lpc_cclk = CYGNUM_HAL_ARM_LPC2XXX_CLOCK_SPEED;
-
 #ifdef CYGHWR_HAL_ARM_LPC2XXX_FAMILY_LPC22XX
     lpc_set_vpbdiv(CYGNUM_HAL_ARM_LPC2XXX_VPBDIV,
                    CYGNUM_HAL_ARM_LPC2XXX_XCLKDIV);
@@ -505,6 +478,36 @@ void hal_lpc_watchdog_reset(void)
     while(1)
       continue;
 }
+
+#ifdef CYGPKG_DEVS_CAN_LPC2XXX
+//===========================================================================
+// Do varianat specific CAN initialisation
+//===========================================================================
+void hal_lpc_can_init(cyg_uint8 can_chan_no)
+{
+    typedef struct 
+    {
+        cyg_uint32 pin_mask;
+        cyg_uint16 reg;
+    } canpincfg;
+    
+    static const canpincfg canpincfg_tbl[] =
+    {
+        {0x00040000L, CYGARC_HAL_LPC2XXX_REG_PINSEL1},
+        {0x00014000L, CYGARC_HAL_LPC2XXX_REG_PINSEL1},
+        {0x00001800L, CYGARC_HAL_LPC2XXX_REG_PINSEL1},
+        {0x0F000000L, CYGARC_HAL_LPC2XXX_REG_PINSEL0},
+    };
+    
+    CYG_ASSERT(can_chan_no < 4, "CAN channel number out of bounds");
+    canpincfg *pincfg = (canpincfg *)&canpincfg_tbl[can_chan_no];
+    cyg_uint32 regval;
+    
+    HAL_READ_UINT32(CYGARC_HAL_LPC2XXX_REG_PIN_BASE + pincfg->reg, regval);
+    regval |= pincfg->pin_mask;
+    HAL_WRITE_UINT32(CYGARC_HAL_LPC2XXX_REG_PIN_BASE + pincfg->reg, regval);
+}
+#endif // CYGPKG_DEVS_CAN_LPC2XXX
 
 //--------------------------------------------------------------------------
 // EOF lpc_misc.c
