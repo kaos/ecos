@@ -1,3 +1,38 @@
+2008-07-21  Uwe Kindler <uwe_kindler@web.de>
+	
+	* cdl/can_lpc2xxx.cdl: Added CYGOPT_DEVS_CAN_LPC2XXX_ALIE to make 
+	arbitration lost interrupt optional. Added option
+	CYGNUM_DEVS_CAN_LPC2XXX_INT_PRIORITY to configure the interrupt
+	priority for global CAN interrupt in LPC24xx variants.
+	
+	* include/can_lpc2xxx_baudrates.h: Replaced CYGNUM_CAN_LPC2XXX_VPB_CLK
+	by CYGNUM_HAL_ARM_LPC2XXX_CAN_CLK because newer variants like LPC24xx
+	do not have a global VPB_CLK.
+	
+	* src/can_accfilt_lpc2xxx.c: Adjusted LPC2XXX_CAN_FIRST_IN_LUT to
+	be 0 for LPC24xxx variants. Added macro CAN_CHAN_NO_LUT(_info_) to
+	abstract channel numbering from acceptance filter code.
+	
+	* src/can_lpc2xxx.c: Removed icr data field from lpc2xxx_can_info_st
+	structure because it is not required any longer. A lot of small
+	modifications to make the driver usable with newer LPC2xxx variants like
+	LPC24xx. ISR and DSR code changed - instead of disabling interrupts in 
+	IER register they are disabled in VIC by using cyg_drv_interrupt_mask()
+	function calls. Added global CAN ISR and DSR for LPC24xx variants 
+	(they do not support individual interrupt vectors for RX and TX
+	interrupts). Moved LUT error checking code from ISR into DSR to keep
+	ISR as short as possible and made LUT error checking code optional.
+	  
+2008-05-23  Alexey Shusharin <mrfinch@mail.ru>
+
+	* cdl/can_lpc2xxx.cdl: add CAN interrupt priorities
+	
+	* src/can_lpc2xxx.c: add CAN interrupt priorities, 
+	  repair "chan" definition missing in rx_ISR
+	
+	* src/can_accfilt_lpc2xxx.c: add various types of CAN controllers
+	  numbering (depends on LPC2XXX version)
+	
 2007-08-17 Hans Rosenfeld <rosenfeld@grumpf.hope-2000.org>
 	
 	* src/can_lpc2xxx.c: The definition of "info" is missing when only

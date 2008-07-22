@@ -74,7 +74,7 @@
 #if defined(CYGOPT_IO_CAN_RUNTIME_MBOX_CFG)
 #include "can_test_aux.inl"
 
-#if defined(CYGOPT_DEVS_CAN_LPC2XXX_RUNTIME_ACCFILT)
+#if defined(CYGOPT_DEVS_CAN_LPC2XXX_EXTENDED_CFG_KEYS)
 #include <cyg/io/can_lpc2xxx.h>
 
 //===========================================================================

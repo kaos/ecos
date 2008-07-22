@@ -79,7 +79,8 @@
 
 
 // We need the loop can driver
-#if defined(CYGPKG_DEVS_CAN_LOOP_CAN0) && defined(CYGPKG_DEVS_CAN_LOOP_CAN1)
+#if defined(CYGPKG_DEVS_CAN_LOOP)
+#include <pkgconf/devs_can_loop.h>
 
 #include "can_test_aux.inl" // include CAN test auxiliary functions
 //===========================================================================
@@ -272,7 +273,7 @@ void cyg_start(void)
     //
     if (ENOERR != cyg_io_lookup(CYGDAT_DEVS_CAN_LOOP_CAN0_NAME, &hLoopCAN_Tbl[0])) 
     {
-        CYG_TEST_FAIL_FINISH("Error opening CAN channel 0");
+        CYG_TEST_FAIL_FINISH("Error opening loop CAN channel 0");
     }
     
 
@@ -281,7 +282,7 @@ void cyg_start(void)
     //
     if (ENOERR != cyg_io_lookup(CYGDAT_DEVS_CAN_LOOP_CAN1_NAME, &hLoopCAN_Tbl[1])) 
     {
-        CYG_TEST_FAIL_FINISH("Error opening CAN channel 1");
+        CYG_TEST_FAIL_FINISH("Error opening loop CAN channel 1");
     }
     
     
@@ -315,8 +316,8 @@ void cyg_start(void)
     
     cyg_scheduler_start();
 }
-#else // defined(CYGPKG_IO_CAN_LOOP_CAN0) && define (CYGPKG_IO_CAN_LOOP_CAN1)
-#define N_A_MSG "Needs suuport for loop CAN device driver"
+#else // defined(CYGPKG_DEVS_CAN_LOOP)
+#define N_A_MSG "Needs support for loop CAN device driver"
 #endif
 
 #else // CYGNUM_DEVS_CAN_LPC2XXX_CAN0_KBAUD == CYGNUM_DEVS_CAN_LPC2XXX_CAN1_KBAUD

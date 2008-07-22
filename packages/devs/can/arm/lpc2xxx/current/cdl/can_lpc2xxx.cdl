@@ -49,11 +49,11 @@ cdl_package CYGPKG_DEVS_CAN_LPC2XXX {
     display       "Philips LPC2xxx CAN device drivers"
     parent        CYGPKG_IO_CAN_DEVICES
     active_if     CYGPKG_IO_CAN
-    active_if     CYGPKG_HAL_ARM_LPC2XXX
+    active_if     CYGPKG_HAL_ARM_LPC2XXX || CYGPKG_HAL_ARM_LPC24XX
     requires      CYGPKG_ERROR
     
-    implements      CYGINT_IO_CAN_STD_CAN_ID
-    implements      CYGINT_IO_CAN_EXT_CAN_ID
+    implements    CYGINT_IO_CAN_STD_CAN_ID
+    implements    CYGINT_IO_CAN_EXT_CAN_ID
             
     include_dir   cyg/io
     description   "
@@ -76,8 +76,8 @@ cdl_package CYGPKG_DEVS_CAN_LPC2XXX {
             configuration of this acceptance filter.  If each CAN
             channel should receive all CAN messages and individual
             message filtering is not required then disable this option
-            to eleminate almost the complete acceptance filter code
-            and to decrease codesize. If this option is disabled the
+            to eliminate almost the complete acceptance filter code
+            and to decrease code size. If this option is disabled the
             option CYGOPT_IO_CAN_RUNTIME_MBOX_CFG is not available and
             the configuration key CYG_IO_SET_CONFIG_CAN_MSGBUF is not
             supported by this driver."
@@ -102,15 +102,36 @@ cdl_package CYGPKG_DEVS_CAN_LPC2XXX {
                     be used for application where portability is not
                     important."
              }
+             
+         cdl_option CYGOPT_DEVS_CAN_LPC2XXX_LUT_ERR_SUPP {
+             display                 "LUT Error Support"
+             flavor                  bool
+             default_value   0
+             description "   
+                 The CAN module contains a look-up table for
+                 acceptance filtering of incoming CAN messages. The
+                 look-up table indicates errors in the LUT error
+                 registers. If this option is enabled, additional
+                 error check code is executed if an interrupt is
+                 serviced. Normally the acceptance filter code should
+                 fill the look-up table properly and no LUT error
+                 should ever occur. You need to decide if LUT error
+                 checking is required for your application because it
+                 adds some bytes of code and slows down the ISR/DSR
+                 handling a little bit because of the additional code
+                 that need to be executed."
+         }
     }
+     
     
     cdl_option CYGOPT_DEVS_CAN_LPC2XXX_USE_SELF_RECEPTION {
         display                 "Use Self Reception Request command"
         flavor                  bool
+        active_if               CYGHWR_HAL_ARM_LPC2XXX_VARIANT_VERSION < 4
         default_value   0
         description "   
             Enable this option for using work-around of problem with
-            reciving messages while arbitration is lost. If this work
+            receiving messages while arbitration is lost. If this work
             around is used each transmitted CAN message will be
             received. This will produce additional RX interrupts an
             requires additional time for processing these interrupts
@@ -135,6 +156,18 @@ cdl_package CYGPKG_DEVS_CAN_LPC2XXX {
             Filter Message Identifiers for the messages you are
             transmitting yourself.)."  
     }
+
+    cdl_option CYGOPT_DEVS_CAN_LPC2XXX_ALIE {
+         display         "Arbitration lost interrupt enable"
+         flavor          bool
+         default_value   0
+         description "   
+             If the CAN controller loses arbitration while attempting to 
+             transmit a message, an interrupt can be triggered. Normally
+             this is no real error condition and it is not necessary to
+             propagate these events to upper layers. But you can enable
+             this option if you want to check for arbitration lost events."     
+     }
        
     cdl_option CYGDBG_DEVS_CAN_LPC2XXX_DEBUG {
         display "Support printing debug information"
@@ -161,8 +194,8 @@ cdl_package CYGPKG_DEVS_CAN_LPC2XXX {
             display     "Allow access to the on-chip CAN [set ::channel] via a CAN driver"
             flavor      bool
             active_if       CYGINT_DEVS_CAN_LPC2XXX_CAN[set ::channel]
-            default_value   1
             implements      CYGINT_IO_CAN_CHANNELS
+            default_value   1
             description "
                 If the application needs to access the on-chip CAN
                 module [set ::channel] via an eCos CAN driver then
@@ -229,8 +262,75 @@ cdl_package CYGPKG_DEVS_CAN_LPC2XXX {
                     identifier."
              }
 
-        }    
+	        cdl_option CYGNUM_DEVS_CAN_LPC2XXX_CAN[set ::channel]_RX_INT_PRIORITY {
+	            display       "Priority level of CAN module [set ::channel] receive interrupt"
+	            flavor        data
+	            active_if     CYGHWR_HAL_ARM_LPC2XXX_VARIANT_VERSION < 4
+	            default_value 16
+	            legal_values  0 to 16
+	            description   "
+	                This option sets CAN module [set ::channel]
+	                device receive interrupt priority level.  We
+	                support up to 17 interrupt levels. Interrupts
+	                0 - 15 are vectored interrupt
+	                requests. Priority 16 indicates a non vectored
+	                IRQ. Vectored IRQs have the higher priority
+	                then non vectored IRQs and slot 0 has the
+	                highest priority and slot 15 has the lowest."
+	        }
+
+	        cdl_option CYGNUM_DEVS_CAN_LPC2XXX_CAN[set ::channel]_TX_INT_PRIORITY {
+	            display       "Priority level of CAN module [set ::channel] transmit interrupt"
+	            flavor        data
+	            active_if     CYGHWR_HAL_ARM_LPC2XXX_VARIANT_VERSION < 4
+	            default_value 16
+	            legal_values  0 to 16
+	            description   "
+	                This option sets CAN module [set ::channel]
+	                device transmit interrupt priority level.  We
+	                support up to 17 interrupt levels. Interrupts
+	                0 - 15 are vectored interrupt
+	                requests. Priority 16 indicates a non vectored
+	                IRQ. Vectored IRQs have the higher priority
+	                then non vectored IRQs and slot 0 has the
+	                highest priority and slot 15 has the lowest."
+            } 
+        } 
     } 
+    
+    cdl_option CYGNUM_DEVS_CAN_LPC2XXX_ERR_INT_PRIORITY {
+        display       "Priority level of CAN error interrupt"
+        flavor        data
+        active_if     CYGHWR_HAL_ARM_LPC2XXX_VARIANT_VERSION < 4
+        default_value 16
+        legal_values  0 to 16
+        description   "
+            This option sets CAN device error interrupt priority level.
+            We support up to 17 interrupt levels. Interrupts 0 - 15
+            are vectored interrupt requests. Priority 16 indicates a
+            non vectored IRQ. Vectored IRQs have the higher priority
+            then non vectored IRQs and slot 0 has the highest priority
+            and slot 15 has the lowest."
+    }
+    
+    cdl_option CYGNUM_DEVS_CAN_LPC2XXX_INT_PRIORITY {
+        display       "Priority level of all CAN interrupts"
+        flavor        data
+        active_if     CYGHWR_HAL_ARM_LPC2XXX_VARIANT_VERSION >= 4
+        default_value 15
+        legal_values  0 to 15
+        description   "
+            The LPC24xx family uses one single interrupt vector for
+            all CAN interrupts of all CAN channels. This if very 
+            different from former LPC2xxx variants where each CAN
+            channels has its own interrupt vectors for transmit
+            and receive interrupts. There are 16 priority 
+            levels, corresponding to the values 0 through  15 decimal, 
+            of which 15 is the lowest priority. The reset value of 
+            these interrupt priority registers defaults all interrupts 
+            to the lowest priority 15, allowing a single write to 
+            elevate the priority of an individual interrupt."
+    }
     
     cdl_option CYGPKG_DEVS_CAN_LPC2XXX_TESTS {
         display "CAN LPC2xxx device driver tests"

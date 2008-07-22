@@ -200,11 +200,11 @@ void can_thread(cyg_addrword_t data)
     {
         if (hCAN_Tbl[i])
         {
-            diag_printf("CAN channel %d: msg: 0x%x - 0x%x\n", i, i * 0x100, i * 0x100 + 9);
+            diag_printf("CAN channel %d: msg: 0x%03x - 0x%03x\n", i, i * 0x100, i * 0x100 + 9);
         }
     }
     
-    diag_printf("\n\nYou can stop this test by sending a message with ID 0xX10\n");
+    diag_printf("\n\nYou can stop this test by sending a message with ID 0xX09\n");
     
     while (1)
     {

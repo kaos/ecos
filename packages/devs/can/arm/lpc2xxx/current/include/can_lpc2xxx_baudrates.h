@@ -55,21 +55,19 @@
 
 
 //
-// Peripheral clock speed
-//
-#define CYGNUM_CAN_LPC2XXX_VPB_CLK (CYGNUM_HAL_ARM_LPC2XXX_CLOCK_SPEED / CYGNUM_HAL_ARM_LPC2XXX_VPBDIV)
-
-//
 // Macro for creation of CAN_BR value for baudrate tbl
 //
 #define CAN_BR_TBL_ENTRY(_brp_, _tseg1_, _tseg2_, _sjw_, _sam_) \
    ((_sam_ << 23) | (_tseg2_ << 20) | (_tseg1_ << 16) | (_sjw_ << 14) | (_brp_))
 
 
+#ifndef CYGNUM_HAL_ARM_LPC2XXX_CAN_CLK
+#error "CYGNUM_HAL_ARM_LPC2XXX_CAN_CLK not defined"
+#endif
 //==========================================================================
 //                             BAUDRATES
 //==========================================================================
-#if CYGNUM_CAN_LPC2XXX_VPB_CLK == 60000000
+#if CYGNUM_HAL_ARM_LPC2XXX_CAN_CLK == 60000000
 //
 // Table with register values for baudrates at peripheral clock of 60 MHz
 //
@@ -87,9 +85,9 @@ static const cyg_uint32 lpc2xxx_br_tbl[] =
     CAN_BR_TBL_ENTRY( 0,   0, 0, 0, 0), // Autobaud  - not supported
 };
 #define HAL_LPC2XXX_BAUD_TBL_DEFINED 1
-#endif // CYGNUM_CAN_LPC2XXX_VPB_CLK == 60000000
+#endif // CYGNUM_HAL_ARM_LPC2XXX_CAN_CLK == 60000000
 
-#if CYGNUM_CAN_LPC2XXX_VPB_CLK == 30000000
+#if CYGNUM_HAL_ARM_LPC2XXX_CAN_CLK == 30000000
 //
 // Table with register values for baudrates at peripheral clock of 30 MHz
 //
@@ -107,9 +105,9 @@ static const cyg_uint32 lpc2xxx_br_tbl[] =
     CAN_BR_TBL_ENTRY( 0,  0, 0, 0, 0), // Autobaud  - not supported
 };
 #define HAL_LPC2XXX_BAUD_TBL_DEFINED 1
-#endif // CYGNUM_CAN_LPC2XXX_VPB_CLK == 30000000
+#endif // CYGNUM_HAL_ARM_LPC2XXX_CAN_CLK == 30000000
 
-#if CYGNUM_CAN_LPC2XXX_VPB_CLK == 15000000
+#if CYGNUM_HAL_ARM_LPC2XXX_CAN_CLK == 15000000
 //
 // Table with register values for baudrates at peripheral clock of 15 MHz
 //
@@ -127,9 +125,9 @@ static const cyg_uint32 lpc2xxx_br_tbl[] =
     CAN_BR_TBL_ENTRY( 0,  0, 0, 0, 0), // Autobaud  - not supported
 };
 #define HAL_LPC2XXX_BAUD_TBL_DEFINED 1
-#endif // CYGNUM_CAN_LPC2XXX_VPB_CLK == 15000000
+#endif // CYGNUM_HAL_ARM_LPC2XXX_CAN_CLK == 15000000
 
-#if CYGNUM_CAN_LPC2XXX_VPB_CLK == 48000000
+#if CYGNUM_HAL_ARM_LPC2XXX_CAN_CLK == 48000000
 //
 // Table with register values for baudrates at peripheral clock of 48 MHz
 //
@@ -147,9 +145,9 @@ static const cyg_uint32 lpc2xxx_br_tbl[] =
     CAN_BR_TBL_ENTRY( 0,  0, 0, 0, 0), // Autobaud  - not supported
 };
 #define HAL_LPC2XXX_BAUD_TBL_DEFINED 1
-#endif // CYGNUM_CAN_LPC2XXX_VPB_CLK == 48000000
+#endif // CYGNUM_HAL_ARM_LPC2XXX_CAN_CLK == 48000000
 
-#if CYGNUM_CAN_LPC2XXX_VPB_CLK == 24000000
+#if CYGNUM_HAL_ARM_LPC2XXX_CAN_CLK == 24000000
 //
 // Table with register values for baudrates at peripheral clock of 24 MHz
 //
@@ -167,9 +165,9 @@ static const cyg_uint32 lpc2xxx_br_tbl[] =
     CAN_BR_TBL_ENTRY( 0,  0, 0, 0, 0), // Autobaud  - not supported
 };
 #define HAL_LPC2XXX_BAUD_TBL_DEFINED 1
-#endif // CYGNUM_CAN_LPC2XXX_VPB_CLK == 24000000
+#endif // CYGNUM_HAL_ARM_LPC2XXX_CAN_CLK == 24000000
 
-#if CYGNUM_CAN_LPC2XXX_VPB_CLK == 12000000
+#if CYGNUM_HAL_ARM_LPC2XXX_CAN_CLK == 12000000
 //
 // Table with register values for baudrates at peripheral clock of 12 MHz
 //
@@ -187,7 +185,7 @@ static const cyg_uint32 lpc2xxx_br_tbl[] =
     CAN_BR_TBL_ENTRY( 0,  0, 0, 0, 0), // Autobaud  - not supported
 };
 #define HAL_LPC2XXX_BAUD_TBL_DEFINED 1
-#endif // CYGNUM_CAN_LPC2XXX_VPB_CLK == 12000000
+#endif // CYGNUM_HAL_ARM_LPC2XXX_CAN_CLK == 12000000
 
 
 //==========================================================================

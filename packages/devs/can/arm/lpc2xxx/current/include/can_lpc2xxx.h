@@ -60,7 +60,7 @@
 //
 // The LPC2XXX supports enhanced configuration options that are not supported
 // be the generic CAN I/O layer. Be careful with using this extension 
-// because they may reduce portability of your pplication
+// because they may reduce portability of your application
 //
 
 //--------------------------------------------------------------------------

@@ -72,6 +72,29 @@ typedef struct lpc2xxx_accfilt_entry
 // Declarations
 //===========================================================================
 //--------------------------------------------------------------------------
+// On no-suffix and /00 devices, the CAN controllers are numbered 1 to n 
+// (n = 2 or 4) in the LUT tables. However, on /01 devices, the CAN controllers
+// are numbered 0 to nâ1 in the LUT tables.
+//
+// On the LPC2468 the LUT channel numbers are also numbered from 0 - 4.
+//
+#if defined(CYGHWR_HAL_ARM_LPC2XXX_SUFFIX_01) || (CYGHWR_HAL_ARM_LPC2XXX_VARIANT_VERSION == 4)
+# define LPC2XXX_CAN_FIRST_IN_LUT   (0)
+#else
+# define LPC2XXX_CAN_FIRST_IN_LUT   (1) 
+#endif
+
+//
+// This macro calculates the chanel number from the channel info. The channel
+// number is numbered from 0 - 3 but in the LUT the channel number may differ
+// depending on the device suffix. For some devices the channel number in
+// LUT are numbered 0 - 3 and for other devices the channels in LUT are
+// numbered 1 - 4. This macro abstrats this fact from the acceptance filter
+// code
+//
+#define CAN_CHAN_NO_LUT(_info_) (CAN_CHAN_NO(_info_) + LPC2XXX_CAN_FIRST_IN_LUT)
+
+//--------------------------------------------------------------------------
 // Lowlevel acceptance filter access
 //
 #ifdef CYGOPT_IO_CAN_RUNTIME_MBOX_CFG
@@ -219,7 +242,7 @@ void lpc2xxx_can_accfilt_ram_remove_entry(cyg_uint32 Table, cyg_uint16 EntryNo)
     } // if (pLine < pExtGrpStart)
     
     //
-    // If no entry was removed then we can leave immediatelly without changing any
+    // If no entry was removed then we can leave immediately without changing any
     // table pointers because we only did a change inside the sff table
     //
     if (!entry_size)
@@ -242,7 +265,7 @@ void lpc2xxx_can_accfilt_ram_remove_entry(cyg_uint32 Table, cyg_uint16 EntryNo)
     end_of_table -= entry_size;
   
     //
-    // Move alle entries one or two dword downwads - that means we remove a line
+    // Move all entries one or two dword downwards - that means we remove a line
     //
     while (entry_address < end_of_table)
     {
@@ -304,10 +327,10 @@ void lpc2xxx_can_accfilt_ram_insert_entry(cyg_uint32 Table, cyg_uint16 EntryNo)
                     // now check if the upper identifier is disabled - if it is disabled, then
                     // we have an odd number of std ids in the list. Then we do not need to 
                     // insert a new line - we simply need to copy all entries 2 bytes upwards
-                    // that meeans we only need to change the std id area and do not need to touch
+                    // that means we only need to change the std id area and do not need to touch
                     // any other filter id area.
                     // If the last entry is not disabled, then we have a valid filter here.
-                    // Then we need to insert a complete new line, that means we also have to mave
+                    // Then we need to insert a complete new line, that means we also have to move
                     // all following entries and filter tables one dword upwards.
                     //
                     if (lsc_val.words.low & ACCFILT_STD_DIS)
@@ -343,7 +366,7 @@ void lpc2xxx_can_accfilt_ram_insert_entry(cyg_uint32 Table, cyg_uint16 EntryNo)
     end_of_table  += entry_size;  // add one additional entry
         
     //
-    // Move alle entries one or two dwords upwards - that means we insert a new empty line
+    // Move all entries one or two dwords upwards - that means we insert a new empty line
     //
     while (entry_address >= copy_start)
     {
@@ -353,7 +376,7 @@ void lpc2xxx_can_accfilt_ram_insert_entry(cyg_uint32 Table, cyg_uint16 EntryNo)
     }
     
     //
-    // For the std ID area we need a special pocedure
+    // For the std ID area we need a special procedure
     //
     if (CAN_ACCFILT_SFF_SA == Table)
     {
@@ -374,7 +397,7 @@ void lpc2xxx_can_accfilt_ram_insert_entry(cyg_uint32 Table, cyg_uint16 EntryNo)
         }
         
         //
-        // If we insert an entry into the lower colum, then we need to move the
+        // If we insert an entry into the lower column, then we need to move the
         // content of the lower column into the upper column
         //
         if (!(EntryNo % 2))
@@ -599,10 +622,10 @@ static bool lpc2xxx_can_accfilt_add(lpc2xxx_can_info_t *info,
     new_entry.upper_id_bound = upper_id;
     
     //
-    // Here we rely on the ISR vector ordering for calculaion of of channel number
+    // Here we rely on the ISR vector ordering for calculation of channel number
     // Maybe this is not the right way for newer LPC parts
     //
-    new_entry.channel_no = (CAN_ISRVEC(info) - CYGNUM_HAL_INTERRUPT_CAN1_TX) + 1; 
+    new_entry.channel_no = CAN_CHAN_NO_LUT(info);
     
     //
     // If lower_id == upper_id then we know that we have to setup a single message filter 
@@ -669,7 +692,7 @@ static bool lpc2xxx_can_accfilt_add(lpc2xxx_can_info_t *info,
     lpc2xxx_can_accfilt_set_entry(table, i, &new_entry);
 
     //
-    // finally restore the prvious state of the acceptance filter
+    // finally restore the previous state of the acceptance filter
     //
     HAL_WRITE_UINT32(CAN_ACCFILT_AFMR, accfilt_bck);
     return true;
@@ -686,7 +709,7 @@ void lpc2xxx_can_accfilt_remove_all_ctrl_entries(lpc2xxx_can_info_t *info)
     cyg_uint16               entries;
     cyg_uint32               TableStartAddress = CAN_ACCFILT_SFF_SA;
     lpc2xxx_accfilt_entry_t  Entry;
-    cyg_uint8                channel_no = (CAN_ISRVEC(info) - CYGNUM_HAL_INTERRUPT_CAN1_TX) + 1; 
+    cyg_uint8                channel_no = CAN_CHAN_NO_LUT(info);
     cyg_uint16               entry_idx;
     
     //
@@ -717,7 +740,7 @@ void lpc2xxx_can_accfilt_remove_all_ctrl_entries(lpc2xxx_can_info_t *info)
     } // for (TableStartAddress = CAN_ACCFILT_SFF_SA ...
     
     //
-    // finally restore the prvious state of the acceptance filter
+    // finally restore the previous state of the acceptance filter
     //
     HAL_WRITE_UINT32(CAN_ACCFILT_AFMR, accfilt_bck);
 }
@@ -778,7 +801,7 @@ static void lpc2xxx_can_accfilt_simple_rx_all(void)
     while (lpc2xxx_global_can_info.active_channels[i])
     {
         lpc2xxx_can_info_t *info = (lpc2xxx_can_info_t *)lpc2xxx_global_can_info.active_channels[i++]->dev_priv; 
-        cyg_uint8           channel_no = (CAN_ISRVEC(info) - CYGNUM_HAL_INTERRUPT_CAN1_TX) + 1;
+        cyg_uint8           channel_no = CAN_CHAN_NO_LUT(info);
 
 #ifdef CYGOPT_IO_CAN_STD_CAN_ID
         accfilt_entry.column.lower = (channel_no << 13) | (0x000 & ACCFILT_STD_ID_MASK);
@@ -829,7 +852,7 @@ void lpc2xxx_can_accfilt_reset(void)
     HAL_WRITE_UINT32(CAN_ACCFILT_ENDOFTABLE, 0);
     
     //
-    // finally restore the prvious state of the acceptance filter
+    // finally restore the previous state of the acceptance filter
     //
     HAL_WRITE_UINT32(CAN_ACCFILT_AFMR, accfilt_bck);
 }
