@@ -58,6 +58,7 @@
 #include <cyg/hal/hal_io.h>             // IO macros
 
 #include <cyg/infra/cyg_type.h>         // base types
+#include <cyg/infra/cyg_ass.h>          // assertion macros
 #include <cyg/hal/var_io.h>
 #include <cyg/hal/plf_io.h>
 #include <pkgconf/hal.h>
@@ -160,7 +161,7 @@ void hal_pll_init(void)
     	// Enable PLL, disconnected
     	//
     	HAL_WRITE_UINT32(SCB_BASE + CYGARC_HAL_LPC24XX_REG_PLLCON,  
-                         CYGARC_HAL_LPC24XX_REG_PLLCON_PLLE);
+    	                  CYGARC_HAL_LPC24XX_REG_PLLCON_PLLE);
     	HAL_WRITE_UINT32(SCB_BASE + CYGARC_HAL_LPC24XX_REG_PLLFEED, 0xaa);
     	HAL_WRITE_UINT32(SCB_BASE + CYGARC_HAL_LPC24XX_REG_PLLFEED, 0x55); 
     }
@@ -255,7 +256,7 @@ void hal_pll_init(void)
 
 
 //===========================================================================
-// hal_mem_init - initalize external memory interface
+// hal_mem_init - initialize external memory interface
 //===========================================================================
 void hal_mem_init(void)
 {
@@ -427,6 +428,38 @@ void hal_lpc24xx_set_leds (int mask)
     // implement function for setting diagnostic leds
     //
 }
+
+
+#ifdef CYGPKG_DEVS_CAN_LPC2XXX
+//===========================================================================
+// Configure CAN pins
+//===========================================================================
+void hal_lpc_can_init(cyg_uint8 can_chan_no)
+{
+    CYG_ASSERT(can_chan_no < 2, "CAN channel number out of bounds");
+    
+    cyg_uint32 pinsel0_val;
+    cyg_uint32 pconp_val;
+    HAL_READ_UINT32(PIN_BASE + CYGARC_HAL_LPC24XX_REG_PINSEL0, pinsel0_val);
+    HAL_READ_UINT32(SCB_BASE + CYGARC_HAL_LPC24XX_REG_PCONP, pconp_val);
+    switch (can_chan_no)
+    {
+        case 0:
+             CYGARC_HAL_LPC24XX_SET_PIN_FUN(pinsel0_val, 0, 1);
+             CYGARC_HAL_LPC24XX_SET_PIN_FUN(pinsel0_val, 1, 1);
+             pconp_val |= CYGARC_HAL_LPC24XX_REG_PCONP_CAN1;
+             break;
+        
+        case 1:
+             CYGARC_HAL_LPC24XX_SET_PIN_FUN(pinsel0_val, 4, 2);
+             CYGARC_HAL_LPC24XX_SET_PIN_FUN(pinsel0_val, 5, 2); 
+             pconp_val |= CYGARC_HAL_LPC24XX_REG_PCONP_CAN2;
+             break;
+    }
+    HAL_WRITE_UINT32(PIN_BASE + CYGARC_HAL_LPC24XX_REG_PINSEL0, pinsel0_val);
+    HAL_WRITE_UINT32(SCB_BASE + CYGARC_HAL_LPC24XX_REG_PCONP, pconp_val);
+}
+#endif // #ifdef CYGPKG_DEVS_CAN_LPC2XXX
 
 //--------------------------------------------------------------------------
 // EOF ea2468_misc.c

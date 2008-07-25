@@ -60,6 +60,16 @@
 extern void hal_plf_hardware_init(void);
 #define HAL_PLF_HARDWARE_INIT() \
     hal_plf_hardware_init()
+
+//-----------------------------------------------------------------------------
+// LPX24xx variant specific initialisation of CAN channels
+// This function configures the pin functions for CAN use
+//-----------------------------------------------------------------------------            
+#ifdef CYGPKG_DEVS_CAN_LPC2XXX
+externC void hal_lpc_can_init(cyg_uint8 can_chan_no);            
+#define HAL_LPC2XXX_INIT_CAN(_can_chan_no_) hal_lpc_can_init(_can_chan_no_)
+#endif // CYGPKG_DEVS_CAN_LPC2XXX   
+
 #endif  //__ASSEMBLER__ 
 
 //-----------------------------------------------------------------------------

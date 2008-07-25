@@ -1,3 +1,10 @@
+2008-07-21  Uwe Kindler  <uwe_kindler@web.de>
+
+	* src/ea2468_misc.c: Added hal_lpc_can_init() to initialize CAN
+	channels
+	* include/plf_io.h: Added HAL_LPC2XXX_INIT_CAN() macro for CAN channel
+	initialisation
+	
 2008-07-06  Uwe Kindler  <uwe_kindler@web.de>
 
 	* Initial release of Embedded Artists LPC2468 OEM board package

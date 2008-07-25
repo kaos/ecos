@@ -134,7 +134,8 @@ cdl_package CYGPKG_HAL_ARM_LPC24XX_EA2468 {
             channel, UART0, ist routed to an USB-to-serial bridge and
             the second channel, UART1, is available on the Sub-D9
             RS232 connector. This option chooses which channel will be
-            used to connect to a host running GDB."  }
+            used to connect to a host running GDB."  
+    }
 
     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL_BAUD {
          display       "GDB serial port baud rate"
