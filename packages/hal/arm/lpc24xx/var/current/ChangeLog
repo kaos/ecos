@@ -1,3 +1,18 @@
+2008-07-21  Uwe Kindler  <uwe_kindler@web.de>
+
+	* src/lpc2xxx_misc.c: Added hal_lpc_can_init() to initialize CAN
+	channels
+	* cdl/hal_arm_lpc24xx.cdl: Added a number of CYGHWR_HAL_ARM_LPC2XXX_xxx
+	options for device driver compatibility reasons. Some LPC2xxx device
+	drivers rely on these definitions. Moved some configuration options
+	to make configuration more intuitive in configuration tool. Added
+	CYGNUM_HAL_ARM_LPC2XXX_CAN_CLK option for configuration of CAN 
+	peripheral clock.
+	* include/var_io.h: Added macro CYGARC_HAL_LPC24XX_SET_PIN_FUN()
+	* src/lpc2xxx_misc.c: Added function hal_lpc_set_pclk() to set
+	peripheral clocks easily. Initialize peripheral clocks in
+	hal_hardware_init() according to configuration.
+	
 2008-07-06  Uwe Kindler  <uwe_kindler@web.de>
 
 	* Initial release of LPC24xx variant support (based on LPX2xxx variant)

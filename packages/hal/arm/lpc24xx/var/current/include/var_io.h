@@ -463,6 +463,8 @@
 #define CYGARC_HAL_LPC24XX_REG_PINMODE8                  0x060
 #define CYGARC_HAL_LPC24XX_REG_PINMODE9                  0x064
 
+#define CYGARC_HAL_LPC24XX_SET_PIN_FUN(_regval_, _pin_, _func_) \
+    (_regval_) = ((_regval_) & ~(0x3 << ((_pin_) << 1))) | ((_func_) << ((_pin_) << 1))
 
 
 //=============================================================================

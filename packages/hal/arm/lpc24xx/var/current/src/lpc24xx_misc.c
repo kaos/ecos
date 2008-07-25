@@ -92,8 +92,8 @@ cyg_uint32 hal_lpc_get_pclk(cyg_uint32 peripheral_id)
     // decide if we need PCLKSEL0 or PCLKSEL1
     //
     pclkselreg = ((peripheral_id <= CYNUM_HAL_LPC24XX_PCLK_ACF) ? 
-                  CYGARC_HAL_LPC24XX_REG_PCLKSEL0 : 
-                  CYGARC_HAL_LPC24XX_REG_PCLKSEL1); 
+                   CYGARC_HAL_LPC24XX_REG_PCLKSEL0 : 
+                   CYGARC_HAL_LPC24XX_REG_PCLKSEL1); 
     HAL_READ_UINT32(CYGARC_HAL_LPC24XX_REG_SCB_BASE + pclkselreg, regval);
     regval  = (regval >> ((peripheral_id & 0xF) << 1)) & 0x03;
     divider = divider_tbl[regval];    
@@ -107,7 +107,35 @@ cyg_uint32 hal_lpc_get_pclk(cyg_uint32 peripheral_id)
 
 
 //===========================================================================
-// initialize timer 0 as eCos real time clock source
+// Set peripheral clock
+//===========================================================================
+void hal_lpc_set_pclk(cyg_uint32 peripheral_id, cyg_uint8 divider)
+{
+    static const cyg_uint8 clock_tbl[4] =
+    {
+        0x01, 0x02, 0x00, 0x03
+    }; 
+    cyg_uint32 clock;
+    cyg_uint32 pclkselreg;
+    cyg_uint32 regval;
+     
+    CYG_ASSERT(divider <= 8, "Wrong peripheral clock divider value"); 
+    //
+    // decide if we need PCLKSEL0 or PCLKSEL1
+    //
+    pclkselreg = (peripheral_id <= CYNUM_HAL_LPC24XX_PCLK_ACF) ? 
+                  CYGARC_HAL_LPC24XX_REG_PCLKSEL0 : 
+                  CYGARC_HAL_LPC24XX_REG_PCLKSEL1;  
+    HAL_READ_UINT32(CYGARC_HAL_LPC24XX_REG_SCB_BASE + pclkselreg, regval);
+    divider = (6 == divider) ? 8 : divider;
+    clock = clock_tbl[divider >> 1];
+    regval |= (clock << ((peripheral_id & 0xF) << 1));   
+    HAL_WRITE_UINT32(CYGARC_HAL_LPC24XX_REG_SCB_BASE + pclkselreg, regval);             
+}
+
+
+//===========================================================================
+// initialize timer 0 as eCos realtime clock source
 //===========================================================================
 void hal_clock_initialize(cyg_uint32 period)
 {
@@ -179,8 +207,8 @@ void hal_delay_us(cyg_int32 usecs)
     // microseconds equate to. We do this calculation in 64 bit
     // arithmetic to avoid overflow.
     ticks = (((cyg_uint64)usecs) * 
-             ((cyg_uint64)hal_lpc_get_pclk(CYNUM_HAL_LPC24XX_PCLK_TIMER1)))
-      / 1000000LL;
+             ((cyg_uint64)hal_lpc_get_pclk(CYNUM_HAL_LPC24XX_PCLK_TIMER1))) / 
+               1000000LL;
     
     // Disable and reset counter
     HAL_WRITE_UINT32(timer+CYGARC_HAL_LPC24XX_REG_TxTCR, 2);
@@ -192,7 +220,7 @@ void hal_delay_us(cyg_int32 usecs)
                      CYGARC_HAL_LPC24XX_REG_TxMCR_MR0_RESET);
 
     //set prescale register to 0
-    HAL_WRITE_UINT32(timer+CYGARC_HAL_LPC24XX_REG_TxPR, 0);			
+    HAL_WRITE_UINT32(timer+CYGARC_HAL_LPC24XX_REG_TxPR, 0);         
 
     // Enable counter
     HAL_WRITE_UINT32(timer+CYGARC_HAL_LPC24XX_REG_TxTCR, 1);
@@ -210,14 +238,22 @@ void hal_delay_us(cyg_int32 usecs)
 //===========================================================================
 void hal_hardware_init(void)
 {
-    cyg_uint32 i;  
+    cyg_uint32 i; 
+    
+    //
+    // Setup peripheral clocks here according to configuration
+    // 
+    hal_lpc_set_pclk(CYNUM_HAL_LPC24XX_PCLK_CAN1, CYGNUM_HAL_ARM_LPC24XX_CAN_CLK_DIV);
+    hal_lpc_set_pclk(CYNUM_HAL_LPC24XX_PCLK_CAN2, CYGNUM_HAL_ARM_LPC24XX_CAN_CLK_DIV);
+    hal_lpc_set_pclk(CYNUM_HAL_LPC24XX_PCLK_ACF,  CYGNUM_HAL_ARM_LPC24XX_CAN_CLK_DIV);
+    
     //
     // Fill vector address registers with interrupt number. If an interrupt
     // occurs we can simply read the interrupt number from the vector
     // address register later
     //
-    cyg_uint32 addr = (CYGARC_HAL_LPC24XX_REG_VIC_BASE + 
-                       CYGARC_HAL_LPC24XX_REG_VICVECTADDR0);    
+    cyg_uint32 addr = CYGARC_HAL_LPC24XX_REG_VIC_BASE + 
+                      CYGARC_HAL_LPC24XX_REG_VICVECTADDR0;    
     for (i = 0; i < 32; ++i)
     {
         HAL_WRITE_UINT32(addr, i);
@@ -249,7 +285,7 @@ int hal_IRQ_handler(void)
 
 
 //===========================================================================
-// Block the the interrupt associated with the vector
+// Block the interrupt associated with the vector
 //===========================================================================
 void hal_interrupt_mask(int vector)
 {
@@ -312,7 +348,7 @@ void hal_interrupt_configure(int vector, int level, int up)
 {
     cyg_uint32 regval;
 
-    // Only external interrupts are configurable	
+    // Only external interrupts are configurable    
     CYG_ASSERT(vector <= CYGNUM_HAL_INTERRUPT_EINT3 &&
                vector >= CYGNUM_HAL_INTERRUPT_EINT0 , "Invalid vector");
 
@@ -390,7 +426,7 @@ void hal_lpc_watchdog_reset(void)
     // feed WD with the two magic values
     HAL_WRITE_UINT32(CYGARC_HAL_LPC24XX_REG_WD_BASE + 
                      CYGARC_HAL_LPC24XX_REG_WDFEED, 
-                     CYGARC_HAL_LPC24XX_REG_WDFEED_MAGIC1);	
+                     CYGARC_HAL_LPC24XX_REG_WDFEED_MAGIC1); 
     HAL_WRITE_UINT32(CYGARC_HAL_LPC24XX_REG_WD_BASE + 
                      CYGARC_HAL_LPC24XX_REG_WDFEED, 
                      CYGARC_HAL_LPC24XX_REG_WDFEED_MAGIC2);
@@ -398,6 +434,7 @@ void hal_lpc_watchdog_reset(void)
     while(1)
       continue;
 }
+
 
 //--------------------------------------------------------------------------
 // EOF lpc24xx_misc.c

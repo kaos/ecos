@@ -303,24 +303,24 @@ static int cyg_hal_plf_serial_isr(void *__ch_data, int* __ctrlc,
     cyg_uint8 iir;
     
     CYGARC_HAL_SAVE_GP();
-    
+
     *__ctrlc = 0;
-    
+
     HAL_READ_UINT32(chan->base + CYGARC_HAL_LPC24XX_REG_UxIIR, iir);
     
     if((iir & (CYGARC_HAL_LPC24XX_REG_UxIIR_IIR0 | 
                CYGARC_HAL_LPC24XX_REG_UxIIR_IIR1 | 
                CYGARC_HAL_LPC24XX_REG_UxIIR_IIR2)) 
        == CYGARC_HAL_LPC24XX_REG_UxIIR_IIR2)
-      {
+    {
         // Rx data available or character timeout
         // Read data in order to clear interrupt
         HAL_READ_UINT32(chan->base + CYGARC_HAL_LPC24XX_REG_UxRBR, c);
         if( cyg_hal_is_break( &c , 1 ) ) *__ctrlc = 1;
-        
+
         res = CYG_ISR_HANDLED;
     }
-    
+
     HAL_INTERRUPT_ACKNOWLEDGE(chan->isr_vector);
 
     CYGARC_HAL_RESTORE_GP();

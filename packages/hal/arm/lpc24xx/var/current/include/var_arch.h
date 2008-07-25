@@ -53,6 +53,8 @@
 
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_io.h>
+#include <cyg/infra/cyg_type.h>
+
 //--------------------------------------------------------------------------
 // Idle thread code.
 // This macro is called in the idle thread loop, and gives the HAL the
