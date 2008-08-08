@@ -151,6 +151,15 @@
 #define CYG_IO_SET_CONFIG_CAN_ABORT                 0x0888
 #define CYG_IO_SET_CONFIG_CAN_CALLBACK              0x0889
 
+// ======== 0x900 ADC ========================================================
+// Get/Set configuration 'key' values for ADC I/O
+
+#define CYG_IO_GET_CONFIG_ADC_RATE                  0x0901
+
+#define CYG_IO_SET_CONFIG_ADC_RATE                  0x0981
+#define CYG_IO_SET_CONFIG_ADC_ENABLE                0x0982
+#define CYG_IO_SET_CONFIG_ADC_DISABLE               0x0983
+
 // ======== 0x1000 Generic ===================================================
 // Get/Set configuration 'key' values that can apply to more than one
 // class of device.

@@ -1,3 +1,7 @@
+2008-08-08  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/config_keys.h: Add keys for ADC devices.
+
 2007-08-13  Alexey Shusharin <mrfinch@mail.ru>
 
 	* include/config_keys.h: Added key set setting CAN callback
