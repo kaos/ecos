@@ -1,3 +1,8 @@
+2008-08-08  Nick Garnett  <nickg@ecoscentric.com>
+
+	* NEWS: 
+	* ecos.db: Add generic ADC package.
+
 2008-07-08   Uwe Kindler <uwe_kindler@web.de>
  
  	* NEWS:

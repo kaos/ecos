@@ -1,3 +1,7 @@
+2008-08-08  Nick Garnett  <nickg@ecoscentric.com>
+
+	* sgml/doclist: Added ADC documentation.
+
 2008-07-12  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* sgml/doclist: added USB Serial documentation

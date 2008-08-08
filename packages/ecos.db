@@ -2276,6 +2276,15 @@ package CYGPKG_DEVS_I2C_MCF52xx {
 	        device provided by the MCF52xx coldfire processor family."
 }
 
+package CYGPKG_IO_ADC {
+	alias 		{ "Genric ADC support" adc io_adc }
+	directory	io/adc
+	script		io_adc.cdl
+        description "
+           This package contains drivers for basic I/O services on
+           adc devices."
+}
+
 package CYGPKG_KERNEL {
 	alias		{ "eCos kernel" kernel }
 	directory	kernel
