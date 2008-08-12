@@ -199,7 +199,7 @@ build_query(const unsigned char * msg, const char * hostname, short rr_type)
 
     /* Fill out the header */
     dns_hdr = (struct dns_header *) msg;
-    dns_hdr->id = htons(id++);
+    dns_hdr->id = (cyg_uint16)htons(id++);
     dns_hdr->rd = true;
     dns_hdr->opcode = DNS_QUERY;
     dns_hdr->qdcount = htons(1);

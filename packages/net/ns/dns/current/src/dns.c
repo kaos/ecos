@@ -80,7 +80,7 @@
 
 #include <cyg/ns/dns/dns_priv.h>
 
-static short id = 0;              /* ID of the last query */
+static cyg_uint16 id = 0;         /* ID of the last query */
 static int s = -1;                /* Socket to the DNS server */
 static cyg_drv_mutex_t dns_mutex; /* Mutex to stop multiple queries as once */
 static cyg_ucount32 ptdindex;     /* Index for the per thread data */

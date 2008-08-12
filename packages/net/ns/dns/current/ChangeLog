@@ -1,3 +1,10 @@
+2008-08-12  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/dns.c: id global should be unsigned, in line with DNS header.
+	* include/dns_impl.inl (build_query): Guarantee id in header is only
+	16-bits.
+	Thanks to Frank Huang for the report.
+
 2006-05-19  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/dns1.c (dns_test_thread): Use CYG_NELEM from infra.
