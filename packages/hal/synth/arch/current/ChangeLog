@@ -1,3 +1,10 @@
+2008-08-13  Bart Veer  <bartv@ecoscentric.com>
+
+	* host/ecosynth.tcl: avoid X problems when shutting down.
+	* src/synth.ld: update for recent gcc versions.
+	* cdl/hal_synth.cdl: use the right compiler flags to avoid a build
+	warning. 
+
 2007-06-12  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/synth_entry.c (__stack_chk_fail): another new function

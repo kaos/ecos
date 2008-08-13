@@ -137,8 +137,8 @@
 #      entries such as:
 #
 #          synth_device eth0 {
-#              ...
-#          }
+    #              ...
+    #          }
 #
 #   3) There are additional optional configuration files
 #      ~/.ecos/synth/initrc.tcl and ~/.ecos/synth/mainrc.tcl which can
@@ -189,13 +189,13 @@ if {([info exists synth::_channel_to_app] == 0) ||
 # from somewhere other than the current repository.
 if { [info exists ::env(ECOSYNTH_DEVEL)] } {
     set _orig_name [file join $synth::_ecosynth_repository $synth::_ecosynth_package_dir $synth::_ecosynth_package_version \
-	    "host" [file tail [info script]]]
+                        "host" [file tail [info script]]]
     if { [file exists $_orig_name] && [file readable $_orig_name] && ($_orig_name != [info script]) } {
-	if { [file mtime $_orig_name] >= [file mtime [info script]] } {
-	    puts "$_orig_name is more recent than install: executing that."
-	    source $_orig_name
-	    return
-	}
+        if { [file mtime $_orig_name] >= [file mtime [info script]] } {
+            puts "$_orig_name is more recent than install: executing that."
+            source $_orig_name
+            return
+        }
     }
     unset _orig_name
 }
@@ -217,8 +217,8 @@ namespace eval synth {
     # parent process id so we can use /proc to get the required information.
     variable ecos_appname ""
     catch {
-	set synth::ecos_appname [file readlink "/proc/[set synth::_ppid]/exe"]
-	set synth::ecos_appname [file tail $synth::ecos_appname]
+        set synth::ecos_appname [file readlink "/proc/[set synth::_ppid]/exe"]
+        set synth::ecos_appname [file tail $synth::ecos_appname]
     }
 
     # The install location can be determined from the script name.
@@ -275,33 +275,33 @@ namespace eval synth {
     array set _hooks [list]
 
     proc hook_define { name } {
-	if { [info exists synth::_hooks($name)] } {
-	    synth::report_error "Attempt to create hook $name which already exists.\n"
-	} else {
-	    set synth::_hooks($name) [list]
-	}
+        if { [info exists synth::_hooks($name)] } {
+            synth::report_error "Attempt to create hook $name which already exists.\n"
+        } else {
+            set synth::_hooks($name) [list]
+        }
     }
 
     proc hook_defined { name } {
-	return [info exists synth::_hooks($name)]
+        return [info exists synth::_hooks($name)]
     }
     
     proc hook_add { name function } {
-	if { ! [info exists synth::_hooks($name)] } {
-	    synth::report_error "Attempt to attach a function to an unknown hook $name\n"
-	    set synth::_hooks($name) [list]
-	}
-	lappend synth::_hooks($name) $function
+        if { ! [info exists synth::_hooks($name)] } {
+            synth::report_error "Attempt to attach a function to an unknown hook $name\n"
+            set synth::_hooks($name) [list]
+        }
+        lappend synth::_hooks($name) $function
     }
 
     proc hook_call { name args } {
-	if { ! [info exists synth::_hooks($name) ] } {
-	    synth::report_error "Attempt to invoke unknown hook $name\n"
-	} else {
-	    foreach function $synth::_hooks($name) {
-		$function $args
-	    }
-	}
+        if { ! [info exists synth::_hooks($name) ] } {
+            synth::report_error "Attempt to invoke unknown hook $name\n"
+        } else {
+            foreach function $synth::_hooks($name) {
+                $function $args
+            }
+        }
     }
 
     # Define an initial set of hooks
@@ -320,12 +320,12 @@ rename exit _hook_real_exit
 
 proc exit { { code 0 } } {
     while { [llength $synth::_hooks(exit)] > 0 } {
-	set handler [lindex $synth::_hooks(exit) end]
-	set synth::_hooks(exit) [lrange $synth::_hooks(exit) 0 end-1]
+        set handler [lindex $synth::_hooks(exit) end]
+        set synth::_hooks(exit) [lrange $synth::_hooks(exit) 0 end-1]
 
-	# For now assume no errors - it is not clear what could be done
-	# about them anyway.
-	catch { eval $handler [list]}
+        # For now assume no errors - it is not clear what could be done
+        # about them anyway.
+        catch { eval $handler [list]}
     }
     _hook_real_exit $code
 }
@@ -364,69 +364,69 @@ namespace eval synth {
     variable _error_count 0
 
     proc logfile_open { } {
-	synth::report "Opening logfile $synth::logfile"
-	set msg ""
-	if { [catch { set synth::_logfd [open $synth::logfile "w"] } msg ] } {
-	    synth::report_error "Unable to open logfile \"$synth::logfile\"\n    $msg\n"
-	}
+        synth::report "Opening logfile $synth::logfile"
+        set msg ""
+        if { [catch { set synth::_logfd [open $synth::logfile "w"] } msg ] } {
+            synth::report_error "Unable to open logfile \"$synth::logfile\"\n    $msg\n"
+        }
     }
 
     # A default implementation of output. This gets overwritten later when running
     # in GUI mode, so if GUI mode is enabled then this proc must be called before
     # the GUI is ready and the data must be queued.
     proc output { msg filter } {
-	if { ! $synth::flag_gui } {
-	    # If a logfile exists, output normally goes there rather than
-	    # to standard output. The exception is for errors which
+        if { ! $synth::flag_gui } {
+            # If a logfile exists, output normally goes there rather than
+            # to standard output. The exception is for errors which
             # always go to stderr, in addition to the logfile.
-	    if { "" != $synth::_logfd } {
-		puts -nonewline $synth::_logfd $msg
-		if { "error" == $filter } {
-		    puts -nonewline stderr $msg
-		}
-	    } else {
-		if { "error" == $filter } {
-		    puts -nonewline stderr $msg
-		} else {
-		    puts -nonewline $msg
-		}
-	    }
-	} else {
-	    lappend synth::_pending_output [list $msg $filter]
-	}
+            if { "" != $synth::_logfd } {
+                puts -nonewline $synth::_logfd $msg
+                if { "error" == $filter } {
+                    puts -nonewline stderr $msg
+                }
+            } else {
+                if { "error" == $filter } {
+                    puts -nonewline stderr $msg
+                } else {
+                    puts -nonewline $msg
+                }
+            }
+        } else {
+            lappend synth::_pending_output [list $msg $filter]
+        }
     }
     
     # Invoked by the text window code once everything is ready
     # and synth::output has been redefined.
     proc _flush_output { } {
-	foreach msg $synth::_pending_output {
-	    synth::output [lindex $msg 0] [lindex $msg 1]
-	}
-	set synth::_pending_output [list]
+        foreach msg $synth::_pending_output {
+            synth::output [lindex $msg 0] [lindex $msg 1]
+        }
+        set synth::_pending_output [list]
     }
 
     # Cope with early exits. This will only have an effect if
     # _flush_output has not been called yet, and by implication
     # if synth::output has not yet been redefined.
     proc _exit_flush_output { arg_list } {
-	if { 0 != [llength $synth::_pending_output] } {
-	    set synth::flag_gui 0
-	    synth::_flush_output
-	}
+        if { 0 != [llength $synth::_pending_output] } {
+            set synth::flag_gui 0
+            synth::_flush_output
+        }
     }
     synth::hook_add "exit" synth::_exit_flush_output
     
     proc report { msg } {
-	synth::output $msg "report"
+        synth::output $msg "report"
     }
 
     proc report_warning { msg } {
-	synth::output "Warning: $msg" "warning"
+        synth::output "Warning: $msg" "warning"
     }
 
     proc report_error { msg } {
-	incr synth::_error_count
-	synth::output "Error: $msg" "error"
+        incr synth::_error_count
+        synth::output "Error: $msg" "error"
     }
 
     # Internal errors indicate a serious problem within ecosynth or
@@ -439,15 +439,15 @@ namespace eval synth {
     # places where it makes to sense to catch problems and call
     # synth::error rather than internal_error
     proc internal_error { msg } {
-	puts stderr "ecosynth, an internal error has occurred:"
-	puts stderr "    $msg"
-	puts stderr "---------- backtrace -------------------------------------------------"
-	for { set level [info level] } { $level > 0 } { incr level -1 } {
-	    puts stderr [info level $level]
-	}
-	puts stderr "----------------------------------------------------------------------"
-	puts stderr "ecosynth, exiting."
-	exit 1
+        puts stderr "ecosynth, an internal error has occurred:"
+        puts stderr "    $msg"
+        puts stderr "---------- backtrace -------------------------------------------------"
+        for { set level [info level] } { $level > 0 } { incr level -1 } {
+            puts stderr [info level $level]
+        }
+        puts stderr "----------------------------------------------------------------------"
+        puts stderr "ecosynth, exiting."
+        exit 1
     }
 
     # Dummy implementations of the exported filter routines, in case a script
@@ -455,22 +455,22 @@ namespace eval synth {
     variable _dummy_filters [list]
     
     proc filter_exists { name } {
-	set result 0
-	if { -1 != [lsearch -exact $synth::_dummy_filters $name] } {
-	    set result 1
-	}
-	return $result
+        set result 0
+        if { -1 != [lsearch -exact $synth::_dummy_filters $name] } {
+            set result 1
+        }
+        return $result
     }
 
     proc filter_get_list { } {
-	return $synth::_dummy_filters
+        return $synth::_dummy_filters
     }
 
     proc filter_add { name args } {
-	if { [synth::filter_exists $name] } {
-	    synth::internal_error "attempt to install filter $name twice.\n"
-	}
-	lappend synth::_dummy_filters $name
+        if { [synth::filter_exists $name] } {
+            synth::internal_error "attempt to install filter $name twice.\n"
+        }
+        lappend synth::_dummy_filters $name
     }
 }
 
@@ -553,104 +553,104 @@ namespace eval synth {
     # Keep track of all arguments which have not yet been consumed.
     array set _argv_unconsumed [list]
     for { set i 0 } { $i < $::argc } { incr i } {
-	set synth::_argv_unconsumed($i) [lindex $::argv $i]
+        set synth::_argv_unconsumed($i) [lindex $::argv $i]
     }
 
     # Provide a list of just those arguments that have not yet
     # been consumed.
     proc argv_get_unconsumed { } {
-	set result [list]
-	for { set i 0 } { $i < $::argc } {incr i } {
-	    if { [info exists synth::_argv_unconsumed($i)] } {
-		lappend result $synth::_argv_unconsumed($i)
-	    }
-	}
-	return $result
+        set result [list]
+        for { set i 0 } { $i < $::argc } {incr i } {
+            if { [info exists synth::_argv_unconsumed($i)] } {
+                lappend result $synth::_argv_unconsumed($i)
+            }
+        }
+        return $result
     }
 
     proc _argv_consume { index } {
-	if { [info exists synth::_argv_unconsumed($index)] } {
-	    unset synth::_argv_unconsumed($index)
-	}
+        if { [info exists synth::_argv_unconsumed($index)] } {
+            unset synth::_argv_unconsumed($index)
+        }
     }
     
     # Internal routine. Given a string of the form "-flag" or "-name=",
     # return an index within argv or -1 if not found. As a side effect
     # this "consumes" the argument.
     proc _argv_lookup { name } {
-	set result -1
-	if { "=" != [string index $name end] } {
-	    for { set i 0 } { $i < $::argc } { incr i } {
-		set arg [lindex $::argv $i]
-		if { [string equal $arg $name] || [string equal $arg "-[set name]"] } {
-		    set result $i
-		    synth::_argv_consume $i
-		    break
-		}
-	    }
-	} else {
-	    set name [string range $name 0 end-1]
-	    set len  [string length $name]
-	    for { set i 0 } { $i < $::argc } { incr i } {
-		set arg [lindex $::argv $i]
-		if { [string equal -length $len $arg $name] } {
-		    if { "=" == [string index $arg $len] } {
-			set result $i
-			synth::_argv_consume $i
-			break;
-		    } elseif { ([string length $arg] == $len) && ($i < ($::argc - 1)) } {
-			set result $i
-			synth::_argv_consume $i
-			synth::_argv_consume [expr $i + 1]
-			break
-		    }
-		} elseif { [string equal -length [expr $len + 1] $arg "-[set name]"] } {
-		    if { "=" == [string index $arg [expr $len + 1]] } {
-			set result $i
-			synth::_argv_consume $i
-			break
-		    } elseif { ([string length $arg] == [expr $len + 1]) && ($i < ($::argc - 1)) } {
-			set result $i
-			synth::_argv_consume $i
-			synth::_argv_consume [expr $i + 1]
-			break
-		    }
-		}
-	    }
-	}
-	return $result
+        set result -1
+        if { "=" != [string index $name end] } {
+            for { set i 0 } { $i < $::argc } { incr i } {
+                set arg [lindex $::argv $i]
+                if { [string equal $arg $name] || [string equal $arg "-[set name]"] } {
+                    set result $i
+                    synth::_argv_consume $i
+                    break
+                }
+            }
+        } else {
+            set name [string range $name 0 end-1]
+            set len  [string length $name]
+            for { set i 0 } { $i < $::argc } { incr i } {
+                set arg [lindex $::argv $i]
+                if { [string equal -length $len $arg $name] } {
+                    if { "=" == [string index $arg $len] } {
+                        set result $i
+                        synth::_argv_consume $i
+                        break;
+                    } elseif { ([string length $arg] == $len) && ($i < ($::argc - 1)) } {
+                        set result $i
+                        synth::_argv_consume $i
+                        synth::_argv_consume [expr $i + 1]
+                        break
+                    }
+                } elseif { [string equal -length [expr $len + 1] $arg "-[set name]"] } {
+                    if { "=" == [string index $arg [expr $len + 1]] } {
+                        set result $i
+                        synth::_argv_consume $i
+                        break
+                    } elseif { ([string length $arg] == [expr $len + 1]) && ($i < ($::argc - 1)) } {
+                        set result $i
+                        synth::_argv_consume $i
+                        synth::_argv_consume [expr $i + 1]
+                        break
+                    }
+                }
+            }
+        }
+        return $result
     }
 
     # Look for a given argument on the command line.
     proc argv_defined { name } {
-	set result 0
-	set index [synth::_argv_lookup $name]
-	if { -1 != $index } {
-	    set result 1
-	}
-	return $result
+        set result 0
+        set index [synth::_argv_lookup $name]
+        if { -1 != $index } {
+            set result 1
+        }
+        return $result
     }
     
     # Return the value associated with a given argument, which must be present.
     proc argv_get_value { name } {
-	if { "=" != [string index $name end] } {
-	    synth::internal_error "attempt to get a value for a simple flag argument \"$name\".\n"
-	}
-	set result ""
-	set index [synth::_argv_lookup $name]
-	if { -1 == $index } {
-	    synth::internal_error "attempt to get the value associated with a non-existent argument \"$name\".\n"
-	}
-	set arg [lindex $::argv $index]
-	set len [string length $name]
-	if { [string equal -length $len $arg $name] } {
-	    set result [string range $arg $len end]
-	} elseif { [string equal -length [expr $len + 1] $arg "-[set name]"] } {
-	    set result [string range $arg [expr $len + 1] end]
-	} else {
-	    set result [lindex $::argv [expr $index + 1]]
-	}
-	return $result
+        if { "=" != [string index $name end] } {
+            synth::internal_error "attempt to get a value for a simple flag argument \"$name\".\n"
+        }
+        set result ""
+        set index [synth::_argv_lookup $name]
+        if { -1 == $index } {
+            synth::internal_error "attempt to get the value associated with a non-existent argument \"$name\".\n"
+        }
+        set arg [lindex $::argv $index]
+        set len [string length $name]
+        if { [string equal -length $len $arg $name] } {
+            set result [string range $arg $len end]
+        } elseif { [string equal -length [expr $len + 1] $arg "-[set name]"] } {
+            set result [string range $arg [expr $len + 1] end]
+        } else {
+            set result [lindex $::argv [expr $index + 1]]
+        }
+        return $result
     }
 
     # -ni/-nio are not relevant. If present then they would have been handled
@@ -668,25 +668,25 @@ namespace eval synth {
 
     # Now cope with the other standard flags
     if { [synth::argv_defined "-v"] || [synth::argv_defined "--version"] } {
-	# Just output the version message and exit. The eCos application
-	# will do the same. The version is obtained from configure.in,
-	# and also from the install directory. The synthetic target
-	# startup code will exit quietly if the auxiliary exits at this
-	# stage. This output should go via puts rather than the
-	# synth:: output routines, since the GUI will never appear if
-	# --version is specified.
-	puts "ecosynth: version $synth::_ecosynth_version"
-	puts "        : install location [file dirname [info script]]"
-	exit 0
+        # Just output the version message and exit. The eCos application
+        # will do the same. The version is obtained from configure.in,
+        # and also from the install directory. The synthetic target
+        # startup code will exit quietly if the auxiliary exits at this
+        # stage. This output should go via puts rather than the
+        # synth:: output routines, since the GUI will never appear if
+        # --version is specified.
+        puts "ecosynth: version $synth::_ecosynth_version"
+        puts "        : install location [file dirname [info script]]"
+        exit 0
     }
 
     if { [synth::argv_defined "-l="] } {
-	set synth::logfile [synth::argv_get_value "-l="]
+        set synth::logfile [synth::argv_get_value "-l="]
     } elseif { [synth::argv_defined "-logfile="] } {
-	set synth::logfile [synth::argv_get_value "-logfile="]
+        set synth::logfile [synth::argv_get_value "-logfile="]
     }
     if { "" != $synth::logfile } {
-	synth::logfile_open
+        synth::logfile_open
     }
 
     # -h/--help would normally also result in an immediate exit. However,
@@ -696,36 +696,36 @@ namespace eval synth {
     # probably a good idea as well, that way the output appears in the
     # current console window.
     if { [synth::argv_defined "-h"] || [synth::argv_defined "-help"] } {
-	set synth::flag_help 1
-	set synth::flag_gui 0
+        set synth::flag_help 1
+        set synth::flag_gui 0
     }
     
     if { [synth::argv_defined "-debug"] } {
-	set synth::flag_debug 1
+        set synth::flag_debug 1
     }
     
     if { [synth::argv_defined "-k"] || [synth::argv_defined "-keep-going"] } {
-	set synth::flag_keep_going 1
+        set synth::flag_keep_going 1
     }
 
     if { [synth::argv_defined "-nr"] || [synth::argv_defined "-no-rc"]} {
-	set synth::flag_no_rc 1
+        set synth::flag_no_rc 1
     }
 
     if { [synth::argv_defined "-x"] || [synth::argv_defined "-exit"] } {
-	set synth::flag_immediate_exit 1
+        set synth::flag_immediate_exit 1
     } elseif { [synth::argv_defined "-nx"] || [synth::argv_defined "-no-exit"] } {
-	set synth::flag_immediate_exit 0
+        set synth::flag_immediate_exit 0
     }
 
     if { [synth::argv_defined "-V"] || [synth::argv_defined "-verbose"] } {
-	set synth::flag_verbose 1
+        set synth::flag_verbose 1
     }
 
     if { [synth::argv_defined "-t="] } {
-	set synth::target_definition [synth::argv_get_value "-t="]
+        set synth::target_definition [synth::argv_get_value "-t="]
     } elseif { [synth::argv_defined "-target="] } {
-	set synth::target_definition [synth::argv_get_value "-target="]
+        set synth::target_definition [synth::argv_get_value "-target="]
     }
 
     # Arguably -geometry should only be checked when the GUI is enabled,
@@ -735,26 +735,26 @@ namespace eval synth {
     # accepts the empty string, and treats it separately from
     # uninitialized.
     if { [synth::argv_defined "-geometry="] } {
-	set synth::geometry [synth::argv_get_value "-geometry="]
+        set synth::geometry [synth::argv_get_value "-geometry="]
 
-	if { ![regexp -- {^([0-9]+x[0-9]+)?([+-][0-9]+[+-][0-9]+)?$} $synth::geometry] } {
-	    synth::report_warning "Invalid geometry string $synth::geometry\n"
-	    set synth::geometry "<none>"
-	}
+        if { ![regexp -- {^([0-9]+x[0-9]+)?([+-][0-9]+[+-][0-9]+)?$} $synth::geometry] } {
+            synth::report_warning "Invalid geometry string $synth::geometry\n"
+            set synth::geometry "<none>"
+        }
     }
 
     if { $synth::flag_debug } {
-	synth::report \
-	    "Results of initial command-line parsing:\n   \
-	          --help            $synth::flag_help\n   \
-	          --keep-going      $synth::flag_keep_going\n   \
-	          --no-rc           $synth::flag_no_rc\n   \
-	          --exit            $synth::flag_immediate_exit\n   \
-	          --verbose         $synth::flag_verbose\n   \
-	          logfile           $synth::logfile\n   \
-	          target definition $synth::target_definition\n   \
-	          geometry          $synth::geometry\n   \
-	          unconsumed        [synth::get_unconsumed_args]\n"
+        synth::report \
+            "Results of initial command-line parsing:\n   \
+              --help            $synth::flag_help\n   \
+              --keep-going      $synth::flag_keep_going\n   \
+              --no-rc           $synth::flag_no_rc\n   \
+              --exit            $synth::flag_immediate_exit\n   \
+              --verbose         $synth::flag_verbose\n   \
+              logfile           $synth::logfile\n   \
+              target definition $synth::target_definition\n   \
+              geometry          $synth::geometry\n   \
+              unconsumed        [synth::get_unconsumed_args]\n"
     }
 }
 
@@ -780,20 +780,20 @@ namespace eval synth {
 if { ![file exists "~/.ecos"] } {
     synth::report "Creating new directory ~/.ecos for eCos configuration files.\n"
     if { 0 != [catch { file mkdir "~/.ecos" }] } {
-	synth::report_warning "failed to create directory ~/.ecos\n"
+        synth::report_warning "failed to create directory ~/.ecos\n"
     }
 }
 if { [file exists "~/.ecos"] && [file isdirectory "~/.ecos"] && ![file exists "~/.ecos/synth"] } {
     synth::report "Creating new directory ~/.ecos/synth for synthetic target configuration files.\n"
     if { 0 != [catch { file mkdir "~/.ecos/synth" } ] } {
-	synth::report_warning "failed to create directory ~/.ecos/synth\n"
+        synth::report_warning "failed to create directory ~/.ecos/synth\n"
     } else {
-	# initrc and mainrc are only copied when the directory is first created,
-	# so that users can delete them if unwanted - even though the
-	# default versions do nothing.
-	synth::report "Installing default configuration files ~/.ecos/synth/initrc.tcl and ~/.ecos/synth/mainrc.tcl\n"
-	catch { file copy -- [file join $synth::install_dir "user_initrc.tcl"] "~/.ecos/synth/initrc.tcl"}
-	catch { file copy -- [file join $synth::install_dir "user_mainrc.tcl"] "~/.ecos/synth/mainrc.tcl"}
+        # initrc and mainrc are only copied when the directory is first created,
+        # so that users can delete them if unwanted - even though the
+        # default versions do nothing.
+        synth::report "Installing default configuration files ~/.ecos/synth/initrc.tcl and ~/.ecos/synth/mainrc.tcl\n"
+        catch { file copy -- [file join $synth::install_dir "user_initrc.tcl"] "~/.ecos/synth/initrc.tcl"}
+        catch { file copy -- [file join $synth::install_dir "user_mainrc.tcl"] "~/.ecos/synth/mainrc.tcl"}
     }
 }
 
@@ -812,8 +812,8 @@ if { [file exists "~/.ecos"] && [file isdirectory "~/.ecos"] && ![file exists "~
 # how I/O gets implemented. For example the eCos application may
 # want to access a network device eth0, but that device could be
 # implemented in a variety of ways (e.g. a real ethernet device
-# on the Linux host, or a fake device provided by the ethertap
-# facility). It is the target definition file that provides
+                                    # on the Linux host, or a fake device provided by the ethertap
+                                    # facility). It is the target definition file that provides
 # this information.
 #
 # The file is of course just another Tcl script, running in the
@@ -825,12 +825,12 @@ if { [file exists "~/.ecos"] && [file isdirectory "~/.ecos"] && ![file exists "~
 # device, e.g.:
 #
 #    synth_device eth0 {
-#        use eth1    
-#    }
+    #        use eth1    
+    #    }
 #
 #    synth_device eth1 {
-#        use tap0
-#    }    
+    #        use tap0
+    #    }    
 #
 # When the eCos device driver looks up eth0 this will cause a
 # device-specific Tcl script to be loaded, which can examine
@@ -879,104 +879,104 @@ namespace eval synth {
     variable _tdf_consumed_options [list]
     
     proc tdf_has_device { name } {
-	return [expr -1 != [lsearch -exact $synth::_tdf_devices $name]]
+        return [expr -1 != [lsearch -exact $synth::_tdf_devices $name]]
     }
 
     proc tdf_get_devices { } {
-	return $synth::_tdf_devices
+        return $synth::_tdf_devices
     }
     
     proc _tdf_get_option_index { devname option } {
-	synth::_tdf_consume_device $devname
-	for { set i 0 } { [info exists synth::_tdf_device_options($devname,$i)] } { incr i } {
-	    if { $option == [lindex $synth::_tdf_device_options($devname,$i) 0] } {
-		synth::_tdf_consume_option $devname $i
-		return $i
-	    }
-	}
-	return -1
+        synth::_tdf_consume_device $devname
+        for { set i 0 } { [info exists synth::_tdf_device_options($devname,$i)] } { incr i } {
+            if { $option == [lindex $synth::_tdf_device_options($devname,$i) 0] } {
+                synth::_tdf_consume_option $devname $i
+                return $i
+            }
+        }
+        return -1
     }
     
     proc _tdf_get_option_indices { devname option } {
-	synth::_tdf_consume_device $devname
-	set result [list]
-	for { set i 0 } { [info exists synth::_tdf_device_options($devname,$i)] } { incr i } {
-	    if { $option == [lindex $synth::_tdf_device_options($devname,$i) 0] } {
-		synth::_tdf_consume_option $devname $i
-		lappend result $i
-	    }
-	}
-	return $result
+        synth::_tdf_consume_device $devname
+        set result [list]
+        for { set i 0 } { [info exists synth::_tdf_device_options($devname,$i)] } { incr i } {
+            if { $option == [lindex $synth::_tdf_device_options($devname,$i) 0] } {
+                synth::_tdf_consume_option $devname $i
+                lappend result $i
+            }
+        }
+        return $result
     }
     
     proc tdf_has_option { devname option } {
-	return [expr -1 != [synth::_tdf_get_option_index $devname $option]]
+        return [expr -1 != [synth::_tdf_get_option_index $devname $option]]
     }
 
     proc tdf_get_option { devname option } {
-	set index [synth::_tdf_get_option_index $devname $option]
-	if { -1 != $index } {
-	    lappend synth::_tdf_consumed_options "$devname,$index"
-	    return [lrange $synth::_tdf_device_options($devname,$index) 1 end]
-	} else {
-	    return [list]
-	}
+        set index [synth::_tdf_get_option_index $devname $option]
+        if { -1 != $index } {
+            lappend synth::_tdf_consumed_options "$devname,$index"
+            return [lrange $synth::_tdf_device_options($devname,$index) 1 end]
+        } else {
+            return [list]
+        }
     }
 
     proc tdf_get_options { devname option } {
-	set result [list]
-	set indices [synth::_tdf_get_option_indices $devname $option]
-	foreach index $indices {
-	    lappend result [lrange $synth::_tdf_device_options($devname,$index) 1 end]
-	}
-	return $result
+        set result [list]
+        set indices [synth::_tdf_get_option_indices $devname $option]
+        foreach index $indices {
+            lappend result [lrange $synth::_tdf_device_options($devname,$index) 1 end]
+        }
+        return $result
     }
     
     proc tdf_get_all_options { devname } {
-	set result [list]
-	for { set i 0 } { [info exists synth::_tdf_device_options($devname,$i)] } { incr i } {
-	    lappend synth::_tdf_consumed_options "$devname,$index"
-	    lappend result $synth::_tdf_device_options($devname,$i)
-	}
-	return $result
+        set result [list]
+        for { set i 0 } { [info exists synth::_tdf_device_options($devname,$i)] } { incr i } {
+            lappend synth::_tdf_consumed_options "$devname,$index"
+            lappend result $synth::_tdf_device_options($devname,$i)
+        }
+        return $result
     }
 
     proc _tdf_consume_device { name } {
-	if { -1 == [lsearch -exact $synth::_tdf_consumed_devices $name] } {
-	    lappend synth::_tdf_consumed_devices $name
-	}
+        if { -1 == [lsearch -exact $synth::_tdf_consumed_devices $name] } {
+            lappend synth::_tdf_consumed_devices $name
+        }
     }
 
     proc _tdf_consume_option { devname index } {
-	if { -1 == [lsearch -exact $synth::_tdf_consumed_options "$devname,$index"] } {
-	    lappend synth::_tdf_consumed_options "$devname,$index"
-	}
+        if { -1 == [lsearch -exact $synth::_tdf_consumed_options "$devname,$index"] } {
+            lappend synth::_tdf_consumed_options "$devname,$index"
+        }
     }
     
     proc tdf_get_unconsumed_devices { } {
-	set result [list]
-	foreach devname $synth::_tdf_devices {
-	    if { -1 == [lsearch -exact $synth::_tdf_consumed_devices $devname] } {
-		lappend result $devname
-	    }
-	}
-	return $result
+        set result [list]
+        foreach devname $synth::_tdf_devices {
+            if { -1 == [lsearch -exact $synth::_tdf_consumed_devices $devname] } {
+                lappend result $devname
+            }
+        }
+        return $result
     }
 
     proc tdf_get_unconsumed_options { } {
-	set result [list]
-	foreach devname $synth::_tdf_devices {
-	    if { -1 == [lsearch -exact $synth::_tdf_consumed_devices $devname] } {
-		# Do not report all the options for a device that has not been consumed at all
-		continue
-	    }
-	    for { set i 0 } { [info exists synth::_tdf_device_options($devname,$i)] } { incr i } {
-		if { -1 == [lsearch -exact $synth::_tdf_consumed_options "$devname,$i"] } {
-		    lappend result [list $devname $synth::_tdf_device_options($devname,$i)]
-		}
-	    }
-	}
-	return $result
+        set result [list]
+        foreach devname $synth::_tdf_devices {
+            if { -1 == [lsearch -exact $synth::_tdf_consumed_devices $devname] } {
+                # Do not report all the options for a device that has not been consumed at all
+                continue
+            }
+            for { set i 0 } { [info exists synth::_tdf_device_options($devname,$i)] } { incr i } {
+                if { -1 == [lsearch -exact $synth::_tdf_consumed_options "$devname,$i"] } {
+                    lappend result [list $devname $synth::_tdf_device_options($devname,$i)]
+                }
+            }
+        }
+        return $result
     }
 }
 
@@ -991,66 +991,66 @@ set _dirlist [list [pwd] "~/.ecos/synth" $synth::install_dir]
 foreach _dir $_dirlist {
     set _candidate "[file join $_dir $_tdf].tdf"  ; # file join does the right thing for absolute paths
     if { [file isfile $_candidate] } {
-	set _config_file $_candidate
-	break
+        set _config_file $_candidate
+        break
     } else {
-	set _candidate [file join $_dir $_tdf]
-	if { [file isfile $_candidate] } {
-	    set _config_file $_candidate
-	    break
-	}
+        set _candidate [file join $_dir $_tdf]
+        if { [file isfile $_candidate] } {
+            set _config_file $_candidate
+            break
+        }
     }
 }
 if { "" == $_config_file } {
     if { "" != $synth::target_definition } {
-	# The user explicitly specified a file, so it must be read in.
-	# If it cannot be found then that should be treated as an error.
-	set msg "Unable to find target definition file $synth::target_definition\n"
-	if { "absolute" !=  [file pathtype $synth::target_definition] } {
-	    append msg "    Searched $_dirlist\n"
-	}
-	synth::report_error $msg
-	exit 1
+        # The user explicitly specified a file, so it must be read in.
+        # If it cannot be found then that should be treated as an error.
+        set msg "Unable to find target definition file $synth::target_definition\n"
+        if { "absolute" !=  [file pathtype $synth::target_definition] } {
+            append msg "    Searched $_dirlist\n"
+        }
+        synth::report_error $msg
+        exit 1
     } else {
-	# This is a mild error, because default.tdf should be installed
-	# below libexec. However the default file does not actually
+        # This is a mild error, because default.tdf should be installed
+        # below libexec. However the default file does not actually
         # define anything, it is just a set of comments, so there is
-	# nothing to be gained by issuing a warning.
+        # nothing to be gained by issuing a warning.
     }
 } else {
 
     set synth::target_definition $_config_file
     
     proc synth_device { name data } {
-	if { "" != $synth::_tdf_current_device } {
-	    error "synth_device $name is nested inside $synth::_tdf_current_device\nNesting of synth_device entries is not allowed."
-	}
-	if { -1 != [lsearch -exact $synth::_tdf_devices $name] } {
-	    error "Duplicate entry for synth_device $name"
-	}
-	set synth::_tdf_current_device $name
-	set synth::_tdf_current_index 0
-	lappend synth::_tdf_devices $name
-	eval $data
-	# If the eval resulted in an error, propagate it immediately rather than attempt
-	# any form of recovery. The downside is that only error per run will be
-	# reported.
-	set synth::_tdf_current_device ""
+        if { "" != $synth::_tdf_current_device } {
+            error "synth_device $name is nested inside $synth::_tdf_current_device\nNesting of synth_device entries is not allowed."
+        }
+        if { -1 != [lsearch -exact $synth::_tdf_devices $name] } {
+            error "Duplicate entry for synth_device $name"
+        }
+        set synth::_tdf_current_device $name
+        set synth::_tdf_current_index 0
+        lappend synth::_tdf_devices $name
+        eval $data
+        # If the eval resulted in an error, propagate it immediately rather than attempt
+        # any form of recovery. The downside is that only error per run will be
+        # reported.
+        set synth::_tdf_current_device ""
     }
     rename unknown _synth_unknown
     proc unknown { args } {
-	if { "" == $synth::_tdf_current_device } {
-	    # An unknown command at the toplevel. Pass this to the
-	    # original "unknown" command, in the unlikely event that
-	    # the user really did want to autoload a library or do
-	    # something similar. 
-	    eval _synth_unknown $arg
-	    return
-	}
+        if { "" == $synth::_tdf_current_device } {
+            # An unknown command at the toplevel. Pass this to the
+            # original "unknown" command, in the unlikely event that
+            # the user really did want to autoload a library or do
+            # something similar. 
+            eval _synth_unknown $arg
+            return
+        }
 
-	# Anything else is treated as an option within the synth_device
-	set synth::_tdf_device_options($synth::_tdf_current_device,$synth::_tdf_current_index) $args
-	incr synth::_tdf_current_index
+        # Anything else is treated as an option within the synth_device
+        set synth::_tdf_device_options($synth::_tdf_current_device,$synth::_tdf_current_index) $args
+        incr synth::_tdf_current_index
     }
 
     set _config_file_msg ""
@@ -1061,12 +1061,12 @@ if { "" == $_config_file } {
     rename _synth_unknown unknown
 
     if { $_result } {
-	# Any problems reading in the target definition file should be
-	# treated as an error: I/O is unlikely to behave in the way
-	# that the user expects.
-	set msg "An error occurred while reading in the target definition file\n    $_config_file\n    $_config_file_msg\n"
-	synth::report_error $msg
-	exit 1
+        # Any problems reading in the target definition file should be
+        # treated as an error: I/O is unlikely to behave in the way
+        # that the user expects.
+        set msg "An error occurred while reading in the target definition file\n    $_config_file\n    $_config_file_msg\n"
+        synth::report_error $msg
+        exit 1
     }
     unset _result _config_file_msg
 }
@@ -1080,55 +1080,55 @@ if { $synth::flag_gui } {
 
 # {{{  Session file                                             
 
-# ----------------------------------------------------------------------------
-# The tool manages a file ~/.ecos/synth/guisession, holding information
-# such as the size and position of the main window. The aim is to give
-# the user a fairly consistent interface between sessions. The information
-# is saved during exit handling, and also in response to the window
-# manager WM_SAVE_YOURSELF request. However note that the latter does
-# not extend to user session information - restarting the eCos application
-# the next time a user logs in is inappropriate for eCos, plus if
-# the application is being run inside gdb (a likely scenario) it is gdb
-# that should handle restarting the application.
-#
-# Using a single file has limitations. Specifically the user may be
-# switching between a number of different target definition files,
-# each resulting in a subtly different layout, and arguably there
-# should be separate session information for each one. However
-# distinguishing between per-target and global settings would be
-# very complicated.
-#
-# The most obvious implementation involves the options database.
-#
-# FIXME: implement properly
+    # ----------------------------------------------------------------------------
+    # The tool manages a file ~/.ecos/synth/guisession, holding information
+    # such as the size and position of the main window. The aim is to give
+    # the user a fairly consistent interface between sessions. The information
+    # is saved during exit handling, and also in response to the window
+    # manager WM_SAVE_YOURSELF request. However note that the latter does
+    # not extend to user session information - restarting the eCos application
+    # the next time a user logs in is inappropriate for eCos, plus if
+    # the application is being run inside gdb (a likely scenario) it is gdb
+    # that should handle restarting the application.
+    #
+    # Using a single file has limitations. Specifically the user may be
+    # switching between a number of different target definition files,
+    # each resulting in a subtly different layout, and arguably there
+    # should be separate session information for each one. However
+    # distinguishing between per-target and global settings would be
+    # very complicated.
+    #
+    # The most obvious implementation involves the options database.
+    #
+    # FIXME: implement properly
 
-namespace eval synth {
-    # Make sure we are using the right options from .Xdefaults etc.
-    tk appname "ecosynth"
+    namespace eval synth {
+        # Make sure we are using the right options from .Xdefaults etc.
+        tk appname "ecosynth"
 
-    if { $synth::flag_debug } {
-	# synth::report "Reading in session file ~/.ecos/synth/guisession\n"
+        if { $synth::flag_debug } {
+            # synth::report "Reading in session file ~/.ecos/synth/guisession\n"
+        }
+        
+        # synth::report_warning "Support for reading session file ~/.ecos/synth/guisession not yet implemented.\n"
+        
+        if { [file exists "~/.ecos/synth/guisession"] } {
+            if {0 != [catch { option readfile "~/.ecos/synth/guisession" userDefault} msg]} {
+                # synth::report_error "Failed to read GUI session information from file ~/.ecos/synth/guisession\n    $msg\n"
+            }
+        }
+
+        proc _update_session_file { arg_list } {
+            # synth::report_warning "Support for updating session file ~/.ecos/synth/guisession not yet implemented.\n"
+        }
+        proc _handle_wm_save_yourself { } {
+            # synth::report_warning "Support for WM_SAVE_YOURSELF not yet implemented\n"
+        }
+
+        synth::hook_add "exit" synth::_update_session_file
     }
-    
-    # synth::report_warning "Support for reading session file ~/.ecos/synth/guisession not yet implemented.\n"
-    
-    if { [file exists "~/.ecos/synth/guisession"] } {
-	if {0 != [catch { option readfile "~/.ecos/synth/guisession" userDefault} msg]} {
-	    # synth::report_error "Failed to read GUI session information from file ~/.ecos/synth/guisession\n    $msg\n"
-	}
-    }
 
-    proc _update_session_file { arg_list } {
-	# synth::report_warning "Support for updating session file ~/.ecos/synth/guisession not yet implemented.\n"
-    }
-    proc _handle_wm_save_yourself { } {
-	# synth::report_warning "Support for WM_SAVE_YOURSELF not yet implemented\n"
-    }
-
-    synth::hook_add "exit" synth::_update_session_file
-}
-
-# }}}
+    # }}}
 # {{{  Load images                                              
 
 # ----------------------------------------------------------------------------
@@ -1142,33 +1142,33 @@ namespace eval synth {
 namespace eval synth {
 
     proc load_image { image_name filename } {
-	set result 0
-	set type [file extension $filename]
-	if { ! [file exists $filename] } {
-	    synth::report_error "Image $filename has not been installed.\n"
-	} elseif { ! [file readable $filename] } {
-	    synth::report_error "Image $filename is not readable.\n"
-	} elseif { (".xbm" == $type) } {
-	    if { 0 == [catch { set $image_name [image create bitmap -file $filename] }] } {
-		set result 1
-	    } else {
-		synth::report_error "Bitmap image $filename is invalid.\n"
-	    }
-	} else {
-	    if { 0 == [catch { set $image_name [image create photo -file $filename] }] } {
-		set result 1
-	    } else {
-		synth::report_error "Image $filename is invalid.\n"
-	    }
-	}
-	return $result
+        set result 0
+        set type [file extension $filename]
+        if { ! [file exists $filename] } {
+            synth::report_error "Image $filename has not been installed.\n"
+        } elseif { ! [file readable $filename] } {
+            synth::report_error "Image $filename is not readable.\n"
+        } elseif { (".xbm" == $type) } {
+            if { 0 == [catch { set $image_name [image create bitmap -file $filename] }] } {
+                set result 1
+            } else {
+                synth::report_error "Bitmap image $filename is invalid.\n"
+            }
+        } else {
+            if { 0 == [catch { set $image_name [image create photo -file $filename] }] } {
+                set result 1
+            } else {
+                synth::report_error "Image $filename is invalid.\n"
+            }
+        }
+        return $result
     }
     
     set _images [list "tick_yes.xbm" "tick_no.xbm" "save.xbm" "cut.xbm" "copy.xbm" "paste.xbm" \
-	    "help.xbm" "running1.ppm" "saveall.xbm" ]
+                     "help.xbm" "running1.ppm" "saveall.xbm" ]
     foreach _image $_images {
-	variable image_[file rootname $_image]
-	synth::load_image "synth::image_[file rootname $_image]" [file join $synth::install_dir $_image]
+        variable image_[file rootname $_image]
+        synth::load_image "synth::image_[file rootname $_image]" [file join $synth::install_dir $_image]
     }
     unset _images _image
 }
@@ -1188,33 +1188,33 @@ namespace eval synth {
     wm withdraw .balloon
     
     proc register_balloon_help { widget message } {
-	set synth::_balloon_messages($widget) $message
-	bind $widget <Enter> { synth::_balloonhelp_pending %W }
-	bind $widget <Leave> { synth::_balloonhelp_cancel }
+        set synth::_balloon_messages($widget) $message
+        bind $widget <Enter> { synth::_balloonhelp_pending %W }
+        bind $widget <Leave> { synth::_balloonhelp_cancel }
     }
     
     proc _balloonhelp_pending { widget } {
-	synth::_balloonhelp_cancel
-	set synth::_balloon_pending [after 1200 [list synth::_balloonhelp_show $widget]]
+        synth::_balloonhelp_cancel
+        set synth::_balloon_pending [after 1200 [list synth::_balloonhelp_show $widget]]
     }
     
     proc _balloonhelp_cancel { } {
-	if { "" != $synth::_balloon_pending } {
-	    after cancel $synth::_balloon_pending
-	    set synth::_balloon_pending ""
-	} else {
-	    wm withdraw .balloon
-	}
+        if { "" != $synth::_balloon_pending } {
+            after cancel $synth::_balloon_pending
+            set synth::_balloon_pending ""
+        } else {
+            wm withdraw .balloon
+        }
     }
 
     proc _balloonhelp_show { widget } {
-	.balloon.info configure -text $synth::_balloon_messages($widget)
-	set x [expr [winfo rootx $widget] + 2]
-	set y [expr [winfo rooty $widget] + [winfo height $widget] + 2]
-	wm geometry .balloon +$x+$y
-	wm deiconify .balloon
-	raise .balloon
-	set synth::_balloon_pending ""
+        .balloon.info configure -text $synth::_balloon_messages($widget)
+        set x [expr [winfo rootx $widget] + 2]
+        set y [expr [winfo rooty $widget] + [winfo height $widget] + 2]
+        wm geometry .balloon +$x+$y
+        wm deiconify .balloon
+        raise .balloon
+        set synth::_balloon_pending ""
     }
 }
 
@@ -1227,7 +1227,7 @@ namespace eval synth {
 namespace eval synth {
 
     if { $synth::flag_debug } {
-	synth::report "Performing required interactions with window manager\n"
+        synth::report "Performing required interactions with window manager\n"
     }
 
     # The toplevel is withdrawn during startup. It is possible that
@@ -1244,7 +1244,7 @@ namespace eval synth {
     
     variable title "eCos synthetic target"
     if { "" != $synth::ecos_appname} {
-	append synth::title ": $synth::ecos_appname ($synth::_ppid)"
+        append synth::title ": $synth::ecos_appname ($synth::_ppid)"
     }
     wm title . $synth::title
 
@@ -1253,40 +1253,40 @@ namespace eval synth {
     # window manager being used.
     set _geometry ""
     if { "" ==  $synth::geometry} {
-	# Command line request to suppress the preferences. Revert
-	# to a default size.
-	set _geometry "640x480"
+        # Command line request to suppress the preferences. Revert
+        # to a default size.
+        set _geometry "640x480"
     } elseif { "<none>" == $synth::geometry } {
-	# No command line option, use the value from the preferences file
-	# FIXME: implement
-	set _geometry "640x480"
+        # No command line option, use the value from the preferences file
+        # FIXME: implement
+        set _geometry "640x480"
     } else {
-	# There was an explicit -geometry option on the command line. Use it.
-	set synth::_geometry $synth::geometry
-	if { [regexp -- {^([0-9]+x[0-9]+).*$} $synth::_geometry] } {
-	    wm sizefrom . "user"
-	}
-	if { [regexp -- {^.*([+-][0-9]+[+-][0-9]+)$} $synth::_geometry] } {
-	    wm positionfrom . "user"
-	}
+        # There was an explicit -geometry option on the command line. Use it.
+        set synth::_geometry $synth::geometry
+        if { [regexp -- {^([0-9]+x[0-9]+).*$} $synth::_geometry] } {
+            wm sizefrom . "user"
+        }
+        if { [regexp -- {^.*([+-][0-9]+[+-][0-9]+)$} $synth::_geometry] } {
+            wm positionfrom . "user"
+        }
     }
     wm geometry . $synth::_geometry
     unset synth::_geometry
 
     set _file [file join $synth::install_dir "ecosicon.xbm"]
     if { [file readable $synth::_file] } {
-	wm iconbitmap . "@$synth::_file"
+        wm iconbitmap . "@$synth::_file"
     }
     set _file [file join $synth::install_dir "ecosiconmask.xbm"]
     if { [file readable $synth::_file] } {
-	wm iconmask . "@$synth::_file"
+        wm iconmask . "@$synth::_file"
     }
     unset synth::_file
     
     if { "" != $synth::ecos_appname } {
-	wm iconname . "ecosynth: $synth::ecos_appname"
+        wm iconname . "ecosynth: $synth::ecos_appname"
     } else {
-	wm iconname . "ecosynth"
+        wm iconname . "ecosynth"
     }
 
     wm protocol . "WM_DELETE_WINDOW" synth::_handle_exit_request
@@ -1321,48 +1321,48 @@ namespace eval synth {
     variable _handle_exit_after   ""
     
     proc _handle_exit_request { } {
+        if { !$synth::ecos_running } {
+            after idle destroy .
+            return
+        }
+        # Setting this flag causes ecosynth to exit immediately once
+        # the application terminates.
+        set synth::flag_immediate_exit 1
 
-	if { !$synth::ecos_running } {
-	    exit 0
-	}
-	# Setting this flag causes ecosynth to exit immediately once
-	# the application terminates.
-	set synth::flag_immediate_exit 1
+        # Now ask the application to exit
+        synth::request_application_exit
 
-	# Now ask the application to exit
-	synth::request_application_exit
+        # Set up a timer to retry this
+        if { "" == $synth::_handle_exit_after } {
+            set synth::_handle_exit_after [after 1000 synth::_handle_exit_timer]
 
-	# Set up a timer to retry this
-	if { "" == $synth::_handle_exit_after } {
-	    set synth::_handle_exit_after [after 1000 synth::_handle_exit_timer]
-
-	    # And output something so the user knows the request has been received
-	    synth::report "Waiting for the eCos application to exit.\n"
-	}
+            # And output something so the user knows the request has been received
+            synth::report "Waiting for the eCos application to exit.\n"
+        }
     }
 
     # This routine requests termination of eCos, but not of 
     # ecosynth
     proc _handle_kill_request { } {
-	if { $synth::ecos_running } {
-	    synth::request_application_exit
-	    if { "" == $synth::_handle_exit_after } {
-		set synth::_handle_exit_after [after 1000 synth::_handle_exit_timer]
-	    }
-	}
+        if { $synth::ecos_running } {
+            synth::request_application_exit
+            if { "" == $synth::_handle_exit_after } {
+                set synth::_handle_exit_after [after 1000 synth::_handle_exit_timer]
+            }
+        }
     }
 
     proc _handle_exit_timer { } {
-	if { $synth::ecos_running } {
-	    incr synth::_handle_exit_retries
-	    if { $synth::_handle_exit_retries < 5 } {
-		synth::request_application_exit
-		synth::report "Still waiting for the eCos application to exit.\n"
-	    } else {
-		synth::_send_SIGKILL
-	    }
-	    set synth::_handle_exit_after [after 1000 synth::_handle_exit_timer]
-	}
+        if { $synth::ecos_running } {
+            incr synth::_handle_exit_retries
+            if { $synth::_handle_exit_retries < 5 } {
+                synth::request_application_exit
+                synth::report "Still waiting for the eCos application to exit.\n"
+            } else {
+                synth::_send_SIGKILL
+            }
+            set synth::_handle_exit_after [after 1000 synth::_handle_exit_timer]
+        }
     }
 }
 
@@ -1428,7 +1428,7 @@ bind . <Control-KeyPress-s> [list synth::_handle_file_save]
 # Once eCos has exited, the kill option should be disabled
 namespace eval synth {
     proc _menubar_ecos_exit_clean { arg_list } {
-	.menubar.file entryconfigure "Kill eCos" -state disabled
+        .menubar.file entryconfigure "Kill eCos" -state disabled
     }
     synth::hook_add "ecos_exit" synth::_menubar_ecos_exit_clean
 }
@@ -1569,7 +1569,7 @@ grid rowconfigure .main 4 -weight 0
 namespace eval synth {
 
     if { $synth::flag_debug } {
-	synth::report "Setting up help menu\n"
+        synth::report "Setting up help menu\n"
     }
     
     variable _browser1   "mozilla -remote openURL(%s)"
@@ -1580,60 +1580,60 @@ namespace eval synth {
     set _repo ""
     
     if { [info exists env(ECOS_REPOSITORY)] } {
-	set _repo $env(ECOS_REPOSITORY)
+        set _repo $env(ECOS_REPOSITORY)
     } else {
-	set _repo $synth::_ecos_repository
+        set _repo $synth::_ecos_repository
     }
     if { ![file exists [file join $_repo "ecos.db"]] } {
-	synth::report_warning "Failed to locate eCos component repository.\n   \
-		Please define an environment variable ECOS_REPOSITORY.\n"
+        synth::report_warning "Failed to locate eCos component repository.\n   \
+        Please define an environment variable ECOS_REPOSITORY.\n"
     } else {
-	# FIXME: this needs attention once the documentation is more sorted
-	set synth::_main_help [file join $_repo "index.html"]
-	if { ![file exists $synth::_main_help] } {
-	    if { 0 } {
-		synth::report_warning "Failed to locate toplevel documentation file $synth::_main_help\n   \
-	                               Help->eCos menu option disabled.\n"
-	    }
-	    set synth::_main_help ""
-	} else {
-	    set synth::_main_help "file://$_main_help"
-	}
-	
-	set synth::_synth_help [file join $_repo $synth::_ecosynth_package_dir $synth::_ecosynth_package_version "doc/hal-synth-arch.html"]
-	if { ![file exists $synth::_synth_help] } {
-	    synth::report_warning "Failed to locate synthetic target documentation $synth::_synth_help\n   \
-		    Help->Synthetic target menu option disabled.\n"
-	    set synth::_synth_help ""
-	} else {
-	    set synth::_synth_help "file://$_synth_help"
-	}
+        # FIXME: this needs attention once the documentation is more sorted
+        set synth::_main_help [file join $_repo "index.html"]
+        if { ![file exists $synth::_main_help] } {
+            if { 0 } {
+                synth::report_warning "Failed to locate toplevel documentation file $synth::_main_help\n   \
+                                   Help->eCos menu option disabled.\n"
+            }
+            set synth::_main_help ""
+        } else {
+            set synth::_main_help "file://$_main_help"
+        }
+        
+        set synth::_synth_help [file join $_repo $synth::_ecosynth_package_dir $synth::_ecosynth_package_version "doc/hal-synth-arch.html"]
+        if { ![file exists $synth::_synth_help] } {
+            synth::report_warning "Failed to locate synthetic target documentation $synth::_synth_help\n   \
+            Help->Synthetic target menu option disabled.\n"
+            set synth::_synth_help ""
+        } else {
+            set synth::_synth_help "file://$_synth_help"
+        }
     }
 
     if { "" != $_main_help } {
-	.menubar.help add command -label "eCos" -command [list synth::_menu_help $synth::handle_help]
+        .menubar.help add command -label "eCos" -command [list synth::_menu_help $synth::handle_help]
     } else {
-	.menubar.help add command -label "eCos" -state disabled
+        .menubar.help add command -label "eCos" -state disabled
     }
     if { "" != $_synth_help } {
-	.menubar.help add command -label "Synthetic target" -command [list synth::handle_help "$synth::_synth_help"]
+        .menubar.help add command -label "Synthetic target" -command [list synth::handle_help "$synth::_synth_help"]
     } else {
-	.menubar.help add command -label "Synthetic target" -state disabled
+        .menubar.help add command -label "Synthetic target" -state disabled
     }
     
     unset _repo
     
     proc handle_help { which } {
-	set command [format $synth::_browser1 $which]
-	if { 0 != [catch { eval exec -- "$command > /dev/null" } & ] } {
-	    set command [format $synth::_browser2 $which]
-	    if { 0 != [catch { eval exec -- "$command > /dev/null &" } ] } {
-		set command [format $synth::_browser3 $which]
-		if { 0 != [catch { eval exec -- "$command > /dev/null &"} ] } {
-		    synth::report_warning "Unable to start a help browser.\n   Please check the settings in Edit->Preferences.\n"
-		}
-	    }
-	}
+        set command [format $synth::_browser1 $which]
+        if { 0 != [catch { eval exec -- "$command > /dev/null" } & ] } {
+            set command [format $synth::_browser2 $which]
+            if { 0 != [catch { eval exec -- "$command > /dev/null &" } ] } {
+                set command [format $synth::_browser3 $which]
+                if { 0 != [catch { eval exec -- "$command > /dev/null &"} ] } {
+                    synth::report_warning "Unable to start a help browser.\n   Please check the settings in Edit->Preferences.\n"
+                }
+            }
+        }
     }
 
     # FIXME: add an about box as well.
@@ -1670,15 +1670,15 @@ namespace eval synth {
 
     # Does a given system filter already exist?
     proc filter_exists { name } {
-	set result 0
-	if { -1 != [lsearch -exact $synth::_system_filter_list $name] } {
-	    set result 1
-	}
-	return $result
+        set result 0
+        if { -1 != [lsearch -exact $synth::_system_filter_list $name] } {
+            set result 1
+        }
+        return $result
     }
 
     proc filter_get_list { } {
-	return $synth::_system_filter_list
+        return $synth::_system_filter_list
     }
     
     # Parsing support. All filters take a number of standard options:
@@ -1697,153 +1697,153 @@ namespace eval synth {
     # used with user-provided data, e.g. from the target definition file,
     # after a call to filter_validate.
     proc filter_parse_options { arg_list result_ref message_ref } {
-	upvar 1 $result_ref result
-	upvar 1 $message_ref message
-	set message ""
+        upvar 1 $result_ref result
+        upvar 1 $message_ref message
+        set message ""
 
-	set text_set        0
-	set hide_set        0
-	set foreground_set  0
-	set background_set  0
-	
-	set len [llength $arg_list]
-	for { set i 0 } { $i < $len } { incr i } {
-	    set arg [lindex $arg_list $i]
-	    if { ( "-text" == $arg) ||
-	         ( "-hide" == $arg) ||
-	         ( "-foreground" == $arg) || ( "-fg" == $arg) ||
-	         ( "-background" == $arg) || ( "-bg" == $arg) } {
+        set text_set        0
+        set hide_set        0
+        set foreground_set  0
+        set background_set  0
+        
+        set len [llength $arg_list]
+        for { set i 0 } { $i < $len } { incr i } {
+            set arg [lindex $arg_list $i]
+            if { ( "-text" == $arg) ||
+                 ( "-hide" == $arg) ||
+                 ( "-foreground" == $arg) || ( "-fg" == $arg) ||
+                 ( "-background" == $arg) || ( "-bg" == $arg) } {
 
-		 incr i
-                 if { $i >= $len } {
-		     append message "    Missing data after argument $arg\n"
-		 } else {
-		     set data [lindex $arg_list $i]
-		     if { "-text" == $arg } {
-			 if { $text_set } {
-			     append message "    Attempt to set -text option twice.\n"
-			 } else {
-			     set text_set 1
-			     set result("-text") $data
-			 }
-		     } elseif { "-hide" == $arg } {
-			 if { $hide_set } {
-			     append message "    Attempt to set -hide option twice.\n"
-			 } else {
-			     set hide_set 1
-			     if { ! [string is boolean -strict $data] } {
-				 append message "    -hide should be given a boolean value, not \"$data\"\n"
-			     } else {
-				 set result("-hide") [expr $data ? 1 : 0]
-			     }
-			 }
-		     } elseif { ( "-foreground" == $arg) || ( "-fg" == $arg ) } {
-			 if { $foreground_set } {
-			     append message "    Attempt to set -foreground twice.\n"
-			 } else {
-			     set foreground_set 1
-			     # FIXME: is there some way of validating this color?
-			     set result("-foreground") $data
-			 }
-		     } elseif { ( "-background" == $arg) || ( "-bg" == $arg ) } {
-			 if { $background_set } {
-			     append message "    Attempt to set -background twice.\n"
-			 } else {
-			     set background_set 1
-			     # FIXME: is there some way of validating this color?
-			     set result("-background") $data
-			 }
-		     }
-		 }
-	     } else {
-		 append message "    Unknown option \"$arg\".\n"
-	     }
-	}
+                incr i
+                if { $i >= $len } {
+                    append message "    Missing data after argument $arg\n"
+                } else {
+                    set data [lindex $arg_list $i]
+                    if { "-text" == $arg } {
+                        if { $text_set } {
+                            append message "    Attempt to set -text option twice.\n"
+                        } else {
+                            set text_set 1
+                            set result("-text") $data
+                        }
+                    } elseif { "-hide" == $arg } {
+                        if { $hide_set } {
+                            append message "    Attempt to set -hide option twice.\n"
+                        } else {
+                            set hide_set 1
+                            if { ! [string is boolean -strict $data] } {
+                                append message "    -hide should be given a boolean value, not \"$data\"\n"
+                            } else {
+                                set result("-hide") [expr $data ? 1 : 0]
+                            }
+                        }
+                    } elseif { ( "-foreground" == $arg) || ( "-fg" == $arg ) } {
+                        if { $foreground_set } {
+                            append message "    Attempt to set -foreground twice.\n"
+                        } else {
+                            set foreground_set 1
+                            # FIXME: is there some way of validating this color?
+                            set result("-foreground") $data
+                        }
+                    } elseif { ( "-background" == $arg) || ( "-bg" == $arg ) } {
+                        if { $background_set } {
+                            append message "    Attempt to set -background twice.\n"
+                        } else {
+                            set background_set 1
+                            # FIXME: is there some way of validating this color?
+                            set result("-background") $data
+                        }
+                    }
+                }
+            } else {
+                append message "    Unknown option \"$arg\".\n"
+            }
+        }
 
-	if { "" == $message } {
-	    return 1
-	} else {
-	    return 0
-	}
+        if { "" == $message } {
+            return 1
+        } else {
+            return 0
+        }
     }
 
     # Add a new system filter, after the options have been parsed 
     proc filter_add_parsed { name data_ref } {
-	upvar 1 $data_ref data
+        upvar 1 $data_ref data
 
-	set text       $name
-	set hide       0
-	set foreground "<default>"
-	set background "<default>"
-	if { [info exists data("-text")] } {
-	    set text $data("-text")
-	}
-	if { [info exists data("-hide")] } {
-	    set hide $data("-hide")
-	}
-	if { [info exists data("-foreground")] } {
-	    set foreground $data("-foreground")
-	} 
-	if { [info exists data("-background")] } {
-	    set background $data("-background")
-	}
-	
-	if { $hide } {
-	    .main.centre.text tag configure $name -elide 1
-	} else {
-	    .main.centre.text tag configure $name -elide 0
-	}
-	if { "<default>" == $foreground } {
-	    .main.centre.text tag configure $name -foreground [.main.centre.text cget -foreground]
-	} else {
-	    set msg ""
-	    if [catch {	.main.centre.text tag configure $name -foreground $foreground } msg ] {
-		synth::report_warning "Unable to configure color \"$foreground\"\n    $msg\n"
-		set foreground "<default>"
-		.main.centre.text tag configure $name -foreground [.main.centre.text cget -foreground]
-	    }
-	}
-	if { "<default>" == $background } {
-	    .main.centre.text tag configure $name -background [.main.centre.text cget -background]
-	} else {
-	    set msg ""
-	    if [catch {	.main.centre.text tag configure $name -background $background } msg ] {
-		synth::report_warning "Unable to configure color \"$background\"\n    $msg\n"
-		set background "<default>"
-		.main.centre.text tag configure $name -background [.main.centre.text cget -background]
-	    }
-	}
-	
-	lappend synth::_system_filter_list $name
-	set synth::_system_filter_settings($name,text)       $text
-	set synth::_system_filter_settings($name,hide)       $hide
-	set synth::_system_filter_settings($name,foreground) $foreground
-	set synth::_system_filter_settings($name,background) $background
+        set text       $name
+        set hide       0
+        set foreground "<default>"
+        set background "<default>"
+        if { [info exists data("-text")] } {
+            set text $data("-text")
+        }
+        if { [info exists data("-hide")] } {
+            set hide $data("-hide")
+        }
+        if { [info exists data("-foreground")] } {
+            set foreground $data("-foreground")
+        } 
+        if { [info exists data("-background")] } {
+            set background $data("-background")
+        }
+        
+        if { $hide } {
+            .main.centre.text tag configure $name -elide 1
+        } else {
+            .main.centre.text tag configure $name -elide 0
+        }
+        if { "<default>" == $foreground } {
+            .main.centre.text tag configure $name -foreground [.main.centre.text cget -foreground]
+        } else {
+            set msg ""
+            if [catch { .main.centre.text tag configure $name -foreground $foreground } msg ] {
+                synth::report_warning "Unable to configure color \"$foreground\"\n    $msg\n"
+                set foreground "<default>"
+                .main.centre.text tag configure $name -foreground [.main.centre.text cget -foreground]
+            }
+        }
+        if { "<default>" == $background } {
+            .main.centre.text tag configure $name -background [.main.centre.text cget -background]
+        } else {
+            set msg ""
+            if [catch { .main.centre.text tag configure $name -background $background } msg ] {
+                synth::report_warning "Unable to configure color \"$background\"\n    $msg\n"
+                set background "<default>"
+                .main.centre.text tag configure $name -background [.main.centre.text cget -background]
+            }
+        }
+        
+        lappend synth::_system_filter_list $name
+        set synth::_system_filter_settings($name,text)       $text
+        set synth::_system_filter_settings($name,hide)       $hide
+        set synth::_system_filter_settings($name,foreground) $foreground
+        set synth::_system_filter_settings($name,background) $background
 
-	# System tags should only get added during initialization. Hence the
-	# first time the system filters window is brought up all filters
-	# should be defined. However, just in case a new filter is added
-	# in the middle of a run...
-	if { [winfo exists .system_filters] } {
-	    destroy .system_filters
-	}
+        # System tags should only get added during initialization. Hence the
+        # first time the system filters window is brought up all filters
+        # should be defined. However, just in case a new filter is added
+        # in the middle of a run...
+        if { [winfo exists .system_filters] } {
+            destroy .system_filters
+        }
     }
     
     # Add a new system filter, performing the appropriate parsing.
     proc filter_add { name args } {
 
-	if { [synth::filter_exists $name] } {
-	    synth::internal_error "attempt to install filter $name twice.\n"
-	}
-	array set data [list]
-	set   msg ""
+        if { [synth::filter_exists $name] } {
+            synth::internal_error "attempt to install filter $name twice.\n"
+        }
+        array set data [list]
+        set   msg ""
 
-	if { ![synth::filter_parse_options $args data msg] } {
-	    # Any dubious arguments to the internal filter_add are treated as fatal.
-	    synth::internal_error "unable to create new filter $name.\n$msg"
-	} else {
-	    filter_add_parsed $name data
-	}
+        if { ![synth::filter_parse_options $args data msg] } {
+            # Any dubious arguments to the internal filter_add are treated as fatal.
+            synth::internal_error "unable to create new filter $name.\n$msg"
+        } else {
+            filter_add_parsed $name data
+        }
     }
 
     filter_add "report"  -text "ecosynth messages"
@@ -1861,122 +1861,122 @@ namespace eval synth {
     variable _system_filter_widgets
     
     proc _menu_view_system_filters { } {
-	if { [winfo exists .system_filters] } {
-	    if { "normal" == [wm state .system_filters] } {
-		raise .system_filters
-	    } else {
-		wm deiconify .system_filters
-	    }
-	    return
-	}
-	toplevel .system_filters
-	wm title .system_filters "ecosynth system filters"
-	wm protocol .system_filters "WM_DELETE_WINDOW" [list synth::_menu_view_system_filters_cancel]
-	wm group .system_filters .
-	
-	frame .system_filters.main
-	label .system_filters.main.header1 -text "Filter"
-	label .system_filters.main.header2 -text "Hide"
-	label .system_filters.main.header3 -text "Foreground"
-	label .system_filters.main.header4 -text "Background"
-	set text_fg [.system_filters.main.header1 cget -foreground]
-	frame .system_filters.main.row0 -height 1 -background $text_fg
-	frame .system_filters.main.row2 -height 1 -background $text_fg
-	frame .system_filters.main.col0 -width 1  -background $text_fg
-	frame .system_filters.main.col2 -width 1  -background $text_fg
-	frame .system_filters.main.col4 -width 1  -background $text_fg
-	frame .system_filters.main.col6 -width 1  -background $text_fg
-	frame .system_filters.main.col8 -width 1  -background $text_fg
-	grid .system_filters.main.row0 -row 0 -column 0 -columnspan 9 -sticky ew
-	grid .system_filters.main.header1 -row 1 -column 1 -sticky news
-	grid .system_filters.main.header2 -row 1 -column 3 -sticky news
-	grid .system_filters.main.header3 -row 1 -column 5 -sticky news
-	grid .system_filters.main.header4 -row 1 -column 7 -sticky news
-	grid .system_filters.main.row2 -row 2 -column 0 -columnspan 9 -sticky ew
+        if { [winfo exists .system_filters] } {
+            if { "normal" == [wm state .system_filters] } {
+                raise .system_filters
+            } else {
+                wm deiconify .system_filters
+            }
+            return
+        }
+        toplevel .system_filters
+        wm title .system_filters "ecosynth system filters"
+        wm protocol .system_filters "WM_DELETE_WINDOW" [list synth::_menu_view_system_filters_cancel]
+        wm group .system_filters .
+        
+        frame .system_filters.main
+        label .system_filters.main.header1 -text "Filter"
+        label .system_filters.main.header2 -text "Hide"
+        label .system_filters.main.header3 -text "Foreground"
+        label .system_filters.main.header4 -text "Background"
+        set text_fg [.system_filters.main.header1 cget -foreground]
+        frame .system_filters.main.row0 -height 1 -background $text_fg
+        frame .system_filters.main.row2 -height 1 -background $text_fg
+        frame .system_filters.main.col0 -width 1  -background $text_fg
+        frame .system_filters.main.col2 -width 1  -background $text_fg
+        frame .system_filters.main.col4 -width 1  -background $text_fg
+        frame .system_filters.main.col6 -width 1  -background $text_fg
+        frame .system_filters.main.col8 -width 1  -background $text_fg
+        grid .system_filters.main.row0 -row 0 -column 0 -columnspan 9 -sticky ew
+        grid .system_filters.main.header1 -row 1 -column 1 -sticky news
+        grid .system_filters.main.header2 -row 1 -column 3 -sticky news
+        grid .system_filters.main.header3 -row 1 -column 5 -sticky news
+        grid .system_filters.main.header4 -row 1 -column 7 -sticky news
+        grid .system_filters.main.row2 -row 2 -column 0 -columnspan 9 -sticky ew
 
-	set row 3
-	foreach filter $synth::_system_filter_list {
-	    set synth::_system_filter_new_settings($filter,hide) $synth::_system_filter_settings($filter,hide)
-	    set synth::_system_filter_new_settings($filter,foreground) $synth::_system_filter_settings($filter,foreground)
-	    set synth::_system_filter_new_settings($filter,background) $synth::_system_filter_settings($filter,background)
-	    
-	    set synth::_system_filter_widgets($filter,label) \
-		    [label .system_filters.main.filter_name_$row -text $synth::_system_filter_settings($filter,text)]
-	    set synth::_system_filter_widgets($filter,hide) \
-		    [checkbutton .system_filters.main.filter_hide_$row -borderwidth 2 -indicatoron false -selectcolor "" \
-		    -image $synth::image_tick_no -selectimage $synth::image_tick_yes -variable synth::_system_filter_new_settings($filter,hide)]
-	    set synth::_system_filter_widgets($filter,foreground) [button .system_filters.main.filter_foreground_$row -borderwidth 2 \
-		    -command [list synth::_menu_view_system_filters_choose_foreground $filter]]
-	    set synth::_system_filter_widgets($filter,background) [button .system_filters.main.filter_background_$row -borderwidth 2 \
-		    -command [list synth::_menu_view_system_filters_choose_background $filter]]
+        set row 3
+        foreach filter $synth::_system_filter_list {
+            set synth::_system_filter_new_settings($filter,hide) $synth::_system_filter_settings($filter,hide)
+            set synth::_system_filter_new_settings($filter,foreground) $synth::_system_filter_settings($filter,foreground)
+            set synth::_system_filter_new_settings($filter,background) $synth::_system_filter_settings($filter,background)
+            
+            set synth::_system_filter_widgets($filter,label) \
+                [label .system_filters.main.filter_name_$row -text $synth::_system_filter_settings($filter,text)]
+            set synth::_system_filter_widgets($filter,hide) \
+                [checkbutton .system_filters.main.filter_hide_$row -borderwidth 2 -indicatoron false -selectcolor "" \
+                     -image $synth::image_tick_no -selectimage $synth::image_tick_yes -variable synth::_system_filter_new_settings($filter,hide)]
+            set synth::_system_filter_widgets($filter,foreground) [button .system_filters.main.filter_foreground_$row -borderwidth 2 \
+                                                                       -command [list synth::_menu_view_system_filters_choose_foreground $filter]]
+            set synth::_system_filter_widgets($filter,background) [button .system_filters.main.filter_background_$row -borderwidth 2 \
+                                                                       -command [list synth::_menu_view_system_filters_choose_background $filter]]
 
-	    grid .system_filters.main.filter_name_$row       -row $row -column 1 -sticky news
-	    grid .system_filters.main.filter_hide_$row       -row $row -column 3 -sticky news
-	    grid .system_filters.main.filter_foreground_$row -row $row -column 5 -sticky news
-	    grid .system_filters.main.filter_background_$row -row $row -column 7 -sticky news
+            grid .system_filters.main.filter_name_$row       -row $row -column 1 -sticky news
+            grid .system_filters.main.filter_hide_$row       -row $row -column 3 -sticky news
+            grid .system_filters.main.filter_foreground_$row -row $row -column 5 -sticky news
+            grid .system_filters.main.filter_background_$row -row $row -column 7 -sticky news
 
-	    incr row
-	    frame .system_filters.main.row$row -height 1 -background $text_fg
-	    grid .system_filters.main.row$row -row $row -column 0 -columnspan 9 -sticky ew
-	    incr row
-	}
-	grid .system_filters.main.col0 -row 0 -column 0 -rowspan $row -sticky ns
-	grid .system_filters.main.col2 -row 0 -column 2 -rowspan $row -sticky ns
-	grid .system_filters.main.col4 -row 0 -column 4 -rowspan $row -sticky ns
-	grid .system_filters.main.col6 -row 0 -column 6 -rowspan $row -sticky ns
-	grid .system_filters.main.col8 -row 0 -column 8 -rowspan $row -sticky ns
+            incr row
+            frame .system_filters.main.row$row -height 1 -background $text_fg
+            grid .system_filters.main.row$row -row $row -column 0 -columnspan 9 -sticky ew
+            incr row
+        }
+        grid .system_filters.main.col0 -row 0 -column 0 -rowspan $row -sticky ns
+        grid .system_filters.main.col2 -row 0 -column 2 -rowspan $row -sticky ns
+        grid .system_filters.main.col4 -row 0 -column 4 -rowspan $row -sticky ns
+        grid .system_filters.main.col6 -row 0 -column 6 -rowspan $row -sticky ns
+        grid .system_filters.main.col8 -row 0 -column 8 -rowspan $row -sticky ns
 
-	for { set i 0 } { $i < $row } { incr i 2 } {
-	    grid rowconfigure .system_filters.main $i -weight 0
-	}
-	for { set i 1 } { $i < $row } { incr i 2 } {
-	    grid rowconfigure .system_filters.main $i -weight 1
-	}
-	for { set i 0 } { $i < 9 } { incr i 2 } {
-	    grid columnconfigure .system_filters.main $i -weight 0
-	}
-	for { set i 1 } { $i < 9 } { incr i 2 } {
-	    grid columnconfigure .system_filters.main $i -weight 1
-	}
-	
-	pack .system_filters.main -side top -fill both -expand 1 -pady 4 -padx 4
+        for { set i 0 } { $i < $row } { incr i 2 } {
+            grid rowconfigure .system_filters.main $i -weight 0
+        }
+        for { set i 1 } { $i < $row } { incr i 2 } {
+            grid rowconfigure .system_filters.main $i -weight 1
+        }
+        for { set i 0 } { $i < 9 } { incr i 2 } {
+            grid columnconfigure .system_filters.main $i -weight 0
+        }
+        for { set i 1 } { $i < 9 } { incr i 2 } {
+            grid columnconfigure .system_filters.main $i -weight 1
+        }
+        
+        pack .system_filters.main -side top -fill both -expand 1 -pady 4 -padx 4
 
-	# FIXME: add try and revert buttons
-	frame .system_filters.buttons
-	button .system_filters.buttons.ok     -text "OK"     -command [list synth::_menu_view_system_filters_ok]
-	button .system_filters.buttons.cancel -text "Cancel" -command [list synth::_menu_view_system_filters_cancel]
-	pack .system_filters.buttons.ok .system_filters.buttons.cancel -side left -expand 1
-	pack .system_filters.buttons -side bottom -fill x -pady 4
+        # FIXME: add try and revert buttons
+        frame .system_filters.buttons
+        button .system_filters.buttons.ok     -text "OK"     -command [list synth::_menu_view_system_filters_ok]
+        button .system_filters.buttons.cancel -text "Cancel" -command [list synth::_menu_view_system_filters_cancel]
+        pack .system_filters.buttons.ok .system_filters.buttons.cancel -side left -expand 1
+        pack .system_filters.buttons -side bottom -fill x -pady 4
 
-	frame .system_filters.separator -height 2 -borderwidth 1 -relief sunken
-	pack .system_filters.separator -side bottom -fill x -pady 4
+        frame .system_filters.separator -height 2 -borderwidth 1 -relief sunken
+        pack .system_filters.separator -side bottom -fill x -pady 4
 
-	bind .system_filters <KeyPress-Return> [list synth::_menu_view_system_filters_ok]
-	bind .system_filters <KeyPress-Escape> [list synth::_menu_view_system_filters_cancel]
+        bind .system_filters <KeyPress-Return> [list synth::_menu_view_system_filters_ok]
+        bind .system_filters <KeyPress-Escape> [list synth::_menu_view_system_filters_cancel]
 
-	synth::_menu_view_system_filters_reset
+        synth::_menu_view_system_filters_reset
     }
 
     proc _menu_view_system_filters_reset { } {
-	foreach filter $synth::_system_filter_list {
-	    set synth::_system_filter_new_settings($filter,hide) $synth::_system_filter_settings($filter,hide)
-	    set synth::_system_filter_new_settings($filter,foreground) $synth::_system_filter_settings($filter,foreground)
-	    set synth::_system_filter_new_settings($filter,background) $synth::_system_filter_settings($filter,background)
+        foreach filter $synth::_system_filter_list {
+            set synth::_system_filter_new_settings($filter,hide) $synth::_system_filter_settings($filter,hide)
+            set synth::_system_filter_new_settings($filter,foreground) $synth::_system_filter_settings($filter,foreground)
+            set synth::_system_filter_new_settings($filter,background) $synth::_system_filter_settings($filter,background)
 
-	    set colour $synth::_system_filter_new_settings($filter,foreground)
-	    if { "<default>" == $colour } {
-		set colour [.system_filters.main.header1 cget -foreground]
-	    }
-	    $synth::_system_filter_widgets($filter,label) configure -foreground $colour 
-	    $synth::_system_filter_widgets($filter,foreground) configure -background $colour -activebackground $colour
+            set colour $synth::_system_filter_new_settings($filter,foreground)
+            if { "<default>" == $colour } {
+                set colour [.system_filters.main.header1 cget -foreground]
+            }
+            $synth::_system_filter_widgets($filter,label) configure -foreground $colour 
+            $synth::_system_filter_widgets($filter,foreground) configure -background $colour -activebackground $colour
 
-	    set colour $synth::_system_filter_new_settings($filter,background)
-	    if { "<default>" == $colour } {
-		set colour [.system_filters.main.header1 cget -background]
-	    }
-	    $synth::_system_filter_widgets($filter,label) configure -background $colour
-	    $synth::_system_filter_widgets($filter,background) configure -background $colour -activebackground $colour
-	}
+            set colour $synth::_system_filter_new_settings($filter,background)
+            if { "<default>" == $colour } {
+                set colour [.system_filters.main.header1 cget -background]
+            }
+            $synth::_system_filter_widgets($filter,label) configure -background $colour
+            $synth::_system_filter_widgets($filter,background) configure -background $colour -activebackground $colour
+        }
     }
 
     # Change a colour. For now this involves calling Tk's chooseColor utility.
@@ -1985,61 +1985,61 @@ namespace eval synth {
     # immediate feedback on how the text will actually appear; it should also
     # provide some simple way of reverting to the default.
     proc _menu_view_system_filters_choose_foreground { filter } {
-	set current_colour $synth::_system_filter_new_settings($filter,foreground)
-	if { "<default>" == $current_colour } {
-	    set current_colour [.system_filters.main.header1 cget -foreground]
-	}
-	set new_colour [tk_chooseColor -parent .system_filters -title "$synth::_system_filter_settings($filter,text) foreground" \
-		-initialcolor $current_colour]
-	if { "" != $new_colour } {
-	    set synth::_system_filter_new_settings($filter,foreground) $new_colour
-	    $synth::_system_filter_widgets($filter,label) configure -foreground $new_colour
-	    $synth::_system_filter_widgets($filter,foreground) configure -background $new_colour -activebackground $new_colour
-	}
+        set current_colour $synth::_system_filter_new_settings($filter,foreground)
+        if { "<default>" == $current_colour } {
+            set current_colour [.system_filters.main.header1 cget -foreground]
+        }
+        set new_colour [tk_chooseColor -parent .system_filters -title "$synth::_system_filter_settings($filter,text) foreground" \
+                            -initialcolor $current_colour]
+        if { "" != $new_colour } {
+            set synth::_system_filter_new_settings($filter,foreground) $new_colour
+            $synth::_system_filter_widgets($filter,label) configure -foreground $new_colour
+            $synth::_system_filter_widgets($filter,foreground) configure -background $new_colour -activebackground $new_colour
+        }
     }
     
     proc _menu_view_system_filters_choose_background { filter } {
-	set current_colour $synth::_system_filter_new_settings($filter,background)
-	if { "<default>" == $current_colour } {
-	    set current_colour [.system_filters.main.header1 cget -background]
-	}
-	set new_colour [tk_chooseColor -parent .system_filters -title "$synth::_system_filter_settings($filter,text) background" \
-		-initialcolor $current_colour]
-	if { "" != $new_colour } {
-	    set synth::_system_filter_new_settings($filter,background) $new_colour
-	    $synth::_system_filter_widgets($filter,label) configure -background $new_colour
-	    $synth::_system_filter_widgets($filter,background) configure -background $new_colour -activebackground $new_colour
-	}
+        set current_colour $synth::_system_filter_new_settings($filter,background)
+        if { "<default>" == $current_colour } {
+            set current_colour [.system_filters.main.header1 cget -background]
+        }
+        set new_colour [tk_chooseColor -parent .system_filters -title "$synth::_system_filter_settings($filter,text) background" \
+                            -initialcolor $current_colour]
+        if { "" != $new_colour } {
+            set synth::_system_filter_new_settings($filter,background) $new_colour
+            $synth::_system_filter_widgets($filter,label) configure -background $new_colour
+            $synth::_system_filter_widgets($filter,background) configure -background $new_colour -activebackground $new_colour
+        }
     }
     
     proc _menu_view_system_filters_ok { } {
-	wm withdraw .system_filters
-	foreach filter $synth::_system_filter_list {
-	    if { $synth::_system_filter_settings($filter,hide) != $synth::_system_filter_new_settings($filter,hide) } {
-		set hide $synth::_system_filter_new_settings($filter,hide)
-		set synth::_system_filter_settings($filter,hide) $hide
-		if { $hide } {
-		    .main.centre.text tag configure $filter -elide 1
-		} else {
-		    .main.centre.text tag configure $filter -elide 0
-		}
-	    }
-	    if { $synth::_system_filter_settings($filter,foreground) != $synth::_system_filter_new_settings($filter,foreground) } {
-		set foreground $synth::_system_filter_new_settings($filter,foreground)
-		set synth::_system_filter_settings($filter,foreground) $foreground
-		.main.centre.text tag configure $filter -foreground $foreground
-	    }
-	    if { $synth::_system_filter_settings($filter,background) != $synth::_system_filter_new_settings($filter,background) } {
-		set background $synth::_system_filter_new_settings($filter,background)
-		set synth::_system_filter_settings($filter,background) $background
-		.main.centre.text tag configure $filter -background $background
-	    }
-	}
+        wm withdraw .system_filters
+        foreach filter $synth::_system_filter_list {
+            if { $synth::_system_filter_settings($filter,hide) != $synth::_system_filter_new_settings($filter,hide) } {
+                set hide $synth::_system_filter_new_settings($filter,hide)
+                set synth::_system_filter_settings($filter,hide) $hide
+                if { $hide } {
+                    .main.centre.text tag configure $filter -elide 1
+                } else {
+                    .main.centre.text tag configure $filter -elide 0
+                }
+            }
+            if { $synth::_system_filter_settings($filter,foreground) != $synth::_system_filter_new_settings($filter,foreground) } {
+                set foreground $synth::_system_filter_new_settings($filter,foreground)
+                set synth::_system_filter_settings($filter,foreground) $foreground
+                .main.centre.text tag configure $filter -foreground $foreground
+            }
+            if { $synth::_system_filter_settings($filter,background) != $synth::_system_filter_new_settings($filter,background) } {
+                set background $synth::_system_filter_new_settings($filter,background)
+                set synth::_system_filter_settings($filter,background) $background
+                .main.centre.text tag configure $filter -background $background
+            }
+        }
     }
 
     proc _menu_view_system_filters_cancel { } {
-	wm withdraw .system_filters
-	synth::_menu_view_system_filters_reset
+        wm withdraw .system_filters
+        synth::_menu_view_system_filters_reset
     }
 
     # Now add a suitable entry to the View menu.
@@ -2081,58 +2081,58 @@ namespace eval synth {
     # Similarly a separate binding for Control- sequences ensures
     # that the shortcuts continue to work.
     bind .main.centre.text <Alt-KeyPress> {
-	continue
+        continue
     }
     bind .main.centre.text <Control-KeyPress> {
-	continue
+        continue
     }
     bind .main.centre.text <KeyPress> {
-	if { !$synth::flag_read_only } {
-	    continue
-	} elseif { 0 != [llength %A] } {
-	    break
-	} elseif { ("Return" == "%K") || ("Tab" == "%K") || ("space" == "%K") } {
-	    break
-	} else {
-	    continue
-	}
+        if { !$synth::flag_read_only } {
+            continue
+        } elseif { 0 != [llength %A] } {
+            break
+        } elseif { ("Return" == "%K") || ("Tab" == "%K") || ("space" == "%K") } {
+            break
+        } else {
+            continue
+        }
     }
     # There are a few special control- bindings built in to the Tk text
     # widget which perform editing operations
     bind .main.centre.text <Control-KeyPress-h> {
-	if { !$synth::flag_read_only } {
-	    continue
-	} else {
-	    break
-	}
+        if { !$synth::flag_read_only } {
+            continue
+        } else {
+            break
+        }
     }
     bind .main.centre.text <Control-KeyPress-d> {
-	if { !$synth::flag_read_only } {
-	    continue
-	} else {
-	    break
-	}
+        if { !$synth::flag_read_only } {
+            continue
+        } else {
+            break
+        }
     }
     bind .main.centre.text <Control-KeyPress-k> {
-	if { !$synth::flag_read_only } {
-	    continue
-	} else {
-	    break
-	}
+        if { !$synth::flag_read_only } {
+            continue
+        } else {
+            break
+        }
     }
     bind .main.centre.text <Control-KeyPress-o> {
-	if { !$synth::flag_read_only } {
-	    continue
-	} else {
-	    break
-	}
+        if { !$synth::flag_read_only } {
+            continue
+        } else {
+            break
+        }
     }
     bind .main.centre.text <Control-KeyPress-t> {
-	if { !$synth::flag_read_only } {
-	    continue
-	} else {
-	    break
-	}
+        if { !$synth::flag_read_only } {
+            continue
+        } else {
+            break
+        }
     }
     
     # Implement support for the normal edit menu operations.
@@ -2145,19 +2145,19 @@ namespace eval synth {
     .menubar.edit insert end checkbutton -label "Read Only" -variable synth::flag_read_only
     .menubar.edit insert end separator
     proc _trace_read_only { name1 name2 op } {
-	if { !$synth::flag_read_only } {
-	    .menubar.edit entryconfigure "Cut"   -state normal
-	    .menubar.edit entryconfigure "Paste" -state normal
-	    .menubar.edit entryconfigure "Clear" -state normal
-	    .toolbar.cut configure -state normal
-	    .toolbar.paste configure -state normal
-	} else {
-	    .menubar.edit entryconfigure "Cut"   -state disabled
-	    .menubar.edit entryconfigure "Paste" -state disabled
-	    .menubar.edit entryconfigure "Clear" -state disabled
-	    .toolbar.cut configure -state disabled
-	    .toolbar.paste configure -state disabled
-	}
+        if { !$synth::flag_read_only } {
+            .menubar.edit entryconfigure "Cut"   -state normal
+            .menubar.edit entryconfigure "Paste" -state normal
+            .menubar.edit entryconfigure "Clear" -state normal
+            .toolbar.cut configure -state normal
+            .toolbar.paste configure -state normal
+        } else {
+            .menubar.edit entryconfigure "Cut"   -state disabled
+            .menubar.edit entryconfigure "Paste" -state disabled
+            .menubar.edit entryconfigure "Clear" -state disabled
+            .toolbar.cut configure -state disabled
+            .toolbar.paste configure -state disabled
+        }
     }
     trace variable synth::flag_read_only "w" synth::_trace_read_only
 
@@ -2177,45 +2177,45 @@ namespace eval synth {
     bind . <Control-KeyPress-a> [list synth::_handle_edit_select_all]
     
     bind .main.centre.text <<Paste>> {
-	if { !$synth::flag_read_only } {
-	    continue
-	} else {
-	    break
-	}
+        if { !$synth::flag_read_only } {
+            continue
+        } else {
+            break
+        }
     }
     bind .main.centre.text <<Cut>> {
-	if { !$synth::flag_read_only } {
-	    continue
-	} else {
-	    break
-	}
+        if { !$synth::flag_read_only } {
+            continue
+        } else {
+            break
+        }
     }
     bind .main.centre.text <<Clear>> {
-	if { !$synth::flag_read_only } {
-	    continue
-	} else {
-	    break
-	}
+        if { !$synth::flag_read_only } {
+            continue
+        } else {
+            break
+        }
     }
     
     proc _handle_edit_cut { } {
-	event generate .main.centre.text "<<Cut>>"
+        event generate .main.centre.text "<<Cut>>"
     }
 
     proc _handle_edit_copy { } {
-	event generate .main.centre.text "<<Copy>>"
+        event generate .main.centre.text "<<Copy>>"
     }
 
     proc _handle_edit_paste { } {
-	event generate .main.centre.text "<<Paste>>"
+        event generate .main.centre.text "<<Paste>>"
     }
 
     proc _handle_edit_clear { } {
-	event generate .main.centre.text "<<Clear>>"
+        event generate .main.centre.text "<<Clear>>"
     }
 
     proc _handle_edit_select_all { } {
-	.main.centre.text tag add sel 1.0 "end - 1 chars"
+        .main.centre.text tag add sel 1.0 "end - 1 chars"
     }
 
     # Most output to the text window goes through this routine. It inserts
@@ -2223,15 +2223,15 @@ namespace eval synth {
     # the new text is visible if appropriate, and if a logfile has been
     # specified then that will be updated as well.
     proc output { msg tag } {
-	set ytail [lindex [.main.centre.text yview] 1]
-	set xhead [lindex [.main.centre.text xview] 0]
-	.main.centre.text insert end $msg $tag
-	if { (1.0 == $ytail) && (0.0 == $xhead) } {
-	    .main.centre.text see end
-	}
-	if { "" != $synth::_logfd } {
-	    puts -nonewline $synth::_logfd $msg
-	}
+        set ytail [lindex [.main.centre.text yview] 1]
+        set xhead [lindex [.main.centre.text xview] 0]
+        .main.centre.text insert end $msg $tag
+        if { (1.0 == $ytail) && (0.0 == $xhead) } {
+            .main.centre.text see end
+        }
+        if { "" != $synth::_logfd } {
+            puts -nonewline $synth::_logfd $msg
+        }
     }
 
     # Text output is now possible, so flush anything that is still buffered.
@@ -2247,59 +2247,59 @@ namespace eval synth {
     # well.
     variable _savefile ""
     proc _handle_file_save { } {
-	if { "" == $synth::_savefile } {
-	    set synth::_savefile [tk_getSaveFile -parent .]
-	    if { "" == $synth::_savefile } {
-		return
-	    }
-	}
-	set msg ""
-	if { 0 != [catch { set fd [open $synth::_savefile "w"] } msg] } {
-	    synth::report_error "$msg\n"
-	    if { $synth::_system_filter_settings(error,hide) } {
-		tk_messageBox -type "ok" -icon "error" -parent . -message "$msg\n"
-	    }
-	    return
-	}
-	set number_lines [expr int([.main.centre.text index end])]
-	for { set i 1 } { $i < $number_lines } { incr i } {
-	    set tags [.main.centre.text tag names "[set i].0"]
-	    if {[llength $tags] > 0 } {
-		set tag [lindex $tags 0]
-		if { [info exists synth::_system_filter_settings($tag,hide)] &&
-		     $synth::_system_filter_settings($tag,hide) } {
-		    continue
-		}
-	    }
-	    puts $fd [.main.centre.text get "[set i].0" "[set i].end"]
-	}
-	close $fd
+        if { "" == $synth::_savefile } {
+            set synth::_savefile [tk_getSaveFile -parent .]
+            if { "" == $synth::_savefile } {
+                return
+            }
+        }
+        set msg ""
+        if { 0 != [catch { set fd [open $synth::_savefile "w"] } msg] } {
+            synth::report_error "$msg\n"
+            if { $synth::_system_filter_settings(error,hide) } {
+                tk_messageBox -type "ok" -icon "error" -parent . -message "$msg\n"
+            }
+            return
+        }
+        set number_lines [expr int([.main.centre.text index end])]
+        for { set i 1 } { $i < $number_lines } { incr i } {
+            set tags [.main.centre.text tag names "[set i].0"]
+            if {[llength $tags] > 0 } {
+                set tag [lindex $tags 0]
+                if { [info exists synth::_system_filter_settings($tag,hide)] &&
+                     $synth::_system_filter_settings($tag,hide) } {
+                    continue
+                }
+            }
+            puts $fd [.main.centre.text get "[set i].0" "[set i].end"]
+        }
+        close $fd
     }
 
     proc _handle_file_save_as { } {
-	set new_savefile [tk_getSaveFile -parent .]
-	if { "" == $new_savefile } {
-	    return
-	}
-	set synth::_savefile $new_savefile
-	synth::_handle_file_save
+        set new_savefile [tk_getSaveFile -parent .]
+        if { "" == $new_savefile } {
+            return
+        }
+        set synth::_savefile $new_savefile
+        synth::_handle_file_save
     }
 
     proc _handle_file_save_all { } {
-	set new_savefile [tk_getSaveFile -parent .]
-	if { "" == $new_savefile } {
-	    return
-	}
-	set msg ""
-	if { 0 != [catch { set fd [open $new_savefile "w"] } msg] } {
-	    synth::report_error "$msg\n"
-	    if { $synth::_system_filter_settings(error,hide) } {
-		tk_messageBox -type "ok" -icon "error" -parent . -message "$msg\n"
-	    }
-	    return
-	}
-	puts -nonewline $fd [.main.centre.text get 1.0 end]
-	close $fd
+        set new_savefile [tk_getSaveFile -parent .]
+        if { "" == $new_savefile } {
+            return
+        }
+        set msg ""
+        if { 0 != [catch { set fd [open $new_savefile "w"] } msg] } {
+            synth::report_error "$msg\n"
+            if { $synth::_system_filter_settings(error,hide) } {
+                tk_messageBox -type "ok" -icon "error" -parent . -message "$msg\n"
+            }
+            return
+        }
+        puts -nonewline $fd [.main.centre.text get 1.0 end]
+        close $fd
     }
 }
 
@@ -2321,122 +2321,124 @@ namespace eval synth {
     frame .status -borderwidth 1 -relief groove
     
     if { 1 } {
-	# The eCos logo, bouncing horizontally
-	variable _heartbeat_image_width [image width $synth::image_running1]
-	variable _heartbeat_offset 0
-	variable _heartbeat_ltor   1
+        # The eCos logo, bouncing horizontally
+        variable _heartbeat_image_width [image width $synth::image_running1]
+        variable _heartbeat_offset 0
+        variable _heartbeat_ltor   1
 
-	frame .status.heartbeat -width $synth::_heartbeat_image_width -height [image height $synth::image_running1]
-	pack  .status.heartbeat -side left
-	label .status.heartbeat.image -image $synth::image_running1 -anchor w -borderwidth 0
-	place .status.heartbeat.image -x $synth::_heartbeat_offset -y 0
+        frame .status.heartbeat -width $synth::_heartbeat_image_width -height [image height $synth::image_running1]
+        pack  .status.heartbeat -side left
+        label .status.heartbeat.image -image $synth::image_running1 -anchor w -borderwidth 0
+        place .status.heartbeat.image -x $synth::_heartbeat_offset -y 0
 
-	proc _heartbeat_update { } {
-	    if { ! $synth::ecos_running } {
-		place configure .status.heartbeat.image -x 0 -y 0
-	    } else {
-		if { $synth::_heartbeat_ltor } {
-		    incr synth::_heartbeat_offset 4
-		} else {
-		    incr synth::_heartbeat_offset -4
-		}
-		place configure .status.heartbeat.image -x $synth::_heartbeat_offset
+        proc _heartbeat_update { } {
+            catch {
+                if { ! $synth::ecos_running } {
+                    place configure .status.heartbeat.image -x 0 -y 0
+                } else {
+                    if { $synth::_heartbeat_ltor } {
+                        incr synth::_heartbeat_offset 4
+                    } else {
+                        incr synth::_heartbeat_offset -4
+                    }
+                    place configure .status.heartbeat.image -x $synth::_heartbeat_offset
 
-		if { $synth::_heartbeat_offset < (5 - $synth::_heartbeat_image_width) } {
-		    set synth::_heartbeat_ltor 1
-		} elseif { $synth::_heartbeat_offset > ( $synth::_heartbeat_image_width -5) } {
-		    set synth::_heartbeat_ltor 0
-		}
-		after 100 synth::_heartbeat_update
-	    }
-	}
-	after 100 synth::_heartbeat_update
-	
+                    if { $synth::_heartbeat_offset < (5 - $synth::_heartbeat_image_width) } {
+                        set synth::_heartbeat_ltor 1
+                    } elseif { $synth::_heartbeat_offset > ( $synth::_heartbeat_image_width -5) } {
+                        set synth::_heartbeat_ltor 0
+                    }
+                    after 100 synth::_heartbeat_update
+                }
+            }
+        }
+        after 100 synth::_heartbeat_update
+        
     } elseif { 0 } {
-	# The eCos logo, alternating between a normal and an inverse version
-	variable _heartbeat_image_width [image width $synth::image_running1]
-	variable _heartbeat_inverse ""
-	variable _heartbeat_normal  ""
-	variable _heartbeat_inverse_width     1
-	variable _heartbeat_normal_width      1
-	
-	canvas .status.heartbeat_canvas -width [image width $synth::image_running1] -height [image height $synth::image_running1]
-	pack .status.heartbeat_canvas -side left
-	label .status.heartbeat_canvas.background -image $synth::image_running1 -anchor w -borderwidth 0
-	label .status.heartbeat_canvas.inverse    -image $synth::image_running2 -anchor w -borderwidth 0
-	label .status.heartbeat_canvas.normal     -image $synth::image_running1 -anchor w -borderwidth 0
-	.status.heartbeat_canvas create window 0 0 -anchor nw -window .status.heartbeat_canvas.background
-	set synth::_heartbeat_inverse [.status.heartbeat_canvas create window 0 0 -anchor nw -window .status.heartbeat_canvas.inverse]
-	raise .status.heartbeat_canvas.inverse .status.heartbeat_canvas.background
-	set synth::_heartbeat_normal  [.status.heartbeat_canvas create window 0 0 -anchor nw -window .status.heartbeat_canvas.normal]
-	raise .status.heartbeat_canvas.normal .status.heartbeat_canvas.inverse
+        # The eCos logo, alternating between a normal and an inverse version
+        variable _heartbeat_image_width [image width $synth::image_running1]
+        variable _heartbeat_inverse ""
+        variable _heartbeat_normal  ""
+        variable _heartbeat_inverse_width     1
+        variable _heartbeat_normal_width      1
+        
+        canvas .status.heartbeat_canvas -width [image width $synth::image_running1] -height [image height $synth::image_running1]
+        pack .status.heartbeat_canvas -side left
+        label .status.heartbeat_canvas.background -image $synth::image_running1 -anchor w -borderwidth 0
+        label .status.heartbeat_canvas.inverse    -image $synth::image_running2 -anchor w -borderwidth 0
+        label .status.heartbeat_canvas.normal     -image $synth::image_running1 -anchor w -borderwidth 0
+        .status.heartbeat_canvas create window 0 0 -anchor nw -window .status.heartbeat_canvas.background
+        set synth::_heartbeat_inverse [.status.heartbeat_canvas create window 0 0 -anchor nw -window .status.heartbeat_canvas.inverse]
+        raise .status.heartbeat_canvas.inverse .status.heartbeat_canvas.background
+        set synth::_heartbeat_normal  [.status.heartbeat_canvas create window 0 0 -anchor nw -window .status.heartbeat_canvas.normal]
+        raise .status.heartbeat_canvas.normal .status.heartbeat_canvas.inverse
 
-	.status.heartbeat_canvas itemconfigure $synth::_heartbeat_inverse -width $synth::_heartbeat_inverse_width
-	.status.heartbeat_canvas itemconfigure $synth::_heartbeat_normal  -width $synth::_heartbeat_normal_width
+        .status.heartbeat_canvas itemconfigure $synth::_heartbeat_inverse -width $synth::_heartbeat_inverse_width
+        .status.heartbeat_canvas itemconfigure $synth::_heartbeat_normal  -width $synth::_heartbeat_normal_width
 
-	proc _heartbeat_update { } {
-	    if { ! $synth::ecos_running } {
-		.status.heartbeat_canvas delete $synth::_heartbeat_inverse
-		.status.heartbeat_canvas delete $synth::_heartbeat_normal
-	    } else {
-		if { $synth::_heartbeat_inverse_width < $synth::_heartbeat_image_width } {
-		    incr synth::_heartbeat_inverse_width 2
-		    .status.heartbeat_canvas itemconfigure $synth::_heartbeat_inverse -width $synth::_heartbeat_inverse_width
-		} elseif { $synth::_heartbeat_normal_width < $synth::_heartbeat_image_width } {
-		    incr synth::_heartbeat_normal_width 2
-		    .status.heartbeat_canvas itemconfigure $synth::_heartbeat_normal -width $synth::_heartbeat_normal_width
-		} else {
-		    set synth::_heartbeat_inverse_width 1
-		    set synth::_heartbeat_normal_width 1
-		    .status.heartbeat_canvas itemconfigure $synth::_heartbeat_inverse -width $synth::_heartbeat_inverse_width
-		    .status.heartbeat_canvas itemconfigure $synth::_heartbeat_normal  -width $synth::_heartbeat_normal_width
-		}
-		after 100 synth::_heartbeat_update
-	    }
-	}
-	after 100 synth::_heartbeat_update
-    
+        proc _heartbeat_update { } {
+            if { ! $synth::ecos_running } {
+                .status.heartbeat_canvas delete $synth::_heartbeat_inverse
+                .status.heartbeat_canvas delete $synth::_heartbeat_normal
+            } else {
+                if { $synth::_heartbeat_inverse_width < $synth::_heartbeat_image_width } {
+                    incr synth::_heartbeat_inverse_width 2
+                    .status.heartbeat_canvas itemconfigure $synth::_heartbeat_inverse -width $synth::_heartbeat_inverse_width
+                } elseif { $synth::_heartbeat_normal_width < $synth::_heartbeat_image_width } {
+                    incr synth::_heartbeat_normal_width 2
+                    .status.heartbeat_canvas itemconfigure $synth::_heartbeat_normal -width $synth::_heartbeat_normal_width
+                } else {
+                    set synth::_heartbeat_inverse_width 1
+                    set synth::_heartbeat_normal_width 1
+                    .status.heartbeat_canvas itemconfigure $synth::_heartbeat_inverse -width $synth::_heartbeat_inverse_width
+                    .status.heartbeat_canvas itemconfigure $synth::_heartbeat_normal  -width $synth::_heartbeat_normal_width
+                }
+                after 100 synth::_heartbeat_update
+            }
+        }
+        after 100 synth::_heartbeat_update
+        
     } elseif { 0 } {
-	# The eCos logo moving left to right, then replaced by a slightly smaller
-	# mirror version moving right to left, sort of as if rotating around a torus
-	variable _heartbeat_image_width [image width $synth::image_running1]
-	variable _heartbeat_offset [expr -1 * [image width $synth::image_running1]]
-	variable _heartbeat_ltor 1
-	
-	frame .status.heartbeat -width $synth::_heartbeat_image_width -height [image height $synth::image_running1]
-	pack  .status.heartbeat -side left
-	label .status.heartbeat.label -image $synth::image_running1 -anchor w -borderwidth 0
+        # The eCos logo moving left to right, then replaced by a slightly smaller
+        # mirror version moving right to left, sort of as if rotating around a torus
+        variable _heartbeat_image_width [image width $synth::image_running1]
+        variable _heartbeat_offset [expr -1 * [image width $synth::image_running1]]
+        variable _heartbeat_ltor 1
+        
+        frame .status.heartbeat -width $synth::_heartbeat_image_width -height [image height $synth::image_running1]
+        pack  .status.heartbeat -side left
+        label .status.heartbeat.label -image $synth::image_running1 -anchor w -borderwidth 0
 
-	place .status.heartbeat.label -x $synth::_heartbeat_offset -y 0
+        place .status.heartbeat.label -x $synth::_heartbeat_offset -y 0
 
-	proc _heartbeat_update { } {
-	    if { ! $synth::ecos_running } {
-		.status.heartbeat.label configure -image $synth::image_running1
-		place configure .status.heartbeat.label -x 0
-	    } else {
-		if { $synth::_heartbeat_ltor } {
-		    incr synth::_heartbeat_offset 4
-		} else {
-		    incr synth::_heartbeat_offset -4
-		}
-		place configure .status.heartbeat.label -x $synth::_heartbeat_offset
-		if { $synth::_heartbeat_offset < (0 - $synth::_heartbeat_image_width) } {
-		    .status.heartbeat.label configure -image $synth::image_running1
-		    set synth::_heartbeat_ltor 1
-		} elseif { $synth::_heartbeat_offset > $synth::_heartbeat_image_width } {
-		    .status.heartbeat.label configure -image $synth::image_running3
-		    set synth::_heartbeat_ltor 0
-		}
-		after 100 synth::_heartbeat_update
-	    }
-	}
-	after 100 synth::_heartbeat_update
+        proc _heartbeat_update { } {
+            if { ! $synth::ecos_running } {
+                .status.heartbeat.label configure -image $synth::image_running1
+                place configure .status.heartbeat.label -x 0
+            } else {
+                if { $synth::_heartbeat_ltor } {
+                    incr synth::_heartbeat_offset 4
+                } else {
+                    incr synth::_heartbeat_offset -4
+                }
+                place configure .status.heartbeat.label -x $synth::_heartbeat_offset
+                if { $synth::_heartbeat_offset < (0 - $synth::_heartbeat_image_width) } {
+                    .status.heartbeat.label configure -image $synth::image_running1
+                    set synth::_heartbeat_ltor 1
+                } elseif { $synth::_heartbeat_offset > $synth::_heartbeat_image_width } {
+                    .status.heartbeat.label configure -image $synth::image_running3
+                    set synth::_heartbeat_ltor 0
+                }
+                after 100 synth::_heartbeat_update
+            }
+        }
+        after 100 synth::_heartbeat_update
     }
 
     label .status.running -width 10 -text "Running" -anchor w
     pack .status.running -side left
     proc _heartbeat_exit_hook { arg_list } {
-	.status.running configure -text "Exited"
+        .status.running configure -text "Exited"
     }
     synth::hook_add "ecos_exit" synth::_heartbeat_exit_hook
     
@@ -2451,7 +2453,7 @@ namespace eval synth {
 namespace eval synth {
 
     if { $synth::flag_debug } {
-	synth::report "Setting up preferences window.\n"
+        synth::report "Setting up preferences window.\n"
     }
 
     variable _pref_browser1 ""
@@ -2507,36 +2509,36 @@ namespace eval synth {
 
     variable _saved_focus ""
     proc _menu_edit_preferences { } {
-	set synth::_saved_focus [focus]
-	set synth::_pref_browser1 $synth::_browser1
-	set synth::_pref_browser2 $synth::_browser2
-	set synth::_pref_browser3 $synth::_browser3
-	if { "normal" == [wm state .preferences] } {
-	    raise .preferences
-	} else {
-	    wm deiconify .preferences
-	}
-	focus .preferences.help.frame.entry1
+        set synth::_saved_focus [focus]
+        set synth::_pref_browser1 $synth::_browser1
+        set synth::_pref_browser2 $synth::_browser2
+        set synth::_pref_browser3 $synth::_browser3
+        if { "normal" == [wm state .preferences] } {
+            raise .preferences
+        } else {
+            wm deiconify .preferences
+        }
+        focus .preferences.help.frame.entry1
     }
 
     proc _menu_edit_preferences_ok { } {
-	if { $synth::_browser1 != $synth::_pref_browser1 } {
-	    set synth::_browser1 $synth::_pref_browser1
-	}
-	if { $synth::_browser2 != $synth::_pref_browser2 } {
-	    set synth::_browser2 $synth::_pref_browser2
-	}
-	if { $synth::_browser3 != $synth::_pref_browser3 } {
-	    set synth::_browser3 $synth::_pref_browser3
-	}
+        if { $synth::_browser1 != $synth::_pref_browser1 } {
+            set synth::_browser1 $synth::_pref_browser1
+        }
+        if { $synth::_browser2 != $synth::_pref_browser2 } {
+            set synth::_browser2 $synth::_pref_browser2
+        }
+        if { $synth::_browser3 != $synth::_pref_browser3 } {
+            set synth::_browser3 $synth::_pref_browser3
+        }
 
-	wm withdraw .preferences
-	catch { focus $synth::_saved_focus }
+        wm withdraw .preferences
+        catch { focus $synth::_saved_focus }
     }
 
     proc _menu_edit_preferences_cancel { } {
-	wm withdraw .preferences
-	catch { focus $synth::_saved_focus }
+        wm withdraw .preferences
+        catch { focus $synth::_saved_focus }
     }
     
     .menubar.edit add command -label "Preferences..." -command [list synth::_menu_edit_preferences]
@@ -2555,77 +2557,77 @@ namespace eval synth {
 
     proc _cleanup_gui { } {
 
-	if { $synth::flag_debug } {
-	    synth::report "Cleaning up unused GUI items.\n"
-	}
-	
-	# File, Edit, View and Help should always have contents, unless
-	# the user has deleted entries via the mainrc file. The Windows
-	# menu will be empty unless contents have been added. There is
-	# always a global binding for ctrl-Q, and the window manager
-	# should always provide a way of killing off the application,
-	# so there is no need to treat File specially.
-	if { 0 == [.menubar.file index end] } {
-	    .menubar delete "File"
-	}
-	if { 0 == [.menubar.edit index end] } {
-	    .menubar delete "Edit"
-	}
-	if { 0 == [.menubar.view index end] } {
-	    .menubar delete "View"
-	}
-	if { 0 == [.menubar.windows index end] } {
-	    .menubar delete "Windows"
-	}
-	if { 0 == [.menubar.help index end] } {
-	    .menubar delete "Help"
-	}
+        if { $synth::flag_debug } {
+            synth::report "Cleaning up unused GUI items.\n"
+        }
+        
+        # File, Edit, View and Help should always have contents, unless
+        # the user has deleted entries via the mainrc file. The Windows
+        # menu will be empty unless contents have been added. There is
+        # always a global binding for ctrl-Q, and the window manager
+        # should always provide a way of killing off the application,
+        # so there is no need to treat File specially.
+        if { 0 == [.menubar.file index end] } {
+            .menubar delete "File"
+        }
+        if { 0 == [.menubar.edit index end] } {
+            .menubar delete "Edit"
+        }
+        if { 0 == [.menubar.view index end] } {
+            .menubar delete "View"
+        }
+        if { 0 == [.menubar.windows index end] } {
+            .menubar delete "Windows"
+        }
+        if { 0 == [.menubar.help index end] } {
+            .menubar delete "Help"
+        }
 
-	# If the toolbar is empty get rid of it.
-	if { 0 == [llength [winfo children .toolbar]] } {
-	    pack forget .toolbar
-	    destroy .toolbar
-	}
-	
-	set can_destroy [list]
-	# Remove some or all of the top, left hand, right hand or bottom
-	# sets of frames, if nobody is using them.
-	if { (0 == [llength [pack slaves .main.nw]]) &&
-	     (0 == [llength [pack slaves .main.n]]) &&
-	     (0 == [llength [pack slaves .main.ne]]) } {
+        # If the toolbar is empty get rid of it.
+        if { 0 == [llength [winfo children .toolbar]] } {
+            pack forget .toolbar
+            destroy .toolbar
+        }
+        
+        set can_destroy [list]
+        # Remove some or all of the top, left hand, right hand or bottom
+        # sets of frames, if nobody is using them.
+        if { (0 == [llength [pack slaves .main.nw]]) &&
+             (0 == [llength [pack slaves .main.n]]) &&
+             (0 == [llength [pack slaves .main.ne]]) } {
             lappend can_destroy .main.nw .main.border_nw_n .main.n .main.border_n_ne .main.ne
-	    lappend can_destroy .main.border_nw_w .main.border_n_centre .main.border_ne_e
+            lappend can_destroy .main.border_nw_w .main.border_n_centre .main.border_ne_e
         }
-	if { (0 == [llength [pack slaves .main.nw]]) &&
-	     (0 == [llength [pack slaves .main.w]]) &&
-	     (0 == [llength [pack slaves .main.sw]]) } {
+        if { (0 == [llength [pack slaves .main.nw]]) &&
+             (0 == [llength [pack slaves .main.w]]) &&
+             (0 == [llength [pack slaves .main.sw]]) } {
             lappend can_destroy .main.nw .main.border_nw_w .main.w .main.border_w_sw .main.sw
-	    lappend can_destroy .main.border_nw_n .main.border_w_centre .main.border_w_sw
+            lappend can_destroy .main.border_nw_n .main.border_w_centre .main.border_w_sw
         }
-	if { (0 == [llength [pack slaves .main.ne]]) &&
-	     (0 == [llength [pack slaves .main.e]]) &&
-	     (0 == [llength [pack slaves .main.se]]) } {
+        if { (0 == [llength [pack slaves .main.ne]]) &&
+             (0 == [llength [pack slaves .main.e]]) &&
+             (0 == [llength [pack slaves .main.se]]) } {
             lappend can_destroy .main.ne .main.border_ne_e .main.e .main.border_e_se .main.se
-	    lappend can_destroy .main.border_n_ne .main.border_centre_e .main.border_s_se
+            lappend can_destroy .main.border_n_ne .main.border_centre_e .main.border_s_se
         }
-	if { (0 == [llength [pack slaves .main.sw]]) &&
-	     (0 == [llength [pack slaves .main.s]]) &&
-	     (0 == [llength [pack slaves .main.se]]) } {
+        if { (0 == [llength [pack slaves .main.sw]]) &&
+             (0 == [llength [pack slaves .main.s]]) &&
+             (0 == [llength [pack slaves .main.se]]) } {
             lappend can_destroy .main.sw .main.border_sw_s .main.s .main.border_s_se .main.se
-	    lappend can_destroy .main.border_w_sw .main.border_centre_s .main.border_e_se
+            lappend can_destroy .main.border_w_sw .main.border_centre_s .main.border_e_se
         }
 
- 	foreach frame [lsort -unique $can_destroy] {
-	    grid forget $frame
-	}
- 	foreach frame [lsort -unique $can_destroy] {
-	    destroy $frame
-	}
+        foreach frame [lsort -unique $can_destroy] {
+            grid forget $frame
+        }
+        foreach frame [lsort -unique $can_destroy] {
+            destroy $frame
+        }
 
-	# Now that the full window layout is known the .main frame can be
-	# packed. Doing this before now could cause problems because the
-	# desired sizes of the subwindows are not known.
-	pack .main -expand 1 -fill both
+        # Now that the full window layout is known the .main frame can be
+        # packed. Doing this before now could cause problems because the
+        # desired sizes of the subwindows are not known.
+        pack .main -expand 1 -fill both
     }
 }
 
@@ -2640,28 +2642,28 @@ namespace eval synth {
 if { 0 } {
 
     bind . <Alt-w> {
-	exec xwd -out main.xwd -frame -id [winfo id .]
+        exec xwd -out main.xwd -frame -id [winfo id .]
     }
 
     bind . <Alt-f> {
-	.menubar invoke "File"
-	after 100 exec xwd -out menu_file.xwd -frame -id [winfo id .]
+        .menubar invoke "File"
+        after 100 exec xwd -out menu_file.xwd -frame -id [winfo id .]
     }
 
     bind . <Alt-e> {
-	.menubar invoke "Edit"
-	after 100 exec xwd -out menu_edit.xwd -frame -id [winfo id .]
+        .menubar invoke "Edit"
+        after 100 exec xwd -out menu_edit.xwd -frame -id [winfo id .]
     }
 
     bind . <Alt-v> {
-	.menubar invoke "View"
-	after 100 exec xwd -out menu_view.xwd -frame -id [winfo id .]
+        .menubar invoke "View"
+        after 100 exec xwd -out menu_view.xwd -frame -id [winfo id .]
     }
 
     # The Help menu will extend beyond the window boundaries
     bind . <Alt-h> {
-	.menubar invoke "Help"
-	after 100 exec xwd -out menu_help.xwd -root
+        .menubar invoke "Help"
+        after 100 exec xwd -out menu_help.xwd -root
     }
 }
 
@@ -2689,7 +2691,7 @@ if { 0 } {
 # tcl script, e.g. console.tcl. This is sufficient to locate and load
 # the tcl script. It should return an instantiation procedure which will
 # be invoked with the instance name (or an empty string if there will only
-# ever be one instance of this device type). The instantiation procedure
+                                     # ever be one instance of this device type). The instantiation procedure
 # will then be called with a number and the device instance string, and
 # should return a handler for all requests intended for that device.
 #
@@ -2716,88 +2718,88 @@ namespace eval synth {
 
     proc _handle_INSTANTIATE { data } {
 
-	set list [split $data \0]
-	if { [llength $list] < 5 } {
-	    synth::send_reply -1 0 ""
-	    return
-	}
-	set package_dir     [lindex $list 0]
-	set package_version [lindex $list 1]
-	set device_type     [lindex $list 2]
-	set device_instance [lindex $list 3]
-	set device_data     [lindex $list 4]
+        set list [split $data \0]
+        if { [llength $list] < 5 } {
+            synth::send_reply -1 0 ""
+            return
+        }
+        set package_dir     [lindex $list 0]
+        set package_version [lindex $list 1]
+        set device_type     [lindex $list 2]
+        set device_instance [lindex $list 3]
+        set device_data     [lindex $list 4]
 
-	if { ![info exists synth::_instantiation_procs($package_dir,$package_version,$device_type)] } {
-	    # The required script has not yet been loaded.
-	    if { "" != $package_dir } {
-		# The device is provided by a package
-		set synth::device_install_dir [file join $synth::_ecosynth_libexecdir "ecos" $package_dir $package_version]
-		set synth::device_src_dir     [file join $synth::_ecosynth_repository $package_dir $package_version]
-	    
-		set script [file join $::synth::device_install_dir "[set device_type].tcl"]
-		if { ![file exists $script] } {
-		    synth::report_error "Unable to initialize device $device_type\n    Script \"$script\" not found.\n"
-		    synth::send_reply -1 0 ""
-		    return
-		} elseif { ![file readable $script] } {
-		    synth::report_error "Unable to initialize device $device_type\n    Script \"$script\" not readable.\n"
-		    synth::send_reply -1 0 ""
-		    return
-		}
+        if { ![info exists synth::_instantiation_procs($package_dir,$package_version,$device_type)] } {
+            # The required script has not yet been loaded.
+            if { "" != $package_dir } {
+                # The device is provided by a package
+                set synth::device_install_dir [file join $synth::_ecosynth_libexecdir "ecos" $package_dir $package_version]
+                set synth::device_src_dir     [file join $synth::_ecosynth_repository $package_dir $package_version]
+                
+                set script [file join $::synth::device_install_dir "[set device_type].tcl"]
+                if { ![file exists $script] } {
+                    synth::report_error "Unable to initialize device $device_type\n    Script \"$script\" not found.\n"
+                    synth::send_reply -1 0 ""
+                    return
+                } elseif { ![file readable $script] } {
+                    synth::report_error "Unable to initialize device $device_type\n    Script \"$script\" not readable.\n"
+                    synth::send_reply -1 0 ""
+                    return
+                }
 
-		# Is there a more recent version in the repository
-		if { [info exists ::env(ECOSYNTH_DEVEL)] } {
-		    set _orig_name [file join $synth::device_src_dir "host" "[set device_type].tcl"]
-		    if { [file exists $_orig_name] && [file readable $_orig_name] } {
-			if { [file mtime $_orig_name] >= [file mtime $script] } {
-			    puts "$_orig_name is more recent than install: executing that."
-			    set script $_orig_name
-			}
-		    }
-		}
-	    } else {
-		# The device is application-specific
-		set script [file join [pwd] "[set device_type].tcl"]
-		if { ![file exists $script] || ![file readable $script] } {
-		    set script [file join "~/.ecos/synth" "[set device_type].tcl"]
-		    if { ![file exists $script] || ![file readable $script] } {
-			synth::report_error "Unable to initialize device $device_type\n    Script $device_type.tcl not found in [pwd] or ~/.ecos/synth\n"
-			synth::send_reply -1 0 ""
-			return
-		    }
-		}
-	    }
-	    
-	    # The uplevel ensures that the device script operates at the global
-	    # level, so any namespaces it creates are also at global level
-	    # and not nested inside synth. This avoids having to add
-	    # synth:: to lots of variable accesses and generally avoids confusion
-	    set result [catch { uplevel #0 source $script } instantiator]
-	    if { 0 != $result } {
-		synth::report_error "Unable to initialize device $device_type\n  Error loading script \"$script\"\n  $instantiator\n"
-		synth::send_reply -1 0 ""
-		return
-	    }
+                # Is there a more recent version in the repository
+                if { [info exists ::env(ECOSYNTH_DEVEL)] } {
+                    set _orig_name [file join $synth::device_src_dir "host" "[set device_type].tcl"]
+                    if { [file exists $_orig_name] && [file readable $_orig_name] } {
+                        if { [file mtime $_orig_name] >= [file mtime $script] } {
+                            puts "$_orig_name is more recent than install: executing that."
+                            set script $_orig_name
+                        }
+                    }
+                }
+            } else {
+                # The device is application-specific
+                set script [file join [pwd] "[set device_type].tcl"]
+                if { ![file exists $script] || ![file readable $script] } {
+                    set script [file join "~/.ecos/synth" "[set device_type].tcl"]
+                    if { ![file exists $script] || ![file readable $script] } {
+                        synth::report_error "Unable to initialize device $device_type\n    Script $device_type.tcl not found in [pwd] or ~/.ecos/synth\n"
+                        synth::send_reply -1 0 ""
+                        return
+                    }
+                }
+            }
+            
+            # The uplevel ensures that the device script operates at the global
+            # level, so any namespaces it creates are also at global level
+            # and not nested inside synth. This avoids having to add
+            # synth:: to lots of variable accesses and generally avoids confusion
+            set result [catch { uplevel #0 source $script } instantiator]
+            if { 0 != $result } {
+                synth::report_error "Unable to initialize device $device_type\n  Error loading script \"$script\"\n  $instantiator\n"
+                synth::send_reply -1 0 ""
+                return
+            }
 
-	    set synth::_instantiation_procs($package_dir,$package_version,$device_type) $instantiator
-	}
+            set synth::_instantiation_procs($package_dir,$package_version,$device_type) $instantiator
+        }
 
-	set handler [$synth::_instantiation_procs($package_dir,$package_version,$device_type) \
-		$synth::_next_device_id $device_instance $device_data]
-	if { "" == $handler } {
-	    synth::send_reply -1 0 ""
-	} else {
-	    set result $synth::_next_device_id
-	    incr synth::_next_device_id
-	    
-	    set synth::_device_handlers($result) $handler
-	    if { "" != $device_instance } {
-		set synth::_device_names($result) $device_instance
-	    } else {
-		set synth::_device_names($result) $device_type
-	    }
-	    synth::send_reply $result 0 ""
-	}
+        set handler [$synth::_instantiation_procs($package_dir,$package_version,$device_type) \
+                         $synth::_next_device_id $device_instance $device_data]
+        if { "" == $handler } {
+            synth::send_reply -1 0 ""
+        } else {
+            set result $synth::_next_device_id
+            incr synth::_next_device_id
+            
+            set synth::_device_handlers($result) $handler
+            if { "" != $device_instance } {
+                set synth::_device_names($result) $device_instance
+            } else {
+                set synth::_device_names($result) $device_type
+            }
+            synth::send_reply $result 0 ""
+        }
     }
 }
 
@@ -2817,7 +2819,7 @@ namespace eval synth {
 # then sending a specially format response to the get-pending request.
 
 namespace eval synth {
-  
+    
     # The next interrupt number to be allocated. Interrupt source 0 is reserved
     # for the timer, which is handled within eCos itself via SIGALRM
     # rather than by the I/O auxiliary.
@@ -2850,52 +2852,52 @@ namespace eval synth {
     # the like.
     # FIXME: add support for allocating specific interrupt numbers
     proc interrupt_allocate { name } {
-	if { $synth::_interrupt_next == 32 } {
-	    synth::report_error "Unable to allocate an interrupt vector for $name\nAll 32 interrupt vectors are already in use.\n"
-	    return -1
-	}
-	set result $synth::_interrupt_next
-	set synth::_interrupt_names($result) $name
-	incr synth::_interrupt_next
-	return $result
+        if { $synth::_interrupt_next == 32 } {
+            synth::report_error "Unable to allocate an interrupt vector for $name\nAll 32 interrupt vectors are already in use.\n"
+            return -1
+        }
+        set result $synth::_interrupt_next
+        set synth::_interrupt_names($result) $name
+        incr synth::_interrupt_next
+        return $result
     }
 
     # Allow information about the device->interrupt mappings to be retrieved
     proc interrupt_get_max { } {
-	return [expr $synth::_interrupt_next - 1]
+        return [expr $synth::_interrupt_next - 1]
     }
     proc interrupt_get_devicename { number } {
-	if { [info exists synth::_interrupt_names($number) ] } {
-	    return $synth::_interrupt_names($number)
-	} else {
-	    return ""
-	}
+        if { [info exists synth::_interrupt_names($number) ] } {
+            return $synth::_interrupt_names($number)
+        } else {
+            return ""
+        }
     }
 
     # Raise a specific interrupt. If the interrupt is already pending
     # this has no effect because a SIGIO will have been sent to the
     # eCos application already. Otherwise SIGIO needs to be raised.
     proc interrupt_raise { number } {
-	if { $number >= $synth::_interrupt_next } {
-	    error "Attempt to raise invalid interrupt $number."
-	}
-	if { !$synth::ecos_running } {
-	    return
-	}
-	set or_mask [expr 0x01 << $number]
-	if { 0 == ($or_mask & $synth::_interrupt_pending) } {
-	    # This interrupt was not previously pending, so action is needed.
-	    set synth::_interrupt_pending [expr $synth::_interrupt_pending | $or_mask]
-	    synth::hook_call "interrupt" $number
-	    synth::_send_SIGIO
-	}
+        if { $number >= $synth::_interrupt_next } {
+            error "Attempt to raise invalid interrupt $number."
+        }
+        if { !$synth::ecos_running } {
+            return
+        }
+        set or_mask [expr 0x01 << $number]
+        if { 0 == ($or_mask & $synth::_interrupt_pending) } {
+            # This interrupt was not previously pending, so action is needed.
+            set synth::_interrupt_pending [expr $synth::_interrupt_pending | $or_mask]
+            synth::hook_call "interrupt" $number
+            synth::_send_SIGIO
+        }
     }
 
     # Request application exit. This is typically called in response to
     # File->Exit.
     proc request_application_exit { } {
-	set synth::_interrupt_exit_pending 1
-	synth::_send_SIGIO
+        set synth::_interrupt_exit_pending 1
+        synth::_send_SIGIO
     }
     
     # The eCos application wants to know about pending interrupts. It maintains
@@ -2904,12 +2906,12 @@ namespace eval synth {
     # only in the eCos app. A pending exit is indicated by non-empty data,
     # the actual data does not matter.
     proc _handle_GET_IRQ_PENDING {  } {
-	if { $synth::_interrupt_exit_pending } {
-	    synth::send_reply $synth::_interrupt_pending 1 "x"
-	} else {
-	    synth::send_reply $synth::_interrupt_pending 0 ""
-	}
-	set synth::_interrupt_pending 0
+        if { $synth::_interrupt_exit_pending } {
+            synth::send_reply $synth::_interrupt_pending 1 "x"
+        } else {
+            synth::send_reply $synth::_interrupt_pending 0 ""
+        }
+        set synth::_interrupt_pending 0
     }
 }
 
@@ -2939,104 +2941,104 @@ namespace eval synth {
 
     proc _handle_CONSTRUCTORS_DONE { } {
 
-	if { $synth::flag_help } {
-	    puts "Usage : <eCos application> <options>"
-	    puts "    Options are passed to the I/O auxiliary, and are not"
-	    puts "    accessible to the eCos application."
-	    puts "Standard options:"
-	    puts " -io                         : run with I/O facilities."
-	    puts " -nio                        : run with no I/O facilities at all."
-	    puts " -nw, --no-windows           : run in console mode."
-	    puts " -w, --windows               : run in GUI mode (default)."
-	    puts " -v, --version               : display the version of the I/O auxiliary."
-	    puts " -h, --help                  : show this help text."
-	    puts " -k, --keep-going            : ignore errors in init scripts or the"
-	    puts "                               target definition file."
-	    puts " -nr, --no-rc                : do not run the user's init scripts."
-	    puts " -x, --exit                  : terminate I/O auxiliary as soon as the eCos"
-	    puts "                               application exits (default in console mode)."
-	    puts " -nx, --no-exit              : I/O auxiliary keeps running even after eCos"
-	    puts "                               application has exited (default in GUI mode)."
-	    puts " -V, --verbose               : provide additional output during the run."
-	    puts " -l <file>, --logfile <file> : send all output to the specified file. In"
-	    puts "                               GUI mode this in addition to the main text"
-	    puts "                               window. In console mode this is instead of"
-	    puts "                               stdout."
-	    puts " -t <file>, --target <file>  : use the specified .tdf file as the target"
-	    puts "                               definition. The auxiliary will look for this"
-	    puts "                               file in the current directory, ~/.ecos, and"
-	    puts "                               finally the install location."
-	    puts " -geometry <geometry>        : size and position for the main window."
-	    synth::hook_call "help"
-	    exit 1
-	}
-	
-	synth::hook_call "ecos_initialized"
-	
-	# ----------------------------------------------------------------------------
-	if { !$synth::flag_no_rc } {
-	    set _config_file [file join "~/.ecos/synth" "mainrc.tcl"]
-	    if { [file exists $_config_file] } {
-		if { [file readable $_config_file] } {
-		    if { [catch { source $_config_file } msg ] } {
-			set error "Failed to execute user initialization file  \"$_config_file\"\n"
-			append error "  $msg\n"
-			if { $synth::flag_verbose } {
-			    append error "------- backtrace ------------------------------------------\n"
-			    append error $::errorInfo
-			    append error "\n------- backtrace ends -------------------------------------\n"
-			}
-			synth::report_error $error
-		    }
-		} else {
-		    synth::report_error "No read access to user initialization file \"$_config_file\"\n"
-		}
-	    }
-	    unset _config_file
-	}
-	
-	# ----------------------------------------------------------------------------
-	# Report any arguments that have not been used up by the auxiliary itself
-	# or by any device handlers
-	set unconsumed_args [synth::argv_get_unconsumed]
-	foreach arg $unconsumed_args { 
-	    synth::report_warning "Unrecognised command line option \"$arg\", ignored.\n"
-	}
+        if { $synth::flag_help } {
+            puts "Usage : <eCos application> <options>"
+            puts "    Options are passed to the I/O auxiliary, and are not"
+            puts "    accessible to the eCos application."
+            puts "Standard options:"
+            puts " -io                         : run with I/O facilities."
+            puts " -nio                        : run with no I/O facilities at all."
+            puts " -nw, --no-windows           : run in console mode."
+            puts " -w, --windows               : run in GUI mode (default)."
+            puts " -v, --version               : display the version of the I/O auxiliary."
+            puts " -h, --help                  : show this help text."
+            puts " -k, --keep-going            : ignore errors in init scripts or the"
+            puts "                               target definition file."
+            puts " -nr, --no-rc                : do not run the user's init scripts."
+            puts " -x, --exit                  : terminate I/O auxiliary as soon as the eCos"
+            puts "                               application exits (default in console mode)."
+            puts " -nx, --no-exit              : I/O auxiliary keeps running even after eCos"
+            puts "                               application has exited (default in GUI mode)."
+            puts " -V, --verbose               : provide additional output during the run."
+            puts " -l <file>, --logfile <file> : send all output to the specified file. In"
+            puts "                               GUI mode this in addition to the main text"
+            puts "                               window. In console mode this is instead of"
+            puts "                               stdout."
+            puts " -t <file>, --target <file>  : use the specified .tdf file as the target"
+            puts "                               definition. The auxiliary will look for this"
+            puts "                               file in the current directory, ~/.ecos, and"
+            puts "                               finally the install location."
+            puts " -geometry <geometry>        : size and position for the main window."
+            synth::hook_call "help"
+            exit 1
+        }
+        
+        synth::hook_call "ecos_initialized"
+        
+        # ----------------------------------------------------------------------------
+        if { !$synth::flag_no_rc } {
+            set _config_file [file join "~/.ecos/synth" "mainrc.tcl"]
+            if { [file exists $_config_file] } {
+                if { [file readable $_config_file] } {
+                    if { [catch { source $_config_file } msg ] } {
+                        set error "Failed to execute user initialization file  \"$_config_file\"\n"
+                        append error "  $msg\n"
+                        if { $synth::flag_verbose } {
+                            append error "------- backtrace ------------------------------------------\n"
+                            append error $::errorInfo
+                            append error "\n------- backtrace ends -------------------------------------\n"
+                        }
+                        synth::report_error $error
+                    }
+                } else {
+                    synth::report_error "No read access to user initialization file \"$_config_file\"\n"
+                }
+            }
+            unset _config_file
+        }
+        
+        # ----------------------------------------------------------------------------
+        # Report any arguments that have not been used up by the auxiliary itself
+        # or by any device handlers
+        set unconsumed_args [synth::argv_get_unconsumed]
+        foreach arg $unconsumed_args { 
+            synth::report_warning "Unrecognised command line option \"$arg\", ignored.\n"
+        }
 
-	# ----------------------------------------------------------------------------
-	if { $synth::flag_verbose } {
-	    set unconsumed_devices [synth::tdf_get_unconsumed_devices]
-	    set unconsumed_options [synth::tdf_get_unconsumed_options]
-	    if { (0 != [llength $unconsumed_devices]) || (0 != [llength $unconsumed_options]) } {
-		set msg "Target definition file $synth::target_definition\n"
-		foreach dev $unconsumed_devices {
-		    append msg "    synth_device \"$dev\" not recognised.\n"
-		}
-		foreach option $unconsumed_options {
-		    set dev [lindex $option 0]
-		    set opt [lindex $option 1]
-		    append msg "    synth_device \"$dev\", option \"$opt\" not recognised.\n"
-		}
-		synth::report_warning $msg
-	    }
-	}
+        # ----------------------------------------------------------------------------
+        if { $synth::flag_verbose } {
+            set unconsumed_devices [synth::tdf_get_unconsumed_devices]
+            set unconsumed_options [synth::tdf_get_unconsumed_options]
+            if { (0 != [llength $unconsumed_devices]) || (0 != [llength $unconsumed_options]) } {
+                set msg "Target definition file $synth::target_definition\n"
+                foreach dev $unconsumed_devices {
+                    append msg "    synth_device \"$dev\" not recognised.\n"
+                }
+                foreach option $unconsumed_options {
+                    set dev [lindex $option 0]
+                    set opt [lindex $option 1]
+                    append msg "    synth_device \"$dev\", option \"$opt\" not recognised.\n"
+                }
+                synth::report_warning $msg
+            }
+        }
 
-	#  ----------------------------------------------------------------------------
-	if { $synth::flag_gui } {
-	    synth::_cleanup_gui
-	    wm deiconify .
-	}
-	
-	# ----------------------------------------------------------------------------
-	# Finally send a reply back to the application so it can really
-	# start running. Alternatively, if any errors occurred during
-	# initialization and the user did not specify --keep-going then
-	# send back an error code, causing the eCos application to terminate.
-	if { (0 == $synth::_error_count) || $synth::flag_keep_going } {
-	    synth::send_reply 1 0 ""
-	} else {
-	    synth::send_reply 0 0 ""
-	}
+        #  ----------------------------------------------------------------------------
+        if { $synth::flag_gui } {
+            synth::_cleanup_gui
+            wm deiconify .
+        }
+        
+        # ----------------------------------------------------------------------------
+        # Finally send a reply back to the application so it can really
+        # start running. Alternatively, if any errors occurred during
+        # initialization and the user did not specify --keep-going then
+        # send back an error code, causing the eCos application to terminate.
+        if { (0 == $synth::_error_count) || $synth::flag_keep_going } {
+            synth::send_reply 1 0 ""
+        } else {
+            synth::send_reply 0 0 ""
+        }
     }
 }
 
@@ -3052,22 +3054,22 @@ namespace eval synth {
 namespace eval synth {
     
     proc _handle_ecosynth_requests { devid request arg1 arg2 request_data request_len reply_len } {
-	if { 0x01 == $request } {
-	    synth::_handle_INSTANTIATE $request_data
-	} elseif { 0x02 == $request } {
-	    synth::_handle_CONSTRUCTORS_DONE
-	} elseif { 0x03 == $request } {
-	    synth::_handle_GET_IRQ_PENDING
-	} elseif { 0x04 == $request } {
-	    synth::_handle_GET_VERSION
-	} else {
-	    error "The eCos application has sent an invalid request sent to the I/O auxiliary"
-	}
+        if { 0x01 == $request } {
+            synth::_handle_INSTANTIATE $request_data
+        } elseif { 0x02 == $request } {
+            synth::_handle_CONSTRUCTORS_DONE
+        } elseif { 0x03 == $request } {
+            synth::_handle_GET_IRQ_PENDING
+        } elseif { 0x04 == $request } {
+            synth::_handle_GET_VERSION
+        } else {
+            error "The eCos application has sent an invalid request sent to the I/O auxiliary"
+        }
     }
 
-    variable _SYNTH_AUXILIARY_PROTOCOL_VERSION	0x01
+    variable _SYNTH_AUXILIARY_PROTOCOL_VERSION  0x01
     proc _handle_GET_VERSION { } {
-	synth::send_reply $synth::_SYNTH_AUXILIARY_PROTOCOL_VERSION 0 ""
+        synth::send_reply $synth::_SYNTH_AUXILIARY_PROTOCOL_VERSION 0 ""
     }
 }
 
@@ -3091,16 +3093,20 @@ namespace eval synth {
     
     proc _application_has_exited { } {
 
-	set synth::ecos_running 0
-	synth::hook_call "ecos_exit"
-	
-	# Depending on command-line arguments and whether or not the GUI is present,
-	# the auxiliary should now exit
-	if { $synth::flag_immediate_exit } {
-	    exit 0
-	} elseif { !$synth::flag_gui } {
-	    synth::report "eCos application has exited: I/O auxiliary still running in the background.\n"
-	}
+        set synth::ecos_running 0
+        synth::hook_call "ecos_exit"
+        
+        # Depending on command-line arguments and whether or not the GUI is present,
+        # the auxiliary should now exit
+        if { $synth::flag_immediate_exit } {
+            if { $synth::flag_gui } {
+                after idle destroy .
+            } else {
+                exit 0
+            }
+        } elseif { !$synth::flag_gui } {
+            synth::report "eCos application has exited: I/O auxiliary still running in the background.\n"
+        }
     }
 }
 
@@ -3122,63 +3128,63 @@ namespace eval synth {
     # Receive a single request from the eCos application and invoke the
     # appropriate handler.
     proc _read_request { } {
-	# Read a single request from the application, or possibly EOF
-	set devid   0
-	set reqcode 0
-	set arg1    0
-	set arg2    0
-	set txlen   0
-	set txdata  ""
-	set rxlen   0
-	set request [read $synth::_channel_from_app 24]
-	
-	if { [eof $synth::_channel_from_app] } {
-	    fileevent $synth::_channel_from_app readable ""
-	    synth::_application_has_exited
-	    return
-	}
+        # Read a single request from the application, or possibly EOF
+        set devid   0
+        set reqcode 0
+        set arg1    0
+        set arg2    0
+        set txlen   0
+        set txdata  ""
+        set rxlen   0
+        set request [read $synth::_channel_from_app 24]
+        
+        if { [eof $synth::_channel_from_app] } {
+            fileevent $synth::_channel_from_app readable ""
+            synth::_application_has_exited
+            return
+        }
 
-	# If a real request is sent then currently the application should
-	# not be expecting a reply
-	if { $synth::_reply_expected } {
-	    error "The eCos application should not be sending a request when there is still a reply pending"
-	}
+        # If a real request is sent then currently the application should
+        # not be expecting a reply
+        if { $synth::_reply_expected } {
+            error "The eCos application should not be sending a request when there is still a reply pending"
+        }
 
-	set binary_result [binary scan $request "iiiiii" devid reqcode arg1 arg2 txlen rxlen]
-	if { 6 != $binary_result } {
-	    error "Internal error decoding request from eCos application"
-	}
+        set binary_result [binary scan $request "iiiiii" devid reqcode arg1 arg2 txlen rxlen]
+        if { 6 != $binary_result } {
+            error "Internal error decoding request from eCos application"
+        }
 
-	# If running on a 64-bit platform then the above numbers will have been sign-extended,
-	# which could lead to confusing results
-	set devid   [expr $devid   & 0x0FFFFFFFF]
-	set reqcode [expr $reqcode & 0x0FFFFFFFF]
-	set arg1    [expr $arg1    & 0x0FFFFFFFF]
-	set arg2    [expr $arg2    & 0x0FFFFFFFF]
-	set txlen   [expr $txlen   & 0x0FFFFFFFF]
-	set rxlen   [expr $rxlen   & 0x0FFFFFFFF]
+        # If running on a 64-bit platform then the above numbers will have been sign-extended,
+        # which could lead to confusing results
+        set devid   [expr $devid   & 0x0FFFFFFFF]
+        set reqcode [expr $reqcode & 0x0FFFFFFFF]
+        set arg1    [expr $arg1    & 0x0FFFFFFFF]
+        set arg2    [expr $arg2    & 0x0FFFFFFFF]
+        set txlen   [expr $txlen   & 0x0FFFFFFFF]
+        set rxlen   [expr $rxlen   & 0x0FFFFFFFF]
 
-	# The top bit of rxlen is special and indicates whether or not a reply is expected.
-	set synth::_reply_expected [expr 0 != ($rxlen & 0x080000000)]
-	set synth::_expected_rxlen [expr $rxlen & 0x07FFFFFFF]
-	
-	# Is there additional data to be read
-	if { $txlen > 0 } {
-	    set txdata [read $synth::_channel_from_app $txlen]
-	    if { [eof $synth::_channel_from_app] } {
-		fileevent $synth::_channel_from_app readable ""
-		synth::_application_has_exited
-		return
-	    }
-	}
+        # The top bit of rxlen is special and indicates whether or not a reply is expected.
+        set synth::_reply_expected [expr 0 != ($rxlen & 0x080000000)]
+        set synth::_expected_rxlen [expr $rxlen & 0x07FFFFFFF]
+        
+        # Is there additional data to be read
+        if { $txlen > 0 } {
+            set txdata [read $synth::_channel_from_app $txlen]
+            if { [eof $synth::_channel_from_app] } {
+                fileevent $synth::_channel_from_app readable ""
+                synth::_application_has_exited
+                return
+            }
+        }
 
-	# The devid can be used to get hold of a handler function, and that will do
-	# the hard work.
-	if { ![info exists synth::_device_handlers($devid)] } {
-	    error "A request has been received for an unknown device $devid"
-	}
+        # The devid can be used to get hold of a handler function, and that will do
+        # the hard work.
+        if { ![info exists synth::_device_handlers($devid)] } {
+            error "A request has been received for an unknown device $devid"
+        }
 
-	$synth::_device_handlers($devid) $devid $reqcode $arg1 $arg2 $txdata $txlen $synth::_expected_rxlen
+        $synth::_device_handlers($devid) $devid $reqcode $arg1 $arg2 $txdata $txlen $synth::_expected_rxlen
     }
     
     # Register _read_request as the handler for file events on the pipe from
@@ -3192,33 +3198,33 @@ namespace eval synth {
     # data strings that exceed the specified length, extracting a
     # suitable substring.
     proc send_reply { result { length 0 } { data "" } } {
-	# Make sure that a reply is actually expected.
-	if { !$synth::_reply_expected } {
-	    error "Attempt to send reply to application when no request has been sent"
-	} else {
-	    set synth::_reply_expected 0
-	}
-	
-	if { $length > $synth::_expected_rxlen } {
-	    error "Reply contains more data than the application expects: $length bytes instead of $synth::_expected_rxlen"
-	}
-	if { ($length > 0) && ([string length $data] != $length) } {
-	    error "Mismatch between specified and actual data length: $length [string length $data]"
-	}
-	if { !$synth::ecos_running } {
-	    return
-	}
-	
-	set struct [binary format "ii" $result $length]
-	# Ignore any errors when writing down the pipe. The only likely error is
-	# when the application has exited, causing a SIGPIPE which Tcl
+        # Make sure that a reply is actually expected.
+        if { !$synth::_reply_expected } {
+            error "Attempt to send reply to application when no request has been sent"
+        } else {
+            set synth::_reply_expected 0
+        }
+        
+        if { $length > $synth::_expected_rxlen } {
+            error "Reply contains more data than the application expects: $length bytes instead of $synth::_expected_rxlen"
+        }
+        if { ($length > 0) && ([string length $data] != $length) } {
+            error "Mismatch between specified and actual data length: $length [string length $data]"
+        }
+        if { !$synth::ecos_running } {
+            return
+        }
+        
+        set struct [binary format "ii" $result $length]
+        # Ignore any errors when writing down the pipe. The only likely error is
+        # when the application has exited, causing a SIGPIPE which Tcl
         # will handle. The application should be waiting for this response.
-	catch {
-	    puts -nonewline $synth::_channel_to_app $struct
-	    if { $length > 0 } {
-		puts -nonewline $synth::_channel_to_app $data
-	    }
-	} 
+        catch {
+            puts -nonewline $synth::_channel_to_app $struct
+            if { $length > 0 } {
+                puts -nonewline $synth::_channel_to_app $data
+            }
+        } 
     }
 }
 
@@ -3243,26 +3249,26 @@ namespace eval synth {
 if { !$synth::flag_no_rc } {
     set _config_file [file join "~/.ecos/synth" "initrc.tcl"]
     if { [file exists $_config_file] } {
-	if { [file readable $_config_file] } {
-	    if { [catch { source $_config_file } msg ] } {
-		set error "Failed to execute user initialization file  \"$_config_file\"\n"
-		append error "  $msg\n"
-		if { $synth::flag_verbose } {
-		    append error "------- backtrace ------------------------------------------\n"
-		    append error $::errorInfo
-		    append error "\n------- backtrace ends -------------------------------------\n"
-		}
-		synth::report_error $error
-	    }
-	} else {
-	    synth::report_error "No read access to user initialization file \"$_config_file\"\n"
-	}
+        if { [file readable $_config_file] } {
+            if { [catch { source $_config_file } msg ] } {
+                set error "Failed to execute user initialization file  \"$_config_file\"\n"
+                append error "  $msg\n"
+                if { $synth::flag_verbose } {
+                    append error "------- backtrace ------------------------------------------\n"
+                    append error $::errorInfo
+                    append error "\n------- backtrace ends -------------------------------------\n"
+                }
+                synth::report_error $error
+            }
+        } else {
+            synth::report_error "No read access to user initialization file \"$_config_file\"\n"
+        }
     }
     unset _config_file
 }
 
 # }}}
-# {{{  Done      						
+# {{{  Done                             
 
 # ----------------------------------------------------------------------------
 # The last few steps.
@@ -3280,9 +3286,9 @@ puts -nonewline $synth::_channel_to_app  "."
 # has exited, so the vwait would abort. This is avoided by a dummy after proc.
 if { !$synth::flag_gui && !$synth::flag_immediate_exit } {
     namespace eval synth {
-	proc _dummy_after_handler { } {
-	    after 1000000 synth::_dummy_after_handler
-	}
+        proc _dummy_after_handler { } {
+            after 1000000 synth::_dummy_after_handler
+        }
     }
     after 1000000 synth::_dummy_after_handler
 }
