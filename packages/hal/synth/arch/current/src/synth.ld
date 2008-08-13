@@ -76,7 +76,9 @@ GROUP(libtarget.a libgcc.a)
 #define SECTION_text(_region_, _vma_, _lma_)                    \
   .text _vma_ : _lma_                                           \
   { _stext = .;                                                 \
-    *(.text*) *(.gnu.warning) *(.gnu.linkonce.t.*) *(.init) }   \
+    *(.text*) *(.gnu.warning) *(.gnu.linkonce.t.*) *(.init)     \
+    *(.note.gnu.build-id)                                       \
+  }                                                             \
   > _region_                                                    \
   _etext = .;  PROVIDE (etext = .);
 
@@ -100,9 +102,11 @@ GROUP(libtarget.a libgcc.a)
     { _FIXUP_START_ = ABSOLUTE(.); *(.fixup) _FIXUP_END_ = ABSOLUTE(.);} 	\
     > _region_
 
-#define SECTION_gcc_except_table(_region_, _vma_, _lma_)       			\
-    .gcc_except_table _vma_ : _lma_                                           	\
-    { _EXCEPT_START_ = ABSOLUTE(.); *(.gcc_except_table)                	\
+#define SECTION_gcc_except_table(_region_, _vma_, _lma_)       			    \
+    .gcc_except_table _vma_ : _lma_                                         \
+    { _EXCEPT_START_ = ABSOLUTE(.);                                         \
+       *(.gcc_except_table)                                                 \
+       *(.gcc_except_table.*)                                               \
       _EXCEPT_END_ = ABSOLUTE(.);}                                      	\
     > _region_
 
