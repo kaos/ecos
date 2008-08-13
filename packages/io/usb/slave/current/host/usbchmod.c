@@ -115,7 +115,8 @@ int
 main(int argc, char** argv)
 {
     int         bus, dev;
-    int         actual_bus, actual_dev;
+    int         actual_bus  = 0;
+    int         actual_dev  = 0;
     char        devname[_POSIX_PATH_MAX];
     long        strtol_tmp1;
     char*       strtol_tmp2;

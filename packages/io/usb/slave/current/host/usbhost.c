@@ -67,6 +67,8 @@
 /*}}}*/
 /*{{{  #include's                                               */
 
+// To get the desired version of strerror_r()
+#define _GNU_SOURCE 1
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -84,7 +86,7 @@
 // Avoid compatibility problems with Tcl 8.4 vs. earlier
 #define USE_NON_CONST
 #include <tcl.h>
-#include <linux/usb.h>
+#include <linux/usb/ch9.h>
 #include <linux/usbdevice_fs.h>
 #include "../tests/protocol.h"
 #include "config.h"

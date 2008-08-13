@@ -1,3 +1,9 @@
+2008-08-13  Bart Veer  <bartv@ecoscentric.com>
+
+	* host/usbhost.c: insist on the GNU version of strerror_r().
+	Use the right header file for current Linux systems.
+	* host/usbchmod.c: avoid compiler warning.
+
 2006-05-07  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* host/bulk-boundaries.tcl(New): test bulk transfers at
