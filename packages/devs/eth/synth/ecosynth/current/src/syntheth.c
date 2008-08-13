@@ -394,9 +394,6 @@ synth_eth_start(struct eth_drv_sc* sc, unsigned char* enaddr, int flags)
                                 (int*)0, (void*) 0, (int*) 0, 0);
     }
     eth->up = 1;
-    if (enaddr != (unsigned char*)0) {
-        memcpy(enaddr, eth->MAC, 6);
-    }
 }
 
 static void

@@ -111,7 +111,7 @@ static void (*multicast_fn)(int);
 // ----------------------------------------------------------------------------
 // A utility buffer for messages.
 #define MSG_SIZE 256
-static unsigned char msg[MSG_SIZE];
+static char msg[MSG_SIZE];
 
 // Report an error to ecosynth during initialization. This means a
 // single byte 0, followed by a string.

@@ -1,3 +1,8 @@
+2008-08-13  Bart Veer  <bartv@ecoscentric.com>
+
+	* host/rawether.c: eliminate compiler warning.
+	* src/syntheth.c (synth_eth_start): ignore the enaddr argument.
+
 2005-07-22  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/syntheth.c (synth_eth_init): Cast to keep the compiler
