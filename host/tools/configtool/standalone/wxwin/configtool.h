@@ -2,6 +2,7 @@
 //
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 2005, 2008 eCosCentric Limited
 //
 // This program is part of the eCos host tools.
 //
@@ -55,7 +56,7 @@
 #include "wx/docview.h"
 #include "wx/process.h"
 #include "wx/timer.h"
-#include "splittree.h"
+#include "wx/gizmos/splittree.h"
 
 #include "appsettings.h"
 
@@ -100,7 +101,8 @@ class ecPipedProcess;
 #define ecUSE_EXPERIMENTAL_CODE 1
 #endif
 
-class WXDLLEXPORT wxZipFSHandler;
+//class WXDLLEXPORT wxZipFSHandler;
+#include "wx/fs_zip.h"
 class WXDLLEXPORT wxFileSystem;
 
 // Define a new application type, each program should derive a class from wxApp
@@ -128,11 +130,6 @@ public:
 
     // Fire off a subprocess to build the library or tests
     void Build(const wxString& strWhat = wxEmptyString) ;
-
-    // Mount drive e.g. /c
-    static void CygMount(wxChar c);
-    // Mount in text mode e.g. /ecos-c
-    static void CygMountText(wxChar c);
 
     bool InitializeHelpController();
 

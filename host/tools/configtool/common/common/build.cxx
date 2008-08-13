@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------------
 // Copyright (C) 2003 Bart Veer
 // Copyright (C) 1998, 1999, 2000, 2002 Red Hat, Inc.
+// Copyright (C) 2005 eCosCentric Limited
 //
 // This program is part of the eCos host tools.
 //
@@ -58,11 +59,11 @@
 #include "build.hxx"
 
 // Two methods of generating Cygwin filenames
-// ECOS_USE_CYGDRIVE = 0: use e.g. //c/, but this is deprecated in new versions of Cygwin
+// ECOS_USE_CYGDRIVE = 0: use cygwin_conv_to_posix_path() - Cygwin-hosted builds only
 // ECOS_USE_CYGDRIVE = 1: use e.g. /cygdrive/c/
 // ECOS_USE_CYGDRIVE = 2: use e.g. c:/ notation
 // ECOS_USE_CYGDRIVE = 3: use e.g. /ecos-x notation where x is a drive name.
-#define ECOS_USE_CYGDRIVE 3
+#define ECOS_USE_CYGDRIVE 0
 
 // Use registry functions to find out location of /cygdrive
 #define ECOS_USE_REGISTRY 1
@@ -162,10 +163,8 @@ std::string cygpath (const std::string input) {
 	const std::string path = nospace_path (input);
 	std::string output;
 
-	// convert the DOS filepath to Cygwin notation - using Cygwin if available
-    // 2001-10-15: should now do the same thing under Cygwin as under VC++, namely
-    // use the /ecos-x form.
-#if 0 // def __CYGWIN__
+	// convert the DOS filepath to Cygwin notation using Cygwin if available
+#if defined(__CYGWIN__) && (ECOS_USE_CYGDRIVE == 0)
 	char buffer [MAX_PATH + 1];
 	cygwin_conv_to_posix_path (path.c_str (), buffer);
 	output = buffer;
@@ -271,15 +270,7 @@ std::string cygpath (const std::string input) {
 
 // create a directory
 bool create_directory (const std::string directory) {
-// We take advantage of wxWindows' recursive wxFileName::Mkdir function
-// to workaround a bug in Tcl on Windows 9x
-#if defined(__WXMSW__)
-    if (wxDirExists(directory.c_str()))
-        return TRUE;
-    return wxFileName::Mkdir(directory.c_str(), 0777, TRUE);
-#else
     return eval_tcl_command ("file mkdir \"" + directory + "\"");
-#endif
 }
 
 // copy a file
@@ -375,7 +366,7 @@ bool generate_makefile (const CdlConfiguration config, const CdlBuildInfo_Loadab
 	fprintf (stream, makefile_header.c_str ());
 
 	// generate the global variables
-	fprintf (stream, "export PREFIX := %s\n", cygpath (install_tree).c_str ());
+	fprintf (stream, "export PREFIX := %s\n", install_tree.c_str ());
 	fprintf (stream, "export COMMAND_PREFIX := %s\n", command_prefix.c_str ());
 	fprintf (stream, "export CC := $(COMMAND_PREFIX)gcc\n");
 	fprintf (stream, "export OBJCOPY := $(COMMAND_PREFIX)objcopy\n");
@@ -390,7 +381,7 @@ bool generate_makefile (const CdlConfiguration config, const CdlBuildInfo_Loadab
 #if ECOS_USE_CYGDRIVE == 1
 	fprintf (stream, "export REPOSITORY := %s\n", cygpath (nativepath (info.repository)).c_str()); // double conversion to force /cygdrive/c format
 #else
-	fprintf (stream, "export REPOSITORY := %s\n", cygpath (info.repository).c_str());
+	fprintf (stream, "export REPOSITORY := %s\n", info.repository.c_str());
 #endif
 	fprintf (stream, "PACKAGE := %s\n", info.directory.c_str ());
 	fprintf (stream, "OBJECT_PREFIX := %s\n", object_prefix.c_str ());
@@ -548,7 +539,7 @@ bool generate_toplevel_makefile (const CdlConfiguration config, const std::strin
 #else
     fprintf (stream, "export HOST := UNIX\n");
 #endif
-	fprintf (stream, "export PREFIX := %s\n", cygpath (install_tree).c_str ());
+	fprintf (stream, "export PREFIX := %s\n", install_tree.c_str ());
 	fprintf (stream, "export COMMAND_PREFIX := %s\n", command_prefix.c_str ());
 	fprintf (stream, "export CC := $(COMMAND_PREFIX)gcc\n");
 	fprintf (stream, "export OBJCOPY := $(COMMAND_PREFIX)objcopy\n");

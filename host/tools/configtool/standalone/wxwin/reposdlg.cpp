@@ -2,6 +2,7 @@
 //
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 2006 eCosCentric Limited
 //
 // This program is part of the eCos host tools.
 //
@@ -218,7 +219,7 @@ bool ecRepositoryInfoDialog::CreateHtmlInfo(wxString& info)
     info += wxT("</ul><P>");
 
     ///////////////////////////////////////////////////
-    info += wxT("<b>Default package:</b><P>\n");
+    info += wxT("<b>Packages template:</b><P>\n");
 
     info += wxT("<ul>");
 

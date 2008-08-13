@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
 // Copyright (C) 2003 John Dallaway
+// Copyright (C) 2005 eCosCentric Limited
 //
 // This program is part of the eCos host tools.
 //
@@ -33,6 +34,10 @@
 
 #ifdef __BORLANDC__
 #pragma hdrstop
+#endif
+
+#ifdef __CYGWIN__
+#include <sys/cygwin.h> /* for cygwin_conv_to_posix_path() */
 #endif
 
 #include "wx/filefn.h"
@@ -550,7 +555,12 @@ ecFileName ecFileName::EC_GetTempPath()
 const ecFileName ecFileName::CygPath () const 
 {
 #ifdef __WXMSW__
-    ecFileName rc = ShortName();
+    ecFileName rc = NoSpaceName();
+#ifdef __CYGWIN__
+	char buffer [MAX_PATH + 1];
+	cygwin_conv_to_posix_path (rc.c_str (), buffer);
+	rc = buffer;
+#else
     if(wxIsalpha(rc[(size_t)0]) && wxTChar(':')==rc[(size_t)1])
     {
         // Convert c:\ to /cygdrive/c/
@@ -563,6 +573,7 @@ const ecFileName ecFileName::CygPath () const
         if (rc[i] == wxTChar('\\'))
             rc[i] = wxTChar('/');
     }
+#endif
 #else
     const ecFileName& rc = * this;
 #endif

@@ -3,7 +3,8 @@
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
 // Copyright (C) 2003 John Dallaway
-//
+// Copyright (C) 2005 eCosCentric Limited
+
 // This program is part of the eCos host tools.
 //
 // This program is free software; you can redistribute it and/or modify it
@@ -80,7 +81,7 @@ BEGIN_EVENT_TABLE(ecPackagesDialog, ecDialog)
     EVT_LISTBOX_DCLICK(ecID_PACKAGES_DIALOG_USE_LIST, ecPackagesDialog::OnDblClickListBox2)
     EVT_LISTBOX(ecID_PACKAGES_DIALOG_AVAILABLE_LIST, ecPackagesDialog::OnClickListBox1)
     EVT_LISTBOX(ecID_PACKAGES_DIALOG_USE_LIST, ecPackagesDialog::OnClickListBox2)
-    EVT_LISTBOX(ecID_PACKAGES_DIALOG_VERSION, ecPackagesDialog::OnSelectVersion)
+    EVT_CHOICE(ecID_PACKAGES_DIALOG_VERSION, ecPackagesDialog::OnSelectVersion)
     EVT_INIT_DIALOG(ecPackagesDialog::OnInitDialog)
     EVT_BUTTON(ecID_PACKAGES_DIALOG_CLEAR, ecPackagesDialog::OnClearKeywords)
     EVT_CHECKBOX(ecID_PACKAGES_DIALOG_OMIT_HARDWARE, ecPackagesDialog::OnClickOmitHardwarePackages)

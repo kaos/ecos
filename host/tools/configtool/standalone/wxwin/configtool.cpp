@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
 // Copyright (C) 2003 John Dallaway
-// Copyright (C) 2004, 2005, 2006 eCosCentric Limited
+// Copyright (C) 2004, 2005, 2006, 2008 eCosCentric Limited
 //
 // This program is part of the eCos host tools.
 //
@@ -138,17 +138,11 @@ ecApp::ecApp()
     m_docManager = NULL;
     m_mainFrame = NULL;
     m_currentDoc = NULL;
-    m_whatsThisMenu = new wxMenu;
-    m_whatsThisMenu->Append(ecID_WHATS_THIS, _("&What's This?"));
     m_helpFile = wxEmptyString;
     m_splashScreen = NULL;
     m_pipedProcess = NULL;
     m_valuesLocked = 0;
     m_helpController = NULL;
-    m_fileSystem = new wxFileSystem;
-#if wxUSE_STREAMS && wxUSE_ZIPSTREAM && wxUSE_ZLIB
-    m_zipHandler = new wxZipFSHandler;
-#endif
 }
 
 ecApp::~ecApp()
@@ -167,7 +161,18 @@ bool ecApp::OnInit()
     } catch(...) { };
 #endif
 
+    // Mandatory initialisation for Tcl 8.4
+    Tcl_FindExecutable(argv[0]);
+
     wxLog::SetTimestamp(NULL);
+
+    m_whatsThisMenu = new wxMenu;
+    m_whatsThisMenu->Append(ecID_WHATS_THIS, _("&What's This?"));
+
+    m_fileSystem = new wxFileSystem;
+#if wxUSE_STREAMS && wxUSE_ZIPSTREAM && wxUSE_ZLIB
+    m_zipHandler = new wxZipFSHandler;
+#endif
 
     wxHelpProvider::Set(new wxSimpleHelpProvider);
     //wxHelpProvider::Set(new wxHelpControllerHelpProvider(& m_helpController));
@@ -179,9 +184,6 @@ bool ecApp::OnInit()
 #if wxUSE_STREAMS && wxUSE_ZIPSTREAM && wxUSE_ZLIB
     wxFileSystem::AddHandler(m_zipHandler);
 #endif
-
-    // Mandatory initialisation for Tcl 8.4
-    Tcl_FindExecutable(argv[0]);
 
     wxString currentDir = wxGetCwd();
 
@@ -227,6 +229,16 @@ bool ecApp::OnInit()
     // Load resources from binary resources archive, or failing that, from
     // Windows resources or plain files
     LoadResources();
+
+    // remove "tty" from CYGWIN environment variable to allow correct
+    // execution of cygwin command-line tools from this application
+#ifdef __WXMSW__
+    wxString strCygwin = wxGetenv(wxT("CYGWIN"));
+    strCygwin = wxT(" ") + strCygwin;
+    strCygwin.Replace(wxT(" tty"), wxEmptyString);
+    strCygwin.Trim(false);
+    wxSetEnv(wxT("CYGWIN"), strCygwin);
+#endif
 
     wxGetEnv(wxT("PATH"), & m_strOriginalPath);
 
@@ -607,7 +619,7 @@ bool ecApp::LoadBitmapResource(wxBitmap& bitmap, const wxString& filename, int b
 #endif
 
     if (!bitmap.Ok() && wxFileExists(GetFullAppPath(filename)))
-        bitmap.LoadFile(GetFullAppPath(filename), bitmapType);
+        bitmap.LoadFile(GetFullAppPath(filename), (wxBitmapType) bitmapType);
 
 
     if (bitmap.Ok() && addToMemoryFS)
@@ -1129,8 +1141,8 @@ bool ecApp::PrepareEnvironment(bool bWithBuildTools, wxString* cmdLine)
         if ( !strUserBinDir.IsEmpty() )
         {
             // calculate the directory of the host tools from this application's module name
-            ecFileName strHostToolsBinDir(this->argv[0]);
-            strHostToolsBinDir = strHostToolsBinDir.Head ();
+            const wxFileName strConfigtoolFile(this->argv[0]);
+            const ecFileName strHostToolsBinDir(strConfigtoolFile.GetPath(wxPATH_GET_VOLUME, wxPATH_DOS));
             
             // tools directories are in the order host-tools, user-tools, comp-tools, install/bin (if present), contrib-tools (if present) on the path
             const ecFileName strContribBinDir(strUserBinDir, wxT("..\\contrib\\bin"));
@@ -1169,14 +1181,6 @@ bool ecApp::PrepareEnvironment(bool bWithBuildTools, wxString* cmdLine)
 
                     // Useful for ecosconfig
                     wxSetEnv(wxT("ECOS_REPOSITORY"), pDoc->GetPackagesDir());
-
-                    // Mount /ecos-x so we can access these in text mode
-                    if (! pDoc->GetBuildTree().IsEmpty() && wxIsalpha(pDoc->GetBuildTree()[0]))
-                        CygMount(pDoc->GetBuildTree()[0]);
-                    if (! pDoc->GetInstallTree().IsEmpty() && wxIsalpha(pDoc->GetInstallTree()[0]))
-                        CygMount(pDoc->GetInstallTree()[0]);
-                    if (! pDoc->GetRepository().IsEmpty() && wxIsalpha(pDoc->GetRepository()[0]))
-                        CygMount(pDoc->GetRepository()[0]);
                 }
             }
         }
@@ -1272,87 +1276,6 @@ bool ecApp::PrepareEnvironment(bool bWithBuildTools, wxString* cmdLine)
     }
     return rc;
 #endif
-}
-
-void ecApp::CygMount(wxChar c)
-{
-    // May not be alpha if it's e.g. a UNC network path
-    if (!wxIsalpha(c))
-        return;
-    
-    c = wxTolower(c);
-    
-    if(!sm_arMounted[c-_TCHAR('a')])
-    {
-        sm_arMounted[c-wxChar('a')]=true;
-        wxString strCmd;
-        String strOutput;
-        
-        strCmd.Printf(wxT("mount -t -u %c: /ecos-%c"),c,c);
-        CSubprocess sub;
-        sub.Run(strOutput,strCmd);
-    }
-
-
-    // Doing it with wxExecute results in a flashing DOS box unfortunately
-#if 0
-    wxASSERT(wxIsalpha(c));
-    c = wxTolower(c);
-    if(!sm_arMounted[c-wxChar('a')])
-    {
-        sm_arMounted[c-wxChar('a')] = TRUE;
-        wxString strCmd;
-        
-        strCmd.Printf(wxT("mount.exe %c: /%c"),c,c);
-
-        wxExecute(strCmd, TRUE);
-    }
-#endif
-}
-
-// Fiddling directly with the registry DOESN'T WORK because Cygwin mount tables
-// get out of synch with the registry
-void ecApp::CygMountText(wxChar c)
-{
-    wxASSERT(wxIsalpha(c));
-    c = wxTolower(c);
-//    if(!sm_arMounted[c-wxChar('a')])
-    {
-//        sm_arMounted[c-wxChar('a')] = TRUE;
-
-#if 0        
-        wxString strCmd;
-        
-        strCmd.Printf(wxT("mount.exe %c: /ecos-%c"),c,c);
-
-        wxExecute(strCmd, TRUE);
-#else
-        wxString key, value;
-        key.Printf(wxT("/ecos-%c"), c);
-        value.Printf(wxT("%c:"), c);
-
-        // Mount by fiddling with registry instead, so we don't see ugly flashing windows
-#ifdef __WXMSW__
-        HKEY hKey = 0;
-        if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\Cygnus Solutions\\Cygwin\\mounts v2",
-            0, KEY_READ, &hKey))
-        {
-            DWORD disposition;
-            HKEY hSubKey = 0;
-
-            if (ERROR_SUCCESS == RegCreateKeyEx(hKey, key, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS,
-                NULL, & hSubKey, & disposition))
-            {
-                RegSetValueEx(hSubKey, "native", 0, REG_SZ, (unsigned char*) (const wxChar*) value, value.Length() + 1);
-                RegCloseKey(hSubKey);
-            }
-            
-            RegCloseKey(hKey);
-        }
-#endif
-
-#endif
-    }
 }
 
 void ecApp::Build(const wxString &strWhat /*=wxT("")*/ )

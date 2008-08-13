@@ -66,11 +66,11 @@ public:
   static bool IsFile (LPCTSTR pszFile);
 
   // File iterator.  Gets next file in directory, avoiding "." and ".."
-  static bool NextFile (void *pHandle,String &str);
+  static bool NextFile (void *&pHandle,String &str);
   // Start file iteration and return first file.
-  static bool StartSearch (void *pHandle,String &str);
+  static bool StartSearch (void *&pHandle,String &str);
   // End file iteration
-  static void EndSearch (void *pHandle);
+  static void EndSearch (void *&pHandle);
 
   // Get the file name of a "home directory" file
   static const String HomeFile (LPCTSTR pszFile);

@@ -94,6 +94,12 @@
 
 #ifdef __WXMSW__
 #include "wx/msw/winundef.h"
+#if wxCHECK_VERSION(2, 6, 0)
+#include "wx/msw/wrapcctl.h" /* for TVS_NOHSCROLL */
+#else
+#define _WIN32_IE 0x0600 /* assume maximal feature set */
+#include <commctrl.h> /* for TVS_NOHSCROLL */
+#endif
 #endif
 
 // ----------------------------------------------------------------------------
@@ -396,7 +402,11 @@ ecMainFrame::ecMainFrame(wxDocManager *manager, const wxString& title, const wxP
         GetToolBar()->Show( FALSE );
     
     // Create the status bar
+#ifdef __WXMSW__
     CreateStatusBar(4, wxST_SIZEGRIP);
+#else
+    CreateStatusBar(4, 0);
+#endif
     
     int* widths = new int[4];
     widths[0] = -1; widths[1] = 100; widths[2] = 40; widths[3] = 80;
@@ -420,7 +430,7 @@ void ecMainFrame::CreateWindows()
     m_outputSashWindow->SetOrientation(wxLAYOUT_HORIZONTAL);
     m_outputSashWindow->SetAlignment(wxLAYOUT_BOTTOM);
     m_outputSashWindow->SetSashVisible(wxSASH_TOP, TRUE);
-    m_outputWindow = new ecOutputWindow(m_outputSashWindow, ecID_OUTPUT_WINDOW, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxCLIP_CHILDREN|wxTE_READONLY|wxTE_RICH);
+    m_outputWindow = new ecOutputWindow(m_outputSashWindow, ecID_OUTPUT_WINDOW, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxCLIP_CHILDREN|wxTE_READONLY|wxTE_RICH|wxSUNKEN_BORDER);
     m_outputWindow->SetHelpText(_("The output window displays various warning and informational messages."));
     
     // Sash window for the memory window
@@ -473,10 +483,21 @@ void ecMainFrame::CreateWindows()
     m_scrolledWindow = new ecSplitterScrolledWindow(m_configSashWindow, ecID_SCROLLED_WINDOW, wxDefaultPosition,
         wxSize(400, 100), wxNO_BORDER | wxCLIP_CHILDREN | wxVSCROLL);
     m_splitter = new wxThinSplitterWindow(m_scrolledWindow, ecID_SPLITTER_WINDOW, wxDefaultPosition,
-        wxSize(400, 100), wxSP_3DBORDER | wxCLIP_CHILDREN /* | wxSP_LIVE_UPDATE */);
+        wxSize(400, 100),
+#ifdef __WXMSW__
+        wxSP_3DBORDER |
+#else
+        wxSUNKEN_BORDER |
+#endif
+        wxCLIP_CHILDREN /* | wxSP_LIVE_UPDATE */);
     m_splitter->SetSashSize(2);
     m_tree = new ecConfigTreeCtrl(m_splitter, ecID_TREE_CTRL, wxDefaultPosition,
-        wxSize(200, 100), wxTR_HAS_BUTTONS | wxTR_NO_LINES | wxNO_BORDER );
+        wxSize(200, 100), wxTR_HAS_BUTTONS | wxTR_NO_LINES | wxNO_BORDER | wxTR_ROW_LINES /* | wxALWAYS_SHOW_SB */);
+#ifdef __WXMSW__
+    // disable horizontal scrolling of the config tree control
+    HWND hTree = (HWND) m_tree->GetHandle();
+    SetWindowLong (hTree, GWL_STYLE, GetWindowLong (hTree, GWL_STYLE) | TVS_NOHSCROLL);
+#endif        
     m_valueWindow = new ecValueWindow(m_splitter, ecID_VALUE_WINDOW, wxDefaultPosition,
         wxSize(200, 100), wxNO_BORDER);
     m_splitter->SplitVertically(m_tree, m_valueWindow);
@@ -552,7 +573,16 @@ void ecMainFrame::OnAbout(wxCommandEvent& WXUNUSED(event))
 //    ecAboutDialog dialog(this, ecID_ABOUT_DIALOG, _("About eCos Configuration Tool"));
 //    dialog.ShowModal();
 	wxString msg;
-	msg.Printf("eCos Configuration Tool %s (%s %s)\n\nCopyright (c) Red Hat, Inc. 1998-2002\nCopyright (c) John Dallaway 2003\nCopyright (c) eCosCentric Limited 2004-2008", ecCONFIGURATION_TOOL_VERSION, __DATE__, __TIME__);
+	int iTclVerMajor, iTclVerMinor, iTclVerPatchLevel;
+	Tcl_GetVersion (&iTclVerMajor, &iTclVerMinor, &iTclVerPatchLevel, NULL);
+	msg.Printf("eCos Configuration Tool %s (%s %s)\n\n"
+		"Copyright (c) Red Hat, Inc. 1998-2002\n"
+		"Copyright (c) John Dallaway 2003\n"
+		"Copyright (c) eCosCentric Limited 2004-2008\n\n"
+		"Using %s %s and Tcl %d.%d.%d",
+		ecCONFIGURATION_TOOL_VERSION, __DATE__, __TIME__,
+		wxPlatformInfo::Get().GetPortIdName().c_str(), wxVERSION_NUM_DOT_STRING,
+		iTclVerMajor, iTclVerMinor, iTclVerPatchLevel);
     wxMessageBox(msg, _("About eCos Configuration Tool"), wxICON_INFORMATION | wxOK);
 }
 
@@ -774,7 +804,7 @@ void ecMainFrame::OnToggleToolbar(wxCommandEvent& event)
     wxSizeEvent sizeEvent(GetSize(), GetId());
     GetEventHandler()->ProcessEvent(sizeEvent);
 #ifdef __WXGTK__
-    GtkOnSize( GetPosition().x, GetPosition().y, GetSize().x, GetSize().y);
+    GtkOnSize();
 #endif
 }
 

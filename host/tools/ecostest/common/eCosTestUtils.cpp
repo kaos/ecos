@@ -58,7 +58,7 @@ LPCTSTR  const CeCosTestUtils::Tail(LPCTSTR  const pszFile)
 }
 
 // File iterator.  Gets next file in directory, avoiding _T(".") and _T("..")
-bool CeCosTestUtils::NextFile (void *pHandle,String &str)
+bool CeCosTestUtils::NextFile (void *&pHandle,String &str)
 {
 #ifdef _WIN32
   WIN32_FIND_DATA fd;
@@ -78,7 +78,7 @@ bool CeCosTestUtils::NextFile (void *pHandle,String &str)
   }
   
   // Start file iteration and return first file.
-bool CeCosTestUtils::StartSearch (void *pHandle,String &str)
+bool CeCosTestUtils::StartSearch (void *&pHandle,String &str)
   {
 #ifdef _WIN32
     WIN32_FIND_DATA fd;
@@ -103,7 +103,7 @@ bool CeCosTestUtils::StartSearch (void *pHandle,String &str)
   }
   
   // End file iteration
-void CeCosTestUtils::EndSearch (void *pHandle)
+void CeCosTestUtils::EndSearch (void *&pHandle)
   {
 #ifdef _WIN32
     FindClose((HANDLE)pHandle);

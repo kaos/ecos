@@ -2,6 +2,7 @@
 //
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 2005, 2008 eCosCentric Limited
 //
 // This program is part of the eCos host tools.
 //
@@ -123,8 +124,9 @@ ecSettingsDialog::ecSettingsDialog(wxWindow* parent):
         
     m_displayOptions = NULL;
 
+    wxSize clientSize = GetClientSize();
     m_notebook = new wxNotebook(this, ecID_SETTINGS_NOTEBOOK,
-         wxPoint(2, 2), wxSize(PROPERTY_DIALOG_WIDTH - 4, PROPERTY_DIALOG_HEIGHT - 4));
+         wxPoint(2, 2), wxSize(clientSize.GetWidth() - 4 - 10, clientSize.GetHeight() - 4 - 100));
 
     m_displayOptions = new ecDisplayOptionsDialog(m_notebook);
     m_notebook->AddPage(m_displayOptions, wxT("Display"));
@@ -210,8 +212,8 @@ void ecSettingsDialog::OnOK(wxCommandEvent& event)
 {
     ecSettings oldSettings(wxGetApp().GetSettings());
 
-    wxDialog::OnOK(event);
-
+    TransferDataFromWindow();
+    
     if (wxGetApp().GetSettings().m_bHex != oldSettings.m_bHex)
     {
         // Refresh the values window and currently selected properties
@@ -226,6 +228,8 @@ void ecSettingsDialog::OnOK(wxCommandEvent& event)
         if (wxGetApp().GetConfigToolDoc())
             wxGetApp().GetConfigToolDoc()->UpdateAllViews (NULL, & hint);        
     }    
+
+    event.Skip();
 }
 
 void ecSettingsDialog::OnHelp(wxCommandEvent& event)
@@ -1078,16 +1082,16 @@ void ecRunOptionsDialog::CreateControls( wxPanel *parent)
 
     wxString strs19[] = 
     {
-        _("COM1"), 
-        _("COM2"), 
-        _("COM3"), 
-        _("COM4"), 
-        _("COM5"), 
-        _("COM6"), 
-        _("COM7"), 
-        _("COM8")
+        _("/dev/ttyS0"), 
+        _("/dev/ttyS1"), 
+        _("/dev/ttyS2"), 
+        _("/dev/ttyS3"), 
+        _("/dev/ttyS4"), 
+        _("/dev/ttyS5"), 
+        _("/dev/ttyS6"), 
+        _("/dev/ttyS7")
     };
-    wxChoice *item19 = new wxChoice( parent, ecID_RUN_PROPERTIES_SERIAL_PORT_ADDR, wxDefaultPosition, wxSize(70,-1), 8, strs19, 0 );
+    wxComboBox *item19 = new wxComboBox( parent, ecID_RUN_PROPERTIES_SERIAL_PORT_ADDR, wxEmptyString, wxDefaultPosition, wxSize(110,-1), 8, strs19, wxCB_DROPDOWN );
     item16->Add( item19, 0, wxALIGN_CENTRE|wxALL, 5 );
 
     wxStaticText *item20 = new wxStaticText( parent, wxID_STATIC, _("&Baud:"), wxDefaultPosition, wxDefaultSize, 0 );
@@ -1111,7 +1115,7 @@ void ecRunOptionsDialog::CreateControls( wxPanel *parent)
         _("128000"), 
         _("256000")
     };
-    wxChoice *item21 = new wxChoice( parent, ecID_RUN_PROPERTIES_SERIAL_PORT_SPEED, wxDefaultPosition, wxSize(70,-1), 15, strs21, 0 );
+    wxChoice *item21 = new wxChoice( parent, ecID_RUN_PROPERTIES_SERIAL_PORT_SPEED, wxDefaultPosition, wxSize(80,-1), 15, strs21, 0 );
     item16->Add( item21, 0, wxALIGN_CENTRE|wxALL, 5 );
 
     item14->Add( item16, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5 );

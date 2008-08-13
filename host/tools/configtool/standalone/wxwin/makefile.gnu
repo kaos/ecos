@@ -27,13 +27,13 @@ EXTRALDFLAGS=-L$(TCLDIR)/lib -L$(INSTALLDIR)/lib -lcdl -lcyginfra -ltcl
 ifneq (,$(findstring CYGWIN, $(shell uname)))
   PROGRAM=configtool.exe
   CPPFLAGS=`$(WXDIR)/bin/wx-config --cppflags` -D_WIN32 -D__WIN32__ -DSTRICT -D__USE_W32_SOCKETS
-  LDFLAGS=`$(WXDIR)/bin/wx-config --libs` -lshlwapi -Wl,--subsystem,windows
+  LDFLAGS=`$(WXDIR)/bin/wx-config --libs std,gizmos` -lshlwapi -Wl,--subsystem,windows
   EXTRAOBJECTS=$(CTBUILDDIR)/configtoolres.o
   RCFLAGS=`$(WXDIR)/bin/wx-config --cppflags`
 else
   PROGRAM=configtool
   CPPFLAGS=`$(WXDIR)/bin/wx-config --cppflags`
-  LDFLAGS=`$(WXDIR)/bin/wx-config --libs`
+  LDFLAGS=`$(WXDIR)/bin/wx-config --libs std,gizmos`
   EXTRAOBJECTS=
   RCFLAGS=`$(WXDIR)/bin/wx-config --cppflags`
 endif
@@ -61,7 +61,6 @@ OBJECTS = \
  $(CTBUILDDIR)/conflictsdlg.o \
  $(CTBUILDDIR)/conflictwin.o \
  $(CTBUILDDIR)/docsystem.o \
- $(CTBUILDDIR)/ecscrolwin.o \
  $(CTBUILDDIR)/eCosSerial.o \
  $(CTBUILDDIR)/eCosSocket.o \
  $(CTBUILDDIR)/eCosStd.o \
@@ -94,7 +93,6 @@ OBJECTS = \
  $(CTBUILDDIR)/settingsdlg.o \
  $(CTBUILDDIR)/shortdescrwin.o \
  $(CTBUILDDIR)/solutionswin.o \
- $(CTBUILDDIR)/splittree.o \
  $(CTBUILDDIR)/Subprocess.o \
  $(CTBUILDDIR)/templatesdlg.o \
  $(CTBUILDDIR)/TestResource.o
@@ -170,9 +168,6 @@ $(CTBUILDDIR)/docsystem.o: $(CTDIR)/docsystem.cpp $(CTDIR)/docsystem.h
 $(CTBUILDDIR)/ecutils.o: $(CTDIR)/ecutils.cpp $(CTDIR)/ecutils.h
 	$(CC) $(CPPDEBUGOPTIONS) -c $(EXTRACPPFLAGS) $(CPPFLAGS) -o $@ $<
 
-$(CTBUILDDIR)/ecscrolwin.o: $(CTDIR)/ecscrolwin.cpp $(CTDIR)/ecscrolwin.h
-	$(CC) $(CPPDEBUGOPTIONS) -c $(EXTRACPPFLAGS) $(CPPFLAGS) -o $@ $<
-
 $(CTBUILDDIR)/filename.o: $(CTDIR)/filename.cpp $(CTDIR)/filename.h
 	$(CC) $(CPPDEBUGOPTIONS) -c $(EXTRACPPFLAGS) $(CPPFLAGS) -o $@ $<
 
@@ -225,9 +220,6 @@ $(CTBUILDDIR)/shortdescrwin.o: $(CTDIR)/shortdescrwin.cpp $(CTDIR)/shortdescrwin
 	$(CC) $(CPPDEBUGOPTIONS) -c $(EXTRACPPFLAGS) $(CPPFLAGS) -o $@ $<
 
 $(CTBUILDDIR)/solutionswin.o: $(CTDIR)/solutionswin.cpp $(CTDIR)/solutionswin.h
-	$(CC) $(CPPDEBUGOPTIONS) -c $(EXTRACPPFLAGS) $(CPPFLAGS) -o $@ $<
-
-$(CTBUILDDIR)/splittree.o: $(CTDIR)/splittree.cpp $(CTDIR)/splittree.h
 	$(CC) $(CPPDEBUGOPTIONS) -c $(EXTRACPPFLAGS) $(CPPFLAGS) -o $@ $<
 
 $(CTBUILDDIR)/templatesdlg.o: $(CTDIR)/templatesdlg.cpp $(CTDIR)/templatesdlg.h

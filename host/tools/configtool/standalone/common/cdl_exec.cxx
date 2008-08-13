@@ -1,6 +1,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
+// Copyright (C) 2005 eCosCentric Limited
 // Copyright (C) 2005 Bart Veer
 // Copyright (C) 2003 John Dallaway
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
@@ -486,46 +487,9 @@ cdl_exec::cmd_tree ()
             char cwd [PATH_MAX + 1];
 #endif
             getcwd (cwd, sizeof cwd);
-#ifdef __CYGWIN__
-            char cwd_win32 [MAXPATHLEN + 1];
-            cygwin_conv_to_win32_path (cwd, cwd_win32);
-            generate_build_tree (config, cwd_win32, install_prefix);
-#else
             generate_build_tree (config, cwd, install_prefix);
-#endif
             config->generate_config_headers (install_prefix.empty () ? "install/include/pkgconf" : install_prefix + "/include/pkgconf");
             status = true;
-#ifdef __CYGWIN__
-            char buf[100];
-            strcpy(buf, "mount.exe -f -t -u x: /ecos-x");
-            //printf("Cwd_win32: %s\n", cwd_win32);
-
-            if ( cwd_win32[1] == ':' )
-            {
-                buf[19] = tolower(cwd_win32[0]);
-                buf[28] = tolower(cwd_win32[0]);
-                system(buf);
-            }
-
-            //printf("Repository: %s\n", repository.c_str());
-
-            if ( repository[1] == ':' )
-            {
-                buf[19] = tolower(repository[0]);
-                buf[28] = tolower(repository[0]);
-                system(buf);
-            }
-            if ( !install_prefix.empty() )
-            {
-                //printf("Install prefix: %s\n", install_prefix.c_str());
-                if ( install_prefix[1] == ':' )
-                {
-                    buf[19] = tolower(install_prefix[0]);
-                    buf[28] = tolower(install_prefix[0]);
-                    system(buf);
-                }
-            }
-#endif
         } else {
             printf("\nUnable to generate build tree, this configuration still contains conflicts.\n");
             printf("Either resolve the conflicts or use --ignore-errors\n");

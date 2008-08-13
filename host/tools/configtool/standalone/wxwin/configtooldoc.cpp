@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
 // Copyright (C) 2003 John Dallaway
-// Copyright (C) 2008 eCosCentric Limited
+// Copyright (C) 2005, 2006, 2008 eCosCentric Limited
 //
 // This program is part of the eCos host tools.
 //
@@ -319,7 +319,7 @@ bool ecConfigToolDoc::OnSaveDocument(const wxString& filename)
                 {
                     // in each case errors already emitted
                     // copy new MLT files to the build tree as necessary
-                    rc=generate_build_tree (GetCdlConfig(), ecUtils::UnicodeToStdStr(m_strBuildTree), ecUtils::UnicodeToStdStr(m_strInstallTree));
+                    rc=generate_build_tree (GetCdlConfig(), ecUtils::UnicodeToStdStr(m_strBuildTree.CygPath()), ecUtils::UnicodeToStdStr(m_strInstallTree.CygPath()));
                     rc = TRUE;
                 }
             }
@@ -385,7 +385,7 @@ bool ecConfigToolDoc::GenerateBuildTree()
         {
             // in each case errors already emitted
             // copy new MLT files to the build tree as necessary
-            bool rc = generate_build_tree (GetCdlConfig(), ecUtils::UnicodeToStdStr(m_strBuildTree), ecUtils::UnicodeToStdStr(m_strInstallTree));
+            bool rc = generate_build_tree (GetCdlConfig(), ecUtils::UnicodeToStdStr(m_strBuildTree.CygPath()), ecUtils::UnicodeToStdStr(m_strInstallTree.CygPath()));
             rc = TRUE;
         }
 
@@ -485,6 +485,7 @@ void ecConfigToolDoc::AddAllItems()
     wxGetApp().GetMainFrame()->GetPropertyListWindow()->Fill(NULL);
 
     treeCtrl->DeleteAllItems();
+    DeleteItems();
 
     m_strMemoryLayoutFolder = wxT("");
     m_strLinkerScriptFolder = wxT("");
@@ -2071,6 +2072,7 @@ bool ecConfigToolDoc::SaveMemoryMap()
 
 bool ecConfigToolDoc::CopyMLTFiles()
 {
+#if ecUSE_MLT
     wxString sep(wxFILE_SEP_PATH);
 
     // copy default MLT files for the selected target/platform from the repository if they do not already exist
@@ -2125,6 +2127,9 @@ bool ecConfigToolDoc::CopyMLTFiles()
         }
     }
     return rc; //FIXME
+#else
+    return TRUE;
+#endif
 }
 
 const wxString ecConfigToolDoc::CurrentMemoryLayout ()

@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
 // Copyright (C) 2003 John Dallaway
+// Copyright (C) 2008 eCosCentric Limited
 //
 // This program is part of the eCos host tools.
 //
@@ -487,7 +488,7 @@ Full-text search=Yes\n" <<
 // Index file=" << keywordFile << "\n
 
 "Language=0x409 English (United States)\n\
-Title=eCos\n";
+Title=eCos Documentation\n";
 
     stream << 
 "[WINDOWS]\n\
@@ -999,13 +1000,8 @@ bool ecHtmlIndexer::IndexDocs(const wxString& reposDir, wxString& projectFile, b
 //        AddEndSection();
 
         AddIndexByList(wxT("User Guide"), wxT("user-guide/ecos-user-guide.html"), wxT("user-guide/ecos-user-guide.html"));
-//        AddIndexByList(wxT("RedBoot User's Guide"), wxT("redboot/redboot.html"), wxT("redboot/redboot.html"));
-#ifdef __WXGTK__
-        // FIXME: wxHtmlParser (version 2.4.0) doesn't like the eCos Reference HTML on Linux so just index the initial page for now
-        AddIndexItem(wxT("eCos Reference"), wxT("ref/ecos-ref.html"));
-#else
+        AddIndexByList(wxT("RedBoot Guide"), wxT("redboot-guide/redboot-guide.html"), wxT("redboot-guide/redboot-guide.html"));
         AddIndexByList(wxT("eCos Reference"), wxT("ref/ecos-ref.html"), wxT("ref/ecos-ref.html"));
-#endif
         AddIndexByList(wxT("Component Writer's Guide"), wxT("cdl-guide/cdl-guide.html"), wxT("cdl-guide/cdl-guide.html"));
 //        AddIndexByList(wxT("eCos-EL/IX Compatibility Guide"), wxT("ecos-elix/elix-compatibility.html"), wxT("ecos-elix/elix-compatibility.html"));
 

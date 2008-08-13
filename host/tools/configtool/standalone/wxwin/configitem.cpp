@@ -617,7 +617,7 @@ bool ecConfigItem::TransferDataFromWindow(wxWindow* window)
     {
         ecDoubleEditorCtrl* win = (ecDoubleEditorCtrl*) window;
 
-        wxASSERT ( GetOptionType() == ecString );
+        wxASSERT ( GetOptionType() == ecDouble );
 
         // TODO: do checking
         doc->SetValue(*this, atof(win->GetValue()));
@@ -1426,7 +1426,7 @@ IMPLEMENT_CLASS(ecIntegerEditorCtrl, wxSpinCtrl)
 
 ecIntegerEditorCtrl::ecIntegerEditorCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size,
                                    long style):
-    wxSpinCtrl(parent, id, wxEmptyString, pos, size, style, INT_MIN, INT_MAX, 0)
+    wxSpinCtrl(parent, id, "0", pos, size, style, INT_MIN, INT_MAX, 0)
 {
 }
 
@@ -1473,8 +1473,14 @@ void ecEnumEditorCtrl::OnChar(wxKeyEvent& event)
 
 void ecEnumEditorCtrl::OnKillFocus(wxFocusEvent& event)
 {
-    ecValueWindow* parent = (ecValueWindow*) GetParent();
-    parent->EndEditing();
+	/* event may result from drop down of menu on wxGTK so
+	   check that the mouse is outside the window */
+    wxPoint mouse = ScreenToClient(::wxGetMousePosition());
+    wxSize size = GetSize();
+    if (mouse.x < 0 || mouse.x > size.x || mouse.y < 0 || mouse.y > size.y) {
+    	ecValueWindow* parent = (ecValueWindow*) GetParent();
+		parent->EndEditing();
+    }
 }
 
 /*
@@ -1510,7 +1516,7 @@ ecEditStringDialog::~ecEditStringDialog()
 
 void ecEditStringDialog::OnOK(wxCommandEvent& event)
 {
-    wxDialog::OnOK(event);
+    event.Skip();
 }
 
 //// Operations

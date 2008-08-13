@@ -268,7 +268,7 @@ void ecRunTestsDialog::OnOK(wxCommandEvent& event)
         return;
     }
 
-    wxDialog::OnOK(event);
+    event.Skip();
 }
 
 void ecRunTestsDialog::OnCloseWindow(wxCloseEvent& event)
@@ -453,7 +453,7 @@ void *ecResetThread::Entry()
     String str1;
     bool bOk=false;
     CResetAttributes::ResetResult n=m_info->pSheet->m_pResource->Reset(str1);
-    str = str1;
+    str = str1.GetCString();
     if(CResetAttributes::RESET_OK!=n){
         str += wxT(">>> Could not reset target\n");
     }

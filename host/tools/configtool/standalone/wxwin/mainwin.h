@@ -2,6 +2,7 @@
 //
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 2008 eCosCentric Limited
 //
 // This program is part of the eCos host tools.
 //
@@ -53,7 +54,7 @@
 #include "wx/wx.h"
 #include "wx/docview.h"
 
-#include "splittree.h"
+#include "wx/gizmos/splittree.h"
 
 /*
  * Status bar panes

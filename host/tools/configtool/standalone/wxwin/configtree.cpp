@@ -102,12 +102,9 @@
 IMPLEMENT_CLASS(ecConfigTreeCtrl, wxRemotelyScrolledTreeCtrl)
 
 BEGIN_EVENT_TABLE(ecConfigTreeCtrl, wxRemotelyScrolledTreeCtrl)
-    EVT_PAINT(ecConfigTreeCtrl::OnPaint)
     EVT_MOUSE_EVENTS(ecConfigTreeCtrl::OnMouseEvent)
     EVT_CHAR(ecConfigTreeCtrl::OnKeyDown)
     EVT_TREE_SEL_CHANGED(-1, ecConfigTreeCtrl::OnSelChanged)
-    EVT_TREE_ITEM_EXPANDED(-1, ecConfigTreeCtrl::OnCollapseExpand)
-    EVT_TREE_ITEM_COLLAPSED(-1, ecConfigTreeCtrl::OnCollapseExpand)
     EVT_HELP(-1, ecConfigTreeCtrl::OnHelp)
 END_EVENT_TABLE()
 
@@ -169,83 +166,6 @@ void ecConfigTreeCtrl::LoadIcons()
     
     m_iconDB.AddInfo("Integer", wxICON(integer), 0, TRUE);
     m_iconDB.AddInfo("Integer", wxICON(integer_dis), 0, FALSE);
-    
-#if 0
-    // Add some dummy items
-    ecConfigItem* item = NULL;
-    wxTreeItemId rootId = AddRoot(_(""), -1, -1, new ecTreeItemData(item = new ecConfigItem(NULL, _("Configuration"), ecContainer)));
-    
-    item->SetTreeItem(rootId);
-    item->UpdateTreeItem(* this);
-    
-    wxTreeItemId childId1 = AppendItem(rootId, _(""), -1, -1, new ecTreeItemData(item = new ecConfigItem(item, _("My Package"), ecPackage, ecFlavorData, ecString)));
-    item->SetTreeItem(childId1);
-    item->GetValue() = _("v1_4_1");
-    item->UpdateTreeItem(* this);
-    
-    wxTreeItemId childId2 = AppendItem(childId1, _(""), -1, -1, new ecTreeItemData(item = new ecConfigItem(item, _("Option 1"), ecOption, ecFlavorData, ecString)));
-    item->SetTreeItem(childId2);
-    item->GetValue() = _("The value for this option");
-    item->UpdateTreeItem(* this);
-    
-    childId2 = AppendItem(childId1, _(""), -1, -1, new ecTreeItemData(item = new ecConfigItem(item, _("Option 2"), ecOption, ecFlavorData, ecLong)));
-    item->SetTreeItem(childId2);
-    item->GetValue() = (long) 176343;
-    item->UpdateTreeItem(* this);
-    
-    childId2 = AppendItem(childId2, _(""), -1, -1, new ecTreeItemData(item = new ecConfigItem(item, _("Option 3"), ecOption, ecFlavorBool, ecOptionTypeNone, TRUE, TRUE, ecHintCheck)));
-    item->SetTreeItem(childId2);
-    item->GetValue() = (bool) TRUE;
-    item->UpdateTreeItem(* this);
-    
-    childId2 = AppendItem(childId1, _(""), -1, -1, new ecTreeItemData(item = new ecConfigItem(item, _("Option 4"), ecOption, ecFlavorBool, ecOptionTypeNone, TRUE, FALSE, ecHintCheck)));
-    item->SetTreeItem(childId2);
-    item->UpdateTreeItem(* this);
-    
-    childId2 = AppendItem(childId1, _(""), -1, -1, new ecTreeItemData(item = new ecConfigItem(item, _("Option 5"), ecOption, ecFlavorBool, ecOptionTypeNone, TRUE, TRUE, ecHintRadio)));
-    item->SetTreeItem(childId2);
-    item->UpdateTreeItem(* this);
-    
-    childId2 = AppendItem(childId1, _(""), -1, -1, new ecTreeItemData(item = new ecConfigItem(item, _("Option 6"), ecOption, ecFlavorBool, ecOptionTypeNone, TRUE, FALSE, ecHintRadio)));
-    item->SetTreeItem(childId2);
-    item->GetValue() = (bool) TRUE ;
-    item->UpdateTreeItem(* this);
-    
-    // Another branch
-    childId1 = AppendItem(rootId, _(""), -1, -1, new ecTreeItemData(item = new ecConfigItem(item, _("My Container"), ecContainer)));
-    item->SetTreeItem(childId1);
-    item->UpdateTreeItem(* this);
-    
-    childId2 = AppendItem(childId1, _(""), -1, -1, new ecTreeItemData(item = new ecConfigItem(item, _("Option 1"), ecOption, ecFlavorData, ecString, FALSE)));
-    item->SetTreeItem(childId2);
-    item->GetValue() = _("The value for this option");
-    item->UpdateTreeItem(* this);
-    
-    childId2 = AppendItem(childId1, _(""), -1, -1, new ecTreeItemData(item = new ecConfigItem(item, _("Option 2"), ecOption, ecFlavorData, ecLong, FALSE)));
-    item->SetTreeItem(childId2);
-    item->GetValue() = (long) 176343;
-    item->UpdateTreeItem(* this);
-    
-    childId2 = AppendItem(childId1, _(""), -1, -1, new ecTreeItemData(item = new ecConfigItem(item, _("Option 3"), ecOption, ecFlavorBool, ecOptionTypeNone, FALSE, TRUE, ecHintCheck)));
-    item->SetTreeItem(childId2);
-    item->GetValue() = (bool) TRUE;
-    item->UpdateTreeItem(* this);
-    
-    childId2 = AppendItem(childId1, _(""), -1, -1, new ecTreeItemData(item = new ecConfigItem(item, _("Option 4"), ecOption, ecFlavorBool, ecOptionTypeNone, FALSE, FALSE, ecHintCheck)));
-    item->SetTreeItem(childId2);
-    item->UpdateTreeItem(* this);
-    
-    childId2 = AppendItem(childId1, _(""), -1, -1, new ecTreeItemData(item = new ecConfigItem(item, _("Option 5"), ecOption, ecFlavorBool, ecOptionTypeNone, FALSE, TRUE, ecHintRadio)));
-    item->SetTreeItem(childId2);
-    item->UpdateTreeItem(* this);
-    
-    childId2 = AppendItem(childId1, _(""), -1, -1, new ecTreeItemData(item = new ecConfigItem(item, _("Option 6"), ecOption, ecFlavorBool, ecOptionTypeNone, FALSE, FALSE, ecHintRadio)));
-    item->SetTreeItem(childId2);
-    item->GetValue() = (bool) TRUE ;
-    item->UpdateTreeItem(* this);
-    
-    Expand(rootId);
-#endif
 }
 
 ecConfigTreeCtrl::~ecConfigTreeCtrl()
@@ -254,47 +174,6 @@ ecConfigTreeCtrl::~ecConfigTreeCtrl()
     
     SetImageList(NULL);
     delete m_imageList;
-}
-
-// Draw the lines on top of the tree
-void ecConfigTreeCtrl::OnPaint(wxPaintEvent& event)
-{
-    wxPaintDC dc(this);
-
-    wxTreeCtrl::OnPaint(event);
-    
-    // Reset the device origin since it may have been set
-    dc.SetDeviceOrigin(0, 0);
-    
-    wxSize sz = GetClientSize();
-
-#if wxCHECK_VERSION(2, 6, 0)
-    wxPen pen(wxSystemSettings::GetColour(wxSYS_COLOUR_3DLIGHT), 1, wxSOLID);
-#else
-    wxPen pen(wxSystemSettings::GetSystemColour(wxSYS_COLOUR_3DLIGHT), 1, wxSOLID);
-#endif
-    dc.SetPen(pen);
-    dc.SetBrush(* wxTRANSPARENT_BRUSH);
-    
-    wxSize clientSize = GetClientSize();
-    wxRect itemRect;
-    int cy=0;
-    wxTreeItemId h, lastH;
-    for(h=GetFirstVisibleItem();h;h=GetNextVisible(h))
-    {
-        if (GetBoundingRect(h, itemRect))
-        {
-            cy = itemRect.GetTop();
-            dc.DrawLine(0, cy, clientSize.x, cy);
-            lastH = h;
-        }
-    }
-    
-    if (lastH && lastH.IsOk() && GetBoundingRect(lastH, itemRect))
-    {
-        cy = itemRect.GetBottom();
-        dc.DrawLine(0, cy, clientSize.x, cy);
-    }
 }
 
 void ecConfigTreeCtrl::OnSelChanged(wxTreeEvent& event)
@@ -408,12 +287,6 @@ void ecConfigTreeCtrl::OnKeyDown(wxKeyEvent& event)
     }
 }
 
-void ecConfigTreeCtrl::OnCollapseExpand(wxTreeEvent& event)
-{
-    if (GetCompanionWindow())
-        GetCompanionWindow()->Refresh();
-}
-
 // show help for this window
 void ecConfigTreeCtrl::OnHelp(wxHelpEvent& event)
 {
@@ -442,7 +315,6 @@ void ecConfigTreeCtrl::OnHelp(wxHelpEvent& event)
 IMPLEMENT_CLASS(ecValueWindow, wxTreeCompanionWindow)
 
 BEGIN_EVENT_TABLE(ecValueWindow, wxTreeCompanionWindow)
-    EVT_PAINT(ecValueWindow::OnPaint)
     EVT_MOUSE_EVENTS(ecValueWindow::OnMouseEvent)
     EVT_SCROLLWIN(ecValueWindow::OnScroll)
     EVT_TREE_ITEM_EXPANDED(-1, ecValueWindow::OnExpand)
@@ -477,50 +349,6 @@ wxTreeCompanionWindow(parent, id, pos, sz, style)
     m_configItem = NULL;
 }
 
-void ecValueWindow::OnPaint(wxPaintEvent& event)
-{
-    wxPaintDC dc(this);
-    
-    if (!m_treeCtrl)
-        return;
-
-#if wxCHECK_VERSION(2, 6, 0)
-    wxPen pen(wxSystemSettings::GetColour(wxSYS_COLOUR_3DLIGHT), 1, wxSOLID);
-#else
-    wxPen pen(wxSystemSettings::GetSystemColour(wxSYS_COLOUR_3DLIGHT), 1, wxSOLID);
-#endif
-    dc.SetPen(pen);
-    dc.SetBrush(* wxTRANSPARENT_BRUSH);
-    wxFont font(GetFont());
-    dc.SetFont(font);
-    //dc.SetTextForeground(wxSystemSettings::GetSystemColour(wxSYS_COLOUR_WINDOWTEXT));
-    dc.SetBackgroundMode(wxTRANSPARENT);
-    
-    wxSize clientSize = GetClientSize();
-    wxRect itemRect;
-    int cy=0;
-    wxTreeItemId h, lastH;
-    for(h=m_treeCtrl->GetFirstVisibleItem();h;h=m_treeCtrl->GetNextVisible(h))
-    {
-        if (m_treeCtrl->GetBoundingRect(h, itemRect))
-        {
-            cy = itemRect.GetTop();
-            wxRect drawItemRect(0, cy, clientSize.x, itemRect.GetHeight());
-            
-            lastH = h;
-            
-            // Draw the actual item
-            DrawItem(dc, h, drawItemRect);
-            dc.DrawLine(0, cy, clientSize.x, cy);
-        }
-    }
-    if (lastH && lastH.IsOk() && m_treeCtrl->GetBoundingRect(lastH, itemRect))
-    {
-        cy = itemRect.GetBottom();
-        dc.DrawLine(0, cy, clientSize.x, cy);
-    }
-}
-
 // Returns the rectangle which will enclose the value for this tree item
 wxRect ecValueWindow::GetItemRect(ecConfigItem* item)
 {
@@ -531,7 +359,7 @@ wxRect ecValueWindow::GetItemRect(ecConfigItem* item)
     wxRect itemRect;
     int cy=0;
     wxTreeItemId h;
-    for(h=m_treeCtrl->GetFirstVisibleItem();h;h=m_treeCtrl->GetNextVisible(h))
+    for(h=m_treeCtrl->GetFirstVisibleItem();h.IsOk() && m_treeCtrl->IsVisible(h);h=m_treeCtrl->GetNextVisible(h))
     {
         ecTreeItemData* data = (ecTreeItemData*) m_treeCtrl->GetItemData(h);
         if (data->GetConfigItem() == item)
@@ -561,7 +389,9 @@ void ecValueWindow::OnMouseEvent(wxMouseEvent& event)
             m_treeCtrl->SelectItem(item);
             ecConfigItem* configItem = ((ecTreeItemData*) m_treeCtrl->GetItemData(item))->GetConfigItem();
             if (configItem->CanEdit())
-                BeginEditing(configItem);            
+                BeginEditing(configItem);
+            else if (m_configItem)
+                EndEditing();            
         }
     }
     else if (event.RightDown())
@@ -575,6 +405,9 @@ void ecValueWindow::OnMouseEvent(wxMouseEvent& event)
         if (item != 0)
 #endif
         {
+        	if (m_configItem)
+        	    EndEditing();
+
             ecConfigItem* configItem = ((ecTreeItemData*) m_treeCtrl->GetItemData(item))->GetConfigItem();
             m_treeCtrl->SelectItem(item);
             ((ecConfigTreeCtrl*) m_treeCtrl)->GetPropertiesMenu()->SetClientData((void*) TRUE);
@@ -1102,7 +935,9 @@ void ecSplitterScrolledWindow::OnUpdateUnloadPackage(wxUpdateUIEvent& event)
     {
         ecConfigItem* item = ((ecTreeItemData*) treeCtrl->GetItemData(id))->GetConfigItem();
         
-        event.Enable( item->IsPackage() );
+        event.Enable( item->IsPackage() &&
+            !wxGetApp().GetConfigToolDoc()->GetCdlPkgData()->
+            is_hardware_package (ecUtils::UnicodeToStdStr (item->GetMacro())));
     }
 }
 

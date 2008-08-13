@@ -1,3 +1,36 @@
+2008-08-13  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/configitem.cpp: Fix assert on ecDoubleEditorCtrl
+	option type. Initialise wxSpinCtrl with valid integer value. Do not
+	end editing when clicking within value window.
+	
+	* standalone/wxwin/configtool.cpp: Move Tcl and wxMenu initialisation
+	from class contructor to OnInit() method for compatibility with recent
+	wxWidgets. Tweak host tool directory path calculation for compatibility
+	with recent wxWidgets under Cygwin.
+	
+	* standalone/wxwin/configtooldoc.cpp: Suppress copying of MLT files.
+	
+	* standalone/wxwin/configtree.cpp: Always end editing when clicking
+	elsewhere in the value window.
+	
+	* standalone/wxwin/configtree.cpp, standalone/wxwin/configtree.h: Do
+	not handle EVT_PAINT, EVT_TREE_ITEM_EXPANDED and EVT_TREE_ITEM_COLLAPSED
+	events unless strictly necessary.
+	
+	* standalone/wxwin/settingsdlg.cpp: Use GetClientSize() to size the
+	wxNotebook.
+	
+	* standalone/wxwin/appsettings.cpp: Use the internal documentation
+	browser by default.
+
+2008-03-25  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/ecutils.cpp: Use PATH_MAX instead of MAXPATHLEN
+	for compatibility with recent Cygwin headers.
+	* standalone/wxwin/appsettings.cpp: Omit hardware packages in the
+	packages dialog and use TCP port 9000 for remote debugging by default.
+
 2008-03-03  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/configitem.cpp: Do not delete the package item
@@ -11,6 +44,20 @@
 	* standalone/wxwin/configitem.cpp: Fix memory leak when unloading a
 	package. [ Bugzilla 1000072 ]
 
+2008-02-05  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/configtree.cpp: Disable "Unload Package" context
+	menu item for hardware packages. [ Bugzilla 1000260 ]
+
+	* standalone/wxwin/propertywin.cpp: Fix presentation of multiple
+	properties of the same type.
+
+2008-01-30  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/mainwin.cpp: Disable the horizontal scroll bar
+	in the configuration tree on Windows to avoid infinite redraw of
+	scroll bars.
+
 2007-10-25  Gary Thomas  <gary@mlbassoc.com>
 
 	* standalone/wxwin/propertywin.h: Remove class qualifier - not
@@ -21,10 +68,20 @@
 	* standalone/wxwin/configitem.cpp: Allow full 32-bit signed integer
 	range when editing CDL items using the ecIntegerEditorCtrl.
 
+2006-08-08  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/configtool.h, standalone/wxwin/configtool.cpp:
+	Eliminate ecApp::CygMount() and	ecApp::CygMountText().
+
 2006-07-11  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/configtool.cpp: Workaround an exception handling
 	issue with Cygwin 1.5.20.
+
+2006-07-10  Bart Veer  <bartv@ecoscentric.com>
+
+	* standalone/common/ecosconfig.cxx: add early C++ exception throw to
+	work around a cygwin issue.
 
 2006-05-01  Andy Jackson  <andy@xylanta.com>
 
@@ -54,10 +111,74 @@
 	standalone/wxwin/splittree.cpp: Changes to allow building
 	against current wxWidgets version (2.6.x).
 
+2006-04-25  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/docsystem.cpp (IndexDocs): Revert workaround for
+	HTML indexing bug in WxGTK 2.4.0. Indexer apparently OK in WxGTK 2.4.2.
+
+2006-01-16  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/reposdlg.cpp: "Default package" relabelled
+	to "Packages template".
+	* configtool/standalone/wxwin/mainwin.cpp: Update copyright notice.
+
+2005-11-04  John Dallaway  <jld@ecoscentric.com>
+
+	* common/common/build.cxx,
+	  standalone/common/cdl_exec.cxx,
+	  standalone/common/ecosconfig.cxx,
+	  standalone/wxwin/configtool.cpp,
+	  standalone/wxwin/configtooldoc.cpp,
+	  standalone/wxwin/filename.cpp: Eliminate /ecos-x text mode
+	mount points which are no longer necessary with modern GNU
+	tools and rationalise the conversion of DOS file paths to
+	POSIX-style paths.
+
+2005-07-11  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/configtool.cpp: Remove "tty" from CYGWIN
+	environment variable if present. It causes ecosadmin.tcl to
+	report failure when adding new packages.
+
 2005-07-09  Bart Veer  <bartv@ecoscentric.com>
 
 	* common/common/build.cxx: add support for C++ files that use a
 	.cpp suffix
+
+2005-06-15  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/appsettings.cpp: Implement "make -j<n>" on
+	Linux hosts.
+
+2005-06-10  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/makefile.gnu: Build for Cygwin using the
+	"-D__USE_W32_SOCKETS" compiler switch.
+
+2005-06-03  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/settingsdlg.cpp: Use "/dev/ttyS*" notation
+	for serial port names and a combo box to accommodate non-
+	standard names.
+
+	* standalone/wxwin/appsettings.cpp: Use "/dev/ttyS0" as default
+	serial port name.
+
+2005-05-23  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/configtooldoc.cpp (AddAllItems): Call
+	DeleteItems() to clear down the items list before regenerating
+	the list of items.
+
+2005-04-27  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/packagesdlg.cpp: Use an EVT_CHOICE handler for
+	ecID_PACKAGES_DIALOG_VERSION.
+
+2004-12-03  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/docsystem.cpp: Add the RedBoot User's Guide to
+	the generated index.
 
 2004-01-16  John Dallaway  <jld@ecoscentric.com>
 

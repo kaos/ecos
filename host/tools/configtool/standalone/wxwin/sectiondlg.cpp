@@ -170,12 +170,12 @@ ecSectionDialog::ecSectionDialog(wxWindow* parent):
 
 void ecSectionDialog::OnOK(wxCommandEvent& event)
 {
-    wxDialog::OnOK(event);
+    event.Skip();
 }
 
 void ecSectionDialog::OnCancel(wxCommandEvent& event)
 {
-    wxDialog::OnCancel(event);
+    event.Skip();
 }
 
 void ecSectionDialog::OnApply(wxCommandEvent& event)

@@ -2,6 +2,7 @@
 //
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 2008 eCosCentric Limited
 //
 // This program is part of the eCos host tools.
 //
@@ -377,21 +378,10 @@ int ecPropertyListCtrl::SetItem(const wxString& item, const wxString& value, int
 {
     wxASSERT( nInsertAs <= GetItemCount() );
 
-/*
-    LVFINDINFO info;
-    info.flags =LVFI_STRING;
-    info.psz   =pszItem;
-    info.vkDirection=VK_DOWN;
-    int nIndex=-1;
+    int nIndex = -2;
     do {
-        nIndex=FindItem(&info,nIndex);
-    } while (--nRepeat>0 && nIndex!=-1);
-*/
-    // NB: wxListCtrl doesn't support reverse search, so could do it explicitly
-    // by iterating through the items.
-    // But for now, just ignore the nRepeat flag and find the first one.
-    int nIndex = -1;
-    nIndex = FindItem(0, /* nIndex */ item);
+        nIndex = FindItem(nIndex+1, item);
+    } while (--nRepeat > 0 && nIndex != -1);
     
     if(-1==nIndex){
         nIndex = InsertItem(nInsertAs, item);

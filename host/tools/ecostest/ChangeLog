@@ -3,6 +3,12 @@
 	* common/eCosTest.h: Remove class qualifier - no longer legal
 	in GCC-4.x
 
+2006-09-06  John Dallaway  <jld@ecoscentric.com>
+
+	* common/eCosTestUtils.cpp, common/eCosTestUtils.h,
+	  common/eCosTest.h: Further tweaks to function prototypes for
+	recent GCC.
+
 2006-07-10  John Dallaway  <jld@ecoscentric.com>
 
 	* common/eCosTestUtils.cpp, common/eCosTestUtils.h: Tweak function

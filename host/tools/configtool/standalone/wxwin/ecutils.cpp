@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
 // Copyright (C) 2003 John Dallaway
+// Copyright (C) 2008 eCosCentric Limited
 //
 // This program is part of the eCos host tools.
 //
@@ -270,7 +271,7 @@ const wxString ecUtils::NativeToPosixPath(const wxString & native)
     else
     {
         wxString posix;
-        cygwin_conv_to_posix_path(native.c_str(), posix.GetWriteBuf(MAXPATHLEN + 1));
+        cygwin_conv_to_posix_path(native.c_str(), posix.GetWriteBuf(PATH_MAX + 1));
         posix.UngetWriteBuf();
         return posix;
     }
@@ -287,7 +288,7 @@ const wxString ecUtils::PosixToNativePath(const wxString & posix)
     else
     {
         wxString native;
-        cygwin_conv_to_win32_path(posix.c_str(), native.GetWriteBuf(MAXPATHLEN + 1));
+        cygwin_conv_to_win32_path(posix.c_str(), native.GetWriteBuf(PATH_MAX + 1));
         native.UngetWriteBuf();
         return native;
     }

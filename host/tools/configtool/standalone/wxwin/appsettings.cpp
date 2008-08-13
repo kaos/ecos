@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
 // Copyright (C) 2003 John Dallaway
+// Copyright (C) 2005, 2006, 2008 eCosCentric Limited
 //
 // This program is part of the eCos host tools.
 //
@@ -70,7 +71,6 @@
 #include "outputwin.h"
 #include "shortdescrwin.h"
 #include "mainwin.h"
-#include "filename.h"
 
 // For SystemInfo
 #ifdef __WXMSW__
@@ -115,7 +115,7 @@ ecSettings::ecSettings()
     
     m_bUseCustomViewer = FALSE;
     m_bUseExternalBrowser = FALSE;
-    m_eUseCustomBrowser = ecAssociatedExternal;
+    m_eUseCustomBrowser = ecInternal;
     m_bHex = FALSE;
     m_nRuleChecking = Immediate|Deferred|SuggestFixes ;
 
@@ -134,7 +134,7 @@ ecSettings::ecSettings()
     m_editSaveFileOnly = FALSE;
 
     // Packages dialog settings
-    m_omitHardwarePackages = FALSE;
+    m_omitHardwarePackages = TRUE;
     m_matchPackageNamesExactly = FALSE;
 }
 
@@ -357,6 +357,10 @@ bool ecSettings::LoadConfig()
         SYSTEM_INFO SystemInfo;
         GetSystemInfo(&SystemInfo);
         m_strMakeOptions.Printf(_T("-j%d"),SystemInfo.dwNumberOfProcessors);
+#else
+        long lProcessors;
+        lProcessors = sysconf(_SC_NPROCESSORS_ONLN);
+        m_strMakeOptions.Printf(_T("-j%ld"),lProcessors < 1 ? 1l : lProcessors);
 #endif
     }
     
@@ -910,9 +914,9 @@ ecRunTestsSettings::ecRunTestsSettings():
     m_nDownloadTimeoutType(TIMEOUT_SPECIFIED),
     m_bRemote(FALSE),
     m_bSerial(TRUE),
-    m_strPort(wxT("COM1")),
+    m_strPort(wxT("/dev/ttyS0")),
     m_nBaud(38400),
-    m_nLocalTCPIPPort(1),
+    m_nLocalTCPIPPort(9000),
     m_nReset(RESET_MANUAL),
     m_nResourcePort(1),
     m_nRemotePort(1),

@@ -2,6 +2,7 @@
 //
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 2008 eCosCentric Limited
 //
 // This program is part of the eCos host tools.
 //
@@ -51,7 +52,7 @@
 #endif
 
 #include "wx/wx.h"
-#include "splittree.h"
+#include "wx/gizmos/splittree.h"
 #include "configitem.h"
 
 #define wxMAX_ICON_STATES 4
@@ -192,10 +193,8 @@ public:
     ~ecConfigTreeCtrl();
 
 //// Event handlers    
-    void OnPaint(wxPaintEvent& event);
     void OnMouseEvent(wxMouseEvent& event);
     void OnSelChanged(wxTreeEvent& event);
-    void OnCollapseExpand(wxTreeEvent& event);
     void OnHelp(wxHelpEvent& event);
     void OnKeyDown(wxKeyEvent& event);
 
@@ -232,7 +231,6 @@ public:
     virtual void DrawItem(wxDC& dc, wxTreeItemId id, const wxRect& rect);
     
     //// Events
-    void OnPaint(wxPaintEvent& event);    
     void OnMouseEvent(wxMouseEvent& event);
     void OnScroll(wxScrollWinEvent& event);
     void OnExpand(wxTreeEvent& event);
