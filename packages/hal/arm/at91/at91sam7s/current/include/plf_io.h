@@ -62,9 +62,6 @@
 
 #define AT91_SPI AT91_SPI0
 
-//Extra SPI control bits
-#define AT91_SPI_MR_MODFDIS (1<<4)
-
 // DMA registers 
 #define AT91_SPI_RPR  0x100 // Receive Pointer Register
 #define AT91_SPI_RCR  0x104 // Receive Counter Register
@@ -73,7 +70,7 @@
 #define AT91_SPI_NRPR 0x110 // Next Receive Pointer Register
 #define AT91_SPI_NRCR 0x114 // Next Receive Counter Register
 #define AT91_SPI_NTPR 0x118 // Next Transmit Pointer Register
-#define AT91_SPI_NTCR 0x11C // Next Trsnsmit Counter Register
+#define AT91_SPI_NTCR 0x11C // Next Transmit Counter Register
 #define AT91_SPI_PTCR 0x120 // PDC Transfer Control Register
 #define AT91_SPI_PTSR 0x124 // PDC Transfer Status Register
 
@@ -82,8 +79,6 @@
 #ifdef CYGHWR_HAL_ARM_AT91SAM7X
 #define AT91_PIOB   0xFFFFF600
 #endif
-
-#define AT91_WSTC   0xFFFFFD40
 
 // USART
 
@@ -110,17 +105,13 @@ extern cyg_uint32 hal_at91_us_baud(cyg_uint32 baud);
 #define AT91_US_NRPR 0x110 // Next Receive Pointer Register
 #define AT91_US_NRCR 0x114 // Next Receive Counter Register
 #define AT91_US_NTPR 0x118 // Next Transmit Pointer Register 
-#define AT91_US_NTCR 0x11C // Next Trsnsmit Counter Register
+#define AT91_US_NTCR 0x11C // Next Transmit Counter Register
 #define AT91_US_PTCR 0x120 // PDC Transfer Control Register
 #define AT91_US_PTSR 0x124 // PDC Transfer Status Register
 
 // PIO - Programmable I/O
 
 #define AT91_PIO    AT91_PIOA
-
-// AIC - Advanced Interrupt Controller
-
-#define AT91_AIC    0xFFFFF000
 
 // TC - Timer Counter
 

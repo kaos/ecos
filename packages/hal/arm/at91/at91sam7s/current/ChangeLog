@@ -1,3 +1,8 @@
+2008-08-14  Jürgen Lambrecht <J.Lambrecht@televic.com>
+
+	* include/plf_io.h: removed AT91_SPI_MR_MODFDIS, AT91_WSTC
+	(AT91_WDTC), AT91_AIC because already in var_io.h. Fixed typo.
+
 2008-05-11  James G. Smith <jsmith@rallysmith.co.uk
             Andrew Lunn  <andrew@lunn.ch>
 
