@@ -1,3 +1,10 @@
+2008-08-14  Klaas Gadeyne  <klaas.gadeyne@fmtc.be>
+2008-08-14  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* doc/mk_romfs.txt (Usage): Remove documentation about obsolete
+	CYGNUM_FS_ROM_BASE_ADDRESS option, and replace with better
+	usage description.
+
 2006-11-13 Xinghua Yang <yxinghua@sunnorth.com.cn>
            Taiyun  Wang <taiyun@sunnorth.com.cn>
 

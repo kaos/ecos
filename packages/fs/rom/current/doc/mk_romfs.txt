@@ -88,7 +88,24 @@ For example, suppose you wish to access the following directories and files:
 	RedBoot>
 
 6. MAKE A NOTE OF THE ADDRESS IN FLASH THAT THE IMAGE IS LOADED AT.
-   The ROMFS option 'CYGNUM_FS_ROM_BASE_ADDRESS' needs to be set to this
-   value in order to access the filesystem.
-  
 
+   This address can then be used in your program in order to mount the
+   filesystem.
+
+   For example, to automatically mount the new romfs created above at
+   /rom, you can use the following macro in your application:
+
+       MTAB_ENTRY( romfs_mte1,
+                   "/rom",
+                   "romfs",
+                   "",
+                   (CYG_ADDRWORD) 0x50040000 );
+
+   See the File I/O package documentation in the eCos Reference Manual
+   ("Writing a New Filesystem") for more information about the MTAB_ENTRY
+   macro.
+
+   Alternatively, the filesystem can be dynamically mounted with a call
+   to mount() such as the following:
+
+     err = mount( "0x50040000", "/rom", "romfs" );
