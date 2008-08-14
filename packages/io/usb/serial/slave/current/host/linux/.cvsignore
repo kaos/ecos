@@ -1,3 +1,7 @@
 .ecos_usbserial.o.d
 .tmp_versions
 *.ko
+*.cmd
+Module.symvers
+ecos_usbserial.mod.c
+modules.order

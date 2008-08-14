@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//      ecos_usbserial.c
+//	ecos_usbserial.c
 //
-//      Kernel driver for the eCos USB serial driver
+//	Kernel driver for the eCos USB serial driver
 //
 //==========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
@@ -37,14 +37,15 @@
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    Frank M. Pagliughi (fmp), SoRo Systems, Inc.
+// Author(s):	 Frank M. Pagliughi (fmp), SoRo Systems, Inc.
 // Contributors: 
-// Date:         2008-06-02
-// Description:  Kernel driver for the eCos USB serial driver
+// Date:	 2008-06-02
+// Description:	 Kernel driver for the eCos USB serial driver
 //
 //####DESCRIPTIONEND####
 //===========================================================================
 
+#include <linux/version.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/tty.h>
@@ -55,6 +56,62 @@
 #define VENDOR_ID	0xFFFF
 #define PRODUCT_ID	1
 
+static int debug;
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19) 
+static inline int 
+usb_endpoint_xfer_bulk(const struct usb_endpoint_descriptor *endpoint) {
+
+	return (endpoint->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) ==
+		USB_ENDPOINT_XFER_BULK;
+}
+
+static inline int 
+usb_endpoint_dir_in(const struct usb_endpoint_descriptor *epd) {
+
+	return (epd->bEndpointAddress & USB_ENDPOINT_DIR_MASK) == USB_DIR_IN;
+}
+#endif
+
+/* Our probe function will detect if the interface has sufficient bulk
+ * in and out endpoints to be useful. The ACM interface only has an
+ * interrupt endpoint, so we don't want a serial device bound to it.
+ */
+
+static int ecos_usbserial_probe(struct usb_serial *serial,
+				const struct usb_device_id *id)
+{
+	struct usb_interface *interface = serial->interface;
+	struct usb_host_interface *iface_desc; 
+	struct usb_endpoint_descriptor *endpoint;
+	int num_bulk_in = 0;
+	int num_bulk_out = 0;
+	int i;
+	
+	iface_desc = interface->cur_altsetting;
+	for (i = 0; i < iface_desc->desc.bNumEndpoints; ++i) {
+		endpoint = &iface_desc->endpoint[i].desc;
+		
+		if (usb_endpoint_xfer_bulk(endpoint)) {
+			if (usb_endpoint_dir_in(endpoint)) {
+				/* we found a bulk in endpoint */
+				dbg("found bulk in on endpoint %d", i);
+				++num_bulk_in;
+			} else {
+				/* we found a bulk out endpoint */
+				dbg("found bulk out on endpoint %d", i);
+				++num_bulk_out;
+			}
+		}
+	}
+	
+	if (!num_bulk_in || !num_bulk_out) {
+		info("Ignoring interface, insufficient endpoints");
+		return -ENODEV;
+	}
+	return 0;
+}
+
 static struct usb_device_id id_table[] = {
 	{ USB_DEVICE(VENDOR_ID, PRODUCT_ID) },
 	{ }
@@ -63,7 +120,7 @@ static struct usb_device_id id_table[] = {
 MODULE_DEVICE_TABLE(usb, id_table);
 
 static struct usb_driver ecos_usbserial_driver = {
-	.name	 	= "ecos_usbserial",
+	.name		= "ecos_usbserial",
 	.probe		= usb_serial_probe,
 	.disconnect	= usb_serial_disconnect,
 	.id_table	= id_table
@@ -74,11 +131,17 @@ static struct usb_serial_driver ecos_usbserial_device = {
 		.owner			= THIS_MODULE,
 		.name			= "ecos_usbserial",
 	},
-	.id_table			= id_table, 
+	.id_table		= id_table,
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,25) 
 	.num_interrupt_in	= NUM_DONT_CARE,
 	.num_bulk_in		= NUM_DONT_CARE,
 	.num_bulk_out		= NUM_DONT_CARE,
-	.num_ports			= 1
+#else
+	.usb_driver		= &ecos_usbserial_driver,
+#endif
+	.num_ports		= 1,
+	.probe			= ecos_usbserial_probe,
+
 };
 
 static int __init ecos_usbserial_init(void)
@@ -108,4 +171,6 @@ module_init(ecos_usbserial_init);
 module_exit(ecos_usbserial_exit);
 
 MODULE_LICENSE("GPL");
+module_param(debug, bool, S_IRUGO | S_IWUSR);
+MODULE_PARM_DESC(debug, "Debug enabled or not");
 

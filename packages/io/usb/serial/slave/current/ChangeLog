@@ -1,3 +1,15 @@
+2008-08-09  Frank Pagliughi <fpagliughi@mindspring.com>
+
+	* host/linux/ecos_usbserial.c (ecos_usbserial_probe): fix compiling
+	on older kernels.
+
+2008-07-13  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* host/linux/ecos_usbserial.c (ecos_usbserial_probe): new probe
+	function so that we ignore the ACM interface, otherwise we end up
+	with a useless /dev/ttyUSB device. Also allow to compile with
+	kernel 2.6.26-rc9.
+	
 2008-07-12  Frank Pagliughi <fpagliughi@mindspring.com>
 
 	* Generic USB Serial package created.  
