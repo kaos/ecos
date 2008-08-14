@@ -3,6 +3,12 @@
 	* NEWS: 
 	* ecos.db: Add generic ADC package.
 
+2008-07-12  Hans Rosenfeld  <rosenfeld@grumpf.hope-2000.org>
+
+	* NEWS:
+	* ecos.db: added drivers for LPC2xxx on-chip flash, RTC, I2C and
+	SPI units
+	
 2008-07-08   Uwe Kindler <uwe_kindler@web.de>
  
  	* NEWS:

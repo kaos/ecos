@@ -826,6 +826,16 @@ package CYGPKG_DEVS_FLASH_FRV_PDK403 {
            on the Fujitsu MB93093-PD00 Portable Development Kit."
 }
 
+package CYGPKG_DEVS_FLASH_ARM_LPC2XXX {
+        alias           { "Support for the internal flash memory of LPC2xxx devices" flash_arm_lpc2xxx }
+        directory       devs/flash/arm/lpc2xxx
+        script          flash_arm_lpc2xxx.cdl
+        hardware
+        description     "
+           This package contains hardware support for the internal
+           flash memory of the LPC2xxx devices."
+}
+
 package CYGPKG_DEVS_TOUCH_IPAQ {
 	alias 		{ "Touch screen support for iPAQ" touch_ipaq }
 	directory	devs/touch/arm/ipaq
@@ -2109,6 +2119,16 @@ c }
            ARM Industrial Module AIM 711."
 }
 
+package CYGPKG_DEVICES_WALLCLOCK_ARM_LPC2XXX {
+        alias           { "Wallclock driver for LPC2xxx RTC module" }
+        directory       devs/wallclock/arm/lpc2xxx
+        script          lpc2xxx_wallclock.cdl
+        hardware
+        description "
+           This package provides a wallclock driver implementation for the
+           LPC2xxx RTC module."
+}
+
 package CYGPKG_DEVICES_WATCHDOG_ARM_AEB {
 	alias		{ "Watchdog driver for ARM/AEB board" devices_watchdog_aeb device_watchdog_aeb }
 	directory	devs/watchdog/arm/aeb
@@ -2243,6 +2263,15 @@ package CYGPKG_DEVS_SPI_ARM_EB55 {
     description   "Atmel AT91EB55 spi devices."
 }
 
+package CYGPKG_DEVS_SPI_ARM_LPC2XXX {
+    alias         { "LPC2xxx SPI driver" }
+    hardware
+    directory     devs/spi/arm/lpc2xxx
+    script        spi_lpc2xxx.cdl
+    description "This package provides a driver for the I2C unit of the LPC2xxx
+                 controller family."
+}
+
 package CYGPKG_IO_SPI {
         alias      { "Generic SPI support" spi io_spi spi_io }
         directory  io/spi
@@ -2274,6 +2303,15 @@ package CYGPKG_DEVS_I2C_MCF52xx {
 	description "
             This packages provides an I2C driver for the on-chip
 	        device provided by the MCF52xx coldfire processor family."
+}
+
+package CYGPKG_DEVS_I2C_ARM_LPC2XXX {
+    alias           { "LPC2xxx I2C driver" }
+    hardware
+    directory       devs/i2c/arm/lpc2xxx
+    script          i2c_lpc2xxx.cdl
+    description "This package provides a driver for the I2C unit of the LPC2xxx
+                 controller family."
 }
 
 package CYGPKG_IO_ADC {

@@ -1,4 +1,5 @@
 * Generic ADC support contributed by eCosCentric Ltd.
+* drivers for LPC2xxx on-chip flash, RTC, I2C and SPI from Hans Rosenfeld.
 * Port to Embedded Artists LPC2468 OEM board by Uwe Kindler.
 * USB serial class driver by Frank Pagliughi.
 * FR30 arch, mb91301 variant and skmb91302 platform by Lars Poeschel.
