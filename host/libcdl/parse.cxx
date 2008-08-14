@@ -49,6 +49,8 @@
 // ----------------------------------------------------------------------------
 #include "cdlconfig.h"
 
+#include <cstring>
+
 // Get the infrastructure types, assertions, tracing and similar
 // facilities.
 #include <cyg/infra/cyg_ass.h>
@@ -210,7 +212,7 @@ CdlParse::concatenate_argv(int argc, const char* argv[], int index)
 // or terminating flags.
 
 static std::string
-get_option_string(char* name)
+get_option_string(const char* name)
 {
     std::string result = "";
     while ((*name != ':') && (*name != '\0')) {
@@ -220,7 +222,7 @@ get_option_string(char* name)
 }
 
 int
-CdlParse::parse_options(CdlInterpreter interp, std::string diag_prefix, char** options,
+CdlParse::parse_options(CdlInterpreter interp, std::string diag_prefix, const char** options,
                                  int argc, const char* argv[], int index,
                                  std::vector<std::pair<std::string,std::string> >& result)
 {
@@ -295,7 +297,7 @@ CdlParse::parse_options(CdlInterpreter interp, std::string diag_prefix, char** o
         // The option has been identified successfully. Extract the flags.
         bool    flag_flag       = false;
         bool    multiple_flag   = false;
-        char*   tmp = options[opt_index];
+        const char*   tmp = options[opt_index];
         while (('\0' != *tmp) && (':' != *tmp)) {
             tmp++;
         }
@@ -731,7 +733,7 @@ CdlParse::report_property_parse_warning(CdlInterpreter interp, CdlProperty prop,
 
 int
 CdlParse::parse_minimal_property(CdlInterpreter interp, int argc, const char* argv[], std::string name,
-                                 char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_Minimal))
+                                 const char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_Minimal))
 {
     CYG_REPORT_FUNCNAME("parse_minimal_property");
     CYG_PRECONDITION_CLASSC(interp);
@@ -772,7 +774,7 @@ CdlParse::parse_minimal_property(CdlInterpreter interp, int argc, const char* ar
 
 int
 CdlParse::parse_string_property(CdlInterpreter interp, int argc, const char* argv[], std::string name,
-                                char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_String))
+                                const char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_String))
 {
     CYG_REPORT_FUNCNAME("parse_string_property");
     CYG_PRECONDITION_CLASSC(interp);
@@ -814,7 +816,7 @@ CdlParse::parse_string_property(CdlInterpreter interp, int argc, const char* arg
 
 int
 CdlParse::parse_tclcode_property(CdlInterpreter interp, int argc, const char* argv[], std::string name,
-                                 char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_TclCode))
+                                 const char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_TclCode))
 {
     CYG_REPORT_FUNCNAME("parse_tclcode_property");
     CYG_PRECONDITION_CLASSC(interp);
@@ -857,7 +859,7 @@ CdlParse::parse_tclcode_property(CdlInterpreter interp, int argc, const char* ar
 
 int
 CdlParse::parse_stringvector_property(CdlInterpreter interp, int argc, const char* argv[], std::string name,
-                                      char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_StringVector),
+                                      const char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_StringVector),
                                       bool allow_empty)
 {
     CYG_REPORT_FUNCNAME("parse_tclcode_property");
@@ -902,7 +904,7 @@ CdlParse::parse_stringvector_property(CdlInterpreter interp, int argc, const cha
 
 int
 CdlParse::parse_reference_property(CdlInterpreter interp, int argc, const char* argv[], std::string name,
-                                   char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_Reference),
+                                   const char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_Reference),
                                    bool allow_empty, CdlUpdateHandler update_handler)
 {
     CYG_REPORT_FUNCNAME("parse_reference_property");
@@ -948,7 +950,7 @@ CdlParse::parse_reference_property(CdlInterpreter interp, int argc, const char* 
 
 int
 CdlParse::parse_expression_property(CdlInterpreter interp, int argc, const char* argv[], std::string name,
-                                    char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_Expression),
+                                    const char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_Expression),
                                     CdlUpdateHandler update_handler)
 {
     CYG_REPORT_FUNCNAME("parse_expression_property");
@@ -1007,7 +1009,7 @@ CdlParse::parse_expression_property(CdlInterpreter interp, int argc, const char*
 
 int
 CdlParse::parse_listexpression_property(CdlInterpreter interp, int argc, const char* argv[], std::string name,
-                                        char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_ListExpression),
+                                        const char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_ListExpression),
                                         CdlUpdateHandler update_handler)
 {
     CYG_REPORT_FUNCNAME("parse_list_expression_property");
@@ -1061,7 +1063,7 @@ CdlParse::parse_listexpression_property(CdlInterpreter interp, int argc, const c
 
 int
 CdlParse::parse_goalexpression_property(CdlInterpreter interp, int argc, const char* argv[], std::string name,
-                                        char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_GoalExpression),
+                                        const char** options_desc, void (*final_parser)(CdlInterpreter, CdlProperty_GoalExpression),
                                         CdlUpdateHandler update_handler)
 {
     CYG_REPORT_FUNCNAMETYPE("parse_goal_expression_property", "result %d");

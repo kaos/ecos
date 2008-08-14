@@ -1341,7 +1341,7 @@ class CdlInterpreterBody
     static int          tcl_command_proc(ClientData, Tcl_Interp*, int, const char*[]);
 
     // This key is used to access the CdlInterpreter assoc data.
-    static char*        cdlinterpreter_assoc_data_key;
+    static const char*  cdlinterpreter_assoc_data_key;
     
     // Do not allow static instances of a Cdl interpreter. There are too
     // many possible failure conditions. Cdl interpreters can only be
@@ -3326,7 +3326,7 @@ class CdlParse {
     // Utility routines.
     static std::string  get_tcl_cmd_name(std::string);
     static std::string  concatenate_argv(int, const char*[], int);
-    static int          parse_options(CdlInterpreter, std::string /* diag_prefix */, char** /* options */,
+    static int          parse_options(CdlInterpreter, std::string /* diag_prefix */, const char** /* options */,
                                                int /* argc */, const char*[] /* argv */, int /* start_index */,
                                                std::vector<std::pair<std::string,std::string> >& /* result */);
     static std::string  construct_diagnostic(CdlInterpreter, std::string /* classification */,
@@ -3351,26 +3351,26 @@ class CdlParse {
     
     // Utility parsing routines
     static int  parse_minimal_property(CdlInterpreter, int, const char*[], std::string,
-                                       char**, void (*)(CdlInterpreter, CdlProperty_Minimal));
+                                       const char**, void (*)(CdlInterpreter, CdlProperty_Minimal));
     static int  parse_string_property(CdlInterpreter, int, const char*[], std::string,
-                                      char**, void (*)(CdlInterpreter, CdlProperty_String));
+                                      const char**, void (*)(CdlInterpreter, CdlProperty_String));
     static int  parse_tclcode_property(CdlInterpreter, int, const char*[], std::string,
-                                       char**, void (*)(CdlInterpreter, CdlProperty_TclCode));
+                                       const char**, void (*)(CdlInterpreter, CdlProperty_TclCode));
     static int  parse_stringvector_property(CdlInterpreter, int, const char*[], std::string,
-                                            char**, void (*)(CdlInterpreter, CdlProperty_StringVector),
+                                            const char**, void (*)(CdlInterpreter, CdlProperty_StringVector),
                                             bool /* allow_empty */ = false);
     static int  parse_reference_property(CdlInterpreter, int, const char*[], std::string,
-                                         char**, void (*)(CdlInterpreter, CdlProperty_Reference),
+                                         const char**, void (*)(CdlInterpreter, CdlProperty_Reference),
                                          bool /* allow_empty */,
                                          CdlUpdateHandler);
     static int  parse_expression_property(CdlInterpreter, int, const char*[], std::string, 
-                                          char **, void (*)(CdlInterpreter, CdlProperty_Expression),
+                                          const char **, void (*)(CdlInterpreter, CdlProperty_Expression),
                                           CdlUpdateHandler);
     static int  parse_listexpression_property(CdlInterpreter, int, const char*[], std::string,
-                                              char **, void (*)(CdlInterpreter, CdlProperty_ListExpression),
+                                              const char **, void (*)(CdlInterpreter, CdlProperty_ListExpression),
                                               CdlUpdateHandler);
     static int  parse_goalexpression_property(CdlInterpreter, int, const char*[], std::string,
-                                              char **, void (*)(CdlInterpreter, CdlProperty_GoalExpression),
+                                              const char **, void (*)(CdlInterpreter, CdlProperty_GoalExpression),
                                               CdlUpdateHandler);
 };
 
@@ -4276,7 +4276,7 @@ class CdlValuableBody : virtual public CdlNodeBody {
     static void         wizard_update_handler(CdlTransaction, CdlNode, CdlProperty, CdlNode, CdlUpdate);
 
     // Persistence suppot
-    void save(CdlInterpreter, Tcl_Channel, int, bool /* modifiable */, bool /* minimal */);
+    void save_valuable(CdlInterpreter, Tcl_Channel, int, bool /* modifiable */, bool /* minimal */);
     bool value_savefile_entry_needed() const;
     static void initialize_savefile_support(CdlToplevel, std::string);
     static int  savefile_value_source_command(CdlInterpreter, int, const char*[]);
@@ -5395,12 +5395,12 @@ class CdlBuildLoadableBody : virtual public CdlLoadableBody
     // By default any compiled files will go into libtarget.a, which
     // is the default value for this variable. Individual applications may
     // specify an alternative default library.
-    static char*        default_library_name;
+    static const char*  default_library_name;
 
     // When filling in a build_info structure the library needs to know
     // what constitutes a header file. A glob pattern can be used for this.
     // NOTE: in the long term this should come out of a data file.
-    static char*        default_headers_glob_pattern;
+    static const char*  default_headers_glob_pattern;
     
     virtual std::string get_class_name() const;
     bool                check_this(cyg_assert_class_zeal = cyg_quick) const;

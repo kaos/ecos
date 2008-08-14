@@ -1,3 +1,12 @@
+2008-08-14  Bart Veer  <bartv@ecoscentric.com>
+
+	* doc/reference.sgml: fix typo.
+
+	* wizard.cxx, value.cxx, parse.cxx, package.cxx, option.cxx,
+	interp.cxx, interface.cxx, dialog.cxx, database.cxx, conflict.cxx,
+	config.cxx, component.cxx, cdlmisc.cxx, cdlcore.hxx, cdl.hxx,
+	build.cxx: fix various compiler warnings.
+
 2004-06-23  John Dallaway  <jld@ecoscentric.com>
 
 	* interp.cxx (locate_subdirs): Avoid use of a trailing period in

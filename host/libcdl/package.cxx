@@ -498,7 +498,7 @@ CdlPackageBody::save(CdlInterpreter interp, Tcl_Channel chan, int indentation, b
         interp->write_data(chan, data);
     
         // Deal with the value
-        this->CdlValuableBody::save(interp, chan, indentation + 4, false, minimal);
+        this->CdlValuableBody::save_valuable(interp, chan, indentation + 4, false, minimal);
 
         // And with any unrecognised data
         this->CdlNodeBody::save(interp, chan, indentation + 4, minimal);

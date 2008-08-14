@@ -48,6 +48,8 @@
 // ----------------------------------------------------------------------------
 #include "cdlconfig.h"
 
+#include <cstring>
+
 // Get the infrastructure types, assertions, tracing and similar
 // facilities.
 #include <cyg/infra/cyg_ass.h>
@@ -212,7 +214,7 @@ int
 CdlBuildableBody::parse_compile(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_compile", "result %d");
-    static char* options[] = {
+    static const char* options[] = {
         "library:",
         0
     };
@@ -391,7 +393,7 @@ int
 CdlBuildableBody::parse_make(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_make", "result %d");
-    static char* options[] = {
+    static const char* options[] = {
         "priority:",
         0
     };
@@ -445,7 +447,7 @@ int
 CdlBuildableBody::parse_make_object(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_make_object", "result %d");
-    static char* options[] = {
+    static const char* options[] = {
         "library:",
         "priority:",
         0
@@ -466,7 +468,7 @@ int
 CdlBuildableBody::parse_object(CdlInterpreter interp, int argc, const char* argv[])
 {
     CYG_REPORT_FUNCNAMETYPE("parse_object", "result %d");
-    static char* options[] = {
+    static const char* options[] = {
         "library:",
         0
     };
@@ -702,11 +704,11 @@ CdlBuildableBody::update_all_build_info(CdlBuildInfo_Loadable& build_info, std::
 // ----------------------------------------------------------------------------
 // This variable controls the default library that should be generated.
 // Some applications may wish to override this.
-char* CdlBuildLoadableBody::default_library_name        = "libtarget.a";
+const char* CdlBuildLoadableBody::default_library_name        = "libtarget.a";
 
 // The pattern that should be used to identify header files.
 // FIXME: this information should come out of a data file
-char* CdlBuildLoadableBody::default_headers_glob_pattern = "*.h *.hxx *.inl *.si *.inc";
+const char* CdlBuildLoadableBody::default_headers_glob_pattern = "*.h *.hxx *.inl *.si *.inc";
 
 //}}}
 //{{{  The simple stuff                         
@@ -1424,7 +1426,7 @@ CdlDefinableBody::parse_define(CdlInterpreter interp, int argc, const char* argv
 {
     CYG_REPORT_FUNCNAMETYPE("parse_define", "result %d");
 
-    static char* options[] = {
+    static const char* options[] = {
         "file:",
         "format:",
         0
@@ -1507,7 +1509,7 @@ CdlDefinableBody::parse_if_define(CdlInterpreter interp, int argc, const char* a
 {
     CYG_REPORT_FUNCNAMETYPE("parse_if_define", "result %d");
 
-    char* options[] = {
+    const char* options[] = {
         "file:",
         0
     };

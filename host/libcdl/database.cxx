@@ -71,7 +71,7 @@
 // ----------------------------------------------------------------------------
 // Some test cases may want to read in a file other than
 // "ecos.db", e.g. to facilitate testing the error conditions.
-char*
+const char*
 CdlPackagesDatabaseBody::database_name = "ecos.db";
 
 // Should warnings be issued for minor database inconsistencies?

@@ -1709,7 +1709,7 @@ sufficient. Sometimes it is useful to have more control over which
 <literal>#define's</literal> get generated.
 </para>
 <para>
-The &define; property can be used to generate an addition
+The &define; property can be used to generate an additional
 <literal>#define</literal> if the option is both active and enabled,
 for example:
 </para>

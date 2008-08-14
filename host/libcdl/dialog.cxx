@@ -106,8 +106,8 @@ CdlDialogBody::dialogs_are_enabled()
 // There is no data associated with a custom dialog object.
 CdlDialogBody::CdlDialogBody(std::string name_arg)
     : CdlNodeBody(name_arg),
-      CdlParentableBody(),
-      CdlUserVisibleBody()
+      CdlUserVisibleBody(),
+      CdlParentableBody()
 {
     CYG_REPORT_FUNCNAME("CdlDialogBody:: constructor");
     CYG_REPORT_FUNCARG1XV(this);

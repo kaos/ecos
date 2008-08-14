@@ -791,7 +791,7 @@ CdlConflict_EvalExceptionBody::get_explanation() const
     CYG_PRECONDITION_THISC();
 
     std::string result = node->get_name() + ", property " + property->get_property_name() + "\n";
-    result += "Error while evaluation expression: ";
+    result += "Error while evaluating expression: ";
     if ("" != explanation) {
         result += explanation;
     }

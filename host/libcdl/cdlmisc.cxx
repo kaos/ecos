@@ -67,6 +67,9 @@
 // For access to strtod()
 #include <cstdlib>
 
+// For strcpy()
+#include <cstring>
+
 // strtod() involves errno...
 #include <cerrno>
 
@@ -661,7 +664,7 @@ Cdl::double_to_integer(double value, cdl_int& target)
 // Conversions between strings and flavors.
 
 static struct {
-    char*               name;
+    const char*         name;
     CdlValueFlavor      flavor;
 } valid_flavors[] = {
     { "none",           CdlValueFlavor_None     },
@@ -735,7 +738,7 @@ Cdl::flavor_to_string(CdlValueFlavor flavor, std::string& target)
 // Similar support for value sources.
 
 static struct {
-    char*               name;
+    const char*         name;
     CdlValueSource      source;
 } valid_sources[] = {
     { "default",        CdlValueSource_Default  },

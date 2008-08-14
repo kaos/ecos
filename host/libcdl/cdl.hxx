@@ -216,7 +216,7 @@ class CdlPackagesDatabaseBody {
 
     // This allows test cases to overwrite the name of the file
     // containing the database information.
-    static char* database_name;
+    static const char* database_name;
 
     // Control whether or not minor problems with the database should be
     // reported.

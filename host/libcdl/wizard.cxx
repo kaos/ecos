@@ -73,8 +73,8 @@ CYGDBG_DEFINE_MEMLEAK_COUNTER(CdlWizardBody);
 // Constructor. The real work is actually done in the parse routine.
 CdlWizardBody::CdlWizardBody(std::string name_arg)
     : CdlNodeBody(name_arg),
-      CdlParentableBody(),
-      CdlUserVisibleBody()
+      CdlUserVisibleBody(),
+      CdlParentableBody()
 {
     CYG_REPORT_FUNCNAME("CdlWizardBody:: constructor");
     CYG_REPORT_FUNCARG1XV(this);

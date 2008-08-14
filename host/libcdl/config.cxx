@@ -1782,7 +1782,7 @@ CdlConfigurationBody::savefile_package_command(CdlInterpreter interp, int argc, 
     CdlPackage  pkg = 0;
     
     std::vector<std::pair<std::string,std::string> > options;
-    static char* optlist[] = {
+    static const char* optlist[] = {
         "template:f",
         "hardware:f",
         0

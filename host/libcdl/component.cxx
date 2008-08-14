@@ -392,7 +392,7 @@ CdlComponentBody::save(CdlInterpreter interp, Tcl_Channel chan, int indentation,
         // Deal with the value
         bool modifiable = !(CdlValueFlavor_None == this->get_flavor()) &&
             !this->has_property(CdlPropertyId_Calculated);
-        this->CdlValuableBody::save(interp, chan, indentation + 4, modifiable, minimal);
+        this->CdlValuableBody::save_valuable(interp, chan, indentation + 4, modifiable, minimal);
 
         // And with any unrecognised data
         this->CdlNodeBody::save(interp, chan, indentation + 4, minimal);

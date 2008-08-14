@@ -367,7 +367,7 @@ CdlInterfaceBody::save(CdlInterpreter interp, Tcl_Channel chan, int indentation,
         interp->write_data(chan, data);
 
         // Deal with the value
-        this->CdlValuableBody::save(interp, chan, indentation + 4, false, minimal);
+        this->CdlValuableBody::save_valuable(interp, chan, indentation + 4, false, minimal);
 
         // Close the cdl_interface body. A blank line is added here.
         data = "};\n\n";

@@ -68,7 +68,7 @@
 // ----------------------------------------------------------------------------
 // This key is used for accessing AssocData in the Tcl interpreters,
 // specifically the CdlInterpreter object.
-char* CdlInterpreterBody::cdlinterpreter_assoc_data_key = "__cdlinterpreter";
+const char* CdlInterpreterBody::cdlinterpreter_assoc_data_key = "__cdlinterpreter";
 
 CYGDBG_DEFINE_MEMLEAK_COUNTER(CdlInterpreterBody);
 
