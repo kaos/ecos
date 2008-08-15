@@ -98,6 +98,7 @@ std::string replace_char (const std::string input, const char old_char, const ch
 	return output;
 }
 
+#if defined(_WIN32) || defined(__CYGWIN__)
 // convert a filepath into a vector of path components
 static void path_to_vector (std::string input, std::vector <std::string> & output) {
 	std::string component;
@@ -116,7 +117,6 @@ static void path_to_vector (std::string input, std::vector <std::string> & outpu
 
 // eliminate spaces from a DOS filepath by substituting the
 // short form of path components containing spaces
-#if defined(_WIN32) || defined(__CYGWIN__)
 std::string nospace_path (const std::string input) {
 	// split the path into a vector of path components
 	std::vector <std::string> long_path_vector;

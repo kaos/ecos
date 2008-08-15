@@ -1,3 +1,7 @@
+2008-08-15  Bart Veer  <bartv@ecoscentric.com>
+
+	* ecosconfig.cxx, cdl_exec.cxx: avoid compiler warnings.
+
 2006-07-10  Bart Veer  <bartv@ecoscentric.com>
 
 	* ecosconfig.cxx: add early C++ exception throw to work around

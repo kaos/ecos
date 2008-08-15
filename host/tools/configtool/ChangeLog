@@ -1,3 +1,7 @@
+2008-08-15  Bart Veer  <bartv@ecoscentric.com>
+
+	* common/common/build.cxx: avoid compiler warning.
+
 2008-08-13  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/configitem.cpp: Fix assert on ecDoubleEditorCtrl

@@ -44,6 +44,7 @@
 #ifdef _MSC_VER
 #include <direct.h> /* for getcwd() */
 #else
+#include <limits.h>
 #include <unistd.h> /* for getcwd() */
 #endif
 #ifdef __CYGWIN__

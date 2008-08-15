@@ -42,6 +42,7 @@
 //==========================================================================
 
 #ifndef _MSC_VER
+#include <cstring>
 #include <sys/param.h>
 #include <unistd.h> /* for realpath() */
 #endif
@@ -55,7 +56,7 @@
 #define TOOL_VERSION "2.net"
 #define TOOL_COPYRIGHT "Copyright (c) 2002 Red Hat, Inc.\nCopyright (c) 2004-2008 eCosCentric Limited"
 #define DEFAULT_SAVE_FILE "ecos.ecc"
-static char* tool = "ecosconfig";
+static const char* tool = "ecosconfig";
 
 int main (int argc, char * argv []) {
 
