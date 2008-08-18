@@ -59,8 +59,10 @@
 
 // STDIO is needed for the default assertion handler.
 // STDLIB is needed for exit() and the status codes.
+// STRING is needed for strcpy()
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 
 #if defined(__unix__) || defined(__CYGWIN32__)
 extern "C" {
