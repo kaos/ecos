@@ -50,7 +50,7 @@
 ######DESCRIPTIONEND####
 ## =====================================================================
 
-AUTOMAKE_OPTIONS = 1.3 foreign
+AUTOMAKE_OPTIONS = 1.10 foreign
 
 ## Only some platforms are supported. Having the configure script throw
 ## an error when attempting to configure on an unsupported platform
@@ -58,12 +58,12 @@ AUTOMAKE_OPTIONS = 1.3 foreign
 ## the toplevel on unsupported platforms. Instead an automake conditional
 ## is used, leading to null makefiles on unsupported platforms.
 
-if SUPPORTED
-
 AM_CFLAGS       = @ecos_CFLAGS@ -DUSBHOST_VERSION=\"@VERSION@\" -DPKGVERSION=\"@PACKAGE_VERSION@\" -DUSBAUXDIR=\"$(libexecdir)/ecos/@PACKAGE_INSTALL@\"
 AM_CXXFLAGS     = @ecos_CXXFLAGS@
 INCLUDES        = @ecos_INCLUDES@
 LIBS            = @ecos_LIBS@ @ecos_LDADD@
+
+if SUPPORTED
 
 ## The USB testing support consists of two programs, usbhost and
 ## usbchmod, and a number of Tcl scripts. usbhost is executable by the

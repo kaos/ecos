@@ -1,3 +1,10 @@
+2008-08-18  Bart Veer  <bartv@ecoscentric.com>
+
+	* host/Makefile.am, host/configure.in: update host-side configury
+	* host/Makefiloe.in, host/aclocal.m4, host/config.h.in,
+	host/configure, host/stamp-h.in: regenerate.
+	* host/acconfig.h: removed, no longer needed.
+
 2008-08-13  Bart Veer  <bartv@ecoscentric.com>
 
 	* host/usbhost.c: insist on the GNU version of strerror_r().

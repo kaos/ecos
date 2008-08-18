@@ -98,7 +98,7 @@ AC_ARG_ENABLE(tracebufsize,[  --enable-tracebufsize=X size of the trace buffer],
     if test "$enableval" = "no" -o "$enableval" = "yes"; then
         AC_MSG_ERROR("--enable-tracebufsize should be given a suitable value")
     else
-        AC_DEFINE_UNQUOTED(CYGNUM_INFRA_TRACE_VECTOR_SIZE,$enableval)
+        AC_DEFINE_UNQUOTED(CYGNUM_INFRA_TRACE_VECTOR_SIZE,$enableval,[size of trace vector])
     fi
 ])
 

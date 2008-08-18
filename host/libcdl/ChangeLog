@@ -1,3 +1,10 @@
+2008-08-18  Bart Veer  <bartv@ecoscentric.com>
+
+	* Makefile.am, configure.in: update host-side configury
+	* Makefile.in, aclocal.m4, config.h.in, configure,
+	testsuite/Makefile.in: regenerate
+	* acconfig.h: removed, no longer necessary.
+
 2008-08-14  Bart Veer  <bartv@ecoscentric.com>
 
 	* doc/reference.sgml: fix typo.

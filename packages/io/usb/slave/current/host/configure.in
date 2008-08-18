@@ -60,6 +60,11 @@ ECOS_CHECK_BUILD_ne_SRC
 AC_CANONICAL_HOST
 AM_INIT_AUTOMAKE(usbhost,0.1,0)
 AM_MAINTAINER_MODE
+AC_PROG_CC
+AC_PROG_LN_S
+AC_OBJEXT
+AC_EXEEXT
+ECOS_PROG_STANDARD_COMPILER_FLAGS
 
 dnl The current version of the USB testing support depends on 
 dnl functionality provided only by Linux platforms, and has only been
@@ -76,13 +81,8 @@ esac
 if test "${SUPPORTED}" = "no" ; then
     AC_MSG_WARN([USB testing is only supported on Linux hosts])
 else   
-    AC_PROG_CC
-    AC_PROG_CXX
-    AC_PROG_LN_S
-    AC_OBJEXT
-    AC_EXEEXT
-    ECOS_PROG_MSVC
-    ECOS_PROG_STANDARD_COMPILER_FLAGS
+
+    
     ECOS_PACKAGE_DIRS
 
     ECOS_PATH_TCL
@@ -96,7 +96,7 @@ else
         fi
     fi
     if test "${SUPPORTED}" = "yes" ; then
-        AC_CHECK_HEADERS("linux/usb.h" "linux/usbdevice_fs.h",,SUPPORTED="no")
+        AC_CHECK_HEADERS("linux/usb/ch9.h" "linux/usbdevice_fs.h",,SUPPORTED="no")
         if test "${SUPPORTED}" = "no" ; then
 	    AC_MSG_WARN([Required Linux kernel functionality does not appear to be available])
 	else
@@ -105,7 +105,7 @@ else
               ], [
 	          static struct usbdevfs_ctrltransfer xx = { .bRequestType = 0 };
 	      ],
-	          AC_DEFINE(CYGBLD_USE_NEW_FIELD_NAMES)
+	          AC_DEFINE(CYGBLD_USE_NEW_FIELD_NAMES,[1],["use later version of Linux usb data structures])
 	      )
         fi
     fi

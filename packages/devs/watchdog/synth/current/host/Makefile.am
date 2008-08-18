@@ -41,7 +41,7 @@
 ######DESCRIPTIONEND####
 ## =====================================================================
 
-AUTOMAKE_OPTIONS = 1.3 foreign
+AUTOMAKE_OPTIONS = 1.10 foreign
 
 ## Only some platforms are supported. Having the configure script throw
 ## an error when attempting to configure on an unsupported platform

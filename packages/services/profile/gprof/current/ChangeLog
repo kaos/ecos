@@ -1,3 +1,8 @@
+2008-08-18  Bart Veer  <bartv@ecoscentric.com>
+
+	* host/Makefile.am: update host-side configury
+	* host/Makefile.in, host/aclocal.m4, host/configure: regenerate
+
 2007-12-14  Oyvind Harboe  <oyvind.harboe@zylin.com>
 2007-12-21  Jonathan Larmour  <jifl@eCosCentric.com>
 

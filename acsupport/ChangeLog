@@ -1,3 +1,10 @@
+2008-08-18  Bart Veer  <bartv@ecoscentric.com>
+
+	* acinclude.m4: major update of host-side configury
+	* config.guess, config.sub, install-sh, ltmain.sh, missing,
+	mkinstalldirs: import latest version
+	* depcomp: add new support file required by automake
+
 2003-02-12  Bart Veer  <bartv@ecoscentric.com>
 
 	* acinclude.m4: Another attempt at the Tcl macro, to cope with

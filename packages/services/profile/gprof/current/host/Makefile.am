@@ -39,7 +39,7 @@
 ######DESCRIPTIONEND####
 ## =====================================================================
 
-AUTOMAKE_OPTIONS = 1.3 foreign
+AUTOMAKE_OPTIONS = 1.10 foreign
 
 ## There is just a set of gdb macros
 gdbdir			= @datadir@/ecos/gdbscripts

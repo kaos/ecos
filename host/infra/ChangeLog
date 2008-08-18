@@ -1,3 +1,10 @@
+2008-08-18  Bart Veer  <bartv@ecoscentric.com>
+
+	* configure.in, Makefile.am: update host-side configury
+	* Makefile.in, aclocal.m4, config.h.in,
+	configure,testsuite/Makefile.in: regenerate
+	* acconfig.h: removed, no longer necessary.
+
 2008-08-14  Bart Veer  <bartv@ecoscentric.com>
 
 	* assert.cxx: fix build problems with recent gcc

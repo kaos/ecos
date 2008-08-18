@@ -1,3 +1,8 @@
+2008-08-18  Bart Veer  <bartv@ecoscentric.com>
+
+	* Makefile.am: update host-side configury
+	* Makefile.in, aclocal.m4, configure: regenerate
+
 2008-08-15  Bart Veer  <bartv@ecoscentric.com>
 
 	* ecosconfig.cxx, cdl_exec.cxx: avoid compiler warnings.

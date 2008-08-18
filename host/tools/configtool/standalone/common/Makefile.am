@@ -40,7 +40,7 @@
 ######DESCRIPTIONEND####
 ## =====================================================================
 
-AUTOMAKE_OPTIONS = 1.3 cygnus
+AUTOMAKE_OPTIONS = 1.4 cygnus
 SUBDIRS          =
 
 ## Pick up compiler flags etc. from configury

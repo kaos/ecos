@@ -135,10 +135,10 @@ main(int argc, char** argv)
     // directory as ecosynth. The Tcl script itself will check whether
     // there is a newer version of itself in the source tree and
     // switch to that instead.
-    assert((strlen(LIBEXECDIR) + strlen(PACKAGE_INSTALL) + 20) < _POSIX_PATH_MAX);
+    assert((strlen(LIBEXECDIR) + strlen(PKG_INSTALL) + 20) < _POSIX_PATH_MAX);
     strcpy(ecosynth_tcl_path, LIBEXECDIR);
     strcat(ecosynth_tcl_path, "/ecos/");
-    strcat(ecosynth_tcl_path, PACKAGE_INSTALL);
+    strcat(ecosynth_tcl_path, PKG_INSTALL);
     strcat(ecosynth_tcl_path, "/ecosynth.tcl");
 
     // Installation sanity checks.
@@ -358,9 +358,9 @@ ecosynth_appinit(Tcl_Interp* interp)
     // The various directories
     Tcl_SetVar(interp, "synth::_ecosynth_repository", ECOS_REPOSITORY, TCL_GLOBAL_ONLY);
     Tcl_SetVar(interp, "synth::_ecosynth_libexecdir", LIBEXECDIR, TCL_GLOBAL_ONLY);
-    Tcl_SetVar(interp, "synth::_ecosynth_package_dir", PACKAGE_DIR, TCL_GLOBAL_ONLY);
-    Tcl_SetVar(interp, "synth::_ecosynth_package_version", PACKAGE_VERSION, TCL_GLOBAL_ONLY);
-    Tcl_SetVar(interp, "synth::_ecosynth_package_install", PACKAGE_INSTALL, TCL_GLOBAL_ONLY);
+    Tcl_SetVar(interp, "synth::_ecosynth_package_dir", PKG_DIR, TCL_GLOBAL_ONLY);
+    Tcl_SetVar(interp, "synth::_ecosynth_package_version", PKG_VERSION, TCL_GLOBAL_ONLY);
+    Tcl_SetVar(interp, "synth::_ecosynth_package_install", PKG_INSTALL, TCL_GLOBAL_ONLY);
     
     return TCL_OK;
 }

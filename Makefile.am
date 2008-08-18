@@ -39,6 +39,6 @@
 ######DESCRIPTIONEND####
 ## =====================================================================
 
-AUTOMAKE_OPTIONS = 1.3 foreign
-SUBDIRS          = @SUBDIRS@
+AUTOMAKE_OPTIONS = 1.10 foreign
+SUBDIRS          = @subdirs@
 

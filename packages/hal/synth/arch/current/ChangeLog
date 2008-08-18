@@ -1,3 +1,9 @@
+2008-08-18  Bart Veer  <bartv@ecoscentric.com>
+
+	* host/Makefile.am, host/configure.in, ecosynth.c: update
+	host-side configury.
+	* host/Makefile.in, host/aclocal.m4, host/configure: regenerate
+
 2008-08-13  Bart Veer  <bartv@ecoscentric.com>
 
 	* host/ecosynth.tcl: avoid X problems when shutting down.

@@ -131,6 +131,31 @@ AC_CONFIG_AUX_DIR(acsupport)
 AC_CANONICAL_HOST
 AM_INIT_AUTOMAKE(eCos,2.0,0)
 AM_MAINTAINER_MODE
+
+dnl Detect attempts at cross-compilation. Usually this is the result
+dnl of somebody failing to read the documentation or the README.host
+dnl file.
+if test "${target_alias}x" != "x" ; then
+  AC_MSG_ERROR("
+================================================================
+You have specified a target ${target_alias}.
+This configure script is for building the eCos host-side support
+tools which are independent of the target architecture. It is not
+used for building eCos itself.
+
+If your intention is to build eCos itself then you should first
+read the relevant documentation starting with the User's Guide.
+
+If your intention is to rebuild the host-side support tools then
+there is no need to specify --target.
+
+If your intention is to cross-compile the host-side support tools
+then you should be using --host instead of --target.
+================================================================
+")
+fi  
+
+dnl Make sure the source and build trees are kept separate.
 ECOS_CHECK_BUILD_ne_SRC
 
 dnl Nothing actually gets built in this directory, so there should be no
@@ -142,11 +167,11 @@ dnl     With the 2.0 release system the directory gets moved to
 dnl     tools/src
 		     
 if test -f "${srcdir}/host/configure" ; then
-   SUBDIRS="host"
+   ecos_subdirs="host"
 elif test -f "${srcdir}/tools/src/configure" ; then
-   SUBDIRS="tools/src"
+   ecos_subdirs="tools/src"
 else   
-   SUBDIRS=""
+   ecos_subdirs=""
 fi   
 
 dnl  2) any package which has a configure script in a
@@ -164,32 +189,39 @@ dnl     This is a good thing because packages are meant to be self-contained
 dnl     whenever possible. Interaction between packages is typically handled
 dnl     at the Tcl level at run-time, so there are no build-time complications.
 
-PKGHOSTDIRS=""
-FOUND_CONFIGURES=""
-FOUND_CONFIGURES="${FOUND_CONFIGURES} ${srcdir}/packages/*/*/host/configure"
-FOUND_CONFIGURES="${FOUND_CONFIGURES} ${srcdir}/packages/*/*/*/host/configure"
-FOUND_CONFIGURES="${FOUND_CONFIGURES} ${srcdir}/packages/*/*/*/*/host/configure"
-FOUND_CONFIGURES="${FOUND_CONFIGURES} ${srcdir}/packages/*/*/*/*/*/host/configure"
-FOUND_CONFIGURES="${FOUND_CONFIGURES} ${srcdir}/packages/*/*/*/*/*/*/host/configure"
-for configure in ${FOUND_CONFIGURES}; do
+AC_MSG_NOTICE([searching for configure scripts in eCos packages'
+host subdirectories. This operation can take a long time.
+If running on Windows and the eCos repository is accessed
+over a network then it may take some hours.])
+ecos_hostdirs=""
+ecos_configure_scripts="${srcdir}/packages/*/*/host/configure"
+ecos_configure_scripts="${ecos_configure_scripts} ${srcdir}/packages/*/*/*/host/configure"
+ecos_configure_scripts="${ecos_configure_scripts} ${srcdir}/packages/*/*/*/*/host/configure"
+ecos_configure_scripts="${ecos_configure_scripts} ${srcdir}/packages/*/*/*/*/*/host/configure"
+ecos_configure_scripts="${ecos_configure_scripts} ${srcdir}/packages/*/*/*/*/*/*/host/configure"
+for configure in ${ecos_configure_scripts}; do
     if test -f ${configure}; then
         dnl A configure script has been found in the source tree.
         dnl First turn it into a directory, then replace the absolute path
         dnl with a relative one.
         hostdir=`dirname ${configure}`
         hostdir=`echo ${hostdir} | sed -e "s:^${srcdir}/::"`
-        PKGHOSTDIRS="${PKGHOSTDIRS} ${hostdir}"
+        ecos_hostdirs="${ecos_hostdirs} ${hostdir}"
     fi
 done
-
-SUBDIRS="${SUBDIRS} ${PKGHOSTDIRS}"
+AC_MSG_NOTICE([found configure scripts in
+${ecos_hostdirs}])
+ecos_subdirs="${ecos_subdirs} ${ecos_hostdirs}"
 
 dnl Because the eCos directory layout does not conform to GNU conventions
 dnl it is necessary to create various levels of intermediate directories.
 dnl This happens via config.status, prior to the recursion into the
 dnl appropriate directories.
-AC_OUTPUT_COMMANDS([${CONFIG_SHELL-/bin/sh} ${top_srcdir}/acsupport/mkinstalldirs ${REQUIRED_DIRS}],REQUIRED_DIRS="${SUBDIRS}")
+AC_OUTPUT_COMMANDS([${CONFIG_SHELL-/bin/sh} ${ac_top_srcdir}/acsupport/mkinstalldirs ${REQUIRED_DIRS}],REQUIRED_DIRS="${ecos_subdirs}")
 
-AC_SUBST(SUBDIRS)
-AC_CONFIG_SUBDIRS(${SUBDIRS})
+dnl This causes warnings with current versions of configure which
+dnl want literal arguments. Since this script deliberately searches
+dnl for subdirectories there is no obvious way to eliminate those
+dnl warnings.
+AC_CONFIG_SUBDIRS(${ecos_subdirs})
 AC_OUTPUT(Makefile)

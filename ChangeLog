@@ -1,3 +1,8 @@
+2008-08-18  Bart Veer  <bartv@ecoscentric.com>
+
+	* Makefile.am, configure.in: update host-side configury.
+	* Makefile.in, configure, aclocal.m4: regenerate.
+
 2003-03-27  Bart Veer  <bartv@ecoscentric.com>
 
 	* configure.in, configure:

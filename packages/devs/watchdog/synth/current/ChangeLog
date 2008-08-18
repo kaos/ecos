@@ -1,3 +1,8 @@
+2008-08-18  Bart Veer  <bartv@ecoscentric.com>
+
+	* host/Makefile.am: update host-side configury
+	* host/Makefile.in, host/aclocal.m4, host/configure: regenerate.
+
 2003-03-23  Iztok Zupet<iz@vsr.si>
 
 	* doc/synth_watchdog.sgml: Replaced .gif with .png to allow for

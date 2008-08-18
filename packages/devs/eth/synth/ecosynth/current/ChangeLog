@@ -1,3 +1,8 @@
+2008-08-18  Bart Veer  <bartv@ecoscentric.com>
+
+	* host/Makefile.am, host/configure.in: update host-configury.
+	* host/Makefile.in, host/configure, host/aclocal.m4: regenerate
+
 2008-08-13  Bart Veer  <bartv@ecoscentric.com>
 
 	* host/rawether.c: eliminate compiler warning.

@@ -41,7 +41,7 @@
 ######DESCRIPTIONEND####
 ## =====================================================================
 
-AUTOMAKE_OPTIONS = 1.3 foreign
+AUTOMAKE_OPTIONS = 1.10 foreign
 
 ## Only some platforms are supported. Having the configure script throw
 ## an error when attempting to configure on an unsupported platform
@@ -49,18 +49,17 @@ AUTOMAKE_OPTIONS = 1.3 foreign
 ## the toplevel on unsupported platforms. Instead an automake conditional
 ## is used, leading to null makefiles on unsupported platforms.
 
-if SUPPORTED
-
 AM_CFLAGS       = @ecos_CFLAGS@ -DECOSYNTH_VERSION=\"@VERSION@\" \
  -DECOS_REPOSITORY=\"@ECOS_REPOSITORY@\" \
  -DLIBEXECDIR=\"$(libexecdir)\" \
- -DPACKAGE_DIR=\"@PACKAGE_DIR@\" \
- -DPACKAGE_VERSION=\"@PACKAGE_VERSION@\" \
- -DPACKAGE_INSTALL=\"@PACKAGE_INSTALL@\"
+ -DPKG_DIR=\"@PACKAGE_DIR@\" \
+ -DPKG_VERSION=\"@PACKAGE_VERSION@\" \
+ -DPKG_INSTALL=\"@PACKAGE_INSTALL@\"
 AM_CXXFLAGS     = @ecos_CXXFLAGS@
 INCLUDES        = @ecos_INCLUDES@
 LIBS            = @ecos_LIBS@ @ecos_LDADD@
 
+if SUPPORTED
 ## The synthetic target support consists of a single program rawether,
 ## a number of Tcl scripts, and some additional data files. These are
 ## all installed in a single directory $(libexec)/ecos/<package>_<version>/

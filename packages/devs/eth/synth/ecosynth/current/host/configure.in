@@ -51,6 +51,13 @@ ECOS_CHECK_BUILD_ne_SRC
 AC_CANONICAL_HOST
 AM_INIT_AUTOMAKE(eCos_synthetic_target_ethernet,0.1,0)
 AM_MAINTAINER_MODE
+AC_PROG_CC
+AC_PROG_CXX
+AC_OBJEXT
+AC_EXEEXT
+ECOS_PROG_MSVC
+ECOS_PROG_STANDARD_COMPILER_FLAGS
+ECOS_PACKAGE_DIRS
 
 dnl The current version of the synthetic target is implemented only for
 dnl x86 Linux platforms, so a test is appropriate here. However
@@ -67,24 +74,16 @@ if test "${SUPPORTED}" = "no" ; then
 fi   
 
 if test "${SUPPORTED}" = "yes" ; then
-    AC_PROG_CC
-    AC_PROG_CXX
-    AC_OBJEXT
-    AC_EXEEXT
-    ECOS_PROG_MSVC
-    ECOS_PROG_STANDARD_COMPILER_FLAGS
-    ECOS_PACKAGE_DIRS
-
-    dnl Old kernels may not have tun/tap support. rawether can
-    dnl still operate via a spare ethernet interface.
-    AC_CHECK_HEADERS("linux/if_tun.h",TAP_SUPPORTED="yes",TAP_SUPPORTED="no")
-    if test "${TAP_SUPPORTED}" = "no" ; then
-        AC_MSG_WARN([No <linux/if_tun.h> header, ethertap support disabled.])
-    fi
+  dnl Old kernels may not have tun/tap support. rawether can
+  dnl still operate via a spare ethernet interface.
+  AC_CHECK_HEADERS("linux/if_tun.h",TAP_SUPPORTED="yes",TAP_SUPPORTED="no")
+  if test "${TAP_SUPPORTED}" = "no" ; then
+    AC_MSG_WARN([No <linux/if_tun.h> header, ethertap support disabled.])
+  fi
 fi
 
 if test "${SUPPORTED}" = "no" ; then
-    AC_MSG_WARN([The synthetic ethernet support cannot be built on this platform.])
+  AC_MSG_WARN([The synthetic ethernet support cannot be built on this platform.])
 fi
 
 AM_CONDITIONAL(SUPPORTED, test "${SUPPORTED}" = "yes")

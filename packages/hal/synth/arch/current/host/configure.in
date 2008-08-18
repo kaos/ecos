@@ -52,6 +52,14 @@ ECOS_CHECK_BUILD_ne_SRC
 AC_CANONICAL_HOST
 AM_INIT_AUTOMAKE(eCos_synthetic_target_arch,0.1,0)
 AM_MAINTAINER_MODE
+AC_PROG_CC
+AC_PROG_CXX
+AC_OBJEXT
+AC_EXEEXT
+ECOS_PROG_MSVC
+ECOS_PROG_STANDARD_COMPILER_FLAGS
+
+ECOS_PATH_TCL
 
 dnl The current version of the synthetic target is implemented only for
 dnl x86 Linux platforms, so a test is appropriate here. However
@@ -64,28 +72,18 @@ case "${host}" in
     * ) SUPPORTED="no"
 esac
 
-if test "${SUPPORTED}" = "yes" ; then
-    AC_PROG_CC
-    AC_PROG_CXX
-    AC_OBJEXT
-    AC_EXEEXT
-    ECOS_PROG_MSVC
-    ECOS_PROG_STANDARD_COMPILER_FLAGS
-
-    ECOS_PATH_TCL
-    dnl Check that the version of tk is sufficiently recent.
-    dnl For example the text widget's tag -elide facility was
-    dnl added between 8.2 and 8.3. Initial development of
-    dnl the synthetic target used 8.3.1
-    if test "${TK_MAJOR_VERSION}" = "8" ; then
-        if test ${TK_MINOR_VERSION} -lt 3 ; then
-            AC_MSG_WARN([The synthetic target support requires at least version 8.3 of Tcl/Tk])
-	    AC_MSG_WARN([Synthetic target host-side support will not be built])
-	    SUPPORTED="no"
-        fi
-    fi
-    ECOS_PACKAGE_DIRS
+dnl Check that the version of tk is sufficiently recent.
+dnl For example the text widget's tag -elide facility was
+dnl added between 8.2 and 8.3. Initial development of
+dnl the synthetic target used 8.3.1
+if test "${TK_MAJOR_VERSION}" = "8" ; then
+  if test ${TK_MINOR_VERSION} -lt 3 ; then
+    AC_MSG_WARN([The synthetic target support requires at least version 8.3 of Tcl/Tk])
+    AC_MSG_WARN([Synthetic target host-side support will not be built])
+    SUPPORTED="no"
+  fi
 fi
+ECOS_PACKAGE_DIRS
 
 AM_CONDITIONAL(SUPPORTED, test "${SUPPORTED}" = "yes")
 
