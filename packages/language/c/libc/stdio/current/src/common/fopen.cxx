@@ -92,6 +92,7 @@ process_mode( const char *mode, Cyg_StdioStream::OpenMode *rw,
 
     case 'a':
         *append = true;
+        /* DROPTHROUGH */
     case 'w':
         *rw = Cyg_StdioStream::CYG_STREAM_WRITE;
         break;
