@@ -1,3 +1,8 @@
+2008-08-19  Rainer Arndt <Arndt-ADT@kieback-peter.de>
+
+	* src/pppd.c (cyg_pppd_main): CYGPKG_PPP_CHAT must be enabled
+	to call cyg_ppp_chat()
+
 2008-04-28  Daniel Néri  <daniel.neri@sigicom.com>
 
 	* src/ipcp.c (ipcp_init): Negotiate both primary and secondary DNS

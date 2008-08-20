@@ -316,6 +316,7 @@ cyg_pppd_main(CYG_ADDRWORD arg)
 	/* set line speed, flow control, etc.; clear CLOCAL if modem option */
 	set_up_tty(tty_handle, 0);
 
+#ifdef CYGPKG_PPP_CHAT          
         if( script != NULL )
         {
             if( !cyg_ppp_chat( devnam, script ) )
@@ -324,6 +325,7 @@ cyg_pppd_main(CYG_ADDRWORD arg)
                 goto fail;
             }
         }
+#endif
 
 #ifdef CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS
         if( modem )
@@ -370,7 +372,9 @@ cyg_pppd_main(CYG_ADDRWORD arg)
 	clean_check();
 	disestablish_ppp(tty_handle);
 
+#ifdef CYGPKG_PPP_CHAT          
     fail:        
+#endif
 	if (tty_handle != 0)
 	    close_tty();
         
