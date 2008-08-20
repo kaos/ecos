@@ -465,11 +465,11 @@ set_attr( struct termios *t, struct termios_private_info *priv )
         }
     }
 
-    if ( (t->c_cflag & IXOFF) != (ptermios->c_cflag & IXOFF) ) {
+    if ( (t->c_iflag & IXOFF) != (ptermios->c_iflag & IXOFF) ) {
         new_dev_conf = dev_conf;
         new_dev_conf.flags &=
             ~(CYGNUM_SERIAL_FLOW_XONXOFF_RX|CYGNUM_SERIAL_FLOW_RTSCTS_RX);
-        if ( t->c_cflag & IXOFF )
+        if ( t->c_iflag & IXOFF )
             if ( t->c_cflag & CRTSCTS)
                 new_dev_conf.flags |= CYGNUM_SERIAL_FLOW_RTSCTS_RX;
             else
@@ -485,16 +485,18 @@ set_attr( struct termios *t, struct termios_private_info *priv )
             // It worked, so update dev_conf to reflect the new state
             dev_conf.flags = new_dev_conf.flags;
             // and termios
-            ptermios->c_cflag &= ~(IXOFF|CRTSCTS);
-            ptermios->c_cflag |= t->c_cflag & (IXOFF|CRTSCTS);
+            ptermios->c_cflag &= ~(CRTSCTS);
+            ptermios->c_cflag |= t->c_cflag & (CRTSCTS);
+            ptermios->c_iflag &= ~(IXOFF);
+            ptermios->c_iflag |= t->c_iflag & (IXOFF);
         }
     }
 
-    if ( (t->c_cflag & IXON) != (ptermios->c_cflag & IXON) ) {
+    if ( (t->c_iflag & IXON) != (ptermios->c_iflag & IXON) ) {
         new_dev_conf = dev_conf;
         new_dev_conf.flags &=
             ~(CYGNUM_SERIAL_FLOW_XONXOFF_TX|CYGNUM_SERIAL_FLOW_RTSCTS_TX);
-        if ( t->c_cflag & IXON )
+        if ( t->c_iflag & IXON )
             if ( t->c_cflag & CRTSCTS)
                 new_dev_conf.flags |= CYGNUM_SERIAL_FLOW_RTSCTS_TX;
             else
@@ -510,8 +512,10 @@ set_attr( struct termios *t, struct termios_private_info *priv )
             // It worked, so update dev_conf to reflect the new state
             dev_conf.flags = new_dev_conf.flags;
             // and termios
-            ptermios->c_cflag &= ~(IXON|CRTSCTS);
-            ptermios->c_cflag |= t->c_cflag & (IXON|CRTSCTS);
+            ptermios->c_cflag &= ~(CRTSCTS);
+            ptermios->c_cflag |= t->c_cflag & (CRTSCTS);
+            ptermios->c_iflag &= ~(IXON);
+            ptermios->c_iflag |= t->c_iflag & (IXON);
         }
     }
 
