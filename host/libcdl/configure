@@ -4395,8 +4395,11 @@ echo "${ECHO_T}-I${ecos_infra_incdir} -L${ecos_infra_libdir}" >&6; }
 
 
 
-    { echo "$as_me:$LINENO: checking for Tcl installation" >&5
-echo $ECHO_N "checking for Tcl installation... $ECHO_C" >&6; }
+        { echo "$as_me:$LINENO: checking for Tcl/Tk installation" >&5
+echo $ECHO_N "checking for Tcl/Tk installation... $ECHO_C" >&6; }
+  { echo "$as_me:$LINENO: result: " >&5
+echo "${ECHO_T}" >&6; }
+
 
 # Check whether --with-tcl was given.
 if test "${with_tcl+set}" = set; then
@@ -4492,6 +4495,8 @@ echo "$as_me: error: unable to locate Tcl header file tcl.h" >&2;}
       possibles="${possibles} /usr/lib/tcl${with_tcl_version}"
       possibles="${possibles} /usr/lib/tk${with_tcl_version}"
     fi
+    { echo "$as_me:$LINENO: looking for tclConfig.sh in ${possibles}" >&5
+echo "$as_me: looking for tclConfig.sh in ${possibles}" >&6;}
 
   tclconfig=""
   for i in ${possibles}; do
@@ -4506,14 +4511,24 @@ echo "$as_me: error: unable to locate Tcl header file tcl.h" >&2;}
 echo "$as_me: error: unable to locate Tcl configuration file tclConfig.sh" >&2;}
    { (exit 1); exit 1; }; }
     else
+      { echo "$as_me:$LINENO: found ${tclconfig}/tclConfig.sh" >&5
+echo "$as_me: found ${tclconfig}/tclConfig.sh" >&6;}
       . ${tclconfig}/tclConfig.sh
 
                         if test -n "${TCL_INCLUDE_SPEC}" ; then
         ecos_tcl_incdir="${TCL_INCLUDE_SPEC}"
+	{ echo "$as_me:$LINENO: trying TCL_INCLUDE_SPEC - looking for tcl.h in ${ecos_tcl_incdir}" >&5
+echo "$as_me: trying TCL_INCLUDE_SPEC - looking for tcl.h in ${ecos_tcl_incdir}" >&6;}
       elif test -n "${TCL_INC_DIR}" ; then
         ecos_tcl_incdir="${TCL_INC_DIR}"
+	{ echo "$as_me:$LINENO: trying TCL_INC_DIR - looking for tcl.h in ${ecos_tcl_incdir}" >&5
+echo "$as_me: trying TCL_INC_DIR - looking for tcl.h in ${ecos_tcl_incdir}" >&6;}
       else
         ecos_tcl_incdir="-I${TCL_PREFIX}/include"
+	{ echo "$as_me:$LINENO: WARNING: no TCL_INCLUDE_SPEC or TCL_INC_DIR in tclConfig.sh" >&5
+echo "$as_me: WARNING: no TCL_INCLUDE_SPEC or TCL_INC_DIR in tclConfig.sh" >&2;}
+	{ echo "$as_me:$LINENO: fallback - looking for tcl.h in ${ecos_tcl_incdir}" >&5
+echo "$as_me: fallback - looking for tcl.h in ${ecos_tcl_incdir}" >&6;}
       fi
             ecos_tcl_tmpdir=`echo ${ecos_tcl_incdir} | sed -e "s:-I::g"`
       if test \! -r "${ecos_tcl_tmpdir}/tcl.h" ; then
@@ -4521,7 +4536,9 @@ echo "$as_me: error: unable to locate Tcl configuration file tclConfig.sh" >&2;}
 echo "$as_me: error: unable to locate Tcl header file tcl.h" >&2;}
    { (exit 1); exit 1; }; }
       else
-                                        if test "${ecos_tcl_incdir}" != "-I/usr/include" ; then
+                                	{ echo "$as_me:$LINENO: using ${ecos_tcl_incdir}" >&5
+echo "$as_me: using ${ecos_tcl_incdir}" >&6;}
+        if test "${ecos_tcl_incdir}" != "-I/usr/include" ; then
           ecos_INCLUDES="${ecos_INCLUDES} ${ecos_tcl_incdir}"
         fi
       fi
@@ -4529,8 +4546,14 @@ echo "$as_me: error: unable to locate Tcl header file tcl.h" >&2;}
                         ecos_tcl_libs=""
       if test -n "${TCL_LIB_SPEC}" ; then
         ecos_tcl_libs="${ecos_LIBS} ${TCL_LIB_SPEC}"
+	{ echo "$as_me:$LINENO: using TCL_LIB_SPEC ${TCL_LIB_SPEC}" >&5
+echo "$as_me: using TCL_LIB_SPEC ${TCL_LIB_SPEC}" >&6;}
       else
+	{ echo "$as_me:$LINENO: WARNING: no TCL_LIB_SPEC in tclConfig.sh" >&5
+echo "$as_me: WARNING: no TCL_LIB_SPEC in tclConfig.sh" >&2;}
         if test "${with_tcl_version+set}" = set ; then
+	  { echo "$as_me:$LINENO: fallback - looking for libtcl${with_tcl_version}.a in ${possibles}" >&5
+echo "$as_me: fallback - looking for libtcl${with_tcl_version}.a in ${possibles}" >&6;}
 
   libtcl=""
   for i in ${possibles}; do
@@ -4542,9 +4565,13 @@ echo "$as_me: error: unable to locate Tcl header file tcl.h" >&2;}
 
           if test -r "${libtcl}/libtcl${with_tcl_version}.a" ; then
               ecos_tcl_libs="-L${libtcl} -ltcl${with_tcl_version}"
+	      { echo "$as_me:$LINENO: using ${ecos_tcl_libs}" >&5
+echo "$as_me: using ${ecos_tcl_libs}" >&6;}
           fi
         fi
         if test -z "${ecos_tcl_libs}" ; then
+	  { echo "$as_me:$LINENO: fallback - looking for libtcl.a in ${possibles}" >&5
+echo "$as_me: fallback - looking for libtcl.a in ${possibles}" >&6;}
 
   libtcl=""
   for i in ${possibles}; do
@@ -4556,27 +4583,35 @@ echo "$as_me: error: unable to locate Tcl header file tcl.h" >&2;}
 
           if test -r "${libtcl}/libtcl.a" ; then
               ecos_tcl_libs="-L${libtcl} -ltcl"
+	      { echo "$as_me:$LINENO: using ${ecos_tcl_libs}" >&5
+echo "$as_me: using ${ecos_tcl_libs}" >&6;}
           fi
         fi
       fi
 
             if test -z "${ecos_tcl_libs}" ; then
-          { { echo "$as_me:$LINENO: error: ${tclconfig}/tclConfig.sh does not define TCL_LIB_SPEC" >&5
+        { { echo "$as_me:$LINENO: error: ${tclconfig}/tclConfig.sh does not define TCL_LIB_SPEC" >&5
 echo "$as_me: error: ${tclconfig}/tclConfig.sh does not define TCL_LIB_SPEC" >&2;}
    { (exit and unable to find libtcl.a); exit and unable to find libtcl.a; }; }
       fi
 
             if test -n "${TCL_LIBS}" ; then
         ecos_tcl_libs="${ecos_tcl_libs} ${TCL_LIBS}"
+	{ echo "$as_me:$LINENO: using additional libraries for Tcl ${TCL_LIBS}" >&5
+echo "$as_me: using additional libraries for Tcl ${TCL_LIBS}" >&6;}
       fi
       if test -n "${TCL_LD_FLAGS}" ; then
         ecos_tcl_libs="${ecos_tcl_libs} ${TCL_LD_FLAGS}"
+	{ echo "$as_me:$LINENO: using additional linker flags for Tcl ${TCL_LD_FLAGS}" >&5
+echo "$as_me: using additional linker flags for Tcl ${TCL_LD_FLAGS}" >&6;}
       fi
       ecos_LIBS="${ecos_LIBS} ${ecos_tcl_libs}"
     fi
 
 
                     possibles=`echo ${possibles} | sed -e 's,tcl,tk,g'`
+    { echo "$as_me:$LINENO: looking for tkConfig.sh in ${possibles}" >&5
+echo "$as_me: looking for tkConfig.sh in ${possibles}" >&6;}
 
   tkconfig=""
   for i in ${possibles}; do
@@ -4591,14 +4626,24 @@ echo "$as_me: error: ${tclconfig}/tclConfig.sh does not define TCL_LIB_SPEC" >&2
 echo "$as_me: error: unable to locate Tk config file tkConfig.sh" >&2;}
    { (exit 1); exit 1; }; }
     else
+      { echo "$as_me:$LINENO: found ${tkconfig}/tkConfig.sh" >&5
+echo "$as_me: found ${tkconfig}/tkConfig.sh" >&6;}
       . ${tkconfig}/tkConfig.sh
 
       if test -n "${TK_INCLUDE_SPEC}" ; then
-          ecos_tk_includes="${TK_INCLUDE_SPEC}"
+        ecos_tk_includes="${TK_INCLUDE_SPEC}"
+	{ echo "$as_me:$LINENO: trying TK_INCLUDE_SPEC - looking for tk.h in ${ecos_tk_includes}" >&5
+echo "$as_me: trying TK_INCLUDE_SPEC - looking for tk.h in ${ecos_tk_includes}" >&6;}
       elif test -n "${TK_INC_DIR}" ; then
           ecos_tk_includes="${TK_INC_DIR}"
+	  { echo "$as_me:$LINENO: trying TK_INC_DIR - looking for tk.h in ${ecos_tk_includes}" >&5
+echo "$as_me: trying TK_INC_DIR - looking for tk.h in ${ecos_tk_includes}" >&6;}
       else
           ecos_tk_includes="-I${TCL_PREFIX}/include"
+	  { echo "$as_me:$LINENO: WARNING: no TK_INCLUDE_SPEC or TK_INC_DIR in tkConfig.sh" >&5
+echo "$as_me: WARNING: no TK_INCLUDE_SPEC or TK_INC_DIR in tkConfig.sh" >&2;}
+	  { echo "$as_me:$LINENO: fallback - looking for tk.h in ${ecos_tk_includes}" >&5
+echo "$as_me: fallback - looking for tk.h in ${ecos_tk_includes}" >&6;}
       fi
             ecos_tk_tmpdir=`echo ${ecos_tk_includes} | sed -e "s:-I::g"`
       if test \! -r "${ecos_tk_tmpdir}/tk.h" ; then
@@ -4606,19 +4651,29 @@ echo "$as_me: error: unable to locate Tk config file tkConfig.sh" >&2;}
 echo "$as_me: error: unable to locate Tk header file tk.h" >&2;}
    { (exit 1); exit 1; }; }
       else
-                                        if test "${ecos_tk_includes}" = "/usr/include" ; then
+                                	{ echo "$as_me:$LINENO: using ${ecos_tk_includes}" >&5
+echo "$as_me: using ${ecos_tk_includes}" >&6;}
+        if test "${ecos_tk_includes}" = "-I/usr/include" ; then
   	  ecos_tk_includes=""
         fi
       fi
                   if test -n "${TK_XINCLUDES}" ; then
+        { echo "$as_me:$LINENO: adding TK_XINCLUDES ${TK_XINCLUDES}" >&5
+echo "$as_me: adding TK_XINCLUDES ${TK_XINCLUDES}" >&6;}
         ecos_tk_includes="${ecos_tk_includes} ${TK_XINCLUDES}"
       fi
 
       ecos_tk_libs=""
       if test -n "${TK_LIB_SPEC}" ; then
         ecos_tk_libs="${TK_LIB_SPEC}"
+	{ echo "$as_me:$LINENO: trying TK_LIB_SPEC ${TK_LIB_SPEC}" >&5
+echo "$as_me: trying TK_LIB_SPEC ${TK_LIB_SPEC}" >&6;}
       else
+        { echo "$as_me:$LINENO: WARNING: no TK_LIB_SPEC in tkConfig.sh" >&5
+echo "$as_me: WARNING: no TK_LIB_SPEC in tkConfig.sh" >&2;}
         if test "${with_tcl_version+set}" = set ; then
+	  { echo "$as_me:$LINENO: fallback - looking for libtk${with_tcl_version}.a in ${possibles}" >&5
+echo "$as_me: fallback - looking for libtk${with_tcl_version}.a in ${possibles}" >&6;}
 
   libtk=""
   for i in ${possibles}; do
@@ -4629,10 +4684,12 @@ echo "$as_me: error: unable to locate Tk header file tk.h" >&2;}
   done
 
           if test -r "${libtk}/libtk${with_tcl_version}.a" ; then
-           ecos_tk_libs="-L${libtk} -ltk${with_tcl_version}"
+            ecos_tk_libs="-L${libtk} -ltk${with_tcl_version}"
           fi
         fi
         if test -z "${ecos_tk_libs}" ; then
+	  { echo "$as_me:$LINENO: fallback - looking for libtk.a in ${possibles}" >&5
+echo "$as_me: fallback - looking for libtk.a in ${possibles}" >&6;}
 
   libtk=""
   for i in ${possibles}; do
@@ -4651,6 +4708,9 @@ echo "$as_me: error: unable to locate Tk header file tk.h" >&2;}
         { { echo "$as_me:$LINENO: error: ${tkconfig}/tkConfig.sh does not define TK_LIB_SPEC" >&5
 echo "$as_me: error: ${tkconfig}/tkConfig.sh does not define TK_LIB_SPEC" >&2;}
    { (exit and unable to find libtk.a); exit and unable to find libtk.a; }; }
+      else
+        { echo "$as_me:$LINENO: using ${ecos_tk_libs}" >&5
+echo "$as_me: using ${ecos_tk_libs}" >&6;}
       fi
 
                               if test -n "${TK_LIBS}" ; then
@@ -4660,15 +4720,21 @@ echo "$as_me: error: ${tkconfig}/tkConfig.sh does not define TK_LIB_SPEC" >&2;}
 	    ecos_tk_tmp=`echo ${ecos_tk_tmp} | sed -e "s:${i}::g"`
 	  done
 	  ecos_tk_libs="${ecos_tk_libs} ${ecos_tk_tmp}"
+	  { echo "$as_me:$LINENO: using additional libraries for Tk ${ecos_tk_tmp}" >&5
+echo "$as_me: using additional libraries for Tk ${ecos_tk_tmp}" >&6;}
 	else
           ecos_tk_libs="${ecos_tk_libs} ${TK_LIBS}"
+	  { echo "$as_me:$LINENO: using additional libraries for Tk ${TK_LIBS}" >&5
+echo "$as_me: using additional libraries for Tk ${TK_LIBS}" >&6;}
 	fi
       fi
     fi
   fi
 
-  { echo "$as_me:$LINENO: result: ${ecos_tcl_incdir} ${TCL_LIB_SPEC}" >&5
-echo "${ECHO_T}${ecos_tcl_incdir} ${TCL_LIB_SPEC}" >&6; }
+  { echo "$as_me:$LINENO: checking for Tcl/Tk installation" >&5
+echo $ECHO_N "checking for Tcl/Tk installation... $ECHO_C" >&6; }
+  { echo "$as_me:$LINENO: result: done" >&5
+echo "${ECHO_T}done" >&6; }
 
 
 

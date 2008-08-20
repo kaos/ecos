@@ -423,7 +423,11 @@ AC_DEFUN([ECOS_PATH_TCL], [
   AC_REQUIRE([ECOS_PROG_MSVC])
 
   dnl Where is the Tcl installation, and what version should be used?
-  AC_MSG_CHECKING(for Tcl installation)
+  dnl This macro is rather more verbose than usual because of the many
+  dnl problems encountered over the years with Tcl installations.
+  AC_MSG_CHECKING(for Tcl/Tk installation)
+  AC_MSG_RESULT()
+  
   AC_ARG_WITH(tcl,[ --with-tcl=<path>        location of Tcl header and libraries])
   AC_ARG_WITH(tcl-version,[ --with-tcl-version=<vsn> version of Tcl to be used])
 
@@ -496,10 +500,12 @@ AC_DEFUN([ECOS_PATH_TCL], [
       possibles="${possibles} /usr/lib/tcl${with_tcl_version}"
       possibles="${possibles} /usr/lib/tk${with_tcl_version}"
     fi
+    AC_MSG_NOTICE(looking for tclConfig.sh in ${possibles})
     AC_FIND_FILE("tclConfig.sh", ${possibles}, tclconfig)
     if test \! -r "${tclconfig}/tclConfig.sh" ; then
       AC_MSG_ERROR(unable to locate Tcl configuration file tclConfig.sh)
     else
+      AC_MSG_NOTICE(found ${tclconfig}/tclConfig.sh)
       . ${tclconfig}/tclConfig.sh
 
       dnl Now we need to figure out where to find the Tcl header files.
@@ -507,10 +513,14 @@ AC_DEFUN([ECOS_PATH_TCL], [
       dnl TCL_INCLUDE_DIR, otherwise use TCL_PREFIX/include
       if test -n "${TCL_INCLUDE_SPEC}" ; then
         ecos_tcl_incdir="${TCL_INCLUDE_SPEC}"
+	AC_MSG_NOTICE(trying TCL_INCLUDE_SPEC - looking for tcl.h in ${ecos_tcl_incdir})
       elif test -n "${TCL_INC_DIR}" ; then
         ecos_tcl_incdir="${TCL_INC_DIR}"
+	AC_MSG_NOTICE(trying TCL_INC_DIR - looking for tcl.h in ${ecos_tcl_incdir})
       else            
         ecos_tcl_incdir="-I${TCL_PREFIX}/include"
+	AC_MSG_WARN(no TCL_INCLUDE_SPEC or TCL_INC_DIR in tclConfig.sh)
+	AC_MSG_NOTICE(fallback - looking for tcl.h in ${ecos_tcl_incdir})
       fi
       dnl But verify that the resulting incdir is valid.
       ecos_tcl_tmpdir=`echo ${ecos_tcl_incdir} | sed -e "s:-I::g"`
@@ -521,6 +531,7 @@ AC_DEFUN([ECOS_PATH_TCL], [
         dnl cause problems on hosts where gcc is not the platform's
         dnl default compiler because of the use of unfixed headers.
         dnl Hence it is explicitly removed here.
+	AC_MSG_NOTICE(using ${ecos_tcl_incdir})
         if test "${ecos_tcl_incdir}" != "-I/usr/include" ; then
           ecos_INCLUDES="${ecos_INCLUDES} ${ecos_tcl_incdir}"
         fi
@@ -532,32 +543,40 @@ AC_DEFUN([ECOS_PATH_TCL], [
       ecos_tcl_libs=""
       if test -n "${TCL_LIB_SPEC}" ; then
         ecos_tcl_libs="${ecos_LIBS} ${TCL_LIB_SPEC}"
+	AC_MSG_NOTICE(using TCL_LIB_SPEC ${TCL_LIB_SPEC})
       else
+	AC_MSG_WARN(no TCL_LIB_SPEC in tclConfig.sh)
         if test "${with_tcl_version+set}" = set ; then
+	  AC_MSG_NOTICE(fallback - looking for libtcl${with_tcl_version}.a in ${possibles})
           AC_FIND_FILE("libtcl${with_tcl_version}.a", ${possibles}, libtcl)
           if test -r "${libtcl}/libtcl${with_tcl_version}.a" ; then
               ecos_tcl_libs="-L${libtcl} -ltcl${with_tcl_version}"
+	      AC_MSG_NOTICE(using ${ecos_tcl_libs})
           fi
         fi
         if test -z "${ecos_tcl_libs}" ; then
+	  AC_MSG_NOTICE(fallback - looking for libtcl.a in ${possibles})
           AC_FIND_FILE("libtcl.a", ${possibles}, libtcl)
           if test -r "${libtcl}/libtcl.a" ; then
               ecos_tcl_libs="-L${libtcl} -ltcl"
+	      AC_MSG_NOTICE(using ${ecos_tcl_libs})
           fi
         fi
       fi
 
       dnl If at this stage we have not found a libtcl.a, complain.
       if test -z "${ecos_tcl_libs}" ; then
-          AC_MSG_ERROR(${tclconfig}/tclConfig.sh does not define TCL_LIB_SPEC, and unable to find libtcl.a)
+        AC_MSG_ERROR(${tclconfig}/tclConfig.sh does not define TCL_LIB_SPEC, and unable to find libtcl.a)
       fi
 
       dnl tclConfig.sh may specify additional flags and libraries.
       if test -n "${TCL_LIBS}" ; then
         ecos_tcl_libs="${ecos_tcl_libs} ${TCL_LIBS}"
+	AC_MSG_NOTICE(using additional libraries for Tcl ${TCL_LIBS})
       fi
       if test -n "${TCL_LD_FLAGS}" ; then
         ecos_tcl_libs="${ecos_tcl_libs} ${TCL_LD_FLAGS}"
+	AC_MSG_NOTICE(using additional linker flags for Tcl ${TCL_LD_FLAGS})
       fi
       ecos_LIBS="${ecos_LIBS} ${ecos_tcl_libs}"
     fi
@@ -568,18 +587,24 @@ AC_DEFUN([ECOS_PATH_TCL], [
     dnl we assume that the Tk installation is in a similar
     dnl location to the Tcl one.
     possibles=`echo ${possibles} | sed -e 's,tcl,tk,g'`
+    AC_MSG_NOTICE(looking for tkConfig.sh in ${possibles})
     AC_FIND_FILE("tkConfig.sh", ${possibles}, tkconfig)
     if test \! -r "${tkconfig}/tkConfig.sh" ; then
       AC_MSG_ERROR(unable to locate Tk config file tkConfig.sh)
     else
+      AC_MSG_NOTICE(found ${tkconfig}/tkConfig.sh)
       . ${tkconfig}/tkConfig.sh
 
       if test -n "${TK_INCLUDE_SPEC}" ; then
-          ecos_tk_includes="${TK_INCLUDE_SPEC}"
+        ecos_tk_includes="${TK_INCLUDE_SPEC}"
+	AC_MSG_NOTICE(trying TK_INCLUDE_SPEC - looking for tk.h in ${ecos_tk_includes})
       elif test -n "${TK_INC_DIR}" ; then
           ecos_tk_includes="${TK_INC_DIR}"
+	  AC_MSG_NOTICE(trying TK_INC_DIR - looking for tk.h in ${ecos_tk_includes})
       else
           ecos_tk_includes="-I${TCL_PREFIX}/include"
+	  AC_MSG_WARN(no TK_INCLUDE_SPEC or TK_INC_DIR in tkConfig.sh)
+	  AC_MSG_NOTICE(fallback - looking for tk.h in ${ecos_tk_includes})
       fi
       dnl But verify that the resulting incdir is valid.
       ecos_tk_tmpdir=`echo ${ecos_tk_includes} | sed -e "s:-I::g"`
@@ -590,27 +615,33 @@ AC_DEFUN([ECOS_PATH_TCL], [
         dnl cause problems on hosts where gcc is not the platform's
         dnl default compiler because of the use of unfixed headers.
         dnl Hence it is explicitly removed here.
-        if test "${ecos_tk_includes}" = "/usr/include" ; then
+	AC_MSG_NOTICE(using ${ecos_tk_includes})
+        if test "${ecos_tk_includes}" = "-I/usr/include" ; then
   	  ecos_tk_includes=""
         fi
       fi
       dnl There may be additional include directories for X, although
       dnl unlikely on a Unix system.
       if test -n "${TK_XINCLUDES}" ; then
+        AC_MSG_NOTICE(adding TK_XINCLUDES ${TK_XINCLUDES})
         ecos_tk_includes="${ecos_tk_includes} ${TK_XINCLUDES}"
       fi
 
       ecos_tk_libs=""
       if test -n "${TK_LIB_SPEC}" ; then
         ecos_tk_libs="${TK_LIB_SPEC}"
+	AC_MSG_NOTICE(trying TK_LIB_SPEC ${TK_LIB_SPEC})
       else
+        AC_MSG_WARN(no TK_LIB_SPEC in tkConfig.sh)
         if test "${with_tcl_version+set}" = set ; then
+	  AC_MSG_NOTICE(fallback - looking for libtk${with_tcl_version}.a in ${possibles})
           AC_FIND_FILE("libtk${with_tcl_version}.a", ${possibles}, libtk)
           if test -r "${libtk}/libtk${with_tcl_version}.a" ; then
-           ecos_tk_libs="-L${libtk} -ltk${with_tcl_version}"
+            ecos_tk_libs="-L${libtk} -ltk${with_tcl_version}"
           fi
         fi
         if test -z "${ecos_tk_libs}" ; then
+	  AC_MSG_NOTICE(fallback - looking for libtk.a in ${possibles})
           AC_FIND_FILE("libtk.a", ${possibles}, libtk)
           if test -r "${libtk}/libtk.a" ; then
             ecos_tk_libs="-L${libtk} -ltk"
@@ -619,6 +650,8 @@ AC_DEFUN([ECOS_PATH_TCL], [
       fi
       if test -z "${ecos_tk_libs}" ; then
         AC_MSG_ERROR(${tkconfig}/tkConfig.sh does not define TK_LIB_SPEC, and unable to find libtk.a)
+      else
+        AC_MSG_NOTICE(using ${ecos_tk_libs})
       fi
 
       dnl Tk may need additional libraries. Unfortunately some of these
@@ -632,14 +665,17 @@ AC_DEFUN([ECOS_PATH_TCL], [
 	    ecos_tk_tmp=`echo ${ecos_tk_tmp} | sed -e "s:${i}::g"`
 	  done
 	  ecos_tk_libs="${ecos_tk_libs} ${ecos_tk_tmp}"
+	  AC_MSG_NOTICE(using additional libraries for Tk ${ecos_tk_tmp})
 	else 
           ecos_tk_libs="${ecos_tk_libs} ${TK_LIBS}"
+	  AC_MSG_NOTICE(using additional libraries for Tk ${TK_LIBS})
 	fi
       fi
     fi
   fi
 
-  AC_MSG_RESULT([${ecos_tcl_incdir} ${TCL_LIB_SPEC}])
+  AC_MSG_CHECKING(for Tcl/Tk installation)
+  AC_MSG_RESULT(done)
   AC_SUBST(ecos_tk_includes)
   AC_SUBST(ecos_tk_libs)
 ])

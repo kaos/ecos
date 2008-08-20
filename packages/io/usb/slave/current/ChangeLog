@@ -1,7 +1,11 @@
+2008-08-20  Bart Veer  <bartv@ecoscentric.com>
+
+	* host/configure: regenerate after update of Tcl macro
+
 2008-08-18  Bart Veer  <bartv@ecoscentric.com>
 
 	* host/Makefile.am, host/configure.in: update host-side configury
-	* host/Makefiloe.in, host/aclocal.m4, host/config.h.in,
+	* host/Makefile.in, host/aclocal.m4, host/config.h.in,
 	host/configure, host/stamp-h.in: regenerate.
 	* host/acconfig.h: removed, no longer needed.
 

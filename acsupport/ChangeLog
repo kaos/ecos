@@ -1,3 +1,7 @@
+2008-08-20  Bart Veer  <bartv@ecoscentric.com>
+
+	* acinclude.m4: update Tcl/Tk macro
+
 2008-08-18  Bart Veer  <bartv@ecoscentric.com>
 
 	* acinclude.m4: major update of host-side configury
