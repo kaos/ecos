@@ -63,7 +63,7 @@ cdl_package CYGPKG_DEVS_DISK_V85X_EDB_V850 {
         cdl_option CYGDAT_IO_DISK_V85X_EDB_V850_DISK0_NAME {
             display       "Device name for disk 0 device"
             flavor        data
-            default_value {"\"/dev/disk0/\""}
+            default_value {"\"/dev/v85xdisk0/\""}
         }
     }
 }

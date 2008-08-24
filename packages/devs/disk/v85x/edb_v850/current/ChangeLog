@@ -1,3 +1,8 @@
+2008-08-19  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/v85x_edb_v850_disk.cdl: Rename the disk device to
+	/dev/v85xdiskX to be unique with respect to other disk drivers.
+	
 2006-09-21  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/v85x_edb_v850_disk.c (cf_disk_init): Provide phys_block_size
