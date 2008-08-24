@@ -1,3 +1,8 @@
+2008-08-19  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/devs_disk_mmc.cdl: Renamed the device to /dev/mmcdiskX so
+	that it is unique with respect to other disk drivers.
+
 2007-05-30  Hajime Ishitani <pigmon@mail.snd.co.jp>
 
 	* src/mmc_spi.c: Revise debug information with addition.

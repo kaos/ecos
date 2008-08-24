@@ -77,18 +77,11 @@ cdl_package CYGPKG_DEVS_DISK_MMC {
 	cdl_option CYGDAT_DEVS_DISK_MMC_SPI_DISK0_NAME {
 	    display		"Device name for the MMC/SPI disk 0 device"
 	    flavor		data
-	    default_value	{ "\"/dev/hd0/\"" }
+	    default_value	{ "\"/dev/mmcdisk0/\"" }
 	    description "
                 This is the device name used to access the raw disk device
                 in eCos, for example for mount operations. Note that the
                 trailing slash must be present."
-
-	    # Testing support. For now just hard-code some values for partition 0
-	    # on the card.
-	    define_proc {
-		puts $::cdl_header "#define CYGDAT_DEVS_DISK_TEST_DEVICE CYGDAT_DEVS_DISK_MMC_SPI_DISK0_NAME \"1\""
-		puts $::cdl_header "#define CYGDAT_DEVS_DISK_TEST_MOUNTPOINT \"/dosfs\""
-		puts $::cdl_header "#define CYGDAT_DEVS_DISK_TEST_DIRECTORY  \"/test\""
 	    }
 	}
 	
@@ -96,18 +89,23 @@ cdl_package CYGPKG_DEVS_DISK_MMC {
 	    display		"Run the driver in polled mode rather than interrupt-driven"
 	    default_value	!CYGPKG_KERNEL
 	    description "
-                By default the MMC disk driver will operate in interrupt-driven
-                mode if the kernel is present, i.e. if the application is likely
-                to be multi-threaded. Otherwise it will operate in polled mode."
+                By default the MMC disk driver will operate in
+                interrupt-driven mode if the kernel is present,
+                i.e. if the application is likely to be
+                multi-threaded. Otherwise it will operate in polled
+                mode."
+
 	}
-    cdl_option CYGPKG_DEVS_DISK_MMC_SPI_IDLE_RETRIES_WAIT {
-        display          "Idle to operational retry wait"
-        flavor           booldata
-        default_value    10000
-        description      "
-            This option sets how long to wait between retries of attempts to change the
-            card state from idle to operational. It is measured in microseconds."
-    }
+        cdl_option CYGPKG_DEVS_DISK_MMC_SPI_IDLE_RETRIES_WAIT {
+            display          "Idle to operational retry wait"
+            flavor           booldata
+            default_value    10000
+            description      "
+
+                This option sets how long to wait between retries of
+                attempts to change the card state from idle to
+                operational. It is measured in microseconds."
+        }
 }
 
 # EOF devs_disk_mmc.cdl
