@@ -33,6 +33,8 @@ CYGPKG_DEVS_DISK_V85X_EDB_V850
         device on a platform that is otherwise unsupported. It has not
         been tested.        
 
+and other disk drivers which have been added in the mean time.
+
 In addition the above new packages, FAT support also relies on the
 following existing packages:
 
@@ -62,40 +64,26 @@ Device Drivers
 The disk device interface is divided into a generic layer in the
 CYGPKG_IO_DISK package and drivers for each device.
 
-Apart from providing the main API, the other thing that the DISK
-package does is to provide support for disk partitions. It interprets
-the on-disk data structures and provides an independent channel to
-access each partition independently. Partitions are referenced using
-an additional element to the device name. If the device is named
-"/dev/disk0" then "/dev/disk0/1" refers to partition 1, "/dev/disk0/2"
-to partition 2 and so on. If the disk is not partitioned, for example
-a floppy disk, then "/dev/disk0/0" refers to the whole disk.
-
-There are two device drivers currently supported:
-
-Linux Synthetic Driver
-----------------------
-
-This driver treats a disk file on Linux as a disk image and read or
-writes blocks from/to it to simulate disk IO. At present it supports
-just a single disk device image. There are a number of configuration
-options for this device, see the CDL file for details, and the .ecm
-files for examples.
-
-EDB V850 Compact Flash Device
------------------------------
-
-This uses an IDE interface to a Compact Flash device. This is actually
-for a platform that is not supported in the current source tree, so
-cannot be tested. However, it should be possible to adapt the code for
-other devices.
+Each disk driver provides a number of device files. The drivers use a
+naming convention to ensure they are unique. The convention is
+/dev/XXXdiskY/Z. XXX is the name of the device driver, eg ide, mmc,
+synth etc. The DISK packages provide support for disk partitions. They
+interpret the on-disk data structures and provides an independent
+channel to access each partition independently. Partitions are
+referenced using an additional element to the device name. If the
+device is named "/dev/XXXdisk0" then "/dev/XXXdisk0/1" refers to
+partition 1, "/dev/XXXdisk0/2" to partition 2 and so on. If the disk
+is not partitioned, for example a floppy disk, then "/dev/XXXdisk0/0"
+refers to the whole disk.
 
 Testing
 =======
 
 There is currently just one test available for the FAT filesystem,
 fileio1. This test will currently only run on the Linux synthetic
-target and needs a special disk image.
+target and needs a special disk image. However, with some work it
+should be possible to make this test run on other disk drivers, if the
+image can be installed and the configury set appropriately.
 
 To run the test you first need to configure the synthetic disk driver
 to access the disk image. This is most easily done by importing the

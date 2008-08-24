@@ -28,10 +28,6 @@ cdl_component CYGVAR_DEVS_DISK_ECOSYNTH_DISK0 {
     user_value   1
 };
 
-cdl_option CYGDAT_IO_DISK_ECOSYNTH_DISK0_NAME {
-    user_value {"/dev/disk0/"}
-};
-
 cdl_option CYGDAT_IO_DISK_ECOSYNTH_DISK0_FILENAME {
     user_value {"/dev/fd0"}
 };

@@ -1868,7 +1868,8 @@ fatfs_init(fatfs_disk_t *disk)
         return err;
 
     // Check some known boot record values
-    if (0x29 != boot_rec.ext_sig       ||
+    if (!(0x29 == boot_rec.ext_sig ||
+          0x28 == boot_rec.ext_sig)    ||
         0x55 != boot_rec.exe_marker[0] ||
         0xAA != boot_rec.exe_marker[1])
         return EINVAL;

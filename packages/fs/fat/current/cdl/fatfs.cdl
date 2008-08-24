@@ -126,6 +126,24 @@ cdl_package CYGPKG_FS_FAT {
     
     # --------------------------------------------------------------------
     
+    cdl_component CYGPKG_DEVS_DISK_TESTING {
+        display          "Testing configuration"
+        default_value    1
+
+        cdl_option CYGDAT_DEVS_DISK_TEST_DEVICE {
+            display      "Test device driver"
+            flavor       data
+            default_value {"\"/dev/synthdisk0/1\"" }
+        }
+
+        cdl_option CYGDAT_DEVS_DISK_TEST_DEVICE2 {
+            display      "Second Test device driver"
+            flavor       data
+            default_value {"\"/dev/synthdisk0/2\"" }
+        }
+
+    }
+
     cdl_option      CYGPKG_FS_FAT_TESTS {
         display         "FAT FS tests"
         flavor          data

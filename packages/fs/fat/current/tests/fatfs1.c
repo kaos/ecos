@@ -447,7 +447,7 @@ int main( int argc, char **argv )
 
     // --------------------------------------------------------------
 
-    err = mount( "/dev/disk0/1", "/", "fatfs" );    
+    err = mount( CYGDAT_DEVS_DISK_TEST_DEVICE, "/", "fatfs" );    
     if( err < 0 ) SHOW_RESULT( mount, err );    
 
     err = chdir( "/" );
@@ -543,7 +543,7 @@ int main( int argc, char **argv )
     if( err < 0 ) SHOW_RESULT( mkdir, err );
 #else
     diag_printf("<INFO>: mount /disk2\n");    
-    err = mount( "/dev/disk0/2", "/disk2", "fatfs" );    
+    err = mount( CYGDAT_DEVS_DISK_TEST_DEVICE2, "/disk2", "fatfs" );    
     if( err < 0 ) SHOW_RESULT( mount, err );    
 #endif
     
