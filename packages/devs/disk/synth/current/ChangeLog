@@ -1,3 +1,10 @@
+2008-08-19  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/synthdisk.cdl: Renamed the disk device to /dev/synthdiskX to
+	be unique with respect to other disk drivers. Remove the test
+	configury which is not used anywhere.
+	
+
 2006-02-03  Nick Garnett  <nickg@ecoscentric.com>
 
 	* src/synthdisk.c: Updated to match changes in io/disk package.

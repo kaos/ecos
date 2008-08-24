@@ -68,7 +68,7 @@ cdl_package CYGPKG_DEVS_DISK_ECOSYNTH {
         cdl_option CYGDAT_IO_DISK_ECOSYNTH_DISK0_NAME {
             display       "Device name for ecosynth disk 0 device"
             flavor        data
-            default_value {"\"/dev/hd0/\""}
+            default_value {"\"/dev/synthdisk0/\""}
             description   "This is the device name used to access this
                            device in eCos. Note that the trailing slash
                            character must be present."
@@ -170,48 +170,4 @@ cdl_package CYGPKG_DEVS_DISK_ECOSYNTH {
                 the set of global flags if present."
         }
     }
-
-    cdl_component CYGPKG_DEVS_DISK_ECOSYNTH_TESTING {
-        display          "Testing configuration"
-        default_value    1
-        
-        cdl_option CYGDAT_DEVS_DISK_TEST_DEVICE {
-            display      "Test device driver"
-            flavor       data
-            default_value {"\"/dev/hd0/1\"" }
-        }
-
-        cdl_option CYGDAT_DEVS_DISK_TEST_MOUNTPOINT {
-            display      "Test filesystem mountpoint"
-            flavor       data
-            default_value {"\"/dosfs\"" }
-        }
-
-        cdl_option CYGDAT_DEVS_DISK_TEST_DIRECTORY {
-            display      "Test directory on test device"
-            flavor       data
-            default_value {"\"/test\"" }
-        }
-
-        
-        cdl_option CYGDAT_DEVS_DISK_TEST_DEVICE2 {
-            display      "Second Test device driver"
-            flavor       data
-            default_value {"\"/dev/hd0/2\"" }
-        }
-
-        cdl_option CYGDAT_DEVS_DISK_TEST_MOUNTPOINT2 {
-            display      "Second Test filesystem mountpoint"
-            flavor       data
-            default_value {"\"/dosfs2\"" }
-        }
-
-        cdl_option CYGDAT_DEVS_DISK_TEST_DIRECTORY2 {
-            display      "Test directory on second test device"
-            flavor       data
-            default_value {"\"/test\"" }
-        }
-
-    }
-
 }
