@@ -48,6 +48,7 @@
 //==========================================================================
 
 #include <pkgconf/devs_disk_ide.h>
+#include <pkgconf/io_disk.h>
 
 #include <cyg/infra/cyg_type.h>
 #include <cyg/infra/cyg_ass.h>
@@ -64,7 +65,9 @@
 
 // ----------------------------------------------------------------------------
 
-//#define DEBUG 1
+#ifdef CYGDBG_IO_DISK_DEBUG
+# define DEBUG 1
+#endif
 
 #ifdef DEBUG
 # define D(fmt,args...) diag_printf(fmt, ## args)
@@ -94,6 +97,8 @@ IDE_DISK_INSTANCE(2, 1, 0, true, CYGDAT_IO_DISK_IDE_DISK2_NAME);
 IDE_DISK_INSTANCE(3, 1, 1, true, CYGDAT_IO_DISK_IDE_DISK3_NAME);
 #endif
 
+#define MIN(a,b) (((a) < (b)) ? (a) : (b))
+
 // ----------------------------------------------------------------------------
 
 static void
@@ -101,8 +106,7 @@ id_strcpy(char *dest, cyg_uint16 *src, cyg_uint16 size)
 {
     int i;
 
-    for (i = 0; i < size; i+=2)
-    {
+    for (i=0; i<size; i+=2) {
         *dest++ = (char)(*src >> 8);
         *dest++ = (char)(*src & 0x00FF);
         src++;
@@ -121,7 +125,9 @@ __wait_for_ready(int ctlr)
     } while (status & (IDE_STAT_BSY | IDE_STAT_DRQ));
 }
 
+// ----------------------------------------------------------------------------
 // Wait while the device is busy with the last command
+
 static inline int
 __wait_busy(int ctlr)
 {
@@ -136,6 +142,8 @@ __wait_busy(int ctlr)
     }
     return 0;   
 }
+
+// ----------------------------------------------------------------------------
 
 static inline int
 __wait_for_drq(int ctlr)
@@ -156,18 +164,20 @@ __wait_for_drq(int ctlr)
     return 0;
 }
 
+// ----------------------------------------------------------------------------
 // Return true if any devices attached to controller
+
 static int
 ide_presence_detect(int ctlr)
 {
     cyg_uint8 sel, val;
     int i;
 
-    for (i = 0; i < 2; i++) {
+    for (i = 0; i < HAL_IDE_NUM_CONTROLLERS; i++) {
         sel = (i << 4) | 0xA0;
-        CYGACC_CALL_IF_DELAY_US((cyg_uint32)50000);
+        CYGACC_CALL_IF_DELAY_US(50000U);
         HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_DEVICE, sel);
-        CYGACC_CALL_IF_DELAY_US((cyg_uint32)50000);
+        CYGACC_CALL_IF_DELAY_US(50000U);
         HAL_IDE_READ_UINT8(ctlr, IDE_REG_DEVICE, val);
         if (val == sel) {
 #ifndef CYGSEM_DEVS_DISK_IDE_VMWARE
@@ -179,6 +189,8 @@ ide_presence_detect(int ctlr)
     }
     return 0;
 }
+
+// ----------------------------------------------------------------------------
 
 static int
 ide_reset(int ctlr)
@@ -193,14 +205,14 @@ ide_reset(int ctlr)
 //
 #ifndef CYGSEM_DEVS_DISK_IDE_VMWARE
     HAL_IDE_WRITE_CONTROL(ctlr, 6);    // polled mode, reset asserted
-    CYGACC_CALL_IF_DELAY_US(5000);
+    CYGACC_CALL_IF_DELAY_US(5000U);
     HAL_IDE_WRITE_CONTROL(ctlr, 2);   // polled mode, reset cleared
-    CYGACC_CALL_IF_DELAY_US((cyg_uint32)50000);
+    CYGACC_CALL_IF_DELAY_US(50000U);
 #endif
 
     // wait 30 seconds max for not busy and drive ready
-    for (delay = 0; delay < 300; ++delay) {
-        CYGACC_CALL_IF_DELAY_US((cyg_uint32)100000);
+    for (delay=0; delay<300; ++delay) {
+        CYGACC_CALL_IF_DELAY_US(100000U);
         HAL_IDE_READ_UINT8(ctlr, IDE_REG_STATUS, status);
             if (!(status & IDE_STAT_BSY)) {
                 if (status & IDE_STAT_DRDY) {
@@ -211,43 +223,76 @@ ide_reset(int ctlr)
     return 0;
 }
 
+// ----------------------------------------------------------------------------
+
 static int
 ide_ident(int ctlr, int dev, cyg_uint16 *buf)
 {
     int i;
 
-    if (!__wait_busy(ctlr)) {
+    if (!__wait_busy(ctlr))
          return 0;
-    }
-    
+
     HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_DEVICE, dev << 4);
     HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_COMMAND, 0xEC);
-    CYGACC_CALL_IF_DELAY_US((cyg_uint32)50000);
+    CYGACC_CALL_IF_DELAY_US(50000U);
 
-    if (!__wait_for_drq(ctlr)) {
+    if (!__wait_for_drq(ctlr))
          return 0;
-    }
-    
-    for (i = 0; i < (CYGDAT_DEVS_DISK_IDE_SECTOR_SIZE / sizeof(cyg_uint16));
-         i++, buf++)
-        HAL_IDE_READ_UINT16(ctlr, IDE_REG_DATA, *buf);
 
+    for (i=0; i<(CYGDAT_DEVS_DISK_IDE_SECTOR_SIZE/sizeof(cyg_uint16)); 
+         i++, buf++) {
+      HAL_IDE_READ_UINT16(ctlr, IDE_REG_DATA, *buf);
+    }
     return 1;
 }
+
+// ----------------------------------------------------------------------------
+// Requests the disk to use an 8-bit data path. This is probably ignored by
+// most modern drives, but is supported by compact flash devices.
+
+#ifdef CYGDAT_DEVS_DISK_IDE_8_BIT_DATA_PATH
+static int
+ide_8bit_mode(int ctlr, int dev, cyg_bool on)
+{
+    cyg_uint8 stat;
+
+    if (!__wait_busy(ctlr))
+         return 0;
+    
+    HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_DEVICE, dev << 4);
+    HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_FEATURES, 0x01);
+    HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_COMMAND,  0xEF);
+
+    if (!__wait_busy(ctlr))
+        return 0;
+
+    HAL_IDE_READ_UINT8(ctlr, IDE_REG_STATUS, stat);
+    return (stat & 1) ? 0 : 1;
+}
+#endif
+
+// ----------------------------------------------------------------------------
+// Reads a group of contiguous sectors from the drive.
+// It can read up to 256 sectors.
 
 static int
 ide_read_sector(int ctlr, int dev, cyg_uint32 start, 
                 cyg_uint8 *buf, cyg_uint32 len)
 {
-    int j, c;
-    cyg_uint16 p;
-    cyg_uint8 * b=buf;
+    int i, nword;
+    cyg_uint8 lenb;
+    cyg_uint16 w;
 
-    if(!__wait_busy(ctlr)) {
-         return 0;
-    }
-    
-    HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_COUNT, 1);    // count =1
+    if (len==0 || !__wait_busy(ctlr))
+       return 0;
+
+    len = MIN(len, 256);
+    lenb = (len == 256) ? 0 : ((cyg_uint8) len);
+
+    nword = len * CYGDAT_DEVS_DISK_IDE_SECTOR_SIZE / sizeof(cyg_uint16);
+
+    HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_COUNT, lenb);
     HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_LBALOW, start & 0xff);
     HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_LBAMID, (start >>  8) & 0xff);
     HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_LBAHI,  (start >> 16) & 0xff);
@@ -257,52 +302,68 @@ ide_read_sector(int ctlr, int dev, cyg_uint32 start,
 
     if (!__wait_for_drq(ctlr))
         return 0;
-    // 
-    // It would be fine if all buffers were word aligned,
-    // but who knows
-    //
-    for (j = 0, c=0 ; j < (CYGDAT_DEVS_DISK_IDE_SECTOR_SIZE / sizeof(cyg_uint16));
-         j++) {
-        HAL_IDE_READ_UINT16(ctlr, IDE_REG_DATA, p);
-        if (c++<(len*512)) *b++=p&0xff;
-        if (c++<(len*512)) *b++=(p>>8)&0xff;
+
+    if ((int) buf & 1) {
+        // Unaligned buffer, so split each word manually
+        for (i=0; i<nword; i++) {
+            HAL_IDE_READ_UINT16(ctlr, IDE_REG_DATA, w);
+            *buf++ = w & 0xff;
+            *buf++ = (w>>8) & 0xff;
+        }
     }
-    return 1;
+    else {
+        cyg_uint16* wbuf = (cyg_uint16*) buf;
+        for (i=0; i<nword; i++, wbuf++)
+            HAL_IDE_READ_UINT16(ctlr, IDE_REG_DATA, *wbuf);
+    }
+    return (int) len;
 }
+
+// ----------------------------------------------------------------------------
+// Writes a group of contiguous sectors to the drive.
+// It can write up to 256 sectors.
 
 static int
 ide_write_sector(int ctlr, int dev, cyg_uint32 start, 
-                cyg_uint8 *buf, cyg_uint32 len)
+                 cyg_uint8 *buf, cyg_uint32 len)
 {
-    int j, c;
-    cyg_uint16 p;
-    cyg_uint8 * b=buf;
+    int i, nword;
+    cyg_uint8 lenb;
+    cyg_uint16 w;
 
-    if(!__wait_busy(ctlr)) {
-         return 0;
-    }
-    
-    HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_COUNT, 1);    // count =1
+    if (len==0 || !__wait_busy(ctlr))
+       return 0;
+
+    len = MIN(len, 256);
+    lenb = (len == 256) ? 0 : ((cyg_uint8) len);
+
+    nword = len * CYGDAT_DEVS_DISK_IDE_SECTOR_SIZE / sizeof(cyg_uint16);
+
+    HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_COUNT, lenb);
     HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_LBALOW, start & 0xff);
     HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_LBAMID, (start >>  8) & 0xff);
     HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_LBAHI,  (start >> 16) & 0xff);
     HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_DEVICE,
-          ((start >> 24) & 0xf) | (dev << 4) | 0x40);
+                            ((start >> 24) & 0xf) | (dev << 4) | 0x40);
     HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_COMMAND, 0x30);
 
     if (!__wait_for_drq(ctlr))
         return 0;
-    // 
-    // It would be fine if all buffers were word aligned,
-    // but who knows
-    //
-    for (j = 0, c=0 ; j < (CYGDAT_DEVS_DISK_IDE_SECTOR_SIZE / sizeof(cyg_uint16));
-         j++) {
-        p = (c++<(len*512)) ? *b++ : 0;
-        p |= (c++<(len*512)) ? (*b++<<8) : 0; 
-        HAL_IDE_WRITE_UINT16(ctlr, IDE_REG_DATA, p);
+
+    if ((int) buf & 1) {
+        // Unaligned buffer, so assemble each word manually
+        for (i=0; i<nword; ++i) {
+            w  = *buf++;
+            w |= (cyg_uint16) (*buf++) << 8;
+            HAL_IDE_WRITE_UINT16(ctlr, IDE_REG_DATA, w);
+        }
     }
-    return 1;
+    else {
+        cyg_uint16* wbuf = (cyg_uint16*) buf;
+        for (i=0; i<nword; ++i)
+            HAL_IDE_WRITE_UINT16(ctlr, IDE_REG_DATA, *wbuf++);
+    }
+    return (int) len;
 }
 
 // ----------------------------------------------------------------------------
@@ -328,6 +389,11 @@ ide_disk_init(struct cyg_devtab_entry *tab)
         D("No IDE controller for channel %d:%d\n", info->port, info->chan);
         return false;
     }
+
+#if CYGDAT_DEVS_DISK_IDE_STARTUP_DELAY
+    CYGACC_CALL_IF_DELAY_US(CYGDAT_DEVS_DISK_IDE_STARTUP_DELAY*1000U);
+#endif
+
     if (!ide_present[info->port]) {
         ide_present[info->port]=ide_presence_detect(info->port);
         if (!ide_present[info->port]) {
@@ -342,6 +408,13 @@ ide_disk_init(struct cyg_devtab_entry *tab)
             return false;
         }
     }
+
+#ifdef CYGDAT_DEVS_DISK_IDE_8_BIT_DATA_PATH
+    if (!ide_8bit_mode(info->port, info->chan, true)) {
+        D("IDE disk %d:%d failed to enter 8-bit mode\n",
+          info->port, info->chan);
+    }
+#endif
     
     D("IDE %d:%d identify drive\n", info->port, info->chan);
     
@@ -350,9 +423,9 @@ ide_disk_init(struct cyg_devtab_entry *tab)
         return false;
     }
 
-    id_strcpy(ident.serial, ide_idData->serial,       20);
+    id_strcpy(ident.serial, ide_idData->serial, 20);
     id_strcpy(ident.firmware_rev, ide_idData->firmware_rev, 8);
-    id_strcpy(ident.model_num, ide_idData->model_num,    40);
+    id_strcpy(ident.model_num, ide_idData->model_num, 40);
     
     ident.cylinders_num  = ide_idData->num_cylinders;
     ident.heads_num = ide_idData->num_heads;
@@ -360,6 +433,8 @@ ide_disk_init(struct cyg_devtab_entry *tab)
     ident.lba_sectors_num = ide_idData->lba_total_sectors[1] << 16 | 
                             ide_idData->lba_total_sectors[0];
     ident.phys_block_size = 1;
+
+    // TODO: Should this be CYGDAT_DEVS_DISK_IDE_SECTOR_SIZE?
     ident.max_transfer = 512;
     
     D("\tSerial : %s\n", ident.serial);
@@ -367,13 +442,7 @@ ide_disk_init(struct cyg_devtab_entry *tab)
     D("\tModel : %s\n", ident.model_num);
     D("\tC/H/S : %d/%d/%d\n", ident.cylinders_num, 
                               ident.heads_num, ident.sectors_num);
-    D("\tKind : %x\n", (ide_idData->general_conf>>8)&0x1f);
 
-    if (((ide_idData->general_conf>>8)&0x1f)!=2) {
-        diag_printf("IDE device %d:%d is not a hard disk!\n",
-                    info->port, info->chan);
-        return false;
-    }
     if (!(chan->callbacks->disk_init)(tab))
         return false;
 

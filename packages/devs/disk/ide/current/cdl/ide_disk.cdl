@@ -55,7 +55,7 @@ cdl_package CYGPKG_DEVS_DISK_IDE {
     compile     -library=libextras.a   ide_disk.c
     
     cdl_component CYGVAR_DEVS_DISK_IDE_DISK0 {
-    	display         "Provide disk 0 device"
+        display         "Provide disk 0 device"
         flavor          bool
         default_value   1
         description     "IDE chanel 0:0 disk driver"
@@ -63,12 +63,12 @@ cdl_package CYGPKG_DEVS_DISK_IDE {
         cdl_option CYGDAT_IO_DISK_IDE_DISK0_NAME {
             display       "Device name for disk 0 device"
             flavor        data
-            default_value {"\"/dev/hda/\""}
+            default_value {"\"/dev/idedisk0/\""}
         }
     }
     
     cdl_component CYGVAR_DEVS_DISK_IDE_DISK1 {
-     display         "Provide disk 1 device"
+        display         "Provide disk 1 device"
         flavor          bool
         default_value   0
         description     "IDE chanel 0:1 disk driver"
@@ -76,12 +76,12 @@ cdl_package CYGPKG_DEVS_DISK_IDE {
         cdl_option CYGDAT_IO_DISK_IDE_DISK1_NAME {
             display       "Device name for disk 1 device"
             flavor        data
-            default_value {"\"/dev/hdb/\""}
+            default_value {"\"/dev/idedisk1/\""}
         }
     }
     
     cdl_component CYGVAR_DEVS_DISK_IDE_DISK2 {
-     display         "Provide disk 2 device"
+        display         "Provide disk 2 device"
         flavor          bool
         default_value   0
         description     "IDE chanel 1:0 disk driver"
@@ -89,12 +89,12 @@ cdl_package CYGPKG_DEVS_DISK_IDE {
         cdl_option CYGDAT_IO_DISK_IDE_DISK2_NAME {
             display       "Device name for disk 2 device"
             flavor        data
-            default_value {"\"/dev/hdc/\""}
+            default_value {"\"/dev/idedisk2/\""}
         }
     }
     
     cdl_component CYGVAR_DEVS_DISK_IDE_DISK3 {
-     display         "Provide disk 3 device"
+        display         "Provide disk 3 device"
         flavor          bool
         default_value   0
         description     "IDE chanel 1:1 disk driver"
@@ -102,7 +102,7 @@ cdl_package CYGPKG_DEVS_DISK_IDE {
         cdl_option CYGDAT_IO_DISK_IDE_DISK3_NAME {
             display       "Device name for disk 3 device"
             flavor        data
-            default_value {"\"/dev/hdd/\""}
+            default_value {"\"/dev/idedisk3/\""}
         }
     }
 
@@ -112,7 +112,35 @@ cdl_package CYGPKG_DEVS_DISK_IDE {
         default_value 512
         description "
         This option controls the disk sector size (default=512)"
-     }
+    }
+
+    cdl_option CYGDAT_DEVS_DISK_IDE_STARTUP_DELAY {
+        display       "Startup delay (in ms)"
+        flavor        data
+        default_value 0
+        description "
+		The amount of time (in ms) to wait for the IDE drives to 
+		initialize on startup. For hard drives, this can usually
+		be set to zero, but for Compact Flash and other solid
+		state media this could be up to 500ms. If drives are not
+		detected at power-up, try increasing this value.
+		"
+    }
+
+    cdl_option CYGDAT_DEVS_DISK_IDE_8_BIT_DATA_PATH {
+        display       "8-bit data path"
+        flavor        bool
+        default_value false
+        description "
+            This allows the host to communicate with the IDE drives using an 
+            8-bit data, rather than 16-bits. It does so by requesting a \"Set
+            Feature\" on the drive for the 8-bit path. Note that this may
+            be ignored by most modern disk drives, but is supported by Compact
+            Flash drives. This is only used by proprietary boards, and should
+	    be disabled for standard IDE controllers.
+        "
+    }
+
 
     cdl_option CYGSEM_DEVS_DISK_IDE_VMWARE {
         display       "Work with VMware virtual disks"
@@ -121,7 +149,6 @@ cdl_package CYGPKG_DEVS_DISK_IDE {
         description "
         This option controls the disk driver behaviour at ide-init"
      }
-
 }
 
 # EOF ide_disk.cdl

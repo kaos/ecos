@@ -1,3 +1,16 @@
+2008-08-19  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/ide_disk.cdl: Rename of the devices to be /dev/idediskX/Y
+	so that all disk drivers have unique device names.
+
+2008-08-18 Frank Pagliughi <fpagliughi@mindspring.com>
+
+	* cdl/ide_disk.cdl:
+	* src/ide_diskc: Add a configurable startup delay to allow slow
+	disks to initialize. Add support for 8-bit data path. Remove the
+	identity check which are retired in the ATA standard. Optimize the
+	read/write functions.
+
 2006-11-17  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/ide_disk.c (ide_read_sector, ide_write_sector): Length
