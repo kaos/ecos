@@ -429,7 +429,8 @@ AC_DEFUN([ECOS_PATH_TCL], [
   AC_MSG_RESULT()
   
   AC_ARG_WITH(tcl,[ --with-tcl=<path>        location of Tcl header and libraries])
-  AC_ARG_WITH(tcl-version,[ --with-tcl-version=<vsn> version of Tcl to be used])
+  AC_ARG_WITH(tcl,[ --with-tk=<path>         location of Tk header and libraries])
+  AC_ARG_WITH(tcl-version,[ --with-tcl-version=<vsn> version of Tcl/Tk to be used])
 
   dnl If using VC++ then there are no sensible default directories
   dnl to search for a Tcl installation. Instead the user must
@@ -487,18 +488,15 @@ AC_DEFUN([ECOS_PATH_TCL], [
       possibles="${with_tcl}/lib"
       if test "${with_tcl_version+set}" = set ; then
         possibles="${possibles} ${with_tcl}/lib/tcl${with_tcl_version}"
-        possibles="${possibles} ${with_tcl}/lib/tk${with_tcl_version}"
       fi
     fi
     possibles="${possibles} ${prefix}/lib"
     if test "${with_tcl_version+set}" = set ; then
       possibles="${possibles} ${prefix}/lib/tcl${with_tcl_version}"
-      possibles="${possibles} ${prefix}/lib/tk${with_tcl_version}"
     fi
     possibles="${possibles} /usr/lib"
     if test "${with_tcl_version+set}" = set ; then
       possibles="${possibles} /usr/lib/tcl${with_tcl_version}"
-      possibles="${possibles} /usr/lib/tk${with_tcl_version}"
     fi
     AC_MSG_NOTICE(looking for tclConfig.sh in ${possibles})
     AC_FIND_FILE("tclConfig.sh", ${possibles}, tclconfig)
@@ -583,10 +581,38 @@ AC_DEFUN([ECOS_PATH_TCL], [
 
         
     dnl --------------------------------------------------------
-    dnl We now repeat the exercise for tk and tkConfig.sh, but
+    dnl We now repeat the exercise for tk and tkConfig.sh.
+    dnl Typically this will be in a similar location to tclConfig.sh,
+    dnl but allow for separate 
     dnl we assume that the Tk installation is in a similar
-    dnl location to the Tcl one.
-    possibles=`echo ${possibles} | sed -e 's,tcl,tk,g'`
+    dnl location to the Tcl one, but allow for different ones
+    dnl just in case.
+    possibles=""
+    if test "${with_tk+set}" = set ; then
+      possibles="${possibles} ${with_tk}/lib"
+      if test "${with_tcl_version+set}" = set ; then
+        possibles="${possibles} ${with_tk}/lib/tcl${with_tcl_version}"
+        possibles="${possibles} ${with_tk}/lib/tk${with_tcl_version}"
+      fi
+    fi
+    if test "${with_tcl+set}" = set ; then
+      possibles="${possibles} ${with_tcl}/lib"
+      if test "${with_tcl_version+set}" = set ; then
+        possibles="${possibles} ${with_tcl}/lib/tcl${with_tcl_version}"
+        possibles="${possibles} ${with_tcl}/lib/tk${with_tcl_version}"
+      fi
+    fi
+    possibles="${possibles} ${prefix}/lib"
+    if test "${with_tcl_version+set}" = set ; then
+      possibles="${possibles} ${prefix}/lib/tcl${with_tcl_version}"
+      possibles="${possibles} ${prefix}/lib/tk${with_tcl_version}"
+    fi
+    possibles="${possibles} /usr/lib"
+    if test "${with_tcl_version+set}" = set ; then
+      possibles="${possibles} /usr/lib/tcl${with_tcl_version}"
+      possibles="${possibles} /usr/lib/tk${with_tcl_version}"
+    fi
+
     AC_MSG_NOTICE(looking for tkConfig.sh in ${possibles})
     AC_FIND_FILE("tkConfig.sh", ${possibles}, tkconfig)
     if test \! -r "${tkconfig}/tkConfig.sh" ; then

@@ -4,7 +4,7 @@
 This README file only describes the eCos host-side software. For
 details of the eCos target-side software or the required toolchains,
 please see other documentation. A good starting point is
-http://sources.redhat.com/ecos
+http://sourceware.com/ecos
 		
 There are two categories of host-side software. The host subdirectory
 contains generic software, primarily related to the eCos configuration
@@ -186,6 +186,7 @@ A list of all the command-line options can be obtained by running
 
 3) --with-tcl=<path>
    --with-tcl-version=<number>
+   --with-tk=<path>
 
    The host-side tools have a dependency on Tcl, which is not supplied
    with the sources because many people will already have a suitable
@@ -225,8 +226,8 @@ A list of all the command-line options can be obtained by running
 
    The --with-tcl and --with-tcl-version options are combined to give a search path:
 
-      <with>/lib/tclConfig.sh
-      <with>/lib/tcl<vsn>/tclConfig.sh
+      <with-tcl>/lib/tclConfig.sh
+      <with-tcl>/lib/tcl<vsn>/tclConfig.sh
       <prefix>/lib/tclConfig.sh
       <prefix>/lib/tcl<vsn>/tclConfig.sh
       /usr/lib/tclConfig.sh
@@ -234,32 +235,36 @@ A list of all the command-line options can be obtained by running
 
    If tclConfig.sh cannot be found in any of these places then it is assumed
    that Tcl has not been properly installed and the eCos configure script will
-   fail. The --with-tcl and --with-tcl-version are also used to give a search
-   path for tkConfig.sh
+   fail.
 
-      <with>/lib/tkConfig.sh
-      <with>/lib/tk<vsn>/tkConfig.sh
-      <prefix>/lib/tkConfig.sh
-      <prefix>/lib/tk<vsn>/tkConfig.sh
-      /usr/lib/tkConfig.sh
-      /usr/lib/tk<vsn>/tkConfig.sh
+   To search for Tk the configure scripts use much the same rules as
+   for Tcl. It is also possible to specify a path using the --with-tk
+   option, useful if for some reason Tk has been installed in a
+   different location from Tcl. There is no --with-tk-version: it is
+   assumed that the same version should be used for both Tcl and Tk.
 
    Again, the configure scripts must be able to find tkConfig.sh
 
    Once tclConfig.sh and tkConfig.sh have been found and read in, the eCos
    configure scripts should have all the information needed to compile and
    link code that uses Tcl. First the location of key headers such as
-   <tcl.h> is needed. A tclConfig.sh file may define TCL_INC_DIR to give
-   a specific location, otherwise the header files should be in
-   $(TCL_PREFIX)/include. If <tcl.h> cannot be found then the eCos configure
-   scripts will fail.
+   <tcl.h> is needed. A tclConfig.sh file may define TCL_INCLUDE_SPEC
+   or TCL_INC_DIR to give a specific location, otherwise the header
+   files should be in $(TCL_PREFIX)/include. If <tcl.h> cannot be
+   found then the eCos configure scripts will fail.
 
    Next it is necessary to work out how to link applications with Tcl. This
    information should be provided by a tclConfig.sh variable TCL_LIB_SPEC.
    Unfortunately not all Tcl installations set this, for example the cygwin
    Tcl 8.4 release. If TCL_LIB_SPEC is not defined then instead the
    configure script will look for a library libtcl<vsn>.a, where <vsn> is
-   specified using --with-tcl-version, then for a library libtcl.a
+   specified using --with-tcl-version, then for a library libtcl.a.
+   tclConfig.sh may also list additional libraries in TCL_LIBS and
+   additional linker flags in TCL_LD_FLAGS.
+
+   For Tk the relevant tkConfig.sh settings are TK_INCLUDE_SPEC or
+   TK_INC_DIR, TK_XINCLUDES, TK_LIB_SPEC, and TK_LIBS.
+
 
 Following the configure step the build tree should be set up
 correctly. All that remains is the actual build and install:
@@ -330,12 +335,12 @@ in the normal fashion:
 More Information
 ================
 
-Please see the eCos web site, http://sources.redhat.com/ecos/, for
+Please see the eCos web site, http://sourceware.com/ecos/, for
 further details. This includes the FAQ, a form for reporting problems,
 and details of the various mailing lists
 (http://sources.redhat.com/ecos/intouch.html) At the time of writing
 there are no separate mailing lists for the eCos host-side sources,
-the main mailing list ecos-discuss@sources.redhat.com should be used
+the main mailing list ecos-discuss@sourceware.com should be used
 instead.
 
 //####COPYRIGHTBEGIN####

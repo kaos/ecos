@@ -1,3 +1,7 @@
+2008-08-28  Bart Veer  <bartv@ecoscentric.com>
+
+	* README.host: update description of Tcl/Tk searching.
+
 2008-08-18  Bart Veer  <bartv@ecoscentric.com>
 
 	* Makefile.am, configure.in: update host-side configury.

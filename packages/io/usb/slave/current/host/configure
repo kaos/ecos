@@ -1327,7 +1327,8 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
  --with-tcl=<path>        location of Tcl header and libraries
- --with-tcl-version=<vsn> version of Tcl to be used
+ --with-tk=<path>         location of Tk header and libraries
+ --with-tcl-version=<vsn> version of Tcl/Tk to be used
  --with-tcl-header=<path> location of Tcl header
  --with-tcl-lib=<path>    location of Tcl libraries
 
@@ -4121,6 +4122,12 @@ if test "${with_tcl+set}" = set; then
 fi
 
 
+# Check whether --with-tcl was given.
+if test "${with_tcl+set}" = set; then
+  withval=$with_tcl;
+fi
+
+
 # Check whether --with-tcl-version was given.
 if test "${with_tcl_version+set}" = set; then
   withval=$with_tcl_version;
@@ -4196,18 +4203,15 @@ echo "$as_me: error: unable to locate Tcl header file tcl.h" >&2;}
       possibles="${with_tcl}/lib"
       if test "${with_tcl_version+set}" = set ; then
         possibles="${possibles} ${with_tcl}/lib/tcl${with_tcl_version}"
-        possibles="${possibles} ${with_tcl}/lib/tk${with_tcl_version}"
       fi
     fi
     possibles="${possibles} ${prefix}/lib"
     if test "${with_tcl_version+set}" = set ; then
       possibles="${possibles} ${prefix}/lib/tcl${with_tcl_version}"
-      possibles="${possibles} ${prefix}/lib/tk${with_tcl_version}"
     fi
     possibles="${possibles} /usr/lib"
     if test "${with_tcl_version+set}" = set ; then
       possibles="${possibles} /usr/lib/tcl${with_tcl_version}"
-      possibles="${possibles} /usr/lib/tk${with_tcl_version}"
     fi
     { echo "$as_me:$LINENO: looking for tclConfig.sh in ${possibles}" >&5
 echo "$as_me: looking for tclConfig.sh in ${possibles}" >&6;}
@@ -4323,7 +4327,32 @@ echo "$as_me: using additional linker flags for Tcl ${TCL_LD_FLAGS}" >&6;}
     fi
 
 
-                    possibles=`echo ${possibles} | sed -e 's,tcl,tk,g'`
+                                possibles=""
+    if test "${with_tk+set}" = set ; then
+      possibles="${possibles} ${with_tk}/lib"
+      if test "${with_tcl_version+set}" = set ; then
+        possibles="${possibles} ${with_tk}/lib/tcl${with_tcl_version}"
+        possibles="${possibles} ${with_tk}/lib/tk${with_tcl_version}"
+      fi
+    fi
+    if test "${with_tcl+set}" = set ; then
+      possibles="${possibles} ${with_tcl}/lib"
+      if test "${with_tcl_version+set}" = set ; then
+        possibles="${possibles} ${with_tcl}/lib/tcl${with_tcl_version}"
+        possibles="${possibles} ${with_tcl}/lib/tk${with_tcl_version}"
+      fi
+    fi
+    possibles="${possibles} ${prefix}/lib"
+    if test "${with_tcl_version+set}" = set ; then
+      possibles="${possibles} ${prefix}/lib/tcl${with_tcl_version}"
+      possibles="${possibles} ${prefix}/lib/tk${with_tcl_version}"
+    fi
+    possibles="${possibles} /usr/lib"
+    if test "${with_tcl_version+set}" = set ; then
+      possibles="${possibles} /usr/lib/tcl${with_tcl_version}"
+      possibles="${possibles} /usr/lib/tk${with_tcl_version}"
+    fi
+
     { echo "$as_me:$LINENO: looking for tkConfig.sh in ${possibles}" >&5
 echo "$as_me: looking for tkConfig.sh in ${possibles}" >&6;}
 
