@@ -174,6 +174,7 @@ typedef struct {
 # define CYGNUM_SERIAL_STATUS_OVERRUNERR    4
 # define CYGNUM_SERIAL_STATUS_CARRIERDETECT 5
 # define CYGNUM_SERIAL_STATUS_RINGINDICATOR 6
+# define CYGNUM_SERIAL_STATUS_NOISEERR      7
 
 typedef struct {
     cyg_uint32 which;        // one of CYGNUM_SERIAL_STATUS_* above

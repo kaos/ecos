@@ -1,3 +1,8 @@
+2008-09-02  Steven Clugston  <steven.clugston@ncl.ac.uk>
+
+	* tests/ser_test_protocol.inl : Add mpc555 generic platform
+	* include/serialio.h : Add noise error define to line status
+	
 2008-08-13  Rainer Arndt <Arndt-ADT@kieback-peter.de>
 
 	* src/common/termiostty.c (set_attr) : Fixed bug for XON/XOFF 
