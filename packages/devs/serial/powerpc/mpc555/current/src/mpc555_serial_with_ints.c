@@ -609,14 +609,38 @@ static void mpc555_serial_rx_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_ad
   cyg_uint16 scdr;
   cyg_uint16 scsr;
 
-  // Allways read out the received character, in order to clear receiver flags
-  HAL_READ_UINT16(port + MPC555_SERIAL_SCxDR, scdr);
+#ifdef CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS
+  cyg_serial_line_status_t stat;
+#endif
 
   HAL_READ_UINT16(port + MPC555_SERIAL_SCxSR, scsr);
+  // Always read out the received character, in order to clear receiver flags
+  HAL_READ_UINT16(port + MPC555_SERIAL_SCxDR, scdr);
+  
   if(scsr & (cyg_uint16)MPC555_SERIAL_SCxSR_ERRORS)
   {
-    scsr &= ~((cyg_uint16)MPC555_SERIAL_SCxSR_ERRORS);
-    HAL_WRITE_UINT16(port + MPC555_SERIAL_SCxSR, scsr);
+#ifdef CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS
+    if(scsr & MPC555_SERIAL_SCxSR_OR)
+    {
+      stat.which = CYGNUM_SERIAL_STATUS_OVERRUNERR;
+      (chan->callbacks->indicate_status)(chan, &stat);
+    } 
+    if(scsr & MPC555_SERIAL_SCxSR_NF)
+    {
+      stat.which = CYGNUM_SERIAL_STATUS_NOISEERR;
+      (chan->callbacks->indicate_status)(chan, &stat);
+    } 
+    if(scsr & MPC555_SERIAL_SCxSR_FE)
+    {
+      stat.which = CYGNUM_SERIAL_STATUS_FRAMEERR;
+      (chan->callbacks->indicate_status)(chan, &stat);
+    } 
+    if(scsr & MPC555_SERIAL_SCxSR_PF)
+    {
+      stat.which = CYGNUM_SERIAL_STATUS_PARITYERR;
+      (chan->callbacks->indicate_status)(chan, &stat);
+    }
+#endif
   }
   else
   {

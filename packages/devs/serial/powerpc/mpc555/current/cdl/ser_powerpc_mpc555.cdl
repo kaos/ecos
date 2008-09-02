@@ -72,6 +72,7 @@ cdl_component CYGPKG_IO_SERIAL_POWERPC_MPC555_SERIAL_A {
     display       "mpc555 PowerPC serial port A driver"
     flavor        bool
     default_value 0
+    implements    CYGINT_IO_SERIAL_LINE_STATUS_HW
     description   "
         This option includes the serial device driver for the mpc555
         PowerPC port A."
@@ -110,6 +111,7 @@ cdl_component CYGPKG_IO_SERIAL_POWERPC_MPC555_SERIAL_B {
     display       "mpc555 PowerPC serial port B driver"
     flavor        bool
     default_value 1
+    implements    CYGINT_IO_SERIAL_LINE_STATUS_HW
     description   "
         This option includes the serial device driver for the mpc555
         PowerPC port B."

@@ -1,3 +1,10 @@
+2008-05-13  Steven Clugston  <steven.clugston@ncl.ac.uk>
+
+	* cdl/ser_powerpc_mpc555.cdl: Add line status
+	* src/mpc555_serial_with_ints.c: 
+	  Fixed exception caused by attempt to clear scsr bits.
+	  Add line status callbacks
+
 2008-04-06  Steven Clugston <steven.clugston@ncl.ac.uk>
 
 	* Refactored cme555 package to more generic mpc555
