@@ -55,7 +55,7 @@
 
 #include <cyg/hal/var_io.h>
 #include <cyg/hal/plf_io.h>
-        
+
 // Macro to initialise the Memory Controller
         .macro _flash_init
 __flash_init__:
@@ -73,20 +73,31 @@ __flash_init__:
 # endif
 #endif
         str     r1,[r0,#AT91_MC_FMR]
+#if defined(AT91_MC_FMR1)
+          // If we have a second flash controller we need to set that up as well
+        str     r1,[r0,#AT91_MC_FMR1]
+#endif
         .endm
 
 // Macro to start the main clock.
         .macro  _main_clock_init
 __main_clock_init__:
         ldr     r0,=AT91_PMC
+
+          // Check that we have a stable clock before we start switching
+wait_pmc_sr_0:
+        ldr     r1,[r0,#AT91_PMC_SR]
+        ands    r1,r1,#AT91_PMC_SR_MCKRDY
+        beq     wait_pmc_sr_0
+
           // Swap to the slow clock, just to be sure.
         ldr     r1,=(AT91_PMC_MCKR_PRES_CLK|AT91_PMC_MCKR_SLOW_CLK)
         str     r1,[r0,#AT91_PMC_MCKR]
-	// startup time
+
 #if defined(CYGNUM_HAL_ARM_AT91_CLOCK_TYPE_EXTCLOCK)
         ldr     r1,=(AT91_PMC_MOR_OSCBYPASS)
 #else
-        ldr     r1,=(AT91_PMC_MOR_OSCCOUNT(6)|AT91_PMC_MOR_MOSCEN)
+        ldr     r1,=(AT91_PMC_MOR_OSCCOUNT(CYGNUM_HAL_ARM_AT91_PMC_MOR_OSCCOUNT)|AT91_PMC_MOR_MOSCEN)
 #endif
         str     r1,[r0,#AT91_PMC_MOR]
 
@@ -97,8 +108,8 @@ wait_pmc_sr_1:
         beq     wait_pmc_sr_1
 
         // Set the PLL multiplier and divider. 16 slow clocks go by
-	// before the LOCK bit is set. */
-        ldr     r1,=((AT91_PMC_PLLR_DIV(CYGNUM_HAL_ARM_AT91_PLL_DIVIDER))|(AT91_PMC_PLLR_PLLCOUNT(16))|(AT91_PMC_PLLR_MUL(CYGNUM_HAL_ARM_AT91_PLL_MULTIPLIER-1)))
+        // before the LOCK bit is set. */
+        ldr     r1,=((AT91_PMC_PLLR_DIV(CYGNUM_HAL_ARM_AT91_PLL_DIVIDER))|(AT91_PMC_PLLR_PLLCOUNT(CYGNUM_HAL_ARM_AT91_PLL_COUNT))|(AT91_PMC_PLLR_MUL(CYGNUM_HAL_ARM_AT91_PLL_MULTIPLIER-1)))
         str     r1,[r0,#AT91_PMC_PLLR]
 
         // Wait for PLL locked indication

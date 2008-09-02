@@ -1,3 +1,13 @@
+2008-09-01  John Eigelaar  <jeigelaar@mweb.co.za>
+
+	* cdl/hal_arm_at91sam7s.cdl: CDL for the MOR OSCCOUNT and 
+	  PLLR PLLCOUNT.
+	* include/hal_platform_setup.h: Turned the MOR OSCCOUNT 
+	  and the PLLR PLLCOUNT setup into CLD configurable 
+	  variables to allow a more flexible clock setup.
+	* include/hal_platform_setup.h: Added setup code for devices
+	  that has a second flash controller i.e. the 512 devices.
+
 2008-08-14  Jürgen Lambrecht <J.Lambrecht@televic.com>
 
 	* include/plf_io.h: removed AT91_SPI_MR_MODFDIS, AT91_WSTC

@@ -236,6 +236,16 @@ cdl_package CYGPKG_HAL_ARM_AT91SAM7 {
             Whether a crystal or a XIN input clock is clocking the device."
     }
 
+    cdl_option CYGNUM_HAL_ARM_AT91_PMC_MOR_OSCCOUNT {
+        display       "Startup time for the main oscillator"
+        flavor        data
+        legal_values  { 0 to 255 }
+        default_value 6
+        description   "
+            Specifies the number of Slow Clock cycles multiplied by 8 
+	    for the Main Oscillator start-up time."
+    }       
+
     cdl_option CYGNUM_HAL_ARM_AT91_PLL_DIVIDER {
         display       "Divider for PLL clock"
         flavor        data
@@ -256,6 +266,16 @@ cdl_package CYGPKG_HAL_ARM_AT91SAM7 {
            the PLL clock."
     }
 
+    cdl_option CYGNUM_HAL_ARM_AT91_PLL_COUNT {
+        display       "Startup Counter for PLL clock"
+        flavor        data
+        legal_values  { 0 to 64 }
+        default_value 16
+        description   "
+            Specifies the number of slow clock cycles before the LOCK bit 
+	    is set in PMC_SR after PLL Register is written."
+    }       
+    
     cdl_option CYGNUM_HAL_ARM_AT91_SLOW_CLOCK {
         display       "Slow clock frequency"
         flavor        data
