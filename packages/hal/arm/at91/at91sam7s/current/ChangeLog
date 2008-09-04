@@ -1,3 +1,9 @@
+2008-09-04  John Eigelaar  <jeigelaar@mweb.co.za>
+
+	* cdl/hal_arm_at91sam7s.cdl: Set MOR OSCCOUNT and PLL Count to
+	values suggests by Atmel. This should make the startup stable for
+	all devices.
+  	
 2008-09-02  John Eigelaar  <jeigelaar@mweb.co.za>
 
 	* include/plf_io.h: Added definitions for devices

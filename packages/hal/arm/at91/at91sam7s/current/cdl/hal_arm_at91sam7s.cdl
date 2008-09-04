@@ -240,10 +240,11 @@ cdl_package CYGPKG_HAL_ARM_AT91SAM7 {
         display       "Startup time for the main oscillator"
         flavor        data
         legal_values  { 0 to 255 }
-        default_value 6
+        default_value 64
         description   "
             Specifies the number of Slow Clock cycles multiplied by 8 
-	    for the Main Oscillator start-up time."
+	    for the Main Oscillator start-up time. 64 is the number suggested
+	    by the kind folk at Atmel"
     }       
 
     cdl_option CYGNUM_HAL_ARM_AT91_PLL_DIVIDER {
@@ -273,7 +274,8 @@ cdl_package CYGPKG_HAL_ARM_AT91SAM7 {
         default_value 16
         description   "
             Specifies the number of slow clock cycles before the LOCK bit 
-	    is set in PMC_SR after PLL Register is written."
+	    is set in PMC_SR after PLL Register is written. The Atmel people
+	    suggest that 16 should be fine"
     }       
     
     cdl_option CYGNUM_HAL_ARM_AT91_SLOW_CLOCK {
