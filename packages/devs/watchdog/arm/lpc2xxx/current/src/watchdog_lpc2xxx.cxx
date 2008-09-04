@@ -71,7 +71,7 @@
 
 //==========================================================================
 
-#define TICKS (CYG_HAL_ARM_LPC2XXX_PCLK()/4000 * \
+#define TICKS (CYGHAL_ARM_LPC2XXX_PCLK/4000 * \
                CYGNUM_DEVS_WATCHDOG_ARM_LPC2XXX_DESIRED_TIMEOUT_MS)
 
 #define RESOLUTION CYGNUM_DEVS_WATCHDOG_ARM_LPC2XXX_DESIRED_TIMEOUT_MS*1000000

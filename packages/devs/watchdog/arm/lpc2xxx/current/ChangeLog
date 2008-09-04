@@ -1,3 +1,9 @@
+2008-09-03  Sergei Gavrikov <sergei.gavrikov@gmail.com>
+
+	* src/watchdog_lpc2xxx.cxx: Since CYG_HAL_ARM_LPC2XXX_PCLK()
+	macro had been gone away from lpc2xxx_misc.h, it is replaced by
+	an equal CYGNUM_HAL_ARM_LPC2XXX_PCLK constant.
+
 2007-08-19  Sergei Gavrikov  <sg@sgs.gomel.by>
 
 	* src/watchdog_lpc2xxx.cxx: Fixed to work properly in WDINT mode.
