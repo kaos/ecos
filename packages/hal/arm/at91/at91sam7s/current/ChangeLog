@@ -1,3 +1,9 @@
+2008-09-02  John Eigelaar  <jeigelaar@mweb.co.za>
+
+	* include/plf_io.h: Added definitions for devices
+	  that has a second flash controller. Thus far only the 
+	  at91sam7x512 is supported.
+
 2008-09-01  John Eigelaar  <jeigelaar@mweb.co.za>
 
 	* cdl/hal_arm_at91sam7s.cdl: CDL for the MOR OSCCOUNT and 

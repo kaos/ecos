@@ -175,6 +175,12 @@ extern cyg_uint32 hal_at91_us_baud(cyg_uint32 baud);
 
 #endif
 
+#ifdef CYGHWR_HAL_ARM_AT91SAM7_at91sam7x512
+#define AT91_MC_FMR0 0x60
+#define AT91_MC_FMR1 0x70
+#define AT91_MC_FMR AT91_MC_FMR0
+#endif
+
 //----------------------------------------------------------------------
 // The platform needs this initialization during the
 // hal_hardware_init() function in the varient HAL.
