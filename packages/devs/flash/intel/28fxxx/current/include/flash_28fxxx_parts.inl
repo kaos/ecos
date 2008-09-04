@@ -217,6 +217,7 @@
         base_mask  : ~(0x1000000 * CYGNUM_FLASH_INTERLEAVE - 1),
         locking    : true,
         buffered_w : true,
+//        buffer_size: TODO!!!
         bootblock  : false,
         banked     : false
     },
@@ -231,6 +232,7 @@
         base_mask  : ~(0x1000000 * CYGNUM_FLASH_INTERLEAVE - 1),
         locking    : true,
         buffered_w : true,
+//        buffer_size: TODO!!!
         bootblock  : false,
         banked     : false
     },
@@ -245,6 +247,7 @@
         base_mask  : ~(0x1000000 * CYGNUM_FLASH_INTERLEAVE - 1),
         locking    : true,
         buffered_w : true,
+        buffer_size: 32,
         bootblock  : false,
         banked     : false
     },
@@ -258,6 +261,7 @@
         device_size: 0x200000 * CYGNUM_FLASH_INTERLEAVE,
         base_mask  : ~(0x200000 * CYGNUM_FLASH_INTERLEAVE - 1),
         buffered_w : true,
+//        buffer_size: TODO
         locking    : false,
         bootblock  : false,
         banked     : false

@@ -1,3 +1,10 @@
+2008-09-04  Dave Lawrence <dlawrence@ad-holdings.co.uk>
+
+	* include/flash_28fxxx.inl: 
+	* include/flash_28fxxx_parts.inl: Support write buffering. Add an
+	entry to the parts table indicating the size of the buffer and
+	copy it into the device table during initialization. 
+
 2006-12-14  Yoshinori Sato <ysato@users.sourceforge.jp>
 
 	* cdl/flash_intel_28fxxx.cdl, include/flash_28fxxx_parts.inl: Add

@@ -141,6 +141,7 @@ typedef struct flash_dev_info {
     cyg_uint32   device_size;
     cyg_bool     locking;               // supports locking
     cyg_bool     buffered_w;            // supports buffered writes
+    cyg_uint32   buffer_size;
     cyg_bool     bootblock;
     cyg_uint32   bootblocks[12];         // 0 is bootblock offset, 1-11 sub-sector sizes (or 0)
     cyg_bool     banked;
@@ -198,6 +199,7 @@ flash_hwr_init(void)
     flash_info.blocks = flash_dev_info->block_count * CYGNUM_FLASH_SERIES;
     flash_info.start = (void *)CYGNUM_FLASH_BASE;
     flash_info.end = (void *)(CYGNUM_FLASH_BASE+ (flash_dev_info->device_size * CYGNUM_FLASH_SERIES));
+    flash_info.buffer_size = flash_dev_info->buffer_size;
 
     return FLASH_ERR_OK;
 }
@@ -367,8 +369,10 @@ flash_program_buf(void* addr, void* data, int len,
 #ifdef CYGHWR_DEVS_FLASH_INTEL_BUFFERED_WRITES
     // FIXME: This code has not been adjusted to handle bootblock
     // parts yet.
-    // FIXME: This code does not appear to work anymore
-    if (0 && flash_dev_info->buffered_w) {
+    // If the buffer size has not been initialised, buffered write will
+    // be skipped.
+
+     if (flash_dev_info->buffered_w && buffer_size) {
         int i, wc;
         // Write any big chunks first
         while (len >= buffer_size) {
