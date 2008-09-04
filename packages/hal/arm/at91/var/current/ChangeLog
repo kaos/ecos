@@ -1,3 +1,12 @@
+2008-09-02  John Eigelaar <jeigelaar@mweb.co.za>
+ 
+ 	* include/var_io.h: Added support for a second flash controller.
+	Fixed some cut and paste gremlins in the SSC definitions.
+	Changed decimal definitions in TWI that could have been confused with 
+	octal definitions.
+	Added ADC definitions for the TRGEN bit and the PDC control bits.
+	   
+
 2008-07-12  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/hal_diag_dcc.{ch}

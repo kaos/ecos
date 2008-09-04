@@ -1473,7 +1473,9 @@
 #define AT91_MC_RCR  0x00 // Remap Control Register
 #define AT91_MC_ASR  0x04 // Abort Status Register
 #define AT91_MC_AASR 0x08 // Abort Address Status Register
+#ifndef AT91_MC_FMR                          
 #define AT91_MC_FMR  0x60 // Flash Mode Register
+#endif
 #define AT91_MC_FMR_FRDY  (1 << 0) // Enable interrupt for Flash Ready
 #define AT91_MC_FMR_LOCKE (1 << 2) // Enable interrupt for Flash Lock Error
 #define AT91_MC_FMR_PROGE (1 << 3) // Enable interrupt for Flash Prog Error
@@ -1781,8 +1783,8 @@
 #define AT91_SSC_RFMR_FSEDGE_NEG    (1<<24) //Intr on -ve edge of Frame Sync 
 #define AT91_SSC_TCMR (0x18)
 #define AT91_SSC_TCMR_CKS_DIV    (0<<0) //Select Divider Clock               
-#define AT91_SSC_TCMR_CKS_TX     (1<<0) //Select Transmit Clock              
-#define AT91_SSC_TCMR_CKS_RK     (2<<0) //Select Receiver Clock              
+#define AT91_SSC_TCMR_CKS_RX     (1<<0) //Select Receiver Clock              
+#define AT91_SSC_TCMR_CKS_TK     (2<<0) //Select Transmit Clock              
 #define AT91_SSC_TCMR_CKO_NONE   (0<<2) //No Clock Output                    
 #define AT91_SSC_TCMR_CKO_CONT   (1<<2) //Continuous Clock Output            
 #define AT91_SSC_TCMR_CKO_TFER   (2<<2) //Clock Output During Transfer only  
@@ -1791,13 +1793,13 @@
 #define AT91_SSC_TCMR_CKG_RFLOW  (1<<6) //Clock Enabled by RF Low            
 #define AT91_SSC_TCMR_CKG_RFHIGH (2<<6) //Clock Enabled by RF HIGH           
 #define AT91_SSC_TCMR_START_CONT    (0<<8) //Start when data in THR, Continuous
-#define AT91_SSC_TCMR_START_TX      (1<<8) //Start when TX Start          
-#define AT91_SSC_TCMR_START_RFLOW   (2<<8) //Start when LOW level on RF
-#define AT91_SSC_TCMR_START_RFHIGH  (3<<8) //Start when HIGH level on RF
-#define AT91_SSC_TCMR_START_RFFALL  (4<<8) //Start when Falling Edge on RF
-#define AT91_SSC_TCMR_START_RFRISE  (5<<8) //Start when Rising Edge on RF
-#define AT91_SSC_TCMR_START_RFLEVEL (6<<8) //Start when any Level Change on RF
-#define AT91_SSC_TCMR_START_RFEDGE  (6<<8) //Start when any Edge on RF
+#define AT91_SSC_TCMR_START_RX      (1<<8) //Start when RX Start          
+#define AT91_SSC_TCMR_START_TFLOW   (2<<8) //Start when LOW level on TF
+#define AT91_SSC_TCMR_START_TFHIGH  (3<<8) //Start when HIGH level on TF
+#define AT91_SSC_TCMR_START_TFFALL  (4<<8) //Start when Falling Edge on TF
+#define AT91_SSC_TCMR_START_TFRISE  (5<<8) //Start when Rising Edge on TF
+#define AT91_SSC_TCMR_START_TFLEVEL (6<<8) //Start when any Level Change on TF
+#define AT91_SSC_TCMR_START_TFEDGE  (6<<8) //Start when any Edge on TF
 #define AT91_SSC_TCMR_STDDLY(x)  ((x&0xFF)<<16) //Start Delay 
 #define AT91_SSC_TCMR_PERIOD(x)  ((x&0xFF)<<24) //Frame Period
 #define AT91_SSC_TFMR (0x1C)
@@ -2064,9 +2066,9 @@
 #define AT91_TWI_IADR 0x0C // Internal Address
 #define AT91_TWI_CWGR 0x10 // Clock Waveform Generator
 #define AT91_TWI_CWGR_CLDIV_MASK  (0xf <<  0) // Clock Low Divider Mask
-#define AT91_TWI_CWGR_CLDIV_SHIFT (00)        // Clock Low Divider Shift
+#define AT91_TWI_CWGR_CLDIV_SHIFT (0)        // Clock Low Divider Shift
 #define AT91_TWI_CWGR_CHDIV_MASK  (0xf <<  8) // Clock High Divider Mask
-#define AT91_TWI_CWGR_CHDIV_SHIFT (08)        // Clock High Divider Shift
+#define AT91_TWI_CWGR_CHDIV_SHIFT (8)        // Clock High Divider Shift
 #define AT91_TWI_CWGR_CKDIV_MASK  (0x7 << 16) // Clock Divider Mask
 #define AT91_TWI_CWGR_CKDIV_SHIFT (16)        // Clock Divider Shift
 #define AT91_TWI_SR   0x20 // Status
@@ -2100,6 +2102,7 @@
 #define AT91_ADC_CR_SWRST (1 << 0) // Software Reset
 #define AT91_ADC_CR_START (1 << 1) // Start Conversion
 #define AT91_ADC_MR    0x04 // Mode 
+#define AT91_ADC_MR_TRGEN         (1 << 0) // Trigger Enable
 #define AT91_ADC_MR_TRGSEL_TIOA0  (0 << 1) // Trigger = TIAO0
 #define AT91_ADC_MR_TRGSEL_TIOA1  (1 << 1) // Trigger = TIAO1
 #define AT91_ADC_MR_TRGSEL_TIOA2  (2 << 1) // Trigger = TIAO2
@@ -2170,6 +2173,11 @@
 #define AT91_ADC_TNPR 0x118 // Transmit Next Pointer
 #define AT91_ADC_TNCR 0x11C // Transmit Next Counter
 #define AT91_ADC_PTCR 0x120 // PDC Transfer Control
+#define AT91_ADC_PTCR_RXTEN  (1 << 0) //Receive Transfers Enabled
+#define AT91_ADC_PTCR_RXTDIS (1 << 1) //Receive Transfers Disabled 
+#define AT91_ADC_PTCR_TXTEN  (1 << 8) //Receive Transfers Enabled  
+#define AT91_ADC_PTCR_TXTDIS (1 << 9) //Receive Transfers Disabled 
+
 #define AT91_ADC_PTSR 0x124 // PDC Transfer Status
 
 #endif
