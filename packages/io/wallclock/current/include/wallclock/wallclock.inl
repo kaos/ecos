@@ -76,7 +76,7 @@ _simple_mktime(cyg_uint32 year, cyg_uint32 mon,
                cyg_uint32 min, cyg_uint32 sec)
 {
     time_t secs;
-    cyg_uint32 y, m, days;
+    cyg_int32 y, m, days;
 
     CYG_ASSERT(year <= 3124, "Year is unreasonably large");
     CYG_ASSERT(mon <= 12, "Month is invalid");
@@ -87,11 +87,11 @@ _simple_mktime(cyg_uint32 year, cyg_uint32 mon,
 
     // Number of days due to years
     days = 0;
-    for (y = 1970; y < year; y++)
+    for (y = 1970; y < (cyg_int32)year; y++)
         days += year_days(y);
 
     // Due to months
-    for (m = 0; m < mon-1; m++)
+    for (m = 0; m < (cyg_int32)mon-1; m++)
         days += days_per_month[is_leap(year)][m];
     // Add days
     days += day - 1;

@@ -1,3 +1,9 @@
+2008-09-09  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/wallclock/wallclock.inl (_simple_mktime): Use signed
+	integers for loops (more correct if input data is invalid and
+	asserts aren't on)
+
 2007-01-14  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/wallclock.cxx: Use a mutex for exclusion during get/set
