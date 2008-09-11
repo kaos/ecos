@@ -835,6 +835,11 @@
 
 #define CYGARC_HAL_LPC24XX_REG_VICVECTADDR              0xF00
 
+
+//=============================================================================
+// Ethernet (EMAC)
+#define CYGARC_HAL_LPC2XXX_REG_EMAC_BASE                0xFFE00000
+
 //-----------------------------------------------------------------------------
 // end of var_io.h
 #endif // CYGONCE_HAL_VAR_IO_H

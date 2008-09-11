@@ -1,3 +1,8 @@
+2008-09-11  Uwe Kindler  <uwe_kindler@web.de>
+
+	* include/var_io.h: Added CYGARC_HAL_LPC2XXX_REG_EMAC_BASE to support
+	  LPC2xxx ethernet driver
+	
 2008-07-21  Uwe Kindler  <uwe_kindler@web.de>
 
 	* src/lpc2xxx_misc.c: Added hal_lpc_can_init() to initialize CAN
