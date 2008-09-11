@@ -1,3 +1,9 @@
+2008-09-11  Uwe Kindler <uwe.kindler@cetoni.de>
+
+	* NEWS: 
+	* ecos.db: Add ethernet device driver for LPC2xxx cores and
+	instantiate it on LPC2460 OEM board.
+	
 2008-08-08  Nick Garnett  <nickg@ecoscentric.com>
 
 	* NEWS: 

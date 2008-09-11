@@ -1,3 +1,5 @@
+* Ethernet driver for LPC2xxx by Uwe Kindler.
+* Ethernet phy driver for Mircrel KSZ8001 by Uwe Kindler.
 * Generic ADC support contributed by eCosCentric Ltd.
 * drivers for LPC2xxx on-chip flash, RTC, I2C and SPI from Hans Rosenfeld.
 * Port to Embedded Artists LPC2468 OEM board by Uwe Kindler.

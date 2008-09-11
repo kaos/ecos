@@ -4416,6 +4416,14 @@ package CYGPKG_DEVS_ETH_ARM_AT91 {
         description     "Ethernet driver for the AT91 family of chips"
 }
 
+package CYGPKG_DEVS_ETH_ARM_LPC2XXX {
+        alias           { "LPC2xxx Ethernet driver" lpc2xxx_eth_driver }
+        directory       devs/eth/arm/lpc2xxx
+        script          lpc2xxx_eth.cdl
+        hardware
+        description     "Ethernet driver for the LPC2xxx family of chips"
+}
+
 
 # --------------------------------------------------------------------------
 
@@ -4799,6 +4807,8 @@ target ea2468 {
                    CYGPKG_DEVS_CAN_LPC2XXX
                    CYGPKG_DEVS_FLASH_EA2468
                    CYGPKG_DEVS_FLASH_SST_39VFXXX
+                   CYGPKG_DEVS_ETH_PHY
+                   CYGPKG_DEVS_ETH_ARM_LPC2XXX
         }
         description "
             The Embedded Artists LPC2468 HAL package provides the support
