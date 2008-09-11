@@ -1,3 +1,8 @@
+2008-09-11  Uwe Kindler  <uwe_kindler@web.de>
+
+	* cdl/hal_arm_lpc2xxx_ea2468.cdl: Added constraint for
+	CYGHWR_DEVS_ETH_PHY_KSZ8001 if ethernet packages is active
+	  
 2008-07-21  Uwe Kindler  <uwe_kindler@web.de>
 
 	* src/ea2468_misc.c: Added hal_lpc_can_init() to initialize CAN
