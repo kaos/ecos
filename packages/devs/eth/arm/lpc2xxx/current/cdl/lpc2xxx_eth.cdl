@@ -1,0 +1,181 @@
+#==========================================================================
+#
+#      lpc2xxx_eth.cdl
+#
+#      Ethernet driver for NXP LPC2xxx Cores
+#
+#==========================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2008 Free Software Foundation, Inc.
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+## -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+#==========================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):    Uwe Kindler
+# Date:         2008-08-05
+#
+#####DESCRIPTIONEND####
+#
+#========================================================================*/
+
+cdl_package CYGPKG_DEVS_ETH_ARM_LPC2XXX {
+    display       "NXP LPC2xxx ethernet driver"
+    parent        CYGPKG_IO_ETH_DRIVERS
+    active_if     CYGPKG_IO_ETH_DRIVERS
+    implements    CYGHWR_NET_DRIVERS
+    implements    CYGHWR_NET_DRIVER_ETH0
+
+    include_dir   net
+    description   "
+       Ethernet driver for NXP LPC2xxx core. This has been tested with the 
+       LPC2468, but should be easy to get to work on other LPC2xxx cores that
+       have the EMAC peripheral."
+
+    compile       -library=libextras.a if_lpc2xxx.c
+
+    cdl_option CYGPKG_DEVS_ETH_ARM_LPC2XXX_DEBUG_LEVEL {
+         display "Driver debug output level"
+         flavor  data
+         legal_values {0 1 2 3}
+         default_value 1
+         description   "
+             This option specifies the level of debug data output by
+             the LPC2XXX ethernet device driver. A value of 0 signifies
+             no debug data output; 1 signifies normal debug data
+             output; and 2 signifies maximum debug data output (not
+             suitable when GDB and application are sharing an ethernet
+             port). Debug level 3 is a special kind of debug level. 
+             It prints the same debug messages like level 2 but it forces 
+             the debug output to the second serial port. This is 
+             required for debugging the ethernet driver if the stand-alone 
+             network stack from redboot is used. It is possible to print 
+             debug messages while an application is loaded and run via GDB
+             TCP/IP connection"
+    }
+    
+    cdl_option CYGPKG_DEVS_ETH_ARM_LPC2XXX_INTPRIO {
+        display       "Interrupt priority"
+        flavor        data
+        legal_values  0 to 15
+        default_value 15
+        description   "
+            This option selects the interrupt priority for the EMAC interrupts. 
+            There are 16 priority levels corresponding to the values 0 through 
+            15 decimal, of which 15 is the lowest priority. The reset value of 
+            these registers defaults all interrupts to the lowest priority, 
+            allowing a single write to elevate the priority of an 
+            individual interrupt."
+    }
+
+    cdl_option CYGNUM_DEVS_ETH_ARM_LPC2XXX_RX_BUFS {
+        display       "Number of RX buffers"
+        flavor        data
+        default_value 4
+        legal_values  2 to 4
+        description   "
+            Number of receive buffers. The number of receive buffers defines 
+            the number of descriptors in the descriptor array. Each receive 
+            descriptor element in the descriptor array has an associated status 
+            field which consists of the HashCRC word and Status Information 
+            word. Because of a device errata the status words are updated 
+            incorrectly if the number of descriptors set is greater than or 
+            equal to 5. Therefore the Rx buffers are limited to a maximum 
+            of 4. Each buffer is 1536 (0x600) bytes in size"
+    }
+
+    cdl_option CYGNUM_DEVS_ETH_ARM_LPC2XXX_TX_BUFS {
+        display       "Number of TX descriptors"
+        flavor        data
+        default_value 10
+        legal_values  2 to 10
+        description   "
+            Number of transmit buffer descriptors. We need one descriptor
+            for each element in the scatter/gather list."
+    }
+
+
+    cdl_component CYGPKG_DEVS_ETH_ARM_LPC2XXX_REDBOOT_HOLDS_ESA {
+        display         "RedBoot manages ESA initialization data"
+        flavor          bool
+        default_value   0
+
+        active_if     CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
+        active_if     (CYGPKG_REDBOOT || CYGSEM_HAL_USE_ROM_MONITOR)
+
+        description   "
+            Enabling this option will allow the ethernet station
+            address to be acquired from RedBoot's configuration data,
+            stored in flash memory.  It can be overridden individually
+            by the 'Set the ethernet station address' option for each
+            interface."
+
+
+        cdl_component CYGPKG_DEVS_ETH_ARM_LPC2XXX_REDBOOT_HOLDS_ESA_VARS {
+            display        "Export RedBoot command to set ESA in FLASH config"
+            flavor         none
+            no_define
+            description "
+                This component contains options which, when enabled, allow
+                RedBoot to support the setting of the ESA in the FLASH
+                configuration. This can then subsequently be accessed by
+                applications using virtual vector calls if those applications
+                are also built with
+                CYGPKG_DEVS_ETH_ARM_LPC2XXX_REDBOOT_HOLDS_ESA enabled."
+
+            cdl_option CYGSEM_DEVS_ETH_ARM_LPC2XXX_REDBOOT_HOLDS_ESA_ETH0 {
+                display         "RedBoot manages ESA for eth0"
+                flavor          bool
+                default_value   1
+                active_if       CYGSEM_REDBOOT_FLASH_CONFIG
+                active_if       CYGPKG_REDBOOT_NETWORKING
+            }
+        }
+    }
+    cdl_option CYGPKG_DEVS_ETH_ARM_LPC2XXX_MACADDR {
+        display "Ethernet station (MAC) address for eth0"
+        flavor  data
+        default_value {"0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC"}
+        description   "The default ethernet station address. This is the
+                       MAC address used when no value is found in the
+                       RedBoot FLASH configuration field."
+    }
+
+    cdl_option  CYGPKG_DEVS_ETH_ARM_LPC2XXX_CFLAGS_ADD {
+        display "Additional compiler flags"
+        flavor  data
+        no_define
+        default_value { "-D_KERNEL -D__ECOS" }
+        description   "
+            This option modifies the set of compiler flags for
+            building the Atmel LPC2XXX ethernet driver package.
+            These flags are used in addition to the set of global flags."
+    }
+}
+
+# EOF LPC2XXX_eth.cdl
