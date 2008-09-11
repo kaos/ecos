@@ -169,7 +169,7 @@ _eth_phy_init(eth_phy_access_t *f)
                 f->phy_addr = addr;
                 for (dev = __ETH_PHY_TAB__; dev != &__ETH_PHY_TAB_END__;  dev++) {
                     if (dev->id == id) {
-                        eth_phy_printf("PHY: %s\n", dev->name);
+                        eth_phy_printf("PHY: %s at addr %x\n", dev->name, f->phy_addr);
                         f->dev = dev;
                         return true;
                     }
