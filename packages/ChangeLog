@@ -1,3 +1,8 @@
+2008-09-15  Steven Clugston  <steven.clugston@ncl.ac.uk>
+		
+	* NEWS:
+	* ecos.db: Port to PATI PC/104+ board from MPL elektronik.
+
 2008-09-11  Uwe Kindler <uwe.kindler@cetoni.de>
 
 	* NEWS: 

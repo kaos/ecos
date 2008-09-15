@@ -12,6 +12,7 @@
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 2004, 2005 eCosCentric Limited
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2008 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -736,6 +737,16 @@ package CYGPKG_DEVS_FLASH_EC555 {
         description "
            This package contains hardware support for FLASH memory
 	   on the ec555 board."
+}
+
+package CYGPKG_DEVS_FLASH_PATI {
+       alias           { "FLASH memory support for PowerPC PATI board" flash_pati }
+       directory       devs/flash/powerpc/pati
+       script          flash_pati.cdl
+       hardware
+        description "
+           This package contains hardware support for FLASH memory
+           on the PowerPC PATI platform."
 }
 
 package CYGPKG_DEVS_FLASH_VIPER {
@@ -3666,6 +3677,16 @@ package CYGPKG_HAL_POWERPC_EC555 {
             eCos on an EC555 development board from Wuerz elektronik."
 }
 
+package CYGPKG_HAL_POWERPC_PATI {
+        alias           { "MPL PATI PC/104+ board" hal_powerpc_pati powerpc_pati_hal }
+        directory       hal/powerpc/pati
+        script          hal_powerpc_pati.cdl
+        hardware
+        description "
+            The PATI HAL package provides the support needed to run
+            eCos on an PATI PC/104+ board from MPL elektronik."
+}
+
 package CYGPKG_HAL_POWERPC_FADS {
 	alias		{ "Motorola MPC8xxFADS board" hal_powerpc_fads powerpc_fads_hal }
 	directory	hal/powerpc/fads
@@ -5206,6 +5227,22 @@ target edb7xxx {
         description "
 The edb7xxx target provides the packages needed to run eCos on the Cirrus Logic EDB7xxx development boards."
     }
+
+target pati {
+        alias           { "MPL PATI" pati }
+        packages        { CYGPKG_HAL_POWERPC
+                          CYGPKG_HAL_POWERPC_MPC5xx
+                          CYGPKG_HAL_POWERPC_PATI
+                          CYGPKG_IO_SERIAL_POWERPC_MPC555
+                          CYGPKG_DEVICES_WALLCLOCK_MPC5xx
+                          CYGPKG_DEVS_FLASH_PATI
+                          CYGPKG_DEVS_FLASH_INTEL_28FXXX
+        }
+        description "
+            The pati target provides the packages needed to run
+            eCos on a PATI MPC555 PC/104+ board from MLP
+            elektronik."
+}
 
 target cma230 {
         alias		{ "Cogent CMA230/222 board" cma222 }
