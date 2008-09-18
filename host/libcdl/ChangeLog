@@ -1,3 +1,8 @@
+2008-09-18  John Dallaway  <jld@ecoscentric.com>
+
+	* build.cxx (generate_config_headers): Create Tcl channels for
+	standard streams in Cygwin builds. [ Bugzilla 1000070 ]
+
 2008-08-28  Bart Veer  <bartv@ecoscentric.com>
 
 	* configure: regenerate after update of Tcl macro
@@ -992,7 +997,7 @@
 //                                                                          
 // ----------------------------------------------------------------------------
 // Copyright (C) 1999, 2000, 2001 Red Hat, Inc.
-// Copyright (C) 2004 eCosCentric Limited
+// Copyright (C) 2004, 2008 eCosCentric Limited
 //
 // This file is part of the eCos host tools.
 //

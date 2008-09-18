@@ -12,6 +12,7 @@
 // ----------------------------------------------------------------------------
 // Copyright (C) 2002, 2003 Bart Veer
 // Copyright (C) 1999, 2000, 2001 Red Hat, Inc.
+// Copyright (C) 2008 eCosCentric Limited
 //
 // This file is part of the eCos host tools.
 //
@@ -2068,7 +2069,7 @@ CdlToplevelBody::generate_config_headers(std::string directory)
  * may be overwritten.\n\
  */\n\
 \n";
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
     // Create three channels which Tcl will use for standard streams
     // if these streams do not already exist. This avoids a Tcl
     // problem which can prevent closure of system.h. (FIXME)
@@ -2173,7 +2174,7 @@ CdlToplevelBody::generate_config_headers(std::string directory)
     // This call to UnregisterChannel automatically closes the
     // channel, there is no need for an explicit Tcl_Close() call.
     Tcl_UnregisterChannel(0, system_h);
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
     Tcl_UnregisterChannel(0, stderr_chan);
     Tcl_UnregisterChannel(0, stdout_chan);
     Tcl_UnregisterChannel(0, stdin_chan);
