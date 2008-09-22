@@ -65,7 +65,7 @@ cdl_package CYGPKG_HAL_ARM_LPC24XX {
     implements    CYGINT_HAL_VIRTUAL_VECTOR_COMM_BAUD_SUPPORT
     implements    CYGINT_HAL_ARM_ARCH_ARM7
     implements    CYGINT_HAL_ARM_THUMB_ARCH
-
+    
     # Let the architectural HAL see this variant's files
     define_proc {
         puts $::cdl_header "#define CYGBLD_HAL_VAR_INTS_H <cyg/hal/hal_var_ints.h>"
@@ -272,8 +272,66 @@ cdl_package CYGPKG_HAL_ARM_LPC24XX {
                     channels. The divider divides the CPU clock to get the 
                     clock for the CAN peripherals."
             }
-        }      
+        }
+        
+        for { set ::channel 0 } { $::channel < 3 } { incr ::channel } { 
+            cdl_component CYGNUM_HAL_ARM_LPC24XX_I2C[set ::channel]_CLK {
+                display       "I2C channel [set ::channel] clock speed"
+                flavor        data
+                calculated    CYGNUM_HAL_ARM_LPC24XX_CLOCK_SPEED / \
+                              CYGNUM_HAL_ARM_LPC24XX_I2C[set ::channel]_CLK_DIV
+                description "
+                    The I2C clock speed is the CPU clock output divided by the 
+                    I2C clock divider" 
+                    
+                cdl_option CYGNUM_HAL_ARM_LPC24XX_I2C[set ::channel]_CLK_DIV {
+                    display       "I2C channel [set ::channel] clock divider"
+                    flavor        data
+                    legal_values  { 1 2 4 8 }
+                    default_value { 1 }
+                    description "
+                        This divider selects the peripheral clock for I2C 
+                        channel [set ::channel]. The divider divides the CPU 
+                        clock to get the clock for the I2C peripheral."
+                } 
+            }   
+        } 
     }
+    
+    for { set ::channel 0 } { $::channel < 3 } { incr ::channel } { 
+        cdl_component CYGHWR_HAL_ARM_LPC24XX_I2C[set ::channel]_SUPP {
+            display       "I2C channel [set ::channel] configuration"
+            parent        CYGPKG_DEVS_I2C_ARM_LPC2XXX
+            flavor         bool
+            default_value  [set ::channel] == 0
+            description "
+                I2C channel [set ::channel] configuration data."         
+           
+            cdl_option CYGNUM_HAL_ARM_LPC24XX_I2C[set ::channel]_INT_PRIO {
+                display       "I2C channel [set ::channel] interrupt priority"
+                flavor        data
+                legal_values  0 to 15
+                default_value 15
+                description "
+                    There are 16 priority levels, corresponding to the
+                    values 0 through 15 decimal, of which 15 is the
+                    lowest priority.  The reset value of these
+                    interrupt priority registers defaults all
+                    interrupts to the lowest priority 15, allowing a
+                    single write to elevate the priority of an
+                    individual interrupt."  
+            }
+        
+            cdl_option CYGNUM_HAL_ARM_LPC24XX_I2C[set ::channel]_BUS_FREQ {
+                display       "I2C channel [set ::channel] bus frequency (Hz)"
+                flavor        data
+                legal_values  {100000 400000}
+                default_value 100000
+                description "
+                    This option selects the data rate for the I2C bus."
+            }
+        }
+    } 
     
     cdl_component CYGNUM_HAL_RTC_CONSTANTS {
         display       "Real-time clock constants"
@@ -316,7 +374,7 @@ cdl_package CYGPKG_HAL_ARM_LPC24XX {
 	    legal_values  { 0 to 15 }
         default_value 15
 	    description "
-            There are 16 priority levels, corresponding to the values 0 through 
+            There are 16 priority levels, corresponding to the values 0 through
             15 decimal, of which 15 is the lowest priority. The reset value of 
             these interrupt priority registers defaults all interrupts to the 
             lowest priority, allowing a single write to elevate the priority 

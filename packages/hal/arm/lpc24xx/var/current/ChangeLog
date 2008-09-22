@@ -1,3 +1,17 @@
+2008-09-18  Uwe Kindler  <uwe_kindler@web.de>
+
+	* cdl/hal_arm_lpc24xx.cdl: Added I2C configuration options for
+	  interrupt priority, peripheral clock divider and I2C bus
+	  frequency
+	* include/lpc24xx_misc.h: Added function hal_lpc_set_power() and
+	  peripheral identifiers for enabling peripheral modules in a
+	  common way
+	* include/var_io.h: Removed CYGARC_HAL_LPC24XX_SET_PIN_FUN()
+	* src/lpc24xx_misc.c: Bugfix in hal_lpc_get_pclk(), Added function
+	  hal_lpc_set_power(), Added hal_set_pin_function(), Added
+	  peripheral clock divider configuration for I2C modules in
+	  hal_hardware_init()
+	
 2008-09-11  Uwe Kindler  <uwe_kindler@web.de>
 
 	* include/var_io.h: Added CYGARC_HAL_LPC2XXX_REG_EMAC_BASE to support

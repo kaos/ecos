@@ -51,9 +51,10 @@
 //=============================================================================
 
 //-----------------------------------------------------------------------------
-// Functions to obtain the current processor clock settings
-//-----------------------------------------------------------------------------
-externC cyg_uint32 hal_lpc_get_pclk(cyg_uint32 peripheral_id);
+// Function to obtain the current processor clock settings
+// Use PCLK identifiers below
+//
+externC cyg_uint32 hal_lpc_get_pclk(cyg_uint32 pclk_id);
 
 //
 // Identifiers for peripheral clock. Use these identifiers with the function
@@ -91,10 +92,55 @@ externC cyg_uint32 hal_lpc_get_pclk(cyg_uint32 peripheral_id);
 
 
 //-----------------------------------------------------------------------------
+// Function to enable/disable power for certain peripheral
+// Use PCONP identifiers from below
+//
+externC void hal_lpc_set_power(cyg_uint8 pconp_id, int on);
+
+//
+// Identifiers for power control
+// hal_get_pclk()
+//
+#define CYNUM_HAL_LPC24XX_PCONP_TIMER0 1
+#define CYNUM_HAL_LPC24XX_PCONP_TIMER1 2
+#define CYNUM_HAL_LPC24XX_PCONP_UART0  3
+#define CYNUM_HAL_LPC24XX_PCONP_UART1  4
+#define CYNUM_HAL_LPC24XX_PCONP_PWM0   5
+#define CYNUM_HAL_LPC24XX_PCONP_PWM1   6
+#define CYNUM_HAL_LPC24XX_PCONP_I2C0   7
+#define CYNUM_HAL_LPC24XX_PCONP_SPI    8
+#define CYNUM_HAL_LPC24XX_PCONP_RTC    9
+#define CYNUM_HAL_LPC24XX_PCONP_SSP1   10
+#define CYNUM_HAL_LPC24XX_PCONP_EMC    11
+#define CYNUM_HAL_LPC24XX_PCONP_ADC    12
+#define CYNUM_HAL_LPC24XX_PCONP_CAN1   13
+#define CYNUM_HAL_LPC24XX_PCONP_CAN2   14
+#define CYNUM_HAL_LPC24XX_PCONP_I2C1   19
+#define CYNUM_HAL_LPC24XX_PCONP_LCD    20
+#define CYNUM_HAL_LPC24XX_PCONP_SSP0   21
+#define CYNUM_HAL_LPC24XX_PCONP_TIMER2 22
+#define CYNUM_HAL_LPC24XX_PCONP_TIMER3 23
+#define CYNUM_HAL_LPC24XX_PCONP_UART2  24
+#define CYNUM_HAL_LPC24XX_PCONP_UART3  25
+#define CYNUM_HAL_LPC24XX_PCONP_I2C2   26
+#define CYNUM_HAL_LPC24XX_PCONP_I2S    27
+#define CYNUM_HAL_LPC24XX_PCONP_SDC    28
+#define CYNUM_HAL_LPC24XX_PCONP_GPDMA  29
+#define CYNUM_HAL_LPC24XX_PCONP_ENET   30
+#define CYNUM_HAL_LPC24XX_PCONP_USB    31
+
+
+//-----------------------------------------------------------------------------
+// Configure pin function
+//
+void hal_set_pin_function(cyg_uint8 port, cyg_uint8 pin, cyg_uint8 function);
+
+
+//-----------------------------------------------------------------------------
 // Macros to derive the baudrate divider values for the internal UARTs
-// The LPC24xx family supports differents baudrate clocks for each single
+// The LPC24xx family supports different baudrate clocks for each single
 // UART. So we need a way to calculate the baudrate for each single UART
-// Now we rely on the fact that we use the same baurate clock for all
+// Now we rely on the fact that we use the same baudrate clock for all
 // UARTs and we query only UART0
 //-----------------------------------------------------------------------------
 #define CYG_HAL_ARM_LPC24XX_PCLK(_pclkid_) hal_lpc_get_pclk(_pclkid_) 

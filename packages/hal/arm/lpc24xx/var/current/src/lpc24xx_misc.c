@@ -78,7 +78,7 @@
 //===========================================================================
 // Get peripheral clock for a certain peripheral
 //===========================================================================
-cyg_uint32 hal_lpc_get_pclk(cyg_uint32 peripheral_id)
+cyg_uint32 hal_lpc_get_pclk(cyg_uint32 pclk_id)
 {
     static const cyg_uint8 divider_tbl[4] =
     {
@@ -87,18 +87,22 @@ cyg_uint32 hal_lpc_get_pclk(cyg_uint32 peripheral_id)
     cyg_uint32 pclkselreg;
     cyg_uint32 regval;
     cyg_uint8  divider;
+    
+    CYG_ASSERT(pclk_id >= CYNUM_HAL_LPC24XX_PCLK_WDT &&
+               pclk_id <= CYNUM_HAL_LPC24XX_PCLK_SYSCON,
+               "Invalid peripheral clock ID");
 
     //
     // decide if we need PCLKSEL0 or PCLKSEL1
     //
-    pclkselreg = ((peripheral_id <= CYNUM_HAL_LPC24XX_PCLK_ACF) ? 
+    pclkselreg = ((pclk_id <= CYNUM_HAL_LPC24XX_PCLK_ACF) ? 
                    CYGARC_HAL_LPC24XX_REG_PCLKSEL0 : 
                    CYGARC_HAL_LPC24XX_REG_PCLKSEL1); 
     HAL_READ_UINT32(CYGARC_HAL_LPC24XX_REG_SCB_BASE + pclkselreg, regval);
-    regval  = (regval >> ((peripheral_id & 0xF) << 1)) & 0x03;
+    regval  = (regval >> ((pclk_id & 0xF) << 1)) & 0x03;
     divider = divider_tbl[regval];    
-    if ((8 == divider) && (peripheral_id >= CYNUM_HAL_LPC24XX_PCLK_CAN1)
-        && (peripheral_id <= CYNUM_HAL_LPC24XX_PCLK_ACF))
+    if ((8 == divider) && (pclk_id >= CYNUM_HAL_LPC24XX_PCLK_CAN1)
+        && (pclk_id <= CYNUM_HAL_LPC24XX_PCLK_ACF))
     {
         divider = 6;
     }           
@@ -118,7 +122,10 @@ void hal_lpc_set_pclk(cyg_uint32 peripheral_id, cyg_uint8 divider)
     cyg_uint32 clock;
     cyg_uint32 pclkselreg;
     cyg_uint32 regval;
-     
+    
+    CYG_ASSERT(peripheral_id >= CYNUM_HAL_LPC24XX_PCLK_WDT &&
+               peripheral_id <= CYNUM_HAL_LPC24XX_PCLK_SYSCON,
+               "Invalid peripheral clock ID");
     CYG_ASSERT(divider <= 8, "Wrong peripheral clock divider value"); 
     //
     // decide if we need PCLKSEL0 or PCLKSEL1
@@ -129,8 +136,55 @@ void hal_lpc_set_pclk(cyg_uint32 peripheral_id, cyg_uint8 divider)
     HAL_READ_UINT32(CYGARC_HAL_LPC24XX_REG_SCB_BASE + pclkselreg, regval);
     divider = (6 == divider) ? 8 : divider;
     clock = clock_tbl[divider >> 1];
+    regval &= ~(0x03 << ((peripheral_id & 0xF) << 1));
     regval |= (clock << ((peripheral_id & 0xF) << 1));   
-    HAL_WRITE_UINT32(CYGARC_HAL_LPC24XX_REG_SCB_BASE + pclkselreg, regval);             
+    HAL_WRITE_UINT32(CYGARC_HAL_LPC24XX_REG_SCB_BASE + pclkselreg, regval);
+}
+
+
+//===========================================================================
+// Enable/Disable power for certain peripheral
+//===========================================================================
+void hal_lpc_set_power(cyg_uint8 pconp_id, int on)
+{
+    cyg_uint32 regval;
+    
+    CYG_ASSERT(pconp_id >= CYNUM_HAL_LPC24XX_PCONP_TIMER0 &&
+               pconp_id <= CYNUM_HAL_LPC24XX_PCONP_USB,
+               "Invalid peripheral power ID");
+    HAL_READ_UINT32(CYGARC_HAL_LPC24XX_REG_SCB_BASE + 
+                    CYGARC_HAL_LPC24XX_REG_PCONP, regval);
+    if (on)
+    {
+        regval |= (0x01 << pconp_id);
+    }
+    else
+    {
+        regval &= ~(0x01 << pconp_id);
+    }
+    
+    HAL_WRITE_UINT32(CYGARC_HAL_LPC24XX_REG_SCB_BASE + 
+                     CYGARC_HAL_LPC24XX_REG_PCONP, regval);
+}
+
+
+//===========================================================================
+// Set pin function
+//===========================================================================
+void hal_set_pin_function(cyg_uint8 port, cyg_uint8 pin, cyg_uint8 function)
+{
+    CYG_ASSERT(port <= 4,  "Port value out of bounds");
+    CYG_ASSERT(pin  <= 31, "Pin value out of bounds");
+    CYG_ASSERT(function <= 3, "Invalid function value");
+    
+    cyg_uint32 regval;
+    cyg_uint8 pinsel_reg = port << 1;
+    pinsel_reg += (pin > 15) ? 1 :0;
+    pinsel_reg <<= 2;
+    HAL_READ_UINT32(CYGARC_HAL_LPC24XX_REG_PIN_BASE + pinsel_reg, regval);
+    regval &= ~(0x03 << ((pin & 0xF) << 1));
+    regval |= (function << ((pin & 0xF) << 1));  
+    HAL_WRITE_UINT32(CYGARC_HAL_LPC24XX_REG_PIN_BASE + pinsel_reg, regval);
 }
 
 
@@ -243,9 +297,39 @@ void hal_hardware_init(void)
     //
     // Setup peripheral clocks here according to configuration
     // 
-    hal_lpc_set_pclk(CYNUM_HAL_LPC24XX_PCLK_CAN1, CYGNUM_HAL_ARM_LPC24XX_CAN_CLK_DIV);
-    hal_lpc_set_pclk(CYNUM_HAL_LPC24XX_PCLK_CAN2, CYGNUM_HAL_ARM_LPC24XX_CAN_CLK_DIV);
-    hal_lpc_set_pclk(CYNUM_HAL_LPC24XX_PCLK_ACF,  CYGNUM_HAL_ARM_LPC24XX_CAN_CLK_DIV);
+    hal_lpc_set_pclk(CYNUM_HAL_LPC24XX_PCLK_CAN1, 
+                     CYGNUM_HAL_ARM_LPC24XX_CAN_CLK_DIV);
+    hal_lpc_set_pclk(CYNUM_HAL_LPC24XX_PCLK_CAN2,   
+                     CYGNUM_HAL_ARM_LPC24XX_CAN_CLK_DIV);
+    hal_lpc_set_pclk(CYNUM_HAL_LPC24XX_PCLK_ACF,    
+                     CYGNUM_HAL_ARM_LPC24XX_CAN_CLK_DIV);
+    hal_lpc_set_pclk(CYNUM_HAL_LPC24XX_PCLK_I2C0,  
+                     CYGNUM_HAL_ARM_LPC24XX_I2C0_CLK_DIV);
+    hal_lpc_set_pclk(CYNUM_HAL_LPC24XX_PCLK_I2C1,  
+                     CYGNUM_HAL_ARM_LPC24XX_I2C1_CLK_DIV);
+    hal_lpc_set_pclk(CYNUM_HAL_LPC24XX_PCLK_I2C2,  
+                     CYGNUM_HAL_ARM_LPC24XX_I2C2_CLK_DIV);
+                     
+    //
+    // Enable power for all used on-chip peripherals
+    //
+#ifdef CYGHWR_HAL_ARM_LPC24XX_I2C0_SUPP
+    hal_lpc_set_power(CYNUM_HAL_LPC24XX_PCONP_I2C0, 1);
+#else
+    hal_lpc_set_power(CYNUM_HAL_LPC24XX_PCONP_I2C0, 0);
+#endif // CYGHWR_HAL_ARM_LPC24XX_I2C0_SUPP 
+
+#ifdef CYGHWR_HAL_ARM_LPC24XX_I2C1_SUPP
+    hal_lpc_set_power(CYNUM_HAL_LPC24XX_PCONP_I2C1, 1);
+#else
+    hal_lpc_set_power(CYNUM_HAL_LPC24XX_PCONP_I2C1, 0);
+#endif // CYGHWR_HAL_ARM_LPC24XX_I2C0_SUPP  
+
+#ifdef CYGHWR_HAL_ARM_LPC24XX_I2C2_SUPP
+    hal_lpc_set_power(CYNUM_HAL_LPC24XX_PCONP_I2C2, 1);
+#else
+    hal_lpc_set_power(CYNUM_HAL_LPC24XX_PCONP_I2C2, 0);
+#endif // CYGHWR_HAL_ARM_LPC24XX_I2C0_SUPP    
     
     //
     // Fill vector address registers with interrupt number. If an interrupt
