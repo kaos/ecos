@@ -44,25 +44,17 @@
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   nickg
+// Author(s):   Lars Poeschel
 // Contributors:
-// Date:        2007-07-09
-// Purpose:     Cache control API
+// Date:        2008-07-09
+// Purpose:     Cache control API for skmb91302 platform
 // Description: The macros defined here provide the HAL APIs for handling
 //              cache control operations.
-// Usage:
-//              #include <cyg/hal/plf_cache.h>
-//              ...
-//              
+// Usage:       Included via "hal_cache.h". Do not use directly.
 //
 //####DESCRIPTIONEND####
 //
 //=============================================================================
-
-#include <pkgconf/hal.h>
-#include <cyg/infra/cyg_type.h>
-
-#include <cyg/hal/plf_cache.h>
 
 //=============================================================================
 

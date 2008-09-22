@@ -153,7 +153,7 @@ cdl_package CYGPKG_HAL_FR30_MB91301_SKMB91302 {
             display "Global compiler flags"
             flavor  data
             no_define
-            default_value { "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -finit-priority -fomit-frame-pointer" }
+            default_value { "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fomit-frame-pointer -fno-use-cxa-atexit" }
             description       "This option controls the global compiler  flags
                                which are used to compile all packages by default.
                                Individual  packages  may  define  options   which
