@@ -1,3 +1,9 @@
+2008-09-19  Lars Poeschel  <larsi@wh2.tu-dresden.de>
+
+    * include/variant.inc:
+    * include/var_cache.h: Support the cache of the mb91301 variant, uses it as
+                           4 kb instruction cache.
+
 2008-07-01  Lars Poeschel  <larsi@wh2.tu-dresden.de>
 
     * src/fr30_md91301.ld: Reworked memory layout for flash support.

@@ -176,8 +176,11 @@
     .equ FR30_MB91301_RTC_TMRLR,      0x50
     .equ FR30_MB91301_RTC_TMR,        0x52
     .equ FR30_MB91301_RTC_TMCSR,      0x56
-
-
+##-----------------------------------------------------------------------------
+## registers for cache settings
+##
+    .equ FR30_MB91301_CACHE_ISIZE,      0x307
+    .equ FR30_MB91301_CACHE_ICHCR,      0x3e7
 
 ##------------------------------------------------------------------------------
 ## CPU initialisation macro
@@ -333,6 +336,25 @@
     .endm
 
 #define CYGPKG_HAL_FR30_TIMER_DEFINED
+
+#endif
+
+#------------------------------------------------------------------------------
+# Cache initialization. We use 4 kb Cache, although not so documented.
+# The processor manual is not clear about this.
+# r0 and r1 are polluted
+
+#ifndef CYGPKG_HAL_FR30_CACHE_DEFINED
+#define CYGPKG_HAL_FR30_CACHE_DEFINED
+
+    .macro  hal_cache_init
+
+        ldi:20  #FR30_MB91301_CACHE_ICHCR, r0
+# set (CYG_HAL_FR30_CACHE_ICHCR_RAM | CYG_HAL_FR30_CACHE_ICHCR_FLSH |
+#      CYG_HAL_FR30_CACHE_ICHCR_ELKR | CYG_HAL_FR30_CACHE_ICHCR_ENAB)
+        ldi:20  #0x87, r1
+        stb     r1, @r0
+    .endm
 
 #endif
 
