@@ -1,3 +1,16 @@
+2008-09-16  Uwe Kindler  <uwe_kindler@web.de>
+
+	* src/i2c_lpc2xxx.c: Implemented support for multiple I2C busses
+	  Call DSR only if there is something to signal. Removed
+	  declaration of I2C bus via CYG_I2C_BUS() macro - this belongs in
+	  the platform HAL.
+	
+	* include/i2c_lpc2xxx.h: New file with macro definition of macro
+	  CYG_LPC2XXX_I2C_BUS() for I2C bus declaration by platform HAL
+	  
+	* cdl/i2c_lpc2xxx.cdl: Added CYGHWR_DEVS_I2C_ARM_LPC2XXX_MULTIPLE_BUSES
+	  configuration option to support multiple I2C busses
+	
 2007-07-12  Hans Rosenfeld  <rosenfeld@grumpf.hope-2000.org>
 
 	* lpc2xxx: driver for on-chip I2C unit

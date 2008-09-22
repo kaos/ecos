@@ -2,13 +2,13 @@
 #
 #      i2c_lpc2xxx.cdl
 #
-#      I2C driver for LPC2xxx
+#      eCos LPC2xxx I2C configuration data
 #
 # ====================================================================
 #####ECOSGPLCOPYRIGHTBEGIN####
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
-## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2008 Free Software Foundation, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -38,7 +38,7 @@
 ######DESCRIPTIONBEGIN####
 #
 # Author(s):      Hans Rosenfeld <rosenfeld@grumpf.hope-2000.org>
-# Contributors:   
+# Contributors:   Uwe Kindler <uwe_kindler@web.de>
 # Date:           2007-07-12
 #
 #####DESCRIPTIONEND####
@@ -50,10 +50,45 @@ cdl_package CYGPKG_DEVS_I2C_ARM_LPC2XXX {
     
     parent      CYGPKG_IO_I2C
     active_if   CYGPKG_IO_I2C
-    active_if   CYGPKG_HAL_ARM_LPC2XXX
+    active_if   CYGPKG_HAL_ARM_LPC2XXX || CYGPKG_HAL_ARM_LPC24XX 
 
-    description "This package provides a driver for the I2C module found in
-                 Philips LPC2xxx controllers."
-
+    description " 
+           This package provides a generic I2C device driver for the on-chip
+           I2C peripherals in LPX2xxx processors."
+           
+    include_dir cyg/io
     compile     i2c_lpc2xxx.c
+    
+    cdl_option CYGHWR_DEVS_I2C_ARM_LPC2XXX_MULTIPLE_BUSES {
+	display		"Target hardware may have multiple I2C buses"
+	flavor		bool
+	default_value	0
+	description "
+          The LPC2xxx I2C driver can support multiple I2C bus devices. By
+          default the driver assumes only a single device is present and will
+          optimize for that case, using constant definitions provided by the
+          platform HAL rather than per-device structure fields. If the hardware
+          has multiple I2C bus devices, or if a singleton bus is instantiated
+          by some other package and hence the platform HAL cannot provide the
+          necessary definitions, then this option should be enabled."
+    }
+    
+    cdl_option CYGPKG_DEVS_I2C_ARM_LPC2XXX_DEBUG_LEVEL {
+         display "Driver debug output level"
+         flavor  data
+         legal_values {0 1}
+         default_value 0
+         description   "
+             This option specifies the level of debug data output by
+             the LPC2XXX I2C device driver. A value of 0 signifies
+             no debug data output; 1 signifies normal debug data
+             output. The generic eCos I2C driver functions do not return any 
+             error information if a I2C transfer failed. If this option is
+             1 then the driver prints the status flags if a transfer failed
+             or was aborted. It prints the status flags in case of a missing 
+             data or address acknowledge, in case of lost arbitration and in 
+             case of a bus error. A missing acknowledge does not realy indicate
+             an error and may be part of a normal I2C communication. Therefore
+             this option should only be >0 for debug reasons."         
+    }
 }
