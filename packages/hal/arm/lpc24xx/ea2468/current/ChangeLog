@@ -1,3 +1,17 @@
+2008-09-18  Uwe Kindler  <uwe_kindler@web.de>
+
+	* cdl/hal_arm_lpc2xxx_ea2468.cdl: Added compile platform_i2c.c and
+	  CYGPKG_HAL_ARM_LPC24XX_EA2468_TESTS for building I2C test
+	* include/plf_io.h: Exported I2C devices and bus via macro
+	  HAL_I2C_EXPORTED_DEVICES, Added I2C related defines, Added
+	  functions declarations  hal_lpc_eeprom_write() and 
+	  hal_lpc_eeprom_read() for I2C EEPROM access
+	* src/ea2468_misc.c: Replaced CYGARC_HAL_LPC24XX_SET_PIN_FUN() macro
+	  calls with hal_set_pin_function() calls
+	* src/platform_i2c.c: New file adds I2C bus support for I2C bus 0 and 
+	  adds support for I2C EEPROM
+	* tests/i2c_eeprom: Simple I2C EEPROM read/write test case
+
 2008-09-11  Uwe Kindler  <uwe_kindler@web.de>
 
 	* cdl/hal_arm_lpc2xxx_ea2468.cdl: Added constraint for

@@ -269,9 +269,7 @@ void hal_mem_init(void)
     //
     HAL_WRITE_UINT32(EMC_BASE + CYGARC_HAL_LPC24XX_REG_EMC_CTRL, 
                      CYGARC_HAL_LPC24XX_REG_EMC_CTRL_EN);
-    HAL_READ_UINT32(SCB_BASE + CYGARC_HAL_LPC24XX_REG_PCONP, regval);
-    HAL_WRITE_UINT32(SCB_BASE + CYGARC_HAL_LPC24XX_REG_PCONP,
-                     regval | CYGARC_HAL_LPC24XX_REG_PCONP_EMC);  
+    hal_lpc_set_power(CYNUM_HAL_LPC24XX_PCONP_EMC, 1);
                     
     //
     // Setup pin functions
@@ -438,26 +436,20 @@ void hal_lpc_can_init(cyg_uint8 can_chan_no)
 {
     CYG_ASSERT(can_chan_no < 2, "CAN channel number out of bounds");
     
-    cyg_uint32 pinsel0_val;
-    cyg_uint32 pconp_val;
-    HAL_READ_UINT32(PIN_BASE + CYGARC_HAL_LPC24XX_REG_PINSEL0, pinsel0_val);
-    HAL_READ_UINT32(SCB_BASE + CYGARC_HAL_LPC24XX_REG_PCONP, pconp_val);
     switch (can_chan_no)
     {
         case 0:
-             CYGARC_HAL_LPC24XX_SET_PIN_FUN(pinsel0_val, 0, 1);
-             CYGARC_HAL_LPC24XX_SET_PIN_FUN(pinsel0_val, 1, 1);
-             pconp_val |= CYGARC_HAL_LPC24XX_REG_PCONP_CAN1;
+             hal_set_pin_function(0, 0, 1); // RD1
+             hal_set_pin_function(0, 1, 1); // TD1
+             hal_lpc_set_power(CYNUM_HAL_LPC24XX_PCONP_CAN1, 1);
              break;
         
         case 1:
-             CYGARC_HAL_LPC24XX_SET_PIN_FUN(pinsel0_val, 4, 2);
-             CYGARC_HAL_LPC24XX_SET_PIN_FUN(pinsel0_val, 5, 2); 
-             pconp_val |= CYGARC_HAL_LPC24XX_REG_PCONP_CAN2;
+             hal_set_pin_function(0, 4, 2); // RD2
+             hal_set_pin_function(0, 5, 2); // TD2
+             hal_lpc_set_power(CYNUM_HAL_LPC24XX_PCONP_CAN2, 1);
              break;
     }
-    HAL_WRITE_UINT32(PIN_BASE + CYGARC_HAL_LPC24XX_REG_PINSEL0, pinsel0_val);
-    HAL_WRITE_UINT32(SCB_BASE + CYGARC_HAL_LPC24XX_REG_PCONP, pconp_val);
 }
 #endif // #ifdef CYGPKG_DEVS_CAN_LPC2XXX
 

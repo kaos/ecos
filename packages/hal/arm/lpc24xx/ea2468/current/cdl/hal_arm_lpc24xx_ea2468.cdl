@@ -58,7 +58,7 @@ cdl_package CYGPKG_HAL_ARM_LPC24XX_EA2468 {
         The LPC2468 OEM HAL package provides the support needed to run
         eCos on Embedded Artists LPC2468 OEM 16/32 boards."
 
-    compile       ea2468_misc.c
+    compile       ea2468_misc.c platform_i2c.c
 
     requires      { CYGHWR_HAL_ARM_LPC24XX == "LPC2468" }
     requires      { is_active(CYGPKG_DEVS_ETH_PHY) implies
@@ -288,6 +288,7 @@ cdl_package CYGPKG_HAL_ARM_LPC24XX_EA2468 {
 
         }
     }
+    
 
     cdl_component CYGHWR_MEMORY_LAYOUT {
         display "Memory layout"
@@ -316,4 +317,15 @@ cdl_package CYGPKG_HAL_ARM_LPC24XX_EA2468 {
                              "<pkgconf/mlt_arm_lpc24xx_ea2468_rom.h>" }
         }
     }
+    
+   cdl_option CYGPKG_HAL_ARM_LPC24XX_EA2468_TESTS {
+        display "Tests for LPC2468 OEM board HAL"
+        flavor  data
+        no_define
+        calculated { "tests/i2c_eeprom" }
+        description   "
+            This option specifies the set of tests for the LPC2xxx 
+            CAN device driver."
+    }
+
 }

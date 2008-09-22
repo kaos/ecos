@@ -53,6 +53,14 @@
 // On-chip device base addresses
 
 
+// ----------------------------------------------------------------------------
+// exported I2C devices on OEM board
+//
+#define HAL_I2C_EXPORTED_DEVICES                      \
+    extern cyg_i2c_device i2c_cat24c256_eeprom;       \
+    extern cyg_i2c_bus    hal_ea2468_i2c0_bus;
+    
+
 //----------------------------------------------------------------------
 // The platform needs this initialization during the
 // hal_hardware_init() function in the varient HAL.
@@ -68,8 +76,47 @@ extern void hal_plf_hardware_init(void);
 #ifdef CYGPKG_DEVS_CAN_LPC2XXX
 externC void hal_lpc_can_init(cyg_uint8 can_chan_no);            
 #define HAL_LPC2XXX_INIT_CAN(_can_chan_no_) hal_lpc_can_init(_can_chan_no_)
-#endif // CYGPKG_DEVS_CAN_LPC2XXX   
+#endif // CYGPKG_DEVS_CAN_LPC2XXX 
 
+
+// ----------------------------------------------------------------------------
+// I2C support. The LPC2468 OEM board supports up to 3 I2C busses. Only the
+// I2C bus 0 is used on the board. The other I2C busses are available via
+// the expansion connector. If only the first bus is used, the I2C driver
+// will be optimized for a single I2C bus
+#ifdef CYGPKG_DEVS_I2C_ARM_LPC2XXX
+# define HAL_LPC2XXX_I2C_SINGLETON_BASE     CYGARC_HAL_LPC24XX_REG_I2C0_BASE
+# define HAL_LPC2XXX_I2C_SINGLETON_ISRVEC   CYGNUM_HAL_INTERRUPT_I2C
+# define HAL_LPC2XXX_I2C_SINGLETON_CLK      CYGNUM_HAL_ARM_LPC24XX_I2C0_CLK
+# define HAL_LPC2XXX_I2C_SINGLETON_ISRPRI   CYGNUM_HAL_ARM_LPC24XX_I2C0_INT_PRIO
+# define HAL_LPC2XXX_I2C_SINGLETON_BUS_FREQ CYGNUM_HAL_ARM_LPC24XX_I2C0_BUS_FREQ
+
+
+//-----------------------------------------------------------------------------
+// Write data to eeprom (page write)
+// If the call is blocking (blocking == true) then the function will poll
+// the device if it is busy writing. If it is non blocking then the function
+// immediately return 0 if the device is busy
+// Function returns number of bytes written to device
+//-----------------------------------------------------------------------------
+externC cyg_uint32 hal_lpc_eeprom_write(cyg_uint16 addr,
+                                        cyg_uint8 *pdata,
+                                        cyg_uint16 size,
+                                        cyg_bool   blocking);
+
+
+//-----------------------------------------------------------------------------
+// Read data from eeprom (selcetive, sequencial read)
+// If the call is blocking (blocking == true) then the function will poll
+// the device if it is busy writing. If it is non blocking then the function
+// immediately return 0 if the device is busy
+// Function returns number of bytes read from device
+//-----------------------------------------------------------------------------
+externC cyg_uint32 hal_lpc_eeprom_read(cyg_uint16 addr,
+                                       cyg_uint8 *pdata,
+                                       cyg_uint16 size,
+                                       cyg_bool   blocking);
+#endif // CYGPKG_DEVS_I2C_ARM_LPC2XXX  
 #endif  //__ASSEMBLER__ 
 
 //-----------------------------------------------------------------------------
