@@ -1,3 +1,8 @@
+2008-09-23  Shaun Louie <sal@microplex.com>
+
+    * src/vectors.S: Changed compile condition that determines whether
+      exception vectors should be copied to RAM.
+
 2007-10-12  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/vectors.S: Optimize system initialization of DATA/BSS/etc.
