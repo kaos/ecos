@@ -1,0 +1,2914 @@
+<!-- DOCTYPE part  PUBLIC "-//OASIS//DTD DocBook V3.1//EN" -->
+
+<!-- {{{ Banner                         -->
+
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!--     framebuf.sgml                                               -->
+<!--                                                                 -->
+<!--     Generic framebuffer documentation.                          -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- ####COPYRIGHTBEGIN####                                          -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- Copyright (C) 2008 Free Software Foundation, Inc.               -->
+<!-- This material may be distributed only subject to the terms      -->
+<!-- and conditions set forth in the Open Publication License, v1.0  -->
+<!-- or later (the latest version is presently available at          -->
+<!-- http://www.opencontent.org/openpub/)                            -->
+<!-- Distribution of the work or derivative of the work in any       -->
+<!-- standard (paper) book form is prohibited unless prior           -->
+<!-- permission obtained from the copyright holder                   -->
+<!-- =============================================================== -->
+<!--                                                                 -->      
+<!-- ####COPYRIGHTEND####                                            -->
+<!-- =============================================================== -->
+<!-- #####DESCRIPTIONBEGIN####                                       -->
+<!--                                                                 -->
+<!-- Author(s):   bartv                                              -->
+<!-- Date:        2005/03/29                                         -->
+<!--                                                                 -->
+<!-- ####DESCRIPTIONEND####                                          -->
+<!-- =============================================================== -->
+
+<!-- }}} -->
+
+<part id="io-framebuf"><title>Framebuffer Support</title>
+
+<!-- {{{ Overview                       -->
+
+<refentry id="framebuf">
+  <refmeta>
+    <refentrytitle>Overview</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname>Overview</refname>
+    <refpurpose>eCos Support for Framebuffer Devices</refpurpose>
+  </refnamediv>
+
+  <refsect1 id="framebuf-description">
+    <title>Description</title>
+    <para>
+Framebuffer devices are the most common way for a computer system to
+display graphical output to users. There are immense variations in the
+implementations of such devices. <varname>CYGPKG_IO_FRAMEBUF</varname>
+provides an abstraction layer for use by application code and other
+packages. It defines an API for manipulating framebuffers, mapping
+this API on to functionality provided by the appropriate device
+driver. It also defines the interface which such device drivers should
+implement. For simple hardware it provides default implementations of
+much of this interface, greatly reducing the effort needed to write a
+device driver.
+    </para>
+    <para>
+This package does not constitute a graphics library. It does not
+implement functionality like drawing text or arbitrary lines, let
+alone any kind of windowing system. Instead it operates at the lower
+level of individual pixels and blocks of pixels, in addition to
+control operations such as hardware initialization. Some applications
+may use the framebuffer API directly. Others will instead use a
+higher-level graphics library, and it is that library which uses the
+framebuffer API.
+    </para>
+    <para>
+It is assumed that users are already familiar with the fundamentals of
+computer graphics, and no attempt is made here to explain terms like
+display depth, palette or pixel.
+    </para>
+    <note>
+      <para>
+This package is work-in-progress. The support for 1bpp, 2bpp and 4bpp
+display depths is incomplete. For double-buffered displays the code
+does not yet maintain a bounding box of the updated parts of the
+display. The package has also been designed to allow for
+<link linkend="framebuf-porting-expansion">expansion</link> with new
+functionality.
+      </para>
+    </note>
+  </refsect1>
+
+  <refsect1 id="framebuf-configuration">
+    <title>Configuration</title>
+    <para>
+<varname>CYGPKG_IO_FRAMEBUF</varname> only contains
+hardware-independent code. It should be complemented by one or more
+framebuffer device drivers appropriate for the target platform. These
+drivers may be specific to the platform, or they may be more generic
+with platform-specific details such as the framebuffer memory base
+address provided by the platform HAL. When creating a configuration
+for a given target the device driver(s) will always be included
+automatically (assuming one has been written or ported). However by
+default this driver will be inactive and will not get built, so does
+not add any unnecessary size overhead for applications which do not
+require graphics. To activate the device driver
+<varname>CYGPKG_IO_FRAMEBUF</varname> must be added explicitly to the
+configuration, for example using
+<command>ecosconfig&nbsp;add&nbsp;framebuf</command>. After this the
+full framebuffer API will be available to other packages and to
+application code.
+    </para>
+    <para>
+This package contains very few configuration options. Instead it is
+left to device drivers or higher-level code to provide appropriate
+configurability. One option,
+<varname>CYGFUN_IO_FRAMEBUF_INSTALL_DEFAULT_PALETTE</varname>, relates
+to the initialization of <link
+linkend="framebuf-colour-palette">paletted displays</link>.
+    </para>
+    <para>
+There are a number of calculated and inferred configuration options
+and a number of interfaces. These provide information such as whether
+or not there is a backlight. The most important one is
+<varname>CYGDAT_IO_FRAMEBUF_DEVICES</varname>, which holds a list of
+framebuffer identifiers for use with the <link
+linkend="framebuf-api">macro-based API</link>. If there is a single
+framebuffer device driver which supports one display in either
+landscape or portrait mode, the configuration option may hold a value
+like <literal> 240x320x8 320x240x8r90</literal>.
+    </para>
+  </refsect1>
+
+  <refsect1 id="framebuf-api">
+    <title>Application Programmer Interfaces</title>
+    <para>
+Framebuffer devices require a difficult choice between flexibility and
+performance. On the one hand the API should be able to support
+multiple devices driving separate displays, or a single device
+operating in different modes at different times. On the other hand
+graphics tends to involve very large amounts of I/O: even something as
+simple as drawing a background image can involve setting many
+thousands of pixels. Efficiency requires avoiding all possible
+overheads including function calls. Instead the API should make
+extensive use of macros or inline functions. Ideally details of the
+framebuffer device such as the stride would be known constants at
+compile-time, giving the compiler as much opportunity as possible to
+optimize the code. Clearly this is difficult if multiple framebuffer
+devices are in use or if the device mode may get changed at run-time.
+    </para>
+    <para>
+To meet the conflicting requirements the generic framebuffer package
+provides two APIs: a fast macro API which requires selecting a single
+framebuffer device at compile or configure time; and a slower function
+API without this limitation. The two are very similar, for example:
+    </para>
+    <programlisting width=72>
+#include &lt;cyg/io/framebuf.h&gt;
+
+void
+clear_screen(cyg_fb* fb, cyg_fb_colour colour)
+{
+    cyg_fb_fill_block(fb, 0, 0,
+                      fb->fb_width, fb->fb_height,
+                      colour);
+}
+    </programlisting>
+    <para>
+or the equivalent macro version:
+    </para>
+<programlisting width=72>
+#include &lt;cyg/io/framebuf.h&gt;
+
+#define FRAMEBUF 240x320x8
+
+void
+clear_screen(cyg_fb_colour colour)
+{
+    CYG_FB_FILL_BLOCK(FRAMEBUF, 0, 0,
+                      CYG_FB_WIDTH(FRAMEBUF), CYG_FB_HEIGHT(FRAMEBUF),
+                      colour);
+}
+    </programlisting>
+    <para>
+The function-based API works in terms of
+<structname>cyg_fb</structname> structures, containing all the
+information needed to manipulate the device. Each framebuffer device
+driver will export one or more of these structures, for example
+<varname>cyg_alaia_fb_240x320x8</varname>, and the driver
+documentation should list the variable names. The macro API works in
+terms of identifiers such as <literal>240x320x8</literal>, and by a
+series of substitutions the main macro gets expanded to the
+appropriate device-specific code, usually inline. Again the device
+driver documentation should list the supported identifiers. In
+addition the configuration option
+<varname>CYGDAT_IO_FRAMEBUF_DEVICES</varname> will contain the full
+list. By convention the identifier will be specified by a
+<literal>#define</literal>'d symbol such as
+<varname>FRAMEBUF</varname>, or in the case of graphics libraries by a
+configuration option.
+    </para>
+    <para>
+If a platform has multiple framebuffer devices connected to different
+displays then there will be separate <structname>cyg_fb</structname>
+structures and macro identifiers for each one. In addition some
+devices can operate in multiple modes. For example a PC VGA card can
+operate in a monochome 640x480 mode, an 8bpp 320x200 mode, and many
+other modes, but only one of these can be active at a time. The
+different modes are also represented by different
+<structname>cyg_fb</structname> structures and identifiers,
+effectively treating the modes as separate devices. It is the
+responsibility of higher-level code to ensure that only one mode is in
+use at a time.
+    </para>
+    <para>
+It is possible to use the macro API with more than one device,
+basically by compiling the code twice with different values of
+<varname>FRAMEBUF</varname>, taking appropriate care to avoid
+identifier name clashes. This gives the higher performance of the
+macros at the cost of increased code size.
+    </para>
+    <para>
+All of the framebuffer API, including exports of the device-specific
+<structname>cyg_fb</structname> structures, is available through a
+single header file <filename>&lt;cyg/io/framebuf.h&gt;</filename>. The
+API follows a number of conventions. Coordinates (0,0) correspond to
+the top-left corner of the display. All functions and macros which
+take a pair of coordinates have x first, y second. For block
+operations these coordinates are followed by width, then height.
+Coordinates and dimensions use <type>cyg_ucount16</type> variables,
+which for any processor should be the most efficient unsigned data
+type with at least 16 bits - usually plain unsigned integers. Colours
+are identified by <type>cyg_fb_colour</type> variables, again usually
+unsigned integers.
+    </para>
+    <para>
+To allow for the different variants of the English language, the API
+allows for a number of alternate spellings. Colour and color can be
+used interchangeably, so there are data types
+<type>cyg_fb_colour</type> and <type>cyg_fb_color</type>, and
+functions <function>cyg_fb_make_colour</function> and
+<function>cyg_fb_make_color</function>. Similarly gray is accepted as
+a variant of grey so the predefined colours
+<literal>CYG_FB_DEFAULT_PALETTE_LIGHTGREY</literal> and
+<literal>CYG_FB_DEFAULT_PALETTE_LIGHTGRAY</literal> are equivalent.
+    </para>
+    <para>
+The API is split into the following categories:
+    </para>
+    <variablelist>
+      <varlistentry>
+        <term><link linkend="framebuf-parameters">parameters</link></term>
+        <listitem><para>
+getting information about a given framebuffer device such as width,
+height and depth. Colours management is complicated so has its own
+<link linkend="framebuf-colour">category</link>.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><link linkend="framebuf-control">control</link></term>
+        <listitem><para>
+operations such as switching the display on and off, and more
+device-specific ones such as manipulating the backlight.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><link linkend="framebuf-colour">colours</link></term>
+        <listitem><para>
+determining the colour format (monochrome, paletted, &hellip),
+manipulating the palette, or constructing true colours.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><link linkend="framebuf-drawing">drawing</link></term>
+        <listitem><para>
+primitives for manipulating pixels and blocks of pixels.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><link linkend="framebuf-iterating">iteration</link></term>
+        <listitem><para>
+efficiently iterating over blocks of pixels.
+        </para></listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1 id="framebuf-threads">
+    <title>Thread Safety</title>
+    <para>
+The framebuffer API never performs any locking so is not thread-safe.
+Instead it assumes that higher-level code such as a graphics library
+performs any locking that may be needed. Adding a mutex lock and
+unlock around every drawing primitive, including pixel writes, would
+be prohibitively expensive.
+    </para>
+    <para>
+It is also assumed that the framebuffer will only be updated from
+thread context. With most hardware it will also be possible to access
+a framebuffer from DSR or ISR context, but this should be avoided in
+portable code.
+    </para>
+  </refsect1>
+
+</refentry>
+
+<!-- }}} -->
+<!-- {{{ Framebuffer parameters         -->
+
+<refentry id="framebuf-parameters">
+  <refmeta>
+    <refentrytitle>Framebuffer Parameters</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname>Parameters</refname>
+    <refpurpose>determining framebuffer capabilities</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+#include &lt;cyg/io/framebuf.h&gt;
+
+typedef struct cyg_fb {
+    cyg_ucount16    fb_depth;
+    cyg_ucount16    fb_format;
+    cyg_ucount16    fb_width;
+    cyg_ucount16    fb_height;
+#ifdef CYGHWR_IO_FRAMEBUF_FUNCTIONALITY_VIEWPORT
+    cyg_ucount16    fb_viewport_width;
+    cyg_ucount16    fb_viewport_height;
+#endif
+    void*           fb_base;
+    cyg_ucount16    fb_stride;
+    cyg_uint32      fb_flags0;
+    &hellip;    
+} cyg_fb;
+      </funcsynopsisinfo>
+      <funcprototype>
+        <funcdef>cyg_fb* <function>CYG_FB_STRUCT</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>cyg_ucount16 <function>CYG_FB_DEPTH</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>cyg_ucount16 <function>CYG_FB_FORMAT</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>cyg_ucount16 <function>CYG_FB_WIDTH</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>cyg_ucount16 <function>CYG_FB_HEIGHT</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>cyg_ucount16 <function>CYG_FB_VIEWPORT_WIDTH</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>cyg_ucount16 <function>CYG_FB_VIEWPORT_HEIGHT</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void* <function>CYG_FB_BASE</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>cyg_ucount16 <function>CYG_FB_STRIDE</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>cyg_uint32 <function>CYG_FB_FLAGS0</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1 id="framebuf-parameters-description">
+    <title>Description</title>
+    <para>
+When developing an application for a specific platform the various
+framebuffer parameters such as width and height are known, and the
+code can be written accordingly. However when writing code that should
+work on many platforms with different framebuffer devices, for example
+a graphics library, the code must be able to get these parameters and
+adapt.
+    </para>
+    <para>
+Code using the function API can extract the parameters from the
+<structname>cyg_fb</structname> structures at run-time. The macro API
+provides dedicated macros for each parameter. These do not follow the
+usual eCos convention where the result is provided via an extra
+argument. Instead the result is returned as normal, and is guaranteed
+to be a compile-time constant. This allows code like the following:
+    </para>
+    <programlisting width=72>
+#if CYG_FB_DEPTH(FRAMEBUF) &lt; 8
+    &hellip;
+#else
+    &hellip;
+#endif
+    </programlisting>
+    <para>
+or alternatively:
+    </para>
+    <programlisting width=72>
+    if (CYG_FB_DEPTH(FRAMEBUF) < 8) {
+        &hellip;
+    } else {
+        &hellip;
+    }
+    </programlisting>
+    <para>
+or:
+    </para>
+    <programlisting width=72>
+    switch (CYG_FB_DEPTH(FRAMEBUF)) {
+        case  1 : &hellip; break;
+        case  2 : &hellip; break;
+        case  4 : &hellip; break;
+        case  8 : &hellip; break;
+        case 16 : &hellip; break;
+        case 32 : &hellip; break;
+    }
+    </programlisting>
+    <para>
+In terms of the code actually generated by the compiler these
+approaches have much the same effect. The macros expand to a
+compile-time constant so unnecessary code can be easily eliminated.
+    </para>
+    <para>
+The available parameters are as follows:
+    </para>
+    <variablelist>
+      <varlistentry>
+        <term>depth</term>
+        <listitem><para>
+The number of bits per pixel or bpp. The common depths are 1, 2, 4, 8,
+16 and 32. 
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>format</term>
+        <listitem><para>
+How the pixel values are mapped on to visible <link
+linkend="framebuf-colour">colours</link>, for example true colour
+or paletted or greyscale.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>width</term>
+        <term>height</term>
+        <listitem><para>
+The number of framebuffer pixels horizontally and vertically.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>viewport width</term>
+        <term>viewport height</term>
+        <listitem><para>
+With some devices the framebuffer height and/or width are greater than
+what the display can actually show. The display is said to offer a
+viewport into the larger framebuffer. The number of visible pixels is
+determined from the viewport width and height. The position of the
+viewport is controlled via an <link
+linkend="framebuf-control-ioctl-viewport"><function>ioctl</function></link>.
+Within a <structname>cyg_fb</structname> structure these fields are
+only present if
+<varname>CYGHWR_IO_FRAMEBUF_FUNCTIONALITY_VIEWPORT</varname>
+is defined, to avoid wasting data space on fields that are unnecessary
+for the current platform. For the macro API the viewport macros should only be used
+if <literal>CYG_FB_FLAGS0_VIEWPORT</literal> is set for the framebuffer:
+        </para>
+        <programlisting width=72>
+#if (CYG_FB_FLAGS0(FRAMEBUF) &amp; CYG_FB_FLAGS0_VIEWPORT)
+    &hellip;
+#endif
+        </programlisting></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>base</term>
+        <term>stride</term>
+        <listitem><para>
+For <link linkend="framebuf-parameters-linear">linear</link>
+framebuffers these parameters provide the information needed to access
+framebuffer memory. The stride is in bytes.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>flags0</term>
+        <listitem><para>
+This gives further information about the hardware capabilities.
+Some of this overlaps with other parameters, especially when it comes
+to colour, because it is often easier to test for a single flag than
+for a range of colour modes. The current flags are:
+        </para>
+        <variablelist>
+          <varlistentry>
+            <term><literal>CYG_FB_FLAGS0_LINEAR_FRAMEBUFFER</literal></term>
+            <listitem><para>
+Framebuffer memory is organized in a conventional fashion and can be
+<link linkend="framebuf-parameters-linear">accessed</link> directly by
+higher-level code using the base and stride parameters.
+            </para></listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><literal>CYG_FB_FLAGS0_LE</literal></term>
+            <listitem><para>
+This flag is only relevant for 1bpp, 2bpp and 4bpp devices and
+controls how the pixels are organized within each byte. If the flag is
+set then the layout is little-endian: for a 1bpp device pixel (0,0)
+occupies bit 0 of the first byte of framebuffer memory. The more
+common layout is big-endian where pixel (0,0) occupies bit 7 of the
+first byte.
+            </para></listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><literal>CYG_FB_FLAGS0_TRUE_COLOUR</literal></term>
+            <listitem><para>
+The framebuffer uses a true colour format where the value of each
+pixel directly encodes the red, green and blue intensities. This is
+common for 16bpp and 32bpp devices, and is occasionally used for 8bpp
+devices. 
+            </para></listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><literal>CYG_FB_FLAGS0_PALETTE</literal></term>
+            <listitem><para>
+The framebuffer uses a palette. A pixel value does not directly encode
+the colours, but instead acts as an index into a separate table of
+colour values. That table may be read-only or read-write. Paletted
+displays are common for 8bpp and some 4bpp displays.
+            </para></listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><literal>CYG_FB_FLAGS0_WRITEABLE_PALETTE</literal></term>
+            <listitem><para>
+The palette is read-write.
+            </para></listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><literal>CYG_FB_FLAGS0_DELAYED_PALETTE_UPDATE</literal></term>
+            <listitem><para>
+Palette updates can be synchronized to a vertical blank, in other
+words a brief time period when the display is not being updated,
+by using <literal>CYG_FB_UPDATE_VERTICAL_RETRACE</literal> as the last
+argument to <function>cyg_fb_write_palette</function> or
+<function>CYG_FB_WRITE_PALETTE</function>. With some hardware updating
+the palette in the middle of a screen update may result in visual noise.
+            </para></listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><literal>CYG_FB_FLAGS0_VIEWPORT</literal></term>
+            <listitem><para>
+The framebuffer contains more pixels than can be shown on the display.
+Instead the display provides a viewport into the framebuffer. An
+<link linkend="framebuf-control-ioctl-viewport"><function>ioctl</function></link>
+can be used to move the viewport.
+            </para></listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><literal>CYG_FB_FLAGS0_DOUBLE_BUFFER</literal></term>
+            <listitem><para>
+The display does not show the current contents of the framebuffer, so
+the results of drawing into the framebuffer are not immediately
+visible. Instead higher-level code needs to perform an explicit 
+<link linkend="framebuf-drawing-synch">synch</link> operation to
+update the display.
+            </para></listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><literal>CYG_FB_FLAGS0_PAGE_FLIPPING</literal></term>
+            <listitem><para>
+The hardware supports two or more pages, each of width*height pixels,
+only one of which is visible on the display. This allows higher-level
+code to update one page without disturbing what is currently visible.
+An <link
+linkend="framebuf-control-ioctl-pageflip"><function>ioctl</function></link>
+is used to switch the visible page.
+            </para></listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><literal>CYG_FB_FLAGS0_BLANK</literal></term>
+            <listitem><para>
+The display can be <link linkend="framebuf-control-ioctl-blank">blanked</link>
+without affecting the framebuffer contents or settings.
+            </para></listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><literal>CYG_FB_FLAGS0_BACKLIGHT</literal></term>
+            <listitem><para>
+There is a backlight which can be <link
+linkend="framebuf-control-ioctl-backlight">switched</link> 
+on or off. Some hardware provides finer-grained control over the
+backlight intensity.
+            </para></listitem>
+          </varlistentry>
+          <varlistentry>
+            <term><literal>CYG_FB_FLAGS0_MUST_BE_ON</literal></term>
+            <listitem><para>
+Often it is desirable to perform some initialization such as clearing
+the screen or setting the palette before the display is <link
+linkend="framebuf-control-onoff">switched on</link>, to avoid visual
+noise. However not all hardware allows this. If this flag is set then
+it is possible to access framebuffer memory and the palette before the
+<function>cyg_fb_on</function> or <function>CYG_FB_ON</function>
+operation. It may also be possible to perform some other operations
+such as activating the backlight, but that is implementation-defined.
+            </para></listitem>
+          </varlistentry>
+        </variablelist>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+    <para>
+To allow for future expansion there are also flags1, flags2, and
+flags3 fields. These may get used for encoding additional
+<function>ioctl</function> functionality, support for hardware
+acceleration, and similar features.
+    </para>
+  </refsect1>
+
+  <refsect1 id="framebuf-parameters-linear">
+    <title>Linear Framebuffers</title>
+    <para>
+There are drawing primitives for writing and reading individual
+pixels. However these involve a certain amount of arithmetic each time
+to get from a position to an address within the frame buffer, plus
+function call overhead if the function API is used, and this will slow
+down graphics operations.
+    </para>
+    <para>
+When the framebuffer device is known at compile-time and the macro API
+is used then there are additional macros specifically for <link
+linkend="framebuf-iterating">iterating</link> over parts of the frame
+buffer. These should prove very efficient for many graphics
+operations. However if the device is selected at run-time then the
+macros are not appropriate and code may want to manipulate framebuffer
+memory directly. This is possible if two conditions are satisfied:
+    </para>
+    <orderedlist>
+      <listitem><para>
+The <literal>CYG_FB_FLAGS0_LINEAR_FRAMEBUFFER</literal> flag must be
+set. Otherwise framebuffer memory is either not directly accessible or
+has a non-linear layout.
+      </para></listitem>
+      <listitem><para>
+The <literal>CYG_FB_FLAGS0_DOUBLE_BUFFER</literal> flag must be clear.
+An efficient double buffer synch operation requires knowing what part
+of the framebuffer have been updated, and the various drawing
+primitives will keep track of this. If higher-level code then starts
+manipulating the framebuffer directly the synch operation may perform
+only a partial update.
+      </para></listitem>
+    </orderedlist>
+    <para>
+The base, stride, depth, width and height parameters, plus the
+<literal>CYG_FB_FLAGS0_LE</literal> flag for 1bpp, 2bpp and 4bpp
+devices, provide all the information needed to access framebuffer
+memory. A linear framebuffer has pixel (0,0) at the base address.
+Incrementing y means adding stride bytes to the pointer.
+    </para>
+    <para>
+The base and stride parameters may be set even if
+<literal>CYG_FB_FLAGS0_LINEAR_FRAMEBUFFER</literal> is clear. This can
+be useful if for example the display is rotated in software from
+landscape to portrait mode. However the meaning of these parameters
+for non-linear framebuffers is implementation-defined.
+    </para>
+  </refsect1>
+</refentry>
+
+<!-- }}} -->
+<!-- {{{ Control Operations             -->
+
+<refentry id="framebuf-control">
+  <refmeta>
+    <refentrytitle>Framebuffer Control Operations</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname>Control Operations</refname>
+    <refpurpose>managing a framebuffer</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+#include &lt;cyg/io/framebuf.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+        <funcdef>int <function>cyg_fb_on</function></funcdef>
+        <paramdef>cyg_fb* <parameter>fbdev</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>int <function>cyg_fb_off</function></funcdef>
+        <paramdef>cyg_fb* <parameter>fbdev</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>int <function>cyg_fb_ioctl</function></funcdef>
+        <paramdef>cyg_fb* <parameter>fbdev</parameter></paramdef>
+        <paramdef>cyg_uint16 <parameter>key</parameter></paramdef>
+        <paramdef>void* <parameter>data</parameter></paramdef>
+        <paramdef>size_t* <parameter>len</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>int <function>CYG_FB_ON</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>int <function>CYG_FB_OFF</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>int <function>CYG_FB_IOCTL</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+        <paramdef>cyg_uint16 <parameter>key</parameter></paramdef>
+        <paramdef>void* <parameter>data</parameter></paramdef>
+        <paramdef>size_t* <parameter>len</parameter></paramdef>
+      </funcprototype> 
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1 id="framebuf-control-description">
+    <title>Description</title>
+    <para>
+The main operations on a framebuffer are drawing and colour
+management. However on most hardware it is also necessary to switch
+the display <link linkend="framebuf-control-onoff">on</link> before the
+user can see anything, and application code should be able to control
+when this happens. There are also miscellaneous operations such as
+manipulating the backlight or moving the viewpoint. These do not
+warrant dedicated functions, especially since the functionality will
+only be available on some hardware, so an <link
+linkend="framebuf-control-ioctl"><function>ioctl</function></link>
+interface is used.
+    </para>
+  </refsect1>
+
+  <refsect1 id="framebuf-control-onoff">
+    <title>Switching the Display On or Off</title>
+    <para>
+With most hardware nothing will be visible until there is a call to
+<function>cyg_fb_on</function> or an invocation of the
+<function>CYG_FB_ON</function> macro. This will initialize the
+framebuffer control circuitry, start sending the data signals to the
+display unit, and switch on the display if necessary. The exact
+initialization semantics are left to the framebuffer device driver. In
+some cases the hardware may already be partially or fully initialized
+by a static constructor or by boot code that ran before eCos.
+    </para>
+    <para>
+There are some circumstances in which initialization can fail, and
+this is indicated by a POSIX error code such as
+<literal>ENODEV</literal>. An example would be plug and play hardware
+where the framebuffer device is not detected at run-time. Another
+example is hardware which can operate in several modes, with separate
+<structname>cyg_fb</structname> structures for each mode, if the
+hardware is already in use for a different mode. A return value of 0
+indicates success.
+    </para>
+    <para>
+Some but not all hardware allows the framebuffer memory and, if
+present, the palette to be manipulated before the device is switched
+on. That way the user does not see random noise on the screen during
+system startup. The flag <literal>CYG_FB_FLAGS0_MUST_BE_ON</literal>
+should be checked:
+    </para>
+    <programlisting width=72>
+static void
+init_screen(cyg_fb_colour background)
+{
+    int result;
+
+#if (! (CYG_FB_FLAGS0(FRAMEBUF) &amp; CYG_FB_FLAGS0_MUST_BE_ON))
+    CYG_FB_FILL_BLOCK(FRAMEBUF, 0, 0,
+                      CYG_FB_WIDTH(FRAMEBUF), CYG_FB_HEIGHT(FRAMEBUF),
+                      background);
+#endif
+
+    result = CYG_FB_ON(FRAMEBUF);
+    if (0 != result) {
+        &lt;handle unusual error condition&gt;
+    }
+
+#if (CYG_FB_FLAGS0(FRAMEBUF) &amp; CYG_FB_FLAGS0_MUST_BE_ON)
+    CYG_FB_FILL_BLOCK(FRAMEBUF, 0, 0,
+                      CYG_FB_WIDTH(FRAMEBUF), CYG_FB_HEIGHT(FRAMEBUF),
+                      background);
+#endif
+}
+    </programlisting>
+    <para>
+Obviously if the application has already manipulated framebuffer
+memory or the palette but then the <function>cyg_fb_on</function>
+operation fails, the system is left in an undefined state.
+    </para>
+    <para>
+It is also possible to switch a framebuffer device off, using the
+function <function>cyg_fb_off</function> or the macro
+<function>CYG_FB_OFF</function>, although this functionality is rarely
+used in embedded systems. The exact semantics of switching a device
+off are implementation-defined, but typically it involves shutting
+down the display, stopping the data signals to the display, and
+halting the control circuitry. The framebuffer memory and the palette
+are left in an undefined state, and application code should assume
+that both need full reinitializing when the device is switched back
+on. Some hardware may also provide a <link
+linkend="framebuf-control-ioctl-blank">blank</link> operation which
+typically just manipulates the display, not the whole framebuffer
+device. Normally <function>cyg_fb_on</function> returns 0. The API
+allows for a POSIX error code as with <function>cyg_fb_on</function>,
+but switching a device off is not an operation that is likely to fail.
+    </para>
+    <para>
+If a framebuffer device can operate in several modes, represented by
+several <structname>cyg_fb</structname> structures and macro
+identifiers, then switching modes requires turning the current device
+off before turning the next one one.
+    </para>
+  </refsect1>
+
+  <refsect1 id="framebuf-control-ioctl">
+    <title>Miscellaneous Control Operations</title>
+    <para>
+Some hardware functionality such as an LCD panel backlight is common
+but not universal. Supporting these does not warrant dedicated
+functions. Instead a catch-all <function>ioctl</function> interface is
+provided, with the arguments just passed straight to the device
+driver. This approach also allows for future expansion and for
+device-specific operations. <function>cyg_fb_ioctl</function> and
+<function>CYG_FB_IOCTL</function> take four arguments: a
+<structname>cyg_fb</structname> structure or framebuffer identifier; a
+key that specifies the operation to be performed; an arbitrary
+pointer, which should usually be a pointer to a data structure
+specific to the key; and a length field. Key values from 0 to 0x7fff
+are generic. Key values from 0x8000 onwards are reserved for the
+individual framebuffer device drivers, for device-specific
+functionality. The length field should be set to the size of the data
+structure, and may get updated by the device driver.
+    </para>
+    <para>
+With most ioctl operations the device can indicate whether or not it
+supports the functionality by one of the flags, for example:
+    </para>
+    <programlisting width=72>
+void
+backlight_off(cyg_fb* fb)
+{
+    if (fb->fb_flags0 &amp; CYG_FB_FLAGS0_BACKLIGHT) {
+        cyg_fb_ioctl_backlight  new_setting;
+        size_t                  len = sizeof(cyg_fb_ioctl_backlight);
+        int                     result;
+
+        new_setting.fbbl_current = 0;
+        result = cyg_fb_ioctl(fb, CYG_FB_IOCTL_BACKLIGHT_SET,
+                              &amp;new_setting, &amp;len);
+        if (0 != result) {
+            &hellip;
+        }
+    }
+}
+    </programlisting>
+    <para>
+The operation returns zero for success or a POSIX error code on
+failure, for example <literal>ENOSYS</literal> if the device driver
+does not implement the requested functionality.
+    </para>
+
+    <refsect2 id="framebuf-control-ioctl-viewport">
+      <title>Viewport</title>
+      <programlisting width=72>
+# define CYG_FB_IOCTL_VIEWPORT_GET_POSITION     0x0100
+# define CYG_FB_IOCTL_VIEWPORT_SET_POSITION     0x0101
+
+typedef struct cyg_fb_ioctl_viewport {
+    cyg_ucount16    fbvp_x;     // position of top-left corner of the viewport within
+    cyg_ucount16    fbvp_y;     // the framebuffer
+    cyg_ucount16    fbvp_when;  // set-only, now or vert retrace
+} cyg_fb_ioctl_viewport;
+      </programlisting>
+      <para>
+On some targets the framebuffer device has a higher resolution than
+the display. Only a subset of the pixels, the viewport, is currently
+visible. Application code can exploit this functionality to achieve
+certain effects, for example smooth scrolling. Framebuffers which
+support this functionality will have the
+<literal>CYG_FB_FLAGS0_VIEWPORT</literal> flag set. The viewport
+dimensions are available as additional <link
+linkend="framebuf-parameters">parameters</link> to the normal
+framebuffer width and height.
+      </para>
+      <para>
+The current position of the viewport can be obtained using an
+<literal>CYG_FB_IOCTL_VIEWPORT_GET_POSITION</literal> ioctl operation.
+The data argument should be a pointer to a
+<structname>cyg_fb_ioctl_viewport</structname> structure. On return
+the <structfield>fbvp_x</structfield> and
+<structfield>fbvp_y</structfield> fields will be filled in. To move
+the viewport use <literal>CYG_FB_IOCTL_VIEWPORT_SET_POSITION</literal>
+with <structfield>fbvp_x</structfield> and
+<structfield>fbvp_y</structfield> set to the top left corner of the
+new viewport within the framebuffer, and
+<structfield>fbvp_when</structfield> set to either
+<literal>CYG_FB_UPDATE_NOW</literal> or
+<literal>CYG_FB_UPDATE_VERTICAL_RETRACE</literal>. If the device
+driver cannot easily synchronize to a vertical retrace period then
+this last field is ignored.
+      </para>
+      <programlisting width=72>
+void
+move_viewport(cyg_fb* fb, int dx, int dy)
+{
+#ifdef CYGHWR_IO_FRAMEBUF_FUNCTIONALITY_VIEWPORT
+    cyg_fb_ioctl_viewport viewport;
+    int len = sizeof(cyg_fb_ioctl_viewport);
+    int result;
+
+    result = cyg_fb_ioctl(fb, CYG_FB_IOCTL_VIEWPORT_GET_POSITION,
+                        &amp;viewport, &amp;len);
+    if (result != 0) {
+        &hellip;
+    }
+    if (((int)viewport.fbvp_x + dx) &lt; 0) {
+        viewport.fbvp_x = 0;
+    } else if ((viewport.fbvp_x + dx + fb-&gt;fb_viewport_width) &gt; fb-&gt;fb_width) {
+        viewport.fbvp_x = fb-&gt;fb_width - fb-&gt;fb_viewport_width;
+    } else {
+        viewport.fbvp_x += dx;
+    }
+    if (((int)viewport.fbvp_y + dy) &lt; 0) {
+        viewport.fbvp_y = 0;
+    } else if ((viewport.fbvp_y + dy + fb-&gt;fb_viewport_height) &gt; fb-&gt;fb_height) {
+        viewport.fbvp_y = fb-&gt;fb_height - fb-&gt;fb_viewport_height;
+    } else {
+        viewport.fbvp_y += dy;
+    }
+    result = cyg_fb_ioctl(fb, CYG_FB_IOCTL_VIEWPORT_SET_POSITION,
+                          &amp;viewport, &amp;len);
+    if (result != 0) {
+        &hellip;
+    }
+#else
+    CYG_UNUSED_PARAM(cyg_fb*, fb);
+    CYG_UNUSED_PARAM(int, dx);
+    CYG_UNUSED_PARAM(int, dy);
+#endif
+}
+      </programlisting>
+      <para>
+If an attempt is made to move the viewport beyond the boundaries of
+the framebuffer then the resulting behaviour is undefined. Some
+hardware may behave reasonably, wrapping around as appropriate, but
+portable code cannot assume this. The above code fragment is careful
+to clip the viewport to the framebuffer dimensions.
+      </para>
+    </refsect2>
+
+    <refsect2 id="framebuf-control-ioctl-pageflip">
+      <title>Page Flipping</title>
+      <programlisting width=72>
+# define CYG_FB_IOCTL_PAGE_FLIPPING_GET_PAGES   0x0200
+# define CYG_FB_IOCTL_PAGE_FLIPPING_SET_PAGES   0x0201
+
+typedef struct cyg_fb_ioctl_page_flip {
+    cyg_uint32      fbpf_number_pages;
+    cyg_uint32      fbpf_visible_page;
+    cyg_uint32      fbpf_drawable_page;
+    cyg_ucount16    fbpf_when;  // set-only, now or vert retrace
+} cyg_fb_ioctl_page_flip;
+      </programlisting>
+      <para>
+On some targets the framebuffer has enough memory for several pages,
+only one of which is visible at a time. This allows the application
+to draw into one page while displaying another. Once drawing is
+complete the display is flipped to the newly drawn page, and the
+previously displayed page is now available for updating. This
+technique is used for smooth animation, especially in games. The flag
+<literal>CYG_FB_FLAGS0_PAGE_FLIPPING</literal> indicates support for
+this functionality.
+      </para>
+      <para>
+<literal>CYG_FB_IOCTL_PAGE_FLIPPING_GET_PAGES</literal> can be used to
+get the current settings of the page flipping support. The data
+argument should be a pointer to a
+<structname>cyg_fb_ioctl_page_flip</structname> structure. The
+resulting <structfield>fbpf_number_pages</structfield> field indicates
+the total number of pages available: 2 is common, but more pages are
+possible. <structfield>fbpf_visible_page</structfield> gives the page
+that is currently visible to the user, and will be between 0 and
+(<structfield>fbpf_number_pages</structfield>&nbsp;-&nbsp;1).
+Similarly <structfield>fbpf_drawable_page</structfield> gives the page
+that is currently visible. It is implementation-defined whether or not
+the visible and drawable page can be the same one.
+      </para>
+      <para>
+<literal>CYG_FB_IOCTL_PAGE_FLIPPING_SET_PAGES</literal> can be used to
+change the visible and drawable page. The
+<structfield>fbpf_number_pages</structfield> field is ignored.
+<structfield>fbpf_visible_page</structfield> and
+<structfield>fbpf_drawable_page</structfield> give the new settings.
+<structfield>fbpf_when</structfield> should be one of
+<literal>CYG_FB_UPDATE_NOW</literal> or
+<literal>CYG_FB_UPDATE_VERTICAL_RETRACE</literal>, but may be ignored
+by some device drivers.
+      </para>
+      <programlisting width=72>
+#if !(CYG_FB_FLAGS0(FRAMEBUF) &amp; CYG_FB_FLAGS0_PAGE_FLIPPING)
+# error Current framebuffer device does not support page flipping
+#endif
+
+static cyg_uint32 current_visible = 0;
+
+static void
+page_flip_init(cyg_fb_colour background)
+{
+    cyg_fb_ioctl_page_flip flip;
+    size_t len = sizeof(cyg_fb_ioctl_page_flip);
+
+    flip.fbpf_visible_page  = current_visible;
+    flip.fbpf_drawable_page = 1 - current_visible;
+    flip.fbpf_when          = CYG_FB_UPDATE_NOW;
+    CYG_FB_IOCTL(FRAMEBUF, CYG_FB_IOCTL_PAGE_FLIPPING_SET_PAGES,
+                 &amp;flip, &amp;len);
+    CYG_FB_FILL_BLOCK(FRAMEBUF, 0, 0,
+                      CYG_FB_WIDTH(FRAMEBUF), CYG_FB_HEIGHT(FRAMEBUF),
+                      background);
+    flip.fbpf_visible_page  = 1 - current_visible;
+    flip.fbpf_drawable_page = current_visible;
+    CYG_FB_IOCTL(FRAMEBUF, CYG_FB_IOCTL_PAGE_FLIPPING_SET_PAGES,
+                 &amp;flip, &amp;len);
+    CYG_FB_FILL_BLOCK(FRAMEBUF, 0, 0,
+                      CYG_FB_WIDTH(FRAMEBUF), CYG_FB_HEIGHT(FRAMEBUF),
+                      background);
+    current_visible = 1 - current_visible;
+}
+
+static void
+page_flip_toggle(void)
+{
+    cyg_fb_ioctl_page_flip flip;
+    size_t len = sizeof(cyg_fb_ioctl_page_flip);
+
+    flip.fbpf_visible_page  = 1 - current_visible;
+    flip.fbpf_drawable_page = current_visible;
+    CYG_FB_IOCTL(FRAMEBUF, CYG_FB_IOCTL_PAGE_FLIPPING_SET_PAGES,
+                 &amp;flip, &amp;len);
+    current_visible = 1 - current_visible;
+}
+      </programlisting>
+      <para>
+A page flip typically just changes a couple of pointers within the
+hardware and device driver. No attempt is made to synchronize the
+contents of the pages, that is left to higher-level code.
+      </para>
+    </refsect2>
+
+    <refsect2 id="framebuf-control-ioctl-blank">
+      <title>Blanking the Screen</title>
+      <programlisting width=72>
+# define CYG_FB_IOCTL_BLANK_GET                 0x0300
+# define CYG_FB_IOCTL_BLANK_SET                 0x0301
+
+typedef struct cyg_fb_ioctl_blank {
+    cyg_bool        fbbl_on;
+} cyg_fb_ioctl_blank;
+      </programlisting>
+      <para>
+Some hardware allows the display to be switched off or blanked without
+shutting down the entire framebuffer device, greatly reducing power
+consumption. The current blanking state can be obtained using
+<literal>CYG_FB_IOCTL_BLANK_GET</literal> and the state can be updated
+using <literal>CYG_FB_IOCTL_BLANK_SET</literal>. The data argument
+should be a pointer to a <structname>cyg_fb_ioctl_blank</structname>
+structure. Support for this functionality is indicated by the
+<literal>CYG_FB_FLAGS0_BLANK</literal> flag.
+      </para>
+      <programlisting width=72>
+static cyg_bool
+display_blanked(cyg_fb_* fb)
+{
+    cyg_fb_ioctl_blank blank;
+    size_t len = sizeof(cyg_fb_ioctl_blank);
+    
+    if (! (fb->fb_flags0 &amp; CYG_FB_FLAGS0_BLANK)) {
+        return false;
+    }
+    (void) cyg_fb_ioctl(fb, CYG_FB_IOCTL_BLANK_GET, &amp;blank, &amp;len);
+    return !blank.fbbl_on;
+}
+      </programlisting>
+    </refsect2>
+
+    <refsect2 id="framebuf-control-ioctl-backlight">
+      <title>Controlling the Backlight</title>
+      <programlisting width=72>
+# define CYG_FB_IOCTL_BACKLIGHT_GET             0x0400
+# define CYG_FB_IOCTL_BACKLIGHT_SET             0x0401
+
+typedef struct cyg_fb_ioctl_backlight {
+    cyg_ucount32    fbbl_current;
+    cyg_ucount32    fbbl_max;
+} cyg_fb_ioctl_backlight;
+      </programlisting>
+      <para>
+Many LCD panels provide some sort of backlight, making the display
+easier to read at the cost of increased power consumption. Support for
+this is indicated by the <literal>CYG_FB_FLAGS0_BACKLIGHT</literal>
+flag. <literal>CYG_FB_IOCTL_BACKLIGHT_GET</literal> can be used to get
+both the current setting and the maximum value. If the maximum is 1
+then the backlight can only be switched on or off. Otherwise it is
+possible to control the intensity.
+      </para>
+      <programlisting width=72>
+static void
+set_backlight_50_percent(void)
+{
+#if (CYG_FB_FLAGS0(FRAMEBUF) & CYG_FB_FLAGS0_BACKLIGHT)
+    cyg_fb_ioctl_backlight backlight;
+    size_t len = sizeof(cyg_fb_ioctl_backlight);
+
+    CYG_FB_IOCTL(FRAMEBUF, CYG_FB_IOCTL_BACKLIGHT_GET, &amp;backlight, &amp;len);
+    backlight.fbbl_current = (backlight.fbbl_max + 1) >> 1;    
+    CYG_FB_IOCTL(FRAMEBUF, CYG_FB_IOCTL_BACKLIGHT_SET, &amp;backlight, &amp;len);
+#endif
+}
+      </programlisting>
+    </refsect2>
+  </refsect1>
+
+</refentry>
+
+<!-- }}} -->
+<!-- {{{ Colour Management              -->
+
+<refentry id="framebuf-colour">
+  <refmeta>
+    <refentrytitle>Framebuffer Colours</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname>Colours</refname>
+    <refpurpose>formats and palette management</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+#include &lt;cyg/io/framebuf.h&gt;
+
+typedef struct cyg_fb {
+    cyg_ucount16    fb_depth;
+    cyg_ucount16    fb_format;
+    cyg_uint32      fb_flags0;
+    &hellip;    
+} cyg_fb;
+
+extern const cyg_uint8  cyg_fb_palette_ega[16 * 3];
+extern const cyg_uint8  cyg_fb_palette_vga[256 * 3];
+
+#define CYG_FB_DEFAULT_PALETTE_BLACK        0x00
+#define CYG_FB_DEFAULT_PALETTE_BLUE         0x01
+#define CYG_FB_DEFAULT_PALETTE_GREEN        0x02
+#define CYG_FB_DEFAULT_PALETTE_CYAN         0x03
+#define CYG_FB_DEFAULT_PALETTE_RED          0x04
+#define CYG_FB_DEFAULT_PALETTE_MAGENTA      0x05
+#define CYG_FB_DEFAULT_PALETTE_BROWN        0x06
+#define CYG_FB_DEFAULT_PALETTE_LIGHTGREY    0x07
+#define CYG_FB_DEFAULT_PALETTE_LIGHTGRAY    0x07
+#define CYG_FB_DEFAULT_PALETTE_DARKGREY     0x08
+#define CYG_FB_DEFAULT_PALETTE_DARKGRAY     0x08
+#define CYG_FB_DEFAULT_PALETTE_LIGHTBLUE    0x09
+#define CYG_FB_DEFAULT_PALETTE_LIGHTGREEN   0x0A
+#define CYG_FB_DEFAULT_PALETTE_LIGHTCYAN    0x0B
+#define CYG_FB_DEFAULT_PALETTE_LIGHTRED     0x0C
+#define CYG_FB_DEFAULT_PALETTE_LIGHTMAGENTA 0x0D
+#define CYG_FB_DEFAULT_PALETTE_YELLOW       0x0E
+#define CYG_FB_DEFAULT_PALETTE_WHITE        0x0F
+      </funcsynopsisinfo>
+      <funcprototype>
+        <funcdef>cyg_ucount16 <function>CYG_FB_FORMAT</function></funcdef>
+        <paramdef><parameter>framebuf</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>cyg_fb_read_palette</function></funcdef>
+        <paramdef>cyg_fb* <parameter>fb</parameter></paramdef>
+        <paramdef>cyg_ucount32 <parameter>first</parameter></paramdef>
+        <paramdef>cyg_ucount32 <parameter>count</parameter></paramdef>
+        <paramdef>void* <parameter>data</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>cyg_fb_write_palette</function></funcdef>
+        <paramdef>cyg_fb* <parameter>fb</parameter></paramdef>
+        <paramdef>cyg_ucount32 <parameter>first</parameter></paramdef>
+        <paramdef>cyg_ucount32 <parameter>count</parameter></paramdef>
+        <paramdef>const void* <parameter>data</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>when</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>cyg_fb_colour <function>cyg_fb_make_colour</function></funcdef>
+        <paramdef>cyg_fb* <parameter>fb</parameter></paramdef>
+        <paramdef>cyg_ucount8 <parameter>r</parameter></paramdef>
+        <paramdef>cyg_ucount8 <parameter>g</parameter></paramdef>
+        <paramdef>cyg_ucount8 <parameter>b</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>cyg_fb_break_colour</function></funcdef>
+        <paramdef>cyg_fb* <parameter>fb</parameter></paramdef>
+        <paramdef>cyg_fb_colour <parameter>colour</parameter></paramdef>
+        <paramdef>cyg_ucount8* <parameter>r</parameter></paramdef>
+        <paramdef>cyg_ucount8* <parameter>g</parameter></paramdef>
+        <paramdef>cyg_ucount8* <parameter>b</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>CYG_FB_READ_PALETTE</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+        <paramdef>cyg_ucount32 <parameter>first</parameter></paramdef>
+        <paramdef>cyg_ucount32 <parameter>count</parameter></paramdef>
+        <paramdef>void* <parameter>data</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>CYG_FB_WRITE_PALETTE</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+        <paramdef>cyg_ucount32 <parameter>first</parameter></paramdef>
+        <paramdef>cyg_ucount32 <parameter>count</parameter></paramdef>
+        <paramdef>const void* <parameter>data</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>when</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>cyg_fb_colour <function>CYG_FB_MAKE_COLOUR</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+        <paramdef>cyg_ucount8 <parameter>r</parameter></paramdef>
+        <paramdef>cyg_ucount8 <parameter>g</parameter></paramdef>
+        <paramdef>cyg_ucount8 <parameter>b</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>CYG_FB_BREAK_COLOUR</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+        <paramdef>cyg_fb_colour <parameter>colour</parameter></paramdef>
+        <paramdef>cyg_ucount8* <parameter>r</parameter></paramdef>
+        <paramdef>cyg_ucount8* <parameter>g</parameter></paramdef>
+        <paramdef>cyg_ucount8* <parameter>b</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1 id="framebuf-colour-description">
+    <title>Description</title>
+    <para>
+Managing colours can be one of the most difficult aspects of writing
+graphics code, especially if that code is intended to be portable to
+many different platforms. Displays can vary from 1bpp monochrome, via
+2bpp and 4bpp greyscale, through 4bpp and 8bpp paletted, and up to
+16bpp and 32bpp true colour - and those are just the more common
+scenarios. The various <link linkend="framebuf-drawing">drawing
+primitives</link> like <function>cyg_fb_write_pixel</function> work in
+terms of <type>cyg_fb_colour</type> values, usually an unsigned
+integer. Exactly how the hardware interprets a
+<type>cyg_fb_colour</type> depends on the format.
+    </para>
+  </refsect1>
+
+  <refsect1 id="framebuf-colour-formats">
+    <title>Colour Formats</title>
+    <para>
+There are a number of ways of finding out how these values will be
+interpreted by the hardware:
+    </para>
+    <orderedlist>
+      <listitem><para>
+The <literal>CYG_FB_FLAGS0_TRUE_COLOUR</literal> flag is set for all
+true colour displays. The format parameter can be examined for more
+details but this is not usually necessary. Instead code can use
+<link
+linkend="framebuf-colour-true"><function>cyg_fb_make_colour</function></link>
+or <link
+linkend="framebuf-colour-true"><function>CYG_FB_MAKE_COLOUR</function></link>
+to construct a <type>cyg_fb_colour</type> value from red, green and
+blue components.
+      </para></listitem>
+      <listitem><para>
+If the <literal>CYG_FB_FLAGS0_WRITEABLE_PALETTE</literal> flag is set
+then a <type>cyg_fb_colour</type> value is an index into a lookup
+table known as the palette, and this table contains red, green and
+blue components. The size of the palette is determined by the display
+depth, so 16 entries for a 4bpp display and 256 entries for an 8bpp
+display. Application code or a graphics library can <link
+linkend="framebuf-colour-palette">install</link> its own palette so
+can control exactly what colour each <type>cyg_fb_colour</type> value
+corresponds to. Alternatively there is support for installing a
+default palette.
+      </para></listitem>
+      <listitem><para>
+If <literal>CYG_FB_FLAGS0_PALETTE</literal> is set but
+<literal>CYG_FB_FLAGS0_WRITEABLE_PALETTE</literal> is clear then the
+hardware uses a fixed palette. There is no easy way for portable
+software to handle this case. The palette can be read at run-time,
+allowing the application's desired colours to be mapped to whichever
+palette entry provides the best match. However normally it will be
+necessary to write code specifically for the fixed palette.
+      </para></listitem>
+      <listitem><para>
+Otherwise the display is monochrome or greyscale, depending on the
+depth. There are still variations, for example on a monochrome display
+colour 0 can be either white or black.
+      </para></listitem>
+    </orderedlist>
+    <para>
+As an alternative or to provide additional information, the exact
+colour format is provided by the <structfield>fb_format</structfield>
+field of the <structname>cyg_fb</structname> structure or by the
+<function>CYG_FB_FORMAT</function> macro. It can be one of the
+following (more entries may be added in future):
+    </para>
+    <variablelist>
+      <varlistentry>
+        <term><literal>CYG_FB_FORMAT_1BPP_MONO_0_BLACK</literal></term>
+        <listitem><para>
+simple 1bpp monochrome display, with 0 as black or the darker of the
+two colours, and 1 as white or the ligher colour.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><literal>CYG_FB_FORMAT_1BPP_MONO_0_WHITE</literal></term>
+        <listitem><para>
+simple 1bpp monochrome display, with 0 as white or the lighter of the
+two colours, and 1 as black or the darker colour.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><literal>CYG_FB_FORMAT_1BPP_PAL888</literal></term>
+        <listitem><para>
+a 1bpp display which cannot easily be described as monochrome. This is
+unusual and not readily supported by portable code. It can happen if
+the framebuffer normally runs at a higher depth, for example 4bpp or
+8bpp paletted, but is run at only 1bpp to save memory. Hence only two
+of the palette entries are used, but can be set to arbitrary colours.
+The palette may be read-only or read-write.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><literal>CYG_FB_FORMAT_2BPP_GREYSCALE_0_BLACK</literal></term>
+        <listitem><para>
+a 2bpp display offering four shades of grey, with 0 as black or the
+darkest of the four shades, and 3 as white or the lightest.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><literal>CYG_FB_FORMAT_2BPP_GREYSCALE_0_WHITE</literal></term>
+        <listitem><para>
+a 2bpp display offering four shades of grey, with 0 as white or the
+lightest of the four shades, and 3 as black or the darkest.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><literal>CYG_FB_FORMAT_2BPP_PAL888</literal></term>
+        <listitem><para>
+a 2bpp display which cannot easily be described as greyscale, for
+example providing black, red, blue and white as the four colours.
+This is unusual and not readily supported by portable code. It can
+happen if the framebuffer normally runs at a higher depth, for example
+4bpp or 8bpp paletted, but is run at only 2bpp to save memory. Hence
+only four of the palette entries are used, but can be set to arbitrary
+colours. The palette may be read-only or read-write.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><literal>CYG_FB_FORMAT_4BPP_GREYSCALE_0_BLACK</literal></term>
+        <listitem><para>
+a 4bpp display offering sixteen shades of grey, with 0 as black or the
+darkest of the 16 shades, and 15 as white or the lighest.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><literal>CYG_FB_FORMAT_4BPP_GREYSCALE_0_WHITE</literal></term>
+        <listitem><para>
+a 4bpp display offering sixteen shades of grey, with 0 as white or the
+lightest of the 16 shades, and 15 as black or the darkest.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><literal>CYG_FB_FORMAT_4BPP_PAL888</literal></term>
+        <listitem><para>
+a 4bpp paletted display, allowing for 16 different colours on screen
+at the same time. The palette may be read-only or read-write.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><literal>CYG_FB_FORMAT_8BPP_PAL888</literal></term>
+        <listitem><para>
+an 8bpp paletted display, allowing for 256 different colours on screen
+at the same time. The palette may be read-only or read-write.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><literal>CYG_FB_FORMAT_8BPP_TRUE_332</literal></term>
+        <listitem><para>
+an 8bpp true colour display. Bits 0 and 1 of each pixel value control
+four levels of blue intensity, bits 2 to 4 control eight levels of
+green, and bits 5 to 7 control eight levels of red.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><literal>CYG_FB_FORMAT_16BPP_TRUE_565</literal></term>
+        <listitem><para>
+a 16bpp true colour display. Bits 0 to 4 of each pixel value control
+the blue intensity, bits 5 to 10 the green intensity, and bits 11 to
+15 the red intensity.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><literal>CYG_FB_FORMAT_16BPP_TRUE_555</literal></term>
+        <listitem><para>
+a 16bpp true colour display, with the top bit unused. Bits 0 to 4 of
+each pixel value control the blue intensity, bits 5 to 9 the green
+intensity, and bits 10 to 14 the red intensity.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><literal>CYG_FB_FORMAT_32BPP_TRUE_0888</literal></term>
+        <listitem><para>
+a 32bpp true colour display, with the top byte unused. Bits 0 to 7 of
+each pixel value control the blue intensity, bits 8 to 15 the green
+intensity, and bits 16 to 23 the red intensity.
+        </para></listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1 id="framebuf-colour-palette">
+    <title>Paletted Displays</title>
+    <para>
+Palettes are the common way of implementing low-end colour displays.
+There are two variants. A read-only palette provides a fixed set of
+colours and it is up to application code to use these colours
+appropriately. A read-write palette allows the application to select
+its own set of colours. Displays providing a read-write palette will
+have the <literal>CYG_FB_FLAGS0_WRITEABLE_PALETTE</literal> flag set
+in addition to <literal>CYG_FB_FLAGS0_PALETTE</literal>.
+    </para>
+    <para>
+Even if application code can install its own palette, many
+applications do not exploit this functionality and instead stick with
+a default. There are two standard palettes: the 16-entry PC EGA for
+4bpp displays; and the 256-entry PC VGA, a superset of the EGA one,
+for 8bpp displays. This package provides the data for both, in the
+form of arrays <varname>cyg_fb_palette_ega</varname> and
+<varname>cyg_fb_palette_vga</varname>, and 16
+<literal>#define</literal>'s such as
+<varname>CYG_FB_DEFAULT_PALETTE_BLACK</varname> for the EGA colours
+and the first 16 VGA colours. By default device drivers for read-write
+paletted displays will install the appropriate default palette, but
+this can be suppressed using configuration option
+<varname>CYGFUN_IO_FRAMEBUF_INSTALL_DEFAULT_PALETTE</varname>. If a
+custom palette will be used then installing the default palette
+involves wasting 48 or 768 bytes of memory.
+    </para>
+    <para>
+It should be emphasized that displays vary widely. A colour such
+as <varname>CYG_FB_DEFAULT_PALETTE_YELLOW</varname> may appear rather
+differently on two different displays, although it should always be
+recognizable as yellow. Developers may wish to fine-tune the palette
+for specific hardware.
+    </para>
+    <para>
+The current palette can be retrieved using
+<function>cyg_fb_read_palette</function> or
+<function>CYG_FB_READ_PALETTE</function>. The
+<parameter>first</parameter> and <parameter>count</parameter>
+arguments control which palette entries should be retrieved. For
+example, to retrieve just palette entry 12
+<parameter>first</parameter> should be set to 12 and
+<parameter>count</parameter> should be set to 1. To retrieve all 256
+entries for an 8bpp display, <parameter>first</parameter> should be
+set to 0 and <parameter>count</parameter> should be set to 256. The
+<parameter>data</parameter> argument should point at an array of
+bytes, allowing three bytes for every entry. Byte 0 will contain the red
+intensity for the first entry, byte 1 green and byte 2 blue.
+    </para>
+    <para>
+For read-write palettes the palette can be updated using
+<function>cyg_fb_write_palette</function> or
+<function>CYG_FB_WRITE_PALETTE</function>. The
+<parameter>first</parameter> and <parameter>count</parameter> arguments
+are the same as for <function>cyg_fb_read_palette</function>, and the
+<parameter>data</parameter> argument should point at a suitable byte
+array packed in the same way. The <parameter>when</parameter> argument
+should be one of <literal>CYG_FB_UPDATE_NOW</literal> or
+<literal>CYG_FB_UPDATE_VERTICAL_RETRACE</literal>. With some displays
+updating the palette in the middle of an update may result in visual
+noise, so synchronizing to the vertical retrace avoids this. However
+not all device drivers will support this.
+    </para>
+    <para>
+There is an assumption that palette entries use 8 bits for each of the
+red, green and blue colour intensities. This is not always the case,
+but the device drivers will perform appropriate adjustments. Some
+hardware may use only 6 bits per colour, and the device driver will
+ignore the bottom two bits of the supplied intensity values.
+Occasionally hardware may use more than 8 bits, in which case the
+supplied 8 bits are shifted left appropriately and zero-padded. Device
+drivers for such hardware may also provide device-specific routines to
+manipulate the palette in a non-portable fashion.
+    </para>
+  </refsect1>
+
+  <refsect1 id="framebuf-colour-true">
+    <title>True Colour displays</title>
+    <para>
+True colour displays are often easier to manage than paletted
+displays. However this comes at the cost of extra memory. A 16bpp true
+colour display requires twice as much memory as an 8bpp paletted
+display, yet can offer only 32 or 64 levels of intensity for each
+colour as opposed to the 256 levels provided by a palette. It also
+requires twice as much video memory bandwidth to send all the pixel
+data to the display for every refresh, which may impact the
+performance of the rest of the system. A 32bpp true colour display
+offers the same colour intensities but requires four times the memory
+and four times the bandwidth.
+    </para>
+    <para>
+There are two ways of determining a <type>cyg_fb_colour</type> pixel
+value for a given colour. The first is to decode the colour format,
+for example <literal>CYG_FB_FORMAT_16BPP_TRUE_565</literal>, and
+perform the appropriate arithmetic. The second is to use the supplied
+<function>cyg_fb_make_colour</function> or
+<function>CYG_FB_MAKE_COLOUR</function> primitives. These take 8-bit
+intensity levels for red, green and blue, and return the corresponding
+<type>cyg_fb_colour</type>. When using the macro interface the
+arithmetic happens at compile-time, for example:
+    </para>
+    <programlisting width=72>
+#define BLACK        CYG_FB_MAKE_COLOUR(FRAMEBUF,   0,   0,   0)
+#define WHITE        CYG_FB_MAKE_COLOUR(FRAMEBUF, 255, 255, 255)
+#define RED          CYG_FB_MAKE_COLOUR(FRAMEBUF, 255,   0,   0)
+#define GREEN        CYG_FB_MAKE_COLOUR(FRAMEBUF,   0, 255,   0)
+#define BLUE         CYG_FB_MAKE_COLOUR(FRAMEBUF,   0,   0, 255)
+#define YELLOW       CYG_FB_MAKE_COLOUR(FRAMEBUF, 255, 255,  80)
+    </programlisting>
+    <para>
+Displays vary widely so the numbers may need to be adjusted to give
+the exact desired colours.
+    </para>
+    <para>
+For symmetry there are also <function>cyg_fb_break_colour</function>
+and <function>CYG_FB_BREAK_COLOUR</function> primitives. These take a
+<type>cyg_fb_colour</type> value and decompose it into its red, green
+and blue components.
+    </para>
+  </refsect1>
+
+</refentry>
+
+<!-- }}} -->
+<!-- {{{ Drawing primitives             -->
+
+<refentry id="framebuf-drawing">
+  <refmeta>
+    <refentrytitle>Framebuffer Drawing Primitives</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname>Drawing Primitives</refname>
+    <refpurpose>updating the display</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+#include &lt;cyg/io/framebuf.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+        <funcdef>void <function>cyg_fb_write_pixel</function></funcdef>
+        <paramdef>cyg_fb* <parameter>fbdev</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>x</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>y</parameter></paramdef>
+        <paramdef>cyg_fb_colour <parameter>colour</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>cyg_fb_colour <function>cyg_fb_read_pixel</function></funcdef>
+        <paramdef>cyg_fb* <parameter>fbdev</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>x</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>y</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>cyg_fb_write_hline</function></funcdef>
+        <paramdef>cyg_fb* <parameter>fbdev</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>x</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>y</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>len</parameter></paramdef>
+        <paramdef>cyg_fb_colour <parameter>colour</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>cyg_fb_write_vline</function></funcdef>
+        <paramdef>cyg_fb* <parameter>fbdev</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>x</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>y</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>len</parameter></paramdef>
+        <paramdef>cyg_fb_colour <parameter>colour</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>cyg_fb_fill_block</function></funcdef>
+        <paramdef>cyg_fb* <parameter>fbdev</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>x</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>y</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>width</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>height</parameter></paramdef>
+        <paramdef>cyg_fb_colour <parameter>colour</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>cyg_fb_write_block</function></funcdef>
+        <paramdef>cyg_fb* <parameter>fbdev</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>x</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>y</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>width</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>height</parameter></paramdef>
+        <paramdef>const void* <parameter>data</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>offset</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>stride</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>cyg_fb_read_block</function></funcdef>
+        <paramdef>cyg_fb* <parameter>fbdev</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>x</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>y</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>width</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>height</parameter></paramdef>
+        <paramdef>void* <parameter>data</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>offset</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>stride</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>cyg_fb_move_block</function></funcdef>
+        <paramdef>cyg_fb* <parameter>fbdev</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>x</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>y</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>width</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>height</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>new_x</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>new_y</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>cyg_fb_synch</function></funcdef>
+        <paramdef>cyg_fb* <parameter>fbdev</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>when</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>CYG_FB_WRITE_PIXEL</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>x</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>y</parameter></paramdef>
+        <paramdef>cyg_fb_colour <parameter>colour</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>cyg_fb_colour <function>CYG_FB_READ_PIXEL</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>x</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>y</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>CYG_FB_WRITE_HLINE</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>x</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>y</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>len</parameter></paramdef>
+        <paramdef>cyg_fb_colour <parameter>colour</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>CYG_FB_WRITE_VLINE</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>x</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>y</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>len</parameter></paramdef>
+        <paramdef>cyg_fb_colour <parameter>colour</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>CYG_FB_FILL_BLOCK</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>x</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>y</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>width</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>height</parameter></paramdef>
+        <paramdef>cyg_fb_colour <parameter>colour</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>CYG_FB_WRITE_BLOCK</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>x</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>y</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>width</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>height</parameter></paramdef>
+        <paramdef>const void* <parameter>data</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>offset</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>stride</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>CYG_FB_READ_BLOCK</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>x</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>y</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>width</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>height</parameter></paramdef>
+        <paramdef>void* <parameter>data</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>offset</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>stride</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>CYG_FB_MOVE_BLOCK</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>x</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>y</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>width</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>height</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>new_x</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>new_y</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>CYG_FB_SYNCH</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>when</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1 id="framebuf-drawing-description">
+    <title>Description</title>
+    <para>
+The eCos framebuffer infrastructure defines a small number of drawing
+primitives. These are not intended to provide full graphical
+functionality like multiple windows, drawing text in arbitrary fonts,
+or anything like that. Instead they provide building blocks for
+higher-level graphical toolkits. The available primitives are:
+    </para>
+    <orderedlist>
+      <listitem><para>
+Manipulating individual pixels.
+      </para></listitem>
+      <listitem><para>
+Drawing horizontal and vertical lines.
+      </para></listitem>
+      <listitem><para>
+Block fills.
+      </para></listitem>
+      <listitem><para>
+Moving blocks between the framebuffer and main memory.
+      </para></listitem>
+      <listitem><para>
+Moving blocks within the framebuffer.
+      </para></listitem>
+      <listitem><para>
+For double-buffered devices, synchronizing the framebuffer contents
+with the actual display.
+      </para></listitem>
+    </orderedlist>
+    <para>
+There are two versions for each primitive: a macro and a function. The
+macro can be used if the desired framebuffer device is known at
+compile-time. Its first argument should be a framebuffer identifier,
+for example <literal>320x240x16</literal>, and must be one of the
+entries in the configuration option
+<varname>CYGDAT_IO_FRAMEBUF_DEVICES</varname>. In the examples below
+it is assumed that <varname>FRAMEBUF</varname> has been
+<literal>#define</literal>'d to a suitable identifier. The function
+can be used if the desired framebuffer device is selected at
+run-time. Its first argument should be a pointer to the appropriate
+<structname>cyg_fb</structname> structure.
+    </para>
+    <para>
+The pixel, line, and block fill primitives take a
+<type>cyg_fb_colour</type> argument. For details of colour handling
+see <xref linkend="framebuf-colour">. This argument should have no
+more bits set than are appropriate for the display depth. For example
+on a 4bpp only the bottom four bits of the colour may be set,
+otherwise the behaviour is undefined.
+    </para>
+    <para>
+None of the primitives will perform any run-time error checking,
+except possibly for some assertions in a debug build. If higher-level
+code provides invalid arguments, for example trying to write a block
+which extends past the right hand side of the screen, then the
+system's behaviour is undefined. It is the responsibility of
+higher-level code to perform clipping to the screen boundaries.
+    </para>
+  </refsect1>
+
+  <refsect1 id="framebuf-drawing-pixels">
+    <title>Manipulating Individual Pixels</title>
+    <para>
+The primitives for manipulating individual pixels are very simple: a
+pixel can be written or read back. The following example shows one way
+of drawing a diagonal line:
+    </para>
+    <programlisting width=72>
+void
+draw_diagonal(cyg_fb* fb,
+              cyg_ucount16 x, cyg_ucount16 y, cyg_ucount16 len,
+              cyg_fb_colour colour)
+{
+    while ( len-- ) {
+        cyg_fb_write_pixel(fb, x++, y++, colour);
+    }
+}
+    </programlisting>
+    <para>
+The next example shows how to draw a horizontal XOR line on a 1bpp
+display.
+    </para>
+    <programlisting width=72>
+void
+draw_horz_xor(cyg_ucount16 x, cyg_ucount16 y, cyg_ucount16 len)
+{
+    cyg_fb_colour colour;
+    while ( len--) {
+        colour = CYG_FB_READ_PIXEL(FRAMEBUF, x, y);
+        CYG_FB_WRITE_PIXEL(FRAMEBUF, x++, y, colour ^ 0x01);
+    }
+}
+    </programlisting>
+    <para>
+The pixel macros should normally be avoided. Determining the correct
+location within framebuffer memory corresponding to a set of
+coordinates for each pixel is a comparatively expensive operation.
+Instead there is direct support for <link
+linkend="framebuf-iterating">iterating</link> over parts of the
+display, avoiding unnecessary overheads.
+    </para>
+  </refsect1>
+
+  <refsect1 id="framebuf-drawing-lines">
+    <title>Drawing Simple Lines</title>
+    <para>
+Higher-level graphics code often needs to draw single-pixel horizontal
+and vertical lines. If the application involves multiple windows then
+these will usually have thin borders around them. Widgets such as
+buttons and scrollbars also often have thin borders. 
+    </para>
+    <para>
+<function>cyg_fb_draw_hline</function> and
+<function>CYG_FB_DRAW_HLINE</function> draw a horizontal line of the
+specified <parameter>colour</parameter>, starting at the
+<parameter>x</parameter> and <parameter>y</parameter> coordinates and
+extending to the right (increasing x) for a total of
+<parameter>len</parameter> pixels. A 50 pixel line starting at
+(100,100) will end at (149,100).
+    </para>
+    <para>
+<function>cyg_fb_draw_vline</function> and
+<function>CYG_FB_DRAW_VLINE</function> take the same arguments, but
+the line extends down (increasing y).
+    </para>
+    <para>
+These primitives do not directly support drawing lines more than one
+pixel thick, but <link linkend="framebuf-drawing-fill">block
+fills</link> can be used to achieve those. There is no generic support
+for drawing arbitrary lines, instead that is left to higher-level
+graphics toolkits.
+    </para>
+  </refsect1>
+
+  <refsect1 id="framebuf-drawing-fill">
+    <title>Block Fills</title>
+    <para>
+Filling a rectangular part of the screen with a solid colour is
+another common requirement for higher-level code. The simplest example
+is during initialization, to set the display's whole background to a
+known value. Block fills are also often used when creating new windows
+or drawing the bulk of a simple button or scrollbar widget.
+<function>cyg_fb_fill_block</function> and
+<function>CYG_FB_FILL_BLOCK</function> provide this functionality.
+    </para>
+    <para>
+The <parameter>x</parameter> and <parameter>y</parameter> arguments
+specify the top-left corner of the block to be filled. The
+<parameter>width</parameter> and <parameter>height</parameter>
+arguments specify the number of pixels affected, a total of
+<literal>width&nbsp;*&nbsp;height</literal>. The following example
+illustrates part of the process for initializing a framebuffer,
+assumed here to have a writeable palette with default settings.
+    </para>
+    <programlisting width=72>
+int
+display_init(void)
+{
+    int result = CYG_FB_ON(FRAMEBUF);
+    if ( result ) {
+        return result;
+    }
+    CYG_FB_FILL_BLOCK(FRAMEBUF, 0, 0,
+                      CYG_FB_WIDTH(FRAMEBUF), CYG_FB_HEIGHT(FRAMEBUF),
+                      CYG_FB_DEFAULT_PALETTE_WHITE);
+    &hellip;
+}
+    </programlisting>
+  </refsect1>
+
+  <refsect1 id="framebuf-drawing-block-transfers">
+    <title>Copying Blocks between the Framebuffer and Main Memory</title>
+    <para>
+The block transfer primitives serve two main purposes: drawing images.
+and saving parts of the current display to be restored later. For
+simple linear framebuffers the primitives just implement copy
+operations, with no data conversion of any sort. For non-linear ones
+the primitives act as if the framebuffer memory was linear. For
+example, consider a 2bpp display where the two bits for a single pixel
+are split over two separate bytes in framebuffer memory, or two
+planes. For a block write operation the source data should still be
+organized with four full pixels per byte, as for a linear framebuffer
+of the same depth. and the block write primitive will distribute the
+bits over the framebuffer memory as required. Similarly a block read
+will combine the appropriate bits from different locations in
+framebuffer memory and the resulting memory block will have four full
+pixels per byte.
+    </para>
+    <para>
+Because the block transfer primitives perform no data conversion, if
+they are to be used for rendering images then those images should be
+pre-formatted appropriately for the framebuffer device. For small
+images this would normally happen on the host-side as part of the
+application build process. For larger images it will usually be better
+to store them in a compressed format and decompress them at run-time,
+trading off memory for cpu cycles.
+    </para>
+    <para>
+The <parameter>x</parameter> and <parameter>y</parameter> arguments
+specify the top-left corner of the block to be transferred, and the
+<parameter>width</parameter> and <parameter>height</parameter>
+arguments determine the size. The <parameter>data</parameter>,
+<parameter>offset</parameter> and <parameter>stride</parameter>
+arguments determine the location and layout of the block in main
+memory:
+    </para>
+    <variablelist>
+      <varlistentry>
+        <term><parameter>data</parameter></term>
+        <listitem><para>
+The source or destination for the transfer. For 1bpp, 2bpp and 4bpp
+devices the data will be packed in accordance with the framebuffer
+device's endianness as per the <literal>CYG_FB_FLAGS0_LE</literal>
+flag. Each row starts in a new byte so there may be some padding on
+the right. For 16bpp and 32bpp the data should be aligned to the
+appropriate boundary.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><parameter>offset</parameter></term>
+        <listitem><para>
+Sometimes only part of an image should be written to the screen. A
+vertical offset can be achieved simply by adjusting
+<parameter>data</parameter> to point at the appropriate row within the
+image instead of the top row. For 8bpp, 16bpp and 32bpp displays
+an additional horizontal offset can also be achieved by adjusting
+<parameter>data</parameter>. However for 1bpp, 2bpp and 4bpp displays
+the starting position within the image may be in the middle of a byte.
+Hence the horizontal pixel offset can instead be specified with the
+<parameter>offset</parameter> argument.
+        </para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><parameter>stride</parameter></term>
+        <listitem><para>
+This indicates the number of bytes between rows. Usually it will be
+related to the <parameter>width</parameter>, but there are exceptions
+such as when drawing only part of an image.
+        </para></listitem>
+      </varlistentry>
+    </variablelist>
+    <para>
+The following example fills a 4bpp display with an image held in
+memory and already in the right format. If the image is smaller than
+the display it will be centered. If the image is larger then the
+center portion will fill the entire display.
+    </para>
+    <programlisting width=72>
+void
+draw_image(const void* data, int width, int height)
+{
+    cyg_ucount16 stride;
+    cyg_ucount16 x, y, offset;
+
+#if (4 != CYG_FB_DEPTH(FRAMEBUF))
+# error This code assumes a 4bpp display
+#endif
+
+    stride = (width + 1) &gt;&gt; 1;  // 4bpp to byte stride
+
+    if (width &lt; CYG_FB_WIDTH(FRAMEBUF)) {
+        x      = (CYG_FB_WIDTH(FRAMEBUF) - width) &gt;&gt; 1;
+        offset = 0;
+    } else {
+        x      = 0;
+        offset = (width - CYG_FB_WIDTH(FRAMEBUF)) &gt;&gt; 1;
+        width  = CYG_FB_WIDTH(FRAMEBUF);
+    }
+    if (height &lt; CYG_FB_HEIGHT(FRAMEBUF)) {
+        y      = (CYG_FB_HEIGHT(FRAMEBUF) - height) &gt;&gt; 1;
+    } else {
+        y      = 0;
+        data   = (const void*)((const cyg_uint8*)data +
+                 (stride * ((height - CYG_FB_HEIGHT(FRAMEBUF)) &gt;&gt; 1));
+        height = CYG_FB_HEIGHT(FRAMEBUF);
+    }
+    CYG_FB_WRITE_BLOCK(FRAMEBUF, x, y, width, height, data, offset, stride);
+}
+    </programlisting>
+  </refsect1>
+
+  <refsect1 id="framebuf-drawing-block-moves">
+    <title>Moving Blocks with the Framebuffer</title>
+    <para>
+Sometimes it is necessary to move a block of data around the screen,
+especially when using a higher-level graphics toolkit that supports
+multiple windows. Block moves can be implemented by a read into main
+memory followed by a write block, but this is expensive and imposes an
+additional memory requirement. Instead the framebuffer infrastructure
+provides a generic block move primitive. It will handle all cases
+where the source and destination positions overlap. The
+<parameter>x</parameter> and <parameter>y</parameter> arguments
+specify the top-left corner of the block to be moved, and
+<parameter>width</parameter> and <parameter>height</parameter>
+determine the block size. <parameter>new_x</parameter> and
+<parameter>new_y</parameter> specify the destination. The source data
+will remain unchanged except in areas where it overlaps the destination.
+    </para>
+  </refsect1>
+
+  <refsect1 id="framebuf-drawing-synch">
+    <title>Synchronizing Double-Buffered Displays</title>
+    <para>
+Some framebuffer devices are double-buffered: the framebuffer memory
+that gets manipulated by the drawing primitives is separate from what
+is actually displayed, and a synch operation is needed to update the
+display. In some cases this may be because the actual display memory
+is not directly accessible by the processor, for example it may
+instead be attached via an SPI bus. Instead drawing happens in a
+buffer in main memory, and then this gets transferred over the SPI bus
+to the actual display hardware during a synch. In other cases it may
+be a software artefact. Some drawing operations, especially ones
+involving complex curves, can take a very long time and it may be
+considered undesirable to have the user see this happening a few
+pixels at a time. Instead the drawing happens in a separate buffer in
+main memory and then a double buffer synch just involves a block move
+to framebuffer memory. Typically that block move is much faster than
+the drawing operation. Obviously there is a cost: an extra area of
+memory, and the synch operation itself can consume many cycles and
+much of the available memory bandwidth.
+    </para>
+    <para>
+It is the responsibility of the framebuffer device driver to provide
+the extra main memory. As far as higher-level code is concerned the
+only difference between an ordinary and a double-buffered display is
+that with the latter changes do not become visible until a synch
+operation has been performed. The framebuffer infrastructure provides
+support for a bounding box, keeping track of what has been updated
+since the last synch. This means only the updated part of the screen
+has to be transferred to the display hardware.
+    </para>
+    <para>
+The synch primitives take two arguments. The first identifies the
+framebuffer device. The second should be one of
+<literal>CYG_FB_UPDATE_NOW</literal> for an immediate update, or
+<literal>CYG_FB_UPDATE_VERTICAL_RETRACE</literal>. Some display
+hardware involves a lengthy vertical retrace period every 10-20
+milliseconds during which nothing gets drawn to the screen, and
+performing the synch during this time means that the end user is
+unaware of the operation (assuming the synch can be completed in the
+time available). When the hardware supports it, specifying
+<literal>CYG_FB_UPDATE_VERTICAL_RETRACE</literal> means that the synch
+operation will block until the next vertical retrace takes place and
+then perform the update. This may be an expensive operation, for
+example it may involve polling a bit in a register. In a
+multi-threaded environment it may also be unreliable because the
+thread performing the synch may get interrupted or rescheduled in the
+middle of the operation. When the hardware does not involve vertical
+retraces, or when there is no easy way to detect them, the second
+argument to the synch operation will just be ignored and the update
+will always happen immediately.
+    </para>
+    <para>
+It is up to higher level code to determine when a synch operation is
+appropriate. One approach for typical event-driven code is to perform
+the synch at the start of the event loop, just before waiting for an
+input or timer event. This may not be optimal. For example if there
+two small updates to opposite corners of the screen then it would be
+better to make two synch calls with small bounding boxes, rather than
+a single synch call with a a large bounding box that requires most of
+the framebuffer memory to be updated.
+    </para>
+    <para>
+Leaving out the synch operations leads to portability problems. On
+hardware which does not involve double-buffering the synch operation
+is a no-op, usually eliminated at compile-time, so invoking synch does
+not add any code size or cpu cycle overhead. On double-buffered
+hardware, leaving out the synch means the user cannot see what has
+been drawn into the framebuffer.
+    </para>
+  </refsect1>
+  
+</refentry>
+
+<!-- }}} -->
+<!-- {{{ Iteration                      -->
+
+<refentry id="framebuf-iterating">
+  <refmeta>
+    <refentrytitle>Framebuffer Pixel Manipulation</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname>Pixel Manipulation</refname>
+    <refpurpose>iterating over the display</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+#include &lt;cyg/io/framebuf.h&gt;
+      </funcsynopsisinfo>
+      <funcprototype>
+        <funcdef><function>CYG_FB_PIXEL0_VAR</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>CYG_FB_PIXEL0_SET</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>x</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>y</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>CYG_FB_PIXEL0_GET</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>x</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>y</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>CYG_FB_PIXEL0_ADDX</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>incr</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>CYG_FB_PIXEL0_ADDY</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>incr</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>CYG_FB_PIXEL0_WRITE</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+        <paramdef>cyg_fb_colour <parameter>colour</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>cyg_fb_colour <function>CYG_FB_PIXEL0_READ</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>CYG_FB_PIXEL0_FLUSHABS</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>x0</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>y0</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>width</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>height</parameter></paramdef>
+      </funcprototype>
+      <funcprototype>
+        <funcdef>void <function>CYG_FB_PIXEL0_FLUSHREL</function></funcdef>
+        <paramdef><parameter>FRAMEBUF</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>x0</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>y0</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>dx</parameter></paramdef>
+        <paramdef>cyg_ucount16 <parameter>dy</parameter></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1 id="framebuf-iteration-description">
+    <title>Description</title>
+    <para>
+A common requirement for graphics code is to iterate over parts of the
+framebuffer. Drawing text typically involves iterating over a block
+of pixels for each character, say 8 by 8, setting each pixel to either
+a foreground or background colour. Drawing arbitrary lines typically
+involves moving to the start position and then adjusting the x and y
+coordinates until the end position is reached, setting a single pixel
+each time around the loop. Drawing images which are not in the frame
+buffer's native format typically involves iterating over a block of
+pixels, from top to bottom and left to right, setting pixels as the
+image is decoded.
+    </para>
+    <para>
+Functionality like this can be implemented in several ways. One
+approach is to use the pixel write primitive. Typically this involves
+some arithmetic to get from the x and y coordinates to a location
+within framebuffer memory so it is fairly expensive compared with a
+loop which just increments a pointer. Another approach is to write the
+data first to a separate buffer in memory and then use a block write
+primitive to move it to the framebuffer, but again this involves
+overhead. The eCos framebuffer support provides a third approach: a
+set of macros specifically for iterating over the frame buffer.
+Depending on the operation being performed and the details of the
+framebuffer implementation, these macros may be optimal or
+near-optimal. Obviously there are limitations. Most importantly the
+framebuffer device must be known at compile-time: the compiler can do
+a better job optimizing the code if information such as the frame
+buffer width are constant. Also each iteration must be performed
+within a single variable scope: it is not possible to do some of the
+iteration in one function, some in another.
+    </para>
+  </refsect1>
+
+  <refsect1 id="framebuf-iteration-macros">
+    <title>The Pixel Macros</title>
+    <para>
+All the pixel macros take a framebuffer identifier as their first
+argument. This is the same identifier that can be used with the other
+macros like <function>CYG_FB_WRITE_HLINE</function> and
+<function>CYG_FB_ON</function>, one of the entries in the
+configuration option <varname>CYGDAT_IO_FRAMEBUF_DEVICES</varname>.
+Using an invalid identifier will result in numerous compile-time error
+messages which may bear little resemblance to the original code. In
+the examples below it is assumed that <varname>FRAMEBUF</varname> has
+been <literal>#define</literal>'d to a suitable identifier.
+    </para>
+    <para>
+Typical use of the pixel macros will look like this:
+    </para>
+<programlisting width=72>
+    CYG_FB_PIXEL0_VAR(FRAMEBUF);
+    &hellip;
+    CYG_FB_PIXEL0_FLUSHABS(FRAMEBUF, x, y, width, height);
+</programlisting>
+    <para>
+The <literal>VAR</literal> macro will define one or more local
+variables to keep track of the current pixel position, as appropriate
+to the framebuffer device. The other pixel macros will then use these
+variables. For a simple 8bpp linear framebuffer there will be just a
+byte pointer. For a 1bpp display there may be several variables: a
+byte pointer, a bit index within that byte, and possibly a cached
+byte; using a cached value means that the framebuffer may only get
+read and written once for every 8 pixels, and the compiler may well
+allocate a register for the cached value; on some platforms
+framebuffer access will bypass the processor's main cache, so reading
+from or writing to framebuffer memory will be slow; reducing the
+number of framebuffer accesses may greatly improve performance.
+    </para>
+    <para>
+Because the <literal>VAR</literal> macro defines one or more local
+variables it is normally placed at the start of a function or block,
+alongside other local variable definitions.
+    </para>
+    <para>
+One the iteration has been completed there should be a
+<function>FLUSHABS</function> or <function>FLUSHREL</function> macro.
+This serves two purposes. First, if the local variables involve a
+dirty cached value or similar state then this will be written back.
+Second, for double-buffered displays the macro sets a bounding box for
+the part of the screen that has been updated. This allows the double
+buffer synch operation to update only the part of the display that has
+been modified, without having to keep track of the current bounding
+box for every updated pixel. For <literal>FLUSHABS</literal> the
+<parameter>x0</parameter> and <parameter>y0</parameter> arguments
+specify the top-left corner of the bounding box, which extends for
+<parameter>width</parameter> by <parameter>height</parameter> pixels.
+For <literal>FLUSHREL</literal> <parameter>x0</parameter> and
+<parameter>y0</parameter> still specify the top-left corner, but the
+bottom-right corner is now determined from the current pixel position
+offset by <parameter>dx</parameter> and <parameter>dy</parameter>.
+More specifically, <parameter>dx</parameter> should move the current
+horizontal position one pixel to the right of the right-most pixel
+modified, such that
+<literal>(x&nbsp;+&nbsp;dx)&nbsp;-&nbsp;x0</literal> gives the width
+of the bounding box. Similarly <parameter>dy</parameter> should move
+the current vertical position one pixel below the bottom-most pixel
+modified. In typical code the current pixel position will already
+correspond in part or in whole to the bounding box corner, as a
+consequence of iterating over the block of memory.
+    </para>
+    <para>
+If a pixel variable has been used only for reading framebuffer memory,
+not for modifying it, then it should still be flushed. A
+<literal>FLUSHABS</literal> with a width and height of 0 can be used
+to indicate that the bounding box is empty. If it is known that the
+framebuffer device being used does not support double-buffering then
+again it is possible to specify an empty bounding box. Otherwise
+portable code should specify a correct bounding box. If the
+framebuffer device that ends up being used does not support double
+buffering then the relevant macro arguments are eliminated at
+compile-time and do not result in any unnecessary code. In addition if
+there is no cached value or other state then the whole flush operation
+will be a no-op and no code will be generated.
+    </para>
+    <para>
+Failure to perform the flush may result in strange drawing artefacts
+on some displays which can be very hard to debug. A
+<function>FLUSHABS</function> or <function>FLUSHREL</function> macro
+only needs to be invoked once, at the end of the iteration.
+    </para>
+    <para>
+The <literal>SET</literal> macro sets the current position within the
+framebuffer. It can be used many times within an iteration. However
+it tends to be somewhat more expensive than <literal>ADDX</literal> or
+<literal>ADDY</literal>, so usually <literal>SET</literal> is only
+executed once at the start of an iteration.
+    </para>
+<programlisting width=72>
+    CYG_FB_PIXEL0_VAR(FRAMEBUF);
+    CYG_FB_PIXEL0_SET(FRAMEBUF, x, y);
+    &hellip;
+    CYG_FB_PIXEL0_FLUSHREL(FRAMEBUF, x, y, 0, 0);
+</programlisting>
+    <para>
+The <literal>GET</literal> macro retrieves the x and y coordinates
+corresponding to the current position. It is provided mainly for
+symmetry, but can prove useful for debugging.
+    </para>
+<programlisting width=72>
+    CYG_FB_PIXEL0_VAR(FRAMEBUF);
+    CYG_FB_PIXEL0_SET(FRAMEBUF, x, y);
+    &hellip;
+#ifdef DEBUG
+    CYG_FB_PIXEL0_GET(FRAMEBUF, new_x, new_y);
+    diag_printf("Halfway through: x now %d, y now %d\n", new_x, new_y);
+#endif
+    &hellip;
+    CYG_FB_PIXEL0_FLUSHREL(FRAMEBUF, x, y, 0, 0);
+</programlisting>
+    <para>
+The <literal>ADDX</literal> and <literal>ADDY</literal> macros adjust
+the current position. The most common increments are 1 and -1, moving
+to the next or previous pixel horizontally or vertically, but any
+increment can be used.
+    </para>
+<programlisting width=72>
+    CYG_FB_PIXEL0_VAR(FRAMEBUF);
+    CYG_FB_PIXEL0_SET(FRAMEBUF, x, y);
+    for (rows = height; rows; rows--) {
+        for (columns = width; columns; columns--) {
+            &lt;perform operation&gt;
+            CYG_FB_PIXEL0_ADDX(FRAMEBUF, 1);
+        }
+        CYG_FB_PIXEL0_ADDX(FRAMEBUF, -1 * width);
+        CYG_FB_PIXEL0_ADDY(FRAMEBUF, 1);
+    }
+    CYG_FB_PIXEL0_FLUSHREL(FRAMEBUF, x, y, width, 0);
+</programlisting>
+    <para>
+Here the current position is moved one pixel to the right each time
+around the inner loop. In the outer loop the position is first moved
+back to the start of the current row, then moved one pixel down.
+For the final flush the current x position is off by
+<literal>width</literal>, but the current y position is already correct.
+    </para>
+    <para>
+The final two macros <literal>READ</literal> and
+<literal>WRITE</literal> can be used to examine or update the current
+pixel value.
+    </para>
+<programlisting width=72>
+    CYG_FB_PIXEL0_VAR(FRAMEBUF);
+    CYG_FB_PIXEL0_SET(FRAMEBUF, x, y);
+    for (rows = height; rows; rows--) {
+        for (columns = width; columns; columns--) {
+            cyg_fb_colour colour = CYG_FB_PIXEL0_READ(FRAMEBUF);
+            if (colour == colour_to_replace) {
+                CYG_FB_PIXEL0_WRITE(FRAMEBUF, replacement);
+            }
+            CYG_FB_PIXEL0_ADDX(FRAMEBUF, 1);
+        }
+        CYG_FB_PIXEL0_ADDX(FRAMEBUF, -1 * width);
+        CYG_FB_PIXEL0_ADDY(FRAMEBUF, 1);
+    }
+    CYG_FB_PIXEL0_FLUSHREL(FRAMEBUF, x, y, width, 0);
+</programlisting>
+  </refsect1>
+
+  <refsect1 id="framebuf-iteration-other">
+    <title>Concurrent Iterations</title>
+    <para>
+Although uncommon, in some cases application code may need to iterate
+over two or more blocks. An example might be an advanced block move
+where each copied pixel requires some processing. To support this
+there are <literal>PIXEL1</literal>, <literal>PIXEL2</literal> and
+<literal>PIXEL3</literal> variants of all the
+<literal>PIXEL0</literal> macros. For example:
+    </para>
+<programlisting width=72>
+    CYG_FB_PIXEL0_VAR(FRAMEBUF);
+    CYG_FB_PIXEL1_VAR(FRAMEBUF);
+
+    CYG_FB_PIXEL0_SET(FRAMEBUF, dest_x, dest_y_);
+    CYG_FB_PIXEL1_SET(FRAMEBUF, source_x, source_y);
+    for (rows = height; rows; rows--) {
+        for (columns = width; columns; columns--) {
+            colour = CYG_FB_PIXEL1_READ(FRAMEBUF);
+            &lt;do some processing on colour&gt;
+            CYG_FB_PIXEL0_WRITE(FRAMEBUF, colour);
+            CYG_FB_PIXEL0_ADDX(FRAMEBUF, 1);
+            CYG_FB_PIXEL1_ADDX(FRAMEBUF, 1);
+        }
+        CYG_FB_PIXEL0_ADDX(FRAMEBUF, -100);
+        CYG_FB_PIXEL0_ADDY(FRAMEBUF, 1);
+        CYG_FB_PIXEL1_ADDX(FRAMEBUF, -100);
+        CYG_FB_PIXEL1_ADDY(FRAMEBUF, 1);
+    }
+
+    CYG_FB_PIXEL0_FLUSHABS(FRAMEBUF, source_x, source_y, width, height);
+    CYG_FB_PIXEL1_FLUSHABS(FRAMEBUF, 0, 0, 0, 0);  // Only used for reading
+</programlisting>
+    <para>
+The <literal>PIXEL0</literal>, <literal>PIXEL1</literal>,
+<literal>PIXEL2</literal> and <literal>PIXEL3</literal> macros all use
+different local variables so there are no conflicts. The variable
+names also depend on the framebuffer device. If the target has two
+displays and two active framebuffer devices then the pixel macros can
+be used with the two devices without conflict:
+    </para>
+<programlisting width=72>
+    CYG_FB_PIXEL0_VAR(FRAMEBUF0);
+    CYG_FB_PIXEL0_VAR(FRAMEBUF1);
+    &hellip;
+</programlisting>  
+  </refsect1>
+
+</refentry>
+
+<!-- }}} -->
+<!-- {{{ Porting                        -->
+
+<refentry id="framebuf-porting">
+  <refmeta>
+    <refentrytitle>Writing a Framebuffer Device Driver</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname>Porting</refname>
+    <refpurpose>writing a new framebuffer device driver</refpurpose>
+  </refnamediv>
+
+  <refsect1 id="framebuf-porting-description">
+    <title>Description</title>
+    <para>
+As with most device drivers, the easiest way to write a new
+framebuffer package is to start with an existing one. Suitable ones
+include the PC VGA mode13 driver, an 8bpp paletted display, and the
+ARM iPAQ driver, a 16bpp true colour display. This document only
+outlines the process.
+    </para>
+    <para>
+Before writing any code it is necessary to decide how many framebuffer
+devices should be provided by the device driver. Each such device
+requires a <structname>cyg_fb</structname> structure and appropriate
+functions, and an identifier for use with the macro API plus
+associated macros. There are no hard rules here. Some device drivers
+may support just a single device, others may support many devices
+which drive the hardware in different modes or orientations. Optional
+functionality such as viewports and page flipping may be supported by
+having different <structname>cyg_fb</structname> devices, or by a
+number of configuration options which affect a single
+<structname>cyg_fb</structname> device. Usually providing multiple
+<structname>cyg_fb</structname> structures is harmless because the
+unused ones will get eliminated at link-time.
+    </para>
+  </refsect1>
+
+  <refsect1 id="framebuf-porting-configuration">
+    <title>Configuration</title>
+    <para>
+The CDL for a framebuffer package is usually straightforward. A
+framebuffer package should be a hardware package and reside in the
+<filename class="directory">devs/framebuf</filename> hierarchy,
+further organized by architecture. Generic framebuffer packages, if
+any, can go into a <filename class="directory">generic</filename>
+subdirectory, and will normally rely on the platform HAL to provide
+some platform-specific information such as base addresses. The package
+should be part of the target definition and hence loaded
+automatically, but should be
+<literal>active_if&nbsp;CYGPKG_IO_FRAMEBUF</literal> so that the
+driver only gets built if the generic framebuffer support is
+explicitly added to the configuration.
+    </para>
+    <para>
+The configuration option <varname>CYGDAT_IO_FRAMEBUF_DEVICES</varname>
+should hold all the valid identifiers which can be used as the first
+argument for the macro API. This helps application developers to
+select the appropriate identifier, and allows higher-level graphics
+library packages to check that they have been configured correctly.
+This is achieved using something like the following, where
+<literal>mode13_320x200x8</literal> is a valid identifier for the PC
+VGA driver:
+    </para>
+    <programlisting width=72>
+  requires { is_substr(CYGDAT_IO_FRAMEBUF_DEVICES, " mode13_320x200x8 ") }
+    </programlisting>
+    <para>
+The spaces ensure that the CDL inference engine keeps the identifiers
+separate.
+    </para>
+    <para>
+<varname>CYGPKG_IO_FRAMEBUF</varname> contains a number of interfaces
+which should be implemented by individual device drivers when
+appropriate. This is used to eliminate some code or data structure
+fields at compile-time, keeping down memory requirements. The
+interfaces are
+<varname>CYGHWR_IO_FRAMEBUF_FUNCTIONALITY_32BPP</varname>,
+<varname>CYGHWR_IO_FRAMEBUF_FUNCTIONALITY_TRUE_COLOUR</varname>,
+<varname>CYGHWR_IO_FRAMEBUF_FUNCTIONALITY_PALETTE</varname>,
+<varname>CYGHWR_IO_FRAMEBUF_FUNCTIONALITY_WRITEABLE_PALETTE</varname>,
+<varname>CYGHWR_IO_FRAMEBUF_FUNCTIONALITY_DOUBLE_BUFFER</varname>,
+and <varname>CYGHWR_IO_FRAMEBUF_FUNCTIONALITY_VIEWPORT</varname>.
+For example if a device driver provides a true colour display but
+fails to implement the relevant interface then functions like
+<function>cyg_fb_make_colour</function> will be no-ops.
+    </para>
+    <para>
+Device drivers for paletted displays should observe the generic
+configuration option
+<varname>CYGFUN_IO_FRAMEBUF_INSTALL_DEFAULT_PALETTE</varname> and
+install either <varname>cyg_fb_palette_ega</varname> or
+<varname>cyg_fb_palette_vga</varname> as part of their
+<function>cyg_fb_on</function> implementation.
+    </para>
+  </refsect1>
+
+  <refsect1 id="framebuf-porting-header">
+    <title>Exported Header File(s)</title>
+    <para>
+Each framebuffer device driver should export one or more header files
+to <filename class="directory">cyg/io/framebufs</filename>. A custom
+build step in <varname>CYGPKG_IO_FRAMEBUF</varname> ensures that
+application code can just <literal>#include</literal> <filename
+class="headerfile">cyg/io/framebuf.h</filename> and this will
+automatically include the device-specific headers. Drivers may export
+one header per <structname>cyg_fb</structname> device or a single
+header for all devices, without affecting any code outside the device
+driver.
+    </para>
+    <para>
+Each exported header serves two purposes. First it defines the
+<link linkend="framebuf-parameters">parameters</link>, <link
+linkend="framebuf-drawing">drawing primitive</link> macros, and
+<link linkend="framebuf-iterating">iteration</link> macros for each
+device. Second it declares the <structname>cyg_fb</structname>
+structure.
+    </para>
+    <refsect2 id="framebuf-porting-header-parameters">
+      <title>Parameters</title>
+      <para>
+The parameter section should resemble the following:
+      </para>
+      <programlisting width=72>
+#define CYG_FB_320x240x16_STRUCT            cyg_ipaq_fb_320x240x16
+#define CYG_FB_320x240x16_DEPTH             16
+#define CYG_FB_320x240x16_FORMAT            CYG_FB_FORMAT_16BPP_TRUE_565
+#define CYG_FB_320x240x16_WIDTH             320
+#define CYG_FB_320x240x16_HEIGHT            240
+#define CYG_FB_320x240x16_VIEWPORT_WIDTH    320
+#define CYG_FB_320x240x16_VIEWPORT_HEIGHT   240
+#define CYG_FB_320x240x16_FLAGS0            (CYG_FB_FLAGS0_LINEAR_FRAMEBUFFER | \
+                                             CYG_FB_FLAGS0_TRUE_COLOUR        | \
+                                             CYG_FB_FLAGS0_BLANK              | \
+                                             CYG_FB_FLAGS0_BACKLIGHT)
+#define CYG_FB_320x240x16_FLAGS1            0
+#define CYG_FB_320x240x16_FLAGS2            0
+#define CYG_FB_320x240x16_FLAGS3            0
+#define CYG_FB_320x240x16_BASE              ((void*)0x01FC0020)
+#define CYG_FB_320x240x16_STRIDE            640
+      </programlisting>
+      <para>
+Here <literal>320x240x16</literal> is the framebuffer identifier for
+use with the macro API. Application code like:
+      </para>
+      <programlisting width=72>
+#define FRAMEBUF 320x240x16
+cyg_ucount16 width = CYG_FB_WIDTH(FRAMEBUF);
+      </programlisting>
+      <para>
+will end up using the <varname>CYG_FB_320x240x16_WIDTH</varname>
+definition. To allow for efficient portable code all parameters must
+be compile-time constants. If the hardware may allow some of the
+parameters to be varied, for example different resolutions, then this
+should be handled either by defining separate devices for each
+resolution or by configuration options.
+      </para>
+      <para>
+The viewport width and height should always be defined. If the device
+driver does not support a viewport then these will be the same as the
+standard width and height.
+      </para>
+      <para>
+To allow for future expansion there are <literal>FLAGS1</literal>,
+<literal>FLAGS2</literal> and <literal>FLAGS3</literal> parameters. No
+flags are defined for these at present, but device drivers should
+still define the parameters.
+      </para>
+      </refsect2>
+
+      <refsect2 id="framebuf-porting-header-drawing">
+        <title>Drawing Primitives</title>
+        <para>
+For each device the exported header file should define macros for the
+drawing primitives, using the same naming convention as for
+parameters. In the case of true colour displays there should also be
+macros for the make-colour and break-colour primitives:
+        </para>
+        <programlisting width=72>
+#define CYG_FB_320x240x16_WRITE_PIXEL(_x_, _y_, _colour_) &hellip;
+#define CYG_FB_320x240x16_READ_PIXEL(_x_, _y_) &hellip;
+#define CYG_FB_320x240x16_WRITE_HLINE(_x_, _y_, _len_, _colour_) &hellip;
+#define CYG_FB_320x240x16_WRITE_VLINE(_x_, _y_, _len_, _colour_) &hellip;
+#define CYG_FB_320x240x16_FILL_BLOCK(_x_, _y_, _w_, _h_, _colour_) &hellip;
+#define CYG_FB_320x240x16_WRITE_BLOCK(_x_, _y_, _w_, _h_, _data_, _off_, _s_) &hellip;
+#define CYG_FB_320x240x16_READ_BLOCK(_x_, _y_, _w_, _h_, _data_, _off_, _s_) &hellip;
+#define CYG_FB_320x240x16_MOVE_BLOCK(_x_, _y_, _w_, _h_, _new_x_, _new_y_) &hellip;
+#define CYG_FB_320x240x16_MAKE_COLOUR(_r_, _g_, _b_) &hellip;
+#define CYG_FB_320x240x16_BREAK_COLOUR(_colour_, _r_, _g_, _b_) &hellip;
+        </programlisting>
+        <para>
+For typical linear framebuffers there are default implementations of
+all of these primitives in the generic framebuffer package, held in
+the exported header <filename
+class="headerfile">cyg/io/framebuf.inl</filename>. Hence the
+definitions will typically look something like:
+        </para>
+        <programlisting width=72>
+#include &lt;cyg/io/framebuf.inl&gt;
+&hellip;
+#define CYG_FB_320x240x16_WRITE_PIXEL(_x_, _y_, _colour_)      \
+    CYG_MACRO_START                                            \
+    cyg_fb_linear_write_pixel_16_inl(CYG_FB_320x240x16_BASE,   \
+                                     CYG_FB_320x240x16_STRIDE, \
+                                     _x_, _y_, _colour_);      \
+    CYG_MACRO_END
+#define CYG_FB_320x240x16_READ_PIXEL(_x_, _y_)                   \
+    ({ cyg_fb_linear_read_pixel_16_inl(CYG_FB_320x240x16_BASE,   \
+                                       CYG_FB_320x240x16_STRIDE, \
+                                       _x_, _y_); })
+&hellip;
+        </programlisting>
+        <para>
+All of the drawing primitives have variants for the common display
+depths and layouts: 1le, 1be, 2le, 2be, 4le, 4be, 8, 16 and 32. The
+inlines take the framebuffer memory base address as the first
+argument, and the stride in bytes as the second. Similarly there are
+default definitions of the true colour primitives for
+<literal>8BPP_TRUE_332</literal>, <literal>16BPP_TRUE_565</literal>,
+<literal>16BPP_TRUE_555</literal>, and <literal>32BPP_TRUE_0888</literal>:
+        </para>
+        <programlisting width=72>
+#define CYG_FB_320x240x16_MAKE_COLOUR(_r_, _g_, _b_)             \
+    ({  CYG_FB_MAKE_COLOUR_16BPP_TRUE_565(_r_, _g_, _b_); })
+#define CYG_FB_320x240x16_BREAK_COLOUR(_colour_, _r_, _g_, _b_)  \
+    CYG_MACRO_START                                              \
+    CYG_FB_BREAK_COLOUR_16BPP_TRUE_565(_colour_, _r_, _g_, _b_); \
+    CYG_MACRO_END
+        </programlisting>
+        <para>
+If the hardware does not implement a linear framebuffer then obviously
+writing the device driver will be significantly more work. The macros
+will have to perform the operations themselves instead of relying on
+generic implementations. The required functionality should be obvious,
+and the generic implementations can still be consulted as a reference.
+For complicated hardware it may be appropriate to map the macros onto
+function calls, rather than try to implement everything inline.
+        </para>
+        <note><para> At the time of writing the support for linear
+framebuffers is incomplete. Only 8bpp, 16bpp and 32bpp depths have
+full support. There may also be future extensions, for example
+<literal>r90</literal>, <literal>r180</literal> and
+<literal>r270</literal> variants to support rotation in software, and
+<literal>db</literal> variants to support double-buffered displays.
+         </para></note>
+      </refsect2>
+
+      <refsect2 id="framebuf-porting-header-iterating">
+        <title>Iteration Macros</title>
+        <para>
+In addition to the drawing primitives the exported header file should
+define iteration macros:
+        </para>
+        <programlisting width=72>
+#define CYG_FB_320x240x16_PIXELx_VAR(  _fb_, _id_) &hellip;
+#define CYG_FB_320x240x16_PIXELx_SET(  _fb_, _id_, _x_, _y_) &hellip;
+#define CYG_FB_320x240x16_PIXELx_GET(  _fb_, _id_, _x_, _y_) &hellip;
+#define CYG_FB_320x240x16_PIXELx_ADDX( _fb_, _id_, _incr_) &hellip;
+#define CYG_FB_320x240x16_PIXELx_ADDY( _fb_, _id_, _incr_) &hellip;
+#define CYG_FB_320x240x16_PIXELx_WRITE(_fb_, _id_, _colour_) &hellip;
+#define CYG_FB_320x240x16_PIXELx_READ( _fb_, _id_)&hellip;
+#define CYG_FB_320x240x16_PIXELx_FLUSHABS( _fb_, _id_, _x0_, _y0_, _w_, _h_) &hellip;
+#define CYG_FB_320x240x16_PIXELx_FLUSHREL( _fb_, _id_, _x0_, _y0_, _dx_, _dy_) &hellip;
+        </programlisting>
+        <para>
+The <parameter>_fb_</parameter> argument will be the identifier, in
+this case <literal>320x240x16</literal>, and the
+<parameter>_id_</parameter> will be a small number, 0 for a
+<literal>PIXEL0</literal> iteration, 1 for <literal>PIXEL1</literal>,
+and so on. Together these two should allow unique local variable names
+to be constructed. Again there are default definitions of the macros
+in <filename class="headerfile">cyg/io/framebuf.inl</filename> for
+linear framebuffers:
+        </para>
+        <programlisting width=72>
+#define CYG_FB_320x240x16_PIXELx_VAR(  _fb_, _id_) \
+    CYG_FB_PIXELx_VAR_16(  _fb_, _id_)
+#define CYG_FB_320x240x16_PIXELx_SET(  _fb_, _id_, _x_, _y_)    \
+    CYG_MACRO_START                                             \
+    CYG_FB_PIXELx_SET_16( _fb_, _id_,                           \
+                          CYG_FB_320x240x16_BASE,               \
+                          320, _x_, _y_);                       \
+    CYG_MACRO_END
+        </programlisting>
+        <para>
+The linear <literal>SET</literal> and <literal>GET</literal> macros
+take base and stride information. The <literal>ADDX</literal> and
+<literal>ADDY</literal> macros only need the stride. By convention
+most of the macros are wrapped in
+<literal>CYG_MACRO_START</literal>/<literal>CYG_MACRO_END</literal> or
+<literal>({</literal>/<literal>})</literal> pairs, allowing debug code
+to be inserted if necessary. However the <literal>_VAR</literal> macro
+must not be wrapped in this way: its purpose is to define one or more
+local variables; wrapping the macro would declare the variables in a
+new scope, inaccessible to the other macros.
+        </para>
+        <para>
+Again for non-linear framebuffers it will be necessary to implement
+these macros fully rather than rely on generic implementations, but
+the generic versions can be consulted as a reference.
+        </para>
+      </refsect2>
+
+      <refsect2 id="framebuf-porting-header-fb">
+        <title>The <structname>cyg_fb</structname> declaration</title>
+        <para>
+Finally there should be an export of the
+<structname>cyg_fb</structname> structure or structures. Typically
+this uses the <literal>_STRUCT</literal> parameter, reducing the
+possibility of an accidental mismatch between the macro and function APIs:
+        </para>
+        <programlisting width=72>
+extern cyg_fb   CYG_FB_320x240x16_STRUCT;
+        </programlisting>
+      </refsect2>
+
+</refsect1>
+
+  <refsect1 id="framebuf-porting-source">
+    <title>Driver-Specific Source Code</title>
+    <para>
+Exporting parameters and macros in a header file is not enough. It is
+also necessary to actually define the <structname>cyg_fb</structname>
+structure or structures, and to provide hardware-specific versions of
+the control operations. For non-linear framebuffers it will also be
+necessary to provide the drawing functions. There is a utility macro
+<function>CYG_FB_FRAMEBUFFER</function> for instantiating a
+<structname>cyg_fb</structname> structure. Drivers may ignore this
+macro and do the work themselves, but at an increased risk of
+compatibility problems with future versions of the generic code.
+    </para>
+    <programlisting width=72>
+CYG_FB_FRAMEBUFFER(CYG_FB_320x240x16_STRUCT,
+                   CYG_FB_320x240x16_DEPTH,
+                   CYG_FB_320x240x16_FORMAT,
+                   CYG_FB_320x240x16_WIDTH,
+                   CYG_FB_320x240x16_HEIGHT,
+                   CYG_FB_320x240x16_VIEWPORT_WIDTH,
+                   CYG_FB_320x240x16_VIEWPORT_HEIGHT,
+                   CYG_FB_320x240x16_BASE,
+                   CYG_FB_320x240x16_STRIDE,
+                   CYG_FB_320x240x16_FLAGS0,
+                   CYG_FB_320x240x16_FLAGS1,
+                   CYG_FB_320x240x16_FLAGS2,
+                   CYG_FB_320x240x16_FLAGS3,
+                   0, 0, 0, 0,   // fb_driver0 -> fb_driver3
+                   &amp;cyg_ipaq_fb_on,
+                   &amp;cyg_ipaq_fb_off,
+                   &amp;cyg_ipaq_fb_ioctl,
+                   &amp;cyg_fb_nop_synch,
+                   &amp;cyg_fb_nop_read_palette,
+                   &amp;cyg_fb_nop_write_palette,
+                   &amp;cyg_fb_dev_make_colour_16bpp_true_565,
+                   &amp;cyg_fb_dev_break_colour_16bpp_true_565,
+                   &amp;cyg_fb_linear_write_pixel_16,
+                   &amp;cyg_fb_linear_read_pixel_16,
+                   &amp;cyg_fb_linear_write_hline_16,
+                   &amp;cyg_fb_linear_write_vline_16,
+                   &amp;cyg_fb_linear_fill_block_16,
+                   &amp;cyg_fb_linear_write_block_16,
+                   &amp;cyg_fb_linear_read_block_16,
+                   &amp;cyg_fb_linear_move_block_16,
+                   0, 0, 0, 0 // fb_spare0 -> fb_spare3
+);
+    </programlisting>
+    <para>
+The first 13 arguments to the macro correspond to the device
+parameters. The next four are arbitrary <type>CYG_ADDRWORD</type>
+values for use by the device driver. Typically these are used to share
+on/off/ioctl functions between multiple
+<structname>cyg_fb</structname> structure. They are followed by
+function pointers: on/off/ioctl control; double buffer synch; palette
+management; true colour support; and the drawing primitives.
+<literal>nop</literal> versions of the on, off, ioctl, synch, palette
+management and true colour functions are provided by the generic
+framebuffer package, and often these arguments to the
+<function>CYG_FB_FRAMEBUFFER</function> macro will be discarded
+at compile-time because the relevant CDL interface is not implemented.
+The final four arguments are currently unused and should be 0. They
+are intended for future expansion, with a value of 0 indicating that a
+device driver does not implement non-core functionality.
+    </para>
+    <para>
+As with the macros there are default implementations of the true
+colour primitives for <literal>8bpp_true_332</literal>,
+<literal>16bpp_true_565</literal>, <literal>16bpp_true_555</literal>
+and <literal>32bpp_true_0888</literal>. There are also default
+implementations of the drawing primitives for linear framebuffers,
+with variants for the common display depths and layouts. Obviously
+non-linear framebuffers will need rather more work.
+    </para>
+    <para>
+Typically a true colour or grey scale framebuffer device driver will
+have to implement just three hardware-specific functions:
+    </para>
+    <programlisting width=72>
+int
+cyg_ipaq_fb_on(cyg_fb* fb)
+{
+    &hellip;
+}
+
+int
+cyg_ipaq_fb_off(cyg_fb* fb)
+{
+    &hellip;
+}
+
+int
+cyg_ipaq_fb_ioctl(cyg_fb* fb, cyg_ucount16 key, void* data, size_t* len)
+{
+    int result;
+
+    switch(key) {
+        case CYG_FB_IOCTL_BLANK_GET: &hellip;
+        &hellip;
+        default: result = ENOSYS; break;
+    }
+    return result;
+}
+    </programlisting>
+    <para>
+These control operations are entirely hardware-specific and cannot be
+implemented by generic code. Paletted displays will need two more
+functions, again hardware-specific:
+    </para>
+    <programlisting width=72>
+void
+cyg_pcvga_fb_read_palette(cyg_fb* fb, cyg_ucount32 first, cyg_ucount32 len,
+                          void* data)
+{
+    &hellip;
+}
+
+void
+cyg_pcvga_fb_write_palette(cyg_fb* fb, cyg_ucount32 first,  cyg_ucount32 len,
+                           const void* data, cyg_ucount16 when)
+{
+    &hellip;
+}
+    </programlisting>
+  </refsect1>
+
+  <refsect1 id="framebuf-porting-expansion">
+    <title>Future Expansion</title>
+    <para>
+As has been mentioned before framebuffer hardware varies widely. The
+design of a generic framebuffer API requires complicated trade-offs
+between efficiency, ease of use, ease of porting, and still supporting
+a very wide range of hardware. To some extent this requires a lowest
+common denominator approach, but the design allows for some future
+expansion and optional support for more advanced features like
+hardware acceleration.
+    </para>
+    <para>
+The most obvious route for expansion is the <function>ioctl</function>
+interface. Device drivers can define their own keys, values
+<literal>0x8000</literal> and higher, for any operation. Alternatively
+a device driver does not have to implement just the interface provided
+by the generic framebuffer package: additional functions and macros
+can be exported as required.
+    </para>
+    <para>
+Currently there are only a small number of <function>ioctl</function>
+operations. Additional ones may get added in future, for example to
+support a hardware mouse cursor, but only in cases where the
+functionality is likely to be provided by a significant number of
+framebuffer devices. Adding new generic functionality adds to the
+maintenance overhead of both code and documentation. When a new
+generic <function>ioctl</function> operation is added there will
+usually also be one or more new flags, so that device drivers can
+indicate they support the functionality. At the time of writing only
+12 of the 32 <literal>FLAGS0</literal> flags are used, and a further
+96 are available in <literal>FLAGS1</literal>,
+<literal>FLAGS2</literal> and <literal>FLAGS3</literal>.
+    </para>
+    <para>
+Another route for future expansion is the four spare arguments to the
+<function>CYG_FB_FRAMEBUFFER</function> macro. As an example of how
+these may get used in future, consider support for 3d hardware
+acceleration. One of the spare fields would become another table of
+function pointers to the various accelerators, or possibly a
+structure. A <literal>FLAGS0</literal> flag would indicate that the
+device driver implements such functionality.
+    </para>
+    <para>
+Other forms of expansion such as defining a new standard drawing
+primitive would be more difficult, since this would normally involve
+changing the <function>CYG_FB_FRAMEBUFFER</function> macro. Such
+expansion should not be necessary because the existing primitives
+provide all reasonable core functionality. Instead other packages such
+as graphics libraries can work on top of the existing primitives.
+    </para>
+  </refsect1>
+
+</refentry>
+
+<!-- }}} -->
+
+</part>

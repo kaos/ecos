@@ -1,0 +1,232 @@
+# ====================================================================
+#
+#      framebuf.cdl
+#
+#      Generic framebuffer package configuration data
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+# -------------------------------------------
+# This file is part of eCos, the Embedded Configurable Operating System.
+# Copyright (C) 2008 Free Software Foundation, Inc.
+#
+# eCos is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 or (at your option) any later version.
+#
+# eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with eCos; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+#
+# As a special exception, if other files instantiate templates or use macros
+# or inline functions from this file, or you compile this file and link it
+# with other works to produce a work based on this file, this file does not
+# by itself cause the resulting work to be covered by the GNU General Public
+# License. However the source code for this file must still be made available
+# in accordance with section (3) of the GNU General Public License.
+#
+# This exception does not invalidate any other reasons why a work based on
+# this file might be covered by the GNU General Public License.
+# -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):     bartv
+# Date:          2005-03-29
+#
+#####DESCRIPTIONEND####
+#========================================================================
+
+cdl_package CYGPKG_IO_FRAMEBUF {
+    display		"Framebuffer support"
+    doc         ref/io-framebuf.html
+    requires	CYGPKG_INFRA CYGPKG_HAL CYGPKG_ERROR
+    include_dir	cyg/io
+    compile		framebuf.c linear.c palette.c
+
+    # A custom build step to generate a single header with details of all
+    # the framebuffers for this target. The dependency on <pkgconf/system.h>
+    # copes with the case of a framebuffer device driver package being removed
+    make -priority 2 {
+        $(PREFIX)/include/cyg/io/framebufs/framebufs.h : $(REPOSITORY)/$(PACKAGE)/src/gen_framebufs.tcl \
+            $(PREFIX)/include/pkgconf/system.h \
+            $(subst $(PREFIX)/include/cyg/io/framebufs/framebufs.h,,$(wildcard $(PREFIX)/include/cyg/io/framebufs/*.h*))
+        sh $< $(dir $@)
+    }
+    
+    description "
+        The generic framebuffer package provides an API for accessing
+        one or more framebuffers, plus support for appropriate device
+        drivers."
+
+    cdl_interface CYGINT_IO_FRAMEBUF_DEVICES {
+        display		"Number of available framebuffer devices"
+        flavor		data
+        description "
+            This interface specifies the number of framebuffer devices
+            supported by device driver(s) on this platform."
+    }
+
+    cdl_option CYGDAT_IO_FRAMEBUF_DEVICES {
+        display		"Names of available framebuffer devices"
+        default_value	{ "" }
+        flavor		data
+        description "
+            This option provides a list of the framebuffer devices available
+            on the current platform. It is controlled by the appropriate
+            device driver(s) and should not be edited by users."
+    }
+
+    cdl_option CYGDAT_IO_FRAMEBUF_TEST_DEVICE {
+        display         "Framebuffer device to use for testing"
+        active_if       CYGINT_IO_FRAMEBUF_DEVICES
+        flavor          booldata
+        default_value   0
+        requires        { is_substr(CYGDAT_IO_FRAMEBUF_DEVICES, " " . CYGDAT_IO_FRAMEBUF_TEST_DEVICE . " ") }
+        description "
+            This option determines the framebuffer device to be used for running
+          the testcases. By default the build system will automatically select
+          the first entry in CYGDAT_IO_FRAMEBUF_DEVICES, which will be the
+          only entry if there is only framebuffer device in the system."
+    }
+    
+    cdl_component CYGPKG_IO_FRAMEBUF_FUNCTIONALITY {
+        display		"Functionality supported by the platform's framebuffer(s)"
+        flavor 		none
+        description "
+            This component holds details of the functionality provided by the
+            framebuffer device driver(s) for the current platform."
+
+        cdl_interface CYGHWR_IO_FRAMEBUF_FUNCTIONALITY_32BPP {
+            display	"32bpp pixel support required"
+            flavor	booldata
+            description "
+                This interface will be implemented if any of the framebuffer
+                device drivers for the current platform provides a 32 bits
+                per pixel display. This constrains the cyg_colour data type
+                to be at least 32 bits."
+        }
+        
+        cdl_interface CYGHWR_IO_FRAMEBUF_FUNCTIONALITY_TRUE_COLOUR {
+            display	"Framebuffer supports true colour mode"
+            flavor	booldata
+            define	CYGHWR_IO_FRAMEBUF_FUNCTIONALITY_TRUE_COLOR
+            description "
+                This interface will be implemented if any of the framebuffer
+                device drivers for the current platform support true colour
+                operation. In other words the contents of the framebuffer
+                defines the colours directly and there is no indirection via
+                a palette."
+        }
+
+        cdl_interface CYGHWR_IO_FRAMEBUF_FUNCTIONALITY_PALETTE {
+            display	"Framebuffer uses a palette for colours"
+            flavor	booldata
+            description "
+                This interface will be implemented if any of the framebuffer
+                device drivers for the current platform use a palette. In
+                other words the contents of the framebuffer's memory do not
+                represent colours directly, but instead are treated as indices
+                into a separate table known as the palette."
+        }
+        
+        cdl_interface CYGHWR_IO_FRAMEBUF_FUNCTIONALITY_WRITEABLE_PALETTE {
+            display	"Framebuffer uses a writeable palette for colours"
+            flavor	booldata
+            description "
+                This interface will be implemented if any of the framebuffer
+                device drivers for the current platform use a palette, and this
+                palette can be modified at run-time. In other words the contents
+                of the framebuffer's memory do not represent colours directly,
+                but instead are treated as indices into a separate table known
+                as the palette."
+        }
+        
+        cdl_interface CYGHWR_IO_FRAMEBUF_FUNCTIONALITY_VIEWPORT {
+            display	"Framebuffer provides viewport support"
+            flavor	booldata
+            description "
+              This interface will be implemented if any of the framebuffer
+              device drivers for the current platform provide viewport support.
+              In other words only a subset of the framebuffer, the viewport,
+              is actually visible on the display and application code can move
+              this viewport."
+        }
+
+        cdl_interface CYGHWR_IO_FRAMEBUF_FUNCTIONALITY_DOUBLE_BUFFER {
+            display	"Framebuffer provides double buffering support"
+            flavor	booldata
+            description "
+              This interface will be implemented if any of the framebuffer
+              device drivers for the current platform provide support for
+              double buffering. In other words the framebuffer memory that
+              is updated by graphics operations is not what actually gets
+              displayed. Instead there is a separate hidden area of memory
+              used for the display, and when drawing is complete a flush
+              operation is needed to move the framebuffer contents to that
+              hidden area. This makes it possible to update the display more
+              smoothly, at the cost of potentially expensive memory copy
+              operations."
+        }
+    }
+
+    cdl_option CYGFUN_IO_FRAMEBUF_INSTALL_DEFAULT_PALETTE {
+        display		"Framebuffers should install a default palette"
+        flavor		bool
+        default_value	1
+        active_if	CYGHWR_IO_FRAMEBUF_FUNCTIONALITY_WRITEABLE_PALETTE
+        description "
+          Framebuffer devices which involve a writeable palette may set this
+          to a default palette when activated by cyg_fb_on() or equivalent
+          functionality. This is useful when the application will access the
+          framebuffer directly. It is less useful if a higher-level graphics
+          library is in use because typically that will install its own
+          palette, and typically there is a code/data overhead of approximately 1K."
+    }
+    
+    cdl_component CYGPKG_IO_FRAMEBUF_OPTIONS {
+        display "Framebuffer build options"
+        flavor  none
+        description   "
+	    Package specific build options including control over
+	    compiler flags used only in building the generic frame
+            buffer package, and details of which tests are built."
+
+        cdl_option CYGPKG_IO_FRAMEBUF_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the generic framebuffer package. These flags
+                are used in addition to the set of global flags."
+        }
+
+        cdl_option CYGPKG_IO_FRAMEBUF_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the generic framebuffer package. These flags
+                are removed from the set of global flags if present."
+        }
+
+        cdl_option CYGPKG_IO_FRAMEBUF_TESTS {
+            display	    "Framebuffer tests"
+            active_if   CYGINT_IO_FRAMEBUF_DEVICES
+            flavor 	    booldata
+            calculated  { "tests/fb tests/fbmacro" }
+            description "
+                This option specifies the set of tests for the framebuffer package"
+        }
+    }
+}
