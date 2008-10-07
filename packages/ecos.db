@@ -5524,11 +5524,12 @@ target pc_usb_d12 {
 target linux {
         alias		{ "Linux synthetic target" i386linux }
 	packages        { CYGPKG_HAL_SYNTH
-                          CYGPKG_HAL_SYNTH_I386
-                          CYGPKG_DEVS_FLASH_SYNTH
-                          CYGPKG_DEVS_ETH_ECOSYNTH
-                          CYGPKG_DEVS_WATCHDOG_SYNTH
-                          CYGPKG_DEVS_WALLCLOCK_SYNTH      
+                      CYGPKG_HAL_SYNTH_I386
+                      CYGPKG_DEVS_FLASH_SYNTH
+                      CYGPKG_DEVS_ETH_ECOSYNTH
+                      CYGPKG_DEVS_WATCHDOG_SYNTH
+                      CYGPKG_DEVS_WALLCLOCK_SYNTH      
+	                  CYGPKG_DEVS_FRAMEBUF_SYNTH
         }
         description "
     	    The linux target provides the 
@@ -6651,6 +6652,29 @@ package CYGPKG_FS_FAT {
         This package contains a FAT filesystem implementation."
 }
 
+
+# --------------------------------------------------------------------------
+
+package CYGPKG_IO_FRAMEBUF {
+        alias	   { "Frame buffer support" framebuf framebuffer io_framebuf framebuf_io }
+        directory  io/framebuf
+        script     framebuf.cdl
+        description "
+          The generic frame buffer package provides an API for accessing
+          frame buffer devices. It also provides support for writing
+          the corresponding the device drivers."
+}
+
+package CYGPKG_DEVS_FRAMEBUF_SYNTH {
+    alias		{ "Synthetic target framebuffer device driver" devs_framebuf_synth synth_framebuf_driver }
+    hardware
+    directory		devs/framebuf/synth
+    script		framebuf_synth.cdl
+    
+    description "
+        This package provides a framebuffer device driver for the
+        synthetic target."
+}
 
 # --------------------------------------------------------------------------
 

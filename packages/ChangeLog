@@ -1,3 +1,8 @@
+2008-10-07  Bart Veer  <bartv@ecoscentric.com>
+
+	* NEWS, ecos.db: add generic framebuffer support and a synthetic
+	target 	device driver.
+
 2008-09-15  Steven Clugston  <steven.clugston@ncl.ac.uk>
 		
 	* NEWS:
